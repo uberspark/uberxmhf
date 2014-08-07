@@ -45,8 +45,7 @@
  */
 
 /* 
- * XMHF core exception handling slab
- * x86 arch. backend
+ * XMHF core exception handling x86-vmx-x86pc arch. backend
  * author: amit vasudevan (amitvasudevan@acm.org)
  */
 
@@ -197,31 +196,6 @@ void xmhf_baseplatform_arch_x86_initializeIDT(void){
 	
 }
 
-//initialize core exception handlers
-void xcexhub_initialize(void){
-	u32 *pexceptionstubs;
-	u32 i;
-
-	_XDPRINTF_("%s: setting up runtime IDT...\n", __FUNCTION__);
-	
-	for(i=0; i < EMHF_XCPHANDLER_MAXEXCEPTIONS; i++){
-		idtentry_t *idtentry=(idtentry_t *)((u32)&_idt_start+ (i*8));
-		idtentry->isrLow= (u16)exceptionstubs[i];
-		idtentry->isrHigh= (u16) ( (u32)exceptionstubs[i] >> 16 );
-		idtentry->isrSelector = __CS_CPL0;
-		idtentry->count=0x0;
-		idtentry->type=0xEE;	//32-bit interrupt gate
-								//present=1, DPL=11b, system=0, type=1110b
-	}
-	
-	xmhf_baseplatform_arch_x86_initializeIDT();
-	
-	_XDPRINTF_("%s: IDT setup done.\n", __FUNCTION__);
-}
-
-
-
-						
 
 __attribute__(( section(".slab_trampoline") )) static void xmhf_xcphandler_arch_unhandled(u32 vector, struct regs *r){
 	u32 exception_cs, exception_eip, exception_eflags, errorcode=0;
@@ -264,6 +238,8 @@ __attribute__(( section(".slab_trampoline") )) static void xmhf_xcphandler_arch_
 	}
 }
 
+//==========================================================================================
+
 //exception handler hub
 __attribute__(( section(".slab_trampoline") )) void xmhf_xcphandler_arch_hub(u32 vector, struct regs *r){
 
@@ -287,3 +263,26 @@ __attribute__(( section(".slab_trampoline") )) void xmhf_xcphandler_arch_hub(u32
 	}
 }
 	
+
+
+//initialize core exception handlers
+void xcexhub_arch_initialize(void){
+	u32 *pexceptionstubs;
+	u32 i;
+
+	_XDPRINTF_("%s: setting up runtime IDT...\n", __FUNCTION__);
+	
+	for(i=0; i < EMHF_XCPHANDLER_MAXEXCEPTIONS; i++){
+		idtentry_t *idtentry=(idtentry_t *)((u32)&_idt_start+ (i*8));
+		idtentry->isrLow= (u16)exceptionstubs[i];
+		idtentry->isrHigh= (u16) ( (u32)exceptionstubs[i] >> 16 );
+		idtentry->isrSelector = __CS_CPL0;
+		idtentry->count=0x0;
+		idtentry->type=0xEE;	//32-bit interrupt gate
+								//present=1, DPL=11b, system=0, type=1110b
+	}
+	
+	xmhf_baseplatform_arch_x86_initializeIDT();
+	
+	_XDPRINTF_("%s: IDT setup done.\n", __FUNCTION__);
+}

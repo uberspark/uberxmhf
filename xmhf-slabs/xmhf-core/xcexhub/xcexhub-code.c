@@ -45,8 +45,7 @@
  */
 
 /* 
- * XMHF core exception handling slab
- * x86 arch. backend
+ * XMHF core exception handling (xcexhub)
  * author: amit vasudevan (amitvasudevan@acm.org)
  */
 
@@ -56,11 +55,11 @@
 
 #include <xcexhub.h>
 
+void xcexhub_initialize(void){
+		xcexhub_arch_initialize();
+}
 
 //////////
 XMHF_SLAB("xcexhub")
 
-XMHF_SLAB_DEFINTERFACE(
-	XMHF_SLAB_DEFEXPORTFN(xcexhub_initialize				,XMHF_SLAB_XCEXHUB_FNXCEXHUBINITIALIZE				,	XMHF_SLAB_FN_RETTYPE_NORMAL)
-)
 

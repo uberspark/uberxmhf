@@ -52,7 +52,7 @@
 #include <xmhf-debug.h>
 
 #include <xcapi.h>
-
+#include <xcihub.h>
 
 
 //----------------------------------------------------------------------

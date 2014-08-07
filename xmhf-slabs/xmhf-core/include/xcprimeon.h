@@ -55,7 +55,6 @@
 #ifndef __XCPRIMEON_H__
 #define __XCPRIMEON_H__
 
-#define XMHF_SLAB_XCPRIMEON_FNSTARTUP							0				
 
 #ifndef __ASSEMBLY__
 
@@ -65,23 +64,16 @@ XMHF_SLAB_DEFIMPORTFN(void, xcprimeon_startup, (void),	XMHF_SLAB_DEFIMPORTFNSTUB
 
 #else 	//!__XMHF_SLAB_CALLER_INDEX__
 
-void xcprimeon_startup(void);
+void xcprimeon_entry(void);
 
 //----------------------------------------------------------------------
 //ARCH. BACKENDS
 //----------------------------------------------------------------------
-void* xmhf_sl_arch_hva2sla(uintptr_t x);
-u64 xmhf_sl_arch_sla2spa(void* x);
-bool xmhf_sl_arch_integrity_check(u8* runtime_base_addr, size_t runtime_len);
-void xmhf_sl_arch_sanitize_post_launch(void);
-void xmhf_sl_arch_early_dmaprot_init(u32 membase, u32 size);
-void xmhf_sl_arch_xfer_control_to_runtime(XMHF_BOOTINFO *xcbootinfo);
-void xmhf_sl_arch_baseplatform_initialize(void);
-
-
-void xcprimeon_platform_arch_initialize(void);
-void _xcprimeon_initialize_exceptionhandling(void);
-void xcprimeon_initialize_slab_tables(void);
+void xcprimeon_arch_entry(void);
+void xcprimeon_arch_initialize(void);
+void xcprimeon_arch_postdrt(void);
+void xcprimeon_arch_earlydmaprot(u32 membase, u32 size);
+void xcprimeon_arch_initialize_page_tables();
 
 #endif	//__XMHF_SLAB_CALLER_INDEX__
 

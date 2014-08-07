@@ -55,6 +55,4 @@
 //////////
 XMHF_SLAB("ihub")
 
-XMHF_SLAB_DEFINTERFACEBARE(xmhf_parteventhub_arch_x86vmx_entry)
-
 

@@ -107,6 +107,7 @@
         | (PCI_DEVICE_FN(device, function) << 8) | (index & 0xFC))
 
 
+void xmhfhw_platform_bus_init(void);
 
 #endif /* __ASSEMBLY__ */
 #endif /* __PCI_H__ */

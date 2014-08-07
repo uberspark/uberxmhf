@@ -179,7 +179,7 @@ void print_mtrrs(const mtrr_state_t *saved_state)
     }
 }
 
-void save_mtrrs(mtrr_state_t *saved_state)
+void xmhfhw_cpu_x86_save_mtrrs(mtrr_state_t *saved_state)
 {
     mtrr_cap_t mtrr_cap;
     int ndx;
@@ -472,7 +472,7 @@ bool validate_mtrrs(const mtrr_state_t *saved_state)
     return true;
 }
 
-void restore_mtrrs(mtrr_state_t *saved_state)
+void xmhfhw_cpu_x86_restore_mtrrs(mtrr_state_t *saved_state)
 {
     int ndx;
 

@@ -55,7 +55,6 @@
 #ifndef __XCEXHUB_H__
 #define __XCEXHUB_H__
 
-#define XMHF_SLAB_XCEXHUB_FNXCEXHUBINITIALIZE							0				
 
 #ifndef __ASSEMBLY__
 
@@ -70,6 +69,11 @@ XMHF_SLAB_DEFIMPORTFN(void, xcexhub_initialize, (void),	XMHF_SLAB_DEFIMPORTFNSTU
 void xcexhub_initialize(void);
 
 #endif	//__XMHF_SLAB_CALLER_INDEX__
+
+//----------------------------------------------------------------------
+//ARCH. BACKENDS
+//----------------------------------------------------------------------
+void xcexhub_arch_initialize(void);
 
 
 #endif	//__ASSEMBLY__
