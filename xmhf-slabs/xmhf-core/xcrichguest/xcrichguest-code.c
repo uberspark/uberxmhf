@@ -53,13 +53,8 @@
 #include <xmhf-debug.h>
 
 #include <xcrichguest.h>
-<<<<<<< HEAD
 
 #define __XMHF_SLAB_CALLER_INDEX__	XMHF_SLAB_INIT_INDEX
-||||||| merged common ancestors
-
-=======
->>>>>>> develop
 #include <xcapi.h>
 #undef __XMHF_SLAB_CALLER_INDEX__
 
