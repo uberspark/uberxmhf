@@ -54,7 +54,7 @@
 
 #include <xcsmp.h>
 
-#define __XMHF_SLAB_CALLER_INDEX__	XMHF_SLAB_INITBS_INDEX
+#define __XMHF_SLAB_CALLER_INDEX__	XMHF_SLAB_XCSMP_INDEX
 #include <testslab1.h>
 #include <testslab2.h>
 #include <xcrichguest.h>
@@ -168,6 +168,6 @@ bool xcsmp_entry(void){
 XMHF_SLAB("xcsmp")
 
 XMHF_SLAB_DEFINTERFACE(
-	XMHF_SLAB_DEFEXPORTFN(xcsmp_entry, XMHF_SLAB_INITBS_FNXMHFRUNTIMEENTRY, XMHF_SLAB_FN_RETTYPE_NORMAL)
+	XMHF_SLAB_DEFEXPORTFN(xcsmp_entry, XMHF_SLAB_XCSMP_FNENTRY, XMHF_SLAB_FN_RETTYPE_NORMAL)
 )
 

@@ -742,7 +742,7 @@ static void _xc_api_partition_arch_addcpu_setupbasestate(u32 partition_index, u3
 	xmhfhw_cpu_x86vmx_vmwrite(VMCS_HOST_CR0, read_cr0());
 	xmhfhw_cpu_x86vmx_vmwrite(VMCS_HOST_CR4, read_cr4());
 	//xmhfhw_cpu_x86vmx_vmwrite(VMCS_HOST_CR3, read_cr3());
-	xmhfhw_cpu_x86vmx_vmwrite(VMCS_HOST_CR3, _slab_table[XMHF_SLAB_IHUB_INDEX].slab_macmid);
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_HOST_CR3, _slab_table[XMHF_SLAB_XCIHUB_INDEX].slab_macmid);
 	xmhfhw_cpu_x86vmx_vmwrite(VMCS_HOST_CS_SELECTOR, read_segreg_cs());
 	xmhfhw_cpu_x86vmx_vmwrite(VMCS_HOST_DS_SELECTOR, read_segreg_ds());
 	xmhfhw_cpu_x86vmx_vmwrite(VMCS_HOST_ES_SELECTOR, read_segreg_es());
@@ -754,7 +754,7 @@ static void _xc_api_partition_arch_addcpu_setupbasestate(u32 partition_index, u3
 	xmhfhw_cpu_x86vmx_vmwrite(VMCS_HOST_IDTR_BASE, xmhf_baseplatform_arch_x86_getidtbase());
 	xmhfhw_cpu_x86vmx_vmwrite(VMCS_HOST_TR_BASE, xmhf_baseplatform_arch_x86_gettssbase());
 	//xmhfhw_cpu_x86vmx_vmwrite(VMCS_HOST_RIP, (u32)xmhf_parteventhub_arch_x86vmx_entry);
-	xmhfhw_cpu_x86vmx_vmwrite(VMCS_HOST_RIP, (u32)_slab_table[XMHF_SLAB_IHUB_INDEX].entry_cr3);
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_HOST_RIP, (u32)_slab_table[XMHF_SLAB_XCIHUB_INDEX].entry_cr3);
 	xmhfhw_cpu_x86vmx_vmwrite(VMCS_HOST_RSP, read_esp());
 	rdmsr(IA32_SYSENTER_CS_MSR, &lodword, &hidword);
 	xmhfhw_cpu_x86vmx_vmwrite(VMCS_HOST_SYSENTER_CS, lodword);

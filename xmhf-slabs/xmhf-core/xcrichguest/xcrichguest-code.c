@@ -54,7 +54,7 @@
 
 #include <xcrichguest.h>
 
-#define __XMHF_SLAB_CALLER_INDEX__	XMHF_SLAB_INIT_INDEX
+#define __XMHF_SLAB_CALLER_INDEX__	XMHF_SLAB_XCRICHGUEST_INDEX
 #include <xcapi.h>
 #include <xhhyperdep.h>	//TODO: remove this hardcoded hypapp dependency
 #undef __XMHF_SLAB_CALLER_INDEX__
@@ -165,6 +165,6 @@ bool xcrichguest_entry(u32 cpuid, bool is_bsp){
 XMHF_SLAB("xcrichguest")
 
 XMHF_SLAB_DEFINTERFACE(
-	XMHF_SLAB_DEFEXPORTFN(xcrichguest_entry, XMHF_SLAB_INIT_FNINITENTRY, XMHF_SLAB_FN_RETTYPE_NORMAL)
-	XMHF_SLAB_DEFEXPORTFN(xcrichguest_arch_handle_guestmemoryreporting, XMHF_SLAB_INIT_FNGUESTMEMORYREPORTING, XMHF_SLAB_FN_RETTYPE_AGGREGATE)
+	XMHF_SLAB_DEFEXPORTFN(xcrichguest_entry, XMHF_SLAB_XCRICHGUEST_FNENTRY, XMHF_SLAB_FN_RETTYPE_NORMAL)
+	XMHF_SLAB_DEFEXPORTFN(xcrichguest_arch_handle_guestmemoryreporting, XMHF_SLAB_XCRICHGUEST_FNARCHHANDLEGUESTMEMORYREPORTING, XMHF_SLAB_FN_RETTYPE_AGGREGATE)
 )
