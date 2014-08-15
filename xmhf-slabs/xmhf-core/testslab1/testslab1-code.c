@@ -59,7 +59,7 @@
  
 void entry_0(void){
 	u32 my_entry_cr3 = _slab_table[0].entry_cr3;
-	_XDPRINTF_("\n%s: Got control, entry_cr3=%08x", __FUNCTION__, my_entry_cr3);
+	_XDPRINTF_("%s: Got control, entry_cr3=%08x\n", __FUNCTION__, my_entry_cr3);
 }
 	
 u32 entry_1(u32 param1, u32 param2){
