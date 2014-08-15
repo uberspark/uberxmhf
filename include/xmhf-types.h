@@ -150,6 +150,22 @@ typedef struct {
 	slab_entrystub_t entry_cr3;
 } slab_header_t;
 
+//XMHF core api CPU descriptor type
+typedef struct {
+	bool isbsp;
+	u32 cpu_index;
+} cpu_desc_t;
+	
+//XMHF core api partition descriptor type
+typedef struct {
+	u32 partition_index;
+} partition_desc_t;
+
+//XMHF core api context descriptor type (context = partition + cpu pair)
+typedef struct {
+	partition_desc_t partition_desc;
+	cpu_desc_t cpu_desc;
+} context_desc_t;
 
 
 #endif /*ifndef __ASSEMBLY__*/
