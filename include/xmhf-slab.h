@@ -58,14 +58,16 @@
 #define XMHF_SLAB_XCPRIMEON_INDEX			(0)
 #define XMHF_SLAB_TESTSLAB1_INDEX			(1)
 #define XMHF_SLAB_TESTSLAB2_INDEX			(2)
-#define XMHF_SLAB_INITBS_INDEX				(3)
-#define XMHF_SLAB_INIT_INDEX				(4)
-#define XMHF_SLAB_IHUB_INDEX				(5)
-#define XMHF_SLAB_COREAPI_INDEX				(6)
+#define XMHF_SLAB_XCSMP_INDEX				(3)
+#define XMHF_SLAB_XCRICHGUEST_INDEX			(4)
+#define XMHF_SLAB_XCIHUB_INDEX				(5)
+#define XMHF_SLAB_XCAPI_INDEX				(6)
 #define XMHF_SLAB_XCEXHUB_INDEX				(7)
 
-#define XMHF_SLAB_HYPAPP_HYPERDEP_INDEX		(8)
-#define XMHF_SLAB_HYPAPP_HELLOWORLD_INDEX	(8)
+//hypapp slab indices currently allow for only one hypapp to be linked in
+//TODO: add support for multiple hypapps
+#define XMHF_SLAB_XHHYPERDEP_INDEX			(8)
+#define XMHF_SLAB_XHHELLOWORLD_INDEX		(8)
 
 #ifndef __ASSEMBLY__
 
