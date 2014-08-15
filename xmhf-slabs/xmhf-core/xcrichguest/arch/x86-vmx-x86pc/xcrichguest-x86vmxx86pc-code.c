@@ -54,7 +54,7 @@
 
 #include <xcrichguest.h>
 
-#define __XMHF_SLAB_CALLER_INDEX__	XMHF_SLAB_INIT_INDEX
+#define __XMHF_SLAB_CALLER_INDEX__	XMHF_SLAB_XCRICHGUEST_INDEX
 #include <xcapi.h>
 #undef __XMHF_SLAB_CALLER_INDEX__
 
