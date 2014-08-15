@@ -452,7 +452,7 @@ static u32 _xcprimeon_slab_getspatype(u32 slab_index, u32 spa){
 	//slab shared data region 
 	//TODO: add per shared data variable access policy rather than entire section
 	if(spa >= (u32)_slab_shareddata_memregion_start && spa < (u32)_slab_shareddata_memregion_end){
-			if (slab_index == XMHF_SLAB_XCPRIMEON_INDEX || slab_index == XMHF_SLAB_INITBS_INDEX || slab_index == XMHF_SLAB_XCEXHUB_INDEX)
+			if (slab_index == XMHF_SLAB_XCPRIMEON_INDEX || slab_index == XMHF_SLAB_XCSMP_INDEX || slab_index == XMHF_SLAB_XCEXHUB_INDEX)
 				return _SLAB_SPATYPE_SLAB_RWDATA; //map read-write in initbs (GDT,TSS setup) and xcexhub (IDT setup)
 			else
 				return _SLAB_SPATYPE_SLAB_RODATA; //map read-only in all other slabs 
