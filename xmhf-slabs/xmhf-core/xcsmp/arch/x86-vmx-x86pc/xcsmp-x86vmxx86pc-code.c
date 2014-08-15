@@ -55,7 +55,7 @@
 
 #include <xcsmp.h>
 
-#define __XMHF_SLAB_CALLER_INDEX__	XMHF_SLAB_INITBS_INDEX
+#define __XMHF_SLAB_CALLER_INDEX__	XMHF_SLAB_XCSMP_INDEX
 #include <xcrichguest.h>
 #undef __XMHF_SLAB_CALLER_INDEX__
 
