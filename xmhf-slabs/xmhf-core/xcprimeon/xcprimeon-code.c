@@ -146,7 +146,7 @@ void xcprimeon_entry(void){
 			XMHF_SLAB_CALL(entry_0());
 			_XDPRINTF_("%s: came back from entry_0, esp=%x\n", __FUNCTION__, read_esp());
 
-/*			_XDPRINTF_("\n%s: preparing to invoke entry_1, esp=%x", __FUNCTION__, read_esp());
+			_XDPRINTF_("\n%s: preparing to invoke entry_1, esp=%x", __FUNCTION__, read_esp());
 			value=XMHF_SLAB_CALL(entry_1(5, 3));
 			_XDPRINTF_("\n%s: came back from entry_1, esp=%x", __FUNCTION__, read_esp());
 			_XDPRINTF_("\n%s: came back from entry_1, value=%u", __FUNCTION__, value);
@@ -200,18 +200,18 @@ void xcprimeon_entry(void){
 			_XDPRINTF_("\nap_output.param.inforegs.info_io_rip                         %llu",  ap_output.param.inforegs.info_io_rip                       ); 
 			_XDPRINTF_("\nap_output.param.inforegs.info_guest_linear_address           %llu",  ap_output.param.inforegs.info_guest_linear_address         ); 
 			_XDPRINTF_("\nap_output.param.inforegs.info_guest_paddr_full               %llu",  ap_output.param.inforegs.info_guest_paddr_full             ); 
-	*/
+	
 	}
 	
 
 
 	//testslab2
-	/*{
+	{
 			//invoke testslab 2 interface
 			_XDPRINTF_("\n%s: preparing to invoke testslab2_entry_0, esp=%x", __FUNCTION__, read_esp());
 			XMHF_SLAB_CALL(testslab2_entry_0());
 			_XDPRINTF_("\n%s: came back from testslab2_entry_0, esp=%x", __FUNCTION__, read_esp());
-	}*/
+	}
 
 	
 	_XDPRINTF_("\nXMHF Tester Finished!\n");
