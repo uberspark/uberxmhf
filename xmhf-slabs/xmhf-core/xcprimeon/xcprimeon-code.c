@@ -53,6 +53,7 @@
 #define __XMHF_SLAB_CALLER_INDEX__	XMHF_SLAB_XCPRIMEON_INDEX
 #include <xcsmp.h>
 
+
 #include <testslab1.h>
 #include <testslab2.h>
 #undef __XMHF_SLAB_CALLER_INDEX__
@@ -132,8 +133,7 @@ void xcprimeon_entry(void){
 
 	//initialize slab page tables
 	xcprimeon_initialize_slab_tables();
-		
-	
+
 	//[test] testslab1
 	{
 			//extern slab_header_t _test_slab_header;
@@ -202,6 +202,7 @@ void xcprimeon_entry(void){
 			_XDPRINTF_("\nap_output.param.inforegs.info_guest_paddr_full               %llu",  ap_output.param.inforegs.info_guest_paddr_full             ); 
 	*/
 	}
+	
 
 
 	//testslab2
@@ -216,9 +217,8 @@ void xcprimeon_entry(void){
 	_XDPRINTF_("\nXMHF Tester Finished!\n");
 	_XDPRINTF_("\n\n");
 	HALT();
-
-
-	
+		
+		
 	//proceed with SMP initialization
 	if ( XMHF_SLAB_CALL(xcsmp_entry()) ){
 		//we should never get here
