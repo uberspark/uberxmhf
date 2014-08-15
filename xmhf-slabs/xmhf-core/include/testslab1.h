@@ -67,10 +67,10 @@ XMHF_SLAB_DEFIMPORTFN(slab_retval_t, entry_3, (context_desc_t context_desc, xc_h
 
 #else 	//!__XMHF_SLAB_CALLER_INDEX__
 
-void entry_0(void);
-u32 entry_1(u32 param1, u32 param2);
-context_desc_t entry_2(u32 cpu_index, bool isbsp, u32 partition_index);
-xc_hypapp_arch_param_t entry_3(context_desc_t context_desc, xc_hypapp_arch_param_t archparam);
+slab_retval_t entry_0(void);
+slab_retval_t entry_1(u32 param1, u32 param2);
+slab_retval_t entry_2(u32 cpu_index, bool isbsp, u32 partition_index);
+slab_retval_t entry_3(context_desc_t context_desc, xc_hypapp_arch_param_t archparam);
 
 #endif	//__XMHF_SLAB_CALLER_INDEX__
 
