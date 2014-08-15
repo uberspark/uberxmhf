@@ -52,7 +52,9 @@
 #include <xmhf-debug.h>
 
 #include <xhhelloworld.h>
+#define __XMHF_SLAB_CALLER_INDEX__	XMHF_SLAB_XHHELLOWORLD_INDEX
 #include <xcapi.h>
+#undef __XMHF_SLAB_CALLER_INDEX__
 
 #define HELLOWORLD_PING					0xC0
 
