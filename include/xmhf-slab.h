@@ -71,6 +71,16 @@
 
 #ifndef __ASSEMBLY__
 
+//slab interface aggregate return type
+typedef union {
+		bool retval_bool;
+		u8 retval_u8;
+		u16 retval_u16;
+		u32 retval_u32;
+		u64 retval_u64;
+		struct regs retval_regs;
+} slab_retval_t;
+
 //extern slab_header_t _slab_table[];
 
 extern __attribute__(( section(".sharedro_xcbootinfoptr") )) XMHF_BOOTINFO *xcbootinfo;
