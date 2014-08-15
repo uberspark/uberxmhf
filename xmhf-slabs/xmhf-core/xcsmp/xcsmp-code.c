@@ -61,7 +61,6 @@
 
 bool xcsmp_entry(void){
 
-
 #if defined (__DMAP__)
 	xcsmp_arch_dmaprot_reinitialize();
 #endif
