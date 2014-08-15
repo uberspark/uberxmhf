@@ -48,7 +48,7 @@
 #include <xmhf-core.h>
 #include <xmhf-debug.h>
 
-#define __XMHF_SLAB_CALLER_INDEX__ XMHF_SLAB_IHUB_INDEX
+#define __XMHF_SLAB_CALLER_INDEX__ XMHF_SLAB_XCIHUB_INDEX
 #include <xcapi.h>
 #undef __XMHF_SLAB_CALLER_INDEX__
 
