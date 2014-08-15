@@ -53,7 +53,7 @@
 
 #include <xhhyperdep.h>
 
-#define __XMHF_SLAB_CALLER_INDEX__	XMHF_SLAB_HYPAPP_HYPERDEP_INDEX
+#define __XMHF_SLAB_CALLER_INDEX__	XMHF_SLAB_XHHYPERDEP_INDEX
 #include <xcapi.h>
 #undef __XMHF_SLAB_CALLER_INDEX__
 
