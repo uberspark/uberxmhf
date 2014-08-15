@@ -152,7 +152,7 @@ void xcprimeon_entry(void){
 			_XDPRINTF_("%s: preparing to invoke entry_2, esp=%x\n", __FUNCTION__, read_esp());
 			srval= XMHF_SLAB_CALL(entry_2(2048, true, 4096));
 			_XDPRINTF_("\n%s: came back from entry_2, esp=%x", __FUNCTION__, read_esp());
-			_XDPRINTF_("\n%s: ctx: cpu_index=%u, isbsp=%u, partition_index=%u", __FUNCTION__, srval.retval_context_desccpu_desc.cpu_index, srval.retval_context_desccpu_desc.isbsp, srval.retval_context_descpartition_desc.partition_index);
+			_XDPRINTF_("\n%s: ctx: cpu_index=%u, isbsp=%u, partition_index=%u", __FUNCTION__, srval.retval_context_desc.cpu_desc.cpu_index, srval.retval_context_desc.cpu_desc.isbsp, srval.retval_context_desc.partition_desc.partition_index);
 			
 			ap_input.operation = XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_INFOREGS;
 			ap_input.param.inforegs.info_vminstr_error = 0; 
@@ -172,7 +172,7 @@ void xcprimeon_entry(void){
 			ap_input.param.inforegs.info_guest_paddr_full = 14; 
 
 			_XDPRINTF_("\n%s: preparing to invoke entry_3, esp=%x", __FUNCTION__, read_esp());
-			srval = XMHF_SLAB_CALL(entry_3(ctx, ap_input));			
+			srval = XMHF_SLAB_CALL(entry_3(srval.retval_context_desc, ap_input));			
 			_XDPRINTF_("\n%s: came back from entry_3, esp=%x", __FUNCTION__, read_esp());
 			_XDPRINTF_("\nsrval.retval_xc_hypapp_arch_param.param.inforegs.info_vminstr_error                  %u",  srval.retval_xc_hypapp_arch_param.param.inforegs.info_vminstr_error                ); 
 			_XDPRINTF_("\nsrval.retval_xc_hypapp_arch_param.param.inforegs.info_vmexit_reason                  %u",  srval.retval_xc_hypapp_arch_param.param.inforegs.info_vmexit_reason                ); 
