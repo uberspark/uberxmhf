@@ -57,61 +57,63 @@
  */
 
  
-void entry_0(void){
-	u32 my_entry_cr3 = _slab_table[0].entry_cr3;
-	_XDPRINTF_("%s: Got control, entry_cr3=%08x\n", __FUNCTION__, my_entry_cr3);
+slab_retval_t entry_0(void){
+	slab_retval_t srval;
+	_XDPRINTF_("%s: Got control, nothing to do!\n", __FUNCTION__);
+	return srval;	//void
 }
 	
-u32 entry_1(u32 param1, u32 param2){
-	u32 my_entry_cr3 = _slab_table[0].entry_cr3;
-	_XDPRINTF_("\n%s: Huhu we are here: entry_cr3=%08x", __FUNCTION__, my_entry_cr3);
-	_XDPRINTF_("\n%s: param1=%u, param2=%u", __FUNCTION__, param1, param2);
-	return param1+param2;
+slab_retval_t entry_1(u32 param1, u32 param2){
+	slab_retval_t srval;
+	_XDPRINTF_("%s: Huhu we are here\n", __FUNCTION__);
+	_XDPRINTF_("%s: param1=%u, param2=%u\n", __FUNCTION__, param1, param2);
+	srval.retval_u32 = param1+param2;
+	return srval;	//u32
 }
 
-context_desc_t entry_2(u32 cpu_index, bool isbsp, u32 partition_index){
-	context_desc_t ctx;
+slab_retval_t entry_2(u32 cpu_index, bool isbsp, u32 partition_index){
+	slab_retval_t srval;
 
 	_XDPRINTF_("\n%s: Got control: cpu_index=%u, isbsp=%u, partition_index=%u", __FUNCTION__, cpu_index, isbsp, partition_index);
 	
-	ctx.cpu_desc.cpu_index = cpu_index;
-	ctx.cpu_desc.isbsp = isbsp;
-	ctx.partition_desc.partition_index = partition_index;
+	srval.retval_context_desc.cpu_desc.cpu_index = cpu_index;
+	srval.retval_context_desc.cpu_desc.isbsp = isbsp;
+	srval.retval_context_desc.partition_desc.partition_index = partition_index;
 	
-	return ctx;
+	return srval;
 }	
 
-xc_hypapp_arch_param_t entry_3(context_desc_t context_desc, xc_hypapp_arch_param_t archparam){
-	xc_hypapp_arch_param_t retparam;
+slab_retval_t entry_3(context_desc_t context_desc, xc_hypapp_arch_param_t archparam){
+	slab_retval_t srval;
 
 	_XDPRINTF_("\n%s: Got control: cpu_index=%u, isbsp=%u, partition_index=%u", __FUNCTION__, context_desc.cpu_desc.cpu_index, context_desc.cpu_desc.isbsp, context_desc.partition_desc.partition_index);
 	
-	retparam.operation = archparam.operation;
-	retparam.param.inforegs.info_vminstr_error = archparam.param.inforegs.info_vminstr_error;
-	retparam.param.inforegs.info_vmexit_reason = archparam.param.inforegs.info_vmexit_reason;
-	retparam.param.inforegs.info_vmexit_interrupt_information = archparam.param.inforegs.info_vmexit_interrupt_information;
-	retparam.param.inforegs.info_vmexit_interrupt_error_code = archparam.param.inforegs.info_vmexit_interrupt_error_code;
-	retparam.param.inforegs.info_idt_vectoring_information = archparam.param.inforegs.info_idt_vectoring_information;
-	retparam.param.inforegs.info_idt_vectoring_error_code = archparam.param.inforegs.info_idt_vectoring_error_code;
-	retparam.param.inforegs.info_vmexit_instruction_length = archparam.param.inforegs.info_vmexit_instruction_length;
-	retparam.param.inforegs.info_vmx_instruction_information = archparam.param.inforegs.info_vmx_instruction_information;
-	retparam.param.inforegs.info_exit_qualification = archparam.param.inforegs.info_exit_qualification;
-	retparam.param.inforegs.info_io_rcx = archparam.param.inforegs.info_io_rcx;
-	retparam.param.inforegs.info_io_rsi = archparam.param.inforegs.info_io_rsi;
-	retparam.param.inforegs.info_io_rdi = archparam.param.inforegs.info_io_rdi;
-	retparam.param.inforegs.info_io_rip = archparam.param.inforegs.info_io_rip;
-	retparam.param.inforegs.info_guest_linear_address = archparam.param.inforegs.info_guest_linear_address;
-	retparam.param.inforegs.info_guest_paddr_full = archparam.param.inforegs.info_guest_paddr_full;
+	srval.retval_xc_hypapp_arch_param.operation = archparam.operation;
+	srval.retval_xc_hypapp_arch_param.param.inforegs.info_vminstr_error = archparam.param.inforegs.info_vminstr_error;
+	srval.retval_xc_hypapp_arch_param.param.inforegs.info_vmexit_reason = archparam.param.inforegs.info_vmexit_reason;
+	srval.retval_xc_hypapp_arch_param.param.inforegs.info_vmexit_interrupt_information = archparam.param.inforegs.info_vmexit_interrupt_information;
+	srval.retval_xc_hypapp_arch_param.param.inforegs.info_vmexit_interrupt_error_code = archparam.param.inforegs.info_vmexit_interrupt_error_code;
+	srval.retval_xc_hypapp_arch_param.param.inforegs.info_idt_vectoring_information = archparam.param.inforegs.info_idt_vectoring_information;
+	srval.retval_xc_hypapp_arch_param.param.inforegs.info_idt_vectoring_error_code = archparam.param.inforegs.info_idt_vectoring_error_code;
+	srval.retval_xc_hypapp_arch_param.param.inforegs.info_vmexit_instruction_length = archparam.param.inforegs.info_vmexit_instruction_length;
+	srval.retval_xc_hypapp_arch_param.param.inforegs.info_vmx_instruction_information = archparam.param.inforegs.info_vmx_instruction_information;
+	srval.retval_xc_hypapp_arch_param.param.inforegs.info_exit_qualification = archparam.param.inforegs.info_exit_qualification;
+	srval.retval_xc_hypapp_arch_param.param.inforegs.info_io_rcx = archparam.param.inforegs.info_io_rcx;
+	srval.retval_xc_hypapp_arch_param.param.inforegs.info_io_rsi = archparam.param.inforegs.info_io_rsi;
+	srval.retval_xc_hypapp_arch_param.param.inforegs.info_io_rdi = archparam.param.inforegs.info_io_rdi;
+	srval.retval_xc_hypapp_arch_param.param.inforegs.info_io_rip = archparam.param.inforegs.info_io_rip;
+	srval.retval_xc_hypapp_arch_param.param.inforegs.info_guest_linear_address = archparam.param.inforegs.info_guest_linear_address;
+	srval.retval_xc_hypapp_arch_param.param.inforegs.info_guest_paddr_full = archparam.param.inforegs.info_guest_paddr_full;
 	
-	return retparam;
+	return srval;
 }
 
 ///////
 XMHF_SLAB("testslab1")
 
 XMHF_SLAB_DEFINTERFACE(
-	XMHF_SLAB_DEFEXPORTFN(entry_0, XMHF_SLAB_TESTSLAB1_FNENTRY0, XMHF_SLAB_FN_RETTYPE_NORMAL)
-	XMHF_SLAB_DEFEXPORTFN(entry_1, XMHF_SLAB_TESTSLAB1_FNENTRY1, XMHF_SLAB_FN_RETTYPE_NORMAL)
+	XMHF_SLAB_DEFEXPORTFN(entry_0, XMHF_SLAB_TESTSLAB1_FNENTRY0, XMHF_SLAB_FN_RETTYPE_AGGREGATE)
+	XMHF_SLAB_DEFEXPORTFN(entry_1, XMHF_SLAB_TESTSLAB1_FNENTRY1, XMHF_SLAB_FN_RETTYPE_AGGREGATE)
 	XMHF_SLAB_DEFEXPORTFN(entry_2, XMHF_SLAB_TESTSLAB1_FNENTRY2, XMHF_SLAB_FN_RETTYPE_AGGREGATE)
 	XMHF_SLAB_DEFEXPORTFN(entry_3, XMHF_SLAB_TESTSLAB1_FNENTRY3, XMHF_SLAB_FN_RETTYPE_AGGREGATE)
 )
