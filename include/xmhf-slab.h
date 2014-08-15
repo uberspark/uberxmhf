@@ -79,6 +79,8 @@ typedef union {
 		u32 retval_u32;
 		u64 retval_u64;
 		struct regs retval_regs;
+		context_desc_t retval_context_desc;
+		xc_hypapp_arch_param_t retval_xc_hypapp_arch_param;
 } slab_retval_t;
 
 //extern slab_header_t _slab_table[];
