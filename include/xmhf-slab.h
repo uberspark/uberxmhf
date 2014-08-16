@@ -298,7 +298,7 @@ extern __attribute__ ((section(".sharedro_slab_table"))) slab_header_t _slab_tab
 
 
 //privilege-to-privilege (P2P) slab call macro
-#define XMHF_SLAB_CALL_P2P(src_slabid, dst_slabid, iface_name, iface_paramsize, ...) __impslab__##iface_name(__VA_ARGS__)
+#define XMHF_SLAB_CALL_P2P(src_slabid, dst_slabid, iface_name, iface_paramsize, ...) __impslab_p2p_##iface_name(__VA_ARGS__)
 
 
 
