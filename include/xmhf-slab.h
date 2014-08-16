@@ -55,6 +55,9 @@
 #define	XMHF_SLAB_FN_RETTYPE_AGGREGATE	0x4
 
 
+#define XMHF_SLAB_CALLP2P					0xB0
+
+
 #define XMHF_SLAB_XCPRIMEON_INDEX			(0)
 #define XMHF_SLAB_TESTSLAB1_INDEX			(1)
 #define XMHF_SLAB_TESTSLAB2_INDEX			(2)
@@ -295,10 +298,51 @@ extern __attribute__ ((section(".sharedro_slab_table"))) slab_header_t _slab_tab
 //	__attribute__ ((section(".slab_trampoline"))) u8 _slab_trampoline_peg[1];	\
 
 
+//----------------------------------------------------------------------------------
+
+
+
+#define _XMHF_SLAB_P2P_DEFIMPORTFNSTUB(iface_paramsize) asm volatile(	\
+						"pushl %%ebp \r\n"				\
+						"pushl %%ecx \r\n"				\
+						"pushl %%esi \r\n"				\
+						"pushl %%edi \r\n"				\
+														\
+						"leal 24(%%esp), %%ebp \r\n"	\
+						"movl $1f, %%edx \r\n"			\
+						"movw %0, %%ax \r\n"			\
+						"rol $16, %%eax \r\n"			\
+						"movw %1, %%ax \r\n"		\
+														\
+						"jmp _slab_trampoline \r\n"		\
+														\
+						"1: \r\n"						\
+						"movl %2, %%ecx \r\n"			\
+						"movl %%ebp, %%esi \r\n"		\
+						"lea 20(%%esp), %%edi \r\n"		\
+						"rep movsb \r\n"				\
+														\
+						"popl %%edi \r\n"				\
+						"popl %%esi \r\n"				\
+						"popl %%ecx \r\n"				\
+						"popl %%ebp \r\n"				\
+														\
+						"ret $0x4 \r\n"					\
+						: 								\
+						: "i" (iface_paramsize), "i" (XMHF_SLAB_CALLP2P), "i" (sizeof(slab_retval_t)	\
+						:	 							\
+						);								\
+
+
+#define XMHF_SLAB_P2P_DEFIMPORTFNSTUB(iface_paramsize) _XMHF_SLAB_P2P_DEFIMPORTFNSTUB(iface_paramsize)
+
+
+#define XMHF_SLAB_P2P_DEFIMPORTFN(fn_rettype, fn_name, fn_decl, fn_stub)	\
+	__attribute__ ((section(".slab_trampoline"))) __attribute__((naked)) __attribute__ ((noinline)) static inline fn_rettype __impslab_p2p_##fn_name fn_decl { fn_stub }	\
 
 
 //privilege-to-privilege (P2P) slab call macro
-#define XMHF_SLAB_CALL_P2P(src_slabid, dst_slabid, iface_name, iface_paramsize, ...) __impslab_p2p_##iface_name(__VA_ARGS__)
+#define XMHF_SLAB_CALL_P2P(src_slabid, dst_slabid, iface_name, iface_paramsize, ...) __impslab_p2p_##iface_name(src_slabid, dst_slabid, iface_paramsize, __VA_ARGS__)
 
 
 
