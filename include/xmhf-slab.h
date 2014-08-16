@@ -312,7 +312,7 @@ extern __attribute__ ((section(".sharedro_slab_table"))) slab_header_t _slab_tab
 						"movl $1f, %%edx \r\n"			\
 						"movw %0, %%ax \r\n"			\
 						"rol $16, %%eax \r\n"			\
-						"movw %1, %%ax \r\n"		\
+						"movw %1, %%ax \r\n"			\
 														\
 						"jmp _slab_trampoline \r\n"		\
 														\
@@ -329,7 +329,7 @@ extern __attribute__ ((section(".sharedro_slab_table"))) slab_header_t _slab_tab
 														\
 						"ret $0x4 \r\n"					\
 						: 								\
-						: "i" (iface_paramsize), "i" (XMHF_SLAB_CALLP2P), "i" (sizeof(slab_retval_t)	\
+						: "i" (iface_paramsize), "i" (XMHF_SLAB_CALLP2P), "i" (sizeof(slab_retval_t))	\
 						:	 							\
 						);								\
 
@@ -342,7 +342,7 @@ extern __attribute__ ((section(".sharedro_slab_table"))) slab_header_t _slab_tab
 
 
 //privilege-to-privilege (P2P) slab call macro
-#define XMHF_SLAB_CALL_P2P(src_slabid, dst_slabid, iface_name, iface_paramsize, ...) __impslab_p2p_##iface_name(src_slabid, dst_slabid, iface_paramsize, __VA_ARGS__)
+#define XMHF_SLAB_CALL_P2P(src_slabid, dst_slabid, iface_name, ...) __impslab_p2p_##iface_name(src_slabid, dst_slabid, __VA_ARGS__)
 
 
 
