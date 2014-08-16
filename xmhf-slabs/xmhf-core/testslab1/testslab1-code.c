@@ -57,9 +57,9 @@
  */
 
  
-slab_retval_t entry_0(void){
+slab_retval_t entry_0(u32 src_slabid, u32 dst_slabid, u32 fn_id){
 	slab_retval_t srval;
-	_XDPRINTF_("%s: Got control, nothing to do!\n", __FUNCTION__);
+	_XDPRINTF_("%s: Got control: nothing to do!\n", __FUNCTION__);
 	return srval;	//void
 }
 	
