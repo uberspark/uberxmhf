@@ -154,6 +154,10 @@ __attribute__((naked)) __attribute (( section(".slabtrampoline") )) void _slab_t
 //		addl $4, %%esp
 
 __attribute__((fastcall)) __attribute (( section(".slabtrampoline") )) void _slab_trampolinenew(slab_trampoline_frame_t *tframe, u32 framesize_op){
-	_XDPRINTF_("%s: we are in C land and halting!\n", __FUNCTION__);
+	_XDPRINTF_("%s: got control\n", __FUNCTION__);
+	_XDPRINTF_(" returnaddress=%08x, src_slabid=%u, dst_slabid=%u, fn_id=%u\n",
+		tframe->returnaddress, tframe->src_slabid, tframe->dst_slabid, tframe->fn_id);
+
+	_XDPRINTF_("%s: Halting!\n", __FUNCTION__);
 	HALT();
 }
