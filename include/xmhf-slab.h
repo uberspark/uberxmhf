@@ -298,6 +298,17 @@ extern __attribute__ ((section(".sharedro_slab_table"))) slab_header_t _slab_tab
 //	__attribute__ ((section(".slab_trampoline"))) u8 _slab_trampoline_peg[1];	\
 
 
+typedef struct {
+	u32 returnaddress;
+	u32 rsvd0[6];
+	u32 src_slabid;
+	u32 dst_slabid;
+	u32 fn_id;
+	u8 params[1];
+} __attribute__((packed)) slab_trampoline_frame_t;
+	
+
+
 //----------------------------------------------------------------------------------
 
 // ecx = 32-bit address of input parameter base
