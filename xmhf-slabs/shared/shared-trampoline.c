@@ -153,7 +153,7 @@ __attribute__((naked)) __attribute (( section(".slabtrampoline") )) void _slab_t
 //		movl (%esp), %%ebp
 //		addl $4, %%esp
 
-__attribute__((fastcall)) __attribute (( section(".slabtrampoline") )) void _slab_trampolinenew(u8 *stk, u32 sizeop){
+__attribute__((fastcall)) __attribute (( section(".slabtrampoline") )) void _slab_trampolinenew(slab_trampoline_frame_t *tframe, u32 framesize_op){
 	_XDPRINTF_("%s: we are in C land and halting!\n", __FUNCTION__);
 	HALT();
 }
