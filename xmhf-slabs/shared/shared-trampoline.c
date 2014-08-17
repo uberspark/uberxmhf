@@ -52,6 +52,7 @@
 
 #include <xmhf.h>
 #include <xmhf-core.h>
+#include <xmhf-debug.h>
 
 // esi = 32-bit address of input parameter base
 // edi = 32-bit address of return from slab call
@@ -138,4 +139,21 @@ __attribute__((naked)) __attribute (( section(".slabtrampoline") )) void _slab_t
 	);
 	
 	
+}
+
+//--------------------------------------------------------------------
+
+
+//parameter-1: in ecx = struct *
+//parameter-2: in edx = parameter size/opcall
+//note: the compiler will setup the prolog which will make ebp point to the stack pointer
+//that we entered on. we use this to restore the stack back to what it was before transferring
+//control to the destination slab
+//e.g., movl %%ebp, %%esp
+//		movl (%esp), %%ebp
+//		addl $4, %%esp
+
+__attribute__((fastcall)) __attribute (( section(".slabtrampoline") )) void _slab_trampolinenew(u8 *stk, u32 sizeop){
+	_XDPRINTF_("%s: we are in C land and halting!\n", __FUNCTION__);
+	HALT();
 }
