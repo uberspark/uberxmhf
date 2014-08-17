@@ -300,35 +300,39 @@ extern __attribute__ ((section(".sharedro_slab_table"))) slab_header_t _slab_tab
 
 //----------------------------------------------------------------------------------
 
-
+// ecx = 32-bit address of input parameter base
+//	   = <slab return address, edi,esi,ecx,ebp, import return address, import aggregate return, src_slabid, dst_slabid, fn_id, ...>
+// edx = lower 16-bits = operation (XMHF_SLAB_CALLP2P, ...)
+//	   = upper 16-bits = size of input parameters (in bytes) at ebp	   
 
 #define _XMHF_SLAB_P2P_DEFIMPORTFNSTUB(iface_paramsize) asm volatile(	\
-						"pushl %%ebp \r\n"				\
-						"pushl %%ecx \r\n"				\
-						"pushl %%esi \r\n"				\
-						"pushl %%edi \r\n"				\
-														\
-						"leal 24(%%esp), %%ebp \r\n"	\
-						"movl $1f, %%edx \r\n"			\
-						"movw %0, %%ax \r\n"			\
-						"rol $16, %%eax \r\n"			\
-						"movw %1, %%ax \r\n"			\
-														\
-						"jmp _slab_trampoline \r\n"		\
-														\
-						"1: \r\n"						\
-						"movl %2, %%ecx \r\n"			\
-						"movl %%ebp, %%esi \r\n"		\
-						"lea 20(%%esp), %%edi \r\n"		\
-						"rep movsb \r\n"				\
-														\
-						"popl %%edi \r\n"				\
-						"popl %%esi \r\n"				\
-						"popl %%ecx \r\n"				\
-						"popl %%ebp \r\n"				\
-														\
-						"ret $0x4 \r\n"					\
-						: 								\
+						"pushl %%ebp \r\n"					\
+						"pushl %%ecx \r\n"					\
+						"pushl %%esi \r\n"					\
+						"pushl %%edi \r\n"					\
+						"pushl $1f	\r\n"					\
+															\
+						"movl %%esp, %%ecx \r\n"			\
+						"movw %0, %%ax \r\n"				\
+						"rol $16, %%eax \r\n"				\
+						"movw %1, %%ax \r\n"				\
+															\
+						"jmp _slab_trampolinenew \r\n"		\
+															\
+						"1: \r\n"							\
+						"movl %2, %%ecx \r\n"				\
+						"movl %%ebp, %%esi \r\n"			\
+						"lea 24(%%esp), %%edi \r\n"			\
+						"rep movsb \r\n"					\
+															\
+						"addl $4, %%esp \r\n"				\
+						"popl %%edi \r\n"					\
+						"popl %%esi \r\n"					\
+						"popl %%ecx \r\n"					\
+						"popl %%ebp \r\n"					\
+															\
+						"ret $0x4 \r\n"						\
+						: 									\
 						: "i" (iface_paramsize), "i" (XMHF_SLAB_CALLP2P), "i" (sizeof(slab_retval_t))	\
 						:	 							\
 						);								\
