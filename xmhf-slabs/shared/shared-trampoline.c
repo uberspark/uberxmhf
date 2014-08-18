@@ -164,8 +164,20 @@ __attribute__((fastcall)) __attribute (( section(".slabtrampoline") )) void _sla
 		"movl %%eax, %%cr3 \r\n"
 		: 
 		: "m" (_slab_table[tframe->dst_slabid].slab_macmid)
-		:	 							
+		: "eax"	 							
 	);
+	
+	//call destination slab entry point
+	asm volatile(	
+		"movl %0, %%esi \r\n"
+		"movl %1, %%ecx \r\n"
+		"movl %2, %%eax \r\n"
+		"call *%%eax \r\n"
+		: 
+		: "g" ((u32)tframe), "g" (framesize_op), "m" (_slab_table[tframe->dst_slabid].entry_cr3)
+		: "esi", "ecx"	 							
+	);
+	
 
 	_XDPRINTF_("%s: Halting!\n", __FUNCTION__);
 	HALT();
