@@ -144,7 +144,7 @@ void xcprimeon_entry(void){
 			XMHF_SLAB_CALL_P2P(XMHF_SLAB_XCPRIMEON_INDEX, XMHF_SLAB_TESTSLAB1_INDEX, entry_0, XMHF_SLAB_TESTSLAB1_FNENTRY0);
 			_XDPRINTF_("%s: came back from entry_0, esp=%x\n", __FUNCTION__, read_esp());
 
-			_XDPRINTF_("\n%s: preparing to invoke entry_1, esp=%x", __FUNCTION__, read_esp());
+			/*_XDPRINTF_("\n%s: preparing to invoke entry_1, esp=%x", __FUNCTION__, read_esp());
 			srval=XMHF_SLAB_CALL(entry_1(5, 3));
 			_XDPRINTF_("\n%s: came back from entry_1, esp=%x", __FUNCTION__, read_esp());
 			_XDPRINTF_("\n%s: came back from entry_1, value=%u", __FUNCTION__, srval.retval_u32);
@@ -189,6 +189,9 @@ void xcprimeon_entry(void){
 			_XDPRINTF_("\nsrval.retval_xc_hypapp_arch_param.param.inforegs.info_io_rip                         %llu",  srval.retval_xc_hypapp_arch_param.param.inforegs.info_io_rip                       ); 
 			_XDPRINTF_("\nsrval.retval_xc_hypapp_arch_param.param.inforegs.info_guest_linear_address           %llu",  srval.retval_xc_hypapp_arch_param.param.inforegs.info_guest_linear_address         ); 
 			_XDPRINTF_("\nsrval.retval_xc_hypapp_arch_param.param.inforegs.info_guest_paddr_full               %llu",  srval.retval_xc_hypapp_arch_param.param.inforegs.info_guest_paddr_full             ); 
+			
+			
+			*/
 	
 	}
 	

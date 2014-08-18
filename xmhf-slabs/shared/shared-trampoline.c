@@ -154,9 +154,11 @@ __attribute__((naked)) __attribute (( section(".slabtrampoline") )) void _slab_t
 //		addl $4, %%esp
 
 __attribute__((fastcall)) __attribute (( section(".slabtrampoline") )) void _slab_trampolinenew(slab_trampoline_frame_t *tframe, u32 framesize_op){
+	u32 aggrettypeptr;
+	
 	_XDPRINTF_("%s: got control\n", __FUNCTION__);
-	_XDPRINTF_(" returnaddress=%08x, src_slabid=%u, dst_slabid=%u, fn_id=%u\n",
-		tframe->returnaddress, tframe->src_slabid, tframe->dst_slabid, tframe->fn_id);
+	_XDPRINTF_(" returnaddress=%08x, framesize_op=%08x, src_slabid=%u, dst_slabid=%u, fn_id=%u\n",
+		tframe->returnaddress, framesize_op, tframe->src_slabid, tframe->dst_slabid, tframe->fn_id);
 
 	//switch to destination slab MAC
 	asm volatile(	
@@ -169,16 +171,39 @@ __attribute__((fastcall)) __attribute (( section(".slabtrampoline") )) void _sla
 	
 	//call destination slab entry point
 	asm volatile(	
-		"movl %0, %%esi \r\n"
-		"movl %1, %%ecx \r\n"
-		"movl %2, %%eax \r\n"
+		"movl %1, %%esi \r\n"
+		"movl %2, %%ecx \r\n"
+		"movl %3, %%eax \r\n"
 		"call *%%eax \r\n"
-		: 
+		"movl %%esi, %0 \r\n"
+		: "=S" (aggrettypeptr)
 		: "g" ((u32)tframe), "g" (framesize_op), "m" (_slab_table[tframe->dst_slabid].entry_cr3)
 		: "esi", "ecx"	 							
 	);
+
+	//switch back to source slab MAC
+	asm volatile(	
+		"movl %0, %%eax \r\n"
+		"movl %%eax, %%cr3 \r\n"
+		: 
+		: "m" (_slab_table[tframe->src_slabid].slab_macmid)
+		: "eax"	 							
+	);
+	
+	//return back to source slab
+	asm volatile(	
+		"movl %0, %%esi \r\n"
+		"movl %1, %%eax \r\n"
+		"movl %%ebp, %%esp \r\n"		
+		"movl (%%esp), %%ebp \r\n"
+		"addl $4, %%esp \r\n"	
+		"jmpl *%%eax \r\n"
+		: 
+		: "m" (aggrettypeptr), "m" (tframe->returnaddress)
+		:  							
+	);
 	
 
-	_XDPRINTF_("%s: Halting!\n", __FUNCTION__);
-	HALT();
+	//_XDPRINTF_("%s: Halting, aggrettypeptr=%08x!\n", __FUNCTION__, aggrettypeptr);
+	//HALT();
 }

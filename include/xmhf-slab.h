@@ -324,16 +324,16 @@ typedef struct {
 						"pushl $1f	\r\n"					\
 															\
 						"movl %%esp, %%ecx \r\n"			\
-						"movw %0, %%ax \r\n"				\
-						"rol $16, %%eax \r\n"				\
-						"movw %1, %%ax \r\n"				\
+						"movw %0, %%dx \r\n"				\
+						"rol $16, %%edx \r\n"				\
+						"movw %1, %%dx \r\n"				\
 															\
 						"jmp _slab_trampolinenew \r\n"		\
 															\
 						"1: \r\n"							\
 						"movl %2, %%ecx \r\n"				\
-						"movl %%ebp, %%esi \r\n"			\
 						"lea 24(%%esp), %%edi \r\n"			\
+						"cld \r\n"							\
 						"rep movsb \r\n"					\
 															\
 						"addl $4, %%esp \r\n"				\
@@ -360,6 +360,53 @@ typedef struct {
 #define XMHF_SLAB_CALL_P2P(src_slabid, dst_slabid, iface_name, ...) __impslab_p2p_##iface_name(src_slabid, dst_slabid, __VA_ARGS__)
 
 
+// esi = interface parameter base
+// ecx = top 16-bits = parameter size
+//	   = low 16-bits = operation
+#define XMHF_SLAB_DEFINTERFACE_NEW(...) __attribute__((naked)) __attribute__ ((section(".slab_entrystub"))) void _slab_interface(void){	\
+	asm volatile (							\
+			"pushl %%ebp \r\n"				\
+			"movl %%esp, %%ebp \r\n"		\
+											\
+			"movl %%ecx, %%ebx	\r\n"		\
+			"shr $16, %%ecx \r\n"			\
+			"subl %0, %%esp \r\n"			\ 
+			"movl %%esp, %%eax \r\n"		\
+			"subl %%ecx, %%esp \r\n"		\
+			"movl %%esp, %%edi \r\n"		\
+			"cld \r\n"						\
+			"rep movsb \r\n"				\
+											\
+			"cmpw %1, %%bx \r\n"			\
+			"jne 3f \r\n"					\
+											\
+			__VA_ARGS__ 					\
+											\
+			"2:\r\n"						\
+			"movl %%edi, %%esi \r\n"		\
+			"movl %%ebp, %%esp \r\n"		\
+			"movl (%%esp), %%ebp \r\n"		\
+			"addl $4, %%esp \r\n"			\
+			"ret \r\n"						\
+											\
+			"3: \r\n"						\
+			"int $0x03 \r\n"				\
+			"hlt \r\n"						\
+			:								\
+			: "i" (sizeof(slab_retval_t)), "i" (XMHF_SLAB_CALLP2P)		\
+			:								\
+		);									\
+}											\
+
+#define _XMHF_SLAB_P2P_DEFEXPORTFN(fn_name, fn_num)		\
+			"cmpl $"#fn_num", 8(%%esp) \r\n"			\
+			"jne 1f \r\n"							\
+			"pushl %%eax \r\n"						\
+			"call "#fn_name" \r\n"					\
+			"jmp 2f \r\n"							\
+			"1:\r\n"								\
+
+#define XMHF_SLAB_P2P_DEFEXPORTFN(fn_name, fn_num)		_XMHF_SLAB_P2P_DEFEXPORTFN(fn_name, fn_num)
 
 #endif //__ASSEMBLY__
 
