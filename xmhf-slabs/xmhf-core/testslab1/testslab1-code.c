@@ -55,8 +55,16 @@
  * 
  * author: amit vasudevan (amitvasudevan@acm.org)
  */
+slab_retval_t testslab1_interface(u32 src_slabid, u32 dst_slabid, u32 fn_id, ...){
+	slab_retval_t srval;
+	_XDPRINTF_("%s: Got control: nothing to do!\n", __FUNCTION__);
+	return srval;	
+}
 
- 
+
+
+
+///////////////////////////////////////////////////////////////////////////// 
 slab_retval_t entry_0(u32 src_slabid, u32 dst_slabid, u32 fn_id){
 	slab_retval_t srval;
 	_XDPRINTF_("%s: Got control: nothing to do!\n", __FUNCTION__);
@@ -109,7 +117,7 @@ slab_retval_t entry_3(context_desc_t context_desc, xc_hypapp_arch_param_t archpa
 }
 
 ///////
-XMHF_SLAB("testslab1")
+//XMHF_SLAB("testslab1")
 
 //XMHF_SLAB_DEFINTERFACE(
 //	//XMHF_SLAB_DEFEXPORTFN(entry_0, XMHF_SLAB_TESTSLAB1_FNENTRY0, XMHF_SLAB_FN_RETTYPE_AGGREGATE)
@@ -118,6 +126,9 @@ XMHF_SLAB("testslab1")
 //	XMHF_SLAB_DEFEXPORTFN(entry_3, XMHF_SLAB_TESTSLAB1_FNENTRY3, XMHF_SLAB_FN_RETTYPE_AGGREGATE)
 //)
 
-XMHF_SLAB_DEFINTERFACE_NEW(
-	XMHF_SLAB_P2P_DEFEXPORTFN(entry_0, XMHF_SLAB_TESTSLAB1_FNENTRY0)
-)
+//XMHF_SLAB_DEFINTERFACE_NEW(
+//	XMHF_SLAB_P2P_DEFEXPORTFN(entry_0, XMHF_SLAB_TESTSLAB1_FNENTRY0)
+//)
+
+XMHF_SLAB_DEF(testslab1)
+
