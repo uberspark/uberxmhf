@@ -158,6 +158,15 @@ __attribute__((fastcall)) __attribute (( section(".slabtrampoline") )) void _sla
 	_XDPRINTF_(" returnaddress=%08x, src_slabid=%u, dst_slabid=%u, fn_id=%u\n",
 		tframe->returnaddress, tframe->src_slabid, tframe->dst_slabid, tframe->fn_id);
 
+	//switch to destination slab MAC
+	asm volatile(	
+		"movl %0, %%eax \r\n"
+		"movl %%eax, %%cr3 \r\n"
+		: 
+		: "m" (_slab_table[tframe->dst_slabid].slab_macmid)
+		:	 							
+	);
+
 	_XDPRINTF_("%s: Halting!\n", __FUNCTION__);
 	HALT();
 }
