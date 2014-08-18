@@ -356,8 +356,45 @@ typedef struct {
 	__attribute__ ((section(".slab_trampoline"))) __attribute__((naked)) __attribute__ ((noinline)) static inline fn_rettype __impslab_p2p_##fn_name fn_decl { fn_stub }	\
 
 
+__attribute__ ((section(".slab_trampoline"))) __attribute__((naked)) __attribute__ ((noinline)) static inline slab_retval_t __xmhf_impslab_p2p(u32 src_slabid, u32 dst_slabid, u32 iface_subid, u32 iface_subparamsize, ...){
+	asm volatile(		
+						"pushl %%ebp \r\n"					
+						"pushl %%ecx \r\n"					
+						"pushl %%esi \r\n"					
+						"pushl %%edi \r\n"					
+						"pushl $1f	\r\n"					
+															
+						"movl %%esp, %%ecx \r\n"			
+						"movl 36(%%esp), %%edx \r\n"
+						"addl %0, %%edx \r\n"				
+						"rol $16, %%edx \r\n"				
+						"movw %1, %%dx \r\n"				
+						
+						"jmp _slab_trampolinenew \r\n"		
+															
+						"1: \r\n"							
+						"movl %2, %%ecx \r\n"				
+						"lea 24(%%esp), %%edi \r\n"			
+						"cld \r\n"							
+						"rep movsb \r\n"					
+															
+						"addl $4, %%esp \r\n"				
+						"popl %%edi \r\n"					
+						"popl %%esi \r\n"					
+						"popl %%ecx \r\n"					
+						"popl %%ebp \r\n"					
+															
+						"ret $0x4 \r\n"						
+						: 									
+						: "i"(4*sizeof(u32)), "i" (XMHF_SLAB_CALLP2P), "i" (sizeof(slab_retval_t))	\
+						:	 							
+	);									
+
+}
+
+
 //privilege-to-privilege (P2P) slab call macro
-#define XMHF_SLAB_CALL_P2P(src_slabid, dst_slabid, iface_name, ...) __impslab_p2p_##iface_name(src_slabid, dst_slabid, __VA_ARGS__)
+#define XMHF_SLAB_CALL_P2P(slab_name, src_slabid, dst_slabid, iface_subid, ...) __xmhf_impslab_p2p(src_slabid, dst_slabid, iface_subid, __VA_ARGS__)
 
 
 // esi = interface parameter base
@@ -407,6 +444,47 @@ typedef struct {
 			"1:\r\n"								\
 
 #define XMHF_SLAB_P2P_DEFEXPORTFN(fn_name, fn_num)		_XMHF_SLAB_P2P_DEFEXPORTFN(fn_name, fn_num)
+
+
+#define XMHF_SLAB_DEF(slab_name)	\
+	__attribute__ ((section(".stack"))) u8 _slab_stack[XMHF_SLAB_STACKSIZE];	\
+																				\
+	__attribute__((naked)) __attribute__ ((section(".slab_entrystub"))) void _interfacestub_##slab_name(void){	\
+	asm volatile (							\
+			"pushl %%ebp \r\n"				\
+			"movl %%esp, %%ebp \r\n"		\
+											\
+			"movl %%ecx, %%ebx	\r\n"		\
+			"shr $16, %%ecx \r\n"			\
+			"subl %0, %%esp \r\n"			\ 
+			"movl %%esp, %%eax \r\n"		\
+			"subl %%ecx, %%esp \r\n"		\
+			"movl %%esp, %%edi \r\n"		\
+			"cld \r\n"						\
+			"rep movsb \r\n"				\
+											\
+			"cmpw %1, %%bx \r\n"			\
+			"jne 3f \r\n"					\
+											\
+			"pushl %%eax \r\n"				\
+			"call "#slab_name"_interface \r\n"		\
+											\
+			"2:\r\n"						\
+			"movl %%edi, %%esi \r\n"		\
+			"movl %%ebp, %%esp \r\n"		\
+			"movl (%%esp), %%ebp \r\n"		\
+			"addl $4, %%esp \r\n"			\
+			"ret \r\n"						\
+											\
+			"3: \r\n"						\
+			"int $0x03 \r\n"				\
+			"hlt \r\n"						\
+			:								\
+			: "i" (sizeof(slab_retval_t)), "i" (XMHF_SLAB_CALLP2P)		\
+			:								\
+		);									\
+}											
+
 
 #endif //__ASSEMBLY__
 
