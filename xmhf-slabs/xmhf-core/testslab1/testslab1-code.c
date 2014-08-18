@@ -57,7 +57,7 @@
  */
 slab_retval_t testslab1_interface(u32 src_slabid, u32 dst_slabid, u32 fn_id, ...){
 	slab_retval_t srval;
-	_XDPRINTF_("%s: Got control: nothing to do!\n", __FUNCTION__);
+	_XDPRINTF_("%s: Got control: src_slabid=%u, dst_slabid=%u, fn_id=%u\n", __FUNCTION__, src_slabid, dst_slabid, fn_id);
 	return srval;	
 }
 
