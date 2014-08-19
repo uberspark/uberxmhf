@@ -63,16 +63,16 @@ slab_retval_t testslab2_interface(u32 src_slabid, u32 dst_slabid, u32 fn_id, ...
 }
 
 
-void testslab2_entry0(void){
+void testslab2_entry1(void){
 	_XDPRINTF_("%s: Got control: nothing to do!\n", __FUNCTION__);
 }
 	
-u32 testslab2_entry1(u32 param1, u32 param2){
+u32 testslab2_entry2(u32 param1, u32 param2){
 	_XDPRINTF_("%s: param1=%u, param2=%u\n", __FUNCTION__, param1, param2);
 	return param1+param2;
 }
 
-context_desc_t testslab2_entry2(u32 cpu_index, bool isbsp, u32 partition_index){
+context_desc_t testslab2_entry3(u32 cpu_index, bool isbsp, u32 partition_index){
 	context_desc_t ctx;
 
 	_XDPRINTF_("\n%s: Got control: cpu_index=%u, isbsp=%u, partition_index=%u", __FUNCTION__, cpu_index, isbsp, partition_index);
@@ -84,7 +84,7 @@ context_desc_t testslab2_entry2(u32 cpu_index, bool isbsp, u32 partition_index){
 	return ctx;
 }	
 
-xc_hypapp_arch_param_t testslab2_entry3(context_desc_t context_desc, xc_hypapp_arch_param_t archparam){
+xc_hypapp_arch_param_t testslab2_entry4(context_desc_t context_desc, xc_hypapp_arch_param_t archparam){
 	xc_hypapp_arch_param_t srval;
 
 	_XDPRINTF_("\n%s: Got control: cpu_index=%u, isbsp=%u, partition_index=%u", __FUNCTION__, context_desc.cpu_desc.cpu_index, context_desc.cpu_desc.isbsp, context_desc.partition_desc.partition_index);
