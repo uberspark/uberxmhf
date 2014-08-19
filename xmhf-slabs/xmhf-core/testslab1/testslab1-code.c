@@ -60,9 +60,14 @@ slab_retval_t testslab1_interface(u32 src_slabid, u32 dst_slabid, u32 fn_id, ...
 	slab_retval_t srval;
 	_XDPRINTF_("%s: Got control: src_slabid=%u, dst_slabid=%u, fn_id=%u\n", __FUNCTION__, src_slabid, dst_slabid, fn_id);
 	
-	_XDPRINTF_("%s: proceeding to invoke testslab2 interface, TOS=%08x\n", __FUNCTION__, read_esp());
+	_XDPRINTF_("%s: proceeding to invoke testslab2, entry1 subinterface, TOS=%08x\n", __FUNCTION__, read_esp());
 	srval = XMHF_SLAB_CALL_P2P(testslab2, XMHF_SLAB_TESTSLAB1_INDEX, XMHF_SLAB_TESTSLAB2_INDEX, XMHF_SLAB_TESTSLAB2_FNENTRY1, XMHF_SLAB_TESTSLAB2_FNENTRY1_SIZE);
 	_XDPRINTF_("%s: came back, TOS=%08x\n", __FUNCTION__, read_esp());
+
+	_XDPRINTF_("%s: proceeding to invoke testslab2, entry2 subinterface, TOS=%08x\n", __FUNCTION__, read_esp());
+	srval = XMHF_SLAB_CALL_P2P(testslab2, XMHF_SLAB_TESTSLAB1_INDEX, XMHF_SLAB_TESTSLAB2_INDEX, XMHF_SLAB_TESTSLAB2_FNENTRY2, XMHF_SLAB_TESTSLAB2_FNENTRY2_SIZE, 5, 8);
+	_XDPRINTF_("%s: came back, result=%u, TOS=%08x\n", __FUNCTION__, srval.retval_u32, read_esp());
+
 
 			/*_XDPRINTF_("\n%s: preparing to invoke entry_1, esp=%x", __FUNCTION__, read_esp());
 			srval=XMHF_SLAB_CALL(entry_1(5, 3));
