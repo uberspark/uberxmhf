@@ -622,7 +622,7 @@ void xmhf_partition_eventhub_arch_x86vmx(struct regs *cpugprs){
 //==================================================================================
 
 //---hvm_intercept_handler------------------------------------------------------
-void xcihub_arch_entry(void) __attribute__((naked)){
+void xcihub_interface(void) __attribute__((naked)){
 		
 		asm volatile (
 			"pushal\r\n"
