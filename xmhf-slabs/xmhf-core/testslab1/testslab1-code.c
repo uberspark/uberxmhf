@@ -50,6 +50,8 @@
 
 #include <testslab1.h>
 
+#include <testslab2.h>
+
 /*
  * slab code
  * 
@@ -58,6 +60,11 @@
 slab_retval_t testslab1_interface(u32 src_slabid, u32 dst_slabid, u32 fn_id, ...){
 	slab_retval_t srval;
 	_XDPRINTF_("%s: Got control: src_slabid=%u, dst_slabid=%u, fn_id=%u\n", __FUNCTION__, src_slabid, dst_slabid, fn_id);
+	
+	_XDPRINTF_("%s: proceeding to invoke testslab2 interface, TOS=%08x\n", __FUNCTION__, read_esp());
+	srval = XMHF_SLAB_CALL_P2P(testslab2, XMHF_SLAB_TESTSLAB1_INDEX, XMHF_SLAB_TESTSLAB2_INDEX, 0, 0);
+	_XDPRINTF_("%s: came back, TOS=%08x\n", __FUNCTION__, read_esp());
+	
 	return srval;	
 }
 
