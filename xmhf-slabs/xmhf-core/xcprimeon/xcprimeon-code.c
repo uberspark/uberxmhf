@@ -134,21 +134,20 @@ void xcprimeon_entry(void){
 	xcprimeon_initialize_slab_tables();
 
 	//[test] testslab1
-	{
-			//invoke slab interfaces
-			_XDPRINTF_("%s: preparing to invoke entry_0, esp=%x\n", __FUNCTION__, read_esp());
-			XMHF_SLAB_CALL_P2P(testslab1, XMHF_SLAB_XCPRIMEON_INDEX, XMHF_SLAB_TESTSLAB1_INDEX, 0, 0);
-			_XDPRINTF_("%s: came back from entry_0, esp=%x\n", __FUNCTION__, read_esp());
-	}
+	//{
+	//		//invoke slab interfaces
+	//		_XDPRINTF_("%s: preparing to invoke entry_0, esp=%x\n", __FUNCTION__, read_esp());
+	//		XMHF_SLAB_CALL_P2P(testslab1, XMHF_SLAB_XCPRIMEON_INDEX, XMHF_SLAB_TESTSLAB1_INDEX, 0, 0);
+	//		_XDPRINTF_("%s: came back from entry_0, esp=%x\n", __FUNCTION__, read_esp());
+	//}
 	
 		
 	//proceed with SMP initialization
-	if ( XMHF_SLAB_CALL(xcsmp_entry()) ){
-		//we should never get here
-		_XDPRINTF_("\nSL: Fatal, should never be here!");
-		HALT();
-	}
-	 
+	XMHF_SLAB_CALL_P2P(xcsmp, XMHF_SLAB_XCPRIMEON_INDEX, XMHF_SLAB_XCSMP_INDEX, 0, 0);
+
+	//we should never get here
+	_XDPRINTF_("\nSL: Fatal, should never be here!");
+	HALT();
 }
 
 ///////

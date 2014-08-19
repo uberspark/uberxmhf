@@ -59,7 +59,24 @@
 #include <xcexhub.h>
 #undef __XMHF_SLAB_CALLER_INDEX__
 
-bool xcsmp_entry(void){
+slab_retval_t xcsmp_interface(u32 src_slabid, u32 dst_slabid, u32 fn_id, u32 fn_paramsize, ...){
+	
+#if defined (__DMAP__)
+	xcsmp_arch_dmaprot_reinitialize();
+#endif
+
+	_XDPRINTF_("%s: proceeding to invoke xcexhub_initialize...\n", __FUNCTION__);
+	XMHF_SLAB_CALL(xcexhub_initialize());
+	_XDPRINTF_("%s: xcexhub_initialize completed successfully.\n", __FUNCTION__);
+	
+	if( xcsmp_arch_smpinitialize() ){
+		_XDPRINTF_("\nRuntime: We should NEVER get here!");
+		HALT();
+	}
+}
+
+
+/*bool xcsmp_entry(void){
 
 #if defined (__DMAP__)
 	xcsmp_arch_dmaprot_reinitialize();
@@ -74,12 +91,13 @@ bool xcsmp_entry(void){
 		HALT();
 	}
 	
-}
+}*/
 
 ///////
-XMHF_SLAB("xcsmp")
+//XMHF_SLAB("xcsmp")
 
-XMHF_SLAB_DEFINTERFACE(
-	XMHF_SLAB_DEFEXPORTFN(xcsmp_entry, XMHF_SLAB_XCSMP_FNENTRY, XMHF_SLAB_FN_RETTYPE_NORMAL)
-)
+//XMHF_SLAB_DEFINTERFACE(
+//	XMHF_SLAB_DEFEXPORTFN(xcsmp_entry, XMHF_SLAB_XCSMP_FNENTRY, XMHF_SLAB_FN_RETTYPE_NORMAL)
+//)
 
+XMHF_SLAB_DEF(xcsmp)
