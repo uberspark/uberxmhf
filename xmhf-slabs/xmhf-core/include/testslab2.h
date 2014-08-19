@@ -57,7 +57,7 @@
 #define	XMHF_SLAB_TESTSLAB2_FNENTRY2_SIZE	(2*sizeof(u32))
 
 #define XMHF_SLAB_TESTSLAB2_FNENTRY3		3
-#define XMHF_SLAB_TESTSLAB2_FNENTRY3_SIZE	(3*sizeof(u32))
+#define XMHF_SLAB_TESTSLAB2_FNENTRY3_SIZE	(2*sizeof(u32) + sizeof(bool))
 
 #define XMHF_SLAB_TESTSLAB2_FNENTRY4		4
 #define XMHF_SLAB_TESTSLAB2_FNENTRY4_SIZE	(sizeof(context_desc_t)+sizeof(xc_hypapp_arch_param_t))

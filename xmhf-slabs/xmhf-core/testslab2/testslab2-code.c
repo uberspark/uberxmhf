@@ -77,6 +77,28 @@ slab_retval_t testslab2_interface(u32 src_slabid, u32 dst_slabid, u32 fn_id, u32
 			}
 			break;
 				
+			case XMHF_SLAB_TESTSLAB2_FNENTRY3:{
+				u32 cpu_index, partition_index;
+				bool isbsp;
+				va_start(args, fn_paramsize);
+				cpu_index = va_arg(args, u32);
+				isbsp = va_arg(args, bool);
+				partition_index = va_arg (args, u32);
+				srval.retval_context_desc = testslab2_entry3(cpu_index, isbsp, partition_index);
+				va_end(args);
+			}
+			break;
+			
+			case XMHF_SLAB_TESTSLAB2_FNENTRY4:{
+				context_desc_t context_desc;
+				xc_hypapp_arch_param_t archparam;
+				va_start(args, fn_paramsize);
+				context_desc = va_arg(args, context_desc_t);
+				archparam = va_arg(args, xc_hypapp_arch_param_t);
+				srval.retval_xc_hypapp_arch_param = testslab2_entry4(context_desc, archparam);
+				va_end(args);
+			}
+			break;
 				
 			default:
 				_XDPRINTF_("%s: unhandled subinterface %u. Halting\n", __FUNCTION__, fn_id);
