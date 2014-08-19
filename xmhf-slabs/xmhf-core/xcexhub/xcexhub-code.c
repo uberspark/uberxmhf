@@ -55,14 +55,26 @@
 
 #include <xcexhub.h>
 
-void xcexhub_initialize(void){
-		xcexhub_arch_initialize();
+slab_retval_t xcexhub_interface(u32 src_slabid, u32 dst_slabid, u32 fn_id, u32 fn_paramsize, ...){
+	slab_retval_t srval;
+	
+	_XDPRINTF_("%s: Got control: src_slabid=%u, dst_slabid=%u, fn_id=%u, fn_paramsize=%u\n", __FUNCTION__, src_slabid, dst_slabid, fn_id, fn_paramsize);
+
+	xcexhub_arch_initialize();
+	
+	return srval;	
 }
 
+//void xcexhub_initialize(void){
+//		xcexhub_arch_initialize();
+//}
+
 //////////
-XMHF_SLAB("xcexhub")
+//XMHF_SLAB("xcexhub")
 
 
-XMHF_SLAB_DEFINTERFACE(
-	XMHF_SLAB_DEFEXPORTFN(xcexhub_initialize				,XMHF_SLAB_XCEXHUB_FNXCEXHUBINITIALIZE				,	XMHF_SLAB_FN_RETTYPE_NORMAL)
-)
+//XMHF_SLAB_DEFINTERFACE(
+//	XMHF_SLAB_DEFEXPORTFN(xcexhub_initialize				,XMHF_SLAB_XCEXHUB_FNXCEXHUBINITIALIZE				,	XMHF_SLAB_FN_RETTYPE_NORMAL)
+//)
+
+XMHF_SLAB_DEF(xcexhub)
