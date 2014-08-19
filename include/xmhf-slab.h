@@ -486,6 +486,20 @@ __attribute__ ((section(".slab_trampoline"))) __attribute__((naked)) __attribute
 }											
 
 
+
+#define XMHF_SLAB_DEF_BARE(slab_name)	\
+	__attribute__ ((section(".stack"))) u8 _slab_stack[XMHF_SLAB_STACKSIZE];	\
+																				\
+	__attribute__((naked)) __attribute__ ((section(".slab_entrystub"))) void _interfacestub_##slab_name(void){	\
+	asm volatile (							\
+			"jmp "#slab_name"_interface \r\n"		\
+			:								\
+			: 								\
+			:								\
+		);									\
+}											
+
+
 #endif //__ASSEMBLY__
 
 #endif //__XMHF_SLAB_H__
