@@ -135,70 +135,12 @@ void xcprimeon_entry(void){
 
 	//[test] testslab1
 	{
-			xc_hypapp_arch_param_t ap_input;
-			slab_retval_t srval;
-			
 			//invoke slab interfaces
 			_XDPRINTF_("%s: preparing to invoke entry_0, esp=%x\n", __FUNCTION__, read_esp());
 			XMHF_SLAB_CALL_P2P(testslab1, XMHF_SLAB_XCPRIMEON_INDEX, XMHF_SLAB_TESTSLAB1_INDEX, XMHF_SLAB_TESTSLAB1_FNENTRY0, XMHF_SLAB_TESTSLAB1_FNENTRY0_SIZE);
 			_XDPRINTF_("%s: came back from entry_0, esp=%x\n", __FUNCTION__, read_esp());
-
-			/*_XDPRINTF_("\n%s: preparing to invoke entry_1, esp=%x", __FUNCTION__, read_esp());
-			srval=XMHF_SLAB_CALL(entry_1(5, 3));
-			_XDPRINTF_("\n%s: came back from entry_1, esp=%x", __FUNCTION__, read_esp());
-			_XDPRINTF_("\n%s: came back from entry_1, value=%u", __FUNCTION__, srval.retval_u32);
-						
-			_XDPRINTF_("%s: preparing to invoke entry_2, esp=%x\n", __FUNCTION__, read_esp());
-			srval= XMHF_SLAB_CALL(entry_2(2048, true, 4096));
-			_XDPRINTF_("\n%s: came back from entry_2, esp=%x", __FUNCTION__, read_esp());
-			_XDPRINTF_("\n%s: ctx: cpu_index=%u, isbsp=%u, partition_index=%u", __FUNCTION__, srval.retval_context_desc.cpu_desc.cpu_index, srval.retval_context_desc.cpu_desc.isbsp, srval.retval_context_desc.partition_desc.partition_index);
-			
-			ap_input.operation = XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_INFOREGS;
-			ap_input.param.inforegs.info_vminstr_error = 0; 
-			ap_input.param.inforegs.info_vmexit_reason = 1; 
-			ap_input.param.inforegs.info_vmexit_interrupt_information = 2; 
-			ap_input.param.inforegs.info_vmexit_interrupt_error_code = 3; 
-			ap_input.param.inforegs.info_idt_vectoring_information = 4; 
-			ap_input.param.inforegs.info_idt_vectoring_error_code = 5; 
-			ap_input.param.inforegs.info_vmexit_instruction_length = 6; 
-			ap_input.param.inforegs.info_vmx_instruction_information = 7; 
-			ap_input.param.inforegs.info_exit_qualification = 8; 
-			ap_input.param.inforegs.info_io_rcx = 9; 
-			ap_input.param.inforegs.info_io_rsi = 10; 
-			ap_input.param.inforegs.info_io_rdi = 11; 
-			ap_input.param.inforegs.info_io_rip = 12; 
-			ap_input.param.inforegs.info_guest_linear_address = 13; 
-			ap_input.param.inforegs.info_guest_paddr_full = 14; 
-
-			_XDPRINTF_("\n%s: preparing to invoke entry_3, esp=%x", __FUNCTION__, read_esp());
-			srval = XMHF_SLAB_CALL(entry_3(srval.retval_context_desc, ap_input));			
-			_XDPRINTF_("\n%s: came back from entry_3, esp=%x", __FUNCTION__, read_esp());
-			_XDPRINTF_("\nsrval.retval_xc_hypapp_arch_param.param.inforegs.info_vminstr_error                  %u",  srval.retval_xc_hypapp_arch_param.param.inforegs.info_vminstr_error                ); 
-			_XDPRINTF_("\nsrval.retval_xc_hypapp_arch_param.param.inforegs.info_vmexit_reason                  %u",  srval.retval_xc_hypapp_arch_param.param.inforegs.info_vmexit_reason                ); 
-			_XDPRINTF_("\nsrval.retval_xc_hypapp_arch_param.param.inforegs.info_vmexit_interrupt_information   %u",  srval.retval_xc_hypapp_arch_param.param.inforegs.info_vmexit_interrupt_information ); 
-			_XDPRINTF_("\nsrval.retval_xc_hypapp_arch_param.param.inforegs.info_vmexit_interrupt_error_code    %u",  srval.retval_xc_hypapp_arch_param.param.inforegs.info_vmexit_interrupt_error_code  ); 
-			_XDPRINTF_("\nsrval.retval_xc_hypapp_arch_param.param.inforegs.info_idt_vectoring_information      %u",  srval.retval_xc_hypapp_arch_param.param.inforegs.info_idt_vectoring_information    ); 
-			_XDPRINTF_("\nsrval.retval_xc_hypapp_arch_param.param.inforegs.info_idt_vectoring_error_code       %u",  srval.retval_xc_hypapp_arch_param.param.inforegs.info_idt_vectoring_error_code     ); 
-			_XDPRINTF_("\nsrval.retval_xc_hypapp_arch_param.param.inforegs.info_vmexit_instruction_length      %u",  srval.retval_xc_hypapp_arch_param.param.inforegs.info_vmexit_instruction_length    ); 
-			_XDPRINTF_("\nsrval.retval_xc_hypapp_arch_param.param.inforegs.info_vmx_instruction_information    %u",  srval.retval_xc_hypapp_arch_param.param.inforegs.info_vmx_instruction_information  ); 
-			_XDPRINTF_("\nsrval.retval_xc_hypapp_arch_param.param.inforegs.info_exit_qualification             %llu",  srval.retval_xc_hypapp_arch_param.param.inforegs.info_exit_qualification           ); 
-			_XDPRINTF_("\nsrval.retval_xc_hypapp_arch_param.param.inforegs.info_io_rcx                         %llu",  srval.retval_xc_hypapp_arch_param.param.inforegs.info_io_rcx                       ); 
-			_XDPRINTF_("\nsrval.retval_xc_hypapp_arch_param.param.inforegs.info_io_rsi                         %llu",  srval.retval_xc_hypapp_arch_param.param.inforegs.info_io_rsi                       ); 
-			_XDPRINTF_("\nsrval.retval_xc_hypapp_arch_param.param.inforegs.info_io_rdi                         %llu",  srval.retval_xc_hypapp_arch_param.param.inforegs.info_io_rdi                       ); 
-			_XDPRINTF_("\nsrval.retval_xc_hypapp_arch_param.param.inforegs.info_io_rip                         %llu",  srval.retval_xc_hypapp_arch_param.param.inforegs.info_io_rip                       ); 
-			_XDPRINTF_("\nsrval.retval_xc_hypapp_arch_param.param.inforegs.info_guest_linear_address           %llu",  srval.retval_xc_hypapp_arch_param.param.inforegs.info_guest_linear_address         ); 
-			_XDPRINTF_("\nsrval.retval_xc_hypapp_arch_param.param.inforegs.info_guest_paddr_full               %llu",  srval.retval_xc_hypapp_arch_param.param.inforegs.info_guest_paddr_full             ); 
-			
-			
-			*/
-	
 	}
 	
-
-	_XDPRINTF_("\nXMHF Tester Finished!\n");
-	_XDPRINTF_("\n\n");
-	HALT();
-		
 		
 	//proceed with SMP initialization
 	if ( XMHF_SLAB_CALL(xcsmp_entry()) ){
