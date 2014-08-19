@@ -53,7 +53,7 @@
 
 #ifndef __ASSEMBLY__
 
-slab_retval_t testslab1_interface(u32 src_slabid, u32 dst_slabid, u32 fn_id, ...);
+slab_retval_t testslab1_interface(u32 src_slabid, u32 dst_slabid, u32 fn_id, u32 fn_paramsize, ...);
 
 
 #endif //__ASSEMBLY__

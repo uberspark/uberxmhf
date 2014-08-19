@@ -162,6 +162,15 @@ __attribute__((fastcall)) __attribute (( section(".slabtrampoline") )) void _sla
 	_XDPRINTF_(" returnaddress=%08x, framesize_op=%08x, src_slabid=%u, dst_slabid=%u, fn_id=%u\n",
 		tframe->returnaddress, framesize_op, tframe->src_slabid, tframe->dst_slabid, tframe->fn_id);
 
+
+	//{
+	//		u32 *p, i;
+	//		p = (u32 *)&tframe->params;
+	//		_XDPRINTF_("%s: %u, %u, %u, %u\n", __FUNCTION__, p[0], p[1], p[2], p[3]);
+	//	
+	//}
+	
+
 	//switch to destination slab MAC
 	asm volatile(	
 		"movl %0, %%eax \r\n"
@@ -182,6 +191,15 @@ __attribute__((fastcall)) __attribute (( section(".slabtrampoline") )) void _sla
 		: "g" (&tframe->src_slabid), "g" (framesize_op), "m" (_slab_table[tframe->dst_slabid].entry_cr3)
 		: "esi", "ecx"	 							
 	);
+
+	//{
+	//	
+	//	slab_retval_t *r;
+	//	_XDPRINTF_("%s: aggrettypeptr=%08x\n", __FUNCTION__, aggrettypeptr);
+	//	r = (slab_retval_t *)aggrettypeptr;
+	//	_XDPRINTF_("%s: retval=%u", __FUNCTION__, r->retval_u32);
+	//}
+
 
 	//switch back to source slab MAC
 	asm volatile(	

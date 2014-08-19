@@ -365,7 +365,7 @@ __attribute__ ((section(".slab_trampoline"))) __attribute__((naked)) __attribute
 						"pushl $1f	\r\n"					
 															
 						"movl %%esp, %%ecx \r\n"			
-						"movl 36(%%esp), %%edx \r\n"
+						"movl 40(%%esp), %%edx \r\n"
 						"addl %0, %%edx \r\n"				
 						"rol $16, %%edx \r\n"				
 						"movw %1, %%dx \r\n"				
@@ -374,7 +374,7 @@ __attribute__ ((section(".slab_trampoline"))) __attribute__((naked)) __attribute
 															
 						"1: \r\n"							
 						"movl %2, %%ecx \r\n"				
-						"lea 24(%%esp), %%edi \r\n"			
+						"movl 24(%%esp), %%edi \r\n"			
 						"cld \r\n"							
 						"rep movsb \r\n"					
 															

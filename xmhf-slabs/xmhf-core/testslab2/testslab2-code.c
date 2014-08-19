@@ -56,11 +56,11 @@
  * author: amit vasudevan (amitvasudevan@acm.org)
  */
 
-slab_retval_t testslab2_interface(u32 src_slabid, u32 dst_slabid, u32 fn_id, ...){
+slab_retval_t testslab2_interface(u32 src_slabid, u32 dst_slabid, u32 fn_id, u32 fn_paramsize, ...){
 	slab_retval_t srval;
 	va_list args;
 	
-	_XDPRINTF_("%s: Got control: src_slabid=%u, dst_slabid=%u, fn_id=%u\n", __FUNCTION__, src_slabid, dst_slabid, fn_id);
+	_XDPRINTF_("%s: Got control: src_slabid=%u, dst_slabid=%u, fn_id=%u, fn_paramsize=%u\n", __FUNCTION__, src_slabid, dst_slabid, fn_id, fn_paramsize);
 	
 	switch(fn_id){
 			case XMHF_SLAB_TESTSLAB2_FNENTRY1:
@@ -68,8 +68,12 @@ slab_retval_t testslab2_interface(u32 src_slabid, u32 dst_slabid, u32 fn_id, ...
 				break;
 	
 			case XMHF_SLAB_TESTSLAB2_FNENTRY2:{
-				va_start(args, fn_id);
-				srval.retval_u32 = testslab2_entry2(va_arg(args, u32), va_arg(args, u32));
+				u32 param1, param2;
+				va_start(args, fn_paramsize);
+				param1 = va_arg(args, u32);
+				param2 = va_arg(args, u32);
+				srval.retval_u32 = testslab2_entry2(param1, param2);
+				va_end(args);
 			}
 			break;
 				
