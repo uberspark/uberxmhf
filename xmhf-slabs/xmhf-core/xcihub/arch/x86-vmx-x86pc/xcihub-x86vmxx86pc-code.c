@@ -314,12 +314,14 @@ static void _vmx_intercept_handler(context_desc_t context_desc, struct regs x86g
 			
 			//if INT 15h E820 hypercall, then let the xmhf-core handle it
 			if(vmmcall_desc.cs.base == (VMX_UG_E820HOOK_CS << 4) &&	vmmcall_activity.rip == VMX_UG_E820HOOK_IP){
+				slab_retval_t srval;
 				//we need to be either in real-mode or in protected
 				//mode with paging and EFLAGS.VM bit set (virtual-8086 mode)
 				HALT_ON_ERRORCOND( !(vmmcall_controlregs.cr0 & CR0_PE)  ||
 					( (vmmcall_controlregs.cr0 & CR0_PE) && (vmmcall_controlregs.cr0 & CR0_PG) &&
 						(vmmcall_activity.rflags & EFLAGS_VM)  ) );
-				x86gprs = XMHF_SLAB_CALL(xcrichguest_arch_handle_guestmemoryreporting(context_desc, x86gprs));
+				srval = XMHF_SLAB_CALL_P2P(xcrichguest, XMHF_SLAB_XCIHUB_INDEX, XMHF_SLAB_XCRICHGUEST_INDEX, XMHF_SLAB_XCRICHGUEST_FNGUESTMEMORYREPORTING, XMHF_SLAB_XCRICHGUEST_FNGUESTMEMORYREPORTING_SIZE, context_desc, x86gprs);
+				x86gprs = srval.retval_regs;
 				_vmx_propagate_cpustate_guestx86gprs(context_desc, x86gprs);
 
 				vmmcall_ap = XMHF_SLAB_CALL(xc_api_cpustate_get(context_desc, XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_ACTIVITY));

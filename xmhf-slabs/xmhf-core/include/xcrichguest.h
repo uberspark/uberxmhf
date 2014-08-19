@@ -50,18 +50,27 @@
 #ifndef __XCRICHGUEST_H__
 #define __XCRICHGUEST_H__
 
-#define	XMHF_SLAB_XCRICHGUEST_FNENTRY	0
-#define	XMHF_SLAB_XCRICHGUEST_FNARCHHANDLEGUESTMEMORYREPORTING	1
+#define	XMHF_SLAB_XCRICHGUEST_FNENTRY							1
+#define	XMHF_SLAB_XCRICHGUEST_FNENTRY_SIZE						(sizeof(u32)+sizeof(bool))
+
+#define	XMHF_SLAB_XCRICHGUEST_FNGUESTMEMORYREPORTING			2
+#define	XMHF_SLAB_XCRICHGUEST_FNGUESTMEMORYREPORTING_SIZE		(sizeof(context_desc_t)+sizeof(struct regs))
+
+//#define	XMHF_SLAB_XCRICHGUEST_FNENTRY	0
+//#define	XMHF_SLAB_XCRICHGUEST_FNARCHHANDLEGUESTMEMORYREPORTING	1
 
 #ifndef __ASSEMBLY__
 
-#ifdef __XMHF_SLAB_CALLER_INDEX__ 
+slab_retval_t xcrichguest_interface(u32 src_slabid, u32 dst_slabid, u32 fn_id, u32 fn_paramsize, ...);
 
-XMHF_SLAB_DEFIMPORTFN(bool, xcrichguest_entry, (u32 cpuid, bool is_bsp), XMHF_SLAB_DEFIMPORTFNSTUB(__XMHF_SLAB_CALLER_INDEX__, XMHF_SLAB_XCRICHGUEST_INDEX, XMHF_SLAB_XCRICHGUEST_FNENTRY, (sizeof(u32)+sizeof(bool)), 0, XMHF_SLAB_FN_RETTYPE_NORMAL))
-XMHF_SLAB_DEFIMPORTFN(struct regs, xcrichguest_arch_handle_guestmemoryreporting, (context_desc_t context_desc, struct regs r), XMHF_SLAB_DEFIMPORTFNSTUB(__XMHF_SLAB_CALLER_INDEX__, XMHF_SLAB_XCRICHGUEST_INDEX, XMHF_SLAB_XCRICHGUEST_FNARCHHANDLEGUESTMEMORYREPORTING, (sizeof(context_desc_t)+sizeof(struct regs)+sizeof(u32)), (sizeof(struct regs)), XMHF_SLAB_FN_RETTYPE_AGGREGATE))
 
-#else 	//!__XMHF_SLAB_CALLER_INDEX__
-
+//#ifdef __XMHF_SLAB_CALLER_INDEX__ 
+//
+//XMHF_SLAB_DEFIMPORTFN(bool, xcrichguest_entry, (u32 cpuid, bool is_bsp), XMHF_SLAB_DEFIMPORTFNSTUB(__XMHF_SLAB_CALLER_INDEX__, XMHF_SLAB_XCRICHGUEST_INDEX, XMHF_SLAB_XCRICHGUEST_FNENTRY, (sizeof(u32)+sizeof(bool)), 0, XMHF_SLAB_FN_RETTYPE_NORMAL))
+//XMHF_SLAB_DEFIMPORTFN(struct regs, xcrichguest_arch_handle_guestmemoryreporting, (context_desc_t context_desc, struct regs r), XMHF_SLAB_DEFIMPORTFNSTUB(__XMHF_SLAB_CALLER_INDEX__, XMHF_SLAB_XCRICHGUEST_INDEX, XMHF_SLAB_XCRICHGUEST_FNARCHHANDLEGUESTMEMORYREPORTING, (sizeof(context_desc_t)+sizeof(struct regs)+sizeof(u32)), (sizeof(struct regs)), XMHF_SLAB_FN_RETTYPE_AGGREGATE))
+//
+//#else 	//!__XMHF_SLAB_CALLER_INDEX__
+//
 bool xcrichguest_entry(u32 cpuid, bool is_bsp);
 
 //----------------------------------------------------------------------
@@ -71,7 +80,7 @@ void xcrichguest_arch_initialize(u32 partition_index);
 void xcrichguest_arch_setupguestOSstate(context_desc_t context_desc);
 struct regs xcrichguest_arch_handle_guestmemoryreporting(context_desc_t context_desc, struct regs r);
 
-#endif	//__XMHF_SLAB_CALLER_INDEX__
+//#endif	//__XMHF_SLAB_CALLER_INDEX__
 
 #endif //__ASSEMBLY__
 
