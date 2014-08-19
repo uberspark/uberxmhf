@@ -63,4 +63,51 @@ slab_retval_t testslab2_interface(u32 src_slabid, u32 dst_slabid, u32 fn_id, ...
 }
 
 
+void testslab2_entry0(void){
+	_XDPRINTF_("%s: Got control: nothing to do!\n", __FUNCTION__);
+}
+	
+u32 testslab2_entry1(u32 param1, u32 param2){
+	_XDPRINTF_("%s: param1=%u, param2=%u\n", __FUNCTION__, param1, param2);
+	return param1+param2;
+}
+
+context_desc_t testslab2_entry2(u32 cpu_index, bool isbsp, u32 partition_index){
+	context_desc_t ctx;
+
+	_XDPRINTF_("\n%s: Got control: cpu_index=%u, isbsp=%u, partition_index=%u", __FUNCTION__, cpu_index, isbsp, partition_index);
+	
+	ctx.cpu_desc.cpu_index = cpu_index;
+	ctx.cpu_desc.isbsp = isbsp;
+	ctx.partition_desc.partition_index = partition_index;
+	
+	return ctx;
+}	
+
+xc_hypapp_arch_param_t testslab2_entry3(context_desc_t context_desc, xc_hypapp_arch_param_t archparam){
+	xc_hypapp_arch_param_t srval;
+
+	_XDPRINTF_("\n%s: Got control: cpu_index=%u, isbsp=%u, partition_index=%u", __FUNCTION__, context_desc.cpu_desc.cpu_index, context_desc.cpu_desc.isbsp, context_desc.partition_desc.partition_index);
+	
+	srval.operation = archparam.operation;
+	srval.param.inforegs.info_vminstr_error = archparam.param.inforegs.info_vminstr_error;
+	srval.param.inforegs.info_vmexit_reason = archparam.param.inforegs.info_vmexit_reason;
+	srval.param.inforegs.info_vmexit_interrupt_information = archparam.param.inforegs.info_vmexit_interrupt_information;
+	srval.param.inforegs.info_vmexit_interrupt_error_code = archparam.param.inforegs.info_vmexit_interrupt_error_code;
+	srval.param.inforegs.info_idt_vectoring_information = archparam.param.inforegs.info_idt_vectoring_information;
+	srval.param.inforegs.info_idt_vectoring_error_code = archparam.param.inforegs.info_idt_vectoring_error_code;
+	srval.param.inforegs.info_vmexit_instruction_length = archparam.param.inforegs.info_vmexit_instruction_length;
+	srval.param.inforegs.info_vmx_instruction_information = archparam.param.inforegs.info_vmx_instruction_information;
+	srval.param.inforegs.info_exit_qualification = archparam.param.inforegs.info_exit_qualification;
+	srval.param.inforegs.info_io_rcx = archparam.param.inforegs.info_io_rcx;
+	srval.param.inforegs.info_io_rsi = archparam.param.inforegs.info_io_rsi;
+	srval.param.inforegs.info_io_rdi = archparam.param.inforegs.info_io_rdi;
+	srval.param.inforegs.info_io_rip = archparam.param.inforegs.info_io_rip;
+	srval.param.inforegs.info_guest_linear_address = archparam.param.inforegs.info_guest_linear_address;
+	srval.param.inforegs.info_guest_paddr_full = archparam.param.inforegs.info_guest_paddr_full;
+	
+	return srval;
+}
+
+
 XMHF_SLAB_DEF(testslab2)

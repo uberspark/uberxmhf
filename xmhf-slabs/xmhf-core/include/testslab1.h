@@ -51,33 +51,9 @@
 #define __TESTSLAB1_H__
 
 
-#define	XMHF_SLAB_TESTSLAB1_FNENTRY0		0
-#define	XMHF_SLAB_TESTSLAB1_FNENTRY0_SIZE	0
-
-#define	XMHF_SLAB_TESTSLAB1_FNENTRY1	1
-#define XMHF_SLAB_TESTSLAB1_FNENTRY2	2
-#define XMHF_SLAB_TESTSLAB1_FNENTRY3	3
-
 #ifndef __ASSEMBLY__
 
 slab_retval_t testslab1_interface(u32 src_slabid, u32 dst_slabid, u32 fn_id, ...);
-
-#ifdef __XMHF_SLAB_CALLER_INDEX__ 
-
-//XMHF_SLAB_P2P_DEFIMPORTFN(slab_retval_t, entry_0, (u32 src_slabid, u32 dst_slabid, u32 fn_id), XMHF_SLAB_P2P_DEFIMPORTFNSTUB((3*sizeof(u32))) )
-//XMHF_SLAB_DEFIMPORTFN(slab_retval_t, entry_0, (void), XMHF_SLAB_DEFIMPORTFNSTUB(__XMHF_SLAB_CALLER_INDEX__, XMHF_SLAB_TESTSLAB1_INDEX, XMHF_SLAB_TESTSLAB1_FNENTRY0, (sizeof(u32)), sizeof(slab_retval_t), XMHF_SLAB_FN_RETTYPE_AGGREGATE))
-XMHF_SLAB_DEFIMPORTFN(slab_retval_t, entry_1, (u32 param1, u32 param2), XMHF_SLAB_DEFIMPORTFNSTUB(__XMHF_SLAB_CALLER_INDEX__, XMHF_SLAB_TESTSLAB1_INDEX, XMHF_SLAB_TESTSLAB1_FNENTRY1, (sizeof(u32)+sizeof(u32)+sizeof(u32)), sizeof(slab_retval_t), XMHF_SLAB_FN_RETTYPE_AGGREGATE))
-XMHF_SLAB_DEFIMPORTFN(slab_retval_t, entry_2, (u32 cpu_index, bool isbsp, u32 partition_index), XMHF_SLAB_DEFIMPORTFNSTUB(__XMHF_SLAB_CALLER_INDEX__, XMHF_SLAB_TESTSLAB1_INDEX, XMHF_SLAB_TESTSLAB1_FNENTRY2, (sizeof(u32)+sizeof(bool)+sizeof(u32)+sizeof(u32)), sizeof(slab_retval_t), XMHF_SLAB_FN_RETTYPE_AGGREGATE) )
-XMHF_SLAB_DEFIMPORTFN(slab_retval_t, entry_3, (context_desc_t context_desc, xc_hypapp_arch_param_t archparam), XMHF_SLAB_DEFIMPORTFNSTUB(__XMHF_SLAB_CALLER_INDEX__, XMHF_SLAB_TESTSLAB1_INDEX, XMHF_SLAB_TESTSLAB1_FNENTRY3, (sizeof(context_desc_t)+sizeof(xc_hypapp_arch_param_t)+sizeof(u32)), sizeof(slab_retval_t), XMHF_SLAB_FN_RETTYPE_AGGREGATE))
-
-#else 	//!__XMHF_SLAB_CALLER_INDEX__
-
-slab_retval_t entry_0(u32 src_slabid, u32 dst_slabid, u32 fn_id);
-slab_retval_t entry_1(u32 param1, u32 param2);
-slab_retval_t entry_2(u32 cpu_index, bool isbsp, u32 partition_index);
-slab_retval_t entry_3(context_desc_t context_desc, xc_hypapp_arch_param_t archparam);
-
-#endif	//__XMHF_SLAB_CALLER_INDEX__
 
 
 #endif //__ASSEMBLY__
