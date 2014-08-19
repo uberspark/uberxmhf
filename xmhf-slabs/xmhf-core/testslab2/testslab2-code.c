@@ -58,12 +58,21 @@
 
 slab_retval_t testslab2_interface(u32 src_slabid, u32 dst_slabid, u32 fn_id, ...){
 	slab_retval_t srval;
+	va_list args;
+	
 	_XDPRINTF_("%s: Got control: src_slabid=%u, dst_slabid=%u, fn_id=%u\n", __FUNCTION__, src_slabid, dst_slabid, fn_id);
 	
 	switch(fn_id){
 			case XMHF_SLAB_TESTSLAB2_FNENTRY1:
 				testslab2_entry1();
 				break;
+	
+			case XMHF_SLAB_TESTSLAB2_FNENTRY2:{
+				va_start(args, fn_id);
+				srval.retval_u32 = testslab2_entry2(va_arg(args, u32), va_arg(args, u32));
+			}
+			break;
+				
 				
 			default:
 				_XDPRINTF_("%s: unhandled subinterface %u. Halting\n", __FUNCTION__, fn_id);
