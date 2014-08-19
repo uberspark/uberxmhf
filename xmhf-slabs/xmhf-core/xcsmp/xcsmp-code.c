@@ -66,7 +66,7 @@ slab_retval_t xcsmp_interface(u32 src_slabid, u32 dst_slabid, u32 fn_id, u32 fn_
 #endif
 
 	_XDPRINTF_("%s: proceeding to invoke xcexhub_initialize...\n", __FUNCTION__);
-	XMHF_SLAB_CALL(xcexhub_initialize());
+	XMHF_SLAB_CALL_P2P(xcexhub, XMHF_SLAB_XCSMP_INDEX, XMHF_SLAB_XCEXHUB_INDEX, 0, 0);
 	_XDPRINTF_("%s: xcexhub_initialize completed successfully.\n", __FUNCTION__);
 	
 	if( xcsmp_arch_smpinitialize() ){
