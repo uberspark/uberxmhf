@@ -137,7 +137,7 @@ void xcprimeon_entry(void){
 	{
 			//invoke slab interfaces
 			_XDPRINTF_("%s: preparing to invoke entry_0, esp=%x\n", __FUNCTION__, read_esp());
-			XMHF_SLAB_CALL_P2P(testslab1, XMHF_SLAB_XCPRIMEON_INDEX, XMHF_SLAB_TESTSLAB1_INDEX, XMHF_SLAB_TESTSLAB1_FNENTRY0, XMHF_SLAB_TESTSLAB1_FNENTRY0_SIZE);
+			XMHF_SLAB_CALL_P2P(testslab1, XMHF_SLAB_XCPRIMEON_INDEX, XMHF_SLAB_TESTSLAB1_INDEX, 0, 0);
 			_XDPRINTF_("%s: came back from entry_0, esp=%x\n", __FUNCTION__, read_esp());
 	}
 	
