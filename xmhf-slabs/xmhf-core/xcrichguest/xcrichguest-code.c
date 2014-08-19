@@ -59,6 +59,46 @@
 #include <xhhyperdep.h>	//TODO: remove this hardcoded hypapp dependency
 #undef __XMHF_SLAB_CALLER_INDEX__
 
+slab_retval_t xcrichguest_interface(u32 src_slabid, u32 dst_slabid, u32 fn_id, u32 fn_paramsize, ...){
+	slab_retval_t srval;
+	va_list args;
+	
+	_XDPRINTF_("%s: Got control: src_slabid=%u, dst_slabid=%u, fn_id=%u, fn_paramsize=%u\n", __FUNCTION__, src_slabid, dst_slabid, fn_id, fn_paramsize);
+	
+	switch(fn_id){
+			case XMHF_SLAB_XCRICHGUEST_FNENTRY:{
+				u32 cpuid;
+				bool is_bsp;
+				va_start(args, fn_paramsize);
+				cpuid = va_arg(args, u32);
+				is_bsp = va_arg(args, bool);
+				srval.retval_bool = xcrichguest_entry(cpuid, is_bsp);
+				va_end(args);
+			}
+			break;
+	
+			case XMHF_SLAB_XCRICHGUEST_FNGUESTMEMORYREPORTING:{
+				context_desc_t context_desc;
+				struct regs r;
+				va_start(args, fn_paramsize);
+				context_desc = va_arg(args, context_desc_t);
+				r = va_arg(args, struct regs);
+				srval.retval_regs = xcrichguest_arch_handle_guestmemoryreporting(context_desc, r);
+				va_end(args);
+			}
+			break;
+				
+			default:
+				_XDPRINTF_("%s: unhandled subinterface %u. Halting\n", __FUNCTION__, fn_id);
+				HALT();
+	}
+	
+	return srval;	
+}
+
+
+
+
 //add given cpu to the rich guest partition
 static context_desc_t _xcrichguest_setup(u32 partition_index, u32 cpuid, bool is_bsp){
 	context_desc_t context_desc;
@@ -162,9 +202,11 @@ bool xcrichguest_entry(u32 cpuid, bool is_bsp){
 }
 
 ///////
-XMHF_SLAB("xcrichguest")
+//XMHF_SLAB("xcrichguest")
+//
+//XMHF_SLAB_DEFINTERFACE(
+//	XMHF_SLAB_DEFEXPORTFN(xcrichguest_entry, XMHF_SLAB_XCRICHGUEST_FNENTRY, XMHF_SLAB_FN_RETTYPE_NORMAL)
+//	XMHF_SLAB_DEFEXPORTFN(xcrichguest_arch_handle_guestmemoryreporting, XMHF_SLAB_XCRICHGUEST_FNARCHHANDLEGUESTMEMORYREPORTING, XMHF_SLAB_FN_RETTYPE_AGGREGATE)
+//)
 
-XMHF_SLAB_DEFINTERFACE(
-	XMHF_SLAB_DEFEXPORTFN(xcrichguest_entry, XMHF_SLAB_XCRICHGUEST_FNENTRY, XMHF_SLAB_FN_RETTYPE_NORMAL)
-	XMHF_SLAB_DEFEXPORTFN(xcrichguest_arch_handle_guestmemoryreporting, XMHF_SLAB_XCRICHGUEST_FNARCHHANDLEGUESTMEMORYREPORTING, XMHF_SLAB_FN_RETTYPE_AGGREGATE)
-)
+XMHF_SLAB_DEF(xcrichguest)
