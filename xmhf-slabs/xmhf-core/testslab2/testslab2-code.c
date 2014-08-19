@@ -56,16 +56,11 @@
  * author: amit vasudevan (amitvasudevan@acm.org)
  */
 
- 
-void testslab2_entry_0(void){
-	_XDPRINTF_("\n%s: Got control, nothing to do, returning", __FUNCTION__);
+slab_retval_t testslab2_interface(u32 src_slabid, u32 dst_slabid, u32 fn_id, ...){
+	slab_retval_t srval;
+	_XDPRINTF_("%s: Got control: src_slabid=%u, dst_slabid=%u, fn_id=%u\n", __FUNCTION__, src_slabid, dst_slabid, fn_id);
+	return srval;	
 }
-	
 
-///////
-XMHF_SLAB("testslab2")
 
-XMHF_SLAB_DEFINTERFACE(
-	XMHF_SLAB_DEFEXPORTFN(testslab2_entry_0, XMHF_SLAB_TESTSLAB2_FNTESTSLAB2ENTRY0, XMHF_SLAB_FN_RETTYPE_NORMAL)
-)
-
+XMHF_SLAB_DEF(testslab2)

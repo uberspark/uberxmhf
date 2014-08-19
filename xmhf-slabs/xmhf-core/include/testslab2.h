@@ -51,19 +51,9 @@
 #define __TESTSLAB2_H__
 
 
-#define	XMHF_SLAB_TESTSLAB2_FNTESTSLAB2ENTRY0	0
-
 #ifndef __ASSEMBLY__
 
-#ifdef __XMHF_SLAB_CALLER_INDEX__ 
-
-XMHF_SLAB_DEFIMPORTFN(void, testslab2_entry_0, (void), XMHF_SLAB_DEFIMPORTFNSTUB(__XMHF_SLAB_CALLER_INDEX__, XMHF_SLAB_TESTSLAB2_INDEX, XMHF_SLAB_TESTSLAB2_FNTESTSLAB2ENTRY0, (0), 0, XMHF_SLAB_FN_RETTYPE_NORMAL))
-
-#else 	//!__XMHF_SLAB_CALLER_INDEX__
-
-void testslab2_entry_0(void);
-
-#endif	//__XMHF_SLAB_CALLER_INDEX__
+slab_retval_t testslab2_interface(u32 src_slabid, u32 dst_slabid, u32 fn_id, ...);
 
 
 #endif //__ASSEMBLY__

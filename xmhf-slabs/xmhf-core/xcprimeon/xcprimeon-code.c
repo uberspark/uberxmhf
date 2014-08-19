@@ -55,7 +55,6 @@
 
 
 #include <testslab1.h>
-#include <testslab2.h>
 #undef __XMHF_SLAB_CALLER_INDEX__
 
 void xcprimeon_entry(void){
@@ -196,16 +195,6 @@ void xcprimeon_entry(void){
 	}
 	
 
-
-	/*//testslab2
-	{
-			//invoke testslab 2 interface
-			_XDPRINTF_("\n%s: preparing to invoke testslab2_entry_0, esp=%x", __FUNCTION__, read_esp());
-			XMHF_SLAB_CALL(testslab2_entry_0());
-			_XDPRINTF_("\n%s: came back from testslab2_entry_0, esp=%x", __FUNCTION__, read_esp());
-	}*/
-
-	
 	_XDPRINTF_("\nXMHF Tester Finished!\n");
 	_XDPRINTF_("\n\n");
 	HALT();
