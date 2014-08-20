@@ -55,22 +55,6 @@
 #ifndef __XCAPI_H__
 #define __XCAPI_H__
 
-//core APIs
-#define	XC_API_HPT_SETPROT							(0xA01)
-#define	XC_API_HPT_GETPROT							(0xA02)
-#define XC_API_HPT_SETENTRY							(0xA03)
-#define XC_API_HPT_GETENTRY							(0xA04)
-#define XC_API_HPT_FLUSHCACHES						(0xA05)
-#define XC_API_HPT_FLUSHCACHES_SMP					(0xA06)
-#define XC_API_HPT_LVL2PAGEWALK						(0xA07)
-
-
-#define	XC_API_TRAPMASK_SET							(0xB01)
-#define XC_API_TRAPMASK_CLEAR						(0xB02)
-
-#define XC_API_CPUSTATE_SET							(0xC01)
-#define XC_API_CPUSTATE_GET							(0xC02)
-
 // memory protection types
 #define MEMP_PROT_NOTPRESENT	(1)	// page not present
 #define	MEMP_PROT_PRESENT		(2)	// page present
