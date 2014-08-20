@@ -148,6 +148,7 @@ typedef struct {
 	slab_section_t slab_rwdata;
 	slab_section_t slab_stack;
 	slab_entrystub_t entry_cr3;
+	slab_entrystub_t entry_cr3_new;
 } slab_header_t;
 
 //XMHF core api CPU descriptor type
