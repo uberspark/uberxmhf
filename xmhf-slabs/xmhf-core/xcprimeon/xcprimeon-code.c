@@ -50,12 +50,8 @@
 
 #include <xcprimeon.h>
 
-#define __XMHF_SLAB_CALLER_INDEX__	XMHF_SLAB_XCPRIMEON_INDEX
 #include <xcsmp.h>
-
-
 #include <testslab1.h>
-#undef __XMHF_SLAB_CALLER_INDEX__
 
 void xcprimeon_entry(void){
 
@@ -151,6 +147,6 @@ void xcprimeon_entry(void){
 }
 
 ///////
-XMHF_SLAB("xcprimeon")
+XMHF_SLAB_DEF_BARE(xcprimeon)
 
 

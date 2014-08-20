@@ -316,7 +316,7 @@ typedef struct {
 // edx = lower 16-bits = operation (XMHF_SLAB_CALLP2P, ...)
 //	   = upper 16-bits = size of input parameters (in bytes) at ebp	   
 
-#define _XMHF_SLAB_P2P_DEFIMPORTFNSTUB(iface_paramsize) asm volatile(	\
+/*#define _XMHF_SLAB_P2P_DEFIMPORTFNSTUB(iface_paramsize) asm volatile(	\
 						"pushl %%ebp \r\n"					\
 						"pushl %%ecx \r\n"					\
 						"pushl %%esi \r\n"					\
@@ -354,7 +354,7 @@ typedef struct {
 
 #define XMHF_SLAB_P2P_DEFIMPORTFN(fn_rettype, fn_name, fn_decl, fn_stub)	\
 	__attribute__ ((section(".slab_trampoline"))) __attribute__((naked)) __attribute__ ((noinline)) static inline fn_rettype __impslab_p2p_##fn_name fn_decl { fn_stub }	\
-
+*/
 
 __attribute__ ((section(".slab_trampoline"))) __attribute__((naked)) __attribute__ ((noinline)) static inline slab_retval_t __xmhf_impslab_p2p(u32 src_slabid, u32 dst_slabid, u32 iface_subid, u32 iface_subparamsize, ...){
 	asm volatile(		
@@ -396,7 +396,7 @@ __attribute__ ((section(".slab_trampoline"))) __attribute__((naked)) __attribute
 //privilege-to-privilege (P2P) slab call macro
 #define XMHF_SLAB_CALL_P2P(slab_name, src_slabid, dst_slabid, iface_subid, ...) __xmhf_impslab_p2p(src_slabid, dst_slabid, iface_subid, __VA_ARGS__)
 
-
+/*
 // esi = interface parameter base
 // ecx = top 16-bits = parameter size
 //	   = low 16-bits = operation
@@ -444,7 +444,7 @@ __attribute__ ((section(".slab_trampoline"))) __attribute__((naked)) __attribute
 			"1:\r\n"								\
 
 #define XMHF_SLAB_P2P_DEFEXPORTFN(fn_name, fn_num)		_XMHF_SLAB_P2P_DEFEXPORTFN(fn_name, fn_num)
-
+*/
 
 #define XMHF_SLAB_DEF(slab_name)	\
 	__attribute__ ((section(".stack"))) u8 _slab_stack[XMHF_SLAB_STACKSIZE];	\
