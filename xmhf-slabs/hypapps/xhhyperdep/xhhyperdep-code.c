@@ -53,7 +53,9 @@
 
 #include <xhhyperdep.h>
 
+#define __XMHF_SLAB_CALLER_INDEX__  XMHF_SLAB_XHHELLOWORLD_INDEX
 #include <xcapi.h>
+#undef __XMHF_SLAB_CALLER_INDEX__
 
 /////////////////////////////////////////////////////////////////////
 slab_retval_t xhhyperdep_interface(u32 src_slabid, u32 dst_slabid, u32 fn_id, u32 fn_paramsize, ...){
@@ -275,3 +277,13 @@ u32 xmhf_hypapp_handleintercept_trap(context_desc_t context_desc, xc_hypapp_arch
 XMHF_SLAB_DEF(xhhyperdep)
 
 
+////////
+XMHF_SLAB("xhhyperdep")
+
+XMHF_SLAB_DEFINTERFACE(
+	XMHF_SLAB_DEFEXPORTFN(xmhf_hypapp_initialization				,XMHF_SLAB_HYPAPP_FNINITIALIZATION							,	XMHF_SLAB_FN_RETTYPE_NORMAL)
+	XMHF_SLAB_DEFEXPORTFN(xmhf_hypapp_handlehypercall				,XMHF_SLAB_HYPAPP_FNHANDLEHYPERCALL						,	XMHF_SLAB_FN_RETTYPE_NORMAL)
+	XMHF_SLAB_DEFEXPORTFN(xmhf_hypapp_handleintercept_hptfault		,XMHF_SLAB_HYPAPP_FNHANDLEINTERCEPTHPTFAULT				,	XMHF_SLAB_FN_RETTYPE_NORMAL)
+	XMHF_SLAB_DEFEXPORTFN(xmhf_hypapp_handleintercept_trap			,XMHF_SLAB_HYPAPP_FNHANDLEINTERCEPTTRAP					,	XMHF_SLAB_FN_RETTYPE_NORMAL)
+	XMHF_SLAB_DEFEXPORTFN(xmhf_hypapp_handleshutdown				,XMHF_SLAB_HYPAPP_FNSHUTDOWN								,	XMHF_SLAB_FN_RETTYPE_NORMAL)
+)
