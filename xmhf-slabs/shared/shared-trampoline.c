@@ -188,7 +188,7 @@ __attribute__((fastcall)) __attribute (( section(".slabtrampoline") )) void _sla
 		"call *%%eax \r\n"
 		"movl %%esi, %0 \r\n"
 		: "=S" (aggrettypeptr)
-		: "g" (&tframe->src_slabid), "g" (framesize_op), "m" (_slab_table[tframe->dst_slabid].entry_cr3)
+		: "g" (&tframe->src_slabid), "g" (framesize_op), "m" (_slab_table[tframe->dst_slabid].entry_cr3_new)
 		: "esi", "ecx"	 							
 	);
 

@@ -58,8 +58,15 @@ SECTIONS
 {
 	. = 0;
 
-	.slabcode : {
+	.slabentrystub : {
 		*(.slab_entrystub)
+	} >slabmem =0x9090 
+
+	.slabentrystubnew : {
+		*(.slab_entrystubnew)
+	} >slabmem =0x9090 
+	
+	.slabcode : {
 		*(.text)
 	} >slabmem =0x9090 
 
