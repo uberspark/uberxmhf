@@ -56,6 +56,213 @@
  *  author: amit vasudevan (amitvasudevan@acm.org)
  */
 
+slab_retval_t xcapi_interface(u32 src_slabid, u32 dst_slabid, u32 fn_id, u32 fn_paramsize, ...){
+	slab_retval_t srval;
+	va_list args;
+	
+	_XDPRINTF_("%s: Got control: src_slabid=%u, dst_slabid=%u, fn_id=%u, fn_paramsize=%u\n", __FUNCTION__, src_slabid, dst_slabid, fn_id, fn_paramsize);
+	
+	switch(fn_id){
+			//HPT related
+			
+			case XMHF_SLAB_XCAPI_FNXCAPIHPTSETPROT:{
+				context_desc_t context_desc;
+				u64 gpa;
+				u32 prottype;
+				va_start(args, fn_paramsize);
+				context_desc = va_arg(args, context_desc_t);
+				gpa = va_arg(args, u64);
+				prottype = va_arg(args, u32);
+				xc_api_hpt_setprot(context_desc, gpa, prottype);
+				va_end(args);
+			}
+			break;
+				
+			case XMHF_SLAB_XCAPI_FNXCAPIHPTGETPROT:{
+				context_desc_t context_desc;
+				u64 gpa;
+				va_start(args, fn_paramsize);
+				context_desc = va_arg(args, context_desc_t);
+				gpa = va_arg(args, u64);
+				srval.retval_u32 = xc_api_hpt_getprot(context_desc, gpa);
+				va_end(args);
+			}
+			break;
+
+			case XMHF_SLAB_XCAPI_FNXCAPIHPTSETENTRY:{
+				context_desc_t context_desc;
+				u64 gpa;
+				u64 entry;
+				va_start(args, fn_paramsize);
+				context_desc = va_arg(args, context_desc_t);
+				gpa = va_arg(args, u64);
+				entry = va_arg(args, u64);
+				xc_api_hpt_setentry(context_desc, gpa, entry);
+				va_end(args);
+			}
+			break;
+
+			case XMHF_SLAB_XCAPI_FNXCAPIHPTGETENTRY:{
+				context_desc_t context_desc;
+				u64 gpa;
+				va_start(args, fn_paramsize);
+				context_desc = va_arg(args, context_desc_t);
+				gpa = va_arg(args, u64);
+				srval.retval_u64 = xc_api_hpt_getentry(context_desc, gpa);
+				va_end(args);
+			}
+			break;
+
+			case XMHF_SLAB_XCAPI_FNXCAPIFLUSHCACHES:{
+				context_desc_t context_desc;
+				va_start(args, fn_paramsize);
+				context_desc = va_arg(args, context_desc_t);
+				xc_api_hpt_flushcaches(context_desc);
+				va_end(args);
+			}
+			break;
+
+			case XMHF_SLAB_XCAPI_FNXCAPIFLUSHCACHESSMP:{
+				context_desc_t context_desc;
+				va_start(args, fn_paramsize);
+				context_desc = va_arg(args, context_desc_t);
+				xc_api_hpt_flushcaches_smp(context_desc);
+				va_end(args);
+			}
+			break;
+
+			case XMHF_SLAB_XCAPI_FNXCAPIHPTLVL2PAGEWALK:{
+				context_desc_t context_desc;
+				u64 gva;
+				va_start(args, fn_paramsize);
+				context_desc = va_arg(args, context_desc_t);
+				gva = va_arg(args, u64);
+				srval.retval_u64 = xc_api_hpt_lvl2pagewalk(context_desc, gva);
+				va_end(args);
+			}
+			break;
+
+			//trapmask related
+
+			case XMHF_SLAB_XCAPI_FNXCAPITRAPMASKSET:{
+				context_desc_t context_desc;
+				xc_hypapp_arch_param_t trapmaskparams;
+				va_start(args, fn_paramsize);
+				context_desc = va_arg(args, context_desc_t);
+				trapmaskparams = va_arg(args, xc_hypapp_arch_param_t);
+				xc_api_trapmask_set(context_desc, trapmaskparams);
+				va_end(args);
+			}
+			break;
+
+			case XMHF_SLAB_XCAPI_FNXCAPITRAPMASKCLEAR:{
+				context_desc_t context_desc;
+				xc_hypapp_arch_param_t trapmaskparams;
+				va_start(args, fn_paramsize);
+				context_desc = va_arg(args, context_desc_t);
+				trapmaskparams = va_arg(args, xc_hypapp_arch_param_t);
+				xc_api_trapmask_clear(context_desc, trapmaskparams);
+				va_end(args);
+			}
+			break;
+
+			//cpu state related
+			
+			case XMHF_SLAB_XCAPI_FNXCAPICPUSTATESET:{
+				context_desc_t context_desc;
+				xc_hypapp_arch_param_t cpustateparams;
+				va_start(args, fn_paramsize);
+				context_desc = va_arg(args, context_desc_t);
+				cpustateparams = va_arg(args, xc_hypapp_arch_param_t);
+				xc_api_cpustate_set(context_desc, cpustateparams);
+				va_end(args);
+			}
+			break;
+			
+			case XMHF_SLAB_XCAPI_FNXCAPICPUSTATEGET:{
+				context_desc_t context_desc;
+				u64 operation;
+				va_start(args, fn_paramsize);
+				context_desc = va_arg(args, context_desc_t);
+				operation = va_arg(args, u64);
+				srval.retval_xc_hypapp_arch_param = xc_api_cpustate_get(context_desc, operation);
+				va_end(args);
+			}
+			break;
+
+			//partition related
+			
+			case XMHF_SLAB_XCAPI_FNXCAPIPARTITIONCREATE:{
+				u32 partitiontype;
+				va_start(args, fn_paramsize);
+				partitiontype = va_arg(args, u32);
+				srval.retval_u32 = xc_api_partition_create(partitiontype);
+				va_end(args);
+			}
+			break;
+			
+			case XMHF_SLAB_XCAPI_FNXCAPIPARTITIONADDCPU:{
+				u32 partition_index;
+				u32 cpuid;
+				bool is_bsp;
+				va_start(args, fn_paramsize);
+				partition_index = va_arg(args, u32);
+				cpuid = va_arg(args, u32);
+				is_bsp = va_arg(args, bool);
+				srval.retval_context_desc = xc_api_partition_addcpu(partition_index, cpuid, is_bsp);
+				va_end(args);
+			}
+			break;
+
+			case XMHF_SLAB_XCAPI_FNXCAPIPARTITIONGETCONTEXTDESC:{
+				u32 cpuid;
+				va_start(args, fn_paramsize);
+				cpuid = va_arg(args, u32);
+				srval.retval_context_desc = xc_api_partition_getcontextdesc(cpuid);
+				va_end(args);
+			}
+			break;
+
+			case XMHF_SLAB_XCAPI_FNXCAPIPARTITIONSTARTCPU:{
+				context_desc_t context_desc;
+				va_start(args, fn_paramsize);
+				context_desc = va_arg(args, context_desc_t);
+				srval.retval_bool = xc_api_partition_startcpu(context_desc);
+				va_end(args);
+			}
+			break;
+
+			//platform related
+
+			case XMHF_SLAB_XCAPI_FNXCAPIPLATFORMSHUTDOWN:{
+				context_desc_t context_desc;
+				va_start(args, fn_paramsize);
+				context_desc = va_arg(args, context_desc_t);
+				xc_api_platform_shutdown(context_desc);
+				va_end(args);
+			}
+			break;
+
+			case XMHF_SLAB_XCAPI_FNXCCOREAPIARCHEVENTHANDLERNMIEXCEPTION:{
+				struct regs *r;
+				va_start(args, fn_paramsize);
+				r = va_arg(args, struct regs *);
+				xc_coreapi_arch_eventhandler_nmiexception(r)
+				va_end(args);
+			}
+			break;
+
+				
+			default:
+				_XDPRINTF_("%s: unhandled subinterface %u. Halting\n", __FUNCTION__, fn_id);
+				HALT();
+	}
+	
+	return srval;	
+}
+
+
+//////////////////////////////////////////////////////////////////////////////////////////////////
 
 //HPT related core APIs
 void xc_api_hpt_setprot(context_desc_t context_desc, u64 gpa, u32 prottype){
@@ -105,6 +312,7 @@ xc_hypapp_arch_param_t xc_api_cpustate_get(context_desc_t context_desc, u64 oper
 	return xc_api_cpustate_arch_get(context_desc, operation);
 }
 
+//partition related
 
 static u32 _partition_current_index=0;
 static u32 _xc_cpu_current_index=0;
@@ -261,31 +469,33 @@ void xc_api_platform_shutdown(context_desc_t context_desc){
 
 
 ///////
-XMHF_SLAB("xcapi")
+//XMHF_SLAB("xcapi")
 
-XMHF_SLAB_DEFINTERFACE(
+//XMHF_SLAB_DEFINTERFACE(
+//
+//	XMHF_SLAB_DEFEXPORTFN(xc_api_hpt_setprot				,XMHF_SLAB_XCAPI_FNXCAPIHPTSETPROT						,	XMHF_SLAB_FN_RETTYPE_NORMAL)
+//	XMHF_SLAB_DEFEXPORTFN(xc_api_hpt_getprot				,XMHF_SLAB_XCAPI_FNXCAPIHPTGETPROT						,	XMHF_SLAB_FN_RETTYPE_NORMAL)
+//	XMHF_SLAB_DEFEXPORTFN(xc_api_hpt_setentry				,XMHF_SLAB_XCAPI_FNXCAPIHPTSETENTRY						,	XMHF_SLAB_FN_RETTYPE_NORMAL)
+//	XMHF_SLAB_DEFEXPORTFN(xc_api_hpt_getentry				,XMHF_SLAB_XCAPI_FNXCAPIHPTGETENTRY						,	XMHF_SLAB_FN_RETTYPE_NORMAL)
+//	XMHF_SLAB_DEFEXPORTFN(xc_api_hpt_flushcaches			,XMHF_SLAB_XCAPI_FNXCAPIHPTFLUSHCACHES					,	XMHF_SLAB_FN_RETTYPE_NORMAL)
+//	XMHF_SLAB_DEFEXPORTFN(xc_api_hpt_flushcaches_smp		,XMHF_SLAB_XCAPI_FNXCAPIHPTFLUSHCACHESSMP					,	XMHF_SLAB_FN_RETTYPE_NORMAL)
+//	XMHF_SLAB_DEFEXPORTFN(xc_api_hpt_lvl2pagewalk			,XMHF_SLAB_XCAPI_FNXCAPIHPTLVL2PAGEWALK					,	XMHF_SLAB_FN_RETTYPE_NORMAL)
+//															 
+//	XMHF_SLAB_DEFEXPORTFN(xc_api_trapmask_set				,XMHF_SLAB_XCAPI_FNXCAPITRAPMASKSET						, 	XMHF_SLAB_FN_RETTYPE_NORMAL)
+//	XMHF_SLAB_DEFEXPORTFN(xc_api_trapmask_clear				,XMHF_SLAB_XCAPI_FNXCAPITRAPMASKCLEAR						,   XMHF_SLAB_FN_RETTYPE_NORMAL)
+//															 
+//	XMHF_SLAB_DEFEXPORTFN(xc_api_cpustate_set				,XMHF_SLAB_XCAPI_FNXCAPICPUSTATESET						,	XMHF_SLAB_FN_RETTYPE_NORMAL)
+//	XMHF_SLAB_DEFEXPORTFN(xc_api_cpustate_get				,XMHF_SLAB_XCAPI_FNXCAPICPUSTATEGET						,	XMHF_SLAB_FN_RETTYPE_AGGREGATE)
+//															 
+//	XMHF_SLAB_DEFEXPORTFN(xc_api_partition_create			,XMHF_SLAB_XCAPI_FNXCAPIPARTITIONCREATE					,	XMHF_SLAB_FN_RETTYPE_NORMAL)
+//	XMHF_SLAB_DEFEXPORTFN(xc_api_partition_addcpu			,XMHF_SLAB_XCAPI_FNXCAPIPARTITIONADDCPU					,	XMHF_SLAB_FN_RETTYPE_AGGREGATE)
+//	XMHF_SLAB_DEFEXPORTFN(xc_api_partition_getcontextdesc	,XMHF_SLAB_XCAPI_FNXCAPIPARTITIONGETCONTEXTDESC			,	XMHF_SLAB_FN_RETTYPE_AGGREGATE)
+//	XMHF_SLAB_DEFEXPORTFN(xc_api_partition_startcpu			,XMHF_SLAB_XCAPI_FNXCAPIPARTITIONSTARTCPU					,	XMHF_SLAB_FN_RETTYPE_NORMAL)
+//															 
+//	XMHF_SLAB_DEFEXPORTFN(xc_api_platform_shutdown			,XMHF_SLAB_XCAPI_FNXCAPIPLATFORMSHUTDOWN					,	XMHF_SLAB_FN_RETTYPE_NORMAL)
+//
+//	XMHF_SLAB_DEFEXPORTFN(xc_coreapi_arch_eventhandler_nmiexception, XMHF_SLAB_XCAPI_FNXCCOREAPIARCHEVENTHANDLERNMIEXCEPTION, 	XMHF_SLAB_FN_RETTYPE_NORMAL)
+//)
 
-	XMHF_SLAB_DEFEXPORTFN(xc_api_hpt_setprot				,XMHF_SLAB_XCAPI_FNXCAPIHPTSETPROT						,	XMHF_SLAB_FN_RETTYPE_NORMAL)
-	XMHF_SLAB_DEFEXPORTFN(xc_api_hpt_getprot				,XMHF_SLAB_XCAPI_FNXCAPIHPTGETPROT						,	XMHF_SLAB_FN_RETTYPE_NORMAL)
-	XMHF_SLAB_DEFEXPORTFN(xc_api_hpt_setentry				,XMHF_SLAB_XCAPI_FNXCAPIHPTSETENTRY						,	XMHF_SLAB_FN_RETTYPE_NORMAL)
-	XMHF_SLAB_DEFEXPORTFN(xc_api_hpt_getentry				,XMHF_SLAB_XCAPI_FNXCAPIHPTGETENTRY						,	XMHF_SLAB_FN_RETTYPE_NORMAL)
-	XMHF_SLAB_DEFEXPORTFN(xc_api_hpt_flushcaches			,XMHF_SLAB_XCAPI_FNXCAPIHPTFLUSHCACHES					,	XMHF_SLAB_FN_RETTYPE_NORMAL)
-	XMHF_SLAB_DEFEXPORTFN(xc_api_hpt_flushcaches_smp		,XMHF_SLAB_XCAPI_FNXCAPIHPTFLUSHCACHESSMP					,	XMHF_SLAB_FN_RETTYPE_NORMAL)
-	XMHF_SLAB_DEFEXPORTFN(xc_api_hpt_lvl2pagewalk			,XMHF_SLAB_XCAPI_FNXCAPIHPTLVL2PAGEWALK					,	XMHF_SLAB_FN_RETTYPE_NORMAL)
-															 
-	XMHF_SLAB_DEFEXPORTFN(xc_api_trapmask_set				,XMHF_SLAB_XCAPI_FNXCAPITRAPMASKSET						, 	XMHF_SLAB_FN_RETTYPE_NORMAL)
-	XMHF_SLAB_DEFEXPORTFN(xc_api_trapmask_clear				,XMHF_SLAB_XCAPI_FNXCAPITRAPMASKCLEAR						,   XMHF_SLAB_FN_RETTYPE_NORMAL)
-															 
-	XMHF_SLAB_DEFEXPORTFN(xc_api_cpustate_set				,XMHF_SLAB_XCAPI_FNXCAPICPUSTATESET						,	XMHF_SLAB_FN_RETTYPE_NORMAL)
-	XMHF_SLAB_DEFEXPORTFN(xc_api_cpustate_get				,XMHF_SLAB_XCAPI_FNXCAPICPUSTATEGET						,	XMHF_SLAB_FN_RETTYPE_AGGREGATE)
-															 
-	XMHF_SLAB_DEFEXPORTFN(xc_api_partition_create			,XMHF_SLAB_XCAPI_FNXCAPIPARTITIONCREATE					,	XMHF_SLAB_FN_RETTYPE_NORMAL)
-	XMHF_SLAB_DEFEXPORTFN(xc_api_partition_addcpu			,XMHF_SLAB_XCAPI_FNXCAPIPARTITIONADDCPU					,	XMHF_SLAB_FN_RETTYPE_AGGREGATE)
-	XMHF_SLAB_DEFEXPORTFN(xc_api_partition_getcontextdesc	,XMHF_SLAB_XCAPI_FNXCAPIPARTITIONGETCONTEXTDESC			,	XMHF_SLAB_FN_RETTYPE_AGGREGATE)
-	XMHF_SLAB_DEFEXPORTFN(xc_api_partition_startcpu			,XMHF_SLAB_XCAPI_FNXCAPIPARTITIONSTARTCPU					,	XMHF_SLAB_FN_RETTYPE_NORMAL)
-															 
-	XMHF_SLAB_DEFEXPORTFN(xc_api_platform_shutdown			,XMHF_SLAB_XCAPI_FNXCAPIPLATFORMSHUTDOWN					,	XMHF_SLAB_FN_RETTYPE_NORMAL)
-
-	XMHF_SLAB_DEFEXPORTFN(xc_coreapi_arch_eventhandler_nmiexception, XMHF_SLAB_XCAPI_FNXCCOREAPIARCHEVENTHANDLERNMIEXCEPTION, 	XMHF_SLAB_FN_RETTYPE_NORMAL)
-)
+XMHF_SLAB_DEF(xcapi)
 
