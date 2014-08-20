@@ -55,7 +55,7 @@
 
 #include <xcprimeon.h>
 
-__attribute__((naked)) __attribute__ ((section(".slab_entrystub"))) __attribute__(( align(4096) )) void xcprimeon_arch_entry(void) {
+__attribute__((naked)) __attribute__ ((section(".slab_entrystub"))) __attribute__(( align(4096) )) void xcprimeon_interface(void) {
 	
 	asm volatile (	".global _mle_page_table_start \r\n"
 					"_mle_page_table_start:\r\n"
