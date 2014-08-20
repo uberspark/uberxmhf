@@ -48,6 +48,7 @@
 #include <xmhf-core.h>
 #include <xmhf-debug.h>
 
+
 #include <xcapi.h>
 
 /*
@@ -113,7 +114,7 @@ slab_retval_t xcapi_interface(u32 src_slabid, u32 dst_slabid, u32 fn_id, u32 fn_
 			}
 			break;
 
-			case XMHF_SLAB_XCAPI_FNXCAPIFLUSHCACHES:{
+			case XMHF_SLAB_XCAPI_FNXCAPIHPTFLUSHCACHES:{
 				context_desc_t context_desc;
 				va_start(args, fn_paramsize);
 				context_desc = va_arg(args, context_desc_t);
@@ -122,7 +123,7 @@ slab_retval_t xcapi_interface(u32 src_slabid, u32 dst_slabid, u32 fn_id, u32 fn_
 			}
 			break;
 
-			case XMHF_SLAB_XCAPI_FNXCAPIFLUSHCACHESSMP:{
+			case XMHF_SLAB_XCAPI_FNXCAPIHPTFLUSHCACHESSMP:{
 				context_desc_t context_desc;
 				va_start(args, fn_paramsize);
 				context_desc = va_arg(args, context_desc_t);
@@ -247,7 +248,7 @@ slab_retval_t xcapi_interface(u32 src_slabid, u32 dst_slabid, u32 fn_id, u32 fn_
 				struct regs *r;
 				va_start(args, fn_paramsize);
 				r = va_arg(args, struct regs *);
-				xc_coreapi_arch_eventhandler_nmiexception(r)
+				xc_coreapi_arch_eventhandler_nmiexception(r);
 				va_end(args);
 			}
 			break;
@@ -469,33 +470,33 @@ void xc_api_platform_shutdown(context_desc_t context_desc){
 
 
 ///////
-//XMHF_SLAB("xcapi")
+XMHF_SLAB("xcapi")
 
-//XMHF_SLAB_DEFINTERFACE(
-//
-//	XMHF_SLAB_DEFEXPORTFN(xc_api_hpt_setprot				,XMHF_SLAB_XCAPI_FNXCAPIHPTSETPROT						,	XMHF_SLAB_FN_RETTYPE_NORMAL)
-//	XMHF_SLAB_DEFEXPORTFN(xc_api_hpt_getprot				,XMHF_SLAB_XCAPI_FNXCAPIHPTGETPROT						,	XMHF_SLAB_FN_RETTYPE_NORMAL)
-//	XMHF_SLAB_DEFEXPORTFN(xc_api_hpt_setentry				,XMHF_SLAB_XCAPI_FNXCAPIHPTSETENTRY						,	XMHF_SLAB_FN_RETTYPE_NORMAL)
-//	XMHF_SLAB_DEFEXPORTFN(xc_api_hpt_getentry				,XMHF_SLAB_XCAPI_FNXCAPIHPTGETENTRY						,	XMHF_SLAB_FN_RETTYPE_NORMAL)
-//	XMHF_SLAB_DEFEXPORTFN(xc_api_hpt_flushcaches			,XMHF_SLAB_XCAPI_FNXCAPIHPTFLUSHCACHES					,	XMHF_SLAB_FN_RETTYPE_NORMAL)
-//	XMHF_SLAB_DEFEXPORTFN(xc_api_hpt_flushcaches_smp		,XMHF_SLAB_XCAPI_FNXCAPIHPTFLUSHCACHESSMP					,	XMHF_SLAB_FN_RETTYPE_NORMAL)
-//	XMHF_SLAB_DEFEXPORTFN(xc_api_hpt_lvl2pagewalk			,XMHF_SLAB_XCAPI_FNXCAPIHPTLVL2PAGEWALK					,	XMHF_SLAB_FN_RETTYPE_NORMAL)
-//															 
-//	XMHF_SLAB_DEFEXPORTFN(xc_api_trapmask_set				,XMHF_SLAB_XCAPI_FNXCAPITRAPMASKSET						, 	XMHF_SLAB_FN_RETTYPE_NORMAL)
-//	XMHF_SLAB_DEFEXPORTFN(xc_api_trapmask_clear				,XMHF_SLAB_XCAPI_FNXCAPITRAPMASKCLEAR						,   XMHF_SLAB_FN_RETTYPE_NORMAL)
-//															 
-//	XMHF_SLAB_DEFEXPORTFN(xc_api_cpustate_set				,XMHF_SLAB_XCAPI_FNXCAPICPUSTATESET						,	XMHF_SLAB_FN_RETTYPE_NORMAL)
-//	XMHF_SLAB_DEFEXPORTFN(xc_api_cpustate_get				,XMHF_SLAB_XCAPI_FNXCAPICPUSTATEGET						,	XMHF_SLAB_FN_RETTYPE_AGGREGATE)
-//															 
-//	XMHF_SLAB_DEFEXPORTFN(xc_api_partition_create			,XMHF_SLAB_XCAPI_FNXCAPIPARTITIONCREATE					,	XMHF_SLAB_FN_RETTYPE_NORMAL)
-//	XMHF_SLAB_DEFEXPORTFN(xc_api_partition_addcpu			,XMHF_SLAB_XCAPI_FNXCAPIPARTITIONADDCPU					,	XMHF_SLAB_FN_RETTYPE_AGGREGATE)
-//	XMHF_SLAB_DEFEXPORTFN(xc_api_partition_getcontextdesc	,XMHF_SLAB_XCAPI_FNXCAPIPARTITIONGETCONTEXTDESC			,	XMHF_SLAB_FN_RETTYPE_AGGREGATE)
-//	XMHF_SLAB_DEFEXPORTFN(xc_api_partition_startcpu			,XMHF_SLAB_XCAPI_FNXCAPIPARTITIONSTARTCPU					,	XMHF_SLAB_FN_RETTYPE_NORMAL)
-//															 
-//	XMHF_SLAB_DEFEXPORTFN(xc_api_platform_shutdown			,XMHF_SLAB_XCAPI_FNXCAPIPLATFORMSHUTDOWN					,	XMHF_SLAB_FN_RETTYPE_NORMAL)
-//
-//	XMHF_SLAB_DEFEXPORTFN(xc_coreapi_arch_eventhandler_nmiexception, XMHF_SLAB_XCAPI_FNXCCOREAPIARCHEVENTHANDLERNMIEXCEPTION, 	XMHF_SLAB_FN_RETTYPE_NORMAL)
-//)
+XMHF_SLAB_DEFINTERFACE(
+
+	XMHF_SLAB_DEFEXPORTFN(xc_api_hpt_setprot				,XMHF_SLAB_XCAPI_FNXCAPIHPTSETPROT						,	XMHF_SLAB_FN_RETTYPE_NORMAL)
+	XMHF_SLAB_DEFEXPORTFN(xc_api_hpt_getprot				,XMHF_SLAB_XCAPI_FNXCAPIHPTGETPROT						,	XMHF_SLAB_FN_RETTYPE_NORMAL)
+	XMHF_SLAB_DEFEXPORTFN(xc_api_hpt_setentry				,XMHF_SLAB_XCAPI_FNXCAPIHPTSETENTRY						,	XMHF_SLAB_FN_RETTYPE_NORMAL)
+	XMHF_SLAB_DEFEXPORTFN(xc_api_hpt_getentry				,XMHF_SLAB_XCAPI_FNXCAPIHPTGETENTRY						,	XMHF_SLAB_FN_RETTYPE_NORMAL)
+	XMHF_SLAB_DEFEXPORTFN(xc_api_hpt_flushcaches			,XMHF_SLAB_XCAPI_FNXCAPIHPTFLUSHCACHES					,	XMHF_SLAB_FN_RETTYPE_NORMAL)
+	XMHF_SLAB_DEFEXPORTFN(xc_api_hpt_flushcaches_smp		,XMHF_SLAB_XCAPI_FNXCAPIHPTFLUSHCACHESSMP					,	XMHF_SLAB_FN_RETTYPE_NORMAL)
+	XMHF_SLAB_DEFEXPORTFN(xc_api_hpt_lvl2pagewalk			,XMHF_SLAB_XCAPI_FNXCAPIHPTLVL2PAGEWALK					,	XMHF_SLAB_FN_RETTYPE_NORMAL)
+															 
+	XMHF_SLAB_DEFEXPORTFN(xc_api_trapmask_set				,XMHF_SLAB_XCAPI_FNXCAPITRAPMASKSET						, 	XMHF_SLAB_FN_RETTYPE_NORMAL)
+	XMHF_SLAB_DEFEXPORTFN(xc_api_trapmask_clear				,XMHF_SLAB_XCAPI_FNXCAPITRAPMASKCLEAR						,   XMHF_SLAB_FN_RETTYPE_NORMAL)
+															 
+	XMHF_SLAB_DEFEXPORTFN(xc_api_cpustate_set				,XMHF_SLAB_XCAPI_FNXCAPICPUSTATESET						,	XMHF_SLAB_FN_RETTYPE_NORMAL)
+	XMHF_SLAB_DEFEXPORTFN(xc_api_cpustate_get				,XMHF_SLAB_XCAPI_FNXCAPICPUSTATEGET						,	XMHF_SLAB_FN_RETTYPE_AGGREGATE)
+															 
+	XMHF_SLAB_DEFEXPORTFN(xc_api_partition_create			,XMHF_SLAB_XCAPI_FNXCAPIPARTITIONCREATE					,	XMHF_SLAB_FN_RETTYPE_NORMAL)
+	XMHF_SLAB_DEFEXPORTFN(xc_api_partition_addcpu			,XMHF_SLAB_XCAPI_FNXCAPIPARTITIONADDCPU					,	XMHF_SLAB_FN_RETTYPE_AGGREGATE)
+	XMHF_SLAB_DEFEXPORTFN(xc_api_partition_getcontextdesc	,XMHF_SLAB_XCAPI_FNXCAPIPARTITIONGETCONTEXTDESC			,	XMHF_SLAB_FN_RETTYPE_AGGREGATE)
+	XMHF_SLAB_DEFEXPORTFN(xc_api_partition_startcpu			,XMHF_SLAB_XCAPI_FNXCAPIPARTITIONSTARTCPU					,	XMHF_SLAB_FN_RETTYPE_NORMAL)
+															 
+	XMHF_SLAB_DEFEXPORTFN(xc_api_platform_shutdown			,XMHF_SLAB_XCAPI_FNXCAPIPLATFORMSHUTDOWN					,	XMHF_SLAB_FN_RETTYPE_NORMAL)
+
+	XMHF_SLAB_DEFEXPORTFN(xc_coreapi_arch_eventhandler_nmiexception, XMHF_SLAB_XCAPI_FNXCCOREAPIARCHEVENTHANDLERNMIEXCEPTION, 	XMHF_SLAB_FN_RETTYPE_NORMAL)
+)
 
 XMHF_SLAB_DEF(xcapi)
 
