@@ -113,7 +113,7 @@
 #define XMHF_SLAB_XCAPI_FNXCAPIPLATFORMSHUTDOWN_SIZE			(sizeof(context_desc_t))	
 
 #define	XMHF_SLAB_XCAPI_FNXCCOREAPIARCHEVENTHANDLERNMIEXCEPTION			17
-#define	XMHF_SLAB_XCAPI_FNXCCOREAPIARCHEVENTHANDLERNMIEXCEPTION_SIZE 	(sizeof(struct regs *))
+#define	XMHF_SLAB_XCAPI_FNXCCOREAPIARCHEVENTHANDLERNMIEXCEPTION_SIZE 	(0)
 
 #ifndef __ASSEMBLY__
 
@@ -140,7 +140,7 @@ XMHF_SLAB_DEFIMPORTFN(bool, xc_api_partition_startcpu, (context_desc_t context_d
                                                                             
 XMHF_SLAB_DEFIMPORTFN(void, xc_api_platform_shutdown, (context_desc_t context_desc),										XMHF_SLAB_DEFIMPORTFNSTUB(__XMHF_SLAB_CALLER_INDEX__, XMHF_SLAB_XCAPI_INDEX,	XMHF_SLAB_XCAPI_FNXCAPIPLATFORMSHUTDOWN			, (sizeof(context_desc_t))									, 0, XMHF_SLAB_FN_RETTYPE_NORMAL)								)
 
-XMHF_SLAB_DEFIMPORTFN(void, xc_coreapi_arch_eventhandler_nmiexception, (struct regs *r),									XMHF_SLAB_DEFIMPORTFNSTUB(__XMHF_SLAB_CALLER_INDEX__, XMHF_SLAB_XCAPI_INDEX, 	XMHF_SLAB_XCAPI_FNXCCOREAPIARCHEVENTHANDLERNMIEXCEPTION, (sizeof(struct regs *)), 0, XMHF_SLAB_FN_RETTYPE_NORMAL)	)
+XMHF_SLAB_DEFIMPORTFN(void, xc_coreapi_arch_eventhandler_nmiexception, (void),									XMHF_SLAB_DEFIMPORTFNSTUB(__XMHF_SLAB_CALLER_INDEX__, XMHF_SLAB_XCAPI_INDEX, 	XMHF_SLAB_XCAPI_FNXCCOREAPIARCHEVENTHANDLERNMIEXCEPTION, (0), 0, XMHF_SLAB_FN_RETTYPE_NORMAL)	)
 
 #else 	//!__XMHF_SLAB_CALLER_INDEX__
 
@@ -205,7 +205,7 @@ extern xc_cpu_t g_xc_cpu[MAX_PLATFORM_CPUS] __attribute__(( section(".data") ));
 extern xc_partition_t g_xc_primary_partition[MAX_PRIMARY_PARTITIONS] __attribute__(( section(".data") ));
 
 //core API NMI callback
-void xc_coreapi_arch_eventhandler_nmiexception(struct regs *r);
+void xc_coreapi_arch_eventhandler_nmiexception(void);
 
 #endif	//__XMHF_SLAB_CALLER_INDEX__
 

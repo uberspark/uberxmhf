@@ -64,7 +64,7 @@ slab_retval_t xcapi_interface(u32 src_slabid, u32 dst_slabid, u32 fn_id, u32 fn_
 	_XDPRINTF_("%s: Got control: src_slabid=%u, dst_slabid=%u, fn_id=%u, fn_paramsize=%u\n", __FUNCTION__, src_slabid, dst_slabid, fn_id, fn_paramsize);
 	
 	switch(fn_id){
-			//HPT related
+/*			//HPT related
 			
 			case XMHF_SLAB_XCAPI_FNXCAPIHPTSETPROT:{
 				context_desc_t context_desc;
@@ -242,14 +242,14 @@ slab_retval_t xcapi_interface(u32 src_slabid, u32 dst_slabid, u32 fn_id, u32 fn_
 				xc_api_platform_shutdown(context_desc);
 				va_end(args);
 			}
-			break;
+			break;*/
 
 			case XMHF_SLAB_XCAPI_FNXCCOREAPIARCHEVENTHANDLERNMIEXCEPTION:{
-				struct regs *r;
-				va_start(args, fn_paramsize);
-				r = va_arg(args, struct regs *);
-				xc_coreapi_arch_eventhandler_nmiexception(r);
-				va_end(args);
+				//struct regs *r;
+				//va_start(args, fn_paramsize);
+				//r = va_arg(args, struct regs *);
+				xc_coreapi_arch_eventhandler_nmiexception();
+				//va_end(args);
 			}
 			break;
 
