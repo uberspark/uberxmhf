@@ -449,7 +449,7 @@ __attribute__ ((section(".slab_trampoline"))) __attribute__((naked)) __attribute
 #define XMHF_SLAB_DEF(slab_name)	\
 	__attribute__ ((section(".stack"))) u8 _slab_stack[XMHF_SLAB_STACKSIZE];	\
 																				\
-	__attribute__((naked)) __attribute__ ((section(".slab_entrystubnew"))) void _interfacestub_##slab_name(void){	\
+	__attribute__((naked)) __attribute__ ((section(".slab_entrystubnew"))) __attribute__((align(1))) void _interfacestub_##slab_name(void){	\
 	asm volatile (							\
 			"pushl %%ebp \r\n"				\
 			"movl %%esp, %%ebp \r\n"		\
@@ -490,7 +490,7 @@ __attribute__ ((section(".slab_trampoline"))) __attribute__((naked)) __attribute
 #define XMHF_SLAB_DEF_BARE(slab_name)	\
 	__attribute__ ((section(".stack"))) u8 _slab_stack[XMHF_SLAB_STACKSIZE];	\
 																				\
-	__attribute__((naked)) __attribute__ ((section(".slab_entrystubnew"))) void _interfacestub_##slab_name(void){	\
+	__attribute__((naked)) __attribute__ ((section(".slab_entrystubnew"))) __attribute__((align(1))) void _interfacestub_##slab_name(void){	\
 	asm volatile (							\
 			"jmp "#slab_name"_interface \r\n"		\
 			:								\

@@ -42,8 +42,10 @@ while( $i <= $#ARGV) {
 print "\n	.slab_$ARGV[$i] : {";
 print "\n		_slab_$ARGV[$i]_code_start = .;";
 print "\n		_slab_$ARGV[$i]_entrypoint = .;";
+print "\n		. = ALIGN(1);";
 print "\n		_objs_slab_$ARGV[$i]/$ARGV[$i].slo(.slabentrystub)";
 print "\n		_slab_$ARGV[$i]_entrypointnew = .;";
+print "\n		. = ALIGN(1);";
 print "\n		_objs_slab_$ARGV[$i]/$ARGV[$i].slo(.slabentrystubnew)";
 print "\n		_objs_slab_$ARGV[$i]/$ARGV[$i].slo(.slabcode)";
 print "\n		. = ALIGN(0x200000);";

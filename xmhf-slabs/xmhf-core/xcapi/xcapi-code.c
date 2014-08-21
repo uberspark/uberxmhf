@@ -61,7 +61,7 @@ slab_retval_t xcapi_interface(u32 src_slabid, u32 dst_slabid, u32 fn_id, u32 fn_
 	slab_retval_t srval;
 	va_list args;
 	
-	_XDPRINTF_("%s: Got control: src_slabid=%u, dst_slabid=%u, fn_id=%u, fn_paramsize=%u\n", __FUNCTION__, src_slabid, dst_slabid, fn_id, fn_paramsize);
+	//_XDPRINTF_("%s: Got control: src_slabid=%u, dst_slabid=%u, fn_id=%u, fn_paramsize=%u\n", __FUNCTION__, src_slabid, dst_slabid, fn_id, fn_paramsize);
 	
 	switch(fn_id){
 /*			//HPT related
@@ -495,7 +495,7 @@ XMHF_SLAB_DEFINTERFACE(
 															 
 	XMHF_SLAB_DEFEXPORTFN(xc_api_platform_shutdown			,XMHF_SLAB_XCAPI_FNXCAPIPLATFORMSHUTDOWN					,	XMHF_SLAB_FN_RETTYPE_NORMAL)
 
-	XMHF_SLAB_DEFEXPORTFN(xc_coreapi_arch_eventhandler_nmiexception, XMHF_SLAB_XCAPI_FNXCCOREAPIARCHEVENTHANDLERNMIEXCEPTION, 	XMHF_SLAB_FN_RETTYPE_NORMAL)
+	//XMHF_SLAB_DEFEXPORTFN(xc_coreapi_arch_eventhandler_nmiexception, XMHF_SLAB_XCAPI_FNXCCOREAPIARCHEVENTHANDLERNMIEXCEPTION, 	XMHF_SLAB_FN_RETTYPE_NORMAL)
 )
 
 XMHF_SLAB_DEF(xcapi)

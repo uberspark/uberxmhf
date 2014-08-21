@@ -158,9 +158,9 @@ __attribute__((naked)) __attribute (( section(".slabtrampoline") )) void _slab_t
 __attribute__((fastcall)) __attribute (( section(".slabtrampoline") )) void _slab_trampolinenew(slab_trampoline_frame_t *tframe, u32 framesize_op){
 	u32 aggrettypeptr;
 	
-	_XDPRINTF_("%s: got control\n", __FUNCTION__);
-	_XDPRINTF_(" returnaddress=%08x, framesize_op=%08x, src_slabid=%u, dst_slabid=%u, fn_id=%u\n",
-		tframe->returnaddress, framesize_op, tframe->src_slabid, tframe->dst_slabid, tframe->fn_id);
+	//_XDPRINTF_("%s: got control\n", __FUNCTION__);
+	//_XDPRINTF_(" returnaddress=%08x, framesize_op=%08x, src_slabid=%u, dst_slabid=%u, fn_id=%u\n",
+	//	tframe->returnaddress, framesize_op, tframe->src_slabid, tframe->dst_slabid, tframe->fn_id);
 
 
 	//{
@@ -179,6 +179,9 @@ __attribute__((fastcall)) __attribute (( section(".slabtrampoline") )) void _sla
 		: "m" (_slab_table[tframe->dst_slabid].slab_macmid)
 		: "eax"	 							
 	);
+
+	//_XDPRINTF_("%s: dst CR3 loaded, proceeding with call, cr3=%08x, EP=%08x\n", __FUNCTION__, read_cr3(), _slab_table[tframe->dst_slabid].entry_cr3_new);
+	
 	
 	//call destination slab entry point
 	asm volatile(	
@@ -200,6 +203,7 @@ __attribute__((fastcall)) __attribute (( section(".slabtrampoline") )) void _sla
 	//	_XDPRINTF_("%s: retval=%u", __FUNCTION__, r->retval_u32);
 	//}
 
+	//_XDPRINTF_("%s: came back from dst call\n", __FUNCTION__);
 
 	//switch back to source slab MAC
 	asm volatile(	
@@ -210,6 +214,9 @@ __attribute__((fastcall)) __attribute (( section(".slabtrampoline") )) void _sla
 		: "eax"	 							
 	);
 	
+	//_XDPRINTF_("%s: going back to src slab, cr3 reloaded to %08x\n", __FUNCTION__, read_cr3());
+
+
 	//return back to source slab
 	asm volatile(	
 		"movl %0, %%esi \r\n"

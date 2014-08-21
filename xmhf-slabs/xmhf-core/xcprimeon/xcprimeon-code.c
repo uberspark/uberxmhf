@@ -123,7 +123,8 @@ void xcprimeon_entry(void){
 				_XDPRINTF_("\n  slab_stack(%08x-%08x)", _slab_table[i].slab_stack.start, _slab_table[i].slab_stack.end);
 				//_XDPRINTF_("\n  slab_trampoline(%08x-%08x)", _slab_table[i].slab_trampoline.start, _slab_table[i].slab_trampoline.end);
 				_XDPRINTF_("\n  slab_entrycr3=%08x", _slab_table[i].entry_cr3);
-			}
+				_XDPRINTF_("\n  slab_entrycr3_new=%08x", _slab_table[i].entry_cr3_new);
+		}
 	}
 
 	//initialize slab page tables
