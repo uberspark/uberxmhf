@@ -140,7 +140,7 @@ XMHF_SLAB_DEFIMPORTFN(bool, xc_api_partition_startcpu, (context_desc_t context_d
                                                                             
 XMHF_SLAB_DEFIMPORTFN(void, xc_api_platform_shutdown, (context_desc_t context_desc),										XMHF_SLAB_DEFIMPORTFNSTUB(__XMHF_SLAB_CALLER_INDEX__, XMHF_SLAB_XCAPI_INDEX,	XMHF_SLAB_XCAPI_FNXCAPIPLATFORMSHUTDOWN			, (sizeof(context_desc_t))									, 0, XMHF_SLAB_FN_RETTYPE_NORMAL)								)
 
-XMHF_SLAB_DEFIMPORTFN(void, xc_coreapi_arch_eventhandler_nmiexception, (void),									XMHF_SLAB_DEFIMPORTFNSTUB(__XMHF_SLAB_CALLER_INDEX__, XMHF_SLAB_XCAPI_INDEX, 	XMHF_SLAB_XCAPI_FNXCCOREAPIARCHEVENTHANDLERNMIEXCEPTION, (0), 0, XMHF_SLAB_FN_RETTYPE_NORMAL)	)
+//XMHF_SLAB_DEFIMPORTFN(void, xc_coreapi_arch_eventhandler_nmiexception, (void),									XMHF_SLAB_DEFIMPORTFNSTUB(__XMHF_SLAB_CALLER_INDEX__, XMHF_SLAB_XCAPI_INDEX, 	XMHF_SLAB_XCAPI_FNXCCOREAPIARCHEVENTHANDLERNMIEXCEPTION, (0), 0, XMHF_SLAB_FN_RETTYPE_NORMAL)	)
 
 #else 	//!__XMHF_SLAB_CALLER_INDEX__
 
