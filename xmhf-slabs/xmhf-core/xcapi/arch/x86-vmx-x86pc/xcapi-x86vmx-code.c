@@ -76,7 +76,7 @@ static u32 g_vmx_lock_quiesce __attribute__(( section(".data") )) = 1;
 static u32 g_vmx_quiesce_resume_signal __attribute__(( section(".data") )) = 0;  
 static u32 g_vmx_lock_quiesce_resume_signal __attribute__(( section(".data") )) = 1; 
 
-static void xmhf_smpguest_arch_x86vmx_eventhandler_nmiexception(xc_cpu_t *xc_cpu, struct regs *r);
+static void xmhf_smpguest_arch_x86vmx_eventhandler_nmiexception(xc_cpu_t *xc_cpu);
 
 static void _vmx_send_quiesce_signal(void){
   u32 prev_icr_high_value;
@@ -125,7 +125,7 @@ static void _cpu_arch_x86vmx_endquiesce(context_desc_t context_desc){
 }
 
 //quiescing handler for #NMI (non-maskable interrupt) exception event
-void xc_coreapi_arch_eventhandler_nmiexception(struct regs *r){
+void xc_coreapi_arch_eventhandler_nmiexception(void){
 	xc_cpu_t *xc_cpu;
 	context_desc_t context_desc;
 	
@@ -137,12 +137,12 @@ void xc_coreapi_arch_eventhandler_nmiexception(struct regs *r){
 	}
 	xc_cpu = &g_xc_cpu[context_desc.cpu_desc.cpu_index];
 
-	xmhf_smpguest_arch_x86vmx_eventhandler_nmiexception(xc_cpu, r);
+	xmhf_smpguest_arch_x86vmx_eventhandler_nmiexception(xc_cpu);
 }	
 
 //quiescing handler for #NMI (non-maskable interrupt) exception event
 //note: we are in atomic processsing mode for this "xc_cpu"
-static void xmhf_smpguest_arch_x86vmx_eventhandler_nmiexception(xc_cpu_t *xc_cpu, struct regs *r){
+static void xmhf_smpguest_arch_x86vmx_eventhandler_nmiexception(xc_cpu_t *xc_cpu){
 	u32 nmiinhvm;	//1 if NMI originated from the HVM else 0 if within the hypervisor
 	u32 _vmx_vmcs_info_vmexit_interrupt_information;
 	u32 _vmx_vmcs_info_vmexit_reason;

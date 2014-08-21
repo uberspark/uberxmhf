@@ -245,7 +245,8 @@ __attribute__(( section(".slab_trampoline") )) void xmhf_xcphandler_arch_hub(u32
 
 	switch(vector){
 			case CPU_EXCEPTION_NMI:{
-				XMHF_SLAB_CALL(xc_coreapi_arch_eventhandler_nmiexception(r));
+				XMHF_SLAB_CALL(xc_coreapi_arch_eventhandler_nmiexception());
+				//XMHF_SLAB_CALL_P2P(xcapi, XMHF_SLAB_XCEXHUB_INDEX, XMHF_SLAB_XCAPI_INDEX, XMHF_SLAB_XCAPI_FNXCCOREAPIARCHEVENTHANDLERNMIEXCEPTION, XMHF_SLAB_XCAPI_FNXCCOREAPIARCHEVENTHANDLERNMIEXCEPTION_SIZE);
 				}
 				break;
 
