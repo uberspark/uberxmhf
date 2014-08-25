@@ -28,7 +28,8 @@ Clang
 	Version 3.3 - available at: http://llvm.org/releases/3.3/clang+llvm-3.3-i386-debian6.tar.bz2
     Untar and setup PATH to point to clang "bin" directory; XMHF uses Clang as the C compiler.
 
-Add <srcroot>/tools to the PATH so the build harness can find required supporting scripts
+Add <srcroot>/tools/arch/<target triad> to the PATH so the build harness can find required supporting scripts
+for the target architecture (see Section 5 below)
 
 4. XMHF source organization:
 ----------------------------
