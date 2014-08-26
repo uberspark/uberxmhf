@@ -64,8 +64,8 @@ slab_retval_t xcapi_interface(u32 src_slabid, u32 dst_slabid, u32 fn_id, u32 fn_
 	//_XDPRINTF_("%s: Got control: src_slabid=%u, dst_slabid=%u, fn_id=%u, fn_paramsize=%u\n", __FUNCTION__, src_slabid, dst_slabid, fn_id, fn_paramsize);
 
 	switch(fn_id){
-/*			//HPT related
-
+			//HPT related
+            /*
 			case XMHF_SLAB_XCAPI_FNXCAPIHPTSETPROT:{
 				context_desc_t context_desc;
 				u64 gpa;
@@ -89,7 +89,7 @@ slab_retval_t xcapi_interface(u32 src_slabid, u32 dst_slabid, u32 fn_id, u32 fn_
 				va_end(args);
 			}
 			break;
-
+            */
 			case XMHF_SLAB_XCAPI_FNXCAPIHPTSETENTRY:{
 				context_desc_t context_desc;
 				u64 gpa;
@@ -142,7 +142,7 @@ slab_retval_t xcapi_interface(u32 src_slabid, u32 dst_slabid, u32 fn_id, u32 fn_
 				va_end(args);
 			}
 			break;
-
+            /*
 			//trapmask related
 
 			case XMHF_SLAB_XCAPI_FNXCAPITRAPMASKSET:{
@@ -478,11 +478,11 @@ XMHF_SLAB_DEFINTERFACE(
 
 	XMHF_SLAB_DEFEXPORTFN(xc_api_hpt_setprot				,XMHF_SLAB_XCAPI_FNXCAPIHPTSETPROT						,	XMHF_SLAB_FN_RETTYPE_NORMAL)
 	XMHF_SLAB_DEFEXPORTFN(xc_api_hpt_getprot				,XMHF_SLAB_XCAPI_FNXCAPIHPTGETPROT						,	XMHF_SLAB_FN_RETTYPE_NORMAL)
-	XMHF_SLAB_DEFEXPORTFN(xc_api_hpt_setentry				,XMHF_SLAB_XCAPI_FNXCAPIHPTSETENTRY						,	XMHF_SLAB_FN_RETTYPE_NORMAL)
-	XMHF_SLAB_DEFEXPORTFN(xc_api_hpt_getentry				,XMHF_SLAB_XCAPI_FNXCAPIHPTGETENTRY						,	XMHF_SLAB_FN_RETTYPE_NORMAL)
-	XMHF_SLAB_DEFEXPORTFN(xc_api_hpt_flushcaches			,XMHF_SLAB_XCAPI_FNXCAPIHPTFLUSHCACHES					,	XMHF_SLAB_FN_RETTYPE_NORMAL)
-	XMHF_SLAB_DEFEXPORTFN(xc_api_hpt_flushcaches_smp		,XMHF_SLAB_XCAPI_FNXCAPIHPTFLUSHCACHESSMP					,	XMHF_SLAB_FN_RETTYPE_NORMAL)
-	XMHF_SLAB_DEFEXPORTFN(xc_api_hpt_lvl2pagewalk			,XMHF_SLAB_XCAPI_FNXCAPIHPTLVL2PAGEWALK					,	XMHF_SLAB_FN_RETTYPE_NORMAL)
+	//XMHF_SLAB_DEFEXPORTFN(xc_api_hpt_setentry				,XMHF_SLAB_XCAPI_FNXCAPIHPTSETENTRY						,	XMHF_SLAB_FN_RETTYPE_NORMAL)
+	//XMHF_SLAB_DEFEXPORTFN(xc_api_hpt_getentry				,XMHF_SLAB_XCAPI_FNXCAPIHPTGETENTRY						,	XMHF_SLAB_FN_RETTYPE_NORMAL)
+	//XMHF_SLAB_DEFEXPORTFN(xc_api_hpt_flushcaches			,XMHF_SLAB_XCAPI_FNXCAPIHPTFLUSHCACHES					,	XMHF_SLAB_FN_RETTYPE_NORMAL)
+	//XMHF_SLAB_DEFEXPORTFN(xc_api_hpt_flushcaches_smp		,XMHF_SLAB_XCAPI_FNXCAPIHPTFLUSHCACHESSMP					,	XMHF_SLAB_FN_RETTYPE_NORMAL)
+	//XMHF_SLAB_DEFEXPORTFN(xc_api_hpt_lvl2pagewalk			,XMHF_SLAB_XCAPI_FNXCAPIHPTLVL2PAGEWALK					,	XMHF_SLAB_FN_RETTYPE_NORMAL)
 
 	XMHF_SLAB_DEFEXPORTFN(xc_api_trapmask_set				,XMHF_SLAB_XCAPI_FNXCAPITRAPMASKSET						, 	XMHF_SLAB_FN_RETTYPE_NORMAL)
 	XMHF_SLAB_DEFEXPORTFN(xc_api_trapmask_clear				,XMHF_SLAB_XCAPI_FNXCAPITRAPMASKCLEAR						,   XMHF_SLAB_FN_RETTYPE_NORMAL)

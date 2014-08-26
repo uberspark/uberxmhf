@@ -178,18 +178,29 @@ u32 xmhf_hypapp_initialization(context_desc_t context_desc, hypapp_env_block_t h
 
 static void hd_activatedep(context_desc_t context_desc, u32 gpa){
 	u64 entry;
-	_XDPRINTF_("\n%s:%u originalprotection=%08x", __FUNCTION__, context_desc.cpu_desc.cpu_index, XMHF_SLAB_CALL(xc_api_hpt_getprot(context_desc, gpa)));
-	entry = XMHF_SLAB_CALL(xc_api_hpt_getentry(context_desc, gpa));
-	XMHF_SLAB_CALL(xc_api_hpt_setentry(context_desc, gpa, entry));
+    slab_retval_t srval;
+
+    //srval = XMHF_SLAB_CALL_P2P(xcapi, XMHF_SLAB_XHHYPERDEP_INDEX, XMHF_SLAB_XCAPI_INDEX, XMHF_SLAB_XCAPI_FNXCAPIHPTGETPROT, XMHF_SLAB_XCAPI_FNXCAPIHPTGETPROT_SIZE, context_desc, gpa);
+    //_XDPRINTF_("\n%s:%u originalprotection=%08x", __FUNCTION__, context_desc.cpu_desc.cpu_index, srval.retval_u32);
+    _XDPRINTF_("\n%s:%u originalprotection=%08x", __FUNCTION__, context_desc.cpu_desc.cpu_index, XMHF_SLAB_CALL(xc_api_hpt_getprot(context_desc, gpa)) );
+	//entry = XMHF_SLAB_CALL(xc_api_hpt_getentry(context_desc, gpa));
+	srval = XMHF_SLAB_CALL_P2P(xcapi, XMHF_SLAB_XHHYPERDEP_INDEX, XMHF_SLAB_XCAPI_INDEX, XMHF_SLAB_XCAPI_FNXCAPIHPTGETENTRY, XMHF_SLAB_XCAPI_FNXCAPIHPTGETENTRY_SIZE, context_desc, gpa);
+    entry = srval.retval_u64;
+	//XMHF_SLAB_CALL(xc_api_hpt_setentry(context_desc, gpa, entry));
+    XMHF_SLAB_CALL_P2P(xcapi, XMHF_SLAB_XHHYPERDEP_INDEX, XMHF_SLAB_XCAPI_INDEX, XMHF_SLAB_XCAPI_FNXCAPIHPTSETENTRY, XMHF_SLAB_XCAPI_FNXCAPIHPTSETENTRY_SIZE, context_desc, gpa, entry);
 	XMHF_SLAB_CALL(xc_api_hpt_setprot(context_desc, gpa, (MEMP_PROT_PRESENT | MEMP_PROT_READWRITE | MEMP_PROT_NOEXECUTE) ));
-	XMHF_SLAB_CALL(xc_api_hpt_flushcaches(context_desc));
+	//XMHF_SLAB_CALL_P2P(xcapi, XMHF_SLAB_XHHYPERDEP_INDEX, XMHF_SLAB_XCAPI_INDEX, XMHF_SLAB_XCAPI_FNXCAPIHPTSETPROT, XMHF_SLAB_XCAPI_FNXCAPIHPTSETPROT_SIZE, context_desc, gpa, (MEMP_PROT_PRESENT | MEMP_PROT_READWRITE | MEMP_PROT_NOEXECUTE));
+	//XMHF_SLAB_CALL(xc_api_hpt_flushcaches(context_desc));
+    XMHF_SLAB_CALL_P2P(xcapi, XMHF_SLAB_XHHYPERDEP_INDEX, XMHF_SLAB_XCAPI_INDEX, XMHF_SLAB_XCAPI_FNXCAPIHPTFLUSHCACHES, XMHF_SLAB_XCAPI_FNXCAPIHPTFLUSHCACHES_SIZE, context_desc);
 	_XDPRINTF_("\nCPU(%02x): %s removed EXECUTE permission for page at gpa %08x", context_desc.cpu_desc.cpu_index, __FUNCTION__, gpa);
 }
 
 //de-activate DEP protection
 static void hd_deactivatedep(context_desc_t context_desc, u32 gpa){
 	XMHF_SLAB_CALL(xc_api_hpt_setprot(context_desc, gpa, (MEMP_PROT_PRESENT | MEMP_PROT_READWRITE | MEMP_PROT_EXECUTE) ));
-	XMHF_SLAB_CALL(xc_api_hpt_flushcaches_smp(context_desc));
+	//XMHF_SLAB_CALL_P2P(xcapi, XMHF_SLAB_XHHYPERDEP_INDEX, XMHF_SLAB_XCAPI_INDEX, XMHF_SLAB_XCAPI_FNXCAPIHPTSETPROT, XMHF_SLAB_XCAPI_FNXCAPIHPTSETPROT_SIZE, context_desc, gpa, (MEMP_PROT_PRESENT | MEMP_PROT_READWRITE | MEMP_PROT_EXECUTE));
+	//XMHF_SLAB_CALL(xc_api_hpt_flushcaches_smp(context_desc));
+    XMHF_SLAB_CALL_P2P(xcapi, XMHF_SLAB_XHHYPERDEP_INDEX, XMHF_SLAB_XCAPI_INDEX, XMHF_SLAB_XCAPI_FNXCAPIHPTFLUSHCACHESSMP, XMHF_SLAB_XCAPI_FNXCAPIHPTFLUSHCACHESSMP_SIZE, context_desc);
 	_XDPRINTF_("\nCPU(%02x): %s added EXECUTE permission for page at gpa %08x", context_desc.cpu_desc.cpu_index, __FUNCTION__, gpa);
 }
 
@@ -202,6 +213,7 @@ u32 xmhf_hypapp_handlehypercall(context_desc_t context_desc, u64 hypercall_id, u
 	u32 status=APP_SUCCESS;
 	u32 call_id;
 	u32 gva, gpa;
+    slab_retval_t srval;
 
 	call_id= hypercall_id;
 
@@ -216,7 +228,9 @@ u32 xmhf_hypapp_handlehypercall(context_desc_t context_desc, u64 hypercall_id, u
 		break;
 
 		case HYPERDEP_ACTIVATEDEP:{
-			gpa=(u32)XMHF_SLAB_CALL(xc_api_hpt_lvl2pagewalk(context_desc, gva));
+			srval = XMHF_SLAB_CALL_P2P(xcapi, XMHF_SLAB_XHHYPERDEP_INDEX, XMHF_SLAB_XCAPI_INDEX, XMHF_SLAB_XCAPI_FNXCAPIHPTLVL2PAGEWALK, XMHF_SLAB_XCAPI_FNXCAPIHPTLVL2PAGEWALK_SIZE, context_desc, gva);
+			gpa = srval.retval_u32;
+			//gpa=(u32)XMHF_SLAB_CALL(xc_api_hpt_lvl2pagewalk(context_desc, gva));
 			if(gpa == 0xFFFFFFFFUL){
 				_XDPRINTF_("\nCPU(%02x): WARNING: unable to get translation for gva=%x, just returning", context_desc.cpu_desc.cpu_index, gva);
 				return status;
@@ -227,7 +241,9 @@ u32 xmhf_hypapp_handlehypercall(context_desc_t context_desc, u64 hypercall_id, u
 		break;
 
 		case HYPERDEP_DEACTIVATEDEP:{
-			gpa=(u32)XMHF_SLAB_CALL(xc_api_hpt_lvl2pagewalk(context_desc, gva));
+			//gpa=(u32)XMHF_SLAB_CALL(xc_api_hpt_lvl2pagewalk(context_desc, gva));
+			srval = XMHF_SLAB_CALL_P2P(xcapi, XMHF_SLAB_XHHYPERDEP_INDEX, XMHF_SLAB_XCAPI_INDEX, XMHF_SLAB_XCAPI_FNXCAPIHPTLVL2PAGEWALK, XMHF_SLAB_XCAPI_FNXCAPIHPTLVL2PAGEWALK_SIZE, context_desc, gva);
+            gpa = srval.retval_u32;
 			if(gpa == 0xFFFFFFFFUL){
 				_XDPRINTF_("\nCPU(%02x): WARNING: unable to get translation for gva=%x, just returning", context_desc.cpu_desc.cpu_index, gva);
 				return status;
