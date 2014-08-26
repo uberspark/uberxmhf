@@ -234,7 +234,7 @@ slab_retval_t xcapi_interface(u32 src_slabid, u32 dst_slabid, u32 fn_id, u32 fn_
 			}
 			break;
 
-            /*
+
 			//platform related
 
 			case XMHF_SLAB_XCAPI_FNXCAPIPLATFORMSHUTDOWN:{
@@ -244,7 +244,7 @@ slab_retval_t xcapi_interface(u32 src_slabid, u32 dst_slabid, u32 fn_id, u32 fn_
 				xc_api_platform_shutdown(context_desc);
 				va_end(args);
 			}
-			break;*/
+			break;
 
 			case XMHF_SLAB_XCAPI_FNXCCOREAPIARCHEVENTHANDLERNMIEXCEPTION:{
 				//struct regs *r;
@@ -495,7 +495,7 @@ XMHF_SLAB_DEFINTERFACE(
 	//XMHF_SLAB_DEFEXPORTFN(xc_api_partition_getcontextdesc	,XMHF_SLAB_XCAPI_FNXCAPIPARTITIONGETCONTEXTDESC			,	XMHF_SLAB_FN_RETTYPE_AGGREGATE)
 	//XMHF_SLAB_DEFEXPORTFN(xc_api_partition_startcpu			,XMHF_SLAB_XCAPI_FNXCAPIPARTITIONSTARTCPU					,	XMHF_SLAB_FN_RETTYPE_NORMAL)
 
-	XMHF_SLAB_DEFEXPORTFN(xc_api_platform_shutdown			,XMHF_SLAB_XCAPI_FNXCAPIPLATFORMSHUTDOWN					,	XMHF_SLAB_FN_RETTYPE_NORMAL)
+	//XMHF_SLAB_DEFEXPORTFN(xc_api_platform_shutdown			,XMHF_SLAB_XCAPI_FNXCAPIPLATFORMSHUTDOWN					,	XMHF_SLAB_FN_RETTYPE_NORMAL)
 
 	//XMHF_SLAB_DEFEXPORTFN(xc_coreapi_arch_eventhandler_nmiexception, XMHF_SLAB_XCAPI_FNXCCOREAPIARCHEVENTHANDLERNMIEXCEPTION, 	XMHF_SLAB_FN_RETTYPE_NORMAL)
 )
