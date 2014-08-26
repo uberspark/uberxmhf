@@ -65,7 +65,7 @@ slab_retval_t xcapi_interface(u32 src_slabid, u32 dst_slabid, u32 fn_id, u32 fn_
 
 	switch(fn_id){
 			//HPT related
-            /*
+
 			case XMHF_SLAB_XCAPI_FNXCAPIHPTSETPROT:{
 				context_desc_t context_desc;
 				u64 gpa;
@@ -89,7 +89,7 @@ slab_retval_t xcapi_interface(u32 src_slabid, u32 dst_slabid, u32 fn_id, u32 fn_
 				va_end(args);
 			}
 			break;
-            */
+
 			case XMHF_SLAB_XCAPI_FNXCAPIHPTSETENTRY:{
 				context_desc_t context_desc;
 				u64 gpa;
@@ -476,8 +476,8 @@ XMHF_SLAB("xcapi")
 
 XMHF_SLAB_DEFINTERFACE(
 
-	XMHF_SLAB_DEFEXPORTFN(xc_api_hpt_setprot				,XMHF_SLAB_XCAPI_FNXCAPIHPTSETPROT						,	XMHF_SLAB_FN_RETTYPE_NORMAL)
-	XMHF_SLAB_DEFEXPORTFN(xc_api_hpt_getprot				,XMHF_SLAB_XCAPI_FNXCAPIHPTGETPROT						,	XMHF_SLAB_FN_RETTYPE_NORMAL)
+	//XMHF_SLAB_DEFEXPORTFN(xc_api_hpt_setprot				,XMHF_SLAB_XCAPI_FNXCAPIHPTSETPROT						,	XMHF_SLAB_FN_RETTYPE_NORMAL)
+	//XMHF_SLAB_DEFEXPORTFN(xc_api_hpt_getprot				,XMHF_SLAB_XCAPI_FNXCAPIHPTGETPROT						,	XMHF_SLAB_FN_RETTYPE_NORMAL)
 	//XMHF_SLAB_DEFEXPORTFN(xc_api_hpt_setentry				,XMHF_SLAB_XCAPI_FNXCAPIHPTSETENTRY						,	XMHF_SLAB_FN_RETTYPE_NORMAL)
 	//XMHF_SLAB_DEFEXPORTFN(xc_api_hpt_getentry				,XMHF_SLAB_XCAPI_FNXCAPIHPTGETENTRY						,	XMHF_SLAB_FN_RETTYPE_NORMAL)
 	//XMHF_SLAB_DEFEXPORTFN(xc_api_hpt_flushcaches			,XMHF_SLAB_XCAPI_FNXCAPIHPTFLUSHCACHES					,	XMHF_SLAB_FN_RETTYPE_NORMAL)
