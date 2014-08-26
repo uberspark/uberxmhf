@@ -322,6 +322,7 @@ static u32 _vmx_getmemorytypeforphysicalpage(u64 pagebaseaddr){
 static void _vmx_setupEPT(context_desc_t context_desc){
 	u64 p_table_value;
 	u64 gpa;
+    slab_retval_t srval;
 
 	for(gpa=0; gpa < ADDR_4GB; gpa += PAGE_SIZE_4K){
 		u32 memorytype = _vmx_getmemorytypeforphysicalpage((u64)gpa);
@@ -339,6 +340,11 @@ static void _vmx_setupEPT(context_desc_t context_desc){
 		//_XDPRINTF_("\n%s: gpa=%x, proceedig to call xc_api_hpt_setentry (esp=%x)\n", __FUNCTION__, (u32)gpa, read_esp());
 		//XMHF_SLAB_CALL(xc_api_hpt_setentry(context_desc, gpa, p_table_value));
 		XMHF_SLAB_CALL_P2P(xcapi, XMHF_SLAB_XCRICHGUEST_INDEX, XMHF_SLAB_XCAPI_INDEX, XMHF_SLAB_XCAPI_FNXCAPIHPTSETENTRY, XMHF_SLAB_XCAPI_FNXCAPIHPTSETENTRY_SIZE, context_desc, gpa, p_table_value);
+        srval = XMHF_SLAB_CALL_P2P(xcapi, XMHF_SLAB_XCRICHGUEST_INDEX, XMHF_SLAB_XCAPI_INDEX, XMHF_SLAB_XCAPI_FNXCAPIHPTGETENTRY, XMHF_SLAB_XCAPI_FNXCAPIHPTGETENTRY_SIZE, context_desc, gpa);
+        if(srval.retval_u64 != p_table_value){
+            _XDPRINTF_("%s: halting since set/get entry don;t match\n", __FUNCTION__);
+            HALT();
+        }
 		//_XDPRINTF_("\n%s: back, esp=%x\n", __FUNCTION__, read_esp());
 	}
 }
