@@ -92,7 +92,7 @@
 #define XMHF_SLAB_XCAPI_FNXCAPITRAPMASKCLEAR_SIZE				(sizeof(context_desc_t)+sizeof(xc_hypapp_arch_param_t))
 
 #define XMHF_SLAB_XCAPI_FNXCAPICPUSTATESET						10
-#define XMHF_SLAB_XCAPI_FNXCAPICPUSTATESET_SIZE					(sizeof(context_desc_t)+sizeof(xc_hypapp_arch_param_t cpustateparams))
+#define XMHF_SLAB_XCAPI_FNXCAPICPUSTATESET_SIZE					(sizeof(context_desc_t)+sizeof(xc_hypapp_arch_param_t))
 
 #define XMHF_SLAB_XCAPI_FNXCAPICPUSTATEGET						11
 #define XMHF_SLAB_XCAPI_FNXCAPICPUSTATEGET_SIZE					(sizeof(context_desc_t)+sizeof(u64))
@@ -127,11 +127,11 @@
 //XMHF_SLAB_DEFIMPORTFN(void, xc_api_hpt_flushcaches_smp, (context_desc_t context_desc), 									XMHF_SLAB_DEFIMPORTFNSTUB(__XMHF_SLAB_CALLER_INDEX__, XMHF_SLAB_XCAPI_INDEX,	XMHF_SLAB_XCAPI_FNXCAPIHPTFLUSHCACHESSMP			, (sizeof(context_desc_t))									, 0, XMHF_SLAB_FN_RETTYPE_NORMAL)								)
 //XMHF_SLAB_DEFIMPORTFN(u64, xc_api_hpt_lvl2pagewalk, (context_desc_t context_desc, u64 gva), 								XMHF_SLAB_DEFIMPORTFNSTUB(__XMHF_SLAB_CALLER_INDEX__, XMHF_SLAB_XCAPI_INDEX,	XMHF_SLAB_XCAPI_FNXCAPIHPTLVL2PAGEWALK			, (sizeof(context_desc_t)+sizeof(u64))						, 0, XMHF_SLAB_FN_RETTYPE_NORMAL)								)
 
-XMHF_SLAB_DEFIMPORTFN(void, xc_api_trapmask_set, (context_desc_t context_desc, xc_hypapp_arch_param_t trapmaskparams), 	XMHF_SLAB_DEFIMPORTFNSTUB(__XMHF_SLAB_CALLER_INDEX__, XMHF_SLAB_XCAPI_INDEX,	XMHF_SLAB_XCAPI_FNXCAPITRAPMASKSET				, (sizeof(context_desc_t)+sizeof(xc_hypapp_arch_param_t))	, 0, XMHF_SLAB_FN_RETTYPE_NORMAL)								)
-XMHF_SLAB_DEFIMPORTFN(void, xc_api_trapmask_clear, (context_desc_t context_desc, xc_hypapp_arch_param_t trapmaskparams), 	XMHF_SLAB_DEFIMPORTFNSTUB(__XMHF_SLAB_CALLER_INDEX__, XMHF_SLAB_XCAPI_INDEX,	XMHF_SLAB_XCAPI_FNXCAPITRAPMASKCLEAR				, (sizeof(context_desc_t)+sizeof(xc_hypapp_arch_param_t))	, 0, XMHF_SLAB_FN_RETTYPE_NORMAL)								)
+//XMHF_SLAB_DEFIMPORTFN(void, xc_api_trapmask_set, (context_desc_t context_desc, xc_hypapp_arch_param_t trapmaskparams), 	XMHF_SLAB_DEFIMPORTFNSTUB(__XMHF_SLAB_CALLER_INDEX__, XMHF_SLAB_XCAPI_INDEX,	XMHF_SLAB_XCAPI_FNXCAPITRAPMASKSET				, (sizeof(context_desc_t)+sizeof(xc_hypapp_arch_param_t))	, 0, XMHF_SLAB_FN_RETTYPE_NORMAL)								)
+//XMHF_SLAB_DEFIMPORTFN(void, xc_api_trapmask_clear, (context_desc_t context_desc, xc_hypapp_arch_param_t trapmaskparams), 	XMHF_SLAB_DEFIMPORTFNSTUB(__XMHF_SLAB_CALLER_INDEX__, XMHF_SLAB_XCAPI_INDEX,	XMHF_SLAB_XCAPI_FNXCAPITRAPMASKCLEAR				, (sizeof(context_desc_t)+sizeof(xc_hypapp_arch_param_t))	, 0, XMHF_SLAB_FN_RETTYPE_NORMAL)								)
 
-XMHF_SLAB_DEFIMPORTFN(void, xc_api_cpustate_set, (context_desc_t context_desc, xc_hypapp_arch_param_t cpustateparams), 	XMHF_SLAB_DEFIMPORTFNSTUB(__XMHF_SLAB_CALLER_INDEX__, XMHF_SLAB_XCAPI_INDEX,	XMHF_SLAB_XCAPI_FNXCAPICPUSTATESET				, (sizeof(context_desc_t)+sizeof(xc_hypapp_arch_param_t))	, 0, XMHF_SLAB_FN_RETTYPE_NORMAL)								)
-XMHF_SLAB_DEFIMPORTFN(xc_hypapp_arch_param_t, xc_api_cpustate_get, (context_desc_t context_desc, u64 operation), 			XMHF_SLAB_DEFIMPORTFNSTUB(__XMHF_SLAB_CALLER_INDEX__, XMHF_SLAB_XCAPI_INDEX,	XMHF_SLAB_XCAPI_FNXCAPICPUSTATEGET				, (sizeof(context_desc_t)+sizeof(u64)+sizeof(u32))			, sizeof(xc_hypapp_arch_param_t), XMHF_SLAB_FN_RETTYPE_AGGREGATE)	)
+//XMHF_SLAB_DEFIMPORTFN(void, xc_api_cpustate_set, (context_desc_t context_desc, xc_hypapp_arch_param_t cpustateparams), 	XMHF_SLAB_DEFIMPORTFNSTUB(__XMHF_SLAB_CALLER_INDEX__, XMHF_SLAB_XCAPI_INDEX,	XMHF_SLAB_XCAPI_FNXCAPICPUSTATESET				, (sizeof(context_desc_t)+sizeof(xc_hypapp_arch_param_t))	, 0, XMHF_SLAB_FN_RETTYPE_NORMAL)								)
+//XMHF_SLAB_DEFIMPORTFN(xc_hypapp_arch_param_t, xc_api_cpustate_get, (context_desc_t context_desc, u64 operation), 			XMHF_SLAB_DEFIMPORTFNSTUB(__XMHF_SLAB_CALLER_INDEX__, XMHF_SLAB_XCAPI_INDEX,	XMHF_SLAB_XCAPI_FNXCAPICPUSTATEGET				, (sizeof(context_desc_t)+sizeof(u64)+sizeof(u32))			, sizeof(xc_hypapp_arch_param_t), XMHF_SLAB_FN_RETTYPE_AGGREGATE)	)
 
 //XMHF_SLAB_DEFIMPORTFN(u32, xc_api_partition_create, (u32 partitiontype),													XMHF_SLAB_DEFIMPORTFNSTUB(__XMHF_SLAB_CALLER_INDEX__, XMHF_SLAB_XCAPI_INDEX,	XMHF_SLAB_XCAPI_FNXCAPIPARTITIONCREATE			, (sizeof(u32))												, 0, XMHF_SLAB_FN_RETTYPE_NORMAL)								)
 //XMHF_SLAB_DEFIMPORTFN(context_desc_t, xc_api_partition_addcpu, (u32 partition_index, u32 cpuid, bool is_bsp), 				XMHF_SLAB_DEFIMPORTFNSTUB(__XMHF_SLAB_CALLER_INDEX__, XMHF_SLAB_XCAPI_INDEX,	XMHF_SLAB_XCAPI_FNXCAPIPARTITIONADDCPU			, (sizeof(u32)+sizeof(u32)+sizeof(bool)+sizeof(u32))		, sizeof(context_desc_t), XMHF_SLAB_FN_RETTYPE_AGGREGATE)			)
