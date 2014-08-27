@@ -52,11 +52,9 @@
 
 #include <xcihub.h>
 
-#define __XMHF_SLAB_CALLER_INDEX__ XMHF_SLAB_XCIHUB_INDEX
 #include <xcapi.h>
 #include <xhhyperdep.h>	//TODO: remove this hardcoded hypapp dependency
 #include <xcrichguest.h>
-#undef __XMHF_SLAB_CALLER_INDEX__
 
 
 
@@ -109,7 +107,6 @@ static void _vmx_handle_intercept_wrmsr(context_desc_t context_desc, struct regs
 	xc_hypapp_arch_param_t ap;
     slab_retval_t srval;
 
-	//ap = XMHF_SLAB_CALL(xc_api_cpustate_get(context_desc, XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_SYSENTER));
 	srval = XMHF_SLAB_CALL_P2P(xcapi, XMHF_SLAB_XCIHUB_INDEX, XMHF_SLAB_XCAPI_INDEX, XMHF_SLAB_XCAPI_FNXCAPICPUSTATEGET, XMHF_SLAB_XCAPI_FNXCAPICPUSTATEGET_SIZE, context_desc, (u64)XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_SYSENTER);
     ap = srval.retval_xc_hypapp_arch_param;
 
@@ -118,17 +115,14 @@ static void _vmx_handle_intercept_wrmsr(context_desc_t context_desc, struct regs
 	switch(r.ecx){
 		case IA32_SYSENTER_CS_MSR:
 			ap.param.sysenter.sysenter_cs = r.eax;
-			//XMHF_SLAB_CALL(xc_api_cpustate_set(context_desc, ap));
             XMHF_SLAB_CALL_P2P(xcapi, XMHF_SLAB_XCIHUB_INDEX, XMHF_SLAB_XCAPI_INDEX, XMHF_SLAB_XCAPI_FNXCAPICPUSTATESET, XMHF_SLAB_XCAPI_FNXCAPICPUSTATESET_SIZE, context_desc, ap);
 			break;
 		case IA32_SYSENTER_EIP_MSR:
 			ap.param.sysenter.sysenter_rip = r.eax;
-			//XMHF_SLAB_CALL(xc_api_cpustate_set(context_desc, ap));
             XMHF_SLAB_CALL_P2P(xcapi, XMHF_SLAB_XCIHUB_INDEX, XMHF_SLAB_XCAPI_INDEX, XMHF_SLAB_XCAPI_FNXCAPICPUSTATESET, XMHF_SLAB_XCAPI_FNXCAPICPUSTATESET_SIZE, context_desc, ap);
 			break;
 		case IA32_SYSENTER_ESP_MSR:
 			ap.param.sysenter.sysenter_rsp = r.eax;
-			//XMHF_SLAB_CALL(xc_api_cpustate_set(context_desc, ap));
             XMHF_SLAB_CALL_P2P(xcapi, XMHF_SLAB_XCIHUB_INDEX, XMHF_SLAB_XCAPI_INDEX, XMHF_SLAB_XCAPI_FNXCAPICPUSTATESET, XMHF_SLAB_XCAPI_FNXCAPICPUSTATESET_SIZE, context_desc, ap);
 			break;
 		default:{
@@ -145,7 +139,6 @@ static struct regs _vmx_handle_intercept_rdmsr(context_desc_t context_desc, stru
 	xc_hypapp_arch_param_t ap;
     slab_retval_t srval;
 
-	//ap = XMHF_SLAB_CALL(xc_api_cpustate_get(context_desc, XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_SYSENTER));
 	srval = XMHF_SLAB_CALL_P2P(xcapi, XMHF_SLAB_XCIHUB_INDEX, XMHF_SLAB_XCAPI_INDEX, XMHF_SLAB_XCAPI_FNXCAPICPUSTATEGET, XMHF_SLAB_XCAPI_FNXCAPICPUSTATEGET_SIZE, context_desc, (u64)XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_SYSENTER);
     ap = srval.retval_xc_hypapp_arch_param;
 
@@ -177,7 +170,6 @@ static struct regs _vmx_handle_intercept_rdmsr(context_desc_t context_desc, stru
 //---intercept handler (EPT voilation)----------------------------------
 static void _vmx_handle_intercept_eptviolation(context_desc_t context_desc, u32 gpa, u32 gva, u32 errorcode, struct regs r __attribute__((unused))){
 
-	//XMHF_SLAB_CALL(xmhf_hypapp_handleintercept_hptfault(context_desc, gpa, gva,	(errorcode & 7)));
     XMHF_SLAB_CALL_P2P(xhhyperdep, XMHF_SLAB_XCIHUB_INDEX, XMHF_SLAB_XHHYPERDEP_INDEX, XMHF_SLAB_HYPAPP_FNHANDLEINTERCEPTHPTFAULT, XMHF_SLAB_HYPAPP_FNHANDLEINTERCEPTHPTFAULT_SIZE, context_desc, (u64)gpa, (u64)gva, (u64)(errorcode & 7));
 }
 
@@ -196,7 +188,6 @@ static struct regs _vmx_handle_intercept_ioportaccess(context_desc_t context_des
 		xc_hypapp_arch_param.param.cbtrapio.portnum = portnum;
 		xc_hypapp_arch_param.param.cbtrapio.access_type = access_type;
 		xc_hypapp_arch_param.param.cbtrapio.access_size = access_size;
-		//app_ret_status=XMHF_SLAB_CALL(xmhf_hypapp_handleintercept_trap(context_desc, xc_hypapp_arch_param));
         srval = XMHF_SLAB_CALL_P2P(xhhyperdep, XMHF_SLAB_XCIHUB_INDEX, XMHF_SLAB_XHHYPERDEP_INDEX, XMHF_SLAB_HYPAPP_FNHANDLEINTERCEPTTRAP, XMHF_SLAB_HYPAPP_FNHANDLEINTERCEPTTRAP_SIZE, context_desc, xc_hypapp_arch_param);
         app_ret_status = srval.retval_u32;
 	}
@@ -236,14 +227,11 @@ static void vmx_handle_intercept_cr0access_ug(context_desc_t context_desc, struc
 
 	cr0_value = _vmx_getregval(gpr, r);
 
-	//ap = XMHF_SLAB_CALL(xc_api_cpustate_get(context_desc, XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_CONTROLREGS));
 	srval = XMHF_SLAB_CALL_P2P(xcapi, XMHF_SLAB_XCIHUB_INDEX, XMHF_SLAB_XCAPI_INDEX, XMHF_SLAB_XCAPI_FNXCAPICPUSTATEGET, XMHF_SLAB_XCAPI_FNXCAPICPUSTATEGET_SIZE, context_desc, (u64)XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_CONTROLREGS);
     ap = srval.retval_xc_hypapp_arch_param;
-
 	ap.param.controlregs.cr0 = cr0_value;
 	ap.param.controlregs.control_cr0_shadow = (cr0_value & ~(CR0_CD | CR0_NW));
 	ap.operation = XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_CONTROLREGS;
-	//XMHF_SLAB_CALL(xc_api_cpustate_set(context_desc, ap));
     XMHF_SLAB_CALL_P2P(xcapi, XMHF_SLAB_XCIHUB_INDEX, XMHF_SLAB_XCAPI_INDEX, XMHF_SLAB_XCAPI_FNXCAPICPUSTATESET, XMHF_SLAB_XCAPI_FNXCAPICPUSTATESET_SIZE, context_desc, ap);
 
 	//we need to flush logical processor VPID mappings as we emulated CR0 load above
@@ -285,7 +273,6 @@ static void _vmx_propagate_cpustate_guestx86gprs(context_desc_t context_desc, st
 
 	ap.param.cpugprs = x86gprs;
 	ap.operation = XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_CPUGPRS;
-	//XMHF_SLAB_CALL(xc_api_cpustate_set(context_desc, ap));
     XMHF_SLAB_CALL_P2P(xcapi, XMHF_SLAB_XCIHUB_INDEX, XMHF_SLAB_XCAPI_INDEX, XMHF_SLAB_XCAPI_FNXCAPICPUSTATESET, XMHF_SLAB_XCAPI_FNXCAPICPUSTATESET_SIZE, context_desc, ap);
 
 }
@@ -297,10 +284,8 @@ static void _vmx_intercept_handler(context_desc_t context_desc, struct regs x86g
 	xc_hypapp_arch_param_x86vmx_cpustate_inforegs_t inforegs;
     slab_retval_t srval;
 
-	//ap = XMHF_SLAB_CALL(xc_api_cpustate_get(context_desc, XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_INFOREGS));
 	srval = XMHF_SLAB_CALL_P2P(xcapi, XMHF_SLAB_XCIHUB_INDEX, XMHF_SLAB_XCAPI_INDEX, XMHF_SLAB_XCAPI_FNXCAPICPUSTATEGET, XMHF_SLAB_XCAPI_FNXCAPICPUSTATEGET_SIZE, context_desc, (u64)XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_INFOREGS);
     ap = srval.retval_xc_hypapp_arch_param;
-
 	inforegs = ap.param.inforegs;
 
 
@@ -330,15 +315,12 @@ static void _vmx_intercept_handler(context_desc_t context_desc, struct regs x86g
 			xc_hypapp_arch_param_x86vmx_cpustate_activity_t vmmcall_activity;
 			xc_hypapp_arch_param_x86vmx_cpustate_controlregs_t vmmcall_controlregs;
 
-			//vmmcall_ap = XMHF_SLAB_CALL(xc_api_cpustate_get(context_desc, XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_DESC));
             srval = XMHF_SLAB_CALL_P2P(xcapi, XMHF_SLAB_XCIHUB_INDEX, XMHF_SLAB_XCAPI_INDEX, XMHF_SLAB_XCAPI_FNXCAPICPUSTATEGET, XMHF_SLAB_XCAPI_FNXCAPICPUSTATEGET_SIZE, context_desc, (u64)XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_DESC);
             vmmcall_ap = srval.retval_xc_hypapp_arch_param;
 			vmmcall_desc = vmmcall_ap.param.desc;
-			//vmmcall_ap = XMHF_SLAB_CALL(xc_api_cpustate_get(context_desc, XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_ACTIVITY));
             srval = XMHF_SLAB_CALL_P2P(xcapi, XMHF_SLAB_XCIHUB_INDEX, XMHF_SLAB_XCAPI_INDEX, XMHF_SLAB_XCAPI_FNXCAPICPUSTATEGET, XMHF_SLAB_XCAPI_FNXCAPICPUSTATEGET_SIZE, context_desc, (u64)XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_ACTIVITY);
             vmmcall_ap = srval.retval_xc_hypapp_arch_param;
 			vmmcall_activity = vmmcall_ap.param.activity;
-			//vmmcall_ap = XMHF_SLAB_CALL(xc_api_cpustate_get(context_desc, XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_CONTROLREGS));
             srval = XMHF_SLAB_CALL_P2P(xcapi, XMHF_SLAB_XCIHUB_INDEX, XMHF_SLAB_XCAPI_INDEX, XMHF_SLAB_XCAPI_FNXCAPICPUSTATEGET, XMHF_SLAB_XCAPI_FNXCAPICPUSTATEGET_SIZE, context_desc, (u64)XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_CONTROLREGS);
             vmmcall_ap = srval.retval_xc_hypapp_arch_param;
 			vmmcall_controlregs = vmmcall_ap.param.controlregs;
@@ -355,14 +337,12 @@ static void _vmx_intercept_handler(context_desc_t context_desc, struct regs x86g
 				x86gprs = srval.retval_regs;
 				_vmx_propagate_cpustate_guestx86gprs(context_desc, x86gprs);
 
-				//vmmcall_ap = XMHF_SLAB_CALL(xc_api_cpustate_get(context_desc, XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_ACTIVITY));
                 srval = XMHF_SLAB_CALL_P2P(xcapi, XMHF_SLAB_XCIHUB_INDEX, XMHF_SLAB_XCAPI_INDEX, XMHF_SLAB_XCAPI_FNXCAPICPUSTATEGET, XMHF_SLAB_XCAPI_FNXCAPICPUSTATEGET_SIZE, context_desc, (u64)XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_ACTIVITY);
                 vmmcall_ap = srval.retval_xc_hypapp_arch_param;
 				vmmcall_activity = vmmcall_ap.param.activity;
 				vmmcall_activity.interruptibility=0;
 				vmmcall_ap.operation = XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_ACTIVITY;
 				vmmcall_ap.param.activity = vmmcall_activity;
-				//XMHF_SLAB_CALL(xc_api_cpustate_set(context_desc, vmmcall_ap));
 			    XMHF_SLAB_CALL_P2P(xcapi, XMHF_SLAB_XCIHUB_INDEX, XMHF_SLAB_XCAPI_INDEX, XMHF_SLAB_XCAPI_FNXCAPICPUSTATESET, XMHF_SLAB_XCAPI_FNXCAPICPUSTATESET_SIZE, context_desc, vmmcall_ap);
 
 
@@ -372,7 +352,6 @@ static void _vmx_intercept_handler(context_desc_t context_desc, struct regs x86g
 					u64 hypercall_id = (u64)x86gprs.eax;
 					u64 hypercall_param = ((u64)x86gprs.edx << 32) | x86gprs.ecx;
 
-					//if( XMHF_SLAB_CALL(xmhf_hypapp_handlehypercall(context_desc, hypercall_id, hypercall_param)) != APP_SUCCESS){
 					srval = XMHF_SLAB_CALL_P2P(xhhyperdep, XMHF_SLAB_XCIHUB_INDEX, XMHF_SLAB_XHHYPERDEP_INDEX, XMHF_SLAB_HYPAPP_FNHANDLEHYPERCALL, XMHF_SLAB_HYPAPP_FNHANDLEHYPERCALL_SIZE, context_desc, (u64)hypercall_id, (u64)hypercall_param);
 					if(srval.retval_u32 != APP_SUCCESS){
 						_XDPRINTF_("\nCPU(0x%02x): error(halt), unhandled hypercall 0x%08x!", context_desc.cpu_desc.cpu_index, x86gprs.eax);
@@ -380,7 +359,6 @@ static void _vmx_intercept_handler(context_desc_t context_desc, struct regs x86g
 					}
 				}
 
-				//vmmcall_ap = XMHF_SLAB_CALL(xc_api_cpustate_get(context_desc, XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_ACTIVITY));
                 srval = XMHF_SLAB_CALL_P2P(xcapi, XMHF_SLAB_XCIHUB_INDEX, XMHF_SLAB_XCAPI_INDEX, XMHF_SLAB_XCAPI_FNXCAPICPUSTATEGET, XMHF_SLAB_XCAPI_FNXCAPICPUSTATEGET_SIZE, context_desc, (u64)XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_ACTIVITY);
                 vmmcall_ap = srval.retval_xc_hypapp_arch_param;
 				vmmcall_activity = vmmcall_ap.param.activity;
@@ -388,7 +366,6 @@ static void _vmx_intercept_handler(context_desc_t context_desc, struct regs x86g
 				vmmcall_activity.interruptibility=0;
 				vmmcall_ap.operation = XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_ACTIVITY;
 				vmmcall_ap.param.activity = vmmcall_activity;
-				//XMHF_SLAB_CALL(xc_api_cpustate_set(context_desc, vmmcall_ap));
 			    XMHF_SLAB_CALL_P2P(xcapi, XMHF_SLAB_XCIHUB_INDEX, XMHF_SLAB_XCAPI_INDEX, XMHF_SLAB_XCAPI_FNXCAPICPUSTATESET, XMHF_SLAB_XCAPI_FNXCAPICPUSTATESET_SIZE, context_desc, vmmcall_ap);
 			}
 		}
@@ -406,7 +383,6 @@ static void _vmx_intercept_handler(context_desc_t context_desc, struct regs x86g
 
 			x86gprs = _vmx_handle_intercept_ioportaccess(context_desc, access_size, access_type, portnum, stringio, x86gprs);
 			_vmx_propagate_cpustate_guestx86gprs(context_desc, x86gprs);
-			//ioio_ap = XMHF_SLAB_CALL(xc_api_cpustate_get(context_desc, XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_ACTIVITY));
             srval = XMHF_SLAB_CALL_P2P(xcapi, XMHF_SLAB_XCIHUB_INDEX, XMHF_SLAB_XCAPI_INDEX, XMHF_SLAB_XCAPI_FNXCAPICPUSTATEGET, XMHF_SLAB_XCAPI_FNXCAPICPUSTATEGET_SIZE, context_desc, (u64)XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_ACTIVITY);
             ioio_ap = srval.retval_xc_hypapp_arch_param;
 			ioio_activity = ioio_ap.param.activity;
@@ -414,7 +390,6 @@ static void _vmx_intercept_handler(context_desc_t context_desc, struct regs x86g
 			ioio_activity.interruptibility=0;
 			ioio_ap.operation = XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_ACTIVITY;
 			ioio_ap.param.activity = ioio_activity;
-			//XMHF_SLAB_CALL(xc_api_cpustate_set(context_desc, ioio_ap));
 		    XMHF_SLAB_CALL_P2P(xcapi, XMHF_SLAB_XCIHUB_INDEX, XMHF_SLAB_XCAPI_INDEX, XMHF_SLAB_XCAPI_FNXCAPICPUSTATESET, XMHF_SLAB_XCAPI_FNXCAPICPUSTATESET_SIZE, context_desc, ioio_ap);
 		}
 		break;
@@ -430,21 +405,18 @@ static void _vmx_intercept_handler(context_desc_t context_desc, struct regs x86g
 
 			_vmx_handle_intercept_eptviolation(context_desc, gpa, gva, errorcode, x86gprs);
 
-			//eptviolation_ap = XMHF_SLAB_CALL(xc_api_cpustate_get(context_desc, XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_ACTIVITY));
             srval = XMHF_SLAB_CALL_P2P(xcapi, XMHF_SLAB_XCIHUB_INDEX, XMHF_SLAB_XCAPI_INDEX, XMHF_SLAB_XCAPI_FNXCAPICPUSTATEGET, XMHF_SLAB_XCAPI_FNXCAPICPUSTATEGET_SIZE, context_desc, (u64)XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_ACTIVITY);
             eptviolation_ap = srval.retval_xc_hypapp_arch_param;
 			eptviolation_activity = eptviolation_ap.param.activity;
 			eptviolation_activity.interruptibility=0;
 			eptviolation_ap.operation = XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_ACTIVITY;
 			eptviolation_ap.param.activity = eptviolation_activity;
-			//XMHF_SLAB_CALL(xc_api_cpustate_set(context_desc, eptviolation_ap));
 		    XMHF_SLAB_CALL_P2P(xcapi, XMHF_SLAB_XCIHUB_INDEX, XMHF_SLAB_XCAPI_INDEX, XMHF_SLAB_XCAPI_FNXCAPICPUSTATESET, XMHF_SLAB_XCAPI_FNXCAPICPUSTATESET_SIZE, context_desc, eptviolation_ap);
         }
 		break;
 
 		case VMX_VMEXIT_INIT:{
 			_XDPRINTF_("\n***** VMEXIT_INIT xmhf_hypapp_handleshutdown\n");
-			//XMHF_SLAB_CALL(xmhf_hypapp_handleshutdown(context_desc));
             XMHF_SLAB_CALL_P2P(xhhyperdep, XMHF_SLAB_XCIHUB_INDEX, XMHF_SLAB_XHHYPERDEP_INDEX, XMHF_SLAB_HYPAPP_FNSHUTDOWN, XMHF_SLAB_HYPAPP_FNSHUTDOWN_SIZE, context_desc );
 			_XDPRINTF_("\nCPU(0x%02x): Fatal, xmhf_hypapp_handleshutdown returned. Halting!", context_desc.cpu_desc.cpu_index);
 			HALT();
@@ -478,7 +450,6 @@ static void _vmx_intercept_handler(context_desc_t context_desc, struct regs x86g
 						_XDPRINTF_("\nunhandled crx, halting!");
 						HALT();
 				}
-				//crxaccess_ap = XMHF_SLAB_CALL(xc_api_cpustate_get(context_desc, XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_ACTIVITY));
                 srval = XMHF_SLAB_CALL_P2P(xcapi, XMHF_SLAB_XCIHUB_INDEX, XMHF_SLAB_XCAPI_INDEX, XMHF_SLAB_XCAPI_FNXCAPICPUSTATEGET, XMHF_SLAB_XCAPI_FNXCAPICPUSTATEGET_SIZE, context_desc, (u64)XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_ACTIVITY);
                 crxaccess_ap = srval.retval_xc_hypapp_arch_param;
 				crxaccess_activity = crxaccess_ap.param.activity;
@@ -486,7 +457,6 @@ static void _vmx_intercept_handler(context_desc_t context_desc, struct regs x86g
 				crxaccess_activity.interruptibility=0;
 				crxaccess_ap.operation = XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_ACTIVITY;
 				crxaccess_ap.param.activity = crxaccess_activity;
-				//XMHF_SLAB_CALL(xc_api_cpustate_set(context_desc, crxaccess_ap));
                 XMHF_SLAB_CALL_P2P(xcapi, XMHF_SLAB_XCIHUB_INDEX, XMHF_SLAB_XCAPI_INDEX, XMHF_SLAB_XCAPI_FNXCAPICPUSTATESET, XMHF_SLAB_XCAPI_FNXCAPICPUSTATESET_SIZE, context_desc, crxaccess_ap);
 
 			}else{
@@ -504,7 +474,6 @@ static void _vmx_intercept_handler(context_desc_t context_desc, struct regs x86g
 			x86gprs = _vmx_handle_intercept_rdmsr(context_desc, x86gprs);
 			_vmx_propagate_cpustate_guestx86gprs(context_desc, x86gprs);
 
-			//rdmsr_ap = XMHF_SLAB_CALL(xc_api_cpustate_get(context_desc, XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_ACTIVITY));
             srval = XMHF_SLAB_CALL_P2P(xcapi, XMHF_SLAB_XCIHUB_INDEX, XMHF_SLAB_XCAPI_INDEX, XMHF_SLAB_XCAPI_FNXCAPICPUSTATEGET, XMHF_SLAB_XCAPI_FNXCAPICPUSTATEGET_SIZE, context_desc, (u64)XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_ACTIVITY);
             rdmsr_ap = srval.retval_xc_hypapp_arch_param;
 			rdmsr_activity = rdmsr_ap.param.activity;
@@ -512,7 +481,6 @@ static void _vmx_intercept_handler(context_desc_t context_desc, struct regs x86g
 			rdmsr_activity.interruptibility=0;
 			rdmsr_ap.operation = XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_ACTIVITY;
 			rdmsr_ap.param.activity = rdmsr_activity;
-			//XMHF_SLAB_CALL(xc_api_cpustate_set(context_desc, rdmsr_ap));
             XMHF_SLAB_CALL_P2P(xcapi, XMHF_SLAB_XCIHUB_INDEX, XMHF_SLAB_XCAPI_INDEX, XMHF_SLAB_XCAPI_FNXCAPICPUSTATESET, XMHF_SLAB_XCAPI_FNXCAPICPUSTATESET_SIZE, context_desc, rdmsr_ap);
 
 		}
@@ -526,13 +494,11 @@ static void _vmx_intercept_handler(context_desc_t context_desc, struct regs x86g
 
             srval = XMHF_SLAB_CALL_P2P(xcapi, XMHF_SLAB_XCIHUB_INDEX, XMHF_SLAB_XCAPI_INDEX, XMHF_SLAB_XCAPI_FNXCAPICPUSTATEGET, XMHF_SLAB_XCAPI_FNXCAPICPUSTATEGET_SIZE, context_desc, (u64)XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_ACTIVITY);
             wrmsr_ap = srval.retval_xc_hypapp_arch_param;
-			//wrmsr_ap = XMHF_SLAB_CALL(xc_api_cpustate_get(context_desc, XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_ACTIVITY));
 			wrmsr_activity = wrmsr_ap.param.activity;
 			wrmsr_activity.rip+=inforegs.info_vmexit_instruction_length;
 			wrmsr_activity.interruptibility=0;
 			wrmsr_ap.operation = XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_ACTIVITY;
 			wrmsr_ap.param.activity = wrmsr_activity;
-			//XMHF_SLAB_CALL(xc_api_cpustate_set(context_desc, wrmsr_ap));
             XMHF_SLAB_CALL_P2P(xcapi, XMHF_SLAB_XCIHUB_INDEX, XMHF_SLAB_XCAPI_INDEX, XMHF_SLAB_XCAPI_FNXCAPICPUSTATESET, XMHF_SLAB_XCAPI_FNXCAPICPUSTATESET_SIZE, context_desc, wrmsr_ap);
 
 		}
@@ -545,7 +511,6 @@ static void _vmx_intercept_handler(context_desc_t context_desc, struct regs x86g
 			x86gprs = _vmx_handle_intercept_cpuid(context_desc, x86gprs);
 			_vmx_propagate_cpustate_guestx86gprs(context_desc, x86gprs);
 
-			//cpuid_ap = XMHF_SLAB_CALL(xc_api_cpustate_get(context_desc, XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_ACTIVITY));
             srval = XMHF_SLAB_CALL_P2P(xcapi, XMHF_SLAB_XCIHUB_INDEX, XMHF_SLAB_XCAPI_INDEX, XMHF_SLAB_XCAPI_FNXCAPICPUSTATEGET, XMHF_SLAB_XCAPI_FNXCAPICPUSTATEGET_SIZE, context_desc, (u64)XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_ACTIVITY);
             cpuid_ap = srval.retval_xc_hypapp_arch_param;
 			cpuid_activity = cpuid_ap.param.activity;
@@ -553,7 +518,6 @@ static void _vmx_intercept_handler(context_desc_t context_desc, struct regs x86g
 			cpuid_activity.interruptibility=0;
 			cpuid_ap.operation = XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_ACTIVITY;
 			cpuid_ap.param.activity = cpuid_activity;
-			//XMHF_SLAB_CALL(xc_api_cpustate_set(context_desc, cpuid_ap));
             XMHF_SLAB_CALL_P2P(xcapi, XMHF_SLAB_XCIHUB_INDEX, XMHF_SLAB_XCAPI_INDEX, XMHF_SLAB_XCAPI_FNXCAPICPUSTATESET, XMHF_SLAB_XCAPI_FNXCAPICPUSTATESET_SIZE, context_desc, cpuid_ap);
 
 		}
@@ -567,7 +531,6 @@ static void _vmx_intercept_handler(context_desc_t context_desc, struct regs x86g
 
 			if(reason == TASK_SWITCH_GATE && type == INTR_TYPE_NMI){
 				_XDPRINTF_("\nCPU(0x%02x): NMI received (MP guest shutdown?)", context_desc.cpu_desc.cpu_index);
-				//XMHF_SLAB_CALL(xmhf_hypapp_handleshutdown(context_desc));
                 XMHF_SLAB_CALL_P2P(xhhyperdep, XMHF_SLAB_XCIHUB_INDEX, XMHF_SLAB_XHHYPERDEP_INDEX, XMHF_SLAB_HYPAPP_FNSHUTDOWN, XMHF_SLAB_HYPAPP_FNSHUTDOWN_SIZE, context_desc );
 				_XDPRINTF_("\nCPU(0x%02x): warning, xmhf_hypapp_handleshutdown returned!", context_desc.cpu_desc.cpu_index);
 				_XDPRINTF_("\nCPU(0x%02x): HALTING!", context_desc.cpu_desc.cpu_index);
@@ -587,7 +550,6 @@ static void _vmx_intercept_handler(context_desc_t context_desc, struct regs x86g
 
 			_vmx_handle_intercept_xsetbv(context_desc, x86gprs);
 
-			//xsetbv_ap = XMHF_SLAB_CALL(xc_api_cpustate_get(context_desc, XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_ACTIVITY));
             srval = XMHF_SLAB_CALL_P2P(xcapi, XMHF_SLAB_XCIHUB_INDEX, XMHF_SLAB_XCAPI_INDEX, XMHF_SLAB_XCAPI_FNXCAPICPUSTATEGET, XMHF_SLAB_XCAPI_FNXCAPICPUSTATEGET_SIZE, context_desc, (u64)XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_ACTIVITY);
             xsetbv_ap = srval.retval_xc_hypapp_arch_param;
 			xsetbv_activity = xsetbv_ap.param.activity;
@@ -595,7 +557,6 @@ static void _vmx_intercept_handler(context_desc_t context_desc, struct regs x86g
 			xsetbv_activity.interruptibility=0;
 			xsetbv_ap.operation = XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_ACTIVITY;
 			xsetbv_ap.param.activity = xsetbv_activity;
-			//XMHF_SLAB_CALL(xc_api_cpustate_set(context_desc, xsetbv_ap));
             XMHF_SLAB_CALL_P2P(xcapi, XMHF_SLAB_XCIHUB_INDEX, XMHF_SLAB_XCAPI_INDEX, XMHF_SLAB_XCAPI_FNXCAPICPUSTATESET, XMHF_SLAB_XCAPI_FNXCAPICPUSTATESET_SIZE, context_desc, xsetbv_ap);
 
 		}
@@ -607,12 +568,10 @@ static void _vmx_intercept_handler(context_desc_t context_desc, struct regs x86g
 			xc_hypapp_arch_param_x86vmx_cpustate_activity_t sipi_activity;
 			xc_hypapp_arch_param_x86vmx_cpustate_desc_t sipi_desc;
 
-			//sipi_ap = XMHF_SLAB_CALL(xc_api_cpustate_get(context_desc, XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_ACTIVITY));
             srval = XMHF_SLAB_CALL_P2P(xcapi, XMHF_SLAB_XCIHUB_INDEX, XMHF_SLAB_XCAPI_INDEX, XMHF_SLAB_XCAPI_FNXCAPICPUSTATEGET, XMHF_SLAB_XCAPI_FNXCAPICPUSTATEGET_SIZE, context_desc, (u64)XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_ACTIVITY);
             sipi_ap = srval.retval_xc_hypapp_arch_param;
 
 			sipi_activity = sipi_ap.param.activity;
-			//sipi_ap = XMHF_SLAB_CALL(xc_api_cpustate_get(context_desc, XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_DESC));
             srval = XMHF_SLAB_CALL_P2P(xcapi, XMHF_SLAB_XCIHUB_INDEX, XMHF_SLAB_XCAPI_INDEX, XMHF_SLAB_XCAPI_FNXCAPICPUSTATEGET, XMHF_SLAB_XCAPI_FNXCAPICPUSTATEGET_SIZE, context_desc, (u64)XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_DESC);
             sipi_ap = srval.retval_xc_hypapp_arch_param;
 
@@ -627,12 +586,10 @@ static void _vmx_intercept_handler(context_desc_t context_desc, struct regs x86g
 
 			sipi_ap.operation = XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_ACTIVITY;
 			sipi_ap.param.activity = sipi_activity;
-			//XMHF_SLAB_CALL(xc_api_cpustate_set(context_desc, sipi_ap));
             XMHF_SLAB_CALL_P2P(xcapi, XMHF_SLAB_XCIHUB_INDEX, XMHF_SLAB_XCAPI_INDEX, XMHF_SLAB_XCAPI_FNXCAPICPUSTATESET, XMHF_SLAB_XCAPI_FNXCAPICPUSTATESET_SIZE, context_desc, sipi_ap);
 
 			sipi_ap.operation = XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_DESC;
 			sipi_ap.param.desc = sipi_desc;
-			//XMHF_SLAB_CALL(xc_api_cpustate_set(context_desc, sipi_ap));
             XMHF_SLAB_CALL_P2P(xcapi, XMHF_SLAB_XCIHUB_INDEX, XMHF_SLAB_XCAPI_INDEX, XMHF_SLAB_XCAPI_FNXCAPICPUSTATESET, XMHF_SLAB_XCAPI_FNXCAPICPUSTATESET_SIZE, context_desc, sipi_ap);
 
 		}
@@ -660,7 +617,6 @@ void xmhf_partition_eventhub_arch_x86vmx(struct regs *cpugprs){
 	//serialize
     spin_lock(&_xc_partition_eventhub_lock);
 
-	//context_desc = XMHF_SLAB_CALL(xc_api_partition_getcontextdesc(xmhf_baseplatform_arch_x86_getcpulapicid()));
 	srval = XMHF_SLAB_CALL_P2P(xcapi, XMHF_SLAB_XCIHUB_INDEX, XMHF_SLAB_XCAPI_INDEX, XMHF_SLAB_XCAPI_FNXCAPIPARTITIONGETCONTEXTDESC, XMHF_SLAB_XCAPI_FNXCAPIPARTITIONGETCONTEXTDESC_SIZE, xmhf_baseplatform_arch_x86_getcpulapicid());
     context_desc = srval.retval_context_desc;
 	if(context_desc.cpu_desc.cpu_index == XC_PARTITION_INDEX_INVALID || context_desc.partition_desc.partition_index == XC_PARTITION_INDEX_INVALID){
@@ -669,7 +625,6 @@ void xmhf_partition_eventhub_arch_x86vmx(struct regs *cpugprs){
 	}
 
 	//set cpu gprs state based on cpugprs
-	//cpustateparams = XMHF_SLAB_CALL(xc_api_cpustate_get(context_desc, XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_CPUGPRS));
     srval = XMHF_SLAB_CALL_P2P(xcapi, XMHF_SLAB_XCIHUB_INDEX, XMHF_SLAB_XCAPI_INDEX, XMHF_SLAB_XCAPI_FNXCAPICPUSTATEGET, XMHF_SLAB_XCAPI_FNXCAPICPUSTATEGET_SIZE, context_desc, (u64)XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_CPUGPRS);
     cpustateparams = srval.retval_xc_hypapp_arch_param;
 
@@ -682,12 +637,10 @@ void xmhf_partition_eventhub_arch_x86vmx(struct regs *cpugprs){
 	x86gprs.ecx = cpustateparams.param.cpugprs.ecx = cpugprs->ecx;
 	x86gprs.eax = cpustateparams.param.cpugprs.eax = cpugprs->eax;
 	cpustateparams.operation = XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_CPUGPRS;
-	//XMHF_SLAB_CALL(xc_api_cpustate_set(context_desc, cpustateparams));
     XMHF_SLAB_CALL_P2P(xcapi, XMHF_SLAB_XCIHUB_INDEX, XMHF_SLAB_XCAPI_INDEX, XMHF_SLAB_XCAPI_FNXCAPICPUSTATESET, XMHF_SLAB_XCAPI_FNXCAPICPUSTATESET_SIZE, context_desc, cpustateparams);
 
 	_vmx_intercept_handler(context_desc, x86gprs);
 
-	//cpustateparams = XMHF_SLAB_CALL(xc_api_cpustate_get(context_desc, XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_CPUGPRS));
     srval = XMHF_SLAB_CALL_P2P(xcapi, XMHF_SLAB_XCIHUB_INDEX, XMHF_SLAB_XCAPI_INDEX, XMHF_SLAB_XCAPI_FNXCAPICPUSTATEGET, XMHF_SLAB_XCAPI_FNXCAPICPUSTATEGET_SIZE, context_desc, (u64)XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_CPUGPRS);
     cpustateparams = srval.retval_xc_hypapp_arch_param;
 

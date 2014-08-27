@@ -54,9 +54,7 @@
 
 #include <xcrichguest.h>
 
-#define __XMHF_SLAB_CALLER_INDEX__	XMHF_SLAB_XCRICHGUEST_INDEX
 #include <xcapi.h>
-#undef __XMHF_SLAB_CALLER_INDEX__
 
 
 static struct _memorytype _vmx_ept_memorytypes[MAX_MEMORYTYPE_ENTRIES]; //EPT memory types array
@@ -338,13 +336,7 @@ static void _vmx_setupEPT(context_desc_t context_desc){
 		}
 
 		//_XDPRINTF_("\n%s: gpa=%x, proceedig to call xc_api_hpt_setentry (esp=%x)\n", __FUNCTION__, (u32)gpa, read_esp());
-		//XMHF_SLAB_CALL(xc_api_hpt_setentry(context_desc, gpa, p_table_value));
 		XMHF_SLAB_CALL_P2P(xcapi, XMHF_SLAB_XCRICHGUEST_INDEX, XMHF_SLAB_XCAPI_INDEX, XMHF_SLAB_XCAPI_FNXCAPIHPTSETENTRY, XMHF_SLAB_XCAPI_FNXCAPIHPTSETENTRY_SIZE, context_desc, gpa, p_table_value);
-        //srval = XMHF_SLAB_CALL_P2P(xcapi, XMHF_SLAB_XCRICHGUEST_INDEX, XMHF_SLAB_XCAPI_INDEX, XMHF_SLAB_XCAPI_FNXCAPIHPTGETENTRY, XMHF_SLAB_XCAPI_FNXCAPIHPTGETENTRY_SIZE, context_desc, gpa);
-        //if(srval.retval_u64 != p_table_value){
-        //   _XDPRINTF_("%s: halting since set/get entry don;t match\n", __FUNCTION__);
-        //    HALT();
-        //}
 		//_XDPRINTF_("\n%s: back, esp=%x\n", __FUNCTION__, read_esp());
 	}
 }
@@ -373,7 +365,6 @@ static bool xmhf_smpguest_arch_readu16(context_desc_t context_desc, const void *
 
 		srval = XMHF_SLAB_CALL_P2P(xcapi, XMHF_SLAB_XCRICHGUEST_INDEX, XMHF_SLAB_XCAPI_INDEX, XMHF_SLAB_XCAPI_FNXCAPIHPTLVL2PAGEWALK, XMHF_SLAB_XCAPI_FNXCAPIHPTLVL2PAGEWALK_SIZE, context_desc, guestaddress);
         tmp = (u16 *)(u32)srval.retval_u64;
-		//u16 *tmp = (u16 *)XMHF_SLAB_CALL(xc_api_hpt_lvl2pagewalk(context_desc, guestaddress));
 		if((u32)tmp == 0xFFFFFFFFUL || valueptr == NULL)
 			return false;
 		*valueptr = xmhfhw_sysmemaccess_readu16((u32)tmp);
@@ -386,7 +377,6 @@ static bool xmhf_smpguest_arch_writeu16(context_desc_t context_desc, const void 
 
 		srval = XMHF_SLAB_CALL_P2P(xcapi, XMHF_SLAB_XCRICHGUEST_INDEX, XMHF_SLAB_XCAPI_INDEX, XMHF_SLAB_XCAPI_FNXCAPIHPTLVL2PAGEWALK, XMHF_SLAB_XCAPI_FNXCAPIHPTLVL2PAGEWALK_SIZE, context_desc, guestaddress);
         tmp = (u16 *)(u32)srval.retval_u64;
-		//u16 *tmp = (u16 *)XMHF_SLAB_CALL(xc_api_hpt_lvl2pagewalk(context_desc, guestaddress));
 		if((u32)tmp == 0xFFFFFFFFUL ||
 			( ((u32)tmp >= xcbootinfo->physmem_base) && ((u32)tmp <= (xcbootinfo->physmem_base+xcbootinfo->size)) )
 		  )
@@ -402,7 +392,6 @@ static bool xmhf_smpguest_arch_memcpyfrom(context_desc_t context_desc, void *buf
 		srval = XMHF_SLAB_CALL_P2P(xcapi, XMHF_SLAB_XCRICHGUEST_INDEX, XMHF_SLAB_XCAPI_INDEX, XMHF_SLAB_XCAPI_FNXCAPIHPTLVL2PAGEWALK, XMHF_SLAB_XCAPI_FNXCAPIHPTLVL2PAGEWALK_SIZE, context_desc, guestaddress);
         guestbuffer = (u8 *)(u32)srval.retval_u64;
 
-	//u8 *guestbuffer = (u8 *)XMHF_SLAB_CALL(xc_api_hpt_lvl2pagewalk(context_desc, guestaddress));
 	if((u32)guestbuffer == 0xFFFFFFFFUL)
 		return false;
 	xmhfhw_sysmemaccess_copy(buffer, gpa2hva(guestbuffer), numbytes);
@@ -415,7 +404,6 @@ static bool xmhf_smpguest_arch_memcpyto(context_desc_t context_desc, void *guest
 		srval = XMHF_SLAB_CALL_P2P(xcapi, XMHF_SLAB_XCRICHGUEST_INDEX, XMHF_SLAB_XCAPI_INDEX, XMHF_SLAB_XCAPI_FNXCAPIHPTLVL2PAGEWALK, XMHF_SLAB_XCAPI_FNXCAPIHPTLVL2PAGEWALK_SIZE, context_desc, guestaddress);
         guestbuffer = (u8 *)(u32)srval.retval_u64;
 
-	//u8 *guestbuffer = (u8 *)XMHF_SLAB_CALL(xc_api_hpt_lvl2pagewalk(context_desc, guestaddress));
 	if((u32)guestbuffer == 0xFFFFFFFFUL ||
 		( ((u32)guestbuffer >= xcbootinfo->physmem_base) && ((u32)guestbuffer <= (xcbootinfo->physmem_base+xcbootinfo->size)) )
 	  )
@@ -458,13 +446,11 @@ void xcrichguest_arch_setupguestOSstate(context_desc_t context_desc){
 	//--------------------------------------------------------------------------------------------------------------------------------
 	//setup guest state
 	//CR0, real-mode, PE and PG bits cleared
-	//ap = XMHF_SLAB_CALL(xc_api_cpustate_get(context_desc, XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_CONTROLREGS));
 	srval = XMHF_SLAB_CALL_P2P(xcapi, XMHF_SLAB_XCRICHGUEST_INDEX, XMHF_SLAB_XCAPI_INDEX, XMHF_SLAB_XCAPI_FNXCAPICPUSTATEGET, XMHF_SLAB_XCAPI_FNXCAPICPUSTATEGET_SIZE, context_desc, (u64)XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_CONTROLREGS);
     ap = srval.retval_xc_hypapp_arch_param;
 	ap.operation = XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_CONTROLREGS;
 	ap.param.controlregs.cr0 = ap.param.controlregs.cr0 & ~(CR0_PE) & ~(CR0_PG);
 	ap.param.controlregs.cr3 = 0;
-	//XMHF_SLAB_CALL(xc_api_cpustate_set(context_desc, ap));
     XMHF_SLAB_CALL_P2P(xcapi, XMHF_SLAB_XCRICHGUEST_INDEX, XMHF_SLAB_XCAPI_INDEX, XMHF_SLAB_XCAPI_FNXCAPICPUSTATESET, XMHF_SLAB_XCAPI_FNXCAPICPUSTATESET_SIZE, context_desc, ap);
 
 	ap.operation = XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_CPUGPRS;
@@ -476,7 +462,6 @@ void xcrichguest_arch_setupguestOSstate(context_desc_t context_desc){
 	ap.param.cpugprs.edi = 0;
 	ap.param.cpugprs.ebp = 0;
 	ap.param.cpugprs.esp = 0;
-	//XMHF_SLAB_CALL(xc_api_cpustate_set(context_desc, ap));
     XMHF_SLAB_CALL_P2P(xcapi, XMHF_SLAB_XCRICHGUEST_INDEX, XMHF_SLAB_XCAPI_INDEX, XMHF_SLAB_XCAPI_FNXCAPICPUSTATESET, XMHF_SLAB_XCAPI_FNXCAPICPUSTATESET_SIZE, context_desc, ap);
 
 
@@ -490,7 +475,6 @@ void xcrichguest_arch_setupguestOSstate(context_desc_t context_desc){
 		ap.param.activity.activity_state = 3;	//wait-for-SIPI
 	}
 	ap.param.activity.interruptibility=0;
-	//XMHF_SLAB_CALL(xc_api_cpustate_set(context_desc, ap));
     XMHF_SLAB_CALL_P2P(xcapi, XMHF_SLAB_XCRICHGUEST_INDEX, XMHF_SLAB_XCAPI_INDEX, XMHF_SLAB_XCAPI_FNXCAPICPUSTATESET, XMHF_SLAB_XCAPI_FNXCAPICPUSTATESET_SIZE, context_desc, ap);
 
 
@@ -536,7 +520,6 @@ void xcrichguest_arch_setupguestOSstate(context_desc_t context_desc){
 	ap.param.desc.tr.limit 			 = 0  ;
 	ap.param.desc.tr.selector 		 = 0  ;
 	ap.param.desc.tr.access_rights 	 = 0x83  ;
-	//XMHF_SLAB_CALL(xc_api_cpustate_set(context_desc, ap));
     XMHF_SLAB_CALL_P2P(xcapi, XMHF_SLAB_XCRICHGUEST_INDEX, XMHF_SLAB_XCAPI_INDEX, XMHF_SLAB_XCAPI_FNXCAPICPUSTATESET, XMHF_SLAB_XCAPI_FNXCAPICPUSTATESET_SIZE, context_desc, ap);
 
 }
@@ -550,12 +533,10 @@ struct regs xcrichguest_arch_handle_guestmemoryreporting(context_desc_t context_
 	xc_hypapp_arch_param_x86vmx_cpustate_activity_t activity;
     slab_retval_t srval;
 
-	//ap = XMHF_SLAB_CALL(xc_api_cpustate_get(context_desc, XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_DESC));
 	srval = XMHF_SLAB_CALL_P2P(xcapi, XMHF_SLAB_XCRICHGUEST_INDEX, XMHF_SLAB_XCAPI_INDEX, XMHF_SLAB_XCAPI_FNXCAPICPUSTATEGET, XMHF_SLAB_XCAPI_FNXCAPICPUSTATEGET_SIZE, context_desc, (u64)XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_DESC);
     ap = srval.retval_xc_hypapp_arch_param;
 
 	desc = ap.param.desc;
-	//ap = XMHF_SLAB_CALL(xc_api_cpustate_get(context_desc, XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_ACTIVITY));
 	srval = XMHF_SLAB_CALL_P2P(xcapi, XMHF_SLAB_XCRICHGUEST_INDEX, XMHF_SLAB_XCAPI_INDEX, XMHF_SLAB_XCAPI_FNXCAPICPUSTATEGET, XMHF_SLAB_XCAPI_FNXCAPICPUSTATEGET_SIZE, context_desc, (u64)XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_ACTIVITY);
     ap = srval.retval_xc_hypapp_arch_param;
 
@@ -630,7 +611,6 @@ struct regs xcrichguest_arch_handle_guestmemoryreporting(context_desc_t context_
 		activity.rip+=3;
 		ap.param.activity = activity;
 		ap.operation = XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_ACTIVITY;
-		//XMHF_SLAB_CALL(xc_api_cpustate_set(context_desc, ap));
         XMHF_SLAB_CALL_P2P(xcapi, XMHF_SLAB_XCRICHGUEST_INDEX, XMHF_SLAB_XCAPI_INDEX, XMHF_SLAB_XCAPI_FNXCAPICPUSTATESET, XMHF_SLAB_XCAPI_FNXCAPICPUSTATESET_SIZE, context_desc, ap);
 
 		return r;
@@ -649,13 +629,11 @@ struct regs xcrichguest_arch_handle_guestmemoryreporting(context_desc_t context_
 	activity.rip = ip;
 	ap.param.activity = activity;
 	ap.operation = XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_ACTIVITY;
-	//XMHF_SLAB_CALL(xc_api_cpustate_set(context_desc, ap));
     XMHF_SLAB_CALL_P2P(xcapi, XMHF_SLAB_XCRICHGUEST_INDEX, XMHF_SLAB_XCAPI_INDEX, XMHF_SLAB_XCAPI_FNXCAPICPUSTATESET, XMHF_SLAB_XCAPI_FNXCAPICPUSTATESET_SIZE, context_desc, ap);
 	desc.cs.base = (cs *16);
 	desc.cs.selector = cs;
 	ap.param.desc = desc;
 	ap.operation = XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_DESC;
-	//XMHF_SLAB_CALL(xc_api_cpustate_set(context_desc, ap));
     XMHF_SLAB_CALL_P2P(xcapi, XMHF_SLAB_XCRICHGUEST_INDEX, XMHF_SLAB_XCAPI_INDEX, XMHF_SLAB_XCAPI_FNXCAPICPUSTATESET, XMHF_SLAB_XCAPI_FNXCAPICPUSTATESET_SIZE, context_desc, ap);
 
 	return r;

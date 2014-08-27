@@ -54,10 +54,8 @@
 
 #include <xcrichguest.h>
 
-#define __XMHF_SLAB_CALLER_INDEX__	XMHF_SLAB_XCRICHGUEST_INDEX
 #include <xcapi.h>
 #include <xhhyperdep.h>	//TODO: remove this hardcoded hypapp dependency
-#undef __XMHF_SLAB_CALLER_INDEX__
 
 slab_retval_t xcrichguest_interface(u32 src_slabid, u32 dst_slabid, u32 fn_id, u32 fn_paramsize, ...){
 	slab_retval_t srval;
@@ -105,7 +103,6 @@ static context_desc_t _xcrichguest_setup(u32 partition_index, u32 cpuid, bool is
     slab_retval_t srval;
 
 	//add cpu to the richguest partition
-	//context_desc = XMHF_SLAB_CALL(xc_api_partition_addcpu(partition_index, cpuid, is_bsp));
     srval = XMHF_SLAB_CALL_P2P(xcapi, XMHF_SLAB_XCRICHGUEST_INDEX, XMHF_SLAB_XCAPI_INDEX, XMHF_SLAB_XCAPI_FNXCAPIPARTITIONADDCPU, XMHF_SLAB_XCAPI_FNXCAPIPARTITIONADDCPU_SIZE, partition_index, cpuid, is_bsp);
     context_desc = srval.retval_context_desc;
 	//bail out if we could not add cpu to the rich guest partition
@@ -176,9 +173,7 @@ bool xcrichguest_entry(u32 cpuid, bool is_bsp){
 
 		//call app main
 		_XDPRINTF_("\n%s: proceeding to call xmhfhypapp_main on BSP", __FUNCTION__);
-		//XMHF_SLAB_CALL(xmhf_hypapp_initialization(context_desc, hypappenvb));
         XMHF_SLAB_CALL_P2P(xhhyperdep, XMHF_SLAB_XCRICHGUEST_INDEX, XMHF_SLAB_XHHYPERDEP_INDEX, XMHF_SLAB_HYPAPP_FNINITIALIZATION, XMHF_SLAB_HYPAPP_FNINITIALIZATION_SIZE, context_desc, hypappenvb );
-
 		_XDPRINTF_("\n%s: came back into core", __FUNCTION__);
 	}
 
@@ -201,7 +196,6 @@ bool xcrichguest_entry(u32 cpuid, bool is_bsp){
 	_XDPRINTF_("\n%s[%u]: starting in partition...\n", __FUNCTION__, context_desc.cpu_desc.cpu_index);
 
 	//xmhf_partition_start(context_desc.cpu_desc.cpu_index);
-	//if(!XMHF_SLAB_CALL(xc_api_partition_startcpu(context_desc))){
 	srval = XMHF_SLAB_CALL_P2P(xcapi, XMHF_SLAB_XCRICHGUEST_INDEX, XMHF_SLAB_XCAPI_INDEX, XMHF_SLAB_XCAPI_FNXCAPIPARTITIONSTARTCPU, XMHF_SLAB_XCAPI_FNXCAPIPARTITIONSTARTCPU_SIZE, context_desc);
     if(!srval.retval_bool){
 		_XDPRINTF_("\n%s: should not be here. HALTING!", __FUNCTION__);
@@ -210,11 +204,4 @@ bool xcrichguest_entry(u32 cpuid, bool is_bsp){
 }
 
 ///////
-//XMHF_SLAB("xcrichguest")
-//
-//XMHF_SLAB_DEFINTERFACE(
-//	XMHF_SLAB_DEFEXPORTFN(xcrichguest_entry, XMHF_SLAB_XCRICHGUEST_FNENTRY, XMHF_SLAB_FN_RETTYPE_NORMAL)
-//	XMHF_SLAB_DEFEXPORTFN(xcrichguest_arch_handle_guestmemoryreporting, XMHF_SLAB_XCRICHGUEST_FNARCHHANDLEGUESTMEMORYREPORTING, XMHF_SLAB_FN_RETTYPE_AGGREGATE)
-//)
-
 XMHF_SLAB_DEF(xcrichguest)
