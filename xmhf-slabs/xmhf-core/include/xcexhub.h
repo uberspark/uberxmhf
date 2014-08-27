@@ -46,32 +46,19 @@
 
 
 /*
- * 
- *  XMHF core exception handling slab 
- * 
+ *
+ *  XMHF core exception handling slab
+ *
  *  author: amit vasudevan (amitvasudevan@acm.org)
  */
 
 #ifndef __XCEXHUB_H__
 #define __XCEXHUB_H__
 
-//#define 	XMHF_SLAB_XCEXHUB_FNXCEXHUBINITIALIZE	0
 
 #ifndef __ASSEMBLY__
 
 slab_retval_t xcexhub_interface(u32 src_slabid, u32 dst_slabid, u32 fn_id, u32 fn_paramsize, ...);
-
-//#ifdef __XMHF_SLAB_CALLER_INDEX__ 
-
-//XMHF_SLAB_DEFIMPORTFN(arch_x86_idtdesc_t xcexhub_initialize(void),	XMHF_SLAB_DEFIMPORTFNSTUB(__XMHF_SLAB_CALLER_INDEX__, XMHF_SLAB_XCEXHUB_INDEX,	XMHF_SLAB_XCEXHUB_FNXCEXHUBINITIALIZE, (0)			, sizeof(arch_x86_idtdesc_t), XMHF_SLAB_FN_RETTYPE_AGGREGATE)								)
-//XMHF_SLAB_DEFIMPORTFN(void, xcexhub_initialize, (void),	XMHF_SLAB_DEFIMPORTFNSTUB(__XMHF_SLAB_CALLER_INDEX__, XMHF_SLAB_XCEXHUB_INDEX,	XMHF_SLAB_XCEXHUB_FNXCEXHUBINITIALIZE, (0)			, (0), XMHF_SLAB_FN_RETTYPE_NORMAL)								)
-
-//#else 	//!__XMHF_SLAB_CALLER_INDEX__
-
-//arch_x86_idtdesc_t xcexhub_initialize(void);
-//void xcexhub_initialize(void);
-
-//#endif	//__XMHF_SLAB_CALLER_INDEX__
 
 //----------------------------------------------------------------------
 //ARCH. BACKENDS
