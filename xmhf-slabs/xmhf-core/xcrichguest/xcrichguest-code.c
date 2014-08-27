@@ -176,7 +176,9 @@ bool xcrichguest_entry(u32 cpuid, bool is_bsp){
 
 		//call app main
 		_XDPRINTF_("\n%s: proceeding to call xmhfhypapp_main on BSP", __FUNCTION__);
-		XMHF_SLAB_CALL(xmhf_hypapp_initialization(context_desc, hypappenvb));
+		//XMHF_SLAB_CALL(xmhf_hypapp_initialization(context_desc, hypappenvb));
+        XMHF_SLAB_CALL_P2P(xhhyperdep, XMHF_SLAB_XCRICHGUEST_INDEX, XMHF_SLAB_XHHYPERDEP_INDEX, XMHF_SLAB_HYPAPP_FNINITIALIZATION, XMHF_SLAB_HYPAPP_FNINITIALIZATION_SIZE, context_desc, hypappenvb );
+
 		_XDPRINTF_("\n%s: came back into core", __FUNCTION__);
 	}
 
