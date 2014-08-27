@@ -177,7 +177,8 @@ static struct regs _vmx_handle_intercept_rdmsr(context_desc_t context_desc, stru
 //---intercept handler (EPT voilation)----------------------------------
 static void _vmx_handle_intercept_eptviolation(context_desc_t context_desc, u32 gpa, u32 gva, u32 errorcode, struct regs r __attribute__((unused))){
 
-	XMHF_SLAB_CALL(xmhf_hypapp_handleintercept_hptfault(context_desc, gpa, gva,	(errorcode & 7)));
+	//XMHF_SLAB_CALL(xmhf_hypapp_handleintercept_hptfault(context_desc, gpa, gva,	(errorcode & 7)));
+    XMHF_SLAB_CALL_P2P(xhhyperdep, XMHF_SLAB_XCIHUB_INDEX, XMHF_SLAB_XHHYPERDEP_INDEX, XMHF_SLAB_HYPAPP_FNHANDLEINTERCEPTHPTFAULT, XMHF_SLAB_HYPAPP_FNHANDLEINTERCEPTHPTFAULT_SIZE, context_desc, (u64)gpa, (u64)gva, (u64)(errorcode & 7));
 }
 
 
@@ -185,6 +186,7 @@ static void _vmx_handle_intercept_eptviolation(context_desc_t context_desc, u32 
 static struct regs _vmx_handle_intercept_ioportaccess(context_desc_t context_desc, u32 access_size, u32 access_type,
 	u32 portnum, u32 stringio, struct regs r __attribute__((unused))){
 	u32 app_ret_status = APP_TRAP_CHAIN;
+    slab_retval_t srval;
 
 	HALT_ON_ERRORCOND(!stringio);	//we dont handle string IO intercepts
 
@@ -194,7 +196,9 @@ static struct regs _vmx_handle_intercept_ioportaccess(context_desc_t context_des
 		xc_hypapp_arch_param.param.cbtrapio.portnum = portnum;
 		xc_hypapp_arch_param.param.cbtrapio.access_type = access_type;
 		xc_hypapp_arch_param.param.cbtrapio.access_size = access_size;
-		app_ret_status=XMHF_SLAB_CALL(xmhf_hypapp_handleintercept_trap(context_desc, xc_hypapp_arch_param));
+		//app_ret_status=XMHF_SLAB_CALL(xmhf_hypapp_handleintercept_trap(context_desc, xc_hypapp_arch_param));
+        srval = XMHF_SLAB_CALL_P2P(xhhyperdep, XMHF_SLAB_XCIHUB_INDEX, XMHF_SLAB_XHHYPERDEP_INDEX, XMHF_SLAB_HYPAPP_FNHANDLEINTERCEPTTRAP, XMHF_SLAB_HYPAPP_FNHANDLEINTERCEPTTRAP_SIZE, context_desc, xc_hypapp_arch_param);
+        app_ret_status = srval.retval_u32;
 	}
 
 	if(app_ret_status == APP_TRAP_CHAIN){
@@ -368,7 +372,9 @@ static void _vmx_intercept_handler(context_desc_t context_desc, struct regs x86g
 					u64 hypercall_id = (u64)x86gprs.eax;
 					u64 hypercall_param = ((u64)x86gprs.edx << 32) | x86gprs.ecx;
 
-					if( XMHF_SLAB_CALL(xmhf_hypapp_handlehypercall(context_desc, hypercall_id, hypercall_param)) != APP_SUCCESS){
+					//if( XMHF_SLAB_CALL(xmhf_hypapp_handlehypercall(context_desc, hypercall_id, hypercall_param)) != APP_SUCCESS){
+					srval = XMHF_SLAB_CALL_P2P(xhhyperdep, XMHF_SLAB_XCIHUB_INDEX, XMHF_SLAB_XHHYPERDEP_INDEX, XMHF_SLAB_HYPAPP_FNHANDLEHYPERCALL, XMHF_SLAB_HYPAPP_FNHANDLEHYPERCALL_SIZE, context_desc, (u64)hypercall_id, (u64)hypercall_param);
+					if(srval.retval_u32 != APP_SUCCESS){
 						_XDPRINTF_("\nCPU(0x%02x): error(halt), unhandled hypercall 0x%08x!", context_desc.cpu_desc.cpu_index, x86gprs.eax);
 						HALT();
 					}
@@ -438,7 +444,8 @@ static void _vmx_intercept_handler(context_desc_t context_desc, struct regs x86g
 
 		case VMX_VMEXIT_INIT:{
 			_XDPRINTF_("\n***** VMEXIT_INIT xmhf_hypapp_handleshutdown\n");
-			XMHF_SLAB_CALL(xmhf_hypapp_handleshutdown(context_desc));
+			//XMHF_SLAB_CALL(xmhf_hypapp_handleshutdown(context_desc));
+            XMHF_SLAB_CALL_P2P(xhhyperdep, XMHF_SLAB_XCIHUB_INDEX, XMHF_SLAB_XHHYPERDEP_INDEX, XMHF_SLAB_HYPAPP_FNSHUTDOWN, XMHF_SLAB_HYPAPP_FNSHUTDOWN_SIZE, context_desc );
 			_XDPRINTF_("\nCPU(0x%02x): Fatal, xmhf_hypapp_handleshutdown returned. Halting!", context_desc.cpu_desc.cpu_index);
 			HALT();
 		}
@@ -560,7 +567,8 @@ static void _vmx_intercept_handler(context_desc_t context_desc, struct regs x86g
 
 			if(reason == TASK_SWITCH_GATE && type == INTR_TYPE_NMI){
 				_XDPRINTF_("\nCPU(0x%02x): NMI received (MP guest shutdown?)", context_desc.cpu_desc.cpu_index);
-				XMHF_SLAB_CALL(xmhf_hypapp_handleshutdown(context_desc));
+				//XMHF_SLAB_CALL(xmhf_hypapp_handleshutdown(context_desc));
+                XMHF_SLAB_CALL_P2P(xhhyperdep, XMHF_SLAB_XCIHUB_INDEX, XMHF_SLAB_XHHYPERDEP_INDEX, XMHF_SLAB_HYPAPP_FNSHUTDOWN, XMHF_SLAB_HYPAPP_FNSHUTDOWN_SIZE, context_desc );
 				_XDPRINTF_("\nCPU(0x%02x): warning, xmhf_hypapp_handleshutdown returned!", context_desc.cpu_desc.cpu_index);
 				_XDPRINTF_("\nCPU(0x%02x): HALTING!", context_desc.cpu_desc.cpu_index);
 				HALT();
