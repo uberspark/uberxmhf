@@ -50,19 +50,10 @@
 #ifndef __XCSMP_H__
 #define __XCSMP_H__
 
-//#define	XMHF_SLAB_XCSMP_FNENTRY	0
 
 #ifndef __ASSEMBLY__
 
 slab_retval_t xcsmp_interface(u32 src_slabid, u32 dst_slabid, u32 fn_id, u32 fn_paramsize, ...);
-
-//#ifdef __XMHF_SLAB_CALLER_INDEX__ 
-//
-//XMHF_SLAB_DEFIMPORTFN(bool, xcsmp_entry, (void), XMHF_SLAB_DEFIMPORTFNSTUB(__XMHF_SLAB_CALLER_INDEX__, XMHF_SLAB_XCSMP_INDEX, XMHF_SLAB_XCSMP_FNENTRY, (0), 0, XMHF_SLAB_FN_RETTYPE_NORMAL))
-//
-//#else 	//!__XMHF_SLAB_CALLER_INDEX__
-//
-//bool xcsmp_entry(void);
 
 //----------------------------------------------------------------------
 //ARCH. BACKENDS
@@ -70,8 +61,6 @@ slab_retval_t xcsmp_interface(u32 src_slabid, u32 dst_slabid, u32 fn_id, u32 fn_
 bool xcsmp_arch_dmaprot_reinitialize(void);
 bool xcsmp_arch_smpinitialize(void);
 
-
-//#endif	//__XMHF_SLAB_CALLER_INDEX__
 
 #endif //__ASSEMBLY__
 
