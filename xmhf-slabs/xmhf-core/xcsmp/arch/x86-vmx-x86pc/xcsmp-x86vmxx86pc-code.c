@@ -226,23 +226,25 @@ static void _xcsmp_container_vmx_wakeupAPs(void){
 
     memcpy((void *)(X86SMP_APBOOTSTRAP_DATASEG << 4), (void *)&apdata, sizeof(apdata));
 
-    _XDPRINTF_("%s: Halting. XMHF Tester Finished!\n");
-    HALT();
+    memcpy((void *)(X86SMP_APBOOTSTRAP_CODESEG << 4), (void *)&_ap_bootstrap_blob, PAGE_SIZE_4K);
+
+    //_XDPRINTF_("%s: Halting. XMHF Tester Finished!\n");
+    //HALT();
 
 
 	//step-1: setup AP boot-strap code at in the desired physical memory location
 	//note that we need an address < 1MB since the APs are woken up in real-mode
 	//we choose 0x10000 physical or 0x1000:0x0000 logical
-    {
-		*_ap_bootstrap_blob_cr3 = read_cr3();
-        *_ap_bootstrap_blob_cr4 = read_cr4();
-        *_ap_bootstrap_blob_runtime_entrypoint = (u32)&_ap_pmode_entry_with_paging;
-        #ifndef __XMHF_VERIFICATION__
-        //memcpy((void *)0x10000, (void *)&_ap_bootstrap_blob, sizeof(_ap_bootstrap_blob));
-        memcpy((void *)(X86SMP_APBOOTSTRAP_CODESEG << 4), (void *)&_ap_bootstrap_blob, PAGE_SIZE_4K);
-
-        #endif
-    }
+    //{
+	//	*_ap_bootstrap_blob_cr3 = read_cr3();
+    //    *_ap_bootstrap_blob_cr4 = read_cr4();
+    //    *_ap_bootstrap_blob_runtime_entrypoint = (u32)&_ap_pmode_entry_with_paging;
+    //    #ifndef __XMHF_VERIFICATION__
+    //    //memcpy((void *)0x10000, (void *)&_ap_bootstrap_blob, sizeof(_ap_bootstrap_blob));
+    //    memcpy((void *)(X86SMP_APBOOTSTRAP_CODESEG << 4), (void *)&_ap_bootstrap_blob, PAGE_SIZE_4K);
+    //
+    //    #endif
+    //}
 
 #if defined (__DRT__)
     //step-2: wake up the APs sending the INIT-SIPI-SIPI sequence as per the
