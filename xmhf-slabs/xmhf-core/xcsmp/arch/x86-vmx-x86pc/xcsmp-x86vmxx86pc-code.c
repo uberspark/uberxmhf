@@ -56,49 +56,47 @@
 #include <xcsmp.h>
 #include <xcexhub.h>
 
-//extern u8 _ap_bootstrap_blob[256];
+__attribute__((naked)) static void _ap_bootstrap_code(void) {
 
-__attribute__((naked)) __attribute((section (".data"))) static void _ap_bootstrap_blob(void) {
+    asm volatile (
+           " .code32 \r\n"
+           " movw %0, %%ax \r\n"
+           " movw %%ax, %%ds \r\n"
+           " movw %%ax, %%es \r\n"
+           " movw %%ax, %%ss \r\n"
+           " movw %%ax, %%fs \r\n"
+           " movw %%ax, %%gs \r\n"
 
-asm volatile (
-       " .code32 \r\n"
-       " movw %0, %%ax \r\n"
-       " movw %%ax, %%ds \r\n"
-       " movw %%ax, %%es \r\n"
-       " movw %%ax, %%ss \r\n"
-       " movw %%ax, %%fs \r\n"
-       " movw %%ax, %%gs \r\n"
+           " // set NX bit \r\n"
+           " movl $0xc0000080, %%ecx \r\n"
+           " rdmsr \r\n"
+           " orl $(1 << 11), %%eax \r\n"
+           " wrmsr \r\n"
 
-       " // set NX bit \r\n"
-       " movl $0xc0000080, %%ecx \r\n"
-       " rdmsr \r\n"
-       " orl $(1 << 11), %%eax \r\n"
-       " wrmsr \r\n"
+           " movl %1, %%ebx \r\n"
+           " movl (%%ebx), %%ebx \r\n"
+           " movl %%ebx, %%cr3 \r\n"
+           " movl %2, %%ebx \r\n"
+           " movl (%%ebx), %%ebx \r\n"
+           " movl %%ebx, %%cr4 \r\n"
+           " movl %3, %%ebx \r\n"
+           " movl (%%ebx), %%ebx \r\n"
 
-       " movl %1, %%ebx \r\n"
-       " movl (%%ebx), %%ebx \r\n"
-       " movl %%ebx, %%cr3 \r\n"
-       " movl %2, %%ebx \r\n"
-       " movl (%%ebx), %%ebx \r\n"
-       " movl %%ebx, %%cr4 \r\n"
-       " movl %3, %%ebx \r\n"
-       " movl (%%ebx), %%ebx \r\n"
+           " movl %%cr0, %%eax \r\n"
+           " orl $0x80000000, %%eax \r\n"
+           " movl %%eax, %%cr0 \r\n"
 
-       " movl %%cr0, %%eax \r\n"
-       " orl $0x80000000, %%eax \r\n"
-       " movl %%eax, %%cr0 \r\n"
+           " jmpl *%%ebx \r\n"
+           " hlt \r\n"
+           " .balign 4096 \r\n"
+            :
+            : "i" (__DS_CPL0),
+              "i" ((X86SMP_APBOOTSTRAP_DATASEG << 4) + offsetof(x86smp_apbootstrapdata_t, ap_cr3)),
+              "i" ((X86SMP_APBOOTSTRAP_DATASEG << 4) + offsetof(x86smp_apbootstrapdata_t, ap_cr4)),
+              "i" ((X86SMP_APBOOTSTRAP_DATASEG << 4) + offsetof(x86smp_apbootstrapdata_t, ap_entrypoint))
+            :
 
-       " jmpl *%%ebx \r\n"
-       " hlt \r\n"
-       " .balign 4096 \r\n"
-        :
-        : "i" (__DS_CPL0),
-          "i" ((X86SMP_APBOOTSTRAP_DATASEG << 4) + offsetof(x86smp_apbootstrapdata_t, ap_cr3)),
-          "i" ((X86SMP_APBOOTSTRAP_DATASEG << 4) + offsetof(x86smp_apbootstrapdata_t, ap_cr4)),
-          "i" ((X86SMP_APBOOTSTRAP_DATASEG << 4) + offsetof(x86smp_apbootstrapdata_t, ap_entrypoint))
-        :
-
-    );
+        );
 }
 
 //static u32 * _ap_bootstrap_blob_cr3 = (u32 *) & _ap_bootstrap_blob[0x02];
@@ -106,10 +104,10 @@ asm volatile (
 //static u32 * _ap_bootstrap_blob_runtime_entrypoint = (u32 *) &_ap_bootstrap_blob[0x0a];
 //static u8 * _ap_bootstrap_blob_mle_join_start = (u8 *) &_ap_bootstrap_blob[0x10];
 
-static u32 * _ap_bootstrap_blob_cr3 = (u32 *) ((u32)&_ap_bootstrap_blob + 0x03);
-static u32 * _ap_bootstrap_blob_cr4 = (u32 *) ((u32)&_ap_bootstrap_blob + 0x07);
-static u32 * _ap_bootstrap_blob_runtime_entrypoint = (u32 *) ((u32)&_ap_bootstrap_blob + 0x0b);
-static u8 * _ap_bootstrap_blob_mle_join_start = (u8 *) ((u32)&_ap_bootstrap_blob + 0x10);
+//static u32 * _ap_bootstrap_blob_cr3 = (u32 *) ((u32)&_ap_bootstrap_blob + 0x03);
+//static u32 * _ap_bootstrap_blob_cr4 = (u32 *) ((u32)&_ap_bootstrap_blob + 0x07);
+//static u32 * _ap_bootstrap_blob_runtime_entrypoint = (u32 *) ((u32)&_ap_bootstrap_blob + 0x0b);
+//static u8 * _ap_bootstrap_blob_mle_join_start = (u8 *) ((u32)&_ap_bootstrap_blob + 0x10);
 
 
 static mtrr_state_t _mtrrs;
@@ -203,7 +201,7 @@ static void _xcsmp_container_vmx_wakeupAPs(void){
 
     memcpy((void *)(X86SMP_APBOOTSTRAP_DATASEG << 4), (void *)&apdata, sizeof(apdata));
 
-    memcpy((void *)(X86SMP_APBOOTSTRAP_CODESEG << 4), (void *)&_ap_bootstrap_blob, PAGE_SIZE_4K);
+    memcpy((void *)(X86SMP_APBOOTSTRAP_CODESEG << 4), (void *)&_ap_bootstrap_code, PAGE_SIZE_4K);
 
     //_XDPRINTF_("%s: Halting. XMHF Tester Finished!\n");
     //HALT();
@@ -261,8 +259,8 @@ static void _xcsmp_container_vmx_wakeupAPs(void){
         // 16-bit mode.  We get to skip that.
         //_XDPRINTF_("\nBSP: _mle_join_start = 0x%08x, _ap_bootstrap_start = 0x%08x",
 		//	(u32)_mle_join_start, (u32)_ap_bootstrap_start);
-        _XDPRINTF_("\nBSP: _ap_bootstrap_blob_mle_join_start = 0x%08x, _ap_bootstrap_blob = 0x%08x",
-			(u32)_ap_bootstrap_blob_mle_join_start, (u32)_ap_bootstrap_blob);
+        //_XDPRINTF_("\nBSP: _ap_bootstrap_blob_mle_join_start = 0x%08x, _ap_bootstrap_blob = 0x%08x",
+		//	(u32)_ap_bootstrap_blob_mle_join_start, (u32)_ap_bootstrap_blob);
 
         // enable SMIs on BSP before waking APs (which will enable them on APs)
         // because some SMM may take immediate SMI and hang if AP gets in first
