@@ -61,37 +61,8 @@
 __attribute__((naked)) __attribute((section (".data"))) static void _ap_bootstrap_blob(void) {
 
 asm volatile (
-       ".code16 \r\n"
-       " _ap_bootstrap_start: \r\n"
-       " jmp ap_bootstrap_bypassdata \r\n"
-       " _ap_cr3_value: \r\n"
-       " .long 0 \r\n"
-       " _ap_cr4_value: \r\n"
-       " .long 0 \r\n"
-       " _ap_runtime_entrypoint: \r\n"
-       " .long 0 \r\n"
-       " .align 16 \r\n"
-       " _ap_mle_join_start: \r\n"
-       " .long _ap_gdt_end - _ap_gdt_start - 1 // gdt_limit \r\n"
-       " .long _ap_gdt_start - _ap_bootstrap_start + 0x10000// gdt_base \r\n"
-       " .long 0x00000008 // CS \r\n"
-       " .long _ap_clear_pipe - _ap_bootstrap_start + 0x10000 // entry point \r\n"
-       " _mle_join_end: \r\n"
-       " _ap_gdtdesc: \r\n"
-       " .word _ap_gdt_end - _ap_gdt_start - 1 \r\n"
-       " .long _ap_gdt_start - _ap_bootstrap_start + 0x10000 \r\n"
-       " .align 16 \r\n"
-       " _ap_gdt_start: \r\n"
-       " .quad 0x0000000000000000 \r\n"
-       " .quad 0x00cf9a000000ffff \r\n"
-       " .quad 0x00cf92000000ffff \r\n"
-       " _ap_gdt_end: \r\n"
-       " .word 0 \r\n"
-       " .align 16 \r\n"
-       " ap_bootstrap_bypassdata: \r\n"
        " .code32 \r\n"
-       " _ap_clear_pipe: \r\n"
-       " movw $0x10, %%ax \r\n"
+       " movw %0, %%ax \r\n"
        " movw %%ax, %%ds \r\n"
        " movw %%ax, %%es \r\n"
        " movw %%ax, %%ss \r\n"
@@ -104,13 +75,13 @@ asm volatile (
        " orl $(1 << 11), %%eax \r\n"
        " wrmsr \r\n"
 
-       " movl %0, %%ebx \r\n"
-       " movl (%%ebx), %%ebx \r\n"
-       " movl %%ebx, %%cr3 \r\n"
        " movl %1, %%ebx \r\n"
        " movl (%%ebx), %%ebx \r\n"
-       " movl %%ebx, %%cr4 \r\n"
+       " movl %%ebx, %%cr3 \r\n"
        " movl %2, %%ebx \r\n"
+       " movl (%%ebx), %%ebx \r\n"
+       " movl %%ebx, %%cr4 \r\n"
+       " movl %3, %%ebx \r\n"
        " movl (%%ebx), %%ebx \r\n"
 
        " movl %%cr0, %%eax \r\n"
@@ -121,7 +92,8 @@ asm volatile (
        " hlt \r\n"
        " .balign 4096 \r\n"
         :
-        : "i" ((X86SMP_APBOOTSTRAP_DATASEG << 4) + offsetof(x86smp_apbootstrapdata_t, ap_cr3)),
+        : "i" (__DS_CPL0),
+          "i" ((X86SMP_APBOOTSTRAP_DATASEG << 4) + offsetof(x86smp_apbootstrapdata_t, ap_cr3)),
           "i" ((X86SMP_APBOOTSTRAP_DATASEG << 4) + offsetof(x86smp_apbootstrapdata_t, ap_cr4)),
           "i" ((X86SMP_APBOOTSTRAP_DATASEG << 4) + offsetof(x86smp_apbootstrapdata_t, ap_entrypoint))
         :
