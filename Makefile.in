@@ -18,7 +18,7 @@ export XMHFLIBS_SRC := $(realpath @XMHFLIBS_SRC@)
 
 # XMHF core source location
 export XMHFCORE_SRC := $(realpath xmhf-slabs/xmhf-core)
-XMHFCORE_INC = -I$(realpath xmhf-slabs/xmhf-core/) -I$(realpath xmhf-slabs/xmhf-core/include) 
+XMHFCORE_INC = -I$(realpath xmhf-slabs/xmhf-core/) -I$(realpath xmhf-slabs/xmhf-core/include)
 
 # libxmhfhw source location
 export LIBXMHFHW_SRC := $(realpath xmhf-libs/libxmhfhw)
@@ -92,17 +92,18 @@ export XMHF_BUILD_REVISION := $(XMHF_BUILD_REVISION_BRANCH)-$(XMHF_BUILD_REVISIO
 #-----basic flags for compiling and assembling
 FLAGS = -O0 -fno-builtin -fno-common -fno-strict-aliasing -iwithprefix include
 FLAGS += -fno-stack-protector
-FLAGS += -Wstrict-prototypes -Wdeclaration-after-statement 
-FLAGS += -Wno-pointer-arith -Wextra -Wfloat-equal 
+FLAGS += -Wstrict-prototypes -Wdeclaration-after-statement
+FLAGS += -Wno-pointer-arith -Wextra -Wfloat-equal
 #FLAGS += -Werror
 FLAGS += -Wsign-compare
 FLAGS += -Wno-bad-function-cast -Wall
 FLAGS += -Waggregate-return
 FLAGS += -Winline
-FLAGS += -m32 -march=k8 
-FLAGS += -mno-mmx -mno-sse -mno-sse2 -mno-sse3 -mno-ssse3 
-FLAGS += -mno-sse4.1 -mno-sse4.2 -mno-sse4 -mno-avx -mno-aes 
-FLAGS += -mno-pclmul -mno-sse4a -mno-sse5 -mno-3dnow -mno-popcnt -mno-abm
+FLAGS += -m32 -march=k8
+FLAGS += -mno-mmx -mno-sse -mno-sse2 -mno-sse3 -mno-ssse3
+FLAGS += -mno-sse4.1 -mno-sse4.2 -mno-sse4 -mno-avx -mno-aes
+#FLAGS += -mno-pclmul -mno-sse4a -mno-sse5 -mno-3dnow -mno-popcnt -mno-abm
+FLAGS += -mno-pclmul -mno-sse4a -mno-3dnow -mno-popcnt
 FLAGS += -nostdinc -pipe
 
 FLAGS += $(ADDL_INCLUDES)
@@ -206,7 +207,7 @@ subdirs: $(XMHFLIBS_SRC) $(XMHFCORE_SRC)
 	@echo generating final binaries...
 	cd $(XMHF_OBJDIR) && $(CAT) ./_objs_xmhf-bootloader/xmhf-bootloader.bin ./xmhf.bin > ./xmhf.tmp.img
 	cd $(XMHF_OBJDIR) && gzip -c ./xmhf.tmp.img > ./xmhf-$(XMHF_TARGET_TRIAD).bin.gz
-	cd $(XMHF_OBJDIR) && $(RM) -rf ./xmhf.tmp.img 
+	cd $(XMHF_OBJDIR) && $(RM) -rf ./xmhf.tmp.img
 	@echo xmhf binary generation SUCCESS
 
 .PHONY: install
@@ -225,7 +226,7 @@ test:
 
 
 #.PHONY: clean distclean init-late-clean
-.PHONY: clean distclean 
+.PHONY: clean distclean
 clean:
 	rm -rf *.html
 	rm -rf doc
