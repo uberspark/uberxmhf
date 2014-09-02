@@ -107,7 +107,7 @@ struct _memorytype {
 
 
 //---platform
-//VMX MSR indices 
+//VMX MSR indices
 #define INDEX_IA32_VMX_BASIC_MSR            0x0
 #define INDEX_IA32_VMX_PINBASED_CTLS_MSR    0x1
 #define INDEX_IA32_VMX_PROCBASED_CTLS_MSR   0x2
@@ -202,12 +202,12 @@ u32 xmhf_baseplatform_arch_x86_acpi_getRSDP(ACPI_RSDP *rsdp);
 //PCI subsystem initialization
 void xmhf_baseplatform_arch_x86_pci_initialize(void);
 
-//does a PCI type-1 write of PCI config space for a given bus, device, 
+//does a PCI type-1 write of PCI config space for a given bus, device,
 //function and index
 void xmhf_baseplatform_arch_x86_pci_type1_write(u32 bus, u32 device, u32 function, u32 index, u32 len,
 	u32 value);
-	
-//does a PCI type-1 read of PCI config space for a given bus, device, 
+
+//does a PCI type-1 read of PCI config space for a given bus, device,
 //function and index
 void xmhf_baseplatform_arch_x86_pci_type1_read(u32 bus, u32 device, u32 function, u32 index, u32 len,
 			u32 *value);
@@ -303,7 +303,7 @@ typedef struct {
 
 typedef struct {
 	u32 operation;
-	union {	
+	union {
 		struct regs cpugprs;
 		xc_hypapp_arch_param_x86vmx_cbtrapio_t cbtrapio;
 		xc_hypapp_arch_param_x86vmx_trapio_t trapio;
@@ -316,17 +316,17 @@ typedef struct {
 } __attribute__ ((packed)) xc_hypapp_arch_param_t;
 
 typedef struct {
-  u8 vmx_vmxon_region[PAGE_SIZE_4K];    		
-  u8 vmx_vmcs_region[PAGE_SIZE_4K];           
-  u8 vmx_msr_area_host_region[2*PAGE_SIZE_4K];		
-  u8 vmx_msr_area_guest_region[2*PAGE_SIZE_4K];		
-  u64 vmx_msrs[IA32_VMX_MSRCOUNT];  
+  u8 vmx_vmxon_region[PAGE_SIZE_4K];
+  u8 vmx_vmcs_region[PAGE_SIZE_4K];
+  u8 vmx_msr_area_host_region[2*PAGE_SIZE_4K];
+  u8 vmx_msr_area_guest_region[2*PAGE_SIZE_4K];
+  u64 vmx_msrs[IA32_VMX_MSRCOUNT];
   u64 vmx_msr_efer;
   u64 vmx_msr_efcr;
   struct regs x86gprs;
 } __attribute__((packed)) xc_cpuarchdata_x86vmx_t;
-	
-	
+
+
 typedef struct {
   u8 vmx_ept_pml4_table[PAGE_SIZE_4K];												//PML4 table
   u8 vmx_ept_pdp_table[PAGE_SIZE_4K];												//PDP table
@@ -369,7 +369,7 @@ void xmhf_baseplatform_arch_x86vmx_allocandsetupvcpus(u32 cpu_vendor);
 //--debug: dumpVMCS dumps VMCS contents
 //void xmhf_baseplatform_arch_x86vmx_dumpVMCS(VCPU *vcpu);
 
-void xmhf_memprot_arch_x86vmx_flushmappings(void); //flush hardware page table mappings (TLB) 
+void xmhf_memprot_arch_x86vmx_flushmappings(void); //flush hardware page table mappings (TLB)
 u64 xmhf_memprot_arch_x86vmx_get_EPTP(void); // get or set EPTP (only valid on Intel)
 void xmhf_memprot_arch_x86vmx_set_EPTP(u64 eptp);
 
