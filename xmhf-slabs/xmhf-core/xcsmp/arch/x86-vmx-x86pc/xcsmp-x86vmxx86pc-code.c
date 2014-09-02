@@ -179,9 +179,7 @@ static void _xcsmp_container_vmx_wakeupAPs(void){
     apdata.ap_gdtdesc_limit = sizeof(apdata.ap_gdt) - 1;
     apdata.ap_gdtdesc_base = (X86SMP_APBOOTSTRAP_DATASEG << 4) + offsetof(x86smp_apbootstrapdata_t, ap_gdt);
     apdata.ap_cs_selector = __CS_CPL0;
-    apdata.ap_cs_eip = (X86SMP_APBOOTSTRAP_CODESEG << 4);
-    apdata.ap_gdtdesc16_limit = 0;
-    apdata.ap_gdtdesc16_base = 0;
+    apdata.ap_eip = (X86SMP_APBOOTSTRAP_CODESEG << 4);
     apdata.ap_gdt[0] = 0x0000000000000000ULL;
     apdata.ap_gdt[1] = 0x00cf9a000000ffffULL;
     apdata.ap_gdt[2] = 0x00cf92000000ffffULL;
