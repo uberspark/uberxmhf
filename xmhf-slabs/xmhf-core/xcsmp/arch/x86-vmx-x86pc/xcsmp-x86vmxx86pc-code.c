@@ -293,7 +293,8 @@ static void _xcsmp_container_vmx_wakeupAPs(void){
         //__getsec_smctrl();
 
         #ifndef __XMHF_VERIFICATION__
-        mle_join = (mle_join_t*)((u32)_ap_bootstrap_blob_mle_join_start - (u32)_ap_bootstrap_blob + 0x10000); // XXX magic number
+        //mle_join = (mle_join_t*)((u32)_ap_bootstrap_blob_mle_join_start - (u32)_ap_bootstrap_blob + 0x10000); // XXX magic number
+        mle_join = (mle_join_t *)((u32)(X86SMP_APBOOTSTRAP_DATASEG << 4) + offsetof(x86smp_apbootstrapdata_t, ap_gdtdesc_limit));
         #endif
 
         _XDPRINTF_("\nBSP: mle_join.gdt_limit = %x", mle_join->gdt_limit);
