@@ -71,38 +71,6 @@
 
 #ifndef __ASSEMBLY__
 
-/*       " _ap_bootstrap_start: \r\n"
-       " jmp ap_bootstrap_bypassdata \r\n"
-       //" .global _ap_cr3_value \r\n"
-       " _ap_cr3_value: \r\n"
-       " .long 0 \r\n"
-       //" .global _ap_cr4_value \r\n"
-       " _ap_cr4_value: \r\n"
-       " .long 0 \r\n"
-       //" .global _ap_runtime_entrypoint \r\n"
-       " _ap_runtime_entrypoint: \r\n"
-       " .long 0 \r\n"
-       " .align 16 \r\n"
-       //" .global _ap_mle_join_start \r\n"
-       " _ap_mle_join_start: \r\n"
-       " .long _ap_gdt_end - _ap_gdt_start - 1 // gdt_limit \r\n"
-       " .long _ap_gdt_start - _ap_bootstrap_start + 0x10000// gdt_base \r\n"
-       " .long 0x00000008 // CS \r\n"
-       " .long _ap_clear_pipe - _ap_bootstrap_start + 0x10000 // entry point \r\n"
-       " _mle_join_end: \r\n"
-       " _ap_gdtdesc: \r\n"
-       " .word _ap_gdt_end - _ap_gdt_start - 1 \r\n"
-       " .long _ap_gdt_start - _ap_bootstrap_start + 0x10000 \r\n"
-       " .align 16 \r\n"
-       " _ap_gdt_start: \r\n"
-       " .quad 0x0000000000000000 \r\n"
-       " .quad 0x00cf9a000000ffff \r\n"
-       " .quad 0x00cf92000000ffff \r\n"
-       " _ap_gdt_end: \r\n"
-       " .word 0 \r\n"
-       " .align 16 \r\n"
-*/
-
 typedef struct {
     u32 ap_cr3;
     u32 ap_cr4;
@@ -110,9 +78,7 @@ typedef struct {
     u32 ap_gdtdesc_limit __attribute__((aligned(16)));
     u32 ap_gdtdesc_base;
     u32 ap_cs_selector;
-    u32 ap_cs_eip;
-    u16 ap_gdtdesc16_limit;
-    u32 ap_gdtdesc16_base;
+    u32 ap_eip;
     u64 ap_gdt[X86SMP_APBOOTSTRAP_MAXGDTENTRIES] __attribute__ ((aligned (16)));
 }__attribute__((aligned(16),packed)) x86smp_apbootstrapdata_t;
 
