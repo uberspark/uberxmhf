@@ -93,19 +93,19 @@ asm volatile (
        " .word 0 \r\n"
        " .align 16 \r\n"
        " ap_bootstrap_bypassdata: \r\n"
-       " movw $0x1000, %ax \r\n"
-       " movw %ax, %ds \r\n"
-       " movw %ax, %es \r\n"
-       " movw $0xFFFF, %sp \r\n"
-       " movw $0x4000, %ax \r\n"
-       " movw %ax, %ss \r\n"
-       " movw $0x0020, %si \r\n"
-       " lgdt (%si) \r\n"
-       " movl %cr0, %eax \r\n"
-       " orl $0x1, %eax \r\n"
-       " movl %eax, %cr0 \r\n"
+       //" movw $0x1000, %ax \r\n"
+       //" movw %ax, %ds \r\n"
+       //" movw %ax, %es \r\n"
+       //" movw $0xFFFF, %sp \r\n"
+       //" movw $0x4000, %ax \r\n"
+       //" movw %ax, %ss \r\n"
+       //" movw $0x0020, %si \r\n"
+       //" lgdt (%si) \r\n"
+       //" movl %cr0, %eax \r\n"
+       //" orl $0x1, %eax \r\n"
+       //" movl %eax, %cr0 \r\n"
 
-       " jmpl $0x08, $(_ap_clear_pipe - _ap_bootstrap_start + (0x1000 << 4)) \r\n"
+       //" jmpl $0x08, $(_ap_clear_pipe - _ap_bootstrap_start + (0x1000 << 4)) \r\n"
        " .code32 \r\n"
        " _ap_clear_pipe: \r\n"
        " movw $0x10, %ax \r\n"
@@ -222,7 +222,7 @@ static void _xcsmp_cpu_x86_wakeupAPs(void){
 
 //wake up application processors (cores) in the system
 static void _xcsmp_container_vmx_wakeupAPs(void){
-    static x86smp_apbootstrapdata_t apdata;
+    /*static x86smp_apbootstrapdata_t apdata;
 
     apdata.ap_cr3 = read_cr3();
     apdata.ap_cr4 = read_cr4();
@@ -246,6 +246,7 @@ static void _xcsmp_container_vmx_wakeupAPs(void){
 
     _XDPRINTF_("%s: Halting. XMHF Tester Finished!\n");
     HALT();
+*/
 
 	//step-1: setup AP boot-strap code at in the desired physical memory location
 	//note that we need an address < 1MB since the APs are woken up in real-mode
