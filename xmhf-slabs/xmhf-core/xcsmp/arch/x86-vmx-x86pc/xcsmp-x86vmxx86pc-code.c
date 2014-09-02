@@ -44,7 +44,7 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-/* 
+/*
  * XMHF core smp slab (xcsmp), x86-vmx-x86pc arch. backend
  * author: amit vasudevan (amitvasudevan@acm.org)
  */
@@ -56,13 +56,7 @@
 #include <xcsmp.h>
 #include <xcexhub.h>
 
-extern u8 _ap_bootstrap_blob[256];
-
 static mtrr_state_t _mtrrs;
-static u32 * _ap_bootstrap_blob_cr3 = (u32 *) & _ap_bootstrap_blob[0x02];
-static u32 * _ap_bootstrap_blob_cr4 = (u32 *) &_ap_bootstrap_blob[0x06];
-static u32 * _ap_bootstrap_blob_runtime_entrypoint = (u32 *) &_ap_bootstrap_blob[0x0a];
-static u8 * _ap_bootstrap_blob_mle_join_start = (u8 *) &_ap_bootstrap_blob[0x10];
 // platform cpu stacks
 static u8 _cpustack[MAX_PLATFORM_CPUS][MAX_PLATFORM_CPUSTACK_SIZE] __attribute__(( section(".stack") ));
 static bool _ap_pmode_entry_with_paging(void) __attribute__((naked));
@@ -71,6 +65,51 @@ static void _xcsmp_cpu_x86_smpinitialize_commonstart(void);
 static xc_cputable_t _cputable[MAX_PLATFORM_CPUS];
 // count of platform cpus
 static u32 _cpucount = 0;
+
+
+__attribute__((naked)) static void _ap_bootstrap_code(void) {
+
+    asm volatile (
+           " .code32 \r\n"
+           " movw %0, %%ax \r\n"
+           " movw %%ax, %%ds \r\n"
+           " movw %%ax, %%es \r\n"
+           " movw %%ax, %%ss \r\n"
+           " movw %%ax, %%fs \r\n"
+           " movw %%ax, %%gs \r\n"
+
+           " // set NX bit \r\n"
+           " movl $0xc0000080, %%ecx \r\n"
+           " rdmsr \r\n"
+           " orl $(1 << 11), %%eax \r\n"
+           " wrmsr \r\n"
+
+           " movl %1, %%ebx \r\n"
+           " movl (%%ebx), %%ebx \r\n"
+           " movl %%ebx, %%cr3 \r\n"
+           " movl %2, %%ebx \r\n"
+           " movl (%%ebx), %%ebx \r\n"
+           " movl %%ebx, %%cr4 \r\n"
+           " movl %3, %%ebx \r\n"
+           " movl (%%ebx), %%ebx \r\n"
+
+           " movl %%cr0, %%eax \r\n"
+           " orl $0x80000000, %%eax \r\n"
+           " movl %%eax, %%cr0 \r\n"
+
+           " jmpl *%%ebx \r\n"
+           " hlt \r\n"
+           " .balign 4096 \r\n"
+            :
+            : "i" (__DS_CPL0),
+              "i" ((X86SMP_APBOOTSTRAP_DATASEG << 4) + offsetof(x86smp_apbootstrapdata_t, ap_cr3)),
+              "i" ((X86SMP_APBOOTSTRAP_DATASEG << 4) + offsetof(x86smp_apbootstrapdata_t, ap_cr4)),
+              "i" ((X86SMP_APBOOTSTRAP_DATASEG << 4) + offsetof(x86smp_apbootstrapdata_t, ap_entrypoint))
+            :
+
+        );
+}
+
 
 
 static void _xcsmp_cpu_x86_savecpumtrrstate(void){
@@ -91,9 +130,9 @@ static void _xcsmp_cpu_x86_wakeupAPs(void){
 	rdmsr(MSR_APIC_BASE, &eax, &edx);
 	HALT_ON_ERRORCOND( edx == 0 ); //APIC is below 4G
 
-	//construct the command register address (offset 0x300)    
+	//construct the command register address (offset 0x300)
 	icr = (u32 *) (((u32)eax & 0xFFFFF000UL) + 0x300);
-    
+
 	//our AP boot-strap code is at physical memory location 0x10000.
 	//so use 0x10 as the vector (0x10000/0x1000 = 0x10)
 
@@ -109,7 +148,7 @@ static void _xcsmp_cpu_x86_wakeupAPs(void){
 		  val = *icr;
 		}while( (val & 0x1000) );
 	}
-  
+
 	//send SIPI (twice as per the MP protocol)
 	{
 		int i;
@@ -124,84 +163,62 @@ static void _xcsmp_cpu_x86_wakeupAPs(void){
 			  }while( (val & 0x1000) );
 			}
 		}
-	}    
+	}
 
 }
 
 
+
 //wake up application processors (cores) in the system
 static void _xcsmp_container_vmx_wakeupAPs(void){
+    static x86smp_apbootstrapdata_t apdata;
 
-	//step-1: setup AP boot-strap code at in the desired physical memory location 
-	//note that we need an address < 1MB since the APs are woken up in real-mode
-	//we choose 0x10000 physical or 0x1000:0x0000 logical
+    apdata.ap_cr3 = read_cr3();
+    apdata.ap_cr4 = read_cr4();
+    apdata.ap_entrypoint = (u32)&_ap_pmode_entry_with_paging;
+    apdata.ap_gdtdesc_limit = sizeof(apdata.ap_gdt) - 1;
+    apdata.ap_gdtdesc_base = (X86SMP_APBOOTSTRAP_DATASEG << 4) + offsetof(x86smp_apbootstrapdata_t, ap_gdt);
+    apdata.ap_cs_selector = __CS_CPL0;
+    apdata.ap_eip = (X86SMP_APBOOTSTRAP_CODESEG << 4);
+    apdata.ap_gdt[0] = 0x0000000000000000ULL;
+    apdata.ap_gdt[1] = 0x00cf9a000000ffffULL;
+    apdata.ap_gdt[2] = 0x00cf92000000ffffULL;
+
+    _XDPRINTF_("%s: sizeof(apdata)=%u bytes\n", __FUNCTION__, sizeof(apdata));
+    _XDPRINTF_("  apdata.ap_gdtdesc_limit at %08x\n", &apdata.ap_gdtdesc_limit);
+    _XDPRINTF_("  apdata.ap_gdt at %08x\n", &apdata.ap_gdt);
+
+    memcpy((void *)(X86SMP_APBOOTSTRAP_DATASEG << 4), (void *)&apdata, sizeof(apdata));
+
+    memcpy((void *)(X86SMP_APBOOTSTRAP_CODESEG << 4), (void *)&_ap_bootstrap_code, PAGE_SIZE_4K);
+
+#if defined (__DRT__)
     {
-		*_ap_bootstrap_blob_cr3 = read_cr3();
-        *_ap_bootstrap_blob_cr4 = read_cr4();
-        *_ap_bootstrap_blob_runtime_entrypoint = (u32)&_ap_pmode_entry_with_paging;
-        #ifndef __XMHF_VERIFICATION__
-        memcpy((void *)0x10000, (void *)_ap_bootstrap_blob, sizeof(_ap_bootstrap_blob));
-        #endif
-    }
-
-#if defined (__DRT__)	
-    //step-2: wake up the APs sending the INIT-SIPI-SIPI sequence as per the
-    //MP protocol. Use the APIC for IPI purposes.
-    if(!txt_is_launched()) { // XXX TODO: Do actual GETSEC[WAKEUP] in here?
-        _XDPRINTF_("\nBSP: Using APIC to awaken APs...");
-        _xcsmp_cpu_x86_wakeupAPs();
-        _XDPRINTF_("\nBSP: APs should be awake.");
-    }else{
-		//we ran SENTER, so do a GETSEC[WAKEUP]
         txt_heap_t *txt_heap;
         os_mle_data_t *os_mle_data;
         mle_join_t *mle_join;
         sinit_mle_data_t *sinit_mle_data;
         os_sinit_data_t *os_sinit_data;
 
-        // sl.c unity-maps 0xfed00000 for 2M so these should work fine 
-        #ifndef __XMHF_VERIFICATION__
         txt_heap = get_txt_heap();
-        //_XDPRINTF_("\ntxt_heap = 0x%08x", (u32)txt_heap);
         os_mle_data = get_os_mle_data_start(txt_heap);
-        (void)os_mle_data;
-        //_XDPRINTF_("\nos_mle_data = 0x%08x", (u32)os_mle_data);
         sinit_mle_data = get_sinit_mle_data_start(txt_heap);
-        //_XDPRINTF_("\nsinit_mle_data = 0x%08x", (u32)sinit_mle_data);
         os_sinit_data = get_os_sinit_data_start(txt_heap);
-        //_XDPRINTF_("\nos_sinit_data = 0x%08x", (u32)os_sinit_data);
-	#endif
-            
-        // Start APs.  Choose wakeup mechanism based on
-        // capabilities used. MLE Dev Guide says MLEs should
-        // support both types of Wakeup mechanism. 
-
-        // We are jumping straight into the 32-bit portion of the
-        // unity-mapped trampoline that starts at 64K
-        // physical. Without SENTER, or with AMD, APs start in
-        // 16-bit mode.  We get to skip that. 
-        //_XDPRINTF_("\nBSP: _mle_join_start = 0x%08x, _ap_bootstrap_start = 0x%08x",
-		//	(u32)_mle_join_start, (u32)_ap_bootstrap_start);
-        _XDPRINTF_("\nBSP: _ap_bootstrap_blob_mle_join_start = 0x%08x, _ap_bootstrap_blob = 0x%08x",
-			(u32)_ap_bootstrap_blob_mle_join_start, (u32)_ap_bootstrap_blob);
 
         // enable SMIs on BSP before waking APs (which will enable them on APs)
-        // because some SMM may take immediate SMI and hang if AP gets in first 
+        // because some SMM may take immediate SMI and hang if AP gets in first
         //_XDPRINTF_("Enabling SMIs on BSP\n");
         //__getsec_smctrl();
-                
-        #ifndef __XMHF_VERIFICATION__
-        mle_join = (mle_join_t*)((u32)_ap_bootstrap_blob_mle_join_start - (u32)_ap_bootstrap_blob + 0x10000); // XXX magic number
-        #endif
-        
+
+        mle_join = (mle_join_t *)((u32)(X86SMP_APBOOTSTRAP_DATASEG << 4) + offsetof(x86smp_apbootstrapdata_t, ap_gdtdesc_limit));
+
         _XDPRINTF_("\nBSP: mle_join.gdt_limit = %x", mle_join->gdt_limit);
         _XDPRINTF_("\nBSP: mle_join.gdt_base = %x", mle_join->gdt_base);
         _XDPRINTF_("\nBSP: mle_join.seg_sel = %x", mle_join->seg_sel);
-        _XDPRINTF_("\nBSP: mle_join.entry_point = %x", mle_join->entry_point);                
+        _XDPRINTF_("\nBSP: mle_join.entry_point = %x", mle_join->entry_point);
 
-	#ifndef __XMHF_VERIFICATION__
         write_priv_config_reg(TXTCR_MLE_JOIN, (uint64_t)(unsigned long)mle_join);
-		
+
         if (os_sinit_data->capabilities.rlp_wake_monitor) {
             _XDPRINTF_("\nBSP: joining RLPs to MLE with MONITOR wakeup");
             _XDPRINTF_("\nBSP: rlp_wakeup_addr = 0x%x", sinit_mle_data->rlp_wakeup_addr);
@@ -211,18 +228,15 @@ static void _xcsmp_container_vmx_wakeupAPs(void){
             __getsec_wakeup();
             _XDPRINTF_("\nBSP: GETSEC[WAKEUP] completed");
         }
-	#endif
+    }
 
-		
-	}
-	
 #else //!__DRT__
 
-        _XDPRINTF_("\nBSP: Using APIC to awaken APs...");
-        _xcsmp_cpu_x86_wakeupAPs();
-        _XDPRINTF_("\nBSP: APs should be awake.");
+    _XDPRINTF_("\nBSP: Using APIC to awaken APs...");
+    _xcsmp_cpu_x86_wakeupAPs();
+    _XDPRINTF_("\nBSP: APs should be awake.");
 
-#endif 
+#endif
 
 
 }
@@ -233,7 +247,7 @@ static bool _xcsmp_cpu_x86_isbsp(void){
   //read LAPIC base address from MSR
   rdmsr(MSR_APIC_BASE, &eax, &edx);
   HALT_ON_ERRORCOND( edx == 0 ); //APIC is below 4G
-  
+
   if(eax & 0x100)
     return true;
   else
@@ -247,19 +261,19 @@ static void _xcsmp_cpu_x86_smpinitialize_commonstart(void){
 	u32 cpuid = xmhf_baseplatform_arch_x86_getcpulapicid();
 	bool is_bsp = _xcsmp_cpu_x86_isbsp();
 	u32 bcr0;
-		
+
 	//initialize base CPU state
 	xmhfhw_cpu_initialize();
 
 	//replicate common MTRR state on this CPU
 	_xcsmp_cpu_x86_restorecpumtrrstate();
-  	
+
 	//set bit 5 (EM) of CR0 to be VMX compatible in case of Intel cores
 	bcr0 = read_cr0();
 	bcr0 |= 0x20;
 	write_cr0(bcr0);
 
-	//load TR 
+	//load TR
 	{
 	  u32 gdtstart = (u32)xmhf_baseplatform_arch_x86_getgdtbase();
 	  u16 trselector = 	__TRSEL;
@@ -271,7 +285,7 @@ static void _xcsmp_cpu_x86_smpinitialize_commonstart(void){
 		"lock andl $0xFFFF00FF, (%%edi)\r\n"
 		"lock orl  $0x00008900, (%%edi)\r\n"
 		"ltr %%ax\r\n"				//load TR
-	     : 
+	     :
 	     : "m"(gdtstart), "m"(trselector)
 	     : "edi", "eax"
 	  );
@@ -279,7 +293,7 @@ static void _xcsmp_cpu_x86_smpinitialize_commonstart(void){
 
 
 	_XDPRINTF_("\n%s: cpu %x, isbsp=%u, Proceeding to call init_entry...\n", __FUNCTION__, cpuid, is_bsp);
-	
+
 	if( XMHF_SLAB_CALL(xcrichguest_entry(cpuid, is_bsp)) ){
 		_XDPRINTF_("%s: Fatal. Should never be here. Halting!\n", __FUNCTION__);
 		HALT();
@@ -324,7 +338,7 @@ static bool _ap_pmode_entry_with_paging(void) __attribute__((naked)){
 	);
 
 	_xcsmp_cpu_x86_smpinitialize_commonstart();
-	
+
 }
 
 //======================================================================
@@ -340,19 +354,19 @@ bool xcsmp_arch_dmaprot_reinitialize(void){
 //initialize SMP
 bool xcsmp_arch_smpinitialize(void){
 	u32 i;
-	
+
 	_cpucount = xcbootinfo->cpuinfo_numentries;
-	
+
 	//initialize cpu table
 	for(i=0; i < _cpucount; i++){
 			_cputable[i].cpuid = xcbootinfo->cpuinfo_buffer[i].lapic_id;
 			_cputable[i].cpu_index = i;
 	}
-  
+
 	//save cpu MTRR state which we will later replicate on all APs
 	_xcsmp_cpu_x86_savecpumtrrstate();
 
-	//signal that basic base platform data structure initialization is complete 
+	//signal that basic base platform data structure initialization is complete
 	//(used by the exception handler component)
 	//g_bplt_initiatialized = true;
 
@@ -362,7 +376,7 @@ bool xcsmp_arch_smpinitialize(void){
 	}
 
 
-	//fall through to common code  
+	//fall through to common code
 	_XDPRINTF_("\nRelinquishing BSP thread and moving to common...");
 	if( _ap_pmode_entry_with_paging() ){
 		_XDPRINTF_("\nBSP must never get here. HALT!");

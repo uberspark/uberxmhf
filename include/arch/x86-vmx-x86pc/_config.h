@@ -64,15 +64,15 @@
 	#define __TARGET_SIZE_BOOTLOADER		0x00200000		//2MB
 
 	//physical address of XMHF secure loader + core runtime
-	//SL currently sits at absolute address 256MB (0x10000000). 
+	//SL currently sits at absolute address 256MB (0x10000000).
 	//core runtime is at an offset of 2M from this SL base address
 	#define __TARGET_BASE_SL				0x10400000		//256MB
 	#define __TARGET_SIZE_SL				0x00200000
-	
+
 	//physical address of XMHF hypapp
 	#define __TARGET_BASE_XMHFHYPAPP		0x1D000000      //480M
 	#define __TARGET_SIZE_XMHFHYPAPP		0x02000000		//32M
-//----------------------------------------------------------------------	
+//----------------------------------------------------------------------
 
 //"sl" parameter block magic value
 //#define SL_PARAMETER_BLOCK_MAGIC		0xDEADBEEF
@@ -84,13 +84,23 @@
 //needs to be 2 or 1 (4 is hw-only, 3 is sinit-only on Intel)
 #define EMHF_TPM_LOCALITY_PREF 2
 
-//where the guest OS boot record is loaded 
+//where the guest OS boot record is loaded
 #define __GUESTOSBOOTMODULE_BASE		0x7c00
 #define __GUESTOSBOOTMODULESUP1_BASE	0x7C00
 
+//----------------------------------------------------------------------
+
 //code segment of memory address where APs startup initially
 //address 0x1000:0x0000 or 0x10000 physical
-#define AP_BOOTSTRAP_CODE_SEG 			0x1000
+#define X86SMP_APBOOTSTRAP_CODESEG 			0x1000
+
+//data segment of memory address where APs startup initially
+//address 0x1100:0x0000 or 0x11000 physical
+#define X86SMP_APBOOTSTRAP_DATASEG 			0x1100
+
+#define X86SMP_APBOOTSTRAP_MAXGDTENTRIES    4
+
+//----------------------------------------------------------------------
 
 //TXT SENTER MLE specific constants
 #define TEMPORARY_HARDCODED_MLE_SIZE       0x10000
@@ -100,7 +110,7 @@
 //VMX Unrestricted Guest (UG) E820 hook support
 //we currently use the BIOS data area (BDA) unused region
 //at 0x0040:0x00AC
-#define	VMX_UG_E820HOOK_CS				(0x0040)	
+#define	VMX_UG_E820HOOK_CS				(0x0040)
 #define	VMX_UG_E820HOOK_IP				(0x00AC)
 
 
