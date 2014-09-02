@@ -136,7 +136,7 @@ asm volatile (
 
        " jmpl *%ebx \r\n"
        " hlt \r\n"
-       " .fill 256, 1, 0 \r\n"
+       " .balign 4096 \r\n"
 
     );
 }
@@ -231,7 +231,7 @@ static void _xcsmp_container_vmx_wakeupAPs(void){
         *_ap_bootstrap_blob_runtime_entrypoint = (u32)&_ap_pmode_entry_with_paging;
         #ifndef __XMHF_VERIFICATION__
         //memcpy((void *)0x10000, (void *)&_ap_bootstrap_blob, sizeof(_ap_bootstrap_blob));
-        memcpy((void *)0x10000, (void *)&_ap_bootstrap_blob, 256);
+        memcpy((void *)(X86SMP_APBOOTSTRAP_CODESEG << 4), (void *)&_ap_bootstrap_blob, PAGE_SIZE_4K);
 
         #endif
     }
