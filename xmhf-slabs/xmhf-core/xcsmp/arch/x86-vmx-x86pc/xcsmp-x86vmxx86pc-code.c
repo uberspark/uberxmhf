@@ -219,8 +219,33 @@ static void _xcsmp_cpu_x86_wakeupAPs(void){
 }
 
 
+
 //wake up application processors (cores) in the system
 static void _xcsmp_container_vmx_wakeupAPs(void){
+    static x86smp_apbootstrapdata_t apdata;
+
+    apdata.ap_cr3 = read_cr3();
+    apdata.ap_cr4 = read_cr4();
+    apdata.ap_entrypoint = (u32)&_ap_pmode_entry_with_paging;
+    apdata.ap_gdtdesc_limit = sizeof(apdata.ap_gdt) - 1;
+    apdata.ap_gdtdesc_base = (X86SMP_APBOOTSTRAP_DATASEG << 4) + offsetof(x86smp_apbootstrapdata_t, ap_gdt);
+    apdata.ap_cs_selector = __CS_CPL0;
+    apdata.ap_cs_eip = 0;
+    apdata.ap_gdtdesc16_limit = 0;
+    apdata.ap_gdtdesc16_base = 0;
+    apdata.ap_gdt[0] = 0;
+    apdata.ap_gdt[1] = 0;
+    apdata.ap_gdt[2] = 0;
+
+
+
+    _XDPRINTF_("%s: sizeof(apdata)=%u bytes\n", __FUNCTION__, sizeof(apdata));
+    _XDPRINTF_("  apdata.ap_gdtdesc_limit at %08x\n", &apdata.ap_gdtdesc_limit);
+    _XDPRINTF_("  apdata.ap_gdt at %08x\n", &apdata.ap_gdt);
+
+
+    _XDPRINTF_("%s: Halting. XMHF Tester Finished!\n");
+    HALT();
 
 	//step-1: setup AP boot-strap code at in the desired physical memory location
 	//note that we need an address < 1MB since the APs are woken up in real-mode
