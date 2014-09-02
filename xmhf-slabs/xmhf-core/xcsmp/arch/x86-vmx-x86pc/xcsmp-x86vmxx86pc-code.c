@@ -91,35 +91,40 @@ asm volatile (
        " ap_bootstrap_bypassdata: \r\n"
        " .code32 \r\n"
        " _ap_clear_pipe: \r\n"
-       " movw $0x10, %ax \r\n"
-       " movw %ax, %ds \r\n"
-       " movw %ax, %es \r\n"
-       " movw %ax, %ss \r\n"
-       " movw %ax, %fs \r\n"
-       " movw %ax, %gs \r\n"
+       " movw $0x10, %%ax \r\n"
+       " movw %%ax, %%ds \r\n"
+       " movw %%ax, %%es \r\n"
+       " movw %%ax, %%ss \r\n"
+       " movw %%ax, %%fs \r\n"
+       " movw %%ax, %%gs \r\n"
 
        " // set NX bit \r\n"
-       " movl $0xc0000080, %ecx \r\n"
+       " movl $0xc0000080, %%ecx \r\n"
        " rdmsr \r\n"
-       " orl $(1 << 11), %eax \r\n"
+       " orl $(1 << 11), %%eax \r\n"
        " wrmsr \r\n"
 
-       " movl $(_ap_cr3_value - _ap_bootstrap_start + (0x1000 << 4)), %esi \r\n"
-       " movl (%esi), %ebx \r\n"
-       " movl %ebx, %cr3 \r\n"
-       " movl $(_ap_cr4_value - _ap_bootstrap_start + (0x1000 << 4)), %esi \r\n"
-       " movl (%esi), %ebx \r\n"
-       " movl %ebx, %cr4 \r\n"
-       " movl $(_ap_runtime_entrypoint - _ap_bootstrap_start + (0x1000 << 4)), %esi \r\n"
-       " movl (%esi), %ebx \r\n"
+       " movl %0, %%ebx \r\n"
+       " movl (%%ebx), %%ebx \r\n"
+       " movl %%ebx, %%cr3 \r\n"
+       " movl %1, %%ebx \r\n"
+       " movl (%%ebx), %%ebx \r\n"
+       " movl %%ebx, %%cr4 \r\n"
+       " movl %2, %%ebx \r\n"
+       " movl (%%ebx), %%ebx \r\n"
 
-       " movl %cr0, %eax \r\n"
-       " orl $0x80000000, %eax \r\n"
-       " movl %eax, %cr0 \r\n"
+       " movl %%cr0, %%eax \r\n"
+       " orl $0x80000000, %%eax \r\n"
+       " movl %%eax, %%cr0 \r\n"
 
-       " jmpl *%ebx \r\n"
+       " jmpl *%%ebx \r\n"
        " hlt \r\n"
        " .balign 4096 \r\n"
+        :
+        : "i" ((X86SMP_APBOOTSTRAP_DATASEG << 4) + offsetof(x86smp_apbootstrapdata_t, ap_cr3)),
+          "i" ((X86SMP_APBOOTSTRAP_DATASEG << 4) + offsetof(x86smp_apbootstrapdata_t, ap_cr4)),
+          "i" ((X86SMP_APBOOTSTRAP_DATASEG << 4) + offsetof(x86smp_apbootstrapdata_t, ap_entrypoint))
+        :
 
     );
 }
