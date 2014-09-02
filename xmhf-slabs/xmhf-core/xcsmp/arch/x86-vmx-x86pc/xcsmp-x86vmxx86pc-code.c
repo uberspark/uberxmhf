@@ -64,17 +64,13 @@ asm volatile (
        ".code16 \r\n"
        " _ap_bootstrap_start: \r\n"
        " jmp ap_bootstrap_bypassdata \r\n"
-       //" .global _ap_cr3_value \r\n"
        " _ap_cr3_value: \r\n"
        " .long 0 \r\n"
-       //" .global _ap_cr4_value \r\n"
        " _ap_cr4_value: \r\n"
        " .long 0 \r\n"
-       //" .global _ap_runtime_entrypoint \r\n"
        " _ap_runtime_entrypoint: \r\n"
        " .long 0 \r\n"
        " .align 16 \r\n"
-       //" .global _ap_mle_join_start \r\n"
        " _ap_mle_join_start: \r\n"
        " .long _ap_gdt_end - _ap_gdt_start - 1 // gdt_limit \r\n"
        " .long _ap_gdt_start - _ap_bootstrap_start + 0x10000// gdt_base \r\n"
@@ -93,19 +89,6 @@ asm volatile (
        " .word 0 \r\n"
        " .align 16 \r\n"
        " ap_bootstrap_bypassdata: \r\n"
-       //" movw $0x1000, %ax \r\n"
-       //" movw %ax, %ds \r\n"
-       //" movw %ax, %es \r\n"
-       //" movw $0xFFFF, %sp \r\n"
-       //" movw $0x4000, %ax \r\n"
-       //" movw %ax, %ss \r\n"
-       //" movw $0x0020, %si \r\n"
-       //" lgdt (%si) \r\n"
-       //" movl %cr0, %eax \r\n"
-       //" orl $0x1, %eax \r\n"
-       //" movl %eax, %cr0 \r\n"
-
-       //" jmpl $0x08, $(_ap_clear_pipe - _ap_bootstrap_start + (0x1000 << 4)) \r\n"
        " .code32 \r\n"
        " _ap_clear_pipe: \r\n"
        " movw $0x10, %ax \r\n"
@@ -222,7 +205,7 @@ static void _xcsmp_cpu_x86_wakeupAPs(void){
 
 //wake up application processors (cores) in the system
 static void _xcsmp_container_vmx_wakeupAPs(void){
-    /*static x86smp_apbootstrapdata_t apdata;
+    static x86smp_apbootstrapdata_t apdata;
 
     apdata.ap_cr3 = read_cr3();
     apdata.ap_cr4 = read_cr4();
@@ -230,23 +213,22 @@ static void _xcsmp_container_vmx_wakeupAPs(void){
     apdata.ap_gdtdesc_limit = sizeof(apdata.ap_gdt) - 1;
     apdata.ap_gdtdesc_base = (X86SMP_APBOOTSTRAP_DATASEG << 4) + offsetof(x86smp_apbootstrapdata_t, ap_gdt);
     apdata.ap_cs_selector = __CS_CPL0;
-    apdata.ap_cs_eip = 0;
+    apdata.ap_cs_eip = (X86SMP_APBOOTSTRAP_CODESEG << 4);
     apdata.ap_gdtdesc16_limit = 0;
     apdata.ap_gdtdesc16_base = 0;
-    apdata.ap_gdt[0] = 0;
-    apdata.ap_gdt[1] = 0;
-    apdata.ap_gdt[2] = 0;
-
-
+    apdata.ap_gdt[0] = 0x0000000000000000ULL;
+    apdata.ap_gdt[1] = 0x00cf9a000000ffffULL;
+    apdata.ap_gdt[2] = 0x00cf92000000ffffULL;
 
     _XDPRINTF_("%s: sizeof(apdata)=%u bytes\n", __FUNCTION__, sizeof(apdata));
     _XDPRINTF_("  apdata.ap_gdtdesc_limit at %08x\n", &apdata.ap_gdtdesc_limit);
     _XDPRINTF_("  apdata.ap_gdt at %08x\n", &apdata.ap_gdt);
 
+    memcpy((void *)(X86SMP_APBOOTSTRAP_DATASEG << 4), (void *)&apdata, sizeof(apdata));
 
     _XDPRINTF_("%s: Halting. XMHF Tester Finished!\n");
     HALT();
-*/
+
 
 	//step-1: setup AP boot-strap code at in the desired physical memory location
 	//note that we need an address < 1MB since the APs are woken up in real-mode
