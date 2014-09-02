@@ -98,7 +98,7 @@
 //address 0x1100:0x0000 or 0x11000 physical
 #define X86SMP_APBOOTSTRAP_DATASEG 			0x1100
 
-
+#define X86SMP_APBOOTSTRAP_MAXGDTENTRIES    4
 
 //----------------------------------------------------------------------
 
