@@ -71,6 +71,11 @@
 
 #ifndef __ASSEMBLY__
 
+typedef struct {
+
+
+
+}__attribute__((packed)) x86smp_apbootstrapdata_t;
 
 typedef struct {
   u32 eip;
