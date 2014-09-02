@@ -195,62 +195,30 @@ static void _xcsmp_container_vmx_wakeupAPs(void){
     memcpy((void *)(X86SMP_APBOOTSTRAP_CODESEG << 4), (void *)&_ap_bootstrap_code, PAGE_SIZE_4K);
 
 #if defined (__DRT__)
-    //step-2: wake up the APs sending the INIT-SIPI-SIPI sequence as per the
-    //MP protocol. Use the APIC for IPI purposes.
-    //if(!txt_is_launched()) { // XXX TODO: Do actual GETSEC[WAKEUP] in here?
-    //    _XDPRINTF_("\nBSP: Using APIC to awaken APs...");
-    //    _xcsmp_cpu_x86_wakeupAPs();
-    //    _XDPRINTF_("\nBSP: APs should be awake.");
-    //}else{
-		//we ran SENTER, so do a GETSEC[WAKEUP]
+    {
         txt_heap_t *txt_heap;
         os_mle_data_t *os_mle_data;
         mle_join_t *mle_join;
         sinit_mle_data_t *sinit_mle_data;
         os_sinit_data_t *os_sinit_data;
 
-        // sl.c unity-maps 0xfed00000 for 2M so these should work fine
-        #ifndef __XMHF_VERIFICATION__
         txt_heap = get_txt_heap();
-        //_XDPRINTF_("\ntxt_heap = 0x%08x", (u32)txt_heap);
         os_mle_data = get_os_mle_data_start(txt_heap);
-        (void)os_mle_data;
-        //_XDPRINTF_("\nos_mle_data = 0x%08x", (u32)os_mle_data);
         sinit_mle_data = get_sinit_mle_data_start(txt_heap);
-        //_XDPRINTF_("\nsinit_mle_data = 0x%08x", (u32)sinit_mle_data);
         os_sinit_data = get_os_sinit_data_start(txt_heap);
-        //_XDPRINTF_("\nos_sinit_data = 0x%08x", (u32)os_sinit_data);
-	#endif
-
-        // Start APs.  Choose wakeup mechanism based on
-        // capabilities used. MLE Dev Guide says MLEs should
-        // support both types of Wakeup mechanism.
-
-        // We are jumping straight into the 32-bit portion of the
-        // unity-mapped trampoline that starts at 64K
-        // physical. Without SENTER, or with AMD, APs start in
-        // 16-bit mode.  We get to skip that.
-        //_XDPRINTF_("\nBSP: _mle_join_start = 0x%08x, _ap_bootstrap_start = 0x%08x",
-		//	(u32)_mle_join_start, (u32)_ap_bootstrap_start);
-        //_XDPRINTF_("\nBSP: _ap_bootstrap_blob_mle_join_start = 0x%08x, _ap_bootstrap_blob = 0x%08x",
-		//	(u32)_ap_bootstrap_blob_mle_join_start, (u32)_ap_bootstrap_blob);
 
         // enable SMIs on BSP before waking APs (which will enable them on APs)
         // because some SMM may take immediate SMI and hang if AP gets in first
         //_XDPRINTF_("Enabling SMIs on BSP\n");
         //__getsec_smctrl();
 
-        #ifndef __XMHF_VERIFICATION__
-        //mle_join = (mle_join_t*)((u32)_ap_bootstrap_blob_mle_join_start - (u32)_ap_bootstrap_blob + 0x10000); // XXX magic number
         mle_join = (mle_join_t *)((u32)(X86SMP_APBOOTSTRAP_DATASEG << 4) + offsetof(x86smp_apbootstrapdata_t, ap_gdtdesc_limit));
-        #endif
 
         _XDPRINTF_("\nBSP: mle_join.gdt_limit = %x", mle_join->gdt_limit);
         _XDPRINTF_("\nBSP: mle_join.gdt_base = %x", mle_join->gdt_base);
         _XDPRINTF_("\nBSP: mle_join.seg_sel = %x", mle_join->seg_sel);
         _XDPRINTF_("\nBSP: mle_join.entry_point = %x", mle_join->entry_point);
 
-	#ifndef __XMHF_VERIFICATION__
         write_priv_config_reg(TXTCR_MLE_JOIN, (uint64_t)(unsigned long)mle_join);
 
         if (os_sinit_data->capabilities.rlp_wake_monitor) {
@@ -262,16 +230,13 @@ static void _xcsmp_container_vmx_wakeupAPs(void){
             __getsec_wakeup();
             _XDPRINTF_("\nBSP: GETSEC[WAKEUP] completed");
         }
-	#endif
-
-
-	//}
+    }
 
 #else //!__DRT__
 
-        _XDPRINTF_("\nBSP: Using APIC to awaken APs...");
-        _xcsmp_cpu_x86_wakeupAPs();
-        _XDPRINTF_("\nBSP: APs should be awake.");
+    _XDPRINTF_("\nBSP: Using APIC to awaken APs...");
+    _xcsmp_cpu_x86_wakeupAPs();
+    _XDPRINTF_("\nBSP: APs should be awake.");
 
 #endif
 
