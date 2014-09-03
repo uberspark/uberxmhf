@@ -55,9 +55,6 @@
 
 #include <xcexhub.h>
 
-/*void xcexhub_initialize(void){
-		xcexhub_arch_initialize();
-}*/
 
 //////////
 XMHF_SLAB("xcexhub")
