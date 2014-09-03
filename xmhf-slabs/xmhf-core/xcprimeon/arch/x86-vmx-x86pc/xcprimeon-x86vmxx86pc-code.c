@@ -443,12 +443,15 @@ static u32 _xcprimeon_populate_pagetables(void){
 
 //=========================================================================================
 
+//perform basic (boot) CPU initialization
+void xcprimeon_arch_cpu_basicinit(void){
+	//initialize CPU
+	xmhfhw_cpu_initialize();
+}
+
 //initialize basic platform elements
 void xcprimeon_arch_initialize(u64 pgtblbase){
 	u32 coreptbase;
-
-	//initialize CPU
-	xmhfhw_cpu_initialize();
 
 	//initialize paging
 	xmhfhw_cpu_x86_initialize_paging((u32)pgtblbase);

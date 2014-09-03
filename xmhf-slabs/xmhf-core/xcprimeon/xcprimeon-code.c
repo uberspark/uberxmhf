@@ -93,6 +93,9 @@ void xcprimeon_entry(void){
     xcprimeon_arch_postdrt();
 #endif	//__DRT__
 
+    //perform basic (boot) CPU initialization
+    xcprimeon_arch_cpu_basicinit();
+
 #if defined (__DMAP__)
 	//setup DMA protection on runtime (xcprimeon is already DMA protected)
 	xcprimeon_arch_earlydmaprot(__TARGET_BASE_SL, xcbootinfo->size);
