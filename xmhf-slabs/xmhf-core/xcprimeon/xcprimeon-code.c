@@ -98,11 +98,18 @@ void xcprimeon_entry(void){
 	xcprimeon_arch_earlydmaprot(__TARGET_BASE_SL, xcbootinfo->size);
 #endif
 
-	//initialize basic platform elements
-	xcprimeon_arch_initialize();
+    {
+        u64 pgtblbase;
 
-	//initialize page tables
-	xcprimeon_arch_initialize_page_tables();
+        //initialize page tables
+        pgtblbase = xcprimeon_arch_initialize_page_tables();
+
+
+        //initialize basic platform elements
+        xcprimeon_arch_initialize(pgtblbase);
+
+    }
+
 
 	//proceed with SMP initialization
 	if ( XMHF_SLAB_CALL(xcsmp_entry()) ){
