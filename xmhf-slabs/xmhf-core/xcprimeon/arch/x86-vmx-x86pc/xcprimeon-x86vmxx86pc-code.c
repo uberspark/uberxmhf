@@ -450,6 +450,21 @@ void xcprimeon_arch_cpu_basicinit(void){
 }
 
 //initialize basic platform elements
+void xcprimeon_arch_platform_initialize(void){
+	//initialize platform bus
+	xmhfhw_platform_bus_init();
+
+	//check ACPI subsystem
+	{
+		ACPI_RSDP rsdp;
+		if(!xmhfhw_platform_x86pc_acpi_getRSDP(&rsdp)){
+			_XDPRINTF_("\n%s: ACPI RSDP not found, Halting!", __FUNCTION__);
+			HALT();
+		}
+	}
+}
+
+
 void xcprimeon_arch_initialize(u64 pgtblbase){
 	u32 coreptbase;
 
@@ -472,17 +487,7 @@ void xcprimeon_arch_initialize(u64 pgtblbase){
 	_XDPRINTF_("%s: basic exception handling initialized\n", __FUNCTION__);
 
 
-	//initialize platform bus
-	xmhfhw_platform_bus_init();
 
-	//check ACPI subsystem
-	{
-		ACPI_RSDP rsdp;
-		if(!xmhfhw_platform_x86pc_acpi_getRSDP(&rsdp)){
-			_XDPRINTF_("\n%s: ACPI RSDP not found, Halting!", __FUNCTION__);
-			HALT();
-		}
-	}
 }
 
 

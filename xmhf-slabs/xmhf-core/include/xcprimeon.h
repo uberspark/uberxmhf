@@ -68,6 +68,7 @@ void xcprimeon_arch_entry(void);
 void xcprimeon_arch_initialize(u64 pgtblbase);
 void xcprimeon_arch_cpu_basicinit(void);
 void xcprimeon_arch_postdrt(void);
+void xcprimeon_arch_platform_initialize();
 void xcprimeon_arch_earlydmaprot(u32 membase, u32 size);
 u64 xcprimeon_arch_initialize_page_tables();
 
