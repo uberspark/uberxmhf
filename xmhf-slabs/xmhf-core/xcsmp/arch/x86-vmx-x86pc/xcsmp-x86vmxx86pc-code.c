@@ -263,7 +263,23 @@ static void _xcsmp_cpu_x86_smpinitialize_commonstart(void){
 	u32 bcr0;
 
 	//initialize base CPU state
-	xmhfhw_cpu_initialize();
+	//set OSXSAVE bit in CR4 to enable us to pass-thru XSETBV intercepts
+	//when the CPU supports XSAVE feature
+	if(xmhf_baseplatform_arch_x86_cpuhasxsavefeature()){
+		u32 t_cr4;
+		t_cr4 = read_cr4();
+		t_cr4 |= CR4_OSXSAVE;
+		write_cr4(t_cr4);
+	}
+
+	//turn on NX protections
+	{
+		u32 eax, edx;
+		rdmsr(MSR_EFER, &eax, &edx);
+		eax |= (1 << EFER_NXE);
+		wrmsr(MSR_EFER, eax, edx);
+		_XDPRINTF_("\n%s: NX protections enabled: MSR_EFER=%08x%08x", __FUNCTION__, edx, eax);
+	}
 
 	//replicate common MTRR state on this CPU
 	_xcsmp_cpu_x86_restorecpumtrrstate();
