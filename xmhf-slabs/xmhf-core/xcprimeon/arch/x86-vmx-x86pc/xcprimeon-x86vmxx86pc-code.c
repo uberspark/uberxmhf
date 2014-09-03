@@ -465,7 +465,7 @@ void xcprimeon_arch_platform_initialize(void){
 }
 
 
-void xcprimeon_arch_initialize(u64 pgtblbase){
+void xcprimeon_arch_cpu_activate_modeandpaging(u64 pgtblbase){
 	u32 coreptbase;
 
 	//initialize paging

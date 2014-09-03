@@ -65,7 +65,7 @@ void xcprimeon_entry(void);
 //ARCH. BACKENDS
 //----------------------------------------------------------------------
 void xcprimeon_arch_entry(void);
-void xcprimeon_arch_initialize(u64 pgtblbase);
+void xcprimeon_arch_cpu_activate_modeandpaging(u64 pgtblbase);
 void xcprimeon_arch_cpu_basicinit(void);
 void xcprimeon_arch_postdrt(void);
 void xcprimeon_arch_platform_initialize();

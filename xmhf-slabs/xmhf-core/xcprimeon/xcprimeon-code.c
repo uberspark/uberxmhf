@@ -108,8 +108,8 @@ void xcprimeon_entry(void){
     //initialize page tables
     pgtblbase = xcprimeon_arch_initialize_page_tables();
 
-    //initialize basic platform elements
-    xcprimeon_arch_initialize(pgtblbase);
+    //activate paging and associated operating mode
+    xcprimeon_arch_cpu_activate_modeandpaging(pgtblbase);
 
 	//proceed with SMP initialization
 	if ( XMHF_SLAB_CALL(xcsmp_entry()) ){
