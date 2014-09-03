@@ -56,65 +56,61 @@ void xcprimeon_entry(void){
 	//initialize debugging early on
 	xmhfhw_platform_serial_init((char *)&xcbootinfo->debugcontrol_buffer);
 
+
+	//[debug] print relevant startup info.
 	_XDPRINTF_("%s: alive and starting...\n", __FUNCTION__);
-	
-	//debug: dump bootinfo
+
 	_XDPRINTF_("SL: xcbootinfo at = 0x%08x\n", (u32)xcbootinfo);
 	_XDPRINTF_("	numE820Entries=%u\n", xcbootinfo->memmapinfo_numentries);
 	_XDPRINTF_("	system memory map buffer at 0x%08x\n", (u32)&xcbootinfo->memmapinfo_buffer);
 	_XDPRINTF_("	numCPUEntries=%u\n", xcbootinfo->cpuinfo_numentries);
 	_XDPRINTF_("	cpuinfo buffer at 0x%08x\n", (u32)&xcbootinfo->cpuinfo_buffer);
 	_XDPRINTF_("	SL + core size= %u bytes\n", xcbootinfo->size);
-	_XDPRINTF_("	OS bootmodule at 0x%08x, size=%u bytes\n", 
+	_XDPRINTF_("	OS bootmodule at 0x%08x, size=%u bytes\n",
 		xcbootinfo->richguest_bootmodule_base, xcbootinfo->richguest_bootmodule_size);
     _XDPRINTF_("\tcmdline = \"%s\"\n", xcbootinfo->cmdline_buffer);
-
 	_XDPRINTF_("SL: runtime at 0x%08x; size=0x%08x bytes\n", __TARGET_BASE_SL, xcbootinfo->size);
-
-	//setup bootinfo with required parameters
 	_XDPRINTF_("SL: XMHF_BOOTINFO at 0x%08x, magic=0x%08x\n", (u32)xcbootinfo, xcbootinfo->magic);
 	HALT_ON_ERRORCOND(xcbootinfo->magic == RUNTIME_PARAMETER_BLOCK_MAGIC);
-			
-	//store runtime physical and virtual base addresses along with size
-	xcbootinfo->physmem_base = __TARGET_BASE_SL; 
-	xcbootinfo->virtmem_base = __TARGET_BASE_SL;
-	xcbootinfo->size = xcbootinfo->size;
-
-	//[debug] dump memory map
  	_XDPRINTF_("\nNumber of E820 entries = %u", xcbootinfo->memmapinfo_numentries);
 	{
 		int i;
 		for(i=0; i < (int)xcbootinfo->memmapinfo_numentries; i++){
-			_XDPRINTF_("\n0x%08x%08x, size=0x%08x%08x (%u)", 
+			_XDPRINTF_("\n0x%08x%08x, size=0x%08x%08x (%u)",
 			  xcbootinfo->memmapinfo_buffer[i].baseaddr_high, xcbootinfo->memmapinfo_buffer[i].baseaddr_low,
 			  xcbootinfo->memmapinfo_buffer[i].length_high, xcbootinfo->memmapinfo_buffer[i].length_low,
 			  xcbootinfo->memmapinfo_buffer[i].type);
 		}
   	}
 
-	//initialize basic platform elements
-	xcprimeon_arch_initialize();
-	
-	//sanitize post launch (e.g., cache/MTRR/SMRAM)
+	//store runtime physical and virtual base addresses along with size
+	xcbootinfo->physmem_base = __TARGET_BASE_SL;
+	xcbootinfo->virtmem_base = __TARGET_BASE_SL;
+	xcbootinfo->size = xcbootinfo->size;
+
+	//post DRT cleanup (e.g., cache/MTRR/SMRAM)
 #if defined (__DRT__)
     xcprimeon_arch_postdrt();
 #endif	//__DRT__
 
-#if defined (__DMAP__)    
+#if defined (__DMAP__)
 	//setup DMA protection on runtime (xcprimeon is already DMA protected)
 	xcprimeon_arch_earlydmaprot(__TARGET_BASE_SL, xcbootinfo->size);
 #endif
 
+	//initialize basic platform elements
+	xcprimeon_arch_initialize();
+
 	//initialize page tables
 	xcprimeon_arch_initialize_page_tables();
-		
+
 	//proceed with SMP initialization
 	if ( XMHF_SLAB_CALL(xcsmp_entry()) ){
 		//we should never get here
 		_XDPRINTF_("\nSL: Fatal, should never be here!");
 		HALT();
 	}
-	 
+
 }
 
 ///////

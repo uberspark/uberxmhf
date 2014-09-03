@@ -48,7 +48,7 @@
  * XMHF core primeon slab (xcprimeon), x86-vmx-x86pc backend
  * author: amit vasudevan (amitvasudevan@acm.org)
  */
- 
+
 #include <xmhf.h>
 #include <xmhf-core.h>
 #include <xmhf-debug.h>
@@ -56,12 +56,12 @@
 #include <xcprimeon.h>
 
 __attribute__((naked)) __attribute__ ((section(".slab_entrystub"))) __attribute__(( align(4096) )) void xcprimeon_arch_entry(void) {
-	
+
 	asm volatile (	".global _mle_page_table_start \r\n"
 					"_mle_page_table_start:\r\n"
-					".fill 4096, 1, 0 \r\n" 
-					".fill 4096, 1, 0 \r\n" 
-					".fill 4096, 1, 0 \r\n" 
+					".fill 4096, 1, 0 \r\n"
+					".fill 4096, 1, 0 \r\n"
+					".fill 4096, 1, 0 \r\n"
 					".global _mle_page_table_end \r\n"
 					"_mle_page_table_end: \r\n"
 					".global _mle_hdr \r\n"
@@ -69,7 +69,7 @@ __attribute__((naked)) __attribute__ ((section(".slab_entrystub"))) __attribute_
 					".fill 0x80, 1, 0x90\r\n" //TODO: should really be sizeof(mle_hdr_t)
 					".global _sl_start \r\n"
 					"_sl_start: \r\n"
-					"movw %%ds, %%ax \r\n" 
+					"movw %%ds, %%ax \r\n"
 					"movw %%ax, %%fs \r\n"
 					"movw %%ax, %%gs \r\n"
 					"movw %%ax, %%ss \r\n"
@@ -83,7 +83,7 @@ __attribute__((naked)) __attribute__ ((section(".slab_entrystub"))) __attribute_
 
 //initialize GDT
 static void _xcprimeon_cpu_x86_initializeGDT(void){
-	
+
 	asm volatile(
 		"lgdt  %0 \r\n"
 		"pushl	%1 \r\n"				// far jump to runtime entry point
@@ -91,7 +91,7 @@ static void _xcprimeon_cpu_x86_initializeGDT(void){
 		"lret \r\n"
 		"reloadsegs: \r\n"
 		"movw	%2, %%ax \r\n"
-		"movw	%%ax, %%ds \r\n"	
+		"movw	%%ax, %%ds \r\n"
 		"movw	%%ax, %%es \r\n"
 		"movw	%%ax, %%fs \r\n"
 		"movw	%%ax, %%gs \r\n"
@@ -101,12 +101,12 @@ static void _xcprimeon_cpu_x86_initializeGDT(void){
 		: //no clobber
 	);
 
-	
+
 }
 
 //initialize IO privilege level
 static void _xcprimeon_cpu_x86_initializeIOPL(void){
-	
+
 	asm volatile(
 		"pushl	$0x3000 \r\n"					// clear flags, but set IOPL=3 (CPL-3)
 		"popf \r\n"
@@ -114,8 +114,8 @@ static void _xcprimeon_cpu_x86_initializeIOPL(void){
 		: //no inputs
 		: //no clobber
 	);
-	
-	
+
+
 }
 
 
@@ -127,7 +127,7 @@ static void _xcprimeon_cpu_x86_initializeTSS(void){
 		u32 tss_base=(u32)&_tss;
 		TSSENTRY *t;
 		tss_t *tss= (tss_t *)_tss;
-		
+
 		tss->ss0 = __DS_CPL0;
 		tss->esp0 = (u32)_tss_stack + PAGE_SIZE_4K;
 
@@ -137,7 +137,7 @@ static void _xcprimeon_cpu_x86_initializeTSS(void){
 		t->limit16_19attributes2= 0x0;
 		t->baseAddr0_15= (u16)(tss_base & 0x0000FFFF);
 		t->baseAddr16_23= (u8)((tss_base & 0x00FF0000) >> 16);
-		t->baseAddr24_31= (u8)((tss_base & 0xFF000000) >> 24);      
+		t->baseAddr24_31= (u8)((tss_base & 0xFF000000) >> 24);
 		t->limit0_15=0x67;
 		_XDPRINTF_("\nTSS descriptor fixed.");
 
@@ -205,7 +205,7 @@ XMHF_XCPRIMEON_EXCEPTION_HANDLER_DEFINE(28)
 XMHF_XCPRIMEON_EXCEPTION_HANDLER_DEFINE(29)
 XMHF_XCPRIMEON_EXCEPTION_HANDLER_DEFINE(30)
 XMHF_XCPRIMEON_EXCEPTION_HANDLER_DEFINE(31)
-	
+
 static u32 __xcprimeon_exceptionstubs[] = { 	XMHF_XCPRIMEON_EXCEPTION_HANDLER_ADDROF(0),
 							XMHF_XCPRIMEON_EXCEPTION_HANDLER_ADDROF(1),
 							XMHF_XCPRIMEON_EXCEPTION_HANDLER_ADDROF(2),
@@ -264,7 +264,7 @@ static void _xcprimeon_initialize_exceptionhandling(void){
 		: //no clobber
 	);
 }
-					
+
 
 __attribute__(( section(".slab_trampoline") )) static void _xcprimeon_xcphandler_arch_unhandled(u32 vector, u32 orig_cr3, u32 orig_esp, struct regs *r){
 	u32 exception_cs, exception_eip, exception_eflags, errorcode=0;
@@ -309,19 +309,19 @@ __attribute__(( section(".slab_trampoline") )) static void _xcprimeon_xcphandler
 
 //exception handler hub
 __attribute__(( section(".slab_trampoline") )) void _xcprimeon_xcphandler_arch_hub(u32 vector, u32 orig_cr3, u32 orig_esp, struct regs *r){
-	
+
 	switch(vector){
 		case 0x3:
 			_xcprimeon_xcphandler_arch_unhandled(vector, orig_cr3, orig_esp, r);
 			_XDPRINTF_("Int3 dbgprint -- continue\n");
 			break;
-		
+
 		default:
 			_xcprimeon_xcphandler_arch_unhandled(vector, orig_cr3, orig_esp, r);
 			_XDPRINTF_("\nHalting System!\n");
 			HALT();
 	}
-	
+
 }
 
 
@@ -336,64 +336,64 @@ static bool _xcprimeon_vtd_dmaprotect(u32 membase, u32 size){
 	vtd_drhd_handle_t drhd_handle;
 	u32 vtd_dmar_table_physical_address=0;
 	vtd_drhd_handle_t vtd_drhd_maxhandle;
-	
+
 	_XDPRINTF_("\n%s: size=%08x", __FUNCTION__, size);
-	
+
 	//scan for available DRHD units in the platform
 	if(!xmhfhw_platform_x86pc_vtd_scanfor_drhd_units(&vtd_drhd_maxhandle, &vtd_dmar_table_physical_address))
 		return false;
 
-	//zero out RET; will be used to prevent DMA reads and writes 
+	//zero out RET; will be used to prevent DMA reads and writes
 	//for the entire system
 	memset((void *)&vtd_ret_table, 0, sizeof(vtd_ret_table));
 
 	//initialize all DRHD units
 	for(drhd_handle=0; drhd_handle < vtd_drhd_maxhandle; drhd_handle++){
 		_XDPRINTF_("\n%s: Setting up DRHD unit %u...", __FUNCTION__, drhd_handle);
-		
+
 		if(!xmhfhw_platform_x86pc_vtd_drhd_initialize(drhd_handle) )
 			return false;
 
 		//setup blanket (full system) DMA protection using VT-d translation
-		//we just employ the RET and ensure that every entry in the RET is 0 
+		//we just employ the RET and ensure that every entry in the RET is 0
 		//which means that the DRHD will
-		//not allow any DMA requests for PCI bus 0-255 
+		//not allow any DMA requests for PCI bus 0-255
 		//(Sec 3.3.2, VT-d Spec. v1.2)
-	
+
 		//set DRHD root entry table
 		if(!xmhfhw_platform_x86pc_vtd_drhd_set_root_entry_table(drhd_handle, (u8 *)&vtd_ret_table))
 			return false;
-	
+
 		//invalidate caches
 		if(!xmhfhw_platform_x86pc_vtd_drhd_invalidatecaches(drhd_handle))
 			return false;
 
 		//enable VT-d translation
 		xmhfhw_platform_x86pc_vtd_drhd_enable_translation(drhd_handle);
-	
+
 		//disable PMRs now (since DMA protection is active via translation)
 		xmhfhw_platform_x86pc_vtd_drhd_disable_pmr(drhd_handle);
-		
+
 		//set PMR low base and limit to cover SL+runtime
 		xmhfhw_platform_x86pc_vtd_drhd_set_plm_base_and_limit(drhd_handle, (u32)PAGE_ALIGN_2M(membase), (u32)(PAGE_ALIGN_2M(membase) + PAGE_ALIGN_UP2M(size)) );
-		
+
 		//set PMR high base and limit to cover SL+runtime
 		xmhfhw_platform_x86pc_vtd_drhd_set_phm_base_and_limit(drhd_handle, (u64)PAGE_ALIGN_2M(membase), (u64)(PAGE_ALIGN_2M(membase) + PAGE_ALIGN_UP2M(size)) );
-		
+
 		//enable PMRs
 		xmhfhw_platform_x86pc_vtd_drhd_enable_pmr(drhd_handle);
-		
+
 		//invalidate caches
 		if(!xmhfhw_platform_x86pc_vtd_drhd_invalidatecaches(drhd_handle))
 			return false;
 
 		//disable translation (now that PMRs are active and protect SL+runtime)
 		xmhfhw_platform_x86pc_vtd_drhd_disable_translation(drhd_handle);
-	
+
 	}
 
 	//zap VT-d presence in ACPI table...
-	//TODO: we need to be a little elegant here. eventually need to setup 
+	//TODO: we need to be a little elegant here. eventually need to setup
 	//EPT/NPTs such that the DMAR pages are unmapped for the guest
 	xmhfhw_sysmemaccess_writeu32(vtd_dmar_table_physical_address, 0UL);
 
@@ -410,9 +410,9 @@ static u64 _pdt[PAE_PTRS_PER_PDPT][PAE_PTRS_PER_PDT] __attribute__(( aligned(409
 static u64 _xcprimeon_getptflagsforspa(u32 spa){
 	u64 flags = (u64)(_PAGE_PRESENT | _PAGE_RW | _PAGE_PSE);
 	if(spa == 0xfee00000 || spa == 0xfec00000) {
-		//map some MMIO regions with Page Cache disabled 
-		//0xfed00000 contains Intel TXT config regs & TPM MMIO 
-		//0xfee00000 contains LAPIC base 
+		//map some MMIO regions with Page Cache disabled
+		//0xfed00000 contains Intel TXT config regs & TPM MMIO
+		//0xfee00000 contains LAPIC base
 		flags |= (u64)(_PAGE_PCD);
 	}
 	return flags;
@@ -422,7 +422,7 @@ static u64 _xcprimeon_getptflagsforspa(u32 spa){
 static u32 _xcprimeon_populate_pagetables(void){
 		u32 i, j;
 		u64 default_flags = (u64)(_PAGE_PRESENT);
-		
+
 		for(i=0; i < PAE_PTRS_PER_PDPT; i++)
 			_pdpt[i] = pae_make_pdpe(hva2spa(_pdt[i]), default_flags);
 
@@ -435,7 +435,7 @@ static u32 _xcprimeon_populate_pagetables(void){
 				_pdt[i][j] = pae_make_pde_big(spa, flags);
 			}
 		}
-	
+
 		return (u32)_pdpt;
 }
 
@@ -463,7 +463,7 @@ void xcprimeon_arch_initialize(void){
 	_XDPRINTF_("%s: proceeding to initialize basic exception handling\n", __FUNCTION__);
 	_xcprimeon_initialize_exceptionhandling();
 	_XDPRINTF_("%s: basic exception handling initialized\n", __FUNCTION__);
-	
+
 
 	//initialize platform bus
 	xmhfhw_platform_bus_init();
@@ -478,6 +478,9 @@ void xcprimeon_arch_initialize(void){
 	}
 }
 
+
+///////////////////////////////////////////////////////////////////////////////
+
 void xcprimeon_arch_postdrt(void){
 	txt_heap_t *txt_heap;
 	os_mle_data_t *os_mle_data;
@@ -486,8 +489,8 @@ void xcprimeon_arch_postdrt(void){
 	_XDPRINTF_("SL: txt_heap = 0x%08x\n", (u32)txt_heap);
 	os_mle_data = get_os_mle_data_start((txt_heap_t*)((u32)txt_heap));
 	_XDPRINTF_("SL: os_mle_data = 0x%08x\n", (u32)os_mle_data);
-        
-	// restore pre-SENTER MTRRs that were overwritten for SINIT launch 
+
+	// restore pre-SENTER MTRRs that were overwritten for SINIT launch
 	if(!validate_mtrrs(&(os_mle_data->saved_mtrr_state))) {
 		_XDPRINTF_("SECURITY FAILURE: validate_mtrrs() failed.\n");
 		HALT();
@@ -503,7 +506,7 @@ void xcprimeon_arch_earlydmaprot(u32 membase, u32 size){
 
 	if(!_xcprimeon_vtd_dmaprotect(membase, size)){
 		_XDPRINTF_("SL: Fatal, could not initialize DMA protections. Halting!\n");
-		HALT();	
+		HALT();
 	}else{
 		_XDPRINTF_("SL: Initialized DMA protections successfully\n");
 	}
@@ -518,7 +521,7 @@ void xcprimeon_arch_initialize_page_tables(void){
 	pgtblbase = _xcprimeon_populate_pagetables();
 
 	_XDPRINTF_("\n%s: setup page tables\n", __FUNCTION__);
-		
+
 	//initialize paging
 	xmhfhw_cpu_x86_initialize_paging(pgtblbase);
 	_XDPRINTF_("\n%s: setup slab paging\n", __FUNCTION__);
