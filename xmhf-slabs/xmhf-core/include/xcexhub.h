@@ -46,9 +46,9 @@
 
 
 /*
- * 
- *  XMHF core exception handling slab 
- * 
+ *
+ *  XMHF core exception handling slab
+ *
  *  author: amit vasudevan (amitvasudevan@acm.org)
  */
 
@@ -64,7 +64,7 @@ void xcexhub_initialize(void);
 //ARCH. BACKENDS
 //----------------------------------------------------------------------
 void xcexhub_arch_initialize(void);
-
+void xmhf_xcphandler_arch_hub(u32 vector, void *exdata);
 
 #endif	//__ASSEMBLY__
 

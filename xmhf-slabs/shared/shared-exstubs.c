@@ -54,6 +54,8 @@
 #include <xmhf.h>
 #include <xmhf-core.h>
 
+#include <xcexhub.h>
+
 __attribute__(( section(".slab_trampoline") )) static u32 _xcexhub_exception_lock = 1;
 __attribute__(( section(".slab_trampoline") )) static u32 _xcexhub_exception_savedesp[MAX_PLATFORM_CPUS];
 __attribute__(( section(".slab_trampoline") )) static u32 _xcexhub_exception_savedesp_index = &_xcexhub_exception_savedesp[0];
