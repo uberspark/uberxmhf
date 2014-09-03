@@ -65,7 +65,7 @@ void xcprimeon_entry(void);
 //ARCH. BACKENDS
 //----------------------------------------------------------------------
 void xcprimeon_arch_entry(void);
-void xcprimeon_arch_initialize(void);
+void xcprimeon_arch_initialize(u64 pgtblbase);
 void xcprimeon_arch_postdrt(void);
 void xcprimeon_arch_earlydmaprot(u32 membase, u32 size);
 u64 xcprimeon_arch_initialize_page_tables();
