@@ -46,9 +46,9 @@
 
 
 /*
- * 
- *  XMHF core primeon slab 
- * 
+ *
+ *  XMHF core primeon slab
+ *
  *  author: amit vasudevan (amitvasudevan@acm.org)
  */
 
@@ -68,7 +68,7 @@ void xcprimeon_arch_entry(void);
 void xcprimeon_arch_initialize(void);
 void xcprimeon_arch_postdrt(void);
 void xcprimeon_arch_earlydmaprot(u32 membase, u32 size);
-void xcprimeon_arch_initialize_page_tables();
+u64 xcprimeon_arch_initialize_page_tables();
 
 
 #endif	//__ASSEMBLY__
