@@ -170,33 +170,3 @@ static u32 exceptionstubs[] = { 	XMHF_EXCEPTION_HANDLER_ADDROF(0),
 };
 
 
-// GDT
-__attribute__(( aligned(16) )) __attribute__(( section(".section_archds") )) u64 _gdt_start[]  = {
-	0x0000000000000000ULL,	//NULL descriptor
-	0x00cf9b000000ffffULL,	//CPL-0 code descriptor (CS)
-	0x00cf93000000ffffULL,	//CPL-0 data descriptor (DS/SS/ES/FS/GS)
-	0x00cffb000000ffffULL,	//CPL-3 code descriptor (CS)
-	0x00cff3000000ffffULL,	//CPL-3 data descriptor (DS/SS/ES/FS/GS)
-	0x0000000000000000ULL
-};
-
-// GDT descriptor
-__attribute__(( aligned(16) )) __attribute__(( section(".section_archds") )) arch_x86_gdtdesc_t _gdt  = {
-	.size=sizeof(_gdt_start)-1,
-	.base=(u32)&_gdt_start,
-};
-
-// TSS
-__attribute__(( aligned(4096) )) __attribute__(( section(".section_archds") )) u8 _tss[PAGE_SIZE_4K] = { 0 };
-
-// IDT
-__attribute__(( aligned(16) )) __attribute__(( section(".section_archds") )) u64 _idt_start[EMHF_XCPHANDLER_MAXEXCEPTIONS] ;
-
-// IDT descriptor
-__attribute__(( aligned(16) )) __attribute__(( section(".section_archds") )) arch_x86_idtdesc_t _idt = {
-	.size=sizeof(_idt_start)-1,
-	.base=(u32)&_idt_start,
-};
-
-//libxmhfdebug
-__attribute__(( section(".libxmhfdebugdata") )) u32 libxmhfdebug_lock = 1;
