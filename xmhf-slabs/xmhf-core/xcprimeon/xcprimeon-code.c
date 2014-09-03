@@ -88,13 +88,14 @@ void xcprimeon_entry(void){
 	xcbootinfo->virtmem_base = __TARGET_BASE_SL;
 	xcbootinfo->size = xcbootinfo->size;
 
+    //perform basic (boot) CPU initialization
+    xcprimeon_arch_cpu_basicinit();
+
 	//post DRT cleanup (e.g., cache/MTRR/SMRAM)
 #if defined (__DRT__)
     xcprimeon_arch_postdrt();
 #endif	//__DRT__
 
-    //perform basic (boot) CPU initialization
-    xcprimeon_arch_cpu_basicinit();
 
 #if defined (__DMAP__)
 	//setup DMA protection on runtime (xcprimeon is already DMA protected)
