@@ -256,13 +256,6 @@ static void _xcprimeon_initialize_exceptionhandling(void){
 								//present=1, DPL=11b, system=0, type=1110b
 	}
 
-	//load IDT
-	asm volatile(
-		"lidt  %0 \r\n"
-		: //no outputs
-		: "m" (_idt)
-		: //no clobber
-	);
 }
 
 
@@ -482,6 +475,15 @@ void xcprimeon_arch_cpu_activate_modeandpaging(u64 pgtblbase){
 
 	//initialize GDT
 	_xcprimeon_cpu_x86_initializeGDT();
+
+	//load IDT
+	asm volatile(
+		"lidt  %0 \r\n"
+		: //no outputs
+		: "m" (_idt)
+		: //no clobber
+	);
+
 
 	//initialize IO privilege level
 	_xcprimeon_cpu_x86_initializeIOPL();
