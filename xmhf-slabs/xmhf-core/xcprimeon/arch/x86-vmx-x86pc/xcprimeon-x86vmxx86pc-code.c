@@ -281,8 +281,48 @@ static u32 _xcprimeon_populate_pagetables(void){
 
 //perform basic (boot) CPU initialization
 void xcprimeon_arch_cpu_basicinit(void){
-	//initialize CPU
-	xmhfhw_cpu_initialize();
+	u32 cpu_vendor;
+
+	//grab CPU vendor
+	cpu_vendor = xmhf_baseplatform_arch_getcpuvendor();
+	if (cpu_vendor != CPU_VENDOR_INTEL){
+		_XDPRINTF_("%s: not an Intel CPU but running VMX backend. Halting!", __FUNCTION__);
+		HALT();
+	}
+
+	//check VMX support
+	{
+		u32	cpu_features;
+		asm volatile(	"mov	$1, %%eax \n"
+						"cpuid \n"
+						"mov	%%ecx, %0	\n"
+					:
+					:"m"(cpu_features)
+					: "eax", "ebx", "ecx", "edx"
+					);
+		if ( ( cpu_features & (1<<5) ) == 0 ){
+			_XDPRINTF_("No VMX support. Halting!");
+			HALT();
+		}
+	}
+
+	//set OSXSAVE bit in CR4 to enable us to pass-thru XSETBV intercepts
+	//when the CPU supports XSAVE feature
+	if(xmhf_baseplatform_arch_x86_cpuhasxsavefeature()){
+		u32 t_cr4;
+		t_cr4 = read_cr4();
+		t_cr4 |= CR4_OSXSAVE;
+		write_cr4(t_cr4);
+	}
+
+	//turn on NX protections
+	{
+		u32 eax, edx;
+		rdmsr(MSR_EFER, &eax, &edx);
+		eax |= (1 << EFER_NXE);
+		wrmsr(MSR_EFER, eax, edx);
+		_XDPRINTF_("\n%s: NX protections enabled: MSR_EFER=%08x%08x", __FUNCTION__, edx, eax);
+	}
 
 	//initialize TSS
 	_xcprimeon_cpu_x86_initializeTSS();
