@@ -451,6 +451,10 @@ void xcprimeon_arch_cpu_basicinit(void){
 	//initialize TSS
 	_xcprimeon_cpu_x86_initializeTSS();
 
+	//initialize basic exception handling
+	_XDPRINTF_("%s: proceeding to initialize basic exception handling\n", __FUNCTION__);
+	_xcprimeon_initialize_exceptionhandling();
+	_XDPRINTF_("%s: basic exception handling initialized\n", __FUNCTION__);
 }
 
 //initialize basic platform elements
@@ -482,10 +486,6 @@ void xcprimeon_arch_cpu_activate_modeandpaging(u64 pgtblbase){
 	//initialize IO privilege level
 	_xcprimeon_cpu_x86_initializeIOPL();
 
-	//initialize basic exception handling
-	_XDPRINTF_("%s: proceeding to initialize basic exception handling\n", __FUNCTION__);
-	_xcprimeon_initialize_exceptionhandling();
-	_XDPRINTF_("%s: basic exception handling initialized\n", __FUNCTION__);
 }
 
 
