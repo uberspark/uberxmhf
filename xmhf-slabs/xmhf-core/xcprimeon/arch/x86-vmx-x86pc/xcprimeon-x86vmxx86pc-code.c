@@ -450,6 +450,10 @@ void xcprimeon_arch_initialize(u64 pgtblbase){
 	//initialize CPU
 	xmhfhw_cpu_initialize();
 
+	//initialize paging
+	xmhfhw_cpu_x86_initialize_paging((u32)pgtblbase);
+	_XDPRINTF_("\n%s: setup page tables\n", __FUNCTION__);
+
 	//initialize GDT
 	_xcprimeon_cpu_x86_initializeGDT();
 
@@ -521,10 +525,6 @@ u64 xcprimeon_arch_initialize_page_tables(void){
 	pgtblbase = _xcprimeon_populate_pagetables();
 
 	_XDPRINTF_("\n%s: setup page tables\n", __FUNCTION__);
-
-	//initialize paging
-	xmhfhw_cpu_x86_initialize_paging(pgtblbase);
-	_XDPRINTF_("\n%s: setup slab paging\n", __FUNCTION__);
 
     return (u64)pgtblbase;
 }
