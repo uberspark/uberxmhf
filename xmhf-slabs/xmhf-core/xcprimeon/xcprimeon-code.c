@@ -52,6 +52,7 @@
 #include <xcsmp.h>
 
 void xcprimeon_entry(void){
+    u64 pgtblbase;
 
 	//initialize debugging early on
 	xmhfhw_platform_serial_init((char *)&xcbootinfo->debugcontrol_buffer);
@@ -99,24 +100,16 @@ void xcprimeon_entry(void){
     xcprimeon_arch_postdrt();
 #endif	//__DRT__
 
-
 #if defined (__DMAP__)
 	//setup DMA protection on runtime (xcprimeon is already DMA protected)
 	xcprimeon_arch_earlydmaprot(__TARGET_BASE_SL, xcbootinfo->size);
 #endif
 
-    {
-        u64 pgtblbase;
+    //initialize page tables
+    pgtblbase = xcprimeon_arch_initialize_page_tables();
 
-        //initialize page tables
-        pgtblbase = xcprimeon_arch_initialize_page_tables();
-
-
-        //initialize basic platform elements
-        xcprimeon_arch_initialize(pgtblbase);
-
-    }
-
+    //initialize basic platform elements
+    xcprimeon_arch_initialize(pgtblbase);
 
 	//proceed with SMP initialization
 	if ( XMHF_SLAB_CALL(xcsmp_entry()) ){
