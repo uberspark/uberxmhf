@@ -61,15 +61,15 @@ bool xcsmp_entry(void){
 	xcsmp_arch_dmaprot_reinitialize();
 #endif
 
-	_XDPRINTF_("%s: proceeding to invoke xcexhub_initialize...\n", __FUNCTION__);
-	XMHF_SLAB_CALL(xcexhub_initialize());
-	_XDPRINTF_("%s: xcexhub_initialize completed successfully.\n", __FUNCTION__);
-	
+	//_XDPRINTF_("%s: proceeding to invoke xcexhub_initialize...\n", __FUNCTION__);
+	//XMHF_SLAB_CALL(xcexhub_initialize());
+	//_XDPRINTF_("%s: xcexhub_initialize completed successfully.\n", __FUNCTION__);
+
 	if( xcsmp_arch_smpinitialize() ){
 		_XDPRINTF_("\nRuntime: We should NEVER get here!");
 		HALT();
 	}
-	
+
 }
 
 ///////
