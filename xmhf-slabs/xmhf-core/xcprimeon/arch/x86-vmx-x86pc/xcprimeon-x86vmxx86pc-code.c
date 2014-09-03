@@ -121,7 +121,7 @@ static void _xcprimeon_cpu_x86_initializeIOPL(void){
 
 __attribute__((section(".stack"))) __attribute__(( aligned(4096) )) static u8 _tss_stack[PAGE_SIZE_4K];
 
-//initialize TR/TSS
+//initialize TSS
 static void _xcprimeon_cpu_x86_initializeTSS(void){
 		u32 i;
 		u32 tss_base=(u32)&_tss;
@@ -447,6 +447,10 @@ static u32 _xcprimeon_populate_pagetables(void){
 void xcprimeon_arch_cpu_basicinit(void){
 	//initialize CPU
 	xmhfhw_cpu_initialize();
+
+	//initialize TSS
+	_xcprimeon_cpu_x86_initializeTSS();
+
 }
 
 //initialize basic platform elements
@@ -478,16 +482,10 @@ void xcprimeon_arch_cpu_activate_modeandpaging(u64 pgtblbase){
 	//initialize IO privilege level
 	_xcprimeon_cpu_x86_initializeIOPL();
 
-	//initialize TR/TSS
-	_xcprimeon_cpu_x86_initializeTSS();
-
 	//initialize basic exception handling
 	_XDPRINTF_("%s: proceeding to initialize basic exception handling\n", __FUNCTION__);
 	_xcprimeon_initialize_exceptionhandling();
 	_XDPRINTF_("%s: basic exception handling initialized\n", __FUNCTION__);
-
-
-
 }
 
 
