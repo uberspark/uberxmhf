@@ -56,15 +56,15 @@
 
 #include <xcexhub.h>
 
-__attribute__(( section(".slab_trampoline") )) static u32 _xcexhub_exception_lock = 1;
-__attribute__(( section(".slab_trampoline") )) static u32 _xcexhub_exception_savedesp[MAX_PLATFORM_CPUS];
-__attribute__(( section(".slab_trampoline") )) static u32 _xcexhub_exception_savedesp_index = &_xcexhub_exception_savedesp[0];
-__attribute__(( section(".slab_trampoline") )) __attribute__(( aligned(4096) )) static u8 _xcexhub_exception_stack[MAX_PLATFORM_CPUS][PAGE_SIZE_4K];
-__attribute__(( section(".slab_trampoline") )) __attribute__(( aligned(4096) )) static u32 _xcexhub_exception_stack_index = &_xcexhub_exception_stack[1];
+__attribute__(( section(".slabtrampoline") )) static u32 _xcexhub_exception_lock = 1;
+__attribute__(( section(".slabtrampoline") )) static u32 _xcexhub_exception_savedesp[MAX_PLATFORM_CPUS];
+__attribute__(( section(".slabtrampoline") )) static u32 _xcexhub_exception_savedesp_index = &_xcexhub_exception_savedesp[0];
+__attribute__(( section(".slabtrampoline") )) __attribute__(( aligned(4096) )) static u8 _xcexhub_exception_stack[MAX_PLATFORM_CPUS][PAGE_SIZE_4K];
+__attribute__(( section(".slabtrampoline") )) __attribute__(( aligned(4096) )) static u32 _xcexhub_exception_stack_index = &_xcexhub_exception_stack[1];
 
 
 #define XMHF_EXCEPTION_HANDLER_DEFINE(vector) 												\
-	__attribute__(( section(".slab_trampoline") )) static void __xmhf_exception_handler_##vector(void) __attribute__((naked)) { 					\
+	__attribute__(( section(".slabtrampoline") )) static void __xmhf_exception_handler_##vector(void) __attribute__((naked)) { 					\
 		asm volatile(												\
 						"1:	bt	$0, %0	\r\n"						\
 						"jnc 1b	\r\n"								\

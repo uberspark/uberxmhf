@@ -58,7 +58,7 @@
 
 #ifndef __ASSEMBLY__
 
-void xcexhub_initialize(void);
+//void xcexhub_initialize(void);
 
 //----------------------------------------------------------------------
 //ARCH. BACKENDS
