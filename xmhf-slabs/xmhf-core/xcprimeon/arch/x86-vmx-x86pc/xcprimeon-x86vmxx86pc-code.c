@@ -353,7 +353,13 @@ void xcprimeon_arch_cpu_activate_modeandpaging(u64 pgtblbase){
 	u32 coreptbase;
 
 	//initialize paging
-	xmhfhw_cpu_x86_initialize_paging((u32)pgtblbase);
+	//xmhfhw_cpu_x86_initialize_paging((u32)pgtblbase);
+    write_cr4(read_cr4() | (u32)0x00000030); //CR4_PAE | CR4_PSE
+
+    write_cr3((u32)pgtblbase);
+
+    write_cr0(read_cr0() | (u32)0x80000015); // ET, EM, PE, PG
+
 	_XDPRINTF_("\n%s: setup page tables\n", __FUNCTION__);
 
 	//initialize GDT
