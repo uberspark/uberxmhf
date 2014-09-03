@@ -91,6 +91,9 @@ void xcprimeon_entry(void){
     //perform basic (boot) CPU initialization
     xcprimeon_arch_cpu_basicinit();
 
+    //initialize platform
+    xcprimeon_arch_platform_initialize();
+
 	//post DRT cleanup (e.g., cache/MTRR/SMRAM)
 #if defined (__DRT__)
     xcprimeon_arch_postdrt();
