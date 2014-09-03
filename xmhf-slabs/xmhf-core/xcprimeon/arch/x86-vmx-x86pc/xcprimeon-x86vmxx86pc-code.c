@@ -353,7 +353,6 @@ void xcprimeon_arch_cpu_activate_modeandpaging(u64 pgtblbase){
 	u32 coreptbase;
 
 	//initialize paging
-	//xmhfhw_cpu_x86_initialize_paging((u32)pgtblbase);
     write_cr4(read_cr4() | (u32)0x00000030); //CR4_PAE | CR4_PSE
 
     write_cr3((u32)pgtblbase);

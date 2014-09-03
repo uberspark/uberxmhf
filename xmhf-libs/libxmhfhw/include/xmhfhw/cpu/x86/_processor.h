@@ -500,7 +500,6 @@ static inline void xsetbv(u32 xcr_reg, u64 value){
 
 #endif //__XMHF_VERIFICATION__
 
-//void xmhfhw_cpu_x86_initialize_paging(u32 pgtblbase);
 void xmhfhw_cpu_x86_save_mtrrs(mtrr_state_t *saved_state);
 void xmhfhw_cpu_x86_restore_mtrrs(mtrr_state_t *saved_state);
 #endif //__ASSEMBLY__
