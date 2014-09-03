@@ -513,7 +513,7 @@ void xcprimeon_arch_earlydmaprot(u32 membase, u32 size){
 }
 
 // initialization function for the core API interface
-void xcprimeon_arch_initialize_page_tables(void){
+u64 xcprimeon_arch_initialize_page_tables(void){
 	u32 pgtblbase;
 
 	_XDPRINTF_("\n%s: starting...", __FUNCTION__);
@@ -526,4 +526,5 @@ void xcprimeon_arch_initialize_page_tables(void){
 	xmhfhw_cpu_x86_initialize_paging(pgtblbase);
 	_XDPRINTF_("\n%s: setup slab paging\n", __FUNCTION__);
 
+    return (u64)pgtblbase;
 }
