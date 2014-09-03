@@ -357,7 +357,7 @@ static bool _ap_pmode_entry_with_paging(void) __attribute__((naked)){
 
 }
 
-//======================================================================
+//////////////////////////////////////////////////////////////////////////////
 
 //re-initialize DMA protections (if needed) for the runtime
 bool xcsmp_arch_dmaprot_reinitialize(void){
@@ -381,10 +381,6 @@ bool xcsmp_arch_smpinitialize(void){
 
 	//save cpu MTRR state which we will later replicate on all APs
 	_xcsmp_cpu_x86_savecpumtrrstate();
-
-	//signal that basic base platform data structure initialization is complete
-	//(used by the exception handler component)
-	//g_bplt_initiatialized = true;
 
 	//wake up APS
 	if(_cpucount > 1){
