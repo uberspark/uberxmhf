@@ -143,7 +143,7 @@ static void _xcprimeon_cpu_x86_initializeTSS(void){
 
 }
 
-
+/*
 //bootstrap exception handling without SMP support
 //only designed until real SMP exception handler slab (xcexhub) can take control
 
@@ -239,7 +239,7 @@ static u32 __xcprimeon_exceptionstubs[] = { 	XMHF_XCPRIMEON_EXCEPTION_HANDLER_AD
 							XMHF_XCPRIMEON_EXCEPTION_HANDLER_ADDROF(30),
 							XMHF_XCPRIMEON_EXCEPTION_HANDLER_ADDROF(31),
 };
-
+*/
 
 //initialize basic exception handling
 static void _xcprimeon_initialize_exceptionhandling(void){
@@ -248,8 +248,10 @@ static void _xcprimeon_initialize_exceptionhandling(void){
 
 	for(i=0; i < EMHF_XCPHANDLER_MAXEXCEPTIONS; i++){
 		idtentry_t *idtentry=(idtentry_t *)((u32)&_idt_start+ (i*8));
-		idtentry->isrLow= (u16)__xcprimeon_exceptionstubs[i];
-		idtentry->isrHigh= (u16) ( (u32)__xcprimeon_exceptionstubs[i] >> 16 );
+		//idtentry->isrLow= (u16)__xcprimeon_exceptionstubs[i];
+		//idtentry->isrHigh= (u16) ( (u32)__xcprimeon_exceptionstubs[i] >> 16 );
+		idtentry->isrLow= (u16)_exceptionstubs[i];
+		idtentry->isrHigh= (u16) ( (u32)_exceptionstubs[i] >> 16 );
 		idtentry->isrSelector = __CS_CPL0;
 		idtentry->count=0x0;
 		idtentry->type=0xEE;	//32-bit interrupt gate
