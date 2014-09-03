@@ -444,7 +444,7 @@ static u32 _xcprimeon_populate_pagetables(void){
 //=========================================================================================
 
 //initialize basic platform elements
-void xcprimeon_arch_initialize(void){
+void xcprimeon_arch_initialize(u64 pgtblbase){
 	u32 coreptbase;
 
 	//initialize CPU
