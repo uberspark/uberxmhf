@@ -289,6 +289,13 @@ static void _xcsmp_cpu_x86_smpinitialize_commonstart(void){
 	bcr0 |= 0x20;
 	write_cr0(bcr0);
 
+    //load GDT and IDT
+    asm volatile(	"lgdt %0\r\n"
+					"lidt %1\r\n"
+					:
+					: "m" (_gdt), "m" (_idt)
+	);
+
 	//load TR
 	{
 	  u32 gdtstart = (u32)xmhf_baseplatform_arch_x86_getgdtbase();
@@ -320,16 +327,14 @@ static void _xcsmp_cpu_x86_smpinitialize_commonstart(void){
 
 static bool _ap_pmode_entry_with_paging(void) __attribute__((naked)){
 
-    asm volatile(	"lgdt %0\r\n"
-					"lidt %1\r\n"
-					"mov %2, %%ecx\r\n"
+    asm volatile(	"mov %0, %%ecx\r\n"
 					"rdmsr\r\n"
 					"andl $0xFFFFF000, %%eax\r\n"
 					"addl $0x20, %%eax\r\n"
 					"movl (%%eax), %%eax\r\n"
 					"shr $24, %%eax\r\n"
-					"movl %3, %%edx\r\n"
-					"movl %4, %%ebx\r\n"
+					"movl %1, %%edx\r\n"
+					"movl %2, %%ebx\r\n"
 					"xorl %%ecx, %%ecx\r\n"
 					"xorl %%edi, %%edi\r\n"
 					"getidxloop:\r\n"
@@ -337,20 +342,20 @@ static bool _ap_pmode_entry_with_paging(void) __attribute__((naked)){
 					"cmpl %%eax, %%ebp\r\n"
 					"jz gotidx\r\n"
 					"incl %%ecx\r\n"
-					"addl %5, %%edi\r\n"
+					"addl %3, %%edi\r\n"
 					"cmpl %%edx, %%ecx\r\n"
 					"jb getidxloop\r\n"
 					"hlt\r\n"								//we should never get here, if so just halt
 					"gotidx:\r\n"							// ecx contains index into g_xc_cputable
 					"movl 0x4(%%ebx, %%edi), %%eax\r\n"	 	// eax = g_xc_cputable[ecx].cpu_index
-					"movl %6, %%edi \r\n"					// edi = &_cpustack
-					"movl %7, %%ecx \r\n"					// ecx = sizeof(_cpustack[0])
+					"movl %4, %%edi \r\n"					// edi = &_cpustack
+					"movl %5, %%ecx \r\n"					// ecx = sizeof(_cpustack[0])
 					"mull %%ecx \r\n"						// eax = sizeof(_cpustack[0]) * eax
 					"addl %%ecx, %%eax \r\n"				// eax = (sizeof(_cpustack[0]) * eax) + sizeof(_cpustack[0])
 					"addl %%edi, %%eax \r\n"				// eax = &_cpustack + (sizeof(_cpustack[0]) * eax) + sizeof(_cpustack[0])
 					"movl %%eax, %%esp \r\n"				// esp = top of stack for the cpu
 					:
-					: "m" (_gdt), "m" (_idt), "i" (MSR_APIC_BASE), "m" (_cpucount), "i" (&_cputable), "i" (sizeof(xc_cputable_t)), "i" (&_cpustack), "i" (sizeof(_cpustack[0]))
+					: "i" (MSR_APIC_BASE), "m" (_cpucount), "i" (&_cputable), "i" (sizeof(xc_cputable_t)), "i" (&_cpustack), "i" (sizeof(_cpustack[0]))
 	);
 
 	_xcsmp_cpu_x86_smpinitialize_commonstart();
