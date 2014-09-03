@@ -180,7 +180,7 @@ u32 xmhf_baseplatform_arch_getcpuvendor(void){
 	return xmhf_baseplatform_arch_x86_getcpuvendor();
 }
 
-
+/*
 //initialize paging
 void xmhfhw_cpu_x86_initialize_paging(u32 pgtblbase){
 
@@ -198,4 +198,4 @@ void xmhfhw_cpu_x86_initialize_paging(u32 pgtblbase){
 		: "eax"
 	);
 
-}
+}*/
