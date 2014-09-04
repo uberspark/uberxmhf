@@ -282,7 +282,21 @@ typedef struct {
 } x86desc_t;
 
 
-#define get_eflags(x)  __asm__ __volatile__("pushfl ; popl %0 ":"=g" (x): /* no input */ :"memory")
+//#define get_eflags(x)  __asm__ __volatile__("pushfl ; popl %0 ":"=g" (x): /* no input */ :"memory")
+static inline u64 get_rflags(void){
+    u64 _rflags;
+
+    asm volatile(
+                 "pushfq \r\n"
+                 "popq %0 \r\n"
+                 : "=g" (_rflags)
+                 :
+                 :
+                 );
+
+    return _rflags;
+}
+
 #define set_eflags(x) __asm__ __volatile__("pushl %0 ; popfl": /* no output */ :"g" (x):"memory", "cc")
 
 #define cpuid(op, eax, ebx, ecx, edx)		\
