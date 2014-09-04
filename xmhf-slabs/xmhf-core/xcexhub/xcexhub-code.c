@@ -44,7 +44,7 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-/* 
+/*
  * XMHF core exception handling (xcexhub)
  * author: amit vasudevan (amitvasudevan@acm.org)
  */
@@ -55,9 +55,6 @@
 
 #include <xcexhub.h>
 
-void xcexhub_initialize(void){
-		xcexhub_arch_initialize();
-}
 
 //////////
 XMHF_SLAB("xcexhub")

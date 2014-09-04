@@ -58,7 +58,7 @@
 
 #define INTEL_STRING_DWORD1	0x756E6547
 #define INTEL_STRING_DWORD2	0x49656E69
-#define INTEL_STRING_DWORD3	0x6C65746E	
+#define INTEL_STRING_DWORD3	0x6C65746E
 
 #define EFLAGS_CF	0x00000001 /* Carry Flag */
 #define EFLAGS_PF	0x00000004 /* Parity Flag */
@@ -269,7 +269,7 @@ typedef struct {
   unsigned short baseAddr0_15;
   unsigned char baseAddr16_23;
   unsigned char attributes1;
-  unsigned char limit16_19attributes2;    
+  unsigned char limit16_19attributes2;
   unsigned char baseAddr24_31;
 } __attribute__ ((packed)) TSSENTRY;
 
@@ -279,7 +279,7 @@ typedef struct {
 	u32 base;
 	u32 limit;
 	u32 access_rights;
-} x86desc_t; 
+} x86desc_t;
 
 
 #define get_eflags(x)  __asm__ __volatile__("pushfl ; popl %0 ":"=g" (x): /* no input */ :"memory")
@@ -309,7 +309,7 @@ static inline uint64_t rdtsc64(void)
 }
 
 
-/* Calls to read and write control registers */ 
+/* Calls to read and write control registers */
 static inline unsigned long read_cr0(void){
   unsigned long __cr0;
   __asm__("mov %%cr0,%0\n\t" :"=r" (__cr0));
@@ -342,7 +342,7 @@ static inline void write_cr3(unsigned long val){
   __asm__("mov %0,%%cr3\n\t"
           "jmp 1f\n\t"
           "1:"
-          : 
+          :
           :"r" ((unsigned long)val));
 }
 
@@ -465,7 +465,7 @@ static inline void xsetbv(u32 xcr_reg, u64 value){
 	static inline u32 get_cpu_vendor_or_die(void) {
 	    u32 dummy;
 	    u32 vendor_dword1, vendor_dword2, vendor_dword3;
-	    
+
 	    cpuid(0, &dummy, &vendor_dword1, &vendor_dword3, &vendor_dword2);
 	    if(vendor_dword1 == AMD_STRING_DWORD1 && vendor_dword2 == AMD_STRING_DWORD2
 	       && vendor_dword3 == AMD_STRING_DWORD3)
@@ -476,7 +476,7 @@ static inline void xsetbv(u32 xcr_reg, u64 value){
 	    else
 		HALT();
 
-	    return 0; // never reached 
+	    return 0; // never reached
 	}
 
 
@@ -500,8 +500,6 @@ static inline void xsetbv(u32 xcr_reg, u64 value){
 
 #endif //__XMHF_VERIFICATION__
 
-void xmhfhw_cpu_initialize(void);
-void xmhfhw_cpu_x86_initialize_paging(u32 pgtblbase);
 void xmhfhw_cpu_x86_save_mtrrs(mtrr_state_t *saved_state);
 void xmhfhw_cpu_x86_restore_mtrrs(mtrr_state_t *saved_state);
 #endif //__ASSEMBLY__
