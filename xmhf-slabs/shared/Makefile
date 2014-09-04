@@ -41,7 +41,7 @@ $(THE_ARCHIVE): $(OBJECTS)
 	@echo Building "$(@F)" from "$<"
 	$(CC) -S -emit-llvm $(CFLAGS) $< -o $(LIBSHARED_OBJECTS_DIR)/$(@F).ll
 	cd $(LIBSHARED_OBJECTS_DIR) && fixnaked.pl $(@F).ll
-	cd $(LIBSHARED_OBJECTS_DIR) && llc -O=0 -march=x86 -mcpu=corei7 -mattr=$(LLC_ATTR) $(@F).ll
+	cd $(LIBSHARED_OBJECTS_DIR) && llc -O=0 -march=x86-64 -mcpu=corei7 -mattr=$(LLC_ATTR) $(@F).ll
 	cd $(LIBSHARED_OBJECTS_DIR) && $(CC) -c $(CFLAGS) $(@F).s -o $(@F)
 
 
