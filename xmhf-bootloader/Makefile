@@ -40,6 +40,7 @@ endif
 
 # x86 boot-loader is currently 32-bit
 CFLAGS += -m32
+ASFLAGS += -m32
 
 # folder where objects go
 XMHF_BOOTLOADER_OBJECTS_DIR = _objs_xmhf-bootloader
