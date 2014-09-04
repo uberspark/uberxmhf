@@ -86,8 +86,8 @@ static void _xcprimeon_cpu_x86_initializeGDT(void){
 
 	asm volatile(
 		"lgdt  %0 \r\n"
-		"pushl	%1 \r\n"				// far jump to runtime entry point
-		"pushl	$reloadsegs \r\n"
+		"pushq	%1 \r\n"				// far jump to runtime entry point
+		"pushq	$reloadsegs \r\n"
 		"lret \r\n"
 		"reloadsegs: \r\n"
 		"movw	%2, %%ax \r\n"
@@ -108,11 +108,11 @@ static void _xcprimeon_cpu_x86_initializeGDT(void){
 static void _xcprimeon_cpu_x86_initializeIOPL(void){
 
 	asm volatile(
-		"pushl	$0x3000 \r\n"					// clear flags, but set IOPL=3 (CPL-3)
-		"popf \r\n"
+		"pushq	$0x3000 \r\n"					// clear flags, but set IOPL=3 (CPL-3)
+		"popfq \r\n"
 		: //no outputs
 		: //no inputs
-		: //no clobber
+		: "cc"
 	);
 
 
