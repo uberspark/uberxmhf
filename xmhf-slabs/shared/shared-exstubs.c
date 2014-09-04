@@ -58,12 +58,12 @@
 
 __attribute__(( section(".slabtrampoline") )) static u32 _xcexhub_exception_lock = 1;
 __attribute__(( section(".slabtrampoline") )) static u32 _xcexhub_exception_savedesp[MAX_PLATFORM_CPUS];
-__attribute__(( section(".slabtrampoline") )) static u32 _xcexhub_exception_savedesp_index = &_xcexhub_exception_savedesp[0];
+__attribute__(( section(".slabtrampoline") )) static u64 _xcexhub_exception_savedesp_index = &_xcexhub_exception_savedesp[0];
 __attribute__(( section(".slabtrampoline") )) __attribute__(( aligned(4096) )) static u8 _xcexhub_exception_stack[MAX_PLATFORM_CPUS][PAGE_SIZE_4K];
-__attribute__(( section(".slabtrampoline") )) __attribute__(( aligned(4096) )) static u32 _xcexhub_exception_stack_index = &_xcexhub_exception_stack[1];
+__attribute__(( section(".slabtrampoline") )) __attribute__(( aligned(4096) )) static u64 _xcexhub_exception_stack_index = &_xcexhub_exception_stack[1];
 
 
-#define XMHF_EXCEPTION_HANDLER_DEFINE(vector) 												\
+/*#define XMHF_EXCEPTION_HANDLER_DEFINE(vector) 												\
 	__attribute__(( section(".slabtrampoline") )) static void __xmhf_exception_handler_##vector(void) __attribute__((naked)) { 					\
 		asm volatile(												\
 						"1:	bt	$0, %0	\r\n"						\
@@ -98,6 +98,16 @@ __attribute__(( section(".slabtrampoline") )) __attribute__(( aligned(4096) )) s
 						"iretl\r\n"									\
 					:												\
 					:	"m" (_xcexhub_exception_lock), "m" (_xcexhub_exception_stack_index), "i" (__DS_CPL0), "i" (vector)				\
+		);															\
+	}\
+*/
+
+#define XMHF_EXCEPTION_HANDLER_DEFINE(vector) 												\
+	__attribute__(( section(".slabtrampoline") )) static void __xmhf_exception_handler_##vector(void) __attribute__((naked)) { 					\
+		asm volatile(												\
+						"iretq\r\n"									\
+					:												\
+					:	\
 		);															\
 	}\
 
@@ -137,7 +147,7 @@ XMHF_EXCEPTION_HANDLER_DEFINE(29)
 XMHF_EXCEPTION_HANDLER_DEFINE(30)
 XMHF_EXCEPTION_HANDLER_DEFINE(31)
 
-__attribute__(( section(".section_archds") )) u32 _exceptionstubs[] = { 	XMHF_EXCEPTION_HANDLER_ADDROF(0),
+__attribute__(( section(".section_archds") )) u64*  _exceptionstubs[] = { XMHF_EXCEPTION_HANDLER_ADDROF(0),
 							XMHF_EXCEPTION_HANDLER_ADDROF(1),
 							XMHF_EXCEPTION_HANDLER_ADDROF(2),
 							XMHF_EXCEPTION_HANDLER_ADDROF(3),
