@@ -145,16 +145,30 @@ struct _memorytype {
 
 
 //x86 GDT descriptor type
+//typedef struct {
+//		u16 size;
+//		u32 base;
+//} __attribute__((packed)) arch_x86_gdtdesc_t;
+
+//x86 IDT descriptor type
+//typedef struct {
+//		u16 size;
+//		u32 base;
+//} __attribute__((packed)) arch_x86_idtdesc_t;
+
+
+//x86 GDT descriptor type
 typedef struct {
 		u16 size;
-		u32 base;
+		u64 base;
 } __attribute__((packed)) arch_x86_gdtdesc_t;
 
 //x86 IDT descriptor type
 typedef struct {
 		u16 size;
-		u32 base;
+		u64 base;
 } __attribute__((packed)) arch_x86_idtdesc_t;
+
 
 //TSS descriptor (partial)
 typedef struct __tss {
