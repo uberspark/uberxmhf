@@ -32,7 +32,7 @@ all: buildslabbin
 buildslabbin: $(XMHF_SLAB_OBJECTS)
 	cd $(XMHF_SLAB_OBJECTS_DIR) && cp -f $(LINKER_SCRIPT_INPUT) $(XMHF_SLAB_NAME).lscript.c
 	cd $(XMHF_SLAB_OBJECTS_DIR) && $(CC) $(CFLAGS) -D__ASSEMBLY__ -P -E $(XMHF_SLAB_NAME).lscript.c -o $(LINKER_SCRIPT_OUTPUT)
-	cd $(XMHF_SLAB_OBJECTS_DIR) && $(LD) -r --oformat elf32-i386 -T $(LINKER_SCRIPT_OUTPUT) -o $(XMHF_SLAB_NAME).slo $(XMHF_SLAB_OBJECTS_ARCHIVE)
+	cd $(XMHF_SLAB_OBJECTS_DIR) && $(LD) -r --oformat elf64-x86-64 -T $(LINKER_SCRIPT_OUTPUT) -o $(XMHF_SLAB_NAME).slo $(XMHF_SLAB_OBJECTS_ARCHIVE)
 
 %.o: %.c
 	mkdir -p $(XMHF_SLAB_OBJECTS_DIR)
