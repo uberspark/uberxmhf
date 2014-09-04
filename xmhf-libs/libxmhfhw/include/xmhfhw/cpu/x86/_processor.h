@@ -297,7 +297,19 @@ static inline u64 get_rflags(void){
     return _rflags;
 }
 
-#define set_eflags(x) __asm__ __volatile__("pushl %0 ; popfl": /* no output */ :"g" (x):"memory", "cc")
+//#define set_eflags(x) __asm__ __volatile__("pushl %0 ; popfl": /* no output */ :"g" (x):"memory", "cc")
+static inline void set_rflags(u64 rflags){
+
+    asm volatile(
+                 "pushq %0 \r\n"
+                 "popfq \r\n"
+                 :
+                 : "g" (rflags)
+                 : "cc"
+                 );
+
+}
+
 
 #define cpuid(op, eax, ebx, ecx, edx)		\
 ({						\
