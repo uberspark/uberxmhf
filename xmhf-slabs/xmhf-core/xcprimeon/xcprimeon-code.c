@@ -111,13 +111,15 @@ void xcprimeon_entry(void){
     //activate paging and associated operating mode
     xcprimeon_arch_cpu_activate_modeandpaging(pgtblbase);
 
-	//proceed with SMP initialization
+	/*//proceed with SMP initialization
 	if ( XMHF_SLAB_CALL(xcsmp_entry()) ){
 		//we should never get here
 		_XDPRINTF_("\nSL: Fatal, should never be here!");
 		HALT();
-	}
+	}*/
 
+    _XDPRINTF_("Halting!. XMHF Tester Finished!\n");
+	HALT();
 }
 
 ///////
