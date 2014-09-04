@@ -147,7 +147,7 @@ XMHF_EXCEPTION_HANDLER_DEFINE(29)
 XMHF_EXCEPTION_HANDLER_DEFINE(30)
 XMHF_EXCEPTION_HANDLER_DEFINE(31)
 
-__attribute__(( section(".section_archds") )) u64*  _exceptionstubs[] = { XMHF_EXCEPTION_HANDLER_ADDROF(0),
+__attribute__(( section(".section_archds") )) u64  _exceptionstubs[] = { XMHF_EXCEPTION_HANDLER_ADDROF(0),
 							XMHF_EXCEPTION_HANDLER_ADDROF(1),
 							XMHF_EXCEPTION_HANDLER_ADDROF(2),
 							XMHF_EXCEPTION_HANDLER_ADDROF(3),
