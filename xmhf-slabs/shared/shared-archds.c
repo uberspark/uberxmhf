@@ -44,10 +44,10 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-/* 
- * arch. specific data structures that are mapped into a slab 
+/*
+ * arch. specific data structures that are mapped into a slab
  * memory view
- * 
+ *
  * author: amit vasudevan (amitvasudevan@acm.org)
  */
 
@@ -64,13 +64,13 @@ __attribute__(( aligned(16) )) __attribute__(( section(".section_archds") )) u64
 	0x00cf93000000ffffULL,	//CPL-0 data descriptor (DS/SS/ES/FS/GS)
 	0x00cffb000000ffffULL,	//CPL-3 code descriptor (CS)
 	0x00cff3000000ffffULL,	//CPL-3 data descriptor (DS/SS/ES/FS/GS)
-	0x0000000000000000ULL	
+	0x0000000000000000ULL
 };
 
 // GDT descriptor
 __attribute__(( aligned(16) )) __attribute__(( section(".section_archds") )) arch_x86_gdtdesc_t _gdt  = {
 	.size=sizeof(_gdt_start)-1,
-	.base=(u32)&_gdt_start,
+	.base=(u64)&_gdt_start,
 };
 
 // TSS
@@ -82,7 +82,7 @@ __attribute__(( aligned(16) )) __attribute__(( section(".section_archds") )) u64
 // IDT descriptor
 __attribute__(( aligned(16) )) __attribute__(( section(".section_archds") )) arch_x86_idtdesc_t _idt = {
 	.size=sizeof(_idt_start)-1,
-	.base=(u32)&_idt_start,
+	.base=(u64)&_idt_start,
 };
 
 //libxmhfdebug
