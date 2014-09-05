@@ -610,6 +610,7 @@ __attribute__((naked)) __attribute__ ((section(".slab_entrystub"))) __attribute_
 					"movw %%ax, %%fs \r\n"
 					"movw %%ax, %%gs \r\n"
 					"movw %%ax, %%ss \r\n"
+
 					"movl $0x10200000, %%esp \r\n" //TODO: get rid of hard-coded stack top
 
     				"movl %%cr4, %%eax \r\n"
@@ -634,12 +635,14 @@ __attribute__((naked)) __attribute__ ((section(".slab_entrystub"))) __attribute_
 
                     ".code64 \r\n"
                     "_xcprimeon_start64: \r\n"
-					"xorq %%rsi, %%rsi \r\n"
-					"movl $0x000b8000, %%esi \r\n"
-					"movl $0x65076507, %%eax \r\n"
-					"movl %%eax, (%%rsi) \r\n"
-					"1: jmp 1b \r\n"
-					//"jmp xcprimeon_entry \r\n"
+					//"xorq %%rsi, %%rsi \r\n"
+					//"movl $0x000b8000, %%esi \r\n"
+					//"movl $0x65076507, %%eax \r\n"
+					//"movl %%eax, (%%rsi) \r\n"
+					//"1: jmp 1b \r\n"
+					"xorq %%rsp, %%rsp \r\n"
+					"movl $0x10200000, %%esp \r\n" //TODO: get rid of hard-coded stack top
+                    "jmp xcprimeon_entry \r\n"
 			    :
 			    : "i" (&_xcprimeon_init_pml4t)
                 :
