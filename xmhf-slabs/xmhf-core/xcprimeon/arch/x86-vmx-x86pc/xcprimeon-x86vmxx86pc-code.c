@@ -55,7 +55,7 @@
 
 #include <xcprimeon.h>
 
-__attribute__((aligned(4096))) static u64 _xcprimeon_init_pdt[2048] = {
+__attribute__((aligned(4096))) static u64 _xcprimeon_init_pdt[(PAE_PTRS_PER_PDPT*PAE_PTRS_PER_PDT)] = {
 	0x0000000000000081,0x0000000000200081,0x0000000000400081,0x0000000000600081,
 	0x0000000000800081,0x0000000000a00081,0x0000000000c00081,0x0000000000e00081,
 	0x0000000001000081,0x0000000001200081,0x0000000001400081,0x0000000001600081,
@@ -570,7 +570,7 @@ __attribute__((aligned(4096))) static u64 _xcprimeon_init_pdt[2048] = {
 	0x00000000ff800091,0x00000000ffa00091,0x00000000ffc00091,0x00000000ffe00091,
 };
 
-__attribute__((aligned(4096))) static u64 _xcprimeon_init_pdpt[512] = {
+__attribute__((aligned(4096))) static u64 _xcprimeon_init_pdpt[PAE_MAXPTRS_PER_PDPT] = {
     ((u64)(&_xcprimeon_init_pdt[0]) + (u64)(_PAGE_PRESENT) ),
     ((u64)(&_xcprimeon_init_pdt[512]) + (u64)(_PAGE_PRESENT) ),
     ((u64)(&_xcprimeon_init_pdt[1024]) + (u64)(_PAGE_PRESENT) ),
@@ -578,7 +578,7 @@ __attribute__((aligned(4096))) static u64 _xcprimeon_init_pdpt[512] = {
     0
 };
 
-__attribute__((aligned(4096))) static u64 _xcprimeon_init_pml4t[512] = {
+__attribute__((aligned(4096))) static u64 _xcprimeon_init_pml4t[PAE_MAXPTRS_PER_PDPT] = {
     ((u64)(&_xcprimeon_init_pdpt) + (u64)(_PAGE_PRESENT) ),
     0
 };
@@ -588,18 +588,12 @@ __attribute__((naked)) __attribute__ ((section(".slab_entrystub"))) __attribute_
 
 	asm volatile (
                     ".code32 \r\n"
-                    ".global _mle_page_table_start \r\n"
-					"_mle_page_table_start:\r\n"
 					".fill 4096, 1, 0 \r\n"
 					".fill 4096, 1, 0 \r\n"
 					".fill 4096, 1, 0 \r\n"
-					".global _mle_page_table_end \r\n"
-					"_mle_page_table_end: \r\n"
-					".global _mle_hdr \r\n"
-					"_mle_hdr:\r\n"
 					".fill 0x80, 1, 0x90\r\n" //TODO: should really be sizeof(mle_hdr_t)
-					".global _sl_start \r\n"
-					"_sl_start: \r\n"
+					"_xcprimeon_start: \r\n"
+
 					"movw %%ds, %%ax \r\n"
 					"movw %%ax, %%fs \r\n"
 					"movw %%ax, %%gs \r\n"
