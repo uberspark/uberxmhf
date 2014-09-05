@@ -619,6 +619,11 @@ __attribute__((naked)) __attribute__ ((section(".slab_entrystub"))) __attribute_
                     "movl %0, %%eax \r\n"
                     "movl %%eax, %%cr3 \r\n"
 
+                    "movl $0xc0000080, %%ecx \r\n"
+                    "rdmsr \r\n"
+                    "orl $0x00000100, %%eax \r\n"
+                    "wrmsr \r\n"
+
                     "movl %%cr0, %%eax \r\n"
                     "orl $0x80000015, %%eax \r\n"
                     "movl %%eax, %%cr0 \r\n"
@@ -630,7 +635,7 @@ __attribute__((naked)) __attribute__ ((section(".slab_entrystub"))) __attribute_
 					".code64 \r\n"
 					//"jmp xcprimeon_entry \r\n"
 			    :
-			    : "i" (&_xcprimeon_init_pdpt)
+			    : "i" (&_xcprimeon_init_pml4t)
                 :
 	);
 }
