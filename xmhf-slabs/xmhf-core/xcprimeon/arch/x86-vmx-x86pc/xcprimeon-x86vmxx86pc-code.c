@@ -584,6 +584,18 @@ __attribute__((aligned(4096))) static u64 _xcprimeon_init_pml4t[PAE_MAXPTRS_PER_
 };
 
 
+__attribute__(( aligned(16) )) static u64 _xcprimeon_init_gdt_start[]  = {
+	0x0000000000000000ULL,	//NULL descriptor
+	0x00af9b000000ffffULL,	//CPL-0 64-bit code descriptor (CS64)
+	0x00af93000000ffffULL,	//CPL-0 64-bit data descriptor (DS/SS/ES/FS/GS)
+};
+
+__attribute__(( aligned(16) )) static arch_x86_gdtdesc_t _xcprimeon_init_gdt  = {
+	.size=sizeof(_xcprimeon_init_gdt_start)-1,
+	.base=&_xcprimeon_init_gdt_start,
+};
+
+
 __attribute__((naked)) __attribute__ ((section(".slab_entrystub"))) __attribute__(( align(4096) )) void xcprimeon_arch_entry(void) {
 
 	asm volatile (
