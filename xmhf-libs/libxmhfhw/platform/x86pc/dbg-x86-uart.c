@@ -92,10 +92,10 @@ static void dbg_x86_uart_putc_bare(char ch){
 
 // write character to serial port, translating '\n' to '\r\n'
 void dbg_x86_uart_putc(char ch){
-  if (ch == '\n') {
+/*  if (ch == '\n') {
     dbg_x86_uart_putc_bare('\r');
   }
-  dbg_x86_uart_putc_bare(ch);
+  dbg_x86_uart_putc_bare(ch);*/
 }
 
 
@@ -106,8 +106,12 @@ void dbg_x86_uart_putc(char ch){
 //}
 
 void xmhfhw_platform_serial_puts(char *buffer){
-	while (*buffer)
-		dbg_x86_uart_putc(*buffer++);
+	//while (*buffer)
+	//	dbg_x86_uart_putc(*buffer++);
+	while (*buffer){
+        dbg_x86_uart_putc(*buffer);
+        buffer++;
+	}
 }
 
 
