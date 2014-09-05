@@ -640,6 +640,14 @@ __attribute__((naked)) __attribute__ ((section(".slab_entrystub"))) __attribute_
 					//"movl $0x65076507, %%eax \r\n"
 					//"movl %%eax, (%%rsi) \r\n"
 					//"1: jmp 1b \r\n"
+
+					"movw $0x10, %%ax \r\n"
+					"movw %%ax, %%fs \r\n"
+					"movw %%ax, %%gs \r\n"
+					"movw %%ax, %%ss \r\n"
+					"movw %%ax, %%ds \r\n"
+					"movw %%ax, %%es \r\n"
+
 					"xorq %%rsp, %%rsp \r\n"
 					"movl $0x10200000, %%esp \r\n" //TODO: get rid of hard-coded stack top
                     "jmp xcprimeon_entry \r\n"
