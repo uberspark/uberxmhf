@@ -51,16 +51,13 @@
 #include <xcprimeon.h>
 #include <xcsmp.h>
 
-static u32 *keepalivesign= (u32 *)0xB8000;
-
 void xcprimeon_entry(void){
     u64 pgtblbase;
 
 	//initialize debugging early on
 	xmhfhw_platform_serial_init((char *)&xcbootinfo->debugcontrol_buffer);
 
-    xmhfhw_platform_serial_puts("Hello world from 64-bit\n");
-    *keepalivesign = 0x61076107;
+    xmhfhw_platform_serial_puts("Hello world from 64-bit. XMHF Tester Finished!\n");
     HALT();
 
 	//[debug] print relevant startup info.
