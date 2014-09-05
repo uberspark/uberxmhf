@@ -44,25 +44,21 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-/* 
+/*
  * boot information structure that is mapped into every slab memory view
- * 
+ *
  * author: amit vasudevan (amitvasudevan@acm.org)
  */
 
 #include <xmhf.h>
 #include <xmhf-core.h>
 
-extern u8 _slab_xcinitbs_stack_start[];														
-extern u8 _slab_xcinitbs_stack_end[];														
-extern u8 _slab_xcinitbs_entrypoint[];	
+extern u8 _slab_xcinitbs_stack_start[];
+extern u8 _slab_xcinitbs_stack_end[];
+extern u8 _slab_xcinitbs_entrypoint[];
 
 static XMHF_BOOTINFO xcbootinfo_store __attribute__(( section(".sharedro_xcbootinfo") )) = {
 	.magic= RUNTIME_PARAMETER_BLOCK_MAGIC,
-	//.entrypoint= (u32)xmhf_runtime_entry,
-	//.stack_base = (u32)_init_stack,
-	//.entrypoint= (u32)_slab_xcinitbs_entrypoint,
-	//.stack_base = (u32)_slab_xcinitbs_stack_start,
 	.stack_size = MAX_PLATFORM_CPUSTACK_SIZE,
 };
 

@@ -56,12 +56,11 @@ static u32 *keepalivesign= (u32 *)0xB8000;
 void xcprimeon_entry(void){
     u64 pgtblbase;
 
-    *keepalivesign = 0x61076107;
-    HALT();
-
 	//initialize debugging early on
 	xmhfhw_platform_serial_init((char *)&xcbootinfo->debugcontrol_buffer);
 
+    *keepalivesign = 0x61076107;
+    HALT();
 
 	//[debug] print relevant startup info.
 	_XDPRINTF_("%s: alive and starting...\n", __FUNCTION__);

@@ -51,7 +51,7 @@
 
 #ifndef __ASSEMBLY__
 
-//define a pseudo attribute definition that allows us to annotate 
+//define a pseudo attribute definition that allows us to annotate
 //core API/hypapp callbacks function parameters
 //core-ro = parameter in core and is read-only within hypapp
 //hypapp-ro = parameter in hypapp area is read-only in core
@@ -61,10 +61,10 @@
 
 
 typedef u32 	paddr_t;		//physical address
-typedef void* 	hva_t; 			//hypervisor virtual address 
-typedef u64 	spa_t; 			//system physical address 
-typedef u32 	gva_t; 			//guest virtual address. we only support 32-bit guests 
-typedef u64 	gpa_t; 			//guest physical address. can be 64-bit with PAE 
+typedef void* 	hva_t; 			//hypervisor virtual address
+typedef u64 	spa_t; 			//system physical address
+typedef u32 	gva_t; 			//guest virtual address. we only support 32-bit guests
+typedef u64 	gpa_t; 			//guest physical address. can be 64-bit with PAE
 
 
 //"golden" digest values injected using CFLAGS during build process
@@ -81,7 +81,7 @@ typedef struct _grube820 {
   u32 baseaddr_high;
   u32 length_low;
   u32 length_high;
-  u32 type;  
+  u32 type;
 } __attribute__((packed)) GRUBE820;
 
 #define SIZE_STRUCT_GRUBE820  (sizeof(struct _grube820))
@@ -118,10 +118,8 @@ typedef struct {
 	u32 richguest_bootmodule_base;
 	u32 richguest_bootmodule_size;
 	u32 memmapinfo_numentries;
-	//u8 memmapinfo_buffer[1280]; //64 entries each of 20 bytes
 	GRUBE820 memmapinfo_buffer[MAX_E820_ENTRIES];
 	u32 cpuinfo_numentries;
-	//u8 cpuinfo_buffer[128]; //8 entries each of 16 bytes
 	PCPU cpuinfo_buffer[MAX_PCPU_ENTRIES];
 	u8 debugcontrol_buffer[16];
 	u8 cmdline_buffer[MAX_CMDLINE_BUFFER_SIZE];
