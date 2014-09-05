@@ -629,6 +629,9 @@ __attribute__((naked)) __attribute__ ((section(".slab_entrystub"))) __attribute_
                     "orl $0x80000015, %%eax \r\n"
                     "movl %%eax, %%cr0 \r\n"
 
+                    "movl %1, %%esi \r\n"
+                    "lgdt (%%esi) \r\n"
+
                     "pushl $8 \r\n"
                     "pushl $_xcprimeon_start64 \r\n"
                     "lret \r\n"
@@ -652,7 +655,7 @@ __attribute__((naked)) __attribute__ ((section(".slab_entrystub"))) __attribute_
 					"movl $0x10200000, %%esp \r\n" //TODO: get rid of hard-coded stack top
                     "jmp xcprimeon_entry \r\n"
 			    :
-			    : "i" (&_xcprimeon_init_pml4t)
+			    : "i" (&_xcprimeon_init_pml4t), "i" (&_xcprimeon_init_gdt)
                 :
 	);
 }
