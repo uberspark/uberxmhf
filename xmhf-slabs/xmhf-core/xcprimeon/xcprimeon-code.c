@@ -59,6 +59,7 @@ void xcprimeon_entry(void){
 	//initialize debugging early on
 	xmhfhw_platform_serial_init((char *)&xcbootinfo->debugcontrol_buffer);
 
+    xmhfhw_platform_serial_puts("Hello world from 64-bit\n");
     *keepalivesign = 0x61076107;
     HALT();
 
