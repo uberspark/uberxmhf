@@ -57,7 +57,9 @@
 
 __attribute__((naked)) __attribute__ ((section(".slab_entrystub"))) __attribute__(( align(4096) )) void xcprimeon_arch_entry(void) {
 
-	asm volatile (	".global _mle_page_table_start \r\n"
+	asm volatile (
+                    ".code32 \r\n"
+                    ".global _mle_page_table_start \r\n"
 					"_mle_page_table_start:\r\n"
 					".fill 4096, 1, 0 \r\n"
 					".fill 4096, 1, 0 \r\n"
@@ -74,7 +76,12 @@ __attribute__((naked)) __attribute__ ((section(".slab_entrystub"))) __attribute_
 					"movw %%ax, %%gs \r\n"
 					"movw %%ax, %%ss \r\n"
 					"movl $0x10200000, %%esp \r\n" //TODO: get rid of hard-coded stack top
-					"jmp xcprimeon_entry \r\n"
+					"movl $0x000b8000, %%esi \r\n"
+					"movl $0x65076507, %%eax \r\n"
+					"movl %%eax, (%%esi) \r\n"
+					"1: jmp 1b \r\n"
+					".code64 \r\n"
+					//"jmp xcprimeon_entry \r\n"
 			    :
 			    :
 	);
