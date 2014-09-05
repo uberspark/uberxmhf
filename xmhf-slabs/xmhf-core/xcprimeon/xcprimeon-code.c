@@ -57,14 +57,8 @@ void xcprimeon_entry(void){
 	//initialize debugging early on
 	xmhfhw_platform_serial_init((char *)&xcbootinfo->debugcontrol_buffer);
 
-    //xmhfhw_platform_serial_puts("Hello world from 64-bit. XMHF Tester Finished!\n");
-    //HALT();
-
 	//[debug] print relevant startup info.
 	_XDPRINTF_("%s: alive and starting...\n", __FUNCTION__);
-
-    _XDPRINTF_("%s: XMHF Tester Finished!\n", __FUNCTION__);
-    HALT();
 
 	_XDPRINTF_("SL: xcbootinfo at = 0x%08x\n", (u32)xcbootinfo);
 	_XDPRINTF_("	numE820Entries=%u\n", xcbootinfo->memmapinfo_numentries);
@@ -80,8 +74,8 @@ void xcprimeon_entry(void){
 	HALT_ON_ERRORCOND(xcbootinfo->magic == RUNTIME_PARAMETER_BLOCK_MAGIC);
  	_XDPRINTF_("\nNumber of E820 entries = %u", xcbootinfo->memmapinfo_numentries);
 	{
-		int i;
-		for(i=0; i < (int)xcbootinfo->memmapinfo_numentries; i++){
+		u32 i;
+		for(i=0; i < (u32)xcbootinfo->memmapinfo_numentries; i++){
 			_XDPRINTF_("\n0x%08x%08x, size=0x%08x%08x (%u)",
 			  xcbootinfo->memmapinfo_buffer[i].baseaddr_high, xcbootinfo->memmapinfo_buffer[i].baseaddr_low,
 			  xcbootinfo->memmapinfo_buffer[i].length_high, xcbootinfo->memmapinfo_buffer[i].length_low,
@@ -93,6 +87,9 @@ void xcprimeon_entry(void){
 	xcbootinfo->physmem_base = __TARGET_BASE_SL;
 	xcbootinfo->virtmem_base = __TARGET_BASE_SL;
 	xcbootinfo->size = xcbootinfo->size;
+
+    _XDPRINTF_("%s: XMHF Tester Finished!\n", __FUNCTION__);
+    HALT();
 
     //perform basic (boot) CPU initialization
     xcprimeon_arch_cpu_basicinit();
