@@ -51,8 +51,13 @@
 #include <xcprimeon.h>
 #include <xcsmp.h>
 
+static u32 *keepalivesign= (u32 *)0xB8000;
+
 void xcprimeon_entry(void){
     u64 pgtblbase;
+
+    *keepalivesign = 0x61076107;
+    HALT();
 
 	//initialize debugging early on
 	xmhfhw_platform_serial_init((char *)&xcbootinfo->debugcontrol_buffer);
@@ -60,6 +65,9 @@ void xcprimeon_entry(void){
 
 	//[debug] print relevant startup info.
 	_XDPRINTF_("%s: alive and starting...\n", __FUNCTION__);
+
+    _XDPRINTF_("%s: XMHF Tester Finished!\n", __FUNCTION__);
+    HALT();
 
 	_XDPRINTF_("SL: xcbootinfo at = 0x%08x\n", (u32)xcbootinfo);
 	_XDPRINTF_("	numE820Entries=%u\n", xcbootinfo->memmapinfo_numentries);
