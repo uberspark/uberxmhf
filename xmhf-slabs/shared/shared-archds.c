@@ -57,16 +57,19 @@
 //#include <xc-x86vmx.h>
 
 
+//*
 // GDT
 __attribute__(( aligned(16) )) __attribute__(( section(".section_archds") )) u64 _gdt_start[]  = {
 	0x0000000000000000ULL,	//NULL descriptor
-	0x00cf9b000000ffffULL,	//CPL-0 code descriptor (CS)
-	0x00cf93000000ffffULL,	//CPL-0 data descriptor (DS/SS/ES/FS/GS)
-	0x00cffb000000ffffULL,	//CPL-3 code descriptor (CS)
-	0x00cff3000000ffffULL,	//CPL-3 data descriptor (DS/SS/ES/FS/GS)
-	0x0000000000000000ULL
+	0x00af9b000000ffffULL,	//CPL-0 64-bit code descriptor (CS64)
+	0x00af93000000ffffULL,	//CPL-0 64-bit data descriptor (DS/SS/ES/FS/GS)
+	0x0000000000000000ULL,	//TODO: CPL-3 64-bit code descriptor (CS64)
+	0x0000000000000000ULL,	//TODO: CPL-3 64-bit data descriptor (DS/SS/ES/FS/GS)
+	0x0000000000000000ULL,  //TSS descriptor
+	0x0000000000000000ULL,
 };
 
+//*
 // GDT descriptor
 __attribute__(( aligned(16) )) __attribute__(( section(".section_archds") )) arch_x86_gdtdesc_t _gdt  = {
 	.size=sizeof(_gdt_start)-1,

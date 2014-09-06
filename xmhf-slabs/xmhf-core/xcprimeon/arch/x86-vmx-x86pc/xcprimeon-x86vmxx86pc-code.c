@@ -697,6 +697,7 @@ static void _xcprimeon_cpu_x86_initializeIOPL(void){
 
 __attribute__((section(".stack"))) __attribute__(( aligned(4096) )) static u8 _tss_stack[PAGE_SIZE_4K];
 
+//*
 //initialize TSS
 static void _xcprimeon_cpu_x86_initializeTSS(void){
 		u32 i;
@@ -704,8 +705,7 @@ static void _xcprimeon_cpu_x86_initializeTSS(void){
 		TSSENTRY *t;
 		tss_t *tss= (tss_t *)_tss;
 
-		tss->ss0 = __DS_CPL0;
-		tss->esp0 = (u32)_tss_stack + PAGE_SIZE_4K;
+		tss->rsp0 = (u64) ( (u32)_tss_stack + PAGE_SIZE_4K );
 
 		_XDPRINTF_("\nfixing TSS descriptor (TSS base=%x)...", tss_base);
 		t= (TSSENTRY *)(u32)&_gdt_start[(__TRSEL/sizeof(u64))];
@@ -898,12 +898,11 @@ void xcprimeon_arch_cpu_basicinit(void){
 		_XDPRINTF_("%s: NX protections enabled: MSR_EFER=%08x%08x\n", __FUNCTION__, edx, eax);
 	}
 
-    _XDPRINTF_("%s:%u: XMHF Tester Finished!\n", __FUNCTION__, __LINE__);
-    HALT();
-
 	//initialize TSS
 	_xcprimeon_cpu_x86_initializeTSS();
 
+    _XDPRINTF_("%s:%u: XMHF Tester Finished!\n", __FUNCTION__, __LINE__);
+    HALT();
 
 	//initialize basic exception handling
 	_XDPRINTF_("%s: proceeding to initialize basic exception handling\n", __FUNCTION__);
