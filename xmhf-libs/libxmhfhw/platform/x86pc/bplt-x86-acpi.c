@@ -44,12 +44,12 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-//	acpi.c 
-//  advanced configuration and power-management interface subsystem 
+//	acpi.c
+//  advanced configuration and power-management interface subsystem
 //	glue code
 //  author: amit vasudevan (amitvasudevan@acm.org)
 
-#include <xmhf.h> 
+#include <xmhf.h>
 
 
 //------------------------------------------------------------------------------
@@ -60,14 +60,14 @@ static u32 _acpi_computetablechecksum(u32 spaddr, u32 size){
   u32 i;
 
   p=(char *)spaddr;
-  
+
   for(i=0; i< size; i++)
     checksum+= (char)(*(p+i));
-  
+
   return (u32)checksum;
 }
 
-
+//*
 //------------------------------------------------------------------------------
 //get the physical address of the root system description pointer (rsdp)
 //return 0 in case of error (ACPI RSDP not found) else the absolute physical
@@ -76,10 +76,9 @@ u32 xmhfhw_platform_x86pc_acpi_getRSDP(ACPI_RSDP *rsdp){
   u16 ebdaseg;
   u32 ebdaphys;
   u32 i, found=0;
-  
+
   //get EBDA segment from 040E:0000h in BIOS data area
   xmhfhw_sysmemaccess_copy((u8 *)&ebdaseg, (u8 *)0x0000040E, sizeof(u16));
-	//memcpy((u8 *)&ebdaseg, (u8 *)0x0000040E, sizeof(u16));
 
   //convert it to its 32-bit physical address
   ebdaphys=(u32)(ebdaseg * 16);
@@ -87,7 +86,6 @@ u32 xmhfhw_platform_x86pc_acpi_getRSDP(ACPI_RSDP *rsdp){
   //search first 1KB of ebda for rsdp signature (8 bytes long)
   for(i=0; i < (1024-8); i+=16){
     xmhfhw_sysmemaccess_copy((u8 *)rsdp, (u8 *)(ebdaphys+i), sizeof(ACPI_RSDP));
-    //memcpy((u8 *)rsdp, (u8 *)(ebdaphys+i), sizeof(ACPI_RSDP));
     if(rsdp->signature == ACPI_RSDP_SIGNATURE){
       if(!_acpi_computetablechecksum((u32)rsdp, 20)){
         found=1;
@@ -96,14 +94,13 @@ u32 xmhfhw_platform_x86pc_acpi_getRSDP(ACPI_RSDP *rsdp){
     }
   }
 
-	//found RSDP?  
+	//found RSDP?
   if(found)
     return (u32)(ebdaphys+i);
-  
+
   //nope, search within BIOS areas 0xE0000 to 0xFFFFF
   for(i=0xE0000; i < (0xFFFFF-8); i+=16){
     xmhfhw_sysmemaccess_copy((u8 *)rsdp, (u8 *)i, sizeof(ACPI_RSDP));
-    //memcpy((u8 *)rsdp, (u8 *)i, sizeof(ACPI_RSDP));
     if(rsdp->signature == ACPI_RSDP_SIGNATURE){
       if(!_acpi_computetablechecksum((u32)rsdp, 20)){
         found=1;
@@ -115,8 +112,8 @@ u32 xmhfhw_platform_x86pc_acpi_getRSDP(ACPI_RSDP *rsdp){
   //found RSDP?
   if(found)
     return i;
-  
+
   //no RSDP, system is not ACPI compliant!
-  return 0;  
+  return 0;
 }
 //------------------------------------------------------------------------------
