@@ -156,25 +156,25 @@ struct _memorytype {
 //		u32 base;
 //} __attribute__((packed)) arch_x86_idtdesc_t;
 
-
+//*
 //x86 GDT descriptor type
 typedef struct {
 		u16 size;
 		u64 base;
 } __attribute__((packed)) arch_x86_gdtdesc_t;
 
+//*
 //x86 IDT descriptor type
 typedef struct {
 		u16 size;
 		u64 base;
 } __attribute__((packed)) arch_x86_idtdesc_t;
 
-
+//*
 //TSS descriptor (partial)
 typedef struct __tss {
-	u32 prevlink;
-	u32 esp0;
-	u32 ss0;
+	u32 reserved;
+	u64 rsp0;
 } tss_t;
 
 #define	EMHF_XCPHANDLER_MAXEXCEPTIONS	32
