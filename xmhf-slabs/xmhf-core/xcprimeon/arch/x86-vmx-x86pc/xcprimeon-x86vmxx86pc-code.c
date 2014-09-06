@@ -722,21 +722,18 @@ static void _xcprimeon_cpu_x86_initializeTSS(void){
 
 //initialize basic exception handling
 static void _xcprimeon_initialize_exceptionhandling(void){
-	u32 *pexceptionstubs;
 	u32 i;
 
 	for(i=0; i < EMHF_XCPHANDLER_MAXEXCEPTIONS; i++){
-		idtentry_t *idtentry=(idtentry_t *)((u32)&_idt_start+ (i*8));
-		//idtentry->isrLow= (u16)__xcprimeon_exceptionstubs[i];
-		//idtentry->isrHigh= (u16) ( (u32)__xcprimeon_exceptionstubs[i] >> 16 );
-		idtentry->isrLow= (u16)_exceptionstubs[i];
-		idtentry->isrHigh= (u16) ( (u32)_exceptionstubs[i] >> 16 );
-		idtentry->isrSelector = __CS_CPL0;
-		idtentry->count=0x0;
-		idtentry->type=0xEE;	//32-bit interrupt gate
-								//present=1, DPL=11b, system=0, type=1110b
+		_idt_start[i].isrLow= (u16)_exceptionstubs[i];
+		_idt_start[i].isrHigh= (u16) ( (u32)_exceptionstubs[i] >> 16 );
+		_idt_start[i].isrSelector = __CS_CPL0;
+		_idt_start[i].count=0x0;
+		_idt_start[i].type=0xEE;	//32-bit interrupt gate
+                                //present=1, DPL=11b, system=0, type=1110b
+        _idt_start[i].offset3263=0;
+        _idt_start[i].reserved=0;
 	}
-
 }
 
 static u8 vtd_ret_table[PAGE_SIZE_4K]; //4KB Vt-d Root-Entry table
@@ -900,9 +897,6 @@ void xcprimeon_arch_cpu_basicinit(void){
 
 	//initialize TSS
 	_xcprimeon_cpu_x86_initializeTSS();
-
-    _XDPRINTF_("%s:%u: XMHF Tester Finished!\n", __FUNCTION__, __LINE__);
-    HALT();
 
 	//initialize basic exception handling
 	_XDPRINTF_("%s: proceeding to initialize basic exception handling\n", __FUNCTION__);

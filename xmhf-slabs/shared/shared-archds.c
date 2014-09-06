@@ -80,7 +80,7 @@ __attribute__(( aligned(16) )) __attribute__(( section(".section_archds") )) arc
 __attribute__(( aligned(4096) )) __attribute__(( section(".section_archds") )) u8 _tss[PAGE_SIZE_4K] = { 0 };
 
 // IDT
-__attribute__(( aligned(16) )) __attribute__(( section(".section_archds") )) u64 _idt_start[EMHF_XCPHANDLER_MAXEXCEPTIONS] ;
+__attribute__(( aligned(16) )) __attribute__(( section(".section_archds") )) idtentry_t _idt_start[EMHF_XCPHANDLER_MAXEXCEPTIONS] ;
 
 // IDT descriptor
 __attribute__(( aligned(16) )) __attribute__(( section(".section_archds") )) arch_x86_idtdesc_t _idt = {

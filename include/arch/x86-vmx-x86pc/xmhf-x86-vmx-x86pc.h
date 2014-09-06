@@ -143,19 +143,6 @@ struct _memorytype {
 #define 	__TRSEL 	0x0028  //TSS (task) selector
 
 
-
-//x86 GDT descriptor type
-//typedef struct {
-//		u16 size;
-//		u32 base;
-//} __attribute__((packed)) arch_x86_gdtdesc_t;
-
-//x86 IDT descriptor type
-//typedef struct {
-//		u16 size;
-//		u32 base;
-//} __attribute__((packed)) arch_x86_idtdesc_t;
-
 //*
 //x86 GDT descriptor type
 typedef struct {

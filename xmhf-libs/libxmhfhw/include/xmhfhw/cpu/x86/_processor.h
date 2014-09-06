@@ -255,13 +255,15 @@ struct regs
   u32 eax;
 }__attribute__ ((packed));
 
-
+//*
 typedef struct {
   u16 isrLow;
   u16 isrSelector;
   u8  count;
   u8  type;
   u16 isrHigh;
+  u32 offset3263;
+  u32 reserved;
 } __attribute__ ((packed)) idtentry_t;
 
 typedef struct {
