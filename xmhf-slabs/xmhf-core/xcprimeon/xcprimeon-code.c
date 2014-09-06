@@ -94,13 +94,13 @@ void xcprimeon_entry(void){
     //initialize platform
     xcprimeon_arch_platform_initialize();
 
-    _XDPRINTF_("%s:%u: XMHF Tester Finished!\n", __FUNCTION__, __LINE__);
-    HALT();
-
 	//post DRT cleanup (e.g., cache/MTRR/SMRAM)
 #if defined (__DRT__)
     xcprimeon_arch_postdrt();
 #endif	//__DRT__
+
+    _XDPRINTF_("%s:%u: XMHF Tester Finished!\n", __FUNCTION__, __LINE__);
+    HALT();
 
 #if defined (__DMAP__)
 	//setup DMA protection on runtime (xcprimeon is already DMA protected)

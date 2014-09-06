@@ -955,6 +955,7 @@ void xcprimeon_arch_cpu_activate_modeandpaging(u64 pgtblbase){
 
 ///////////////////////////////////////////////////////////////////////////////
 
+//*
 void xcprimeon_arch_postdrt(void){
 	txt_heap_t *txt_heap;
 	os_mle_data_t *os_mle_data;
