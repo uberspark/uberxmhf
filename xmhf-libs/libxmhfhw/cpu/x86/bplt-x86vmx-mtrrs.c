@@ -358,6 +358,8 @@ bool validate_mtrrs(const mtrr_state_t *saved_state)
     if ( saved_state->mtrr_def_type.e == 0 )
         return true;
 
+    //print_mtrrs(saved_state);
+
     /* number variable MTRRs */
     mtrr_cap.raw = rdmsr64(MSR_MTRRcap);
     if ( mtrr_cap.vcnt < saved_state->num_var_mtrrs ) {
@@ -468,7 +470,6 @@ bool validate_mtrrs(const mtrr_state_t *saved_state)
 /*         return false; */
 /*     } */
 
-    //print_mtrrs(saved_state);
     return true;
 }
 
@@ -500,6 +501,7 @@ void xmhfhw_cpu_x86_restore_mtrrs(mtrr_state_t *saved_state)
         wrmsr64(MTRR_PHYS_BASE0_MSR + ndx*2,
               saved_state->mtrr_physbases[ndx].raw);
     }
+
 
     /* IA32_MTRR_DEF_TYPE MSR */
     wrmsr64(MSR_MTRRdefType, saved_state->mtrr_def_type.raw);

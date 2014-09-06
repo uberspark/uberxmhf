@@ -163,7 +163,7 @@ enum fix_mtrr_t {
 typedef union {
     uint64_t raw;
     uint8_t  type[8];
-} mtrr_fix_types_t;
+} __attribute__((packed)) mtrr_fix_types_t;
 
 enum var_mtrr_t {
     MTRR_PHYS_BASE0_MSR = 0x200,
@@ -193,7 +193,7 @@ typedef union {
         uint64_t wc          : 1;    /* write-combining mem type supported */
         uint64_t reserved2   : 53;
     };
-} mtrr_cap_t;
+} __attribute__((packed)) mtrr_cap_t;
 
 typedef union {
     uint64_t	raw;
@@ -204,7 +204,7 @@ typedef union {
         uint64_t e           : 1;    /* (all) MTRR enable */
         uint64_t reserved2   : 52;
     };
-} mtrr_def_type_t;
+} __attribute__((packed)) mtrr_def_type_t;
 
 typedef union {
     uint64_t	raw;
@@ -216,7 +216,7 @@ typedef union {
         uint64_t base      : 24;
         uint64_t reserved2 : 28;
     };
-} mtrr_physbase_t;
+} __attribute__((packed)) mtrr_physbase_t;
 
 typedef union {
     uint64_t	raw;
@@ -228,7 +228,7 @@ typedef union {
         uint64_t mask      : 24;
         uint64_t reserved2 : 28;
     };
-} mtrr_physmask_t;
+} __attribute__((packed)) mtrr_physmask_t;
 
 /* current procs only have 8, so this should hold us for a while */
 #define MAX_VARIABLE_MTRRS      16
@@ -238,7 +238,7 @@ typedef struct {
     int	                num_var_mtrrs;
     mtrr_physbase_t     mtrr_physbases[MAX_VARIABLE_MTRRS];
     mtrr_physmask_t     mtrr_physmasks[MAX_VARIABLE_MTRRS];
-} mtrr_state_t;
+} __attribute__((packed)) mtrr_state_t;
 
 
 //x86 GPR set definition (follows the order enforced by PUSHAD/POPAD
