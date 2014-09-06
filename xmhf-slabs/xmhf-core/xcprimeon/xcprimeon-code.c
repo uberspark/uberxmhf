@@ -88,11 +88,11 @@ void xcprimeon_entry(void){
 	xcbootinfo->virtmem_base = __TARGET_BASE_SL;
 	xcbootinfo->size = xcbootinfo->size;
 
-    _XDPRINTF_("%s: XMHF Tester Finished!\n", __FUNCTION__);
-    HALT();
-
     //perform basic (boot) CPU initialization
     xcprimeon_arch_cpu_basicinit();
+
+    _XDPRINTF_("%s:%u: XMHF Tester Finished!\n", __FUNCTION__, __LINE__);
+    HALT();
 
     //initialize platform
     xcprimeon_arch_platform_initialize();

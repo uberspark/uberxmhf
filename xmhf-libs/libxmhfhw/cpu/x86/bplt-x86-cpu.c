@@ -53,7 +53,7 @@
 #include <xmhf.h>
 #include <xmhf-debug.h>
 
-
+//*
 //returns true if CPU has support for XSAVE/XRSTOR
 bool xmhf_baseplatform_arch_x86_cpuhasxsavefeature(void){
 	u32 eax, ebx, ecx, edx;
@@ -148,18 +148,13 @@ u32 xmhf_baseplatform_arch_x86_gettssbase(void){
 }
 
 
+//*
 //get CPU vendor
 u32 xmhf_baseplatform_arch_x86_getcpuvendor(void){
-	u32 vendor_dword1, vendor_dword2, vendor_dword3;
+	u32 reserved, vendor_dword1, vendor_dword2, vendor_dword3;
 	u32 cpu_vendor;
-	asm(	"xor	%%eax, %%eax \n"
-				  "cpuid \n"
-				  "mov	%%ebx, %0 \n"
-				  "mov	%%edx, %1 \n"
-				  "mov	%%ecx, %2 \n"
-			     :	//no inputs
-					 : "m"(vendor_dword1), "m"(vendor_dword2), "m"(vendor_dword3)
-					 : "eax", "ebx", "ecx", "edx" );
+
+    cpuid(0, &reserved, &vendor_dword1, &vendor_dword3, &vendor_dword2);
 
 	if(vendor_dword1 == AMD_STRING_DWORD1 && vendor_dword2 == AMD_STRING_DWORD2
 			&& vendor_dword3 == AMD_STRING_DWORD3)
@@ -168,7 +163,7 @@ u32 xmhf_baseplatform_arch_x86_getcpuvendor(void){
 			&& vendor_dword3 == INTEL_STRING_DWORD3)
 		cpu_vendor = CPU_VENDOR_INTEL;
 	else{
-		_XDPRINTF_("\n%s: unrecognized x86 CPU (0x%08x:0x%08x:0x%08x). HALT!",
+		_XDPRINTF_("%s: unrecognized x86 CPU (0x%08x:0x%08x:0x%08x). HALT!\n",
 			__FUNCTION__, vendor_dword1, vendor_dword2, vendor_dword3);
 		HALT();
 	}
@@ -176,6 +171,7 @@ u32 xmhf_baseplatform_arch_x86_getcpuvendor(void){
 	return cpu_vendor;
 }
 
+//*
 u32 xmhf_baseplatform_arch_getcpuvendor(void){
 	return xmhf_baseplatform_arch_x86_getcpuvendor();
 }

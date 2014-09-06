@@ -389,14 +389,16 @@ static inline unsigned long read_cr2(void){
   return __cr2;
 }
 
-static inline unsigned long read_cr4(void){
-  unsigned long __cr4;
-  __asm__("mov %%cr4,%0\n\t" :"=r" (__cr4));
+//*
+static inline u64 read_cr4(void){
+  u64 __cr4;
+  asm volatile("mov %%cr4, %0 \r\n" :"=r" (__cr4));
   return __cr4;
 }
 
-static inline void write_cr4(unsigned long val){
-  __asm__("mov %0,%%cr4": :"r" ((unsigned long)val));
+//*
+static inline void write_cr4(u64 val){
+  asm volatile("mov %0,%%cr4": :"r" (val));
 }
 
 static inline void skinit(unsigned long eax) {
