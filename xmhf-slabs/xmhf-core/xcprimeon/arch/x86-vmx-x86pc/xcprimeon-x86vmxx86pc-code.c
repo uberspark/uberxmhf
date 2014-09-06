@@ -862,22 +862,19 @@ void xcprimeon_arch_cpu_basicinit(void){
 	//grab CPU vendor
 	cpu_vendor = xmhf_baseplatform_arch_getcpuvendor();
 	if (cpu_vendor != CPU_VENDOR_INTEL){
-		_XDPRINTF_("%s: not an Intel CPU but running VMX backend. Halting!", __FUNCTION__);
+		_XDPRINTF_("%s: not an Intel CPU but running VMX backend. Halting!\n", __FUNCTION__);
 		HALT();
 	}
 
 	//check VMX support
 	{
 		u32	cpu_features;
-		asm volatile(	"mov	$1, %%eax \n"
-						"cpuid \n"
-						"mov	%%ecx, %0	\n"
-					:
-					:"m"(cpu_features)
-					: "eax", "ebx", "ecx", "edx"
-					);
+		u32 res0,res1,res2;
+
+		cpuid(0x1, &res0, &res1, &cpu_features, &res2);
+
 		if ( ( cpu_features & (1<<5) ) == 0 ){
-			_XDPRINTF_("No VMX support. Halting!");
+			_XDPRINTF_("No VMX support. Halting!\n");
 			HALT();
 		}
 	}
@@ -891,17 +888,22 @@ void xcprimeon_arch_cpu_basicinit(void){
 		write_cr4(t_cr4);
 	}
 
+
 	//turn on NX protections
 	{
 		u32 eax, edx;
 		rdmsr(MSR_EFER, &eax, &edx);
 		eax |= (1 << EFER_NXE);
 		wrmsr(MSR_EFER, eax, edx);
-		_XDPRINTF_("\n%s: NX protections enabled: MSR_EFER=%08x%08x", __FUNCTION__, edx, eax);
+		_XDPRINTF_("%s: NX protections enabled: MSR_EFER=%08x%08x\n", __FUNCTION__, edx, eax);
 	}
+
+    _XDPRINTF_("%s:%u: XMHF Tester Finished!\n", __FUNCTION__, __LINE__);
+    HALT();
 
 	//initialize TSS
 	_xcprimeon_cpu_x86_initializeTSS();
+
 
 	//initialize basic exception handling
 	_XDPRINTF_("%s: proceeding to initialize basic exception handling\n", __FUNCTION__);
