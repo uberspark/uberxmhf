@@ -91,11 +91,11 @@ void xcprimeon_entry(void){
     //perform basic (boot) CPU initialization
     xcprimeon_arch_cpu_basicinit();
 
-    _XDPRINTF_("%s:%u: XMHF Tester Finished!\n", __FUNCTION__, __LINE__);
-    HALT();
-
     //initialize platform
     xcprimeon_arch_platform_initialize();
+
+    _XDPRINTF_("%s:%u: XMHF Tester Finished!\n", __FUNCTION__, __LINE__);
+    HALT();
 
 	//post DRT cleanup (e.g., cache/MTRR/SMRAM)
 #if defined (__DRT__)

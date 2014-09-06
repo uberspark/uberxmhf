@@ -719,7 +719,7 @@ static void _xcprimeon_cpu_x86_initializeTSS(void){
 
 }
 
-
+//*
 //initialize basic exception handling
 static void _xcprimeon_initialize_exceptionhandling(void){
 	u32 i;
@@ -852,6 +852,7 @@ static u32 _xcprimeon_populate_pagetables(void){
 
 //=========================================================================================
 
+//*
 //perform basic (boot) CPU initialization
 void xcprimeon_arch_cpu_basicinit(void){
 	u32 cpu_vendor;
@@ -904,6 +905,8 @@ void xcprimeon_arch_cpu_basicinit(void){
 	_XDPRINTF_("%s: basic exception handling initialized\n", __FUNCTION__);
 }
 
+
+//*
 //initialize basic platform elements
 void xcprimeon_arch_platform_initialize(void){
 	//initialize platform bus
@@ -913,7 +916,7 @@ void xcprimeon_arch_platform_initialize(void){
 	{
 		ACPI_RSDP rsdp;
 		if(!xmhfhw_platform_x86pc_acpi_getRSDP(&rsdp)){
-			_XDPRINTF_("\n%s: ACPI RSDP not found, Halting!", __FUNCTION__);
+			_XDPRINTF_("%s: ACPI RSDP not found, Halting!\n", __FUNCTION__);
 			HALT();
 		}
 	}
