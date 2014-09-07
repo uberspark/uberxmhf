@@ -813,7 +813,7 @@ static bool _xcprimeon_vtd_dmaprotect(u32 membase, u32 size){
 	return true;
 }
 
-
+static u64 _pml4t[PAE_MAXPTRS_PER_PML4T] __attribute__(( aligned(4096) ));
 static u64 _pdpt[PAE_MAXPTRS_PER_PDPT] __attribute__(( aligned(4096) ));
 static u64 _pdt[PAE_PTRS_PER_PDPT][PAE_PTRS_PER_PDT] __attribute__(( aligned(4096) ));
 
@@ -833,6 +833,9 @@ static u32 _xcprimeon_populate_pagetables(void){
 		u32 i, j;
 		u64 default_flags = (u64)(_PAGE_PRESENT);
 
+        for(i=0; i < PAE_PTRS_PER_PML4T; i++)
+            _pml4t[i] = pae_make_pml4e(hva2spa(&_pdpt), default_flags);
+
 		for(i=0; i < PAE_PTRS_PER_PDPT; i++)
 			_pdpt[i] = pae_make_pdpe(hva2spa(_pdt[i]), default_flags);
 
@@ -846,7 +849,7 @@ static u32 _xcprimeon_populate_pagetables(void){
 			}
 		}
 
-		return (u32)_pdpt;
+		return (u32)_pml4t;
 }
 
 

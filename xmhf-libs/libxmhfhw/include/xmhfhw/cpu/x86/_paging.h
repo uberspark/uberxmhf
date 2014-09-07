@@ -52,17 +52,17 @@
 
 //physical memory limit
 #ifndef __ASSEMBLY__
-#define ADDR_4GB 0x100000000ULL 	
+#define ADDR_4GB 0x100000000ULL
 #else
 #define ADDR_4GB 0x100000000
 #endif
 
-// page sizes 
+// page sizes
 #ifndef __ASSEMBLY__
 #define PAGE_SIZE_4K (1UL << 12)
 #define PAGE_SIZE_2M (1UL << 21)
 #define PAGE_SIZE_4M (1UL << 22)
-#else   
+#else
 #define PAGE_SIZE_4K (1 << 12)
 #define PAGE_SIZE_2M (1 << 21)
 #define PAGE_SIZE_4M (1 << 22)
@@ -84,7 +84,7 @@
 #define PAGE_ALIGNED_2M(size) (PAGE_ALIGN_2M(size) == size)
 #define PAGE_ALIGNED_4M(size) (PAGE_ALIGN_4M(size) == size)
 
-// non-PAE mode specific definitions 
+// non-PAE mode specific definitions
 #define NPAE_PTRS_PER_PDT       1024
 #define NPAE_PTRS_PER_PT        1024
 #define NPAE_PAGETABLE_SHIFT    12
@@ -92,11 +92,16 @@
 #define NPAE_PAGE_DIR_MASK      0xffc00000
 #define NPAE_PAGE_TABLE_MASK    0x003ff000
 
-// PAE mode specific definitions 
+// PAE mode specific definitions
+#define PAE_PTRS_PER_PML4T       1
+#define PAE_MAXPTRS_PER_PML4T    512
+
 #define PAE_PTRS_PER_PDPT  4
 #define PAE_MAXPTRS_PER_PDPT  512
+
 #define PAE_PTRS_PER_PDT   512
 #define PAE_PTRS_PER_PT    512
+
 #define PAE_PT_SHIFT       12
 #define PAE_PDT_SHIFT      21
 #define PAE_PDPT_SHIFT     30
@@ -105,7 +110,7 @@
 #define PAE_PDPT_MASK      0xc0000000
 #define PAE_ENTRY_SIZE     8
 
-// various paging flags 
+// various paging flags
 #define _PAGE_BIT_PRESENT	0
 #define _PAGE_BIT_RW		1
 #define _PAGE_BIT_USER		2
@@ -113,23 +118,23 @@
 #define _PAGE_BIT_PCD		4
 #define _PAGE_BIT_ACCESSED	5
 #define _PAGE_BIT_DIRTY		6
-#define _PAGE_BIT_PSE		7	
-#define _PAGE_BIT_GLOBAL	8	
-#define _PAGE_BIT_UNUSED1	9	
+#define _PAGE_BIT_PSE		7
+#define _PAGE_BIT_GLOBAL	8
+#define _PAGE_BIT_UNUSED1	9
 #define _PAGE_BIT_UNUSED2	10
 #define _PAGE_BIT_UNUSED3	11
 #define _PAGE_BIT_NX		63
 
 #define _PAGE_PRESENT	0x001
-#define _PAGE_RW	0x002   
+#define _PAGE_RW	0x002
 #define _PAGE_USER	0x004
 #define _PAGE_PWT	0x008
 #define _PAGE_PCD	0x010
 #define _PAGE_ACCESSED	0x020
 #define _PAGE_DIRTY	0x040
-#define _PAGE_PSE	0x080	
-#define _PAGE_GLOBAL	0x100	
-#define _PAGE_UNUSED1	0x200	
+#define _PAGE_PSE	0x080
+#define _PAGE_GLOBAL	0x100
+#define _PAGE_UNUSED1	0x200
 #define _PAGE_UNUSED2	0x400
 #define _PAGE_UNUSED3	0x800
 
@@ -137,22 +142,28 @@
 #define _PAGE_NX	(1ULL<<_PAGE_BIT_NX)
 #else
 #define _PAGE_NX  (1 << _PAGE_BIT_NX)
-#endif 
+#endif
 
 #define PAGE_FAULT_BITS (_PAGE_PRESENT | _PAGE_RW | _PAGE_USER | _PAGE_NX)
 
 #ifndef __ASSEMBLY__
 
+typedef u64 pml4te_t;
 typedef u64 pdpte_t;
 typedef u64 pdte_t;
 typedef u64 pte_t;
 
+typedef pml4te_t *pml4t_t;
 typedef pdpte_t *pdpt_t;
 typedef pdte_t *pdt_t;
 typedef pte_t *pt_t;
 
 typedef u32 *npdt_t;
 typedef u32 *npt_t;
+
+/* make a pml4 entry from individual fields */
+#define pae_make_pml4e(paddr, flags) \
+  ((u64)(paddr) & (~(((u64)PAGE_SIZE_4K - 1) | _PAGE_NX))) | (u64)(flags)
 
 /* make a page directory pointer entry from individual fields */
 #define pae_make_pdpe(paddr, flags) \
@@ -172,19 +183,19 @@ typedef u32 *npt_t;
 
 /* get address field from 32-bit cr3 (page directory pointer) in PAE mode */
 #define pae_get_addr_from_32bit_cr3(entry) \
-  ((u32)(entry) & (~((1UL << 5) - 1))) 
+  ((u32)(entry) & (~((1UL << 5) - 1)))
 
 /* get flags field from 32-bit cr3 (page directory pointer) in PAE mode */
 #define pae_get_flags_from_32bit_cr3(entry) \
-  ((u32)(entry) & ((1UL << 5) - 1)) 
+  ((u32)(entry) & ((1UL << 5) - 1))
 
 /* get address field of a pdpe (page directory pointer entry) */
 #define pae_get_addr_from_pdpe(entry) \
-  ((u64)(entry) & (~(((u64)PAGE_SIZE_4K - 1) | _PAGE_NX))) 
+  ((u64)(entry) & (~(((u64)PAGE_SIZE_4K - 1) | _PAGE_NX)))
 
 /* get flags field of a pdpe (page directory pointer entry) */
 #define pae_get_flags_from_pdpe(entry) \
-  ((u64)(entry) & (((u64)PAGE_SIZE_4K - 1) | _PAGE_NX)) 
+  ((u64)(entry) & (((u64)PAGE_SIZE_4K - 1) | _PAGE_NX))
 
 /* get address field of a 2MB pdte (page directory entry) */
 #define pae_get_addr_from_pde_big(entry) \
@@ -220,7 +231,7 @@ typedef u32 *npt_t;
 
 /* get address field from NON-PAE cr3 (page directory pointer) */
 #define npae_get_addr_from_32bit_cr3(entry) \
-  ((u32)(entry) & (~((u32)PAGE_SIZE_4K - 1))) 
+  ((u32)(entry) & (~((u32)PAGE_SIZE_4K - 1)))
 
 /* get address field of a 4K non-PAE pdte (page directory entry) */
 #define npae_get_addr_from_pde(entry) \
