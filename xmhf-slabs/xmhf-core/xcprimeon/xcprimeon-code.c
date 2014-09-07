@@ -110,6 +110,13 @@ void xcprimeon_entry(void){
     //activate paging and associated operating mode
     xcprimeon_arch_cpu_activate_modeandpaging(pgtblbase);
 
+
+    //[debug]
+    {
+        asm volatile ("int $0x03 \r\n");
+
+    }
+
 	/*//proceed with SMP initialization
 	if ( XMHF_SLAB_CALL(xcsmp_entry()) ){
 		//we should never get here
