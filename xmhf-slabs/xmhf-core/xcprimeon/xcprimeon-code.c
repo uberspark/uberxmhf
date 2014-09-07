@@ -107,9 +107,6 @@ void xcprimeon_entry(void){
     //initialize page tables
     pgtblbase = xcprimeon_arch_initialize_page_tables();
 
-    _XDPRINTF_("%s:%u: XMHF Tester Finished!\n", __FUNCTION__, __LINE__);
-    HALT();
-
     //activate paging and associated operating mode
     xcprimeon_arch_cpu_activate_modeandpaging(pgtblbase);
 
@@ -120,8 +117,8 @@ void xcprimeon_entry(void){
 		HALT();
 	}*/
 
-    _XDPRINTF_("Halting!. XMHF Tester Finished!\n");
-	HALT();
+    _XDPRINTF_("%s:%u: XMHF Tester Finished!\n", __FUNCTION__, __LINE__);
+    HALT();
 }
 
 ///////

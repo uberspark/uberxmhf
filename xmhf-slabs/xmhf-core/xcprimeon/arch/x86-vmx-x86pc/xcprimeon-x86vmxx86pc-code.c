@@ -828,6 +828,7 @@ static u64 _xcprimeon_getptflagsforspa(u32 spa){
 	return flags;
 }
 
+//*
 // initialize page tables and return page table base
 static u32 _xcprimeon_populate_pagetables(void){
 		u32 i, j;
@@ -931,28 +932,28 @@ void xcprimeon_arch_cpu_activate_modeandpaging(u64 pgtblbase){
 	u32 coreptbase;
 
 	//initialize paging
-    write_cr4(read_cr4() | (u32)0x00000030); //CR4_PAE | CR4_PSE
+    //write_cr4(read_cr4() | (u32)0x00000030); //CR4_PAE | CR4_PSE
 
-    write_cr3((u32)pgtblbase);
+    write_cr3((u64)pgtblbase);
 
-    write_cr0(read_cr0() | (u32)0x80000015); // ET, EM, PE, PG
+    //write_cr0(read_cr0() | (u32)0x80000015); // ET, EM, PE, PG
 
-	_XDPRINTF_("\n%s: setup page tables\n", __FUNCTION__);
+	_XDPRINTF_("%s: paging activated\n", __FUNCTION__);
 
 	//initialize GDT
-	_xcprimeon_cpu_x86_initializeGDT();
+	//_xcprimeon_cpu_x86_initializeGDT();
 
 	//load IDT
 	asm volatile(
 		"lidt  %0 \r\n"
 		: //no outputs
-		: "m" (_idt)
+		: "g" (_idt)
 		: //no clobber
 	);
 
 
 	//initialize IO privilege level
-	_xcprimeon_cpu_x86_initializeIOPL();
+	//_xcprimeon_cpu_x86_initializeIOPL();
 
 }
 
