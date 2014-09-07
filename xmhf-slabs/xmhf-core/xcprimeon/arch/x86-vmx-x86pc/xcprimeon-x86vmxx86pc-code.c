@@ -738,6 +738,7 @@ static void _xcprimeon_initialize_exceptionhandling(void){
 
 static u8 vtd_ret_table[PAGE_SIZE_4K]; //4KB Vt-d Root-Entry table
 
+//*
 //protect a given physical range of memory (membase to membase+size)
 //using VT-d PMRs
 //return true if everything went fine, else false
@@ -976,6 +977,7 @@ void xcprimeon_arch_postdrt(void){
     _XDPRINTF_("SL: Restored MTRRs\n");
 }
 
+//*
 void xcprimeon_arch_earlydmaprot(u32 membase, u32 size){
 	_XDPRINTF_("SL: Initializing DMA protections...\n");
 
