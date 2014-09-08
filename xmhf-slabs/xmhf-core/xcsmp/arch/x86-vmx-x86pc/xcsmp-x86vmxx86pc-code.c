@@ -56,16 +56,26 @@
 #include <xcsmp.h>
 #include <xcexhub.h>
 
-static mtrr_state_t _mtrrs;
-// platform cpu stacks
-static u8 _cpustack[MAX_PLATFORM_CPUS][MAX_PLATFORM_CPUSTACK_SIZE] __attribute__(( section(".stack") ));
-static bool _ap_pmode_entry_with_paging(void) __attribute__((naked));
-static void _xcsmp_cpu_x86_smpinitialize_commonstart(void);
-// cpu table
-static xc_cputable_t _cputable[MAX_PLATFORM_CPUS];
-// count of platform cpus
-static u32 _cpucount = 0;
+static bool _ap_entry(void) __attribute__((naked));
+void _xcsmp_cpu_x86_smpinitialize_commonstart(void);
 
+static u8 _cpustack[MAX_PLATFORM_CPUS][MAX_PLATFORM_CPUSTACK_SIZE] __attribute__(( section(".stack") )); // platform cpu stacks
+static xc_cputable_t _cputable[MAX_PLATFORM_CPUS];// cpu table
+static u32 _cpucount = 0; // count of platform cpus
+
+static mtrr_state_t _mtrrs;
+static u64 _ap_cr3=0;
+
+__attribute__(( aligned(16) )) static u64 _xcsmp_ap_init_gdt_start[]  = {
+	0x0000000000000000ULL,	//NULL descriptor
+	0x00af9b000000ffffULL,	//CPL-0 64-bit code descriptor (CS64)
+	0x00af93000000ffffULL,	//CPL-0 64-bit data descriptor (DS/SS/ES/FS/GS)
+};
+
+__attribute__(( aligned(16) )) static arch_x86_gdtdesc_t _xcsmp_ap_init_gdt  = {
+	.size=sizeof(_xcsmp_ap_init_gdt_start)-1,
+	.base=&_xcsmp_ap_init_gdt_start,
+};
 
 __attribute__((naked)) static void _ap_bootstrap_code(void) {
 
@@ -73,29 +83,9 @@ __attribute__((naked)) static void _ap_bootstrap_code(void) {
            " .code32 \r\n"
            " movw %0, %%ax \r\n"
            " movw %%ax, %%ds \r\n"
-           " movw %%ax, %%es \r\n"
-           " movw %%ax, %%ss \r\n"
-           " movw %%ax, %%fs \r\n"
-           " movw %%ax, %%gs \r\n"
-
-           " // set NX bit \r\n"
-           " movl $0xc0000080, %%ecx \r\n"
-           " rdmsr \r\n"
-           " orl $(1 << 11), %%eax \r\n"
-           " wrmsr \r\n"
 
            " movl %1, %%ebx \r\n"
            " movl (%%ebx), %%ebx \r\n"
-           " movl %%ebx, %%cr3 \r\n"
-           " movl %2, %%ebx \r\n"
-           " movl (%%ebx), %%ebx \r\n"
-           " movl %%ebx, %%cr4 \r\n"
-           " movl %3, %%ebx \r\n"
-           " movl (%%ebx), %%ebx \r\n"
-
-           " movl %%cr0, %%eax \r\n"
-           " orl $0x80000000, %%eax \r\n"
-           " movl %%eax, %%cr0 \r\n"
 
            " jmpl *%%ebx \r\n"
            " hlt \r\n"
@@ -103,8 +93,6 @@ __attribute__((naked)) static void _ap_bootstrap_code(void) {
            ".code64"
             :
             : "i" (__DS_CPL0),
-              "i" ((X86SMP_APBOOTSTRAP_DATASEG << 4) + offsetof(x86smp_apbootstrapdata_t, ap_cr3)),
-              "i" ((X86SMP_APBOOTSTRAP_DATASEG << 4) + offsetof(x86smp_apbootstrapdata_t, ap_cr4)),
               "i" ((X86SMP_APBOOTSTRAP_DATASEG << 4) + offsetof(x86smp_apbootstrapdata_t, ap_entrypoint))
             :
 
@@ -176,7 +164,7 @@ static void _xcsmp_container_vmx_wakeupAPs(void){
 
     apdata.ap_cr3 = read_cr3();
     apdata.ap_cr4 = read_cr4();
-    apdata.ap_entrypoint = (u32)&_ap_pmode_entry_with_paging;
+    apdata.ap_entrypoint = (u32)&_ap_entry;
     apdata.ap_gdtdesc_limit = sizeof(apdata.ap_gdt) - 1;
     apdata.ap_gdtdesc_base = (X86SMP_APBOOTSTRAP_DATASEG << 4) + offsetof(x86smp_apbootstrapdata_t, ap_gdt);
     apdata.ap_cs_selector = __CS_CPL0;
@@ -258,8 +246,8 @@ static bool _xcsmp_cpu_x86_isbsp(void){
 
 //common function which is entered by all CPUs upon SMP initialization
 //note: this is specific to the x86 architecture backend
-static void _xcsmp_cpu_x86_smpinitialize_commonstart(void){
-	u32 cpuid = xmhf_baseplatform_arch_x86_getcpulapicid();
+void _xcsmp_cpu_x86_smpinitialize_commonstart(void){
+	/*u32 cpuid = xmhf_baseplatform_arch_x86_getcpulapicid();
 	bool is_bsp = _xcsmp_cpu_x86_isbsp();
 	u32 bcr0;
 
@@ -313,7 +301,7 @@ static void _xcsmp_cpu_x86_smpinitialize_commonstart(void){
 	     : "m"(gdtstart), "m"(trselector)
 	     : "edi", "eax"
 	  );
-	}
+	}*/
 
 
 	/*_XDPRINTF_("\n%s: cpu %x, isbsp=%u, Proceeding to call init_entry...\n", __FUNCTION__, cpuid, is_bsp);
@@ -329,16 +317,48 @@ static void _xcsmp_cpu_x86_smpinitialize_commonstart(void){
 
 
 
-static bool _ap_pmode_entry_with_paging(void) __attribute__((naked)){
+static bool _ap_entry(void) __attribute__((naked)){
 
-    asm volatile(	"mov %0, %%ecx\r\n"
+    asm volatile(
+                    ".code32 \r\n"
+					"_xcsmp_ap_start: \r\n"
+
+					"movw %%ds, %%ax \r\n"
+					"movw %%ax, %%es \r\n"
+					"movw %%ax, %%fs \r\n"
+					"movw %%ax, %%gs \r\n"
+					"movw %%ax, %%ss \r\n"
+
+    				"movl %%cr4, %%eax \r\n"
+   					"orl $0x00000030, %%eax \r\n"
+   					"movl %%eax, %%cr4 \r\n"
+
+                    "movl %0, %%ebx \r\n"
+                    "movl (%%ebx), %%ebx \r\n"
+                    "movl %%ebx, %%cr3 \r\n"
+
+                    "movl $0xc0000080, %%ecx \r\n"
+                    "rdmsr \r\n"
+                    "orl $0x00000100, %%eax \r\n"
+                    "orl $0x00000800, %%eax \r\n"
+                    "wrmsr \r\n"
+
+                    "movl %%cr0, %%eax \r\n"
+                    "orl $0x80000015, %%eax \r\n"
+                    "movl %%eax, %%cr0 \r\n"
+
+                    "movl %1, %%esi \r\n"
+                    "lgdt (%%esi) \r\n"
+
+                    "mov %2, %%ecx\r\n"
 					"rdmsr\r\n"
 					"andl $0xFFFFF000, %%eax\r\n"
 					"addl $0x20, %%eax\r\n"
 					"movl (%%eax), %%eax\r\n"
 					"shr $24, %%eax\r\n"
-					"movl %1, %%edx\r\n"
-					"movl %2, %%ebx\r\n"
+					"movl %3, %%edx\r\n"
+					"movl (%%edx), %%edx \r\n"
+					"movl %4, %%ebx\r\n"
 					"xorl %%ecx, %%ecx\r\n"
 					"xorl %%edi, %%edi\r\n"
 					"getidxloop:\r\n"
@@ -346,23 +366,37 @@ static bool _ap_pmode_entry_with_paging(void) __attribute__((naked)){
 					"cmpl %%eax, %%ebp\r\n"
 					"jz gotidx\r\n"
 					"incl %%ecx\r\n"
-					"addl %3, %%edi\r\n"
+					"addl %5, %%edi\r\n"
 					"cmpl %%edx, %%ecx\r\n"
 					"jb getidxloop\r\n"
 					"hlt\r\n"								//we should never get here, if so just halt
 					"gotidx:\r\n"							// ecx contains index into g_xc_cputable
 					"movl 0x4(%%ebx, %%edi), %%eax\r\n"	 	// eax = g_xc_cputable[ecx].cpu_index
-					"movl %4, %%edi \r\n"					// edi = &_cpustack
-					"movl %5, %%ecx \r\n"					// ecx = sizeof(_cpustack[0])
+					"movl %6, %%edi \r\n"					// edi = &_cpustack
+					"movl %7, %%ecx \r\n"					// ecx = sizeof(_cpustack[0])
 					"mull %%ecx \r\n"						// eax = sizeof(_cpustack[0]) * eax
 					"addl %%ecx, %%eax \r\n"				// eax = (sizeof(_cpustack[0]) * eax) + sizeof(_cpustack[0])
 					"addl %%edi, %%eax \r\n"				// eax = &_cpustack + (sizeof(_cpustack[0]) * eax) + sizeof(_cpustack[0])
 					"movl %%eax, %%esp \r\n"				// esp = top of stack for the cpu
-					:
-					: "i" (MSR_APIC_BASE), "m" (_cpucount), "i" (&_cputable), "i" (sizeof(xc_cputable_t)), "i" (&_cpustack), "i" (sizeof(_cpustack[0]))
-	);
 
-	_xcsmp_cpu_x86_smpinitialize_commonstart();
+                    "pushl $8 \r\n"
+                    "pushl $_xcsmp_ap_start64 \r\n"
+                    "lret \r\n"
+
+                    ".code64 \r\n"
+                    "_xcsmp_ap_start64: \r\n"
+
+					"movw $0x10, %%ax \r\n"
+					"movw %%ax, %%fs \r\n"
+					"movw %%ax, %%gs \r\n"
+					"movw %%ax, %%ss \r\n"
+					"movw %%ax, %%ds \r\n"
+					"movw %%ax, %%es \r\n"
+
+                    "jmp _xcsmp_cpu_x86_smpinitialize_commonstart \r\n"
+					:
+					: "i" (&_ap_cr3), "i" (&_xcsmp_ap_init_gdt), "i" (MSR_APIC_BASE), "i" (&_cpucount), "i" (&_cputable), "i" (sizeof(xc_cputable_t)), "i" (&_cpustack), "i" (sizeof(_cpustack[0]))
+	);
 
 }
 
@@ -381,9 +415,6 @@ bool xcsmp_arch_dmaprot_reinitialize(void){
 bool xcsmp_arch_smpinitialize(void){
 	u32 i;
 
-	_XDPRINTF_("%s:%u: XMHF Tester Finished!\n", __FUNCTION__, __LINE__);
-	HALT();
-
 	_cpucount = xcbootinfo->cpuinfo_numentries;
 
 	//initialize cpu table
@@ -395,16 +426,23 @@ bool xcsmp_arch_smpinitialize(void){
 	//save cpu MTRR state which we will later replicate on all APs
 	_xcsmp_cpu_x86_savecpumtrrstate();
 
+    //save page table base which we will later replicate on all APs
+    _ap_cr3 = read_cr3();
+
 	//wake up APS
 	if(_cpucount > 1){
 	  _xcsmp_container_vmx_wakeupAPs();
 	}
 
 
-	//fall through to common code
+	/*//fall through to common code
 	_XDPRINTF_("\nRelinquishing BSP thread and moving to common...");
 	if( _ap_pmode_entry_with_paging() ){
 		_XDPRINTF_("\nBSP must never get here. HALT!");
 		HALT();
-	}
+	}*/
+
+	_XDPRINTF_("%s:%u: BSP halting\n", __FUNCTION__, __LINE__);
+	HALT();
+
 }
