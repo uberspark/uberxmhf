@@ -100,6 +100,7 @@ __attribute__((naked)) static void _ap_bootstrap_code(void) {
            " jmpl *%%ebx \r\n"
            " hlt \r\n"
            " .balign 4096 \r\n"
+           ".code64"
             :
             : "i" (__DS_CPL0),
               "i" ((X86SMP_APBOOTSTRAP_DATASEG << 4) + offsetof(x86smp_apbootstrapdata_t, ap_cr3)),
