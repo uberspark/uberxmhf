@@ -368,6 +368,7 @@ static bool _ap_pmode_entry_with_paging(void) __attribute__((naked)){
 
 //////////////////////////////////////////////////////////////////////////////
 
+//*
 //re-initialize DMA protections (if needed) for the runtime
 bool xcsmp_arch_dmaprot_reinitialize(void){
 	//we don't need to reinitialize DMA protections since we setup

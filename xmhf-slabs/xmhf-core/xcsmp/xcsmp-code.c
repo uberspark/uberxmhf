@@ -57,12 +57,12 @@
 
 bool xcsmp_entry(void){
 
-	_XDPRINTF_("%s:%u: XMHF Tester Finished!\n", __FUNCTION__, __LINE__);
-	HALT();
-
 #if defined (__DMAP__)
 	xcsmp_arch_dmaprot_reinitialize();
 #endif
+
+	_XDPRINTF_("%s:%u: XMHF Tester Finished!\n", __FUNCTION__, __LINE__);
+	HALT();
 
 	if( xcsmp_arch_smpinitialize() ){
 		_XDPRINTF_("\nRuntime: We should NEVER get here!");
