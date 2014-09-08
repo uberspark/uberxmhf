@@ -61,16 +61,6 @@ __attribute__(( section(".slabtrampoline") )) __attribute__(( aligned(4096) )) s
 __attribute__(( section(".slabtrampoline") )) static u64 _xcexhub_exception_stack_index = &_xcexhub_exception_stack[MAX_PLATFORM_CPUS];
 
 
-//#define XMHF_EXCEPTION_HANDLER_DEFINE(vector) 												\
-//	__attribute__(( section(".slabtrampoline") )) static void __xmhf_exception_handler_##vector(void) __attribute__((naked)) { 					\
-//		asm volatile(												\
-//						"iretq\r\n"									\
-//					:												\
-//					:	\
-//		);															\
-//	}\
-
-
 #define XMHF_EXCEPTION_HANDLER_DEFINE(vector) 												\
 	__attribute__(( section(".slabtrampoline") )) static void __xmhf_exception_handler_##vector(void) __attribute__((naked)) { 					\
 		asm volatile(												\
