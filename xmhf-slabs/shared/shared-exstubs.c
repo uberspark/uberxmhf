@@ -56,60 +56,57 @@
 
 #include <xcexhub.h>
 
-__attribute__(( section(".slabtrampoline") )) static u32 _xcexhub_exception_lock = 1;
-__attribute__(( section(".slabtrampoline") )) static u32 _xcexhub_exception_savedesp[MAX_PLATFORM_CPUS];
-__attribute__(( section(".slabtrampoline") )) static u64 _xcexhub_exception_savedesp_index = &_xcexhub_exception_savedesp[0];
-__attribute__(( section(".slabtrampoline") )) __attribute__(( aligned(4096) )) static u8 _xcexhub_exception_stack[MAX_PLATFORM_CPUS][PAGE_SIZE_4K];
-__attribute__(( section(".slabtrampoline") )) __attribute__(( aligned(4096) )) static u64 _xcexhub_exception_stack_index = &_xcexhub_exception_stack[1];
+__attribute__(( section(".slabtrampoline") )) static u64 _xcexhub_exception_lock = 1;
+__attribute__(( section(".slabtrampoline") )) __attribute__(( aligned(4096) )) static u8 _xcexhub_exception_stack[(MAX_PLATFORM_CPUS+1)][PAGE_SIZE_4K];
+__attribute__(( section(".slabtrampoline") )) static u64 _xcexhub_exception_stack_index = &_xcexhub_exception_stack[MAX_PLATFORM_CPUS];
 
 
-/*#define XMHF_EXCEPTION_HANDLER_DEFINE(vector) 												\
-	__attribute__(( section(".slabtrampoline") )) static void __xmhf_exception_handler_##vector(void) __attribute__((naked)) { 					\
-		asm volatile(												\
-						"1:	bt	$0, %0	\r\n"						\
-						"jnc 1b	\r\n"								\
-						"lock \r\n"   								\
-						"btrl	$0, %0	\r\n"						\
-						"jnc 1b \r\n"   							\
-																	\
-						"xchg %%esp, %1 \r\n"						\
-						"pushl %1 \r\n"								\
-						"pushal \r\n"								\
-						"movl %%esp, %%eax \r\n"					\
-						"addl $36, %%eax \r\n"						\
-						"addl $4096, %%eax \r\n"					\
-						"movl %%eax, %1 \r\n"						\
-																	\
-						"btsl	$0, %0		\r\n"					\
-																	\
-						"movw	%2, %%ax\r\n"						\
-						"movw	%%ax, %%ds\r\n"						\
-						"movl 	%%esp, %%eax\r\n"					\
-						"pushl 	%%eax\r\n"							\
-						"pushl	%3\r\n" 							\
-						"call	xmhf_xcphandler_arch_hub\r\n"		\
-						"addl  	$0x08, %%esp\r\n"					\
-																	\
-						"popal	 \r\n"								\
-																	\
-						"pop %%esp \r\n"							\
-																	\
-																	\
-						"iretl\r\n"									\
-					:												\
-					:	"m" (_xcexhub_exception_lock), "m" (_xcexhub_exception_stack_index), "i" (__DS_CPL0), "i" (vector)				\
-		);															\
-	}\
-*/
+//#define XMHF_EXCEPTION_HANDLER_DEFINE(vector) 												\
+//	__attribute__(( section(".slabtrampoline") )) static void __xmhf_exception_handler_##vector(void) __attribute__((naked)) { 					\
+//		asm volatile(												\
+//						"iretq\r\n"									\
+//					:												\
+//					:	\
+//		);															\
+//	}\
+
 
 #define XMHF_EXCEPTION_HANDLER_DEFINE(vector) 												\
 	__attribute__(( section(".slabtrampoline") )) static void __xmhf_exception_handler_##vector(void) __attribute__((naked)) { 					\
 		asm volatile(												\
+						"1:	btq	$0, %0	\r\n"						/*start atomic operation*/\
+						"jnc 1b	\r\n"								\
+						"lock \r\n"   								\
+						"btrq	$0, %0	\r\n"						\
+						"jnc 1b \r\n"   							\
+                                                                    \
+						"subq $4096, %1 \r\n"                       \
+						"xchgq %%rsp, %1 \r\n"						/*rsp=stack top for current CPU*/ \
+						"pushq %1 \r\n"								/*store original exception entry rsp*/ \
+						"movq %%rsp, %1 \r\n"                       /*compute and store next stack top*/ \
+                        "addq $8, %1 \r\n"                          \
+                                                                    \
+						"btsq	$0, %0		\r\n"					/*end atomic operation */ \
+																	\
+                                                                    /* TODO: call xcexhub*/ \
+                                                                    \
+						"2:	btq	$0, %0	\r\n"						/*start atomic operation*/\
+						"jnc 2b	\r\n"								\
+						"lock \r\n"   								\
+						"btrq	$0, %0	\r\n"						\
+						"jnc 2b \r\n"   							\
+																	\
+                        "popq %%rsp \r\n"							/*restore original exception entry rsp*/\
+						"addq $4096, %1 \r\n"                       \
+																	\
+						"btsq	$0, %0		\r\n"					/*end atomic operation */ \
+																	\
 						"iretq\r\n"									\
 					:												\
-					:	\
+					:	"m" (_xcexhub_exception_lock), "m" (_xcexhub_exception_stack_index)				\
 		);															\
 	}\
+
 
 
 #define XMHF_EXCEPTION_HANDLER_ADDROF(vector) &__xmhf_exception_handler_##vector
