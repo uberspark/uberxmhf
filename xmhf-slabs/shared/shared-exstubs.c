@@ -106,7 +106,21 @@ __attribute__(( section(".slabtrampoline") )) static u64 _xcexhub_exception_stac
                         "movq %%rsp, %%rsi \r\n"\
                         "mov %2, %%rdi \r\n"\
                         "callq xmhf_xcphandler_arch_hub \r\n"\
-                        "add $120, %%rsp \r\n"\
+                        "popq %%r8 \r\n"\
+                        "popq %%r9 \r\n"\
+                        "popq %%r10 \r\n"\
+                        "popq %%r11 \r\n"\
+                        "popq %%r12 \r\n"\
+                        "popq %%r13 \r\n"\
+                        "popq %%r14 \r\n"\
+                        "popq %%r15 \r\n"\
+                        "popq %%rax \r\n"\
+                        "popq %%rbx \r\n"\
+                        "popq %%rcx \r\n"\
+                        "popq %%rdx \r\n"\
+                        "popq %%rsi \r\n"\
+                        "popq %%rdi \r\n"\
+                        "popq %%rbp \r\n"\
                                                                     \
 						"2:	btq	$0, %0	\r\n"						/*start atomic operation*/\
 						"jnc 2b	\r\n"								\
