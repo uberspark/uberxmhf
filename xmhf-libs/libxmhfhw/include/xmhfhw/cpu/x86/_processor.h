@@ -371,6 +371,12 @@ static inline unsigned long read_esp(void){
   return __esp;
 }
 
+static inline u64 read_rsp(void){
+  u64 __rsp;
+  asm volatile("movq %%rsp,%0\n\t" :"=r" (__rsp));
+  return __rsp;
+}
+
 static inline unsigned long read_ebp(void){
   unsigned long __ebp;
   __asm__("mov %%ebp,%0\n\t" :"=r" (__ebp));
