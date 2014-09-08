@@ -87,8 +87,26 @@ __attribute__(( section(".slabtrampoline") )) static u64 _xcexhub_exception_stac
                         "addq $8, %1 \r\n"                          \
                                                                     \
 						"btsq	$0, %0		\r\n"					/*end atomic operation */ \
-																	\
-                                                                    /* TODO: call xcexhub*/ \
+																\
+                        "pushq %%rbp \r\n"\
+                        "pushq %%rdi \r\n"\
+                        "pushq %%rsi \r\n"\
+                        "pushq %%rdx \r\n"\
+                        "pushq %%rcx \r\n"\
+                        "pushq %%rbx \r\n"\
+                        "pushq %%rax \r\n"\
+                        "pushq %%r15 \r\n"\
+                        "pushq %%r14 \r\n"\
+                        "pushq %%r13 \r\n"\
+                        "pushq %%r12 \r\n"\
+                        "pushq %%r11 \r\n"\
+                        "pushq %%r10 \r\n"\
+                        "pushq %%r9 \r\n"\
+                        "pushq %%r8 \r\n"\
+                        "movq %%rsp, %%rsi \r\n"\
+                        "mov %2, %%rdi \r\n"\
+                        "callq xmhf_xcphandler_arch_hub \r\n"\
+                        "add $120, %%rsp \r\n"\
                                                                     \
 						"2:	btq	$0, %0	\r\n"						/*start atomic operation*/\
 						"jnc 2b	\r\n"								\
@@ -103,7 +121,7 @@ __attribute__(( section(".slabtrampoline") )) static u64 _xcexhub_exception_stac
 																	\
 						"iretq\r\n"									\
 					:												\
-					:	"m" (_xcexhub_exception_lock), "m" (_xcexhub_exception_stack_index)				\
+					:	"m" (_xcexhub_exception_lock), "m" (_xcexhub_exception_stack_index), "i" (vector)				\
 		);															\
 	}\
 
