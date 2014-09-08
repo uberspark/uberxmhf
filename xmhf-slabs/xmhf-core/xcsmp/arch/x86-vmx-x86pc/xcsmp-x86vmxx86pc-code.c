@@ -381,6 +381,9 @@ bool xcsmp_arch_dmaprot_reinitialize(void){
 bool xcsmp_arch_smpinitialize(void){
 	u32 i;
 
+	_XDPRINTF_("%s:%u: XMHF Tester Finished!\n", __FUNCTION__, __LINE__);
+	HALT();
+
 	_cpucount = xcbootinfo->cpuinfo_numentries;
 
 	//initialize cpu table
