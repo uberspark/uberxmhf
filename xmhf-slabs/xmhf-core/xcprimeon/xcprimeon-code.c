@@ -117,15 +117,13 @@ void xcprimeon_entry(void){
         _XDPRINTF_("%s: rsp after int 3 = %016llx\n", __FUNCTION__, read_rsp());
     }
 
-	/*//proceed with SMP initialization
+	//proceed with SMP initialization
 	if ( XMHF_SLAB_CALL(xcsmp_entry()) ){
 		//we should never get here
-		_XDPRINTF_("\nSL: Fatal, should never be here!");
+		_XDPRINTF_("%s:%u: Fatal, should never be here!\n", __FUNCTION__, __LINE__);
 		HALT();
-	}*/
+	}
 
-    _XDPRINTF_("%s:%u: XMHF Tester Finished!\n", __FUNCTION__, __LINE__);
-    HALT();
 }
 
 ///////
