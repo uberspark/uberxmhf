@@ -273,8 +273,16 @@ typedef struct {
   u64 rdi;
   u64 rbp;
   u64 rsp;
-}__attribute__ ((packed)) x86reg64_t;
+}__attribute__ ((packed)) x86regs64_t;
 
+
+typedef struct {
+    u64 rip;
+    u64 cs;
+    u64 rflags;
+    u64 rsp;
+    u64 ss;
+}__attribute__ ((packed)) x86idt64_stackframe_t;
 
 //*
 typedef struct {
@@ -370,25 +378,25 @@ static inline uint64_t rdtsc64(void)
 
 
 /* Calls to read and write control registers */
-static inline unsigned long read_cr0(void){
-  unsigned long __cr0;
-  __asm__("mov %%cr0,%0\n\t" :"=r" (__cr0));
+static inline u64 read_cr0(void){
+  u64 __cr0;
+  asm volatile("mov %%cr0,%0 \r\n" :"=r" (__cr0));
   return __cr0;
 }
 
-static inline void write_cr0(unsigned long val){
-  __asm__("mov %0,%%cr0": :"r" ((unsigned long)val));
+static inline void write_cr0(u64 val){
+  asm volatile("mov %0,%%cr0 \r\n": :"r" (val));
 }
 
-static inline unsigned long read_cr3(void){
-  unsigned long __cr3;
-  __asm__("mov %%cr3,%0\n\t" :"=r" (__cr3));
+static inline u64 read_cr3(void){
+  u64 __cr3;
+  asm volatile("mov %%cr3,%0 \r\n" :"=r" (__cr3));
   return __cr3;
 }
 
-static inline unsigned long read_esp(void){
-  unsigned long __esp;
-  __asm__("mov %%esp,%0\n\t" :"=r" (__esp));
+static inline u32 read_esp(void){
+  u32 __esp;
+  asm volatile("mov %%esp,%0 \r\n" :"=r" (__esp));
   return __esp;
 }
 
@@ -404,17 +412,13 @@ static inline unsigned long read_ebp(void){
   return __ebp;
 }
 
-static inline void write_cr3(unsigned long val){
-  __asm__("mov %0,%%cr3\n\t"
-          "jmp 1f\n\t"
-          "1:"
-          :
-          :"r" ((unsigned long)val));
+static inline void write_cr3(u64 val){
+  asm volatile("mov %0,%%cr3 \r\n"::"r" (val));
 }
 
-static inline unsigned long read_cr2(void){
-  unsigned long __cr2;
-  __asm__("mov %%cr2,%0\n\t" :"=r" (__cr2));
+static inline u64 read_cr2(void){
+  u64 __cr2;
+  asm volatile("mov %%cr2,%0 \r\n" :"=r" (__cr2));
   return __cr2;
 }
 
