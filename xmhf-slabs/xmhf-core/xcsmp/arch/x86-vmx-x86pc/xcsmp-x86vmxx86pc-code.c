@@ -247,9 +247,13 @@ static bool _xcsmp_cpu_x86_isbsp(void){
 //common function which is entered by all CPUs upon SMP initialization
 //note: this is specific to the x86 architecture backend
 void _xcsmp_cpu_x86_smpinitialize_commonstart(void){
-	/*u32 cpuid = xmhf_baseplatform_arch_x86_getcpulapicid();
+	u32 cpuid = xmhf_baseplatform_arch_x86_getcpulapicid();
 	bool is_bsp = _xcsmp_cpu_x86_isbsp();
-	u32 bcr0;
+
+	_XDPRINTF_("%s: cpuid=%u, is_bsp=%u, rsp=%016llx. Halting!\n", __FUNCTION__, (u32)cpuid, (u32)is_bsp, read_rsp());
+	HALT();
+
+	/*u32 bcr0;
 
 	//initialize base CPU state
 	//set OSXSAVE bit in CR4 to enable us to pass-thru XSETBV intercepts
@@ -435,14 +439,11 @@ bool xcsmp_arch_smpinitialize(void){
 	}
 
 
-	/*//fall through to common code
-	_XDPRINTF_("\nRelinquishing BSP thread and moving to common...");
-	if( _ap_pmode_entry_with_paging() ){
-		_XDPRINTF_("\nBSP must never get here. HALT!");
-		HALT();
-	}*/
+	//fall through to common code
+	_XDPRINTF_("%s: Relinquishing BSP thread and moving to common...\n", __FUNCTION__);
+	_xcsmp_cpu_x86_smpinitialize_commonstart();
 
-	_XDPRINTF_("%s:%u: BSP halting\n", __FUNCTION__, __LINE__);
+	_XDPRINTF_("%s:%u: Must never get here. Halting\n", __FUNCTION__, __LINE__);
 	HALT();
 
 }
