@@ -255,6 +255,27 @@ struct regs
   u32 eax;
 }__attribute__ ((packed));
 
+
+typedef struct {
+  u64 r8;
+  u64 r9;
+  u64 r10;
+  u64 r11;
+  u64 r12;
+  u64 r13;
+  u64 r14;
+  u64 r15;
+  u64 rax;
+  u64 rbx;
+  u64 rcx;
+  u64 rdx;
+  u64 rsi;
+  u64 rdi;
+  u64 rbp;
+  u64 rsp;
+}__attribute__ ((packed)) x86reg64_t;
+
+
 //*
 typedef struct {
   u16 isrLow;

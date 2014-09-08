@@ -103,6 +103,9 @@ __attribute__(( section(".slab_trampoline") )) static void xmhf_xcphandler_arch_
 __attribute__(( section(".slab_trampoline") )) void xmhf_xcphandler_arch_hub(u64 vector, void *exdata){
     struct regs *r = (struct regs *)exdata;
 
+	_XDPRINTF_("%s: got control, vector=0x%016llx, exdata=0x%016llx\n", __FUNCTION__, vector, (u64)exdata);
+    return;
+
 	switch(vector){
 			/*case CPU_EXCEPTION_NMI:{
 				XMHF_SLAB_CALL(xc_coreapi_arch_eventhandler_nmiexception(r));
