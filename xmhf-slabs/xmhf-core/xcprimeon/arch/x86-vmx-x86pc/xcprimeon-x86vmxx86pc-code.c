@@ -607,6 +607,7 @@ __attribute__((naked)) __attribute__ ((section(".slab_entrystub"))) __attribute_
 					"_xcprimeon_start: \r\n"
 
 					"movw %%ds, %%ax \r\n"
+					"movw %%ax, %%es \r\n"
 					"movw %%ax, %%fs \r\n"
 					"movw %%ax, %%gs \r\n"
 					"movw %%ax, %%ss \r\n"
@@ -623,6 +624,7 @@ __attribute__((naked)) __attribute__ ((section(".slab_entrystub"))) __attribute_
                     "movl $0xc0000080, %%ecx \r\n"
                     "rdmsr \r\n"
                     "orl $0x00000100, %%eax \r\n"
+                    "orl $0x00000800, %%eax \r\n"
                     "wrmsr \r\n"
 
                     "movl %%cr0, %%eax \r\n"
