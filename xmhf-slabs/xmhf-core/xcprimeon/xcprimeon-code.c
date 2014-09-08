@@ -117,6 +117,11 @@ void xcprimeon_entry(void){
         _XDPRINTF_("%s: rsp after int 3 = %016llx\n", read_rsp());
     }
 
+    {
+        static u8 _statbuffer[512];
+        xmhf_xcphandler_arch_hub(0xBBULL, &_statbuffer);
+    }
+
 	/*//proceed with SMP initialization
 	if ( XMHF_SLAB_CALL(xcsmp_entry()) ){
 		//we should never get here

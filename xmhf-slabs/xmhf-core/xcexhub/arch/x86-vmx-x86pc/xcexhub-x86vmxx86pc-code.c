@@ -100,7 +100,7 @@ __attribute__(( section(".slab_trampoline") )) static void xmhf_xcphandler_arch_
 //==========================================================================================
 
 //exception handler hub
-__attribute__(( section(".slab_trampoline") )) void xmhf_xcphandler_arch_hub(u32 vector, void *exdata){
+__attribute__(( section(".slab_trampoline") )) void xmhf_xcphandler_arch_hub(u64 vector, void *exdata){
     struct regs *r = (struct regs *)exdata;
 
 	switch(vector){
