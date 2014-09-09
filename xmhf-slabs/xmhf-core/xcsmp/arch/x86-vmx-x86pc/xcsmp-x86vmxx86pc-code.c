@@ -273,56 +273,38 @@ void _xcsmp_cpu_x86_smpinitialize_commonstart(void){
 	);
 
 
-	_XDPRINTF_("%s(%u):%u: Halting!\n", __FUNCTION__, cpuid, __LINE__);
-	HALT();
-
-	/*u32 bcr0;
-
-	//initialize base CPU state
 	//set OSXSAVE bit in CR4 to enable us to pass-thru XSETBV intercepts
 	//when the CPU supports XSAVE feature
-	if(xmhf_baseplatform_arch_x86_cpuhasxsavefeature()){
-		u32 t_cr4;
-		t_cr4 = read_cr4();
-		t_cr4 |= CR4_OSXSAVE;
-		write_cr4(t_cr4);
-	}
+	if(xmhf_baseplatform_arch_x86_cpuhasxsavefeature())
+		write_cr4(read_cr4() | CR4_OSXSAVE);
 
-	//turn on NX protections
-	{
-		u32 eax, edx;
-		rdmsr(MSR_EFER, &eax, &edx);
-		eax |= (1 << EFER_NXE);
-		wrmsr(MSR_EFER, eax, edx);
-		_XDPRINTF_("\n%s: NX protections enabled: MSR_EFER=%08x%08x", __FUNCTION__, edx, eax);
-	}
 
 	//replicate common MTRR state on this CPU
 	_xcsmp_cpu_x86_restorecpumtrrstate();
 
 	//set bit 5 (EM) of CR0 to be VMX compatible in case of Intel cores
-	bcr0 = read_cr0();
-	bcr0 |= 0x20;
-	write_cr0(bcr0);
+	write_cr0(read_cr0() | 0x20);
 
-
+/*
 	//load TR
 	{
 	  u32 gdtstart = (u32)xmhf_baseplatform_arch_x86_getgdtbase();
 	  u16 trselector = 	__TRSEL;
-	  asm volatile("movl %0, %%edi\r\n"
-		"xorl %%eax, %%eax\r\n"
-		"movw %1, %%ax\r\n"
-		"addl %%eax, %%edi\r\n"		//%edi is pointer to TSS descriptor in GDT
-		"addl $0x4, %%edi\r\n"		//%edi points to top 32-bits of 64-bit TSS desc.
-		"lock andl $0xFFFF00FF, (%%edi)\r\n"
-		"lock orl  $0x00008900, (%%edi)\r\n"
-		"ltr %%ax\r\n"				//load TR
+	  asm volatile(
+                "movl %0, %%edi\r\n"
+                "xorl %%eax, %%eax\r\n"
+                "movw %1, %%ax\r\n"
+                "addl %%eax, %%edi\r\n"		//%edi is pointer to TSS descriptor in GDT
+                "addl $0x4, %%edi\r\n"		//%edi points to top 32-bits of 64-bit TSS desc.
+                "lock andl $0xFFFF00FF, (%%edi)\r\n"
+                "lock orl  $0x00008900, (%%edi)\r\n"
+                "ltr %%ax\r\n"				//load TR
 	     :
 	     : "m"(gdtstart), "m"(trselector)
 	     : "edi", "eax"
 	  );
-	}*/
+	}
+*/
 
 
 	/*_XDPRINTF_("\n%s: cpu %x, isbsp=%u, Proceeding to call init_entry...\n", __FUNCTION__, cpuid, is_bsp);
@@ -332,7 +314,7 @@ void _xcsmp_cpu_x86_smpinitialize_commonstart(void){
 		HALT();
 	}*/
 
-	_XDPRINTF_("%s: should never be here!\n", __FUNCTION__);
+	_XDPRINTF_("%s(%u):%u: Should never be here. Halting!\n", __FUNCTION__, (u32)cpuid, __LINE__);
 	HALT();
 }
 
