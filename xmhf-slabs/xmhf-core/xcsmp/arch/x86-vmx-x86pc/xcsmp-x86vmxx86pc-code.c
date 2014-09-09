@@ -60,8 +60,10 @@ static bool _ap_entry(void) __attribute__((naked));
 void _xcsmp_cpu_x86_smpinitialize_commonstart(void);
 
 static u8 _cpustack[MAX_PLATFORM_CPUS][MAX_PLATFORM_CPUSTACK_SIZE] __attribute__(( section(".stack") )); // platform cpu stacks
-//static xc_cputable_t _cputable[MAX_PLATFORM_CPUS];// cpu table
+static xc_cputable_t _cputable[MAX_PLATFORM_CPUS];// cpu table
 static u32 _cpucount = 0; // count of platform cpus
+static u32 _totalcpus = 0; // count of platform cpus
+
 static u64 _xcsmp_ap_entry_lock = 1;
 
 static mtrr_state_t _mtrrs;
@@ -367,37 +369,45 @@ static bool _ap_entry(void) __attribute__((naked)){
 					"movw %%ax, %%ds \r\n"
 					"movw %%ax, %%es \r\n"
 
-                    "1:	btq	$0, %2	\r\n"						/*start atomic operation*/\
-                    "jnc 1b	\r\n"
-                    "lock \r\n"
-                    "btrq	$0, %2	\r\n"
-                    "jnc 1b \r\n"
+					:
+					:   "i" (&_ap_cr3), "i" (&_xcsmp_ap_init_gdt)
+	);
 
-                    "mov %3, %%ecx\r\n"                         /*set LAPIC base address to preferred address*/
-					"rdmsr\r\n"
-                    "andl $0x00000FFF, %%eax \r\n"
-                    "orl %4, %%eax \r\n"
-                    "wrmsr \r\n"
 
-                    "movl %5, %%ebx \r\n"                       /*get LAPIC id and set CPU stack*/
-                    "movl (%%ebx), %%eax \r\n"
-                    "shr $24, %%eax \r\n"
-                    "xorl %%edx, %%edx \r\n"
-                    "movl %6, %%ebx \r\n"
-                    "mul %%ebx \r\n"                       /*set CPU stack*/
-                    "addl %%ebx, %%eax \r\n"
-                    "movl %7, %%esp \r\n"
-                    "addl %%eax, %%esp \r\n"
+    asm volatile(
+                 	"movl %0, %%eax\r\n"
+					"movl (%%eax), %%eax\r\n"
+					"shr $24, %%eax\r\n"
+					"movl %1, %%edx\r\n"
+					"movl %2, %%ebx\r\n"
+					"xorl %%ecx, %%ecx\r\n"
+					"xorl %%edi, %%edi\r\n"
+					"getidxloop:\r\n"
+					"movl 0x0(%%ebx, %%edi), %%ebp\r\n"  	//ebp contains the lapic id
+					"cmpl %%eax, %%ebp\r\n"
+					"jz gotidx\r\n"
+					"incl %%ecx\r\n"
+					"addl %3, %%edi\r\n"
+					"cmpl %%edx, %%ecx\r\n"
+					"jb getidxloop\r\n"
+					"hlt\r\n"								//we should never get here, if so just halt
+					"gotidx:\r\n"							// ecx contains index into g_xc_cputable
+					"movl 0x4(%%ebx, %%edi), %%eax\r\n"	 	// eax = g_xc_cputable[ecx].cpu_index
+					"movl %4, %%edi \r\n"					// edi = &_cpustack
+					"movl %5, %%ecx \r\n"					// ecx = sizeof(_cpustack[0])
+					"mull %%ecx \r\n"						// eax = sizeof(_cpustack[0]) * eax
+					"addl %%ecx, %%eax \r\n"				// eax = (sizeof(_cpustack[0]) * eax) + sizeof(_cpustack[0])
+					"addl %%edi, %%eax \r\n"				// eax = &_cpustack + (sizeof(_cpustack[0]) * eax) + sizeof(_cpustack[0])
+					"movl %%eax, %%esp \r\n"				// esp = top of stack for the cpu
 
-                    "incl %8 \r\n"
-
-                    "btsq	$0, %2		\r\n"					/*end atomic operation */
+                    "lock incl %6 \r\n"
 
                     "jmp _xcsmp_cpu_x86_smpinitialize_commonstart \r\n"
+
 					:
-					:   "i" (&_ap_cr3), "i" (&_xcsmp_ap_init_gdt), "m" (_xcsmp_ap_entry_lock),
-                        "i" (MSR_APIC_BASE), "i"(X86SMP_LAPIC_MEMORYADDRESS), "i" (X86SMP_LAPIC_ID_MEMORYADDRESS),
-                        "i" (MAX_PLATFORM_CPUSTACK_SIZE), "i" (&_cpustack), "m" (_cpucount)
+					:   "i" (X86SMP_LAPIC_ID_MEMORYADDRESS), "m" (_totalcpus), "i" (&_cputable),
+                        "i" (sizeof(xc_cputable_t)), "i" (&_cpustack), "i" (sizeof(_cpustack[0])),
+                        "m" (_cpucount)
 	);
 
 }
@@ -416,6 +426,13 @@ bool xcsmp_arch_dmaprot_reinitialize(void){
 //initialize SMP
 bool xcsmp_arch_smpinitialize(void){
 	u32 i;
+
+	//initialize cpu table
+	for(i=0; i < xcbootinfo->cpuinfo_numentries; i++){
+			_cputable[i].cpuid = xcbootinfo->cpuinfo_buffer[i].lapic_id;
+			_cputable[i].cpu_index = i;
+	}
+    _totalcpus=xcbootinfo->cpuinfo_numentries;
 
     //set LAPIC base address to preferred address and increment CPU counter
     {
