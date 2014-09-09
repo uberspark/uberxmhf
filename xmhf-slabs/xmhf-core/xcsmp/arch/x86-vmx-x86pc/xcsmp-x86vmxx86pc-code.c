@@ -289,32 +289,24 @@ void _xcsmp_cpu_x86_smpinitialize_commonstart(void){
 	//set bit 5 (EM) of CR0 to be VMX compatible in case of Intel cores
 	write_cr0(read_cr0() | 0x20);
 
-    _XDPRINTF_("%s(%u): initialized CPU...\n", __FUNCTION__, (u32)cpuid);
-
-
-    spin_unlock(&_smpinitialize_lock);
-
-
-/*
-	//load TR
-	{
-	  u32 gdtstart = (u32)xmhf_baseplatform_arch_x86_getgdtbase();
-	  u16 trselector = 	__TRSEL;
-	  asm volatile(
-                "movl %0, %%edi\r\n"
-                "xorl %%eax, %%eax\r\n"
-                "movw %1, %%ax\r\n"
-                "addl %%eax, %%edi\r\n"		//%edi is pointer to TSS descriptor in GDT
-                "addl $0x4, %%edi\r\n"		//%edi points to top 32-bits of 64-bit TSS desc.
-                "lock andl $0xFFFF00FF, (%%edi)\r\n"
-                "lock orl  $0x00008900, (%%edi)\r\n"
+    //load TR, ensure busy bit is clear else LTR will cause a #GP
+    {
+   		TSSENTRY *t;
+		t= (TSSENTRY *)(u32)&_gdt_start[(__TRSEL/sizeof(u64))];
+		t->attributes1= 0x89;
+        asm volatile(
+                "movw %0, %%ax\r\n"
                 "ltr %%ax\r\n"				//load TR
 	     :
-	     : "m"(gdtstart), "m"(trselector)
-	     : "edi", "eax"
-	  );
-	}
-*/
+	     : "i"(__TRSEL)
+	     : "eax"
+        );
+
+    }
+
+    _XDPRINTF_("%s(%u): initialized CPU...\n", __FUNCTION__, (u32)cpuid);
+
+    spin_unlock(&_smpinitialize_lock);
 
 
 	/*_XDPRINTF_("\n%s: cpu %x, isbsp=%u, Proceeding to call init_entry...\n", __FUNCTION__, cpuid, is_bsp);
