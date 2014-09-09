@@ -251,6 +251,7 @@ void _xcsmp_cpu_x86_smpinitialize_commonstart(void){
 	u32 cpuid = xmhf_baseplatform_arch_x86_getcpulapicid();
 	bool is_bsp = _xcsmp_cpu_x86_isbsp();
     static volatile bool allgo_signal = false;
+    static u32 _smpinitialize_lock = 1;
 
     //rendezvous all APs before proceeding
     if(is_bsp){
@@ -264,6 +265,9 @@ void _xcsmp_cpu_x86_smpinitialize_commonstart(void){
         while(!allgo_signal);
         _XDPRINTF_("%s: AP: cpuid=%u, is_bsp=%u, rsp=%016llx. Moving on...\n", __FUNCTION__, (u32)cpuid, (u32)is_bsp, read_rsp());
     }
+
+    spin_lock(&_smpinitialize_lock);
+    _XDPRINTF_("%s(%u): proceeding to initialize CPU...\n", __FUNCTION__, (u32)cpuid);
 
     //load GDT and IDT
     asm volatile(	"lgdt %0\r\n"
@@ -284,6 +288,12 @@ void _xcsmp_cpu_x86_smpinitialize_commonstart(void){
 
 	//set bit 5 (EM) of CR0 to be VMX compatible in case of Intel cores
 	write_cr0(read_cr0() | 0x20);
+
+    _XDPRINTF_("%s(%u): initialized CPU...\n", __FUNCTION__, (u32)cpuid);
+
+
+    spin_unlock(&_smpinitialize_lock);
+
 
 /*
 	//load TR
