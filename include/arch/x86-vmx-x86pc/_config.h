@@ -100,6 +100,8 @@
 
 #define X86SMP_APBOOTSTRAP_MAXGDTENTRIES    4
 
+#define X86SMP_LAPIC_MEMORYADDRESS          0xFEE00000
+
 //----------------------------------------------------------------------
 
 //TXT SENTER MLE specific constants

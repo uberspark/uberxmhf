@@ -419,6 +419,17 @@ bool xcsmp_arch_dmaprot_reinitialize(void){
 bool xcsmp_arch_smpinitialize(void){
 	u32 i;
 
+    {
+        u64 msrapic = rdmsr64(MSR_APIC_BASE);
+        _XDPRINTF_("%s: LAPIC=%016llx\n", __FUNCTION__, msrapic);
+        wrmsr64(MSR_APIC_BASE, ((msrapic & 0x0000000000000FFFULL) | X86SMP_LAPIC_MEMORYADDRESS));
+        msrapic = rdmsr64(MSR_APIC_BASE);
+        _XDPRINTF_("%s: LAPIC=%016llx\n", __FUNCTION__, msrapic);
+        _XDPRINTF_("%s:%u: Must never get here. XMHF Tester Finished!\n", __FUNCTION__, __LINE__);
+        HALT();
+    }
+
+
 	_cpucount = xcbootinfo->cpuinfo_numentries;
 
 	//initialize cpu table
