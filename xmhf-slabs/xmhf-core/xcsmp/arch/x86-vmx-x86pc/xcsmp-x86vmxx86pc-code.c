@@ -250,18 +250,31 @@ static bool _xcsmp_cpu_x86_isbsp(void){
 void _xcsmp_cpu_x86_smpinitialize_commonstart(void){
 	u32 cpuid = xmhf_baseplatform_arch_x86_getcpulapicid();
 	bool is_bsp = _xcsmp_cpu_x86_isbsp();
+    static volatile bool allgo_signal = false;
 
+    //rendezvous all APs before proceeding
     if(is_bsp){
         _XDPRINTF_("%s: BSP: cpuid=%u, is_bsp=%u, rsp=%016llx\n", __FUNCTION__, (u32)cpuid, (u32)is_bsp, read_rsp());
         _XDPRINTF_("%s: BSP: Waiting for APs...\n", __FUNCTION__);
         while((_cpucount+1) < xcbootinfo->cpuinfo_numentries);
-        _XDPRINTF_("%s: BSP: All APs booted up.Halting!\n", __FUNCTION__);
-        HALT();
-
+        _XDPRINTF_("%s: BSP: All APs booted up. Moving on...\n", __FUNCTION__);
+        allgo_signal=true;
     }else{
-        _XDPRINTF_("%s: AP: cpuid=%u, is_bsp=%u, rsp=%016llx. Halting!\n", __FUNCTION__, (u32)cpuid, (u32)is_bsp, read_rsp());
-        HALT();
+        _XDPRINTF_("%s: AP: cpuid=%u, is_bsp=%u, rsp=%016llx. Waiting to proceed...\n", __FUNCTION__, (u32)cpuid, (u32)is_bsp, read_rsp());
+        while(!allgo_signal);
+        _XDPRINTF_("%s: AP: cpuid=%u, is_bsp=%u, rsp=%016llx. Moving on...\n", __FUNCTION__, (u32)cpuid, (u32)is_bsp, read_rsp());
     }
+
+    //load GDT and IDT
+    asm volatile(	"lgdt %0\r\n"
+					"lidt %1\r\n"
+					:
+					: "m" (_gdt), "m" (_idt)
+	);
+
+
+	_XDPRINTF_("%s(%u):%u: Halting!\n", __FUNCTION__, cpuid, __LINE__);
+	HALT();
 
 	/*u32 bcr0;
 
@@ -292,12 +305,6 @@ void _xcsmp_cpu_x86_smpinitialize_commonstart(void){
 	bcr0 |= 0x20;
 	write_cr0(bcr0);
 
-    //load GDT and IDT
-    asm volatile(	"lgdt %0\r\n"
-					"lidt %1\r\n"
-					:
-					: "m" (_gdt), "m" (_idt)
-	);
 
 	//load TR
 	{
