@@ -354,6 +354,18 @@ static bool _ap_entry(void) __attribute__((naked)){
                     "movl %1, %%esi \r\n"
                     "lgdt (%%esi) \r\n"
 
+                    "ljmp $8, $_xcsmp_ap_start64 \r\n"
+
+                    ".code64 \r\n"
+                    "_xcsmp_ap_start64: \r\n"
+
+					"movw $0x10, %%ax \r\n"
+					"movw %%ax, %%fs \r\n"
+					"movw %%ax, %%gs \r\n"
+					"movw %%ax, %%ss \r\n"
+					"movw %%ax, %%ds \r\n"
+					"movw %%ax, %%es \r\n"
+
                     "mov %2, %%ecx\r\n"
 					"rdmsr\r\n"
 					"andl $0xFFFFF000, %%eax\r\n"
@@ -383,20 +395,6 @@ static bool _ap_entry(void) __attribute__((naked)){
 					"addl %%edi, %%eax \r\n"				// eax = &_cpustack + (sizeof(_cpustack[0]) * eax) + sizeof(_cpustack[0])
 					"movl %%eax, %%esp \r\n"				// esp = top of stack for the cpu
 
-                    "pushl $8 \r\n"
-                    "pushl $_xcsmp_ap_start64 \r\n"
-                    "lret \r\n"
-
-                    ".code64 \r\n"
-                    "_xcsmp_ap_start64: \r\n"
-
-					"movw $0x10, %%ax \r\n"
-					"movw %%ax, %%fs \r\n"
-					"movw %%ax, %%gs \r\n"
-					"movw %%ax, %%ss \r\n"
-					"movw %%ax, %%ds \r\n"
-					"movw %%ax, %%es \r\n"
-
                     "jmp _xcsmp_cpu_x86_smpinitialize_commonstart \r\n"
 					:
 					: "i" (&_ap_cr3), "i" (&_xcsmp_ap_init_gdt), "i" (MSR_APIC_BASE), "i" (&_cpucount), "i" (&_cputable), "i" (sizeof(xc_cputable_t)), "i" (&_cpustack), "i" (sizeof(_cpustack[0]))
@@ -419,7 +417,7 @@ bool xcsmp_arch_dmaprot_reinitialize(void){
 bool xcsmp_arch_smpinitialize(void){
 	u32 i;
 
-    {
+    /*{
         u64 msrapic = rdmsr64(MSR_APIC_BASE);
         _XDPRINTF_("%s: LAPIC=%016llx\n", __FUNCTION__, msrapic);
         wrmsr64(MSR_APIC_BASE, ((msrapic & 0x0000000000000FFFULL) | X86SMP_LAPIC_MEMORYADDRESS));
@@ -427,7 +425,16 @@ bool xcsmp_arch_smpinitialize(void){
         _XDPRINTF_("%s: LAPIC=%016llx\n", __FUNCTION__, msrapic);
         _XDPRINTF_("%s:%u: Must never get here. XMHF Tester Finished!\n", __FUNCTION__, __LINE__);
         HALT();
-    }
+    }*/
+
+    /*{
+        u64 msrapic = rdmsr64(MSR_APIC_BASE);
+        volatile u32 *lapicid = (volatile u32 *)X86SMP_LAPIC_ID_MEMORYADDRESS;
+        _cpucount = 0; //BSP always gets index 0
+        wrmsr64(MSR_APIC_BASE, ((msrapic & 0x0000000000000FFFULL) | X86SMP_LAPIC_MEMORYADDRESS));
+        *lapicid = (u32)((_cpucount & 0x000000FFUL) << 24);
+        _cpucount++;
+    }*/
 
 
 	_cpucount = xcbootinfo->cpuinfo_numentries;
