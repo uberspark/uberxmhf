@@ -60,8 +60,9 @@ static bool _ap_entry(void) __attribute__((naked));
 void _xcsmp_cpu_x86_smpinitialize_commonstart(void);
 
 static u8 _cpustack[MAX_PLATFORM_CPUS][MAX_PLATFORM_CPUSTACK_SIZE] __attribute__(( section(".stack") )); // platform cpu stacks
-static xc_cputable_t _cputable[MAX_PLATFORM_CPUS];// cpu table
+//static xc_cputable_t _cputable[MAX_PLATFORM_CPUS];// cpu table
 static u32 _cpucount = 0; // count of platform cpus
+static u64 _xcsmp_ap_entry_lock = 1;
 
 static mtrr_state_t _mtrrs;
 static u64 _ap_cr3=0;
@@ -250,8 +251,17 @@ void _xcsmp_cpu_x86_smpinitialize_commonstart(void){
 	u32 cpuid = xmhf_baseplatform_arch_x86_getcpulapicid();
 	bool is_bsp = _xcsmp_cpu_x86_isbsp();
 
-	_XDPRINTF_("%s: cpuid=%u, is_bsp=%u, rsp=%016llx. Halting!\n", __FUNCTION__, (u32)cpuid, (u32)is_bsp, read_rsp());
-	HALT();
+    if(is_bsp){
+        _XDPRINTF_("%s: BSP: cpuid=%u, is_bsp=%u, rsp=%016llx\n", __FUNCTION__, (u32)cpuid, (u32)is_bsp, read_rsp());
+        _XDPRINTF_("%s: BSP: Waiting for APs...\n", __FUNCTION__);
+        while((_cpucount+1) < xcbootinfo->cpuinfo_numentries);
+        _XDPRINTF_("%s: BSP: All APs booted up.Halting!\n", __FUNCTION__);
+        HALT();
+
+    }else{
+        _XDPRINTF_("%s: AP: cpuid=%u, is_bsp=%u, rsp=%016llx. Halting!\n", __FUNCTION__, (u32)cpuid, (u32)is_bsp, read_rsp());
+        HALT();
+    }
 
 	/*u32 bcr0;
 
@@ -366,38 +376,37 @@ static bool _ap_entry(void) __attribute__((naked)){
 					"movw %%ax, %%ds \r\n"
 					"movw %%ax, %%es \r\n"
 
-                    "mov %2, %%ecx\r\n"
+                    "1:	btq	$0, %2	\r\n"						/*start atomic operation*/\
+                    "jnc 1b	\r\n"
+                    "lock \r\n"
+                    "btrq	$0, %2	\r\n"
+                    "jnc 1b \r\n"
+
+                    "mov %3, %%ecx\r\n"                         /*set LAPIC base address to preferred address*/
 					"rdmsr\r\n"
-					"andl $0xFFFFF000, %%eax\r\n"
-					"addl $0x20, %%eax\r\n"
-					"movl (%%eax), %%eax\r\n"
-					"shr $24, %%eax\r\n"
-					"movl %3, %%edx\r\n"
-					"movl (%%edx), %%edx \r\n"
-					"movl %4, %%ebx\r\n"
-					"xorl %%ecx, %%ecx\r\n"
-					"xorl %%edi, %%edi\r\n"
-					"getidxloop:\r\n"
-					"movl 0x0(%%ebx, %%edi), %%ebp\r\n"  	//ebp contains the lapic id
-					"cmpl %%eax, %%ebp\r\n"
-					"jz gotidx\r\n"
-					"incl %%ecx\r\n"
-					"addl %5, %%edi\r\n"
-					"cmpl %%edx, %%ecx\r\n"
-					"jb getidxloop\r\n"
-					"hlt\r\n"								//we should never get here, if so just halt
-					"gotidx:\r\n"							// ecx contains index into g_xc_cputable
-					"movl 0x4(%%ebx, %%edi), %%eax\r\n"	 	// eax = g_xc_cputable[ecx].cpu_index
-					"movl %6, %%edi \r\n"					// edi = &_cpustack
-					"movl %7, %%ecx \r\n"					// ecx = sizeof(_cpustack[0])
-					"mull %%ecx \r\n"						// eax = sizeof(_cpustack[0]) * eax
-					"addl %%ecx, %%eax \r\n"				// eax = (sizeof(_cpustack[0]) * eax) + sizeof(_cpustack[0])
-					"addl %%edi, %%eax \r\n"				// eax = &_cpustack + (sizeof(_cpustack[0]) * eax) + sizeof(_cpustack[0])
-					"movl %%eax, %%esp \r\n"				// esp = top of stack for the cpu
+                    "andl $0x00000FFF, %%eax \r\n"
+                    "orl %4, %%eax \r\n"
+                    "wrmsr \r\n"
+
+                    "movl %5, %%ebx \r\n"                       /*get LAPIC id and set CPU stack*/
+                    "movl (%%ebx), %%eax \r\n"
+                    "shr $24, %%eax \r\n"
+                    "xorl %%edx, %%edx \r\n"
+                    "movl %6, %%ebx \r\n"
+                    "mul %%ebx \r\n"                       /*set CPU stack*/
+                    "addl %%ebx, %%eax \r\n"
+                    "movl %7, %%esp \r\n"
+                    "addl %%eax, %%esp \r\n"
+
+                    "incl %8 \r\n"
+
+                    "btsq	$0, %2		\r\n"					/*end atomic operation */
 
                     "jmp _xcsmp_cpu_x86_smpinitialize_commonstart \r\n"
 					:
-					: "i" (&_ap_cr3), "i" (&_xcsmp_ap_init_gdt), "i" (MSR_APIC_BASE), "i" (&_cpucount), "i" (&_cputable), "i" (sizeof(xc_cputable_t)), "i" (&_cpustack), "i" (sizeof(_cpustack[0]))
+					:   "i" (&_ap_cr3), "i" (&_xcsmp_ap_init_gdt), "m" (_xcsmp_ap_entry_lock),
+                        "i" (MSR_APIC_BASE), "i"(X86SMP_LAPIC_MEMORYADDRESS), "i" (X86SMP_LAPIC_ID_MEMORYADDRESS),
+                        "i" (MAX_PLATFORM_CPUSTACK_SIZE), "i" (&_cpustack), "m" (_cpucount)
 	);
 
 }
@@ -417,42 +426,21 @@ bool xcsmp_arch_dmaprot_reinitialize(void){
 bool xcsmp_arch_smpinitialize(void){
 	u32 i;
 
-    /*{
+    //set LAPIC base address to preferred address and increment CPU counter
+    {
         u64 msrapic = rdmsr64(MSR_APIC_BASE);
-        _XDPRINTF_("%s: LAPIC=%016llx\n", __FUNCTION__, msrapic);
         wrmsr64(MSR_APIC_BASE, ((msrapic & 0x0000000000000FFFULL) | X86SMP_LAPIC_MEMORYADDRESS));
-        msrapic = rdmsr64(MSR_APIC_BASE);
-        _XDPRINTF_("%s: LAPIC=%016llx\n", __FUNCTION__, msrapic);
-        _XDPRINTF_("%s:%u: Must never get here. XMHF Tester Finished!\n", __FUNCTION__, __LINE__);
-        HALT();
-    }*/
-
-    /*{
-        u64 msrapic = rdmsr64(MSR_APIC_BASE);
-        volatile u32 *lapicid = (volatile u32 *)X86SMP_LAPIC_ID_MEMORYADDRESS;
-        _cpucount = 0; //BSP always gets index 0
-        wrmsr64(MSR_APIC_BASE, ((msrapic & 0x0000000000000FFFULL) | X86SMP_LAPIC_MEMORYADDRESS));
-        *lapicid = (u32)((_cpucount & 0x000000FFUL) << 24);
         _cpucount++;
-    }*/
+    }
 
-
-	_cpucount = xcbootinfo->cpuinfo_numentries;
-
-	//initialize cpu table
-	for(i=0; i < _cpucount; i++){
-			_cputable[i].cpuid = xcbootinfo->cpuinfo_buffer[i].lapic_id;
-			_cputable[i].cpu_index = i;
-	}
-
-	//save cpu MTRR state which we will later replicate on all APs
+    //save cpu MTRR state which we will later replicate on all APs
 	_xcsmp_cpu_x86_savecpumtrrstate();
 
     //save page table base which we will later replicate on all APs
     _ap_cr3 = read_cr3();
 
 	//wake up APS
-	if(_cpucount > 1){
+	if(xcbootinfo->cpuinfo_numentries > 1){
 	  _xcsmp_container_vmx_wakeupAPs();
 	}
 
