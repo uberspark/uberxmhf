@@ -56,9 +56,9 @@
 
 #include <xcexhub.h>
 
-__attribute__(( section(".slabtrampoline") )) static u64 _xcexhub_exception_lock = 1;
-__attribute__(( section(".slabtrampoline") )) __attribute__(( aligned(4096) )) static u8 _xcexhub_exception_stack[(MAX_PLATFORM_CPUS+1)][PAGE_SIZE_4K];
-__attribute__(( section(".slabtrampoline") )) static u64 _xcexhub_exception_stack_index = &_xcexhub_exception_stack[MAX_PLATFORM_CPUS];
+//__attribute__(( section(".slabtrampoline") )) static u64 _xcexhub_exception_lock = 1;
+//__attribute__(( section(".slabtrampoline") )) __attribute__(( aligned(4096) )) static u8 _xcexhub_exception_stack[(MAX_PLATFORM_CPUS+1)][PAGE_SIZE_4K];
+//__attribute__(( section(".slabtrampoline") )) static u64 _xcexhub_exception_stack_index = &_xcexhub_exception_stack[MAX_PLATFORM_CPUS];
 
 
 #define XMHF_EXCEPTION_HANDLER_DEFINE(vector) 												\
@@ -70,13 +70,105 @@ __attribute__(( section(".slabtrampoline") )) static u64 _xcexhub_exception_stac
 						"btrq	$0, %0	\r\n"						\
 						"jnc 1b \r\n"   							\
                                                                     \
-						"subq $4096, %1 \r\n"                       \
-						"xchgq %%rsp, %1 \r\n"						/*rsp=stack top for current CPU*/ \
-						"pushq %1 \r\n"								/*store original exception entry rsp*/ \
-						"movq %%rsp, %1 \r\n"                       /*compute and store next stack top*/ \
-                        "addq $8, %1 \r\n"                          \
+                        "movq %%rax, %1 \r\n"                       \
+                        "movq %%rbx, %2 \r\n"                       \
+                        "movq %%rcx, %3 \r\n"                       \
+                        "movq %%rsp, %4 \r\n"                       \
+                                                                    \
+                        "movl %5, %%eax\r\n"                        \
+                        "movl (%%eax), %%eax\r\n"                   \
+                        "shr $24, %%eax\r\n"                        \
+                        "movl %7, %%ebx\r\n"                        \
+                        "movl %6, %%ecx \r\n"                       \
+                        "1: cmpl 0x0(%%ebx), %%eax\r\n"             \
+                        "jz 2f\r\n"                                 \
+                        "addl %8, %%ebx\r\n"                        \
+                        "loop 1b \r\n"                              \
+                        "hlt\r\n"								    \
+                        "2: movl 0x4(%%ebx), %%eax\r\n"			    \
+                        "movl %10, %%ecx \r\n"					    \
+                        "mull %%ecx \r\n"						    \
+                        "addl %%ecx, %%eax \r\n"				    \
+                        "addl %9, %%eax \r\n"				        \
+                        "xorq %%rsp, %%rsp \r\n"                    \
+                        "movl %%eax, %%esp \r\n"				    \
+                                                                    \
+                        "pushq %4 \r\n"                             \
+                        "movq %1, %%rax \r\n"                       \
+                        "movq %2, %%rbx \r\n"                       \
+                        "movq %3, %%rcx \r\n"                       \
                                                                     \
 						"btsq	$0, %0		\r\n"					/*end atomic operation */ \
+                                                                    \
+                                                                    \
+                        "pushq %%rbp \r\n"\
+                        "pushq %%rdi \r\n"\
+                        "pushq %%rsi \r\n"\
+                        "pushq %%rdx \r\n"\
+                        "pushq %%rcx \r\n"\
+                        "pushq %%rbx \r\n"\
+                        "pushq %%rax \r\n"\
+                        "pushq %%r15 \r\n"\
+                        "pushq %%r14 \r\n"\
+                        "pushq %%r13 \r\n"\
+                        "pushq %%r12 \r\n"\
+                        "pushq %%r11 \r\n"\
+                        "pushq %%r10 \r\n"\
+                        "pushq %%r9 \r\n"\
+                        "pushq %%r8 \r\n"\
+                        "movq %%rsp, %%rsi \r\n"\
+                        "mov %11, %%rdi \r\n"\
+                        "callq xmhf_xcphandler_arch_hub \r\n"\
+                        "popq %%r8 \r\n"\
+                        "popq %%r9 \r\n"\
+                        "popq %%r10 \r\n"\
+                        "popq %%r11 \r\n"\
+                        "popq %%r12 \r\n"\
+                        "popq %%r13 \r\n"\
+                        "popq %%r14 \r\n"\
+                        "popq %%r15 \r\n"\
+                        "popq %%rax \r\n"\
+                        "popq %%rbx \r\n"\
+                        "popq %%rcx \r\n"\
+                        "popq %%rdx \r\n"\
+                        "popq %%rsi \r\n"\
+                        "popq %%rdi \r\n"\
+                        "popq %%rbp \r\n"\
+                        "popq %%rsp \r\n"\
+                                                                    \
+                                                                    \
+                        "iretq\r\n"									\
+					:												\
+					:	"m" (_rtmxcp_bssavearea[0]), \
+                                                     \
+                        "m" (_rtmxcp_bssavearea[1]), "m" (_rtmxcp_bssavearea[2]),   \
+                        "m" (_rtmxcp_bssavearea[3]), "m" (_rtmxcp_bssavearea[4]),    \
+                                                    \
+                        "i" (X86SMP_LAPIC_ID_MEMORYADDRESS), "m" (_totalcpus), "i" (&_cputable), \
+                        "i" (sizeof(xmhf_cputable_t)), "i" (&_rtmxcp_cpustacks), "i" (sizeof(_rtmxcp_cpustacks[0])), \
+                                                    \
+                        "i" (vector) \
+                                                    \
+		);															\
+    }\
+
+/*
+#define DEFUNCT_XMHF_EXCEPTION_HANDLER_DEFINE(vector) 												\
+	__attribute__(( section(".slabtrampoline") )) static void __xmhf_exception_handler_##vector(void) __attribute__((naked)) { 					\
+		asm volatile(												\
+						"1:	btq	$0, %0	\r\n"						\
+						"jnc 1b	\r\n"								\
+						"lock \r\n"   								\
+						"btrq	$0, %0	\r\n"						\
+						"jnc 1b \r\n"   							\
+                                                                    \
+						"subq $4096, %1 \r\n"                       \
+						"xchgq %%rsp, %1 \r\n"						\
+						"pushq %1 \r\n"								\
+						"movq %%rsp, %1 \r\n"                       \
+                        "addq $8, %1 \r\n"                          \
+                                                                    \
+						"btsq	$0, %0		\r\n"					\
 																\
                         "pushq %%rbp \r\n"\
                         "pushq %%rdi \r\n"\
@@ -112,23 +204,23 @@ __attribute__(( section(".slabtrampoline") )) static u64 _xcexhub_exception_stac
                         "popq %%rdi \r\n"\
                         "popq %%rbp \r\n"\
                                                                     \
-						"2:	btq	$0, %0	\r\n"						/*start atomic operation*/\
+						"2:	btq	$0, %0	\r\n"						\
 						"jnc 2b	\r\n"								\
 						"lock \r\n"   								\
 						"btrq	$0, %0	\r\n"						\
 						"jnc 2b \r\n"   							\
 																	\
-                        "popq %%rsp \r\n"							/*restore original exception entry rsp*/\
+                        "popq %%rsp \r\n"							\
 						"addq $4096, %1 \r\n"                       \
 																	\
-						"btsq	$0, %0		\r\n"					/*end atomic operation */ \
+						"btsq	$0, %0		\r\n"					\
 																	\
 						"iretq\r\n"									\
 					:												\
 					:	"m" (_xcexhub_exception_lock), "m" (_xcexhub_exception_stack_index), "i" (vector)				\
 		);															\
 	}\
-
+*/
 
 
 #define XMHF_EXCEPTION_HANDLER_ADDROF(vector) &__xmhf_exception_handler_##vector
