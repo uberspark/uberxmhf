@@ -95,18 +95,19 @@ bool xcrichguest_entry(u32 cpuid, bool is_bsp){
 	//[debug]
 	_XDPRINTF_("%s(%u): is_bsp=%u...\n", __FUNCTION__, cpuid, is_bsp);
 
-    _XDPRINTF_("%s(%u): Test. Halting!\n", __FUNCTION__, cpuid);
-    HALT();
-
 	//create rich guest partition if we are the BSP
 	if(is_bsp){
-		_XDPRINTF_("\n%s: proceeding to create rich guest partition (esp=%x)\n", __FUNCTION__, read_esp());
+		_XDPRINTF_("%s(%u): proceeding to create rich guest partition...\n", __FUNCTION__, cpuid);
 		xc_richguest_partition_index = XMHF_SLAB_CALL(xc_api_partition_create(XC_PARTITION_PRIMARY));
 		if(xc_richguest_partition_index == XC_PARTITION_INDEX_INVALID){
-			_XDPRINTF_("\n%s: Fatal error, could not create rich guest partition!", __FUNCTION__);
+			_XDPRINTF_("%s(%u): Fatal error, could not create rich guest partition!\n", __FUNCTION__, cpuid);
 			HALT();
 		}
-		_XDPRINTF_("\n%s: BSP: created rich guest partition %u", __FUNCTION__, xc_richguest_partition_index);
+		_XDPRINTF_("%s(%u): created rich guest partition %u\n", __FUNCTION__, cpuid, xc_richguest_partition_index);
+
+	    _XDPRINTF_("%s(%u): Test. Halting!\n", __FUNCTION__, cpuid);
+        HALT();
+
 		xcrichguest_arch_initialize(xc_richguest_partition_index);
 		_XDPRINTF_("\n%s: BSP: initialized rich guest partition %u", __FUNCTION__, xc_richguest_partition_index);
 	}
@@ -129,10 +130,10 @@ bool xcrichguest_entry(u32 cpuid, bool is_bsp){
 		hypappenvb.runtimephysmembase = (u32)xcbootinfo->physmem_base;
 		hypappenvb.runtimesize = (u32)xcbootinfo->size;
 
-		//call app main
+		/*//call app main
 		_XDPRINTF_("\n%s: proceeding to call xmhfhypapp_main on BSP", __FUNCTION__);
 		XMHF_SLAB_CALL(xmhf_hypapp_initialization(context_desc, hypappenvb));
-		_XDPRINTF_("\n%s: came back into core", __FUNCTION__);
+		_XDPRINTF_("\n%s: came back into core", __FUNCTION__);*/
 	}
 
     _xc_startup_hypappmain_counter++;
