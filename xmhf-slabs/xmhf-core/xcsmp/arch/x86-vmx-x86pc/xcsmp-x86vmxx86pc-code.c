@@ -378,26 +378,18 @@ static bool _ap_entry(void) __attribute__((naked)){
                  	"movl %0, %%eax\r\n"
 					"movl (%%eax), %%eax\r\n"
 					"shr $24, %%eax\r\n"
-					"movl %1, %%edx\r\n"
 					"movl %2, %%ebx\r\n"
-					"xorl %%ecx, %%ecx\r\n"
-					"xorl %%edi, %%edi\r\n"
-					"getidxloop:\r\n"
-					"movl 0x0(%%ebx, %%edi), %%ebp\r\n"  	//ebp contains the lapic id
-					"cmpl %%eax, %%ebp\r\n"
-					"jz gotidx\r\n"
-					"incl %%ecx\r\n"
-					"addl %3, %%edi\r\n"
-					"cmpl %%edx, %%ecx\r\n"
-					"jb getidxloop\r\n"
-					"hlt\r\n"								//we should never get here, if so just halt
-					"gotidx:\r\n"							// ecx contains index into g_xc_cputable
-					"movl 0x4(%%ebx, %%edi), %%eax\r\n"	 	// eax = g_xc_cputable[ecx].cpu_index
-					"movl %4, %%edi \r\n"					// edi = &_cpustack
+					"movl %1, %%ecx \r\n"
+					"1: cmpl 0x0(%%ebx), %%eax\r\n"
+					"jz 2f\r\n"
+					"addl %3, %%ebx\r\n"
+					"loop 1b \r\n"
+					"hlt\r\n"								// we should never get here, if so just halt
+					"2: movl 0x4(%%ebx), %%eax\r\n"			// eax = g_xc_cputable[ecx].cpu_index
 					"movl %5, %%ecx \r\n"					// ecx = sizeof(_cpustack[0])
 					"mull %%ecx \r\n"						// eax = sizeof(_cpustack[0]) * eax
 					"addl %%ecx, %%eax \r\n"				// eax = (sizeof(_cpustack[0]) * eax) + sizeof(_cpustack[0])
-					"addl %%edi, %%eax \r\n"				// eax = &_cpustack + (sizeof(_cpustack[0]) * eax) + sizeof(_cpustack[0])
+					"addl %4, %%eax \r\n"				    // eax = &_cpustack + (sizeof(_cpustack[0]) * eax) + sizeof(_cpustack[0])*/
 					"movl %%eax, %%esp \r\n"				// esp = top of stack for the cpu
 
                     "lock incl %6 \r\n"
