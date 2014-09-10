@@ -366,8 +366,14 @@ static bool _ap_entry(void) __attribute__((naked)){
 					"movw %%ax, %%ds \r\n"
 					"movw %%ax, %%es \r\n"
 
+                    "movl %2, %%ecx \r\n"
+                    "rdmsr \r\n"
+                    "andl $0x00000FFF, %%eax \r\n"
+                    "orl %3, %%eax \r\n"
+                    "wrmsr \r\n"
+
 					:
-					:   "i" (&_ap_cr3), "i" (&_xcsmp_ap_init_gdt)
+					:   "i" (&_ap_cr3), "i" (&_xcsmp_ap_init_gdt), "i" (MSR_APIC_BASE), "i" (X86SMP_LAPIC_MEMORYADDRESS)
 	);
 
 
@@ -416,20 +422,14 @@ bool xcsmp_arch_dmaprot_reinitialize(void){
 bool xcsmp_arch_smpinitialize(void){
 	u32 i;
 
-    //set LAPIC base address to preferred address and increment CPU counter
-    {
-        u64 msrapic = rdmsr64(MSR_APIC_BASE);
-        wrmsr64(MSR_APIC_BASE, ((msrapic & 0x0000000000000FFFULL) | X86SMP_LAPIC_MEMORYADDRESS));
-        _cpucount++;
-    }
-
     //save cpu MTRR state which we will later replicate on all APs
 	_xcsmp_cpu_x86_savecpumtrrstate();
 
     //save page table base which we will later replicate on all APs
     _ap_cr3 = read_cr3();
 
-	//wake up APS
+	//increment CPU counter and wake up APS
+	_cpucount++;
 	if(xcbootinfo->cpuinfo_numentries > 1){
 	  _xcsmp_container_vmx_wakeupAPs();
 	}

@@ -883,6 +883,12 @@ void xcprimeon_arch_cpu_basicinit(void){
 		}
 	}
 
+    //set LAPIC base address to preferred address
+    {
+        u64 msrapic = rdmsr64(MSR_APIC_BASE);
+        wrmsr64(MSR_APIC_BASE, ((msrapic & 0x0000000000000FFFULL) | X86SMP_LAPIC_MEMORYADDRESS));
+    }
+
 	//set OSXSAVE bit in CR4 to enable us to pass-thru XSETBV intercepts
 	//when the CPU supports XSAVE feature
 	if(xmhf_baseplatform_arch_x86_cpuhasxsavefeature()){
