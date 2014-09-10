@@ -73,6 +73,11 @@ extern __attribute__(( section(".section_archds") )) xmhf_cputable_t _cputable[M
 // count of platform CPUs
 extern __attribute__(( section(".section_archds") )) u32 _totalcpus;
 
+// runtime exception CPU stacks
+extern __attribute__(( aligned(4096) )) __attribute__(( section(".section_archds") )) u8 _rtmxcp_cpustacks[MAX_PLATFORM_CPUS][MAX_PLATFORM_CPUSTACK_SIZE];
+// runtime exception bootstrap save area
+extern __attribute__(( aligned(4096) )) __attribute__(( section(".section_archds") )) u64 _rtmxcp_bssavearea[512];
+
 
 //libxmhfdebug
 extern __attribute__(( section(".libxmhfdebugdata") )) u32 libxmhfdebug_lock;

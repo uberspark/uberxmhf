@@ -94,13 +94,21 @@ __attribute__(( aligned(16) )) __attribute__(( section(".section_archds") )) arc
 __attribute__(( aligned(4096) )) __attribute__(( section(".section_archds") )) u8 _init_cpustacks[MAX_PLATFORM_CPUS][MAX_PLATFORM_CPUSTACK_SIZE];
 
 //////
+// runtime exception CPU stacks
+
+__attribute__(( aligned(4096) )) __attribute__(( section(".section_archds") )) u8 _rtmxcp_cpustacks[MAX_PLATFORM_CPUS][MAX_PLATFORM_CPUSTACK_SIZE];
+
+//////
+// runtime exception bootstrap save area
+__attribute__(( aligned(4096) )) __attribute__(( section(".section_archds") )) u64 _rtmxcp_bssavearea[512] = { 1ULL };
+
+//////
 // CPU table: mapping from unique CPU id --> 0 based index (into CPU stack)
 
 __attribute__(( section(".section_archds") )) xmhf_cputable_t _cputable[MAX_PLATFORM_CPUS];
 
 // count of platform CPUs
 __attribute__(( section(".section_archds") )) u32 _totalcpus = 0;
-
 
 
 
