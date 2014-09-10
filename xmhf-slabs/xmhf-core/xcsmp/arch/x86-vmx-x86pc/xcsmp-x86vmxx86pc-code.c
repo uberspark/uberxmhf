@@ -307,11 +307,11 @@ void _xcsmp_cpu_x86_smpinitialize_commonstart(void){
 
 
     //[debug]
-    {
-       _XDPRINTF_("%s(%u): rsp before int 3 = %016llx\n", __FUNCTION__, (u32)cpuid, read_rsp());
-        asm volatile ("int $0x03 \r\n");
-        _XDPRINTF_("%s(%u): rsp after int 3 = %016llx\n", __FUNCTION__, (u32)cpuid, read_rsp());
-    }
+    //{
+    //   _XDPRINTF_("%s(%u): rsp before int 3 = %016llx\n", __FUNCTION__, (u32)cpuid, read_rsp());
+    //    asm volatile ("int $0x03 \r\n");
+    //    _XDPRINTF_("%s(%u): rsp after int 3 = %016llx\n", __FUNCTION__, (u32)cpuid, read_rsp());
+    //}
 
 
     spin_unlock(&_smpinitialize_lock);
