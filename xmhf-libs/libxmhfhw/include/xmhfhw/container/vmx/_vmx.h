@@ -47,23 +47,23 @@
 //vmx.h - Intel VMX definitions
 //author: amit vasudevan (amitvasudevan@acm.org)
 
-#define VMXON_SIZE		(4096) 
-#define VMCS_SIZE			(8192) 
+#define VMXON_SIZE		(4096)
+#define VMCS_SIZE			(8192)
 
 //VM Exit Interruption-information format
-#define INTR_INFO_VECTOR_MASK           (0x000000ff)        // 7:0 
-#define INTR_INFO_INTR_TYPE_MASK        (0x00000700)        // 10:8 
-#define INTR_INFO_DELIVER_CODE_MASK     (0x00000800)        // 11 
-#define INTR_INFO_VALID_MASK            (0x80000000)      	// 31 
+#define INTR_INFO_VECTOR_MASK           (0x000000ff)        // 7:0
+#define INTR_INFO_INTR_TYPE_MASK        (0x00000700)        // 10:8
+#define INTR_INFO_DELIVER_CODE_MASK     (0x00000800)        // 11
+#define INTR_INFO_VALID_MASK            (0x80000000)      	// 31
 
 #define VECTORING_INFO_VECTOR_MASK           	INTR_INFO_VECTOR_MASK
 #define VECTORING_INFO_TYPE_MASK        			INTR_INFO_INTR_TYPE_MASK
 #define VECTORING_INFO_DELIVER_CODE_MASK    	INTR_INFO_DELIVER_CODE_MASK
 #define VECTORING_INFO_VALID_MASK       			INTR_INFO_VALID_MASK
 
-#define INTR_TYPE_HW_INTERRUPT         	 (0UL << 8) // hardware/external interrupt 
+#define INTR_TYPE_HW_INTERRUPT         	 (0UL << 8) // hardware/external interrupt
 #define INTR_TYPE_NMI										 (2UL << 8)	// NMI
-#define INTR_TYPE_HW_EXCEPTION           (3UL << 8) // processor exception 
+#define INTR_TYPE_HW_EXCEPTION           (3UL << 8) // processor exception
 #define INTR_TYPE_SW_INTERRUPT         	 (4UL << 8) // software interrupt
 #define INTR_TYPE_SW_EXCEPTION           (6UL << 8) // software exception (INTO, INT3)
 
@@ -110,7 +110,7 @@
 #define INTERCEPT_EXCEPTIONS_1E (0x1E)
 #define INTERCEPT_EXCEPTIONS_1F (0x1F)
 #define INTERCEPT_EXCEPTIONS_20 (0x20)
-        
+
 
 #define INTERCEPT_INVLPG          0x21
 #define INTERCEPT_CR3_READ        0x22
@@ -141,7 +141,7 @@
 #define VMX_VMEXIT_IOIO 30
 #define VMX_VMEXIT_VMCALL 18
 #define VMX_VMEXIT_HLT 12
-#define VMX_VMEXIT_INVLPG 14	
+#define VMX_VMEXIT_INVLPG 14
 #define VMX_VMEXIT_RDMSR	0x1f
 #define VMX_VMEXIT_WRMSR	0x20
 #define VMX_VMEXIT_CPUID	0x0a
@@ -362,7 +362,7 @@ enum {
 
 
 typedef struct {
-	u16 sel;		  
+	u16 sel;
 	u64 base;
 	u32 limit;
 	union{
@@ -406,8 +406,8 @@ struct _vmx_vmcsfields {
   unsigned int  control_VMX_cpu_based;
 	unsigned int  control_VMX_seccpu_based;
   unsigned int  control_exception_bitmap;
-  unsigned int  control_pagefault_errorcode_mask; 
-  unsigned int  control_pagefault_errorcode_match; 
+  unsigned int  control_pagefault_errorcode_mask;
+  unsigned int  control_pagefault_errorcode_match;
   unsigned int  control_CR3_target_count;
   unsigned int  control_VM_exit_controls;
   unsigned int  control_VM_exit_MSR_store_count;
@@ -446,7 +446,7 @@ struct _vmx_vmcsfields {
   unsigned int  control_TSC_offset_high;
   unsigned int  control_virtual_APIC_page_address_full;
   unsigned int  control_virtual_APIC_page_address_high;
-	unsigned int control_EPT_pointer_full; 
+	unsigned int control_EPT_pointer_full;
 	unsigned int control_EPT_pointer_high;
   // Natural 64-bit Host-State fields
   unsigned long long  host_CR0;
@@ -476,7 +476,7 @@ struct _vmx_vmcsfields {
   unsigned long long  guest_CR3;
   unsigned long long  guest_CR4;
   unsigned long long  guest_ES_base;
-  unsigned long long  guest_CS_base; 
+  unsigned long long  guest_CS_base;
   unsigned long long  guest_SS_base;
   unsigned long long  guest_DS_base;
   unsigned long long  guest_FS_base;
@@ -486,9 +486,9 @@ struct _vmx_vmcsfields {
   unsigned long long  guest_GDTR_base;
   unsigned long long  guest_IDTR_base;
   unsigned long long  guest_DR7;
-  unsigned long long  guest_RSP; 
-  unsigned long long  guest_RIP; 
-  unsigned long long  guest_RFLAGS; 
+  unsigned long long  guest_RSP;
+  unsigned long long  guest_RIP;
+  unsigned long long  guest_RFLAGS;
   unsigned long long  guest_pending_debug_x;
   unsigned long long  guest_SYSENTER_ESP;
   unsigned long long  guest_SYSENTER_EIP;
@@ -499,11 +499,11 @@ struct _vmx_vmcsfields {
   unsigned int  guest_DS_limit;
   unsigned int  guest_FS_limit;
   unsigned int  guest_GS_limit;
-  unsigned int  guest_LDTR_limit; 
+  unsigned int  guest_LDTR_limit;
   unsigned int  guest_TR_limit;
   unsigned int  guest_GDTR_limit;
   unsigned int  guest_IDTR_limit;
-  unsigned int  guest_ES_access_rights; 
+  unsigned int  guest_ES_access_rights;
   unsigned int  guest_CS_access_rights;
   unsigned int  guest_SS_access_rights;
   unsigned int  guest_DS_access_rights;
@@ -511,10 +511,10 @@ struct _vmx_vmcsfields {
   unsigned int  guest_GS_access_rights;
   unsigned int  guest_LDTR_access_rights;
   unsigned int  guest_TR_access_rights;
-  unsigned int  guest_interruptibility; 
-  unsigned int  guest_activity_state; 
-  unsigned int  guest_SMBASE;	
-  unsigned int  guest_SYSENTER_CS; 
+  unsigned int  guest_interruptibility;
+  unsigned int  guest_activity_state;
+  unsigned int  guest_SMBASE;
+  unsigned int  guest_SYSENTER_CS;
   // Natural 16-bit Guest-State fields
   unsigned int  guest_ES_selector;
   unsigned int  guest_CS_selector;
@@ -531,13 +531,13 @@ struct _vmx_vmcsfields {
   unsigned int  guest_IA32_DEBUGCTL_high;
     unsigned int 	guest_paddr_full;
     unsigned int 	guest_paddr_high;
-    unsigned int  guest_PDPTE0_full; 
+    unsigned int  guest_PDPTE0_full;
 	  unsigned int  guest_PDPTE0_high;
-    unsigned int  guest_PDPTE1_full; 
+    unsigned int  guest_PDPTE1_full;
 	  unsigned int  guest_PDPTE1_high;
-    unsigned int  guest_PDPTE2_full; 
+    unsigned int  guest_PDPTE2_full;
 	  unsigned int  guest_PDPTE2_high;
-    unsigned int  guest_PDPTE3_full; 
+    unsigned int  guest_PDPTE3_full;
 	  unsigned int  guest_PDPTE3_high;
   //Read-Only Fields
   unsigned int  info_vminstr_error;
@@ -559,175 +559,175 @@ struct _vmx_vmcsfields {
 
 
 //VMX VMCS read-only field encodings
-#define VMCS_INFO_VMINSTR_ERROR  				0x4400  
-#define VMCS_INFO_VMEXIT_REASON 				0x4402  
-#define VMCS_INFO_VMEXIT_INTERRUPT_INFORMATION	0x4404   
-#define VMCS_INFO_VMEXIT_INTERRUPT_ERROR_CODE 	0x4406  
-#define VMCS_INFO_IDT_VECTORING_INFORMATION 	0x4408  
-#define VMCS_INFO_IDT_VECTORING_ERROR_CODE 		0x440a  
-#define VMCS_INFO_VMEXIT_INSTRUCTION_LENGTH 	0x440c  
-#define VMCS_INFO_VMX_INSTRUCTION_INFORMATION 	0x440e  
-#define VMCS_INFO_EXIT_QUALIFICATION 			0x6400  
-#define VMCS_INFO_IO_RCX 						0x6402  
-#define VMCS_INFO_IO_RSI 						0x6404  
-#define VMCS_INFO_IO_RDI 						0x6406  
-#define VMCS_INFO_IO_RIP 						0x6408  
-#define VMCS_INFO_GUEST_PADDR_FULL 				0x2400  
-#define VMCS_INFO_GUEST_PADDR_HIGH 				0x2401  
-#define VMCS_INFO_GUEST_LINEAR_ADDRESS			0x640a  
+#define VMCS_INFO_VMINSTR_ERROR  				0x4400
+#define VMCS_INFO_VMEXIT_REASON 				0x4402
+#define VMCS_INFO_VMEXIT_INTERRUPT_INFORMATION	0x4404
+#define VMCS_INFO_VMEXIT_INTERRUPT_ERROR_CODE 	0x4406
+#define VMCS_INFO_IDT_VECTORING_INFORMATION 	0x4408
+#define VMCS_INFO_IDT_VECTORING_ERROR_CODE 		0x440a
+#define VMCS_INFO_VMEXIT_INSTRUCTION_LENGTH 	0x440c
+#define VMCS_INFO_VMX_INSTRUCTION_INFORMATION 	0x440e
+#define VMCS_INFO_EXIT_QUALIFICATION 			0x6400
+#define VMCS_INFO_IO_RCX 						0x6402
+#define VMCS_INFO_IO_RSI 						0x6404
+#define VMCS_INFO_IO_RDI 						0x6406
+#define VMCS_INFO_IO_RIP 						0x6408
+#define VMCS_INFO_GUEST_PADDR_FULL 				0x2400
+#define VMCS_INFO_GUEST_PADDR_HIGH 				0x2401
+#define VMCS_INFO_GUEST_LINEAR_ADDRESS			0x640a
 
 //VMX VMCS read-write field encodings
-#define VMCS_CONTROL_VPID 								0x0000 
+#define VMCS_CONTROL_VPID 								0x0000
 
-#define VMCS_CONTROL_VMX_PIN_BASED 						0x4000 
-#define VMCS_CONTROL_VMX_CPU_BASED 						0x4002 
-#define VMCS_CONTROL_VMX_SECCPU_BASED 					0x401E 
-#define VMCS_CONTROL_EXCEPTION_BITMAP 					0x4004 
-#define VMCS_CONTROL_PAGEFAULT_ERRORCODE_MASK 			0x4006 
-#define VMCS_CONTROL_PAGEFAULT_ERRORCODE_MATCH 			0x4008 
-#define VMCS_CONTROL_CR3_TARGET_COUNT 					0x400A 
-#define VMCS_CONTROL_VM_EXIT_CONTROLS 					0x400C 
-#define VMCS_CONTROL_VM_EXIT_MSR_STORE_COUNT 			0x400E 
-#define VMCS_CONTROL_VM_EXIT_MSR_LOAD_COUNT 			0x4010 
-#define VMCS_CONTROL_VM_ENTRY_CONTROLS 					0x4012 
-#define VMCS_CONTROL_VM_ENTRY_MSR_LOAD_COUNT 			0x4014 
-#define VMCS_CONTROL_VM_ENTRY_INTERRUPTION_INFORMATION 	0x4016 
-#define VMCS_CONTROL_VM_ENTRY_EXCEPTION_ERRORCODE 		0x4018 
-#define VMCS_CONTROL_VM_ENTRY_INSTRUCTION_LENGTH 		0x401A 
-#define VMCS_CONTROL_TASK_PRIVILEGE_THRESHOLD 			0x401C 
+#define VMCS_CONTROL_VMX_PIN_BASED 						0x4000
+#define VMCS_CONTROL_VMX_CPU_BASED 						0x4002
+#define VMCS_CONTROL_VMX_SECCPU_BASED 					0x401E
+#define VMCS_CONTROL_EXCEPTION_BITMAP 					0x4004
+#define VMCS_CONTROL_PAGEFAULT_ERRORCODE_MASK 			0x4006
+#define VMCS_CONTROL_PAGEFAULT_ERRORCODE_MATCH 			0x4008
+#define VMCS_CONTROL_CR3_TARGET_COUNT 					0x400A
+#define VMCS_CONTROL_VM_EXIT_CONTROLS 					0x400C
+#define VMCS_CONTROL_VM_EXIT_MSR_STORE_COUNT 			0x400E
+#define VMCS_CONTROL_VM_EXIT_MSR_LOAD_COUNT 			0x4010
+#define VMCS_CONTROL_VM_ENTRY_CONTROLS 					0x4012
+#define VMCS_CONTROL_VM_ENTRY_MSR_LOAD_COUNT 			0x4014
+#define VMCS_CONTROL_VM_ENTRY_INTERRUPTION_INFORMATION 	0x4016
+#define VMCS_CONTROL_VM_ENTRY_EXCEPTION_ERRORCODE 		0x4018
+#define VMCS_CONTROL_VM_ENTRY_INSTRUCTION_LENGTH 		0x401A
+#define VMCS_CONTROL_TASK_PRIVILEGE_THRESHOLD 			0x401C
 
-#define VMCS_CONTROL_CR0_MASK 							0x6000 
-#define VMCS_CONTROL_CR4_MASK 							0x6002 
-#define VMCS_CONTROL_CR0_SHADOW 						0x6004 
-#define VMCS_CONTROL_CR4_SHADOW 						0x6006 
-#define VMCS_CONTROL_CR3_TARGET0 						0x6008 
-#define VMCS_CONTROL_CR3_TARGET1 						0x600A 
-#define VMCS_CONTROL_CR3_TARGET2 						0x600C 
-#define VMCS_CONTROL_CR3_TARGET3 						0x600E 
+#define VMCS_CONTROL_CR0_MASK 							0x6000
+#define VMCS_CONTROL_CR4_MASK 							0x6002
+#define VMCS_CONTROL_CR0_SHADOW 						0x6004
+#define VMCS_CONTROL_CR4_SHADOW 						0x6006
+#define VMCS_CONTROL_CR3_TARGET0 						0x6008
+#define VMCS_CONTROL_CR3_TARGET1 						0x600A
+#define VMCS_CONTROL_CR3_TARGET2 						0x600C
+#define VMCS_CONTROL_CR3_TARGET3 						0x600E
 
-#define VMCS_CONTROL_IO_BITMAPA_ADDRESS_FULL 0x2000 
-#define VMCS_CONTROL_IO_BITMAPA_ADDRESS_HIGH 0x2001 
-#define VMCS_CONTROL_IO_BITMAPB_ADDRESS_FULL 0x2002 
-#define VMCS_CONTROL_IO_BITMAPB_ADDRESS_HIGH 0x2003 
-#define VMCS_CONTROL_MSR_BITMAPS_ADDRESS_FULL 0x2004 
-#define VMCS_CONTROL_MSR_BITMAPS_ADDRESS_HIGH 0x2005 
-#define VMCS_CONTROL_VM_EXIT_MSR_STORE_ADDRESS_FULL 0x2006 
-#define VMCS_CONTROL_VM_EXIT_MSR_STORE_ADDRESS_HIGH 0x2007 
-#define VMCS_CONTROL_VM_EXIT_MSR_LOAD_ADDRESS_FULL 0x2008 
-#define VMCS_CONTROL_VM_EXIT_MSR_LOAD_ADDRESS_HIGH 0x2009 
-#define VMCS_CONTROL_VM_ENTRY_MSR_LOAD_ADDRESS_FULL 0x200A 
-#define VMCS_CONTROL_VM_ENTRY_MSR_LOAD_ADDRESS_HIGH 0x200B 
-#define VMCS_CONTROL_EXECUTIVE_#define VMCS_POINTER_FULL 0x200C 
-#define VMCS_CONTROL_EXECUTIVE_#define VMCS_POINTER_HIGH 0x200D 
-#define VMCS_CONTROL_TSC_OFFSET_FULL 0x2010 
-#define VMCS_CONTROL_TSC_OFFSET_HIGH 0x2011 
-#define VMCS_CONTROL_VIRTUAL_APIC_PAGE_ADDRESS_FULL 0x2012 
-#define VMCS_CONTROL_VIRTUAL_APIC_PAGE_ADDRESS_HIGH 0x2013 
-#define VMCS_CONTROL_EPT_POINTER_FULL 0x201A 
-#define VMCS_CONTROL_EPT_POINTER_HIGH 0x201B 
+#define VMCS_CONTROL_IO_BITMAPA_ADDRESS_FULL 0x2000
+#define VMCS_CONTROL_IO_BITMAPA_ADDRESS_HIGH 0x2001
+#define VMCS_CONTROL_IO_BITMAPB_ADDRESS_FULL 0x2002
+#define VMCS_CONTROL_IO_BITMAPB_ADDRESS_HIGH 0x2003
+#define VMCS_CONTROL_MSR_BITMAPS_ADDRESS_FULL 0x2004
+#define VMCS_CONTROL_MSR_BITMAPS_ADDRESS_HIGH 0x2005
+#define VMCS_CONTROL_VM_EXIT_MSR_STORE_ADDRESS_FULL 0x2006
+#define VMCS_CONTROL_VM_EXIT_MSR_STORE_ADDRESS_HIGH 0x2007
+#define VMCS_CONTROL_VM_EXIT_MSR_LOAD_ADDRESS_FULL 0x2008
+#define VMCS_CONTROL_VM_EXIT_MSR_LOAD_ADDRESS_HIGH 0x2009
+#define VMCS_CONTROL_VM_ENTRY_MSR_LOAD_ADDRESS_FULL 0x200A
+#define VMCS_CONTROL_VM_ENTRY_MSR_LOAD_ADDRESS_HIGH 0x200B
+#define VMCS_CONTROL_EXECUTIVE_#define VMCS_POINTER_FULL 0x200C
+#define VMCS_CONTROL_EXECUTIVE_#define VMCS_POINTER_HIGH 0x200D
+#define VMCS_CONTROL_TSC_OFFSET_FULL 0x2010
+#define VMCS_CONTROL_TSC_OFFSET_HIGH 0x2011
+#define VMCS_CONTROL_VIRTUAL_APIC_PAGE_ADDRESS_FULL 0x2012
+#define VMCS_CONTROL_VIRTUAL_APIC_PAGE_ADDRESS_HIGH 0x2013
+#define VMCS_CONTROL_EPT_POINTER_FULL 0x201A
+#define VMCS_CONTROL_EPT_POINTER_HIGH 0x201B
 
-#define VMCS_HOST_CR0 0x6C00 
-#define VMCS_HOST_CR3 0x6C02 
-#define VMCS_HOST_CR4 0x6C04 
-#define VMCS_HOST_FS_BASE 0x6C06 
-#define VMCS_HOST_GS_BASE 0x6C08 
-#define VMCS_HOST_TR_BASE 0x6C0A 
-#define VMCS_HOST_GDTR_BASE 0x6C0C 
-#define VMCS_HOST_IDTR_BASE 0x6C0E 
-#define VMCS_HOST_SYSENTER_ESP 0x6C10 
-#define VMCS_HOST_SYSENTER_EIP 0x6C12 
-#define VMCS_HOST_RSP 0x6C14 
-#define VMCS_HOST_RIP 0x6C16 
+#define VMCS_HOST_CR0 0x6C00
+#define VMCS_HOST_CR3 0x6C02
+#define VMCS_HOST_CR4 0x6C04
+#define VMCS_HOST_FS_BASE 0x6C06
+#define VMCS_HOST_GS_BASE 0x6C08
+#define VMCS_HOST_TR_BASE 0x6C0A
+#define VMCS_HOST_GDTR_BASE 0x6C0C
+#define VMCS_HOST_IDTR_BASE 0x6C0E
+#define VMCS_HOST_SYSENTER_ESP 0x6C10
+#define VMCS_HOST_SYSENTER_EIP 0x6C12
+#define VMCS_HOST_RSP 0x6C14
+#define VMCS_HOST_RIP 0x6C16
 
-#define VMCS_HOST_SYSENTER_CS 0x4C00 
+#define VMCS_HOST_SYSENTER_CS 0x4C00
 
-#define VMCS_HOST_ES_SELECTOR 0x0C00 
-#define VMCS_HOST_CS_SELECTOR 0x0C02 
-#define VMCS_HOST_SS_SELECTOR 0x0C04 
-#define VMCS_HOST_DS_SELECTOR 0x0C06 
-#define VMCS_HOST_FS_SELECTOR 0x0C08 
-#define VMCS_HOST_GS_SELECTOR 0x0C0A 
-#define VMCS_HOST_TR_SELECTOR 0x0C0C 
+#define VMCS_HOST_ES_SELECTOR 0x0C00
+#define VMCS_HOST_CS_SELECTOR 0x0C02
+#define VMCS_HOST_SS_SELECTOR 0x0C04
+#define VMCS_HOST_DS_SELECTOR 0x0C06
+#define VMCS_HOST_FS_SELECTOR 0x0C08
+#define VMCS_HOST_GS_SELECTOR 0x0C0A
+#define VMCS_HOST_TR_SELECTOR 0x0C0C
 
-#define VMCS_GUEST_CR0 0x6800 
-#define VMCS_GUEST_CR3 0x6802 
-#define VMCS_GUEST_CR4 0x6804 
-#define VMCS_GUEST_ES_BASE 0x6806 
-#define VMCS_GUEST_CS_BASE 0x6808 
-#define VMCS_GUEST_SS_BASE 0x680A 
-#define VMCS_GUEST_DS_BASE 0x680C 
-#define VMCS_GUEST_FS_BASE 0x680E 
-#define VMCS_GUEST_GS_BASE 0x6810 
-#define VMCS_GUEST_LDTR_BASE 0x6812 
-#define VMCS_GUEST_TR_BASE 0x6814 
-#define VMCS_GUEST_GDTR_BASE 0x6816 
-#define VMCS_GUEST_IDTR_BASE 0x6818 
-#define VMCS_GUEST_DR7 0x681A 
-#define VMCS_GUEST_RSP 0x681C 
-#define VMCS_GUEST_RIP 0x681E 
-#define VMCS_GUEST_RFLAGS 0x6820 
-#define VMCS_GUEST_PENDING_DEBUG_X 0x6822 
-#define VMCS_GUEST_SYSENTER_ESP 0x6824 
-#define VMCS_GUEST_SYSENTER_EIP 0x6826 
-#define VMCS_GUEST_PDPTE0_FULL 0x280A 
-#define VMCS_GUEST_PDPTE0_HIGH 0x280B 
-#define VMCS_GUEST_PDPTE1_FULL 0x280C 
-#define VMCS_GUEST_PDPTE1_HIGH 0x280D 
-#define VMCS_GUEST_PDPTE2_FULL 0x280E 
-#define VMCS_GUEST_PDPTE2_HIGH 0x280F 
-#define VMCS_GUEST_PDPTE3_FULL 0x2810 
-#define VMCS_GUEST_PDPTE3_HIGH 0x2811 
+#define VMCS_GUEST_CR0 0x6800
+#define VMCS_GUEST_CR3 0x6802
+#define VMCS_GUEST_CR4 0x6804
+#define VMCS_GUEST_ES_BASE 0x6806
+#define VMCS_GUEST_CS_BASE 0x6808
+#define VMCS_GUEST_SS_BASE 0x680A
+#define VMCS_GUEST_DS_BASE 0x680C
+#define VMCS_GUEST_FS_BASE 0x680E
+#define VMCS_GUEST_GS_BASE 0x6810
+#define VMCS_GUEST_LDTR_BASE 0x6812
+#define VMCS_GUEST_TR_BASE 0x6814
+#define VMCS_GUEST_GDTR_BASE 0x6816
+#define VMCS_GUEST_IDTR_BASE 0x6818
+#define VMCS_GUEST_DR7 0x681A
+#define VMCS_GUEST_RSP 0x681C
+#define VMCS_GUEST_RIP 0x681E
+#define VMCS_GUEST_RFLAGS 0x6820
+#define VMCS_GUEST_PENDING_DEBUG_X 0x6822
+#define VMCS_GUEST_SYSENTER_ESP 0x6824
+#define VMCS_GUEST_SYSENTER_EIP 0x6826
+#define VMCS_GUEST_PDPTE0_FULL 0x280A
+#define VMCS_GUEST_PDPTE0_HIGH 0x280B
+#define VMCS_GUEST_PDPTE1_FULL 0x280C
+#define VMCS_GUEST_PDPTE1_HIGH 0x280D
+#define VMCS_GUEST_PDPTE2_FULL 0x280E
+#define VMCS_GUEST_PDPTE2_HIGH 0x280F
+#define VMCS_GUEST_PDPTE3_FULL 0x2810
+#define VMCS_GUEST_PDPTE3_HIGH 0x2811
 
-#define VMCS_GUEST_ES_LIMIT 0x4800 
-#define VMCS_GUEST_CS_LIMIT 0x4802 
-#define VMCS_GUEST_SS_LIMIT 0x4804 
-#define VMCS_GUEST_DS_LIMIT 0x4806 
-#define VMCS_GUEST_FS_LIMIT 0x4808 
-#define VMCS_GUEST_GS_LIMIT 0x480A 
-#define VMCS_GUEST_LDTR_LIMIT 0x480C 
-#define VMCS_GUEST_TR_LIMIT 0x480E 
-#define VMCS_GUEST_GDTR_LIMIT 0x4810 
-#define VMCS_GUEST_IDTR_LIMIT 0x4812 
-#define VMCS_GUEST_ES_ACCESS_RIGHTS 0x4814 
-#define VMCS_GUEST_CS_ACCESS_RIGHTS 0x4816 
-#define VMCS_GUEST_SS_ACCESS_RIGHTS 0x4818 
-#define VMCS_GUEST_DS_ACCESS_RIGHTS 0x481A 
-#define VMCS_GUEST_FS_ACCESS_RIGHTS 0x481C 
-#define VMCS_GUEST_GS_ACCESS_RIGHTS 0x481E 
-#define VMCS_GUEST_LDTR_ACCESS_RIGHTS 0x4820 
-#define VMCS_GUEST_TR_ACCESS_RIGHTS 0x4822 
-#define VMCS_GUEST_INTERRUPTIBILITY 0x4824 
-#define VMCS_GUEST_ACTIVITY_STATE 0x4826 
-#define VMCS_GUEST_SMBASE 0x4828 
-#define VMCS_GUEST_SYSENTER_CS 0x482A 
+#define VMCS_GUEST_ES_LIMIT 0x4800
+#define VMCS_GUEST_CS_LIMIT 0x4802
+#define VMCS_GUEST_SS_LIMIT 0x4804
+#define VMCS_GUEST_DS_LIMIT 0x4806
+#define VMCS_GUEST_FS_LIMIT 0x4808
+#define VMCS_GUEST_GS_LIMIT 0x480A
+#define VMCS_GUEST_LDTR_LIMIT 0x480C
+#define VMCS_GUEST_TR_LIMIT 0x480E
+#define VMCS_GUEST_GDTR_LIMIT 0x4810
+#define VMCS_GUEST_IDTR_LIMIT 0x4812
+#define VMCS_GUEST_ES_ACCESS_RIGHTS 0x4814
+#define VMCS_GUEST_CS_ACCESS_RIGHTS 0x4816
+#define VMCS_GUEST_SS_ACCESS_RIGHTS 0x4818
+#define VMCS_GUEST_DS_ACCESS_RIGHTS 0x481A
+#define VMCS_GUEST_FS_ACCESS_RIGHTS 0x481C
+#define VMCS_GUEST_GS_ACCESS_RIGHTS 0x481E
+#define VMCS_GUEST_LDTR_ACCESS_RIGHTS 0x4820
+#define VMCS_GUEST_TR_ACCESS_RIGHTS 0x4822
+#define VMCS_GUEST_INTERRUPTIBILITY 0x4824
+#define VMCS_GUEST_ACTIVITY_STATE 0x4826
+#define VMCS_GUEST_SMBASE 0x4828
+#define VMCS_GUEST_SYSENTER_CS 0x482A
 
-#define VMCS_GUEST_ES_SELECTOR 0x0800 
-#define VMCS_GUEST_CS_SELECTOR 0x0802 
-#define VMCS_GUEST_SS_SELECTOR 0x0804 
-#define VMCS_GUEST_DS_SELECTOR 0x0806 
-#define VMCS_GUEST_FS_SELECTOR 0x0808 
-#define VMCS_GUEST_GS_SELECTOR 0x080A 
-#define VMCS_GUEST_LDTR_SELECTOR 0x080C 
-#define VMCS_GUEST_TR_SELECTOR 0x080E 
+#define VMCS_GUEST_ES_SELECTOR 0x0800
+#define VMCS_GUEST_CS_SELECTOR 0x0802
+#define VMCS_GUEST_SS_SELECTOR 0x0804
+#define VMCS_GUEST_DS_SELECTOR 0x0806
+#define VMCS_GUEST_FS_SELECTOR 0x0808
+#define VMCS_GUEST_GS_SELECTOR 0x080A
+#define VMCS_GUEST_LDTR_SELECTOR 0x080C
+#define VMCS_GUEST_TR_SELECTOR 0x080E
 
-#define VMCS_GUEST_VMCS_LINK_POINTER_FULL 0x2800 
-#define VMCS_GUEST_VMCS_LINK_POINTER_HIGH 0x2801 
-#define VMCS_GUEST_IA32_DEBUGCTL_FULL 0x2802 
-#define VMCS_GUEST_IA32_DEBUGCTL_HIGH  0x2803 
+#define VMCS_GUEST_VMCS_LINK_POINTER_FULL 0x2800
+#define VMCS_GUEST_VMCS_LINK_POINTER_HIGH 0x2801
+#define VMCS_GUEST_IA32_DEBUGCTL_FULL 0x2802
+#define VMCS_GUEST_IA32_DEBUGCTL_HIGH  0x2803
 
 struct _vmx_vmcsrofields_encodings	{
- unsigned int  encoding; 
- unsigned int  fieldoffset; 
+ unsigned int  encoding;
+ unsigned int  fieldoffset;
 } __attribute__((packed));
 
 struct _vmx_vmcsrwfields_encodings	{
- unsigned int  encoding; 
- unsigned int  fieldoffset; 
+ unsigned int  encoding;
+ unsigned int  fieldoffset;
 } __attribute__((packed));
 
 
 
-//VMX functions 
+//VMX functions
 static inline void __vmx_vmxon(u64 vmxonRegion){
   __asm__("vmxon %0\n\t"
 	  : //no outputs
@@ -749,13 +749,20 @@ static inline u32 __vmx_vmwrite(u32 encoding, u32 value){
 	return status;
 }
 
-static inline void __vmx_vmread(u32 encoding, u32 *value){
+/*static inline void __vmx_vmread(u32 encoding, u32 *value){
 	__asm__ __volatile__("vmread %%eax, %%ebx\n\t"
 	  : "=b"(*value)
 	  : "a"(encoding));
-}
+}*/
 
-static inline u32 xmhfhw_cpu_x86vmx_vmwrite(u32 encoding, u32 value){
+/*static inline u64 __vmx_vmread(u64 encoding){
+    u64 __value;
+    asm volatile("vmread %0, %1 \r\n" :: "r"(encoding), "r" (__value));
+    return __value;
+}*/
+
+
+/*static inline u32 xmhfhw_cpu_x86vmx_vmwrite(u32 encoding, u32 value){
   u32 status;
   __asm__("vmwrite %%ebx, %%eax \r\n"
           "jbe 1f \r\n"
@@ -768,10 +775,14 @@ static inline u32 xmhfhw_cpu_x86vmx_vmwrite(u32 encoding, u32 value){
     : "%edx", "%eax", "%ebx"
     );
 	return status;
+}*/
+
+static inline void xmhfhw_cpu_x86vmx_vmwrite(u64 encoding, u64 value){
+  asm volatile ("vmwrite %1, %0 \r\n" :: "r"(encoding), "r"(value & 0x00000000FFFFFFFFULL));
 }
 
 
-static inline u32 xmhfhw_cpu_x86vmx_vmread(u32 encoding){
+/*static inline u32 xmhfhw_cpu_x86vmx_vmread(u32 encoding){
 	u32 value;
 	__asm__ __volatile__("vmread %%eax, %%ebx\n\t"
 	  : "=b"(value)
@@ -779,7 +790,14 @@ static inline u32 xmhfhw_cpu_x86vmx_vmread(u32 encoding){
 	  : "%eax","%ebx"
 	  );
 	return value;
+}*/
+
+static inline u64 xmhfhw_cpu_x86vmx_vmread(u64 encoding){
+    u64 __value;
+    asm volatile("vmread %1, %0 \r\n" : "=r"(__value) : "r"(encoding));
+    return __value;
 }
+
 
 static inline u32 __vmx_vmclear(u64 vmcs){
   u32 status;
@@ -788,10 +806,10 @@ static inline u32 __vmx_vmclear(u64 vmcs){
       "movl $1, %%eax \r\n"
       "jmp  2f  \r\n"
       "1: movl $0, %%eax \r\n"
-      "2: movl %%eax, %0 \r\n" 
+      "2: movl %%eax, %0 \r\n"
     : "=m" (status)
     : "m"(vmcs)
-    : "%eax"     
+    : "%eax"
   );
   return status;
 }
@@ -803,10 +821,10 @@ static inline u32 __vmx_vmptrld(u64 vmcs){
       "movl $1, %%eax \r\n"
       "jmp  2f  \r\n"
       "1: movl $0, %%eax \r\n"
-      "2: movl %%eax, %0 \r\n" 
+      "2: movl %%eax, %0 \r\n"
     : "=m" (status)
     : "m"(vmcs)
-    : "%eax"     
+    : "%eax"
   );
   return status;
 }
@@ -839,7 +857,7 @@ static inline u32 __vmx_invvpid(int invalidation_type, u16 vpid, u32 linearaddre
           "movl $1, %%eax \r\n"
 		  "ja	1f    	  \r\n"
 		  "movl $0, %%eax \r\n"
-		  "1: movl %%eax, %0 \r\n" 
+		  "1: movl %%eax, %0 \r\n"
     : "=m" (status)
     : "a"(&invvpiddescriptor), "c"(invalidation_type)
 	: "cc", "memory");
@@ -873,12 +891,12 @@ static inline u32 __vmx_invept(int invalidation_type, u64 eptp){
           "movl $1, %%eax \r\n"
 		  "ja	1f    	  \r\n"
 		  "movl $0, %%eax \r\n"
-		  "1: movl %%eax, %0 \r\n" 
+		  "1: movl %%eax, %0 \r\n"
     : "=m" (status)
     : "a"(&inveptdescriptor), "c"(invalidation_type)
 	: "cc", "memory");
 
-	return status;	
+	return status;
 }
 
 
