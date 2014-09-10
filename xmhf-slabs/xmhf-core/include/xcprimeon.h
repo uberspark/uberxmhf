@@ -71,6 +71,7 @@ void xcprimeon_arch_postdrt(void);
 void xcprimeon_arch_platform_initialize();
 void xcprimeon_arch_earlydmaprot(u32 membase, u32 size);
 u64 xcprimeon_arch_initialize_page_tables();
+void xcprimeon_arch_relinquish_control(void);
 
 
 #endif	//__ASSEMBLY__
