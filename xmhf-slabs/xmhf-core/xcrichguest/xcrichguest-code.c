@@ -105,11 +105,12 @@ bool xcrichguest_entry(u32 cpuid, bool is_bsp){
 		}
 		_XDPRINTF_("%s(%u): created rich guest partition %u\n", __FUNCTION__, cpuid, xc_richguest_partition_index);
 
+		xcrichguest_arch_initialize(xc_richguest_partition_index);
+		_XDPRINTF_("\n%s(%u): initialized rich guest partition %u\n", __FUNCTION__, cpuid, xc_richguest_partition_index);
+
 	    _XDPRINTF_("%s(%u): Test. Halting!\n", __FUNCTION__, cpuid);
         HALT();
 
-		xcrichguest_arch_initialize(xc_richguest_partition_index);
-		_XDPRINTF_("\n%s: BSP: initialized rich guest partition %u", __FUNCTION__, xc_richguest_partition_index);
 	}
 
 	//add cpu to rich guest partition
