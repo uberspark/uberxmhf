@@ -83,6 +83,17 @@ void xcprimeon_entry(void){
 		}
   	}
 
+	//initialize cpu table and total platform CPUs
+	{
+	    u32 i;
+	    for(i=0; i < xcbootinfo->cpuinfo_numentries; i++){
+            _cputable[i].cpuid = xcbootinfo->cpuinfo_buffer[i].lapic_id;
+            _cputable[i].cpu_index = i;
+        }
+        _totalcpus=xcbootinfo->cpuinfo_numentries;
+	}
+
+
 	//store runtime physical and virtual base addresses along with size
 	xcbootinfo->physmem_base = __TARGET_BASE_SL;
 	xcbootinfo->virtmem_base = __TARGET_BASE_SL;
