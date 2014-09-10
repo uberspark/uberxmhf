@@ -316,13 +316,9 @@ void _xcsmp_cpu_x86_smpinitialize_commonstart(void){
 
     spin_unlock(&_smpinitialize_lock);
 
+	_XDPRINTF_("%s(%u): Proceeding to call init_entry...\n", __FUNCTION__, (u32)cpuid);
 
-	/*_XDPRINTF_("\n%s: cpu %x, isbsp=%u, Proceeding to call init_entry...\n", __FUNCTION__, cpuid, is_bsp);
-
-	if( XMHF_SLAB_CALL(xcrichguest_entry(cpuid, is_bsp)) ){
-		_XDPRINTF_("%s: Fatal. Should never be here. Halting!\n", __FUNCTION__);
-		HALT();
-	}*/
+	XMHF_SLAB_CALL(xcrichguest_entry(cpuid, is_bsp));
 
 	_XDPRINTF_("%s(%u):%u: Should never be here. Halting!\n", __FUNCTION__, (u32)cpuid, __LINE__);
 	HALT();
