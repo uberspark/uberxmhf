@@ -59,10 +59,7 @@
 static bool _ap_entry(void) __attribute__((naked));
 void _xcsmp_cpu_x86_smpinitialize_commonstart(void);
 
-static u8 _cpustack[MAX_PLATFORM_CPUS][MAX_PLATFORM_CPUSTACK_SIZE] __attribute__(( section(".stack") )); // platform cpu stacks
-static xc_cputable_t _cputable[MAX_PLATFORM_CPUS];// cpu table
 static u32 _cpucount = 0; // count of platform cpus
-static u32 _totalcpus = 0; // count of platform cpus
 
 static u64 _xcsmp_ap_entry_lock = 1;
 
@@ -398,7 +395,7 @@ static bool _ap_entry(void) __attribute__((naked)){
 
 					:
 					:   "i" (X86SMP_LAPIC_ID_MEMORYADDRESS), "m" (_totalcpus), "i" (&_cputable),
-                        "i" (sizeof(xc_cputable_t)), "i" (&_cpustack), "i" (sizeof(_cpustack[0])),
+                        "i" (sizeof(xmhf_cputable_t)), "i" (&_init_cpustacks), "i" (sizeof(_init_cpustacks[0])),
                         "m" (_cpucount)
 	);
 

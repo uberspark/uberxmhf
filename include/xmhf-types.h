@@ -127,6 +127,11 @@ typedef struct {
 
 __attribute__(( section(".sharedro_xcbootinfoptr") )) extern XMHF_BOOTINFO *xcbootinfo;
 
+typedef struct {
+		u32 cpuid;				//unique CPU id
+		u32 cpu_index;			//0 based index
+} __attribute__((packed)) xmhf_cputable_t;
+
 
 #endif /*ifndef __ASSEMBLY__*/
 
