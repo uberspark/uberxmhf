@@ -856,7 +856,6 @@ static u32 _xcprimeon_populate_pagetables(void){
 }
 
 
-
 //=========================================================================================
 
 //*
@@ -1007,3 +1006,36 @@ u64 xcprimeon_arch_initialize_page_tables(void){
 
     return (u64)pgtblbase;
 }
+
+
+void xcprimeon_arch_relinquish_control(void){
+
+    asm volatile(
+                 	"movl %0, %%eax\r\n"
+					"movl (%%eax), %%eax\r\n"
+					"shr $24, %%eax\r\n"
+					"movl %2, %%ebx\r\n"
+					"movl %1, %%ecx \r\n"
+					"1: cmpl 0x0(%%ebx), %%eax\r\n"
+					"jz 2f\r\n"
+					"addl %3, %%ebx\r\n"
+					"loop 1b \r\n"
+					"hlt\r\n"								// we should never get here, if so just halt
+					"2: movl 0x4(%%ebx), %%eax\r\n"			// eax = g_xc_cputable[ecx].cpu_index
+					"movl %5, %%ecx \r\n"					// ecx = sizeof(_cpustack[0])
+					"mull %%ecx \r\n"						// eax = sizeof(_cpustack[0]) * eax
+					"addl %%ecx, %%eax \r\n"				// eax = (sizeof(_cpustack[0]) * eax) + sizeof(_cpustack[0])
+					"addl %4, %%eax \r\n"				    // eax = &_cpustack + (sizeof(_cpustack[0]) * eax) + sizeof(_cpustack[0])*/
+					"movl %%eax, %%esp \r\n"				// esp = top of stack for the cpu
+
+					"jmp xcsmp_entry \r\n"
+					:
+					:   "i" (X86SMP_LAPIC_ID_MEMORYADDRESS), "m" (_totalcpus), "i" (&_cputable),
+                        "i" (sizeof(xmhf_cputable_t)), "i" (&_init_cpustacks), "i" (sizeof(_init_cpustacks[0]))
+	);
+
+}
+
+
+
+
