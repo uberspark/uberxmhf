@@ -56,10 +56,6 @@
 
 #include <xcexhub.h>
 
-//__attribute__(( section(".slabtrampoline") )) static u64 _xcexhub_exception_lock = 1;
-//__attribute__(( section(".slabtrampoline") )) __attribute__(( aligned(4096) )) static u8 _xcexhub_exception_stack[(MAX_PLATFORM_CPUS+1)][PAGE_SIZE_4K];
-//__attribute__(( section(".slabtrampoline") )) static u64 _xcexhub_exception_stack_index = &_xcexhub_exception_stack[MAX_PLATFORM_CPUS];
-
 
 #define XMHF_EXCEPTION_HANDLER_DEFINE(vector) 												\
 	__attribute__(( section(".slabtrampoline") )) static void __xmhf_exception_handler_##vector(void) __attribute__((naked)) { 					\
@@ -151,76 +147,6 @@
                                                     \
 		);															\
     }\
-
-/*
-#define DEFUNCT_XMHF_EXCEPTION_HANDLER_DEFINE(vector) 												\
-	__attribute__(( section(".slabtrampoline") )) static void __xmhf_exception_handler_##vector(void) __attribute__((naked)) { 					\
-		asm volatile(												\
-						"1:	btq	$0, %0	\r\n"						\
-						"jnc 1b	\r\n"								\
-						"lock \r\n"   								\
-						"btrq	$0, %0	\r\n"						\
-						"jnc 1b \r\n"   							\
-                                                                    \
-						"subq $4096, %1 \r\n"                       \
-						"xchgq %%rsp, %1 \r\n"						\
-						"pushq %1 \r\n"								\
-						"movq %%rsp, %1 \r\n"                       \
-                        "addq $8, %1 \r\n"                          \
-                                                                    \
-						"btsq	$0, %0		\r\n"					\
-																\
-                        "pushq %%rbp \r\n"\
-                        "pushq %%rdi \r\n"\
-                        "pushq %%rsi \r\n"\
-                        "pushq %%rdx \r\n"\
-                        "pushq %%rcx \r\n"\
-                        "pushq %%rbx \r\n"\
-                        "pushq %%rax \r\n"\
-                        "pushq %%r15 \r\n"\
-                        "pushq %%r14 \r\n"\
-                        "pushq %%r13 \r\n"\
-                        "pushq %%r12 \r\n"\
-                        "pushq %%r11 \r\n"\
-                        "pushq %%r10 \r\n"\
-                        "pushq %%r9 \r\n"\
-                        "pushq %%r8 \r\n"\
-                        "movq %%rsp, %%rsi \r\n"\
-                        "mov %2, %%rdi \r\n"\
-                        "callq xmhf_xcphandler_arch_hub \r\n"\
-                        "popq %%r8 \r\n"\
-                        "popq %%r9 \r\n"\
-                        "popq %%r10 \r\n"\
-                        "popq %%r11 \r\n"\
-                        "popq %%r12 \r\n"\
-                        "popq %%r13 \r\n"\
-                        "popq %%r14 \r\n"\
-                        "popq %%r15 \r\n"\
-                        "popq %%rax \r\n"\
-                        "popq %%rbx \r\n"\
-                        "popq %%rcx \r\n"\
-                        "popq %%rdx \r\n"\
-                        "popq %%rsi \r\n"\
-                        "popq %%rdi \r\n"\
-                        "popq %%rbp \r\n"\
-                                                                    \
-						"2:	btq	$0, %0	\r\n"						\
-						"jnc 2b	\r\n"								\
-						"lock \r\n"   								\
-						"btrq	$0, %0	\r\n"						\
-						"jnc 2b \r\n"   							\
-																	\
-                        "popq %%rsp \r\n"							\
-						"addq $4096, %1 \r\n"                       \
-																	\
-						"btsq	$0, %0		\r\n"					\
-																	\
-						"iretq\r\n"									\
-					:												\
-					:	"m" (_xcexhub_exception_lock), "m" (_xcexhub_exception_stack_index), "i" (vector)				\
-		);															\
-	}\
-*/
 
 
 #define XMHF_EXCEPTION_HANDLER_ADDROF(vector) &__xmhf_exception_handler_##vector
