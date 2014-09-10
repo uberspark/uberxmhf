@@ -416,13 +416,6 @@ bool xcsmp_arch_dmaprot_reinitialize(void){
 bool xcsmp_arch_smpinitialize(void){
 	u32 i;
 
-	//initialize cpu table
-	for(i=0; i < xcbootinfo->cpuinfo_numentries; i++){
-			_cputable[i].cpuid = xcbootinfo->cpuinfo_buffer[i].lapic_id;
-			_cputable[i].cpu_index = i;
-	}
-    _totalcpus=xcbootinfo->cpuinfo_numentries;
-
     //set LAPIC base address to preferred address and increment CPU counter
     {
         u64 msrapic = rdmsr64(MSR_APIC_BASE);
