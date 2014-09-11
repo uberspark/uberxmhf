@@ -88,10 +88,10 @@ u32 xmhf_baseplatform_arch_x86_getcpulapicid(void){
   return lapic_id;
 }
 
-u32 xmhf_baseplatform_arch_x86_getgdtbase(void){
+u64 xmhf_baseplatform_arch_x86_getgdtbase(void){
 		struct {
 			u16 limit;
-			u32 base;
+			u64 base;
 		} __attribute__ ((packed)) gdtr;
 
 
@@ -105,10 +105,10 @@ u32 xmhf_baseplatform_arch_x86_getgdtbase(void){
 		return gdtr.base;
 }
 
-u32 xmhf_baseplatform_arch_x86_getidtbase(void){
+u64 xmhf_baseplatform_arch_x86_getidtbase(void){
 		struct {
 			u16 limit;
-			u32 base;
+			u64 base;
 		} __attribute__ ((packed)) idtr;
 
 
@@ -120,31 +120,26 @@ u32 xmhf_baseplatform_arch_x86_getidtbase(void){
 		);
 
 		return idtr.base;
-		//return (u32)&_idt_start;
 }
 
-u32 xmhf_baseplatform_arch_x86_gettssbase(void){
-	  u32 gdtbase = (u32)xmhf_baseplatform_arch_x86_getgdtbase();
-	  //u16 trselector = 	__TRSEL;
+u64  xmhf_baseplatform_arch_x86_gettssbase(void){
+	  u64 gdtbase = xmhf_baseplatform_arch_x86_getgdtbase();
 	  u32 tssdesc_low, tssdesc_high;
 
 	  asm volatile(
-		"movl %2, %%edi\r\n"
-		"xorl %%eax, %%eax\r\n"
-		//"movw %3, %%ax\r\n"
-		"str %%ax \r\n"
-		"addl %%eax, %%edi\r\n"		//%edi is pointer to TSS descriptor in GDT
-		"movl (%%edi), %0 \r\n"		//move low 32-bits of TSS descriptor into tssdesc_low
-		"addl $0x4, %%edi\r\n"		//%edi points to top 32-bits of 64-bit TSS desc.
-		"movl (%%edi), %1 \r\n"		//move high 32-bits of TSS descriptor into tssdesc_high
+            "movl %2, %%edi\r\n"
+            "xorl %%eax, %%eax\r\n"
+            "str %%ax \r\n"
+            "addl %%eax, %%edi\r\n"		//%edi is pointer to TSS descriptor in GDT
+            "movl (%%edi), %0 \r\n"		//move low 32-bits of TSS descriptor into tssdesc_low
+            "addl $0x4, %%edi\r\n"		//%edi points to top 32-bits of 64-bit TSS desc.
+            "movl (%%edi), %1 \r\n"		//move high 32-bits of TSS descriptor into tssdesc_high
 	     : "=r" (tssdesc_low), "=r" (tssdesc_high)
-	     //: "m"(gdtbase), "m"(trselector)
 	     : "m"(gdtbase)
 	     : "edi", "eax"
 	  );
 
-	   return (  (u32)(  ((u32)tssdesc_high & 0xFF000000UL) | (((u32)tssdesc_high & 0x000000FFUL) << 16)  | ((u32)tssdesc_low >> 16)  ) );
-	//return (u32)&_tss;
+       return (  (u64)(  ((u32)tssdesc_high & 0xFF000000UL) | (((u32)tssdesc_high & 0x000000FFUL) << 16)  | ((u32)tssdesc_low >> 16)  ) );
 }
 
 

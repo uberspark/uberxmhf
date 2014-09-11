@@ -757,7 +757,11 @@ static void _xc_api_partition_arch_addcpu_setupbasestate(u32 partition_index, u3
     _XDPRINTF_("%s(%u):%u -> ping\n", __FUNCTION__, cpu_index, __LINE__);
 
 	xmhfhw_cpu_x86vmx_vmwrite(VMCS_HOST_GDTR_BASE, xmhf_baseplatform_arch_x86_getgdtbase());
+    _XDPRINTF_("%s(%u):%u -> ping\n", __FUNCTION__, cpu_index, __LINE__);
+
 	xmhfhw_cpu_x86vmx_vmwrite(VMCS_HOST_IDTR_BASE, xmhf_baseplatform_arch_x86_getidtbase());
+    _XDPRINTF_("%s(%u):%u -> ping\n", __FUNCTION__, cpu_index, __LINE__);
+
 	xmhfhw_cpu_x86vmx_vmwrite(VMCS_HOST_TR_BASE, xmhf_baseplatform_arch_x86_gettssbase());
 
     _XDPRINTF_("%s(%u):%u -> ping\n", __FUNCTION__, cpu_index, __LINE__);
