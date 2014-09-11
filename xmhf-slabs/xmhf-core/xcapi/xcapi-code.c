@@ -74,10 +74,12 @@ u64 xc_api_hpt_getentry(context_desc_t context_desc, u64 gpa){
 	return xc_api_hpt_arch_getentry(context_desc, gpa);
 }
 
+//*
 void xc_api_hpt_flushcaches(context_desc_t context_desc){
 	xc_api_hpt_arch_flushcaches(context_desc, false);
 }
 
+//*
 void xc_api_hpt_flushcaches_smp(context_desc_t context_desc){
 	xc_api_hpt_arch_flushcaches(context_desc, true);
 }
@@ -214,7 +216,7 @@ context_desc_t xc_api_partition_addcpu(u32 partition_index, u32 cpuid, bool is_b
 	return context_desc;
 }
 
-
+//**
 context_desc_t xc_api_partition_getcontextdesc(u32 cpuid){
 		context_desc_t context_desc;
 		u32 partition_index, cpu_index, i;
