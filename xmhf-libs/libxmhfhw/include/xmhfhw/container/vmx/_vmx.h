@@ -778,7 +778,7 @@ static inline void __vmx_vmxon(u64 vmxonRegion){
 }*/
 
 static inline void xmhfhw_cpu_x86vmx_vmwrite(u64 encoding, u64 value){
-  asm volatile ("vmwrite %1, %0 \r\n" :: "r"(encoding  & 0x00000000FFFFFFFFULL), "r"(value));
+  asm volatile ("vmwrite %1, %0 \r\n" :: "r"(encoding  & 0x00000000FFFFFFFFULL), "r"(value) : "cc");
 }
 
 
@@ -794,7 +794,7 @@ static inline void xmhfhw_cpu_x86vmx_vmwrite(u64 encoding, u64 value){
 
 static inline u64 xmhfhw_cpu_x86vmx_vmread(u64 encoding){
     u64 __value;
-    asm volatile("vmread %1, %0 \r\n" : "=r"(__value) : "r"(encoding));
+    asm volatile("vmread %1, %0 \r\n" : "=r"(__value) : "r"(encoding) : "cc");
     return __value;
 }
 
