@@ -866,7 +866,7 @@ static inline u32 __vmx_invvpid(int invalidation_type, u16 vpid, u32 linearaddre
 }
 
 
-// VMX instruction INVEPT
+/*// VMX instruction INVEPT
 //		Invalidate Translations Derived from EPT
 // INVEPT r32, m128
 //returns 1 on success, 0 on failure
@@ -897,9 +897,26 @@ static inline u32 __vmx_invept(int invalidation_type, u64 eptp){
 	: "cc", "memory");
 
 	return status;
+}*/
+
+
+
+// VMX instruction INVEPT
+//		Invalidate Translations Derived from EPT
+
+#define	VMX_INVEPT_SINGLECONTEXT			1
+#define VMX_INVEPT_GLOBAL					2
+
+static inline void __vmx_invept(u64 invalidation_type, u64 eptp){
+	//invept descriptor
+	struct {
+		u64 eptp;
+		u64 reserved;
+    } __attribute__((packed)) __inveptdescriptor = { eptp, 0};
+
+	//issue invept instruction
+	asm volatile("invept %0, %1 \r\n" ::"m" (__inveptdescriptor), "r" (invalidation_type):"cc");
 }
-
-
 
 
 #endif
