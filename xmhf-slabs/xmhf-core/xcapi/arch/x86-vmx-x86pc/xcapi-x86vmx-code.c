@@ -726,7 +726,7 @@ xc_hypapp_arch_param_t xc_api_cpustate_arch_get(context_desc_t context_desc, u64
 }
 
 
-
+//*
 static void _xc_api_partition_arch_addcpu_setupbasestate(u32 partition_index, u32 cpu_index){
 	const u32 vmx_msr_area_msrs[] = {MSR_EFER, MSR_IA32_PAT, MSR_K6_STAR}; //critical MSRs that need to be saved/restored across guest VM switches
 	const unsigned int vmx_msr_area_msrs_count = (sizeof(vmx_msr_area_msrs)/sizeof(vmx_msr_area_msrs[0]));	//count of critical MSRs that need to be saved/restored across VM switches
@@ -755,7 +755,7 @@ static void _xc_api_partition_arch_addcpu_setupbasestate(u32 partition_index, u3
 	//XXX: Tie this in later
 	//xmhfhw_cpu_x86vmx_vmwrite(VMCS_HOST_RIP, (u32)xcihub_arch_entry);
 	//XXX:
-	xmhfhw_cpu_x86vmx_vmwrite(VMCS_HOST_RSP, read_esp());
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_HOST_RSP, read_rsp());
 	rdmsr(IA32_SYSENTER_CS_MSR, &lodword, &hidword);
 	xmhfhw_cpu_x86vmx_vmwrite(VMCS_HOST_SYSENTER_CS, lodword);
 	rdmsr(IA32_SYSENTER_ESP_MSR, &lodword, &hidword);
@@ -852,7 +852,7 @@ static void _xc_api_partition_arch_addcpu_setupbasestate(u32 partition_index, u3
 	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_CR4, xc_cpuarchdata_x86vmx->vmx_msrs[INDEX_IA32_VMX_CR4_FIXED0_MSR]);
 }
 
-
+//*
 bool xc_api_partition_arch_addcpu(u32 partition_index, u32 cpu_index){
 	xc_cpuarchdata_x86vmx_t *xc_cpuarchdata_x86vmx = (xc_cpuarchdata_x86vmx_t *)&g_xc_cpu[cpu_index].cpuarchdata;
 	u64 vmcs_phys_addr = hva2spa((void*)xc_cpuarchdata_x86vmx->vmx_vmcs_region);
@@ -879,7 +879,7 @@ bool xc_api_partition_arch_addcpu(u32 partition_index, u32 cpu_index){
 
 	//we require unrestricted guest support, bail out if we don't have it
 	if( !( (u32)((u64)xc_cpuarchdata_x86vmx->vmx_msrs[IA32_VMX_MSRCOUNT-1] >> 32) & 0x80 ) ){
-		_XDPRINTF_("\n%s: need unrestricted guest support but did not find any!", __FUNCTION__);
+		_XDPRINTF_("%s(%u): need unrestricted guest support but did not find any!\n", __FUNCTION__, cpu_index);
 		return false;
 	}
 
@@ -914,7 +914,7 @@ bool xc_api_partition_arch_addcpu(u32 partition_index, u32 cpu_index){
 		   : "eax");
 
 		if(!retval){
-			_XDPRINTF_("\n%s: unable to enter VMX root operation", __FUNCTION__);
+			_XDPRINTF_("%s(%u): unable to enter VMX root operation\n", __FUNCTION__, cpuid);
 			return false;
 		}
 	}

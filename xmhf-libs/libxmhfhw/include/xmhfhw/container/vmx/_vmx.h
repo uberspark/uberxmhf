@@ -734,7 +734,7 @@ static inline void __vmx_vmxon(u64 vmxonRegion){
 	  : "m"(vmxonRegion));
 }
 
-static inline u32 __vmx_vmwrite(u32 encoding, u32 value){
+/*static inline u32 __vmx_vmwrite(u32 encoding, u32 value){
   u32 status;
   __asm__("vmwrite %%ebx, %%eax \r\n"
           "jbe 1f \r\n"
@@ -747,7 +747,7 @@ static inline u32 __vmx_vmwrite(u32 encoding, u32 value){
     : "%edx"
     );
 	return status;
-}
+}*/
 
 /*static inline void __vmx_vmread(u32 encoding, u32 *value){
 	__asm__ __volatile__("vmread %%eax, %%ebx\n\t"
@@ -778,7 +778,7 @@ static inline u32 __vmx_vmwrite(u32 encoding, u32 value){
 }*/
 
 static inline void xmhfhw_cpu_x86vmx_vmwrite(u64 encoding, u64 value){
-  asm volatile ("vmwrite %1, %0 \r\n" :: "r"(encoding), "r"(value & 0x00000000FFFFFFFFULL));
+  asm volatile ("vmwrite %1, %0 \r\n" :: "r"(encoding  & 0x00000000FFFFFFFFULL), "r"(value));
 }
 
 
