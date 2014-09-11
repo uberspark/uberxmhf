@@ -751,9 +751,7 @@ static void _xc_api_partition_arch_addcpu_setupbasestate(u32 partition_index, u3
 	xmhfhw_cpu_x86vmx_vmwrite(VMCS_HOST_GDTR_BASE, xmhf_baseplatform_arch_x86_getgdtbase());
 	xmhfhw_cpu_x86vmx_vmwrite(VMCS_HOST_IDTR_BASE, xmhf_baseplatform_arch_x86_getidtbase());
 	xmhfhw_cpu_x86vmx_vmwrite(VMCS_HOST_TR_BASE, xmhf_baseplatform_arch_x86_gettssbase());
-	//XXX: Tie this in later
-	//xmhfhw_cpu_x86vmx_vmwrite(VMCS_HOST_RIP, (u32)xcihub_arch_entry);
-	//XXX:
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_HOST_RIP, &xcihub_arch_entry);
 	xmhfhw_cpu_x86vmx_vmwrite(VMCS_HOST_RSP, read_rsp());
 	rdmsr(IA32_SYSENTER_CS_MSR, &lodword, &hidword);
 	xmhfhw_cpu_x86vmx_vmwrite(VMCS_HOST_SYSENTER_CS, lodword);
