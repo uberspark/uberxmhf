@@ -63,12 +63,9 @@ static context_desc_t _xcrichguest_setup(u32 partition_index, u32 cpuid, bool is
 	//add cpu to the richguest partition
 	context_desc = XMHF_SLAB_CALL(xc_api_partition_addcpu(partition_index, cpuid, is_bsp));
 
-    _XDPRINTF_("%s(%u): Test. Halting!\n", __FUNCTION__, cpuid);
-    HALT();
-
 	//bail out if we could not add cpu to the rich guest partition
 	if(context_desc.cpu_desc.cpu_index == XC_PARTITION_INDEX_INVALID || context_desc.partition_desc.partition_index == XC_PARTITION_INDEX_INVALID){
-		_XDPRINTF_("\n%s: could not add cpu to rich guest partition. Halting!", __FUNCTION__);
+		_XDPRINTF_("%s(%u): could not add cpu to rich guest partition. Halting!\n", __FUNCTION__, cpuid);
 		return context_desc;
 	}
 
