@@ -116,10 +116,10 @@ __attribute__(( section(".slab_trampoline") )) void xmhf_xcphandler_arch_hub(u64
     x86regs64_t *r = (x86regs64_t *)exdata;
 
 	switch(vector){
-			/*case CPU_EXCEPTION_NMI:{
+			case CPU_EXCEPTION_NMI:{
 				XMHF_SLAB_CALL(xc_coreapi_arch_eventhandler_nmiexception(r));
 				}
-				break;*/
+				break;
 
 			case 0x3:{
 					xmhf_xcphandler_arch_unhandled(vector, r);

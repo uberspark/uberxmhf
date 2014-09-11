@@ -149,6 +149,34 @@ bool xcrichguest_entry(u32 cpuid, bool is_bsp){
 	//wait for hypapp main to execute on all the cpus
 	while(_xc_startup_hypappmain_counter < xcbootinfo->cpuinfo_numentries);
 
+    //[debug]
+    {
+        static u32 __test_cpucount=0;
+        static bool __test_done = false;
+        static u32 __test_lock=1;
+
+        if(is_bsp){
+            spin_lock(&__test_lock);
+            __test_cpucount++;
+            spin_unlock(&__test_lock);
+            _XDPRINTF_("%s(%u): BSP, Waiting for all APs to enter stall loop...\n", __FUNCTION__, context_desc.cpu_desc.cpu_index);
+            while(__test_cpucount < xcbootinfo->cpuinfo_numentries);
+            _XDPRINTF_("%s(%u): BSP, APs in stall loop, proceeding with quiesce test...\n", __FUNCTION__, context_desc.cpu_desc.cpu_index);
+            XMHF_SLAB_CALL(xc_api_hpt_flushcaches(context_desc));
+            _XDPRINTF_("%s(%u): BSP, quiesce test finished...\n", __FUNCTION__, context_desc.cpu_desc.cpu_index);
+            __test_done=true;
+        }else{
+            _XDPRINTF_("%s(%u): Waiting for quiesce...\n", __FUNCTION__, context_desc.cpu_desc.cpu_index);
+            spin_lock(&__test_lock);
+            __test_cpucount++;
+            spin_unlock(&__test_lock);
+            while(!__test_done);
+            _XDPRINTF_("%s(%u): Now halting...\n", __FUNCTION__, context_desc.cpu_desc.cpu_index);
+            HALT();
+        }
+    }
+
+
 	//start cpu in corresponding partition
 	_XDPRINTF_("%s(%u): starting in partition...\n", __FUNCTION__, context_desc.cpu_desc.cpu_index);
 

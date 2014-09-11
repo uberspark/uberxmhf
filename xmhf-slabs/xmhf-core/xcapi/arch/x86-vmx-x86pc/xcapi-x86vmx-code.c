@@ -124,15 +124,15 @@ static void _cpu_arch_x86vmx_endquiesce(context_desc_t context_desc){
         spin_unlock(&g_vmx_lock_quiesce);         //release quiesce lock
 }
 
+//**
 //quiescing handler for #NMI (non-maskable interrupt) exception event
 void xc_coreapi_arch_eventhandler_nmiexception(struct regs *r){
 	xc_cpu_t *xc_cpu;
 	context_desc_t context_desc;
 
-	//xc_cpu= _vmx_getxc_cpu();
 	context_desc = xc_api_partition_getcontextdesc(xmhf_baseplatform_arch_x86_getcpulapicid());
 	if(context_desc.cpu_desc.cpu_index == XC_PARTITION_INDEX_INVALID || context_desc.partition_desc.partition_index == XC_PARTITION_INDEX_INVALID){
-		_XDPRINTF_("\n%s: invalid partition/cpu context. Halting!\n", __FUNCTION__);
+		_XDPRINTF_("%s: invalid partition/cpu context. Halting!\n", __FUNCTION__);
 		HALT();
 	}
 	xc_cpu = &g_xc_cpu[context_desc.cpu_desc.cpu_index];
@@ -140,6 +140,7 @@ void xc_coreapi_arch_eventhandler_nmiexception(struct regs *r){
 	xmhf_smpguest_arch_x86vmx_eventhandler_nmiexception(xc_cpu, r);
 }
 
+//*
 //quiescing handler for #NMI (non-maskable interrupt) exception event
 //note: we are in atomic processsing mode for this "xc_cpu"
 static void xmhf_smpguest_arch_x86vmx_eventhandler_nmiexception(xc_cpu_t *xc_cpu, struct regs *r){
@@ -195,7 +196,7 @@ static void xmhf_smpguest_arch_x86vmx_eventhandler_nmiexception(xc_cpu_t *xc_cpu
 
 }
 
-
+//*
 void xc_api_hpt_arch_flushcaches(context_desc_t context_desc, bool dosmpflush){
 		//xc_cpu_t *xc_cpu = (xc_cpu_t *)context_desc.cpu_desc.xc_cpu;
 		//xc_cpu_t *xc_cpu = (xc_cpu_t *)&g_xc_cpu[context_desc.cpu_desc.cpu_index];
