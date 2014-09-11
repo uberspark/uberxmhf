@@ -827,8 +827,8 @@ static void _xc_api_partition_arch_addcpu_setupbasestate(u32 partition_index, u3
 	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VMX_SECCPU_BASED, (xmhfhw_cpu_x86vmx_vmread(VMCS_CONTROL_VMX_SECCPU_BASED) | (1 << 7)) );
 
 	//setup VMCS link pointer
-	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_VMCS_LINK_POINTER_FULL, (u32)0xFFFFFFFFUL);
-	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_VMCS_LINK_POINTER_HIGH, (u32)0xFFFFFFFFUL);
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_VMCS_LINK_POINTER_FULL, 0xFFFFFFFFFFFFFFFFULL);
+	//xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_VMCS_LINK_POINTER_HIGH, (u32)0xFFFFFFFFUL);
 
 	//setup NMI intercept for core-quiescing
 	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VMX_PIN_BASED, (xmhfhw_cpu_x86vmx_vmread(VMCS_CONTROL_VMX_PIN_BASED) | (1 << 3) ) );
@@ -959,7 +959,6 @@ static u32 __vmx_start_hvm(struct regs x86cpugprs) {
 	//x86cpugprs.ebp = 0;
 
 	asm volatile (
-                        "pushq %%rsp \r\n"
                         "pushq %%rbp \r\n"
                         "pushq %%rdi \r\n"
                         "pushq %%rsi \r\n"
@@ -1000,7 +999,6 @@ static u32 __vmx_start_hvm(struct regs x86cpugprs) {
                         "popq %%rsi \r\n"
                         "popq %%rdi \r\n"
                         "popq %%rbp \r\n"
-                        "popq %%rsp \r\n"
 
 					"jc __vmx_start_hvm_failinvalid\r\n"
 					"jnz	__vmx_start_hvm_undefinedimplementation	\r\n"
@@ -1037,7 +1035,7 @@ bool xc_api_partition_arch_startcpu(context_desc_t context_desc){
 	x86cpugprs.edi = xc_cpuarchdata_x86vmx->x86gprs.edi;
 	x86cpugprs.ebp = xc_cpuarchdata_x86vmx->x86gprs.ebp;
 
-	HALT_ON_ERRORCOND( xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_VMCS_LINK_POINTER_FULL) == 0xFFFFFFFFUL );
+	HALT_ON_ERRORCOND( xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_VMCS_LINK_POINTER_FULL) == 0xFFFFFFFFFFFFFFFFULL );
 
 	errorcode=__vmx_start_hvm(x86cpugprs);
 	HALT_ON_ERRORCOND(errorcode != 2);	//this means the VMLAUNCH implementation violated the specs.

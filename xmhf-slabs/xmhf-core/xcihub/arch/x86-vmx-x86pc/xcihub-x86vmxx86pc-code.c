@@ -581,6 +581,9 @@ void xmhf_partition_eventhub_arch_x86vmx(struct regs *cpugprs){
 	//serialize
     spin_lock(&_xc_partition_eventhub_lock);
 
+    _XDPRINTF_("%s: Triggered. Halting!\n", __FUNCTION__);
+    HALT();
+
 	context_desc = XMHF_SLAB_CALL(xc_api_partition_getcontextdesc(xmhf_baseplatform_arch_x86_getcpulapicid()));
 	if(context_desc.cpu_desc.cpu_index == XC_PARTITION_INDEX_INVALID || context_desc.partition_desc.partition_index == XC_PARTITION_INDEX_INVALID){
 		_XDPRINTF_("\n%s: invalid partition/cpu context. Halting!\n", __FUNCTION__);
