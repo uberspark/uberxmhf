@@ -737,6 +737,7 @@ static void _xc_api_partition_arch_addcpu_setupbasestate(u32 partition_index, u3
 	xc_partition_trapmaskdata_x86vmx_t *xc_partition_trapmaskdata_x86vmx = (xc_partition_trapmaskdata_x86vmx_t *)xc_partition->trapmaskdata;
 	xc_partition_hptdata_x86vmx_t *eptdata = (xc_partition_hptdata_x86vmx_t *)xc_partition->hptdata;
 
+    _XDPRINTF_("%s(%u):%u -> ping\n", __FUNCTION__, cpu_index, __LINE__);
 
 	//setup host state
 	xmhfhw_cpu_x86vmx_vmwrite(VMCS_HOST_CR0, read_cr0());
@@ -763,12 +764,18 @@ static void _xc_api_partition_arch_addcpu_setupbasestate(u32 partition_index, u3
 	rdmsr(IA32_SYSENTER_EIP_MSR, &lodword, &hidword);
 	xmhfhw_cpu_x86vmx_vmwrite(VMCS_HOST_SYSENTER_EIP, (((u64)hidword << 32) | (u64)lodword));
 	rdmsr(IA32_MSR_FS_BASE, &lodword, &hidword);
+
 	xmhfhw_cpu_x86vmx_vmwrite(VMCS_HOST_FS_BASE, (((u64)hidword << 32) | (u64)lodword) );
 	rdmsr(IA32_MSR_GS_BASE, &lodword, &hidword);
 	xmhfhw_cpu_x86vmx_vmwrite(VMCS_HOST_GS_BASE, (((u64)hidword << 32) | (u64)lodword) );
 
 	//setup default VMX controls
+    _XDPRINTF_("%s(%u):%u -> ping\n", __FUNCTION__, cpu_index, __LINE__);
+
 	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VMX_PIN_BASED, xc_cpuarchdata_x86vmx->vmx_msrs[INDEX_IA32_VMX_PINBASED_CTLS_MSR]);
+
+    _XDPRINTF_("%s(%u):%u -> ping\n", __FUNCTION__, cpu_index, __LINE__);
+
 	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VMX_CPU_BASED, xc_cpuarchdata_x86vmx->vmx_msrs[INDEX_IA32_VMX_PROCBASED_CTLS_MSR]);
 	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VM_EXIT_CONTROLS, xc_cpuarchdata_x86vmx->vmx_msrs[INDEX_IA32_VMX_EXIT_CTLS_MSR]);
 	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VM_ENTRY_CONTROLS, xc_cpuarchdata_x86vmx->vmx_msrs[INDEX_IA32_VMX_ENTRY_CTLS_MSR]);
