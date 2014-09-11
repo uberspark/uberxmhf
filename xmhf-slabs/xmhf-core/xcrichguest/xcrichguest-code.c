@@ -139,21 +139,21 @@ bool xcrichguest_entry(u32 cpuid, bool is_bsp){
     //end serialized execution
     spin_unlock(&_xc_startup_hypappmain_counter_lock);
 
-    _XDPRINTF_("%s(%u): Test. Halting!\n", __FUNCTION__, cpuid);
-    HALT();
 
 	//if we are the BSP, signal that APs can go ahead and do the above setup
 	if(is_bsp)
 		bsp_done=true;
 
-	_XDPRINTF_("\n%s: cpu %x, isbsp=%u, Waiting for all cpus fo cycle through hypapp main", __FUNCTION__, cpuid, is_bsp);
-	_XDPRINTF_("\n\n");
+	_XDPRINTF_("%s(%u): isbsp=%u, Waiting for all cpus fo cycle through hypapp main...\n", __FUNCTION__, context_desc.cpu_desc.cpu_index, context_desc.cpu_desc.isbsp);
 
 	//wait for hypapp main to execute on all the cpus
 	while(_xc_startup_hypappmain_counter < xcbootinfo->cpuinfo_numentries);
 
 	//start cpu in corresponding partition
-	_XDPRINTF_("\n%s[%u]: starting in partition...\n", __FUNCTION__, context_desc.cpu_desc.cpu_index);
+	_XDPRINTF_("%s(%u): starting in partition...\n", __FUNCTION__, context_desc.cpu_desc.cpu_index);
+
+    _XDPRINTF_("%s(%u): Test. Halting!\n", __FUNCTION__, cpuid);
+    HALT();
 
 	//xmhf_partition_start(context_desc.cpu_desc.cpu_index);
 	if(!XMHF_SLAB_CALL(xc_api_partition_startcpu(context_desc))){
