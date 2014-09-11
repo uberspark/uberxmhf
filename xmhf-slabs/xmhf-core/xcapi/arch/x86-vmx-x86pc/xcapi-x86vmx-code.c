@@ -137,6 +137,7 @@ void xc_coreapi_arch_eventhandler_nmiexception(struct regs *r){
 	}
 	xc_cpu = &g_xc_cpu[context_desc.cpu_desc.cpu_index];
 
+    _XDPRINTF_("%s(%u): got control...\n", __FUNCTION__, context_desc.cpu_desc.cpu_index);
 	xmhf_smpguest_arch_x86vmx_eventhandler_nmiexception(xc_cpu, r);
 }
 
