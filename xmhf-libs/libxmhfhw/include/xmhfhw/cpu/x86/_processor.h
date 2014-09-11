@@ -243,7 +243,7 @@ typedef struct {
 
 //x86 GPR set definition (follows the order enforced by PUSHAD/POPAD
 //SDM Vol 2B. 4-427)
-struct regs
+/*struct regs
 {
   u32 edi;
   u32 esi;
@@ -253,6 +253,19 @@ struct regs
   u32 edx;
   u32 ecx;
   u32 eax;
+}__attribute__ ((packed));
+*/
+
+struct regs
+{
+  u64 edi;
+  u64 esi;
+  u64 ebp;
+  u64 esp;
+  u64 ebx;
+  u64 edx;
+  u64 ecx;
+  u64 eax;
 }__attribute__ ((packed));
 
 
