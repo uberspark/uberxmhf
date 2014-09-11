@@ -180,9 +180,6 @@ bool xcrichguest_entry(u32 cpuid, bool is_bsp){
 	//start cpu in corresponding partition
 	_XDPRINTF_("%s(%u): starting in partition...\n", __FUNCTION__, context_desc.cpu_desc.cpu_index);
 
-    _XDPRINTF_("%s(%u): Test. Halting!\n", __FUNCTION__, cpuid);
-    HALT();
-
 	//xmhf_partition_start(context_desc.cpu_desc.cpu_index);
 	if(!XMHF_SLAB_CALL(xc_api_partition_startcpu(context_desc))){
 		_XDPRINTF_("\n%s: should not be here. HALTING!", __FUNCTION__);
