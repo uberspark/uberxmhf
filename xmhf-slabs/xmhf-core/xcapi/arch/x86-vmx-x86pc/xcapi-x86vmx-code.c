@@ -108,6 +108,7 @@ static void _cpu_arch_x86vmx_quiesce(context_desc_t context_desc){
         spin_unlock(&g_vmx_lock_quiesce_counter);
         g_vmx_quiesce=1;  								//we are now processing quiesce
         _vmx_send_quiesce_signal();				        //send all the other CPUs the quiesce signal
+        _XDPRINTF_("%s(%u): sent quiesce signal...\n", __FUNCTION__, context_desc.cpu_desc.cpu_index);
         while(g_vmx_quiesce_counter < (g_xc_primary_partition[context_desc.partition_desc.partition_index].numcpus-1) );         //wait for all the remaining CPUs to quiesce
 }
 
