@@ -244,9 +244,9 @@ void xmhf_baseplatform_arch_x86_initialize_paging(u32 pgtblbase);
 void xmhf_baseplatform_arch_x86_savecpumtrrstate(void);
 void xmhf_baseplatform_arch_x86_restorecpumtrrstate(void);
 
-u32 xmhf_baseplatform_arch_x86_getgdtbase(void);
-u32 xmhf_baseplatform_arch_x86_getidtbase(void);
-u32 xmhf_baseplatform_arch_x86_gettssbase(void);
+u64 xmhf_baseplatform_arch_x86_getgdtbase(void);
+u64 xmhf_baseplatform_arch_x86_getidtbase(void);
+u64 xmhf_baseplatform_arch_x86_gettssbase(void);
 
 
 typedef struct {
