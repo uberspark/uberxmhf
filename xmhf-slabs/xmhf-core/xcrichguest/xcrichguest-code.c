@@ -116,11 +116,8 @@ bool xcrichguest_entry(u32 cpuid, bool is_bsp){
 	//rich guest, enter it into a CPU pool for use by other partitions
 	context_desc=_xcrichguest_setup(xc_richguest_partition_index, cpuid, is_bsp);
 
-    _XDPRINTF_("%s(%u): Test. Halting!\n", __FUNCTION__, cpuid);
-    HALT();
-
 	if(context_desc.cpu_desc.cpu_index == XC_PARTITION_INDEX_INVALID || context_desc.partition_desc.partition_index == XC_PARTITION_INDEX_INVALID){
-		_XDPRINTF_("\n%s: Fatal error, could not add cpu to rich guest. Halting!", __FUNCTION__);
+		_XDPRINTF_("%s(%u): Fatal error, could not add cpu to rich guest. Halting!\n", __FUNCTION__, cpuid);
 		HALT();
 	}
 
@@ -141,6 +138,9 @@ bool xcrichguest_entry(u32 cpuid, bool is_bsp){
 
     //end serialized execution
     spin_unlock(&_xc_startup_hypappmain_counter_lock);
+
+    _XDPRINTF_("%s(%u): Test. Halting!\n", __FUNCTION__, cpuid);
+    HALT();
 
 	//if we are the BSP, signal that APs can go ahead and do the above setup
 	if(is_bsp)
