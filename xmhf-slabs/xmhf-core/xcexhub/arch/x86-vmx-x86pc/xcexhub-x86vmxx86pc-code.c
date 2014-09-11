@@ -117,6 +117,7 @@ __attribute__(( section(".slab_trampoline") )) void xmhf_xcphandler_arch_hub(u64
 
 	switch(vector){
 			case CPU_EXCEPTION_NMI:{
+                _XDPRINTF_("%s: NMI exception, got control...\n", __FUNCTION__);
 				XMHF_SLAB_CALL(xc_coreapi_arch_eventhandler_nmiexception(r));
 				}
 				break;
