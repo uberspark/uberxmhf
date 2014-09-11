@@ -149,7 +149,7 @@ bool xcrichguest_entry(u32 cpuid, bool is_bsp){
 	//wait for hypapp main to execute on all the cpus
 	while(_xc_startup_hypappmain_counter < xcbootinfo->cpuinfo_numentries);
 
-    //[debug]
+    /*//[debug]
     {
         static u32 __test_cpucount=0;
         static bool __test_done = false;
@@ -174,7 +174,7 @@ bool xcrichguest_entry(u32 cpuid, bool is_bsp){
             _XDPRINTF_("%s(%u): Now halting...\n", __FUNCTION__, context_desc.cpu_desc.cpu_index);
             HALT();
         }
-    }
+    }*/
 
 
 	//start cpu in corresponding partition
