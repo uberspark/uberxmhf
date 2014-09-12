@@ -218,6 +218,8 @@ static void vmx_handle_intercept_cr0access_ug(context_desc_t context_desc, struc
 
 	cr0_value = _vmx_getregval(gpr, r);
 
+    _XDPRINTF_("%s(%u): setting CR0 to %08x\n", __FUNCTION__, context_desc.cpu_desc.cpu_index, cr0_value);
+
 	ap = XMHF_SLAB_CALL(xc_api_cpustate_get(context_desc, XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_CONTROLREGS));
 	ap.param.controlregs.cr0 = cr0_value;
 	ap.param.controlregs.control_cr0_shadow = (cr0_value & ~(CR0_CD | CR0_NW));
@@ -225,7 +227,9 @@ static void vmx_handle_intercept_cr0access_ug(context_desc_t context_desc, struc
 	XMHF_SLAB_CALL(xc_api_cpustate_set(context_desc, ap));
 
 	//we need to flush logical processor VPID mappings as we emulated CR0 load above
+    _XDPRINTF_("%s(%u): before invvpid rsp=%016llx\n", __FUNCTION__, context_desc.cpu_desc.cpu_index, read_rsp());
 	__vmx_invvpid(VMX_INVVPID_SINGLECONTEXT, 1, 0);
+    _XDPRINTF_("%s(%u): before invvpid rsp=%016llx\n", __FUNCTION__, context_desc.cpu_desc.cpu_index, read_rsp());
 }
 
 //---CR4 access handler---------------------------------------------------------
@@ -235,8 +239,12 @@ static void vmx_handle_intercept_cr4access_ug(context_desc_t context_desc, struc
 
 	cr4_proposed_value = _vmx_getregval(gpr, r);
 
+    _XDPRINTF_("%s(%u): setting CR4 to %08x\n", __FUNCTION__, context_desc.cpu_desc.cpu_index, cr4_proposed_value);
+
 	//we need to flush logical processor VPID mappings as we emulated CR4 load above
+    _XDPRINTF_("%s(%u): before invvpid rsp=%016llx\n", __FUNCTION__, context_desc.cpu_desc.cpu_index, read_rsp());
 	__vmx_invvpid(VMX_INVVPID_SINGLECONTEXT, 1, 0);
+    _XDPRINTF_("%s(%u): before invvpid rsp=%016llx\n", __FUNCTION__, context_desc.cpu_desc.cpu_index, read_rsp());
   }
 }
 
@@ -290,7 +298,7 @@ static void _vmx_intercept_handler(context_desc_t context_desc, struct regs x86g
 		HALT();
 	}
 
-    //_XDPRINTF_("%s: Intercept %08x. Halting\n", __FUNCTION__, (u32)inforegs.info_vmexit_reason);
+    _XDPRINTF_("%s: Intercept %08x\n", __FUNCTION__, (u32)inforegs.info_vmexit_reason);
     //HALT();
 
 
