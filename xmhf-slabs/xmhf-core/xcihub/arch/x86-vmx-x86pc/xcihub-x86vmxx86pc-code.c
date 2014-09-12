@@ -75,14 +75,25 @@ static u32 _vmx_getregval(u32 gpr, struct regs r){
 
 //---intercept handler (CPUID)--------------------------------------------------
 static struct regs _vmx_handle_intercept_cpuid(context_desc_t context_desc, struct regs r){
+    bool clearsyscallretbit=false;
 	/*asm volatile ("cpuid\r\n"
           :"=a"(r.eax), "=b"(r.ebx), "=c"(r.ecx), "=d"(r.edx)
           :"a"(r.eax), "c" (r.ecx));*/
     _XDPRINTF_("%s(%u): CPUID: input: eax=%08x, ebx=%08x, ecx=%08x, edx=%08x\n", __FUNCTION__, context_desc.cpu_desc.cpu_index,
                (u32)r.eax, (u32)r.ebx, (u32)r.ecx, (u32)r.edx);
+
+    if((u32)r.eax == 0x80000001)
+        clearsyscallretbit = true;
+
     cpuid((u32)r.eax, (u32 *)&r.eax, (u32 *)&r.ebx, (u32 *)&r.ecx, (u32 *)&r.edx);
+
+    if(clearsyscallretbit)
+        r.edx = r.edx & (u64)~(1ULL << 11);
+
     _XDPRINTF_("%s(%u): CPUID: input: eax=%08x, ebx=%08x, ecx=%08x, edx=%08x\n", __FUNCTION__, context_desc.cpu_desc.cpu_index,
                (u32)r.eax, (u32)r.ebx, (u32)r.ecx, (u32)r.edx);
+
+
     return r;
 }
 
