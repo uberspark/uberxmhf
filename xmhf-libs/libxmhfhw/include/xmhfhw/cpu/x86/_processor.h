@@ -368,7 +368,7 @@ static inline void cpuid(u32 op, u32 *eax, u32 *ebx, u32 *ecx, u32 *edx){
     asm volatile(
                  "cpuid \r\n"
                 :"=a"(*(eax)), "=b"(*(ebx)), "=c"(*(ecx)), "=d"(*(edx))
-                :"0"(op), "2"(0)
+                :"a"(op), "c"(*(ecx))
                 :
                );
 

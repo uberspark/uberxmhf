@@ -75,9 +75,10 @@ static u32 _vmx_getregval(u32 gpr, struct regs r){
 
 //---intercept handler (CPUID)--------------------------------------------------
 static struct regs _vmx_handle_intercept_cpuid(context_desc_t context_desc, struct regs r){
-	asm volatile ("cpuid\r\n"
+	/*asm volatile ("cpuid\r\n"
           :"=a"(r.eax), "=b"(r.ebx), "=c"(r.ecx), "=d"(r.edx)
-          :"a"(r.eax), "c" (r.ecx));
+          :"a"(r.eax), "c" (r.ecx));*/
+    cpuid((u32)r.eax, (u32 *)&r.eax, (u32 *)&r.ebx, (u32 *)&r.ecx, (u32 *)&r.edx);
     return r;
 }
 
@@ -121,9 +122,10 @@ static void _vmx_handle_intercept_wrmsr(context_desc_t context_desc, struct regs
 			XMHF_SLAB_CALL(xc_api_cpustate_set(context_desc, ap));
 			break;
 		default:{
-			asm volatile ("wrmsr\r\n"
+		/*	asm volatile ("wrmsr\r\n"
           : //no outputs
-          :"a"(r.eax), "c" (r.ecx), "d" (r.edx));
+          :"a"(r.eax), "c" (r.ecx), "d" (r.edx));*/
+          wrmsr((u32)r.ecx, (u32)r.eax, (u32)r.edx);
 			break;
 		}
 	}
@@ -149,9 +151,10 @@ static struct regs _vmx_handle_intercept_rdmsr(context_desc_t context_desc, stru
 			r.edx = 0;
 			break;
 		default:{
-			asm volatile ("rdmsr\r\n"
+			/*asm volatile ("rdmsr\r\n"
           : "=a"(r.eax), "=d"(r.edx)
-          : "c" (r.ecx));
+          : "c" (r.ecx));*/
+          rdmsr((u32)r.ecx, (u32 *)&r.eax, (u32 *)&r.edx);
 			break;
 		}
 	}
