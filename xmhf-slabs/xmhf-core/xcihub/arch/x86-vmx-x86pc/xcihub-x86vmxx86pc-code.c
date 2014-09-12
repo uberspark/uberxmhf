@@ -278,20 +278,20 @@ static void _vmx_intercept_handler(context_desc_t context_desc, struct regs x86g
 
 	//sanity check for VM-entry errors
 	if( inforegs.info_vmexit_reason & 0x80000000UL ){
-		_XDPRINTF_("\nVM-ENTRY error: reason=0x%08x, qualification=0x%016llx",
+		_XDPRINTF_("VM-ENTRY error: reason=0x%08x, qualification=0x%016llx\n",
 			inforegs.info_vmexit_reason, inforegs.info_exit_qualification);
 		HALT();
 	}
 
 	//make sure we have no nested events
 	if( inforegs.info_idt_vectoring_information & 0x80000000){
-		_XDPRINTF_("\nCPU(0x%02x): HALT; Nested events unhandled with hwp:0x%08x",
+		_XDPRINTF_("%s(%u): HALT; Nested events unhandled with hwp:0x%08x\n", __FUNCTION__,
 			context_desc.cpu_desc.cpu_index, inforegs.info_idt_vectoring_information);
 		HALT();
 	}
 
-    _XDPRINTF_("%s: Intercept %08x. Halting\n", __FUNCTION__, (u32)inforegs.info_vmexit_reason);
-    HALT();
+    //_XDPRINTF_("%s: Intercept %08x. Halting\n", __FUNCTION__, (u32)inforegs.info_vmexit_reason);
+    //HALT();
 
 
 	//handle intercepts

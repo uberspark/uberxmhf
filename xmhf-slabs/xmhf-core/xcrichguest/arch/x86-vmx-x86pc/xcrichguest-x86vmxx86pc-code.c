@@ -526,14 +526,14 @@ struct regs xcrichguest_arch_handle_guestmemoryreporting(context_desc_t context_
 		//return value, CF=0 indicated no error, EAX='SMAP'
 		//ES:DI left untouched, ECX=size returned, EBX=next continuation value
 		//EBX=0 if last descriptor
-		_XDPRINTF_("\nCPU(0x%02x): INT 15(e820): AX=0x%04x, EDX=0x%08x, EBX=0x%08x, ECX=0x%08x, ES=0x%04x, DI=0x%04x", context_desc.cpu_desc.cpu_index,
-		(u16)r.eax, r.edx, r.ebx, r.ecx, (u16)desc.es.selector, (u16)r.edi);
+		_XDPRINTF_("[%u]: INT 15(e820): AX=0x%04x, EDX=0x%08x, EBX=0x%08x, ECX=0x%08x, ES=0x%04x, DI=0x%04x\n", context_desc.cpu_desc.cpu_index,
+		(u16)r.eax, (u32)r.edx, (u32)r.ebx, (u32)r.ecx, (u16)desc.es.selector, (u16)r.edi);
 
 		if( (r.edx == 0x534D4150UL) && (r.ebx < xcbootinfo->memmapinfo_numentries) ){
 
 			//copy the E820 descriptor and return its size
 			if(!xmhf_smpguest_arch_memcpyto(context_desc, (const void *)((u32)(desc.es.base+(u16)r.edi)), (void *)&xcbootinfo->memmapinfo_buffer[r.ebx], sizeof(GRUBE820)) ){
-				_XDPRINTF_("\n%s: Error in copying e820 descriptor to guest. Halting!", __FUNCTION__);
+				_XDPRINTF_("%s: Error in copying e820 descriptor to guest. Halting!\n", __FUNCTION__);
 				HALT();
 			}
 
@@ -555,7 +555,7 @@ struct regs xcrichguest_arch_handle_guestmemoryreporting(context_desc_t context_
 
 			//grab guest eflags on guest stack
 			if(!xmhf_smpguest_arch_readu16(context_desc, (const void *)((u32)desc.ss.base + (u16)r.esp + 0x4), &guest_flags)){
-				_XDPRINTF_("\n%s: Error in reading guest_flags. Halting!", __FUNCTION__);
+				_XDPRINTF_("%s: Error in reading guest_flags. Halting!\n", __FUNCTION__);
 				HALT();
 			}
 
@@ -573,13 +573,13 @@ struct regs xcrichguest_arch_handle_guestmemoryreporting(context_desc_t context_
 
 			//write updated eflags in guest stack
 			if(!xmhf_smpguest_arch_writeu16(context_desc, (const void *)((u32)desc.ss.base + (u16)r.esp + 0x4), guest_flags)){
-				_XDPRINTF_("\n%s: Error in updating guest_flags. Halting!", __FUNCTION__);
+				_XDPRINTF_("%s: Error in updating guest_flags. Halting!\n", __FUNCTION__);
 				HALT();
 			}
 
 
 		}else{	//invalid state specified during INT 15 E820, halt
-				_XDPRINTF_("\nCPU(0x%02x): INT15 (E820), invalid state specified by guest. Halting!", context_desc.cpu_desc.cpu_index);
+				_XDPRINTF_("[%u]: INT15 (E820), invalid state specified by guest. Halting!\n", context_desc.cpu_desc.cpu_index);
 				HALT();
 		}
 
@@ -598,7 +598,7 @@ struct regs xcrichguest_arch_handle_guestmemoryreporting(context_desc_t context_
 
 	//read the original INT 15h handler which is stored right after the VMCALL instruction
 	if(!xmhf_smpguest_arch_readu16(context_desc, 0x4AC+0x4, &ip) || !xmhf_smpguest_arch_readu16(context_desc, 0x4AC+0x6, &cs)){
-		_XDPRINTF_("\n%s: Error in reading original INT 15h handler. Halting!", __FUNCTION__);
+		_XDPRINTF_("%s: Error in reading original INT 15h handler. Halting!\n", __FUNCTION__);
 		HALT();
 	}
 
