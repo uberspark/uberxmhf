@@ -741,8 +741,8 @@ static void _xc_api_partition_arch_addcpu_setupbasestate(u32 partition_index, u3
 	xc_partition_hptdata_x86vmx_t *eptdata = (xc_partition_hptdata_x86vmx_t *)xc_partition->hptdata;
 
 	//setup host state
-	_XDPRINTF_("%s: read_cr0()=%016llx, vmcs cr0=%016llx\n", __FUNCTION__, read_cr0(), xmhfhw_cpu_x86vmx_vmread(VMCS_HOST_CR0));
 	xmhfhw_cpu_x86vmx_vmwrite(VMCS_HOST_CR0, read_cr0());
+	_XDPRINTF_("%s: read_cr0()=%016llx, vmcs cr0=%016llx\n", __FUNCTION__, read_cr0(), xmhfhw_cpu_x86vmx_vmread(VMCS_HOST_CR0));
 	xmhfhw_cpu_x86vmx_vmwrite(VMCS_HOST_CR4, read_cr4());
 	xmhfhw_cpu_x86vmx_vmwrite(VMCS_HOST_CR3, read_cr3());
 	xmhfhw_cpu_x86vmx_vmwrite(VMCS_HOST_CS_SELECTOR, read_segreg_cs());
@@ -769,11 +769,14 @@ static void _xc_api_partition_arch_addcpu_setupbasestate(u32 partition_index, u3
 	xmhfhw_cpu_x86vmx_vmwrite(VMCS_HOST_GS_BASE, (((u64)hidword << 32) | (u64)lodword) );
 
 	//setup default VMX controls
-	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VMX_PIN_BASED, xc_cpuarchdata_x86vmx->vmx_msrs[INDEX_IA32_VMX_PINBASED_CTLS_MSR]);
-	_XDPRINTF_("%s: pinbase MSR=%016llx, vmcs pinbased=%016llx\n", __FUNCTION__, xc_cpuarchdata_x86vmx->vmx_msrs[INDEX_IA32_VMX_PINBASED_CTLS_MSR], xmhfhw_cpu_x86vmx_vmread(VMCS_CONTROL_VMX_PIN_BASED));
-	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VMX_CPU_BASED, xc_cpuarchdata_x86vmx->vmx_msrs[INDEX_IA32_VMX_PROCBASED_CTLS_MSR]);
-	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VM_EXIT_CONTROLS, xc_cpuarchdata_x86vmx->vmx_msrs[INDEX_IA32_VMX_EXIT_CTLS_MSR]);
-	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VM_ENTRY_CONTROLS, xc_cpuarchdata_x86vmx->vmx_msrs[INDEX_IA32_VMX_ENTRY_CTLS_MSR]);
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VMX_PIN_BASED, (u32)xc_cpuarchdata_x86vmx->vmx_msrs[INDEX_IA32_VMX_PINBASED_CTLS_MSR]);
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VMX_CPU_BASED, (u32)xc_cpuarchdata_x86vmx->vmx_msrs[INDEX_IA32_VMX_PROCBASED_CTLS_MSR]);
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VM_EXIT_CONTROLS, (u32)xc_cpuarchdata_x86vmx->vmx_msrs[INDEX_IA32_VMX_EXIT_CTLS_MSR]);
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VM_ENTRY_CONTROLS, (u32)xc_cpuarchdata_x86vmx->vmx_msrs[INDEX_IA32_VMX_ENTRY_CTLS_MSR]);
+
+    //64-bit host
+  	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VM_EXIT_CONTROLS, (u32)(xmhfhw_cpu_x86vmx_vmread(VMCS_CONTROL_VM_EXIT_CONTROLS) | (1 << 9)) );
+
 
 	//IO bitmap support
 	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_IO_BITMAPA_ADDRESS_FULL, hva2spa((void*)xc_partition_trapmaskdata_x86vmx->vmx_iobitmap_region));
@@ -822,25 +825,27 @@ static void _xc_api_partition_arch_addcpu_setupbasestate(u32 partition_index, u3
 
 
 	//activate secondary processor controls
-	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VMX_SECCPU_BASED, xc_cpuarchdata_x86vmx->vmx_msrs[INDEX_IA32_VMX_PROCBASED_CTLS2_MSR]);
-	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VMX_CPU_BASED, (xmhfhw_cpu_x86vmx_vmread(VMCS_CONTROL_VMX_CPU_BASED) | (u64)(1 << 31)) );
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VMX_SECCPU_BASED, (u32)xc_cpuarchdata_x86vmx->vmx_msrs[INDEX_IA32_VMX_PROCBASED_CTLS2_MSR]);
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VMX_CPU_BASED, (u32) (xmhfhw_cpu_x86vmx_vmread(VMCS_CONTROL_VMX_CPU_BASED) | (u64)(1 << 31)) );
 
 	//setup unrestricted guest
-	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VMX_SECCPU_BASED, (xmhfhw_cpu_x86vmx_vmread(VMCS_CONTROL_VMX_SECCPU_BASED) | (u64)(1 << 7)) );
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VMX_SECCPU_BASED, (u32)(xmhfhw_cpu_x86vmx_vmread(VMCS_CONTROL_VMX_SECCPU_BASED) | (u64)(1 << 7)) );
 
 	//setup VMCS link pointer
 	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_VMCS_LINK_POINTER_FULL, 0xFFFFFFFFFFFFFFFFULL);
 	//xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_VMCS_LINK_POINTER_HIGH, (u32)0xFFFFFFFFUL);
 
 	//setup NMI intercept for core-quiescing
-	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VMX_PIN_BASED, (xmhfhw_cpu_x86vmx_vmread(VMCS_CONTROL_VMX_PIN_BASED) | (u64)(1 << 3) ) );
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VMX_PIN_BASED, (u32)(xmhfhw_cpu_x86vmx_vmread(VMCS_CONTROL_VMX_PIN_BASED) | (u64)(1 << 3) ) );
 
 	//trap access to CR0 fixed 1-bits
-	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_CR0_MASK, ((((xc_cpuarchdata_x86vmx->vmx_msrs[INDEX_IA32_VMX_CR0_FIXED0_MSR] & (u64)~(CR0_PE)) & (u64)~(CR0_PG)) | (u64)CR0_CD) | (u64)CR0_NW) );
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_CR0_MASK, (u32)(((((u32)xc_cpuarchdata_x86vmx->vmx_msrs[INDEX_IA32_VMX_CR0_FIXED0_MSR] & ~(CR0_PE)) & ~(CR0_PG)) | CR0_CD) | CR0_NW) );
 	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_CR0_SHADOW, xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_CR0));
+	_XDPRINTF_("%s: CR0 mask MSR=%016llx\n", __FUNCTION__, xc_cpuarchdata_x86vmx->vmx_msrs[INDEX_IA32_VMX_CR0_FIXED0_MSR]);
+	_XDPRINTF_("%s: CR0 mask vmcs=%016llx\n", __FUNCTION__, xmhfhw_cpu_x86vmx_vmread(VMCS_CONTROL_CR0_MASK));
 
 	//trap access to CR4 fixed bits (this includes the VMXE bit)
-	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_CR4_MASK, xc_cpuarchdata_x86vmx->vmx_msrs[INDEX_IA32_VMX_CR4_FIXED0_MSR]);
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_CR4_MASK, (u32)xc_cpuarchdata_x86vmx->vmx_msrs[INDEX_IA32_VMX_CR4_FIXED0_MSR]);
 	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_CR4_SHADOW, (u64)CR4_VMXE);
 
 	//setup memory protection
@@ -850,8 +855,29 @@ static void _xc_api_partition_arch_addcpu_setupbasestate(u32 partition_index, u3
 	//xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_EPT_POINTER_HIGH, 0);
 	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VMX_CPU_BASED, (xmhfhw_cpu_x86vmx_vmread(VMCS_CONTROL_VMX_CPU_BASED) & (u64)~(1 << 15) & (u64)~(1 << 16)) );
 
-	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_CR0, xc_cpuarchdata_x86vmx->vmx_msrs[INDEX_IA32_VMX_CR0_FIXED0_MSR]);
-	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_CR4, xc_cpuarchdata_x86vmx->vmx_msrs[INDEX_IA32_VMX_CR4_FIXED0_MSR]);
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_CR0, (u32)xc_cpuarchdata_x86vmx->vmx_msrs[INDEX_IA32_VMX_CR0_FIXED0_MSR]);
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_CR4, (u32)xc_cpuarchdata_x86vmx->vmx_msrs[INDEX_IA32_VMX_CR4_FIXED0_MSR]);
+
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VM_ENTRY_EXCEPTION_ERRORCODE, 0);
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VM_ENTRY_INTERRUPTION_INFORMATION, 0);
+
+	_XDPRINTF_("%s: vmcs pinbased=%016llx\n", __FUNCTION__, xmhfhw_cpu_x86vmx_vmread(VMCS_CONTROL_VMX_PIN_BASED));
+	_XDPRINTF_("%s: pinbase MSR=%016llx\n", __FUNCTION__, xc_cpuarchdata_x86vmx->vmx_msrs[INDEX_IA32_VMX_PINBASED_CTLS_MSR]);
+	_XDPRINTF_("%s: cpu_based vmcs=%016llx\n", __FUNCTION__, xmhfhw_cpu_x86vmx_vmread(VMCS_CONTROL_VMX_CPU_BASED));
+	_XDPRINTF_("%s: cpu_based MSR=%016llx\n", __FUNCTION__, xc_cpuarchdata_x86vmx->vmx_msrs[INDEX_IA32_VMX_PROCBASED_CTLS_MSR]);
+	_XDPRINTF_("%s: seccpu_based vmcs=%016llx\n", __FUNCTION__, xmhfhw_cpu_x86vmx_vmread(VMCS_CONTROL_VMX_SECCPU_BASED));
+	_XDPRINTF_("%s: seccpu_based MSR=%016llx\n", __FUNCTION__, xc_cpuarchdata_x86vmx->vmx_msrs[INDEX_IA32_VMX_PROCBASED_CTLS2_MSR]);
+	_XDPRINTF_("%s: entrycontrols vmcs=%016llx\n", __FUNCTION__, xmhfhw_cpu_x86vmx_vmread(VMCS_CONTROL_VM_ENTRY_CONTROLS));
+	_XDPRINTF_("%s: entrycontrols MSR=%016llx\n", __FUNCTION__, xc_cpuarchdata_x86vmx->vmx_msrs[INDEX_IA32_VMX_ENTRY_CTLS_MSR]);
+	_XDPRINTF_("%s: exitcontrols vmcs=%016llx\n", __FUNCTION__, xmhfhw_cpu_x86vmx_vmread(VMCS_CONTROL_VM_EXIT_CONTROLS));
+	_XDPRINTF_("%s: exitcontrols MSR=%016llx\n", __FUNCTION__, xc_cpuarchdata_x86vmx->vmx_msrs[INDEX_IA32_VMX_EXIT_CTLS_MSR]);
+	_XDPRINTF_("%s: iobitmapa vmcs=%016llx\n", __FUNCTION__, xmhfhw_cpu_x86vmx_vmread(VMCS_CONTROL_IO_BITMAPA_ADDRESS_FULL));
+	_XDPRINTF_("%s: iobitmapb vmcs=%016llx\n", __FUNCTION__, xmhfhw_cpu_x86vmx_vmread(VMCS_CONTROL_IO_BITMAPB_ADDRESS_FULL));
+	_XDPRINTF_("%s: msrbitmap load vmcs=%016llx\n", __FUNCTION__, xmhfhw_cpu_x86vmx_vmread(VMCS_CONTROL_VM_ENTRY_MSR_LOAD_ADDRESS_FULL));
+	_XDPRINTF_("%s: msrbitmap store vmcs=%016llx\n", __FUNCTION__, xmhfhw_cpu_x86vmx_vmread(VMCS_CONTROL_VM_EXIT_MSR_STORE_ADDRESS_FULL));
+	_XDPRINTF_("%s: msrbitmap exit load vmcs=%016llx\n", __FUNCTION__, xmhfhw_cpu_x86vmx_vmread(VMCS_CONTROL_VM_EXIT_MSR_LOAD_ADDRESS_FULL));
+	_XDPRINTF_("%s: ept pointer vmcs=%016llx\n", __FUNCTION__, xmhfhw_cpu_x86vmx_vmread(VMCS_CONTROL_EPT_POINTER_FULL));
+
 }
 
 //*

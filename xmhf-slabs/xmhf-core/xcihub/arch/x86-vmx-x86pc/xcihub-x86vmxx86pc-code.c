@@ -290,6 +290,10 @@ static void _vmx_intercept_handler(context_desc_t context_desc, struct regs x86g
 		HALT();
 	}
 
+    _XDPRINTF_("%s: Intercept %08x. Halting\n", __FUNCTION__, (u32)inforegs.info_vmexit_reason);
+    HALT();
+
+
 	//handle intercepts
 	switch(inforegs.info_vmexit_reason){
 		//--------------------------------------------------------------
@@ -580,9 +584,6 @@ void xmhf_partition_eventhub_arch_x86vmx(struct regs *cpugprs){
 
 	//serialize
     spin_lock(&_xc_partition_eventhub_lock);
-
-    _XDPRINTF_("%s: Triggered. Halting!\n", __FUNCTION__);
-    HALT();
 
 	context_desc = XMHF_SLAB_CALL(xc_api_partition_getcontextdesc(xmhf_baseplatform_arch_x86_getcpulapicid()));
 	if(context_desc.cpu_desc.cpu_index == XC_PARTITION_INDEX_INVALID || context_desc.partition_desc.partition_index == XC_PARTITION_INDEX_INVALID){

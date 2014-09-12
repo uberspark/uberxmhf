@@ -617,8 +617,8 @@ struct _vmx_vmcsfields {
 #define VMCS_CONTROL_VM_EXIT_MSR_LOAD_ADDRESS_HIGH 0x2009
 #define VMCS_CONTROL_VM_ENTRY_MSR_LOAD_ADDRESS_FULL 0x200A
 #define VMCS_CONTROL_VM_ENTRY_MSR_LOAD_ADDRESS_HIGH 0x200B
-#define VMCS_CONTROL_EXECUTIVE_#define VMCS_POINTER_FULL 0x200C
-#define VMCS_CONTROL_EXECUTIVE_#define VMCS_POINTER_HIGH 0x200D
+#define VMCS_CONTROL_EXECUTIVE_POINTER_FULL 0x200C
+#define VMCS_CONTROL_EXECUTIVE_POINTER_HIGH 0x200D
 #define VMCS_CONTROL_TSC_OFFSET_FULL 0x2010
 #define VMCS_CONTROL_TSC_OFFSET_HIGH 0x2011
 #define VMCS_CONTROL_VIRTUAL_APIC_PAGE_ADDRESS_FULL 0x2012
@@ -794,7 +794,7 @@ static inline void xmhfhw_cpu_x86vmx_vmwrite(u64 encoding, u64 value){
 
 static inline u64 xmhfhw_cpu_x86vmx_vmread(u64 encoding){
     u64 __value;
-    asm volatile("vmread %1, %0 \r\n" : "=r"(__value) : "r"(encoding) : "cc");
+    asm volatile("vmread %1, %0 \r\n" : "=r"(__value) : "r"(encoding  & 0x00000000FFFFFFFFULL) : "cc");
     return __value;
 }
 
