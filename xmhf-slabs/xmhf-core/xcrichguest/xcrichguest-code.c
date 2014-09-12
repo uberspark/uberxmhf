@@ -128,10 +128,10 @@ bool xcrichguest_entry(u32 cpuid, bool is_bsp){
 		hypappenvb.runtimephysmembase = (u32)xcbootinfo->physmem_base;
 		hypappenvb.runtimesize = (u32)xcbootinfo->size;
 
-		/*//call app main
-		_XDPRINTF_("\n%s: proceeding to call xmhfhypapp_main on BSP", __FUNCTION__);
+		//call hypapp main
+		_XDPRINTF_("%s(%u): proceeding to call xmhfhypapp_main...\n", __FUNCTION__, context_desc.cpu_desc.cpu_index);
 		XMHF_SLAB_CALL(xmhf_hypapp_initialization(context_desc, hypappenvb));
-		_XDPRINTF_("\n%s: came back into core", __FUNCTION__);*/
+		_XDPRINTF_("%s(%u): came back into core\n", __FUNCTION__, context_desc.cpu_desc.cpu_index);
 	}
 
     _xc_startup_hypappmain_counter++;
