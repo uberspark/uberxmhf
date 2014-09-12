@@ -379,6 +379,7 @@ static bool xmhf_smpguest_arch_memcpyfrom(context_desc_t context_desc, void *buf
 	if((u32)guestbuffer == 0xFFFFFFFFUL)
 		return false;
 	xmhfhw_sysmemaccess_copy(buffer, gpa2hva(guestbuffer), numbytes);
+	return true;
 }
 
 static bool xmhf_smpguest_arch_memcpyto(context_desc_t context_desc, void *guestaddress, const void *buffer, size_t numbytes){
@@ -388,6 +389,7 @@ static bool xmhf_smpguest_arch_memcpyto(context_desc_t context_desc, void *guest
 	  )
 		return false;
 	xmhfhw_sysmemaccess_copy(gpa2hva(guestbuffer), buffer, numbytes);
+	return true;
 }
 
 
