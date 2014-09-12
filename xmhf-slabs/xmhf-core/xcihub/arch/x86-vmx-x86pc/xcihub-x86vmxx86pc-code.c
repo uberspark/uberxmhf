@@ -79,8 +79,8 @@ static struct regs _vmx_handle_intercept_cpuid(context_desc_t context_desc, stru
 	/*asm volatile ("cpuid\r\n"
           :"=a"(r.eax), "=b"(r.ebx), "=c"(r.ecx), "=d"(r.edx)
           :"a"(r.eax), "c" (r.ecx));*/
-    _XDPRINTF_("%s(%u): CPUID: input: eax=%08x, ebx=%08x, ecx=%08x, edx=%08x\n", __FUNCTION__, context_desc.cpu_desc.cpu_index,
-               (u32)r.eax, (u32)r.ebx, (u32)r.ecx, (u32)r.edx);
+    //_XDPRINTF_("%s(%u): CPUID: input: eax=%08x, ebx=%08x, ecx=%08x, edx=%08x\n", __FUNCTION__, context_desc.cpu_desc.cpu_index,
+    //           (u32)r.eax, (u32)r.ebx, (u32)r.ecx, (u32)r.edx);
 
     if((u32)r.eax == 0x80000001)
         clearsyscallretbit = true;
@@ -90,8 +90,8 @@ static struct regs _vmx_handle_intercept_cpuid(context_desc_t context_desc, stru
     if(clearsyscallretbit)
         r.edx = r.edx & (u64)~(1ULL << 11);
 
-    _XDPRINTF_("%s(%u): CPUID: input: eax=%08x, ebx=%08x, ecx=%08x, edx=%08x\n", __FUNCTION__, context_desc.cpu_desc.cpu_index,
-               (u32)r.eax, (u32)r.ebx, (u32)r.ecx, (u32)r.edx);
+    //_XDPRINTF_("%s(%u): CPUID: input: eax=%08x, ebx=%08x, ecx=%08x, edx=%08x\n", __FUNCTION__, context_desc.cpu_desc.cpu_index,
+    //           (u32)r.eax, (u32)r.ebx, (u32)r.ecx, (u32)r.edx);
 
 
     return r;
@@ -173,6 +173,9 @@ static struct regs _vmx_handle_intercept_rdmsr(context_desc_t context_desc, stru
 			break;
 		}
 	}
+
+    //_XDPRINTF_("%s(%u): RDMSR: ecx=%08x, edx=%08x, eax=%08x\n", __FUNCTION__, context_desc.cpu_desc.cpu_index,
+    //           (u32)r.ecx, (u32)r.edx, (u32)r.eax);
 
 	return r;
 }
@@ -316,7 +319,7 @@ static void _vmx_intercept_handler(context_desc_t context_desc, struct regs x86g
 		HALT();
 	}
 
-    _XDPRINTF_("%s: Intercept %08x\n", __FUNCTION__, (u32)inforegs.info_vmexit_reason);
+    //_XDPRINTF_("%s: Intercept %08x\n", __FUNCTION__, (u32)inforegs.info_vmexit_reason);
     //HALT();
 
 
