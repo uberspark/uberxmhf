@@ -321,10 +321,15 @@ void xc_api_hpt_arch_setprot(context_desc_t context_desc, u64 gpa, u32 prottype)
 //note: returns 0xFFFFFFFF if there is no mapping
 u64 xc_api_hpt_arch_lvl2pagewalk(context_desc_t context_desc, u64 gva){
 
+   _XDPRINTF_("%s(%u): gva=%016llx, starting...\n", __FUNCTION__, context_desc.cpu_desc.cpu_index);
+
   //if paging is disabled then physical address is the
   //supplied virtual address itself
-	if( !((xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_CR0) & CR0_PE) && (xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_CR0) & CR0_PG)) )
+	if( !((xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_CR0) & CR0_PE) && (xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_CR0) & CR0_PG)) ){
+	   _XDPRINTF_("%s(%u): no paging in guest, return=%016llx...\n", __FUNCTION__, context_desc.cpu_desc.cpu_index,
+               (u8 *)gpa2hva(gva));
 		return (u8 *)gpa2hva(gva);
+    }
 
   if((u32)xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_CR4) & CR4_PAE ){
     //PAE paging used by guest
@@ -349,15 +354,21 @@ u64 xc_api_hpt_arch_lvl2pagewalk(context_desc_t context_desc, u64 gva){
     pdpt_entry = kpdpt[pdpt_index];
 
     //grab pd entry
-    if( !(pae_get_flags_from_pdpe(pdpt_entry) & _PAGE_PRESENT) )
+    if( !(pae_get_flags_from_pdpe(pdpt_entry) & _PAGE_PRESENT) ){
+        _XDPRINTF_("%s(%u): PAE (no-PD), return=%016llx...\n", __FUNCTION__, context_desc.cpu_desc.cpu_index,
+               (u8 *)0xFFFFFFFFUL);
 		return (u8 *)0xFFFFFFFFUL;
+    }
     tmp = pae_get_addr_from_pdpe(pdpt_entry);
     kpd = (pdt_t)((u32)tmp);
     pd_entry = kpd[pd_index];
 
-    if( !(pae_get_flags_from_pde(pd_entry) & _PAGE_PRESENT) )
-		return (u8 *)0xFFFFFFFFUL;
+    if( !(pae_get_flags_from_pde(pd_entry) & _PAGE_PRESENT) ){
+        _XDPRINTF_("%s(%u): PAE (no-PT), return=%016llx...\n", __FUNCTION__, context_desc.cpu_desc.cpu_index,
+               (u8 *)0xFFFFFFFFUL);
 
+		return (u8 *)0xFFFFFFFFUL;
+    }
 
     if ( (pd_entry & _PAGE_PSE) == 0 ) {
       // grab pt entry
@@ -365,8 +376,12 @@ u64 xc_api_hpt_arch_lvl2pagewalk(context_desc_t context_desc, u64 gva){
       kpt = (pt_t)((u32)tmp);
       pt_entry  = kpt[pt_index];
 
-	  if( !(pae_get_flags_from_pte(pt_entry) & _PAGE_PRESENT) )
+	  if( !(pae_get_flags_from_pte(pt_entry) & _PAGE_PRESENT) ){
+        _XDPRINTF_("%s(%u): PAE (no-PTE), return=%016llx...\n", __FUNCTION__, context_desc.cpu_desc.cpu_index,
+              (u8 *)0xFFFFFFFFUL);
+
 		return (u8 *)0xFFFFFFFFUL;
+	  }
 
       // find physical page base addr from page table entry
       paddr = (u64)pae_get_addr_from_pte(pt_entry) + offset;
@@ -376,6 +391,9 @@ u64 xc_api_hpt_arch_lvl2pagewalk(context_desc_t context_desc, u64 gva){
       paddr = (u64)pae_get_addr_from_pde_big(pd_entry);
       paddr += (u64)offset;
     }
+
+    _XDPRINTF_("%s(%u): PAE), return=%016llx...\n", __FUNCTION__, context_desc.cpu_desc.cpu_index,
+               (u8 *)gpa2hva(paddr));
 
     return (u8 *)gpa2hva(paddr);
 
@@ -400,8 +418,12 @@ u64 xc_api_hpt_arch_lvl2pagewalk(context_desc_t context_desc, u64 gva){
     pd_entry = kpd[pd_index];
 
 
-    if( !(npae_get_flags_from_pde(pd_entry) & _PAGE_PRESENT) )
+    if( !(npae_get_flags_from_pde(pd_entry) & _PAGE_PRESENT) ){
+	    _XDPRINTF_("%s(%u): non-PAE (no-PD), return=%016llx...\n", __FUNCTION__, context_desc.cpu_desc.cpu_index,
+               (u8 *)0xFFFFFFFFUL);
+
 		return (u8 *)0xFFFFFFFFUL;
+    }
 
     if ( (pd_entry & _PAGE_PSE) == 0 ) {
       // grab pt entry
@@ -409,8 +431,12 @@ u64 xc_api_hpt_arch_lvl2pagewalk(context_desc_t context_desc, u64 gva){
       kpt = (npt_t)((u32)tmp);
       pt_entry  = kpt[pt_index];
 
-      if( !(npae_get_flags_from_pte(pt_entry) & _PAGE_PRESENT) )
+      if( !(npae_get_flags_from_pte(pt_entry) & _PAGE_PRESENT) ){
+	    _XDPRINTF_("%s(%u): non-PAE (no-PTE), return=%016llx...\n", __FUNCTION__, context_desc.cpu_desc.cpu_index,
+               (u8 *)0xFFFFFFFFUL);
+
 		return (u8 *)0xFFFFFFFFUL;
+      }
 
       // find physical page base addr from page table entry
       paddr = (u64)npae_get_addr_from_pte(pt_entry) + offset;
@@ -420,6 +446,9 @@ u64 xc_api_hpt_arch_lvl2pagewalk(context_desc_t context_desc, u64 gva){
       paddr = (u64)npae_get_addr_from_pde_big(pd_entry);
       paddr += (u64)offset;
     }
+
+    _XDPRINTF_("%s(%u): non-PAE, return=%016llx...\n", __FUNCTION__, context_desc.cpu_desc.cpu_index,
+               (u8 *)gpa2hva(paddr));
 
     return (u8 *)gpa2hva(paddr);
   }
