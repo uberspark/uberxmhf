@@ -820,16 +820,33 @@ static void _xc_api_partition_arch_addcpu_setupbasestate(u32 partition_index, u3
 		msr_entry_t *hmsr = (msr_entry_t *)xc_cpuarchdata_x86vmx->vmx_msr_area_host_region;
 		msr_entry_t *gmsr = (msr_entry_t *)xc_cpuarchdata_x86vmx->vmx_msr_area_guest_region;
 
-		#ifndef __XMHF_VERIFICATION__
-		//store initial values of the MSRs
+		//store host and guest initial values of the critical MSRs
 		for(i=0; i < vmx_msr_area_msrs_count; i++){
 			u32 msr, eax, edx;
 			msr = vmx_msr_area_msrs[i];
 			rdmsr(msr, &eax, &edx);
-			hmsr[i].index = gmsr[i].index = msr;
-			hmsr[i].data = gmsr[i].data = ((u64)edx << 32) | (u64)eax;
+
+			//host MSR values will be what we get from RDMSR
+			hmsr[i].index = msr;
+			hmsr[i].data = ((u64)edx << 32) | (u64)eax;
+
+            //adjust and populate guest MSR values according to the MSR
+			gmsr[i].index = msr;
+			gmsr[i].data = ((u64)edx << 32) | (u64)eax;
+			switch(msr){
+                case MSR_EFER:{
+                    gmsr[i].data = gmsr[i].data & (u64)~(1ULL << EFER_LME);
+                    gmsr[i].data = gmsr[i].data & (u64)~(1ULL << EFER_LMA);
+                    gmsr[i].data = gmsr[i].data & (u64)~(1ULL << EFER_SCE);
+                    gmsr[i].data = gmsr[i].data & (u64)~(1ULL << EFER_NXE);
+                }
+                break;
+
+                default:
+                    break;
+			}
+
 		}
-		#endif
 
 		//host MSR load on exit, we store it ourselves before entry
 		xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VM_EXIT_MSR_LOAD_ADDRESS_FULL, hva2spa((void*)xc_cpuarchdata_x86vmx->vmx_msr_area_host_region));
