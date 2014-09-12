@@ -78,7 +78,11 @@ static struct regs _vmx_handle_intercept_cpuid(context_desc_t context_desc, stru
 	/*asm volatile ("cpuid\r\n"
           :"=a"(r.eax), "=b"(r.ebx), "=c"(r.ecx), "=d"(r.edx)
           :"a"(r.eax), "c" (r.ecx));*/
+    _XDPRINTF_("%s(%u): CPUID: input: eax=%08x, ebx=%08x, ecx=%08x, edx=%08x\n", __FUNCTION__, context_desc.cpu_desc.cpu_index,
+               (u32)r.eax, (u32)r.ebx, (u32)r.ecx, (u32)r.edx);
     cpuid((u32)r.eax, (u32 *)&r.eax, (u32 *)&r.ebx, (u32 *)&r.ecx, (u32 *)&r.edx);
+    _XDPRINTF_("%s(%u): CPUID: input: eax=%08x, ebx=%08x, ecx=%08x, edx=%08x\n", __FUNCTION__, context_desc.cpu_desc.cpu_index,
+               (u32)r.eax, (u32)r.ebx, (u32)r.ecx, (u32)r.edx);
     return r;
 }
 
