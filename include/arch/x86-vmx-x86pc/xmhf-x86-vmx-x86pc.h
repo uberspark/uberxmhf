@@ -143,24 +143,25 @@ struct _memorytype {
 #define 	__TRSEL 	0x0028  //TSS (task) selector
 
 
-
+//*
 //x86 GDT descriptor type
 typedef struct {
 		u16 size;
-		u32 base;
+		u64 base;
 } __attribute__((packed)) arch_x86_gdtdesc_t;
 
+//*
 //x86 IDT descriptor type
 typedef struct {
 		u16 size;
-		u32 base;
+		u64 base;
 } __attribute__((packed)) arch_x86_idtdesc_t;
 
+//*
 //TSS descriptor (partial)
 typedef struct __tss {
-	u32 prevlink;
-	u32 esp0;
-	u32 ss0;
+	u32 reserved;
+	u64 rsp0;
 } tss_t;
 
 #define	EMHF_XCPHANDLER_MAXEXCEPTIONS	32
@@ -243,9 +244,9 @@ void xmhf_baseplatform_arch_x86_initialize_paging(u32 pgtblbase);
 void xmhf_baseplatform_arch_x86_savecpumtrrstate(void);
 void xmhf_baseplatform_arch_x86_restorecpumtrrstate(void);
 
-u32 xmhf_baseplatform_arch_x86_getgdtbase(void);
-u32 xmhf_baseplatform_arch_x86_getidtbase(void);
-u32 xmhf_baseplatform_arch_x86_gettssbase(void);
+u64 xmhf_baseplatform_arch_x86_getgdtbase(void);
+u64 xmhf_baseplatform_arch_x86_getidtbase(void);
+u64 xmhf_baseplatform_arch_x86_gettssbase(void);
 
 
 typedef struct {

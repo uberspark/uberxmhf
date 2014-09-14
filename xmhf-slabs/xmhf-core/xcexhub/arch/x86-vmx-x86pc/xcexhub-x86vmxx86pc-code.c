@@ -56,9 +56,13 @@
 #include <xcapi.h>
 
 
-__attribute__(( section(".slab_trampoline") )) static void xmhf_xcphandler_arch_unhandled(u32 vector, struct regs *r){
-	u32 exception_cs, exception_eip, exception_eflags, errorcode=0;
+__attribute__(( section(".slab_trampoline") )) static void xmhf_xcphandler_arch_unhandled(u64 vector, x86regs64_t *r){
+	x86idt64_stackframe_t *exframe = NULL;
+    u64 errorcode=0;
 
+    //grab and skip error code on stack if applicable
+    //TODO: fixme, this won't hold if we call these exceptions with INT xx since there is no error code pushed
+    //in such cases
 	if(vector == CPU_EXCEPTION_DF ||
 		vector == CPU_EXCEPTION_TS ||
 		vector == CPU_EXCEPTION_NP ||
@@ -66,42 +70,50 @@ __attribute__(( section(".slab_trampoline") )) static void xmhf_xcphandler_arch_
 		vector == CPU_EXCEPTION_GP ||
 		vector == CPU_EXCEPTION_PF ||
 		vector == CPU_EXCEPTION_AC){
-		errorcode = *(uint32_t *)(r->esp+0);
-		r->esp += sizeof(uint32_t);	//skip error code on stack if applicable
+		errorcode = *(u64 *)(r->rsp);
+		r->rsp += sizeof(u64);
 	}
 
-	exception_eip = *(uint32_t *)(r->esp+0);
-	exception_cs = *(uint32_t *)(r->esp+sizeof(uint32_t));
-	exception_eflags = *(uint32_t *)(r->esp+(2*sizeof(uint32_t)));
+    //get idt stack frame
+    exframe = (x86idt64_stackframe_t *)r->rsp;
 
-	_XDPRINTF_("\nunhandled exception %x, halting!", vector);
-	_XDPRINTF_("\nstate dump follows...");
-	//things to dump
-	_XDPRINTF_("\nCS:EIP 0x%04x:0x%08x with EFLAGS=0x%08x, errorcode=%08x", (u16)exception_cs, exception_eip, exception_eflags, errorcode);
-	_XDPRINTF_("\nCR0=%08x, CR2=%08x, CR3=%08x, CR4=%08x", read_cr0(), read_cr2(), read_cr3(), read_cr4());
-	_XDPRINTF_("\nEAX=0x%08x EBX=0x%08x ECX=0x%08x EDX=0x%08x", r->eax, r->ebx, r->ecx, r->edx);
-	_XDPRINTF_("\nESI=0x%08x EDI=0x%08x EBP=0x%08x ESP=0x%08x", r->esi, r->edi, r->ebp, r->esp);
-	_XDPRINTF_("\nCS=0x%04x, DS=0x%04x, ES=0x%04x, SS=0x%04x", (u16)read_segreg_cs(), (u16)read_segreg_ds(), (u16)read_segreg_es(), (u16)read_segreg_ss());
-	_XDPRINTF_("\nFS=0x%04x, GS=0x%04x", (u16)read_segreg_fs(), (u16)read_segreg_gs());
-	_XDPRINTF_("\nTR=0x%04x", (u16)read_tr_sel());
+    //dump relevant info
+	_XDPRINTF_("unhandled exception %x, halting!\n", vector);
+	_XDPRINTF_("state dump:\n\n");
+	_XDPRINTF_("errorcode=0x%016llx\n", errorcode);
+	_XDPRINTF_("CS:RIP:RFLAGS = 0x%016llx:0x%016llx:0x%016llx\n", exframe->cs, exframe->rip, exframe->rflags);
+	_XDPRINTF_("SS:RSP = 0x%016llx:0x%016llx\n", exframe->ss, exframe->rsp);
+	_XDPRINTF_("CR0=0x%016llx, CR2=0x%016llx\n", read_cr0(), read_cr2());
+	_XDPRINTF_("CR3=0x%016llx, CR4=0x%016llx\n", read_cr3(), read_cr4());
+	_XDPRINTF_("CS=0x%04x, DS=0x%04x, ES=0x%04x, SS=0x%04x\n", (u16)read_segreg_cs(), (u16)read_segreg_ds(), (u16)read_segreg_es(), (u16)read_segreg_ss());
+	_XDPRINTF_("FS=0x%04x, GS=0x%04x\n", (u16)read_segreg_fs(), (u16)read_segreg_gs());
+	_XDPRINTF_("TR=0x%04x\n", (u16)read_tr_sel());
+	_XDPRINTF_("RAX=0x%016llx, RBX=0%016llx\n", r->rax, r->rbx);
+	_XDPRINTF_("RCX=0x%016llx, RDX=0%016llx\n", r->rcx, r->rdx);
+	_XDPRINTF_("RSI=0x%016llx, RDI=0%016llx\n", r->rsi, r->rdi);
+	_XDPRINTF_("RBP=0x%016llx, RSP=0%016llx\n", r->rbp, r->rsp);
+	_XDPRINTF_("R8=0x%016llx, R9=0%016llx\n", r->r8, r->r9);
+	_XDPRINTF_("R10=0x%016llx, R11=0%016llx\n", r->r10, r->r11);
+	_XDPRINTF_("R12=0x%016llx, R13=0%016llx\n", r->r12, r->r13);
+	_XDPRINTF_("R14=0x%016llx, R15=0%016llx\n", r->r14, r->r15);
 
 	//do a stack dump in the hopes of getting more info.
 	{
-		uint32_t i;
-		uint32_t stack_start = r->esp;
-		_XDPRINTF_("\n-----stack dump (16 entries)-----");
-		for(i=stack_start; i < stack_start+(16*sizeof(uint32_t)); i+=sizeof(uint32_t)){
-			_XDPRINTF_("\nStack(0x%08x) -> 0x%08x", i, *(uint32_t *)i);
+		u64 i;
+		u64 stack_start = r->rsp;
+		_XDPRINTF_("\n-----stack dump (8 entries)-----\n");
+		for(i=stack_start; i < stack_start+(8*sizeof(u64)); i+=sizeof(u64)){
+			_XDPRINTF_("Stack(0x%016llx) -> 0x%016llx\n", i, *(u64 *)i);
 		}
-		_XDPRINTF_("\n-----end------------");
+		_XDPRINTF_("\n-----stack dump end-------------\n");
 	}
 }
 
 //==========================================================================================
 
 //exception handler hub
-__attribute__(( section(".slab_trampoline") )) void xmhf_xcphandler_arch_hub(u32 vector, void *exdata){
-    struct regs *r = (struct regs *)exdata;
+__attribute__(( section(".slab_trampoline") )) void xmhf_xcphandler_arch_hub(u64 vector, void *exdata){
+    x86regs64_t *r = (x86regs64_t *)exdata;
 
 	switch(vector){
 			case CPU_EXCEPTION_NMI:{

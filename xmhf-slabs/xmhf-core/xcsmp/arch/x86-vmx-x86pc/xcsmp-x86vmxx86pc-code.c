@@ -56,16 +56,26 @@
 #include <xcsmp.h>
 #include <xcexhub.h>
 
-static mtrr_state_t _mtrrs;
-// platform cpu stacks
-static u8 _cpustack[MAX_PLATFORM_CPUS][MAX_PLATFORM_CPUSTACK_SIZE] __attribute__(( section(".stack") ));
-static bool _ap_pmode_entry_with_paging(void) __attribute__((naked));
-static void _xcsmp_cpu_x86_smpinitialize_commonstart(void);
-// cpu table
-static xc_cputable_t _cputable[MAX_PLATFORM_CPUS];
-// count of platform cpus
-static u32 _cpucount = 0;
+static bool _ap_entry(void) __attribute__((naked));
+void _xcsmp_cpu_x86_smpinitialize_commonstart(void);
 
+static u32 _cpucount = 0; // count of platform cpus
+
+static u64 _xcsmp_ap_entry_lock = 1;
+
+static mtrr_state_t _mtrrs;
+static u64 _ap_cr3=0;
+
+__attribute__(( aligned(16) )) static u64 _xcsmp_ap_init_gdt_start[]  = {
+	0x0000000000000000ULL,	//NULL descriptor
+	0x00af9b000000ffffULL,	//CPL-0 64-bit code descriptor (CS64)
+	0x00af93000000ffffULL,	//CPL-0 64-bit data descriptor (DS/SS/ES/FS/GS)
+};
+
+__attribute__(( aligned(16) )) static arch_x86_gdtdesc_t _xcsmp_ap_init_gdt  = {
+	.size=sizeof(_xcsmp_ap_init_gdt_start)-1,
+	.base=&_xcsmp_ap_init_gdt_start,
+};
 
 __attribute__((naked)) static void _ap_bootstrap_code(void) {
 
@@ -73,37 +83,16 @@ __attribute__((naked)) static void _ap_bootstrap_code(void) {
            " .code32 \r\n"
            " movw %0, %%ax \r\n"
            " movw %%ax, %%ds \r\n"
-           " movw %%ax, %%es \r\n"
-           " movw %%ax, %%ss \r\n"
-           " movw %%ax, %%fs \r\n"
-           " movw %%ax, %%gs \r\n"
-
-           " // set NX bit \r\n"
-           " movl $0xc0000080, %%ecx \r\n"
-           " rdmsr \r\n"
-           " orl $(1 << 11), %%eax \r\n"
-           " wrmsr \r\n"
 
            " movl %1, %%ebx \r\n"
            " movl (%%ebx), %%ebx \r\n"
-           " movl %%ebx, %%cr3 \r\n"
-           " movl %2, %%ebx \r\n"
-           " movl (%%ebx), %%ebx \r\n"
-           " movl %%ebx, %%cr4 \r\n"
-           " movl %3, %%ebx \r\n"
-           " movl (%%ebx), %%ebx \r\n"
-
-           " movl %%cr0, %%eax \r\n"
-           " orl $0x80000000, %%eax \r\n"
-           " movl %%eax, %%cr0 \r\n"
 
            " jmpl *%%ebx \r\n"
            " hlt \r\n"
            " .balign 4096 \r\n"
+           ".code64"
             :
             : "i" (__DS_CPL0),
-              "i" ((X86SMP_APBOOTSTRAP_DATASEG << 4) + offsetof(x86smp_apbootstrapdata_t, ap_cr3)),
-              "i" ((X86SMP_APBOOTSTRAP_DATASEG << 4) + offsetof(x86smp_apbootstrapdata_t, ap_cr4)),
               "i" ((X86SMP_APBOOTSTRAP_DATASEG << 4) + offsetof(x86smp_apbootstrapdata_t, ap_entrypoint))
             :
 
@@ -175,7 +164,7 @@ static void _xcsmp_container_vmx_wakeupAPs(void){
 
     apdata.ap_cr3 = read_cr3();
     apdata.ap_cr4 = read_cr4();
-    apdata.ap_entrypoint = (u32)&_ap_pmode_entry_with_paging;
+    apdata.ap_entrypoint = (u32)&_ap_entry;
     apdata.ap_gdtdesc_limit = sizeof(apdata.ap_gdt) - 1;
     apdata.ap_gdtdesc_base = (X86SMP_APBOOTSTRAP_DATASEG << 4) + offsetof(x86smp_apbootstrapdata_t, ap_gdt);
     apdata.ap_cs_selector = __CS_CPL0;
@@ -257,37 +246,27 @@ static bool _xcsmp_cpu_x86_isbsp(void){
 
 //common function which is entered by all CPUs upon SMP initialization
 //note: this is specific to the x86 architecture backend
-static void _xcsmp_cpu_x86_smpinitialize_commonstart(void){
+void _xcsmp_cpu_x86_smpinitialize_commonstart(void){
 	u32 cpuid = xmhf_baseplatform_arch_x86_getcpulapicid();
 	bool is_bsp = _xcsmp_cpu_x86_isbsp();
-	u32 bcr0;
+    static volatile bool allgo_signal = false;
+    static u32 _smpinitialize_lock = 1;
 
-	//initialize base CPU state
-	//set OSXSAVE bit in CR4 to enable us to pass-thru XSETBV intercepts
-	//when the CPU supports XSAVE feature
-	if(xmhf_baseplatform_arch_x86_cpuhasxsavefeature()){
-		u32 t_cr4;
-		t_cr4 = read_cr4();
-		t_cr4 |= CR4_OSXSAVE;
-		write_cr4(t_cr4);
-	}
+    //rendezvous all APs before proceeding
+    if(is_bsp){
+        _XDPRINTF_("%s: BSP: cpuid=%u, is_bsp=%u, rsp=%016llx\n", __FUNCTION__, (u32)cpuid, (u32)is_bsp, read_rsp());
+        _XDPRINTF_("%s: BSP: Waiting for APs...\n", __FUNCTION__);
+        while((_cpucount+1) < xcbootinfo->cpuinfo_numentries);
+        _XDPRINTF_("%s: BSP: All APs booted up. Moving on...\n", __FUNCTION__);
+        allgo_signal=true;
+    }else{
+        _XDPRINTF_("%s: AP: cpuid=%u, is_bsp=%u, rsp=%016llx. Waiting to proceed...\n", __FUNCTION__, (u32)cpuid, (u32)is_bsp, read_rsp());
+        while(!allgo_signal);
+        _XDPRINTF_("%s: AP: cpuid=%u, is_bsp=%u, rsp=%016llx. Moving on...\n", __FUNCTION__, (u32)cpuid, (u32)is_bsp, read_rsp());
+    }
 
-	//turn on NX protections
-	{
-		u32 eax, edx;
-		rdmsr(MSR_EFER, &eax, &edx);
-		eax |= (1 << EFER_NXE);
-		wrmsr(MSR_EFER, eax, edx);
-		_XDPRINTF_("\n%s: NX protections enabled: MSR_EFER=%08x%08x", __FUNCTION__, edx, eax);
-	}
-
-	//replicate common MTRR state on this CPU
-	_xcsmp_cpu_x86_restorecpumtrrstate();
-
-	//set bit 5 (EM) of CR0 to be VMX compatible in case of Intel cores
-	bcr0 = read_cr0();
-	bcr0 |= 0x20;
-	write_cr0(bcr0);
+    spin_lock(&_smpinitialize_lock);
+    _XDPRINTF_("%s(%u): proceeding to initialize CPU...\n", __FUNCTION__, (u32)cpuid);
 
     //load GDT and IDT
     asm volatile(	"lgdt %0\r\n"
@@ -296,74 +275,137 @@ static void _xcsmp_cpu_x86_smpinitialize_commonstart(void){
 					: "m" (_gdt), "m" (_idt)
 	);
 
-	//load TR
-	{
-	  u32 gdtstart = (u32)xmhf_baseplatform_arch_x86_getgdtbase();
-	  u16 trselector = 	__TRSEL;
-	  asm volatile("movl %0, %%edi\r\n"
-		"xorl %%eax, %%eax\r\n"
-		"movw %1, %%ax\r\n"
-		"addl %%eax, %%edi\r\n"		//%edi is pointer to TSS descriptor in GDT
-		"addl $0x4, %%edi\r\n"		//%edi points to top 32-bits of 64-bit TSS desc.
-		"lock andl $0xFFFF00FF, (%%edi)\r\n"
-		"lock orl  $0x00008900, (%%edi)\r\n"
-		"ltr %%ax\r\n"				//load TR
+
+	//set OSXSAVE bit in CR4 to enable us to pass-thru XSETBV intercepts
+	//when the CPU supports XSAVE feature
+	if(xmhf_baseplatform_arch_x86_cpuhasxsavefeature())
+		write_cr4(read_cr4() | CR4_OSXSAVE);
+
+
+	//replicate common MTRR state on this CPU
+	_xcsmp_cpu_x86_restorecpumtrrstate();
+
+	//set bit 5 (EM) of CR0 to be VMX compatible in case of Intel cores
+	write_cr0(read_cr0() | 0x20);
+
+    //load TR, ensure busy bit is clear else LTR will cause a #GP
+    {
+   		TSSENTRY *t;
+		t= (TSSENTRY *)(u32)&_gdt_start[(__TRSEL/sizeof(u64))];
+		t->attributes1= 0x89;
+        asm volatile(
+                "movw %0, %%ax\r\n"
+                "ltr %%ax\r\n"				//load TR
 	     :
-	     : "m"(gdtstart), "m"(trselector)
-	     : "edi", "eax"
-	  );
-	}
+	     : "i"(__TRSEL)
+	     : "eax"
+        );
 
+    }
 
-	_XDPRINTF_("\n%s: cpu %x, isbsp=%u, Proceeding to call init_entry...\n", __FUNCTION__, cpuid, is_bsp);
+    _XDPRINTF_("%s(%u): initialized CPU...\n", __FUNCTION__, (u32)cpuid);
 
-	if( XMHF_SLAB_CALL(xcrichguest_entry(cpuid, is_bsp)) ){
-		_XDPRINTF_("%s: Fatal. Should never be here. Halting!\n", __FUNCTION__);
-		HALT();
-	}
+    spin_unlock(&_smpinitialize_lock);
+
+	_XDPRINTF_("%s(%u): Proceeding to call init_entry...\n", __FUNCTION__, (u32)cpuid);
+
+	XMHF_SLAB_CALL(xcrichguest_entry(cpuid, is_bsp));
+
+	_XDPRINTF_("%s(%u):%u: Should never be here. Halting!\n", __FUNCTION__, (u32)cpuid, __LINE__);
+	HALT();
 }
 
 
 
-static bool _ap_pmode_entry_with_paging(void) __attribute__((naked)){
+static bool _ap_entry(void) __attribute__((naked)){
 
-    asm volatile(	"mov %0, %%ecx\r\n"
-					"rdmsr\r\n"
-					"andl $0xFFFFF000, %%eax\r\n"
-					"addl $0x20, %%eax\r\n"
+    asm volatile(
+                    ".code32 \r\n"
+					"_xcsmp_ap_start: \r\n"
+
+					"movw %%ds, %%ax \r\n"
+					"movw %%ax, %%es \r\n"
+					"movw %%ax, %%fs \r\n"
+					"movw %%ax, %%gs \r\n"
+					"movw %%ax, %%ss \r\n"
+
+    				"movl %%cr4, %%eax \r\n"
+   					"orl $0x00000030, %%eax \r\n"
+   					"movl %%eax, %%cr4 \r\n"
+
+                    "movl %0, %%ebx \r\n"
+                    "movl (%%ebx), %%ebx \r\n"
+                    "movl %%ebx, %%cr3 \r\n"
+
+                    "movl $0xc0000080, %%ecx \r\n"
+                    "rdmsr \r\n"
+                    "orl $0x00000100, %%eax \r\n"
+                    "orl $0x00000800, %%eax \r\n"
+                    "wrmsr \r\n"
+
+                    "movl %%cr0, %%eax \r\n"
+                    "orl $0x80000015, %%eax \r\n"
+                    "movl %%eax, %%cr0 \r\n"
+
+                    "movl %1, %%esi \r\n"
+                    "lgdt (%%esi) \r\n"
+
+                    "ljmp $8, $_xcsmp_ap_start64 \r\n"
+
+                    ".code64 \r\n"
+                    "_xcsmp_ap_start64: \r\n"
+
+					"movw $0x10, %%ax \r\n"
+					"movw %%ax, %%fs \r\n"
+					"movw %%ax, %%gs \r\n"
+					"movw %%ax, %%ss \r\n"
+					"movw %%ax, %%ds \r\n"
+					"movw %%ax, %%es \r\n"
+
+                    "movl %2, %%ecx \r\n"
+                    "rdmsr \r\n"
+                    "andl $0x00000FFF, %%eax \r\n"
+                    "orl %3, %%eax \r\n"
+                    "wrmsr \r\n"
+
+					:
+					:   "i" (&_ap_cr3), "i" (&_xcsmp_ap_init_gdt), "i" (MSR_APIC_BASE), "i" (X86SMP_LAPIC_MEMORYADDRESS)
+	);
+
+
+    asm volatile(
+                 	"movl %0, %%eax\r\n"
 					"movl (%%eax), %%eax\r\n"
 					"shr $24, %%eax\r\n"
-					"movl %1, %%edx\r\n"
 					"movl %2, %%ebx\r\n"
-					"xorl %%ecx, %%ecx\r\n"
-					"xorl %%edi, %%edi\r\n"
-					"getidxloop:\r\n"
-					"movl 0x0(%%ebx, %%edi), %%ebp\r\n"  	//ebp contains the lapic id
-					"cmpl %%eax, %%ebp\r\n"
-					"jz gotidx\r\n"
-					"incl %%ecx\r\n"
-					"addl %3, %%edi\r\n"
-					"cmpl %%edx, %%ecx\r\n"
-					"jb getidxloop\r\n"
-					"hlt\r\n"								//we should never get here, if so just halt
-					"gotidx:\r\n"							// ecx contains index into g_xc_cputable
-					"movl 0x4(%%ebx, %%edi), %%eax\r\n"	 	// eax = g_xc_cputable[ecx].cpu_index
-					"movl %4, %%edi \r\n"					// edi = &_cpustack
+					"movl %1, %%ecx \r\n"
+					"1: cmpl 0x0(%%ebx), %%eax\r\n"
+					"jz 2f\r\n"
+					"addl %3, %%ebx\r\n"
+					"loop 1b \r\n"
+					"hlt\r\n"								// we should never get here, if so just halt
+					"2: movl 0x4(%%ebx), %%eax\r\n"			// eax = g_xc_cputable[ecx].cpu_index
 					"movl %5, %%ecx \r\n"					// ecx = sizeof(_cpustack[0])
 					"mull %%ecx \r\n"						// eax = sizeof(_cpustack[0]) * eax
 					"addl %%ecx, %%eax \r\n"				// eax = (sizeof(_cpustack[0]) * eax) + sizeof(_cpustack[0])
-					"addl %%edi, %%eax \r\n"				// eax = &_cpustack + (sizeof(_cpustack[0]) * eax) + sizeof(_cpustack[0])
+					"addl %4, %%eax \r\n"				    // eax = &_cpustack + (sizeof(_cpustack[0]) * eax) + sizeof(_cpustack[0])*/
 					"movl %%eax, %%esp \r\n"				// esp = top of stack for the cpu
-					:
-					: "i" (MSR_APIC_BASE), "m" (_cpucount), "i" (&_cputable), "i" (sizeof(xc_cputable_t)), "i" (&_cpustack), "i" (sizeof(_cpustack[0]))
-	);
 
-	_xcsmp_cpu_x86_smpinitialize_commonstart();
+                    "lock incl %6 \r\n"
+
+                    "jmp _xcsmp_cpu_x86_smpinitialize_commonstart \r\n"
+
+					:
+					:   "i" (X86SMP_LAPIC_ID_MEMORYADDRESS), "m" (_totalcpus), "i" (&_cputable),
+                        "i" (sizeof(xmhf_cputable_t)), "i" (&_init_cpustacks), "i" (sizeof(_init_cpustacks[0])),
+                        "m" (_cpucount)
+	);
 
 }
 
 //////////////////////////////////////////////////////////////////////////////
 
+//*
 //re-initialize DMA protections (if needed) for the runtime
 bool xcsmp_arch_dmaprot_reinitialize(void){
 	//we don't need to reinitialize DMA protections since we setup
@@ -376,27 +418,24 @@ bool xcsmp_arch_dmaprot_reinitialize(void){
 bool xcsmp_arch_smpinitialize(void){
 	u32 i;
 
-	_cpucount = xcbootinfo->cpuinfo_numentries;
-
-	//initialize cpu table
-	for(i=0; i < _cpucount; i++){
-			_cputable[i].cpuid = xcbootinfo->cpuinfo_buffer[i].lapic_id;
-			_cputable[i].cpu_index = i;
-	}
-
-	//save cpu MTRR state which we will later replicate on all APs
+    //save cpu MTRR state which we will later replicate on all APs
 	_xcsmp_cpu_x86_savecpumtrrstate();
 
-	//wake up APS
-	if(_cpucount > 1){
+    //save page table base which we will later replicate on all APs
+    _ap_cr3 = read_cr3();
+
+	//increment CPU counter and wake up APS
+	_cpucount++;
+	if(xcbootinfo->cpuinfo_numentries > 1){
 	  _xcsmp_container_vmx_wakeupAPs();
 	}
 
 
 	//fall through to common code
-	_XDPRINTF_("\nRelinquishing BSP thread and moving to common...");
-	if( _ap_pmode_entry_with_paging() ){
-		_XDPRINTF_("\nBSP must never get here. HALT!");
-		HALT();
-	}
+	_XDPRINTF_("%s: Relinquishing BSP thread and moving to common...\n", __FUNCTION__);
+	_xcsmp_cpu_x86_smpinitialize_commonstart();
+
+	_XDPRINTF_("%s:%u: Must never get here. Halting\n", __FUNCTION__, __LINE__);
+	HALT();
+
 }

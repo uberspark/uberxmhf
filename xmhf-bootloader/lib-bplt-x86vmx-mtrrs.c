@@ -104,7 +104,7 @@ static mtrr_state_t *g_saved_mtrrs = NULL;
  */
 bool set_mtrrs_for_acmod(acm_hdr_t *hdr)
 {
-    u64 rflags;
+    u32 eflags;
     unsigned long cr0, cr4;
 
     /*
@@ -115,7 +115,14 @@ bool set_mtrrs_for_acmod(acm_hdr_t *hdr)
      */
 
     /* disable interrupts */
-    rflags = get_rflags();
+    asm volatile(
+                 "pushfl \r\n"
+                 "popl %0 \r\n"
+                 : "=g" (eflags)
+                 :
+                 :
+                 );
+
     disable_intr();
 
     /* save CR0 then disable cache (CRO.CD=1, CR0.NW=0) */
@@ -155,7 +162,15 @@ bool set_mtrrs_for_acmod(acm_hdr_t *hdr)
     write_cr4(cr4);
 
     /* enable interrupts */
-    set_rflags(rflags);
+    asm volatile(
+                 "pushl %0 \r\n"
+                 "popfl \r\n"
+                 :
+                 : "g" (eflags)
+                 : "cc"
+                 );
+
+
 
 
     return true;
@@ -358,8 +373,6 @@ bool validate_mtrrs(const mtrr_state_t *saved_state)
     if ( saved_state->mtrr_def_type.e == 0 )
         return true;
 
-    //print_mtrrs(saved_state);
-
     /* number variable MTRRs */
     mtrr_cap.raw = rdmsr64(MSR_MTRRcap);
     if ( mtrr_cap.vcnt < saved_state->num_var_mtrrs ) {
@@ -470,6 +483,7 @@ bool validate_mtrrs(const mtrr_state_t *saved_state)
 /*         return false; */
 /*     } */
 
+    //print_mtrrs(saved_state);
     return true;
 }
 
@@ -501,7 +515,6 @@ void xmhfhw_cpu_x86_restore_mtrrs(mtrr_state_t *saved_state)
         wrmsr64(MTRR_PHYS_BASE0_MSR + ndx*2,
               saved_state->mtrr_physbases[ndx].raw);
     }
-
 
     /* IA32_MTRR_DEF_TYPE MSR */
     wrmsr64(MSR_MTRRdefType, saved_state->mtrr_def_type.raw);

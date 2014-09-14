@@ -44,29 +44,9 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-// multi-processor support routines
-// author: amit vasudevan (amitvasudevan@acm.org)
+#include <emhfc_callbacks.h>
 
-//---spinlock/unlock------------------------------------------------------------
-#include <xmhf.h>
-
-void spin_lock(volatile u32 *lock){
-	__asm__ __volatile__ (
-		"1:	btl	$0, %0	\r\n"	//mutex is available?
-      	"		jnc 1b	\r\n"	//wait till it is
-		"      	lock		\r\n"   //lock the bus (exclusive access)
-	    "		btrl	$0, %0	\r\n"   //and try to grab the mutex
-	    "		jnc	1b	\r\n"   //spin until successful --> spinlock :p
-		: //no asm outputs
-		: "m" (*lock)
-	);
+void emhfc_log_error(const char *format, ...)
+{
+  (void)format;
 }
-
-void spin_unlock(volatile u32 *lock){
-	__asm__ __volatile__ (
-		"btsl	$0, %0		\r\n"	//release spinlock
-		: //no asm outputs
-		: "m" (*lock)
-	);
-}
-

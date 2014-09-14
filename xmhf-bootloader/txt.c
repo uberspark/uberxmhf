@@ -91,7 +91,7 @@
  * wheel when the time comes.
  */
 
-#include <xmhf.h> 
+#include <xmhf.h>
 #include <xmhf-debug.h>
 
 
@@ -166,10 +166,10 @@ static void *build_mle_pagetable(uint32_t mle_start, uint32_t mle_size)
     /* place ptab_base below MLE */
     ptab_size = 3 * PAGE_SIZE_4K;      /* pgdir ptr + pgdir + ptab = 3 */
     ptab_base = (void *)(mle_start - ptab_size);
-    
+
     /* NB: This memset will clobber the AMD-specific SL header.  That
      * is okay, as we are launching on an Intel TXT system. */
-    memset(ptab_base, 0, ptab_size); 
+    memset(ptab_base, 0, ptab_size);
     _XDPRINTF_("ptab_size=%x, ptab_base=%p\n", ptab_size, ptab_base);
 
     pg_dir_ptr_tab = ptab_base;
@@ -187,7 +187,7 @@ static void *build_mle_pagetable(uint32_t mle_start, uint32_t mle_size)
     _XDPRINTF_("*(uint64_t *)pg_dir = 0x%16llx\n",
            *(uint64_t *)pg_dir);
 
-    
+
     pte = pg_tab;
     mle_off = 0;
     do {
@@ -210,7 +210,7 @@ static bool check_sinit_module(void *base, size_t size)
 {
     txt_didvid_t didvid;
     txt_ver_fsbif_emif_t ver;
-    
+
     if ( base == NULL )
         return false;
 
@@ -248,7 +248,7 @@ static txt_heap_t *init_txt_heap(void *ptab_base, acm_hdr_t *sinit,
     /* uint64_t min_lo_ram, max_lo_ram, min_hi_ram, max_hi_ram; */
     txt_caps_t sinit_caps;
     txt_caps_t caps_mask;
-    
+
     txt_heap = get_txt_heap();
 
     /*
@@ -286,7 +286,7 @@ static txt_heap_t *init_txt_heap(void *ptab_base, acm_hdr_t *sinit,
            (u32)&g_mle_hdr, sizeof(mle_hdr_t), (u32)phys_mle_start);
     /* this is linear addr (offset from MLE base) of mle header, in MLE page tables */
     os_sinit_data->mle_hdr_base = 0;
-        
+
     //- (uint64_t)(unsigned long)&_mle_start;
     /* VT-d PMRs */
     /* Must protect MLE, o/w get: TXT.ERRORCODE=c0002871
@@ -300,7 +300,7 @@ static txt_heap_t *init_txt_heap(void *ptab_base, acm_hdr_t *sinit,
 
 		//os_sinit_data->vtd_pmr_hi_base = (u64)(__TARGET_BASE_SL+ __TARGET_SIZE_SL);
 		//os_sinit_data->vtd_pmr_hi_size = (u64)PAGE_ALIGN_UP2M(sl_rt_size) - (u64)__TARGET_SIZE_SL;
-		
+
 		_XDPRINTF_("\nvtd_pmr_lo_base=%016llx, size=%016llx", os_sinit_data->vtd_pmr_lo_base, os_sinit_data->vtd_pmr_lo_size);
 		//_XDPRINTF_("\nvtd_pmr_hi_base=%016llx, size=%016llx", os_sinit_data->vtd_pmr_hi_base, os_sinit_data->vtd_pmr_hi_size);
 
@@ -309,7 +309,7 @@ static txt_heap_t *init_txt_heap(void *ptab_base, acm_hdr_t *sinit,
 
 
     /* LCP owner policy data -- DELETED */
-    
+
     /* capabilities : choose monitor wake mechanism first */
     ///XXX I don't really understand this
     sinit_caps._raw = get_sinit_capabilities(sinit);
@@ -343,7 +343,7 @@ static txt_heap_t *init_txt_heap(void *ptab_base, acm_hdr_t *sinit,
 void delay(u64 cycles)
 {
     uint64_t start = rdtsc64();
-    
+
     while ( rdtsc64()-start < cycles ) ;
 }
 
@@ -411,7 +411,7 @@ tb_error_t txt_launch_environment(void *sinit_ptr, size_t sinit_size,
 //            : "ebx","ecx");
 //    }
 //#endif
-    
+
     __getsec_senter((uint32_t)sinit, (sinit->size)*4);
     _XDPRINTF_("ERROR--we should not get here!\n");
     return TB_ERR_FATAL;
@@ -420,7 +420,7 @@ tb_error_t txt_launch_environment(void *sinit_ptr, size_t sinit_size,
 
 bool txt_prepare_cpu(void)
 {
-    unsigned long eflags, cr0;
+    u32 eflags, cr0;
     uint64_t mcg_cap, mcg_stat;
     getsec_parameters_t params;
     unsigned int i;
@@ -455,10 +455,24 @@ bool txt_prepare_cpu(void)
     write_cr0(cr0);
 
     /* cannot be in virtual-8086 mode (EFLAGS.VM=1) */
-    get_eflags(eflags);
+        asm volatile(
+                 "pushfl \r\n"
+                 "popl %0 \r\n"
+                 : "=g" (eflags)
+                 :
+                 :
+                 );
+
     if ( eflags & EFLAGS_VM ) {
         _XDPRINTF_("EFLAGS.VM set; clearing it.\n");
-        set_eflags(eflags | ~EFLAGS_VM);
+            asm volatile(
+                 "pushl %0 \r\n"
+                 "popfl \r\n"
+                 :
+                 : "g" ((eflags | ~EFLAGS_VM))
+                 : "cc"
+                 );
+
     }
 
     _XDPRINTF_("CR0 and EFLAGS OK\n");

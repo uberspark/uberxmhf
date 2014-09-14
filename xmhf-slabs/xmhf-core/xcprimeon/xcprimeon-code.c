@@ -57,7 +57,6 @@ void xcprimeon_entry(void){
 	//initialize debugging early on
 	xmhfhw_platform_serial_init((char *)&xcbootinfo->debugcontrol_buffer);
 
-
 	//[debug] print relevant startup info.
 	_XDPRINTF_("%s: alive and starting...\n", __FUNCTION__);
 
@@ -75,14 +74,25 @@ void xcprimeon_entry(void){
 	HALT_ON_ERRORCOND(xcbootinfo->magic == RUNTIME_PARAMETER_BLOCK_MAGIC);
  	_XDPRINTF_("\nNumber of E820 entries = %u", xcbootinfo->memmapinfo_numentries);
 	{
-		int i;
-		for(i=0; i < (int)xcbootinfo->memmapinfo_numentries; i++){
+		u32 i;
+		for(i=0; i < (u32)xcbootinfo->memmapinfo_numentries; i++){
 			_XDPRINTF_("\n0x%08x%08x, size=0x%08x%08x (%u)",
 			  xcbootinfo->memmapinfo_buffer[i].baseaddr_high, xcbootinfo->memmapinfo_buffer[i].baseaddr_low,
 			  xcbootinfo->memmapinfo_buffer[i].length_high, xcbootinfo->memmapinfo_buffer[i].length_low,
 			  xcbootinfo->memmapinfo_buffer[i].type);
 		}
   	}
+
+	//initialize cpu table and total platform CPUs
+	{
+	    u32 i;
+	    for(i=0; i < xcbootinfo->cpuinfo_numentries; i++){
+            _cputable[i].cpuid = xcbootinfo->cpuinfo_buffer[i].lapic_id;
+            _cputable[i].cpu_index = i;
+        }
+        _totalcpus=xcbootinfo->cpuinfo_numentries;
+	}
+
 
 	//store runtime physical and virtual base addresses along with size
 	xcbootinfo->physmem_base = __TARGET_BASE_SL;
@@ -112,12 +122,10 @@ void xcprimeon_entry(void){
     xcprimeon_arch_cpu_activate_modeandpaging(pgtblbase);
 
 	//proceed with SMP initialization
-	if ( XMHF_SLAB_CALL(xcsmp_entry()) ){
-		//we should never get here
-		_XDPRINTF_("\nSL: Fatal, should never be here!");
-		HALT();
-	}
+    xcprimeon_arch_relinquish_control();
 
+	_XDPRINTF_("%s:%u: Fatal, should never be here!\n", __FUNCTION__, __LINE__);
+	HALT();
 }
 
 ///////

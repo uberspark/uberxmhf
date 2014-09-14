@@ -83,14 +83,14 @@ static inline void _XDPRINTF_(const char *fmt, ...){
 	va_start(ap, fmt);
 	retval = vsnprintf(&buffer, 1024, fmt, ap);
 	spin_lock(&libxmhfdebug_lock);
-	xmhf_hw_platform_serial_puts(&buffer);
+	xmhfhw_platform_serial_puts(&buffer);
 	spin_unlock(&libxmhfdebug_lock);
     va_end(ap);
 }
 
 #else
 
-#define _XDPRINTF_(format, args...)  
+#define _XDPRINTF_(format, args...)
 
 #endif
 
