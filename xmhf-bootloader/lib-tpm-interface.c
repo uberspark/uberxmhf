@@ -44,29 +44,63 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-// multi-processor support routines
-// author: amit vasudevan (amitvasudevan@acm.org)
+/**
+ * Common EMHF-specific functions for initiating and terminating
+ * communication with the TPM.  Motivation is that AMD and Intel have
+ * slightly different requirements, since Intel uses some TXT-specific
+ * registers if late launch has already completed.
+ *
+ * TODO: For dynamic hypervisor launch after the legacy OS is booted,
+ * support to "play nice" with the legacy OS's TPM driver probably
+ * goes in here.
+ *
+ * Author: Jonathan McCune and Amit Vasudevan (amitvasudevan@acm.org)
+ */
 
-//---spinlock/unlock------------------------------------------------------------
-#include <xmhf.h>
+#include <xmhf.h> 
+#include <xmhf-debug.h>
 
-void spin_lock(volatile u32 *lock){
-	__asm__ __volatile__ (
-		"1:	btl	$0, %0	\r\n"	//mutex is available?
-      	"		jnc 1b	\r\n"	//wait till it is
-		"      	lock		\r\n"   //lock the bus (exclusive access)
-	    "		btrl	$0, %0	\r\n"   //and try to grab the mutex
-	    "		jnc	1b	\r\n"   //spin until successful --> spinlock :p
-		: //no asm outputs
-		: "m" (*lock)
-	);
+//open TPM locality
+int xmhf_tpm_open_locality(int locality){
+    /* We expect locality 1 or 2 */
+    if(locality < 1 || locality > 2) {
+        return 1;
+    }
+	
+    if(xmhf_tpm_arch_open_locality(locality)) {
+      _XDPRINTF_("\n%s: FAILED to open TPM locality %d\n", __FUNCTION__, locality);
+      return 1;
+    };
+
+    if(!xmhf_tpm_is_tpm_ready(locality)) {
+        _XDPRINTF_("\n%s: ERROR TPM is not ready, failed to open locality %d\n", __FUNCTION__, locality);
+        return 1;
+    } 
+
+    _XDPRINTF_("\n%s: opened TPM locality %d", __FUNCTION__, locality);
+    return 0;    
 }
 
-void spin_unlock(volatile u32 *lock){
-	__asm__ __volatile__ (
-		"btsl	$0, %0		\r\n"	//release spinlock
-		: //no asm outputs
-		: "m" (*lock)
-	);
+//check if TPM is ready for use
+bool xmhf_tpm_is_tpm_ready(uint32_t locality){
+		return xmhf_tpm_arch_is_tpm_ready(locality);
 }
 
+//deactivate all TPM localities
+void xmhf_tpm_deactivate_all_localities(void){
+	xmhf_tpm_arch_deactivate_all_localities();
+}
+
+//prepare TPM for use
+bool xmhf_tpm_prepare_tpm(void){
+	return xmhf_tpm_arch_prepare_tpm();
+}
+
+
+
+
+/* Local Variables: */
+/* mode:c           */
+/* indent-tabs-mode:'t */
+/* tab-width:2      */
+/* End:             */

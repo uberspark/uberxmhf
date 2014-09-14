@@ -61,9 +61,24 @@
 extern __attribute__(( aligned(16) )) __attribute__(( section(".section_archds") )) u64 _gdt_start[] ;
 extern __attribute__(( aligned(16) )) __attribute__(( section(".section_archds") )) arch_x86_gdtdesc_t _gdt;
 extern __attribute__(( aligned(4096) )) __attribute__(( section(".section_archds") )) u8 _tss[PAGE_SIZE_4K];
-extern __attribute__(( aligned(16) )) __attribute__(( section(".section_archds") )) u64 _idt_start[EMHF_XCPHANDLER_MAXEXCEPTIONS] ;
+extern __attribute__(( aligned(16) )) __attribute__(( section(".section_archds") )) idtentry_t _idt_start[EMHF_XCPHANDLER_MAXEXCEPTIONS] ;
 extern __attribute__(( aligned(16) )) __attribute__(( section(".section_archds") )) arch_x86_idtdesc_t _idt;
-extern __attribute__(( section(".section_archds") )) u32 _exceptionstubs[];
+extern __attribute__(( section(".section_archds") )) u64 _exceptionstubs[];
+
+
+// initialization phase CPU stacks
+extern __attribute__(( aligned(4096) )) __attribute__(( section(".section_archds") )) u8 _init_cpustacks[MAX_PLATFORM_CPUS][MAX_PLATFORM_CPUSTACK_SIZE];
+// CPU table: mapping from unique CPU id --> 0 based index (into CPU stack)
+extern __attribute__(( section(".section_archds") )) xmhf_cputable_t _cputable[MAX_PLATFORM_CPUS];
+// count of platform CPUs
+extern __attribute__(( section(".section_archds") )) u32 _totalcpus;
+
+// runtime exception CPU stacks
+extern __attribute__(( aligned(4096) )) __attribute__(( section(".section_archds") )) u8 _rtmxcp_cpustacks[MAX_PLATFORM_CPUS][MAX_PLATFORM_CPUSTACK_SIZE];
+// runtime exception bootstrap save area
+extern __attribute__(( aligned(4096) )) __attribute__(( section(".section_archds") )) u64 _rtmxcp_bssavearea[512];
+
+
 //libxmhfdebug
 extern __attribute__(( section(".libxmhfdebugdata") )) u32 libxmhfdebug_lock;
 

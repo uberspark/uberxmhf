@@ -57,9 +57,9 @@
 #define HELLOWORLD_PING					0xC0
 
 // hypapp initialization
-u32 xmhf_hypapp_initialization(context_desc_t context_desc, hypapp_env_block_t hypappenvb){	
-	_XDPRINTF_("\nCPU %u: helloworld initialized", context_desc.cpu_desc.cpu_index);
-	
+u32 xmhf_hypapp_initialization(context_desc_t context_desc, hypapp_env_block_t hypappenvb){
+	_XDPRINTF_("CPU %u: helloworld initialized\n", context_desc.cpu_desc.cpu_index);
+
 	return APP_INIT_SUCCESS;  //successful
 }
 
@@ -70,33 +70,32 @@ u32 xmhf_hypapp_initialization(context_desc_t context_desc, hypapp_env_block_t h
 u32 xmhf_hypapp_handlehypercall(context_desc_t context_desc, u64 hypercall_id, u64 hypercall_param){
 	u32 status=APP_SUCCESS;
 	u32 call_id;
-	
+
 	call_id= hypercall_id;
 
-	_XDPRINTF_("\nCPU(%02x): %s starting: call number=%x", context_desc.cpu_desc.cpu_index, __FUNCTION__, call_id);
+	_XDPRINTF_("CPU(%02x): %s starting: call number=%x\n", context_desc.cpu_desc.cpu_index, __FUNCTION__, call_id);
 
 	switch(call_id){
 		case HELLOWORLD_PING:{
-			_XDPRINTF_("%s: helloworld ping!");
+			_XDPRINTF_("%s: helloworld ping!\n", __FUNCTION__);
 		}
 		break;
 
 		default:
-			_XDPRINTF_("\nCPU(0x%02x): unsupported hypercall (0x%08x)!!", 
+			_XDPRINTF_("CPU(0x%02x): unsupported hypercall (0x%08x)!!\n",
 			  context_desc.cpu_desc.cpu_index, call_id);
-			//status=APP_ERROR;
 			break;
 	}
 
-	return status;			
+	return status;
 }
 
 
 //handles XMHF shutdown callback
 //note: should not return
 void xmhf_hypapp_handleshutdown(context_desc_t context_desc){
-	_XDPRINTF_("\n%s:%u: rebooting now", __FUNCTION__, context_desc.cpu_desc.cpu_index);
-	XMHF_SLAB_CALL(xc_api_platform_shutdown(context_desc));				
+	_XDPRINTF_("%s:%u: rebooting now\n", __FUNCTION__, context_desc.cpu_desc.cpu_index);
+	XMHF_SLAB_CALL(xc_api_platform_shutdown(context_desc));
 }
 
 //handles h/w pagetable violations
@@ -104,9 +103,9 @@ void xmhf_hypapp_handleshutdown(context_desc_t context_desc){
 u32 xmhf_hypapp_handleintercept_hptfault(context_desc_t context_desc, u64 gpa, u64 gva, u64 error_code){
 	u32 status = APP_SUCCESS;
 
-	_XDPRINTF_("\nCPU(%02x): FATAL HWPGTBL violation (gva=%x, gpa=%x, code=%x): unhandled", context_desc.cpu_desc.cpu_index, (u32)gva, (u32)gpa, (u32)error_code);
+	_XDPRINTF_("CPU(%02x): FATAL HWPGTBL violation (gva=%x, gpa=%x, code=%x): unhandled\n", context_desc.cpu_desc.cpu_index, (u32)gva, (u32)gpa, (u32)error_code);
 	HALT();
-	
+
 	return status;
 }
 
@@ -119,13 +118,5 @@ u32 xmhf_hypapp_handleintercept_trap(context_desc_t context_desc, xc_hypapp_arch
 
 ////////
 XMHF_SLAB("xhhelloworld")
-
-XMHF_SLAB_DEFINTERFACE(
-	XMHF_SLAB_DEFEXPORTFN(xmhf_hypapp_initialization				,XMHF_SLAB_HYPAPP_HYPERDEP_FNINITIALIZATION							,	XMHF_SLAB_FN_RETTYPE_NORMAL)
-	XMHF_SLAB_DEFEXPORTFN(xmhf_hypapp_handlehypercall				,XMHF_SLAB_HYPAPP_HYPERDEP_FNHANDLEHYPERCALL						,	XMHF_SLAB_FN_RETTYPE_NORMAL)
-	XMHF_SLAB_DEFEXPORTFN(xmhf_hypapp_handleintercept_hptfault		,XMHF_SLAB_HYPAPP_HYPERDEP_FNHANDLEINTERCEPTHPTFAULT				,	XMHF_SLAB_FN_RETTYPE_NORMAL)
-	XMHF_SLAB_DEFEXPORTFN(xmhf_hypapp_handleintercept_trap			,XMHF_SLAB_HYPAPP_HYPERDEP_FNHANDLEINTERCEPTTRAP					,	XMHF_SLAB_FN_RETTYPE_NORMAL)
-	XMHF_SLAB_DEFEXPORTFN(xmhf_hypapp_handleshutdown				,XMHF_SLAB_HYPAPP_HYPERDEP_FNSHUTDOWN								,	XMHF_SLAB_FN_RETTYPE_NORMAL)
-)
 
 

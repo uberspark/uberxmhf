@@ -81,6 +81,7 @@ uart_config_t g_uart_config = {115200,
 static void dbg_x86_uart_putc_bare(char ch){
   //wait for xmit hold register to be empty
   while ( ! (inb(g_uart_config.port+0x5) & 0x20) );
+  //while ( ! (inb(0x3f8+0x5) & 0x20) );
 
   //write the character
   outb((u8)ch, g_uart_config.port);
@@ -107,14 +108,6 @@ void dbg_x86_uart_putc(char ch){
 void xmhfhw_platform_serial_puts(char *buffer){
 	while (*buffer)
 		dbg_x86_uart_putc(*buffer++);
-	/*while (*buffer){
-        if(*buffer == '\n')
-            dbg_x86_uart_putc_bare((u32)'\r');
-
-        dbg_x86_uart_putc_bare((u32)*buffer);
-
-        buffer++;
-	}*/
 }
 
 

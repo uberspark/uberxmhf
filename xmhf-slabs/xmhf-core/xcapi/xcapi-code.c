@@ -52,7 +52,7 @@
 
 /*
  * 	XMHF core API
- * 
+ *
  *  author: amit vasudevan (amitvasudevan@acm.org)
  */
 
@@ -71,19 +71,21 @@ void xc_api_hpt_setentry(context_desc_t context_desc, u64 gpa, u64 entry){
 }
 
 u64 xc_api_hpt_getentry(context_desc_t context_desc, u64 gpa){
-	return xc_api_hpt_arch_getentry(context_desc, gpa);	
+	return xc_api_hpt_arch_getentry(context_desc, gpa);
 }
 
+//*
 void xc_api_hpt_flushcaches(context_desc_t context_desc){
 	xc_api_hpt_arch_flushcaches(context_desc, false);
 }
 
+//*
 void xc_api_hpt_flushcaches_smp(context_desc_t context_desc){
-	xc_api_hpt_arch_flushcaches(context_desc, true);	
+	xc_api_hpt_arch_flushcaches(context_desc, true);
 }
 
 u64 xc_api_hpt_lvl2pagewalk(context_desc_t context_desc, u64 gva){
-	return xc_api_hpt_arch_lvl2pagewalk(context_desc, gva);	
+	return xc_api_hpt_arch_lvl2pagewalk(context_desc, gva);
 }
 
 
@@ -106,74 +108,75 @@ xc_hypapp_arch_param_t xc_api_cpustate_get(context_desc_t context_desc, u64 oper
 }
 
 
+
+//////
+//partition related core APIs
+
 static u32 _partition_current_index=0;
 static u32 _xc_cpu_current_index=0;
-
-
 static xc_cpupartitiontable_t _xc_cpupartitiontable[MAX_PLATFORM_CPUS];
 static u32 _xc_cpupartitiontable_current_index=0;
 
-
+//*
 static void _xc_api_partition_create_establishEPTshape(xc_partition_hptdata_x86vmx_t *eptdata){
 	u64 *pml4_table, *pdp_table, *pd_table;
 	u32 i, j, paddr=0;
 
 	pml4_table = (u64 *)eptdata->vmx_ept_pml4_table;
-	pml4_table[0] = (u64) (hva2spa((void*)eptdata->vmx_ept_pdp_table) | 0x7); 
+	pml4_table[0] = (u64) (hva2spa((void*)eptdata->vmx_ept_pdp_table) | 0x7);
 
 	pdp_table = (u64 *)eptdata->vmx_ept_pdp_table;
-		
+
 	for(i=0; i < PAE_PTRS_PER_PDPT; i++){
 		pdp_table[i] = (u64) ( hva2spa((void*)eptdata->vmx_ept_pd_tables + (PAGE_SIZE_4K * i)) | 0x7 );
 		pd_table = (u64 *)  ((u32)eptdata->vmx_ept_pd_tables + (PAGE_SIZE_4K * i)) ;
-		
+
 		for(j=0; j < PAE_PTRS_PER_PDT; j++){
 			pd_table[j] = (u64) ( hva2spa((void*)eptdata->vmx_ept_p_tables + (PAGE_SIZE_4K * ((i*PAE_PTRS_PER_PDT)+j))) | 0x7 );
 		}
 	}
 }
 
-
-//partition related core APIs
+//*
 u32 xc_api_partition_create(u32 partitiontype){
 	u32 partition_index = XC_PARTITION_INDEX_INVALID;
-	
+
 	//we only support primary partitions
 	if(partitiontype != XC_PARTITION_PRIMARY)
 		return partition_index;
-		
+
 	//check if we have run out of partition memory backing
 	if(_partition_current_index > MAX_PRIMARY_PARTITIONS)
 		return partition_index;
-	
+
 	g_xc_primary_partition[_partition_current_index].partitionid=_partition_current_index;
 	g_xc_primary_partition[_partition_current_index].partitiontype = XC_PARTITION_PRIMARY;
 	g_xc_primary_partition[_partition_current_index].numcpus = 0;
 
 	_xc_api_partition_create_establishEPTshape( (xc_partition_hptdata_x86vmx_t *)g_xc_primary_partition[_partition_current_index].hptdata );
-	
+
     partition_index = _partition_current_index;
     _partition_current_index++;
-    
+
     return partition_index;
 }
 
-
+//*
 context_desc_t xc_api_partition_addcpu(u32 partition_index, u32 cpuid, bool is_bsp){
 	context_desc_t context_desc;
 	u32 cpu_index;
-		
-	_XDPRINTF_("\n%s: partition_index=%u, cpuid=%x, is_bsp=%u", __FUNCTION__, partition_index, cpuid, is_bsp);
-		
+
+	//_XDPRINTF_("%s(%u): partition_index=%u, cpuid=%x, is_bsp=%u\n", __FUNCTION__, cpuid, partition_index, cpuid, is_bsp);
+
 	//initialize context_desc
 	context_desc.cpu_desc.cpu_index = XC_PARTITION_INDEX_INVALID;
 	context_desc.cpu_desc.isbsp = is_bsp;
-	context_desc.partition_desc.partition_index = XC_PARTITION_INDEX_INVALID;	
-		
+	context_desc.partition_desc.partition_index = XC_PARTITION_INDEX_INVALID;
+
 	//sanity check partition_index
 	if ( !(partition_index >=0 && partition_index < MAX_PRIMARY_PARTITIONS)	)
 		return context_desc;
-		
+
 	//check if have run out of xc_cpu memory backing
 	if(_xc_cpu_current_index > MAX_PLATFORM_CPUS)
 		return context_desc;
@@ -186,17 +189,17 @@ context_desc_t xc_api_partition_addcpu(u32 partition_index, u32 cpuid, bool is_b
 		return context_desc;
 
 	cpu_index = _xc_cpu_current_index++;
-	
+
 	g_xc_cpu[cpu_index].cpuid = cpuid;
 	g_xc_cpu[cpu_index].is_bsp = is_bsp;
 	g_xc_cpu[cpu_index].is_quiesced = false;
 	g_xc_cpu[cpu_index].parentpartition_index = partition_index;
-	
+
 	_xc_cpupartitiontable[_xc_cpupartitiontable_current_index].cpuid = cpuid;
 	_xc_cpupartitiontable[_xc_cpupartitiontable_current_index].partition_index = partition_index;
 	_xc_cpupartitiontable[_xc_cpupartitiontable_current_index].cpu_index = cpu_index;
 	_xc_cpupartitiontable_current_index++;
-	
+
 	g_xc_primary_partition[partition_index].cputable[g_xc_primary_partition[partition_index].numcpus].cpuid = cpuid;
 	g_xc_primary_partition[partition_index].cputable[g_xc_primary_partition[partition_index].numcpus].cpu_index = cpu_index;
 	g_xc_primary_partition[partition_index].numcpus++;
@@ -204,27 +207,27 @@ context_desc_t xc_api_partition_addcpu(u32 partition_index, u32 cpuid, bool is_b
 	//perform arch. specific cpu partition initialization
 	if(!xc_api_partition_arch_addcpu(partition_index, cpu_index))
 		return context_desc;
-		
+
 	//create context_desc for the partition and cpu
 	context_desc.cpu_desc.cpu_index = cpu_index;
 	context_desc.partition_desc.partition_index = partition_index;
-	
-	_XDPRINTF_("\n%s: returning %u (numcpus=%u)", __FUNCTION__, cpu_index, g_xc_primary_partition[partition_index].numcpus);
+
+	//_XDPRINTF_("%s(%u): returning %u (numcpus=%u)\n", __FUNCTION__, cpuid, cpu_index, g_xc_primary_partition[partition_index].numcpus);
 	return context_desc;
 }
 
-
+//**
 context_desc_t xc_api_partition_getcontextdesc(u32 cpuid){
 		context_desc_t context_desc;
 		u32 partition_index, cpu_index, i;
 		bool found_indices=false;
-		
+
 		//initialize context_desc to invalid values so we can just return it if
 		//we encounter any errors
 		context_desc.cpu_desc.cpu_index = XC_PARTITION_INDEX_INVALID;
 		context_desc.cpu_desc.isbsp = false;
 		context_desc.partition_desc.partition_index = XC_PARTITION_INDEX_INVALID;
-		
+
 		//obtain partition_index from cpuid
 		for(i=0; i < _xc_cpupartitiontable_current_index; i++){
 				if(_xc_cpupartitiontable[i].cpuid == cpuid){
@@ -238,8 +241,8 @@ context_desc_t xc_api_partition_getcontextdesc(u32 cpuid){
 		//check if we got a valid cpu and partition indices
 		if(!found_indices)
 			return context_desc;
-			
-		
+
+
 		//populate context_desc with cpu and partition indices
 		context_desc.cpu_desc.cpu_index = cpu_index;
 		context_desc.cpu_desc.isbsp = g_xc_cpu[cpu_index].is_bsp;
@@ -262,30 +265,4 @@ void xc_api_platform_shutdown(context_desc_t context_desc){
 
 ///////
 XMHF_SLAB("coreapi")
-
-XMHF_SLAB_DEFINTERFACE(
-
-	XMHF_SLAB_DEFEXPORTFN(xc_api_hpt_setprot				,XMHF_SLAB_COREAPI_FNXCAPIHPTSETPROT						,	XMHF_SLAB_FN_RETTYPE_NORMAL)
-	XMHF_SLAB_DEFEXPORTFN(xc_api_hpt_getprot				,XMHF_SLAB_COREAPI_FNXCAPIHPTGETPROT						,	XMHF_SLAB_FN_RETTYPE_NORMAL)
-	XMHF_SLAB_DEFEXPORTFN(xc_api_hpt_setentry				,XMHF_SLAB_COREAPI_FNXCAPIHPTSETENTRY						,	XMHF_SLAB_FN_RETTYPE_NORMAL)
-	XMHF_SLAB_DEFEXPORTFN(xc_api_hpt_getentry				,XMHF_SLAB_COREAPI_FNXCAPIHPTGETENTRY						,	XMHF_SLAB_FN_RETTYPE_NORMAL)
-	XMHF_SLAB_DEFEXPORTFN(xc_api_hpt_flushcaches			,XMHF_SLAB_COREAPI_FNXCAPIHPTFLUSHCACHES					,	XMHF_SLAB_FN_RETTYPE_NORMAL)
-	XMHF_SLAB_DEFEXPORTFN(xc_api_hpt_flushcaches_smp		,XMHF_SLAB_COREAPI_FNXCAPIHPTFLUSHCACHESSMP					,	XMHF_SLAB_FN_RETTYPE_NORMAL)
-	XMHF_SLAB_DEFEXPORTFN(xc_api_hpt_lvl2pagewalk			,XMHF_SLAB_COREAPI_FNXCAPIHPTLVL2PAGEWALK					,	XMHF_SLAB_FN_RETTYPE_NORMAL)
-															 
-	XMHF_SLAB_DEFEXPORTFN(xc_api_trapmask_set				,XMHF_SLAB_COREAPI_FNXCAPITRAPMASKSET						, 	XMHF_SLAB_FN_RETTYPE_NORMAL)
-	XMHF_SLAB_DEFEXPORTFN(xc_api_trapmask_clear				,XMHF_SLAB_COREAPI_FNXCAPITRAPMASKCLEAR						,   XMHF_SLAB_FN_RETTYPE_NORMAL)
-															 
-	XMHF_SLAB_DEFEXPORTFN(xc_api_cpustate_set				,XMHF_SLAB_COREAPI_FNXCAPICPUSTATESET						,	XMHF_SLAB_FN_RETTYPE_NORMAL)
-	XMHF_SLAB_DEFEXPORTFN(xc_api_cpustate_get				,XMHF_SLAB_COREAPI_FNXCAPICPUSTATEGET						,	XMHF_SLAB_FN_RETTYPE_AGGREGATE)
-															 
-	XMHF_SLAB_DEFEXPORTFN(xc_api_partition_create			,XMHF_SLAB_COREAPI_FNXCAPIPARTITIONCREATE					,	XMHF_SLAB_FN_RETTYPE_NORMAL)
-	XMHF_SLAB_DEFEXPORTFN(xc_api_partition_addcpu			,XMHF_SLAB_COREAPI_FNXCAPIPARTITIONADDCPU					,	XMHF_SLAB_FN_RETTYPE_AGGREGATE)
-	XMHF_SLAB_DEFEXPORTFN(xc_api_partition_getcontextdesc	,XMHF_SLAB_COREAPI_FNXCAPIPARTITIONGETCONTEXTDESC			,	XMHF_SLAB_FN_RETTYPE_AGGREGATE)
-	XMHF_SLAB_DEFEXPORTFN(xc_api_partition_startcpu			,XMHF_SLAB_COREAPI_FNXCAPIPARTITIONSTARTCPU					,	XMHF_SLAB_FN_RETTYPE_NORMAL)
-															 
-	XMHF_SLAB_DEFEXPORTFN(xc_api_platform_shutdown			,XMHF_SLAB_COREAPI_FNXCAPIPLATFORMSHUTDOWN					,	XMHF_SLAB_FN_RETTYPE_NORMAL)
-
-	XMHF_SLAB_DEFEXPORTFN(xc_coreapi_arch_eventhandler_nmiexception, XMHF_SLAB_COREAPI_FNXCCOREAPIARCHEVENTHANDLERNMIEXCEPTION, 	XMHF_SLAB_FN_RETTYPE_NORMAL)
-)
 

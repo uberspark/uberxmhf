@@ -51,22 +51,23 @@
 #include <xmhf.h>
 
 void spin_lock(volatile u32 *lock){
-	__asm__ __volatile__ (
-		"1:	btl	$0, %0	\r\n"	//mutex is available?
-      	"		jnc 1b	\r\n"	//wait till it is
-		"      	lock		\r\n"   //lock the bus (exclusive access)
-	    "		btrl	$0, %0	\r\n"   //and try to grab the mutex
-	    "		jnc	1b	\r\n"   //spin until successful --> spinlock :p
+	__asm__ __volatile__ ( 
+		"spin:	bt	$0, %0	\r\n"	//mutex is available?
+      	"		jnc spin	\r\n"	//wait till it is
+		"      	lock		\r\n"   //lock the bus (exclusive access)	
+	    "		btrl	$0, %0	\r\n"   //and try to grab the mutex	
+	    "		jnc	spin	\r\n"   //spin until successful --> spinlock :p
 		: //no asm outputs
 		: "m" (*lock)
 	);
 }
 
 void spin_unlock(volatile u32 *lock){
-	__asm__ __volatile__ (
+	__asm__ __volatile__ ( 
 		"btsl	$0, %0		\r\n"	//release spinlock
 		: //no asm outputs
 		: "m" (*lock)
 	);
-}
-
+}	
+	
+      		
