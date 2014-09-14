@@ -939,16 +939,8 @@ void xcprimeon_arch_cpu_activate_modeandpaging(u64 pgtblbase){
 	u32 coreptbase;
 
 	//initialize paging
-    //write_cr4(read_cr4() | (u32)0x00000030); //CR4_PAE | CR4_PSE
-
     write_cr3((u64)pgtblbase);
-
-    //write_cr0(read_cr0() | (u32)0x80000015); // ET, EM, PE, PG
-
 	_XDPRINTF_("%s: paging activated\n", __FUNCTION__);
-
-	//initialize GDT
-	//_xcprimeon_cpu_x86_initializeGDT();
 
 	//load IDT
 	asm volatile(
@@ -957,11 +949,6 @@ void xcprimeon_arch_cpu_activate_modeandpaging(u64 pgtblbase){
 		: "g" (_idt)
 		: //no clobber
 	);
-
-
-	//initialize IO privilege level
-	//_xcprimeon_cpu_x86_initializeIOPL();
-
 }
 
 

@@ -166,7 +166,7 @@ context_desc_t xc_api_partition_addcpu(u32 partition_index, u32 cpuid, bool is_b
 	context_desc_t context_desc;
 	u32 cpu_index;
 
-	_XDPRINTF_("%s(%u): partition_index=%u, cpuid=%x, is_bsp=%u\n", __FUNCTION__, cpuid, partition_index, cpuid, is_bsp);
+	//_XDPRINTF_("%s(%u): partition_index=%u, cpuid=%x, is_bsp=%u\n", __FUNCTION__, cpuid, partition_index, cpuid, is_bsp);
 
 	//initialize context_desc
 	context_desc.cpu_desc.cpu_index = XC_PARTITION_INDEX_INVALID;
@@ -212,7 +212,7 @@ context_desc_t xc_api_partition_addcpu(u32 partition_index, u32 cpuid, bool is_b
 	context_desc.cpu_desc.cpu_index = cpu_index;
 	context_desc.partition_desc.partition_index = partition_index;
 
-	_XDPRINTF_("%s(%u): returning %u (numcpus=%u)\n", __FUNCTION__, cpuid, cpu_index, g_xc_primary_partition[partition_index].numcpus);
+	//_XDPRINTF_("%s(%u): returning %u (numcpus=%u)\n", __FUNCTION__, cpuid, cpu_index, g_xc_primary_partition[partition_index].numcpus);
 	return context_desc;
 }
 

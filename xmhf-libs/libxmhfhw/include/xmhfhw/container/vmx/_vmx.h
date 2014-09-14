@@ -734,63 +734,10 @@ static inline void __vmx_vmxon(u64 vmxonRegion){
 	  : "m"(vmxonRegion));
 }
 
-/*static inline u32 __vmx_vmwrite(u32 encoding, u32 value){
-  u32 status;
-  __asm__("vmwrite %%ebx, %%eax \r\n"
-          "jbe 1f \r\n"
-          "movl $1, %%edx \r\n"
-          "jmp 2f \r\n"
-          "1: movl $0, %%edx \r\n"
-          "2: movl %%edx, %0"
-	  : "=m"(status)
-	  : "a"(encoding), "b"(value)
-    : "%edx"
-    );
-	return status;
-}*/
-
-/*static inline void __vmx_vmread(u32 encoding, u32 *value){
-	__asm__ __volatile__("vmread %%eax, %%ebx\n\t"
-	  : "=b"(*value)
-	  : "a"(encoding));
-}*/
-
-/*static inline u64 __vmx_vmread(u64 encoding){
-    u64 __value;
-    asm volatile("vmread %0, %1 \r\n" :: "r"(encoding), "r" (__value));
-    return __value;
-}*/
-
-
-/*static inline u32 xmhfhw_cpu_x86vmx_vmwrite(u32 encoding, u32 value){
-  u32 status;
-  __asm__("vmwrite %%ebx, %%eax \r\n"
-          "jbe 1f \r\n"
-          "movl $1, %%edx \r\n"
-          "jmp 2f \r\n"
-          "1: movl $0, %%edx \r\n"
-          "2: movl %%edx, %0"
-	  : "=m"(status)
-	  : "a"(encoding), "b"(value)
-    : "%edx", "%eax", "%ebx"
-    );
-	return status;
-}*/
 
 static inline void xmhfhw_cpu_x86vmx_vmwrite(u64 encoding, u64 value){
   asm volatile ("vmwrite %1, %0 \r\n" :: "r"(encoding  & 0x00000000FFFFFFFFULL), "r"(value) : "cc");
 }
-
-
-/*static inline u32 xmhfhw_cpu_x86vmx_vmread(u32 encoding){
-	u32 value;
-	__asm__ __volatile__("vmread %%eax, %%ebx\n\t"
-	  : "=b"(value)
-	  : "a"(encoding)
-	  : "%eax","%ebx"
-	  );
-	return value;
-}*/
 
 static inline u64 xmhfhw_cpu_x86vmx_vmread(u64 encoding){
     u64 __value;
@@ -864,40 +811,6 @@ static inline u32 __vmx_invvpid(int invalidation_type, u16 vpid, u32 linearaddre
 
 	return status;
 }
-
-
-/*// VMX instruction INVEPT
-//		Invalidate Translations Derived from EPT
-// INVEPT r32, m128
-//returns 1 on success, 0 on failure
-
-#define	VMX_INVEPT_SINGLECONTEXT			1
-#define VMX_INVEPT_GLOBAL					2
-
-static inline u32 __vmx_invept(int invalidation_type, u64 eptp){
-	//return status (1 or 0)
-	u32 status;
-
-	//invvpid descriptor
-	struct {
-		u64 eptp;
-		u64 reserved;
-    } inveptdescriptor = { eptp, 0};
-
-	//issue invept instruction
-	//note: GCC does not seem to support this instruction directly
-	//so we encode it as hex
-	__asm__(".byte 0x66, 0x0f, 0x38, 0x80, 0x08 \r\n"
-          "movl $1, %%eax \r\n"
-		  "ja	1f    	  \r\n"
-		  "movl $0, %%eax \r\n"
-		  "1: movl %%eax, %0 \r\n"
-    : "=m" (status)
-    : "a"(&inveptdescriptor), "c"(invalidation_type)
-	: "cc", "memory");
-
-	return status;
-}*/
 
 
 
