@@ -121,13 +121,6 @@ void xcprimeon_entry(void){
     //activate paging and associated operating mode
     xcprimeon_arch_cpu_activate_modeandpaging(pgtblbase);
 
-    /*//[debug]
-    {
-       _XDPRINTF_("%s: rsp before int 3 = %016llx\n", __FUNCTION__, read_rsp());
-        asm volatile ("int $0x03 \r\n");
-        _XDPRINTF_("%s: rsp after int 3 = %016llx\n", __FUNCTION__, read_rsp());
-    }*/
-
 	//proceed with SMP initialization
     xcprimeon_arch_relinquish_control();
 

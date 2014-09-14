@@ -237,8 +237,6 @@ static void vmx_handle_intercept_cr0access_ug(context_desc_t context_desc, struc
 
 	cr0_value = _vmx_getregval(gpr, r);
 
-    _XDPRINTF_("%s(%u): setting CR0 to %08x\n", __FUNCTION__, context_desc.cpu_desc.cpu_index, cr0_value);
-
 	ap = XMHF_SLAB_CALL(xc_api_cpustate_get(context_desc, XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_CONTROLREGS));
 	ap.param.controlregs.cr0 = cr0_value;
 	ap.param.controlregs.control_cr0_shadow = (cr0_value & ~(CR0_CD | CR0_NW));
@@ -246,9 +244,7 @@ static void vmx_handle_intercept_cr0access_ug(context_desc_t context_desc, struc
 	XMHF_SLAB_CALL(xc_api_cpustate_set(context_desc, ap));
 
 	//we need to flush logical processor VPID mappings as we emulated CR0 load above
-    _XDPRINTF_("%s(%u): before invvpid rsp=%016llx\n", __FUNCTION__, context_desc.cpu_desc.cpu_index, read_rsp());
 	__vmx_invvpid(VMX_INVVPID_SINGLECONTEXT, 1, 0);
-    _XDPRINTF_("%s(%u): before invvpid rsp=%016llx\n", __FUNCTION__, context_desc.cpu_desc.cpu_index, read_rsp());
 }
 
 //---CR4 access handler---------------------------------------------------------
@@ -258,12 +254,9 @@ static void vmx_handle_intercept_cr4access_ug(context_desc_t context_desc, struc
 
 	cr4_proposed_value = _vmx_getregval(gpr, r);
 
-    _XDPRINTF_("%s(%u): setting CR4 to %08x\n", __FUNCTION__, context_desc.cpu_desc.cpu_index, cr4_proposed_value);
 
 	//we need to flush logical processor VPID mappings as we emulated CR4 load above
-    _XDPRINTF_("%s(%u): before invvpid rsp=%016llx\n", __FUNCTION__, context_desc.cpu_desc.cpu_index, read_rsp());
 	__vmx_invvpid(VMX_INVVPID_SINGLECONTEXT, 1, 0);
-    _XDPRINTF_("%s(%u): before invvpid rsp=%016llx\n", __FUNCTION__, context_desc.cpu_desc.cpu_index, read_rsp());
   }
 }
 
@@ -646,39 +639,6 @@ void xmhf_partition_eventhub_arch_x86vmx(struct regs *cpugprs){
 
 
 //==================================================================================
-
-/*//---hvm_intercept_handler------------------------------------------------------
-void xcihub_arch_entry(void) __attribute__((naked)){
-
-		asm volatile (
-			"pushal\r\n"
-			"movl %0, %%eax \r\n"				//eax = VMCS_INFO_VMEXIT_REASON
-			"vmread %%eax, %%ebx \r\n"			//ebx = VMCS[VMCS_INFO_VMEXIT_REASON]
-			"cmpl %1, %%ebx \r\n"				//if (ebx == VMX_VMEXIT_EXCEPTION)
-			"jne normal \r\n"					//nope, so just do normal eventhub processing
-			"movl %2, %%eax \r\n"				//eax = VMCS_INFO_VMEXIT_INTERRUPT_INFORMATION
-			"vmread %%eax, %%ebx \r\n"			//ebx = VMCS[VMCS_INFO_VMEXIT_INTERRUPT_INFORMATION]
-			"andl %3, %%ebx \r\n"				//ebx &= INTR_INFO_VECTOR_MASK
-			"cmpl %4, %%ebx \r\n"				//if (ebx == 0x2)
-			"jne normal \r\n"					//nope, so just do normal eventhub processing
-			"int $0x02 \r\n"					//NMI exception intercept, so trigger NMI handler
-			"jmp exithub \r\n"					//skip over normal event hub processing
-			"normal: \r\n"						//normal event hub processing setup
-			"movl %%esp, %%eax\r\n"
-			"pushl %%eax\r\n"
-			"call xmhf_partition_eventhub_arch_x86vmx\r\n"
-			"addl $0x04, %%esp\r\n"
-			"exithub: \r\n"						//event hub epilogue to resume partition
-			"popal\r\n"
-			"vmresume\r\n"
-			"int $0x03\r\n"
-			"hlt\r\n"
-			: //no outputs
-			: "i" (VMCS_INFO_VMEXIT_REASON), "i" (VMX_VMEXIT_EXCEPTION), "i" (VMCS_INFO_VMEXIT_INTERRUPT_INFORMATION), "i" (INTR_INFO_VECTOR_MASK), "i" (0x2)
-			: //no clobber
-		);
-
-}*/
 
 
 //---hvm_intercept_handler------------------------------------------------------
