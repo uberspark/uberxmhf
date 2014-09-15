@@ -56,7 +56,8 @@
 
 
 //bool xcrichguest_entry(u32 cpuid, bool is_bsp);
-context_desc_t xcrichguest_entry(u32 cpuid, bool is_bsp);
+context_desc_t xcrichguest_entry(u32 partition_index, u32 cpuid, bool is_bsp);
+void xcrichguest_initialize(u32 partition_index);
 
 
 //----------------------------------------------------------------------
