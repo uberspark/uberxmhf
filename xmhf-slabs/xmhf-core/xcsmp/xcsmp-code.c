@@ -56,12 +56,29 @@
 #include <xcrichguest.h>
 
 static volatile u32 _cpucount = 0; // count of platform cpus
+static u32 xc_richguest_partition_index=XC_PARTITION_INDEX_INVALID;
 
 bool xcsmp_entry(void){
 
 #if defined (__DMAP__)
 	xcsmp_arch_dmaprot_reinitialize();
 #endif
+
+
+	//create rich guest partition
+	_XDPRINTF_("%s: proceeding to create rich guest partition...\n", __FUNCTION__);
+	xc_richguest_partition_index = XMHF_SLAB_CALL(xc_api_partition_create(XC_PARTITION_PRIMARY));
+	if(xc_richguest_partition_index == XC_PARTITION_INDEX_INVALID){
+		_XDPRINTF_("%s: Fatal error, could not create rich guest partition!\n", __FUNCTION__);
+		HALT();
+	}
+	_XDPRINTF_("%s: created rich guest partition %u\n", __FUNCTION__, xc_richguest_partition_index);
+
+
+    //initialize rich guest partition
+    XMHF_SLAB_CALL(xcrichguest_initialize(xc_richguest_partition_index));
+    _XDPRINTF_("\n%s: initialized rich guest partition %u\n", __FUNCTION__, xc_richguest_partition_index);
+
 
 	if( xcsmp_arch_smpinitialize() ){
 		_XDPRINTF_("\nRuntime: We should NEVER get here!");
@@ -97,7 +114,7 @@ void xcsmp_smpstart(u32 cpuid, bool isbsp){
 
 
         _XDPRINTF_("%s(%u): Proceeding to call xcrichguest_entry...\n", __FUNCTION__, (u32)cpuid);
-        context_desc = XMHF_SLAB_CALL(xcrichguest_entry(cpuid, isbsp));
+        context_desc = XMHF_SLAB_CALL(xcrichguest_entry(xc_richguest_partition_index, cpuid, isbsp));
 
     spin_unlock(&_smpinitialize_lock);
 
