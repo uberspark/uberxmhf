@@ -64,17 +64,8 @@
 static u32 g_vmx_quiesce_counter __attribute__(( section(".data") )) = 0;
 static u32 g_vmx_lock_quiesce_counter __attribute__(( section(".data") )) = 1;
 
-//resume counter to rally all CPUs after resumption from quiesce
-//static u32 g_vmx_quiesce_resume_counter __attribute__(( section(".data") )) = 0;
-//static u32 g_vmx_lock_quiesce_resume_counter __attribute__(( section(".data") )) = 1;
-
 //the "quiesce" variable, if 1, then we have a quiesce in process
 static u32 g_vmx_quiesce __attribute__(( section(".data") )) = 0;;
-//static u32 g_vmx_lock_quiesce __attribute__(( section(".data") )) = 1;
-
-//resume signal, becomes 1 to signal resume after quiescing
-//static u32 g_vmx_quiesce_resume_signal __attribute__(( section(".data") )) = 0;
-//static u32 g_vmx_lock_quiesce_resume_signal __attribute__(( section(".data") )) = 1;
 
 static void xmhf_smpguest_arch_x86vmx_eventhandler_nmiexception(xc_cpu_t *xc_cpu, struct regs *r);
 
@@ -96,34 +87,6 @@ static void _vmx_ept_flushmappings(void){
   __vmx_invept(VMX_INVEPT_SINGLECONTEXT,
           (u64)xmhfhw_cpu_x86vmx_vmread(VMCS_CONTROL_EPT_POINTER_FULL));
 }
-
-
-/*//quiesce interface to switch all guest cores into hypervisor mode
-//note: we are in atomic processsing mode for this "xc_cpu"
-static void _cpu_arch_x86vmx_quiesce(context_desc_t context_desc){
-        spin_lock(&g_vmx_lock_quiesce);	        		//grab hold of quiesce lock
-		g_xc_cpu[context_desc.cpu_desc.cpu_index].is_quiesced = true;
-        spin_lock(&g_vmx_lock_quiesce_counter);
-        g_vmx_quiesce_counter=0;						//reset quiesce counter
-        spin_unlock(&g_vmx_lock_quiesce_counter);
-        g_vmx_quiesce=1;  								//we are now processing quiesce
-        _vmx_send_quiesce_signal();				        //send all the other CPUs the quiesce signal
-        //_XDPRINTF_("%s(%u): sent quiesce signal...\n", __FUNCTION__, context_desc.cpu_desc.cpu_index);
-        while(g_vmx_quiesce_counter < (g_xc_primary_partition[context_desc.partition_desc.partition_index].numcpus-1) );         //wait for all the remaining CPUs to quiesce
-}
-
-static void _cpu_arch_x86vmx_endquiesce(context_desc_t context_desc){
-
-        g_vmx_quiesce_resume_counter=0;		        //set resume signal to resume the cores that are quiesced
-        g_vmx_quiesce_resume_signal=1;
-        while(g_vmx_quiesce_resume_counter < (g_xc_primary_partition[context_desc.partition_desc.partition_index].numcpus-1) );	//wait for all cores to resume
-		g_xc_cpu[context_desc.cpu_desc.cpu_index].is_quiesced = false;
-        g_vmx_quiesce=0;  							// we are out of quiesce at this point
-        spin_lock(&g_vmx_lock_quiesce_resume_signal);
-        g_vmx_quiesce_resume_signal=0;				        //reset resume signal
-        spin_unlock(&g_vmx_lock_quiesce_resume_signal);
-        spin_unlock(&g_vmx_lock_quiesce);         //release quiesce lock
-}*/
 
 //**
 //quiescing handler for #NMI (non-maskable interrupt) exception event
@@ -159,23 +122,8 @@ static void xmhf_smpguest_arch_x86vmx_eventhandler_nmiexception(xc_cpu_t *xc_cpu
 	nmiinhvm = ( (_vmx_vmcs_info_vmexit_reason == VMX_VMEXIT_EXCEPTION) && ((_vmx_vmcs_info_vmexit_interrupt_information & INTR_INFO_VECTOR_MASK) == 2) ) ? 1 : 0;
 
 	if(g_vmx_quiesce){ //if g_vmx_quiesce =1 process quiesce regardless of where NMI originated from
-		//if this core has been quiesced, simply return
-			//if(xc_cpu->is_quiesced)
-			//	return;
-
-			//xc_cpu->is_quiesced=1;
-
-			//wait until quiesceing is finished
-			//while(!g_vmx_quiesce_resume_signal);
-
 			//flush EPT TLB
 			_vmx_ept_flushmappings();
-
-			//spin_lock(&g_vmx_lock_quiesce_resume_counter);
-			//g_vmx_quiesce_resume_counter++;
-			//spin_unlock(&g_vmx_lock_quiesce_resume_counter);
-
-			//xc_cpu->is_quiesced=0;
 
 			//increment quiesce counter
 			spin_lock(&g_vmx_lock_quiesce_counter);
