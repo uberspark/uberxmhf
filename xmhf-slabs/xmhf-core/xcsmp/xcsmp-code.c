@@ -89,29 +89,14 @@ bool xcsmp_entry(void){
 
 //executes in the context of each physical CPU
 void xcsmp_smpstart(u32 cpuid, bool isbsp){
-    static volatile bool bspdone=false;
     static u32 _smpinitialize_lock = 1;
     context_desc_t context_desc;
-
-    if(!isbsp){
-        //this is an AP, so we wait until BSP gives us go ahead
-        _XDPRINTF_("%s: AP: cpuid=%u, is_bsp=%u, rsp=%016llx. Waiting to proceed...\n", __FUNCTION__, (u32)cpuid, (u32)isbsp, read_rsp());
-        while(!bspdone);
-        _XDPRINTF_("%s: AP: cpuid=%u, is_bsp=%u, rsp=%016llx. Moving on...\n", __FUNCTION__, (u32)cpuid, (u32)isbsp, read_rsp());
-    }else{
-        _XDPRINTF_("%s: BSP: cpuid=%u, is_bsp=%u, rsp=%016llx\n", __FUNCTION__, (u32)cpuid, (u32)isbsp, read_rsp());
-        _XDPRINTF_("%s: BSP going first...\n", __FUNCTION__);
-    }
 
     //serialize execution
     spin_lock(&_smpinitialize_lock);
 
-        //increment CPU count
-        _cpucount++;
-
         //initialize CPU
         xcsmp_arch_initializecpu(cpuid, isbsp);
-
 
         //add cpu to rich guest partition
         //TODO: check if this CPU is allocated to the "rich" guest. if so, pass it on to
@@ -132,18 +117,21 @@ void xcsmp_smpstart(u32 cpuid, bool isbsp){
             _XDPRINTF_("%s(%u): came back into core\n", __FUNCTION__, context_desc.cpu_desc.cpu_index);
         }
 
+        if(!isbsp){
+            _XDPRINTF_("%s(%u): starting in partition...\n", __FUNCTION__, context_desc.cpu_desc.cpu_index);
+            //increment CPU count
+            _cpucount++;
+        }
+
     spin_unlock(&_smpinitialize_lock);
 
 
-    //if this is the BSP, then signal that APs can proceed
-    if(isbsp)
-        bspdone=true;
-
-	_XDPRINTF_("%s(%u): isbsp=%u, syncing...\n", __FUNCTION__, cpuid, isbsp);
-    while(_cpucount < xcbootinfo->cpuinfo_numentries);
-
-	//start cpu in corresponding partition
-	_XDPRINTF_("%s(%u): starting in partition...\n", __FUNCTION__, context_desc.cpu_desc.cpu_index);
+    if(isbsp){
+        _XDPRINTF_("%s: BSP: waiting for all APs to get into partition...\n", __FUNCTION__);
+        while(_cpucount < (xcbootinfo->cpuinfo_numentries-1));
+        xmhf_baseplatform_arch_x86_udelay(6666);
+        _XDPRINTF_("%s: BSP: APs all in partition, kickstarting BSP within partition...\n", __FUNCTION__);
+    }
 
 	if(!XMHF_SLAB_CALL(xc_api_partition_startcpu(context_desc))){
         _XDPRINTF_("%s(%u):%u: Should never be here. Halting!\n", __FUNCTION__, (u32)cpuid, __LINE__);
@@ -153,5 +141,5 @@ void xcsmp_smpstart(u32 cpuid, bool isbsp){
 }
 
 ///////
-XMHF_SLAB("initbs")
+XMHF_SLAB("xcsmp")
 
