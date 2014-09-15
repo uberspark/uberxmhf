@@ -55,6 +55,8 @@
 #include <xcsmp.h>
 #include <xcrichguest.h>
 
+static volatile u32 _cpucount = 0; // count of platform cpus
+
 bool xcsmp_entry(void){
 
 #if defined (__DMAP__)
@@ -65,6 +67,47 @@ bool xcsmp_entry(void){
 		_XDPRINTF_("\nRuntime: We should NEVER get here!");
 		HALT();
 	}
+
+}
+
+//executes in the context of each physical CPU
+void xcsmp_smpstart(u32 cpuid, bool isbsp){
+    static volatile bool bspdone=false;
+    static u32 _smpinitialize_lock = 1;
+
+    if(!isbsp){
+        //this is an AP, so we wait until BSP gives us go ahead
+        _XDPRINTF_("%s: AP: cpuid=%u, is_bsp=%u, rsp=%016llx. Waiting to proceed...\n", __FUNCTION__, (u32)cpuid, (u32)isbsp, read_rsp());
+        while(!bspdone);
+        _XDPRINTF_("%s: AP: cpuid=%u, is_bsp=%u, rsp=%016llx. Moving on...\n", __FUNCTION__, (u32)cpuid, (u32)isbsp, read_rsp());
+    }else{
+        _XDPRINTF_("%s: BSP: cpuid=%u, is_bsp=%u, rsp=%016llx\n", __FUNCTION__, (u32)cpuid, (u32)isbsp, read_rsp());
+        _XDPRINTF_("%s: BSP going first...\n", __FUNCTION__);
+    }
+
+    //serialize execution
+    spin_lock(&_smpinitialize_lock);
+        //increment CPU count
+        _cpucount++;
+
+        //initialize CPU
+        xcsmp_arch_initializecpu(cpuid, isbsp);
+
+    spin_unlock(&_smpinitialize_lock);
+
+    //if this is the BSP, then signal that APs can proceed
+    if(isbsp)
+        bspdone=true;
+
+	_XDPRINTF_("%s(%u): isbsp=%u, syncing...\n", __FUNCTION__, cpuid, isbsp);
+    while(_cpucount < xcbootinfo->cpuinfo_numentries);
+
+	_XDPRINTF_("%s(%u): Proceeding to call xcrichguest_entry...\n", __FUNCTION__, (u32)cpuid);
+
+	XMHF_SLAB_CALL(xcrichguest_entry(cpuid, isbsp));
+
+	_XDPRINTF_("%s(%u):%u: Should never be here. Halting!\n", __FUNCTION__, (u32)cpuid, __LINE__);
+	HALT();
 
 }
 

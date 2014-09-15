@@ -54,13 +54,14 @@
 #ifndef __ASSEMBLY__
 
 bool xcsmp_entry(void);
+void xcsmp_smpstart(u32 cpuid, bool isbsp);
 
 //----------------------------------------------------------------------
 //ARCH. BACKENDS
 //----------------------------------------------------------------------
 bool xcsmp_arch_dmaprot_reinitialize(void);
 bool xcsmp_arch_smpinitialize(void);
-
+void xcsmp_arch_initializecpu(u32 cpuid, bool isbsp);
 
 #endif //__ASSEMBLY__
 
