@@ -74,6 +74,7 @@ bool xcsmp_entry(void){
 void xcsmp_smpstart(u32 cpuid, bool isbsp){
     static volatile bool bspdone=false;
     static u32 _smpinitialize_lock = 1;
+    context_desc_t context_desc;
 
     if(!isbsp){
         //this is an AP, so we wait until BSP gives us go ahead
@@ -87,13 +88,19 @@ void xcsmp_smpstart(u32 cpuid, bool isbsp){
 
     //serialize execution
     spin_lock(&_smpinitialize_lock);
+
         //increment CPU count
         _cpucount++;
 
         //initialize CPU
         xcsmp_arch_initializecpu(cpuid, isbsp);
 
+
+        _XDPRINTF_("%s(%u): Proceeding to call xcrichguest_entry...\n", __FUNCTION__, (u32)cpuid);
+        context_desc = XMHF_SLAB_CALL(xcrichguest_entry(cpuid, isbsp));
+
     spin_unlock(&_smpinitialize_lock);
+
 
     //if this is the BSP, then signal that APs can proceed
     if(isbsp)
@@ -102,12 +109,13 @@ void xcsmp_smpstart(u32 cpuid, bool isbsp){
 	_XDPRINTF_("%s(%u): isbsp=%u, syncing...\n", __FUNCTION__, cpuid, isbsp);
     while(_cpucount < xcbootinfo->cpuinfo_numentries);
 
-	_XDPRINTF_("%s(%u): Proceeding to call xcrichguest_entry...\n", __FUNCTION__, (u32)cpuid);
+	//start cpu in corresponding partition
+	_XDPRINTF_("%s(%u): starting in partition...\n", __FUNCTION__, context_desc.cpu_desc.cpu_index);
 
-	XMHF_SLAB_CALL(xcrichguest_entry(cpuid, isbsp));
-
-	_XDPRINTF_("%s(%u):%u: Should never be here. Halting!\n", __FUNCTION__, (u32)cpuid, __LINE__);
-	HALT();
+	if(!XMHF_SLAB_CALL(xc_api_partition_startcpu(context_desc))){
+        _XDPRINTF_("%s(%u):%u: Should never be here. Halting!\n", __FUNCTION__, (u32)cpuid, __LINE__);
+        HALT();
+	}
 
 }
 
