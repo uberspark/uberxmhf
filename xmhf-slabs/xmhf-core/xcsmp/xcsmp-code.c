@@ -113,8 +113,12 @@ void xcsmp_smpstart(u32 cpuid, bool isbsp){
         xcsmp_arch_initializecpu(cpuid, isbsp);
 
 
-        _XDPRINTF_("%s(%u): Proceeding to call xcrichguest_entry...\n", __FUNCTION__, (u32)cpuid);
-        context_desc = XMHF_SLAB_CALL(xcrichguest_entry(xc_richguest_partition_index, cpuid, isbsp));
+        //add cpu to rich guest partition
+        //TODO: check if this CPU is allocated to the "rich" guest. if so, pass it on to
+        //the rich guest initialization procedure. if the CPU is not allocated to the
+        //rich guest, enter it into a CPU pool for use by other partitions
+        _XDPRINTF_("%s(%u): Proceeding to call xcrichguest_addcpu...\n", __FUNCTION__, (u32)cpuid);
+        context_desc = XMHF_SLAB_CALL(xcrichguest_addcpu(xc_richguest_partition_index, cpuid, isbsp));
 
     spin_unlock(&_smpinitialize_lock);
 

@@ -57,7 +57,7 @@
 
 //*
 //add given cpu to the rich guest partition
-static context_desc_t _xcrichguest_setup(u32 partition_index, u32 cpuid, bool is_bsp){
+static context_desc_t _xcrichguest_addcpu(u32 partition_index, u32 cpuid, bool is_bsp){
 	context_desc_t context_desc;
 
 	//add cpu to the richguest partition
@@ -79,9 +79,7 @@ void xcrichguest_initialize(u32 partition_index){
 	xcrichguest_arch_initialize(partition_index);
 }
 
-//we get control here in the context of *each* physical CPU core
-//bool xcrichguest_entry(u32 cpuid, bool is_bsp){
-context_desc_t xcrichguest_entry(u32 partition_index, u32 cpuid, bool is_bsp){
+context_desc_t xcrichguest_addcpu(u32 partition_index, u32 cpuid, bool is_bsp){
 
 	//static u32 _xc_startup_hypappmain_counter = 0;
 	//static u32 _xc_startup_hypappmain_counter_lock = 1;
@@ -116,11 +114,7 @@ context_desc_t xcrichguest_entry(u32 partition_index, u32 cpuid, bool is_bsp){
 	}*/
 
 
-	//add cpu to rich guest partition
-	//TODO: check if this CPU is allocated to the "rich" guest. if so, pass it on to
-	//the rich guest initialization procedure. if the CPU is not allocated to the
-	//rich guest, enter it into a CPU pool for use by other partitions
-	context_desc=_xcrichguest_setup(partition_index, cpuid, is_bsp);
+	context_desc=_xcrichguest_addcpu(partition_index, cpuid, is_bsp);
 
 	if(context_desc.cpu_desc.cpu_index == XC_PARTITION_INDEX_INVALID || context_desc.partition_desc.partition_index == XC_PARTITION_INDEX_INVALID){
 		_XDPRINTF_("%s(%u): Fatal error, could not add cpu to rich guest. Halting!\n", __FUNCTION__, cpuid);
