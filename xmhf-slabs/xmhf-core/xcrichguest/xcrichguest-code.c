@@ -77,21 +77,23 @@ static context_desc_t _xcrichguest_setup(u32 partition_index, u32 cpuid, bool is
 
 
 //we get control here in the context of *each* physical CPU core
-bool xcrichguest_entry(u32 cpuid, bool is_bsp){
-	static u32 _xc_startup_hypappmain_counter = 0;
-	static u32 _xc_startup_hypappmain_counter_lock = 1;
+//bool xcrichguest_entry(u32 cpuid, bool is_bsp){
+context_desc_t xcrichguest_entry(u32 cpuid, bool is_bsp){
+
+	//static u32 _xc_startup_hypappmain_counter = 0;
+	//static u32 _xc_startup_hypappmain_counter_lock = 1;
 	context_desc_t context_desc;
-	static volatile bool bsp_done=false;
+	//static volatile bool bsp_done=false;
 	static u32 xc_richguest_partition_index=XC_PARTITION_INDEX_INVALID;
 
-	_XDPRINTF_("%s(%u): is_bsp=%u\n", __FUNCTION__, cpuid, is_bsp);
+	//_XDPRINTF_("%s(%u): is_bsp=%u\n", __FUNCTION__, cpuid, is_bsp);
 
 	//ensure BSP is the first to grab the lock below
-	if(!is_bsp)
-		while(!bsp_done);
+	//if(!is_bsp)
+	//	while(!bsp_done);
 
 	//serialize execution
-    spin_lock(&_xc_startup_hypappmain_counter_lock);
+    //spin_lock(&_xc_startup_hypappmain_counter_lock);
 
 	//[debug]
 	_XDPRINTF_("%s(%u): is_bsp=%u...\n", __FUNCTION__, cpuid, is_bsp);
@@ -134,30 +136,32 @@ bool xcrichguest_entry(u32 cpuid, bool is_bsp){
 		_XDPRINTF_("%s(%u): came back into core\n", __FUNCTION__, context_desc.cpu_desc.cpu_index);
 	}
 
-    _xc_startup_hypappmain_counter++;
+    //_xc_startup_hypappmain_counter++;
 
     //end serialized execution
-    spin_unlock(&_xc_startup_hypappmain_counter_lock);
+    //spin_unlock(&_xc_startup_hypappmain_counter_lock);
 
 
 	//if we are the BSP, signal that APs can go ahead and do the above setup
-	if(is_bsp)
-		bsp_done=true;
+	//if(is_bsp)
+	//	bsp_done=true;
 
-	_XDPRINTF_("%s(%u): isbsp=%u, Waiting for all cpus fo cycle through hypapp main...\n", __FUNCTION__, context_desc.cpu_desc.cpu_index, context_desc.cpu_desc.isbsp);
+	//_XDPRINTF_("%s(%u): isbsp=%u, Waiting for all cpus fo cycle through hypapp main...\n", __FUNCTION__, context_desc.cpu_desc.cpu_index, context_desc.cpu_desc.isbsp);
 
 	//wait for hypapp main to execute on all the cpus
-	while(_xc_startup_hypappmain_counter < xcbootinfo->cpuinfo_numentries);
+	//while(_xc_startup_hypappmain_counter < xcbootinfo->cpuinfo_numentries);
 
 
-	//start cpu in corresponding partition
+	/*//start cpu in corresponding partition
 	_XDPRINTF_("%s(%u): starting in partition...\n", __FUNCTION__, context_desc.cpu_desc.cpu_index);
 
 	//xmhf_partition_start(context_desc.cpu_desc.cpu_index);
 	if(!XMHF_SLAB_CALL(xc_api_partition_startcpu(context_desc))){
 		_XDPRINTF_("\n%s: should not be here. HALTING!", __FUNCTION__);
 		HALT();
-	}
+	}*/
+
+	return context_desc;
 }
 
 ///////
