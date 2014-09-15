@@ -120,6 +120,18 @@ void xcsmp_smpstart(u32 cpuid, bool isbsp){
         _XDPRINTF_("%s(%u): Proceeding to call xcrichguest_addcpu...\n", __FUNCTION__, (u32)cpuid);
         context_desc = XMHF_SLAB_CALL(xcrichguest_addcpu(xc_richguest_partition_index, cpuid, isbsp));
 
+       	//call hypapp initialization function
+        {
+            hypapp_env_block_t hypappenvb;
+
+            hypappenvb.runtimephysmembase = (u32)xcbootinfo->physmem_base;
+            hypappenvb.runtimesize = (u32)xcbootinfo->size;
+
+            _XDPRINTF_("%s(%u): proceeding to call xmhfhypapp_main...\n", __FUNCTION__, context_desc.cpu_desc.cpu_index);
+            XMHF_SLAB_CALL(xmhf_hypapp_initialization(context_desc, hypappenvb));
+            _XDPRINTF_("%s(%u): came back into core\n", __FUNCTION__, context_desc.cpu_desc.cpu_index);
+        }
+
     spin_unlock(&_smpinitialize_lock);
 
 

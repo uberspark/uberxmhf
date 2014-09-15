@@ -89,19 +89,6 @@ context_desc_t xcrichguest_addcpu(u32 partition_index, u32 cpuid, bool is_bsp){
 		HALT();
 	}
 
-	//call hypapp main function
-	{
-		hypapp_env_block_t hypappenvb;
-
-		hypappenvb.runtimephysmembase = (u32)xcbootinfo->physmem_base;
-		hypappenvb.runtimesize = (u32)xcbootinfo->size;
-
-		//call hypapp main
-		_XDPRINTF_("%s(%u): proceeding to call xmhfhypapp_main...\n", __FUNCTION__, context_desc.cpu_desc.cpu_index);
-		XMHF_SLAB_CALL(xmhf_hypapp_initialization(context_desc, hypappenvb));
-		_XDPRINTF_("%s(%u): came back into core\n", __FUNCTION__, context_desc.cpu_desc.cpu_index);
-	}
-
 	return context_desc;
 }
 
