@@ -197,16 +197,27 @@ static void xmhf_smpguest_arch_x86vmx_eventhandler_nmiexception(xc_cpu_t *xc_cpu
 
 }
 
+
+//----------------------------------------------------------------------
+
+
 //*
 void xc_api_hpt_arch_flushcaches(context_desc_t context_desc, bool dosmpflush){
-		if(dosmpflush)
-			_cpu_arch_x86vmx_quiesce(context_desc);
+    //if we are not doing a SMP flush just invalidate and return
+    if(!dosmpflush){
+        _vmx_ept_flushmappings();
+        return;
+    }
 
-		_vmx_ept_flushmappings();
-
-		if(dosmpflush)
-			_cpu_arch_x86vmx_endquiesce(context_desc);
+    //we are doing a SMP flush
+	_cpu_arch_x86vmx_quiesce(context_desc);
+	_vmx_ept_flushmappings();
+	_cpu_arch_x86vmx_endquiesce(context_desc);
 }
+
+
+
+//----------------------------------------------------------------------
 
 
 u64 xc_api_hpt_arch_getentry(context_desc_t context_desc, u64 gpa){
