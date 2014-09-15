@@ -62,7 +62,7 @@
 //ARCH. BACKENDS
 //----------------------------------------------------------------------
 void xcexhub_arch_initialize(void);
-void xmhf_xcphandler_arch_hub(u64 vector, void *exdata);
+bool xmhf_xcphandler_arch_hub(u64 vector, void *exdata);
 
 #endif	//__ASSEMBLY__
 
