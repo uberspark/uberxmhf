@@ -305,9 +305,9 @@ static void _vmx_intercept_handler(context_desc_t context_desc, struct regs x86g
 
 	//make sure we have no nested events
 	if( inforegs.info_idt_vectoring_information & 0x80000000){
-		_XDPRINTF_("%s(%u): HALT; Nested events unhandled with hwp:0x%08x\n", __FUNCTION__,
+		_XDPRINTF_("%s(%u): Halting: Nested events unhandled with hwp:0x%08x\n", __FUNCTION__,
 			context_desc.cpu_desc.cpu_index, inforegs.info_idt_vectoring_information);
-		HALT();
+        HALT();
 	}
 
     //_XDPRINTF_("%s: Intercept %08x\n", __FUNCTION__, (u32)inforegs.info_vmexit_reason);
