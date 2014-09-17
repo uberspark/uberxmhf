@@ -55,11 +55,17 @@
 
 #include <xcdev.h>
 
+static u8 vtd_ret_table[PAGE_SIZE_4K]; //4KB Vt-d Root-Entry table
+
 bool xcdev_arch_initialize(void){
 
 	vtd_drhd_handle_t drhd_handle;
 	u32 vtd_dmar_table_physical_address=0;
 	vtd_drhd_handle_t vtd_drhd_maxhandle;
+
+	//zero out RET; will be used to prevent DMA reads and writes
+	//for the entire system
+	memset((void *)&vtd_ret_table, 0, sizeof(vtd_ret_table));
 
 	//scan for available DRHD units in the platform
 	if(!xmhfhw_platform_x86pc_vtd_scanfor_drhd_units(&vtd_drhd_maxhandle, &vtd_dmar_table_physical_address)){
@@ -83,10 +89,21 @@ bool xcdev_arch_initialize(void){
 			return false;
 		}
 
-        //cap.value = xmhfhw_platform_x86pc_vtd_drhd_reg_read(drhd_handle, VTD_CAP_REG_OFF);
-        //ecap.value = xmhfhw_platform_x86pc_vtd_drhd_reg_read(drhd_handle, VTD_ECAP_REG_OFF);
+		//set DRHD root entry table
+		if(!xmhfhw_platform_x86pc_vtd_drhd_set_root_entry_table(drhd_handle, (u8 *)&vtd_ret_table))
+			return false;
 
-        //_XDPRINTF_(" cap.bits.sps=%x, cap.bits.sagaw=%x, ecap=%016llx\n", cap.bits.sps, cap.bits.sagaw, ecap.value);
+		//invalidate caches
+		if(!xmhfhw_platform_x86pc_vtd_drhd_invalidatecaches(drhd_handle))
+			return false;
+
+		//enable VT-d translation
+		xmhfhw_platform_x86pc_vtd_drhd_enable_translation(drhd_handle);
+
+		//disable PMRs now (since DMA protection is active via translation)
+		xmhfhw_platform_x86pc_vtd_drhd_disable_pmr(drhd_handle);
+
+		_XDPRINTF_("%s: Successfully setup DRHD unit %u\n", __FUNCTION__, drhd_handle);
 	}
 
 	//zap VT-d presence in ACPI table...
