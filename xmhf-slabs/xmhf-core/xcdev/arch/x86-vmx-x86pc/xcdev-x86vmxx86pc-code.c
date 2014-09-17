@@ -89,5 +89,10 @@ bool xcdev_arch_initialize(void){
         //_XDPRINTF_(" cap.bits.sps=%x, cap.bits.sagaw=%x, ecap=%016llx\n", cap.bits.sps, cap.bits.sagaw, ecap.value);
 	}
 
+	//zap VT-d presence in ACPI table...
+	//TODO: we need to be a little elegant here. eventually need to setup
+	//EPT/NPTs such that the DMAR pages are unmapped for the guest
+	xmhfhw_sysmemaccess_writeu32(vtd_dmar_table_physical_address, 0UL);
+
     return true;
 }

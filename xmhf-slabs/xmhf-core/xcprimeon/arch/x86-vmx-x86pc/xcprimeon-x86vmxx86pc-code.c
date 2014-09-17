@@ -804,11 +804,6 @@ static bool _xcprimeon_vtd_dmaprotect(u32 membase, u32 size){
 
 	}
 
-	/*//zap VT-d presence in ACPI table...
-	//TODO: we need to be a little elegant here. eventually need to setup
-	//EPT/NPTs such that the DMAR pages are unmapped for the guest
-	xmhfhw_sysmemaccess_writeu32(vtd_dmar_table_physical_address, 0UL);
-    */
 
 	//success
 	_XDPRINTF_("\n%s: success, leaving...", __FUNCTION__);
