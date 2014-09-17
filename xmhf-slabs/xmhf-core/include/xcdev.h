@@ -53,6 +53,7 @@
 
 #ifndef __ASSEMBLY__
 
+bool xcdev_initialize(void);
 
 //----------------------------------------------------------------------
 //ARCH. BACKENDS
