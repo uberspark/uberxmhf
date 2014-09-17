@@ -55,17 +55,37 @@
 
 #include <xcdev.h>
 
-static u8 vtd_ret_table[PAGE_SIZE_4K]; //4KB Vt-d Root-Entry table
+__attribute__((aligned(4096))) static vtd_ret_entry_t _vtd_ret[VTD_RET_MAXPTRS];
+__attribute__((aligned(4096))) static vtd_cet_entry_t _vtd_cet[VTD_RET_MAXPTRS][VTD_CET_MAXPTRS];
+
+
+static u64 _xcdev_arch_setup_vtd_retcet(void){
+    u32 i, j;
+
+    for(i=0; i< VTD_RET_MAXPTRS; i++){
+        _vtd_ret[i].qwords[0] = _vtd_ret[i].qwords[1] = 0ULL;
+        _vtd_ret[i].fields.p = 1;
+        _vtd_ret[i].fields.ctp = &_vtd_cet[i];
+
+        for(j=0; j < VTD_CET_MAXPTRS; j++){
+            _vtd_cet[i][j].qwords[0] = _vtd_cet[i][j].qwords[1] = 0ULL;
+        }
+    }
+
+    return (u64)&_vtd_ret;
+}
+
 
 bool xcdev_arch_initialize(void){
-
+    u64 vtd_ret_addr;
 	vtd_drhd_handle_t drhd_handle;
 	u32 vtd_dmar_table_physical_address=0;
 	vtd_drhd_handle_t vtd_drhd_maxhandle;
 
 	//zero out RET; will be used to prevent DMA reads and writes
 	//for the entire system
-	memset((void *)&vtd_ret_table, 0, sizeof(vtd_ret_table));
+	//memset((void *)&vtd_ret_table, 0, sizeof(vtd_ret_table));
+    vtd_ret_addr = _xcdev_arch_setup_vtd_retcet();
 
 	//scan for available DRHD units in the platform
 	if(!xmhfhw_platform_x86pc_vtd_scanfor_drhd_units(&vtd_drhd_maxhandle, &vtd_dmar_table_physical_address)){
@@ -90,7 +110,7 @@ bool xcdev_arch_initialize(void){
 		}
 
 		//set DRHD root entry table
-		if(!xmhfhw_platform_x86pc_vtd_drhd_set_root_entry_table(drhd_handle, (u8 *)&vtd_ret_table))
+		if(!xmhfhw_platform_x86pc_vtd_drhd_set_root_entry_table(drhd_handle, vtd_ret_addr))
 			return false;
 
 		//invalidate caches
