@@ -57,7 +57,32 @@
 
 bool xcdev_arch_initialize(void){
 
+	vtd_drhd_handle_t drhd_handle;
+	u32 vtd_dmar_table_physical_address=0;
+	vtd_drhd_handle_t vtd_drhd_maxhandle;
+
+	//scan for available DRHD units in the platform
+	if(!xmhfhw_platform_x86pc_vtd_scanfor_drhd_units(&vtd_drhd_maxhandle, &vtd_dmar_table_physical_address)){
+        _XDPRINTF_("%s: unable to scan for DRHD units. bailing out!\n", __FUNCTION__);
+		return false;
+	}
+
+    _XDPRINTF_("%s: maxhandle = %u, dmar table addr=0x%08x\n", __FUNCTION__,
+                (u32)vtd_drhd_maxhandle, (u32)vtd_dmar_table_physical_address);
 
 
+	//initialize all DRHD units
+	for(drhd_handle=0; drhd_handle < vtd_drhd_maxhandle; drhd_handle++){
+   		VTD_CAP_REG cap;
+		VTD_ECAP_REG ecap;
 
+		_XDPRINTF_("%s: Setting up DRHD unit %u...\n", __FUNCTION__, drhd_handle);
+
+        cap.value = xmhfhw_platform_x86pc_vtd_drhd_reg_read(drhd_handle, VTD_CAP_REG_OFF);
+        ecap.value = xmhfhw_platform_x86pc_vtd_drhd_reg_read(drhd_handle, VTD_ECAP_REG_OFF);
+
+        _XDPRINTF_(" cap.bits.sps=%x, cap.bits.sagaw=%x, ecap=%016llx\n", cap.bits.sps, cap.bits.sagaw, ecap.value);
+	}
+
+    return true;
 }
