@@ -124,6 +124,33 @@ typedef struct{
 
 typedef u32 vtd_drhd_handle_t;
 
+
+typedef union {
+    u64 qwords[2];
+    struct {
+        u64 p : 1;
+        u64 rsv0 : 11;
+        u64 ctp : 52;
+        u64 rsv1 : 64;
+    }fields;
+} __attribute__((packed)) vtd_ret_entry_t;
+
+typedef union {
+    u64 qwords[2];
+    struct {
+        u64 p : 1;
+        u64 fpd : 1;
+        u64 t : 2;
+        u64 rsv0 : 8;
+        u64 slptptr : 52;
+        u64 aw : 3;
+        u64 ign0 : 4;
+        u64 rsv1 : 1;
+        u64 did : 16;
+        u64 rsv2 : 40;
+    }fields;
+} __attribute__((packed)) vtd_cet_entry_t;
+
 //------------------------------------------------------------------------------
 //VT-d register structure definitions
 
