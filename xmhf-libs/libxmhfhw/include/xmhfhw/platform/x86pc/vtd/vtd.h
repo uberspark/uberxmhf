@@ -154,8 +154,10 @@ typedef union {
 } __attribute__((packed)) vtd_cet_entry_t;
 
 typedef struct {
-    u64 addr_pml4t;
-    u64 addr_pdpt;
+    pml4te_t pml4t[PAE_MAXPTRS_PER_PML4T];
+    pdpte_t pdpt[PAE_MAXPTRS_PER_PDPT];
+    pdte_t pdt[PAE_PTRS_PER_PDPT][PAE_PTRS_PER_PDT];
+    pte_t pt[PAE_PTRS_PER_PDPT][PAE_PTRS_PER_PDT][PAE_PTRS_PER_PT];
 }__attribute__((packed)) vtd_slpgtbl_t;
 
 
