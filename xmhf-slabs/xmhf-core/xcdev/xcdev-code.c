@@ -56,7 +56,7 @@
 
 bool xcdev_initialize(void){
 
-    return true;
+    return xcdev_arch_initialize();
 
 }
 

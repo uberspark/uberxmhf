@@ -54,3 +54,10 @@
 #include <xmhf-debug.h>
 
 #include <xcdev.h>
+
+bool xcdev_arch_initialize(void){
+
+
+
+
+}
