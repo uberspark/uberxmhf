@@ -305,9 +305,9 @@ static void _vmx_intercept_handler(context_desc_t context_desc, struct regs x86g
 
 	//make sure we have no nested events
 	if( inforegs.info_idt_vectoring_information & 0x80000000){
-		_XDPRINTF_("%s(%u): HALT; Nested events unhandled with hwp:0x%08x\n", __FUNCTION__,
+		_XDPRINTF_("%s(%u): Halting: Nested events unhandled with hwp:0x%08x\n", __FUNCTION__,
 			context_desc.cpu_desc.cpu_index, inforegs.info_idt_vectoring_information);
-		HALT();
+        HALT();
 	}
 
     //_XDPRINTF_("%s: Intercept %08x\n", __FUNCTION__, (u32)inforegs.info_vmexit_reason);
@@ -654,6 +654,9 @@ void xcihub_arch_entry(void) __attribute__((naked)){
             "pushq %%rsi \r\n"
             "pushq %%rdi \r\n"
 
+            "movq %5, %%rax \r\n"               //clear any pending (NMI) event injection
+            "mov $0, %%rbx \r\n"
+            "vmwrite %%rbx, %%rax \r\n"
 			"movq %0, %%rax \r\n"				//rax = VMCS_INFO_VMEXIT_REASON
 			"vmread %%rax, %%rbx \r\n"			//ebx = VMCS[VMCS_INFO_VMEXIT_REASON]
 			"cmpl %1, %%ebx \r\n"				//if (ebx == VMX_VMEXIT_EXCEPTION)
@@ -686,12 +689,13 @@ void xcihub_arch_entry(void) __attribute__((naked)){
 			"int $0x03\r\n"
 			"hlt\r\n"
 			: //no outputs
-			: "i" (VMCS_INFO_VMEXIT_REASON), "i" (VMX_VMEXIT_EXCEPTION), "i" (VMCS_INFO_VMEXIT_INTERRUPT_INFORMATION), "i" (INTR_INFO_VECTOR_MASK), "i" (0x2)
+			: "i" (VMCS_INFO_VMEXIT_REASON), "i" (VMX_VMEXIT_EXCEPTION),
+              "i" (VMCS_INFO_VMEXIT_INTERRUPT_INFORMATION), "i" (INTR_INFO_VECTOR_MASK),
+              "i" (0x2), "i" (VMCS_CONTROL_VM_ENTRY_INTERRUPTION_INFORMATION)
 			: //no clobber
 		);
 
 }
-
 
 
 

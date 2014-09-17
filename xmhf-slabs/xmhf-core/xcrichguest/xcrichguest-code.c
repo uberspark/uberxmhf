@@ -57,7 +57,7 @@
 
 //*
 //add given cpu to the rich guest partition
-static context_desc_t _xcrichguest_setup(u32 partition_index, u32 cpuid, bool is_bsp){
+static context_desc_t _xcrichguest_addcpu(u32 partition_index, u32 cpuid, bool is_bsp){
 	context_desc_t context_desc;
 
 	//add cpu to the richguest partition
@@ -75,89 +75,21 @@ static context_desc_t _xcrichguest_setup(u32 partition_index, u32 cpuid, bool is
 	return context_desc;
 }
 
+void xcrichguest_initialize(u32 partition_index){
+	xcrichguest_arch_initialize(partition_index);
+}
 
-//we get control here in the context of *each* physical CPU core
-bool xcrichguest_entry(u32 cpuid, bool is_bsp){
-	static u32 _xc_startup_hypappmain_counter = 0;
-	static u32 _xc_startup_hypappmain_counter_lock = 1;
+context_desc_t xcrichguest_addcpu(u32 partition_index, u32 cpuid, bool is_bsp){
 	context_desc_t context_desc;
-	static volatile bool bsp_done=false;
-	static u32 xc_richguest_partition_index=XC_PARTITION_INDEX_INVALID;
 
-	_XDPRINTF_("%s(%u): is_bsp=%u\n", __FUNCTION__, cpuid, is_bsp);
-
-	//ensure BSP is the first to grab the lock below
-	if(!is_bsp)
-		while(!bsp_done);
-
-	//serialize execution
-    spin_lock(&_xc_startup_hypappmain_counter_lock);
-
-	//[debug]
-	_XDPRINTF_("%s(%u): is_bsp=%u...\n", __FUNCTION__, cpuid, is_bsp);
-
-	//create rich guest partition if we are the BSP
-	if(is_bsp){
-		_XDPRINTF_("%s(%u): proceeding to create rich guest partition...\n", __FUNCTION__, cpuid);
-		xc_richguest_partition_index = XMHF_SLAB_CALL(xc_api_partition_create(XC_PARTITION_PRIMARY));
-		if(xc_richguest_partition_index == XC_PARTITION_INDEX_INVALID){
-			_XDPRINTF_("%s(%u): Fatal error, could not create rich guest partition!\n", __FUNCTION__, cpuid);
-			HALT();
-		}
-		_XDPRINTF_("%s(%u): created rich guest partition %u\n", __FUNCTION__, cpuid, xc_richguest_partition_index);
-
-		xcrichguest_arch_initialize(xc_richguest_partition_index);
-		_XDPRINTF_("\n%s(%u): initialized rich guest partition %u\n", __FUNCTION__, cpuid, xc_richguest_partition_index);
-	}
-
-	//add cpu to rich guest partition
-	//TODO: check if this CPU is allocated to the "rich" guest. if so, pass it on to
-	//the rich guest initialization procedure. if the CPU is not allocated to the
-	//rich guest, enter it into a CPU pool for use by other partitions
-	context_desc=_xcrichguest_setup(xc_richguest_partition_index, cpuid, is_bsp);
+	context_desc=_xcrichguest_addcpu(partition_index, cpuid, is_bsp);
 
 	if(context_desc.cpu_desc.cpu_index == XC_PARTITION_INDEX_INVALID || context_desc.partition_desc.partition_index == XC_PARTITION_INDEX_INVALID){
 		_XDPRINTF_("%s(%u): Fatal error, could not add cpu to rich guest. Halting!\n", __FUNCTION__, cpuid);
 		HALT();
 	}
 
-	//call hypapp main function
-	{
-		hypapp_env_block_t hypappenvb;
-
-		hypappenvb.runtimephysmembase = (u32)xcbootinfo->physmem_base;
-		hypappenvb.runtimesize = (u32)xcbootinfo->size;
-
-		//call hypapp main
-		_XDPRINTF_("%s(%u): proceeding to call xmhfhypapp_main...\n", __FUNCTION__, context_desc.cpu_desc.cpu_index);
-		XMHF_SLAB_CALL(xmhf_hypapp_initialization(context_desc, hypappenvb));
-		_XDPRINTF_("%s(%u): came back into core\n", __FUNCTION__, context_desc.cpu_desc.cpu_index);
-	}
-
-    _xc_startup_hypappmain_counter++;
-
-    //end serialized execution
-    spin_unlock(&_xc_startup_hypappmain_counter_lock);
-
-
-	//if we are the BSP, signal that APs can go ahead and do the above setup
-	if(is_bsp)
-		bsp_done=true;
-
-	_XDPRINTF_("%s(%u): isbsp=%u, Waiting for all cpus fo cycle through hypapp main...\n", __FUNCTION__, context_desc.cpu_desc.cpu_index, context_desc.cpu_desc.isbsp);
-
-	//wait for hypapp main to execute on all the cpus
-	while(_xc_startup_hypappmain_counter < xcbootinfo->cpuinfo_numentries);
-
-
-	//start cpu in corresponding partition
-	_XDPRINTF_("%s(%u): starting in partition...\n", __FUNCTION__, context_desc.cpu_desc.cpu_index);
-
-	//xmhf_partition_start(context_desc.cpu_desc.cpu_index);
-	if(!XMHF_SLAB_CALL(xc_api_partition_startcpu(context_desc))){
-		_XDPRINTF_("\n%s: should not be here. HALTING!", __FUNCTION__);
-		HALT();
-	}
+	return context_desc;
 }
 
 ///////
