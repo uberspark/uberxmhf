@@ -54,6 +54,13 @@
 
 #include <xcdev.h>
 
+bool xcdev_initialize(void){
+
+    return true;
+
+}
+
+
 ///////
 XMHF_SLAB("xcdev")
 
