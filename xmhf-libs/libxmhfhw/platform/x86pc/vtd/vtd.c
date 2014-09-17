@@ -307,6 +307,11 @@ bool xmhfhw_platform_x86pc_vtd_drhd_initialize(vtd_drhd_handle_t drhd_handle){
 			return false;
 		}
 
+        if ( !((cap.bits.sagaw & 0x2) || (cap.bits.sagaw & 0x4)) ){
+            _XDPRINTF_("%s: Error: we only support 3-level or 4-level tables (%x)\n", __FUNCTION__, cap.bits.sagaw);
+			return false;
+        }
+
 		_XDPRINTF_("\nDRHD unit has all required capabilities");
 	}
 

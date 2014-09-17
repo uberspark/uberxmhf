@@ -73,15 +73,20 @@ bool xcdev_arch_initialize(void){
 
 	//initialize all DRHD units
 	for(drhd_handle=0; drhd_handle < vtd_drhd_maxhandle; drhd_handle++){
-   		VTD_CAP_REG cap;
-		VTD_ECAP_REG ecap;
+   		//VTD_CAP_REG cap;
+		//VTD_ECAP_REG ecap;
 
 		_XDPRINTF_("%s: Setting up DRHD unit %u...\n", __FUNCTION__, drhd_handle);
 
-        cap.value = xmhfhw_platform_x86pc_vtd_drhd_reg_read(drhd_handle, VTD_CAP_REG_OFF);
-        ecap.value = xmhfhw_platform_x86pc_vtd_drhd_reg_read(drhd_handle, VTD_ECAP_REG_OFF);
+		if(!xmhfhw_platform_x86pc_vtd_drhd_initialize(drhd_handle) ){
+            _XDPRINTF_("%s: error setting up DRHD unit %u. bailing out!\n", __FUNCTION__, drhd_handle);
+			return false;
+		}
 
-        _XDPRINTF_(" cap.bits.sps=%x, cap.bits.sagaw=%x, ecap=%016llx\n", cap.bits.sps, cap.bits.sagaw, ecap.value);
+        //cap.value = xmhfhw_platform_x86pc_vtd_drhd_reg_read(drhd_handle, VTD_CAP_REG_OFF);
+        //ecap.value = xmhfhw_platform_x86pc_vtd_drhd_reg_read(drhd_handle, VTD_ECAP_REG_OFF);
+
+        //_XDPRINTF_(" cap.bits.sps=%x, cap.bits.sagaw=%x, ecap=%016llx\n", cap.bits.sps, cap.bits.sagaw, ecap.value);
 	}
 
     return true;
