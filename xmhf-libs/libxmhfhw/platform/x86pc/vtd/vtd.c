@@ -409,11 +409,11 @@ bool xmhfhw_platform_x86pc_vtd_drhd_invalidatecaches(vtd_drhd_handle_t drhd_hand
 //the CET, accounting for 32 devices with 8 functions each as per the
 //PCI spec.
 //each CE points to a PDPT type paging structure for  device
-bool xmhfhw_platform_x86pc_vtd_drhd_set_root_entry_table(vtd_drhd_handle_t drhd_handle,  u8 *retbuffer){
+bool xmhfhw_platform_x86pc_vtd_drhd_set_root_entry_table(vtd_drhd_handle_t drhd_handle,  u64 ret_addr){
 	VTD_RTADDR_REG rtaddr;
 	VTD_GCMD_REG gcmd;
 	VTD_GSTS_REG gsts;
-	u32 retbuffer_paddr = hva2spa((u32)retbuffer);
+	u32 retbuffer_paddr = hva2spa((u32)ret_addr);
 	VTD_DRHD *drhd = _vtd_get_drhd_struct(drhd_handle);
 
 	//sanity check

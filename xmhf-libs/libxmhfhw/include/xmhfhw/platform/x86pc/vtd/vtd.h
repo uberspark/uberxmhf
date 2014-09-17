@@ -93,6 +93,8 @@
 #define VTD_WRITE						0x2
 #define VTD_SUPERPAGE				(0x1UL << 7)
 
+#define VTD_RET_MAXPTRS         (256)
+#define VTD_CET_MAXPTRS         (256)
 
 #ifndef __ASSEMBLY__
 
@@ -150,6 +152,13 @@ typedef union {
         u64 rsv2 : 40;
     }fields;
 } __attribute__((packed)) vtd_cet_entry_t;
+
+typedef struct {
+    u64 addr_pml4t;
+    u64 addr_pdpt;
+}__attribute__((packed)) vtd_slpgtbl_t;
+
+
 
 //------------------------------------------------------------------------------
 //VT-d register structure definitions
@@ -369,7 +378,7 @@ typedef struct {
 bool xmhfhw_platform_x86pc_vtd_scanfor_drhd_units(vtd_drhd_handle_t *maxhandle, u32 *dmar_phys_addr_var);
 bool xmhfhw_platform_x86pc_vtd_drhd_initialize(vtd_drhd_handle_t drhd_handle);
 bool xmhfhw_platform_x86pc_vtd_drhd_invalidatecaches(vtd_drhd_handle_t drhd_handle);
-bool xmhfhw_platform_x86pc_vtd_drhd_set_root_entry_table(vtd_drhd_handle_t drhd_handle, u8 *retbuffer);
+bool xmhfhw_platform_x86pc_vtd_drhd_set_root_entry_table(vtd_drhd_handle_t drhd_handle, u64 ret_addr);
 void xmhfhw_platform_x86pc_vtd_drhd_enable_translation(vtd_drhd_handle_t drhd_handle);
 void xmhfhw_platform_x86pc_vtd_drhd_disable_translation(vtd_drhd_handle_t drhd_handle);
 void xmhfhw_platform_x86pc_vtd_drhd_enable_pmr(vtd_drhd_handle_t drhd_handle);
