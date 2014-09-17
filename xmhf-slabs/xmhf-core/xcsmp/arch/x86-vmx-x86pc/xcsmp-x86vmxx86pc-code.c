@@ -59,7 +59,6 @@
 static bool _ap_entry(void) __attribute__((naked));
 void _xcsmp_cpu_x86_smpinitialize_commonstart(void);
 
-static u32 _cpucount = 0; // count of platform cpus
 
 static u64 _xcsmp_ap_entry_lock = 1;
 
@@ -249,70 +248,8 @@ static bool _xcsmp_cpu_x86_isbsp(void){
 void _xcsmp_cpu_x86_smpinitialize_commonstart(void){
 	u32 cpuid = xmhf_baseplatform_arch_x86_getcpulapicid();
 	bool is_bsp = _xcsmp_cpu_x86_isbsp();
-    static volatile bool allgo_signal = false;
-    static u32 _smpinitialize_lock = 1;
 
-    //rendezvous all APs before proceeding
-    if(is_bsp){
-        _XDPRINTF_("%s: BSP: cpuid=%u, is_bsp=%u, rsp=%016llx\n", __FUNCTION__, (u32)cpuid, (u32)is_bsp, read_rsp());
-        _XDPRINTF_("%s: BSP: Waiting for APs...\n", __FUNCTION__);
-        while((_cpucount+1) < xcbootinfo->cpuinfo_numentries);
-        _XDPRINTF_("%s: BSP: All APs booted up. Moving on...\n", __FUNCTION__);
-        allgo_signal=true;
-    }else{
-        _XDPRINTF_("%s: AP: cpuid=%u, is_bsp=%u, rsp=%016llx. Waiting to proceed...\n", __FUNCTION__, (u32)cpuid, (u32)is_bsp, read_rsp());
-        while(!allgo_signal);
-        _XDPRINTF_("%s: AP: cpuid=%u, is_bsp=%u, rsp=%016llx. Moving on...\n", __FUNCTION__, (u32)cpuid, (u32)is_bsp, read_rsp());
-    }
-
-    spin_lock(&_smpinitialize_lock);
-    _XDPRINTF_("%s(%u): proceeding to initialize CPU...\n", __FUNCTION__, (u32)cpuid);
-
-    //load GDT and IDT
-    asm volatile(	"lgdt %0\r\n"
-					"lidt %1\r\n"
-					:
-					: "m" (_gdt), "m" (_idt)
-	);
-
-
-	//set OSXSAVE bit in CR4 to enable us to pass-thru XSETBV intercepts
-	//when the CPU supports XSAVE feature
-	if(xmhf_baseplatform_arch_x86_cpuhasxsavefeature())
-		write_cr4(read_cr4() | CR4_OSXSAVE);
-
-
-	//replicate common MTRR state on this CPU
-	_xcsmp_cpu_x86_restorecpumtrrstate();
-
-	//set bit 5 (EM) of CR0 to be VMX compatible in case of Intel cores
-	write_cr0(read_cr0() | 0x20);
-
-    //load TR, ensure busy bit is clear else LTR will cause a #GP
-    {
-   		TSSENTRY *t;
-		t= (TSSENTRY *)(u32)&_gdt_start[(__TRSEL/sizeof(u64))];
-		t->attributes1= 0x89;
-        asm volatile(
-                "movw %0, %%ax\r\n"
-                "ltr %%ax\r\n"				//load TR
-	     :
-	     : "i"(__TRSEL)
-	     : "eax"
-        );
-
-    }
-
-    _XDPRINTF_("%s(%u): initialized CPU...\n", __FUNCTION__, (u32)cpuid);
-
-    spin_unlock(&_smpinitialize_lock);
-
-	_XDPRINTF_("%s(%u): Proceeding to call init_entry...\n", __FUNCTION__, (u32)cpuid);
-
-	XMHF_SLAB_CALL(xcrichguest_entry(cpuid, is_bsp));
-
-	_XDPRINTF_("%s(%u):%u: Should never be here. Halting!\n", __FUNCTION__, (u32)cpuid, __LINE__);
-	HALT();
+    xcsmp_smpstart(cpuid, is_bsp);
 }
 
 
@@ -391,14 +328,12 @@ static bool _ap_entry(void) __attribute__((naked)){
 					"addl %4, %%eax \r\n"				    // eax = &_cpustack + (sizeof(_cpustack[0]) * eax) + sizeof(_cpustack[0])*/
 					"movl %%eax, %%esp \r\n"				// esp = top of stack for the cpu
 
-                    "lock incl %6 \r\n"
-
                     "jmp _xcsmp_cpu_x86_smpinitialize_commonstart \r\n"
 
 					:
 					:   "i" (X86SMP_LAPIC_ID_MEMORYADDRESS), "m" (_totalcpus), "i" (&_cputable),
-                        "i" (sizeof(xmhf_cputable_t)), "i" (&_init_cpustacks), "i" (sizeof(_init_cpustacks[0])),
-                        "m" (_cpucount)
+                        "i" (sizeof(xmhf_cputable_t)), "i" (&_init_cpustacks), "i" (sizeof(_init_cpustacks[0]))
+
 	);
 
 }
@@ -424,12 +359,10 @@ bool xcsmp_arch_smpinitialize(void){
     //save page table base which we will later replicate on all APs
     _ap_cr3 = read_cr3();
 
-	//increment CPU counter and wake up APS
-	_cpucount++;
+	//wake up APS
 	if(xcbootinfo->cpuinfo_numentries > 1){
 	  _xcsmp_container_vmx_wakeupAPs();
 	}
-
 
 	//fall through to common code
 	_XDPRINTF_("%s: Relinquishing BSP thread and moving to common...\n", __FUNCTION__);
@@ -439,3 +372,47 @@ bool xcsmp_arch_smpinitialize(void){
 	HALT();
 
 }
+
+//initialize CPU
+void xcsmp_arch_initializecpu(u32 cpuid, bool isbsp){
+    _XDPRINTF_("%s(%u): proceeding to initialize CPU...\n", __FUNCTION__, (u32)cpuid);
+
+    //load GDT and IDT
+    asm volatile(	"lgdt %0\r\n"
+					"lidt %1\r\n"
+					:
+					: "m" (_gdt), "m" (_idt)
+	);
+
+
+	//set OSXSAVE bit in CR4 to enable us to pass-thru XSETBV intercepts
+	//when the CPU supports XSAVE feature
+	if(xmhf_baseplatform_arch_x86_cpuhasxsavefeature())
+		write_cr4(read_cr4() | CR4_OSXSAVE);
+
+
+	//replicate common MTRR state on this CPU
+	_xcsmp_cpu_x86_restorecpumtrrstate();
+
+	//set bit 5 (EM) of CR0 to be VMX compatible in case of Intel cores
+	write_cr0(read_cr0() | 0x20);
+
+    //load TR, ensure busy bit is clear else LTR will cause a #GP
+    {
+   		TSSENTRY *t;
+		t= (TSSENTRY *)(u32)&_gdt_start[(__TRSEL/sizeof(u64))];
+		t->attributes1= 0x89;
+        asm volatile(
+                "movw %0, %%ax\r\n"
+                "ltr %%ax\r\n"				//load TR
+	     :
+	     : "i"(__TRSEL)
+	     : "eax"
+        );
+
+    }
+
+    _XDPRINTF_("%s(%u): initialized CPU...\n", __FUNCTION__, (u32)cpuid);
+
+}
+

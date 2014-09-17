@@ -94,7 +94,6 @@
                         "movq %2, %%rbx \r\n"                       \
                         "movq %3, %%rcx \r\n"                       \
                                                                     \
-						"btsq	$0, %0		\r\n"					/*end atomic operation */ \
                                                                     \
                                                                     \
                         "pushq %%rbp \r\n"\
@@ -115,6 +114,11 @@
                         "movq %%rsp, %%rsi \r\n"\
                         "mov %11, %%rdi \r\n"\
                         "callq xmhf_xcphandler_arch_hub \r\n"\
+                        "cmpq $0, %%rax \r\n"\
+                        "jne 3f\r\n"\
+   						"btsq	$0, %0		\r\n"					/*end atomic operation */ \
+                        "hlt\r\n"\
+                        "3:\r\n"\
                         "popq %%r8 \r\n"\
                         "popq %%r9 \r\n"\
                         "popq %%r10 \r\n"\
@@ -131,6 +135,7 @@
                         "popq %%rdi \r\n"\
                         "popq %%rbp \r\n"\
                         "popq %%rsp \r\n"\
+						"btsq	$0, %0		\r\n"					/*end atomic operation */ \
                                                                     \
                                                                     \
                         "iretq\r\n"									\
