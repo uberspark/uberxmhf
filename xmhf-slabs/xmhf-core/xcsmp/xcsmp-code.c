@@ -60,10 +60,9 @@ static u32 xc_richguest_partition_index=XC_PARTITION_INDEX_INVALID;
 
 bool xcsmp_entry(void){
 
-#if defined (__DMAP__)
-	xcsmp_arch_dmaprot_reinitialize();
-#endif
-
+//#if defined (__DMAP__)
+//	xcsmp_arch_dmaprot_reinitialize();
+//#endif
 
 	//create rich guest partition
 	_XDPRINTF_("%s: proceeding to create rich guest partition...\n", __FUNCTION__);
@@ -74,6 +73,12 @@ bool xcsmp_entry(void){
 	}
 	_XDPRINTF_("%s: created rich guest partition %u\n", __FUNCTION__, xc_richguest_partition_index);
 
+
+    //process system device allocation and DMA protection
+    if(!xcdev_initialize(xc_richguest_partition_index)){
+        _XDPRINTF_("%s: Fatal, could not perform system device allocation and DMA protection. Halting!\n", __FUNCTION__);
+        HALT();
+    }
 
     //initialize rich guest partition
     XMHF_SLAB_CALL(xcrichguest_initialize(xc_richguest_partition_index));

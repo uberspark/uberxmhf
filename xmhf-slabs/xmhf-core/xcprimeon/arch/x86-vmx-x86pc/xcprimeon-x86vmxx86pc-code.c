@@ -773,7 +773,7 @@ static bool _xcprimeon_vtd_dmaprotect(u32 membase, u32 size){
 		//(Sec 3.3.2, VT-d Spec. v1.2)
 
 		//set DRHD root entry table
-		if(!xmhfhw_platform_x86pc_vtd_drhd_set_root_entry_table(drhd_handle, (u8 *)&vtd_ret_table))
+		if(!xmhfhw_platform_x86pc_vtd_drhd_set_root_entry_table(drhd_handle, (u64)&vtd_ret_table))
 			return false;
 
 		//invalidate caches
@@ -804,10 +804,6 @@ static bool _xcprimeon_vtd_dmaprotect(u32 membase, u32 size){
 
 	}
 
-	//zap VT-d presence in ACPI table...
-	//TODO: we need to be a little elegant here. eventually need to setup
-	//EPT/NPTs such that the DMAR pages are unmapped for the guest
-	xmhfhw_sysmemaccess_writeu32(vtd_dmar_table_physical_address, 0UL);
 
 	//success
 	_XDPRINTF_("\n%s: success, leaving...", __FUNCTION__);
