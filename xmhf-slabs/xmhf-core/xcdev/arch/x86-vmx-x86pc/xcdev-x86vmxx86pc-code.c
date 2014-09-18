@@ -179,8 +179,6 @@ bool xcdev_arch_initialize(u32 partition_index){
 			for(f=0; f < PCI_FUNCTION_MAX; f++){
 				u32 vendor_id, device_id;
 
-                _xcdev_arch_allocdevicetopartition(partition_index, b, d, f);
-
 				//read device and vendor ids, if no device then both will be 0xFFFF
 				xmhf_baseplatform_arch_x86_pci_type1_read(b, d, f, PCI_CONF_HDR_IDX_VENDOR_ID, sizeof(u16), &vendor_id);
 				xmhf_baseplatform_arch_x86_pci_type1_read(b, d, f, PCI_CONF_HDR_IDX_DEVICE_ID, sizeof(u16), &device_id);
@@ -188,6 +186,7 @@ bool xcdev_arch_initialize(u32 partition_index){
 					break;
 
 				_XDPRINTF_("  %02x:%02x.%1x -> vendor_id=%04x, device_id=%04x\n", b, d, f, vendor_id, device_id);
+                _xcdev_arch_allocdevicetopartition(partition_index, b, d, f);
 
 			}
 		}
@@ -244,51 +243,51 @@ bool xcdev_arch_initialize(u32 partition_index){
         _XDPRINTF_("sizeof(_vtd_ret)=%u\n", sizeof(_vtd_ret));
         _XDPRINTF_("sizeof(_vtd_cet)=%u\n", sizeof(_vtd_cet[0]));
 
-        for(i=0; i < VTD_RET_MAXPTRS; i++){
-            _XDPRINTF_("  %016llx%016llx\n", _vtd_ret[i].qwords[1], _vtd_ret[i].qwords[0]);
-        }
+        //for(i=0; i < VTD_RET_MAXPTRS; i++){
+        //    _XDPRINTF_("  %016llx%016llx\n", _vtd_ret[i].qwords[1], _vtd_ret[i].qwords[0]);
+        //}
 
         //dump context table for bus 0, 2 and 3 [our test system has devices on these buses only]
-        _XDPRINTF_("dumping context table for bus 0 at %016llx...\n", _vtd_cet[0]);
-        for(i=0; i < VTD_CET_MAXPTRS; i++){
-            _XDPRINTF_("  %016llx%016llx\n", _vtd_cet[0][i].qwords[1], _vtd_cet[0][i].qwords[0]);
-        }
-        _XDPRINTF_("dumping context table for bus 2 at %016llx...\n", _vtd_cet[2]);
-        for(i=0; i < VTD_CET_MAXPTRS; i++){
-            _XDPRINTF_("  %016llx%016llx\n", _vtd_cet[2][i].qwords[1], _vtd_cet[2][i].qwords[0]);
-        }
-        _XDPRINTF_("dumping context table for bus 3 at %016llx...\n", _vtd_cet[3]);
-        for(i=0; i < VTD_CET_MAXPTRS; i++){
-            _XDPRINTF_("  %016llx%016llx\n", _vtd_cet[3][i].qwords[1], _vtd_cet[3][i].qwords[0]);
-        }
+        //_XDPRINTF_("dumping context table for bus 0 at %016llx...\n", _vtd_cet[0]);
+        //for(i=0; i < VTD_CET_MAXPTRS; i++){
+        //    _XDPRINTF_("  %016llx%016llx\n", _vtd_cet[0][i].qwords[1], _vtd_cet[0][i].qwords[0]);
+        //}
+        //_XDPRINTF_("dumping context table for bus 2 at %016llx...\n", _vtd_cet[2]);
+        //for(i=0; i < VTD_CET_MAXPTRS; i++){
+        //    _XDPRINTF_("  %016llx%016llx\n", _vtd_cet[2][i].qwords[1], _vtd_cet[2][i].qwords[0]);
+        //}
+        //_XDPRINTF_("dumping context table for bus 3 at %016llx...\n", _vtd_cet[3]);
+        //for(i=0; i < VTD_CET_MAXPTRS; i++){
+        //    _XDPRINTF_("  %016llx%016llx\n", _vtd_cet[3][i].qwords[1], _vtd_cet[3][i].qwords[0]);
+        //}
 
-        _XDPRINTF_("dumping pml4t, sizeof(pml4t=%u)...\n", sizeof(_vtd_slpgtbl[0].pml4t));
-        for(i=0; i < PAE_MAXPTRS_PER_PML4T; i++){
-            _XDPRINTF_("  %016llx\n", _vtd_slpgtbl[0].pml4t[i]);
-        }
+        //_XDPRINTF_("dumping pml4t, sizeof(pml4t=%u)...\n", sizeof(_vtd_slpgtbl[0].pml4t));
+        //for(i=0; i < PAE_MAXPTRS_PER_PML4T; i++){
+        //    _XDPRINTF_("  %016llx\n", _vtd_slpgtbl[0].pml4t[i]);
+        //}
 
-        _XDPRINTF_("dumping pdpt, sizeof(pdpt=%u)...\n", sizeof(_vtd_slpgtbl[0].pdpt));
-        for(i=0; i < PAE_MAXPTRS_PER_PML4T; i++){
-            _XDPRINTF_("  %016llx\n", _vtd_slpgtbl[0].pdpt[i]);
-        }
+        //_XDPRINTF_("dumping pdpt, sizeof(pdpt=%u)...\n", sizeof(_vtd_slpgtbl[0].pdpt));
+        //for(i=0; i < PAE_MAXPTRS_PER_PML4T; i++){
+        //    _XDPRINTF_("  %016llx\n", _vtd_slpgtbl[0].pdpt[i]);
+        //}
 
-        _XDPRINTF_("dumping pdt, sizeof(pdt=%u)...\n", sizeof(_vtd_slpgtbl[0].pdt));
-        for(i=0; i < PAE_PTRS_PER_PDPT; i++){
-            _XDPRINTF_("  pdt[%u] at %016llx\n", i, _vtd_slpgtbl[0].pdt[i]);
-            for(j=0; j < PAE_PTRS_PER_PDT; j++){
-                _XDPRINTF_("      %016llx\n", _vtd_slpgtbl[0].pdt[i][j]);
-            }
-        }
+        //_XDPRINTF_("dumping pdt, sizeof(pdt=%u)...\n", sizeof(_vtd_slpgtbl[0].pdt));
+        //for(i=0; i < PAE_PTRS_PER_PDPT; i++){
+        //    _XDPRINTF_("  pdt[%u] at %016llx\n", i, _vtd_slpgtbl[0].pdt[i]);
+        //    for(j=0; j < PAE_PTRS_PER_PDT; j++){
+        //        _XDPRINTF_("      %016llx\n", _vtd_slpgtbl[0].pdt[i][j]);
+        //    }
+        //}
 
-        _XDPRINTF_("dumping pt, sizeof(pdt=%u)...\n", sizeof(_vtd_slpgtbl[0].pt));
-        for(i=0; i < PAE_PTRS_PER_PDPT; i++){
-            for(j=0; j < PAE_PTRS_PER_PDT; j++){
-                _XDPRINTF_(" pdt[%u][%u] at %016llx\n", i, j, &_vtd_slpgtbl[0].pt[i][j]);
-                for(k=0; k < PAE_PTRS_PER_PDT; k++){
-                    _XDPRINTF_("      %016llx\n", _vtd_slpgtbl[0].pt[i][j][k]);
-                }
-            }
-        }
+        //_XDPRINTF_("dumping pt, sizeof(pdt=%u)...\n", sizeof(_vtd_slpgtbl[0].pt));
+        //for(i=0; i < PAE_PTRS_PER_PDPT; i++){
+        //    for(j=0; j < PAE_PTRS_PER_PDT; j++){
+        //        _XDPRINTF_(" pdt[%u][%u] at %016llx\n", i, j, &_vtd_slpgtbl[0].pt[i][j]);
+        //        for(k=0; k < PAE_PTRS_PER_PDT; k++){
+        //            _XDPRINTF_("      %016llx\n", _vtd_slpgtbl[0].pt[i][j][k]);
+        //        }
+        //    }
+       // }
 
     }
 
