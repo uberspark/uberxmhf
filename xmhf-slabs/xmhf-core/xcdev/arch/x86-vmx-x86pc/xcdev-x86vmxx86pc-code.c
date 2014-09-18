@@ -79,15 +79,17 @@ static bool _xcdev_arch_allocdevicetopartition(u32 partition_index, u32 b, u32 d
     //_XDPRINTF_("%s: Setting cet[%u][%u]...\n", __FUNCTION__,
     //            b, ((d*PCI_FUNCTION_MAX) + f));
 
-    _vtd_cet[b][((d*PCI_FUNCTION_MAX) + f)].fields.p = 1; //present
-    _vtd_cet[b][((d*PCI_FUNCTION_MAX) + f)].fields.did = 1; //domain
 
     if(vtd_pagewalk_level == VTD_PAGEWALK_4LEVEL){
         _vtd_cet[b][((d*PCI_FUNCTION_MAX) + f)].fields.slptptr = ((u64)_vtd_slpgtbl[partition_index].pml4t >> 12);
         _vtd_cet[b][((d*PCI_FUNCTION_MAX) + f)].fields.aw = 2; //4-level
+        _vtd_cet[b][((d*PCI_FUNCTION_MAX) + f)].fields.did = (partition_index + 1); //domain
+        _vtd_cet[b][((d*PCI_FUNCTION_MAX) + f)].fields.p = 1; //present
     }else if (vtd_pagewalk_level == VTD_PAGEWALK_3LEVEL){
         _vtd_cet[b][((d*PCI_FUNCTION_MAX) + f)].fields.slptptr = ((u64)_vtd_slpgtbl[partition_index].pdpt >> 12);
         _vtd_cet[b][((d*PCI_FUNCTION_MAX) + f)].fields.aw = 1; //3-level
+        _vtd_cet[b][((d*PCI_FUNCTION_MAX) + f)].fields.did = (partition_index + 1); //domain
+        _vtd_cet[b][((d*PCI_FUNCTION_MAX) + f)].fields.p = 1; //present
     }else{ //unknown page walk length, fail
         return false;
     }
