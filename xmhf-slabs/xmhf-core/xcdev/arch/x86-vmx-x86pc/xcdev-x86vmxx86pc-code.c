@@ -72,30 +72,33 @@ static vtd_slpgtbl_handle_t _xcdev_arch_setup_vtd_slpgtbl(u32 partition_index){
     }
 
     //setup device memory access for the partition
-    _vtd_slpgtbl[partition_index].pml4t[0].r = 1;
-    _vtd_slpgtbl[partition_index].pml4t[0].w = 1;
-    _vtd_slpgtbl[partition_index].pml4t[0].slpdpt = &_vtd_slpgtbl[partition_index].pdpt;
+    _vtd_slpgtbl[partition_index].pml4t[0].fields.r = 1;
+    _vtd_slpgtbl[partition_index].pml4t[0].fields.w = 1;
+    _vtd_slpgtbl[partition_index].pml4t[0].fields.slpdpt = &_vtd_slpgtbl[partition_index].pdpt;
 
     for(i=0; i < PAE_PTRS_PER_PDPT; i++){
-        _vtd_slpgtbl[partition_index].pdpt[i].r = 1;
-        _vtd_slpgtbl[partition_index].pdpt[i].w = 1;
-        _vtd_slpgtbl[partition_index].pdpt[i].slpdt = &_vtd_slpgtbl[partition_index].pdt[i];
+        _vtd_slpgtbl[partition_index].pdpt[i].fields.r = 1;
+        _vtd_slpgtbl[partition_index].pdpt[i].fields.w = 1;
+        _vtd_slpgtbl[partition_index].pdpt[i].fields.slpdt = &_vtd_slpgtbl[partition_index].pdt[i];
 
         for(j=0; j < PAE_PTRS_PER_PDT; j++){
-            _vtd_slpgtbl[partition_index].pdt[i][j].r = 1;
-            _vtd_slpgtbl[partition_index].pdt[i][j].w = 1;
-            _vtd_slpgtbl[partition_index].pdt[i][j].slpt = &_vtd_slpgtbl[partition_index].pt[i][j];
+            _vtd_slpgtbl[partition_index].pdt[i][j].fields.r = 1;
+            _vtd_slpgtbl[partition_index].pdt[i][j].fields.w = 1;
+            _vtd_slpgtbl[partition_index].pdt[i][j].fields.slpt = &_vtd_slpgtbl[partition_index].pt[i][j];
 
             for(k=0; k < PAE_PTRS_PER_PT; k++){
-                _vtd_slpgtbl[partition_index].pt[i][j][k].r = 1;
-                _vtd_slpgtbl[partition_index].pt[i][j][k].w = 1;
-                _vtd_slpgtbl[partition_index].pt[i][j][k].pageaddr = paddr;
+                _vtd_slpgtbl[partition_index].pt[i][j][k].fields.r = 1;
+                _vtd_slpgtbl[partition_index].pt[i][j][k].fields.w = 1;
+                _vtd_slpgtbl[partition_index].pt[i][j][k].fields.pageaddr = paddr;
                 paddr += PAGE_SIZE_4K;
             }
         }
     }
 
+    retval.addr_vtd_pml4t = _vtd_slpgtbl[partition_index].pml4t;
+    retval.addr_vtd_pdpt = _vtd_slpgtbl[partition_index].pdpt;
 
+    return retval;
 }
 
 static u64 _xcdev_arch_setup_vtd_retcet(void){
@@ -115,16 +118,27 @@ static u64 _xcdev_arch_setup_vtd_retcet(void){
 }
 
 
-bool xcdev_arch_initialize(void){
+bool xcdev_arch_initialize(u32 partition_index){
     u64 vtd_ret_addr;
 	vtd_drhd_handle_t drhd_handle;
 	u32 vtd_dmar_table_physical_address=0;
 	vtd_drhd_handle_t vtd_drhd_maxhandle;
+    vtd_slpgtbl_handle_t vtd_slpgtbl_handle;
 
 	//zero out RET; will be used to prevent DMA reads and writes
 	//for the entire system
 	//memset((void *)&vtd_ret_table, 0, sizeof(vtd_ret_table));
     vtd_ret_addr = _xcdev_arch_setup_vtd_retcet();
+
+    //setup partition vt-d page tables
+    vtd_slpgtbl_handle = _xcdev_arch_setup_vtd_slpgtbl(partition_index);
+
+    if(vtd_slpgtbl_handle.addr_vtd_pml4t == 0 &&
+        vtd_slpgtbl_handle.addr_vtd_pdpt == 0){
+        _XDPRINTF_("%s: unable to initialize vt-d pagetables for partition %u\n", __FUNCTION__, partition_index);
+		return false;
+    }
+
 
 	//scan for available DRHD units in the platform
 	if(!xmhfhw_platform_x86pc_vtd_scanfor_drhd_units(&vtd_drhd_maxhandle, &vtd_dmar_table_physical_address)){

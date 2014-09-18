@@ -75,7 +75,7 @@ bool xcsmp_entry(void){
 
 
     //process system device allocation and DMA protection
-    if(!xcdev_initialize()){
+    if(!xcdev_initialize(xc_richguest_partition_index)){
         _XDPRINTF_("%s: Fatal, could not perform system device allocation and DMA protection. Halting!\n", __FUNCTION__);
         HALT();
     }

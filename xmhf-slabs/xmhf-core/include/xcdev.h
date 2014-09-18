@@ -53,12 +53,12 @@
 
 #ifndef __ASSEMBLY__
 
-bool xcdev_initialize(void);
+bool xcdev_initialize(u32 partition_index);
 
 //----------------------------------------------------------------------
 //ARCH. BACKENDS
 //----------------------------------------------------------------------
-bool xcdev_arch_initialize(void);
+bool xcdev_arch_initialize(u32 partition_index);
 
 #endif //__ASSEMBLY__
 
