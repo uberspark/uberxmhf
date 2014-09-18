@@ -58,6 +58,45 @@
 __attribute__((aligned(4096))) static vtd_ret_entry_t _vtd_ret[VTD_RET_MAXPTRS];
 __attribute__((aligned(4096))) static vtd_cet_entry_t _vtd_cet[VTD_RET_MAXPTRS][VTD_CET_MAXPTRS];
 
+__attribute__((aligned(4096))) static vtd_slpgtbl_t _vtd_slpgtbl[MAX_PRIMARY_PARTITIONS];
+
+
+static vtd_slpgtbl_handle_t _xcdev_arch_setup_vtd_slpgtbl(u32 partition_index){
+    vtd_slpgtbl_handle_t retval = {0, 0};
+    u32 i, j, k, paddr=0;
+
+    //sanity check partition index
+    if(partition_index >= MAX_PRIMARY_PARTITIONS){
+        _XDPRINTF_("%s: Error: partition_index >= MAX_PRIMARY_PARTITIONS. bailing out!\n", __FUNCTION__);
+        return retval;
+    }
+
+    //setup device memory access for the partition
+    _vtd_slpgtbl[partition_index].pml4t[0].r = 1;
+    _vtd_slpgtbl[partition_index].pml4t[0].w = 1;
+    _vtd_slpgtbl[partition_index].pml4t[0].slpdpt = &_vtd_slpgtbl[partition_index].pdpt;
+
+    for(i=0; i < PAE_PTRS_PER_PDPT; i++){
+        _vtd_slpgtbl[partition_index].pdpt[i].r = 1;
+        _vtd_slpgtbl[partition_index].pdpt[i].w = 1;
+        _vtd_slpgtbl[partition_index].pdpt[i].slpdt = &_vtd_slpgtbl[partition_index].pdt[i];
+
+        for(j=0; j < PAE_PTRS_PER_PDT; j++){
+            _vtd_slpgtbl[partition_index].pdt[i][j].r = 1;
+            _vtd_slpgtbl[partition_index].pdt[i][j].w = 1;
+            _vtd_slpgtbl[partition_index].pdt[i][j].slpt = &_vtd_slpgtbl[partition_index].pt[i][j];
+
+            for(k=0; k < PAE_PTRS_PER_PT; k++){
+                _vtd_slpgtbl[partition_index].pt[i][j][k].r = 1;
+                _vtd_slpgtbl[partition_index].pt[i][j][k].w = 1;
+                _vtd_slpgtbl[partition_index].pt[i][j][k].pageaddr = paddr;
+                paddr += PAGE_SIZE_4K;
+            }
+        }
+    }
+
+
+}
 
 static u64 _xcdev_arch_setup_vtd_retcet(void){
     u32 i, j;
