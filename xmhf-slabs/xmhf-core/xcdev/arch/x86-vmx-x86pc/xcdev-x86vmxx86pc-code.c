@@ -78,7 +78,7 @@ static bool _xcdev_arch_allocdevicetopartition(u32 partition_index, u32 b, u32 d
     //_XDPRINTF_("%s: Setting cet[%u][%u]...\n", __FUNCTION__,
     //            b, ((d*PCI_FUNCTION_MAX) + f));
 
-    _vtd_cet[b][((d*PCI_FUNCTION_MAX) + f)].fields.p = 1; //present
+    _vtd_cet[b][((d*PCI_FUNCTION_MAX) + f)].fields.p = 0; //present
     _vtd_cet[b][((d*PCI_FUNCTION_MAX) + f)].fields.did = 1; //domain
     _vtd_cet[b][((d*PCI_FUNCTION_MAX) + f)].fields.aw = 2; //4-level
     _vtd_cet[b][((d*PCI_FUNCTION_MAX) + f)].fields.slptptr = ((u64)_vtd_slpgtbl[partition_index].pml4t >> 12);
