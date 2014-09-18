@@ -54,9 +54,9 @@
 
 #include <xcdev.h>
 
-bool xcdev_initialize(void){
+bool xcdev_initialize(u32 partition_index){
 
-    return xcdev_arch_initialize();
+    return xcdev_arch_initialize(partition_index);
 
 }
 
