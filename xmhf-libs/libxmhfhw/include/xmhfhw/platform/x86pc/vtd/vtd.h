@@ -93,6 +93,10 @@
 #define VTD_WRITE						0x2
 #define VTD_SUPERPAGE				(0x1UL << 7)
 
+//vt-d page table page walk lengths
+#define VTD_PAGEWALK_3LEVEL     (0x3)
+#define VTD_PAGEWALK_4LEVEL     (0x4)
+
 #define VTD_RET_MAXPTRS         (256)
 #define VTD_CET_MAXPTRS         (256)
 
