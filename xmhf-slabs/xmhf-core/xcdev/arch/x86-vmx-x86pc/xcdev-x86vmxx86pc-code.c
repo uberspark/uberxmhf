@@ -61,7 +61,7 @@ __attribute__((aligned(4096))) static vtd_cet_entry_t _vtd_cet[VTD_RET_MAXPTRS][
 __attribute__((aligned(4096))) static vtd_slpgtbl_t _vtd_slpgtbl[MAX_PRIMARY_PARTITIONS];
 
 static vtd_drhd_handle_t vtd_drhd_maxhandle=0;
-static vtd_pagewalk_level = VTD_PAGEWALK_4LEVEL;
+static vtd_pagewalk_level = VTD_PAGEWALK_NONE;
 
 static bool _xcdev_arch_allocdevicetopartition(u32 partition_index, u32 b, u32 d, u32 f){
 	vtd_drhd_handle_t drhd_handle;
@@ -81,12 +81,13 @@ static bool _xcdev_arch_allocdevicetopartition(u32 partition_index, u32 b, u32 d
 
     _vtd_cet[b][((d*PCI_FUNCTION_MAX) + f)].fields.p = 1; //present
     _vtd_cet[b][((d*PCI_FUNCTION_MAX) + f)].fields.did = 1; //domain
-    _vtd_cet[b][((d*PCI_FUNCTION_MAX) + f)].fields.aw = 2; //4-level
 
     if(vtd_pagewalk_level == VTD_PAGEWALK_4LEVEL){
         _vtd_cet[b][((d*PCI_FUNCTION_MAX) + f)].fields.slptptr = ((u64)_vtd_slpgtbl[partition_index].pml4t >> 12);
+        _vtd_cet[b][((d*PCI_FUNCTION_MAX) + f)].fields.aw = 2; //4-level
     }else if (vtd_pagewalk_level == VTD_PAGEWALK_3LEVEL){
         _vtd_cet[b][((d*PCI_FUNCTION_MAX) + f)].fields.slptptr = ((u64)_vtd_slpgtbl[partition_index].pdpt >> 12);
+        _vtd_cet[b][((d*PCI_FUNCTION_MAX) + f)].fields.aw = 1; //3-level
     }else{ //unknown page walk length, fail
         return false;
     }
@@ -190,8 +191,7 @@ bool xcdev_arch_initialize(u32 partition_index){
 
 	//initialize all DRHD units
 	for(drhd_handle=0; drhd_handle < vtd_drhd_maxhandle; drhd_handle++){
-   		//VTD_CAP_REG cap;
-		//VTD_ECAP_REG ecap;
+   		VTD_CAP_REG cap;
 
 		_XDPRINTF_("%s: Setting up DRHD unit %u...\n", __FUNCTION__, drhd_handle);
 
@@ -199,6 +199,31 @@ bool xcdev_arch_initialize(u32 partition_index){
             _XDPRINTF_("%s: error setting up DRHD unit %u. bailing out!\n", __FUNCTION__, drhd_handle);
 			return false;
 		}
+
+        //read and store DRHD supported page-walk length
+        cap.value = xmhfhw_platform_x86pc_vtd_drhd_reg_read(drhd_handle, VTD_CAP_REG_OFF);
+        if(cap.bits.sagaw & 0x2){
+            if(vtd_pagewalk_level == VTD_PAGEWALK_NONE || vtd_pagewalk_level == VTD_PAGEWALK_3LEVEL){
+                vtd_pagewalk_level = VTD_PAGEWALK_3LEVEL;
+                _XDPRINTF_("%s: DRHD unit %u - 3-level page-walk\n", __FUNCTION__, drhd_handle);
+            }else{
+                _XDPRINTF_("%s: Halting: mixed hardware supported page-walk lengths\n",
+                            __FUNCTION__);
+                HALT();
+            }
+        }
+
+        if(cap.bits.sagaw & 0x4){
+            if(vtd_pagewalk_level == VTD_PAGEWALK_NONE || vtd_pagewalk_level == VTD_PAGEWALK_4LEVEL){
+                vtd_pagewalk_level = VTD_PAGEWALK_4LEVEL;
+                _XDPRINTF_("%s: DRHD unit %u - 4-level page-walk\n", __FUNCTION__, drhd_handle);
+            }else{
+                _XDPRINTF_("%s: Halting: mixed hardware supported page-walk lengths\n",
+                            __FUNCTION__);
+                HALT();
+            }
+        }
+
 
 		//set DRHD root entry table
 		if(!xmhfhw_platform_x86pc_vtd_drhd_set_root_entry_table(drhd_handle, vtd_ret_addr))
@@ -222,6 +247,8 @@ bool xcdev_arch_initialize(u32 partition_index){
 	//EPT/NPTs such that the DMAR pages are unmapped for the guest
 	xmhfhw_sysmemaccess_writeu32(vtd_dmar_table_physical_address, 0UL);
 
+
+    _XDPRINTF_("%s: final page-walk level=%u\n", __FUNCTION__, vtd_pagewalk_level);
 
     //setup partition vt-d page tables
     vtd_slpgtbl_handle = _xcdev_arch_setup_vtd_slpgtbl(partition_index);
