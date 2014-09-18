@@ -61,17 +61,23 @@ __attribute__((aligned(4096))) static vtd_cet_entry_t _vtd_cet[VTD_RET_MAXPTRS][
 __attribute__((aligned(4096))) static vtd_slpgtbl_t _vtd_slpgtbl[MAX_PRIMARY_PARTITIONS];
 
 static bool _xcdev_arch_allocdevicetopartition(u32 partition_index, u32 b, u32 d, u32 f){
+    //_XDPRINTF_("%s: partition_index=%u, b=%u, d=%u, f=%u\n", __FUNCTION__,
+    //            partition_index, b, d, f);
 
     //sanity check b, d, f triad
     if ( !(b < PCI_BUS_MAX && d < PCI_DEVICE_MAX && f < PCI_FUNCTION_MAX) )
         return false;
 
     //b is our index into ret
-    // (d* PCI_DEVICE_MAX) + f = index into the cet
-    _vtd_cet[b][(d*PCI_DEVICE_MAX) + f].fields.p = 1; //present
-    _vtd_cet[b][(d*PCI_DEVICE_MAX) + f].fields.did = 1; //domain
-    _vtd_cet[b][(d*PCI_DEVICE_MAX) + f].fields.aw = 2; //4-level
-    _vtd_cet[b][(d*PCI_DEVICE_MAX) + f].fields.slptptr = _vtd_slpgtbl[partition_index].pml4t;
+    // (d* PCI_FUNCTION_MAX) + f = index into the cet
+
+    //_XDPRINTF_("%s: Setting cet[%u][%u]...\n", __FUNCTION__,
+    //            b, ((d*PCI_FUNCTION_MAX) + f));
+
+    _vtd_cet[b][((d*PCI_FUNCTION_MAX) + f)].fields.p = 1; //present
+    _vtd_cet[b][((d*PCI_FUNCTION_MAX) + f)].fields.did = 1; //domain
+    _vtd_cet[b][((d*PCI_FUNCTION_MAX) + f)].fields.aw = 2; //4-level
+    _vtd_cet[b][((d*PCI_FUNCTION_MAX) + f)].fields.slptptr = ((u64)_vtd_slpgtbl[partition_index].pml4t >> 12);
 
     return true;
 }
@@ -86,25 +92,33 @@ static vtd_slpgtbl_handle_t _xcdev_arch_setup_vtd_slpgtbl(u32 partition_index){
         return retval;
     }
 
+    _XDPRINTF_("%s: partition_index=%u, sizeof(vtd_slpgtbl_t)=%u\n", __FUNCTION__,
+                partition_index, sizeof(vtd_slpgtbl_t));
+
+    _XDPRINTF_("%s: pml4t=%016llx \n", __FUNCTION__, (u64)&_vtd_slpgtbl[partition_index].pml4t);
+    _XDPRINTF_("%s: pdpt=%016llx \n", __FUNCTION__, (u64)&_vtd_slpgtbl[partition_index].pdpt);
+    _XDPRINTF_("%s: pdt=%016llx \n", __FUNCTION__, (u64)&_vtd_slpgtbl[partition_index].pdt);
+    _XDPRINTF_("%s: pt=%016llx \n", __FUNCTION__, (u64)&_vtd_slpgtbl[partition_index].pt);
+
     //setup device memory access for the partition
     _vtd_slpgtbl[partition_index].pml4t[0].fields.r = 1;
     _vtd_slpgtbl[partition_index].pml4t[0].fields.w = 1;
-    _vtd_slpgtbl[partition_index].pml4t[0].fields.slpdpt = &_vtd_slpgtbl[partition_index].pdpt;
+    _vtd_slpgtbl[partition_index].pml4t[0].fields.slpdpt = ((u64)&_vtd_slpgtbl[partition_index].pdpt >> 12);
 
     for(i=0; i < PAE_PTRS_PER_PDPT; i++){
         _vtd_slpgtbl[partition_index].pdpt[i].fields.r = 1;
         _vtd_slpgtbl[partition_index].pdpt[i].fields.w = 1;
-        _vtd_slpgtbl[partition_index].pdpt[i].fields.slpdt = &_vtd_slpgtbl[partition_index].pdt[i];
+        _vtd_slpgtbl[partition_index].pdpt[i].fields.slpdt = ((u64)&_vtd_slpgtbl[partition_index].pdt[i] >> 12);
 
         for(j=0; j < PAE_PTRS_PER_PDT; j++){
             _vtd_slpgtbl[partition_index].pdt[i][j].fields.r = 1;
             _vtd_slpgtbl[partition_index].pdt[i][j].fields.w = 1;
-            _vtd_slpgtbl[partition_index].pdt[i][j].fields.slpt = &_vtd_slpgtbl[partition_index].pt[i][j];
+            _vtd_slpgtbl[partition_index].pdt[i][j].fields.slpt = ((u64)&_vtd_slpgtbl[partition_index].pt[i][j] >> 12);
 
             for(k=0; k < PAE_PTRS_PER_PT; k++){
                 _vtd_slpgtbl[partition_index].pt[i][j][k].fields.r = 1;
                 _vtd_slpgtbl[partition_index].pt[i][j][k].fields.w = 1;
-                _vtd_slpgtbl[partition_index].pt[i][j][k].fields.pageaddr = paddr;
+                _vtd_slpgtbl[partition_index].pt[i][j][k].fields.pageaddr = ((u64)paddr >> 12);
                 paddr += PAGE_SIZE_4K;
             }
         }
@@ -122,7 +136,7 @@ static u64 _xcdev_arch_setup_vtd_retcet(void){
     for(i=0; i< VTD_RET_MAXPTRS; i++){
         _vtd_ret[i].qwords[0] = _vtd_ret[i].qwords[1] = 0ULL;
         _vtd_ret[i].fields.p = 1;
-        _vtd_ret[i].fields.ctp = &_vtd_cet[i];
+        _vtd_ret[i].fields.ctp = ((u64)&_vtd_cet[i] >> 12);
 
         for(j=0; j < VTD_CET_MAXPTRS; j++){
             _vtd_cet[i][j].qwords[0] = _vtd_cet[i][j].qwords[1] = 0ULL;
@@ -164,6 +178,9 @@ bool xcdev_arch_initialize(u32 partition_index){
 		for(d=0; d < PCI_DEVICE_MAX; d++){
 			for(f=0; f < PCI_FUNCTION_MAX; f++){
 				u32 vendor_id, device_id;
+
+                _xcdev_arch_allocdevicetopartition(partition_index, b, d, f);
+
 				//read device and vendor ids, if no device then both will be 0xFFFF
 				xmhf_baseplatform_arch_x86_pci_type1_read(b, d, f, PCI_CONF_HDR_IDX_VENDOR_ID, sizeof(u16), &vendor_id);
 				xmhf_baseplatform_arch_x86_pci_type1_read(b, d, f, PCI_CONF_HDR_IDX_DEVICE_ID, sizeof(u16), &device_id);
@@ -171,7 +188,7 @@ bool xcdev_arch_initialize(u32 partition_index){
 					break;
 
 				_XDPRINTF_("  %02x:%02x.%1x -> vendor_id=%04x, device_id=%04x\n", b, d, f, vendor_id, device_id);
-                _xcdev_arch_allocdevicetopartition(partition_index, b, d, f);
+
 			}
 		}
 	}
@@ -221,7 +238,59 @@ bool xcdev_arch_initialize(u32 partition_index){
 	xmhfhw_sysmemaccess_writeu32(vtd_dmar_table_physical_address, 0UL);
 
 
+    //[debug]
+    {
+        u32 i, j, k;
+        _XDPRINTF_("sizeof(_vtd_ret)=%u\n", sizeof(_vtd_ret));
+        _XDPRINTF_("sizeof(_vtd_cet)=%u\n", sizeof(_vtd_cet[0]));
 
+        for(i=0; i < VTD_RET_MAXPTRS; i++){
+            _XDPRINTF_("  %016llx%016llx\n", _vtd_ret[i].qwords[1], _vtd_ret[i].qwords[0]);
+        }
+
+        //dump context table for bus 0, 2 and 3 [our test system has devices on these buses only]
+        _XDPRINTF_("dumping context table for bus 0 at %016llx...\n", _vtd_cet[0]);
+        for(i=0; i < VTD_CET_MAXPTRS; i++){
+            _XDPRINTF_("  %016llx%016llx\n", _vtd_cet[0][i].qwords[1], _vtd_cet[0][i].qwords[0]);
+        }
+        _XDPRINTF_("dumping context table for bus 2 at %016llx...\n", _vtd_cet[2]);
+        for(i=0; i < VTD_CET_MAXPTRS; i++){
+            _XDPRINTF_("  %016llx%016llx\n", _vtd_cet[2][i].qwords[1], _vtd_cet[2][i].qwords[0]);
+        }
+        _XDPRINTF_("dumping context table for bus 3 at %016llx...\n", _vtd_cet[3]);
+        for(i=0; i < VTD_CET_MAXPTRS; i++){
+            _XDPRINTF_("  %016llx%016llx\n", _vtd_cet[3][i].qwords[1], _vtd_cet[3][i].qwords[0]);
+        }
+
+        _XDPRINTF_("dumping pml4t, sizeof(pml4t=%u)...\n", sizeof(_vtd_slpgtbl[0].pml4t));
+        for(i=0; i < PAE_MAXPTRS_PER_PML4T; i++){
+            _XDPRINTF_("  %016llx\n", _vtd_slpgtbl[0].pml4t[i]);
+        }
+
+        _XDPRINTF_("dumping pdpt, sizeof(pdpt=%u)...\n", sizeof(_vtd_slpgtbl[0].pdpt));
+        for(i=0; i < PAE_MAXPTRS_PER_PML4T; i++){
+            _XDPRINTF_("  %016llx\n", _vtd_slpgtbl[0].pdpt[i]);
+        }
+
+        _XDPRINTF_("dumping pdt, sizeof(pdt=%u)...\n", sizeof(_vtd_slpgtbl[0].pdt));
+        for(i=0; i < PAE_PTRS_PER_PDPT; i++){
+            _XDPRINTF_("  pdt[%u] at %016llx\n", i, _vtd_slpgtbl[0].pdt[i]);
+            for(j=0; j < PAE_PTRS_PER_PDT; j++){
+                _XDPRINTF_("      %016llx\n", _vtd_slpgtbl[0].pdt[i][j]);
+            }
+        }
+
+        _XDPRINTF_("dumping pt, sizeof(pdt=%u)...\n", sizeof(_vtd_slpgtbl[0].pt));
+        for(i=0; i < PAE_PTRS_PER_PDPT; i++){
+            for(j=0; j < PAE_PTRS_PER_PDT; j++){
+                _XDPRINTF_(" pdt[%u][%u] at %016llx\n", i, j, &_vtd_slpgtbl[0].pt[i][j]);
+                for(k=0; k < PAE_PTRS_PER_PDT; k++){
+                    _XDPRINTF_("      %016llx\n", _vtd_slpgtbl[0].pt[i][j][k]);
+                }
+            }
+        }
+
+    }
 
     return true;
 }
