@@ -60,7 +60,21 @@ __attribute__((aligned(4096))) static vtd_cet_entry_t _vtd_cet[VTD_RET_MAXPTRS][
 
 __attribute__((aligned(4096))) static vtd_slpgtbl_t _vtd_slpgtbl[MAX_PRIMARY_PARTITIONS];
 
+static bool _xcdev_arch_allocdevicetopartition(u32 partition_index, u32 b, u32 d, u32 f){
 
+    //sanity check b, d, f triad
+    if ( !(b < PCI_BUS_MAX && d < PCI_DEVICE_MAX && f < PCI_FUNCTION_MAX) )
+        return false;
+
+    //b is our index into ret
+    // (d* PCI_DEVICE_MAX) + f = index into the cet
+    _vtd_cet[b][(d*PCI_DEVICE_MAX) + f].fields.p = 1; //present
+    _vtd_cet[b][(d*PCI_DEVICE_MAX) + f].fields.did = 1; //domain
+    _vtd_cet[b][(d*PCI_DEVICE_MAX) + f].fields.aw = 2; //4-level
+    _vtd_cet[b][(d*PCI_DEVICE_MAX) + f].fields.slptptr = _vtd_slpgtbl[partition_index].pml4t;
+
+    return true;
+}
 
 static vtd_slpgtbl_handle_t _xcdev_arch_setup_vtd_slpgtbl(u32 partition_index){
     vtd_slpgtbl_handle_t retval = {0, 0};
@@ -202,6 +216,7 @@ bool xcdev_arch_initialize(u32 partition_index){
 					break;
 
 				_XDPRINTF_("  %02x:%02x.%1x -> vendor_id=%04x, device_id=%04x\n", b, d, f, vendor_id, device_id);
+                _xcdev_arch_allocdevicetopartition(partition_index, b, d, f);
 			}
 		}
 	}
