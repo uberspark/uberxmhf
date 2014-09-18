@@ -231,7 +231,10 @@ typedef struct {
     vtd_pte_t pt[PAE_PTRS_PER_PDPT][PAE_PTRS_PER_PDT][PAE_PTRS_PER_PT];
 }__attribute__((packed)) vtd_slpgtbl_t;
 
-
+typedef struct {
+    u64 addr_vtd_pml4t;
+    u64 addr_vtd_pdpt;
+}__attribute__((packed)) vtd_slpgtbl_handle_t;
 
 //------------------------------------------------------------------------------
 //VT-d register structure definitions
