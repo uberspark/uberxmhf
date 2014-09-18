@@ -153,11 +153,82 @@ typedef union {
     }fields;
 } __attribute__((packed)) vtd_cet_entry_t;
 
+
+typedef union {
+    u64 entry;
+    struct {
+        u64 r : 1;
+        u64 w : 1;
+        u64 x : 1;
+        u64 ign0 : 4;
+        u64 rsv0 : 1;
+        u64 ign1 : 3;
+        u64 rsv1 : 1;
+        u64 slpdpt : 40;
+        u64 ign2 : 10;
+        u64 rsv2 : 1;
+        u64 ign3 : 1;
+    }fields;
+}__attribute__((packed)) vtd_pml4te_t;
+
+typedef union {
+    u64 entry;
+    struct {
+        u64 r : 1;
+        u64 w : 1;
+        u64 x : 1;
+        u64 emt : 3;
+        u64 pat : 1;
+        u64 big : 1;
+        u64 ign0 : 3;
+        u64 snp : 1;
+        u64 slpdt : 40;
+        u64 ign1 : 10;
+        u64 tm : 1;
+        u64 ign2 : 1;
+    }fields;
+}__attribute__((packed)) vtd_pdpte_t;
+
+typedef union {
+    u64 entry;
+    struct {
+        u64 r : 1;
+        u64 w : 1;
+        u64 x : 1;
+        u64 emt : 3;
+        u64 pat : 1;
+        u64 big : 1;
+        u64 ign0 : 3;
+        u64 snp : 1;
+        u64 slpt : 40;
+        u64 ign1 : 10;
+        u64 tm : 1;
+        u64 ign2 : 1;
+    }fields;
+}__attribute__((packed)) vtd_pdte_t;
+
+typedef union {
+    u64 entry;
+    struct {
+        u64 r : 1;
+        u64 w : 1;
+        u64 x : 1;
+        u64 emt : 3;
+        u64 pat : 1;
+        u64 ign0 : 4;
+        u64 snp : 1;
+        u64 pageaddr : 40;
+        u64 ign1 : 10;
+        u64 tm : 1;
+        u64 ign2 : 1;
+    }fields;
+}__attribute__((packed)) vtd_pte_t;
+
 typedef struct {
-    pml4te_t pml4t[PAE_MAXPTRS_PER_PML4T];
-    pdpte_t pdpt[PAE_MAXPTRS_PER_PDPT];
-    pdte_t pdt[PAE_PTRS_PER_PDPT][PAE_PTRS_PER_PDT];
-    pte_t pt[PAE_PTRS_PER_PDPT][PAE_PTRS_PER_PDT][PAE_PTRS_PER_PT];
+    vtd_pml4te_t pml4t[PAE_MAXPTRS_PER_PML4T];
+    vtd_pdpte_t pdpt[PAE_MAXPTRS_PER_PDPT];
+    vtd_pdte_t pdt[PAE_PTRS_PER_PDPT][PAE_PTRS_PER_PDT];
+    vtd_pte_t pt[PAE_PTRS_PER_PDPT][PAE_PTRS_PER_PDT][PAE_PTRS_PER_PT];
 }__attribute__((packed)) vtd_slpgtbl_t;
 
 
