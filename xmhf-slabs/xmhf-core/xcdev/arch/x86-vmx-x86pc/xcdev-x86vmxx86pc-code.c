@@ -60,7 +60,11 @@ __attribute__((aligned(4096))) static vtd_cet_entry_t _vtd_cet[VTD_RET_MAXPTRS][
 
 __attribute__((aligned(4096))) static vtd_slpgtbl_t _vtd_slpgtbl[MAX_PRIMARY_PARTITIONS];
 
+vtd_drhd_handle_t vtd_drhd_maxhandle=0;
+
 static bool _xcdev_arch_allocdevicetopartition(u32 partition_index, u32 b, u32 d, u32 f){
+	vtd_drhd_handle_t drhd_handle;
+
     //_XDPRINTF_("%s: partition_index=%u, b=%u, d=%u, f=%u\n", __FUNCTION__,
     //            partition_index, b, d, f);
 
@@ -78,6 +82,12 @@ static bool _xcdev_arch_allocdevicetopartition(u32 partition_index, u32 b, u32 d
     _vtd_cet[b][((d*PCI_FUNCTION_MAX) + f)].fields.did = 1; //domain
     _vtd_cet[b][((d*PCI_FUNCTION_MAX) + f)].fields.aw = 2; //4-level
     _vtd_cet[b][((d*PCI_FUNCTION_MAX) + f)].fields.slptptr = ((u64)_vtd_slpgtbl[partition_index].pml4t >> 12);
+
+	for(drhd_handle=0; drhd_handle < vtd_drhd_maxhandle; drhd_handle++){
+		//invalidate caches
+		if(!xmhfhw_platform_x86pc_vtd_drhd_invalidatecaches(drhd_handle))
+			return false;
+	}
 
     return true;
 }
@@ -151,7 +161,6 @@ bool xcdev_arch_initialize(u32 partition_index){
     u64 vtd_ret_addr;
 	vtd_drhd_handle_t drhd_handle;
 	u32 vtd_dmar_table_physical_address=0;
-	vtd_drhd_handle_t vtd_drhd_maxhandle;
     vtd_slpgtbl_handle_t vtd_slpgtbl_handle;
     u32 b, d, f;
 
@@ -160,37 +169,6 @@ bool xcdev_arch_initialize(u32 partition_index){
 	//memset((void *)&vtd_ret_table, 0, sizeof(vtd_ret_table));
     vtd_ret_addr = _xcdev_arch_setup_vtd_retcet();
 
-    //setup partition vt-d page tables
-    vtd_slpgtbl_handle = _xcdev_arch_setup_vtd_slpgtbl(partition_index);
-
-    if(vtd_slpgtbl_handle.addr_vtd_pml4t == 0 &&
-        vtd_slpgtbl_handle.addr_vtd_pdpt == 0){
-        _XDPRINTF_("%s: unable to initialize vt-d pagetables for partition %u\n", __FUNCTION__, partition_index);
-		return false;
-    }
-
-
-    //enumerate PCI bus to find out all the devices
-	//bus numbers range from 0-255, device from 0-31 and function from 0-7
-	_XDPRINTF_("%: enumerating system devices...\n", __FUNCTION__);
-
-	for(b=0; b < PCI_BUS_MAX; b++){
-		for(d=0; d < PCI_DEVICE_MAX; d++){
-			for(f=0; f < PCI_FUNCTION_MAX; f++){
-				u32 vendor_id, device_id;
-
-				//read device and vendor ids, if no device then both will be 0xFFFF
-				xmhf_baseplatform_arch_x86_pci_type1_read(b, d, f, PCI_CONF_HDR_IDX_VENDOR_ID, sizeof(u16), &vendor_id);
-				xmhf_baseplatform_arch_x86_pci_type1_read(b, d, f, PCI_CONF_HDR_IDX_DEVICE_ID, sizeof(u16), &device_id);
-				if(vendor_id == 0xFFFF && device_id == 0xFFFF)
-					break;
-
-				_XDPRINTF_("  %02x:%02x.%1x -> vendor_id=%04x, device_id=%04x\n", b, d, f, vendor_id, device_id);
-                _xcdev_arch_allocdevicetopartition(partition_index, b, d, f);
-
-			}
-		}
-	}
 
 	//scan for available DRHD units in the platform
 	if(!xmhfhw_platform_x86pc_vtd_scanfor_drhd_units(&vtd_drhd_maxhandle, &vtd_dmar_table_physical_address)){
@@ -237,11 +215,47 @@ bool xcdev_arch_initialize(u32 partition_index){
 	xmhfhw_sysmemaccess_writeu32(vtd_dmar_table_physical_address, 0UL);
 
 
+    //setup partition vt-d page tables
+    vtd_slpgtbl_handle = _xcdev_arch_setup_vtd_slpgtbl(partition_index);
+
+    if(vtd_slpgtbl_handle.addr_vtd_pml4t == 0 &&
+        vtd_slpgtbl_handle.addr_vtd_pdpt == 0){
+        _XDPRINTF_("%s: unable to initialize vt-d pagetables for partition %u\n", __FUNCTION__, partition_index);
+		return false;
+    }
+
+    //enumerate PCI bus to find out all the devices
+	//bus numbers range from 0-255, device from 0-31 and function from 0-7
+	_XDPRINTF_("%: enumerating system devices...\n", __FUNCTION__);
+
+	for(b=0; b < PCI_BUS_MAX; b++){
+		for(d=0; d < PCI_DEVICE_MAX; d++){
+			for(f=0; f < PCI_FUNCTION_MAX; f++){
+				u32 vendor_id, device_id;
+
+				//read device and vendor ids, if no device then both will be 0xFFFF
+				xmhf_baseplatform_arch_x86_pci_type1_read(b, d, f, PCI_CONF_HDR_IDX_VENDOR_ID, sizeof(u16), &vendor_id);
+				xmhf_baseplatform_arch_x86_pci_type1_read(b, d, f, PCI_CONF_HDR_IDX_DEVICE_ID, sizeof(u16), &device_id);
+				if(vendor_id == 0xFFFF && device_id == 0xFFFF)
+					break;
+
+				_XDPRINTF_("  %02x:%02x.%1x -> vendor_id=%04x, device_id=%04x\n", b, d, f, vendor_id, device_id);
+                if(!_xcdev_arch_allocdevicetopartition(partition_index, b, d, f)){
+                    _XDPRINTF_("%s: Halting.unable to allocate device to partition %u\n",
+                                __FUNCTION__, partition_index);
+                    HALT();
+                }
+
+			}
+		}
+	}
+
+
     //[debug]
-    {
-        u32 i, j, k;
-        _XDPRINTF_("sizeof(_vtd_ret)=%u\n", sizeof(_vtd_ret));
-        _XDPRINTF_("sizeof(_vtd_cet)=%u\n", sizeof(_vtd_cet[0]));
+    //{
+        //u32 i, j, k;
+        //_XDPRINTF_("sizeof(_vtd_ret)=%u\n", sizeof(_vtd_ret));
+        //_XDPRINTF_("sizeof(_vtd_cet)=%u\n", sizeof(_vtd_cet[0]));
 
         //for(i=0; i < VTD_RET_MAXPTRS; i++){
         //    _XDPRINTF_("  %016llx%016llx\n", _vtd_ret[i].qwords[1], _vtd_ret[i].qwords[0]);
@@ -289,7 +303,7 @@ bool xcdev_arch_initialize(u32 partition_index){
         //    }
        // }
 
-    }
+    //}
 
     return true;
 }
