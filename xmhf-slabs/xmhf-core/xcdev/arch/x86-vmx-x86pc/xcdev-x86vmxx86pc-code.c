@@ -60,7 +60,8 @@ __attribute__((aligned(4096))) static vtd_cet_entry_t _vtd_cet[VTD_RET_MAXPTRS][
 
 __attribute__((aligned(4096))) static vtd_slpgtbl_t _vtd_slpgtbl[MAX_PRIMARY_PARTITIONS];
 
-vtd_drhd_handle_t vtd_drhd_maxhandle=0;
+static vtd_drhd_handle_t vtd_drhd_maxhandle=0;
+static vtd_pagewalk_level = VTD_PAGEWALK_4LEVEL;
 
 static bool _xcdev_arch_allocdevicetopartition(u32 partition_index, u32 b, u32 d, u32 f){
 	vtd_drhd_handle_t drhd_handle;
@@ -78,10 +79,17 @@ static bool _xcdev_arch_allocdevicetopartition(u32 partition_index, u32 b, u32 d
     //_XDPRINTF_("%s: Setting cet[%u][%u]...\n", __FUNCTION__,
     //            b, ((d*PCI_FUNCTION_MAX) + f));
 
-    _vtd_cet[b][((d*PCI_FUNCTION_MAX) + f)].fields.p = 0; //present
+    _vtd_cet[b][((d*PCI_FUNCTION_MAX) + f)].fields.p = 1; //present
     _vtd_cet[b][((d*PCI_FUNCTION_MAX) + f)].fields.did = 1; //domain
     _vtd_cet[b][((d*PCI_FUNCTION_MAX) + f)].fields.aw = 2; //4-level
-    _vtd_cet[b][((d*PCI_FUNCTION_MAX) + f)].fields.slptptr = ((u64)_vtd_slpgtbl[partition_index].pml4t >> 12);
+
+    if(vtd_pagewalk_level == VTD_PAGEWALK_4LEVEL){
+        _vtd_cet[b][((d*PCI_FUNCTION_MAX) + f)].fields.slptptr = ((u64)_vtd_slpgtbl[partition_index].pml4t >> 12);
+    }else if (vtd_pagewalk_level == VTD_PAGEWALK_3LEVEL){
+        _vtd_cet[b][((d*PCI_FUNCTION_MAX) + f)].fields.slptptr = ((u64)_vtd_slpgtbl[partition_index].pdpt >> 12);
+    }else{ //unknown page walk length, fail
+        return false;
+    }
 
 	for(drhd_handle=0; drhd_handle < vtd_drhd_maxhandle; drhd_handle++){
 		//invalidate caches
