@@ -61,6 +61,7 @@ __attribute__((aligned(4096))) static vtd_cet_entry_t _vtd_cet[VTD_RET_MAXPTRS][
 __attribute__((aligned(4096))) static vtd_slpgtbl_t _vtd_slpgtbl[MAX_PRIMARY_PARTITIONS];
 
 
+
 static vtd_slpgtbl_handle_t _xcdev_arch_setup_vtd_slpgtbl(u32 partition_index){
     vtd_slpgtbl_handle_t retval = {0, 0};
     u32 i, j, k, paddr=0;
@@ -124,6 +125,7 @@ bool xcdev_arch_initialize(u32 partition_index){
 	u32 vtd_dmar_table_physical_address=0;
 	vtd_drhd_handle_t vtd_drhd_maxhandle;
     vtd_slpgtbl_handle_t vtd_slpgtbl_handle;
+    u32 b, d, f;
 
 	//zero out RET; will be used to prevent DMA reads and writes
 	//for the entire system
@@ -183,6 +185,27 @@ bool xcdev_arch_initialize(u32 partition_index){
 	//TODO: we need to be a little elegant here. eventually need to setup
 	//EPT/NPTs such that the DMAR pages are unmapped for the guest
 	xmhfhw_sysmemaccess_writeu32(vtd_dmar_table_physical_address, 0UL);
+
+
+    //enumerate PCI bus to find out all the devices
+	//bus numbers range from 0-255, device from 0-31 and function from 0-7
+	_XDPRINTF_("%: enumerating system devices...\n", __FUNCTION__);
+
+	for(b=0; b < PCI_BUS_MAX; b++){
+		for(d=0; d < PCI_DEVICE_MAX; d++){
+			for(f=0; f < PCI_FUNCTION_MAX; f++){
+				u32 vendor_id, device_id;
+				//read device and vendor ids, if no device then both will be 0xFFFF
+				xmhf_baseplatform_arch_x86_pci_type1_read(b, d, f, PCI_CONF_HDR_IDX_VENDOR_ID, sizeof(u16), &vendor_id);
+				xmhf_baseplatform_arch_x86_pci_type1_read(b, d, f, PCI_CONF_HDR_IDX_DEVICE_ID, sizeof(u16), &device_id);
+				if(vendor_id == 0xFFFF && device_id == 0xFFFF)
+					break;
+
+				_XDPRINTF_("  %02x:%02x.%1x -> vendor_id=%04x, device_id=%04x\n", b, d, f, vendor_id, device_id);
+			}
+		}
+	}
+
 
     return true;
 }
