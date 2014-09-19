@@ -1077,6 +1077,12 @@ bool xc_api_partition_arch_startcpu(context_desc_t context_desc){
 
 //////
 //platform related core API
+typedef struct {
+    __attribute__((aligned(4096))) vtd_slpgtbl_t _vtd_slpgtbl;
+    bool initialized;
+}__attribute__((packed)) xc_partitiondevicetable_t;
+
+static __attribute__((aligned(4096))) xc_partitiondevicetable_t _partitiondevtable[MAX_PRIMARY_PARTITIONS];
 
 //shutdown platform
 void xc_api_platform_arch_shutdown(context_desc_t context_desc){
@@ -1123,3 +1129,12 @@ xc_platformdevice_desc_t xc_api_platform_arch_enumeratedevices(context_desc_t co
     result.desc_valid = true;
     return result;
 }
+
+
+bool xc_api_platform_allocdevices_to_partition(context_desc_t context_desc, xc_platformdevice_desc_t device_descs){
+
+
+
+    return true;
+}
+

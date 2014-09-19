@@ -116,7 +116,7 @@ bool xc_api_partition_arch_startcpu(context_desc_t context_desc);
 bool xc_api_partition_arch_addcpu(u32 partition_index, u32 cpu_index);
 
 
-//platform related core APIs
+//platform related core APIs and internal types
 void xc_api_platform_shutdown(context_desc_t context_desc);
 void xc_api_platform_arch_shutdown(context_desc_t context_desc);
 
