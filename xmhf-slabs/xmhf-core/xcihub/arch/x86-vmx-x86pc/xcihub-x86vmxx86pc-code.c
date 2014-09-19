@@ -305,7 +305,7 @@ static void _vmx_intercept_handler(context_desc_t context_desc, struct regs x86g
 
 	//make sure we have no nested events
 	if( inforegs.info_idt_vectoring_information & 0x80000000){
-		_XDPRINTF_("%s(%u): Halting: Nested events unhandled with hwp:0x%08x\n", __FUNCTION__,
+		_XDPRINTF_("%s(%u): Warning: Nested events unhandled with hwp:0x%08x\n", __FUNCTION__,
 			context_desc.cpu_desc.cpu_index, inforegs.info_idt_vectoring_information);
         HALT();
 	}
@@ -587,6 +587,15 @@ static void _vmx_intercept_handler(context_desc_t context_desc, struct regs x86g
 			HALT();
 		}
 	} //end inforegs.info_vmexit_reason
+
+	if( ! ((xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_INTERRUPTIBILITY) == 0) &&
+ 		(xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_ACTIVITY_STATE) == 0)) ){
+
+        //clear any event injection as this CPU is not in a state to receive it
+        xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VM_ENTRY_EXCEPTION_ERRORCODE, 0);
+        xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VM_ENTRY_INTERRUPTION_INFORMATION, 0);
+
+ 	}
 }
 
 
