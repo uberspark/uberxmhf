@@ -127,6 +127,7 @@ bool xc_api_platform_allocdevices_to_partition(context_desc_t context_desc, xc_p
 bool xc_api_platform_arch_allocdevices_to_partition(context_desc_t context_desc, xc_platformdevice_desc_t device_descs);
 
 bool xc_api_platform_deallocdevices_from_partition(context_desc_t context_desc, xc_platformdevice_desc_t device_descs);
+bool xc_api_platform_arch_deallocdevices_from_partition(context_desc_t context_desc, xc_platformdevice_desc_t device_descs);
 
 
 //global data

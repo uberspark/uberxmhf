@@ -215,6 +215,14 @@ bool xcdev_arch_initialize(u32 partition_index){
                             __FUNCTION__, partition_index);
                 HALT();
         }
+
+        if(!XMHF_SLAB_CALL(xc_api_platform_deallocdevices_from_partition(ctx, ddescs))){
+                _XDPRINTF_("%s: Halting.unable to deallocate devices from partition %u\n",
+                            __FUNCTION__, partition_index);
+                HALT();
+        }
+
+
 	}
 
     return true;
