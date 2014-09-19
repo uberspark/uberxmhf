@@ -587,6 +587,10 @@ static void _vmx_intercept_handler(context_desc_t context_desc, struct regs x86g
 			HALT();
 		}
 	} //end inforegs.info_vmexit_reason
+
+    //clear any pending NMI injection since we handled this intercept
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VM_ENTRY_EXCEPTION_ERRORCODE, 0);
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VM_ENTRY_INTERRUPTION_INFORMATION, 0);
 }
 
 
