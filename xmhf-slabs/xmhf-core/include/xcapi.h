@@ -46,9 +46,9 @@
 
 
 /*
- * 
- *  XMHF core API 
- * 
+ *
+ *  XMHF core API
+ *
  *  author: amit vasudevan (amitvasudevan@acm.org)
  */
 
@@ -119,6 +119,11 @@ bool xc_api_partition_arch_addcpu(u32 partition_index, u32 cpu_index);
 //platform related core APIs
 void xc_api_platform_shutdown(context_desc_t context_desc);
 void xc_api_platform_arch_shutdown(context_desc_t context_desc);
+
+xc_platformdevice_desc_t xc_xc_api_platform_enumeratedevices(context_desc_t context_desc);
+bool xc_api_platform_allocdevices_to_partition(context_desc_t context_desc, xc_platformdevice_desc_t device_descs);
+bool xc_api_platform_deallocdevices_from_partition(context_desc_t context_desc, xc_platformdevice_desc_t device_descs);
+
 
 //global data
 
