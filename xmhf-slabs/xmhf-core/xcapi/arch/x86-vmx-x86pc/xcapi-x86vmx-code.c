@@ -138,8 +138,11 @@ static void xmhf_smpguest_arch_x86vmx_eventhandler_nmiexception(xc_cpu_t *xc_cpu
 			if(xmhfhw_cpu_x86vmx_vmread(VMCS_CONTROL_EXCEPTION_BITMAP) & CPU_EXCEPTION_NMI){
 				//TODO: hypapp has chosen to intercept NMI so callback
 			}else{ //inject NMI back to partition
-				xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VM_ENTRY_EXCEPTION_ERRORCODE, 0);
-				xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VM_ENTRY_INTERRUPTION_INFORMATION, (NMI_VECTOR | INTR_TYPE_NMI | INTR_INFO_VALID_MASK));
+				if( (xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_INTERRUPTIBILITY) == 0) &&
+       				(xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_ACTIVITY_STATE) == 0) ){
+                    xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VM_ENTRY_EXCEPTION_ERRORCODE, 0);
+                    xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VM_ENTRY_INTERRUPTION_INFORMATION, (NMI_VECTOR | INTR_TYPE_NMI | INTR_INFO_VALID_MASK));
+				}
 			}
 		}
 	}
