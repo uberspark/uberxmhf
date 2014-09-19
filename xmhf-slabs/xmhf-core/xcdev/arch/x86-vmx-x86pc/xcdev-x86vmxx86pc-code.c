@@ -54,6 +54,7 @@
 #include <xmhf-debug.h>
 
 #include <xcdev.h>
+#include <xcapi.h>
 
 __attribute__((aligned(4096))) static vtd_ret_entry_t _vtd_ret[VTD_RET_MAXPTRS];
 __attribute__((aligned(4096))) static vtd_cet_entry_t _vtd_cet[VTD_RET_MAXPTRS][VTD_CET_MAXPTRS];
@@ -243,30 +244,41 @@ bool xcdev_arch_initialize(u32 partition_index){
 		return false;
     }
 
-    //enumerate PCI bus to find out all the devices
-	//bus numbers range from 0-255, device from 0-31 and function from 0-7
-	_XDPRINTF_("%: enumerating system devices...\n", __FUNCTION__);
 
-	for(b=0; b < PCI_BUS_MAX; b++){
-		for(d=0; d < PCI_DEVICE_MAX; d++){
-			for(f=0; f < PCI_FUNCTION_MAX; f++){
-				u32 vendor_id, device_id;
+	{
+        u32 i;
+	    xc_platformdevice_desc_t ddescs;
+        context_desc_t ctx;
 
-				//read device and vendor ids, if no device then both will be 0xFFFF
-				xmhf_baseplatform_arch_x86_pci_type1_read(b, d, f, PCI_CONF_HDR_IDX_VENDOR_ID, sizeof(u16), &vendor_id);
-				xmhf_baseplatform_arch_x86_pci_type1_read(b, d, f, PCI_CONF_HDR_IDX_DEVICE_ID, sizeof(u16), &device_id);
-				if(vendor_id == 0xFFFF && device_id == 0xFFFF)
-					break;
+        ctx.cpu_desc.cpu_index = 0;
+        ctx.cpu_desc.isbsp = true;
+        ctx.partition_desc.partition_index = partition_index;
 
-				_XDPRINTF_("  %02x:%02x.%1x -> vendor_id=%04x, device_id=%04x\n", b, d, f, vendor_id, device_id);
-                if(!_xcdev_arch_allocdevicetopartition(partition_index, b, d, f)){
-                    _XDPRINTF_("%s: Halting.unable to allocate device to partition %u\n",
-                                __FUNCTION__, partition_index);
-                    HALT();
-                }
+        ddescs = XMHF_SLAB_CALL(xc_api_platform_enumeratedevices(ctx));
 
-			}
-		}
+        if(!ddescs.desc_valid){
+            _XDPRINTF_("%s: Error: could not obtain platform device descriptors\n",
+                        __FUNCTION__);
+            return false;
+        }
+
+        for(i=0; i < ddescs.numdevices; i++){
+			_XDPRINTF_("  %02x:%02x.%1x -> vendor_id=%04x, device_id=%04x\n", ddescs.arch_desc[i].pci_bus,
+              ddescs.arch_desc[i].pci_device, ddescs.arch_desc[i].pci_function,
+              ddescs.arch_desc[i].vendor_id, ddescs.arch_desc[i].device_id);
+
+            if(!_xcdev_arch_allocdevicetopartition(ctx.partition_desc.partition_index,
+                                                   ddescs.arch_desc[i].pci_bus,
+                                                   ddescs.arch_desc[i].pci_device,
+                                                   ddescs.arch_desc[i].pci_function)){
+                _XDPRINTF_("%s: Halting.unable to allocate device to partition %u\n",
+                            __FUNCTION__, partition_index);
+                HALT();
+            }
+
+
+        }
+
 	}
 
     return true;
