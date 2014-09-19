@@ -1347,9 +1347,40 @@ bool xc_api_platform_arch_allocdevices_to_partition(context_desc_t context_desc,
 	}
 
     return true;
+}
 
 
+bool xc_api_platform_arch_deallocdevices_from_partition(context_desc_t context_desc, xc_platformdevice_desc_t device_descs){
+	vtd_drhd_handle_t drhd_handle;
+    vtd_slpgtbl_handle_t vtd_slpgtbl_handle;
+    u32 i;
 
+    //initialize vtd hardware (if it has not been initialized already)
+    if(!_platform_x86pc_vtd_initialize())
+        return false;
+
+    for(i=0; i < device_descs.numdevices; i++){
+        u32 b=device_descs.arch_desc[i].pci_bus;
+        u32 d=device_descs.arch_desc[i].pci_device;
+        u32 f=device_descs.arch_desc[i].pci_function;
+
+        //sanity check b, d, f triad
+        if ( !(b < PCI_BUS_MAX &&
+               d < PCI_DEVICE_MAX &&
+               f < PCI_FUNCTION_MAX) )
+            return false;
+
+        //b is our index into ret
+        // (d* PCI_FUNCTION_MAX) + f = index into the cet
+        _vtd_cet[b][((d*PCI_FUNCTION_MAX) + f)].qwords[0] = 0;
+        _vtd_cet[b][((d*PCI_FUNCTION_MAX) + f)].qwords[1] = 0;
+    }
+
+	//invalidate vtd caches
+	for(drhd_handle=0; drhd_handle < vtd_drhd_maxhandle; drhd_handle++){
+		if(!xmhfhw_platform_x86pc_vtd_drhd_invalidatecaches(drhd_handle))
+			return false;
+	}
 
     return true;
 }
