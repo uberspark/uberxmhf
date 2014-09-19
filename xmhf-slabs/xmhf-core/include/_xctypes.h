@@ -53,6 +53,12 @@
 
 #ifndef __ASSEMBLY__
 
+typedef struct {
+	bool desc_valid;
+	u64 numdevices;
+    xc_platformdevice_arch_desc_t arch_desc[MAX_PLATFORM_DEVICES];
+} __attribute__((packed)) xc_platformdevice_desc_t;
+
 
 typedef u8 xc_partition_hptdata_t;
 typedef u8 xc_partition_trapmaskdata_t;
