@@ -1075,6 +1075,7 @@ bool xc_api_partition_arch_startcpu(context_desc_t context_desc){
 	return false;
 }
 
+//////
 //platform related core API
 
 //shutdown platform
@@ -1085,4 +1086,14 @@ void xc_api_platform_arch_shutdown(context_desc_t context_desc){
 
 	//fall back on generic x86 reboot
 	xmhf_baseplatform_arch_x86_reboot();
+}
+
+
+xc_platformdevice_desc_t xc_api_platform_arch_enumeratedevices(context_desc_t context_desc){
+    xc_platformdevice_desc_t result;
+
+    result.desc_valid = false;
+
+
+    return result;
 }
