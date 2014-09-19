@@ -56,15 +56,11 @@
 #include <xcdev.h>
 #include <xcapi.h>
 
-__attribute__((aligned(4096))) static vtd_ret_entry_t _vtd_ret[VTD_RET_MAXPTRS];
-__attribute__((aligned(4096))) static vtd_cet_entry_t _vtd_cet[VTD_RET_MAXPTRS][VTD_CET_MAXPTRS];
 
-__attribute__((aligned(4096))) static vtd_slpgtbl_t _vtd_slpgtbl[MAX_PRIMARY_PARTITIONS];
+//__attribute__((aligned(4096))) static vtd_slpgtbl_t _vtd_slpgtbl[MAX_PRIMARY_PARTITIONS];
 
-static vtd_drhd_handle_t vtd_drhd_maxhandle=0;
-static vtd_pagewalk_level = VTD_PAGEWALK_NONE;
 
-static bool _xcdev_arch_allocdevicetopartition(u32 partition_index, u32 b, u32 d, u32 f){
+/*static bool _xcdev_arch_allocdevicetopartition(u32 partition_index, u32 b, u32 d, u32 f){
 	vtd_drhd_handle_t drhd_handle;
 
     //sanity check b, d, f triad
@@ -95,67 +91,13 @@ static bool _xcdev_arch_allocdevicetopartition(u32 partition_index, u32 b, u32 d
 	}
 
     return true;
-}
+}*/
 
-static vtd_slpgtbl_handle_t _xcdev_arch_setup_vtd_slpgtbl(u32 partition_index){
-    vtd_slpgtbl_handle_t retval = {0, 0};
-    u32 i, j, k, paddr=0;
 
-    //sanity check partition index
-    if(partition_index >= MAX_PRIMARY_PARTITIONS){
-        _XDPRINTF_("%s: Error: partition_index >= MAX_PRIMARY_PARTITIONS. bailing out!\n", __FUNCTION__);
-        return retval;
-    }
-
-    //setup device memory access for the partition
-    _vtd_slpgtbl[partition_index].pml4t[0].fields.r = 1;
-    _vtd_slpgtbl[partition_index].pml4t[0].fields.w = 1;
-    _vtd_slpgtbl[partition_index].pml4t[0].fields.slpdpt = ((u64)&_vtd_slpgtbl[partition_index].pdpt >> 12);
-
-    for(i=0; i < PAE_PTRS_PER_PDPT; i++){
-        _vtd_slpgtbl[partition_index].pdpt[i].fields.r = 1;
-        _vtd_slpgtbl[partition_index].pdpt[i].fields.w = 1;
-        _vtd_slpgtbl[partition_index].pdpt[i].fields.slpdt = ((u64)&_vtd_slpgtbl[partition_index].pdt[i] >> 12);
-
-        for(j=0; j < PAE_PTRS_PER_PDT; j++){
-            _vtd_slpgtbl[partition_index].pdt[i][j].fields.r = 1;
-            _vtd_slpgtbl[partition_index].pdt[i][j].fields.w = 1;
-            _vtd_slpgtbl[partition_index].pdt[i][j].fields.slpt = ((u64)&_vtd_slpgtbl[partition_index].pt[i][j] >> 12);
-
-            for(k=0; k < PAE_PTRS_PER_PT; k++){
-                _vtd_slpgtbl[partition_index].pt[i][j][k].fields.r = 1;
-                _vtd_slpgtbl[partition_index].pt[i][j][k].fields.w = 1;
-                _vtd_slpgtbl[partition_index].pt[i][j][k].fields.pageaddr = ((u64)paddr >> 12);
-                paddr += PAGE_SIZE_4K;
-            }
-        }
-    }
-
-    retval.addr_vtd_pml4t = _vtd_slpgtbl[partition_index].pml4t;
-    retval.addr_vtd_pdpt = _vtd_slpgtbl[partition_index].pdpt;
-
-    return retval;
-}
-
-static u64 _xcdev_arch_setup_vtd_retcet(void){
-    u32 i, j;
-
-    for(i=0; i< VTD_RET_MAXPTRS; i++){
-        _vtd_ret[i].qwords[0] = _vtd_ret[i].qwords[1] = 0ULL;
-        _vtd_ret[i].fields.p = 1;
-        _vtd_ret[i].fields.ctp = ((u64)&_vtd_cet[i] >> 12);
-
-        for(j=0; j < VTD_CET_MAXPTRS; j++){
-            _vtd_cet[i][j].qwords[0] = _vtd_cet[i][j].qwords[1] = 0ULL;
-        }
-    }
-
-    return (u64)&_vtd_ret;
-}
 
 
 bool xcdev_arch_initialize(u32 partition_index){
-    u64 vtd_ret_addr;
+    /*u64 vtd_ret_addr;
 	vtd_drhd_handle_t drhd_handle;
 	u32 vtd_dmar_table_physical_address=0;
     vtd_slpgtbl_handle_t vtd_slpgtbl_handle;
@@ -242,7 +184,7 @@ bool xcdev_arch_initialize(u32 partition_index){
         vtd_slpgtbl_handle.addr_vtd_pdpt == 0){
         _XDPRINTF_("%s: unable to initialize vt-d pagetables for partition %u\n", __FUNCTION__, partition_index);
 		return false;
-    }
+    }*/
 
 
 	{
@@ -266,19 +208,13 @@ bool xcdev_arch_initialize(u32 partition_index){
 			_XDPRINTF_("  %02x:%02x.%1x -> vendor_id=%04x, device_id=%04x\n", ddescs.arch_desc[i].pci_bus,
               ddescs.arch_desc[i].pci_device, ddescs.arch_desc[i].pci_function,
               ddescs.arch_desc[i].vendor_id, ddescs.arch_desc[i].device_id);
-
-            if(!_xcdev_arch_allocdevicetopartition(ctx.partition_desc.partition_index,
-                                                   ddescs.arch_desc[i].pci_bus,
-                                                   ddescs.arch_desc[i].pci_device,
-                                                   ddescs.arch_desc[i].pci_function)){
-                _XDPRINTF_("%s: Halting.unable to allocate device to partition %u\n",
-                            __FUNCTION__, partition_index);
-                HALT();
-            }
-
-
         }
 
+        if(!XMHF_SLAB_CALL(xc_api_platform_allocdevices_to_partition(ctx, ddescs))){
+                _XDPRINTF_("%s: Halting.unable to allocate devices to partition %u\n",
+                            __FUNCTION__, partition_index);
+                HALT();
+        }
 	}
 
     return true;
