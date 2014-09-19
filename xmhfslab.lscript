@@ -50,7 +50,7 @@
 
 MEMORY
 {
-  slabmem (rwxai) : ORIGIN = 0, LENGTH = 16M /* max. length */
+  slabmem (rwxai) : ORIGIN = 0, LENGTH = 32M /* max. length */
   unaccounted (rwxai) : ORIGIN = 0, LENGTH = 0 /* see section .unaccounted at end */
 }
 
