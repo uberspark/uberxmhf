@@ -1259,6 +1259,10 @@ xc_platformdevice_desc_t xc_api_platform_arch_initializeandenumeratedevices(cont
     result.desc_valid = false;
     result.numdevices = 0;
 
+   //initialize vtd hardware (if it has not been initialized already)
+    if(!_platform_x86pc_vtd_initialize())
+        return result;
+
     //enumerate PCI bus to find out all the devices
 	//bus numbers range from 0-255, device from 0-31 and function from 0-7
 	for(b=0; b < PCI_BUS_MAX; b++){
@@ -1293,9 +1297,9 @@ bool xc_api_platform_arch_allocdevices_to_partition(context_desc_t context_desc,
     vtd_slpgtbl_handle_t vtd_slpgtbl_handle;
     u32 i;
 
-    //initialize vtd hardware (if it has not been initialized already)
-    if(!_platform_x86pc_vtd_initialize())
+    if(!vtd_initialized)
         return false;
+
 
     //initialize partition device page tables (if it has not been initialized already)
     //if(!_partitiondevtable[context_desc.partition_desc.partition_index].initialized){
@@ -1355,8 +1359,7 @@ bool xc_api_platform_arch_deallocdevices_from_partition(context_desc_t context_d
     vtd_slpgtbl_handle_t vtd_slpgtbl_handle;
     u32 i;
 
-    //initialize vtd hardware (if it has not been initialized already)
-    if(!_platform_x86pc_vtd_initialize())
+    if(!vtd_initialized)
         return false;
 
     for(i=0; i < device_descs.numdevices; i++){
