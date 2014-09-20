@@ -66,7 +66,7 @@ bool xcdev_arch_initialize(u32 partition_index){
     ctx.cpu_desc.isbsp = true;
     ctx.partition_desc.partition_index = partition_index;
 
-    ddescs = XMHF_SLAB_CALL(xc_api_platform_enumeratedevices(ctx));
+    ddescs = XMHF_SLAB_CALL(xc_api_platform_initializeandenumeratedevices(ctx));
 
     if(!ddescs.desc_valid){
         _XDPRINTF_("%s: Error: could not obtain platform device descriptors\n",

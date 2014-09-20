@@ -1252,7 +1252,7 @@ void xc_api_platform_arch_shutdown(context_desc_t context_desc){
 }
 
 
-xc_platformdevice_desc_t xc_api_platform_arch_enumeratedevices(context_desc_t context_desc){
+xc_platformdevice_desc_t xc_api_platform_arch_initializeandenumeratedevices(context_desc_t context_desc){
     xc_platformdevice_desc_t result;
     u32 b, d, f;
 
