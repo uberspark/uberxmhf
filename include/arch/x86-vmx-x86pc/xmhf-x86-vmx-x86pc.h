@@ -72,6 +72,15 @@
 #ifndef __ASSEMBLY__
 
 typedef struct {
+    u64 pci_bus;
+    u64 pci_device;
+    u64 pci_function;
+    u64 vendor_id;
+    u64 device_id;
+}__attribute__((packed)) xc_platformdevice_arch_desc_t;
+
+
+typedef struct {
     u32 ap_cr3;
     u32 ap_cr4;
     u32 ap_entrypoint;

@@ -257,10 +257,24 @@ bool xc_api_partition_startcpu(context_desc_t context_desc){
 }
 
 
+//////
 //platform related core API
 void xc_api_platform_shutdown(context_desc_t context_desc){
 	xc_api_platform_arch_shutdown(context_desc);
 }
+
+xc_platformdevice_desc_t xc_api_platform_initializeandenumeratedevices(context_desc_t context_desc){
+    return xc_api_platform_arch_initializeandenumeratedevices(context_desc);
+}
+
+bool xc_api_platform_allocdevices_to_partition(context_desc_t context_desc, xc_platformdevice_desc_t device_descs){
+    return xc_api_platform_arch_allocdevices_to_partition(context_desc, device_descs);
+}
+
+bool xc_api_platform_deallocdevices_from_partition(context_desc_t context_desc, xc_platformdevice_desc_t device_descs){
+    return xc_api_platform_arch_deallocdevices_from_partition(context_desc, device_descs);
+}
+
 
 
 ///////
