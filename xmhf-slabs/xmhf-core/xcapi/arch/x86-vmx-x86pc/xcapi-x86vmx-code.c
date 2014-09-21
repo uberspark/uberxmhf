@@ -1114,11 +1114,15 @@ static bool _platform_x86pc_vtd_initialize(void){
 	vtd_drhd_handle_t drhd_handle;
 	u32 vtd_dmar_table_physical_address=0;
     vtd_slpgtbl_handle_t vtd_slpgtbl_handle;
-    u32 b, d, f;
+    u32 i, b, d, f;
 
     //if we already setup vtd then simply return true
     if(vtd_initialized)
         return true;
+
+    //initialize partition--device table
+    for(i=0; i < MAX_PRIMARY_PARTITIONS; i++)
+        _partitiondevtable[i].initialized = false;
 
 	//setup basic RET/CET structure; will initially prevent DMA reads and writes
 	//for the entire system
@@ -1259,7 +1263,7 @@ xc_platformdevice_desc_t xc_api_platform_arch_initializeandenumeratedevices(cont
     result.desc_valid = false;
     result.numdevices = 0;
 
-   //initialize vtd hardware (if it has not been initialized already)
+    //initialize vtd hardware (if it has not been initialized already)
     if(!_platform_x86pc_vtd_initialize())
         return result;
 
@@ -1302,7 +1306,7 @@ bool xc_api_platform_arch_allocdevices_to_partition(context_desc_t context_desc,
 
 
     //initialize partition device page tables (if it has not been initialized already)
-    //if(!_partitiondevtable[context_desc.partition_desc.partition_index].initialized){
+    if(!_partitiondevtable[context_desc.partition_desc.partition_index].initialized){
         vtd_slpgtbl_handle = _platform_x86pc_vtd_setup_slpgtbl(context_desc.partition_desc.partition_index);
 
         if(vtd_slpgtbl_handle.addr_vtd_pml4t == 0 &&
@@ -1311,8 +1315,8 @@ bool xc_api_platform_arch_allocdevices_to_partition(context_desc_t context_desc,
             return false;
         }
 
-        //_partitiondevtable[context_desc.partition_desc.partition_index].initialized = true;
-    //}
+        _partitiondevtable[context_desc.partition_desc.partition_index].initialized = true;
+    }
 
 
     for(i=0; i < device_descs.numdevices; i++){
