@@ -88,6 +88,16 @@ u64 xc_api_hpt_lvl2pagewalk(context_desc_t context_desc, u64 gva);
 u64 xc_api_hpt_arch_lvl2pagewalk(context_desc_t context_desc, u64 gva);
 
 
+
+
+
+
+
+
+
+
+
+//////
 //trapmask related core APIs
 void xc_api_trapmask_set(context_desc_t context_desc, xc_hypapp_arch_param_t trapmaskparams);
 void xc_api_trapmask_arch_set(context_desc_t context_desc, xc_hypapp_arch_param_t trapmaskparams);
@@ -95,7 +105,20 @@ void xc_api_trapmask_arch_set(context_desc_t context_desc, xc_hypapp_arch_param_
 void xc_api_trapmask_clear(context_desc_t context_desc, xc_hypapp_arch_param_t trapmaskparams);
 void xc_api_trapmask_arch_clear(context_desc_t context_desc, xc_hypapp_arch_param_t trapmaskparams);
 
+u64 xc_api_trapmask_arch_gettrapmaskbuffer(context_desc_t context_desc, u64 operation);
 
+
+
+
+
+
+
+
+
+
+
+
+//////
 //cpu state related core APIs
 void xc_api_cpustate_set(context_desc_t context_desc, xc_hypapp_arch_param_t cpustateparams);
 void xc_api_cpustate_arch_set(context_desc_t context_desc, xc_hypapp_arch_param_t cpustateparams);
