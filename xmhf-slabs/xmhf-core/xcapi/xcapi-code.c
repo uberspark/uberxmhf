@@ -157,6 +157,12 @@ static u32 _xc_cpu_current_index=0;
 static xc_cpupartitiontable_t _xc_cpupartitiontable[MAX_PLATFORM_CPUS];
 static u32 _xc_cpupartitiontable_current_index=0;
 
+// platform cpus
+static xc_cpu_t g_xc_cpu[MAX_PLATFORM_CPUS];
+
+// primary partitions
+static xc_partition_t g_xc_primary_partition[MAX_PRIMARY_PARTITIONS];
+
 
 //*
 u32 xc_api_partition_create(u32 partitiontype){

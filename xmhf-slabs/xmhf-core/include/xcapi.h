@@ -187,14 +187,7 @@ void xc_api_platform_arch_quiescecpus_in_partition(context_desc_t context_desc);
 
 void xc_coreapi_arch_eventhandler_nmiexception(struct regs *r);
 
-
-//global data
-
-// platform cpus
-extern xc_cpu_t g_xc_cpu[MAX_PLATFORM_CPUS] __attribute__(( section(".data") ));
-
-// primary partitions
-extern xc_partition_t g_xc_primary_partition[MAX_PRIMARY_PARTITIONS] __attribute__(( section(".data") ));
+tion[MAX_PRIMARY_PARTITIONS] __attribute__(( section(".data") ));
 
 #endif	//__ASSEMBLY__
 

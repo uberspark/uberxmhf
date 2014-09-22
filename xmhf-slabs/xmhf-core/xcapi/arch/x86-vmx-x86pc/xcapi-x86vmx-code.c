@@ -647,9 +647,6 @@ bool xc_api_cpustate_arch_setupbasestate(context_desc_t context_desc){
 	const u32 vmx_msr_area_msrs[] = {MSR_EFER, MSR_IA32_PAT, MSR_K6_STAR}; //critical MSRs that need to be saved/restored across guest VM switches
 	const unsigned int vmx_msr_area_msrs_count = (sizeof(vmx_msr_area_msrs)/sizeof(vmx_msr_area_msrs[0]));	//count of critical MSRs that need to be saved/restored across VM switches
 	u32 lodword, hidword;
-	//xc_cpu_t *xc_cpu = (xc_cpu_t *)&g_xc_cpu[context_desc.cpu_desc.cpu_index];
-	//xc_partition_t *xc_partition = &g_xc_primary_partition[context_desc.partition_desc.partition_index];
-	//xc_cpuarchdata_x86vmx_t *xc_cpuarchdata_x86vmx = (xc_cpuarchdata_x86vmx_t *)xc_cpu->cpuarchdata;
 	u64 vmcs_phys_addr = hva2spa((void*)_cpustate_archdatavmx[context_desc.cpu_desc.cpu_index].vmx_vmcs_region);
 
 	//save contents of VMX MSRs as well as MSR EFER and EFCR
@@ -1340,9 +1337,6 @@ void xc_coreapi_arch_eventhandler_nmiexception(struct regs *r){
 		_XDPRINTF_("%s: invalid partition/cpu context. Halting!\n", __FUNCTION__);
 		HALT();
 	}
-	//xc_cpu = &g_xc_cpu[context_desc.cpu_desc.cpu_index];
-
-	//xmhf_smpguest_arch_x86vmx_eventhandler_nmiexception(xc_cpu, r);
 	xmhf_smpguest_arch_x86vmx_eventhandler_nmiexception(context_desc, r);
 }
 
