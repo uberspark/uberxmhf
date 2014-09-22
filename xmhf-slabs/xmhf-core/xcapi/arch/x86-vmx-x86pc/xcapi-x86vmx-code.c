@@ -58,37 +58,12 @@
 //HPT related core APIs
 
 
-//flush EPT TLB
-//static void _vmx_ept_flushmappings(void){
-//  __vmx_invept(VMX_INVEPT_SINGLECONTEXT,
-//          (u64)xmhfhw_cpu_x86vmx_vmread(VMCS_CONTROL_EPT_POINTER_FULL));
-//}
-
-
 //*
 void xc_api_hpt_arch_flushcaches(context_desc_t context_desc){
-    //if we are not doing a SMP flush just invalidate and return
-    //if(!dosmpflush){
+
     __vmx_invept(VMX_INVEPT_SINGLECONTEXT,
           (u64)xmhfhw_cpu_x86vmx_vmread(VMCS_CONTROL_EPT_POINTER_FULL));
         return;
-    //}
-
-    /*//we are doing a SMP flush
-    {
-        //first, flush mappings on the current CPU
-        _vmx_ept_flushmappings();
-
-        g_vmx_quiesce_counter=0;						//reset quiesce counter
-        g_vmx_quiesce=1;  								//we are now processing quiesce
-
-        _vmx_send_quiesce_signal();				        //send all the other CPUs the quiesce signal
-        //_XDPRINTF_("%s(%u): sent quiesce signal...\n", __FUNCTION__, context_desc.cpu_desc.cpu_index);
-        //wait until all other CPUs are done with the flushing
-        while(g_vmx_quiesce_counter < (g_xc_primary_partition[context_desc.partition_desc.partition_index].numcpus-1) );
-
-        g_vmx_quiesce=0;                                //done processing quiesce
-    }*/
 }
 
 
@@ -1377,9 +1352,6 @@ static void xmhf_smpguest_arch_x86vmx_eventhandler_nmiexception(context_desc_t c
 	nmiinhvm = ( (_vmx_vmcs_info_vmexit_reason == VMX_VMEXIT_EXCEPTION) && ((_vmx_vmcs_info_vmexit_interrupt_information & INTR_INFO_VECTOR_MASK) == 2) ) ? 1 : 0;
 
 	if(g_vmx_quiesce){ //if g_vmx_quiesce =1 process quiesce regardless of where NMI originated from
-			//flush EPT TLB
-			//_vmx_ept_flushmappings();
-
             //call hypapp quiesce handler
             XMHF_SLAB_CALL(xmhf_hypapp_handlequiesce(context_desc));
 
