@@ -68,6 +68,7 @@
 
 #ifndef __ASSEMBLY__
 
+///////////////////////////////////////////////////////////////////////////////
 //HPT related core APIs
 void xc_api_hpt_setprot(context_desc_t context_desc, u64 gpa, u32 prottype);
 void xc_api_hpt_arch_setprot(context_desc_t context_desc, u64 gpa, u32 prottype);
@@ -97,7 +98,7 @@ u64 xc_api_hpt_arch_gethptroot(context_desc_t context_desc);
 
 
 
-//////
+///////////////////////////////////////////////////////////////////////////////
 //trapmask related core APIs
 void xc_api_trapmask_set(context_desc_t context_desc, xc_hypapp_arch_param_t trapmaskparams);
 void xc_api_trapmask_arch_set(context_desc_t context_desc, xc_hypapp_arch_param_t trapmaskparams);
@@ -118,7 +119,7 @@ u64 xc_api_trapmask_arch_gettrapmaskbuffer(context_desc_t context_desc, u64 oper
 
 
 
-//////
+///////////////////////////////////////////////////////////////////////////////
 //cpu state related core APIs
 void xc_api_cpustate_set(context_desc_t context_desc, xc_hypapp_arch_param_t cpustateparams);
 void xc_api_cpustate_arch_set(context_desc_t context_desc, xc_hypapp_arch_param_t cpustateparams);
@@ -136,7 +137,7 @@ xc_hypapp_arch_param_t xc_api_cpustate_arch_get(context_desc_t context_desc, u64
 
 
 
-
+///////////////////////////////////////////////////////////////////////////////
 //partition related core APIs
 u32 xc_api_partition_create(u32 partitiontype);	//returns partition_index
 
@@ -153,7 +154,22 @@ bool xc_api_partition_arch_addcpu(u32 partition_index, u32 cpu_index);
 
 
 
-//////
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+///////////////////////////////////////////////////////////////////////////////
 //platform related core APIs
 void xc_api_platform_shutdown(context_desc_t context_desc);
 void xc_api_platform_arch_shutdown(context_desc_t context_desc);
@@ -169,8 +185,6 @@ bool xc_api_platform_arch_deallocdevices_from_partition(context_desc_t context_d
 
 void xc_api_platform_quiescecpus_in_partition(context_desc_t context_desc);
 void xc_api_platform_arch_quiescecpus_in_partition(context_desc_t context_desc);
-
-
 
 void xc_coreapi_arch_eventhandler_nmiexception(struct regs *r);
 

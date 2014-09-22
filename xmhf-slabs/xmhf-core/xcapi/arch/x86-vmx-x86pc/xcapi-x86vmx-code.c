@@ -92,14 +92,10 @@ void xc_api_hpt_arch_flushcaches(context_desc_t context_desc){
 
 u64 xc_api_hpt_arch_getentry(context_desc_t context_desc, u64 gpa){
 	u64 entry;
-	//xc_partition_t *xc_partition;
 
 	HALT_ON_ERRORCOND( context_desc.partition_desc.partition_index != XC_PARTITION_INDEX_INVALID );
 
-	//xc_partition = &g_xc_primary_partition[context_desc.partition_desc.partition_index];
-
 	{
-		//xc_partition_hptdata_x86vmx_t *eptdata = (xc_partition_hptdata_x86vmx_t *)xc_partition->hptdata;
 		u64 *hpt = (u64 *)_hpt_data[context_desc.partition_desc.partition_index].vmx_ept_p_tables;
 		u32 hpt_index = (u32)gpa / PAGE_SIZE_4K;
 
@@ -110,14 +106,9 @@ u64 xc_api_hpt_arch_getentry(context_desc_t context_desc, u64 gpa){
 }
 
 void xc_api_hpt_arch_setentry(context_desc_t context_desc, u64 gpa, u64 entry){
-	//xc_partition_t *xc_partition;
-
 	HALT_ON_ERRORCOND( context_desc.partition_desc.partition_index != XC_PARTITION_INDEX_INVALID );
 
-	//xc_partition = &g_xc_primary_partition[context_desc.partition_desc.partition_index];
-
 	{
-		//xc_partition_hptdata_x86vmx_t *eptdata = (xc_partition_hptdata_x86vmx_t *)xc_partition->hptdata;
 		u64 *hpt = (u64 *)_hpt_data[context_desc.partition_desc.partition_index].vmx_ept_p_tables;
 		u32 hpt_index = (u32)gpa / PAGE_SIZE_4K;
 
@@ -129,11 +120,6 @@ void xc_api_hpt_arch_setentry(context_desc_t context_desc, u64 gpa, u64 entry){
 
 
 u32 xc_api_hpt_arch_getprot(context_desc_t context_desc, u64 gpa){
-  //xc_cpu_t *xc_cpu = (xc_cpu_t *)&g_xc_cpu[context_desc.cpu_desc.cpu_index];
-  //xc_partition_t *xc_partition = &g_xc_primary_partition[xc_cpu->parentpartition_index];
-
-  //xc_partition_hptdata_x86vmx_t *eptdata = (xc_partition_hptdata_x86vmx_t *)xc_partition->hptdata;
-
   u32 pfn = (u32)gpa / PAGE_SIZE_4K;	//grab page frame number
   u64 *pt = (u64 *)_hpt_data[context_desc.partition_desc.partition_index].vmx_ept_p_tables;
   u64 entry = pt[pfn];
@@ -163,11 +149,6 @@ void xc_api_hpt_arch_setprot(context_desc_t context_desc, u64 gpa, u32 prottype)
   u32 pfn;
   u64 *pt;
   u32 flags =0;
- //xc_cpu_t *xc_cpu = (xc_cpu_t *)&g_xc_cpu[context_desc.cpu_desc.cpu_index];
- //	xc_partition_t *xc_partition = &g_xc_primary_partition[xc_cpu->parentpartition_index];
-
-
-  //xc_partition_hptdata_x86vmx_t *eptdata = (xc_partition_hptdata_x86vmx_t *)xc_partition->hptdata;
 
   pfn = (u32)gpa / PAGE_SIZE_4K;	//grab page frame number
   pt = (u64 *)_hpt_data[context_desc.partition_desc.partition_index].vmx_ept_p_tables;
@@ -346,10 +327,6 @@ u64 xc_api_hpt_arch_lvl2pagewalk(context_desc_t context_desc, u64 gva){
  __attribute__((aligned(4096))) static xc_partition_trapmaskdata_x86vmx_t _trapmask_data[MAX_PRIMARY_PARTITIONS];
 
 static void _trapmask_operation_trap_io_set(context_desc_t context_desc, xc_hypapp_arch_param_x86vmx_trapio_t trapio){
-	//xc_cpu_t *xc_cpu = (xc_cpu_t *)&g_xc_cpu[context_desc.cpu_desc.cpu_index];
-	//xc_partition_t *xc_partition = &g_xc_primary_partition[xc_cpu->parentpartition_index];
-
-	//xc_partition_trapmaskdata_x86vmx_t *xc_partition_trapmaskdata_x86vmx = (xc_partition_trapmaskdata_x86vmx_t *)xc_partition->trapmaskdata;
 	u8 *bit_vector = (u8 *)_trapmask_data[context_desc.partition_desc.partition_index].vmx_iobitmap_region;
 	u32 byte_offset, bit_offset;
 	u32 i;
@@ -365,10 +342,6 @@ static void _trapmask_operation_trap_io_set(context_desc_t context_desc, xc_hypa
 }
 
 static void _trapmask_operation_trap_io_clear(context_desc_t context_desc, xc_hypapp_arch_param_x86vmx_trapio_t trapio){
-	//xc_cpu_t *xc_cpu = (xc_cpu_t *)&g_xc_cpu[context_desc.cpu_desc.cpu_index];
-	//xc_partition_t *xc_partition = &g_xc_primary_partition[xc_cpu->parentpartition_index];
-
-	//xc_partition_trapmaskdata_x86vmx_t *xc_partition_trapmaskdata_x86vmx = (xc_partition_trapmaskdata_x86vmx_t *)xc_partition->trapmaskdata;
 	u8 *bit_vector = (u8 *)_trapmask_data[context_desc.partition_desc.partition_index].vmx_iobitmap_region;
 	u32 byte_offset, bit_offset;
 	u32 i;
@@ -679,13 +652,11 @@ xc_hypapp_arch_param_t xc_api_cpustate_arch_get(context_desc_t context_desc, u64
 
 
 
-//////
+///////////////////////////////////////////////////////////////////////////////
 //partition related APIs
 
 
 
-//*
-//static void _xc_api_partition_arch_addcpu_setupbasestate(u32 partition_index, u32 cpu_index){
 static void _xc_api_partition_arch_addcpu_setupbasestate(context_desc_t context_desc){
 
 	const u32 vmx_msr_area_msrs[] = {MSR_EFER, MSR_IA32_PAT, MSR_K6_STAR}; //critical MSRs that need to be saved/restored across guest VM switches
@@ -694,8 +665,6 @@ static void _xc_api_partition_arch_addcpu_setupbasestate(context_desc_t context_
 	xc_cpu_t *xc_cpu = (xc_cpu_t *)&g_xc_cpu[context_desc.cpu_desc.cpu_index];
 	xc_partition_t *xc_partition = &g_xc_primary_partition[context_desc.partition_desc.partition_index];
 	xc_cpuarchdata_x86vmx_t *xc_cpuarchdata_x86vmx = (xc_cpuarchdata_x86vmx_t *)xc_cpu->cpuarchdata;
-	//xc_partition_trapmaskdata_x86vmx_t *xc_partition_trapmaskdata_x86vmx = (xc_partition_trapmaskdata_x86vmx_t *)xc_partition->trapmaskdata;
-	//xc_partition_hptdata_x86vmx_t *eptdata = (xc_partition_hptdata_x86vmx_t *)xc_partition->hptdata;
 
 	//setup host state
 	xmhfhw_cpu_x86vmx_vmwrite(VMCS_HOST_CR0, read_cr0());
@@ -1378,12 +1347,6 @@ bool xc_api_platform_arch_deallocdevices_from_partition(context_desc_t context_d
     return true;
 }
 
-//----------------------------------------------------------------------
-//Queiscing interfaces
-//----------------------------------------------------------------------
-
-
-
 
 //**
 //quiescing handler for #NMI (non-maskable interrupt) exception event
@@ -1475,5 +1438,3 @@ void xc_api_platform_arch_quiescecpus_in_partition(context_desc_t context_desc){
         g_vmx_quiesce=0;                                //done processing quiesce
 }
 
-
-//----------------------------------------------------------------------
