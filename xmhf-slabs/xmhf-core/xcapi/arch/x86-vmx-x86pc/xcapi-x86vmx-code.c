@@ -1027,7 +1027,8 @@ static u32 g_vmx_lock_quiesce_counter __attribute__(( section(".data") )) = 1;
 static u32 g_vmx_quiesce __attribute__(( section(".data") )) = 0;;
 
 
-static void xmhf_smpguest_arch_x86vmx_eventhandler_nmiexception(xc_cpu_t *xc_cpu, struct regs *r);
+//static void xmhf_smpguest_arch_x86vmx_eventhandler_nmiexception(xc_cpu_t *xc_cpu, struct regs *r);
+static void xmhf_smpguest_arch_x86vmx_eventhandler_nmiexception(context_desc_t context_desc, struct regs *r);
 
 
 
@@ -1342,7 +1343,7 @@ bool xc_api_platform_arch_deallocdevices_from_partition(context_desc_t context_d
 //**
 //quiescing handler for #NMI (non-maskable interrupt) exception event
 void xc_coreapi_arch_eventhandler_nmiexception(struct regs *r){
-	xc_cpu_t *xc_cpu;
+	//xc_cpu_t *xc_cpu;
 	context_desc_t context_desc;
 
 	context_desc = xc_api_partition_getcontextdesc(xmhf_baseplatform_arch_x86_getcpulapicid());
@@ -1350,15 +1351,17 @@ void xc_coreapi_arch_eventhandler_nmiexception(struct regs *r){
 		_XDPRINTF_("%s: invalid partition/cpu context. Halting!\n", __FUNCTION__);
 		HALT();
 	}
-	xc_cpu = &g_xc_cpu[context_desc.cpu_desc.cpu_index];
+	//xc_cpu = &g_xc_cpu[context_desc.cpu_desc.cpu_index];
 
-	xmhf_smpguest_arch_x86vmx_eventhandler_nmiexception(xc_cpu, r);
+	//xmhf_smpguest_arch_x86vmx_eventhandler_nmiexception(xc_cpu, r);
+	xmhf_smpguest_arch_x86vmx_eventhandler_nmiexception(context_desc, r);
 }
 
 //*
 //quiescing handler for #NMI (non-maskable interrupt) exception event
 //note: we are in atomic processsing mode for this "xc_cpu"
-static void xmhf_smpguest_arch_x86vmx_eventhandler_nmiexception(xc_cpu_t *xc_cpu, struct regs *r){
+//static void xmhf_smpguest_arch_x86vmx_eventhandler_nmiexception(xc_cpu_t *xc_cpu, struct regs *r){
+static void xmhf_smpguest_arch_x86vmx_eventhandler_nmiexception(context_desc_t context_desc, struct regs *r){
 	u32 nmiinhvm;	//1 if NMI originated from the HVM else 0 if within the hypervisor
 	u32 _vmx_vmcs_info_vmexit_interrupt_information;
 	u32 _vmx_vmcs_info_vmexit_reason;
@@ -1374,7 +1377,10 @@ static void xmhf_smpguest_arch_x86vmx_eventhandler_nmiexception(xc_cpu_t *xc_cpu
 
 	if(g_vmx_quiesce){ //if g_vmx_quiesce =1 process quiesce regardless of where NMI originated from
 			//flush EPT TLB
-			_vmx_ept_flushmappings();
+			//_vmx_ept_flushmappings();
+
+            //call hypapp quiesce handler
+            XMHF_SLAB_CALL(xmhf_hypapp_handlequiesce(context_desc));
 
 			//increment quiesce counter
 			spin_lock(&g_vmx_lock_quiesce_counter);
