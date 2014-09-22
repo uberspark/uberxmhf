@@ -101,7 +101,12 @@ static void hd_activatedep(context_desc_t context_desc, u32 gpa){
 //de-activate DEP protection
 static void hd_deactivatedep(context_desc_t context_desc, u32 gpa){
 	XMHF_SLAB_CALL(xc_api_hpt_setprot(context_desc, gpa, (MEMP_PROT_PRESENT | MEMP_PROT_READWRITE | MEMP_PROT_EXECUTE) ));
-	XMHF_SLAB_CALL(xc_api_hpt_flushcaches_smp(context_desc));
+
+	//flush hpt caches on CPU
+	XMHF_SLAB_CALL(xc_api_hpt_flushcaches(context_desc));
+	//quiesce all CPUs to perform TLB shootdown
+	XMHF_SLAB_CALL(xc_api_platform_quiescecpus_in_partition(context_desc));
+
 	_XDPRINTF_("CPU(%02x): %s added EXECUTE permission for page at gpa %08x\n", context_desc.cpu_desc.cpu_index, __FUNCTION__, gpa);
 }
 

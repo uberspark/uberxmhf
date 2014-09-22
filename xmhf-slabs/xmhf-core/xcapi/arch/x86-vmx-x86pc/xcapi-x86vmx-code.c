@@ -59,17 +59,18 @@
 
 
 //flush EPT TLB
-static void _vmx_ept_flushmappings(void){
-  __vmx_invept(VMX_INVEPT_SINGLECONTEXT,
-          (u64)xmhfhw_cpu_x86vmx_vmread(VMCS_CONTROL_EPT_POINTER_FULL));
-}
+//static void _vmx_ept_flushmappings(void){
+//  __vmx_invept(VMX_INVEPT_SINGLECONTEXT,
+//          (u64)xmhfhw_cpu_x86vmx_vmread(VMCS_CONTROL_EPT_POINTER_FULL));
+//}
 
 
 //*
-void xc_api_hpt_arch_flushcaches(context_desc_t context_desc, bool dosmpflush){
+void xc_api_hpt_arch_flushcaches(context_desc_t context_desc){
     //if we are not doing a SMP flush just invalidate and return
     //if(!dosmpflush){
-        _vmx_ept_flushmappings();
+    __vmx_invept(VMX_INVEPT_SINGLECONTEXT,
+          (u64)xmhfhw_cpu_x86vmx_vmread(VMCS_CONTROL_EPT_POINTER_FULL));
         return;
     //}
 
