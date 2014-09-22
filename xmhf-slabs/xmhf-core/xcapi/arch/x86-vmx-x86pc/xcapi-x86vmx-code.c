@@ -314,12 +314,14 @@ u64 xc_api_hpt_arch_lvl2pagewalk(context_desc_t context_desc, u64 gva){
 //////
 // Trapmask related APIs
 
-static void _trapmask_operation_trap_io_set(context_desc_t context_desc, xc_hypapp_arch_param_x86vmx_trapio_t trapio){
-	xc_cpu_t *xc_cpu = (xc_cpu_t *)&g_xc_cpu[context_desc.cpu_desc.cpu_index];
-	xc_partition_t *xc_partition = &g_xc_primary_partition[xc_cpu->parentpartition_index];
+ __attribute__((aligned(4096))) static xc_partition_trapmaskdata_x86vmx_t _trapmask_data[MAX_PRIMARY_PARTITIONS];
 
-	xc_partition_trapmaskdata_x86vmx_t *xc_partition_trapmaskdata_x86vmx = (xc_partition_trapmaskdata_x86vmx_t *)xc_partition->trapmaskdata;
-	u8 *bit_vector = (u8 *)xc_partition_trapmaskdata_x86vmx->vmx_iobitmap_region;
+static void _trapmask_operation_trap_io_set(context_desc_t context_desc, xc_hypapp_arch_param_x86vmx_trapio_t trapio){
+	//xc_cpu_t *xc_cpu = (xc_cpu_t *)&g_xc_cpu[context_desc.cpu_desc.cpu_index];
+	//xc_partition_t *xc_partition = &g_xc_primary_partition[xc_cpu->parentpartition_index];
+
+	//xc_partition_trapmaskdata_x86vmx_t *xc_partition_trapmaskdata_x86vmx = (xc_partition_trapmaskdata_x86vmx_t *)xc_partition->trapmaskdata;
+	u8 *bit_vector = (u8 *)_trapmask_data[context_desc.partition_desc.partition_index].vmx_iobitmap_region;
 	u32 byte_offset, bit_offset;
 	u32 i;
 
@@ -334,11 +336,11 @@ static void _trapmask_operation_trap_io_set(context_desc_t context_desc, xc_hypa
 }
 
 static void _trapmask_operation_trap_io_clear(context_desc_t context_desc, xc_hypapp_arch_param_x86vmx_trapio_t trapio){
-	xc_cpu_t *xc_cpu = (xc_cpu_t *)&g_xc_cpu[context_desc.cpu_desc.cpu_index];
-	xc_partition_t *xc_partition = &g_xc_primary_partition[xc_cpu->parentpartition_index];
+	//xc_cpu_t *xc_cpu = (xc_cpu_t *)&g_xc_cpu[context_desc.cpu_desc.cpu_index];
+	//xc_partition_t *xc_partition = &g_xc_primary_partition[xc_cpu->parentpartition_index];
 
-	xc_partition_trapmaskdata_x86vmx_t *xc_partition_trapmaskdata_x86vmx = (xc_partition_trapmaskdata_x86vmx_t *)xc_partition->trapmaskdata;
-	u8 *bit_vector = (u8 *)xc_partition_trapmaskdata_x86vmx->vmx_iobitmap_region;
+	//xc_partition_trapmaskdata_x86vmx_t *xc_partition_trapmaskdata_x86vmx = (xc_partition_trapmaskdata_x86vmx_t *)xc_partition->trapmaskdata;
+	u8 *bit_vector = (u8 *)_trapmask_data[context_desc.partition_desc.partition_index].vmx_iobitmap_region;
 	u32 byte_offset, bit_offset;
 	u32 i;
 
@@ -377,6 +379,30 @@ void xc_api_trapmask_arch_clear(context_desc_t context_desc, xc_hypapp_arch_para
 	}
 
 }
+
+u64 xc_api_trapmask_arch_gettrapmaskbuffer(context_desc_t context_desc, u64 operation){
+    u64 retval=0;
+
+    switch(operation){
+        case XC_HYPAPP_ARCH_PARAM_OPERATION_TRAP_IO:
+            retval = (u64)&_trapmask_data[context_desc.partition_desc.partition_index].vmx_iobitmap_region;
+            break;
+
+        default:
+            break;
+    }
+
+    return retval;
+}
+
+
+
+
+
+
+
+
+
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -628,14 +654,16 @@ xc_hypapp_arch_param_t xc_api_cpustate_arch_get(context_desc_t context_desc, u64
 //partition related APIs
 
 //*
-static void _xc_api_partition_arch_addcpu_setupbasestate(u32 partition_index, u32 cpu_index){
+//static void _xc_api_partition_arch_addcpu_setupbasestate(u32 partition_index, u32 cpu_index){
+static void _xc_api_partition_arch_addcpu_setupbasestate(context_desc_t context_desc){
+
 	const u32 vmx_msr_area_msrs[] = {MSR_EFER, MSR_IA32_PAT, MSR_K6_STAR}; //critical MSRs that need to be saved/restored across guest VM switches
 	const unsigned int vmx_msr_area_msrs_count = (sizeof(vmx_msr_area_msrs)/sizeof(vmx_msr_area_msrs[0]));	//count of critical MSRs that need to be saved/restored across VM switches
 	u32 lodword, hidword;
-	xc_cpu_t *xc_cpu = (xc_cpu_t *)&g_xc_cpu[cpu_index];
-	xc_partition_t *xc_partition = &g_xc_primary_partition[partition_index];
+	xc_cpu_t *xc_cpu = (xc_cpu_t *)&g_xc_cpu[context_desc.cpu_desc.cpu_index];
+	xc_partition_t *xc_partition = &g_xc_primary_partition[context_desc.partition_desc.partition_index];
 	xc_cpuarchdata_x86vmx_t *xc_cpuarchdata_x86vmx = (xc_cpuarchdata_x86vmx_t *)xc_cpu->cpuarchdata;
-	xc_partition_trapmaskdata_x86vmx_t *xc_partition_trapmaskdata_x86vmx = (xc_partition_trapmaskdata_x86vmx_t *)xc_partition->trapmaskdata;
+	//xc_partition_trapmaskdata_x86vmx_t *xc_partition_trapmaskdata_x86vmx = (xc_partition_trapmaskdata_x86vmx_t *)xc_partition->trapmaskdata;
 	xc_partition_hptdata_x86vmx_t *eptdata = (xc_partition_hptdata_x86vmx_t *)xc_partition->hptdata;
 
 	//setup host state
@@ -676,8 +704,8 @@ static void _xc_api_partition_arch_addcpu_setupbasestate(u32 partition_index, u3
 
 
 	//IO bitmap support
-	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_IO_BITMAPA_ADDRESS_FULL, hva2spa((void*)xc_partition_trapmaskdata_x86vmx->vmx_iobitmap_region));
-	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_IO_BITMAPB_ADDRESS_FULL, hva2spa( ((void*)xc_partition_trapmaskdata_x86vmx->vmx_iobitmap_region + PAGE_SIZE_4K) ));
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_IO_BITMAPA_ADDRESS_FULL, hva2spa(xc_api_trapmask_arch_gettrapmaskbuffer(context_desc, XC_HYPAPP_ARCH_PARAM_OPERATION_TRAP_IO)));
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_IO_BITMAPB_ADDRESS_FULL, hva2spa( (xc_api_trapmask_arch_gettrapmaskbuffer(context_desc, XC_HYPAPP_ARCH_PARAM_OPERATION_TRAP_IO) + PAGE_SIZE_4K) ));
 	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VMX_CPU_BASED, (xmhfhw_cpu_x86vmx_vmread(VMCS_CONTROL_VMX_CPU_BASED) | (u64)(1 << 25)) );
 
 	//Critical MSR load/store
@@ -796,6 +824,12 @@ static void _xc_api_partition_arch_addcpu_setupbasestate(u32 partition_index, u3
 bool xc_api_partition_arch_addcpu(u32 partition_index, u32 cpu_index){
 	xc_cpuarchdata_x86vmx_t *xc_cpuarchdata_x86vmx = (xc_cpuarchdata_x86vmx_t *)&g_xc_cpu[cpu_index].cpuarchdata;
 	u64 vmcs_phys_addr = hva2spa((void*)xc_cpuarchdata_x86vmx->vmx_vmcs_region);
+    context_desc_t context_desc;
+
+    context_desc.cpu_desc.cpu_index = cpu_index;
+    context_desc.cpu_desc.isbsp = false;
+    context_desc.partition_desc.partition_index = partition_index;
+
 
 	//save contents of VMX MSRs as well as MSR EFER and EFCR
 	{
@@ -863,7 +897,8 @@ bool xc_api_partition_arch_addcpu(u32 partition_index, u32 cpu_index){
 		return false;
 
 	//setup base state of the partition
-	_xc_api_partition_arch_addcpu_setupbasestate(partition_index, cpu_index);
+	//_xc_api_partition_arch_addcpu_setupbasestate(partition_index, cpu_index);
+	_xc_api_partition_arch_addcpu_setupbasestate(context_desc);
 
 	return true;
 }
