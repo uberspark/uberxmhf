@@ -78,7 +78,7 @@ typedef struct {
 		u32 cpuid;				//unique CPU id
 		bool is_bsp;			//true if CPU is the boot-strap processor
 		bool is_quiesced;		//true if CPU is quiesced
-		xc_cpuarchdata_t cpuarchdata[MAX_PLATFORM_CPUARCHDATA_SIZE] __attribute__((aligned(4096)));
+		//xc_cpuarchdata_t cpuarchdata[MAX_PLATFORM_CPUARCHDATA_SIZE] __attribute__((aligned(4096)));
 		u32 parentpartition_index;
 } __attribute__ ((packed)) xc_cpu_t;
 
