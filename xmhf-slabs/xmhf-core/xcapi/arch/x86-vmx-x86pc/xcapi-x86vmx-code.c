@@ -1433,7 +1433,7 @@ void xc_api_platform_arch_quiescecpus_in_partition(context_desc_t context_desc){
         _vmx_send_quiesce_signal();				        //send all the other CPUs the quiesce signal
         //_XDPRINTF_("%s(%u): sent quiesce signal...\n", __FUNCTION__, context_desc.cpu_desc.cpu_index);
         //wait until all other CPUs are done with the flushing
-        while(g_vmx_quiesce_counter < (g_xc_primary_partition[context_desc.partition_desc.partition_index].numcpus-1) );
+        while(g_vmx_quiesce_counter < (context_desc.partition_desc.numcpus-1) );
 
         g_vmx_quiesce=0;                                //done processing quiesce
 }

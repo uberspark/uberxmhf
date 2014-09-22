@@ -232,6 +232,8 @@ context_desc_t xc_api_partition_addcpu(u32 partition_index, u32 cpuid, bool is_b
 	//create context_desc for the partition and cpu
 	context_desc.cpu_desc.cpu_index = cpu_index;
 	context_desc.partition_desc.partition_index = partition_index;
+    context_desc.partition_desc.numcpus = g_xc_primary_partition[partition_index].numcpus;
+
 
 	//_XDPRINTF_("%s(%u): returning %u (numcpus=%u)\n", __FUNCTION__, cpuid, cpu_index, g_xc_primary_partition[partition_index].numcpus);
 	return context_desc;
@@ -268,6 +270,7 @@ context_desc_t xc_api_partition_getcontextdesc(u32 cpuid){
 		context_desc.cpu_desc.cpu_index = cpu_index;
 		context_desc.cpu_desc.isbsp = g_xc_cpu[cpu_index].is_bsp;
 		context_desc.partition_desc.partition_index = partition_index;
+        context_desc.partition_desc.numcpus = g_xc_primary_partition[partition_index].numcpus;
 
 		return context_desc;
 }
