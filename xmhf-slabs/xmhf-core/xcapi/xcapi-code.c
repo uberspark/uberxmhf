@@ -277,6 +277,10 @@ bool xc_api_platform_deallocdevices_from_partition(context_desc_t context_desc, 
     return xc_api_platform_arch_deallocdevices_from_partition(context_desc, device_descs);
 }
 
+void xc_api_platform_quiescecpus_in_partition(context_desc_t context_desc){
+    xc_api_platform_arch_quescecpus_in_partition(context_desc);
+}
+
 
 
 ///////
