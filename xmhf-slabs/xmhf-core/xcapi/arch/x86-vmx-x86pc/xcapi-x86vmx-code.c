@@ -58,42 +58,22 @@
 //HPT related core APIs
 
 
-//the quiesce counter, all CPUs except for the one requesting the
-//quiesce will increment this when they get their quiesce signal
-static u32 g_vmx_quiesce_counter __attribute__(( section(".data") )) = 0;
-static u32 g_vmx_lock_quiesce_counter __attribute__(( section(".data") )) = 1;
-
-//the "quiesce" variable, if 1, then we have a quiesce in process
-static u32 g_vmx_quiesce __attribute__(( section(".data") )) = 0;;
-
 //flush EPT TLB
 static void _vmx_ept_flushmappings(void){
   __vmx_invept(VMX_INVEPT_SINGLECONTEXT,
           (u64)xmhfhw_cpu_x86vmx_vmread(VMCS_CONTROL_EPT_POINTER_FULL));
 }
 
-static void _vmx_send_quiesce_signal(void){
-  u32 prev_icr_high_value;
-
-  prev_icr_high_value = xmhfhw_sysmemaccess_readu32((0xFEE00000 + 0x310));
-
-  xmhfhw_sysmemaccess_writeu32((0xFEE00000 + 0x310), (0xFFUL << 24)); //send to all but self
-  xmhfhw_sysmemaccess_writeu32((0xFEE00000 + 0x300), 0x000C0400UL); //send NMI
-
-  while( xmhfhw_sysmemaccess_readu32((0xFEE00000 + 0x310)) & 0x00001000 );
-
-  xmhfhw_sysmemaccess_writeu32((0xFEE00000 + 0x310), prev_icr_high_value);
-}
 
 //*
 void xc_api_hpt_arch_flushcaches(context_desc_t context_desc, bool dosmpflush){
     //if we are not doing a SMP flush just invalidate and return
-    if(!dosmpflush){
+    //if(!dosmpflush){
         _vmx_ept_flushmappings();
         return;
-    }
+    //}
 
-    //we are doing a SMP flush
+    /*//we are doing a SMP flush
     {
         //first, flush mappings on the current CPU
         _vmx_ept_flushmappings();
@@ -107,7 +87,7 @@ void xc_api_hpt_arch_flushcaches(context_desc_t context_desc, bool dosmpflush){
         while(g_vmx_quiesce_counter < (g_xc_primary_partition[context_desc.partition_desc.partition_index].numcpus-1) );
 
         g_vmx_quiesce=0;                                //done processing quiesce
-    }
+    }*/
 }
 
 
@@ -1012,6 +992,16 @@ bool xc_api_partition_arch_startcpu(context_desc_t context_desc){
 	return false;
 }
 
+
+
+
+
+
+
+
+
+
+
 //////
 //platform related core API
 typedef struct {
@@ -1027,6 +1017,14 @@ __attribute__((aligned(4096))) static vtd_cet_entry_t _vtd_cet[VTD_RET_MAXPTRS][
 static vtd_drhd_handle_t vtd_drhd_maxhandle=0;
 static u32 vtd_pagewalk_level = VTD_PAGEWALK_NONE;
 static bool vtd_initialized = false;
+
+//the quiesce counter, all CPUs except for the one requesting the
+//quiesce will increment this when they get their quiesce signal
+static u32 g_vmx_quiesce_counter __attribute__(( section(".data") )) = 0;
+static u32 g_vmx_lock_quiesce_counter __attribute__(( section(".data") )) = 1;
+
+//the "quiesce" variable, if 1, then we have a quiesce in process
+static u32 g_vmx_quiesce __attribute__(( section(".data") )) = 0;;
 
 
 static void xmhf_smpguest_arch_x86vmx_eventhandler_nmiexception(xc_cpu_t *xc_cpu, struct regs *r);
@@ -1400,6 +1398,33 @@ static void xmhf_smpguest_arch_x86vmx_eventhandler_nmiexception(xc_cpu_t *xc_cpu
 		}
 	}
 
+}
+
+static void _vmx_send_quiesce_signal(void){
+  u32 prev_icr_high_value;
+
+  prev_icr_high_value = xmhfhw_sysmemaccess_readu32((0xFEE00000 + 0x310));
+
+  xmhfhw_sysmemaccess_writeu32((0xFEE00000 + 0x310), (0xFFUL << 24)); //send to all but self
+  xmhfhw_sysmemaccess_writeu32((0xFEE00000 + 0x300), 0x000C0400UL); //send NMI
+
+  while( xmhfhw_sysmemaccess_readu32((0xFEE00000 + 0x310)) & 0x00001000 );
+
+  xmhfhw_sysmemaccess_writeu32((0xFEE00000 + 0x310), prev_icr_high_value);
+}
+
+
+void xc_api_platform_arch_quiescecpus_in_partition(context_desc_t context_desc){
+
+        g_vmx_quiesce_counter=0;						//reset quiesce counter
+        g_vmx_quiesce=1;  								//we are now processing quiesce
+
+        _vmx_send_quiesce_signal();				        //send all the other CPUs the quiesce signal
+        //_XDPRINTF_("%s(%u): sent quiesce signal...\n", __FUNCTION__, context_desc.cpu_desc.cpu_index);
+        //wait until all other CPUs are done with the flushing
+        while(g_vmx_quiesce_counter < (g_xc_primary_partition[context_desc.partition_desc.partition_index].numcpus-1) );
+
+        g_vmx_quiesce=0;                                //done processing quiesce
 }
 
 
