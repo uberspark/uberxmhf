@@ -379,35 +379,34 @@ void xc_api_trapmask_arch_clear(context_desc_t context_desc, xc_hypapp_arch_para
 }
 
 
-//////
+///////////////////////////////////////////////////////////////////////////////
 // CPU state related APIs
 
+static struct regs _cpustate_x86gprs[MAX_PLATFORM_CPUS];
+
+
 static void _cpustate_operation_cpugprs_set(context_desc_t context_desc, struct regs x86gprs){
-	xc_cpu_t *xc_cpu = (xc_cpu_t *)&g_xc_cpu[context_desc.cpu_desc.cpu_index];
-	xc_cpuarchdata_x86vmx_t *xc_cpuarchdata_x86vmx = (xc_cpuarchdata_x86vmx_t *)xc_cpu->cpuarchdata;
-	xc_cpuarchdata_x86vmx->x86gprs.edi = x86gprs.edi;
-	xc_cpuarchdata_x86vmx->x86gprs.esi = x86gprs.esi;
-	xc_cpuarchdata_x86vmx->x86gprs.ebp = x86gprs.ebp;
+	_cpustate_x86gprs[context_desc.cpu_desc.cpu_index].edi = x86gprs.edi;
+	_cpustate_x86gprs[context_desc.cpu_desc.cpu_index].esi = x86gprs.esi;
+	_cpustate_x86gprs[context_desc.cpu_desc.cpu_index].ebp = x86gprs.ebp;
 	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_RSP, x86gprs.esp);
-	xc_cpuarchdata_x86vmx->x86gprs.ebx = x86gprs.ebx;
-	xc_cpuarchdata_x86vmx->x86gprs.edx = x86gprs.edx;
-	xc_cpuarchdata_x86vmx->x86gprs.ecx = x86gprs.ecx;
-	xc_cpuarchdata_x86vmx->x86gprs.eax = x86gprs.eax;
+	_cpustate_x86gprs[context_desc.cpu_desc.cpu_index].ebx = x86gprs.ebx;
+	_cpustate_x86gprs[context_desc.cpu_desc.cpu_index].edx = x86gprs.edx;
+	_cpustate_x86gprs[context_desc.cpu_desc.cpu_index].ecx = x86gprs.ecx;
+	_cpustate_x86gprs[context_desc.cpu_desc.cpu_index].eax = x86gprs.eax;
 }
 
 static struct regs _cpustate_operation_cpugprs_get(context_desc_t context_desc){
-	xc_cpu_t *xc_cpu = (xc_cpu_t *)&g_xc_cpu[context_desc.cpu_desc.cpu_index];
-	xc_cpuarchdata_x86vmx_t *xc_cpuarchdata_x86vmx = (xc_cpuarchdata_x86vmx_t *)xc_cpu->cpuarchdata;
 	struct regs x86gprs;
 
-	x86gprs.edi = xc_cpuarchdata_x86vmx->x86gprs.edi;
-	x86gprs.esi = xc_cpuarchdata_x86vmx->x86gprs.esi;
-	x86gprs.ebp = xc_cpuarchdata_x86vmx->x86gprs.ebp;
+	x86gprs.edi = _cpustate_x86gprs[context_desc.cpu_desc.cpu_index].edi;
+	x86gprs.esi = _cpustate_x86gprs[context_desc.cpu_desc.cpu_index].esi;
+	x86gprs.ebp = _cpustate_x86gprs[context_desc.cpu_desc.cpu_index].ebp;
 	x86gprs.esp = xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_RSP);
-	x86gprs.ebx = xc_cpuarchdata_x86vmx->x86gprs.ebx;
-	x86gprs.edx = xc_cpuarchdata_x86vmx->x86gprs.edx;
-	x86gprs.ecx = xc_cpuarchdata_x86vmx->x86gprs.ecx;
-	x86gprs.eax = xc_cpuarchdata_x86vmx->x86gprs.eax;
+	x86gprs.ebx = _cpustate_x86gprs[context_desc.cpu_desc.cpu_index].ebx;
+	x86gprs.edx = _cpustate_x86gprs[context_desc.cpu_desc.cpu_index].edx;
+	x86gprs.ecx = _cpustate_x86gprs[context_desc.cpu_desc.cpu_index].ecx;
+	x86gprs.eax = _cpustate_x86gprs[context_desc.cpu_desc.cpu_index].eax;
 
 	return x86gprs;
 }
@@ -612,6 +611,16 @@ xc_hypapp_arch_param_t xc_api_cpustate_arch_get(context_desc_t context_desc, u64
 
 	return ap;
 }
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -939,19 +948,13 @@ static u32 __vmx_start_hvm(struct regs x86cpugprs) {
 bool xc_api_partition_arch_startcpu(context_desc_t context_desc){
 	u32 errorcode;
     struct regs x86cpugprs;
-    xc_cpuarchdata_x86vmx_t *xc_cpuarchdata_x86vmx = &g_xc_cpu[context_desc.cpu_desc.cpu_index].cpuarchdata;
+    xc_hypapp_arch_param_t ap;
 
-    x86cpugprs.eax = xc_cpuarchdata_x86vmx->x86gprs.eax;
-    x86cpugprs.ebx = xc_cpuarchdata_x86vmx->x86gprs.ebx;
-	x86cpugprs.ecx = xc_cpuarchdata_x86vmx->x86gprs.ecx;
-	x86cpugprs.edx = xc_cpuarchdata_x86vmx->x86gprs.edx;
-	x86cpugprs.esi = xc_cpuarchdata_x86vmx->x86gprs.esi;
-	x86cpugprs.edi = xc_cpuarchdata_x86vmx->x86gprs.edi;
-	x86cpugprs.ebp = xc_cpuarchdata_x86vmx->x86gprs.ebp;
+    ap = xc_api_cpustate_get(context_desc, XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_CPUGPRS);
 
 	HALT_ON_ERRORCOND( xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_VMCS_LINK_POINTER_FULL) == 0xFFFFFFFFFFFFFFFFULL );
 
-	errorcode=__vmx_start_hvm(x86cpugprs);
+	errorcode=__vmx_start_hvm(ap.param.cpugprs);
 	HALT_ON_ERRORCOND(errorcode != 2);	//this means the VMLAUNCH implementation violated the specs.
 
 	switch(errorcode){
@@ -978,7 +981,7 @@ bool xc_api_partition_arch_startcpu(context_desc_t context_desc){
 
 
 
-//////
+///////////////////////////////////////////////////////////////////////////////
 //platform related core API
 typedef struct {
     __attribute__((aligned(4096))) vtd_slpgtbl_t _vtd_slpgtbl;
