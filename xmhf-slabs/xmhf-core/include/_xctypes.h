@@ -60,7 +60,7 @@ typedef struct {
 } __attribute__((packed)) xc_platformdevice_desc_t;
 
 
-typedef u8 xc_partition_hptdata_t;
+//typedef u8 xc_partition_hptdata_t;
 //typedef u8 xc_partition_trapmaskdata_t;
 
 typedef struct {
@@ -68,7 +68,7 @@ typedef struct {
 		u32 partitiontype;			//primary or secondary
 		u32 numcpus;
 		xmhf_cputable_t cputable[MAX_PLATFORM_CPUS];
-		xc_partition_hptdata_t hptdata[MAX_PRIMARY_PARTITION_HPTDATA_SIZE] __attribute__((aligned(4096)));
+		//xc_partition_hptdata_t hptdata[MAX_PRIMARY_PARTITION_HPTDATA_SIZE] __attribute__((aligned(4096)));
 		//xc_partition_trapmaskdata_t trapmaskdata[MAX_PRIMARY_PARTITION_TRAPMASKDATA_SIZE] __attribute__((aligned(4096)));
 } xc_partition_t;
 
