@@ -641,23 +641,7 @@ xc_hypapp_arch_param_t xc_api_cpustate_arch_get(context_desc_t context_desc, u64
 }
 
 
-
-
-
-
-
-
-
-
-
-
-
-///////////////////////////////////////////////////////////////////////////////
-//partition related APIs
-
-
-
-static bool _xc_api_partition_arch_addcpu_setupbasestate(context_desc_t context_desc){
+bool xc_api_cpustate_arch_setupbasestate(context_desc_t context_desc){
 
 	const u32 vmx_msr_area_msrs[] = {MSR_EFER, MSR_IA32_PAT, MSR_K6_STAR}; //critical MSRs that need to be saved/restored across guest VM switches
 	const unsigned int vmx_msr_area_msrs_count = (sizeof(vmx_msr_area_msrs)/sizeof(vmx_msr_area_msrs[0]));	//count of critical MSRs that need to be saved/restored across VM switches
@@ -888,89 +872,18 @@ static bool _xc_api_partition_arch_addcpu_setupbasestate(context_desc_t context_
     return true;
 }
 
-//*
-bool xc_api_partition_arch_addcpu(u32 partition_index, u32 cpu_index){
-	//xc_cpuarchdata_x86vmx_t *xc_cpuarchdata_x86vmx = (xc_cpuarchdata_x86vmx_t *)&g_xc_cpu[cpu_index].cpuarchdata;
-	//u64 vmcs_phys_addr = hva2spa((void*)xc_cpuarchdata_x86vmx->vmx_vmcs_region);
-    context_desc_t context_desc;
-
-    context_desc.cpu_desc.cpu_index = cpu_index;
-    context_desc.cpu_desc.isbsp = false;
-    context_desc.partition_desc.partition_index = partition_index;
 
 
-/*	//save contents of VMX MSRs as well as MSR EFER and EFCR
-	{
-		u32 i;
-		u32 eax, edx;
-		for(i=0; i < IA32_VMX_MSRCOUNT; i++){
-			rdmsr( (IA32_VMX_BASIC_MSR + i), &eax, &edx);
-			xc_cpuarchdata_x86vmx->vmx_msrs[i] = (u64)edx << 32 | (u64) eax;
-		}
-
-		rdmsr(MSR_EFER, &eax, &edx);
-		xc_cpuarchdata_x86vmx->vmx_msr_efer = (u64)edx << 32 | (u64) eax;
-		rdmsr(MSR_EFCR, &eax, &edx);
-		xc_cpuarchdata_x86vmx->vmx_msr_efcr = (u64)edx << 32 | (u64) eax;
-
-		//_XDPRINTF_("\nCPU(0x%02x): MSR_EFER=0x%08x%08x", xc_cpu->cpuid, (u32)((u64)xc_cpuarchdata_x86vmx->vmx_msr_efer >> 32),
-		//	(u32)xc_cpuarchdata_x86vmx->vmx_msr_efer);
-		//_XDPRINTF_("\nCPU(0x%02x): MSR_EFCR=0x%08x%08x", xc_cpu->cpuid, (u32)((u64)xc_cpuarchdata_x86vmx->vmx_msr_efcr >> 32),
-		//	(u32)xc_cpuarchdata_x86vmx->vmx_msr_efcr);
-  	}
-
-	//we require unrestricted guest support, bail out if we don't have it
-	if( !( (u32)((u64)xc_cpuarchdata_x86vmx->vmx_msrs[IA32_VMX_MSRCOUNT-1] >> 32) & 0x80 ) ){
-		_XDPRINTF_("%s(%u): need unrestricted guest support but did not find any!\n", __FUNCTION__, cpu_index);
-		return false;
-	}
-
-    write_cr4( read_cr4() |  CR4_VMXE);
-
-	//enter VMX root operation using VMXON
-	{
-		u32 retval=0;
-		u64 vmxonregion_paddr = hva2spa((void*)xc_cpuarchdata_x86vmx->vmx_vmxon_region);
-		//set VMCS rev id
-		*((u32 *)xc_cpuarchdata_x86vmx->vmx_vmxon_region) = (u32)xc_cpuarchdata_x86vmx->vmx_msrs[INDEX_IA32_VMX_BASIC_MSR];
-
-		asm volatile( "vmxon %1 \n"
-				 "jbe vmfail \n"
-				 "movl $0x1, %%eax \n"
-				 "movl %%eax, %0 \n"
-				 "jmp vmsuccess \n"
-				 "vmfail: \n"
-				 "movl $0x0, %%eax \n"
-				 "movl %%eax, %0 \n"
-				 "vmsuccess: \n"
-		   : "=m" (retval)
-		   : "m"(vmxonregion_paddr)
-		   : "eax");
-
-		if(!retval){
-			_XDPRINTF_("%s(%u): unable to enter VMX root operation\n", __FUNCTION__, cpuid);
-			return false;
-		}
-	}
-
-	//clear VMCS
-	if(!__vmx_vmclear((u64)vmcs_phys_addr))
-		return false;
-
-	//set VMCS revision id
-	*((u32 *)xc_cpuarchdata_x86vmx->vmx_vmcs_region) = (u32)xc_cpuarchdata_x86vmx->vmx_msrs[INDEX_IA32_VMX_BASIC_MSR];
-
-	//load VMPTR
-	if(!__vmx_vmptrld((u64)vmcs_phys_addr))
-		return false;
-*/
-
-	//setup base state of the partition
-	//_xc_api_partition_arch_addcpu_setupbasestate(partition_index, cpu_index);
-	return _xc_api_partition_arch_addcpu_setupbasestate(context_desc);
-}
 
 
+
+
+
+
+
+
+///////////////////////////////////////////////////////////////////////////////
+//partition related APIs
 
 
 //----------------------------------------------------------------------
