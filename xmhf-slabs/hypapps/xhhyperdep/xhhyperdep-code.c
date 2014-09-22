@@ -180,6 +180,13 @@ u32 xmhf_hypapp_handleintercept_trap(context_desc_t context_desc, xc_hypapp_arch
  	return APP_TRAP_CHAIN;
 }
 
+
+//quiesce handler
+void xmhf_hypapp_handlequiesce(context_desc_t context_desc){
+    //TODO: flush TLB
+
+}
+
 ////////
 XMHF_SLAB("hypapp-hyperdep")
 

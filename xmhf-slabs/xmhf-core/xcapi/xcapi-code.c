@@ -278,7 +278,7 @@ bool xc_api_platform_deallocdevices_from_partition(context_desc_t context_desc, 
 }
 
 void xc_api_platform_quiescecpus_in_partition(context_desc_t context_desc){
-    xc_api_platform_arch_quescecpus_in_partition(context_desc);
+    xc_api_platform_arch_quiescecpus_in_partition(context_desc);
 }
 
 
