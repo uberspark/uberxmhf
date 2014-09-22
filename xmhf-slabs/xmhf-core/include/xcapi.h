@@ -187,7 +187,6 @@ void xc_api_platform_arch_quiescecpus_in_partition(context_desc_t context_desc);
 
 void xc_coreapi_arch_eventhandler_nmiexception(struct regs *r);
 
-tion[MAX_PRIMARY_PARTITIONS] __attribute__(( section(".data") ));
 
 #endif	//__ASSEMBLY__
 
