@@ -87,8 +87,8 @@ void xc_api_hpt_arch_flushcaches(context_desc_t context_desc);
 u64 xc_api_hpt_lvl2pagewalk(context_desc_t context_desc, u64 gva);
 u64 xc_api_hpt_arch_lvl2pagewalk(context_desc_t context_desc, u64 gva);
 
-
-
+void xc_api_hpt_arch_establishshape(u32 partition_index);
+u64 xc_api_hpt_arch_gethptroot(context_desc_t context_desc);
 
 
 
@@ -127,8 +127,20 @@ xc_hypapp_arch_param_t xc_api_cpustate_get(context_desc_t context_desc, u64 oper
 xc_hypapp_arch_param_t xc_api_cpustate_arch_get(context_desc_t context_desc, u64 operation);
 
 
+
+
+
+
+
+
+
+
+
+
 //partition related core APIs
 u32 xc_api_partition_create(u32 partitiontype);	//returns partition_index
+
+
 context_desc_t xc_api_partition_addcpu(u32 partition_index, u32 cpuid, bool is_bsp); //return cpu_index
 context_desc_t xc_api_partition_getcontextdesc(u32 cpuid); //return context_desc_t structure
 bool xc_api_partition_startcpu(context_desc_t context_desc);
