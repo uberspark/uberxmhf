@@ -127,7 +127,7 @@ void xc_api_cpustate_arch_set(context_desc_t context_desc, xc_hypapp_arch_param_
 xc_hypapp_arch_param_t xc_api_cpustate_get(context_desc_t context_desc, u64 operation);
 xc_hypapp_arch_param_t xc_api_cpustate_arch_get(context_desc_t context_desc, u64 operation);
 
-
+bool xc_api_cpustate_arch_setupbasestate(context_desc_t context_desc);
 
 
 
@@ -148,7 +148,6 @@ bool xc_api_partition_startcpu(context_desc_t context_desc);
 bool xc_api_partition_arch_startcpu(context_desc_t context_desc);
 
 
-bool xc_api_partition_arch_addcpu(u32 partition_index, u32 cpu_index);
 
 
 
