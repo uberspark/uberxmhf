@@ -54,10 +54,9 @@
 #include <xcapi.h>
 #include <xcihub.h>
 
+//////
+//HPT related core APIs
 
-//----------------------------------------------------------------------
-//Queiscing interfaces
-//----------------------------------------------------------------------
 
 //the quiesce counter, all CPUs except for the one requesting the
 //quiesce will increment this when they get their quiesce signal
@@ -67,7 +66,11 @@ static u32 g_vmx_lock_quiesce_counter __attribute__(( section(".data") )) = 1;
 //the "quiesce" variable, if 1, then we have a quiesce in process
 static u32 g_vmx_quiesce __attribute__(( section(".data") )) = 0;;
 
-static void xmhf_smpguest_arch_x86vmx_eventhandler_nmiexception(xc_cpu_t *xc_cpu, struct regs *r);
+//flush EPT TLB
+static void _vmx_ept_flushmappings(void){
+  __vmx_invept(VMX_INVEPT_SINGLECONTEXT,
+          (u64)xmhfhw_cpu_x86vmx_vmread(VMCS_CONTROL_EPT_POINTER_FULL));
+}
 
 static void _vmx_send_quiesce_signal(void){
   u32 prev_icr_high_value;
@@ -81,77 +84,6 @@ static void _vmx_send_quiesce_signal(void){
 
   xmhfhw_sysmemaccess_writeu32((0xFEE00000 + 0x310), prev_icr_high_value);
 }
-
-//flush EPT TLB
-static void _vmx_ept_flushmappings(void){
-  __vmx_invept(VMX_INVEPT_SINGLECONTEXT,
-          (u64)xmhfhw_cpu_x86vmx_vmread(VMCS_CONTROL_EPT_POINTER_FULL));
-}
-
-//**
-//quiescing handler for #NMI (non-maskable interrupt) exception event
-void xc_coreapi_arch_eventhandler_nmiexception(struct regs *r){
-	xc_cpu_t *xc_cpu;
-	context_desc_t context_desc;
-
-	context_desc = xc_api_partition_getcontextdesc(xmhf_baseplatform_arch_x86_getcpulapicid());
-	if(context_desc.cpu_desc.cpu_index == XC_PARTITION_INDEX_INVALID || context_desc.partition_desc.partition_index == XC_PARTITION_INDEX_INVALID){
-		_XDPRINTF_("%s: invalid partition/cpu context. Halting!\n", __FUNCTION__);
-		HALT();
-	}
-	xc_cpu = &g_xc_cpu[context_desc.cpu_desc.cpu_index];
-
-	xmhf_smpguest_arch_x86vmx_eventhandler_nmiexception(xc_cpu, r);
-}
-
-//*
-//quiescing handler for #NMI (non-maskable interrupt) exception event
-//note: we are in atomic processsing mode for this "xc_cpu"
-static void xmhf_smpguest_arch_x86vmx_eventhandler_nmiexception(xc_cpu_t *xc_cpu, struct regs *r){
-	u32 nmiinhvm;	//1 if NMI originated from the HVM else 0 if within the hypervisor
-	u32 _vmx_vmcs_info_vmexit_interrupt_information;
-	u32 _vmx_vmcs_info_vmexit_reason;
-
-	//determine if the NMI originated within the HVM or within the
-	//hypervisor. we use VMCS fields for this purpose. note that we
-	//use vmread directly instead of relying on xc_cpu-> to avoid
-	//race conditions
-	_vmx_vmcs_info_vmexit_interrupt_information = xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_VMEXIT_INTERRUPT_INFORMATION);
-	_vmx_vmcs_info_vmexit_reason = xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_VMEXIT_REASON);
-
-	nmiinhvm = ( (_vmx_vmcs_info_vmexit_reason == VMX_VMEXIT_EXCEPTION) && ((_vmx_vmcs_info_vmexit_interrupt_information & INTR_INFO_VECTOR_MASK) == 2) ) ? 1 : 0;
-
-	if(g_vmx_quiesce){ //if g_vmx_quiesce =1 process quiesce regardless of where NMI originated from
-			//flush EPT TLB
-			_vmx_ept_flushmappings();
-
-			//increment quiesce counter
-			spin_lock(&g_vmx_lock_quiesce_counter);
-			g_vmx_quiesce_counter++;
-			spin_unlock(&g_vmx_lock_quiesce_counter);
-
-	}else{
-		//we are not in quiesce
-		//inject the NMI if it was triggered in guest mode
-
-		if(nmiinhvm){
-			if(xmhfhw_cpu_x86vmx_vmread(VMCS_CONTROL_EXCEPTION_BITMAP) & CPU_EXCEPTION_NMI){
-				//TODO: hypapp has chosen to intercept NMI so callback
-			}else{ //inject NMI back to partition
-				if( (xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_INTERRUPTIBILITY) == 0) &&
-       				(xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_ACTIVITY_STATE) == 0) ){
-                    xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VM_ENTRY_EXCEPTION_ERRORCODE, 0);
-                    xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VM_ENTRY_INTERRUPTION_INFORMATION, (NMI_VECTOR | INTR_TYPE_NMI | INTR_INFO_VALID_MASK));
-				}
-			}
-		}
-	}
-
-}
-
-
-//----------------------------------------------------------------------
-
 
 //*
 void xc_api_hpt_arch_flushcaches(context_desc_t context_desc, bool dosmpflush){
@@ -422,7 +354,8 @@ u64 xc_api_hpt_arch_lvl2pagewalk(context_desc_t context_desc, u64 gva){
 }
 
 
-//---------------------------------------------------------------------------------
+
+//////
 // Trapmask related APIs
 
 static void _trapmask_operation_trap_io_set(context_desc_t context_desc, xc_hypapp_arch_param_x86vmx_trapio_t trapio){
@@ -490,7 +423,7 @@ void xc_api_trapmask_arch_clear(context_desc_t context_desc, xc_hypapp_arch_para
 }
 
 
-//-----------------------------------------------------------------------------------------------
+//////
 // CPU state related APIs
 
 static void _cpustate_operation_cpugprs_set(context_desc_t context_desc, struct regs x86gprs){
@@ -724,6 +657,10 @@ xc_hypapp_arch_param_t xc_api_cpustate_arch_get(context_desc_t context_desc, u64
 	return ap;
 }
 
+
+
+//////
+//partition related APIs
 
 //*
 static void _xc_api_partition_arch_addcpu_setupbasestate(u32 partition_index, u32 cpu_index){
@@ -1091,6 +1028,11 @@ static vtd_drhd_handle_t vtd_drhd_maxhandle=0;
 static u32 vtd_pagewalk_level = VTD_PAGEWALK_NONE;
 static bool vtd_initialized = false;
 
+
+static void xmhf_smpguest_arch_x86vmx_eventhandler_nmiexception(xc_cpu_t *xc_cpu, struct regs *r);
+
+
+
 static u64 _platform_x86pc_vtd_setup_retcet(void){
     u32 i, j;
 
@@ -1392,3 +1334,73 @@ bool xc_api_platform_arch_deallocdevices_from_partition(context_desc_t context_d
     return true;
 }
 
+//----------------------------------------------------------------------
+//Queiscing interfaces
+//----------------------------------------------------------------------
+
+
+
+
+//**
+//quiescing handler for #NMI (non-maskable interrupt) exception event
+void xc_coreapi_arch_eventhandler_nmiexception(struct regs *r){
+	xc_cpu_t *xc_cpu;
+	context_desc_t context_desc;
+
+	context_desc = xc_api_partition_getcontextdesc(xmhf_baseplatform_arch_x86_getcpulapicid());
+	if(context_desc.cpu_desc.cpu_index == XC_PARTITION_INDEX_INVALID || context_desc.partition_desc.partition_index == XC_PARTITION_INDEX_INVALID){
+		_XDPRINTF_("%s: invalid partition/cpu context. Halting!\n", __FUNCTION__);
+		HALT();
+	}
+	xc_cpu = &g_xc_cpu[context_desc.cpu_desc.cpu_index];
+
+	xmhf_smpguest_arch_x86vmx_eventhandler_nmiexception(xc_cpu, r);
+}
+
+//*
+//quiescing handler for #NMI (non-maskable interrupt) exception event
+//note: we are in atomic processsing mode for this "xc_cpu"
+static void xmhf_smpguest_arch_x86vmx_eventhandler_nmiexception(xc_cpu_t *xc_cpu, struct regs *r){
+	u32 nmiinhvm;	//1 if NMI originated from the HVM else 0 if within the hypervisor
+	u32 _vmx_vmcs_info_vmexit_interrupt_information;
+	u32 _vmx_vmcs_info_vmexit_reason;
+
+	//determine if the NMI originated within the HVM or within the
+	//hypervisor. we use VMCS fields for this purpose. note that we
+	//use vmread directly instead of relying on xc_cpu-> to avoid
+	//race conditions
+	_vmx_vmcs_info_vmexit_interrupt_information = xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_VMEXIT_INTERRUPT_INFORMATION);
+	_vmx_vmcs_info_vmexit_reason = xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_VMEXIT_REASON);
+
+	nmiinhvm = ( (_vmx_vmcs_info_vmexit_reason == VMX_VMEXIT_EXCEPTION) && ((_vmx_vmcs_info_vmexit_interrupt_information & INTR_INFO_VECTOR_MASK) == 2) ) ? 1 : 0;
+
+	if(g_vmx_quiesce){ //if g_vmx_quiesce =1 process quiesce regardless of where NMI originated from
+			//flush EPT TLB
+			_vmx_ept_flushmappings();
+
+			//increment quiesce counter
+			spin_lock(&g_vmx_lock_quiesce_counter);
+			g_vmx_quiesce_counter++;
+			spin_unlock(&g_vmx_lock_quiesce_counter);
+
+	}else{
+		//we are not in quiesce
+		//inject the NMI if it was triggered in guest mode
+
+		if(nmiinhvm){
+			if(xmhfhw_cpu_x86vmx_vmread(VMCS_CONTROL_EXCEPTION_BITMAP) & CPU_EXCEPTION_NMI){
+				//TODO: hypapp has chosen to intercept NMI so callback
+			}else{ //inject NMI back to partition
+				if( (xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_INTERRUPTIBILITY) == 0) &&
+       				(xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_ACTIVITY_STATE) == 0) ){
+                    xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VM_ENTRY_EXCEPTION_ERRORCODE, 0);
+                    xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VM_ENTRY_INTERRUPTION_INFORMATION, (NMI_VECTOR | INTR_TYPE_NMI | INTR_INFO_VALID_MASK));
+				}
+			}
+		}
+	}
+
+}
+
+
+//----------------------------------------------------------------------
