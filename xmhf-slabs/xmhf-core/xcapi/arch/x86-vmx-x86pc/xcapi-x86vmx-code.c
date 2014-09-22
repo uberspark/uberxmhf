@@ -411,6 +411,7 @@ u64 xc_api_trapmask_arch_gettrapmaskbuffer(context_desc_t context_desc, u64 oper
 // CPU state related APIs
 
 static struct regs _cpustate_x86gprs[MAX_PLATFORM_CPUS];
+__attribute__((aligned(4096))) static xc_cpuarchdata_x86vmx_t _cpustate_archdatavmx[MAX_PLATFORM_CPUS];
 
 
 static void _cpustate_operation_cpugprs_set(context_desc_t context_desc, struct regs x86gprs){
@@ -646,10 +647,10 @@ bool xc_api_cpustate_arch_setupbasestate(context_desc_t context_desc){
 	const u32 vmx_msr_area_msrs[] = {MSR_EFER, MSR_IA32_PAT, MSR_K6_STAR}; //critical MSRs that need to be saved/restored across guest VM switches
 	const unsigned int vmx_msr_area_msrs_count = (sizeof(vmx_msr_area_msrs)/sizeof(vmx_msr_area_msrs[0]));	//count of critical MSRs that need to be saved/restored across VM switches
 	u32 lodword, hidword;
-	xc_cpu_t *xc_cpu = (xc_cpu_t *)&g_xc_cpu[context_desc.cpu_desc.cpu_index];
-	xc_partition_t *xc_partition = &g_xc_primary_partition[context_desc.partition_desc.partition_index];
-	xc_cpuarchdata_x86vmx_t *xc_cpuarchdata_x86vmx = (xc_cpuarchdata_x86vmx_t *)xc_cpu->cpuarchdata;
-	u64 vmcs_phys_addr = hva2spa((void*)xc_cpuarchdata_x86vmx->vmx_vmcs_region);
+	//xc_cpu_t *xc_cpu = (xc_cpu_t *)&g_xc_cpu[context_desc.cpu_desc.cpu_index];
+	//xc_partition_t *xc_partition = &g_xc_primary_partition[context_desc.partition_desc.partition_index];
+	//xc_cpuarchdata_x86vmx_t *xc_cpuarchdata_x86vmx = (xc_cpuarchdata_x86vmx_t *)xc_cpu->cpuarchdata;
+	u64 vmcs_phys_addr = hva2spa((void*)_cpustate_archdatavmx[context_desc.cpu_desc.cpu_index].vmx_vmcs_region);
 
 	//save contents of VMX MSRs as well as MSR EFER and EFCR
 	{
@@ -657,22 +658,22 @@ bool xc_api_cpustate_arch_setupbasestate(context_desc_t context_desc){
 		u32 eax, edx;
 		for(i=0; i < IA32_VMX_MSRCOUNT; i++){
 			rdmsr( (IA32_VMX_BASIC_MSR + i), &eax, &edx);
-			xc_cpuarchdata_x86vmx->vmx_msrs[i] = (u64)edx << 32 | (u64) eax;
+			_cpustate_archdatavmx[context_desc.cpu_desc.cpu_index].vmx_msrs[i] = (u64)edx << 32 | (u64) eax;
 		}
 
 		rdmsr(MSR_EFER, &eax, &edx);
-		xc_cpuarchdata_x86vmx->vmx_msr_efer = (u64)edx << 32 | (u64) eax;
+		_cpustate_archdatavmx[context_desc.cpu_desc.cpu_index].vmx_msr_efer = (u64)edx << 32 | (u64) eax;
 		rdmsr(MSR_EFCR, &eax, &edx);
-		xc_cpuarchdata_x86vmx->vmx_msr_efcr = (u64)edx << 32 | (u64) eax;
+		_cpustate_archdatavmx[context_desc.cpu_desc.cpu_index].vmx_msr_efcr = (u64)edx << 32 | (u64) eax;
 
-		//_XDPRINTF_("\nCPU(0x%02x): MSR_EFER=0x%08x%08x", xc_cpu->cpuid, (u32)((u64)xc_cpuarchdata_x86vmx->vmx_msr_efer >> 32),
-		//	(u32)xc_cpuarchdata_x86vmx->vmx_msr_efer);
-		//_XDPRINTF_("\nCPU(0x%02x): MSR_EFCR=0x%08x%08x", xc_cpu->cpuid, (u32)((u64)xc_cpuarchdata_x86vmx->vmx_msr_efcr >> 32),
-		//	(u32)xc_cpuarchdata_x86vmx->vmx_msr_efcr);
+		//_XDPRINTF_("\nCPU(0x%02x): MSR_EFER=0x%08x%08x", xc_cpu->cpuid, (u32)((u64)_cpustate_archdatavmx[context_desc.cpu_desc.cpu_index].vmx_msr_efer >> 32),
+		//	(u32)_cpustate_archdatavmx[context_desc.cpu_desc.cpu_index].vmx_msr_efer);
+		//_XDPRINTF_("\nCPU(0x%02x): MSR_EFCR=0x%08x%08x", xc_cpu->cpuid, (u32)((u64)_cpustate_archdatavmx[context_desc.cpu_desc.cpu_index].vmx_msr_efcr >> 32),
+		//	(u32)_cpustate_archdatavmx[context_desc.cpu_desc.cpu_index].vmx_msr_efcr);
   	}
 
 	//we require unrestricted guest support, bail out if we don't have it
-	if( !( (u32)((u64)xc_cpuarchdata_x86vmx->vmx_msrs[IA32_VMX_MSRCOUNT-1] >> 32) & 0x80 ) ){
+	if( !( (u32)((u64)_cpustate_archdatavmx[context_desc.cpu_desc.cpu_index].vmx_msrs[IA32_VMX_MSRCOUNT-1] >> 32) & 0x80 ) ){
 		_XDPRINTF_("%s(%u): need unrestricted guest support but did not find any!\n", __FUNCTION__, context_desc.cpu_desc.cpu_index);
 		return false;
 	}
@@ -682,9 +683,9 @@ bool xc_api_cpustate_arch_setupbasestate(context_desc_t context_desc){
 	//enter VMX root operation using VMXON
 	{
 		u32 retval=0;
-		u64 vmxonregion_paddr = hva2spa((void*)xc_cpuarchdata_x86vmx->vmx_vmxon_region);
+		u64 vmxonregion_paddr = hva2spa((void*)_cpustate_archdatavmx[context_desc.cpu_desc.cpu_index].vmx_vmxon_region);
 		//set VMCS rev id
-		*((u32 *)xc_cpuarchdata_x86vmx->vmx_vmxon_region) = (u32)xc_cpuarchdata_x86vmx->vmx_msrs[INDEX_IA32_VMX_BASIC_MSR];
+		*((u32 *)_cpustate_archdatavmx[context_desc.cpu_desc.cpu_index].vmx_vmxon_region) = (u32)_cpustate_archdatavmx[context_desc.cpu_desc.cpu_index].vmx_msrs[INDEX_IA32_VMX_BASIC_MSR];
 
 		asm volatile( "vmxon %1 \n"
 				 "jbe vmfail \n"
@@ -710,7 +711,7 @@ bool xc_api_cpustate_arch_setupbasestate(context_desc_t context_desc){
 		return false;
 
 	//set VMCS revision id
-	*((u32 *)xc_cpuarchdata_x86vmx->vmx_vmcs_region) = (u32)xc_cpuarchdata_x86vmx->vmx_msrs[INDEX_IA32_VMX_BASIC_MSR];
+	*((u32 *)_cpustate_archdatavmx[context_desc.cpu_desc.cpu_index].vmx_vmcs_region) = (u32)_cpustate_archdatavmx[context_desc.cpu_desc.cpu_index].vmx_msrs[INDEX_IA32_VMX_BASIC_MSR];
 
 	//load VMPTR
 	if(!__vmx_vmptrld((u64)vmcs_phys_addr))
@@ -745,10 +746,10 @@ bool xc_api_cpustate_arch_setupbasestate(context_desc_t context_desc){
 	xmhfhw_cpu_x86vmx_vmwrite(VMCS_HOST_GS_BASE, (((u64)hidword << 32) | (u64)lodword) );
 
 	//setup default VMX controls
-	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VMX_PIN_BASED, (u32)xc_cpuarchdata_x86vmx->vmx_msrs[INDEX_IA32_VMX_PINBASED_CTLS_MSR]);
-	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VMX_CPU_BASED, (u32)xc_cpuarchdata_x86vmx->vmx_msrs[INDEX_IA32_VMX_PROCBASED_CTLS_MSR]);
-	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VM_EXIT_CONTROLS, (u32)xc_cpuarchdata_x86vmx->vmx_msrs[INDEX_IA32_VMX_EXIT_CTLS_MSR]);
-	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VM_ENTRY_CONTROLS, (u32)xc_cpuarchdata_x86vmx->vmx_msrs[INDEX_IA32_VMX_ENTRY_CTLS_MSR]);
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VMX_PIN_BASED, (u32)_cpustate_archdatavmx[context_desc.cpu_desc.cpu_index].vmx_msrs[INDEX_IA32_VMX_PINBASED_CTLS_MSR]);
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VMX_CPU_BASED, (u32)_cpustate_archdatavmx[context_desc.cpu_desc.cpu_index].vmx_msrs[INDEX_IA32_VMX_PROCBASED_CTLS_MSR]);
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VM_EXIT_CONTROLS, (u32)_cpustate_archdatavmx[context_desc.cpu_desc.cpu_index].vmx_msrs[INDEX_IA32_VMX_EXIT_CTLS_MSR]);
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VM_ENTRY_CONTROLS, (u32)_cpustate_archdatavmx[context_desc.cpu_desc.cpu_index].vmx_msrs[INDEX_IA32_VMX_ENTRY_CTLS_MSR]);
 
     //64-bit host
   	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VM_EXIT_CONTROLS, (u32)(xmhfhw_cpu_x86vmx_vmread(VMCS_CONTROL_VM_EXIT_CONTROLS) | (1 << 9)) );
@@ -762,8 +763,8 @@ bool xc_api_cpustate_arch_setupbasestate(context_desc_t context_desc){
 	//Critical MSR load/store
 	{
 		u32 i;
-		msr_entry_t *hmsr = (msr_entry_t *)xc_cpuarchdata_x86vmx->vmx_msr_area_host_region;
-		msr_entry_t *gmsr = (msr_entry_t *)xc_cpuarchdata_x86vmx->vmx_msr_area_guest_region;
+		msr_entry_t *hmsr = (msr_entry_t *)_cpustate_archdatavmx[context_desc.cpu_desc.cpu_index].vmx_msr_area_host_region;
+		msr_entry_t *gmsr = (msr_entry_t *)_cpustate_archdatavmx[context_desc.cpu_desc.cpu_index].vmx_msr_area_guest_region;
 
 		//store host and guest initial values of the critical MSRs
 		for(i=0; i < vmx_msr_area_msrs_count; i++){
@@ -794,13 +795,13 @@ bool xc_api_cpustate_arch_setupbasestate(context_desc_t context_desc){
 		}
 
 		//host MSR load on exit, we store it ourselves before entry
-		xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VM_EXIT_MSR_LOAD_ADDRESS_FULL, hva2spa((void*)xc_cpuarchdata_x86vmx->vmx_msr_area_host_region));
+		xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VM_EXIT_MSR_LOAD_ADDRESS_FULL, hva2spa((void*)_cpustate_archdatavmx[context_desc.cpu_desc.cpu_index].vmx_msr_area_host_region));
 		xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VM_EXIT_MSR_LOAD_COUNT, vmx_msr_area_msrs_count);
 
 		//guest MSR load on entry, store on exit
-		xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VM_ENTRY_MSR_LOAD_ADDRESS_FULL, hva2spa((void*)xc_cpuarchdata_x86vmx->vmx_msr_area_guest_region));
+		xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VM_ENTRY_MSR_LOAD_ADDRESS_FULL, hva2spa((void*)_cpustate_archdatavmx[context_desc.cpu_desc.cpu_index].vmx_msr_area_guest_region));
 		xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VM_ENTRY_MSR_LOAD_COUNT, vmx_msr_area_msrs_count);
-		xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VM_EXIT_MSR_STORE_ADDRESS_FULL, hva2spa((void*)xc_cpuarchdata_x86vmx->vmx_msr_area_guest_region));
+		xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VM_EXIT_MSR_STORE_ADDRESS_FULL, hva2spa((void*)_cpustate_archdatavmx[context_desc.cpu_desc.cpu_index].vmx_msr_area_guest_region));
 		xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VM_EXIT_MSR_STORE_COUNT, vmx_msr_area_msrs_count);
 
 	}
@@ -813,7 +814,7 @@ bool xc_api_cpustate_arch_setupbasestate(context_desc_t context_desc){
 
 
 	//activate secondary processor controls
-	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VMX_SECCPU_BASED, (u32)xc_cpuarchdata_x86vmx->vmx_msrs[INDEX_IA32_VMX_PROCBASED_CTLS2_MSR]);
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VMX_SECCPU_BASED, (u32)_cpustate_archdatavmx[context_desc.cpu_desc.cpu_index].vmx_msrs[INDEX_IA32_VMX_PROCBASED_CTLS2_MSR]);
 	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VMX_CPU_BASED, (u32) (xmhfhw_cpu_x86vmx_vmread(VMCS_CONTROL_VMX_CPU_BASED) | (u64)(1 << 31)) );
 
 	//setup unrestricted guest
@@ -826,11 +827,11 @@ bool xc_api_cpustate_arch_setupbasestate(context_desc_t context_desc){
 	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VMX_PIN_BASED, (u32)(xmhfhw_cpu_x86vmx_vmread(VMCS_CONTROL_VMX_PIN_BASED) | (u64)(1 << 3) ) );
 
 	//trap access to CR0 fixed 1-bits
-	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_CR0_MASK, (u32)(((((u32)xc_cpuarchdata_x86vmx->vmx_msrs[INDEX_IA32_VMX_CR0_FIXED0_MSR] & ~(CR0_PE)) & ~(CR0_PG)) | CR0_CD) | CR0_NW) );
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_CR0_MASK, (u32)(((((u32)_cpustate_archdatavmx[context_desc.cpu_desc.cpu_index].vmx_msrs[INDEX_IA32_VMX_CR0_FIXED0_MSR] & ~(CR0_PE)) & ~(CR0_PG)) | CR0_CD) | CR0_NW) );
 	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_CR0_SHADOW, xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_CR0));
 
 	//trap access to CR4 fixed bits (this includes the VMXE bit)
-	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_CR4_MASK, (u32)xc_cpuarchdata_x86vmx->vmx_msrs[INDEX_IA32_VMX_CR4_FIXED0_MSR]);
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_CR4_MASK, (u32)_cpustate_archdatavmx[context_desc.cpu_desc.cpu_index].vmx_msrs[INDEX_IA32_VMX_CR4_FIXED0_MSR]);
 	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_CR4_SHADOW, (u64)CR4_VMXE);
 
 	//setup memory protection
@@ -839,31 +840,31 @@ bool xc_api_cpustate_arch_setupbasestate(context_desc_t context_desc){
 	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_EPT_POINTER_FULL, (hva2spa(xc_api_hpt_arch_gethptroot(context_desc)) | (u64)0x1E) );
 	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VMX_CPU_BASED, (xmhfhw_cpu_x86vmx_vmread(VMCS_CONTROL_VMX_CPU_BASED) & (u64)~(1 << 15) & (u64)~(1 << 16)) );
 
-	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_CR0, (u32)xc_cpuarchdata_x86vmx->vmx_msrs[INDEX_IA32_VMX_CR0_FIXED0_MSR]);
-	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_CR4, (u32)xc_cpuarchdata_x86vmx->vmx_msrs[INDEX_IA32_VMX_CR4_FIXED0_MSR]);
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_CR0, (u32)_cpustate_archdatavmx[context_desc.cpu_desc.cpu_index].vmx_msrs[INDEX_IA32_VMX_CR0_FIXED0_MSR]);
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_CR4, (u32)_cpustate_archdatavmx[context_desc.cpu_desc.cpu_index].vmx_msrs[INDEX_IA32_VMX_CR4_FIXED0_MSR]);
 
 	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VM_ENTRY_EXCEPTION_ERRORCODE, 0);
 	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VM_ENTRY_INTERRUPTION_INFORMATION, 0);
 
 	/*_XDPRINTF_("%s: vmcs pinbased=%016llx\n", __FUNCTION__, xmhfhw_cpu_x86vmx_vmread(VMCS_CONTROL_VMX_PIN_BASED));
-	_XDPRINTF_("%s: pinbase MSR=%016llx\n", __FUNCTION__, xc_cpuarchdata_x86vmx->vmx_msrs[INDEX_IA32_VMX_PINBASED_CTLS_MSR]);
+	_XDPRINTF_("%s: pinbase MSR=%016llx\n", __FUNCTION__, _cpustate_archdatavmx[context_desc.cpu_desc.cpu_index].vmx_msrs[INDEX_IA32_VMX_PINBASED_CTLS_MSR]);
 	_XDPRINTF_("%s: cpu_based vmcs=%016llx\n", __FUNCTION__, xmhfhw_cpu_x86vmx_vmread(VMCS_CONTROL_VMX_CPU_BASED));
-	_XDPRINTF_("%s: cpu_based MSR=%016llx\n", __FUNCTION__, xc_cpuarchdata_x86vmx->vmx_msrs[INDEX_IA32_VMX_PROCBASED_CTLS_MSR]);
+	_XDPRINTF_("%s: cpu_based MSR=%016llx\n", __FUNCTION__, _cpustate_archdatavmx[context_desc.cpu_desc.cpu_index].vmx_msrs[INDEX_IA32_VMX_PROCBASED_CTLS_MSR]);
 	_XDPRINTF_("%s: seccpu_based vmcs=%016llx\n", __FUNCTION__, xmhfhw_cpu_x86vmx_vmread(VMCS_CONTROL_VMX_SECCPU_BASED));
-	_XDPRINTF_("%s: seccpu_based MSR=%016llx\n", __FUNCTION__, xc_cpuarchdata_x86vmx->vmx_msrs[INDEX_IA32_VMX_PROCBASED_CTLS2_MSR]);
+	_XDPRINTF_("%s: seccpu_based MSR=%016llx\n", __FUNCTION__, _cpustate_archdatavmx[context_desc.cpu_desc.cpu_index].vmx_msrs[INDEX_IA32_VMX_PROCBASED_CTLS2_MSR]);
 	_XDPRINTF_("%s: entrycontrols vmcs=%016llx\n", __FUNCTION__, xmhfhw_cpu_x86vmx_vmread(VMCS_CONTROL_VM_ENTRY_CONTROLS));
-	_XDPRINTF_("%s: entrycontrols MSR=%016llx\n", __FUNCTION__, xc_cpuarchdata_x86vmx->vmx_msrs[INDEX_IA32_VMX_ENTRY_CTLS_MSR]);
+	_XDPRINTF_("%s: entrycontrols MSR=%016llx\n", __FUNCTION__, _cpustate_archdatavmx[context_desc.cpu_desc.cpu_index].vmx_msrs[INDEX_IA32_VMX_ENTRY_CTLS_MSR]);
 	_XDPRINTF_("%s: exitcontrols vmcs=%016llx\n", __FUNCTION__, xmhfhw_cpu_x86vmx_vmread(VMCS_CONTROL_VM_EXIT_CONTROLS));
-	_XDPRINTF_("%s: exitcontrols MSR=%016llx\n", __FUNCTION__, xc_cpuarchdata_x86vmx->vmx_msrs[INDEX_IA32_VMX_EXIT_CTLS_MSR]);
+	_XDPRINTF_("%s: exitcontrols MSR=%016llx\n", __FUNCTION__, _cpustate_archdatavmx[context_desc.cpu_desc.cpu_index].vmx_msrs[INDEX_IA32_VMX_EXIT_CTLS_MSR]);
 	_XDPRINTF_("%s: iobitmapa vmcs=%016llx\n", __FUNCTION__, xmhfhw_cpu_x86vmx_vmread(VMCS_CONTROL_IO_BITMAPA_ADDRESS_FULL));
 	_XDPRINTF_("%s: iobitmapb vmcs=%016llx\n", __FUNCTION__, xmhfhw_cpu_x86vmx_vmread(VMCS_CONTROL_IO_BITMAPB_ADDRESS_FULL));
 	_XDPRINTF_("%s: msrbitmap load vmcs=%016llx\n", __FUNCTION__, xmhfhw_cpu_x86vmx_vmread(VMCS_CONTROL_VM_ENTRY_MSR_LOAD_ADDRESS_FULL));
 	_XDPRINTF_("%s: msrbitmap store vmcs=%016llx\n", __FUNCTION__, xmhfhw_cpu_x86vmx_vmread(VMCS_CONTROL_VM_EXIT_MSR_STORE_ADDRESS_FULL));
 	_XDPRINTF_("%s: msrbitmap exit load vmcs=%016llx\n", __FUNCTION__, xmhfhw_cpu_x86vmx_vmread(VMCS_CONTROL_VM_EXIT_MSR_LOAD_ADDRESS_FULL));
 	_XDPRINTF_("%s: ept pointer vmcs=%016llx\n", __FUNCTION__, xmhfhw_cpu_x86vmx_vmread(VMCS_CONTROL_EPT_POINTER_FULL));
-	_XDPRINTF_("%s: CR0 mask MSR=%016llx\n", __FUNCTION__, xc_cpuarchdata_x86vmx->vmx_msrs[INDEX_IA32_VMX_CR0_FIXED0_MSR]);
+	_XDPRINTF_("%s: CR0 mask MSR=%016llx\n", __FUNCTION__, _cpustate_archdatavmx[context_desc.cpu_desc.cpu_index].vmx_msrs[INDEX_IA32_VMX_CR0_FIXED0_MSR]);
 	_XDPRINTF_("%s: CR0 mask vmcs=%016llx\n", __FUNCTION__, xmhfhw_cpu_x86vmx_vmread(VMCS_CONTROL_CR0_MASK));
-	_XDPRINTF_("%s: CR4 mask MSR=%016llx\n", __FUNCTION__, xc_cpuarchdata_x86vmx->vmx_msrs[INDEX_IA32_VMX_CR4_FIXED0_MSR]);
+	_XDPRINTF_("%s: CR4 mask MSR=%016llx\n", __FUNCTION__, _cpustate_archdatavmx[context_desc.cpu_desc.cpu_index].vmx_msrs[INDEX_IA32_VMX_CR4_FIXED0_MSR]);
 	_XDPRINTF_("%s: CR4 mask vmcs=%016llx\n", __FUNCTION__, xmhfhw_cpu_x86vmx_vmread(VMCS_CONTROL_CR4_MASK));
 	_XDPRINTF_("%s: CR0 shadow vmcs=%016llx\n", __FUNCTION__, xmhfhw_cpu_x86vmx_vmread(VMCS_CONTROL_CR0_SHADOW));
 	_XDPRINTF_("%s: CR4 shadow vmcs=%016llx\n", __FUNCTION__, xmhfhw_cpu_x86vmx_vmread(VMCS_CONTROL_CR4_SHADOW));
