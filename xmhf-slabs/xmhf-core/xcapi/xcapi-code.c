@@ -56,7 +56,7 @@
  *  author: amit vasudevan (amitvasudevan@acm.org)
  */
 
-
+//////
 //HPT related core APIs
 void xc_api_hpt_setprot(context_desc_t context_desc, u64 gpa, u32 prottype){
 	xc_api_hpt_arch_setprot(context_desc, gpa, prottype);
@@ -89,6 +89,7 @@ u64 xc_api_hpt_lvl2pagewalk(context_desc_t context_desc, u64 gva){
 }
 
 
+//////
 //Trapmask related APIs
 void xc_api_trapmask_set(context_desc_t context_desc, xc_hypapp_arch_param_t trapmaskparams){
 	xc_api_trapmask_arch_set(context_desc, trapmaskparams);
@@ -98,6 +99,7 @@ void xc_api_trapmask_clear(context_desc_t context_desc, xc_hypapp_arch_param_t t
 	xc_api_trapmask_arch_clear(context_desc, trapmaskparams);
 }
 
+//////
 //cpu state related core APIs
 void xc_api_cpustate_set(context_desc_t context_desc, xc_hypapp_arch_param_t cpustateparams){
 	xc_api_cpustate_arch_set(context_desc, cpustateparams);
