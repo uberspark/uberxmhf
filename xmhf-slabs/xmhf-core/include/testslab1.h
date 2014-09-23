@@ -51,28 +51,9 @@
 #define __TESTSLAB1_H__
 
 
-#define	XMHF_SLAB_TESTSLAB1_FNENTRY0	0
-#define	XMHF_SLAB_TESTSLAB1_FNENTRY1	1
-#define XMHF_SLAB_TESTSLAB1_FNENTRY2	2
-#define XMHF_SLAB_TESTSLAB1_FNENTRY3	3
-
 #ifndef __ASSEMBLY__
 
-#ifdef __XMHF_SLAB_CALLER_INDEX__ 
-
-XMHF_SLAB_DEFIMPORTFN(void, entry_0, (void), XMHF_SLAB_DEFIMPORTFNSTUB(__XMHF_SLAB_CALLER_INDEX__, XMHF_SLAB_TESTSLAB1_INDEX, XMHF_SLAB_TESTSLAB1_FNENTRY0, (0), 0, XMHF_SLAB_FN_RETTYPE_NORMAL))
-XMHF_SLAB_DEFIMPORTFN(u32, entry_1, (u32 param1, u32 param2), XMHF_SLAB_DEFIMPORTFNSTUB(__XMHF_SLAB_CALLER_INDEX__, XMHF_SLAB_TESTSLAB1_INDEX, XMHF_SLAB_TESTSLAB1_FNENTRY1, (sizeof(u32)+sizeof(u32)), 0, XMHF_SLAB_FN_RETTYPE_NORMAL))
-XMHF_SLAB_DEFIMPORTFN(context_desc_t, entry_2, (u32 cpu_index, bool isbsp, u32 partition_index), XMHF_SLAB_DEFIMPORTFNSTUB(__XMHF_SLAB_CALLER_INDEX__, XMHF_SLAB_TESTSLAB1_INDEX, XMHF_SLAB_TESTSLAB1_FNENTRY2, (sizeof(u32)+sizeof(bool)+sizeof(u32)+sizeof(u32)), sizeof(context_desc_t), XMHF_SLAB_FN_RETTYPE_AGGREGATE) )
-XMHF_SLAB_DEFIMPORTFN(xc_hypapp_arch_param_t, entry_3, (context_desc_t context_desc, xc_hypapp_arch_param_t archparam), XMHF_SLAB_DEFIMPORTFNSTUB(__XMHF_SLAB_CALLER_INDEX__, XMHF_SLAB_TESTSLAB1_INDEX, XMHF_SLAB_TESTSLAB1_FNENTRY3, (sizeof(context_desc_t)+sizeof(xc_hypapp_arch_param_t)+sizeof(u32)), sizeof(xc_hypapp_arch_param_t), XMHF_SLAB_FN_RETTYPE_AGGREGATE))
-
-#else 	//!__XMHF_SLAB_CALLER_INDEX__
-
-void entry_0(void);
-u32 entry_1(u32 param1, u32 param2);
-context_desc_t entry_2(u32 cpu_index, bool isbsp, u32 partition_index);
-xc_hypapp_arch_param_t entry_3(context_desc_t context_desc, xc_hypapp_arch_param_t archparam);
-
-#endif	//__XMHF_SLAB_CALLER_INDEX__
+slab_retval_t testslab1_interface(u32 src_slabid, u32 dst_slabid, u32 fn_id, u32 fn_paramsize, ...);
 
 
 #endif //__ASSEMBLY__

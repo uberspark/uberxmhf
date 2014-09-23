@@ -55,17 +55,10 @@
 #ifndef __XCPRIMEON_H__
 #define __XCPRIMEON_H__
 
-#define XMHF_SLAB_XCPRIMEON_FNSTARTUP							0				
-
 #ifndef __ASSEMBLY__
 
-#ifdef __XMHF_SLAB_CALLER_INDEX__ 
 
-XMHF_SLAB_DEFIMPORTFN(void, xcprimeon_startup, (void),	XMHF_SLAB_DEFIMPORTFNSTUB(__XMHF_SLAB_CALLER_INDEX__, XMHF_SLAB_XCPRIMEON_INDEX,	XMHF_SLAB_XCPRIMEON_FNSTARTUP, (0)			, (0), XMHF_SLAB_FN_RETTYPE_NORMAL)								)
-
-#else 	//!__XMHF_SLAB_CALLER_INDEX__
-
-void xcprimeon_entry(void);
+void xcprimeon_interface(void);
 
 //----------------------------------------------------------------------
 //ARCH. BACKENDS
@@ -75,8 +68,6 @@ void xcprimeon_arch_initialize(void);
 void xcprimeon_arch_postdrt(void);
 void xcprimeon_arch_earlydmaprot(u32 membase, u32 size);
 void xcprimeon_arch_initialize_page_tables();
-
-#endif	//__XMHF_SLAB_CALLER_INDEX__
 
 
 #endif	//__ASSEMBLY__

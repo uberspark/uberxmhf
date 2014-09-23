@@ -56,29 +56,31 @@
 #define __XHHELLOWORLD_H__
 
 
-#define XMHF_SLAB_XHHELLOWORLD_FNINITIALIZATION					0
-#define XMHF_SLAB_XHHELLOWORLD_FNHANDLEHYPERCALL					1
-#define XMHF_SLAB_XHHELLOWORLD_FNHANDLEINTERCEPTHPTFAULT			2
-#define XMHF_SLAB_XHHELLOWORLD_FNHANDLEINTERCEPTTRAP				3
-#define XMHF_SLAB_XHHELLOWORLD_FNSHUTDOWN						4
+//#define XMHF_SLAB_XHHELLOWORLD_FNINITIALIZATION					0
+//#define XMHF_SLAB_XHHELLOWORLD_FNHANDLEHYPERCALL					1
+//#define XMHF_SLAB_XHHELLOWORLD_FNHANDLEINTERCEPTHPTFAULT			2
+//#define XMHF_SLAB_XHHELLOWORLD_FNHANDLEINTERCEPTTRAP				3
+//#define XMHF_SLAB_XHHELLOWORLD_FNSHUTDOWN						4
 
 #ifndef __ASSEMBLY__
 
+slab_retval_t xhhelloworld_interface(u32 src_slabid, u32 dst_slabid, u32 fn_id, u32 fn_paramsize, ...);
+
 #ifdef __XMHF_SLAB_CALLER_INDEX__ 
 
-XMHF_SLAB_DEFIMPORTFN(u32, xmhf_hypapp_initialization, (context_desc_t context_desc, hypapp_env_block_t hypappenvb)						,XMHF_SLAB_DEFIMPORTFNSTUB(__XMHF_SLAB_CALLER_INDEX__, XMHF_SLAB_XHHELLOWORLD_INDEX,	XMHF_SLAB_XHHELLOWORLD_FNINITIALIZATION			, (sizeof(context_desc_t)+sizeof(hypapp_env_block_t))			, 0	, XMHF_SLAB_FN_RETTYPE_NORMAL))
-XMHF_SLAB_DEFIMPORTFN(u32, xmhf_hypapp_handlehypercall, (context_desc_t context_desc, u64 hypercall_id, u64 hypercall_param)				,XMHF_SLAB_DEFIMPORTFNSTUB(__XMHF_SLAB_CALLER_INDEX__, XMHF_SLAB_XHHELLOWORLD_INDEX,	XMHF_SLAB_XHHELLOWORLD_FNHANDLEHYPERCALL			, (sizeof(context_desc_t)+sizeof(u64)+sizeof(u64))				, 0	, XMHF_SLAB_FN_RETTYPE_NORMAL))
-XMHF_SLAB_DEFIMPORTFN(u32, xmhf_hypapp_handleintercept_hptfault, (context_desc_t context_desc, u64 gpa, u64 gva, u64 error_code)			,XMHF_SLAB_DEFIMPORTFNSTUB(__XMHF_SLAB_CALLER_INDEX__, XMHF_SLAB_XHHELLOWORLD_INDEX,	XMHF_SLAB_XHHELLOWORLD_FNHANDLEINTERCEPTHPTFAULT	, (sizeof(context_desc_t)+sizeof(u64)+sizeof(u64)+sizeof(u64))	, 0	, XMHF_SLAB_FN_RETTYPE_NORMAL))
-XMHF_SLAB_DEFIMPORTFN(u32, xmhf_hypapp_handleintercept_trap, (context_desc_t context_desc, xc_hypapp_arch_param_t xc_hypapp_arch_param)	,XMHF_SLAB_DEFIMPORTFNSTUB(__XMHF_SLAB_CALLER_INDEX__, XMHF_SLAB_XHHELLOWORLD_INDEX,	XMHF_SLAB_XHHELLOWORLD_FNHANDLEINTERCEPTTRAP		, (sizeof(context_desc_t)+sizeof(xc_hypapp_arch_param_t))		, 0	, XMHF_SLAB_FN_RETTYPE_NORMAL))
-XMHF_SLAB_DEFIMPORTFN(void, xmhf_hypapp_handleshutdown, (context_desc_t context_desc)														,XMHF_SLAB_DEFIMPORTFNSTUB(__XMHF_SLAB_CALLER_INDEX__, XMHF_SLAB_XHHELLOWORLD_INDEX,	XMHF_SLAB_XHHELLOWORLD_FNSHUTDOWN				, (sizeof(context_desc_t))										, 0	, XMHF_SLAB_FN_RETTYPE_NORMAL))
+XMHF_SLAB_DEFIMPORTFN(u32, xmhf_hypapp_initialization, (context_desc_t context_desc, hypapp_env_block_t hypappenvb)						,XMHF_SLAB_DEFIMPORTFNSTUB(__XMHF_SLAB_CALLER_INDEX__, XMHF_SLAB_XHHELLOWORLD_INDEX,	XMHF_SLAB_HYPAPP_FNINITIALIZATION			, (sizeof(context_desc_t)+sizeof(hypapp_env_block_t))			, 0	, XMHF_SLAB_FN_RETTYPE_NORMAL))
+XMHF_SLAB_DEFIMPORTFN(u32, xmhf_hypapp_handlehypercall, (context_desc_t context_desc, u64 hypercall_id, u64 hypercall_param)				,XMHF_SLAB_DEFIMPORTFNSTUB(__XMHF_SLAB_CALLER_INDEX__, XMHF_SLAB_XHHELLOWORLD_INDEX,	XMHF_SLAB_HYPAPP_FNHANDLEHYPERCALL			, (sizeof(context_desc_t)+sizeof(u64)+sizeof(u64))				, 0	, XMHF_SLAB_FN_RETTYPE_NORMAL))
+XMHF_SLAB_DEFIMPORTFN(u32, xmhf_hypapp_handleintercept_hptfault, (context_desc_t context_desc, u64 gpa, u64 gva, u64 error_code)			,XMHF_SLAB_DEFIMPORTFNSTUB(__XMHF_SLAB_CALLER_INDEX__, XMHF_SLAB_XHHELLOWORLD_INDEX,	XMHF_SLAB_HYPAPP_FNHANDLEINTERCEPTHPTFAULT	, (sizeof(context_desc_t)+sizeof(u64)+sizeof(u64)+sizeof(u64))	, 0	, XMHF_SLAB_FN_RETTYPE_NORMAL))
+XMHF_SLAB_DEFIMPORTFN(u32, xmhf_hypapp_handleintercept_trap, (context_desc_t context_desc, xc_hypapp_arch_param_t xc_hypapp_arch_param)	,XMHF_SLAB_DEFIMPORTFNSTUB(__XMHF_SLAB_CALLER_INDEX__, XMHF_SLAB_XHHELLOWORLD_INDEX,	XMHF_SLAB_HYPAPP_FNHANDLEINTERCEPTTRAP		, (sizeof(context_desc_t)+sizeof(xc_hypapp_arch_param_t))		, 0	, XMHF_SLAB_FN_RETTYPE_NORMAL))
+XMHF_SLAB_DEFIMPORTFN(void, xmhf_hypapp_handleshutdown, (context_desc_t context_desc)														,XMHF_SLAB_DEFIMPORTFNSTUB(__XMHF_SLAB_CALLER_INDEX__, XMHF_SLAB_XHHELLOWORLD_INDEX,	XMHF_SLAB_HYPAPP_FNSHUTDOWN				, (sizeof(context_desc_t))										, 0	, XMHF_SLAB_FN_RETTYPE_NORMAL))
 
 #else 	//!__XMHF_SLAB_CALLER_INDEX__
 
-u32 xmhf_hypapp_initialization(context_desc_t context_desc, hypapp_env_block_t hypappenvb);
-u32 xmhf_hypapp_handlehypercall(context_desc_t context_desc, u64 hypercall_id, u64 hypercall_param);
-u32 xmhf_hypapp_handleintercept_hptfault(context_desc_t context_desc, u64 gpa, u64 gva, u64 error_code);
-u32 xmhf_hypapp_handleintercept_trap(context_desc_t context_desc, xc_hypapp_arch_param_t xc_hypapp_arch_param);
-void xmhf_hypapp_handleshutdown(context_desc_t context_desc);													
+//u32 xmhf_hypapp_initialization(context_desc_t context_desc, hypapp_env_block_t hypappenvb);
+//u32 xmhf_hypapp_handlehypercall(context_desc_t context_desc, u64 hypercall_id, u64 hypercall_param);
+//u32 xmhf_hypapp_handleintercept_hptfault(context_desc_t context_desc, u64 gpa, u64 gva, u64 error_code);
+//u32 xmhf_hypapp_handleintercept_trap(context_desc_t context_desc, xc_hypapp_arch_param_t xc_hypapp_arch_param);
+//void xmhf_hypapp_handleshutdown(context_desc_t context_desc);													
 
 #endif	//__XMHF_SLAB_CALLER_INDEX__
 

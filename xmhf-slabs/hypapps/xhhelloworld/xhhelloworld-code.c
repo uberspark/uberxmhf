@@ -52,9 +52,87 @@
 #include <xmhf-debug.h>
 
 #include <xhhelloworld.h>
-#define __XMHF_SLAB_CALLER_INDEX__	XMHF_SLAB_XHHELLOWORLD_INDEX
+
+#define __XMHF_SLAB_CALLER_INDEX__  XMHF_SLAB_XHHELLOWORLD_INDEX
 #include <xcapi.h>
 #undef __XMHF_SLAB_CALLER_INDEX__
+
+/////////////////////////////////////////////////////////////////////
+slab_retval_t xhhelloworld_interface(u32 src_slabid, u32 dst_slabid, u32 fn_id, u32 fn_paramsize, ...){
+	slab_retval_t srval;
+	va_list args;
+	
+	_XDPRINTF_("%s: Got control: src_slabid=%u, dst_slabid=%u, fn_id=%u, fn_paramsize=%u\n", __FUNCTION__, src_slabid, dst_slabid, fn_id, fn_paramsize);
+
+	switch(fn_id){
+			case XMHF_SLAB_HYPAPP_FNINITIALIZATION:{
+				context_desc_t context_desc;
+				hypapp_env_block_t hypappenvb;
+				va_start(args, fn_paramsize);
+				context_desc = va_arg(args, context_desc_t);
+				hypappenvb = va_arg(args, hypapp_env_block_t);
+				srval.retval_u32 = xmhf_hypapp_initialization(context_desc, hypappenvb);
+				va_end(args);
+			}
+			break;
+
+			case XMHF_SLAB_HYPAPP_FNHANDLEHYPERCALL:{
+				context_desc_t context_desc;
+				u64 hypercall_id;
+				u64 hypercall_param;
+				va_start(args, fn_paramsize);
+				context_desc = va_arg(args, context_desc_t);
+				hypercall_id = va_arg(args, u64);
+				hypercall_param = va_arg(args, u64);
+				srval.retval_u32 = xmhf_hypapp_handlehypercall(context_desc, hypercall_id, hypercall_param);
+				va_end(args);
+			}
+			break;
+				
+			case XMHF_SLAB_HYPAPP_FNHANDLEINTERCEPTHPTFAULT:{
+				context_desc_t context_desc;
+				u64 gpa;
+				u64 gva;
+				u64 error_code;
+				va_start(args, fn_paramsize);
+				context_desc = va_arg(args, context_desc_t);
+				gpa = va_arg(args, u64);
+				gva = va_arg(args, u64);
+				error_code = va_arg (args, u64);
+				srval.retval_u32 = xmhf_hypapp_handleintercept_hptfault(context_desc, gpa, gva, error_code);
+				va_end(args);
+			}
+			break;
+			
+			case XMHF_SLAB_HYPAPP_FNHANDLEINTERCEPTTRAP:{
+				context_desc_t context_desc;
+				xc_hypapp_arch_param_t xc_hypapp_arch_param;
+				va_start(args, fn_paramsize);
+				context_desc = va_arg(args, context_desc_t);
+				xc_hypapp_arch_param = va_arg(args, xc_hypapp_arch_param_t);
+				srval.retval_u32 = xmhf_hypapp_handleintercept_trap(context_desc, xc_hypapp_arch_param);
+				va_end(args);
+			}
+			break;
+
+			case XMHF_SLAB_HYPAPP_FNSHUTDOWN:{
+				context_desc_t context_desc;
+				va_start(args, fn_paramsize);
+				context_desc = va_arg(args, context_desc_t);
+				xmhf_hypapp_handleshutdown(context_desc);
+				va_end(args);
+			}
+			break;
+				
+			default:
+				_XDPRINTF_("%s: unhandled subinterface %u. Halting\n", __FUNCTION__, fn_id);
+				HALT();
+	}
+	
+	return srval;	
+}
+
+//////////////////////////////////////////////////////////////////////////
 
 #define HELLOWORLD_PING					0xC0
 
@@ -120,14 +198,15 @@ u32 xmhf_hypapp_handleintercept_trap(context_desc_t context_desc, xc_hypapp_arch
 }
 
 ////////
+XMHF_SLAB_DEF(xhhelloworld)
+
+////////
 XMHF_SLAB("xhhelloworld")
 
 XMHF_SLAB_DEFINTERFACE(
-	XMHF_SLAB_DEFEXPORTFN(xmhf_hypapp_initialization				,XMHF_SLAB_XHHELLOWORLD_FNINITIALIZATION							,	XMHF_SLAB_FN_RETTYPE_NORMAL)
-	XMHF_SLAB_DEFEXPORTFN(xmhf_hypapp_handlehypercall				,XMHF_SLAB_XHHELLOWORLD_FNHANDLEHYPERCALL						,	XMHF_SLAB_FN_RETTYPE_NORMAL)
-	XMHF_SLAB_DEFEXPORTFN(xmhf_hypapp_handleintercept_hptfault		,XMHF_SLAB_XHHELLOWORLD_FNHANDLEINTERCEPTHPTFAULT				,	XMHF_SLAB_FN_RETTYPE_NORMAL)
-	XMHF_SLAB_DEFEXPORTFN(xmhf_hypapp_handleintercept_trap			,XMHF_SLAB_XHHELLOWORLD_FNHANDLEINTERCEPTTRAP					,	XMHF_SLAB_FN_RETTYPE_NORMAL)
-	XMHF_SLAB_DEFEXPORTFN(xmhf_hypapp_handleshutdown				,XMHF_SLAB_XHHELLOWORLD_FNSHUTDOWN								,	XMHF_SLAB_FN_RETTYPE_NORMAL)
+	XMHF_SLAB_DEFEXPORTFN(xmhf_hypapp_initialization				,XMHF_SLAB_HYPAPP_FNINITIALIZATION							,	XMHF_SLAB_FN_RETTYPE_NORMAL)
+	XMHF_SLAB_DEFEXPORTFN(xmhf_hypapp_handlehypercall				,XMHF_SLAB_HYPAPP_FNHANDLEHYPERCALL						,	XMHF_SLAB_FN_RETTYPE_NORMAL)
+	XMHF_SLAB_DEFEXPORTFN(xmhf_hypapp_handleintercept_hptfault		,XMHF_SLAB_HYPAPP_FNHANDLEINTERCEPTHPTFAULT				,	XMHF_SLAB_FN_RETTYPE_NORMAL)
+	XMHF_SLAB_DEFEXPORTFN(xmhf_hypapp_handleintercept_trap			,XMHF_SLAB_HYPAPP_FNHANDLEINTERCEPTTRAP					,	XMHF_SLAB_FN_RETTYPE_NORMAL)
+	XMHF_SLAB_DEFEXPORTFN(xmhf_hypapp_handleshutdown				,XMHF_SLAB_HYPAPP_FNSHUTDOWN								,	XMHF_SLAB_FN_RETTYPE_NORMAL)
 )
-
-

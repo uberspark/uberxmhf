@@ -50,21 +50,27 @@
 #ifndef __TESTSLAB2_H__
 #define __TESTSLAB2_H__
 
+#define	XMHF_SLAB_TESTSLAB2_FNENTRY1		1
+#define	XMHF_SLAB_TESTSLAB2_FNENTRY1_SIZE	0
 
-#define	XMHF_SLAB_TESTSLAB2_FNTESTSLAB2ENTRY0	0
+#define	XMHF_SLAB_TESTSLAB2_FNENTRY2		2
+#define	XMHF_SLAB_TESTSLAB2_FNENTRY2_SIZE	(2*sizeof(u32))
+
+#define XMHF_SLAB_TESTSLAB2_FNENTRY3		3
+#define XMHF_SLAB_TESTSLAB2_FNENTRY3_SIZE	(2*sizeof(u32) + sizeof(bool))
+
+#define XMHF_SLAB_TESTSLAB2_FNENTRY4		4
+#define XMHF_SLAB_TESTSLAB2_FNENTRY4_SIZE	(sizeof(context_desc_t)+sizeof(xc_hypapp_arch_param_t))
+
 
 #ifndef __ASSEMBLY__
 
-#ifdef __XMHF_SLAB_CALLER_INDEX__ 
+slab_retval_t testslab2_interface(u32 src_slabid, u32 dst_slabid, u32 fn_id, u32 fn_paramsize, ...);
 
-XMHF_SLAB_DEFIMPORTFN(void, testslab2_entry_0, (void), XMHF_SLAB_DEFIMPORTFNSTUB(__XMHF_SLAB_CALLER_INDEX__, XMHF_SLAB_TESTSLAB2_INDEX, XMHF_SLAB_TESTSLAB2_FNTESTSLAB2ENTRY0, (0), 0, XMHF_SLAB_FN_RETTYPE_NORMAL))
-
-#else 	//!__XMHF_SLAB_CALLER_INDEX__
-
-void testslab2_entry_0(void);
-
-#endif	//__XMHF_SLAB_CALLER_INDEX__
-
+void testslab2_entry1(void);
+u32 testslab2_entry2(u32 param1, u32 param2);
+context_desc_t testslab2_entry3(u32 cpu_index, bool isbsp, u32 partition_index);
+xc_hypapp_arch_param_t testslab2_entry4(context_desc_t context_desc, xc_hypapp_arch_param_t archparam);
 
 #endif //__ASSEMBLY__
 

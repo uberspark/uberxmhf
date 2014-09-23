@@ -42,6 +42,11 @@ while( $i <= $#ARGV) {
 print "\n	.slab_$ARGV[$i] : {";
 print "\n		_slab_$ARGV[$i]_code_start = .;";
 print "\n		_slab_$ARGV[$i]_entrypoint = .;";
+print "\n		. = ALIGN(1);";
+print "\n		_objs_slab_$ARGV[$i]/$ARGV[$i].slo(.slabentrystub)";
+print "\n		_slab_$ARGV[$i]_entrypointnew = .;";
+print "\n		. = ALIGN(1);";
+print "\n		_objs_slab_$ARGV[$i]/$ARGV[$i].slo(.slabentrystubnew)";
 print "\n		_objs_slab_$ARGV[$i]/$ARGV[$i].slo(.slabcode)";
 print "\n		. = ALIGN(0x200000);";
 print "\n		_slab_$ARGV[$i]_code_end = .;";
@@ -65,6 +70,11 @@ print "\n";
 
 print "\n	.libxmhfdebugdata : {";
 print "\n		*(.libxmhfdebugdata)";
+print "\n		*(.text)";
+print "\n		*(.rodata)";
+print "\n		*(.rodata.str1.1)";
+print "\n		*(.bss)";
+print "\n		*(.data)";
 print "\n	} >all=0x0000";
 print "\n";
 print "\n	/* this is to cause the link to fail if there is";
