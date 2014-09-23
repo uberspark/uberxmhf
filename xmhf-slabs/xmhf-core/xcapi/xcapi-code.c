@@ -56,46 +56,6 @@
  *  author: amit vasudevan (amitvasudevan@acm.org)
  */
 
-///////////////////////////////////////////////////////////////////////////////
-//HPT related core APIs
-void xc_api_hpt_setprot(context_desc_t context_desc, u64 gpa, u32 prottype){
-	xc_api_hpt_arch_setprot(context_desc, gpa, prottype);
-}
-
-u32 xc_api_hpt_getprot(context_desc_t context_desc, u64 gpa){
-	return xc_api_hpt_arch_getprot(context_desc, gpa);
-}
-
-void xc_api_hpt_setentry(context_desc_t context_desc, u64 gpa, u64 entry){
-	xc_api_hpt_arch_setentry(context_desc, gpa, entry);
-}
-
-u64 xc_api_hpt_getentry(context_desc_t context_desc, u64 gpa){
-	return xc_api_hpt_arch_getentry(context_desc, gpa);
-}
-
-//*
-void xc_api_hpt_flushcaches(context_desc_t context_desc){
-	xc_api_hpt_arch_flushcaches(context_desc);
-}
-
-
-u64 xc_api_hpt_lvl2pagewalk(context_desc_t context_desc, u64 gva){
-	return xc_api_hpt_arch_lvl2pagewalk(context_desc, gva);
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 ///////////////////////////////////////////////////////////////////////////////
