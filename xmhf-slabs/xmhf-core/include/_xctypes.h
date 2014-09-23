@@ -60,16 +60,11 @@ typedef struct {
 } __attribute__((packed)) xc_platformdevice_desc_t;
 
 
-typedef u8 xc_partition_hptdata_t;
-typedef u8 xc_partition_trapmaskdata_t;
-
 typedef struct {
 		u32 partitionid;			//unique partition id
 		u32 partitiontype;			//primary or secondary
 		u32 numcpus;
 		xmhf_cputable_t cputable[MAX_PLATFORM_CPUS];
-		xc_partition_hptdata_t hptdata[MAX_PRIMARY_PARTITION_HPTDATA_SIZE] __attribute__((aligned(4096)));
-		xc_partition_trapmaskdata_t trapmaskdata[MAX_PRIMARY_PARTITION_TRAPMASKDATA_SIZE] __attribute__((aligned(4096)));
 } xc_partition_t;
 
 #define XC_PARTITION_PRIMARY		(1)
@@ -83,7 +78,7 @@ typedef struct {
 		u32 cpuid;				//unique CPU id
 		bool is_bsp;			//true if CPU is the boot-strap processor
 		bool is_quiesced;		//true if CPU is quiesced
-		xc_cpuarchdata_t cpuarchdata[MAX_PLATFORM_CPUARCHDATA_SIZE] __attribute__((aligned(4096)));
+		//xc_cpuarchdata_t cpuarchdata[MAX_PLATFORM_CPUARCHDATA_SIZE] __attribute__((aligned(4096)));
 		u32 parentpartition_index;
 } __attribute__ ((packed)) xc_cpu_t;
 
@@ -104,6 +99,7 @@ typedef struct {
 //XMHF core api partition descriptor type
 typedef struct {
 	u32 partition_index;
+	u32 numcpus;
 } partition_desc_t;
 
 //XMHF core api context descriptor type (context = partition + cpu pair)

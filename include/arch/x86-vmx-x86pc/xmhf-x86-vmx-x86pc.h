@@ -336,14 +336,13 @@ typedef struct {
 } __attribute__ ((packed)) xc_hypapp_arch_param_t;
 
 typedef struct {
-  u8 vmx_vmxon_region[PAGE_SIZE_4K];
-  u8 vmx_vmcs_region[PAGE_SIZE_4K];
-  u8 vmx_msr_area_host_region[2*PAGE_SIZE_4K];
-  u8 vmx_msr_area_guest_region[2*PAGE_SIZE_4K];
+  u8 vmx_vmxon_region[PAGE_SIZE_4K] __attribute__((aligned(4096)));
+  u8 vmx_vmcs_region[PAGE_SIZE_4K] __attribute__((aligned(4096)));
+  u8 vmx_msr_area_host_region[2*PAGE_SIZE_4K] __attribute__((aligned(4096)));
+  u8 vmx_msr_area_guest_region[2*PAGE_SIZE_4K] __attribute__((aligned(4096)));
   u64 vmx_msrs[IA32_VMX_MSRCOUNT];
   u64 vmx_msr_efer;
   u64 vmx_msr_efcr;
-  struct regs x86gprs;
 } __attribute__((packed)) xc_cpuarchdata_x86vmx_t;
 
 

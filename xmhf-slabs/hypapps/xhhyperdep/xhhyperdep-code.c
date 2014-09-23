@@ -89,14 +89,24 @@ static void hd_activatedep(context_desc_t context_desc, u32 gpa){
 	entry = XMHF_SLAB_CALL(xc_api_hpt_getentry(context_desc, gpa));
 	XMHF_SLAB_CALL(xc_api_hpt_setentry(context_desc, gpa, entry));
 	XMHF_SLAB_CALL(xc_api_hpt_setprot(context_desc, gpa, (MEMP_PROT_PRESENT | MEMP_PROT_READWRITE | MEMP_PROT_NOEXECUTE) ));
-	XMHF_SLAB_CALL(xc_api_hpt_flushcaches_smp(context_desc));
+
+	//flush hpt caches on CPU
+	XMHF_SLAB_CALL(xc_api_hpt_flushcaches(context_desc));
+	//quiesce all CPUs to perform TLB shootdown
+	XMHF_SLAB_CALL(xc_api_platform_quiescecpus_in_partition(context_desc));
+
 	_XDPRINTF_("CPU(%02x): %s removed EXECUTE permission for page at gpa %08x\n", context_desc.cpu_desc.cpu_index, __FUNCTION__, gpa);
 }
 
 //de-activate DEP protection
 static void hd_deactivatedep(context_desc_t context_desc, u32 gpa){
 	XMHF_SLAB_CALL(xc_api_hpt_setprot(context_desc, gpa, (MEMP_PROT_PRESENT | MEMP_PROT_READWRITE | MEMP_PROT_EXECUTE) ));
-	XMHF_SLAB_CALL(xc_api_hpt_flushcaches_smp(context_desc));
+
+	//flush hpt caches on CPU
+	XMHF_SLAB_CALL(xc_api_hpt_flushcaches(context_desc));
+	//quiesce all CPUs to perform TLB shootdown
+	XMHF_SLAB_CALL(xc_api_platform_quiescecpus_in_partition(context_desc));
+
 	_XDPRINTF_("CPU(%02x): %s added EXECUTE permission for page at gpa %08x\n", context_desc.cpu_desc.cpu_index, __FUNCTION__, gpa);
 }
 
@@ -178,6 +188,13 @@ u32 xmhf_hypapp_handleintercept_hptfault(context_desc_t context_desc, u64 gpa, u
 //returns either APP_IOINTERCEPT_SKIP or APP_IOINTERCEPT_CHAIN
 u32 xmhf_hypapp_handleintercept_trap(context_desc_t context_desc, xc_hypapp_arch_param_t xc_hypapp_arch_param){
  	return APP_TRAP_CHAIN;
+}
+
+
+//quiesce handler
+void xmhf_hypapp_handlequiesce(context_desc_t context_desc){
+	//flush hpt caches on CPU
+	XMHF_SLAB_CALL(xc_api_hpt_flushcaches(context_desc));
 }
 
 ////////

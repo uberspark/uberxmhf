@@ -57,59 +57,7 @@
  */
 
 
-//HPT related core APIs
-void xc_api_hpt_setprot(context_desc_t context_desc, u64 gpa, u32 prottype){
-	xc_api_hpt_arch_setprot(context_desc, gpa, prottype);
-}
-
-u32 xc_api_hpt_getprot(context_desc_t context_desc, u64 gpa){
-	return xc_api_hpt_arch_getprot(context_desc, gpa);
-}
-
-void xc_api_hpt_setentry(context_desc_t context_desc, u64 gpa, u64 entry){
-	xc_api_hpt_arch_setentry(context_desc, gpa, entry);
-}
-
-u64 xc_api_hpt_getentry(context_desc_t context_desc, u64 gpa){
-	return xc_api_hpt_arch_getentry(context_desc, gpa);
-}
-
-//*
-void xc_api_hpt_flushcaches(context_desc_t context_desc){
-	xc_api_hpt_arch_flushcaches(context_desc, false);
-}
-
-//*
-void xc_api_hpt_flushcaches_smp(context_desc_t context_desc){
-	xc_api_hpt_arch_flushcaches(context_desc, true);
-}
-
-u64 xc_api_hpt_lvl2pagewalk(context_desc_t context_desc, u64 gva){
-	return xc_api_hpt_arch_lvl2pagewalk(context_desc, gva);
-}
-
-
-//Trapmask related APIs
-void xc_api_trapmask_set(context_desc_t context_desc, xc_hypapp_arch_param_t trapmaskparams){
-	xc_api_trapmask_arch_set(context_desc, trapmaskparams);
-}
-
-void xc_api_trapmask_clear(context_desc_t context_desc, xc_hypapp_arch_param_t trapmaskparams){
-	xc_api_trapmask_arch_clear(context_desc, trapmaskparams);
-}
-
-//cpu state related core APIs
-void xc_api_cpustate_set(context_desc_t context_desc, xc_hypapp_arch_param_t cpustateparams){
-	xc_api_cpustate_arch_set(context_desc, cpustateparams);
-}
-
-xc_hypapp_arch_param_t xc_api_cpustate_get(context_desc_t context_desc, u64 operation){
-	return xc_api_cpustate_arch_get(context_desc, operation);
-}
-
-
-
-//////
+///////////////////////////////////////////////////////////////////////////////
 //partition related core APIs
 
 static u32 _partition_current_index=0;
@@ -117,25 +65,12 @@ static u32 _xc_cpu_current_index=0;
 static xc_cpupartitiontable_t _xc_cpupartitiontable[MAX_PLATFORM_CPUS];
 static u32 _xc_cpupartitiontable_current_index=0;
 
-//*
-static void _xc_api_partition_create_establishEPTshape(xc_partition_hptdata_x86vmx_t *eptdata){
-	u64 *pml4_table, *pdp_table, *pd_table;
-	u32 i, j, paddr=0;
+// platform cpus
+static xc_cpu_t g_xc_cpu[MAX_PLATFORM_CPUS];
 
-	pml4_table = (u64 *)eptdata->vmx_ept_pml4_table;
-	pml4_table[0] = (u64) (hva2spa((void*)eptdata->vmx_ept_pdp_table) | 0x7);
+// primary partitions
+static xc_partition_t g_xc_primary_partition[MAX_PRIMARY_PARTITIONS];
 
-	pdp_table = (u64 *)eptdata->vmx_ept_pdp_table;
-
-	for(i=0; i < PAE_PTRS_PER_PDPT; i++){
-		pdp_table[i] = (u64) ( hva2spa((void*)eptdata->vmx_ept_pd_tables + (PAGE_SIZE_4K * i)) | 0x7 );
-		pd_table = (u64 *)  ((u32)eptdata->vmx_ept_pd_tables + (PAGE_SIZE_4K * i)) ;
-
-		for(j=0; j < PAE_PTRS_PER_PDT; j++){
-			pd_table[j] = (u64) ( hva2spa((void*)eptdata->vmx_ept_p_tables + (PAGE_SIZE_4K * ((i*PAE_PTRS_PER_PDT)+j))) | 0x7 );
-		}
-	}
-}
 
 //*
 u32 xc_api_partition_create(u32 partitiontype){
@@ -153,7 +88,7 @@ u32 xc_api_partition_create(u32 partitiontype){
 	g_xc_primary_partition[_partition_current_index].partitiontype = XC_PARTITION_PRIMARY;
 	g_xc_primary_partition[_partition_current_index].numcpus = 0;
 
-	_xc_api_partition_create_establishEPTshape( (xc_partition_hptdata_x86vmx_t *)g_xc_primary_partition[_partition_current_index].hptdata );
+    xc_api_hpt_arch_establishshape(_partition_current_index);
 
     partition_index = _partition_current_index;
     _partition_current_index++;
@@ -204,13 +139,19 @@ context_desc_t xc_api_partition_addcpu(u32 partition_index, u32 cpuid, bool is_b
 	g_xc_primary_partition[partition_index].cputable[g_xc_primary_partition[partition_index].numcpus].cpu_index = cpu_index;
 	g_xc_primary_partition[partition_index].numcpus++;
 
-	//perform arch. specific cpu partition initialization
-	if(!xc_api_partition_arch_addcpu(partition_index, cpu_index))
-		return context_desc;
 
 	//create context_desc for the partition and cpu
 	context_desc.cpu_desc.cpu_index = cpu_index;
 	context_desc.partition_desc.partition_index = partition_index;
+    context_desc.partition_desc.numcpus = g_xc_primary_partition[partition_index].numcpus;
+
+	//perform arch. specific cpu partition initialization
+	if(!xc_api_cpustate_arch_setupbasestate(context_desc)){
+       	context_desc.cpu_desc.cpu_index = XC_PARTITION_INDEX_INVALID;
+        context_desc.cpu_desc.isbsp = is_bsp;
+        context_desc.partition_desc.partition_index = XC_PARTITION_INDEX_INVALID;
+		return context_desc;
+	}
 
 	//_XDPRINTF_("%s(%u): returning %u (numcpus=%u)\n", __FUNCTION__, cpuid, cpu_index, g_xc_primary_partition[partition_index].numcpus);
 	return context_desc;
@@ -247,6 +188,7 @@ context_desc_t xc_api_partition_getcontextdesc(u32 cpuid){
 		context_desc.cpu_desc.cpu_index = cpu_index;
 		context_desc.cpu_desc.isbsp = g_xc_cpu[cpu_index].is_bsp;
 		context_desc.partition_desc.partition_index = partition_index;
+        context_desc.partition_desc.numcpus = g_xc_primary_partition[partition_index].numcpus;
 
 		return context_desc;
 }
@@ -257,26 +199,21 @@ bool xc_api_partition_startcpu(context_desc_t context_desc){
 }
 
 
-//////
-//platform related core API
-void xc_api_platform_shutdown(context_desc_t context_desc){
-	xc_api_platform_arch_shutdown(context_desc);
-}
 
-xc_platformdevice_desc_t xc_api_platform_initializeandenumeratedevices(context_desc_t context_desc){
-    return xc_api_platform_arch_initializeandenumeratedevices(context_desc);
-}
 
-bool xc_api_platform_allocdevices_to_partition(context_desc_t context_desc, xc_platformdevice_desc_t device_descs){
-    return xc_api_platform_arch_allocdevices_to_partition(context_desc, device_descs);
-}
 
-bool xc_api_platform_deallocdevices_from_partition(context_desc_t context_desc, xc_platformdevice_desc_t device_descs){
-    return xc_api_platform_arch_deallocdevices_from_partition(context_desc, device_descs);
-}
+
+
+
+
+
+
+
+
+
 
 
 
 ///////
-XMHF_SLAB("coreapi")
+XMHF_SLAB("xcapipartition")
 
