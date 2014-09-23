@@ -53,12 +53,84 @@
 
 #include <xhhyperdep.h>
 
-#define __XMHF_SLAB_CALLER_INDEX__	XMHF_SLAB_XHHYPERDEP_INDEX
 #include <xcapi.h>
-#undef __XMHF_SLAB_CALLER_INDEX__
 
-//#include <arch/x86/common/include/xc-x86.h>
-//#include <arch/x86/vmx/include/xc-x86vmx.h>
+/////////////////////////////////////////////////////////////////////
+slab_retval_t xhhyperdep_interface(u32 src_slabid, u32 dst_slabid, u32 fn_id, u32 fn_paramsize, ...){
+	slab_retval_t srval;
+	va_list args;
+
+	_XDPRINTF_("%s: Got control: src_slabid=%u, dst_slabid=%u, fn_id=%u, fn_paramsize=%u\n", __FUNCTION__, src_slabid, dst_slabid, fn_id, fn_paramsize);
+
+	switch(fn_id){
+			case XMHF_SLAB_HYPAPP_FNINITIALIZATION:{
+				context_desc_t context_desc;
+				hypapp_env_block_t hypappenvb;
+				va_start(args, fn_paramsize);
+				context_desc = va_arg(args, context_desc_t);
+				hypappenvb = va_arg(args, hypapp_env_block_t);
+				srval.retval_u32 = xmhf_hypapp_initialization(context_desc, hypappenvb);
+				va_end(args);
+			}
+			break;
+
+			case XMHF_SLAB_HYPAPP_FNHANDLEHYPERCALL:{
+				context_desc_t context_desc;
+				u64 hypercall_id;
+				u64 hypercall_param;
+				va_start(args, fn_paramsize);
+				context_desc = va_arg(args, context_desc_t);
+				hypercall_id = va_arg(args, u64);
+				hypercall_param = va_arg(args, u64);
+				srval.retval_u32 = xmhf_hypapp_handlehypercall(context_desc, hypercall_id, hypercall_param);
+				va_end(args);
+			}
+			break;
+
+			case XMHF_SLAB_HYPAPP_FNHANDLEINTERCEPTHPTFAULT:{
+				context_desc_t context_desc;
+				u64 gpa;
+				u64 gva;
+				u64 error_code;
+				va_start(args, fn_paramsize);
+				context_desc = va_arg(args, context_desc_t);
+				gpa = va_arg(args, u64);
+				gva = va_arg(args, u64);
+				error_code = va_arg (args, u64);
+				srval.retval_u32 = xmhf_hypapp_handleintercept_hptfault(context_desc, gpa, gva, error_code);
+				va_end(args);
+			}
+			break;
+
+			case XMHF_SLAB_HYPAPP_FNHANDLEINTERCEPTTRAP:{
+				context_desc_t context_desc;
+				xc_hypapp_arch_param_t xc_hypapp_arch_param;
+				va_start(args, fn_paramsize);
+				context_desc = va_arg(args, context_desc_t);
+				xc_hypapp_arch_param = va_arg(args, xc_hypapp_arch_param_t);
+				srval.retval_u32 = xmhf_hypapp_handleintercept_trap(context_desc, xc_hypapp_arch_param);
+				va_end(args);
+			}
+			break;
+
+			case XMHF_SLAB_HYPAPP_FNSHUTDOWN:{
+				context_desc_t context_desc;
+				va_start(args, fn_paramsize);
+				context_desc = va_arg(args, context_desc_t);
+				xmhf_hypapp_handleshutdown(context_desc);
+				va_end(args);
+			}
+			break;
+
+			default:
+				_XDPRINTF_("%s: unhandled subinterface %u. Halting\n", __FUNCTION__, fn_id);
+				HALT();
+	}
+
+	return srval;
+}
+
+//////////////////////////////////////////////////////////////////////////
 
 #define HYPERDEP_ACTIVATEDEP			0xC0
 #define HYPERDEP_DEACTIVATEDEP			0xC1
@@ -69,9 +141,9 @@ u32 hd_runtimesize=0;
 
 
 // hypapp initialization
-u32 xmhf_hypapp_initialization(context_desc_t context_desc, hypapp_env_block_t hypappenvb){	
+u32 xmhf_hypapp_initialization(context_desc_t context_desc, hypapp_env_block_t hypappenvb){
 	_XDPRINTF_("\nCPU %u: hyperDEP initializing", context_desc.cpu_desc.cpu_index);
-		
+
 	//store runtime base and size
 	hd_runtimephysbase = hypappenvb.runtimephysmembase;
 	hd_runtimesize = hypappenvb.runtimesize;
@@ -95,7 +167,7 @@ u32 xmhf_hypapp_initialization(context_desc_t context_desc, hypapp_env_block_t h
 	//}
 
 	_XDPRINTF_("\nCPU %u: hyperDEP initialized!", context_desc.cpu_desc.cpu_index);
-	
+
 	return APP_INIT_SUCCESS;  //successful
 }
 
@@ -104,18 +176,24 @@ u32 xmhf_hypapp_initialization(context_desc_t context_desc, hypapp_env_block_t h
 
 static void hd_activatedep(context_desc_t context_desc, u32 gpa){
 	u64 entry;
-	_XDPRINTF_("\n%s:%u originalprotection=%08x", __FUNCTION__, context_desc.cpu_desc.cpu_index, XMHF_SLAB_CALL(xc_api_hpt_getprot(context_desc, gpa)));
-	entry = XMHF_SLAB_CALL(xc_api_hpt_getentry(context_desc, gpa));
-	XMHF_SLAB_CALL(xc_api_hpt_setentry(context_desc, gpa, entry));
-	XMHF_SLAB_CALL(xc_api_hpt_setprot(context_desc, gpa, (MEMP_PROT_PRESENT | MEMP_PROT_READWRITE | MEMP_PROT_NOEXECUTE) ));	   
-	XMHF_SLAB_CALL(xc_api_hpt_flushcaches(context_desc));
+    slab_retval_t srval;
+
+    srval = XMHF_SLAB_CALL_P2P(xcapi, XMHF_SLAB_XHHYPERDEP_INDEX, XMHF_SLAB_XCAPI_INDEX, XMHF_SLAB_XCAPI_FNXCAPIHPTGETPROT, XMHF_SLAB_XCAPI_FNXCAPIHPTGETPROT_SIZE, context_desc, gpa);
+    _XDPRINTF_("\n%s:%u originalprotection=%08x", __FUNCTION__, context_desc.cpu_desc.cpu_index, srval.retval_u32);
+    //_XDPRINTF_("\n%s:%u originalprotection=%08x", __FUNCTION__, context_desc.cpu_desc.cpu_index, XMHF_SLAB_CALL(xc_api_hpt_getprot(context_desc, gpa)) );
+	srval = XMHF_SLAB_CALL_P2P(xcapi, XMHF_SLAB_XHHYPERDEP_INDEX, XMHF_SLAB_XCAPI_INDEX, XMHF_SLAB_XCAPI_FNXCAPIHPTGETENTRY, XMHF_SLAB_XCAPI_FNXCAPIHPTGETENTRY_SIZE, context_desc, (u64)gpa);
+    entry = srval.retval_u64;
+    XMHF_SLAB_CALL_P2P(xcapi, XMHF_SLAB_XHHYPERDEP_INDEX, XMHF_SLAB_XCAPI_INDEX, XMHF_SLAB_XCAPI_FNXCAPIHPTSETENTRY, XMHF_SLAB_XCAPI_FNXCAPIHPTSETENTRY_SIZE, context_desc, (u64)gpa, entry);
+	XMHF_SLAB_CALL_P2P(xcapi, XMHF_SLAB_XHHYPERDEP_INDEX, XMHF_SLAB_XCAPI_INDEX, XMHF_SLAB_XCAPI_FNXCAPIHPTSETPROT, XMHF_SLAB_XCAPI_FNXCAPIHPTSETPROT_SIZE, context_desc, (u64)gpa, (u32)(MEMP_PROT_PRESENT | MEMP_PROT_READWRITE | MEMP_PROT_NOEXECUTE));
+    XMHF_SLAB_CALL_P2P(xcapi, XMHF_SLAB_XHHYPERDEP_INDEX, XMHF_SLAB_XCAPI_INDEX, XMHF_SLAB_XCAPI_FNXCAPIHPTFLUSHCACHESSMP, XMHF_SLAB_XCAPI_FNXCAPIHPTFLUSHCACHESSMP_SIZE, context_desc);
+
 	_XDPRINTF_("\nCPU(%02x): %s removed EXECUTE permission for page at gpa %08x", context_desc.cpu_desc.cpu_index, __FUNCTION__, gpa);
 }
 
 //de-activate DEP protection
 static void hd_deactivatedep(context_desc_t context_desc, u32 gpa){
-	XMHF_SLAB_CALL(xc_api_hpt_setprot(context_desc, gpa, (MEMP_PROT_PRESENT | MEMP_PROT_READWRITE | MEMP_PROT_EXECUTE) ));	   
-	XMHF_SLAB_CALL(xc_api_hpt_flushcaches_smp(context_desc));
+	XMHF_SLAB_CALL_P2P(xcapi, XMHF_SLAB_XHHYPERDEP_INDEX, XMHF_SLAB_XCAPI_INDEX, XMHF_SLAB_XCAPI_FNXCAPIHPTSETPROT, XMHF_SLAB_XCAPI_FNXCAPIHPTSETPROT_SIZE, context_desc, (u64)gpa, (u32)(MEMP_PROT_PRESENT | MEMP_PROT_READWRITE | MEMP_PROT_EXECUTE));
+    XMHF_SLAB_CALL_P2P(xcapi, XMHF_SLAB_XHHYPERDEP_INDEX, XMHF_SLAB_XCAPI_INDEX, XMHF_SLAB_XCAPI_FNXCAPIHPTFLUSHCACHESSMP, XMHF_SLAB_XCAPI_FNXCAPIHPTFLUSHCACHESSMP_SIZE, context_desc);
 	_XDPRINTF_("\nCPU(%02x): %s added EXECUTE permission for page at gpa %08x", context_desc.cpu_desc.cpu_index, __FUNCTION__, gpa);
 }
 
@@ -128,11 +206,12 @@ u32 xmhf_hypapp_handlehypercall(context_desc_t context_desc, u64 hypercall_id, u
 	u32 status=APP_SUCCESS;
 	u32 call_id;
 	u32 gva, gpa;
-	
+    slab_retval_t srval;
+
 	call_id= hypercall_id;
 
 	gva=(u32)hypercall_param;
-	
+
 	_XDPRINTF_("\nCPU(%02x): %s starting: call number=%x, gva=%x", context_desc.cpu_desc.cpu_index, __FUNCTION__, call_id, gva);
 
 	switch(call_id){
@@ -142,35 +221,37 @@ u32 xmhf_hypapp_handlehypercall(context_desc_t context_desc, u64 hypercall_id, u
 		break;
 
 		case HYPERDEP_ACTIVATEDEP:{
-			gpa=(u32)XMHF_SLAB_CALL(xc_api_hpt_lvl2pagewalk(context_desc, gva));
+			srval = XMHF_SLAB_CALL_P2P(xcapi, XMHF_SLAB_XHHYPERDEP_INDEX, XMHF_SLAB_XCAPI_INDEX, XMHF_SLAB_XCAPI_FNXCAPIHPTLVL2PAGEWALK, XMHF_SLAB_XCAPI_FNXCAPIHPTLVL2PAGEWALK_SIZE, context_desc, gva);
+			gpa = srval.retval_u32;
 			if(gpa == 0xFFFFFFFFUL){
 				_XDPRINTF_("\nCPU(%02x): WARNING: unable to get translation for gva=%x, just returning", context_desc.cpu_desc.cpu_index, gva);
 				return status;
-			}		
+			}
 			_XDPRINTF_("\nCPU(%02x): translated gva=%x to gpa=%x", context_desc.cpu_desc.cpu_index, gva, gpa);
 			hd_activatedep(context_desc, gpa);
 		}
 		break;
-		
+
 		case HYPERDEP_DEACTIVATEDEP:{
-			gpa=(u32)XMHF_SLAB_CALL(xc_api_hpt_lvl2pagewalk(context_desc, gva));
+			srval = XMHF_SLAB_CALL_P2P(xcapi, XMHF_SLAB_XHHYPERDEP_INDEX, XMHF_SLAB_XCAPI_INDEX, XMHF_SLAB_XCAPI_FNXCAPIHPTLVL2PAGEWALK, XMHF_SLAB_XCAPI_FNXCAPIHPTLVL2PAGEWALK_SIZE, context_desc, gva);
+            gpa = srval.retval_u32;
 			if(gpa == 0xFFFFFFFFUL){
 				_XDPRINTF_("\nCPU(%02x): WARNING: unable to get translation for gva=%x, just returning", context_desc.cpu_desc.cpu_index, gva);
 				return status;
-			}		
+			}
 			_XDPRINTF_("\nCPU(%02x): translated gva=%x to gpa=%x", context_desc.cpu_desc.cpu_index, gva, gpa);
 			hd_deactivatedep(context_desc, gpa);
 		}
 		break;
-		
+
 		default:
-			_XDPRINTF_("\nCPU(0x%02x): unsupported hypercall (0x%08x)!!", 
+			_XDPRINTF_("\nCPU(0x%02x): unsupported hypercall (0x%08x)!!",
 			  context_desc.cpu_desc.cpu_index, call_id);
 			status=APP_ERROR;
 			break;
 	}
 
-	return status;			
+	return status;
 }
 
 
@@ -178,7 +259,7 @@ u32 xmhf_hypapp_handlehypercall(context_desc_t context_desc, u64 hypercall_id, u
 //note: should not return
 void xmhf_hypapp_handleshutdown(context_desc_t context_desc){
 	_XDPRINTF_("\n%s:%u: rebooting now", __FUNCTION__, context_desc.cpu_desc.cpu_index);
-	XMHF_SLAB_CALL(xc_api_platform_shutdown(context_desc));				
+	XMHF_SLAB_CALL_P2P(xcapi, XMHF_SLAB_XHHYPERDEP_INDEX, XMHF_SLAB_XCAPI_INDEX, XMHF_SLAB_XCAPI_FNXCAPIPLATFORMSHUTDOWN, XMHF_SLAB_XCAPI_FNXCAPIPLATFORMSHUTDOWN_SIZE, context_desc);
 }
 
 //handles h/w pagetable violations
@@ -188,7 +269,7 @@ u32 xmhf_hypapp_handleintercept_hptfault(context_desc_t context_desc, u64 gpa, u
 
 	_XDPRINTF_("\nCPU(%02x): FATAL HWPGTBL violation (gva=%x, gpa=%x, code=%x): app tried to execute data page??", context_desc.cpu_desc.cpu_index, (u32)gva, (u32)gpa, (u32)error_code);
 	HALT();
-	
+
 	return status;
 }
 
@@ -200,14 +281,6 @@ u32 xmhf_hypapp_handleintercept_trap(context_desc_t context_desc, xc_hypapp_arch
 }
 
 ////////
-XMHF_SLAB("xhhyperdep")
-
-XMHF_SLAB_DEFINTERFACE(
-	XMHF_SLAB_DEFEXPORTFN(xmhf_hypapp_initialization				,XMHF_SLAB_XHHYPERDEP_FNINITIALIZATION							,	XMHF_SLAB_FN_RETTYPE_NORMAL)
-	XMHF_SLAB_DEFEXPORTFN(xmhf_hypapp_handlehypercall				,XMHF_SLAB_XHHYPERDEP_FNHANDLEHYPERCALL						,	XMHF_SLAB_FN_RETTYPE_NORMAL)
-	XMHF_SLAB_DEFEXPORTFN(xmhf_hypapp_handleintercept_hptfault		,XMHF_SLAB_XHHYPERDEP_FNHANDLEINTERCEPTHPTFAULT				,	XMHF_SLAB_FN_RETTYPE_NORMAL)
-	XMHF_SLAB_DEFEXPORTFN(xmhf_hypapp_handleintercept_trap			,XMHF_SLAB_XHHYPERDEP_FNHANDLEINTERCEPTTRAP					,	XMHF_SLAB_FN_RETTYPE_NORMAL)
-	XMHF_SLAB_DEFEXPORTFN(xmhf_hypapp_handleshutdown				,XMHF_SLAB_XHHYPERDEP_FNSHUTDOWN								,	XMHF_SLAB_FN_RETTYPE_NORMAL)
-)
+XMHF_SLAB_DEF(xhhyperdep)
 
 

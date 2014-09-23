@@ -52,6 +52,7 @@
 
 #include <xmhf.h>
 #include <xmhf-core.h>
+#include <xmhf-debug.h>
 
 // esi = 32-bit address of input parameter base
 // edi = 32-bit address of return from slab call
@@ -65,6 +66,8 @@
 __attribute__((naked)) __attribute (( section(".slabtrampoline") )) void _slab_trampoline(void){
 	
 	asm volatile(	
+			//"int $0x03 \r\n"
+
 			"movl %%edx, %%cr3 \r\n"				//load callee MAC
 			"pushl %%esi \r\n"						//save caller parameter base address
 			"pushl %%eax \r\n"						//save caller MAC
@@ -136,4 +139,98 @@ __attribute__((naked)) __attribute (( section(".slabtrampoline") )) void _slab_t
 	);
 	
 	
+}
+
+//--------------------------------------------------------------------
+
+
+
+
+//parameter-1: in ecx = struct *
+//parameter-2: in edx = parameter size/opcall
+//note: the compiler will setup the prolog which will make ebp point to the stack pointer
+//that we entered on. we use this to restore the stack back to what it was before transferring
+//control to the destination slab
+//e.g., movl %%ebp, %%esp
+//		movl (%esp), %%ebp
+//		addl $4, %%esp
+
+__attribute__((fastcall)) __attribute (( section(".slabtrampoline") )) void _slab_trampolinenew(slab_trampoline_frame_t *tframe, u32 framesize_op){
+	u32 aggrettypeptr;
+	
+	//_XDPRINTF_("%s: got control\n", __FUNCTION__);
+	//_XDPRINTF_(" returnaddress=%08x, framesize_op=%08x, src_slabid=%u, dst_slabid=%u, fn_id=%u\n",
+	//	tframe->returnaddress, framesize_op, tframe->src_slabid, tframe->dst_slabid, tframe->fn_id);
+
+
+	//{
+	//		u32 *p, i;
+	//		p = (u32 *)&tframe->params;
+	//		_XDPRINTF_("%s: %u, %u, %u, %u\n", __FUNCTION__, p[0], p[1], p[2], p[3]);
+	//	
+	//}
+	
+
+	//switch to destination slab MAC
+	asm volatile(	
+		"movl %0, %%eax \r\n"
+		"movl %%eax, %%cr3 \r\n"
+		: 
+		: "m" (_slab_table[tframe->dst_slabid].slab_macmid)
+		: "eax"	 							
+	);
+
+	//_XDPRINTF_("%s: dst CR3 loaded, proceeding with call, cr3=%08x, EP=%08x\n", __FUNCTION__, read_cr3(), _slab_table[tframe->dst_slabid].entry_cr3_new);
+	
+	
+	//call destination slab entry point
+	asm volatile(	
+		"movl %1, %%esi \r\n"
+		"movl %2, %%ecx \r\n"
+		"movl %3, %%eax \r\n"
+		"call *%%eax \r\n"
+		"movl %%esi, %0 \r\n"
+		: "=S" (aggrettypeptr)
+		: "g" (&tframe->src_slabid), "g" (framesize_op), "m" (_slab_table[tframe->dst_slabid].entry_cr3_new)
+		: "esi", "ecx"	 							
+	);
+
+	//{
+	//	
+	//	slab_retval_t *r;
+	//	_XDPRINTF_("%s: aggrettypeptr=%08x\n", __FUNCTION__, aggrettypeptr);
+	//	r = (slab_retval_t *)aggrettypeptr;
+	//	_XDPRINTF_("%s: retval=%u", __FUNCTION__, r->retval_u32);
+	//}
+
+	//_XDPRINTF_("%s: came back from dst call\n", __FUNCTION__);
+
+	//switch back to source slab MAC
+	asm volatile(	
+		"movl %0, %%eax \r\n"
+		"movl %%eax, %%cr3 \r\n"
+		: 
+		: "m" (_slab_table[tframe->src_slabid].slab_macmid)
+		: "eax"	 							
+	);
+	
+	//_XDPRINTF_("%s: going back to src slab, cr3 reloaded to %08x\n", __FUNCTION__, read_cr3());
+
+
+	//return back to source slab
+	asm volatile(	
+		"movl %0, %%esi \r\n"
+		"movl %1, %%eax \r\n"
+		"movl %%ebp, %%esp \r\n"		
+		"movl (%%esp), %%ebp \r\n"
+		"addl $4, %%esp \r\n"	
+		"jmpl *%%eax \r\n"
+		: 
+		: "m" (aggrettypeptr), "m" (tframe->returnaddress)
+		:  							
+	);
+	
+
+	//_XDPRINTF_("%s: Halting, aggrettypeptr=%08x!\n", __FUNCTION__, aggrettypeptr);
+	//HALT();
 }

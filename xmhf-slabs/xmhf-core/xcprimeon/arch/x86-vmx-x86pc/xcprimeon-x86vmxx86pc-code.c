@@ -55,7 +55,7 @@
 
 #include <xcprimeon.h>
 
-__attribute__((naked)) __attribute__ ((section(".slab_entrystub"))) __attribute__(( align(4096) )) void xcprimeon_arch_entry(void) {
+__attribute__((naked)) __attribute__ ((section(".slab_entrystub"))) __attribute__(( align(4096) )) void xcprimeon_interface(void) {
 	
 	asm volatile (	".global _mle_page_table_start \r\n"
 					"_mle_page_table_start:\r\n"
@@ -73,10 +73,10 @@ __attribute__((naked)) __attribute__ ((section(".slab_entrystub"))) __attribute_
 					"movw %%ax, %%fs \r\n"
 					"movw %%ax, %%gs \r\n"
 					"movw %%ax, %%ss \r\n"
-					"movl $0x10200000, %%esp \r\n" //TODO: get rid of hard-coded stack top
+					"movl %0, %%esp \r\n"
 					"jmp xcprimeon_entry \r\n"
 			    :
-			    :
+			    : "m" (_slab_table[XMHF_SLAB_XCPRIMEON_INDEX].slab_tos)
 	);
 }
 
@@ -529,6 +529,9 @@ static u32 _xcprimeon_slab_populate_pagetables(u32 slab_index){
 				u64 spa = hva2spa((void*)hva);
 				u64 flags = _xcprimeon_slab_getptflagsforspa(slab_index, (u32)spa);
 				_slab_pagetables[slab_index].pdt[i][j] = pae_make_pde_big(spa, flags);
+				//debug
+				//if(slab_index == XMHF_SLAB_TESTSLAB1_INDEX && (spa >=0x10000000 && spa < 0x20000000) )
+				//	_XDPRINTF_("  hva/spa=%08x, flags=%08x\n", (u32)spa, (u32)flags);
 			}
 		}
 	

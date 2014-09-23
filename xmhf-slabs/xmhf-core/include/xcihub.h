@@ -50,24 +50,10 @@
 #ifndef __XCIHUB_H__
 #define __XCIHUB_H__
 
-#define	XMHF_SLAB_XCIHUB_FNARCHENTRY	0
 
 #ifndef __ASSEMBLY__
 
-#ifdef __XMHF_SLAB_CALLER_INDEX__ 
-
-XMHF_SLAB_DEFIMPORTFN(void, xcihub_arch_entry, (void), XMHF_SLAB_DEFIMPORTFNSTUB(__XMHF_SLAB_CALLER_INDEX__, XMHF_SLAB_XCIHUB_INDEX, XMHF_SLAB_XCIHUB_FNARCHENTRY, (0), 0, XMHF_SLAB_FN_RETTYPE_NORMAL))
-
-#else 	//!__XMHF_SLAB_CALLER_INDEX__
-
-
-//----------------------------------------------------------------------
-//ARCH. BACKENDS
-//----------------------------------------------------------------------
-void xcihub_arch_entry(void);
-
-
-#endif	//__XMHF_SLAB_CALLER_INDEX__
+void xcihub_interface(void);
 
 #endif //__ASSEMBLY__
 

@@ -55,9 +55,7 @@
 
 #include <xcsmp.h>
 
-#define __XMHF_SLAB_CALLER_INDEX__	XMHF_SLAB_XCSMP_INDEX
 #include <xcrichguest.h>
-#undef __XMHF_SLAB_CALLER_INDEX__
 
 
 
@@ -283,12 +281,13 @@ static void _xcsmp_cpu_x86_smpinitialize_commonstart(void){
 	}
 
 
+
 	_XDPRINTF_("\n%s: cpu %x, isbsp=%u, Proceeding to call init_entry...\n", __FUNCTION__, cpuid, is_bsp);
-	
-	if( XMHF_SLAB_CALL(xcrichguest_entry(cpuid, is_bsp)) ){
-		_XDPRINTF_("%s: Fatal. Should never be here. Halting!\n", __FUNCTION__);
-		HALT();
-	}
+	XMHF_SLAB_CALL_P2P(xcrichguest, XMHF_SLAB_XCSMP_INDEX, XMHF_SLAB_XCRICHGUEST_INDEX, XMHF_SLAB_XCRICHGUEST_FNENTRY, XMHF_SLAB_XCRICHGUEST_FNENTRY_SIZE, cpuid, is_bsp);
+
+	//we should never get here	
+	_XDPRINTF_("%s: Fatal. Should never be here. Halting!\n", __FUNCTION__);
+	HALT();
 }
 
 

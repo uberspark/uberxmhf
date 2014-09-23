@@ -48,12 +48,5 @@
 #include <xmhf-core.h>
 #include <xmhf-debug.h>
 
-#define __XMHF_SLAB_CALLER_INDEX__ XMHF_SLAB_XCIHUB_INDEX
-#include <xcapi.h>
-#undef __XMHF_SLAB_CALLER_INDEX__
-
 //////////
-XMHF_SLAB("xcihub")
-
-
-XMHF_SLAB_DEFINTERFACEBARE(xcihub_arch_entry)
+XMHF_SLAB_DEF_BARE(xcihub)

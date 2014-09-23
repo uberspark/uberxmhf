@@ -44,7 +44,7 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-/* 
+/*
  * XMHF core exception handling x86-vmx-x86pc arch. backend
  * author: amit vasudevan (amitvasudevan@acm.org)
  */
@@ -53,9 +53,7 @@
 #include <xmhf-core.h>
 #include <xmhf-debug.h>
 
-#define __XMHF_SLAB_CALLER_INDEX__	XMHF_SLAB_XCEXHUB_INDEX
 #include <xcapi.h>
-#undef __XMHF_SLAB_CALLER_INDEX__
 
 __attribute__((section(".stack"))) static u32 _xcexhub_exception_lock = 1;
 __attribute__((section(".stack"))) static u32 _xcexhub_exception_savedesp[MAX_PLATFORM_CPUS];
@@ -69,17 +67,17 @@ __attribute__((section(".stack"))) __attribute__(( aligned(4096) )) static u32 _
 		asm volatile(												\
 						"1:	bt	$0, %0	\r\n"						\
 						"jnc 1b	\r\n"								\
-						"lock \r\n"   								\	
-						"btrl	$0, %0	\r\n"						\	
+						"lock \r\n"   								\
+						"btrl	$0, %0	\r\n"						\
 						"jnc 1b \r\n"   							\
 																	\
-						"xchg %%esp, %1 \r\n"						\ 	
-						"pushl %1 \r\n"								\	
+						"xchg %%esp, %1 \r\n"						\
+						"pushl %1 \r\n"								\
 						"pushal \r\n"								\
 						"movl %%esp, %%eax \r\n"					\
-						"addl $36, %%eax \r\n"						\	
+						"addl $36, %%eax \r\n"						\
 						"addl $4096, %%eax \r\n"					\
-						"movl %%eax, %1 \r\n"						\	
+						"movl %%eax, %1 \r\n"						\
 																	\
 						"btsl	$0, %0		\r\n"					\
 																	\
@@ -147,7 +145,7 @@ XMHF_EXCEPTION_HANDLER_DEFINE(28)
 XMHF_EXCEPTION_HANDLER_DEFINE(29)
 XMHF_EXCEPTION_HANDLER_DEFINE(30)
 XMHF_EXCEPTION_HANDLER_DEFINE(31)
-	
+
 static u32 exceptionstubs[] = { 	XMHF_EXCEPTION_HANDLER_ADDROF(0),
 							XMHF_EXCEPTION_HANDLER_ADDROF(1),
 							XMHF_EXCEPTION_HANDLER_ADDROF(2),
@@ -193,7 +191,7 @@ void xmhf_baseplatform_arch_x86_initializeIDT(void){
 		: "m" (_idt)
 		: //no clobber
 	);
-	
+
 }
 
 
@@ -245,7 +243,7 @@ __attribute__(( section(".slab_trampoline") )) void xmhf_xcphandler_arch_hub(u32
 
 	switch(vector){
 			case CPU_EXCEPTION_NMI:{
-				XMHF_SLAB_CALL(xc_coreapi_arch_eventhandler_nmiexception(r));
+				XMHF_SLAB_CALL_P2P(xcapi, XMHF_SLAB_XCEXHUB_INDEX, XMHF_SLAB_XCAPI_INDEX, XMHF_SLAB_XCAPI_FNXCCOREAPIARCHEVENTHANDLERNMIEXCEPTION, XMHF_SLAB_XCAPI_FNXCCOREAPIARCHEVENTHANDLERNMIEXCEPTION_SIZE);
 				}
 				break;
 
@@ -254,7 +252,7 @@ __attribute__(( section(".slab_trampoline") )) void xmhf_xcphandler_arch_hub(u32
 					_XDPRINTF_("\n%s: exception 3, returning", __FUNCTION__);
 			}
 			break;
-			
+
 			default:{
 				xmhf_xcphandler_arch_unhandled(vector, r);
 				_XDPRINTF_("\nHalting System!\n");
@@ -262,7 +260,7 @@ __attribute__(( section(".slab_trampoline") )) void xmhf_xcphandler_arch_hub(u32
 			}
 	}
 }
-	
+
 
 
 //initialize core exception handlers
@@ -271,7 +269,7 @@ void xcexhub_arch_initialize(void){
 	u32 i;
 
 	_XDPRINTF_("%s: setting up runtime IDT...\n", __FUNCTION__);
-	
+
 	for(i=0; i < EMHF_XCPHANDLER_MAXEXCEPTIONS; i++){
 		idtentry_t *idtentry=(idtentry_t *)((u32)&_idt_start+ (i*8));
 		idtentry->isrLow= (u16)exceptionstubs[i];
@@ -281,8 +279,8 @@ void xcexhub_arch_initialize(void){
 		idtentry->type=0xEE;	//32-bit interrupt gate
 								//present=1, DPL=11b, system=0, type=1110b
 	}
-	
+
 	xmhf_baseplatform_arch_x86_initializeIDT();
-	
+
 	_XDPRINTF_("%s: IDT setup done.\n", __FUNCTION__);
 }
