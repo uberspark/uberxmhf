@@ -52,8 +52,8 @@
  *  author: amit vasudevan (amitvasudevan@acm.org)
  */
 
-#ifndef __XCAPI_H__
-#define __XCAPI_H__
+#ifndef __XCAPIHPT_H__
+#define __XCAPIHPT_H__
 
 
 // memory protection types
@@ -92,103 +92,7 @@ void xc_api_hpt_arch_establishshape(u32 partition_index);
 u64 xc_api_hpt_arch_gethptroot(context_desc_t context_desc);
 
 
-
-
-
-
-
-
-///////////////////////////////////////////////////////////////////////////////
-//trapmask related core APIs
-void xc_api_trapmask_set(context_desc_t context_desc, xc_hypapp_arch_param_t trapmaskparams);
-void xc_api_trapmask_arch_set(context_desc_t context_desc, xc_hypapp_arch_param_t trapmaskparams);
-
-void xc_api_trapmask_clear(context_desc_t context_desc, xc_hypapp_arch_param_t trapmaskparams);
-void xc_api_trapmask_arch_clear(context_desc_t context_desc, xc_hypapp_arch_param_t trapmaskparams);
-
-u64 xc_api_trapmask_arch_gettrapmaskbuffer(context_desc_t context_desc, u64 operation);
-
-
-
-
-
-
-
-
-
-
-
-
-///////////////////////////////////////////////////////////////////////////////
-//cpu state related core APIs
-void xc_api_cpustate_set(context_desc_t context_desc, xc_hypapp_arch_param_t cpustateparams);
-void xc_api_cpustate_arch_set(context_desc_t context_desc, xc_hypapp_arch_param_t cpustateparams);
-
-xc_hypapp_arch_param_t xc_api_cpustate_get(context_desc_t context_desc, u64 operation);
-xc_hypapp_arch_param_t xc_api_cpustate_arch_get(context_desc_t context_desc, u64 operation);
-
-bool xc_api_cpustate_arch_setupbasestate(context_desc_t context_desc);
-
-
-
-
-
-
-
-
-
-///////////////////////////////////////////////////////////////////////////////
-//partition related core APIs
-u32 xc_api_partition_create(u32 partitiontype);	//returns partition_index
-
-
-context_desc_t xc_api_partition_addcpu(u32 partition_index, u32 cpuid, bool is_bsp); //return cpu_index
-context_desc_t xc_api_partition_getcontextdesc(u32 cpuid); //return context_desc_t structure
-bool xc_api_partition_startcpu(context_desc_t context_desc);
-bool xc_api_partition_arch_startcpu(context_desc_t context_desc);
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-///////////////////////////////////////////////////////////////////////////////
-//platform related core APIs
-void xc_api_platform_shutdown(context_desc_t context_desc);
-void xc_api_platform_arch_shutdown(context_desc_t context_desc);
-
-xc_platformdevice_desc_t xc_api_platform_initializeandenumeratedevices(context_desc_t context_desc);
-xc_platformdevice_desc_t xc_api_platform_arch_initializeandenumeratedevices(context_desc_t context_desc);
-
-bool xc_api_platform_allocdevices_to_partition(context_desc_t context_desc, xc_platformdevice_desc_t device_descs);
-bool xc_api_platform_arch_allocdevices_to_partition(context_desc_t context_desc, xc_platformdevice_desc_t device_descs);
-
-bool xc_api_platform_deallocdevices_from_partition(context_desc_t context_desc, xc_platformdevice_desc_t device_descs);
-bool xc_api_platform_arch_deallocdevices_from_partition(context_desc_t context_desc, xc_platformdevice_desc_t device_descs);
-
-void xc_api_platform_quiescecpus_in_partition(context_desc_t context_desc);
-void xc_api_platform_arch_quiescecpus_in_partition(context_desc_t context_desc);
-
-void xc_coreapi_arch_eventhandler_nmiexception(struct regs *r);
-
-
 #endif	//__ASSEMBLY__
 
 
-#endif //__XCAPI_H__
+#endif //__XCAPIHPT_H__
