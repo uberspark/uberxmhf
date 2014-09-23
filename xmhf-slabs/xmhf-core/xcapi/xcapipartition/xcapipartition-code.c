@@ -56,98 +56,6 @@
  *  author: amit vasudevan (amitvasudevan@acm.org)
  */
 
-///////////////////////////////////////////////////////////////////////////////
-//HPT related core APIs
-void xc_api_hpt_setprot(context_desc_t context_desc, u64 gpa, u32 prottype){
-	xc_api_hpt_arch_setprot(context_desc, gpa, prottype);
-}
-
-u32 xc_api_hpt_getprot(context_desc_t context_desc, u64 gpa){
-	return xc_api_hpt_arch_getprot(context_desc, gpa);
-}
-
-void xc_api_hpt_setentry(context_desc_t context_desc, u64 gpa, u64 entry){
-	xc_api_hpt_arch_setentry(context_desc, gpa, entry);
-}
-
-u64 xc_api_hpt_getentry(context_desc_t context_desc, u64 gpa){
-	return xc_api_hpt_arch_getentry(context_desc, gpa);
-}
-
-//*
-void xc_api_hpt_flushcaches(context_desc_t context_desc){
-	xc_api_hpt_arch_flushcaches(context_desc);
-}
-
-
-u64 xc_api_hpt_lvl2pagewalk(context_desc_t context_desc, u64 gva){
-	return xc_api_hpt_arch_lvl2pagewalk(context_desc, gva);
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-///////////////////////////////////////////////////////////////////////////////
-//Trapmask related APIs
-void xc_api_trapmask_set(context_desc_t context_desc, xc_hypapp_arch_param_t trapmaskparams){
-	xc_api_trapmask_arch_set(context_desc, trapmaskparams);
-}
-
-void xc_api_trapmask_clear(context_desc_t context_desc, xc_hypapp_arch_param_t trapmaskparams){
-	xc_api_trapmask_arch_clear(context_desc, trapmaskparams);
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-///////////////////////////////////////////////////////////////////////////////
-//cpu state related core APIs
-void xc_api_cpustate_set(context_desc_t context_desc, xc_hypapp_arch_param_t cpustateparams){
-	xc_api_cpustate_arch_set(context_desc, cpustateparams);
-}
-
-xc_hypapp_arch_param_t xc_api_cpustate_get(context_desc_t context_desc, u64 operation){
-	return xc_api_cpustate_arch_get(context_desc, operation);
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 ///////////////////////////////////////////////////////////////////////////////
 //partition related core APIs
@@ -306,30 +214,6 @@ bool xc_api_partition_startcpu(context_desc_t context_desc){
 
 
 
-///////////////////////////////////////////////////////////////////////////////
-//platform related core API
-void xc_api_platform_shutdown(context_desc_t context_desc){
-	xc_api_platform_arch_shutdown(context_desc);
-}
-
-xc_platformdevice_desc_t xc_api_platform_initializeandenumeratedevices(context_desc_t context_desc){
-    return xc_api_platform_arch_initializeandenumeratedevices(context_desc);
-}
-
-bool xc_api_platform_allocdevices_to_partition(context_desc_t context_desc, xc_platformdevice_desc_t device_descs){
-    return xc_api_platform_arch_allocdevices_to_partition(context_desc, device_descs);
-}
-
-bool xc_api_platform_deallocdevices_from_partition(context_desc_t context_desc, xc_platformdevice_desc_t device_descs){
-    return xc_api_platform_arch_deallocdevices_from_partition(context_desc, device_descs);
-}
-
-void xc_api_platform_quiescecpus_in_partition(context_desc_t context_desc){
-    xc_api_platform_arch_quiescecpus_in_partition(context_desc);
-}
-
-
-
 ///////
-XMHF_SLAB("coreapi")
+XMHF_SLAB("xcapipartition")
 
