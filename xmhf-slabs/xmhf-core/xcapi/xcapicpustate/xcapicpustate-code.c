@@ -44,29 +44,41 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
+#include <xmhf.h>
+#include <xmhf-core.h>
+#include <xmhf-debug.h>
+
+#include <xcapi.h>
 
 /*
- *
- *  helloworld hypapp slab decls.
+ * 	XMHF core API
  *
  *  author: amit vasudevan (amitvasudevan@acm.org)
  */
 
-#ifndef __XHHELLOWORLD_H__
-#define __XHHELLOWORLD_H__
 
 
-#ifndef __ASSEMBLY__
+///////////////////////////////////////////////////////////////////////////////
+//cpu state related core APIs
+void xc_api_cpustate_set(context_desc_t context_desc, xc_hypapp_arch_param_t cpustateparams){
+	xc_api_cpustate_arch_set(context_desc, cpustateparams);
+}
 
-u32 xmhf_hypapp_initialization(context_desc_t context_desc, hypapp_env_block_t hypappenvb);
-u32 xmhf_hypapp_handlehypercall(context_desc_t context_desc, u64 hypercall_id, u64 hypercall_param);
-u32 xmhf_hypapp_handleintercept_hptfault(context_desc_t context_desc, u64 gpa, u64 gva, u64 error_code);
-u32 xmhf_hypapp_handleintercept_trap(context_desc_t context_desc, xc_hypapp_arch_param_t xc_hypapp_arch_param);
-void xmhf_hypapp_handleshutdown(context_desc_t context_desc);
-void xmhf_hypapp_handlequiesce(context_desc_t context_desc);
-
-
-#endif	//__ASSEMBLY__
+xc_hypapp_arch_param_t xc_api_cpustate_get(context_desc_t context_desc, u64 operation){
+	return xc_api_cpustate_arch_get(context_desc, operation);
+}
 
 
-#endif //__XHHELLOWORLD_H__
+
+
+
+
+
+
+
+
+
+
+///////
+XMHF_SLAB("xcapicpustate")
+

@@ -47,26 +47,41 @@
 
 /*
  *
- *  helloworld hypapp slab decls.
+ *  XMHF core API
  *
  *  author: amit vasudevan (amitvasudevan@acm.org)
  */
 
-#ifndef __XHHELLOWORLD_H__
-#define __XHHELLOWORLD_H__
+#ifndef __XCAPIPLATFORM_H__
+#define __XCAPIPLATFORM_H__
 
 
 #ifndef __ASSEMBLY__
 
-u32 xmhf_hypapp_initialization(context_desc_t context_desc, hypapp_env_block_t hypappenvb);
-u32 xmhf_hypapp_handlehypercall(context_desc_t context_desc, u64 hypercall_id, u64 hypercall_param);
-u32 xmhf_hypapp_handleintercept_hptfault(context_desc_t context_desc, u64 gpa, u64 gva, u64 error_code);
-u32 xmhf_hypapp_handleintercept_trap(context_desc_t context_desc, xc_hypapp_arch_param_t xc_hypapp_arch_param);
-void xmhf_hypapp_handleshutdown(context_desc_t context_desc);
-void xmhf_hypapp_handlequiesce(context_desc_t context_desc);
+
+
+
+///////////////////////////////////////////////////////////////////////////////
+//platform related core APIs
+void xc_api_platform_shutdown(context_desc_t context_desc);
+void xc_api_platform_arch_shutdown(context_desc_t context_desc);
+
+xc_platformdevice_desc_t xc_api_platform_initializeandenumeratedevices(context_desc_t context_desc);
+xc_platformdevice_desc_t xc_api_platform_arch_initializeandenumeratedevices(context_desc_t context_desc);
+
+bool xc_api_platform_allocdevices_to_partition(context_desc_t context_desc, xc_platformdevice_desc_t device_descs);
+bool xc_api_platform_arch_allocdevices_to_partition(context_desc_t context_desc, xc_platformdevice_desc_t device_descs);
+
+bool xc_api_platform_deallocdevices_from_partition(context_desc_t context_desc, xc_platformdevice_desc_t device_descs);
+bool xc_api_platform_arch_deallocdevices_from_partition(context_desc_t context_desc, xc_platformdevice_desc_t device_descs);
+
+void xc_api_platform_quiescecpus_in_partition(context_desc_t context_desc);
+void xc_api_platform_arch_quiescecpus_in_partition(context_desc_t context_desc);
+
+void xc_coreapi_arch_eventhandler_nmiexception(struct regs *r);
 
 
 #endif	//__ASSEMBLY__
 
 
-#endif //__XHHELLOWORLD_H__
+#endif //__XCAPIPLATFORM_H__
