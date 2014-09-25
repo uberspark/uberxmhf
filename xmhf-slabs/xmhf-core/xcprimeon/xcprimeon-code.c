@@ -85,6 +85,12 @@ void xcprimeon_entry(void){
 		}
   	}
 
+    //debug
+    _XDPRINTF_("Halting!\n");
+    _XDPRINTF_("XMHF Tester Finished!\n");
+    HALT();
+
+
 	//initialize cpu table and total platform CPUs
 	{
 	    u32 i;
