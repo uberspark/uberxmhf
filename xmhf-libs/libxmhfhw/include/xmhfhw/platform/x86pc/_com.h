@@ -305,10 +305,10 @@ typedef struct {
 
 
 void xmhfhw_platform_serial_init(char *params);
-void xmhf_hw_platform_serial_puts(char *buffer);
+void xmhfhw_platform_serial_puts(char *buffer);
 
 
-extern uart_config_t g_uart_config; 
+extern uart_config_t g_uart_config;
 
 #endif // __ASSEMBLY__
 

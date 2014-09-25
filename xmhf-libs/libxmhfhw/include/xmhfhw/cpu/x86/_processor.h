@@ -58,7 +58,7 @@
 
 #define INTEL_STRING_DWORD1	0x756E6547
 #define INTEL_STRING_DWORD2	0x49656E69
-#define INTEL_STRING_DWORD3	0x6C65746E	
+#define INTEL_STRING_DWORD3	0x6C65746E
 
 #define EFLAGS_CF	0x00000001 /* Carry Flag */
 #define EFLAGS_PF	0x00000004 /* Parity Flag */
@@ -163,7 +163,7 @@ enum fix_mtrr_t {
 typedef union {
     uint64_t raw;
     uint8_t  type[8];
-} mtrr_fix_types_t;
+} __attribute__((packed)) mtrr_fix_types_t;
 
 enum var_mtrr_t {
     MTRR_PHYS_BASE0_MSR = 0x200,
@@ -193,7 +193,7 @@ typedef union {
         uint64_t wc          : 1;    /* write-combining mem type supported */
         uint64_t reserved2   : 53;
     };
-} mtrr_cap_t;
+} __attribute__((packed)) mtrr_cap_t;
 
 typedef union {
     uint64_t	raw;
@@ -204,7 +204,7 @@ typedef union {
         uint64_t e           : 1;    /* (all) MTRR enable */
         uint64_t reserved2   : 52;
     };
-} mtrr_def_type_t;
+} __attribute__((packed)) mtrr_def_type_t;
 
 typedef union {
     uint64_t	raw;
@@ -216,7 +216,7 @@ typedef union {
         uint64_t base      : 24;
         uint64_t reserved2 : 28;
     };
-} mtrr_physbase_t;
+} __attribute__((packed)) mtrr_physbase_t;
 
 typedef union {
     uint64_t	raw;
@@ -228,7 +228,7 @@ typedef union {
         uint64_t mask      : 24;
         uint64_t reserved2 : 28;
     };
-} mtrr_physmask_t;
+} __attribute__((packed)) mtrr_physmask_t;
 
 /* current procs only have 8, so this should hold us for a while */
 #define MAX_VARIABLE_MTRRS      16
@@ -238,30 +238,62 @@ typedef struct {
     int	                num_var_mtrrs;
     mtrr_physbase_t     mtrr_physbases[MAX_VARIABLE_MTRRS];
     mtrr_physmask_t     mtrr_physmasks[MAX_VARIABLE_MTRRS];
-} mtrr_state_t;
+} __attribute__((packed)) mtrr_state_t;
 
 
 //x86 GPR set definition (follows the order enforced by PUSHAD/POPAD
 //SDM Vol 2B. 4-427)
+
 struct regs
 {
-  u32 edi;
-  u32 esi;
-  u32 ebp;
-  u32 esp;
-  u32 ebx;
-  u32 edx;
-  u32 ecx;
-  u32 eax;
+  u64 edi;
+  u64 esi;
+  u64 ebp;
+  u64 esp;
+  u64 ebx;
+  u64 edx;
+  u64 ecx;
+  u64 eax;
 }__attribute__ ((packed));
 
 
+typedef struct {
+  u64 r8;
+  u64 r9;
+  u64 r10;
+  u64 r11;
+  u64 r12;
+  u64 r13;
+  u64 r14;
+  u64 r15;
+  u64 rax;
+  u64 rbx;
+  u64 rcx;
+  u64 rdx;
+  u64 rsi;
+  u64 rdi;
+  u64 rbp;
+  u64 rsp;
+}__attribute__ ((packed)) x86regs64_t;
+
+
+typedef struct {
+    u64 rip;
+    u64 cs;
+    u64 rflags;
+    u64 rsp;
+    u64 ss;
+}__attribute__ ((packed)) x86idt64_stackframe_t;
+
+//*
 typedef struct {
   u16 isrLow;
   u16 isrSelector;
   u8  count;
   u8  type;
   u16 isrHigh;
+  u32 offset3263;
+  u32 reserved;
 } __attribute__ ((packed)) idtentry_t;
 
 typedef struct {
@@ -269,7 +301,7 @@ typedef struct {
   unsigned short baseAddr0_15;
   unsigned char baseAddr16_23;
   unsigned char attributes1;
-  unsigned char limit16_19attributes2;    
+  unsigned char limit16_19attributes2;
   unsigned char baseAddr24_31;
 } __attribute__ ((packed)) TSSENTRY;
 
@@ -279,19 +311,48 @@ typedef struct {
 	u32 base;
 	u32 limit;
 	u32 access_rights;
-} x86desc_t; 
+} x86desc_t;
 
 
-#define get_eflags(x)  __asm__ __volatile__("pushfl ; popl %0 ":"=g" (x): /* no input */ :"memory")
-#define set_eflags(x) __asm__ __volatile__("pushl %0 ; popfl": /* no output */ :"g" (x):"memory", "cc")
+//#define get_eflags(x)  __asm__ __volatile__("pushfl ; popl %0 ":"=g" (x): /* no input */ :"memory")
+static inline u64 get_rflags(void){
+    u64 _rflags;
 
-#define cpuid(op, eax, ebx, ecx, edx)		\
-({						\
-  __asm__ __volatile__("cpuid"				\
-          :"=a"(*(eax)), "=b"(*(ebx)), "=c"(*(ecx)), "=d"(*(edx))	\
-          :"0"(op), "2" (0));			\
-})
+    asm volatile(
+                 "pushfq \r\n"
+                 "popq %0 \r\n"
+                 : "=g" (_rflags)
+                 :
+                 :
+                 );
 
+    return _rflags;
+}
+
+//#define set_eflags(x) __asm__ __volatile__("pushl %0 ; popfl": /* no output */ :"g" (x):"memory", "cc")
+static inline void set_rflags(u64 rflags){
+
+    asm volatile(
+                 "pushq %0 \r\n"
+                 "popfq \r\n"
+                 :
+                 : "g" (rflags)
+                 : "cc"
+                 );
+
+}
+
+
+static inline void cpuid(u32 op, u32 *eax, u32 *ebx, u32 *ecx, u32 *edx){
+
+    asm volatile(
+                 "cpuid \r\n"
+                :"=a"(*(eax)), "=b"(*(ebx)), "=c"(*(ecx)), "=d"(*(edx))
+                :"a"(op), "c"(*(ecx))
+                :
+               );
+
+}
 
 #define rdtsc(eax, edx)		\
 ({						\
@@ -309,27 +370,33 @@ static inline uint64_t rdtsc64(void)
 }
 
 
-/* Calls to read and write control registers */ 
-static inline unsigned long read_cr0(void){
-  unsigned long __cr0;
-  __asm__("mov %%cr0,%0\n\t" :"=r" (__cr0));
+/* Calls to read and write control registers */
+static inline u64 read_cr0(void){
+  u64 __cr0;
+  asm volatile("mov %%cr0,%0 \r\n" :"=r" (__cr0));
   return __cr0;
 }
 
-static inline void write_cr0(unsigned long val){
-  __asm__("mov %0,%%cr0": :"r" ((unsigned long)val));
+static inline void write_cr0(u64 val){
+  asm volatile("mov %0,%%cr0 \r\n": :"r" (val));
 }
 
-static inline unsigned long read_cr3(void){
-  unsigned long __cr3;
-  __asm__("mov %%cr3,%0\n\t" :"=r" (__cr3));
+static inline u64 read_cr3(void){
+  u64 __cr3;
+  asm volatile("mov %%cr3,%0 \r\n" :"=r" (__cr3));
   return __cr3;
 }
 
-static inline unsigned long read_esp(void){
-  unsigned long __esp;
-  __asm__("mov %%esp,%0\n\t" :"=r" (__esp));
+static inline u32 read_esp(void){
+  u32 __esp;
+  asm volatile("mov %%esp,%0 \r\n" :"=r" (__esp));
   return __esp;
+}
+
+static inline u64 read_rsp(void){
+  u64 __rsp;
+  asm volatile("movq %%rsp,%0\n\t" :"=r" (__rsp));
+  return __rsp;
 }
 
 static inline unsigned long read_ebp(void){
@@ -338,28 +405,26 @@ static inline unsigned long read_ebp(void){
   return __ebp;
 }
 
-static inline void write_cr3(unsigned long val){
-  __asm__("mov %0,%%cr3\n\t"
-          "jmp 1f\n\t"
-          "1:"
-          : 
-          :"r" ((unsigned long)val));
+static inline void write_cr3(u64 val){
+  asm volatile("mov %0,%%cr3 \r\n"::"r" (val));
 }
 
-static inline unsigned long read_cr2(void){
-  unsigned long __cr2;
-  __asm__("mov %%cr2,%0\n\t" :"=r" (__cr2));
+static inline u64 read_cr2(void){
+  u64 __cr2;
+  asm volatile("mov %%cr2,%0 \r\n" :"=r" (__cr2));
   return __cr2;
 }
 
-static inline unsigned long read_cr4(void){
-  unsigned long __cr4;
-  __asm__("mov %%cr4,%0\n\t" :"=r" (__cr4));
+//*
+static inline u64 read_cr4(void){
+  u64 __cr4;
+  asm volatile("mov %%cr4, %0 \r\n" :"=r" (__cr4));
   return __cr4;
 }
 
-static inline void write_cr4(unsigned long val){
-  __asm__("mov %0,%%cr4": :"r" ((unsigned long)val));
+//*
+static inline void write_cr4(u64 val){
+  asm volatile("mov %0,%%cr4": :"r" (val));
 }
 
 static inline void skinit(unsigned long eax) {
@@ -465,7 +530,7 @@ static inline void xsetbv(u32 xcr_reg, u64 value){
 	static inline u32 get_cpu_vendor_or_die(void) {
 	    u32 dummy;
 	    u32 vendor_dword1, vendor_dword2, vendor_dword3;
-	    
+
 	    cpuid(0, &dummy, &vendor_dword1, &vendor_dword3, &vendor_dword2);
 	    if(vendor_dword1 == AMD_STRING_DWORD1 && vendor_dword2 == AMD_STRING_DWORD2
 	       && vendor_dword3 == AMD_STRING_DWORD3)
@@ -476,7 +541,7 @@ static inline void xsetbv(u32 xcr_reg, u64 value){
 	    else
 		HALT();
 
-	    return 0; // never reached 
+	    return 0; // never reached
 	}
 
 
@@ -500,8 +565,6 @@ static inline void xsetbv(u32 xcr_reg, u64 value){
 
 #endif //__XMHF_VERIFICATION__
 
-void xmhfhw_cpu_initialize(void);
-void xmhfhw_cpu_x86_initialize_paging(u32 pgtblbase);
 void xmhfhw_cpu_x86_save_mtrrs(mtrr_state_t *saved_state);
 void xmhfhw_cpu_x86_restore_mtrrs(mtrr_state_t *saved_state);
 #endif //__ASSEMBLY__

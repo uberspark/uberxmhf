@@ -54,22 +54,90 @@
 
 #include <xcsmp.h>
 
-#include <xcexhub.h>
+static volatile u32 _cpucount = 0; // count of platform cpus
+static u32 xc_richguest_partition_index=XC_PARTITION_INDEX_INVALID;
 
 slab_retval_t xcsmp_interface(u32 src_slabid, u32 dst_slabid, u32 fn_id, u32 fn_paramsize, ...){
-	
-#if defined (__DMAP__)
-	xcsmp_arch_dmaprot_reinitialize();
-#endif
 
-	_XDPRINTF_("%s: proceeding to invoke xcexhub_initialize...\n", __FUNCTION__);
-	XMHF_SLAB_CALL_P2P(xcexhub, XMHF_SLAB_XCSMP_INDEX, XMHF_SLAB_XCEXHUB_INDEX, 0, 0);
-	_XDPRINTF_("%s: xcexhub_initialize completed successfully.\n", __FUNCTION__);
-	
+
+	//create rich guest partition
+	_XDPRINTF_("%s: proceeding to create rich guest partition...\n", __FUNCTION__);
+	xc_richguest_partition_index = XMHF_SLAB_CALL(xc_api_partition_create(XC_PARTITION_PRIMARY));
+	if(xc_richguest_partition_index == XC_PARTITION_INDEX_INVALID){
+		_XDPRINTF_("%s: Fatal error, could not create rich guest partition!\n", __FUNCTION__);
+		HALT();
+	}
+	_XDPRINTF_("%s: created rich guest partition %u\n", __FUNCTION__, xc_richguest_partition_index);
+
+
+    //process system device allocation and DMA protection
+    if(!xcdev_initialize(xc_richguest_partition_index)){
+        _XDPRINTF_("%s: Fatal, could not perform system device allocation and DMA protection. Halting!\n", __FUNCTION__);
+        HALT();
+    }
+
+    //initialize rich guest partition
+    XMHF_SLAB_CALL(xcrichguest_initialize(xc_richguest_partition_index));
+    _XDPRINTF_("\n%s: initialized rich guest partition %u\n", __FUNCTION__, xc_richguest_partition_index);
+
 	if( xcsmp_arch_smpinitialize() ){
 		_XDPRINTF_("\nRuntime: We should NEVER get here!");
 		HALT();
 	}
+
+}
+
+//executes in the context of each physical CPU
+void xcsmp_smpstart(u32 cpuid, bool isbsp){
+    static u32 _smpinitialize_lock = 1;
+    context_desc_t context_desc;
+
+    //serialize execution
+    spin_lock(&_smpinitialize_lock);
+
+        //initialize CPU
+        xcsmp_arch_initializecpu(cpuid, isbsp);
+
+        //add cpu to rich guest partition
+        //TODO: check if this CPU is allocated to the "rich" guest. if so, pass it on to
+        //the rich guest initialization procedure. if the CPU is not allocated to the
+        //rich guest, enter it into a CPU pool for use by other partitions
+        _XDPRINTF_("%s(%u): Proceeding to call xcrichguest_addcpu...\n", __FUNCTION__, (u32)cpuid);
+        context_desc = XMHF_SLAB_CALL(xcrichguest_addcpu(xc_richguest_partition_index, cpuid, isbsp));
+
+       	//call hypapp initialization function
+        {
+            hypapp_env_block_t hypappenvb;
+
+            hypappenvb.runtimephysmembase = (u32)xcbootinfo->physmem_base;
+            hypappenvb.runtimesize = (u32)xcbootinfo->size;
+
+            _XDPRINTF_("%s(%u): proceeding to call xmhfhypapp_main...\n", __FUNCTION__, context_desc.cpu_desc.cpu_index);
+            XMHF_SLAB_CALL(xmhf_hypapp_initialization(context_desc, hypappenvb));
+            _XDPRINTF_("%s(%u): came back into core\n", __FUNCTION__, context_desc.cpu_desc.cpu_index);
+        }
+
+        if(!isbsp){
+            _XDPRINTF_("%s(%u): starting in partition...\n", __FUNCTION__, context_desc.cpu_desc.cpu_index);
+            //increment CPU count
+            _cpucount++;
+        }
+
+    spin_unlock(&_smpinitialize_lock);
+
+
+    if(isbsp){
+        _XDPRINTF_("%s: BSP: waiting for all APs to get into partition...\n", __FUNCTION__);
+        while(_cpucount < (xcbootinfo->cpuinfo_numentries-1));
+        xmhf_baseplatform_arch_x86_udelay(6666);
+        _XDPRINTF_("%s: BSP: APs all in partition, kickstarting BSP within partition...\n", __FUNCTION__);
+    }
+
+	if(!XMHF_SLAB_CALL(xc_api_partition_startcpu(context_desc))){
+        _XDPRINTF_("%s(%u):%u: Should never be here. Halting!\n", __FUNCTION__, (u32)cpuid, __LINE__);
+        HALT();
+	}
+
 }
 
 

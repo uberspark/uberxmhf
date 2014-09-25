@@ -395,6 +395,7 @@ static bool xmhf_smpguest_arch_memcpyfrom(context_desc_t context_desc, void *buf
 	if((u32)guestbuffer == 0xFFFFFFFFUL)
 		return false;
 	xmhfhw_sysmemaccess_copy(buffer, gpa2hva(guestbuffer), numbytes);
+	return true;
 }
 
 static bool xmhf_smpguest_arch_memcpyto(context_desc_t context_desc, void *guestaddress, const void *buffer, size_t numbytes){
@@ -409,6 +410,7 @@ static bool xmhf_smpguest_arch_memcpyto(context_desc_t context_desc, void *guest
 	  )
 		return false;
 	xmhfhw_sysmemaccess_copy(gpa2hva(guestbuffer), buffer, numbytes);
+	return true;
 }
 
 
@@ -416,6 +418,7 @@ static bool xmhf_smpguest_arch_memcpyto(context_desc_t context_desc, void *guest
 
 
 //================================================================================
+//*
 void xcrichguest_arch_initialize(u32 partition_index){
 	context_desc_t context_desc;
 
@@ -423,17 +426,21 @@ void xcrichguest_arch_initialize(u32 partition_index){
 	context_desc.cpu_desc.isbsp = true;
 	context_desc.partition_desc.partition_index = partition_index;
 
-	_XDPRINTF_("\n%s: copying boot-module to boot guest: base=%08x, size=%u bytes", __FUNCTION__, (u32)xcbootinfo->richguest_bootmodule_base, xcbootinfo->richguest_bootmodule_size);
-	memcpy((void *)__GUESTOSBOOTMODULE_BASE, (void *)xcbootinfo->richguest_bootmodule_base, xcbootinfo->richguest_bootmodule_size);
+	_XDPRINTF_("%s: copying boot-module to boot guest: base=%08x, size=%u bytes\n", __FUNCTION__,
+                (u32)xcbootinfo->richguest_bootmodule_base, xcbootinfo->richguest_bootmodule_size);
+	memcpy((void *)__GUESTOSBOOTMODULE_BASE, (void *)xcbootinfo->richguest_bootmodule_base,
+                xcbootinfo->richguest_bootmodule_size);
 
-	_XDPRINTF_("\n%s: BSP initializing HPT", __FUNCTION__);
+	_XDPRINTF_("%s: BSP initializing HPT...\n", __FUNCTION__);
+
 	_vmx_gathermemorytypes();
 
 	_vmx_setupEPT(context_desc);
 
 	//INT 15h E820 hook enablement for VMX unrestricted guest mode
 	//note: this only happens for the BSP
-	_XDPRINTF_("\n%s: BSP initializing INT 15 hook for UG mode...", __FUNCTION__);
+	_XDPRINTF_("%s: BSP initializing INT 15 hook for UG mode...\n", __FUNCTION__);
+
 	_vmx_int15_initializehook();
 }
 
@@ -556,7 +563,7 @@ struct regs xcrichguest_arch_handle_guestmemoryreporting(context_desc_t context_
 
 			//copy the E820 descriptor and return its size
 			if(!xmhf_smpguest_arch_memcpyto(context_desc, (const void *)((u32)(desc.es.base+(u16)r.edi)), (void *)&xcbootinfo->memmapinfo_buffer[r.ebx], sizeof(GRUBE820)) ){
-				_XDPRINTF_("\n%s: Error in copying e820 descriptor to guest. Halting!", __FUNCTION__);
+				_XDPRINTF_("%s: Error in copying e820 descriptor to guest. Halting!\n", __FUNCTION__);
 				HALT();
 			}
 
@@ -578,7 +585,7 @@ struct regs xcrichguest_arch_handle_guestmemoryreporting(context_desc_t context_
 
 			//grab guest eflags on guest stack
 			if(!xmhf_smpguest_arch_readu16(context_desc, (const void *)((u32)desc.ss.base + (u16)r.esp + 0x4), &guest_flags)){
-				_XDPRINTF_("\n%s: Error in reading guest_flags. Halting!", __FUNCTION__);
+				_XDPRINTF_("%s: Error in reading guest_flags. Halting!\n", __FUNCTION__);
 				HALT();
 			}
 
@@ -596,13 +603,13 @@ struct regs xcrichguest_arch_handle_guestmemoryreporting(context_desc_t context_
 
 			//write updated eflags in guest stack
 			if(!xmhf_smpguest_arch_writeu16(context_desc, (const void *)((u32)desc.ss.base + (u16)r.esp + 0x4), guest_flags)){
-				_XDPRINTF_("\n%s: Error in updating guest_flags. Halting!", __FUNCTION__);
+				_XDPRINTF_("%s: Error in updating guest_flags. Halting!\n", __FUNCTION__);
 				HALT();
 			}
 
 
 		}else{	//invalid state specified during INT 15 E820, halt
-				_XDPRINTF_("\nCPU(0x%02x): INT15 (E820), invalid state specified by guest. Halting!", context_desc.cpu_desc.cpu_index);
+				_XDPRINTF_("[%u]: INT15 (E820), invalid state specified by guest. Halting!\n", context_desc.cpu_desc.cpu_index);
 				HALT();
 		}
 
@@ -621,7 +628,7 @@ struct regs xcrichguest_arch_handle_guestmemoryreporting(context_desc_t context_
 
 	//read the original INT 15h handler which is stored right after the VMCALL instruction
 	if(!xmhf_smpguest_arch_readu16(context_desc, 0x4AC+0x4, &ip) || !xmhf_smpguest_arch_readu16(context_desc, 0x4AC+0x6, &cs)){
-		_XDPRINTF_("\n%s: Error in reading original INT 15h handler. Halting!", __FUNCTION__);
+		_XDPRINTF_("%s: Error in reading original INT 15h handler. Halting!\n", __FUNCTION__);
 		HALT();
 	}
 

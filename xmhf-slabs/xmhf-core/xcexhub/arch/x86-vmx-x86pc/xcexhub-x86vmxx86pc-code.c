@@ -55,149 +55,14 @@
 
 #include <xcapi.h>
 
-__attribute__((section(".stack"))) static u32 _xcexhub_exception_lock = 1;
-__attribute__((section(".stack"))) static u32 _xcexhub_exception_savedesp[MAX_PLATFORM_CPUS];
-__attribute__((section(".stack"))) static u32 _xcexhub_exception_savedesp_index = &_xcexhub_exception_savedesp[0];
-__attribute__((section(".stack"))) __attribute__(( aligned(4096) )) static u8 _xcexhub_exception_stack[MAX_PLATFORM_CPUS][PAGE_SIZE_4K];
-__attribute__((section(".stack"))) __attribute__(( aligned(4096) )) static u32 _xcexhub_exception_stack_index = &_xcexhub_exception_stack[1];
 
+__attribute__(( section(".slab_trampoline") )) static void xmhf_xcphandler_arch_unhandled(u64 vector, x86regs64_t *r){
+	x86idt64_stackframe_t *exframe = NULL;
+    u64 errorcode=0;
 
-#define XMHF_EXCEPTION_HANDLER_DEFINE(vector) 												\
-	__attribute__(( section(".slab_trampoline") )) static void __xmhf_exception_handler_##vector(void) __attribute__((naked)) { 					\
-		asm volatile(												\
-						"1:	bt	$0, %0	\r\n"						\
-						"jnc 1b	\r\n"								\
-						"lock \r\n"   								\
-						"btrl	$0, %0	\r\n"						\
-						"jnc 1b \r\n"   							\
-																	\
-						"xchg %%esp, %1 \r\n"						\
-						"pushl %1 \r\n"								\
-						"pushal \r\n"								\
-						"movl %%esp, %%eax \r\n"					\
-						"addl $36, %%eax \r\n"						\
-						"addl $4096, %%eax \r\n"					\
-						"movl %%eax, %1 \r\n"						\
-																	\
-						"btsl	$0, %0		\r\n"					\
-																	\
-						"movl %%cr3, %%eax \r\n"					\
-						"pushl %%eax \r\n"							\
-																	\
-						"movl %2, %%eax \r\n"						\
-						"movl %%eax, %%cr3 \r\n"					\
-																	\
-						"movw	%3, %%ax\r\n"						\
-						"movw	%%ax, %%ds\r\n"						\
-						"movl 	%%esp, %%eax\r\n"					\
-						"pushl 	%%eax\r\n"							\
-						"pushl	%4\r\n" 							\
-						"call	xmhf_xcphandler_arch_hub\r\n"		\
-						"addl  	$0x08, %%esp\r\n"					\
-																	\
-						"popl %%eax \r\n"							\
-						"movl %%eax, %%cr3 \r\n"					\
-																	\
-						"popal	 \r\n"								\
-																	\
-						"pop %%esp \r\n"							\
-																	\
-																	\
-						"iretl\r\n"									\
-					:												\
-					:	"m" (_xcexhub_exception_lock), "m" (_xcexhub_exception_stack_index), "m" (_slab_table[XMHF_SLAB_XCEXHUB_INDEX].slab_macmid), "i" (__DS_CPL0), "i" (vector)				\
-		);															\
-	}\
-
-
-
-#define XMHF_EXCEPTION_HANDLER_ADDROF(vector) &__xmhf_exception_handler_##vector
-
-XMHF_EXCEPTION_HANDLER_DEFINE(0)
-XMHF_EXCEPTION_HANDLER_DEFINE(1)
-XMHF_EXCEPTION_HANDLER_DEFINE(2)
-XMHF_EXCEPTION_HANDLER_DEFINE(3)
-XMHF_EXCEPTION_HANDLER_DEFINE(4)
-XMHF_EXCEPTION_HANDLER_DEFINE(5)
-XMHF_EXCEPTION_HANDLER_DEFINE(6)
-XMHF_EXCEPTION_HANDLER_DEFINE(7)
-XMHF_EXCEPTION_HANDLER_DEFINE(8)
-XMHF_EXCEPTION_HANDLER_DEFINE(9)
-XMHF_EXCEPTION_HANDLER_DEFINE(10)
-XMHF_EXCEPTION_HANDLER_DEFINE(11)
-XMHF_EXCEPTION_HANDLER_DEFINE(12)
-XMHF_EXCEPTION_HANDLER_DEFINE(13)
-XMHF_EXCEPTION_HANDLER_DEFINE(14)
-XMHF_EXCEPTION_HANDLER_DEFINE(15)
-XMHF_EXCEPTION_HANDLER_DEFINE(16)
-XMHF_EXCEPTION_HANDLER_DEFINE(17)
-XMHF_EXCEPTION_HANDLER_DEFINE(18)
-XMHF_EXCEPTION_HANDLER_DEFINE(19)
-XMHF_EXCEPTION_HANDLER_DEFINE(20)
-XMHF_EXCEPTION_HANDLER_DEFINE(21)
-XMHF_EXCEPTION_HANDLER_DEFINE(22)
-XMHF_EXCEPTION_HANDLER_DEFINE(23)
-XMHF_EXCEPTION_HANDLER_DEFINE(24)
-XMHF_EXCEPTION_HANDLER_DEFINE(25)
-XMHF_EXCEPTION_HANDLER_DEFINE(26)
-XMHF_EXCEPTION_HANDLER_DEFINE(27)
-XMHF_EXCEPTION_HANDLER_DEFINE(28)
-XMHF_EXCEPTION_HANDLER_DEFINE(29)
-XMHF_EXCEPTION_HANDLER_DEFINE(30)
-XMHF_EXCEPTION_HANDLER_DEFINE(31)
-
-static u32 exceptionstubs[] = { 	XMHF_EXCEPTION_HANDLER_ADDROF(0),
-							XMHF_EXCEPTION_HANDLER_ADDROF(1),
-							XMHF_EXCEPTION_HANDLER_ADDROF(2),
-							XMHF_EXCEPTION_HANDLER_ADDROF(3),
-							XMHF_EXCEPTION_HANDLER_ADDROF(4),
-							XMHF_EXCEPTION_HANDLER_ADDROF(5),
-							XMHF_EXCEPTION_HANDLER_ADDROF(6),
-							XMHF_EXCEPTION_HANDLER_ADDROF(7),
-							XMHF_EXCEPTION_HANDLER_ADDROF(8),
-							XMHF_EXCEPTION_HANDLER_ADDROF(9),
-							XMHF_EXCEPTION_HANDLER_ADDROF(10),
-							XMHF_EXCEPTION_HANDLER_ADDROF(11),
-							XMHF_EXCEPTION_HANDLER_ADDROF(12),
-							XMHF_EXCEPTION_HANDLER_ADDROF(13),
-							XMHF_EXCEPTION_HANDLER_ADDROF(14),
-							XMHF_EXCEPTION_HANDLER_ADDROF(15),
-							XMHF_EXCEPTION_HANDLER_ADDROF(16),
-							XMHF_EXCEPTION_HANDLER_ADDROF(17),
-							XMHF_EXCEPTION_HANDLER_ADDROF(18),
-							XMHF_EXCEPTION_HANDLER_ADDROF(19),
-							XMHF_EXCEPTION_HANDLER_ADDROF(20),
-							XMHF_EXCEPTION_HANDLER_ADDROF(21),
-							XMHF_EXCEPTION_HANDLER_ADDROF(22),
-							XMHF_EXCEPTION_HANDLER_ADDROF(23),
-							XMHF_EXCEPTION_HANDLER_ADDROF(24),
-							XMHF_EXCEPTION_HANDLER_ADDROF(25),
-							XMHF_EXCEPTION_HANDLER_ADDROF(26),
-							XMHF_EXCEPTION_HANDLER_ADDROF(27),
-							XMHF_EXCEPTION_HANDLER_ADDROF(28),
-							XMHF_EXCEPTION_HANDLER_ADDROF(29),
-							XMHF_EXCEPTION_HANDLER_ADDROF(30),
-							XMHF_EXCEPTION_HANDLER_ADDROF(31),
-};
-
-
-
-//load IDT
-void xmhf_baseplatform_arch_x86_initializeIDT(void){
-
-	asm volatile(
-		"lidt  %0 \r\n"
-		: //no outputs
-		: "m" (_idt)
-		: //no clobber
-	);
-
-}
-
-
-__attribute__(( section(".slab_trampoline") )) static void xmhf_xcphandler_arch_unhandled(u32 vector, struct regs *r){
-	u32 exception_cs, exception_eip, exception_eflags, errorcode=0;
-
+    //grab and skip error code on stack if applicable
+    //TODO: fixme, this won't hold if we call these exceptions with INT xx since there is no error code pushed
+    //in such cases
 	if(vector == CPU_EXCEPTION_DF ||
 		vector == CPU_EXCEPTION_TS ||
 		vector == CPU_EXCEPTION_NP ||
@@ -205,82 +70,74 @@ __attribute__(( section(".slab_trampoline") )) static void xmhf_xcphandler_arch_
 		vector == CPU_EXCEPTION_GP ||
 		vector == CPU_EXCEPTION_PF ||
 		vector == CPU_EXCEPTION_AC){
-		errorcode = *(uint32_t *)(r->esp+0);
-		r->esp += sizeof(uint32_t);	//skip error code on stack if applicable
+		errorcode = *(u64 *)(r->rsp);
+		r->rsp += sizeof(u64);
 	}
 
-	exception_eip = *(uint32_t *)(r->esp+0);
-	exception_cs = *(uint32_t *)(r->esp+sizeof(uint32_t));
-	exception_eflags = *(uint32_t *)(r->esp+(2*sizeof(uint32_t)));
+    //get idt stack frame
+    exframe = (x86idt64_stackframe_t *)r->rsp;
 
-	_XDPRINTF_("\nunhandled exception %x, halting!", vector);
-	_XDPRINTF_("\nstate dump follows...");
-	//things to dump
-	_XDPRINTF_("\nCS:EIP 0x%04x:0x%08x with EFLAGS=0x%08x, errorcode=%08x", (u16)exception_cs, exception_eip, exception_eflags, errorcode);
-	_XDPRINTF_("\nCR0=%08x, CR2=%08x, CR3=%08x, CR4=%08x", read_cr0(), read_cr2(), read_cr3(), read_cr4());
-	_XDPRINTF_("\nEAX=0x%08x EBX=0x%08x ECX=0x%08x EDX=0x%08x", r->eax, r->ebx, r->ecx, r->edx);
-	_XDPRINTF_("\nESI=0x%08x EDI=0x%08x EBP=0x%08x ESP=0x%08x", r->esi, r->edi, r->ebp, r->esp);
-	_XDPRINTF_("\nCS=0x%04x, DS=0x%04x, ES=0x%04x, SS=0x%04x", (u16)read_segreg_cs(), (u16)read_segreg_ds(), (u16)read_segreg_es(), (u16)read_segreg_ss());
-	_XDPRINTF_("\nFS=0x%04x, GS=0x%04x", (u16)read_segreg_fs(), (u16)read_segreg_gs());
-	_XDPRINTF_("\nTR=0x%04x", (u16)read_tr_sel());
+    //dump relevant info
+	_XDPRINTF_("unhandled exception %x, halting!\n", vector);
+	_XDPRINTF_("state dump:\n\n");
+	_XDPRINTF_("errorcode=0x%016llx\n", errorcode);
+	_XDPRINTF_("CS:RIP:RFLAGS = 0x%016llx:0x%016llx:0x%016llx\n", exframe->cs, exframe->rip, exframe->rflags);
+	_XDPRINTF_("SS:RSP = 0x%016llx:0x%016llx\n", exframe->ss, exframe->rsp);
+	_XDPRINTF_("CR0=0x%016llx, CR2=0x%016llx\n", read_cr0(), read_cr2());
+	_XDPRINTF_("CR3=0x%016llx, CR4=0x%016llx\n", read_cr3(), read_cr4());
+	_XDPRINTF_("CS=0x%04x, DS=0x%04x, ES=0x%04x, SS=0x%04x\n", (u16)read_segreg_cs(), (u16)read_segreg_ds(), (u16)read_segreg_es(), (u16)read_segreg_ss());
+	_XDPRINTF_("FS=0x%04x, GS=0x%04x\n", (u16)read_segreg_fs(), (u16)read_segreg_gs());
+	_XDPRINTF_("TR=0x%04x\n", (u16)read_tr_sel());
+	_XDPRINTF_("RAX=0x%016llx, RBX=0%016llx\n", r->rax, r->rbx);
+	_XDPRINTF_("RCX=0x%016llx, RDX=0%016llx\n", r->rcx, r->rdx);
+	_XDPRINTF_("RSI=0x%016llx, RDI=0%016llx\n", r->rsi, r->rdi);
+	_XDPRINTF_("RBP=0x%016llx, RSP=0%016llx\n", r->rbp, r->rsp);
+	_XDPRINTF_("R8=0x%016llx, R9=0%016llx\n", r->r8, r->r9);
+	_XDPRINTF_("R10=0x%016llx, R11=0%016llx\n", r->r10, r->r11);
+	_XDPRINTF_("R12=0x%016llx, R13=0%016llx\n", r->r12, r->r13);
+	_XDPRINTF_("R14=0x%016llx, R15=0%016llx\n", r->r14, r->r15);
 
 	//do a stack dump in the hopes of getting more info.
 	{
-		uint32_t i;
-		uint32_t stack_start = r->esp;
-		_XDPRINTF_("\n-----stack dump (16 entries)-----");
-		for(i=stack_start; i < stack_start+(16*sizeof(uint32_t)); i+=sizeof(uint32_t)){
-			_XDPRINTF_("\nStack(0x%08x) -> 0x%08x", i, *(uint32_t *)i);
+		u64 i;
+		u64 stack_start = r->rsp;
+		_XDPRINTF_("\n-----stack dump (8 entries)-----\n");
+		for(i=stack_start; i < stack_start+(8*sizeof(u64)); i+=sizeof(u64)){
+			_XDPRINTF_("Stack(0x%016llx) -> 0x%016llx\n", i, *(u64 *)i);
 		}
-		_XDPRINTF_("\n-----end------------");
+		_XDPRINTF_("\n-----stack dump end-------------\n");
 	}
 }
 
 //==========================================================================================
 
 //exception handler hub
-__attribute__(( section(".slab_trampoline") )) void xmhf_xcphandler_arch_hub(u32 vector, struct regs *r){
+__attribute__(( section(".slab_trampoline") )) bool xmhf_xcphandler_arch_hub(u64 vector, void *exdata){
+    bool returnfromexcp=false;
+    x86regs64_t *r = (x86regs64_t *)exdata;
 
 	switch(vector){
 			case CPU_EXCEPTION_NMI:{
 				XMHF_SLAB_CALL_P2P(xcapi, XMHF_SLAB_XCEXHUB_INDEX, XMHF_SLAB_XCAPI_INDEX, XMHF_SLAB_XCAPI_FNXCCOREAPIARCHEVENTHANDLERNMIEXCEPTION, XMHF_SLAB_XCAPI_FNXCCOREAPIARCHEVENTHANDLERNMIEXCEPTION_SIZE);
+				returnfromexcp=true;
 				}
 				break;
 
 			case 0x3:{
-					xmhf_xcphandler_arch_unhandled(vector, r);
-					_XDPRINTF_("\n%s: exception 3, returning", __FUNCTION__);
+                xmhf_xcphandler_arch_unhandled(vector, r);
+				_XDPRINTF_("%s: exception 3, returning\n", __FUNCTION__);
+                returnfromexcp=true;
 			}
 			break;
 
 			default:{
 				xmhf_xcphandler_arch_unhandled(vector, r);
 				_XDPRINTF_("\nHalting System!\n");
-				HALT();
+				returnfromexcp=false;
 			}
 	}
+
+    return returnfromexcp;
 }
 
 
-
-//initialize core exception handlers
-void xcexhub_arch_initialize(void){
-	u32 *pexceptionstubs;
-	u32 i;
-
-	_XDPRINTF_("%s: setting up runtime IDT...\n", __FUNCTION__);
-
-	for(i=0; i < EMHF_XCPHANDLER_MAXEXCEPTIONS; i++){
-		idtentry_t *idtentry=(idtentry_t *)((u32)&_idt_start+ (i*8));
-		idtentry->isrLow= (u16)exceptionstubs[i];
-		idtentry->isrHigh= (u16) ( (u32)exceptionstubs[i] >> 16 );
-		idtentry->isrSelector = __CS_CPL0;
-		idtentry->count=0x0;
-		idtentry->type=0xEE;	//32-bit interrupt gate
-								//present=1, DPL=11b, system=0, type=1110b
-	}
-
-	xmhf_baseplatform_arch_x86_initializeIDT();
-
-	_XDPRINTF_("%s: IDT setup done.\n", __FUNCTION__);
-}

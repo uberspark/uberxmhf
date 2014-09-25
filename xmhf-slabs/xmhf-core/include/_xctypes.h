@@ -54,20 +54,17 @@
 #ifndef __ASSEMBLY__
 
 typedef struct {
-		u32 cpuid;				//unique CPU id
-		u32 cpu_index;			//index into g_xc_cpu
-} __attribute__((packed)) xc_cputable_t;
+	bool desc_valid;
+	u64 numdevices;
+    xc_platformdevice_arch_desc_t arch_desc[MAX_PLATFORM_DEVICES];
+} __attribute__((packed)) xc_platformdevice_desc_t;
 
-typedef u8 xc_partition_hptdata_t;
-typedef u8 xc_partition_trapmaskdata_t;
 
 typedef struct {
 		u32 partitionid;			//unique partition id
 		u32 partitiontype;			//primary or secondary
 		u32 numcpus;
-		xc_cputable_t cputable[MAX_PLATFORM_CPUS];
-		xc_partition_hptdata_t hptdata[MAX_PRIMARY_PARTITION_HPTDATA_SIZE] __attribute__((aligned(4096)));
-		xc_partition_trapmaskdata_t trapmaskdata[MAX_PRIMARY_PARTITION_TRAPMASKDATA_SIZE] __attribute__((aligned(4096)));
+		xmhf_cputable_t cputable[MAX_PLATFORM_CPUS];
 } xc_partition_t;
 
 #define XC_PARTITION_PRIMARY		(1)
@@ -81,7 +78,7 @@ typedef struct {
 		u32 cpuid;				//unique CPU id
 		bool is_bsp;			//true if CPU is the boot-strap processor
 		bool is_quiesced;		//true if CPU is quiesced
-		xc_cpuarchdata_t cpuarchdata[MAX_PLATFORM_CPUARCHDATA_SIZE] __attribute__((aligned(4096)));
+		//xc_cpuarchdata_t cpuarchdata[MAX_PLATFORM_CPUARCHDATA_SIZE] __attribute__((aligned(4096)));
 		u32 parentpartition_index;
 } __attribute__ ((packed)) xc_cpu_t;
 
@@ -91,8 +88,25 @@ typedef struct {
 	u32 cpu_index;
 	u32 partition_index;
 } __attribute__ ((packed)) xc_cpupartitiontable_t;
-	
-	
+
+
+//XMHF core api CPU descriptor type
+typedef struct {
+	bool isbsp;
+	u32 cpu_index;
+} cpu_desc_t;
+
+//XMHF core api partition descriptor type
+typedef struct {
+	u32 partition_index;
+	u32 numcpus;
+} partition_desc_t;
+
+//XMHF core api context descriptor type (context = partition + cpu pair)
+typedef struct {
+	partition_desc_t partition_desc;
+	cpu_desc_t cpu_desc;
+} context_desc_t;
 
 
 //revised app parameter block; will replace the above decl. when done
@@ -136,7 +150,7 @@ typedef struct {
 } __attribute__((packed)) APP_PARAM_BLOCK;
 
 
-//hypapp binary header 
+//hypapp binary header
 typedef struct {
   u32 magic;
   u32 addr_hypappfromcore;	//address is hypapp where control is transferred to from the core
@@ -146,11 +160,11 @@ typedef struct {
 } __attribute__((packed)) XMHF_HYPAPP_HEADER;
 
 #define XMHF_HYPAPP_HEADER_MAGIC	0xDEADBEEF
- 
- 
- 
- 
- 
+
+
+
+
+
 #endif //__ASSEMBLY__
 
 

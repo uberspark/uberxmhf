@@ -105,7 +105,7 @@ typedef struct {
     uint32_t  num_logical_procs;
     /* versions >= 3 */
     uint64_t  flags;
-} bios_data_t;
+} __attribute__ ((packed)) bios_data_t;
 
 /*
  * OS/loader to MLE structure
@@ -120,7 +120,7 @@ typedef struct {
     uint32_t          saved_misc_enable_msr;  /* saved prior to SENTER */
                                          /* PO policy data */
     uint8_t           lcp_po_data[MAX_LCP_PO_DATA_SIZE];
-} os_mle_data_t;
+} __attribute__ ((packed)) os_mle_data_t;
 
 /*
  * OS/loader to SINIT structure
@@ -140,7 +140,7 @@ typedef struct {
     txt_caps_t  capabilities;
     /* versions >= 5 */
     uint64_t    efi_rsdt_ptr;
-} os_sinit_data_t;
+} __attribute__ ((packed)) os_sinit_data_t;
 
 /*
  * SINIT to MLE structure
@@ -156,7 +156,7 @@ typedef struct __attribute__ ((packed)) {
     uint64_t  length;
     uint8_t   mem_type;
     uint8_t   reserved[7];
-} sinit_mdr_t;
+} __attribute__ ((packed)) sinit_mdr_t;
 
 #define SHA1_SIZE      20
 typedef uint8_t   sha1_hash_t[SHA1_SIZE];
@@ -179,7 +179,7 @@ typedef struct {
     uint32_t     vtd_dmars_off;
     /* versions >= 8 */
     uint32_t     proc_scrtm_status;
-} sinit_mle_data_t;
+} __attribute__ ((packed)) sinit_mle_data_t;
 
 
 /*
@@ -248,7 +248,7 @@ static inline uint64_t get_os_sinit_data_size(txt_heap_t *heap)
                          get_os_mle_data_size(heap));
     //return xmhf_arch_baseplatform_flat_readu64((u32)(heap + get_bios_data_size(heap) +
     //                     get_os_mle_data_size(heap)));
-    
+
 }
 
 static inline os_sinit_data_t *get_os_sinit_data_start(txt_heap_t *heap)

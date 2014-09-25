@@ -44,10 +44,10 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-/* 
- * arch. specific data structures that are mapped into a slab 
+/*
+ * arch. specific data structures that are mapped into a slab
  * memory view
- * 
+ *
  * author: amit vasudevan (amitvasudevan@acm.org)
  */
 
@@ -57,33 +57,60 @@
 //#include <xc-x86vmx.h>
 
 
+//*
 // GDT
 __attribute__(( aligned(16) )) __attribute__(( section(".section_archds") )) u64 _gdt_start[]  = {
 	0x0000000000000000ULL,	//NULL descriptor
-	0x00cf9b000000ffffULL,	//CPL-0 code descriptor (CS)
-	0x00cf93000000ffffULL,	//CPL-0 data descriptor (DS/SS/ES/FS/GS)
-	0x00cffb000000ffffULL,	//CPL-3 code descriptor (CS)
-	0x00cff3000000ffffULL,	//CPL-3 data descriptor (DS/SS/ES/FS/GS)
-	0x0000000000000000ULL	
+	0x00af9b000000ffffULL,	//CPL-0 64-bit code descriptor (CS64)
+	0x00af93000000ffffULL,	//CPL-0 64-bit data descriptor (DS/SS/ES/FS/GS)
+	0x0000000000000000ULL,	//TODO: CPL-3 64-bit code descriptor (CS64)
+	0x0000000000000000ULL,	//TODO: CPL-3 64-bit data descriptor (DS/SS/ES/FS/GS)
+	0x0000000000000000ULL,  //TSS descriptor
+	0x0000000000000000ULL,
 };
 
+//*
 // GDT descriptor
 __attribute__(( aligned(16) )) __attribute__(( section(".section_archds") )) arch_x86_gdtdesc_t _gdt  = {
 	.size=sizeof(_gdt_start)-1,
-	.base=(u32)&_gdt_start,
+	.base=(u64)&_gdt_start,
 };
 
 // TSS
 __attribute__(( aligned(4096) )) __attribute__(( section(".section_archds") )) u8 _tss[PAGE_SIZE_4K] = { 0 };
 
 // IDT
-__attribute__(( aligned(16) )) __attribute__(( section(".section_archds") )) u64 _idt_start[EMHF_XCPHANDLER_MAXEXCEPTIONS] ;
+__attribute__(( aligned(16) )) __attribute__(( section(".section_archds") )) idtentry_t _idt_start[EMHF_XCPHANDLER_MAXEXCEPTIONS] ;
 
 // IDT descriptor
 __attribute__(( aligned(16) )) __attribute__(( section(".section_archds") )) arch_x86_idtdesc_t _idt = {
 	.size=sizeof(_idt_start)-1,
-	.base=(u32)&_idt_start,
+	.base=(u64)&_idt_start,
 };
+
+//////
+// initialization phase CPU stacks
+
+__attribute__(( aligned(4096) )) __attribute__(( section(".section_archds") )) u8 _init_cpustacks[MAX_PLATFORM_CPUS][MAX_PLATFORM_CPUSTACK_SIZE];
+
+//////
+// runtime exception CPU stacks
+
+__attribute__(( aligned(4096) )) __attribute__(( section(".section_archds") )) u8 _rtmxcp_cpustacks[MAX_PLATFORM_CPUS][MAX_PLATFORM_CPUSTACK_SIZE];
+
+//////
+// runtime exception bootstrap save area
+__attribute__(( aligned(4096) )) __attribute__(( section(".section_archds") )) u64 _rtmxcp_bssavearea[512] = { 1ULL };
+
+//////
+// CPU table: mapping from unique CPU id --> 0 based index (into CPU stack)
+
+__attribute__(( section(".section_archds") )) xmhf_cputable_t _cputable[MAX_PLATFORM_CPUS];
+
+// count of platform CPUs
+__attribute__(( section(".section_archds") )) u32 _totalcpus = 0;
+
+
 
 //libxmhfdebug
 __attribute__(( section(".libxmhfdebugdata") )) u32 libxmhfdebug_lock = 1;

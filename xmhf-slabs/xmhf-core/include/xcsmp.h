@@ -54,13 +54,14 @@
 #ifndef __ASSEMBLY__
 
 slab_retval_t xcsmp_interface(u32 src_slabid, u32 dst_slabid, u32 fn_id, u32 fn_paramsize, ...);
+void xcsmp_smpstart(u32 cpuid, bool isbsp);
 
 //----------------------------------------------------------------------
 //ARCH. BACKENDS
 //----------------------------------------------------------------------
 bool xcsmp_arch_dmaprot_reinitialize(void);
 bool xcsmp_arch_smpinitialize(void);
-
+void xcsmp_arch_initializecpu(u32 cpuid, bool isbsp);
 
 #endif //__ASSEMBLY__
 

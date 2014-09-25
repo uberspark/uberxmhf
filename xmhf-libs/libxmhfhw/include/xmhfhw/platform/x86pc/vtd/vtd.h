@@ -51,16 +51,16 @@
 #define __VTD_H__
 
 #define VTD_DMAR_SIGNATURE  (0x52414D44) //"DMAR"
-#define VTD_MAX_DRHD   8		//maximum number of DMAR h/w units   
+#define VTD_MAX_DRHD   8		//maximum number of DMAR h/w units
 
 //VT-d register offsets (sec. 10.4, Intel_VT_for_Direct_IO)
 #define VTD_VER_REG_OFF 		0x000				//arch. version (32-bit)
-#define VTD_CAP_REG_OFF 		0x008				//h/w capabilities (64-bit)				
+#define VTD_CAP_REG_OFF 		0x008				//h/w capabilities (64-bit)
 #define VTD_ECAP_REG_OFF  	0x010				//h/w extended capabilities (64-bit)
 #define VTD_GCMD_REG_OFF  	0x018				//global command (32-bit)
 #define VTD_GSTS_REG_OFF  	0x01C				//global status (32-bit)
 #define VTD_RTADDR_REG_OFF  0x020				//root-entry table address (64-bit)
-#define VTD_CCMD_REG_OFF  	0x028				//manage context-entry cache (64-bit) 
+#define VTD_CCMD_REG_OFF  	0x028				//manage context-entry cache (64-bit)
 #define VTD_FSTS_REG_OFF  	0x034				//report fault/error status (32-bit)
 #define VTD_FECTL_REG_OFF 	0x038				//interrupt control (32-bit)
 
@@ -93,6 +93,13 @@
 #define VTD_WRITE						0x2
 #define VTD_SUPERPAGE				(0x1UL << 7)
 
+//vt-d page table page walk lengths
+#define VTD_PAGEWALK_3LEVEL     (0x3)
+#define VTD_PAGEWALK_4LEVEL     (0x4)
+#define VTD_PAGEWALK_NONE       (0x0)
+
+#define VTD_RET_MAXPTRS         (256)
+#define VTD_CET_MAXPTRS         (256)
 
 #ifndef __ASSEMBLY__
 
@@ -109,7 +116,7 @@ typedef struct{
 	u32 creatorrevision;
   u8 hostaddresswidth;
   u8 flags;
-  u8 rsvdz[10];    
+  u8 rsvdz[10];
 }__attribute__ ((packed)) VTD_DMAR;
 
 //VT-d DRHD structure
@@ -123,6 +130,116 @@ typedef struct{
 }__attribute__ ((packed)) VTD_DRHD;
 
 typedef u32 vtd_drhd_handle_t;
+
+
+typedef union {
+    u64 qwords[2];
+    struct {
+        u64 p : 1;
+        u64 rsv0 : 11;
+        u64 ctp : 52;
+        u64 rsv1 : 64;
+    }fields;
+} __attribute__((packed)) vtd_ret_entry_t;
+
+typedef union {
+    u64 qwords[2];
+    struct {
+        u64 p : 1;
+        u64 fpd : 1;
+        u64 t : 2;
+        u64 rsv0 : 8;
+        u64 slptptr : 52;
+        u64 aw : 3;
+        u64 ign0 : 4;
+        u64 rsv1 : 1;
+        u64 did : 16;
+        u64 rsv2 : 40;
+    }fields;
+} __attribute__((packed)) vtd_cet_entry_t;
+
+
+typedef union {
+    u64 entry;
+    struct {
+        u64 r : 1;
+        u64 w : 1;
+        u64 x : 1;
+        u64 ign0 : 4;
+        u64 rsv0 : 1;
+        u64 ign1 : 3;
+        u64 rsv1 : 1;
+        u64 slpdpt : 40;
+        u64 ign2 : 10;
+        u64 rsv2 : 1;
+        u64 ign3 : 1;
+    }fields;
+}__attribute__((packed)) vtd_pml4te_t;
+
+typedef union {
+    u64 entry;
+    struct {
+        u64 r : 1;
+        u64 w : 1;
+        u64 x : 1;
+        u64 emt : 3;
+        u64 pat : 1;
+        u64 big : 1;
+        u64 ign0 : 3;
+        u64 snp : 1;
+        u64 slpdt : 40;
+        u64 ign1 : 10;
+        u64 tm : 1;
+        u64 ign2 : 1;
+    }fields;
+}__attribute__((packed)) vtd_pdpte_t;
+
+typedef union {
+    u64 entry;
+    struct {
+        u64 r : 1;
+        u64 w : 1;
+        u64 x : 1;
+        u64 emt : 3;
+        u64 pat : 1;
+        u64 big : 1;
+        u64 ign0 : 3;
+        u64 snp : 1;
+        u64 slpt : 40;
+        u64 ign1 : 10;
+        u64 tm : 1;
+        u64 ign2 : 1;
+    }fields;
+}__attribute__((packed)) vtd_pdte_t;
+
+typedef union {
+    u64 entry;
+    struct {
+        u64 r : 1;
+        u64 w : 1;
+        u64 x : 1;
+        u64 emt : 3;
+        u64 pat : 1;
+        u64 ign0 : 4;
+        u64 snp : 1;
+        u64 pageaddr : 40;
+        u64 ign1 : 10;
+        u64 tm : 1;
+        u64 ign2 : 1;
+    }fields;
+}__attribute__((packed)) vtd_pte_t;
+
+typedef struct {
+    vtd_pml4te_t pml4t[PAE_MAXPTRS_PER_PML4T];
+    vtd_pdpte_t pdpt[PAE_MAXPTRS_PER_PDPT];
+    vtd_pdte_t pdt[PAE_PTRS_PER_PDPT][PAE_PTRS_PER_PDT];
+    vtd_pte_t pt[PAE_PTRS_PER_PDPT][PAE_PTRS_PER_PDT][PAE_PTRS_PER_PT];
+}__attribute__((packed)) vtd_slpgtbl_t;
+
+typedef struct {
+    u64 addr_vtd_pml4t;
+    u64 addr_vtd_pdpt;
+}__attribute__((packed)) vtd_slpgtbl_handle_t;
 
 //------------------------------------------------------------------------------
 //VT-d register structure definitions
@@ -177,7 +294,7 @@ typedef union {
     u32 ir:1;					//interrupt remapping support
     u32 eim:1;				//extended interrupt mode
     u32 ch:1;					//caching hints
-    u32 pt:1;					//pass through 
+    u32 pt:1;					//pass through
     u32 sc:1;					//snoop control
     u32 iro:10;				//IOTLB register offset
     u32 rsvdz0: 2;		//reserved
@@ -218,7 +335,7 @@ typedef union {
     u32 afls:1;				//advanced fault logging status
     u32 fls:1;				//fault log status
     u32 rtps:1;				//root table pointer status
-    u32 tes:1;				//translation enable status 
+    u32 tes:1;				//translation enable status
   } bits;
 } __attribute__ ((packed)) VTD_GSTS_REG;
 
@@ -243,7 +360,7 @@ typedef union {
     u32 rsvdz0: 25;		//reserved
     u32 caig:2;				//context invalidation actual granularity
     u32 cirg:2;				//context invalidation request granularity
-    u32 icc:1;				//invalidate context-cache 
+    u32 icc:1;				//invalidate context-cache
   } bits;
 } __attribute__ ((packed)) VTD_CCMD_REG;
 
@@ -259,7 +376,7 @@ typedef union {
     u32 rsvdz1: 7;		//reserved
     u32 iaig: 3;			//IOTLB actual invalidation granularity
     u32 iirg: 3;			//IOTLB request invalidation granularity
-    u32 ivt: 1;				//invalidate IOTLB 
+    u32 ivt: 1;				//invalidate IOTLB
   } bits;
 } __attribute__ ((packed)) VTD_IOTLB_REG;
 
@@ -285,7 +402,7 @@ typedef union {
     u32 ppf:1;				//primary pending fault
     u32 afo:1;				//advanced fault overflow
     u32 apf:1;				//advanced pending fault
-    u32 iqe:1;				//invalidation queue error				
+    u32 iqe:1;				//invalidation queue error
     u32 ice:1;				//invalidation completion error
     u32 ite:1;				//invalidation time-out error
     u32 rsvdz0: 1;		//reserved
@@ -342,15 +459,17 @@ typedef struct {
 bool xmhfhw_platform_x86pc_vtd_scanfor_drhd_units(vtd_drhd_handle_t *maxhandle, u32 *dmar_phys_addr_var);
 bool xmhfhw_platform_x86pc_vtd_drhd_initialize(vtd_drhd_handle_t drhd_handle);
 bool xmhfhw_platform_x86pc_vtd_drhd_invalidatecaches(vtd_drhd_handle_t drhd_handle);
-bool xmhfhw_platform_x86pc_vtd_drhd_set_root_entry_table(vtd_drhd_handle_t drhd_handle, u8 *retbuffer);
+bool xmhfhw_platform_x86pc_vtd_drhd_set_root_entry_table(vtd_drhd_handle_t drhd_handle, u64 ret_addr);
 void xmhfhw_platform_x86pc_vtd_drhd_enable_translation(vtd_drhd_handle_t drhd_handle);
 void xmhfhw_platform_x86pc_vtd_drhd_disable_translation(vtd_drhd_handle_t drhd_handle);
 void xmhfhw_platform_x86pc_vtd_drhd_enable_pmr(vtd_drhd_handle_t drhd_handle);
 void xmhfhw_platform_x86pc_vtd_drhd_disable_pmr(vtd_drhd_handle_t drhd_handle);
 void xmhfhw_platform_x86pc_vtd_drhd_set_plm_base_and_limit(vtd_drhd_handle_t drhd_handle, u32 base, u32 limit);
 void xmhfhw_platform_x86pc_vtd_drhd_set_phm_base_and_limit(vtd_drhd_handle_t drhd_handle, u64 base, u64 limit);
+u64 xmhfhw_platform_x86pc_vtd_drhd_reg_read(vtd_drhd_handle_t drhd_handle, u32 reg);
+void xmhfhw_platform_x86pc_vtd_drhd_reg_write(vtd_drhd_handle_t drhd_handle, u32 reg, u64 value);
 
-		
+
 #endif //__ASSEMBLY__
 
 #endif //__VTD_H__
