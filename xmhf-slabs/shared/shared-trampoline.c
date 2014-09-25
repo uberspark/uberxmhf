@@ -44,9 +44,9 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-/* 
+/*
  * slab trampoline that is mapped into every slab memory view
- * 
+ *
  * author: amit vasudevan (amitvasudevan@acm.org)
  */
 
@@ -54,7 +54,7 @@
 #include <xmhf-core.h>
 #include <xmhf-debug.h>
 
-// esi = 32-bit address of input parameter base
+/*// esi = 32-bit address of input parameter base
 // edi = 32-bit address of return from slab call
 // ebp = 32-bit address of destination slab entry point
 // ecx = top 16-bits = size of result dwords
@@ -64,8 +64,8 @@
 // edx = 32-bit dst slab macmid
 
 __attribute__((naked)) __attribute (( section(".slabtrampoline") )) void _slab_trampoline(void){
-	
-	asm volatile(	
+
+	asm volatile(
 			//"int $0x03 \r\n"
 
 			"movl %%edx, %%cr3 \r\n"				//load callee MAC
@@ -73,22 +73,22 @@ __attribute__((naked)) __attribute (( section(".slabtrampoline") )) void _slab_t
 			"pushl %%eax \r\n"						//save caller MAC
 			"pushl %%edi \r\n" 						//save caller return address
 			"pushl %%ecx \r\n"						//save caller param/ret count
-			
+
 			"movl %%ebp, %%eax \r\n"				//eax= callee entry point
 
 			//"int $0x03 \r\n"
-											
+
 			"xorl %%ebp, %%ebp \r\n"				//zero out %ebp so we can use it to keep track of stack frame
-			
+
 			"xorl %%edx, %%edx \r\n"				//edx=0
 			"movw %%cx, %%dx \r\n"					//edx=parameter dwords
 			"shr $16, %%ecx \r\n"					//ecx=result dwords
-			
+
 			//"int $0x03 \r\n"
-						
+
 			"cmpl $0, %%ecx \r\n"					//check if we are supporting aggregate return type for this slab call
 			"je 1f \r\n"							//if no, then skip aggregate return type stack frame adjustment
-			
+
 			"movl %%ecx, %%ebp \r\n"				//ebp=result dwords
 			"movl %%esp, %%ecx \r\n"				//ecx=top of stack
 			"subl %%ebp, %%ecx \r\n"				//ecx=top of stack (32-bit address of aggregate return type bufffer)
@@ -97,52 +97,52 @@ __attribute__((naked)) __attribute (( section(".slabtrampoline") )) void _slab_t
 			"subl $4, %%edx \r\n"					//reduce parameter size by 1 dword to account for the aggregate return type buffer pointer
 
 			//"int $0x03 \r\n"
-			
-			"1:\r\n"						
+
+			"1:\r\n"
 			"addl %%edx, %%ebp \r\n"				//ebp=parameter + result dwords
 			"subl %%ebp, %%esp 	\r\n"				//adjust top of stack to accomodate input parameters and aggregate return type buffer (if applicable)
 			"movl %%esp, %%edi \r\n"				//edi=top of stack (with room made for input parameters)
-			
+
 			"xchg %%ecx, %%edx \r\n"
 			"cld \r\n"								//clear direction flag to copy forward
 			"rep movsb \r\n"						//copy input parameters (at esi) to top of stack
 			"xchg %%ecx, %%edx \r\n"
-			
+
 			//"int $0x03 \r\n"
-			
+
 			"cmpl $0, %%ecx \r\n"					//if we have aggregate return type then we need to push the aggregate return type buffer address
 			"je 1f \r\n"							//if not, then invoke the callee slab entry point
 			"pushl %%ecx \r\n"						//push our new return type buffer address that we have just made space for in our new call frame
 			"movl %%ecx, %%esi \r\n"				//esi= 32-bit address of aggregate return type buffer which we will use to copy back return value
-											
+
 			"1: call *%%eax \r\n"					//invoke callee slab entry point
-											
+
 			"addl %%ebp, %%esp \r\n"				//discard callee stack frame that we created
-			
+
 			"popl %%ecx \r\n"						//ecx = caller param/return size
 			"popl %%ebp \r\n"						//ebp = caller return address
 			"popl %%ebx \r\n"						//ebx = caller MAC
-		
+
 			"movl %%ebx, %%cr3 \r\n"				//load caller MAC
-			
+
 			"popl %%edi \r\n"						//edi = caller parameter base address
 			"movl (%%edi), %%edi \r\n"				//edi = caller aggregate return type buffer
-			
+
 			"shr $16, %%ecx \r\n"					//ecx = result size
-			"cld \r\n"						
+			"cld \r\n"
 			"rep movsb \r\n"						//store aggregate return value (if any)
-			
+
 			"jmpl *%%ebp \r\n"						//go back to caller
-		: 
-		: 
-		:	 							
+		:
+		:
+		:
 	);
-	
-	
+
+
 }
 
 //--------------------------------------------------------------------
-
+*/
 
 
 
@@ -157,7 +157,7 @@ __attribute__((naked)) __attribute (( section(".slabtrampoline") )) void _slab_t
 
 __attribute__((fastcall)) __attribute (( section(".slabtrampoline") )) void _slab_trampolinenew(slab_trampoline_frame_t *tframe, u32 framesize_op){
 	u32 aggrettypeptr;
-	
+
 	//_XDPRINTF_("%s: got control\n", __FUNCTION__);
 	//_XDPRINTF_(" returnaddress=%08x, framesize_op=%08x, src_slabid=%u, dst_slabid=%u, fn_id=%u\n",
 	//	tframe->returnaddress, framesize_op, tframe->src_slabid, tframe->dst_slabid, tframe->fn_id);
@@ -167,36 +167,36 @@ __attribute__((fastcall)) __attribute (( section(".slabtrampoline") )) void _sla
 	//		u32 *p, i;
 	//		p = (u32 *)&tframe->params;
 	//		_XDPRINTF_("%s: %u, %u, %u, %u\n", __FUNCTION__, p[0], p[1], p[2], p[3]);
-	//	
+	//
 	//}
-	
 
+/*
 	//switch to destination slab MAC
-	asm volatile(	
-		"movl %0, %%eax \r\n"
+	asm volatile(
+    	"movl %0, %%eax \r\n"
 		"movl %%eax, %%cr3 \r\n"
-		: 
+		:
 		: "m" (_slab_table[tframe->dst_slabid].slab_macmid)
-		: "eax"	 							
+		: "eax"
 	);
-
+*/
 	//_XDPRINTF_("%s: dst CR3 loaded, proceeding with call, cr3=%08x, EP=%08x\n", __FUNCTION__, read_cr3(), _slab_table[tframe->dst_slabid].entry_cr3_new);
-	
-	
+
+/*
 	//call destination slab entry point
-	asm volatile(	
-		"movl %1, %%esi \r\n"
+	asm volatile(
+    	"movl %1, %%esi \r\n"
 		"movl %2, %%ecx \r\n"
 		"movl %3, %%eax \r\n"
 		"call *%%eax \r\n"
 		"movl %%esi, %0 \r\n"
 		: "=S" (aggrettypeptr)
 		: "g" (&tframe->src_slabid), "g" (framesize_op), "m" (_slab_table[tframe->dst_slabid].entry_cr3_new)
-		: "esi", "ecx"	 							
+		: "esi", "ecx"
 	);
-
+*/
 	//{
-	//	
+	//
 	//	slab_retval_t *r;
 	//	_XDPRINTF_("%s: aggrettypeptr=%08x\n", __FUNCTION__, aggrettypeptr);
 	//	r = (slab_retval_t *)aggrettypeptr;
@@ -204,32 +204,32 @@ __attribute__((fastcall)) __attribute (( section(".slabtrampoline") )) void _sla
 	//}
 
 	//_XDPRINTF_("%s: came back from dst call\n", __FUNCTION__);
-
+/*
 	//switch back to source slab MAC
-	asm volatile(	
+	asm volatile(
 		"movl %0, %%eax \r\n"
 		"movl %%eax, %%cr3 \r\n"
-		: 
+		:
 		: "m" (_slab_table[tframe->src_slabid].slab_macmid)
-		: "eax"	 							
+		: "eax"
 	);
-	
+*/
 	//_XDPRINTF_("%s: going back to src slab, cr3 reloaded to %08x\n", __FUNCTION__, read_cr3());
 
 
-	//return back to source slab
-	asm volatile(	
+/*	//return back to source slab
+	asm volatile(
 		"movl %0, %%esi \r\n"
 		"movl %1, %%eax \r\n"
-		"movl %%ebp, %%esp \r\n"		
+		"movl %%ebp, %%esp \r\n"
 		"movl (%%esp), %%ebp \r\n"
-		"addl $4, %%esp \r\n"	
+		"addl $4, %%esp \r\n"
 		"jmpl *%%eax \r\n"
-		: 
+		:
 		: "m" (aggrettypeptr), "m" (tframe->returnaddress)
-		:  							
+		:
 	);
-	
+*/
 
 	//_XDPRINTF_("%s: Halting, aggrettypeptr=%08x!\n", __FUNCTION__, aggrettypeptr);
 	//HALT();

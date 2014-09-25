@@ -73,5 +73,5 @@ void xc_api_trapmask_clear(context_desc_t context_desc, xc_hypapp_arch_param_t t
 
 
 ///////
-XMHF_SLAB("xcapitrapmask")
+XMHF_SLAB_DEF(xcapitrapmask)
 

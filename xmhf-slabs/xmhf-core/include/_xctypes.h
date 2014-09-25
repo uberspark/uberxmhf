@@ -53,11 +53,6 @@
 
 #ifndef __ASSEMBLY__
 
-typedef struct {
-	bool desc_valid;
-	u64 numdevices;
-    xc_platformdevice_arch_desc_t arch_desc[MAX_PLATFORM_DEVICES];
-} __attribute__((packed)) xc_platformdevice_desc_t;
 
 
 typedef struct {
@@ -90,7 +85,7 @@ typedef struct {
 } __attribute__ ((packed)) xc_cpupartitiontable_t;
 
 
-//XMHF core api CPU descriptor type
+/*//XMHF core api CPU descriptor type
 typedef struct {
 	bool isbsp;
 	u32 cpu_index;
@@ -106,7 +101,7 @@ typedef struct {
 typedef struct {
 	partition_desc_t partition_desc;
 	cpu_desc_t cpu_desc;
-} context_desc_t;
+} context_desc_t;*/
 
 
 //revised app parameter block; will replace the above decl. when done

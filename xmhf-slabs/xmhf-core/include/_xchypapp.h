@@ -50,6 +50,8 @@
 #ifndef __XMHF_HYPAPP_H__
 #define __XMHF_HYPAPP_H__
 
+#ifndef __ASSEMBLY__
+
 //hypapp sub-interface ids
 #define XMHF_SLAB_HYPAPP_FNINITIALIZATION					1
 #define XMHF_SLAB_HYPAPP_FNINITIALIZATION_SIZE				(sizeof(context_desc_t)+sizeof(hypapp_env_block_t))
@@ -66,6 +68,8 @@
 #define XMHF_SLAB_HYPAPP_FNSHUTDOWN							5
 #define XMHF_SLAB_HYPAPP_FNSHUTDOWN_SIZE					(sizeof(context_desc_t))
 
+#define XMHF_SLAB_HYPAPP_FNHANDLEQUIESCE					6
+#define XMHF_SLAB_HYPAPP_FNHANDLEQUIESCE_SIZE				(sizeof(context_desc_t))
 
 //generic catch-all app return codes
 #define APP_SUCCESS     		(0x1)
@@ -77,6 +81,13 @@
 #define APP_INIT_SUCCESS        0x0
 #define APP_INIT_FAIL           0xFF
 
-#endif	//__ASSEMBLY__
+u32 xmhf_hypapp_initialization(context_desc_t context_desc, hypapp_env_block_t hypappenvb);
+u32 xmhf_hypapp_handlehypercall(context_desc_t context_desc, u64 hypercall_id, u64 hypercall_param);
+u32 xmhf_hypapp_handleintercept_hptfault(context_desc_t context_desc, u64 gpa, u64 gva, u64 error_code);
+u32 xmhf_hypapp_handleintercept_trap(context_desc_t context_desc, xc_hypapp_arch_param_t xc_hypapp_arch_param);
+void xmhf_hypapp_handleshutdown(context_desc_t context_desc);
+void xmhf_hypapp_handlequiesce(context_desc_t context_desc);
+
+#endif //__ASSEMBLY__
 
 #endif	// __XMHF_HYPAPP_H__

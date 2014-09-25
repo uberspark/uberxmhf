@@ -927,7 +927,7 @@ static u32 _xcprimeon_slab_populate_pagetables(u32 slab_index){
 		u64 default_flags = (u64)(_PAGE_PRESENT);
 
         for(i=0; i < PAE_PTRS_PER_PML4T; i++)
-            _pml4t[i] = pae_make_pml4e(hva2spa(&_pdpt), default_flags);
+            _slab_pagetables[slab_index].pml4t[i] = pae_make_pml4e(hva2spa(&_slab_pagetables[slab_index].pdpt), default_flags);
 
 		for(i=0; i < PAE_PTRS_PER_PDPT; i++)
 			_slab_pagetables[slab_index].pdpt[i] = pae_make_pdpe(hva2spa(_slab_pagetables[slab_index].pdt[i]), default_flags);
@@ -945,7 +945,7 @@ static u32 _xcprimeon_slab_populate_pagetables(u32 slab_index){
 			}
 		}
 
-		return (u32)_pml4t;
+		return (u32)_slab_pagetables[slab_index].pml4t;
 }
 
 
@@ -1132,7 +1132,7 @@ void xcprimeon_arch_relinquish_control(void){
 					"addl %4, %%eax \r\n"				    // eax = &_cpustack + (sizeof(_cpustack[0]) * eax) + sizeof(_cpustack[0])*/
 					"movl %%eax, %%esp \r\n"				// esp = top of stack for the cpu
 
-					"jmp xcsmp_entry \r\n"
+					"jmp xcsmp_interface \r\n"
 					:
 					:   "i" (X86SMP_LAPIC_ID_MEMORYADDRESS), "m" (_totalcpus), "i" (&_cputable),
                         "i" (sizeof(xmhf_cputable_t)), "i" (&_init_cpustacks), "i" (sizeof(_init_cpustacks[0]))

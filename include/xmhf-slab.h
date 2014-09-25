@@ -57,18 +57,32 @@
 #define XMHF_SLAB_XCPRIMEON_INDEX			(0)
 #define XMHF_SLAB_TESTSLAB1_INDEX			(1)
 #define XMHF_SLAB_TESTSLAB2_INDEX			(2)
-#define XMHF_SLAB_XCSMP_INDEX				(3)
-#define XMHF_SLAB_XCRICHGUEST_INDEX			(4)
-#define XMHF_SLAB_XCIHUB_INDEX				(5)
-#define XMHF_SLAB_XCAPI_INDEX				(6)
-#define XMHF_SLAB_XCEXHUB_INDEX				(7)
+#define XMHF_SLAB_XCEXHUB_INDEX				(3)
+#define XMHF_SLAB_XCSMP_INDEX				(4)
+#define XMHF_SLAB_XCDEV_INDEX               (5)
+#define XMHF_SLAB_XCRICHGUEST_INDEX			(6)
+#define XMHF_SLAB_XCIHUB_INDEX				(7)
+
+#define XMHF_SLAB_XCAPIPLATFORM_INDEX       (8)
+#define XMHF_SLAB_XCAPIHPT_INDEX            (9)
+#define XMHF_SLAB_XCAPICPUSTATE_INDEX       (10)
+#define XMHF_SLAB_XCAPITRAPMASK_INDEX       (11)
+#define XMHF_SLAB_XCAPIPARTITION_INDEX      (12)
+
+#define XMHF_SLAB_XCAPI_INDEX               (13)
 
 //hypapp slab indices currently allow for only one hypapp to be linked in
 //TODO: add support for multiple hypapps
-#define XMHF_SLAB_XHHYPERDEP_INDEX			(8)
-#define XMHF_SLAB_XHHELLOWORLD_INDEX		(8)
+#define XMHF_SLAB_XHHYPERDEP_INDEX			(13)
+#define XMHF_SLAB_XHHELLOWORLD_INDEX		(13)
 
 #ifndef __ASSEMBLY__
+
+typedef struct {
+	bool desc_valid;
+	u64 numdevices;
+    xc_platformdevice_arch_desc_t arch_desc[MAX_PLATFORM_DEVICES];
+} __attribute__((packed)) xc_platformdevice_desc_t;
 
 //slab interface aggregate return type
 typedef union {
@@ -80,6 +94,7 @@ typedef union {
 		struct regs retval_regs;
 		context_desc_t retval_context_desc;
 		xc_hypapp_arch_param_t retval_xc_hypapp_arch_param;
+        xc_platformdevice_desc_t retval_xc_platformdevice_desc;
 } slab_retval_t;
 
 extern __attribute__(( section(".sharedro_xcbootinfoptr") )) XMHF_BOOTINFO *xcbootinfo;
@@ -94,7 +109,7 @@ typedef struct {
 	u8 params[1];
 } __attribute__((packed)) slab_trampoline_frame_t;
 
-
+/*
 __attribute__ ((section(".slab_trampoline"))) __attribute__((naked)) __attribute__ ((noinline)) static inline slab_retval_t __xmhf_impslab_p2p(u32 src_slabid, u32 dst_slabid, u32 iface_subid, u32 iface_subparamsize, ...){
 	asm volatile(
 						"pushl %%ebp \r\n"
@@ -184,7 +199,43 @@ __attribute__ ((section(".slab_trampoline"))) __attribute__((naked)) __attribute
 			:								\
 		);									\
 }
+*/
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+__attribute__ ((section(".slab_trampoline"))) __attribute__((naked)) __attribute__ ((noinline)) static inline slab_retval_t __xmhf_impslab_p2p(u32 src_slabid, u32 dst_slabid, u32 iface_subid, u32 iface_subparamsize, ...){
+
+}
+
+//privilege-to-privilege (P2P) slab call macro
+#define XMHF_SLAB_CALL_P2P(slab_name, src_slabid, dst_slabid, iface_subid, ...) __xmhf_impslab_p2p(src_slabid, dst_slabid, iface_subid, __VA_ARGS__)
+
+#define XMHF_SLAB_DEF(slab_name)	\
+	__attribute__ ((section(".stack"))) u8 slab_name##_slab_stack[XMHF_SLAB_STACKSIZE];	\
+																				\
+	__attribute__((naked)) __attribute__ ((section(".slab_entrystubnew"))) __attribute__((align(1))) void _interfacestub_##slab_name(void){	\
+}
+
+#define XMHF_SLAB_DEF_BARE(slab_name)	\
+	__attribute__ ((section(".stack"))) u8 slab_name##_slab_stack[XMHF_SLAB_STACKSIZE];	\
+																				\
+	__attribute__((naked)) __attribute__ ((section(".slab_entrystubnew"))) __attribute__((align(1))) void _interfacestub_##slab_name(void){	\
+}
+
+#define XMHF_SLAB_CALL(x)   x
 
 #endif //__ASSEMBLY__
 

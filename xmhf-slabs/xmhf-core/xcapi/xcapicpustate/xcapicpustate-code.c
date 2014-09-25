@@ -80,5 +80,5 @@ xc_hypapp_arch_param_t xc_api_cpustate_get(context_desc_t context_desc, u64 oper
 
 
 ///////
-XMHF_SLAB("xcapicpustate")
+XMHF_SLAB_DEF(xcapicpustate)
 

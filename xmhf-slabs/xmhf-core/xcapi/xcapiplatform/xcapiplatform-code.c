@@ -86,5 +86,5 @@ void xc_api_platform_quiescecpus_in_partition(context_desc_t context_desc){
 
 
 ///////
-XMHF_SLAB("xcapiplatform")
+XMHF_SLAB_DEF(xcapiplatform)
 
