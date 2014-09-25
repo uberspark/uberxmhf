@@ -56,6 +56,12 @@
 #define	XMHF_SLAB_XCRICHGUEST_FNGUESTMEMORYREPORTING			2
 #define	XMHF_SLAB_XCRICHGUEST_FNGUESTMEMORYREPORTING_SIZE		(sizeof(context_desc_t)+sizeof(struct regs))
 
+#define XMHF_SLAB_XCRICHGUEST_FNADDCPU                          3
+#define XMHF_SLAB_XCRICHGUEST_FNADDCPU_SIZE                     (sizeof(u32)+sizeof(u32)+sizeof(bool))
+
+#define XMHF_SLAB_XCRICHGUEST_FNINITIALIZE                      4
+#define XMHF_SLAB_XCRICHGUEST_FNINITIALIZE_SIZE                     (sizeof(u32))
+
 #ifndef __ASSEMBLY__
 
 slab_retval_t xcrichguest_interface(u32 src_slabid, u32 dst_slabid, u32 fn_id, u32 fn_paramsize, ...);

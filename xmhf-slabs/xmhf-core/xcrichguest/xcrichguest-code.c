@@ -64,7 +64,7 @@ slab_retval_t xcrichguest_interface(u32 src_slabid, u32 dst_slabid, u32 fn_id, u
 	_XDPRINTF_("%s: Got control: src_slabid=%u, dst_slabid=%u, fn_id=%u, fn_paramsize=%u\n", __FUNCTION__, src_slabid, dst_slabid, fn_id, fn_paramsize);
 
 	switch(fn_id){
-			case XMHF_SLAB_XCRICHGUEST_FNENTRY:{
+			/*case XMHF_SLAB_XCRICHGUEST_FNENTRY:{
 				u32 cpuid;
 				bool is_bsp;
 				va_start(args, fn_paramsize);
@@ -73,7 +73,7 @@ slab_retval_t xcrichguest_interface(u32 src_slabid, u32 dst_slabid, u32 fn_id, u
 				srval.retval_bool = xcrichguest_entry(cpuid, is_bsp);
 				va_end(args);
 			}
-			break;
+			break;*/
 
 			case XMHF_SLAB_XCRICHGUEST_FNGUESTMEMORYREPORTING:{
 				context_desc_t context_desc;

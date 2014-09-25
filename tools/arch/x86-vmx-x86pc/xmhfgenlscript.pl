@@ -75,6 +75,8 @@ print "\n		*(.rodata)";
 print "\n		*(.rodata.str1.1)";
 print "\n		*(.bss)";
 print "\n		*(.data)";
+print "\n		*(.comment)";
+print "\n		*(.eh_frame)";
 print "\n	} >all=0x0000";
 print "\n";
 print "\n	/* this is to cause the link to fail if there is";

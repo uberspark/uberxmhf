@@ -422,7 +422,8 @@ static void xmhf_smpguest_arch_x86vmx_eventhandler_nmiexception(context_desc_t c
 
 	if(g_vmx_quiesce){ //if g_vmx_quiesce =1 process quiesce regardless of where NMI originated from
             //call hypapp quiesce handler
-            XMHF_SLAB_CALL(xmhf_hypapp_handlequiesce(context_desc));
+            //XMHF_SLAB_CALL(xmhf_hypapp_handlequiesce(context_desc));
+            XMHF_SLAB_CALL_P2P(xhhyperdep, XMHF_SLAB_XCAPIPLATFORM_INDEX, XMHF_SLAB_XHHYPERDEP_INDEX, XMHF_SLAB_HYPAPP_FNHANDLEQUIESCE, XMHF_SLAB_HYPAPP_FNHANDLEQUIESCE_SIZE, context_desc);
 
 			//increment quiesce counter
 			spin_lock(&g_vmx_lock_quiesce_counter);

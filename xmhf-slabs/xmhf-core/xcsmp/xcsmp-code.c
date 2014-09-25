@@ -53,6 +53,7 @@
 #include <xmhf-debug.h>
 
 #include <xcsmp.h>
+#include <xcrichguest.h>
 
 static volatile u32 _cpucount = 0; // count of platform cpus
 static u32 xc_richguest_partition_index=XC_PARTITION_INDEX_INVALID;
@@ -77,7 +78,9 @@ slab_retval_t xcsmp_interface(u32 src_slabid, u32 dst_slabid, u32 fn_id, u32 fn_
     }
 
     //initialize rich guest partition
-    XMHF_SLAB_CALL(xcrichguest_initialize(xc_richguest_partition_index));
+    //XMHF_SLAB_CALL(xcrichguest_initialize(xc_richguest_partition_index));
+    XMHF_SLAB_CALL_P2P(xcrichguest, XMHF_SLAB_XCSMP_INDEX, XMHF_SLAB_XCRICHGUEST_INDEX, XMHF_SLAB_XCRICHGUEST_FNINITIALIZE, XMHF_SLAB_XCRICHGUEST_FNINITIALIZE_SIZE, (u32)xc_richguest_partition_index);
+
     _XDPRINTF_("\n%s: initialized rich guest partition %u\n", __FUNCTION__, xc_richguest_partition_index);
 
 	if( xcsmp_arch_smpinitialize() ){
@@ -103,7 +106,13 @@ void xcsmp_smpstart(u32 cpuid, bool isbsp){
         //the rich guest initialization procedure. if the CPU is not allocated to the
         //rich guest, enter it into a CPU pool for use by other partitions
         _XDPRINTF_("%s(%u): Proceeding to call xcrichguest_addcpu...\n", __FUNCTION__, (u32)cpuid);
-        context_desc = XMHF_SLAB_CALL(xcrichguest_addcpu(xc_richguest_partition_index, cpuid, isbsp));
+        //context_desc = XMHF_SLAB_CALL(xcrichguest_addcpu(xc_richguest_partition_index, cpuid, isbsp));
+
+        {
+            slab_retval_t srval;
+            srval = XMHF_SLAB_CALL_P2P(xcrichguest, XMHF_SLAB_XCSMP_INDEX, XMHF_SLAB_XCRICHGUEST_INDEX, XMHF_SLAB_XCRICHGUEST_FNADDCPU, XMHF_SLAB_XCRICHGUEST_FNADDCPU_SIZE, (u32)xc_richguest_partition_index, (u32)cpuid, (bool)isbsp);
+            context_desc = srval.retval_context_desc;
+        }
 
        	//call hypapp initialization function
         {

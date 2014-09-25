@@ -5,12 +5,12 @@ xmhf-slabs/xmhf-core/xcexhub
 xmhf-slabs/xmhf-core/xcsmp
 xmhf-slabs/xmhf-core/xcdev
 xmhf-slabs/xmhf-core/xcrichguest
+xmhf-slabs/xmhf-core/xcihub
 xmhf-slabs/xmhf-core/xcapi/xcapihpt
 xmhf-slabs/xmhf-core/xcapi/xcapicpustate
 xmhf-slabs/xmhf-core/xcapi/xcapitrapmask
 xmhf-slabs/xmhf-core/xcapi/xcapipartition
 xmhf-slabs/xmhf-core/xcapi/xcapiplatform
-xmhf-slabs/xmhf-core/xcihub
 xmhf-slabs/hypapps/xhhyperdep
 
 

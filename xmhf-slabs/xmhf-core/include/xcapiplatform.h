@@ -58,8 +58,11 @@
 
 #ifndef __ASSEMBLY__
 
+#define	XMHF_SLAB_XCAPIPLATFORM_FNINITIALIZEANDENUMERATEDEVICES						1
+#define	XMHF_SLAB_XCAPIPLATFORM_FNINITIALIZEANDENUMERATEDEVICES_SIZE 			(sizeof(context_desc_t))
 
-
+#define XMHF_SLAB_XCAPIPLATFORM_FNQUIESCECPUSINPARTITION                            2
+#define XMHF_SLAB_XCAPIPLATFORM_FNQUIESCECPUSINPARTITION_SIZE                   (sizeof(context_desc_t))
 
 ///////////////////////////////////////////////////////////////////////////////
 //platform related core APIs

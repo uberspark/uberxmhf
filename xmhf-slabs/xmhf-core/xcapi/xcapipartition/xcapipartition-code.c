@@ -123,14 +123,14 @@ slab_retval_t xcapi_interface(u32 src_slabid, u32 dst_slabid, u32 fn_id, u32 fn_
 			}
 			break;
 
-			case XMHF_SLAB_XCAPI_FNXCAPIHPTFLUSHCACHESSMP:{
+			/*case XMHF_SLAB_XCAPI_FNXCAPIHPTFLUSHCACHESSMP:{
 				context_desc_t context_desc;
 				va_start(args, fn_paramsize);
 				context_desc = va_arg(args, context_desc_t);
 				xc_api_hpt_flushcaches_smp(context_desc);
 				va_end(args);
 			}
-			break;
+			break;*/
 
 			case XMHF_SLAB_XCAPI_FNXCAPIHPTLVL2PAGEWALK:{
 				context_desc_t context_desc;
@@ -248,11 +248,11 @@ slab_retval_t xcapi_interface(u32 src_slabid, u32 dst_slabid, u32 fn_id, u32 fn_
 			break;
 
 			case XMHF_SLAB_XCAPI_FNXCCOREAPIARCHEVENTHANDLERNMIEXCEPTION:{
-				//struct regs *r;
-				//va_start(args, fn_paramsize);
-				//r = va_arg(args, struct regs *);
-				xc_coreapi_arch_eventhandler_nmiexception();
-				//va_end(args);
+				struct regs *r;
+				va_start(args, fn_paramsize);
+				r = va_arg(args, struct regs *);
+				xc_coreapi_arch_eventhandler_nmiexception(r);
+				va_end(args);
 			}
 			break;
 
@@ -426,5 +426,5 @@ bool xc_api_partition_startcpu(context_desc_t context_desc){
 
 
 ///////
-XMHF_SLAB_DEF("xcapipartition")
+XMHF_SLAB_DEF(xcapipartition)
 

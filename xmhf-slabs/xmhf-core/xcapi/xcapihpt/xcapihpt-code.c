@@ -89,5 +89,5 @@ u64 xc_api_hpt_lvl2pagewalk(context_desc_t context_desc, u64 gva){
 
 
 ///////
-XMHF_SLAB("xcapihpt")
+XMHF_SLAB_DEF(xcapihpt)
 

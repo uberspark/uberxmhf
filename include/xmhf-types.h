@@ -135,17 +135,17 @@ typedef struct {
 
 //-------------------------------------------------------
 typedef struct {
-	u32 start;
-	u32 end;
+	u64 start;
+	u64 end;
 } slab_section_t;
 
 typedef void * slab_entrystub_t;
 
 typedef struct {
-	u32 slab_index;
-	u32 slab_macmid;
-	u32 slab_privilegemask;
-	u32 slab_tos;
+	u64 slab_index;
+	u64 slab_macmid;
+	u64 slab_privilegemask;
+	u64 slab_tos;
 	slab_section_t slab_code;
 	slab_section_t slab_rodata;
 	slab_section_t slab_rwdata;
@@ -159,10 +159,11 @@ typedef struct {
 	bool isbsp;
 	u32 cpu_index;
 } cpu_desc_t;
-	
+
 //XMHF core api partition descriptor type
 typedef struct {
 	u32 partition_index;
+	u32 numcpus;
 } partition_desc_t;
 
 //XMHF core api context descriptor type (context = partition + cpu pair)

@@ -62,5 +62,5 @@ bool xcdev_initialize(u32 partition_index){
 
 
 ///////
-XMHF_SLAB("xcdev")
+XMHF_SLAB_DEF(xcdev)
 
