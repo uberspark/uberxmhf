@@ -61,7 +61,7 @@
 slab_retval_t xhhelloworld_interface(u32 src_slabid, u32 dst_slabid, u32 fn_id, u32 fn_paramsize, ...){
 	slab_retval_t srval;
 	va_list args;
-	
+
 	_XDPRINTF_("%s: Got control: src_slabid=%u, dst_slabid=%u, fn_id=%u, fn_paramsize=%u\n", __FUNCTION__, src_slabid, dst_slabid, fn_id, fn_paramsize);
 
 	switch(fn_id){
@@ -88,7 +88,7 @@ slab_retval_t xhhelloworld_interface(u32 src_slabid, u32 dst_slabid, u32 fn_id, 
 				va_end(args);
 			}
 			break;
-				
+
 			case XMHF_SLAB_HYPAPP_FNHANDLEINTERCEPTHPTFAULT:{
 				context_desc_t context_desc;
 				u64 gpa;
@@ -103,7 +103,7 @@ slab_retval_t xhhelloworld_interface(u32 src_slabid, u32 dst_slabid, u32 fn_id, 
 				va_end(args);
 			}
 			break;
-			
+
 			case XMHF_SLAB_HYPAPP_FNHANDLEINTERCEPTTRAP:{
 				context_desc_t context_desc;
 				xc_hypapp_arch_param_t xc_hypapp_arch_param;
@@ -123,13 +123,13 @@ slab_retval_t xhhelloworld_interface(u32 src_slabid, u32 dst_slabid, u32 fn_id, 
 				va_end(args);
 			}
 			break;
-				
+
 			default:
 				_XDPRINTF_("%s: unhandled subinterface %u. Halting\n", __FUNCTION__, fn_id);
 				HALT();
 	}
-	
-	return srval;	
+
+	return srval;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -137,9 +137,9 @@ slab_retval_t xhhelloworld_interface(u32 src_slabid, u32 dst_slabid, u32 fn_id, 
 #define HELLOWORLD_PING					0xC0
 
 // hypapp initialization
-u32 xmhf_hypapp_initialization(context_desc_t context_desc, hypapp_env_block_t hypappenvb){	
-	_XDPRINTF_("\nCPU %u: helloworld initialized", context_desc.cpu_desc.cpu_index);
-	
+u32 xmhf_hypapp_initialization(context_desc_t context_desc, hypapp_env_block_t hypappenvb){
+	_XDPRINTF_("CPU %u: helloworld initialized\n", context_desc.cpu_desc.cpu_index);
+
 	return APP_INIT_SUCCESS;  //successful
 }
 
@@ -150,33 +150,32 @@ u32 xmhf_hypapp_initialization(context_desc_t context_desc, hypapp_env_block_t h
 u32 xmhf_hypapp_handlehypercall(context_desc_t context_desc, u64 hypercall_id, u64 hypercall_param){
 	u32 status=APP_SUCCESS;
 	u32 call_id;
-	
+
 	call_id= hypercall_id;
 
-	_XDPRINTF_("\nCPU(%02x): %s starting: call number=%x", context_desc.cpu_desc.cpu_index, __FUNCTION__, call_id);
+	_XDPRINTF_("CPU(%02x): %s starting: call number=%x\n", context_desc.cpu_desc.cpu_index, __FUNCTION__, call_id);
 
 	switch(call_id){
 		case HELLOWORLD_PING:{
-			_XDPRINTF_("%s: helloworld ping!");
+			_XDPRINTF_("%s: helloworld ping!\n", __FUNCTION__);
 		}
 		break;
 
 		default:
-			_XDPRINTF_("\nCPU(0x%02x): unsupported hypercall (0x%08x)!!", 
+			_XDPRINTF_("CPU(0x%02x): unsupported hypercall (0x%08x)!!\n",
 			  context_desc.cpu_desc.cpu_index, call_id);
-			//status=APP_ERROR;
 			break;
 	}
 
-	return status;			
+	return status;
 }
 
 
 //handles XMHF shutdown callback
 //note: should not return
 void xmhf_hypapp_handleshutdown(context_desc_t context_desc){
-	_XDPRINTF_("\n%s:%u: rebooting now", __FUNCTION__, context_desc.cpu_desc.cpu_index);
-	XMHF_SLAB_CALL(xc_api_platform_shutdown(context_desc));				
+	_XDPRINTF_("%s:%u: rebooting now\n", __FUNCTION__, context_desc.cpu_desc.cpu_index);
+	XMHF_SLAB_CALL(xc_api_platform_shutdown(context_desc));
 }
 
 //handles h/w pagetable violations
@@ -184,9 +183,9 @@ void xmhf_hypapp_handleshutdown(context_desc_t context_desc){
 u32 xmhf_hypapp_handleintercept_hptfault(context_desc_t context_desc, u64 gpa, u64 gva, u64 error_code){
 	u32 status = APP_SUCCESS;
 
-	_XDPRINTF_("\nCPU(%02x): FATAL HWPGTBL violation (gva=%x, gpa=%x, code=%x): unhandled", context_desc.cpu_desc.cpu_index, (u32)gva, (u32)gpa, (u32)error_code);
+	_XDPRINTF_("CPU(%02x): FATAL HWPGTBL violation (gva=%x, gpa=%x, code=%x): unhandled\n", context_desc.cpu_desc.cpu_index, (u32)gva, (u32)gpa, (u32)error_code);
 	HALT();
-	
+
 	return status;
 }
 
@@ -197,16 +196,11 @@ u32 xmhf_hypapp_handleintercept_trap(context_desc_t context_desc, xc_hypapp_arch
  	return APP_TRAP_CHAIN;
 }
 
+//quiesce handler
+void xmhf_hypapp_handlequiesce(context_desc_t context_desc){
+    //nothing to do
+}
+
 ////////
 XMHF_SLAB_DEF(xhhelloworld)
 
-////////
-XMHF_SLAB("xhhelloworld")
-
-XMHF_SLAB_DEFINTERFACE(
-	XMHF_SLAB_DEFEXPORTFN(xmhf_hypapp_initialization				,XMHF_SLAB_HYPAPP_FNINITIALIZATION							,	XMHF_SLAB_FN_RETTYPE_NORMAL)
-	XMHF_SLAB_DEFEXPORTFN(xmhf_hypapp_handlehypercall				,XMHF_SLAB_HYPAPP_FNHANDLEHYPERCALL						,	XMHF_SLAB_FN_RETTYPE_NORMAL)
-	XMHF_SLAB_DEFEXPORTFN(xmhf_hypapp_handleintercept_hptfault		,XMHF_SLAB_HYPAPP_FNHANDLEINTERCEPTHPTFAULT				,	XMHF_SLAB_FN_RETTYPE_NORMAL)
-	XMHF_SLAB_DEFEXPORTFN(xmhf_hypapp_handleintercept_trap			,XMHF_SLAB_HYPAPP_FNHANDLEINTERCEPTTRAP					,	XMHF_SLAB_FN_RETTYPE_NORMAL)
-	XMHF_SLAB_DEFEXPORTFN(xmhf_hypapp_handleshutdown				,XMHF_SLAB_HYPAPP_FNSHUTDOWN								,	XMHF_SLAB_FN_RETTYPE_NORMAL)
-)

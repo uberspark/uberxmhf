@@ -54,55 +54,65 @@
 #include <testslab1.h>
 
 void xcprimeon_entry(void){
+    u64 pgtblbase;
 
 	//initialize debugging early on
 	xmhfhw_platform_serial_init((char *)&xcbootinfo->debugcontrol_buffer);
 
+	//[debug] print relevant startup info.
 	_XDPRINTF_("%s: alive and starting...\n", __FUNCTION__);
-	
-	//debug: dump bootinfo
+
 	_XDPRINTF_("SL: xcbootinfo at = 0x%08x\n", (u32)xcbootinfo);
 	_XDPRINTF_("	numE820Entries=%u\n", xcbootinfo->memmapinfo_numentries);
 	_XDPRINTF_("	system memory map buffer at 0x%08x\n", (u32)&xcbootinfo->memmapinfo_buffer);
 	_XDPRINTF_("	numCPUEntries=%u\n", xcbootinfo->cpuinfo_numentries);
 	_XDPRINTF_("	cpuinfo buffer at 0x%08x\n", (u32)&xcbootinfo->cpuinfo_buffer);
 	_XDPRINTF_("	SL + core size= %u bytes\n", xcbootinfo->size);
-	_XDPRINTF_("	OS bootmodule at 0x%08x, size=%u bytes\n", 
+	_XDPRINTF_("	OS bootmodule at 0x%08x, size=%u bytes\n",
 		xcbootinfo->richguest_bootmodule_base, xcbootinfo->richguest_bootmodule_size);
     _XDPRINTF_("\tcmdline = \"%s\"\n", xcbootinfo->cmdline_buffer);
-
 	_XDPRINTF_("SL: runtime at 0x%08x; size=0x%08x bytes\n", __TARGET_BASE_SL, xcbootinfo->size);
-
-	//setup bootinfo with required parameters
 	_XDPRINTF_("SL: XMHF_BOOTINFO at 0x%08x, magic=0x%08x\n", (u32)xcbootinfo, xcbootinfo->magic);
 	HALT_ON_ERRORCOND(xcbootinfo->magic == RUNTIME_PARAMETER_BLOCK_MAGIC);
-			
-	//store runtime physical and virtual base addresses along with size
-	xcbootinfo->physmem_base = __TARGET_BASE_SL; 
-	xcbootinfo->virtmem_base = __TARGET_BASE_SL;
-	xcbootinfo->size = xcbootinfo->size;
-
-	//[debug] dump memory map
  	_XDPRINTF_("\nNumber of E820 entries = %u", xcbootinfo->memmapinfo_numentries);
 	{
-		int i;
-		for(i=0; i < (int)xcbootinfo->memmapinfo_numentries; i++){
-			_XDPRINTF_("\n0x%08x%08x, size=0x%08x%08x (%u)", 
+		u32 i;
+		for(i=0; i < (u32)xcbootinfo->memmapinfo_numentries; i++){
+			_XDPRINTF_("\n0x%08x%08x, size=0x%08x%08x (%u)",
 			  xcbootinfo->memmapinfo_buffer[i].baseaddr_high, xcbootinfo->memmapinfo_buffer[i].baseaddr_low,
 			  xcbootinfo->memmapinfo_buffer[i].length_high, xcbootinfo->memmapinfo_buffer[i].length_low,
 			  xcbootinfo->memmapinfo_buffer[i].type);
 		}
   	}
 
-	//initialize basic platform elements
-	xcprimeon_arch_initialize();
-	
-	//sanitize post launch (e.g., cache/MTRR/SMRAM)
+	//initialize cpu table and total platform CPUs
+	{
+	    u32 i;
+	    for(i=0; i < xcbootinfo->cpuinfo_numentries; i++){
+            _cputable[i].cpuid = xcbootinfo->cpuinfo_buffer[i].lapic_id;
+            _cputable[i].cpu_index = i;
+        }
+        _totalcpus=xcbootinfo->cpuinfo_numentries;
+	}
+
+
+	//store runtime physical and virtual base addresses along with size
+	xcbootinfo->physmem_base = __TARGET_BASE_SL;
+	xcbootinfo->virtmem_base = __TARGET_BASE_SL;
+	xcbootinfo->size = xcbootinfo->size;
+
+    //perform basic (boot) CPU initialization
+    xcprimeon_arch_cpu_basicinit();
+
+    //initialize platform
+    xcprimeon_arch_platform_initialize();
+
+	//post DRT cleanup (e.g., cache/MTRR/SMRAM)
 #if defined (__DRT__)
     xcprimeon_arch_postdrt();
 #endif	//__DRT__
 
-#if defined (__DMAP__)    
+#if defined (__DMAP__)
 	//setup DMA protection on runtime (xcprimeon is already DMA protected)
 	xcprimeon_arch_earlydmaprot(__TARGET_BASE_SL, xcbootinfo->size);
 #endif
@@ -110,7 +120,7 @@ void xcprimeon_entry(void){
 	//print out slab table
 	{
 			u32 i;
-			
+
 			for(i=0; i < XMHF_SLAB_NUMBEROFSLABS; i++){
 				_XDPRINTF_("\nslab %u: dumping slab header", i);
 				_XDPRINTF_("\n	slab_index=%u", _slab_table[i].slab_index);
@@ -128,7 +138,7 @@ void xcprimeon_entry(void){
 	}
 
 	//initialize slab page tables
-	xcprimeon_initialize_slab_tables();
+	//xcprimeon_initialize_slab_tables();
 
 	//[test] testslab1
 	//{
@@ -137,13 +147,18 @@ void xcprimeon_entry(void){
 	//		XMHF_SLAB_CALL_P2P(testslab1, XMHF_SLAB_XCPRIMEON_INDEX, XMHF_SLAB_TESTSLAB1_INDEX, 0, 0);
 	//		_XDPRINTF_("%s: came back from entry_0, esp=%x\n", __FUNCTION__, read_esp());
 	//}
-	
-		
-	//proceed with SMP initialization
-	XMHF_SLAB_CALL_P2P(xcsmp, XMHF_SLAB_XCPRIMEON_INDEX, XMHF_SLAB_XCSMP_INDEX, 0, 0);
 
-	//we should never get here
-	_XDPRINTF_("\nSL: Fatal, should never be here!");
+
+    //initialize page tables
+    pgtblbase = xcprimeon_arch_initialize_slab_tables();
+
+    //activate paging and associated operating mode
+    xcprimeon_arch_cpu_activate_modeandpaging(pgtblbase);
+
+	//proceed with SMP initialization
+    xcprimeon_arch_relinquish_control();
+
+	_XDPRINTF_("%s:%u: Fatal, should never be here!\n", __FUNCTION__, __LINE__);
 	HALT();
 }
 

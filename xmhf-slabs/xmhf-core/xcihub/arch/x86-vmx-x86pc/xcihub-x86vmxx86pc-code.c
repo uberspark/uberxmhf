@@ -77,9 +77,25 @@ static u32 _vmx_getregval(u32 gpr, struct regs r){
 
 //---intercept handler (CPUID)--------------------------------------------------
 static struct regs _vmx_handle_intercept_cpuid(context_desc_t context_desc, struct regs r){
-	asm volatile ("cpuid\r\n"
+    bool clearsyscallretbit=false;
+	/*asm volatile ("cpuid\r\n"
           :"=a"(r.eax), "=b"(r.ebx), "=c"(r.ecx), "=d"(r.edx)
-          :"a"(r.eax), "c" (r.ecx));
+          :"a"(r.eax), "c" (r.ecx));*/
+    //_XDPRINTF_("%s(%u): CPUID: input: eax=%08x, ebx=%08x, ecx=%08x, edx=%08x\n", __FUNCTION__, context_desc.cpu_desc.cpu_index,
+    //           (u32)r.eax, (u32)r.ebx, (u32)r.ecx, (u32)r.edx);
+
+    if((u32)r.eax == 0x80000001)
+        clearsyscallretbit = true;
+
+    cpuid((u32)r.eax, (u32 *)&r.eax, (u32 *)&r.ebx, (u32 *)&r.ecx, (u32 *)&r.edx);
+
+    if(clearsyscallretbit)
+        r.edx = r.edx & (u64)~(1ULL << 11);
+
+    //_XDPRINTF_("%s(%u): CPUID: input: eax=%08x, ebx=%08x, ecx=%08x, edx=%08x\n", __FUNCTION__, context_desc.cpu_desc.cpu_index,
+    //           (u32)r.eax, (u32)r.ebx, (u32)r.ecx, (u32)r.edx);
+
+
     return r;
 }
 
@@ -126,9 +142,7 @@ static void _vmx_handle_intercept_wrmsr(context_desc_t context_desc, struct regs
             XMHF_SLAB_CALL_P2P(xcapi, XMHF_SLAB_XCIHUB_INDEX, XMHF_SLAB_XCAPI_INDEX, XMHF_SLAB_XCAPI_FNXCAPICPUSTATESET, XMHF_SLAB_XCAPI_FNXCAPICPUSTATESET_SIZE, context_desc, ap);
 			break;
 		default:{
-			asm volatile ("wrmsr\r\n"
-          : //no outputs
-          :"a"(r.eax), "c" (r.ecx), "d" (r.edx));
+          wrmsr((u32)r.ecx, (u32)r.eax, (u32)r.edx);
 			break;
 		}
 	}
@@ -156,9 +170,10 @@ static struct regs _vmx_handle_intercept_rdmsr(context_desc_t context_desc, stru
 			r.edx = 0;
 			break;
 		default:{
-			asm volatile ("rdmsr\r\n"
+			/*asm volatile ("rdmsr\r\n"
           : "=a"(r.eax), "=d"(r.edx)
-          : "c" (r.ecx));
+          : "c" (r.ecx));*/
+          rdmsr((u32)r.ecx, (u32 *)&r.eax, (u32 *)&r.edx);
 			break;
 		}
 	}
@@ -171,6 +186,7 @@ static struct regs _vmx_handle_intercept_rdmsr(context_desc_t context_desc, stru
 static void _vmx_handle_intercept_eptviolation(context_desc_t context_desc, u32 gpa, u32 gva, u32 errorcode, struct regs r __attribute__((unused))){
 
     XMHF_SLAB_CALL_P2P(xhhyperdep, XMHF_SLAB_XCIHUB_INDEX, XMHF_SLAB_XHHYPERDEP_INDEX, XMHF_SLAB_HYPAPP_FNHANDLEINTERCEPTHPTFAULT, XMHF_SLAB_HYPAPP_FNHANDLEINTERCEPTHPTFAULT_SIZE, context_desc, (u64)gpa, (u64)gva, (u64)(errorcode & 7));
+
 }
 
 
@@ -291,17 +307,21 @@ static void _vmx_intercept_handler(context_desc_t context_desc, struct regs x86g
 
 	//sanity check for VM-entry errors
 	if( inforegs.info_vmexit_reason & 0x80000000UL ){
-		_XDPRINTF_("\nVM-ENTRY error: reason=0x%08x, qualification=0x%016llx",
+		_XDPRINTF_("VM-ENTRY error: reason=0x%08x, qualification=0x%016llx\n",
 			inforegs.info_vmexit_reason, inforegs.info_exit_qualification);
 		HALT();
 	}
 
 	//make sure we have no nested events
 	if( inforegs.info_idt_vectoring_information & 0x80000000){
-		_XDPRINTF_("\nCPU(0x%02x): HALT; Nested events unhandled with hwp:0x%08x",
+		_XDPRINTF_("%s(%u): Warning: Nested events unhandled with hwp:0x%08x\n", __FUNCTION__,
 			context_desc.cpu_desc.cpu_index, inforegs.info_idt_vectoring_information);
-		HALT();
+        HALT();
 	}
+
+    //_XDPRINTF_("%s: Intercept %08x\n", __FUNCTION__, (u32)inforegs.info_vmexit_reason);
+    //HALT();
+
 
 	//handle intercepts
 	switch(inforegs.info_vmexit_reason){
@@ -344,6 +364,7 @@ static void _vmx_intercept_handler(context_desc_t context_desc, struct regs x86g
 				vmmcall_ap.operation = XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_ACTIVITY;
 				vmmcall_ap.param.activity = vmmcall_activity;
 			    XMHF_SLAB_CALL_P2P(xcapi, XMHF_SLAB_XCIHUB_INDEX, XMHF_SLAB_XCAPI_INDEX, XMHF_SLAB_XCAPI_FNXCAPICPUSTATESET, XMHF_SLAB_XCAPI_FNXCAPICPUSTATESET_SIZE, context_desc, vmmcall_ap);
+
 
 
 
@@ -592,6 +613,7 @@ static void _vmx_intercept_handler(context_desc_t context_desc, struct regs x86g
 			sipi_ap.param.desc = sipi_desc;
             XMHF_SLAB_CALL_P2P(xcapi, XMHF_SLAB_XCIHUB_INDEX, XMHF_SLAB_XCAPI_INDEX, XMHF_SLAB_XCAPI_FNXCAPICPUSTATESET, XMHF_SLAB_XCAPI_FNXCAPICPUSTATESET_SIZE, context_desc, sipi_ap);
 
+
 		}
 		break;
 
@@ -601,6 +623,15 @@ static void _vmx_intercept_handler(context_desc_t context_desc, struct regs x86g
 			HALT();
 		}
 	} //end inforegs.info_vmexit_reason
+
+	if( ! ((xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_INTERRUPTIBILITY) == 0) &&
+ 		(xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_ACTIVITY_STATE) == 0)) ){
+
+        //clear any event injection as this CPU is not in a state to receive it
+        xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VM_ENTRY_EXCEPTION_ERRORCODE, 0);
+        xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VM_ENTRY_INTERRUPTION_INFORMATION, 0);
+
+ 	}
 }
 
 
@@ -660,39 +691,62 @@ void xmhf_partition_eventhub_arch_x86vmx(struct regs *cpugprs){
 
 //==================================================================================
 
+
 //---hvm_intercept_handler------------------------------------------------------
-void xcihub_interface(void) __attribute__((naked)){
+void xcihub_arch_entry(void) __attribute__((naked)){
 
 		asm volatile (
-			"pushal\r\n"
-			"movl %0, %%eax \r\n"				//eax = VMCS_INFO_VMEXIT_REASON
-			"vmread %%eax, %%ebx \r\n"			//ebx = VMCS[VMCS_INFO_VMEXIT_REASON]
+            "pushq %%rax \r\n"
+            "pushq %%rcx \r\n"
+            "pushq %%rdx \r\n"
+            "pushq %%rbx \r\n"
+            "pushq %%rsp \r\n"
+            "pushq %%rbp \r\n"
+            "pushq %%rsi \r\n"
+            "pushq %%rdi \r\n"
+
+            "movq %5, %%rax \r\n"               //clear any pending (NMI) event injection
+            "mov $0, %%rbx \r\n"
+            "vmwrite %%rbx, %%rax \r\n"
+			"movq %0, %%rax \r\n"				//rax = VMCS_INFO_VMEXIT_REASON
+			"vmread %%rax, %%rbx \r\n"			//ebx = VMCS[VMCS_INFO_VMEXIT_REASON]
 			"cmpl %1, %%ebx \r\n"				//if (ebx == VMX_VMEXIT_EXCEPTION)
 			"jne normal \r\n"					//nope, so just do normal eventhub processing
-			"movl %2, %%eax \r\n"				//eax = VMCS_INFO_VMEXIT_INTERRUPT_INFORMATION
-			"vmread %%eax, %%ebx \r\n"			//ebx = VMCS[VMCS_INFO_VMEXIT_INTERRUPT_INFORMATION]
+			"movq %2, %%rax \r\n"				//eax = VMCS_INFO_VMEXIT_INTERRUPT_INFORMATION
+			"vmread %%rax, %%rbx \r\n"			//ebx = VMCS[VMCS_INFO_VMEXIT_INTERRUPT_INFORMATION]
 			"andl %3, %%ebx \r\n"				//ebx &= INTR_INFO_VECTOR_MASK
 			"cmpl %4, %%ebx \r\n"				//if (ebx == 0x2)
 			"jne normal \r\n"					//nope, so just do normal eventhub processing
 			"int $0x02 \r\n"					//NMI exception intercept, so trigger NMI handler
 			"jmp exithub \r\n"					//skip over normal event hub processing
 			"normal: \r\n"						//normal event hub processing setup
-			"movl %%esp, %%eax\r\n"
-			"pushl %%eax\r\n"
+
+			"movq %%rsp, %%rdi\r\n"
 			"call xmhf_partition_eventhub_arch_x86vmx\r\n"
-			"addl $0x04, %%esp\r\n"
+
 			"exithub: \r\n"						//event hub epilogue to resume partition
-			"popal\r\n"
+
+            "popq %%rdi \r\n"
+            "popq %%rsi \r\n"
+            "popq %%rbp \r\n"
+            "popq %%rsp \r\n"
+            "popq %%rbx \r\n"
+            "popq %%rdx \r\n"
+            "popq %%rcx \r\n"
+            "popq %%rax \r\n"
+
 			"vmresume\r\n"
+
 			"int $0x03\r\n"
 			"hlt\r\n"
 			: //no outputs
-			: "i" (VMCS_INFO_VMEXIT_REASON), "i" (VMX_VMEXIT_EXCEPTION), "i" (VMCS_INFO_VMEXIT_INTERRUPT_INFORMATION), "i" (INTR_INFO_VECTOR_MASK), "i" (0x2)
+			: "i" (VMCS_INFO_VMEXIT_REASON), "i" (VMX_VMEXIT_EXCEPTION),
+              "i" (VMCS_INFO_VMEXIT_INTERRUPT_INFORMATION), "i" (INTR_INFO_VECTOR_MASK),
+              "i" (0x2), "i" (VMCS_CONTROL_VM_ENTRY_INTERRUPTION_INFORMATION)
 			: //no clobber
 		);
 
 }
-
 
 
 

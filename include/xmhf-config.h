@@ -56,10 +56,10 @@
 #define SL_PARAMETER_BLOCK_MAGIC		0xF00DDEAD
 
 //16K stack for each core during runtime
-#define RUNTIME_STACK_SIZE  			(16384)     
+#define RUNTIME_STACK_SIZE  			(16384)
 
 //8K stack for each core in "init"
-#define INIT_STACK_SIZE					(8192)					
+#define INIT_STACK_SIZE					(8192)
 
 //max. size of command line parameter buffer
 #define MAX_CMDLINE_BUFFER_SIZE			(128)
@@ -70,6 +70,9 @@
 #else
 	#define	MAX_PLATFORM_CPUS					(1)
 #endif
+
+//max. platform devices we support currently
+#define MAX_PLATFORM_DEVICES                    (64)
 
 #define MAX_MIDTAB_ENTRIES  			(MAX_PLATFORM_CPUS)
 #define MAX_PCPU_ENTRIES  				(MAX_PLATFORM_CPUS)
@@ -100,16 +103,16 @@
 #define MAX_XC_HYPAPP_CB_ARCH_PARAMS	8
 
 //maximum system memory map entries (e.g., E820) currently supported
-#define MAX_E820_ENTRIES    			(64)  
+#define MAX_E820_ENTRIES    			(64)
 
 // SHA-1 hash of runtime should be defined during build process.
 // However, if it's not, don't fail.  Just proceed with all zeros.
-// XXX TODO Disable proceeding with insecure hash value. 
+// XXX TODO Disable proceeding with insecure hash value.
 #define BAD_INTEGRITY_HASH "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
 
 #ifndef ___RUNTIME_INTEGRITY_HASH___
 #define ___RUNTIME_INTEGRITY_HASH___ BAD_INTEGRITY_HASH
-#endif // ___RUNTIME_INTEGRITY_HASH___ 
+#endif // ___RUNTIME_INTEGRITY_HASH___
 
 //======================================================================
 

@@ -84,7 +84,7 @@
  * Modified further by amitvasudevan (amitvasudevan@acm.org)
  */
 
-#include <xmhf.h> 
+#include <xmhf.h>
 #include <xmhf-debug.h>
 
 
@@ -104,7 +104,7 @@ static mtrr_state_t *g_saved_mtrrs = NULL;
  */
 bool set_mtrrs_for_acmod(acm_hdr_t *hdr)
 {
-    unsigned long eflags;
+    u64 rflags;
     unsigned long cr0, cr4;
 
     /*
@@ -115,7 +115,7 @@ bool set_mtrrs_for_acmod(acm_hdr_t *hdr)
      */
 
     /* disable interrupts */
-    get_eflags(eflags);
+    rflags = get_rflags();
     disable_intr();
 
     /* save CR0 then disable cache (CRO.CD=1, CR0.NW=0) */
@@ -155,7 +155,7 @@ bool set_mtrrs_for_acmod(acm_hdr_t *hdr)
     write_cr4(cr4);
 
     /* enable interrupts */
-    set_eflags(eflags);
+    set_rflags(rflags);
 
 
     return true;
@@ -164,7 +164,7 @@ bool set_mtrrs_for_acmod(acm_hdr_t *hdr)
 void print_mtrrs(const mtrr_state_t *saved_state)
 {
     int i;
-    
+
     _XDPRINTF_("mtrr_def_type: e = %d, fe = %d, type = %x\n",
            saved_state->mtrr_def_type.e, saved_state->mtrr_def_type.fe,
            saved_state->mtrr_def_type.type );
@@ -208,7 +208,7 @@ void xmhfhw_cpu_x86_save_mtrrs(mtrr_state_t *saved_state)
     }
 
     print_mtrrs(saved_state);
-    
+
     g_saved_mtrrs = saved_state;
 }
 
@@ -262,7 +262,7 @@ static int get_region_type(const mtrr_state_t *saved_state,
     if ( saved_state->mtrr_def_type.e == 0 )
         return MTRR_TYPE_UNCACHABLE;
 
-    /* align to 4k page boundary */    
+    /* align to 4k page boundary */
     base = PAGE_ALIGN_4K(base); //base &= PAGE_MASK;
     end = base + (pages << PAGE_SHIFT_4K);
 
@@ -357,6 +357,8 @@ bool validate_mtrrs(const mtrr_state_t *saved_state)
     /* check is meaningless if MTRRs were disabled */
     if ( saved_state->mtrr_def_type.e == 0 )
         return true;
+
+    //print_mtrrs(saved_state);
 
     /* number variable MTRRs */
     mtrr_cap.raw = rdmsr64(MSR_MTRRcap);
@@ -468,7 +470,6 @@ bool validate_mtrrs(const mtrr_state_t *saved_state)
 /*         return false; */
 /*     } */
 
-    //print_mtrrs(saved_state);
     return true;
 }
 
@@ -482,7 +483,7 @@ void xmhfhw_cpu_x86_restore_mtrrs(mtrr_state_t *saved_state)
     }
 
     //print_mtrrs(saved_state);
-        
+
     /* called by apply_policy() so use saved ptr */
     if ( saved_state == NULL )
         saved_state = g_saved_mtrrs;
@@ -500,6 +501,7 @@ void xmhfhw_cpu_x86_restore_mtrrs(mtrr_state_t *saved_state)
         wrmsr64(MTRR_PHYS_BASE0_MSR + ndx*2,
               saved_state->mtrr_physbases[ndx].raw);
     }
+
 
     /* IA32_MTRR_DEF_TYPE MSR */
     wrmsr64(MSR_MTRRdefType, saved_state->mtrr_def_type.raw);

@@ -71,6 +71,25 @@
 
 #ifndef __ASSEMBLY__
 
+typedef struct {
+    u64 pci_bus;
+    u64 pci_device;
+    u64 pci_function;
+    u64 vendor_id;
+    u64 device_id;
+}__attribute__((packed)) xc_platformdevice_arch_desc_t;
+
+
+typedef struct {
+    u32 ap_cr3;
+    u32 ap_cr4;
+    u32 ap_entrypoint;
+    u32 ap_gdtdesc_limit __attribute__((aligned(16)));
+    u32 ap_gdtdesc_base;
+    u32 ap_cs_selector;
+    u32 ap_eip;
+    u64 ap_gdt[X86SMP_APBOOTSTRAP_MAXGDTENTRIES] __attribute__ ((aligned (16)));
+}__attribute__((aligned(16),packed)) x86smp_apbootstrapdata_t;
 
 typedef struct {
   u32 eip;
@@ -107,7 +126,7 @@ struct _memorytype {
 
 
 //---platform
-//VMX MSR indices 
+//VMX MSR indices
 #define INDEX_IA32_VMX_BASIC_MSR            0x0
 #define INDEX_IA32_VMX_PINBASED_CTLS_MSR    0x1
 #define INDEX_IA32_VMX_PROCBASED_CTLS_MSR   0x2
@@ -133,24 +152,25 @@ struct _memorytype {
 #define 	__TRSEL 	0x0028  //TSS (task) selector
 
 
-
+//*
 //x86 GDT descriptor type
 typedef struct {
 		u16 size;
-		u32 base;
+		u64 base;
 } __attribute__((packed)) arch_x86_gdtdesc_t;
 
+//*
 //x86 IDT descriptor type
 typedef struct {
 		u16 size;
-		u32 base;
+		u64 base;
 } __attribute__((packed)) arch_x86_idtdesc_t;
 
+//*
 //TSS descriptor (partial)
 typedef struct __tss {
-	u32 prevlink;
-	u32 esp0;
-	u32 ss0;
+	u32 reserved;
+	u64 rsp0;
 } tss_t;
 
 #define	EMHF_XCPHANDLER_MAXEXCEPTIONS	32
@@ -202,12 +222,12 @@ u32 xmhf_baseplatform_arch_x86_acpi_getRSDP(ACPI_RSDP *rsdp);
 //PCI subsystem initialization
 void xmhf_baseplatform_arch_x86_pci_initialize(void);
 
-//does a PCI type-1 write of PCI config space for a given bus, device, 
+//does a PCI type-1 write of PCI config space for a given bus, device,
 //function and index
 void xmhf_baseplatform_arch_x86_pci_type1_write(u32 bus, u32 device, u32 function, u32 index, u32 len,
 	u32 value);
-	
-//does a PCI type-1 read of PCI config space for a given bus, device, 
+
+//does a PCI type-1 read of PCI config space for a given bus, device,
 //function and index
 void xmhf_baseplatform_arch_x86_pci_type1_read(u32 bus, u32 device, u32 function, u32 index, u32 len,
 			u32 *value);
@@ -233,9 +253,9 @@ void xmhf_baseplatform_arch_x86_initialize_paging(u32 pgtblbase);
 void xmhf_baseplatform_arch_x86_savecpumtrrstate(void);
 void xmhf_baseplatform_arch_x86_restorecpumtrrstate(void);
 
-u32 xmhf_baseplatform_arch_x86_getgdtbase(void);
-u32 xmhf_baseplatform_arch_x86_getidtbase(void);
-u32 xmhf_baseplatform_arch_x86_gettssbase(void);
+u64 xmhf_baseplatform_arch_x86_getgdtbase(void);
+u64 xmhf_baseplatform_arch_x86_getidtbase(void);
+u64 xmhf_baseplatform_arch_x86_gettssbase(void);
 
 
 typedef struct {
@@ -303,7 +323,7 @@ typedef struct {
 
 typedef struct {
 	u32 operation;
-	union {	
+	union {
 		struct regs cpugprs;
 		xc_hypapp_arch_param_x86vmx_cbtrapio_t cbtrapio;
 		xc_hypapp_arch_param_x86vmx_trapio_t trapio;
@@ -316,17 +336,16 @@ typedef struct {
 } __attribute__ ((packed)) xc_hypapp_arch_param_t;
 
 typedef struct {
-  u8 vmx_vmxon_region[PAGE_SIZE_4K];    		
-  u8 vmx_vmcs_region[PAGE_SIZE_4K];           
-  u8 vmx_msr_area_host_region[2*PAGE_SIZE_4K];		
-  u8 vmx_msr_area_guest_region[2*PAGE_SIZE_4K];		
-  u64 vmx_msrs[IA32_VMX_MSRCOUNT];  
+  u8 vmx_vmxon_region[PAGE_SIZE_4K] __attribute__((aligned(4096)));
+  u8 vmx_vmcs_region[PAGE_SIZE_4K] __attribute__((aligned(4096)));
+  u8 vmx_msr_area_host_region[2*PAGE_SIZE_4K] __attribute__((aligned(4096)));
+  u8 vmx_msr_area_guest_region[2*PAGE_SIZE_4K] __attribute__((aligned(4096)));
+  u64 vmx_msrs[IA32_VMX_MSRCOUNT];
   u64 vmx_msr_efer;
   u64 vmx_msr_efcr;
-  struct regs x86gprs;
 } __attribute__((packed)) xc_cpuarchdata_x86vmx_t;
-	
-	
+
+
 typedef struct {
   u8 vmx_ept_pml4_table[PAGE_SIZE_4K];												//PML4 table
   u8 vmx_ept_pdp_table[PAGE_SIZE_4K];												//PDP table
@@ -369,7 +388,7 @@ void xmhf_baseplatform_arch_x86vmx_allocandsetupvcpus(u32 cpu_vendor);
 //--debug: dumpVMCS dumps VMCS contents
 //void xmhf_baseplatform_arch_x86vmx_dumpVMCS(VCPU *vcpu);
 
-void xmhf_memprot_arch_x86vmx_flushmappings(void); //flush hardware page table mappings (TLB) 
+void xmhf_memprot_arch_x86vmx_flushmappings(void); //flush hardware page table mappings (TLB)
 u64 xmhf_memprot_arch_x86vmx_get_EPTP(void); // get or set EPTP (only valid on Intel)
 void xmhf_memprot_arch_x86vmx_set_EPTP(u64 eptp);
 

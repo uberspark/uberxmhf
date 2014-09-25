@@ -142,31 +142,15 @@ u32 hd_runtimesize=0;
 
 // hypapp initialization
 u32 xmhf_hypapp_initialization(context_desc_t context_desc, hypapp_env_block_t hypappenvb){
-	_XDPRINTF_("\nCPU %u: hyperDEP initializing", context_desc.cpu_desc.cpu_index);
+	_XDPRINTF_("CPU %u: hyperDEP initializing\n", context_desc.cpu_desc.cpu_index);
 
 	//store runtime base and size
 	hd_runtimephysbase = hypappenvb.runtimephysmembase;
 	hd_runtimesize = hypappenvb.runtimesize;
-	_XDPRINTF_("\n%s: XMHF runtime base=%08x, size=%08x", __FUNCTION__, hd_runtimephysbase, hd_runtimesize);
 
-	//apb->runtimephysmembase=0;	//write to core parameter area, should trigger a #PF
-	//*((u32 *)0x10000000) = 0; 	//write to core memory, should trigger a #PF
-	//{
-	//		typedef void (*testfun)(void);
-	//		testfun fun = (testfun)0x10000000;
-	//		fun();	//execute arbitrary code in core memory region, should trigger a #pf
-	//}
+	_XDPRINTF_("%s: XMHF runtime base=%08x, size=%08x\n", __FUNCTION__, hd_runtimephysbase, hd_runtimesize);
 
-	//{//trapmask API test
-	//	xc_hypapp_arch_param_t xc_hypapp_arch_param;
-	//	xc_hypapp_arch_param.operation = XC_HYPAPP_ARCH_PARAM_OPERATION_TRAP_IO;
-	//	xc_hypapp_arch_param.params[0] = 0x2000;
-	//	xc_hypapp_arch_param.params[1] = 0x4;
-	//	xc_api_trapmask_set(context_desc, xc_hypapp_arch_param);
-	//	xc_api_trapmask_clear(context_desc, xc_hypapp_arch_param);
-	//}
-
-	_XDPRINTF_("\nCPU %u: hyperDEP initialized!", context_desc.cpu_desc.cpu_index);
+	_XDPRINTF_("CPU %u: hyperDEP initialized!\n", context_desc.cpu_desc.cpu_index);
 
 	return APP_INIT_SUCCESS;  //successful
 }
@@ -185,7 +169,11 @@ static void hd_activatedep(context_desc_t context_desc, u32 gpa){
     entry = srval.retval_u64;
     XMHF_SLAB_CALL_P2P(xcapi, XMHF_SLAB_XHHYPERDEP_INDEX, XMHF_SLAB_XCAPI_INDEX, XMHF_SLAB_XCAPI_FNXCAPIHPTSETENTRY, XMHF_SLAB_XCAPI_FNXCAPIHPTSETENTRY_SIZE, context_desc, (u64)gpa, entry);
 	XMHF_SLAB_CALL_P2P(xcapi, XMHF_SLAB_XHHYPERDEP_INDEX, XMHF_SLAB_XCAPI_INDEX, XMHF_SLAB_XCAPI_FNXCAPIHPTSETPROT, XMHF_SLAB_XCAPI_FNXCAPIHPTSETPROT_SIZE, context_desc, (u64)gpa, (u32)(MEMP_PROT_PRESENT | MEMP_PROT_READWRITE | MEMP_PROT_NOEXECUTE));
-    XMHF_SLAB_CALL_P2P(xcapi, XMHF_SLAB_XHHYPERDEP_INDEX, XMHF_SLAB_XCAPI_INDEX, XMHF_SLAB_XCAPI_FNXCAPIHPTFLUSHCACHESSMP, XMHF_SLAB_XCAPI_FNXCAPIHPTFLUSHCACHESSMP_SIZE, context_desc);
+
+	//flush hpt caches on CPU
+    XMHF_SLAB_CALL_P2P(xcapi, XMHF_SLAB_XHHYPERDEP_INDEX, XMHF_SLAB_XCAPI_INDEX, XMHF_SLAB_XCAPI_FNXCAPIHPTFLUSHCACHES, XMHF_SLAB_XCAPI_FNXCAPIHPTFLUSHCACHES_SIZE, context_desc);
+	//quiesce all CPUs to perform TLB shootdown
+    XMHF_SLAB_CALL_P2P(xcapi, XMHF_SLAB_XHHYPERDEP_INDEX, XMHF_SLAB_XCAPI_INDEX, XMHF_SLAB_XCAPI_FNXCAPIQUIESCECPUSINPARTITION, XMHF_SLAB_XCAPI_FNXCAPIQUIESCECPUSINPARTITION_SIZE, context_desc);
 
 	_XDPRINTF_("\nCPU(%02x): %s removed EXECUTE permission for page at gpa %08x", context_desc.cpu_desc.cpu_index, __FUNCTION__, gpa);
 }
@@ -193,12 +181,19 @@ static void hd_activatedep(context_desc_t context_desc, u32 gpa){
 //de-activate DEP protection
 static void hd_deactivatedep(context_desc_t context_desc, u32 gpa){
 	XMHF_SLAB_CALL_P2P(xcapi, XMHF_SLAB_XHHYPERDEP_INDEX, XMHF_SLAB_XCAPI_INDEX, XMHF_SLAB_XCAPI_FNXCAPIHPTSETPROT, XMHF_SLAB_XCAPI_FNXCAPIHPTSETPROT_SIZE, context_desc, (u64)gpa, (u32)(MEMP_PROT_PRESENT | MEMP_PROT_READWRITE | MEMP_PROT_EXECUTE));
-    XMHF_SLAB_CALL_P2P(xcapi, XMHF_SLAB_XHHYPERDEP_INDEX, XMHF_SLAB_XCAPI_INDEX, XMHF_SLAB_XCAPI_FNXCAPIHPTFLUSHCACHESSMP, XMHF_SLAB_XCAPI_FNXCAPIHPTFLUSHCACHESSMP_SIZE, context_desc);
+
+	//flush hpt caches on CPU
+    XMHF_SLAB_CALL_P2P(xcapi, XMHF_SLAB_XHHYPERDEP_INDEX, XMHF_SLAB_XCAPI_INDEX, XMHF_SLAB_XCAPI_FNXCAPIHPTFLUSHCACHES, XMHF_SLAB_XCAPI_FNXCAPIHPTFLUSHCACHES_SIZE, context_desc);
+	//quiesce all CPUs to perform TLB shootdown
+    XMHF_SLAB_CALL_P2P(xcapi, XMHF_SLAB_XHHYPERDEP_INDEX, XMHF_SLAB_XCAPI_INDEX, XMHF_SLAB_XCAPI_FNXCAPIQUIESCECPUSINPARTITION, XMHF_SLAB_XCAPI_FNXCAPIQUIESCECPUSINPARTITION_SIZE, context_desc);
+
+
 	_XDPRINTF_("\nCPU(%02x): %s added EXECUTE permission for page at gpa %08x", context_desc.cpu_desc.cpu_index, __FUNCTION__, gpa);
+
 }
 
 static void hd_initialize(context_desc_t context_desc){
-	_XDPRINTF_("\n%s: nothing to do", __FUNCTION__);
+	_XDPRINTF_("%s: nothing to do\n", __FUNCTION__);
 }
 
 
@@ -224,10 +219,10 @@ u32 xmhf_hypapp_handlehypercall(context_desc_t context_desc, u64 hypercall_id, u
 			srval = XMHF_SLAB_CALL_P2P(xcapi, XMHF_SLAB_XHHYPERDEP_INDEX, XMHF_SLAB_XCAPI_INDEX, XMHF_SLAB_XCAPI_FNXCAPIHPTLVL2PAGEWALK, XMHF_SLAB_XCAPI_FNXCAPIHPTLVL2PAGEWALK_SIZE, context_desc, gva);
 			gpa = srval.retval_u32;
 			if(gpa == 0xFFFFFFFFUL){
-				_XDPRINTF_("\nCPU(%02x): WARNING: unable to get translation for gva=%x, just returning", context_desc.cpu_desc.cpu_index, gva);
+				_XDPRINTF_("CPU(%02x): WARNING: unable to get translation for gva=%x, just returning\n", context_desc.cpu_desc.cpu_index, gva);
 				return status;
 			}
-			_XDPRINTF_("\nCPU(%02x): translated gva=%x to gpa=%x", context_desc.cpu_desc.cpu_index, gva, gpa);
+			_XDPRINTF_("CPU(%02x): translated gva=%x to gpa=%x\n", context_desc.cpu_desc.cpu_index, gva, gpa);
 			hd_activatedep(context_desc, gpa);
 		}
 		break;
@@ -236,16 +231,16 @@ u32 xmhf_hypapp_handlehypercall(context_desc_t context_desc, u64 hypercall_id, u
 			srval = XMHF_SLAB_CALL_P2P(xcapi, XMHF_SLAB_XHHYPERDEP_INDEX, XMHF_SLAB_XCAPI_INDEX, XMHF_SLAB_XCAPI_FNXCAPIHPTLVL2PAGEWALK, XMHF_SLAB_XCAPI_FNXCAPIHPTLVL2PAGEWALK_SIZE, context_desc, gva);
             gpa = srval.retval_u32;
 			if(gpa == 0xFFFFFFFFUL){
-				_XDPRINTF_("\nCPU(%02x): WARNING: unable to get translation for gva=%x, just returning", context_desc.cpu_desc.cpu_index, gva);
+				_XDPRINTF_("CPU(%02x): WARNING: unable to get translation for gva=%x, just returning\n", context_desc.cpu_desc.cpu_index, gva);
 				return status;
 			}
-			_XDPRINTF_("\nCPU(%02x): translated gva=%x to gpa=%x", context_desc.cpu_desc.cpu_index, gva, gpa);
+			_XDPRINTF_("CPU(%02x): translated gva=%x to gpa=%x\n", context_desc.cpu_desc.cpu_index, gva, gpa);
 			hd_deactivatedep(context_desc, gpa);
 		}
 		break;
 
 		default:
-			_XDPRINTF_("\nCPU(0x%02x): unsupported hypercall (0x%08x)!!",
+			_XDPRINTF_("CPU(0x%02x): unsupported hypercall (0x%08x)!!\n",
 			  context_desc.cpu_desc.cpu_index, call_id);
 			status=APP_ERROR;
 			break;
@@ -260,6 +255,7 @@ u32 xmhf_hypapp_handlehypercall(context_desc_t context_desc, u64 hypercall_id, u
 void xmhf_hypapp_handleshutdown(context_desc_t context_desc){
 	_XDPRINTF_("\n%s:%u: rebooting now", __FUNCTION__, context_desc.cpu_desc.cpu_index);
 	XMHF_SLAB_CALL_P2P(xcapi, XMHF_SLAB_XHHYPERDEP_INDEX, XMHF_SLAB_XCAPI_INDEX, XMHF_SLAB_XCAPI_FNXCAPIPLATFORMSHUTDOWN, XMHF_SLAB_XCAPI_FNXCAPIPLATFORMSHUTDOWN_SIZE, context_desc);
+
 }
 
 //handles h/w pagetable violations
@@ -267,7 +263,7 @@ void xmhf_hypapp_handleshutdown(context_desc_t context_desc){
 u32 xmhf_hypapp_handleintercept_hptfault(context_desc_t context_desc, u64 gpa, u64 gva, u64 error_code){
 	u32 status = APP_SUCCESS;
 
-	_XDPRINTF_("\nCPU(%02x): FATAL HWPGTBL violation (gva=%x, gpa=%x, code=%x): app tried to execute data page??", context_desc.cpu_desc.cpu_index, (u32)gva, (u32)gpa, (u32)error_code);
+	_XDPRINTF_("CPU(%02x): FATAL HWPGTBL violation (gva=%x, gpa=%x, code=%x): app tried to execute data page??\n", context_desc.cpu_desc.cpu_index, (u32)gva, (u32)gpa, (u32)error_code);
 	HALT();
 
 	return status;
@@ -278,6 +274,13 @@ u32 xmhf_hypapp_handleintercept_hptfault(context_desc_t context_desc, u64 gpa, u
 //returns either APP_IOINTERCEPT_SKIP or APP_IOINTERCEPT_CHAIN
 u32 xmhf_hypapp_handleintercept_trap(context_desc_t context_desc, xc_hypapp_arch_param_t xc_hypapp_arch_param){
  	return APP_TRAP_CHAIN;
+}
+
+
+//quiesce handler
+void xmhf_hypapp_handlequiesce(context_desc_t context_desc){
+	//flush hpt caches on CPU
+    XMHF_SLAB_CALL_P2P(xcapi, XMHF_SLAB_XHHYPERDEP_INDEX, XMHF_SLAB_XCAPI_INDEX, XMHF_SLAB_XCAPI_FNXCAPIHPTFLUSHCACHES, XMHF_SLAB_XCAPI_FNXCAPIHPTFLUSHCACHES_SIZE, context_desc);
 }
 
 ////////

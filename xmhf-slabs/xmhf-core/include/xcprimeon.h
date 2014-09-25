@@ -46,9 +46,9 @@
 
 
 /*
- * 
- *  XMHF core primeon slab 
- * 
+ *
+ *  XMHF core primeon slab
+ *
  *  author: amit vasudevan (amitvasudevan@acm.org)
  */
 
@@ -64,10 +64,13 @@ void xcprimeon_interface(void);
 //ARCH. BACKENDS
 //----------------------------------------------------------------------
 void xcprimeon_arch_entry(void);
-void xcprimeon_arch_initialize(void);
+void xcprimeon_arch_cpu_activate_modeandpaging(u64 pgtblbase);
+void xcprimeon_arch_cpu_basicinit(void);
 void xcprimeon_arch_postdrt(void);
+void xcprimeon_arch_platform_initialize();
 void xcprimeon_arch_earlydmaprot(u32 membase, u32 size);
-void xcprimeon_arch_initialize_page_tables();
+u64 xcprimeon_arch_initialize_page_tables();
+void xcprimeon_arch_relinquish_control(void);
 
 
 #endif	//__ASSEMBLY__

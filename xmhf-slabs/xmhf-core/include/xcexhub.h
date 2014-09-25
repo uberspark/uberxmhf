@@ -64,7 +64,7 @@ slab_retval_t xcexhub_interface(u32 src_slabid, u32 dst_slabid, u32 fn_id, u32 f
 //ARCH. BACKENDS
 //----------------------------------------------------------------------
 void xcexhub_arch_initialize(void);
-
+bool xmhf_xcphandler_arch_hub(u64 vector, void *exdata);
 
 #endif	//__ASSEMBLY__
 

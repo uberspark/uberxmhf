@@ -61,7 +61,10 @@
 slab_retval_t xcrichguest_interface(u32 src_slabid, u32 dst_slabid, u32 fn_id, u32 fn_paramsize, ...);
 
 
-bool xcrichguest_entry(u32 cpuid, bool is_bsp);
+//bool xcrichguest_entry(u32 cpuid, bool is_bsp);
+context_desc_t xcrichguest_addcpu(u32 partition_index, u32 cpuid, bool is_bsp);
+void xcrichguest_initialize(u32 partition_index);
+
 
 //----------------------------------------------------------------------
 //ARCH. BACKENDS

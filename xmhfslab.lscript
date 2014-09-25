@@ -46,11 +46,11 @@
 
 #include <xmhf.h>
 
-OUTPUT_ARCH("i386")
+/*OUTPUT_ARCH("x86-64")*/
 
 MEMORY
 {
-  slabmem (rwxai) : ORIGIN = 0, LENGTH = 16M /* max. length */
+  slabmem (rwxai) : ORIGIN = 0, LENGTH = 32M /* max. length */
   unaccounted (rwxai) : ORIGIN = 0, LENGTH = 0 /* see section .unaccounted at end */
 }
 
@@ -68,19 +68,19 @@ SECTIONS
 	
 	.slabcode : {
 		*(.text)
-	} >slabmem =0x9090 
+	} >slabmem =0x9090
 
 	.slabrodata : {
 		*(.rodata)
 		*(.rodata.str1.1)
 		*(.comment)
-		*(.eh_frame) 
-	} >slabmem =0x0000 
+		*(.eh_frame)
+	} >slabmem =0x0000
 
 	.slabrwdata : {
 		*(.data)
 		*(.bss)
-	} >slabmem =0x0000 
+	} >slabmem =0x0000
 
 	.slabstack : {
 		*(.stack)
@@ -93,7 +93,7 @@ SECTIONS
 
 	.libxmhfdebugdata : {
 		*(.libxmhfdebugdata)
-	} >slabmem  
+	} >slabmem
 
 	/* this is to cause the link to fail if there is
 	* anything we didn't explicitly place.
@@ -104,6 +104,6 @@ SECTIONS
 	.unaccounted : {
 	*(*)
 	} >unaccounted
-	
-	
+
+
 }
