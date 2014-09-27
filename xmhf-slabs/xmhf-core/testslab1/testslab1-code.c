@@ -140,5 +140,5 @@ slab_retval_t testslab1_interface(u64 src_slabid, u64 dst_slabid, u64 call_type,
 
 
 
-XMHF_SLAB_DEF(testslab1)
+XMHF_SLAB_DEFENTRYSTUB(testslab1)
 
