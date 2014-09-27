@@ -150,10 +150,27 @@ __attribute (( section(".slabtrampoline") )) void _slab_trampolinenew(u64 rsv0, 
     _XDPRINTF_("%s: got control: src slabid=%u, dst slabid=%u, call_type=%u\n",
                 __FUNCTION__, src_slabid, dst_slabid, call_type);
 
-    //debug
-    _XDPRINTF_("Halting!\n");
-    _XDPRINTF_("XMHF Tester Finished!\n");
-    HALT();
+
+    asm volatile (
+        "movq %0, %%rdi \r\n"
+        "movq %1, %%rsi \r\n"
+        "movq %2, %%rdx \r\n"
+        "movq %3, %%rcx \r\n"
+		"movq %%rbp, %%rsp \r\n"
+		"movq (%%rsp), %%rbp \r\n"
+		"addq $8, %%rsp \r\n"
+        "movq %4, %%r8 \r\n"
+        "jmp *%%r8 \r\n"
+        :
+        : "m" (rsv0), "m" (src_slabid), "m" (dst_slabid),
+          "m" (call_type), "m" (_slab_table[dst_slabid].entry_cr3_new)
+        : "rdi", "rsi", "rdx", "rcx", "rsp", "rbp", "r8"
+    );
+
+    ////debug
+    //_XDPRINTF_("Halting!\n");
+    //_XDPRINTF_("XMHF Tester Finished!\n");
+    //HALT();
 
 }
 
