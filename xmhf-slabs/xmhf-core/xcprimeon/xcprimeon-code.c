@@ -85,12 +85,6 @@ void xcprimeon_entry(void){
 		}
   	}
 
-    //debug
-    _XDPRINTF_("Halting!\n");
-    _XDPRINTF_("XMHF Tester Finished!\n");
-    HALT();
-
-
 	//initialize cpu table and total platform CPUs
 	{
 	    u32 i;
@@ -128,20 +122,26 @@ void xcprimeon_entry(void){
 			u32 i;
 
 			for(i=0; i < XMHF_SLAB_NUMBEROFSLABS; i++){
-				_XDPRINTF_("\nslab %u: dumping slab header", i);
-				_XDPRINTF_("\n	slab_index=%u", _slab_table[i].slab_index);
-				_XDPRINTF_("\n	slab_macmid=%08x", _slab_table[i].slab_macmid);
-				_XDPRINTF_("\n	slab_privilegemask=%08x", _slab_table[i].slab_privilegemask);
-				_XDPRINTF_("\n	slab_tos=%08x", _slab_table[i].slab_tos);
-				_XDPRINTF_("\n  slab_rodata(%08x-%08x)", _slab_table[i].slab_rodata.start, _slab_table[i].slab_rodata.end);
-				_XDPRINTF_("\n  slab_rwdata(%08x-%08x)", _slab_table[i].slab_rwdata.start, _slab_table[i].slab_rwdata.end);
-				_XDPRINTF_("\n  slab_code(%08x-%08x)", _slab_table[i].slab_code.start, _slab_table[i].slab_code.end);
-				_XDPRINTF_("\n  slab_stack(%08x-%08x)", _slab_table[i].slab_stack.start, _slab_table[i].slab_stack.end);
+				_XDPRINTF_("slab %u: dumping slab header\n", i);
+				_XDPRINTF_("	slab_index=%u\n", _slab_table[i].slab_index);
+				_XDPRINTF_("	slab_macmid=%08x\n", _slab_table[i].slab_macmid);
+				_XDPRINTF_("	slab_privilegemask=%08x\n", _slab_table[i].slab_privilegemask);
+				_XDPRINTF_("	slab_tos=%08x\n", _slab_table[i].slab_tos);
+				_XDPRINTF_("  slab_rodata(%08x-%08x)\n", _slab_table[i].slab_rodata.start, _slab_table[i].slab_rodata.end);
+				_XDPRINTF_("  slab_rwdata(%08x-%08x)\n", _slab_table[i].slab_rwdata.start, _slab_table[i].slab_rwdata.end);
+				_XDPRINTF_("  slab_code(%08x-%08x)\n", _slab_table[i].slab_code.start, _slab_table[i].slab_code.end);
+				_XDPRINTF_("  slab_stack(%08x-%08x)\n", _slab_table[i].slab_stack.start, _slab_table[i].slab_stack.end);
 				//_XDPRINTF_("\n  slab_trampoline(%08x-%08x)", _slab_table[i].slab_trampoline.start, _slab_table[i].slab_trampoline.end);
-				_XDPRINTF_("\n  slab_entrycr3=%08x", _slab_table[i].entry_cr3);
-				_XDPRINTF_("\n  slab_entrycr3_new=%08x", _slab_table[i].entry_cr3_new);
+				_XDPRINTF_("  slab_entrycr3=%08x\n", _slab_table[i].entry_cr3);
+				_XDPRINTF_("  slab_entrycr3_new=%08x\n", _slab_table[i].entry_cr3_new);
 		}
 	}
+
+
+    //debug
+    _XDPRINTF_("Halting!\n");
+    _XDPRINTF_("XMHF Tester Finished!\n");
+    HALT();
 
 	//initialize slab page tables
 	//xcprimeon_initialize_slab_tables();
