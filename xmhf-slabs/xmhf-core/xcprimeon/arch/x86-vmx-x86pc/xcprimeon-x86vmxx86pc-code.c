@@ -841,7 +841,7 @@ static struct {
 #define _SLAB_SPATYPE_NOTASLAB					(0xFF00)
 
 static u32 _xcprimeon_slab_getspatype(u32 slab_index, u32 spa){
-	u32 i;
+/*	u32 i;
 
 	//slab memory regions
 	for(i=0; i < XMHF_SLAB_NUMBEROFSLABS; i++){
@@ -870,7 +870,7 @@ static u32 _xcprimeon_slab_getspatype(u32 slab_index, u32 spa){
 	if(spa >= (u32)_slab_trampoline_memregion_start && spa < (u32)_slab_trampoline_memregion_end){
 			return _SLAB_SPATYPE_SLAB_TRAMPOLINE; //map read-only in all slabs
 	}
-
+*/
 
 	return _SLAB_SPATYPE_NOTASLAB;
 }

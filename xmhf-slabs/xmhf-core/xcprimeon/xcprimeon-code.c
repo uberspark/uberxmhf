@@ -138,13 +138,12 @@ void xcprimeon_entry(void){
 	}
 
 
-    //debug
-    _XDPRINTF_("Halting!\n");
-    _XDPRINTF_("XMHF Tester Finished!\n");
-    HALT();
+    //initialize page tables
+    pgtblbase = xcprimeon_arch_initialize_slab_tables();
 
-	//initialize slab page tables
-	//xcprimeon_initialize_slab_tables();
+    //activate paging and associated operating mode
+    xcprimeon_arch_cpu_activate_modeandpaging(pgtblbase);
+
 
 	//[test] testslab1
 	//{
@@ -155,11 +154,10 @@ void xcprimeon_entry(void){
 	//}
 
 
-    //initialize page tables
-    pgtblbase = xcprimeon_arch_initialize_slab_tables();
-
-    //activate paging and associated operating mode
-    xcprimeon_arch_cpu_activate_modeandpaging(pgtblbase);
+    //debug
+    _XDPRINTF_("Halting!\n");
+    _XDPRINTF_("XMHF Tester Finished!\n");
+    HALT();
 
 	//proceed with SMP initialization
     xcprimeon_arch_relinquish_control();
