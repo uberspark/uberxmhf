@@ -254,7 +254,19 @@ __attribute__ ((section(".slab_trampoline"))) __attribute__((naked)) __attribute
 
 
 
-#define XMHF_SLAB_CALLP2P(slab_name, src_slabid, dst_slabid, call_type, rsv0, ...) slab_name##_interface(src_slabid, dst_slabid, call_type, rsv0, __VA_ARGS__)
+
+__attribute__ ((section(".slab_trampoline"))) __attribute__((naked)) __attribute__ ((noinline)) static inline slab_retval_t __xmhf_slab_callstubp2p(u64 src_slabid, u64 dst_slabid, u64 call_type, u64 rsv0, u64 rsv1, slab_params_t srparams){
+
+    asm volatile (
+        "jmp _slab_trampolinenew \r\n"
+    );
+
+}
+
+
+
+//#define XMHF_SLAB_CALLP2P(slab_name, src_slabid, dst_slabid, call_type, rsv0, ...) slab_name##_interface(src_slabid, dst_slabid, call_type, rsv0, __VA_ARGS__)
+#define XMHF_SLAB_CALLP2P(slab_name, src_slabid, dst_slabid, call_type, rsv0, ...) __xmhf_slab_callstubp2p(src_slabid, dst_slabid, call_type, rsv0, __VA_ARGS__)
 
 #define XMHF_SLAB_DEFENTRYSTUB(slab_name)	\
 	__attribute__ ((section(".stack"))) u8 slab_name##_slab_stack[XMHF_SLAB_STACKSIZE];	\

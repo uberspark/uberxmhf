@@ -145,6 +145,23 @@ __attribute__((naked)) __attribute (( section(".slabtrampoline") )) void _slab_t
 */
 
 
+__attribute (( section(".slabtrampoline") )) void _slab_trampolinenew(u64 rsv0, u64 src_slabid, u64 dst_slabid, u64 call_type, u64 rsv1, u64 rsv2){
+
+    _XDPRINTF_("%s: got control: src slabid=%u, dst slabid=%u, call_type=%u\n",
+                __FUNCTION__, src_slabid, dst_slabid, call_type);
+
+    //debug
+    _XDPRINTF_("Halting!\n");
+    _XDPRINTF_("XMHF Tester Finished!\n");
+    HALT();
+
+}
+
+
+
+
+
+#if 0
 
 //parameter-1: in ecx = struct *
 //parameter-2: in edx = parameter size/opcall
@@ -234,3 +251,5 @@ __attribute__((fastcall)) __attribute (( section(".slabtrampoline") )) void _sla
 	//_XDPRINTF_("%s: Halting, aggrettypeptr=%08x!\n", __FUNCTION__, aggrettypeptr);
 	//HALT();
 }
+
+#endif // 0
