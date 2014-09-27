@@ -95,7 +95,20 @@ typedef union {
 		context_desc_t retval_context_desc;
 		xc_hypapp_arch_param_t retval_xc_hypapp_arch_param;
         xc_platformdevice_desc_t retval_xc_platformdevice_desc;
-} slab_retval_t;
+}__attribute__((packed)) slab_retval_t;
+
+typedef struct {
+    bool input_bool[8];
+    u64 input_u64[8];
+    u32 input_u32[8];
+    u16 input_u16[8];
+    u8 input_u8[8];
+    struct regs input_regs;
+    context_desc_t input_context_desc;
+    xc_hypapp_arch_param_t input_xc_hypapp_arch_param;
+    xc_platformdevice_desc_t input_xc_platformdevice_desc;
+}__attribute__((packed)) slab_params_t;
+
 
 extern __attribute__(( section(".sharedro_xcbootinfoptr") )) XMHF_BOOTINFO *xcbootinfo;
 extern __attribute__ ((section(".sharedro_slab_table"))) slab_header_t _slab_table[XMHF_SLAB_NUMBEROFSLABS];
@@ -241,7 +254,7 @@ __attribute__ ((section(".slab_trampoline"))) __attribute__((naked)) __attribute
 
 
 
-#define XMHF_SLAB_CALLP2P(slab_name, src_slabid, dst_slabid) slab_name##_interface(src_slabid, dst_slabid)
+#define XMHF_SLAB_CALLP2P(slab_name, src_slabid, dst_slabid, call_type, rsv0, ...) slab_name##_interface(src_slabid, dst_slabid, call_type, rsv0, __VA_ARGS__)
 
 
 
