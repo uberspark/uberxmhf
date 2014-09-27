@@ -237,6 +237,18 @@ __attribute__ ((section(".slab_trampoline"))) __attribute__((naked)) __attribute
 
 #define XMHF_SLAB_CALL(x)   x
 
+
+
+
+
+#define XMHF_SLAB_CALLP2P(slab_name, src_slabid, dst_slabid) slab_name##_interface(src_slabid, dst_slabid)
+
+
+
+
+
+
+
 #endif //__ASSEMBLY__
 
 #endif //__XMHF_SLAB_H__

@@ -146,12 +146,14 @@ void xcprimeon_entry(void){
 
 
 	//[test] testslab1
-	//{
-	//		//invoke slab interfaces
-	//		_XDPRINTF_("%s: preparing to invoke entry_0, esp=%x\n", __FUNCTION__, read_esp());
-	//		XMHF_SLAB_CALL_P2P(testslab1, XMHF_SLAB_XCPRIMEON_INDEX, XMHF_SLAB_TESTSLAB1_INDEX, 0, 0);
-	//		_XDPRINTF_("%s: came back from entry_0, esp=%x\n", __FUNCTION__, read_esp());
-	//}
+	{
+			slab_retval_t srval;
+			//invoke slab interfaces
+			_XDPRINTF_("%s: preparing to invoke testslab1, rsp=%016llx\n", __FUNCTION__, read_rsp());
+			srval = XMHF_SLAB_CALLP2P(testslab1, XMHF_SLAB_XCPRIMEON_INDEX, XMHF_SLAB_TESTSLAB1_INDEX);
+			_XDPRINTF_("%s: came back from testslab1, rsp=%016llx\n", __FUNCTION__, read_rsp());
+			_XDPRINTF_("%s: testslab1 retval.u64=%016llx\n", __FUNCTION__, srval.retval_u64);
+	}
 
 
     //debug

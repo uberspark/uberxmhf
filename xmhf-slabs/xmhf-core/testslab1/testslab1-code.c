@@ -53,15 +53,27 @@
 
 /*
  * slab code
- * 
+ *
  * author: amit vasudevan (amitvasudevan@acm.org)
  */
-slab_retval_t testslab1_interface(u32 src_slabid, u32 dst_slabid, u32 fn_id, u32 fn_paramsize, ...){
+
+slab_retval_t testslab1_interface(u64 src_slabid, u64 dst_slabid){
+	slab_retval_t srval;
+
+	_XDPRINTF_("%s: Got control: src_slabid=%u, dst_slabid=%u\n",
+                __FUNCTION__, src_slabid, dst_slabid);
+
+
+    srval.retval_u64 = 0xAA;
+    return srval;
+}
+
+/*slab_retval_t testslab1_interface(u32 src_slabid, u32 dst_slabid, u32 fn_id, u32 fn_paramsize, ...){
 	slab_retval_t srval;
 	xc_hypapp_arch_param_t ap_input;
 
 	_XDPRINTF_("%s: Got control: src_slabid=%u, dst_slabid=%u, fn_id=%u\n", __FUNCTION__, src_slabid, dst_slabid, fn_id);
-	
+
 	_XDPRINTF_("%s: proceeding to invoke testslab2, entry1 subinterface, TOS=%08x\n", __FUNCTION__, read_esp());
 	srval = XMHF_SLAB_CALL_P2P(testslab2, XMHF_SLAB_TESTSLAB1_INDEX, XMHF_SLAB_TESTSLAB2_INDEX, XMHF_SLAB_TESTSLAB2_FNENTRY1, XMHF_SLAB_TESTSLAB2_FNENTRY1_SIZE);
 	_XDPRINTF_("%s: came back, TOS=%08x\n", __FUNCTION__, read_esp());
@@ -77,49 +89,49 @@ slab_retval_t testslab1_interface(u32 src_slabid, u32 dst_slabid, u32 fn_id, u32
 
 
 	ap_input.operation = XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_INFOREGS;
-	ap_input.param.inforegs.info_vminstr_error = 0; 
-	ap_input.param.inforegs.info_vmexit_reason = 1; 
-	ap_input.param.inforegs.info_vmexit_interrupt_information = 2; 
-	ap_input.param.inforegs.info_vmexit_interrupt_error_code = 3; 
-	ap_input.param.inforegs.info_idt_vectoring_information = 4; 
-	ap_input.param.inforegs.info_idt_vectoring_error_code = 5; 
-	ap_input.param.inforegs.info_vmexit_instruction_length = 6; 
-	ap_input.param.inforegs.info_vmx_instruction_information = 7; 
-	ap_input.param.inforegs.info_exit_qualification = 8; 
-	ap_input.param.inforegs.info_io_rcx = 9; 
-	ap_input.param.inforegs.info_io_rsi = 10; 
-	ap_input.param.inforegs.info_io_rdi = 11; 
-	ap_input.param.inforegs.info_io_rip = 12; 
-	ap_input.param.inforegs.info_guest_linear_address = 13; 
-	ap_input.param.inforegs.info_guest_paddr_full = 14; 
+	ap_input.param.inforegs.info_vminstr_error = 0;
+	ap_input.param.inforegs.info_vmexit_reason = 1;
+	ap_input.param.inforegs.info_vmexit_interrupt_information = 2;
+	ap_input.param.inforegs.info_vmexit_interrupt_error_code = 3;
+	ap_input.param.inforegs.info_idt_vectoring_information = 4;
+	ap_input.param.inforegs.info_idt_vectoring_error_code = 5;
+	ap_input.param.inforegs.info_vmexit_instruction_length = 6;
+	ap_input.param.inforegs.info_vmx_instruction_information = 7;
+	ap_input.param.inforegs.info_exit_qualification = 8;
+	ap_input.param.inforegs.info_io_rcx = 9;
+	ap_input.param.inforegs.info_io_rsi = 10;
+	ap_input.param.inforegs.info_io_rdi = 11;
+	ap_input.param.inforegs.info_io_rip = 12;
+	ap_input.param.inforegs.info_guest_linear_address = 13;
+	ap_input.param.inforegs.info_guest_paddr_full = 14;
 
 	_XDPRINTF_("%s: preparing to invoke testslab2, entry4 subinterface, TOS=%08x\n", __FUNCTION__, read_esp());
 	srval= XMHF_SLAB_CALL_P2P(testslab2, XMHF_SLAB_TESTSLAB1_INDEX, XMHF_SLAB_TESTSLAB2_INDEX, XMHF_SLAB_TESTSLAB2_FNENTRY4, XMHF_SLAB_TESTSLAB2_FNENTRY4_SIZE, srval.retval_context_desc, ap_input);
 	_XDPRINTF_("%s: came back, TOS=%08x", __FUNCTION__, read_esp());
 
-	_XDPRINTF_("\nsrval.retval_xc_hypapp_arch_param.param.inforegs.info_vminstr_error                  %u",  srval.retval_xc_hypapp_arch_param.param.inforegs.info_vminstr_error                ); 
-	_XDPRINTF_("\nsrval.retval_xc_hypapp_arch_param.param.inforegs.info_vmexit_reason                  %u",  srval.retval_xc_hypapp_arch_param.param.inforegs.info_vmexit_reason                ); 
-	_XDPRINTF_("\nsrval.retval_xc_hypapp_arch_param.param.inforegs.info_vmexit_interrupt_information   %u",  srval.retval_xc_hypapp_arch_param.param.inforegs.info_vmexit_interrupt_information ); 
-	_XDPRINTF_("\nsrval.retval_xc_hypapp_arch_param.param.inforegs.info_vmexit_interrupt_error_code    %u",  srval.retval_xc_hypapp_arch_param.param.inforegs.info_vmexit_interrupt_error_code  ); 
-	_XDPRINTF_("\nsrval.retval_xc_hypapp_arch_param.param.inforegs.info_idt_vectoring_information      %u",  srval.retval_xc_hypapp_arch_param.param.inforegs.info_idt_vectoring_information    ); 
-	_XDPRINTF_("\nsrval.retval_xc_hypapp_arch_param.param.inforegs.info_idt_vectoring_error_code       %u",  srval.retval_xc_hypapp_arch_param.param.inforegs.info_idt_vectoring_error_code     ); 
-	_XDPRINTF_("\nsrval.retval_xc_hypapp_arch_param.param.inforegs.info_vmexit_instruction_length      %u",  srval.retval_xc_hypapp_arch_param.param.inforegs.info_vmexit_instruction_length    ); 
-	_XDPRINTF_("\nsrval.retval_xc_hypapp_arch_param.param.inforegs.info_vmx_instruction_information    %u",  srval.retval_xc_hypapp_arch_param.param.inforegs.info_vmx_instruction_information  ); 
-	_XDPRINTF_("\nsrval.retval_xc_hypapp_arch_param.param.inforegs.info_exit_qualification             %llu",  srval.retval_xc_hypapp_arch_param.param.inforegs.info_exit_qualification           ); 
-	_XDPRINTF_("\nsrval.retval_xc_hypapp_arch_param.param.inforegs.info_io_rcx                         %llu",  srval.retval_xc_hypapp_arch_param.param.inforegs.info_io_rcx                       ); 
-	_XDPRINTF_("\nsrval.retval_xc_hypapp_arch_param.param.inforegs.info_io_rsi                         %llu",  srval.retval_xc_hypapp_arch_param.param.inforegs.info_io_rsi                       ); 
-	_XDPRINTF_("\nsrval.retval_xc_hypapp_arch_param.param.inforegs.info_io_rdi                         %llu",  srval.retval_xc_hypapp_arch_param.param.inforegs.info_io_rdi                       ); 
-	_XDPRINTF_("\nsrval.retval_xc_hypapp_arch_param.param.inforegs.info_io_rip                         %llu",  srval.retval_xc_hypapp_arch_param.param.inforegs.info_io_rip                       ); 
-	_XDPRINTF_("\nsrval.retval_xc_hypapp_arch_param.param.inforegs.info_guest_linear_address           %llu",  srval.retval_xc_hypapp_arch_param.param.inforegs.info_guest_linear_address         ); 
-	_XDPRINTF_("\nsrval.retval_xc_hypapp_arch_param.param.inforegs.info_guest_paddr_full               %llu",  srval.retval_xc_hypapp_arch_param.param.inforegs.info_guest_paddr_full             ); 
+	_XDPRINTF_("\nsrval.retval_xc_hypapp_arch_param.param.inforegs.info_vminstr_error                  %u",  srval.retval_xc_hypapp_arch_param.param.inforegs.info_vminstr_error                );
+	_XDPRINTF_("\nsrval.retval_xc_hypapp_arch_param.param.inforegs.info_vmexit_reason                  %u",  srval.retval_xc_hypapp_arch_param.param.inforegs.info_vmexit_reason                );
+	_XDPRINTF_("\nsrval.retval_xc_hypapp_arch_param.param.inforegs.info_vmexit_interrupt_information   %u",  srval.retval_xc_hypapp_arch_param.param.inforegs.info_vmexit_interrupt_information );
+	_XDPRINTF_("\nsrval.retval_xc_hypapp_arch_param.param.inforegs.info_vmexit_interrupt_error_code    %u",  srval.retval_xc_hypapp_arch_param.param.inforegs.info_vmexit_interrupt_error_code  );
+	_XDPRINTF_("\nsrval.retval_xc_hypapp_arch_param.param.inforegs.info_idt_vectoring_information      %u",  srval.retval_xc_hypapp_arch_param.param.inforegs.info_idt_vectoring_information    );
+	_XDPRINTF_("\nsrval.retval_xc_hypapp_arch_param.param.inforegs.info_idt_vectoring_error_code       %u",  srval.retval_xc_hypapp_arch_param.param.inforegs.info_idt_vectoring_error_code     );
+	_XDPRINTF_("\nsrval.retval_xc_hypapp_arch_param.param.inforegs.info_vmexit_instruction_length      %u",  srval.retval_xc_hypapp_arch_param.param.inforegs.info_vmexit_instruction_length    );
+	_XDPRINTF_("\nsrval.retval_xc_hypapp_arch_param.param.inforegs.info_vmx_instruction_information    %u",  srval.retval_xc_hypapp_arch_param.param.inforegs.info_vmx_instruction_information  );
+	_XDPRINTF_("\nsrval.retval_xc_hypapp_arch_param.param.inforegs.info_exit_qualification             %llu",  srval.retval_xc_hypapp_arch_param.param.inforegs.info_exit_qualification           );
+	_XDPRINTF_("\nsrval.retval_xc_hypapp_arch_param.param.inforegs.info_io_rcx                         %llu",  srval.retval_xc_hypapp_arch_param.param.inforegs.info_io_rcx                       );
+	_XDPRINTF_("\nsrval.retval_xc_hypapp_arch_param.param.inforegs.info_io_rsi                         %llu",  srval.retval_xc_hypapp_arch_param.param.inforegs.info_io_rsi                       );
+	_XDPRINTF_("\nsrval.retval_xc_hypapp_arch_param.param.inforegs.info_io_rdi                         %llu",  srval.retval_xc_hypapp_arch_param.param.inforegs.info_io_rdi                       );
+	_XDPRINTF_("\nsrval.retval_xc_hypapp_arch_param.param.inforegs.info_io_rip                         %llu",  srval.retval_xc_hypapp_arch_param.param.inforegs.info_io_rip                       );
+	_XDPRINTF_("\nsrval.retval_xc_hypapp_arch_param.param.inforegs.info_guest_linear_address           %llu",  srval.retval_xc_hypapp_arch_param.param.inforegs.info_guest_linear_address         );
+	_XDPRINTF_("\nsrval.retval_xc_hypapp_arch_param.param.inforegs.info_guest_paddr_full               %llu",  srval.retval_xc_hypapp_arch_param.param.inforegs.info_guest_paddr_full             );
 
 	_XDPRINTF_("\nXMHF Tester Finished!\n");
 	_XDPRINTF_("\n\n");
 	HALT();
-	
-	return srval;	
-}
 
+	return srval;
+}
+*/
 
 
 
