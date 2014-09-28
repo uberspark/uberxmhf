@@ -945,7 +945,7 @@ static u32 _xcprimeon_slab_populate_pagetables(u32 slab_index){
 			}
 		}
 
-		return (u32)_slab_pagetables[slab_index].pml4t;
+		return (u32)_slab_pagetables[slab_index].pml4t | (u32)(slab_index+1);
 }
 
 
@@ -989,6 +989,12 @@ void xcprimeon_arch_cpu_basicinit(void){
 		t_cr4 = read_cr4();
 		t_cr4 |= CR4_OSXSAVE;
 		write_cr4(t_cr4);
+	}
+
+
+	//enable PCIDE support
+	{
+		write_cr4(read_cr4() | CR4_PCIDE);
 	}
 
 
