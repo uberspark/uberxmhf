@@ -104,6 +104,7 @@
 #define CR4_VMXE		0x2000  /* enable VMX */
 #define CR4_SMXE		0x4000  /* enable SMX */
 #define CR4_OSXSAVE	(1UL << 18)	// XSAVE and Processor Extended States Enable bit
+#define CR4_PCIDE   (1UL << 17) // process context identifiers
 
 //CPUID related
 #define EDX_PAE 6

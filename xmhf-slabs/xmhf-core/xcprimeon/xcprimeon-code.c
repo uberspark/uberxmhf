@@ -149,22 +149,22 @@ void xcprimeon_entry(void){
 	{
 			slab_retval_t srval;
 			slab_params_t srparams;
-            //u64 tscbefore, tscafter;
-            //u64 avgtotal=0;
-            //u32 i;
+            u64 tscbefore, tscafter;
+            u64 avgtotal=0;
+            u32 i;
 
             srparams.input_u64[0]=0xBB;
 			//invoke slab interfaces
 			_XDPRINTF_("%s: preparing to invoke testslab1, rsp=%016llx\n", __FUNCTION__, read_rsp());
 
-			//for(i=0; i < 128; i++){
-                //tscbefore=rdtsc64();
+			for(i=0; i < 1024; i++){
+                tscbefore=rdtsc64();
                 srval = XMHF_SLAB_CALLP2P(testslab1, XMHF_SLAB_XCPRIMEON_INDEX, XMHF_SLAB_TESTSLAB1_INDEX, 0, 0, 0, srparams);
-                //tscafter=rdtsc64();
-                //avgtotal += (tscafter - tscbefore);
-			//}
-            //avgtotal = avgtotal/128;
-			//_XDPRINTF_("%s: came back from testslab1, tsc=%u clicks\n", __FUNCTION__, avgtotal);
+                tscafter=rdtsc64();
+                avgtotal += (tscafter - tscbefore);
+			}
+            avgtotal = avgtotal/1024;
+			_XDPRINTF_("%s: came back from testslab1, tsc=%u clicks\n", __FUNCTION__, avgtotal);
 			_XDPRINTF_("%s: came back from testslab1, rsp=%016llx\n", __FUNCTION__, read_rsp());
 			_XDPRINTF_("%s: testslab1 retval.u64=%016llx\n", __FUNCTION__, srval.retval_u64);
 	}
