@@ -329,6 +329,10 @@ __attribute__ ((section(".slab_trampoline"))) __attribute__((naked)) __attribute
             "subq %0, %%rsp \r\n" \
             "movq %%rsp, %%rax \r\n" \
                             \
+            "subq %2, %%rsp \r\n" \
+            "movq %%rsp, %%rdi \r\n" \
+                            \
+                            \
                             \
             "int $0x03 \r\n" \
                             \
@@ -359,6 +363,8 @@ __attribute__ ((section(".slab_trampoline"))) __attribute__((naked)) __attribute
                             \
             "addq %0, %%rsp \r\n" \
                         \
+            "addq %2, %%rsp \r\n" \
+                        \
                        \
             "int $0x03 \r\n" \
                             \
@@ -375,7 +381,8 @@ __attribute__ ((section(".slab_trampoline"))) __attribute__((naked)) __attribute
                             \
             "jmp _slab_trampolinenew \r\n" \
 			:								\
-			: "i" (sizeof(slab_params_t)), "i" (XMHF_SLAB_CALLTYPE_RETP2P)	\
+			: "i" (sizeof(slab_params_t)), "i" (XMHF_SLAB_CALLTYPE_RETP2P),	\
+               "i" (sizeof(slab_retval_t)) \
 			:								\
 		);									\
     }\
