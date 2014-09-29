@@ -265,7 +265,6 @@ __attribute__ ((section(".slab_trampoline"))) __attribute__((naked)) __attribute
 
 
 
-
 //slabretval_t - rdi
 //u64 src_slabid - rsi
 //u64 dst_slabid - rdx
@@ -274,30 +273,10 @@ __attribute__ ((section(".slab_trampoline"))) __attribute__((naked)) __attribute
 //u64 rsv1 - r9
 //[rsp] = return rip
 //[rsp+8] = slab_params_t srparams
-__attribute__ ((section(".slab_trampoline"))) __attribute__((naked)) __attribute__ ((noinline)) static inline slab_retval_t __xmhf_slab_callstubp2p(u64 src_slabid, u64 dst_slabid, u64 call_type, u64 rsv0, u64 rsv1, slab_params_t srparams){
-
-    asm volatile (
-        "movq $1f, %%r8 \r\n"
-        "leaq 8(%%rsp), %%r9 \r\n"
-        "int $0x03\r\n"
-        "int $0x03\r\n"
-        "jmp _slab_trampolinenew \r\n"
-
-        "1:\r\n"
-        "int $0x03\r\n"
-        "movq %%rdi, %%rax \r\n"
-        "retq \r\n"
-        :
-        :
-        :
-    );
-
-}
 
 
 
-//#define XMHF_SLAB_CALLP2P(slab_name, src_slabid, dst_slabid, call_type, rsv0, ...) slab_name##_interface(src_slabid, dst_slabid, call_type, rsv0, __VA_ARGS__)
-#define XMHF_SLAB_CALLP2P(slab_name, src_slabid, dst_slabid, call_type, rsv0, ...) __xmhf_slab_callstubp2p(src_slabid, dst_slabid, call_type, rsv0, __VA_ARGS__)
+
 
 
 #define XMHF_SLAB_DEFENTRYSTUBBARE(slab_name)	\
@@ -305,7 +284,25 @@ __attribute__ ((section(".slab_trampoline"))) __attribute__((naked)) __attribute
 	__attribute__ ((section(".stack"))) u64 slab_name##_slab_tos[1]= { ((u64)&slab_name##_slab_stack[0] + XMHF_SLAB_STACKSIZE)  };	\
 																				\
 	__attribute__((naked)) __attribute__ ((section(".slab_entrystubnew"))) __attribute__((align(1))) void _interfacestub_##slab_name(void){	\
-}
+    }\
+    __attribute__ ((section(".slab_trampoline"))) __attribute__((naked)) __attribute__ ((noinline)) static inline slab_retval_t __xmhf_slab_callstubp2p(u64 src_slabid, u64 dst_slabid, u64 call_type, u64 rsv0, u64 rsv1, slab_params_t srparams){\
+        asm volatile ( \
+            "movq $1f, %%r8 \r\n" \
+            "leaq 8(%%rsp), %%r9 \r\n" \
+            "int $0x03\r\n" \
+            "int $0x03\r\n" \
+            "jmp _slab_trampolinenew \r\n" \
+                        \
+            "1:\r\n" \
+            "int $0x03\r\n" \
+            "movq %%rdi, %%rax \r\n" \
+            "retq \r\n" \
+            : \
+            : \
+            : \
+        ); \
+    } \
+
 
 
 #define XMHF_SLAB_DEFENTRYSTUB(slab_name)	\
@@ -377,10 +374,32 @@ __attribute__ ((section(".slab_trampoline"))) __attribute__((naked)) __attribute
 			: "i" (sizeof(slab_params_t)), "i" (XMHF_SLAB_CALLTYPE_RETP2P)	\
 			:								\
 		);									\
-}
+    }\
+    \
+    \
+    \
+    __attribute__ ((section(".slab_trampoline"))) __attribute__((naked)) __attribute__ ((noinline)) static inline slab_retval_t __xmhf_slab_callstubp2p(u64 src_slabid, u64 dst_slabid, u64 call_type, u64 rsv0, u64 rsv1, slab_params_t srparams){\
+        asm volatile ( \
+            "movq $1f, %%r8 \r\n" \
+            "leaq 8(%%rsp), %%r9 \r\n" \
+            "int $0x03\r\n" \
+            "int $0x03\r\n" \
+            "jmp _slab_trampolinenew \r\n" \
+                        \
+            "1:\r\n" \
+            "int $0x03\r\n" \
+            "movq %%rdi, %%rax \r\n" \
+            "retq \r\n" \
+            : \
+            : \
+            : \
+        ); \
+    } \
 
 
 
+//#define XMHF_SLAB_CALLP2P(slab_name, src_slabid, dst_slabid, call_type, rsv0, ...) slab_name##_interface(src_slabid, dst_slabid, call_type, rsv0, __VA_ARGS__)
+#define XMHF_SLAB_CALLP2P(slab_name, src_slabid, dst_slabid, call_type, rsv0, ...) __xmhf_slab_callstubp2p(src_slabid, dst_slabid, call_type, rsv0, __VA_ARGS__)
 
 
 

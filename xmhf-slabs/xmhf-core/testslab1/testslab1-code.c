@@ -51,6 +51,10 @@
 #include <testslab1.h>
 #include <testslab2.h>
 
+//////
+XMHF_SLAB_DEFENTRYSTUB(testslab1)
+
+
 /*
  * slab code
  *
@@ -140,5 +144,4 @@ slab_retval_t testslab1_interface(u64 src_slabid, u64 dst_slabid, u64 call_type,
 
 
 
-XMHF_SLAB_DEFENTRYSTUB(testslab1)
 
