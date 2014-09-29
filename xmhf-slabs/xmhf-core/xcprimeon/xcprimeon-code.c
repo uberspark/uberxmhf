@@ -159,7 +159,7 @@ void xcprimeon_entry(void){
 
 			//for(i=0; i < 1024; i++){
                 //tscbefore=rdtsc64();
-                srval = XMHF_SLAB_CALLP2P(testslab1, XMHF_SLAB_XCPRIMEON_INDEX, XMHF_SLAB_TESTSLAB1_INDEX, 0, 0, 0, srparams);
+                srval = XMHF_SLAB_CALLP2P(testslab1, XMHF_SLAB_XCPRIMEON_INDEX, XMHF_SLAB_TESTSLAB1_INDEX, XMHF_SLAB_CALLTYPE_CALLP2P, 0, 0, srparams);
                 //tscafter=rdtsc64();
                 //avgtotal += (tscafter - tscbefore);
 			//}
