@@ -151,16 +151,6 @@ __attribute (( section(".slabtrampoline") )) void _slab_trampolinenew(u64 rsv0, 
     //            __FUNCTION__, src_slabid, dst_slabid, call_type);
 
 
-    asm volatile (
-        "movq %%cr3, %%rax \r\n"
-        //"movq $0x8000000000000000, %%r8 \r\n"
-        //"orq %%r8, %%rax \r\n"
-        "movq %%rax, %%cr3 \r\n"
-        :
-        :
-        : "rax"
-    );
-
     /*asm volatile (
         "movq %%cr3, %%rax \r\n"
         "movq $0x8000000000000000, %%r8 \r\n"
@@ -169,17 +159,8 @@ __attribute (( section(".slabtrampoline") )) void _slab_trampolinenew(u64 rsv0, 
         :
         :
         : "rax"
-    );
-
-    asm volatile (
-        "movq %%cr3, %%rax \r\n"
-        "movq $0x8000000000000000, %%r8 \r\n"
-        "orq %%r8, %%rax \r\n"
-        "movq %%rax, %%cr3 \r\n"
-        :
-        :
-        : "rax"
     );*/
+
 
     asm volatile (
         "movq %0, %%rdi \r\n"
