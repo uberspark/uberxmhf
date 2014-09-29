@@ -297,10 +297,16 @@ __attribute__ ((section(".slab_trampoline"))) __attribute__((naked)) __attribute
             "int $0x03 \r\n" \
             "movq "#slab_name"_slab_tos, %%rsp \r\n" \
             "int $0x03 \r\n" \
+                    \
+            "movq %%r9, %%rsi \r\n" \
+            "movq %0, %%rcx \r\n" \
+            "cld \r\n" \
+            "rep movsb \r\n"\
+                    \
             "movq %%rdi, %%rax \r\n" \
             "retq \r\n" \
             : \
-            : \
+            : "i" (sizeof(slab_retval_t))\
             : \
         ); \
     } \
@@ -369,6 +375,9 @@ __attribute__ ((section(".slab_trampoline"))) __attribute__((naked)) __attribute
             "int $0x03 \r\n" \
                             \
             "popq %%r9 \r\n" \
+                            \
+            "movq %%rax, %%r9 \r\n" \
+                            \
             "popq %%r8 \r\n" \
             "popq %%rcx \r\n" \
             "popq %%rdx \r\n" \
