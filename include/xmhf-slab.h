@@ -289,12 +289,9 @@ __attribute__ ((section(".slab_trampoline"))) __attribute__((naked)) __attribute
         asm volatile ( \
             "movq $1f, %%r8 \r\n" \
             "leaq 8(%%rsp), %%r9 \r\n" \
-            "int $0x03\r\n" \
-            "int $0x03\r\n" \
             "jmp _slab_trampolinenew \r\n" \
                         \
             "1:\r\n" \
-            "int $0x03\r\n" \
             "movq %%rdi, %%rax \r\n" \
             "retq \r\n" \
             : \
@@ -382,12 +379,9 @@ __attribute__ ((section(".slab_trampoline"))) __attribute__((naked)) __attribute
         asm volatile ( \
             "movq $1f, %%r8 \r\n" \
             "leaq 8(%%rsp), %%r9 \r\n" \
-            "int $0x03\r\n" \
-            "int $0x03\r\n" \
             "jmp _slab_trampolinenew \r\n" \
                         \
             "1:\r\n" \
-            "int $0x03\r\n" \
             "movq %%rdi, %%rax \r\n" \
             "retq \r\n" \
             : \
