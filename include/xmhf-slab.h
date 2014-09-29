@@ -290,13 +290,10 @@ __attribute__ ((section(".slab_trampoline"))) __attribute__((naked)) __attribute
             "movq $1f, %%r8 \r\n" \
             "leaq 8(%%rsp), %%r9 \r\n" \
             "movq %%rsp, "#slab_name"_slab_tos \r\n"  \
-            "int $0x03 \r\n" \
             "jmp _slab_trampolinenew \r\n" \
                         \
             "1:\r\n" \
-            "int $0x03 \r\n" \
             "movq "#slab_name"_slab_tos, %%rsp \r\n" \
-            "int $0x03 \r\n" \
                     \
             "movq %%r9, %%rsi \r\n" \
             "movq %0, %%rcx \r\n" \
@@ -329,18 +326,12 @@ __attribute__ ((section(".slab_trampoline"))) __attribute__((naked)) __attribute
             "pushq %%r9 \r\n" \
                             \
                             \
-            "int $0x03 \r\n" \
-                            \
-                            \
             "subq %0, %%rsp \r\n" \
             "movq %%rsp, %%rax \r\n" \
                             \
             "subq %2, %%rsp \r\n" \
             "movq %%rsp, %%rdi \r\n" \
                             \
-                            \
-                            \
-            "int $0x03 \r\n" \
                             \
             "pushq %%rsi \r\n" \
             "pushq %%rdi \r\n" \
@@ -350,7 +341,6 @@ __attribute__ ((section(".slab_trampoline"))) __attribute__((naked)) __attribute
             "movq %%r9, %%rsi \r\n" \
             "movq %%rax, %%rdi \r\n" \
                             \
-            "int $0x03 \r\n" \
                             \
             "cld \r\n" \
             "rep movsb \r\n" \
@@ -360,19 +350,16 @@ __attribute__ ((section(".slab_trampoline"))) __attribute__((naked)) __attribute
             "popq %%rsi \r\n" \
                         \
                             \
-            "int $0x03 \r\n" \
                             \
             "callq "#slab_name"_interface \r\n"		\
                         \
                        \
-            "int $0x03 \r\n" \
                             \
             "addq %0, %%rsp \r\n" \
                         \
             "addq %2, %%rsp \r\n" \
                         \
                        \
-            "int $0x03 \r\n" \
                             \
             "popq %%r9 \r\n" \
                             \
@@ -386,7 +373,6 @@ __attribute__ ((section(".slab_trampoline"))) __attribute__((naked)) __attribute
                     \
             "movq %1, %%rcx \r\n" \
                             \
-            "int $0x03 \r\n" \
                             \
             "jmp _slab_trampolinenew \r\n" \
 			:								\
@@ -407,10 +393,16 @@ __attribute__ ((section(".slab_trampoline"))) __attribute__((naked)) __attribute
                         \
             "1:\r\n" \
             "movq "#slab_name"_slab_tos, %%rsp \r\n" \
+                    \
+            "movq %%r9, %%rsi \r\n" \
+            "movq %0, %%rcx \r\n" \
+            "cld \r\n" \
+            "rep movsb \r\n"\
+                    \
             "movq %%rdi, %%rax \r\n" \
             "retq \r\n" \
             : \
-            : \
+            : "i" (sizeof(slab_retval_t))\
             : \
         ); \
     } \
