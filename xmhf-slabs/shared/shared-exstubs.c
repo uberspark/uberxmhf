@@ -69,6 +69,7 @@
                         "movq %%rax, %1 \r\n"                       \
                         "movq %%rbx, %2 \r\n"                       \
                         "movq %%rcx, %3 \r\n"                       \
+                        "movq %%rdx, %12 \r\n"                      \
                         "movq %%rsp, %4 \r\n"                       \
                                                                     \
                         "movl %5, %%eax\r\n"                        \
@@ -93,6 +94,7 @@
                         "movq %1, %%rax \r\n"                       \
                         "movq %2, %%rbx \r\n"                       \
                         "movq %3, %%rcx \r\n"                       \
+                        "movq %12, %%rdx \r\n"                      \
                                                                     \
                                                                     \
                                                                     \
@@ -148,7 +150,9 @@
                         "i" (X86SMP_LAPIC_ID_MEMORYADDRESS), "m" (_totalcpus), "i" (&_cputable), \
                         "i" (sizeof(xmhf_cputable_t)), "i" (&_rtmxcp_cpustacks), "i" (sizeof(_rtmxcp_cpustacks[0])), \
                                                     \
-                        "i" (vector) \
+                        "i" (vector), \
+                                                    \
+                        "m" (_rtmxcp_bssavearea[5]) \
                                                     \
 		);															\
     }\
