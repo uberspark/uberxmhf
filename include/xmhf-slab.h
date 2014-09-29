@@ -295,15 +295,22 @@ __attribute__ ((section(".slab_trampoline"))) __attribute__((naked)) __attribute
 																				\
 	__attribute__((naked)) __attribute__ ((section(".slab_entrystubnew"))) __attribute__((align(1))) void _entrystub_##slab_name(void){	\
 	asm volatile (							\
-            "subq $2048, %%rsp \r\n" \
-            "movq %%rsp, %%rax \r\n" \
-                            \
             "pushq %%rdi \r\n" \
             "pushq %%rsi \r\n" \
             "pushq %%rdx \r\n" \
             "pushq %%rcx \r\n" \
             "pushq %%r8 \r\n" \
             "pushq %%r9 \r\n" \
+                            \
+                            \
+            "int $0x03 \r\n" \
+                            \
+                            \
+            "subq $4096, %%rsp \r\n" \
+            "movq %%rsp, %%rax \r\n" \
+                            \
+                            \
+            "int $0x03 \r\n" \
                             \
             "pushq %%rsi \r\n" \
             "pushq %%rdi \r\n" \
@@ -312,6 +319,9 @@ __attribute__ ((section(".slab_trampoline"))) __attribute__((naked)) __attribute
             "movq %0, %%rcx \r\n" \
             "movq %%r9, %%rsi \r\n" \
             "movq %%rax, %%rdi \r\n" \
+                            \
+            "int $0x03 \r\n" \
+                            \
             "cld \r\n" \
             "rep movsb \r\n" \
                         \
@@ -319,8 +329,19 @@ __attribute__ ((section(".slab_trampoline"))) __attribute__((naked)) __attribute
             "popq %%rdi \r\n" \
             "popq %%rsi \r\n" \
                         \
-            "call "#slab_name"_interface \r\n"		\
+                            \
+            "int $0x03 \r\n" \
+                            \
+            "callq "#slab_name"_interface \r\n"		\
                         \
+                       \
+            "int $0x03 \r\n" \
+                            \
+            "addq $4096, %%rsp \r\n" \
+                        \
+                       \
+            "int $0x03 \r\n" \
+                            \
             "popq %%r9 \r\n" \
             "popq %%r8 \r\n" \
             "popq %%rcx \r\n" \
@@ -328,9 +349,10 @@ __attribute__ ((section(".slab_trampoline"))) __attribute__((naked)) __attribute
             "popq %%rsi \r\n" \
             "popq %%rdi \r\n" \
                     \
-            "addq $2048, %%rsp \r\n" \
-                        \
             "movq %1, %%rcx \r\n" \
+                            \
+            "int $0x03 \r\n" \
+                            \
             "jmp _slab_trampolinenew \r\n" \
 			:								\
 			: "i" (sizeof(slab_params_t)), "i" (XMHF_SLAB_CALLTYPE_RETP2P)	\
