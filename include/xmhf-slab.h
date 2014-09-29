@@ -326,7 +326,7 @@ __attribute__ ((section(".slab_trampoline"))) __attribute__((naked)) __attribute
             "int $0x03 \r\n" \
                             \
                             \
-            "subq $4096, %%rsp \r\n" \
+            "subq %0, %%rsp \r\n" \
             "movq %%rsp, %%rax \r\n" \
                             \
                             \
@@ -357,7 +357,7 @@ __attribute__ ((section(".slab_trampoline"))) __attribute__((naked)) __attribute
                        \
             "int $0x03 \r\n" \
                             \
-            "addq $4096, %%rsp \r\n" \
+            "addq %0, %%rsp \r\n" \
                         \
                        \
             "int $0x03 \r\n" \
