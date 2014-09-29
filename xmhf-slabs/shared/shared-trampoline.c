@@ -161,11 +161,11 @@ __attribute__((naked)) __attribute (( section(".slabtrampoline") )) void _slab_t
 
 __attribute (( section(".slabtrampoline") )) void _slab_trampolinenew_cland(u64 rsv0, u64 src_slabid, u64 dst_slabid, u64 call_type, u64 return_address, u64 param_base){
 
-    _XDPRINTF_("%s: got control: src slabid=%u, dst slabid=%u, call_type=%u\n",
-                __FUNCTION__, src_slabid, dst_slabid, call_type);
+    //_XDPRINTF_("%s: got control: src slabid=%u, dst slabid=%u, call_type=%u\n",
+    //            __FUNCTION__, src_slabid, dst_slabid, call_type);
 
-    _XDPRINTF_("%s: return address=%016llx, parambase=%016llx\n",
-                __FUNCTION__, return_address, param_base);
+    //_XDPRINTF_("%s: return address=%016llx, parambase=%016llx\n",
+    //            __FUNCTION__, return_address, param_base);
 
 
     /*asm volatile (
