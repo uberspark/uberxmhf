@@ -299,6 +299,14 @@ __attribute__ ((section(".slab_trampoline"))) __attribute__((naked)) __attribute
 //#define XMHF_SLAB_CALLP2P(slab_name, src_slabid, dst_slabid, call_type, rsv0, ...) slab_name##_interface(src_slabid, dst_slabid, call_type, rsv0, __VA_ARGS__)
 #define XMHF_SLAB_CALLP2P(slab_name, src_slabid, dst_slabid, call_type, rsv0, ...) __xmhf_slab_callstubp2p(src_slabid, dst_slabid, call_type, rsv0, __VA_ARGS__)
 
+
+#define XMHF_SLAB_DEFENTRYSTUBBARE(slab_name)	\
+	__attribute__ ((section(".stack"))) u8 slab_name##_slab_stack[XMHF_SLAB_STACKSIZE];	\
+																				\
+	__attribute__((naked)) __attribute__ ((section(".slab_entrystubnew"))) __attribute__((align(1))) void _interfacestub_##slab_name(void){	\
+}
+
+
 #define XMHF_SLAB_DEFENTRYSTUB(slab_name)	\
 	__attribute__ ((section(".stack"))) u8 slab_name##_slab_stack[XMHF_SLAB_STACKSIZE];	\
 																				\

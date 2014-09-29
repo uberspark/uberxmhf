@@ -183,6 +183,6 @@ void xcprimeon_entry(void){
 }
 
 ///////
-XMHF_SLAB_DEF_BARE(xcprimeon)
+XMHF_SLAB_DEFENTRYSTUBBARE(xcprimeon)
 
 
