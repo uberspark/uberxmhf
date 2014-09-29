@@ -144,8 +144,22 @@ __attribute__((naked)) __attribute (( section(".slabtrampoline") )) void _slab_t
 //--------------------------------------------------------------------
 */
 
+__attribute (( section(".slabtrampoline") )) static u8 _slab_trampoline_stack[XMHF_SLAB_STACKSIZE];
+__attribute (( section(".slabtrampoline") )) static u64 _slab_trampoline_stack_tos = (u64)&_slab_trampoline_stack + XMHF_SLAB_STACKSIZE;
 
-__attribute (( section(".slabtrampoline") )) void _slab_trampolinenew(u64 rsv0, u64 src_slabid, u64 dst_slabid, u64 call_type, u64 return_address, u64 param_base){
+__attribute__((naked)) __attribute (( section(".slabtrampoline") )) void _slab_trampolinenew(void){
+    asm volatile (
+        "movq %0, %%rsp \r\n"
+        "jmp _slab_trampolinenew_cland \r\n"
+      :
+      : "m" (_slab_trampoline_stack_tos)
+      :
+    );
+
+}
+
+
+__attribute (( section(".slabtrampoline") )) void _slab_trampolinenew_cland(u64 rsv0, u64 src_slabid, u64 dst_slabid, u64 call_type, u64 return_address, u64 param_base){
 
     _XDPRINTF_("%s: got control: src slabid=%u, dst slabid=%u, call_type=%u\n",
                 __FUNCTION__, src_slabid, dst_slabid, call_type);
