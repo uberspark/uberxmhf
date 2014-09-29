@@ -188,9 +188,9 @@ __attribute (( section(".slabtrampoline") )) void _slab_trampolinenew_cland(u64 
                 "movq %3, %%rcx \r\n"
                 "movq %4, %%r8 \r\n"
                 "movq %5, %%r9 \r\n"
-                "movq %%rbp, %%rsp \r\n"
-                "movq (%%rsp), %%rbp \r\n"
-                "addq $8, %%rsp \r\n"
+                //"movq %%rbp, %%rsp \r\n"
+                //"movq (%%rsp), %%rbp \r\n"
+                //"addq $8, %%rsp \r\n"
                 "movq %6, %%rax \r\n"
                 "jmp *%%rax \r\n"
                 :
@@ -206,9 +206,9 @@ __attribute (( section(".slabtrampoline") )) void _slab_trampolinenew_cland(u64 
             asm volatile (
                 "movq %0, %%rdi \r\n"
                 "movq %1, %%rax \r\n"
-                "movq %%rbp, %%rsp \r\n"
-                "movq (%%rsp), %%rbp \r\n"
-                "addq $8, %%rsp \r\n"
+                //"movq %%rbp, %%rsp \r\n"
+                //"movq (%%rsp), %%rbp \r\n"
+                //"addq $8, %%rsp \r\n"
                 "jmp *%%rax \r\n"
                 :
                 : "m" (rsv0), "m" (return_address)
