@@ -301,14 +301,16 @@ __attribute__ ((section(".slab_trampoline"))) __attribute__((naked)) __attribute
 
 
 #define XMHF_SLAB_DEFENTRYSTUBBARE(slab_name)	\
-	__attribute__ ((section(".stack"))) u8 slab_name##_slab_stack[XMHF_SLAB_STACKSIZE];	\
+	__attribute__ ((section(".stack"))) u8 slab_name##_slab_stack[1][XMHF_SLAB_STACKSIZE];	\
+	__attribute__ ((section(".stack"))) u64 slab_name##_slab_tos[1]= { ((u64)&slab_name##_slab_stack[0] + XMHF_SLAB_STACKSIZE)  };	\
 																				\
 	__attribute__((naked)) __attribute__ ((section(".slab_entrystubnew"))) __attribute__((align(1))) void _interfacestub_##slab_name(void){	\
 }
 
 
 #define XMHF_SLAB_DEFENTRYSTUB(slab_name)	\
-	__attribute__ ((section(".stack"))) u8 slab_name##_slab_stack[XMHF_SLAB_STACKSIZE];	\
+	__attribute__ ((section(".stack"))) u8 slab_name##_slab_stack[1][XMHF_SLAB_STACKSIZE];	\
+	__attribute__ ((section(".stack"))) u64 slab_name##_slab_tos[1]= { ((u64)&slab_name##_slab_stack[0] + XMHF_SLAB_STACKSIZE)  };	\
 																				\
 	__attribute__((naked)) __attribute__ ((section(".slab_entrystubnew"))) __attribute__((align(1))) void _entrystub_##slab_name(void){	\
 	asm volatile (							\
