@@ -257,6 +257,15 @@ __attribute__ ((section(".slab_trampoline"))) __attribute__((naked)) __attribute
 
 
 
+
+
+
+
+//////////////////////////////////////////////////////////////////////////////
+
+
+
+
 //slabretval_t - rdi
 //u64 src_slabid - rsi
 //u64 dst_slabid - rdx
