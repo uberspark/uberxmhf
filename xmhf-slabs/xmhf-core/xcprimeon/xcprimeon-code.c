@@ -53,6 +53,11 @@
 #include <xcsmp.h>
 #include <testslab1.h>
 
+///////
+XMHF_SLAB_DEFENTRYSTUBBARE(xcprimeon)
+
+
+
 void xcprimeon_entry(void){
     u64 pgtblbase;
 
@@ -182,7 +187,5 @@ void xcprimeon_entry(void){
 	HALT();
 }
 
-///////
-XMHF_SLAB_DEFENTRYSTUBBARE(xcprimeon)
 
 
