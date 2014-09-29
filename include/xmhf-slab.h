@@ -310,6 +310,8 @@ __attribute__ ((section(".slab_trampoline"))) __attribute__((naked)) __attribute
 																				\
 	__attribute__((naked)) __attribute__ ((section(".slab_entrystubnew"))) __attribute__((align(1))) void _entrystub_##slab_name(void){	\
 	asm volatile (							\
+            "movq "#slab_name"_slab_tos, %%rsp \r\n" \
+                    \
             "pushq %%rdi \r\n" \
             "pushq %%rsi \r\n" \
             "pushq %%rdx \r\n" \
