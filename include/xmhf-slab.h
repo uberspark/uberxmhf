@@ -282,7 +282,6 @@ __attribute__ ((section(".slab_trampoline"))) __attribute__((naked)) __attribute
 
 
 
-
 #define XMHF_SLAB_DEFENTRYSTUBBARE(slab_name)	\
 	__attribute__ ((section(".stack"))) u8 slab_name##_slab_stack[MAX_PLATFORM_CPUS][XMHF_SLAB_STACKSIZE];	\
 	__attribute__ ((section(".stack"))) u64 slab_name##_slab_tos[MAX_PLATFORM_CPUS]= { ((u64)&slab_name##_slab_stack[0] + XMHF_SLAB_STACKSIZE), ((u64)&slab_name##_slab_stack[1] + XMHF_SLAB_STACKSIZE), ((u64)&slab_name##_slab_stack[2] + XMHF_SLAB_STACKSIZE), ((u64)&slab_name##_slab_stack[3] + XMHF_SLAB_STACKSIZE), ((u64)&slab_name##_slab_stack[4] + XMHF_SLAB_STACKSIZE), ((u64)&slab_name##_slab_stack[5] + XMHF_SLAB_STACKSIZE), ((u64)&slab_name##_slab_stack[6] + XMHF_SLAB_STACKSIZE), ((u64)&slab_name##_slab_stack[7] + XMHF_SLAB_STACKSIZE)  };	\
@@ -293,11 +292,11 @@ __attribute__ ((section(".slab_trampoline"))) __attribute__((naked)) __attribute
         asm volatile ( \
             "movq $1f, %%r8 \r\n" \
             "leaq 8(%%rsp), %%r9 \r\n" \
-            "movq %%rsp, "#slab_name"_slab_tos \r\n"  \
+            "movq %%rsp, "#slab_name"_slab_tos+0x0(,%%ecx,8) \r\n"  \
             "jmp _slab_trampolinenew \r\n" \
                         \
             "1:\r\n" \
-            "movq "#slab_name"_slab_tos, %%rsp \r\n" \
+            "movq "#slab_name"_slab_tos+0x0(,%%ecx,8), %%rsp \r\n" \
                     \
             "movq %%r9, %%rsi \r\n" \
             "movq %0, %%rcx \r\n" \
@@ -398,11 +397,11 @@ __attribute__ ((section(".slab_trampoline"))) __attribute__((naked)) __attribute
         asm volatile ( \
             "movq $1f, %%r8 \r\n" \
             "leaq 8(%%rsp), %%r9 \r\n" \
-            "movq %%rsp, "#slab_name"_slab_tos \r\n"  \
+            "movq %%rsp, "#slab_name"_slab_tos+0x0(,%%ecx,8) \r\n"  \
             "jmp _slab_trampolinenew \r\n" \
                         \
             "1:\r\n" \
-            "movq "#slab_name"_slab_tos, %%rsp \r\n" \
+            "movq "#slab_name"_slab_tos+0x0(,%%ecx,8), %%rsp \r\n" \
                     \
             "movq %%r9, %%rsi \r\n" \
             "movq %0, %%rcx \r\n" \
