@@ -336,12 +336,12 @@ __attribute__ ((section(".slab_trampoline"))) __attribute__((naked)) __attribute
             "pushq %%r8 \r\n" \
             "pushq %%r9 \r\n" \
                             \
+            "subq %2, %%rsp \r\n" \
+            "movq %%rsp, %%rdi \r\n" \
+                            \
                             \
             "subq %0, %%rsp \r\n" \
             "movq %%rsp, %%rax \r\n" \
-                            \
-            "subq %2, %%rsp \r\n" \
-            "movq %%rsp, %%rdi \r\n" \
                             \
                             \
             "pushq %%rsi \r\n" \
