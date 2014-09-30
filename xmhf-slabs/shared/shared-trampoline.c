@@ -162,11 +162,11 @@ __attribute__((naked)) __attribute (( section(".slabtrampoline") )) void _slab_t
 __attribute (( section(".slabtrampoline") )) void _slab_trampolinenew_cland(u64 rsv0, u64 src_slabid, u64 dst_slabid, u64 cpuidtype, u64 return_address, u64 param_base){
     u64 call_type = XMHF_SLAB_CALL_UNPACKTYPE(cpuidtype);
 
-    //_XDPRINTF_("%s: got control: src slabid=%u, dst slabid=%u, call_type=%u\n",
-    //            __FUNCTION__, src_slabid, dst_slabid, call_type);
+    _XDPRINTF_("%s: got control: src slabid=%u, dst slabid=%u, call_type=%u\n",
+                __FUNCTION__, src_slabid, dst_slabid, call_type);
 
-    //_XDPRINTF_("%s: return address=%016llx, parambase=%016llx\n",
-    //            __FUNCTION__, return_address, param_base);
+    _XDPRINTF_("%s: return address=%016llx, parambase=%016llx\n",
+                __FUNCTION__, return_address, param_base);
 
 
     /*asm volatile (
@@ -196,7 +196,7 @@ __attribute (( section(".slabtrampoline") )) void _slab_trampolinenew_cland(u64 
                 "jmp *%%rax \r\n"
                 :
                 : "m" (rsv0), "m" (src_slabid), "m" (dst_slabid),
-                  "m" (call_type), "m" (return_address), "m" (param_base), "m" (_slab_table[dst_slabid].entry_cr3_new)
+                  "m" (cpuidtype), "m" (return_address), "m" (param_base), "m" (_slab_table[dst_slabid].entry_cr3_new)
                 : "rax", "rdi", "rsi", "rdx", "rcx", "rsp", "rbp", "r8", "r9"
             );
 

@@ -284,8 +284,8 @@ __attribute__ ((section(".slab_trampoline"))) __attribute__((naked)) __attribute
 
 
 #define XMHF_SLAB_DEFENTRYSTUBBARE(slab_name)	\
-	__attribute__ ((section(".stack"))) u8 slab_name##_slab_stack[1][XMHF_SLAB_STACKSIZE];	\
-	__attribute__ ((section(".stack"))) u64 slab_name##_slab_tos[1]= { ((u64)&slab_name##_slab_stack[0] + XMHF_SLAB_STACKSIZE)  };	\
+	__attribute__ ((section(".stack"))) u8 slab_name##_slab_stack[MAX_PLATFORM_CPUS][XMHF_SLAB_STACKSIZE];	\
+	__attribute__ ((section(".stack"))) u64 slab_name##_slab_tos[MAX_PLATFORM_CPUS]= { ((u64)&slab_name##_slab_stack[0] + XMHF_SLAB_STACKSIZE), ((u64)&slab_name##_slab_stack[1] + XMHF_SLAB_STACKSIZE), ((u64)&slab_name##_slab_stack[2] + XMHF_SLAB_STACKSIZE), ((u64)&slab_name##_slab_stack[3] + XMHF_SLAB_STACKSIZE), ((u64)&slab_name##_slab_stack[4] + XMHF_SLAB_STACKSIZE), ((u64)&slab_name##_slab_stack[5] + XMHF_SLAB_STACKSIZE), ((u64)&slab_name##_slab_stack[6] + XMHF_SLAB_STACKSIZE), ((u64)&slab_name##_slab_stack[7] + XMHF_SLAB_STACKSIZE)  };	\
 																				\
 	__attribute__((naked)) __attribute__ ((section(".slab_entrystubnew"))) __attribute__((align(1))) void _slab_entrystub_##slab_name(void){	\
     }\
@@ -315,12 +315,19 @@ __attribute__ ((section(".slab_trampoline"))) __attribute__((naked)) __attribute
 
 
 #define XMHF_SLAB_DEFENTRYSTUB(slab_name)	\
-	__attribute__ ((section(".stack"))) u8 slab_name##_slab_stack[1][XMHF_SLAB_STACKSIZE];	\
-	__attribute__ ((section(".stack"))) u64 slab_name##_slab_tos[1]= { ((u64)&slab_name##_slab_stack[0] + XMHF_SLAB_STACKSIZE)  };	\
+	__attribute__ ((section(".stack"))) u8 slab_name##_slab_stack[MAX_PLATFORM_CPUS][XMHF_SLAB_STACKSIZE];	\
+	__attribute__ ((section(".stack"))) u64 slab_name##_slab_tos[MAX_PLATFORM_CPUS]= { ((u64)&slab_name##_slab_stack[0] + XMHF_SLAB_STACKSIZE), ((u64)&slab_name##_slab_stack[1] + XMHF_SLAB_STACKSIZE), ((u64)&slab_name##_slab_stack[2] + XMHF_SLAB_STACKSIZE), ((u64)&slab_name##_slab_stack[3] + XMHF_SLAB_STACKSIZE), ((u64)&slab_name##_slab_stack[4] + XMHF_SLAB_STACKSIZE), ((u64)&slab_name##_slab_stack[5] + XMHF_SLAB_STACKSIZE), ((u64)&slab_name##_slab_stack[6] + XMHF_SLAB_STACKSIZE), ((u64)&slab_name##_slab_stack[7] + XMHF_SLAB_STACKSIZE)  };	\
 																				\
 	__attribute__((naked)) __attribute__ ((section(".slab_entrystubnew"))) __attribute__((align(1))) void _slab_entrystub_##slab_name(void){	\
 	asm volatile (							\
-            "movq "#slab_name"_slab_tos, %%rsp \r\n" \
+            "cmpl %3, %%ecx \r\n" \
+            "jb 1f \r\n" \
+            "int $0x03 \r\n" \
+            "hlt \r\n" \
+            "1: movq "#slab_name"_slab_tos+0x0(,%%ecx,8), %%rsp \r\n" \
+                    \
+                    \
+            "int $0x03 \r\n" \
                     \
             "pushq %%rdi \r\n" \
             "pushq %%rsi \r\n" \
@@ -383,7 +390,7 @@ __attribute__ ((section(".slab_trampoline"))) __attribute__((naked)) __attribute
             "jmp _slab_trampolinenew \r\n" \
 			:								\
 			: "i" (sizeof(slab_params_t)), "i" ((u32)XMHF_SLAB_CALLTYPE_RETP2P),	\
-               "i" (sizeof(slab_retval_t)) \
+               "i" (sizeof(slab_retval_t)), "i" (MAX_PLATFORM_CPUS) \
 			:								\
 		);									\
     }\
@@ -415,8 +422,8 @@ __attribute__ ((section(".slab_trampoline"))) __attribute__((naked)) __attribute
 
 
 
-#define XMHF_SLAB_CALLP2P(src_slabname, dst_slabname, src_slabid, dst_slabid, call_type, rsv0, ...) dst_slabname##_interface(src_slabid, dst_slabid, call_type, rsv0, __VA_ARGS__)
-//#define XMHF_SLAB_CALLP2P(src_slabname, dst_slabname, src_slabid, dst_slabid, call_type, rsv0, ...) _slab_callstubp2p_##src_slabname(src_slabid, dst_slabid, call_type, rsv0, __VA_ARGS__)
+//#define XMHF_SLAB_CALLP2P(src_slabname, dst_slabname, src_slabid, dst_slabid, call_type, rsv0, ...) dst_slabname##_interface(src_slabid, dst_slabid, call_type, rsv0, __VA_ARGS__)
+#define XMHF_SLAB_CALLP2P(src_slabname, dst_slabname, src_slabid, dst_slabid, call_type, rsv0, ...) _slab_callstubp2p_##src_slabname(src_slabid, dst_slabid, call_type, rsv0, __VA_ARGS__)
 
 
 

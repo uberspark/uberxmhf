@@ -65,11 +65,11 @@ slab_retval_t testslab1_interface(u64 src_slabid, u64 dst_slabid, u64 call_type,
                                   u64 rsv0, u64 rsv1, slab_params_t slab_params){
 	slab_retval_t srval;
 
-	//_XDPRINTF_("%s: Got control: src_slabid=%u, dst_slabid=%u\n",
-    //            __FUNCTION__, src_slabid, dst_slabid);
+	_XDPRINTF_("%s: Got control: src_slabid=%u, dst_slabid=%u\n",
+                __FUNCTION__, src_slabid, dst_slabid);
 
-	//_XDPRINTF_("%s: slab_params.input_u64[0]=%016llx\n",
-    //            __FUNCTION__, slab_params.input_u64[0]);
+	_XDPRINTF_("%s: slab_params.input_u64[0]=%016llx\n",
+                __FUNCTION__, slab_params.input_u64[0]);
 
 
     srval.retval_u64 = 0xAA;
