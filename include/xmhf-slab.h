@@ -326,9 +326,6 @@ __attribute__ ((section(".slab_trampoline"))) __attribute__((naked)) __attribute
             "hlt \r\n" \
             "1: movq "#slab_name"_slab_tos+0x0(,%%ecx,8), %%rsp \r\n" \
                     \
-                    \
-            "int $0x03 \r\n" \
-                    \
             "pushq %%rdi \r\n" \
             "pushq %%rsi \r\n" \
             "pushq %%rdx \r\n" \

@@ -166,7 +166,7 @@ void xcprimeon_entry(void){
                 //tscbefore=rdtsc64();
                 srval = XMHF_SLAB_CALLP2P(xcprimeon, testslab1,
                                           XMHF_SLAB_XCPRIMEON_INDEX, XMHF_SLAB_TESTSLAB1_INDEX,
-                                          XMHF_SLAB_CALL_PACKCPUIDTYPE(XMHF_SLAB_CALLTYPE_CALLP2P, 7),
+                                          XMHF_SLAB_CALL_PACKCPUIDTYPE(XMHF_SLAB_CALLTYPE_CALLP2P, 0),
                                           0, 0,
                                           srparams);
                 //tscafter=rdtsc64();
