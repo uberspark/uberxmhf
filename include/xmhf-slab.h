@@ -265,6 +265,10 @@ __attribute__ ((section(".slab_trampoline"))) __attribute__((naked)) __attribute
 
 
 
+#define XMHF_SLAB_CALL_PACKCPUIDTYPE(type, cpuid)  (u64)( ((u64)(type) << 32) | ((u64)(cpuid) & 0x00000000FFFFFFFFULL) )
+#define XMHF_SLAB_CALL_UNPACKTYPE(packedval)        (u64)((u64)(packedval) >> 32)
+#define XMHF_SLAB_CALL_UNPACKCPUID(packedval)       (u64)((u64)(packedval) & 0x00000000FFFFFFFFULL)
+
 //slabretval_t - rdi
 //u64 src_slabid - rsi
 //u64 dst_slabid - rdx
@@ -371,12 +375,14 @@ __attribute__ ((section(".slab_trampoline"))) __attribute__((naked)) __attribute
             "popq %%rsi \r\n" \
             "popq %%rdi \r\n" \
                     \
-            "movq %1, %%rcx \r\n" \
+            "rorq $32, %%rcx \r\n" \
+            "movl %1, %%ecx \r\n" \
+            "rolq $32, %%rcx \r\n" \
                             \
                             \
             "jmp _slab_trampolinenew \r\n" \
 			:								\
-			: "i" (sizeof(slab_params_t)), "i" (XMHF_SLAB_CALLTYPE_RETP2P),	\
+			: "i" (sizeof(slab_params_t)), "i" ((u32)XMHF_SLAB_CALLTYPE_RETP2P),	\
                "i" (sizeof(slab_retval_t)) \
 			:								\
 		);									\
