@@ -208,13 +208,15 @@ __attribute (( section(".slabtrampoline") )) void _slab_trampolinenew_cland(u64 
                 "movq %0, %%rdi \r\n"
                 "movq %1, %%rax \r\n"
                 "movq %2, %%r9 \r\n"
+                "movq %3, %%rcx \r\n"
                 "movq %%rbp, %%rsp \r\n"
                 "movq (%%rsp), %%rbp \r\n"
                 "addq $8, %%rsp \r\n"
                 "jmp *%%rax \r\n"
                 :
-                : "m" (rsv0), "m" (return_address), "m" (param_base)
-                : "rax", "rdi", "rsp", "rbp"
+                : "m" (rsv0), "m" (return_address), "m" (param_base),
+                  "m" (cpuidtype)
+                : "rax", "rcx", "rdi", "rsp", "rbp"
             );
         }
         break;
