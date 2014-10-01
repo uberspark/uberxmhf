@@ -79,6 +79,18 @@ slab_retval_t testslab1_interface(u64 src_slabid, u64 dst_slabid, u64 call_type,
 					: "m" (_gdt), "m" (_idt)
 	);
 
+
+	asm volatile(
+		"pushfq \r\n"
+		"popq %%rax \r\n"
+		"or $0x3000, %%rax \r\n"
+		"pushq %%rax \r\n"					// set IOPL=3 (CPL-3)
+		"popfq \r\n"
+		: //no outputs
+		: //no inputs
+		: "rax"
+	);
+
     //debug
     _XDPRINTF_("Halting!\n");
     _XDPRINTF_("XMHF Tester Finished!\n");
