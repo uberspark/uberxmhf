@@ -152,7 +152,7 @@ void xcprimeon_entry(void){
 
 	//[test] testslab1
 	{
-			slab_retval_t srval;
+			/*slab_retval_t srval;
 			slab_params_t srparams;
             //u64 tscbefore, tscafter;
             //u64 avgtotal=0;
@@ -175,7 +175,13 @@ void xcprimeon_entry(void){
             //avgtotal = avgtotal/1024;
 			//_XDPRINTF_("%s: came back from testslab1, tsc=%u clicks\n", __FUNCTION__, avgtotal);
 			_XDPRINTF_("%s: came back from testslab1, rsp=%016llx\n", __FUNCTION__, read_rsp());
-			_XDPRINTF_("%s: testslab1 retval.u64=%016llx\n", __FUNCTION__, srval.retval_u64);
+			_XDPRINTF_("%s: testslab1 retval.u64=%016llx\n", __FUNCTION__, srval.retval_u64);*/
+
+			_XDPRINTF_("%s: preparing to invoke testslab1, rsp=%016llx\n", __FUNCTION__, read_rsp());
+            slab_params_t srparams;
+            testslab1_interface(0,0,0,0,0,srparams);
+			_XDPRINTF_("%s: came back from testslab1, rsp=%016llx\n", __FUNCTION__, read_rsp());
+
 	}
 
 
