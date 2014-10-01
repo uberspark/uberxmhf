@@ -72,6 +72,20 @@ slab_retval_t testslab1_interface(u64 src_slabid, u64 dst_slabid, u64 call_type,
                 __FUNCTION__, slab_params.input_u64[0]);
 
 
+    //load GDT and IDT
+    asm volatile(	"lgdt %0\r\n"
+					"lidt %1\r\n"
+					:
+					: "m" (_gdt), "m" (_idt)
+	);
+
+    //debug
+    _XDPRINTF_("Halting!\n");
+    _XDPRINTF_("XMHF Tester Finished!\n");
+    HALT();
+
+
+
     srval.retval_u64 = 0xAA;
     return srval;
 }
