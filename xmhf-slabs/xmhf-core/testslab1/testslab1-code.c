@@ -54,6 +54,11 @@
 //////
 XMHF_SLAB_DEFENTRYSTUB(testslab1)
 
+__attribute__((aligned(4096))) u8 _ring0stackaligned[16384];
+u64 _ring0stackptr= (u64)&_ring0stackaligned + (u64)0x4000;
+
+__attribute__((aligned(4096))) u8 _ring3stack[16384];
+u64 _ring3stackptr= (u64)&_ring3stack + (u64)0x4000;
 
 /*
  * slab code
@@ -74,7 +79,7 @@ slab_retval_t testslab1_interface(u64 src_slabid, u64 dst_slabid, u64 call_type,
 
     //load GDT and IDT
     asm volatile(	"lgdt %0\r\n"
-					"lidt %1\r\n"
+					//"lidt %1\r\n"
 					:
 					: "m" (_gdt), "m" (_idt)
 	);
@@ -86,10 +91,73 @@ slab_retval_t testslab1_interface(u64 src_slabid, u64 dst_slabid, u64 call_type,
 		"or $0x3000, %%rax \r\n"
 		"pushq %%rax \r\n"					// set IOPL=3 (CPL-3)
 		"popfq \r\n"
+		//"int $0x03 \r\n"
 		: //no outputs
 		: //no inputs
 		: "rax"
 	);
+
+    asm volatile(
+		"movq %0, %%rax \r\n"
+        "movq %%rax, %%rsp \r\n"
+		"pushq %1 \r\n"
+		"pushq %2 \r\n"
+        "pushfq \r\n"
+        "pushq %3 \r\n"
+        "pushq $1f \r\n"
+        "movq %1, %%rax \r\n"
+		"movw %%ax, %%ds \r\n"
+		"movw %%ax, %%es \r\n"
+		"iretq \r\n"
+		"1: \r\n"
+        "movq %1, %%rax \r\n"
+		"movw %%ax, %%ds \r\n"
+		"movw %%ax, %%es \r\n"
+		"movw %%ax, %%ss \r\n"
+        //"2: jmp 2b \r\n"
+		: //no outputs
+		: "m" (_ring0stackptr),
+          "i" (__DS_CPL3), "m" (_ring3stackptr), "i" (__CS_CPL3)
+		: "rax", "rsp"
+	);
+
+
+    {
+        u8 *vidbuffer = (u8 *)0xB8000;
+        vidbuffer[0] = 0xA1;
+        vidbuffer[1] = 0xA1;
+        vidbuffer[2] = 0xA1;
+        vidbuffer[3] = 0xA1;
+        vidbuffer[4] = 0xA1;
+        vidbuffer[5] = 0xA1;
+
+
+    }
+
+    HALT();
+
+    {
+        u8 val;
+        u64 rflags;
+
+        asm volatile (
+            //"2: jmp 2b \r\n"
+		    "int $0x03 \r\n"
+            "pushfq \r\n"
+            "popq %%rax \r\n"
+            "movq %%rax, %0 \r\n"
+            : "=m" (rflags)
+            :
+            : "rax"
+        );
+
+        if(rflags & 0x3000){
+            HALT();
+        }
+
+        val = inb(0x3f8);
+
+    }
 
     //debug
     _XDPRINTF_("Halting!\n");

@@ -60,6 +60,12 @@
 #define XMHF_EXCEPTION_HANDLER_DEFINE(vector) 												\
 	__attribute__(( section(".slabtrampoline") )) static void __xmhf_exception_handler_##vector(void) __attribute__((naked)) { 					\
 		asm volatile(												\
+						"1: jmp 1b \r\n" \
+						"movq $0x10, %%rax \r\n" \
+                        "movw %%ax, %%ss \r\n" \
+                        "movw %%ax, %%ds \r\n" \
+                        "movw %%ax, %%es \r\n" \
+                                \
 						"1:	btq	$0, %0	\r\n"						/*start atomic operation*/\
 						"jnc 1b	\r\n"								\
 						"lock \r\n"   								\
@@ -71,6 +77,10 @@
                         "movq %%rcx, %3 \r\n"                       \
                         "movq %%rdx, %12 \r\n"                      \
                         "movq %%rsp, %4 \r\n"                       \
+                                                                    \
+                                                                    \
+                                                                    \
+                                                                    \
                                                                     \
                         "movl %5, %%eax\r\n"                        \
                         "movl (%%eax), %%eax\r\n"                   \
