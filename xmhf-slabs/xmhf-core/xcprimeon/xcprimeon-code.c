@@ -177,12 +177,19 @@ void xcprimeon_entry(void){
 			_XDPRINTF_("%s: came back from testslab1, rsp=%016llx\n", __FUNCTION__, read_rsp());
 			_XDPRINTF_("%s: testslab1 retval.u64=%016llx\n", __FUNCTION__, srval.retval_u64);*/
 
-			_XDPRINTF_("%s: preparing to invoke testslab1, rsp=%016llx\n", __FUNCTION__, read_rsp());
+			/*_XDPRINTF_("%s: preparing to invoke testslab1, rsp=%016llx\n", __FUNCTION__, read_rsp());
             slab_params_t srparams;
             testslab1_interface(0,0,0,0,0,srparams);
 			_XDPRINTF_("%s: came back from testslab1, rsp=%016llx\n", __FUNCTION__, read_rsp());
+*/
 
-	}
+        {
+            extern void xcprimeon_exp_entry(void);
+            xcprimeon_exp_entry();
+            _XDPRINTF_("%s:%u: Fatal, should never be here!\n", __FUNCTION__, __LINE__);
+            HALT();
+        }
+    }
 
 
     //debug
