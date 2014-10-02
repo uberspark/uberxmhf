@@ -924,7 +924,7 @@ static u64 _xcprimeon_slab_getptflagsforspa(u32 slab_index, u32 spa){
 // initialize slab page tables for a given slab index, returns the macm base
 static u32 _xcprimeon_slab_populate_pagetables(u32 slab_index){
 		u32 i, j;
-		u64 default_flags = (u64)(_PAGE_PRESENT);
+		u64 default_flags = (u64)(_PAGE_PRESENT) | (u64)(_PAGE_USER);
 
         for(i=0; i < PAE_PTRS_PER_PML4T; i++)
             _slab_pagetables[slab_index].pml4t[i] = pae_make_pml4e(hva2spa(&_slab_pagetables[slab_index].pdpt), default_flags);
@@ -938,7 +938,7 @@ static u32 _xcprimeon_slab_populate_pagetables(u32 slab_index){
 				u32 hva = ((i * PAE_PTRS_PER_PDT) + j) * PAGE_SIZE_2M;
 				u64 spa = hva2spa((void*)hva);
 				u64 flags = _xcprimeon_slab_getptflagsforspa(slab_index, (u32)spa);
-				_slab_pagetables[slab_index].pdt[i][j] = pae_make_pde_big(spa, flags);
+				_slab_pagetables[slab_index].pdt[i][j] = pae_make_pde_big(spa, flags | (u64)(_PAGE_USER));
 				//debug
 				//if(slab_index == XMHF_SLAB_TESTSLAB1_INDEX && (spa >=0x10000000 && spa < 0x20000000) )
 				//	_XDPRINTF_("  hva/spa=%08x, flags=%08x\n", (u32)spa, (u32)flags);
