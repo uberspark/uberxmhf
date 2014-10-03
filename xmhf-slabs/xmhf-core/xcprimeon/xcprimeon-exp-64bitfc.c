@@ -49,11 +49,12 @@
 #include <xmhf-debug.h>
 
 #include <xcprimeon.h>
-/*
+
+
 //ring3 stack and tos
 __attribute__(( aligned(4096) )) static u8 _exp_ring3stack[PAGE_SIZE_4K] = { 0 };
-static u32 _exp_ring3tos = (u32)&_exp_ring3stack + (u32)PAGE_SIZE_4K;
-*/
+static u64 _exp_ring3tos = (u64)&_exp_ring3stack + (u64)PAGE_SIZE_4K;
+
 
 // GDT
 __attribute__(( aligned(16) )) static u64 _exp_gdt_start[]  = {
@@ -223,7 +224,7 @@ static u64 _exp_exceptionstubs[] = { 	XMHF_EXCEPTION_HANDLER_ADDROF(0),
 };
 
 
-/*
+
 __attribute__((naked)) static void __exp_syscallhandler(void){
     asm volatile(
       "sysexit \r\n"
@@ -234,7 +235,7 @@ __attribute__((naked)) static void __exp_syscallhandler(void){
 
 }
 
-*/
+
 
 
 
@@ -462,7 +463,7 @@ void xcprimeon_exp_entry(void){
     _exp_setIOPL3();
     _XDPRINTF_("%s: set IOPL to CPL-3\n", __FUNCTION__);
 
-/*
+
     //setup SYSENTER/SYSEXIT mechanism
     {
         wrmsr(IA32_SYSENTER_CS_MSR, __CS_CPL0, 0);
@@ -471,30 +472,47 @@ void xcprimeon_exp_entry(void){
     }
     _XDPRINTF_("%s: setup SYSENTER/SYSEXIT mechanism\n", __FUNCTION__);
 
-
-#if 0
+/*
     //switch to ring-3
     {
         asm volatile(
-             "pushl %0 \r\n"
-             "pushl %1 \r\n"
-             "pushl %2 \r\n"
-             "pushl $1f \r\n"
-             "lret \r\n"
-             "1: \r\n"
-             "movl %0, %%eax \r\n"
+             "pushq %0 \r\n"
+             "pushq %1 \r\n"
+             "pushq %2 \r\n"
+             "pushq $1f \r\n"
+             "lretq \r\n"
+             "1: jmp 1b\r\n"
+             "movq %0, %%rax \r\n"
              "movw %%ax, %%ds \r\n"
              "movw %%ax, %%es \r\n"
             :
             : "i" (__DS_CPL3), "m" (_exp_ring3tos), "i" (__CS_CPL3)
-            : "esp", "eax"
+            : "rsp", "rax"
         );
     }
+*/
+
+
+    //switch to ring-3
+    {
+        asm volatile(
+            "movq %0, %%rcx \r\n"
+            "movq $1f, %%rdx \r\n"
+            "sysexit \r\n"
+            "1: jmp 1b\r\n"
+            "movq %1, %%rax \r\n"
+            "movw %%ax, %%ds \r\n"
+            "movw %%ax, %%es \r\n"
+            :
+            : "m" (_exp_ring3tos), "i" (__DS_CPL3)
+            : "rcx", "rdx", "rax"
+        );
+
+    }
+
 
     _XDPRINTF_("%s: Now at CPL-3...\n", __FUNCTION__);
-
-#endif // ring-3 switch
-*/
+    HALT();
 
     asm volatile ("int $0x03 \r\n");
 
