@@ -499,7 +499,7 @@ void xcprimeon_exp_entry(void){
             "movq %0, %%rcx \r\n"
             "movq $1f, %%rdx \r\n"
             "sysexit \r\n"
-            "1: jmp 1b\r\n"
+            "1: \r\n"
             "movq %1, %%rax \r\n"
             "movw %%ax, %%ds \r\n"
             "movw %%ax, %%es \r\n"
