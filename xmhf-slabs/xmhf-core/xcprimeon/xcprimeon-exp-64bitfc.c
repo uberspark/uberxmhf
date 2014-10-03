@@ -503,10 +503,29 @@ void xcprimeon_exp_entry(void){
             "movq %1, %%rax \r\n"
             "movw %%ax, %%ds \r\n"
             "movw %%ax, %%es \r\n"
+            "movw %%ds, %%ax \r\n"
+            "andq $0x3, %%rax \r\n"
+            "jz 3f \r\n"
+            "2: jmp 2b \r\n"
+            "3: \r\n"
             :
             : "m" (_exp_ring3tos), "i" (__DS_CPL3)
             : "rcx", "rdx", "rax"
         );
+
+    }
+
+
+    {
+        u8 *vidbuffer = (u8 *)0xB8000;
+
+        vidbuffer[0]=0xA1;
+        vidbuffer[1]=0xA1;
+        vidbuffer[2]=0xA1;
+        vidbuffer[3]=0xA1;
+        vidbuffer[4]=0xA1;
+
+        HALT();
 
     }
 
