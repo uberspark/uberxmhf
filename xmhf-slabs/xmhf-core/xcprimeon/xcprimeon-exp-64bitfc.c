@@ -299,7 +299,7 @@ static void _exp_initializeIDT(void){
 
 }*/
 
-#if 0
+
 static void _exp_dotests(void){
 
     //[drop tests:begin]
@@ -383,7 +383,6 @@ static void _exp_dotests(void){
     }
 
 }
-#endif // 0
 
 //////
 //we get in here in 32-bit protected mode with (unity) paging turned on
@@ -450,9 +449,9 @@ void xcprimeon_exp_entry(void){
     _XDPRINTF_("%s: Now at CPL-3...\n", __FUNCTION__);
 
 #endif // ring-3 switch
-
-    _exp_dotests();
 */
+    _exp_dotests();
+
 
     _XDPRINTF_("%s: Halting!\n", __FUNCTION__);
     _XDPRINTF_("%s: XMHF Tester Finished!\n", __FUNCTION__);
