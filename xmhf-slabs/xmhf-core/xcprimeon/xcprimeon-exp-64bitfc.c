@@ -80,7 +80,7 @@ __attribute__(( aligned(4096) )) static u8 _exp_tss_stack[PAGE_SIZE_4K];
 
 
 // IDT
-__attribute__(( aligned(16) )) static u64 _exp_idt_start[EMHF_XCPHANDLER_MAXEXCEPTIONS] ;
+__attribute__(( aligned(16) )) static idtentry_t _exp_idt_start[EMHF_XCPHANDLER_MAXEXCEPTIONS] ;
 
 // IDT descriptor
 __attribute__(( aligned(16) )) static arch_x86_idtdesc_t _exp_idt = {
@@ -295,14 +295,14 @@ static void _exp_initializeIDT(void){
 	u32 i;
 
 	for(i=0; i < EMHF_XCPHANDLER_MAXEXCEPTIONS; i++){
-		_idt_start[i].isrLow= (u16)_exceptionstubs[i];
-		_idt_start[i].isrHigh= (u16) ( (u32)_exceptionstubs[i] >> 16 );
-		_idt_start[i].isrSelector = __CS_CPL0;
-		_idt_start[i].count=0x0;
-		_idt_start[i].type=0xEE;	//32-bit interrupt gate
+		_exp_idt_start[i].isrLow= (u16)_exp_exceptionstubs[i];
+		_exp_idt_start[i].isrHigh= (u16) ( (u32)_exp_exceptionstubs[i] >> 16 );
+		_exp_idt_start[i].isrSelector = __CS_CPL0;
+		_exp_idt_start[i].count=0x0;
+		_exp_idt_start[i].type=0xEE;	//32-bit interrupt gate
                                 //present=1, DPL=11b, system=0, type=1110b
-        _idt_start[i].offset3263=0;
-        _idt_start[i].reserved=0;
+        _exp_idt_start[i].offset3263=0;
+        _exp_idt_start[i].reserved=0;
 	}
 
 }
