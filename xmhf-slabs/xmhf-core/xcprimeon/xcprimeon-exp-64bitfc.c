@@ -386,10 +386,6 @@ static void _exp_dotests(void){
 void xcprimeon_exp_entry(void){
     _XDPRINTF_("%s: Begin Testing...\n", __FUNCTION__);
 
-    _XDPRINTF_("%s: Halting!\n");
-    _XDPRINTF_("%s: XMHF Tester Finished!\n");
-    HALT();
-
 /*    //init GDT
     _exp_initializeGDT();
     _XDPRINTF_("%s: GDT initialized\n", __FUNCTION__);
@@ -452,10 +448,11 @@ void xcprimeon_exp_entry(void){
 #endif // ring-3 switch
 
     _exp_dotests();
+*/
 
     _XDPRINTF_("%s: Halting!\n", __FUNCTION__);
     _XDPRINTF_("%s: XMHF Tester Finished!\n", __FUNCTION__);
-    HALT();*/
+    HALT();
 }
 
 
