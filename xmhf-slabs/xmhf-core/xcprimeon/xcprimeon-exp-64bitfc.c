@@ -78,18 +78,27 @@ __attribute__(( aligned(4096) )) static u8 _exp_tss[PAGE_SIZE_4K] = { 0 };
 
 __attribute__(( aligned(4096) )) static u8 _exp_tss_stack[PAGE_SIZE_4K];
 
-/*
+
 // IDT
 __attribute__(( aligned(16) )) static u64 _exp_idt_start[EMHF_XCPHANDLER_MAXEXCEPTIONS] ;
 
 // IDT descriptor
 __attribute__(( aligned(16) )) static arch_x86_idtdesc_t _exp_idt = {
 	.size=sizeof(_exp_idt_start)-1,
-	.base=(u32)&_exp_idt_start,
+	.base=(u64)&_exp_idt_start,
 };
 
 
 #define XMHF_EXCEPTION_HANDLER_DEFINE(vector) 												\
+	static void __exp_exception_handler_##vector(void) __attribute__((naked)) { 					\
+		asm volatile(												\
+						"iretq \r\n"								\
+					:												\
+					:	"i" (vector)				\
+		);															\
+	}\
+
+/*#define XMHF_EXCEPTION_HANDLER_DEFINE(vector) 												\
 	static void __exp_exception_handler_##vector(void) __attribute__((naked)) { 					\
 		asm volatile(												\
 						"pushal \r\n"								\
@@ -107,8 +116,7 @@ __attribute__(( aligned(16) )) static arch_x86_idtdesc_t _exp_idt = {
 					:	"i" (vector)				\
 		);															\
 	}\
-
-
+*/
 
 
 #define XMHF_EXCEPTION_HANDLER_ADDROF(vector) &__exp_exception_handler_##vector
@@ -146,7 +154,7 @@ XMHF_EXCEPTION_HANDLER_DEFINE(29)
 XMHF_EXCEPTION_HANDLER_DEFINE(30)
 XMHF_EXCEPTION_HANDLER_DEFINE(31)
 
-static u32 _exp_exceptionstubs[] = { 	XMHF_EXCEPTION_HANDLER_ADDROF(0),
+static u64 _exp_exceptionstubs[] = { 	XMHF_EXCEPTION_HANDLER_ADDROF(0),
 							XMHF_EXCEPTION_HANDLER_ADDROF(1),
 							XMHF_EXCEPTION_HANDLER_ADDROF(2),
 							XMHF_EXCEPTION_HANDLER_ADDROF(3),
@@ -181,7 +189,7 @@ static u32 _exp_exceptionstubs[] = { 	XMHF_EXCEPTION_HANDLER_ADDROF(0),
 };
 
 
-
+/*
 __attribute__((naked)) static void __exp_syscallhandler(void){
     asm volatile(
       "sysexit \r\n"
@@ -217,7 +225,7 @@ static void _exp_loadGDT(void){
 	);
 }
 
-/*
+
 //load IDT
 static void _exp_loadIDT(void){
 	//load IDT
@@ -228,7 +236,7 @@ static void _exp_loadIDT(void){
 		: //no clobber
 	);
 }
-
+/*
 //load TR
 static void _exp_loadTR(void){
 	  asm volatile(
@@ -282,22 +290,23 @@ static void _exp_initializeGDT(void){
 		t->limit0_15=0x67;
 }
 
-/*
+
 //initialize IDT
 static void _exp_initializeIDT(void){
 	u32 i;
 
 	for(i=0; i < EMHF_XCPHANDLER_MAXEXCEPTIONS; i++){
-		idtentry_t *idtentry=(idtentry_t *)((u32)&_exp_idt_start+ (i*8));
-		idtentry->isrLow= (u16)_exp_exceptionstubs[i];
-		idtentry->isrHigh= (u16) ( (u32)_exp_exceptionstubs[i] >> 16 );
-		idtentry->isrSelector = __CS_CPL0;
-		idtentry->count=0x0;
-		idtentry->type=0xEE;	//32-bit interrupt gate
-								//present=1, DPL=11b, system=0, type=1110b
+		_idt_start[i].isrLow= (u16)_exceptionstubs[i];
+		_idt_start[i].isrHigh= (u16) ( (u32)_exceptionstubs[i] >> 16 );
+		_idt_start[i].isrSelector = __CS_CPL0;
+		_idt_start[i].count=0x0;
+		_idt_start[i].type=0xEE;	//32-bit interrupt gate
+                                //present=1, DPL=11b, system=0, type=1110b
+        _idt_start[i].offset3263=0;
+        _idt_start[i].reserved=0;
 	}
 
-}*/
+}
 
 
 static void _exp_dotests(void){
@@ -393,10 +402,11 @@ void xcprimeon_exp_entry(void){
     _exp_initializeGDT();
     _XDPRINTF_("%s: GDT initialized\n", __FUNCTION__);
 
-/*    //init IDT
+    //init IDT
     _exp_initializeIDT();
     _XDPRINTF_("%s: IDT initialized\n", __FUNCTION__);
 
+/*
     //init TSS
     _exp_initializeTSS();
     _XDPRINTF_("%s: TSS initialized\n", __FUNCTION__);
@@ -408,11 +418,13 @@ void xcprimeon_exp_entry(void){
     //load TR
     _exp_loadTR();
     _XDPRINTF_("%s: TR loaded\n", __FUNCTION__);
+*/
 
     //load IDT
     _exp_loadIDT();
     _XDPRINTF_("%s: IDT loaded\n", __FUNCTION__);
 
+/*
     //set IOPL3
     _exp_setIOPL3();
     _XDPRINTF_("%s: set IOPL to CPL-3\n", __FUNCTION__);
@@ -450,6 +462,9 @@ void xcprimeon_exp_entry(void){
 
 #endif // ring-3 switch
 */
+
+    asm volatile ("int $0x03 \r\n");
+
     _exp_dotests();
 
 
