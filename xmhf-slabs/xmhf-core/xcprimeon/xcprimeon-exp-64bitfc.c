@@ -152,26 +152,6 @@ static u64 _exp_idttos = (u64)&_exp_idtstack + (u64)PAGE_SIZE_4K;
 		);															\
 	}\
 
-/*#define XMHF_EXCEPTION_HANDLER_DEFINE(vector) 												\
-	static void __exp_exception_handler_##vector(void) __attribute__((naked)) { 					\
-		asm volatile(												\
-						"pushal \r\n"								\
-                                                                    \
-						"movl 	%%esp, %%eax\r\n"					\
-						"pushl 	%%eax\r\n"							\
-						"pushl	%0\r\n" 							\
-						"call	xmhf_xcphandler_arch_hub\r\n"		\
-						"addl  	$0x08, %%esp\r\n"					\
-																	\
-						"popal	 \r\n"								\
-																	\
-						"iretl\r\n"									\
-					:												\
-					:	"i" (vector)				\
-		);															\
-	}\
-*/
-
 
 #define XMHF_EXCEPTION_HANDLER_ADDROF(vector) &__exp_exception_handler_##vector
 
@@ -303,23 +283,23 @@ static void _exp_loadTR(void){
 	  );
 }
 
-/*
+
 //set IOPl to CPl-3
 static void _exp_setIOPL3(void){
 
 	asm volatile(
-        "pushf \r\n"
-        "popl %%eax \r\n"
-		"orl $0x3000, %%eax \r\n"					// clear flags, but set IOPL=3 (CPL-3)
-		"pushl %%eax \r\n"
-		"popf \r\n"
+        "pushfq \r\n"
+        "popq %%rax \r\n"
+		"orq $0x3000, %%rax \r\n"					// clear flags, but set IOPL=3 (CPL-3)
+		"pushq %%rax \r\n"
+		"popfq \r\n"
 		: //no outputs
 		: //no inputs
-		: "eax", "cc"
+		: "rax", "cc"
 	);
 
 
-}*/
+}
 
 //initialize TSS
 static void _exp_initializeTSS(void){
@@ -477,12 +457,12 @@ void xcprimeon_exp_entry(void){
     _exp_loadIDT();
     _XDPRINTF_("%s: IDT loaded\n", __FUNCTION__);
 
-/*
+
     //set IOPL3
     _exp_setIOPL3();
     _XDPRINTF_("%s: set IOPL to CPL-3\n", __FUNCTION__);
 
-
+/*
     //setup SYSENTER/SYSEXIT mechanism
     {
         wrmsr(IA32_SYSENTER_CS_MSR, __CS_CPL0, 0);
