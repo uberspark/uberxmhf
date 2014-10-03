@@ -53,30 +53,32 @@
 //ring3 stack and tos
 __attribute__(( aligned(4096) )) static u8 _exp_ring3stack[PAGE_SIZE_4K] = { 0 };
 static u32 _exp_ring3tos = (u32)&_exp_ring3stack + (u32)PAGE_SIZE_4K;
-
+*/
 
 // GDT
 __attribute__(( aligned(16) )) static u64 _exp_gdt_start[]  = {
 	0x0000000000000000ULL,	//NULL descriptor
-	0x00cf9b000000ffffULL,	//CPL-0 code descriptor (CS)
-	0x00cf93000000ffffULL,	//CPL-0 data descriptor (DS/SS/ES/FS/GS)
-	0x00cffb000000ffffULL,	//CPL-3 code descriptor (CS)
-	0x00cff3000000ffffULL,	//CPL-3 data descriptor (DS/SS/ES/FS/GS)
-	0x0000000000000000ULL
+	0x00af9a000000ffffULL,	//CPL-0 64-bit code descriptor (CS64)
+	0x00af92000000ffffULL,	//CPL-0 64-bit data descriptor (DS/SS/ES/FS/GS)
+	0x00affa000000ffffULL,	//TODO: CPL-3 64-bit code descriptor (CS64)
+	0x00aff2000000ffffULL,	//TODO: CPL-3 64-bit data descriptor (DS/SS/ES/FS/GS)
+	0x0000000000000000ULL,  //TSS descriptor
+	0x0000000000000000ULL,
 };
 
 // GDT descriptor
 __attribute__(( aligned(16) )) static arch_x86_gdtdesc_t _exp_gdt  = {
 	.size=sizeof(_exp_gdt_start)-1,
-	.base=(u32)&_exp_gdt_start,
+	.base=(u64)&_exp_gdt_start,
 };
+
 
 // TSS
 __attribute__(( aligned(4096) )) static u8 _exp_tss[PAGE_SIZE_4K] = { 0 };
 
 __attribute__(( aligned(4096) )) static u8 _exp_tss_stack[PAGE_SIZE_4K];
 
-
+/*
 // IDT
 __attribute__(( aligned(16) )) static u64 _exp_idt_start[EMHF_XCPHANDLER_MAXEXCEPTIONS] ;
 
@@ -190,7 +192,7 @@ __attribute__((naked)) static void __exp_syscallhandler(void){
 
 }
 
-
+*/
 
 
 
@@ -199,22 +201,23 @@ static void _exp_loadGDT(void){
 
 	asm volatile(
 		"lgdt  %0 \r\n"
-		"pushl	%1 \r\n"				// far jump to runtime entry point
-		"pushl	$reloadsegs \r\n"
-		"lret \r\n"
+		"pushq	%1 \r\n"				// far jump to runtime entry point
+		"pushq	$reloadsegs \r\n"
+		"lretq \r\n"
 		"reloadsegs: \r\n"
 		"movw	%2, %%ax \r\n"
 		"movw	%%ax, %%ds \r\n"
 		"movw	%%ax, %%es \r\n"
 		"movw	%%ax, %%fs \r\n"
 		"movw	%%ax, %%gs \r\n"
-		"movw  %%ax, %%ss \r\n"
+		"movw   %%ax, %%ss \r\n"
 		: //no outputs
 		: "m" (_exp_gdt), "i" (__CS_CPL0), "i" (__DS_CPL0)
 		: "eax"
 	);
 }
 
+/*
 //load IDT
 static void _exp_loadIDT(void){
 	//load IDT
@@ -262,7 +265,7 @@ static void _exp_initializeTSS(void){
 
 		tss->ss0 = __DS_CPL0;
 		tss->esp0 = (u32)_exp_tss_stack + PAGE_SIZE_4K;
-}
+}*/
 
 //initialize GDT
 static void _exp_initializeGDT(void){
@@ -271,7 +274,7 @@ static void _exp_initializeGDT(void){
 
 		//TSS descriptor
 		t= (TSSENTRY *)(u32)&_exp_gdt_start[(__TRSEL/sizeof(u64))];
-		t->attributes1= 0x89;
+		t->attributes1= 0xE9;
 		t->limit16_19attributes2= 0x0;
 		t->baseAddr0_15= (u16)(tss_base & 0x0000FFFF);
 		t->baseAddr16_23= (u8)((tss_base & 0x00FF0000) >> 16);
@@ -279,6 +282,7 @@ static void _exp_initializeGDT(void){
 		t->limit0_15=0x67;
 }
 
+/*
 //initialize IDT
 static void _exp_initializeIDT(void){
 	u32 i;
@@ -386,22 +390,22 @@ static void _exp_dotests(void){
 void xcprimeon_exp_entry(void){
     _XDPRINTF_("%s: Begin Testing...\n", __FUNCTION__);
 
-/*    //init GDT
+    //init GDT
     _exp_initializeGDT();
     _XDPRINTF_("%s: GDT initialized\n", __FUNCTION__);
 
-    //init IDT
+/*    //init IDT
     _exp_initializeIDT();
     _XDPRINTF_("%s: IDT initialized\n", __FUNCTION__);
 
     //init TSS
     _exp_initializeTSS();
     _XDPRINTF_("%s: TSS initialized\n", __FUNCTION__);
-
+*/
     //load GDT
     _exp_loadGDT();
     _XDPRINTF_("%s: GDT loaded\n", __FUNCTION__);
-
+/*
     //load TR
     _exp_loadTR();
     _XDPRINTF_("%s: TR loaded\n", __FUNCTION__);
