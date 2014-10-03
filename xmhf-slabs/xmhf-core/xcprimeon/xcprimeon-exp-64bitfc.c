@@ -236,20 +236,20 @@ static void _exp_loadIDT(void){
 		: //no clobber
 	);
 }
-/*
+
 //load TR
 static void _exp_loadTR(void){
 	  asm volatile(
-		"xorl %%eax, %%eax\r\n"
+		"xorq %%rax, %%rax\r\n"
 		"movw %0, %%ax\r\n"
 		"ltr %%ax\r\n"				//load TR
 	     :
 	     : "i"(__TRSEL)
-	     : "eax"
+	     : "rax"
 	  );
 }
 
-
+/*
 //set IOPl to CPl-3
 static void _exp_setIOPL3(void){
 
@@ -265,15 +265,14 @@ static void _exp_setIOPL3(void){
 	);
 
 
-}
+}*/
 
 //initialize TSS
 static void _exp_initializeTSS(void){
 		tss_t *tss= (tss_t *)_exp_tss;
 
-		tss->ss0 = __DS_CPL0;
-		tss->esp0 = (u32)_exp_tss_stack + PAGE_SIZE_4K;
-}*/
+		tss->rsp0 = (u64) ( (u32)_exp_tss_stack + PAGE_SIZE_4K );
+}
 
 //initialize GDT
 static void _exp_initializeGDT(void){
@@ -406,19 +405,19 @@ void xcprimeon_exp_entry(void){
     _exp_initializeIDT();
     _XDPRINTF_("%s: IDT initialized\n", __FUNCTION__);
 
-/*
+
     //init TSS
     _exp_initializeTSS();
     _XDPRINTF_("%s: TSS initialized\n", __FUNCTION__);
-*/
+
     //load GDT
     _exp_loadGDT();
     _XDPRINTF_("%s: GDT loaded\n", __FUNCTION__);
-/*
+
     //load TR
     _exp_loadTR();
     _XDPRINTF_("%s: TR loaded\n", __FUNCTION__);
-*/
+
 
     //load IDT
     _exp_loadIDT();
