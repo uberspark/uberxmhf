@@ -89,12 +89,66 @@ __attribute__(( aligned(16) )) static arch_x86_idtdesc_t _exp_idt = {
 };
 
 
+static u64 _exp_saved_rsp=0;
+static u64 _exp_saved_rax=0;
+
+__attribute__(( aligned(4096) )) static u8 _exp_idtstack[PAGE_SIZE_4K] = { 0 };
+static u64 _exp_idttos = (u64)&_exp_idtstack + (u64)PAGE_SIZE_4K;
+
+
 #define XMHF_EXCEPTION_HANDLER_DEFINE(vector) 												\
 	static void __exp_exception_handler_##vector(void) __attribute__((naked)) { 					\
 		asm volatile(												\
-						"iretq \r\n"								\
+                        "movq %%rax, %0 \r\n"\
+                        "movq %%rsp, %1 \r\n"\
+                        "movq %2, %%rax \r\n"\
+                        "movw %%ax, %%ss \r\n"\
+                        "movq %3, %%rsp \r\n"				    \
+                        "movq %0, %%rax \r\n"\
+                                                                    \
+                        "pushq %1 \r\n"\
+                        "pushq %%rbp \r\n"\
+                        "pushq %%rdi \r\n"\
+                        "pushq %%rsi \r\n"\
+                        "pushq %%rdx \r\n"\
+                        "pushq %%rcx \r\n"\
+                        "pushq %%rbx \r\n"\
+                        "pushq %%rax \r\n"\
+                        "pushq %%r15 \r\n"\
+                        "pushq %%r14 \r\n"\
+                        "pushq %%r13 \r\n"\
+                        "pushq %%r12 \r\n"\
+                        "pushq %%r11 \r\n"\
+                        "pushq %%r10 \r\n"\
+                        "pushq %%r9 \r\n"\
+                        "pushq %%r8 \r\n"\
+                        "movq %%rsp, %%rsi \r\n"\
+                        "mov %4, %%rdi \r\n"\
+                        "callq xmhf_xcphandler_arch_hub \r\n"\
+                        "cmpq $0, %%rax \r\n"\
+                        "jne 3f\r\n"\
+                        "hlt\r\n"\
+                        "3:\r\n"\
+                        "popq %%r8 \r\n"\
+                        "popq %%r9 \r\n"\
+                        "popq %%r10 \r\n"\
+                        "popq %%r11 \r\n"\
+                        "popq %%r12 \r\n"\
+                        "popq %%r13 \r\n"\
+                        "popq %%r14 \r\n"\
+                        "popq %%r15 \r\n"\
+                        "popq %%rax \r\n"\
+                        "popq %%rbx \r\n"\
+                        "popq %%rcx \r\n"\
+                        "popq %%rdx \r\n"\
+                        "popq %%rsi \r\n"\
+                        "popq %%rdi \r\n"\
+                        "popq %%rbp \r\n"\
+                        "popq %%rsp \r\n"\
+                        \
+                        "iretq \r\n"\
 					:												\
-					:	"i" (vector)				\
+					:	"m" (_exp_saved_rax), "m" (_exp_saved_rsp), "i"(__DS_CPL0), "m" (_exp_idttos), "i" (vector)				\
 		);															\
 	}\
 
