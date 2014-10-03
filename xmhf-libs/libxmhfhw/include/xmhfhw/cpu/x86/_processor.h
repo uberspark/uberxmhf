@@ -298,12 +298,12 @@ typedef struct {
 } __attribute__ ((packed)) idtentry_t;
 
 typedef struct {
-  unsigned short limit0_15;
-  unsigned short baseAddr0_15;
-  unsigned char baseAddr16_23;
-  unsigned char attributes1;
-  unsigned char limit16_19attributes2;
-  unsigned char baseAddr24_31;
+  u16 limit0_15;
+  u16 baseAddr0_15;
+  u8 baseAddr16_23;
+  u8 attributes1;
+  u8 limit16_19attributes2;
+  u8 baseAddr24_31;
 } __attribute__ ((packed)) TSSENTRY;
 
 
