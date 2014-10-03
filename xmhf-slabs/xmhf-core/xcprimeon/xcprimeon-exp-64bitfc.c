@@ -57,13 +57,14 @@ static u64 _exp_ring3tos = (u64)&_exp_ring3stack + (u64)PAGE_SIZE_4K;
 
 
 // GDT
-__attribute__(( aligned(16) )) static u64 _exp_gdt_start[]  = {
+__attribute__(( aligned(16) )) static u64 _exp_gdt_start[8]  = {
 	0x0000000000000000ULL,	//NULL descriptor
 	0x00af9a000000ffffULL,	//CPL-0 64-bit code descriptor (CS64)
 	0x00af92000000ffffULL,	//CPL-0 64-bit data descriptor (DS/SS/ES/FS/GS)
 	0x00affa000000ffffULL,	//TODO: CPL-3 64-bit code descriptor (CS64)
 	0x00aff2000000ffffULL,	//TODO: CPL-3 64-bit data descriptor (DS/SS/ES/FS/GS)
 	0x0000000000000000ULL,  //TSS descriptor
+	0x0000000000000000ULL,
 	0x0000000000000000ULL,
 };
 
@@ -100,6 +101,7 @@ static u64 _exp_idttos = (u64)&_exp_idtstack + (u64)PAGE_SIZE_4K;
 #define XMHF_EXCEPTION_HANDLER_DEFINE(vector) 												\
 	static void __exp_exception_handler_##vector(void) __attribute__((naked)) { 					\
 		asm volatile(												\
+                        "iretq \r\n"\
                         "movq %%rax, %0 \r\n"\
                         "movq %%rsp, %1 \r\n"\
                         "movq %2, %%rax \r\n"\
@@ -315,7 +317,7 @@ static void _exp_initializeGDT(void){
 		u32 tss_base=(u32)&_exp_tss;
 
 		//TSS descriptor
-		t= (TSSENTRY *)(u32)&_exp_gdt_start[(__TRSEL/sizeof(u64))];
+		t= (TSSENTRY *)&_exp_gdt_start[5];
 		t->attributes1= 0xE9;
 		t->limit16_19attributes2= 0x0;
 		t->baseAddr0_15= (u16)(tss_base & 0x0000FFFF);
@@ -503,11 +505,8 @@ void xcprimeon_exp_entry(void){
             "movq %1, %%rax \r\n"
             "movw %%ax, %%ds \r\n"
             "movw %%ax, %%es \r\n"
-            "movw %%ds, %%ax \r\n"
-            "andq $0x3, %%rax \r\n"
-            "jz 3f \r\n"
+            "int $0x03 \r\n"
             "2: jmp 2b \r\n"
-            "3: \r\n"
             :
             : "m" (_exp_ring3tos), "i" (__DS_CPL3)
             : "rcx", "rdx", "rax"
