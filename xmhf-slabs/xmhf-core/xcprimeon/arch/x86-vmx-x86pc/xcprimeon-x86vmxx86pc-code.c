@@ -817,7 +817,7 @@ extern u8 _slab_shareddata_memregion_end[];
 extern u8 _slab_trampoline_memregion_start[];
 extern u8 _slab_trampoline_memregion_end[];
 
-static struct {
+__attribute__((aligned(4096))) static struct {
     u64 pml4t[PAE_MAXPTRS_PER_PML4T] __attribute__(( aligned(4096) ));
 	u64 pdpt[PAE_MAXPTRS_PER_PDPT] __attribute__(( aligned(4096) ));
 	u64 pdt[PAE_PTRS_PER_PDPT][PAE_PTRS_PER_PDT] __attribute__(( aligned(4096) ));
@@ -924,7 +924,7 @@ static u64 _xcprimeon_slab_getptflagsforspa(u32 slab_index, u32 spa){
 // initialize slab page tables for a given slab index, returns the macm base
 static u32 _xcprimeon_slab_populate_pagetables(u32 slab_index){
 		u32 i, j;
-		u64 default_flags = (u64)(_PAGE_PRESENT);
+		u64 default_flags = (u64)(_PAGE_PRESENT) | (u64)(_PAGE_USER);
 
         for(i=0; i < PAE_PTRS_PER_PML4T; i++)
             _slab_pagetables[slab_index].pml4t[i] = pae_make_pml4e(hva2spa(&_slab_pagetables[slab_index].pdpt), default_flags);
