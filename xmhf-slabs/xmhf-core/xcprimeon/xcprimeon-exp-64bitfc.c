@@ -334,7 +334,7 @@ static void _exp_initializeIDT(void){
 	for(i=0; i < EMHF_XCPHANDLER_MAXEXCEPTIONS; i++){
 		_exp_idt_start[i].isrLow= (u16)_exp_exceptionstubs[i];
 		_exp_idt_start[i].isrHigh= (u16) ( (u32)_exp_exceptionstubs[i] >> 16 );
-		_exp_idt_start[i].isrSelector = __CS_CPL0;
+		_exp_idt_start[i].isrSelector = __CS_CPL3;
 		_exp_idt_start[i].count=0x0;
 		_exp_idt_start[i].type=0xEE;	//32-bit interrupt gate
                                 //present=1, DPL=11b, system=0, type=1110b
@@ -505,7 +505,7 @@ void xcprimeon_exp_entry(void){
             "movq %1, %%rax \r\n"
             "movw %%ax, %%ds \r\n"
             "movw %%ax, %%es \r\n"
-            //"int $0x03 \r\n"
+            "int $0x03 \r\n"
             //"2: jmp 2b \r\n"
             :
             : "m" (_exp_ring3tos), "i" (__DS_CPL3)
@@ -524,7 +524,7 @@ void xcprimeon_exp_entry(void){
         vidbuffer[3]=0xA1;
         vidbuffer[4]=0xA1;
 
-        //HALT();
+        HALT();
 
     }
 
