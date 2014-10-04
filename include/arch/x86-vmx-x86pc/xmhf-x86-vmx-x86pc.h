@@ -171,7 +171,7 @@ typedef struct {
 typedef struct __tss {
 	u32 reserved;
 	u64 rsp0;
-} tss_t;
+} __attribute__((packed)) tss_t;
 
 #define	EMHF_XCPHANDLER_MAXEXCEPTIONS	32
 #define EMHF_XCPHANDLER_IDTSIZE			(EMHF_XCPHANDLER_MAXEXCEPTIONS * 8)

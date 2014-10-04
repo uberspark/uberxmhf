@@ -101,7 +101,6 @@ static u64 _exp_idttos = (u64)&_exp_idtstack + (u64)PAGE_SIZE_4K;
 #define XMHF_EXCEPTION_HANDLER_DEFINE(vector) 												\
 	static void __exp_exception_handler_##vector(void) __attribute__((naked)) { 					\
 		asm volatile(												\
-                        "iretq \r\n"\
                         "movq %%rax, %0 \r\n"\
                         "movq %%rsp, %1 \r\n"\
                         "movq %2, %%rax \r\n"\
@@ -334,7 +333,7 @@ static void _exp_initializeIDT(void){
 	for(i=0; i < EMHF_XCPHANDLER_MAXEXCEPTIONS; i++){
 		_exp_idt_start[i].isrLow= (u16)_exp_exceptionstubs[i];
 		_exp_idt_start[i].isrHigh= (u16) ( (u32)_exp_exceptionstubs[i] >> 16 );
-		_exp_idt_start[i].isrSelector = __CS_CPL3;
+		_exp_idt_start[i].isrSelector = __CS_CPL0;
 		_exp_idt_start[i].count=0x0;
 		_exp_idt_start[i].type=0xEE;	//32-bit interrupt gate
                                 //present=1, DPL=11b, system=0, type=1110b
@@ -550,7 +549,9 @@ void xcprimeon_exp_entry(void){
     _XDPRINTF_("%s: Now at CPL-3...\n", __FUNCTION__);
     //HALT();
 
-    //asm volatile ("int $0x03 \r\n");
+    _XDPRINTF_("%s: going to do int3...\n", __FUNCTION__);
+    asm volatile ("int $0x03 \r\n");
+    _XDPRINTF_("%s: came back from int3...\n", __FUNCTION__);
 
     _exp_dotests();
 
