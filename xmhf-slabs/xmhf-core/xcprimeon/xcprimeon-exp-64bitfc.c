@@ -531,7 +531,7 @@ void xcprimeon_exp_entry(void){
     }*/
 
 
-    {
+    /*{
         u8 *vidbuffer = (u8 *)0xB8000;
 
         vidbuffer[0]=0xA1;
@@ -544,13 +544,13 @@ void xcprimeon_exp_entry(void){
 
         //HALT();
 
-    }
+    }*/
 
 
     _XDPRINTF_("%s: Now at CPL-3...\n", __FUNCTION__);
-    HALT();
+    //HALT();
 
-    asm volatile ("int $0x03 \r\n");
+    //asm volatile ("int $0x03 \r\n");
 
     _exp_dotests();
 
