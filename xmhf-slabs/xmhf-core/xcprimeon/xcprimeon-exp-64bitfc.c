@@ -474,7 +474,7 @@ void xcprimeon_exp_entry(void){
     }
     _XDPRINTF_("%s: setup SYSENTER/SYSEXIT mechanism\n", __FUNCTION__);
 
-/*
+
     //switch to ring-3
     {
         asm volatile(
@@ -483,19 +483,20 @@ void xcprimeon_exp_entry(void){
              "pushq %2 \r\n"
              "pushq $1f \r\n"
              "lretq \r\n"
-             "1: jmp 1b\r\n"
+             "1: \r\n"
              "movq %0, %%rax \r\n"
              "movw %%ax, %%ds \r\n"
              "movw %%ax, %%es \r\n"
+             //"int $0x03 \r\n"
             :
             : "i" (__DS_CPL3), "m" (_exp_ring3tos), "i" (__CS_CPL3)
             : "rsp", "rax"
         );
     }
-*/
 
 
-    //switch to ring-3
+
+/*    //switch to ring-3
     {
         asm volatile(
             "movq %0, %%rcx \r\n"
@@ -512,7 +513,22 @@ void xcprimeon_exp_entry(void){
             : "rcx", "rdx", "rax"
         );
 
-    }
+    }*/
+
+    /*{
+        asm volatile (
+            "pushfq \r\n"
+            "popq %%rax \r\n"
+            "andq $0x3000, %%rax \r\n"
+            "jnz 1f \r\n"
+            "2: jmp 2b \r\n"
+            "1: \r\n"
+            :
+            :
+            :"rax"
+        );
+
+    }*/
 
 
     {
@@ -524,7 +540,9 @@ void xcprimeon_exp_entry(void){
         vidbuffer[3]=0xA1;
         vidbuffer[4]=0xA1;
 
-        HALT();
+        //inb(0x3f8);
+
+        //HALT();
 
     }
 
