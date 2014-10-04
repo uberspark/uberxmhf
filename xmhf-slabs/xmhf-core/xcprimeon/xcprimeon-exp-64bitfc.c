@@ -524,7 +524,7 @@ void xcprimeon_exp_entry(void){
         vidbuffer[3]=0xA1;
         vidbuffer[4]=0xA1;
 
-        HALT();
+        //HALT();
 
     }
 
