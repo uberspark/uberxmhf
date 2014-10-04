@@ -877,7 +877,7 @@ static u32 _xcprimeon_slab_getspatype(u32 slab_index, u32 spa){
 
 static u64 _xcprimeon_slab_getptflagsforspa(u32 slab_index, u32 spa){
 	u64 flags;
-	u32 spatype = _xcprimeon_slab_getspatype(slab_index, spa);
+/*	u32 spatype = _xcprimeon_slab_getspatype(slab_index, spa);
 	//_XDPRINTF_("\n%s: slab_index=%u, spa=%08x, spatype = %x\n", __FUNCTION__, slab_index, spa, spatype);
 
 	switch(spatype){
@@ -907,7 +907,7 @@ static u64 _xcprimeon_slab_getptflagsforspa(u32 slab_index, u32 spa){
 			break;
 
 		default:
-			flags = (u64)(_PAGE_PRESENT | _PAGE_RW | _PAGE_PSE);
+			flags = (u64)(_PAGE_PRESENT | _PAGE_RW | _PAGE_PSE | _PAGE_USER);
 			if(spa == 0xfee00000 || spa == 0xfec00000) {
 				//map some MMIO regions with Page Cache disabled
 				//0xfed00000 contains Intel TXT config regs & TPM MMIO
@@ -915,7 +915,15 @@ static u64 _xcprimeon_slab_getptflagsforspa(u32 slab_index, u32 spa){
 				flags |= (u64)(_PAGE_PCD);
 			}
 			break;
-	}
+	}*/
+
+	flags = (u64)(_PAGE_PRESENT | _PAGE_RW | _PAGE_PSE | _PAGE_USER);
+			if(spa == 0xfee00000 || spa == 0xfec00000) {
+				//map some MMIO regions with Page Cache disabled
+				//0xfed00000 contains Intel TXT config regs & TPM MMIO
+				//0xfee00000 contains LAPIC base
+				flags |= (u64)(_PAGE_PCD);
+			}
 
 	return flags;
 }
@@ -924,7 +932,7 @@ static u64 _xcprimeon_slab_getptflagsforspa(u32 slab_index, u32 spa){
 // initialize slab page tables for a given slab index, returns the macm base
 static u32 _xcprimeon_slab_populate_pagetables(u32 slab_index){
 		u32 i, j;
-		u64 default_flags = (u64)(_PAGE_PRESENT) | (u64)(_PAGE_USER);
+		u64 default_flags = (u64)(_PAGE_PRESENT) | (u64)(_PAGE_USER) | (u64)(_PAGE_RW);
 
         for(i=0; i < PAE_PTRS_PER_PML4T; i++)
             _slab_pagetables[slab_index].pml4t[i] = pae_make_pml4e(hva2spa(&_slab_pagetables[slab_index].pdpt), default_flags);
@@ -938,7 +946,7 @@ static u32 _xcprimeon_slab_populate_pagetables(u32 slab_index){
 				u32 hva = ((i * PAE_PTRS_PER_PDT) + j) * PAGE_SIZE_2M;
 				u64 spa = hva2spa((void*)hva);
 				u64 flags = _xcprimeon_slab_getptflagsforspa(slab_index, (u32)spa);
-				_slab_pagetables[slab_index].pdt[i][j] = pae_make_pde_big(spa, flags | (u64)(_PAGE_USER));
+				_slab_pagetables[slab_index].pdt[i][j] = pae_make_pde_big(spa, flags);
 				//debug
 				//if(slab_index == XMHF_SLAB_TESTSLAB1_INDEX && (spa >=0x10000000 && spa < 0x20000000) )
 				//	_XDPRINTF_("  hva/spa=%08x, flags=%08x\n", (u32)spa, (u32)flags);
@@ -1116,6 +1124,92 @@ u64 xcprimeon_arch_initialize_slab_tables(void){
 
     return (u64)_slab_table[XMHF_SLAB_XCPRIMEON_INDEX].slab_macmid;
 }
+
+
+//////
+
+/*
+static u64 _pml4t[PAE_MAXPTRS_PER_PML4T] __attribute__(( aligned(4096) ));
+static u64 _pdpt[PAE_MAXPTRS_PER_PDPT] __attribute__(( aligned(4096) ));
+static u64 _pdt[PAE_PTRS_PER_PDPT][PAE_PTRS_PER_PDT] __attribute__(( aligned(4096) ));
+
+static u64 _xcprimeon_getptflagsforspa(u32 spa){
+	u64 flags = (u64)(_PAGE_PRESENT | _PAGE_RW | _PAGE_PSE | _PAGE_USER);
+	if(spa == 0xfee00000 || spa == 0xfec00000) {
+		//map some MMIO regions with Page Cache disabled
+		//0xfed00000 contains Intel TXT config regs & TPM MMIO
+		//0xfee00000 contains LAPIC base
+		flags |= (u64)(_PAGE_PCD);
+	}
+	return flags;
+}
+
+//*
+// initialize page tables and return page table base
+static u32 _exp_xcprimeon_populate_pagetables(void){
+		u32 i, j;
+		u64 default_flags = (u64)(_PAGE_PRESENT | _PAGE_USER);
+
+        for(i=0; i < PAE_PTRS_PER_PML4T; i++)
+            _pml4t[i] = pae_make_pml4e(hva2spa(&_pdpt), default_flags);
+
+		for(i=0; i < PAE_PTRS_PER_PDPT; i++)
+			_pdpt[i] = pae_make_pdpe(hva2spa(_pdt[i]), default_flags);
+
+		//init pdts with unity mappings
+		for(i=0; i < PAE_PTRS_PER_PDPT; i++){
+			for(j=0; j < PAE_PTRS_PER_PDT; j++){
+				u32 hva = ((i * PAE_PTRS_PER_PDT) + j) * PAGE_SIZE_2M;
+				u64 spa = hva2spa((void*)hva);
+				u64 flags = _xcprimeon_getptflagsforspa((u32)spa);
+				_pdt[i][j] = pae_make_pde_big(spa, flags);
+			}
+		}
+
+		return (u32)_pml4t;
+}
+
+// initialization function for the core API interface
+u64 xcprimeon_arch_initialize_page_tables(void){
+	u32 pgtblbase;
+
+	_XDPRINTF_("\n%s: starting...", __FUNCTION__);
+
+	pgtblbase = _exp_xcprimeon_populate_pagetables();
+
+	_XDPRINTF_("\n%s: setup page tables\n", __FUNCTION__);
+
+    return (u64)pgtblbase;
+}
+
+
+*/
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//////
+
 
 
 void xcprimeon_arch_relinquish_control(void){
