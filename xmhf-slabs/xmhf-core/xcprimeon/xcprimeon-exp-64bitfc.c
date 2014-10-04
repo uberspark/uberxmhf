@@ -505,8 +505,8 @@ void xcprimeon_exp_entry(void){
             "movq %1, %%rax \r\n"
             "movw %%ax, %%ds \r\n"
             "movw %%ax, %%es \r\n"
-            "int $0x03 \r\n"
-            "2: jmp 2b \r\n"
+            //"int $0x03 \r\n"
+            //"2: jmp 2b \r\n"
             :
             : "m" (_exp_ring3tos), "i" (__DS_CPL3)
             : "rcx", "rdx", "rax"
