@@ -361,6 +361,8 @@ static void _exp_dotests(void){
 
         _XDPRINTF_("%s: proceeding with test...\n", __FUNCTION__);
 
+
+
         for(i=0; i < iterations; i++){
             tscbefore = rdtsc64();
 
@@ -411,6 +413,24 @@ static void _exp_dotests(void){
                               :
                               : "m"(_exp_ring3tos)
                               :
+                              );*/
+
+
+                /*{
+                    TSSENTRY *t;
+
+                    //TSS descriptor
+                    t= (TSSENTRY *)&_exp_gdt_start[5];
+                    t->attributes1= 0xE9;
+                }
+
+                //ltr: 151 clock cycles
+                asm volatile (
+                              "movq %0, %%rax \r\n"
+                              "ltr %%ax \r\n"
+                              :
+                              : "i"(__TRSEL)
+                              : "rax"
                               );*/
 
             }
@@ -474,7 +494,7 @@ void xcprimeon_exp_entry(void){
     _XDPRINTF_("%s: setup SYSENTER/SYSEXIT mechanism\n", __FUNCTION__);
 
 
-    //switch to ring-3
+/*    //switch to ring-3 -- working
     {
         asm volatile(
              "pushq %0 \r\n"
@@ -491,7 +511,7 @@ void xcprimeon_exp_entry(void){
             : "i" (__DS_CPL3), "m" (_exp_ring3tos), "i" (__CS_CPL3)
             : "rsp", "rax"
         );
-    }
+    }*/
 
 
 
@@ -546,12 +566,12 @@ void xcprimeon_exp_entry(void){
     }*/
 
 
-    _XDPRINTF_("%s: Now at CPL-3...\n", __FUNCTION__);
+    //_XDPRINTF_("%s: Now at CPL-3...\n", __FUNCTION__);
     //HALT();
 
-    _XDPRINTF_("%s: going to do int3...\n", __FUNCTION__);
-    asm volatile ("int $0x03 \r\n");
-    _XDPRINTF_("%s: came back from int3...\n", __FUNCTION__);
+    //_XDPRINTF_("%s: going to do int3...\n", __FUNCTION__);
+    //asm volatile ("int $0x03 \r\n");
+    //_XDPRINTF_("%s: came back from int3...\n", __FUNCTION__);
 
     _exp_dotests();
 
