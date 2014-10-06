@@ -57,10 +57,12 @@ static u64 _exp_ring3tos = (u64)&_exp_ring3stack + (u64)PAGE_SIZE_4K;
 
 
 // GDT
-__attribute__(( aligned(16) )) static u64 _exp_gdt_start[8]  = {
+__attribute__(( aligned(16) )) static u64 _exp_gdt_start[]  = {
 	0x0000000000000000ULL,	//NULL descriptor
 	0x00af9a000000ffffULL,	//CPL-0 64-bit code descriptor (CS64)
 	0x00af92000000ffffULL,	//CPL-0 64-bit data descriptor (DS/SS/ES/FS/GS)
+	0x00affa000000ffffULL,	//TODO: CPL-3 64-bit code descriptor (CS64)
+	0x00aff2000000ffffULL,	//TODO: CPL-3 64-bit data descriptor (DS/SS/ES/FS/GS)
 	0x00affa000000ffffULL,	//TODO: CPL-3 64-bit code descriptor (CS64)
 	0x00aff2000000ffffULL,	//TODO: CPL-3 64-bit data descriptor (DS/SS/ES/FS/GS)
 	0x0000000000000000ULL,  //TSS descriptor
@@ -228,7 +230,7 @@ static u64 _exp_exceptionstubs[] = { 	XMHF_EXCEPTION_HANDLER_ADDROF(0),
 
 __attribute__((naked)) static void __exp_syscallhandler(void){
     asm volatile(
-      "sysexit \r\n"
+      "sysexitq \r\n"
       :
       :
       :
@@ -316,7 +318,7 @@ static void _exp_initializeGDT(void){
 		u32 tss_base=(u32)&_exp_tss;
 
 		//TSS descriptor
-		t= (TSSENTRY *)&_exp_gdt_start[5];
+		t= (TSSENTRY *)&_exp_gdt_start[7];
 		t->attributes1= 0xE9;
 		t->limit16_19attributes2= 0x0;
 		t->baseAddr0_15= (u16)(tss_base & 0x0000FFFF);
@@ -395,16 +397,15 @@ static void _exp_dotests(void){
                               :
                               );*/
 
-                /*//sysenter/sysexit: 69 clock cycles
-                asm volatile (
-                              "movl %%esp, %%ecx \r\n"
-                              "movl $1f, %%edx \r\n"
+                //sysenter/sysexit: 69 clock cycles
+                asm volatile ("movq %%rsp, %%rcx \r\n"
+                              "movq $1f, %%rdx \r\n"
                               "sysenter \r\n"
                               "1: \r\n"
                               :
                               :
-                              :
-                              );*/
+                              :"rcx", "rdx"
+                              );
 
 
                 /*//invlpg: 183 clock cycles
@@ -494,7 +495,7 @@ void xcprimeon_exp_entry(void){
     _XDPRINTF_("%s: setup SYSENTER/SYSEXIT mechanism\n", __FUNCTION__);
 
 
-/*    //switch to ring-3 -- working
+    //switch to ring-3 -- working
     {
         asm volatile(
              "pushq %0 \r\n"
@@ -511,62 +512,10 @@ void xcprimeon_exp_entry(void){
             : "i" (__DS_CPL3), "m" (_exp_ring3tos), "i" (__CS_CPL3)
             : "rsp", "rax"
         );
-    }*/
+    }
 
 
-
-/*    //switch to ring-3
-    {
-        asm volatile(
-            "movq %0, %%rcx \r\n"
-            "movq $1f, %%rdx \r\n"
-            "sysexit \r\n"
-            "1: \r\n"
-            "movq %1, %%rax \r\n"
-            "movw %%ax, %%ds \r\n"
-            "movw %%ax, %%es \r\n"
-            "int $0x03 \r\n"
-            //"2: jmp 2b \r\n"
-            :
-            : "m" (_exp_ring3tos), "i" (__DS_CPL3)
-            : "rcx", "rdx", "rax"
-        );
-
-    }*/
-
-    /*{
-        asm volatile (
-            "pushfq \r\n"
-            "popq %%rax \r\n"
-            "andq $0x3000, %%rax \r\n"
-            "jnz 1f \r\n"
-            "2: jmp 2b \r\n"
-            "1: \r\n"
-            :
-            :
-            :"rax"
-        );
-
-    }*/
-
-
-    /*{
-        u8 *vidbuffer = (u8 *)0xB8000;
-
-        vidbuffer[0]=0xA1;
-        vidbuffer[1]=0xA1;
-        vidbuffer[2]=0xA1;
-        vidbuffer[3]=0xA1;
-        vidbuffer[4]=0xA1;
-
-        //inb(0x3f8);
-
-        //HALT();
-
-    }*/
-
-
-    //_XDPRINTF_("%s: Now at CPL-3...\n", __FUNCTION__);
+    _XDPRINTF_("%s: Now at CPL-3...\n", __FUNCTION__);
     //HALT();
 
     //_XDPRINTF_("%s: going to do int3...\n", __FUNCTION__);
@@ -583,3 +532,17 @@ void xcprimeon_exp_entry(void){
 
 
 
+    /*{
+        u8 *vidbuffer = (u8 *)0xB8000;
+
+        vidbuffer[0]=0xA1;
+        vidbuffer[1]=0xA1;
+        vidbuffer[2]=0xA1;
+        vidbuffer[3]=0xA1;
+        vidbuffer[4]=0xA1;
+
+        //inb(0x3f8);
+
+        //HALT();
+
+    }*/
