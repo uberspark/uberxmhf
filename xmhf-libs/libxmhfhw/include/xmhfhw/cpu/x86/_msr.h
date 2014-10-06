@@ -96,6 +96,12 @@
 #define IA32_SYSENTER_EIP_MSR	         0x176
 #define IA32_SYSENTER_ESP_MSR	         0x175
 
+//syscall/sysret MSRs
+#define IA32_LSTAR_MSR                  0xC0000082
+#define IA32_FMASK_MSR                  0xC0000084
+#define IA32_STAR_MSR                   0xC0000081
+
+
 //only for 64-bit LM
 #define IA32_MSR_FS_BASE               0xC0000100
 #define IA32_MSR_GS_BASE               0xC0000101

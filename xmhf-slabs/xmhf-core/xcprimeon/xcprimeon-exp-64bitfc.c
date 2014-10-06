@@ -238,6 +238,15 @@ __attribute__((naked)) static void __exp_syscallhandler(void){
 
 }
 
+__attribute__((naked)) static void __exp_scehandler(void){
+    asm volatile(
+      "sysretq \r\n"
+      :
+      :
+      :
+    );
+
+}
 
 
 
@@ -397,7 +406,7 @@ static void _exp_dotests(void){
                               :
                               );*/
 
-                //sysenter/sysexit: 69 clock cycles
+                /*//sysenter/sysexit: 69 clock cycles
                 asm volatile ("movq %%rsp, %%rcx \r\n"
                               "movq $1f, %%rdx \r\n"
                               "sysenter \r\n"
@@ -405,7 +414,7 @@ static void _exp_dotests(void){
                               :
                               :
                               :"rcx", "rdx"
-                              );
+                              );*/
 
 
                 /*//invlpg: 183 clock cycles
@@ -433,6 +442,16 @@ static void _exp_dotests(void){
                               : "i"(__TRSEL)
                               : "rax"
                               );*/
+
+                //syscall: 66 clock cycles
+                 asm volatile (
+                                  "syscall \r\n"
+                                  "1: \r\n"
+                                  :
+                                  :
+                                  :"rcx", "r11"
+                                  );
+
 
             }
             //
@@ -495,6 +514,19 @@ void xcprimeon_exp_entry(void){
     _XDPRINTF_("%s: setup SYSENTER/SYSEXIT mechanism\n", __FUNCTION__);
 
 
+    //setup SYSCALL/SYSRET mechanism
+    {
+        u32 eax, edx;
+        rdmsr(MSR_EFER, &eax, &edx);
+        wrmsr(MSR_EFER, (eax | (1UL << EFER_SCE)), edx);
+        eax =0;
+        edx =   ((u32)__CS_CPL0 << 16) | ((u32)__CS_CPL0);
+        wrmsr(IA32_STAR_MSR, eax, edx);
+        wrmsr(IA32_FMASK_MSR, 0, 0);
+        wrmsr(IA32_LSTAR_MSR, (u32)&__exp_scehandler, 0);
+    }
+
+
     //switch to ring-3 -- working
     {
         asm volatile(
@@ -524,6 +556,17 @@ void xcprimeon_exp_entry(void){
 
     _exp_dotests();
 
+
+/*    {
+
+        asm volatile (
+                      "syscall \r\n"
+                      "1: \r\n"
+                      :
+                      :
+                      :"rcx", "r11"
+                      );
+    }*/
 
     _XDPRINTF_("%s: Halting!\n", __FUNCTION__);
     _XDPRINTF_("%s: XMHF Tester Finished!\n", __FUNCTION__);
