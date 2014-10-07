@@ -169,7 +169,8 @@ export XMHF_SLAB_DIRS := $(shell cat $(XMHF_DIR)/SLABS)
 XMHF_SLAB_NAMES := $(notdir $(XMHF_SLAB_DIRS))
 
 .PHONY: all
-all: genfiles libshared subdirs
+#all: genfiles libshared subdirs
+all: genfiles
 #all:
 #	xmhfgenslabtable.pl $(XMHF_SLAB_NAMES)
 
@@ -177,7 +178,8 @@ all: genfiles libshared subdirs
 genfiles:
 	mkdir -p $(XMHF_OBJDIR)
 	cd $(XMHF_OBJDIR) && xmhfgenlscript.pl $(XMHF_SLAB_NAMES) >xmhf.lscript
-	cd $(XMHF_OBJDIR) && xmhfgenslabtable.pl $(XMHF_SLAB_NAMES) >$(XMHF_DIR)/xmhf-slabs/shared/shared-slabtable.c
+#	cd $(XMHF_OBJDIR) && xmhfgenslabtable.pl $(XMHF_SLAB_NAMES) >$(XMHF_DIR)/xmhf-slabs/shared/shared-slabtable.c
+	cd $(XMHF_OBJDIR) && xmhfgenslabtable.pl $(XMHF_SLAB_NAMES) >$(XMHF_DIR)/xmhf-hic/data-hypslabtable.c
 
 .PHONY: libshared
 libshared:
