@@ -35,7 +35,7 @@ XMHFLIBS_SUBLIBS = $(wildcard $(XMHFLIBS_SRC)/lib*)
 XMHFLIBS_INC = $(foreach dir,$(XMHFLIBS_SUBLIBS),-I$(dir)/include)
 
 # populate library and include paths
-export ADDL_INCLUDES :=
+export ADDL_INCLUDES := -I$(realpath xmhf-slabs/include)
 export XMHFLIBS_DIR := $(XMHF_OBJDIR)/_objs_xmhf-libs
 ADDL_INCLUDES += -I$(XMHF_INC) $(XMHFCORE_INC) -I$(LIBXMHFHW_INC) $(XMHFLIBS_INC)
 
