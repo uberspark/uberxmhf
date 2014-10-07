@@ -596,7 +596,7 @@ __attribute__(( aligned(16) )) static arch_x86_gdtdesc_t _xcprimeon_init_gdt  = 
 };
 
 
-__attribute__((naked)) __attribute__ ((section(".slab_entrystub"))) __attribute__(( align(4096) )) void xcprimeon_arch_entry(void) {
+__attribute__((naked)) __attribute__ ((section(".hic_entrystub"))) __attribute__(( align(4096) )) void xcprimeon_arch_entry(void) {
 
 	asm volatile (
                     ".code32 \r\n"
@@ -1232,7 +1232,8 @@ void xcprimeon_arch_relinquish_control(void){
 					"addl %4, %%eax \r\n"				    // eax = &_cpustack + (sizeof(_cpustack[0]) * eax) + sizeof(_cpustack[0])*/
 					"movl %%eax, %%esp \r\n"				// esp = top of stack for the cpu
 
-					"jmp xcsmp_interface \r\n"
+					//"jmp xcsmp_interface \r\n"
+					"hlt \r\n"
 					:
 					:   "i" (X86SMP_LAPIC_ID_MEMORYADDRESS), "m" (_totalcpus), "i" (&_cputable),
                         "i" (sizeof(xmhf_cputable_t)), "i" (&_init_cpustacks), "i" (sizeof(_init_cpustacks[0]))

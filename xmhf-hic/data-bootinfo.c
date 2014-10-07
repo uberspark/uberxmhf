@@ -44,46 +44,26 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-
 /*
+ * boot information structure that is mapped into every slab memory view
  *
- *  XMHF slab shared mapping decls.
- *
- *  author: amit vasudevan (amitvasudevan@acm.org)
+ * author: amit vasudevan (amitvasudevan@acm.org)
  */
 
-#ifndef __SHARED_H__
-#define __SHARED_H__
+#include <xmhf.h>
+#include <xmhf-core.h>
+
+extern u8 _slab_xcinitbs_stack_start[];
+extern u8 _slab_xcinitbs_stack_end[];
+extern u8 _slab_xcinitbs_entrypoint[];
+
+static XMHF_BOOTINFO xcbootinfo_store __attribute__(( section(".sharedro_xcbootinfo") )) = {
+	.magic= RUNTIME_PARAMETER_BLOCK_MAGIC,
+	.stack_size = MAX_PLATFORM_CPUSTACK_SIZE,
+};
+
+// XMHF boot information block
+__attribute__(( section(".sharedro_xcbootinfoptr") )) XMHF_BOOTINFO *xcbootinfo= &xcbootinfo_store;
 
 
-#ifndef __ASSEMBLY__
 
-extern __attribute__(( aligned(16) )) u64 _gdt_start[] ;
-extern __attribute__(( aligned(16) )) arch_x86_gdtdesc_t _gdt;
-extern __attribute__(( aligned(4096) )) u8 _tss[PAGE_SIZE_4K];
-extern __attribute__(( aligned(16) )) idtentry_t _idt_start[EMHF_XCPHANDLER_MAXEXCEPTIONS] ;
-extern __attribute__(( aligned(16) )) arch_x86_idtdesc_t _idt;
-extern u64 _exceptionstubs[];
-
-
-// initialization phase CPU stacks
-extern __attribute__(( aligned(4096) )) u8 _init_cpustacks[MAX_PLATFORM_CPUS][MAX_PLATFORM_CPUSTACK_SIZE];
-// CPU table: mapping from unique CPU id --> 0 based index (into CPU stack)
-extern  xmhf_cputable_t _cputable[MAX_PLATFORM_CPUS];
-// count of platform CPUs
-extern  u32 _totalcpus;
-
-// runtime exception CPU stacks
-extern __attribute__(( aligned(4096) )) u8 _rtmxcp_cpustacks[MAX_PLATFORM_CPUS][MAX_PLATFORM_CPUSTACK_SIZE];
-// runtime exception bootstrap save area
-extern __attribute__(( aligned(4096) )) u64 _rtmxcp_bssavearea[512];
-
-
-//libxmhfdebug
-extern __attribute__(( section(".libxmhfdebugdata") )) u32 libxmhfdebug_lock;
-
-
-#endif	//__ASSEMBLY__
-
-
-#endif //__SHARED_H__

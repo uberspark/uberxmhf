@@ -114,7 +114,7 @@ typedef struct {
 
 
 extern __attribute__(( section(".sharedro_xcbootinfoptr") )) XMHF_BOOTINFO *xcbootinfo;
-extern __attribute__ ((section(".sharedro_slab_table"))) slab_header_t _slab_table[XMHF_SLAB_NUMBEROFSLABS];
+extern slab_header_t _slab_table[XMHF_SLAB_NUMBEROFSLABS];
 
 typedef struct {
 	u32 returnaddress;

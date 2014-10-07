@@ -58,6 +58,11 @@ SECTIONS
 {
 	. = 0;
 
+    .hicbootloaderdata : {
+        *(.sharedro_xcbootinfo)
+        *(.sharedro_xcbootinfoptr)
+    } >hicmem =0x0000
+
 	.hicentrystub : {
 		*(.hic_entrystub)
 	} >hicmem =0x9090
