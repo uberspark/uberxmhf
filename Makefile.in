@@ -173,7 +173,7 @@ XMHF_SLAB_NAMES := $(notdir $(XMHF_SLAB_DIRS))
 
 .PHONY: all
 #all: genfiles libshared subdirs
-all: genfiles xmhflibs xmhfhic xmhfslabs
+all: genfiles xmhflibs xmhfhic xmhfslabs xmhfbin
 #all:
 #	xmhfgenslabtable.pl $(XMHF_SLAB_NAMES)
 
@@ -212,15 +212,15 @@ libshared:
 	mkdir -p $(XMHF_OBJDIR)
 	cd $(XMHF_OBJDIR) && $(MAKE) -f $(XMHF_DIR)/xmhf-slabs/shared/Makefile -w all
 
-.PHONY: subdirs
-subdirs: $(XMHFLIBS_SRC) $(XMHFCORE_SRC)
+.PHONY: xmhfbin
+xmhfbin: $(XMHFLIBS_SRC) $(XMHFCORE_SRC)
 #	@echo Building XMHF libs...
 #	cd $(XMHF_OBJDIR) && $(MAKE) -f $(XMHFLIBS_SRC)/Makefile -w all
 #	@echo XMHF libs build SUCCESS
 	@echo Linking XMHF binary...
 	cd $(XMHF_OBJDIR) && cp -f xmhf.lscript xmhf.lscript.c
 	cd $(XMHF_OBJDIR) && $(CC) $(CFLAGS) -D__ASSEMBLY__ -P -E xmhf.lscript.c -o xmhf.lds
-	cd $(XMHF_OBJDIR) && $(LD) --oformat elf64-x86-64 -T xmhf.lds -o xmhf.exe _objs_libshared/libshared.a -L$(CCLIB)/lib/linux -L$(XMHFLIBS_DIR) -lxmhfc -lxmhfcrypto -lxmhfutil -lxmhfhw -lxmhfutil -lxmhfc -lclang_rt.builtins-x86_64
+	cd $(XMHF_OBJDIR) && $(LD) --oformat elf64-x86-64 -T xmhf.lds -o xmhf.exe -L$(CCLIB)/lib/linux -L$(XMHFLIBS_DIR) -lxmhfc -lxmhfcrypto -lxmhfutil -lxmhfhw -lxmhfutil -lxmhfc -lclang_rt.builtins-x86_64
 	cd $(XMHF_OBJDIR) && $(OBJCOPY) --output-format=binary xmhf.exe xmhf.bin
 	@echo XMHF link SUCCESS
 	@echo Building XMHF boot loader...
