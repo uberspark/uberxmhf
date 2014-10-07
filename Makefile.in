@@ -16,6 +16,9 @@ export XMHF_VERIFYDIR := $(CURDIR)/_verify
 # xmhf libs directory
 export XMHFLIBS_SRC := $(realpath @XMHFLIBS_SRC@)
 
+# XMHF HIC source location
+export XMHFHIC_SRC := $(realpath xmhf-hic/)
+
 # XMHF core source location
 export XMHFCORE_SRC := $(realpath xmhf-slabs/xmhf-core)
 XMHFCORE_INC = -I$(realpath xmhf-slabs/xmhf-core/) -I$(realpath xmhf-slabs/xmhf-core/include)
@@ -170,7 +173,7 @@ XMHF_SLAB_NAMES := $(notdir $(XMHF_SLAB_DIRS))
 
 .PHONY: all
 #all: genfiles libshared subdirs
-all: genfiles xmhflibs
+all: genfiles xmhflibs xmhfhic
 #all:
 #	xmhfgenslabtable.pl $(XMHF_SLAB_NAMES)
 
@@ -187,6 +190,13 @@ xmhflibs:
 	@echo Building XMHF libs...
 	cd $(XMHF_OBJDIR) && $(MAKE) -f $(XMHFLIBS_SRC)/Makefile -w all
 	@echo XMHF libs build SUCCESS
+
+.PHONY: xmhfhic
+xmhfhic:
+	@echo Building XMHF HIC...
+	cd $(XMHF_OBJDIR) && $(MAKE) -f $(XMHFHIC_SRC)/Makefile -w all
+	@echo XMHF HIC build SUCCESS
+
 
 
 .PHONY: libshared
