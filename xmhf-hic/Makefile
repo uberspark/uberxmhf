@@ -55,6 +55,9 @@ buildhicbin: $(XMHF_HIC_OBJECTS)
 	cd $(XMHF_HIC_OBJECTS_DIR) && cp -f $(LINKER_SCRIPT_INPUT) $(XMHF_HIC_NAME).lscript.c
 	cd $(XMHF_HIC_OBJECTS_DIR) && $(CC) $(CFLAGS) -D__ASSEMBLY__ -P -E $(XMHF_HIC_NAME).lscript.c -o $(LINKER_SCRIPT_OUTPUT)
 	cd $(XMHF_HIC_OBJECTS_DIR) && $(LD) -r --oformat elf64-x86-64 -T $(LINKER_SCRIPT_OUTPUT) -o $(XMHF_HIC_NAME).slo $(XMHF_HIC_OBJECTS_ARCHIVE) -L$(CCLIB)/lib/linux -L$(XMHFLIBS_DIR) -lxmhfc -lxmhfcrypto -lxmhfutil -lxmhfhw -lxmhfutil -lxmhfc -lclang_rt.builtins-x86_64
+	cd $(XMHF_HIC_OBJECTS_DIR) && nm $(XMHF_HIC_NAME).slo | awk '{ print $$3 }' | awk NF >$(XMHF_HIC_NAME).slo.syms
+	cd $(XMHF_HIC_OBJECTS_DIR) && $(OBJCOPY) --localize-symbols=$(XMHF_HIC_NAME).slo.syms $(XMHF_HIC_NAME).slo $(XMHF_HIC_NAME).slo
+	cd $(XMHF_HIC_OBJECTS_DIR) && $(OBJCOPY) --globalize-symbol libxmhfdebug_lock $(XMHF_HIC_NAME).slo $(XMHF_HIC_NAME).slo
 
 %.o: %.c
 	mkdir -p $(XMHF_HIC_OBJECTS_DIR)
