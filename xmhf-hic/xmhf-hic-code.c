@@ -121,18 +121,18 @@ void xmhfhic_entry(void){
     //perform basic (boot) CPU initialization
     xcprimeon_arch_cpu_basicinit();
 
-    //initialize platform
-    xcprimeon_arch_platform_initialize();
+*    //initialize platform
+*    xcprimeon_arch_platform_initialize();
 
 	//post DRT cleanup (e.g., cache/MTRR/SMRAM)
-#if defined (__DRT__)
-    xcprimeon_arch_postdrt();
-#endif	//__DRT__
+*#if defined (__DRT__)
+*    xcprimeon_arch_postdrt();
+*#endif	//__DRT__
 
-#if defined (__DMAP__)
-	//setup DMA protection on runtime (xcprimeon is already DMA protected)
-	xcprimeon_arch_earlydmaprot(__TARGET_BASE_SL, xcbootinfo->size);
-#endif
+*#if defined (__DMAP__)
+*	//setup DMA protection on runtime (xcprimeon is already DMA protected)
+*	xcprimeon_arch_earlydmaprot(__TARGET_BASE_SL, xcbootinfo->size);
+*#endif
 
 	//print out slab table
 	{
