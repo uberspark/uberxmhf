@@ -81,6 +81,9 @@
 
 #ifndef __ASSEMBLY__
 
+void xmhfhic_arch_setup_slab_device_allocation(void);
+
+
 typedef struct {
 	bool desc_valid;
 	u64 numdevices;

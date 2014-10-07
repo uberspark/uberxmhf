@@ -53,12 +53,8 @@
 #include <xcsmp.h>
 #include <testslab1.h>
 
-///////
-//XMHF_SLAB_DEFENTRYSTUBBARE(xcprimeon)
 
-
-
-void xcprimeon_entry(void){
+void xmhfhic_entry(void){
     u64 pgtblbase;
 
 	//initialize debugging early on
@@ -67,12 +63,12 @@ void xcprimeon_entry(void){
 	//[debug] print relevant startup info.
 	_XDPRINTF_("%s: alive and starting...\n", __FUNCTION__);
 
-	_XDPRINTF_("SL: xcbootinfo at = 0x%08x\n", (u32)xcbootinfo);
+	_XDPRINTF_("    xcbootinfo at = 0x%08x\n", (u32)xcbootinfo);
 	_XDPRINTF_("	numE820Entries=%u\n", xcbootinfo->memmapinfo_numentries);
 	_XDPRINTF_("	system memory map buffer at 0x%08x\n", (u32)&xcbootinfo->memmapinfo_buffer);
 	_XDPRINTF_("	numCPUEntries=%u\n", xcbootinfo->cpuinfo_numentries);
 	_XDPRINTF_("	cpuinfo buffer at 0x%08x\n", (u32)&xcbootinfo->cpuinfo_buffer);
-	_XDPRINTF_("	SL + core size= %u bytes\n", xcbootinfo->size);
+	_XDPRINTF_("	XMHF size= %u bytes\n", xcbootinfo->size);
 	_XDPRINTF_("	OS bootmodule at 0x%08x, size=%u bytes\n",
 		xcbootinfo->richguest_bootmodule_base, xcbootinfo->richguest_bootmodule_size);
     _XDPRINTF_("\tcmdline = \"%s\"\n", xcbootinfo->cmdline_buffer);
@@ -105,6 +101,22 @@ void xcprimeon_entry(void){
 	xcbootinfo->physmem_base = __TARGET_BASE_SL;
 	xcbootinfo->virtmem_base = __TARGET_BASE_SL;
 	xcbootinfo->size = xcbootinfo->size;
+
+
+    //setup slab system device allocation
+    xmhfhic_arch_setup_slab_device_allocation();
+
+
+
+    //debug
+    _XDPRINTF_("Halting!\n");
+    _XDPRINTF_("XMHF Tester Finished!\n");
+    HALT();
+
+}
+
+
+#if 0
 
     //perform basic (boot) CPU initialization
     xcprimeon_arch_cpu_basicinit();
@@ -207,3 +219,4 @@ void xcprimeon_entry(void){
 
 
 
+#endif // 0

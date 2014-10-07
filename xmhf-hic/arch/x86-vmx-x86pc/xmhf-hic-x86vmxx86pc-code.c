@@ -651,7 +651,7 @@ __attribute__((naked)) __attribute__ ((section(".hic_entrystub"))) __attribute__
 					"xorq %%rsp, %%rsp \r\n"
 					"movl $0x10200000, %%esp \r\n" //TODO: get rid of hard-coded stack top
 
-                    "jmp xcprimeon_entry \r\n"
+                    "jmp xmhfhic_entry \r\n"
 			    :
 			    : "i" (&_xcprimeon_init_pml4t), "i" (&_xcprimeon_init_gdt)
                 :
@@ -1062,25 +1062,6 @@ void xcprimeon_arch_cpu_activate_modeandpaging(u64 pgtblbase){
 ///////////////////////////////////////////////////////////////////////////////
 
 //*
-void xcprimeon_arch_postdrt(void){
-	txt_heap_t *txt_heap;
-	os_mle_data_t *os_mle_data;
-
-	txt_heap = get_txt_heap();
-	_XDPRINTF_("SL: txt_heap = 0x%08x\n", (u32)txt_heap);
-	os_mle_data = get_os_mle_data_start((txt_heap_t*)((u32)txt_heap));
-	_XDPRINTF_("SL: os_mle_data = 0x%08x\n", (u32)os_mle_data);
-
-	// restore pre-SENTER MTRRs that were overwritten for SINIT launch
-	if(!validate_mtrrs(&(os_mle_data->saved_mtrr_state))) {
-		_XDPRINTF_("SECURITY FAILURE: validate_mtrrs() failed.\n");
-		HALT();
-	}
-	_XDPRINTF_("SL: Validated MTRRs\n");
-
-	xmhfhw_cpu_x86_restore_mtrrs(&(os_mle_data->saved_mtrr_state));
-    _XDPRINTF_("SL: Restored MTRRs\n");
-}
 
 //*
 void xcprimeon_arch_earlydmaprot(u32 membase, u32 size){
@@ -1243,4 +1224,37 @@ void xcprimeon_arch_relinquish_control(void){
 
 
 
+//////////////////////////////////////////////////////////////////////////////
+//setup slab device allocation
+static void __xmhfhic_x86vmxx86pc_postdrt(void){
+	txt_heap_t *txt_heap;
+	os_mle_data_t *os_mle_data;
+
+	txt_heap = get_txt_heap();
+	_XDPRINTF_("SL: txt_heap = 0x%08x\n", (u32)txt_heap);
+	os_mle_data = get_os_mle_data_start((txt_heap_t*)((u32)txt_heap));
+	_XDPRINTF_("SL: os_mle_data = 0x%08x\n", (u32)os_mle_data);
+
+	// restore pre-SENTER MTRRs that were overwritten for SINIT launch
+	if(!validate_mtrrs(&(os_mle_data->saved_mtrr_state))) {
+		_XDPRINTF_("SECURITY FAILURE: validate_mtrrs() failed.\n");
+		HALT();
+	}
+	_XDPRINTF_("SL: Validated MTRRs\n");
+
+	xmhfhw_cpu_x86_restore_mtrrs(&(os_mle_data->saved_mtrr_state));
+    _XDPRINTF_("SL: Restored MTRRs\n");
+}
+
+
+
+
+void xmhfhic_arch_setup_slab_device_allocation(void){
+    //post DRT cleanup first
+    __xmhfhic_x86vmxx86pc_postdrt();
+
+
+
+
+}
 
