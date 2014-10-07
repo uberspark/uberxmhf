@@ -143,6 +143,11 @@ void xcprimeon_entry(void){
 	}
 
 
+    //debug
+    _XDPRINTF_("Halting!\n");
+    _XDPRINTF_("XMHF Tester Finished!\n");
+    HALT();
+
     //initialize page tables
     pgtblbase = xcprimeon_arch_initialize_slab_tables();
 
@@ -192,10 +197,6 @@ void xcprimeon_entry(void){
     }
 
 
-    //debug
-    _XDPRINTF_("Halting!\n");
-    _XDPRINTF_("XMHF Tester Finished!\n");
-    HALT();
 
 	//proceed with SMP initialization
     xcprimeon_arch_relinquish_control();
