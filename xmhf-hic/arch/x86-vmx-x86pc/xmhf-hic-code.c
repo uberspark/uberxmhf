@@ -54,7 +54,7 @@
 #include <testslab1.h>
 
 ///////
-XMHF_SLAB_DEFENTRYSTUBBARE(xcprimeon)
+//XMHF_SLAB_DEFENTRYSTUBBARE(xcprimeon)
 
 
 
