@@ -61,6 +61,7 @@ SECTIONS
     .hicbootloaderdata : {
         *(.sharedro_xcbootinfo)
         *(.sharedro_xcbootinfoptr)
+        . = ALIGN(0x200000);
     } >hicmem =0x0000
 
 	.hicentrystub : {
