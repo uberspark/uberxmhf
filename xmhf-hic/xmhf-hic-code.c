@@ -112,6 +112,10 @@ void xmhfhic_entry(void){
     //seutp guest slab page tables
     xmhfhic_arch_setup_guest_slab_page_tables();
 
+
+    //setup base CPU data structures
+    xmhfhic_arch_setup_base_cpu_data_structures();
+
     //setup SMP and move on to xmhfhic_smp_entry
     xmhfhic_arch_switch_to_smp();
 
