@@ -2293,11 +2293,90 @@ void xcsmp_arch_initializecpu(u32 cpuid, bool isbsp){
 }
 */
 
-void xmhf_hic_arch_setup_cpu_state(u64 cpuid, bool isbsp){
+
+//load GDT and initialize segment registers
+static void __xmhfhic_x86vmx_loadGDT(u64 cpuid){
+
+	asm volatile(
+		"lgdt  %0 \r\n"
+		"pushq	%1 \r\n"				// far jump to runtime entry point
+		"pushq	$reloadsegs \r\n"
+		"lretq \r\n"
+		"reloadsegs: \r\n"
+		"movw	%2, %%ax \r\n"
+		"movw	%%ax, %%ds \r\n"
+		"movw	%%ax, %%es \r\n"
+		"movw	%%ax, %%fs \r\n"
+		"movw	%%ax, %%gs \r\n"
+		"movw   %%ax, %%ss \r\n"
+		: //no outputs
+		: "m" (__xmhfhic_x86vmx_gdt), "i" (__CS_CPL0), "i" (__DS_CPL0)
+		: "eax"
+	);
+}
+
+
+//load IDT
+static void __xmhfhic_x86vmx_loadIDT(u64 cpuid){
+	//load IDT
+	asm volatile(
+		"lidt  %0 \r\n"
+		: //no outputs
+		: "m" (__xmhfhic_x86vmx_idt)
+		: //no clobber
+	);
+}
+
+//load TR
+static void __xmhfhic_x86vmx_loadTR(u64 cpuid){
+	  asm volatile(
+		"movq %0, %%rax\r\n"
+		"ltr %%ax\r\n"				//load TR
+	     :
+	     : "g"(__TRSEL + ((u32)cpuid * 2) )
+	     : "rax"
+	  );
+}
+
+
+//set IOPl to CPl-3
+static void __xmhfhic_x86vmx_setIOPL3(u64 cpuid){
+
+	asm volatile(
+        "pushfq \r\n"
+        "popq %%rax \r\n"
+		"orq $0x3000, %%rax \r\n"					// clear flags, but set IOPL=3 (CPL-3)
+		"pushq %%rax \r\n"
+		"popfq \r\n"
+		: //no outputs
+		: //no inputs
+		: "rax", "cc"
+	);
+
+
+}
+
+
+void xmhf_hic_arch_setup_cpu_state(u64 cpuid){
 
 	//replicate common MTRR state on this CPU
 	__xmhfhic_smp_cpu_x86_restorecpumtrrstate();
 
+    //load GDT
+    __xmhfhic_x86vmx_loadGDT(cpuid);
+    _XDPRINTF_("%s[%u]: GDT loaded\n", __FUNCTION__, (u32)cpuid);
+
+    //load TR
+    __xmhfhic_x86vmx_loadTR(cpuid);
+    _XDPRINTF_("%s[%u]: TR loaded\n", __FUNCTION__, (u32)cpuid);
+
+    //load IDT
+    __xmhfhic_x86vmx_loadIDT(cpuid);
+    _XDPRINTF_("%s[%u]: IDT loaded\n", __FUNCTION__, (u32)cpuid);
+
+    //set IOPL3
+    __xmhfhic_x86vmx_setIOPL3(cpuid);
+    _XDPRINTF_("%s[%u]: set IOPL to CPL-3\n", __FUNCTION__, (u32)cpuid);
 
 
 /*
