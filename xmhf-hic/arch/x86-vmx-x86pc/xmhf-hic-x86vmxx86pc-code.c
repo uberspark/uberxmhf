@@ -2120,6 +2120,17 @@ static void __xmhfhic_x86vmx_initializeIDT(void){
 }
 
 
+//initialize TSS
+static void __xmhfhic_x86vmx_initializeTSS(void){
+		u32 i;
+
+		//initialize TSS descriptors for all CPUs
+		for(i=0; i < xcbootinfo->cpuinfo_numentries; i++){
+            tss_t *tss= (tss_t *)__xmhfhic_x86vmx_tss[i];
+            tss->rsp0 = (u64) ( &__xmhfhic_x86vmx_tss_stack[i] + sizeof(__xmhfhic_x86vmx_tss_stack[0]) );
+		}
+}
+
 
 void xmhfhic_arch_setup_base_cpu_data_structures(void){
 
@@ -2129,6 +2140,8 @@ void xmhfhic_arch_setup_base_cpu_data_structures(void){
     //initialize IDT
     __xmhfhic_x86vmx_initializeIDT();
 
+    //initialize TSS
+    __xmhfhic_x86vmx_initializeTSS();
 
 }
 
@@ -2150,51 +2163,9 @@ void xmhfhic_arch_setup_base_cpu_data_structures(void){
 //////////////////////////////////////////////////////////////////////////////
 // setup cpu state for hic
 
-/*
-__attribute__((section(".stack"))) __attribute__(( aligned(4096) )) static u8 _tss_stack[PAGE_SIZE_4K];
-*/
 
 
 /*
-//*
-//initialize TSS
-static void _xcprimeon_cpu_x86_initializeTSS(void){
-		u32 i;
-		u32 tss_base=(u32)&_tss;
-		TSSENTRY *t;
-		tss_t *tss= (tss_t *)_tss;
-
-		tss->rsp0 = (u64) ( (u32)_tss_stack + PAGE_SIZE_4K );
-
-		_XDPRINTF_("\nfixing TSS descriptor (TSS base=%x)...", tss_base);
-		t= (TSSENTRY *)(u32)&_gdt_start[(__TRSEL/sizeof(u64))];
-		t->attributes1= 0xE9;
-		t->limit16_19attributes2= 0x0;
-		t->baseAddr0_15= (u16)(tss_base & 0x0000FFFF);
-		t->baseAddr16_23= (u8)((tss_base & 0x00FF0000) >> 16);
-		t->baseAddr24_31= (u8)((tss_base & 0xFF000000) >> 24);
-		t->limit0_15=0x67;
-		_XDPRINTF_("\nTSS descriptor fixed.");
-
-}
-
-
-//*
-//initialize basic exception handling
-static void _xcprimeon_initialize_exceptionhandling(void){
-	u32 i;
-
-	for(i=0; i < EMHF_XCPHANDLER_MAXEXCEPTIONS; i++){
-		_idt_start[i].isrLow= (u16)_exceptionstubs[i];
-		_idt_start[i].isrHigh= (u16) ( (u32)_exceptionstubs[i] >> 16 );
-		_idt_start[i].isrSelector = __CS_CPL0;
-		_idt_start[i].count=0x0;
-		_idt_start[i].type=0xEE;	//32-bit interrupt gate
-                                //present=1, DPL=11b, system=0, type=1110b
-        _idt_start[i].offset3263=0;
-        _idt_start[i].reserved=0;
-	}
-}
 
 
 //*
