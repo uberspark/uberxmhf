@@ -109,6 +109,9 @@ void xmhfhic_entry(void){
     //setup hypervisor slab page tables
     xmhfhic_arch_setup_hypervisor_slab_page_tables();
 
+    //seutp guest slab page tables
+    xmhfhic_arch_setup_guest_slab_page_tables();
+
 
     //debug
     _XDPRINTF_("Halting!\n");
