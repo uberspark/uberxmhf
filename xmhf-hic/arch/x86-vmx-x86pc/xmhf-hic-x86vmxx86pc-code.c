@@ -2278,6 +2278,13 @@ void xmhf_hic_arch_setup_cpu_state(u64 cpuid){
     __xmhfhic_x86vmx_loadIDT(cpuid);
     _XDPRINTF_("%s[%u]: IDT loaded\n", __FUNCTION__, (u32)cpuid);
 
+
+    //asm volatile ("int $0x03 \r\n");
+
+    //turn on CR0.WP bit for supervisor mode write protection
+    //write_cr0(read_cr0() | CR0_PE);
+    //_XDPRINTF_("%s[%u]: Enabled supervisor mode write protection\n", __FUNCTION__, (u32)cpuid);
+
     //set IOPL3
     __xmhfhic_x86vmx_setIOPL3(cpuid);
     _XDPRINTF_("%s[%u]: set IOPL to CPL-3\n", __FUNCTION__, (u32)cpuid);
@@ -2319,9 +2326,6 @@ void xmhf_hic_arch_setup_cpu_state(u64 cpuid){
     _XDPRINTF_("%s[%u]: Set CR0.EM to be VMX compatible\n", __FUNCTION__, (u32)cpuid);
 
 
-    //turn on CR0.WP bit for supervisor mode write protection
-    //write_cr0(read_cr0() | CR0_WP);
-    //_XDPRINTF_("%s[%u]: Enabled supervisor mode write protection\n", __FUNCTION__, (u32)cpuid);
 
 }
 
