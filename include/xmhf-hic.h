@@ -89,6 +89,7 @@ void xmhfhic_arch_setup_slab_device_allocation(void);
 void xmhfhic_arch_setup_hypervisor_slab_page_tables(void);
 void xmhfhic_arch_setup_guest_slab_page_tables(void);
 void xmhfhic_arch_switch_to_smp(void);
+void xmhf_hic_arch_setup_cpu_state(u64 cpuid, bool isbsp);
 void xmhfhic_smp_entry(u64 cpuid, bool isbsp);
 
 
@@ -127,6 +128,25 @@ typedef struct {
 
 extern __attribute__(( section(".sharedro_xcbootinfoptr") )) XMHF_BOOTINFO *xcbootinfo;
 extern slab_header_t _slab_table[XMHF_SLAB_NUMBEROFSLABS];
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//////
+//arch. dependent decls.
+
+
 
 typedef struct {
 	u32 returnaddress;
