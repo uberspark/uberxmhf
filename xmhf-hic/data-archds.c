@@ -52,12 +52,12 @@
  */
 
 #include <xmhf.h>
-#include <xmhf-core.h>
+//#include <xmhf-core.h>
 //#include <xc-x86.h>
 //#include <xc-x86vmx.h>
 
 
-
+/*
 //*
 // GDT
 __attribute__(( aligned(16) )) u64 _gdt_start[]  = {
@@ -75,7 +75,7 @@ __attribute__(( aligned(16) )) u64 _gdt_start[]  = {
 __attribute__(( aligned(16) )) arch_x86_gdtdesc_t _gdt  = {
 	.size=sizeof(_gdt_start)-1,
 	.base=(u64)&_gdt_start,
-};
+};*/
 
 // TSS
 __attribute__(( aligned(4096) )) u8 _tss[PAGE_SIZE_4K] = { 0 };

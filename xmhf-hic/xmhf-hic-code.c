@@ -123,94 +123,25 @@ void xmhfhic_entry(void){
 
 void xmhfhic_smp_entry(u64 cpuid, bool isbsp){
 
-    _XDPRINTF_("%s: cpuid=%u, isbsp=%u, rsp=%016llx. Halting!\n",
+    _XDPRINTF_("%s[%u,%u]: rsp=%016llx. Starting...\n",
             __FUNCTION__, cpuid, isbsp, read_rsp());
+
+    if(isbsp){
+        //setup CPU state for HIC
+        xmhf_hic_arch_setup_cpu_state(cpuid, isbsp);
+    }
+
+
+    _XDPRINTF_("%s[%u,%u]: Done. Halting!\n", __FUNCTION__, cpuid, isbsp);
     HALT();
 
 }
 
 #if 0
 
-    //perform basic (boot) CPU initialization
-    xcprimeon_arch_cpu_basicinit();
-
-*    //initialize platform
-*    xcprimeon_arch_platform_initialize();
-
-	//post DRT cleanup (e.g., cache/MTRR/SMRAM)
-*#if defined (__DRT__)
-*    xcprimeon_arch_postdrt();
-*#endif	//__DRT__
-
-*#if defined (__DMAP__)
-*	//setup DMA protection on runtime (xcprimeon is already DMA protected)
-*	xcprimeon_arch_earlydmaprot(__TARGET_BASE_SL, xcbootinfo->size);
-*#endif
-
-
-
     //debug
     _XDPRINTF_("Halting!\n");
     _XDPRINTF_("XMHF Tester Finished!\n");
     HALT();
-
-    //initialize page tables
-    pgtblbase = xcprimeon_arch_initialize_slab_tables();
-
-    //activate paging and associated operating mode
-    xcprimeon_arch_cpu_activate_modeandpaging(pgtblbase);
-
-
-	//[test] testslab1
-	{
-			/*slab_retval_t srval;
-			slab_params_t srparams;
-            //u64 tscbefore, tscafter;
-            //u64 avgtotal=0;
-            //u32 i;
-
-            srparams.input_u64[0]=0xBB;
-			//invoke slab interfaces
-			_XDPRINTF_("%s: preparing to invoke testslab1, rsp=%016llx\n", __FUNCTION__, read_rsp());
-
-			//for(i=0; i < 1024; i++){
-                //tscbefore=rdtsc64();
-                srval = XMHF_SLAB_CALLP2P(xcprimeon, testslab1,
-                                          XMHF_SLAB_XCPRIMEON_INDEX, XMHF_SLAB_TESTSLAB1_INDEX,
-                                          XMHF_SLAB_CALL_PACKCPUIDTYPE(XMHF_SLAB_CALLTYPE_CALLP2P, 0),
-                                          0, 0,
-                                          srparams);
-                //tscafter=rdtsc64();
-                //avgtotal += (tscafter - tscbefore);
-			//}
-            //avgtotal = avgtotal/1024;
-			//_XDPRINTF_("%s: came back from testslab1, tsc=%u clicks\n", __FUNCTION__, avgtotal);
-			_XDPRINTF_("%s: came back from testslab1, rsp=%016llx\n", __FUNCTION__, read_rsp());
-			_XDPRINTF_("%s: testslab1 retval.u64=%016llx\n", __FUNCTION__, srval.retval_u64);*/
-
-			/*_XDPRINTF_("%s: preparing to invoke testslab1, rsp=%016llx\n", __FUNCTION__, read_rsp());
-            slab_params_t srparams;
-            testslab1_interface(0,0,0,0,0,srparams);
-			_XDPRINTF_("%s: came back from testslab1, rsp=%016llx\n", __FUNCTION__, read_rsp());
-*/
-
-        {
-            extern void xcprimeon_exp_entry(void);
-            xcprimeon_exp_entry();
-            _XDPRINTF_("%s:%u: Fatal, should never be here!\n", __FUNCTION__, __LINE__);
-            HALT();
-        }
-    }
-
-
-
-	//proceed with SMP initialization
-    xcprimeon_arch_relinquish_control();
-
-	_XDPRINTF_("%s:%u: Fatal, should never be here!\n", __FUNCTION__, __LINE__);
-	HALT();
-}
-
-
 
 #endif // 0
