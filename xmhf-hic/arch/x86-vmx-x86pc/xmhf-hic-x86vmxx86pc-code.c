@@ -2083,17 +2083,23 @@ void xmhfhic_arch_switch_to_smp(void){
 
 //initialize GDT
 static void __xmhfhic_x86vmx_initializeGDT(void){
-		TSSENTRY *t;
-		u32 tss_base=(u32)&__xmhfhic_x86vmx_tss;
+		u32 i;
 
-		//TSS descriptor
-		t= (TSSENTRY *)&__xmhfhic_x86vmx_gdt_start[7];
-		t->attributes1= 0xE9;
-		t->limit16_19attributes2= 0x0;
-		t->baseAddr0_15= (u16)(tss_base & 0x0000FFFF);
-		t->baseAddr16_23= (u8)((tss_base & 0x00FF0000) >> 16);
-		t->baseAddr24_31= (u8)((tss_base & 0xFF000000) >> 24);
-		t->limit0_15=0x67;
+		//initialize TSS descriptors for all CPUs
+		for(i=0; i < xcbootinfo->cpuinfo_numentries; i++){
+            TSSENTRY *t;
+            u32 tss_base=(u32)&__xmhfhic_x86vmx_tss[i];
+
+            //TSS descriptor
+            t= (TSSENTRY *)&__xmhfhic_x86vmx_gdt_start[(__TRSEL/8)+(i*2)];
+            t->attributes1= 0xE9;
+            t->limit16_19attributes2= 0x0;
+            t->baseAddr0_15= (u16)(tss_base & 0x0000FFFF);
+            t->baseAddr16_23= (u8)((tss_base & 0x00FF0000) >> 16);
+            t->baseAddr24_31= (u8)((tss_base & 0xFF000000) >> 24);
+            t->limit0_15=0x67;
+		}
+
 }
 
 
