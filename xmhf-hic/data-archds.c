@@ -57,10 +57,10 @@
 //#include <xc-x86vmx.h>
 
 
-/*
+
 //*
 // GDT
-__attribute__(( aligned(16) )) u64 _gdt_start[]  = {
+__attribute__(( aligned(16) )) u64 __xmhfhic_x86vmx_gdt_start[]  = {
 	0x0000000000000000ULL,	//NULL descriptor
 	0x00af9a000000ffffULL,	//CPL-0 64-bit code descriptor (CS64)
 	0x00af92000000ffffULL,	//CPL-0 64-bit data descriptor (DS/SS/ES/FS/GS)
@@ -72,14 +72,15 @@ __attribute__(( aligned(16) )) u64 _gdt_start[]  = {
 
 //*
 // GDT descriptor
-__attribute__(( aligned(16) )) arch_x86_gdtdesc_t _gdt  = {
-	.size=sizeof(_gdt_start)-1,
-	.base=(u64)&_gdt_start,
-};*/
+__attribute__(( aligned(16) )) arch_x86_gdtdesc_t __xmhfhic_x86vmx_gdt  = {
+	.size=sizeof(__xmhfhic_x86vmx_gdt_start)-1,
+	.base=(u64)&__xmhfhic_x86vmx_gdt_start,
+};
 
 // TSS
-__attribute__(( aligned(4096) )) u8 _tss[PAGE_SIZE_4K] = { 0 };
+__attribute__(( aligned(4096) )) u8 __xmhfhic_x86vmx_tss[PAGE_SIZE_4K] = { 0 };
 
+/*
 // IDT
 __attribute__(( aligned(16) )) idtentry_t _idt_start[EMHF_XCPHANDLER_MAXEXCEPTIONS] ;
 
@@ -88,11 +89,13 @@ __attribute__(( aligned(16) )) arch_x86_idtdesc_t _idt = {
 	.size=sizeof(_idt_start)-1,
 	.base=(u64)&_idt_start,
 };
+*/
 
 //////
 // initialization phase CPU stacks
 
 __attribute__(( aligned(4096) )) u8 _init_cpustacks[MAX_PLATFORM_CPUS][MAX_PLATFORM_CPUSTACK_SIZE];
+
 
 //////
 // runtime exception CPU stacks
@@ -102,6 +105,7 @@ __attribute__(( aligned(4096) )) u8 _rtmxcp_cpustacks[MAX_PLATFORM_CPUS][MAX_PLA
 //////
 // runtime exception bootstrap save area
 __attribute__(( aligned(4096) )) u64 _rtmxcp_bssavearea[512] = { 1ULL };
+
 
 //////
 // CPU table: mapping from unique CPU id --> 0 based index (into CPU stack)

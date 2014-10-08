@@ -2052,14 +2052,15 @@ void xmhfhic_arch_switch_to_smp(void){
 
 /*
 __attribute__((section(".stack"))) __attribute__(( aligned(4096) )) static u8 _tss_stack[PAGE_SIZE_4K];
+*/
 
 //initialize GDT
 static void __xmhfhic_x86vmx_initializeGDT(void){
 		TSSENTRY *t;
-		u32 tss_base=(u32)&_exp_tss;
+		u32 tss_base=(u32)&__xmhfhic_x86vmx_tss;
 
 		//TSS descriptor
-		t= (TSSENTRY *)&_exp_gdt_start[7];
+		t= (TSSENTRY *)&__xmhfhic_x86vmx_gdt_start[7];
 		t->attributes1= 0xE9;
 		t->limit16_19attributes2= 0x0;
 		t->baseAddr0_15= (u16)(tss_base & 0x0000FFFF);
@@ -2068,6 +2069,7 @@ static void __xmhfhic_x86vmx_initializeGDT(void){
 		t->limit0_15=0x67;
 }
 
+/*
 //*
 //initialize TSS
 static void _xcprimeon_cpu_x86_initializeTSS(void){
@@ -2239,9 +2241,11 @@ void xmhf_hic_arch_setup_cpu_state(u64 cpuid, bool isbsp){
 	//replicate common MTRR state on this CPU
 	__xmhfhic_smp_cpu_x86_restorecpumtrrstate();
 
-/*    //initialize GDT
+    //initialize GDT
+    __xmhfhic_x86vmx_initializeGDT();
 
 
+/*
 basicinit;
 
 activate_modeandpaging
