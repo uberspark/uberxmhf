@@ -98,16 +98,16 @@ __attribute__(( aligned(16) )) arch_x86_gdtdesc_t __xmhfhic_x86vmx_gdt  = {
 // TSS
 __attribute__(( aligned(4096) )) u8 __xmhfhic_x86vmx_tss[MAX_PLATFORM_CPUS][PAGE_SIZE_4K] = { 0 };
 
-/*
+
 // IDT
-__attribute__(( aligned(16) )) idtentry_t _idt_start[EMHF_XCPHANDLER_MAXEXCEPTIONS] ;
+__attribute__(( aligned(16) )) idtentry_t __xmhfhic_x86vmx_idt_start[EMHF_XCPHANDLER_MAXEXCEPTIONS] ;
 
 // IDT descriptor
-__attribute__(( aligned(16) )) arch_x86_idtdesc_t _idt = {
-	.size=sizeof(_idt_start)-1,
-	.base=(u64)&_idt_start,
+__attribute__(( aligned(16) )) arch_x86_idtdesc_t __xmhfhic_x86vmx_idt = {
+	.size=sizeof(__xmhfhic_x86vmx_idt_start)-1,
+	.base=(u64)&__xmhfhic_x86vmx_idt_start,
 };
-*/
+
 
 //////
 // initialization phase CPU stacks

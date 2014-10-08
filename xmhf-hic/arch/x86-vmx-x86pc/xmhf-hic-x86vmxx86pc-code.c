@@ -2102,6 +2102,23 @@ static void __xmhfhic_x86vmx_initializeGDT(void){
 
 }
 
+//initialize IDT
+static void __xmhfhic_x86vmx_initializeIDT(void){
+	u32 i;
+
+	for(i=0; i < EMHF_XCPHANDLER_MAXEXCEPTIONS; i++){
+		__xmhfhic_x86vmx_idt_start[i].isrLow= (u16)__xmhfhic_exceptionstubs[i];
+		__xmhfhic_x86vmx_idt_start[i].isrHigh= (u16) ( (u32)__xmhfhic_exceptionstubs[i] >> 16 );
+		__xmhfhic_x86vmx_idt_start[i].isrSelector = __CS_CPL0;
+		__xmhfhic_x86vmx_idt_start[i].count=0x0;
+		__xmhfhic_x86vmx_idt_start[i].type=0xEE;	//32-bit interrupt gate
+                                //present=1, DPL=11b, system=0, type=1110b
+        __xmhfhic_x86vmx_idt_start[i].offset3263=0;
+        __xmhfhic_x86vmx_idt_start[i].reserved=0;
+	}
+
+}
+
 
 
 void xmhfhic_arch_setup_base_cpu_data_structures(void){
@@ -2109,6 +2126,8 @@ void xmhfhic_arch_setup_base_cpu_data_structures(void){
     //initialize GDT
     __xmhfhic_x86vmx_initializeGDT();
 
+    //initialize IDT
+    __xmhfhic_x86vmx_initializeIDT();
 
 
 }
