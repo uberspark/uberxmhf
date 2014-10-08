@@ -2333,7 +2333,7 @@ static void __xmhfhic_x86vmx_loadTR(u64 cpuid){
 		"movq %0, %%rax\r\n"
 		"ltr %%ax\r\n"				//load TR
 	     :
-	     : "g"(__TRSEL + ((u32)cpuid * 2) )
+	     : "g"(__TRSEL + ((u32)cpuid * 16) )
 	     : "rax"
 	  );
 }

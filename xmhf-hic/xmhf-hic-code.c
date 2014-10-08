@@ -131,10 +131,8 @@ void xmhfhic_smp_entry(u64 cpuid){
     _XDPRINTF_("%s[%u,%u]: rsp=%016llx. Starting...\n",
             __FUNCTION__, cpuid, isbsp, read_rsp());
 
-    //if(isbsp){
-        //setup CPU state for HIC
-        xmhf_hic_arch_setup_cpu_state(cpuid);
-    //}
+    //setup CPU state for HIC
+    xmhf_hic_arch_setup_cpu_state(cpuid);
 
 
     _XDPRINTF_("%s[%u,%u]: Done. Halting!\n", __FUNCTION__, cpuid, isbsp);
