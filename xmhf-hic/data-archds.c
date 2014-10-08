@@ -96,7 +96,7 @@ __attribute__(( aligned(16) )) arch_x86_gdtdesc_t __xmhfhic_x86vmx_gdt  = {
 };
 
 // TSS
-__attribute__(( aligned(4096) )) u8 __xmhfhic_x86vmx_tss[PAGE_SIZE_4K] = { 0 };
+__attribute__(( aligned(4096) )) u8 __xmhfhic_x86vmx_tss[MAX_PLATFORM_CPUS][PAGE_SIZE_4K] = { 0 };
 
 /*
 // IDT
