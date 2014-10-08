@@ -1916,10 +1916,9 @@ static bool __xmhfhic_smp_cpu_x86_isbsp(void){
 //common function which is entered by all CPUs upon SMP initialization
 //note: this is specific to the x86 architecture backend
 void __xmhfhic_smp_cpu_x86_smpinitialize_commonstart(void){
-	u64 cpuid = xmhf_baseplatform_arch_x86_getcpulapicid();
-	bool is_bsp = __xmhfhic_smp_cpu_x86_isbsp();
+	u64 cpuid = __xmhfhic_x86vmx_cpuidtable[xmhf_baseplatform_arch_x86_getcpulapicid()];
 
-    xmhfhic_smp_entry(cpuid, is_bsp);
+    xmhfhic_smp_entry(cpuid);
 }
 
 
@@ -1980,7 +1979,7 @@ static bool __xmhfhic_ap_entry(void) __attribute__((naked)){
 	);
 
 
-    asm volatile(
+/*    asm volatile(
                  	"movl %0, %%eax\r\n"
 					"movl (%%eax), %%eax\r\n"
 					"shr $24, %%eax\r\n"
@@ -1995,7 +1994,7 @@ static bool __xmhfhic_ap_entry(void) __attribute__((naked)){
 					"movl %5, %%ecx \r\n"					// ecx = sizeof(_cpustack[0])
 					"mull %%ecx \r\n"						// eax = sizeof(_cpustack[0]) * eax
 					"addl %%ecx, %%eax \r\n"				// eax = (sizeof(_cpustack[0]) * eax) + sizeof(_cpustack[0])
-					"addl %4, %%eax \r\n"				    // eax = &_cpustack + (sizeof(_cpustack[0]) * eax) + sizeof(_cpustack[0])*/
+					"addl %4, %%eax \r\n"				    // eax = &_cpustack + (sizeof(_cpustack[0]) * eax) + sizeof(_cpustack[0])
 					"movl %%eax, %%esp \r\n"				// esp = top of stack for the cpu
 
                     "jmp __xmhfhic_smp_cpu_x86_smpinitialize_commonstart \r\n"
@@ -2004,12 +2003,54 @@ static bool __xmhfhic_ap_entry(void) __attribute__((naked)){
 					:   "i" (X86SMP_LAPIC_ID_MEMORYADDRESS), "m" (_totalcpus), "i" (&_cputable),
                         "i" (sizeof(xmhf_cputable_t)), "i" (&_init_cpustacks), "i" (sizeof(_init_cpustacks[0]))
 
+	);*/
+
+    asm volatile(
+                 	"xorq %%rax, %%rax \r\n"                //RAX=0
+                 	"movl %0, %%eax\r\n"                    //
+					"movl (%%eax), %%eax\r\n"               //RAX(bits 0-7)=LAPIC ID
+					"shr $24, %%eax\r\n"                    //RAX=LAPIC ID
+                    "movq %1, %%rbx \r\n"                   //RBX=&__xmhfhic_x86vmx_cpuidtable
+                    "movq (%%rbx, %%rax, 8), %%rax \r\n"    //EAX= 0-based cpu index for the CPU
+
+					"movl %2, %%ecx \r\n"					// ecx = sizeof(_cpustack[0])
+					"mull %%ecx \r\n"						// eax = sizeof(_cpustack[0]) * eax
+					"addl %%ecx, %%eax \r\n"				// eax = (sizeof(_cpustack[0]) * eax) + sizeof(_cpustack[0])
+					"addl %3, %%eax \r\n"				    // eax = &_cpustack + (sizeof(_cpustack[0]) * eax) + sizeof(_cpustack[0])
+					"movl %%eax, %%esp \r\n"				// esp = top of stack for the cpu
+
+                    "jmp __xmhfhic_smp_cpu_x86_smpinitialize_commonstart \r\n"
+
+					:
+					:   "i" (X86SMP_LAPIC_ID_MEMORYADDRESS),
+                        "i" (&__xmhfhic_x86vmx_cpuidtable),
+                        "i" (sizeof(_init_cpustacks[0])),
+                        "i" (&_init_cpustacks)
+
+                    :
 	);
+
 
 }
 
 
 void xmhfhic_arch_switch_to_smp(void){
+	//initialize cpu table and total platform CPUs
+	{
+	    u32 i, j;
+	    for(i=0; i < MAX_X86_APIC_ID; i++)
+            __xmhfhic_x86vmx_cpuidtable[i] = 0xFFFFFFFFFFFFFFFFULL;
+
+	    for(i=0; i < xcbootinfo->cpuinfo_numentries; i++){
+            u64 value = i;
+
+            if(xcbootinfo->cpuinfo_buffer[i].isbsp)
+                value |= 0x8000000000000000ULL;
+
+            //XXX: TODO sanity check xcbootinfo->cpuinfo_buffer[i].lapic_id < MAX_X86_APIC_ID
+            __xmhfhic_x86vmx_cpuidtable[xcbootinfo->cpuinfo_buffer[i].lapic_id] = value;
+        }
+	}
 
     __xmhfhic_smp_arch_smpinitialize();
 

@@ -106,7 +106,7 @@ __attribute__(( aligned(4096) )) u8 _rtmxcp_cpustacks[MAX_PLATFORM_CPUS][MAX_PLA
 // runtime exception bootstrap save area
 __attribute__(( aligned(4096) )) u64 _rtmxcp_bssavearea[512] = { 1ULL };
 
-
+/*
 //////
 // CPU table: mapping from unique CPU id --> 0 based index (into CPU stack)
 
@@ -114,7 +114,9 @@ xmhf_cputable_t _cputable[MAX_PLATFORM_CPUS];
 
 // count of platform CPUs
 u32 _totalcpus = 0;
+*/
 
+__attribute__(( aligned(8) )) u64 __xmhfhic_x86vmx_cpuidtable[MAX_X86_APIC_ID];
 
 
 //libxmhfdebug
