@@ -112,14 +112,22 @@ void xmhfhic_entry(void){
     //seutp guest slab page tables
     xmhfhic_arch_setup_guest_slab_page_tables();
 
+    //setup SMP and move on to xmhfhic_smp_entry
+    xmhfhic_arch_switch_to_smp();
 
-    //debug
-    _XDPRINTF_("Halting!\n");
-    _XDPRINTF_("XMHF Tester Finished!\n");
+    //we should never get here
+    _XDPRINTF_("Should never be here. Halting!\n");
+    HALT();
+}
+
+
+void xmhfhic_smp_entry(u64 cpuid, bool isbsp){
+
+    _XDPRINTF_("%s: cpuid=%u, isbsp=%u, rsp=%016llx. Halting!\n",
+            __FUNCTION__, cpuid, isbsp, read_rsp());
     HALT();
 
 }
-
 
 #if 0
 
