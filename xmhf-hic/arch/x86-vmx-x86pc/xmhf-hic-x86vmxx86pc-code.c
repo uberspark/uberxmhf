@@ -2193,104 +2193,8 @@ void xcprimeon_arch_cpu_basicinit(void){
 		}
 	}
 
-    //set LAPIC base address to preferred address
-    {
-        u64 msrapic = rdmsr64(MSR_APIC_BASE);
-        wrmsr64(MSR_APIC_BASE, ((msrapic & 0x0000000000000FFFULL) | X86SMP_LAPIC_MEMORYADDRESS));
-    }
-
-	//set OSXSAVE bit in CR4 to enable us to pass-thru XSETBV intercepts
-	//when the CPU supports XSAVE feature
-	if(xmhf_baseplatform_arch_x86_cpuhasxsavefeature()){
-		u32 t_cr4;
-		t_cr4 = read_cr4();
-		t_cr4 |= CR4_OSXSAVE;
-		write_cr4(t_cr4);
-	}
 
 
-	//enable PCIDE support
-	{
-		write_cr4(read_cr4() | CR4_PCIDE);
-	}
-
-
-	//turn on NX protections
-	{
-		u32 eax, edx;
-		rdmsr(MSR_EFER, &eax, &edx);
-		eax |= (1 << EFER_NXE);
-		wrmsr(MSR_EFER, eax, edx);
-		_XDPRINTF_("%s: NX protections enabled: MSR_EFER=%08x%08x\n", __FUNCTION__, edx, eax);
-	}
-
-	//initialize TSS
-	_xcprimeon_cpu_x86_initializeTSS();
-
-	//initialize basic exception handling
-	_XDPRINTF_("%s: proceeding to initialize basic exception handling\n", __FUNCTION__);
-	_xcprimeon_initialize_exceptionhandling();
-	_XDPRINTF_("%s: basic exception handling initialized\n", __FUNCTION__);
-}
-
-
-void xcprimeon_arch_cpu_activate_modeandpaging(u64 pgtblbase){
-	u32 coreptbase;
-
-	//initialize paging
-    write_cr3((u64)pgtblbase);
-	_XDPRINTF_("%s: paging activated\n", __FUNCTION__);
-
-	//load IDT
-	asm volatile(
-		"lidt  %0 \r\n"
-		: //no outputs
-		: "g" (_idt)
-		: //no clobber
-	);
-}
-
-
-//initialize CPU
-void xcsmp_arch_initializecpu(u32 cpuid, bool isbsp){
-    _XDPRINTF_("%s(%u): proceeding to initialize CPU...\n", __FUNCTION__, (u32)cpuid);
-
-    //load GDT and IDT
-    asm volatile(	"lgdt %0\r\n"
-					"lidt %1\r\n"
-					:
-					: "m" (_gdt), "m" (_idt)
-	);
-
-
-	//set OSXSAVE bit in CR4 to enable us to pass-thru XSETBV intercepts
-	//when the CPU supports XSAVE feature
-	if(xmhf_baseplatform_arch_x86_cpuhasxsavefeature())
-		write_cr4(read_cr4() | CR4_OSXSAVE);
-
-
-
-	//set bit 5 (EM) of CR0 to be VMX compatible in case of Intel cores
-	write_cr0(read_cr0() | 0x20);
-
-    //load TR, ensure busy bit is clear else LTR will cause a #GP
-    {
-   		TSSENTRY *t;
-		t= (TSSENTRY *)(u32)&_gdt_start[(__TRSEL/sizeof(u64))];
-		t->attributes1= 0x89;
-        asm volatile(
-                "movw %0, %%ax\r\n"
-                "ltr %%ax\r\n"				//load TR
-	     :
-	     : "i"(__TRSEL)
-	     : "eax"
-        );
-
-    }
-
-    _XDPRINTF_("%s(%u): initialized CPU...\n", __FUNCTION__, (u32)cpuid);
-
-}
 */
 
 
@@ -2379,14 +2283,45 @@ void xmhf_hic_arch_setup_cpu_state(u64 cpuid){
     _XDPRINTF_("%s[%u]: set IOPL to CPL-3\n", __FUNCTION__, (u32)cpuid);
 
 
-/*
-basicinit;
+    //set LAPIC base address to preferred address
+    {
+        u64 msrapic = rdmsr64(MSR_APIC_BASE);
+        wrmsr64(MSR_APIC_BASE, ((msrapic & 0x0000000000000FFFULL) | X86SMP_LAPIC_MEMORYADDRESS));
+    }
+    _XDPRINTF_("%s[%u]: set LAPIC base address to %016llx\n", __FUNCTION__, (u32)cpuid, rdmsr64(MSR_APIC_BASE));
 
-activate_modeandpaging
+	//turn on NX protections
+	{
+		u32 eax, edx;
+		rdmsr(MSR_EFER, &eax, &edx);
+		eax |= (1 << EFER_NXE);
+		wrmsr(MSR_EFER, eax, edx);
+	}
+    _XDPRINTF_("%s[%u]: NX protections enabled\n", __FUNCTION__, (u32)cpuid);
+
+	//enable PCIDE support
+	{
+		write_cr4(read_cr4() | CR4_PCIDE);
+	}
+    _XDPRINTF_("%s[%u]: PCIDE enabled\n", __FUNCTION__, (u32)cpuid);
 
 
-initialize CPU;
-*/
+	//set OSXSAVE bit in CR4 to enable us to pass-thru XSETBV intercepts
+	//when the CPU supports XSAVE feature
+	if(xmhf_baseplatform_arch_x86_cpuhasxsavefeature()){
+        write_cr4(read_cr4() | CR4_OSXSAVE);
+        _XDPRINTF_("%s[%u]: XSETBV passthrough enabled\n", __FUNCTION__, (u32)cpuid);
+	}
+
+
+	//set bit 5 (EM) of CR0 to be VMX compatible in case of Intel cores
+	write_cr0(read_cr0() | 0x20);
+    _XDPRINTF_("%s[%u]: Set CR0.EM to be VMX compatible\n", __FUNCTION__, (u32)cpuid);
+
+
+    //turn on CR0.WP bit for supervisor mode write protection
+    //write_cr0(read_cr0() | CR0_WP);
+    //_XDPRINTF_("%s[%u]: Enabled supervisor mode write protection\n", __FUNCTION__, (u32)cpuid);
 
 }
 
