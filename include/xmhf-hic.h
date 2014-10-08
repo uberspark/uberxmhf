@@ -146,6 +146,10 @@ extern slab_header_t _slab_table[XMHF_SLAB_NUMBEROFSLABS];
 //////
 //arch. dependent decls.
 
+extern __attribute__(( aligned(16) )) u64 __xmhfhic_x86vmx_gdt_start[];
+extern __attribute__(( aligned(16) )) arch_x86_gdtdesc_t __xmhfhic_x86vmx_gdt;
+extern __attribute__(( aligned(4096) )) u8 __xmhfhic_x86vmx_tss[PAGE_SIZE_4K];
+
 
 
 typedef struct {
