@@ -86,7 +86,7 @@ void xmhfhic_entry(void){
 		}
   	}
 
-	//initialize cpu table and total platform CPUs
+	/*//initialize cpu table and total platform CPUs
 	{
 	    u32 i;
 	    for(i=0; i < xcbootinfo->cpuinfo_numentries; i++){
@@ -94,7 +94,7 @@ void xmhfhic_entry(void){
             _cputable[i].cpu_index = i;
         }
         _totalcpus=xcbootinfo->cpuinfo_numentries;
-	}
+	}*/
 
 
 	//store runtime physical and virtual base addresses along with size
@@ -121,7 +121,8 @@ void xmhfhic_entry(void){
 }
 
 
-void xmhfhic_smp_entry(u64 cpuid, bool isbsp){
+void xmhfhic_smp_entry(u64 cpuid){
+    bool isbsp = (cpuid & 0x8000000000000000ULL) ? true : false;
 
     _XDPRINTF_("%s[%u,%u]: rsp=%016llx. Starting...\n",
             __FUNCTION__, cpuid, isbsp, read_rsp());

@@ -69,6 +69,10 @@
 #include <xmhfhw/platform/x86pc/_tpm.h>        		//TPM
 #include <xmhfhw/platform/x86pc/_biosdata.h>		//BIOS data areas
 
+
+#define     MAX_X86_APIC_ID     256
+
+
 #ifndef __ASSEMBLY__
 
 typedef struct {
