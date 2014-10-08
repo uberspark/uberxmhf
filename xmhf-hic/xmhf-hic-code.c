@@ -106,6 +106,8 @@ void xmhfhic_entry(void){
     //setup slab system device allocation
     xmhfhic_arch_setup_slab_device_allocation();
 
+    //setup hypervisor slab page tables
+    xmhfhic_arch_setup_hypervisor_slab_page_tables();
 
 
     //debug
@@ -134,25 +136,6 @@ void xmhfhic_entry(void){
 *	xcprimeon_arch_earlydmaprot(__TARGET_BASE_SL, xcbootinfo->size);
 *#endif
 
-	//print out slab table
-	{
-			u32 i;
-
-			for(i=0; i < XMHF_SLAB_NUMBEROFSLABS; i++){
-				_XDPRINTF_("slab %u: dumping slab header\n", i);
-				_XDPRINTF_("	slab_index=%u\n", _slab_table[i].slab_index);
-				_XDPRINTF_("	slab_macmid=%08x\n", _slab_table[i].slab_macmid);
-				_XDPRINTF_("	slab_privilegemask=%08x\n", _slab_table[i].slab_privilegemask);
-				_XDPRINTF_("	slab_tos=%08x\n", _slab_table[i].slab_tos);
-				_XDPRINTF_("  slab_rodata(%08x-%08x)\n", _slab_table[i].slab_rodata.start, _slab_table[i].slab_rodata.end);
-				_XDPRINTF_("  slab_rwdata(%08x-%08x)\n", _slab_table[i].slab_rwdata.start, _slab_table[i].slab_rwdata.end);
-				_XDPRINTF_("  slab_code(%08x-%08x)\n", _slab_table[i].slab_code.start, _slab_table[i].slab_code.end);
-				_XDPRINTF_("  slab_stack(%08x-%08x)\n", _slab_table[i].slab_stack.start, _slab_table[i].slab_stack.end);
-				//_XDPRINTF_("\n  slab_trampoline(%08x-%08x)", _slab_table[i].slab_trampoline.start, _slab_table[i].slab_trampoline.end);
-				_XDPRINTF_("  slab_entrycr3=%08x\n", _slab_table[i].entry_cr3);
-				_XDPRINTF_("  slab_entrycr3_new=%08x\n", _slab_table[i].entry_cr3_new);
-		}
-	}
 
 
     //debug

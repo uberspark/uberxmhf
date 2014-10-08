@@ -51,6 +51,9 @@
 #ifndef __XMHF_HIC_H__
 #define __XMHF_HIC_H__
 
+
+#define XMHF_HIC_HYP_SLABS_COUNT            (1)
+
 //#define XMHF_SLAB_CALLP2P					0xB0
 
 #define XMHF_SLAB_CALLTYPE_CALLP2P				0xB0
@@ -82,6 +85,7 @@
 #ifndef __ASSEMBLY__
 
 void xmhfhic_arch_setup_slab_device_allocation(void);
+void xmhfhic_arch_setup_hypervisor_slab_page_tables(void);
 
 
 typedef struct {
