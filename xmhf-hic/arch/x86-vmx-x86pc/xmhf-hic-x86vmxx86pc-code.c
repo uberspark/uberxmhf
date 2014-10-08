@@ -2078,6 +2078,40 @@ void xmhfhic_arch_switch_to_smp(void){
 
 
 
+/////////////////////////////////////////////////////////////////////
+// setup base CPU data structures
+
+//initialize GDT
+static void __xmhfhic_x86vmx_initializeGDT(void){
+		TSSENTRY *t;
+		u32 tss_base=(u32)&__xmhfhic_x86vmx_tss;
+
+		//TSS descriptor
+		t= (TSSENTRY *)&__xmhfhic_x86vmx_gdt_start[7];
+		t->attributes1= 0xE9;
+		t->limit16_19attributes2= 0x0;
+		t->baseAddr0_15= (u16)(tss_base & 0x0000FFFF);
+		t->baseAddr16_23= (u8)((tss_base & 0x00FF0000) >> 16);
+		t->baseAddr24_31= (u8)((tss_base & 0xFF000000) >> 24);
+		t->limit0_15=0x67;
+}
+
+
+
+void xmhfhic_arch_setup_base_cpu_data_structures(void){
+
+    //initialize GDT
+    __xmhfhic_x86vmx_initializeGDT();
+
+
+
+}
+
+
+
+
+
+
 
 
 
@@ -2095,20 +2129,6 @@ void xmhfhic_arch_switch_to_smp(void){
 __attribute__((section(".stack"))) __attribute__(( aligned(4096) )) static u8 _tss_stack[PAGE_SIZE_4K];
 */
 
-//initialize GDT
-static void __xmhfhic_x86vmx_initializeGDT(void){
-		TSSENTRY *t;
-		u32 tss_base=(u32)&__xmhfhic_x86vmx_tss;
-
-		//TSS descriptor
-		t= (TSSENTRY *)&__xmhfhic_x86vmx_gdt_start[7];
-		t->attributes1= 0xE9;
-		t->limit16_19attributes2= 0x0;
-		t->baseAddr0_15= (u16)(tss_base & 0x0000FFFF);
-		t->baseAddr16_23= (u8)((tss_base & 0x00FF0000) >> 16);
-		t->baseAddr24_31= (u8)((tss_base & 0xFF000000) >> 24);
-		t->limit0_15=0x67;
-}
 
 /*
 //*
@@ -2282,8 +2302,6 @@ void xmhf_hic_arch_setup_cpu_state(u64 cpuid, bool isbsp){
 	//replicate common MTRR state on this CPU
 	__xmhfhic_smp_cpu_x86_restorecpumtrrstate();
 
-    //initialize GDT
-    __xmhfhic_x86vmx_initializeGDT();
 
 
 /*
