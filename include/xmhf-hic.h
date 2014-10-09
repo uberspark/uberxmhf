@@ -103,6 +103,25 @@ void xmhfhic_smp_entry(u64 cpuid);
 void xmhfhic_arch_relinquish_control_to_init_slab(u64 cpuid);
 
 
+typedef struct {
+	u64 start;
+	u64 end;
+} slab_section_t;
+
+typedef void * slab_entrystub_t;
+
+typedef struct {
+	u64 slab_index;
+	u64 slab_macmid;
+	u64 slab_privilegemask;
+	u64 slab_tos;
+	slab_section_t slab_code;
+	slab_section_t slab_rodata;
+	slab_section_t slab_rwdata;
+	slab_section_t slab_stack;
+	slab_entrystub_t entrystub;
+} slab_header_t;
+
 
 typedef struct {
 	bool desc_valid;
@@ -179,9 +198,21 @@ typedef void slab_output_params_t;
 #define XMHF_SLAB_CALL(dst_slabname, dst_slabid, cpuid, iparams, iparams_size, oparams, oparams_size) dst_slabname##_interface(cpuid, iparams, iparams_size, oparams, oparams_size)
 
 
-
-
-
+#define XMHF_SLAB(slab_name)	\
+	__attribute__ ((section(".stack"))) u8 slab_name##_slab_stack[MAX_PLATFORM_CPUS][XMHF_SLAB_STACKSIZE];	\
+	__attribute__ ((section(".data"))) u64 slab_name##_slab_tos[MAX_PLATFORM_CPUS]= { ((u64)&slab_name##_slab_stack[0] + XMHF_SLAB_STACKSIZE), ((u64)&slab_name##_slab_stack[1] + XMHF_SLAB_STACKSIZE), ((u64)&slab_name##_slab_stack[2] + XMHF_SLAB_STACKSIZE), ((u64)&slab_name##_slab_stack[3] + XMHF_SLAB_STACKSIZE), ((u64)&slab_name##_slab_stack[4] + XMHF_SLAB_STACKSIZE), ((u64)&slab_name##_slab_stack[5] + XMHF_SLAB_STACKSIZE), ((u64)&slab_name##_slab_stack[6] + XMHF_SLAB_STACKSIZE), ((u64)&slab_name##_slab_stack[7] + XMHF_SLAB_STACKSIZE)  };	\
+																				\
+	__attribute__((naked)) __attribute__ ((section(".slab_entrystub"))) __attribute__((align(1))) void _slab_entrystub_##slab_name(void){	\
+	asm volatile (							\
+            "int $0x03 \r\n" \
+            "hlt \r\n" \
+            \
+			:								\
+			: 	\
+               \
+			:								\
+		);									\
+    }\
 
 
 

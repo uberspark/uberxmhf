@@ -134,25 +134,6 @@ typedef struct {
 
 
 //-------------------------------------------------------
-typedef struct {
-	u64 start;
-	u64 end;
-} slab_section_t;
-
-typedef void * slab_entrystub_t;
-
-typedef struct {
-	u64 slab_index;
-	u64 slab_macmid;
-	u64 slab_privilegemask;
-	u64 slab_tos;
-	slab_section_t slab_code;
-	slab_section_t slab_rodata;
-	slab_section_t slab_rwdata;
-	slab_section_t slab_stack;
-	slab_entrystub_t entry_cr3;
-	slab_entrystub_t entry_cr3_new;
-} slab_header_t;
 
 //XMHF core api CPU descriptor type
 typedef struct {

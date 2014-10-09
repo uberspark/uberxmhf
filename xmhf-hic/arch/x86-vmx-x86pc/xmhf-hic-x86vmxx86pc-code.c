@@ -1367,8 +1367,7 @@ void xmhfhic_arch_setup_hypervisor_slab_page_tables(void){
 				_XDPRINTF_("  slab_code(%08x-%08x)\n", _slab_table[i].slab_code.start, _slab_table[i].slab_code.end);
 				_XDPRINTF_("  slab_stack(%08x-%08x)\n", _slab_table[i].slab_stack.start, _slab_table[i].slab_stack.end);
 				//_XDPRINTF_("\n  slab_trampoline(%08x-%08x)", _slab_table[i].slab_trampoline.start, _slab_table[i].slab_trampoline.end);
-				_XDPRINTF_("  slab_entrycr3=%08x\n", _slab_table[i].entry_cr3);
-				_XDPRINTF_("  slab_entrycr3_new=%08x\n", _slab_table[i].entry_cr3_new);
+				_XDPRINTF_("  slab_entrystub=%08x\n", _slab_table[i].entrystub);
 		}
 	}
 
