@@ -2612,7 +2612,7 @@ void xmhfhic_arch_relinquish_control_to_init_slab(u64 cpuid){
     }
 
 
-    _XDPRINTF_("%s[%u]: Now in ring-3. Halting!\n", __FUNCTION__, cpuid);
+    _XDPRINTF_("%s[%u]: Now in ring-3. Halting!\n", __FUNCTION__, (u32)cpuid);
     HALT();
 
 
