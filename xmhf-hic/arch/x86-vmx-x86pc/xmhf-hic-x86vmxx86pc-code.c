@@ -761,6 +761,20 @@ void xmhfhic_arch_sanity_check_requirements(void){
 		}
 	}
 
+	//we require unrestricted guest and EPT support, bail out if we don't have it
+    {
+        u64 msr_procctls2 = rdmsr64(IA32_VMX_PROCBASED_CTLS2_MSR);
+        if( !( (msr_procctls2 >> 32) & 0x80 ) ){
+            _XDPRINTF_("%s: need unrestricted guest support but did not find any!\n", __FUNCTION__);
+            HALT();
+        }
+
+        if( !( (msr_procctls2 >> 32) & 0x2) ){
+            _XDPRINTF_("%s: need EPTt support but did not find any!\n", __FUNCTION__);
+            HALT();
+        }
+
+    }
 
 
 }
