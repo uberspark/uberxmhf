@@ -732,6 +732,61 @@ void xcprimeon_arch_relinquish_control(void){
 
 
 
+
+
+
+
+///////////////////////////////////////////////////////////////
+// sanity check HIC (hardware) requirements
+void xmhfhic_arch_sanity_check_requirements(void){
+	u32 cpu_vendor;
+
+	//grab CPU vendor
+	cpu_vendor = xmhf_baseplatform_arch_getcpuvendor();
+	if (cpu_vendor != CPU_VENDOR_INTEL){
+		_XDPRINTF_("%s: not an Intel CPU but running VMX backend. Halting!\n", __FUNCTION__);
+		HALT();
+	}
+
+	//check VMX support
+	{
+		u32	cpu_features;
+		u32 res0,res1,res2;
+
+		cpuid(0x1, &res0, &res1, &cpu_features, &res2);
+
+		if ( ( cpu_features & (1<<5) ) == 0 ){
+			_XDPRINTF_("No VMX support. Halting!\n");
+			HALT();
+		}
+	}
+
+
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 //////////////////////////////////////////////////////////////////////////////
 //setup slab device allocation
 typedef struct {
@@ -2165,37 +2220,6 @@ void xmhfhic_arch_setup_base_cpu_data_structures(void){
 
 
 
-/*
-
-
-//*
-//perform basic (boot) CPU initialization
-void xcprimeon_arch_cpu_basicinit(void){
-	u32 cpu_vendor;
-
-	//grab CPU vendor
-	cpu_vendor = xmhf_baseplatform_arch_getcpuvendor();
-	if (cpu_vendor != CPU_VENDOR_INTEL){
-		_XDPRINTF_("%s: not an Intel CPU but running VMX backend. Halting!\n", __FUNCTION__);
-		HALT();
-	}
-
-	//check VMX support
-	{
-		u32	cpu_features;
-		u32 res0,res1,res2;
-
-		cpuid(0x1, &res0, &res1, &cpu_features, &res2);
-
-		if ( ( cpu_features & (1<<5) ) == 0 ){
-			_XDPRINTF_("No VMX support. Halting!\n");
-			HALT();
-		}
-	}
-
-
-
-*/
 
 
 //load GDT and initialize segment registers

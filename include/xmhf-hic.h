@@ -85,6 +85,7 @@
 
 #ifndef __ASSEMBLY__
 
+void xmhfhic_arch_sanity_check_requirements(void);
 void xmhfhic_arch_setup_slab_device_allocation(void);
 void xmhfhic_arch_setup_hypervisor_slab_page_tables(void);
 void xmhfhic_arch_setup_guest_slab_page_tables(void);
