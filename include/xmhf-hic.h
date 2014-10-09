@@ -93,6 +93,7 @@ void xmhfhic_arch_switch_to_smp(void);
 void xmhfhic_arch_setup_base_cpu_data_structures(void);
 void xmhf_hic_arch_setup_cpu_state(u64 cpuid);
 void xmhfhic_smp_entry(u64 cpuid);
+void xmhfhic_arch_relinquish_control_to_init_slab(u64 cpuid);
 
 
 
