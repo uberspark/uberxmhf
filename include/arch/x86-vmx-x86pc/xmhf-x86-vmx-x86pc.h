@@ -346,6 +346,8 @@ typedef struct {
   u8 vmx_vmcs_region[PAGE_SIZE_4K] __attribute__((aligned(4096)));
   u8 vmx_msr_area_host_region[2*PAGE_SIZE_4K] __attribute__((aligned(4096)));
   u8 vmx_msr_area_guest_region[2*PAGE_SIZE_4K] __attribute__((aligned(4096)));
+  u8 vmx_iobitmap_region[2][PAGE_SIZE_4K] __attribute__((aligned(4096)));		//I/O Bitmap area
+  u8 vmx_msrbitmaps_region[PAGE_SIZE_4K] __attribute__((aligned(4096)));		//MSR bitmap area
   u64 vmx_msrs[IA32_VMX_MSRCOUNT];
   u64 vmx_msr_efer;
   u64 vmx_msr_efcr;

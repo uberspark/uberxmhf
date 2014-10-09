@@ -142,5 +142,7 @@ u32 _totalcpus = 0;
 __attribute__(( aligned(8) )) u64 __xmhfhic_x86vmx_cpuidtable[MAX_X86_APIC_ID];
 
 
+__attribute__(( aligned(4096) )) xc_cpuarchdata_x86vmx_t __xmhfhic_x86vmx_archdata[MAX_PLATFORM_CPUS];
+
 //libxmhfdebug
 __attribute__(( section(".libxmhfdebugdata") )) u32 libxmhfdebug_lock = 1;
