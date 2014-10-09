@@ -50,10 +50,10 @@
  */
 
 #include <xmhf.h>
-#include <xmhf-core.h>
+//#include <xmhf-core.h>
 #include <xmhf-debug.h>
 
-#include <xcprimeon.h>
+//#include <xcprimeon.h>
 
 __attribute__((aligned(4096))) static u64 _xcprimeon_init_pdt[(PAE_PTRS_PER_PDPT*PAE_PTRS_PER_PDT)] = {
 	0x0000000000000087,0x0000000000200087,0x0000000000400087,0x0000000000600087,
@@ -2612,7 +2612,9 @@ void xmhfhic_arch_relinquish_control_to_init_slab(u64 cpuid){
     }
 
 
-    _XDPRINTF_("%s[%u]: Now in ring-3. Halting!\n", __FUNCTION__, (u32)cpuid);
+    XMHF_SLAB_CALL(hictestslab1, XMHF_HYP_SLAB_HICTESTSLAB1, cpuid, NULL, 0, NULL, 0);
+
+    _XDPRINTF_("%s[%u]: Done. Halting!\n", __FUNCTION__, (u32)cpuid);
     HALT();
 
 

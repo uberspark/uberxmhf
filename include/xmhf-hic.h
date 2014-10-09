@@ -55,6 +55,13 @@
 #define XMHF_HIC_HYP_SLABS_COUNT            (1)
 #define XMHF_HIC_GUEST_SLABS_COUNT          (1)
 
+
+#define XMHF_HYP_SLAB_HICTESTSLAB1          (0)
+
+
+
+
+
 //#define XMHF_SLAB_CALLP2P					0xB0
 
 #define XMHF_SLAB_CALLTYPE_CALLP2P				0xB0
@@ -158,6 +165,22 @@ extern __attribute__(( aligned(16) )) idtentry_t __xmhfhic_x86vmx_idt_start[EMHF
 extern __attribute__(( aligned(16) )) arch_x86_idtdesc_t __xmhfhic_x86vmx_idt;
 extern __attribute__(( aligned(4096) )) u8 __xmhfhic_x86vmx_tss_stack[MAX_PLATFORM_CPUS][PAGE_SIZE_4K];
 extern __attribute__(( aligned(4096) )) xc_cpuarchdata_x86vmx_t __xmhfhic_x86vmx_archdata[MAX_PLATFORM_CPUS];
+
+
+
+
+//////
+//
+
+typedef void slab_input_params_t;
+typedef void slab_output_params_t;
+
+
+#define XMHF_SLAB_CALL(dst_slabname, dst_slabid, cpuid, iparams, iparams_size, oparams, oparams_size) dst_slabname##_interface(cpuid, iparams, iparams_size, oparams, oparams_size)
+
+
+
+
 
 
 
