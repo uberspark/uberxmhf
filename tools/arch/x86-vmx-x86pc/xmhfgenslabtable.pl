@@ -22,7 +22,6 @@ while( $i <= $#ARGV) {
 	print "\nextern u8 _slab_$ARGV[$i]_stack_start[];";
 	print "\nextern u8 _slab_$ARGV[$i]_stack_end[];";
 	print "\nextern u8 _slab_$ARGV[$i]_entrypoint[];";
-	print "\nextern u8 _slab_$ARGV[$i]_entrypointnew[];";
 
 	$i++;
 }
@@ -47,8 +46,7 @@ while( $i <= $#ARGV) {
 	print "\n	.slab_rwdata.end = _slab_$ARGV[$i]_rwdata_end,";
 	print "\n	.slab_stack.start = _slab_$ARGV[$i]_stack_start,";
 	print "\n	.slab_stack.end = _slab_$ARGV[$i]_stack_end,";
-	print "\n	.entry_cr3 = _slab_$ARGV[$i]_entrypoint,";
-	print "\n	.entry_cr3_new = _slab_$ARGV[$i]_entrypointnew,";
+	print "\n	.entrystub = _slab_$ARGV[$i]_entrypoint,";
 	print "\n},";
 
 	$i++;
