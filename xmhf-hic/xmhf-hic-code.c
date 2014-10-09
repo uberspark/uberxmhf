@@ -102,6 +102,8 @@ void xmhfhic_entry(void){
 	xcbootinfo->virtmem_base = __TARGET_BASE_SL;
 	xcbootinfo->size = xcbootinfo->size;
 
+    //sanity check HIC (hardware) requirements
+    xmhfhic_arch_sanity_check_requirements();
 
     //setup slab system device allocation
     xmhfhic_arch_setup_slab_device_allocation();
@@ -132,9 +134,9 @@ void xmhfhic_smp_entry(u64 cpuid){
             __FUNCTION__, cpuid, isbsp, read_rsp());
 
     //setup CPU state for HIC
-    //if(isbsp){
+    if(isbsp){
         xmhf_hic_arch_setup_cpu_state(cpuid);
-    //}
+    }
 
     _XDPRINTF_("%s[%u,%u]: Done. Halting!\n", __FUNCTION__, cpuid, isbsp);
     HALT();
