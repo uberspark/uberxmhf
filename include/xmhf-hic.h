@@ -205,7 +205,7 @@ typedef void slab_output_params_t;
 	__attribute__((naked)) __attribute__ ((section(".slab_entrystub"))) __attribute__((align(1))) void _slab_entrystub_##slab_name(void){	\
 	asm volatile (							\
             "int $0x03 \r\n" \
-            "hlt \r\n" \
+            "1: jmp 1b \r\n" \
             \
 			:								\
 			: 	\
