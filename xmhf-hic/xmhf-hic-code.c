@@ -138,7 +138,13 @@ void xmhfhic_smp_entry(u64 cpuid){
         xmhf_hic_arch_setup_cpu_state(cpuid);
     //}
 
-    _XDPRINTF_("%s[%u,%u]: Done. Halting!\n", __FUNCTION__, cpuid, isbsp);
+
+    if(isbsp){
+    //relinquish HIC initialization and move on to the first slab
+    xmhfhic_arch_relinquish_control_to_init_slab((u32)cpuid);
+    }
+
+    _XDPRINTF_("%s[%u,%u]: Should never be here. Halting!\n", __FUNCTION__, cpuid, isbsp);
     HALT();
 
 }
