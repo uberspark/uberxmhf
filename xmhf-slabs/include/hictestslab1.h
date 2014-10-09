@@ -53,8 +53,7 @@
 
 #ifndef __ASSEMBLY__
 
-slab_retval_t hictestslab1_interface(u64 src_slabid, u64 dst_slabid, u64 call_type, u64 rsv0, u64 rsv1, slab_params_t slab_params);
-
+void hictestslab1_interface(u64 cpuid, slab_input_params_t *iparams, u64 iparams_size, slab_output_params_t *oparams, u64 oparams_size);
 
 #endif //__ASSEMBLY__
 

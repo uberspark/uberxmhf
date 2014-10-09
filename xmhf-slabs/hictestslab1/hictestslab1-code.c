@@ -56,18 +56,16 @@
  * author: amit vasudevan (amitvasudevan@acm.org)
  */
 
-slab_retval_t hictestslab1_interface(u64 src_slabid, u64 dst_slabid, u64 call_type,
-                                  u64 rsv0, u64 rsv1, slab_params_t slab_params){
-	slab_retval_t srval;
+void hictestslab1_interface(u64 cpuid, slab_input_params_t *iparams, u64 iparams_size, slab_output_params_t *oparams, u64 oparams_size){
 
-	_XDPRINTF_("%s: Got control: src_slabid=%u, dst_slabid=%u\n",
-                __FUNCTION__, src_slabid, dst_slabid);
+	_XDPRINTF_("%s[%u]: Got control: iparams=%016llx, iparams_size=%u\n",
+                __FUNCTION__, (u32)cpuid, iparams, iparams_size);
 
-	_XDPRINTF_("%s: slab_params.input_u64[0]=%016llx\n",
-                __FUNCTION__, slab_params.input_u64[0]);
+	_XDPRINTF_("%s[%u]: Got control: oparams=%016llx, oparams_size=%u\n",
+                __FUNCTION__, (u32)cpuid, oparams, oparams_size);
 
 
-    srval.retval_u64 = 0xAA;
-    return srval;
+    return;
 }
+
 
