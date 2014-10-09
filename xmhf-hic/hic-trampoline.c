@@ -144,6 +144,9 @@ __attribute__((naked)) __attribute (( section(".slabtrampoline") )) void _slab_t
 //--------------------------------------------------------------------
 */
 
+
+#if 0
+
 static u8 _slab_trampoline_stack[XMHF_SLAB_STACKSIZE];
 static u64 _slab_trampoline_stack_tos = (u64)&_slab_trampoline_stack + XMHF_SLAB_STACKSIZE;
 
@@ -235,6 +238,7 @@ void _slab_trampolinenew_cland(u64 rsv0, u64 src_slabid, u64 dst_slabid, u64 cpu
 
 }
 
+#endif // 0
 
 
 
