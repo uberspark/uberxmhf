@@ -55,6 +55,37 @@
 #include <xmhf-debug.h>
 
 
+typedef struct {
+    u64 src_slabid;
+    u64 dst_slabid;
+    u64 hic_calltype;
+    u64 return_address;
+} __xmhfhic_safestack_element_t;
+
+static u64 __xmhfhic_safestack_indices[MAX_PLATFORM_CPUS] = { 0 };
+
+static __xmhfhic_safestack_element_t __xmhfhic_safestack[MAX_PLATFORM_CPUS][512];
+
+static void __xmhfhic_safepush(u64 cpuid, u64 src_slabid, u64 dst_slabid, u64 hic_calltype, u64 return_address){
+    u64 safestack_index =  __xmhfhic_safestack_indices[(u32)cpuid];
+    __xmhfhic_safestack[(u32)cpuid][safestack_index].src_slabid = src_slabid;
+    __xmhfhic_safestack[(u32)cpuid][safestack_index].dst_slabid = dst_slabid;
+    __xmhfhic_safestack[(u32)cpuid][safestack_index].hic_calltype = hic_calltype;
+    __xmhfhic_safestack[(u32)cpuid][safestack_index].return_address = return_address;
+    safestack_index++;
+    __xmhfhic_safestack_indices[(u32)cpuid] = safestack_index;
+}
+
+static void __xmhfhic_safepop(u64 cpuid, u64 *src_slabid, u64 *dst_slabid, u64 *hic_calltype, u64 *return_address){
+    u64 safestack_index =  __xmhfhic_safestack_indices[(u32)cpuid]-1;
+    *src_slabid = __xmhfhic_safestack[(u32)cpuid][safestack_index].src_slabid;
+    *dst_slabid = __xmhfhic_safestack[(u32)cpuid][safestack_index].dst_slabid;
+    *hic_calltype = __xmhfhic_safestack[(u32)cpuid][safestack_index].hic_calltype;
+    *return_address = __xmhfhic_safestack[(u32)cpuid][safestack_index].return_address;
+    __xmhfhic_safestack_indices[(u32)cpuid] = safestack_index;
+}
+
+
 //HIC runtime trampoline stub
 __attribute__((naked)) void __xmhfhic_rtm_trampoline_stub(void){
 
