@@ -2556,6 +2556,16 @@ void xmhf_hic_arch_setup_cpu_state(u64 cpuid){
     }
     _XDPRINTF_("%s[%u]: Setup VMX state\n", __FUNCTION__, (u32)cpuid);
 
+
+    //setup SYSENTER/SYSEXIT mechanism
+    {
+        wrmsr(IA32_SYSENTER_CS_MSR, __CS_CPL0, 0);
+        wrmsr(IA32_SYSENTER_EIP_MSR, (u32)&__xmhfhic_rtm_trampoline_stub, 0);
+        wrmsr(IA32_SYSENTER_ESP_MSR, ((u32)__xmhfhic_rtm_trampoline_stack[(u32)cpuid] + MAX_PLATFORM_CPUSTACK_SIZE), 0);
+    }
+    _XDPRINTF_("%s: setup SYSENTER/SYSEXIT mechanism\n", __FUNCTION__);
+
+
 }
 
 
