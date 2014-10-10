@@ -89,35 +89,40 @@ void __xmhfhic_rtm_trampoline(u64 cpuid, slab_input_params_t *iparams, u64 ipara
 
     switch(hic_calltype){
         case XMHF_HIC_SLABCALL:{
-            /*R9 = srcslabid
+            /*
 
             RDI = cpuid
             RSI = iparams
-            RDX = iparams_size
-            RCX = oparams
-            R8 = oparams_size*/
+            RDX = for SYSEXIT
+            RCX = for SYSEXIT
+            R8 = oparams_size
+            R9 = srcslabid
+            R10 = iparams_size (original RDX)
+            R11 = oparams (original RCX)*/
 
             asm volatile(
-                 "movq %0, %%r9 \r\n"
-                 "movq %1, %%rdi \r\n"
-                 "movq %2, %%rsi \r\n"
-                 "movq %3, %%rdx \r\n"
-                 "movq %4, %%rcx \r\n"
-                 "movq %5, %%r8 \r\n"
+                 "movq %0, %%rdi \r\n"
+                 "movq %1, %%rsi \r\n"
+                 "movq %2, %%rdx \r\n"
+                 "movq %3, %%rcx \r\n"
+                 "movq %4, %%r8 \r\n"
+                 "movq %5, %%r9 \r\n"
+                 "movq %6, %%r10 \r\n"
+                 "movq %7, %%r11 \r\n"
 
-                 "movq %6, %%rax \r\n"
-                 "jmp *%%rax \r\n"
+                 "sysexitq \r\n"
                  //"int $0x03 \r\n"
                  //"1: jmp 1b \r\n"
                 :
-                : "i" (0),
-                  "m" (cpuid),
+                : "m" (cpuid),
                   "m" (iparams),
-                  "m" (iparams_size),
-                  "m" (oparams),
+                  "m" (_slab_table[dst_slabid].entrystub),
+                  "i" (0ULL),
                   "m" (oparams_size),
-                  "m" (_slab_table[dst_slabid].entrystub)
-                : "r9", "rdi", "rsi", "rdx", "rcx", "r8", "rax"
+                  "i" (0),
+                  "m" (iparams_size),
+                  "m" (oparams)
+                : "rdi", "rsi", "rdx", "rcx", "r8", "r9", "r10", "r11", "rax"
             );
 
         }
