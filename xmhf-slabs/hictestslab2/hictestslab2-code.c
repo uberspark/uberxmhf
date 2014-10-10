@@ -60,6 +60,8 @@ XMHF_SLAB(hictestslab2)
  */
 
 void hictestslab2_interface(u64 cpuid, slab_input_params_t *iparams, u64 iparams_size, slab_output_params_t *oparams, u64 oparams_size){
+    u64 *inputval = (u64 *)iparams;
+    u64 *outputval = (u64 *)oparams;
 
 	_XDPRINTF_("%s[%u]: Got control: RSP=%016llx\n",
                 __FUNCTION__, (u32)cpuid, read_rsp());
@@ -70,6 +72,10 @@ void hictestslab2_interface(u64 cpuid, slab_input_params_t *iparams, u64 iparams
 	_XDPRINTF_("%s[%u]: Got control: oparams=%016llx, oparams_size=%u\n",
                 __FUNCTION__, (u32)cpuid, oparams, oparams_size);
 
+	_XDPRINTF_("%s[%u]: inputval=%016llx\n",
+                __FUNCTION__, (u32)cpuid, *inputval);
+
+    *outputval = 0xBBCCDD;
 
 	_XDPRINTF_("%s[%u]: Returning!\n",
                 __FUNCTION__, (u32)cpuid);
