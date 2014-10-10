@@ -2623,30 +2623,42 @@ void xmhfhic_arch_relinquish_control_to_init_slab(u64 cpuid){
     _XDPRINTF_("%s[%u]: proceeding to call init slab at %x\n", __FUNCTION__, (u32)cpuid,
                 _slab_table[XMHF_HYP_SLAB_HICTESTSLAB1].entrystub);
 
-	/*R9 = srcslabid
+            /*
 
-	RDI = cpuid
-	RSI = iparams
-	RDX = iparams_size
-	RCX = oparams
-	R8 = oparams_size*/
+            RDI = cpuid
+            RSI = iparams
+            RDX = for SYSEXIT
+            RCX = for SYSEXIT
+            R8 = oparams_size
+            R9 = srcslabid
+            R10 = iparams_size (original RDX)
+            R11 = oparams (original RCX)*/
 
     asm volatile(
-         "movq %0, %%r9 \r\n"
-         "movq %1, %%rdi \r\n"
-         "movq $0, %%rsi \r\n"
-         "movq $0, %%rdx \r\n"
-         "movq $0, %%rcx \r\n"
-         "movq $0, %%r8 \r\n"
+         "movq %0, %%rdi \r\n"
+         "movq %1, %%rsi \r\n"
+         "movq %2, %%rdx \r\n"
+         "movq %3, %%rcx \r\n"
+         "movq %4, %%r8 \r\n"
+         "movq %5, %%r9 \r\n"
+         "movq %6, %%r10 \r\n"
+         "movq %7, %%r11 \r\n"
 
-         "movq %2, %%rax \r\n"
+         "movq %8, %%rax \r\n"
          "jmp *%%rax \r\n"
          //"int $0x03 \r\n"
         :
-        : "i" (0xFFFFFFFFFFFFFFFFULL),
-          "m" (cpuid),
+        : "m" (cpuid),
+          "i" (NULL),
+          "i" (0),
+          "i" (0),
+          "i" (0),
+          "i" (0xFFFFFFFFFFFFFFFFULL),
+          "i" (0),
+          "i" (NULL),
+
           "m" (_slab_table[XMHF_HYP_SLAB_HICTESTSLAB1].entrystub)
-        :
+        : "rdi", "rsi", "rdx", "rcx", "r8", "r9", "r10", "r11"
     );
 
     //XMHF_SLAB_CALL(hictestslab1, XMHF_HYP_SLAB_HICTESTSLAB1, cpuid, NULL, 0, NULL, 0);

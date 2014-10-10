@@ -185,6 +185,18 @@ extern __attribute__(( aligned(4096) )) u8 __xmhfhic_rtm_trampoline_stack[MAX_PL
 //#define XMHF_SLAB_CALL(dst_slabname, dst_slabid, cpuid, iparams, iparams_size, oparams, oparams_size) dst_slabname##_interface(cpuid, iparams, iparams_size, oparams, oparams_size)
 #define XMHF_SLAB_CALL(dst_slabname, dst_slabid, cpuid, iparams, iparams_size, oparams, oparams_size) __slab_callstub(cpuid, iparams, iparams_size, oparams, oparams_size, dst_slabid)
 
+            /*
+            _slab_entrystub: registers
+
+            RDI = cpuid
+            RSI = iparams
+            RDX = for SYSEXIT
+            RCX = for SYSEXIT
+            R8 = oparams_size
+            R9 = srcslabid
+            R10 = iparams_size (original RDX)
+            R11 = oparams (original RCX)*/
+
 
 #define XMHF_SLAB(slab_name)	\
 	__attribute__ ((section(".stack"))) u8 slab_name##_slab_stack[MAX_PLATFORM_CPUS][XMHF_SLAB_STACKSIZE];	\
@@ -193,6 +205,10 @@ extern __attribute__(( aligned(4096) )) u8 __xmhfhic_rtm_trampoline_stack[MAX_PL
 	__attribute__((naked)) __attribute__ ((section(".slab_entrystub"))) __attribute__((align(1))) void _slab_entrystub_##slab_name(void){	\
 	asm volatile (							\
             "movq "#slab_name"_slab_tos+0x0(,%%edi,8), %%rsp \r\n" \
+            \
+            "movq %%r10, %%rdx \r\n" \
+            "movq %%r11, %%rcx \r\n" \
+            \
             "cmpq $0, %%r8 \r\n" \
             "je 1f \r\n" \
             "subq %%r8, %%rsp \r\n" \
@@ -236,19 +252,7 @@ extern __attribute__(( aligned(4096) )) u8 __xmhfhic_rtm_trampoline_stack[MAX_PL
         ); \
     } \
 
-/*
-    _slab_callstub: entry registers
-    RDI = cpuid
-    RSI = iparams
-    RDX = iparams_size
-    RCX = oparams
-    R8 = oparmams_size
-    R9 = dst_slabid
 
-    R10 = available
-    R11 = available
-    RAX = available
-*/
 
 
 
