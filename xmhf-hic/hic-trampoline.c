@@ -75,8 +75,8 @@ __attribute__((naked)) void __xmhfhic_rtm_trampoline_stub(void){
 //HIC runtime trampoline
 void __xmhfhic_rtm_trampoline(u64 cpuid, slab_input_params_t *iparams, u64 iparams_size, slab_output_params_t *oparams, u64 oparams_size, u64 dst_slabid){
 
-    _XDPRINTF_("%s[%u]: Trampoline got control: dst_slabid=%u\n",
-                    __FUNCTION__, (u32)cpuid, dst_slabid);
+    _XDPRINTF_("%s[%u]: Trampoline got control: dst_slabid=%u, RSP=%016llx\n",
+                    __FUNCTION__, (u32)cpuid, dst_slabid, read_rsp());
 
     HALT();
 }
