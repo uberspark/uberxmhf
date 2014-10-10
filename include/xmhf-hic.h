@@ -195,7 +195,8 @@ typedef void slab_input_params_t;
 typedef void slab_output_params_t;
 
 
-#define XMHF_SLAB_CALL(dst_slabname, dst_slabid, cpuid, iparams, iparams_size, oparams, oparams_size) dst_slabname##_interface(cpuid, iparams, iparams_size, oparams, oparams_size)
+//#define XMHF_SLAB_CALL(dst_slabname, dst_slabid, cpuid, iparams, iparams_size, oparams, oparams_size) dst_slabname##_interface(cpuid, iparams, iparams_size, oparams, oparams_size)
+#define XMHF_SLAB_CALL(dst_slabname, dst_slabid, cpuid, iparams, iparams_size, oparams, oparams_size) __slab_callstub(cpuid, iparams, iparams_size, oparams, oparams_size, dst_slabid)
 
 
 #define XMHF_SLAB(slab_name)	\
@@ -222,6 +223,43 @@ typedef void slab_output_params_t;
 			:								\
 		);									\
     }\
+    \
+    \
+    \
+    __attribute__((naked)) __attribute__ ((noinline)) static inline bool __slab_callstub(u64 cpuid, slab_input_params_t *iparams, u64 iparams_size, slab_output_params_t *oparams, u64 oparams_size, u64 dst_slabid){\
+        asm volatile ( \
+            "movq %%rsp, "#slab_name"_slab_tos+0x0(,%%edi,8) \r\n"  \
+            \
+            \
+            "jmp _slab_trampolinenew \r\n" \
+            \
+            \
+            "1:\r\n" \
+            "movq "#slab_name"_slab_tos+0x0(,%%edi,8), %%rsp \r\n" \
+                    \
+                    \
+            \
+            \
+            "retq \r\n" \
+            : \
+            : \
+            : \
+        ); \
+    } \
+
+/*
+    _slab_callstub: entry registers
+    RDI = cpuid
+    RSI = iparams
+    RDX = iparams_size
+    RCX = oparams
+    R8 = oparmams_size
+    R9 = dst_slabid
+
+    R10 = available
+    R11 = available
+    RAX = available
+*/
 
 
 
