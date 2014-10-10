@@ -2600,7 +2600,7 @@ void xmhf_hic_arch_setup_cpu_state(u64 cpuid){
 // relinquish HIC initialization and move on to the first slab
 void xmhfhic_arch_relinquish_control_to_init_slab(u64 cpuid){
 
-    //switch to ring-3 -- working
+/*    //switch to ring-3 -- working
     {
         asm volatile(
              "movq %%rsp, %%rax \r\n"
@@ -2618,7 +2618,7 @@ void xmhfhic_arch_relinquish_control_to_init_slab(u64 cpuid){
             : "i" (__DS_CPL3), "i" (__CS_CPL3)
             : "rsp", "rax"
         );
-    }
+    }*/
 
     _XDPRINTF_("%s[%u]: proceeding to call init slab at %x\n", __FUNCTION__, (u32)cpuid,
                 _slab_table[XMHF_HYP_SLAB_HICTESTSLAB1].entrystub);
@@ -2644,20 +2644,19 @@ void xmhfhic_arch_relinquish_control_to_init_slab(u64 cpuid){
          "movq %6, %%r10 \r\n"
          "movq %7, %%r11 \r\n"
 
-         "movq %8, %%rax \r\n"
-         "jmp *%%rax \r\n"
+         "sysexitq \r\n"
          //"int $0x03 \r\n"
         :
         : "m" (cpuid),
           "i" (NULL),
-          "i" (0),
+          "m" (_slab_table[XMHF_HYP_SLAB_HICTESTSLAB1].entrystub),
           "i" (0),
           "i" (0),
           "i" (0xFFFFFFFFFFFFFFFFULL),
           "i" (0),
-          "i" (NULL),
+          "i" (NULL)
 
-          "m" (_slab_table[XMHF_HYP_SLAB_HICTESTSLAB1].entrystub)
+
         : "rdi", "rsi", "rdx", "rcx", "r8", "r9", "r10", "r11"
     );
 

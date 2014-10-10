@@ -122,7 +122,7 @@ void __xmhfhic_rtm_trampoline(u64 cpuid, slab_input_params_t *iparams, u64 ipara
                   "i" (0),
                   "m" (iparams_size),
                   "m" (oparams)
-                : "rdi", "rsi", "rdx", "rcx", "r8", "r9", "r10", "r11", "rax"
+                : "rdi", "rsi", "rdx", "rcx", "r8", "r9", "r10", "r11"
             );
 
         }
