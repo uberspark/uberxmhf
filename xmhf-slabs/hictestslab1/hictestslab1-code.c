@@ -62,20 +62,37 @@ XMHF_SLAB(hictestslab1)
 void hictestslab1_interface(u64 cpuid, slab_input_params_t *iparams, u64 iparams_size, slab_output_params_t *oparams, u64 oparams_size){
     bool isbsp = (cpuid & 0x8000000000000000ULL) ? true : false;
     u64 inputval, outputval;
+    static u64 cpucount=0;
+    static u32 __hictestslab1_smplock = 1;
 
 	_XDPRINTF_("%s[%u]: Got control: RSP=%016llx\n",
                 __FUNCTION__, (u32)cpuid, read_rsp());
 
-    if(isbsp){
+    if(!isbsp){
+        _XDPRINTF_("%s[%u]: AP Halting!\n",
+                __FUNCTION__, (u32)cpuid);
 
-        _XDPRINTF_("%s[%u]: Got control: iparams=%016llx, iparams_size=%u\n",
+        spin_lock(&__hictestslab1_smplock);
+        cpucount++;
+        spin_unlock(&__hictestslab1_smplock);
+
+        HALT();
+    }else{
+        //BSP
+        _XDPRINTF_("%s[%u]: BSP waiting to rally APs...\n",
+                __FUNCTION__, (u32)cpuid);
+
+        while(cpucount < (xcbootinfo->cpuinfo_numentries-1));
+
+        _XDPRINTF_("%s[%u]: BSP, APs halted. Proceeding...\n",
+                __FUNCTION__, (u32)cpuid);
+
+        _XDPRINTF_("%s[%u]: iparams=%016llx, iparams_size=%u\n",
                     __FUNCTION__, (u32)cpuid, iparams, iparams_size);
 
-        _XDPRINTF_("%s[%u]: Got control: oparams=%016llx, oparams_size=%u\n",
+        _XDPRINTF_("%s[%u]:  oparams=%016llx, oparams_size=%u\n",
                     __FUNCTION__, (u32)cpuid, oparams, oparams_size);
 
-
-        //asm volatile ("sysenter \r\n");
         _XDPRINTF_("%s[%u]: Proceeding to call hictestslab2 interface; RSP=%016llx\n",
                 __FUNCTION__, (u32)cpuid, read_rsp());
 
@@ -87,12 +104,12 @@ void hictestslab1_interface(u64 cpuid, slab_input_params_t *iparams, u64 iparams
         _XDPRINTF_("%s[%u]: outputval=%016llx\n",
                 __FUNCTION__, (u32)cpuid, outputval);
 
-    }
-
-	_XDPRINTF_("%s[%u]: Done.Halting!\n",
+        _XDPRINTF_("%s[%u]: Done.Halting!\n",
                 __FUNCTION__, (u32)cpuid);
 
-    HALT();
+        HALT();
+    }
+
 
     return;
 }
