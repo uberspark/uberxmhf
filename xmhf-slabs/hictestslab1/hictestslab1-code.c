@@ -61,6 +61,7 @@ XMHF_SLAB(hictestslab1)
 
 void hictestslab1_interface(u64 cpuid, slab_input_params_t *iparams, u64 iparams_size, slab_output_params_t *oparams, u64 oparams_size){
     bool isbsp = (cpuid & 0x8000000000000000ULL) ? true : false;
+    u64 inputval, outputval;
 
 	_XDPRINTF_("%s[%u]: Got control: RSP=%016llx\n",
                 __FUNCTION__, (u32)cpuid, read_rsp());
@@ -78,10 +79,13 @@ void hictestslab1_interface(u64 cpuid, slab_input_params_t *iparams, u64 iparams
         _XDPRINTF_("%s[%u]: Proceeding to call hictestslab2 interface; RSP=%016llx\n",
                 __FUNCTION__, (u32)cpuid, read_rsp());
 
-        XMHF_SLAB_CALL(hictestslab2, XMHF_HYP_SLAB_HICTESTSLAB2, cpuid, NULL, 0, NULL, 0);
+        inputval = 0xAABB;
+        XMHF_SLAB_CALL(hictestslab2, XMHF_HYP_SLAB_HICTESTSLAB2, cpuid, &inputval, sizeof(inputval), &outputval, sizeof(outputval));
 
         _XDPRINTF_("%s[%u]: Came back to hictestslab1; RSP=%016llx\n",
                 __FUNCTION__, (u32)cpuid, read_rsp());
+        _XDPRINTF_("%s[%u]: outputval=%016llx\n",
+                __FUNCTION__, (u32)cpuid, outputval);
 
     }
 
