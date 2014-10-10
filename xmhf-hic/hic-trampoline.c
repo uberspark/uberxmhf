@@ -51,8 +51,37 @@
  */
 
 #include <xmhf.h>
-#include <xmhf-core.h>
+//#include <xmhf-core.h>
 #include <xmhf-debug.h>
+
+
+//HIC runtime trampoline stub
+__attribute__((naked)) void __xmhfhic_rtm_trampoline_stub(void){
+
+    asm volatile (
+        "movq %%cr3, %%r10 \r\n"
+       	"movq %0, %%rdi \r\n"       //RDI=X86XMP_LAPIC_ID_MEMORYADDRESS
+		"movl (%%edi), %%edi\r\n"   //EDI(bits 0-7)=LAPIC ID
+        "shrl $24, %%edi\r\n"       //EDI=LAPIC ID
+        "movq __xmhfhic_x86vmx_cpuidtable+0x0(,%%edi,8), %%rdi\r\n" //RDI = 0-based cpu index for the CPU
+
+        "jmp __xmhfhic_rtm_trampoline \r\n"
+      :
+      : "i" (X86SMP_LAPIC_ID_MEMORYADDRESS)
+      :
+    );
+}
+
+//HIC runtime trampoline
+void __xmhfhic_rtm_trampoline(u64 cpuid, slab_input_params_t *iparams, u64 iparams_size, slab_output_params_t *oparams, u64 oparams_size, u64 dst_slabid){
+
+    _XDPRINTF_("%s[%u]: Trampoline got control: dst_slabid=%u\n",
+                    __FUNCTION__, (u32)cpuid, dst_slabid);
+
+    HALT();
+}
+
+
 
 /*// esi = 32-bit address of input parameter base
 // edi = 32-bit address of return from slab call
