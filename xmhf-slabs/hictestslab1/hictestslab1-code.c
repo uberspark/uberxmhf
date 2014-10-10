@@ -75,7 +75,13 @@ void hictestslab1_interface(u64 cpuid, slab_input_params_t *iparams, u64 iparams
 
 
         //asm volatile ("sysenter \r\n");
+        _XDPRINTF_("%s[%u]: Proceeding to call hictestslab2 interface; RSP=%016llx\n",
+                __FUNCTION__, (u32)cpuid, read_rsp());
+
         XMHF_SLAB_CALL(hictestslab2, XMHF_HYP_SLAB_HICTESTSLAB2, cpuid, NULL, 0, NULL, 0);
+
+        _XDPRINTF_("%s[%u]: Came back to hictestslab1; RSP=%016llx\n",
+                __FUNCTION__, (u32)cpuid, read_rsp());
 
     }
 

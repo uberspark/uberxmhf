@@ -248,6 +248,11 @@ extern __attribute__(( aligned(4096) )) u8 __xmhfhic_rtm_trampoline_stack[MAX_PL
     \
     __attribute__((naked)) __attribute__ ((noinline)) static inline bool __slab_callstub(u64 cpuid, slab_input_params_t *iparams, u64 iparams_size, slab_output_params_t *oparams, u64 oparams_size, u64 dst_slabid){\
         asm volatile ( \
+            "pushq %%rbp \r\n"\
+            "pushq %%r10 \r\n" \
+            "pushq %%r11 \r\n" \
+            \
+            "pushq %%rcx \r\n" \
             "movq %%rsp, "#slab_name"_slab_tos+0x0(,%%edi,8) \r\n"  \
             \
             \
@@ -257,17 +262,24 @@ extern __attribute__(( aligned(4096) )) u8 __xmhfhic_rtm_trampoline_stack[MAX_PL
             \
             \
             "1:\r\n" \
-            "int $0x03 \r\n" \
-            "2: jmp 2b \r\n" \
             "movq "#slab_name"_slab_tos+0x0(,%%edi,8), %%rsp \r\n" \
+                      \
+            "popq %%rdi \r\n" \
+            "movq %%r11, %%rsi \r\n" \
+            "movq %%r8, %%rcx \r\n" \
+            "cld \r\n" \
+            "rep movsb \r\n" \
                     \
                     \
+            "popq %%r11 \r\n" \
+            "popq %%r10 \r\n" \
+            "popq %%rbp \r\n" \
             \
             \
             "retq \r\n" \
             : \
             : "i" (XMHF_HIC_SLABCALL) \
-            : \
+            : "rdi", "rsi", "rcx", "rdx", "r8", "r9", "rax"\
         ); \
     } \
 
