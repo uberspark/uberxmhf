@@ -59,13 +59,16 @@
 __attribute__((naked)) void __xmhfhic_rtm_trampoline_stub(void){
 
     asm volatile (
-        "movq %%cr3, %%r10 \r\n"
+        "pushq %%rax \r\n"          //push call type
+        "pushq %%r11 \r\n"          //push return address
+        "movq %%cr3, %%rax \r\n"
+        "pushq %%rax \r\n"          //push source slab id
        	"movq %0, %%rdi \r\n"       //RDI=X86XMP_LAPIC_ID_MEMORYADDRESS
 		"movl (%%edi), %%edi\r\n"   //EDI(bits 0-7)=LAPIC ID
         "shrl $24, %%edi\r\n"       //EDI=LAPIC ID
         "movq __xmhfhic_x86vmx_cpuidtable+0x0(,%%edi,8), %%rdi\r\n" //RDI = 0-based cpu index for the CPU
 
-        "jmp __xmhfhic_rtm_trampoline \r\n"
+        "callq __xmhfhic_rtm_trampoline \r\n"
       :
       : "i" (X86SMP_LAPIC_ID_MEMORYADDRESS)
       :
@@ -73,10 +76,16 @@ __attribute__((naked)) void __xmhfhic_rtm_trampoline_stub(void){
 }
 
 //HIC runtime trampoline
-void __xmhfhic_rtm_trampoline(u64 cpuid, slab_input_params_t *iparams, u64 iparams_size, slab_output_params_t *oparams, u64 oparams_size, u64 dst_slabid){
+void __xmhfhic_rtm_trampoline(u64 cpuid, slab_input_params_t *iparams, u64 iparams_size, slab_output_params_t *oparams, u64 oparams_size, u64 dst_slabid, u64 src_slabid, u64 return_address, u64 hic_calltype){
 
-    _XDPRINTF_("%s[%u]: Trampoline got control: dst_slabid=%u, RSP=%016llx\n",
+    _XDPRINTF_("%s[%u]: Trampoline got control: RSP=%016llx\n",
                     __FUNCTION__, (u32)cpuid, dst_slabid, read_rsp());
+
+    _XDPRINTF_("%s[%u]: Trampoline got control: cpuid=%u, iparams=%x, iparams_size=%u, \
+               oparams=%x, oparams_size=%u, dst_slabid=%x, src_slabid=%x, return_address=%016llx \
+               hic_calltype=%x\n",
+                    __FUNCTION__, (u32)cpuid, cpuid, iparams, iparams_size, oparams, oparams_size,
+               dst_slabid, src_slabid, return_address, hic_calltype);
 
     HALT();
 }
