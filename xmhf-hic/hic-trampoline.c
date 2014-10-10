@@ -120,6 +120,12 @@ void __xmhfhic_rtm_trampoline(u64 cpuid, slab_input_params_t *iparams, u64 ipara
 
     switch(hic_calltype){
         case XMHF_HIC_SLABCALL:{
+            _XDPRINTF_("%s[%u]: safepush, return_address=%016llx\n",
+                    __FUNCTION__, (u32)cpuid, return_address);
+
+            __xmhfhic_safepush(cpuid, src_slabid, dst_slabid, hic_calltype, return_address);
+
+
             /*
 
             RDI = cpuid
@@ -161,6 +167,13 @@ void __xmhfhic_rtm_trampoline(u64 cpuid, slab_input_params_t *iparams, u64 ipara
 
 
         case XMHF_HIC_SLABRET:{
+            __xmhfhic_safestack_element_t elem;
+            __xmhfhic_safepop(cpuid, &elem.src_slabid, &elem.dst_slabid, &elem.hic_calltype, &elem.return_address);
+
+            _XDPRINTF_("%s[%u]: safepop, return_address=%016llx\n",
+                    __FUNCTION__, (u32)cpuid, elem.return_address);
+
+
             /*
 
             RDI = cpuid
@@ -188,7 +201,7 @@ void __xmhfhic_rtm_trampoline(u64 cpuid, slab_input_params_t *iparams, u64 ipara
                 :
                 : "m" (cpuid),
                   "m" (iparams),
-                  "m" (_slab_table[dst_slabid].entrystub),
+                  "m" (elem.return_address),
                   "i" (0ULL),
                   "m" (oparams_size),
                   "i" (0),
