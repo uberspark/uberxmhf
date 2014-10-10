@@ -52,43 +52,19 @@
 #define __XMHF_HIC_H__
 
 
-#define XMHF_HIC_HYP_SLABS_COUNT            (1)
+#define XMHF_HIC_HYP_SLABS_COUNT            (2)
 #define XMHF_HIC_GUEST_SLABS_COUNT          (1)
 
 
 #define XMHF_HYP_SLAB_HICTESTSLAB1          (0)
+#define XMHF_HYP_SLAB_HICTESTSLAB2          (1)
+
+
+#define XMHF_HIC_SLABCALL                   (0xA0)
+#define XMHF_HIC_SLABRET                    (0xA1)
 
 
 
-
-
-//#define XMHF_SLAB_CALLP2P					0xB0
-
-#define XMHF_SLAB_CALLTYPE_CALLP2P				0xB0
-#define XMHF_SLAB_CALLTYPE_RETP2P               0xB1
-
-
-#define XMHF_SLAB_XCPRIMEON_INDEX			(0)
-#define XMHF_SLAB_TESTSLAB1_INDEX			(1)
-#define XMHF_SLAB_TESTSLAB2_INDEX			(2)
-#define XMHF_SLAB_XCEXHUB_INDEX				(3)
-#define XMHF_SLAB_XCSMP_INDEX				(4)
-#define XMHF_SLAB_XCDEV_INDEX               (5)
-#define XMHF_SLAB_XCRICHGUEST_INDEX			(6)
-#define XMHF_SLAB_XCIHUB_INDEX				(7)
-
-#define XMHF_SLAB_XCAPIPLATFORM_INDEX       (8)
-#define XMHF_SLAB_XCAPIHPT_INDEX            (9)
-#define XMHF_SLAB_XCAPICPUSTATE_INDEX       (10)
-#define XMHF_SLAB_XCAPITRAPMASK_INDEX       (11)
-#define XMHF_SLAB_XCAPIPARTITION_INDEX      (12)
-
-#define XMHF_SLAB_XCAPI_INDEX               (13)
-
-//hypapp slab indices currently allow for only one hypapp to be linked in
-//TODO: add support for multiple hypapps
-#define XMHF_SLAB_XHHYPERDEP_INDEX			(13)
-#define XMHF_SLAB_XHHELLOWORLD_INDEX		(13)
 
 #ifndef __ASSEMBLY__
 typedef void slab_input_params_t;
@@ -109,9 +85,7 @@ void xmhfhic_arch_relinquish_control_to_init_slab(u64 cpuid);
 
 
 __attribute__((naked)) void __xmhfhic_rtm_trampoline_stub(void);
-void __xmhfhic_rtm_trampoline(u64 cpuid, slab_input_params_t *iparams, u64 iparams_size, slab_output_params_t *oparams, u64 oparams_size, u64 dst_slabid);
-
-
+void __xmhfhic_rtm_trampoline(u64 cpuid, slab_input_params_t *iparams, u64 iparams_size, slab_output_params_t *oparams, u64 oparams_size, u64 dst_slabid, u64 src_slabid, u64 return_address, u64 hic_calltype);
 
 
 
@@ -244,7 +218,9 @@ extern __attribute__(( aligned(4096) )) u8 __xmhfhic_rtm_trampoline_stack[MAX_PL
             "movq %%rsp, "#slab_name"_slab_tos+0x0(,%%edi,8) \r\n"  \
             \
             \
-            "jmp _slab_trampolinenew \r\n" \
+            "movq $1f, %%r11 \r\n"\
+            "movq %0, %%rax \r\n"\
+            "sysenter \r\n" \
             \
             \
             "1:\r\n" \
@@ -255,7 +231,7 @@ extern __attribute__(( aligned(4096) )) u8 __xmhfhic_rtm_trampoline_stack[MAX_PL
             \
             "retq \r\n" \
             : \
-            : \
+            : "i" (XMHF_HIC_SLABCALL) \
             : \
         ); \
     } \
