@@ -50,6 +50,9 @@
 
 #include <hictestslab2.h>
 
+//////
+XMHF_SLAB(hictestslab2)
+
 /*
  * slab code
  *
@@ -77,5 +80,3 @@ void hictestslab2_interface(u64 cpuid, slab_input_params_t *iparams, u64 iparams
 }
 
 
-//////
-XMHF_SLAB(hictestslab2)
