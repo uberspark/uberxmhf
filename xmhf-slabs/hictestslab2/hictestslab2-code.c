@@ -71,10 +71,10 @@ void hictestslab2_interface(u64 cpuid, slab_input_params_t *iparams, u64 iparams
                 __FUNCTION__, (u32)cpuid, oparams, oparams_size);
 
 
-	_XDPRINTF_("%s[%u]: Halting!\n",
+	_XDPRINTF_("%s[%u]: Returning!\n",
                 __FUNCTION__, (u32)cpuid);
 
-    HALT();
+    //HALT();
 
     return;
 }

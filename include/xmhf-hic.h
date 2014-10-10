@@ -198,6 +198,9 @@ extern __attribute__(( aligned(4096) )) u8 __xmhfhic_rtm_trampoline_stack[MAX_PL
             R11 = oparams (original RCX)*/
 
 
+	//oparams_size (R8), new_oparams (RCX),  dstslabid (R9)
+
+
 #define XMHF_SLAB(slab_name)	\
 	__attribute__ ((section(".stack"))) u8 slab_name##_slab_stack[MAX_PLATFORM_CPUS][XMHF_SLAB_STACKSIZE];	\
 	__attribute__ ((section(".data"))) u64 slab_name##_slab_tos[MAX_PLATFORM_CPUS]= { ((u64)&slab_name##_slab_stack[0] + XMHF_SLAB_STACKSIZE), ((u64)&slab_name##_slab_stack[1] + XMHF_SLAB_STACKSIZE), ((u64)&slab_name##_slab_stack[2] + XMHF_SLAB_STACKSIZE), ((u64)&slab_name##_slab_stack[3] + XMHF_SLAB_STACKSIZE), ((u64)&slab_name##_slab_stack[4] + XMHF_SLAB_STACKSIZE), ((u64)&slab_name##_slab_stack[5] + XMHF_SLAB_STACKSIZE), ((u64)&slab_name##_slab_stack[6] + XMHF_SLAB_STACKSIZE), ((u64)&slab_name##_slab_stack[7] + XMHF_SLAB_STACKSIZE)  };	\
@@ -215,13 +218,27 @@ extern __attribute__(( aligned(4096) )) u8 __xmhfhic_rtm_trampoline_stack[MAX_PL
             "movq %%rsp, %%rcx \r\n" \
             "1: \r\n" \
                             \
+            \
+            "pushq %%r8 \r\n" \
+            "pushq %%rcx \r\n" \
+            "pushq %%r9 \r\n" \
+            \
+                            \
             "callq "#slab_name"_interface \r\n"		\
                         \
+            \
+            "popq %%r9 \r\n" \
+            "popq %%rcx \r\n" \
+            "popq %%r8 \r\n" \
+            \
+            "movq %0, %%rax \r\n"\
+            \
+            "sysenter \r\n" \
             "int $0x03 \r\n" \
             "1: jmp 1b \r\n" \
             \
 			:								\
-			: 	\
+			: "i" (XMHF_HIC_SLABRET) 	\
                \
 			:								\
 		);									\
@@ -240,6 +257,8 @@ extern __attribute__(( aligned(4096) )) u8 __xmhfhic_rtm_trampoline_stack[MAX_PL
             \
             \
             "1:\r\n" \
+            "int $0x03 \r\n" \
+            "2: jmp 2b \r\n" \
             "movq "#slab_name"_slab_tos+0x0(,%%edi,8), %%rsp \r\n" \
                     \
                     \
