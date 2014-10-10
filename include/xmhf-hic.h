@@ -205,6 +205,14 @@ typedef void slab_output_params_t;
 	__attribute__((naked)) __attribute__ ((section(".slab_entrystub"))) __attribute__((align(1))) void _slab_entrystub_##slab_name(void){	\
 	asm volatile (							\
             "movq "#slab_name"_slab_tos+0x0(,%%edi,8), %%rsp \r\n" \
+            "cmpq $0, %%r8 \r\n" \
+            "je 1f \r\n" \
+            "subq %%r8, %%rsp \r\n" \
+            "movq %%rsp, %%rcx \r\n" \
+            "1: \r\n" \
+                            \
+            "callq "#slab_name"_interface \r\n"		\
+                        \
             "int $0x03 \r\n" \
             "1: jmp 1b \r\n" \
             \
