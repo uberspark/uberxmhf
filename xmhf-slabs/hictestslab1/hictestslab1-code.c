@@ -65,7 +65,7 @@ void hictestslab1_interface(u64 cpuid, slab_input_params_t *iparams, u64 iparams
 	_XDPRINTF_("%s[%u]: Got control: RSP=%016llx\n",
                 __FUNCTION__, (u32)cpuid, read_rsp());
 
-    if(isbsp){
+    //if(isbsp){
 
         _XDPRINTF_("%s[%u]: Got control: iparams=%016llx, iparams_size=%u\n",
                     __FUNCTION__, (u32)cpuid, iparams, iparams_size);
@@ -74,10 +74,10 @@ void hictestslab1_interface(u64 cpuid, slab_input_params_t *iparams, u64 iparams
                     __FUNCTION__, (u32)cpuid, oparams, oparams_size);
 
 
+        asm volatile ("sysenter \r\n");
 
 
-
-    }
+    //}
 
 	_XDPRINTF_("%s[%u]: Done.Halting!\n",
                 __FUNCTION__, (u32)cpuid);
