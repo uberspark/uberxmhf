@@ -79,7 +79,7 @@ __attribute__((naked)) void __xmhfhic_rtm_trampoline_stub(void){
 void __xmhfhic_rtm_trampoline(u64 cpuid, slab_input_params_t *iparams, u64 iparams_size, slab_output_params_t *oparams, u64 oparams_size, u64 dst_slabid, u64 src_slabid, u64 return_address, u64 hic_calltype){
 
     _XDPRINTF_("%s[%u]: Trampoline got control: RSP=%016llx\n",
-                    __FUNCTION__, (u32)cpuid, dst_slabid, read_rsp());
+                    __FUNCTION__, (u32)cpuid, read_rsp());
 
     _XDPRINTF_("%s[%u]: Trampoline got control: cpuid=%u, iparams=%x, iparams_size=%u, \
                oparams=%x, oparams_size=%u, dst_slabid=%x, src_slabid=%x, return_address=%016llx \
@@ -87,6 +87,53 @@ void __xmhfhic_rtm_trampoline(u64 cpuid, slab_input_params_t *iparams, u64 ipara
                     __FUNCTION__, (u32)cpuid, cpuid, iparams, iparams_size, oparams, oparams_size,
                dst_slabid, src_slabid, return_address, hic_calltype);
 
+    switch(hic_calltype){
+        case XMHF_HIC_SLABCALL:{
+            /*R9 = srcslabid
+
+            RDI = cpuid
+            RSI = iparams
+            RDX = iparams_size
+            RCX = oparams
+            R8 = oparams_size*/
+
+            asm volatile(
+                 "movq %0, %%r9 \r\n"
+                 "movq %1, %%rdi \r\n"
+                 "movq %2, %%rsi \r\n"
+                 "movq %3, %%rdx \r\n"
+                 "movq %4, %%rcx \r\n"
+                 "movq %5, %%r8 \r\n"
+
+                 "movq %6, %%rax \r\n"
+                 "jmp *%%rax \r\n"
+                 //"int $0x03 \r\n"
+                 //"1: jmp 1b \r\n"
+                :
+                : "i" (0),
+                  "m" (cpuid),
+                  "m" (iparams),
+                  "m" (iparams_size),
+                  "m" (oparams),
+                  "m" (oparams_size),
+                  "m" (_slab_table[dst_slabid].entrystub)
+                : "r9", "rdi", "rsi", "rdx", "rcx", "r8", "rax"
+            );
+
+        }
+        break;
+
+
+        default:
+            _XDPRINTF_("%s[%u]: Unknown hic_calltype=%x. Halting!\n",
+                    __FUNCTION__, (u32)cpuid, hic_calltype);
+            HALT();
+
+
+    }
+
+    _XDPRINTF_("%s[%u]: Should never come here. Halting!\n",
+                    __FUNCTION__, (u32)cpuid);
     HALT();
 }
 
