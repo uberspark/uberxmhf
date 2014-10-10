@@ -28,7 +28,7 @@ while( $i <= $#ARGV) {
 
 print "\n";
 #print "\n__attribute__ ((section(\".sharedro_slab_table\"))) slab_header_t _slab_table[XMHF_SLAB_NUMBEROFSLABS] = {";
-print "\nslab_header_t _slab_table[XMHF_SLAB_NUMBEROFSLABS] = {";
+print "\nslab_header_t _slab_table[XMHF_HIC_HYP_SLABS_COUNT] = {";
 
 $i = 0;
 while( $i <= $#ARGV) {
