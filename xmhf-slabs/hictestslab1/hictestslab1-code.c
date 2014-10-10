@@ -57,18 +57,26 @@
  */
 
 void hictestslab1_interface(u64 cpuid, slab_input_params_t *iparams, u64 iparams_size, slab_output_params_t *oparams, u64 oparams_size){
+    bool isbsp = (cpuid & 0x8000000000000000ULL) ? true : false;
 
 	_XDPRINTF_("%s[%u]: Got control: RSP=%016llx\n",
                 __FUNCTION__, (u32)cpuid, read_rsp());
 
-	_XDPRINTF_("%s[%u]: Got control: iparams=%016llx, iparams_size=%u\n",
-                __FUNCTION__, (u32)cpuid, iparams, iparams_size);
+    if(isbsp){
 
-	_XDPRINTF_("%s[%u]: Got control: oparams=%016llx, oparams_size=%u\n",
-                __FUNCTION__, (u32)cpuid, oparams, oparams_size);
+        _XDPRINTF_("%s[%u]: Got control: iparams=%016llx, iparams_size=%u\n",
+                    __FUNCTION__, (u32)cpuid, iparams, iparams_size);
+
+        _XDPRINTF_("%s[%u]: Got control: oparams=%016llx, oparams_size=%u\n",
+                    __FUNCTION__, (u32)cpuid, oparams, oparams_size);
 
 
-	_XDPRINTF_("%s[%u]: Halting!\n",
+
+
+
+    }
+
+	_XDPRINTF_("%s[%u]: Done.Halting!\n",
                 __FUNCTION__, (u32)cpuid);
 
     HALT();
