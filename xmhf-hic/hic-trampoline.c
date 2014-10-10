@@ -96,7 +96,48 @@ void __xmhfhic_rtm_trampoline(u64 cpuid, slab_input_params_t *iparams, u64 ipara
             RDX = for SYSEXIT
             RCX = for SYSEXIT
             R8 = oparams_size
-            R9 = srcslabid
+            R9 = dst_slabid
+            R10 = iparams_size (original RDX)
+            R11 = oparams (original RCX)*/
+
+            asm volatile(
+                 "movq %0, %%rdi \r\n"
+                 "movq %1, %%rsi \r\n"
+                 "movq %2, %%rdx \r\n"
+                 "movq %3, %%rcx \r\n"
+                 "movq %4, %%r8 \r\n"
+                 "movq %5, %%r9 \r\n"
+                 "movq %6, %%r10 \r\n"
+                 "movq %7, %%r11 \r\n"
+
+                 "sysexitq \r\n"
+                 //"int $0x03 \r\n"
+                 //"1: jmp 1b \r\n"
+                :
+                : "m" (cpuid),
+                  "m" (iparams),
+                  "m" (_slab_table[dst_slabid].entrystub),
+                  "i" (0ULL),
+                  "m" (oparams_size),
+                  "i" (0),
+                  "m" (iparams_size),
+                  "m" (oparams)
+                : "rdi", "rsi", "rdx", "rcx", "r8", "r9", "r10", "r11"
+            );
+
+        }
+        break;
+
+
+        case XMHF_HIC_SLABRET:{
+            /*
+
+            RDI = cpuid
+            RSI = iparams
+            RDX = for SYSEXIT
+            RCX = for SYSEXIT
+            R8 = oparams_size
+            R9 = dst_slabid
             R10 = iparams_size (original RDX)
             R11 = oparams (original RCX)*/
 
