@@ -15,12 +15,14 @@ while( $i <= $#ARGV) {
 	print "\n";
 	print "\nextern u8 _slab_$ARGV[$i]_code_start[];";
 	print "\nextern u8 _slab_$ARGV[$i]_code_end[];";
-	print "\nextern u8 _slab_$ARGV[$i]_rodata_start[];";
-	print "\nextern u8 _slab_$ARGV[$i]_rodata_end[];";
 	print "\nextern u8 _slab_$ARGV[$i]_rwdata_start[];";
 	print "\nextern u8 _slab_$ARGV[$i]_rwdata_end[];";
+	print "\nextern u8 _slab_$ARGV[$i]_rodata_start[];";
+	print "\nextern u8 _slab_$ARGV[$i]_rodata_end[];";
 	print "\nextern u8 _slab_$ARGV[$i]_stack_start[];";
 	print "\nextern u8 _slab_$ARGV[$i]_stack_end[];";
+	print "\nextern u8 _slab_$ARGV[$i]_dmadata_start[];";
+	print "\nextern u8 _slab_$ARGV[$i]_dmadata_end[];";
 	print "\nextern u8 _slab_$ARGV[$i]_entrypoint[];";
 
 	$i++;
@@ -40,12 +42,14 @@ while( $i <= $#ARGV) {
 	print "\n	.slab_tos = _slab_$ARGV[$i]_stack_end,";
 	print "\n	.slab_code.start = _slab_$ARGV[$i]_code_start,";
 	print "\n	.slab_code.end = _slab_$ARGV[$i]_code_end,";
-	print "\n	.slab_rodata.start = _slab_$ARGV[$i]_rodata_start,";
-	print "\n	.slab_rodata.end = _slab_$ARGV[$i]_rodata_end,";
 	print "\n	.slab_rwdata.start = _slab_$ARGV[$i]_rwdata_start,";
 	print "\n	.slab_rwdata.end = _slab_$ARGV[$i]_rwdata_end,";
+	print "\n	.slab_rodata.start = _slab_$ARGV[$i]_rodata_start,";
+	print "\n	.slab_rodata.end = _slab_$ARGV[$i]_rodata_end,";
 	print "\n	.slab_stack.start = _slab_$ARGV[$i]_stack_start,";
 	print "\n	.slab_stack.end = _slab_$ARGV[$i]_stack_end,";
+	print "\n	.slab_dmadata.start = _slab_$ARGV[$i]_dmadata_start,";
+	print "\n	.slab_dmadata.end = _slab_$ARGV[$i]_dmadata_end,";
 	print "\n	.entrystub = _slab_$ARGV[$i]_entrypoint,";
 	print "\n},";
 

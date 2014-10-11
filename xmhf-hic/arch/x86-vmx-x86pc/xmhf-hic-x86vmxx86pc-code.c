@@ -1362,11 +1362,11 @@ void xmhfhic_arch_setup_hypervisor_slab_page_tables(void){
 				_XDPRINTF_("	slab_macmid=%08x\n", _slab_table[i].slab_macmid);
 				_XDPRINTF_("	slab_privilegemask=%08x\n", _slab_table[i].slab_privilegemask);
 				_XDPRINTF_("	slab_tos=%08x\n", _slab_table[i].slab_tos);
-				_XDPRINTF_("  slab_rodata(%08x-%08x)\n", _slab_table[i].slab_rodata.start, _slab_table[i].slab_rodata.end);
-				_XDPRINTF_("  slab_rwdata(%08x-%08x)\n", _slab_table[i].slab_rwdata.start, _slab_table[i].slab_rwdata.end);
 				_XDPRINTF_("  slab_code(%08x-%08x)\n", _slab_table[i].slab_code.start, _slab_table[i].slab_code.end);
+				_XDPRINTF_("  slab_rwdata(%08x-%08x)\n", _slab_table[i].slab_rwdata.start, _slab_table[i].slab_rwdata.end);
+				_XDPRINTF_("  slab_rodata(%08x-%08x)\n", _slab_table[i].slab_rodata.start, _slab_table[i].slab_rodata.end);
 				_XDPRINTF_("  slab_stack(%08x-%08x)\n", _slab_table[i].slab_stack.start, _slab_table[i].slab_stack.end);
-				//_XDPRINTF_("\n  slab_trampoline(%08x-%08x)", _slab_table[i].slab_trampoline.start, _slab_table[i].slab_trampoline.end);
+				_XDPRINTF_("  slab_dmadata(%08x-%08x)\n", _slab_table[i].slab_dmadata.start, _slab_table[i].slab_dmadata.end);
 				_XDPRINTF_("  slab_entrystub=%08x\n", _slab_table[i].entrystub);
 		}
 	}
