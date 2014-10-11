@@ -22,8 +22,27 @@ print "\n	. = 0x10000000;";
 print "\n";
 
 print "\n	.xmhfhic : {";
+print "\n		_xmhfhic_sharedro_start = .;";
 print "\n		. = ALIGN(1);";
-print "\n		_objs_xmhf-hic/xmhf-hic.slo(*)";
+print "\n		_objs_xmhf-hic/xmhf-hic.slo(.hicsharedro)";
+print "\n		. = ALIGN(0x200000);";
+print "\n		_xmhfhic_sharedro_end = .;";
+print "\n		_xmhfhic_code_start = .;";
+print "\n		_objs_xmhf-hic/xmhf-hic.slo(.hiccode)";
+print "\n		. = ALIGN(0x200000);";
+print "\n		_xmhfhic_code_end = .;";
+print "\n		_xmhfhic_rwdata_start = .;";
+print "\n		_objs_xmhf-hic/xmhf-hic.slo(.hicrwdata)";
+print "\n		. = ALIGN(0x200000);";
+print "\n		_xmhfhic_rwdata_end = .;";
+print "\n		_xmhfhic_rodata_start = .;";
+print "\n		_objs_xmhf-hic/xmhf-hic.slo(.hicrodata)";
+print "\n		. = ALIGN(0x200000);";
+print "\n		_xmhfhic_rodata_end = .;";
+print "\n		_xmhfhic_stack_start = .;";
+print "\n		_objs_xmhf-hic/xmhf-hic.slo(.hicstack)";
+print "\n		. = ALIGN(0x200000);";
+print "\n		_xmhfhic_stack_end = .;";
 print "\n		. = ALIGN(0x200000);";
 print "\n	} >all=0x0000";
 

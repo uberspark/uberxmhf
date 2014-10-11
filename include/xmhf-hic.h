@@ -160,6 +160,16 @@ extern __xmhfhic_safestack_element_t __xmhfhic_safestack[MAX_PLATFORM_CPUS][512]
 
 
 
+extern u8 _xmhfhic_sharedro_start[];
+extern u8 _xmhfhic_sharedro_end[];
+extern u8 _xmhfhic_code_start[];
+extern u8 _xmhfhic_code_end[];
+extern u8 _xmhfhic_rwdata_start[];
+extern u8 _xmhfhic_rwdata_end[];
+extern u8 _xmhfhic_rodata_start[];
+extern u8 _xmhfhic_rodata_end[];
+extern u8 _xmhfhic_stack_start[];
+extern u8 _xmhfhic_stack_end[];
 
 
 
