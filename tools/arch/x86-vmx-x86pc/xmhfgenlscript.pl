@@ -28,24 +28,6 @@ print "\n		. = ALIGN(0x200000);";
 print "\n	} >all=0x0000";
 
 
-#print "\n	.slab_shareddata : {";
-#print "\n		_slab_shareddata_memregion_start = .;";
-#print "\n		*(.sharedro_xcbootinfo)";
-#print "\n		*(.sharedro_xcbootinfoptr)";
-#print "\n		*(.sharedro_slab_table)";
-#print "\n		*(.section_archds);";
-#print "\n		. = ALIGN(0x200000);";
-#print "\n		_slab_shareddata_memregion_end = .;";
-#print "\n	} >all=0x0000";
-#print "\n";
-#print "\n	.slab_trampoline : {";
-#print "\n		_slab_trampoline_memregion_start = .;";
-#print "\n		*(.slabtrampoline)";
-#print "\n		. = ALIGN(0x200000);";
-#print "\n		_slab_trampoline_memregion_end = .;";
-#print "\n	} >all=0x0000";
-
-
 while( $i <= $#ARGV) {
 print "\n	.slab_$ARGV[$i] : {";
 print "\n		_slab_$ARGV[$i]_code_start = .;";
@@ -55,18 +37,22 @@ print "\n		_objs_slab_$ARGV[$i]/$ARGV[$i].slo(.slabentrystub)";
 print "\n		_objs_slab_$ARGV[$i]/$ARGV[$i].slo(.slabcode)";
 print "\n		. = ALIGN(0x200000);";
 print "\n		_slab_$ARGV[$i]_code_end = .;";
-print "\n		_slab_$ARGV[$i]_rodata_start = .;";
-print "\n		_objs_slab_$ARGV[$i]/$ARGV[$i].slo(.slabrodata)";
-print "\n		. = ALIGN(0x200000);";
-print "\n		_slab_$ARGV[$i]_rodata_end = .;";
 print "\n		_slab_$ARGV[$i]_rwdata_start = .;";
 print "\n		_objs_slab_$ARGV[$i]/$ARGV[$i].slo(.slabrwdata)";
 print "\n		. = ALIGN(0x200000);";
 print "\n		_slab_$ARGV[$i]_rwdata_end = .;";
+print "\n		_slab_$ARGV[$i]_rodata_start = .;";
+print "\n		_objs_slab_$ARGV[$i]/$ARGV[$i].slo(.slabrodata)";
+print "\n		. = ALIGN(0x200000);";
+print "\n		_slab_$ARGV[$i]_rodata_end = .;";
 print "\n		_slab_$ARGV[$i]_stack_start = .;";
 print "\n		_objs_slab_$ARGV[$i]/$ARGV[$i].slo(.slabstack)";
 print "\n		. = ALIGN(0x200000);";
 print "\n		_slab_$ARGV[$i]_stack_end = .;";
+print "\n		_slab_$ARGV[$i]_dmadata_start = .;";
+print "\n		_objs_slab_$ARGV[$i]/$ARGV[$i].slo(.slabdmadata)";
+print "\n		. = ALIGN(0x200000);";
+print "\n		_slab_$ARGV[$i]_dmadata_end = .;";
 print "\n	} >all=0x0000";
 print "\n";
 

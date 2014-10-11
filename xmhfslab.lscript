@@ -66,6 +66,11 @@ SECTIONS
 		*(.text)
 	} >slabmem =0x9090
 
+	.slabrwdata : {
+		*(.data)
+		*(.bss)
+	} >slabmem =0x0000
+
 	.slabrodata : {
 		*(.rodata)
 		*(.rodata.str1.1)
@@ -73,18 +78,13 @@ SECTIONS
 		*(.eh_frame)
 	} >slabmem =0x0000
 
-	.slabrwdata : {
-		*(.data)
-		*(.bss)
-	} >slabmem =0x0000
-
 	.slabstack : {
 		*(.stack)
 		*(.note.GNU-stack)
 	} >slabmem =0x0000
 
-	.slabtrampoline : {
-		*(.slab_trampoline)
+	.slabdmadata : {
+		*(.slab_dmadata)
 	} >slabmem =0x0000
 
 	.libxmhfdebugdata : {
