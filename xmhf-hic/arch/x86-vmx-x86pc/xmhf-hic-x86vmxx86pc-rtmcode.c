@@ -280,19 +280,19 @@ __attribute__((naked)) void __xmhfhic_rtm_trampoline_stub(void){
 //HIC runtime trampoline
 void __xmhfhic_rtm_trampoline(u64 cpuid, slab_input_params_t *iparams, u64 iparams_size, slab_output_params_t *oparams, u64 oparams_size, u64 dst_slabid, u64 src_slabid, u64 return_address, u64 hic_calltype){
 
-    _XDPRINTF_("%s[%u]: Trampoline got control: RSP=%016llx\n",
-                    __FUNCTION__, (u32)cpuid, read_rsp());
+    //_XDPRINTF_("%s[%u]: Trampoline got control: RSP=%016llx\n",
+    //                __FUNCTION__, (u32)cpuid, read_rsp());
 
-    _XDPRINTF_("%s[%u]: Trampoline got control: cpuid=%u, iparams=%x, iparams_size=%u, \
-               oparams=%x, oparams_size=%u, dst_slabid=%x, src_slabid=%x, return_address=%016llx \
-               hic_calltype=%x\n",
-                    __FUNCTION__, (u32)cpuid, cpuid, iparams, iparams_size, oparams, oparams_size,
-               dst_slabid, src_slabid, return_address, hic_calltype);
+    //_XDPRINTF_("%s[%u]: Trampoline got control: cpuid=%u, iparams=%x, iparams_size=%u, \
+    //           oparams=%x, oparams_size=%u, dst_slabid=%x, src_slabid=%x, return_address=%016llx \
+    //           hic_calltype=%x\n",
+    //                __FUNCTION__, (u32)cpuid, cpuid, iparams, iparams_size, oparams, oparams_size,
+    //           dst_slabid, src_slabid, return_address, hic_calltype);
 
     switch(hic_calltype){
         case XMHF_HIC_SLABCALL:{
-            _XDPRINTF_("%s[%u]: safepush, return_address=%016llx\n",
-                    __FUNCTION__, (u32)cpuid, return_address);
+            //_XDPRINTF_("%s[%u]: safepush, return_address=%016llx\n",
+            //        __FUNCTION__, (u32)cpuid, return_address);
 
             __xmhfhic_safepush(cpuid, src_slabid, dst_slabid, hic_calltype, return_address);
 
@@ -341,8 +341,8 @@ void __xmhfhic_rtm_trampoline(u64 cpuid, slab_input_params_t *iparams, u64 ipara
             __xmhfhic_safestack_element_t elem;
             __xmhfhic_safepop(cpuid, &elem.src_slabid, &elem.dst_slabid, &elem.hic_calltype, &elem.return_address);
 
-            _XDPRINTF_("%s[%u]: safepop, return_address=%016llx\n",
-                    __FUNCTION__, (u32)cpuid, elem.return_address);
+            //_XDPRINTF_("%s[%u]: safepop, return_address=%016llx\n",
+            //        __FUNCTION__, (u32)cpuid, elem.return_address);
 
 
             /*
