@@ -1179,11 +1179,16 @@ void xmhfhic_arch_setup_slab_device_allocation(void){
 // setup hypervisor slab page tables
 
 
-__attribute__((aligned(4096))) static struct {
+/*__attribute__((aligned(4096))) static struct {
     u64 pml4t[PAE_MAXPTRS_PER_PML4T] __attribute__(( aligned(4096) ));
 	u64 pdpt[PAE_MAXPTRS_PER_PDPT] __attribute__(( aligned(4096) ));
 	u64 pdt[PAE_PTRS_PER_PDPT][PAE_PTRS_PER_PDT] __attribute__(( aligned(4096) ));
 } _slab_pagetables[XMHF_HIC_HYP_SLABS_COUNT];
+*/
+
+u64 __xmhfhic_hyp_slab_pagetables_pml4t[XMHF_HIC_HYP_SLABS_COUNT][PAE_MAXPTRS_PER_PML4T] __attribute__(( aligned(2097152) ));
+u64 __xmhfhic_hyp_slab_pagetables_pdpt[XMHF_HIC_HYP_SLABS_COUNT][PAE_MAXPTRS_PER_PDPT] __attribute__(( aligned(4096) ));
+u64 __xmhfhic_hyp_slab_pagetables_pdt[XMHF_HIC_HYP_SLABS_COUNT][PAE_PTRS_PER_PDPT][PAE_PTRS_PER_PDT] __attribute__(( aligned(4096) ));
 
 
 #define	_SLAB_SPATYPE_OTHER_SLAB_MASK			(0xF0)
@@ -1297,10 +1302,10 @@ static u32 __xmhfhic_hyp_slab_populate_pagetables(u32 slab_index){
 		u64 default_flags = (u64)(_PAGE_PRESENT) | (u64)(_PAGE_USER) | (u64)(_PAGE_RW);
 
         for(i=0; i < PAE_PTRS_PER_PML4T; i++)
-            _slab_pagetables[slab_index].pml4t[i] = pae_make_pml4e(hva2spa(&_slab_pagetables[slab_index].pdpt), default_flags);
+            __xmhfhic_hyp_slab_pagetables_pml4t[slab_index][i] = pae_make_pml4e(hva2spa(&__xmhfhic_hyp_slab_pagetables_pdpt[slab_index]), default_flags);
 
 		for(i=0; i < PAE_PTRS_PER_PDPT; i++)
-			_slab_pagetables[slab_index].pdpt[i] = pae_make_pdpe(hva2spa(_slab_pagetables[slab_index].pdt[i]), default_flags);
+			__xmhfhic_hyp_slab_pagetables_pdpt[slab_index][i] = pae_make_pdpe(hva2spa(__xmhfhic_hyp_slab_pagetables_pdt[slab_index][i]), default_flags);
 
 		//init pdts with unity mappings
 		for(i=0; i < PAE_PTRS_PER_PDPT; i++){
@@ -1308,14 +1313,11 @@ static u32 __xmhfhic_hyp_slab_populate_pagetables(u32 slab_index){
 				u32 hva = ((i * PAE_PTRS_PER_PDT) + j) * PAGE_SIZE_2M;
 				u64 spa = hva2spa((void*)hva);
 				u64 flags = __xmhfhic_hyp_slab_getptflagsforspa(slab_index, (u32)spa);
-				_slab_pagetables[slab_index].pdt[i][j] = pae_make_pde_big(spa, flags);
-				//debug
-				//if(slab_index == XMHF_SLAB_TESTSLAB1_INDEX && (spa >=0x10000000 && spa < 0x20000000) )
-				//	_XDPRINTF_("  hva/spa=%08x, flags=%08x\n", (u32)spa, (u32)flags);
+				__xmhfhic_hyp_slab_pagetables_pdt[slab_index][i][j] = pae_make_pde_big(spa, flags);
 			}
 		}
 
-		return (u32)_slab_pagetables[slab_index].pml4t | (u32)(slab_index+1);
+		return (u32)__xmhfhic_hyp_slab_pagetables_pml4t[slab_index];
 }
 
 
@@ -1329,8 +1331,8 @@ void __xmhfhic_arch_initialize_slab_tables(void){
 	{
 		u32 i;
 		for(i=0; i < XMHF_HIC_HYP_SLABS_COUNT; i++){
-				_XDPRINTF_("slab %u: pdpt=%08x, pdt[0]=%08x, pdt[1]=%08x\n", i, (u32)_slab_pagetables[i].pdpt, (u32)_slab_pagetables[i].pdt[0], (u32)_slab_pagetables[i].pdt[1]);
-				_XDPRINTF_("                    pdt[2]=%08x, pdt[3]=%08x\n", (u32)_slab_pagetables[i].pdt[2], (u32)_slab_pagetables[i].pdt[3]);
+				_XDPRINTF_("slab %u: pml4t=%016llx\n", i,
+                    (u32)__xmhfhic_hyp_slab_pagetables_pml4t[i]);
 		}
 
 	}
@@ -1339,7 +1341,7 @@ void __xmhfhic_arch_initialize_slab_tables(void){
 	{
 		u32 i;
 		for(i=0; i < XMHF_HIC_HYP_SLABS_COUNT; i++)
-			_slab_table[i].slab_macmid = __xmhfhic_hyp_slab_populate_pagetables(i);
+			_slab_table[i].slab_macmid = __xmhfhic_hyp_slab_populate_pagetables(i)  | (u32)(i+1) ;
 
 	}
 
