@@ -59,6 +59,41 @@ XMHF_SLAB(hictestslab1)
  * author: amit vasudevan (amitvasudevan@acm.org)
  */
 
+
+static void _hictestslab1_dotests(u64 cpuid){
+
+    {
+        u64 tscbefore, tscafter, tscavg=0;
+        u32 iterations=8192;
+        u32 i;
+
+        _XDPRINTF_("%s: proceeding with test...\n", __FUNCTION__);
+
+
+
+        for(i=0; i < iterations; i++){
+            tscbefore = rdtsc64();
+
+            {
+
+                XMHF_SLAB_CALL(hictestslab2, XMHF_HYP_SLAB_HICTESTSLAB2, cpuid, NULL, 0, NULL, 0);
+
+            }
+
+            tscafter = rdtsc64();
+            tscavg += (tscafter - tscbefore);
+        }
+
+        tscavg = tscavg / iterations;
+
+        _XDPRINTF_("%s: clock cycles for test = %u\n", __FUNCTION__, (u32)tscavg);
+
+    }
+
+}
+
+
+
 void hictestslab1_interface(u64 cpuid, slab_input_params_t *iparams, u64 iparams_size, slab_output_params_t *oparams, u64 oparams_size){
     bool isbsp = (cpuid & 0x8000000000000000ULL) ? true : false;
     u64 inputval, outputval;
@@ -93,7 +128,9 @@ void hictestslab1_interface(u64 cpuid, slab_input_params_t *iparams, u64 iparams
         _XDPRINTF_("%s[%u]:  oparams=%016llx, oparams_size=%u\n",
                     __FUNCTION__, (u32)cpuid, oparams, oparams_size);
 
-        _XDPRINTF_("%s[%u]: Proceeding to call hictestslab2 interface; RSP=%016llx\n",
+
+
+        /*_XDPRINTF_("%s[%u]: Proceeding to call hictestslab2 interface; RSP=%016llx\n",
                 __FUNCTION__, (u32)cpuid, read_rsp());
 
         inputval = 0xAABB;
@@ -103,6 +140,10 @@ void hictestslab1_interface(u64 cpuid, slab_input_params_t *iparams, u64 iparams
                 __FUNCTION__, (u32)cpuid, read_rsp());
         _XDPRINTF_("%s[%u]: outputval=%016llx\n",
                 __FUNCTION__, (u32)cpuid, outputval);
+        */
+
+        _hictestslab1_dotests(cpuid);
+
 
         _XDPRINTF_("%s[%u]: Done.Halting!\n",
                 __FUNCTION__, (u32)cpuid);
