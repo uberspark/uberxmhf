@@ -58,40 +58,38 @@ SECTIONS
 {
 	. = 0;
 
-    .hicbootloaderdata : {
+    .hicsharedro : {
         *(.sharedro_xcbootinfo)
         *(.sharedro_xcbootinfoptr)
         . = ALIGN(0x200000);
     } >hicmem =0x0000
 
-	.hicentrystub : {
+	.hiccode : {
 		*(.hic_entrystub)
+		*(.text)
+        . = ALIGN(0x200000);
 	} >hicmem =0x9090
 
-	.hiccode : {
-		*(.text)
-	} >hicmem =0x9090
+	.hicrwdata : {
+		*(.data)
+		*(.bss)
+        . = ALIGN(0x200000);
+	} >hicmem =0x0000
 
 	.hicrodata : {
 		*(.rodata)
 		*(.rodata.str1.1)
 		*(.comment)
 		*(.eh_frame)
-	} >hicmem =0x0000
-
-	.hicrwdata : {
-		*(.data)
-		*(.bss)
+        . = ALIGN(0x200000);
 	} >hicmem =0x0000
 
 	.hicstack : {
 		*(.stack)
 		*(.note.GNU-stack)
+        . = ALIGN(0x200000);
 	} >hicmem =0x0000
 
-	.hictrampoline : {
-		*(.hic_trampoline)
-	} >hicmem =0x0000
 
 	.libxmhfdebugdata : {
 		*(.libxmhfdebugdata)
