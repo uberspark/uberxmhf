@@ -45,19 +45,14 @@
  */
 
 /*
- * arch. specific exception handler stubs that are mapped into a slab
- * memory view
+ * slab trampoline that is mapped into every slab memory view
  *
  * author: amit vasudevan (amitvasudevan@acm.org)
  */
 
 #include <xmhf.h>
+//#include <xmhf-core.h>
 #include <xmhf-debug.h>
-#include <xmhf-core.h>
-
-
-//#include <xcexhub.h>
-
 
 static void xmhf_xcphandler_arch_unhandled(u64 vector, x86regs64_t *r){
 	x86idt64_stackframe_t *exframe = NULL;
@@ -137,119 +132,6 @@ bool xmhf_xcphandler_arch_hub(u64 vector, void *exdata){
     return returnfromexcp;
 }
 
-#if 0
-
-#define XMHF_EXCEPTION_HANDLER_DEFINE(vector) 												\
-	static void __xmhf_exception_handler_##vector(void) __attribute__((naked)) { 					\
-		asm volatile(												\
-						"1: jmp 1b \r\n" \
-						"movq $0x10, %%rax \r\n" \
-                        "movw %%ax, %%ss \r\n" \
-                        "movw %%ax, %%ds \r\n" \
-                        "movw %%ax, %%es \r\n" \
-                                \
-						"1:	btq	$0, %0	\r\n"						/*start atomic operation*/\
-						"jnc 1b	\r\n"								\
-						"lock \r\n"   								\
-						"btrq	$0, %0	\r\n"						\
-						"jnc 1b \r\n"   							\
-                                                                    \
-                        "movq %%rax, %1 \r\n"                       \
-                        "movq %%rbx, %2 \r\n"                       \
-                        "movq %%rcx, %3 \r\n"                       \
-                        "movq %%rdx, %12 \r\n"                      \
-                        "movq %%rsp, %4 \r\n"                       \
-                                                                    \
-                                                                    \
-                                                                    \
-                                                                    \
-                                                                    \
-                        "movl %5, %%eax\r\n"                        \
-                        "movl (%%eax), %%eax\r\n"                   \
-                        "shr $24, %%eax\r\n"                        \
-                        "movl %7, %%ebx\r\n"                        \
-                        "movl %6, %%ecx \r\n"                       \
-                        "1: cmpl 0x0(%%ebx), %%eax\r\n"             \
-                        "jz 2f\r\n"                                 \
-                        "addl %8, %%ebx\r\n"                        \
-                        "loop 1b \r\n"                              \
-                        "hlt\r\n"								    \
-                        "2: movl 0x4(%%ebx), %%eax\r\n"			    \
-                        "movl %10, %%ecx \r\n"					    \
-                        "mull %%ecx \r\n"						    \
-                        "addl %%ecx, %%eax \r\n"				    \
-                        "addl %9, %%eax \r\n"				        \
-                        "xorq %%rsp, %%rsp \r\n"                    \
-                        "movl %%eax, %%esp \r\n"				    \
-                                                                    \
-                        "pushq %4 \r\n"                             \
-                        "movq %1, %%rax \r\n"                       \
-                        "movq %2, %%rbx \r\n"                       \
-                        "movq %3, %%rcx \r\n"                       \
-                        "movq %12, %%rdx \r\n"                      \
-                                                                    \
-                                                                    \
-                                                                    \
-                        "pushq %%rbp \r\n"\
-                        "pushq %%rdi \r\n"\
-                        "pushq %%rsi \r\n"\
-                        "pushq %%rdx \r\n"\
-                        "pushq %%rcx \r\n"\
-                        "pushq %%rbx \r\n"\
-                        "pushq %%rax \r\n"\
-                        "pushq %%r15 \r\n"\
-                        "pushq %%r14 \r\n"\
-                        "pushq %%r13 \r\n"\
-                        "pushq %%r12 \r\n"\
-                        "pushq %%r11 \r\n"\
-                        "pushq %%r10 \r\n"\
-                        "pushq %%r9 \r\n"\
-                        "pushq %%r8 \r\n"\
-                        "movq %%rsp, %%rsi \r\n"\
-                        "mov %11, %%rdi \r\n"\
-                        "callq xmhf_xcphandler_arch_hub \r\n"\
-                        "cmpq $0, %%rax \r\n"\
-                        "jne 3f\r\n"\
-   						"btsq	$0, %0		\r\n"					/*end atomic operation */ \
-                        "hlt\r\n"\
-                        "3:\r\n"\
-                        "popq %%r8 \r\n"\
-                        "popq %%r9 \r\n"\
-                        "popq %%r10 \r\n"\
-                        "popq %%r11 \r\n"\
-                        "popq %%r12 \r\n"\
-                        "popq %%r13 \r\n"\
-                        "popq %%r14 \r\n"\
-                        "popq %%r15 \r\n"\
-                        "popq %%rax \r\n"\
-                        "popq %%rbx \r\n"\
-                        "popq %%rcx \r\n"\
-                        "popq %%rdx \r\n"\
-                        "popq %%rsi \r\n"\
-                        "popq %%rdi \r\n"\
-                        "popq %%rbp \r\n"\
-                        "popq %%rsp \r\n"\
-						"btsq	$0, %0		\r\n"					/*end atomic operation */ \
-                                                                    \
-                                                                    \
-                        "iretq\r\n"									\
-					:												\
-					:	"m" (_rtmxcp_bssavearea[0]), \
-                                                     \
-                        "m" (_rtmxcp_bssavearea[1]), "m" (_rtmxcp_bssavearea[2]),   \
-                        "m" (_rtmxcp_bssavearea[3]), "m" (_rtmxcp_bssavearea[4]),    \
-                                                    \
-                        "i" (X86SMP_LAPIC_ID_MEMORYADDRESS), "m" (_totalcpus), "i" (&_cputable), \
-                        "i" (sizeof(xmhf_cputable_t)), "i" (&_rtmxcp_cpustacks), "i" (sizeof(_rtmxcp_cpustacks[0])), \
-                                                    \
-                        "i" (vector), \
-                                                    \
-                        "m" (_rtmxcp_bssavearea[5]) \
-                                                    \
-		);															\
-    }\
-
-#endif // 0
 
 #define XMHF_EXCEPTION_HANDLER_DEFINE(vector) 												\
 	static void __xmhf_exception_handler_##vector(void) __attribute__((naked)) { 					\
@@ -373,4 +255,146 @@ u64  __xmhfhic_exceptionstubs[] = { XMHF_EXCEPTION_HANDLER_ADDROF(0),
 							XMHF_EXCEPTION_HANDLER_ADDROF(31),
 };
 
+
+
+//HIC runtime trampoline stub
+__attribute__((naked)) void __xmhfhic_rtm_trampoline_stub(void){
+
+    asm volatile (
+        "pushq %%rax \r\n"          //push call type
+        "pushq %%r11 \r\n"          //push return address
+        "movq %%cr3, %%rax \r\n"
+        "pushq %%rax \r\n"          //push source slab id
+       	"movq %0, %%rdi \r\n"       //RDI=X86XMP_LAPIC_ID_MEMORYADDRESS
+		"movl (%%edi), %%edi\r\n"   //EDI(bits 0-7)=LAPIC ID
+        "shrl $24, %%edi\r\n"       //EDI=LAPIC ID
+        "movq __xmhfhic_x86vmx_cpuidtable+0x0(,%%edi,8), %%rdi\r\n" //RDI = 0-based cpu index for the CPU
+
+        "callq __xmhfhic_rtm_trampoline \r\n"
+      :
+      : "i" (X86SMP_LAPIC_ID_MEMORYADDRESS)
+      :
+    );
+}
+
+//HIC runtime trampoline
+void __xmhfhic_rtm_trampoline(u64 cpuid, slab_input_params_t *iparams, u64 iparams_size, slab_output_params_t *oparams, u64 oparams_size, u64 dst_slabid, u64 src_slabid, u64 return_address, u64 hic_calltype){
+
+    _XDPRINTF_("%s[%u]: Trampoline got control: RSP=%016llx\n",
+                    __FUNCTION__, (u32)cpuid, read_rsp());
+
+    _XDPRINTF_("%s[%u]: Trampoline got control: cpuid=%u, iparams=%x, iparams_size=%u, \
+               oparams=%x, oparams_size=%u, dst_slabid=%x, src_slabid=%x, return_address=%016llx \
+               hic_calltype=%x\n",
+                    __FUNCTION__, (u32)cpuid, cpuid, iparams, iparams_size, oparams, oparams_size,
+               dst_slabid, src_slabid, return_address, hic_calltype);
+
+    switch(hic_calltype){
+        case XMHF_HIC_SLABCALL:{
+            _XDPRINTF_("%s[%u]: safepush, return_address=%016llx\n",
+                    __FUNCTION__, (u32)cpuid, return_address);
+
+            __xmhfhic_safepush(cpuid, src_slabid, dst_slabid, hic_calltype, return_address);
+
+
+            /*
+
+            RDI = cpuid
+            RSI = iparams
+            RDX = for SYSEXIT
+            RCX = for SYSEXIT
+            R8 = oparams_size
+            R9 = dst_slabid
+            R10 = iparams_size (original RDX)
+            R11 = oparams (original RCX)*/
+
+            asm volatile(
+                 "movq %0, %%rdi \r\n"
+                 "movq %1, %%rsi \r\n"
+                 "movq %2, %%rdx \r\n"
+                 "movq %3, %%rcx \r\n"
+                 "movq %4, %%r8 \r\n"
+                 "movq %5, %%r9 \r\n"
+                 "movq %6, %%r10 \r\n"
+                 "movq %7, %%r11 \r\n"
+
+                 "sysexitq \r\n"
+                 //"int $0x03 \r\n"
+                 //"1: jmp 1b \r\n"
+                :
+                : "m" (cpuid),
+                  "m" (iparams),
+                  "m" (_slab_table[dst_slabid].entrystub),
+                  "i" (0ULL),
+                  "m" (oparams_size),
+                  "i" (0),
+                  "m" (iparams_size),
+                  "m" (oparams)
+                : "rdi", "rsi", "rdx", "rcx", "r8", "r9", "r10", "r11"
+            );
+
+        }
+        break;
+
+
+        case XMHF_HIC_SLABRET:{
+            __xmhfhic_safestack_element_t elem;
+            __xmhfhic_safepop(cpuid, &elem.src_slabid, &elem.dst_slabid, &elem.hic_calltype, &elem.return_address);
+
+            _XDPRINTF_("%s[%u]: safepop, return_address=%016llx\n",
+                    __FUNCTION__, (u32)cpuid, elem.return_address);
+
+
+            /*
+
+            RDI = cpuid
+            RSI = iparams
+            RDX = for SYSEXIT
+            RCX = for SYSEXIT
+            R8 = oparams_size
+            R9 = dst_slabid
+            R10 = iparams_size (original RDX)
+            R11 = oparams (original RCX)*/
+
+            asm volatile(
+                 "movq %0, %%rdi \r\n"
+                 "movq %1, %%rsi \r\n"
+                 "movq %2, %%rdx \r\n"
+                 "movq %3, %%rcx \r\n"
+                 "movq %4, %%r8 \r\n"
+                 "movq %5, %%r9 \r\n"
+                 "movq %6, %%r10 \r\n"
+                 "movq %7, %%r11 \r\n"
+
+                 "sysexitq \r\n"
+                 //"int $0x03 \r\n"
+                 //"1: jmp 1b \r\n"
+                :
+                : "m" (cpuid),
+                  "m" (iparams),
+                  "m" (elem.return_address),
+                  "i" (0ULL),
+                  "m" (oparams_size),
+                  "i" (0),
+                  "m" (iparams_size),
+                  "m" (oparams)
+                : "rdi", "rsi", "rdx", "rcx", "r8", "r9", "r10", "r11"
+            );
+
+        }
+        break;
+
+
+        default:
+            _XDPRINTF_("%s[%u]: Unknown hic_calltype=%x. Halting!\n",
+                    __FUNCTION__, (u32)cpuid, hic_calltype);
+            HALT();
+
+
+    }
+
+    _XDPRINTF_("%s[%u]: Should never come here. Halting!\n",
+                    __FUNCTION__, (u32)cpuid);
+    HALT();
+}
 

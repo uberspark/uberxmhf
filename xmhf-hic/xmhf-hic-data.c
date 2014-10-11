@@ -53,9 +53,9 @@
 #include <xmhf.h>
 #include <xmhf-core.h>
 
-extern u8 _slab_xcinitbs_stack_start[];
-extern u8 _slab_xcinitbs_stack_end[];
-extern u8 _slab_xcinitbs_entrypoint[];
+//extern u8 _slab_xcinitbs_stack_start[];
+//extern u8 _slab_xcinitbs_stack_end[];
+//extern u8 _slab_xcinitbs_entrypoint[];
 
 static XMHF_BOOTINFO xcbootinfo_store __attribute__(( section(".sharedro_xcbootinfo") )) = {
 	.magic= RUNTIME_PARAMETER_BLOCK_MAGIC,
@@ -66,4 +66,7 @@ static XMHF_BOOTINFO xcbootinfo_store __attribute__(( section(".sharedro_xcbooti
 __attribute__(( section(".sharedro_xcbootinfoptr") )) XMHF_BOOTINFO *xcbootinfo= &xcbootinfo_store;
 
 
+u64 __xmhfhic_safestack_indices[MAX_PLATFORM_CPUS] = { 0 };
+
+__xmhfhic_safestack_element_t __xmhfhic_safestack[MAX_PLATFORM_CPUS][512];
 
