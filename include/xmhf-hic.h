@@ -279,7 +279,7 @@ extern __attribute__(( aligned(4096) )) u8 __xmhfhic_rtm_trampoline_stack[MAX_PL
             "retq \r\n" \
             : \
             : "i" (XMHF_HIC_SLABCALL) \
-            : "rdi", "rsi", "rcx", "rdx", "r8", "r9", "rax"\
+            : \
         ); \
     } \
 
