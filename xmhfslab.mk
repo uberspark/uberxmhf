@@ -43,9 +43,9 @@ buildslabbin: $(XMHF_SLAB_OBJECTS)
 
 %.o: %.c
 	mkdir -p $(XMHF_SLAB_OBJECTS_DIR)
-	$(CC) -S -emit-llvm $(CFLAGS) $< -o $(XMHF_SLAB_OBJECTS_DIR)/$(@F).ll
+	$(CC) -fomit-frame-pointer -O2 -S -emit-llvm $(CFLAGS) $< -o $(XMHF_SLAB_OBJECTS_DIR)/$(@F).ll
 	cd $(XMHF_SLAB_OBJECTS_DIR) && fixnaked.pl $(@F).ll
-	cd $(XMHF_SLAB_OBJECTS_DIR) && llc -O=0 -march=x86-64 -mcpu=corei7 -mattr=$(LLC_ATTR) $(@F).ll
+	cd $(XMHF_SLAB_OBJECTS_DIR) && llc -O=2 -march=x86-64 -mcpu=corei7 -mattr=$(LLC_ATTR) $(@F).ll
 	cd $(XMHF_SLAB_OBJECTS_DIR) && $(CC) -c $(CFLAGS) $(@F).s -o $(@F)
 
 %.o: %.S
