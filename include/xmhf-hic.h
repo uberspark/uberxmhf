@@ -70,6 +70,12 @@
 typedef void slab_input_params_t;
 typedef void slab_output_params_t;
 
+typedef struct {
+    u64 src_slabid;
+    u64 dst_slabid;
+    u64 hic_calltype;
+    u64 return_address;
+} __xmhfhic_safestack_element_t;
 
 
 void xmhfhic_arch_sanity_check_requirements(void);
@@ -83,7 +89,8 @@ void xmhfhic_smp_entry(u64 cpuid);
 void xmhfhic_arch_relinquish_control_to_init_slab(u64 cpuid);
 
 
-
+void __xmhfhic_safepush(u64 cpuid, u64 src_slabid, u64 dst_slabid, u64 hic_calltype, u64 return_address);
+void __xmhfhic_safepop(u64 cpuid, u64 *src_slabid, u64 *dst_slabid, u64 *hic_calltype, u64 *return_address);
 __attribute__((naked)) void __xmhfhic_rtm_trampoline_stub(void);
 void __xmhfhic_rtm_trampoline(u64 cpuid, slab_input_params_t *iparams, u64 iparams_size, slab_output_params_t *oparams, u64 oparams_size, u64 dst_slabid, u64 src_slabid, u64 return_address, u64 hic_calltype);
 
@@ -147,6 +154,8 @@ typedef struct {
 extern __attribute__(( section(".sharedro_xcbootinfoptr") )) XMHF_BOOTINFO *xcbootinfo;
 extern slab_header_t _slab_table[XMHF_SLAB_NUMBEROFSLABS];
 
+extern u64 __xmhfhic_safestack_indices[MAX_PLATFORM_CPUS];
+extern __xmhfhic_safestack_element_t __xmhfhic_safestack[MAX_PLATFORM_CPUS][512];
 
 
 
