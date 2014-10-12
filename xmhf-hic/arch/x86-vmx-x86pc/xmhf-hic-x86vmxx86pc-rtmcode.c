@@ -136,52 +136,12 @@ bool xmhf_xcphandler_arch_hub(u64 vector, void *exdata){
 #define XMHF_EXCEPTION_HANDLER_DEFINE(vector) 												\
 	static void __xmhf_exception_handler_##vector(void) __attribute__((naked)) { 					\
 		asm volatile(												\
-                                                                  \
-                        "pushq %%rsp \r\n"\
-                        "pushq %%rbp \r\n"\
-                        "pushq %%rdi \r\n"\
-                        "pushq %%rsi \r\n"\
-                        "pushq %%rdx \r\n"\
-                        "pushq %%rcx \r\n"\
-                        "pushq %%rbx \r\n"\
-                        "pushq %%rax \r\n"\
-                        "pushq %%r15 \r\n"\
-                        "pushq %%r14 \r\n"\
-                        "pushq %%r13 \r\n"\
-                        "pushq %%r12 \r\n"\
-                        "pushq %%r11 \r\n"\
-                        "pushq %%r10 \r\n"\
-                        "pushq %%r9 \r\n"\
-                        "pushq %%r8 \r\n"\
-                        "movq %%rsp, %%rsi \r\n"\
-                        "mov %0, %%rdi \r\n"\
-                        "callq xmhf_xcphandler_arch_hub \r\n"\
-                        "cmpq $0, %%rax \r\n"\
-                        "jne 3f\r\n"\
-                        "hlt\r\n"\
-                        "3:\r\n"\
-                        "popq %%r8 \r\n"\
-                        "popq %%r9 \r\n"\
-                        "popq %%r10 \r\n"\
-                        "popq %%r11 \r\n"\
-                        "popq %%r12 \r\n"\
-                        "popq %%r13 \r\n"\
-                        "popq %%r14 \r\n"\
-                        "popq %%r15 \r\n"\
-                        "popq %%rax \r\n"\
-                        "popq %%rbx \r\n"\
-                        "popq %%rcx \r\n"\
-                        "popq %%rdx \r\n"\
-                        "popq %%rsi \r\n"\
-                        "popq %%rdi \r\n"\
-                        "popq %%rbp \r\n"\
-                        "popq %%rsp \r\n"\
-                                                                    \
-                        "iretq\r\n"									\
-					:												\
-					:	                        "i" (vector) \
-                                                    \
-		);															\
+                        "pushq %0 \r\n"\
+                        "jmp __xmhfhic_rtm_exception_stub\r\n"\
+					: \
+					: "i" (vector) \
+                    : \
+               		);	\
     }\
 
 
@@ -254,6 +214,80 @@ u64  __xmhfhic_exceptionstubs[] = { XMHF_EXCEPTION_HANDLER_ADDROF(0),
 							XMHF_EXCEPTION_HANDLER_ADDROF(30),
 							XMHF_EXCEPTION_HANDLER_ADDROF(31),
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//HIC runtime exception stub
+__attribute__((naked)) void __xmhfhic_rtm_exception_stub(void){
+
+	asm volatile(												\
+                                                                  \
+                        "pushq %%rsp \r\n"
+                        "pushq %%rbp \r\n"
+                        "pushq %%rdi \r\n"
+                        "pushq %%rsi \r\n"
+                        "pushq %%rdx \r\n"
+                        "pushq %%rcx \r\n"
+                        "pushq %%rbx \r\n"
+                        "pushq %%rax \r\n"
+                        "pushq %%r15 \r\n"
+                        "pushq %%r14 \r\n"
+                        "pushq %%r13 \r\n"
+                        "pushq %%r12 \r\n"
+                        "pushq %%r11 \r\n"
+                        "pushq %%r10 \r\n"
+                        "pushq %%r9 \r\n"
+                        "pushq %%r8 \r\n"
+                        "movq %%rsp, %%rsi \r\n"
+                        "movq 128(%%rsp), %%rdi \r\n"
+                        "callq xmhf_xcphandler_arch_hub \r\n"
+                        "cmpq $0, %%rax \r\n"
+                        "jne 3f\r\n"
+                        "hlt\r\n"
+                        "3:\r\n"
+                        "popq %%r8 \r\n"
+                        "popq %%r9 \r\n"
+                        "popq %%r10 \r\n"
+                        "popq %%r11 \r\n"
+                        "popq %%r12 \r\n"
+                        "popq %%r13 \r\n"
+                        "popq %%r14 \r\n"
+                        "popq %%r15 \r\n"
+                        "popq %%rax \r\n"
+                        "popq %%rbx \r\n"
+                        "popq %%rcx \r\n"
+                        "popq %%rdx \r\n"
+                        "popq %%rsi \r\n"
+                        "popq %%rdi \r\n"
+                        "popq %%rbp \r\n"
+                        "popq %%rsp \r\n"
+
+                        "addq $8, %%rsp \r\n"
+                                                                    \
+                        "iretq\r\n"									\
+					:												\
+					:
+                    :
+		);															\
+}
 
 
 
