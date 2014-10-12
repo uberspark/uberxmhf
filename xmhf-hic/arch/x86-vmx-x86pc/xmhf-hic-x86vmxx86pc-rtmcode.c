@@ -264,6 +264,8 @@ __attribute__((naked)) void __xmhfhic_rtm_trampoline_stub(void){
         "pushq %%rax \r\n"          //push call type
         "pushq %%r11 \r\n"          //push return address
         "movq %%cr3, %%rax \r\n"
+        "andq $0x00000000000FF000, %%rax \r\n"
+        "shr $12, %%rax \r\n"
         "pushq %%rax \r\n"          //push source slab id
        	"movq %0, %%rdi \r\n"       //RDI=X86XMP_LAPIC_ID_MEMORYADDRESS
 		"movl (%%edi), %%edi\r\n"   //EDI(bits 0-7)=LAPIC ID
@@ -304,7 +306,7 @@ void __xmhfhic_rtm_trampoline(u64 cpuid, slab_input_params_t *iparams, u64 ipara
             RDX = for SYSEXIT
             RCX = for SYSEXIT
             R8 = oparams_size
-            R9 = dst_slabid
+            R9 = src_slabid
             R10 = iparams_size (original RDX)
             R11 = oparams (original RCX)*/
 
@@ -327,7 +329,7 @@ void __xmhfhic_rtm_trampoline(u64 cpuid, slab_input_params_t *iparams, u64 ipara
                   "m" (_slab_table[dst_slabid].entrystub),
                   "i" (0ULL),
                   "m" (oparams_size),
-                  "i" (0),
+                  "m" (src_slabid),
                   "m" (iparams_size),
                   "m" (oparams)
                 : "rdi", "rsi", "rdx", "rcx", "r8", "r9", "r10", "r11"
@@ -375,7 +377,7 @@ void __xmhfhic_rtm_trampoline(u64 cpuid, slab_input_params_t *iparams, u64 ipara
                   "m" (elem.return_address),
                   "i" (0ULL),
                   "m" (oparams_size),
-                  "i" (0),
+                  "m" (dst_slabid),
                   "m" (iparams_size),
                   "m" (oparams)
                 : "rdi", "rsi", "rdx", "rcx", "r8", "r9", "r10", "r11"
