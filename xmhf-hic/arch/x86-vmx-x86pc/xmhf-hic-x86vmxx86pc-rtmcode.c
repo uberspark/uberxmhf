@@ -299,6 +299,15 @@ void __xmhfhic_rtm_trampoline(u64 cpuid, slab_input_params_t *iparams, u64 ipara
             __xmhfhic_safepush(cpuid, src_slabid, dst_slabid, hic_calltype, return_address);
 
 
+            //switch to destination slab page tables
+            asm volatile(
+                 "movq %0, %%rax \r\n"
+                 "movq %%rax, %%cr3 \r\n"
+                :
+                : "m" (_slab_table[dst_slabid].slab_macmid)
+                : "rax"
+            );
+
             /*
 
             RDI = cpuid
@@ -345,6 +354,15 @@ void __xmhfhic_rtm_trampoline(u64 cpuid, slab_input_params_t *iparams, u64 ipara
 
             //_XDPRINTF_("%s[%u]: safepop, return_address=%016llx\n",
             //        __FUNCTION__, (u32)cpuid, elem.return_address);
+
+            //switch to destination slab page tables
+            asm volatile(
+                 "movq %0, %%rax \r\n"
+                 "movq %%rax, %%cr3 \r\n"
+                :
+                : "m" (_slab_table[dst_slabid].slab_macmid)
+                : "rax"
+            );
 
 
             /*
