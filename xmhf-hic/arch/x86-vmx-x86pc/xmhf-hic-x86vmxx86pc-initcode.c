@@ -1341,8 +1341,8 @@ void __xmhfhic_arch_initialize_slab_tables(void){
 	{
 		u32 i;
 		for(i=0; i < XMHF_HIC_HYP_SLABS_COUNT; i++)
-			#if 0
-			_slab_table[i].slab_macmid = __xmhfhic_hyp_slab_populate_pagetables(i)  | (u32)(i+1) ;
+			#if 1
+			_slab_table[i].slab_macmid = __xmhfhic_hyp_slab_populate_pagetables(i) | (u32)(i+1) | 0x8000000000000000ULL;
             #else
 			_slab_table[i].slab_macmid = __xmhfhic_hyp_slab_populate_pagetables(i);
             #endif
@@ -2545,7 +2545,7 @@ void xmhf_hic_arch_setup_cpu_state(u64 cpuid){
 	}
     _XDPRINTF_("%s[%u]: NX protections enabled\n", __FUNCTION__, (u32)cpuid);
 
-#if 0
+#if 1
 	//enable PCIDE support
 	{
 		write_cr4(read_cr4() | CR4_PCIDE);
