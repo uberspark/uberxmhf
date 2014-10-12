@@ -1341,7 +1341,11 @@ void __xmhfhic_arch_initialize_slab_tables(void){
 	{
 		u32 i;
 		for(i=0; i < XMHF_HIC_HYP_SLABS_COUNT; i++)
+			#if 0
 			_slab_table[i].slab_macmid = __xmhfhic_hyp_slab_populate_pagetables(i)  | (u32)(i+1) ;
+            #else
+			_slab_table[i].slab_macmid = __xmhfhic_hyp_slab_populate_pagetables(i);
+            #endif
 
 	}
 
@@ -2541,12 +2545,13 @@ void xmhf_hic_arch_setup_cpu_state(u64 cpuid){
 	}
     _XDPRINTF_("%s[%u]: NX protections enabled\n", __FUNCTION__, (u32)cpuid);
 
+#if 0
 	//enable PCIDE support
 	{
 		write_cr4(read_cr4() | CR4_PCIDE);
 	}
     _XDPRINTF_("%s[%u]: PCIDE enabled\n", __FUNCTION__, (u32)cpuid);
-
+#endif
 
 	//set OSXSAVE bit in CR4 to enable us to pass-thru XSETBV intercepts
 	//when the CPU supports XSAVE feature
@@ -2634,6 +2639,17 @@ void xmhfhic_arch_relinquish_control_to_init_slab(u64 cpuid){
 
     _XDPRINTF_("%s[%u]: proceeding to call init slab at %x\n", __FUNCTION__, (u32)cpuid,
                 _slab_table[XMHF_HYP_SLAB_HICTESTSLAB1].entrystub);
+
+
+    //switch page tables to init slab pagetables
+    asm volatile(
+         "movq %0, %%rax \r\n"
+         "movq %%rax, %%cr3 \r\n"
+        :
+        : "m" (_slab_table[XMHF_HYP_SLAB_HICTESTSLAB1].slab_macmid)
+        : "rax"
+    );
+
 
             /*
 
