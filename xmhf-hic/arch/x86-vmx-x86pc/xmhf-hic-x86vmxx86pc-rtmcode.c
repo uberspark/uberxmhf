@@ -414,42 +414,65 @@ void __xmhfhic_rtm_trampoline(u64 cpuid, slab_input_params_t *iparams, u64 ipara
                 : "rax"
             );
 
+            switch(elem.hic_calltype){
+                case XMHF_HIC_SLABCALL:{
+                    /*
 
-            /*
+                    RDI = cpuid
+                    RSI = iparams
+                    RDX = for SYSEXIT
+                    RCX = for SYSEXIT
+                    R8 = oparams_size
+                    R9 = dst_slabid
+                    R10 = iparams_size (original RDX)
+                    R11 = oparams (original RCX)*/
 
-            RDI = cpuid
-            RSI = iparams
-            RDX = for SYSEXIT
-            RCX = for SYSEXIT
-            R8 = oparams_size
-            R9 = dst_slabid
-            R10 = iparams_size (original RDX)
-            R11 = oparams (original RCX)*/
+                    asm volatile(
+                         "movq %0, %%rdi \r\n"
+                         "movq %1, %%rsi \r\n"
+                         "movq %2, %%rdx \r\n"
+                         "movq %3, %%rcx \r\n"
+                         "movq %4, %%r8 \r\n"
+                         "movq %5, %%r9 \r\n"
+                         "movq %6, %%r10 \r\n"
+                         "movq %7, %%r11 \r\n"
 
-            asm volatile(
-                 "movq %0, %%rdi \r\n"
-                 "movq %1, %%rsi \r\n"
-                 "movq %2, %%rdx \r\n"
-                 "movq %3, %%rcx \r\n"
-                 "movq %4, %%r8 \r\n"
-                 "movq %5, %%r9 \r\n"
-                 "movq %6, %%r10 \r\n"
-                 "movq %7, %%r11 \r\n"
+                         "sysexitq \r\n"
+                         //"int $0x03 \r\n"
+                         //"1: jmp 1b \r\n"
+                        :
+                        : "m" (cpuid),
+                          "m" (iparams),
+                          "m" (elem.return_address),
+                          "i" (0ULL),
+                          "m" (oparams_size),
+                          "m" (dst_slabid),
+                          "m" (iparams_size),
+                          "m" (oparams)
+                        : "rdi", "rsi", "rdx", "rcx", "r8", "r9", "r10", "r11"
+                    );
+                }
+                break;
 
-                 "sysexitq \r\n"
-                 //"int $0x03 \r\n"
-                 //"1: jmp 1b \r\n"
-                :
-                : "m" (cpuid),
-                  "m" (iparams),
-                  "m" (elem.return_address),
-                  "i" (0ULL),
-                  "m" (oparams_size),
-                  "m" (dst_slabid),
-                  "m" (iparams_size),
-                  "m" (oparams)
-                : "rdi", "rsi", "rdx", "rcx", "r8", "r9", "r10", "r11"
-            );
+                case XMHF_HIC_SLABCALLEXCEPTION:{
+                    x86vmx_exception_frame_t *exframe = (x86vmx_exception_frame_t *)oparams;
+
+                    _XDPRINTF_("%s[%u]: returning from exception: oparams=%016llx, oparams_size=%u\n",
+                        __FUNCTION__, (u32)cpuid, oparams, oparams_size);
+
+                    _XDPRINTF_("%s[%u]: original SS:RSP=%016llx:%016llx\n",
+                        __FUNCTION__, (u32)cpuid, exframe->orig_ss, exframe->orig_rsp);
+
+
+                    _XDPRINTF_("%s[%u]: Halting!\n",
+                        __FUNCTION__, (u32)cpuid);
+                    HALT();
+
+                }
+                break;
+
+            }
+
 
         }
         break;

@@ -76,7 +76,9 @@ void hictestslab3_interface(u64 cpuid, slab_input_params_t *iparams, u64 iparams
 	_XDPRINTF_("%s[%u]: original SS:RSP=%016llx:%016llx\n",
                 __FUNCTION__, (u32)cpuid, exframe->orig_ss, exframe->orig_rsp);
 
-    HALT();
+
+    memcpy(oparams, iparams, oparams_size);
+    //HALT();
 
     return;
 }
