@@ -53,6 +53,32 @@
 //////
 XMHF_SLAB(hictestslab3)
 
+typedef struct {
+    u64 r8;
+    u64 r9;
+    u64 r10;
+    u64 r11;
+    u64 r12;
+    u64 r13;
+    u64 r14;
+    u64 r15;
+    u64 rax;
+    u64 rbx;
+    u64 rcx;
+    u64 rdx;
+    u64 rsi;
+    u64 rdi;
+    u64 rbp;
+    u64 rsp;
+    u64 vector;
+    u64 rip;
+    u64 cs;
+    u64 rflags;
+    u64 orig_rsp;
+    u64 ss;
+} __attribute__((packed)) x86vmx_exception_frame_t;
+
+
 /*
  * slab code
  *
@@ -60,6 +86,7 @@ XMHF_SLAB(hictestslab3)
  */
 
 void hictestslab3_interface(u64 cpuid, slab_input_params_t *iparams, u64 iparams_size, slab_output_params_t *oparams, u64 oparams_size){
+    x86vmx_exception_frame_t *exframe = (x86vmx_exception_frame_t *)iparams;
 
 	_XDPRINTF_("%s[%u]: Got control: RSP=%016llx\n",
                 __FUNCTION__, (u32)cpuid, read_rsp());
@@ -69,6 +96,9 @@ void hictestslab3_interface(u64 cpuid, slab_input_params_t *iparams, u64 iparams
 
 	_XDPRINTF_("%s[%u]: Got control: oparams=%016llx, oparams_size=%u\n",
                 __FUNCTION__, (u32)cpuid, oparams, oparams_size);
+
+	_XDPRINTF_("%s[%u]: original SS:RSP=%016llx:%016llx\n",
+                __FUNCTION__, (u32)cpuid, exframe->ss, exframe->orig_rsp);
 
     HALT();
 

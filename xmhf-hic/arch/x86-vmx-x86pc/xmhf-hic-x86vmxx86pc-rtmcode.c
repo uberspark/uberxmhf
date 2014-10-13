@@ -273,10 +273,10 @@ __attribute__((naked)) void __xmhfhic_rtm_exception_stub(void){
                         "movq __xmhfhic_x86vmx_cpuidtable+0x0(,%%edi,8), %%rdi\r\n" //RDI = 0-based cpu index for the CPU
 
                         "movq %%rsp, %%rsi \r\n"    //iparams
-                        "movq $128, %%rdx \r\n"     //iparams_size
+                        "movq $176, %%rdx \r\n"     //iparams_size
 
-                        "xorq %%rcx, %%rcx \r\n"    //oparams
-                        "xorq %%r8, %%r8 \r\n"      //oparams_size
+                        "movq %%rsp, %%rcx \r\n"    //oparams
+                        "movq $176, %%r8 \r\n"      //oparams_size
 
                         "movq %1, %%r9 \r\n"        //dst_slabid
 
