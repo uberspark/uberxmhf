@@ -63,6 +63,7 @@
 
 #define XMHF_HIC_SLABCALL                   (0xA0)
 #define XMHF_HIC_SLABRET                    (0xA1)
+#define XMHF_HIC_SLABCALLEXCEPTION          (0xA2)
 
 
 

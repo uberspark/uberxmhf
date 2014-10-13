@@ -231,6 +231,17 @@ u64  __xmhfhic_exceptionstubs[] = { XMHF_EXCEPTION_HANDLER_ADDROF(0),
 
 
 
+/*entry into __xmhfhic_rtm_trampoline:
+RDI = cpuid
+RSI = iparams
+RDX = iparams_size
+RCX = oparams
+R8 = oparams_size
+R9 = dst_slabid
+[RSP] = src_slabid
+[RSP+8] = return_address
+[RSP+16] = hic_calltype
+*/
 
 
 
@@ -239,7 +250,6 @@ u64  __xmhfhic_exceptionstubs[] = { XMHF_EXCEPTION_HANDLER_ADDROF(0),
 __attribute__((naked)) void __xmhfhic_rtm_exception_stub(void){
 
 	asm volatile(												\
-                                                                  \
                         "pushq %%rsp \r\n"
                         "pushq %%rbp \r\n"
                         "pushq %%rdi \r\n"
@@ -256,37 +266,39 @@ __attribute__((naked)) void __xmhfhic_rtm_exception_stub(void){
                         "pushq %%r10 \r\n"
                         "pushq %%r9 \r\n"
                         "pushq %%r8 \r\n"
-                        "movq %%rsp, %%rsi \r\n"
-                        "movq 128(%%rsp), %%rdi \r\n"
-                        "callq xmhf_xcphandler_arch_hub \r\n"
-                        "cmpq $0, %%rax \r\n"
-                        "jne 3f\r\n"
-                        "hlt\r\n"
-                        "3:\r\n"
-                        "popq %%r8 \r\n"
-                        "popq %%r9 \r\n"
-                        "popq %%r10 \r\n"
-                        "popq %%r11 \r\n"
-                        "popq %%r12 \r\n"
-                        "popq %%r13 \r\n"
-                        "popq %%r14 \r\n"
-                        "popq %%r15 \r\n"
-                        "popq %%rax \r\n"
-                        "popq %%rbx \r\n"
-                        "popq %%rcx \r\n"
-                        "popq %%rdx \r\n"
-                        "popq %%rsi \r\n"
-                        "popq %%rdi \r\n"
-                        "popq %%rbp \r\n"
-                        "popq %%rsp \r\n"
 
-                        "addq $8, %%rsp \r\n"
-                                                                    \
-                        "iretq\r\n"									\
-					:												\
+                        "movq %0, %%rdi \r\n"       //RDI=X86XMP_LAPIC_ID_MEMORYADDRESS
+                        "movl (%%edi), %%edi\r\n"   //EDI(bits 0-7)=LAPIC ID
+                        "shrl $24, %%edi\r\n"       //EDI=LAPIC ID
+                        "movq __xmhfhic_x86vmx_cpuidtable+0x0(,%%edi,8), %%rdi\r\n" //RDI = 0-based cpu index for the CPU
+
+                        "movq %%rsp, %%rsi \r\n"    //iparams
+                        "movq $128, %%rdx \r\n"     //iparams_size
+
+                        "xorq %%rcx, %%rcx \r\n"    //oparams
+                        "xorq %%r8, %%r8 \r\n"      //oparams_size
+
+                        "movq %1, %%r9 \r\n"        //dst_slabid
+
+                        "movq 136(%%rsp), %%rax \r\n"
+                        "pushq %2 \r\n"     //push hic_calltype
+                        "pushq %%rax \r\n"  //push return_address
+                                            //note: this does not take into account error code,
+                                            //assumed that on any exception that includes an error
+                                            //code we never get back to the caller
+                        "movq %%cr3, %%rax \r\n"
+                        "andq $0x00000000000FF000, %%rax \r\n"
+                        "shr $12, %%rax \r\n"
+                        "pushq %%rax \r\n"          //push source slab id
+
+
+                        "callq __xmhfhic_rtm_trampoline \r\n"
 					:
+					: "i" (X86SMP_LAPIC_ID_MEMORYADDRESS),
+                      "i" (XMHF_HYP_SLAB_HICTESTSLAB3),
+					    "i" (XMHF_HIC_SLABCALLEXCEPTION)
                     :
-		);															\
+		);
 }
 
 
@@ -313,6 +325,8 @@ __attribute__((naked)) void __xmhfhic_rtm_trampoline_stub(void){
     );
 }
 
+
+
 //HIC runtime trampoline
 void __xmhfhic_rtm_trampoline(u64 cpuid, slab_input_params_t *iparams, u64 iparams_size, slab_output_params_t *oparams, u64 oparams_size, u64 dst_slabid, u64 src_slabid, u64 return_address, u64 hic_calltype){
 
@@ -326,7 +340,9 @@ void __xmhfhic_rtm_trampoline(u64 cpuid, slab_input_params_t *iparams, u64 ipara
     //           dst_slabid, src_slabid, return_address, hic_calltype);
 
     switch(hic_calltype){
-        case XMHF_HIC_SLABCALL:{
+        case XMHF_HIC_SLABCALL:
+        case XMHF_HIC_SLABCALLEXCEPTION:
+            {
             //_XDPRINTF_("%s[%u]: safepush, return_address=%016llx\n",
             //        __FUNCTION__, (u32)cpuid, return_address);
 
