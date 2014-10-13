@@ -52,12 +52,13 @@
 #define __XMHF_HIC_H__
 
 
-#define XMHF_HIC_HYP_SLABS_COUNT            (2)
+#define XMHF_HIC_HYP_SLABS_COUNT            (3)
 #define XMHF_HIC_GUEST_SLABS_COUNT          (1)
 
 
 #define XMHF_HYP_SLAB_HICTESTSLAB1          (0)
 #define XMHF_HYP_SLAB_HICTESTSLAB2          (1)
+#define XMHF_HYP_SLAB_HICTESTSLAB3          (2)
 
 
 #define XMHF_HIC_SLABCALL                   (0xA0)
@@ -152,7 +153,7 @@ typedef struct {
 
 
 extern __attribute__(( section(".sharedro_xcbootinfoptr") )) XMHF_BOOTINFO *xcbootinfo;
-extern slab_header_t _slab_table[XMHF_SLAB_NUMBEROFSLABS];
+extern slab_header_t _slab_table[XMHF_HIC_HYP_SLABS_COUNT];
 
 extern u64 __xmhfhic_safestack_indices[MAX_PLATFORM_CPUS];
 extern __xmhfhic_safestack_element_t __xmhfhic_safestack[MAX_PLATFORM_CPUS][512];
