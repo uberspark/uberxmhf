@@ -153,8 +153,14 @@ typedef struct {
 }__attribute__((packed)) slab_params_t;
 
 
+
+
 extern __attribute__(( section(".sharedro_xcbootinfoptr") )) XMHF_BOOTINFO *xcbootinfo;
 extern slab_header_t _slab_table[XMHF_HIC_HYP_SLABS_COUNT];
+
+
+
+
 
 extern u64 __xmhfhic_safestack_indices[MAX_PLATFORM_CPUS];
 extern __xmhfhic_safestack_element_t __xmhfhic_safestack[MAX_PLATFORM_CPUS][512];
