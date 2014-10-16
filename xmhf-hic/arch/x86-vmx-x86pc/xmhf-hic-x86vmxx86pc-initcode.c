@@ -1710,8 +1710,8 @@ static void __xmhfhic_vmx_setupEPT(u64 guestslab_id){
 	for(gpa=0; gpa < ADDR_4GB; gpa += PAGE_SIZE_4K){
 		u32 memorytype = __xmhfhic_vmx_getmemorytypeforphysicalpage((u64)gpa);
 		//make XMHF physical pages inaccessible
-		if( (gpa >= (xcbootinfo->xmhf_base)) &&
-			(gpa < (xcbootinfo->xmhf_base + xcbootinfo->xmhf_size)) ){
+		if( (gpa >= (__TARGET_BASE_XMHF)) &&
+			(gpa < (__TARGET_BASE_XMHF + __TARGET_SIZE_XMHF)) ){
 			p_table_value = (u64) (gpa)  | ((u64)memorytype << 3) | (u64)0x0 ;	//not-present
 		}else{
 			if(memorytype == 0)
