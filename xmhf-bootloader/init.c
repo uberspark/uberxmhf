@@ -984,7 +984,7 @@ void cstartup(multiboot_info_t *mbi){
         HALT_ON_ERRORCOND(xslbootinfo->cpuinfo_numentries <= 8);
         memcpy((void *)&xslbootinfo->cpuinfo_buffer, (void *)&pcpus, (sizeof(PCPU) * pcpus_numentries));
         //xslbootinfo->runtime_size = sl_rt_size - PAGE_SIZE_2M;
-        xslbootinfo->xmhf_size = sl_rt_size;
+        //xslbootinfo->xmhf_size = sl_rt_size;
         xslbootinfo->richguest_bootmodule_base = mod_array[1].mod_start;
         xslbootinfo->richguest_bootmodule_size = (mod_array[1].mod_end - mod_array[1].mod_start);
 
@@ -1029,7 +1029,7 @@ void cstartup(multiboot_info_t *mbi){
         xslbootinfo->cpuinfo_numentries = pcpus_numentries;
         HALT_ON_ERRORCOND(xslbootinfo->cpuinfo_numentries <= 8);
         memcpy((void *)&xslbootinfo->cpuinfo_buffer, (void *)&pcpus, (sizeof(PCPU) * pcpus_numentries));
-        xslbootinfo->xmhf_size = sl_rt_size;
+        //xslbootinfo->xmhf_size = sl_rt_size;
         xslbootinfo->richguest_bootmodule_base = mod_array[1].mod_start;
         xslbootinfo->richguest_bootmodule_size = (mod_array[1].mod_end - mod_array[1].mod_start);
 

@@ -60,12 +60,12 @@ void xmhfhic_entry(void){
 	//initialize debugging early on
 	xmhfhw_platform_serial_init((char *)&xcbootinfo->debugcontrol_buffer);
 
-	//store runtime physical and virtual base addresses along with size
+/*	//store runtime physical and virtual base addresses along with size
 	//xcbootinfo->physmem_base = __TARGET_BASE_SL;
 	//xcbootinfo->virtmem_base = __TARGET_BASE_SL;
 	//xcbootinfo->size = xcbootinfo->size;
 	xcbootinfo->xmhf_base = __TARGET_BASE_XMHF;
-	xcbootinfo->xmhf_size = __TARGET_SIZE_XMHF;
+	xcbootinfo->xmhf_size = __TARGET_SIZE_XMHF;*/
 
 
 	//[debug] print relevant startup info.
@@ -76,11 +76,11 @@ void xmhfhic_entry(void){
 	_XDPRINTF_("	system memory map buffer at 0x%08x\n", (u32)&xcbootinfo->memmapinfo_buffer);
 	_XDPRINTF_("	numCPUEntries=%u\n", xcbootinfo->cpuinfo_numentries);
 	_XDPRINTF_("	cpuinfo buffer at 0x%08x\n", (u32)&xcbootinfo->cpuinfo_buffer);
-	_XDPRINTF_("	XMHF size= %u bytes\n", xcbootinfo->xmhf_size);
+	_XDPRINTF_("	XMHF size= %u bytes\n", __TARGET_SIZE_XMHF);
 	_XDPRINTF_("	OS bootmodule at 0x%08x, size=%u bytes\n",
 		xcbootinfo->richguest_bootmodule_base, xcbootinfo->richguest_bootmodule_size);
     _XDPRINTF_("\tcmdline = \"%s\"\n", xcbootinfo->cmdline_buffer);
-	_XDPRINTF_("SL: runtime at 0x%08x; size=0x%08x bytes\n", xcbootinfo->xmhf_base, xcbootinfo->xmhf_size);
+	_XDPRINTF_("SL: runtime at 0x%08x; size=0x%08x bytes\n", __TARGET_BASE_XMHF, __TARGET_SIZE_XMHF);
 	_XDPRINTF_("SL: XMHF_BOOTINFO at 0x%08x, magic=0x%08x\n", (u32)xcbootinfo, xcbootinfo->magic);
 	HALT_ON_ERRORCOND(xcbootinfo->magic == RUNTIME_PARAMETER_BLOCK_MAGIC);
  	_XDPRINTF_("\nNumber of E820 entries = %u", xcbootinfo->memmapinfo_numentries);
