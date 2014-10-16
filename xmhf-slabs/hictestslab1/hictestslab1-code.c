@@ -144,7 +144,7 @@ void hictestslab1_interface(u64 cpuid, slab_input_params_t *iparams, u64 iparams
 
         //_hictestslab1_dotests(cpuid);
 
-        asm volatile ("int $0x03\r\n");
+        //asm volatile ("int $0x03\r\n");
 
         _XDPRINTF_("%s[%u]: Done.Halting!\n",
                 __FUNCTION__, (u32)cpuid);

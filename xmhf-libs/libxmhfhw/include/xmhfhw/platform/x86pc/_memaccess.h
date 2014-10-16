@@ -44,7 +44,7 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-// platform memory access interface 
+// platform memory access interface
 // any memory access which is not part of the xmhf framework should
 // use these interfaces
 // author: amit vasudevan (amitvasudevan@acm.org)
@@ -61,24 +61,24 @@
 
 	//hypervisor runtime virtual address to secure loader address
 	static inline void * hva2sla(void *hva){
-		return (void*)((u32)hva);	
+		return (void*)((u32)hva);
 	}
-	
+
 	//secure loader address to system physical address
 	static inline spa_t sla2spa(void *sla){
 		return (spa_t) ((u32)sla );
 	}
-	
+
 	// XMHF runtime virtual-address to system-physical-address and vice-versa
 	static inline spa_t hva2spa(void *hva){
 		uintptr_t hva_ui = (uintptr_t)hva;
 		return hva_ui;
 	}
-	  
+
 	static inline void * spa2hva(spa_t spa){
 		return (void *)(uintptr_t)spa;
 	}
-	
+
 	static inline spa_t gpa2spa(gpa_t gpa) { return gpa; }
 	static inline gpa_t spa2gpa(spa_t spa) { return spa; }
 	static inline void* gpa2hva(gpa_t gpa) { return spa2hva(gpa2spa(gpa)); }
@@ -93,7 +93,7 @@
 	static inline spa_t gpa2spa(gpa_t gpa) { return gpa; }
 	static inline gpa_t spa2gpa(spa_t spa) { return spa; }
 	static inline void* gpa2hva(gpa_t gpa) { return spa2hva(gpa2spa(gpa)); }
-	static inline gpa_t hva2gpa(hva_t hva) { return spa2gpa(hva2spa(hva)); }	
+	static inline gpa_t hva2gpa(hva_t hva) { return spa2gpa(hva2spa(hva)); }
 
 #endif //__XMHF_VERIFICATION__
 
@@ -153,7 +153,7 @@ static inline u64 xmhfhw_sysmemaccess_readu64(u32 addr){
 //write 8-bits to absolute physical address
 static inline void xmhfhw_sysmemaccess_writeu8(u32 addr, u8 val) {
     u8 *valueptr = (u8 *)addr;
-	assert( ! ( ((u32)valueptr >= xcbootinfo->physmem_base) && ((u32)valueptr <= (xcbootinfo->physmem_base+xcbootinfo->size)) ) ); 
+	assert( ! ( ((u32)valueptr >= xcbootinfo->xmhf_base) && ((u32)valueptr <= (xcbootinfo->xmhf_base+xcbootinfo->xmhf_size)) ) );
     #ifndef __XMHF_VERIFICATION__
     *valueptr = val;
     #endif
@@ -162,7 +162,7 @@ static inline void xmhfhw_sysmemaccess_writeu8(u32 addr, u8 val) {
 //write 16-bits to absolute physical address
 static inline void xmhfhw_sysmemaccess_writeu16(u32 addr, u16 val) {
     u16 *valueptr = (u16 *)addr;
-	assert( ! ( ((u32)valueptr >= xcbootinfo->physmem_base) && ((u32)valueptr <= (xcbootinfo->physmem_base+xcbootinfo->size)) ) ); 
+	assert( ! ( ((u32)valueptr >= xcbootinfo->xmhf_base) && ((u32)valueptr <= (xcbootinfo->xmhf_base+xcbootinfo->xmhf_size)) ) );
     #ifndef __XMHF_VERIFICATION__
     *valueptr = val;
 	#endif
@@ -171,7 +171,7 @@ static inline void xmhfhw_sysmemaccess_writeu16(u32 addr, u16 val) {
 //write 32-bits to absolute physical address
 static inline void xmhfhw_sysmemaccess_writeu32(u32 addr, u32 val) {
     u32 *valueptr = (u32 *)addr;
-	assert( ! ( ((u32)valueptr >= xcbootinfo->physmem_base) && ((u32)valueptr <= (xcbootinfo->physmem_base+xcbootinfo->size)) ) ); 
+	assert( ! ( ((u32)valueptr >= xcbootinfo->xmhf_base) && ((u32)valueptr <= (xcbootinfo->xmhf_base+xcbootinfo->xmhf_size)) ) );
     #ifndef __XMHF_VERIFICATION__
     *valueptr = val;
 	#endif
@@ -180,7 +180,7 @@ static inline void xmhfhw_sysmemaccess_writeu32(u32 addr, u32 val) {
 //write 64-bits to absolute physical address
 static inline void xmhfhw_sysmemaccess_writeu64(u32 addr, u64 val) {
     u64 *valueptr = (u64 *)addr;
-	assert( ! ( ((u32)valueptr >= xcbootinfo->physmem_base) && ((u32)valueptr <= (xcbootinfo->physmem_base+xcbootinfo->size)) ) ); 
+	assert( ! ( ((u32)valueptr >= xcbootinfo->xmhf_base) && ((u32)valueptr <= (xcbootinfo->xmhf_base+xcbootinfo->xmhf_size)) ) );
     #ifndef __XMHF_VERIFICATION__
     *valueptr = val;
 	#endif
@@ -188,7 +188,7 @@ static inline void xmhfhw_sysmemaccess_writeu64(u32 addr, u64 val) {
 
 //the following function can be used to write to framework data areas
 //only. e.g., copying from rich guest to hypapp data buffer
-//memory copy from absolute physical address (src) to 
+//memory copy from absolute physical address (src) to
 //absolute physical address (dest)
 //TODO: ensure dest does not fall within framework code regions
 static inline void xmhfhw_sysmemaccess_copy(u8 *dest, u8 *src, u32 size){
