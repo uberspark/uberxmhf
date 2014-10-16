@@ -98,6 +98,16 @@ void __xmhfhic_rtm_trampoline(u64 cpuid, slab_input_params_t *iparams, u64 ipara
 
 
 
+#define HIC_SLAB_PHYSMEM_EXTENT_READ       (1 << 0)
+#define HIC_SLAB_PHYSMEM_EXTENT_WRITE      (1 << 1)
+#define HIC_SLAB_PHYSMEM_EXTENT_EXECUTE    (1 << 2)
+
+//slab physical memory extent type
+typedef struct {
+    u64 addr_start;
+    u64 addr_end;
+    u64 protection;
+} slab_physmem_extent_t;
 
 
 typedef struct {
