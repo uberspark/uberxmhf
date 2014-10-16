@@ -59,7 +59,7 @@
 
 static XMHF_BOOTINFO xcbootinfo_store __attribute__(( section(".sharedro_xcbootinfo") )) = {
 	.magic= RUNTIME_PARAMETER_BLOCK_MAGIC,
-	.stack_size = MAX_PLATFORM_CPUSTACK_SIZE,
+	//.stack_size = MAX_PLATFORM_CPUSTACK_SIZE,
 };
 
 // XMHF boot information block

@@ -109,12 +109,13 @@ typedef struct _midtab {
 //XMHF_BOOTINFO
 typedef struct {
 	u32 magic;
-	u32 physmem_base;
-	u32 virtmem_base;
-	u32 size;
-	u32 entrypoint;
-	u32 stack_base;
-	u32 stack_size;
+	u32 xmhf_base;
+	//u32 physmem_base;
+	//u32 virtmem_base;
+	u32 xmhf_size;
+	//u32 entrypoint;
+	//u32 stack_base;
+	//u32 stack_size;
 	u32 richguest_bootmodule_base;
 	u32 richguest_bootmodule_size;
 	u32 memmapinfo_numentries;
