@@ -79,6 +79,12 @@ typedef void * slab_entrystub_t;
 typedef u64 slab_callcaps_t;
 
 typedef struct {
+	bool desc_valid;
+	u64 numdevices;
+    xc_platformdevice_arch_desc_t arch_desc[MAX_PLATFORM_DEVICES];
+} __attribute__((packed)) slab_platformdevices_t;
+
+typedef struct {
     u64 src_slabid;
     u64 dst_slabid;
     u64 hic_calltype;
@@ -124,14 +130,18 @@ typedef struct {
 	bool slab_inuse;
     slab_privilegemask_t slab_privilegemask;
     slab_callcaps_t slab_callcaps;
+    slab_platformdevices_t slab_devices;
     slab_physmem_extent_t slab_physmem_extents[HIC_SLAB_PHYSMEM_MAXEXTENTS];
 	slab_entrystub_t entrystub;
 } __attribute__((packed)) __attribute__((aligned(4096))) slab_info_t;
 
 
+
+
 typedef struct {
     slab_privilegemask_t slab_privilegemask;
     slab_callcaps_t slab_callcaps;
+    slab_platformdevices_t slab_devices;
     u64 slab_archparams;
 } __attribute__((packed)) slab_caps_t;
 
@@ -158,15 +168,15 @@ void __xmhfhic_rtm_trampoline(u64 cpuid, slab_input_params_t *iparams, u64 ipara
 
 
 
-
-
-
-
+/*
 typedef struct {
 	bool desc_valid;
 	u64 numdevices;
     xc_platformdevice_arch_desc_t arch_desc[MAX_PLATFORM_DEVICES];
 } __attribute__((packed)) xc_platformdevice_desc_t;
+*/
+
+
 
 //slab interface aggregate return type
 typedef union {
@@ -178,7 +188,7 @@ typedef union {
 		struct regs retval_regs;
 		context_desc_t retval_context_desc;
 		xc_hypapp_arch_param_t retval_xc_hypapp_arch_param;
-        xc_platformdevice_desc_t retval_xc_platformdevice_desc;
+        //xc_platformdevice_desc_t retval_xc_platformdevice_desc;
 }__attribute__((packed)) slab_retval_t;
 
 typedef struct {
@@ -190,7 +200,7 @@ typedef struct {
     struct regs input_regs;
     context_desc_t input_context_desc;
     xc_hypapp_arch_param_t input_xc_hypapp_arch_param;
-    xc_platformdevice_desc_t input_xc_platformdevice_desc;
+    //xc_platformdevice_desc_t input_xc_platformdevice_desc;
 }__attribute__((packed)) slab_params_t;
 
 
