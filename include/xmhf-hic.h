@@ -55,12 +55,13 @@
 #define XMHF_HIC_HYP_SLABS_COUNT            (3)
 #define XMHF_HIC_GUEST_SLABS_COUNT          (1)
 
-#define XMHF_HIC_MAX_SLABS                  (10)
+#define XMHF_HIC_MAX_SLABS                  (8)
 
 
 #define XMHF_HYP_SLAB_HICTESTSLAB1          (0)
 #define XMHF_HYP_SLAB_HICTESTSLAB2          (1)
 #define XMHF_HYP_SLAB_HICTESTSLAB3          (2)
+#define XMHF_RICHGUEST_SLAB                 (3)
 
 
 #define XMHF_HIC_SLABCALL                   (0xA0)
@@ -103,7 +104,7 @@ typedef struct {
 	u64 end;
 } slab_section_t;
 
-typedef struct {
+/*typedef struct {
 	u64 slab_index;
 	u64 slab_macmid;
 	u64 slab_privilegemask;
@@ -114,14 +115,14 @@ typedef struct {
 	slab_section_t slab_stack;
 	slab_section_t slab_dmadata;
 	slab_entrystub_t entrystub;
-} slab_header_t;
+} slab_header_t;*/
 
 
 typedef struct {
     __attribute__((aligned(4096))) slab_info_archdata_t archdata;
 	bool slab_inuse;
     slab_privilegemask_t slab_privilegemask;
-    slab_physmem_extent_t slab_physmem_extent[HIC_SLAB_PHYSMEM_MAXEXTENTS];
+    slab_physmem_extent_t slab_physmem_extents[HIC_SLAB_PHYSMEM_MAXEXTENTS];
 	slab_entrystub_t entrystub;
 } __attribute__((packed)) __attribute__((aligned(4096))) slab_info_t;
 
@@ -189,7 +190,8 @@ extern slab_physmem_extent_t _xmhfhic_init_setupdata_slab_physmem_extents[XMHF_H
 extern slab_physmem_extent_t _xmhfhic_init_setupdata_hic_physmem_extents[HIC_SLAB_PHYSMEM_MAXEXTENTS];
 
 //common data
-extern slab_header_t _slab_table[XMHF_HIC_MAX_SLABS];
+//extern slab_header_t _slab_table[XMHF_HIC_MAX_SLABS];
+extern slab_info_t _xmhfhic_common_slab_info_table[XMHF_HIC_MAX_SLABS];
 extern slab_physmem_extent_t _xmhfhic_common_hic_physmem_extents[HIC_SLAB_PHYSMEM_MAXEXTENTS];
 
 //runtime data

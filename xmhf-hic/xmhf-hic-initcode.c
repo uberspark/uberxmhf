@@ -105,28 +105,19 @@ void xmhfhic_entry(void){
 	}*/
 
 
-    //initialize slab table
+    //initialize slab info table
     {
         u32 i;
 
         for(i=0; i < XMHF_HIC_MAX_SLABS; i++){
 
-            _slab_table[i].slab_index         = i;
-            _slab_table[i].slab_macmid        = 0;
-            _slab_table[i].slab_privilegemask = 0;
-            _slab_table[i].entrystub          =  _slab_table[i].slab_code.start    = _xmhfhic_init_setupdata_slab_physmem_extents[i][0].addr_start;
-            _slab_table[i].slab_code.end      = _xmhfhic_init_setupdata_slab_physmem_extents[i][0].addr_end;
-            _slab_table[i].slab_rwdata.start  = _xmhfhic_init_setupdata_slab_physmem_extents[i][1].addr_start;
-            _slab_table[i].slab_rwdata.end    = _xmhfhic_init_setupdata_slab_physmem_extents[i][1].addr_end;
-            _slab_table[i].slab_rodata.start  = _xmhfhic_init_setupdata_slab_physmem_extents[i][2].addr_start;
-            _slab_table[i].slab_rodata.end    = _xmhfhic_init_setupdata_slab_physmem_extents[i][2].addr_end;
-            _slab_table[i].slab_stack.start   = _xmhfhic_init_setupdata_slab_physmem_extents[i][3].addr_start;
-            _slab_table[i].slab_tos           = _slab_table[i].slab_stack.end     = _xmhfhic_init_setupdata_slab_physmem_extents[i][3].addr_end;
-            _slab_table[i].slab_dmadata.start = _xmhfhic_init_setupdata_slab_physmem_extents[i][4].addr_start;
-            _slab_table[i].slab_dmadata.end   = _xmhfhic_init_setupdata_slab_physmem_extents[i][4].addr_end;
-
+            _xmhfhic_common_slab_info_table[i].slab_inuse = true;
+            _xmhfhic_common_slab_info_table[i].slab_privilegemask = 0;
+            memcpy(_xmhfhic_common_slab_info_table[i].slab_physmem_extents,
+                   _xmhfhic_init_setupdata_slab_physmem_extents[i],
+                   sizeof(_xmhfhic_common_slab_info_table[0].slab_physmem_extents));
+            _xmhfhic_common_slab_info_table[i].entrystub = _xmhfhic_common_slab_info_table[i].slab_physmem_extents[0].addr_start;
         }
-
     }
 
 

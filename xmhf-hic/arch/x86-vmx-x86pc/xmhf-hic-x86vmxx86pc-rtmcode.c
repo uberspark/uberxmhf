@@ -354,7 +354,7 @@ void __xmhfhic_rtm_trampoline(u64 cpuid, slab_input_params_t *iparams, u64 ipara
                  "movq %0, %%rax \r\n"
                  "movq %%rax, %%cr3 \r\n"
                 :
-                : "m" (_slab_table[dst_slabid].slab_macmid)
+                : "m" (_xmhfhic_common_slab_info_table[dst_slabid].archdata.mempgtbl_cr3)
                 : "rax"
             );
 
@@ -385,7 +385,7 @@ void __xmhfhic_rtm_trampoline(u64 cpuid, slab_input_params_t *iparams, u64 ipara
                 :
                 : "m" (cpuid),
                   "m" (iparams),
-                  "m" (_slab_table[dst_slabid].entrystub),
+                  "m" (_xmhfhic_common_slab_info_table[dst_slabid].entrystub),
                   "i" (0ULL),
                   "m" (oparams_size),
                   "m" (src_slabid),
@@ -410,7 +410,7 @@ void __xmhfhic_rtm_trampoline(u64 cpuid, slab_input_params_t *iparams, u64 ipara
                  "movq %0, %%rax \r\n"
                  "movq %%rax, %%cr3 \r\n"
                 :
-                : "m" (_slab_table[dst_slabid].slab_macmid)
+                : "m" (_xmhfhic_common_slab_info_table[dst_slabid].archdata.mempgtbl_cr3)
                 : "rax"
             );
 

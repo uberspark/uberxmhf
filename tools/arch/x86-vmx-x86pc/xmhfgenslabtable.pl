@@ -70,6 +70,19 @@ while( $i <= $#ARGV) {
 	$i++;
 }
 
+# rich guest slab
+
+	print "\n";
+	print "\n{";
+	print "\n	{.addr_start = 0, .addr_end = __TARGET_BASE_XMHF, .protection = 0},";
+	print "\n	{.addr_start = (__TARGET_BASE_XMHF + __TARGET_SIZE_XMHF), .addr_end = ADDR_4GB, .protection = 0},";
+	print "\n	{.addr_start = 0, .addr_end = 0, .protection = 0},";
+	print "\n	{.addr_start = 0, .addr_end = 0, .protection = 0},";
+	print "\n	{.addr_start = 0, .addr_end = 0, .protection = 0},";
+	print "\n},";
+
+
+
 print "\n};";
 
 exit 0;

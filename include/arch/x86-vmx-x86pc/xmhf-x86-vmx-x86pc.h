@@ -89,7 +89,7 @@ typedef struct {
 	u64 devpgtbl_pts[PAE_PTRS_PER_PDT][PAE_PTRS_PER_PT] __attribute__((aligned(4096)));
 	u8  deviomap[2 * PAGE_SIZE_4K] __attribute__((aligned(4096)));
 	u64 slabtype; //hypervisor, guest
-	u64 pgtbl_cr3;
+	u64 mempgtbl_cr3;
 	u64 slabtos[MAX_PLATFORM_CPUS];
 } __attribute__((packed)) __attribute__((aligned(4096))) slab_info_archdata_t;
 
