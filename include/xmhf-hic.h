@@ -55,6 +55,8 @@
 #define XMHF_HIC_HYP_SLABS_COUNT            (3)
 #define XMHF_HIC_GUEST_SLABS_COUNT          (1)
 
+#define XMHF_HIC_MAX_SLABS                  (10)
+
 
 #define XMHF_HYP_SLAB_HICTESTSLAB1          (0)
 #define XMHF_HYP_SLAB_HICTESTSLAB2          (1)
@@ -101,6 +103,8 @@ void __xmhfhic_rtm_trampoline(u64 cpuid, slab_input_params_t *iparams, u64 ipara
 #define HIC_SLAB_PHYSMEM_EXTENT_READ       (1 << 0)
 #define HIC_SLAB_PHYSMEM_EXTENT_WRITE      (1 << 1)
 #define HIC_SLAB_PHYSMEM_EXTENT_EXECUTE    (1 << 2)
+
+#define HIC_SLAB_PHYSMEM_MAXEXTENTS         5
 
 //slab physical memory extent type
 typedef struct {
@@ -166,8 +170,8 @@ typedef struct {
 
 
 extern __attribute__(( section(".sharedro_xcbootinfoptr") )) XMHF_BOOTINFO *xcbootinfo;
-extern slab_header_t _slab_table[XMHF_HIC_HYP_SLABS_COUNT];
-
+extern slab_header_t _slab_table[XMHF_HIC_MAX_SLABS];
+extern slab_physmem_extent_t _xmhfhic_init_setupdata_slab_physmem_extents[XMHF_HIC_MAX_SLABS][HIC_SLAB_PHYSMEM_MAXEXTENTS];
 
 
 
