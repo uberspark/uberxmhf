@@ -71,24 +71,28 @@ slab_caps_t _xmhfhic_init_setupdata_slab_caps[XMHF_HIC_MAX_SLABS] = {
     {
         0,
         0,
+        {false, 0, {0}},
         HIC_SLAB_X86VMXX86PC_HYPERVISOR
     },
 
     {
         0,
         0,
+        {false, 0, {0}},
         HIC_SLAB_X86VMXX86PC_HYPERVISOR
     },
 
     {
         0,
         0,
+        {false, 0, {0}},
         HIC_SLAB_X86VMXX86PC_HYPERVISOR
     },
 
     {
         0,
         0,
+        {true, 0xFFFFFFFFFFFFFFFFULL, {0}},
         HIC_SLAB_X86VMXX86PC_GUEST
     },
 
