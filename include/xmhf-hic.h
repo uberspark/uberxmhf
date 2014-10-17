@@ -76,6 +76,7 @@ typedef void slab_input_params_t;
 typedef void slab_output_params_t;
 typedef u64 slab_privilegemask_t;
 typedef void * slab_entrystub_t;
+typedef u64 slab_callcaps_t;
 
 typedef struct {
     u64 src_slabid;
@@ -127,6 +128,15 @@ typedef struct {
 } __attribute__((packed)) __attribute__((aligned(4096))) slab_info_t;
 
 
+typedef struct {
+    slab_privilegemask_t slab_privilegemask;
+    slab_callcaps_t slab_callcaps;
+    u64 archparams;
+} __attribute__((packed)) slab_caps_t;
+
+
+
+void xmhfhic_arch_setup_slab_info(void);
 void xmhfhic_arch_sanity_check_requirements(void);
 void xmhfhic_arch_setup_slab_device_allocation(void);
 void xmhfhic_arch_setup_hypervisor_slab_page_tables(void);
@@ -188,6 +198,8 @@ typedef struct {
 extern __attribute__(( section(".sharedro_xcbootinfoptr") )) XMHF_BOOTINFO *xcbootinfo;
 extern slab_physmem_extent_t _xmhfhic_init_setupdata_slab_physmem_extents[XMHF_HIC_MAX_SLABS][HIC_SLAB_PHYSMEM_MAXEXTENTS];
 extern slab_physmem_extent_t _xmhfhic_init_setupdata_hic_physmem_extents[HIC_SLAB_PHYSMEM_MAXEXTENTS];
+extern slab_caps_t _xmhfhic_init_setupdata_slab_caps[XMHF_HIC_MAX_SLABS];
+
 
 //common data
 //extern slab_header_t _slab_table[XMHF_HIC_MAX_SLABS];

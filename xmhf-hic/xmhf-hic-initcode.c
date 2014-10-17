@@ -104,28 +104,8 @@ void xmhfhic_entry(void){
         _totalcpus=xcbootinfo->cpuinfo_numentries;
 	}*/
 
-
-    //initialize slab info table
-    {
-        u32 i;
-
-        for(i=0; i < XMHF_HIC_MAX_SLABS; i++){
-
-            _xmhfhic_common_slab_info_table[i].slab_inuse = true;
-            _xmhfhic_common_slab_info_table[i].slab_privilegemask = 0;
-            memcpy(_xmhfhic_common_slab_info_table[i].slab_physmem_extents,
-                   _xmhfhic_init_setupdata_slab_physmem_extents[i],
-                   sizeof(_xmhfhic_common_slab_info_table[0].slab_physmem_extents));
-            _xmhfhic_common_slab_info_table[i].entrystub = _xmhfhic_common_slab_info_table[i].slab_physmem_extents[0].addr_start;
-        }
-    }
-
-
-    //initialize HIC physical memory extents
-    memcpy(_xmhfhic_common_hic_physmem_extents,
-           _xmhfhic_init_setupdata_hic_physmem_extents,
-           sizeof(_xmhfhic_common_hic_physmem_extents));
-
+    //initialize slab info table based on setup data
+    xmhfhic_arch_setup_slab_info();
 
     //sanity check HIC (hardware) requirements
     xmhfhic_arch_sanity_check_requirements();
