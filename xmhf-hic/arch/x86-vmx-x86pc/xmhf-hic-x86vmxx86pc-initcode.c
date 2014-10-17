@@ -726,6 +726,10 @@ void xmhfhic_arch_setup_slab_info(void){
             _xmhfhic_common_slab_info_table[i].archdata.slabtype =
                 _xmhfhic_init_setupdata_slab_caps[i].slab_archparams;
 
+            _xmhfhic_common_slab_info_table[i].archdata.mempgtbl_initialized=false;
+            _xmhfhic_common_slab_info_table[i].archdata.devpgtbl_initialized=false;
+
+
         }
     }
 
@@ -769,10 +773,6 @@ void xmhfhic_arch_setup_slab_info(void){
 	}
 
 
-    //debug
-    _XDPRINTF_("Halting!\n");
-    _XDPRINTF_("XMHF Tester Finished!\n");
-    HALT();
 
 
 }
@@ -978,42 +978,42 @@ static bool _platform_x86pc_vtd_initialize(void){
     return true;
 }
 
-static vtd_slpgtbl_handle_t _platform_x86pc_vtd_setup_slpgtbl(u32 partition_index){
+static vtd_slpgtbl_handle_t _platform_x86pc_vtd_setup_slpgtbl(u32 slabid){
     vtd_slpgtbl_handle_t retval = {0, 0};
     u32 i, j, k, paddr=0;
 
     //sanity check partition index
-    if(partition_index >= MAX_PRIMARY_PARTITIONS){
-        _XDPRINTF_("%s: Error: partition_index >= MAX_PRIMARY_PARTITIONS. bailing out!\n", __FUNCTION__);
+    if(slabid > XMHF_HIC_MAX_SLABS){
+        _XDPRINTF_("%s: Error: slabid (%u) > XMHF_HIC_MAX_SLABS(%u). bailing out!\n", __FUNCTION__, slabid, XMHF_HIC_MAX_SLABS);
         return retval;
     }
 
     //setup device memory access for the partition
-    _partitiondevtable[partition_index]._vtd_slpgtbl.pml4t[0].fields.r = 1;
-    _partitiondevtable[partition_index]._vtd_slpgtbl.pml4t[0].fields.w = 1;
-    _partitiondevtable[partition_index]._vtd_slpgtbl.pml4t[0].fields.slpdpt = ((u64)&_partitiondevtable[partition_index]._vtd_slpgtbl.pdpt >> 12);
+    _xmhfhic_common_slab_info_table[slabid].archdata.devpgtbl.pml4t[0].fields.r = 1;
+    _xmhfhic_common_slab_info_table[slabid].archdata.devpgtbl.pml4t[0].fields.w = 1;
+    _xmhfhic_common_slab_info_table[slabid].archdata.devpgtbl.pml4t[0].fields.slpdpt = ((u64)&_xmhfhic_common_slab_info_table[slabid].archdata.devpgtbl.pdpt >> 12);
 
     for(i=0; i < PAE_PTRS_PER_PDPT; i++){
-        _partitiondevtable[partition_index]._vtd_slpgtbl.pdpt[i].fields.r = 1;
-        _partitiondevtable[partition_index]._vtd_slpgtbl.pdpt[i].fields.w = 1;
-        _partitiondevtable[partition_index]._vtd_slpgtbl.pdpt[i].fields.slpdt = ((u64)&_partitiondevtable[partition_index]._vtd_slpgtbl.pdt[i] >> 12);
+        _xmhfhic_common_slab_info_table[slabid].archdata.devpgtbl.pdpt[i].fields.r = 1;
+        _xmhfhic_common_slab_info_table[slabid].archdata.devpgtbl.pdpt[i].fields.w = 1;
+        _xmhfhic_common_slab_info_table[slabid].archdata.devpgtbl.pdpt[i].fields.slpdt = ((u64)&_xmhfhic_common_slab_info_table[slabid].archdata.devpgtbl.pdt[i] >> 12);
 
         for(j=0; j < PAE_PTRS_PER_PDT; j++){
-            _partitiondevtable[partition_index]._vtd_slpgtbl.pdt[i][j].fields.r = 1;
-            _partitiondevtable[partition_index]._vtd_slpgtbl.pdt[i][j].fields.w = 1;
-            _partitiondevtable[partition_index]._vtd_slpgtbl.pdt[i][j].fields.slpt = ((u64)&_partitiondevtable[partition_index]._vtd_slpgtbl.pt[i][j] >> 12);
+            _xmhfhic_common_slab_info_table[slabid].archdata.devpgtbl.pdt[i][j].fields.r = 1;
+            _xmhfhic_common_slab_info_table[slabid].archdata.devpgtbl.pdt[i][j].fields.w = 1;
+            _xmhfhic_common_slab_info_table[slabid].archdata.devpgtbl.pdt[i][j].fields.slpt = ((u64)&_xmhfhic_common_slab_info_table[slabid].archdata.devpgtbl.pt[i][j] >> 12);
 
             for(k=0; k < PAE_PTRS_PER_PT; k++){
-                _partitiondevtable[partition_index]._vtd_slpgtbl.pt[i][j][k].fields.r = 1;
-                _partitiondevtable[partition_index]._vtd_slpgtbl.pt[i][j][k].fields.w = 1;
-                _partitiondevtable[partition_index]._vtd_slpgtbl.pt[i][j][k].fields.pageaddr = ((u64)paddr >> 12);
+                _xmhfhic_common_slab_info_table[slabid].archdata.devpgtbl.pt[i][j][k].fields.r = 1;
+                _xmhfhic_common_slab_info_table[slabid].archdata.devpgtbl.pt[i][j][k].fields.w = 1;
+                _xmhfhic_common_slab_info_table[slabid].archdata.devpgtbl.pt[i][j][k].fields.pageaddr = ((u64)paddr >> 12);
                 paddr += PAGE_SIZE_4K;
             }
         }
     }
 
-    retval.addr_vtd_pml4t = _partitiondevtable[partition_index]._vtd_slpgtbl.pml4t;
-    retval.addr_vtd_pdpt = _partitiondevtable[partition_index]._vtd_slpgtbl.pdpt;
+    retval.addr_vtd_pml4t = _xmhfhic_common_slab_info_table[slabid].archdata.devpgtbl.pml4t;
+    retval.addr_vtd_pdpt = _xmhfhic_common_slab_info_table[slabid].archdata.devpgtbl.pdpt;
 
     return retval;
 }
@@ -1060,25 +1060,27 @@ static slab_platformdevices_t __xmhfhic_arch_initializeandenumeratedevices(void)
 
 
 static bool __xmhfhic_arch_sda_allocdevices_to_slab(u64 slabid, slab_platformdevices_t device_descs){
-/*	vtd_drhd_handle_t drhd_handle;
+	vtd_drhd_handle_t drhd_handle;
     vtd_slpgtbl_handle_t vtd_slpgtbl_handle;
     u32 i;
 
     if(!vtd_initialized)
         return false;
 
+    if(!device_descs.desc_valid)
+        return true;
 
-    //initialize partition device page tables (if it has not been initialized already)
-    if(!_partitiondevtable[context_desc.partition_desc.partition_index].initialized){
-        vtd_slpgtbl_handle = _platform_x86pc_vtd_setup_slpgtbl(context_desc.partition_desc.partition_index);
+    //initialize slab device page tables (if it has not been initialized already)
+    if( !_xmhfhic_common_slab_info_table[slabid].archdata.devpgtbl_initialized ){
+        vtd_slpgtbl_handle = _platform_x86pc_vtd_setup_slpgtbl(slabid);
 
         if(vtd_slpgtbl_handle.addr_vtd_pml4t == 0 &&
             vtd_slpgtbl_handle.addr_vtd_pdpt == 0){
-            _XDPRINTF_("%s: unable to initialize vt-d pagetables for partition %u\n", __FUNCTION__, context_desc.partition_desc.partition_index);
+            _XDPRINTF_("%s: unable to initialize vt-d pagetables for slab %u\n", __FUNCTION__, slabid);
             return false;
         }
 
-        _partitiondevtable[context_desc.partition_desc.partition_index].initialized = true;
+        _xmhfhic_common_slab_info_table[slabid].archdata.devpgtbl_initialized=true;
     }
 
 
@@ -1096,14 +1098,14 @@ static bool __xmhfhic_arch_sda_allocdevices_to_slab(u64 slabid, slab_platformdev
         //b is our index into ret
         // (d* PCI_FUNCTION_MAX) + f = index into the cet
         if(vtd_pagewalk_level == VTD_PAGEWALK_4LEVEL){
-            _vtd_cet[b][((d*PCI_FUNCTION_MAX) + f)].fields.slptptr = ((u64)_partitiondevtable[context_desc.partition_desc.partition_index]._vtd_slpgtbl.pml4t >> 12);
+            _vtd_cet[b][((d*PCI_FUNCTION_MAX) + f)].fields.slptptr = ((u64)_xmhfhic_common_slab_info_table[slabid].archdata.devpgtbl.pml4t >> 12);
             _vtd_cet[b][((d*PCI_FUNCTION_MAX) + f)].fields.aw = 2; //4-level
-            _vtd_cet[b][((d*PCI_FUNCTION_MAX) + f)].fields.did = (context_desc.partition_desc.partition_index + 1); //domain
+            _vtd_cet[b][((d*PCI_FUNCTION_MAX) + f)].fields.did = (slabid + 1); //domain
             _vtd_cet[b][((d*PCI_FUNCTION_MAX) + f)].fields.p = 1; //present
         }else if (vtd_pagewalk_level == VTD_PAGEWALK_3LEVEL){
-            _vtd_cet[b][((d*PCI_FUNCTION_MAX) + f)].fields.slptptr = ((u64)_partitiondevtable[context_desc.partition_desc.partition_index]._vtd_slpgtbl.pdpt >> 12);
+            _vtd_cet[b][((d*PCI_FUNCTION_MAX) + f)].fields.slptptr = ((u64)_xmhfhic_common_slab_info_table[slabid].archdata.devpgtbl.pdpt >> 12);
             _vtd_cet[b][((d*PCI_FUNCTION_MAX) + f)].fields.aw = 1; //3-level
-            _vtd_cet[b][((d*PCI_FUNCTION_MAX) + f)].fields.did = (context_desc.partition_desc.partition_index + 1); //domain
+            _vtd_cet[b][((d*PCI_FUNCTION_MAX) + f)].fields.did = (slabid + 1); //domain
             _vtd_cet[b][((d*PCI_FUNCTION_MAX) + f)].fields.p = 1; //present
         }else{ //unknown page walk length, fail
             return false;
@@ -1115,7 +1117,7 @@ static bool __xmhfhic_arch_sda_allocdevices_to_slab(u64 slabid, slab_platformdev
 	for(drhd_handle=0; drhd_handle < vtd_drhd_maxhandle; drhd_handle++){
 		if(!xmhfhw_platform_x86pc_vtd_drhd_invalidatecaches(drhd_handle))
 			return false;
-	}*/
+	}
 
     return true;
 }
@@ -1211,7 +1213,17 @@ static void __xmhfhic_x86vmxx86pc_postdrt(void){
 
 
 static slab_platformdevices_t __xmhfhic_arch_sda_get_devices_for_slab(u64 slabid, slab_platformdevices_t devices){
-    return devices;
+    slab_platformdevices_t retval;
+
+    retval.desc_valid=false;
+    retval.numdevices=0;
+
+    //for now detect rich guest slab and allocate all platform devices to it
+    if(_xmhfhic_common_slab_info_table[slabid].slab_devices.desc_valid &&
+        _xmhfhic_common_slab_info_table[slabid].slab_devices.numdevices == 0xFFFFFFFFFFFFFFFFULL)
+        return devices;
+    else
+        return retval;
 }
 
 void xmhfhic_arch_setup_slab_device_allocation(void){
@@ -1258,10 +1270,19 @@ void xmhfhic_arch_setup_slab_device_allocation(void){
 
         slab_ddescs = __xmhfhic_arch_sda_get_devices_for_slab(i, ddescs);
 
-        if(!__xmhfhic_arch_sda_allocdevices_to_slab(i, slab_ddescs)){
-                _XDPRINTF_("%s: Halting.unable to allocate devices to slab %u\n",
+        if(slab_ddescs.desc_valid){
+            _XDPRINTF_("%s: Allocating %u devices to slab %u...\n",
+                            __FUNCTION__, slab_ddescs.numdevices, i);
+
+
+            if(!__xmhfhic_arch_sda_allocdevices_to_slab(i, slab_ddescs)){
+                    _XDPRINTF_("%s: Halting.unable to allocate devices to slab %u\n",
+                                __FUNCTION__, i);
+                    HALT();
+            }
+        }else{
+            _XDPRINTF_("%s: No devices to allocate for slab %u...\n",
                             __FUNCTION__, i);
-                HALT();
         }
     }
 
