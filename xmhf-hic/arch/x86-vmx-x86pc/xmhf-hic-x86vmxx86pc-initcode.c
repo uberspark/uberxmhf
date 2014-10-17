@@ -852,12 +852,6 @@ void xmhfhic_arch_sanity_check_requirements(void){
 //////////////////////////////////////////////////////////////////////////////
 //setup slab device allocation (sda)
 
-typedef struct {
-    __attribute__((aligned(4096))) vtd_slpgtbl_t _vtd_slpgtbl;
-    bool initialized;
-}__attribute__((packed)) xc_partitiondevicetable_t;
-
-__attribute__((aligned(4096))) static  xc_partitiondevicetable_t _partitiondevtable[MAX_PRIMARY_PARTITIONS];
 
 __attribute__((aligned(4096))) static vtd_ret_entry_t _vtd_ret[VTD_RET_MAXPTRS];
 __attribute__((aligned(4096))) static vtd_cet_entry_t _vtd_cet[VTD_RET_MAXPTRS][VTD_CET_MAXPTRS];
@@ -894,10 +888,6 @@ static bool _platform_x86pc_vtd_initialize(void){
     //if we already setup vtd then simply return true
     if(vtd_initialized)
         return true;
-
-    //initialize partition--device table
-    for(i=0; i < MAX_PRIMARY_PARTITIONS; i++)
-        _partitiondevtable[i].initialized = false;
 
 	//setup basic RET/CET structure; will initially prevent DMA reads and writes
 	//for the entire system
@@ -1122,8 +1112,8 @@ static bool __xmhfhic_arch_sda_allocdevices_to_slab(u64 slabid, slab_platformdev
     return true;
 }
 
-/*
-static bool __xmhfhic_arch_deallocdevices_from_partition(context_desc_t context_desc, xc_platformdevice_desc_t device_descs){
+
+static bool __xmhfhic_arch_sda_deallocdevices_from_slab(u64 slabid, slab_platformdevices_t device_descs){
 	vtd_drhd_handle_t drhd_handle;
     vtd_slpgtbl_handle_t vtd_slpgtbl_handle;
     u32 i;
@@ -1154,41 +1144,11 @@ static bool __xmhfhic_arch_deallocdevices_from_partition(context_desc_t context_
 			return false;
 	}
 
-    return true;
-}*/
-
-
-/*static bool __xmhfhic_dev_arch_initialize(u32 partition_index){
-    u32 i;
-    xc_platformdevice_desc_t ddescs;
-    context_desc_t ctx;
-
-    ctx.cpu_desc.cpu_index = 0;
-    ctx.cpu_desc.isbsp = true;
-    ctx.partition_desc.partition_index = partition_index;
-
-    ddescs = __xmhfhic_arch_initializeandenumeratedevices(ctx);
-
-    if(!ddescs.desc_valid){
-        _XDPRINTF_("%s: Error: could not obtain platform device descriptors\n",
-                    __FUNCTION__);
-        return false;
-    }
-
-    for(i=0; i < ddescs.numdevices; i++){
-        _XDPRINTF_("  %02x:%02x.%1x -> vendor_id=%04x, device_id=%04x\n", ddescs.arch_desc[i].pci_bus,
-          ddescs.arch_desc[i].pci_device, ddescs.arch_desc[i].pci_function,
-          ddescs.arch_desc[i].vendor_id, ddescs.arch_desc[i].device_id);
-    }
-
-    if(!__xmhfhic_arch_allocdevices_to_partition(ctx, ddescs)){
-            _XDPRINTF_("%s: Halting.unable to allocate devices to partition %u\n",
-                        __FUNCTION__, partition_index);
-            HALT();
-    }
+    //TODO: update slab info to remove the devices from slab_devices
 
     return true;
-}*/
+}
+
 
 
 static void __xmhfhic_x86vmxx86pc_postdrt(void){
