@@ -50,7 +50,7 @@
 
 MEMORY
 {
-  hicmem (rwxai) : ORIGIN = 0, LENGTH = 32M /* max. length */
+  hicmem (rwxai) : ORIGIN = 0, LENGTH = 150M /* max. length */
   unaccounted (rwxai) : ORIGIN = 0, LENGTH = 0 /* see section .unaccounted at end */
 }
 

@@ -1214,13 +1214,13 @@ static u32 __xmhfhic_hyp_slab_getspatype(u32 slab_index, u32 spa){
 	for(i=0; i < XMHF_SLAB_NUMBEROFSLABS; i++){
 		u32 mask = (i == slab_index) ? 0 : _SLAB_SPATYPE_OTHER_SLAB_MASK;
 
-		if(spa >= _slab_table[i].slab_code.start  && spa < _slab_table[i].slab_code.end)
+		if(spa >= _xmhfhic_common_slab_info_table[i].slab_code.start  && spa < _xmhfhic_common_slab_info_table[i].slab_code.end)
 			return _SLAB_SPATYPE_SLAB_CODE | mask;
-		if (spa >= _slab_table[i].slab_rodata.start  && spa < _slab_table[i].slab_rodata.end)
+		if (spa >= _xmhfhic_common_slab_info_table[i].slab_rodata.start  && spa < _xmhfhic_common_slab_info_table[i].slab_rodata.end)
 			return _SLAB_SPATYPE_SLAB_RODATA | mask;
-		if (spa >= _slab_table[i].slab_rwdata.start  && spa < _slab_table[i].slab_rwdata.end)
+		if (spa >= _xmhfhic_common_slab_info_table[i].slab_rwdata.start  && spa < _xmhfhic_common_slab_info_table[i].slab_rwdata.end)
 			return _SLAB_SPATYPE_SLAB_RWDATA | mask;
-		if (spa >= _slab_table[i].slab_stack.start  && spa < _slab_table[i].slab_stack.end)
+		if (spa >= _xmhfhic_common_slab_info_table[i].slab_stack.start  && spa < _xmhfhic_common_slab_info_table[i].slab_stack.end)
 			return _SLAB_SPATYPE_SLAB_STACK | mask;
 	}
 
@@ -1342,9 +1342,9 @@ void __xmhfhic_arch_initialize_slab_tables(void){
 		u32 i;
 		for(i=0; i < XMHF_HIC_HYP_SLABS_COUNT; i++)
 			#if 1
-			_slab_table[i].slab_macmid = __xmhfhic_hyp_slab_populate_pagetables(i) | (u32)(i+1) | 0x8000000000000000ULL;
+			_xmhfhic_common_slab_info_table[i].archdata.mempgtbl_cr3 = __xmhfhic_hyp_slab_populate_pagetables(i) | (u32)(i+1) | 0x8000000000000000ULL;
             #else
-			_slab_table[i].slab_macmid = __xmhfhic_hyp_slab_populate_pagetables(i);
+			_xmhfhic_common_slab_info_table[i].archdata.mempgtbl_cr3 = __xmhfhic_hyp_slab_populate_pagetables(i);
             #endif
 
 	}
@@ -1374,19 +1374,24 @@ void xmhfhic_arch_setup_hypervisor_slab_page_tables(void){
 
 			for(i=0; i < XMHF_HIC_MAX_SLABS; i++){
 				_XDPRINTF_("slab %u: dumping slab header\n", i);
-				_XDPRINTF_("	slab_index=%u\n", _slab_table[i].slab_index);
-				_XDPRINTF_("	slab_macmid=%08x\n", _slab_table[i].slab_macmid);
-				_XDPRINTF_("	slab_privilegemask=%08x\n", _slab_table[i].slab_privilegemask);
-				_XDPRINTF_("	slab_tos=%08x\n", _slab_table[i].slab_tos);
-				_XDPRINTF_("  slab_code(%08x-%08x)\n", _slab_table[i].slab_code.start, _slab_table[i].slab_code.end);
-				_XDPRINTF_("  slab_rwdata(%08x-%08x)\n", _slab_table[i].slab_rwdata.start, _slab_table[i].slab_rwdata.end);
-				_XDPRINTF_("  slab_rodata(%08x-%08x)\n", _slab_table[i].slab_rodata.start, _slab_table[i].slab_rodata.end);
-				_XDPRINTF_("  slab_stack(%08x-%08x)\n", _slab_table[i].slab_stack.start, _slab_table[i].slab_stack.end);
-				_XDPRINTF_("  slab_dmadata(%08x-%08x)\n", _slab_table[i].slab_dmadata.start, _slab_table[i].slab_dmadata.end);
-				_XDPRINTF_("  slab_entrystub=%08x\n", _slab_table[i].entrystub);
+				_XDPRINTF_("	slab_inuse=%s\n", ( _xmhfhic_common_slab_info_table[i].slab_inuse ? "true" : "false") );
+				//_XDPRINTF_("	slab_macmid=%08x\n", _xmhfhic_common_slab_info_table[i].slab_macmid);
+				_XDPRINTF_("	slab_privilegemask=%08x\n", _xmhfhic_common_slab_info_table[i].slab_privilegemask);
+				//_XDPRINTF_("	slab_tos=%08x\n", _xmhfhic_common_slab_info_table[i].slab_tos);
+				_XDPRINTF_("  slab_code(%08x-%08x)\n", _xmhfhic_common_slab_info_table[i].slab_physmem_extents[0].addr_start, _xmhfhic_common_slab_info_table[i].slab_physmem_extents[0].addr_end);
+				_XDPRINTF_("  slab_rwdata(%08x-%08x)\n", _xmhfhic_common_slab_info_table[i].slab_physmem_extents[1].addr_start, _xmhfhic_common_slab_info_table[i].slab_physmem_extents[1].addr_end);
+				_XDPRINTF_("  slab_rodata(%08x-%08x)\n", _xmhfhic_common_slab_info_table[i].slab_physmem_extents[2].addr_start, _xmhfhic_common_slab_info_table[i].slab_physmem_extents[2].addr_end);
+				_XDPRINTF_("  slab_stack(%08x-%08x)\n", _xmhfhic_common_slab_info_table[i].slab_physmem_extents[3].addr_start, _xmhfhic_common_slab_info_table[i].slab_physmem_extents[3].addr_end);
+				_XDPRINTF_("  slab_dmadata(%08x-%08x)\n", _xmhfhic_common_slab_info_table[i].slab_physmem_extents[4].addr_start, _xmhfhic_common_slab_info_table[i].slab_physmem_extents[4].addr_end);
+				_XDPRINTF_("  slab_entrystub=%08x\n", _xmhfhic_common_slab_info_table[i].entrystub);
 		}
 	}
 
+
+    //debug
+    _XDPRINTF_("Halting!\n");
+    _XDPRINTF_("XMHF Tester Finished!\n");
+    HALT();
 
     __xmhfhic_arch_initialize_slab_tables();
 
@@ -2638,7 +2643,7 @@ void xmhfhic_arch_relinquish_control_to_init_slab(u64 cpuid){
     }*/
 
     _XDPRINTF_("%s[%u]: proceeding to call init slab at %x\n", __FUNCTION__, (u32)cpuid,
-                _slab_table[XMHF_HYP_SLAB_HICTESTSLAB1].entrystub);
+                _xmhfhic_common_slab_info_table[XMHF_HYP_SLAB_HICTESTSLAB1].entrystub);
 
 
     //switch page tables to init slab pagetables
@@ -2646,7 +2651,7 @@ void xmhfhic_arch_relinquish_control_to_init_slab(u64 cpuid){
          "movq %0, %%rax \r\n"
          "movq %%rax, %%cr3 \r\n"
         :
-        : "m" (_slab_table[XMHF_HYP_SLAB_HICTESTSLAB1].slab_macmid)
+        : "m" (_xmhfhic_common_slab_info_table[XMHF_HYP_SLAB_HICTESTSLAB1].archdata.mempgtbl_cr3)
         : "rax"
     );
 
@@ -2677,7 +2682,7 @@ void xmhfhic_arch_relinquish_control_to_init_slab(u64 cpuid){
         :
         : "m" (cpuid),
           "i" (NULL),
-          "m" (_slab_table[XMHF_HYP_SLAB_HICTESTSLAB1].entrystub),
+          "m" (_xmhfhic_common_slab_info_table[XMHF_HYP_SLAB_HICTESTSLAB1].entrystub),
           "i" (0),
           "i" (0),
           "i" (0xFFFFFFFFFFFFFFFFULL),
