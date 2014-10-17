@@ -73,6 +73,8 @@
 #ifndef __ASSEMBLY__
 typedef void slab_input_params_t;
 typedef void slab_output_params_t;
+typedef u64 slab_privilegemask_t;
+typedef void * slab_entrystub_t;
 
 typedef struct {
     u64 src_slabid;
@@ -80,24 +82,6 @@ typedef struct {
     u64 hic_calltype;
     u64 return_address;
 } __xmhfhic_safestack_element_t;
-
-
-void xmhfhic_arch_sanity_check_requirements(void);
-void xmhfhic_arch_setup_slab_device_allocation(void);
-void xmhfhic_arch_setup_hypervisor_slab_page_tables(void);
-void xmhfhic_arch_setup_guest_slab_page_tables(void);
-void xmhfhic_arch_switch_to_smp(void);
-void xmhfhic_arch_setup_base_cpu_data_structures(void);
-void xmhf_hic_arch_setup_cpu_state(u64 cpuid);
-void xmhfhic_smp_entry(u64 cpuid);
-void xmhfhic_arch_relinquish_control_to_init_slab(u64 cpuid);
-
-
-void __xmhfhic_safepush(u64 cpuid, u64 src_slabid, u64 dst_slabid, u64 hic_calltype, u64 return_address);
-void __xmhfhic_safepop(u64 cpuid, u64 *src_slabid, u64 *dst_slabid, u64 *hic_calltype, u64 *return_address);
-__attribute__((naked)) void __xmhfhic_rtm_trampoline_stub(void);
-void __xmhfhic_rtm_trampoline(u64 cpuid, slab_input_params_t *iparams, u64 iparams_size, slab_output_params_t *oparams, u64 oparams_size, u64 dst_slabid, u64 src_slabid, u64 return_address, u64 hic_calltype);
-
 
 
 #define HIC_SLAB_PHYSMEM_EXTENT_READ       (1 << 0)
@@ -119,8 +103,6 @@ typedef struct {
 	u64 end;
 } slab_section_t;
 
-typedef void * slab_entrystub_t;
-
 typedef struct {
 	u64 slab_index;
 	u64 slab_macmid;
@@ -133,6 +115,39 @@ typedef struct {
 	slab_section_t slab_dmadata;
 	slab_entrystub_t entrystub;
 } slab_header_t;
+
+
+typedef struct {
+    __attribute__((aligned(4096))) slab_info_archdata_t archdata;
+	bool slab_inuse;
+    slab_privilegemask_t slab_privilegemask;
+    slab_physmem_extent_t slab_physmem_extent[HIC_SLAB_PHYSMEM_MAXEXTENTS];
+	slab_entrystub_t entrystub;
+} __attribute__((packed)) __attribute__((aligned(4096))) slab_info_t;
+
+
+void xmhfhic_arch_sanity_check_requirements(void);
+void xmhfhic_arch_setup_slab_device_allocation(void);
+void xmhfhic_arch_setup_hypervisor_slab_page_tables(void);
+void xmhfhic_arch_setup_guest_slab_page_tables(void);
+void xmhfhic_arch_switch_to_smp(void);
+void xmhfhic_arch_setup_base_cpu_data_structures(void);
+void xmhf_hic_arch_setup_cpu_state(u64 cpuid);
+void xmhfhic_smp_entry(u64 cpuid);
+void xmhfhic_arch_relinquish_control_to_init_slab(u64 cpuid);
+
+
+void __xmhfhic_safepush(u64 cpuid, u64 src_slabid, u64 dst_slabid, u64 hic_calltype, u64 return_address);
+void __xmhfhic_safepop(u64 cpuid, u64 *src_slabid, u64 *dst_slabid, u64 *hic_calltype, u64 *return_address);
+__attribute__((naked)) void __xmhfhic_rtm_trampoline_stub(void);
+void __xmhfhic_rtm_trampoline(u64 cpuid, slab_input_params_t *iparams, u64 iparams_size, slab_output_params_t *oparams, u64 oparams_size, u64 dst_slabid, u64 src_slabid, u64 return_address, u64 hic_calltype);
+
+
+
+
+
+
+
 
 
 typedef struct {
