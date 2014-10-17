@@ -168,30 +168,22 @@ typedef struct {
 
 
 
-
+//init, setup data
 extern __attribute__(( section(".sharedro_xcbootinfoptr") )) XMHF_BOOTINFO *xcbootinfo;
-extern slab_header_t _slab_table[XMHF_HIC_MAX_SLABS];
 extern slab_physmem_extent_t _xmhfhic_init_setupdata_slab_physmem_extents[XMHF_HIC_MAX_SLABS][HIC_SLAB_PHYSMEM_MAXEXTENTS];
+extern slab_physmem_extent_t _xmhfhic_init_setupdata_hic_physmem_extents[HIC_SLAB_PHYSMEM_MAXEXTENTS];
 
+//common data
+extern slab_header_t _slab_table[XMHF_HIC_MAX_SLABS];
+extern slab_physmem_extent_t _xmhfhic_common_hic_physmem_extents[HIC_SLAB_PHYSMEM_MAXEXTENTS];
 
-
-
+//runtime data
 extern u64 __xmhfhic_safestack_indices[MAX_PLATFORM_CPUS];
 extern __xmhfhic_safestack_element_t __xmhfhic_safestack[MAX_PLATFORM_CPUS][512];
 
 
 
 
-extern u8 _xmhfhic_sharedro_start[];
-extern u8 _xmhfhic_sharedro_end[];
-extern u8 _xmhfhic_code_start[];
-extern u8 _xmhfhic_code_end[];
-extern u8 _xmhfhic_rwdata_start[];
-extern u8 _xmhfhic_rwdata_end[];
-extern u8 _xmhfhic_rodata_start[];
-extern u8 _xmhfhic_rodata_end[];
-extern u8 _xmhfhic_stack_start[];
-extern u8 _xmhfhic_stack_end[];
 
 
 

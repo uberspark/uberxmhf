@@ -10,6 +10,32 @@ print "\n/* author: amit vasudevan (amitvasudevan@acm.org) */";
 
 print "\n#include <xmhf.h>";
 
+print "\n";
+print "\nextern u8 _xmhfhic_sharedro_start[];";
+print "\nextern u8 _xmhfhic_sharedro_end[];";
+print "\nextern u8 _xmhfhic_code_start[];";
+print "\nextern u8 _xmhfhic_code_end[];";
+print "\nextern u8 _xmhfhic_rwdata_start[];";
+print "\nextern u8 _xmhfhic_rwdata_end[];";
+print "\nextern u8 _xmhfhic_rodata_start[];";
+print "\nextern u8 _xmhfhic_rodata_end[];";
+print "\nextern u8 _xmhfhic_stack_start[];";
+print "\nextern u8 _xmhfhic_stack_end[];";
+
+
+print "\n";
+print "\nslab_physmem_extent_t _xmhfhic_init_setupdata_hic_physmem_extents[HIC_SLAB_PHYSMEM_MAXEXTENTS] = {";
+	print "\n";
+	print "\n	{.addr_start = _xmhfhic_sharedro_start, .addr_end = _xmhfhic_sharedro_end, .protection = 0},";
+	print "\n	{.addr_start = _xmhfhic_code_start, .addr_end = _xmhfhic_code_end, .protection = 0},";
+	print "\n	{.addr_start = _xmhfhic_rwdata_start, .addr_end = _xmhfhic_rwdata_end, .protection = 0},";
+	print "\n	{.addr_start = _xmhfhic_rodata_start, .addr_end = _xmhfhic_rodata_end, .protection = 0},";
+	print "\n	{.addr_start = _xmhfhic_stack_start, .addr_end = _xmhfhic_stack_end, .protection = 0},";
+print "\n};";
+
+
+
+
 while( $i <= $#ARGV) {
 	print "\n";
 	print "\nextern u8 _slab_$ARGV[$i]_code_start[];";
