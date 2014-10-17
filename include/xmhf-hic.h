@@ -123,6 +123,7 @@ typedef struct {
     __attribute__((aligned(4096))) slab_info_archdata_t archdata;
 	bool slab_inuse;
     slab_privilegemask_t slab_privilegemask;
+    slab_callcaps_t slab_callcaps;
     slab_physmem_extent_t slab_physmem_extents[HIC_SLAB_PHYSMEM_MAXEXTENTS];
 	slab_entrystub_t entrystub;
 } __attribute__((packed)) __attribute__((aligned(4096))) slab_info_t;
@@ -131,7 +132,7 @@ typedef struct {
 typedef struct {
     slab_privilegemask_t slab_privilegemask;
     slab_callcaps_t slab_callcaps;
-    u64 archparams;
+    u64 slab_archparams;
 } __attribute__((packed)) slab_caps_t;
 
 
