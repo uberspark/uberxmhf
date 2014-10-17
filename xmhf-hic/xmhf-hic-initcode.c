@@ -130,6 +130,11 @@ void xmhfhic_entry(void){
     }
 
 
+    //initialize HIC physical memory extents
+    memcpy(_xmhfhic_common_hic_physmem_extents,
+           _xmhfhic_init_setupdata_hic_physmem_extents,
+           sizeof(_xmhfhic_common_hic_physmem_extents));
+
 
     //sanity check HIC (hardware) requirements
     xmhfhic_arch_sanity_check_requirements();

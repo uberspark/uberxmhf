@@ -1361,18 +1361,18 @@ void xmhfhic_arch_setup_hypervisor_slab_page_tables(void){
 	//print out HIC section information
     {
 		_XDPRINTF_("xmhfhic section info:\n");
-		_XDPRINTF_("  xmhfhic sharedro(%08x-%08x)\n", _xmhfhic_sharedro_start, _xmhfhic_sharedro_end);
-		_XDPRINTF_("  xmhfhic code(%08x-%08x)\n", _xmhfhic_code_start, _xmhfhic_code_end);
-		_XDPRINTF_("  xmhfhic rwdata(%08x-%08x)\n", _xmhfhic_rwdata_start, _xmhfhic_rwdata_end);
-		_XDPRINTF_("  xmhfhic rodata(%08x-%08x)\n", _xmhfhic_rodata_start, _xmhfhic_rodata_end);
-		_XDPRINTF_("  xmhfhic stack(%08x-%08x)\n", _xmhfhic_stack_start, _xmhfhic_stack_end);
+		_XDPRINTF_("  xmhfhic sharedro(%08x-%08x)\n", _xmhfhic_common_hic_physmem_extents[0].addr_start, _xmhfhic_common_hic_physmem_extents[0].addr_end);
+		_XDPRINTF_("  xmhfhic code(%08x-%08x)\n", _xmhfhic_common_hic_physmem_extents[1].addr_start, _xmhfhic_common_hic_physmem_extents[1].addr_end);
+		_XDPRINTF_("  xmhfhic rwdata(%08x-%08x)\n", _xmhfhic_common_hic_physmem_extents[2].addr_start, _xmhfhic_common_hic_physmem_extents[2].addr_end);
+		_XDPRINTF_("  xmhfhic rodata(%08x-%08x)\n", _xmhfhic_common_hic_physmem_extents[3].addr_start, _xmhfhic_common_hic_physmem_extents[3].addr_end);
+		_XDPRINTF_("  xmhfhic stack(%08x-%08x)\n", _xmhfhic_common_hic_physmem_extents[4].addr_start, _xmhfhic_common_hic_physmem_extents[4].addr_end);
     }
 
-	//print out hypervisor slab table
+	//print out slab table
 	{
 			u32 i;
 
-			for(i=0; i < XMHF_HIC_HYP_SLABS_COUNT; i++){
+			for(i=0; i < XMHF_HIC_MAX_SLABS; i++){
 				_XDPRINTF_("slab %u: dumping slab header\n", i);
 				_XDPRINTF_("	slab_index=%u\n", _slab_table[i].slab_index);
 				_XDPRINTF_("	slab_macmid=%08x\n", _slab_table[i].slab_macmid);
