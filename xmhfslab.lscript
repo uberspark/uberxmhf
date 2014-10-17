@@ -79,6 +79,7 @@ SECTIONS
 	} >slabmem =0x0000
 
 	.slabstack : {
+		*(.stackhdr)
 		*(.stack)
 		*(.note.GNU-stack)
 	} >slabmem =0x0000
