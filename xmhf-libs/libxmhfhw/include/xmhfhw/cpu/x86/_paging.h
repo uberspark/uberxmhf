@@ -105,9 +105,15 @@
 #define PAE_PT_SHIFT       12
 #define PAE_PDT_SHIFT      21
 #define PAE_PDPT_SHIFT     30
-#define PAE_PT_MASK        0x001ff000
-#define PAE_PDT_MASK       0x3fe00000
-#define PAE_PDPT_MASK      0xc0000000
+#define PAE_PML4T_SHIFT    39
+
+
+#define PAE_PT_MASK        0x00000000001ff000ULL
+#define PAE_PDT_MASK       0x000000003fe00000ULL
+#define PAE_PDPT_MASK      0x0000007fc0000000ULL
+#define PAE_PMl4T_MASK     0x0000ff8000000000ULL
+
+
 #define PAE_ENTRY_SIZE     8
 
 // various paging flags
@@ -272,6 +278,11 @@ typedef u32 *npt_t;
 /* get offset field of a vaddr in a 4M page */
 #define npae_get_offset_big(vaddr) \
   ((u32)(vaddr) & ((u32)PAGE_SIZE_4M - 1))
+
+
+/* get index field of a paddr in a pml4t level */
+#define pae_get_pml4t_index(paddr)\
+    (((paddr) & PAE_PML4T_MASK) >> PAE_PML4T_SHIFT)
 
 /* get index field of a paddr in a pdp level */
 #define pae_get_pdpt_index(paddr)\
