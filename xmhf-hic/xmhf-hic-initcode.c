@@ -110,19 +110,22 @@ void xmhfhic_entry(void){
     //sanity check HIC (hardware) requirements
     xmhfhic_arch_sanity_check_requirements();
 
-    //setup slab system device allocation
+    //setup slab system device allocation and device page tables
     xmhfhic_arch_setup_slab_device_allocation();
 
-    //setup hypervisor slab page tables
+    /*//setup hypervisor slab page tables
     xmhfhic_arch_setup_hypervisor_slab_page_tables();
+
+    //seutp guest slab page tables
+    xmhfhic_arch_setup_guest_slab_page_tables();*/
+
+    //setup slab memory page tables
+    xmhfhic_arch_setup_slab_mem_page_tables();
 
     //debug
     _XDPRINTF_("Halting!\n");
     _XDPRINTF_("XMHF Tester Finished!\n");
     HALT();
-
-    //seutp guest slab page tables
-    xmhfhic_arch_setup_guest_slab_page_tables();
 
 
     //setup base CPU data structures

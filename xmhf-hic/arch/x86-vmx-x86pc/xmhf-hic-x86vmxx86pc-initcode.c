@@ -1269,7 +1269,8 @@ void xmhfhic_arch_setup_slab_device_allocation(void){
 
 
 //////////////////////////////////////////////////////////////////////////////
-// setup hypervisor slab page tables
+// setup slab memory page tables (smt)
+
 
 
 /*__attribute__((aligned(4096))) static struct {
@@ -1335,7 +1336,7 @@ static u32 __xmhfhic_hyp_slab_getspatype(u32 slab_index, u32 spa){
 	return _SLAB_SPATYPE_NOTASLAB;
 }
 
-static u64 __xmhfhic_hyp_slab_getptflagsforspa(u32 slab_index, u32 spa){
+static u64 __xmhfhic_hyp_slab_getptflagsforspa(u64 slabid, u32 spa){
 	u64 flags;
 /*	u32 spatype = _xcprimeon_slab_getspatype(slab_index, spa);
 	//_XDPRINTF_("\n%s: slab_index=%u, spa=%08x, spatype = %x\n", __FUNCTION__, slab_index, spa, spatype);
@@ -1390,31 +1391,31 @@ static u64 __xmhfhic_hyp_slab_getptflagsforspa(u32 slab_index, u32 spa){
 
 //
 // initialize slab page tables for a given slab index, returns the macm base
-static u32 __xmhfhic_hyp_slab_populate_pagetables(u32 slab_index){
+static u64 __xmhfhic_arch_smt_slab_populate_hyp_pagetables(u64 slabid){
 		u32 i, j;
 		u64 default_flags = (u64)(_PAGE_PRESENT) | (u64)(_PAGE_USER) | (u64)(_PAGE_RW);
 
         for(i=0; i < PAE_PTRS_PER_PML4T; i++)
-            __xmhfhic_hyp_slab_pagetables_pml4t[slab_index][i] = pae_make_pml4e(hva2spa(&__xmhfhic_hyp_slab_pagetables_pdpt[slab_index]), default_flags);
+            _xmhfhic_common_slab_info_table[slabid].archdata.mempgtbl_pml4t[i] = pae_make_pml4e(hva2spa(&_xmhfhic_common_slab_info_table[slabid].archdata.mempgtbl_pdpt), default_flags);
 
 		for(i=0; i < PAE_PTRS_PER_PDPT; i++)
-			__xmhfhic_hyp_slab_pagetables_pdpt[slab_index][i] = pae_make_pdpe(hva2spa(__xmhfhic_hyp_slab_pagetables_pdt[slab_index][i]), default_flags);
+			_xmhfhic_common_slab_info_table[slabid].archdata.mempgtbl_pdpt[i] = pae_make_pdpe(hva2spa(_xmhfhic_common_slab_info_table[slabid].archdata.mempgtbl_pdt[i]), default_flags);
 
 		//init pdts with unity mappings
 		for(i=0; i < PAE_PTRS_PER_PDPT; i++){
 			for(j=0; j < PAE_PTRS_PER_PDT; j++){
 				u32 hva = ((i * PAE_PTRS_PER_PDT) + j) * PAGE_SIZE_2M;
 				u64 spa = hva2spa((void*)hva);
-				u64 flags = __xmhfhic_hyp_slab_getptflagsforspa(slab_index, (u32)spa);
-				__xmhfhic_hyp_slab_pagetables_pdt[slab_index][i][j] = pae_make_pde_big(spa, flags);
+				u64 flags = __xmhfhic_hyp_slab_getptflagsforspa(slabid, (u32)spa);
+				_xmhfhic_common_slab_info_table[slabid].archdata.mempgtbl_pdt[i][j] = pae_make_pde_big(spa, flags);
 			}
 		}
 
-		return (u32)__xmhfhic_hyp_slab_pagetables_pml4t[slab_index];
+		return _xmhfhic_common_slab_info_table[slabid].archdata.mempgtbl_pml4t;
 }
 
 
-// initialization function for the core API interface
+/*// initialization function for the core API interface
 void __xmhfhic_arch_initialize_slab_tables(void){
 	u32 pgtblbase;
 
@@ -1454,31 +1455,11 @@ void xmhfhic_arch_setup_hypervisor_slab_page_tables(void){
 
     __xmhfhic_arch_initialize_slab_tables();
 
-}
+}*/
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-///////////////////////////////////////////////////////////////////////////
-// setup guest slab page tables
-__attribute__((aligned(4096))) static xc_partition_hptdata_x86vmx_t _hpt_data[XMHF_HIC_GUEST_SLABS_COUNT];
+//__attribute__((aligned(4096))) static xc_partition_hptdata_x86vmx_t _hpt_data[XMHF_HIC_GUEST_SLABS_COUNT];
 static struct _memorytype _vmx_ept_memorytypes[MAX_MEMORYTYPE_ENTRIES]; //EPT memory types array
 
 static void __xmhfhic_vmx_gathermemorytypes(void);
@@ -1486,30 +1467,28 @@ static u32 __xmhfhic_vmx_getmemorytypeforphysicalpage(u64 pagebaseaddr);
 static void __xmhfhic_vmx_setupEPT(u64 guestslab_id);
 
 
-static void __xmhfhic_guestpgtbl_setentry(u64 guestslab_id,  u64 gpa, u64 entry){
-    u64 *hpt = (u64 *)_hpt_data[guestslab_id].vmx_ept_p_tables;
-		u32 hpt_index = (u32)gpa / PAGE_SIZE_4K;
+static void __xmhfhic_guestpgtbl_setentry(u64 slabid,  u64 gpa, u64 entry){
+    u64 pdpt_index = pae_get_pdpt_index(gpa);
+    u64 pd_index = pae_get_pdt_index(gpa);
+    u64 pt_index = pae_get_pt_index(gpa);
 
-		hpt[hpt_index] = entry;
+    _xmhfhic_common_slab_info_table[slabid].archdata.mempgtbl_pt[pdpt_index][pd_index][pt_index] = entry;
 
 	return;
 }
 
-static void __xmhfhic_guestpgtbl_establishshape(u64 guestslab_id){
-	u64 *pml4_table, *pdp_table, *pd_table;
-	u32 i, j, paddr=0;
+static void __xmhfhic_guestpgtbl_establishshape(u64 slabid){
+	u32 i, j;
 
-	pml4_table = (u64 *)_hpt_data[guestslab_id].vmx_ept_pml4_table;
-	pml4_table[0] = (u64) (hva2spa((void*)_hpt_data[guestslab_id].vmx_ept_pdp_table) | 0x7);
+    for(i=0; i < PAE_PTRS_PER_PML4T; i++)
+        _xmhfhic_common_slab_info_table[slabid].archdata.mempgtbl_pml4t[i] = (u64) (hva2spa((void*)_xmhfhic_common_slab_info_table[slabid].archdata.mempgtbl_pdpt) | 0x7);
 
-	pdp_table = (u64 *)_hpt_data[guestslab_id].vmx_ept_pdp_table;
+	for(i=0; i < PAE_PTRS_PER_PDPT; i++)
+		_xmhfhic_common_slab_info_table[slabid].archdata.mempgtbl_pdpt[i] = (u64) ( hva2spa((void*)_xmhfhic_common_slab_info_table[slabid].archdata.mempgtbl_pdt[i]) | 0x7 );
 
 	for(i=0; i < PAE_PTRS_PER_PDPT; i++){
-		pdp_table[i] = (u64) ( hva2spa((void*)_hpt_data[guestslab_id].vmx_ept_pd_tables + (PAGE_SIZE_4K * i)) | 0x7 );
-		pd_table = (u64 *)  ((u32)_hpt_data[guestslab_id].vmx_ept_pd_tables + (PAGE_SIZE_4K * i)) ;
-
 		for(j=0; j < PAE_PTRS_PER_PDT; j++){
-			pd_table[j] = (u64) ( hva2spa((void*)_hpt_data[guestslab_id].vmx_ept_p_tables + (PAGE_SIZE_4K * ((i*PAE_PTRS_PER_PDT)+j))) | 0x7 );
+			_xmhfhic_common_slab_info_table[slabid].archdata.mempgtbl_pdt[i][j] = (u64) ( hva2spa((void*)_xmhfhic_common_slab_info_table[slabid].archdata.mempgtbl_pt[i][j]) | 0x7 );
 		}
 	}
 }
@@ -1766,7 +1745,7 @@ static u32 __xmhfhic_vmx_getmemorytypeforphysicalpage(u64 pagebaseaddr){
 
 
 //---setup EPT for VMX----------------------------------------------------------
-static void __xmhfhic_vmx_setupEPT(u64 guestslab_id){
+static void __xmhfhic_vmx_setupEPT(u64 slabid){
 	u64 p_table_value;
 	u64 gpa;
     slab_retval_t srval;
@@ -1784,21 +1763,73 @@ static void __xmhfhic_vmx_setupEPT(u64 guestslab_id){
 				p_table_value = (u64) (gpa)  | ((u64)6 << 3) | (u64)0x7 ;	//present, WB, track host MTRR
 		}
 
-        __xmhfhic_guestpgtbl_setentry(guestslab_id, gpa, p_table_value);
+        __xmhfhic_guestpgtbl_setentry(slabid, gpa, p_table_value);
 
 	}
 }
 
 
-void xmhfhic_arch_setup_guest_slab_page_tables(void){
+static u64 __xmhfhic_arch_smt_slab_populate_guest_pagetables(u64 slabid){
 
+    __xmhfhic_guestpgtbl_establishshape(slabid);
+
+	__xmhfhic_vmx_setupEPT(slabid);
+
+    return _xmhfhic_common_slab_info_table[slabid].archdata.mempgtbl_pml4t;
+}
+
+
+void xmhfhic_arch_setup_slab_mem_page_tables(void){
+
+	_XDPRINTF_("%s: starting...\n", __FUNCTION__);
+
+    //gather memory types for EPT (for guest slabs)
     __xmhfhic_vmx_gathermemorytypes();
 
-    __xmhfhic_guestpgtbl_establishshape(0);
+	//setup slab memory page tables
+	{
+		u32 i;
+		for(i=0; i < XMHF_HIC_MAX_SLABS; i++){
+				_XDPRINTF_("slab %u: pml4t=%016llx\n", i,
+                    (u32)_xmhfhic_common_slab_info_table[i].archdata.mempgtbl_pml4t);
 
-	__xmhfhic_vmx_setupEPT(0);
+                switch(_xmhfhic_common_slab_info_table[i].archdata.slabtype){
+                    case HIC_SLAB_X86VMXX86PC_HYPERVISOR:{
+                        #if 1
+                        _xmhfhic_common_slab_info_table[i].archdata.mempgtbl_cr3 = __xmhfhic_arch_smt_slab_populate_hyp_pagetables(i) | (u32)(i+1) | 0x8000000000000000ULL;
+                        #else
+                        _xmhfhic_common_slab_info_table[i].archdata.mempgtbl_cr3 = __xmhfhic_arch_smt_slab_populate_hyp_pagetables(i);
+                        #endif
+                    }
+                    break;
+
+                    case HIC_SLAB_X86VMXX86PC_GUEST:{
+                        _xmhfhic_common_slab_info_table[i].archdata.mempgtbl_cr3 = __xmhfhic_arch_smt_slab_populate_guest_pagetables(i);
+                    }
+                    break;
+
+                    default: //unallocated slab or an unknown slabtype
+                        break;
+                }
+
+		}
+
+	}
+
+	_XDPRINTF_("%s: setup slab memory page tables\n", __FUNCTION__);
 
 }
+
+
+
+
+
+
+
+
+
+
+
 
 
 
