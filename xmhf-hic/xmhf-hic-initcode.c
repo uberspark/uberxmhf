@@ -122,12 +122,6 @@ void xmhfhic_entry(void){
     //setup slab memory page tables
     xmhfhic_arch_setup_slab_mem_page_tables();
 
-    //debug
-    _XDPRINTF_("Halting!\n");
-    _XDPRINTF_("XMHF Tester Finished!\n");
-    HALT();
-
-
     //setup base CPU data structures
     xmhfhic_arch_setup_base_cpu_data_structures();
 
