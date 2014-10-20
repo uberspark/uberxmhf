@@ -729,6 +729,15 @@ void xmhfhic_arch_setup_slab_info(void){
             _xmhfhic_common_slab_info_table[i].archdata.mempgtbl_initialized=false;
             _xmhfhic_common_slab_info_table[i].archdata.devpgtbl_initialized=false;
 
+            {
+                u32 j;
+                u64 *slab_stackhdr = (u64 *)_xmhfhic_common_slab_info_table[i].slab_physmem_extents[3].addr_start;
+                if(slab_stackhdr){
+                    for(j=0; j < MAX_PLATFORM_CPUS; j++)
+                        _xmhfhic_common_slab_info_table[i].archdata.slabtos[j]=slab_stackhdr[j];
+                }
+            }
+
 
         }
     }
@@ -748,6 +757,7 @@ void xmhfhic_arch_setup_slab_info(void){
 		_XDPRINTF_("  xmhfhic rwdata(%08x-%08x)\n", _xmhfhic_common_hic_physmem_extents[2].addr_start, _xmhfhic_common_hic_physmem_extents[2].addr_end);
 		_XDPRINTF_("  xmhfhic rodata(%08x-%08x)\n", _xmhfhic_common_hic_physmem_extents[3].addr_start, _xmhfhic_common_hic_physmem_extents[3].addr_end);
 		_XDPRINTF_("  xmhfhic stack(%08x-%08x)\n", _xmhfhic_common_hic_physmem_extents[4].addr_start, _xmhfhic_common_hic_physmem_extents[4].addr_end);
+
     }
 
 	//print out slab table
@@ -769,6 +779,15 @@ void xmhfhic_arch_setup_slab_info(void){
 				_XDPRINTF_("  slab_stack(%08x-%08x)\n", _xmhfhic_common_slab_info_table[i].slab_physmem_extents[3].addr_start, _xmhfhic_common_slab_info_table[i].slab_physmem_extents[3].addr_end);
 				_XDPRINTF_("  slab_dmadata(%08x-%08x)\n", _xmhfhic_common_slab_info_table[i].slab_physmem_extents[4].addr_start, _xmhfhic_common_slab_info_table[i].slab_physmem_extents[4].addr_end);
 				_XDPRINTF_("  slab_entrystub=%08x\n", _xmhfhic_common_slab_info_table[i].entrystub);
+
+                {
+                    u32 j;
+
+                    for(j=0; j < MAX_PLATFORM_CPUS; j++)
+                        _XDPRINTF_("     CPU %u: stack TOS=%016llx\n", j,
+                               _xmhfhic_common_slab_info_table[i].archdata.slabtos[j]);
+                }
+
 		}
 	}
 
