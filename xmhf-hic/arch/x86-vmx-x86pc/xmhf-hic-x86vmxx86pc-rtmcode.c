@@ -54,7 +54,7 @@
 //#include <xmhf-core.h>
 #include <xmhf-debug.h>
 
-static void xmhf_xcphandler_arch_unhandled(u64 vector, x86regs64_t *r){
+static void xmhf_xcphandler_arch_unhandled(u64 vector, void *exdata){
 	x86idt64_stackframe_t *exframe = NULL;
     u64 errorcode=0;
 
@@ -68,68 +68,101 @@ static void xmhf_xcphandler_arch_unhandled(u64 vector, x86regs64_t *r){
 		vector == CPU_EXCEPTION_GP ||
 		vector == CPU_EXCEPTION_PF ||
 		vector == CPU_EXCEPTION_AC){
-		errorcode = *(u64 *)(r->rsp);
-		r->rsp += sizeof(u64);
+        x86vmx_exception_frame_errcode_t *exframe = (x86vmx_exception_frame_errcode_t *)exdata;
+
+        //dump relevant info
+        _XDPRINTF_("unhandled exception %x, halting!\n", exframe->vector);
+        _XDPRINTF_("state dump:\n\n");
+        _XDPRINTF_("errorcode=0x%016llx\n", exframe->errorcode);
+        _XDPRINTF_("CS:RIP:RFLAGS = 0x%016llx:0x%016llx:0x%016llx\n", exframe->orig_cs, exframe->orig_rip, exframe->orig_rflags);
+        _XDPRINTF_("SS:RSP = 0x%016llx:0x%016llx\n", exframe->orig_ss, exframe->orig_rsp);
+        _XDPRINTF_("CR0=0x%016llx, CR2=0x%016llx\n", read_cr0(), read_cr2());
+        _XDPRINTF_("CR3=0x%016llx, CR4=0x%016llx\n", read_cr3(), read_cr4());
+        _XDPRINTF_("CS=0x%04x, DS=0x%04x, ES=0x%04x, SS=0x%04x\n", (u16)read_segreg_cs(), (u16)read_segreg_ds(), (u16)read_segreg_es(), (u16)read_segreg_ss());
+        _XDPRINTF_("FS=0x%04x, GS=0x%04x\n", (u16)read_segreg_fs(), (u16)read_segreg_gs());
+        _XDPRINTF_("TR=0x%04x\n", (u16)read_tr_sel());
+        _XDPRINTF_("RAX=0x%016llx, RBX=0%016llx\n", exframe->rax, exframe->rbx);
+        _XDPRINTF_("RCX=0x%016llx, RDX=0%016llx\n", exframe->rcx, exframe->rdx);
+        _XDPRINTF_("RSI=0x%016llx, RDI=0%016llx\n", exframe->rsi, exframe->rdi);
+        _XDPRINTF_("RBP=0x%016llx, RSP=0%016llx\n", exframe->rbp, exframe->rsp);
+        _XDPRINTF_("R8=0x%016llx, R9=0%016llx\n", exframe->r8, exframe->r9);
+        _XDPRINTF_("R10=0x%016llx, R11=0%016llx\n", exframe->r10, exframe->r11);
+        _XDPRINTF_("R12=0x%016llx, R13=0%016llx\n", exframe->r12, exframe->r13);
+        _XDPRINTF_("R14=0x%016llx, R15=0%016llx\n", exframe->r14, exframe->r15);
+
+        //do a stack dump in the hopes of getting more info.
+        {
+            u64 i;
+            u64 stack_start = exframe->orig_rsp;
+            _XDPRINTF_("\n-----stack dump (8 entries)-----\n");
+            for(i=stack_start; i < stack_start+(8*sizeof(u64)); i+=sizeof(u64)){
+                _XDPRINTF_("Stack(0x%016llx) -> 0x%016llx\n", i, *(u64 *)i);
+            }
+            _XDPRINTF_("\n-----stack dump end-------------\n");
+        }
+
+	}else{
+
+        x86vmx_exception_frame_t *exframe = (x86vmx_exception_frame_t *)exdata;
+
+        //dump relevant info
+        _XDPRINTF_("unhandled exception %x, halting!\n", exframe->vector);
+        _XDPRINTF_("state dump:\n\n");
+        //_XDPRINTF_("errorcode=0x%016llx\n", exframe->errorcode);
+        _XDPRINTF_("CS:RIP:RFLAGS = 0x%016llx:0x%016llx:0x%016llx\n", exframe->orig_cs, exframe->orig_rip, exframe->orig_rflags);
+        _XDPRINTF_("SS:RSP = 0x%016llx:0x%016llx\n", exframe->orig_ss, exframe->orig_rsp);
+        _XDPRINTF_("CR0=0x%016llx, CR2=0x%016llx\n", read_cr0(), read_cr2());
+        _XDPRINTF_("CR3=0x%016llx, CR4=0x%016llx\n", read_cr3(), read_cr4());
+        _XDPRINTF_("CS=0x%04x, DS=0x%04x, ES=0x%04x, SS=0x%04x\n", (u16)read_segreg_cs(), (u16)read_segreg_ds(), (u16)read_segreg_es(), (u16)read_segreg_ss());
+        _XDPRINTF_("FS=0x%04x, GS=0x%04x\n", (u16)read_segreg_fs(), (u16)read_segreg_gs());
+        _XDPRINTF_("TR=0x%04x\n", (u16)read_tr_sel());
+        _XDPRINTF_("RAX=0x%016llx, RBX=0%016llx\n", exframe->rax, exframe->rbx);
+        _XDPRINTF_("RCX=0x%016llx, RDX=0%016llx\n", exframe->rcx, exframe->rdx);
+        _XDPRINTF_("RSI=0x%016llx, RDI=0%016llx\n", exframe->rsi, exframe->rdi);
+        _XDPRINTF_("RBP=0x%016llx, RSP=0%016llx\n", exframe->rbp, exframe->rsp);
+        _XDPRINTF_("R8=0x%016llx, R9=0%016llx\n", exframe->r8, exframe->r9);
+        _XDPRINTF_("R10=0x%016llx, R11=0%016llx\n", exframe->r10, exframe->r11);
+        _XDPRINTF_("R12=0x%016llx, R13=0%016llx\n", exframe->r12, exframe->r13);
+        _XDPRINTF_("R14=0x%016llx, R15=0%016llx\n", exframe->r14, exframe->r15);
+
+        //do a stack dump in the hopes of getting more info.
+        {
+            u64 i;
+            u64 stack_start = exframe->orig_rsp;
+            _XDPRINTF_("\n-----stack dump (8 entries)-----\n");
+            for(i=stack_start; i < stack_start+(8*sizeof(u64)); i+=sizeof(u64)){
+                _XDPRINTF_("Stack(0x%016llx) -> 0x%016llx\n", i, *(u64 *)i);
+            }
+            _XDPRINTF_("\n-----stack dump end-------------\n");
+        }
+
+
+
 	}
 
-    //get idt stack frame
-    exframe = (x86idt64_stackframe_t *)r->rsp;
-
-    //dump relevant info
-	_XDPRINTF_("unhandled exception %x, halting!\n", vector);
-	_XDPRINTF_("state dump:\n\n");
-	_XDPRINTF_("errorcode=0x%016llx\n", errorcode);
-	_XDPRINTF_("CS:RIP:RFLAGS = 0x%016llx:0x%016llx:0x%016llx\n", exframe->cs, exframe->rip, exframe->rflags);
-	_XDPRINTF_("SS:RSP = 0x%016llx:0x%016llx\n", exframe->ss, exframe->rsp);
-	_XDPRINTF_("CR0=0x%016llx, CR2=0x%016llx\n", read_cr0(), read_cr2());
-	_XDPRINTF_("CR3=0x%016llx, CR4=0x%016llx\n", read_cr3(), read_cr4());
-	_XDPRINTF_("CS=0x%04x, DS=0x%04x, ES=0x%04x, SS=0x%04x\n", (u16)read_segreg_cs(), (u16)read_segreg_ds(), (u16)read_segreg_es(), (u16)read_segreg_ss());
-	_XDPRINTF_("FS=0x%04x, GS=0x%04x\n", (u16)read_segreg_fs(), (u16)read_segreg_gs());
-	_XDPRINTF_("TR=0x%04x\n", (u16)read_tr_sel());
-	_XDPRINTF_("RAX=0x%016llx, RBX=0%016llx\n", r->rax, r->rbx);
-	_XDPRINTF_("RCX=0x%016llx, RDX=0%016llx\n", r->rcx, r->rdx);
-	_XDPRINTF_("RSI=0x%016llx, RDI=0%016llx\n", r->rsi, r->rdi);
-	_XDPRINTF_("RBP=0x%016llx, RSP=0%016llx\n", r->rbp, r->rsp);
-	_XDPRINTF_("R8=0x%016llx, R9=0%016llx\n", r->r8, r->r9);
-	_XDPRINTF_("R10=0x%016llx, R11=0%016llx\n", r->r10, r->r11);
-	_XDPRINTF_("R12=0x%016llx, R13=0%016llx\n", r->r12, r->r13);
-	_XDPRINTF_("R14=0x%016llx, R15=0%016llx\n", r->r14, r->r15);
-
-	//do a stack dump in the hopes of getting more info.
-	{
-		u64 i;
-		u64 stack_start = r->rsp;
-		_XDPRINTF_("\n-----stack dump (8 entries)-----\n");
-		for(i=stack_start; i < stack_start+(8*sizeof(u64)); i+=sizeof(u64)){
-			_XDPRINTF_("Stack(0x%016llx) -> 0x%016llx\n", i, *(u64 *)i);
-		}
-		_XDPRINTF_("\n-----stack dump end-------------\n");
-	}
 }
 
 //==========================================================================================
 
 //exception handler hub
 bool xmhf_xcphandler_arch_hub(u64 vector, void *exdata){
-    bool returnfromexcp=false;
-    x86regs64_t *r = (x86regs64_t *)exdata;
+    bool poperrorcode=false;
 
 	switch(vector){
 			case 0x3:{
-                xmhf_xcphandler_arch_unhandled(vector, r);
+                xmhf_xcphandler_arch_unhandled(vector, exdata);
 				_XDPRINTF_("%s: exception 3, returning\n", __FUNCTION__);
-                returnfromexcp=true;
 			}
 			break;
 
 			default:{
-				xmhf_xcphandler_arch_unhandled(vector, r);
+				xmhf_xcphandler_arch_unhandled(vector, exdata);
 				_XDPRINTF_("\nHalting System!\n");
-				returnfromexcp=false;
+				HALT();
 			}
 	}
 
-    return returnfromexcp;
+    return poperrorcode;
 }
 
 
@@ -331,10 +364,6 @@ __attribute__((naked)) void __xmhfhic_rtm_exception_stub(void){
                         "callq xmhf_xcphandler_arch_hub \r\n"
 
                         "cmpq $0, %%rax \r\n"
-                        "jne 1f \r\n"
-                        "2: hlt \r\n"
-
-                        "1: \r\n"
 
                         "popq %%r8 \r\n"
                         "popq %%r9 \r\n"
@@ -353,10 +382,13 @@ __attribute__((naked)) void __xmhfhic_rtm_exception_stub(void){
                         "popq %%rbp \r\n"
                         "popq %%rsp \r\n"
 
+                        "je 1f \r\n"
+                        "addq $0x8, %%rsp \r\n"
+
+                        "1: \r\n"
                         "addq $0x8, %%rsp \r\n"
 
                         "iretq \r\n"
-
 					:
 					:
                     :
@@ -389,7 +421,7 @@ __attribute__((naked)) void __xmhfhic_rtm_trampoline_stub(void){
         "pushq %%r11 \r\n"          //push return address
 
        	"movq %1, %%rax \r\n"       //RAX=X86XMP_LAPIC_ID_MEMORYADDRESS
-		"movl (%%rax), %%eax\r\n"   //EAX(bits 0-7)=LAPIC ID
+		"movl (%%eax), %%eax\r\n"   //EAX(bits 0-7)=LAPIC ID
         "shrl $24, %%eax\r\n"       //EAX=LAPIC ID
         "movq __xmhfhic_x86vmx_cpuidtable+0x0(,%%eax,8), %%rax\r\n" //RAX = 0-based cpu index for the CPU
         "pushq %%rax \r\n"          //push cpuid
@@ -419,11 +451,12 @@ void __xmhfhic_rtm_trampoline(u64 hic_calltype, slab_input_params_t *iparams, u6
     _XDPRINTF_("%s[%u]: Trampoline got control: RSP=%016llx\n",
                     __FUNCTION__, (u32)cpuid, read_rsp());
 
-    _XDPRINTF_("%s[%u]: Trampoline got control: cpuid=%u, iparams=%x, iparams_size=%u, \
-               oparams=%x, oparams_size=%u, dst_slabid=%x, src_slabid=%x, return_address=%016llx \
-               hic_calltype=%x\n",
-                    __FUNCTION__, (u32)cpuid, cpuid, iparams, iparams_size, oparams, oparams_size,
-               dst_slabid, src_slabid, return_address, hic_calltype);
+    _XDPRINTF_("%s[%u]: Trampoline got control: hic_calltype=%x, iparams=%x, iparams_size=%u, \
+               oparams=%x, oparams_size=%u, dst_slabid=%x, src_slabid=%x, cpuid=%x, return_address=%016llx \
+               return_rsp=%x\n",
+                    __FUNCTION__, (u32)cpuid,
+               hic_calltype, iparams, iparams_size, oparams, oparams_size,
+               dst_slabid, src_slabid, cpuid, return_address, return_rsp);
 
     switch(hic_calltype){
         case XMHF_HIC_SLABCALL:
