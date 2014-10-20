@@ -76,7 +76,7 @@ static void _hictestslab1_dotests(u64 cpuid){
 
             {
 
-                XMHF_SLAB_CALL(hictestslab2, XMHF_HYP_SLAB_HICTESTSLAB2, cpuid, NULL, 0, NULL, 0);
+                XMHF_SLAB_CALL(hictestslab2, XMHF_HYP_SLAB_HICTESTSLAB2, NULL, 0, NULL, 0);
 
             }
 
@@ -130,17 +130,17 @@ void hictestslab1_interface(slab_input_params_t *iparams, u64 iparams_size, slab
 
 
 
-        /*_XDPRINTF_("%s[%u]: Proceeding to call hictestslab2 interface; RSP=%016llx\n",
+        _XDPRINTF_("%s[%u]: Proceeding to call hictestslab2 interface; RSP=%016llx\n",
                 __FUNCTION__, (u32)cpuid, read_rsp());
 
         inputval = 0xAABB;
-        XMHF_SLAB_CALL(hictestslab2, XMHF_HYP_SLAB_HICTESTSLAB2, cpuid, &inputval, sizeof(inputval), &outputval, sizeof(outputval));
+        XMHF_SLAB_CALL(hictestslab2, XMHF_HYP_SLAB_HICTESTSLAB2, &inputval, sizeof(inputval), &outputval, sizeof(outputval));
 
         _XDPRINTF_("%s[%u]: Came back to hictestslab1; RSP=%016llx\n",
                 __FUNCTION__, (u32)cpuid, read_rsp());
         _XDPRINTF_("%s[%u]: outputval=%016llx\n",
                 __FUNCTION__, (u32)cpuid, outputval);
-        */
+
 
         //_hictestslab1_dotests(cpuid);
 
