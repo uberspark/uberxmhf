@@ -94,7 +94,7 @@ static void _hictestslab1_dotests(u64 cpuid){
 
 
 
-void hictestslab1_interface(u64 cpuid, slab_input_params_t *iparams, u64 iparams_size, slab_output_params_t *oparams, u64 oparams_size){
+void hictestslab1_interface(slab_input_params_t *iparams, u64 iparams_size, slab_output_params_t *oparams, u64 oparams_size, u64 src_slabid, u64 cpuid){
     bool isbsp = (cpuid & 0x8000000000000000ULL) ? true : false;
     u64 inputval, outputval;
     static u64 cpucount=0;
@@ -130,7 +130,7 @@ void hictestslab1_interface(u64 cpuid, slab_input_params_t *iparams, u64 iparams
 
 
 
-        _XDPRINTF_("%s[%u]: Proceeding to call hictestslab2 interface; RSP=%016llx\n",
+        /*_XDPRINTF_("%s[%u]: Proceeding to call hictestslab2 interface; RSP=%016llx\n",
                 __FUNCTION__, (u32)cpuid, read_rsp());
 
         inputval = 0xAABB;
@@ -140,7 +140,7 @@ void hictestslab1_interface(u64 cpuid, slab_input_params_t *iparams, u64 iparams
                 __FUNCTION__, (u32)cpuid, read_rsp());
         _XDPRINTF_("%s[%u]: outputval=%016llx\n",
                 __FUNCTION__, (u32)cpuid, outputval);
-
+        */
 
         //_hictestslab1_dotests(cpuid);
 
