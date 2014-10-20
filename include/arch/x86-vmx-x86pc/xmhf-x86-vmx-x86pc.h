@@ -206,6 +206,33 @@ typedef struct {
     u64 orig_ss;
 } __attribute__((packed)) x86vmx_exception_frame_t;
 
+
+typedef struct {
+    u64 r8;
+    u64 r9;
+    u64 r10;
+    u64 r11;
+    u64 r12;
+    u64 r13;
+    u64 r14;
+    u64 r15;
+    u64 rax;
+    u64 rbx;
+    u64 rcx;
+    u64 rdx;
+    u64 rsi;
+    u64 rdi;
+    u64 rbp;
+    u64 rsp;
+    u64 vector;
+    u64 errorcode;
+    u64 orig_rip;
+    u64 orig_cs;
+    u64 orig_rflags;
+    u64 orig_rsp;
+    u64 orig_ss;
+} __attribute__((packed)) x86vmx_exception_frame_errcode_t;
+
 //*
 //x86 GDT descriptor type
 typedef struct {

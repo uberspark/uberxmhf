@@ -1416,16 +1416,16 @@ static u64 __xmhfhic_arch_smt_slab_populate_hyp_pagetables(u64 slabid){
 
         for(i=0; i < PAE_PTRS_PER_PML4T; i++){
             _xmhfhic_common_slab_info_table[slabid].archdata.mempgtbl_pml4t[i] = pae_make_pml4e(hva2spa(&_xmhfhic_common_slab_info_table[slabid].archdata.mempgtbl_pdpt), default_flags);
-                if(slabid == 0){
-                    _XDPRINTF_("pml4t[%u] = %016llx\n", i, _xmhfhic_common_slab_info_table[slabid].archdata.mempgtbl_pml4t[i]);
-                }
+            //    if(slabid == 0){
+            //        _XDPRINTF_("pml4t[%u] = %016llx\n", i, _xmhfhic_common_slab_info_table[slabid].archdata.mempgtbl_pml4t[i]);
+            //    }
         }
 
 		for(i=0; i < PAE_PTRS_PER_PDPT; i++){
 			_xmhfhic_common_slab_info_table[slabid].archdata.mempgtbl_pdpt[i] = pae_make_pdpe(hva2spa(_xmhfhic_common_slab_info_table[slabid].archdata.mempgtbl_pdt[i]), default_flags);
-                if(slabid == 0){
-                    _XDPRINTF_("pdpt[%u] = %016llx\n", i, _xmhfhic_common_slab_info_table[slabid].archdata.mempgtbl_pdpt[i]);
-                }
+            //    if(slabid == 0){
+            //        _XDPRINTF_("pdpt[%u] = %016llx\n", i, _xmhfhic_common_slab_info_table[slabid].archdata.mempgtbl_pdpt[i]);
+            //    }
 		}
 
 		//init pdts with unity mappings
@@ -1436,9 +1436,9 @@ static u64 __xmhfhic_arch_smt_slab_populate_hyp_pagetables(u64 slabid){
 				u64 flags = __xmhfhic_hyp_slab_getptflagsforspa(slabid, (u32)spa);
 				_xmhfhic_common_slab_info_table[slabid].archdata.mempgtbl_pdt[i][j] = pae_make_pde_big(spa, flags);
 
-                if(slabid == 0){
-                    _XDPRINTF_("pdt[%u][%u] = %016llx\n", i, j, _xmhfhic_common_slab_info_table[slabid].archdata.mempgtbl_pdt[i][j]);
-                }
+                //if(slabid == 0){
+                //    _XDPRINTF_("pdt[%u][%u] = %016llx\n", i, j, _xmhfhic_common_slab_info_table[slabid].archdata.mempgtbl_pdt[i][j]);
+               // }
 			}
 		}
 
