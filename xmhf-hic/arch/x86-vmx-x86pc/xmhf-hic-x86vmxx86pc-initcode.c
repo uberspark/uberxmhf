@@ -1414,11 +1414,19 @@ static u64 __xmhfhic_arch_smt_slab_populate_hyp_pagetables(u64 slabid){
 		u32 i, j;
 		u64 default_flags = (u64)(_PAGE_PRESENT) | (u64)(_PAGE_USER) | (u64)(_PAGE_RW);
 
-        for(i=0; i < PAE_PTRS_PER_PML4T; i++)
+        for(i=0; i < PAE_PTRS_PER_PML4T; i++){
             _xmhfhic_common_slab_info_table[slabid].archdata.mempgtbl_pml4t[i] = pae_make_pml4e(hva2spa(&_xmhfhic_common_slab_info_table[slabid].archdata.mempgtbl_pdpt), default_flags);
+                if(slabid == 0){
+                    _XDPRINTF_("pml4t[%u] = %016llx\n", i, _xmhfhic_common_slab_info_table[slabid].archdata.mempgtbl_pml4t[i]);
+                }
+        }
 
-		for(i=0; i < PAE_PTRS_PER_PDPT; i++)
+		for(i=0; i < PAE_PTRS_PER_PDPT; i++){
 			_xmhfhic_common_slab_info_table[slabid].archdata.mempgtbl_pdpt[i] = pae_make_pdpe(hva2spa(_xmhfhic_common_slab_info_table[slabid].archdata.mempgtbl_pdt[i]), default_flags);
+                if(slabid == 0){
+                    _XDPRINTF_("pdpt[%u] = %016llx\n", i, _xmhfhic_common_slab_info_table[slabid].archdata.mempgtbl_pdpt[i]);
+                }
+		}
 
 		//init pdts with unity mappings
 		for(i=0; i < PAE_PTRS_PER_PDPT; i++){
@@ -1427,6 +1435,10 @@ static u64 __xmhfhic_arch_smt_slab_populate_hyp_pagetables(u64 slabid){
 				u64 spa = hva2spa((void*)hva);
 				u64 flags = __xmhfhic_hyp_slab_getptflagsforspa(slabid, (u32)spa);
 				_xmhfhic_common_slab_info_table[slabid].archdata.mempgtbl_pdt[i][j] = pae_make_pde_big(spa, flags);
+
+                if(slabid == 0){
+                    _XDPRINTF_("pdt[%u][%u] = %016llx\n", i, j, _xmhfhic_common_slab_info_table[slabid].archdata.mempgtbl_pdt[i][j]);
+                }
 			}
 		}
 
@@ -1809,11 +1821,19 @@ void xmhfhic_arch_setup_slab_mem_page_tables(void){
 	{
 		u32 i;
 		for(i=0; i < XMHF_HIC_MAX_SLABS; i++){
-				_XDPRINTF_("slab %u: pml4t=%016llx\n", i,
-                    (u32)_xmhfhic_common_slab_info_table[i].archdata.mempgtbl_pml4t);
+				_XDPRINTF_("slab %u: pml4t=%016llx, pdpt=%016llx, pdt[0]=%016llx, pdt[1]=%016llx, pdt[2]=%016llx, pdt[3]=%016llx\n", i,
+                    _xmhfhic_common_slab_info_table[i].archdata.mempgtbl_pml4t,
+                    _xmhfhic_common_slab_info_table[i].archdata.mempgtbl_pdpt,
+                    _xmhfhic_common_slab_info_table[i].archdata.mempgtbl_pdt[0],
+                    _xmhfhic_common_slab_info_table[i].archdata.mempgtbl_pdt[1],
+                    _xmhfhic_common_slab_info_table[i].archdata.mempgtbl_pdt[2],
+                    _xmhfhic_common_slab_info_table[i].archdata.mempgtbl_pdt[3]
+               );
 
                 switch(_xmhfhic_common_slab_info_table[i].archdata.slabtype){
                     case HIC_SLAB_X86VMXX86PC_HYPERVISOR:{
+                        _XDPRINTF_("  HYPERVISOR slab: populating page tables\n");
+
                         #if 1
                         _xmhfhic_common_slab_info_table[i].archdata.mempgtbl_cr3 = __xmhfhic_arch_smt_slab_populate_hyp_pagetables(i) | (u32)(i+1) | 0x8000000000000000ULL;
                         #else
@@ -1823,6 +1843,8 @@ void xmhfhic_arch_setup_slab_mem_page_tables(void){
                     break;
 
                     case HIC_SLAB_X86VMXX86PC_GUEST:{
+                        _XDPRINTF_("  GUEST slab: populating page tables\n");
+
                         _xmhfhic_common_slab_info_table[i].archdata.mempgtbl_cr3 = __xmhfhic_arch_smt_slab_populate_guest_pagetables(i);
                     }
                     break;
