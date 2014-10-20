@@ -55,12 +55,17 @@
 #include <xmhf-debug.h>
 
 
-void __xmhfhic_safepush(u64 cpuid, u64 src_slabid, u64 dst_slabid, u64 hic_calltype, u64 return_address){
+void __xmhfhic_safepush(u64 cpuid, u64 src_slabid, u64 dst_slabid, u64 hic_calltype, u64 return_address,
+                        slab_output_params_t *oparams, slab_output_params_t *newoparams, u64 oparams_size){
     u64 safestack_index =  __xmhfhic_safestack_indices[(u32)cpuid];
     __xmhfhic_safestack[(u32)cpuid][safestack_index].src_slabid = src_slabid;
     __xmhfhic_safestack[(u32)cpuid][safestack_index].dst_slabid = dst_slabid;
     __xmhfhic_safestack[(u32)cpuid][safestack_index].hic_calltype = hic_calltype;
     __xmhfhic_safestack[(u32)cpuid][safestack_index].return_address = return_address;
+    __xmhfhic_safestack[(u32)cpuid][safestack_index].oparams = oparams;
+    __xmhfhic_safestack[(u32)cpuid][safestack_index].newoparams = newoparams;
+    __xmhfhic_safestack[(u32)cpuid][safestack_index].oparams_size = oparams_size;
+
     safestack_index++;
     __xmhfhic_safestack_indices[(u32)cpuid] = safestack_index;
 }

@@ -89,6 +89,9 @@ typedef struct {
     u64 dst_slabid;
     u64 hic_calltype;
     u64 return_address;
+    slab_output_params_t *oparams;
+    slab_output_params_t *newoparams;
+    u64 oparams_size;
 } __xmhfhic_safestack_element_t;
 
 
@@ -161,10 +164,12 @@ void xmhfhic_smp_entry(u64 cpuid);
 void xmhfhic_arch_relinquish_control_to_init_slab(u64 cpuid);
 
 
-void __xmhfhic_safepush(u64 cpuid, u64 src_slabid, u64 dst_slabid, u64 hic_calltype, u64 return_address);
+void __xmhfhic_safepush(u64 cpuid, u64 src_slabid, u64 dst_slabid, u64 hic_calltype, u64 return_address,
+                        slab_output_params_t *oparams, slab_output_params_t *newoparams, u64 oparams_size);
 void __xmhfhic_safepop(u64 cpuid, u64 *src_slabid, u64 *dst_slabid, u64 *hic_calltype, u64 *return_address);
 __attribute__((naked)) void __xmhfhic_rtm_trampoline_stub(void);
-void __xmhfhic_rtm_trampoline(u64 cpuid, slab_input_params_t *iparams, u64 iparams_size, slab_output_params_t *oparams, u64 oparams_size, u64 dst_slabid, u64 src_slabid, u64 return_address, u64 hic_calltype);
+void __xmhfhic_rtm_trampoline(u64 hic_calltype, slab_input_params_t *iparams, u64 iparams_size, slab_output_params_t *oparams, u64 oparams_size, u64 dst_slabid, u64 src_slabid, u64 cpuid, u64 return_address, u64 return_rsp);
+
 
 
 
@@ -257,9 +262,42 @@ extern __attribute__(( aligned(4096) )) u8 __xmhfhic_rtm_trampoline_stack[MAX_PL
 //
 
 
+/*
+__slab_callstub register mappings:
 
-//#define XMHF_SLAB_CALL(dst_slabname, dst_slabid, cpuid, iparams, iparams_size, oparams, oparams_size) dst_slabname##_interface(cpuid, iparams, iparams_size, oparams, oparams_size)
-#define XMHF_SLAB_CALL(dst_slabname, dst_slabid, cpuid, iparams, iparams_size, oparams, oparams_size) __slab_callstub(cpuid, iparams, iparams_size, oparams, oparams_size, dst_slabid)
+RDI = call type (XMHF_HIC_SLABCALL)
+RSI = iparams
+RDX = iparams_size
+RCX = oparams
+R8 = oparams_size
+R9 = dst_slabid
+R10 = return RSP;
+R11 = return_address
+
+*/
+
+
+__attribute__((naked)) __attribute__ ((noinline)) static inline bool __slab_callstub(u64 reserved, slab_input_params_t *iparams, u64 iparams_size, slab_output_params_t *oparams, u64 oparams_size, u64 dst_slabid){
+    asm volatile (
+        "movq %0, %%rdi \r\n"
+        "movq %%rsp, %%r10 \r\n"
+        "movq $1f, %%r11 \r\n"\
+        "sysenter \r\n" \
+        \
+        "1:\r\n" \
+        "retq \r\n" \
+        :
+        : "i" (XMHF_HIC_SLABCALL)
+        :
+    );
+}
+
+
+
+
+
+//#define XMHF_SLAB_CALL(dst_slabname, dst_slabid, iparams, iparams_size, oparams, oparams_size) dst_slabname##_interface(iparams, iparams_size, oparams, oparams_size, 0)
+#define XMHF_SLAB_CALL(dst_slabname, dst_slabid, iparams, iparams_size, oparams, oparams_size) __slab_callstub(0, iparams, iparams_size, oparams, oparams_size, dst_slabid)
 
 
 /*
