@@ -54,6 +54,25 @@
 //#include <xmhf-core.h>
 #include <xmhf-debug.h>
 
+
+//HIC runtime intercept stub
+__attribute__((naked)) void __xmhfhic_rtm_intercept_stub(void){
+
+	asm volatile(
+                        "1: jmp 1b \r\n"
+
+        :
+        :
+        :
+    );
+}
+
+
+
+
+
+
+
 static void xmhf_xcphandler_arch_unhandled(u64 vector, void *exdata){
 	x86idt64_stackframe_t *exframe = NULL;
     u64 errorcode=0;

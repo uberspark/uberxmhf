@@ -2494,9 +2494,9 @@ static bool __xmhfhic_x86vmx_setupvmxstate(u64 cpuid){
 	xmhfhw_cpu_x86vmx_vmwrite(VMCS_HOST_GDTR_BASE, xmhf_baseplatform_arch_x86_getgdtbase());
 	xmhfhw_cpu_x86vmx_vmwrite(VMCS_HOST_IDTR_BASE, xmhf_baseplatform_arch_x86_getidtbase());
 	xmhfhw_cpu_x86vmx_vmwrite(VMCS_HOST_TR_BASE, xmhf_baseplatform_arch_x86_gettssbase());
-	//XXX: TODO: plug this back in appropriately!!
-	//xmhfhw_cpu_x86vmx_vmwrite(VMCS_HOST_RIP, &xcihub_arch_entry);
-	//XXX:
+
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_HOST_RIP, __xmhfhic_rtm_intercept_stub);
+
 	xmhfhw_cpu_x86vmx_vmwrite(VMCS_HOST_RSP, read_rsp());
 	rdmsr(IA32_SYSENTER_CS_MSR, &lodword, &hidword);
 	xmhfhw_cpu_x86vmx_vmwrite(VMCS_HOST_SYSENTER_CS, lodword);
@@ -2598,10 +2598,8 @@ static bool __xmhfhic_x86vmx_setupvmxstate(u64 cpuid){
 
 	//setup memory protection
 	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VMX_SECCPU_BASED, (xmhfhw_cpu_x86vmx_vmread(VMCS_CONTROL_VMX_SECCPU_BASED) | (u64)(1 <<1) | (u64)(1 << 5)) );
-	//XXX: the two below need to go into the trampoline before
-	//switching to a destination guest slab
-	//xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VPID, 1);
-	//xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_EPT_POINTER_FULL, (hva2spa(XXX) | (u64)0x1E) );
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VPID, 0); //[need to populate in trampoline]
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_EPT_POINTER_FULL, 0); // [need to populate in trampoline]
 	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VMX_CPU_BASED, (xmhfhw_cpu_x86vmx_vmread(VMCS_CONTROL_VMX_CPU_BASED) & (u64)~(1 << 15) & (u64)~(1 << 16)) );
 
 	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_CR0, (u32)__xmhfhic_x86vmx_archdata[cpuindex].vmx_msrs[INDEX_IA32_VMX_CR0_FIXED0_MSR]);
@@ -2609,6 +2607,98 @@ static bool __xmhfhic_x86vmx_setupvmxstate(u64 cpuid){
 
 	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VM_ENTRY_EXCEPTION_ERRORCODE, 0);
 	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VM_ENTRY_INTERRUPTION_INFORMATION, 0);
+
+
+
+    //setup default guest slab state, 32-bit mode, no paging
+    {
+        xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_CR0, (xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_CR0) & ~(CR0_PG) ) );
+        xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_CR3, 0 );
+
+        xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_RSP, 0); //[need to populate in trampoline]
+
+        xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_RIP, 0); // [need to populate in trampoline]
+        xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_ACTIVITY_STATE, 0);
+        xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_RFLAGS, ((((0 & ~((1<<3)|(1<<5)|(1<<15)) ) | (1 <<1)) | (1<<9)) & ~(1<<14)));
+        xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_INTERRUPTIBILITY, 0);
+
+
+        //CS, DS, ES, FS, GS and SS segments
+        xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_CS_SELECTOR, 0x8);
+        xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_CS_BASE, 0);
+        xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_CS_LIMIT, 0xFFFFFFFFUL);
+        xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_CS_ACCESS_RIGHTS, 0xc09b);
+
+        xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_DS_SELECTOR, 0x10);
+        xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_DS_BASE, 0);
+        xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_DS_LIMIT, 0xFFFFFFFFUL);
+        xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_DS_ACCESS_RIGHTS, 0xc093);
+
+        xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_ES_SELECTOR, 0x10);
+        xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_ES_BASE, 0);
+        xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_ES_LIMIT, 0xFFFFFFFFUL);
+        xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_ES_ACCESS_RIGHTS, 0xc093);
+
+        xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_FS_SELECTOR, 0x10);
+        xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_FS_BASE, 0);
+        xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_FS_LIMIT, 0xFFFFFFFFUL);
+        xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_FS_ACCESS_RIGHTS, 0xc093);
+
+        xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_GS_SELECTOR, 0x10);
+        xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_GS_BASE, 0);
+        xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_GS_LIMIT, 0xFFFFFFFFUL);
+        xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_GS_ACCESS_RIGHTS, 0xc093);
+
+        xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_SS_SELECTOR, 0x10);
+        xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_SS_BASE, 0);
+        xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_SS_LIMIT, 0xFFFFFFFFUL);
+        xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_SS_ACCESS_RIGHTS, 0xc093);
+
+        //IDTR
+        xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_IDTR_BASE, 0);
+        xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_IDTR_LIMIT, 0);
+
+        //GDTR
+        xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_GDTR_BASE, 0);
+        xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_GDTR_LIMIT, 0);
+
+        //LDTR, unusable
+        xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_LDTR_BASE, 0);
+        xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_LDTR_LIMIT, 0);
+        xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_LDTR_SELECTOR, 0);
+        xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_LDTR_ACCESS_RIGHTS, 0x10000);
+
+        //TR, should be usable for VMX to work, but not used by guest
+        xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_TR_BASE, 0);
+        xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_TR_LIMIT, 0);
+        xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_TR_SELECTOR, 0);
+        xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_TR_ACCESS_RIGHTS, 0x83);
+
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 	/*_XDPRINTF_("%s: vmcs pinbased=%016llx\n", __FUNCTION__, xmhfhw_cpu_x86vmx_vmread(VMCS_CONTROL_VMX_PIN_BASED));
 	_XDPRINTF_("%s: pinbase MSR=%016llx\n", __FUNCTION__, _cpustate_archdatavmx[context_desc.cpu_desc.cpu_index].vmx_msrs[INDEX_IA32_VMX_PINBASED_CTLS_MSR]);
