@@ -50,7 +50,7 @@
 #include <guestslab1.h>
 
 //////
-XMHF_SLAB(guestslab1)
+XMHF_SLAB_GUEST(guestslab1)
 
 
 
