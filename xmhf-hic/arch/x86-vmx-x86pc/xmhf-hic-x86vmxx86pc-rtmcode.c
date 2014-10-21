@@ -59,12 +59,70 @@
 __attribute__((naked)) void __xmhfhic_rtm_intercept_stub(void){
 
 	asm volatile(
-                        "1: jmp 1b \r\n"
+                        "pushq %%rsp \r\n"
+                        "pushq %%rbp \r\n"
+                        "pushq %%rdi \r\n"
+                        "pushq %%rsi \r\n"
+                        "pushq %%rdx \r\n"
+                        "pushq %%rcx \r\n"
+                        "pushq %%rbx \r\n"
+                        "pushq %%rax \r\n"
+                        "pushq %%r15 \r\n"
+                        "pushq %%r14 \r\n"
+                        "pushq %%r13 \r\n"
+                        "pushq %%r12 \r\n"
+                        "pushq %%r11 \r\n"
+                        "pushq %%r10 \r\n"
+                        "pushq %%r9 \r\n"
+                        "pushq %%r8 \r\n"
 
-        :
-        :
-        :
-    );
+                        //rdi = hic_calltype = XMHF_HIC_SLABCALLINTERCEPT
+                        "movq %0, %%rdi \r\n"
+
+                        //iparams
+                        "movq %%rsp, %%rsi \r\n"
+
+                        //iparams_size
+                        "movq %1, %%rdx \r\n"
+
+                        //oparams
+                        "movq %%rsi, %%rcx \r\n"
+
+                        //oparams_size
+                        "movq %%rdx, %%r8 \r\n"
+
+                        //dst_slabid
+                        "movq %2, %%r9 \r\n"
+
+                        //return_rsp (NA -- since its stored in VMCS)
+                        "pushq $0x0 \r\n"
+
+                        //return_address (NA -- since its stored in VMCS)
+                        "pushq $0x0 \r\n"
+
+                        //cpuid
+                        "movq %3, %%rax \r\n"       //RAX=X86XMP_LAPIC_ID_MEMORYADDRESS
+                        "movl (%%eax), %%eax\r\n"   //EAX(bits 0-7)=LAPIC ID
+                        "shrl $24, %%eax\r\n"       //EAX=LAPIC ID
+                        "movq __xmhfhic_x86vmx_cpuidtable+0x0(,%%eax,8), %%rax\r\n" //RAX = 0-based cpu index for the CPU
+                        "pushq %%rax \r\n"
+
+                        //src_slabid
+                        "movq %4, %%rax \r\n"
+                        "vmread %%rax, %%rax \r\n"     //RAX = VPID = slab_id
+                        "decq %%rax \r\n"
+                        "pushq %%rax \r\n"
+
+
+                        "callq __xmhfhic_rtm_trampoline \r\n"
+					:
+					:   "i" (XMHF_HIC_SLABCALLINTERCEPT),
+                        "i" (sizeof(x86regs64_t)),
+                        "i" (XMHF_HYP_SLAB_HICTESTSLAB2),
+					    "i" (X86SMP_LAPIC_ID_MEMORYADDRESS),
+                        "i" (VMCS_CONTROL_VPID)
+                    :
+		);
 }
 
 
@@ -506,6 +564,20 @@ void __xmhfhic_rtm_trampoline(u64 hic_calltype, slab_input_params_t *iparams, u6
                dst_slabid, src_slabid, cpuid, return_address, return_rsp);
 
     switch(hic_calltype){
+        case XMHF_HIC_SLABCALLINTERCEPT:{
+            _XDPRINTF_("%s[%u]: Trampoline Intercept call\n",
+                    __FUNCTION__, (u32)cpuid, read_rsp());
+
+            _XDPRINTF_("Intercept exit reason: %08x\n",
+                 xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_VMEXIT_REASON));
+
+            _XDPRINTF_("%s[%u]: Trampoline Halting\n",
+                    __FUNCTION__, (u32)cpuid, read_rsp());
+            HALT();
+        }
+        break;
+
+
         case XMHF_HIC_SLABCALL:
         case XMHF_HIC_SLABCALLEXCEPTION:
         if ( _xmhfhic_common_slab_info_table[dst_slabid].archdata.slabtype == HIC_SLAB_X86VMXX86PC_HYPERVISOR) {
