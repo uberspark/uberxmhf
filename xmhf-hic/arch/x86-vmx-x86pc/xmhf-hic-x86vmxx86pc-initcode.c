@@ -2419,12 +2419,20 @@ static void __xmhfhic_x86vmx_setIOPL3(u64 cpuid){
 
 
 
+__attribute__((aligned(16)))    static u64 __guest_gdt[] = {
+        0x0000000000000000ULL,
+        0x00cf9b000000ffffULL,
+        0x00cf93000000ffffULL,
+        0x0000000000000000ULL,
+    };
+
 static bool __xmhfhic_x86vmx_setupvmxstate(u64 cpuid){
     u32 cpuindex = (u32)cpuid;
 	const u32 vmx_msr_area_msrs[] = {MSR_EFER, MSR_IA32_PAT, MSR_K6_STAR}; //critical MSRs that need to be saved/restored across guest VM switches
 	const unsigned int vmx_msr_area_msrs_count = (sizeof(vmx_msr_area_msrs)/sizeof(vmx_msr_area_msrs[0]));	//count of critical MSRs that need to be saved/restored across VM switches
 	u32 lodword, hidword;
 	u64 vmcs_phys_addr = hva2spa(__xmhfhic_x86vmx_archdata[cpuindex].vmx_vmcs_region);
+
 
 	//save contents of VMX MSRs as well as MSR EFER and EFCR
 	{
@@ -2619,7 +2627,7 @@ static bool __xmhfhic_x86vmx_setupvmxstate(u64 cpuid){
 
         xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_RIP, 0); // [need to populate in trampoline]
         xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_ACTIVITY_STATE, 0);
-        xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_RFLAGS, ((((0 & ~((1<<3)|(1<<5)|(1<<15)) ) | (1 <<1)) | (1<<9)) & ~(1<<14)));
+        xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_RFLAGS, (1 <<1));
         xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_INTERRUPTIBILITY, 0);
 
 
@@ -2659,8 +2667,11 @@ static bool __xmhfhic_x86vmx_setupvmxstate(u64 cpuid){
         xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_IDTR_LIMIT, 0);
 
         //GDTR
+        //xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_GDTR_BASE, &__guest_gdt);
+        //xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_GDTR_LIMIT, 0x1F);
         xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_GDTR_BASE, 0);
         xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_GDTR_LIMIT, 0);
+
 
         //LDTR, unusable
         xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_LDTR_BASE, 0);
