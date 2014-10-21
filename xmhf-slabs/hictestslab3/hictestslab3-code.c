@@ -62,7 +62,7 @@ XMHF_SLAB(hictestslab3)
  */
 
 void hictestslab3_interface(slab_input_params_t *iparams, u64 iparams_size, slab_output_params_t *oparams, u64 oparams_size, u64 src_slabid, u64 cpuid){
-    //x86vmx_exception_frame_t *exframe = (x86vmx_exception_frame_t *)iparams;
+    x86vmx_exception_frame_errcode_t *exframe = (x86vmx_exception_frame_errcode_t *)iparams;
 
 	_XDPRINTF_("%s[%u]: Got control: RSP=%016llx\n",
                 __FUNCTION__, (u32)cpuid, read_rsp());
@@ -73,11 +73,17 @@ void hictestslab3_interface(slab_input_params_t *iparams, u64 iparams_size, slab
 	_XDPRINTF_("%s[%u]: Got control: oparams=%016llx, oparams_size=%u\n",
                 __FUNCTION__, (u32)cpuid, oparams, oparams_size);
 
-	//_XDPRINTF_("%s[%u]: original SS:RSP=%016llx:%016llx\n",
-    //            __FUNCTION__, (u32)cpuid, exframe->orig_ss, exframe->orig_rsp);
+	_XDPRINTF_("%s[%u]: original SS:RSP=%016llx:%016llx\n",
+                __FUNCTION__, (u32)cpuid, exframe->orig_ss, exframe->orig_rsp);
 
 
     memcpy(oparams, iparams, oparams_size);
+
+    exframe = (x86vmx_exception_frame_errcode_t *)oparams;
+
+    _XDPRINTF_("%s[%u]:original SS:RSP=%016llx:%016llx\n",
+                    __FUNCTION__, (u32)cpuid, exframe->orig_ss, exframe->orig_rsp);
+
 
     //_XDPRINTF_("%s[%u]: Halting\n",
     //            __FUNCTION__, (u32)cpuid);

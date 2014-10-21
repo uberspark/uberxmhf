@@ -177,42 +177,53 @@ bool xmhf_xcphandler_arch_hub(u64 vector, void *exdata){
                		);	\
     }\
 
+#define XMHF_EXCEPTION_HANDLER_DEFINE_WITHERRORCODE(vector) 												\
+	static void __xmhf_exception_handler_##vector(void) __attribute__((naked)) { 					\
+		asm volatile(												\
+                        "pushq $0x0 \r\n" \
+                        "pushq %0 \r\n"\
+                        "jmp __xmhfhic_rtm_exception_stub\r\n"\
+					: \
+					: "i" (vector) \
+                    : \
+               		);	\
+    }\
 
 
 #define XMHF_EXCEPTION_HANDLER_ADDROF(vector) &__xmhf_exception_handler_##vector
 
-XMHF_EXCEPTION_HANDLER_DEFINE(0)
-XMHF_EXCEPTION_HANDLER_DEFINE(1)
-XMHF_EXCEPTION_HANDLER_DEFINE(2)
-XMHF_EXCEPTION_HANDLER_DEFINE(3)
-XMHF_EXCEPTION_HANDLER_DEFINE(4)
-XMHF_EXCEPTION_HANDLER_DEFINE(5)
-XMHF_EXCEPTION_HANDLER_DEFINE(6)
-XMHF_EXCEPTION_HANDLER_DEFINE(7)
+XMHF_EXCEPTION_HANDLER_DEFINE_WITHERRORCODE(0)
+XMHF_EXCEPTION_HANDLER_DEFINE_WITHERRORCODE(1)
+XMHF_EXCEPTION_HANDLER_DEFINE_WITHERRORCODE(2)
+XMHF_EXCEPTION_HANDLER_DEFINE_WITHERRORCODE(3)
+XMHF_EXCEPTION_HANDLER_DEFINE_WITHERRORCODE(4)
+XMHF_EXCEPTION_HANDLER_DEFINE_WITHERRORCODE(5)
+XMHF_EXCEPTION_HANDLER_DEFINE_WITHERRORCODE(6)
+XMHF_EXCEPTION_HANDLER_DEFINE_WITHERRORCODE(7)
 XMHF_EXCEPTION_HANDLER_DEFINE(8)
-XMHF_EXCEPTION_HANDLER_DEFINE(9)
+XMHF_EXCEPTION_HANDLER_DEFINE_WITHERRORCODE(9)
 XMHF_EXCEPTION_HANDLER_DEFINE(10)
 XMHF_EXCEPTION_HANDLER_DEFINE(11)
 XMHF_EXCEPTION_HANDLER_DEFINE(12)
 XMHF_EXCEPTION_HANDLER_DEFINE(13)
 XMHF_EXCEPTION_HANDLER_DEFINE(14)
-XMHF_EXCEPTION_HANDLER_DEFINE(15)
-XMHF_EXCEPTION_HANDLER_DEFINE(16)
+XMHF_EXCEPTION_HANDLER_DEFINE_WITHERRORCODE(15)
+XMHF_EXCEPTION_HANDLER_DEFINE_WITHERRORCODE(16)
 XMHF_EXCEPTION_HANDLER_DEFINE(17)
-XMHF_EXCEPTION_HANDLER_DEFINE(18)
-XMHF_EXCEPTION_HANDLER_DEFINE(19)
-XMHF_EXCEPTION_HANDLER_DEFINE(20)
-XMHF_EXCEPTION_HANDLER_DEFINE(21)
-XMHF_EXCEPTION_HANDLER_DEFINE(22)
-XMHF_EXCEPTION_HANDLER_DEFINE(23)
-XMHF_EXCEPTION_HANDLER_DEFINE(24)
-XMHF_EXCEPTION_HANDLER_DEFINE(25)
-XMHF_EXCEPTION_HANDLER_DEFINE(26)
-XMHF_EXCEPTION_HANDLER_DEFINE(27)
-XMHF_EXCEPTION_HANDLER_DEFINE(28)
-XMHF_EXCEPTION_HANDLER_DEFINE(29)
-XMHF_EXCEPTION_HANDLER_DEFINE(30)
-XMHF_EXCEPTION_HANDLER_DEFINE(31)
+XMHF_EXCEPTION_HANDLER_DEFINE_WITHERRORCODE(18)
+XMHF_EXCEPTION_HANDLER_DEFINE_WITHERRORCODE(19)
+XMHF_EXCEPTION_HANDLER_DEFINE_WITHERRORCODE(20)
+XMHF_EXCEPTION_HANDLER_DEFINE_WITHERRORCODE(21)
+XMHF_EXCEPTION_HANDLER_DEFINE_WITHERRORCODE(22)
+XMHF_EXCEPTION_HANDLER_DEFINE_WITHERRORCODE(23)
+XMHF_EXCEPTION_HANDLER_DEFINE_WITHERRORCODE(24)
+XMHF_EXCEPTION_HANDLER_DEFINE_WITHERRORCODE(25)
+XMHF_EXCEPTION_HANDLER_DEFINE_WITHERRORCODE(26)
+XMHF_EXCEPTION_HANDLER_DEFINE_WITHERRORCODE(27)
+XMHF_EXCEPTION_HANDLER_DEFINE_WITHERRORCODE(28)
+XMHF_EXCEPTION_HANDLER_DEFINE_WITHERRORCODE(29)
+XMHF_EXCEPTION_HANDLER_DEFINE_WITHERRORCODE(30)
+XMHF_EXCEPTION_HANDLER_DEFINE_WITHERRORCODE(31)
 
 u64  __xmhfhic_exceptionstubs[] = { XMHF_EXCEPTION_HANDLER_ADDROF(0),
 							XMHF_EXCEPTION_HANDLER_ADDROF(1),
@@ -303,14 +314,10 @@ __attribute__((naked)) void __xmhfhic_rtm_exception_stub(void){
                         "movq %0, %%rdi \r\n"
 
                         //iparams
-                        "movq %%rsp, %%rax \r\n"
-                        "andl $0xFFFFF000, %%eax \r\n"
-                        "addq $0x1000, %%rax \r\n"
-                        "movq %%rax, %%rsi \r\n"
+                        "movq %%rsp, %%rsi \r\n"
 
                         //iparams_size
-                        "subq %%rsp, %%rax \r\n"
-                        "movq %%rax, %%rdx \r\n"
+                        "movq %1, %%rdx \r\n"
 
                         //oparams
                         "movq %%rsi, %%rcx \r\n"
@@ -319,23 +326,20 @@ __attribute__((naked)) void __xmhfhic_rtm_exception_stub(void){
                         "movq %%rdx, %%r8 \r\n"
 
                         //dst_slabid
-                        "movq %1, %%r9 \r\n"
+                        "movq %2, %%r9 \r\n"
 
                         "movq %%rsp, %%rbx \r\n"
 
                         //return_rsp
-                        "movq 160(%%rbx), %%rax \r\n"
+                        "movq 168(%%rbx), %%rax \r\n"
                         "pushq %%rax \r\n"
 
                         //return_address
-                        //note: this does not take into account error code,
-                        //assumed that on any exception that includes an error
-                        //code we never get back to the caller
-                        "movq 136(%%rbx), %%rax \r\n"
+                        "movq 144(%%rbx), %%rax \r\n"
                         "pushq %%rax \r\n"
 
                         //cpuid
-                        "movq %2, %%rax \r\n"       //RAX=X86XMP_LAPIC_ID_MEMORYADDRESS
+                        "movq %3, %%rax \r\n"       //RAX=X86XMP_LAPIC_ID_MEMORYADDRESS
                         "movl (%%eax), %%eax\r\n"   //EAX(bits 0-7)=LAPIC ID
                         "shrl $24, %%eax\r\n"       //EAX=LAPIC ID
                         "movq __xmhfhic_x86vmx_cpuidtable+0x0(,%%eax,8), %%rax\r\n" //RAX = 0-based cpu index for the CPU
@@ -351,6 +355,7 @@ __attribute__((naked)) void __xmhfhic_rtm_exception_stub(void){
                         "callq __xmhfhic_rtm_trampoline \r\n"
 					:
 					:   "i" (XMHF_HIC_SLABCALLEXCEPTION),
+                        "i" (sizeof(x86vmx_exception_frame_errcode_t)),
                         "i" (XMHF_HYP_SLAB_HICTESTSLAB3),
 					    "i" (X86SMP_LAPIC_ID_MEMORYADDRESS)
                     :
@@ -491,8 +496,23 @@ void __xmhfhic_rtm_trampoline(u64 hic_calltype, slab_input_params_t *iparams, u6
             //save return RSP
             _xmhfhic_common_slab_info_table[src_slabid].archdata.slabtos[(u32)cpuid] = return_rsp;
 
+
+            {//debug
+                x86vmx_exception_frame_errcode_t *exframe = (x86vmx_exception_frame_errcode_t *)iparams;
+                _XDPRINTF_("%s[%u]: original SS:RSP=%016llx:%016llx\n",
+                        __FUNCTION__, (u32)cpuid, exframe->orig_ss, exframe->orig_rsp);
+
+            }
+
             //copy iparams to internal buffer __iparamsbuffer
             memcpy(&__iparamsbuffer, iparams, (iparams_size > 1024 ? 1024 : iparams_size) );
+
+            {//debug
+                x86vmx_exception_frame_errcode_t *exframe = (x86vmx_exception_frame_errcode_t *)&__iparamsbuffer;
+                _XDPRINTF_("%s[%u]: original SS:RSP=%016llx:%016llx\n",
+                        __FUNCTION__, (u32)cpuid, exframe->orig_ss, exframe->orig_rsp);
+
+            }
 
 
             //switch to destination slab page tables
@@ -589,9 +609,23 @@ void __xmhfhic_rtm_trampoline(u64 hic_calltype, slab_input_params_t *iparams, u6
                        cpuid, elem.src_slabid, elem.dst_slabid, elem.hic_calltype, elem.return_address,
                        elem.oparams, elem.newoparams, elem.oparams_size);
 
+            {//debug
+                x86vmx_exception_frame_errcode_t *exframe = (x86vmx_exception_frame_errcode_t *)elem.newoparams;
+                _XDPRINTF_("%s[%u]: original SS:RSP=%016llx:%016llx\n",
+                        __FUNCTION__, (u32)cpuid, exframe->orig_ss, exframe->orig_rsp);
+
+            }
+
 
             //copy newoparams to internal buffer __iparamsbuffer
             memcpy(&__iparamsbuffer, elem.newoparams, (elem.oparams_size > 1024 ? 1024 : elem.oparams_size) );
+
+            {//debug
+                x86vmx_exception_frame_errcode_t *exframe = (x86vmx_exception_frame_errcode_t *)&__iparamsbuffer;
+                _XDPRINTF_("%s[%u]: original SS:RSP=%016llx:%016llx\n",
+                        __FUNCTION__, (u32)cpuid, exframe->orig_ss, exframe->orig_rsp);
+
+            }
 
             //adjust slab stack by popping off iparams_size and oparams_size
             _xmhfhic_common_slab_info_table[src_slabid].archdata.slabtos[(u32)cpuid] += (elem.iparams_size+elem.oparams_size);
@@ -639,10 +673,11 @@ void __xmhfhic_rtm_trampoline(u64 hic_calltype, slab_input_params_t *iparams, u6
                 break;
 
                 case XMHF_HIC_SLABCALLEXCEPTION:{
-                    x86vmx_exception_frame_t *exframe = (x86vmx_exception_frame_t *)&__iparamsbuffer;
+                    x86vmx_exception_frame_errcode_t *exframe = (x86vmx_exception_frame_errcode_t *)&__iparamsbuffer;
+                    exframe->orig_rip = elem.return_address;
 
-                    _XDPRINTF_("%s[%u]: returning from exception\n",
-                        __FUNCTION__, (u32)cpuid);
+                    _XDPRINTF_("%s[%u]: returning from exception to %016llx\n",
+                        __FUNCTION__, (u32)cpuid, exframe->orig_rip);
 
                     _XDPRINTF_("%s[%u]: original SS:RSP=%016llx:%016llx\n",
                         __FUNCTION__, (u32)cpuid, exframe->orig_ss, exframe->orig_rsp);
@@ -665,7 +700,7 @@ void __xmhfhic_rtm_trampoline(u64 hic_calltype, slab_input_params_t *iparams, u6
                         "popq %%rdi \r\n"
                         "popq %%rbp \r\n"
                         "popq %%rsp \r\n"
-                        "addq $8, %%rsp \r\n"
+                        "addq $16, %%rsp \r\n"
                         "iretq \r\n"
                         :
                         : "m" (exframe)
