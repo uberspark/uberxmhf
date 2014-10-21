@@ -61,7 +61,8 @@
 #define XMHF_HYP_SLAB_HICTESTSLAB1          (0)
 #define XMHF_HYP_SLAB_HICTESTSLAB2          (1)
 #define XMHF_HYP_SLAB_HICTESTSLAB3          (2)
-#define XMHF_RICHGUEST_SLAB                 (3)
+#define XMHF_GUEST_SLAB1                    (3)
+#define XMHF_GUEST_SLAB_RICHGUEST           (4)
 
 
 #define XMHF_HIC_SLABCALL                   (0xA0)
