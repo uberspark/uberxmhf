@@ -508,7 +508,7 @@ void __xmhfhic_rtm_trampoline(u64 hic_calltype, slab_input_params_t *iparams, u6
     switch(hic_calltype){
         case XMHF_HIC_SLABCALL:
         case XMHF_HIC_SLABCALLEXCEPTION:
-            {
+        if ( _xmhfhic_common_slab_info_table[dst_slabid].archdata.slabtype == HIC_SLAB_X86VMXX86PC_HYPERVISOR) {
             slab_input_params_t *newiparams;
             slab_output_params_t *newoparams;
 
@@ -592,6 +592,51 @@ void __xmhfhic_rtm_trampoline(u64 hic_calltype, slab_input_params_t *iparams, u6
                   "m" (cpuid)
                 : "rdi", "rsi", "rdx", "rcx", "r8", "r9", "r10", "r11"
             );
+
+        }else if ( _xmhfhic_common_slab_info_table[dst_slabid].archdata.slabtype == HIC_SLAB_X86VMXX86PC_GUEST){
+            u32 errorcode;
+
+            _XDPRINTF_("%s[%u]: going to invoke guest slab %u\n",
+                       __FUNCTION__, (u32)cpuid, dst_slabid);
+            xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VPID, dst_slabid+1);
+            xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_EPT_POINTER_FULL, _xmhfhic_common_slab_info_table[dst_slabid].archdata.mempgtbl_cr3);
+            xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_RSP, 0);
+            xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_RIP, _xmhfhic_common_slab_info_table[dst_slabid].entrystub);
+
+            asm volatile (
+                    "vmlaunch\r\n"
+
+                    "jc __vmx_start_hvm_failinvalid\r\n"
+                    "jnz	__vmx_start_hvm_undefinedimplementation	\r\n"
+                    "movl $0x1, %%eax\r\n"		//VMLAUNCH error, XXX: need to read from VM instruction error field in VMCS
+                    "movl %%eax, %0 \r\n"
+                    "jmp __vmx_start_continue \r\n"
+                    "__vmx_start_hvm_undefinedimplementation:\r\n"
+                    "movl $0x2, %%eax\r\n"		//violation of VMLAUNCH specs., handle it anyways
+                    "movl %%eax, %0 \r\n"
+                    "jmp __vmx_start_continue \r\n"
+                    "__vmx_start_hvm_failinvalid:\r\n"
+                    "xorl %%eax, %%eax\r\n"		//return 0 as we have no error code available
+                    "movl %%eax, %0 \r\n"
+                    "__vmx_start_continue:\r\n"
+                : "=g"(errorcode)
+                :
+                : "eax", "cc"
+            );
+
+
+           	switch(errorcode){
+                case 0:	//no error code, VMCS pointer is invalid
+                    _XDPRINTF_("%s: VMLAUNCH error; VMCS pointer invalid?\n", __FUNCTION__);
+                    break;
+                case 1:{//error code available, so dump it
+                    u32 code=xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_VMINSTR_ERROR);
+                    _XDPRINTF_("\n%s: VMLAUNCH error; code=%x\n", __FUNCTION__, code);
+                    break;
+                }
+            }
+
+            HALT();
 
         }
         break;

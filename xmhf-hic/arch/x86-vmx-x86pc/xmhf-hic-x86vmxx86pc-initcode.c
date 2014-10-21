@@ -1845,7 +1845,7 @@ void xmhfhic_arch_setup_slab_mem_page_tables(void){
                     case HIC_SLAB_X86VMXX86PC_GUEST:{
                         _XDPRINTF_("  GUEST slab: populating page tables\n");
 
-                        _xmhfhic_common_slab_info_table[i].archdata.mempgtbl_cr3 = __xmhfhic_arch_smt_slab_populate_guest_pagetables(i);
+                        _xmhfhic_common_slab_info_table[i].archdata.mempgtbl_cr3 = __xmhfhic_arch_smt_slab_populate_guest_pagetables(i) | 0x1E;
                     }
                     break;
 
