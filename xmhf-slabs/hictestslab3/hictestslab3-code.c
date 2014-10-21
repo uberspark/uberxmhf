@@ -77,11 +77,11 @@ void hictestslab3_interface(slab_input_params_t *iparams, u64 iparams_size, slab
     //            __FUNCTION__, (u32)cpuid, exframe->orig_ss, exframe->orig_rsp);
 
 
-    //memcpy(oparams, iparams, oparams_size);
+    memcpy(oparams, iparams, oparams_size);
 
-    _XDPRINTF_("%s[%u]: Halting\n",
-                __FUNCTION__, (u32)cpuid);
-    HALT();
+    //_XDPRINTF_("%s[%u]: Halting\n",
+    //            __FUNCTION__, (u32)cpuid);
+    //HALT();
 
     return;
 }

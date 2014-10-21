@@ -607,12 +607,11 @@ void __xmhfhic_rtm_trampoline(u64 hic_calltype, slab_input_params_t *iparams, u6
             );
 
 
-            //copy internal buffer __iparamsbuffer to oparams
-            memcpy(elem.oparams, &__iparamsbuffer, (elem.oparams_size > 1024 ? 1024 : elem.oparams_size) );
-
-
             switch(elem.hic_calltype){
                 case XMHF_HIC_SLABCALL:{
+                    //copy internal buffer __iparamsbuffer to oparams
+                    memcpy(elem.oparams, &__iparamsbuffer, (elem.oparams_size > 1024 ? 1024 : elem.oparams_size) );
+
                     /*
                     RDI = undefined
                     RSI = undefined
@@ -640,10 +639,10 @@ void __xmhfhic_rtm_trampoline(u64 hic_calltype, slab_input_params_t *iparams, u6
                 break;
 
                 case XMHF_HIC_SLABCALLEXCEPTION:{
-                    x86vmx_exception_frame_t *exframe = (x86vmx_exception_frame_t *)oparams;
+                    x86vmx_exception_frame_t *exframe = (x86vmx_exception_frame_t *)&__iparamsbuffer;
 
-                    _XDPRINTF_("%s[%u]: returning from exception: oparams=%016llx, oparams_size=%u\n",
-                        __FUNCTION__, (u32)cpuid, oparams, oparams_size);
+                    _XDPRINTF_("%s[%u]: returning from exception\n",
+                        __FUNCTION__, (u32)cpuid);
 
                     _XDPRINTF_("%s[%u]: original SS:RSP=%016llx:%016llx\n",
                         __FUNCTION__, (u32)cpuid, exframe->orig_ss, exframe->orig_rsp);
@@ -669,7 +668,7 @@ void __xmhfhic_rtm_trampoline(u64 hic_calltype, slab_input_params_t *iparams, u6
                         "addq $8, %%rsp \r\n"
                         "iretq \r\n"
                         :
-                        : "m" (oparams)
+                        : "m" (exframe)
                         : "r8", "r9", "r10", "r11", "r12", "r13", "r14", "r15",
                           "rax", "rbx", "rcx", "rdx", "rsi", "rdi", "rbp", "rsp"
 
