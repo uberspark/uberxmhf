@@ -363,9 +363,7 @@ R11 = cpuid
     \
 	__attribute__((naked)) __attribute__ ((section(".slab_entrystub"))) __attribute__((align(1))) void _slab_entrystub_##slab_name(void){	\
 	asm volatile ( \
-            "jmp 1f \r\n"		\
-            \
-            "1: jmp 1b \r\n" \
+            "hlt \r\n"		\
 			:  \
 			:  \
 			:  \
