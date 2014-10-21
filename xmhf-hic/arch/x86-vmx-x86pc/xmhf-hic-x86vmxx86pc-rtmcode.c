@@ -496,24 +496,8 @@ void __xmhfhic_rtm_trampoline(u64 hic_calltype, slab_input_params_t *iparams, u6
             //save return RSP
             _xmhfhic_common_slab_info_table[src_slabid].archdata.slabtos[(u32)cpuid] = return_rsp;
 
-
-            {//debug
-                x86vmx_exception_frame_errcode_t *exframe = (x86vmx_exception_frame_errcode_t *)iparams;
-                _XDPRINTF_("%s[%u]: original SS:RSP=%016llx:%016llx\n",
-                        __FUNCTION__, (u32)cpuid, exframe->orig_ss, exframe->orig_rsp);
-
-            }
-
             //copy iparams to internal buffer __iparamsbuffer
             memcpy(&__iparamsbuffer, iparams, (iparams_size > 1024 ? 1024 : iparams_size) );
-
-            {//debug
-                x86vmx_exception_frame_errcode_t *exframe = (x86vmx_exception_frame_errcode_t *)&__iparamsbuffer;
-                _XDPRINTF_("%s[%u]: original SS:RSP=%016llx:%016llx\n",
-                        __FUNCTION__, (u32)cpuid, exframe->orig_ss, exframe->orig_rsp);
-
-            }
-
 
             //switch to destination slab page tables
             asm volatile(
@@ -523,7 +507,6 @@ void __xmhfhic_rtm_trampoline(u64 hic_calltype, slab_input_params_t *iparams, u6
                 : "m" (_xmhfhic_common_slab_info_table[dst_slabid].archdata.mempgtbl_cr3)
                 : "rax"
             );
-
 
             //make space on destination slab stack for iparams and copy iparams and obtain newiparams
             {
@@ -550,8 +533,6 @@ void __xmhfhic_rtm_trampoline(u64 hic_calltype, slab_input_params_t *iparams, u6
                        oparams, newoparams, oparams_size);
 
             __xmhfhic_safepush(cpuid, src_slabid, dst_slabid, hic_calltype, return_address, oparams, newoparams, oparams_size, iparams_size);
-
-
 
 
             //jump to destination slab entrystub
@@ -600,6 +581,7 @@ void __xmhfhic_rtm_trampoline(u64 hic_calltype, slab_input_params_t *iparams, u6
         case XMHF_HIC_SLABRET:{
             __xmhfhic_safestack_element_t elem;
 
+            //pop tuple from safe stack
             __xmhfhic_safepop(cpuid, &elem.src_slabid, &elem.dst_slabid, &elem.hic_calltype, &elem.return_address,
                                 &elem.oparams, &elem.newoparams, &elem.oparams_size, &elem.iparams_size);
 
@@ -609,27 +591,12 @@ void __xmhfhic_rtm_trampoline(u64 hic_calltype, slab_input_params_t *iparams, u6
                        cpuid, elem.src_slabid, elem.dst_slabid, elem.hic_calltype, elem.return_address,
                        elem.oparams, elem.newoparams, elem.oparams_size);
 
-            {//debug
-                x86vmx_exception_frame_errcode_t *exframe = (x86vmx_exception_frame_errcode_t *)elem.newoparams;
-                _XDPRINTF_("%s[%u]: original SS:RSP=%016llx:%016llx\n",
-                        __FUNCTION__, (u32)cpuid, exframe->orig_ss, exframe->orig_rsp);
-
-            }
-
 
             //copy newoparams to internal buffer __iparamsbuffer
             memcpy(&__iparamsbuffer, elem.newoparams, (elem.oparams_size > 1024 ? 1024 : elem.oparams_size) );
 
-            {//debug
-                x86vmx_exception_frame_errcode_t *exframe = (x86vmx_exception_frame_errcode_t *)&__iparamsbuffer;
-                _XDPRINTF_("%s[%u]: original SS:RSP=%016llx:%016llx\n",
-                        __FUNCTION__, (u32)cpuid, exframe->orig_ss, exframe->orig_rsp);
-
-            }
-
             //adjust slab stack by popping off iparams_size and oparams_size
             _xmhfhic_common_slab_info_table[src_slabid].archdata.slabtos[(u32)cpuid] += (elem.iparams_size+elem.oparams_size);
-
 
             //switch to destination slab page tables
             asm volatile(
@@ -641,11 +608,15 @@ void __xmhfhic_rtm_trampoline(u64 hic_calltype, slab_input_params_t *iparams, u6
             );
 
 
+            //depending on whether we are returning from a regular call, or exception or intercept, do the
+            //needful
             switch(elem.hic_calltype){
                 case XMHF_HIC_SLABCALL:{
+
                     //copy internal buffer __iparamsbuffer to oparams
                     memcpy(elem.oparams, &__iparamsbuffer, (elem.oparams_size > 1024 ? 1024 : elem.oparams_size) );
 
+                    //return back to slab
                     /*
                     RDI = undefined
                     RSI = undefined
@@ -679,8 +650,8 @@ void __xmhfhic_rtm_trampoline(u64 hic_calltype, slab_input_params_t *iparams, u6
                     _XDPRINTF_("%s[%u]: returning from exception to %016llx\n",
                         __FUNCTION__, (u32)cpuid, exframe->orig_rip);
 
-                    _XDPRINTF_("%s[%u]: original SS:RSP=%016llx:%016llx\n",
-                        __FUNCTION__, (u32)cpuid, exframe->orig_ss, exframe->orig_rsp);
+                    //_XDPRINTF_("%s[%u]: original SS:RSP=%016llx:%016llx\n",
+                    //    __FUNCTION__, (u32)cpuid, exframe->orig_ss, exframe->orig_rsp);
 
                     asm volatile (
                         "movq %0, %%rsp \r\n"
