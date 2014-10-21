@@ -265,19 +265,18 @@ u64  __xmhfhic_exceptionstubs[] = { XMHF_EXCEPTION_HANDLER_ADDROF(0),
 
 
 /*entry into __xmhfhic_rtm_trampoline:
-RDI = cpuid
+RDI = hic_calltype
 RSI = iparams
 RDX = iparams_size
 RCX = oparams
 R8 = oparams_size
 R9 = dst_slabid
 [RSP] = src_slabid
-[RSP+8] = return_address
-[RSP+16] = hic_calltype
+[RSP+8] = cpuid
+[RSP+16] = return_address
+[RSP+32] = return_rsp
 */
 
-
-/*
 
 //HIC runtime exception stub
 __attribute__((naked)) void __xmhfhic_rtm_exception_stub(void){
@@ -300,43 +299,67 @@ __attribute__((naked)) void __xmhfhic_rtm_exception_stub(void){
                         "pushq %%r9 \r\n"
                         "pushq %%r8 \r\n"
 
-                        "movq %0, %%rdi \r\n"       //RDI=X86XMP_LAPIC_ID_MEMORYADDRESS
-                        "movl (%%edi), %%edi\r\n"   //EDI(bits 0-7)=LAPIC ID
-                        "shrl $24, %%edi\r\n"       //EDI=LAPIC ID
-                        "movq __xmhfhic_x86vmx_cpuidtable+0x0(,%%edi,8), %%rdi\r\n" //RDI = 0-based cpu index for the CPU
+                        //rdi = hic_calltype = XMHF_HIC_SLABCALLEXCEPTION
+                        "movq %0, %%rdi \r\n"
 
-                        "movq %%rsp, %%rsi \r\n"    //iparams
-                        "movq $176, %%rdx \r\n"     //iparams_size
+                        //iparams
+                        "movq %%rsp, %%rax \r\n"
+                        "andl $0xFFFFF000, %%eax \r\n"
+                        "addq $0x1000, %%rax \r\n"
+                        "movq %%rax, %%rsi \r\n"
 
-                        "movq %%rsp, %%rcx \r\n"    //oparams
-                        "movq $176, %%r8 \r\n"      //oparams_size
+                        //iparams_size
+                        "subq %%rsp, %%rax \r\n"
+                        "movq %%rax, %%rdx \r\n"
 
-                        "movq %1, %%r9 \r\n"        //dst_slabid
+                        //oparams
+                        "movq %%rsi, %%rcx \r\n"
 
-                        "movq 136(%%rsp), %%rax \r\n"
-                        "pushq %2 \r\n"     //push hic_calltype
-                        "pushq %%rax \r\n"  //push return_address
-                                            //note: this does not take into account error code,
-                                            //assumed that on any exception that includes an error
-                                            //code we never get back to the caller
+                        //oparams_size
+                        "movq %%rdx, %%r8 \r\n"
+
+                        //dst_slabid
+                        "movq %1, %%r9 \r\n"
+
+                        "movq %%rsp, %%rbx \r\n"
+
+                        //return_rsp
+                        "movq 160(%%rbx), %%rax \r\n"
+                        "pushq %%rax \r\n"
+
+                        //return_address
+                        //note: this does not take into account error code,
+                        //assumed that on any exception that includes an error
+                        //code we never get back to the caller
+                        "movq 136(%%rbx), %%rax \r\n"
+                        "pushq %%rax \r\n"
+
+                        //cpuid
+                        "movq %2, %%rax \r\n"       //RAX=X86XMP_LAPIC_ID_MEMORYADDRESS
+                        "movl (%%eax), %%eax\r\n"   //EAX(bits 0-7)=LAPIC ID
+                        "shrl $24, %%eax\r\n"       //EAX=LAPIC ID
+                        "movq __xmhfhic_x86vmx_cpuidtable+0x0(,%%eax,8), %%rax\r\n" //RAX = 0-based cpu index for the CPU
+                        "pushq %%rax \r\n"
+
+                        //src_slabid
                         "movq %%cr3, %%rax \r\n"
                         "andq $0x00000000000FF000, %%rax \r\n"
                         "shr $12, %%rax \r\n"
-                        "pushq %%rax \r\n"          //push source slab id
+                        "pushq %%rax \r\n"
 
 
                         "callq __xmhfhic_rtm_trampoline \r\n"
 					:
-					: "i" (X86SMP_LAPIC_ID_MEMORYADDRESS),
-                      "i" (XMHF_HYP_SLAB_HICTESTSLAB3),
-					    "i" (XMHF_HIC_SLABCALLEXCEPTION)
+					:   "i" (XMHF_HIC_SLABCALLEXCEPTION),
+                        "i" (XMHF_HYP_SLAB_HICTESTSLAB3),
+					    "i" (X86SMP_LAPIC_ID_MEMORYADDRESS)
                     :
 		);
-}*/
+}
 
 
 
-
+/*
 //HIC runtime exception stub
 __attribute__((naked)) void __xmhfhic_rtm_exception_stub(void){
 
@@ -394,6 +417,7 @@ __attribute__((naked)) void __xmhfhic_rtm_exception_stub(void){
                     :
 		);
 }
+*/
 
 
 /*
