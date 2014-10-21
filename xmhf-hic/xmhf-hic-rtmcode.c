@@ -56,7 +56,7 @@
 
 
 void __xmhfhic_safepush(u64 cpuid, u64 src_slabid, u64 dst_slabid, u64 hic_calltype, u64 return_address,
-                        slab_output_params_t *oparams, slab_output_params_t *newoparams, u64 oparams_size){
+                        slab_output_params_t *oparams, slab_output_params_t *newoparams, u64 oparams_size, u64 iparams_size){
     u64 safestack_index =  __xmhfhic_safestack_indices[(u32)cpuid];
     __xmhfhic_safestack[(u32)cpuid][safestack_index].src_slabid = src_slabid;
     __xmhfhic_safestack[(u32)cpuid][safestack_index].dst_slabid = dst_slabid;
@@ -65,17 +65,24 @@ void __xmhfhic_safepush(u64 cpuid, u64 src_slabid, u64 dst_slabid, u64 hic_callt
     __xmhfhic_safestack[(u32)cpuid][safestack_index].oparams = oparams;
     __xmhfhic_safestack[(u32)cpuid][safestack_index].newoparams = newoparams;
     __xmhfhic_safestack[(u32)cpuid][safestack_index].oparams_size = oparams_size;
+    __xmhfhic_safestack[(u32)cpuid][safestack_index].iparams_size = iparams_size;
 
     safestack_index++;
     __xmhfhic_safestack_indices[(u32)cpuid] = safestack_index;
 }
 
-void __xmhfhic_safepop(u64 cpuid, u64 *src_slabid, u64 *dst_slabid, u64 *hic_calltype, u64 *return_address){
+void __xmhfhic_safepop(u64 cpuid, u64 *src_slabid, u64 *dst_slabid, u64 *hic_calltype, u64 *return_address,
+                       slab_output_params_t **oparams, slab_output_params_t **newoparams, u64 *oparams_size, u64 *iparams_size){
     u64 safestack_index =  __xmhfhic_safestack_indices[(u32)cpuid]-1;
     *src_slabid = __xmhfhic_safestack[(u32)cpuid][safestack_index].src_slabid;
     *dst_slabid = __xmhfhic_safestack[(u32)cpuid][safestack_index].dst_slabid;
     *hic_calltype = __xmhfhic_safestack[(u32)cpuid][safestack_index].hic_calltype;
     *return_address = __xmhfhic_safestack[(u32)cpuid][safestack_index].return_address;
+    *oparams = __xmhfhic_safestack[(u32)cpuid][safestack_index].oparams;
+    *newoparams = __xmhfhic_safestack[(u32)cpuid][safestack_index].newoparams;
+    *oparams_size = __xmhfhic_safestack[(u32)cpuid][safestack_index].oparams_size;
+    *iparams_size = __xmhfhic_safestack[(u32)cpuid][safestack_index].iparams_size;
+
     __xmhfhic_safestack_indices[(u32)cpuid] = safestack_index;
 }
 

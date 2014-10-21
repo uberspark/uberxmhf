@@ -415,7 +415,7 @@ __attribute__((naked)) void __xmhfhic_rtm_trampoline_stub(void){
 
     asm volatile (
         "cmpq %0, %%rdi \r\n"
-        "jne 1f \r\n"
+        "je 1f \r\n"
 
         "pushq %%r10 \r\n"          //push return RSP
         "pushq %%r11 \r\n"          //push return address
@@ -433,10 +433,9 @@ __attribute__((naked)) void __xmhfhic_rtm_trampoline_stub(void){
 
         "callq __xmhfhic_rtm_trampoline \r\n"
 
-        "1:  \r\n"
-        "2: jmp 2b \r\n"
+        "1: jmp 1b \r\n"
       :
-      : "i" (XMHF_HIC_SLABCALL), "i" (X86SMP_LAPIC_ID_MEMORYADDRESS)
+      : "i" (XMHF_HIC_UAPI), "i" (X86SMP_LAPIC_ID_MEMORYADDRESS)
       :
     );
 }
@@ -506,7 +505,7 @@ void __xmhfhic_rtm_trampoline(u64 hic_calltype, slab_input_params_t *iparams, u6
                        cpuid, src_slabid, dst_slabid, hic_calltype, return_address,
                        oparams, newoparams, oparams_size);
 
-            __xmhfhic_safepush(cpuid, src_slabid, dst_slabid, hic_calltype, return_address, oparams, newoparams, oparams_size);
+            __xmhfhic_safepush(cpuid, src_slabid, dst_slabid, hic_calltype, return_address, oparams, newoparams, oparams_size, iparams_size);
 
 
 
@@ -556,10 +555,23 @@ void __xmhfhic_rtm_trampoline(u64 hic_calltype, slab_input_params_t *iparams, u6
 
         case XMHF_HIC_SLABRET:{
             __xmhfhic_safestack_element_t elem;
-            __xmhfhic_safepop(cpuid, &elem.src_slabid, &elem.dst_slabid, &elem.hic_calltype, &elem.return_address);
 
-            //_XDPRINTF_("%s[%u]: safepop, return_address=%016llx\n",
-            //        __FUNCTION__, (u32)cpuid, elem.return_address);
+            __xmhfhic_safepop(cpuid, &elem.src_slabid, &elem.dst_slabid, &elem.hic_calltype, &elem.return_address,
+                                &elem.oparams, &elem.newoparams, &elem.oparams_size, &elem.iparams_size);
+
+            _XDPRINTF_("%s[%u]: safepop: {cpuid: %016llx, srcsid: %u, dstsid: %u, ctype: %x, ra=%016llx, \
+                       op=%016llx, newop=%016llx, opsize=%u\n",
+                    __FUNCTION__, (u32)cpuid,
+                       cpuid, elem.src_slabid, elem.dst_slabid, elem.hic_calltype, elem.return_address,
+                       elem.oparams, elem.newoparams, elem.oparams_size);
+
+
+            //copy newoparams to internal buffer __iparamsbuffer
+            memcpy(&__iparamsbuffer, elem.newoparams, (elem.oparams_size > 1024 ? 1024 : elem.oparams_size) );
+
+            //adjust slab stack by popping off iparams_size and oparams_size
+            _xmhfhic_common_slab_info_table[src_slabid].archdata.slabtos[(u32)cpuid] += (elem.iparams_size+elem.oparams_size);
+
 
             //switch to destination slab page tables
             asm volatile(
@@ -570,42 +582,35 @@ void __xmhfhic_rtm_trampoline(u64 hic_calltype, slab_input_params_t *iparams, u6
                 : "rax"
             );
 
+
+            //copy internal buffer __iparamsbuffer to oparams
+            memcpy(elem.oparams, &__iparamsbuffer, (elem.oparams_size > 1024 ? 1024 : elem.oparams_size) );
+
+
             switch(elem.hic_calltype){
                 case XMHF_HIC_SLABCALL:{
                     /*
-
-                    RDI = cpuid
-                    RSI = iparams
-                    RDX = for SYSEXIT
-                    RCX = for SYSEXIT
-                    R8 = oparams_size
-                    R9 = dst_slabid
-                    R10 = iparams_size (original RDX)
-                    R11 = oparams (original RCX)*/
+                    RDI = undefined
+                    RSI = undefined
+                    RDX = return_address; for SYSEXIT
+                    RCX = return TOS; for SYSEXIT
+                    R8 = undefined
+                    R9 = undefined
+                    R10 = undefined
+                    R11 = undefined
+                    */
 
                     asm volatile(
-                         "movq %0, %%rdi \r\n"
-                         "movq %1, %%rsi \r\n"
-                         "movq %2, %%rdx \r\n"
-                         "movq %3, %%rcx \r\n"
-                         "movq %4, %%r8 \r\n"
-                         "movq %5, %%r9 \r\n"
-                         "movq %6, %%r10 \r\n"
-                         "movq %7, %%r11 \r\n"
+                         "movq %0, %%rdx \r\n"
+                         "movq %1, %%rcx \r\n"
 
                          "sysexitq \r\n"
                          //"int $0x03 \r\n"
                          //"1: jmp 1b \r\n"
                         :
-                        : "m" (cpuid),
-                          "m" (iparams),
-                          "m" (elem.return_address),
-                          "i" (0ULL),
-                          "m" (oparams_size),
-                          "m" (dst_slabid),
-                          "m" (iparams_size),
-                          "m" (oparams)
-                        : "rdi", "rsi", "rdx", "rcx", "r8", "r9", "r10", "r11"
+                        : "m" (elem.return_address),
+                          "m" (_xmhfhic_common_slab_info_table[elem.src_slabid].archdata.slabtos[(u32)cpuid])
+                        : "rdx", "rcx"
                     );
                 }
                 break;

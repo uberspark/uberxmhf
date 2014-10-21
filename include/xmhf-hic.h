@@ -67,7 +67,7 @@
 #define XMHF_HIC_SLABCALL                   (0xA0)
 #define XMHF_HIC_SLABRET                    (0xA1)
 #define XMHF_HIC_SLABCALLEXCEPTION          (0xA2)
-
+#define XMHF_HIC_UAPI                       (0xA3)
 
 
 
@@ -92,6 +92,7 @@ typedef struct {
     slab_output_params_t *oparams;
     slab_output_params_t *newoparams;
     u64 oparams_size;
+    u64 iparams_size;
 } __xmhfhic_safestack_element_t;
 
 
@@ -164,9 +165,14 @@ void xmhfhic_smp_entry(u64 cpuid);
 void xmhfhic_arch_relinquish_control_to_init_slab(u64 cpuid);
 
 
+
 void __xmhfhic_safepush(u64 cpuid, u64 src_slabid, u64 dst_slabid, u64 hic_calltype, u64 return_address,
-                        slab_output_params_t *oparams, slab_output_params_t *newoparams, u64 oparams_size);
-void __xmhfhic_safepop(u64 cpuid, u64 *src_slabid, u64 *dst_slabid, u64 *hic_calltype, u64 *return_address);
+                        slab_output_params_t *oparams, slab_output_params_t *newoparams, u64 oparams_size, u64 iparams_size);
+
+void __xmhfhic_safepop(u64 cpuid, u64 *src_slabid, u64 *dst_slabid, u64 *hic_calltype, u64 *return_address,
+                       slab_output_params_t **oparams, slab_output_params_t **newoparams, u64 *oparams_size, u64 *iparams_size);
+
+
 __attribute__((naked)) void __xmhfhic_rtm_trampoline_stub(void);
 void __xmhfhic_rtm_trampoline(u64 hic_calltype, slab_input_params_t *iparams, u64 iparams_size, slab_output_params_t *oparams, u64 oparams_size, u64 dst_slabid, u64 src_slabid, u64 cpuid, u64 return_address, u64 return_rsp);
 
@@ -324,16 +330,21 @@ R11 = cpuid
     \
 	__attribute__((naked)) __attribute__ ((section(".slab_entrystub"))) __attribute__((align(1))) void _slab_entrystub_##slab_name(void){	\
 	asm volatile ( \
+            "pushq %%r10 \r\n" \
             "movq %%r8, %%rdx \r\n" \
             "movq %%r9, %%rcx \r\n" \
             "movq %%r10, %%r8 \r\n" \
             "movq %%r11, %%r9 \r\n" \
             "callq "#slab_name"_interface \r\n"		\
+            "popq %%r9 \r\n" \
+            "movq %0, %%rdi \r\n" \
+            "sysenter \r\n" \
+            \
             "int $0x03 \r\n" \
             "1: jmp 1b \r\n" \
             \
 			:  \
-			:  \
+			:  "i" (XMHF_HIC_SLABRET) \
 			:  \
 		);	\
     }\
