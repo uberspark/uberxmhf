@@ -61,8 +61,8 @@ XMHF_SLAB(hictestslab3)
  * author: amit vasudevan (amitvasudevan@acm.org)
  */
 
-void hictestslab3_interface(u64 cpuid, slab_input_params_t *iparams, u64 iparams_size, slab_output_params_t *oparams, u64 oparams_size){
-    x86vmx_exception_frame_t *exframe = (x86vmx_exception_frame_t *)iparams;
+void hictestslab3_interface(slab_input_params_t *iparams, u64 iparams_size, slab_output_params_t *oparams, u64 oparams_size, u64 src_slabid, u64 cpuid){
+    //x86vmx_exception_frame_t *exframe = (x86vmx_exception_frame_t *)iparams;
 
 	_XDPRINTF_("%s[%u]: Got control: RSP=%016llx\n",
                 __FUNCTION__, (u32)cpuid, read_rsp());
@@ -73,12 +73,15 @@ void hictestslab3_interface(u64 cpuid, slab_input_params_t *iparams, u64 iparams
 	_XDPRINTF_("%s[%u]: Got control: oparams=%016llx, oparams_size=%u\n",
                 __FUNCTION__, (u32)cpuid, oparams, oparams_size);
 
-	_XDPRINTF_("%s[%u]: original SS:RSP=%016llx:%016llx\n",
-                __FUNCTION__, (u32)cpuid, exframe->orig_ss, exframe->orig_rsp);
+	//_XDPRINTF_("%s[%u]: original SS:RSP=%016llx:%016llx\n",
+    //            __FUNCTION__, (u32)cpuid, exframe->orig_ss, exframe->orig_rsp);
 
 
-    memcpy(oparams, iparams, oparams_size);
-    //HALT();
+    //memcpy(oparams, iparams, oparams_size);
+
+    _XDPRINTF_("%s[%u]: Halting\n",
+                __FUNCTION__, (u32)cpuid);
+    HALT();
 
     return;
 }
