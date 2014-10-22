@@ -609,21 +609,21 @@ __attribute__(( aligned(16) )) static u64 _guestslab1_init_gdt_start[]  = {
 	0x00af93000000ffffULL,	//CPL-0 64-bit data descriptor (DS/SS/ES/FS/GS)
 };
 
-__attribute__(( aligned(16) )) static u64 _guestslab1_init_gdt32_start[]  = {
+/*__attribute__(( aligned(16) )) static u64 _guestslab1_init_gdt32_start[]  = {
 	0x0000000000000000ULL,	//NULL descriptor
 	0x00cf9b000000ffffULL,	//CPL-0 32-bit code descriptor (CS64)
 	0x00cf93000000ffffULL,	//CPL-0 32-bit data descriptor (DS/SS/ES/FS/GS)
-};
+};*/
 
 __attribute__(( aligned(16) )) static arch_x86_gdtdesc_t _guestslab1_init_gdt  = {
 	.size=sizeof(_guestslab1_init_gdt_start)-1,
 	.base=&_guestslab1_init_gdt_start,
 };
 
-__attribute__(( aligned(16) )) static arch_x86_gdtdesc_t _guestslab1_init_gdt32  = {
+/*__attribute__(( aligned(16) )) static arch_x86_gdtdesc_t _guestslab1_init_gdt32  = {
 	.size=sizeof(_guestslab1_init_gdt32_start)-1,
 	.base=&_guestslab1_init_gdt32_start,
-};
+};*/
 
 
 __attribute__((naked)) void guestslab1_interface(void) {
@@ -643,6 +643,7 @@ __attribute__((naked)) void guestslab1_interface(void) {
 }
 
 
+
 /*
 __attribute__((naked)) void guestslab1_interface(void) {
 
@@ -656,31 +657,31 @@ __attribute__((naked)) void guestslab1_interface(void) {
    					"orl $0x00000030, %%eax \r\n"
    					"movl %%eax, %%cr4 \r\n"
 
-                    "movl %0, %%eax \r\n"
+                    "movl %1, %%eax \r\n"
                     "movl %%eax, %%cr3 \r\n"
 
-                    "movl $0xc0000080, %%ecx \r\n"
-                    "rdmsr \r\n"
-                    "orl $0x00000100, %%eax \r\n"
-                    "orl $0x00000800, %%eax \r\n"
-                    "wrmsr \r\n"
-
-                    "movl $0xA1A1A1A1, %%eax \r\n"
-					"movl $0xB8000, %%esi \r\n"
-					"movl %%eax, (%%esi) \r\n"
-                    "hlt \r\n"
-                    "1: jmp 1b \r\n"
+                    //"movl $0xc0000080, %%ecx \r\n"
+                    //"rdmsr \r\n"
+                    //"orl $0x00000100, %%eax \r\n"
+                    //"orl $0x00000800, %%eax \r\n"
+                    //"wrmsr \r\n"
 
                     "movl %%cr0, %%eax \r\n"
                     "orl $0x80000001, %%eax \r\n"
                     "movl %%eax, %%cr0 \r\n"
 
+                    //"movl $0xA1A1A1A1, %%eax \r\n"
+					//"movl $0xB8000, %%esi \r\n"
+					//"movl %%eax, (%%esi) \r\n"
+                    "hlt \r\n"
+                    "1: jmp 1b \r\n"
+
                     ".code64 \r\n"
 
 			    :
-			    : "i" (&_guestslab1_init_gdt32), "i" (&_guestslab1_init_pml4t)
+			    : "i" (&_guestslab1_init_gdt32), "i" (&_guestslab1_init_pdpt)
                 :
 	);
 
-}
-*/
+}*/
+
