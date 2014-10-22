@@ -3091,53 +3091,6 @@ static bool __xmhfhic_x86vmx_setupvmxstate(u64 cpuid){
 	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_MSR_BITMAPS_ADDRESS_FULL, hva2spa(__xmhfhic_x86vmx_archdata[cpuindex].vmx_msrbitmaps_region ));
 	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VMX_CPU_BASED, (xmhfhw_cpu_x86vmx_vmread(VMCS_CONTROL_VMX_CPU_BASED) | (u64)(1 << 28)) );
 
-	//Critical MSR load/store
-	{
-		u32 i;
-		msr_entry_t *hmsr = (msr_entry_t *)__xmhfhic_x86vmx_archdata[cpuindex].vmx_msr_area_host_region;
-		msr_entry_t *gmsr = (msr_entry_t *)__xmhfhic_x86vmx_archdata[cpuindex].vmx_msr_area_guest_region;
-
-		//store host and guest initial values of the critical MSRs
-		for(i=0; i < vmx_msr_area_msrs_count; i++){
-			u32 msr, eax, edx;
-			msr = vmx_msr_area_msrs[i];
-			rdmsr(msr, &eax, &edx);
-
-			//host MSR values will be what we get from RDMSR
-			hmsr[i].index = msr;
-			hmsr[i].data = ((u64)edx << 32) | (u64)eax;
-
-            //adjust and populate guest MSR values according to the MSR
-			gmsr[i].index = msr;
-			gmsr[i].data = ((u64)edx << 32) | (u64)eax;
-			switch(msr){
-                case MSR_EFER:{
-                    //gmsr[i].data = gmsr[i].data & (u64)~(1ULL << EFER_LME);
-                    //gmsr[i].data = gmsr[i].data & (u64)~(1ULL << EFER_LMA);
-                    //gmsr[i].data = gmsr[i].data & (u64)~(1ULL << EFER_SCE);
-                    //gmsr[i].data = gmsr[i].data & (u64)~(1ULL << EFER_NXE);
-                    xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_IA32_EFER_FULL, gmsr[i].data);
-
-                }
-                break;
-
-                default:
-                    break;
-			}
-
-		}
-
-		//host MSR load on exit, we store it ourselves before entry
-		xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VM_EXIT_MSR_LOAD_ADDRESS_FULL, hva2spa((void*)__xmhfhic_x86vmx_archdata[cpuindex].vmx_msr_area_host_region));
-		xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VM_EXIT_MSR_LOAD_COUNT, vmx_msr_area_msrs_count);
-
-		//guest MSR load on entry, store on exit
-		xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VM_ENTRY_MSR_LOAD_ADDRESS_FULL, hva2spa((void*)__xmhfhic_x86vmx_archdata[cpuindex].vmx_msr_area_guest_region));
-		xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VM_ENTRY_MSR_LOAD_COUNT, vmx_msr_area_msrs_count);
-		xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VM_EXIT_MSR_STORE_ADDRESS_FULL, hva2spa((void*)__xmhfhic_x86vmx_archdata[cpuindex].vmx_msr_area_guest_region));
-		xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VM_EXIT_MSR_STORE_COUNT, vmx_msr_area_msrs_count);
-
-	}
 
 	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_PAGEFAULT_ERRORCODE_MASK, 0x00000000);
     xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_PAGEFAULT_ERRORCODE_MATCH, 0x00000000);
@@ -3176,18 +3129,95 @@ static bool __xmhfhic_x86vmx_setupvmxstate(u64 cpuid){
 	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_CR0_SHADOW, xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_CR0));
 
 	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_CR4, (u32)__xmhfhic_x86vmx_archdata[cpuindex].vmx_msrs[INDEX_IA32_VMX_CR4_FIXED0_MSR]);
-	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_CR4, (xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_CR4) | CR4_PAE | CR4_PSE) );
 
 	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VM_ENTRY_EXCEPTION_ERRORCODE, 0);
 	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VM_ENTRY_INTERRUPTION_INFORMATION, 0);
 
 
-	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VM_ENTRY_CONTROLS, (xmhfhw_cpu_x86vmx_vmread(VMCS_CONTROL_VM_ENTRY_CONTROLS) | (1 << 9)) );
-	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VM_ENTRY_CONTROLS, (xmhfhw_cpu_x86vmx_vmread(VMCS_CONTROL_VM_ENTRY_CONTROLS) | (1 << 15)) );
+    xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_RSP, 0); //[need to populate in trampoline]
+
+    xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_RIP, 0); // [need to populate in trampoline]
+    xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_ACTIVITY_STATE, 0);
+    xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_RFLAGS, (1 <<1));
+    xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_INTERRUPTIBILITY, 0);
 
 
-    //setup default guest slab state, 32-bit mode, no paging
+    //IDTR
+    xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_IDTR_BASE, 0);
+    xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_IDTR_LIMIT, 0);
+
+    //GDTR
+    //xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_GDTR_BASE, &__guest_gdt);
+    //xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_GDTR_LIMIT, 0x1F);
+    xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_GDTR_BASE, 0);
+    xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_GDTR_LIMIT, 0);
+
+
+    //LDTR, unusable
+    xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_LDTR_BASE, 0);
+    xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_LDTR_LIMIT, 0);
+    xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_LDTR_SELECTOR, 0);
+    xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_LDTR_ACCESS_RIGHTS, 0x10000);
+
+
+
+
+    //64-bit specific guest slab setup
     {
+
+        //Critical MSR load/store
+        {
+            u32 i;
+            msr_entry_t *hmsr = (msr_entry_t *)__xmhfhic_x86vmx_archdata[cpuindex].vmx_msr_area_host_region;
+            msr_entry_t *gmsr = (msr_entry_t *)__xmhfhic_x86vmx_archdata[cpuindex].vmx_msr_area_guest_region;
+
+            //store host and guest initial values of the critical MSRs
+            for(i=0; i < vmx_msr_area_msrs_count; i++){
+                u32 msr, eax, edx;
+                msr = vmx_msr_area_msrs[i];
+                rdmsr(msr, &eax, &edx);
+
+                //host MSR values will be what we get from RDMSR
+                hmsr[i].index = msr;
+                hmsr[i].data = ((u64)edx << 32) | (u64)eax;
+
+                //adjust and populate guest MSR values according to the MSR
+                gmsr[i].index = msr;
+                gmsr[i].data = ((u64)edx << 32) | (u64)eax;
+                switch(msr){
+                    case MSR_EFER:{
+                        //gmsr[i].data = gmsr[i].data & (u64)~(1ULL << EFER_LME);
+                        //gmsr[i].data = gmsr[i].data & (u64)~(1ULL << EFER_LMA);
+                        //gmsr[i].data = gmsr[i].data & (u64)~(1ULL << EFER_SCE);
+                        //gmsr[i].data = gmsr[i].data & (u64)~(1ULL << EFER_NXE);
+                        xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_IA32_EFER_FULL, gmsr[i].data);
+
+                    }
+                    break;
+
+                    default:
+                        break;
+                }
+
+            }
+
+            //host MSR load on exit, we store it ourselves before entry
+            xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VM_EXIT_MSR_LOAD_ADDRESS_FULL, hva2spa((void*)__xmhfhic_x86vmx_archdata[cpuindex].vmx_msr_area_host_region));
+            xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VM_EXIT_MSR_LOAD_COUNT, vmx_msr_area_msrs_count);
+
+            //guest MSR load on entry, store on exit
+            xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VM_ENTRY_MSR_LOAD_ADDRESS_FULL, hva2spa((void*)__xmhfhic_x86vmx_archdata[cpuindex].vmx_msr_area_guest_region));
+            xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VM_ENTRY_MSR_LOAD_COUNT, vmx_msr_area_msrs_count);
+            xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VM_EXIT_MSR_STORE_ADDRESS_FULL, hva2spa((void*)__xmhfhic_x86vmx_archdata[cpuindex].vmx_msr_area_guest_region));
+            xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VM_EXIT_MSR_STORE_COUNT, vmx_msr_area_msrs_count);
+
+        }
+
+
+        xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_CR4, (xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_CR4) | CR4_PAE | CR4_PSE) );
+
+        xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VM_ENTRY_CONTROLS, (xmhfhw_cpu_x86vmx_vmread(VMCS_CONTROL_VM_ENTRY_CONTROLS) | (1 << 9)) );
+        xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VM_ENTRY_CONTROLS, (xmhfhw_cpu_x86vmx_vmread(VMCS_CONTROL_VM_ENTRY_CONTROLS) | (1 << 15)) );
 
         xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_PDPTE0_FULL, _guestslab1_init_pdpt[0] );
         xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_PDPTE1_FULL, _guestslab1_init_pdpt[1] );
@@ -3197,13 +3227,12 @@ static bool __xmhfhic_x86vmx_setupvmxstate(u64 cpuid){
 
         xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_CR3, &_guestslab1_init_pml4t );
 
-        xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_RSP, 0); //[need to populate in trampoline]
 
-        xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_RIP, 0); // [need to populate in trampoline]
-        xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_ACTIVITY_STATE, 0);
-        xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_RFLAGS, (1 <<1));
-        xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_INTERRUPTIBILITY, 0);
-
+        //TR, should be usable for VMX to work, but not used by guest
+        xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_TR_BASE, 0);
+        xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_TR_LIMIT, 0);
+        xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_TR_SELECTOR, 0);
+        xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_TR_ACCESS_RIGHTS, 0x8B);
 
         //CS, DS, ES, FS, GS and SS segments
         xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_CS_SELECTOR, 0x8);
@@ -3236,35 +3265,9 @@ static bool __xmhfhic_x86vmx_setupvmxstate(u64 cpuid){
         xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_SS_LIMIT, 0xFFFFFFFFUL);
         xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_SS_ACCESS_RIGHTS, 0xa093);
 
-        //IDTR
-        xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_IDTR_BASE, 0);
-        xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_IDTR_LIMIT, 0);
 
-        //GDTR
-        //xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_GDTR_BASE, &__guest_gdt);
-        //xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_GDTR_LIMIT, 0x1F);
-        xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_GDTR_BASE, 0);
-        xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_GDTR_LIMIT, 0);
-
-
-        //LDTR, unusable
-        xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_LDTR_BASE, 0);
-        xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_LDTR_LIMIT, 0);
-        xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_LDTR_SELECTOR, 0);
-        xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_LDTR_ACCESS_RIGHTS, 0x10000);
-
-        //TR, should be usable for VMX to work, but not used by guest
-        xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_TR_BASE, 0);
-        xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_TR_LIMIT, 0);
-        xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_TR_SELECTOR, 0);
-        xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_TR_ACCESS_RIGHTS, 0x8B);
 
     }
-
-
-
-
-
 
 
 
