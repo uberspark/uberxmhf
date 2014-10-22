@@ -626,7 +626,7 @@ __attribute__(( aligned(16) )) static arch_x86_gdtdesc_t _guestslab1_init_gdt  =
 };*/
 
 
-__attribute__((naked)) void guestslab1_interface(void) {
+/*__attribute__((naked)) void guestslab1_interface(void) {
 
 	asm volatile (
                     "movq $0xA1A1A1A1, %%rax \r\n"
@@ -640,8 +640,14 @@ __attribute__((naked)) void guestslab1_interface(void) {
 			    :
                 :
 	);
-}
+}*/
 
+void guestslab1_interface(void) {
+    _XDPRINTF_("%s: Hello world from Guest slab!\n", __FUNCTION__);
+
+    _XDPRINTF_("%s: Guest Slab Halting\n", __FUNCTION__);
+    HALT();
+}
 
 
 /*
