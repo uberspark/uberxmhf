@@ -92,7 +92,17 @@ void hictestslab2_interface(slab_input_params_t *iparams, u64 iparams_size, slab
     XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMREAD, VMCS_GUEST_RIP, &guest_rip);
 
 
-	_XDPRINTF_("%s[%u]: guest_rip=%016llx\n",
+	_XDPRINTF_("%s[%u]: original guest_rip=%016llx\n",
+                __FUNCTION__, (u32)cpuid, guest_rip);
+
+
+    guest_rip+=3;
+
+    XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMWRITE, VMCS_GUEST_RIP, guest_rip);
+    XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMREAD, VMCS_GUEST_RIP, &guest_rip);
+
+
+	_XDPRINTF_("%s[%u]: adjusted guest_rip=%016llx\n",
                 __FUNCTION__, (u32)cpuid, guest_rip);
 
 	_XDPRINTF_("%s[%u]: Halting!\n",
