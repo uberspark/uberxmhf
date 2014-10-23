@@ -642,7 +642,9 @@ static void guestslab1_dotest_vmcall(void){
 void guestslab1_interface(void) {
     _XDPRINTF_("%s: Hello world from Guest slab!\n", __FUNCTION__);
 
-    guestslab1_dotest_vmcall();
+    //guestslab1_dotest_vmcall();
+
+    asm volatile ("vmcall \r\n");
 
     _XDPRINTF_("%s: Guest Slab Halting\n", __FUNCTION__);
     HALT();

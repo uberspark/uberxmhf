@@ -63,6 +63,8 @@ void hictestslab2_interface(slab_input_params_t *iparams, u64 iparams_size, slab
     //u64 *inputval = (u64 *)iparams;
     //u64 *outputval = (u64 *)oparams;
 
+    //asm volatile ("int $0x03 \r\n");
+
 	_XDPRINTF_("%s[%u]: Got control: RSP=%016llx\n",
                 __FUNCTION__, (u32)cpuid, read_rsp());
 
