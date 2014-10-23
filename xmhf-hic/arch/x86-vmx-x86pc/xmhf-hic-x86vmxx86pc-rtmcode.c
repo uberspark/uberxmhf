@@ -585,6 +585,12 @@ __attribute__((naked)) void __xmhfhic_rtm_trampoline_stub(void){
         "pushq %%rax \r\n"          //push source slab id
 
         "callq __xmhfhic_rtm_uapihandler \r\n"
+
+        "addq $16, %%rsp \r\n"
+        "popq %%rdx \r\n"
+        "popq %%rcx \r\n"
+        "sysexitq \r\n"
+
         "hlt \r\n"
       :
       : "i" (XMHF_HIC_UAPI), "i" (X86SMP_LAPIC_ID_MEMORYADDRESS)
@@ -997,6 +1003,20 @@ static void __xmhfhic_rtm_uapihandler_cpustate(u64 uapicall_subnum, u64 iparams,
         }
         break;
 
+        case XMHF_HIC_UAPI_CPUSTATE_VMWRITE:{
+            //iparams = encoding (u64), oparams = value (u64)
+            asm volatile (
+                "movq %0, %%rax \r\n"
+                "movq %1, %%rsi \r\n"
+                "vmwrite %%rsi, %%rax \r\n"
+              :
+              : "m" (iparams), "m" (oparams)
+              : "rax", "rsi"
+            );
+
+        }
+        break;
+
         default:
             _XDPRINTF_("%s[%u]: Unknown cpustate subcall %x. Halting!\n",
                     __FUNCTION__, (u32)cpuid, uapicall_subnum);
@@ -1030,7 +1050,7 @@ void __xmhfhic_rtm_uapihandler(u64 uapicall, u64 uapicall_num, u64 uapicall_subn
     }
 
 
-    asm volatile(
+/*    asm volatile(
                  "movq %0, %%rdx \r\n"
                  "movq %1, %%rcx \r\n"
                  "sysexitq \r\n"
@@ -1040,5 +1060,7 @@ void __xmhfhic_rtm_uapihandler(u64 uapicall, u64 uapicall_num, u64 uapicall_subn
                 : "m" (return_address),
                   "m" (return_rsp)
                 : "rdx", "rcx"
-    );
+    );*/
+
+    return;
 }

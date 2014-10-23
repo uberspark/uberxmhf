@@ -75,6 +75,7 @@
 #define XMHF_HIC_UAPI_CPUSTATE              (0xA40)
 
 #define XMHF_HIC_UAPI_CPUSTATE_VMREAD       (0xA400)
+#define XMHF_HIC_UAPI_CPUSTATE_VMWRITE      (0xA401)
 
 
 #ifndef __ASSEMBLY__
