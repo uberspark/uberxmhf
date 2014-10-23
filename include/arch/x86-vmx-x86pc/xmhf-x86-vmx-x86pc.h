@@ -79,14 +79,10 @@
 #define HIC_SLAB_X86VMXX86PC_GUEST      (2)
 
 typedef struct {
-	u64 mempgtbl_pml4t[PAE_MAXPTRS_PER_PML4T] __attribute__((aligned(4096)));
+	//u64 mempgtbl_pml4t[PAE_MAXPTRS_PER_PML4T] __attribute__((aligned(4096)));
 	u64 mempgtbl_pdpt[PAE_MAXPTRS_PER_PDPT] __attribute__((aligned(4096)));
 	u64 mempgtbl_pdt[PAE_PTRS_PER_PDPT][PAE_PTRS_PER_PDT] __attribute__((aligned(4096)));
 	u64 mempgtbl_pt[PAE_PTRS_PER_PDPT][PAE_PTRS_PER_PDT][PAE_PTRS_PER_PT] __attribute__((aligned(4096)));
-	//u64 devpgtbl_pml4t[PAE_MAXPTRS_PER_PML4T] __attribute__((aligned(4096)));
-	//u64 devpgtbl_pdpt[PAE_PTRS_PER_PML4T][PAE_MAXPTRS_PER_PDPT] __attribute__((aligned(4096)));
-	//u64 devpgtbl_pdt[PAE_PTRS_PER_PDPT][PAE_PTRS_PER_PDT] __attribute__((aligned(4096)));
-	//u64 devpgtbl_pts[PAE_PTRS_PER_PDT][PAE_PTRS_PER_PT] __attribute__((aligned(4096)));
 	vtd_slpgtbl_t devpgtbl __attribute__((aligned(4096)));
 	u8  deviomap[2 * PAGE_SIZE_4K] __attribute__((aligned(4096)));
 	u64 slabtype; //hypervisor, guest
