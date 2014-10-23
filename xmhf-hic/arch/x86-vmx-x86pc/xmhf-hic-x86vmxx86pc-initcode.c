@@ -2994,7 +2994,7 @@ __attribute__(( aligned(16) )) static arch_x86_gdtdesc_t _guestslab1_init_gdt  =
 
 static bool __xmhfhic_x86vmx_setupvmxstate(u64 cpuid){
     u32 cpuindex = (u32)cpuid;
-	const u32 vmx_msr_area_msrs[] = {MSR_EFER, MSR_IA32_PAT, MSR_K6_STAR}; //critical MSRs that need to be saved/restored across guest VM switches
+	const u32 vmx_msr_area_msrs[] = {MSR_EFER, MSR_IA32_PAT}; //critical MSRs that need to be saved/restored across guest VM switches
 	const unsigned int vmx_msr_area_msrs_count = (sizeof(vmx_msr_area_msrs)/sizeof(vmx_msr_area_msrs[0]));	//count of critical MSRs that need to be saved/restored across VM switches
 	u32 lodword, hidword;
 	u64 vmcs_phys_addr = hva2spa(__xmhfhic_x86vmx_archdata[cpuindex].vmx_vmcs_region);
@@ -3083,6 +3083,8 @@ static bool __xmhfhic_x86vmx_setupvmxstate(u64 cpuid){
 	rdmsr(IA32_MSR_GS_BASE, &lodword, &hidword);
 	xmhfhw_cpu_x86vmx_vmwrite(VMCS_HOST_GS_BASE, (((u64)hidword << 32) | (u64)lodword) );
 
+	//xmhfhw_cpu_x86vmx_vmwrite(VMCS_HOST_IA32_EFER_FULL, rdmsr64(MSR_EFER));
+
 	//setup default VMX controls
 	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VMX_PIN_BASED, (u32)__xmhfhic_x86vmx_archdata[cpuindex].vmx_msrs[INDEX_IA32_VMX_PINBASED_CTLS_MSR]);
 	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VMX_CPU_BASED, (u32)__xmhfhic_x86vmx_archdata[cpuindex].vmx_msrs[INDEX_IA32_VMX_PROCBASED_CTLS_MSR]);
@@ -3147,7 +3149,7 @@ static bool __xmhfhic_x86vmx_setupvmxstate(u64 cpuid){
 
     xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_RIP, 0); // [need to populate in trampoline]
     xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_ACTIVITY_STATE, 0);
-    xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_RFLAGS, (1 <<1));
+    xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_RFLAGS, (1 <<1) | (EFLAGS_IOPL));
     xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_INTERRUPTIBILITY, 0);
 
 
@@ -3498,14 +3500,6 @@ void xmhf_hic_arch_setup_cpu_state(u64 cpuid){
     _XDPRINTF_("%s[%u]: Set CR0.EM to be VMX compatible\n", __FUNCTION__, (u32)cpuid);
 
 
-    //setup VMX state
-    if(!__xmhfhic_x86vmx_setupvmxstate(cpuid)){
-        _XDPRINTF_("%s[%u]: Unable to set VMX state. Halting!\n", __FUNCTION__, (u32)cpuid);
-        HALT();
-    }
-    _XDPRINTF_("%s[%u]: Setup VMX state\n", __FUNCTION__, (u32)cpuid);
-
-
     //setup SYSENTER/SYSEXIT mechanism
     {
         wrmsr(IA32_SYSENTER_CS_MSR, __CS_CPL0, 0);
@@ -3513,6 +3507,16 @@ void xmhf_hic_arch_setup_cpu_state(u64 cpuid){
         wrmsr(IA32_SYSENTER_ESP_MSR, ((u32)__xmhfhic_rtm_trampoline_stack[(u32)cpuid] + MAX_PLATFORM_CPUSTACK_SIZE), 0);
     }
     _XDPRINTF_("%s: setup SYSENTER/SYSEXIT mechanism\n", __FUNCTION__);
+    _XDPRINTF_("SYSENTER CS=%016llx\n", rdmsr64(IA32_SYSENTER_CS_MSR));
+    _XDPRINTF_("SYSENTER RIP=%016llx\n", rdmsr64(IA32_SYSENTER_EIP_MSR));
+    _XDPRINTF_("SYSENTER RSP=%016llx\n", rdmsr64(IA32_SYSENTER_ESP_MSR));
+
+    //setup VMX state
+    if(!__xmhfhic_x86vmx_setupvmxstate(cpuid)){
+        _XDPRINTF_("%s[%u]: Unable to set VMX state. Halting!\n", __FUNCTION__, (u32)cpuid);
+        HALT();
+    }
+    _XDPRINTF_("%s[%u]: Setup VMX state\n", __FUNCTION__, (u32)cpuid);
 
 
 }

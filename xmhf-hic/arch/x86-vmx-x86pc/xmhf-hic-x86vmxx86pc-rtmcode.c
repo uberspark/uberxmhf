@@ -54,7 +54,7 @@
 //#include <xmhf-core.h>
 #include <xmhf-debug.h>
 
-
+/*
 __attribute__((naked)) void __xmhfhic_rtm_intercept_stub(void){
 
 	asm volatile(
@@ -74,13 +74,14 @@ __attribute__((naked)) void __xmhfhic_rtm_intercept_stub(void){
     );
 
 }
+*/
 
-/*
+
+
 //HIC runtime intercept stub
 __attribute__((naked)) void __xmhfhic_rtm_intercept_stub(void){
 
 	asm volatile(
-
                         "pushq %%rsp \r\n"
                         "pushq %%rbp \r\n"
                         "pushq %%rdi \r\n"
@@ -97,6 +98,12 @@ __attribute__((naked)) void __xmhfhic_rtm_intercept_stub(void){
                         "pushq %%r10 \r\n"
                         "pushq %%r9 \r\n"
                         "pushq %%r8 \r\n"
+
+                        "pushfq \r\n"
+                        "popq %%rax \r\n"
+                        "orq $0x3000, %%rax \r\n"
+                        "pushq %%rax \r\n"
+                        "popfq \r\n"
 
                         //rdi = hic_calltype = XMHF_HIC_SLABCALLINTERCEPT
                         "movq %0, %%rdi \r\n"
@@ -146,7 +153,7 @@ __attribute__((naked)) void __xmhfhic_rtm_intercept_stub(void){
                     :
 		);
 }
-*/
+
 
 
 
@@ -593,9 +600,72 @@ void __xmhfhic_rtm_trampoline(u64 hic_calltype, slab_input_params_t *iparams, u6
             _XDPRINTF_("Intercept exit reason: %08x\n",
                  xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_VMEXIT_REASON));
 
-            _XDPRINTF_("%s[%u]: Trampoline Halting\n",
-                    __FUNCTION__, (u32)cpuid, read_rsp());
-            HALT();
+            _XDPRINTF_("SYSENTER CS=%016llx\n", rdmsr64(IA32_SYSENTER_CS_MSR));
+            _XDPRINTF_("SYSENTER RIP=%016llx\n", rdmsr64(IA32_SYSENTER_EIP_MSR));
+            _XDPRINTF_("SYSENTER RSP=%016llx\n", rdmsr64(IA32_SYSENTER_ESP_MSR));
+
+
+            //copy iparams (CPU GPR state) into arch. data for cpuid
+            memcpy(&__xmhfhic_x86vmx_archdata[(u32)cpuid].vmx_gprs,
+                   iparams, iparams_size);
+
+            //switch to destination slab page tables
+            //XXX: eliminate this by preloading CR3 with hictestslab2 CR3
+            asm volatile(
+                 "movq %0, %%rax \r\n"
+                 "movq %%rax, %%cr3 \r\n"
+                :
+                : "m" (_xmhfhic_common_slab_info_table[dst_slabid].archdata.mempgtbl_cr3)
+                : "rax"
+            );
+
+            //intercept slab does not get any input parameters and does not
+            //return any output parameters
+
+            _XDPRINTF_("Jumping to dst_slabid...\n");
+
+            //jump to destination slab entrystub
+            /*
+
+            RDI = newiparams (NULL)
+            RSI = iparams_size (0)
+            RDX = slab entrystub; used for SYSEXIT
+            RCX = slab entrystub stack TOS for the CPU; used for SYSEXIT
+            R8 = newoparams (NULL)
+            R9 = oparams_size (0)
+            R10 = src_slabid
+            R11 = cpuid
+
+            */
+
+            asm volatile(
+                 "movq %0, %%rdi \r\n"
+                 "movq %1, %%rsi \r\n"
+                 "movq %2, %%rdx \r\n"
+                 "movq %3, %%rcx \r\n"
+                 "movq %4, %%r8 \r\n"
+                 "movq %5, %%r9 \r\n"
+                 "movq %6, %%r10 \r\n"
+                 "movq %7, %%r11 \r\n"
+                 //"movq %8, %%rax \r\n"
+                 //"movw %%ax, %%ds \r\n"
+                 //"movw %%ax, %%es \r\n"
+                 "sysexitq \r\n"
+                 //"int $0x03 \r\n"
+                 //"1: jmp 1b \r\n"
+                :
+                : "i" (0),
+                  "i" (0),
+                  "m" (_xmhfhic_common_slab_info_table[dst_slabid].entrystub),
+                  "m" (_xmhfhic_common_slab_info_table[dst_slabid].archdata.slabtos[(u32)cpuid]),
+                  "i" (0),
+                  "i" (0),
+                  "m" (src_slabid),
+                  "m" (cpuid)
+                 // "i" (__DS_CPL3_SE)
+                : "rdi", "rsi", "rdx", "rcx", "r8", "r9", "r10", "r11"
+            );
+
         }
         break;
 

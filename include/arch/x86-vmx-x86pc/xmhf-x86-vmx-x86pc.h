@@ -426,6 +426,7 @@ typedef struct {
   u64 vmx_msrs[IA32_VMX_MSRCOUNT];
   u64 vmx_msr_efer;
   u64 vmx_msr_efcr;
+  x86regs64_t vmx_gprs;
 } __attribute__((packed)) xc_cpuarchdata_x86vmx_t;
 
 
