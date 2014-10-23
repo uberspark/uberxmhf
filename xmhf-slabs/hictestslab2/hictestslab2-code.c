@@ -62,6 +62,7 @@ XMHF_SLAB(hictestslab2)
 void hictestslab2_interface(slab_input_params_t *iparams, u64 iparams_size, slab_output_params_t *oparams, u64 oparams_size, u64 src_slabid, u64 cpuid){
     //u64 *inputval = (u64 *)iparams;
     //u64 *outputval = (u64 *)oparams;
+    u64 guest_rip;
 
     //asm volatile ("int $0x03 \r\n");
 
@@ -85,7 +86,14 @@ void hictestslab2_interface(slab_input_params_t *iparams, u64 iparams_size, slab
     */
 
 
-    XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMREAD, 0, 0);
+	_XDPRINTF_("%s[%u]: Proceeding to call VMREAD UAPI...\n",
+                __FUNCTION__, (u32)cpuid);
+
+    XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMREAD, VMCS_GUEST_RIP, &guest_rip);
+
+
+	_XDPRINTF_("%s[%u]: guest_rip=%016llx\n",
+                __FUNCTION__, (u32)cpuid, guest_rip);
 
 	_XDPRINTF_("%s[%u]: Halting!\n",
                 __FUNCTION__, (u32)cpuid);
