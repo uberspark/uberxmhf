@@ -84,6 +84,9 @@ void hictestslab2_interface(slab_input_params_t *iparams, u64 iparams_size, slab
 
     */
 
+
+    XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMREAD, 0, 0);
+
 	_XDPRINTF_("%s[%u]: Halting!\n",
                 __FUNCTION__, (u32)cpuid);
     HALT();

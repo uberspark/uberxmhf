@@ -69,8 +69,12 @@
 #define XMHF_HIC_SLABRET                    (0xA1)
 #define XMHF_HIC_SLABCALLEXCEPTION          (0xA2)
 #define XMHF_HIC_SLABCALLINTERCEPT          (0xA3)
+
 #define XMHF_HIC_UAPI                       (0xA4)
 
+#define XMHF_HIC_UAPI_CPUSTATE              (0xA40)
+
+#define XMHF_HIC_UAPI_CPUSTATE_VMREAD       (0xA400)
 
 
 #ifndef __ASSEMBLY__
@@ -271,6 +275,54 @@ extern __attribute__(( aligned(4096) )) u8 __xmhfhic_rtm_trampoline_stack[MAX_PL
 //
 
 
+
+
+
+
+
+
+
+//HIC UAPI
+
+
+/*
+__xmhfhic_uapi_cpustate register mappings:
+
+RDI = XMHF_HIC_UAPI
+RSI = XMHF_HIC_UAPI_CPUSTATE
+RDX = cpustatefn
+RCX = undefined
+R8 = iparams
+R9 = oparams
+R10 = return RSP
+R11 = return_address
+
+*/
+
+//reserved_uapicall = XMHF_HIC_UAPI, reserved_uapicall_num = XMHF_HIC_UAPI_CPUSTATE
+__attribute__((naked)) __attribute__ ((noinline)) static inline bool __xmhfhic_uapi_cpustate(u64 reserved_uapicall, u64 reserved_uapicall_num,
+                                           u64 cpustatefn,
+                                           u64 reserved, u64 iparams, u64 oparams){
+
+    asm volatile (
+        "movq %%rsp, %%r10 \r\n"
+        "movq $1f, %%r11 \r\n"\
+        "sysenter \r\n" \
+        \
+        "1:\r\n" \
+        "retq \r\n" \
+        :
+        :
+        :
+    );
+
+
+}
+
+#define XMHF_HIC_SLAB_UAPI_CPUSTATE(cpustatefn, iparams, oparams) \
+    __xmhfhic_uapi_cpustate(XMHF_HIC_UAPI, XMHF_HIC_UAPI_CPUSTATE, cpustatefn, 0, iparams, oparams)
+
+
 /*
 __slab_callstub register mappings:
 
@@ -308,6 +360,8 @@ __attribute__((naked)) __attribute__ ((noinline)) static inline bool __slab_call
 //#define XMHF_SLAB_CALL(dst_slabname, dst_slabid, iparams, iparams_size, oparams, oparams_size) dst_slabname##_interface(iparams, iparams_size, oparams, oparams_size, 0)
 #define XMHF_SLAB_CALL(dst_slabname, dst_slabid, iparams, iparams_size, oparams, oparams_size) __slab_callstub(0, iparams, iparams_size, oparams, oparams_size, dst_slabid)
 
+
+#define XMHF_SLAB_HIC_UAPI_CPUSTATE
 
 /*
 _slab_entrystub entry register mappings:
@@ -380,99 +434,3 @@ R11 = cpuid
 #endif //__XMHF_HIC_H__
 
 
-
-#if 0
-
-            /*
-            _slab_entrystub: registers
-
-            RDI = cpuid
-            RSI = iparams
-            RDX = for SYSEXIT
-            RCX = for SYSEXIT
-            R8 = oparams_size
-            R9 = srcslabid
-            R10 = iparams_size (original RDX)
-            R11 = oparams (original RCX)*/
-
-
-	//oparams_size (R8), new_oparams (RCX),  dstslabid (R9)
-
-
-#define XMHF_SLAB(slab_name)	\
-	__attribute__ ((section(".rodata"))) char * slab_name##_string="_xmhfslab_"#slab_name"_";	\
-	__attribute__ ((section(".stack"))) __attribute__ ((aligned(4096))) u8 slab_name##_slab_stack[MAX_PLATFORM_CPUS][XMHF_SLAB_STACKSIZE];	\
-	__attribute__ ((section(".stackhdr"))) u64 slab_name##_slab_tos[MAX_PLATFORM_CPUS]= { ((u64)&slab_name##_slab_stack[0] + XMHF_SLAB_STACKSIZE), ((u64)&slab_name##_slab_stack[1] + XMHF_SLAB_STACKSIZE), ((u64)&slab_name##_slab_stack[2] + XMHF_SLAB_STACKSIZE), ((u64)&slab_name##_slab_stack[3] + XMHF_SLAB_STACKSIZE), ((u64)&slab_name##_slab_stack[4] + XMHF_SLAB_STACKSIZE), ((u64)&slab_name##_slab_stack[5] + XMHF_SLAB_STACKSIZE), ((u64)&slab_name##_slab_stack[6] + XMHF_SLAB_STACKSIZE), ((u64)&slab_name##_slab_stack[7] + XMHF_SLAB_STACKSIZE)  };	\
-    __attribute__ ((section(".slab_dmadata"))) u8 slab_name##dmadataplaceholder[1];\
-																				\
-	__attribute__((naked)) __attribute__ ((section(".slab_entrystub"))) __attribute__((align(1))) void _slab_entrystub_##slab_name(void){	\
-	asm volatile (							\
-            "movq "#slab_name"_slab_tos+0x0(,%%edi,8), %%rsp \r\n" \
-            \
-            "movq %%r10, %%rdx \r\n" \
-            "movq %%r11, %%rcx \r\n" \
-            \
-            "cmpq $0, %%r8 \r\n" \
-            "je 1f \r\n" \
-            "subq %%r8, %%rsp \r\n" \
-            "movq %%rsp, %%rcx \r\n" \
-            "1: \r\n" \
-                            \
-            \
-            "pushq %%r8 \r\n" \
-            "pushq %%rcx \r\n" \
-            "pushq %%r9 \r\n" \
-            \
-                            \
-            "callq "#slab_name"_interface \r\n"		\
-                        \
-            \
-            "popq %%r9 \r\n" \
-            "popq %%rcx \r\n" \
-            "popq %%r8 \r\n" \
-            \
-            "movq %0, %%rax \r\n"\
-            \
-            "sysenter \r\n" \
-            "int $0x03 \r\n" \
-            "1: jmp 1b \r\n" \
-            \
-			:								\
-			: "i" (XMHF_HIC_SLABRET) 	\
-               \
-			:								\
-		);									\
-    }\
-    \
-    \
-    \
-    __attribute__((naked)) __attribute__ ((noinline)) static inline bool __slab_callstub(u64 cpuid, slab_input_params_t *iparams, u64 iparams_size, slab_output_params_t *oparams, u64 oparams_size, u64 dst_slabid){\
-        asm volatile ( \
-            \
-            "pushq %%rcx \r\n" \
-            "movq %%rsp, "#slab_name"_slab_tos+0x0(,%%edi,8) \r\n"  \
-            \
-            \
-            "movq $1f, %%r11 \r\n"\
-            "movq %0, %%rax \r\n"\
-            "sysenter \r\n" \
-            \
-            \
-            "1:\r\n" \
-            "movq "#slab_name"_slab_tos+0x0(,%%edi,8), %%rsp \r\n" \
-                      \
-            "popq %%rdi \r\n" \
-            "movq %%r11, %%rsi \r\n" \
-            "movq %%r8, %%rcx \r\n" \
-            "cld \r\n" \
-            "rep movsb \r\n" \
-                    \
-                    \
-            "retq \r\n" \
-            : \
-            : "i" (XMHF_HIC_SLABCALL) \
-            : \
-        ); \
-    } \
-
-#endif //0
