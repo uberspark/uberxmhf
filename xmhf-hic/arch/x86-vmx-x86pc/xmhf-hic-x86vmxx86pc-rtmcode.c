@@ -977,6 +977,35 @@ void __xmhfhic_rtm_trampoline(u64 hic_calltype, slab_input_params_t *iparams, u6
 //////////////////////////////////////////////////////////////////////////////
 // HIC UAPI handler
 
+static void __xmhfhic_rtm_uapihandler_cpustate(u64 uapicall_subnum, u64 iparams, u64 oparams, u64 cpuid){
+    _XDPRINTF_("%s[%u]: Got control...\n",
+                __FUNCTION__, (u32)cpuid);
+
+
+    switch(uapicall_subnum){
+        case XMHF_HIC_UAPI_CPUSTATE_VMREAD:{
+            //iparams = encoding (u64), oparams = memory (u64 *)
+            asm volatile (
+                "movq %0, %%rax \r\n"
+                "movq %1, %%rsi \r\n"
+                "vmread %%rax, (%%rsi) \r\n"
+              :
+              : "m" (iparams), "m" (oparams)
+              : "rax", "rsi"
+            );
+
+        }
+        break;
+
+        default:
+            _XDPRINTF_("%s[%u]: Unknown cpustate subcall %x. Halting!\n",
+                    __FUNCTION__, (u32)cpuid, uapicall_subnum);
+            HALT();
+    }
+
+}
+
+
 void __xmhfhic_rtm_uapihandler(u64 uapicall, u64 uapicall_num, u64 uapicall_subnum,
                                u64 reserved, u64 iparams, u64 oparams,  u64 src_slabid, u64 cpuid, u64 return_address, u64 return_rsp){
 
@@ -989,9 +1018,27 @@ void __xmhfhic_rtm_uapihandler(u64 uapicall, u64 uapicall_num, u64 uapicall_subn
                src_slabid, cpuid, return_address, return_rsp, read_cr3());
 
 
+    switch(uapicall_num){
+        case XMHF_HIC_UAPI_CPUSTATE:
+            __xmhfhic_rtm_uapihandler_cpustate(uapicall_subnum, iparams, oparams, cpuid);
+            break;
 
-    _XDPRINTF_("%s[%u]: Halting!\n",
-                    __FUNCTION__, (u32)cpuid);
-    HALT();
+        default:
+            _XDPRINTF_("%s[%u]: Unknown UAPI call %x. Halting!\n",
+                    __FUNCTION__, (u32)cpuid, uapicall_num);
+            HALT();
+    }
 
+
+    asm volatile(
+                 "movq %0, %%rdx \r\n"
+                 "movq %1, %%rcx \r\n"
+                 "sysexitq \r\n"
+                 //"int $0x03 \r\n"
+                 //"1: jmp 1b \r\n"
+                :
+                : "m" (return_address),
+                  "m" (return_rsp)
+                : "rdx", "rcx"
+    );
 }
