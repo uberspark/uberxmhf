@@ -642,8 +642,47 @@ __attribute__(( aligned(16) )) static arch_x86_gdtdesc_t _guestslab1_init_gdt  =
 	);
 }*/
 
+
+static void guestslab1_dotest_vmcall(void){
+
+    {
+        u64 tscbefore, tscafter, tscavg=0;
+        u32 iterations=8192;
+        u32 i;
+
+        _XDPRINTF_("%s: proceeding with test...\n", __FUNCTION__);
+
+
+
+        for(i=0; i < iterations; i++){
+            tscbefore = rdtsc64();
+
+            {
+
+                //asm volatile ("vmcall \r\n");
+
+            }
+
+            tscafter = rdtsc64();
+            tscavg += (tscafter - tscbefore);
+        }
+
+        tscavg = tscavg / iterations;
+
+        _XDPRINTF_("%s: clock cycles for test = %u\n", __FUNCTION__, (u32)tscavg);
+
+    }
+
+
+
+}
+
+
+
 void guestslab1_interface(void) {
     _XDPRINTF_("%s: Hello world from Guest slab!\n", __FUNCTION__);
+
+    guestslab1_dotest_vmcall();
 
     _XDPRINTF_("%s: Guest Slab Halting\n", __FUNCTION__);
     HALT();

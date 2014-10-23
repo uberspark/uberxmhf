@@ -55,10 +55,32 @@
 #include <xmhf-debug.h>
 
 
+__attribute__((naked)) void __xmhfhic_rtm_intercept_stub(void){
+
+	asm volatile(
+            "pushq %%rax \r\n"
+            "pushq %%rbx \r\n"
+            "movq %0, %%rbx \r\n"
+            "vmread %%rbx, %%rax \r\n"
+            "addq $3, %%rax \r\n"
+            "vmwrite %%rax, %%rbx \r\n"
+            "popq %%rbx \r\n"
+            "popq %%rax \r\n"
+            "vmresume \r\n"
+        :
+        : "i" (VMCS_GUEST_RIP)
+        :
+
+    );
+
+}
+
+/*
 //HIC runtime intercept stub
 __attribute__((naked)) void __xmhfhic_rtm_intercept_stub(void){
 
 	asm volatile(
+
                         "pushq %%rsp \r\n"
                         "pushq %%rbp \r\n"
                         "pushq %%rdi \r\n"
@@ -124,7 +146,7 @@ __attribute__((naked)) void __xmhfhic_rtm_intercept_stub(void){
                     :
 		);
 }
-
+*/
 
 
 
