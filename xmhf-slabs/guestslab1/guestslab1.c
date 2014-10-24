@@ -638,13 +638,34 @@ static void guestslab1_dotest_vmcall(void){
 }
 
 
+static void guestslab1_do_vmcall(void){
+    u64 magic = 0xAABBCCDDAABBCCDDULL;
+
+    _XDPRINTF_("%s: Going for VMCALL, magic=%016llx\n",
+                __FUNCTION__, magic);
+
+    asm volatile(
+        "movq %0, %%rax \r\n"
+        "vmcall \r\n"
+        "movq %%rax, %0 \r\n"
+        :
+        : "m" (magic)
+        : "rax"
+    );
+
+    _XDPRINTF_("%s: Came back from VMCALL, magic=%016llx\n",
+                __FUNCTION__, magic);
+
+
+}
+
 
 void guestslab1_interface(void) {
     _XDPRINTF_("%s: Hello world from Guest slab!\n", __FUNCTION__);
 
     //guestslab1_dotest_vmcall();
 
-    asm volatile ("vmcall \r\n");
+    guestslab1_do_vmcall();
 
     _XDPRINTF_("%s: Guest Slab Halting\n", __FUNCTION__);
     HALT();
