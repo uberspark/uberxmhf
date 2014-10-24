@@ -51,7 +51,7 @@
 #include <hictestslab2.h>
 
 //////
-XMHF_SLAB(hictestslab2)
+XMHF_SLAB_INTERCEPT(hictestslab2)
 
 /*
  * slab code
@@ -96,9 +96,9 @@ void hictestslab2_interface(slab_input_params_t *iparams, u64 iparams_size, slab
     }
 
 
-	_XDPRINTF_("%s[%u]: Halting!\n",
-                __FUNCTION__, (u32)cpuid);
-    HALT();
+	//_XDPRINTF_("%s[%u]: Halting!\n",
+    //            __FUNCTION__, (u32)cpuid);
+    //HALT();
 
     return;
 }
