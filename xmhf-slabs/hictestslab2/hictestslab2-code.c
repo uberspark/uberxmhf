@@ -60,50 +60,41 @@ XMHF_SLAB(hictestslab2)
  */
 
 void hictestslab2_interface(slab_input_params_t *iparams, u64 iparams_size, slab_output_params_t *oparams, u64 oparams_size, u64 src_slabid, u64 cpuid){
-    //u64 *inputval = (u64 *)iparams;
-    //u64 *outputval = (u64 *)oparams;
-    u64 guest_rip;
-
-    //asm volatile ("int $0x03 \r\n");
+    u64 info_vmexit_reason;
 
 	_XDPRINTF_("%s[%u]: Got control: RSP=%016llx\n",
                 __FUNCTION__, (u32)cpuid, read_rsp());
 
-	/*_XDPRINTF_("%s[%u]: Got control: iparams=%016llx, iparams_size=%u\n",
-                __FUNCTION__, (u32)cpuid, iparams, iparams_size);
+    XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMREAD, VMCS_INFO_VMEXIT_REASON, &info_vmexit_reason);
 
-	_XDPRINTF_("%s[%u]: Got control: oparams=%016llx, oparams_size=%u\n",
-                __FUNCTION__, (u32)cpuid, oparams, oparams_size);
+    switch(info_vmexit_reason){
 
-	_XDPRINTF_("%s[%u]: inputval=%016llx\n",
-                __FUNCTION__, (u32)cpuid, *inputval);
+        case VMX_VMEXIT_VMCALL:{
+            u64 guest_rip;
+            u64 info_vmexit_instruction_length;
 
-    *outputval = 0xBBCCDD;
-
-	_XDPRINTF_("%s[%u]: Returning!\n",
+            _XDPRINTF_("%s[%u]: VMX_VMEXIT_VMCALL\n",
                 __FUNCTION__, (u32)cpuid);
 
-    */
+            XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMREAD, VMCS_INFO_VMEXIT_INSTRUCTION_LENGTH, &info_vmexit_instruction_length);
+            XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMREAD, VMCS_GUEST_RIP, &guest_rip);
+            guest_rip+=info_vmexit_instruction_length;
+            XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMWRITE, VMCS_GUEST_RIP, guest_rip);
 
-
-	_XDPRINTF_("%s[%u]: Proceeding to call VMREAD UAPI...\n",
-                __FUNCTION__, (u32)cpuid);
-
-    XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMREAD, VMCS_GUEST_RIP, &guest_rip);
-
-
-	_XDPRINTF_("%s[%u]: original guest_rip=%016llx\n",
+            _XDPRINTF_("%s[%u]: adjusted guest_rip=%016llx\n",
                 __FUNCTION__, (u32)cpuid, guest_rip);
 
-
-    guest_rip+=3;
-
-    XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMWRITE, VMCS_GUEST_RIP, guest_rip);
-    XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMREAD, VMCS_GUEST_RIP, &guest_rip);
+        }
+        break;
 
 
-	_XDPRINTF_("%s[%u]: adjusted guest_rip=%016llx\n",
-                __FUNCTION__, (u32)cpuid, guest_rip);
+        default:
+            _XDPRINTF_("%s[%u]: unhandled intercept %x. Halting!\n",
+                    __FUNCTION__, (u32)cpuid, info_vmexit_reason);
+
+            HALT();
+    }
+
 
 	_XDPRINTF_("%s[%u]: Halting!\n",
                 __FUNCTION__, (u32)cpuid);
