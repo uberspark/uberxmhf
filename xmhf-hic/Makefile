@@ -64,7 +64,7 @@ buildhicbin: $(XMHF_HIC_OBJECTS)
 	$(CC) -fomit-frame-pointer -O2 -S -emit-llvm $(CFLAGS) $< -o $(XMHF_HIC_OBJECTS_DIR)/$(@F).ll
 	cd $(XMHF_HIC_OBJECTS_DIR) && fixnaked.pl $(@F).ll
 	cd $(XMHF_HIC_OBJECTS_DIR) && llc -O=2 -march=x86-64 -mcpu=corei7 -mattr=$(LLC_ATTR) $(@F).ll
-	cd $(XMHF_HIC_OBJECTS_DIR) && $(CC) -c $(CFLAGS) $(@F).s -o $(@F)
+	cd $(XMHF_HIC_OBJECTS_DIR) && $(CC) -O2 -c $(CFLAGS) $(@F).s -o $(@F)
 
 #%.o: %.S
 #	mkdir -p $(XMHF_HIC_OBJECTS_DIR)
