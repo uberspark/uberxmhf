@@ -45,13 +45,12 @@
  */
 
 #include <xmhf.h>
-#include <xmhf-core.h>
 #include <xmhf-debug.h>
 
-#include <xcprimeon.h>
+//#include <xcprimeon.h>
 
-#include <xcsmp.h>
-#include <testslab1.h>
+//#include <xcsmp.h>
+//#include <testslab1.h>
 
 
 void xmhfhic_entry(void){

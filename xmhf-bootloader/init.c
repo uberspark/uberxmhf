@@ -1022,7 +1022,7 @@ void cstartup(multiboot_info_t *mbi){
     {
         xslbootinfo = (XMHF_BOOTINFO *)((u32)hypervisor_image_baseaddress);
         _XDPRINTF_("xmhf-bootloader: xslbootinfo=%08x, magic=%x\n", (u32)xslbootinfo, xslbootinfo->magic);
-        HALT_ON_ERRORCOND(xslbootinfo->magic == SL_PARAMETER_BLOCK_MAGIC);
+        HALT_ON_ERRORCOND(xslbootinfo->magic == RUNTIME_PARAMETER_BLOCK_MAGIC);
         xslbootinfo->memmapinfo_numentries = grube820list_numentries;
         HALT_ON_ERRORCOND(xslbootinfo->memmapinfo_numentries <= 64);
 		memcpy((void *)&xslbootinfo->memmapinfo_buffer, (void *)&grube820list, (sizeof(GRUBE820) * grube820list_numentries));
