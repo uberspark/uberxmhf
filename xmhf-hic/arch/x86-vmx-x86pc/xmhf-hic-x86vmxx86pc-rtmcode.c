@@ -991,28 +991,30 @@ static void __xmhfhic_rtm_uapihandler_cpustate(u64 uapicall_subnum, u64 iparams,
     switch(uapicall_subnum){
         case XMHF_HIC_UAPI_CPUSTATE_VMREAD:{
             //iparams = encoding (u64), oparams = memory (u64 *)
-            asm volatile (
+            *(u64 *)oparams = xmhfhw_cpu_x86vmx_vmread(iparams);
+            /*asm volatile (
                 "movq %0, %%rax \r\n"
                 "movq %1, %%rsi \r\n"
                 "vmread %%rax, (%%rsi) \r\n"
               :
               : "m" (iparams), "m" (oparams)
               : "rax", "rsi"
-            );
+            );*/
 
         }
         break;
 
         case XMHF_HIC_UAPI_CPUSTATE_VMWRITE:{
             //iparams = encoding (u64), oparams = value (u64)
-            asm volatile (
+            xmhfhw_cpu_x86vmx_vmwrite(iparams, oparams);
+            /*asm volatile (
                 "movq %0, %%rax \r\n"
                 "movq %1, %%rsi \r\n"
                 "vmwrite %%rsi, %%rax \r\n"
               :
               : "m" (iparams), "m" (oparams)
               : "rax", "rsi"
-            );
+            );*/
 
         }
         break;
