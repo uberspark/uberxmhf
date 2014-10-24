@@ -692,6 +692,21 @@ void __xmhfhic_rtm_trampoline(u64 hic_calltype, slab_input_params_t *iparams, u6
         }
         break;
 
+        case XMHF_HIC_SLABRETINTERCEPT:{
+            _XDPRINTF_("%s[%u]: going to resume guest slab %u\n",
+                       __FUNCTION__, (u32)cpuid, dst_slabid);
+
+            asm volatile (
+                    "vmresume \r\n"
+                    :
+                    :
+                    :
+            );
+
+        }
+        break;
+
+
 
         case XMHF_HIC_SLABCALL:
         case XMHF_HIC_SLABCALLEXCEPTION:
