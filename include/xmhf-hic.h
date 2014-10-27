@@ -82,6 +82,11 @@
 #define XMHF_HIC_UAPI_CPUSTATE_VMREAD       (0xA600)
 #define XMHF_HIC_UAPI_CPUSTATE_VMWRITE      (0xA601)
 
+#define XMHF_HIC_UAPI_PHYSMEM               (0xA70)
+
+#define XMHF_HIC_UAPI_PHYSMEM_PEEK          (0xA700)
+#define XMHF_HIC_UAPI_PHYSMEM_POKE          (0xA701)
+
 
 #ifndef __ASSEMBLY__
 typedef void slab_input_params_t;
@@ -89,6 +94,28 @@ typedef void slab_output_params_t;
 typedef u64 slab_privilegemask_t;
 typedef void * slab_entrystub_t;
 typedef u64 slab_callcaps_t;
+
+
+
+
+
+
+//////
+// uapi related types
+
+typedef struct {
+    void *addr_from;
+    void *addr_to;
+    u64 numbytes;
+}__attribute__((packed)) xmhf_hic_uapi_physmem_desc_t;
+
+
+
+
+
+
+
+
 
 typedef struct {
 	bool desc_valid;
@@ -348,6 +375,56 @@ __attribute__((naked)) __attribute__ ((noinline)) static inline bool __xmhfhic_u
 
 #define XMHF_HIC_SLAB_UAPI_CPUSTATE(cpustatefn, iparams, oparams) \
     __xmhfhic_uapi_cpustate(XMHF_HIC_UAPI, XMHF_HIC_UAPI_CPUSTATE, cpustatefn, 0, iparams, oparams)
+
+
+
+
+
+
+
+
+/*
+__xmhfhic_uapi_physmem register mappings:
+
+RDI = XMHF_HIC_UAPI
+RSI = XMHF_HIC_UAPI_PHYSMEM
+RDX = physmemfn
+RCX = undefined
+R8 = iparams
+R9 = oparams
+R10 = return RSP
+R11 = return_address
+
+*/
+
+//reserved_uapicall = XMHF_HIC_UAPI, reserved_uapicall_num = XMHF_HIC_UAPI_PHYSMEM
+__attribute__((naked)) __attribute__ ((noinline)) static inline bool __xmhfhic_uapi_physmem(u64 reserved_uapicall, u64 reserved_uapicall_num,
+                                           u64 physmemfn,
+                                           u64 reserved, u64 iparams, u64 oparams){
+
+    asm volatile (
+        "movq %%rsp, %%r10 \r\n"
+        "movq $1f, %%r11 \r\n"\
+        "sysenter \r\n" \
+        \
+        "1:\r\n" \
+        "retq \r\n" \
+        :
+        :
+        :
+    );
+
+
+}
+
+#define XMHF_HIC_SLAB_UAPI_PHYSMEM(physmemfn, iparams, oparams) \
+    __xmhfhic_uapi_physmem(XMHF_HIC_UAPI, XMHF_HIC_UAPI_PHYSMEM, physmemfn, 0, iparams, oparams)
+
+
+
+
+
+
 
 
 /*
