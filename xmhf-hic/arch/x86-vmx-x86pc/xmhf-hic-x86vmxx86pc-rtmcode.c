@@ -834,6 +834,188 @@ void __xmhfhic_rtm_trampoline(u64 hic_calltype, slab_input_params_t *iparams, u6
 
 
 
+
+
+
+
+
+
+
+
+        case XMHF_HIC_SLABCALLEXCEPTION:{
+                slab_input_params_t *newiparams;
+                slab_output_params_t *newoparams;
+
+                //save return RSP
+                _xmhfhic_common_slab_info_table[src_slabid].archdata.slabtos[(u32)cpuid] = return_rsp;
+
+                //copy iparams to internal buffer __iparamsbuffer
+                memcpy(&__iparamsbuffer, iparams, (iparams_size > 1024 ? 1024 : iparams_size) );
+
+                //switch to destination slab page tables
+                asm volatile(
+                     "movq %0, %%rax \r\n"
+                     "movq %%rax, %%cr3 \r\n"
+                    :
+                    : "m" (_xmhfhic_common_slab_info_table[dst_slabid].archdata.mempgtbl_cr3)
+                    : "rax"
+                );
+
+                //make space on destination slab stack for iparams and copy iparams and obtain newiparams
+                {
+                    _xmhfhic_common_slab_info_table[dst_slabid].archdata.slabtos[(u32)cpuid] -= iparams_size;
+                    newiparams = (slab_input_params_t *) _xmhfhic_common_slab_info_table[dst_slabid].archdata.slabtos[(u32)cpuid];
+                    memcpy((void *)_xmhfhic_common_slab_info_table[dst_slabid].archdata.slabtos[(u32)cpuid],
+                           &__iparamsbuffer, (iparams_size > 1024 ? 1024 : iparams_size) );
+                }
+
+
+                //make space on destination slab stack for oparams and obtain newoparams
+                //{
+                //    _xmhfhic_common_slab_info_table[dst_slabid].archdata.slabtos[(u32)cpuid] -= oparams_size;
+                //    newoparams = (slab_output_params_t *) _xmhfhic_common_slab_info_table[dst_slabid].archdata.slabtos[(u32)cpuid];
+                //}
+
+
+                //push cpuid, src_slabid, dst_slabid, hic_calltype, return_address, iparams, new iparams and iparams_size tuple to
+                //safe stack
+                _XDPRINTF_("%s[%u]: safepush: {cpuid: %016llx, srcsid: %u, dstsid: %u, ctype: %x, ra=%016llx, \
+                           ip=%016llx, newip=%016llx, ipsize=%u\n",
+                        __FUNCTION__, (u32)cpuid,
+                           cpuid, src_slabid, dst_slabid, hic_calltype, return_address,
+                           iparams, newiparams, iparams_size);
+
+                __xmhfhic_safepush(cpuid, src_slabid, dst_slabid, hic_calltype, return_address, iparams, newiparams, 0, iparams_size);
+
+
+                //jump to destination slab entrystub
+                /*
+
+                RDI = newiparams
+                RSI = iparams_size
+                RDX = slab entrystub; used for SYSEXIT
+                RCX = slab entrystub stack TOS for the CPU; used for SYSEXIT
+                R8 = 0 (oparams)
+                R9 = 0 (oparams_size)
+                R10 = src_slabid
+                R11 = cpuid
+
+                */
+
+                asm volatile(
+                     "movq %0, %%rdi \r\n"
+                     "movq %1, %%rsi \r\n"
+                     "movq %2, %%rdx \r\n"
+                     "movq %3, %%rcx \r\n"
+                     "movq %4, %%r8 \r\n"
+                     "movq %5, %%r9 \r\n"
+                     "movq %6, %%r10 \r\n"
+                     "movq %7, %%r11 \r\n"
+
+                     "sysexitq \r\n"
+                     //"int $0x03 \r\n"
+                     //"1: jmp 1b \r\n"
+                    :
+                    : "m" (newiparams),
+                      "m" (iparams_size),
+                      "m" (_xmhfhic_common_slab_info_table[dst_slabid].entrystub),
+                      "m" (_xmhfhic_common_slab_info_table[dst_slabid].archdata.slabtos[(u32)cpuid]),
+                      "i" (0),
+                      "i" (0),
+                      "m" (src_slabid),
+                      "m" (cpuid)
+                    : "rdi", "rsi", "rdx", "rcx", "r8", "r9", "r10", "r11"
+                );
+
+        }
+        break;
+
+
+
+        case XMHF_HIC_SLABRETEXCEPTION:{
+            __xmhfhic_safestack_element_t elem;
+
+            //pop tuple from safe stack
+            __xmhfhic_safepop(cpuid, &elem.src_slabid, &elem.dst_slabid, &elem.hic_calltype, &elem.return_address,
+                                &elem.oparams, &elem.newoparams, &elem.oparams_size, &elem.iparams_size);
+
+            _XDPRINTF_("%s[%u]: safepop: {cpuid: %016llx, srcsid: %u, dstsid: %u, ctype: %x, ra=%016llx, \
+                       op=%016llx, newop=%016llx, opsize=%u\n",
+                    __FUNCTION__, (u32)cpuid,
+                       cpuid, elem.src_slabid, elem.dst_slabid, elem.hic_calltype, elem.return_address,
+                       elem.oparams, elem.newoparams, elem.oparams_size);
+
+
+            //copy newoparams to internal buffer __iparamsbuffer
+            //memcpy(&__iparamsbuffer, elem.newoparams, (elem.oparams_size > 1024 ? 1024 : elem.oparams_size) );
+
+            //adjust slab stack by popping off iparams_size
+            _xmhfhic_common_slab_info_table[src_slabid].archdata.slabtos[(u32)cpuid] += (elem.iparams_size);
+
+            //switch to destination slab page tables
+            asm volatile(
+                 "movq %0, %%rax \r\n"
+                 "movq %%rax, %%cr3 \r\n"
+                :
+                : "m" (_xmhfhic_common_slab_info_table[dst_slabid].archdata.mempgtbl_cr3)
+                : "rax"
+            );
+
+
+            //return back to destination slab
+            {
+                    x86vmx_exception_frame_errcode_t *exframe = (x86vmx_exception_frame_errcode_t *)elem.oparams;
+                    exframe->orig_rip = elem.return_address;
+
+                    _XDPRINTF_("%s[%u]: returning from exception to %016llx\n",
+                        __FUNCTION__, (u32)cpuid, exframe->orig_rip);
+
+                    asm volatile (
+                        "movq %0, %%rsp \r\n"
+                        "popq %%r8 \r\n"
+                        "popq %%r9 \r\n"
+                        "popq %%r10 \r\n"
+                        "popq %%r11 \r\n"
+                        "popq %%r12 \r\n"
+                        "popq %%r13 \r\n"
+                        "popq %%r14 \r\n"
+                        "popq %%r15 \r\n"
+                        "popq %%rax \r\n"
+                        "popq %%rbx \r\n"
+                        "popq %%rcx \r\n"
+                        "popq %%rdx \r\n"
+                        "popq %%rsi \r\n"
+                        "popq %%rdi \r\n"
+                        "popq %%rbp \r\n"
+                        "popq %%rsp \r\n"
+                        "addq $16, %%rsp \r\n"
+                        "iretq \r\n"
+                        :
+                        : "m" (exframe)
+                        : "r8", "r9", "r10", "r11", "r12", "r13", "r14", "r15",
+                          "rax", "rbx", "rcx", "rdx", "rsi", "rdi", "rbp", "rsp"
+
+                    );
+
+            }
+
+        }
+        break;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
         case XMHF_HIC_SLABCALLINTERCEPT:{
             _XDPRINTF_("%s[%u]: Trampoline Intercept call\n",
                     __FUNCTION__, (u32)cpuid, read_rsp());
@@ -946,44 +1128,16 @@ void __xmhfhic_rtm_trampoline(u64 hic_calltype, slab_input_params_t *iparams, u6
 
 
 
-        /*case XMHF_HIC_SLABCALLEXCEPTION:{
-                    x86vmx_exception_frame_errcode_t *exframe = (x86vmx_exception_frame_errcode_t *)&__iparamsbuffer;
-                    exframe->orig_rip = elem.return_address;
 
-                    _XDPRINTF_("%s[%u]: returning from exception to %016llx\n",
-                        __FUNCTION__, (u32)cpuid, exframe->orig_rip);
 
-                    //_XDPRINTF_("%s[%u]: original SS:RSP=%016llx:%016llx\n",
-                    //    __FUNCTION__, (u32)cpuid, exframe->orig_ss, exframe->orig_rsp);
 
-                    asm volatile (
-                        "movq %0, %%rsp \r\n"
-                        "popq %%r8 \r\n"
-                        "popq %%r9 \r\n"
-                        "popq %%r10 \r\n"
-                        "popq %%r11 \r\n"
-                        "popq %%r12 \r\n"
-                        "popq %%r13 \r\n"
-                        "popq %%r14 \r\n"
-                        "popq %%r15 \r\n"
-                        "popq %%rax \r\n"
-                        "popq %%rbx \r\n"
-                        "popq %%rcx \r\n"
-                        "popq %%rdx \r\n"
-                        "popq %%rsi \r\n"
-                        "popq %%rdi \r\n"
-                        "popq %%rbp \r\n"
-                        "popq %%rsp \r\n"
-                        "addq $16, %%rsp \r\n"
-                        "iretq \r\n"
-                        :
-                        : "m" (exframe)
-                        : "r8", "r9", "r10", "r11", "r12", "r13", "r14", "r15",
-                          "rax", "rbx", "rcx", "rdx", "rsi", "rdi", "rbp", "rsp"
 
-                    );
 
-        */
+
+
+
+
+
 
 
 

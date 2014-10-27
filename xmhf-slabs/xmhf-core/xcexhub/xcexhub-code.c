@@ -50,7 +50,7 @@
 #include <xcexhub.h>
 
 //////
-XMHF_SLAB(xcexhub)
+XMHF_SLAB_EXCEPTION(xcexhub)
 
 
 
@@ -76,12 +76,12 @@ void xcexhub_interface(slab_input_params_t *iparams, u64 iparams_size, slab_outp
                 __FUNCTION__, (u32)cpuid, exframe->orig_ss, exframe->orig_rsp);
 
 
-    memcpy(oparams, iparams, oparams_size);
+    //memcpy(oparams, iparams, oparams_size);
 
-    exframe = (x86vmx_exception_frame_errcode_t *)oparams;
+    //exframe = (x86vmx_exception_frame_errcode_t *)oparams;
 
-    _XDPRINTF_("%s[%u]:original SS:RSP=%016llx:%016llx\n",
-                    __FUNCTION__, (u32)cpuid, exframe->orig_ss, exframe->orig_rsp);
+    //_XDPRINTF_("%s[%u]:original SS:RSP=%016llx:%016llx\n",
+    //                __FUNCTION__, (u32)cpuid, exframe->orig_ss, exframe->orig_rsp);
 
 
     //_XDPRINTF_("%s[%u]: Halting\n",
