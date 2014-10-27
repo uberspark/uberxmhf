@@ -131,6 +131,16 @@ void xcinit_interface(slab_input_params_t *iparams, u64 iparams_size, slab_outpu
     //             __FUNCTION__, (u32)cpuid, oparams, oparams_size);
 
 
+    {
+        guest_slab_header_t *xcguestslab_hdr;
+
+        xcguestslab_hdr = (guest_slab_header_t *)_xmhfhic_common_slab_info_table[XMHF_GUEST_SLAB_XCGUESTSLAB].slab_physmem_extents[1].addr_start;
+
+        _XDPRINTF_("%s[%u]: guest slab header magic=%x\n",
+            __FUNCTION__, (u32)cpuid, xcguestslab_hdr->magic);
+
+    }
+
 
     _XDPRINTF_("%s[%u]: Proceeding to call xcguestslab; RSP=%016llx\n",
         __FUNCTION__, (u32)cpuid, read_rsp());
