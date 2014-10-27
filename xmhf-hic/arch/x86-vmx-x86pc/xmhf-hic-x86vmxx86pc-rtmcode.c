@@ -147,7 +147,7 @@ __attribute__((naked)) void __xmhfhic_rtm_intercept_stub(void){
 					:
 					:   "i" (XMHF_HIC_SLABCALLINTERCEPT),
                         "i" (sizeof(x86regs64_t)),
-                        "i" (XMHF_HYP_SLAB_HICTESTSLAB2),
+                        "i" (XMHF_HYP_SLAB_XCIHUB),
 					    "i" (X86SMP_LAPIC_ID_MEMORYADDRESS),
                         "i" (VMCS_CONTROL_VPID)
                     :
@@ -462,7 +462,7 @@ __attribute__((naked)) void __xmhfhic_rtm_exception_stub(void){
 					:
 					:   "i" (XMHF_HIC_SLABCALLEXCEPTION),
                         "i" (sizeof(x86vmx_exception_frame_errcode_t)),
-                        "i" (XMHF_HYP_SLAB_HICTESTSLAB3),
+                        "i" (XMHF_HYP_SLAB_XCEXHUB),
 					    "i" (X86SMP_LAPIC_ID_MEMORYADDRESS)
                     :
 		);

@@ -75,7 +75,7 @@ static void _xcinit_dotests(u64 cpuid){
 
             {
 
-                XMHF_SLAB_CALL(hictestslab2, XMHF_HYP_SLAB_HICTESTSLAB2, NULL, 0, NULL, 0);
+                //XMHF_SLAB_CALL(hictestslab2, XMHF_HYP_SLAB_HICTESTSLAB2, NULL, 0, NULL, 0);
 
             }
 
@@ -149,7 +149,7 @@ void xcinit_interface(slab_input_params_t *iparams, u64 iparams_size, slab_outpu
         _XDPRINTF_("%s[%u]: Proceeding to call guestslab1; RSP=%016llx\n",
                 __FUNCTION__, (u32)cpuid, read_rsp());
 
-        XMHF_SLAB_CALL(guestslab1, XMHF_GUEST_SLAB1, NULL, 0, NULL, 0);
+        XMHF_SLAB_CALL(xcguestslab, XMHF_GUEST_SLAB_XCGUESTSLAB, NULL, 0, NULL, 0);
 
 
         _XDPRINTF_("%s[%u]: Done.Halting!\n",

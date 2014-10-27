@@ -3558,7 +3558,7 @@ void xmhf_hic_arch_setup_cpu_state(u64 cpuid){
 void xmhfhic_arch_relinquish_control_to_init_slab(u64 cpuid){
 
     _XDPRINTF_("%s[%u]: proceeding to call init slab at %x\n", __FUNCTION__, (u32)cpuid,
-                _xmhfhic_common_slab_info_table[XMHF_HYP_SLAB_HICTESTSLAB1].entrystub);
+                _xmhfhic_common_slab_info_table[XMHF_HYP_SLAB_XCINIT].entrystub);
 
 
     //switch page tables to init slab pagetables
@@ -3566,7 +3566,7 @@ void xmhfhic_arch_relinquish_control_to_init_slab(u64 cpuid){
          "movq %0, %%rax \r\n"
          "movq %%rax, %%cr3 \r\n"
         :
-        : "m" (_xmhfhic_common_slab_info_table[XMHF_HYP_SLAB_HICTESTSLAB1].archdata.mempgtbl_cr3)
+        : "m" (_xmhfhic_common_slab_info_table[XMHF_HYP_SLAB_XCINIT].archdata.mempgtbl_cr3)
         : "rax"
     );
 
@@ -3599,8 +3599,8 @@ void xmhfhic_arch_relinquish_control_to_init_slab(u64 cpuid){
         :
         : "i" (NULL),
           "i" (0),
-          "m" (_xmhfhic_common_slab_info_table[XMHF_HYP_SLAB_HICTESTSLAB1].entrystub),
-          "m" (_xmhfhic_common_slab_info_table[XMHF_HYP_SLAB_HICTESTSLAB1].archdata.slabtos[(u32)cpuid]),
+          "m" (_xmhfhic_common_slab_info_table[XMHF_HYP_SLAB_XCINIT].entrystub),
+          "m" (_xmhfhic_common_slab_info_table[XMHF_HYP_SLAB_XCINIT].archdata.slabtos[(u32)cpuid]),
           "i" (NULL),
           "i" (0),
           "i" (0xFFFFFFFFFFFFFFFFULL),

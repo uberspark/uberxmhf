@@ -21,7 +21,7 @@ export XMHFHIC_SRC := $(realpath xmhf-hic/)
 
 # XMHF core source location
 export XMHFCORE_SRC := $(realpath xmhf-slabs/xmhf-core)
-XMHFCORE_INC = -I$(realpath xmhf-slabs/xmhf-core/) -I$(realpath xmhf-slabs/xmhf-core/include)
+#XMHFCORE_INC = -I$(realpath xmhf-slabs/xmhf-core/) -I$(realpath xmhf-slabs/xmhf-core/include)
 
 # libxmhfhw source location
 #export LIBXMHFHW_SRC := $(realpath xmhf-libs/libxmhfhw)
@@ -37,7 +37,8 @@ XMHFLIBS_INC = $(foreach dir,$(XMHFLIBS_SUBLIBS),-I$(dir)/include)
 # populate library and include paths
 export ADDL_INCLUDES := -I$(realpath xmhf-slabs/include)
 export XMHFLIBS_DIR := $(XMHF_OBJDIR)/_objs_xmhf-libs
-ADDL_INCLUDES += -I$(XMHF_INC) $(XMHFCORE_INC) $(XMHFLIBS_INC)
+#ADDL_INCLUDES += -I$(XMHF_INC) $(XMHFCORE_INC) $(XMHFLIBS_INC)
+ADDL_INCLUDES += -I$(XMHF_INC) $(XMHFLIBS_INC)
 
 ##################################################################################
 ### BEGIN Variables controlled using autoconf

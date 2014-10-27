@@ -47,10 +47,10 @@
 #include <xmhf.h>
 #include <xmhf-debug.h>
 
-#include <guestslab1.h>
+#include <xcguestslab.h>
 
 //////
-XMHF_SLAB_GUEST(guestslab1)
+XMHF_SLAB_GUEST(xcguestslab)
 
 
 
@@ -61,7 +61,7 @@ XMHF_SLAB_GUEST(guestslab1)
  */
 
 
-__attribute__((aligned(4096))) static u64 _guestslab1_init_pdt[(PAE_PTRS_PER_PDPT*PAE_PTRS_PER_PDT)] = {
+__attribute__((aligned(4096))) static u64 _xcguestslab_init_pdt[(PAE_PTRS_PER_PDPT*PAE_PTRS_PER_PDT)] = {
 	0x0000000000000087,0x0000000000200087,0x0000000000400087,0x0000000000600087,
 	0x0000000000800087,0x0000000000a00087,0x0000000000c00087,0x0000000000e00087,
 	0x0000000001000087,0x0000000001200087,0x0000000001400087,0x0000000001600087,
@@ -576,34 +576,34 @@ __attribute__((aligned(4096))) static u64 _guestslab1_init_pdt[(PAE_PTRS_PER_PDP
 	0x00000000ff800097,0x00000000ffa00097,0x00000000ffc00097,0x00000000ffe00097,
 };
 
-__attribute__((aligned(4096))) static u64 _guestslab1_init_pdpt[PAE_MAXPTRS_PER_PDPT] = {
-    ((u64)(&_guestslab1_init_pdt[0]) + (u64)(_PAGE_PRESENT | _PAGE_RW | _PAGE_USER) ),
-    ((u64)(&_guestslab1_init_pdt[512]) + (u64)(_PAGE_PRESENT | _PAGE_RW | _PAGE_USER) ),
-    ((u64)(&_guestslab1_init_pdt[1024]) + (u64)(_PAGE_PRESENT | _PAGE_RW | _PAGE_USER) ),
-    ((u64)(&_guestslab1_init_pdt[1536]) + (u64)(_PAGE_PRESENT | _PAGE_RW | _PAGE_USER) ),
+__attribute__((aligned(4096))) static u64 _xcguestslab_init_pdpt[PAE_MAXPTRS_PER_PDPT] = {
+    ((u64)(&_xcguestslab_init_pdt[0]) + (u64)(_PAGE_PRESENT | _PAGE_RW | _PAGE_USER) ),
+    ((u64)(&_xcguestslab_init_pdt[512]) + (u64)(_PAGE_PRESENT | _PAGE_RW | _PAGE_USER) ),
+    ((u64)(&_xcguestslab_init_pdt[1024]) + (u64)(_PAGE_PRESENT | _PAGE_RW | _PAGE_USER) ),
+    ((u64)(&_xcguestslab_init_pdt[1536]) + (u64)(_PAGE_PRESENT | _PAGE_RW | _PAGE_USER) ),
     0
 };
 
-__attribute__((aligned(4096))) static u64 _guestslab1_init_pml4t[PAE_MAXPTRS_PER_PDPT] = {
-    ((u64)(&_guestslab1_init_pdpt) + (u64)(_PAGE_PRESENT | _PAGE_RW | _PAGE_USER) ),
+__attribute__((aligned(4096))) static u64 _xcguestslab_init_pml4t[PAE_MAXPTRS_PER_PDPT] = {
+    ((u64)(&_xcguestslab_init_pdpt) + (u64)(_PAGE_PRESENT | _PAGE_RW | _PAGE_USER) ),
     0
 };
 
 
-__attribute__(( aligned(16) )) static u64 _guestslab1_init_gdt_start[]  = {
+__attribute__(( aligned(16) )) static u64 _xcguestslab_init_gdt_start[]  = {
 	0x0000000000000000ULL,	//NULL descriptor
 	0x00af9b000000ffffULL,	//CPL-0 64-bit code descriptor (CS64)
 	0x00af93000000ffffULL,	//CPL-0 64-bit data descriptor (DS/SS/ES/FS/GS)
 };
 
 
-__attribute__(( aligned(16) )) static arch_x86_gdtdesc_t _guestslab1_init_gdt  = {
-	.size=sizeof(_guestslab1_init_gdt_start)-1,
-	.base=&_guestslab1_init_gdt_start,
+__attribute__(( aligned(16) )) static arch_x86_gdtdesc_t _xcguestslab_init_gdt  = {
+	.size=sizeof(_xcguestslab_init_gdt_start)-1,
+	.base=&_xcguestslab_init_gdt_start,
 };
 
 
-static void guestslab1_dotest_vmcall(void){
+static void xcguestslab_dotest_vmcall(void){
 
     {
         u64 tscbefore, tscafter, tscavg=0;
@@ -638,7 +638,7 @@ static void guestslab1_dotest_vmcall(void){
 }
 
 
-static void guestslab1_do_vmcall(void){
+static void xcguestslab_do_vmcall(void){
     u64 magic = 0xAABBCCDDAABBCCDDULL;
 
     _XDPRINTF_("%s: Going for VMCALL, magic=%016llx\n",
@@ -660,12 +660,12 @@ static void guestslab1_do_vmcall(void){
 }
 
 
-void guestslab1_interface(void) {
+void xcguestslab_interface(void) {
     _XDPRINTF_("%s: Hello world from Guest slab!\n", __FUNCTION__);
 
-    //guestslab1_dotest_vmcall();
+    //xcguestslab_dotest_vmcall();
 
-    guestslab1_do_vmcall();
+    xcguestslab_do_vmcall();
 
     _XDPRINTF_("%s: Guest Slab Halting\n", __FUNCTION__);
     HALT();
