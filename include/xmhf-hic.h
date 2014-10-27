@@ -173,7 +173,7 @@ typedef struct {
     u64 magic;
     __attribute__((aligned(4096))) u64 lvl2mempgtbl_pml4t[PAE_MAXPTRS_PER_PDPT];
     __attribute__((aligned(4096))) u64 lvl2mempgtbl_pdpt[PAE_MAXPTRS_PER_PDPT];
-    __attribute__((aligned(4096))) u64 lvl2mempgtbl_pdt[(PAE_PTRS_PER_PDPT*PAE_PTRS_PER_PDT)];
+    __attribute__((aligned(4096))) u64 lvl2mempgtbl_pdts[PAE_PTRS_PER_PDPT][PAE_PTRS_PER_PDT];
     __attribute__(( aligned(16) )) u64 gdt[16];
 } __attribute__((packed)) guest_slab_header_t;
 
