@@ -45,13 +45,12 @@
  */
 
 #include <xmhf.h>
-//#include <xmhf-core.h>
 #include <xmhf-debug.h>
 
-#include <hictestslab1.h>
+#include <xcinit.h>
 
 //////
-XMHF_SLAB(hictestslab1)
+XMHF_SLAB(xcinit)
 
 /*
  * slab code
@@ -60,7 +59,7 @@ XMHF_SLAB(hictestslab1)
  */
 
 
-static void _hictestslab1_dotests(u64 cpuid){
+static void _xcinit_dotests(u64 cpuid){
 
     {
         u64 tscbefore, tscafter, tscavg=0;
@@ -94,11 +93,11 @@ static void _hictestslab1_dotests(u64 cpuid){
 
 
 
-void hictestslab1_interface(slab_input_params_t *iparams, u64 iparams_size, slab_output_params_t *oparams, u64 oparams_size, u64 src_slabid, u64 cpuid){
+void xcinit_interface(slab_input_params_t *iparams, u64 iparams_size, slab_output_params_t *oparams, u64 oparams_size, u64 src_slabid, u64 cpuid){
     bool isbsp = (cpuid & 0x8000000000000000ULL) ? true : false;
     u64 inputval, outputval;
     static u64 cpucount=0;
-    static u32 __hictestslab1_smplock = 1;
+    static u32 __xcinit_smplock = 1;
 
 	_XDPRINTF_("%s[%u]: Got control: RSP=%016llx\n",
                 __FUNCTION__, (u32)cpuid, read_rsp());
@@ -107,9 +106,9 @@ void hictestslab1_interface(slab_input_params_t *iparams, u64 iparams_size, slab
         _XDPRINTF_("%s[%u]: AP Halting!\n",
                 __FUNCTION__, (u32)cpuid);
 
-        spin_lock(&__hictestslab1_smplock);
+        spin_lock(&__xcinit_smplock);
         cpucount++;
-        spin_unlock(&__hictestslab1_smplock);
+        spin_unlock(&__xcinit_smplock);
 
         HALT();
     }else{
@@ -136,13 +135,13 @@ void hictestslab1_interface(slab_input_params_t *iparams, u64 iparams_size, slab
         inputval = 0xAABB;
         XMHF_SLAB_CALL(hictestslab2, XMHF_HYP_SLAB_HICTESTSLAB2, &inputval, sizeof(inputval), &outputval, sizeof(outputval));
 
-        _XDPRINTF_("%s[%u]: Came back to hictestslab1; RSP=%016llx\n",
+        _XDPRINTF_("%s[%u]: Came back to xcinit; RSP=%016llx\n",
                 __FUNCTION__, (u32)cpuid, read_rsp());
         _XDPRINTF_("%s[%u]: outputval=%016llx\n",
                 __FUNCTION__, (u32)cpuid, outputval);*/
 
 
-        //_hictestslab1_dotests(cpuid);
+        //_xcinit_dotests(cpuid);
 
         //asm volatile ("int $0x03\r\n");
 

@@ -47,15 +47,15 @@
 // XMHF slab import library decls./defns.
 // author: amit vasudevan (amitvasudevan@acm.org)
 
-#ifndef __HICTESTSLAB2_H__
-#define __HICTESTSLAB2_H__
+#ifndef __XCINIT_H__
+#define __XCINIT_H__
 
 
 #ifndef __ASSEMBLY__
 
-void hictestslab2_interface(slab_input_params_t *iparams, u64 iparams_size, slab_output_params_t *oparams, u64 oparams_size, u64 src_slabid, u64 cpuid);
+void xcinit_interface(slab_input_params_t *iparams, u64 iparams_size, slab_output_params_t *oparams, u64 oparams_size, u64 src_slabid, u64 cpuid);
 
 #endif //__ASSEMBLY__
 
 
-#endif //__HICTESTSLAB2_H__
+#endif //__XCINIT_H__

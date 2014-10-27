@@ -58,10 +58,10 @@
 #define XMHF_HIC_MAX_SLABS                  (8)
 
 
-#define XMHF_HYP_SLAB_HICTESTSLAB1          (0)
-#define XMHF_HYP_SLAB_HICTESTSLAB2          (1)
-#define XMHF_HYP_SLAB_HICTESTSLAB3          (2)
-#define XMHF_GUEST_SLAB1                    (3)
+#define XMHF_HYP_SLAB_XCINIT                (0)
+#define XMHF_HYP_SLAB_XCIHUB                (1)
+#define XMHF_HYP_SLAB_XCEXHUB               (2)
+#define XMHF_GUEST_SLAB_XCGUESTSLAB         (3)
 #define XMHF_GUEST_SLAB_RICHGUEST           (4)
 
 
