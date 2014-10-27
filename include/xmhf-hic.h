@@ -347,12 +347,23 @@ R11 = return_address
 
 __attribute__((naked)) __attribute__ ((noinline)) static inline bool __slab_callstub(u64 reserved, slab_input_params_t *iparams, u64 iparams_size, slab_output_params_t *oparams, u64 oparams_size, u64 dst_slabid){
     asm volatile (
+        "pushq %%rbx \r\n"
+        "pushq %%r12 \r\n"
+        "pushq %%r13 \r\n"
+        "pushq %%r14 \r\n"
+        "pushq %%r15 \r\n"
+
         "movq %0, %%rdi \r\n"
         "movq %%rsp, %%r10 \r\n"
         "movq $1f, %%r11 \r\n"\
         "sysenter \r\n" \
         \
         "1:\r\n" \
+        "popq %%r15 \r\n"
+        "popq %%r14 \r\n"
+        "popq %%r13 \r\n"
+        "popq %%r12 \r\n"
+        "popq %%rbx \r\n"
         "retq \r\n" \
         :
         : "i" (XMHF_HIC_SLABCALL)

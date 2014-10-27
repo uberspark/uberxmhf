@@ -616,6 +616,224 @@ void __xmhfhic_rtm_trampoline(u64 hic_calltype, slab_input_params_t *iparams, u6
                dst_slabid, src_slabid, cpuid, return_address, return_rsp);
 
     switch(hic_calltype){
+
+        case XMHF_HIC_SLABCALL:{
+
+            switch(_xmhfhic_common_slab_info_table[dst_slabid].archdata.slabtype){
+
+                case HIC_SLAB_X86VMXX86PC_HYPERVISOR:{
+                    slab_input_params_t *newiparams;
+                    slab_output_params_t *newoparams;
+
+                    //save return RSP
+                    _xmhfhic_common_slab_info_table[src_slabid].archdata.slabtos[(u32)cpuid] = return_rsp;
+
+                    //copy iparams to internal buffer __iparamsbuffer
+                    memcpy(&__iparamsbuffer, iparams, (iparams_size > 1024 ? 1024 : iparams_size) );
+
+                    //switch to destination slab page tables
+                    asm volatile(
+                         "movq %0, %%rax \r\n"
+                         "movq %%rax, %%cr3 \r\n"
+                        :
+                        : "m" (_xmhfhic_common_slab_info_table[dst_slabid].archdata.mempgtbl_cr3)
+                        : "rax"
+                    );
+
+                    //make space on destination slab stack for iparams and copy iparams and obtain newiparams
+                    {
+                        _xmhfhic_common_slab_info_table[dst_slabid].archdata.slabtos[(u32)cpuid] -= iparams_size;
+                        newiparams = (slab_input_params_t *) _xmhfhic_common_slab_info_table[dst_slabid].archdata.slabtos[(u32)cpuid];
+                        memcpy((void *)_xmhfhic_common_slab_info_table[dst_slabid].archdata.slabtos[(u32)cpuid],
+                               &__iparamsbuffer, (iparams_size > 1024 ? 1024 : iparams_size) );
+                    }
+
+
+                    //make space on destination slab stack for oparams and obtain newoparams
+                    {
+                        _xmhfhic_common_slab_info_table[dst_slabid].archdata.slabtos[(u32)cpuid] -= oparams_size;
+                        newoparams = (slab_output_params_t *) _xmhfhic_common_slab_info_table[dst_slabid].archdata.slabtos[(u32)cpuid];
+                    }
+
+
+                    //push cpuid, src_slabid, dst_slabid, hic_calltype, return_address, oparams, new oparams and oparams_size tuple to
+                    //safe stack
+                    _XDPRINTF_("%s[%u]: safepush: {cpuid: %016llx, srcsid: %u, dstsid: %u, ctype: %x, ra=%016llx, \
+                               op=%016llx, newop=%016llx, opsize=%u\n",
+                            __FUNCTION__, (u32)cpuid,
+                               cpuid, src_slabid, dst_slabid, hic_calltype, return_address,
+                               oparams, newoparams, oparams_size);
+
+                    __xmhfhic_safepush(cpuid, src_slabid, dst_slabid, hic_calltype, return_address, oparams, newoparams, oparams_size, iparams_size);
+
+
+                    //jump to destination slab entrystub
+                    /*
+
+                    RDI = newiparams
+                    RSI = iparams_size
+                    RDX = slab entrystub; used for SYSEXIT
+                    RCX = slab entrystub stack TOS for the CPU; used for SYSEXIT
+                    R8 = newoparams
+                    R9 = oparams_size
+                    R10 = src_slabid
+                    R11 = cpuid
+
+                    */
+
+                    asm volatile(
+                         "movq %0, %%rdi \r\n"
+                         "movq %1, %%rsi \r\n"
+                         "movq %2, %%rdx \r\n"
+                         "movq %3, %%rcx \r\n"
+                         "movq %4, %%r8 \r\n"
+                         "movq %5, %%r9 \r\n"
+                         "movq %6, %%r10 \r\n"
+                         "movq %7, %%r11 \r\n"
+
+                         "sysexitq \r\n"
+                         //"int $0x03 \r\n"
+                         //"1: jmp 1b \r\n"
+                        :
+                        : "m" (newiparams),
+                          "m" (iparams_size),
+                          "m" (_xmhfhic_common_slab_info_table[dst_slabid].entrystub),
+                          "m" (_xmhfhic_common_slab_info_table[dst_slabid].archdata.slabtos[(u32)cpuid]),
+                          "m" (newoparams),
+                          "m" (oparams_size),
+                          "m" (src_slabid),
+                          "m" (cpuid)
+                        : "rdi", "rsi", "rdx", "rcx", "r8", "r9", "r10", "r11"
+                    );
+
+                }
+                break;
+
+                case HIC_SLAB_X86VMXX86PC_GUEST:{
+                    u32 errorcode;
+
+                    _XDPRINTF_("%s[%u]: going to invoke guest slab %u\n",
+                               __FUNCTION__, (u32)cpuid, dst_slabid);
+                    xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VPID, dst_slabid+1);
+                    xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_EPT_POINTER_FULL, _xmhfhic_common_slab_info_table[dst_slabid].archdata.mempgtbl_cr3);
+                    xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_RSP, _xmhfhic_common_slab_info_table[dst_slabid].archdata.slabtos[(u32)cpuid]);
+                    xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_RIP, _xmhfhic_common_slab_info_table[dst_slabid].entrystub);
+
+                    asm volatile (
+                            "vmlaunch\r\n"
+
+                            "jc __vmx_start_hvm_failinvalid\r\n"
+                            "jnz	__vmx_start_hvm_undefinedimplementation	\r\n"
+                            "movl $0x1, %%eax\r\n"		//VMLAUNCH error, XXX: need to read from VM instruction error field in VMCS
+                            "movl %%eax, %0 \r\n"
+                            "jmp __vmx_start_continue \r\n"
+                            "__vmx_start_hvm_undefinedimplementation:\r\n"
+                            "movl $0x2, %%eax\r\n"		//violation of VMLAUNCH specs., handle it anyways
+                            "movl %%eax, %0 \r\n"
+                            "jmp __vmx_start_continue \r\n"
+                            "__vmx_start_hvm_failinvalid:\r\n"
+                            "xorl %%eax, %%eax\r\n"		//return 0 as we have no error code available
+                            "movl %%eax, %0 \r\n"
+                            "__vmx_start_continue:\r\n"
+                        : "=g"(errorcode)
+                        :
+                        : "eax", "cc"
+                    );
+
+
+                    switch(errorcode){
+                        case 0:	//no error code, VMCS pointer is invalid
+                            _XDPRINTF_("%s: VMLAUNCH error; VMCS pointer invalid?\n", __FUNCTION__);
+                            break;
+                        case 1:{//error code available, so dump it
+                            u32 code=xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_VMINSTR_ERROR);
+                            _XDPRINTF_("\n%s: VMLAUNCH error; code=%x\n", __FUNCTION__, code);
+                            break;
+                        }
+                    }
+
+                    HALT();
+
+                }
+                break;
+
+
+                default:
+                    _XDPRINTF_("%s[%u]: Unknown slabtype=%x. Halting!\n", __FUNCTION__, (u32)cpuid, hic_calltype);
+                    HALT();
+
+            }
+
+        }
+        break;
+
+
+        case XMHF_HIC_SLABRET:{
+            __xmhfhic_safestack_element_t elem;
+
+            //pop tuple from safe stack
+            __xmhfhic_safepop(cpuid, &elem.src_slabid, &elem.dst_slabid, &elem.hic_calltype, &elem.return_address,
+                                &elem.oparams, &elem.newoparams, &elem.oparams_size, &elem.iparams_size);
+
+            _XDPRINTF_("%s[%u]: safepop: {cpuid: %016llx, srcsid: %u, dstsid: %u, ctype: %x, ra=%016llx, \
+                       op=%016llx, newop=%016llx, opsize=%u\n",
+                    __FUNCTION__, (u32)cpuid,
+                       cpuid, elem.src_slabid, elem.dst_slabid, elem.hic_calltype, elem.return_address,
+                       elem.oparams, elem.newoparams, elem.oparams_size);
+
+
+            //copy newoparams to internal buffer __iparamsbuffer
+            memcpy(&__iparamsbuffer, elem.newoparams, (elem.oparams_size > 1024 ? 1024 : elem.oparams_size) );
+
+            //adjust slab stack by popping off iparams_size and oparams_size
+            _xmhfhic_common_slab_info_table[src_slabid].archdata.slabtos[(u32)cpuid] += (elem.iparams_size+elem.oparams_size);
+
+            //switch to destination slab page tables
+            asm volatile(
+                 "movq %0, %%rax \r\n"
+                 "movq %%rax, %%cr3 \r\n"
+                :
+                : "m" (_xmhfhic_common_slab_info_table[dst_slabid].archdata.mempgtbl_cr3)
+                : "rax"
+            );
+
+
+            //copy internal buffer __iparamsbuffer to oparams
+            memcpy(elem.oparams, &__iparamsbuffer, (elem.oparams_size > 1024 ? 1024 : elem.oparams_size) );
+
+            //return back to slab
+            /*
+            RDI = undefined
+            RSI = undefined
+            RDX = return_address; for SYSEXIT
+            RCX = return TOS; for SYSEXIT
+            R8 = undefined
+            R9 = undefined
+            R10 = undefined
+            R11 = undefined
+            */
+
+            asm volatile(
+                 "movq %0, %%rdx \r\n"
+                 "movq %1, %%rcx \r\n"
+
+                 "sysexitq \r\n"
+                 //"int $0x03 \r\n"
+                 //"1: jmp 1b \r\n"
+                :
+                : "m" (elem.return_address),
+                  "m" (_xmhfhic_common_slab_info_table[elem.src_slabid].archdata.slabtos[(u32)cpuid])
+                : "rdx", "rcx"
+            );
+
+        }
+        break;
+
+
+
+
+
+
         case XMHF_HIC_SLABCALLINTERCEPT:{
             _XDPRINTF_("%s[%u]: Trampoline Intercept call\n",
                     __FUNCTION__, (u32)cpuid, read_rsp());
@@ -728,208 +946,7 @@ void __xmhfhic_rtm_trampoline(u64 hic_calltype, slab_input_params_t *iparams, u6
 
 
 
-        case XMHF_HIC_SLABCALL:
-        case XMHF_HIC_SLABCALLEXCEPTION:
-        if ( _xmhfhic_common_slab_info_table[dst_slabid].archdata.slabtype == HIC_SLAB_X86VMXX86PC_HYPERVISOR) {
-            slab_input_params_t *newiparams;
-            slab_output_params_t *newoparams;
-
-            //save return RSP
-            _xmhfhic_common_slab_info_table[src_slabid].archdata.slabtos[(u32)cpuid] = return_rsp;
-
-            //copy iparams to internal buffer __iparamsbuffer
-            memcpy(&__iparamsbuffer, iparams, (iparams_size > 1024 ? 1024 : iparams_size) );
-
-            //switch to destination slab page tables
-            asm volatile(
-                 "movq %0, %%rax \r\n"
-                 "movq %%rax, %%cr3 \r\n"
-                :
-                : "m" (_xmhfhic_common_slab_info_table[dst_slabid].archdata.mempgtbl_cr3)
-                : "rax"
-            );
-
-            //make space on destination slab stack for iparams and copy iparams and obtain newiparams
-            {
-                _xmhfhic_common_slab_info_table[dst_slabid].archdata.slabtos[(u32)cpuid] -= iparams_size;
-                newiparams = (slab_input_params_t *) _xmhfhic_common_slab_info_table[dst_slabid].archdata.slabtos[(u32)cpuid];
-                memcpy((void *)_xmhfhic_common_slab_info_table[dst_slabid].archdata.slabtos[(u32)cpuid],
-                       &__iparamsbuffer, (iparams_size > 1024 ? 1024 : iparams_size) );
-            }
-
-
-            //make space on destination slab stack for oparams and obtain newoparams
-            {
-                _xmhfhic_common_slab_info_table[dst_slabid].archdata.slabtos[(u32)cpuid] -= oparams_size;
-                newoparams = (slab_output_params_t *) _xmhfhic_common_slab_info_table[dst_slabid].archdata.slabtos[(u32)cpuid];
-            }
-
-
-            //push cpuid, src_slabid, dst_slabid, hic_calltype, return_address, oparams, new oparams and oparams_size tuple to
-            //safe stack
-            _XDPRINTF_("%s[%u]: safepush: {cpuid: %016llx, srcsid: %u, dstsid: %u, ctype: %x, ra=%016llx, \
-                       op=%016llx, newop=%016llx, opsize=%u\n",
-                    __FUNCTION__, (u32)cpuid,
-                       cpuid, src_slabid, dst_slabid, hic_calltype, return_address,
-                       oparams, newoparams, oparams_size);
-
-            __xmhfhic_safepush(cpuid, src_slabid, dst_slabid, hic_calltype, return_address, oparams, newoparams, oparams_size, iparams_size);
-
-
-            //jump to destination slab entrystub
-            /*
-
-            RDI = newiparams
-            RSI = iparams_size
-            RDX = slab entrystub; used for SYSEXIT
-            RCX = slab entrystub stack TOS for the CPU; used for SYSEXIT
-            R8 = newoparams
-            R9 = oparams_size
-            R10 = src_slabid
-            R11 = cpuid
-
-            */
-
-            asm volatile(
-                 "movq %0, %%rdi \r\n"
-                 "movq %1, %%rsi \r\n"
-                 "movq %2, %%rdx \r\n"
-                 "movq %3, %%rcx \r\n"
-                 "movq %4, %%r8 \r\n"
-                 "movq %5, %%r9 \r\n"
-                 "movq %6, %%r10 \r\n"
-                 "movq %7, %%r11 \r\n"
-
-                 "sysexitq \r\n"
-                 //"int $0x03 \r\n"
-                 //"1: jmp 1b \r\n"
-                :
-                : "m" (newiparams),
-                  "m" (iparams_size),
-                  "m" (_xmhfhic_common_slab_info_table[dst_slabid].entrystub),
-                  "m" (_xmhfhic_common_slab_info_table[dst_slabid].archdata.slabtos[(u32)cpuid]),
-                  "m" (newoparams),
-                  "m" (oparams_size),
-                  "m" (src_slabid),
-                  "m" (cpuid)
-                : "rdi", "rsi", "rdx", "rcx", "r8", "r9", "r10", "r11"
-            );
-
-        }else if ( _xmhfhic_common_slab_info_table[dst_slabid].archdata.slabtype == HIC_SLAB_X86VMXX86PC_GUEST){
-            u32 errorcode;
-
-            _XDPRINTF_("%s[%u]: going to invoke guest slab %u\n",
-                       __FUNCTION__, (u32)cpuid, dst_slabid);
-            xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VPID, dst_slabid+1);
-            xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_EPT_POINTER_FULL, _xmhfhic_common_slab_info_table[dst_slabid].archdata.mempgtbl_cr3);
-            xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_RSP, _xmhfhic_common_slab_info_table[dst_slabid].archdata.slabtos[(u32)cpuid]);
-            xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_RIP, _xmhfhic_common_slab_info_table[dst_slabid].entrystub);
-
-            asm volatile (
-                    "vmlaunch\r\n"
-
-                    "jc __vmx_start_hvm_failinvalid\r\n"
-                    "jnz	__vmx_start_hvm_undefinedimplementation	\r\n"
-                    "movl $0x1, %%eax\r\n"		//VMLAUNCH error, XXX: need to read from VM instruction error field in VMCS
-                    "movl %%eax, %0 \r\n"
-                    "jmp __vmx_start_continue \r\n"
-                    "__vmx_start_hvm_undefinedimplementation:\r\n"
-                    "movl $0x2, %%eax\r\n"		//violation of VMLAUNCH specs., handle it anyways
-                    "movl %%eax, %0 \r\n"
-                    "jmp __vmx_start_continue \r\n"
-                    "__vmx_start_hvm_failinvalid:\r\n"
-                    "xorl %%eax, %%eax\r\n"		//return 0 as we have no error code available
-                    "movl %%eax, %0 \r\n"
-                    "__vmx_start_continue:\r\n"
-                : "=g"(errorcode)
-                :
-                : "eax", "cc"
-            );
-
-
-           	switch(errorcode){
-                case 0:	//no error code, VMCS pointer is invalid
-                    _XDPRINTF_("%s: VMLAUNCH error; VMCS pointer invalid?\n", __FUNCTION__);
-                    break;
-                case 1:{//error code available, so dump it
-                    u32 code=xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_VMINSTR_ERROR);
-                    _XDPRINTF_("\n%s: VMLAUNCH error; code=%x\n", __FUNCTION__, code);
-                    break;
-                }
-            }
-
-            HALT();
-
-        }
-        break;
-
-
-        case XMHF_HIC_SLABRET:{
-            __xmhfhic_safestack_element_t elem;
-
-            //pop tuple from safe stack
-            __xmhfhic_safepop(cpuid, &elem.src_slabid, &elem.dst_slabid, &elem.hic_calltype, &elem.return_address,
-                                &elem.oparams, &elem.newoparams, &elem.oparams_size, &elem.iparams_size);
-
-            _XDPRINTF_("%s[%u]: safepop: {cpuid: %016llx, srcsid: %u, dstsid: %u, ctype: %x, ra=%016llx, \
-                       op=%016llx, newop=%016llx, opsize=%u\n",
-                    __FUNCTION__, (u32)cpuid,
-                       cpuid, elem.src_slabid, elem.dst_slabid, elem.hic_calltype, elem.return_address,
-                       elem.oparams, elem.newoparams, elem.oparams_size);
-
-
-            //copy newoparams to internal buffer __iparamsbuffer
-            memcpy(&__iparamsbuffer, elem.newoparams, (elem.oparams_size > 1024 ? 1024 : elem.oparams_size) );
-
-            //adjust slab stack by popping off iparams_size and oparams_size
-            _xmhfhic_common_slab_info_table[src_slabid].archdata.slabtos[(u32)cpuid] += (elem.iparams_size+elem.oparams_size);
-
-            //switch to destination slab page tables
-            asm volatile(
-                 "movq %0, %%rax \r\n"
-                 "movq %%rax, %%cr3 \r\n"
-                :
-                : "m" (_xmhfhic_common_slab_info_table[dst_slabid].archdata.mempgtbl_cr3)
-                : "rax"
-            );
-
-
-            //depending on whether we are returning from a regular call, or exception or intercept, do the
-            //needful
-            switch(elem.hic_calltype){
-                case XMHF_HIC_SLABCALL:{
-
-                    //copy internal buffer __iparamsbuffer to oparams
-                    memcpy(elem.oparams, &__iparamsbuffer, (elem.oparams_size > 1024 ? 1024 : elem.oparams_size) );
-
-                    //return back to slab
-                    /*
-                    RDI = undefined
-                    RSI = undefined
-                    RDX = return_address; for SYSEXIT
-                    RCX = return TOS; for SYSEXIT
-                    R8 = undefined
-                    R9 = undefined
-                    R10 = undefined
-                    R11 = undefined
-                    */
-
-                    asm volatile(
-                         "movq %0, %%rdx \r\n"
-                         "movq %1, %%rcx \r\n"
-
-                         "sysexitq \r\n"
-                         //"int $0x03 \r\n"
-                         //"1: jmp 1b \r\n"
-                        :
-                        : "m" (elem.return_address),
-                          "m" (_xmhfhic_common_slab_info_table[elem.src_slabid].archdata.slabtos[(u32)cpuid])
-                        : "rdx", "rcx"
-                    );
-                }
-                break;
-
-                case XMHF_HIC_SLABCALLEXCEPTION:{
+        /*case XMHF_HIC_SLABCALLEXCEPTION:{
                     x86vmx_exception_frame_errcode_t *exframe = (x86vmx_exception_frame_errcode_t *)&__iparamsbuffer;
                     exframe->orig_rip = elem.return_address;
 
@@ -966,14 +983,8 @@ void __xmhfhic_rtm_trampoline(u64 hic_calltype, slab_input_params_t *iparams, u6
 
                     );
 
-                }
-                break;
+        */
 
-            }
-
-
-        }
-        break;
 
 
         default:
