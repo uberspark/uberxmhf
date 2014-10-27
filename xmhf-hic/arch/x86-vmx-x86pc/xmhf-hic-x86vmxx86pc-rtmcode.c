@@ -430,7 +430,7 @@ __attribute__((naked)) void __xmhfhic_rtm_intercept_stub(void){
 
 //HIC runtime trampoline
 void __xmhfhic_rtm_trampoline(u64 hic_calltype, slab_input_params_t *iparams, u64 iparams_size, slab_output_params_t *oparams, u64 oparams_size, u64 dst_slabid, u64 src_slabid, u64 cpuid, u64 return_address, u64 return_rsp) {
-    u8 __iparamsbuffer[1024];
+    u8 __paramsbuffer[1024];
 
 
     _XDPRINTF_("%s[%u]: Trampoline got control: RSP=%016llx\n",
@@ -463,8 +463,8 @@ void __xmhfhic_rtm_trampoline(u64 hic_calltype, slab_input_params_t *iparams, u6
                     //save return RSP
                     _xmhfhic_common_slab_info_table[src_slabid].archdata.slabtos[(u32)cpuid] = return_rsp;
 
-                    //copy iparams to internal buffer __iparamsbuffer
-                    memcpy(&__iparamsbuffer, iparams, (iparams_size > 1024 ? 1024 : iparams_size) );
+                    //copy iparams to internal buffer __paramsbuffer
+                    memcpy(&__paramsbuffer, iparams, (iparams_size > 1024 ? 1024 : iparams_size) );
 
                     //switch to destination slab page tables
                     asm volatile(
@@ -480,7 +480,7 @@ void __xmhfhic_rtm_trampoline(u64 hic_calltype, slab_input_params_t *iparams, u6
                         _xmhfhic_common_slab_info_table[dst_slabid].archdata.slabtos[(u32)cpuid] -= iparams_size;
                         newiparams = (slab_input_params_t *) _xmhfhic_common_slab_info_table[dst_slabid].archdata.slabtos[(u32)cpuid];
                         memcpy((void *)_xmhfhic_common_slab_info_table[dst_slabid].archdata.slabtos[(u32)cpuid],
-                               &__iparamsbuffer, (iparams_size > 1024 ? 1024 : iparams_size) );
+                               &__paramsbuffer, (iparams_size > 1024 ? 1024 : iparams_size) );
                     }
 
 
@@ -616,9 +616,16 @@ void __xmhfhic_rtm_trampoline(u64 hic_calltype, slab_input_params_t *iparams, u6
                        cpuid, elem.src_slabid, elem.dst_slabid, elem.hic_calltype, elem.return_address,
                        elem.oparams, elem.newoparams, elem.oparams_size);
 
+            //check to ensure this SLABRET is paired with a prior SLABCALL
+            if ( !((elem.src_slabid == dst_slabid) && (elem.dst_slabid == src_slabid) && (elem.hic_calltype ==XMHF_HIC_SLABCALL)) ){
+                _XDPRINTF_("%s[%u]: Fatal: SLABRET does not match prior SLABCALL. Halting!\n",
+                    __FUNCTION__, (u32)cpuid);
+                HALT();
+            }
 
-            //copy newoparams to internal buffer __iparamsbuffer
-            memcpy(&__iparamsbuffer, elem.newoparams, (elem.oparams_size > 1024 ? 1024 : elem.oparams_size) );
+
+            //copy newoparams to internal buffer __paramsbuffer
+            memcpy(&__paramsbuffer, elem.newoparams, (elem.oparams_size > 1024 ? 1024 : elem.oparams_size) );
 
             //adjust slab stack by popping off iparams_size and oparams_size
             _xmhfhic_common_slab_info_table[src_slabid].archdata.slabtos[(u32)cpuid] += (elem.iparams_size+elem.oparams_size);
@@ -633,8 +640,8 @@ void __xmhfhic_rtm_trampoline(u64 hic_calltype, slab_input_params_t *iparams, u6
             );
 
 
-            //copy internal buffer __iparamsbuffer to oparams
-            memcpy(elem.oparams, &__iparamsbuffer, (elem.oparams_size > 1024 ? 1024 : elem.oparams_size) );
+            //copy internal buffer __paramsbuffer to oparams
+            memcpy(elem.oparams, &__paramsbuffer, (elem.oparams_size > 1024 ? 1024 : elem.oparams_size) );
 
             //return back to slab
             /*
@@ -684,8 +691,8 @@ void __xmhfhic_rtm_trampoline(u64 hic_calltype, slab_input_params_t *iparams, u6
                 //save return RSP
                 _xmhfhic_common_slab_info_table[src_slabid].archdata.slabtos[(u32)cpuid] = return_rsp;
 
-                //copy iparams to internal buffer __iparamsbuffer
-                memcpy(&__iparamsbuffer, iparams, (iparams_size > 1024 ? 1024 : iparams_size) );
+                //copy iparams to internal buffer __paramsbuffer
+                memcpy(&__paramsbuffer, iparams, (iparams_size > 1024 ? 1024 : iparams_size) );
 
                 //switch to destination slab page tables
                 asm volatile(
@@ -701,7 +708,7 @@ void __xmhfhic_rtm_trampoline(u64 hic_calltype, slab_input_params_t *iparams, u6
                     _xmhfhic_common_slab_info_table[dst_slabid].archdata.slabtos[(u32)cpuid] -= iparams_size;
                     newiparams = (slab_input_params_t *) _xmhfhic_common_slab_info_table[dst_slabid].archdata.slabtos[(u32)cpuid];
                     memcpy((void *)_xmhfhic_common_slab_info_table[dst_slabid].archdata.slabtos[(u32)cpuid],
-                           &__iparamsbuffer, (iparams_size > 1024 ? 1024 : iparams_size) );
+                           &__paramsbuffer, (iparams_size > 1024 ? 1024 : iparams_size) );
                 }
 
 
@@ -781,8 +788,8 @@ void __xmhfhic_rtm_trampoline(u64 hic_calltype, slab_input_params_t *iparams, u6
                        elem.oparams, elem.newoparams, elem.oparams_size);
 
 
-            //copy newoparams to internal buffer __iparamsbuffer
-            //memcpy(&__iparamsbuffer, elem.newoparams, (elem.oparams_size > 1024 ? 1024 : elem.oparams_size) );
+            //copy newoparams to internal buffer __paramsbuffer
+            //memcpy(&__paramsbuffer, elem.newoparams, (elem.oparams_size > 1024 ? 1024 : elem.oparams_size) );
 
             //adjust slab stack by popping off iparams_size
             _xmhfhic_common_slab_info_table[src_slabid].archdata.slabtos[(u32)cpuid] += (elem.iparams_size);
