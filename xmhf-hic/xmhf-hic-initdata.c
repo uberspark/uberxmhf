@@ -51,23 +51,27 @@
  */
 
 #include <xmhf.h>
-//#include <xmhf-core.h>
-
-//extern u8 _slab_xcinitbs_stack_start[];
-//extern u8 _slab_xcinitbs_stack_end[];
-//extern u8 _slab_xcinitbs_entrypoint[];
 
 static XMHF_BOOTINFO xcbootinfo_store __attribute__(( section(".sharedro_xcbootinfo") )) = {
 	.magic= RUNTIME_PARAMETER_BLOCK_MAGIC,
-	//.stack_size = MAX_PLATFORM_CPUSTACK_SIZE,
 };
 
 // XMHF boot information block
 __attribute__(( section(".sharedro_xcbootinfoptr") )) XMHF_BOOTINFO *xcbootinfo= &xcbootinfo_store;
 
+
 // slab capabilities (privilegemask, call capabilities, type ...)
 slab_caps_t _xmhfhic_init_setupdata_slab_caps[XMHF_HIC_MAX_SLABS] = {
 
+    //XMHF_HYP_SLAB_XCINIT
+    {
+        0,
+        HIC_SLAB_CALLCAP(XMHF_HYP_SLAB_XCTESTSLAB1),
+        {false, 0, {0}},
+        HIC_SLAB_X86VMXX86PC_HYPERVISOR
+    },
+
+    //XMHF_HYP_SLAB_XCIHUB
     {
         0,
         0,
@@ -75,6 +79,7 @@ slab_caps_t _xmhfhic_init_setupdata_slab_caps[XMHF_HIC_MAX_SLABS] = {
         HIC_SLAB_X86VMXX86PC_HYPERVISOR
     },
 
+    //XMHF_HYP_SLAB_XCEXHUB
     {
         0,
         0,
@@ -82,6 +87,7 @@ slab_caps_t _xmhfhic_init_setupdata_slab_caps[XMHF_HIC_MAX_SLABS] = {
         HIC_SLAB_X86VMXX86PC_HYPERVISOR
     },
 
+    //XMHF_HYP_SLAB_XCTESTSLAB1
     {
         0,
         0,
@@ -89,13 +95,7 @@ slab_caps_t _xmhfhic_init_setupdata_slab_caps[XMHF_HIC_MAX_SLABS] = {
         HIC_SLAB_X86VMXX86PC_HYPERVISOR
     },
 
-    {
-        0,
-        0,
-        {false, 0, {0}},
-        HIC_SLAB_X86VMXX86PC_HYPERVISOR
-    },
-
+    //XMHF_GUEST_SLAB_XCGUESTSLAB
     {
         0,
         0,
@@ -103,6 +103,7 @@ slab_caps_t _xmhfhic_init_setupdata_slab_caps[XMHF_HIC_MAX_SLABS] = {
         HIC_SLAB_X86VMXX86PC_GUEST
     },
 
+    //XMHF_GUEST_SLAB_RICHGUEST
     {
         0,
         0,
