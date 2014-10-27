@@ -84,20 +84,21 @@
  *
  * "Extra" functions unnecessary in SL denoted as such.
  */
- 
+
 /**
- * Adapted for libtpm - generic TPM library 
- * by Amit Vasudevan amitvasudevan@acm.org 
+ * Adapted for libtpm - generic TPM library
+ * by Amit Vasudevan amitvasudevan@acm.org
  */
 #include <xmhf.h>
 #include <xmhf-debug.h>
- 
+
 #include <stddef.h>
 #include <string.h>
 #include <stdio.h>
 //#include <print_hex.h>
-#include <tpm.h>
+//#include <tpm.h>
 
+#if 0
 
 /*
  * The _tpm_submit_cmd function comes with 2 global buffers: cmd_buf & rsp_buf.
@@ -206,6 +207,7 @@ uint32_t tpm_submit_cmd(uint32_t locality, uint32_t cmd,
     return rv;
 }
 
+#endif
 
 uint32_t tpm_pcr_read(uint32_t locality, uint32_t pcr, tpm_pcr_value_t *out)
 {
@@ -335,7 +337,7 @@ uint32_t tpm_get_version(uint8_t *major, uint8_t *minor)
 }
 
 
-
+#if 0
 /* static */
 uint32_t tpm_get_capability(
                   uint32_t locality, tpm_capability_area_t cap_area,
@@ -376,7 +378,7 @@ uint32_t tpm_get_capability(
 
     return ret;
 }
-
+#endif
 
 uint32_t tpm_get_random(uint32_t locality, uint8_t *random_data,
                         uint32_t *data_size)
@@ -384,7 +386,7 @@ uint32_t tpm_get_random(uint32_t locality, uint8_t *random_data,
     uint32_t ret, in_size = 0, out_size, requested_size;
     static bool first_attempt;
     uint32_t second_size;
-    
+
     if ( random_data == NULL || data_size == NULL )
         return TPM_BAD_PARAMETER;
     if ( *data_size == 0 )
