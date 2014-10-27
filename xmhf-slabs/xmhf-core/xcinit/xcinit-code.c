@@ -130,7 +130,7 @@ void xcinit_interface(slab_input_params_t *iparams, u64 iparams_size, slab_outpu
 
 
 
-        _XDPRINTF_("%s[%u]: Proceeding to call xctestslab1 interface; RSP=%016llx\n",
+/*        _XDPRINTF_("%s[%u]: Proceeding to call xctestslab1 interface; RSP=%016llx\n",
                 __FUNCTION__, (u32)cpuid, read_rsp());
 
         inputval = 0xAABB;
@@ -140,18 +140,18 @@ void xcinit_interface(slab_input_params_t *iparams, u64 iparams_size, slab_outpu
                 __FUNCTION__, (u32)cpuid, read_rsp());
         _XDPRINTF_("%s[%u]: outputval=%016llx\n",
                 __FUNCTION__, (u32)cpuid, outputval);
-
+*/
 
         //_xcinit_dotests(cpuid);
 
         //asm volatile ("int $0x03\r\n");
 
 
-/*        _XDPRINTF_("%s[%u]: Proceeding to call guestslab1; RSP=%016llx\n",
+        _XDPRINTF_("%s[%u]: Proceeding to call guestslab1; RSP=%016llx\n",
                 __FUNCTION__, (u32)cpuid, read_rsp());
 
         XMHF_SLAB_CALL(xcguestslab, XMHF_GUEST_SLAB_XCGUESTSLAB, NULL, 0, NULL, 0);
-*/
+
 
         _XDPRINTF_("%s[%u]: Done.Halting!\n",
                 __FUNCTION__, (u32)cpuid);
