@@ -51,35 +51,106 @@
  */
 
 #include <xmhf.h>
-//#include <xmhf-core.h>
 #include <xmhf-debug.h>
 
+
+//HIC runtime trampoline stub
+
 /*
-__attribute__((naked)) void __xmhfhic_rtm_intercept_stub(void){
+__xmhfhic_rtm_trampoline stub entry register mappings:
 
-	asm volatile(
-            "pushq %%rax \r\n"
-            "pushq %%rbx \r\n"
-            "movq %0, %%rbx \r\n"
-            "vmread %%rbx, %%rax \r\n"
-            "addq $3, %%rax \r\n"
-            "vmwrite %%rax, %%rbx \r\n"
-            "popq %%rbx \r\n"
-            "popq %%rax \r\n"
-            "vmresume \r\n"
-        :
-        : "i" (VMCS_GUEST_RIP)
-        :
+RDI = call type (XMHF_HIC_SLABCALL)
+RSI = iparams
+RDX = iparams_size
+RCX = oparams
+R8 = oparams_size
+R9 = dst_slabid
+R10 = return RSP;
+R11 = return_address
 
+*/
+
+__attribute__((naked)) void __xmhfhic_rtm_trampoline_stub(void){
+
+    asm volatile (
+        "cmpq %0, %%rdi \r\n"
+        "je 1f \r\n"
+
+        "pushq %%r10 \r\n"          //push return RSP
+        "pushq %%r11 \r\n"          //push return address
+
+       	"movq %1, %%rax \r\n"       //RAX=X86XMP_LAPIC_ID_MEMORYADDRESS
+		"movl (%%eax), %%eax\r\n"   //EAX(bits 0-7)=LAPIC ID
+        "shrl $24, %%eax\r\n"       //EAX=LAPIC ID
+        "movq __xmhfhic_x86vmx_cpuidtable+0x0(,%%eax,8), %%rax\r\n" //RAX = 0-based cpu index for the CPU
+        "pushq %%rax \r\n"          //push cpuid
+
+        "movq %%cr3, %%rax \r\n"
+        "andq $0x00000000000FF000, %%rax \r\n"
+        "shr $12, %%rax \r\n"
+        "pushq %%rax \r\n"          //push source slab id
+
+        "callq __xmhfhic_rtm_trampoline \r\n"
+        "hlt \r\n"
+
+        "1: \r\n"
+        "pushq %%r10 \r\n"          //push return RSP
+        "pushq %%r11 \r\n"          //push return address
+
+       	"movq %1, %%rax \r\n"       //RAX=X86XMP_LAPIC_ID_MEMORYADDRESS
+		"movl (%%eax), %%eax\r\n"   //EAX(bits 0-7)=LAPIC ID
+        "shrl $24, %%eax\r\n"       //EAX=LAPIC ID
+        "movq __xmhfhic_x86vmx_cpuidtable+0x0(,%%eax,8), %%rax\r\n" //RAX = 0-based cpu index for the CPU
+        "pushq %%rax \r\n"          //push cpuid
+
+        "movq %%cr3, %%rax \r\n"
+        "andq $0x00000000000FF000, %%rax \r\n"
+        "shr $12, %%rax \r\n"
+        "pushq %%rax \r\n"          //push source slab id
+
+        "callq __xmhfhic_rtm_uapihandler \r\n"
+
+        "addq $16, %%rsp \r\n"
+        "popq %%rdx \r\n"
+        "popq %%rcx \r\n"
+        "sysexitq \r\n"
+
+        "hlt \r\n"
+      :
+      : "i" (XMHF_HIC_UAPI), "i" (X86SMP_LAPIC_ID_MEMORYADDRESS)
+      :
     );
-
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+//HIC runtime exception stub
+
+/*entry into __xmhfhic_rtm_trampoline:
+RDI = hic_calltype
+RSI = iparams
+RDX = iparams_size
+RCX = oparams
+R8 = oparams_size
+R9 = dst_slabid
+[RSP] = src_slabid
+[RSP+8] = cpuid
+[RSP+16] = return_address
+[RSP+32] = return_rsp
 */
 
 
-
-//HIC runtime intercept stub
-__attribute__((naked)) void __xmhfhic_rtm_intercept_stub(void){
+__attribute__((naked)) void __xmhfhic_rtm_exception_stub(void){
 
 	asm volatile(
                         "pushq %%rsp \r\n"
@@ -99,13 +170,7 @@ __attribute__((naked)) void __xmhfhic_rtm_intercept_stub(void){
                         "pushq %%r9 \r\n"
                         "pushq %%r8 \r\n"
 
-                        "pushfq \r\n"
-                        "popq %%rax \r\n"
-                        "orq $0x3000, %%rax \r\n"
-                        "pushq %%rax \r\n"
-                        "popfq \r\n"
-
-                        //rdi = hic_calltype = XMHF_HIC_SLABCALLINTERCEPT
+                        //rdi = hic_calltype = XMHF_HIC_SLABCALLEXCEPTION
                         "movq %0, %%rdi \r\n"
 
                         //iparams
@@ -123,11 +188,15 @@ __attribute__((naked)) void __xmhfhic_rtm_intercept_stub(void){
                         //dst_slabid
                         "movq %2, %%r9 \r\n"
 
-                        //return_rsp (NA -- since its stored in VMCS)
-                        "pushq $0x0 \r\n"
+                        "movq %%rsp, %%rbx \r\n"
 
-                        //return_address (NA -- since its stored in VMCS)
-                        "pushq $0x0 \r\n"
+                        //return_rsp
+                        "movq 168(%%rbx), %%rax \r\n"
+                        "pushq %%rax \r\n"
+
+                        //return_address
+                        "movq 144(%%rbx), %%rax \r\n"
+                        "pushq %%rax \r\n"
 
                         //cpuid
                         "movq %3, %%rax \r\n"       //RAX=X86XMP_LAPIC_ID_MEMORYADDRESS
@@ -137,138 +206,20 @@ __attribute__((naked)) void __xmhfhic_rtm_intercept_stub(void){
                         "pushq %%rax \r\n"
 
                         //src_slabid
-                        "movq %4, %%rax \r\n"
-                        "vmread %%rax, %%rax \r\n"     //RAX = VPID = slab_id
-                        "decq %%rax \r\n"
+                        "movq %%cr3, %%rax \r\n"
+                        "andq $0x00000000000FF000, %%rax \r\n"
+                        "shr $12, %%rax \r\n"
                         "pushq %%rax \r\n"
 
 
                         "callq __xmhfhic_rtm_trampoline \r\n"
 					:
-					:   "i" (XMHF_HIC_SLABCALLINTERCEPT),
-                        "i" (sizeof(x86regs64_t)),
-                        "i" (XMHF_HYP_SLAB_XCIHUB),
-					    "i" (X86SMP_LAPIC_ID_MEMORYADDRESS),
-                        "i" (VMCS_CONTROL_VPID)
+					:   "i" (XMHF_HIC_SLABCALLEXCEPTION),
+                        "i" (sizeof(x86vmx_exception_frame_errcode_t)),
+                        "i" (XMHF_HYP_SLAB_XCEXHUB),
+					    "i" (X86SMP_LAPIC_ID_MEMORYADDRESS)
                     :
 		);
-}
-
-
-
-
-
-
-
-static void xmhf_xcphandler_arch_unhandled(u64 vector, void *exdata){
-	x86idt64_stackframe_t *exframe = NULL;
-    u64 errorcode=0;
-
-    //grab and skip error code on stack if applicable
-    //TODO: fixme, this won't hold if we call these exceptions with INT xx since there is no error code pushed
-    //in such cases
-	if(vector == CPU_EXCEPTION_DF ||
-		vector == CPU_EXCEPTION_TS ||
-		vector == CPU_EXCEPTION_NP ||
-		vector == CPU_EXCEPTION_SS ||
-		vector == CPU_EXCEPTION_GP ||
-		vector == CPU_EXCEPTION_PF ||
-		vector == CPU_EXCEPTION_AC){
-        x86vmx_exception_frame_errcode_t *exframe = (x86vmx_exception_frame_errcode_t *)exdata;
-
-        //dump relevant info
-        _XDPRINTF_("unhandled exception %x, halting!\n", exframe->vector);
-        _XDPRINTF_("state dump:\n\n");
-        _XDPRINTF_("errorcode=0x%016llx\n", exframe->errorcode);
-        _XDPRINTF_("CS:RIP:RFLAGS = 0x%016llx:0x%016llx:0x%016llx\n", exframe->orig_cs, exframe->orig_rip, exframe->orig_rflags);
-        _XDPRINTF_("SS:RSP = 0x%016llx:0x%016llx\n", exframe->orig_ss, exframe->orig_rsp);
-        _XDPRINTF_("CR0=0x%016llx, CR2=0x%016llx\n", read_cr0(), read_cr2());
-        _XDPRINTF_("CR3=0x%016llx, CR4=0x%016llx\n", read_cr3(), read_cr4());
-        _XDPRINTF_("CS=0x%04x, DS=0x%04x, ES=0x%04x, SS=0x%04x\n", (u16)read_segreg_cs(), (u16)read_segreg_ds(), (u16)read_segreg_es(), (u16)read_segreg_ss());
-        _XDPRINTF_("FS=0x%04x, GS=0x%04x\n", (u16)read_segreg_fs(), (u16)read_segreg_gs());
-        _XDPRINTF_("TR=0x%04x\n", (u16)read_tr_sel());
-        _XDPRINTF_("RAX=0x%016llx, RBX=0%016llx\n", exframe->rax, exframe->rbx);
-        _XDPRINTF_("RCX=0x%016llx, RDX=0%016llx\n", exframe->rcx, exframe->rdx);
-        _XDPRINTF_("RSI=0x%016llx, RDI=0%016llx\n", exframe->rsi, exframe->rdi);
-        _XDPRINTF_("RBP=0x%016llx, RSP=0%016llx\n", exframe->rbp, exframe->rsp);
-        _XDPRINTF_("R8=0x%016llx, R9=0%016llx\n", exframe->r8, exframe->r9);
-        _XDPRINTF_("R10=0x%016llx, R11=0%016llx\n", exframe->r10, exframe->r11);
-        _XDPRINTF_("R12=0x%016llx, R13=0%016llx\n", exframe->r12, exframe->r13);
-        _XDPRINTF_("R14=0x%016llx, R15=0%016llx\n", exframe->r14, exframe->r15);
-
-        //do a stack dump in the hopes of getting more info.
-        {
-            u64 i;
-            u64 stack_start = exframe->orig_rsp;
-            _XDPRINTF_("\n-----stack dump (8 entries)-----\n");
-            for(i=stack_start; i < stack_start+(8*sizeof(u64)); i+=sizeof(u64)){
-                _XDPRINTF_("Stack(0x%016llx) -> 0x%016llx\n", i, *(u64 *)i);
-            }
-            _XDPRINTF_("\n-----stack dump end-------------\n");
-        }
-
-	}else{
-
-        x86vmx_exception_frame_t *exframe = (x86vmx_exception_frame_t *)exdata;
-
-        //dump relevant info
-        _XDPRINTF_("unhandled exception %x, halting!\n", exframe->vector);
-        _XDPRINTF_("state dump:\n\n");
-        //_XDPRINTF_("errorcode=0x%016llx\n", exframe->errorcode);
-        _XDPRINTF_("CS:RIP:RFLAGS = 0x%016llx:0x%016llx:0x%016llx\n", exframe->orig_cs, exframe->orig_rip, exframe->orig_rflags);
-        _XDPRINTF_("SS:RSP = 0x%016llx:0x%016llx\n", exframe->orig_ss, exframe->orig_rsp);
-        _XDPRINTF_("CR0=0x%016llx, CR2=0x%016llx\n", read_cr0(), read_cr2());
-        _XDPRINTF_("CR3=0x%016llx, CR4=0x%016llx\n", read_cr3(), read_cr4());
-        _XDPRINTF_("CS=0x%04x, DS=0x%04x, ES=0x%04x, SS=0x%04x\n", (u16)read_segreg_cs(), (u16)read_segreg_ds(), (u16)read_segreg_es(), (u16)read_segreg_ss());
-        _XDPRINTF_("FS=0x%04x, GS=0x%04x\n", (u16)read_segreg_fs(), (u16)read_segreg_gs());
-        _XDPRINTF_("TR=0x%04x\n", (u16)read_tr_sel());
-        _XDPRINTF_("RAX=0x%016llx, RBX=0%016llx\n", exframe->rax, exframe->rbx);
-        _XDPRINTF_("RCX=0x%016llx, RDX=0%016llx\n", exframe->rcx, exframe->rdx);
-        _XDPRINTF_("RSI=0x%016llx, RDI=0%016llx\n", exframe->rsi, exframe->rdi);
-        _XDPRINTF_("RBP=0x%016llx, RSP=0%016llx\n", exframe->rbp, exframe->rsp);
-        _XDPRINTF_("R8=0x%016llx, R9=0%016llx\n", exframe->r8, exframe->r9);
-        _XDPRINTF_("R10=0x%016llx, R11=0%016llx\n", exframe->r10, exframe->r11);
-        _XDPRINTF_("R12=0x%016llx, R13=0%016llx\n", exframe->r12, exframe->r13);
-        _XDPRINTF_("R14=0x%016llx, R15=0%016llx\n", exframe->r14, exframe->r15);
-
-        //do a stack dump in the hopes of getting more info.
-        {
-            u64 i;
-            u64 stack_start = exframe->orig_rsp;
-            _XDPRINTF_("\n-----stack dump (8 entries)-----\n");
-            for(i=stack_start; i < stack_start+(8*sizeof(u64)); i+=sizeof(u64)){
-                _XDPRINTF_("Stack(0x%016llx) -> 0x%016llx\n", i, *(u64 *)i);
-            }
-            _XDPRINTF_("\n-----stack dump end-------------\n");
-        }
-
-
-
-	}
-
-}
-
-//==========================================================================================
-
-//exception handler hub
-bool xmhf_xcphandler_arch_hub(u64 vector, void *exdata){
-    bool poperrorcode=false;
-
-	switch(vector){
-			case 0x3:{
-                xmhf_xcphandler_arch_unhandled(vector, exdata);
-				_XDPRINTF_("%s: exception 3, returning\n", __FUNCTION__);
-			}
-			break;
-
-			default:{
-				xmhf_xcphandler_arch_unhandled(vector, exdata);
-				_XDPRINTF_("\nHalting System!\n");
-				HALT();
-			}
-	}
-
-    return poperrorcode;
 }
 
 
@@ -378,25 +329,8 @@ u64  __xmhfhic_exceptionstubs[] = { XMHF_EXCEPTION_HANDLER_ADDROF(0),
 
 
 
-
-
-
-/*entry into __xmhfhic_rtm_trampoline:
-RDI = hic_calltype
-RSI = iparams
-RDX = iparams_size
-RCX = oparams
-R8 = oparams_size
-R9 = dst_slabid
-[RSP] = src_slabid
-[RSP+8] = cpuid
-[RSP+16] = return_address
-[RSP+32] = return_rsp
-*/
-
-
-//HIC runtime exception stub
-__attribute__((naked)) void __xmhfhic_rtm_exception_stub(void){
+//HIC runtime intercept stub
+__attribute__((naked)) void __xmhfhic_rtm_intercept_stub(void){
 
 	asm volatile(
                         "pushq %%rsp \r\n"
@@ -416,7 +350,13 @@ __attribute__((naked)) void __xmhfhic_rtm_exception_stub(void){
                         "pushq %%r9 \r\n"
                         "pushq %%r8 \r\n"
 
-                        //rdi = hic_calltype = XMHF_HIC_SLABCALLEXCEPTION
+                        "pushfq \r\n"
+                        "popq %%rax \r\n"
+                        "orq $0x3000, %%rax \r\n"
+                        "pushq %%rax \r\n"
+                        "popfq \r\n"
+
+                        //rdi = hic_calltype = XMHF_HIC_SLABCALLINTERCEPT
                         "movq %0, %%rdi \r\n"
 
                         //iparams
@@ -434,15 +374,11 @@ __attribute__((naked)) void __xmhfhic_rtm_exception_stub(void){
                         //dst_slabid
                         "movq %2, %%r9 \r\n"
 
-                        "movq %%rsp, %%rbx \r\n"
+                        //return_rsp (NA -- since its stored in VMCS)
+                        "pushq $0x0 \r\n"
 
-                        //return_rsp
-                        "movq 168(%%rbx), %%rax \r\n"
-                        "pushq %%rax \r\n"
-
-                        //return_address
-                        "movq 144(%%rbx), %%rax \r\n"
-                        "pushq %%rax \r\n"
+                        //return_address (NA -- since its stored in VMCS)
+                        "pushq $0x0 \r\n"
 
                         //cpuid
                         "movq %3, %%rax \r\n"       //RAX=X86XMP_LAPIC_ID_MEMORYADDRESS
@@ -452,151 +388,43 @@ __attribute__((naked)) void __xmhfhic_rtm_exception_stub(void){
                         "pushq %%rax \r\n"
 
                         //src_slabid
-                        "movq %%cr3, %%rax \r\n"
-                        "andq $0x00000000000FF000, %%rax \r\n"
-                        "shr $12, %%rax \r\n"
+                        "movq %4, %%rax \r\n"
+                        "vmread %%rax, %%rax \r\n"     //RAX = VPID = slab_id
+                        "decq %%rax \r\n"
                         "pushq %%rax \r\n"
 
 
                         "callq __xmhfhic_rtm_trampoline \r\n"
 					:
-					:   "i" (XMHF_HIC_SLABCALLEXCEPTION),
-                        "i" (sizeof(x86vmx_exception_frame_errcode_t)),
-                        "i" (XMHF_HYP_SLAB_XCEXHUB),
-					    "i" (X86SMP_LAPIC_ID_MEMORYADDRESS)
+					:   "i" (XMHF_HIC_SLABCALLINTERCEPT),
+                        "i" (sizeof(x86regs64_t)),
+                        "i" (XMHF_HYP_SLAB_XCIHUB),
+					    "i" (X86SMP_LAPIC_ID_MEMORYADDRESS),
+                        "i" (VMCS_CONTROL_VPID)
                     :
 		);
 }
 
 
 
-/*
-//HIC runtime exception stub
-__attribute__((naked)) void __xmhfhic_rtm_exception_stub(void){
-
-	asm volatile(
-                        "pushq %%rsp \r\n"
-                        "pushq %%rbp \r\n"
-                        "pushq %%rdi \r\n"
-                        "pushq %%rsi \r\n"
-                        "pushq %%rdx \r\n"
-                        "pushq %%rcx \r\n"
-                        "pushq %%rbx \r\n"
-                        "pushq %%rax \r\n"
-                        "pushq %%r15 \r\n"
-                        "pushq %%r14 \r\n"
-                        "pushq %%r13 \r\n"
-                        "pushq %%r12 \r\n"
-                        "pushq %%r11 \r\n"
-                        "pushq %%r10 \r\n"
-                        "pushq %%r9 \r\n"
-                        "pushq %%r8 \r\n"
-
-                        "movq 128(%%rsp), %%rdi \r\n"       //vector
-                        "movq %%rsp, %%rsi \r\n"            //exdata
-
-                        "callq xmhf_xcphandler_arch_hub \r\n"
-
-                        "cmpq $0, %%rax \r\n"
-
-                        "popq %%r8 \r\n"
-                        "popq %%r9 \r\n"
-                        "popq %%r10 \r\n"
-                        "popq %%r11 \r\n"
-                        "popq %%r12 \r\n"
-                        "popq %%r13 \r\n"
-                        "popq %%r14 \r\n"
-                        "popq %%r15 \r\n"
-                        "popq %%rax \r\n"
-                        "popq %%rbx \r\n"
-                        "popq %%rcx \r\n"
-                        "popq %%rdx \r\n"
-                        "popq %%rsi \r\n"
-                        "popq %%rdi \r\n"
-                        "popq %%rbp \r\n"
-                        "popq %%rsp \r\n"
-
-                        "je 1f \r\n"
-                        "addq $0x8, %%rsp \r\n"
-
-                        "1: \r\n"
-                        "addq $0x8, %%rsp \r\n"
-
-                        "iretq \r\n"
-					:
-					:
-                    :
-		);
-}
-*/
 
 
-/*
-__xmhfhic_rtm_trampoline stub entry register mappings:
 
-RDI = call type (XMHF_HIC_SLABCALL)
-RSI = iparams
-RDX = iparams_size
-RCX = oparams
-R8 = oparams_size
-R9 = dst_slabid
-R10 = return RSP;
-R11 = return_address
 
-*/
 
-//HIC runtime trampoline stub
-__attribute__((naked)) void __xmhfhic_rtm_trampoline_stub(void){
 
-    asm volatile (
-        "cmpq %0, %%rdi \r\n"
-        "je 1f \r\n"
 
-        "pushq %%r10 \r\n"          //push return RSP
-        "pushq %%r11 \r\n"          //push return address
 
-       	"movq %1, %%rax \r\n"       //RAX=X86XMP_LAPIC_ID_MEMORYADDRESS
-		"movl (%%eax), %%eax\r\n"   //EAX(bits 0-7)=LAPIC ID
-        "shrl $24, %%eax\r\n"       //EAX=LAPIC ID
-        "movq __xmhfhic_x86vmx_cpuidtable+0x0(,%%eax,8), %%rax\r\n" //RAX = 0-based cpu index for the CPU
-        "pushq %%rax \r\n"          //push cpuid
 
-        "movq %%cr3, %%rax \r\n"
-        "andq $0x00000000000FF000, %%rax \r\n"
-        "shr $12, %%rax \r\n"
-        "pushq %%rax \r\n"          //push source slab id
 
-        "callq __xmhfhic_rtm_trampoline \r\n"
-        "hlt \r\n"
 
-        "1: \r\n"
-        "pushq %%r10 \r\n"          //push return RSP
-        "pushq %%r11 \r\n"          //push return address
 
-       	"movq %1, %%rax \r\n"       //RAX=X86XMP_LAPIC_ID_MEMORYADDRESS
-		"movl (%%eax), %%eax\r\n"   //EAX(bits 0-7)=LAPIC ID
-        "shrl $24, %%eax\r\n"       //EAX=LAPIC ID
-        "movq __xmhfhic_x86vmx_cpuidtable+0x0(,%%eax,8), %%rax\r\n" //RAX = 0-based cpu index for the CPU
-        "pushq %%rax \r\n"          //push cpuid
 
-        "movq %%cr3, %%rax \r\n"
-        "andq $0x00000000000FF000, %%rax \r\n"
-        "shr $12, %%rax \r\n"
-        "pushq %%rax \r\n"          //push source slab id
 
-        "callq __xmhfhic_rtm_uapihandler \r\n"
 
-        "addq $16, %%rsp \r\n"
-        "popq %%rdx \r\n"
-        "popq %%rcx \r\n"
-        "sysexitq \r\n"
 
-        "hlt \r\n"
-      :
-      : "i" (XMHF_HIC_UAPI), "i" (X86SMP_LAPIC_ID_MEMORYADDRESS)
-      :
-    );
-}
+
+
 
 
 
@@ -618,6 +446,13 @@ void __xmhfhic_rtm_trampoline(u64 hic_calltype, slab_input_params_t *iparams, u6
     switch(hic_calltype){
 
         case XMHF_HIC_SLABCALL:{
+            //check to see if source slab can invoke destination slab
+            if(!__xmhfhic_callcaps(src_slabid, dst_slabid)){
+                _XDPRINTF_("%s[%u]: Fatal: Slab %u does not have capabilities to invoke Slab %u. Halting!\n",
+                    __FUNCTION__, (u32)cpuid, src_slabid, dst_slabid);
+                HALT();
+            }
+
 
             switch(_xmhfhic_common_slab_info_table[dst_slabid].archdata.slabtype){
 

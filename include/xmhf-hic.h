@@ -141,6 +141,10 @@ typedef struct {
 } slab_header_t;*/
 
 
+
+#define HIC_SLAB_CALLCAP(x) (1 << x)
+
+
 typedef struct {
     __attribute__((aligned(4096))) slab_info_archdata_t archdata;
 	bool slab_inuse;
@@ -177,6 +181,7 @@ void xmhfhic_smp_entry(u64 cpuid);
 void xmhfhic_arch_relinquish_control_to_init_slab(u64 cpuid);
 
 
+bool __xmhfhic_callcaps(u64 src_slabid, u64 dst_slabid);
 
 void __xmhfhic_safepush(u64 cpuid, u64 src_slabid, u64 dst_slabid, u64 hic_calltype, u64 return_address,
                         slab_output_params_t *oparams, slab_output_params_t *newoparams, u64 oparams_size, u64 iparams_size);

@@ -55,6 +55,14 @@
 #include <xmhf-debug.h>
 
 
+bool __xmhfhic_callcaps(u64 src_slabid, u64 dst_slabid){
+    if(_xmhfhic_common_slab_info_table[src_slabid].slab_callcaps & HIC_SLAB_CALLCAP(dst_slabid))
+        return true;
+    else
+        return false;
+}
+
+
 void __xmhfhic_safepush(u64 cpuid, u64 src_slabid, u64 dst_slabid, u64 hic_calltype, u64 return_address,
                         slab_output_params_t *oparams, slab_output_params_t *newoparams, u64 oparams_size, u64 iparams_size){
     u64 safestack_index =  __xmhfhic_safestack_indices[(u32)cpuid];
