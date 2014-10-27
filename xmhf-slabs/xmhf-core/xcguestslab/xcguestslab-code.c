@@ -60,7 +60,7 @@ XMHF_SLAB_GUEST(xcguestslab)
  * author: amit vasudevan (amitvasudevan@acm.org)
  */
 
-
+/*
 __attribute__((aligned(4096))) static u64 _xcguestslab_init_pdt[(PAE_PTRS_PER_PDPT*PAE_PTRS_PER_PDT)] = {
 	0x0000000000000087,0x0000000000200087,0x0000000000400087,0x0000000000600087,
 	0x0000000000800087,0x0000000000a00087,0x0000000000c00087,0x0000000000e00087,
@@ -601,7 +601,7 @@ __attribute__(( aligned(16) )) static arch_x86_gdtdesc_t _xcguestslab_init_gdt  
 	.size=sizeof(_xcguestslab_init_gdt_start)-1,
 	.base=&_xcguestslab_init_gdt_start,
 };
-
+*/
 
 static void xcguestslab_dotest_vmcall(void){
 
