@@ -673,15 +673,24 @@ void xcinit_interface(slab_input_params_t *iparams, u64 iparams_size, slab_outpu
 
 
     {
-        guest_slab_header_t *xcguestslab_hdr;
+        u64 guest_slab_header_paddr = _xmhfhic_common_slab_info_table[XMHF_GUEST_SLAB_XCGUESTSLAB].slab_physmem_extents[1].addr_start;
+        u64 guest_slab_pml4t_paddr = guest_slab_header_paddr + offsetof(guest_slab_header_t, lvl2mempgtbl_pml4t);
+        u64 guest_slab_pdpt_paddr = guest_slab_header_paddr + offsetof(guest_slab_header_t, lvl2mempgtbl_pdpt);
+        u64 guest_slab_pdts_paddr = guest_slab_header_paddr + offsetof(guest_slab_header_t, lvl2mempgtbl_pdts);
+        u64 guest_slab_magic_paddr = guest_slab_header_paddr + offsetof(guest_slab_header_t, magic);
+        u64 guest_slab_magic;
+        xmhf_hic_uapi_physmem_desc_t pdesc;
 
-        xcguestslab_hdr = (guest_slab_header_t *)_xmhfhic_common_slab_info_table[XMHF_GUEST_SLAB_XCGUESTSLAB].slab_physmem_extents[1].addr_start;
+        pdesc.addr_to = &guest_slab_magic;
+        pdesc.addr_from = guest_slab_magic_paddr;
+        pdesc.numbytes = sizeof(guest_slab_magic);
+        XMHF_HIC_SLAB_UAPI_PHYSMEM(XMHF_HIC_UAPI_PHYSMEM_PEEK, &pdesc, NULL);
 
         _XDPRINTF_("%s[%u]: guest slab header magic=%x\n",
-            __FUNCTION__, (u32)cpuid, xcguestslab_hdr->magic);
+            __FUNCTION__, (u32)cpuid, guest_slab_magic);
 
 
-        //initialize guest slab level-2 page tables shape
+        /*//initialize guest slab level-2 page tables shape
         {
             u32 i;
 
@@ -707,15 +716,16 @@ void xcinit_interface(slab_input_params_t *iparams, u64 iparams_size, slab_outpu
 
         XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMWRITE, VMCS_GUEST_GDTR_BASE, xcguestslab_hdr->gdt);
         XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMWRITE, VMCS_GUEST_GDTR_LIMIT, (sizeof(_xcguestslab_init_gdt)-1));
+        */
 
     }
 
 
-    _XDPRINTF_("%s[%u]: Proceeding to call xcguestslab; RSP=%016llx\n",
+    /*_XDPRINTF_("%s[%u]: Proceeding to call xcguestslab; RSP=%016llx\n",
         __FUNCTION__, (u32)cpuid, read_rsp());
 
     XMHF_SLAB_CALL(xcguestslab, XMHF_GUEST_SLAB_XCGUESTSLAB, NULL, 0, NULL, 0);
-
+*/
 
 
 
