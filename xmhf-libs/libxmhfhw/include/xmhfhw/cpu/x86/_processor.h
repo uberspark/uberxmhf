@@ -51,6 +51,7 @@
 
 #define CPU_VENDOR_INTEL 	0xAB
 #define CPU_VENDOR_AMD 		0xCD
+#define CPU_VENDOR_UNKNOWN	0xDE
 
 #define AMD_STRING_DWORD1 0x68747541
 #define AMD_STRING_DWORD2 0x69746E65
@@ -566,8 +567,136 @@ static inline void xsetbv(u32 xcr_reg, u64 value){
 
 #endif //__XMHF_VERIFICATION__
 
-void xmhfhw_cpu_x86_save_mtrrs(mtrr_state_t *saved_state);
-void xmhfhw_cpu_x86_restore_mtrrs(mtrr_state_t *saved_state);
+//void xmhfhw_cpu_x86_save_mtrrs(mtrr_state_t *saved_state);
+//void xmhfhw_cpu_x86_restore_mtrrs(mtrr_state_t *saved_state);
+
+
+//*
+//returns true if CPU has support for XSAVE/XRSTOR
+static inline bool xmhf_baseplatform_arch_x86_cpuhasxsavefeature(void){
+	u32 eax, ebx, ecx, edx;
+
+	//bit 26 of ECX is 1 in CPUID function 0x00000001 if
+	//XSAVE/XRSTOR feature is available
+
+	cpuid(0x00000001, &eax, &ebx, &ecx, &edx);
+
+	if((ecx & (1UL << 26)))
+		return true;
+	else
+		return false;
+
+}
+
+static inline u32 xmhf_baseplatform_arch_x86_getcpulapicid(void){
+  u32 eax, edx, *lapic_reg;
+  u32 lapic_id;
+
+  //read LAPIC id of this core
+  rdmsr(MSR_APIC_BASE, &eax, &edx);
+  //if (edx != 0 ){ //APIC is not below 4G, unsupported
+  //	_XDPRINTF_("%s: APIC is not below 4G, unsupported. Halting!", __FUNCTION__);
+  //	HALT();
+  //}
+  eax &= (u32)0xFFFFF000UL;
+  lapic_reg = (u32 *)((u32)eax+ (u32)LAPIC_ID);
+  lapic_id = xmhfhw_sysmemaccess_readu32((u32)lapic_reg);
+  lapic_id = lapic_id >> 24;
+
+  return lapic_id;
+}
+
+static inline u64 xmhf_baseplatform_arch_x86_getgdtbase(void){
+		struct {
+			u16 limit;
+			u64 base;
+		} __attribute__ ((packed)) gdtr;
+
+
+		asm volatile(
+			"sgdt %0 \r\n"
+			: //no output
+			: "m" (gdtr)
+			: //no clobber
+		);
+
+		return gdtr.base;
+}
+
+static inline u64 xmhf_baseplatform_arch_x86_getidtbase(void){
+		struct {
+			u16 limit;
+			u64 base;
+		} __attribute__ ((packed)) idtr;
+
+
+		asm volatile(
+			"sidt %0 \r\n"
+			: //no output
+			: "m" (idtr)
+			: //no clobber
+		);
+
+		return idtr.base;
+}
+
+static inline u64  xmhf_baseplatform_arch_x86_gettssbase(void){
+	  u64 gdtbase = xmhf_baseplatform_arch_x86_getgdtbase();
+	  u32 tssdesc_low, tssdesc_high;
+
+	  asm volatile(
+            "movl %2, %%edi\r\n"
+            "xorl %%eax, %%eax\r\n"
+            "str %%ax \r\n"
+            "addl %%eax, %%edi\r\n"		//%edi is pointer to TSS descriptor in GDT
+            "movl (%%edi), %0 \r\n"		//move low 32-bits of TSS descriptor into tssdesc_low
+            "addl $0x4, %%edi\r\n"		//%edi points to top 32-bits of 64-bit TSS desc.
+            "movl (%%edi), %1 \r\n"		//move high 32-bits of TSS descriptor into tssdesc_high
+	     : "=r" (tssdesc_low), "=r" (tssdesc_high)
+	     : "m"(gdtbase)
+	     : "edi", "eax"
+	  );
+
+       return (  (u64)(  ((u32)tssdesc_high & 0xFF000000UL) | (((u32)tssdesc_high & 0x000000FFUL) << 16)  | ((u32)tssdesc_low >> 16)  ) );
+}
+
+
+//*
+//get CPU vendor
+static inline u32 xmhf_baseplatform_arch_x86_getcpuvendor(void){
+	u32 reserved, vendor_dword1, vendor_dword2, vendor_dword3;
+	u32 cpu_vendor;
+
+    cpuid(0, &reserved, &vendor_dword1, &vendor_dword3, &vendor_dword2);
+
+	if(vendor_dword1 == AMD_STRING_DWORD1 && vendor_dword2 == AMD_STRING_DWORD2
+			&& vendor_dword3 == AMD_STRING_DWORD3)
+		cpu_vendor = CPU_VENDOR_AMD;
+	else if(vendor_dword1 == INTEL_STRING_DWORD1 && vendor_dword2 == INTEL_STRING_DWORD2
+			&& vendor_dword3 == INTEL_STRING_DWORD3)
+		cpu_vendor = CPU_VENDOR_INTEL;
+	else{
+		cpu_vendor = CPU_VENDOR_UNKNOWN;
+		//_XDPRINTF_("%s: unrecognized x86 CPU (0x%08x:0x%08x:0x%08x). HALT!\n",
+		//	__FUNCTION__, vendor_dword1, vendor_dword2, vendor_dword3);
+		//HALT();
+	}
+
+	return cpu_vendor;
+}
+
+//*
+static inline u32 xmhf_baseplatform_arch_getcpuvendor(void){
+	return xmhf_baseplatform_arch_x86_getcpuvendor();
+}
+
+
+
+
+
+
+
+
 #endif //__ASSEMBLY__
 
 #endif /* __PROCESSOR_H */

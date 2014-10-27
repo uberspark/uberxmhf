@@ -176,6 +176,7 @@ bool set_mtrrs_for_acmod(acm_hdr_t *hdr)
     return true;
 }
 
+#if 0
 void print_mtrrs(const mtrr_state_t *saved_state)
 {
     int i;
@@ -226,6 +227,7 @@ void xmhfhw_cpu_x86_save_mtrrs(mtrr_state_t *saved_state)
 
     g_saved_mtrrs = saved_state;
 }
+#endif
 
 #if 0 /* functions unused as of 2011-07-19 */
 /* base should be 4k-bytes aligned, no invalid overlap combination */
@@ -364,6 +366,7 @@ static int get_region_type(const mtrr_state_t *saved_state,
 /*     return true; */
 /* } */
 
+#if 0
 bool validate_mtrrs(const mtrr_state_t *saved_state)
 {
     mtrr_cap_t mtrr_cap;
@@ -614,6 +617,7 @@ void set_all_mtrrs(bool enable)
     mtrr_def_type.e = enable ? 1 : 0;
     wrmsr64(MSR_MTRRdefType, mtrr_def_type.raw);
 }
+#endif // 0
 
 /*
  * Local variables:

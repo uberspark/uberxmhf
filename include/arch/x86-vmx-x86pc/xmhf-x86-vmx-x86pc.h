@@ -54,18 +54,19 @@
 #include "_config.h"								//include arch. specific configuration parameters
 
 #include <xmhfhw/platform/x86pc/_multiboot.h>		//multiboot
-#include <xmhfhw/cpu/x86/_processor.h>  			//CPU
+#include <xmhfhw/platform/x86pc/_memaccess.h>		//platform memory access
 #include <xmhfhw/cpu/x86/_msr.h>        			//model specific registers
+#include <xmhfhw/cpu/x86/_apic.h>       			//APIC
+#include <xmhfhw/cpu/x86/_processor.h>  			//CPU
 #include <xmhfhw/cpu/x86/_paging.h>     			//MMU
 #include <xmhfhw/cpu/x86/_io.h>         			//legacy I/O
-#include <xmhfhw/cpu/x86/_apic.h>       			//APIC
 #include <xmhfhw/cpu/x86/txt/_txt.h>				//Trusted eXecution Technology (SENTER support)
 #include <xmhfhw/container/vmx/_vmx.h>				//VMX extensions
 #include <xmhfhw/platform/x86pc/_pci.h>        		//PCI bus glue
+#include <xmhfhw/platform/x86pc/_pit.h>        		//PIT
 #include <xmhfhw/platform/x86pc/_acpi.h>			//ACPI glue
 #include <xmhfhw/platform/x86pc/_com.h>        		//UART/serial
 #include <xmhfhw/platform/x86pc/vtd/vtd.h>			//VMX DMA protection
-#include <xmhfhw/platform/x86pc/_memaccess.h>		//platform memory access
 #include <xmhfhw/platform/x86pc/_tpm.h>        		//TPM
 #include <xmhfhw/platform/x86pc/_biosdata.h>		//BIOS data areas
 
@@ -291,7 +292,7 @@ bool xmhf_baseplatform_arch_x86_isbsp(void);
 void xmhf_baseplatform_arch_x86_wakeupAPs(void);
 
 //generic x86 platform reboot
-void xmhf_baseplatform_arch_x86_reboot(void);
+//void xmhf_baseplatform_arch_x86_reboot(void);
 
 //get the physical address of the root system description pointer (rsdp)
 u32 xmhf_baseplatform_arch_x86_acpi_getRSDP(ACPI_RSDP *rsdp);
@@ -474,6 +475,41 @@ void xmhf_memprot_arch_x86vmx_set_EPTP(u64 eptp);
 
 void xmhf_parteventhub_arch_x86vmx_entry(void);
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//generic x86 platform reboot
+static inline void xmhf_baseplatform_arch_x86_reboot(void){
+	unsigned char flush = 0x02;
+
+#ifndef __XMHF_VERIFICATION__
+
+	while ((flush & 0x02) != 0)
+		flush = inb(0x64);
+	outb(0xFE, 0x64);
+
+	//never get here
+	//_XDPRINTF_("\n%s: should never get here. halt!", __FUNCTION__);
+	HALT();
+
+#else   //__XMHF_VERIFICATION__
+	//TODO: plug in a 8042 controller/reset h/w model
+
+#endif	//__XMHF_VERIFICATION__
+
+}
 
 
 
