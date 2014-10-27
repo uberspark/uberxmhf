@@ -863,23 +863,28 @@ void __xmhfhic_rtm_trampoline(u64 hic_calltype, slab_input_params_t *iparams, u6
 
 
         case XMHF_HIC_SLABCALLINTERCEPT:{
+            //force destination slab to be the intercept slab
+            dst_slabid = XMHF_HYP_SLAB_XCIHUB;
+
             _XDPRINTF_("%s[%u]: Trampoline Intercept call\n",
                     __FUNCTION__, (u32)cpuid, read_rsp());
-
-            _XDPRINTF_("Intercept exit reason: %08x\n",
-                 xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_VMEXIT_REASON));
-
-            _XDPRINTF_("SYSENTER CS=%016llx\n", rdmsr64(IA32_SYSENTER_CS_MSR));
-            _XDPRINTF_("SYSENTER RIP=%016llx\n", rdmsr64(IA32_SYSENTER_EIP_MSR));
-            _XDPRINTF_("SYSENTER RSP=%016llx\n", rdmsr64(IA32_SYSENTER_ESP_MSR));
-
 
             //copy iparams (CPU GPR state) into arch. data for cpuid
             memcpy(&__xmhfhic_x86vmx_archdata[(u32)cpuid].vmx_gprs,
                    iparams, iparams_size);
 
+
+            //push cpuid, src_slabid, dst_slabid, hic_calltype tuple to
+            //safe stack
+            _XDPRINTF_("%s[%u]: safepush: {cpuid: %016llx, srcsid: %u, dstsid: %u, ctype: %x\n",
+                    __FUNCTION__, (u32)cpuid,
+                       cpuid, src_slabid, dst_slabid, hic_calltype);
+
+            __xmhfhic_safepush(cpuid, src_slabid, dst_slabid, hic_calltype, 0, 0, 0, 0, 0);
+
+
             //switch to destination slab page tables
-            //XXX: eliminate this by preloading CR3 with hictestslab2 CR3
+            //XXX: eliminate this by preloading VMCS CR3 with xcihub CR3
             asm volatile(
                  "movq %0, %%rax \r\n"
                  "movq %%rax, %%cr3 \r\n"
@@ -890,10 +895,7 @@ void __xmhfhic_rtm_trampoline(u64 hic_calltype, slab_input_params_t *iparams, u6
 
             //intercept slab does not get any input parameters and does not
             //return any output parameters
-
-            _XDPRINTF_("Jumping to dst_slabid...\n");
-
-            //jump to destination slab entrystub
+            //jump to intercept slab entrystub
             /*
 
             RDI = newiparams (NULL)
@@ -916,9 +918,6 @@ void __xmhfhic_rtm_trampoline(u64 hic_calltype, slab_input_params_t *iparams, u6
                  "movq %5, %%r9 \r\n"
                  "movq %6, %%r10 \r\n"
                  "movq %7, %%r11 \r\n"
-                 //"movq %8, %%rax \r\n"
-                 //"movw %%ax, %%ds \r\n"
-                 //"movw %%ax, %%es \r\n"
                  "sysexitq \r\n"
                  //"int $0x03 \r\n"
                  //"1: jmp 1b \r\n"
@@ -931,17 +930,40 @@ void __xmhfhic_rtm_trampoline(u64 hic_calltype, slab_input_params_t *iparams, u6
                   "i" (0),
                   "m" (src_slabid),
                   "m" (cpuid)
-                 // "i" (__DS_CPL3_SE)
                 : "rdi", "rsi", "rdx", "rcx", "r8", "r9", "r10", "r11"
             );
 
         }
         break;
 
-        case XMHF_HIC_SLABRETINTERCEPT:{
-            _XDPRINTF_("%s[%u]: going to resume guest slab %u\n",
-                       __FUNCTION__, (u32)cpuid, dst_slabid);
 
+        case XMHF_HIC_SLABRETINTERCEPT:{
+            __xmhfhic_safestack_element_t elem;
+
+            //check to ensure that we get SLABRETINTERCEPT only from the intercept slab
+            if ( !(src_slabid == XMHF_HYP_SLAB_XCIHUB) ){
+                _XDPRINTF_("%s[%u]: Fatal: SLABRETINTERCEPT from a non-intercept slab. Halting!\n",
+                    __FUNCTION__, (u32)cpuid);
+                HALT();
+            }
+
+
+            //pop tuple from safe stack
+            __xmhfhic_safepop(cpuid, &elem.src_slabid, &elem.dst_slabid, &elem.hic_calltype, &elem.return_address,
+                                &elem.oparams, &elem.newoparams, &elem.oparams_size, &elem.iparams_size);
+
+            _XDPRINTF_("%s[%u]: safepop: {cpuid: %016llx, srcsid: %u, dstsid: %u, ctype: %x\n",
+                    __FUNCTION__, (u32)cpuid,
+                       cpuid, elem.src_slabid, elem.dst_slabid, elem.hic_calltype);
+
+            //check to ensure this SLABRETINTERCEPT is paired with a prior SLABCALLINTERCEPT
+            if ( !((elem.src_slabid == dst_slabid) && (elem.dst_slabid == src_slabid) && (elem.hic_calltype ==XMHF_HIC_SLABCALLINTERCEPT)) ){
+                _XDPRINTF_("%s[%u]: Fatal: SLABRETINTERCEPT does not match prior SLABCALLINTERCEPT. Halting!\n",
+                    __FUNCTION__, (u32)cpuid);
+                HALT();
+            }
+
+            //resume caller (guest) slab where the intercept was triggered
             asm volatile (
                 "movq %0, %%rsp \r\n"
                 "popq %%r8 \r\n"
