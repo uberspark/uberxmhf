@@ -1051,6 +1051,37 @@ void __xmhfhic_rtm_trampoline(u64 hic_calltype, slab_input_params_t *iparams, u6
 //////////////////////////////////////////////////////////////////////////////
 // HIC UAPI handler
 
+
+static void __xmhfhic_rtm_uapihandler_physmem(u64 uapicall_subnum, u64 iparams, u64 oparams, u64 cpuid){
+    _XDPRINTF_("%s[%u]: Got control...\n",
+                __FUNCTION__, (u32)cpuid);
+
+    switch(uapicall_subnum){
+        case XMHF_HIC_UAPI_PHYSMEM_PEEK:{
+            xmhf_hic_uapi_physmem_desc_t *pdesc = (xmhf_hic_uapi_physmem_desc_t *)iparams;
+            memcpy(pdesc->addr_to, pdesc->addr_from, pdesc->numbytes);
+        }
+        break;
+
+
+        case XMHF_HIC_UAPI_PHYSMEM_POKE:{
+            xmhf_hic_uapi_physmem_desc_t *pdesc = (xmhf_hic_uapi_physmem_desc_t *)iparams;
+            memcpy(pdesc->addr_to, pdesc->addr_from, pdesc->numbytes);
+        }
+        break;
+
+
+        default:
+            _XDPRINTF_("%s[%u]: Unknown cpustate subcall %x. Halting!\n",
+                    __FUNCTION__, (u32)cpuid, uapicall_subnum);
+            HALT();
+
+    }
+
+}
+
+
+
 static void __xmhfhic_rtm_uapihandler_cpustate(u64 uapicall_subnum, u64 iparams, u64 oparams, u64 cpuid){
     _XDPRINTF_("%s[%u]: Got control...\n",
                 __FUNCTION__, (u32)cpuid);
@@ -1111,6 +1142,10 @@ void __xmhfhic_rtm_uapihandler(u64 uapicall, u64 uapicall_num, u64 uapicall_subn
     switch(uapicall_num){
         case XMHF_HIC_UAPI_CPUSTATE:
             __xmhfhic_rtm_uapihandler_cpustate(uapicall_subnum, iparams, oparams, cpuid);
+            break;
+
+        case XMHF_HIC_UAPI_PHYSMEM:
+            __xmhfhic_rtm_uapihandler_physmem(uapicall_subnum, iparams, oparams, cpuid);
             break;
 
         default:
