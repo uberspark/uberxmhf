@@ -45,13 +45,12 @@
  */
 
 #include <xmhf.h>
-//#include <xmhf-core.h>
 #include <xmhf-debug.h>
 
-#include <hictestslab3.h>
+#include <xcexhub.h>
 
 //////
-XMHF_SLAB(hictestslab3)
+XMHF_SLAB(xcexhub)
 
 
 
@@ -61,7 +60,7 @@ XMHF_SLAB(hictestslab3)
  * author: amit vasudevan (amitvasudevan@acm.org)
  */
 
-void hictestslab3_interface(slab_input_params_t *iparams, u64 iparams_size, slab_output_params_t *oparams, u64 oparams_size, u64 src_slabid, u64 cpuid){
+void xcexhub_interface(slab_input_params_t *iparams, u64 iparams_size, slab_output_params_t *oparams, u64 oparams_size, u64 src_slabid, u64 cpuid){
     x86vmx_exception_frame_errcode_t *exframe = (x86vmx_exception_frame_errcode_t *)iparams;
 
 	_XDPRINTF_("%s[%u]: Got control: RSP=%016llx\n",

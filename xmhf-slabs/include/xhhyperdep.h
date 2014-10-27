@@ -44,18 +44,22 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-// XMHF slab import library decls./defns.
-// author: amit vasudevan (amitvasudevan@acm.org)
 
-#ifndef __HICTESTSLAB1_H__
-#define __HICTESTSLAB1_H__
+/*
+ *
+ *  hyperdep hypapp slab decls.
+ *
+ *  author: amit vasudevan (amitvasudevan@acm.org)
+ */
+
+#ifndef __XHHYPERDEP_H__
+#define __XHHYPERDEP_H__
 
 
 #ifndef __ASSEMBLY__
 
-void hictestslab1_interface(slab_input_params_t *iparams, u64 iparams_size, slab_output_params_t *oparams, u64 oparams_size, u64 src_slabid, u64 cpuid);
+void xhhyperdep_interface(slab_input_params_t *iparams, u64 iparams_size, slab_output_params_t *oparams, u64 oparams_size, u64 src_slabid, u64 cpuid);
 
-#endif //__ASSEMBLY__
+#endif	//__ASSEMBLY__
 
-
-#endif //__TESTSLAB1_H__
+#endif //__XHHYPERDEP_H__

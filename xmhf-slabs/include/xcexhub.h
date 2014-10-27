@@ -44,63 +44,18 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-#include <xmhf.h>
-//#include <xmhf-core.h>
-#include <xmhf-debug.h>
+// XMHF slab import library decls./defns.
+// author: amit vasudevan (amitvasudevan@acm.org)
 
-#include <hictestslab2.h>
-
-//////
-XMHF_SLAB_INTERCEPT(hictestslab2)
-
-/*
- * slab code
- *
- * author: amit vasudevan (amitvasudevan@acm.org)
- */
-
-void hictestslab2_interface(slab_input_params_t *iparams, u64 iparams_size, slab_output_params_t *oparams, u64 oparams_size, u64 src_slabid, u64 cpuid){
-    u64 info_vmexit_reason;
-
-	_XDPRINTF_("%s[%u]: Got control: RSP=%016llx\n",
-                __FUNCTION__, (u32)cpuid, read_rsp());
-
-    XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMREAD, VMCS_INFO_VMEXIT_REASON, &info_vmexit_reason);
-
-    switch(info_vmexit_reason){
-
-        case VMX_VMEXIT_VMCALL:{
-            u64 guest_rip;
-            u64 info_vmexit_instruction_length;
-
-            _XDPRINTF_("%s[%u]: VMX_VMEXIT_VMCALL\n",
-                __FUNCTION__, (u32)cpuid);
-
-            XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMREAD, VMCS_INFO_VMEXIT_INSTRUCTION_LENGTH, &info_vmexit_instruction_length);
-            XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMREAD, VMCS_GUEST_RIP, &guest_rip);
-            guest_rip+=info_vmexit_instruction_length;
-            XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMWRITE, VMCS_GUEST_RIP, guest_rip);
-
-            _XDPRINTF_("%s[%u]: adjusted guest_rip=%016llx\n",
-                __FUNCTION__, (u32)cpuid, guest_rip);
-
-        }
-        break;
+#ifndef __XCEXHUB_H__
+#define __XCEXHUB_H__
 
 
-        default:
-            _XDPRINTF_("%s[%u]: unhandled intercept %x. Halting!\n",
-                    __FUNCTION__, (u32)cpuid, info_vmexit_reason);
+#ifndef __ASSEMBLY__
 
-            HALT();
-    }
+void xcexhub_interface(slab_input_params_t *iparams, u64 iparams_size, slab_output_params_t *oparams, u64 oparams_size, u64 src_slabid, u64 cpuid);
 
-
-	//_XDPRINTF_("%s[%u]: Halting!\n",
-    //            __FUNCTION__, (u32)cpuid);
-    //HALT();
-
-    return;
-}
+#endif //__ASSEMBLY__
 
 
+#endif //__XCEXHUB_H__

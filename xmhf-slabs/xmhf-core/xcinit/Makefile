@@ -18,7 +18,7 @@ vpath %.lscript $(srcdir)
 ########################################################################
 # options that each slab will customize
 
-export XMHF_SLAB_NAME := hictestslab1
+export XMHF_SLAB_NAME := xcinit
 export XMHF_SLAB_PRIVILEGED := y
 export XMHF_SLAB_SOURCES := $(wildcard $(srcdir)/*.c)
 

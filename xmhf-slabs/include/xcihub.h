@@ -47,15 +47,15 @@
 // XMHF slab import library decls./defns.
 // author: amit vasudevan (amitvasudevan@acm.org)
 
-#ifndef __GUESTSLAB1_H__
-#define __GUESTSLAB1_H__
+#ifndef __XCIHUB_H__
+#define __XCIHUB_H__
 
 
 #ifndef __ASSEMBLY__
 
-//void guestslab1_interface(slab_input_params_t *iparams, u64 iparams_size, slab_output_params_t *oparams, u64 oparams_size, u64 src_slabid, u64 cpuid);
+void xcihub_interface(slab_input_params_t *iparams, u64 iparams_size, slab_output_params_t *oparams, u64 oparams_size, u64 src_slabid, u64 cpuid);
 
 #endif //__ASSEMBLY__
 
 
-#endif //__GUESTSLAB1_H__
+#endif //__XCIHUB_H__
