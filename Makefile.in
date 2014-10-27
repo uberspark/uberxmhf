@@ -24,8 +24,8 @@ export XMHFCORE_SRC := $(realpath xmhf-slabs/xmhf-core)
 XMHFCORE_INC = -I$(realpath xmhf-slabs/xmhf-core/) -I$(realpath xmhf-slabs/xmhf-core/include)
 
 # libxmhfhw source location
-export LIBXMHFHW_SRC := $(realpath xmhf-libs/libxmhfhw)
-LIBXMHFHW_INC = $(realpath xmhf-libs/libxmhfhw/include)
+#export LIBXMHFHW_SRC := $(realpath xmhf-libs/libxmhfhw)
+#LIBXMHFHW_INC = $(realpath xmhf-libs/libxmhfhw/include)
 
 # XMHF bootloader source location
 export XMHF_BOOTLOADER_SRC := $(realpath xmhf-bootloader)
@@ -37,7 +37,7 @@ XMHFLIBS_INC = $(foreach dir,$(XMHFLIBS_SUBLIBS),-I$(dir)/include)
 # populate library and include paths
 export ADDL_INCLUDES := -I$(realpath xmhf-slabs/include)
 export XMHFLIBS_DIR := $(XMHF_OBJDIR)/_objs_xmhf-libs
-ADDL_INCLUDES += -I$(XMHF_INC) $(XMHFCORE_INC) -I$(LIBXMHFHW_INC) $(XMHFLIBS_INC)
+ADDL_INCLUDES += -I$(XMHF_INC) $(XMHFCORE_INC) $(XMHFLIBS_INC)
 
 ##################################################################################
 ### BEGIN Variables controlled using autoconf
@@ -220,7 +220,7 @@ xmhfbin: $(XMHFLIBS_SRC) $(XMHFCORE_SRC)
 	@echo Linking XMHF binary...
 	cd $(XMHF_OBJDIR) && cp -f xmhf.lscript xmhf.lscript.c
 	cd $(XMHF_OBJDIR) && $(CC) $(CFLAGS) -D__ASSEMBLY__ -P -E xmhf.lscript.c -o xmhf.lds
-	cd $(XMHF_OBJDIR) && $(LD) --oformat elf64-x86-64 -T xmhf.lds -o xmhf.exe -L$(CCLIB)/lib/linux -L$(XMHFLIBS_DIR) -lxmhfc -lxmhfcrypto -lxmhfutil -lxmhfhw -lxmhfutil -lxmhfc -lclang_rt.builtins-x86_64
+	cd $(XMHF_OBJDIR) && $(LD) --oformat elf64-x86-64 -T xmhf.lds -o xmhf.exe -L$(CCLIB)/lib/linux -L$(XMHFLIBS_DIR) -lxmhfc -lxmhfcrypto -lxmhfutil -lxmhfutil -lxmhfc -lclang_rt.builtins-x86_64
 	cd $(XMHF_OBJDIR) && $(OBJCOPY) --output-format=binary xmhf.exe xmhf.bin
 	@echo XMHF link SUCCESS
 	@echo Building XMHF boot loader...
