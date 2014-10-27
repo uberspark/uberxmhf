@@ -96,7 +96,7 @@
 
 /* saved MTRR state or NULL if orig. MTRRs have not been changed */
 //static __data mtrr_state_t *g_saved_mtrrs = NULL;
-static mtrr_state_t *g_saved_mtrrs = NULL;
+//static mtrr_state_t *g_saved_mtrrs = NULL;
 
 /*
  * this must be done for each processor so that all have the same
@@ -209,7 +209,7 @@ void xmhfhw_cpu_x86_save_mtrrs(mtrr_state_t *saved_state)
 
     print_mtrrs(saved_state);
 
-    g_saved_mtrrs = saved_state;
+    //g_saved_mtrrs = saved_state;
 }
 
 #if 0 /* functions unused as of 2011-07-19 */
@@ -485,8 +485,8 @@ void xmhfhw_cpu_x86_restore_mtrrs(mtrr_state_t *saved_state)
     //print_mtrrs(saved_state);
 
     /* called by apply_policy() so use saved ptr */
-    if ( saved_state == NULL )
-        saved_state = g_saved_mtrrs;
+    //if ( saved_state == NULL )
+    //    saved_state = g_saved_mtrrs;
     /* haven't saved them yet, so return */
     if ( saved_state == NULL )
         return;

@@ -304,11 +304,123 @@ typedef struct {
 } __attribute__((packed)) uart_config_t;
 
 
-void xmhfhw_platform_serial_init(char *params);
-void xmhfhw_platform_serial_puts(char *buffer);
+//void xmhfhw_platform_serial_init(char *params);
+//void xmhfhw_platform_serial_puts(char *buffer);
 
 
-extern uart_config_t g_uart_config;
+//extern uart_config_t g_uart_config;
+
+
+
+// frequency of UART clock source
+#define UART_CLOCKFREQ   1843200
+
+#ifdef __DEBUG_SERIAL__
+
+// default config parameters for serial port
+static uart_config_t g_uart_config = {115200,
+							   8,
+							   PARITY_NONE,
+							   1,
+							   0,
+							   UART_CLOCKFREQ,
+							   DEBUG_PORT};
+
+#else
+
+static uart_config_t g_uart_config = {115200,
+							   8,
+							   PARITY_NONE,
+							   1,
+							   0,
+							   UART_CLOCKFREQ,
+							   0x3f8};
+
+#endif
+
+//low-level UART character output
+static inline void dbg_x86_uart_putc_bare(char ch){
+  //wait for xmit hold register to be empty
+  while ( ! (inb(g_uart_config.port+0x5) & 0x20) );
+
+  //write the character
+  outb((u8)ch, g_uart_config.port);
+
+  return;
+}
+
+
+// write character to serial port, translating '\n' to '\r\n'
+static inline void dbg_x86_uart_putc(char ch){
+  if (ch == '\n') {
+    dbg_x86_uart_putc_bare('\r');
+  }
+  dbg_x86_uart_putc_bare(ch);
+}
+
+
+// write string to serial port
+//void dbg_x86_uart_putstr(const char *s){
+//	while (*s)
+//		dbg_x86_uart_putc(*s++);
+//}
+
+static inline void xmhfhw_platform_serial_puts(char *buffer){
+	while (*buffer)
+		dbg_x86_uart_putc(*buffer++);
+	/*while (*buffer){
+        if(*buffer == '\n')
+            dbg_x86_uart_putc_bare((u32)'\r');
+
+        dbg_x86_uart_putc_bare((u32)*buffer);
+
+        buffer++;
+	}*/
+}
+
+
+//initialize UART comms.
+//void dbg_x86_uart_init(char *params){
+static inline void xmhfhw_platform_serial_init(char *params){
+
+  //override default UART parameters with the one passed via the
+  //command line
+  memcpy((void *)&g_uart_config, params, sizeof(uart_config_t));
+
+  // FIXME: work-around for issue #143
+  g_uart_config.fifo = 0;
+
+  // disable UART interrupts
+  outb((u8)0, g_uart_config.port+0x1); //clear interrupt enable register
+
+  //compute divisor latch data from baud-rate and set baud-rate
+  {
+	u16 divisor_latch_data = g_uart_config.clock_hz / (g_uart_config.baud * 16);
+
+	outb(0x80, g_uart_config.port+0x3); //enable divisor latch access by
+									    //writing to line control register
+
+	outb((u8)divisor_latch_data, g_uart_config.port); //write low 8-bits of divisor latch data
+	outb((u8)(divisor_latch_data >> 8), g_uart_config.port+0x1); //write high 8-bits of divisor latch data
+
+   }
+
+  //set data bits, stop bits and parity info. by writing to
+  //line control register
+  outb((u8)((g_uart_config.data_bits - 5) |
+               ((g_uart_config.stop_bits - 1) << 2) |
+                      g_uart_config.parity), g_uart_config.port+0x3);
+
+  //signal ready by setting DTR and RTS high in
+  //modem control register
+  outb((u8)0x3, g_uart_config.port+0x4);
+
+  return;
+}
+
+
+
+
 
 #endif // __ASSEMBLY__
 
