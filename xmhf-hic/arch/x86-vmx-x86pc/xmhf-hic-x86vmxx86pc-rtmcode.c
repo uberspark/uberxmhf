@@ -688,6 +688,9 @@ void __xmhfhic_rtm_trampoline(u64 hic_calltype, slab_input_params_t *iparams, u6
                 slab_input_params_t *newiparams;
                 slab_output_params_t *newoparams;
 
+                //force destination slab to be the exception slab
+                dst_slabid = XMHF_HYP_SLAB_XCEXHUB;
+
                 //save return RSP
                 _xmhfhic_common_slab_info_table[src_slabid].archdata.slabtos[(u32)cpuid] = return_rsp;
 
@@ -711,14 +714,6 @@ void __xmhfhic_rtm_trampoline(u64 hic_calltype, slab_input_params_t *iparams, u6
                            &__paramsbuffer, (iparams_size > 1024 ? 1024 : iparams_size) );
                 }
 
-
-                //make space on destination slab stack for oparams and obtain newoparams
-                //{
-                //    _xmhfhic_common_slab_info_table[dst_slabid].archdata.slabtos[(u32)cpuid] -= oparams_size;
-                //    newoparams = (slab_output_params_t *) _xmhfhic_common_slab_info_table[dst_slabid].archdata.slabtos[(u32)cpuid];
-                //}
-
-
                 //push cpuid, src_slabid, dst_slabid, hic_calltype, return_address, iparams, new iparams and iparams_size tuple to
                 //safe stack
                 _XDPRINTF_("%s[%u]: safepush: {cpuid: %016llx, srcsid: %u, dstsid: %u, ctype: %x, ra=%016llx, \
@@ -730,7 +725,7 @@ void __xmhfhic_rtm_trampoline(u64 hic_calltype, slab_input_params_t *iparams, u6
                 __xmhfhic_safepush(cpuid, src_slabid, dst_slabid, hic_calltype, return_address, iparams, newiparams, 0, iparams_size);
 
 
-                //jump to destination slab entrystub
+                //jump to exception slab entrystub
                 /*
 
                 RDI = newiparams
@@ -777,6 +772,13 @@ void __xmhfhic_rtm_trampoline(u64 hic_calltype, slab_input_params_t *iparams, u6
         case XMHF_HIC_SLABRETEXCEPTION:{
             __xmhfhic_safestack_element_t elem;
 
+            //check to ensure that we get SLABRETEXCEPTION only from the exception slab
+            if ( !(src_slabid == XMHF_HYP_SLAB_XCEXHUB) ){
+                _XDPRINTF_("%s[%u]: Fatal: SLABRETEXCEPTION from a non-exception slab. Halting!\n",
+                    __FUNCTION__, (u32)cpuid);
+                HALT();
+            }
+
             //pop tuple from safe stack
             __xmhfhic_safepop(cpuid, &elem.src_slabid, &elem.dst_slabid, &elem.hic_calltype, &elem.return_address,
                                 &elem.oparams, &elem.newoparams, &elem.oparams_size, &elem.iparams_size);
@@ -787,9 +789,12 @@ void __xmhfhic_rtm_trampoline(u64 hic_calltype, slab_input_params_t *iparams, u6
                        cpuid, elem.src_slabid, elem.dst_slabid, elem.hic_calltype, elem.return_address,
                        elem.oparams, elem.newoparams, elem.oparams_size);
 
-
-            //copy newoparams to internal buffer __paramsbuffer
-            //memcpy(&__paramsbuffer, elem.newoparams, (elem.oparams_size > 1024 ? 1024 : elem.oparams_size) );
+            //check to ensure this SLABRETEXCEPTION is paired with a prior SLABCALLEXCEPTION
+            if ( !((elem.src_slabid == dst_slabid) && (elem.dst_slabid == src_slabid) && (elem.hic_calltype ==XMHF_HIC_SLABCALLEXCEPTION)) ){
+                _XDPRINTF_("%s[%u]: Fatal: SLABRETEXCEPTION does not match prior SLABCALLEXCEPTION. Halting!\n",
+                    __FUNCTION__, (u32)cpuid);
+                HALT();
+            }
 
             //adjust slab stack by popping off iparams_size
             _xmhfhic_common_slab_info_table[src_slabid].archdata.slabtos[(u32)cpuid] += (elem.iparams_size);
@@ -803,8 +808,7 @@ void __xmhfhic_rtm_trampoline(u64 hic_calltype, slab_input_params_t *iparams, u6
                 : "rax"
             );
 
-
-            //return back to destination slab
+            //return back to slab where exception originally occurred
             {
                     x86vmx_exception_frame_errcode_t *exframe = (x86vmx_exception_frame_errcode_t *)elem.oparams;
                     exframe->orig_rip = elem.return_address;
