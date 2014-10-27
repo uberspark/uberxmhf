@@ -121,13 +121,36 @@ void xcinit_interface(slab_input_params_t *iparams, u64 iparams_size, slab_outpu
 
         _XDPRINTF_("%s[%u]: BSP, APs halted. Proceeding...\n",
                 __FUNCTION__, (u32)cpuid);
+    }
 
-        _XDPRINTF_("%s[%u]: iparams=%016llx, iparams_size=%u\n",
-                    __FUNCTION__, (u32)cpuid, iparams, iparams_size);
 
-        _XDPRINTF_("%s[%u]:  oparams=%016llx, oparams_size=%u\n",
-                    __FUNCTION__, (u32)cpuid, oparams, oparams_size);
+    //_XDPRINTF_("%s[%u]: iparams=%016llx, iparams_size=%u\n",
+    //             __FUNCTION__, (u32)cpuid, iparams, iparams_size);
 
+    //_XDPRINTF_("%s[%u]:  oparams=%016llx, oparams_size=%u\n",
+    //             __FUNCTION__, (u32)cpuid, oparams, oparams_size);
+
+
+
+    _XDPRINTF_("%s[%u]: Proceeding to call xcguestslab; RSP=%016llx\n",
+        __FUNCTION__, (u32)cpuid, read_rsp());
+
+    XMHF_SLAB_CALL(xcguestslab, XMHF_GUEST_SLAB_XCGUESTSLAB, NULL, 0, NULL, 0);
+
+
+
+
+    _XDPRINTF_("%s[%u]: Should  never get here.Halting!\n",
+        __FUNCTION__, (u32)cpuid);
+
+    HALT();
+
+
+    return;
+}
+
+
+#if 0
 
 
         /*_XDPRINTF_("%s[%u]: Proceeding to call xctestslab1 interface; RSP=%016llx\n",
@@ -147,20 +170,8 @@ void xcinit_interface(slab_input_params_t *iparams, u64 iparams_size, slab_outpu
         asm volatile ("int $0x03\r\n");
 
 
-        /*_XDPRINTF_("%s[%u]: Proceeding to call guestslab1; RSP=%016llx\n",
-                __FUNCTION__, (u32)cpuid, read_rsp());
-
-        XMHF_SLAB_CALL(xcguestslab, XMHF_GUEST_SLAB_XCGUESTSLAB, NULL, 0, NULL, 0);
-*/
-
-        _XDPRINTF_("%s[%u]: Done.Halting!\n",
-                __FUNCTION__, (u32)cpuid);
-
-        HALT();
-    }
 
 
-    return;
-}
 
 
+#endif // 0
