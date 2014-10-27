@@ -48,6 +48,7 @@
 #include <xmhf-debug.h>
 
 #include <xcinit.h>
+#include <xctestslab1.h>
 
 //////
 XMHF_SLAB(xcinit)
@@ -129,17 +130,17 @@ void xcinit_interface(slab_input_params_t *iparams, u64 iparams_size, slab_outpu
 
 
 
-        /*_XDPRINTF_("%s[%u]: Proceeding to call hictestslab2 interface; RSP=%016llx\n",
+        /*_XDPRINTF_("%s[%u]: Proceeding to call xctestslab1 interface; RSP=%016llx\n",
                 __FUNCTION__, (u32)cpuid, read_rsp());
 
         inputval = 0xAABB;
-        XMHF_SLAB_CALL(hictestslab2, XMHF_HYP_SLAB_HICTESTSLAB2, &inputval, sizeof(inputval), &outputval, sizeof(outputval));
+        XMHF_SLAB_CALL(xctestslab1, XMHF_HYP_SLAB_XCTESTSLAB1, &inputval, sizeof(inputval), &outputval, sizeof(outputval));
 
         _XDPRINTF_("%s[%u]: Came back to xcinit; RSP=%016llx\n",
                 __FUNCTION__, (u32)cpuid, read_rsp());
         _XDPRINTF_("%s[%u]: outputval=%016llx\n",
-                __FUNCTION__, (u32)cpuid, outputval);*/
-
+                __FUNCTION__, (u32)cpuid, outputval);
+*/
 
         //_xcinit_dotests(cpuid);
 

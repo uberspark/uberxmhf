@@ -61,8 +61,9 @@
 #define XMHF_HYP_SLAB_XCINIT                (0)
 #define XMHF_HYP_SLAB_XCIHUB                (1)
 #define XMHF_HYP_SLAB_XCEXHUB               (2)
-#define XMHF_GUEST_SLAB_XCGUESTSLAB         (3)
-#define XMHF_GUEST_SLAB_RICHGUEST           (4)
+#define XMHF_HYP_SLAB_XCTESTSLAB1           (3)
+#define XMHF_GUEST_SLAB_XCGUESTSLAB         (4)
+#define XMHF_GUEST_SLAB_RICHGUEST           (5) //currently unused
 
 
 #define XMHF_HIC_SLABCALL                   (0xA0)
