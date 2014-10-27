@@ -53,7 +53,7 @@
 #include <xmhf-debug.h>
 
 #include <xmhfcrypto.h>
-#include <tpm.h>
+//#include <tpm.h>
 #include <cmdline.h>
 
 
