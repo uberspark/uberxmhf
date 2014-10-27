@@ -67,6 +67,7 @@ SECTIONS
 	} >slabmem =0x9090
 
 	.slabrwdata : {
+		*(.rwdatahdr)
 		*(.data)
 		*(.bss)
 	} >slabmem =0x0000

@@ -167,6 +167,19 @@ typedef struct {
 
 
 
+#define GUEST_SLAB_HEADER_MAGIC     (0x76543210)
+//guest slab header data type
+typedef struct {
+    u64 magic;
+    __attribute__((aligned(4096))) u64 lvl2mempgtbl_pml4t[PAE_MAXPTRS_PER_PDPT];
+    __attribute__((aligned(4096))) u64 lvl2mempgtbl_pdpt[PAE_MAXPTRS_PER_PDPT];
+    __attribute__((aligned(4096))) u64 lvl2mempgtbl_pdt[(PAE_PTRS_PER_PDPT*PAE_PTRS_PER_PDT)];
+    __attribute__(( aligned(16) )) u64 gdt[16];
+} __attribute__((packed)) guest_slab_header_t;
+
+
+
+
 void xmhfhic_arch_setup_slab_info(void);
 void xmhfhic_arch_sanity_check_requirements(void);
 void xmhfhic_arch_setup_slab_device_allocation(void);
@@ -438,6 +451,7 @@ R11 = cpuid
 	__attribute__ ((section(".stack"))) __attribute__ ((aligned(4096))) u8 slab_name##_slab_stack[MAX_PLATFORM_CPUS][XMHF_SLAB_STACKSIZE];	\
 	__attribute__ ((section(".stackhdr"))) u64 slab_name##_slab_tos[MAX_PLATFORM_CPUS]= { ((u64)&slab_name##_slab_stack[0] + XMHF_SLAB_STACKSIZE), ((u64)&slab_name##_slab_stack[1] + XMHF_SLAB_STACKSIZE), ((u64)&slab_name##_slab_stack[2] + XMHF_SLAB_STACKSIZE), ((u64)&slab_name##_slab_stack[3] + XMHF_SLAB_STACKSIZE), ((u64)&slab_name##_slab_stack[4] + XMHF_SLAB_STACKSIZE), ((u64)&slab_name##_slab_stack[5] + XMHF_SLAB_STACKSIZE), ((u64)&slab_name##_slab_stack[6] + XMHF_SLAB_STACKSIZE), ((u64)&slab_name##_slab_stack[7] + XMHF_SLAB_STACKSIZE)  };	\
     __attribute__ ((section(".slab_dmadata"))) u8 slab_name##dmadataplaceholder[1];\
+    __attribute__ ((section(".rwdatahdr"))) guest_slab_header_t slab_name##_guestslabheader = {GUEST_SLAB_HEADER_MAGIC, 0};\
     \
     \
 	__attribute__((naked)) __attribute__ ((section(".slab_entrystub"))) __attribute__((align(1))) void _slab_entrystub_##slab_name(void){	\
