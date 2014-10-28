@@ -17,7 +17,8 @@ OBJECTS = $(patsubst %.c, %.o, $(O_SOURCES))
 
 I_SOURCES :=  $(wildcard $(srcdir)/include/*.h)
 
-CFLAGS += -I$(srcdir)/../libemhfc/include -I$(srcdir)/include -nostdinc -fno-builtin -nostdlib -Wall 
+#CFLAGS += -I$(srcdir)/../libemhfc/include -I$(srcdir)/include -nostdinc -fno-builtin -nostdlib -Wall
+CFLAGS += -I$(srcdir)/include -nostdinc -fno-builtin -nostdlib -Wall
 
 LIBXMHFCRYPTO_OBJECTS_DIR = _objs_libxmhfcrypto
 THE_ARCHIVE = libxmhfcrypto.a
@@ -25,14 +26,14 @@ THE_ARCHIVE = libxmhfcrypto.a
 # targets
 .PHONY: all
 all: $(THE_ARCHIVE)
-	
+
 $(THE_ARCHIVE): $(OBJECTS)
 	cd $(LIBXMHFCRYPTO_OBJECTS_DIR) && $(AR) -rcs $(THE_ARCHIVE) $(OBJECTS)
 
-%.o: %.c 
+%.o: %.c
 	#mkdir -p "$(@D)"
 	mkdir -p $(LIBXMHFCRYPTO_OBJECTS_DIR)
-	@echo Building "$@" from "$<" 
+	@echo Building "$@" from "$<"
 	$(CC) -c $(CFLAGS) -o $(LIBXMHFCRYPTO_OBJECTS_DIR)/$@ $<
 
 .PHONY: clean

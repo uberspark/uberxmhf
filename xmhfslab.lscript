@@ -60,15 +60,17 @@ SECTIONS
 
 	.slabentrystub : {
 		*(.slab_entrystub)
-	} >slabmem =0x9090 
+	} >slabmem =0x9090
 
-	.slabentrystubnew : {
-		*(.slab_entrystubnew)
-	} >slabmem =0x9090 
-	
 	.slabcode : {
 		*(.text)
 	} >slabmem =0x9090
+
+	.slabrwdata : {
+		*(.rwdatahdr)
+		*(.data)
+		*(.bss)
+	} >slabmem =0x0000
 
 	.slabrodata : {
 		*(.rodata)
@@ -77,18 +79,14 @@ SECTIONS
 		*(.eh_frame)
 	} >slabmem =0x0000
 
-	.slabrwdata : {
-		*(.data)
-		*(.bss)
-	} >slabmem =0x0000
-
 	.slabstack : {
+		*(.stackhdr)
 		*(.stack)
 		*(.note.GNU-stack)
 	} >slabmem =0x0000
 
-	.slabtrampoline : {
-		*(.slab_trampoline)
+	.slabdmadata : {
+		*(.slab_dmadata)
 	} >slabmem =0x0000
 
 	.libxmhfdebugdata : {
