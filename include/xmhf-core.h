@@ -68,12 +68,12 @@
 
 typedef struct {
     u64 cbtype;
-}__attribute__((packed)) xc_hypappcb_inputparams_t
+}__attribute__((packed)) xc_hypappcb_inputparams_t;
 
 
 typedef struct {
     u64 cbresult;
-}__attribute__((packed)) xc_hypappcb_outputparams_t
+}__attribute__((packed)) xc_hypappcb_outputparams_t;
 
 
 typedef struct {
@@ -81,6 +81,8 @@ typedef struct {
     u64 cbmask;
 } __attribute__((packed)) xc_hypapp_info_t;
 
+
+#define XC_HYPAPPCB_MASK(x) (1 << x)
 
 
 #endif /* __XMHF_CORE_H_ */
