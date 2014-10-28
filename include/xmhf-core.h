@@ -44,7 +44,7 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-//xmhf.h - main XMHF core header file 
+//xmhf.h - main XMHF core header file
 // this orchestrates the inclusion of other core component specific
 // headers
 //author: amit vasudevan (amitvasudevan@acm.org)
@@ -52,8 +52,35 @@
 #ifndef __XMHF_CORE_H_
 #define __XMHF_CORE_H_
 
-#include <_xctypes.h>			//core specific data types
-#include <_xchypapp.h>			//hypapp callback declarations
+//#include <_xctypes.h>			//core specific data types
+//#include <_xchypapp.h>			//hypapp callback declarations
+
+
+#define XC_HYPAPPCB_HANDLED                   (1)
+#define XC_HYPAPPCB_UNHANDLED                 (0)
+
+#define XC_HYPAPPCB_INITIALIZE                  (1)
+#define XC_HYPAPPCB_HYPERCALL                   (2)
+#define XC_HYPAPPCB_MEMORYFAULT                 (3)
+#define XC_HYPAPPCB_TRAP_IO                     (4)
+#define XC_HYPAPPCB_TRAP_INSTRUCTION            (5)
+#define XC_HYPAPPCB_TRAP_EXCEPTION              (6)
+
+typedef struct {
+    u64 cbtype;
+}__attribute__((packed)) xc_hypappcb_inputparams_t
+
+
+typedef struct {
+    u64 cbresult;
+}__attribute__((packed)) xc_hypappcb_outputparams_t
+
+
+typedef struct {
+    u64 xmhfhic_slab_index;
+    u64 cbmask;
+} __attribute__((packed)) xc_hypapp_info_t;
+
 
 
 #endif /* __XMHF_CORE_H_ */
