@@ -48,14 +48,76 @@
 // author: amit vasudevan (amitvasudevan@acm.org)
 
 #include <xmhf.h>
-#include <xmhf-core.h>
 #include <xmhf-debug.h>
+#include <xmhf-core.h>
 
 #include <xhhyperdep.h>
 
-#include <xcapi.h>
 
 /////////////////////////////////////////////////////////////////////
+void xhhyperdep_interface(slab_input_params_t *iparams, u64 iparams_size, slab_output_params_t *oparams, u64 oparams_size, u64 src_slabid, u64 cpuindex){
+    xc_hypappcb_inputparams_t *hcb_iparams = (xc_hypappcb_inputparams_t *)iparams;
+    xc_hypappcb_outputparams_t *hcb_oparams = (xc_hypappcb_outputparams_t *)oparams;
+
+
+	_XDPRINTF_("%s[%u]: Got control, cbtype=%x: RSP=%016llx\n",
+                __FUNCTION__, (u32)cpuindex, hcb_iparams->cbtype, read_rsp());
+
+
+    switch(hcb_iparams->cbtype){
+        case XC_HYPAPPCB_INITIALIZE:{
+
+        }
+        break;
+
+        case XC_HYPAPPCB_HYPERCALL:{
+
+
+        }
+        break;
+
+        case XC_HYPAPPCB_MEMORYFAULT:{
+
+
+        }
+        break;
+
+
+        case XC_HYPAPPCB_TRAP_IO:{
+
+
+        }
+        break;
+
+        case XC_HYPAPPCB_TRAP_INSTRUCTION:{
+
+
+        }
+        break;
+
+
+        case XC_HYPAPPCB_TRAP_EXCEPTION:{
+
+
+        }
+        break;
+
+
+        default:{
+            _XDPRINTF_("%s[%u]: Unknown cbtype. Halting!\n",
+                __FUNCTION__, (u32)cpuindex);
+            HALT();
+        }
+    }
+
+
+    hcb_oparams->cbresult=XC_HYPAPPCB_HANDLED;
+
+}
+
+
+
+
 slab_retval_t xhhyperdep_interface(u32 src_slabid, u32 dst_slabid, u32 fn_id, u32 fn_paramsize, ...){
 	slab_retval_t srval;
 	va_list args;

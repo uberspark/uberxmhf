@@ -46,11 +46,24 @@
 
 #include <xmhf.h>
 #include <xmhf-debug.h>
+#include <xmhf-core.h>
 
 #include <xcihub.h>
 
 //////
 XMHF_SLAB_INTERCEPT(xcihub)
+
+
+
+
+static xc_hypapp_info_t _xcihub_hypapp_info_table[] = {
+    {
+        0,0
+    },
+};
+
+#define HYPAPP_INFO_TABLE_NUMENTRIES (sizeof(_xcihub_hypapp_info_table)/sizeof(_xcihub_hypapp_info_table[0]))
+
 
 /*
  * slab code
@@ -60,6 +73,8 @@ XMHF_SLAB_INTERCEPT(xcihub)
 
 void xcihub_interface(slab_input_params_t *iparams, u64 iparams_size, slab_output_params_t *oparams, u64 oparams_size, u64 src_slabid, u64 cpuindex){
     u64 info_vmexit_reason;
+    xc_hypappcb_inputparams_t hcb_iparams;
+    xc_hypappcb_outputparams_t hcb_oparams;
 
 	_XDPRINTF_("%s[%u]: Got control: RSP=%016llx\n",
                 __FUNCTION__, (u32)cpuindex, read_rsp());
