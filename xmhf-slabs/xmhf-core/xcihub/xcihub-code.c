@@ -58,11 +58,11 @@ XMHF_SLAB_INTERCEPT(xcihub)
  * author: amit vasudevan (amitvasudevan@acm.org)
  */
 
-void xcihub_interface(slab_input_params_t *iparams, u64 iparams_size, slab_output_params_t *oparams, u64 oparams_size, u64 src_slabid, u64 cpuid){
+void xcihub_interface(slab_input_params_t *iparams, u64 iparams_size, slab_output_params_t *oparams, u64 oparams_size, u64 src_slabid, u64 cpuindex){
     u64 info_vmexit_reason;
 
 	_XDPRINTF_("%s[%u]: Got control: RSP=%016llx\n",
-                __FUNCTION__, (u32)cpuid, read_rsp());
+                __FUNCTION__, (u32)cpuindex, read_rsp());
 
     XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMREAD, VMCS_INFO_VMEXIT_REASON, &info_vmexit_reason);
 
@@ -73,7 +73,7 @@ void xcihub_interface(slab_input_params_t *iparams, u64 iparams_size, slab_outpu
             u64 info_vmexit_instruction_length;
 
             _XDPRINTF_("%s[%u]: VMX_VMEXIT_VMCALL\n",
-                __FUNCTION__, (u32)cpuid);
+                __FUNCTION__, (u32)cpuindex);
 
             XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMREAD, VMCS_INFO_VMEXIT_INSTRUCTION_LENGTH, &info_vmexit_instruction_length);
             XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMREAD, VMCS_GUEST_RIP, &guest_rip);
@@ -81,7 +81,40 @@ void xcihub_interface(slab_input_params_t *iparams, u64 iparams_size, slab_outpu
             XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMWRITE, VMCS_GUEST_RIP, guest_rip);
 
             _XDPRINTF_("%s[%u]: adjusted guest_rip=%016llx\n",
-                __FUNCTION__, (u32)cpuid, guest_rip);
+                __FUNCTION__, (u32)cpuindex, guest_rip);
+
+        }
+        break;
+
+
+        case VMX_VMEXIT_CPUID:{
+            u64 guest_rip;
+            u64 info_vmexit_instruction_length;
+            bool clearsyscallretbit=false;
+            x86regs64_t r;
+
+            _XDPRINTF_("%s[%u]: VMX_VMEXIT_cpuindex\n",
+                __FUNCTION__, (u32)cpuindex);
+
+            XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSREAD, NULL, &r);
+
+            if((u32)r.rax == 0x80000001)
+                clearsyscallretbit = true;
+
+            cpuid((u32)r.rax, (u32 *)&r.rax, (u32 *)&r.rbx, (u32 *)&r.rcx, (u32 *)&r.rdx);
+
+            if(clearsyscallretbit)
+                r.rdx = r.rdx & (u64)~(1ULL << 11);
+
+            XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSWRITE, &r, NULL);
+
+            XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMREAD, VMCS_INFO_VMEXIT_INSTRUCTION_LENGTH, &info_vmexit_instruction_length);
+            XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMREAD, VMCS_GUEST_RIP, &guest_rip);
+            guest_rip+=info_vmexit_instruction_length;
+            XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMWRITE, VMCS_GUEST_RIP, guest_rip);
+
+            _XDPRINTF_("%s[%u]: adjusted guest_rip=%016llx\n",
+                __FUNCTION__, (u32)cpuindex, guest_rip);
 
         }
         break;
@@ -89,14 +122,14 @@ void xcihub_interface(slab_input_params_t *iparams, u64 iparams_size, slab_outpu
 
         default:
             _XDPRINTF_("%s[%u]: unhandled intercept %x. Halting!\n",
-                    __FUNCTION__, (u32)cpuid, info_vmexit_reason);
+                    __FUNCTION__, (u32)cpuindex, info_vmexit_reason);
 
             HALT();
     }
 
 
 	//_XDPRINTF_("%s[%u]: Halting!\n",
-    //            __FUNCTION__, (u32)cpuid);
+    //            __FUNCTION__, (u32)cpuindex);
     //HALT();
 
     return;
