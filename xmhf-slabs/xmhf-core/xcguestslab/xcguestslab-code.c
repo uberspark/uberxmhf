@@ -137,9 +137,9 @@ void xcguestslab_interface(void) {
 
     //xcguestslab_dotest_vmcall();
 
-    //xcguestslab_do_vmcall();
+    xcguestslab_do_vmcall();
 
-    xcguestslab_do_cpuid();
+    //xcguestslab_do_cpuid();
 
     _XDPRINTF_("%s: Guest Slab Halting\n", __FUNCTION__);
     HALT();

@@ -673,10 +673,13 @@ void xcinit_interface(slab_input_params_t *iparams, u64 iparams_size, slab_outpu
 
 
     {
+        u64 entries_pml4t[PAE_PTRS_PER_PML4T];
+        u64 entries_pdpt[PAE_PTRS_PER_PDPT];
+
         u64 guest_slab_header_paddr = _xmhfhic_common_slab_info_table[XMHF_GUEST_SLAB_XCGUESTSLAB].slab_physmem_extents[1].addr_start;
         u64 guest_slab_pml4t_paddr = guest_slab_header_paddr + offsetof(guest_slab_header_t, lvl2mempgtbl_pml4t);
         u64 guest_slab_pdpt_paddr = guest_slab_header_paddr + offsetof(guest_slab_header_t, lvl2mempgtbl_pdpt);
-        u64 guest_slab_pdts_paddr = guest_slab_header_paddr + offsetof(guest_slab_header_t, lvl2mempgtbl_pdts);
+        u64 guest_slab_pdts_paddr = guest_slab_header_paddr + offsetof(guest_slab_header_t, lvl2mempgtbl_pdts);        u64 guest_slab_gdt_paddr = guest_slab_header_paddr + offsetof(guest_slab_header_t, gdt);
         u64 guest_slab_magic_paddr = guest_slab_header_paddr + offsetof(guest_slab_header_t, magic);
         u64 guest_slab_magic;
         xmhf_hic_uapi_physmem_desc_t pdesc;
@@ -690,42 +693,60 @@ void xcinit_interface(slab_input_params_t *iparams, u64 iparams_size, slab_outpu
             __FUNCTION__, (u32)cpuid, guest_slab_magic);
 
 
-        /*//initialize guest slab level-2 page tables shape
+        //initialize guest slab level-2 page tables shape
         {
             u32 i;
 
             for(i=0; i < PAE_PTRS_PER_PML4T; i++)
-                xcguestslab_hdr->lvl2mempgtbl_pml4t[i] = pae_make_pml4e(hva2spa(xcguestslab_hdr->lvl2mempgtbl_pdpt), (u64)(_PAGE_PRESENT | _PAGE_RW | _PAGE_USER));
+                entries_pml4t[i] = pae_make_pml4e(hva2spa(guest_slab_pdpt_paddr), (u64)(_PAGE_PRESENT | _PAGE_RW | _PAGE_USER));
+
+            pdesc.addr_to = guest_slab_pml4t_paddr;
+            pdesc.addr_from = &entries_pml4t;
+            pdesc.numbytes = sizeof(u64) * PAE_PTRS_PER_PML4T;
+            XMHF_HIC_SLAB_UAPI_PHYSMEM(XMHF_HIC_UAPI_PHYSMEM_POKE, &pdesc, NULL);
+
 
             for(i=0; i < PAE_PTRS_PER_PDPT; i++)
-                xcguestslab_hdr->lvl2mempgtbl_pdpt[i] = pae_make_pdpe(hva2spa(xcguestslab_hdr->lvl2mempgtbl_pdts[i]), (u64)(_PAGE_PRESENT | _PAGE_RW | _PAGE_USER));
+                entries_pdpt[i] = pae_make_pdpe(hva2spa(guest_slab_pdts_paddr + (i * PAGE_SIZE_4K)), (u64)(_PAGE_PRESENT | _PAGE_RW | _PAGE_USER));
 
-            memcpy(xcguestslab_hdr->lvl2mempgtbl_pdts, _xcguestslab_init_pdt, sizeof(_xcguestslab_init_pdt));
+            pdesc.addr_to = guest_slab_pdpt_paddr;
+            pdesc.addr_from = &entries_pdpt;
+            pdesc.numbytes = sizeof(u64) * PAE_PTRS_PER_PDPT;
+            XMHF_HIC_SLAB_UAPI_PHYSMEM(XMHF_HIC_UAPI_PHYSMEM_POKE, &pdesc, NULL);
+
+
+            pdesc.addr_to = guest_slab_pdts_paddr;
+            pdesc.addr_from = &_xcguestslab_init_pdt;
+            pdesc.numbytes = sizeof(_xcguestslab_init_pdt);
+            XMHF_HIC_SLAB_UAPI_PHYSMEM(XMHF_HIC_UAPI_PHYSMEM_POKE, &pdesc, NULL);
         }
 
         //initialize guest slab gdt
-        memcpy(xcguestslab_hdr->gdt, _xcguestslab_init_gdt, sizeof(_xcguestslab_init_gdt));
+        pdesc.addr_to = guest_slab_gdt_paddr;
+        pdesc.addr_from = &_xcguestslab_init_gdt;
+        pdesc.numbytes = sizeof(_xcguestslab_init_gdt);
+        XMHF_HIC_SLAB_UAPI_PHYSMEM(XMHF_HIC_UAPI_PHYSMEM_POKE, &pdesc, NULL);
+
 
         //initialize guest slab VMCS PDPT, CR3 and GDTR fields
-        XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMWRITE, VMCS_GUEST_PDPTE0_FULL, xcguestslab_hdr->lvl2mempgtbl_pdpt[0]);
-        XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMWRITE, VMCS_GUEST_PDPTE1_FULL, xcguestslab_hdr->lvl2mempgtbl_pdpt[1]);
-        XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMWRITE, VMCS_GUEST_PDPTE2_FULL, xcguestslab_hdr->lvl2mempgtbl_pdpt[2]);
-        XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMWRITE, VMCS_GUEST_PDPTE3_FULL, xcguestslab_hdr->lvl2mempgtbl_pdpt[3]);
+        XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMWRITE, VMCS_GUEST_PDPTE0_FULL, entries_pdpt[0]);
+        XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMWRITE, VMCS_GUEST_PDPTE1_FULL, entries_pdpt[1]);
+        XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMWRITE, VMCS_GUEST_PDPTE2_FULL, entries_pdpt[2]);
+        XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMWRITE, VMCS_GUEST_PDPTE3_FULL, entries_pdpt[3]);
 
-        XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMWRITE, VMCS_GUEST_CR3, xcguestslab_hdr->lvl2mempgtbl_pml4t);
+        XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMWRITE, VMCS_GUEST_CR3, guest_slab_pml4t_paddr);
 
-        XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMWRITE, VMCS_GUEST_GDTR_BASE, xcguestslab_hdr->gdt);
+        XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMWRITE, VMCS_GUEST_GDTR_BASE, guest_slab_gdt_paddr);
         XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMWRITE, VMCS_GUEST_GDTR_LIMIT, (sizeof(_xcguestslab_init_gdt)-1));
-        */
+
 
     }
 
 
-    /*_XDPRINTF_("%s[%u]: Proceeding to call xcguestslab; RSP=%016llx\n",
+    _XDPRINTF_("%s[%u]: Proceeding to call xcguestslab; RSP=%016llx\n",
         __FUNCTION__, (u32)cpuid, read_rsp());
 
     XMHF_SLAB_CALL(xcguestslab, XMHF_GUEST_SLAB_XCGUESTSLAB, NULL, 0, NULL, 0);
-*/
 
 
 
