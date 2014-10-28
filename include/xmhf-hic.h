@@ -62,8 +62,16 @@
 #define XMHF_HYP_SLAB_XCIHUB                (1)
 #define XMHF_HYP_SLAB_XCEXHUB               (2)
 #define XMHF_HYP_SLAB_XCTESTSLAB1           (3)
-#define XMHF_GUEST_SLAB_XCGUESTSLAB         (4)
-#define XMHF_GUEST_SLAB_RICHGUEST           (5) //currently unused
+#define XMHF_HYP_SLAB_XHHYPERDEP            (4)
+#define XMHF_GUEST_SLAB_XCGUESTSLAB         (5)
+#define XMHF_GUEST_SLAB_RICHGUEST           (6) //currently unused
+
+
+
+
+
+
+
 
 
 #define XMHF_HIC_SLABCALL                   (0xA0)
@@ -74,6 +82,13 @@
 
 #define XMHF_HIC_SLABCALLINTERCEPT          (0xA4)
 #define XMHF_HIC_SLABRETINTERCEPT           (0xA5)
+
+
+
+
+
+
+
 
 #define XMHF_HIC_UAPI                       (0xA6)
 
