@@ -110,8 +110,8 @@ static void _hcb_initialize(u64 cpuindex){
 
 
 static void _hcb_hypercall(u64 cpuindex, u64 guest_slab_index, u64 hypercall_id, u64 hypercall_param){
-	u64 status=XC_HYPAPPCB_HANDLED;
-/*	u64 call_id;
+/*	u64 status=XC_HYPAPPCB_HANDLED;
+	u64 call_id;
 	u64 gva, gpa;
     //slab_retval_t srval;
 
@@ -157,9 +157,9 @@ static void _hcb_hypercall(u64 cpuindex, u64 guest_slab_index, u64 hypercall_id,
 			status=APP_ERROR;
 			break;
 	}
-*/
-	return status;
 
+	return status;
+*/
 
 }
 
