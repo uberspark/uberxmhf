@@ -68,6 +68,8 @@ void xcihub_interface(slab_input_params_t *iparams, u64 iparams_size, slab_outpu
 
     switch(info_vmexit_reason){
 
+
+        //hypercall
         case VMX_VMEXIT_VMCALL:{
             u64 guest_rip;
             u64 info_vmexit_instruction_length;
@@ -87,6 +89,28 @@ void xcihub_interface(slab_input_params_t *iparams, u64 iparams_size, slab_outpu
         break;
 
 
+
+        //memory fault
+		case VMX_VMEXIT_EPT_VIOLATION:{
+
+
+
+        }
+		break;
+
+
+
+        //io traps
+		case VMX_VMEXIT_IOIO:{
+
+
+
+
+		}
+		break;
+
+
+        //instruction traps
         case VMX_VMEXIT_CPUID:{
             u64 guest_rip;
             u64 info_vmexit_instruction_length;
@@ -118,6 +142,18 @@ void xcihub_interface(slab_input_params_t *iparams, u64 iparams_size, slab_outpu
 
         }
         break;
+
+
+
+        //exception traps
+        case VMX_VMEXIT_EXCEPTION:{
+
+
+
+
+        }
+        break;
+
 
 
         default:
