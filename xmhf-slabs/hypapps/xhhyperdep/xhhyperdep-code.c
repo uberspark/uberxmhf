@@ -53,6 +53,10 @@
 
 #include <xhhyperdep.h>
 
+
+//////
+XMHF_SLAB(xhhyperdep)
+
 #define HYPERDEP_ACTIVATEDEP			0xC0
 #define HYPERDEP_DEACTIVATEDEP			0xC1
 #define HYPERDEP_INITIALIZE				0xC2
@@ -110,6 +114,9 @@ static void _hcb_initialize(u64 cpuindex){
 
 
 static void _hcb_hypercall(u64 cpuindex, u64 guest_slab_index, u64 hypercall_id, u64 hypercall_param){
+	_XDPRINTF_("CPU %s[%u]: call number=%x\n", __FUNCTION__, (u32)cpuindex, hypercall_id);
+
+
 /*	u64 status=XC_HYPAPPCB_HANDLED;
 	u64 call_id;
 	u64 gva, gpa;

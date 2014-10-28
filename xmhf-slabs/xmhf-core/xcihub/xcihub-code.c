@@ -50,26 +50,48 @@
 
 #include <xcihub.h>
 
+/*
+ * slab code
+ *
+ * author: amit vasudevan (amitvasudevan@acm.org)
+ */
+
 //////
 XMHF_SLAB_INTERCEPT(xcihub)
 
 
-
-
 static xc_hypapp_info_t _xcihub_hypapp_info_table[] = {
     {
-        0,0
+        XMHF_HYP_SLAB_XHHYPERDEP,
+        (XC_HYPAPPCB_MASK(XC_HYPAPPCB_HYPERCALL) | XC_HYPAPPCB_MASK(XC_HYPAPPCB_MEMORYFAULT) | XC_HYPAPPCB_MASK(XC_HYPAPPCB_SHUTDOWN) )
     },
 };
 
 #define HYPAPP_INFO_TABLE_NUMENTRIES (sizeof(_xcihub_hypapp_info_table)/sizeof(_xcihub_hypapp_info_table[0]))
 
 
-/*
- * slab code
- *
- * author: amit vasudevan (amitvasudevan@acm.org)
- */
+static u64 _xcihub_hcbinvoke(u64 cbtype, u64 guest_slab_index){
+    u64 status = XC_HYPAPPCB_CHAIN;
+    u64 i;
+    xc_hypappcb_inputparams_t hcb_iparams;
+    xc_hypappcb_outputparams_t hcb_oparams;
+
+    hcb_iparams.cbtype = cbtype;
+    hcb_iparams.guest_slab_index = guest_slab_index;
+
+    for(i=0; i < HYPAPP_INFO_TABLE_NUMENTRIES; i++){
+        if(_xcihub_hypapp_info_table[i].cbmask & XC_HYPAPPCB_MASK(cbtype)){
+            XMHF_SLAB_CALL(hypapp, _xcihub_hypapp_info_table[i].xmhfhic_slab_index, &hcb_iparams, sizeof(hcb_iparams), &hcb_oparams, sizeof(hcb_oparams));
+            if(hcb_oparams.cbresult == XC_HYPAPPCB_NOCHAIN){
+                status = XC_HYPAPPCB_NOCHAIN;
+                break;
+            }
+        }
+    }
+
+    return status;
+}
+
 
 void xcihub_interface(slab_input_params_t *iparams, u64 iparams_size, slab_output_params_t *oparams, u64 oparams_size, u64 src_slabid, u64 cpuindex){
     u64 info_vmexit_reason;
@@ -86,20 +108,19 @@ void xcihub_interface(slab_input_params_t *iparams, u64 iparams_size, slab_outpu
 
         //hypercall
         case VMX_VMEXIT_VMCALL:{
-            u64 guest_rip;
-            u64 info_vmexit_instruction_length;
+            if(_xcihub_hcbinvoke(XC_HYPAPPCB_HYPERCALL, src_slabid) == XC_HYPAPPCB_CHAIN){
+                u64 guest_rip;
+                u64 info_vmexit_instruction_length;
 
-            _XDPRINTF_("%s[%u]: VMX_VMEXIT_VMCALL\n",
-                __FUNCTION__, (u32)cpuindex);
+                _XDPRINTF_("%s[%u]: VMX_VMEXIT_VMCALL\n", __FUNCTION__, (u32)cpuindex);
 
-            XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMREAD, VMCS_INFO_VMEXIT_INSTRUCTION_LENGTH, &info_vmexit_instruction_length);
-            XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMREAD, VMCS_GUEST_RIP, &guest_rip);
-            guest_rip+=info_vmexit_instruction_length;
-            XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMWRITE, VMCS_GUEST_RIP, guest_rip);
+                XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMREAD, VMCS_INFO_VMEXIT_INSTRUCTION_LENGTH, &info_vmexit_instruction_length);
+                XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMREAD, VMCS_GUEST_RIP, &guest_rip);
+                guest_rip+=info_vmexit_instruction_length;
+                XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMWRITE, VMCS_GUEST_RIP, guest_rip);
 
-            _XDPRINTF_("%s[%u]: adjusted guest_rip=%016llx\n",
-                __FUNCTION__, (u32)cpuindex, guest_rip);
-
+                _XDPRINTF_("%s[%u]: adjusted guest_rip=%016llx\n", __FUNCTION__, (u32)cpuindex, guest_rip);
+            }
         }
         break;
 

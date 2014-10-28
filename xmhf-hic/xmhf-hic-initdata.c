@@ -74,7 +74,7 @@ slab_caps_t _xmhfhic_init_setupdata_slab_caps[XMHF_HIC_MAX_SLABS] = {
     //XMHF_HYP_SLAB_XCIHUB
     {
         0,
-        0,
+        HIC_SLAB_CALLCAP(XMHF_HYP_SLAB_XHHYPERDEP),
         {false, 0, {0}},
         HIC_SLAB_X86VMXX86PC_HYPERVISOR
     },
