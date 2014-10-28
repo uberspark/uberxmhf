@@ -16,13 +16,16 @@ export XMHF_VERIFYDIR := $(CURDIR)/_verify
 # xmhf libs directory
 export XMHFLIBS_SRC := $(realpath @XMHFLIBS_SRC@)
 
+# XMHF HIC source location
+export XMHFHIC_SRC := $(realpath xmhf-hic/)
+
 # XMHF core source location
 export XMHFCORE_SRC := $(realpath xmhf-slabs/xmhf-core)
-XMHFCORE_INC = -I$(realpath xmhf-slabs/xmhf-core/) -I$(realpath xmhf-slabs/xmhf-core/include)
+#XMHFCORE_INC = -I$(realpath xmhf-slabs/xmhf-core/) -I$(realpath xmhf-slabs/xmhf-core/include)
 
 # libxmhfhw source location
-export LIBXMHFHW_SRC := $(realpath xmhf-libs/libxmhfhw)
-LIBXMHFHW_INC = $(realpath xmhf-libs/libxmhfhw/include)
+#export LIBXMHFHW_SRC := $(realpath xmhf-libs/libxmhfhw)
+#LIBXMHFHW_INC = $(realpath xmhf-libs/libxmhfhw/include)
 
 # XMHF bootloader source location
 export XMHF_BOOTLOADER_SRC := $(realpath xmhf-bootloader)
@@ -32,9 +35,10 @@ XMHFLIBS_SUBLIBS = $(wildcard $(XMHFLIBS_SRC)/lib*)
 XMHFLIBS_INC = $(foreach dir,$(XMHFLIBS_SUBLIBS),-I$(dir)/include)
 
 # populate library and include paths
-export ADDL_INCLUDES :=
+export ADDL_INCLUDES := -I$(realpath xmhf-slabs/include)
 export XMHFLIBS_DIR := $(XMHF_OBJDIR)/_objs_xmhf-libs
-ADDL_INCLUDES += -I$(XMHF_INC) $(XMHFCORE_INC) -I$(LIBXMHFHW_INC) $(XMHFLIBS_INC)
+#ADDL_INCLUDES += -I$(XMHF_INC) $(XMHFCORE_INC) $(XMHFLIBS_INC)
+ADDL_INCLUDES += -I$(XMHF_INC) $(XMHFLIBS_INC)
 
 ##################################################################################
 ### BEGIN Variables controlled using autoconf
@@ -169,7 +173,8 @@ export XMHF_SLAB_DIRS := $(shell cat $(XMHF_DIR)/SLABS)
 XMHF_SLAB_NAMES := $(notdir $(XMHF_SLAB_DIRS))
 
 .PHONY: all
-all: genfiles libshared subdirs
+#all: genfiles libshared subdirs
+all: genfiles xmhflibs xmhfhic xmhfslabs xmhfbin
 #all:
 #	xmhfgenslabtable.pl $(XMHF_SLAB_NAMES)
 
@@ -177,28 +182,46 @@ all: genfiles libshared subdirs
 genfiles:
 	mkdir -p $(XMHF_OBJDIR)
 	cd $(XMHF_OBJDIR) && xmhfgenlscript.pl $(XMHF_SLAB_NAMES) >xmhf.lscript
-	cd $(XMHF_OBJDIR) && xmhfgenslabtable.pl $(XMHF_SLAB_NAMES) >$(XMHF_DIR)/xmhf-slabs/shared/shared-slabtable.c
+#	cd $(XMHF_OBJDIR) && xmhfgenslabtable.pl $(XMHF_SLAB_NAMES) >$(XMHF_DIR)/xmhf-slabs/shared/shared-slabtable.c
+	cd $(XMHF_OBJDIR) && xmhfgenslabtable.pl $(XMHF_SLAB_NAMES) >$(XMHF_DIR)/xmhf-hic/__xmhfhic_initdata_slabtable
 
-.PHONY: libshared
-libshared:
-	mkdir -p $(XMHF_OBJDIR)
-	cd $(XMHF_OBJDIR) && $(MAKE) -f $(XMHF_DIR)/xmhf-slabs/shared/Makefile -w all
 
-.PHONY: subdirs
-subdirs: $(XMHFLIBS_SRC) $(XMHFCORE_SRC)
+.PHONY: xmhflibs
+xmhflibs:
 	@echo Building XMHF libs...
 	cd $(XMHF_OBJDIR) && $(MAKE) -f $(XMHFLIBS_SRC)/Makefile -w all
 	@echo XMHF libs build SUCCESS
+
+.PHONY: xmhfhic
+xmhfhic:
+	@echo Building XMHF HIC...
+	cd $(XMHF_OBJDIR) && $(MAKE) -f $(XMHFHIC_SRC)/Makefile -w all
+	@echo XMHF HIC build SUCCESS
+
+.PHONY: xmhfslabs
+xmhfslabs:
 	@echo Building slabs...
 	@for i in $(XMHF_SLAB_DIRS); \
 	do \
 		(cd $(XMHF_OBJDIR) &&	echo "Making all in $$i..." && $(MAKE) -f $(XMHF_DIR)/$$i/Makefile -w all) || exit 1; \
 	done;
 	@echo Slabs build SUCCESS
+
+
+.PHONY: libshared
+libshared:
+	mkdir -p $(XMHF_OBJDIR)
+	cd $(XMHF_OBJDIR) && $(MAKE) -f $(XMHF_DIR)/xmhf-slabs/shared/Makefile -w all
+
+.PHONY: xmhfbin
+xmhfbin: $(XMHFLIBS_SRC) $(XMHFCORE_SRC)
+#	@echo Building XMHF libs...
+#	cd $(XMHF_OBJDIR) && $(MAKE) -f $(XMHFLIBS_SRC)/Makefile -w all
+#	@echo XMHF libs build SUCCESS
 	@echo Linking XMHF binary...
 	cd $(XMHF_OBJDIR) && cp -f xmhf.lscript xmhf.lscript.c
 	cd $(XMHF_OBJDIR) && $(CC) $(CFLAGS) -D__ASSEMBLY__ -P -E xmhf.lscript.c -o xmhf.lds
-	cd $(XMHF_OBJDIR) && $(LD) --oformat elf64-x86-64 -T xmhf.lds -o xmhf.exe _objs_libshared/libshared.a -L$(CCLIB)/lib/linux -L$(XMHFLIBS_DIR) -lxmhfc -lxmhfcrypto -lxmhfutil -lxmhfhw -lxmhfutil -lxmhfc -lclang_rt.builtins-x86_64
+	cd $(XMHF_OBJDIR) && $(LD) --oformat elf64-x86-64 -T xmhf.lds -o xmhf.exe -L$(CCLIB)/lib/linux -L$(XMHFLIBS_DIR) -lxmhfc -lxmhfcrypto -lxmhfutil -lxmhfutil -lxmhfc -lclang_rt.builtins-x86_64
 	cd $(XMHF_OBJDIR) && $(OBJCOPY) --output-format=binary xmhf.exe xmhf.bin
 	@echo XMHF link SUCCESS
 	@echo Building XMHF boot loader...
@@ -231,7 +254,7 @@ test:
 #.PHONY: clean distclean init-late-clean
 .PHONY: clean distclean
 clean:
-	$(RM) -f $(XMHF_DIR)/xmhf-slabs/shared/shared-slabtable.c
+	$(RM) -f $(XMHF_DIR)/xmhf-hic/__xmhfhic_initdata_slabtable
 	rm -rf *.html
 	rm -rf doc
 	$(RM) -rf $(XMHF_OBJDIR)

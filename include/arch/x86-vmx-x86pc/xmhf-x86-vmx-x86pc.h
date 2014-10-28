@@ -54,22 +54,45 @@
 #include "_config.h"								//include arch. specific configuration parameters
 
 #include <xmhfhw/platform/x86pc/_multiboot.h>		//multiboot
-#include <xmhfhw/cpu/x86/_processor.h>  			//CPU
+#include <xmhfhw/platform/x86pc/_memaccess.h>		//platform memory access
 #include <xmhfhw/cpu/x86/_msr.h>        			//model specific registers
+#include <xmhfhw/cpu/x86/_apic.h>       			//APIC
+#include <xmhfhw/cpu/x86/_processor.h>  			//CPU
 #include <xmhfhw/cpu/x86/_paging.h>     			//MMU
 #include <xmhfhw/cpu/x86/_io.h>         			//legacy I/O
-#include <xmhfhw/cpu/x86/_apic.h>       			//APIC
 #include <xmhfhw/cpu/x86/txt/_txt.h>				//Trusted eXecution Technology (SENTER support)
 #include <xmhfhw/container/vmx/_vmx.h>				//VMX extensions
 #include <xmhfhw/platform/x86pc/_pci.h>        		//PCI bus glue
+#include <xmhfhw/platform/x86pc/_pit.h>        		//PIT
 #include <xmhfhw/platform/x86pc/_acpi.h>			//ACPI glue
 #include <xmhfhw/platform/x86pc/_com.h>        		//UART/serial
 #include <xmhfhw/platform/x86pc/vtd/vtd.h>			//VMX DMA protection
-#include <xmhfhw/platform/x86pc/_memaccess.h>		//platform memory access
 #include <xmhfhw/platform/x86pc/_tpm.h>        		//TPM
 #include <xmhfhw/platform/x86pc/_biosdata.h>		//BIOS data areas
 
+
+#define     MAX_X86_APIC_ID     256
+
+
 #ifndef __ASSEMBLY__
+
+#define HIC_SLAB_X86VMXX86PC_HYPERVISOR (1)
+#define HIC_SLAB_X86VMXX86PC_GUEST      (2)
+
+typedef struct {
+	//u64 mempgtbl_pml4t[PAE_MAXPTRS_PER_PML4T] __attribute__((aligned(4096)));
+	u64 mempgtbl_pdpt[PAE_MAXPTRS_PER_PDPT] __attribute__((aligned(4096)));
+	u64 mempgtbl_pdt[PAE_PTRS_PER_PDPT][PAE_PTRS_PER_PDT] __attribute__((aligned(4096)));
+	u64 mempgtbl_pt[PAE_PTRS_PER_PDPT][PAE_PTRS_PER_PDT][PAE_PTRS_PER_PT] __attribute__((aligned(4096)));
+	vtd_slpgtbl_t devpgtbl __attribute__((aligned(4096)));
+	u8  deviomap[2 * PAGE_SIZE_4K] __attribute__((aligned(4096)));
+	u64 slabtype; //hypervisor, guest
+	bool mempgtbl_initialized;
+	bool devpgtbl_initialized;
+	u64 mempgtbl_cr3;
+	u64 slabtos[MAX_PLATFORM_CPUS];
+} __attribute__((packed)) __attribute__((aligned(4096))) slab_info_archdata_t;
+
 
 typedef struct {
     u64 pci_bus;
@@ -145,12 +168,67 @@ struct _memorytype {
 
 
 // segment selectors
-#define 	__CS_CPL0 	0x0008 	//CPL-0 code segment selector
-#define 	__DS_CPL0 	0x0010 	//CPL-0 data segment selector
-#define		__CS_CPL3	0x001b	//CPL-3 code segment selector
-#define		__DS_CPL3	0x0023  //CPL-3 data segment selector
-#define 	__TRSEL 	0x0028  //TSS (task) selector
+#define 	__CS_CPL0 	    0x0008 	//CPL-0 code segment selector
+#define 	__DS_CPL0 	    0x0010 	//CPL-0 data segment selector
+#define		__CS_CPL3	    0x001b	//CPL-3 code segment selector
+#define		__DS_CPL3	    0x0023  //CPL-3 data segment selector
+#define		__CS_CPL3_SE	0x002b	//CPL-3 code segment selector
+#define		__DS_CPL3_SE	0x0033  //CPL-3 data segment selector
+#define 	__TRSEL 	    0x0038  //TSS (task) selector
 
+
+
+typedef struct {
+    u64 r8;
+    u64 r9;
+    u64 r10;
+    u64 r11;
+    u64 r12;
+    u64 r13;
+    u64 r14;
+    u64 r15;
+    u64 rax;
+    u64 rbx;
+    u64 rcx;
+    u64 rdx;
+    u64 rsi;
+    u64 rdi;
+    u64 rbp;
+    u64 rsp;
+    u64 vector;
+    u64 orig_rip;
+    u64 orig_cs;
+    u64 orig_rflags;
+    u64 orig_rsp;
+    u64 orig_ss;
+} __attribute__((packed)) x86vmx_exception_frame_t;
+
+
+typedef struct {
+    u64 r8;
+    u64 r9;
+    u64 r10;
+    u64 r11;
+    u64 r12;
+    u64 r13;
+    u64 r14;
+    u64 r15;
+    u64 rax;
+    u64 rbx;
+    u64 rcx;
+    u64 rdx;
+    u64 rsi;
+    u64 rdi;
+    u64 rbp;
+    u64 rsp;
+    u64 vector;
+    u64 errorcode;
+    u64 orig_rip;
+    u64 orig_cs;
+    u64 orig_rflags;
+    u64 orig_rsp;
+    u64 orig_ss;
+} __attribute__((packed)) x86vmx_exception_frame_errcode_t;
 
 //*
 //x86 GDT descriptor type
@@ -171,7 +249,7 @@ typedef struct {
 typedef struct __tss {
 	u32 reserved;
 	u64 rsp0;
-} tss_t;
+} __attribute__((packed)) tss_t;
 
 #define	EMHF_XCPHANDLER_MAXEXCEPTIONS	32
 #define EMHF_XCPHANDLER_IDTSIZE			(EMHF_XCPHANDLER_MAXEXCEPTIONS * 8)
@@ -214,7 +292,7 @@ bool xmhf_baseplatform_arch_x86_isbsp(void);
 void xmhf_baseplatform_arch_x86_wakeupAPs(void);
 
 //generic x86 platform reboot
-void xmhf_baseplatform_arch_x86_reboot(void);
+//void xmhf_baseplatform_arch_x86_reboot(void);
 
 //get the physical address of the root system description pointer (rsdp)
 u32 xmhf_baseplatform_arch_x86_acpi_getRSDP(ACPI_RSDP *rsdp);
@@ -340,9 +418,12 @@ typedef struct {
   u8 vmx_vmcs_region[PAGE_SIZE_4K] __attribute__((aligned(4096)));
   u8 vmx_msr_area_host_region[2*PAGE_SIZE_4K] __attribute__((aligned(4096)));
   u8 vmx_msr_area_guest_region[2*PAGE_SIZE_4K] __attribute__((aligned(4096)));
+  u8 vmx_iobitmap_region[2][PAGE_SIZE_4K] __attribute__((aligned(4096)));		//I/O Bitmap area
+  u8 vmx_msrbitmaps_region[PAGE_SIZE_4K] __attribute__((aligned(4096)));		//MSR bitmap area
   u64 vmx_msrs[IA32_VMX_MSRCOUNT];
   u64 vmx_msr_efer;
   u64 vmx_msr_efcr;
+  x86regs64_t vmx_gprs;
 } __attribute__((packed)) xc_cpuarchdata_x86vmx_t;
 
 
@@ -394,6 +475,41 @@ void xmhf_memprot_arch_x86vmx_set_EPTP(u64 eptp);
 
 void xmhf_parteventhub_arch_x86vmx_entry(void);
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//generic x86 platform reboot
+static inline void xmhf_baseplatform_arch_x86_reboot(void){
+	unsigned char flush = 0x02;
+
+#ifndef __XMHF_VERIFICATION__
+
+	while ((flush & 0x02) != 0)
+		flush = inb(0x64);
+	outb(0xFE, 0x64);
+
+	//never get here
+	//_XDPRINTF_("\n%s: should never get here. halt!", __FUNCTION__);
+	HALT();
+
+#else   //__XMHF_VERIFICATION__
+	//TODO: plug in a 8042 controller/reset h/w model
+
+#endif	//__XMHF_VERIFICATION__
+
+}
 
 
 

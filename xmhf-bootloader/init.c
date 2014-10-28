@@ -48,12 +48,12 @@
 //author: amit vasudevan (amitvasudevan@acm.org)
 
 //---includes-------------------------------------------------------------------
-#include <xmhf.h> 
+#include <xmhf.h>
 #include <xmhf-core.h>
 #include <xmhf-debug.h>
 
 #include <xmhfcrypto.h>
-#include <tpm.h>
+//#include <tpm.h>
 #include <cmdline.h>
 
 
@@ -151,17 +151,17 @@ void dealwithMP(void){
 //---microsecond delay----------------------------------------------------------
 void udelay(u32 usecs){
     u8 val;
-    u32 latchregval;  
+    u32 latchregval;
 
     //enable 8254 ch-2 counter
     val = inb(0x61);
     val &= 0x0d; //turn PC speaker off
     val |= 0x01; //turn on ch-2
     outb(val, 0x61);
-  
+
     //program ch-2 as one-shot
     outb(0xB0, 0x43);
-  
+
     //compute appropriate latch register value depending on usecs
     latchregval = (1193182 * usecs) / 1000000;
 
@@ -170,10 +170,10 @@ void udelay(u32 usecs){
     outb(val, 0x42);
     val = (u8)((u32)latchregval >> (u32)8);
     outb(val , 0x42);
-  
+
     //wait for countdown
     while(!(inb(0x61) & 0x20));
-  
+
     //disable ch-2 counter
     val = inb(0x61);
     val &= 0x0c;
@@ -186,12 +186,12 @@ void send_init_ipi_to_all_APs(void) {
     u32 eax, edx;
     volatile u32 *icr;
     u32 timeout = 0x01000000;
-  
+
     //read LAPIC base address from MSR
     rdmsr(MSR_APIC_BASE, &eax, &edx);
     HALT_ON_ERRORCOND( edx == 0 ); //APIC is below 4G
     _XDPRINTF_("\nLAPIC base and status=0x%08x", eax);
-    
+
     icr = (u32 *) (((u32)eax & 0xFFFFF000UL) + 0x300);
 
     //send INIT
@@ -221,7 +221,7 @@ u32 dealwithE820(multiboot_info_t *mbi, u32 runtimesize __attribute__((unused)))
         _XDPRINTF_("\n%s: no E820 map provided. HALT!", __FUNCTION__);
         HALT();
     }
-  
+
     //zero out grub e820 list
     memset((void *)&grube820list, 0, sizeof(GRUBE820)*MAX_E820_ENTRIES);
 
@@ -235,7 +235,7 @@ u32 dealwithE820(multiboot_info_t *mbi, u32 runtimesize __attribute__((unused)))
             grube820list[grube820list_numentries].baseaddr_low = mmap->base_addr_low;
             grube820list[grube820list_numentries].baseaddr_high = mmap->base_addr_high;
             grube820list[grube820list_numentries].length_low = mmap->length_low;
-            grube820list[grube820list_numentries].length_high = mmap->length_high; 
+            grube820list[grube820list_numentries].length_high = mmap->length_high;
             grube820list[grube820list_numentries].type = mmap->type;
             grube820list_numentries++;
         }
@@ -246,30 +246,30 @@ u32 dealwithE820(multiboot_info_t *mbi, u32 runtimesize __attribute__((unused)))
         u32 i;
         _XDPRINTF_("\noriginal system E820 map follows:\n");
         for(i=0; i < grube820list_numentries; i++){
-            _XDPRINTF_("\n0x%08x%08x, size=0x%08x%08x (%u)", 
+            _XDPRINTF_("\n0x%08x%08x, size=0x%08x%08x (%u)",
                    grube820list[i].baseaddr_high, grube820list[i].baseaddr_low,
                    grube820list[i].length_high, grube820list[i].length_low,
                    grube820list[i].type);
         }
-  
+
     }
-  
+
     //traverse e820 list forward to find an entry with type=0x1 (free)
     //with free amount of memory for runtime
     {
         u32 foundentry=0;
         u32 slruntimephysicalbase=__TARGET_BASE_XMHF;	//SL + runtime base
         u32 i;
-     
+
         //for(i= (int)(grube820list_numentries-1); i >=0; i--){
 		for(i= 0; i < grube820list_numentries; i++){
             u32 baseaddr, size;
             baseaddr = grube820list[i].baseaddr_low;
             size = grube820list[i].length_low;
-    
+
             if(grube820list[i].type == 0x1){ //free memory?
                 if(grube820list[i].baseaddr_high) //greater than 4GB? then skip
-                    continue; 
+                    continue;
 
                 if(grube820list[i].length_high){
                     _XDPRINTF_("\n%s: E820 parsing error (64-bit length for < 4GB). HALT!");
@@ -282,8 +282,8 @@ u32 dealwithE820(multiboot_info_t *mbi, u32 runtimesize __attribute__((unused)))
                     break;
                 }
             }
-        } 
-    
+        }
+
         if(!foundentry){
             _XDPRINTF_("\n%s: unable to find E820 memory for SL+runtime. HALT!");
             HALT();
@@ -291,13 +291,13 @@ u32 dealwithE820(multiboot_info_t *mbi, u32 runtimesize __attribute__((unused)))
 
 		//entry number we need to split is indexed by i
 		_XDPRINTF_("\nproceeding to revise E820...");
-		
+
 		{
-				
+
 				//temporary E820 table with index
 				GRUBE820 te820[MAX_E820_ENTRIES];
 				u32 j=0;
-				
+
 				//copy all entries from original E820 table until index i
 				for(j=0; j < i; j++)
 					memcpy((void *)&te820[j], (void *)&grube820list[j], sizeof(GRUBE820));
@@ -335,7 +335,7 @@ u32 dealwithE820(multiboot_info_t *mbi, u32 runtimesize __attribute__((unused)))
 						j++;
 						i++;
 				}
-				
+
 				//copy entries i through end of original E820 list into temporary E820 list starting at index j
 				while(i < grube820list_numentries){
 					memcpy((void *)&te820[j], (void *)&grube820list[i], sizeof(GRUBE820));
@@ -349,13 +349,13 @@ u32 dealwithE820(multiboot_info_t *mbi, u32 runtimesize __attribute__((unused)))
 		}
 
 		_XDPRINTF_("\nE820 revision complete.");
-			
+
 		//debug: print grube820list
 		{
 			u32 i;
 			_XDPRINTF_("\nrevised system E820 map follows:\n");
 			for(i=0; i < grube820list_numentries; i++){
-				_XDPRINTF_("\n0x%08x%08x, size=0x%08x%08x (%u)", 
+				_XDPRINTF_("\n0x%08x%08x, size=0x%08x%08x (%u)",
 					   grube820list[i].baseaddr_high, grube820list[i].baseaddr_low,
 					   grube820list[i].length_high, grube820list[i].length_low,
 					   grube820list[i].type);
@@ -365,7 +365,7 @@ u32 dealwithE820(multiboot_info_t *mbi, u32 runtimesize __attribute__((unused)))
 
         return slruntimephysicalbase;
     }
-  
+
 }
 
 /* Run tests to determine if platform supports TXT.  Note that this
@@ -392,15 +392,15 @@ bool txt_supports_txt(void) {
                feat_ctrl_msr);
         return false;
     }
-    
-    
+
+
     /* Check that processor supports SMX instructions */
     if ( !(cpuid_ext_feat_info & CPUID_X86_FEATURE_SMX) ) {
         _XDPRINTF_("ERR: CPU does not support SMX\n");
         return false;
     }
     _XDPRINTF_("CPU is SMX-capable\n");
-    
+
     /* and that SENTER (w/ full params) is enabled */
     if ( !(feat_ctrl_msr & (IA32_FEATURE_CONTROL_MSR_ENABLE_SENTER |
                             IA32_FEATURE_CONTROL_MSR_SENTER_PARAM_CTL)) ) {
@@ -421,14 +421,14 @@ bool txt_supports_txt(void) {
     if(!cap.chipset_present) {
         _XDPRINTF_("ERR: TXT-capable chipset not present\n");
         return false;
-    }        
+    }
     if (!(cap.senter && cap.sexit && cap.parameters && cap.smctrl &&
           cap.wakeup)) {
         _XDPRINTF_("ERR: insufficient SMX capabilities (0x%08x)\n", cap._raw);
         return false;
-    }    
-    _XDPRINTF_("TXT chipset and all needed capabilities (0x%08x) present\n", cap._raw);    
-    
+    }
+    _XDPRINTF_("TXT chipset and all needed capabilities (0x%08x) present\n", cap._raw);
+
     return true;
 }
 
@@ -439,12 +439,12 @@ tb_error_t txt_verify_platform(void)
     txt_ests_t ests;
 
     _XDPRINTF_("txt_verify_platform\n");
-    
+
     /* check TXT supported */
     if(!txt_supports_txt()) {
         _XDPRINTF_("FATAL ERROR: TXT not suppported\n");
         HALT();
-    }    
+    }
 
     /* check is TXT_RESET.STS is set, since if it is SENTER will fail */
     ests = (txt_ests_t)read_pub_config_reg(TXTCR_ESTS);
@@ -508,7 +508,7 @@ void txt_status_regs(void) {
     if ( ests.txt_wake_error_sts ) {
         e2sts = (txt_e2sts_t)read_pub_config_reg(TXTCR_E2STS);
         _XDPRINTF_("LT.E2STS=%llx\n", e2sts._raw);
-    }    
+    }
 }
 
 /* Transfer control to the SL using GETSEC[SENTER] */
@@ -516,7 +516,7 @@ void txt_status_regs(void) {
 txt_prepare_cpu();
 txt_verify_platform();
 // Legacy USB?
-    // disable legacy USB #SMIs 
+    // disable legacy USB #SMIs
     get_tboot_no_usb();
     disable_smis();
 prepare_tpm();
@@ -526,7 +526,7 @@ bool txt_do_senter(void *phys_mle_start, size_t mle_size) {
     tb_error_t err;
 
     txt_status_regs();
-    
+
     if((err = txt_verify_platform()) != TB_ERR_NONE) {
         _XDPRINTF_("ERROR: txt_verify_platform returned 0x%08x\n", (u32)err);
         return false;
@@ -535,7 +535,7 @@ bool txt_do_senter(void *phys_mle_start, size_t mle_size) {
         _XDPRINTF_("ERROR: txt_prepare_cpu failed.\n");
         return false;
     }
-    
+
     ///XXX TODO get addresses of SL, populate a mle_hdr_t
     txt_launch_environment(g_sinit_module_ptr, g_sinit_module_size,
                            phys_mle_start, mle_size);
@@ -559,7 +559,7 @@ static bool txt_parse_sinit(module_t *mod_array, unsigned int mods_count) {
     if(mods_count > 10) {
         return false;
     }
-    
+
     for(i=(int)mods_count-1; i >= 0; i--) {
         bytes = mod_array[i].mod_end - mod_array[i].mod_start;
         _XDPRINTF_("Checking whether MBI module %i is SINIT...\n", i);
@@ -574,7 +574,7 @@ static bool txt_parse_sinit(module_t *mod_array, unsigned int mods_count) {
         }
     }
 
-    return false;    
+    return false;
 }
 
 //---svm_verify_platform-------------------------------------------------------
@@ -586,7 +586,7 @@ static bool svm_verify_platform(void)
     uint64_t efer;
 
     cpuid(0x80000001, &eax, &ebx, &ecx, &edx);
-    
+
     if ((ecx & SVM_CPUID_FEATURE) == 0) {
         _XDPRINTF_("ERR: CPU does not support AMD SVM\n");
         return false;
@@ -655,15 +655,15 @@ static bool svm_prepare_cpu(void)
     mcg_cap = rdmsr64(MSR_MCG_CAP);
     bound = (u32)mcg_cap & 0x000000ff;
     for (i = 0; i < bound; i++) {
-        mcg_stat = rdmsr64(MSR_MC0_STATUS + 4*i);               
+        mcg_stat = rdmsr64(MSR_MC0_STATUS + 4*i);
         if (mcg_stat & (1ULL << 63)) {
             _XDPRINTF_("MCG[%d] = %llx ERROR\n", i, mcg_stat);
             return false;
         }
     }
-    
+
     _XDPRINTF_("no machine check errors\n");
-    
+
     /* clear microcode on all the APs handled in mp_cstartup() */
     /* put all APs in INIT handled in do_drtm() */
 
@@ -675,13 +675,13 @@ static bool svm_prepare_cpu(void)
 
 //---do_drtm--------------------------------------------------------------------
 //this establishes a dynamic root of trust
-//inputs: 
+//inputs:
 //cpu_vendor = intel or amd
 //slbase= physical memory address of start of sl
 void do_drtm(BOOTVCPU __attribute__((unused))*vcpu, u32 slbase, size_t mle_size __attribute__((unused))){
 //#ifdef __MP_VERSION__
     HALT_ON_ERRORCOND(vcpu->id == 0);
-    //send INIT IPI to all APs 
+    //send INIT IPI to all APs
     send_init_ipi_to_all_APs();
     _XDPRINTF_("\nINIT(early): sent INIT IPI to APs");
 //#endif
@@ -714,12 +714,12 @@ void do_drtm(BOOTVCPU __attribute__((unused))*vcpu, u32 slbase, size_t mle_size 
 		//#endif
         skinit((u32)slbase);
     } else {
-        _XDPRINTF_("\n******  INIT(early): Begin TXT Stuff  ******\n");        
+        _XDPRINTF_("\n******  INIT(early): Begin TXT Stuff  ******\n");
         txt_do_senter((void*)(slbase+3*PAGE_SIZE_4K), TEMPORARY_HARDCODED_MLE_SIZE);
         _XDPRINTF_("\nINIT(early): error(fatal), should never come here!");
         HALT();
     }
-    
+
 #else  //!__DRT__
 	//don't use SKINIT or SENTER
 	{
@@ -727,7 +727,7 @@ void do_drtm(BOOTVCPU __attribute__((unused))*vcpu, u32 slbase, size_t mle_size 
 		u16 *sl_entry_point_offset = (u16 *)slbase;
 		typedef void(*FCALL)(void);
 		FCALL invokesl;
-		
+
 		_XDPRINTF_("\n****** NO DRTM startup ******\n");
 		_XDPRINTF_("\nslbase=0x%08x, sl_entry_point_offset=0x%08x", (u32)slbase, *sl_entry_point_offset);
 		sl_entry_point = (u32)slbase + (u32) (*sl_entry_point_offset);
@@ -736,30 +736,30 @@ void do_drtm(BOOTVCPU __attribute__((unused))*vcpu, u32 slbase, size_t mle_size 
 		invokesl();
         _XDPRINTF_("\nINIT(early): error(fatal), should never come here!");
         HALT();
-	}	
-#endif    
- 
+	}
+#endif
+
 }
 
 
 void setupvcpus(u32 cpu_vendor, MIDTAB *midtable, u32 midtable_numentries){
     u32 i;
     BOOTVCPU *vcpu;
-  
+
     _XDPRINTF_("\n%s: cpustacks range 0x%08x-0x%08x in 0x%08x chunks",
            __FUNCTION__, (u32)cpustacks, (u32)cpustacks + (RUNTIME_STACK_SIZE * MAX_VCPU_ENTRIES),
            RUNTIME_STACK_SIZE);
     _XDPRINTF_("\n%s: vcpubuffers range 0x%08x-0x%08x in 0x%08x chunks",
            __FUNCTION__, (u32)vcpubuffers, (u32)vcpubuffers + (SIZE_STRUCT_BOOTVCPU * MAX_VCPU_ENTRIES),
            SIZE_STRUCT_BOOTVCPU);
-          
+
     for(i=0; i < midtable_numentries; i++){
         vcpu = (BOOTVCPU *)((u32)vcpubuffers + (u32)(i * SIZE_STRUCT_BOOTVCPU));
         memset((void *)vcpu, 0, sizeof(BOOTVCPU));
-    
+
         vcpu->cpu_vendor = cpu_vendor;
-    
-        vcpu->esp = ((u32)cpustacks + (i * RUNTIME_STACK_SIZE)) + RUNTIME_STACK_SIZE;    
+
+        vcpu->esp = ((u32)cpustacks + (i * RUNTIME_STACK_SIZE)) + RUNTIME_STACK_SIZE;
         vcpu->id = midtable[i].cpu_lapic_id;
 
         midtable[i].vcpu_vaddr_ptr = (u32)vcpu;
@@ -773,14 +773,14 @@ void setupvcpus(u32 cpu_vendor, MIDTAB *midtable, u32 midtable_numentries){
 void wakeupAPs(void){
     u32 eax, edx;
     volatile u32 *icr;
-  
+
     //read LAPIC base address from MSR
     rdmsr(MSR_APIC_BASE, &eax, &edx);
     HALT_ON_ERRORCOND( edx == 0 ); //APIC is below 4G
     //_XDPRINTF_("\nLAPIC base and status=0x%08x", eax);
-    
+
     icr = (u32 *) (((u32)eax & 0xFFFFF000UL) + 0x300);
-    
+
     {
         extern u32 _ap_bootstrap_start[], _ap_bootstrap_end[];
         memcpy((void *)0x10000, (void *)_ap_bootstrap_start, (u32)_ap_bootstrap_end - (u32)_ap_bootstrap_start + 1);
@@ -816,8 +816,8 @@ void wakeupAPs(void){
             }
             _XDPRINTF_("Done.");
         }
-    }    
-    
+    }
+
     _XDPRINTF_("\nAPs should be awake!");
 }
 
@@ -831,14 +831,14 @@ void wakeupAPs(void){
 bool svm_prepare_tpm(void) {
     uint32_t locality = EMHF_TPM_LOCALITY_PREF; /* target.h */
     bool ret = true;
-    
+
     _XDPRINTF_("\nINIT:TPM: prepare_tpm starting.");
     //dump_locality_access_regs();
     xmhf_tpm_deactivate_all_localities();
     //dump_locality_access_regs();
-    
+
     if(TPM_SUCCESS == tpm_wait_cmd_ready(locality)) {
-        _XDPRINTF_("INIT:TPM: successfully opened in Locality %d.\n", locality);            
+        _XDPRINTF_("INIT:TPM: successfully opened in Locality %d.\n", locality);
     } else {
         _XDPRINTF_("INIT:TPM: ERROR: Locality %d could not be opened.\n", locality);
         ret = false;
@@ -855,7 +855,7 @@ void cstartup(multiboot_info_t *mbi){
     module_t *mod_array;
     u32 mods_count;
 	size_t hypapp_size;
-	
+
     /* parse command line */
     memset(g_cmdline, '\0', sizeof(g_cmdline));
     strncpy(g_cmdline, (char*)mbi->cmdline, sizeof(g_cmdline)-1);
@@ -882,48 +882,48 @@ void cstartup(multiboot_info_t *mbi){
 	//welcome banner
 	_XDPRINTF_("\neXtensible Modular Hypervisor Framework (XMHF) %s", ___XMHF_BUILD_VERSION___);
 	_XDPRINTF_("\nBuild revision: %s\n", ___XMHF_BUILD_REVISION___);
-	
+
     _XDPRINTF_("\nXMHF boot-loader: initializing, total modules=%u", mods_count);
 
-	//we need at least 2 modules passed to us via GRUB, the hypapp binary and the guest OS boot-sector. 
+	//we need at least 2 modules passed to us via GRUB, the hypapp binary and the guest OS boot-sector.
 	//If we don't have the bare minimum, bail out early
 	if(mods_count < 2){
 		_XDPRINTF_("\nXMHF boot-loader: Halting, you need a hypapp and the guest OS boot sector at bare minimum!");
-		HALT(); 		
+		HALT();
 	}
 
     //check CPU type (Intel vs AMD)
-    cpu_vendor = get_cpu_vendor_or_die(); // HALT()'s if unrecognized    
+    cpu_vendor = get_cpu_vendor_or_die(); // HALT()'s if unrecognized
 
     if(CPU_VENDOR_INTEL == cpu_vendor) {
         _XDPRINTF_("\nINIT(early): detected an Intel CPU");
-        
+
         /* Intel systems require an SINIT module */
         if(!txt_parse_sinit(mod_array, mods_count)) {
             _XDPRINTF_("\nINIT(early): FATAL ERROR: Intel CPU without SINIT module!\n");
             HALT();
-        }            
+        }
     } else if(CPU_VENDOR_AMD == cpu_vendor) {
         _XDPRINTF_("\nINIT(early): detected an AMD CPU");
     } else {
         _XDPRINTF_("\nINIT(early): Dazed and confused: Unknown CPU vendor %d\n", cpu_vendor);
     }
-    
+
     //deal with MP and get CPU table
     dealwithMP();
 
     //check (and revise) platform E820 memory map to see if we can load at __TARGET_BASE_XMHF
     _XDPRINTF_("xmhf-bootloader: %s:%u\n", __FUNCTION__, __LINE__);
 	sl_rt_size = (mod_array[0].mod_start - __TARGET_BASE_BOOTLOADER) - __TARGET_SIZE_BOOTLOADER;
-	hypervisor_image_baseaddress = dealwithE820(mbi, __TARGET_SIZE_XMHF); 
+	hypervisor_image_baseaddress = dealwithE820(mbi, __TARGET_SIZE_XMHF);
 	_XDPRINTF_("xmhf-bootloader: XMHF binary base=%08x, actual size=%08x bytes, reserved size=%08x bytes\n", hypervisor_image_baseaddress, sl_rt_size, __TARGET_SIZE_XMHF);
-	
+
 	//sanity check memory map and limits; ensure we are loading at 256M
 	HALT_ON_ERRORCOND( (hypervisor_image_baseaddress == __TARGET_BASE_XMHF) );
-		
+
 	//load address of XMHF bootloader = 30MB
 	//sizeof ( XMHF bootloader) = 2MB
-	//sizeof ( XMHF hypervisor binary + guest OS boot-sector + SINIT module (if any) + hypapp specific modules (if any) ) 
+	//sizeof ( XMHF hypervisor binary + guest OS boot-sector + SINIT module (if any) + hypapp specific modules (if any) )
 	//should not be greater than 224MB since we will be loading our system at absolute address 256MB and our current memcpy does not tackle overlaps
 	if ( mod_array[mods_count-1].mod_end >= __TARGET_BASE_XMHF ){
 		_XDPRINTF_("XMHF boot-loader: Halting! XMHF load memory map limits violated. TOMM=0x%08x\n", mod_array[mods_count-1].mod_end);
@@ -935,20 +935,20 @@ void cstartup(multiboot_info_t *mbi){
 	//		_XDPRINTF_("\nXMHF boot-loader: Halting! XMHF SL + core memory limit overflow. size=%08x (max:%08x)", sl_rt_size, (__TARGET_BASE_XMHFHYPAPP - __TARGET_BASE_SL));
 	//		HALT();
 	//	}
-		
+
 	//	//hypapp memory map is from 0x1D000000-0x20000000
 	//	if( hypapp_size > __TARGET_SIZE_XMHFHYPAPP ){
 	//		_XDPRINTF_("\nXMHF boot-loader: Halting! XMHF hypapp memory limit overflow. size=%08x (max:%08x)", hypapp_size, __TARGET_SIZE_XMHFHYPAPP);
 	//		HALT();
 	//	}
-		
+
 
     _XDPRINTF_("xmhf-bootloader: %s:%u\n", __FUNCTION__, __LINE__);
     //relocate XMHF hypervisor binary to preferred load address
     memcpy((void*)__TARGET_BASE_XMHF, (void*)(__TARGET_BASE_BOOTLOADER+__TARGET_SIZE_BOOTLOADER), sl_rt_size);
     _XDPRINTF_("xmhf-bootloader: %s:%u\n", __FUNCTION__, __LINE__);
 
-	
+
     /* runtime */
     //print_hex("    INIT(early): *UNTRUSTED* gold runtime: ",
     //         g_init_gold.sha_runtime, SHA_DIGEST_LENGTH);
@@ -965,13 +965,13 @@ void cstartup(multiboot_info_t *mbi){
     //hashandprint("    INIT(early): *UNTRUSTED* comp SL above 64K): ",
     //             (u8*)hypervisor_image_baseaddress+0x10000, 0x200000-0x10000);
 
-    
+
     //print out stats
     //_XDPRINTF_("\nINIT(early): relocated hypervisor binary image to 0x%08x", hypervisor_image_baseaddress);
     //_XDPRINTF_("\nINIT(early): 2M aligned size = 0x%08lx", PAGE_ALIGN_UP2M((mod_array[0].mod_end - mod_array[0].mod_start)));
     //_XDPRINTF_("\nINIT(early): un-aligned size = 0x%08x", mod_array[0].mod_end - mod_array[0].mod_start);
 
-#if 0    
+#if 0
     //fill in "sl" parameter block
     {
         //"sl" parameter block is at hypervisor_image_baseaddress + 0x10000
@@ -979,14 +979,14 @@ void cstartup(multiboot_info_t *mbi){
         HALT_ON_ERRORCOND(xslbootinfo->magic == SL_PARAMETER_BLOCK_MAGIC);
         xslbootinfo->memmapinfo_numentries = grube820list_numentries;
         HALT_ON_ERRORCOND(xslbootinfo->memmapinfo_numentries <= 64);
-		memcpy((void *)&xslbootinfo->memmapinfo_buffer, (void *)&grube820list, (sizeof(GRUBE820) * grube820list_numentries));         
+		memcpy((void *)&xslbootinfo->memmapinfo_buffer, (void *)&grube820list, (sizeof(GRUBE820) * grube820list_numentries));
         xslbootinfo->cpuinfo_numentries = pcpus_numentries;
         HALT_ON_ERRORCOND(xslbootinfo->cpuinfo_numentries <= 8);
         memcpy((void *)&xslbootinfo->cpuinfo_buffer, (void *)&pcpus, (sizeof(PCPU) * pcpus_numentries));
         //xslbootinfo->runtime_size = sl_rt_size - PAGE_SIZE_2M;
-        xslbootinfo->size = sl_rt_size;
+        //xslbootinfo->xmhf_size = sl_rt_size;
         xslbootinfo->richguest_bootmodule_base = mod_array[1].mod_start;
-        xslbootinfo->richguest_bootmodule_size = (mod_array[1].mod_end - mod_array[1].mod_start); 
+        xslbootinfo->richguest_bootmodule_size = (mod_array[1].mod_end - mod_array[1].mod_start);
 
 		/*//check if we have an optional app module and if so populate relevant SLPB
 		//fields
@@ -1022,17 +1022,17 @@ void cstartup(multiboot_info_t *mbi){
     {
         xslbootinfo = (XMHF_BOOTINFO *)((u32)hypervisor_image_baseaddress);
         _XDPRINTF_("xmhf-bootloader: xslbootinfo=%08x, magic=%x\n", (u32)xslbootinfo, xslbootinfo->magic);
-        HALT_ON_ERRORCOND(xslbootinfo->magic == SL_PARAMETER_BLOCK_MAGIC);
+        HALT_ON_ERRORCOND(xslbootinfo->magic == RUNTIME_PARAMETER_BLOCK_MAGIC);
         xslbootinfo->memmapinfo_numentries = grube820list_numentries;
         HALT_ON_ERRORCOND(xslbootinfo->memmapinfo_numentries <= 64);
-		memcpy((void *)&xslbootinfo->memmapinfo_buffer, (void *)&grube820list, (sizeof(GRUBE820) * grube820list_numentries));         
+		memcpy((void *)&xslbootinfo->memmapinfo_buffer, (void *)&grube820list, (sizeof(GRUBE820) * grube820list_numentries));
         xslbootinfo->cpuinfo_numentries = pcpus_numentries;
         HALT_ON_ERRORCOND(xslbootinfo->cpuinfo_numentries <= 8);
         memcpy((void *)&xslbootinfo->cpuinfo_buffer, (void *)&pcpus, (sizeof(PCPU) * pcpus_numentries));
-        xslbootinfo->size = sl_rt_size;
+        //xslbootinfo->xmhf_size = sl_rt_size;
         xslbootinfo->richguest_bootmodule_base = mod_array[1].mod_start;
-        xslbootinfo->richguest_bootmodule_size = (mod_array[1].mod_end - mod_array[1].mod_start); 
-	
+        xslbootinfo->richguest_bootmodule_size = (mod_array[1].mod_end - mod_array[1].mod_start);
+
 		#if defined (__DEBUG_SERIAL__)
         memcpy(&xslbootinfo->debugcontrol_buffer, &g_uart_config, sizeof(uart_config_t));
 		#endif
@@ -1054,14 +1054,14 @@ void cstartup(multiboot_info_t *mbi){
 
     //setup vcpus
     setupvcpus(cpu_vendor, midtable, midtable_numentries);
-    
+
     //wakeup all APs
     if(midtable_numentries > 1)
         wakeupAPs();
 
     //fall through and enter mp_cstartup via init_core_lowlevel_setup
     init_core_lowlevel_setup();
-        
+
     _XDPRINTF_("\nINIT(early): error(fatal), should never come here!");
     HALT();
 }
@@ -1073,7 +1073,7 @@ u32 isbsp(void){
     //read LAPIC base address from MSR
     rdmsr(MSR_APIC_BASE, &eax, &edx);
     HALT_ON_ERRORCOND( edx == 0 ); //APIC is below 4G
-  
+
     if(eax & 0x100)
         return 1;
     else
@@ -1089,7 +1089,7 @@ void svm_clear_microcode(BOOTVCPU *vcpu){
     // Current microcode patch level available via MSR read
     rdmsr(MSR_AMD64_PATCH_LEVEL, &ucode_rev, &dummy);
     _XDPRINTF_("\nCPU(0x%02x): existing microcode version 0x%08x", vcpu->id, ucode_rev);
-    
+
     if(ucode_rev != 0) {
         wrmsr(MSR_AMD64_PATCH_CLEAR, dummy, dummy);
         _XDPRINTF_("\nCPU(0x%02x): microcode CLEARED", vcpu->id);
@@ -1104,7 +1104,7 @@ u32 lock_cpus_active=1; //spinlock to access the above
 
 
 //------------------------------------------------------------------------------
-//all cores enter here 
+//all cores enter here
 void mp_cstartup (BOOTVCPU *vcpu){
     //sanity, we should be an Intel or AMD core
     HALT_ON_ERRORCOND(vcpu->cpu_vendor == CPU_VENDOR_INTEL ||
@@ -1120,9 +1120,9 @@ void mp_cstartup (BOOTVCPU *vcpu){
             if(!svm_prepare_tpm()) {
                 _XDPRINTF_("\nBSP(0x%02x): ERROR: svm_prepare_tpm FAILED.", vcpu->id);
                 // XXX TODO HALT();
-            }            
+            }
         }
-         
+
         _XDPRINTF_("\nBSP(0x%02x): Rallying APs...", vcpu->id);
 
         //increment a CPU to account for the BSP
@@ -1136,14 +1136,14 @@ void mp_cstartup (BOOTVCPU *vcpu){
 
 
         //put all APs in INIT state
-        
+
         _XDPRINTF_("\nBSP(0x%02x): APs ready, doing DRTM...", vcpu->id);
         //do_drtm(vcpu, hypervisor_image_baseaddress, sl_rt_size); // this function will not return
         do_drtm(vcpu, __TARGET_BASE_SL, sl_rt_size); // this function will not return
-    
+
         _XDPRINTF_("\nBSP(0x%02x): FATAL, should never be here!", vcpu->id);
         HALT();
-    
+
     }else{
         //clear microcode if AMD CPU
         if(vcpu->cpu_vendor == CPU_VENDOR_AMD){
@@ -1151,15 +1151,15 @@ void mp_cstartup (BOOTVCPU *vcpu){
             svm_clear_microcode(vcpu);
             _XDPRINTF_("\nAP(0x%02x): Microcode clear.", vcpu->id);
         }
-    
+
         //update the AP startup counter
         spin_lock(&lock_cpus_active);
         cpus_active++;
         spin_unlock(&lock_cpus_active);
 
         _XDPRINTF_("\nAP(0x%02x): Waiting for DRTM establishment...", vcpu->id);
- 
-        HALT();               
+
+        HALT();
     }
 
 

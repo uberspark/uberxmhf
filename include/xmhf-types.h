@@ -109,12 +109,8 @@ typedef struct _midtab {
 //XMHF_BOOTINFO
 typedef struct {
 	u32 magic;
-	u32 physmem_base;
-	u32 virtmem_base;
-	u32 size;
-	u32 entrypoint;
-	u32 stack_base;
-	u32 stack_size;
+	//u32 xmhf_base;
+	//u32 xmhf_size;
 	u32 richguest_bootmodule_base;
 	u32 richguest_bootmodule_size;
 	u32 memmapinfo_numentries;
@@ -134,25 +130,6 @@ typedef struct {
 
 
 //-------------------------------------------------------
-typedef struct {
-	u64 start;
-	u64 end;
-} slab_section_t;
-
-typedef void * slab_entrystub_t;
-
-typedef struct {
-	u64 slab_index;
-	u64 slab_macmid;
-	u64 slab_privilegemask;
-	u64 slab_tos;
-	slab_section_t slab_code;
-	slab_section_t slab_rodata;
-	slab_section_t slab_rwdata;
-	slab_section_t slab_stack;
-	slab_entrystub_t entry_cr3;
-	slab_entrystub_t entry_cr3_new;
-} slab_header_t;
 
 //XMHF core api CPU descriptor type
 typedef struct {
