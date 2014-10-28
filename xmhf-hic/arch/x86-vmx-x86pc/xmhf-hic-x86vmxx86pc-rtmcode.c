@@ -1118,6 +1118,22 @@ static void __xmhfhic_rtm_uapihandler_cpustate(u64 uapicall_subnum, u64 iparams,
         }
         break;
 
+        case XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSREAD:{
+            //iparams = NULL, oparams = x86regs64_t *
+            memcpy(oparams, & __xmhfhic_x86vmx_archdata[(u32)cpuid].vmx_gprs,
+                   sizeof(x86regs64_t));
+        }
+        break;
+
+        case XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSWRITE:{
+            //iparams = x86regs64_t *, oparams=NULL
+            memcpy(& __xmhfhic_x86vmx_archdata[(u32)cpuid].vmx_gprs,
+                   iparams,
+                   sizeof(x86regs64_t));
+        }
+        break;
+
+
         default:
             _XDPRINTF_("%s[%u]: Unknown cpustate subcall %x. Halting!\n",
                     __FUNCTION__, (u32)cpuid, uapicall_subnum);
@@ -1169,3 +1185,5 @@ void __xmhfhic_rtm_uapihandler(u64 uapicall, u64 uapicall_num, u64 uapicall_subn
 
     return;
 }
+
+
