@@ -56,18 +56,20 @@
 //#include <_xchypapp.h>			//hypapp callback declarations
 
 
-#define XC_HYPAPPCB_HANDLED                   (1)
-#define XC_HYPAPPCB_UNHANDLED                 (0)
+#define XC_HYPAPPCB_CHAIN                       (1)
+#define XC_HYPAPPCB_NOCHAIN                     (2)
 
 #define XC_HYPAPPCB_INITIALIZE                  (1)
 #define XC_HYPAPPCB_HYPERCALL                   (2)
 #define XC_HYPAPPCB_MEMORYFAULT                 (3)
-#define XC_HYPAPPCB_TRAP_IO                     (4)
-#define XC_HYPAPPCB_TRAP_INSTRUCTION            (5)
-#define XC_HYPAPPCB_TRAP_EXCEPTION              (6)
+#define XC_HYPAPPCB_SHUTDOWN                    (4)
+#define XC_HYPAPPCB_TRAP_IO                     (5)
+#define XC_HYPAPPCB_TRAP_INSTRUCTION            (6)
+#define XC_HYPAPPCB_TRAP_EXCEPTION              (7)
 
 typedef struct {
     u64 cbtype;
+    u64 guest_slab_index;
 }__attribute__((packed)) xc_hypappcb_inputparams_t;
 
 

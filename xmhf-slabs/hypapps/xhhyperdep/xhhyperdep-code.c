@@ -53,173 +53,13 @@
 
 #include <xhhyperdep.h>
 
-
-/////////////////////////////////////////////////////////////////////
-void xhhyperdep_interface(slab_input_params_t *iparams, u64 iparams_size, slab_output_params_t *oparams, u64 oparams_size, u64 src_slabid, u64 cpuindex){
-    xc_hypappcb_inputparams_t *hcb_iparams = (xc_hypappcb_inputparams_t *)iparams;
-    xc_hypappcb_outputparams_t *hcb_oparams = (xc_hypappcb_outputparams_t *)oparams;
-
-
-	_XDPRINTF_("%s[%u]: Got control, cbtype=%x: RSP=%016llx\n",
-                __FUNCTION__, (u32)cpuindex, hcb_iparams->cbtype, read_rsp());
-
-
-    switch(hcb_iparams->cbtype){
-        case XC_HYPAPPCB_INITIALIZE:{
-
-        }
-        break;
-
-        case XC_HYPAPPCB_HYPERCALL:{
-
-
-        }
-        break;
-
-        case XC_HYPAPPCB_MEMORYFAULT:{
-
-
-        }
-        break;
-
-
-        case XC_HYPAPPCB_TRAP_IO:{
-
-
-        }
-        break;
-
-        case XC_HYPAPPCB_TRAP_INSTRUCTION:{
-
-
-        }
-        break;
-
-
-        case XC_HYPAPPCB_TRAP_EXCEPTION:{
-
-
-        }
-        break;
-
-
-        default:{
-            _XDPRINTF_("%s[%u]: Unknown cbtype. Halting!\n",
-                __FUNCTION__, (u32)cpuindex);
-            HALT();
-        }
-    }
-
-
-    hcb_oparams->cbresult=XC_HYPAPPCB_HANDLED;
-
-}
-
-
-
-
-slab_retval_t xhhyperdep_interface(u32 src_slabid, u32 dst_slabid, u32 fn_id, u32 fn_paramsize, ...){
-	slab_retval_t srval;
-	va_list args;
-
-	_XDPRINTF_("%s: Got control: src_slabid=%u, dst_slabid=%u, fn_id=%u, fn_paramsize=%u\n", __FUNCTION__, src_slabid, dst_slabid, fn_id, fn_paramsize);
-
-	switch(fn_id){
-			case XMHF_SLAB_HYPAPP_FNINITIALIZATION:{
-				context_desc_t context_desc;
-				hypapp_env_block_t hypappenvb;
-				va_start(args, fn_paramsize);
-				context_desc = va_arg(args, context_desc_t);
-				hypappenvb = va_arg(args, hypapp_env_block_t);
-				srval.retval_u32 = xmhf_hypapp_initialization(context_desc, hypappenvb);
-				va_end(args);
-			}
-			break;
-
-			case XMHF_SLAB_HYPAPP_FNHANDLEHYPERCALL:{
-				context_desc_t context_desc;
-				u64 hypercall_id;
-				u64 hypercall_param;
-				va_start(args, fn_paramsize);
-				context_desc = va_arg(args, context_desc_t);
-				hypercall_id = va_arg(args, u64);
-				hypercall_param = va_arg(args, u64);
-				srval.retval_u32 = xmhf_hypapp_handlehypercall(context_desc, hypercall_id, hypercall_param);
-				va_end(args);
-			}
-			break;
-
-			case XMHF_SLAB_HYPAPP_FNHANDLEINTERCEPTHPTFAULT:{
-				context_desc_t context_desc;
-				u64 gpa;
-				u64 gva;
-				u64 error_code;
-				va_start(args, fn_paramsize);
-				context_desc = va_arg(args, context_desc_t);
-				gpa = va_arg(args, u64);
-				gva = va_arg(args, u64);
-				error_code = va_arg (args, u64);
-				srval.retval_u32 = xmhf_hypapp_handleintercept_hptfault(context_desc, gpa, gva, error_code);
-				va_end(args);
-			}
-			break;
-
-			case XMHF_SLAB_HYPAPP_FNHANDLEINTERCEPTTRAP:{
-				context_desc_t context_desc;
-				xc_hypapp_arch_param_t xc_hypapp_arch_param;
-				va_start(args, fn_paramsize);
-				context_desc = va_arg(args, context_desc_t);
-				xc_hypapp_arch_param = va_arg(args, xc_hypapp_arch_param_t);
-				srval.retval_u32 = xmhf_hypapp_handleintercept_trap(context_desc, xc_hypapp_arch_param);
-				va_end(args);
-			}
-			break;
-
-			case XMHF_SLAB_HYPAPP_FNSHUTDOWN:{
-				context_desc_t context_desc;
-				va_start(args, fn_paramsize);
-				context_desc = va_arg(args, context_desc_t);
-				xmhf_hypapp_handleshutdown(context_desc);
-				va_end(args);
-			}
-			break;
-
-			default:
-				_XDPRINTF_("%s: unhandled subinterface %u. Halting\n", __FUNCTION__, fn_id);
-				HALT();
-	}
-
-	return srval;
-}
-
-//////////////////////////////////////////////////////////////////////////
-
 #define HYPERDEP_ACTIVATEDEP			0xC0
 #define HYPERDEP_DEACTIVATEDEP			0xC1
 #define HYPERDEP_INITIALIZE				0xC2
 
-u32 hd_runtimephysbase=0;
-u32 hd_runtimesize=0;
 
 
-// hypapp initialization
-u32 xmhf_hypapp_initialization(context_desc_t context_desc, hypapp_env_block_t hypappenvb){
-	_XDPRINTF_("CPU %u: hyperDEP initializing\n", context_desc.cpu_desc.cpu_index);
-
-	//store runtime base and size
-	hd_runtimephysbase = hypappenvb.runtimephysmembase;
-	hd_runtimesize = hypappenvb.runtimesize;
-
-	_XDPRINTF_("%s: XMHF runtime base=%08x, size=%08x\n", __FUNCTION__, hd_runtimephysbase, hd_runtimesize);
-
-	_XDPRINTF_("CPU %u: hyperDEP initialized!\n", context_desc.cpu_desc.cpu_index);
-
-	return APP_INIT_SUCCESS;  //successful
-}
-
-//----------------------------------------------------------------------
-// RUNTIME
-
+/*
 static void hd_activatedep(context_desc_t context_desc, u32 gpa){
 	u64 entry;
     slab_retval_t srval;
@@ -257,19 +97,29 @@ static void hd_deactivatedep(context_desc_t context_desc, u32 gpa){
 static void hd_initialize(context_desc_t context_desc){
 	_XDPRINTF_("%s: nothing to do\n", __FUNCTION__);
 }
+*/
 
 
-u32 xmhf_hypapp_handlehypercall(context_desc_t context_desc, u64 hypercall_id, u64 hypercall_param){
-	u32 status=APP_SUCCESS;
-	u32 call_id;
-	u32 gva, gpa;
-    slab_retval_t srval;
+// hypapp initialization
+static void _hcb_initialize(u64 cpuindex){
+
+	_XDPRINTF_("CPU %s[%u]: hyperDEP initializing...\n", __FUNCTION__, (u32)cpuindex);
+
+}
+
+
+
+static void _hcb_hypercall(u64 cpuindex, u64 guest_slab_index, u64 hypercall_id, u64 hypercall_param){
+	u64 status=XC_HYPAPPCB_HANDLED;
+/*	u64 call_id;
+	u64 gva, gpa;
+    //slab_retval_t srval;
 
 	call_id= hypercall_id;
 
-	gva=(u32)hypercall_param;
+	gva=hypercall_param;
 
-	_XDPRINTF_("\nCPU(%02x): %s starting: call number=%x, gva=%x", context_desc.cpu_desc.cpu_index, __FUNCTION__, call_id, gva);
+	_XDPRINTF_("CPU %s[%u]: call number=%x, gva=%x", __FUNCTION__, (u32)cpuindex, call_id, gva);
 
 	switch(call_id){
 		case HYPERDEP_INITIALIZE:{
@@ -307,45 +157,82 @@ u32 xmhf_hypapp_handlehypercall(context_desc_t context_desc, u64 hypercall_id, u
 			status=APP_ERROR;
 			break;
 	}
-
+*/
 	return status;
-}
 
-
-//handles XMHF shutdown callback
-//note: should not return
-void xmhf_hypapp_handleshutdown(context_desc_t context_desc){
-	_XDPRINTF_("\n%s:%u: rebooting now", __FUNCTION__, context_desc.cpu_desc.cpu_index);
-	XMHF_SLAB_CALL_P2P(xcapi, XMHF_SLAB_XHHYPERDEP_INDEX, XMHF_SLAB_XCAPI_INDEX, XMHF_SLAB_XCAPI_FNXCAPIPLATFORMSHUTDOWN, XMHF_SLAB_XCAPI_FNXCAPIPLATFORMSHUTDOWN_SIZE, context_desc);
 
 }
 
-//handles h/w pagetable violations
-//for now this always returns APP_SUCCESS
-u32 xmhf_hypapp_handleintercept_hptfault(context_desc_t context_desc, u64 gpa, u64 gva, u64 error_code){
-	u32 status = APP_SUCCESS;
+static void _hcb_shutdown(u64 cpuindex, u64 guest_slab_index){
+	_XDPRINTF_("CPU %s[%u]: guest slab %u shutdown...\n", __FUNCTION__, (u32)cpuindex, guest_slab_index);
+}
 
-	_XDPRINTF_("CPU(%02x): FATAL HWPGTBL violation (gva=%x, gpa=%x, code=%x): app tried to execute data page??\n", context_desc.cpu_desc.cpu_index, (u32)gva, (u32)gpa, (u32)error_code);
+
+static void _hcb_memoryfault(u64 cpuindex, u64 guest_slab_index, u64 gpa, u64 gva, u64 error_code){
+
+	_XDPRINTF_("CPU %s[%u]: memory fault in guest slab %u; data page execution?. Halting!\n",
+            __FUNCTION__, (u32)cpuindex, guest_slab_index);
+
 	HALT();
-
-	return status;
 }
 
 
-//handles i/o port intercepts
-//returns either APP_IOINTERCEPT_SKIP or APP_IOINTERCEPT_CHAIN
-u32 xmhf_hypapp_handleintercept_trap(context_desc_t context_desc, xc_hypapp_arch_param_t xc_hypapp_arch_param){
- 	return APP_TRAP_CHAIN;
+/////////////////////////////////////////////////////////////////////
+void xhhyperdep_interface(slab_input_params_t *iparams, u64 iparams_size, slab_output_params_t *oparams, u64 oparams_size, u64 src_slabid, u64 cpuindex){
+    xc_hypappcb_inputparams_t *hcb_iparams = (xc_hypappcb_inputparams_t *)iparams;
+    xc_hypappcb_outputparams_t *hcb_oparams = (xc_hypappcb_outputparams_t *)oparams;
+    hcb_oparams->cbresult=XC_HYPAPPCB_CHAIN;
+
+
+	_XDPRINTF_("%s[%u]: Got control, cbtype=%x: RSP=%016llx\n",
+                __FUNCTION__, (u32)cpuindex, hcb_iparams->cbtype, read_rsp());
+
+
+    switch(hcb_iparams->cbtype){
+        case XC_HYPAPPCB_INITIALIZE:{
+            _hcb_initialize(cpuindex);
+        }
+        break;
+
+        case XC_HYPAPPCB_HYPERCALL:{
+            _hcb_hypercall(cpuindex, hcb_iparams->guest_slab_index, 0, 0);
+        }
+        break;
+
+        case XC_HYPAPPCB_MEMORYFAULT:{
+            _hcb_memoryfault(cpuindex, hcb_iparams->guest_slab_index, 0, 0, 0);
+        }
+        break;
+
+        case XC_HYPAPPCB_SHUTDOWN:{
+            _hcb_shutdown(cpuindex, hcb_iparams->guest_slab_index);
+        }
+        break;
+
+        //case XC_HYPAPPCB_TRAP_IO:{
+        //
+        //
+        //}
+        //break;
+
+        //case XC_HYPAPPCB_TRAP_INSTRUCTION:{
+        //
+        //
+        //}
+        //break;
+
+        //case XC_HYPAPPCB_TRAP_EXCEPTION:{
+        //
+        //
+        //}
+        //break;
+
+
+        default:{
+            _XDPRINTF_("%s[%u]: Unknown cbtype. Halting!\n",
+                __FUNCTION__, (u32)cpuindex);
+            HALT();
+        }
+    }
+
 }
-
-
-//quiesce handler
-void xmhf_hypapp_handlequiesce(context_desc_t context_desc){
-	//flush hpt caches on CPU
-    XMHF_SLAB_CALL_P2P(xcapi, XMHF_SLAB_XHHYPERDEP_INDEX, XMHF_SLAB_XCAPI_INDEX, XMHF_SLAB_XCAPI_FNXCAPIHPTFLUSHCACHES, XMHF_SLAB_XCAPI_FNXCAPIHPTFLUSHCACHES_SIZE, context_desc);
-}
-
-////////
-XMHF_SLAB_DEF(xhhyperdep)
-
-
