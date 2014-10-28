@@ -178,34 +178,35 @@ void xcihub_interface(slab_input_params_t *iparams, u64 iparams_size, slab_outpu
 
         //instruction traps
         case VMX_VMEXIT_CPUID:{
-            u64 guest_rip;
-            u64 info_vmexit_instruction_length;
-            bool clearsyscallretbit=false;
-            x86regs64_t r;
+            if(_xcihub_hcbinvoke(XC_HYPAPPCB_HYPERCALL, src_slabid) == XC_HYPAPPCB_CHAIN){
+                u64 guest_rip;
+                u64 info_vmexit_instruction_length;
+                bool clearsyscallretbit=false;
+                x86regs64_t r;
 
-            _XDPRINTF_("%s[%u]: VMX_VMEXIT_cpuindex\n",
-                __FUNCTION__, (u32)cpuindex);
+                _XDPRINTF_("%s[%u]: VMX_VMEXIT_CPUID\n",
+                    __FUNCTION__, (u32)cpuindex);
 
-            XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSREAD, NULL, &r);
+                XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSREAD, NULL, &r);
 
-            if((u32)r.rax == 0x80000001)
-                clearsyscallretbit = true;
+                if((u32)r.rax == 0x80000001)
+                    clearsyscallretbit = true;
 
-            cpuid((u32)r.rax, (u32 *)&r.rax, (u32 *)&r.rbx, (u32 *)&r.rcx, (u32 *)&r.rdx);
+                cpuid((u32)r.rax, (u32 *)&r.rax, (u32 *)&r.rbx, (u32 *)&r.rcx, (u32 *)&r.rdx);
 
-            if(clearsyscallretbit)
-                r.rdx = r.rdx & (u64)~(1ULL << 11);
+                if(clearsyscallretbit)
+                    r.rdx = r.rdx & (u64)~(1ULL << 11);
 
-            XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSWRITE, &r, NULL);
+                XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSWRITE, &r, NULL);
 
-            XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMREAD, VMCS_INFO_VMEXIT_INSTRUCTION_LENGTH, &info_vmexit_instruction_length);
-            XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMREAD, VMCS_GUEST_RIP, &guest_rip);
-            guest_rip+=info_vmexit_instruction_length;
-            XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMWRITE, VMCS_GUEST_RIP, guest_rip);
+                XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMREAD, VMCS_INFO_VMEXIT_INSTRUCTION_LENGTH, &info_vmexit_instruction_length);
+                XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMREAD, VMCS_GUEST_RIP, &guest_rip);
+                guest_rip+=info_vmexit_instruction_length;
+                XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMWRITE, VMCS_GUEST_RIP, guest_rip);
 
-            _XDPRINTF_("%s[%u]: adjusted guest_rip=%016llx\n",
-                __FUNCTION__, (u32)cpuindex, guest_rip);
-
+                _XDPRINTF_("%s[%u]: adjusted guest_rip=%016llx\n",
+                    __FUNCTION__, (u32)cpuindex, guest_rip);
+            }
         }
         break;
 
