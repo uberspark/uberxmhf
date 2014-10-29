@@ -104,6 +104,10 @@
 #define XMHF_HIC_UAPI_PHYSMEM_PEEK          (0xA700)
 #define XMHF_HIC_UAPI_PHYSMEM_POKE          (0xA701)
 
+#define XMHF_HIC_UAPI_MEMPGTBL              (0xA80)
+
+#define XMHF_HIC_UAPI_MEMPGTBL_GETENTRY     (0xA800)
+#define XMHF_HIC_UAPI_MEMPGTBL_SETENTRY     (0xA801)
 
 #ifndef __ASSEMBLY__
 typedef void slab_input_params_t;
@@ -126,6 +130,11 @@ typedef struct {
     u64 numbytes;
 }__attribute__((packed)) xmhf_hic_uapi_physmem_desc_t;
 
+typedef struct {
+    u64 guest_slab_index;
+    u64 gpa;
+    u64 entry;
+}__attribute__((packed)) xmhf_hic_uapi_mempgtbl_desc_t;
 
 
 
@@ -439,6 +448,46 @@ __attribute__((naked)) __attribute__ ((noinline)) static inline bool __xmhfhic_u
 
 
 
+
+
+
+
+/*
+__xmhfhic_uapi_mempgtbl register mappings:
+
+RDI = XMHF_HIC_UAPI
+RSI = XMHF_HIC_UAPI_MEMPGTBL
+RDX = mempgtblfn
+RCX = undefined
+R8 = iparams
+R9 = oparams
+R10 = return RSP
+R11 = return_address
+
+*/
+
+//reserved_uapicall = XMHF_HIC_UAPI, reserved_uapicall_num = XMHF_HIC_UAPI_MEMPGTBL
+__attribute__((naked)) __attribute__ ((noinline)) static inline bool __xmhfhic_uapi_mempgtbl(u64 reserved_uapicall, u64 reserved_uapicall_num,
+                                           u64 mempgtblfn,
+                                           u64 reserved, u64 iparams, u64 oparams){
+
+    asm volatile (
+        "movq %%rsp, %%r10 \r\n"
+        "movq $1f, %%r11 \r\n"\
+        "sysenter \r\n" \
+        \
+        "1:\r\n" \
+        "retq \r\n" \
+        :
+        :
+        :
+    );
+
+
+}
+
+#define XMHF_HIC_SLAB_UAPI_MEMPGTBL(mempgtblfn, iparams, oparams) \
+    __xmhfhic_uapi_mempgtbl(XMHF_HIC_UAPI, XMHF_HIC_UAPI_MEMPGTBL, mempgtblfn, 0, iparams, oparams)
 
 
 

@@ -1052,6 +1052,47 @@ void __xmhfhic_rtm_trampoline(u64 hic_calltype, slab_input_params_t *iparams, u6
 // HIC UAPI handler
 
 
+static void __xmhfhic_rtm_uapihandler_mempgtbl(u64 uapicall_subnum, u64 iparams, u64 oparams, u64 cpuid){
+    _XDPRINTF_("%s[%u]: Got control...\n",
+                __FUNCTION__, (u32)cpuid);
+
+    switch(uapicall_subnum){
+        case XMHF_HIC_UAPI_MEMPGTBL_GETENTRY:{
+            xmhf_hic_uapi_mempgtbl_desc_t *imdesc= (xmhf_hic_uapi_mempgtbl_desc_t *)iparams;
+            xmhf_hic_uapi_mempgtbl_desc_t *omdesc= (xmhf_hic_uapi_mempgtbl_desc_t *)oparams;
+
+            u64 pdpt_index = pae_get_pdpt_index(imdesc->gpa);
+            u64 pd_index = pae_get_pdt_index(imdesc->gpa);
+            u64 pt_index = pae_get_pt_index(imdesc->gpa);
+
+            omdesc->entry = _xmhfhic_common_slab_info_table[imdesc->guest_slab_index].archdata.mempgtbl_pt[pdpt_index][pd_index][pt_index];
+        }
+        break;
+
+
+        case XMHF_HIC_UAPI_MEMPGTBL_SETENTRY:{
+            xmhf_hic_uapi_mempgtbl_desc_t *imdesc= (xmhf_hic_uapi_mempgtbl_desc_t *)iparams;
+
+            u64 pdpt_index = pae_get_pdpt_index(imdesc->gpa);
+            u64 pd_index = pae_get_pdt_index(imdesc->gpa);
+            u64 pt_index = pae_get_pt_index(imdesc->gpa);
+
+            _xmhfhic_common_slab_info_table[imdesc->guest_slab_index].archdata.mempgtbl_pt[pdpt_index][pd_index][pt_index] = imdesc->entry;
+
+        }
+        break;
+
+
+        default:
+            _XDPRINTF_("%s[%u]: Unknown cpustate subcall %x. Halting!\n",
+                    __FUNCTION__, (u32)cpuid, uapicall_subnum);
+            HALT();
+
+    }
+
+}
+
+
 static void __xmhfhic_rtm_uapihandler_physmem(u64 uapicall_subnum, u64 iparams, u64 oparams, u64 cpuid){
     _XDPRINTF_("%s[%u]: Got control...\n",
                 __FUNCTION__, (u32)cpuid);
@@ -1163,6 +1204,11 @@ void __xmhfhic_rtm_uapihandler(u64 uapicall, u64 uapicall_num, u64 uapicall_subn
         case XMHF_HIC_UAPI_PHYSMEM:
             __xmhfhic_rtm_uapihandler_physmem(uapicall_subnum, iparams, oparams, cpuid);
             break;
+
+        case XMHF_HIC_UAPI_MEMPGTBL:
+            __xmhfhic_rtm_uapihandler_mempgtbl(uapicall_subnum, iparams, oparams, cpuid);
+            break;
+
 
         default:
             _XDPRINTF_("%s[%u]: Unknown UAPI call %x. Halting!\n",

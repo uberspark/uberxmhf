@@ -59,49 +59,45 @@ XMHF_SLAB(xhhyperdep)
 
 #define HYPERDEP_ACTIVATEDEP			0xC0
 #define HYPERDEP_DEACTIVATEDEP			0xC1
-#define HYPERDEP_INITIALIZE				0xC2
 
 
+static void hd_activatedep(u64 cpuindex, u64 guest_slab_index, u64 gpa){
+	xmhf_hic_uapi_mempgtbl_desc_t mdesc;
 
-/*
-static void hd_activatedep(context_desc_t context_desc, u32 gpa){
-	u64 entry;
-    slab_retval_t srval;
+	mdesc.guest_slab_index = guest_slab_index;
+	mdesc.gpa = gpa;
 
-    srval = XMHF_SLAB_CALL_P2P(xcapi, XMHF_SLAB_XHHYPERDEP_INDEX, XMHF_SLAB_XCAPI_INDEX, XMHF_SLAB_XCAPI_FNXCAPIHPTGETPROT, XMHF_SLAB_XCAPI_FNXCAPIHPTGETPROT_SIZE, context_desc, gpa);
-    _XDPRINTF_("\n%s:%u originalprotection=%08x", __FUNCTION__, context_desc.cpu_desc.cpu_index, srval.retval_u32);
-    //_XDPRINTF_("\n%s:%u originalprotection=%08x", __FUNCTION__, context_desc.cpu_desc.cpu_index, XMHF_SLAB_CALL(xc_api_hpt_getprot(context_desc, gpa)) );
-	srval = XMHF_SLAB_CALL_P2P(xcapi, XMHF_SLAB_XHHYPERDEP_INDEX, XMHF_SLAB_XCAPI_INDEX, XMHF_SLAB_XCAPI_FNXCAPIHPTGETENTRY, XMHF_SLAB_XCAPI_FNXCAPIHPTGETENTRY_SIZE, context_desc, (u64)gpa);
-    entry = srval.retval_u64;
-    XMHF_SLAB_CALL_P2P(xcapi, XMHF_SLAB_XHHYPERDEP_INDEX, XMHF_SLAB_XCAPI_INDEX, XMHF_SLAB_XCAPI_FNXCAPIHPTSETENTRY, XMHF_SLAB_XCAPI_FNXCAPIHPTSETENTRY_SIZE, context_desc, (u64)gpa, entry);
-	XMHF_SLAB_CALL_P2P(xcapi, XMHF_SLAB_XHHYPERDEP_INDEX, XMHF_SLAB_XCAPI_INDEX, XMHF_SLAB_XCAPI_FNXCAPIHPTSETPROT, XMHF_SLAB_XCAPI_FNXCAPIHPTSETPROT_SIZE, context_desc, (u64)gpa, (u32)(MEMP_PROT_PRESENT | MEMP_PROT_READWRITE | MEMP_PROT_NOEXECUTE));
+    XMHF_HIC_SLAB_UAPI_MEMPGTBL(XMHF_HIC_UAPI_MEMPGTBL_GETENTRY, &mdesc, &mdesc);
+    _XDPRINTF_("%s[%u]: original entry for gpa=%x is %x\n",
+               __FUNCTION__, (u32)cpuindex, gpa, mdesc.entry);
 
-	//flush hpt caches on CPU
-    XMHF_SLAB_CALL_P2P(xcapi, XMHF_SLAB_XHHYPERDEP_INDEX, XMHF_SLAB_XCAPI_INDEX, XMHF_SLAB_XCAPI_FNXCAPIHPTFLUSHCACHES, XMHF_SLAB_XCAPI_FNXCAPIHPTFLUSHCACHES_SIZE, context_desc);
-	//quiesce all CPUs to perform TLB shootdown
-    XMHF_SLAB_CALL_P2P(xcapi, XMHF_SLAB_XHHYPERDEP_INDEX, XMHF_SLAB_XCAPIPLATFORM_INDEX, XMHF_SLAB_XCAPIPLATFORM_FNQUIESCECPUSINPARTITION, XMHF_SLAB_XCAPIPLATFORM_FNQUIESCECPUSINPARTITION_SIZE, context_desc);
+    mdesc.entry &= ~(0x7);
+    mdesc.entry |= 0x3; //execute disable
 
-	_XDPRINTF_("\nCPU(%02x): %s removed EXECUTE permission for page at gpa %08x", context_desc.cpu_desc.cpu_index, __FUNCTION__, gpa);
+    XMHF_HIC_SLAB_UAPI_MEMPGTBL(XMHF_HIC_UAPI_MEMPGTBL_SETENTRY, &mdesc, NULL);
+
+    _XDPRINTF_("%s[%u]: removed execute permission for page at gpa %x\n",
+               __FUNCTION__, (u32)cpuindex, gpa);
 }
 
-//de-activate DEP protection
-static void hd_deactivatedep(context_desc_t context_desc, u32 gpa){
-	XMHF_SLAB_CALL_P2P(xcapi, XMHF_SLAB_XHHYPERDEP_INDEX, XMHF_SLAB_XCAPI_INDEX, XMHF_SLAB_XCAPI_FNXCAPIHPTSETPROT, XMHF_SLAB_XCAPI_FNXCAPIHPTSETPROT_SIZE, context_desc, (u64)gpa, (u32)(MEMP_PROT_PRESENT | MEMP_PROT_READWRITE | MEMP_PROT_EXECUTE));
+static void hd_deactivatedep(u64 cpuindex, u64 guest_slab_index, u64 gpa){
+	xmhf_hic_uapi_mempgtbl_desc_t mdesc;
 
-	//flush hpt caches on CPU
-    XMHF_SLAB_CALL_P2P(xcapi, XMHF_SLAB_XHHYPERDEP_INDEX, XMHF_SLAB_XCAPI_INDEX, XMHF_SLAB_XCAPI_FNXCAPIHPTFLUSHCACHES, XMHF_SLAB_XCAPI_FNXCAPIHPTFLUSHCACHES_SIZE, context_desc);
-	//quiesce all CPUs to perform TLB shootdown
-    XMHF_SLAB_CALL_P2P(xcapi, XMHF_SLAB_XHHYPERDEP_INDEX, XMHF_SLAB_XCAPIPLATFORM_INDEX, XMHF_SLAB_XCAPIPLATFORM_FNQUIESCECPUSINPARTITION, XMHF_SLAB_XCAPIPLATFORM_FNQUIESCECPUSINPARTITION_SIZE, context_desc);
+	mdesc.guest_slab_index = guest_slab_index;
+	mdesc.gpa = gpa;
 
+    XMHF_HIC_SLAB_UAPI_MEMPGTBL(XMHF_HIC_UAPI_MEMPGTBL_GETENTRY, &mdesc, &mdesc);
+    _XDPRINTF_("%s[%u]: original entry for gpa=%x is %x\n",
+               __FUNCTION__, (u32)cpuindex, gpa, mdesc.entry);
 
-	_XDPRINTF_("\nCPU(%02x): %s added EXECUTE permission for page at gpa %08x", context_desc.cpu_desc.cpu_index, __FUNCTION__, gpa);
+    mdesc.entry &= ~(0x7);
+    mdesc.entry |= 0x7; //enable executes
 
+    XMHF_HIC_SLAB_UAPI_MEMPGTBL(XMHF_HIC_UAPI_MEMPGTBL_SETENTRY, &mdesc, NULL);
+
+    _XDPRINTF_("%s[%u]: deactivated DEP for page at gpa %x\n",
+               __FUNCTION__, (u32)cpuindex, gpa);
 }
-
-static void hd_initialize(context_desc_t context_desc){
-	_XDPRINTF_("%s: nothing to do\n", __FUNCTION__);
-}
-*/
 
 
 // hypapp initialization
@@ -113,60 +109,37 @@ static void _hcb_initialize(u64 cpuindex){
 
 
 
-static void _hcb_hypercall(u64 cpuindex, u64 guest_slab_index, u64 hypercall_id, u64 hypercall_param){
-	_XDPRINTF_("CPU %s[%u]: call number=%x\n", __FUNCTION__, (u32)cpuindex, hypercall_id);
-
-
-/*	u64 status=XC_HYPAPPCB_HANDLED;
+static void _hcb_hypercall(u64 cpuindex, u64 guest_slab_index){
+    x86regs64_t gprs;
 	u64 call_id;
-	u64 gva, gpa;
-    //slab_retval_t srval;
+	u64 gpa;
 
-	call_id= hypercall_id;
+    XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSREAD, NULL, &gprs);
 
-	gva=hypercall_param;
+    call_id = gprs.rax;
+    gpa = gprs.rbx;
 
-	_XDPRINTF_("CPU %s[%u]: call number=%x, gva=%x", __FUNCTION__, (u32)cpuindex, call_id, gva);
+	_XDPRINTF_("CPU %s[%u]: call_id=%x, gpa=%x\n", __FUNCTION__, (u32)cpuindex,
+            call_id, gpa);
+
 
 	switch(call_id){
-		case HYPERDEP_INITIALIZE:{
-			hd_initialize(context_desc);
-		}
-		break;
 
 		case HYPERDEP_ACTIVATEDEP:{
-			srval = XMHF_SLAB_CALL_P2P(xcapi, XMHF_SLAB_XHHYPERDEP_INDEX, XMHF_SLAB_XCAPI_INDEX, XMHF_SLAB_XCAPI_FNXCAPIHPTLVL2PAGEWALK, XMHF_SLAB_XCAPI_FNXCAPIHPTLVL2PAGEWALK_SIZE, context_desc, gva);
-			gpa = srval.retval_u32;
-			if(gpa == 0xFFFFFFFFUL){
-				_XDPRINTF_("CPU(%02x): WARNING: unable to get translation for gva=%x, just returning\n", context_desc.cpu_desc.cpu_index, gva);
-				return status;
-			}
-			_XDPRINTF_("CPU(%02x): translated gva=%x to gpa=%x\n", context_desc.cpu_desc.cpu_index, gva, gpa);
-			hd_activatedep(context_desc, gpa);
+			hd_activatedep(cpuindex, guest_slab_index, gpa);
 		}
 		break;
 
 		case HYPERDEP_DEACTIVATEDEP:{
-			srval = XMHF_SLAB_CALL_P2P(xcapi, XMHF_SLAB_XHHYPERDEP_INDEX, XMHF_SLAB_XCAPI_INDEX, XMHF_SLAB_XCAPI_FNXCAPIHPTLVL2PAGEWALK, XMHF_SLAB_XCAPI_FNXCAPIHPTLVL2PAGEWALK_SIZE, context_desc, gva);
-            gpa = srval.retval_u32;
-			if(gpa == 0xFFFFFFFFUL){
-				_XDPRINTF_("CPU(%02x): WARNING: unable to get translation for gva=%x, just returning\n", context_desc.cpu_desc.cpu_index, gva);
-				return status;
-			}
-			_XDPRINTF_("CPU(%02x): translated gva=%x to gpa=%x\n", context_desc.cpu_desc.cpu_index, gva, gpa);
-			hd_deactivatedep(context_desc, gpa);
+			hd_deactivatedep(cpuindex, guest_slab_index, gpa);
 		}
 		break;
 
 		default:
-			_XDPRINTF_("CPU(0x%02x): unsupported hypercall (0x%08x)!!\n",
-			  context_desc.cpu_desc.cpu_index, call_id);
-			status=APP_ERROR;
+            _XDPRINTF_("CPU %s[%u]: unsupported hypercall %x. Ignoring\n",
+                       __FUNCTION__, (u32)cpuindex, call_id);
 			break;
 	}
-
-	return status;
-*/
 
 }
 
@@ -202,7 +175,8 @@ void xhhyperdep_interface(slab_input_params_t *iparams, u64 iparams_size, slab_o
         break;
 
         case XC_HYPAPPCB_HYPERCALL:{
-            _hcb_hypercall(cpuindex, hcb_iparams->guest_slab_index, 0, 0);
+            _hcb_hypercall(cpuindex, hcb_iparams->guest_slab_index);
+
         }
         break;
 
