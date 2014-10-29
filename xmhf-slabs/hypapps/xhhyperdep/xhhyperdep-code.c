@@ -103,7 +103,7 @@ static void hd_deactivatedep(u64 cpuindex, u64 guest_slab_index, u64 gpa){
 // hypapp initialization
 static void _hcb_initialize(u64 cpuindex){
 
-	_XDPRINTF_("CPU %s[%u]: hyperDEP initializing...\n", __FUNCTION__, (u32)cpuindex);
+	_XDPRINTF_("%s[%u]: hyperDEP initializing...\n", __FUNCTION__, (u32)cpuindex);
 
 }
 
@@ -119,7 +119,7 @@ static void _hcb_hypercall(u64 cpuindex, u64 guest_slab_index){
     call_id = gprs.rax;
     gpa = gprs.rbx;
 
-	_XDPRINTF_("CPU %s[%u]: call_id=%x, gpa=%x\n", __FUNCTION__, (u32)cpuindex,
+	_XDPRINTF_("%s[%u]: call_id=%x, gpa=%x\n", __FUNCTION__, (u32)cpuindex,
             call_id, gpa);
 
 
@@ -136,7 +136,7 @@ static void _hcb_hypercall(u64 cpuindex, u64 guest_slab_index){
 		break;
 
 		default:
-            _XDPRINTF_("CPU %s[%u]: unsupported hypercall %x. Ignoring\n",
+            _XDPRINTF_("%s[%u]: unsupported hypercall %x. Ignoring\n",
                        __FUNCTION__, (u32)cpuindex, call_id);
 			break;
 	}
@@ -144,14 +144,14 @@ static void _hcb_hypercall(u64 cpuindex, u64 guest_slab_index){
 }
 
 static void _hcb_shutdown(u64 cpuindex, u64 guest_slab_index){
-	_XDPRINTF_("CPU %s[%u]: guest slab %u shutdown...\n", __FUNCTION__, (u32)cpuindex, guest_slab_index);
+	_XDPRINTF_("%s[%u]: guest slab %u shutdown...\n", __FUNCTION__, (u32)cpuindex, guest_slab_index);
 }
 
 
-static void _hcb_memoryfault(u64 cpuindex, u64 guest_slab_index, u64 gpa, u64 gva, u64 error_code){
+static void _hcb_memoryfault(u64 cpuindex, u64 guest_slab_index, u64 gpa, u64 gva, u64 errorcode){
 
-	_XDPRINTF_("CPU %s[%u]: memory fault in guest slab %u; data page execution?. Halting!\n",
-            __FUNCTION__, (u32)cpuindex, guest_slab_index);
+	_XDPRINTF_("%s[%u]: memory fault in guest slab %u; gpa=%x, gva=%x, errorcode=%x, data page execution?. Halting!\n",
+            __FUNCTION__, (u32)cpuindex, guest_slab_index, gpa, gva, errorcode);
 
 	HALT();
 }
@@ -181,7 +181,15 @@ void xhhyperdep_interface(slab_input_params_t *iparams, u64 iparams_size, slab_o
         break;
 
         case XC_HYPAPPCB_MEMORYFAULT:{
-            _hcb_memoryfault(cpuindex, hcb_iparams->guest_slab_index, 0, 0, 0);
+         	u64 errorcode;
+         	u64 gpa;
+         	u64 gva;
+
+         	XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMREAD, VMCS_INFO_EXIT_QUALIFICATION, &errorcode);
+         	XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMREAD, VMCS_INFO_GUEST_PADDR_FULL, &gpa);
+         	XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMREAD, VMCS_INFO_GUEST_LINEAR_ADDRESS, &gva);
+
+            _hcb_memoryfault(cpuindex, hcb_iparams->guest_slab_index, gpa, gva, errorcode);
         }
         break;
 
