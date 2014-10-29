@@ -133,6 +133,13 @@ static void xcguestslab_do_cpuid(void){
 }
 
 
+
+
+
+
+//////////////////////////////////////////////////////////////////////////////
+// xhhyperdep test
+
 __attribute__((aligned(4096))) u8 _xcguestslab_do_testxhhyperdep_page[4096];
 
 #define HYPERDEP_ACTIVATEDEP			0xC0
@@ -179,6 +186,69 @@ static void xcguestslab_do_testxhhyperdep(void){
 
 
 
+
+
+
+
+
+//////////////////////////////////////////////////////////////////////////////
+// xhapprovexec test
+
+__attribute__((aligned(4096))) void _xcguestslab_do_testxhapprovexec_functoprotect(void){
+
+    asm volatile (
+        ".fill 4096, 1, 0x90 \r\n"
+    :
+    :
+    :
+    );
+
+};
+
+#define APPROVEXEC_LOCK     			0xD0
+#define APPROVEXEC_UNLOCK   			0xD1
+
+static void xcguestslab_do_testxhapprovexec(void){
+    u64 gpa = &_xcguestslab_do_testxhapprovexec_functoprotect;
+
+    _XDPRINTF_("%s: Going to approve and lock function at %x\n", __FUNCTION__, gpa);
+
+    asm volatile(
+        "movq %0, %%rax \r\n"
+        "movq %1, %%rbx \r\n"
+        "vmcall \r\n"
+        :
+        : "i" (APPROVEXEC_LOCK), "m" (gpa)
+        : "rax", "rbx"
+    );
+
+    _XDPRINTF_("%s: Locked function\n", __FUNCTION__);
+
+
+    _XDPRINTF_("%s: Going to unlock function on page %x\n", __FUNCTION__, gpa);
+
+    asm volatile(
+        "movq %0, %%rax \r\n"
+        "movq %1, %%rbx \r\n"
+        "vmcall \r\n"
+        :
+        : "i" (APPROVEXEC_UNLOCK), "m" (gpa)
+        : "rax", "rbx"
+    );
+
+    _XDPRINTF_("%s: unlocked function\n", __FUNCTION__);
+
+
+}
+
+
+
+
+
+
+
+
+
 void xcguestslab_interface(void) {
     _XDPRINTF_("%s: Hello world from Guest slab!\n", __FUNCTION__);
 
@@ -188,7 +258,9 @@ void xcguestslab_interface(void) {
 
     //xcguestslab_do_cpuid();
 
-    xcguestslab_do_testxhhyperdep();
+    //xcguestslab_do_testxhhyperdep();
+
+    xcguestslab_do_testxhapprovexec();
 
     _XDPRINTF_("%s: Guest Slab Halting\n", __FUNCTION__);
     HALT();
