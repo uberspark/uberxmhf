@@ -103,15 +103,31 @@ slab_caps_t _xmhfhic_init_setupdata_slab_caps[XMHF_HIC_MAX_SLABS] = {
         HIC_SLAB_X86VMXX86PC_HYPERVISOR
     },
 
-    //XMHF_GUEST_SLAB_XCGUESTSLAB
+    //XMHF_HYP_SLAB_XHAPPROVEXEC
     {
         0,
         0,
         {false, 0, {0}},
-        HIC_SLAB_X86VMXX86PC_GUEST
+        HIC_SLAB_X86VMXX86PC_HYPERVISOR
     },
 
-    //XMHF_GUEST_SLAB_RICHGUEST
+    //XMHF_HYP_SLAB_XHSYSCALLLOG
+    {
+        0,
+        0,
+        {false, 0, {0}},
+        HIC_SLAB_X86VMXX86PC_HYPERVISOR
+    },
+
+    //XMHF_HYP_SLAB_XHSSTEPTRACE
+    {
+        0,
+        0,
+        {false, 0, {0}},
+        HIC_SLAB_X86VMXX86PC_HYPERVISOR
+    },
+
+    //XMHF_GUEST_SLAB_XCGUESTSLAB
     {
         0,
         0,

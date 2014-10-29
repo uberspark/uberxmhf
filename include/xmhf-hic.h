@@ -52,10 +52,10 @@
 #define __XMHF_HIC_H__
 
 
-#define XMHF_HIC_HYP_SLABS_COUNT            (3)
-#define XMHF_HIC_GUEST_SLABS_COUNT          (1)
+//#define XMHF_HIC_HYP_SLABS_COUNT            (3)
+//#define XMHF_HIC_GUEST_SLABS_COUNT          (1)
 
-#define XMHF_HIC_MAX_SLABS                  (8)
+#define XMHF_HIC_MAX_SLABS                  (9)
 
 
 #define XMHF_HYP_SLAB_XCINIT                (0)
@@ -63,15 +63,10 @@
 #define XMHF_HYP_SLAB_XCEXHUB               (2)
 #define XMHF_HYP_SLAB_XCTESTSLAB1           (3)
 #define XMHF_HYP_SLAB_XHHYPERDEP            (4)
-#define XMHF_GUEST_SLAB_XCGUESTSLAB         (5)
-#define XMHF_GUEST_SLAB_RICHGUEST           (6) //currently unused
-
-
-
-
-
-
-
+#define XMHF_HYP_SLAB_XHAPPROVEXEC          (5)
+#define XMHF_HYP_SLAB_XHSYSCALLLOG          (6)
+#define XMHF_HYP_SLAB_XHSSTEPTRACE          (7)
+#define XMHF_GUEST_SLAB_XCGUESTSLAB         (8)
 
 
 #define XMHF_HIC_SLABCALL                   (0xA0)
