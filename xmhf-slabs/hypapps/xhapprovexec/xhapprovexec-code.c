@@ -136,7 +136,25 @@ static void ae_lock(u64 cpuindex, u64 guest_slab_index, u64 gpa){
 }
 
 static void ae_unlock(u64 cpuindex, u64 guest_slab_index, u64 gpa){
+     xmhf_hic_uapi_mempgtbl_desc_t mdesc;
 
+    _XDPRINTF_("%s[%u]: starting...\n", __FUNCTION__, (u32)cpuindex);
+
+     //unlock the code page
+     mdesc.guest_slab_index = guest_slab_index;
+     mdesc.gpa = gpa;
+
+     XMHF_HIC_SLAB_UAPI_MEMPGTBL(XMHF_HIC_UAPI_MEMPGTBL_GETENTRY, &mdesc, &mdesc);
+     _XDPRINTF_("%s[%u]: original entry for gpa=%x is %x\n",
+               __FUNCTION__, (u32)cpuindex, gpa, mdesc.entry);
+
+    mdesc.entry &= ~(0x7);
+    mdesc.entry |= 0x7; // execute, read, write
+
+    XMHF_HIC_SLAB_UAPI_MEMPGTBL(XMHF_HIC_UAPI_MEMPGTBL_SETENTRY, &mdesc, NULL);
+
+    _XDPRINTF_("%s[%u]: restored permissions for page at %x\n",
+               __FUNCTION__, (u32)cpuindex, gpa);
 
 }
 
