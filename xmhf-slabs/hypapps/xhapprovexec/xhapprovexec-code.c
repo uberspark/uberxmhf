@@ -58,6 +58,80 @@
 XMHF_SLAB(xhapprovexec)
 
 
+#define APPROVEXEC_LOCK     			0xD0
+#define APPROVEXEC_UNLOCK   			0xD1
+
+
+static void ae_lock(u64 cpuindex, u64 guest_slab_index, u64 gpa){
+
+
+}
+
+static void ae_unlock(u64 cpuindex, u64 guest_slab_index, u64 gpa){
+
+
+}
+
+
+
+//////////////////////////////////////////////////////////////////////////////
+
+// hypapp initialization
+static void _hcb_initialize(u64 cpuindex){
+
+	_XDPRINTF_("%s[%u]: approvexec initializing...\n", __FUNCTION__, (u32)cpuindex);
+
+}
+
+static void _hcb_hypercall(u64 cpuindex, u64 guest_slab_index){
+    x86regs64_t gprs;
+	u64 call_id;
+	u64 gpa;
+
+    XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSREAD, NULL, &gprs);
+
+    call_id = gprs.rax;
+    gpa = gprs.rbx;
+
+	_XDPRINTF_("%s[%u]: call_id=%x, gpa=%x\n", __FUNCTION__, (u32)cpuindex,
+            call_id, gpa);
+
+
+	switch(call_id){
+
+		case APPROVEXEC_LOCK:{
+			ae_lock(cpuindex, guest_slab_index, gpa);
+		}
+		break;
+
+		case APPROVEXEC_UNLOCK:{
+			ae_unlock(cpuindex, guest_slab_index, gpa);
+		}
+		break;
+
+		default:
+            _XDPRINTF_("%s[%u]: unsupported hypercall %x. Ignoring\n",
+                       __FUNCTION__, (u32)cpuindex, call_id);
+			break;
+	}
+
+}
+
+static void _hcb_memoryfault(u64 cpuindex, u64 guest_slab_index, u64 gpa, u64 gva, u64 errorcode){
+
+	_XDPRINTF_("%s[%u]: memory fault in guest slab %u; gpa=%x, gva=%x, errorcode=%x, data page execution?. Halting!\n",
+            __FUNCTION__, (u32)cpuindex, guest_slab_index, gpa, gva, errorcode);
+
+	HALT();
+}
+
+
+static void _hcb_shutdown(u64 cpuindex, u64 guest_slab_index){
+	_XDPRINTF_("%s[%u]: guest slab %u shutdown...\n", __FUNCTION__, (u32)cpuindex, guest_slab_index);
+}
+
+
+
 /////////////////////////////////////////////////////////////////////
 void xhapprovexec_interface(slab_input_params_t *iparams, u64 iparams_size, slab_output_params_t *oparams, u64 oparams_size, u64 src_slabid, u64 cpuindex){
     xc_hypappcb_inputparams_t *hcb_iparams = (xc_hypappcb_inputparams_t *)iparams;
@@ -71,23 +145,30 @@ void xhapprovexec_interface(slab_input_params_t *iparams, u64 iparams_size, slab
 
     switch(hcb_iparams->cbtype){
         case XC_HYPAPPCB_INITIALIZE:{
-
+            _hcb_initialize(cpuindex);
         }
         break;
 
         case XC_HYPAPPCB_HYPERCALL:{
-
+            _hcb_hypercall(cpuindex, hcb_iparams->guest_slab_index);
         }
         break;
 
         case XC_HYPAPPCB_MEMORYFAULT:{
+         	u64 errorcode;
+         	u64 gpa;
+         	u64 gva;
 
+         	XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMREAD, VMCS_INFO_EXIT_QUALIFICATION, &errorcode);
+         	XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMREAD, VMCS_INFO_GUEST_PADDR_FULL, &gpa);
+         	XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMREAD, VMCS_INFO_GUEST_LINEAR_ADDRESS, &gva);
 
+            _hcb_memoryfault(cpuindex, hcb_iparams->guest_slab_index, gpa, gva, errorcode);
         }
         break;
 
         case XC_HYPAPPCB_SHUTDOWN:{
-
+            _hcb_shutdown(cpuindex, hcb_iparams->guest_slab_index);
         }
         break;
 
