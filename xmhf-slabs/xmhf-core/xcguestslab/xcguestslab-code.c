@@ -203,7 +203,7 @@ __attribute__((aligned(4096))) void _xcguestslab_do_testxhapprovexec_functoprote
     :
     );
 
-};
+}
 
 #define APPROVEXEC_LOCK     			0xD0
 #define APPROVEXEC_UNLOCK   			0xD1
@@ -243,6 +243,72 @@ static void xcguestslab_do_testxhapprovexec(void){
 
 
 
+//////////////////////////////////////////////////////////////////////////////
+// xhssteptrace test
+
+#define SSTEPTRACE_REGISTER    			0xE0
+#define SSTEPTRACE_ON          			0xE1
+#define SSTEPTRACE_OFF         			0xE2
+#define SSTEPTRACE_VALIDATE    			0xE3
+
+__attribute__((aligned(4096))) void _xcguestslab_do_testxhssteptrace_func(void){
+
+    _XDPRINTF_("%s: Turning on tracing...\n", __FUNCTION__);
+
+    asm volatile(
+        "movq %0, %%rax \r\n"
+        "vmcall \r\n"
+        :
+        : "i" (SSTEPTRACE_ON)
+        : "rax", "rbx"
+    );
+
+
+    asm volatile(
+        "nop \r\n"
+        "nop \r\n"
+        :
+        :
+        :
+    );
+
+    asm volatile(
+        "movq %0, %%rax \r\n"
+        "vmcall \r\n"
+        :
+        : "i" (SSTEPTRACE_OFF)
+        : "rax", "rbx"
+    );
+
+
+    _XDPRINTF_("%s: Tracing off...\n", __FUNCTION__);
+
+}
+
+
+static void xcguestslab_do_testxhssteptrace(void){
+    u64 gpa = &_xcguestslab_do_testxhssteptrace_func;
+
+    _XDPRINTF_("%s: Going to register function at %x\n", __FUNCTION__, gpa);
+
+    asm volatile(
+        "movq %0, %%rax \r\n"
+        "movq %1, %%rbx \r\n"
+        "vmcall \r\n"
+        :
+        : "i" (SSTEPTRACE_REGISTER), "m" (gpa)
+        : "rax", "rbx"
+    );
+
+    _XDPRINTF_("%s: Registered function\n", __FUNCTION__);
+
+    _XDPRINTF_("%s: Proceeding to call function...\n", __FUNCTION__, gpa);
+
+    _xcguestslab_do_testxhssteptrace_func();
+
+    _XDPRINTF_("%s: Came back from calling function.\n", __FUNCTION__, gpa);
+
+}
 
 
 

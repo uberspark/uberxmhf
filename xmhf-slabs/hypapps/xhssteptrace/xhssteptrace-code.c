@@ -60,6 +60,7 @@ XMHF_SLAB(xhssteptrace)
 #define SSTEPTRACE_REGISTER    			0xE0
 #define SSTEPTRACE_ON          			0xE1
 #define SSTEPTRACE_OFF         			0xE2
+#define SSTEPTRACE_VALIDATE    			0xE3
 
 static bool ssteptrace_on = false;
 
@@ -77,6 +78,12 @@ static void st_on(u64 cpuindex, u64 guest_slab_index){
 
 
 static void st_off(u64 cpuindex, u64 guest_slab_index){
+
+
+
+}
+
+static void st_validate(u64 cpuindex, u64 guest_slab_index){
 
 
 
@@ -121,6 +128,11 @@ static void _hcb_hypercall(u64 cpuindex, u64 guest_slab_index){
 
 		case SSTEPTRACE_OFF:{
 			st_off(cpuindex, guest_slab_index);
+		}
+		break;
+
+		case SSTEPTRACE_VALIDATE:{
+			st_validate(cpuindex, guest_slab_index);
 		}
 		break;
 
