@@ -63,10 +63,20 @@ XMHF_SLAB(xhapprovexec)
 
 static u8 _ae_page_buffer[PAGE_SIZE_4K];
 
+static u8 _ae_database[][SHA_DIGEST_LENGTH] = {
+  {0xd1, 0x4e, 0x30, 0x25,  0x8e,  0x16, 0x85, 0x9b, 0x21, 0x81, 0x74, 0x78, 0xbb, 0x1b, 0x5d, 0x99, 0xb5, 0x48, 0x60, 0xca},
+  {0xa1, 0x4e, 0x30, 0x25,  0x8e,  0x16, 0x85, 0x9b, 0x21, 0x71, 0x74, 0x78, 0xbb, 0x1b, 0x5d, 0x99, 0xb5, 0x48, 0x60, 0xca},
+  {0xf1, 0x4e, 0x30, 0x25,  0x8e,  0x16, 0x85, 0x9b, 0x21, 0x81, 0x54, 0x78, 0xbb, 0x1b, 0x5d, 0x99, 0xb5, 0x48, 0x60, 0xca},
+  {0xe1, 0x4e, 0x30, 0x25,  0x9e,  0x16, 0x85, 0x9b, 0x21, 0x81, 0x74, 0x78, 0x6b, 0x1b, 0x5d, 0x99, 0xb5, 0x48, 0x60, 0xca},
+};
+
+#define NUMENTRIES_AE_DATABASE  (sizeof(_ae_database)/sizeof(_ae_database[0]))
 
 static void ae_lock(u64 cpuindex, u64 guest_slab_index, u64 gpa){
     xmhf_hic_uapi_physmem_desc_t pdesc;
     u8 digest[SHA_DIGEST_LENGTH];
+    bool found_in_database=false;
+    u32 i;
 
     _XDPRINTF_("%s[%u]: starting...\n", __FUNCTION__, (u32)cpuindex);
 
@@ -85,6 +95,43 @@ static void ae_lock(u64 cpuindex, u64 guest_slab_index, u64 gpa){
     _XDPRINTF_("%s[%u]: computed SHA-1: %*D\n",
                __FUNCTION__, (u32)cpuindex, SHA_DIGEST_LENGTH, digest, " ");
 
+
+    //compare computed SHA-1 to the database
+    for(i=0; i < NUMENTRIES_AE_DATABASE; i++){
+        if(!memcmp(&digest, &_ae_database[i], SHA_DIGEST_LENGTH)){
+            found_in_database=true;
+            break;
+        }
+    }
+
+    if(!found_in_database){
+        _XDPRINTF_("%s[%u]: could not find entry in database. returning\n",
+               __FUNCTION__, (u32)cpuindex);
+        return;
+    }
+
+    _XDPRINTF_("%s[%u]: entry matched in database, proceeding to lock page...\n",
+               __FUNCTION__, (u32)cpuindex);
+
+    {
+        //lock the code page so no one can write to it
+        xmhf_hic_uapi_mempgtbl_desc_t mdesc;
+
+        mdesc.guest_slab_index = guest_slab_index;
+        mdesc.gpa = gpa;
+
+        XMHF_HIC_SLAB_UAPI_MEMPGTBL(XMHF_HIC_UAPI_MEMPGTBL_GETENTRY, &mdesc, &mdesc);
+        _XDPRINTF_("%s[%u]: original entry for gpa=%x is %x\n",
+                   __FUNCTION__, (u32)cpuindex, gpa, mdesc.entry);
+
+        mdesc.entry &= ~(0x7);
+        mdesc.entry |= 0x5; // execute, read-only
+
+        XMHF_HIC_SLAB_UAPI_MEMPGTBL(XMHF_HIC_UAPI_MEMPGTBL_SETENTRY, &mdesc, NULL);
+
+        _XDPRINTF_("%s[%u]: removed write permission for page at gpa %x\n",
+               __FUNCTION__, (u32)cpuindex, gpa);
+    }
 
 }
 
