@@ -61,8 +61,29 @@ XMHF_SLAB(xhapprovexec)
 #define APPROVEXEC_LOCK     			0xD0
 #define APPROVEXEC_UNLOCK   			0xD1
 
+static u8 _ae_page_buffer[PAGE_SIZE_4K];
+
 
 static void ae_lock(u64 cpuindex, u64 guest_slab_index, u64 gpa){
+    xmhf_hic_uapi_physmem_desc_t pdesc;
+    u8 digest[SHA_DIGEST_LENGTH];
+
+    _XDPRINTF_("%s[%u]: starting...\n", __FUNCTION__, (u32)cpuindex);
+
+    //grab page contents at gpa into local page buffer
+    pdesc.addr_to = &_ae_page_buffer;
+    pdesc.addr_from = gpa;
+    pdesc.numbytes = PAGE_SIZE_4K;
+    XMHF_HIC_SLAB_UAPI_PHYSMEM(XMHF_HIC_UAPI_PHYSMEM_PEEK, &pdesc, NULL);
+
+    _XDPRINTF_("%s[%u]: grabbed page contents at gpa=%x\n",
+               __FUNCTION__, (u32)cpuindex, gpa);
+
+    //compute SHA-1 of the local page buffer
+    sha1_buffer(&_ae_page_buffer, PAGE_SIZE_4K, digest);
+
+    _XDPRINTF_("%s[%u]: computed SHA-1: %*D\n",
+               __FUNCTION__, (u32)cpuindex, SHA_DIGEST_LENGTH, digest, " ");
 
 
 }
