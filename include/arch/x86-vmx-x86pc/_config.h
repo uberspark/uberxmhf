@@ -56,22 +56,23 @@
 //----------------------------------------------------------------------
 // XMHF platform memory map
 	//size of memory that is pre-allocated by XMHF on the platform (currently 256MB)
-	#define __TARGET_BASE_XMHF				0x10000000		//at 256M
-	#define __TARGET_SIZE_XMHF				0x10000000
+	//#define __TARGET_BASE_XMHF				0x10000000		//at 256M
+	//#define __TARGET_SIZE_XMHF				0x10000000
+	#define __TARGET_BASE_XMHF				0x02000000		//at 32M
+	#define __TARGET_SIZE_XMHF				0x10000000      //256M size
 
 	//physical address where the XMHF boot-loader is loaded (e.g., via GRUB)
 	#define __TARGET_BASE_BOOTLOADER		0x01E00000		//30MB
 	#define __TARGET_SIZE_BOOTLOADER		0x00200000		//2MB
 
-	//physical address of XMHF secure loader + core runtime
-	//SL currently sits at absolute address 256MB (0x10000000).
-	//core runtime is at an offset of 2M from this SL base address
-	#define __TARGET_BASE_SL				0x10200000		//256MB
+	//physical address of XMHF secure loader
+	#define __TARGET_BASE_SL				0x02200000		//34MB
 	#define __TARGET_SIZE_SL				0x00200000
 
+
 	//physical address of XMHF hypapp
-	#define __TARGET_BASE_XMHFHYPAPP		0x1D000000      //480M
-	#define __TARGET_SIZE_XMHFHYPAPP		0x02000000		//32M
+	//#define __TARGET_BASE_XMHFHYPAPP		0x1D000000      //480M
+	//#define __TARGET_SIZE_XMHFHYPAPP		0x02000000		//32M
 //----------------------------------------------------------------------
 
 //"sl" parameter block magic value
