@@ -1299,9 +1299,9 @@ void xmhfhic_arch_setup_slab_device_allocation(void){
 } _slab_pagetables[XMHF_HIC_HYP_SLABS_COUNT];
 */
 
-u64 __xmhfhic_hyp_slab_pagetables_pml4t[XMHF_HIC_HYP_SLABS_COUNT][PAE_MAXPTRS_PER_PML4T] __attribute__(( aligned(2097152) ));
-u64 __xmhfhic_hyp_slab_pagetables_pdpt[XMHF_HIC_HYP_SLABS_COUNT][PAE_MAXPTRS_PER_PDPT] __attribute__(( aligned(4096) ));
-u64 __xmhfhic_hyp_slab_pagetables_pdt[XMHF_HIC_HYP_SLABS_COUNT][PAE_PTRS_PER_PDPT][PAE_PTRS_PER_PDT] __attribute__(( aligned(4096) ));
+//u64 __xmhfhic_hyp_slab_pagetables_pml4t[XMHF_HIC_HYP_SLABS_COUNT][PAE_MAXPTRS_PER_PML4T] __attribute__(( aligned(2097152) ));
+//u64 __xmhfhic_hyp_slab_pagetables_pdpt[XMHF_HIC_HYP_SLABS_COUNT][PAE_MAXPTRS_PER_PDPT] __attribute__(( aligned(4096) ));
+//u64 __xmhfhic_hyp_slab_pagetables_pdt[XMHF_HIC_HYP_SLABS_COUNT][PAE_PTRS_PER_PDPT][PAE_PTRS_PER_PDT] __attribute__(( aligned(4096) ));
 
 
 #define	_SLAB_SPATYPE_OTHER_SLAB_MASK			(0xF0)

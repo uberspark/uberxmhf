@@ -44,66 +44,22 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-#include <xmhf.h>
 
-/*OUTPUT_ARCH("x86-64")*/
+/*
+ *
+ *  hyperdep hypapp slab decls.
+ *
+ *  author: amit vasudevan (amitvasudevan@acm.org)
+ */
 
-MEMORY
-{
-  hicmem (rwxai) : ORIGIN = 0, LENGTH = 160M /* max. length */
-  unaccounted (rwxai) : ORIGIN = 0, LENGTH = 0 /* see section .unaccounted at end */
-}
-
-SECTIONS
-{
-	. = 0;
-
-    .hicsharedro : {
-        *(.sharedro_xcbootinfo)
-        *(.sharedro_xcbootinfoptr)
-        . = ALIGN(0x200000);
-    } >hicmem =0x0000
-
-	.hiccode : {
-		*(.hic_entrystub)
-		*(.text)
-        . = ALIGN(0x200000);
-	} >hicmem =0x9090
-
-	.hicrwdata : {
-		*(.data)
-		*(.bss)
-        . = ALIGN(0x200000);
-	} >hicmem =0x0000
-
-	.hicrodata : {
-		*(.rodata)
-		*(.rodata.str1.1)
-		*(.comment)
-		*(.eh_frame)
-        . = ALIGN(0x200000);
-	} >hicmem =0x0000
-
-	.hicstack : {
-		*(.stack)
-		*(.note.GNU-stack)
-        . = ALIGN(0x200000);
-	} >hicmem =0x0000
+#ifndef __XHSSTEPTRACE_H__
+#define __XHSSTEPTRACE_H__
 
 
-	.libxmhfdebugdata : {
-		*(.libxmhfdebugdata)
-	} >hicmem
+#ifndef __ASSEMBLY__
 
-	/* this is to cause the link to fail if there is
-	* anything we didn't explicitly place.
-	* when this does cause link to fail, temporarily comment
-	* this part out to see what sections end up in the output
-	* which are not handled above, and handle them.
-	*/
-	.unaccounted : {
-	*(*)
-	} >unaccounted
+void xhssteptrace_interface(slab_input_params_t *iparams, u64 iparams_size, slab_output_params_t *oparams, u64 oparams_size, u64 src_slabid, u64 cpuindex);
 
+#endif	//__ASSEMBLY__
 
-}
+#endif //__XHSSTEPTRACE_H__

@@ -44,66 +44,77 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
+// hyperdep hypapp main module
+// author: amit vasudevan (amitvasudevan@acm.org)
+
 #include <xmhf.h>
+#include <xmhf-debug.h>
+#include <xmhf-core.h>
 
-/*OUTPUT_ARCH("x86-64")*/
-
-MEMORY
-{
-  hicmem (rwxai) : ORIGIN = 0, LENGTH = 160M /* max. length */
-  unaccounted (rwxai) : ORIGIN = 0, LENGTH = 0 /* see section .unaccounted at end */
-}
-
-SECTIONS
-{
-	. = 0;
-
-    .hicsharedro : {
-        *(.sharedro_xcbootinfo)
-        *(.sharedro_xcbootinfoptr)
-        . = ALIGN(0x200000);
-    } >hicmem =0x0000
-
-	.hiccode : {
-		*(.hic_entrystub)
-		*(.text)
-        . = ALIGN(0x200000);
-	} >hicmem =0x9090
-
-	.hicrwdata : {
-		*(.data)
-		*(.bss)
-        . = ALIGN(0x200000);
-	} >hicmem =0x0000
-
-	.hicrodata : {
-		*(.rodata)
-		*(.rodata.str1.1)
-		*(.comment)
-		*(.eh_frame)
-        . = ALIGN(0x200000);
-	} >hicmem =0x0000
-
-	.hicstack : {
-		*(.stack)
-		*(.note.GNU-stack)
-        . = ALIGN(0x200000);
-	} >hicmem =0x0000
+#include <xhsyscalllog.h>
 
 
-	.libxmhfdebugdata : {
-		*(.libxmhfdebugdata)
-	} >hicmem
+//////
+XMHF_SLAB(xhsyscalllog)
 
-	/* this is to cause the link to fail if there is
-	* anything we didn't explicitly place.
-	* when this does cause link to fail, temporarily comment
-	* this part out to see what sections end up in the output
-	* which are not handled above, and handle them.
-	*/
-	.unaccounted : {
-	*(*)
-	} >unaccounted
 
+/////////////////////////////////////////////////////////////////////
+void xhsyscalllog_interface(slab_input_params_t *iparams, u64 iparams_size, slab_output_params_t *oparams, u64 oparams_size, u64 src_slabid, u64 cpuindex){
+    xc_hypappcb_inputparams_t *hcb_iparams = (xc_hypappcb_inputparams_t *)iparams;
+    xc_hypappcb_outputparams_t *hcb_oparams = (xc_hypappcb_outputparams_t *)oparams;
+    hcb_oparams->cbresult=XC_HYPAPPCB_CHAIN;
+
+
+	_XDPRINTF_("%s[%u]: Got control, cbtype=%x: RSP=%016llx\n",
+                __FUNCTION__, (u32)cpuindex, hcb_iparams->cbtype, read_rsp());
+
+
+    switch(hcb_iparams->cbtype){
+        case XC_HYPAPPCB_INITIALIZE:{
+
+        }
+        break;
+
+        case XC_HYPAPPCB_HYPERCALL:{
+
+        }
+        break;
+
+        case XC_HYPAPPCB_MEMORYFAULT:{
+
+
+        }
+        break;
+
+        case XC_HYPAPPCB_SHUTDOWN:{
+
+        }
+        break;
+
+        //case XC_HYPAPPCB_TRAP_IO:{
+        //
+        //
+        //}
+        //break;
+
+        //case XC_HYPAPPCB_TRAP_INSTRUCTION:{
+        //
+        //
+        //}
+        //break;
+
+        //case XC_HYPAPPCB_TRAP_EXCEPTION:{
+        //
+        //
+        //}
+        //break;
+
+
+        default:{
+            _XDPRINTF_("%s[%u]: Unknown cbtype. Halting!\n",
+                __FUNCTION__, (u32)cpuindex);
+            HALT();
+        }
+    }
 
 }

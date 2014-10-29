@@ -3,6 +3,9 @@ xmhf-slabs/xmhf-core/xcihub
 xmhf-slabs/xmhf-core/xcexhub
 xmhf-slabs/xmhf-core/xctestslab1
 xmhf-slabs/hypapps/xhhyperdep
+xmhf-slabs/hypapps/xhapprovexec
+xmhf-slabs/hypapps/xhsyscalllog
+xmhf-slabs/hypapps/xhssteptrace
 xmhf-slabs/xmhf-core/xcguestslab
 
 
