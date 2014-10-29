@@ -59,13 +59,17 @@ XMHF_SLAB(xcinit)
  * author: amit vasudevan (amitvasudevan@acm.org)
  */
 
+static u8 _ae_page_buffer_src[PAGE_SIZE_4K];
+
+static u8 _ae_page_buffer[PAGE_SIZE_4K];
 
 static void _xcinit_dotests(u64 cpuid){
 
     {
         u64 tscbefore, tscafter, tscavg=0;
-        u32 iterations=8192;
+        u32 iterations=1;
         u32 i;
+        u8 digest[SHA_DIGEST_LENGTH];
 
         _XDPRINTF_("%s: proceeding with test...\n", __FUNCTION__);
 
@@ -75,6 +79,10 @@ static void _xcinit_dotests(u64 cpuid){
             tscbefore = rdtsc64();
 
             {
+
+                memcpy(_ae_page_buffer, &_ae_page_buffer_src, PAGE_SIZE_4K);
+                //compute SHA-1 of the local page buffer
+                //sha1_buffer(&_ae_page_buffer, PAGE_SIZE_4K, digest);
 
                 //XMHF_SLAB_CALL(hictestslab2, XMHF_HYP_SLAB_HICTESTSLAB2, NULL, 0, NULL, 0);
 
@@ -671,6 +679,7 @@ void xcinit_interface(slab_input_params_t *iparams, u64 iparams_size, slab_outpu
     //_XDPRINTF_("%s[%u]:  oparams=%016llx, oparams_size=%u\n",
     //             __FUNCTION__, (u32)cpuid, oparams, oparams_size);
 
+#if 1
 
     {
         u64 entries_pml4t[PAE_PTRS_PER_PML4T];
@@ -755,6 +764,18 @@ void xcinit_interface(slab_input_params_t *iparams, u64 iparams_size, slab_outpu
 
     HALT();
 
+#else
+
+
+    _xcinit_dotests(cpuid);
+
+    _XDPRINTF_("%s[%u]: Should  never get here.Halting!\n",
+        __FUNCTION__, (u32)cpuid);
+
+    HALT();
+
+
+#endif
 
     return;
 }
