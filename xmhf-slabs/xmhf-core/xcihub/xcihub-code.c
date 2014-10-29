@@ -128,9 +128,7 @@ void xcihub_interface(slab_input_params_t *iparams, u64 iparams_size, slab_outpu
 
         //memory fault
 		case VMX_VMEXIT_EPT_VIOLATION:{
-
-
-
+            _xcihub_hcbinvoke(XC_HYPAPPCB_HYPERCALL, src_slabid);
         }
 		break;
 

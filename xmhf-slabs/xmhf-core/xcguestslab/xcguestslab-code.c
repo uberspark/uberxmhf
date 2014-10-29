@@ -132,14 +132,56 @@ static void xcguestslab_do_cpuid(void){
                 __FUNCTION__, vendor_dword1, vendor_dword2, vendor_dword3);
 }
 
+
+__attribute__((aligned(4096))) u8 _xcguestslab_do_testxhhyperdep_page[4096];
+
+#define HYPERDEP_ACTIVATEDEP			0xC0
+#define HYPERDEP_DEACTIVATEDEP			0xC1
+
+static void xcguestslab_do_testxhhyperdep(void){
+    u64 gpa = &_xcguestslab_do_testxhhyperdep_page;
+
+    _XDPRINTF_("%s: Going to activate DEP on page %x\n", __FUNCTION__, gpa);
+
+    asm volatile(
+        "movq %0, %%rax \r\n"
+        "movq %1, %%rbx \r\n"
+        "vmcall \r\n"
+        :
+        : "i" (HYPERDEP_ACTIVATEDEP), "m" (gpa)
+        : "rax", "rbx"
+    );
+
+    _XDPRINTF_("%s: Activated DEP\n", __FUNCTION__);
+
+    _XDPRINTF_("%s: Going to de-activate DEP on page %x\n", __FUNCTION__, gpa);
+
+    asm volatile(
+        "movq %0, %%rax \r\n"
+        "movq %1, %%rbx \r\n"
+        "vmcall \r\n"
+        :
+        : "i" (HYPERDEP_DEACTIVATEDEP), "m" (gpa)
+        : "rax", "rbx"
+    );
+
+    _XDPRINTF_("%s: Deactivated DEP\n", __FUNCTION__);
+
+
+}
+
+
+
 void xcguestslab_interface(void) {
     _XDPRINTF_("%s: Hello world from Guest slab!\n", __FUNCTION__);
 
     //xcguestslab_dotest_vmcall();
 
-    xcguestslab_do_vmcall();
+    //xcguestslab_do_vmcall();
 
-    xcguestslab_do_cpuid();
+    //xcguestslab_do_cpuid();
+
+    xcguestslab_do_testxhhyperdep();
 
     _XDPRINTF_("%s: Guest Slab Halting\n", __FUNCTION__);
     HALT();
