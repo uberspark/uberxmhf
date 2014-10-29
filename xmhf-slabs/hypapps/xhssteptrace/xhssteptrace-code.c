@@ -57,6 +57,95 @@
 //////
 XMHF_SLAB(xhssteptrace)
 
+#define SSTEPTRACE_REGISTER    			0xE0
+#define SSTEPTRACE_ON          			0xE1
+#define SSTEPTRACE_OFF         			0xE2
+
+static bool ssteptrace_on = false;
+
+static void st_register(u64 cpuindex, u64 guest_slab_index, u64 gpa){
+
+
+
+}
+
+static void st_on(u64 cpuindex, u64 guest_slab_index){
+
+
+
+}
+
+
+static void st_off(u64 cpuindex, u64 guest_slab_index){
+
+
+
+}
+
+
+
+//////////////////////////////////////////////////////////////////////////////
+
+// hypapp initialization
+static void _hcb_initialize(u64 cpuindex){
+
+	_XDPRINTF_("%s[%u]: xhssteptrace initializing...\n", __FUNCTION__, (u32)cpuindex);
+
+}
+
+static void _hcb_hypercall(u64 cpuindex, u64 guest_slab_index){
+    x86regs64_t gprs;
+	u64 call_id;
+	u64 gpa;
+
+    XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSREAD, NULL, &gprs);
+
+    call_id = gprs.rax;
+    gpa = gprs.rbx;
+
+	_XDPRINTF_("%s[%u]: call_id=%x, gpa=%x\n", __FUNCTION__, (u32)cpuindex,
+            call_id, gpa);
+
+
+	switch(call_id){
+
+		case SSTEPTRACE_REGISTER:{
+			st_register(cpuindex, guest_slab_index, gpa);
+		}
+		break;
+
+		case SSTEPTRACE_ON:{
+			st_on(cpuindex, guest_slab_index);
+		}
+		break;
+
+		case SSTEPTRACE_OFF:{
+			st_off(cpuindex, guest_slab_index);
+		}
+		break;
+
+
+		default:
+            _XDPRINTF_("%s[%u]: unsupported hypercall %x. Ignoring\n",
+                       __FUNCTION__, (u32)cpuindex, call_id);
+			break;
+	}
+
+
+
+}
+
+
+static void _hcb_trap_exception(u64 cpuindex, u64 guest_slab_index){
+	_XDPRINTF_("%s[%u]: guest slab %u exception...\n", __FUNCTION__, (u32)cpuindex, guest_slab_index);
+}
+
+
+static void _hcb_shutdown(u64 cpuindex, u64 guest_slab_index){
+	_XDPRINTF_("%s[%u]: guest slab %u shutdown...\n", __FUNCTION__, (u32)cpuindex, guest_slab_index);
+}
+
+
 
 /////////////////////////////////////////////////////////////////////
 void xhssteptrace_interface(slab_input_params_t *iparams, u64 iparams_size, slab_output_params_t *oparams, u64 oparams_size, u64 src_slabid, u64 cpuindex){
@@ -71,23 +160,23 @@ void xhssteptrace_interface(slab_input_params_t *iparams, u64 iparams_size, slab
 
     switch(hcb_iparams->cbtype){
         case XC_HYPAPPCB_INITIALIZE:{
-
+            _hcb_initialize(cpuindex);
         }
         break;
 
         case XC_HYPAPPCB_HYPERCALL:{
-
+            _hcb_hypercall(cpuindex, hcb_iparams->guest_slab_index);
         }
         break;
 
-        case XC_HYPAPPCB_MEMORYFAULT:{
-
-
-        }
-        break;
+        //case XC_HYPAPPCB_MEMORYFAULT:{
+        //
+        //
+        //}
+        //break;
 
         case XC_HYPAPPCB_SHUTDOWN:{
-
+            _hcb_shutdown(cpuindex, hcb_iparams->guest_slab_index);
         }
         break;
 
@@ -103,11 +192,10 @@ void xhssteptrace_interface(slab_input_params_t *iparams, u64 iparams_size, slab
         //}
         //break;
 
-        //case XC_HYPAPPCB_TRAP_EXCEPTION:{
-        //
-        //
-        //}
-        //break;
+        case XC_HYPAPPCB_TRAP_EXCEPTION:{
+            _hcb_trap_exception(cpuindex, hcb_iparams->guest_slab_index);
+        }
+        break;
 
 
         default:{
