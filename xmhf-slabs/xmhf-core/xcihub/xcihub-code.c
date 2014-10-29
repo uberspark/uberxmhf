@@ -71,6 +71,12 @@ static xc_hypapp_info_t _xcihub_hypapp_info_table[] = {
         (XC_HYPAPPCB_MASK(XC_HYPAPPCB_HYPERCALL) | XC_HYPAPPCB_MASK(XC_HYPAPPCB_MEMORYFAULT) | XC_HYPAPPCB_MASK(XC_HYPAPPCB_SHUTDOWN) )
     },
 
+    {
+        XMHF_HYP_SLAB_XHSSTEPTRACE,
+        (XC_HYPAPPCB_MASK(XC_HYPAPPCB_HYPERCALL) | XC_HYPAPPCB_MASK(XC_HYPAPPCB_TRAP_EXCEPTION) | XC_HYPAPPCB_MASK(XC_HYPAPPCB_SHUTDOWN) )
+    },
+
+
 };
 
 #define HYPAPP_INFO_TABLE_NUMENTRIES (sizeof(_xcihub_hypapp_info_table)/sizeof(_xcihub_hypapp_info_table[0]))
@@ -218,10 +224,11 @@ void xcihub_interface(slab_input_params_t *iparams, u64 iparams_size, slab_outpu
 
         //exception traps
         case VMX_VMEXIT_EXCEPTION:{
-
-
-
-
+            if(_xcihub_hcbinvoke(XC_HYPAPPCB_TRAP_EXCEPTION, src_slabid) == XC_HYPAPPCB_CHAIN){
+                _XDPRINTF_("%s[%u]: I do not handle VMX_VMEXIT_EXEPTION intercept. Halting!\n",
+                    __FUNCTION__, (u32)cpuindex);
+                HALT();
+            }
         }
         break;
 
