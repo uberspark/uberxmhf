@@ -138,8 +138,13 @@ __attribute__((aligned(4096))) u8 _xcguestslab_do_testxhhyperdep_page[4096];
 #define HYPERDEP_ACTIVATEDEP			0xC0
 #define HYPERDEP_DEACTIVATEDEP			0xC1
 
+typedef void (*DEPFN)(void);
+
 static void xcguestslab_do_testxhhyperdep(void){
     u64 gpa = &_xcguestslab_do_testxhhyperdep_page;
+    DEPFN fn = (DEPFN)gpa;
+
+    _xcguestslab_do_testxhhyperdep_page[0] = 0xC3; //ret instruction
 
     _XDPRINTF_("%s: Going to activate DEP on page %x\n", __FUNCTION__, gpa);
 
@@ -153,6 +158,8 @@ static void xcguestslab_do_testxhhyperdep(void){
     );
 
     _XDPRINTF_("%s: Activated DEP\n", __FUNCTION__);
+
+    fn();
 
     _XDPRINTF_("%s: Going to de-activate DEP on page %x\n", __FUNCTION__, gpa);
 
