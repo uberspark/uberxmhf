@@ -59,57 +59,6 @@ XMHF_SLAB(xcinit)
  * author: amit vasudevan (amitvasudevan@acm.org)
  */
 
-static u8 _ae_page_buffer_src[PAGE_SIZE_4K];
-
-static u8 _ae_page_buffer[PAGE_SIZE_4K];
-
-static void _xcinit_dotests(u64 cpuid){
-
-    {
-        u64 tscbefore, tscafter, tscavg=0;
-        u32 iterations=128;
-        u32 i;
-        u8 digest[SHA_DIGEST_LENGTH];
-
-        _XDPRINTF_("%s: proceeding with test...\n", __FUNCTION__);
-
-
-
-        for(i=0; i < iterations; i++){
-            tscbefore = rdtsc64();
-
-            {
-
-                //memcpy(_ae_page_buffer, &_ae_page_buffer_src, PAGE_SIZE_4K);
-                //compute SHA-1 of the local page buffer
-                sha1_buffer(&_ae_page_buffer, PAGE_SIZE_4K, digest);
-
-                //XMHF_SLAB_CALL(hictestslab2, XMHF_HYP_SLAB_HICTESTSLAB2, NULL, 0, NULL, 0);
-
-            }
-
-            tscafter = rdtsc64();
-            tscavg += (tscafter - tscbefore);
-        }
-
-        tscavg = tscavg / iterations;
-
-        _XDPRINTF_("%s: clock cycles for test = %u\n", __FUNCTION__, (u32)tscavg);
-
-    }
-
-}
-
-
-
-
-
-
-
-
-
-
-
 
 __attribute__((aligned(4096))) static u64 _xcguestslab_init_pdt[(PAE_PTRS_PER_PDPT*PAE_PTRS_PER_PDT)] = {
 	0x0000000000000087,0x0000000000200087,0x0000000000400087,0x0000000000600087,
@@ -637,24 +586,16 @@ __attribute__(( aligned(16) )) static u64 _xcguestslab_init_gdt[]  = {
 
 
 
-
-
-
-
-
-
 void xcinit_interface(slab_input_params_t *iparams, u64 iparams_size, slab_output_params_t *oparams, u64 oparams_size, u64 src_slabid, u64 cpuid){
     bool isbsp = (cpuid & 0x8000000000000000ULL) ? true : false;
     u64 inputval, outputval;
     static u64 cpucount=0;
     static u32 __xcinit_smplock = 1;
 
-	_XDPRINTF_("%s[%u]: Got control: RSP=%016llx\n",
-                __FUNCTION__, (u32)cpuid, read_rsp());
+	_XDPRINTF_("%s[%u]: Got control: RSP=%016llx\n", __FUNCTION__, (u32)cpuid, read_rsp());
 
     if(!isbsp){
-        _XDPRINTF_("%s[%u]: AP Halting!\n",
-                __FUNCTION__, (u32)cpuid);
+        _XDPRINTF_("%s[%u]: AP Halting!\n", __FUNCTION__, (u32)cpuid);
 
         spin_lock(&__xcinit_smplock);
         cpucount++;
@@ -672,14 +613,6 @@ void xcinit_interface(slab_input_params_t *iparams, u64 iparams_size, slab_outpu
                 __FUNCTION__, (u32)cpuid);
     }
 
-
-    //_XDPRINTF_("%s[%u]: iparams=%016llx, iparams_size=%u\n",
-    //             __FUNCTION__, (u32)cpuid, iparams, iparams_size);
-
-    //_XDPRINTF_("%s[%u]:  oparams=%016llx, oparams_size=%u\n",
-    //             __FUNCTION__, (u32)cpuid, oparams, oparams_size);
-
-#if 1
 
     {
         u64 entries_pml4t[PAE_PTRS_PER_PML4T];
@@ -699,8 +632,7 @@ void xcinit_interface(slab_input_params_t *iparams, u64 iparams_size, slab_outpu
         pdesc.numbytes = sizeof(guest_slab_magic);
         XMHF_HIC_SLAB_UAPI_PHYSMEM(XMHF_HIC_UAPI_PHYSMEM_PEEK, &pdesc, NULL);
 
-        _XDPRINTF_("%s[%u]: guest slab header magic=%x\n",
-            __FUNCTION__, (u32)cpuid, guest_slab_magic);
+        _XDPRINTF_("%s[%u]: guest slab header magic=%x\n", __FUNCTION__, (u32)cpuid, guest_slab_magic);
 
 
         //initialize guest slab level-2 page tables shape
@@ -753,19 +685,25 @@ void xcinit_interface(slab_input_params_t *iparams, u64 iparams_size, slab_outpu
     }
 
 
-    _XDPRINTF_("%s[%u]: Proceeding to call xcguestslab; RSP=%016llx\n",
-        __FUNCTION__, (u32)cpuid, read_rsp());
+    _XDPRINTF_("%s[%u]: Proceeding to call xcguestslab; RSP=%016llx\n", __FUNCTION__, (u32)cpuid, read_rsp());
 
     XMHF_SLAB_CALL(xcguestslab, XMHF_GUEST_SLAB_XCGUESTSLAB, NULL, 0, NULL, 0);
 
 
-
-    _XDPRINTF_("%s[%u]: Should  never get here.Halting!\n",
-        __FUNCTION__, (u32)cpuid);
-
+    _XDPRINTF_("%s[%u]: Should  never get here.Halting!\n", __FUNCTION__, (u32)cpuid);
     HALT();
 
-#else
+    return;
+}
+
+
+
+
+
+
+
+
+#if 0
 
 
     _xcinit_dotests(cpuid);
@@ -774,36 +712,6 @@ void xcinit_interface(slab_input_params_t *iparams, u64 iparams_size, slab_outpu
         __FUNCTION__, (u32)cpuid);
 
     HALT();
-
-
-#endif
-
-    return;
-}
-
-
-#if 0
-
-
-        /*_XDPRINTF_("%s[%u]: Proceeding to call xctestslab1 interface; RSP=%016llx\n",
-                __FUNCTION__, (u32)cpuid, read_rsp());
-
-        inputval = 0xAABB;
-        XMHF_SLAB_CALL(xctestslab1, XMHF_HYP_SLAB_XCTESTSLAB1, &inputval, sizeof(inputval), &outputval, sizeof(outputval));
-
-        _XDPRINTF_("%s[%u]: Came back to xcinit; RSP=%016llx\n",
-                __FUNCTION__, (u32)cpuid, read_rsp());
-        _XDPRINTF_("%s[%u]: outputval=%016llx\n",
-                __FUNCTION__, (u32)cpuid, outputval);*/
-
-
-        //_xcinit_dotests(cpuid);
-
-        asm volatile ("int $0x03\r\n");
-
-
-
-
 
 
 #endif // 0

@@ -151,44 +151,19 @@ void xcihub_interface(slab_input_params_t *iparams, u64 iparams_size, slab_outpu
 
 
         //shutdown
-        case VMX_VMEXIT_INIT:{
-
-
-
-        }
-        break;
-
-   		case VMX_VMEXIT_TASKSWITCH:{
-			/*u32 idt_v = inforegs.info_idt_vectoring_information & VECTORING_INFO_VALID_MASK;
-			u32 type = inforegs.info_idt_vectoring_information & VECTORING_INFO_TYPE_MASK;
-			u32 reason = inforegs.info_exit_qualification >> 30;
-			u16 tss_selector = (u16)inforegs.info_exit_qualification;
-
-			if(reason == TASK_SWITCH_GATE && type == INTR_TYPE_NMI){
-				_XDPRINTF_("\nCPU(0x%02x): NMI received (MP guest shutdown?)", context_desc.cpu_desc.cpu_index);
-                XMHF_SLAB_CALL_P2P(xhhyperdep, XMHF_SLAB_XCIHUB_INDEX, XMHF_SLAB_XHHYPERDEP_INDEX, XMHF_SLAB_HYPAPP_FNSHUTDOWN, XMHF_SLAB_HYPAPP_FNSHUTDOWN_SIZE, context_desc );
-				_XDPRINTF_("\nCPU(0x%02x): warning, xmhf_hypapp_handleshutdown returned!", context_desc.cpu_desc.cpu_index);
-				_XDPRINTF_("\nCPU(0x%02x): HALTING!", context_desc.cpu_desc.cpu_index);
-				HALT();
-			}else{
-				_XDPRINTF_("\nCPU(0x%02x): Unhandled Task Switch. Halt!", context_desc.cpu_desc.cpu_index);
-				_XDPRINTF_("\n	idt_v=0x%08x, type=0x%08x, reason=0x%08x, tsssel=0x%04x",
-					idt_v, type, reason, tss_selector);
-			}
-			HALT();*/
-		}
+        case VMX_VMEXIT_INIT:
+   		case VMX_VMEXIT_TASKSWITCH:
+            _xcihub_hcbinvoke(XC_HYPAPPCB_SHUTDOWN, 0, src_slabid);
 		break;
 
 
 
-        //io traps
-		case VMX_VMEXIT_IOIO:{
-
-
-
-
-		}
-		break;
+        ////io traps
+		//case VMX_VMEXIT_IOIO:{
+        //
+        //
+		//}
+		//break;
 
 
         //instruction traps
@@ -333,10 +308,7 @@ void xcihub_interface(slab_input_params_t *iparams, u64 iparams_size, slab_outpu
     }
 
 
-	//_XDPRINTF_("%s[%u]: Halting!\n",
-    //            __FUNCTION__, (u32)cpuindex);
-    //HALT();
-
+    //resume guest slab
     return;
 }
 

@@ -59,6 +59,48 @@ XMHF_SLAB(xctestslab1)
  */
 
 
+/*
+static u8 _ae_page_buffer_src[PAGE_SIZE_4K];
+
+static u8 _ae_page_buffer[PAGE_SIZE_4K];
+
+static void _xcinit_dotests(u64 cpuid){
+
+    {
+        u64 tscbefore, tscafter, tscavg=0;
+        u32 iterations=128;
+        u32 i;
+        u8 digest[SHA_DIGEST_LENGTH];
+
+        _XDPRINTF_("%s: proceeding with test...\n", __FUNCTION__);
+
+
+
+        for(i=0; i < iterations; i++){
+            tscbefore = rdtsc64();
+
+            {
+
+                //memcpy(_ae_page_buffer, &_ae_page_buffer_src, PAGE_SIZE_4K);
+                //compute SHA-1 of the local page buffer
+                sha1_buffer(&_ae_page_buffer, PAGE_SIZE_4K, digest);
+
+                //XMHF_SLAB_CALL(hictestslab2, XMHF_HYP_SLAB_HICTESTSLAB2, NULL, 0, NULL, 0);
+
+            }
+
+            tscafter = rdtsc64();
+            tscavg += (tscafter - tscbefore);
+        }
+
+        tscavg = tscavg / iterations;
+
+        _XDPRINTF_("%s: clock cycles for test = %u\n", __FUNCTION__, (u32)tscavg);
+
+    }
+
+}*/
+
 
 void xctestslab1_interface(slab_input_params_t *iparams, u64 iparams_size, slab_output_params_t *oparams, u64 oparams_size, u64 src_slabid, u64 cpuid){
     u64 *inputval = (u64 *)iparams;
