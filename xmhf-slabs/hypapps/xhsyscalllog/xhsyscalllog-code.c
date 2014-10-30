@@ -63,6 +63,7 @@ XMHF_SLAB(xhsyscalllog)
 static u8 _sl_pagebuffer[PAGE_SIZE_4K];
 static u8 _sl_syscalldigest[SHA_DIGEST_LENGTH];
 static bool _sl_registered=false;
+static u64 shadow_sysenter_rip=0;
 
 static void sl_register(u64 cpuindex, u64 guest_slab_index, u64 gpa){
         xmhf_hic_uapi_physmem_desc_t pdesc;
@@ -129,15 +130,46 @@ static void _hcb_hypercall(u64 cpuindex, u64 guest_slab_index){
 
 
 static void _hcb_memoryfault(u64 cpuindex, u64 guest_slab_index, u64 gpa, u64 gva, u64 errorcode){
+    xmhf_hic_uapi_physmem_desc_t pdesc;
+    u8 syscalldigest[SHA_DIGEST_LENGTH];
+    bool syscallhandler_modified=false;
+    x86regs64_t r;
+
+    if(!_sl_registered)
+        return;
 
 	_XDPRINTF_("%s[%u]: memory fault in guest slab %u; gpa=%x, gva=%x, errorcode=%x, sysenter execution?\n",
             __FUNCTION__, (u32)cpuindex, guest_slab_index, gpa, gva, errorcode);
 
-	HALT();
+
+    //read GPR state
+    XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSREAD, NULL, &r);
+
+    //copy code page at SYSENTER (referenced by shadow_sysenter_rip)
+    pdesc.addr_to = &_sl_pagebuffer;
+    pdesc.addr_from = shadow_sysenter_rip;
+    pdesc.numbytes = sizeof(_sl_pagebuffer);
+    XMHF_HIC_SLAB_UAPI_PHYSMEM(XMHF_HIC_UAPI_PHYSMEM_PEEK, &pdesc, NULL);
+
+    //compute SHA-1 of the syscall page
+    sha1_buffer(&_sl_pagebuffer, sizeof(_sl_pagebuffer), syscalldigest);
+
+    //check to see if syscall handler has been modified
+    if(memcmp(&_sl_syscalldigest, &syscalldigest, SHA_DIGEST_LENGTH))
+        syscallhandler_modified=true;
+
+	_XDPRINTF_("%s[%u]: syscall modified = %s\n",
+            __FUNCTION__, (u32)cpuindex, (syscallhandler_modified ? "true" : "false"));
+
+
+    //log GPR state, syscall modified status and digest
+
+
+    //set guest RIP to shadow_sysenter_rip to continue execution
+    XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMWRITE, VMCS_GUEST_RIP, shadow_sysenter_rip);
 }
 
 
-static u64 shadow_sysenter_rip=0;
 
 static u64 _hcb_trap_instruction(u64 cpuindex, u64 guest_slab_index, u64 insntype){
     u64 status=XC_HYPAPPCB_CHAIN;
