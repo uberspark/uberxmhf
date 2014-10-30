@@ -61,7 +61,7 @@ XMHF_SLAB_INTERCEPT(xcihub)
 
 
 static xc_hypapp_info_t _xcihub_hypapp_info_table[] = {
-/*    {
+    {
         XMHF_HYP_SLAB_XHHYPERDEP,
         (XC_HYPAPPCB_MASK(XC_HYPAPPCB_HYPERCALL) | XC_HYPAPPCB_MASK(XC_HYPAPPCB_MEMORYFAULT) | XC_HYPAPPCB_MASK(XC_HYPAPPCB_SHUTDOWN) )
     },
@@ -74,7 +74,7 @@ static xc_hypapp_info_t _xcihub_hypapp_info_table[] = {
     {
         XMHF_HYP_SLAB_XHSSTEPTRACE,
         (XC_HYPAPPCB_MASK(XC_HYPAPPCB_HYPERCALL) | XC_HYPAPPCB_MASK(XC_HYPAPPCB_TRAP_EXCEPTION) | XC_HYPAPPCB_MASK(XC_HYPAPPCB_SHUTDOWN) )
-    },*/
+    },
 
     {
         XMHF_HYP_SLAB_XHSYSCALLLOG,
