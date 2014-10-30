@@ -60,10 +60,32 @@ XMHF_SLAB(xhsyscalllog)
 #define SYSCALLLOG_REGISTER     			0xF0
 
 
+static u8 _sl_pagebuffer[PAGE_SIZE_4K];
+static u8 _sl_syscalldigest[SHA_DIGEST_LENGTH];
+static bool _sl_registered=false;
+
 static void sl_register(u64 cpuindex, u64 guest_slab_index, u64 gpa){
+        xmhf_hic_uapi_physmem_desc_t pdesc;
+
+        _XDPRINTF_("%s[%u]: starting...\n", __FUNCTION__, (u32)cpuindex);
+
+        //copy code page at gpa
+        pdesc.addr_to = &_sl_pagebuffer;
+        pdesc.addr_from = gpa;
+        pdesc.numbytes = sizeof(_sl_pagebuffer);
+        XMHF_HIC_SLAB_UAPI_PHYSMEM(XMHF_HIC_UAPI_PHYSMEM_PEEK, &pdesc, NULL);
+
+        _XDPRINTF_("%s[%u]: grabbed page contents at gpa=%x\n",
+               __FUNCTION__, (u32)cpuindex, gpa);
+
+        //compute SHA-1 of the syscall page
+        sha1_buffer(&_sl_pagebuffer, sizeof(_sl_pagebuffer), _sl_syscalldigest);
 
 
+        _XDPRINTF_("%s[%u]: computed SHA-1: %*D\n",
+               __FUNCTION__, (u32)cpuindex, SHA_DIGEST_LENGTH, _sl_syscalldigest, " ");
 
+        _sl_registered=true;
 }
 
 
@@ -108,15 +130,89 @@ static void _hcb_hypercall(u64 cpuindex, u64 guest_slab_index){
 
 static void _hcb_memoryfault(u64 cpuindex, u64 guest_slab_index, u64 gpa, u64 gva, u64 errorcode){
 
-	_XDPRINTF_("%s[%u]: memory fault in guest slab %u; gpa=%x, gva=%x, errorcode=%x, data page execution?. Halting!\n",
+	_XDPRINTF_("%s[%u]: memory fault in guest slab %u; gpa=%x, gva=%x, errorcode=%x, sysenter execution?\n",
             __FUNCTION__, (u32)cpuindex, guest_slab_index, gpa, gva, errorcode);
 
 	HALT();
 }
 
 
-static void _hcb_trap_instruction(u64 cpuindex, u64 guest_slab_index, u64 insntype){
+static u64 shadow_sysenter_rip=0;
 
+static u64 _hcb_trap_instruction(u64 cpuindex, u64 guest_slab_index, u64 insntype){
+    u64 status=XC_HYPAPPCB_CHAIN;
+    u64 guest_rip, msrvalue;
+    u64 info_vmexit_instruction_length;
+    x86regs64_t r;
+
+    if(!_sl_registered)
+        return status;
+
+    if (insntype == XC_HYPAPPCB_TRAP_INSTRUCTION_WRMSR){
+
+        XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSREAD, NULL, &r);
+
+        switch((u32)r.rcx){
+            case IA32_SYSENTER_EIP_MSR:{
+                xmhf_hic_uapi_mempgtbl_desc_t mdesc;
+
+              	_XDPRINTF_("%s[%u]: emulating WRMSR SYSENTER_EIP_MSR\n", __FUNCTION__, (u32)cpuindex);
+
+                //XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMWRITE, VMCS_GUEST_SYSENTER_EIP, ( ((u64)(u32)r.rdx << 32) | (u32)r.rax ));
+                shadow_sysenter_rip = ( ((u64)(u32)r.rdx << 32) | (u32)r.rax ) ;
+                XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMWRITE, VMCS_GUEST_SYSENTER_EIP, 0);
+
+                mdesc.guest_slab_index = guest_slab_index;
+                mdesc.gpa = 0;
+                XMHF_HIC_SLAB_UAPI_MEMPGTBL(XMHF_HIC_UAPI_MEMPGTBL_GETENTRY, &mdesc, &mdesc);
+                mdesc.entry &= ~(0x7);
+                XMHF_HIC_SLAB_UAPI_MEMPGTBL(XMHF_HIC_UAPI_MEMPGTBL_SETENTRY, &mdesc, NULL);
+
+                status = XC_HYPAPPCB_NOCHAIN;
+            }
+            break;
+
+            default:
+                break;
+        }
+
+    }else if (insntype == XC_HYPAPPCB_TRAP_INSTRUCTION_RDMSR){
+
+        XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSREAD, NULL, &r);
+
+        switch((u32)r.rcx){
+            case IA32_SYSENTER_EIP_MSR:
+              	_XDPRINTF_("%s[%u]: emulating RDMSR SYSENTER_EIP_MSR\n", __FUNCTION__, (u32)cpuindex);
+
+                //XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMREAD, VMCS_GUEST_SYSENTER_EIP, &msrvalue);
+                //r.rdx = msrvalue >> 32;
+                //r.rax = (u32)msrvalue;
+                r.rdx = shadow_sysenter_rip >> 32;
+                r.rax = (u32)shadow_sysenter_rip;
+
+                XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSWRITE, &r, NULL);
+                status = XC_HYPAPPCB_NOCHAIN;
+                break;
+            default:
+                break;
+        }
+
+    }else{ //some instruction we don't care about, so just fall through
+
+
+    }
+
+
+    //if we emulated the instruction then do not chain, but update instruction pointer
+    //accordingly
+    if(status == XC_HYPAPPCB_NOCHAIN){
+        XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMREAD, VMCS_INFO_VMEXIT_INSTRUCTION_LENGTH, &info_vmexit_instruction_length);
+        XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMREAD, VMCS_GUEST_RIP, &guest_rip);
+        guest_rip+=info_vmexit_instruction_length;
+        XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMWRITE, VMCS_GUEST_RIP, guest_rip);
+    }
+
+    return status;
 }
 
 
@@ -173,7 +269,7 @@ void xhsyscalllog_interface(slab_input_params_t *iparams, u64 iparams_size, slab
         //break;
 
         case XC_HYPAPPCB_TRAP_INSTRUCTION:{
-            _hcb_trap_instruction(cpuindex, hcb_iparams->guest_slab_index, hcb_iparams->cbqual);
+            hcb_oparams->cbresult = _hcb_trap_instruction(cpuindex, hcb_iparams->guest_slab_index, hcb_iparams->cbqual);
         }
         break;
 
