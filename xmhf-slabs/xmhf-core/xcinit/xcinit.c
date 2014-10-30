@@ -46,9 +46,9 @@
 
 #include <xmhf.h>
 #include <xmhf-debug.h>
+#include <xmhf-core.h>
 
 #include <xcinit.h>
-#include <xctestslab1.h>
 
 //////
 XMHF_SLAB(xcinit)
@@ -685,8 +685,12 @@ void xcinit_interface(slab_input_params_t *iparams, u64 iparams_size, slab_outpu
     }
 
 
-    _XDPRINTF_("%s[%u]: Proceeding to call xcguestslab; RSP=%016llx\n", __FUNCTION__, (u32)cpuid, read_rsp());
+    //invoke hypapp initialization callbacks
+    xc_hcbinvoke(XC_HYPAPPCB_INITIALIZE, 0, XMHF_GUEST_SLAB_XCGUESTSLAB);
 
+
+    //call guestslab
+    _XDPRINTF_("%s[%u]: Proceeding to call xcguestslab; RSP=%016llx\n", __FUNCTION__, (u32)cpuid, read_rsp());
     XMHF_SLAB_CALL(xcguestslab, XMHF_GUEST_SLAB_XCGUESTSLAB, NULL, 0, NULL, 0);
 
 
