@@ -627,8 +627,7 @@ __attribute__((naked)) __attribute__ ((section(".hic_entrystub"))) __attribute__
                     "orl $0x00000800, %%eax \r\n"
                     "wrmsr \r\n"
 
-                    "movl %%cr0, %%eax \r\n"
-                    "orl $0x80000015, %%eax \r\n"
+                    "movl $0x80000015, %%eax \r\n"
                     "movl %%eax, %%cr0 \r\n"
 
                     "movl %1, %%esi \r\n"
