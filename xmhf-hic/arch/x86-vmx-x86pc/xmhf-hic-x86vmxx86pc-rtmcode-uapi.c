@@ -58,7 +58,7 @@
 
 static void __xmhfhic_rtm_uapihandler_cpustate(u64 uapicall_subnum, u64 iparams, u64 oparams, u64 cpuid, u64 src_slabid);
 static void __xmhfhic_rtm_uapihandler_physmem(u64 uapicall_subnum, u64 iparams, u64 oparams, u64 cpuid, u64 src_slabid);
-static void __xmhfhic_rtm_uapihandler_mempgtbl(u64 uapicall_subnum, u64 iparams, u64 oparams, u64 cpuid);
+static void __xmhfhic_rtm_uapihandler_mempgtbl(u64 uapicall_subnum, u64 iparams, u64 oparams, u64 cpuid, u64 src_slabid);
 
 
 static bool _uapicheck_is_within_slab_memory_extents(u64 slab_id, u64 addr, u64 size){
@@ -137,7 +137,7 @@ void __xmhfhic_rtm_uapihandler(u64 uapicall, u64 uapicall_num, u64 uapicall_subn
             break;
 
         case XMHF_HIC_UAPI_MEMPGTBL:
-            __xmhfhic_rtm_uapihandler_mempgtbl(uapicall_subnum, iparams, oparams, cpuid);
+            __xmhfhic_rtm_uapihandler_mempgtbl(uapicall_subnum, iparams, oparams, cpuid, src_slabid);
             break;
 
         default:
@@ -371,23 +371,47 @@ static void __xmhfhic_rtm_uapihandler_physmem(u64 uapicall_subnum, u64 iparams, 
 
 //////
 // mempgtbl UAPI sub-handler
-static void __xmhfhic_rtm_uapihandler_mempgtbl(u64 uapicall_subnum, u64 iparams, u64 oparams, u64 cpuid){
+static void __xmhfhic_rtm_uapihandler_mempgtbl(u64 uapicall_subnum, u64 iparams, u64 oparams, u64 cpuid, u64 src_slabid){
     //_XDPRINTF_("%s[%u]: Got control...\n", __FUNCTION__, (u32)cpuid);
 
     switch(uapicall_subnum){
         case XMHF_HIC_UAPI_MEMPGTBL_GETENTRY:{
             //iparams = xmhf_hic_uapi_mempgtbl_desc_t *; oparams = xmhf_hic_uapi_mempgtbl_desc_t *
-            //checks:
-            //1. iparams is within source slab memory extents
-            //2. oparams is within source slab memory extents
-            //3. destination slab (iparams->guest_slab_index) is a guest slab
-            //4. iparams->gpa fits within destination slab mempgtbl extents (pdpt_index, pd_index and pt_index bounds)
             xmhf_hic_uapi_mempgtbl_desc_t *imdesc= (xmhf_hic_uapi_mempgtbl_desc_t *)iparams;
             xmhf_hic_uapi_mempgtbl_desc_t *omdesc= (xmhf_hic_uapi_mempgtbl_desc_t *)oparams;
+
+            //checks:
+            //1. iparams is within source slab memory extents
+            if(!_uapicheck_is_within_slab_memory_extents(src_slabid, iparams, sizeof(xmhf_hic_uapi_mempgtbl_desc_t))){
+                _XDPRINTF_("%s[%u],%u: uapierr: iparams should be within source slab memory extents. Halting!\n", __FUNCTION__, (u32)cpuid, __LINE__);
+                HALT();
+            }
+            //2. oparams is within source slab memory extents
+            if(!_uapicheck_is_within_slab_memory_extents(src_slabid, oparams, sizeof(xmhf_hic_uapi_mempgtbl_desc_t))){
+                _XDPRINTF_("%s[%u],%u: uapierr: oparams should be within source slab memory extents. Halting!\n", __FUNCTION__, (u32)cpuid, __LINE__);
+                HALT();
+            }
+            //3. destination slab is within bounds and is a guest slab
+            if(! (imdesc->guest_slab_index < XMHF_HIC_MAX_SLABS ) ){
+                _XDPRINTF_("%s[%u],%u: uapierr: destination slab is out of bounds. Halting!\n", __FUNCTION__, (u32)cpuid, __LINE__);
+                HALT();
+            }
+            if( !(_xmhfhic_common_slab_info_table[imdesc->guest_slab_index].archdata.slabtype == HIC_SLAB_X86VMXX86PC_GUEST) ){
+                _XDPRINTF_("%s[%u],%u: uapierr: destination slab is not a guest slab. Halting!\n", __FUNCTION__, (u32)cpuid, __LINE__);
+                HALT();
+            }
 
             u64 pdpt_index = pae_get_pdpt_index(imdesc->gpa);
             u64 pd_index = pae_get_pdt_index(imdesc->gpa);
             u64 pt_index = pae_get_pt_index(imdesc->gpa);
+
+            //checks:
+            //4. iparams->gpa fits within destination slab mempgtbl extents (pdpt_index, pd_index and pt_index bounds)
+            if( !(pdpt_index < PAE_PTRS_PER_PDPT && pd_index < PAE_PTRS_PER_PDT && pt_index < PAE_PTRS_PER_PT) ){
+                _XDPRINTF_("%s[%u],%u: uapierr: mempgtbl indices out of bound. Halting!\n", __FUNCTION__, (u32)cpuid, __LINE__);
+                HALT();
+            }
+
 
             omdesc->entry = _xmhfhic_common_slab_info_table[imdesc->guest_slab_index].archdata.mempgtbl_pt[pdpt_index][pd_index][pt_index];
         }
@@ -396,16 +420,42 @@ static void __xmhfhic_rtm_uapihandler_mempgtbl(u64 uapicall_subnum, u64 iparams,
 
         case XMHF_HIC_UAPI_MEMPGTBL_SETENTRY:{
             //iparams = xmhf_hic_uapi_mempgtbl_desc_t *; oparams = unused
+            xmhf_hic_uapi_mempgtbl_desc_t *imdesc= (xmhf_hic_uapi_mempgtbl_desc_t *)iparams;
+
             //checks:
             //1. iparams is within source slab memory extents
-            //2. destination slab (iparams->guest_slab_index) is a guest slab
-            //3. iparams->gpa fits within destination slab mempgtbl extents (pdpt_index, pd_index and pt_index bounds)
-            //4. if iparams->entry has present bit set then entry is within destination slab memory extents
-            xmhf_hic_uapi_mempgtbl_desc_t *imdesc= (xmhf_hic_uapi_mempgtbl_desc_t *)iparams;
+            if(!_uapicheck_is_within_slab_memory_extents(src_slabid, iparams, sizeof(xmhf_hic_uapi_mempgtbl_desc_t))){
+                _XDPRINTF_("%s[%u],%u: uapierr: iparams should be within source slab memory extents. Halting!\n", __FUNCTION__, (u32)cpuid, __LINE__);
+                HALT();
+            }
+            //2. destination slab is within bounds and is a guest slab
+            if(! (imdesc->guest_slab_index < XMHF_HIC_MAX_SLABS ) ){
+                _XDPRINTF_("%s[%u],%u: uapierr: destination slab is out of bounds. Halting!\n", __FUNCTION__, (u32)cpuid, __LINE__);
+                HALT();
+            }
+            if( !(_xmhfhic_common_slab_info_table[imdesc->guest_slab_index].archdata.slabtype == HIC_SLAB_X86VMXX86PC_GUEST) ){
+                _XDPRINTF_("%s[%u],%u: uapierr: destination slab is not a guest slab. Halting!\n", __FUNCTION__, (u32)cpuid, __LINE__);
+                HALT();
+            }
 
             u64 pdpt_index = pae_get_pdpt_index(imdesc->gpa);
             u64 pd_index = pae_get_pdt_index(imdesc->gpa);
             u64 pt_index = pae_get_pt_index(imdesc->gpa);
+
+            //checks:
+            //3. iparams->gpa fits within destination slab mempgtbl extents (pdpt_index, pd_index and pt_index bounds)
+            if( !(pdpt_index < PAE_PTRS_PER_PDPT && pd_index < PAE_PTRS_PER_PDT && pt_index < PAE_PTRS_PER_PT) ){
+                _XDPRINTF_("%s[%u],%u: uapierr: mempgtbl indices out of bound. Halting!\n", __FUNCTION__, (u32)cpuid, __LINE__);
+                HALT();
+            }
+            //4. if iparams->entry has present bit set then entry is within destination slab memory extents
+            if( imdesc->entry & 0x7 ){
+                if(!_uapicheck_is_within_slab_memory_extents(imdesc->guest_slab_index, (imdesc->entry & 0xFFFFFFFFFFFFF000UL), 1)){
+                    _XDPRINTF_("%s[%u],%u: uapierr: mempgtbl entry is not within destination slab memory extents. Halting!\n", __FUNCTION__, (u32)cpuid, __LINE__);
+                    HALT();
+                }
+            }
+
 
             _xmhfhic_common_slab_info_table[imdesc->guest_slab_index].archdata.mempgtbl_pt[pdpt_index][pd_index][pt_index] = imdesc->entry;
 
