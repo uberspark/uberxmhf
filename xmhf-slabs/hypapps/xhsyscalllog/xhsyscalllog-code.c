@@ -97,6 +97,7 @@ static void sl_register(u64 cpuindex, u64 guest_slab_index, u64 gpa){
         _XDPRINTF_("%s[%u]: starting...\n", __FUNCTION__, (u32)cpuindex);
 
         //copy code page at gpa
+        pdesc.guest_slab_index = guest_slab_index;
         pdesc.addr_to = &_sl_pagebuffer;
         pdesc.addr_from = gpa;
         pdesc.numbytes = sizeof(_sl_pagebuffer);
@@ -172,6 +173,7 @@ static void _hcb_memoryfault(u64 cpuindex, u64 guest_slab_index, u64 gpa, u64 gv
     XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSREAD, NULL, &r);
 
     //copy code page at SYSENTER (referenced by shadow_sysenter_rip)
+    pdesc.guest_slab_index = guest_slab_index;
     pdesc.addr_to = &_sl_pagebuffer;
     pdesc.addr_from = shadow_sysenter_rip;
     pdesc.numbytes = sizeof(_sl_pagebuffer);

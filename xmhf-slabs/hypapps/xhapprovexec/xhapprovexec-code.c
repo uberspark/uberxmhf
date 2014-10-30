@@ -81,6 +81,7 @@ static void ae_lock(u64 cpuindex, u64 guest_slab_index, u64 gpa){
     _XDPRINTF_("%s[%u]: starting...\n", __FUNCTION__, (u32)cpuindex);
 
     //grab page contents at gpa into local page buffer
+    pdesc.guest_slab_index = guest_slab_index;
     pdesc.addr_to = &_ae_page_buffer;
     pdesc.addr_from = gpa;
     pdesc.numbytes = PAGE_SIZE_4K;
