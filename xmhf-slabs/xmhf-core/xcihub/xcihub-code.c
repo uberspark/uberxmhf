@@ -221,6 +221,91 @@ void xcihub_interface(slab_input_params_t *iparams, u64 iparams_size, slab_outpu
         break;
 
 
+        case VMX_VMEXIT_WRMSR:{
+                u64 guest_rip;
+                u64 info_vmexit_instruction_length;
+                x86regs64_t r;
+
+                _XDPRINTF_("%s[%u]: VMX_VMEXIT_WRMSR\n", __FUNCTION__, (u32)cpuindex);
+
+                XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSREAD, NULL, &r);
+
+                switch((u32)r.rcx){
+                    case IA32_SYSENTER_CS_MSR:
+                        XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMWRITE, VMCS_GUEST_SYSENTER_CS, ( ((u64)(u32)r.rdx << 32) | (u32)r.rax ));
+                        break;
+                    case IA32_SYSENTER_EIP_MSR:
+                        XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMWRITE, VMCS_GUEST_SYSENTER_EIP, ( ((u64)(u32)r.rdx << 32) | (u32)r.rax ));
+                        break;
+                    case IA32_SYSENTER_ESP_MSR:
+                        XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMWRITE, VMCS_GUEST_SYSENTER_ESP, ( ((u64)(u32)r.rdx << 32) | (u32)r.rax ));
+                        break;
+                    default:
+                        XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_WRMSR, r.rcx, ( ((u64)(u32)r.rdx << 32) | (u32)r.rax ));
+                        break;
+                }
+
+                XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMREAD, VMCS_INFO_VMEXIT_INSTRUCTION_LENGTH, &info_vmexit_instruction_length);
+                XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMREAD, VMCS_GUEST_RIP, &guest_rip);
+                guest_rip+=info_vmexit_instruction_length;
+                XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMWRITE, VMCS_GUEST_RIP, guest_rip);
+
+                _XDPRINTF_("%s[%u]: adjusted guest_rip=%016llx\n",
+                    __FUNCTION__, (u32)cpuindex, guest_rip);
+
+        }
+        break;
+
+
+        case VMX_VMEXIT_RDMSR:{
+                u64 guest_rip, msrvalue;
+                u64 info_vmexit_instruction_length;
+                x86regs64_t r;
+
+                _XDPRINTF_("%s[%u]: VMX_VMEXIT_RDMSR\n", __FUNCTION__, (u32)cpuindex);
+
+                XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSREAD, NULL, &r);
+
+                switch((u32)r.rcx){
+                    case IA32_SYSENTER_CS_MSR:
+                        XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMREAD, VMCS_GUEST_SYSENTER_CS, &msrvalue);
+                        r.rdx = msrvalue >> 32;
+                        r.rax = (u32)msrvalue;
+                        break;
+                    case IA32_SYSENTER_EIP_MSR:
+                        XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMREAD, VMCS_GUEST_SYSENTER_EIP, &msrvalue);
+                        r.rdx = msrvalue >> 32;
+                        r.rax = (u32)msrvalue;
+                        break;
+                    case IA32_SYSENTER_ESP_MSR:
+                        XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMREAD, VMCS_GUEST_SYSENTER_ESP, &msrvalue);
+                        r.rdx = msrvalue >> 32;
+                        r.rax = (u32)msrvalue;
+                        break;
+                    default:
+                        XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_RDMSR, r.rcx, &msrvalue);
+                        r.rdx = msrvalue >> 32;
+                        r.rax = (u32)msrvalue;
+                        break;
+                }
+
+                XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSWRITE, &r, NULL);
+
+                XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMREAD, VMCS_INFO_VMEXIT_INSTRUCTION_LENGTH, &info_vmexit_instruction_length);
+                XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMREAD, VMCS_GUEST_RIP, &guest_rip);
+                guest_rip+=info_vmexit_instruction_length;
+                XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMWRITE, VMCS_GUEST_RIP, guest_rip);
+
+                _XDPRINTF_("%s[%u]: adjusted guest_rip=%016llx\n",
+                    __FUNCTION__, (u32)cpuindex, guest_rip);
+
+        }
+        break;
+
+
+
+
+
 
         //exception traps
         case VMX_VMEXIT_EXCEPTION:{
@@ -246,3 +331,73 @@ void xcihub_interface(slab_input_params_t *iparams, u64 iparams_size, slab_outpu
 }
 
 
+
+
+
+
+
+
+
+
+/*
+//---intercept handler (WRMSR)--------------------------------------------------
+static void _vmx_handle_intercept_wrmsr(context_desc_t context_desc, struct regs r){
+	//_XDPRINTF_("\nCPU(0x%02x): WRMSR 0x%08x", xc_cpu->cpuid, r.ecx);
+	xc_hypapp_arch_param_t ap;
+    slab_retval_t srval;
+
+	srval = XMHF_SLAB_CALL_P2P(xcapi, XMHF_SLAB_XCIHUB_INDEX, XMHF_SLAB_XCAPI_INDEX, XMHF_SLAB_XCAPI_FNXCAPICPUSTATEGET, XMHF_SLAB_XCAPI_FNXCAPICPUSTATEGET_SIZE, context_desc, (u64)XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_SYSENTER);
+    ap = srval.retval_xc_hypapp_arch_param;
+
+	ap.operation = XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_SYSENTER;
+
+	switch(r.ecx){
+		case IA32_SYSENTER_CS_MSR:
+			ap.param.sysenter.sysenter_cs = r.eax;
+            XMHF_SLAB_CALL_P2P(xcapi, XMHF_SLAB_XCIHUB_INDEX, XMHF_SLAB_XCAPI_INDEX, XMHF_SLAB_XCAPI_FNXCAPICPUSTATESET, XMHF_SLAB_XCAPI_FNXCAPICPUSTATESET_SIZE, context_desc, ap);
+			break;
+		case IA32_SYSENTER_EIP_MSR:
+			ap.param.sysenter.sysenter_rip = r.eax;
+            XMHF_SLAB_CALL_P2P(xcapi, XMHF_SLAB_XCIHUB_INDEX, XMHF_SLAB_XCAPI_INDEX, XMHF_SLAB_XCAPI_FNXCAPICPUSTATESET, XMHF_SLAB_XCAPI_FNXCAPICPUSTATESET_SIZE, context_desc, ap);
+			break;
+		case IA32_SYSENTER_ESP_MSR:
+			ap.param.sysenter.sysenter_rsp = r.eax;
+            XMHF_SLAB_CALL_P2P(xcapi, XMHF_SLAB_XCIHUB_INDEX, XMHF_SLAB_XCAPI_INDEX, XMHF_SLAB_XCAPI_FNXCAPICPUSTATESET, XMHF_SLAB_XCAPI_FNXCAPICPUSTATESET_SIZE, context_desc, ap);
+			break;
+		default:{
+          wrmsr((u32)r.ecx, (u32)r.eax, (u32)r.edx);
+			break;
+		}
+	}
+}
+
+//---intercept handler (RDMSR)--------------------------------------------------
+static struct regs _vmx_handle_intercept_rdmsr(context_desc_t context_desc, struct regs r){
+	xc_hypapp_arch_param_t ap;
+    slab_retval_t srval;
+
+	srval = XMHF_SLAB_CALL_P2P(xcapi, XMHF_SLAB_XCIHUB_INDEX, XMHF_SLAB_XCAPI_INDEX, XMHF_SLAB_XCAPI_FNXCAPICPUSTATEGET, XMHF_SLAB_XCAPI_FNXCAPICPUSTATEGET_SIZE, context_desc, (u64)XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_SYSENTER);
+    ap = srval.retval_xc_hypapp_arch_param;
+
+	switch(r.ecx){
+		case IA32_SYSENTER_CS_MSR:
+			r.eax = ap.param.sysenter.sysenter_cs;
+			r.edx = 0;
+			break;
+		case IA32_SYSENTER_EIP_MSR:
+			r.eax = ap.param.sysenter.sysenter_rip;
+			r.edx = 0;
+			break;
+		case IA32_SYSENTER_ESP_MSR:
+			r.eax = ap.param.sysenter.sysenter_rsp;
+			r.edx = 0;
+			break;
+		default:{
+	        rdmsr((u32)r.ecx, (u32 *)&r.eax, (u32 *)&r.edx);
+			break;
+		}
+	}
+
+	return r;
+}
+*/
