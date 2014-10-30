@@ -266,6 +266,7 @@ __attribute__((aligned(4096))) void _xcguestslab_do_testxhssteptrace_func(void){
     asm volatile(
         "nop \r\n"
         "nop \r\n"
+        "nop \r\n"
         :
         :
         :
