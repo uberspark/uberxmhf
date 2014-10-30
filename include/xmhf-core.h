@@ -67,8 +67,15 @@
 #define XC_HYPAPPCB_TRAP_INSTRUCTION            (6)
 #define XC_HYPAPPCB_TRAP_EXCEPTION              (7)
 
+
+#define XC_HYPAPPCB_TRAP_INSTRUCTION_CPUID      (0x60)
+#define XC_HYPAPPCB_TRAP_INSTRUCTION_WRMSR      (0x61)
+#define XC_HYPAPPCB_TRAP_INSTRUCTION_RDMSR      (0x62)
+
+
 typedef struct {
     u64 cbtype;
+    u64 cbqual;
     u64 guest_slab_index;
 }__attribute__((packed)) xc_hypappcb_inputparams_t;
 
