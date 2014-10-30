@@ -52,10 +52,6 @@
 #ifndef __XMHF_CORE_H_
 #define __XMHF_CORE_H_
 
-//#include <_xctypes.h>			//core specific data types
-//#include <_xchypapp.h>			//hypapp callback declarations
-
-
 #define XC_HYPAPPCB_CHAIN                       (1)
 #define XC_HYPAPPCB_NOCHAIN                     (2)
 
