@@ -45,7 +45,7 @@
  */
 
 /*
- * slab trampoline that is mapped into every slab memory view
+ * HIC UAPI (micro-API) implementation for XMHF
  *
  * author: amit vasudevan (amitvasudevan@acm.org)
  */
@@ -53,18 +53,208 @@
 #include <xmhf.h>
 #include <xmhf-debug.h>
 
+/////
+// forward prototypes
+
+static void __xmhfhic_rtm_uapihandler_cpustate(u64 uapicall_subnum, u64 iparams, u64 oparams, u64 cpuid);
+static void __xmhfhic_rtm_uapihandler_physmem(u64 uapicall_subnum, u64 iparams, u64 oparams, u64 cpuid);
+static void __xmhfhic_rtm_uapihandler_mempgtbl(u64 uapicall_subnum, u64 iparams, u64 oparams, u64 cpuid);
 
 
-//////////////////////////////////////////////////////////////////////////////
-// HIC UAPI
 
 
+
+
+//////
+// main UAPI handler, gets called by a slab
+// src_slabid and cpuid are trusted input parameters provided by HIC
+void __xmhfhic_rtm_uapihandler(u64 uapicall, u64 uapicall_num, u64 uapicall_subnum,
+                               u64 reserved, u64 iparams, u64 oparams,
+                               u64 src_slabid, u64 cpuid){
+
+    //_XDPRINTF_("%s[%u]: uapi handler got control: uapicall=%x, uapicall_num=%x, \
+    //           uapicall_subnum=%x, iparams=%x, oparams=%x, \
+    //           src_slabid=%u, cpuid=%x, return_address=%x, return_rsp=%x, cr3=%x\n",
+    //            __FUNCTION__, (u32)cpuid,
+    //           uapicall, uapicall_num, uapicall_subnum,
+    //           iparams, oparams,
+    //           src_slabid, cpuid, return_address, return_rsp, read_cr3());
+
+
+    //checks
+    //1. src_slabid is a hypervisor slab
+    //2. src_slabid should have capabilities for the requested uapicall_num
+
+    switch(uapicall_num){
+        case XMHF_HIC_UAPI_CPUSTATE:
+            __xmhfhic_rtm_uapihandler_cpustate(uapicall_subnum, iparams, oparams, cpuid);
+            break;
+
+        case XMHF_HIC_UAPI_PHYSMEM:
+            __xmhfhic_rtm_uapihandler_physmem(uapicall_subnum, iparams, oparams, cpuid);
+            break;
+
+        case XMHF_HIC_UAPI_MEMPGTBL:
+            __xmhfhic_rtm_uapihandler_mempgtbl(uapicall_subnum, iparams, oparams, cpuid);
+            break;
+
+        default:
+            _XDPRINTF_("%s[%u]: Unknown UAPI call %x. Halting!\n",
+                    __FUNCTION__, (u32)cpuid, uapicall_num);
+            HALT();
+    }
+
+
+    return;
+}
+
+
+
+
+
+
+
+
+
+
+//////
+// cpustate UAPI sub-handler
+static void __xmhfhic_rtm_uapihandler_cpustate(u64 uapicall_subnum, u64 iparams, u64 oparams, u64 cpuid){
+    //_XDPRINTF_("%s[%u]: Got control...\n", __FUNCTION__, (u32)cpuid);
+
+    switch(uapicall_subnum){
+        case XMHF_HIC_UAPI_CPUSTATE_VMREAD:{
+            //iparams = encoding (u64), oparams = memory (u64 *)
+            //checks:
+            //1. oparams should be within source slab rwdata or stack memory extents
+            //2. encoding cannot contain any value that is specific to HIC
+            *(u64 *)oparams = xmhfhw_cpu_x86vmx_vmread(iparams);
+        }
+        break;
+
+        case XMHF_HIC_UAPI_CPUSTATE_VMWRITE:{
+            //iparams = encoding (u64), oparams = value (u64)
+            //checks:
+            //1. encoding cannot contain any value that is specific to HIC
+            xmhfhw_cpu_x86vmx_vmwrite(iparams, oparams);
+        }
+        break;
+
+        case XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSREAD:{
+            //iparams = NULL, oparams = x86regs64_t *
+            //checks:
+            //1. oparams should be within source slab rwdata or stack memory extents
+            memcpy(oparams, & __xmhfhic_x86vmx_archdata[(u32)cpuid].vmx_gprs,
+                   sizeof(x86regs64_t));
+        }
+        break;
+
+        case XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSWRITE:{
+            //iparams = x86regs64_t *, oparams=NULL
+            //checks:
+            //1. iparams should be within source slab rwdata, rodata or stack memory extents
+            memcpy(& __xmhfhic_x86vmx_archdata[(u32)cpuid].vmx_gprs,
+                   iparams,
+                   sizeof(x86regs64_t));
+        }
+        break;
+
+        case XMHF_HIC_UAPI_CPUSTATE_WRMSR:{
+            //iparams = msr, oparams = value
+            //checks
+            //1. msr cannot contain any value that is specific to HIC
+            wrmsr64((u32)iparams, oparams);
+        }
+        break;
+
+
+        case XMHF_HIC_UAPI_CPUSTATE_RDMSR:{
+            //iparams = msr, oparams = (u64 *)
+            //checks:
+            //1. msr cannot contain any value that is specific to HIC
+            //2. oparams should be within source slab rwdata or stack memory extents
+            *(u64 *)oparams = rdmsr64((u32)iparams);
+        }
+        break;
+
+        default:
+            _XDPRINTF_("%s[%u]: Unknown cpustate subcall %x. Halting!\n",
+                    __FUNCTION__, (u32)cpuid, uapicall_subnum);
+            HALT();
+    }
+
+}
+
+
+
+
+
+
+
+
+
+
+//////
+// physmem UAPI sub-handler
+static void __xmhfhic_rtm_uapihandler_physmem(u64 uapicall_subnum, u64 iparams, u64 oparams, u64 cpuid){
+    //_XDPRINTF_("%s[%u]: Got control...\n", __FUNCTION__, (u32)cpuid);
+
+    switch(uapicall_subnum){
+        case XMHF_HIC_UAPI_PHYSMEM_PEEK:{
+            //iparams = (xmhf_hic_uapi_physmem_desc_t *), oparams = unused
+            //checks:
+            //1. iparams is within source slab rwdata or stack section
+            //2. destination slab is a guest slab
+            //3. pdesc->addr_from and pdesc->numbytes is within destination slab memory extents
+            //4. pdesc->addr_to is within source slab memory extents
+            xmhf_hic_uapi_physmem_desc_t *pdesc = (xmhf_hic_uapi_physmem_desc_t *)iparams;
+            memcpy(pdesc->addr_to, pdesc->addr_from, pdesc->numbytes);
+        }
+        break;
+
+        case XMHF_HIC_UAPI_PHYSMEM_POKE:{
+            //iparams = (xmhf_hic_uapi_physmem_desc_t *), oparams = unused
+            //1. iparams is within source slab memory extents
+            //2. destination slab is a guest slab
+            //3. pdesc->addr_to and pdesc->numbytes is within destination slab memory extents
+            //4. pdesc->addr_from is within source slab memory extents
+            xmhf_hic_uapi_physmem_desc_t *pdesc = (xmhf_hic_uapi_physmem_desc_t *)iparams;
+            memcpy(pdesc->addr_to, pdesc->addr_from, pdesc->numbytes);
+        }
+        break;
+
+
+        default:
+            _XDPRINTF_("%s[%u]: Unknown cpustate subcall %x. Halting!\n",
+                    __FUNCTION__, (u32)cpuid, uapicall_subnum);
+            HALT();
+
+    }
+
+}
+
+
+
+
+
+
+
+
+
+
+//////
+// mempgtbl UAPI sub-handler
 static void __xmhfhic_rtm_uapihandler_mempgtbl(u64 uapicall_subnum, u64 iparams, u64 oparams, u64 cpuid){
-    //_XDPRINTF_("%s[%u]: Got control...\n",
-    //            __FUNCTION__, (u32)cpuid);
+    //_XDPRINTF_("%s[%u]: Got control...\n", __FUNCTION__, (u32)cpuid);
 
     switch(uapicall_subnum){
         case XMHF_HIC_UAPI_MEMPGTBL_GETENTRY:{
+            //iparams = xmhf_hic_uapi_mempgtbl_desc_t *; oparams = xmhf_hic_uapi_mempgtbl_desc_t *
+            //checks:
+            //1. iparams is within source slab memory extents
+            //2. oparams is within source slab memory extents
+            //3. destination slab (iparams->guest_slab_index) is a guest slab
+            //4. iparams->gpa fits within destination slab mempgtbl extents (pdpt_index, pd_index and pt_index bounds)
             xmhf_hic_uapi_mempgtbl_desc_t *imdesc= (xmhf_hic_uapi_mempgtbl_desc_t *)iparams;
             xmhf_hic_uapi_mempgtbl_desc_t *omdesc= (xmhf_hic_uapi_mempgtbl_desc_t *)oparams;
 
@@ -78,6 +268,12 @@ static void __xmhfhic_rtm_uapihandler_mempgtbl(u64 uapicall_subnum, u64 iparams,
 
 
         case XMHF_HIC_UAPI_MEMPGTBL_SETENTRY:{
+            //iparams = xmhf_hic_uapi_mempgtbl_desc_t *; oparams = unused
+            //checks:
+            //1. iparams is within source slab memory extents
+            //2. destination slab (iparams->guest_slab_index) is a guest slab
+            //3. iparams->gpa fits within destination slab mempgtbl extents (pdpt_index, pd_index and pt_index bounds)
+            //4. if iparams->entry has present bit set then entry is within destination slab memory extents
             xmhf_hic_uapi_mempgtbl_desc_t *imdesc= (xmhf_hic_uapi_mempgtbl_desc_t *)iparams;
 
             u64 pdpt_index = pae_get_pdpt_index(imdesc->gpa);
@@ -97,128 +293,6 @@ static void __xmhfhic_rtm_uapihandler_mempgtbl(u64 uapicall_subnum, u64 iparams,
 
     }
 
-}
-
-
-static void __xmhfhic_rtm_uapihandler_physmem(u64 uapicall_subnum, u64 iparams, u64 oparams, u64 cpuid){
-    //_XDPRINTF_("%s[%u]: Got control...\n",
-    //            __FUNCTION__, (u32)cpuid);
-
-    switch(uapicall_subnum){
-        case XMHF_HIC_UAPI_PHYSMEM_PEEK:{
-            xmhf_hic_uapi_physmem_desc_t *pdesc = (xmhf_hic_uapi_physmem_desc_t *)iparams;
-            memcpy(pdesc->addr_to, pdesc->addr_from, pdesc->numbytes);
-        }
-        break;
-
-
-        case XMHF_HIC_UAPI_PHYSMEM_POKE:{
-            xmhf_hic_uapi_physmem_desc_t *pdesc = (xmhf_hic_uapi_physmem_desc_t *)iparams;
-            memcpy(pdesc->addr_to, pdesc->addr_from, pdesc->numbytes);
-        }
-        break;
-
-
-        default:
-            _XDPRINTF_("%s[%u]: Unknown cpustate subcall %x. Halting!\n",
-                    __FUNCTION__, (u32)cpuid, uapicall_subnum);
-            HALT();
-
-    }
-
-}
-
-
-
-static void __xmhfhic_rtm_uapihandler_cpustate(u64 uapicall_subnum, u64 iparams, u64 oparams, u64 cpuid){
-    //_XDPRINTF_("%s[%u]: Got control...\n",
-    //            __FUNCTION__, (u32)cpuid);
-
-
-    switch(uapicall_subnum){
-        case XMHF_HIC_UAPI_CPUSTATE_VMREAD:{
-            //iparams = encoding (u64), oparams = memory (u64 *)
-            *(u64 *)oparams = xmhfhw_cpu_x86vmx_vmread(iparams);
-        }
-        break;
-
-        case XMHF_HIC_UAPI_CPUSTATE_VMWRITE:{
-            //iparams = encoding (u64), oparams = value (u64)
-            xmhfhw_cpu_x86vmx_vmwrite(iparams, oparams);
-        }
-        break;
-
-        case XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSREAD:{
-            //iparams = NULL, oparams = x86regs64_t *
-            memcpy(oparams, & __xmhfhic_x86vmx_archdata[(u32)cpuid].vmx_gprs,
-                   sizeof(x86regs64_t));
-        }
-        break;
-
-        case XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSWRITE:{
-            //iparams = x86regs64_t *, oparams=NULL
-            memcpy(& __xmhfhic_x86vmx_archdata[(u32)cpuid].vmx_gprs,
-                   iparams,
-                   sizeof(x86regs64_t));
-        }
-        break;
-
-        case XMHF_HIC_UAPI_CPUSTATE_WRMSR:{
-            //iparams = msr, oparams = value
-            wrmsr64((u32)iparams, oparams);
-        }
-        break;
-
-
-        case XMHF_HIC_UAPI_CPUSTATE_RDMSR:{
-            //iparams = msr, oparams = (u64 *)
-            *(u64 *)oparams = rdmsr64((u32)iparams);
-        }
-        break;
-
-        default:
-            _XDPRINTF_("%s[%u]: Unknown cpustate subcall %x. Halting!\n",
-                    __FUNCTION__, (u32)cpuid, uapicall_subnum);
-            HALT();
-    }
-
-}
-
-
-void __xmhfhic_rtm_uapihandler(u64 uapicall, u64 uapicall_num, u64 uapicall_subnum,
-                               u64 reserved, u64 iparams, u64 oparams,  u64 src_slabid, u64 cpuid, u64 return_address, u64 return_rsp){
-
-    //_XDPRINTF_("%s[%u]: uapi handler got control: uapicall=%x, uapicall_num=%x, \
-    //           uapicall_subnum=%x, iparams=%x, oparams=%x, \
-    //           src_slabid=%u, cpuid=%x, return_address=%x, return_rsp=%x, cr3=%x\n",
-    //            __FUNCTION__, (u32)cpuid,
-    //           uapicall, uapicall_num, uapicall_subnum,
-    //           iparams, oparams,
-    //           src_slabid, cpuid, return_address, return_rsp, read_cr3());
-
-
-    switch(uapicall_num){
-        case XMHF_HIC_UAPI_CPUSTATE:
-            __xmhfhic_rtm_uapihandler_cpustate(uapicall_subnum, iparams, oparams, cpuid);
-            break;
-
-        case XMHF_HIC_UAPI_PHYSMEM:
-            __xmhfhic_rtm_uapihandler_physmem(uapicall_subnum, iparams, oparams, cpuid);
-            break;
-
-        case XMHF_HIC_UAPI_MEMPGTBL:
-            __xmhfhic_rtm_uapihandler_mempgtbl(uapicall_subnum, iparams, oparams, cpuid);
-            break;
-
-
-        default:
-            _XDPRINTF_("%s[%u]: Unknown UAPI call %x. Halting!\n",
-                    __FUNCTION__, (u32)cpuid, uapicall_num);
-            HALT();
-    }
-
-
-    return;
 }
 
 
