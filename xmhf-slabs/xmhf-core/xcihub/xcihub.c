@@ -60,54 +60,6 @@
 XMHF_SLAB_INTERCEPT(xcihub)
 
 
-static xc_hypapp_info_t _xcihub_hypapp_info_table[] = {
-    {
-        XMHF_HYP_SLAB_XHHYPERDEP,
-        (XC_HYPAPPCB_MASK(XC_HYPAPPCB_HYPERCALL) | XC_HYPAPPCB_MASK(XC_HYPAPPCB_MEMORYFAULT) | XC_HYPAPPCB_MASK(XC_HYPAPPCB_SHUTDOWN) )
-    },
-
-    {
-        XMHF_HYP_SLAB_XHAPPROVEXEC,
-        (XC_HYPAPPCB_MASK(XC_HYPAPPCB_HYPERCALL) | XC_HYPAPPCB_MASK(XC_HYPAPPCB_MEMORYFAULT) | XC_HYPAPPCB_MASK(XC_HYPAPPCB_SHUTDOWN) )
-    },
-
-    {
-        XMHF_HYP_SLAB_XHSSTEPTRACE,
-        (XC_HYPAPPCB_MASK(XC_HYPAPPCB_HYPERCALL) | XC_HYPAPPCB_MASK(XC_HYPAPPCB_TRAP_EXCEPTION) | XC_HYPAPPCB_MASK(XC_HYPAPPCB_SHUTDOWN) )
-    },
-
-    {
-        XMHF_HYP_SLAB_XHSYSCALLLOG,
-        (XC_HYPAPPCB_MASK(XC_HYPAPPCB_HYPERCALL) | XC_HYPAPPCB_MASK(XC_HYPAPPCB_MEMORYFAULT) | XC_HYPAPPCB_MASK(XC_HYPAPPCB_TRAP_INSTRUCTION) | XC_HYPAPPCB_MASK(XC_HYPAPPCB_SHUTDOWN) )
-    },
-
-};
-
-#define HYPAPP_INFO_TABLE_NUMENTRIES (sizeof(_xcihub_hypapp_info_table)/sizeof(_xcihub_hypapp_info_table[0]))
-
-
-static u64 _xcihub_hcbinvoke(u64 cbtype, u64 cbqual, u64 guest_slab_index){
-    u64 status = XC_HYPAPPCB_CHAIN;
-    u64 i;
-    xc_hypappcb_inputparams_t hcb_iparams;
-    xc_hypappcb_outputparams_t hcb_oparams;
-
-    hcb_iparams.cbtype = cbtype;
-    hcb_iparams.cbqual = cbqual;
-    hcb_iparams.guest_slab_index = guest_slab_index;
-
-    for(i=0; i < HYPAPP_INFO_TABLE_NUMENTRIES; i++){
-        if(_xcihub_hypapp_info_table[i].cbmask & XC_HYPAPPCB_MASK(cbtype)){
-            XMHF_SLAB_CALL(hypapp, _xcihub_hypapp_info_table[i].xmhfhic_slab_index, &hcb_iparams, sizeof(hcb_iparams), &hcb_oparams, sizeof(hcb_oparams));
-            if(hcb_oparams.cbresult == XC_HYPAPPCB_NOCHAIN){
-                status = XC_HYPAPPCB_NOCHAIN;
-                break;
-            }
-        }
-    }
-
-    return status;
-}
 
 
 void xcihub_interface(slab_input_params_t *iparams, u64 iparams_size, slab_output_params_t *oparams, u64 oparams_size, u64 src_slabid, u64 cpuindex){
@@ -125,7 +77,7 @@ void xcihub_interface(slab_input_params_t *iparams, u64 iparams_size, slab_outpu
 
         //hypercall
         case VMX_VMEXIT_VMCALL:{
-            if(_xcihub_hcbinvoke(XC_HYPAPPCB_HYPERCALL, 0, src_slabid) == XC_HYPAPPCB_CHAIN){
+            if(xc_hcbinvoke(XC_HYPAPPCB_HYPERCALL, 0, src_slabid) == XC_HYPAPPCB_CHAIN){
                 u64 guest_rip;
                 u64 info_vmexit_instruction_length;
 
@@ -145,7 +97,7 @@ void xcihub_interface(slab_input_params_t *iparams, u64 iparams_size, slab_outpu
 
         //memory fault
 		case VMX_VMEXIT_EPT_VIOLATION:{
-            _xcihub_hcbinvoke(XC_HYPAPPCB_MEMORYFAULT, 0, src_slabid);
+            xc_hcbinvoke(XC_HYPAPPCB_MEMORYFAULT, 0, src_slabid);
         }
 		break;
 
@@ -153,7 +105,7 @@ void xcihub_interface(slab_input_params_t *iparams, u64 iparams_size, slab_outpu
         //shutdown
         case VMX_VMEXIT_INIT:
    		case VMX_VMEXIT_TASKSWITCH:
-            _xcihub_hcbinvoke(XC_HYPAPPCB_SHUTDOWN, 0, src_slabid);
+            xc_hcbinvoke(XC_HYPAPPCB_SHUTDOWN, 0, src_slabid);
 		break;
 
 
@@ -168,7 +120,7 @@ void xcihub_interface(slab_input_params_t *iparams, u64 iparams_size, slab_outpu
 
         //instruction traps
         case VMX_VMEXIT_CPUID:{
-            if(_xcihub_hcbinvoke(XC_HYPAPPCB_TRAP_INSTRUCTION, XC_HYPAPPCB_TRAP_INSTRUCTION_CPUID, src_slabid) == XC_HYPAPPCB_CHAIN){
+            if(xc_hcbinvoke(XC_HYPAPPCB_TRAP_INSTRUCTION, XC_HYPAPPCB_TRAP_INSTRUCTION_CPUID, src_slabid) == XC_HYPAPPCB_CHAIN){
                 u64 guest_rip;
                 u64 info_vmexit_instruction_length;
                 bool clearsyscallretbit=false;
@@ -202,7 +154,7 @@ void xcihub_interface(slab_input_params_t *iparams, u64 iparams_size, slab_outpu
 
 
         case VMX_VMEXIT_WRMSR:{
-            if(_xcihub_hcbinvoke(XC_HYPAPPCB_TRAP_INSTRUCTION, XC_HYPAPPCB_TRAP_INSTRUCTION_WRMSR, src_slabid) == XC_HYPAPPCB_CHAIN){
+            if(xc_hcbinvoke(XC_HYPAPPCB_TRAP_INSTRUCTION, XC_HYPAPPCB_TRAP_INSTRUCTION_WRMSR, src_slabid) == XC_HYPAPPCB_CHAIN){
 
                 u64 guest_rip;
                 u64 info_vmexit_instruction_length;
@@ -241,7 +193,7 @@ void xcihub_interface(slab_input_params_t *iparams, u64 iparams_size, slab_outpu
 
 
         case VMX_VMEXIT_RDMSR:{
-            if(_xcihub_hcbinvoke(XC_HYPAPPCB_TRAP_INSTRUCTION, XC_HYPAPPCB_TRAP_INSTRUCTION_RDMSR, src_slabid) == XC_HYPAPPCB_CHAIN){
+            if(xc_hcbinvoke(XC_HYPAPPCB_TRAP_INSTRUCTION, XC_HYPAPPCB_TRAP_INSTRUCTION_RDMSR, src_slabid) == XC_HYPAPPCB_CHAIN){
                 u64 guest_rip, msrvalue;
                 u64 info_vmexit_instruction_length;
                 x86regs64_t r;
@@ -294,7 +246,7 @@ void xcihub_interface(slab_input_params_t *iparams, u64 iparams_size, slab_outpu
 
         //exception traps
         case VMX_VMEXIT_EXCEPTION:{
-            _xcihub_hcbinvoke(XC_HYPAPPCB_TRAP_EXCEPTION, 0, src_slabid);
+            xc_hcbinvoke(XC_HYPAPPCB_TRAP_EXCEPTION, 0, src_slabid);
         }
         break;
 
