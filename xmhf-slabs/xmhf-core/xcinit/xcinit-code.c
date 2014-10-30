@@ -693,6 +693,7 @@ void xcinit_interface(slab_input_params_t *iparams, u64 iparams_size, slab_outpu
         u64 guest_slab_magic;
         xmhf_hic_uapi_physmem_desc_t pdesc;
 
+        pdesc.guest_slab_index = XMHF_GUEST_SLAB_XCGUESTSLAB;
         pdesc.addr_to = &guest_slab_magic;
         pdesc.addr_from = guest_slab_magic_paddr;
         pdesc.numbytes = sizeof(guest_slab_magic);

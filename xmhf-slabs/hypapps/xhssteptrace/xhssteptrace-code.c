@@ -208,6 +208,7 @@ static void _hcb_trap_exception(u64 cpuindex, u64 guest_slab_index){
         XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMREAD, VMCS_GUEST_RIP, &guest_rip);
 
         //copy 256 bytes from the current guest RIP for trace inference
+        pdesc.guest_slab_index = guest_slab_index;
         pdesc.addr_to = &_st_tracebuffer;
         pdesc.addr_from = guest_rip;
         pdesc.numbytes = sizeof(_st_tracebuffer);

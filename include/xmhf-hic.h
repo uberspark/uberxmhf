@@ -148,6 +148,7 @@ typedef struct {
 // uapi related types
 
 typedef struct {
+    u64 guest_slab_index;
     void *addr_from;
     void *addr_to;
     u64 numbytes;
