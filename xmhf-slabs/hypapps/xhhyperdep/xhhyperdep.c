@@ -61,6 +61,7 @@ XMHF_SLAB(xhhyperdep)
 #define HYPERDEP_DEACTIVATEDEP			0xC1
 
 
+//activate DEP for a given page (at gpa)
 static void hd_activatedep(u64 cpuindex, u64 guest_slab_index, u64 gpa){
 	xmhf_hic_uapi_mempgtbl_desc_t mdesc;
 
@@ -68,18 +69,17 @@ static void hd_activatedep(u64 cpuindex, u64 guest_slab_index, u64 gpa){
 	mdesc.gpa = gpa;
 
     XMHF_HIC_SLAB_UAPI_MEMPGTBL(XMHF_HIC_UAPI_MEMPGTBL_GETENTRY, &mdesc, &mdesc);
-    _XDPRINTF_("%s[%u]: original entry for gpa=%x is %x\n",
-               __FUNCTION__, (u32)cpuindex, gpa, mdesc.entry);
+    _XDPRINTF_("%s[%u]: original entry for gpa=%x is %x\n", __FUNCTION__, (u32)cpuindex, gpa, mdesc.entry);
 
     mdesc.entry &= ~(0x7);
-    mdesc.entry |= 0x3; //execute disable
+    mdesc.entry |= 0x3; //execute-disable, read-write
 
     XMHF_HIC_SLAB_UAPI_MEMPGTBL(XMHF_HIC_UAPI_MEMPGTBL_SETENTRY, &mdesc, NULL);
 
-    _XDPRINTF_("%s[%u]: removed execute permission for page at gpa %x\n",
-               __FUNCTION__, (u32)cpuindex, gpa);
+    _XDPRINTF_("%s[%u]: activated DEP for page at gpa %x\n", __FUNCTION__, (u32)cpuindex, gpa);
 }
 
+//deactivate DEP for a given page (at gpa)
 static void hd_deactivatedep(u64 cpuindex, u64 guest_slab_index, u64 gpa){
 	xmhf_hic_uapi_mempgtbl_desc_t mdesc;
 
@@ -87,28 +87,33 @@ static void hd_deactivatedep(u64 cpuindex, u64 guest_slab_index, u64 gpa){
 	mdesc.gpa = gpa;
 
     XMHF_HIC_SLAB_UAPI_MEMPGTBL(XMHF_HIC_UAPI_MEMPGTBL_GETENTRY, &mdesc, &mdesc);
-    _XDPRINTF_("%s[%u]: original entry for gpa=%x is %x\n",
-               __FUNCTION__, (u32)cpuindex, gpa, mdesc.entry);
+    _XDPRINTF_("%s[%u]: original entry for gpa=%x is %x\n", __FUNCTION__, (u32)cpuindex, gpa, mdesc.entry);
 
     mdesc.entry &= ~(0x7);
-    mdesc.entry |= 0x7; //enable executes
+    mdesc.entry |= 0x7; //execute, read-write
 
     XMHF_HIC_SLAB_UAPI_MEMPGTBL(XMHF_HIC_UAPI_MEMPGTBL_SETENTRY, &mdesc, NULL);
 
-    _XDPRINTF_("%s[%u]: deactivated DEP for page at gpa %x\n",
-               __FUNCTION__, (u32)cpuindex, gpa);
+    _XDPRINTF_("%s[%u]: deactivated DEP for page at gpa %x\n", __FUNCTION__, (u32)cpuindex, gpa);
 }
 
 
-// hypapp initialization
+
+
+
+
+
+
+//////
+// hypapp callbacks
+
+// initialization
 static void _hcb_initialize(u64 cpuindex){
-
 	_XDPRINTF_("%s[%u]: hyperDEP initializing...\n", __FUNCTION__, (u32)cpuindex);
-
 }
 
 
-
+// hypercall
 static void _hcb_hypercall(u64 cpuindex, u64 guest_slab_index){
     x86regs64_t gprs;
 	u64 call_id;
@@ -119,8 +124,7 @@ static void _hcb_hypercall(u64 cpuindex, u64 guest_slab_index){
     call_id = gprs.rax;
     gpa = gprs.rbx;
 
-	_XDPRINTF_("%s[%u]: call_id=%x, gpa=%x\n", __FUNCTION__, (u32)cpuindex,
-            call_id, gpa);
+	_XDPRINTF_("%s[%u]: call_id=%x, gpa=%x\n", __FUNCTION__, (u32)cpuindex, call_id, gpa);
 
 
 	switch(call_id){
@@ -143,21 +147,31 @@ static void _hcb_hypercall(u64 cpuindex, u64 guest_slab_index){
 
 }
 
+//shutdown
 static void _hcb_shutdown(u64 cpuindex, u64 guest_slab_index){
 	_XDPRINTF_("%s[%u]: guest slab %u shutdown...\n", __FUNCTION__, (u32)cpuindex, guest_slab_index);
 }
 
 
+//memory fault
 static void _hcb_memoryfault(u64 cpuindex, u64 guest_slab_index, u64 gpa, u64 gva, u64 errorcode){
-
-	_XDPRINTF_("%s[%u]: memory fault in guest slab %u; gpa=%x, gva=%x, errorcode=%x, data page execution?\n",
-            __FUNCTION__, (u32)cpuindex, guest_slab_index, gpa, gva, errorcode);
-
-	//HALT();
+	_XDPRINTF_("%s[%u]: memory fault in guest slab %u; gpa=%x, gva=%x, errorcode=%x, data page execution?\n", __FUNCTION__, (u32)cpuindex, guest_slab_index, gpa, gva, errorcode);
 }
 
 
-/////////////////////////////////////////////////////////////////////
+
+
+
+
+
+
+
+
+
+
+//////
+// slab interface
+
 void xhhyperdep_interface(slab_input_params_t *iparams, u64 iparams_size, slab_output_params_t *oparams, u64 oparams_size, u64 src_slabid, u64 cpuindex){
     xc_hypappcb_inputparams_t *hcb_iparams = (xc_hypappcb_inputparams_t *)iparams;
     xc_hypappcb_outputparams_t *hcb_oparams = (xc_hypappcb_outputparams_t *)oparams;

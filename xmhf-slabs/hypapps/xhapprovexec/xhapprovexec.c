@@ -44,7 +44,7 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-// hyperdep hypapp main module
+// approvexec hypapp main module
 // author: amit vasudevan (amitvasudevan@acm.org)
 
 #include <xmhf.h>
@@ -72,6 +72,8 @@ static u8 _ae_database[][SHA_DIGEST_LENGTH] = {
 
 #define NUMENTRIES_AE_DATABASE  (sizeof(_ae_database)/sizeof(_ae_database[0]))
 
+
+//approve and lock a page (at gpa)
 static void ae_lock(u64 cpuindex, u64 guest_slab_index, u64 gpa){
     xmhf_hic_uapi_physmem_desc_t pdesc;
     u8 digest[SHA_DIGEST_LENGTH];
@@ -87,15 +89,12 @@ static void ae_lock(u64 cpuindex, u64 guest_slab_index, u64 gpa){
     pdesc.numbytes = PAGE_SIZE_4K;
     XMHF_HIC_SLAB_UAPI_PHYSMEM(XMHF_HIC_UAPI_PHYSMEM_PEEK, &pdesc, NULL);
 
-    _XDPRINTF_("%s[%u]: grabbed page contents at gpa=%x\n",
-               __FUNCTION__, (u32)cpuindex, gpa);
+    _XDPRINTF_("%s[%u]: grabbed page contents at gpa=%x\n",  __FUNCTION__, (u32)cpuindex, gpa);
 
     //compute SHA-1 of the local page buffer
     sha1_buffer(&_ae_page_buffer, PAGE_SIZE_4K, digest);
 
-    _XDPRINTF_("%s[%u]: computed SHA-1: %*D\n",
-               __FUNCTION__, (u32)cpuindex, SHA_DIGEST_LENGTH, digest, " ");
-
+    _XDPRINTF_("%s[%u]: computed SHA-1: %*D\n", __FUNCTION__, (u32)cpuindex, SHA_DIGEST_LENGTH, digest, " ");
 
     //compare computed SHA-1 to the database
     for(i=0; i < NUMENTRIES_AE_DATABASE; i++){
@@ -105,6 +104,7 @@ static void ae_lock(u64 cpuindex, u64 guest_slab_index, u64 gpa){
         }
     }
 
+    //if not approved then just return
     if(!found_in_database){
         _XDPRINTF_("%s[%u]: could not find entry in database. returning\n",
                __FUNCTION__, (u32)cpuindex);
@@ -130,12 +130,13 @@ static void ae_lock(u64 cpuindex, u64 guest_slab_index, u64 gpa){
 
         XMHF_HIC_SLAB_UAPI_MEMPGTBL(XMHF_HIC_UAPI_MEMPGTBL_SETENTRY, &mdesc, NULL);
 
-        _XDPRINTF_("%s[%u]: removed write permission for page at gpa %x\n",
-               __FUNCTION__, (u32)cpuindex, gpa);
+        _XDPRINTF_("%s[%u]: approved and locked page at gpa %x\n", __FUNCTION__, (u32)cpuindex, gpa);
     }
 
 }
 
+
+//unlock a page (at gpa)
 static void ae_unlock(u64 cpuindex, u64 guest_slab_index, u64 gpa){
      xmhf_hic_uapi_mempgtbl_desc_t mdesc;
 
@@ -146,30 +147,29 @@ static void ae_unlock(u64 cpuindex, u64 guest_slab_index, u64 gpa){
      mdesc.gpa = gpa;
 
      XMHF_HIC_SLAB_UAPI_MEMPGTBL(XMHF_HIC_UAPI_MEMPGTBL_GETENTRY, &mdesc, &mdesc);
-     _XDPRINTF_("%s[%u]: original entry for gpa=%x is %x\n",
-               __FUNCTION__, (u32)cpuindex, gpa, mdesc.entry);
+     _XDPRINTF_("%s[%u]: original entry for gpa=%x is %x\n",  __FUNCTION__, (u32)cpuindex, gpa, mdesc.entry);
 
     mdesc.entry &= ~(0x7);
-    mdesc.entry |= 0x7; // execute, read, write
+    mdesc.entry |= 0x7; // execute, read-write
 
     XMHF_HIC_SLAB_UAPI_MEMPGTBL(XMHF_HIC_UAPI_MEMPGTBL_SETENTRY, &mdesc, NULL);
 
-    _XDPRINTF_("%s[%u]: restored permissions for page at %x\n",
-               __FUNCTION__, (u32)cpuindex, gpa);
+    _XDPRINTF_("%s[%u]: restored permissions for page at %x\n", __FUNCTION__, (u32)cpuindex, gpa);
 
 }
 
 
 
-//////////////////////////////////////////////////////////////////////////////
+//////
+// hypapp callbacks
 
-// hypapp initialization
+
+//initialization
 static void _hcb_initialize(u64 cpuindex){
-
 	_XDPRINTF_("%s[%u]: approvexec initializing...\n", __FUNCTION__, (u32)cpuindex);
-
 }
 
+//hypercall
 static void _hcb_hypercall(u64 cpuindex, u64 guest_slab_index){
     x86regs64_t gprs;
 	u64 call_id;
@@ -204,22 +204,31 @@ static void _hcb_hypercall(u64 cpuindex, u64 guest_slab_index){
 
 }
 
+
+//memory fault
 static void _hcb_memoryfault(u64 cpuindex, u64 guest_slab_index, u64 gpa, u64 gva, u64 errorcode){
 
 	_XDPRINTF_("%s[%u]: memory fault in guest slab %u; gpa=%x, gva=%x, errorcode=%x, write error to approved code?\n",
             __FUNCTION__, (u32)cpuindex, guest_slab_index, gpa, gva, errorcode);
 
-	//HALT();
 }
 
-
+// shutdown
 static void _hcb_shutdown(u64 cpuindex, u64 guest_slab_index){
 	_XDPRINTF_("%s[%u]: guest slab %u shutdown...\n", __FUNCTION__, (u32)cpuindex, guest_slab_index);
 }
 
 
 
-/////////////////////////////////////////////////////////////////////
+
+
+
+
+
+
+//////
+// slab interface
+
 void xhapprovexec_interface(slab_input_params_t *iparams, u64 iparams_size, slab_output_params_t *oparams, u64 oparams_size, u64 src_slabid, u64 cpuindex){
     xc_hypappcb_inputparams_t *hcb_iparams = (xc_hypappcb_inputparams_t *)iparams;
     xc_hypappcb_outputparams_t *hcb_oparams = (xc_hypappcb_outputparams_t *)oparams;

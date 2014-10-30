@@ -78,6 +78,7 @@ sl_log_type_t sl_log[128];
 
 static u64 sl_log_index=0;
 
+// logs given info into memory buffer sl_log
 static void sl_loginfo(bool syscallmodified, u8 *digest, x86regs64_t *r){
     if(sl_log_index < MAX_SL_LOG_SIZE){
         sl_log[sl_log_index].syscallmodified = syscallmodified;
@@ -89,8 +90,7 @@ static void sl_loginfo(bool syscallmodified, u8 *digest, x86regs64_t *r){
 
 
 
-
-
+//register a syscall handler code page (at gpa)
 static void sl_register(u64 cpuindex, u64 guest_slab_index, u64 gpa){
         xmhf_hic_uapi_physmem_desc_t pdesc;
 
@@ -117,15 +117,15 @@ static void sl_register(u64 cpuindex, u64 guest_slab_index, u64 gpa){
 }
 
 
-//////////////////////////////////////////////////////////////////////////////
+//////
+// hypapp callbacks
 
-// hypapp initialization
+// initialization
 static void _hcb_initialize(u64 cpuindex){
-
 	_XDPRINTF_("%s[%u]: syscalllog initializing...\n", __FUNCTION__, (u32)cpuindex);
-
 }
 
+// hypercall
 static void _hcb_hypercall(u64 cpuindex, u64 guest_slab_index){
     x86regs64_t gprs;
 	u64 call_id;
@@ -156,6 +156,7 @@ static void _hcb_hypercall(u64 cpuindex, u64 guest_slab_index){
 }
 
 
+// memory fault
 static void _hcb_memoryfault(u64 cpuindex, u64 guest_slab_index, u64 gpa, u64 gva, u64 errorcode){
     xmhf_hic_uapi_physmem_desc_t pdesc;
     u8 syscalldigest[SHA_DIGEST_LENGTH];
@@ -198,7 +199,7 @@ static void _hcb_memoryfault(u64 cpuindex, u64 guest_slab_index, u64 gpa, u64 gv
 }
 
 
-
+// instruction trap
 static u64 _hcb_trap_instruction(u64 cpuindex, u64 guest_slab_index, u64 insntype){
     u64 status=XC_HYPAPPCB_CHAIN;
     u64 guest_rip, msrvalue;
@@ -218,7 +219,6 @@ static u64 _hcb_trap_instruction(u64 cpuindex, u64 guest_slab_index, u64 insntyp
 
               	_XDPRINTF_("%s[%u]: emulating WRMSR SYSENTER_EIP_MSR\n", __FUNCTION__, (u32)cpuindex);
 
-                //XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMWRITE, VMCS_GUEST_SYSENTER_EIP, ( ((u64)(u32)r.rdx << 32) | (u32)r.rax ));
                 shadow_sysenter_rip = ( ((u64)(u32)r.rdx << 32) | (u32)r.rax ) ;
                 XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMWRITE, VMCS_GUEST_SYSENTER_EIP, 0);
 
@@ -244,9 +244,6 @@ static u64 _hcb_trap_instruction(u64 cpuindex, u64 guest_slab_index, u64 insntyp
             case IA32_SYSENTER_EIP_MSR:
               	_XDPRINTF_("%s[%u]: emulating RDMSR SYSENTER_EIP_MSR\n", __FUNCTION__, (u32)cpuindex);
 
-                //XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMREAD, VMCS_GUEST_SYSENTER_EIP, &msrvalue);
-                //r.rdx = msrvalue >> 32;
-                //r.rax = (u32)msrvalue;
                 r.rdx = shadow_sysenter_rip >> 32;
                 r.rax = (u32)shadow_sysenter_rip;
 
@@ -262,7 +259,6 @@ static u64 _hcb_trap_instruction(u64 cpuindex, u64 guest_slab_index, u64 insntyp
 
     }
 
-
     //if we emulated the instruction then do not chain, but update instruction pointer
     //accordingly
     if(status == XC_HYPAPPCB_NOCHAIN){
@@ -276,13 +272,25 @@ static u64 _hcb_trap_instruction(u64 cpuindex, u64 guest_slab_index, u64 insntyp
 }
 
 
+// shutdown
 static void _hcb_shutdown(u64 cpuindex, u64 guest_slab_index){
 	_XDPRINTF_("%s[%u]: guest slab %u shutdown...\n", __FUNCTION__, (u32)cpuindex, guest_slab_index);
 }
 
 
 
-/////////////////////////////////////////////////////////////////////
+
+
+
+
+
+
+
+
+
+//////
+// slab interface
+
 void xhsyscalllog_interface(slab_input_params_t *iparams, u64 iparams_size, slab_output_params_t *oparams, u64 oparams_size, u64 src_slabid, u64 cpuindex){
     xc_hypappcb_inputparams_t *hcb_iparams = (xc_hypappcb_inputparams_t *)iparams;
     xc_hypappcb_outputparams_t *hcb_oparams = (xc_hypappcb_outputparams_t *)oparams;
