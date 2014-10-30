@@ -67,6 +67,7 @@ slab_caps_t _xmhfhic_init_setupdata_slab_caps[XMHF_HIC_MAX_SLABS] = {
     {
         0,
         HIC_SLAB_CALLCAP(XMHF_HYP_SLAB_XCTESTSLAB1) | HIC_SLAB_CALLCAP(XMHF_GUEST_SLAB_XCGUESTSLAB),
+        HIC_SLAB_UAPICAP(XMHF_HIC_UAPI_CPUSTATE) | HIC_SLAB_UAPICAP(XMHF_HIC_UAPI_PHYSMEM) | HIC_SLAB_UAPICAP(XMHF_HIC_UAPI_MEMPGTBL),
         {false, 0, {0}},
         HIC_SLAB_X86VMXX86PC_HYPERVISOR
     },
@@ -75,12 +76,14 @@ slab_caps_t _xmhfhic_init_setupdata_slab_caps[XMHF_HIC_MAX_SLABS] = {
     {
         0,
         HIC_SLAB_CALLCAP(XMHF_HYP_SLAB_XHHYPERDEP) | HIC_SLAB_CALLCAP(XMHF_HYP_SLAB_XHAPPROVEXEC) | HIC_SLAB_CALLCAP(XMHF_HYP_SLAB_XHSSTEPTRACE) | HIC_SLAB_CALLCAP(XMHF_HYP_SLAB_XHSYSCALLLOG),
+        HIC_SLAB_UAPICAP(XMHF_HIC_UAPI_CPUSTATE) | HIC_SLAB_UAPICAP(XMHF_HIC_UAPI_PHYSMEM) | HIC_SLAB_UAPICAP(XMHF_HIC_UAPI_MEMPGTBL),
         {false, 0, {0}},
         HIC_SLAB_X86VMXX86PC_HYPERVISOR
     },
 
     //XMHF_HYP_SLAB_XCEXHUB
     {
+        0,
         0,
         0,
         {false, 0, {0}},
@@ -91,6 +94,7 @@ slab_caps_t _xmhfhic_init_setupdata_slab_caps[XMHF_HIC_MAX_SLABS] = {
     {
         0,
         0,
+        0,
         {false, 0, {0}},
         HIC_SLAB_X86VMXX86PC_HYPERVISOR
     },
@@ -99,6 +103,7 @@ slab_caps_t _xmhfhic_init_setupdata_slab_caps[XMHF_HIC_MAX_SLABS] = {
     {
         0,
         0,
+        HIC_SLAB_UAPICAP(XMHF_HIC_UAPI_CPUSTATE) | HIC_SLAB_UAPICAP(XMHF_HIC_UAPI_PHYSMEM) | HIC_SLAB_UAPICAP(XMHF_HIC_UAPI_MEMPGTBL),
         {false, 0, {0}},
         HIC_SLAB_X86VMXX86PC_HYPERVISOR
     },
@@ -107,6 +112,7 @@ slab_caps_t _xmhfhic_init_setupdata_slab_caps[XMHF_HIC_MAX_SLABS] = {
     {
         0,
         0,
+        HIC_SLAB_UAPICAP(XMHF_HIC_UAPI_CPUSTATE) | HIC_SLAB_UAPICAP(XMHF_HIC_UAPI_PHYSMEM) | HIC_SLAB_UAPICAP(XMHF_HIC_UAPI_MEMPGTBL),
         {false, 0, {0}},
         HIC_SLAB_X86VMXX86PC_HYPERVISOR
     },
@@ -115,6 +121,7 @@ slab_caps_t _xmhfhic_init_setupdata_slab_caps[XMHF_HIC_MAX_SLABS] = {
     {
         0,
         0,
+        HIC_SLAB_UAPICAP(XMHF_HIC_UAPI_CPUSTATE) | HIC_SLAB_UAPICAP(XMHF_HIC_UAPI_PHYSMEM) | HIC_SLAB_UAPICAP(XMHF_HIC_UAPI_MEMPGTBL),
         {false, 0, {0}},
         HIC_SLAB_X86VMXX86PC_HYPERVISOR
     },
@@ -123,12 +130,14 @@ slab_caps_t _xmhfhic_init_setupdata_slab_caps[XMHF_HIC_MAX_SLABS] = {
     {
         0,
         0,
+        HIC_SLAB_UAPICAP(XMHF_HIC_UAPI_CPUSTATE) | HIC_SLAB_UAPICAP(XMHF_HIC_UAPI_PHYSMEM) | HIC_SLAB_UAPICAP(XMHF_HIC_UAPI_MEMPGTBL),
         {false, 0, {0}},
         HIC_SLAB_X86VMXX86PC_HYPERVISOR
     },
 
     //XMHF_GUEST_SLAB_XCGUESTSLAB
     {
+        0,
         0,
         0,
         {true, 0xFFFFFFFFFFFFFFFFULL, {0}},
