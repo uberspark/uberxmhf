@@ -166,7 +166,7 @@ static void xcguestslab_do_testxhhyperdep(void){
 
     _XDPRINTF_("%s: Activated DEP\n", __FUNCTION__);
 
-    fn();
+    //fn();
 
     _XDPRINTF_("%s: Going to de-activate DEP on page %x\n", __FUNCTION__, gpa);
 

@@ -108,11 +108,11 @@ void __xmhfhic_rtm_uapihandler(u64 uapicall, u64 uapicall_num, u64 uapicall_subn
 
     //_XDPRINTF_("%s[%u]: uapi handler got control: uapicall=%x, uapicall_num=%x, \
     //           uapicall_subnum=%x, iparams=%x, oparams=%x, \
-    //           src_slabid=%u, cpuid=%x, return_address=%x, return_rsp=%x, cr3=%x\n",
+    //           src_slabid=%u, cpuid=%x, cr3=%x\n",
     //            __FUNCTION__, (u32)cpuid,
     //           uapicall, uapicall_num, uapicall_subnum,
     //           iparams, oparams,
-    //           src_slabid, cpuid, return_address, return_rsp, read_cr3());
+    //           src_slabid, cpuid, read_cr3());
 
 
     //checks
