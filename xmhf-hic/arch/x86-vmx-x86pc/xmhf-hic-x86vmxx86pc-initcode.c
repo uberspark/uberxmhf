@@ -712,6 +712,9 @@ void xmhfhic_arch_setup_slab_info(void){
                 _xmhfhic_init_setupdata_slab_caps[i].slab_privilegemask;
             _xmhfhic_common_slab_info_table[i].slab_callcaps =
                 _xmhfhic_init_setupdata_slab_caps[i].slab_callcaps;
+            _xmhfhic_common_slab_info_table[i].slab_uapicaps =
+                _xmhfhic_init_setupdata_slab_caps[i].slab_uapicaps;
+
 
             memcpy(&_xmhfhic_common_slab_info_table[i].slab_devices,
                    &_xmhfhic_init_setupdata_slab_caps[i].slab_devices,

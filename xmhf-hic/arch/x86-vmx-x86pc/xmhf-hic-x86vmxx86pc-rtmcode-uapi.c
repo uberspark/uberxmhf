@@ -83,7 +83,15 @@ void __xmhfhic_rtm_uapihandler(u64 uapicall, u64 uapicall_num, u64 uapicall_subn
 
     //checks
     //1. src_slabid is a hypervisor slab
+    if( !(_xmhfhic_common_slab_info_table[src_slabid].archdata.slabtype == HIC_SLAB_X86VMXX86PC_HYPERVISOR) ){
+        _XDPRINTF_("%s[%u]: uapierr: src_slabid (%u) is not a hypervisor slab. Halting!\n", __FUNCTION__, (u32)cpuid, src_slabid);
+        HALT();
+    }
     //2. src_slabid should have capabilities for the requested uapicall_num
+    if( !(_xmhfhic_common_slab_info_table[src_slabid].slab_uapicaps & HIC_SLAB_UAPICAP(uapicall_num)) ){
+        _XDPRINTF_("%s[%u]: uapierr: src_slabid (%u) does not have uapi capability. Halting!\n", __FUNCTION__, (u32)cpuid, src_slabid);
+        HALT();
+    }
 
     switch(uapicall_num){
         case XMHF_HIC_UAPI_CPUSTATE:

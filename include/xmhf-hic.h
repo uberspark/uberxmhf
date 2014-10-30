@@ -85,36 +85,61 @@
 
 
 
-#define XMHF_HIC_UAPI                       (0xA6)
+#define XMHF_HIC_UAPI                       (0x666)
 
-#define XMHF_HIC_UAPI_CPUSTATE              (0xA60)
+#define XMHF_HIC_UAPI_CPUSTATE                  (0)
 
-#define XMHF_HIC_UAPI_CPUSTATE_VMREAD       (0xA600)
-#define XMHF_HIC_UAPI_CPUSTATE_VMWRITE      (0xA601)
-#define XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSREAD    (0xA602)
-#define XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSWRITE   (0xA603)
-#define XMHF_HIC_UAPI_CPUSTATE_WRMSR        (0xA604)
-#define XMHF_HIC_UAPI_CPUSTATE_RDMSR        (0xA605)
+#define XMHF_HIC_UAPI_CPUSTATE_VMREAD           (1)
+#define XMHF_HIC_UAPI_CPUSTATE_VMWRITE          (2)
+#define XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSREAD    (3)
+#define XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSWRITE   (4)
+#define XMHF_HIC_UAPI_CPUSTATE_WRMSR            (5)
+#define XMHF_HIC_UAPI_CPUSTATE_RDMSR            (6)
 
 
-#define XMHF_HIC_UAPI_PHYSMEM               (0xA70)
+#define XMHF_HIC_UAPI_PHYSMEM                   (16)
 
-#define XMHF_HIC_UAPI_PHYSMEM_PEEK          (0xA700)
-#define XMHF_HIC_UAPI_PHYSMEM_POKE          (0xA701)
+#define XMHF_HIC_UAPI_PHYSMEM_PEEK              (17)
+#define XMHF_HIC_UAPI_PHYSMEM_POKE              (18)
 
-#define XMHF_HIC_UAPI_MEMPGTBL              (0xA80)
+#define XMHF_HIC_UAPI_MEMPGTBL                  (24)
 
-#define XMHF_HIC_UAPI_MEMPGTBL_GETENTRY     (0xA800)
-#define XMHF_HIC_UAPI_MEMPGTBL_SETENTRY     (0xA801)
+#define XMHF_HIC_UAPI_MEMPGTBL_GETENTRY         (25)
+#define XMHF_HIC_UAPI_MEMPGTBL_SETENTRY         (26)
+
+
 
 #ifndef __ASSEMBLY__
+
+
 typedef void slab_input_params_t;
 typedef void slab_output_params_t;
-typedef u64 slab_privilegemask_t;
 typedef void * slab_entrystub_t;
+
+typedef u64 slab_privilegemask_t;
 typedef u64 slab_callcaps_t;
+typedef u64 slab_uapicaps_t;
+
+typedef struct {
+	bool desc_valid;
+	u64 numdevices;
+    xc_platformdevice_arch_desc_t arch_desc[MAX_PLATFORM_DEVICES];
+} __attribute__((packed)) slab_platformdevices_t;
 
 
+//slab capabilities type
+typedef struct {
+    slab_privilegemask_t slab_privilegemask;
+    slab_callcaps_t slab_callcaps;
+    slab_uapicaps_t slab_uapicaps;
+    slab_platformdevices_t slab_devices;
+    u64 slab_archparams;
+} __attribute__((packed)) slab_caps_t;
+
+
+
+#define HIC_SLAB_CALLCAP(x) (1 << x)
+#define HIC_SLAB_UAPICAP(x) (1 << x)
 
 
 
@@ -141,11 +166,6 @@ typedef struct {
 
 
 
-typedef struct {
-	bool desc_valid;
-	u64 numdevices;
-    xc_platformdevice_arch_desc_t arch_desc[MAX_PLATFORM_DEVICES];
-} __attribute__((packed)) slab_platformdevices_t;
 
 typedef struct {
     u64 src_slabid;
@@ -193,7 +213,6 @@ typedef struct {
 
 
 
-#define HIC_SLAB_CALLCAP(x) (1 << x)
 
 
 typedef struct {
@@ -201,6 +220,7 @@ typedef struct {
 	bool slab_inuse;
     slab_privilegemask_t slab_privilegemask;
     slab_callcaps_t slab_callcaps;
+    slab_uapicaps_t slab_uapicaps;
     slab_platformdevices_t slab_devices;
     slab_physmem_extent_t slab_physmem_extents[HIC_SLAB_PHYSMEM_MAXEXTENTS];
 	slab_entrystub_t entrystub;
@@ -208,13 +228,6 @@ typedef struct {
 
 
 
-
-typedef struct {
-    slab_privilegemask_t slab_privilegemask;
-    slab_callcaps_t slab_callcaps;
-    slab_platformdevices_t slab_devices;
-    u64 slab_archparams;
-} __attribute__((packed)) slab_caps_t;
 
 
 
