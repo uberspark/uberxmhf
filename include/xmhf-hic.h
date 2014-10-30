@@ -52,11 +52,7 @@
 #define __XMHF_HIC_H__
 
 
-//#define XMHF_HIC_HYP_SLABS_COUNT            (3)
-//#define XMHF_HIC_GUEST_SLABS_COUNT          (1)
-
 #define XMHF_HIC_MAX_SLABS                  (9)
-
 
 #define XMHF_HYP_SLAB_XCINIT                (0)
 #define XMHF_HYP_SLAB_XCIHUB                (1)
@@ -77,12 +73,6 @@
 
 #define XMHF_HIC_SLABCALLINTERCEPT          (0xA4)
 #define XMHF_HIC_SLABRETINTERCEPT           (0xA5)
-
-
-
-
-
-
 
 
 #define XMHF_HIC_UAPI                       (0x666)
@@ -199,22 +189,6 @@ typedef struct {
 	u64 end;
 } slab_section_t;
 
-/*typedef struct {
-	u64 slab_index;
-	u64 slab_macmid;
-	u64 slab_privilegemask;
-	u64 slab_tos;
-	slab_section_t slab_code;
-	slab_section_t slab_rwdata;
-	slab_section_t slab_rodata;
-	slab_section_t slab_stack;
-	slab_section_t slab_dmadata;
-	slab_entrystub_t entrystub;
-} slab_header_t;*/
-
-
-
-
 
 typedef struct {
     __attribute__((aligned(4096))) slab_info_archdata_t archdata;
@@ -226,9 +200,6 @@ typedef struct {
     slab_physmem_extent_t slab_physmem_extents[HIC_SLAB_PHYSMEM_MAXEXTENTS];
 	slab_entrystub_t entrystub;
 } __attribute__((packed)) __attribute__((aligned(4096))) slab_info_t;
-
-
-
 
 
 
@@ -248,15 +219,13 @@ typedef struct {
 void xmhfhic_arch_setup_slab_info(void);
 void xmhfhic_arch_sanity_check_requirements(void);
 void xmhfhic_arch_setup_slab_device_allocation(void);
-//void xmhfhic_arch_setup_hypervisor_slab_page_tables(void);
-//void xmhfhic_arch_setup_guest_slab_page_tables(void);
 void xmhfhic_arch_setup_slab_mem_page_tables(void);
-
 void xmhfhic_arch_switch_to_smp(void);
 void xmhfhic_arch_setup_base_cpu_data_structures(void);
 void xmhf_hic_arch_setup_cpu_state(u64 cpuid);
 void xmhfhic_smp_entry(u64 cpuid);
 void xmhfhic_arch_relinquish_control_to_init_slab(u64 cpuid);
+
 
 
 bool __xmhfhic_callcaps(u64 src_slabid, u64 dst_slabid);
