@@ -56,11 +56,45 @@
 /////
 // forward prototypes
 
-static void __xmhfhic_rtm_uapihandler_cpustate(u64 uapicall_subnum, u64 iparams, u64 oparams, u64 cpuid);
+static void __xmhfhic_rtm_uapihandler_cpustate(u64 uapicall_subnum, u64 iparams, u64 oparams, u64 cpuid, u64 src_slabid);
 static void __xmhfhic_rtm_uapihandler_physmem(u64 uapicall_subnum, u64 iparams, u64 oparams, u64 cpuid);
 static void __xmhfhic_rtm_uapihandler_mempgtbl(u64 uapicall_subnum, u64 iparams, u64 oparams, u64 cpuid);
 
 
+static bool _uapicheck_is_within_slab_memory_extents(u64 slab_id, u64 addr){
+    u64 i;
+    bool status=false;
+
+    for(i=0; i < HIC_SLAB_PHYSMEM_MAXEXTENTS; i++){
+        if(_xmhfhic_common_slab_info_table[slab_id].slab_physmem_extents[i].addr_start == 0 &&
+           _xmhfhic_common_slab_info_table[slab_id].slab_physmem_extents[i].addr_end == 0)
+           continue;
+
+        if(addr >= _xmhfhic_common_slab_info_table[slab_id].slab_physmem_extents[i].addr_start &&
+           addr < _xmhfhic_common_slab_info_table[slab_id].slab_physmem_extents[i].addr_end)
+            return true;
+
+    }
+
+    return status;
+}
+
+static bool _uapicheck_encoding_used_by_hic(u64 encoding){
+    if( (u32)encoding & 0xFFFF0000 )
+        return false;
+
+    if( (u16)encoding == 0x0000 || (u16)encoding == 0x4000 || (u16)encoding == 0x4002 || (u16)encoding == 0x401E )
+        return true;
+
+    if( ((u16)encoding & 0xFF00) == 0x20 ||
+       ((u16)encoding & 0xFF00) == 0x6C ||
+       ((u16)encoding & 0xFF00) == 0x4C ||
+       ((u16)encoding & 0xFF00) == 0x2C ||
+       ((u16)encoding & 0xFF00) == 0x0C)
+        return true;
+
+    return false;
+}
 
 
 
@@ -95,7 +129,7 @@ void __xmhfhic_rtm_uapihandler(u64 uapicall, u64 uapicall_num, u64 uapicall_subn
 
     switch(uapicall_num){
         case XMHF_HIC_UAPI_CPUSTATE:
-            __xmhfhic_rtm_uapihandler_cpustate(uapicall_subnum, iparams, oparams, cpuid);
+            __xmhfhic_rtm_uapihandler_cpustate(uapicall_subnum, iparams, oparams, cpuid, src_slabid);
             break;
 
         case XMHF_HIC_UAPI_PHYSMEM:
@@ -127,15 +161,24 @@ void __xmhfhic_rtm_uapihandler(u64 uapicall, u64 uapicall_num, u64 uapicall_subn
 
 //////
 // cpustate UAPI sub-handler
-static void __xmhfhic_rtm_uapihandler_cpustate(u64 uapicall_subnum, u64 iparams, u64 oparams, u64 cpuid){
+static void __xmhfhic_rtm_uapihandler_cpustate(u64 uapicall_subnum, u64 iparams, u64 oparams, u64 cpuid, u64 src_slabid){
     //_XDPRINTF_("%s[%u]: Got control...\n", __FUNCTION__, (u32)cpuid);
 
     switch(uapicall_subnum){
         case XMHF_HIC_UAPI_CPUSTATE_VMREAD:{
             //iparams = encoding (u64), oparams = memory (u64 *)
             //checks:
-            //1. oparams should be within source slab rwdata or stack memory extents
+            //1. oparams should be within source slab memory extents
+            if(!_uapicheck_is_within_slab_memory_extents(src_slabid, oparams)){
+                _XDPRINTF_("%s[%u],%u: uapierr: oparams should be within source slab memory extents. Halting!\n", __FUNCTION__, (u32)cpuid, __LINE__);
+                HALT();
+            }
             //2. encoding cannot contain any value that is specific to HIC
+            if(_uapicheck_encoding_used_by_hic(iparams)){
+                _XDPRINTF_("%s[%u],%u: uapierr: encoding reserved for HIC. Halting!\n", __FUNCTION__, (u32)cpuid, __LINE__);
+                HALT();
+            }
+
             *(u64 *)oparams = xmhfhw_cpu_x86vmx_vmread(iparams);
         }
         break;
@@ -144,6 +187,11 @@ static void __xmhfhic_rtm_uapihandler_cpustate(u64 uapicall_subnum, u64 iparams,
             //iparams = encoding (u64), oparams = value (u64)
             //checks:
             //1. encoding cannot contain any value that is specific to HIC
+            if(_uapicheck_encoding_used_by_hic(iparams)){
+                _XDPRINTF_("%s[%u],%u: uapierr: encoding reserved for HIC. Halting!\n", __FUNCTION__, (u32)cpuid, __LINE__);
+                HALT();
+            }
+
             xmhfhw_cpu_x86vmx_vmwrite(iparams, oparams);
         }
         break;
@@ -151,7 +199,12 @@ static void __xmhfhic_rtm_uapihandler_cpustate(u64 uapicall_subnum, u64 iparams,
         case XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSREAD:{
             //iparams = NULL, oparams = x86regs64_t *
             //checks:
-            //1. oparams should be within source slab rwdata or stack memory extents
+            //1. oparams should be within source slab memory extents
+            if(!_uapicheck_is_within_slab_memory_extents(src_slabid, oparams)){
+                _XDPRINTF_("%s[%u],%u: uapierr: oparams should be within source slab memory extents. Halting!\n", __FUNCTION__, (u32)cpuid, __LINE__);
+                HALT();
+            }
+
             memcpy(oparams, & __xmhfhic_x86vmx_archdata[(u32)cpuid].vmx_gprs,
                    sizeof(x86regs64_t));
         }
@@ -160,7 +213,12 @@ static void __xmhfhic_rtm_uapihandler_cpustate(u64 uapicall_subnum, u64 iparams,
         case XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSWRITE:{
             //iparams = x86regs64_t *, oparams=NULL
             //checks:
-            //1. iparams should be within source slab rwdata, rodata or stack memory extents
+            //1. iparams should be within source slab memory extents
+            if(!_uapicheck_is_within_slab_memory_extents(src_slabid, iparams)){
+                _XDPRINTF_("%s[%u],%u: uapierr: oparams should be within source slab memory extents. Halting!\n", __FUNCTION__, (u32)cpuid, __LINE__);
+                HALT();
+            }
+
             memcpy(& __xmhfhic_x86vmx_archdata[(u32)cpuid].vmx_gprs,
                    iparams,
                    sizeof(x86regs64_t));
@@ -171,6 +229,11 @@ static void __xmhfhic_rtm_uapihandler_cpustate(u64 uapicall_subnum, u64 iparams,
             //iparams = msr, oparams = value
             //checks
             //1. msr cannot contain any value that is specific to HIC
+            if(!( iparams != MSR_EFER && iparams != IA32_SYSENTER_CS_MSR && iparams != IA32_SYSENTER_EIP_MSR && iparams != IA32_SYSENTER_ESP_MSR)){
+                _XDPRINTF_("%s[%u],%u: uapierr: HIC specific iparams being written to. Halting!\n", __FUNCTION__, (u32)cpuid, __LINE__);
+                HALT();
+            }
+
             wrmsr64((u32)iparams, oparams);
         }
         break;
@@ -180,7 +243,17 @@ static void __xmhfhic_rtm_uapihandler_cpustate(u64 uapicall_subnum, u64 iparams,
             //iparams = msr, oparams = (u64 *)
             //checks:
             //1. msr cannot contain any value that is specific to HIC
-            //2. oparams should be within source slab rwdata or stack memory extents
+            if(!( iparams != MSR_EFER && iparams != IA32_SYSENTER_CS_MSR && iparams != IA32_SYSENTER_EIP_MSR && iparams != IA32_SYSENTER_ESP_MSR)){
+                _XDPRINTF_("%s[%u],%u: uapierr: HIC specific MSR being read from. Halting!\n", __FUNCTION__, (u32)cpuid, __LINE__);
+                HALT();
+            }
+
+            //2. oparams should be within source slab memory extents
+            if(!_uapicheck_is_within_slab_memory_extents(src_slabid, oparams)){
+                _XDPRINTF_("%s[%u],%u: uapierr: oparams should be within source slab memory extents. Halting!\n", __FUNCTION__, (u32)cpuid, __LINE__);
+                HALT();
+            }
+
             *(u64 *)oparams = rdmsr64((u32)iparams);
         }
         break;
