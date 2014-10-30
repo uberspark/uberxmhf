@@ -60,32 +60,73 @@ XMHF_SLAB(xhssteptrace)
 #define SSTEPTRACE_REGISTER    			0xE0
 #define SSTEPTRACE_ON          			0xE1
 #define SSTEPTRACE_OFF         			0xE2
-#define SSTEPTRACE_VALIDATE    			0xE3
 
 static bool ssteptrace_on = false;
 
-static void st_register(u64 cpuindex, u64 guest_slab_index, u64 gpa){
-
-
-
-}
+//static void st_register(u64 cpuindex, u64 guest_slab_index, u64 gpa){
+//
+//
+//
+//}
 
 static void st_on(u64 cpuindex, u64 guest_slab_index){
+    u64 guest_rflags;
+    u64 exception_bitmap;
 
+    XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMREAD, VMCS_GUEST_RFLAGS, &guest_rflags);
+    XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMREAD, VMCS_CONTROL_EXCEPTION_BITMAP, &exception_bitmap);
+    guest_rflags |= EFLAGS_TF;
+    exception_bitmap |= (1 << 1);
+    XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMWRITE, VMCS_CONTROL_EXCEPTION_BITMAP, exception_bitmap);
+    XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMWRITE, VMCS_GUEST_RFLAGS, guest_rflags);
 
-
+    ssteptrace_on=true;
 }
 
 
 static void st_off(u64 cpuindex, u64 guest_slab_index){
+    u64 guest_rflags;
+    u64 exception_bitmap;
 
+    XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMREAD, VMCS_GUEST_RFLAGS, &guest_rflags);
+    XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMREAD, VMCS_CONTROL_EXCEPTION_BITMAP, &exception_bitmap);
+    guest_rflags &= ~(EFLAGS_TF);
+    exception_bitmap &= ~(1 << 1);
+    XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMWRITE, VMCS_CONTROL_EXCEPTION_BITMAP, exception_bitmap);
+    XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMWRITE, VMCS_GUEST_RFLAGS, guest_rflags);
 
-
+    ssteptrace_on=false;
 }
 
-static void st_validate(u64 cpuindex, u64 guest_slab_index){
 
 
+static u8 _st_sigdatabase[][SHA_DIGEST_LENGTH] = {
+  {0xd1, 0x4e, 0x30, 0x25,  0x8e,  0x16, 0x85, 0x9b, 0x21, 0x81, 0x74, 0x78, 0xbb, 0x1b, 0x5d, 0x99, 0xb5, 0x48, 0x60, 0xca},
+  {0xa1, 0x4e, 0x30, 0x25,  0x8e,  0x16, 0x85, 0x9b, 0x21, 0x71, 0x74, 0x78, 0xbb, 0x1b, 0x5d, 0x99, 0xb5, 0x48, 0x60, 0xca},
+  {0xf1, 0x4e, 0x30, 0x25,  0x8e,  0x16, 0x85, 0x9b, 0x21, 0x81, 0x54, 0x78, 0xbb, 0x1b, 0x5d, 0x99, 0xb5, 0x48, 0x60, 0xca},
+  {0xe1, 0x4e, 0x30, 0x25,  0x9e,  0x16, 0x85, 0x9b, 0x21, 0x81, 0x74, 0x78, 0x6b, 0x1b, 0x5d, 0x99, 0xb5, 0x48, 0x60, 0xca},
+};
+
+#define NUMENTRIES_ST_SIGDATABASE  (sizeof(_st_sigdatabase)/sizeof(_st_sigdatabase[0]))
+
+
+
+static bool st_scanforsignature(u8 *buffer, u64 buffer_size){
+    u8 digest[SHA_DIGEST_LENGTH];
+    u64 i;
+
+    //compute SHA-1 of the buffer
+    sha1_buffer(buffer, buffer_size, digest);
+
+    //compare computed SHA-1 to the signature database
+    for(i=0; i < NUMENTRIES_ST_SIGDATABASE; i++){
+        if(!memcmp(&digest, &_st_sigdatabase[i], SHA_DIGEST_LENGTH)){
+            return true;
+        }
+    }
+
+    //no match
+    return false;
 
 }
 
@@ -116,10 +157,10 @@ static void _hcb_hypercall(u64 cpuindex, u64 guest_slab_index){
 
 	switch(call_id){
 
-		case SSTEPTRACE_REGISTER:{
-			st_register(cpuindex, guest_slab_index, gpa);
-		}
-		break;
+		//case SSTEPTRACE_REGISTER:{
+		//	st_register(cpuindex, guest_slab_index, gpa);
+		//}
+		//break;
 
 		case SSTEPTRACE_ON:{
 			st_on(cpuindex, guest_slab_index);
@@ -131,10 +172,10 @@ static void _hcb_hypercall(u64 cpuindex, u64 guest_slab_index){
 		}
 		break;
 
-		case SSTEPTRACE_VALIDATE:{
-			st_validate(cpuindex, guest_slab_index);
-		}
-		break;
+		//case SSTEPTRACE_VALIDATE:{
+		//	st_validate(cpuindex, guest_slab_index);
+		//}
+		//break;
 
 
 		default:
@@ -149,7 +190,14 @@ static void _hcb_hypercall(u64 cpuindex, u64 guest_slab_index){
 
 
 static void _hcb_trap_exception(u64 cpuindex, u64 guest_slab_index){
-	_XDPRINTF_("%s[%u]: guest slab %u exception...\n", __FUNCTION__, (u32)cpuindex, guest_slab_index);
+    u64 info_vmexit_interruption_information;
+
+    XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMREAD, VMCS_INFO_VMEXIT_INTERRUPT_INFORMATION, &info_vmexit_interruption_information);
+
+	_XDPRINTF_("%s[%u]: guest slab %u exception %u...\n", __FUNCTION__, (u32)cpuindex, guest_slab_index, (u8)info_vmexit_interruption_information);
+
+
+
 }
 
 

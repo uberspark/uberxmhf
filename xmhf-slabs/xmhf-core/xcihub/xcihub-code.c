@@ -224,11 +224,7 @@ void xcihub_interface(slab_input_params_t *iparams, u64 iparams_size, slab_outpu
 
         //exception traps
         case VMX_VMEXIT_EXCEPTION:{
-            if(_xcihub_hcbinvoke(XC_HYPAPPCB_TRAP_EXCEPTION, src_slabid) == XC_HYPAPPCB_CHAIN){
-                _XDPRINTF_("%s[%u]: I do not handle VMX_VMEXIT_EXEPTION intercept. Halting!\n",
-                    __FUNCTION__, (u32)cpuindex);
-                HALT();
-            }
+            _xcihub_hcbinvoke(XC_HYPAPPCB_TRAP_EXCEPTION, src_slabid);
         }
         break;
 

@@ -249,7 +249,6 @@ static void xcguestslab_do_testxhapprovexec(void){
 #define SSTEPTRACE_REGISTER    			0xE0
 #define SSTEPTRACE_ON          			0xE1
 #define SSTEPTRACE_OFF         			0xE2
-#define SSTEPTRACE_VALIDATE    			0xE3
 
 __attribute__((aligned(4096))) void _xcguestslab_do_testxhssteptrace_func(void){
 
@@ -289,18 +288,18 @@ __attribute__((aligned(4096))) void _xcguestslab_do_testxhssteptrace_func(void){
 static void xcguestslab_do_testxhssteptrace(void){
     u64 gpa = &_xcguestslab_do_testxhssteptrace_func;
 
-    _XDPRINTF_("%s: Going to register function at %x\n", __FUNCTION__, gpa);
+    //_XDPRINTF_("%s: Going to register function at %x\n", __FUNCTION__, gpa);
 
-    asm volatile(
-        "movq %0, %%rax \r\n"
-        "movq %1, %%rbx \r\n"
-        "vmcall \r\n"
-        :
-        : "i" (SSTEPTRACE_REGISTER), "m" (gpa)
-        : "rax", "rbx"
-    );
+    //asm volatile(
+    //    "movq %0, %%rax \r\n"
+    //    "movq %1, %%rbx \r\n"
+    //    "vmcall \r\n"
+    //    :
+    //    : "i" (SSTEPTRACE_REGISTER), "m" (gpa)
+    //    : "rax", "rbx"
+    //);
 
-    _XDPRINTF_("%s: Registered function\n", __FUNCTION__);
+    //_XDPRINTF_("%s: Registered function\n", __FUNCTION__);
 
     _XDPRINTF_("%s: Proceeding to call function...\n", __FUNCTION__, gpa);
 
@@ -326,7 +325,9 @@ void xcguestslab_interface(void) {
 
     //xcguestslab_do_testxhhyperdep();
 
-    xcguestslab_do_testxhapprovexec();
+    //xcguestslab_do_testxhapprovexec();
+
+    xcguestslab_do_testxhssteptrace();
 
     _XDPRINTF_("%s: Guest Slab Halting\n", __FUNCTION__);
     HALT();
