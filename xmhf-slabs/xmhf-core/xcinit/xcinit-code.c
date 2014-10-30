@@ -679,7 +679,7 @@ void xcinit_interface(slab_input_params_t *iparams, u64 iparams_size, slab_outpu
     //_XDPRINTF_("%s[%u]:  oparams=%016llx, oparams_size=%u\n",
     //             __FUNCTION__, (u32)cpuid, oparams, oparams_size);
 
-#if 0
+#if 1
 
     {
         u64 entries_pml4t[PAE_PTRS_PER_PML4T];
