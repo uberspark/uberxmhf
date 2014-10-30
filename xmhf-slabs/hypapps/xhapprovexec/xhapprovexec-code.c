@@ -205,10 +205,10 @@ static void _hcb_hypercall(u64 cpuindex, u64 guest_slab_index){
 
 static void _hcb_memoryfault(u64 cpuindex, u64 guest_slab_index, u64 gpa, u64 gva, u64 errorcode){
 
-	_XDPRINTF_("%s[%u]: memory fault in guest slab %u; gpa=%x, gva=%x, errorcode=%x, data page execution?. Halting!\n",
+	_XDPRINTF_("%s[%u]: memory fault in guest slab %u; gpa=%x, gva=%x, errorcode=%x, write error to approved code?\n",
             __FUNCTION__, (u32)cpuindex, guest_slab_index, gpa, gva, errorcode);
 
-	HALT();
+	//HALT();
 }
 
 

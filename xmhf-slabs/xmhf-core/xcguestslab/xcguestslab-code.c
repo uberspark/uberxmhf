@@ -319,6 +319,10 @@ static void xcguestslab_do_testxhssteptrace(void){
 
 
 
+
+
+
+
 //*
 // GDT
 __attribute__(( aligned(16) )) u64 _xcguestslab_gdt_start[]  = {
@@ -358,6 +362,8 @@ __attribute__(( aligned(16) )) arch_x86_gdtdesc_t _xcguestslab_gdt  = {
 
 
 /////////
+#define SYSCALLLOG_REGISTER     			0xF0
+
 static u8 _xcguestslab_do_testxhsyscalllog_sysenterhandler_stack[PAGE_SIZE_4K];
 
 
@@ -374,6 +380,8 @@ static void _xcguestslab_do_testxhsyscalllog_sysenterhandler(void){
 
 
 static void xcguestslab_do_testxhsyscalllog(void){
+    u64 gpa = &_xcguestslab_do_testxhsyscalllog_sysenterhandler;
+
     _XDPRINTF_("%s: proceeding to load GDT\n", __FUNCTION__);
 
     //load GDTR
@@ -408,6 +416,20 @@ static void xcguestslab_do_testxhsyscalllog(void){
 		: //no inputs
 		: "rax", "cc"
 	);
+
+
+    //register syscall handler
+    asm volatile(
+        "movq %0, %%rax \r\n"
+        "movq %1, %%rbx \r\n"
+        "vmcall \r\n"
+        :
+        : "i" (SYSCALLLOG_REGISTER), "m" (gpa)
+        : "rax", "rbx"
+    );
+
+    _XDPRINTF_("%s: registered syscall handler on page %x\n", __FUNCTION__, gpa);
+
 
 
     //setup SYSENTER/SYSEXIT mechanism
