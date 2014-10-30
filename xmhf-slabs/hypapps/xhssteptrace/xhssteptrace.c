@@ -66,12 +66,7 @@ static bool ssteptrace_on = false;
 
 static u8 _st_tracebuffer[256];
 
-//static void st_register(u64 cpuindex, u64 guest_slab_index, u64 gpa){
-//
-//
-//
-//}
-
+// trace (single-step) on
 static void st_on(u64 cpuindex, u64 guest_slab_index){
     u64 guest_rflags;
     u64 exception_bitmap;
@@ -86,7 +81,7 @@ static void st_on(u64 cpuindex, u64 guest_slab_index){
     ssteptrace_on=true;
 }
 
-
+// trace (single-step) off
 static void st_off(u64 cpuindex, u64 guest_slab_index){
     u64 guest_rflags;
     u64 exception_bitmap;
@@ -113,7 +108,7 @@ static u8 _st_sigdatabase[][SHA_DIGEST_LENGTH] = {
 #define NUMENTRIES_ST_SIGDATABASE  (sizeof(_st_sigdatabase)/sizeof(_st_sigdatabase[0]))
 
 
-
+// scan for a trace match with incoming trace in buffer
 static bool st_scanforsignature(u8 *buffer, u64 buffer_size){
     u8 digest[SHA_DIGEST_LENGTH];
     u64 i;
@@ -130,20 +125,23 @@ static bool st_scanforsignature(u8 *buffer, u64 buffer_size){
 
     //no match
     return false;
-
 }
 
 
 
-//////////////////////////////////////////////////////////////////////////////
+//////
+// hypapp callbacks
 
-// hypapp initialization
+
+// initialization
 static void _hcb_initialize(u64 cpuindex){
 
 	_XDPRINTF_("%s[%u]: xhssteptrace initializing...\n", __FUNCTION__, (u32)cpuindex);
 
 }
 
+
+// hypercall
 static void _hcb_hypercall(u64 cpuindex, u64 guest_slab_index){
     x86regs64_t gprs;
 	u64 call_id;
@@ -160,11 +158,6 @@ static void _hcb_hypercall(u64 cpuindex, u64 guest_slab_index){
 
 	switch(call_id){
 
-		//case SSTEPTRACE_REGISTER:{
-		//	st_register(cpuindex, guest_slab_index, gpa);
-		//}
-		//break;
-
 		case SSTEPTRACE_ON:{
 			st_on(cpuindex, guest_slab_index);
 		}
@@ -174,12 +167,6 @@ static void _hcb_hypercall(u64 cpuindex, u64 guest_slab_index){
 			st_off(cpuindex, guest_slab_index);
 		}
 		break;
-
-		//case SSTEPTRACE_VALIDATE:{
-		//	st_validate(cpuindex, guest_slab_index);
-		//}
-		//break;
-
 
 		default:
             _XDPRINTF_("%s[%u]: unsupported hypercall %x. Ignoring\n",
@@ -192,6 +179,7 @@ static void _hcb_hypercall(u64 cpuindex, u64 guest_slab_index){
 }
 
 
+// trap exception
 static void _hcb_trap_exception(u64 cpuindex, u64 guest_slab_index){
     u64 info_vmexit_interruption_information;
     u64 guest_rip;
@@ -214,20 +202,31 @@ static void _hcb_trap_exception(u64 cpuindex, u64 guest_slab_index){
         pdesc.numbytes = sizeof(_st_tracebuffer);
         XMHF_HIC_SLAB_UAPI_PHYSMEM(XMHF_HIC_UAPI_PHYSMEM_PEEK, &pdesc, NULL);
 
-
+        //try to see if we found a match in our trace database
         st_scanforsignature(&_st_tracebuffer, sizeof(_st_tracebuffer));
     }
 
 }
 
 
+// shutdown
 static void _hcb_shutdown(u64 cpuindex, u64 guest_slab_index){
 	_XDPRINTF_("%s[%u]: guest slab %u shutdown...\n", __FUNCTION__, (u32)cpuindex, guest_slab_index);
 }
 
 
 
-/////////////////////////////////////////////////////////////////////
+
+
+
+
+
+
+
+
+///////
+// slab interface
+
 void xhssteptrace_interface(slab_input_params_t *iparams, u64 iparams_size, slab_output_params_t *oparams, u64 oparams_size, u64 src_slabid, u64 cpuindex){
     xc_hypappcb_inputparams_t *hcb_iparams = (xc_hypappcb_inputparams_t *)iparams;
     xc_hypappcb_outputparams_t *hcb_oparams = (xc_hypappcb_outputparams_t *)oparams;
