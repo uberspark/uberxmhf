@@ -1156,6 +1156,18 @@ static void __xmhfhic_rtm_uapihandler_cpustate(u64 uapicall_subnum, u64 iparams,
         }
         break;
 
+        case XMHF_HIC_UAPI_CPUSTATE_WRMSR:{
+            //iparams = msr, oparams = value
+            wrmsr64((u32)iparams, oparams);
+        }
+        break;
+
+
+        case XMHF_HIC_UAPI_CPUSTATE_RDMSR:{
+            //iparams = msr, oparams = (u64 *)
+            *(u64 *)oparams = rdmsr64((u32)iparams);
+        }
+        break;
 
         default:
             _XDPRINTF_("%s[%u]: Unknown cpustate subcall %x. Halting!\n",
