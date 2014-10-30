@@ -63,6 +63,9 @@ XMHF_SLAB(xhssteptrace)
 
 static bool ssteptrace_on = false;
 
+
+static u8 _st_tracebuffer[256];
+
 //static void st_register(u64 cpuindex, u64 guest_slab_index, u64 gpa){
 //
 //
@@ -191,12 +194,28 @@ static void _hcb_hypercall(u64 cpuindex, u64 guest_slab_index){
 
 static void _hcb_trap_exception(u64 cpuindex, u64 guest_slab_index){
     u64 info_vmexit_interruption_information;
+    u64 guest_rip;
+    xmhf_hic_uapi_physmem_desc_t pdesc;
 
-    XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMREAD, VMCS_INFO_VMEXIT_INTERRUPT_INFORMATION, &info_vmexit_interruption_information);
+    if(ssteptrace_on){
+        XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMREAD, VMCS_INFO_VMEXIT_INTERRUPT_INFORMATION, &info_vmexit_interruption_information);
 
-	_XDPRINTF_("%s[%u]: guest slab %u exception %u...\n", __FUNCTION__, (u32)cpuindex, guest_slab_index, (u8)info_vmexit_interruption_information);
+        _XDPRINTF_("%s[%u]: guest slab %u exception %u...\n", __FUNCTION__, (u32)cpuindex, guest_slab_index, (u8)info_vmexit_interruption_information);
+
+        if((u8)info_vmexit_interruption_information != 0x1)
+            return;
+
+        XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMREAD, VMCS_GUEST_RIP, &guest_rip);
+
+        //copy 256 bytes from the current guest RIP for trace inference
+        pdesc.addr_to = &_st_tracebuffer;
+        pdesc.addr_from = guest_rip;
+        pdesc.numbytes = sizeof(_st_tracebuffer);
+        XMHF_HIC_SLAB_UAPI_PHYSMEM(XMHF_HIC_UAPI_PHYSMEM_PEEK, &pdesc, NULL);
 
 
+        st_scanforsignature(&_st_tracebuffer, sizeof(_st_tracebuffer));
+    }
 
 }
 
