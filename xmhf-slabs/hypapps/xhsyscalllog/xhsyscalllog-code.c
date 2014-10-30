@@ -65,6 +65,32 @@ static u8 _sl_syscalldigest[SHA_DIGEST_LENGTH];
 static bool _sl_registered=false;
 static u64 shadow_sysenter_rip=0;
 
+
+
+#define MAX_SL_LOG_SIZE 128
+typedef struct {
+    bool syscallmodified;
+    u8 syscalldigest[SHA_DIGEST_LENGTH];
+    x86regs64_t r;
+} sl_log_type_t;
+
+sl_log_type_t sl_log[128];
+
+static u64 sl_log_index=0;
+
+static void sl_loginfo(bool syscallmodified, u8 *digest, x86regs64_t *r){
+    if(sl_log_index < MAX_SL_LOG_SIZE){
+        sl_log[sl_log_index].syscallmodified = syscallmodified;
+        memcpy(&sl_log[sl_log_index].syscalldigest, digest, SHA_DIGEST_LENGTH);
+        memcpy(&sl_log[sl_log_index].r, r, sizeof(x86regs64_t));
+        sl_log_index++;
+    }
+}
+
+
+
+
+
 static void sl_register(u64 cpuindex, u64 guest_slab_index, u64 gpa){
         xmhf_hic_uapi_physmem_desc_t pdesc;
 
@@ -163,7 +189,7 @@ static void _hcb_memoryfault(u64 cpuindex, u64 guest_slab_index, u64 gpa, u64 gv
 
 
     //log GPR state, syscall modified status and digest
-
+    sl_loginfo(syscallhandler_modified, &syscalldigest, &r);
 
     //set guest RIP to shadow_sysenter_rip to continue execution
     XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMWRITE, VMCS_GUEST_RIP, shadow_sysenter_rip);
