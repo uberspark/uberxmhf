@@ -46,6 +46,7 @@
 
 #include <xmhf.h>
 #include <xmhf-debug.h>
+#include <xmhf-core.h>
 
 #include <xcexhub.h>
 

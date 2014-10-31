@@ -52,18 +52,17 @@
 #define __XMHF_HIC_H__
 
 
-#define XMHF_HIC_HYP_SLABS_COUNT            (3)
-#define XMHF_HIC_GUEST_SLABS_COUNT          (1)
-
-#define XMHF_HIC_MAX_SLABS                  (8)
-
+#define XMHF_HIC_MAX_SLABS                  (9)
 
 #define XMHF_HYP_SLAB_XCINIT                (0)
 #define XMHF_HYP_SLAB_XCIHUB                (1)
 #define XMHF_HYP_SLAB_XCEXHUB               (2)
 #define XMHF_HYP_SLAB_XCTESTSLAB1           (3)
-#define XMHF_GUEST_SLAB_XCGUESTSLAB         (4)
-#define XMHF_GUEST_SLAB_RICHGUEST           (5) //currently unused
+#define XMHF_HYP_SLAB_XHHYPERDEP            (4)
+#define XMHF_HYP_SLAB_XHAPPROVEXEC          (5)
+#define XMHF_HYP_SLAB_XHSYSCALLLOG          (6)
+#define XMHF_HYP_SLAB_XHSSTEPTRACE          (7)
+#define XMHF_GUEST_SLAB_XCGUESTSLAB         (8)
 
 
 #define XMHF_HIC_SLABCALL                   (0xA0)
@@ -75,29 +74,62 @@
 #define XMHF_HIC_SLABCALLINTERCEPT          (0xA4)
 #define XMHF_HIC_SLABRETINTERCEPT           (0xA5)
 
-#define XMHF_HIC_UAPI                       (0xA6)
 
-#define XMHF_HIC_UAPI_CPUSTATE              (0xA60)
+#define XMHF_HIC_UAPI                       (0x666)
 
-#define XMHF_HIC_UAPI_CPUSTATE_VMREAD       (0xA600)
-#define XMHF_HIC_UAPI_CPUSTATE_VMWRITE      (0xA601)
-#define XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSREAD    (0xA602)
-#define XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSWRITE   (0xA603)
+#define XMHF_HIC_UAPI_CPUSTATE                  (0)
 
-#define XMHF_HIC_UAPI_PHYSMEM               (0xA70)
+#define XMHF_HIC_UAPI_CPUSTATE_VMREAD           (1)
+#define XMHF_HIC_UAPI_CPUSTATE_VMWRITE          (2)
+#define XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSREAD    (3)
+#define XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSWRITE   (4)
+#define XMHF_HIC_UAPI_CPUSTATE_WRMSR            (5)
+#define XMHF_HIC_UAPI_CPUSTATE_RDMSR            (6)
 
-#define XMHF_HIC_UAPI_PHYSMEM_PEEK          (0xA700)
-#define XMHF_HIC_UAPI_PHYSMEM_POKE          (0xA701)
+
+#define XMHF_HIC_UAPI_PHYSMEM                   (16)
+
+#define XMHF_HIC_UAPI_PHYSMEM_PEEK              (17)
+#define XMHF_HIC_UAPI_PHYSMEM_POKE              (18)
+
+#define XMHF_HIC_UAPI_MEMPGTBL                  (24)
+
+#define XMHF_HIC_UAPI_MEMPGTBL_GETENTRY         (25)
+#define XMHF_HIC_UAPI_MEMPGTBL_SETENTRY         (26)
+
 
 
 #ifndef __ASSEMBLY__
+
+
 typedef void slab_input_params_t;
 typedef void slab_output_params_t;
-typedef u64 slab_privilegemask_t;
 typedef void * slab_entrystub_t;
+
+typedef u64 slab_privilegemask_t;
 typedef u64 slab_callcaps_t;
+typedef u64 slab_uapicaps_t;
+
+typedef struct {
+	bool desc_valid;
+	u64 numdevices;
+    xc_platformdevice_arch_desc_t arch_desc[MAX_PLATFORM_DEVICES];
+} __attribute__((packed)) slab_platformdevices_t;
 
 
+//slab capabilities type
+typedef struct {
+    slab_privilegemask_t slab_privilegemask;
+    slab_callcaps_t slab_callcaps;
+    slab_uapicaps_t slab_uapicaps;
+    slab_platformdevices_t slab_devices;
+    u64 slab_archparams;
+} __attribute__((packed)) slab_caps_t;
+
+
+
+#define HIC_SLAB_CALLCAP(x) (1 << x)
+#define HIC_SLAB_UAPICAP(x) (1 << x)
 
 
 
@@ -106,24 +138,25 @@ typedef u64 slab_callcaps_t;
 // uapi related types
 
 typedef struct {
+    u64 guest_slab_index;
     void *addr_from;
     void *addr_to;
     u64 numbytes;
 }__attribute__((packed)) xmhf_hic_uapi_physmem_desc_t;
 
-
-
-
-
-
-
-
-
 typedef struct {
-	bool desc_valid;
-	u64 numdevices;
-    xc_platformdevice_arch_desc_t arch_desc[MAX_PLATFORM_DEVICES];
-} __attribute__((packed)) slab_platformdevices_t;
+    u64 guest_slab_index;
+    u64 gpa;
+    u64 entry;
+}__attribute__((packed)) xmhf_hic_uapi_mempgtbl_desc_t;
+
+
+
+
+
+
+
+
 
 typedef struct {
     u64 src_slabid;
@@ -156,43 +189,17 @@ typedef struct {
 	u64 end;
 } slab_section_t;
 
-/*typedef struct {
-	u64 slab_index;
-	u64 slab_macmid;
-	u64 slab_privilegemask;
-	u64 slab_tos;
-	slab_section_t slab_code;
-	slab_section_t slab_rwdata;
-	slab_section_t slab_rodata;
-	slab_section_t slab_stack;
-	slab_section_t slab_dmadata;
-	slab_entrystub_t entrystub;
-} slab_header_t;*/
-
-
-
-#define HIC_SLAB_CALLCAP(x) (1 << x)
-
 
 typedef struct {
     __attribute__((aligned(4096))) slab_info_archdata_t archdata;
 	bool slab_inuse;
     slab_privilegemask_t slab_privilegemask;
     slab_callcaps_t slab_callcaps;
+    slab_uapicaps_t slab_uapicaps;
     slab_platformdevices_t slab_devices;
     slab_physmem_extent_t slab_physmem_extents[HIC_SLAB_PHYSMEM_MAXEXTENTS];
 	slab_entrystub_t entrystub;
 } __attribute__((packed)) __attribute__((aligned(4096))) slab_info_t;
-
-
-
-
-typedef struct {
-    slab_privilegemask_t slab_privilegemask;
-    slab_callcaps_t slab_callcaps;
-    slab_platformdevices_t slab_devices;
-    u64 slab_archparams;
-} __attribute__((packed)) slab_caps_t;
 
 
 
@@ -212,15 +219,13 @@ typedef struct {
 void xmhfhic_arch_setup_slab_info(void);
 void xmhfhic_arch_sanity_check_requirements(void);
 void xmhfhic_arch_setup_slab_device_allocation(void);
-//void xmhfhic_arch_setup_hypervisor_slab_page_tables(void);
-//void xmhfhic_arch_setup_guest_slab_page_tables(void);
 void xmhfhic_arch_setup_slab_mem_page_tables(void);
-
 void xmhfhic_arch_switch_to_smp(void);
 void xmhfhic_arch_setup_base_cpu_data_structures(void);
 void xmhf_hic_arch_setup_cpu_state(u64 cpuid);
 void xmhfhic_smp_entry(u64 cpuid);
 void xmhfhic_arch_relinquish_control_to_init_slab(u64 cpuid);
+
 
 
 bool __xmhfhic_callcaps(u64 src_slabid, u64 dst_slabid);
@@ -235,6 +240,9 @@ void __xmhfhic_safepop(u64 cpuid, u64 *src_slabid, u64 *dst_slabid, u64 *hic_cal
 __attribute__((naked)) void __xmhfhic_rtm_intercept_stub(void);
 __attribute__((naked)) void __xmhfhic_rtm_trampoline_stub(void);
 void __xmhfhic_rtm_trampoline(u64 hic_calltype, slab_input_params_t *iparams, u64 iparams_size, slab_output_params_t *oparams, u64 oparams_size, u64 dst_slabid, u64 src_slabid, u64 cpuid, u64 return_address, u64 return_rsp);
+void __xmhfhic_rtm_uapihandler(u64 uapicall, u64 uapicall_num, u64 uapicall_subnum,
+                               u64 reserved, u64 iparams, u64 oparams,
+                               u64 src_slabid, u64 cpuid);
 
 
 
@@ -424,6 +432,46 @@ __attribute__((naked)) __attribute__ ((noinline)) static inline bool __xmhfhic_u
 
 
 
+
+
+
+
+/*
+__xmhfhic_uapi_mempgtbl register mappings:
+
+RDI = XMHF_HIC_UAPI
+RSI = XMHF_HIC_UAPI_MEMPGTBL
+RDX = mempgtblfn
+RCX = undefined
+R8 = iparams
+R9 = oparams
+R10 = return RSP
+R11 = return_address
+
+*/
+
+//reserved_uapicall = XMHF_HIC_UAPI, reserved_uapicall_num = XMHF_HIC_UAPI_MEMPGTBL
+__attribute__((naked)) __attribute__ ((noinline)) static inline bool __xmhfhic_uapi_mempgtbl(u64 reserved_uapicall, u64 reserved_uapicall_num,
+                                           u64 mempgtblfn,
+                                           u64 reserved, u64 iparams, u64 oparams){
+
+    asm volatile (
+        "movq %%rsp, %%r10 \r\n"
+        "movq $1f, %%r11 \r\n"\
+        "sysenter \r\n" \
+        \
+        "1:\r\n" \
+        "retq \r\n" \
+        :
+        :
+        :
+    );
+
+
+}
+
+#define XMHF_HIC_SLAB_UAPI_MEMPGTBL(mempgtblfn, iparams, oparams) \
+    __xmhfhic_uapi_mempgtbl(XMHF_HIC_UAPI, XMHF_HIC_UAPI_MEMPGTBL, mempgtblfn, 0, iparams, oparams)
 
 
 

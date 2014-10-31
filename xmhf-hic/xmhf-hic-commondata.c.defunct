@@ -44,67 +44,18 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
+/*
+ * data used by both HIC initialization and runtime
+ *
+ * author: amit vasudevan (amitvasudevan@acm.org)
+ */
+
 #include <xmhf.h>
 
-/*OUTPUT_ARCH("x86-64")*/
 
-MEMORY
-{
-  hicmem (rwxai) : ORIGIN = 0, LENGTH = 160M /* max. length */
-  unaccounted (rwxai) : ORIGIN = 0, LENGTH = 0 /* see section .unaccounted at end */
-}
+//slab_header_t _slab_table[XMHF_HIC_MAX_SLABS] = {0};
+__attribute__(( section(".sharedro") )) __attribute__((aligned(4096))) slab_info_t _xmhfhic_common_slab_info_table[XMHF_HIC_MAX_SLABS] = {0};
 
-SECTIONS
-{
-	. = 0;
+__attribute__(( section(".sharedro") )) slab_physmem_extent_t _xmhfhic_common_hic_physmem_extents[HIC_SLAB_PHYSMEM_MAXEXTENTS] = {0};
 
-    .hicsharedro : {
-        *(.sharedro_xcbootinfo)
-        *(.sharedro_xcbootinfoptr)
-        *(.sharedro)
-        . = ALIGN(0x200000);
-    } >hicmem =0x0000
-
-	.hiccode : {
-		*(.hic_entrystub)
-		*(.text)
-        . = ALIGN(0x200000);
-	} >hicmem =0x9090
-
-	.hicrwdata : {
-		*(.data)
-		*(.bss)
-        . = ALIGN(0x200000);
-	} >hicmem =0x0000
-
-	.hicrodata : {
-		*(.rodata)
-		*(.rodata.str1.1)
-		*(.comment)
-		*(.eh_frame)
-        . = ALIGN(0x200000);
-	} >hicmem =0x0000
-
-	.hicstack : {
-		*(.stack)
-		*(.note.GNU-stack)
-        . = ALIGN(0x200000);
-	} >hicmem =0x0000
-
-
-	.libxmhfdebugdata : {
-		*(.libxmhfdebugdata)
-	} >hicmem
-
-	/* this is to cause the link to fail if there is
-	* anything we didn't explicitly place.
-	* when this does cause link to fail, temporarily comment
-	* this part out to see what sections end up in the output
-	* which are not handled above, and handle them.
-	*/
-	.unaccounted : {
-	*(*)
-	} >unaccounted
-
-
-}
+__attribute__(( aligned(2097152) )) u64 _xmhfhic_common_slab_archdata_mempgtbl_pml4t[XMHF_HIC_MAX_SLABS][PAE_MAXPTRS_PER_PML4T];

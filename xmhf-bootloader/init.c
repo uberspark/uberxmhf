@@ -136,7 +136,7 @@ INTEGRITY_MEASUREMENT_VALUES g_init_gold /* __attribute__(( section("") )) */ = 
 };
 
 //size of SL + runtime in bytes
-size_t sl_rt_size;
+//size_t sl_rt_size;
 
 
 //---MP config table handling---------------------------------------------------
@@ -914,9 +914,9 @@ void cstartup(multiboot_info_t *mbi){
 
     //check (and revise) platform E820 memory map to see if we can load at __TARGET_BASE_XMHF
     _XDPRINTF_("xmhf-bootloader: %s:%u\n", __FUNCTION__, __LINE__);
-	sl_rt_size = (mod_array[0].mod_start - __TARGET_BASE_BOOTLOADER) - __TARGET_SIZE_BOOTLOADER;
+	//sl_rt_size = (mod_array[0].mod_start - __TARGET_BASE_BOOTLOADER) - __TARGET_SIZE_BOOTLOADER;
 	hypervisor_image_baseaddress = dealwithE820(mbi, __TARGET_SIZE_XMHF);
-	_XDPRINTF_("xmhf-bootloader: XMHF binary base=%08x, actual size=%08x bytes, reserved size=%08x bytes\n", hypervisor_image_baseaddress, sl_rt_size, __TARGET_SIZE_XMHF);
+	_XDPRINTF_("xmhf-bootloader: XMHF binary base=%08x, reserved size=%08x bytes\n", hypervisor_image_baseaddress, __TARGET_SIZE_XMHF);
 
 	//sanity check memory map and limits; ensure we are loading at 256M
 	HALT_ON_ERRORCOND( (hypervisor_image_baseaddress == __TARGET_BASE_XMHF) );
@@ -925,10 +925,10 @@ void cstartup(multiboot_info_t *mbi){
 	//sizeof ( XMHF bootloader) = 2MB
 	//sizeof ( XMHF hypervisor binary + guest OS boot-sector + SINIT module (if any) + hypapp specific modules (if any) )
 	//should not be greater than 224MB since we will be loading our system at absolute address 256MB and our current memcpy does not tackle overlaps
-	if ( mod_array[mods_count-1].mod_end >= __TARGET_BASE_XMHF ){
-		_XDPRINTF_("XMHF boot-loader: Halting! XMHF load memory map limits violated. TOMM=0x%08x\n", mod_array[mods_count-1].mod_end);
-		HALT();
-	}
+	//if ( mod_array[mods_count-1].mod_end >= __TARGET_BASE_XMHF ){
+	//	_XDPRINTF_("XMHF boot-loader: Halting! XMHF load memory map limits violated. TOMM=0x%08x\n", mod_array[mods_count-1].mod_end);
+	//	HALT();
+	//}
 
 	//SL+core memory map is from 0x10000000-0x1D000000
 	//if(sl_rt_size > (__TARGET_BASE_XMHFHYPAPP - __TARGET_BASE_SL) ){
@@ -943,10 +943,10 @@ void cstartup(multiboot_info_t *mbi){
 	//	}
 
 
-    _XDPRINTF_("xmhf-bootloader: %s:%u\n", __FUNCTION__, __LINE__);
-    //relocate XMHF hypervisor binary to preferred load address
-    memcpy((void*)__TARGET_BASE_XMHF, (void*)(__TARGET_BASE_BOOTLOADER+__TARGET_SIZE_BOOTLOADER), sl_rt_size);
-    _XDPRINTF_("xmhf-bootloader: %s:%u\n", __FUNCTION__, __LINE__);
+    //_XDPRINTF_("xmhf-bootloader: %s:%u\n", __FUNCTION__, __LINE__);
+    ////relocate XMHF hypervisor binary to preferred load address
+    // memcpy((void*)__TARGET_BASE_XMHF, (void*)(__TARGET_BASE_BOOTLOADER+__TARGET_SIZE_BOOTLOADER), sl_rt_size);
+    //_XDPRINTF_("xmhf-bootloader: %s:%u\n", __FUNCTION__, __LINE__);
 
 
     /* runtime */
@@ -1139,7 +1139,7 @@ void mp_cstartup (BOOTVCPU *vcpu){
 
         _XDPRINTF_("\nBSP(0x%02x): APs ready, doing DRTM...", vcpu->id);
         //do_drtm(vcpu, hypervisor_image_baseaddress, sl_rt_size); // this function will not return
-        do_drtm(vcpu, __TARGET_BASE_SL, sl_rt_size); // this function will not return
+        do_drtm(vcpu, __TARGET_BASE_SL, __TARGET_SIZE_SL); // this function will not return
 
         _XDPRINTF_("\nBSP(0x%02x): FATAL, should never be here!", vcpu->id);
         HALT();

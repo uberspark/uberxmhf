@@ -25,15 +25,9 @@ sudo apt-get install gcc-multilib
 --------------------------------------------------
 
 Clang
-    Version 3.5RC4 64-bit - available at: http://llvm.org/pre-releases/3.5/rc4/clang+llvm-3.5.0-rc4-x86_64-linux-gnu-ubuntu-14.04.tar.xz
+    Version 3.5 64-bit - available at:
+    http://llvm.org/releases/3.5.0/clang+llvm-3.5.0-x86_64-linux-gnu-ubuntu-14.04.tar.xz
     Untar and setup PATH to point to clang "bin" directory; XMHF uses Clang as the C compiler.
-
-    Note: 3.5RC4 64-bit by default does not include the 32-bit compiler RT library. So use
-  	Version 3.3 32-bit - available at: http://llvm.org/releases/3.3/clang+llvm-3.3-i386-debian6.tar.bz2
-  	and copy the 3.3 32-bit RT library to the 3.5RC4 lib folder:
-
-    cp clang+llvm-3.3-i386-debian6/lib/clang/3.3/lib/linux/libclang_rt.full-i386.a clang+llvm-3.5.0-rc4-x86_64-linux-gnu/lib/clang/3.5.0/lib/linux/.
-
 
 Add <srcroot>/tools/arch/<target triad> to the PATH so the build harness can find required supporting scripts
 for the target architecture (see Section 5 below)
@@ -47,43 +41,40 @@ for the target architecture (see Section 5 below)
 
 <srcroot>/include							-- top-level XMHF headers
 <srcroot>/include/arch						-- arch. specific headers
+<srcroot>/include/xmhfhw/   				-- XMHF hardware backend headers
 
 <srcroot>/xmhf-bootloader					-- XMHF bootloader
 
 <srcroot>/xmhf-libs							-- various "mini" libraries
 
-<srcroot>/xmhf-libs/libxmhfhw				-- XMHF hardware backend library
 <srcroot>/xmhf-libs/libxmhfc				-- mini C runtime library (memcpy, strcpy etc.)
 <srcroot>/xmhf-libs/libxmhfcrypto 			-- small crypto library (SHA-1, AES etc.)
 <srcroot>/xmhf-libs/libxmhfutil 			-- various general purpose utilities (e.g., command line parsing)
-<srcroot>/xmhf-libs/libtv_utpm  			-- micro software TPM library (still a work in progress)
 
-<srcroot>/xmhf-slabs/						-- houses XMHF framework modules
-
-<srcroot>/xmhf-slabs/shared					-- shared modules that are part of every other XMHF module
+<srcroot>/xmhf-slabs/						-- houses XMHF slabs
+<srcroot>/xmhf-slabs/include				-- houses XMHF slab headers
 
 <srcroot>/xmhf-slabs/hypapps				-- individual hypapp modules
 <srcroot>/xmhf-slabs/hypapps/xhhyperdep		-- hyper Data Execution Prevention (DEP) hypapp
+<srcroot>/xmhf-slabs/hypapps/xhsyscalllog	-- syscall logger hypapp
+<srcroot>/xmhf-slabs/hypapps/xhssteptrace	-- single-step trace real-time trace comparison hypapp
+<srcroot>/xmhf-slabs/hypapps/xhapprovexec	-- approved code execution hypapp
 
-<srcroot>/xmhf-slabs/xmhf-core				-- XMHF core modules
-<srcroot>/xmhf-slabs/xmhf-core/include		-- XMHF core specific headers
-<srcroot>/xmhf-slabs/xmhf-core/xcprimeon	-- core initialization module
-<srcroot>/xmhf-slabs/xmhf-core/xcsmp		-- core SMP support module
+<srcroot>/xmhf-slabs/xmhf-core				-- XMHF core slabs
+<srcroot>/xmhf-slabs/xmhf-core/xcinit   	-- core initialization module
 <srcroot>/xmhf-slabs/xmhf-core/xcexhub		-- core exception handling module
-<srcroot>/xmhf-slabs/xmhf-core/xcrichguest	-- core rich-guest support module
 <srcroot>/xmhf-slabs/xmhf-core/xcihub		-- core intercept handling module
-<srcroot>/xmhf-slabs/xmhf-core/xcapi		-- core API module
 
 
 5. Building:
 ------------
 
-The following demonstrates building the XMHF core and hyperdep hypapp
+The following demonstrates building the XMHF core with all the above slabs
 
 	a) Building XMHF core: done while in <srcroot>
 
 		./autogen.sh
-		./configure --with-target-cpu=x86 --with-target-container=vmx --with-target-platform=x86pc --with-xmhf-hypapps=xmhf-slabs/hypapps/xhhyperdep
+		./configure --prefix=/home/<yourusername>/<yourworkingfolder>
 		make
 
 	If all went well <srcroot>/_objects/xmhf-<target triad>.bin.gz will be created

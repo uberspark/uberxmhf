@@ -44,50 +44,77 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-// XMHF hypapp callback declarations
-// author: amit vasudevan (amitvasudevan@acm.org)
+#include <xmhf.h>
+#include <xmhf-debug.h>
 
-#ifndef __XMHF_HYPAPP_H__
-#define __XMHF_HYPAPP_H__
+#include <xctestslab1.h>
 
-#ifndef __ASSEMBLY__
+//////
+XMHF_SLAB(xctestslab1)
 
-//hypapp sub-interface ids
-#define XMHF_SLAB_HYPAPP_FNINITIALIZATION					1
-#define XMHF_SLAB_HYPAPP_FNINITIALIZATION_SIZE				(sizeof(context_desc_t)+sizeof(hypapp_env_block_t))
+/*
+ * slab code
+ *
+ * author: amit vasudevan (amitvasudevan@acm.org)
+ */
 
-#define XMHF_SLAB_HYPAPP_FNHANDLEHYPERCALL					2
-#define XMHF_SLAB_HYPAPP_FNHANDLEHYPERCALL_SIZE				(sizeof(context_desc_t)+sizeof(u64)+sizeof(u64))
 
-#define XMHF_SLAB_HYPAPP_FNHANDLEINTERCEPTHPTFAULT			3
-#define XMHF_SLAB_HYPAPP_FNHANDLEINTERCEPTHPTFAULT_SIZE		(sizeof(context_desc_t)+sizeof(u64)+sizeof(u64)+sizeof(u64))
+/*
+static u8 _ae_page_buffer_src[PAGE_SIZE_4K];
 
-#define XMHF_SLAB_HYPAPP_FNHANDLEINTERCEPTTRAP				4
-#define XMHF_SLAB_HYPAPP_FNHANDLEINTERCEPTTRAP_SIZE			(sizeof(context_desc_t)+sizeof(xc_hypapp_arch_param_t))
+static u8 _ae_page_buffer[PAGE_SIZE_4K];
 
-#define XMHF_SLAB_HYPAPP_FNSHUTDOWN							5
-#define XMHF_SLAB_HYPAPP_FNSHUTDOWN_SIZE					(sizeof(context_desc_t))
+static void _xcinit_dotests(u64 cpuid){
 
-#define XMHF_SLAB_HYPAPP_FNHANDLEQUIESCE					6
-#define XMHF_SLAB_HYPAPP_FNHANDLEQUIESCE_SIZE				(sizeof(context_desc_t))
+    {
+        u64 tscbefore, tscafter, tscavg=0;
+        u32 iterations=128;
+        u32 i;
+        u8 digest[SHA_DIGEST_LENGTH];
 
-//generic catch-all app return codes
-#define APP_SUCCESS     		(0x1)
-#define APP_ERROR				(0x0)
+        _XDPRINTF_("%s: proceeding with test...\n", __FUNCTION__);
 
-//emhf app constant definitions
-#define APP_TRAP_CHAIN   0xA0
-#define APP_TRAP_SKIP    0xA1
-#define APP_INIT_SUCCESS        0x0
-#define APP_INIT_FAIL           0xFF
 
-u32 xmhf_hypapp_initialization(context_desc_t context_desc, hypapp_env_block_t hypappenvb);
-u32 xmhf_hypapp_handlehypercall(context_desc_t context_desc, u64 hypercall_id, u64 hypercall_param);
-u32 xmhf_hypapp_handleintercept_hptfault(context_desc_t context_desc, u64 gpa, u64 gva, u64 error_code);
-u32 xmhf_hypapp_handleintercept_trap(context_desc_t context_desc, xc_hypapp_arch_param_t xc_hypapp_arch_param);
-void xmhf_hypapp_handleshutdown(context_desc_t context_desc);
-void xmhf_hypapp_handlequiesce(context_desc_t context_desc);
 
-#endif //__ASSEMBLY__
+        for(i=0; i < iterations; i++){
+            tscbefore = rdtsc64();
 
-#endif	// __XMHF_HYPAPP_H__
+            {
+
+                //memcpy(_ae_page_buffer, &_ae_page_buffer_src, PAGE_SIZE_4K);
+                //compute SHA-1 of the local page buffer
+                sha1_buffer(&_ae_page_buffer, PAGE_SIZE_4K, digest);
+
+                //XMHF_SLAB_CALL(hictestslab2, XMHF_HYP_SLAB_HICTESTSLAB2, NULL, 0, NULL, 0);
+
+            }
+
+            tscafter = rdtsc64();
+            tscavg += (tscafter - tscbefore);
+        }
+
+        tscavg = tscavg / iterations;
+
+        _XDPRINTF_("%s: clock cycles for test = %u\n", __FUNCTION__, (u32)tscavg);
+
+    }
+
+}*/
+
+
+void xctestslab1_interface(slab_input_params_t *iparams, u64 iparams_size, slab_output_params_t *oparams, u64 oparams_size, u64 src_slabid, u64 cpuid){
+    u64 *inputval = (u64 *)iparams;
+    u64 *outputval = (u64 *)oparams;
+
+	_XDPRINTF_("%s[%u]: Got control: RSP=%016llx\n",
+                __FUNCTION__, (u32)cpuid, read_rsp());
+
+	_XDPRINTF_("%s[%u]: inputval=%x\n",
+                __FUNCTION__, (u32)cpuid, *inputval);
+
+    *outputval = 0xBBCCDDEE;
+
+    return;
+}
+
+
