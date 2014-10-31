@@ -44,7 +44,7 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-//xmhf.h - main XMHF core header file 
+//xmhf.h - main XMHF core header file
 // this orchestrates the inclusion of other core component specific
 // headers
 //author: amit vasudevan (amitvasudevan@acm.org)
@@ -52,8 +52,92 @@
 #ifndef __XMHF_CORE_H_
 #define __XMHF_CORE_H_
 
-#include <_xctypes.h>			//core specific data types
-#include <_xchypapp.h>			//hypapp callback declarations
+#define XC_HYPAPPCB_CHAIN                       (1)
+#define XC_HYPAPPCB_NOCHAIN                     (2)
 
+#define XC_HYPAPPCB_INITIALIZE                  (1)
+#define XC_HYPAPPCB_HYPERCALL                   (2)
+#define XC_HYPAPPCB_MEMORYFAULT                 (3)
+#define XC_HYPAPPCB_SHUTDOWN                    (4)
+#define XC_HYPAPPCB_TRAP_IO                     (5)
+#define XC_HYPAPPCB_TRAP_INSTRUCTION            (6)
+#define XC_HYPAPPCB_TRAP_EXCEPTION              (7)
+
+
+#define XC_HYPAPPCB_TRAP_INSTRUCTION_CPUID      (0x60)
+#define XC_HYPAPPCB_TRAP_INSTRUCTION_WRMSR      (0x61)
+#define XC_HYPAPPCB_TRAP_INSTRUCTION_RDMSR      (0x62)
+
+
+typedef struct {
+    u64 cbtype;
+    u64 cbqual;
+    u64 guest_slab_index;
+}__attribute__((packed)) xc_hypappcb_inputparams_t;
+
+
+typedef struct {
+    u64 cbresult;
+}__attribute__((packed)) xc_hypappcb_outputparams_t;
+
+
+typedef struct {
+    u64 xmhfhic_slab_index;
+    u64 cbmask;
+} __attribute__((packed)) xc_hypapp_info_t;
+
+
+#define XC_HYPAPPCB_MASK(x) (1 << x)
+
+
+
+static xc_hypapp_info_t _xcihub_hypapp_info_table[] = {
+    {
+        XMHF_HYP_SLAB_XHHYPERDEP,
+        (XC_HYPAPPCB_MASK(XC_HYPAPPCB_HYPERCALL) | XC_HYPAPPCB_MASK(XC_HYPAPPCB_MEMORYFAULT) | XC_HYPAPPCB_MASK(XC_HYPAPPCB_SHUTDOWN) )
+    },
+
+    {
+        XMHF_HYP_SLAB_XHAPPROVEXEC,
+        (XC_HYPAPPCB_MASK(XC_HYPAPPCB_HYPERCALL) | XC_HYPAPPCB_MASK(XC_HYPAPPCB_MEMORYFAULT) | XC_HYPAPPCB_MASK(XC_HYPAPPCB_SHUTDOWN) )
+    },
+
+    {
+        XMHF_HYP_SLAB_XHSSTEPTRACE,
+        (XC_HYPAPPCB_MASK(XC_HYPAPPCB_HYPERCALL) | XC_HYPAPPCB_MASK(XC_HYPAPPCB_TRAP_EXCEPTION) | XC_HYPAPPCB_MASK(XC_HYPAPPCB_SHUTDOWN) )
+    },
+
+    {
+        XMHF_HYP_SLAB_XHSYSCALLLOG,
+        (XC_HYPAPPCB_MASK(XC_HYPAPPCB_HYPERCALL) | XC_HYPAPPCB_MASK(XC_HYPAPPCB_MEMORYFAULT) | XC_HYPAPPCB_MASK(XC_HYPAPPCB_TRAP_INSTRUCTION) | XC_HYPAPPCB_MASK(XC_HYPAPPCB_SHUTDOWN) )
+    },
+
+};
+
+#define HYPAPP_INFO_TABLE_NUMENTRIES (sizeof(_xcihub_hypapp_info_table)/sizeof(_xcihub_hypapp_info_table[0]))
+
+
+static inline u64 xc_hcbinvoke(u64 cbtype, u64 cbqual, u64 guest_slab_index){
+    u64 status = XC_HYPAPPCB_CHAIN;
+    u64 i;
+    xc_hypappcb_inputparams_t hcb_iparams;
+    xc_hypappcb_outputparams_t hcb_oparams;
+
+    hcb_iparams.cbtype = cbtype;
+    hcb_iparams.cbqual = cbqual;
+    hcb_iparams.guest_slab_index = guest_slab_index;
+
+    for(i=0; i < HYPAPP_INFO_TABLE_NUMENTRIES; i++){
+        if(_xcihub_hypapp_info_table[i].cbmask & XC_HYPAPPCB_MASK(cbtype)){
+            XMHF_SLAB_CALL(hypapp, _xcihub_hypapp_info_table[i].xmhfhic_slab_index, &hcb_iparams, sizeof(hcb_iparams), &hcb_oparams, sizeof(hcb_oparams));
+            if(hcb_oparams.cbresult == XC_HYPAPPCB_NOCHAIN){
+                status = XC_HYPAPPCB_NOCHAIN;
+                break;
+            }
+        }
+    }
+
+    return status;
+}
 
 #endif /* __XMHF_CORE_H_ */

@@ -293,7 +293,7 @@ static txt_heap_t *init_txt_heap(void *ptab_base, acm_hdr_t *sinit,
        AC module error : acm_type=1, progress=07, error=a
        "page is not covered by DPR nor PMR regions" */
     {
-		extern u32 sl_rt_size;	//XXX: Ugly hack to bring in SL + runtime size; ideally this should be passed in as another parameter
+		//extern u32 sl_rt_size;	//XXX: Ugly hack to bring in SL + runtime size; ideally this should be passed in as another parameter
 		(void)mle_size;
 		os_sinit_data->vtd_pmr_lo_base = (u64)__TARGET_BASE_SL;
 		os_sinit_data->vtd_pmr_lo_size = (u64)__TARGET_SIZE_SL;

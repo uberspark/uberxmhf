@@ -44,35 +44,22 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-#include <xmhf.h>
-#include <xmhf-debug.h>
-
-#include <xctestslab1.h>
-
-//////
-XMHF_SLAB(xctestslab1)
 
 /*
- * slab code
  *
- * author: amit vasudevan (amitvasudevan@acm.org)
+ *  hyperdep hypapp slab decls.
+ *
+ *  author: amit vasudevan (amitvasudevan@acm.org)
  */
 
+#ifndef __XHSSTEPTRACE_H__
+#define __XHSSTEPTRACE_H__
 
 
-void xctestslab1_interface(slab_input_params_t *iparams, u64 iparams_size, slab_output_params_t *oparams, u64 oparams_size, u64 src_slabid, u64 cpuid){
-    u64 *inputval = (u64 *)iparams;
-    u64 *outputval = (u64 *)oparams;
+#ifndef __ASSEMBLY__
 
-	_XDPRINTF_("%s[%u]: Got control: RSP=%016llx\n",
-                __FUNCTION__, (u32)cpuid, read_rsp());
+void xhssteptrace_interface(slab_input_params_t *iparams, u64 iparams_size, slab_output_params_t *oparams, u64 oparams_size, u64 src_slabid, u64 cpuindex);
 
-	_XDPRINTF_("%s[%u]: inputval=%x\n",
-                __FUNCTION__, (u32)cpuid, *inputval);
+#endif	//__ASSEMBLY__
 
-    *outputval = 0xBBCCDDEE;
-
-    return;
-}
-
-
+#endif //__XHSSTEPTRACE_H__

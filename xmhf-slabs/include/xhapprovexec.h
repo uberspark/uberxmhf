@@ -44,18 +44,22 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
+
 /*
- * data used by both HIC initialization and runtime
  *
- * author: amit vasudevan (amitvasudevan@acm.org)
+ *  hyperdep hypapp slab decls.
+ *
+ *  author: amit vasudevan (amitvasudevan@acm.org)
  */
 
-#include <xmhf.h>
+#ifndef __XHAPPROVEXEC_H__
+#define __XHAPPROVEXEC_H__
 
 
-//slab_header_t _slab_table[XMHF_HIC_MAX_SLABS] = {0};
-__attribute__((aligned(4096))) slab_info_t _xmhfhic_common_slab_info_table[XMHF_HIC_MAX_SLABS] = {0};
+#ifndef __ASSEMBLY__
 
-slab_physmem_extent_t _xmhfhic_common_hic_physmem_extents[HIC_SLAB_PHYSMEM_MAXEXTENTS] = {0};
+void xhapprovexec_interface(slab_input_params_t *iparams, u64 iparams_size, slab_output_params_t *oparams, u64 oparams_size, u64 src_slabid, u64 cpuindex);
 
-__attribute__(( aligned(2097152) )) u64 _xmhfhic_common_slab_archdata_mempgtbl_pml4t[XMHF_HIC_MAX_SLABS][PAE_MAXPTRS_PER_PML4T];
+#endif	//__ASSEMBLY__
+
+#endif //__XHAPPROVEXEC_H__

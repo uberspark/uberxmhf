@@ -117,7 +117,7 @@
 //======================================================================
 
 #define	XMHF_SLAB_STACKSIZE		(16384)
-
+/*
 //#define XMHF_SLAB_NUMBEROFSLABS			14
 #define XMHF_SLAB_NUMBEROFSLABS			2
 
@@ -132,5 +132,6 @@
 #define XMHF_SLAB_HYPAPP_HYPERDEP_REGION_START	0x18000000
 
 #define XMHF_SLAB_NEXT_REGION_START		0x19000000
+*/
 
 #endif //__XMHF_CONFIG_H__

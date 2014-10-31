@@ -45,13 +45,55 @@
  */
 
 /*
- * slab trampoline that is mapped into every slab memory view
+ * HIC trampoline and stubs
  *
  * author: amit vasudevan (amitvasudevan@acm.org)
  */
 
 #include <xmhf.h>
 #include <xmhf-debug.h>
+
+
+bool __xmhfhic_callcaps(u64 src_slabid, u64 dst_slabid){
+    if(_xmhfhic_common_slab_info_table[src_slabid].slab_callcaps & HIC_SLAB_CALLCAP(dst_slabid))
+        return true;
+    else
+        return false;
+}
+
+
+void __xmhfhic_safepush(u64 cpuid, u64 src_slabid, u64 dst_slabid, u64 hic_calltype, u64 return_address,
+                        slab_output_params_t *oparams, slab_output_params_t *newoparams, u64 oparams_size, u64 iparams_size){
+    u64 safestack_index =  __xmhfhic_safestack_indices[(u32)cpuid];
+    __xmhfhic_safestack[(u32)cpuid][safestack_index].src_slabid = src_slabid;
+    __xmhfhic_safestack[(u32)cpuid][safestack_index].dst_slabid = dst_slabid;
+    __xmhfhic_safestack[(u32)cpuid][safestack_index].hic_calltype = hic_calltype;
+    __xmhfhic_safestack[(u32)cpuid][safestack_index].return_address = return_address;
+    __xmhfhic_safestack[(u32)cpuid][safestack_index].oparams = oparams;
+    __xmhfhic_safestack[(u32)cpuid][safestack_index].newoparams = newoparams;
+    __xmhfhic_safestack[(u32)cpuid][safestack_index].oparams_size = oparams_size;
+    __xmhfhic_safestack[(u32)cpuid][safestack_index].iparams_size = iparams_size;
+
+    safestack_index++;
+    __xmhfhic_safestack_indices[(u32)cpuid] = safestack_index;
+}
+
+void __xmhfhic_safepop(u64 cpuid, u64 *src_slabid, u64 *dst_slabid, u64 *hic_calltype, u64 *return_address,
+                       slab_output_params_t **oparams, slab_output_params_t **newoparams, u64 *oparams_size, u64 *iparams_size){
+    u64 safestack_index =  __xmhfhic_safestack_indices[(u32)cpuid]-1;
+    *src_slabid = __xmhfhic_safestack[(u32)cpuid][safestack_index].src_slabid;
+    *dst_slabid = __xmhfhic_safestack[(u32)cpuid][safestack_index].dst_slabid;
+    *hic_calltype = __xmhfhic_safestack[(u32)cpuid][safestack_index].hic_calltype;
+    *return_address = __xmhfhic_safestack[(u32)cpuid][safestack_index].return_address;
+    *oparams = __xmhfhic_safestack[(u32)cpuid][safestack_index].oparams;
+    *newoparams = __xmhfhic_safestack[(u32)cpuid][safestack_index].newoparams;
+    *oparams_size = __xmhfhic_safestack[(u32)cpuid][safestack_index].oparams_size;
+    *iparams_size = __xmhfhic_safestack[(u32)cpuid][safestack_index].iparams_size;
+
+    __xmhfhic_safestack_indices[(u32)cpuid] = safestack_index;
+}
+
+
 
 
 //HIC runtime trampoline stub
@@ -433,15 +475,15 @@ void __xmhfhic_rtm_trampoline(u64 hic_calltype, slab_input_params_t *iparams, u6
     u8 __paramsbuffer[1024];
 
 
-    _XDPRINTF_("%s[%u]: Trampoline got control: RSP=%016llx\n",
-                    __FUNCTION__, (u32)cpuid, read_rsp());
+    //_XDPRINTF_("%s[%u]: Trampoline got control: RSP=%016llx\n",
+    //                __FUNCTION__, (u32)cpuid, read_rsp());
 
-    _XDPRINTF_("%s[%u]: Trampoline got control: hic_calltype=%x, iparams=%x, iparams_size=%u, \
-               oparams=%x, oparams_size=%u, dst_slabid=%x, src_slabid=%x, cpuid=%x, return_address=%016llx \
-               return_rsp=%x\n",
-                    __FUNCTION__, (u32)cpuid,
-               hic_calltype, iparams, iparams_size, oparams, oparams_size,
-               dst_slabid, src_slabid, cpuid, return_address, return_rsp);
+    //_XDPRINTF_("%s[%u]: Trampoline got control: hic_calltype=%x, iparams=%x, iparams_size=%u, \
+    //           oparams=%x, oparams_size=%u, dst_slabid=%x, src_slabid=%x, cpuid=%x, return_address=%016llx \
+    //           return_rsp=%x\n",
+    //                __FUNCTION__, (u32)cpuid,
+    //           hic_calltype, iparams, iparams_size, oparams, oparams_size,
+    //           dst_slabid, src_slabid, cpuid, return_address, return_rsp);
 
     switch(hic_calltype){
 
@@ -493,11 +535,11 @@ void __xmhfhic_rtm_trampoline(u64 hic_calltype, slab_input_params_t *iparams, u6
 
                     //push cpuid, src_slabid, dst_slabid, hic_calltype, return_address, oparams, new oparams and oparams_size tuple to
                     //safe stack
-                    _XDPRINTF_("%s[%u]: safepush: {cpuid: %016llx, srcsid: %u, dstsid: %u, ctype: %x, ra=%016llx, \
-                               op=%016llx, newop=%016llx, opsize=%u\n",
-                            __FUNCTION__, (u32)cpuid,
-                               cpuid, src_slabid, dst_slabid, hic_calltype, return_address,
-                               oparams, newoparams, oparams_size);
+                    //_XDPRINTF_("%s[%u]: safepush: {cpuid: %016llx, srcsid: %u, dstsid: %u, ctype: %x, ra=%016llx, \
+                    //           op=%016llx, newop=%016llx, opsize=%u\n",
+                    //        __FUNCTION__, (u32)cpuid,
+                    //           cpuid, src_slabid, dst_slabid, hic_calltype, return_address,
+                    //           oparams, newoparams, oparams_size);
 
                     __xmhfhic_safepush(cpuid, src_slabid, dst_slabid, hic_calltype, return_address, oparams, newoparams, oparams_size, iparams_size);
 
@@ -547,8 +589,8 @@ void __xmhfhic_rtm_trampoline(u64 hic_calltype, slab_input_params_t *iparams, u6
                 case HIC_SLAB_X86VMXX86PC_GUEST:{
                     u32 errorcode;
 
-                    _XDPRINTF_("%s[%u]: going to invoke guest slab %u\n",
-                               __FUNCTION__, (u32)cpuid, dst_slabid);
+                    //_XDPRINTF_("%s[%u]: going to invoke guest slab %u\n",
+                    //           __FUNCTION__, (u32)cpuid, dst_slabid);
                     xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VPID, dst_slabid+1);
                     xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_EPT_POINTER_FULL, _xmhfhic_common_slab_info_table[dst_slabid].archdata.mempgtbl_cr3);
                     xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_RSP, _xmhfhic_common_slab_info_table[dst_slabid].archdata.slabtos[(u32)cpuid]);
@@ -610,11 +652,11 @@ void __xmhfhic_rtm_trampoline(u64 hic_calltype, slab_input_params_t *iparams, u6
             __xmhfhic_safepop(cpuid, &elem.src_slabid, &elem.dst_slabid, &elem.hic_calltype, &elem.return_address,
                                 &elem.oparams, &elem.newoparams, &elem.oparams_size, &elem.iparams_size);
 
-            _XDPRINTF_("%s[%u]: safepop: {cpuid: %016llx, srcsid: %u, dstsid: %u, ctype: %x, ra=%016llx, \
-                       op=%016llx, newop=%016llx, opsize=%u\n",
-                    __FUNCTION__, (u32)cpuid,
-                       cpuid, elem.src_slabid, elem.dst_slabid, elem.hic_calltype, elem.return_address,
-                       elem.oparams, elem.newoparams, elem.oparams_size);
+            //_XDPRINTF_("%s[%u]: safepop: {cpuid: %016llx, srcsid: %u, dstsid: %u, ctype: %x, ra=%016llx, \
+            //           op=%016llx, newop=%016llx, opsize=%u\n",
+            //        __FUNCTION__, (u32)cpuid,
+            //           cpuid, elem.src_slabid, elem.dst_slabid, elem.hic_calltype, elem.return_address,
+            //           elem.oparams, elem.newoparams, elem.oparams_size);
 
             //check to ensure this SLABRET is paired with a prior SLABCALL
             if ( !((elem.src_slabid == dst_slabid) && (elem.dst_slabid == src_slabid) && (elem.hic_calltype ==XMHF_HIC_SLABCALL)) ){
@@ -716,11 +758,11 @@ void __xmhfhic_rtm_trampoline(u64 hic_calltype, slab_input_params_t *iparams, u6
 
                 //push cpuid, src_slabid, dst_slabid, hic_calltype, return_address, iparams, new iparams and iparams_size tuple to
                 //safe stack
-                _XDPRINTF_("%s[%u]: safepush: {cpuid: %016llx, srcsid: %u, dstsid: %u, ctype: %x, ra=%016llx, \
-                           ip=%016llx, newip=%016llx, ipsize=%u\n",
-                        __FUNCTION__, (u32)cpuid,
-                           cpuid, src_slabid, dst_slabid, hic_calltype, return_address,
-                           iparams, newiparams, iparams_size);
+                //_XDPRINTF_("%s[%u]: safepush: {cpuid: %016llx, srcsid: %u, dstsid: %u, ctype: %x, ra=%016llx, \
+                //           ip=%016llx, newip=%016llx, ipsize=%u\n",
+                //        __FUNCTION__, (u32)cpuid,
+                //           cpuid, src_slabid, dst_slabid, hic_calltype, return_address,
+                //           iparams, newiparams, iparams_size);
 
                 __xmhfhic_safepush(cpuid, src_slabid, dst_slabid, hic_calltype, return_address, iparams, newiparams, 0, iparams_size);
 
@@ -783,11 +825,11 @@ void __xmhfhic_rtm_trampoline(u64 hic_calltype, slab_input_params_t *iparams, u6
             __xmhfhic_safepop(cpuid, &elem.src_slabid, &elem.dst_slabid, &elem.hic_calltype, &elem.return_address,
                                 &elem.oparams, &elem.newoparams, &elem.oparams_size, &elem.iparams_size);
 
-            _XDPRINTF_("%s[%u]: safepop: {cpuid: %016llx, srcsid: %u, dstsid: %u, ctype: %x, ra=%016llx, \
-                       op=%016llx, newop=%016llx, opsize=%u\n",
-                    __FUNCTION__, (u32)cpuid,
-                       cpuid, elem.src_slabid, elem.dst_slabid, elem.hic_calltype, elem.return_address,
-                       elem.oparams, elem.newoparams, elem.oparams_size);
+            //_XDPRINTF_("%s[%u]: safepop: {cpuid: %016llx, srcsid: %u, dstsid: %u, ctype: %x, ra=%016llx, \
+            //           op=%016llx, newop=%016llx, opsize=%u\n",
+            //        __FUNCTION__, (u32)cpuid,
+            //           cpuid, elem.src_slabid, elem.dst_slabid, elem.hic_calltype, elem.return_address,
+            //           elem.oparams, elem.newoparams, elem.oparams_size);
 
             //check to ensure this SLABRETEXCEPTION is paired with a prior SLABCALLEXCEPTION
             if ( !((elem.src_slabid == dst_slabid) && (elem.dst_slabid == src_slabid) && (elem.hic_calltype ==XMHF_HIC_SLABCALLEXCEPTION)) ){
@@ -866,8 +908,8 @@ void __xmhfhic_rtm_trampoline(u64 hic_calltype, slab_input_params_t *iparams, u6
             //force destination slab to be the intercept slab
             dst_slabid = XMHF_HYP_SLAB_XCIHUB;
 
-            _XDPRINTF_("%s[%u]: Trampoline Intercept call\n",
-                    __FUNCTION__, (u32)cpuid, read_rsp());
+            //_XDPRINTF_("%s[%u]: Trampoline Intercept call\n",
+            //        __FUNCTION__, (u32)cpuid, read_rsp());
 
             //copy iparams (CPU GPR state) into arch. data for cpuid
             memcpy(&__xmhfhic_x86vmx_archdata[(u32)cpuid].vmx_gprs,
@@ -876,9 +918,9 @@ void __xmhfhic_rtm_trampoline(u64 hic_calltype, slab_input_params_t *iparams, u6
 
             //push cpuid, src_slabid, dst_slabid, hic_calltype tuple to
             //safe stack
-            _XDPRINTF_("%s[%u]: safepush: {cpuid: %016llx, srcsid: %u, dstsid: %u, ctype: %x\n",
-                    __FUNCTION__, (u32)cpuid,
-                       cpuid, src_slabid, dst_slabid, hic_calltype);
+            //_XDPRINTF_("%s[%u]: safepush: {cpuid: %016llx, srcsid: %u, dstsid: %u, ctype: %x\n",
+            //        __FUNCTION__, (u32)cpuid,
+            //           cpuid, src_slabid, dst_slabid, hic_calltype);
 
             __xmhfhic_safepush(cpuid, src_slabid, dst_slabid, hic_calltype, 0, 0, 0, 0, 0);
 
@@ -952,9 +994,9 @@ void __xmhfhic_rtm_trampoline(u64 hic_calltype, slab_input_params_t *iparams, u6
             __xmhfhic_safepop(cpuid, &elem.src_slabid, &elem.dst_slabid, &elem.hic_calltype, &elem.return_address,
                                 &elem.oparams, &elem.newoparams, &elem.oparams_size, &elem.iparams_size);
 
-            _XDPRINTF_("%s[%u]: safepop: {cpuid: %016llx, srcsid: %u, dstsid: %u, ctype: %x\n",
-                    __FUNCTION__, (u32)cpuid,
-                       cpuid, elem.src_slabid, elem.dst_slabid, elem.hic_calltype);
+            //_XDPRINTF_("%s[%u]: safepop: {cpuid: %016llx, srcsid: %u, dstsid: %u, ctype: %x\n",
+            //        __FUNCTION__, (u32)cpuid,
+            //           cpuid, elem.src_slabid, elem.dst_slabid, elem.hic_calltype);
 
             //check to ensure this SLABRETINTERCEPT is paired with a prior SLABCALLINTERCEPT
             if ( !((elem.src_slabid == dst_slabid) && (elem.dst_slabid == src_slabid) && (elem.hic_calltype ==XMHF_HIC_SLABCALLINTERCEPT)) ){
@@ -1027,163 +1069,5 @@ void __xmhfhic_rtm_trampoline(u64 hic_calltype, slab_input_params_t *iparams, u6
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-//////////////////////////////////////////////////////////////////////////////
-// HIC UAPI handler
-
-
-static void __xmhfhic_rtm_uapihandler_physmem(u64 uapicall_subnum, u64 iparams, u64 oparams, u64 cpuid){
-    _XDPRINTF_("%s[%u]: Got control...\n",
-                __FUNCTION__, (u32)cpuid);
-
-    switch(uapicall_subnum){
-        case XMHF_HIC_UAPI_PHYSMEM_PEEK:{
-            xmhf_hic_uapi_physmem_desc_t *pdesc = (xmhf_hic_uapi_physmem_desc_t *)iparams;
-            memcpy(pdesc->addr_to, pdesc->addr_from, pdesc->numbytes);
-        }
-        break;
-
-
-        case XMHF_HIC_UAPI_PHYSMEM_POKE:{
-            xmhf_hic_uapi_physmem_desc_t *pdesc = (xmhf_hic_uapi_physmem_desc_t *)iparams;
-            memcpy(pdesc->addr_to, pdesc->addr_from, pdesc->numbytes);
-        }
-        break;
-
-
-        default:
-            _XDPRINTF_("%s[%u]: Unknown cpustate subcall %x. Halting!\n",
-                    __FUNCTION__, (u32)cpuid, uapicall_subnum);
-            HALT();
-
-    }
-
-}
-
-
-
-static void __xmhfhic_rtm_uapihandler_cpustate(u64 uapicall_subnum, u64 iparams, u64 oparams, u64 cpuid){
-    _XDPRINTF_("%s[%u]: Got control...\n",
-                __FUNCTION__, (u32)cpuid);
-
-
-    switch(uapicall_subnum){
-        case XMHF_HIC_UAPI_CPUSTATE_VMREAD:{
-            //iparams = encoding (u64), oparams = memory (u64 *)
-            *(u64 *)oparams = xmhfhw_cpu_x86vmx_vmread(iparams);
-            /*asm volatile (
-                "movq %0, %%rax \r\n"
-                "movq %1, %%rsi \r\n"
-                "vmread %%rax, (%%rsi) \r\n"
-              :
-              : "m" (iparams), "m" (oparams)
-              : "rax", "rsi"
-            );*/
-
-        }
-        break;
-
-        case XMHF_HIC_UAPI_CPUSTATE_VMWRITE:{
-            //iparams = encoding (u64), oparams = value (u64)
-            xmhfhw_cpu_x86vmx_vmwrite(iparams, oparams);
-            /*asm volatile (
-                "movq %0, %%rax \r\n"
-                "movq %1, %%rsi \r\n"
-                "vmwrite %%rsi, %%rax \r\n"
-              :
-              : "m" (iparams), "m" (oparams)
-              : "rax", "rsi"
-            );*/
-
-        }
-        break;
-
-        case XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSREAD:{
-            //iparams = NULL, oparams = x86regs64_t *
-            memcpy(oparams, & __xmhfhic_x86vmx_archdata[(u32)cpuid].vmx_gprs,
-                   sizeof(x86regs64_t));
-        }
-        break;
-
-        case XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSWRITE:{
-            //iparams = x86regs64_t *, oparams=NULL
-            memcpy(& __xmhfhic_x86vmx_archdata[(u32)cpuid].vmx_gprs,
-                   iparams,
-                   sizeof(x86regs64_t));
-        }
-        break;
-
-
-        default:
-            _XDPRINTF_("%s[%u]: Unknown cpustate subcall %x. Halting!\n",
-                    __FUNCTION__, (u32)cpuid, uapicall_subnum);
-            HALT();
-    }
-
-}
-
-
-void __xmhfhic_rtm_uapihandler(u64 uapicall, u64 uapicall_num, u64 uapicall_subnum,
-                               u64 reserved, u64 iparams, u64 oparams,  u64 src_slabid, u64 cpuid, u64 return_address, u64 return_rsp){
-
-    _XDPRINTF_("%s[%u]: uapi handler got control: uapicall=%x, uapicall_num=%x, \
-               uapicall_subnum=%x, iparams=%x, oparams=%x, \
-               src_slabid=%u, cpuid=%x, return_address=%x, return_rsp=%x, cr3=%x\n",
-                __FUNCTION__, (u32)cpuid,
-               uapicall, uapicall_num, uapicall_subnum,
-               iparams, oparams,
-               src_slabid, cpuid, return_address, return_rsp, read_cr3());
-
-
-    switch(uapicall_num){
-        case XMHF_HIC_UAPI_CPUSTATE:
-            __xmhfhic_rtm_uapihandler_cpustate(uapicall_subnum, iparams, oparams, cpuid);
-            break;
-
-        case XMHF_HIC_UAPI_PHYSMEM:
-            __xmhfhic_rtm_uapihandler_physmem(uapicall_subnum, iparams, oparams, cpuid);
-            break;
-
-        default:
-            _XDPRINTF_("%s[%u]: Unknown UAPI call %x. Halting!\n",
-                    __FUNCTION__, (u32)cpuid, uapicall_num);
-            HALT();
-    }
-
-
-/*    asm volatile(
-                 "movq %0, %%rdx \r\n"
-                 "movq %1, %%rcx \r\n"
-                 "sysexitq \r\n"
-                 //"int $0x03 \r\n"
-                 //"1: jmp 1b \r\n"
-                :
-                : "m" (return_address),
-                  "m" (return_rsp)
-                : "rdx", "rcx"
-    );*/
-
-    return;
-}
 
 
