@@ -14,7 +14,7 @@ all: verifyhypapps
 .PHONY: verifyhypapps
 verifyhypapps:
 	@echo Verifying hypapps...
-
+	cbmc --ILP64 --bounds-check --pointer-check -D__XMHF_VERIFICATION__ $(VFLAGS) $(HYPAPP_HYPERDEP)
 
 .PHONY: clean
 clean:
