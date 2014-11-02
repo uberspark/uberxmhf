@@ -1,3 +1,4 @@
+
 /*
  * @XMHF_LICENSE_HEADER_START@
  *
@@ -44,63 +45,26 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-//error.h - error handling
-//author: amit vasudevan (amitvasudevan@acm.org)
+// hyperdep hypapp verification module
+// author: amit vasudevan (amitvasudevan@acm.org)
 
-#ifndef __XMHF_ERROR_H_
-#define __XMHF_ERROR_H_
+#include <xmhf.h>
+#include <xmhf-debug.h>
+#include <xmhf-core.h>
 
-
-#ifndef __ASSEMBLY__
-
-#if defined (__XMHF_VERIFICATION__)
-    #define HALT()
-    #define HALT_ON_ERRORCOND(_p)
-
-#else
-    #define HALT()	{ while(1); }
-    #define HALT_ON_ERRORCOND(_p) { if ( !(_p) ) { _XDPRINTF_("\nFatal: Halting! Condition '%s' failed, line %d, file %s\n\n", #_p , __LINE__, __FILE__); HALT(); } }
-#endif // defined
+#include <xhhyperdep.h>
 
 
 
-/* awesome trick from http://www.jaggersoft.com/pubs/CVu11_3.html */
-#define COMPILE_TIME_ASSERT(pred)               \
-  switch(0){case 0:case pred:;}
 
-/* Overflow functions from tboot-20101005/tboot/include/misc.h */
+void main(void){
+    xc_hypappcb_inputparams_t iparams;
+    xc_hypappcb_outputparams_t oparams;
 
-/*
- *  These three "plus overflow" functions take a "x" value
- *    and add the "y" value to it and if the two values are
- *    greater than the size of the variable type, they will
- *    overflow the type and end up with a smaller value and
- *    return TRUE - that they did overflow.  i.e.
- *    x + y <= variable type maximum.
- */
-static inline bool plus_overflow_u64(uint64_t x, uint64_t y)
-{
-    return ((((uint64_t)(~0)) - x) < y);
+    iparams.cbtype = nondet_u64();
+    iparams.cbqual = nondet_u64();
+    iparams.guest_slab_index = nondet_u64();
+
+    xhhyperdep_interface(&iparams, sizeof(iparams), &oparams, sizeof(oparams), 0, 0);
+
 }
-
-static inline bool plus_overflow_u32(uint32_t x, uint32_t y)
-{
-    return ((((uint32_t)(~0)) - x) < y);
-}
-
-/*
- * This checks to see if two numbers multiplied together are larger
- *   than the type that they are.  Returns TRUE if OVERFLOWING.
- *   If the first parameter "x" is greater than zero and
- *   if that is true, that the largest possible value 0xFFFFFFFF / "x"
- *   is less than the second parameter "y".  If "y" is zero then
- *   it will also fail because no unsigned number is less than zero.
- */
-static inline bool multiply_overflow_u32(uint32_t x, uint32_t y)
-{
-    return (x > 0) ? ((((uint32_t)(~0))/x) < y) : false;
-}
-
-#endif /*__ASSEMBLY__*/
-
-#endif /* _XMHF_ERROR_H */
