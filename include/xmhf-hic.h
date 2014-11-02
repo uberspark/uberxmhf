@@ -519,14 +519,22 @@ __attribute__((naked)) __attribute__ ((noinline)) static inline bool __slab_call
 }
 
 
+#if defined (__XMHF_VERIFICATION__)
+
+#define XMHF_SLAB_CALL(dst_slabname, dst_slabid, iparams, iparams_size, oparams, oparams_size)
+#define XMHF_SLAB(slab_name)
+#define XMHF_SLAB_GUEST(slab_name)
+#define XMHF_SLAB_INTERCEPT(slab_name)
+#define XMHF_SLAB_EXCEPTION(slab_name)
+
+
+#else
 
 
 
-//#define XMHF_SLAB_CALL(dst_slabname, dst_slabid, iparams, iparams_size, oparams, oparams_size) dst_slabname##_interface(iparams, iparams_size, oparams, oparams_size, 0)
+
 #define XMHF_SLAB_CALL(dst_slabname, dst_slabid, iparams, iparams_size, oparams, oparams_size) __slab_callstub(0, iparams, iparams_size, oparams, oparams_size, dst_slabid)
 
-
-#define XMHF_SLAB_HIC_UAPI_CPUSTATE
 
 /*
 _slab_entrystub entry register mappings:
@@ -649,6 +657,12 @@ R11 = cpuid
 			:  \
 		);	\
     }\
+
+
+
+
+#endif //__XMHF_VERIFICATION__
+
 
 
 #endif //__ASSEMBLY__
