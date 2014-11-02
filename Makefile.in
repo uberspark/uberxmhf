@@ -266,12 +266,11 @@ distclean: clean
 	$(RM) -rf xmhf.pc
 
 verify:
-	#cd xmhf/src/xmhf-core && make -w verify
 	mkdir -p $(XMHF_VERIFYDIR)
 	@echo **************************************************************
 	@echo Starting verification...
 	@echo **************************************************************
-	cd $(XMHF_VERIFYDIR) && $(MAKE) -f ./verification/Makefile -w verify
+	cd $(XMHF_VERIFYDIR) && $(MAKE) -f  $(XMHF_DIR)/xmhf-verification/Makefile -w all
 
 
 .PHONY: htmldoc
