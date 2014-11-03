@@ -52,6 +52,8 @@
 #include <xmhf-debug.h>
 #include <xmhf-core.h>
 
+slab_info_t _xmhfhic_common_slab_info_table[XMHF_HIC_MAX_SLABS] = {0};
+
 
 void main(void){
     u64 uapicall = nondet_u64();

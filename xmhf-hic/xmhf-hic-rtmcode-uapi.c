@@ -114,39 +114,49 @@ void __xmhfhic_rtm_uapihandler(u64 uapicall, u64 uapicall_num, u64 uapicall_subn
     //           iparams, oparams,
     //           src_slabid, cpuid, read_cr3());
 
-/*
+
     //checks
     //1. src_slabid is a hypervisor slab
     if( !(_xmhfhic_common_slab_info_table[src_slabid].archdata.slabtype == HIC_SLAB_X86VMXX86PC_HYPERVISOR) ){
         _XDPRINTF_("%s[%u]: uapierr: src_slabid (%u) is not a hypervisor slab. Halting!\n", __FUNCTION__, (u32)cpuid, src_slabid);
-        HALT();
+        //HALT();
+        return;
     }
     //2. src_slabid should have capabilities for the requested uapicall_num
     if( !(_xmhfhic_common_slab_info_table[src_slabid].slab_uapicaps & HIC_SLAB_UAPICAP(uapicall_num)) ){
         _XDPRINTF_("%s[%u]: uapierr: src_slabid (%u) does not have uapi capability. Halting!\n", __FUNCTION__, (u32)cpuid, src_slabid);
-        HALT();
+        //HALT();
+        return;
     }
+
+
+#if defined (__XMHF_VERIFICATION__)
+    assert( _xmhfhic_common_slab_info_table[src_slabid].archdata.slabtype == HIC_SLAB_X86VMXX86PC_HYPERVISOR );
+    assert( _xmhfhic_common_slab_info_table[src_slabid].slab_uapicaps & HIC_SLAB_UAPICAP(uapicall_num));
+#endif //__XMHF_VERIFICATION__
+
 
     switch(uapicall_num){
         case XMHF_HIC_UAPI_CPUSTATE:
-            __xmhfhic_rtm_uapihandler_cpustate(uapicall_subnum, iparams, oparams, cpuid, src_slabid);
+            //__xmhfhic_rtm_uapihandler_cpustate(uapicall_subnum, iparams, oparams, cpuid, src_slabid);
             break;
 
         case XMHF_HIC_UAPI_PHYSMEM:
-            __xmhfhic_rtm_uapihandler_physmem(uapicall_subnum, iparams, oparams, cpuid, src_slabid);
+            //__xmhfhic_rtm_uapihandler_physmem(uapicall_subnum, iparams, oparams, cpuid, src_slabid);
             break;
 
         case XMHF_HIC_UAPI_MEMPGTBL:
-            __xmhfhic_rtm_uapihandler_mempgtbl(uapicall_subnum, iparams, oparams, cpuid, src_slabid);
+            //__xmhfhic_rtm_uapihandler_mempgtbl(uapicall_subnum, iparams, oparams, cpuid, src_slabid);
             break;
 
         default:
             _XDPRINTF_("%s[%u]: Unknown UAPI call %x. Halting!\n",
                     __FUNCTION__, (u32)cpuid, uapicall_num);
-            HALT();
+            //HALT();
+            return;
     }
 
-*/
+
     return;
 }
 
