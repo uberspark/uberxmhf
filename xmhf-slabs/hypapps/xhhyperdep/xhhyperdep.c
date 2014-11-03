@@ -184,31 +184,31 @@ void xhhyperdep_interface(slab_input_params_t *iparams, u64 iparams_size, slab_o
 
     switch(hcb_iparams->cbtype){
         case XC_HYPAPPCB_INITIALIZE:{
-            //_hcb_initialize(cpuindex);
+            _hcb_initialize(cpuindex);
         }
         break;
 
         case XC_HYPAPPCB_HYPERCALL:{
-            //_hcb_hypercall(cpuindex, hcb_iparams->guest_slab_index);
+            _hcb_hypercall(cpuindex, hcb_iparams->guest_slab_index);
 
         }
         break;
 
         case XC_HYPAPPCB_MEMORYFAULT:{
-         	//u64 errorcode;
-         	//u64 gpa;
-         	//u64 gva;
+         	u64 errorcode;
+         	u64 gpa;
+         	u64 gva;
 
-         	//XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMREAD, VMCS_INFO_EXIT_QUALIFICATION, &errorcode);
-         	//XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMREAD, VMCS_INFO_GUEST_PADDR_FULL, &gpa);
-         	//XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMREAD, VMCS_INFO_GUEST_LINEAR_ADDRESS, &gva);
+         	XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMREAD, VMCS_INFO_EXIT_QUALIFICATION, &errorcode);
+         	XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMREAD, VMCS_INFO_GUEST_PADDR_FULL, &gpa);
+         	XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMREAD, VMCS_INFO_GUEST_LINEAR_ADDRESS, &gva);
 
-            //_hcb_memoryfault(cpuindex, hcb_iparams->guest_slab_index, gpa, gva, errorcode);
+            _hcb_memoryfault(cpuindex, hcb_iparams->guest_slab_index, gpa, gva, errorcode);
         }
         break;
 
         case XC_HYPAPPCB_SHUTDOWN:{
-            //_hcb_shutdown(cpuindex, hcb_iparams->guest_slab_index);
+            _hcb_shutdown(cpuindex, hcb_iparams->guest_slab_index);
         }
         break;
 
