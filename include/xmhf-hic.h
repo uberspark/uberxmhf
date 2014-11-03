@@ -51,8 +51,17 @@
 #ifndef __XMHF_HIC_H__
 #define __XMHF_HIC_H__
 
+#if defined (__XMHF_VERIFICATION__)
+
+#define XMHF_HIC_MAX_SLABS                  (2)
+
+#else
 
 #define XMHF_HIC_MAX_SLABS                  (9)
+
+
+#endif //__XMHF_VERIFICATION__
+
 
 #define XMHF_HYP_SLAB_XCINIT                (0)
 #define XMHF_HYP_SLAB_XCIHUB                (1)
