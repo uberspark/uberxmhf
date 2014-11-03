@@ -52,7 +52,49 @@
 #include <xmhf-debug.h>
 #include <xmhf-core.h>
 
-slab_info_t _xmhfhic_common_slab_info_table[XMHF_HIC_MAX_SLABS] = {0};
+u8 sourceslab_rwdatabuffer[128];
+u8 destinationslab_rwdatabuffer[128];
+
+
+slab_info_t _xmhfhic_common_slab_info_table[XMHF_HIC_MAX_SLABS] = {
+    //source slab
+    {
+        { 0 },
+        true,
+        0,
+        0,
+        0,
+        {0},
+        {
+            {0, 0, 0},
+            {(u64)&sourceslab_rwdatabuffer, ((u64)&sourceslab_rwdatabuffer + (u64)sizeof(sourceslab_rwdatabuffer)), 0},
+            {0, 0, 0},
+            {0, 0, 0},
+            {0, 0, 0},
+        },
+        0,
+    },
+
+
+    //destination slab
+    {
+        { 0 },
+        true,
+        0,
+        0,
+        0,
+        {0},
+        {
+            {0, 0, 0},
+            {(u64)&destinationslab_rwdatabuffer, ((u64)&destinationslab_rwdatabuffer + (u64)sizeof(destinationslab_rwdatabuffer)), 0},
+            {0, 0, 0},
+            {0, 0, 0},
+            {0, 0, 0},
+        },
+        0,
+    }
+
+};
 
 
 void main(void){
@@ -65,9 +107,15 @@ void main(void){
     u64 src_slabid = 0;
     u64 cpuid = 0;
 
-    __xmhfhic_rtm_uapihandler(uapicall, uapicall_num, uapicall_subnum,
-                               reserved, iparams, oparams,
-                               src_slabid, cpuid);
+//    __xmhfhic_rtm_uapihandler(uapicall, uapicall_num, uapicall_subnum,
+//                               reserved, iparams, oparams,
+//                               src_slabid, cpuid);
 
+
+    assert(_xmhfhic_common_slab_info_table[src_slabid].slab_inuse == true);
+    //assert(_xmhfhic_common_slab_info_table[src_slabid].slab_physmem_extents[1].addr_start == (u64)&sourceslab_rwdatabuffer);
+    assert(_xmhfhic_common_slab_info_table[src_slabid].slab_physmem_extents[1].addr_start == (u64)&sourceslab_rwdatabuffer &&
+           _xmhfhic_common_slab_info_table[src_slabid].slab_physmem_extents[1].addr_end == ((u64)&sourceslab_rwdatabuffer + sizeof(sourceslab_rwdatabuffer))
+           );
 
 }
