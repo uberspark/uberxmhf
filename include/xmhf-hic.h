@@ -383,9 +383,17 @@ __attribute__((naked)) __attribute__ ((noinline)) static inline bool __xmhfhic_u
 
 }
 
+
+#if defined (__XMHF_VERIFICATION)
+
+#define XMHF_HIC_SLAB_UAPI_CPUSTATE(cpustatefn, iparams, oparams)
+
+#else
+
 #define XMHF_HIC_SLAB_UAPI_CPUSTATE(cpustatefn, iparams, oparams) \
     __xmhfhic_uapi_cpustate(XMHF_HIC_UAPI, XMHF_HIC_UAPI_CPUSTATE, cpustatefn, 0, iparams, oparams)
 
+#endif //__XMHF_VERIFICATION__
 
 
 
@@ -427,9 +435,18 @@ __attribute__((naked)) __attribute__ ((noinline)) static inline bool __xmhfhic_u
 
 }
 
+#if defined (__XMHF_VERIFICATION__)
+
+#define XMHF_HIC_SLAB_UAPI_PHYSMEM(physmemfn, iparams, oparams)
+
+
+#else
+
 #define XMHF_HIC_SLAB_UAPI_PHYSMEM(physmemfn, iparams, oparams) \
     __xmhfhic_uapi_physmem(XMHF_HIC_UAPI, XMHF_HIC_UAPI_PHYSMEM, physmemfn, 0, iparams, oparams)
 
+
+#endif
 
 
 
@@ -470,9 +487,18 @@ __attribute__((naked)) __attribute__ ((noinline)) static inline bool __xmhfhic_u
 
 }
 
+
+#if defined (__XMHF_VERIFICATION__)
+
 #define XMHF_HIC_SLAB_UAPI_MEMPGTBL(mempgtblfn, iparams, oparams) \
     __xmhfhic_uapi_mempgtbl(XMHF_HIC_UAPI, XMHF_HIC_UAPI_MEMPGTBL, mempgtblfn, 0, iparams, oparams)
 
+
+#else
+
+#define XMHF_HIC_SLAB_UAPI_MEMPGTBL(mempgtblfn, iparams, oparams)
+
+#endif //__XMHF_VERIFICATION__
 
 
 
