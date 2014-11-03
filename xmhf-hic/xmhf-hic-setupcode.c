@@ -1765,7 +1765,7 @@ static u32 __xmhfhic_vmx_getmemorytypeforphysicalpage(u64 pagebaseaddr){
 static void __xmhfhic_vmx_setupEPT(u64 slabid){
 	u64 p_table_value;
 	u64 gpa;
-    slab_retval_t srval;
+    //slab_retval_t srval;
 
 	for(gpa=0; gpa < ADDR_4GB; gpa += PAGE_SIZE_4K){
 		u32 memorytype = __xmhfhic_vmx_getmemorytypeforphysicalpage((u64)gpa);

@@ -185,12 +185,6 @@ typedef struct {
 
 
 typedef struct {
-	u64 start;
-	u64 end;
-} slab_section_t;
-
-
-typedef struct {
     __attribute__((aligned(4096))) slab_info_archdata_t archdata;
 	bool slab_inuse;
     slab_privilegemask_t slab_privilegemask;
@@ -215,6 +209,10 @@ typedef struct {
 
 
 
+
+
+//////
+// HIC function prototypes
 
 void xmhfhic_arch_setup_slab_info(void);
 void xmhfhic_arch_sanity_check_requirements(void);
@@ -246,103 +244,55 @@ void __xmhfhic_rtm_uapihandler(u64 uapicall, u64 uapicall_num, u64 uapicall_subn
 
 
 
-
-
-
-/*
-typedef struct {
-	bool desc_valid;
-	u64 numdevices;
-    xc_platformdevice_arch_desc_t arch_desc[MAX_PLATFORM_DEVICES];
-} __attribute__((packed)) xc_platformdevice_desc_t;
-*/
-
-
-
-//slab interface aggregate return type
-typedef union {
-		bool retval_bool;
-		u8 retval_u8;
-		u16 retval_u16;
-		u32 retval_u32;
-		u64 retval_u64;
-		struct regs retval_regs;
-		context_desc_t retval_context_desc;
-		xc_hypapp_arch_param_t retval_xc_hypapp_arch_param;
-        //xc_platformdevice_desc_t retval_xc_platformdevice_desc;
-}__attribute__((packed)) slab_retval_t;
-
-typedef struct {
-    bool input_bool[8];
-    u64 input_u64[8];
-    u32 input_u32[8];
-    u16 input_u16[8];
-    u8 input_u8[8];
-    struct regs input_regs;
-    context_desc_t input_context_desc;
-    xc_hypapp_arch_param_t input_xc_hypapp_arch_param;
-    //xc_platformdevice_desc_t input_xc_platformdevice_desc;
-}__attribute__((packed)) slab_params_t;
-
+//////
+// HIC data decls.
 
 
 //init, setup data
-extern __attribute__(( section(".sharedro_xcbootinfoptr") )) XMHF_BOOTINFO *xcbootinfo;
-extern slab_physmem_extent_t _xmhfhic_init_setupdata_slab_physmem_extents[XMHF_HIC_MAX_SLABS][HIC_SLAB_PHYSMEM_MAXEXTENTS];
-extern slab_physmem_extent_t _xmhfhic_init_setupdata_hic_physmem_extents[HIC_SLAB_PHYSMEM_MAXEXTENTS];
-extern slab_caps_t _xmhfhic_init_setupdata_slab_caps[XMHF_HIC_MAX_SLABS];
+extern __attribute__(( section(".sharedro_xcbootinfoptr") )) XMHF_BOOTINFO *xcbootinfo; //ro
+extern slab_physmem_extent_t _xmhfhic_init_setupdata_slab_physmem_extents[XMHF_HIC_MAX_SLABS][HIC_SLAB_PHYSMEM_MAXEXTENTS]; //ro
+extern slab_physmem_extent_t _xmhfhic_init_setupdata_hic_physmem_extents[HIC_SLAB_PHYSMEM_MAXEXTENTS]; //ro
+extern slab_caps_t _xmhfhic_init_setupdata_slab_caps[XMHF_HIC_MAX_SLABS]; //ro
 
-
-//common data
-//extern slab_header_t _slab_table[XMHF_HIC_MAX_SLABS];
-extern __attribute__((aligned(4096))) slab_info_t _xmhfhic_common_slab_info_table[XMHF_HIC_MAX_SLABS];
-extern slab_physmem_extent_t _xmhfhic_common_hic_physmem_extents[HIC_SLAB_PHYSMEM_MAXEXTENTS];
 
 //runtime data
+extern __attribute__((aligned(4096))) slab_info_t _xmhfhic_common_slab_info_table[XMHF_HIC_MAX_SLABS];
+extern slab_physmem_extent_t _xmhfhic_common_hic_physmem_extents[HIC_SLAB_PHYSMEM_MAXEXTENTS]; //ro
 extern u64 __xmhfhic_safestack_indices[MAX_PLATFORM_CPUS];
 extern __xmhfhic_safestack_element_t __xmhfhic_safestack[MAX_PLATFORM_CPUS][512];
 
+//arch. dependent runtime data
+extern __attribute__(( aligned(16) )) u64 __xmhfhic_x86vmx_gdt_start[];     //ro
+extern __attribute__(( aligned(16) )) arch_x86_gdtdesc_t __xmhfhic_x86vmx_gdt;  //ro
+extern __attribute__(( aligned(4096) )) u8 __xmhfhic_x86vmx_tss[MAX_PLATFORM_CPUS][PAGE_SIZE_4K]; //ro
+extern __attribute__(( aligned(8) )) u64 __xmhfhic_x86vmx_cpuidtable[MAX_X86_APIC_ID]; //ro
+extern u64  __xmhfhic_exceptionstubs[]; //ro
+extern __attribute__(( aligned(16) )) idtentry_t __xmhfhic_x86vmx_idt_start[EMHF_XCPHANDLER_MAXEXCEPTIONS]; //ro
+extern __attribute__(( aligned(16) )) arch_x86_idtdesc_t __xmhfhic_x86vmx_idt; //ro
+extern __attribute__(( aligned(4096) )) u8 _init_cpustacks[MAX_PLATFORM_CPUS][MAX_PLATFORM_CPUSTACK_SIZE]; //ro
+extern __attribute__(( aligned(2097152) )) u64 _xmhfhic_common_slab_archdata_mempgtbl_pml4t[XMHF_HIC_MAX_SLABS][PAE_MAXPTRS_PER_PML4T]; //ro
 
 
-
-
-
-
-
-
-
-
-
-
-
-//////
-//arch. dependent decls.
-
-extern __attribute__(( aligned(16) )) u64 __xmhfhic_x86vmx_gdt_start[];
-extern __attribute__(( aligned(16) )) arch_x86_gdtdesc_t __xmhfhic_x86vmx_gdt;
-extern __attribute__(( aligned(4096) )) u8 __xmhfhic_x86vmx_tss[MAX_PLATFORM_CPUS][PAGE_SIZE_4K];
-extern __attribute__(( aligned(8) )) u64 __xmhfhic_x86vmx_cpuidtable[MAX_X86_APIC_ID];
-extern u64  __xmhfhic_exceptionstubs[];
-extern __attribute__(( aligned(16) )) idtentry_t __xmhfhic_x86vmx_idt_start[EMHF_XCPHANDLER_MAXEXCEPTIONS];
-extern __attribute__(( aligned(16) )) arch_x86_idtdesc_t __xmhfhic_x86vmx_idt;
 extern __attribute__(( aligned(4096) )) u8 __xmhfhic_x86vmx_tss_stack[MAX_PLATFORM_CPUS][PAGE_SIZE_4K];
-extern __attribute__(( aligned(4096) )) xc_cpuarchdata_x86vmx_t __xmhfhic_x86vmx_archdata[MAX_PLATFORM_CPUS];
 extern __attribute__(( aligned(4096) )) u8 __xmhfhic_rtm_trampoline_stack[MAX_PLATFORM_CPUS][MAX_PLATFORM_CPUSTACK_SIZE];
-extern __attribute__(( aligned(2097152) )) u64 _xmhfhic_common_slab_archdata_mempgtbl_pml4t[XMHF_HIC_MAX_SLABS][PAE_MAXPTRS_PER_PML4T];
-extern __attribute__(( aligned(4096) )) u8 _init_cpustacks[MAX_PLATFORM_CPUS][MAX_PLATFORM_CPUSTACK_SIZE];
+extern __attribute__(( aligned(4096) )) xc_cpuarchdata_x86vmx_t __xmhfhic_x86vmx_archdata[MAX_PLATFORM_CPUS];
+
 //libxmhfdebug
 extern __attribute__(( section(".libxmhfdebugdata") )) u32 libxmhfdebug_lock;
 
 
 
+
+
+
+
+
+
+
+
+
 //////
-//
-
-
-
-
-
-
+// HIC UAPI and SLAB invocation macros
 
 
 
