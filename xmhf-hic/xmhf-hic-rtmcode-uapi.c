@@ -114,7 +114,7 @@ void __xmhfhic_rtm_uapihandler(u64 uapicall, u64 uapicall_num, u64 uapicall_subn
     //           iparams, oparams,
     //           src_slabid, cpuid, read_cr3());
 
-
+/*
     //checks
     //1. src_slabid is a hypervisor slab
     if( !(_xmhfhic_common_slab_info_table[src_slabid].archdata.slabtype == HIC_SLAB_X86VMXX86PC_HYPERVISOR) ){
@@ -146,7 +146,7 @@ void __xmhfhic_rtm_uapihandler(u64 uapicall, u64 uapicall_num, u64 uapicall_subn
             HALT();
     }
 
-
+*/
     return;
 }
 
