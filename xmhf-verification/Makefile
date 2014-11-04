@@ -26,7 +26,7 @@ verifyhypapps:
 .PHONY: verifyuapi
 verifyuapi:
 	@echo Verifying UAPI...
-	cbmc --ILP64 --bounds-check --pointer-check -D__XMHF_VERIFICATION__ $(VFLAGS) $(XMHFHIC_UAPI_DRV) $(XMHFHIC_UAPI_CODE)
+	cbmc --ILP64 --bounds-check --pointer-check --unwind 10 -D__XMHF_VERIFICATION__ $(VFLAGS) $(XMHFHIC_UAPI_DRV) $(XMHFHIC_UAPI_CODE)
 
 
 .PHONY: clean

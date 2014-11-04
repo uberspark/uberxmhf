@@ -79,7 +79,7 @@ x_slab_info_t _x_xmhfhic_common_slab_info_table[XMHF_HIC_MAX_SLABS] = {
         true,
         0,
         0,
-        HIC_SLAB_UAPICAP(XMHF_HIC_UAPI_MEMPGTBL),
+        HIC_SLAB_UAPICAP(XMHF_HIC_UAPI_MEMPGTBL) | HIC_SLAB_UAPICAP(XMHF_HIC_UAPI_PHYSMEM),
         {0},
         {
             {0, 0, 0},
@@ -135,6 +135,7 @@ void main(void){
     u64 cpuid;
 
     xmhf_hic_uapi_mempgtbl_desc_t *mempgtbldesc = (xmhf_hic_uapi_mempgtbl_desc_t *)&sourceslab_rwdatabuffer;
+    xmhf_hic_uapi_physmem_desc_t *pdesc = (xmhf_hic_uapi_physmem_desc_t *)&sourceslab_rwdatabuffer;
 
 
     /*mempgtbldesc->guest_slab_index = nondet_u64();
@@ -150,7 +151,7 @@ void main(void){
     cpuid = 0;*/
 
 
-    mempgtbldesc->guest_slab_index = nondet_u64();
+    /*mempgtbldesc->guest_slab_index = nondet_u64();
     mempgtbldesc->gpa = nondet_u64();
     mempgtbldesc->entry = nondet_u64();
     uapicall = XMHF_HIC_UAPI;
@@ -159,6 +160,21 @@ void main(void){
     reserved = nondet_u64();
     iparams = mempgtbldesc;
     oparams = mempgtbldesc;
+    src_slabid= 0;
+    cpuid = 0;*/
+
+
+
+    pdesc->guest_slab_index = nondet_u64();
+    pdesc->addr_to = nondet_u64();
+    pdesc->addr_from = nondet_u64();
+    pdesc->numbytes = nondet_u64();
+    uapicall = XMHF_HIC_UAPI;
+    uapicall_num = XMHF_HIC_UAPI_PHYSMEM;
+    uapicall_subnum = XMHF_HIC_UAPI_PHYSMEM_PEEK;
+    reserved = nondet_u64();
+    iparams = pdesc;
+    oparams = NULL;
     src_slabid= 0;
     cpuid = 0;
 
