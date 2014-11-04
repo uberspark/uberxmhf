@@ -74,8 +74,7 @@ static void hd_activatedep(u64 cpuindex, u64 guest_slab_index, u64 gpa){
         XMHF_HIC_SLAB_UAPI_MEMPGTBL(XMHF_HIC_UAPI_MEMPGTBL_GETENTRY, &mdesc, &mdesc);
         _XDPRINTF_("%s[%u]: original entry for gpa=%x is %x\n", __FUNCTION__, (u32)cpuindex, gpa, mdesc.entry);
 
-        mdesc.entry &= ~(0x7);
-        mdesc.entry |= 0x3; //execute-disable, read-write
+        mdesc.entry &= ~(0x4); //execute-disable
 
         XMHF_HIC_SLAB_UAPI_MEMPGTBL(XMHF_HIC_UAPI_MEMPGTBL_SETENTRY, &mdesc, NULL);
 
