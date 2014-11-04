@@ -150,7 +150,7 @@ void __xmhfhic_rtm_uapihandler(u64 uapicall, u64 uapicall_num, u64 uapicall_subn
 
     switch(uapicall_num){
         case XMHF_HIC_UAPI_CPUSTATE:
-            //__xmhfhic_rtm_uapihandler_cpustate(uapicall_subnum, iparams, oparams, cpuid, src_slabid);
+            __xmhfhic_rtm_uapihandler_cpustate(uapicall_subnum, iparams, oparams, cpuid, src_slabid);
             break;
 
         case XMHF_HIC_UAPI_PHYSMEM:
@@ -177,7 +177,7 @@ void __xmhfhic_rtm_uapihandler(u64 uapicall, u64 uapicall_num, u64 uapicall_subn
 
 
 
-/*
+
 
 
 
@@ -193,19 +193,33 @@ static void __xmhfhic_rtm_uapihandler_cpustate(u64 uapicall_subnum, u64 iparams,
             //1. oparams should be within source slab memory extents
             if(!_uapicheck_is_within_slab_memory_extents(src_slabid, oparams, sizeof(u64))){
                 _XDPRINTF_("%s[%u],%u: uapierr: oparams should be within source slab memory extents. Halting!\n", __FUNCTION__, (u32)cpuid, __LINE__);
-                HALT();
+                //HALT();
+                return;
             }
+
+            #if defined(__XMHF_VERIFICATION__)
+            assert(_uapicheck_is_within_slab_memory_extents(src_slabid, oparams, sizeof(u64)));
+            #endif // defined
+
             //2. encoding cannot contain any value that is specific to HIC
             if(_uapicheck_encoding_used_by_hic(iparams)){
                 _XDPRINTF_("%s[%u],%u: uapierr: encoding reserved for HIC. Halting!\n", __FUNCTION__, (u32)cpuid, __LINE__);
-                HALT();
+                //HALT();
+                return;
             }
 
+            #if defined(__XMHF_VERIFICATION__)
+            assert(!_uapicheck_encoding_used_by_hic(iparams));
+            #endif // defined
+
+            #if !defined(__XMHF_VERIFICATION__)
             *(u64 *)oparams = xmhfhw_cpu_x86vmx_vmread(iparams);
+            #endif // defined
+
         }
         break;
 
-        case XMHF_HIC_UAPI_CPUSTATE_VMWRITE:{
+/*        case XMHF_HIC_UAPI_CPUSTATE_VMWRITE:{
             //iparams = encoding (u64), oparams = value (u64)
             //checks:
             //1. encoding cannot contain any value that is specific to HIC
@@ -279,17 +293,18 @@ static void __xmhfhic_rtm_uapihandler_cpustate(u64 uapicall_subnum, u64 iparams,
             *(u64 *)oparams = rdmsr64((u32)iparams);
         }
         break;
-
+*/
         default:
             _XDPRINTF_("%s[%u]: Unknown cpustate subcall %x. Halting!\n",
                     __FUNCTION__, (u32)cpuid, uapicall_subnum);
-            HALT();
+            //HALT();
+            return;
     }
 
 }
 
 
-*/
+
 
 
 
