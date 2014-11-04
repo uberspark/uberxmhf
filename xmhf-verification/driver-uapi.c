@@ -195,15 +195,25 @@ void main(void){
 
 
 
-    uapicall = XMHF_HIC_UAPI;
+/*    uapicall = XMHF_HIC_UAPI;
     uapicall_num = XMHF_HIC_UAPI_CPUSTATE;
     uapicall_subnum = XMHF_HIC_UAPI_CPUSTATE_VMREAD;
     reserved = nondet_u64();
     iparams = nondet_u64();
     oparams = value;
     src_slabid= 0;
-    cpuid = 0;
+    cpuid = 0;*/
 
+
+
+    uapicall = XMHF_HIC_UAPI;
+    uapicall_num = XMHF_HIC_UAPI_CPUSTATE;
+    uapicall_subnum = XMHF_HIC_UAPI_CPUSTATE_VMWRITE;
+    reserved = nondet_u64();
+    iparams = nondet_u64();
+    oparams = nondet_u64();
+    src_slabid= 0;
+    cpuid = 0;
 
     __xmhfhic_rtm_uapihandler(uapicall, uapicall_num, uapicall_subnum,
                                reserved, iparams, oparams,

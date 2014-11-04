@@ -219,19 +219,27 @@ static void __xmhfhic_rtm_uapihandler_cpustate(u64 uapicall_subnum, u64 iparams,
         }
         break;
 
-/*        case XMHF_HIC_UAPI_CPUSTATE_VMWRITE:{
+        case XMHF_HIC_UAPI_CPUSTATE_VMWRITE:{
             //iparams = encoding (u64), oparams = value (u64)
             //checks:
             //1. encoding cannot contain any value that is specific to HIC
             if(_uapicheck_encoding_used_by_hic(iparams)){
                 _XDPRINTF_("%s[%u],%u: uapierr: encoding reserved for HIC. Halting!\n", __FUNCTION__, (u32)cpuid, __LINE__);
-                HALT();
+                //HALT();
+                return;
             }
 
+            #if defined(__XMHF_VERIFICATION__)
+            assert(!_uapicheck_encoding_used_by_hic(iparams));
+            #endif // defined
+
+            #if !defined(__XMHF_VERIFICATION__)
             xmhfhw_cpu_x86vmx_vmwrite(iparams, oparams);
+            #endif
         }
         break;
 
+/*
         case XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSREAD:{
             //iparams = NULL, oparams = x86regs64_t *
             //checks:
