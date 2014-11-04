@@ -165,13 +165,27 @@ void main(void){
 
 
 
-    pdesc->guest_slab_index = nondet_u64();
+    /*pdesc->guest_slab_index = nondet_u64();
     pdesc->addr_to = nondet_u64();
     pdesc->addr_from = nondet_u64();
     pdesc->numbytes = nondet_u64();
     uapicall = XMHF_HIC_UAPI;
     uapicall_num = XMHF_HIC_UAPI_PHYSMEM;
     uapicall_subnum = XMHF_HIC_UAPI_PHYSMEM_PEEK;
+    reserved = nondet_u64();
+    iparams = pdesc;
+    oparams = NULL;
+    src_slabid= 0;
+    cpuid = 0;*/
+
+
+    pdesc->guest_slab_index = nondet_u64();
+    pdesc->addr_to = nondet_u64();
+    pdesc->addr_from = nondet_u64();
+    pdesc->numbytes = nondet_u64();
+    uapicall = XMHF_HIC_UAPI;
+    uapicall_num = XMHF_HIC_UAPI_PHYSMEM;
+    uapicall_subnum = XMHF_HIC_UAPI_PHYSMEM_POKE;
     reserved = nondet_u64();
     iparams = pdesc;
     oparams = NULL;
