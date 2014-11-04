@@ -154,7 +154,7 @@ void __xmhfhic_rtm_uapihandler(u64 uapicall, u64 uapicall_num, u64 uapicall_subn
             break;
 
         case XMHF_HIC_UAPI_PHYSMEM:
-            //__xmhfhic_rtm_uapihandler_physmem(uapicall_subnum, iparams, oparams, cpuid, src_slabid);
+             __xmhfhic_rtm_uapihandler_physmem(uapicall_subnum, iparams, oparams, cpuid, src_slabid);
             break;
 
         case XMHF_HIC_UAPI_MEMPGTBL:
@@ -289,7 +289,7 @@ static void __xmhfhic_rtm_uapihandler_cpustate(u64 uapicall_subnum, u64 iparams,
 }
 
 
-
+*/
 
 
 
@@ -307,38 +307,73 @@ static void __xmhfhic_rtm_uapihandler_physmem(u64 uapicall_subnum, u64 iparams, 
             //iparams = (xmhf_hic_uapi_physmem_desc_t *), oparams = unused
             xmhf_hic_uapi_physmem_desc_t *pdesc = (xmhf_hic_uapi_physmem_desc_t *)iparams;
 
+
             //checks:
             //1. iparams is within source slab memory extents
             if(!_uapicheck_is_within_slab_memory_extents(src_slabid, iparams, sizeof(xmhf_hic_uapi_physmem_desc_t))){
                 _XDPRINTF_("%s[%u],%u: uapierr: iparams should be within source slab memory extents. Halting!\n", __FUNCTION__, (u32)cpuid, __LINE__);
-                HALT();
+                //HALT();
+                return;
             }
+
+
+
+            #if defined (__XMHF_VERIFICATION__)
+            assert(_uapicheck_is_within_slab_memory_extents(src_slabid, iparams, sizeof(xmhf_hic_uapi_physmem_desc_t)));
+            #endif // defined
+
             //2. destination slab is within bounds and is a guest slab
             if(! (pdesc->guest_slab_index < XMHF_HIC_MAX_SLABS ) ){
                 _XDPRINTF_("%s[%u],%u: uapierr: destination slab is out of bounds. Halting!\n", __FUNCTION__, (u32)cpuid, __LINE__);
-                HALT();
+                //HALT();
+                return;
             }
-            if( !(_xmhfhic_common_slab_info_table[pdesc->guest_slab_index].archdata.slabtype == HIC_SLAB_X86VMXX86PC_GUEST) ){
+
+            #if defined (__XMHF_VERIFICATION__)
+            assert((pdesc->guest_slab_index < XMHF_HIC_MAX_SLABS ));
+            #endif // defined
+
+            if( !(_x_xmhfhic_common_slab_info_table[pdesc->guest_slab_index].archdata.slabtype == HIC_SLAB_X86VMXX86PC_GUEST) ){
                 _XDPRINTF_("%s[%u],%u: uapierr: destination slab is not a guest slab. Halting!\n", __FUNCTION__, (u32)cpuid, __LINE__);
-                HALT();
+                //HALT();
+                return;
             }
+
+            #if defined (__XMHF_VERIFICATION__)
+            assert((_x_xmhfhic_common_slab_info_table[pdesc->guest_slab_index].archdata.slabtype == HIC_SLAB_X86VMXX86PC_GUEST));
+            #endif // defined
+
+
             //3. pdesc->addr_from and pdesc->numbytes is within destination slab memory extents
             if(!_uapicheck_is_within_slab_memory_extents(pdesc->guest_slab_index, pdesc->addr_from, pdesc->numbytes)){
                 _XDPRINTF_("%s[%u],%u: uapierr: addr_from is not within destination slab memory extents. Halting!\n", __FUNCTION__, (u32)cpuid, __LINE__);
-                HALT();
+                //HALT();
+                return;
             }
+
+            #if defined (__XMHF_VERIFICATION__)
+            assert(_uapicheck_is_within_slab_memory_extents(pdesc->guest_slab_index, pdesc->addr_from, pdesc->numbytes));
+            #endif // defined
+
+
             //4. pdesc->addr_to is within source slab memory extents
             if(!_uapicheck_is_within_slab_memory_extents(src_slabid, pdesc->addr_to, pdesc->numbytes)){
                 _XDPRINTF_("%s[%u],%u: uapierr: addr_to is not within source slab memory extents. Halting!\n", __FUNCTION__, (u32)cpuid, __LINE__);
-                HALT();
+                //HALT();
+                return;
             }
 
+            #if defined (__XMHF_VERIFICATION__)
+            assert(_uapicheck_is_within_slab_memory_extents(src_slabid, pdesc->addr_to, pdesc->numbytes));
+            #endif // defined
 
+            #if !defined (__XMHF_VERIFICATION__)
             memcpy(pdesc->addr_to, pdesc->addr_from, pdesc->numbytes);
+            #endif
         }
         break;
 
-        case XMHF_HIC_UAPI_PHYSMEM_POKE:{
+        /*case XMHF_HIC_UAPI_PHYSMEM_POKE:{
             //iparams = (xmhf_hic_uapi_physmem_desc_t *), oparams = unused
             xmhf_hic_uapi_physmem_desc_t *pdesc = (xmhf_hic_uapi_physmem_desc_t *)iparams;
 
@@ -370,13 +405,14 @@ static void __xmhfhic_rtm_uapihandler_physmem(u64 uapicall_subnum, u64 iparams, 
 
             memcpy(pdesc->addr_to, pdesc->addr_from, pdesc->numbytes);
         }
-        break;
+        break;*/
 
 
         default:
-            _XDPRINTF_("%s[%u]: Unknown cpustate subcall %x. Halting!\n",
+            _XDPRINTF_("%s[%u]: Unknown physmem subcall %x. Halting!\n",
                     __FUNCTION__, (u32)cpuid, uapicall_subnum);
-            HALT();
+            //HALT();
+            return;
 
     }
 
@@ -384,7 +420,6 @@ static void __xmhfhic_rtm_uapihandler_physmem(u64 uapicall_subnum, u64 iparams, 
 
 
 
-*/
 
 
 
