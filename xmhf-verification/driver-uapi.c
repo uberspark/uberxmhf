@@ -79,7 +79,7 @@ x_slab_info_t _x_xmhfhic_common_slab_info_table[XMHF_HIC_MAX_SLABS] = {
         true,
         0,
         0,
-        HIC_SLAB_UAPICAP(XMHF_HIC_UAPI_MEMPGTBL) | HIC_SLAB_UAPICAP(XMHF_HIC_UAPI_PHYSMEM),
+        HIC_SLAB_UAPICAP(XMHF_HIC_UAPI_MEMPGTBL) | HIC_SLAB_UAPICAP(XMHF_HIC_UAPI_PHYSMEM) | HIC_SLAB_UAPICAP(XMHF_HIC_UAPI_CPUSTATE),
         {0},
         {
             {0, 0, 0},
@@ -136,6 +136,7 @@ void main(void){
 
     xmhf_hic_uapi_mempgtbl_desc_t *mempgtbldesc = (xmhf_hic_uapi_mempgtbl_desc_t *)&sourceslab_rwdatabuffer;
     xmhf_hic_uapi_physmem_desc_t *pdesc = (xmhf_hic_uapi_physmem_desc_t *)&sourceslab_rwdatabuffer;
+    u64 *value = (u64 *)&sourceslab_rwdatabuffer;
 
 
     /*mempgtbldesc->guest_slab_index = nondet_u64();
@@ -179,7 +180,7 @@ void main(void){
     cpuid = 0;*/
 
 
-    pdesc->guest_slab_index = nondet_u64();
+    /*pdesc->guest_slab_index = nondet_u64();
     pdesc->addr_to = nondet_u64();
     pdesc->addr_from = nondet_u64();
     pdesc->numbytes = nondet_u64();
@@ -190,8 +191,18 @@ void main(void){
     iparams = pdesc;
     oparams = NULL;
     src_slabid= 0;
-    cpuid = 0;
+    cpuid = 0;*/
 
+
+
+    uapicall = XMHF_HIC_UAPI;
+    uapicall_num = XMHF_HIC_UAPI_CPUSTATE;
+    uapicall_subnum = XMHF_HIC_UAPI_CPUSTATE_VMREAD;
+    reserved = nondet_u64();
+    iparams = nondet_u64();
+    oparams = value;
+    src_slabid= 0;
+    cpuid = 0;
 
 
     __xmhfhic_rtm_uapihandler(uapicall, uapicall_num, uapicall_subnum,
