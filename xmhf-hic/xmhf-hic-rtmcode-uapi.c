@@ -239,18 +239,25 @@ static void __xmhfhic_rtm_uapihandler_cpustate(u64 uapicall_subnum, u64 iparams,
         }
         break;
 
-/*
+
         case XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSREAD:{
             //iparams = NULL, oparams = x86regs64_t *
             //checks:
             //1. oparams should be within source slab memory extents
             if(!_uapicheck_is_within_slab_memory_extents(src_slabid, oparams, sizeof(x86regs64_t))){
                 _XDPRINTF_("%s[%u],%u: uapierr: oparams should be within source slab memory extents. Halting!\n", __FUNCTION__, (u32)cpuid, __LINE__);
-                HALT();
+                //HALT();
+                return;
             }
 
+            #if defined(__XMHF_VERIFICATION__)
+            assert(_uapicheck_is_within_slab_memory_extents(src_slabid, oparams, sizeof(x86regs64_t)));
+            #endif // defined
+
+            #if !defined (__XMHF_VERIFICATION__)
             memcpy(oparams, & __xmhfhic_x86vmx_archdata[(u32)cpuid].vmx_gprs,
                    sizeof(x86regs64_t));
+            #endif
         }
         break;
 
@@ -260,15 +267,23 @@ static void __xmhfhic_rtm_uapihandler_cpustate(u64 uapicall_subnum, u64 iparams,
             //1. iparams should be within source slab memory extents
             if(!_uapicheck_is_within_slab_memory_extents(src_slabid, iparams, sizeof(x86regs64_t))){
                 _XDPRINTF_("%s[%u],%u: uapierr: oparams should be within source slab memory extents. Halting!\n", __FUNCTION__, (u32)cpuid, __LINE__);
-                HALT();
+                //HALT();
+                return;
             }
 
+            #if defined(__XMHF_VERIFICATION__)
+            assert(_uapicheck_is_within_slab_memory_extents(src_slabid, iparams, sizeof(x86regs64_t)));
+            #endif // defined
+
+            #if !defined (__XMHF_VERIFICATION__)
             memcpy(& __xmhfhic_x86vmx_archdata[(u32)cpuid].vmx_gprs,
                    iparams,
                    sizeof(x86regs64_t));
+            #endif
         }
         break;
 
+/*
         case XMHF_HIC_UAPI_CPUSTATE_WRMSR:{
             //iparams = msr, oparams = value
             //checks
