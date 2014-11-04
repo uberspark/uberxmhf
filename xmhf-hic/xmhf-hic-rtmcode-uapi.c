@@ -283,17 +283,25 @@ static void __xmhfhic_rtm_uapihandler_cpustate(u64 uapicall_subnum, u64 iparams,
         }
         break;
 
-/*
+
         case XMHF_HIC_UAPI_CPUSTATE_WRMSR:{
             //iparams = msr, oparams = value
             //checks
             //1. msr cannot contain any value that is specific to HIC
             if(!( iparams != MSR_EFER && iparams != IA32_SYSENTER_CS_MSR && iparams != IA32_SYSENTER_EIP_MSR && iparams != IA32_SYSENTER_ESP_MSR)){
                 _XDPRINTF_("%s[%u],%u: uapierr: HIC specific iparams being written to. Halting!\n", __FUNCTION__, (u32)cpuid, __LINE__);
-                HALT();
+                //HALT();
+                return;
             }
 
+            #if defined(__XMHF_VERIFICATION__)
+            assert(( iparams != MSR_EFER && iparams != IA32_SYSENTER_CS_MSR && iparams != IA32_SYSENTER_EIP_MSR && iparams != IA32_SYSENTER_ESP_MSR));
+            #endif // defined
+
+
+            #if !defined (__XMHF_VERIFICATION__)
             wrmsr64((u32)iparams, oparams);
+            #endif
         }
         break;
 
@@ -304,19 +312,32 @@ static void __xmhfhic_rtm_uapihandler_cpustate(u64 uapicall_subnum, u64 iparams,
             //1. msr cannot contain any value that is specific to HIC
             if(!( iparams != MSR_EFER && iparams != IA32_SYSENTER_CS_MSR && iparams != IA32_SYSENTER_EIP_MSR && iparams != IA32_SYSENTER_ESP_MSR)){
                 _XDPRINTF_("%s[%u],%u: uapierr: HIC specific MSR being read from. Halting!\n", __FUNCTION__, (u32)cpuid, __LINE__);
-                HALT();
+                //HALT();
+                return;
             }
+
+            #if defined(__XMHF_VERIFICATION__)
+            assert(( iparams != MSR_EFER && iparams != IA32_SYSENTER_CS_MSR && iparams != IA32_SYSENTER_EIP_MSR && iparams != IA32_SYSENTER_ESP_MSR));
+            #endif // defined
 
             //2. oparams should be within source slab memory extents
             if(!_uapicheck_is_within_slab_memory_extents(src_slabid, oparams, sizeof(u64))){
                 _XDPRINTF_("%s[%u],%u: uapierr: oparams should be within source slab memory extents. Halting!\n", __FUNCTION__, (u32)cpuid, __LINE__);
-                HALT();
+                //HALT();
+                return;
             }
 
+            #if defined(__XMHF_VERIFICATION__)
+            assert(_uapicheck_is_within_slab_memory_extents(src_slabid, oparams, sizeof(u64)));
+            #endif // defined
+
+
+            #if !defined (__XMHF_VERIFICATION__)
             *(u64 *)oparams = rdmsr64((u32)iparams);
+            #endif
         }
         break;
-*/
+
         default:
             _XDPRINTF_("%s[%u]: Unknown cpustate subcall %x. Halting!\n",
                     __FUNCTION__, (u32)cpuid, uapicall_subnum);
