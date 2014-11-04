@@ -12,16 +12,17 @@ HYPAPP_HYPERDEP_DRV := $(srcdir)/driver-xhhyperdep.c
 XMHFHIC_UAPI_CODE := $(srcdir)/../xmhf-hic/xmhf-hic-rtmcode-uapi.c
 XMHFHIC_UAPI_DRV := $(srcdir)/driver-uapi.c
 
+XMHFHIC_UAPI_STUB := $(srcdir)/xmhf-hic-rtmcode-uapi-verifstubs.c
 
 
 .PHONY: all
-#all: verifyhypapps
-all: verifyuapi
+all: verifyhypapps
+#all: verifyuapi
 
 .PHONY: verifyhypapps
 verifyhypapps:
 	@echo Verifying hypapps...
-	cbmc --ILP64 --bounds-check --pointer-check -D__XMHF_VERIFICATION__ $(VFLAGS) $(HYPAPP_HYPERDEP_DRV) $(HYPAPP_HYPERDEP)
+	cbmc --ILP64 --bounds-check --pointer-check -D__XMHF_VERIFICATION__ $(VFLAGS) $(XMHFHIC_UAPI_STUB) $(HYPAPP_HYPERDEP_DRV) $(HYPAPP_HYPERDEP)
 
 .PHONY: verifyuapi
 verifyuapi:
