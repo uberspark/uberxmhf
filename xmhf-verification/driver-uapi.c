@@ -52,18 +52,34 @@
 #include <xmhf-debug.h>
 #include <xmhf-core.h>
 
+
+
+
 u8 sourceslab_rwdatabuffer[128];
 u8 destinationslab_rwdatabuffer[128];
 
+u64 guestslab_mempgtbl_buffer[1048576];
 
-slab_info_t _xmhfhic_common_slab_info_table[XMHF_HIC_MAX_SLABS] = {
+
+x_slab_info_t _x_xmhfhic_common_slab_info_table[XMHF_HIC_MAX_SLABS] = {
     //source slab
     {
-        { 0 },
+        {
+            0,
+            0,
+            0,
+            0,
+            0,
+            HIC_SLAB_X86VMXX86PC_HYPERVISOR,
+            true,
+            true,
+            0,
+            {0}
+        },
         true,
         0,
         0,
-        0,
+        HIC_SLAB_UAPICAP(XMHF_HIC_UAPI_MEMPGTBL),
         {0},
         {
             {0, 0, 0},
@@ -78,7 +94,18 @@ slab_info_t _xmhfhic_common_slab_info_table[XMHF_HIC_MAX_SLABS] = {
 
     //destination slab
     {
-        { 0 },
+        {
+            0,
+            0,
+            (u64 *)&guestslab_mempgtbl_buffer,
+            0,
+            0,
+            HIC_SLAB_X86VMXX86PC_GUEST,
+            true,
+            true,
+            0,
+            {0}
+        },
         true,
         0,
         0,
@@ -98,24 +125,33 @@ slab_info_t _xmhfhic_common_slab_info_table[XMHF_HIC_MAX_SLABS] = {
 
 
 void main(void){
-    u64 uapicall = nondet_u64();
-    u64 uapicall_num = nondet_u64();
-    u64 uapicall_subnum = nondet_u64();
-    u64 reserved = nondet_u64();
-    u64 iparams = nondet_u64();
-    u64 oparams = nondet_u64();
-    u64 src_slabid = 0;
-    u64 cpuid = 0;
+    u64 uapicall;
+    u64 uapicall_num;
+    u64 uapicall_subnum;
+    u64 reserved;
+    u64 iparams;
+    u64 oparams;
+    u64 src_slabid;
+    u64 cpuid;
 
-//    __xmhfhic_rtm_uapihandler(uapicall, uapicall_num, uapicall_subnum,
-//                               reserved, iparams, oparams,
-//                               src_slabid, cpuid);
+    xmhf_hic_uapi_mempgtbl_desc_t *mempgtbldesc = (xmhf_hic_uapi_mempgtbl_desc_t *)&sourceslab_rwdatabuffer;
 
 
-    assert(_xmhfhic_common_slab_info_table[src_slabid].slab_inuse == true);
-    //assert(_xmhfhic_common_slab_info_table[src_slabid].slab_physmem_extents[1].addr_start == (u64)&sourceslab_rwdatabuffer);
-    assert(_xmhfhic_common_slab_info_table[src_slabid].slab_physmem_extents[1].addr_start == (u64)&sourceslab_rwdatabuffer &&
-           _xmhfhic_common_slab_info_table[src_slabid].slab_physmem_extents[1].addr_end == ((u64)&sourceslab_rwdatabuffer + sizeof(sourceslab_rwdatabuffer))
-           );
+    mempgtbldesc->guest_slab_index = nondet_u64();
+    mempgtbldesc->gpa = nondet_u64();
+    mempgtbldesc->entry = nondet_u64();
+    uapicall = XMHF_HIC_UAPI;
+    uapicall_num = XMHF_HIC_UAPI_MEMPGTBL;
+    uapicall_subnum = XMHF_HIC_UAPI_MEMPGTBL_SETENTRY;
+    reserved = nondet_u64();
+    iparams = mempgtbldesc;
+    oparams = NULL;
+    src_slabid= 0;
+    cpuid = 0;
+
+    __xmhfhic_rtm_uapihandler(uapicall, uapicall_num, uapicall_subnum,
+                               reserved, iparams, oparams,
+                               src_slabid, cpuid);
+
 
 }
