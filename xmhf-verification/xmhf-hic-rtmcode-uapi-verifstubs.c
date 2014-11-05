@@ -55,6 +55,7 @@
 
 #include <xhhyperdep.h>
 #include <xhapprovexec.h>
+#include <xhsyscalllog.h>
 
 //extern x_slab_info_t _x_xmhfhic_common_slab_info_table[XMHF_HIC_MAX_SLABS];
 //extern u64 guestslab_mempgtbl_buffer[1048576];
@@ -733,8 +734,6 @@ static void __xmhfhic_rtm_uapihandler_mempgtbl(u64 uapicall_subnum, u64 iparams,
 
 
             {
-                //u64 entry=imdesc->entry;
-
                 //hyperdep invariant
                 xhhyperdep_inv_xmhf_hic_uapi_mempgtbl_setentry(imdesc);
 
@@ -742,10 +741,7 @@ static void __xmhfhic_rtm_uapihandler_mempgtbl(u64 uapicall_subnum, u64 iparams,
                 xhapprovexec_inv_xmhf_hic_uapi_mempgtbl_setentry(imdesc);
 
                 //syscalllog invariant
-                //if(!sl_activated){
-                //    assert( !(entry & 0x4) );
-                //}
-
+                xhsyscalllog_inv_xmhf_hic_uapi_mempgtbl_setentry(imdesc);
 
             }
 
