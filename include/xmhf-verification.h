@@ -57,6 +57,7 @@
 
 #ifdef __XMHF_VERIFICATION__
 	//CBMC SATABS internal functions for non-deterministic values
+	bool nondet_bool();
 	u8 nondet_u8();
 	u32 nondet_u32();
 	u64 nondet_u64();
