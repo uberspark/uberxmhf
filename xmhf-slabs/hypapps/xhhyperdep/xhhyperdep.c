@@ -61,7 +61,6 @@ XMHF_SLAB(xhhyperdep)
 #define HYPERDEP_DEACTIVATEDEP			0xC1
 
 
-bool hd_activated=false;
 
 //activate DEP for a given page (at gpa)
 static void hd_activatedep(u64 cpuindex, u64 guest_slab_index, u64 gpa){
