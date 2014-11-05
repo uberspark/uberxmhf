@@ -22,6 +22,10 @@ HYPAPP_SSTEPTRACE := $(srcdir)/../xmhf-slabs/hypapps/xhssteptrace/xhssteptrace.c
 HYPAPP_SSTEPTRACE_DRV := $(srcdir)/driver-xhssteptrace.c
 HYPAPP_VFMS += $(srcdir)/../xmhf-slabs/hypapps/xhssteptrace/xhssteptrace-vfm.c
 
+XMHFCORE_XCIHUB := $(srcdir)/../xmhf-slabs/xmhf-core/xcihub/xcihub.c
+XMHFHIC_XCIHUB_DRV := $(srcdir)/driver-xcihub.c
+
+
 XMHFHIC_UAPI_CODE := $(srcdir)/../xmhf-hic/xmhf-hic-rtmcode-uapi.c
 XMHFHIC_UAPI_DRV := $(srcdir)/driver-uapi.c
 
@@ -38,7 +42,8 @@ verifyhypapps:
 	#cbmc --ILP64 --bounds-check --pointer-check -D__XMHF_VERIFICATION__ $(VFLAGS) $(XMHFHIC_UAPI_STUB) $(HYPAPP_VFMS) $(HYPAPP_HYPERDEP_DRV) $(HYPAPP_HYPERDEP)
 	#cbmc --ILP64 --bounds-check --pointer-check -D__XMHF_VERIFICATION__ $(VFLAGS) $(XMHFHIC_UAPI_STUB) $(HYPAPP_VFMS) $(HYPAPP_APPROVEXEC_DRV) $(HYPAPP_APPROVEXEC)
 	#cbmc --ILP64 --bounds-check --pointer-check -D__XMHF_VERIFICATION__ $(VFLAGS) $(XMHFHIC_UAPI_STUB) $(HYPAPP_VFMS) $(HYPAPP_SYSCALLLOG_DRV) $(HYPAPP_SYSCALLLOG)
-	cbmc --ILP64 --bounds-check --pointer-check -D__XMHF_VERIFICATION__ $(VFLAGS) $(XMHFHIC_UAPI_STUB) $(HYPAPP_VFMS) $(HYPAPP_SSTEPTRACE_DRV) $(HYPAPP_SSTEPTRACE)
+	#cbmc --ILP64 --bounds-check --pointer-check -D__XMHF_VERIFICATION__ $(VFLAGS) $(XMHFHIC_UAPI_STUB) $(HYPAPP_VFMS) $(HYPAPP_SSTEPTRACE_DRV) $(HYPAPP_SSTEPTRACE)
+	cbmc --ILP64 --bounds-check --pointer-check -D__XMHF_VERIFICATION__ $(VFLAGS) $(XMHFHIC_UAPI_STUB) $(XMHFHIC_XCIHUB_DRV) $(XMHFCORE_XCIHUB)
 
 
 .PHONY: verifyuapi

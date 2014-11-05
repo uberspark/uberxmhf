@@ -379,10 +379,10 @@ static void __xmhfhic_rtm_uapihandler_cpustate(u64 uapicall_subnum, u64 iparams,
             assert(_uapicheck_is_within_slab_memory_extents(src_slabid, oparams, sizeof(u64)));
             #endif // defined
 */
-            {
-                u64 value = nondet_u64();
-                *(u64 *)oparams = value;
-            }
+            //{
+            //    u64 value = nondet_u64();
+            //    *(u64 *)oparams = value;
+           // }
 
 
 /*            #if !defined (__XMHF_VERIFICATION__)
