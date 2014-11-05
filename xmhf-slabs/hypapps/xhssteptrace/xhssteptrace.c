@@ -61,7 +61,8 @@ XMHF_SLAB(xhssteptrace)
 #define SSTEPTRACE_ON          			0xE1
 #define SSTEPTRACE_OFF         			0xE2
 
-static bool ssteptrace_on = false;
+//static bool ssteptrace_on = false;
+static bool ssteptrace_on= nondet_bool();
 
 
 static u8 _st_tracebuffer[256];
@@ -280,7 +281,7 @@ void xhssteptrace_interface(slab_input_params_t *iparams, u64 iparams_size, slab
         default:{
             _XDPRINTF_("%s[%u]: Unknown cbtype. Halting!\n",
                 __FUNCTION__, (u32)cpuindex);
-            HALT();
+            //HALT();
         }
     }
 
