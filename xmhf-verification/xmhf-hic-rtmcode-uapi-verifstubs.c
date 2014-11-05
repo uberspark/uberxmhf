@@ -56,6 +56,7 @@
 #include <xhhyperdep.h>
 #include <xhapprovexec.h>
 #include <xhsyscalllog.h>
+#include <xhssteptrace.h>
 
 //extern x_slab_info_t _x_xmhfhic_common_slab_info_table[XMHF_HIC_MAX_SLABS];
 //extern u64 guestslab_mempgtbl_buffer[1048576];
@@ -216,9 +217,9 @@ static void __xmhfhic_rtm_uapihandler_cpustate(u64 uapicall_subnum, u64 iparams,
             #endif // defined
 */
             {
-                u64 value;
-                value = nondet_u64();
-                *(u64 *)oparams = value;
+                //u64 value;
+                //value = nondet_u64();
+                //*(u64 *)oparams = value;
             }
 
 /*            #if !defined(__XMHF_VERIFICATION__)
@@ -244,7 +245,10 @@ static void __xmhfhic_rtm_uapihandler_cpustate(u64 uapicall_subnum, u64 iparams,
             #endif // defined
 */
 
-            //void
+            {
+                //ssteptrace invariant
+                xhssteptrace_inv_xmhf_hic_uapi_cpustate_vmwrite(iparams, oparams);
+            }
 
 /*
             #if !defined(__XMHF_VERIFICATION__)
