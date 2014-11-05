@@ -379,7 +379,7 @@ __attribute__((naked)) __attribute__ ((noinline)) static inline bool __xmhfhic_u
 }
 
 
-#if defined (__XMHF_VERIFICATION)
+#if defined (__XMHF_VERIFICATION__)
 
 #define XMHF_HIC_SLAB_UAPI_CPUSTATE(cpustatefn, iparams, oparams) \
     __xmhfhic_rtm_uapihandler(XMHF_HIC_UAPI, XMHF_HIC_UAPI_CPUSTATE, cpustatefn,0, iparams, oparams, 0, 0);\

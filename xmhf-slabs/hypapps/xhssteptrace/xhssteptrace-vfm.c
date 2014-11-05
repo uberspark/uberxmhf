@@ -44,25 +44,29 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
+// ssteptrace hypapp -- verification manifest
+// author: amit vasudevan (amitvasudevan@acm.org)
 
-/*
- *
- *  hyperdep hypapp slab decls.
- *
- *  author: amit vasudevan (amitvasudevan@acm.org)
- */
+#include <xmhf.h>
+#include <xmhf-debug.h>
+#include <xmhf-core.h>
 
-#ifndef __XHSSTEPTRACE_H__
-#define __XHSSTEPTRACE_H__
+#include <xhssteptrace.h>
 
 
-#ifndef __ASSEMBLY__
+#if defined (__XMHF_VERIFICATION__)
+static bool ssteptrace_on= nondet_bool();
+#else
+static bool ssteptrace_on = false;
+#endif
 
-void xhssteptrace_interface(slab_input_params_t *iparams, u64 iparams_size, slab_output_params_t *oparams, u64 oparams_size, u64 src_slabid, u64 cpuindex);
 
-//VFM
-static bool ssteptrace_on;
-void xhssteptrace_inv_xmhf_hic_uapi_cpustate_vmwrite(u64 encoding, u64 value);
-#endif	//__ASSEMBLY__
+void xhssteptrace_inv_xmhf_hic_uapi_cpustate_vmwrite(u64 encoding, u64 value){
+    if(!ssteptrace_on){
+        if(encoding == VMCS_CONTROL_EXCEPTION_BITMAP)
+            assert( value & (1 << 1) );
 
-#endif //__XHSSTEPTRACE_H__
+        if(encoding == VMCS_GUEST_RFLAGS)
+            assert (value & EFLAGS_TF);
+    }
+}
