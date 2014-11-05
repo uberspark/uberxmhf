@@ -62,7 +62,6 @@ XMHF_SLAB(xhsyscalllog)
 
 static u8 _sl_pagebuffer[PAGE_SIZE_4K];
 static u8 _sl_syscalldigest[SHA_DIGEST_LENGTH];
-static bool _sl_registered=false;
 static u64 shadow_sysenter_rip=0;
 
 
@@ -222,11 +221,14 @@ static u64 _hcb_trap_instruction(u64 cpuindex, u64 guest_slab_index, u64 insntyp
                 shadow_sysenter_rip = ( ((u64)(u32)r.rdx << 32) | (u32)r.rax ) ;
                 XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMWRITE, VMCS_GUEST_SYSENTER_EIP, 0);
 
-                mdesc.guest_slab_index = guest_slab_index;
-                mdesc.gpa = 0;
-                XMHF_HIC_SLAB_UAPI_MEMPGTBL(XMHF_HIC_UAPI_MEMPGTBL_GETENTRY, &mdesc, &mdesc);
-                mdesc.entry &= ~(0x7);
-                XMHF_HIC_SLAB_UAPI_MEMPGTBL(XMHF_HIC_UAPI_MEMPGTBL_SETENTRY, &mdesc, NULL);
+                if(!sl_activated){
+                    mdesc.guest_slab_index = guest_slab_index;
+                    mdesc.gpa = 0;
+                    XMHF_HIC_SLAB_UAPI_MEMPGTBL(XMHF_HIC_UAPI_MEMPGTBL_GETENTRY, &mdesc, &mdesc);
+                    mdesc.entry &= ~(0x7);
+                    XMHF_HIC_SLAB_UAPI_MEMPGTBL(XMHF_HIC_UAPI_MEMPGTBL_SETENTRY, &mdesc, NULL);
+                    sl_activated=true;
+                }
 
                 status = XC_HYPAPPCB_NOCHAIN;
             }
