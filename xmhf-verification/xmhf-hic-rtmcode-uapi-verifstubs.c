@@ -744,13 +744,11 @@ static void __xmhfhic_rtm_uapihandler_mempgtbl(u64 uapicall_subnum, u64 iparams,
 */
 
 
-/*            {
-                u64 entry=imdesc->entry;
+            {
+                //u64 entry=imdesc->entry;
 
                 //hyperdep invariant
-                if(!hd_activated){
-                    assert(!(entry & 0x4));
-                }
+                xhhyperdep_inv_xmhf_hic_uapi_mempgtbl_setentry(imdesc);
 
                 //approvexec invariant
                 //if(!ae_activated){
@@ -759,12 +757,12 @@ static void __xmhfhic_rtm_uapihandler_mempgtbl(u64 uapicall_subnum, u64 iparams,
 
 
                 //syscalllog invariant
-                if(!sl_activated){
-                    assert( !(entry & 0x4) );
-                }
+                //if(!sl_activated){
+                //    assert( !(entry & 0x4) );
+                //}
 
 
-            }*/
+            }
 
 
 

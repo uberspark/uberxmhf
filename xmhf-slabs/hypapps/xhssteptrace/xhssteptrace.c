@@ -61,9 +61,11 @@ XMHF_SLAB(xhssteptrace)
 #define SSTEPTRACE_ON          			0xE1
 #define SSTEPTRACE_OFF         			0xE2
 
-//static bool ssteptrace_on = false;
+#if defined (__XMHF_VERIFICATION__)
 static bool ssteptrace_on= nondet_bool();
-
+#else
+static bool ssteptrace_on = false;
+#endif
 
 static u8 _st_tracebuffer[256];
 
