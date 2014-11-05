@@ -26,6 +26,11 @@ XMHFCORE_XCIHUB := $(srcdir)/../xmhf-slabs/xmhf-core/xcihub/xcihub.c
 XMHFHIC_XCIHUB_DRV := $(srcdir)/driver-xcihub.c
 
 
+XMHFCORE_XCINIT := $(srcdir)/../xmhf-slabs/xmhf-core/xcinit/xcinit.c
+XMHFHIC_XCINIT_DRV := $(srcdir)/driver-xcinit.c
+
+
+
 XMHFHIC_UAPI_CODE := $(srcdir)/../xmhf-hic/xmhf-hic-rtmcode-uapi.c
 XMHFHIC_UAPI_DRV := $(srcdir)/driver-uapi.c
 
@@ -33,8 +38,14 @@ XMHFHIC_UAPI_STUB := $(srcdir)/xmhf-hic-rtmcode-uapi-verifstubs.c
 
 
 .PHONY: all
-all: verifyhypapps
+all: verifyinit
+#all: verifyhypapps
 #all: verifyuapi
+
+
+.PHONY: verifyinit
+verifyinit:
+	cbmc --ILP64 --bounds-check --pointer-check -D__XMHF_VERIFICATION__ $(VFLAGS) $(XMHFHIC_UAPI_STUB) $(XMHFHIC_XCINIT_DRV) $(XMHFCORE_XCINIT)
 
 .PHONY: verifyhypapps
 verifyhypapps:
