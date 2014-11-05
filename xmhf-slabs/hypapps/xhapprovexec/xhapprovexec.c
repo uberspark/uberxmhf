@@ -290,7 +290,7 @@ void xhapprovexec_interface(slab_input_params_t *iparams, u64 iparams_size, slab
         default:{
             _XDPRINTF_("%s[%u]: Unknown cbtype. Halting!\n",
                 __FUNCTION__, (u32)cpuindex);
-            HALT();
+            //HALT();
         }
     }
 
