@@ -50,6 +50,9 @@
 
 #include <xcinit.h>
 
+extern x_slab_info_t _x_xmhfhic_common_slab_info_table[XMHF_HIC_MAX_SLABS];
+
+
 //////
 XMHF_SLAB(xcinit)
 
@@ -618,7 +621,7 @@ void xcinit_interface(slab_input_params_t *iparams, u64 iparams_size, slab_outpu
         u64 entries_pml4t[PAE_PTRS_PER_PML4T];
         u64 entries_pdpt[PAE_PTRS_PER_PDPT];
 
-        u64 guest_slab_header_paddr = _xmhfhic_common_slab_info_table[XMHF_GUEST_SLAB_XCGUESTSLAB].slab_physmem_extents[1].addr_start;
+        u64 guest_slab_header_paddr = _x_xmhfhic_common_slab_info_table[XMHF_GUEST_SLAB_XCGUESTSLAB].slab_physmem_extents[1].addr_start;
         u64 guest_slab_pml4t_paddr = guest_slab_header_paddr + offsetof(guest_slab_header_t, lvl2mempgtbl_pml4t);
         u64 guest_slab_pdpt_paddr = guest_slab_header_paddr + offsetof(guest_slab_header_t, lvl2mempgtbl_pdpt);
         u64 guest_slab_pdts_paddr = guest_slab_header_paddr + offsetof(guest_slab_header_t, lvl2mempgtbl_pdts);        u64 guest_slab_gdt_paddr = guest_slab_header_paddr + offsetof(guest_slab_header_t, gdt);

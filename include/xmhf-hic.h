@@ -71,8 +71,12 @@
 #define XMHF_HYP_SLAB_XHAPPROVEXEC          (5)
 #define XMHF_HYP_SLAB_XHSYSCALLLOG          (6)
 #define XMHF_HYP_SLAB_XHSSTEPTRACE          (7)
-#define XMHF_GUEST_SLAB_XCGUESTSLAB         (8)
 
+#if defined (__XMHF_VERIFICATION__)
+#define XMHF_GUEST_SLAB_XCGUESTSLAB         (1)
+#else
+#define XMHF_GUEST_SLAB_XCGUESTSLAB         (8)
+#endif
 
 #define XMHF_HIC_SLABCALL                   (0xA0)
 #define XMHF_HIC_SLABRET                    (0xA1)
