@@ -605,7 +605,6 @@ static void __xmhfhic_rtm_uapihandler_mempgtbl(u64 uapicall_subnum, u64 iparams,
             //iparams = xmhf_hic_uapi_mempgtbl_desc_t *; oparams = unused
             xmhf_hic_uapi_mempgtbl_desc_t *imdesc= (xmhf_hic_uapi_mempgtbl_desc_t *)iparams;
 
-
             //checks:
             //1. iparams is within source slab memory extents
             if(!_uapicheck_is_within_slab_memory_extents(src_slabid, iparams, sizeof(xmhf_hic_uapi_mempgtbl_desc_t))){
@@ -665,7 +664,6 @@ static void __xmhfhic_rtm_uapihandler_mempgtbl(u64 uapicall_subnum, u64 iparams,
                     //HALT();
                     return;
                 }
-
                 #if defined (__XMHF_VERIFICATION__)
                 assert( _uapicheck_is_within_slab_memory_extents(imdesc->guest_slab_index, (imdesc->entry & 0xFFFFFFFFFFFFF000UL), 1) );
                 #endif // defined
