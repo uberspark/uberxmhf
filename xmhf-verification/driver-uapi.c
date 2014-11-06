@@ -139,7 +139,7 @@ void main(void){
     u64 *value = (u64 *)&sourceslab_rwdatabuffer;
     x86regs64_t *regs = (x86regs64_t *)&sourceslab_rwdatabuffer;
 
-    mempgtbldesc->guest_slab_index = nondet_u64();
+/*    mempgtbldesc->guest_slab_index = nondet_u64();
     mempgtbldesc->gpa = nondet_u64();
     mempgtbldesc->entry = nondet_u64();
     uapicall = XMHF_HIC_UAPI;
@@ -150,7 +150,7 @@ void main(void){
     oparams = NULL;
     src_slabid= 0;
     cpuid = 0;
-
+*/
 
 /*    mempgtbldesc->guest_slab_index = nondet_u64();
     mempgtbldesc->gpa = nondet_u64();
@@ -180,7 +180,7 @@ void main(void){
     cpuid = 0;*/
 
 
-/*    pdesc->guest_slab_index = nondet_u64();
+    pdesc->guest_slab_index = nondet_u64();
     pdesc->addr_to = nondet_u64();
     pdesc->addr_from = nondet_u64();
     pdesc->numbytes = nondet_u64();
@@ -191,7 +191,7 @@ void main(void){
     iparams = pdesc;
     oparams = NULL;
     src_slabid= 0;
-    cpuid = 0;*/
+    cpuid = 0;
 
 
 
