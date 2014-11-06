@@ -55,8 +55,8 @@
 
 
 
-u8 sourceslab_rwdatabuffer[128];
-u8 destinationslab_rwdatabuffer[128];
+u64 sourceslab_rwdatabuffer[64];
+u64 destinationslab_rwdatabuffer[64];
 
 u64 guestslab_mempgtbl_buffer[1048576];
 
@@ -139,7 +139,7 @@ void main(void){
     u64 *value = (u64 *)&sourceslab_rwdatabuffer;
     x86regs64_t *regs = (x86regs64_t *)&sourceslab_rwdatabuffer;
 
-    /*mempgtbldesc->guest_slab_index = nondet_u64();
+    mempgtbldesc->guest_slab_index = nondet_u64();
     mempgtbldesc->gpa = nondet_u64();
     mempgtbldesc->entry = nondet_u64();
     uapicall = XMHF_HIC_UAPI;
@@ -149,10 +149,10 @@ void main(void){
     iparams = mempgtbldesc;
     oparams = NULL;
     src_slabid= 0;
-    cpuid = 0;*/
+    cpuid = 0;
 
 
-    /*mempgtbldesc->guest_slab_index = nondet_u64();
+/*    mempgtbldesc->guest_slab_index = nondet_u64();
     mempgtbldesc->gpa = nondet_u64();
     mempgtbldesc->entry = nondet_u64();
     uapicall = XMHF_HIC_UAPI;
@@ -166,7 +166,7 @@ void main(void){
 
 
 
-    /*pdesc->guest_slab_index = nondet_u64();
+/*    pdesc->guest_slab_index = nondet_u64();
     pdesc->addr_to = nondet_u64();
     pdesc->addr_from = nondet_u64();
     pdesc->numbytes = nondet_u64();
@@ -180,7 +180,7 @@ void main(void){
     cpuid = 0;*/
 
 
-    /*pdesc->guest_slab_index = nondet_u64();
+/*    pdesc->guest_slab_index = nondet_u64();
     pdesc->addr_to = nondet_u64();
     pdesc->addr_from = nondet_u64();
     pdesc->numbytes = nondet_u64();
@@ -224,6 +224,7 @@ void main(void){
     src_slabid= 0;
     cpuid = 0;*/
 
+
 /*    uapicall = XMHF_HIC_UAPI;
     uapicall_num = XMHF_HIC_UAPI_CPUSTATE;
     uapicall_subnum = XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSWRITE;
@@ -244,14 +245,30 @@ void main(void){
 
 
 
-    uapicall = XMHF_HIC_UAPI;
+   /* uapicall = XMHF_HIC_UAPI;
     uapicall_num = XMHF_HIC_UAPI_CPUSTATE;
     uapicall_subnum = XMHF_HIC_UAPI_CPUSTATE_RDMSR;
     reserved = nondet_u64();
     iparams = nondet_u64();
     oparams = value;
     src_slabid= 0;
+    cpuid = 0;*/
+
+
+/*    sourceslab_rwdatabuffer[0] = nondet_u64();
+    sourceslab_rwdatabuffer[1] = nondet_u64();
+    sourceslab_rwdatabuffer[2] = nondet_u64();
+
+
+    uapicall = nondet_u64();
+    uapicall_num = nondet_u64();
+    uapicall_subnum = nondet_u64();
+    reserved = nondet_u64();
+    iparams = (u64)&sourceslab_rwdatabuffer;
+    oparams = (u64)&sourceslab_rwdatabuffer;
+    src_slabid= 0;
     cpuid = 0;
+*/
 
 
     __xmhfhic_rtm_uapihandler(uapicall, uapicall_num, uapicall_subnum,
