@@ -53,9 +53,16 @@
 #include <xmhf.h>
 #include <xmhf-debug.h>
 
+extern x_slab_info_t _x_xmhfhic_common_slab_info_table[XMHF_HIC_MAX_SLABS];
+extern u64 guestslab_mempgtbl_buffer[1048576];
+
+u64 __xmhfhic_safestack_indices[MAX_PLATFORM_CPUS] = { 0 };
+
+__xmhfhic_safestack_element_t __xmhfhic_safestack[MAX_PLATFORM_CPUS][512];
+
 
 bool __xmhfhic_callcaps(u64 src_slabid, u64 dst_slabid){
-    if(_xmhfhic_common_slab_info_table[src_slabid].slab_callcaps & HIC_SLAB_CALLCAP(dst_slabid))
+    if( _x_xmhfhic_common_slab_info_table[src_slabid].slab_callcaps & HIC_SLAB_CALLCAP(dst_slabid))
         return true;
     else
         return false;
@@ -65,32 +72,36 @@ bool __xmhfhic_callcaps(u64 src_slabid, u64 dst_slabid){
 void __xmhfhic_safepush(u64 cpuid, u64 src_slabid, u64 dst_slabid, u64 hic_calltype, u64 return_address,
                         slab_output_params_t *oparams, slab_output_params_t *newoparams, u64 oparams_size, u64 iparams_size){
     u64 safestack_index =  __xmhfhic_safestack_indices[(u32)cpuid];
-    __xmhfhic_safestack[(u32)cpuid][safestack_index].src_slabid = src_slabid;
-    __xmhfhic_safestack[(u32)cpuid][safestack_index].dst_slabid = dst_slabid;
-    __xmhfhic_safestack[(u32)cpuid][safestack_index].hic_calltype = hic_calltype;
-    __xmhfhic_safestack[(u32)cpuid][safestack_index].return_address = return_address;
-    __xmhfhic_safestack[(u32)cpuid][safestack_index].oparams = oparams;
-    __xmhfhic_safestack[(u32)cpuid][safestack_index].newoparams = newoparams;
-    __xmhfhic_safestack[(u32)cpuid][safestack_index].oparams_size = oparams_size;
-    __xmhfhic_safestack[(u32)cpuid][safestack_index].iparams_size = iparams_size;
+    if(safestack_index >=0 && safestack_index < 512) {
+        __xmhfhic_safestack[(u32)cpuid][safestack_index].src_slabid = src_slabid;
+        __xmhfhic_safestack[(u32)cpuid][safestack_index].dst_slabid = dst_slabid;
+        __xmhfhic_safestack[(u32)cpuid][safestack_index].hic_calltype = hic_calltype;
+        __xmhfhic_safestack[(u32)cpuid][safestack_index].return_address = return_address;
+        __xmhfhic_safestack[(u32)cpuid][safestack_index].oparams = oparams;
+        __xmhfhic_safestack[(u32)cpuid][safestack_index].newoparams = newoparams;
+        __xmhfhic_safestack[(u32)cpuid][safestack_index].oparams_size = oparams_size;
+        __xmhfhic_safestack[(u32)cpuid][safestack_index].iparams_size = iparams_size;
 
-    safestack_index++;
-    __xmhfhic_safestack_indices[(u32)cpuid] = safestack_index;
+        safestack_index++;
+        __xmhfhic_safestack_indices[(u32)cpuid] = safestack_index;
+    }
 }
 
 void __xmhfhic_safepop(u64 cpuid, u64 *src_slabid, u64 *dst_slabid, u64 *hic_calltype, u64 *return_address,
                        slab_output_params_t **oparams, slab_output_params_t **newoparams, u64 *oparams_size, u64 *iparams_size){
     u64 safestack_index =  __xmhfhic_safestack_indices[(u32)cpuid]-1;
-    *src_slabid = __xmhfhic_safestack[(u32)cpuid][safestack_index].src_slabid;
-    *dst_slabid = __xmhfhic_safestack[(u32)cpuid][safestack_index].dst_slabid;
-    *hic_calltype = __xmhfhic_safestack[(u32)cpuid][safestack_index].hic_calltype;
-    *return_address = __xmhfhic_safestack[(u32)cpuid][safestack_index].return_address;
-    *oparams = __xmhfhic_safestack[(u32)cpuid][safestack_index].oparams;
-    *newoparams = __xmhfhic_safestack[(u32)cpuid][safestack_index].newoparams;
-    *oparams_size = __xmhfhic_safestack[(u32)cpuid][safestack_index].oparams_size;
-    *iparams_size = __xmhfhic_safestack[(u32)cpuid][safestack_index].iparams_size;
+    if(safestack_index >=0 && safestack_index < 512){
+        *src_slabid = __xmhfhic_safestack[(u32)cpuid][safestack_index].src_slabid;
+        *dst_slabid = __xmhfhic_safestack[(u32)cpuid][safestack_index].dst_slabid;
+        *hic_calltype = __xmhfhic_safestack[(u32)cpuid][safestack_index].hic_calltype;
+        *return_address = __xmhfhic_safestack[(u32)cpuid][safestack_index].return_address;
+        *oparams = __xmhfhic_safestack[(u32)cpuid][safestack_index].oparams;
+        *newoparams = __xmhfhic_safestack[(u32)cpuid][safestack_index].newoparams;
+        *oparams_size = __xmhfhic_safestack[(u32)cpuid][safestack_index].oparams_size;
+        *iparams_size = __xmhfhic_safestack[(u32)cpuid][safestack_index].iparams_size;
 
-    __xmhfhic_safestack_indices[(u32)cpuid] = safestack_index;
+        __xmhfhic_safestack_indices[(u32)cpuid] = safestack_index;
+    }
 }
 
 
@@ -503,33 +514,33 @@ void __xmhfhic_rtm_trampoline(u64 hic_calltype, slab_input_params_t *iparams, u6
                     slab_output_params_t *newoparams;
 
                     //save return RSP
-                    _xmhfhic_common_slab_info_table[src_slabid].archdata.slabtos[(u32)cpuid] = return_rsp;
+                    _x_xmhfhic_common_slab_info_table[src_slabid].archdata.slabtos[(u32)cpuid] = return_rsp;
 
                     //copy iparams to internal buffer __paramsbuffer
-                    memcpy(&__paramsbuffer, iparams, (iparams_size > 1024 ? 1024 : iparams_size) );
+                    //memcpy(&__paramsbuffer, iparams, (iparams_size > 1024 ? 1024 : iparams_size) );
 
                     //switch to destination slab page tables
                     asm volatile(
                          "movq %0, %%rax \r\n"
                          "movq %%rax, %%cr3 \r\n"
                         :
-                        : "m" (_xmhfhic_common_slab_info_table[dst_slabid].archdata.mempgtbl_cr3)
+                        : "m" (_x_xmhfhic_common_slab_info_table[dst_slabid].archdata.mempgtbl_cr3)
                         : "rax"
                     );
 
                     //make space on destination slab stack for iparams and copy iparams and obtain newiparams
                     {
-                        _xmhfhic_common_slab_info_table[dst_slabid].archdata.slabtos[(u32)cpuid] -= iparams_size;
-                        newiparams = (slab_input_params_t *) _xmhfhic_common_slab_info_table[dst_slabid].archdata.slabtos[(u32)cpuid];
-                        memcpy((void *)_xmhfhic_common_slab_info_table[dst_slabid].archdata.slabtos[(u32)cpuid],
-                               &__paramsbuffer, (iparams_size > 1024 ? 1024 : iparams_size) );
+                        _x_xmhfhic_common_slab_info_table[dst_slabid].archdata.slabtos[(u32)cpuid] -= iparams_size;
+                        newiparams = (slab_input_params_t *) _x_xmhfhic_common_slab_info_table[dst_slabid].archdata.slabtos[(u32)cpuid];
+                        //memcpy((void *)_xmhfhic_common_slab_info_table[dst_slabid].archdata.slabtos[(u32)cpuid],
+                        //       &__paramsbuffer, (iparams_size > 1024 ? 1024 : iparams_size) );
                     }
 
 
                     //make space on destination slab stack for oparams and obtain newoparams
                     {
-                        _xmhfhic_common_slab_info_table[dst_slabid].archdata.slabtos[(u32)cpuid] -= oparams_size;
-                        newoparams = (slab_output_params_t *) _xmhfhic_common_slab_info_table[dst_slabid].archdata.slabtos[(u32)cpuid];
+                        _x_xmhfhic_common_slab_info_table[dst_slabid].archdata.slabtos[(u32)cpuid] -= oparams_size;
+                        newoparams = (slab_output_params_t *) _x_xmhfhic_common_slab_info_table[dst_slabid].archdata.slabtos[(u32)cpuid];
                     }
 
 
@@ -574,8 +585,8 @@ void __xmhfhic_rtm_trampoline(u64 hic_calltype, slab_input_params_t *iparams, u6
                         :
                         : "m" (newiparams),
                           "m" (iparams_size),
-                          "m" (_xmhfhic_common_slab_info_table[dst_slabid].entrystub),
-                          "m" (_xmhfhic_common_slab_info_table[dst_slabid].archdata.slabtos[(u32)cpuid]),
+                          "m" (_x_xmhfhic_common_slab_info_table[dst_slabid].entrystub),
+                          "m" (_x_xmhfhic_common_slab_info_table[dst_slabid].archdata.slabtos[(u32)cpuid]),
                           "m" (newoparams),
                           "m" (oparams_size),
                           "m" (src_slabid),
@@ -592,9 +603,9 @@ void __xmhfhic_rtm_trampoline(u64 hic_calltype, slab_input_params_t *iparams, u6
                     //_XDPRINTF_("%s[%u]: going to invoke guest slab %u\n",
                     //           __FUNCTION__, (u32)cpuid, dst_slabid);
                     xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VPID, dst_slabid+1);
-                    xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_EPT_POINTER_FULL, _xmhfhic_common_slab_info_table[dst_slabid].archdata.mempgtbl_cr3);
-                    xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_RSP, _xmhfhic_common_slab_info_table[dst_slabid].archdata.slabtos[(u32)cpuid]);
-                    xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_RIP, _xmhfhic_common_slab_info_table[dst_slabid].entrystub);
+                    xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_EPT_POINTER_FULL, _x_xmhfhic_common_slab_info_table[dst_slabid].archdata.mempgtbl_cr3);
+                    xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_RSP, _x_xmhfhic_common_slab_info_table[dst_slabid].archdata.slabtos[(u32)cpuid]);
+                    xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_RIP, _x_xmhfhic_common_slab_info_table[dst_slabid].entrystub);
 
                     asm volatile (
                             "vmlaunch\r\n"
@@ -641,9 +652,9 @@ void __xmhfhic_rtm_trampoline(u64 hic_calltype, slab_input_params_t *iparams, u6
 
             }
 
+
         }
         break;
-
 
         case XMHF_HIC_SLABRET:{
             __xmhfhic_safestack_element_t elem;
@@ -667,23 +678,23 @@ void __xmhfhic_rtm_trampoline(u64 hic_calltype, slab_input_params_t *iparams, u6
 
 
             //copy newoparams to internal buffer __paramsbuffer
-            memcpy(&__paramsbuffer, elem.newoparams, (elem.oparams_size > 1024 ? 1024 : elem.oparams_size) );
+            //memcpy(&__paramsbuffer, elem.newoparams, (elem.oparams_size > 1024 ? 1024 : elem.oparams_size) );
 
             //adjust slab stack by popping off iparams_size and oparams_size
-            _xmhfhic_common_slab_info_table[src_slabid].archdata.slabtos[(u32)cpuid] += (elem.iparams_size+elem.oparams_size);
+             _x_xmhfhic_common_slab_info_table[src_slabid].archdata.slabtos[(u32)cpuid] += (elem.iparams_size+elem.oparams_size);
 
             //switch to destination slab page tables
             asm volatile(
                  "movq %0, %%rax \r\n"
                  "movq %%rax, %%cr3 \r\n"
                 :
-                : "m" (_xmhfhic_common_slab_info_table[dst_slabid].archdata.mempgtbl_cr3)
+                : "m" ( _x_xmhfhic_common_slab_info_table[dst_slabid].archdata.mempgtbl_cr3)
                 : "rax"
             );
 
 
             //copy internal buffer __paramsbuffer to oparams
-            memcpy(elem.oparams, &__paramsbuffer, (elem.oparams_size > 1024 ? 1024 : elem.oparams_size) );
+            //memcpy(elem.oparams, &__paramsbuffer, (elem.oparams_size > 1024 ? 1024 : elem.oparams_size) );
 
             //return back to slab
             /*
@@ -706,7 +717,7 @@ void __xmhfhic_rtm_trampoline(u64 hic_calltype, slab_input_params_t *iparams, u6
                  //"1: jmp 1b \r\n"
                 :
                 : "m" (elem.return_address),
-                  "m" (_xmhfhic_common_slab_info_table[elem.src_slabid].archdata.slabtos[(u32)cpuid])
+                  "m" ( _x_xmhfhic_common_slab_info_table[elem.src_slabid].archdata.slabtos[(u32)cpuid])
                 : "rdx", "rcx"
             );
 
@@ -731,29 +742,33 @@ void __xmhfhic_rtm_trampoline(u64 hic_calltype, slab_input_params_t *iparams, u6
                 slab_output_params_t *newoparams;
 
                 //force destination slab to be the exception slab
+                #if defined (__XMHF_VERIFICATION__)
+                dst_slabid = 0;
+                #else
                 dst_slabid = XMHF_HYP_SLAB_XCEXHUB;
+                #endif // defined
 
                 //save return RSP
-                _xmhfhic_common_slab_info_table[src_slabid].archdata.slabtos[(u32)cpuid] = return_rsp;
+                 _x_xmhfhic_common_slab_info_table[src_slabid].archdata.slabtos[(u32)cpuid] = return_rsp;
 
                 //copy iparams to internal buffer __paramsbuffer
-                memcpy(&__paramsbuffer, iparams, (iparams_size > 1024 ? 1024 : iparams_size) );
+                //memcpy(&__paramsbuffer, iparams, (iparams_size > 1024 ? 1024 : iparams_size) );
 
                 //switch to destination slab page tables
                 asm volatile(
                      "movq %0, %%rax \r\n"
                      "movq %%rax, %%cr3 \r\n"
                     :
-                    : "m" (_xmhfhic_common_slab_info_table[dst_slabid].archdata.mempgtbl_cr3)
+                    : "m" ( _x_xmhfhic_common_slab_info_table[dst_slabid].archdata.mempgtbl_cr3)
                     : "rax"
                 );
 
                 //make space on destination slab stack for iparams and copy iparams and obtain newiparams
                 {
-                    _xmhfhic_common_slab_info_table[dst_slabid].archdata.slabtos[(u32)cpuid] -= iparams_size;
-                    newiparams = (slab_input_params_t *) _xmhfhic_common_slab_info_table[dst_slabid].archdata.slabtos[(u32)cpuid];
-                    memcpy((void *)_xmhfhic_common_slab_info_table[dst_slabid].archdata.slabtos[(u32)cpuid],
-                           &__paramsbuffer, (iparams_size > 1024 ? 1024 : iparams_size) );
+                     _x_xmhfhic_common_slab_info_table[dst_slabid].archdata.slabtos[(u32)cpuid] -= iparams_size;
+                    newiparams = (slab_input_params_t *)  _x_xmhfhic_common_slab_info_table[dst_slabid].archdata.slabtos[(u32)cpuid];
+                    //memcpy((void *) _x_xmhfhic_common_slab_info_table[dst_slabid].archdata.slabtos[(u32)cpuid],
+                    //       &__paramsbuffer, (iparams_size > 1024 ? 1024 : iparams_size) );
                 }
 
                 //push cpuid, src_slabid, dst_slabid, hic_calltype, return_address, iparams, new iparams and iparams_size tuple to
@@ -797,8 +812,8 @@ void __xmhfhic_rtm_trampoline(u64 hic_calltype, slab_input_params_t *iparams, u6
                     :
                     : "m" (newiparams),
                       "m" (iparams_size),
-                      "m" (_xmhfhic_common_slab_info_table[dst_slabid].entrystub),
-                      "m" (_xmhfhic_common_slab_info_table[dst_slabid].archdata.slabtos[(u32)cpuid]),
+                      "m" ( _x_xmhfhic_common_slab_info_table[dst_slabid].entrystub),
+                      "m" ( _x_xmhfhic_common_slab_info_table[dst_slabid].archdata.slabtos[(u32)cpuid]),
                       "i" (0),
                       "i" (0),
                       "m" (src_slabid),
@@ -839,21 +854,23 @@ void __xmhfhic_rtm_trampoline(u64 hic_calltype, slab_input_params_t *iparams, u6
             }
 
             //adjust slab stack by popping off iparams_size
-            _xmhfhic_common_slab_info_table[src_slabid].archdata.slabtos[(u32)cpuid] += (elem.iparams_size);
+             _x_xmhfhic_common_slab_info_table[src_slabid].archdata.slabtos[(u32)cpuid] += (elem.iparams_size);
 
             //switch to destination slab page tables
             asm volatile(
                  "movq %0, %%rax \r\n"
                  "movq %%rax, %%cr3 \r\n"
                 :
-                : "m" (_xmhfhic_common_slab_info_table[dst_slabid].archdata.mempgtbl_cr3)
+                : "m" ( _x_xmhfhic_common_slab_info_table[dst_slabid].archdata.mempgtbl_cr3)
                 : "rax"
             );
 
             //return back to slab where exception originally occurred
             {
+                    #if !defined (__XMHF_VERIFICATION__)
                     x86vmx_exception_frame_errcode_t *exframe = (x86vmx_exception_frame_errcode_t *)elem.oparams;
                     exframe->orig_rip = elem.return_address;
+                    #endif
 
                     _XDPRINTF_("%s[%u]: returning from exception to %016llx\n",
                         __FUNCTION__, (u32)cpuid, exframe->orig_rip);
@@ -906,14 +923,18 @@ void __xmhfhic_rtm_trampoline(u64 hic_calltype, slab_input_params_t *iparams, u6
 
         case XMHF_HIC_SLABCALLINTERCEPT:{
             //force destination slab to be the intercept slab
+            #if defined (__XMHF_VERIFICATION__)
+            dst_slabid = 0;
+            #else
             dst_slabid = XMHF_HYP_SLAB_XCIHUB;
+            #endif // defined
 
             //_XDPRINTF_("%s[%u]: Trampoline Intercept call\n",
             //        __FUNCTION__, (u32)cpuid, read_rsp());
 
             //copy iparams (CPU GPR state) into arch. data for cpuid
-            memcpy(&__xmhfhic_x86vmx_archdata[(u32)cpuid].vmx_gprs,
-                   iparams, iparams_size);
+            //memcpy(&__xmhfhic_x86vmx_archdata[(u32)cpuid].vmx_gprs,
+            //       iparams, iparams_size);
 
 
             //push cpuid, src_slabid, dst_slabid, hic_calltype tuple to
@@ -931,7 +952,7 @@ void __xmhfhic_rtm_trampoline(u64 hic_calltype, slab_input_params_t *iparams, u6
                  "movq %0, %%rax \r\n"
                  "movq %%rax, %%cr3 \r\n"
                 :
-                : "m" (_xmhfhic_common_slab_info_table[dst_slabid].archdata.mempgtbl_cr3)
+                : "m" ( _x_xmhfhic_common_slab_info_table[dst_slabid].archdata.mempgtbl_cr3)
                 : "rax"
             );
 
@@ -966,8 +987,8 @@ void __xmhfhic_rtm_trampoline(u64 hic_calltype, slab_input_params_t *iparams, u6
                 :
                 : "i" (0),
                   "i" (0),
-                  "m" (_xmhfhic_common_slab_info_table[dst_slabid].entrystub),
-                  "m" (_xmhfhic_common_slab_info_table[dst_slabid].archdata.slabtos[(u32)cpuid]),
+                  "m" ( _x_xmhfhic_common_slab_info_table[dst_slabid].entrystub),
+                  "m" ( _x_xmhfhic_common_slab_info_table[dst_slabid].archdata.slabtos[(u32)cpuid]),
                   "i" (0),
                   "i" (0),
                   "m" (src_slabid),
@@ -977,6 +998,7 @@ void __xmhfhic_rtm_trampoline(u64 hic_calltype, slab_input_params_t *iparams, u6
 
         }
         break;
+
 
 
         case XMHF_HIC_SLABRETINTERCEPT:{
@@ -1035,8 +1057,6 @@ void __xmhfhic_rtm_trampoline(u64 hic_calltype, slab_input_params_t *iparams, u6
 
         }
         break;
-
-
 
 
 
