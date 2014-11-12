@@ -654,6 +654,7 @@ __attribute__((naked)) __attribute__ ((section(".hic_entrystub"))) __attribute__
 void xmhfhic_entry(void){
     u64 pgtblbase;
 
+#if !defined(__XMHF_VERIFICATION__)
 	//initialize debugging early on
 	xmhfhw_platform_serial_init((char *)&xcbootinfo->debugcontrol_buffer);
 
@@ -683,6 +684,7 @@ void xmhfhic_entry(void){
 			  xcbootinfo->memmapinfo_buffer[i].type);
 		}
   	}
+#endif
 
     //initialize slab info table based on setup data
     xmhfhic_arch_setup_slab_info();
@@ -691,10 +693,10 @@ void xmhfhic_entry(void){
     xmhfhic_arch_sanity_check_requirements();
 
     //setup slab system device allocation and device page tables
-    xmhfhic_arch_setup_slab_device_allocation();
+    //xmhfhic_arch_setup_slab_device_allocation();
 
     //setup slab memory page tables
-    xmhfhic_arch_setup_slab_mem_page_tables();
+    //xmhfhic_arch_setup_slab_mem_page_tables();
 
     //setup base CPU data structures
     xmhfhic_arch_setup_base_cpu_data_structures();
@@ -710,6 +712,10 @@ void xmhfhic_entry(void){
 
 void xmhfhic_smp_entry(u64 cpuid){
     bool isbsp = (cpuid & 0x8000000000000000ULL) ? true : false;
+    #if defined (__XMHF_VERIFICATION__)
+    cpuid = 0;
+    isbsp = true;
+    #endif // defined
 
     _XDPRINTF_("%s[%u,%u]: rsp=%016llx. Starting...\n",
             __FUNCTION__, cpuid, isbsp, read_rsp());
@@ -717,7 +723,7 @@ void xmhfhic_smp_entry(u64 cpuid){
     xmhf_hic_arch_setup_cpu_state(cpuid);
 
     //relinquish HIC initialization and move on to the first slab
-    xmhfhic_arch_relinquish_control_to_init_slab(cpuid);
+    //xmhfhic_arch_relinquish_control_to_init_slab(cpuid);
 
     _XDPRINTF_("%s[%u,%u]: Should never be here. Halting!\n", __FUNCTION__, cpuid, isbsp);
     HALT();
@@ -749,6 +755,7 @@ void xmhfhic_arch_setup_slab_info(void){
                 _xmhfhic_init_setupdata_slab_caps[i].slab_uapicaps;
 
 
+            #if !defined(__XMHF_VERIFICATION__)
             memcpy(&_xmhfhic_common_slab_info_table[i].slab_devices,
                    &_xmhfhic_init_setupdata_slab_caps[i].slab_devices,
                    sizeof(_xmhfhic_common_slab_info_table[0].slab_devices));
@@ -756,6 +763,8 @@ void xmhfhic_arch_setup_slab_info(void){
             memcpy(_xmhfhic_common_slab_info_table[i].slab_physmem_extents,
                    _xmhfhic_init_setupdata_slab_physmem_extents[i],
                    sizeof(_xmhfhic_common_slab_info_table[0].slab_physmem_extents));
+            #endif
+
             _xmhfhic_common_slab_info_table[i].entrystub = _xmhfhic_common_slab_info_table[i].slab_physmem_extents[0].addr_start;
 
             //arch. specific
@@ -765,6 +774,7 @@ void xmhfhic_arch_setup_slab_info(void){
             _xmhfhic_common_slab_info_table[i].archdata.mempgtbl_initialized=false;
             _xmhfhic_common_slab_info_table[i].archdata.devpgtbl_initialized=false;
 
+            #if !defined(__XMHF_VERIFICATION__)
             {
                 u32 j;
                 u64 *slab_stackhdr = (u64 *)_xmhfhic_common_slab_info_table[i].slab_physmem_extents[3].addr_start;
@@ -773,18 +783,20 @@ void xmhfhic_arch_setup_slab_info(void){
                         _xmhfhic_common_slab_info_table[i].archdata.slabtos[j]=slab_stackhdr[j];
                 }
             }
-
+            #endif
 
         }
     }
 
 
+    #if !defined (__XMHF_VERIFICATION__)
     //initialize HIC physical memory extents
     memcpy(_xmhfhic_common_hic_physmem_extents,
            _xmhfhic_init_setupdata_hic_physmem_extents,
            sizeof(_xmhfhic_common_hic_physmem_extents));
+    #endif
 
-
+    #if !defined (__XMHF_VERIFICATION__)
 	//print out HIC section information
     {
 		_XDPRINTF_("xmhfhic section info:\n");
@@ -826,7 +838,7 @@ void xmhfhic_arch_setup_slab_info(void){
 
 		}
 	}
-
+    #endif
 
 
 
@@ -2064,7 +2076,9 @@ static bool __xmhfhic_smp_arch_smpinitialize(void){
 	u32 i;
 
     //save cpu MTRR state which we will later replicate on all APs
+	#if !defined(__XMHF_VERIFICATION__)
 	__xmhfhic_smp_cpu_x86_savecpumtrrstate();
+    #endif
 
     //save page table base which we will later replicate on all APs
     _ap_cr3 = read_cr3();
@@ -2100,7 +2114,10 @@ static bool __xmhfhic_smp_cpu_x86_isbsp(void){
 //common function which is entered by all CPUs upon SMP initialization
 //note: this is specific to the x86 architecture backend
 void __xmhfhic_smp_cpu_x86_smpinitialize_commonstart(void){
-	u64 cpuid = __xmhfhic_x86vmx_cpuidtable[xmhf_baseplatform_arch_x86_getcpulapicid()];
+	u64 cpuid;
+	#if !defined(__XMHF_VERIFICATION__)
+	cpuid  = __xmhfhic_x86vmx_cpuidtable[xmhf_baseplatform_arch_x86_getcpulapicid()];
+    #endif
 
     xmhfhic_smp_entry(cpuid);
 }
@@ -2244,7 +2261,6 @@ void xmhfhic_arch_switch_to_smp(void){
 static void __xmhfhic_x86vmx_initializeGDT(void){
 		u32 i;
 
-		//initialize TSS descriptors for all CPUs
 		for(i=0; i < xcbootinfo->cpuinfo_numentries; i++){
             TSSENTRY *t;
             u32 tss_base=(u32)&__xmhfhic_x86vmx_tss[i];
@@ -2294,7 +2310,9 @@ static void __xmhfhic_x86vmx_initializeTSS(void){
 void xmhfhic_arch_setup_base_cpu_data_structures(void){
 
     //initialize GDT
+    #if !defined(__XMHF_VERIFICATION__)
     __xmhfhic_x86vmx_initializeGDT();
+    #endif
 
     //initialize IDT
     __xmhfhic_x86vmx_initializeIDT();
@@ -2414,6 +2432,7 @@ static bool __xmhfhic_x86vmx_setupvmxstate(u64 cpuid){
 
     write_cr4( read_cr4() |  CR4_VMXE);
 
+#if 0
 	//enter VMX root operation using VMXON
 	{
 		u32 retval=0;
@@ -2450,6 +2469,8 @@ static bool __xmhfhic_x86vmx_setupvmxstate(u64 cpuid){
 	//load VMPTR
 	if(!__vmx_vmptrld((u64)vmcs_phys_addr))
 		return false;
+#endif // 0
+
 
 	//setup host state
 	xmhfhw_cpu_x86vmx_vmwrite(VMCS_HOST_CR0, read_cr0());
@@ -2676,7 +2697,6 @@ static bool __xmhfhic_x86vmx_setupvmxstate(u64 cpuid){
 
     }
 
-
 /*    //32-bit specific guest slab setup
     {
 
@@ -2837,7 +2857,9 @@ static bool __xmhfhic_x86vmx_setupvmxstate(u64 cpuid){
 void xmhf_hic_arch_setup_cpu_state(u64 cpuid){
 
 	//replicate common MTRR state on this CPU
+	#if !defined (__XMHF_VERIFICATION__)
 	__xmhfhic_smp_cpu_x86_restorecpumtrrstate();
+    #endif
 
     //load GDT
     __xmhfhic_x86vmx_loadGDT(cpuid);
@@ -2914,7 +2936,6 @@ void xmhf_hic_arch_setup_cpu_state(u64 cpuid){
         HALT();
     }
     _XDPRINTF_("%s[%u]: Setup VMX state\n", __FUNCTION__, (u32)cpuid);
-
 
 }
 

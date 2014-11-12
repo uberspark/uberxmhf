@@ -53,5 +53,6 @@
 #include <xmhf-core.h>
 
 void main(void){
-
+    xcbootinfo->cpuinfo_numentries = 1;
+xmhfhic_entry();
 }
