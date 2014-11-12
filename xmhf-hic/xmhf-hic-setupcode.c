@@ -1023,6 +1023,7 @@ static bool _platform_x86pc_vtd_initialize(void){
     return true;
 }
 
+#if !defined (__XMHF_VERIFICATION__)
 static vtd_slpgtbl_handle_t _platform_x86pc_vtd_setup_slpgtbl(u32 slabid){
     vtd_slpgtbl_handle_t retval = {0, 0};
     u32 i, j, k, paddr=0;
@@ -1062,6 +1063,7 @@ static vtd_slpgtbl_handle_t _platform_x86pc_vtd_setup_slpgtbl(u32 slabid){
 
     return retval;
 }
+#endif
 
 //static xc_platformdevice_desc_t __xmhfhic_arch_initializeandenumeratedevices(context_desc_t context_desc){
 static slab_platformdevices_t __xmhfhic_arch_initializeandenumeratedevices(void){
@@ -1115,6 +1117,7 @@ static bool __xmhfhic_arch_sda_allocdevices_to_slab(u64 slabid, slab_platformdev
     if(!device_descs.desc_valid)
         return true;
 
+    #if !defined (__XMHF_VERIFICATION__)
     //initialize slab device page tables (if it has not been initialized already)
     if( !_xmhfhic_common_slab_info_table[slabid].archdata.devpgtbl_initialized ){
         vtd_slpgtbl_handle = _platform_x86pc_vtd_setup_slpgtbl(slabid);
@@ -1127,6 +1130,7 @@ static bool __xmhfhic_arch_sda_allocdevices_to_slab(u64 slabid, slab_platformdev
 
         _xmhfhic_common_slab_info_table[slabid].archdata.devpgtbl_initialized=true;
     }
+    #endif
 
 
     for(i=0; i < device_descs.numdevices; i++){
@@ -1142,6 +1146,7 @@ static bool __xmhfhic_arch_sda_allocdevices_to_slab(u64 slabid, slab_platformdev
 
         //b is our index into ret
         // (d* PCI_FUNCTION_MAX) + f = index into the cet
+        #if !defined(__XMHF_VERIFICATION__)
         if(vtd_pagewalk_level == VTD_PAGEWALK_4LEVEL){
             _vtd_cet[b][((d*PCI_FUNCTION_MAX) + f)].fields.slptptr = ((u64)_xmhfhic_common_slab_info_table[slabid].archdata.devpgtbl.pml4t >> 12);
             _vtd_cet[b][((d*PCI_FUNCTION_MAX) + f)].fields.aw = 2; //4-level
@@ -1155,6 +1160,7 @@ static bool __xmhfhic_arch_sda_allocdevices_to_slab(u64 slabid, slab_platformdev
         }else{ //unknown page walk length, fail
             return false;
         }
+        #endif
     }
 
 
@@ -1434,6 +1440,7 @@ static u64 __xmhfhic_hyp_slab_getptflagsforspa(u64 slabid, u32 spa){
 	return flags;
 }
 
+#if !defined (__XMHF_VERIFICATION__)
 //
 // initialize slab page tables for a given slab index, returns the macm base
 static u64 __xmhfhic_arch_smt_slab_populate_hyp_pagetables(u64 slabid){
@@ -1472,7 +1479,7 @@ static u64 __xmhfhic_arch_smt_slab_populate_hyp_pagetables(u64 slabid){
 		//return _xmhfhic_common_slab_info_table[slabid].archdata.mempgtbl_pml4t;
 		return _xmhfhic_common_slab_archdata_mempgtbl_pml4t[slabid];
 }
-
+#endif
 
 
 
@@ -1482,7 +1489,7 @@ static void __xmhfhic_vmx_gathermemorytypes(void);
 static u32 __xmhfhic_vmx_getmemorytypeforphysicalpage(u64 pagebaseaddr);
 static void __xmhfhic_vmx_setupEPT(u64 guestslab_id);
 
-
+#if !defined (__XMHF_VERIFICATION__)
 static void __xmhfhic_guestpgtbl_setentry(u64 slabid,  u64 gpa, u64 entry){
     u64 pdpt_index = pae_get_pdpt_index(gpa);
     u64 pd_index = pae_get_pdt_index(gpa);
@@ -1492,7 +1499,9 @@ static void __xmhfhic_guestpgtbl_setentry(u64 slabid,  u64 gpa, u64 entry){
 
 	return;
 }
+#endif
 
+#if !defined (__XMHF_VERIFICATION__)
 static void __xmhfhic_guestpgtbl_establishshape(u64 slabid){
 	u32 i, j;
 
@@ -1509,7 +1518,7 @@ static void __xmhfhic_guestpgtbl_establishshape(u64 slabid){
 		}
 	}
 }
-
+#endif
 
 
 //---gather memory types for system physical memory------------------------------
