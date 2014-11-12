@@ -53,7 +53,7 @@
 
 #if defined (__XMHF_VERIFICATION__)
 
-#define XMHF_HIC_MAX_SLABS                  (2)
+#define XMHF_HIC_MAX_SLABS                  (1)
 
 #else
 
@@ -305,7 +305,9 @@ extern slab_caps_t _xmhfhic_init_setupdata_slab_caps[XMHF_HIC_MAX_SLABS]; //ro
 
 
 //runtime data
-extern __attribute__((aligned(4096))) slab_info_t _xmhfhic_common_slab_info_table[XMHF_HIC_MAX_SLABS];
+
+//extern __attribute__((aligned(4096))) slab_info_t _xmhfhic_common_slab_info_table[XMHF_HIC_MAX_SLABS];
+extern __attribute__((aligned(4096))) x_slab_info_t _xmhfhic_common_slab_info_table[XMHF_HIC_MAX_SLABS];
 extern slab_physmem_extent_t _xmhfhic_common_hic_physmem_extents[HIC_SLAB_PHYSMEM_MAXEXTENTS]; //ro
 extern u64 __xmhfhic_safestack_indices[MAX_PLATFORM_CPUS];
 extern __xmhfhic_safestack_element_t __xmhfhic_safestack[MAX_PLATFORM_CPUS][512];

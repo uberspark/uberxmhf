@@ -75,6 +75,7 @@ slab_caps_t _xmhfhic_init_setupdata_slab_caps[XMHF_HIC_MAX_SLABS] = {
         {false, 0, {0}},
         HIC_SLAB_X86VMXX86PC_HYPERVISOR
     },
+#if !defined (__XMHF_VERIFICATION__)
 
     //XMHF_HYP_SLAB_XCIHUB
     {
@@ -147,7 +148,7 @@ slab_caps_t _xmhfhic_init_setupdata_slab_caps[XMHF_HIC_MAX_SLABS] = {
         {true, 0xFFFFFFFFFFFFFFFFULL, {0}},
         HIC_SLAB_X86VMXX86PC_GUEST
     },
-
+#endif
 };
 
 
@@ -196,7 +197,8 @@ __xmhfhic_safestack_element_t __xmhfhic_safestack[MAX_PLATFORM_CPUS][512];
 //////
 // common
 
-__attribute__(( section(".sharedro") )) __attribute__((aligned(4096))) slab_info_t _xmhfhic_common_slab_info_table[XMHF_HIC_MAX_SLABS] = {0};
+//__attribute__(( section(".sharedro") )) __attribute__((aligned(4096))) slab_info_t _xmhfhic_common_slab_info_table[XMHF_HIC_MAX_SLABS] = {0};
+__attribute__(( section(".sharedro") )) __attribute__((aligned(4096))) x_slab_info_t _xmhfhic_common_slab_info_table[XMHF_HIC_MAX_SLABS] = {0};
 
 __attribute__(( section(".sharedro") )) slab_physmem_extent_t _xmhfhic_common_hic_physmem_extents[HIC_SLAB_PHYSMEM_MAXEXTENTS] = {0};
 
