@@ -29,6 +29,10 @@ XMHFHIC_XCIHUB_DRV := $(srcdir)/driver-xcihub.c
 XMHFCORE_XCINIT := $(srcdir)/../xmhf-slabs/xmhf-core/xcinit/xcinit.c
 XMHFHIC_XCINIT_DRV := $(srcdir)/driver-xcinit.c
 
+
+XMHFCORE_XCEXHUB := $(srcdir)/../xmhf-slabs/xmhf-core/xcexhub/xcexhub.c
+XMHFHIC_XCEXHUB_DRV := $(srcdir)/driver-xcexhub.c
+
 XMHFHIC_TRAMPOLINE := $(srcdir)/../xmhf-hic/xmhf-hic-rtmcode-trampoline.c
 XMHFHIC_TRAMPOLINE_DRV := $(srcdir)/driver-hictrampoline.c
 
@@ -48,12 +52,18 @@ XMHFHIC_UAPI_STUB := $(srcdir)/xmhf-hic-rtmcode-uapi-verifstubs.c
 #all: verifyhypapps
 #all: verifyuapi
 #all: verifyhictrampoline
-all: verifyhicsetup
+#all: verifyhicsetup
+all: verifyxcexhub
 
+
+.PHONY: verifyxcexhub
+verifyxcexhub:
+	cbmc --ILP64 --bounds-check --pointer-check -D__XMHF_VERIFICATION__ $(VFLAGS) $(XMHFHIC_XCEXHUB_DRV) $(XMHFCORE_XCEXHUB)
 
 .PHONY: verifyhicsetup
 verifyhicsetup:
 	cbmc --ILP64 --bounds-check --pointer-check -D__XMHF_VERIFICATION__ $(VFLAGS) $(XMHFHIC_SETUP_DRV) $(XMHFHIC_SETUP_DATA) $(XMHFHIC_SETUP)
+
 
 .PHONY: verifyhictrampoline
 verifyhictrampoline:
