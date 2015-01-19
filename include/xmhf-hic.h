@@ -217,6 +217,7 @@ typedef struct {
 //////
 //modified data types
 typedef struct {
+    u64 *mempgtbl_pml4t;
 	u64 *mempgtbl_pdpt;
 	u64 *mempgtbl_pdt;
 	u64 *mempgtbl_pt;
