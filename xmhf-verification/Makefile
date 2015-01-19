@@ -52,8 +52,8 @@ XMHFHIC_UAPI_STUB := $(srcdir)/xmhf-hic-rtmcode-uapi-verifstubs.c
 #all: verifyhypapps
 #all: verifyuapi
 #all: verifyhictrampoline
-#all: verifyhicsetup
-all: verifyxcexhub
+all: verifyhicsetup
+#all: verifyxcexhub
 
 
 .PHONY: verifyxcexhub

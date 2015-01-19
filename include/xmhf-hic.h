@@ -196,7 +196,7 @@ typedef struct {
     u64 protection;
 } slab_physmem_extent_t;
 
-
+/*
 typedef struct {
     __attribute__((aligned(4096))) slab_info_archdata_t archdata;
 	bool slab_inuse;
@@ -207,7 +207,7 @@ typedef struct {
     slab_physmem_extent_t slab_physmem_extents[HIC_SLAB_PHYSMEM_MAXEXTENTS];
 	slab_entrystub_t entrystub;
 } __attribute__((packed)) __attribute__((aligned(4096))) slab_info_t;
-
+*/
 
 
 
