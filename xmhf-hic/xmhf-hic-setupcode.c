@@ -1046,7 +1046,43 @@ static vtd_slpgtbl_handle_t _platform_x86pc_vtd_setup_slpgtbl(u32 slabid){
         return retval;
     }
 
+
     //setup device memory access for the partition
+    _dbuf_devpgtbl[slabid].pml4t[0].fields.r = 1;
+    _dbuf_devpgtbl[slabid].pml4t[0].fields.w = 1;
+    _dbuf_devpgtbl[slabid].pml4t[0].fields.slpdpt =
+        ((u64)_dbuf_devpgtbl[slabid].pdpt >> 12);
+
+    for(i=0; i < PAE_PTRS_PER_PDPT; i++){
+        _dbuf_devpgtbl[slabid].pdpt[i].fields.r = 1;
+        _dbuf_devpgtbl[slabid].pdpt[i].fields.w = 1;
+        _dbuf_devpgtbl[slabid].pdpt[i].fields.slpdt =
+            ((u64)_dbuf_devpgtbl[slabid].pdt[i] >> 12);
+
+        for(j=0; j < PAE_PTRS_PER_PDT; j++){
+            _dbuf_devpgtbl[slabid].pdt[i][j].fields.r = 1;
+            _dbuf_devpgtbl[slabid].pdt[i][j].fields.w = 1;
+            _dbuf_devpgtbl[slabid].pdt[i][j].fields.slpt =
+                ((u64)_dbuf_devpgtbl[slabid].pt[i][j] >> 12);
+
+            for(k=0; k < PAE_PTRS_PER_PT; k++){
+                _dbuf_devpgtbl[slabid].pt[i][j][k].fields.r = 1;
+                _dbuf_devpgtbl[slabid].pt[i][j][k].fields.w = 1;
+                _dbuf_devpgtbl[slabid].pt[i][j][k].fields.pageaddr = ((u64)paddr >> 12);
+                paddr += PAGE_SIZE_4K;
+            }
+        }
+    }
+
+    //populate device page tables pml4t, pdpt, pdt and pt pointers in slab info table
+    _xmhfhic_common_slab_info_table[slabid].archdata.devpgtbl_pml4t = &_dbuf_devpgtbl[slabid].pml4t;
+    _xmhfhic_common_slab_info_table[slabid].archdata.devpgtbl_pdpt = &_dbuf_devpgtbl[slabid].pdpt;
+    _xmhfhic_common_slab_info_table[slabid].archdata.devpgtbl_pdt = &_dbuf_devpgtbl[slabid].pdt;
+    _xmhfhic_common_slab_info_table[slabid].archdata.devpgtbl_pt = &_dbuf_devpgtbl[slabid].pt;
+
+
+
+    /*//setup device memory access for the partition
     _xmhfhic_common_slab_info_table[slabid].archdata.devpgtbl.pml4t[0].fields.r = 1;
     _xmhfhic_common_slab_info_table[slabid].archdata.devpgtbl.pml4t[0].fields.w = 1;
     _xmhfhic_common_slab_info_table[slabid].archdata.devpgtbl.pml4t[0].fields.slpdpt = ((u64)&_xmhfhic_common_slab_info_table[slabid].archdata.devpgtbl.pdpt >> 12);
@@ -1068,10 +1104,10 @@ static vtd_slpgtbl_handle_t _platform_x86pc_vtd_setup_slpgtbl(u32 slabid){
                 paddr += PAGE_SIZE_4K;
             }
         }
-    }
+    }*/
 
-    retval.addr_vtd_pml4t = _xmhfhic_common_slab_info_table[slabid].archdata.devpgtbl.pml4t;
-    retval.addr_vtd_pdpt = _xmhfhic_common_slab_info_table[slabid].archdata.devpgtbl.pdpt;
+    retval.addr_vtd_pml4t = _xmhfhic_common_slab_info_table[slabid].archdata.devpgtbl_pml4t;
+    retval.addr_vtd_pdpt = _xmhfhic_common_slab_info_table[slabid].archdata.devpgtbl_pdpt;
 
     return retval;
 }

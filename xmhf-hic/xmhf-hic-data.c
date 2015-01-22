@@ -205,6 +205,12 @@ __attribute__(( section(".sharedro") )) slab_physmem_extent_t _xmhfhic_common_hi
 __attribute__(( aligned(2097152) )) u64 _xmhfhic_common_slab_archdata_mempgtbl_pml4t[XMHF_HIC_MAX_SLABS][PAE_MAXPTRS_PER_PML4T];
 
 
+
+//////
+// backing data buffers for slab memory and device page tables
+__attribute__((aligned(4096))) vtd_slpgtbl_t _dbuf_devpgtbl[XMHF_HIC_MAX_SLABS];
+
+
 // GDT
 __attribute__(( aligned(16) )) u64 __xmhfhic_x86vmx_gdt_start[]  = {
 	0x0000000000000000ULL,	//NULL descriptor

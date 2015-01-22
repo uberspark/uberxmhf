@@ -221,6 +221,7 @@ typedef struct {
 	u64 *mempgtbl_pdpt;
 	u64 *mempgtbl_pdt;
 	u64 *mempgtbl_pt;
+
 	u64 *devpgtbl_pml4t;
 	u64 *devpgtbl_pdpt;
 	u64 *devpgtbl_pdt;
@@ -313,6 +314,10 @@ extern slab_caps_t _xmhfhic_init_setupdata_slab_caps[XMHF_HIC_MAX_SLABS]; //ro
 
 //extern __attribute__((aligned(4096))) slab_info_t _xmhfhic_common_slab_info_table[XMHF_HIC_MAX_SLABS];
 extern __attribute__((aligned(4096))) x_slab_info_t _xmhfhic_common_slab_info_table[XMHF_HIC_MAX_SLABS];
+
+extern __attribute__((aligned(4096))) vtd_slpgtbl_t _dbuf_devpgtbl[XMHF_HIC_MAX_SLABS];
+
+
 extern slab_physmem_extent_t _xmhfhic_common_hic_physmem_extents[HIC_SLAB_PHYSMEM_MAXEXTENTS]; //ro
 extern u64 __xmhfhic_safestack_indices[MAX_PLATFORM_CPUS];
 extern __xmhfhic_safestack_element_t __xmhfhic_safestack[MAX_PLATFORM_CPUS][512];
