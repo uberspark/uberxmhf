@@ -79,6 +79,8 @@
 #define HIC_SLAB_X86VMXX86PC_HYPERVISOR (1)
 #define HIC_SLAB_X86VMXX86PC_GUEST      (2)
 
+
+
 /*typedef struct {
 	//u64 mempgtbl_pml4t[PAE_MAXPTRS_PER_PML4T] __attribute__((aligned(4096)));
 	u64 mempgtbl_pdpt[PAE_MAXPTRS_PER_PDPT] __attribute__((aligned(4096)));
