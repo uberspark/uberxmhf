@@ -48,11 +48,11 @@ XMHFHIC_UAPI_STUB := $(srcdir)/xmhf-hic-rtmcode-uapi-verifstubs.c
 
 
 .PHONY: all
-all: verifyhicsetup
+#all: verifyhicsetup
+all: verifyhictrampoline
 #all: verifyinit
 #all: verifyhypapps
 #all: verifyuapi
-#all: verifyhictrampoline
 #all: verifyxcexhub
 
 
@@ -61,16 +61,13 @@ verifyhicsetup:
 	cbmc --ILP64 --bounds-check --pointer-check -D__XMHF_VERIFICATION__ $(VFLAGS) $(XMHFHIC_SETUP_DRV) $(XMHFHIC_SETUP_DATA) $(XMHFHIC_SETUP)
 
 
-.PHONY: verifyxcexhub
-verifyxcexhub:
-	cbmc --ILP64 --bounds-check --pointer-check -D__XMHF_VERIFICATION__ $(VFLAGS) $(XMHFHIC_XCEXHUB_DRV) $(XMHFCORE_XCEXHUB)
-
-
-
 .PHONY: verifyhictrampoline
 verifyhictrampoline:
 	cbmc --ILP64 --bounds-check --pointer-check -D__XMHF_VERIFICATION__ $(VFLAGS) $(XMHFHIC_TRAMPOLINE_DRV) $(XMHFHIC_TRAMPOLINE)
 
+.PHONY: verifyxcexhub
+verifyxcexhub:
+	cbmc --ILP64 --bounds-check --pointer-check -D__XMHF_VERIFICATION__ $(VFLAGS) $(XMHFHIC_XCEXHUB_DRV) $(XMHFCORE_XCEXHUB)
 
 
 .PHONY: verifyinit
