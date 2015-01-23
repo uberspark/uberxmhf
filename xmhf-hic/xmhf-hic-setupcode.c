@@ -692,11 +692,13 @@ void xmhfhic_entry(void){
     //sanity check HIC (hardware) requirements
     xmhfhic_arch_sanity_check_requirements();
 
+#if !defined (__XMHF_VERIFICATION__)
     //setup slab system device allocation and device page tables
-    //xmhfhic_arch_setup_slab_device_allocation();
+    xmhfhic_arch_setup_slab_device_allocation();
 
     //setup slab memory page tables
-    //xmhfhic_arch_setup_slab_mem_page_tables();
+    xmhfhic_arch_setup_slab_mem_page_tables();
+#endif //__XMHF_VERIFICATION__
 
     //setup base CPU data structures
     xmhfhic_arch_setup_base_cpu_data_structures();
