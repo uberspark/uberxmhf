@@ -515,8 +515,10 @@ void __xmhfhic_rtm_trampoline(u64 hic_calltype, slab_input_params_t *iparams, u6
                     //save return RSP
                     _xmhfhic_common_slab_info_table[src_slabid].archdata.slabtos[(u32)cpuid] = return_rsp;
 
+                    #if !defined (__XMHF_VERIFICATION__)
                     //copy iparams to internal buffer __paramsbuffer
-                    //memcpy(&__paramsbuffer, iparams, (iparams_size > 1024 ? 1024 : iparams_size) );
+                    memcpy(&__paramsbuffer, iparams, (iparams_size > 1024 ? 1024 : iparams_size) );
+                    #endif
 
                     //switch to destination slab page tables
                     asm volatile(
@@ -531,8 +533,10 @@ void __xmhfhic_rtm_trampoline(u64 hic_calltype, slab_input_params_t *iparams, u6
                     {
                         _xmhfhic_common_slab_info_table[dst_slabid].archdata.slabtos[(u32)cpuid] -= iparams_size;
                         newiparams = (slab_input_params_t *) _xmhfhic_common_slab_info_table[dst_slabid].archdata.slabtos[(u32)cpuid];
-                        //memcpy((void *)_xmhfhic_common_slab_info_table[dst_slabid].archdata.slabtos[(u32)cpuid],
-                        //       &__paramsbuffer, (iparams_size > 1024 ? 1024 : iparams_size) );
+                        #if !defined (__XMHF_VERIFICATION__)
+                        memcpy((void *)_xmhfhic_common_slab_info_table[dst_slabid].archdata.slabtos[(u32)cpuid],
+                               &__paramsbuffer, (iparams_size > 1024 ? 1024 : iparams_size) );
+                        #endif
                     }
 
 
@@ -676,8 +680,10 @@ void __xmhfhic_rtm_trampoline(u64 hic_calltype, slab_input_params_t *iparams, u6
             }
 
 
+            #if !defined (__XMHF_VERIFICATION__)
             //copy newoparams to internal buffer __paramsbuffer
-            //memcpy(&__paramsbuffer, elem.newoparams, (elem.oparams_size > 1024 ? 1024 : elem.oparams_size) );
+            memcpy(&__paramsbuffer, elem.newoparams, (elem.oparams_size > 1024 ? 1024 : elem.oparams_size) );
+            #endif
 
             //adjust slab stack by popping off iparams_size and oparams_size
              _xmhfhic_common_slab_info_table[src_slabid].archdata.slabtos[(u32)cpuid] += (elem.iparams_size+elem.oparams_size);
@@ -692,8 +698,10 @@ void __xmhfhic_rtm_trampoline(u64 hic_calltype, slab_input_params_t *iparams, u6
             );
 
 
+            #if !defined (__XMHF_VERIFICATION__)
             //copy internal buffer __paramsbuffer to oparams
-            //memcpy(elem.oparams, &__paramsbuffer, (elem.oparams_size > 1024 ? 1024 : elem.oparams_size) );
+            memcpy(elem.oparams, &__paramsbuffer, (elem.oparams_size > 1024 ? 1024 : elem.oparams_size) );
+            #endif
 
             //return back to slab
             /*
@@ -750,8 +758,10 @@ void __xmhfhic_rtm_trampoline(u64 hic_calltype, slab_input_params_t *iparams, u6
                 //save return RSP
                  _xmhfhic_common_slab_info_table[src_slabid].archdata.slabtos[(u32)cpuid] = return_rsp;
 
+                #if !defined (__XMHF_VERIFICATION__)
                 //copy iparams to internal buffer __paramsbuffer
-                //memcpy(&__paramsbuffer, iparams, (iparams_size > 1024 ? 1024 : iparams_size) );
+                memcpy(&__paramsbuffer, iparams, (iparams_size > 1024 ? 1024 : iparams_size) );
+                #endif
 
                 //switch to destination slab page tables
                 asm volatile(
@@ -766,8 +776,10 @@ void __xmhfhic_rtm_trampoline(u64 hic_calltype, slab_input_params_t *iparams, u6
                 {
                      _xmhfhic_common_slab_info_table[dst_slabid].archdata.slabtos[(u32)cpuid] -= iparams_size;
                     newiparams = (slab_input_params_t *)  _xmhfhic_common_slab_info_table[dst_slabid].archdata.slabtos[(u32)cpuid];
-                    //memcpy((void *) _xmhfhic_common_slab_info_table[dst_slabid].archdata.slabtos[(u32)cpuid],
-                    //       &__paramsbuffer, (iparams_size > 1024 ? 1024 : iparams_size) );
+                    #if !defined (__XMHF_VERIFICATION__)
+                    memcpy((void *) _xmhfhic_common_slab_info_table[dst_slabid].archdata.slabtos[(u32)cpuid],
+                           &__paramsbuffer, (iparams_size > 1024 ? 1024 : iparams_size) );
+                    #endif
                 }
 
                 //push cpuid, src_slabid, dst_slabid, hic_calltype, return_address, iparams, new iparams and iparams_size tuple to
@@ -931,10 +943,11 @@ void __xmhfhic_rtm_trampoline(u64 hic_calltype, slab_input_params_t *iparams, u6
             //_XDPRINTF_("%s[%u]: Trampoline Intercept call\n",
             //        __FUNCTION__, (u32)cpuid, read_rsp());
 
+            #if !defined (__XMHF_VERIFICATION__)
             //copy iparams (CPU GPR state) into arch. data for cpuid
-            //memcpy(&__xmhfhic_x86vmx_archdata[(u32)cpuid].vmx_gprs,
-            //       iparams, iparams_size);
-
+            memcpy(&__xmhfhic_x86vmx_archdata[(u32)cpuid].vmx_gprs,
+                   iparams, iparams_size);
+            #endif
 
             //push cpuid, src_slabid, dst_slabid, hic_calltype tuple to
             //safe stack
