@@ -487,13 +487,13 @@ void xcguestslab_interface(void) {
 
     //xcguestslab_do_cpuid();
 
-    //xcguestslab_do_testxhhyperdep();
+    xcguestslab_do_testxhhyperdep();
 
     //xcguestslab_do_testxhapprovexec();
 
     //xcguestslab_do_testxhssteptrace();
 
-    xcguestslab_do_testxhsyscalllog();
+    //xcguestslab_do_testxhsyscalllog();
 
     _XDPRINTF_("%s: Guest Slab Halting\n", __FUNCTION__);
     HALT();
