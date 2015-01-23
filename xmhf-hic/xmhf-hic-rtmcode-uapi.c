@@ -54,8 +54,8 @@
 #include <xmhf-debug.h>
 
 
-extern x_slab_info_t _x_xmhfhic_common_slab_info_table[XMHF_HIC_MAX_SLABS];
-extern u64 guestslab_mempgtbl_buffer[1048576];
+//extern x_slab_info_t _xmhfhic_common_slab_info_table[XMHF_HIC_MAX_SLABS];
+//extern u64 guestslab_mempgtbl_buffer[1048576];
 
 
 /////
@@ -71,12 +71,12 @@ static bool _uapicheck_is_within_slab_memory_extents(u64 slab_id, u64 addr, u64 
     bool status=false;
 
     for(i=0; i < HIC_SLAB_PHYSMEM_MAXEXTENTS; i++){
-        if(_x_xmhfhic_common_slab_info_table[slab_id].slab_physmem_extents[i].addr_start == 0 &&
-           _x_xmhfhic_common_slab_info_table[slab_id].slab_physmem_extents[i].addr_end == 0)
+        if(_xmhfhic_common_slab_info_table[slab_id].slab_physmem_extents[i].addr_start == 0 &&
+           _xmhfhic_common_slab_info_table[slab_id].slab_physmem_extents[i].addr_end == 0)
            continue;
 
-        if(addr >= _x_xmhfhic_common_slab_info_table[slab_id].slab_physmem_extents[i].addr_start &&
-           (addr+size) < _x_xmhfhic_common_slab_info_table[slab_id].slab_physmem_extents[i].addr_end)
+        if(addr >= _xmhfhic_common_slab_info_table[slab_id].slab_physmem_extents[i].addr_start &&
+           (addr+size) < _xmhfhic_common_slab_info_table[slab_id].slab_physmem_extents[i].addr_end)
             return true;
 
     }
@@ -122,20 +122,20 @@ void __xmhfhic_rtm_uapihandler(u64 uapicall, u64 uapicall_num, u64 uapicall_subn
 
     //checks
     //1. src_slabid is a hypervisor slab
-    if( !(_x_xmhfhic_common_slab_info_table[src_slabid].archdata.slabtype == HIC_SLAB_X86VMXX86PC_HYPERVISOR) ){
+    if( !(_xmhfhic_common_slab_info_table[src_slabid].archdata.slabtype == HIC_SLAB_X86VMXX86PC_HYPERVISOR) ){
         _XDPRINTF_("%s[%u]: uapierr: src_slabid (%u) is not a hypervisor slab. Halting!\n", __FUNCTION__, (u32)cpuid, src_slabid);
         //HALT();
         return;
     }
 
     #if defined (__XMHF_VERIFICATION__)
-    assert( _x_xmhfhic_common_slab_info_table[src_slabid].archdata.slabtype == HIC_SLAB_X86VMXX86PC_HYPERVISOR );
+    assert( _xmhfhic_common_slab_info_table[src_slabid].archdata.slabtype == HIC_SLAB_X86VMXX86PC_HYPERVISOR );
     #endif //__XMHF_VERIFICATION__
 
 
 
     //2. src_slabid should have capabilities for the requested uapicall_num
-    if( !(_x_xmhfhic_common_slab_info_table[src_slabid].slab_uapicaps & HIC_SLAB_UAPICAP(uapicall_num)) ){
+    if( !(_xmhfhic_common_slab_info_table[src_slabid].slab_uapicaps & HIC_SLAB_UAPICAP(uapicall_num)) ){
         _XDPRINTF_("%s[%u]: uapierr: src_slabid (%u) does not have uapi capability. Halting!\n", __FUNCTION__, (u32)cpuid, src_slabid);
         //HALT();
         return;
@@ -143,7 +143,7 @@ void __xmhfhic_rtm_uapihandler(u64 uapicall, u64 uapicall_num, u64 uapicall_subn
 
 
     #if defined (__XMHF_VERIFICATION__)
-        assert( _x_xmhfhic_common_slab_info_table[src_slabid].slab_uapicaps & HIC_SLAB_UAPICAP(uapicall_num));
+        assert( _xmhfhic_common_slab_info_table[src_slabid].slab_uapicaps & HIC_SLAB_UAPICAP(uapicall_num));
     #endif //__XMHF_VERIFICATION__
 
 
@@ -392,14 +392,14 @@ static void __xmhfhic_rtm_uapihandler_physmem(u64 uapicall_subnum, u64 iparams, 
             assert((pdesc->guest_slab_index < XMHF_HIC_MAX_SLABS ));
             #endif // defined
 
-            if( !(_x_xmhfhic_common_slab_info_table[pdesc->guest_slab_index].archdata.slabtype == HIC_SLAB_X86VMXX86PC_GUEST) ){
+            if( !(_xmhfhic_common_slab_info_table[pdesc->guest_slab_index].archdata.slabtype == HIC_SLAB_X86VMXX86PC_GUEST) ){
                 _XDPRINTF_("%s[%u],%u: uapierr: destination slab is not a guest slab. Halting!\n", __FUNCTION__, (u32)cpuid, __LINE__);
                 //HALT();
                 return;
             }
 
             #if defined (__XMHF_VERIFICATION__)
-            assert((_x_xmhfhic_common_slab_info_table[pdesc->guest_slab_index].archdata.slabtype == HIC_SLAB_X86VMXX86PC_GUEST));
+            assert((_xmhfhic_common_slab_info_table[pdesc->guest_slab_index].archdata.slabtype == HIC_SLAB_X86VMXX86PC_GUEST));
             #endif // defined
 
 
@@ -461,14 +461,14 @@ static void __xmhfhic_rtm_uapihandler_physmem(u64 uapicall_subnum, u64 iparams, 
             #endif // defined
 
 
-            if( !(_x_xmhfhic_common_slab_info_table[pdesc->guest_slab_index].archdata.slabtype == HIC_SLAB_X86VMXX86PC_GUEST) ){
+            if( !(_xmhfhic_common_slab_info_table[pdesc->guest_slab_index].archdata.slabtype == HIC_SLAB_X86VMXX86PC_GUEST) ){
                 _XDPRINTF_("%s[%u],%u: uapierr: destination slab is not a guest slab. Halting!\n", __FUNCTION__, (u32)cpuid, __LINE__);
                 //HALT();
                 return;
             }
 
             #if defined (__XMHF_VERIFICATION__)
-            assert((_x_xmhfhic_common_slab_info_table[pdesc->guest_slab_index].archdata.slabtype == HIC_SLAB_X86VMXX86PC_GUEST));
+            assert((_xmhfhic_common_slab_info_table[pdesc->guest_slab_index].archdata.slabtype == HIC_SLAB_X86VMXX86PC_GUEST));
             #endif // defined
 
             //3. pdesc->addr_to and pdesc->numbytes is within destination slab memory extents
@@ -565,14 +565,14 @@ static void __xmhfhic_rtm_uapihandler_mempgtbl(u64 uapicall_subnum, u64 iparams,
             #endif // defined
 
 
-            if( !(_x_xmhfhic_common_slab_info_table[imdesc->guest_slab_index].archdata.slabtype == HIC_SLAB_X86VMXX86PC_GUEST) ){
+            if( !(_xmhfhic_common_slab_info_table[imdesc->guest_slab_index].archdata.slabtype == HIC_SLAB_X86VMXX86PC_GUEST) ){
                 _XDPRINTF_("%s[%u],%u: uapierr: destination slab is not a guest slab. Halting!\n", __FUNCTION__, (u32)cpuid, __LINE__);
                 //HALT();
                 return;
             }
 
             #if defined (__XMHF_VERIFICATION__)
-            assert((_x_xmhfhic_common_slab_info_table[imdesc->guest_slab_index].archdata.slabtype == HIC_SLAB_X86VMXX86PC_GUEST));
+            assert((_xmhfhic_common_slab_info_table[imdesc->guest_slab_index].archdata.slabtype == HIC_SLAB_X86VMXX86PC_GUEST));
             #endif // defined
 
             //u64 pdpt_index = pae_get_pdpt_index(imdesc->gpa);
@@ -593,7 +593,7 @@ static void __xmhfhic_rtm_uapihandler_mempgtbl(u64 uapicall_subnum, u64 iparams,
             #endif // defined
 
             {
-                u64 *table = (u64 *)_x_xmhfhic_common_slab_info_table[imdesc->guest_slab_index].archdata.mempgtbl_pt;
+                u64 *table = (u64 *)_xmhfhic_common_slab_info_table[imdesc->guest_slab_index].archdata.mempgtbl_pt;
                 omdesc->entry = table[pt_index];
             }
 
@@ -630,14 +630,14 @@ static void __xmhfhic_rtm_uapihandler_mempgtbl(u64 uapicall_subnum, u64 iparams,
             #endif // defined
 
 
-            if( !(_x_xmhfhic_common_slab_info_table[imdesc->guest_slab_index].archdata.slabtype == HIC_SLAB_X86VMXX86PC_GUEST) ){
+            if( !(_xmhfhic_common_slab_info_table[imdesc->guest_slab_index].archdata.slabtype == HIC_SLAB_X86VMXX86PC_GUEST) ){
                 _XDPRINTF_("%s[%u],%u: uapierr: destination slab is not a guest slab. Halting!\n", __FUNCTION__, (u32)cpuid, __LINE__);
                 //HALT();
                 return;
             }
 
             #if defined (__XMHF_VERIFICATION__)
-            assert( _x_xmhfhic_common_slab_info_table[imdesc->guest_slab_index].archdata.slabtype == HIC_SLAB_X86VMXX86PC_GUEST );
+            assert( _xmhfhic_common_slab_info_table[imdesc->guest_slab_index].archdata.slabtype == HIC_SLAB_X86VMXX86PC_GUEST );
             #endif // defined
 
             //u64 pdpt_index = pae_get_pdpt_index(imdesc->gpa);
@@ -670,7 +670,7 @@ static void __xmhfhic_rtm_uapihandler_mempgtbl(u64 uapicall_subnum, u64 iparams,
             }
 
             {
-                u64 *table = (u64 *)_x_xmhfhic_common_slab_info_table[imdesc->guest_slab_index].archdata.mempgtbl_pt;
+                u64 *table = (u64 *)_xmhfhic_common_slab_info_table[imdesc->guest_slab_index].archdata.mempgtbl_pt;
                 table[pt_index] = imdesc->entry;
             }
 
