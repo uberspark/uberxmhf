@@ -55,7 +55,7 @@
 
 
 //extern x_slab_info_t _xmhfhic_common_slab_info_table[XMHF_HIC_MAX_SLABS];
-//extern u64 guestslab_mempgtbl_buffer[1048576];
+extern u64 guestslab_mempgtbl_buffer[1048576];
 
 
 /////
@@ -119,7 +119,6 @@ void __xmhfhic_rtm_uapihandler(u64 uapicall, u64 uapicall_num, u64 uapicall_subn
     //           iparams, oparams,
     //           src_slabid, cpuid, read_cr3());
 
-
     //checks
     //1. src_slabid is a hypervisor slab
     if( !(_xmhfhic_common_slab_info_table[src_slabid].archdata.slabtype == HIC_SLAB_X86VMXX86PC_HYPERVISOR) ){
@@ -131,7 +130,6 @@ void __xmhfhic_rtm_uapihandler(u64 uapicall, u64 uapicall_num, u64 uapicall_subn
     #if defined (__XMHF_VERIFICATION__)
     assert( _xmhfhic_common_slab_info_table[src_slabid].archdata.slabtype == HIC_SLAB_X86VMXX86PC_HYPERVISOR );
     #endif //__XMHF_VERIFICATION__
-
 
 
     //2. src_slabid should have capabilities for the requested uapicall_num

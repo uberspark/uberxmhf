@@ -49,10 +49,10 @@ XMHFHIC_UAPI_STUB := $(srcdir)/xmhf-hic-rtmcode-uapi-verifstubs.c
 
 .PHONY: all
 #all: verifyhicsetup
-all: verifyhictrampoline
+#all: verifyhictrampoline
+all: verifyuapi
 #all: verifyinit
 #all: verifyhypapps
-#all: verifyuapi
 #all: verifyxcexhub
 
 
@@ -60,10 +60,14 @@ all: verifyhictrampoline
 verifyhicsetup:
 	cbmc --ILP64 --bounds-check --pointer-check -D__XMHF_VERIFICATION__ $(VFLAGS) $(XMHFHIC_SETUP_DRV) $(XMHFHIC_SETUP_DATA) $(XMHFHIC_SETUP)
 
-
 .PHONY: verifyhictrampoline
 verifyhictrampoline:
 	cbmc --ILP64 --bounds-check --pointer-check -D__XMHF_VERIFICATION__ $(VFLAGS) $(XMHFHIC_TRAMPOLINE_DRV) $(XMHFHIC_TRAMPOLINE)
+
+.PHONY: verifyuapi
+verifyuapi:
+	@echo Verifying UAPI...
+	cbmc --ILP64 --bounds-check --pointer-check --unwind 10 -D__XMHF_VERIFICATION__ $(VFLAGS) $(XMHFHIC_UAPI_DRV) $(XMHFHIC_UAPI_CODE)
 
 .PHONY: verifyxcexhub
 verifyxcexhub:
@@ -84,10 +88,6 @@ verifyhypapps:
 	cbmc --ILP64 --bounds-check --pointer-check -D__XMHF_VERIFICATION__ $(VFLAGS) $(XMHFHIC_UAPI_STUB) $(HYPAPP_VFMS) $(HYPAPP_HYPERDEP_DRV) $(HYPAPP_HYPERDEP)
 
 
-.PHONY: verifyuapi
-verifyuapi:
-	@echo Verifying UAPI...
-	cbmc --ILP64 --bounds-check --pointer-check --unwind 10 -D__XMHF_VERIFICATION__ $(VFLAGS) $(XMHFHIC_UAPI_DRV) $(XMHFHIC_UAPI_CODE)
 
 
 .PHONY: clean
