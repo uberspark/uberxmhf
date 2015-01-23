@@ -204,7 +204,10 @@ __xmhfhic_safestack_element_t __xmhfhic_safestack[MAX_PLATFORM_CPUS][512];
 // common
 
 //__attribute__(( section(".sharedro") )) __attribute__((aligned(4096))) slab_info_t _xmhfhic_common_slab_info_table[XMHF_HIC_MAX_SLABS] = {0};
+
+#if !defined (__XMHF_VERIFICATION__)
 __attribute__(( section(".sharedro") )) __attribute__((aligned(4096))) x_slab_info_t _xmhfhic_common_slab_info_table[XMHF_HIC_MAX_SLABS] = {0};
+#endif //__XMHF_VERIFICATION__
 
 __attribute__(( section(".sharedro") )) slab_physmem_extent_t _xmhfhic_common_hic_physmem_extents[HIC_SLAB_PHYSMEM_MAXEXTENTS] = {0};
 

@@ -53,7 +53,7 @@
 
 #if defined (__XMHF_VERIFICATION__)
 
-#define XMHF_HIC_MAX_SLABS                  (1)
+#define XMHF_HIC_MAX_SLABS                  (2)
 
 #else
 
