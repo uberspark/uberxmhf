@@ -516,7 +516,11 @@ __attribute__((naked)) __attribute__ ((noinline)) static inline bool __xmhfhic_u
 
 #else
 
-#define XMHF_HIC_SLAB_UAPI_MEMPGTBL(mempgtblfn, iparams, oparams)
+//#define XMHF_HIC_SLAB_UAPI_MEMPGTBL(mempgtblfn, iparams, oparams)
+
+#define XMHF_HIC_SLAB_UAPI_MEMPGTBL(mempgtblfn, iparams, oparams) \
+    __xmhfhic_uapi_mempgtbl(XMHF_HIC_UAPI, XMHF_HIC_UAPI_MEMPGTBL, mempgtblfn, 0, iparams, oparams)
+
 
 #endif //__XMHF_VERIFICATION__
 
