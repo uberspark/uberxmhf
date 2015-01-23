@@ -489,9 +489,9 @@ void xcguestslab_interface(void) {
 
     //xcguestslab_do_testxhhyperdep();
 
-    xcguestslab_do_testxhapprovexec();
+    //xcguestslab_do_testxhapprovexec();
 
-    //xcguestslab_do_testxhssteptrace();
+    xcguestslab_do_testxhssteptrace();
 
     //xcguestslab_do_testxhsyscalllog();
 
