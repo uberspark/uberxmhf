@@ -53,8 +53,8 @@ XMHFHIC_UAPI_STUB := $(srcdir)/xmhf-hic-rtmcode-uapi-verifstubs.c
 #all: verifyuapi
 #all: verifyinit
 #all: verifyxcexhub
-all: verifyxcihub
-#all: verifyhypapps
+#all: verifyxcihub
+all: verifyhypapps
 
 
 .PHONY: verifyhicsetup
@@ -87,9 +87,9 @@ verifyxcihub:
 verifyhypapps:
 	@echo Verifying hypapps...
 	#cbmc --ILP64 --bounds-check --pointer-check -D__XMHF_VERIFICATION__ $(VFLAGS) $(XMHFHIC_UAPI_STUB) $(HYPAPP_VFMS) $(HYPAPP_SSTEPTRACE_DRV) $(HYPAPP_SSTEPTRACE)
-	#cbmc --ILP64 --bounds-check --pointer-check -D__XMHF_VERIFICATION__ $(VFLAGS) $(XMHFHIC_UAPI_STUB) $(HYPAPP_VFMS) $(HYPAPP_SYSCALLLOG_DRV) $(HYPAPP_SYSCALLLOG)
+	cbmc --ILP64 --bounds-check --pointer-check -D__XMHF_VERIFICATION__ $(VFLAGS) $(XMHFHIC_UAPI_STUB) $(HYPAPP_VFMS) $(HYPAPP_SYSCALLLOG_DRV) $(HYPAPP_SYSCALLLOG)
 	#cbmc --ILP64 --bounds-check --pointer-check -D__XMHF_VERIFICATION__ $(VFLAGS) $(XMHFHIC_UAPI_STUB) $(HYPAPP_VFMS) $(HYPAPP_APPROVEXEC_DRV) $(HYPAPP_APPROVEXEC)
-	cbmc --ILP64 --bounds-check --pointer-check -D__XMHF_VERIFICATION__ $(VFLAGS) $(XMHFHIC_UAPI_STUB) $(HYPAPP_VFMS) $(HYPAPP_HYPERDEP_DRV) $(HYPAPP_HYPERDEP)
+	#cbmc --ILP64 --bounds-check --pointer-check -D__XMHF_VERIFICATION__ $(VFLAGS) $(XMHFHIC_UAPI_STUB) $(HYPAPP_VFMS) $(HYPAPP_HYPERDEP_DRV) $(HYPAPP_HYPERDEP)
 
 
 
