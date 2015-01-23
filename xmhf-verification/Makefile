@@ -12,7 +12,7 @@ HYPAPP_VFMS += $(srcdir)/../xmhf-slabs/hypapps/xhhyperdep/xhhyperdep-vfm.c
 
 HYPAPP_APPROVEXEC := $(srcdir)/../xmhf-slabs/hypapps/xhapprovexec/xhapprovexec.c
 HYPAPP_APPROVEXEC_DRV := $(srcdir)/driver-xhapprovexec.c
-#HYPAPP_VFMS += $(srcdir)/../xmhf-slabs/hypapps/xhapprovexec/xhapprovexec-vfm.c
+HYPAPP_VFMS += $(srcdir)/../xmhf-slabs/hypapps/xhapprovexec/xhapprovexec-vfm.c
 
 HYPAPP_SYSCALLLOG := $(srcdir)/../xmhf-slabs/hypapps/xhsyscalllog/xhsyscalllog.c
 HYPAPP_SYSCALLLOG_DRV := $(srcdir)/driver-xhsyscalllog.c
