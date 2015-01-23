@@ -487,9 +487,9 @@ void xcguestslab_interface(void) {
 
     //xcguestslab_do_cpuid();
 
-    xcguestslab_do_testxhhyperdep();
+    //xcguestslab_do_testxhhyperdep();
 
-    //xcguestslab_do_testxhapprovexec();
+    xcguestslab_do_testxhapprovexec();
 
     //xcguestslab_do_testxhssteptrace();
 
