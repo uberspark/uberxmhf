@@ -207,6 +207,8 @@ __attribute__(( section(".sharedro") )) slab_physmem_extent_t _xmhfhic_common_hi
 
 //////
 // backing data buffers for slab memory and device page tables
+#if !defined (__XMHF_VERIFICATION__)
+
 __attribute__((aligned(4096))) vtd_slpgtbl_t _dbuf_devpgtbl[XMHF_HIC_MAX_SLABS];
 
 
@@ -215,7 +217,7 @@ __attribute__((aligned(4096)))	u64 _dbuf_mempgtbl_pdpt[XMHF_HIC_MAX_SLABS][PAE_M
 __attribute__((aligned(4096)))	u64 _dbuf_mempgtbl_pdt[XMHF_HIC_MAX_SLABS][PAE_PTRS_PER_PDPT][PAE_PTRS_PER_PDT];
 __attribute__((aligned(4096)))  u64 _dbuf_mempgtbl_pt[XMHF_HIC_MAX_SLABS][PAE_PTRS_PER_PDPT][PAE_PTRS_PER_PDT][PAE_PTRS_PER_PT];
 
-
+#endif //__XMHF_VERIFICATION__
 
 
 // GDT
