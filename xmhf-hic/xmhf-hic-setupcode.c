@@ -725,7 +725,9 @@ void xmhfhic_smp_entry(u64 cpuid){
     xmhf_hic_arch_setup_cpu_state(cpuid);
 
     //relinquish HIC initialization and move on to the first slab
-    //xmhfhic_arch_relinquish_control_to_init_slab(cpuid);
+#if !defined (__XMHF_VERIFICATION__)
+    xmhfhic_arch_relinquish_control_to_init_slab(cpuid);
+#endif //__XMHF_VERIFICATION__
 
     _XDPRINTF_("%s[%u,%u]: Should never be here. Halting!\n", __FUNCTION__, cpuid, isbsp);
     HALT();
@@ -2520,7 +2522,7 @@ static bool __xmhfhic_x86vmx_setupvmxstate(u64 cpuid){
 
     write_cr4( read_cr4() |  CR4_VMXE);
 
-#if 0
+#if !defined (__XMHF_VERIFICATION__)
 	//enter VMX root operation using VMXON
 	{
 		u32 retval=0;
@@ -2557,7 +2559,7 @@ static bool __xmhfhic_x86vmx_setupvmxstate(u64 cpuid){
 	//load VMPTR
 	if(!__vmx_vmptrld((u64)vmcs_phys_addr))
 		return false;
-#endif // 0
+#endif //__XMHF_VERIFICATION__
 
 
 	//setup host state
