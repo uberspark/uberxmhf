@@ -60,6 +60,9 @@
 
 void xhssteptrace_interface(slab_input_params_t *iparams, u64 iparams_size, slab_output_params_t *oparams, u64 oparams_size, u64 src_slabid, u64 cpuindex);
 
+//VFM
+static bool ssteptrace_on;
+void xhssteptrace_inv_xmhf_hic_uapi_cpustate_vmwrite(u64 encoding, u64 value);
 #endif	//__ASSEMBLY__
 
 #endif //__XHSSTEPTRACE_H__

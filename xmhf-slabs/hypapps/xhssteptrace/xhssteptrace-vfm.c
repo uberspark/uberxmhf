@@ -44,16 +44,29 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-/*
- * data used by HIC runtime only
- *
- * author: amit vasudevan (amitvasudevan@acm.org)
- */
+// ssteptrace hypapp -- verification manifest
+// author: amit vasudevan (amitvasudevan@acm.org)
 
 #include <xmhf.h>
+#include <xmhf-debug.h>
+#include <xmhf-core.h>
+
+#include <xhssteptrace.h>
 
 
-u64 __xmhfhic_safestack_indices[MAX_PLATFORM_CPUS] = { 0 };
+#if defined (__XMHF_VERIFICATION__)
+static bool ssteptrace_on= nondet_bool();
+#else
+static bool ssteptrace_on = false;
+#endif
 
-__xmhfhic_safestack_element_t __xmhfhic_safestack[MAX_PLATFORM_CPUS][512];
 
+void xhssteptrace_inv_xmhf_hic_uapi_cpustate_vmwrite(u64 encoding, u64 value){
+    if(!ssteptrace_on){
+        if(encoding == VMCS_CONTROL_EXCEPTION_BITMAP)
+            assert( value & (1 << 1) );
+
+        if(encoding == VMCS_GUEST_RFLAGS)
+            assert (value & EFLAGS_TF);
+    }
+}

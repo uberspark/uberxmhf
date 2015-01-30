@@ -1,3 +1,4 @@
+
 /*
  * @XMHF_LICENSE_HEADER_START@
  *
@@ -44,18 +45,14 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-/*
- * data used by both HIC initialization and runtime
- *
- * author: amit vasudevan (amitvasudevan@acm.org)
- */
+// XMHF HIC trampoline verification module
+// author: amit vasudevan (amitvasudevan@acm.org)
 
 #include <xmhf.h>
+#include <xmhf-debug.h>
+#include <xmhf-core.h>
 
-
-//slab_header_t _slab_table[XMHF_HIC_MAX_SLABS] = {0};
-__attribute__(( section(".sharedro") )) __attribute__((aligned(4096))) slab_info_t _xmhfhic_common_slab_info_table[XMHF_HIC_MAX_SLABS] = {0};
-
-__attribute__(( section(".sharedro") )) slab_physmem_extent_t _xmhfhic_common_hic_physmem_extents[HIC_SLAB_PHYSMEM_MAXEXTENTS] = {0};
-
-__attribute__(( aligned(2097152) )) u64 _xmhfhic_common_slab_archdata_mempgtbl_pml4t[XMHF_HIC_MAX_SLABS][PAE_MAXPTRS_PER_PML4T];
+void main(void){
+    xcbootinfo->cpuinfo_numentries = 1;
+xmhfhic_entry();
+}

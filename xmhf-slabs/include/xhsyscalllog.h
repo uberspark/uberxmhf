@@ -47,7 +47,7 @@
 
 /*
  *
- *  hyperdep hypapp slab decls.
+ *  syscalllog hypapp slab decls.
  *
  *  author: amit vasudevan (amitvasudevan@acm.org)
  */
@@ -59,6 +59,13 @@
 #ifndef __ASSEMBLY__
 
 void xhsyscalllog_interface(slab_input_params_t *iparams, u64 iparams_size, slab_output_params_t *oparams, u64 oparams_size, u64 src_slabid, u64 cpuindex);
+
+
+//VFM
+extern bool sl_activated;
+extern bool _sl_registered;
+void xhsyscalllog_inv_xmhf_hic_uapi_mempgtbl_setentry(xmhf_hic_uapi_mempgtbl_desc_t *imdesc);
+
 
 #endif	//__ASSEMBLY__
 

@@ -82,6 +82,8 @@ static void ae_lock(u64 cpuindex, u64 guest_slab_index, u64 gpa){
 
     _XDPRINTF_("%s[%u]: starting...\n", __FUNCTION__, (u32)cpuindex);
 
+
+if(!ae_activated){
     //grab page contents at gpa into local page buffer
     pdesc.guest_slab_index = guest_slab_index;
     pdesc.addr_to = &_ae_page_buffer;
@@ -130,8 +132,11 @@ static void ae_lock(u64 cpuindex, u64 guest_slab_index, u64 gpa){
 
         XMHF_HIC_SLAB_UAPI_MEMPGTBL(XMHF_HIC_UAPI_MEMPGTBL_SETENTRY, &mdesc, NULL);
 
+        ae_activated = true;
+
         _XDPRINTF_("%s[%u]: approved and locked page at gpa %x\n", __FUNCTION__, (u32)cpuindex, gpa);
     }
+}
 
 }
 
@@ -142,6 +147,7 @@ static void ae_unlock(u64 cpuindex, u64 guest_slab_index, u64 gpa){
 
     _XDPRINTF_("%s[%u]: starting...\n", __FUNCTION__, (u32)cpuindex);
 
+if(ae_activated){
      //unlock the code page
      mdesc.guest_slab_index = guest_slab_index;
      mdesc.gpa = gpa;
@@ -154,8 +160,11 @@ static void ae_unlock(u64 cpuindex, u64 guest_slab_index, u64 gpa){
 
     XMHF_HIC_SLAB_UAPI_MEMPGTBL(XMHF_HIC_UAPI_MEMPGTBL_SETENTRY, &mdesc, NULL);
 
-    _XDPRINTF_("%s[%u]: restored permissions for page at %x\n", __FUNCTION__, (u32)cpuindex, gpa);
 
+    ae_activated=false;
+
+    _XDPRINTF_("%s[%u]: restored permissions for page at %x\n", __FUNCTION__, (u32)cpuindex, gpa);
+}
 }
 
 
@@ -290,7 +299,7 @@ void xhapprovexec_interface(slab_input_params_t *iparams, u64 iparams_size, slab
         default:{
             _XDPRINTF_("%s[%u]: Unknown cbtype. Halting!\n",
                 __FUNCTION__, (u32)cpuindex);
-            HALT();
+            //HALT();
         }
     }
 

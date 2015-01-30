@@ -61,40 +61,52 @@ XMHF_SLAB(xhhyperdep)
 #define HYPERDEP_DEACTIVATEDEP			0xC1
 
 
+
 //activate DEP for a given page (at gpa)
 static void hd_activatedep(u64 cpuindex, u64 guest_slab_index, u64 gpa){
 	xmhf_hic_uapi_mempgtbl_desc_t mdesc;
 
-	mdesc.guest_slab_index = guest_slab_index;
-	mdesc.gpa = gpa;
+    if(!hd_activated){
+        mdesc.guest_slab_index = guest_slab_index;
+        mdesc.gpa = gpa;
 
-    XMHF_HIC_SLAB_UAPI_MEMPGTBL(XMHF_HIC_UAPI_MEMPGTBL_GETENTRY, &mdesc, &mdesc);
-    _XDPRINTF_("%s[%u]: original entry for gpa=%x is %x\n", __FUNCTION__, (u32)cpuindex, gpa, mdesc.entry);
+        if(mdesc.gpa != 0){
+            XMHF_HIC_SLAB_UAPI_MEMPGTBL(XMHF_HIC_UAPI_MEMPGTBL_GETENTRY, &mdesc, &mdesc);
+            _XDPRINTF_("%s[%u]: original entry for gpa=%x is %x\n", __FUNCTION__, (u32)cpuindex, gpa, mdesc.entry);
 
-    mdesc.entry &= ~(0x7);
-    mdesc.entry |= 0x3; //execute-disable, read-write
+            mdesc.entry &= ~(0x4); //execute-disable
 
-    XMHF_HIC_SLAB_UAPI_MEMPGTBL(XMHF_HIC_UAPI_MEMPGTBL_SETENTRY, &mdesc, NULL);
+            XMHF_HIC_SLAB_UAPI_MEMPGTBL(XMHF_HIC_UAPI_MEMPGTBL_SETENTRY, &mdesc, NULL);
 
-    _XDPRINTF_("%s[%u]: activated DEP for page at gpa %x\n", __FUNCTION__, (u32)cpuindex, gpa);
+            _XDPRINTF_("%s[%u]: activated DEP for page at gpa %x\n", __FUNCTION__, (u32)cpuindex, gpa);
+
+            hd_activated=true;
+        }
+    }
 }
 
 //deactivate DEP for a given page (at gpa)
 static void hd_deactivatedep(u64 cpuindex, u64 guest_slab_index, u64 gpa){
 	xmhf_hic_uapi_mempgtbl_desc_t mdesc;
 
-	mdesc.guest_slab_index = guest_slab_index;
-	mdesc.gpa = gpa;
+    if(hd_activated){
+        mdesc.guest_slab_index = guest_slab_index;
+        mdesc.gpa = gpa;
 
-    XMHF_HIC_SLAB_UAPI_MEMPGTBL(XMHF_HIC_UAPI_MEMPGTBL_GETENTRY, &mdesc, &mdesc);
-    _XDPRINTF_("%s[%u]: original entry for gpa=%x is %x\n", __FUNCTION__, (u32)cpuindex, gpa, mdesc.entry);
+        if(mdesc.gpa != 0){
+            XMHF_HIC_SLAB_UAPI_MEMPGTBL(XMHF_HIC_UAPI_MEMPGTBL_GETENTRY, &mdesc, &mdesc);
+            _XDPRINTF_("%s[%u]: original entry for gpa=%x is %x\n", __FUNCTION__, (u32)cpuindex, gpa, mdesc.entry);
 
-    mdesc.entry &= ~(0x7);
-    mdesc.entry |= 0x7; //execute, read-write
+            mdesc.entry &= ~(0x7);
+            mdesc.entry |= 0x7; //execute, read-write
 
-    XMHF_HIC_SLAB_UAPI_MEMPGTBL(XMHF_HIC_UAPI_MEMPGTBL_SETENTRY, &mdesc, NULL);
+            XMHF_HIC_SLAB_UAPI_MEMPGTBL(XMHF_HIC_UAPI_MEMPGTBL_SETENTRY, &mdesc, NULL);
 
-    _XDPRINTF_("%s[%u]: deactivated DEP for page at gpa %x\n", __FUNCTION__, (u32)cpuindex, gpa);
+            _XDPRINTF_("%s[%u]: deactivated DEP for page at gpa %x\n", __FUNCTION__, (u32)cpuindex, gpa);
+
+            hd_activated=false;
+        }
+    }
 }
 
 

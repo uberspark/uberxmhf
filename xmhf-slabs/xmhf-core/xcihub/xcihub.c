@@ -154,6 +154,7 @@ void xcihub_interface(slab_input_params_t *iparams, u64 iparams_size, slab_outpu
 
 
         case VMX_VMEXIT_WRMSR:{
+
             if(xc_hcbinvoke(XC_HYPAPPCB_TRAP_INSTRUCTION, XC_HYPAPPCB_TRAP_INSTRUCTION_WRMSR, src_slabid) == XC_HYPAPPCB_CHAIN){
 
                 u64 guest_rip;
