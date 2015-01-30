@@ -58,6 +58,7 @@ print "\nslab_physmem_extent_t _xmhfhic_init_setupdata_slab_physmem_extents[XMHF
 
 $i = 0;
 while( $i <= $#ARGV) {
+#while( $i < 1) {
 	print "\n";
 	print "\n{";
 	print "\n	{.addr_start = _slab_$ARGV[$i]_code_start, .addr_end = _slab_$ARGV[$i]_code_end, .protection = 0},";

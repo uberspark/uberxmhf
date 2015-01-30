@@ -547,8 +547,26 @@ static inline void xsetbv(u32 xcr_reg, u64 value){
 	}
 
 
-	//void spin_lock(volatile u32 *);
-	//void spin_unlock(volatile u32 *);
+    static inline void spin_lock(volatile u32 *lock){
+        __asm__ __volatile__ (
+            "1:	btl	$0, %0	\r\n"	//mutex is available?
+            "		jnc 1b	\r\n"	//wait till it is
+            "      	lock		\r\n"   //lock the bus (exclusive access)
+            "		btrl	$0, %0	\r\n"   //and try to grab the mutex
+            "		jnc	1b	\r\n"   //spin until successful --> spinlock :p
+            : //no asm outputs
+            : "m" (*lock)
+        );
+    }
+
+    static inline void spin_unlock(volatile u32 *lock){
+        __asm__ __volatile__ (
+            "btsl	$0, %0		\r\n"	//release spinlock
+            : //no asm outputs
+            : "m" (*lock)
+        );
+    }
+
 
 #else //__XMHF_VERIFICATION__
 
@@ -692,26 +710,6 @@ static inline u32 xmhf_baseplatform_arch_getcpuvendor(void){
 
 
 
-
-static inline void spin_lock(volatile u32 *lock){
-	__asm__ __volatile__ (
-		"1:	btl	$0, %0	\r\n"	//mutex is available?
-      	"		jnc 1b	\r\n"	//wait till it is
-		"      	lock		\r\n"   //lock the bus (exclusive access)
-	    "		btrl	$0, %0	\r\n"   //and try to grab the mutex
-	    "		jnc	1b	\r\n"   //spin until successful --> spinlock :p
-		: //no asm outputs
-		: "m" (*lock)
-	);
-}
-
-static inline void spin_unlock(volatile u32 *lock){
-	__asm__ __volatile__ (
-		"btsl	$0, %0		\r\n"	//release spinlock
-		: //no asm outputs
-		: "m" (*lock)
-	);
-}
 
 
 

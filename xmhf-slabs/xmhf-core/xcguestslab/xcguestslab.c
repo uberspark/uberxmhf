@@ -439,9 +439,9 @@ static void xcguestslab_do_testxhsyscalllog(void){
         wrmsr(IA32_SYSENTER_ESP_MSR, (u32)&_xcguestslab_do_testxhsyscalllog_sysenterhandler_stack + (u32)PAGE_SIZE_4K, 0);
     }
     _XDPRINTF_("%s: setup SYSENTER/SYSEXIT mechanism\n", __FUNCTION__);
-    _XDPRINTF_("SYSENTER CS=%016llx\n", rdmsr64(IA32_SYSENTER_CS_MSR));
-    _XDPRINTF_("SYSENTER RIP=%016llx\n", rdmsr64(IA32_SYSENTER_EIP_MSR));
-    _XDPRINTF_("SYSENTER RSP=%016llx\n", rdmsr64(IA32_SYSENTER_ESP_MSR));
+    _XDPRINTF_("%s: SYSENTER CS=%016llx\n", __FUNCTION__, rdmsr64(IA32_SYSENTER_CS_MSR));
+    _XDPRINTF_("%s: SYSENTER RIP=%016llx\n", __FUNCTION__, rdmsr64(IA32_SYSENTER_EIP_MSR));
+    _XDPRINTF_("%s: SYSENTER RSP=%016llx\n", __FUNCTION__, rdmsr64(IA32_SYSENTER_ESP_MSR));
 
 
     //switch to ring-3
@@ -456,7 +456,7 @@ static void xcguestslab_do_testxhsyscalllog(void){
     );
 
 
-    _XDPRINTF_("%s: Guest Slab at Ring-3. Proceeding to execute sysenter...\n", __FUNCTION__);
+    _XDPRINTF_("%s: Guest Slab at Ring-3. Proceeding to execute sysenter...Halting!\n", __FUNCTION__);
 
     //invoke sysenter
     asm volatile(
@@ -491,9 +491,9 @@ void xcguestslab_interface(void) {
 
     //xcguestslab_do_testxhapprovexec();
 
-    //xcguestslab_do_testxhssteptrace();
+    xcguestslab_do_testxhssteptrace();
 
-    xcguestslab_do_testxhsyscalllog();
+    //xcguestslab_do_testxhsyscalllog();
 
     _XDPRINTF_("%s: Guest Slab Halting\n", __FUNCTION__);
     HALT();

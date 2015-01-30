@@ -44,28 +44,27 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
+// syscalllog hypapp -- verification manifest
+// author: amit vasudevan (amitvasudevan@acm.org)
 
-/*
- *
- *  hyperdep hypapp slab decls.
- *
- *  author: amit vasudevan (amitvasudevan@acm.org)
- */
+#include <xmhf.h>
+#include <xmhf-debug.h>
+#include <xmhf-core.h>
 
-#ifndef __XHHYPERDEP_H__
-#define __XHHYPERDEP_H__
+#include <xhsyscalllog.h>
 
 
-#ifndef __ASSEMBLY__
+#if defined (__XMHF_VERIFICATION__)
+bool sl_activated= nondet_bool();
+bool _sl_registered= nondet_bool();
+#else
+bool sl_activated=false;
+bool _sl_registered=false;
+#endif // defined
 
-void xhhyperdep_interface(slab_input_params_t *iparams, u64 iparams_size, slab_output_params_t *oparams, u64 oparams_size, u64 src_slabid, u64 cpuindex);
-
-
-//VFM
-extern bool hd_activated;
-
-void xhhyperdep_inv_xmhf_hic_uapi_mempgtbl_setentry(xmhf_hic_uapi_mempgtbl_desc_t *imdesc);
-
-#endif	//__ASSEMBLY__
-
-#endif //__XHHYPERDEP_H__
+void xhsyscalllog_inv_xmhf_hic_uapi_mempgtbl_setentry(xmhf_hic_uapi_mempgtbl_desc_t *imdesc){
+    if(!sl_activated){
+        if(imdesc->gpa == 0)
+            assert( !(imdesc->entry & 0x4) );
+    }
+}

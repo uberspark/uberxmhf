@@ -61,8 +61,6 @@ XMHF_SLAB(xhssteptrace)
 #define SSTEPTRACE_ON          			0xE1
 #define SSTEPTRACE_OFF         			0xE2
 
-static bool ssteptrace_on = false;
-
 
 static u8 _st_tracebuffer[256];
 
@@ -71,6 +69,7 @@ static void st_on(u64 cpuindex, u64 guest_slab_index){
     u64 guest_rflags;
     u64 exception_bitmap;
 
+if(!ssteptrace_on){
     XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMREAD, VMCS_GUEST_RFLAGS, &guest_rflags);
     XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMREAD, VMCS_CONTROL_EXCEPTION_BITMAP, &exception_bitmap);
     guest_rflags |= EFLAGS_TF;
@@ -80,12 +79,14 @@ static void st_on(u64 cpuindex, u64 guest_slab_index){
 
     ssteptrace_on=true;
 }
+}
 
 // trace (single-step) off
 static void st_off(u64 cpuindex, u64 guest_slab_index){
     u64 guest_rflags;
     u64 exception_bitmap;
 
+if(ssteptrace_on){
     XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMREAD, VMCS_GUEST_RFLAGS, &guest_rflags);
     XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMREAD, VMCS_CONTROL_EXCEPTION_BITMAP, &exception_bitmap);
     guest_rflags &= ~(EFLAGS_TF);
@@ -94,6 +95,7 @@ static void st_off(u64 cpuindex, u64 guest_slab_index){
     XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMWRITE, VMCS_GUEST_RFLAGS, guest_rflags);
 
     ssteptrace_on=false;
+}
 }
 
 
@@ -280,7 +282,7 @@ void xhssteptrace_interface(slab_input_params_t *iparams, u64 iparams_size, slab
         default:{
             _XDPRINTF_("%s[%u]: Unknown cbtype. Halting!\n",
                 __FUNCTION__, (u32)cpuindex);
-            HALT();
+            //HALT();
         }
     }
 

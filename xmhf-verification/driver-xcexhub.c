@@ -1,3 +1,4 @@
+
 /*
  * @XMHF_LICENSE_HEADER_START@
  *
@@ -44,28 +45,17 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
+// XMHF core xcexhub verification module
+// author: amit vasudevan (amitvasudevan@acm.org)
 
-/*
- *
- *  hyperdep hypapp slab decls.
- *
- *  author: amit vasudevan (amitvasudevan@acm.org)
- */
+#include <xmhf.h>
+#include <xmhf-debug.h>
+#include <xmhf-core.h>
 
-#ifndef __XHHYPERDEP_H__
-#define __XHHYPERDEP_H__
+#include <xcexhub.h>
 
+void main(void){
+    x86vmx_exception_frame_errcode_t exframe;
 
-#ifndef __ASSEMBLY__
-
-void xhhyperdep_interface(slab_input_params_t *iparams, u64 iparams_size, slab_output_params_t *oparams, u64 oparams_size, u64 src_slabid, u64 cpuindex);
-
-
-//VFM
-extern bool hd_activated;
-
-void xhhyperdep_inv_xmhf_hic_uapi_mempgtbl_setentry(xmhf_hic_uapi_mempgtbl_desc_t *imdesc);
-
-#endif	//__ASSEMBLY__
-
-#endif //__XHHYPERDEP_H__
+    xcexhub_interface(&exframe, sizeof(exframe), NULL, 0, 0, 0x8000000000000000ULL);
+}

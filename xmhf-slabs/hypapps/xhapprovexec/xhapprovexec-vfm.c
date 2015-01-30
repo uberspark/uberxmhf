@@ -44,28 +44,24 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
+// approvexec hypapp -- verification manifest
+// author: amit vasudevan (amitvasudevan@acm.org)
 
-/*
- *
- *  hyperdep hypapp slab decls.
- *
- *  author: amit vasudevan (amitvasudevan@acm.org)
- */
+#include <xmhf.h>
+#include <xmhf-debug.h>
+#include <xmhf-core.h>
 
-#ifndef __XHHYPERDEP_H__
-#define __XHHYPERDEP_H__
+#include <xhapprovexec.h>
 
+#if defined (__XMHF_VERIFICATION__)
+bool ae_activated=nondet_bool();
+#else
+bool ae_activated=false;
+#endif // defined
 
-#ifndef __ASSEMBLY__
+void xhapprovexec_inv_xmhf_hic_uapi_mempgtbl_setentry(xmhf_hic_uapi_mempgtbl_desc_t *imdesc){
+    if(!ae_activated){
+        assert( (imdesc->entry & 0x7) == 0x5 );
+    }
+}
 
-void xhhyperdep_interface(slab_input_params_t *iparams, u64 iparams_size, slab_output_params_t *oparams, u64 oparams_size, u64 src_slabid, u64 cpuindex);
-
-
-//VFM
-extern bool hd_activated;
-
-void xhhyperdep_inv_xmhf_hic_uapi_mempgtbl_setentry(xmhf_hic_uapi_mempgtbl_desc_t *imdesc);
-
-#endif	//__ASSEMBLY__
-
-#endif //__XHHYPERDEP_H__

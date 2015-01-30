@@ -44,7 +44,7 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-//error.h - error handling 
+//error.h - error handling
 //author: amit vasudevan (amitvasudevan@acm.org)
 
 #ifndef __XMHF_ERROR_H_
@@ -53,10 +53,16 @@
 
 #ifndef __ASSEMBLY__
 
-#define HALT()	{ while(1); }
-//#define HALT_ON_ERRORCOND(_p) { if ( !(_p) ) { _XDPRINTF_("\nFatal: Halting! Condition '%s' failed, line %d, file %s\n\n", #_p , __LINE__, __FILE__); HALT(); } }
-#define HALT_ON_ERRORCOND(_p) { if ( !(_p) ) { _XDPRINTF_("\nFatal: Halting! Condition '%s' failed, line %d, file %s\n\n", #_p , __LINE__, __FILE__); HALT(); } }
-//#define WARNING(_p) { if ( !(_p) ) { _XDPRINTF_("\nWarning Assertion '%s' failed, line %d, file %s\n", #_p , __LINE__, __FILE__);} }
+#if defined (__XMHF_VERIFICATION__)
+    #define HALT()
+    #define HALT_ON_ERRORCOND(_p)
+
+#else
+    #define HALT()	{ while(1); }
+    #define HALT_ON_ERRORCOND(_p) { if ( !(_p) ) { _XDPRINTF_("\nFatal: Halting! Condition '%s' failed, line %d, file %s\n\n", #_p , __LINE__, __FILE__); HALT(); } }
+#endif // defined
+
+
 
 /* awesome trick from http://www.jaggersoft.com/pubs/CVu11_3.html */
 #define COMPILE_TIME_ASSERT(pred)               \

@@ -52,6 +52,8 @@
 
 #ifndef __ASSEMBLY__
 
+
+
 //pull in required libxmhfc C includes
 #include <stdint.h>
 #include <stdbool.h>
@@ -83,6 +85,13 @@
 #include <xmhf-types.h>			//XMHF specific base types
 #include <xmhf-error.h>
 
+
+#ifdef __XMHF_VERIFICATION__
+	//include verification related primitives
+	#include <xmhf-verification.h>
+#endif //__XMHF_VERIFICATION__
+
+
 #include <xmhf-arch.h>			//XMHF arch. specific types/defn.
 
 //#include <xmhf-slab.h>
@@ -97,10 +106,6 @@
 //#include <xmhf-debug.h>			//libxmhfdebug
 
 
-#ifdef __XMHF_VERIFICATION__
-	//include verification related primitives
-	#include <xmhf-verification.h>
-#endif //__XMHF_VERIFICATION__
 
 /*
 //forward declaration of runtime parameter block

@@ -654,6 +654,7 @@ __attribute__((naked)) __attribute__ ((section(".hic_entrystub"))) __attribute__
 void xmhfhic_entry(void){
     u64 pgtblbase;
 
+#if !defined(__XMHF_VERIFICATION__)
 	//initialize debugging early on
 	xmhfhw_platform_serial_init((char *)&xcbootinfo->debugcontrol_buffer);
 
@@ -683,6 +684,7 @@ void xmhfhic_entry(void){
 			  xcbootinfo->memmapinfo_buffer[i].type);
 		}
   	}
+#endif
 
     //initialize slab info table based on setup data
     xmhfhic_arch_setup_slab_info();
@@ -690,11 +692,13 @@ void xmhfhic_entry(void){
     //sanity check HIC (hardware) requirements
     xmhfhic_arch_sanity_check_requirements();
 
+#if !defined (__XMHF_VERIFICATION__)
     //setup slab system device allocation and device page tables
     xmhfhic_arch_setup_slab_device_allocation();
 
     //setup slab memory page tables
     xmhfhic_arch_setup_slab_mem_page_tables();
+#endif //__XMHF_VERIFICATION__
 
     //setup base CPU data structures
     xmhfhic_arch_setup_base_cpu_data_structures();
@@ -710,6 +714,10 @@ void xmhfhic_entry(void){
 
 void xmhfhic_smp_entry(u64 cpuid){
     bool isbsp = (cpuid & 0x8000000000000000ULL) ? true : false;
+    #if defined (__XMHF_VERIFICATION__)
+    cpuid = 0;
+    isbsp = true;
+    #endif // defined
 
     _XDPRINTF_("%s[%u,%u]: rsp=%016llx. Starting...\n",
             __FUNCTION__, cpuid, isbsp, read_rsp());
@@ -717,7 +725,9 @@ void xmhfhic_smp_entry(u64 cpuid){
     xmhf_hic_arch_setup_cpu_state(cpuid);
 
     //relinquish HIC initialization and move on to the first slab
+#if !defined (__XMHF_VERIFICATION__)
     xmhfhic_arch_relinquish_control_to_init_slab(cpuid);
+#endif //__XMHF_VERIFICATION__
 
     _XDPRINTF_("%s[%u,%u]: Should never be here. Halting!\n", __FUNCTION__, cpuid, isbsp);
     HALT();
@@ -749,6 +759,7 @@ void xmhfhic_arch_setup_slab_info(void){
                 _xmhfhic_init_setupdata_slab_caps[i].slab_uapicaps;
 
 
+            #if !defined(__XMHF_VERIFICATION__)
             memcpy(&_xmhfhic_common_slab_info_table[i].slab_devices,
                    &_xmhfhic_init_setupdata_slab_caps[i].slab_devices,
                    sizeof(_xmhfhic_common_slab_info_table[0].slab_devices));
@@ -756,6 +767,8 @@ void xmhfhic_arch_setup_slab_info(void){
             memcpy(_xmhfhic_common_slab_info_table[i].slab_physmem_extents,
                    _xmhfhic_init_setupdata_slab_physmem_extents[i],
                    sizeof(_xmhfhic_common_slab_info_table[0].slab_physmem_extents));
+            #endif
+
             _xmhfhic_common_slab_info_table[i].entrystub = _xmhfhic_common_slab_info_table[i].slab_physmem_extents[0].addr_start;
 
             //arch. specific
@@ -765,6 +778,7 @@ void xmhfhic_arch_setup_slab_info(void){
             _xmhfhic_common_slab_info_table[i].archdata.mempgtbl_initialized=false;
             _xmhfhic_common_slab_info_table[i].archdata.devpgtbl_initialized=false;
 
+            #if !defined(__XMHF_VERIFICATION__)
             {
                 u32 j;
                 u64 *slab_stackhdr = (u64 *)_xmhfhic_common_slab_info_table[i].slab_physmem_extents[3].addr_start;
@@ -773,18 +787,20 @@ void xmhfhic_arch_setup_slab_info(void){
                         _xmhfhic_common_slab_info_table[i].archdata.slabtos[j]=slab_stackhdr[j];
                 }
             }
-
+            #endif
 
         }
     }
 
 
+    #if !defined (__XMHF_VERIFICATION__)
     //initialize HIC physical memory extents
     memcpy(_xmhfhic_common_hic_physmem_extents,
            _xmhfhic_init_setupdata_hic_physmem_extents,
            sizeof(_xmhfhic_common_hic_physmem_extents));
+    #endif
 
-
+    #if !defined (__XMHF_VERIFICATION__)
 	//print out HIC section information
     {
 		_XDPRINTF_("xmhfhic section info:\n");
@@ -826,7 +842,7 @@ void xmhfhic_arch_setup_slab_info(void){
 
 		}
 	}
-
+    #endif
 
 
 
@@ -1023,6 +1039,7 @@ static bool _platform_x86pc_vtd_initialize(void){
     return true;
 }
 
+#if !defined (__XMHF_VERIFICATION__)
 static vtd_slpgtbl_handle_t _platform_x86pc_vtd_setup_slpgtbl(u32 slabid){
     vtd_slpgtbl_handle_t retval = {0, 0};
     u32 i, j, k, paddr=0;
@@ -1033,7 +1050,43 @@ static vtd_slpgtbl_handle_t _platform_x86pc_vtd_setup_slpgtbl(u32 slabid){
         return retval;
     }
 
+
     //setup device memory access for the partition
+    _dbuf_devpgtbl[slabid].pml4t[0].fields.r = 1;
+    _dbuf_devpgtbl[slabid].pml4t[0].fields.w = 1;
+    _dbuf_devpgtbl[slabid].pml4t[0].fields.slpdpt =
+        ((u64)_dbuf_devpgtbl[slabid].pdpt >> 12);
+
+    for(i=0; i < PAE_PTRS_PER_PDPT; i++){
+        _dbuf_devpgtbl[slabid].pdpt[i].fields.r = 1;
+        _dbuf_devpgtbl[slabid].pdpt[i].fields.w = 1;
+        _dbuf_devpgtbl[slabid].pdpt[i].fields.slpdt =
+            ((u64)_dbuf_devpgtbl[slabid].pdt[i] >> 12);
+
+        for(j=0; j < PAE_PTRS_PER_PDT; j++){
+            _dbuf_devpgtbl[slabid].pdt[i][j].fields.r = 1;
+            _dbuf_devpgtbl[slabid].pdt[i][j].fields.w = 1;
+            _dbuf_devpgtbl[slabid].pdt[i][j].fields.slpt =
+                ((u64)_dbuf_devpgtbl[slabid].pt[i][j] >> 12);
+
+            for(k=0; k < PAE_PTRS_PER_PT; k++){
+                _dbuf_devpgtbl[slabid].pt[i][j][k].fields.r = 1;
+                _dbuf_devpgtbl[slabid].pt[i][j][k].fields.w = 1;
+                _dbuf_devpgtbl[slabid].pt[i][j][k].fields.pageaddr = ((u64)paddr >> 12);
+                paddr += PAGE_SIZE_4K;
+            }
+        }
+    }
+
+    //populate device page tables pml4t, pdpt, pdt and pt pointers in slab info table
+    _xmhfhic_common_slab_info_table[slabid].archdata.devpgtbl_pml4t = &_dbuf_devpgtbl[slabid].pml4t;
+    _xmhfhic_common_slab_info_table[slabid].archdata.devpgtbl_pdpt = &_dbuf_devpgtbl[slabid].pdpt;
+    _xmhfhic_common_slab_info_table[slabid].archdata.devpgtbl_pdt = &_dbuf_devpgtbl[slabid].pdt;
+    _xmhfhic_common_slab_info_table[slabid].archdata.devpgtbl_pt = &_dbuf_devpgtbl[slabid].pt;
+
+
+
+    /*//setup device memory access for the partition
     _xmhfhic_common_slab_info_table[slabid].archdata.devpgtbl.pml4t[0].fields.r = 1;
     _xmhfhic_common_slab_info_table[slabid].archdata.devpgtbl.pml4t[0].fields.w = 1;
     _xmhfhic_common_slab_info_table[slabid].archdata.devpgtbl.pml4t[0].fields.slpdpt = ((u64)&_xmhfhic_common_slab_info_table[slabid].archdata.devpgtbl.pdpt >> 12);
@@ -1055,13 +1108,14 @@ static vtd_slpgtbl_handle_t _platform_x86pc_vtd_setup_slpgtbl(u32 slabid){
                 paddr += PAGE_SIZE_4K;
             }
         }
-    }
+    }*/
 
-    retval.addr_vtd_pml4t = _xmhfhic_common_slab_info_table[slabid].archdata.devpgtbl.pml4t;
-    retval.addr_vtd_pdpt = _xmhfhic_common_slab_info_table[slabid].archdata.devpgtbl.pdpt;
+    retval.addr_vtd_pml4t = _xmhfhic_common_slab_info_table[slabid].archdata.devpgtbl_pml4t;
+    retval.addr_vtd_pdpt = _xmhfhic_common_slab_info_table[slabid].archdata.devpgtbl_pdpt;
 
     return retval;
 }
+#endif
 
 //static xc_platformdevice_desc_t __xmhfhic_arch_initializeandenumeratedevices(context_desc_t context_desc){
 static slab_platformdevices_t __xmhfhic_arch_initializeandenumeratedevices(void){
@@ -1115,6 +1169,7 @@ static bool __xmhfhic_arch_sda_allocdevices_to_slab(u64 slabid, slab_platformdev
     if(!device_descs.desc_valid)
         return true;
 
+    #if !defined (__XMHF_VERIFICATION__)
     //initialize slab device page tables (if it has not been initialized already)
     if( !_xmhfhic_common_slab_info_table[slabid].archdata.devpgtbl_initialized ){
         vtd_slpgtbl_handle = _platform_x86pc_vtd_setup_slpgtbl(slabid);
@@ -1127,6 +1182,7 @@ static bool __xmhfhic_arch_sda_allocdevices_to_slab(u64 slabid, slab_platformdev
 
         _xmhfhic_common_slab_info_table[slabid].archdata.devpgtbl_initialized=true;
     }
+    #endif
 
 
     for(i=0; i < device_descs.numdevices; i++){
@@ -1142,19 +1198,21 @@ static bool __xmhfhic_arch_sda_allocdevices_to_slab(u64 slabid, slab_platformdev
 
         //b is our index into ret
         // (d* PCI_FUNCTION_MAX) + f = index into the cet
+        #if !defined(__XMHF_VERIFICATION__)
         if(vtd_pagewalk_level == VTD_PAGEWALK_4LEVEL){
-            _vtd_cet[b][((d*PCI_FUNCTION_MAX) + f)].fields.slptptr = ((u64)_xmhfhic_common_slab_info_table[slabid].archdata.devpgtbl.pml4t >> 12);
+            _vtd_cet[b][((d*PCI_FUNCTION_MAX) + f)].fields.slptptr = ((u64)_xmhfhic_common_slab_info_table[slabid].archdata.devpgtbl_pml4t >> 12);
             _vtd_cet[b][((d*PCI_FUNCTION_MAX) + f)].fields.aw = 2; //4-level
             _vtd_cet[b][((d*PCI_FUNCTION_MAX) + f)].fields.did = (slabid + 1); //domain
             _vtd_cet[b][((d*PCI_FUNCTION_MAX) + f)].fields.p = 1; //present
         }else if (vtd_pagewalk_level == VTD_PAGEWALK_3LEVEL){
-            _vtd_cet[b][((d*PCI_FUNCTION_MAX) + f)].fields.slptptr = ((u64)_xmhfhic_common_slab_info_table[slabid].archdata.devpgtbl.pdpt >> 12);
+            _vtd_cet[b][((d*PCI_FUNCTION_MAX) + f)].fields.slptptr = ((u64)_xmhfhic_common_slab_info_table[slabid].archdata.devpgtbl_pdpt >> 12);
             _vtd_cet[b][((d*PCI_FUNCTION_MAX) + f)].fields.aw = 1; //3-level
             _vtd_cet[b][((d*PCI_FUNCTION_MAX) + f)].fields.did = (slabid + 1); //domain
             _vtd_cet[b][((d*PCI_FUNCTION_MAX) + f)].fields.p = 1; //present
         }else{ //unknown page walk length, fail
             return false;
         }
+        #endif
     }
 
 
@@ -1434,13 +1492,40 @@ static u64 __xmhfhic_hyp_slab_getptflagsforspa(u64 slabid, u32 spa){
 	return flags;
 }
 
+#if !defined (__XMHF_VERIFICATION__)
 //
 // initialize slab page tables for a given slab index, returns the macm base
 static u64 __xmhfhic_arch_smt_slab_populate_hyp_pagetables(u64 slabid){
 		u32 i, j;
 		u64 default_flags = (u64)(_PAGE_PRESENT) | (u64)(_PAGE_USER) | (u64)(_PAGE_RW);
 
+        //_dbuf_mempgtbl_pml4t/pdpt/pdt/pt[slabid] is the data backing for slabid
+
         for(i=0; i < PAE_PTRS_PER_PML4T; i++){
+            _dbuf_mempgtbl_pml4t[slabid][i] = pae_make_pml4e(hva2spa(&_dbuf_mempgtbl_pdpt[slabid]), default_flags);
+        }
+
+		for(i=0; i < PAE_PTRS_PER_PDPT; i++){
+			_dbuf_mempgtbl_pdpt[slabid][i] = pae_make_pdpe(hva2spa(&_dbuf_mempgtbl_pdt[slabid][i]), default_flags);
+		}
+
+		//init pdts with unity mappings
+		for(i=0; i < PAE_PTRS_PER_PDPT; i++){
+			for(j=0; j < PAE_PTRS_PER_PDT; j++){
+				u32 hva = ((i * PAE_PTRS_PER_PDT) + j) * PAGE_SIZE_2M;
+				u64 spa = hva2spa((void*)hva);
+				u64 flags = __xmhfhic_hyp_slab_getptflagsforspa(slabid, (u32)spa);
+				_dbuf_mempgtbl_pdt[slabid][i][j] = pae_make_pde_big(spa, flags);
+			}
+		}
+
+        _xmhfhic_common_slab_info_table[slabid].archdata.mempgtbl_pml4t = (u64)&_dbuf_mempgtbl_pml4t[slabid];
+        _xmhfhic_common_slab_info_table[slabid].archdata.mempgtbl_pdpt = (u64)&_dbuf_mempgtbl_pdpt[slabid];
+        _xmhfhic_common_slab_info_table[slabid].archdata.mempgtbl_pdt = (u64)&_dbuf_mempgtbl_pdt[slabid];
+        _xmhfhic_common_slab_info_table[slabid].archdata.mempgtbl_pt = (u64)&_dbuf_mempgtbl_pt[slabid]; //FIXME: we dont need this allocation
+
+
+/*        for(i=0; i < PAE_PTRS_PER_PML4T; i++){
             //_xmhfhic_common_slab_info_table[slabid].archdata.mempgtbl_pml4t[i] = pae_make_pml4e(hva2spa(&_xmhfhic_common_slab_info_table[slabid].archdata.mempgtbl_pdpt), default_flags);
             _xmhfhic_common_slab_archdata_mempgtbl_pml4t[slabid][i] = pae_make_pml4e(hva2spa(&_xmhfhic_common_slab_info_table[slabid].archdata.mempgtbl_pdpt), default_flags);
             //    if(slabid == 0){
@@ -1467,12 +1552,12 @@ static u64 __xmhfhic_arch_smt_slab_populate_hyp_pagetables(u64 slabid){
                 //    _XDPRINTF_("pdt[%u][%u] = %016llx\n", i, j, _xmhfhic_common_slab_info_table[slabid].archdata.mempgtbl_pdt[i][j]);
                 //}
 			}
-		}
+		}*/
 
-		//return _xmhfhic_common_slab_info_table[slabid].archdata.mempgtbl_pml4t;
-		return _xmhfhic_common_slab_archdata_mempgtbl_pml4t[slabid];
+		return _xmhfhic_common_slab_info_table[slabid].archdata.mempgtbl_pml4t;
+		//return _xmhfhic_common_slab_archdata_mempgtbl_pml4t[slabid];
 }
-
+#endif
 
 
 
@@ -1482,21 +1567,39 @@ static void __xmhfhic_vmx_gathermemorytypes(void);
 static u32 __xmhfhic_vmx_getmemorytypeforphysicalpage(u64 pagebaseaddr);
 static void __xmhfhic_vmx_setupEPT(u64 guestslab_id);
 
-
+#if !defined (__XMHF_VERIFICATION__)
 static void __xmhfhic_guestpgtbl_setentry(u64 slabid,  u64 gpa, u64 entry){
-    u64 pdpt_index = pae_get_pdpt_index(gpa);
-    u64 pd_index = pae_get_pdt_index(gpa);
-    u64 pt_index = pae_get_pt_index(gpa);
+    //u64 pdpt_index = pae_get_pdpt_index(gpa);
+    //u64 pd_index = pae_get_pdt_index(gpa);
+    //u64 pt_index = pae_get_pt_index(gpa);
 
-    _xmhfhic_common_slab_info_table[slabid].archdata.mempgtbl_pt[pdpt_index][pd_index][pt_index] = entry;
+    //_xmhfhic_common_slab_info_table[slabid].archdata.mempgtbl_pt[pdpt_index][pd_index][pt_index] = entry;
+    _xmhfhic_common_slab_info_table[slabid].archdata.mempgtbl_pt[(gpa/PAGE_SIZE_4K)]= entry;
 
 	return;
 }
+#endif
 
+#if !defined (__XMHF_VERIFICATION__)
 static void __xmhfhic_guestpgtbl_establishshape(u64 slabid){
 	u32 i, j;
 
+    //_dbuf_mempgtbl_pml4t/pdpt/pdt/pt[slabid] is the data backing for slabid
+
     for(i=0; i < PAE_PTRS_PER_PML4T; i++)
+        _dbuf_mempgtbl_pml4t[slabid][i] = (u64) (hva2spa((void*)&_dbuf_mempgtbl_pdpt[slabid]) | 0x7);
+
+	for(i=0; i < PAE_PTRS_PER_PDPT; i++)
+		_dbuf_mempgtbl_pdpt[slabid][i] = (u64) ( hva2spa((void*)&_dbuf_mempgtbl_pdt[slabid][i]) | 0x7 );
+
+	for(i=0; i < PAE_PTRS_PER_PDPT; i++){
+		for(j=0; j < PAE_PTRS_PER_PDT; j++){
+			_dbuf_mempgtbl_pdt[slabid][i][j] = (u64) ( hva2spa((void*)&_dbuf_mempgtbl_pt[slabid][i][j]) | 0x7 );
+		}
+	}
+
+
+/*    for(i=0; i < PAE_PTRS_PER_PML4T; i++)
         //_xmhfhic_common_slab_info_table[slabid].archdata.mempgtbl_pml4t[i] = (u64) (hva2spa((void*)_xmhfhic_common_slab_info_table[slabid].archdata.mempgtbl_pdpt) | 0x7);
         _xmhfhic_common_slab_archdata_mempgtbl_pml4t[slabid][i] = (u64) (hva2spa((void*)_xmhfhic_common_slab_info_table[slabid].archdata.mempgtbl_pdpt) | 0x7);
 
@@ -1507,9 +1610,17 @@ static void __xmhfhic_guestpgtbl_establishshape(u64 slabid){
 		for(j=0; j < PAE_PTRS_PER_PDT; j++){
 			_xmhfhic_common_slab_info_table[slabid].archdata.mempgtbl_pdt[i][j] = (u64) ( hva2spa((void*)_xmhfhic_common_slab_info_table[slabid].archdata.mempgtbl_pt[i][j]) | 0x7 );
 		}
-	}
-}
+	}*/
 
+
+    _xmhfhic_common_slab_info_table[slabid].archdata.mempgtbl_pml4t = (u64)&_dbuf_mempgtbl_pml4t[slabid];
+    _xmhfhic_common_slab_info_table[slabid].archdata.mempgtbl_pdpt = (u64)&_dbuf_mempgtbl_pdpt[slabid];
+    _xmhfhic_common_slab_info_table[slabid].archdata.mempgtbl_pdt = (u64)&_dbuf_mempgtbl_pdt[slabid];
+    _xmhfhic_common_slab_info_table[slabid].archdata.mempgtbl_pt = (u64)&_dbuf_mempgtbl_pt[slabid]; //FIXME: we dont need this allocation
+
+
+}
+#endif
 
 
 //---gather memory types for system physical memory------------------------------
@@ -1765,7 +1876,7 @@ static u32 __xmhfhic_vmx_getmemorytypeforphysicalpage(u64 pagebaseaddr){
 static void __xmhfhic_vmx_setupEPT(u64 slabid){
 	u64 p_table_value;
 	u64 gpa;
-    slab_retval_t srval;
+    //slab_retval_t srval;
 
 	for(gpa=0; gpa < ADDR_4GB; gpa += PAGE_SIZE_4K){
 		u32 memorytype = __xmhfhic_vmx_getmemorytypeforphysicalpage((u64)gpa);
@@ -1792,8 +1903,8 @@ static u64 __xmhfhic_arch_smt_slab_populate_guest_pagetables(u64 slabid){
 
 	__xmhfhic_vmx_setupEPT(slabid);
 
-    //return _xmhfhic_common_slab_info_table[slabid].archdata.mempgtbl_pml4t;
-    return _xmhfhic_common_slab_archdata_mempgtbl_pml4t[slabid];
+    return _xmhfhic_common_slab_info_table[slabid].archdata.mempgtbl_pml4t;
+    //return _xmhfhic_common_slab_archdata_mempgtbl_pml4t[slabid];
 }
 
 
@@ -1808,14 +1919,14 @@ void xmhfhic_arch_setup_slab_mem_page_tables(void){
 	{
 		u32 i;
 		for(i=0; i < XMHF_HIC_MAX_SLABS; i++){
-				_XDPRINTF_("slab %u: pml4t=%016llx, pdpt=%016llx, pdt[0]=%016llx, pdt[1]=%016llx, pdt[2]=%016llx, pdt[3]=%016llx\n", i,
-                    _xmhfhic_common_slab_archdata_mempgtbl_pml4t[i],
-                    _xmhfhic_common_slab_info_table[i].archdata.mempgtbl_pdpt,
-                    _xmhfhic_common_slab_info_table[i].archdata.mempgtbl_pdt[0],
-                    _xmhfhic_common_slab_info_table[i].archdata.mempgtbl_pdt[1],
-                    _xmhfhic_common_slab_info_table[i].archdata.mempgtbl_pdt[2],
-                    _xmhfhic_common_slab_info_table[i].archdata.mempgtbl_pdt[3]
-               );
+				//_XDPRINTF_("slab %u: pml4t=%016llx, pdpt=%016llx, pdt[0]=%016llx, pdt[1]=%016llx, pdt[2]=%016llx, pdt[3]=%016llx\n", i,
+                //    _xmhfhic_common_slab_archdata_mempgtbl_pml4t[i],
+                //    _xmhfhic_common_slab_info_table[i].archdata.mempgtbl_pdpt,
+                //    _xmhfhic_common_slab_info_table[i].archdata.mempgtbl_pdt[0],
+                //    _xmhfhic_common_slab_info_table[i].archdata.mempgtbl_pdt[1],
+                //    _xmhfhic_common_slab_info_table[i].archdata.mempgtbl_pdt[2],
+                //    _xmhfhic_common_slab_info_table[i].archdata.mempgtbl_pdt[3]
+               //);
 
                 switch(_xmhfhic_common_slab_info_table[i].archdata.slabtype){
                     case HIC_SLAB_X86VMXX86PC_HYPERVISOR:{
@@ -2055,7 +2166,9 @@ static bool __xmhfhic_smp_arch_smpinitialize(void){
 	u32 i;
 
     //save cpu MTRR state which we will later replicate on all APs
+	#if !defined(__XMHF_VERIFICATION__)
 	__xmhfhic_smp_cpu_x86_savecpumtrrstate();
+    #endif
 
     //save page table base which we will later replicate on all APs
     _ap_cr3 = read_cr3();
@@ -2091,7 +2204,10 @@ static bool __xmhfhic_smp_cpu_x86_isbsp(void){
 //common function which is entered by all CPUs upon SMP initialization
 //note: this is specific to the x86 architecture backend
 void __xmhfhic_smp_cpu_x86_smpinitialize_commonstart(void){
-	u64 cpuid = __xmhfhic_x86vmx_cpuidtable[xmhf_baseplatform_arch_x86_getcpulapicid()];
+	u64 cpuid;
+	#if !defined(__XMHF_VERIFICATION__)
+	cpuid  = __xmhfhic_x86vmx_cpuidtable[xmhf_baseplatform_arch_x86_getcpulapicid()];
+    #endif
 
     xmhfhic_smp_entry(cpuid);
 }
@@ -2235,7 +2351,6 @@ void xmhfhic_arch_switch_to_smp(void){
 static void __xmhfhic_x86vmx_initializeGDT(void){
 		u32 i;
 
-		//initialize TSS descriptors for all CPUs
 		for(i=0; i < xcbootinfo->cpuinfo_numentries; i++){
             TSSENTRY *t;
             u32 tss_base=(u32)&__xmhfhic_x86vmx_tss[i];
@@ -2285,7 +2400,9 @@ static void __xmhfhic_x86vmx_initializeTSS(void){
 void xmhfhic_arch_setup_base_cpu_data_structures(void){
 
     //initialize GDT
+    #if !defined(__XMHF_VERIFICATION__)
     __xmhfhic_x86vmx_initializeGDT();
+    #endif
 
     //initialize IDT
     __xmhfhic_x86vmx_initializeIDT();
@@ -2405,6 +2522,7 @@ static bool __xmhfhic_x86vmx_setupvmxstate(u64 cpuid){
 
     write_cr4( read_cr4() |  CR4_VMXE);
 
+#if !defined (__XMHF_VERIFICATION__)
 	//enter VMX root operation using VMXON
 	{
 		u32 retval=0;
@@ -2441,6 +2559,8 @@ static bool __xmhfhic_x86vmx_setupvmxstate(u64 cpuid){
 	//load VMPTR
 	if(!__vmx_vmptrld((u64)vmcs_phys_addr))
 		return false;
+#endif //__XMHF_VERIFICATION__
+
 
 	//setup host state
 	xmhfhw_cpu_x86vmx_vmwrite(VMCS_HOST_CR0, read_cr0());
@@ -2667,7 +2787,6 @@ static bool __xmhfhic_x86vmx_setupvmxstate(u64 cpuid){
 
     }
 
-
 /*    //32-bit specific guest slab setup
     {
 
@@ -2828,7 +2947,9 @@ static bool __xmhfhic_x86vmx_setupvmxstate(u64 cpuid){
 void xmhf_hic_arch_setup_cpu_state(u64 cpuid){
 
 	//replicate common MTRR state on this CPU
+	#if !defined (__XMHF_VERIFICATION__)
 	__xmhfhic_smp_cpu_x86_restorecpumtrrstate();
+    #endif
 
     //load GDT
     __xmhfhic_x86vmx_loadGDT(cpuid);
@@ -2905,7 +3026,6 @@ void xmhf_hic_arch_setup_cpu_state(u64 cpuid){
         HALT();
     }
     _XDPRINTF_("%s[%u]: Setup VMX state\n", __FUNCTION__, (u32)cpuid);
-
 
 }
 
