@@ -323,6 +323,3 @@ __attribute__(( aligned(4096) )) xc_cpuarchdata_x86vmx_t __xmhfhic_x86vmx_archda
 
 
 
-//////
-//libxmhfdebug debug data
-__attribute__(( section(".libxmhfdebugdata") )) u32 libxmhfdebug_lock = 1;
