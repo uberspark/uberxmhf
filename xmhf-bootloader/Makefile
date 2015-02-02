@@ -44,6 +44,8 @@ ASFLAGS += -m32
 
 # folder where objects go
 XMHF_BOOTLOADER_OBJECTS_DIR = _objs_xmhf-bootloader
+XMHF_BOOTLOADER_LIBS_DIR = _objs_xmhf-bootloader/libs32
+
 
 # archive name
 THE_ARCHIVE = xmhf-bootloader
@@ -51,11 +53,20 @@ THE_ARCHIVE = xmhf-bootloader
 
 # targets
 .PHONY: all
-all: $(THE_ARCHIVE)
+all: xmhflibs32 $(THE_ARCHIVE)
+
+
+.PHONY: xmhflibs32
+xmhflibs32:
+	mkdir -p $(XMHF_BOOTLOADER_LIBS_DIR)
+	@echo Building XMHF libs 32-bit...
+	cd $(XMHF_BOOTLOADER_LIBS_DIR) && $(MAKE) -f $(XMHFLIBS_SRC)/Makefile -w all
+	@echo XMHF libs build SUCCESS
+
 
 $(THE_ARCHIVE): $(OBJECTS)
 	#cd $(XMHF_BOOTLOADER_OBJECTS_DIR) && $(LD) --oformat elf32-i386 -T $(srcdir)/init.lds -o $(THE_ARCHIVE).exe $(OBJECTS_ARCHIVE) -L$(CCLIB)/lib/linux -L$(XMHFLIBS_DIR) -lxmhfc -lxmhfcrypto -lxmhfutil -lxmhfhw -lxmhfutil -ltpm -lxmhfc -lclang_rt.full-i386
-	cd $(XMHF_BOOTLOADER_OBJECTS_DIR) && $(LD) --oformat elf32-i386 -T $(srcdir)/init.lds -o $(THE_ARCHIVE).exe $(OBJECTS_ARCHIVE) -L$(CCLIB)/lib/linux -L$(XMHFLIBS_DIR) -lxmhfdebug -lclang_rt.full-i386
+	cd $(XMHF_BOOTLOADER_OBJECTS_DIR) && $(LD) --oformat elf32-i386 -T $(srcdir)/init.lds -o $(THE_ARCHIVE).exe $(OBJECTS_ARCHIVE) -L$(CCLIB)/lib/linux -L./libs32/_objs_xmhf-libs -lxmhfdebug -lclang_rt.full-i386
 	cd $(XMHF_BOOTLOADER_OBJECTS_DIR) && $(STRIP) -s $(THE_ARCHIVE).exe
 	cd $(XMHF_BOOTLOADER_OBJECTS_DIR) && $(OBJCOPY) --output-format=binary $(THE_ARCHIVE).exe $(THE_ARCHIVE).bin
 
