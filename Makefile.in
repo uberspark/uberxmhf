@@ -208,10 +208,10 @@ xmhfslabs:
 	@echo Slabs build SUCCESS
 
 
-.PHONY: libshared
-libshared:
-	mkdir -p $(XMHF_OBJDIR)
-	cd $(XMHF_OBJDIR) && $(MAKE) -f $(XMHF_DIR)/xmhf-slabs/shared/Makefile -w all
+#.PHONY: libshared
+#libshared:
+#	mkdir -p $(XMHF_OBJDIR)
+#	cd $(XMHF_OBJDIR) && $(MAKE) -f $(XMHF_DIR)/xmhf-slabs/shared/Makefile -w all
 
 .PHONY: xmhfbin
 xmhfbin: $(XMHFLIBS_SRC) $(XMHFCORE_SRC)
