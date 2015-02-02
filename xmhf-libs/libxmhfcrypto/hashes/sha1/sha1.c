@@ -43,7 +43,7 @@
  *
  * @XMHF_LICENSE_HEADER_END@
  */
- 
+
 #undef DESC_DEF_ONLY
 #define LTC_SOURCE
 
@@ -54,7 +54,7 @@
 #include <xmhfcrypto.h>
 #include <euchk.h>
 
-#include <sha1.h> 
+#include <sha1.h>
 
 #define F0(x,y,z)  (z ^ (x & (y ^ z)))
 #define F1(x,y,z)  (x ^ y ^ z)
@@ -80,7 +80,7 @@ static int  sha1_compress(hash_state *md, unsigned char *buf)
 
     /* expand it */
     for (i = 16; i < 80; i++) {
-        W[i] = ROL(W[i-3] ^ W[i-8] ^ W[i-14] ^ W[i-16], 1); 
+        W[i] = ROL(W[i-3] ^ W[i-8] ^ W[i-14] ^ W[i-16], 1);
     }
 
     /* compress */
@@ -89,7 +89,7 @@ static int  sha1_compress(hash_state *md, unsigned char *buf)
     #define FF1(a,b,c,d,e,i) e = (ROLc(a, 5) + F1(b,c,d) + e + W[i] + 0x6ed9eba1UL); b = ROLc(b, 30);
     #define FF2(a,b,c,d,e,i) e = (ROLc(a, 5) + F2(b,c,d) + e + W[i] + 0x8f1bbcdcUL); b = ROLc(b, 30);
     #define FF3(a,b,c,d,e,i) e = (ROLc(a, 5) + F3(b,c,d) + e + W[i] + 0xca62c1d6UL); b = ROLc(b, 30);
- 
+
     for (i = 0; i < 20; ) {
        FF0(a,b,c,d,e,i++); t = e; e = d; d = c; c = b; b = a; a = t;
     }
@@ -126,7 +126,7 @@ int sha1_buffer(const unsigned char *buffer, size_t len,
                 unsigned char md[SHA_DIGEST_LENGTH]){
   int rv=0;
   hash_state hs;
-  
+
   EU_CHKN( rv = sha1_init( &hs));
   EU_CHKN( rv = sha1_process( &hs, buffer, len));
   EU_CHKN( rv = sha1_done( &hs, md));
@@ -135,7 +135,7 @@ int sha1_buffer(const unsigned char *buffer, size_t len,
   return rv;
 }
 
-void hashandprint(const char* prefix, const u8 *bytes, size_t len) {
+/*void hashandprint(const char* prefix, const u8 *bytes, size_t len) {
     u8 digest[SHA_DIGEST_LENGTH];
 
     _XDPRINTF_("\nhashandprint: processing 0x%08x bytes at addr 0x%08x", len, (u32)bytes);
@@ -143,7 +143,7 @@ void hashandprint(const char* prefix, const u8 *bytes, size_t len) {
     EU_VERIFYN( sha1_buffer(bytes, len, digest));
 
     _XDPRINTF_("%s: %*D\n", prefix, SHA_DIGEST_LENGTH, digest, " ");
-}
+}*/
 
 /**
    Initialize the hash state
@@ -223,11 +223,11 @@ int sha1_done(hash_state * md, unsigned char *out)
 /**
   Self-test the hash
   @return CRYPT_OK if successful, CRYPT_NOP if self-tests have been disabled
-*/  
+*/
 int  sha1_test(void)
 {
     return CRYPT_NOP;
- 
+
 }
 
 
