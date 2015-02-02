@@ -7,25 +7,25 @@ OBJECTS = $(patsubst %.c, %.o, $(C_SOURCES))
 
 I_SOURCES :=  $(wildcard $(srcdir)/include/*.h)
 
-CFLAGS += -I$(srcdir)/include -nostdinc -fno-builtin -nostdlib -Wall 
+CFLAGS += -I$(srcdir)/include -nostdinc -fno-builtin -nostdlib -Wall
 
-LIBXMHFC_OBJECTS_DIR = _objs_libxmhfc
-THE_ARCHIVE = libxmhfc.a
+LIBXMHFDEBUG_OBJECTS_DIR = _objs_libxmhfdebug
+THE_ARCHIVE = libxmhfdebug.a
 
 # targets
 .PHONY: all
 all: $(THE_ARCHIVE)
 
 $(THE_ARCHIVE): $(OBJECTS)
-	cd $(LIBXMHFC_OBJECTS_DIR) && $(AR) -rcs $(THE_ARCHIVE) $(OBJECTS)
+	cd $(LIBXMHFDEBUG_OBJECTS_DIR) && $(AR) -rcs $(THE_ARCHIVE) $(OBJECTS)
 
-%.o: %.c 
+%.o: %.c
 	#mkdir -p "$(@D)"
-	mkdir -p $(LIBXMHFC_OBJECTS_DIR)
-	@echo Building "$@" from "$<" 
-	$(CC) -c $(CFLAGS) -o $(LIBXMHFC_OBJECTS_DIR)/$@ $<
+	mkdir -p $(LIBXMHFDEBUG_OBJECTS_DIR)
+	@echo Building "$@" from "$<"
+	$(CC) -c $(CFLAGS) -o $(LIBXMHFDEBUG_OBJECTS_DIR)/$@ $<
 
 .PHONY: clean
 clean:
-	$(RM) -rf $(LIBXMHFC_OBJECTS_DIR)
+	$(RM) -rf $(LIBXMHFDEBUG_OBJECTS_DIR)
 
