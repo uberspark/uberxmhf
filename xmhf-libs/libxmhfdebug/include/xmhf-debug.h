@@ -47,6 +47,8 @@
 #ifndef __XMHF_DEBUG_H__
 #define __XMHF_DEBUG_H__
 
+#include "_com.h"        		//UART/serial
+
 
 #ifndef __ASSEMBLY__
 

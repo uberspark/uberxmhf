@@ -57,8 +57,8 @@
 #include <cmdline.h>
 
 
-//libxmhfdebug
-u32 libxmhfdebug_lock = 1;
+////libxmhfdebug
+//u32 libxmhfdebug_lock = 1;
 
 //the vcpu structure which holds the current state of a core
 typedef struct _bootvcpu {
