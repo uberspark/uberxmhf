@@ -62,6 +62,12 @@
 
 #include "emhfc_callbacks.h"
 
+
+/* This is actually used with radix [2..36] */
+char const hex2ascii_data[] = "0123456789abcdefghijklmnopqrstuvwxyz";
+#define	hex2ascii(hex)	(hex2ascii_data[hex])
+
+
 struct snprintf_arg {
 	char	*str;
 	size_t	remain;
@@ -91,7 +97,7 @@ int vprintf(const char *fmt, va_list ap){
 	retval = vsnprintf(&buffer, 2048, fmt, ap);
 
 	xmhfc_puts(&buffer);
-	
+
 	return (retval);
 }*/
 
@@ -536,7 +542,7 @@ number:
 			while (percent < fmt)
 				PCHAR(*percent++);
 			/*
-			 * Since we ignore an formatting argument it is no 
+			 * Since we ignore an formatting argument it is no
 			 * longer safe to obey the remaining formatting
 			 * arguments as the arguments will no longer match
 			 * the format specs.

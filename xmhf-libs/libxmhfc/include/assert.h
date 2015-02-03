@@ -49,8 +49,8 @@
 
 #ifndef __XMHF_VERIFICATION__
 
-	#include <emhfc_callbacks.h>
-	#include <stdlib.h> /* defines abort */
+/*	#include <emhfc_callbacks.h>
+	#include <stdlib.h>
 
 	#ifdef NDEBUG
 	# define assert(x) ((void)0)
@@ -63,6 +63,10 @@
 		}                                                                   \
 	  } while(0)
 	#endif
+*/
+
+#define assert(x) ((void)0)
+
 
 #endif
 
