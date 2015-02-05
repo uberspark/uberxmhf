@@ -60,7 +60,7 @@
 /* Max number conversion buffer length: a u_quad_t in base 2, plus NUL byte. */
 #define MAXNBUF	(sizeof(intmax_t) * NBBY + 1)
 
-#include "emhfc_callbacks.h"
+//#include "emhfc_callbacks.h"
 
 
 /* This is actually used with radix [2..36] */

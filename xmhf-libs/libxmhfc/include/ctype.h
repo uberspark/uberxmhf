@@ -38,8 +38,8 @@
  * Modified for XMHF.
  */
 
-#ifndef _SYS_CTYPE_H_
-#define _SYS_CTYPE_H_
+#ifndef __CTYPE_H__
+#define __CTYPE_H__
 
 #define isspace(c)      ((c) == ' ' || ((c) >= '\t' && (c) <= '\r'))
 #define isascii(c)      (((c) & ~0x7f) == 0)
@@ -55,4 +55,4 @@
 #define toupper(c)      ((c) - 0x20 * (((c) >= 'a') && ((c) <= 'z')))
 #define tolower(c)      ((c) + 0x20 * (((c) >= 'A') && ((c) <= 'Z')))
 
-#endif /* !_SYS_CTYPE_H_ */
+#endif // __CTYPE_H__
