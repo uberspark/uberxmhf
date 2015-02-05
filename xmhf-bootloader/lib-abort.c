@@ -46,10 +46,10 @@
 
 #include <stdlib.h>
 
-#include <emhfc_callbacks.h>
+//#include <emhfc_callbacks.h>
 
 void abort(void)
 {
-  emhfc_abort();
+  //emhfc_abort();
   while(1);
 }

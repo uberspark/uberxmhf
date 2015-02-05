@@ -48,26 +48,7 @@
 #define __ASSERT_H__
 
 #ifndef __XMHF_VERIFICATION__
-
-/*	#include <emhfc_callbacks.h>
-	#include <stdlib.h>
-
-	#ifdef NDEBUG
-	# define assert(x) ((void)0)
-	#else
-	# define assert(x)                                                      \
-	  do {                                                                  \
-		if(!(x)) {                                                          \
-		  emhfc_log_error("%s:%d: assert failed: %s", __FILE__, __LINE__, #x); \
-		  abort();                                                          \
-		}                                                                   \
-	  } while(0)
-	#endif
-*/
-
 #define assert(x) ((void)0)
-
-
 #endif
 
 #endif /* __ASSERT_H__ */
