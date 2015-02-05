@@ -43,7 +43,7 @@
 #define _SYS_TYPES_H_
 
 /* Machine type dependent parameters. */
-#include <sys/i386_endian.h>
+//#include <sys/i386_endian.h>
 #include <sys/i386_types.h>
 
 typedef unsigned char   u_char;
