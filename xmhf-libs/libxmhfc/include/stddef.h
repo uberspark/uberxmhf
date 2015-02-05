@@ -29,16 +29,24 @@
  * Modified for XMHF.
  */
 
-#ifndef _SYS_STDDEF_H_
-#define _SYS_STDDEF_H_
+#ifndef __STDDEF_H__
+#define __STDDEF_H__
 
-#include <sys/_null.h>
-#include <sys/i386_types.h>
+#include <stdint.h>
+
+#ifndef NULL
+
+#if !defined(__cplusplus)
+#define NULL    ((void *)0)
+#else
+#define NULL    0
+#endif  /* !__cplusplus */
+
+#endif
+
 
 typedef __ptrdiff_t     ptrdiff_t;
 
-/* extracted from cdefs.h */
-#include <sys/cdefs.h>
-#define offsetof(type, field)   __offsetof(type, field)
+#define offsetof(type, field)   __builtin_offsetof(type, field)
 
-#endif /* !_SYS_STDDEF_H_ */
+#endif // __STDDEF_H__

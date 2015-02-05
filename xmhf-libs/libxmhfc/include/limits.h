@@ -33,10 +33,61 @@
  * Modified for XMHF.
  */
 
-#ifndef _SYS_LIMITS_H_
-#define _SYS_LIMITS_H_
+#ifndef __LIMITS_H__
+#define __LIMITS_H__
 
-#include <sys/i386_limits.h>
+/*
+ * According to ANSI (section 2.2.4.2), the values below must be usable by
+ * #if preprocessing directives.  Additionally, the expression must have the
+ * same type as would an expression that is an object of the corresponding
+ * type converted according to the integral promotions.  The subtraction for
+ * INT_MIN, etc., is so the value is not unsigned; e.g., 0x80000000 is an
+ * unsigned int for 32-bit two's complement ANSI compilers (section 3.1.3.2).
+ * These numbers are for the default configuration of gcc.  They work for
+ * some other compilers as well, but this should not be depended on.
+ */
+
+#define __CHAR_BIT      8               /* number of bits in a char */
+
+#define __SCHAR_MAX     0x7f            /* max value for a signed char */
+#define __SCHAR_MIN     (-0x7f - 1)     /* min value for a signed char */
+
+#define __UCHAR_MAX     0xff            /* max value for an unsigned char */
+
+#define __USHRT_MAX     0xffff          /* max value for an unsigned short */
+#define __SHRT_MAX      0x7fff          /* max value for a short */
+#define __SHRT_MIN      (-0x7fff - 1)   /* min value for a short */
+
+#define __UINT_MAX      0xffffffffU     /* max value for an unsigned int */
+#define __INT_MAX       0x7fffffff      /* max value for an int */
+#define __INT_MIN       (-0x7fffffff - 1)       /* min value for an int */
+
+#define __ULONG_MAX     0xffffffffUL    /* max value for an unsigned long */
+#define __LONG_MAX      0x7fffffffL     /* max value for a long */
+#define __LONG_MIN      (-0x7fffffffL - 1)      /* min value for a long */
+
+                        /* max value for an unsigned long long */
+#define __ULLONG_MAX    0xffffffffffffffffULL
+#define __LLONG_MAX     0x7fffffffffffffffLL    /* max value for a long long */
+#define __LLONG_MIN     (-0x7fffffffffffffffLL - 1)  /* min for a long long */
+
+#define __SSIZE_MAX     __INT_MAX       /* max value for a ssize_t */
+
+#define __SIZE_T_MAX    __UINT_MAX      /* max value for a size_t */
+
+#define __OFF_MAX       __LLONG_MAX     /* max value for an off_t */
+#define __OFF_MIN       __LLONG_MIN     /* min value for an off_t */
+
+/* Quads and long longs are the same size.  Ensure they stay in sync. */
+#define __UQUAD_MAX     __ULLONG_MAX    /* max value for a uquad_t */
+#define __QUAD_MAX      __LLONG_MAX     /* max value for a quad_t */
+#define __QUAD_MIN      __LLONG_MIN     /* min value for a quad_t */
+
+#define __LONG_BIT      32
+#define __WORD_BIT      32
+
+
+
 
 #define CHAR_BIT        __CHAR_BIT      /* number of bits in a char */
 
@@ -65,39 +116,17 @@
 #define LONG_MAX        __LONG_MAX      /* max for a long */
 #define LONG_MIN        __LONG_MIN      /* min for a long */
 
-#ifdef __LONG_LONG_SUPPORTED
 #define ULLONG_MAX      __ULLONG_MAX    /* max for an unsigned long long */
 #define LLONG_MAX       __LLONG_MAX     /* max for a long long */
 #define LLONG_MIN       __LLONG_MIN     /* min for a long long */
-#endif
 
-#if __POSIX_VISIBLE || __XSI_VISIBLE
 #define SSIZE_MAX       __SSIZE_MAX     /* max value for an ssize_t */
-#endif
-
-#if __POSIX_VISIBLE >= 200112 || __XSI_VISIBLE
 #define SIZE_T_MAX      __SIZE_T_MAX    /* max value for a size_t */
-
 #define OFF_MAX         __OFF_MAX       /* max value for an off_t */
 #define OFF_MIN         __OFF_MIN       /* min value for an off_t */
-#endif
 
-#if __BSD_VISIBLE
-#define GID_MAX         UINT_MAX        /* max value for a gid_t */
-#define UID_MAX         UINT_MAX        /* max value for a uid_t */
-
-#define UQUAD_MAX       (__UQUAD_MAX)   /* max value for a uquad_t */
-#define QUAD_MAX        (__QUAD_MAX)    /* max value for a quad_t */
-#define QUAD_MIN        (__QUAD_MIN)    /* min value for a quad_t */
-#endif
-
-#if __XSI_VISIBLE || __POSIX_VISIBLE >= 200809
 #define LONG_BIT        __LONG_BIT
 #define WORD_BIT        __WORD_BIT
-#endif
 
-#if __POSIX_VISIBLE
-#define MQ_PRIO_MAX     64
-#endif
 
-#endif /* !_SYS_LIMITS_H_ */
+#endif /* __LIMITS_H__ */

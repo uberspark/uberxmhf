@@ -44,12 +44,15 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-#include <stdlib.h>
+#include <stdint.h>
+#include <string.h>
 
-#include <emhfc_callbacks.h>
 
-void abort(void)
-{
-  emhfc_abort();
-  while(1);
+void *memset (void *str, int c, size_t len) {
+  register u8 *st = str;
+
+  while (len-- > 0)
+    *st++ = (u8)c;
+  return str;
 }
+

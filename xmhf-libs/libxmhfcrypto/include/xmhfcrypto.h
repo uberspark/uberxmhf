@@ -47,8 +47,8 @@
 #ifndef __XMHFCRYPTO_H__
 #define __XMHFCRYPTO_H__
 
-#include <stdlib.h>
-#include <stdio.h>
+//#include <stdlib.h>
+//#include <stdio.h>
 
 #define SHA1_RESULTLEN (160/8)
 #define SHA_DIGEST_LENGTH	SHA1_RESULTLEN
@@ -146,8 +146,8 @@ typedef union Symmetric_key {
 /** A block cipher CBC structure */
 typedef struct {
    /** The index of the cipher chosen */
-   int                 cipher, 
-   /** The block size of the given cipher */                        
+   int                 cipher,
+   /** The block size of the given cipher */
                        blocklen;
    /** The current IV */
    unsigned char       IV[MAXBLOCKSIZE];
@@ -163,14 +163,14 @@ extern struct ltc_cipher_descriptor {
    /** internal ID */
    unsigned char ID;
    /** min keysize (octets) */
-   int  min_key_length, 
+   int  min_key_length,
    /** max keysize (octets) */
-        max_key_length, 
+        max_key_length,
    /** block size (octets) */
-        block_length, 
+        block_length,
    /** default number of rounds */
         default_rounds;
-   /** Setup the cipher 
+   /** Setup the cipher
       @param key         The input symmetric key
       @param keylen      The length of the input key (octets)
       @param num_rounds  The requested number of rounds (0==default)
@@ -197,10 +197,10 @@ extern struct ltc_cipher_descriptor {
    */
    int (*test)(void);
 
-   /** Terminate the context 
+   /** Terminate the context
       @param skey    The scheduled key
    */
-   void (*done)(symmetric_key *skey);      
+   void (*done)(symmetric_key *skey);
 
    /** Determine a key size
        @param keysize    [in/out] The size of the key desired and the suggested size
@@ -209,7 +209,7 @@ extern struct ltc_cipher_descriptor {
    int  (*keysize)(int *keysize);
 
 /** Accelerators **/
-   /** Accelerated ECB encryption 
+   /** Accelerated ECB encryption
        @param pt      Plaintext
        @param ct      Ciphertext
        @param blocks  The number of complete blocks to process
@@ -218,7 +218,7 @@ extern struct ltc_cipher_descriptor {
    */
    int (*accel_ecb_encrypt)(const unsigned char *pt, unsigned char *ct, unsigned long blocks, symmetric_key *skey);
 
-   /** Accelerated ECB decryption 
+   /** Accelerated ECB decryption
        @param pt      Plaintext
        @param ct      Ciphertext
        @param blocks  The number of complete blocks to process
@@ -227,7 +227,7 @@ extern struct ltc_cipher_descriptor {
    */
    int (*accel_ecb_decrypt)(const unsigned char *ct, unsigned char *pt, unsigned long blocks, symmetric_key *skey);
 
-   /** Accelerated CBC encryption 
+   /** Accelerated CBC encryption
        @param pt      Plaintext
        @param ct      Ciphertext
        @param blocks  The number of complete blocks to process
@@ -237,7 +237,7 @@ extern struct ltc_cipher_descriptor {
    */
    int (*accel_cbc_encrypt)(const unsigned char *pt, unsigned char *ct, unsigned long blocks, unsigned char *IV, symmetric_key *skey);
 
-   /** Accelerated CBC decryption 
+   /** Accelerated CBC decryption
        @param pt      Plaintext
        @param ct      Ciphertext
        @param blocks  The number of complete blocks to process
@@ -247,7 +247,7 @@ extern struct ltc_cipher_descriptor {
    */
    int (*accel_cbc_decrypt)(const unsigned char *ct, unsigned char *pt, unsigned long blocks, unsigned char *IV, symmetric_key *skey);
 
-   /** Accelerated CTR encryption 
+   /** Accelerated CTR encryption
        @param pt      Plaintext
        @param ct      Ciphertext
        @param blocks  The number of complete blocks to process
@@ -258,7 +258,7 @@ extern struct ltc_cipher_descriptor {
    */
    int (*accel_ctr_encrypt)(const unsigned char *pt, unsigned char *ct, unsigned long blocks, unsigned char *IV, int mode, symmetric_key *skey);
 
-   /** Accelerated LRW 
+   /** Accelerated LRW
        @param pt      Plaintext
        @param ct      Ciphertext
        @param blocks  The number of complete blocks to process
@@ -269,7 +269,7 @@ extern struct ltc_cipher_descriptor {
    */
    int (*accel_lrw_encrypt)(const unsigned char *pt, unsigned char *ct, unsigned long blocks, unsigned char *IV, const unsigned char *tweak, symmetric_key *skey);
 
-   /** Accelerated LRW 
+   /** Accelerated LRW
        @param ct      Ciphertext
        @param pt      Plaintext
        @param blocks  The number of complete blocks to process
@@ -309,7 +309,7 @@ extern struct ltc_cipher_descriptor {
    /** Accelerated GCM packet (one shot)
        @param key        The secret key
        @param keylen     The length of the secret key
-       @param IV         The initial vector 
+       @param IV         The initial vector
        @param IVlen      The length of the initial vector
        @param adata      The additional authentication data (header)
        @param adatalen   The length of the adata
@@ -326,14 +326,14 @@ extern struct ltc_cipher_descriptor {
        const unsigned char *IV,     unsigned long IVlen,
        const unsigned char *adata,  unsigned long adatalen,
              unsigned char *pt,     unsigned long ptlen,
-             unsigned char *ct, 
+             unsigned char *ct,
              unsigned char *tag,    unsigned long *taglen,
                        int direction);
 
-   /** Accelerated one shot LTC_OMAC 
+   /** Accelerated one shot LTC_OMAC
        @param key            The secret key
-       @param keylen         The key length (octets) 
-       @param in             The message 
+       @param keylen         The key length (octets)
+       @param in             The message
        @param inlen          Length of message (octets)
        @param out            [out] Destination for tag
        @param outlen         [in/out] Initial and final size of out
@@ -344,10 +344,10 @@ extern struct ltc_cipher_descriptor {
        const unsigned char *in,  unsigned long inlen,
              unsigned char *out, unsigned long *outlen);
 
-   /** Accelerated one shot XCBC 
+   /** Accelerated one shot XCBC
        @param key            The secret key
-       @param keylen         The key length (octets) 
-       @param in             The message 
+       @param keylen         The key length (octets)
+       @param in             The message
        @param inlen          Length of message (octets)
        @param out            [out] Destination for tag
        @param outlen         [in/out] Initial and final size of out
@@ -358,10 +358,10 @@ extern struct ltc_cipher_descriptor {
        const unsigned char *in,  unsigned long inlen,
              unsigned char *out, unsigned long *outlen);
 
-   /** Accelerated one shot F9 
+   /** Accelerated one shot F9
        @param key            The secret key
-       @param keylen         The key length (octets) 
-       @param in             The message 
+       @param keylen         The key length (octets)
+       @param in             The message
        @param inlen          Length of message (octets)
        @param out            [out] Destination for tag
        @param outlen         [in/out] Initial and final size of out
@@ -413,7 +413,7 @@ extern  struct ltc_hash_descriptor {
       @return CRYPT_OK if successful
     */
     int (*init)(hash_state *hash);
-    /** Process a block of data 
+    /** Process a block of data
       @param hash   The hash state
       @param in     The data to hash
       @param inlen  The length of the data (octets)
@@ -433,7 +433,7 @@ extern  struct ltc_hash_descriptor {
 
     /* accelerated hmac callback: if you need to-do multiple packets just use the generic hmac_memory and provide a hash callback */
     int  (*hmac_block)(const unsigned char *key, unsigned long  keylen,
-                       const unsigned char *in,  unsigned long  inlen, 
+                       const unsigned char *in,  unsigned long  inlen,
                              unsigned char *out, unsigned long *outlen);
 
 } hash_descriptor[];
@@ -507,7 +507,7 @@ extern void free(void *s);
 extern void *calloc(size_t num, size_t size);
 extern void *realloc(void *p, size_t n);
 extern void	 qsort(void *base, size_t nmemb, size_t size,
-	    int (*compar)(const void *, const void *));      
+	    int (*compar)(const void *, const void *));
 
 #define XMEMCMP  memcmp
 #define XMEMCPY  memcpy
@@ -560,7 +560,7 @@ extern struct ltc_prng_descriptor {
         @return CRYPT_OK if successful
     */
     int (*done)(prng_state *prng);
-    /** Export a PRNG state  
+    /** Export a PRNG state
         @param out     [out] The destination for the state
         @param outlen  [in/out] The max size and resulting size of the PRNG state
         @param prng    The PRNG to export
@@ -604,19 +604,19 @@ typedef struct Rsa_key {
     /** Type of key, PK_PRIVATE or PK_PUBLIC */
     int type;
     /** The public exponent */
-    void *e; 
+    void *e;
     /** The private exponent */
-    void *d; 
+    void *d;
     /** The modulus */
-    void *N; 
+    void *N;
     /** The p factor of N */
-    void *p; 
+    void *p;
     /** The q factor of N */
-    void *q; 
+    void *q;
     /** The 1/q mod p CRT param */
-    void *qP; 
+    void *qP;
     /** The d mod (p - 1) CRT param */
-    void *dP; 
+    void *dP;
     /** The d mod (q - 1) CRT param */
     void *dQ;
 } rsa_key;
@@ -683,12 +683,12 @@ typedef struct ltc_asn1_list_ {
 /* SEQUENCE */
 int der_encode_sequence_ex(ltc_asn1_list *list, unsigned long inlen,
                            unsigned char *out,  unsigned long *outlen, int type_of);
-                          
-#define der_encode_sequence(list, inlen, out, outlen) der_encode_sequence_ex(list, inlen, out, outlen, LTC_ASN1_SEQUENCE)                        
+
+#define der_encode_sequence(list, inlen, out, outlen) der_encode_sequence_ex(list, inlen, out, outlen, LTC_ASN1_SEQUENCE)
 
 int der_decode_sequence_ex(const unsigned char *in, unsigned long  inlen,
                            ltc_asn1_list *list,     unsigned long  outlen, int ordered);
-                              
+
 #define der_decode_sequence(in, inlen, list, outlen) der_decode_sequence_ex(in, inlen, list, outlen, 1)
 
 int der_length_sequence(ltc_asn1_list *list, unsigned long inlen,
@@ -702,7 +702,7 @@ int der_encode_set(ltc_asn1_list *list, unsigned long inlen,
 
 int der_encode_setof(ltc_asn1_list *list, unsigned long inlen,
                      unsigned char *out,  unsigned long *outlen);
-                        
+
 /* VA list handy helpers with triplets of <type, size, data> */
 int der_encode_sequence_multi(unsigned char *out, unsigned long *outlen, ...);
 int der_decode_sequence_multi(const unsigned char *in, unsigned long inlen, ...);
@@ -715,10 +715,10 @@ void der_sequence_free(ltc_asn1_list *in);
 
 /* BOOLEAN */
 int der_length_boolean(unsigned long *outlen);
-int der_encode_boolean(int in, 
+int der_encode_boolean(int in,
                        unsigned char *out, unsigned long *outlen);
 int der_decode_boolean(const unsigned char *in, unsigned long inlen,
-                                       int *out);		       
+                                       int *out);
 /* INTEGER */
 int der_encode_integer(void *num, unsigned char *out, unsigned long *outlen);
 int der_decode_integer(const unsigned char *in, unsigned long inlen, void *num);
@@ -799,7 +799,7 @@ typedef struct {
             off_mm; /* timezone offset minutes */
 } ltc_utctime;
 
-int der_encode_utctime(ltc_utctime *utctime, 
+int der_encode_utctime(ltc_utctime *utctime,
                        unsigned char *out,   unsigned long *outlen);
 
 int der_decode_utctime(const unsigned char *in, unsigned long *inlen,
@@ -836,15 +836,15 @@ typedef struct {
      @return  CRYPT_OK on success
    */
    int (*init)(void **a);
-   
-   /** init copy 
+
+   /** init copy
      @param  dst    The number to initialize and write to
      @param  src    The number to copy from
      @return CRYPT_OK on success
    */
    int (*init_copy)(void **dst, void *src);
 
-   /** deinit 
+   /** deinit
       @param   a    The number to free
       @return CRYPT_OK on success
    */
@@ -858,30 +858,30 @@ typedef struct {
       @return CRYPT_OK on success
    */
    int (*neg)(void *src, void *dst);
-   
-   /** copy 
+
+   /** copy
       @param   src   The number to copy from
-      @param   dst   The number to write to 
+      @param   dst   The number to write to
       @return CRYPT_OK on success
    */
    int (*copy)(void *src, void *dst);
 
 /* ---- trivial low level functions ---- */
 
-   /** set small constant 
+   /** set small constant
       @param a    Number to write to
-      @param n    Source upto bits_per_digit (actually meant for very small constants) 
+      @param n    Source upto bits_per_digit (actually meant for very small constants)
       @return CRYPT_OK on succcess
    */
    int (*set_int)(void *a, unsigned long n);
 
-   /** get small constant 
+   /** get small constant
       @param a    Number to read, only fetches upto bits_per_digit from the number
       @return  The lower bits_per_digit of the integer (unsigned)
    */
    unsigned long (*get_int)(void *a);
 
-   /** get digit n 
+   /** get digit n
      @param a  The number to read from
      @param n  The number of the digit to fetch
      @return  The bits_per_digit  sized n'th digit of a
@@ -901,7 +901,7 @@ typedef struct {
    */
    int (*compare)(void *a, void *b);
 
-   /** compare against int 
+   /** compare against int
      @param a   The left side integer
      @param b   The right side integer (upto bits_per_digit)
      @return LTC_MP_LT if a < b, LTC_MP_GT if a > b and LTC_MP_EQ otherwise.  (signed comparison)
@@ -914,7 +914,7 @@ typedef struct {
    */
    int (*count_bits)(void * a);
 
-   /** Count the number of LSB bits which are zero 
+   /** Count the number of LSB bits which are zero
      @param a   The integer to count
      @return The number of contiguous zero LSB bits
    */
@@ -928,8 +928,8 @@ typedef struct {
    int (*twoexpt)(void *a , int n);
 
 /* ---- radix conversions ---- */
-   
-   /** read ascii string 
+
+   /** read ascii string
      @param a     The integer to store into
      @param str   The string to read
      @param radix The radix the integer has been represented in (2-64)
@@ -945,13 +945,13 @@ typedef struct {
    */
    int (*write_radix)(void *a, char *str, int radix);
 
-   /** get size as unsigned char string 
+   /** get size as unsigned char string
      @param a     The integer to get the size (when stored in array of octets)
      @return The length of the integer
    */
    unsigned long (*unsigned_size)(void *a);
 
-   /** store an integer as an array of octets 
+   /** store an integer as an array of octets
      @param src   The integer to store
      @param dst   The buffer to store the integer in
      @return CRYPT_OK on success
@@ -960,15 +960,15 @@ typedef struct {
 
    /** read an array of octets and store as integer
      @param dst   The integer to load
-     @param src   The array of octets 
-     @param len   The number of octets 
+     @param src   The array of octets
+     @param len   The number of octets
      @return CRYPT_OK on success
    */
    int (*unsigned_read)(void *dst, unsigned char *src, unsigned long len);
 
 /* ---- basic math ---- */
 
-   /** add two integers 
+   /** add two integers
      @param a   The first source integer
      @param b   The second source integer
      @param c   The destination of "a + b"
@@ -977,7 +977,7 @@ typedef struct {
    int (*add)(void *a, void *b, void *c);
 
 
-   /** add two integers 
+   /** add two integers
      @param a   The first source integer
      @param b   The second source integer (single digit of upto bits_per_digit in length)
      @param c   The destination of "a + b"
@@ -985,7 +985,7 @@ typedef struct {
    */
    int (*addi)(void *a, unsigned long b, void *c);
 
-   /** subtract two integers 
+   /** subtract two integers
      @param a   The first source integer
      @param b   The second source integer
      @param c   The destination of "a - b"
@@ -993,7 +993,7 @@ typedef struct {
    */
    int (*sub)(void *a, void *b, void *c);
 
-   /** subtract two integers 
+   /** subtract two integers
      @param a   The first source integer
      @param b   The second source integer (single digit of upto bits_per_digit in length)
      @param c   The destination of "a - b"
@@ -1001,7 +1001,7 @@ typedef struct {
    */
    int (*subi)(void *a, unsigned long b, void *c);
 
-   /** multiply two integers 
+   /** multiply two integers
      @param a   The first source integer
      @param b   The second source integer (single digit of upto bits_per_digit in length)
      @param c   The destination of "a * b"
@@ -1009,7 +1009,7 @@ typedef struct {
    */
    int (*mul)(void *a, void *b, void *c);
 
-   /** multiply two integers 
+   /** multiply two integers
      @param a   The first source integer
      @param b   The second source integer (single digit of upto bits_per_digit in length)
      @param c   The destination of "a * b"
@@ -1033,9 +1033,9 @@ typedef struct {
    */
    int (*mpdiv)(void *a, void *b, void *c, void *d);
 
-   /** divide by two 
+   /** divide by two
       @param  a   The integer to divide (shift right)
-      @param  b   The destination 
+      @param  b   The destination
       @return CRYPT_OK on success
    */
    int (*div_2)(void *a, void *b);
@@ -1048,7 +1048,7 @@ typedef struct {
    */
    int (*modi)(void *a, unsigned long b, unsigned long *c);
 
-   /** gcd 
+   /** gcd
       @param  a     The first integer
       @param  b     The second integer
       @param  c     The destination for (a, b)
@@ -1056,7 +1056,7 @@ typedef struct {
    */
    int (*gcd)(void *a, void *b, void *c);
 
-   /** lcm 
+   /** lcm
       @param  a     The first integer
       @param  b     The second integer
       @param  c     The destination for [a, b]
@@ -1066,7 +1066,7 @@ typedef struct {
 
    /** Modular multiplication
       @param  a     The first source
-      @param  b     The second source 
+      @param  b     The second source
       @param  c     The modulus
       @param  d     The destination (a*b mod c)
       @return CRYPT_OK on success
@@ -1083,7 +1083,7 @@ typedef struct {
 
    /** Modular inversion
       @param  a     The value to invert
-      @param  b     The modulus 
+      @param  b     The modulus
       @param  c     The destination (1/a mod b)
       @return CRYPT_OK on success
    */
@@ -1092,13 +1092,13 @@ typedef struct {
 /* ---- reduction ---- */
 
    /** setup montgomery
-       @param a  The modulus 
-       @param b  The destination for the reduction digit 
+       @param a  The modulus
+       @param b  The destination for the reduction digit
        @return CRYPT_OK on success
    */
    int (*montgomery_setup)(void *a, void **b);
 
-   /** get normalization value 
+   /** get normalization value
        @param a   The destination for the normalization value
        @param b   The modulus
        @return  CRYPT_OK on success
@@ -1116,7 +1116,7 @@ typedef struct {
    /** clean up  (frees memory)
        @param a   The value "b" from montgomery_setup()
        @return CRYPT_OK on success
-   */      
+   */
    void (*montgomery_deinit)(void *a);
 
 /* ---- exponentiation ---- */
@@ -1142,14 +1142,14 @@ typedef struct {
    /** ECC GF(p) point multiplication (from the NIST curves)
        @param k   The integer to multiply the point by
        @param G   The point to multiply
-       @param R   The destination for kG  
+       @param R   The destination for kG
        @param modulus  The modulus for the field
        @param map Boolean indicated whether to map back to affine or not (can be ignored if you work in affine only)
        @return CRYPT_OK on success
    */
    int (*INACTIVE_ecc_ptmul)(void *k, ecc_point *G, ecc_point *R, void *modulus, int map);
 
-   /** ECC GF(p) point addition 
+   /** ECC GF(p) point addition
        @param P    The first point
        @param Q    The second point
        @param R    The destination of P + Q
@@ -1159,7 +1159,7 @@ typedef struct {
    */
    int (*INACTIVE_ecc_ptadd)(ecc_point *P, ecc_point *Q, ecc_point *R, void *modulus, void *mp);
 
-   /** ECC GF(p) point double 
+   /** ECC GF(p) point double
        @param P    The first point
        @param R    The destination of 2P
        @param modulus  The modulus
@@ -1173,7 +1173,7 @@ typedef struct {
        @param modulus The modulus
        @param mp    The "b" value from montgomery_setup()
        @return CRYPT_OK on success
-       @remark  The mapping can be different but keep in mind a ecc_point only has three 
+       @remark  The mapping can be different but keep in mind a ecc_point only has three
                 integers (x,y,z) so if you use a different mapping you have to make it fit.
    */
    int (*INACTIVE_ecc_map)(ecc_point *P, void *modulus, void *mp);
@@ -1184,9 +1184,9 @@ typedef struct {
        @param B        Second point to multiply
        @param kB       What to multiple B by
        @param C        [out] Destination point (can overlap with A or B
-       @param modulus  Modulus for curve 
+       @param modulus  Modulus for curve
        @return CRYPT_OK on success
-   */ 
+   */
    int (*INACTIVE_ecc_mul2add)(ecc_point *A, void *kA,
                       ecc_point *B, void *kB,
                       ecc_point *C,
@@ -1194,7 +1194,7 @@ typedef struct {
 
 /* ---- (optional) rsa optimized math (for internal CRT) ---- */
 
-   /** RSA Key Generation 
+   /** RSA Key Generation
        @param prng     An active PRNG state
        @param wprng    The index of the PRNG desired
        @param size     The size of the modulus (key size) desired (octets)
@@ -1203,7 +1203,7 @@ typedef struct {
        @return CRYPT_OK if successful, upon error all allocated ram is freed
     */
     int (*rsa_keygen)(prng_state *prng, int wprng, int size, long e, rsa_key *key);
-   
+
 
    /** RSA exponentiation
       @param in       The octet array representing the base
@@ -1211,7 +1211,7 @@ typedef struct {
       @param out      The destination (to be stored in an octet array format)
       @param outlen   The length of the output buffer and the resulting size (zero padded to the size of the modulus)
       @param which    PK_PUBLIC for public RSA and PK_PRIVATE for private RSA
-      @param key      The RSA key to use 
+      @param key      The RSA key to use
       @return CRYPT_OK on success
    */
    int (*rsa_me)(const unsigned char *in,   unsigned long inlen,
@@ -1325,7 +1325,7 @@ typedef u64            mp_word;
       #define MP_PREC                 32     /* default digits of precision */
    #else
       #define MP_PREC                 8      /* default digits of precision */
-   #endif   
+   #endif
 #endif
 
 /* size of comba arrays, should be at least 2 * 2**(BITS_PER_WORD - BITS_PER_DIGIT*2) */
@@ -1345,7 +1345,7 @@ typedef struct  {
 
 #if (defined(DESC_DEF_ONLY) && defined(LTC_SOURCE)) || !defined(LTC_SOURCE)
 	#define MP_DIGIT_BIT     DIGIT_BIT
-#endif	
+#endif
 
 #define MP_MASK          ((((mp_digit)1)<<((mp_digit)DIGIT_BIT))-((mp_digit)1))
 #define MP_DIGIT_MAX     MP_MASK
@@ -1408,7 +1408,7 @@ typedef struct  {
 	int mp_neg (mp_int * a, mp_int * b);
 	int mp_copy (mp_int * a, mp_int * b);
 	int mp_set_int (mp_int * a, unsigned long b);
-	unsigned long mp_get_int(mp_int * a); 
+	unsigned long mp_get_int(mp_int * a);
 	int mp_mul_2d (mp_int * a, int b, mp_int * c);
 	int mp_lshd (mp_int * a, int b);
 	int mp_cmp (mp_int * a, mp_int * b);
@@ -1511,27 +1511,27 @@ int pkcs_1_mgf1(      int            hash_idx,
 
 
 /* *** v1.5 padding */
-int pkcs_1_v1_5_encode(const unsigned char *msg, 
+int pkcs_1_v1_5_encode(const unsigned char *msg,
                              unsigned long  msglen,
                              int            block_type,
                              unsigned long  modulus_bitlen,
-                                prng_state *prng, 
+                                prng_state *prng,
                                        int  prng_idx,
-                             unsigned char *out, 
+                             unsigned char *out,
                              unsigned long *outlen);
 
-int pkcs_1_v1_5_decode(const unsigned char *msg, 
+int pkcs_1_v1_5_decode(const unsigned char *msg,
                              unsigned long  msglen,
                                        int  block_type,
                              unsigned long  modulus_bitlen,
-                             unsigned char *out, 
+                             unsigned char *out,
                              unsigned long *outlen,
                                        int *is_valid);
 
 /* *** v2.1 padding */
 
 int pkcs_1_pss_encode(const unsigned char *msghash, unsigned long msghashlen,
-                            unsigned long saltlen,  prng_state   *prng,     
+                            unsigned long saltlen,  prng_state   *prng,
                             int           prng_idx, int           hash_idx,
                             unsigned long modulus_bitlen,
                             unsigned char *out,     unsigned long *outlen);

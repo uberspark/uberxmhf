@@ -44,15 +44,14 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-#ifndef __XMHFC_CALLBACKS__
-#define __XMHFC_CALLBACKS__
+#include <stdint.h>
+#include <string.h>
 
-/* These are functions that are intended to be overriden by the 
- * libxmhfc user */
 
-void emhfc_log_error(const char *format, ...);
-void emhfc_abort(void);
+u32 strnlen(const char * s, u32 count){
+	const char *sc;
 
-void xmhfc_puts(const char *s);
+	for (sc = s; count-- && *sc != '\0'; ++sc);
+	return (u32)(sc - s);
+}
 
-#endif	//__XMHFC_CALLBACKS__
