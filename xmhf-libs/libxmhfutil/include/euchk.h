@@ -48,7 +48,7 @@
 #define EUCHK_H
 
 #include <eulog.h>
-#include <stdlib.h>
+//#include <stdlib.h>
 
 /* normally use eu_log, but give option for client to override */
 #ifndef EU_CHK_LOG
@@ -62,7 +62,7 @@
  * Optionally, include additional expressions that will be evaluated
  * iff the condition doesn't hold.  This can be used, e.g., to set a
  * return value or error flag.  examples:
- * 
+ *
  * EU_CHK((buf = malloc(20)));
  *
  * EU_CHK(buf = malloc(20),
@@ -82,7 +82,7 @@
  * if fn_that_may_fail returns non-zero, the check will fail and the
  * return value will be logged.
  *
- */ 
+ */
 
 #define EU_CHKN_PRI(cond, priority, args...)                            \
   do {                                                                  \
@@ -121,7 +121,7 @@
     if (!(cond)) {                              \
       EU_CHK_LOG( EU_ERR, "EU_VERIFY( %s) failed", #cond);       \
       (void)0, ## args;                         \
-      abort();                                  \
+      HALT();                                  \
     }                                           \
   } while(0)
 
@@ -132,7 +132,7 @@
     if (_eu_chk_cond) {                                                 \
       EU_CHK_LOG( EU_ERR, "EU_VERIFYN( %s) failed with %d", #cond, _eu_chk_cond); \
       (void)0, ## args;                                                 \
-      abort();                                                          \
+      HALT();                                                          \
     }                                                                   \
   } while(0)
 

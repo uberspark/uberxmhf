@@ -44,11 +44,12 @@
  */
 
 #include <stdint.h>
-#include <stdio.h>
+//#include <stdio.h>
 #include <stddef.h>
 #include <ctype.h>
 
-#include <sys/libkern.h>
+//#include <sys/libkern.h>
+static __inline int imax(int a, int b) { return (a > b ? a : b); }
 
 /*
  * Note that stdarg.h and the ANSI style va_start macro is used for both
@@ -60,7 +61,14 @@
 /* Max number conversion buffer length: a u_quad_t in base 2, plus NUL byte. */
 #define MAXNBUF	(sizeof(intmax_t) * NBBY + 1)
 
-#include "emhfc_callbacks.h"
+//#include "emhfc_callbacks.h"
+
+
+/* This is actually used with radix [2..36] */
+char const hex2ascii_data[] = "0123456789abcdefghijklmnopqrstuvwxyz";
+#define	hex2ascii(hex)	(hex2ascii_data[hex])
+
+#define NBBY    8
 
 struct snprintf_arg {
 	char	*str;
@@ -91,7 +99,7 @@ int vprintf(const char *fmt, va_list ap){
 	retval = vsnprintf(&buffer, 2048, fmt, ap);
 
 	xmhfc_puts(&buffer);
-	
+
 	return (retval);
 }*/
 
@@ -536,7 +544,7 @@ number:
 			while (percent < fmt)
 				PCHAR(*percent++);
 			/*
-			 * Since we ignore an formatting argument it is no 
+			 * Since we ignore an formatting argument it is no
 			 * longer safe to obey the remaining formatting
 			 * arguments as the arguments will no longer match
 			 * the format specs.

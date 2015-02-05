@@ -44,7 +44,7 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-#include <emhfc_callbacks.h>
+//#include <emhfc_callbacks.h>
 
 void emhfc_abort(void)
 {

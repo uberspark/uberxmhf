@@ -44,9 +44,26 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-#include <emhfc_callbacks.h>
+#include <stdint.h>
+#include <string.h>
 
-void emhfc_log_error(const char *format, ...)
-{
-  (void)format;
+void *memmove(void *dst_void, const void *src_void, u32 length){
+  char *dst = dst_void;
+  const char *src = src_void;
+
+  if (src < dst && dst < src + length){
+      // Have to copy backwards
+      src += length;
+      dst += length;
+      while (length--){
+	     *--dst = *--src;
+	     }
+  }else{
+      while (length--){
+	     *dst++ = *src++;
+	    }
+  }
+
+  return dst_void;
 }
+

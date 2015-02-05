@@ -6,9 +6,9 @@
 /* #include <sys/cdefs.h> */
 /* __FBSDID("$FreeBSD: src/sys/libkern/bcd.c,v 1.7.22.1.6.1 2010/12/21 17:09:25 kensmith Exp $"); */
 
-#include <sys/libkern.h>
+//#include <sys/libkern.h>
 
-u_char const bcd2bin_data[] = {
+unsigned char const bcd2bin_data[] = {
 	 0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 0, 0, 0, 0, 0, 0,
 	10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 0, 0, 0, 0, 0, 0,
 	20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 0, 0, 0, 0, 0, 0,
@@ -21,7 +21,7 @@ u_char const bcd2bin_data[] = {
 	90, 91, 92, 93, 94, 95, 96, 97, 98, 99
 };
 
-u_char const bin2bcd_data[] = {
+unsigned char const bin2bcd_data[] = {
 	0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09,
 	0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18, 0x19,
 	0x20, 0x21, 0x22, 0x23, 0x24, 0x25, 0x26, 0x27, 0x28, 0x29,
@@ -35,4 +35,4 @@ u_char const bin2bcd_data[] = {
 };
 
 /* This is actually used with radix [2..36] */
-char const hex2ascii_data[] = "0123456789abcdefghijklmnopqrstuvwxyz";
+//char const hex2ascii_data[] = "0123456789abcdefghijklmnopqrstuvwxyz";
