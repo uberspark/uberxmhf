@@ -64,7 +64,7 @@
 #define EU_LOG_PRINTLN( prefix, fmt, args...) _XDPRINTF_( "%-50s " fmt "\n", prefix, ## args)
 #endif
 
-#include <stdio.h>
+//#include <stdio.h>
 #include <stdarg.h>
 
 #ifndef EU_PREFIX_MAX_LEN

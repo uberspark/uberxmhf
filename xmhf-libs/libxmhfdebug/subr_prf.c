@@ -44,11 +44,12 @@
  */
 
 #include <stdint.h>
-#include <stdio.h>
+//#include <stdio.h>
 #include <stddef.h>
 #include <ctype.h>
 
-#include <sys/libkern.h>
+//#include <sys/libkern.h>
+static __inline int imax(int a, int b) { return (a > b ? a : b); }
 
 /*
  * Note that stdarg.h and the ANSI style va_start macro is used for both
@@ -67,6 +68,7 @@
 char const hex2ascii_data[] = "0123456789abcdefghijklmnopqrstuvwxyz";
 #define	hex2ascii(hex)	(hex2ascii_data[hex])
 
+#define NBBY    8
 
 struct snprintf_arg {
 	char	*str;

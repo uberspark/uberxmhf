@@ -94,7 +94,7 @@
 
 #include <stddef.h>
 #include <string.h>
-#include <stdio.h>
+//#include <stdio.h>
 //#include <print_hex.h>
 //#include <tpm.h>
 
