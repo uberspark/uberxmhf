@@ -33,8 +33,6 @@
 #ifndef _SYS_STDINT_H_
 #define _SYS_STDINT_H_
 
-//#include <sys/i386_types.h>
-
 /*
  * Basic types upon which most other types are built.
  */
@@ -90,8 +88,6 @@ typedef __uint32_t      __u_register_t;
 
 typedef __uint32_t off_t;
 
-
-//#include <sys/i386_stdint.h>
 
 #if !defined(__cplusplus) || defined(__STDC_CONSTANT_MACROS)
 
@@ -216,10 +212,6 @@ typedef __uint32_t off_t;
 
 #endif /* !defined(__cplusplus) || defined(__STDC_LIMIT_MACROS) */
 
-
-
-
-//#include <sys/types.h>
 
 typedef unsigned char   u_char;
 typedef unsigned short  u_short;

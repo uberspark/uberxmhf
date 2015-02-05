@@ -33,7 +33,6 @@
 #define __STDDEF_H__
 
 #include <stdint.h>
-//#include <sys/_null.h>
 
 #ifndef NULL
 
@@ -46,12 +45,8 @@
 #endif
 
 
-//#include <sys/i386_types.h>
-
 typedef __ptrdiff_t     ptrdiff_t;
 
-/* extracted from cdefs.h */
-//#include <sys/cdefs.h>
 #define offsetof(type, field)   __builtin_offsetof(type, field)
 
 #endif // __STDDEF_H__
