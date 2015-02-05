@@ -56,6 +56,9 @@
 //#include <tpm.h>
 #include <cmdline.h>
 
+#include "_txt_hash.h"
+#include "_txt_acmod.h"
+
 
 ////libxmhfdebug
 //u32 libxmhfdebug_lock = 1;
