@@ -47,8 +47,8 @@
 /**
  * libc string functions for use in a stand-alone environment
  */
-#ifndef __EMHF_STRING_H__
-#define __EMHF_STRING_H__
+#ifndef __STRING_H__
+#define __STRING_H__
 
 #include <stdint.h>
 #include <stdbool.h>
@@ -56,17 +56,20 @@
 #include <stdarg.h>
 
 #ifndef __ASSEMBLY__
-void *memmove(void *dst_void, const void *src_void, uint32_t length);
-char *strchr(const char *s, int c);
-u32 strnlen(const char * s, uint32_t count);
-void *memcpy(void * to, const void * from, uint32_t n);
-void *memset (void *str, int c, size_t len);
-int strncmp(const char *s1, const char *s2, size_t n);
-int strcmp(const char * cs,const char * ct);
-char *strncpy(char * dst, const char * src, size_t n);
-size_t strlen(const char * s);
-unsigned long strtoul(const char *cp,const char **endp, unsigned int base);
+
 int memcmp(const void *b1, const void *b2, size_t len);
+void *memcpy(void * to, const void * from, uint32_t n);
+void *memmove(void *dst_void, const void *src_void, uint32_t length);
+void *memset (void *str, int c, size_t len);
+
+char *strchr(const char *s, int c);
+int strcmp(const char * cs,const char * ct);
+size_t strlen(const char * s);
+int strncmp(const char *s1, const char *s2, size_t n);
+char *strncpy(char * dst, const char * src, size_t n);
+u32 strnlen(const char * s, uint32_t count);
+unsigned long strtoul(const char *cp,const char **endp, unsigned int base);
+
 #endif /* __ASSEMBLY__ */
 
-#endif /* __EMHF_STRING_H__ */
+#endif /* __STRING_H__ */

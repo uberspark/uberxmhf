@@ -36,7 +36,6 @@
 #ifndef __LIMITS_H__
 #define __LIMITS_H__
 
-// arch. specific
 /*
  * According to ANSI (section 2.2.4.2), the values below must be usable by
  * #if preprocessing directives.  Additionally, the expression must have the
