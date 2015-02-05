@@ -44,7 +44,7 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-//stdarg.h - variable length arguments 
+//stdarg.h - variable length arguments
 //author: amit vasudevan (amitvasudevan@acm.org)
 //based on guidelines in
 //http://pubs.opengroup.org/onlinepubs/007904875/basedefs/stdarg.h.html
@@ -54,13 +54,6 @@
 
 #ifndef __ASSEMBLY__
 
-//typedef void *va_list;
-
-//#define	va_start(list, name) (void) (list = (void *)((char *)&name + \
-//	((sizeof (name) + (sizeof (int) - 1)) & ~(sizeof (int) - 1))))
-//#define	va_arg(list, mode) ((mode *)(list = (char *)list + sizeof (mode)))[-1]
-
-//#define	va_end(list) (void)0
 
 #ifndef _VA_LIST
 typedef __builtin_va_list va_list;

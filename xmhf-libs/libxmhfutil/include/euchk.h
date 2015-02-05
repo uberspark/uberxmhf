@@ -48,7 +48,7 @@
 #define EUCHK_H
 
 #include <eulog.h>
-#include <stdlib.h>
+//#include <stdlib.h>
 
 /* normally use eu_log, but give option for client to override */
 #ifndef EU_CHK_LOG
