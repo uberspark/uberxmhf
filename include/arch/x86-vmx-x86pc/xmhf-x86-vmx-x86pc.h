@@ -67,7 +67,7 @@
 #include <xmhfhw/platform/x86pc/_acpi.h>			//ACPI glue
 //#include <xmhfhw/platform/x86pc/_com.h>        		//UART/serial
 #include <xmhfhw/platform/x86pc/vtd/vtd.h>			//VMX DMA protection
-#include <xmhfhw/platform/x86pc/_tpm.h>        		//TPM
+//#include <xmhfhw/platform/x86pc/_tpm.h>        		//TPM
 #include <xmhfhw/platform/x86pc/_biosdata.h>		//BIOS data areas
 
 
