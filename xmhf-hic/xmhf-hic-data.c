@@ -283,10 +283,6 @@ __attribute__(( aligned(16) )) arch_x86_idtdesc_t __xmhfhic_x86vmx_idt = {
 };
 
 
-//////
-// initialization phase CPU stacks
-
-__attribute__(( section(".stack") )) __attribute__(( aligned(4096) )) u8 _init_cpustacks[MAX_PLATFORM_CPUS][MAX_PLATFORM_CPUSTACK_SIZE];
 
 //////
 // trampoline CPU stacks
