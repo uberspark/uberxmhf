@@ -52,6 +52,12 @@
 #ifndef __XMHF_CORE_H_
 #define __XMHF_CORE_H_
 
+
+#ifndef __ASSEMBLY__
+	#include <xmhfcrypto.h>
+#endif // __ASSEMBLY__
+
+
 #define XC_HYPAPPCB_CHAIN                       (1)
 #define XC_HYPAPPCB_NOCHAIN                     (2)
 
