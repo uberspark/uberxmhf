@@ -1871,23 +1871,10 @@ static bool __xmhfhic_x86vmx_setupvmxstate(u64 cpuid){
 		//set VMCS rev id
 		*((u32 *)__xmhfhic_x86vmx_archdata[cpuindex].vmx_vmxon_region) = (u32)__xmhfhic_x86vmx_archdata[cpuindex].vmx_msrs[INDEX_IA32_VMX_BASIC_MSR];
 
-		asm volatile( "vmxon %1 \n"
-				 "jbe vmfail \n"
-				 "movl $0x1, %%eax \n"
-				 "movl %%eax, %0 \n"
-				 "jmp vmsuccess \n"
-				 "vmfail: \n"
-				 "movl $0x0, %%eax \n"
-				 "movl %%eax, %0 \n"
-				 "vmsuccess: \n"
-		   : "=m" (retval)
-		   : "m"(vmxonregion_paddr)
-		   : "eax");
-
-		if(!retval){
+        if(!__vmx_vmxon(vmxonregion_paddr)){
 			_XDPRINTF_("%s(%u): unable to enter VMX root operation\n", __FUNCTION__, (u32)cpuid);
 			return false;
-		}
+        }
 	}
 
 	//clear VMCS
