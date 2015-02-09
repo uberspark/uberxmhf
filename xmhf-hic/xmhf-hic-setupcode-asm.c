@@ -735,3 +735,63 @@ void __xmhfhic_x86vmx_setIOPL3(u64 cpuid){
 }
 
 
+/////////////////////////////////////////////////////////////////////////////
+// relinquish HIC initialization and move on to the first slab
+//XXX: globals:
+//_xmhfhic_common_slab_info_table[XMHF_HYP_SLAB_XCINIT].entrystub
+//_xmhfhic_common_slab_info_table[XMHF_HYP_SLAB_XCINIT].archdata.mempgtbl_cr3
+//_xmhfhic_common_slab_info_table[XMHF_HYP_SLAB_XCINIT].archdata.slabtos[(u32)cpuid]
+
+void xmhfhic_arch_relinquish_control_to_init_slab(u64 cpuid){
+
+    //switch page tables to init slab pagetables
+    asm volatile(
+         "movq %0, %%rax \r\n"
+         "movq %%rax, %%cr3 \r\n"
+        :
+        : "m" (_xmhfhic_common_slab_info_table[XMHF_HYP_SLAB_XCINIT].archdata.mempgtbl_cr3)
+        : "rax"
+    );
+
+
+    /*
+
+    RDI = iparams
+    RSI = iparams_size
+    RDX = slab entrystub; used for SYSEXIT
+    RCX = slab entrystub stack TOS for the CPU; used for SYSEXIT
+    R8 = oparams
+    R9 = oparams_size
+    R10 = src_slabid
+    R11 = cpuid
+
+    */
+
+    asm volatile(
+         "movq %0, %%rdi \r\n"
+         "movq %1, %%rsi \r\n"
+         "movq %2, %%rdx \r\n"
+         "movq %3, %%rcx \r\n"
+         "movq %4, %%r8 \r\n"
+         "movq %5, %%r9 \r\n"
+         "movq %6, %%r10 \r\n"
+         "movq %7, %%r11 \r\n"
+
+         "sysexitq \r\n"
+         //"int $0x03 \r\n"
+        :
+        : "i" (NULL),
+          "i" (0),
+          "m" (_xmhfhic_common_slab_info_table[XMHF_HYP_SLAB_XCINIT].entrystub),
+          "m" (_xmhfhic_common_slab_info_table[XMHF_HYP_SLAB_XCINIT].archdata.slabtos[(u32)cpuid]),
+          "i" (NULL),
+          "i" (0),
+          "i" (0xFFFFFFFFFFFFFFFFULL),
+          "m" (cpuid)
+
+
+        : "rdi", "rsi", "rdx", "rcx", "r8", "r9", "r10", "r11"
+    );
+
+
+}
