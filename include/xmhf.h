@@ -90,11 +90,11 @@
 	#include <xmhf-verification.h>
 #endif //__XMHF_VERIFICATION__
 
+#include <xmhf-hw.h>            //XMHF hardware interfaces
 
 #include <xmhf-arch.h>			//XMHF arch. specific types/defn.
 
 //#include <xmhf-slab.h>
-
 
 #include <xmhf-hic.h>
 

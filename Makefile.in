@@ -10,6 +10,10 @@ export XMHF_OBJDIR = $(CURDIR)/_objects
 # top-level include directory
 XMHF_INC = $(CURDIR)/include
 
+# XMHF hardware interface include directory
+XMHF_HW_INC = $(CURDIR)/xmhf-hw/include
+
+
 # verification directory (used for verification without polluting source namespace)
 export XMHF_VERIFYDIR := $(CURDIR)/_verify
 
@@ -38,7 +42,7 @@ XMHFLIBS_INC = $(foreach dir,$(XMHFLIBS_SUBLIBS),-I$(dir)/include)
 export ADDL_INCLUDES := -I$(realpath xmhf-slabs/include)
 export XMHFLIBS_DIR := $(XMHF_OBJDIR)/_objs_xmhf-libs
 #ADDL_INCLUDES += -I$(XMHF_INC) $(XMHFCORE_INC) $(XMHFLIBS_INC)
-ADDL_INCLUDES += -I$(XMHF_INC) $(XMHFLIBS_INC)
+ADDL_INCLUDES += -I$(XMHF_INC) -I$(XMHF_HW_INC) $(XMHFLIBS_INC)
 
 ##################################################################################
 ### BEGIN Variables controlled using autoconf
