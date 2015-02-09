@@ -1831,67 +1831,11 @@ void xmhfhic_arch_setup_base_cpu_data_structures(void){
 
 
 
-//load GDT and initialize segment registers
-static void __xmhfhic_x86vmx_loadGDT(u64 cpuid){
-
-	asm volatile(
-		"lgdt  %0 \r\n"
-		"pushq	%1 \r\n"				// far jump to runtime entry point
-		"pushq	$reloadsegs \r\n"
-		"lretq \r\n"
-		"reloadsegs: \r\n"
-		"movw	%2, %%ax \r\n"
-		"movw	%%ax, %%ds \r\n"
-		"movw	%%ax, %%es \r\n"
-		"movw	%%ax, %%fs \r\n"
-		"movw	%%ax, %%gs \r\n"
-		"movw   %%ax, %%ss \r\n"
-		: //no outputs
-		: "m" (__xmhfhic_x86vmx_gdt), "i" (__CS_CPL0), "i" (__DS_CPL0)
-		: "eax"
-	);
-}
 
 
-//load IDT
-static void __xmhfhic_x86vmx_loadIDT(u64 cpuid){
-	//load IDT
-	asm volatile(
-		"lidt  %0 \r\n"
-		: //no outputs
-		: "m" (__xmhfhic_x86vmx_idt)
-		: //no clobber
-	);
-}
-
-//load TR
-static void __xmhfhic_x86vmx_loadTR(u64 cpuid){
-	  asm volatile(
-		"movq %0, %%rax\r\n"
-		"ltr %%ax\r\n"				//load TR
-	     :
-	     : "g"(__TRSEL + ((u32)cpuid * 16) )
-	     : "rax"
-	  );
-}
 
 
-//set IOPl to CPl-3
-static void __xmhfhic_x86vmx_setIOPL3(u64 cpuid){
 
-	asm volatile(
-        "pushfq \r\n"
-        "popq %%rax \r\n"
-		"orq $0x3000, %%rax \r\n"					// clear flags, but set IOPL=3 (CPL-3)
-		"pushq %%rax \r\n"
-		"popfq \r\n"
-		: //no outputs
-		: //no inputs
-		: "rax", "cc"
-	);
-
-
-}
 
 
 static bool __xmhfhic_x86vmx_setupvmxstate(u64 cpuid){
