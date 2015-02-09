@@ -730,11 +730,34 @@ struct _vmx_vmcsrwfields_encodings	{
 
 
 //VMX functions
-static inline void __vmx_vmxon(u64 vmxonRegion){
-  __asm__("vmxon %0\n\t"
-	  : //no outputs
-	  : "m"(vmxonRegion));
+//static inline void __vmx_vmxon(u64 vmxonRegion){
+//  __asm__("vmxon %0\n\t"
+//	  : //no outputs
+//	  : "m"(vmxonRegion));
+//}
+
+static inline bool __vmx_vmxon(u64 vmxonregion_paddr){
+		u32 retval=0;
+
+		asm volatile( "vmxon %1 \n"
+				 "jbe vmfail \n"
+				 "movl $0x1, %%eax \n"
+				 "movl %%eax, %0 \n"
+				 "jmp vmsuccess \n"
+				 "vmfail: \n"
+				 "movl $0x0, %%eax \n"
+				 "movl %%eax, %0 \n"
+				 "vmsuccess: \n"
+		   : "=g" (retval)
+		   : "m"(vmxonregion_paddr)
+		   : "eax");
+
+		if(!retval)
+            return false;
+        else
+            return true;
 }
+
 
 
 static inline void xmhfhw_cpu_x86vmx_vmwrite(u64 encoding, u64 value){
