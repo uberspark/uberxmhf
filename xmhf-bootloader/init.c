@@ -56,6 +56,10 @@
 //#include <tpm.h>
 #include <cmdline.h>
 
+#include "_txt_hash.h"
+#include "_txt_acmod.h"
+#include "_tpm.h"
+#include "_multiboot.h"
 
 ////libxmhfdebug
 //u32 libxmhfdebug_lock = 1;

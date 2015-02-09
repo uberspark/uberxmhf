@@ -94,6 +94,9 @@
 #include <xmhf.h>
 #include <xmhf-debug.h>
 
+#include "_txt_hash.h"
+#include "_txt_acmod.h"
+
 
 //extern SL_PARAMETER_BLOCK *slpb; /* Ugh; ugly global from init.c */
 

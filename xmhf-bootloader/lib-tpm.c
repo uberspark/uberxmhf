@@ -98,6 +98,8 @@
 //#include <print_hex.h>
 //#include <tpm.h>
 
+#include "_tpm.h"
+
 #if 0
 
 /*
