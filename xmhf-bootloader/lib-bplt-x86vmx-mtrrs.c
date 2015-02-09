@@ -87,6 +87,8 @@
 #include <xmhf.h>
 #include <xmhf-debug.h>
 
+#include "_txt_hash.h"
+#include "_txt_acmod.h"
 
 #define MTRR_TYPE_MIXED         -1
 #define MMIO_APIC_BASE          0xFEE00000

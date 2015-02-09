@@ -53,7 +53,8 @@
 
 #include "_config.h"								//include arch. specific configuration parameters
 
-#include <xmhfhw/platform/x86pc/_multiboot.h>		//multiboot
+/*
+//#include <xmhfhw/platform/x86pc/_multiboot.h>		//multiboot
 #include <xmhfhw/platform/x86pc/_memaccess.h>		//platform memory access
 #include <xmhfhw/cpu/x86/_msr.h>        			//model specific registers
 #include <xmhfhw/cpu/x86/_apic.h>       			//APIC
@@ -67,9 +68,9 @@
 #include <xmhfhw/platform/x86pc/_acpi.h>			//ACPI glue
 //#include <xmhfhw/platform/x86pc/_com.h>        		//UART/serial
 #include <xmhfhw/platform/x86pc/vtd/vtd.h>			//VMX DMA protection
-#include <xmhfhw/platform/x86pc/_tpm.h>        		//TPM
+//#include <xmhfhw/platform/x86pc/_tpm.h>        		//TPM
 #include <xmhfhw/platform/x86pc/_biosdata.h>		//BIOS data areas
-
+*/
 
 #define     MAX_X86_APIC_ID     256
 
