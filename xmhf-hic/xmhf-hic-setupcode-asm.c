@@ -923,10 +923,6 @@ void __xmhfhic_x86vmx_setIOPL3(u64 cpuid){
 
 /////////////////////////////////////////////////////////////////////////////
 // relinquish HIC initialization and move on to the first slab
-//XXX: globals:
-//_xmhfhic_common_slab_info_table[XMHF_HYP_SLAB_XCINIT].entrystub
-//_xmhfhic_common_slab_info_table[XMHF_HYP_SLAB_XCINIT].archdata.mempgtbl_cr3
-//_xmhfhic_common_slab_info_table[XMHF_HYP_SLAB_XCINIT].archdata.slabtos[(u32)cpuid]
 
 void xmhfhic_arch_relinquish_control_to_init_slab(u64 cpuid, u64 entrystub, u64 mempgtbl_cr3, u64 slabtos){
 
