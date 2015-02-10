@@ -50,6 +50,14 @@
 //external assembly language blobs
 extern void _ap_bootstrap_code(void);
 extern bool __xmhfhic_ap_entry(void);
+extern void xmhfhic_arch_relinquish_control_to_init_slab(u64 cpuid);
+extern void __xmhfhic_x86vmx_setIOPL3(u64 cpuid);
+extern void __xmhfhic_x86vmx_loadTR(u64 cpuid);
+extern void __xmhfhic_x86vmx_loadIDT(u64 cpuid);
+extern void __xmhfhic_x86vmx_loadGDT(u64 cpuid);
+
+
+
 
 void xmhfhic_entry(void){
     u64 pgtblbase;
