@@ -53,8 +53,8 @@ extern bool __xmhfhic_ap_entry(void);
 extern void xmhfhic_arch_relinquish_control_to_init_slab(u64 cpuid, u64 entrystub, u64 mempgtbl_cr3, u64 slabtos);
 extern void __xmhfhic_x86vmx_setIOPL3(u64 cpuid);
 extern void __xmhfhic_x86vmx_loadTR(u64 cpuid);
-extern void __xmhfhic_x86vmx_loadIDT(u64 cpuid);
-extern void __xmhfhic_x86vmx_loadGDT(u64 cpuid);
+extern void __xmhfhic_x86vmx_loadIDT(arch_x86_idtdesc_t *idt_addr);
+extern void __xmhfhic_x86vmx_loadGDT(arch_x86_gdtdesc_t *gdt_addr);
 
 
 
@@ -2183,7 +2183,7 @@ void xmhf_hic_arch_setup_cpu_state(u64 cpuid){
     #endif
 
     //load GDT
-    __xmhfhic_x86vmx_loadGDT(cpuid);
+    __xmhfhic_x86vmx_loadGDT(&__xmhfhic_x86vmx_gdt);
     _XDPRINTF_("%s[%u]: GDT loaded\n", __FUNCTION__, (u32)cpuid);
 
     //load TR
@@ -2191,7 +2191,7 @@ void xmhf_hic_arch_setup_cpu_state(u64 cpuid){
     _XDPRINTF_("%s[%u]: TR loaded\n", __FUNCTION__, (u32)cpuid);
 
     //load IDT
-    __xmhfhic_x86vmx_loadIDT(cpuid);
+    __xmhfhic_x86vmx_loadIDT(&__xmhfhic_x86vmx_idt);
     _XDPRINTF_("%s[%u]: IDT loaded\n", __FUNCTION__, (u32)cpuid);
 
     //turn on CR0.WP bit for supervisor mode write protection
