@@ -838,8 +838,7 @@ bool __xmhfhic_ap_entry(void) __attribute__((naked)){
 
 
 //load GDT and initialize segment registers
-//XXX: globals: __xmhfhic_x86vmx_gdt
-void __xmhfhic_x86vmx_loadGDT(u64 cpuid){
+void __xmhfhic_x86vmx_loadGDT(arch_x86_gdtdesc_t *gdt_addr){
 
 	asm volatile(
 		"lgdt  %0 \r\n"
@@ -854,20 +853,19 @@ void __xmhfhic_x86vmx_loadGDT(u64 cpuid){
 		"movw	%%ax, %%gs \r\n"
 		"movw   %%ax, %%ss \r\n"
 		: //no outputs
-		: "m" (__xmhfhic_x86vmx_gdt), "i" (__CS_CPL0), "i" (__DS_CPL0)
+		: "m" (*gdt_addr), "i" (__CS_CPL0), "i" (__DS_CPL0)
 		: "eax"
 	);
 }
 
 
 //load IDT
-//XXX: globals: __xmhfhic_x86vmx_idt
-void __xmhfhic_x86vmx_loadIDT(u64 cpuid){
+void __xmhfhic_x86vmx_loadIDT(arch_x86_idtdesc_t *idt_addr){
 	//load IDT
 	asm volatile(
 		"lidt  %0 \r\n"
 		: //no outputs
-		: "m" (__xmhfhic_x86vmx_idt)
+		: "m" (*idt_addr)
 		: //no clobber
 	);
 }
