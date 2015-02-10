@@ -928,14 +928,14 @@ void __xmhfhic_x86vmx_setIOPL3(u64 cpuid){
 //_xmhfhic_common_slab_info_table[XMHF_HYP_SLAB_XCINIT].archdata.mempgtbl_cr3
 //_xmhfhic_common_slab_info_table[XMHF_HYP_SLAB_XCINIT].archdata.slabtos[(u32)cpuid]
 
-void xmhfhic_arch_relinquish_control_to_init_slab(u64 cpuid){
+void xmhfhic_arch_relinquish_control_to_init_slab(u64 cpuid, u64 entrystub, u64 mempgtbl_cr3, u64 slabtos){
 
     //switch page tables to init slab pagetables
     asm volatile(
          "movq %0, %%rax \r\n"
          "movq %%rax, %%cr3 \r\n"
         :
-        : "m" (_xmhfhic_common_slab_info_table[XMHF_HYP_SLAB_XCINIT].archdata.mempgtbl_cr3)
+        : "m" (mempgtbl_cr3)
         : "rax"
     );
 
@@ -968,8 +968,8 @@ void xmhfhic_arch_relinquish_control_to_init_slab(u64 cpuid){
         :
         : "i" (NULL),
           "i" (0),
-          "m" (_xmhfhic_common_slab_info_table[XMHF_HYP_SLAB_XCINIT].entrystub),
-          "m" (_xmhfhic_common_slab_info_table[XMHF_HYP_SLAB_XCINIT].archdata.slabtos[(u32)cpuid]),
+          "m" (entrystub),
+          "m" (slabtos),
           "i" (NULL),
           "i" (0),
           "i" (0xFFFFFFFFFFFFFFFFULL),

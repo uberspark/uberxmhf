@@ -50,7 +50,7 @@
 //external assembly language blobs
 extern void _ap_bootstrap_code(void);
 extern bool __xmhfhic_ap_entry(void);
-extern void xmhfhic_arch_relinquish_control_to_init_slab(u64 cpuid);
+extern void xmhfhic_arch_relinquish_control_to_init_slab(u64 cpuid, u64 entrystub, u64 mempgtbl_cr3, u64 slabtos);
 extern void __xmhfhic_x86vmx_setIOPL3(u64 cpuid);
 extern void __xmhfhic_x86vmx_loadTR(u64 cpuid);
 extern void __xmhfhic_x86vmx_loadIDT(u64 cpuid);
@@ -137,7 +137,11 @@ void xmhfhic_smp_entry(u64 cpuid){
     _XDPRINTF_("%s[%u]: proceeding to call init slab at %x\n", __FUNCTION__, (u32)cpuid,
                 _xmhfhic_common_slab_info_table[XMHF_HYP_SLAB_XCINIT].entrystub);
 
-    xmhfhic_arch_relinquish_control_to_init_slab(cpuid);
+    xmhfhic_arch_relinquish_control_to_init_slab(cpuid,
+        _xmhfhic_common_slab_info_table[XMHF_HYP_SLAB_XCINIT].entrystub,
+        _xmhfhic_common_slab_info_table[XMHF_HYP_SLAB_XCINIT].archdata.mempgtbl_cr3,
+        _xmhfhic_common_slab_info_table[XMHF_HYP_SLAB_XCINIT].archdata.slabtos[(u32)cpuid]);
+
 #endif //__XMHF_VERIFICATION__
 
     _XDPRINTF_("%s[%u,%u]: Should never be here. Halting!\n", __FUNCTION__, cpuid, isbsp);
