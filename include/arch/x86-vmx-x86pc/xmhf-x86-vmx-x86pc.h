@@ -114,6 +114,7 @@ typedef struct {
     u32 ap_gdtdesc_base;
     u32 ap_cs_selector;
     u32 ap_eip;
+    u32 cpuidtable;
     u64 ap_gdt[X86SMP_APBOOTSTRAP_MAXGDTENTRIES] __attribute__ ((aligned (16)));
 }__attribute__((aligned(16),packed)) x86smp_apbootstrapdata_t;
 

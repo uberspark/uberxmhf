@@ -1484,6 +1484,7 @@ static void __xmhfhic_smp_container_vmx_wakeupAPs(void){
     apdata.ap_gdtdesc_base = (X86SMP_APBOOTSTRAP_DATASEG << 4) + offsetof(x86smp_apbootstrapdata_t, ap_gdt);
     apdata.ap_cs_selector = __CS_CPL0;
     apdata.ap_eip = (X86SMP_APBOOTSTRAP_CODESEG << 4);
+    apdata.cpuidtable = (u32)&__xmhfhic_x86vmx_cpuidtable;
     apdata.ap_gdt[0] = 0x0000000000000000ULL;
     apdata.ap_gdt[1] = 0x00cf9a000000ffffULL;
     apdata.ap_gdt[2] = 0x00cf92000000ffffULL;

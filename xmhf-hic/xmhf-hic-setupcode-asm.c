@@ -700,16 +700,24 @@ __attribute__((naked)) void _ap_bootstrap_code(void) {
            " movw %0, %%ax \r\n"
            " movw %%ax, %%ds \r\n"
 
-           " movl %1, %%ebx \r\n"
+           " movl %1, %%eax \r\n"
+           " movl (%%eax), %%eax \r\n"
+
+           " movl %2, %%ebx \r\n"
            " movl (%%ebx), %%ebx \r\n"
 
-           " jmpl *%%ebx \r\n"
+           " movl %3, %%edi \r\n"
+           " movl (%%edi), %%edi \r\n"
+
+           " jmpl *%%eax \r\n"
            " hlt \r\n"
            " .balign 4096 \r\n"
            ".code64"
             :
             : "i" (__DS_CPL0),
-              "i" ((X86SMP_APBOOTSTRAP_DATASEG << 4) + offsetof(x86smp_apbootstrapdata_t, ap_entrypoint))
+              "i" ((X86SMP_APBOOTSTRAP_DATASEG << 4) + offsetof(x86smp_apbootstrapdata_t, ap_entrypoint)),
+              "i" ((X86SMP_APBOOTSTRAP_DATASEG << 4) + offsetof(x86smp_apbootstrapdata_t, ap_cr3)),
+              "i" ((X86SMP_APBOOTSTRAP_DATASEG << 4) + offsetof(x86smp_apbootstrapdata_t, cpuidtable))
             :
 
         );
@@ -738,8 +746,8 @@ bool __xmhfhic_ap_entry(void) __attribute__((naked)){
    					"orl $0x00000030, %%eax \r\n"
    					"movl %%eax, %%cr4 \r\n"
 
-                    "movl %0, %%ebx \r\n"
-                    "movl (%%ebx), %%ebx \r\n"
+                    //"movl %0, %%ebx \r\n"
+                    //"movl (%%ebx), %%ebx \r\n"
                     "movl %%ebx, %%cr3 \r\n"
 
                     "movl $0xc0000080, %%ecx \r\n"
@@ -774,7 +782,10 @@ bool __xmhfhic_ap_entry(void) __attribute__((naked)){
                     "wrmsr \r\n"
 
 					:
-					:   "i" (&_ap_cr3), "i" (&_xcsmp_ap_init_gdt), "i" (MSR_APIC_BASE), "i" (X86SMP_LAPIC_MEMORYADDRESS)
+					:   "i" (0), //unused
+                        "i" (&_xcsmp_ap_init_gdt),
+                        "i" (MSR_APIC_BASE),
+                        "i" (X86SMP_LAPIC_MEMORYADDRESS)
 	);
 
 
@@ -784,7 +795,11 @@ bool __xmhfhic_ap_entry(void) __attribute__((naked)){
                  	"movl %0, %%eax\r\n"                    //
 					"movl (%%eax), %%eax\r\n"               //RAX(bits 0-7)=LAPIC ID
 					"shr $24, %%eax\r\n"                    //RAX=LAPIC ID
-                    "movq %1, %%rbx \r\n"                   //RBX=&__xmhfhic_x86vmx_cpuidtable
+                    //"movq %1, %%rbx \r\n"                   //RBX=&__xmhfhic_x86vmx_cpuidtable
+
+                    "xorq %%rbx, %%rbx \r\n"
+                    "movl %%edi, %%ebx \r\n"                   //RBX=&__xmhfhic_x86vmx_cpuidtable
+
                     "movq (%%rbx, %%rax, 8), %%rax \r\n"    //EAX= 0-based cpu index for the CPU
 
 					"movl %2, %%ecx \r\n"					// ecx = sizeof(_cpustack[0])
@@ -797,7 +812,7 @@ bool __xmhfhic_ap_entry(void) __attribute__((naked)){
 
 					:
 					:   "i" (X86SMP_LAPIC_ID_MEMORYADDRESS),
-                        "i" (&__xmhfhic_x86vmx_cpuidtable),
+                        "i" (0), //unused
                         "i" (sizeof(_init_cpustacks[0])),
                         "i" (&_init_cpustacks)
 
