@@ -182,14 +182,16 @@ void __xmhfhic_rtm_trampoline(u64 hic_calltype, slab_input_params_t *iparams, u6
                     memcpy(&__paramsbuffer, iparams, (iparams_size > 1024 ? 1024 : iparams_size) );
                     #endif
 
-                    //switch to destination slab page tables
+                    /*//switch to destination slab page tables
                     asm volatile(
                          "movq %0, %%rax \r\n"
                          "movq %%rax, %%cr3 \r\n"
                         :
                         : "m" (_xmhfhic_common_slab_info_table[dst_slabid].archdata.mempgtbl_cr3)
                         : "rax"
-                    );
+                    );*/
+
+                    write_cr3(_xmhfhic_common_slab_info_table[dst_slabid].archdata.mempgtbl_cr3);
 
                     //make space on destination slab stack for iparams and copy iparams and obtain newiparams
                     {
@@ -350,14 +352,16 @@ void __xmhfhic_rtm_trampoline(u64 hic_calltype, slab_input_params_t *iparams, u6
             //adjust slab stack by popping off iparams_size and oparams_size
              _xmhfhic_common_slab_info_table[src_slabid].archdata.slabtos[(u32)cpuid] += (elem.iparams_size+elem.oparams_size);
 
-            //switch to destination slab page tables
+            /*//switch to destination slab page tables
             asm volatile(
                  "movq %0, %%rax \r\n"
                  "movq %%rax, %%cr3 \r\n"
                 :
                 : "m" ( _xmhfhic_common_slab_info_table[dst_slabid].archdata.mempgtbl_cr3)
                 : "rax"
-            );
+            );*/
+
+            write_cr3(_xmhfhic_common_slab_info_table[dst_slabid].archdata.mempgtbl_cr3);
 
 
             #if !defined (__XMHF_VERIFICATION__)
@@ -425,14 +429,16 @@ void __xmhfhic_rtm_trampoline(u64 hic_calltype, slab_input_params_t *iparams, u6
                 memcpy(&__paramsbuffer, iparams, (iparams_size > 1024 ? 1024 : iparams_size) );
                 #endif
 
-                //switch to destination slab page tables
+                /*//switch to destination slab page tables
                 asm volatile(
                      "movq %0, %%rax \r\n"
                      "movq %%rax, %%cr3 \r\n"
                     :
                     : "m" ( _xmhfhic_common_slab_info_table[dst_slabid].archdata.mempgtbl_cr3)
                     : "rax"
-                );
+                );*/
+
+                write_cr3(_xmhfhic_common_slab_info_table[dst_slabid].archdata.mempgtbl_cr3);
 
                 //make space on destination slab stack for iparams and copy iparams and obtain newiparams
                 {
@@ -529,14 +535,16 @@ void __xmhfhic_rtm_trampoline(u64 hic_calltype, slab_input_params_t *iparams, u6
             //adjust slab stack by popping off iparams_size
              _xmhfhic_common_slab_info_table[src_slabid].archdata.slabtos[(u32)cpuid] += (elem.iparams_size);
 
-            //switch to destination slab page tables
+            /*//switch to destination slab page tables
             asm volatile(
                  "movq %0, %%rax \r\n"
                  "movq %%rax, %%cr3 \r\n"
                 :
                 : "m" ( _xmhfhic_common_slab_info_table[dst_slabid].archdata.mempgtbl_cr3)
                 : "rax"
-            );
+            );*/
+
+            write_cr3(_xmhfhic_common_slab_info_table[dst_slabid].archdata.mempgtbl_cr3);
 
             //return back to slab where exception originally occurred
             {
@@ -622,13 +630,15 @@ void __xmhfhic_rtm_trampoline(u64 hic_calltype, slab_input_params_t *iparams, u6
 
             //switch to destination slab page tables
             //XXX: eliminate this by preloading VMCS CR3 with xcihub CR3
-            asm volatile(
+            /*asm volatile(
                  "movq %0, %%rax \r\n"
                  "movq %%rax, %%cr3 \r\n"
                 :
                 : "m" ( _xmhfhic_common_slab_info_table[dst_slabid].archdata.mempgtbl_cr3)
                 : "rax"
-            );
+            );*/
+
+            write_cr3(_xmhfhic_common_slab_info_table[dst_slabid].archdata.mempgtbl_cr3);
 
             //intercept slab does not get any input parameters and does not
             //return any output parameters

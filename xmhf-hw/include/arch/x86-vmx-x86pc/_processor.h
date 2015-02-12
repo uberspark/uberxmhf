@@ -429,6 +429,7 @@ static inline void write_cr4(u64 val){
   asm volatile("mov %0,%%cr4": :"r" (val));
 }
 
+
 static inline void skinit(unsigned long eax) {
     __asm__("mov %0, %%eax": :"r" (eax));
     __asm__("skinit %%eax":);
