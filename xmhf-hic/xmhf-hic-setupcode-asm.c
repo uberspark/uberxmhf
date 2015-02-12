@@ -1454,3 +1454,46 @@ void __xmhfhic_trampoline_slabxfer_h2h(u64 iparams, u64 iparams_size,
 
 
 }
+
+
+
+void __xmhfhic_trampoline_slabxfer_h2g(void){
+                    u32 errorcode;
+
+                    asm volatile (
+                            "vmlaunch\r\n"
+
+                            "jc __vmx_start_hvm_failinvalid\r\n"
+                            "jnz	__vmx_start_hvm_undefinedimplementation	\r\n"
+                            "movl $0x1, %%eax\r\n"		//VMLAUNCH error, XXX: need to read from VM instruction error field in VMCS
+                            "movl %%eax, %0 \r\n"
+                            "jmp __vmx_start_continue \r\n"
+                            "__vmx_start_hvm_undefinedimplementation:\r\n"
+                            "movl $0x2, %%eax\r\n"		//violation of VMLAUNCH specs., handle it anyways
+                            "movl %%eax, %0 \r\n"
+                            "jmp __vmx_start_continue \r\n"
+                            "__vmx_start_hvm_failinvalid:\r\n"
+                            "xorl %%eax, %%eax\r\n"		//return 0 as we have no error code available
+                            "movl %%eax, %0 \r\n"
+                            "__vmx_start_continue:\r\n"
+                        : "=g"(errorcode)
+                        :
+                        : "eax", "cc"
+                    );
+
+
+                    switch(errorcode){
+                        case 0:	//no error code, VMCS pointer is invalid
+                            _XDPRINTF_("%s: VMLAUNCH error; VMCS pointer invalid?\n", __FUNCTION__);
+                            break;
+                        case 1:{//error code available, so dump it
+                            u32 code=xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_VMINSTR_ERROR);
+                            _XDPRINTF_("\n%s: VMLAUNCH error; code=%x\n", __FUNCTION__, code);
+                            break;
+                        }
+                    }
+
+                    HALT();
+
+
+}
