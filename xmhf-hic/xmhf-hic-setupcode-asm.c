@@ -1592,3 +1592,37 @@ void __xmhfhic_trampoline_slabxfer_callintercept(u64 entrystub, u64 slabtos,
             );
 
 }
+
+
+void __xmhfhic_trampoline_slabxfer_retintercept(u64 addrgprs){
+
+
+            asm volatile (
+                "movq %0, %%rsp \r\n"
+                "popq %%r8 \r\n"
+                "popq %%r9 \r\n"
+                "popq %%r10 \r\n"
+                "popq %%r11 \r\n"
+                "popq %%r12 \r\n"
+                "popq %%r13 \r\n"
+                "popq %%r14 \r\n"
+                "popq %%r15 \r\n"
+                "popq %%rax \r\n"
+                "popq %%rbx \r\n"
+                "popq %%rcx \r\n"
+                "popq %%rdx \r\n"
+                "popq %%rsi \r\n"
+                "popq %%rdi \r\n"
+                "popq %%rbp \r\n"
+
+                "vmresume \r\n"
+                :
+                : "g" (addrgprs)
+                : "r8", "r9", "r10", "r11", "r12", "r13", "r14", "r15",
+                  "rax", "rbx", "rcx", "rdx", "rsi", "rdi", "rbp"
+
+            );
+
+
+
+}
