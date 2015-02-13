@@ -1497,3 +1497,98 @@ void __xmhfhic_trampoline_slabxfer_h2g(void){
 
 
 }
+
+
+
+
+
+void __xmhfhic_trampoline_slabxfer_callexception(u64 iparams, u64 iparams_size,
+                                                 u64 entrystub, u64 slabtos,
+                                                 u64 src_slabid, u64 cpuid){
+
+                /*
+
+                RDI = newiparams
+                RSI = iparams_size
+                RDX = slab entrystub; used for SYSEXIT
+                RCX = slab entrystub stack TOS for the CPU; used for SYSEXIT
+                R8 = 0 (oparams)
+                R9 = 0 (oparams_size)
+                R10 = src_slabid
+                R11 = cpuid
+
+                */
+
+                asm volatile(
+                     "movq %0, %%rdi \r\n"
+                     "movq %1, %%rsi \r\n"
+                     "movq %2, %%rdx \r\n"
+                     "movq %3, %%rcx \r\n"
+                     "movq %4, %%r8 \r\n"
+                     "movq %5, %%r9 \r\n"
+                     "movq %6, %%r10 \r\n"
+                     "movq %7, %%r11 \r\n"
+
+                     "sysexitq \r\n"
+                     //"int $0x03 \r\n"
+                     //"1: jmp 1b \r\n"
+                    :
+                    : "m" (iparams),
+                      "m" (iparams_size),
+                      "m" (entrystub),
+                      "m" (slabtos),
+                      "i" (0),
+                      "i" (0),
+                      "m" (src_slabid),
+                      "m" (cpuid)
+                    : "rdi", "rsi", "rdx", "rcx", "r8", "r9", "r10", "r11"
+                );
+
+
+
+}
+
+
+
+
+void __xmhfhic_trampoline_slabxfer_callintercept(u64 entrystub, u64 slabtos,
+                                                 u64 src_slabid, u64 cpuid){
+
+            /*
+
+            RDI = newiparams (NULL)
+            RSI = iparams_size (0)
+            RDX = slab entrystub; used for SYSEXIT
+            RCX = slab entrystub stack TOS for the CPU; used for SYSEXIT
+            R8 = newoparams (NULL)
+            R9 = oparams_size (0)
+            R10 = src_slabid
+            R11 = cpuid
+
+            */
+
+            asm volatile(
+                 "movq %0, %%rdi \r\n"
+                 "movq %1, %%rsi \r\n"
+                 "movq %2, %%rdx \r\n"
+                 "movq %3, %%rcx \r\n"
+                 "movq %4, %%r8 \r\n"
+                 "movq %5, %%r9 \r\n"
+                 "movq %6, %%r10 \r\n"
+                 "movq %7, %%r11 \r\n"
+                 "sysexitq \r\n"
+                 //"int $0x03 \r\n"
+                 //"1: jmp 1b \r\n"
+                :
+                : "i" (0),
+                  "i" (0),
+                  "m" (entrystub),
+                  "m" (slabtos),
+                  "i" (0),
+                  "i" (0),
+                  "m" (src_slabid),
+                  "m" (cpuid)
+                : "rdi", "rsi", "rdx", "rcx", "r8", "r9", "r10", "r11"
+            );
+
+}

@@ -143,8 +143,13 @@ extern void __xmhfhic_trampoline_slabxfer_h2h(u64 iparams, u64 iparams_size,
 void __xmhfhic_trampoline_slabxfer_h2g(void);
 
 
+void __xmhfhic_trampoline_slabxfer_callexception(u64 iparams, u64 iparams_size,
+                                                 u64 entrystub, u64 slabtos,
+                                                 u64 src_slabid, u64 cpuid);
 
 
+void __xmhfhic_trampoline_slabxfer_callintercept(u64 entrystub, u64 slabtos,
+                                                 u64 src_slabid, u64 cpuid);
 
 
 
@@ -311,6 +316,8 @@ void __xmhfhic_rtm_trampoline(u64 hic_calltype, slab_input_params_t *iparams, u6
             memcpy(elem.oparams, &__paramsbuffer, (elem.oparams_size > 1024 ? 1024 : elem.oparams_size) );
             #endif
 
+
+            sysexitq(elem.return_address, _xmhfhic_common_slab_info_table[elem.src_slabid].archdata.slabtos[(u32)cpuid]);
             //return back to slab
             /*
             RDI = undefined
@@ -323,7 +330,7 @@ void __xmhfhic_rtm_trampoline(u64 hic_calltype, slab_input_params_t *iparams, u6
             R11 = undefined
             */
 
-            asm volatile(
+            /*asm volatile(
                  "movq %0, %%rdx \r\n"
                  "movq %1, %%rcx \r\n"
 
@@ -334,7 +341,7 @@ void __xmhfhic_rtm_trampoline(u64 hic_calltype, slab_input_params_t *iparams, u6
                 : "m" (elem.return_address),
                   "m" ( _xmhfhic_common_slab_info_table[elem.src_slabid].archdata.slabtos[(u32)cpuid])
                 : "rdx", "rcx"
-            );
+            );*/
 
         }
         break;
@@ -404,43 +411,11 @@ void __xmhfhic_rtm_trampoline(u64 hic_calltype, slab_input_params_t *iparams, u6
 
 
                 //jump to exception slab entrystub
-                /*
+                __xmhfhic_trampoline_slabxfer_callexception(newiparams, iparams_size,
+                                                 _xmhfhic_common_slab_info_table[dst_slabid].entrystub,
+                                                 _xmhfhic_common_slab_info_table[dst_slabid].archdata.slabtos[(u32)cpuid],
+                                                 src_slabid, cpuid);
 
-                RDI = newiparams
-                RSI = iparams_size
-                RDX = slab entrystub; used for SYSEXIT
-                RCX = slab entrystub stack TOS for the CPU; used for SYSEXIT
-                R8 = 0 (oparams)
-                R9 = 0 (oparams_size)
-                R10 = src_slabid
-                R11 = cpuid
-
-                */
-
-                asm volatile(
-                     "movq %0, %%rdi \r\n"
-                     "movq %1, %%rsi \r\n"
-                     "movq %2, %%rdx \r\n"
-                     "movq %3, %%rcx \r\n"
-                     "movq %4, %%r8 \r\n"
-                     "movq %5, %%r9 \r\n"
-                     "movq %6, %%r10 \r\n"
-                     "movq %7, %%r11 \r\n"
-
-                     "sysexitq \r\n"
-                     //"int $0x03 \r\n"
-                     //"1: jmp 1b \r\n"
-                    :
-                    : "m" (newiparams),
-                      "m" (iparams_size),
-                      "m" ( _xmhfhic_common_slab_info_table[dst_slabid].entrystub),
-                      "m" ( _xmhfhic_common_slab_info_table[dst_slabid].archdata.slabtos[(u32)cpuid]),
-                      "i" (0),
-                      "i" (0),
-                      "m" (src_slabid),
-                      "m" (cpuid)
-                    : "rdi", "rsi", "rdx", "rcx", "r8", "r9", "r10", "r11"
-                );
 
         }
         break;
@@ -585,42 +560,9 @@ void __xmhfhic_rtm_trampoline(u64 hic_calltype, slab_input_params_t *iparams, u6
             //intercept slab does not get any input parameters and does not
             //return any output parameters
             //jump to intercept slab entrystub
-            /*
-
-            RDI = newiparams (NULL)
-            RSI = iparams_size (0)
-            RDX = slab entrystub; used for SYSEXIT
-            RCX = slab entrystub stack TOS for the CPU; used for SYSEXIT
-            R8 = newoparams (NULL)
-            R9 = oparams_size (0)
-            R10 = src_slabid
-            R11 = cpuid
-
-            */
-
-            asm volatile(
-                 "movq %0, %%rdi \r\n"
-                 "movq %1, %%rsi \r\n"
-                 "movq %2, %%rdx \r\n"
-                 "movq %3, %%rcx \r\n"
-                 "movq %4, %%r8 \r\n"
-                 "movq %5, %%r9 \r\n"
-                 "movq %6, %%r10 \r\n"
-                 "movq %7, %%r11 \r\n"
-                 "sysexitq \r\n"
-                 //"int $0x03 \r\n"
-                 //"1: jmp 1b \r\n"
-                :
-                : "i" (0),
-                  "i" (0),
-                  "m" ( _xmhfhic_common_slab_info_table[dst_slabid].entrystub),
-                  "m" ( _xmhfhic_common_slab_info_table[dst_slabid].archdata.slabtos[(u32)cpuid]),
-                  "i" (0),
-                  "i" (0),
-                  "m" (src_slabid),
-                  "m" (cpuid)
-                : "rdi", "rsi", "rdx", "rcx", "r8", "r9", "r10", "r11"
-            );
+            __xmhfhic_trampoline_slabxfer_callintercept(_xmhfhic_common_slab_info_table[dst_slabid].entrystub,
+                                                         _xmhfhic_common_slab_info_table[dst_slabid].archdata.slabtos[(u32)cpuid],
+                                                 src_slabid, cpuid);
 
         }
         break;

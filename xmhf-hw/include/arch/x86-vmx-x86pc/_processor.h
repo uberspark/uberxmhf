@@ -528,6 +528,40 @@ static inline void xsetbv(u32 xcr_reg, u64 value){
 			: "a" (eax), "d" (edx), "c" (xcr_reg));
 }
 
+
+
+
+
+
+
+
+
+
+static inline void sysexitq(u64 rip, u64 rsp){
+
+            asm volatile(
+                 "movq %0, %%rdx \r\n"
+                 "movq %1, %%rcx \r\n"
+
+                 "sysexitq \r\n"
+                 //"int $0x03 \r\n"
+                 //"1: jmp 1b \r\n"
+                :
+                : "m" (rip),
+                  "m" (rsp)
+                : "rdx", "rcx"
+            );
+
+}
+
+
+
+
+
+
+
+
+
 #ifndef __XMHF_VERIFICATION__
 
 	static inline u32 get_cpu_vendor_or_die(void) {
