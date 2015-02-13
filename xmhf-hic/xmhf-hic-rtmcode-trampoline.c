@@ -155,6 +155,9 @@ void __xmhfhic_trampoline_slabxfer_callintercept(u64 entrystub, u64 slabtos,
 void __xmhfhic_trampoline_slabxfer_retintercept(u64 addrgprs);
 
 
+void __xmhfhic_trampoline_slabxfer_retexception(u64 addr_exframe);
+
+
 //HIC runtime trampoline
 void __xmhfhic_rtm_trampoline(u64 hic_calltype, slab_input_params_t *iparams, u64 iparams_size, slab_output_params_t *oparams, u64 oparams_size, u64 dst_slabid, u64 src_slabid, u64 cpuid, u64 return_address, u64 return_rsp) {
     u8 __paramsbuffer[1024];
@@ -475,32 +478,8 @@ void __xmhfhic_rtm_trampoline(u64 hic_calltype, slab_input_params_t *iparams, u6
                     _XDPRINTF_("%s[%u]: returning from exception to %016llx\n",
                         __FUNCTION__, (u32)cpuid, exframe->orig_rip);
 
-                    asm volatile (
-                        "movq %0, %%rsp \r\n"
-                        "popq %%r8 \r\n"
-                        "popq %%r9 \r\n"
-                        "popq %%r10 \r\n"
-                        "popq %%r11 \r\n"
-                        "popq %%r12 \r\n"
-                        "popq %%r13 \r\n"
-                        "popq %%r14 \r\n"
-                        "popq %%r15 \r\n"
-                        "popq %%rax \r\n"
-                        "popq %%rbx \r\n"
-                        "popq %%rcx \r\n"
-                        "popq %%rdx \r\n"
-                        "popq %%rsi \r\n"
-                        "popq %%rdi \r\n"
-                        "popq %%rbp \r\n"
-                        "popq %%rsp \r\n"
-                        "addq $16, %%rsp \r\n"
-                        "iretq \r\n"
-                        :
-                        : "m" (exframe)
-                        : "r8", "r9", "r10", "r11", "r12", "r13", "r14", "r15",
-                          "rax", "rbx", "rcx", "rdx", "rsi", "rdi", "rbp", "rsp"
 
-                    );
+                    __xmhfhic_trampoline_slabxfer_retexception((u64)exframe);
 
             }
 
