@@ -152,6 +152,8 @@ void __xmhfhic_trampoline_slabxfer_callintercept(u64 entrystub, u64 slabtos,
                                                  u64 src_slabid, u64 cpuid);
 
 
+void __xmhfhic_trampoline_slabxfer_retintercept(u64 addrgprs);
+
 
 //HIC runtime trampoline
 void __xmhfhic_rtm_trampoline(u64 hic_calltype, slab_input_params_t *iparams, u64 iparams_size, slab_output_params_t *oparams, u64 oparams_size, u64 dst_slabid, u64 src_slabid, u64 cpuid, u64 return_address, u64 return_rsp) {
@@ -596,32 +598,7 @@ void __xmhfhic_rtm_trampoline(u64 hic_calltype, slab_input_params_t *iparams, u6
             }
 
             //resume caller (guest) slab where the intercept was triggered
-            asm volatile (
-                "movq %0, %%rsp \r\n"
-                "popq %%r8 \r\n"
-                "popq %%r9 \r\n"
-                "popq %%r10 \r\n"
-                "popq %%r11 \r\n"
-                "popq %%r12 \r\n"
-                "popq %%r13 \r\n"
-                "popq %%r14 \r\n"
-                "popq %%r15 \r\n"
-                "popq %%rax \r\n"
-                "popq %%rbx \r\n"
-                "popq %%rcx \r\n"
-                "popq %%rdx \r\n"
-                "popq %%rsi \r\n"
-                "popq %%rdi \r\n"
-                "popq %%rbp \r\n"
-
-                "vmresume \r\n"
-                :
-                : "g" (&__xmhfhic_x86vmx_archdata[(u32)cpuid].vmx_gprs)
-                : "r8", "r9", "r10", "r11", "r12", "r13", "r14", "r15",
-                  "rax", "rbx", "rcx", "rdx", "rsi", "rdi", "rbp"
-
-            );
-
+            __xmhfhic_trampoline_slabxfer_retintercept((u64)&__xmhfhic_x86vmx_archdata[(u32)cpuid].vmx_gprs);
 
         }
         break;
