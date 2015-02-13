@@ -53,9 +53,32 @@
 #include <xmhf.h>
 #include <xmhf-debug.h>
 
+
+//asm blobs
+extern void __xmhfhic_trampoline_slabxfer_h2h(u64 iparams, u64 iparams_size,
+                                       u64 entrystub, u64 slabtos,
+                                       u64 oparams, u64 oparams_size,
+                                       u64 src_slabid, u64 cpuid);
+
+extern void __xmhfhic_trampoline_slabxfer_h2g(void);
+
+
+extern void __xmhfhic_trampoline_slabxfer_callexception(u64 iparams, u64 iparams_size,
+                                                 u64 entrystub, u64 slabtos,
+                                                 u64 src_slabid, u64 cpuid);
+
+
+extern void __xmhfhic_trampoline_slabxfer_callintercept(u64 entrystub, u64 slabtos,
+                                                 u64 src_slabid, u64 cpuid);
+
+
+extern void __xmhfhic_trampoline_slabxfer_retintercept(u64 addrgprs);
+
+
+extern void __xmhfhic_trampoline_slabxfer_retexception(u64 addr_exframe);
+
+
 #if defined (__XMHF_VERIFICATION__)
-//extern x_slab_info_t _xmhfhic_common_slab_info_table[XMHF_HIC_MAX_SLABS];
-//extern u64 guestslab_mempgtbl_buffer[1048576];
 u64 __xmhfhic_safestack_indices[MAX_PLATFORM_CPUS] = { 0 };
 __xmhfhic_safestack_element_t __xmhfhic_safestack[MAX_PLATFORM_CPUS][512];
 #endif //__XMHF_VERIFICATION__
@@ -134,28 +157,6 @@ void __xmhfhic_safepop(u64 cpuid, u64 *src_slabid, u64 *dst_slabid, u64 *hic_cal
 
 
 
-//asm blobs
-extern void __xmhfhic_trampoline_slabxfer_h2h(u64 iparams, u64 iparams_size,
-                                       u64 entrystub, u64 slabtos,
-                                       u64 oparams, u64 oparams_size,
-                                       u64 src_slabid, u64 cpuid);
-
-void __xmhfhic_trampoline_slabxfer_h2g(void);
-
-
-void __xmhfhic_trampoline_slabxfer_callexception(u64 iparams, u64 iparams_size,
-                                                 u64 entrystub, u64 slabtos,
-                                                 u64 src_slabid, u64 cpuid);
-
-
-void __xmhfhic_trampoline_slabxfer_callintercept(u64 entrystub, u64 slabtos,
-                                                 u64 src_slabid, u64 cpuid);
-
-
-void __xmhfhic_trampoline_slabxfer_retintercept(u64 addrgprs);
-
-
-void __xmhfhic_trampoline_slabxfer_retexception(u64 addr_exframe);
 
 
 //HIC runtime trampoline
