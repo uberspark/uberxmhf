@@ -429,6 +429,7 @@ static inline void write_cr4(u64 val){
   asm volatile("mov %0,%%cr4": :"r" (val));
 }
 
+
 static inline void skinit(unsigned long eax) {
     __asm__("mov %0, %%eax": :"r" (eax));
     __asm__("skinit %%eax":);
@@ -526,6 +527,40 @@ static inline void xsetbv(u32 xcr_reg, u64 value){
 			:
 			: "a" (eax), "d" (edx), "c" (xcr_reg));
 }
+
+
+
+
+
+
+
+
+
+
+static inline void sysexitq(u64 rip, u64 rsp){
+
+            asm volatile(
+                 "movq %0, %%rdx \r\n"
+                 "movq %1, %%rcx \r\n"
+
+                 "sysexitq \r\n"
+                 //"int $0x03 \r\n"
+                 //"1: jmp 1b \r\n"
+                :
+                : "m" (rip),
+                  "m" (rsp)
+                : "rdx", "rcx"
+            );
+
+}
+
+
+
+
+
+
+
+
 
 #ifndef __XMHF_VERIFICATION__
 
