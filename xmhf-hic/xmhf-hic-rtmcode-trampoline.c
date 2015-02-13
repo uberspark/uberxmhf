@@ -130,35 +130,6 @@ void __xmhfhic_safepop(u64 cpuid, u64 *src_slabid, u64 *dst_slabid, u64 *hic_cal
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 //HIC runtime trampoline
 void __xmhfhic_rtm_trampoline(u64 hic_calltype, slab_input_params_t *iparams, u64 iparams_size, slab_output_params_t *oparams, u64 oparams_size, u64 dst_slabid, u64 src_slabid, u64 cpuid, u64 return_address, u64 return_rsp) {
     u8 __paramsbuffer[1024];
@@ -199,15 +170,7 @@ void __xmhfhic_rtm_trampoline(u64 hic_calltype, slab_input_params_t *iparams, u6
                     memcpy(&__paramsbuffer, iparams, (iparams_size > 1024 ? 1024 : iparams_size) );
                     #endif
 
-                    /*//switch to destination slab page tables
-                    asm volatile(
-                         "movq %0, %%rax \r\n"
-                         "movq %%rax, %%cr3 \r\n"
-                        :
-                        : "m" (_xmhfhic_common_slab_info_table[dst_slabid].archdata.mempgtbl_cr3)
-                        : "rax"
-                    );*/
-
+                    //switch to destination slab page tables
                     write_cr3(_xmhfhic_common_slab_info_table[dst_slabid].archdata.mempgtbl_cr3);
 
                     //make space on destination slab stack for iparams and copy iparams and obtain newiparams
@@ -305,15 +268,7 @@ void __xmhfhic_rtm_trampoline(u64 hic_calltype, slab_input_params_t *iparams, u6
             //adjust slab stack by popping off iparams_size and oparams_size
              _xmhfhic_common_slab_info_table[src_slabid].archdata.slabtos[(u32)cpuid] += (elem.iparams_size+elem.oparams_size);
 
-            /*//switch to destination slab page tables
-            asm volatile(
-                 "movq %0, %%rax \r\n"
-                 "movq %%rax, %%cr3 \r\n"
-                :
-                : "m" ( _xmhfhic_common_slab_info_table[dst_slabid].archdata.mempgtbl_cr3)
-                : "rax"
-            );*/
-
+            //switch to destination slab page tables
             write_cr3(_xmhfhic_common_slab_info_table[dst_slabid].archdata.mempgtbl_cr3);
 
 
@@ -322,33 +277,8 @@ void __xmhfhic_rtm_trampoline(u64 hic_calltype, slab_input_params_t *iparams, u6
             memcpy(elem.oparams, &__paramsbuffer, (elem.oparams_size > 1024 ? 1024 : elem.oparams_size) );
             #endif
 
-
-            sysexitq(elem.return_address, _xmhfhic_common_slab_info_table[elem.src_slabid].archdata.slabtos[(u32)cpuid]);
             //return back to slab
-            /*
-            RDI = undefined
-            RSI = undefined
-            RDX = return_address; for SYSEXIT
-            RCX = return TOS; for SYSEXIT
-            R8 = undefined
-            R9 = undefined
-            R10 = undefined
-            R11 = undefined
-            */
-
-            /*asm volatile(
-                 "movq %0, %%rdx \r\n"
-                 "movq %1, %%rcx \r\n"
-
-                 "sysexitq \r\n"
-                 //"int $0x03 \r\n"
-                 //"1: jmp 1b \r\n"
-                :
-                : "m" (elem.return_address),
-                  "m" ( _xmhfhic_common_slab_info_table[elem.src_slabid].archdata.slabtos[(u32)cpuid])
-                : "rdx", "rcx"
-            );*/
-
+            sysexitq(elem.return_address, _xmhfhic_common_slab_info_table[elem.src_slabid].archdata.slabtos[(u32)cpuid]);
         }
         break;
 
@@ -384,15 +314,7 @@ void __xmhfhic_rtm_trampoline(u64 hic_calltype, slab_input_params_t *iparams, u6
                 memcpy(&__paramsbuffer, iparams, (iparams_size > 1024 ? 1024 : iparams_size) );
                 #endif
 
-                /*//switch to destination slab page tables
-                asm volatile(
-                     "movq %0, %%rax \r\n"
-                     "movq %%rax, %%cr3 \r\n"
-                    :
-                    : "m" ( _xmhfhic_common_slab_info_table[dst_slabid].archdata.mempgtbl_cr3)
-                    : "rax"
-                );*/
-
+                //switch to destination slab page tables
                 write_cr3(_xmhfhic_common_slab_info_table[dst_slabid].archdata.mempgtbl_cr3);
 
                 //make space on destination slab stack for iparams and copy iparams and obtain newiparams
@@ -458,15 +380,7 @@ void __xmhfhic_rtm_trampoline(u64 hic_calltype, slab_input_params_t *iparams, u6
             //adjust slab stack by popping off iparams_size
              _xmhfhic_common_slab_info_table[src_slabid].archdata.slabtos[(u32)cpuid] += (elem.iparams_size);
 
-            /*//switch to destination slab page tables
-            asm volatile(
-                 "movq %0, %%rax \r\n"
-                 "movq %%rax, %%cr3 \r\n"
-                :
-                : "m" ( _xmhfhic_common_slab_info_table[dst_slabid].archdata.mempgtbl_cr3)
-                : "rax"
-            );*/
-
+            //switch to destination slab page tables
             write_cr3(_xmhfhic_common_slab_info_table[dst_slabid].archdata.mempgtbl_cr3);
 
             //return back to slab where exception originally occurred
@@ -529,14 +443,6 @@ void __xmhfhic_rtm_trampoline(u64 hic_calltype, slab_input_params_t *iparams, u6
 
             //switch to destination slab page tables
             //XXX: eliminate this by preloading VMCS CR3 with xcihub CR3
-            /*asm volatile(
-                 "movq %0, %%rax \r\n"
-                 "movq %%rax, %%cr3 \r\n"
-                :
-                : "m" ( _xmhfhic_common_slab_info_table[dst_slabid].archdata.mempgtbl_cr3)
-                : "rax"
-            );*/
-
             write_cr3(_xmhfhic_common_slab_info_table[dst_slabid].archdata.mempgtbl_cr3);
 
             //intercept slab does not get any input parameters and does not
