@@ -14,11 +14,12 @@ THE_ARCHIVE = libxmhfhw.a
 
 # targets
 .PHONY: all
-#all: $(THE_ARCHIVE)
-all:
+all: $(THE_ARCHIVE)
+#all:
 
 $(THE_ARCHIVE): $(OBJECTS)
-	cd $(LIBXMHFC_OBJECTS_DIR) && $(AR) -rcs $(THE_ARCHIVE) $(OBJECTS)
+	mkdir -p $(LIBXMHFHW_OBJECTS_DIR)
+	cd $(LIBXMHFHW_OBJECTS_DIR) && $(AR) -rcs $(THE_ARCHIVE) $(OBJECTS)
 
 %.o: %.c
 	#mkdir -p "$(@D)"
