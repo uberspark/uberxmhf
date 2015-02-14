@@ -48,8 +48,8 @@
 // implementation declarations
 //author: amit vasudevan (amitvasudevan@acm.org)
 
-#ifndef __PCI_H__
-#define __PCI_H__
+#ifndef __XMHFHW_LEGIO_PCI_H__
+#define __XMHFHW_LEGIO_PCI_H__
 
 //from _pci.h
 
@@ -276,4 +276,4 @@ static void _pci_enumeratebus(void){
 
 
 #endif /* __ASSEMBLY__ */
-#endif /* __PCI_H__ */
+#endif // __XMHFHW_LEGIO_PCI_H__

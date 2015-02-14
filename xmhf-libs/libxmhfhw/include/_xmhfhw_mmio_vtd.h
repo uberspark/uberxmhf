@@ -47,8 +47,8 @@
 //Intel VT-d declarations/definitions
 //author: amit vasudevan (amitvasudevan@acm.org)
 
-#ifndef __VTD_H__
-#define __VTD_H__
+#ifndef __XMHFHW_MMIO_VTD_H__
+#define __XMHFHW_MMIO_VTD_H__
 
 //from vtd.h
 
@@ -627,4 +627,4 @@ static inline void xmhfhw_platform_x86pc_vtd_drhd_reg_write(vtd_drhd_handle_t dr
 
 #endif //__ASSEMBLY__
 
-#endif //__VTD_H__
+#endif //__XMHFHW_MMIO_VTD_H__
