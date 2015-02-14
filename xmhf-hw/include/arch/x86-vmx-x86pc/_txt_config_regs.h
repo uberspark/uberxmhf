@@ -254,7 +254,7 @@ static inline uint64_t read_config_reg(uint32_t config_regs_base, uint32_t reg)
     /* these are MMIO so make sure compiler doesn't optimize */
     //return *(volatile uint64_t *)(unsigned long)(config_regs_base +
     //reg);
-      
+
     u64 ret;
     u32 addr = config_regs_base + reg;
     __asm__ __volatile__("movl %%fs:(%%ebx), %%eax\r\n"
@@ -278,28 +278,9 @@ static inline void write_config_reg(uint32_t config_regs_base, uint32_t reg,
                          :
                          : "A"(val), "b"(addr)
                          );
-                                    
+
 }
 
-static inline uint64_t read_pub_config_reg(uint32_t reg)
-{
-    return read_config_reg(TXT_PUB_CONFIG_REGS_BASE, reg);
-}
-
-static inline void write_pub_config_reg(uint32_t reg, uint64_t val)
-{
-    write_config_reg(TXT_PUB_CONFIG_REGS_BASE, reg, val);
-}
-
-static inline uint64_t read_priv_config_reg(uint32_t reg)
-{
-    return read_config_reg(TXT_PRIV_CONFIG_REGS_BASE, reg);
-}
-
-static inline void write_priv_config_reg(uint32_t reg, uint64_t val)
-{
-    write_config_reg(TXT_PRIV_CONFIG_REGS_BASE, reg, val);
-}
 
 
 /***********************************************************
