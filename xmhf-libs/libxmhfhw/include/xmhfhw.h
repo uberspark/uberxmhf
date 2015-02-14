@@ -47,6 +47,11 @@
 #ifndef __XMHFHW_H__
 #define __XMHFHW_H__
 
-//XXX: TODO: ensure we include xmhf-hwm.h
+#include <_xmhfhw_cpu.h>
+#include <_xmhfhw_legio_pci.h>
+#include <_xmhfhw_legio_pit.h>
+#include <_xmhfhw_sysmem_bios.h>
+#include <_xmhfhw_mmio_vtd.h>
+
 
 #endif // __XMHFHW_H__
