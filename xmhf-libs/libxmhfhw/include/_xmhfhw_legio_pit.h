@@ -47,8 +47,8 @@
 // programmable interval timer (for micro second delay)
 //author: amit vasudevan (amitvasudevan@acm.org)
 
-#ifndef __PIT_H__
-#define __PIT_H__
+#ifndef __XMHFHW_LEGIO_PIT_H__
+#define __XMHFHW_LEGIO_PIT_H__
 
 //from _pit.h
 
@@ -91,4 +91,4 @@ static inline void xmhf_baseplatform_arch_x86_udelay(u32 usecs){
 
 
 #endif /* __ASSEMBLY__ */
-#endif /* __PIT_H__ */
+#endif // __XMHFHW_LEGIO_PIT_H__

@@ -47,8 +47,8 @@
 //_cpu.h - CPU declarations
 //author: amit vasudevan (amitvasudevan@acm.org)
 
-#ifndef __CPU_H
-#define __CPU_H
+#ifndef __XMHFHW_CPU_H__
+#define __XMHFHW_CPU_H__
 
 #ifndef __ASSEMBLY__
 
@@ -627,4 +627,4 @@ static inline sinit_mle_data_t *get_sinit_mle_data_start(txt_heap_t *heap)
 
 #endif //__ASSEMBLY__
 
-#endif /* __PROCESSOR_H */
+#endif // __XMHFHW_CPU_H__

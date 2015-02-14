@@ -49,8 +49,8 @@
 
 //from _acpi.h
 
-#ifndef __ACPI_H__
-#define __ACPI_H__
+#ifndef __XMHFHW_SYSMEM_BIOS_H__
+#define __XMHFHW_SYSMEM_BIOS_H__
 
 
 #ifndef __ASSEMBLY__
@@ -129,4 +129,4 @@ static inline u32 xmhfhw_platform_x86pc_acpi_getRSDP(ACPI_RSDP *rsdp){
 
 #endif	//__ASSEMBLY__
 
-#endif //__ACPI_H__
+#endif //__XMHFHW_SYSMEM_BIOS_H__
