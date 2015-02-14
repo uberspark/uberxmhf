@@ -91,6 +91,7 @@
 #endif //__XMHF_VERIFICATION__
 
 #include <xmhf-hw.h>            //XMHF hardware interfaces
+#include <xmhfhw.h>
 
 #include <xmhf-arch.h>			//XMHF arch. specific types/defn.
 
