@@ -90,7 +90,7 @@
 	#include <xmhf-verification.h>
 #endif //__XMHF_VERIFICATION__
 
-#include <xmhf-hw.h>            //XMHF hardware interfaces
+#include <xmhf-hwm.h>            //XMHF hardware interfaces
 #include <xmhfhw.h>
 
 #include <xmhf-arch.h>			//XMHF arch. specific types/defn.
