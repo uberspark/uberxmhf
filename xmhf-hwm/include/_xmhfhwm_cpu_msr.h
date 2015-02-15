@@ -44,11 +44,11 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-// msr.h - CPU MSR declarations
+// XMHF HWM  CPU MSR declarations
 // author: amit vasudevan (amitvasudevan@acm.org)
 
-#ifndef __MSR_H__
-#define __MSR_H__
+#ifndef __XMHFHWM_CPU_MSR_H__
+#define __XMHFHWM_CPU_MSR_H__
 
 #define MSR_EFER 0xc0000080     // prevent write to efer.sce
 #define MSR_K6_STAR                     0xc0000081
@@ -239,4 +239,4 @@ static inline void wrmsr64(u32 msr, u64 newval){
 #endif /* __ASSEMBLY__ */
 
 
-#endif/* __MSR_H__ */
+#endif/* __XMHFHWM_CPU_MSR_H__ */

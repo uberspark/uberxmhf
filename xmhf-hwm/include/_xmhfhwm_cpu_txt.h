@@ -44,11 +44,11 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-/* txt.h - Unified header file for Intel TXT requirements */
-//author: jonmccune@cmu.edu
+// XMHF HWM CPU TXT decls.
+// authors: amit vasudevan (amitvasudevan@acm.org) and jonmccune@cmu.edu
 
-#ifndef __UNI_TXT_
-#define __UNI_TXT_
+#ifndef __XMHFHWM_CPU_TXT_H__
+#define __XMHFHWM_CPU_TXT_H__
 
 #ifndef __ASSEMBLY__
 
@@ -631,4 +631,4 @@ extern void print_os_sinit_data(os_sinit_data_t *os_sinit_data);
 
 #endif //__ASSEMBLY__
 
-#endif /* __UNI_TXT_ */
+#endif /* __XMHFHWM_CPU_TXT_H__ */

@@ -44,10 +44,11 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-//processor.h - CPU declarations
+//XMHF HWM CPU declarations
 //author: amit vasudevan (amitvasudevan@acm.org)
-#ifndef __PROCESSOR_H
-#define __PROCESSOR_H
+
+#ifndef __XMHFHWM_CPU_H__
+#define __XMHFHWM_CPU_H__
 
 #define CPU_VENDOR_INTEL 	0xAB
 #define CPU_VENDOR_AMD 		0xCD
@@ -662,4 +663,4 @@ static inline u64  xmhf_baseplatform_arch_x86_gettssbase(void){
 
 #endif //__ASSEMBLY__
 
-#endif /* __PROCESSOR_H */
+#endif /* __XMHFHWM_CPU_H__ */

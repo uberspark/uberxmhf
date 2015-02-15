@@ -44,13 +44,11 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-// platform memory access interface
-// any memory access which is not part of the xmhf framework should
-// use these interfaces
+// XMHF HWM platform memory access interface (sysmem)
 // author: amit vasudevan (amitvasudevan@acm.org)
 
-#ifndef __MEMACCESS_H__
-#define __MEMACCESS_H__
+#ifndef __XMHFHWM_SYSMEM_H__
+#define __XMHFHWM_SYSMEM_H__
 
 
 #ifndef __ASSEMBLY__
@@ -200,4 +198,4 @@ static inline void xmhfhw_sysmemaccess_copy(u8 *dest, u8 *src, u32 size){
 
 #endif	//__ASSEMBLY__
 
-#endif //__MEMACCESS_H__
+#endif //__XMHFHWM_SYSMEM_H__

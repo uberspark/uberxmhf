@@ -44,11 +44,11 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-// programmable interval timer (for micro second delay)
+// XMHF HWM Legacy I/O programmable interval timer (for micro second delay) decls.
 //author: amit vasudevan (amitvasudevan@acm.org)
 
-#ifndef __PIT_H__
-#define __PIT_H__
+#ifndef __XMHFHWM_LEGIO_PIT_H___
+#define __XMHFHWM_LEGIO_PIT_H___
 
 
-#endif /* __PIT_H__ */
+#endif /* __XMHFHWM_LEGIO_PIT_H___ */

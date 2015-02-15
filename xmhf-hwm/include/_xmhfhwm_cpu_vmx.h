@@ -44,8 +44,12 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-//vmx.h - Intel VMX definitions
+// XMHF CPU VMX decls.
 //author: amit vasudevan (amitvasudevan@acm.org)
+
+#ifndef __XMHFHWM_CPU_VMX_H__
+#define __XMHFHWM_CPU_VMX_H__
+
 
 #define VMXON_SIZE		(4096)
 #define VMCS_SIZE			(8192)
@@ -857,4 +861,6 @@ static inline void __vmx_invept(u64 invalidation_type, u64 eptp){
 }
 
 
-#endif
+#endif //__ASSEMBLY__
+
+#endif //__XMHFHWM_CPU_VMX_H_

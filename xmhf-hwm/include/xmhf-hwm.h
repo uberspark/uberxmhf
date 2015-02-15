@@ -48,6 +48,11 @@
 //XMHF hardware interface
 //author: amit vasudevan (amitvasudevan@acm.org)
 
+#ifndef __XMHF_HWM_H__
+#define __XMHF_HWM_H__
+
+
+
 #if defined(__XMHF_TARGET_TRIAD_X86_VMX_X86PC__)
 
     #include <_xmhfhwm_cpu.h>  			//CPU
@@ -68,5 +73,10 @@
 
 
 #else
+
 	#error "You must define a valid cpu-container-platform triad before trying to build."
+
 #endif
+
+
+#endif //__XMHF_HWM_H__

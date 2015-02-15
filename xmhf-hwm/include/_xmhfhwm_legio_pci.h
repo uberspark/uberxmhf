@@ -44,12 +44,11 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-//pci.h - peripheral component interconnect (PCI) spec.
-// implementation declarations
+// XMHF HWM Legacy I/O PCI decls.
 //author: amit vasudevan (amitvasudevan@acm.org)
 
-#ifndef __PCI_H__
-#define __PCI_H__
+#ifndef __XMHFHWM_LEGIO_PCI_H___
+#define __XMHFHWM_LEGIO_PCI_H___
 
 //PCI type-1 access ports
 #define PCI_CONFIG_ADDR_PORT 	(0x0cf8)
@@ -110,4 +109,4 @@
 
 
 #endif /* __ASSEMBLY__ */
-#endif /* __PCI_H__ */
+#endif /* __XMHFHWM_LEGIO_PCI_H___ */
