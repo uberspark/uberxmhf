@@ -44,10 +44,11 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-//paging.h - macros and definitions to assist with x86 paging schemes
+// XMHF HWM CPU paging decls.
 // author: amit vasudevan (amitvasudevan@acm.org)
-#ifndef __PAGING_H__
-#define __PAGING_H__
+
+#ifndef __XMHFHWM_CPU_PAGING_H__
+#define __XMHFHWM_CPU_PAGING_H__
 
 
 //physical memory limit
@@ -328,4 +329,4 @@ typedef u32 *npt_t;
 
 #endif /* __ASSEMBLY__ */
 
-#endif /* __PAGING_H__ */
+#endif /* __XMHFHWM_CPU_PAGING_H__ */

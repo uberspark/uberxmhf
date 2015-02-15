@@ -44,11 +44,11 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-// Advanced Configuration and Power-management Interface (ACPI) definitions
+// XMHF HWM sysmem BIOS areas
 // author: amit vasudevan (amitvasudevan@acm.org)
 
-#ifndef __ACPI_H__
-#define __ACPI_H__
+#ifndef __XMHFHWM_SYSMEM_BIOS_H__
+#define __XMHFHWM_SYSMEM_BIOS_H__
 
 #define ACPI_RSDP_SIGNATURE  (0x2052545020445352ULL) //"RSD PTR "
 #define ACPI_FADT_SIGNATURE  (0x50434146)  //"FACP"
@@ -266,4 +266,4 @@ typedef struct {
 
 
 
-#endif //__ACPI_H__
+#endif //__XMHFHWM_SYSMEM_BIOS_H__

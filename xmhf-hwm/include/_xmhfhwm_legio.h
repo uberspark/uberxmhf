@@ -44,10 +44,11 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-//io.h - legacy I/O read and write support
+// XMHF HWM Legacy IO decls.
 // author: amit vasudevan (amitvasudevan@acm.org)
-#ifndef __IO_H_
-#define __IO_H_
+
+#ifndef __XMHFHW_LEGIO_H__
+#define __XMHFHW_LEGIO_H__
 
 #ifndef __ASSEMBLY__
 
@@ -56,36 +57,36 @@
 	static inline void outl(u32 val, u32 port){
 	  __asm__ __volatile__("out %0, %w1"
 			     : /* no outputs */
-			     :"a"(val), "Nd"((u16)port)); 
+			     :"a"(val), "Nd"((u16)port));
 	}
 
 	static inline void outw (u32 value, u32 port){
 	  __asm__ __volatile__ ("outw %w0,%w1": :"a" ((u16)value), "Nd" ((u16)port));
 	}
 
-	static inline void outb (u32 value, u32 port){                        
+	static inline void outb (u32 value, u32 port){
 	  __asm__ __volatile__ ("outb %b0,%w1": :"a" ((u8)value), "Nd" ((u16)port));
 	}
 
 	static inline u32 inl(u32 port){
 	  u32 val;
-	  
+
 	  __asm__ __volatile__("in %w1, %0"
 			       :"=a"(val)
 			       :"Nd"((u16)port));
 	  return val;
 	}
 
-	static inline unsigned short inw (u32 port){ 
+	static inline unsigned short inw (u32 port){
 	  unsigned short _v;
 
 	  __asm__ __volatile__ ("inw %w1,%0":"=a" (_v):"Nd" ((u16)port));
 	  return _v;
 	}
 
-	static inline unsigned char inb (u32 port){ 
+	static inline unsigned char inb (u32 port){
 	  unsigned char _v;
-	  
+
 	  __asm__ __volatile__ ("inb %w1,%0":"=a" (_v):"Nd" ((u16)port));
 	  return _v;
 	}
@@ -102,7 +103,7 @@
 	  (void)port;
 	}
 
-	static inline void outb (u32 value, u32 port){                        
+	static inline void outb (u32 value, u32 port){
 	  (void)value;
 	  (void)port;
 	}
@@ -113,13 +114,13 @@
 	  return val;
 	}
 
-	static inline unsigned short inw (u32 port){ 
+	static inline unsigned short inw (u32 port){
 	  unsigned short _v;
 	  _v = nondet_u16();
 	  return _v;
 	}
 
-	static inline unsigned char inb (u32 port){ 
+	static inline unsigned char inb (u32 port){
 	  unsigned char _v;
 
 	  _v = (u8)nondet_u16();
@@ -132,4 +133,4 @@ void udelay(u32 usecs);
 
 #endif /* __ASSEMBLY__ */
 
-#endif /* __IO_H_ */
+#endif /* __XMHFHW_LEGIO_H__ */

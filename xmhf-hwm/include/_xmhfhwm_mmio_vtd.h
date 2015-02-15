@@ -44,11 +44,11 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-//Intel VT-d declarations/definitions
+// XMHF HWM MMIO VTd decls.
 //author: amit vasudevan (amitvasudevan@acm.org)
 
-#ifndef __VTD_H__
-#define __VTD_H__
+#ifndef __XMHFHWM_MMIO_VTD_H___
+#define __XMHFHWM_MMIO_VTD_H___
 
 #define VTD_DMAR_SIGNATURE  (0x52414D44) //"DMAR"
 #define VTD_MAX_DRHD   8		//maximum number of DMAR h/w units
@@ -451,4 +451,4 @@ typedef struct {
 
 #endif //__ASSEMBLY__
 
-#endif //__VTD_H__
+#endif //__XMHFHWM_MMIO_VTD_H___

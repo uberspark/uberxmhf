@@ -44,11 +44,11 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-// apic.h - APIC defines
+// XMHF HWM CPU LAPIC decls.
 // author: amit vasudevan (amitvasudevan@acm.org)
 
-#ifndef __APIC_H__
-#define __APIC_H__
+#ifndef __XMHFHWM_CPU_LAPIC_H__
+#define __XMHFHWM_CPU_LAPIC_H__
 
 #define LAPIC_ICR_LOW   (0x300)
 #define LAPIC_ICR_HIGH  (0x310)
@@ -60,4 +60,4 @@
 #define LAPIC_OP_WRITE  (1)
 
 
-#endif // __APIC_H__ 
+#endif // __XMHFHWM_CPU_LAPIC_H__
