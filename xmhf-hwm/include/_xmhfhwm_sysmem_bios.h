@@ -213,4 +213,57 @@ typedef struct{
 
 #endif	//__ASSEMBLY__
 
+//from _biosdata.h
+
+#ifndef __ASSEMBLY__
+
+//SMP configuration table signatures on x86 platforms
+#define MPFP_SIGNATURE 					(0x5F504D5FUL) //"_MP_"
+#define MPCONFTABLE_SIGNATURE 			(0x504D4350UL)  //"PCMP"
+
+typedef struct {
+  u32 signature;
+  u32 paddrpointer;
+  u8 length;
+  u8 spec_rev;
+  u8 checksum;
+  u8 mpfeatureinfo1;
+  u8 mpfeatureinfo2;
+  u8 mpfeatureinfo3;
+  u8 mpfeatureinfo4;
+  u8 mpfeatureinfo5;
+} __attribute__ ((packed)) MPFP;
+
+typedef struct{
+  u32 signature;
+  u16 length;
+  u8 spec_rev;
+  u8 checksum;
+  u8 oemid[8];
+  u8 productid[12];
+  u32 oemtableptr;
+  u16 oemtablesize;
+  u16 entrycount;
+  u32 lapicaddr;
+  u16 exttablelength;
+  u16 exttablechecksum;
+} __attribute__ ((packed)) MPCONFTABLE;
+
+typedef struct {
+  u8 entrytype;
+  u8 lapicid;
+  u8 lapicver;
+  u8 cpuflags;
+  u32 cpusig;
+  u32 featureflags;
+  u32 res0;
+  u32 res1;
+} __attribute__ ((packed)) MPENTRYCPU;
+
+
+
+#endif	//__ASSEMBLY__
+
+
+
 #endif //__ACPI_H__
