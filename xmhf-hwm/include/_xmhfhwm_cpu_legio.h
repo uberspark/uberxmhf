@@ -47,8 +47,8 @@
 // XMHF HWM Legacy IO decls.
 // author: amit vasudevan (amitvasudevan@acm.org)
 
-#ifndef __XMHFHW_LEGIO_H__
-#define __XMHFHW_LEGIO_H__
+#ifndef __XMHFHW_CPU_LEGIO_H__
+#define __XMHFHW_CPU_LEGIO_H__
 
 #ifndef __ASSEMBLY__
 
@@ -133,4 +133,4 @@
 
 #endif /* __ASSEMBLY__ */
 
-#endif /* __XMHFHW_LEGIO_H__ */
+#endif /* __XMHFHW_CPU_LEGIO_H__ */

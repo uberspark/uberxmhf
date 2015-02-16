@@ -47,8 +47,8 @@
 // XMHF HWM platform memory access interface (sysmem)
 // author: amit vasudevan (amitvasudevan@acm.org)
 
-#ifndef __XMHFHWM_SYSMEM_H__
-#define __XMHFHWM_SYSMEM_H__
+#ifndef __XMHFHWM_CPU_MEM_H__
+#define __XMHFHWM_CPU_MEM_H__
 
 
 #ifndef __ASSEMBLY__
@@ -198,4 +198,4 @@ static inline void xmhfhw_sysmemaccess_copy(u8 *dest, u8 *src, u32 size){
 
 #endif	//__ASSEMBLY__
 
-#endif //__XMHFHWM_SYSMEM_H__
+#endif //__XMHFHWM_CPU_MEM_H__
