@@ -203,40 +203,5 @@
 #define MTRR_TYPE_WRBACK         6
 
 
-#ifndef __ASSEMBLY__
-static inline void rdmsr(u32 msr, u32 *eax, u32 *edx) __attribute__((always_inline));
-static inline void wrmsr(u32 msr, u32 eax, u32 edx) __attribute__((always_inline));
-
-//*
-static inline void rdmsr(u32 msr, u32 *eax, u32 *edx){
-  asm volatile("rdmsr \r\n"
-	  :"=a"(*eax), "=d"(*edx)
-	  :"c"(msr));
-}
-
-//*
-static inline void wrmsr(u32 msr, u32 eax, u32 edx){
-  asm volatile("wrmsr \r\n"
-	  : /* no outputs */
-	  :"c"(msr), "a"(eax), "d"(edx));
-}
-
-
-static inline u64 rdmsr64(u32 msr){
-    //u64 rv;
-    u32 eax, edx;
-    rdmsr(msr, &eax, &edx);
-    return (((u64)edx << 32) | (u64)eax);
-    //asm volatile ("rdmsr \r\n" : "=A" (rv) : "c" (msr));
-    //return (rv);
-}
-
-static inline void wrmsr64(u32 msr, u64 newval){
-    //asm volatile ("wrmsr \r\n" : : "A" (newval), "c" (msr));
-    wrmsr(msr, (u32)newval, (u32)((u64)newval >> 32));
-}
-
-#endif /* __ASSEMBLY__ */
-
 
 #endif/* __XMHFHWM_CPU_MSR_H__ */

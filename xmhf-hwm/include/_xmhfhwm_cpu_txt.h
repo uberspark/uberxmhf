@@ -211,44 +211,6 @@ typedef struct {
     uint32_t    cr3_offset;
 } mseg_hdr_t;
 
-/*
- * fns to read/write TXT config regs
- *
- * NOTE: MODIFIED TO ALWAYS USE %FS SEGMENT-OVERRIDE
- */
-
-static inline uint64_t read_config_reg(uint32_t config_regs_base, uint32_t reg)
-{
-    /* these are MMIO so make sure compiler doesn't optimize */
-    //return *(volatile uint64_t *)(unsigned long)(config_regs_base +
-    //reg);
-
-    u64 ret;
-    u32 addr = config_regs_base + reg;
-    __asm__ __volatile__("movl %%fs:(%%ebx), %%eax\r\n"
-                         "movl %%fs:4(%%ebx), %%edx\r\n"
-                         : "=A"(ret)
-                         : "b"(addr)
-                         );
-    return ret;
-}
-
-static inline void write_config_reg(uint32_t config_regs_base, uint32_t reg,
-                                    uint64_t val)
-{
-    /* these are MMIO so make sure compiler doesn't optimize */
-    //*(volatile uint64_t *)(unsigned long)(config_regs_base + reg) =
-    //val;
-    u32 addr = config_regs_base + reg;
-
-    __asm__ __volatile__("movl %%eax, %%fs:(%%ebx)\r\n"
-                         "movl %%edx, %%fs:4(%%ebx)\r\n"
-                         :
-                         : "A"(val), "b"(addr)
-                         );
-
-}
-
 
 
 /***********************************************************
@@ -431,14 +393,6 @@ typedef union {
     };
 } capabilities_t;
 
-static inline uint32_t __getsec_capabilities(uint32_t index)
-{
-    uint32_t cap;
-    __asm__ __volatile__ (IA32_GETSEC_OPCODE "\n"
-              : "=a"(cap)
-              : "a"(IA32_GETSEC_CAPABILITIES), "b"(index));
-    return cap;
-}
 
 /* helper fn. for getsec_capabilities */
 /* this is arbitrary and can be increased when needed */
@@ -457,51 +411,7 @@ typedef struct {
     bool preserve_mce;
 } getsec_parameters_t;
 
-///extern bool get_parameters(getsec_parameters_t *params);
 
-
-static inline void __getsec_senter(uint32_t sinit_base, uint32_t sinit_size)
-{
-    __asm__ __volatile__ (IA32_GETSEC_OPCODE "\n"
-			  :
-			  : "a"(IA32_GETSEC_SENTER),
-			    "b"(sinit_base),
-			    "c"(sinit_size),
-			    "d"(0x0));
-}
-
-static inline void __getsec_sexit(void)
-{
-    __asm__ __volatile__ (IA32_GETSEC_OPCODE "\n"
-                          : : "a"(IA32_GETSEC_SEXIT));
-}
-
-static inline void __getsec_wakeup(void)
-{
-    __asm__ __volatile__ (IA32_GETSEC_OPCODE "\n"
-                          : : "a"(IA32_GETSEC_WAKEUP));
-}
-
-static inline void __getsec_smctrl(void)
-{
-    __asm__ __volatile__ (IA32_GETSEC_OPCODE "\n"
-                          : : "a"(IA32_GETSEC_SMCTRL), "b"(0x0));
-}
-
-static inline void __getsec_parameters(uint32_t index, int* param_type,
-                                       uint32_t* peax, uint32_t* pebx,
-                                       uint32_t* pecx)
-{
-    uint32_t eax=0, ebx=0, ecx=0;
-    __asm__ __volatile__ (IA32_GETSEC_OPCODE "\n"
-                          : "=a"(eax), "=b"(ebx), "=c"(ecx)
-                          : "a"(IA32_GETSEC_PARAMETERS), "b"(index));
-
-    if ( param_type != NULL )   *param_type = eax & 0x1f;
-    if ( peax != NULL )         *peax = eax;
-    if ( pebx != NULL )         *pebx = ebx;
-    if ( pecx != NULL )         *pecx = ecx;
-}
 
 
 bool txt_prepare_cpu(void);
