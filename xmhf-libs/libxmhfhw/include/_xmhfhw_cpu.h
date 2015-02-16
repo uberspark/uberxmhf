@@ -111,23 +111,6 @@ static inline bool xmhf_baseplatform_arch_x86_cpuhasxsavefeature(void){
 
 }
 
-static inline u32 xmhf_baseplatform_arch_x86_getcpulapicid(void){
-  u32 eax, edx, *lapic_reg;
-  u32 lapic_id;
-
-  //read LAPIC id of this core
-  rdmsr(MSR_APIC_BASE, &eax, &edx);
-  //if (edx != 0 ){ //APIC is not below 4G, unsupported
-  //	_XDPRINTF_("%s: APIC is not below 4G, unsupported. Halting!", __FUNCTION__);
-  //	HALT();
-  //}
-  eax &= (u32)0xFFFFF000UL;
-  lapic_reg = (u32 *)((u32)eax+ (u32)LAPIC_ID);
-  lapic_id = xmhfhw_sysmemaccess_readu32((u32)lapic_reg);
-  lapic_id = lapic_id >> 24;
-
-  return lapic_id;
-}
 
 
 
