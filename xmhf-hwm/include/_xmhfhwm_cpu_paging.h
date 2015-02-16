@@ -323,8 +323,6 @@ typedef u32 *npt_t;
     (((addr1) >> NPAE_PAGETABLE_SHIFT) == ((addr2) >> NPAE_PAGETABLE_SHIFT))
 
 
-#define CACHE_WBINV()  __asm__ __volatile__("wbinvd\n" :::"memory")
-#define TLB_INVLPG(x) __asm__ __volatile__("invlpg (%0)\n": /* no output */ : "r" (x): "memory")
 
 
 #endif /* __ASSEMBLY__ */

@@ -129,7 +129,7 @@
 
 #endif //__XMHF_VERIFICATION__
 
-void udelay(u32 usecs);
+//void udelay(u32 usecs);
 
 #endif /* __ASSEMBLY__ */
 

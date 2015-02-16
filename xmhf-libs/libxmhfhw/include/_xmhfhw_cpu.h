@@ -50,6 +50,13 @@
 #ifndef __XMHFHW_CPU_H__
 #define __XMHFHW_CPU_H__
 
+
+#include <_xmhfhw_cpu_msr.h>
+#include <_xmhfhw_cpu_paging.h>
+#include <_xmhfhw_cpu_txt.h>
+#include <_xmhfhw_cpu_vmx.h>
+
+
 #ifndef __ASSEMBLY__
 
 
