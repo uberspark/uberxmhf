@@ -55,7 +55,8 @@
 #include <_xmhfhw_cpu_paging.h>
 #include <_xmhfhw_cpu_txt.h>
 #include <_xmhfhw_cpu_vmx.h>
-
+#include <_xmhfhw_cpu_legio.h>
+#include <_xmhfhw_cpu_mem.h>
 
 #ifndef __ASSEMBLY__
 
