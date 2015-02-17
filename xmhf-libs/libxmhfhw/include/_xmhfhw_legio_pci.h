@@ -48,67 +48,12 @@
 // implementation declarations
 //author: amit vasudevan (amitvasudevan@acm.org)
 
-#ifndef __PCI_H__
-#define __PCI_H__
+#ifndef __XMHFHW_LEGIO_PCI_H__
+#define __XMHFHW_LEGIO_PCI_H__
 
-//PCI type-1 access ports
-#define PCI_CONFIG_ADDR_PORT 	(0x0cf8)
-#define PCI_CONFIG_DATA_PORT 	(0x0cfc)
-
-//PCI configuration header indices (as per PCI local bus spec. v3.0)
-#define PCI_CONF_HDR_IDX_VENDOR_ID 							0x0
-#define PCI_CONF_HDR_IDX_DEVICE_ID							0x02
-#define PCI_CONF_HDR_IDX_COMMAND          			0x04
-#define PCI_CONF_HDR_IDX_STATUS	          			0x06
-#define PCI_CONF_HDR_IDX_REVISION_ID						0x08
-#define PCI_CONF_HDR_IDX_CLASS_CODE							0x09
-#define	PCI_CONF_HDR_IDX_HEADER_TYPE						0x0E
-#define PCI_CONF_HDR_IDX_CAPABILITIES_POINTER		0x34
-
-//PCI "command" register
-#define PCI_COMMAND_IO          	0x1     /* Enable response in I/O space */
-#define PCI_COMMAND_MEMORY      	0x2     /* Enable response in Memory space */
-#define PCI_COMMAND_MASTER      	0x4     /* Enable bus mastering */
-#define PCI_COMMAND_SPECIAL     	0x8     /* Enable response to special cycles */
-#define PCI_COMMAND_INVALIDATE  	0x10    /* Use memory write and invalidate */
-#define PCI_COMMAND_VGA_PALETTE 	0x20   	/* Enable palette snooping */
-#define PCI_COMMAND_PARITY      	0x40    /* Enable parity checking */
-#define PCI_COMMAND_WAIT        	0x80    /* Enable address/data stepping */
-#define PCI_COMMAND_SERR        	0x100   /* Enable SERR */
-#define PCI_COMMAND_FAST_BACK   	0x200   /* Enable back-to-back writes */
-#define PCI_COMMAND_INTX_DISABLE 	0x400 	/* INTx Emulation Disable */
-
-//maximum PCI bus, device and function numbers
-#define PCI_BUS_MAX					256
-#define PCI_DEVICE_MAX			32
-#define	PCI_FUNCTION_MAX		8
-
-//AMD PCI configuration space constants
-#define	PCI_VENDOR_ID_AMD										0x1022	//Vendor ID for AMD
-
-#define	PCI_DEVICE_ID_AMD_HT_CONFIGURATION	0x1200	//Device ID for AMD Hypertransport Configuration
-#define	PCI_DEVICE_ID_AMD_ADDRESSMAP				0x1201	//Device ID for AMD Address Map
-#define PCI_DEVICE_ID_AMD_DRAMCONTROL				0x1202	//Device ID for AMD DRAM Controller
-#define PCI_DEVICE_ID_AMD_MISCCONTROL				0x1203	//Device ID for AMD Miscellaneous Control
-#define PCI_DEVICE_ID_AMD_LINKCONTROL				0x1204	//Device ID for AMD Link Control
-
-#define PCI_CAPABILITIES_POINTER_ID_DEV			0x0F	//PCI capability ID for SVM DEV
-
+//from _pci.h
 
 #ifndef __ASSEMBLY__
-
-//macro to encode a device and function into a 8-bit value
-#define PCI_DEVICE_FN(device, function) ((((device) & 0x1f) << 3) | ((function) & 0x07))
-
-//macro to encode a bus, device, function and index into a 32-bit
-//PCI type-1 address
-#define PCI_TYPE1_ADDRESS(bus, device, function, index) \
-        (0x80000000 | ((index & 0xF00) << 16) | (bus << 16) \
-        | (PCI_DEVICE_FN(device, function) << 8) | (index & 0xFC))
-
-
-//void xmhfhw_platform_bus_init(void);
-
 
 
 /*
@@ -216,28 +161,6 @@
 //static (local) functions
 //==============================================================================
 
-/*//enumerates the PCI bus on the system
-static void _pci_enumeratebus(void){
-	u32 b, d, f;
-
-	//bus numbers range from 0-255, device from 0-31 and function from 0-7
-	for(b=0; b < PCI_BUS_MAX; b++){
-		for(d=0; d < PCI_DEVICE_MAX; d++){
-			for(f=0; f < PCI_FUNCTION_MAX; f++){
-				u32 vendor_id, device_id;
-				//read device and vendor ids, if no device then both will be 0xFFFF
-				xmhf_baseplatform_arch_x86_pci_type1_read(b, d, f, PCI_CONF_HDR_IDX_VENDOR_ID, sizeof(u16), &vendor_id);
-				xmhf_baseplatform_arch_x86_pci_type1_read(b, d, f, PCI_CONF_HDR_IDX_DEVICE_ID, sizeof(u16), &device_id);
-				if(vendor_id == 0xFFFF && device_id == 0xFFFF)
-					break;
-
-				_XDPRINTF_("\n	%02x:%02x.%1x -> vendor_id=%04x, device_id=%04x", b, d, f, vendor_id, device_id);
-			}
-		}
-	}
-
-
-}*/
 
 
 //does a PCI type-1 read of PCI config space for a given bus, device,
@@ -328,6 +251,29 @@ static inline void xmhfhw_platform_bus_init(void){
   outl(tmp, PCI_CONFIG_ADDR_PORT);
 }
 
+/*//enumerates the PCI bus on the system
+static void _pci_enumeratebus(void){
+	u32 b, d, f;
+
+	//bus numbers range from 0-255, device from 0-31 and function from 0-7
+	for(b=0; b < PCI_BUS_MAX; b++){
+		for(d=0; d < PCI_DEVICE_MAX; d++){
+			for(f=0; f < PCI_FUNCTION_MAX; f++){
+				u32 vendor_id, device_id;
+				//read device and vendor ids, if no device then both will be 0xFFFF
+				xmhf_baseplatform_arch_x86_pci_type1_read(b, d, f, PCI_CONF_HDR_IDX_VENDOR_ID, sizeof(u16), &vendor_id);
+				xmhf_baseplatform_arch_x86_pci_type1_read(b, d, f, PCI_CONF_HDR_IDX_DEVICE_ID, sizeof(u16), &device_id);
+				if(vendor_id == 0xFFFF && device_id == 0xFFFF)
+					break;
+
+				_XDPRINTF_("\n	%02x:%02x.%1x -> vendor_id=%04x, device_id=%04x", b, d, f, vendor_id, device_id);
+			}
+		}
+	}
+
+
+}*/
+
 
 #endif /* __ASSEMBLY__ */
-#endif /* __PCI_H__ */
+#endif // __XMHFHW_LEGIO_PCI_H__

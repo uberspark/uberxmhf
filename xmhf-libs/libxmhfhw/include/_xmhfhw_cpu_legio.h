@@ -44,51 +44,93 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-// programmable interval timer (for micro second delay)
-//author: amit vasudevan (amitvasudevan@acm.org)
+// XMHF HWM Legacy IO decls.
+// author: amit vasudevan (amitvasudevan@acm.org)
 
-#ifndef __PIT_H__
-#define __PIT_H__
-
-
+#ifndef __XMHFHW_CPU_LEGIO_H__
+#define __XMHFHW_CPU_LEGIO_H__
 
 #ifndef __ASSEMBLY__
 
-//---microsecond delay----------------------------------------------------------
-static inline void xmhf_baseplatform_arch_x86_udelay(u32 usecs){
-  u8 val;
-  u32 latchregval;
+#ifndef __XMHF_VERIFICATION__
 
-  //enable 8254 ch-2 counter
-  val = inb(0x61);
-  val &= 0x0d; //turn PC speaker off
-  val |= 0x01; //turn on ch-2
-  outb(val, 0x61);
+	static inline void outl(u32 val, u32 port){
+	  __asm__ __volatile__("out %0, %w1"
+			     : /* no outputs */
+			     :"a"(val), "Nd"((u16)port));
+	}
 
-  //program ch-2 as one-shot
-  outb(0xB0, 0x43);
+	static inline void outw (u32 value, u32 port){
+	  __asm__ __volatile__ ("outw %w0,%w1": :"a" ((u16)value), "Nd" ((u16)port));
+	}
 
-  //compute appropriate latch register value depending on usecs
-  latchregval = (1193182 * usecs) / 1000000;
+	static inline void outb (u32 value, u32 port){
+	  __asm__ __volatile__ ("outb %b0,%w1": :"a" ((u8)value), "Nd" ((u16)port));
+	}
 
-  //write latch register to ch-2
-  val = (u8)latchregval;
-  outb(val, 0x42);
-  val = (u8)((u32)latchregval >> (u32)8);
-  outb(val , 0x42);
+	static inline u32 inl(u32 port){
+	  u32 val;
 
-  #ifndef __XMHF_VERIFICATION__
-	//TODO: plug in a 8254 programmable interval timer h/w model
-	//wait for countdown
-	while(!(inb(0x61) & 0x20));
-  #endif //__XMHF_VERIFICATION__
+	  __asm__ __volatile__("in %w1, %0"
+			       :"=a"(val)
+			       :"Nd"((u16)port));
+	  return val;
+	}
 
-  //disable ch-2 counter
-  val = inb(0x61);
-  val &= 0x0c;
-  outb(val, 0x61);
-}
+	static inline unsigned short inw (u32 port){
+	  unsigned short _v;
 
+	  __asm__ __volatile__ ("inw %w1,%0":"=a" (_v):"Nd" ((u16)port));
+	  return _v;
+	}
+
+	static inline unsigned char inb (u32 port){
+	  unsigned char _v;
+
+	  __asm__ __volatile__ ("inb %w1,%0":"=a" (_v):"Nd" ((u16)port));
+	  return _v;
+	}
+
+#else //__XMHF_VERIFICATION__
+
+	static inline void outl(u32 val, u32 port){
+	  (void)val;
+	  (void)port;
+	}
+
+	static inline void outw (u32 value, u32 port){
+	  (void)value;
+	  (void)port;
+	}
+
+	static inline void outb (u32 value, u32 port){
+	  (void)value;
+	  (void)port;
+	}
+
+	static inline u32 inl(u32 port){
+	  u32 val;
+	  val = nondet_u32();
+	  return val;
+	}
+
+	static inline unsigned short inw (u32 port){
+	  unsigned short _v;
+	  _v = nondet_u16();
+	  return _v;
+	}
+
+	static inline unsigned char inb (u32 port){
+	  unsigned char _v;
+
+	  _v = (u8)nondet_u16();
+	  return _v;
+	}
+
+#endif //__XMHF_VERIFICATION__
+
+//void udelay(u32 usecs);
 
 #endif /* __ASSEMBLY__ */
-#endif /* __PIT_H__ */
+
+#endif /* __XMHFHW_CPU_LEGIO_H__ */

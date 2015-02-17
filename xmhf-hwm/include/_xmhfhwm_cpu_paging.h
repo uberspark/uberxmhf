@@ -44,10 +44,11 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-//paging.h - macros and definitions to assist with x86 paging schemes
+// XMHF HWM CPU paging decls.
 // author: amit vasudevan (amitvasudevan@acm.org)
-#ifndef __PAGING_H__
-#define __PAGING_H__
+
+#ifndef __XMHFHWM_CPU_PAGING_H__
+#define __XMHFHWM_CPU_PAGING_H__
 
 
 //physical memory limit
@@ -322,10 +323,8 @@ typedef u32 *npt_t;
     (((addr1) >> NPAE_PAGETABLE_SHIFT) == ((addr2) >> NPAE_PAGETABLE_SHIFT))
 
 
-#define CACHE_WBINV()  __asm__ __volatile__("wbinvd\n" :::"memory")
-#define TLB_INVLPG(x) __asm__ __volatile__("invlpg (%0)\n": /* no output */ : "r" (x): "memory")
 
 
 #endif /* __ASSEMBLY__ */
 
-#endif /* __PAGING_H__ */
+#endif /* __XMHFHWM_CPU_PAGING_H__ */
