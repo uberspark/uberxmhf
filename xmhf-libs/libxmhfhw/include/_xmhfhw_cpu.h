@@ -135,11 +135,11 @@ static inline u64 read_cr3(void){
   return __cr3;
 }
 
-static inline u32 read_esp(void){
+/*static inline u32 read_esp(void){
   u32 __esp;
   asm volatile("mov %%esp,%0 \r\n" :"=r" (__esp));
   return __esp;
-}
+}*/
 
 static inline u64 read_rsp(void){
   u64 __rsp;
@@ -147,21 +147,21 @@ static inline u64 read_rsp(void){
   return __rsp;
 }
 
-static inline unsigned long read_ebp(void){
+/*static inline unsigned long read_ebp(void){
   unsigned long __ebp;
   __asm__("mov %%ebp,%0\n\t" :"=r" (__ebp));
   return __ebp;
-}
+}*/
 
 static inline void write_cr3(u64 val){
   asm volatile("mov %0,%%cr3 \r\n"::"r" (val));
 }
 
-static inline u64 read_cr2(void){
+/*static inline u64 read_cr2(void){
   u64 __cr2;
   asm volatile("mov %%cr2,%0 \r\n" :"=r" (__cr2));
   return __cr2;
-}
+}*/
 
 //*
 static inline u64 read_cr4(void){
@@ -239,10 +239,14 @@ static inline uint32_t bsrl(uint32_t mask)
 }
 
 
+
+
 static inline void disable_intr(void)
 {
     __asm__ __volatile__ ("cli" : : : "memory");
 }
+
+
 
 static inline void enable_intr(void)
 {
