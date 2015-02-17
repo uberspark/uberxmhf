@@ -102,12 +102,12 @@ static inline void cpuid(u32 op, u32 *eax, u32 *ebx, u32 *ecx, u32 *edx){
 
 }
 
-#define rdtsc(eax, edx)		\
+/*#define rdtsc(eax, edx)		\
 ({						\
   __asm__ __volatile__ ("rdtsc"				\
           :"=a"(*(eax)), "=d"(*(edx))	\
           :);			\
-})
+})*/
 
 static inline uint64_t rdtsc64(void)
 {
