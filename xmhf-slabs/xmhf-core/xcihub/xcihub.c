@@ -134,7 +134,7 @@ void xcihub_interface(slab_input_params_t *iparams, u64 iparams_size, slab_outpu
                 if((u32)r.rax == 0x80000001)
                     clearsyscallretbit = true;
 
-                cpuid((u32)r.rax, (u32 *)&r.rax, (u32 *)&r.rbx, (u32 *)&r.rcx, (u32 *)&r.rdx);
+                xmhfhw_cpu_cpuid((u32)r.rax, (u32 *)&r.rax, (u32 *)&r.rbx, (u32 *)&r.rcx, (u32 *)&r.rdx);
 
                 if(clearsyscallretbit)
                     r.rdx = r.rdx & (u64)~(1ULL << 11);

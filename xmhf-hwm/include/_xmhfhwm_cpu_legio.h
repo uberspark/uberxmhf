@@ -44,24 +44,14 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-/* txt.h - Unified header file for Intel TXT requirements */
-//author: jonmccune@cmu.edu
+// XMHF HWM Legacy IO decls.
+// author: amit vasudevan (amitvasudevan@acm.org)
 
-#ifndef __UNI_TXT_
-#define __UNI_TXT_
+#ifndef __XMHFHWM_CPU_LEGIO_H__
+#define __XMHFHWM_CPU_LEGIO_H__
 
 #ifndef __ASSEMBLY__
 
-#include "_txt_config_regs.h"
-//#include "_txt_hash.h"
+#endif /* __ASSEMBLY__ */
 
-/* XXX TODO order is important for these; fix it */
-#include "_txt_mle.h"
-#include "_txt_smx.h"
-//#include "_txt_acmod.h" /* XXX TODO This is really only necessary in init/ */
-#include "_txt_mtrrs.h"
-#include "_txt_heap.h"
-
-#endif //__ASSEMBLY__
-
-#endif /* __UNI_TXT_ */
+#endif /* __XMHFHWM_CPU_LEGIO_H__ */

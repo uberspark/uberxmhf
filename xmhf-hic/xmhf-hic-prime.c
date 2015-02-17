@@ -287,7 +287,7 @@ void xmhfhic_arch_sanity_check_requirements(void){
 		u32	cpu_features;
 		u32 res0,res1,res2;
 
-		cpuid(0x1, &res0, &res1, &cpu_features, &res2);
+		xmhfhw_cpu_cpuid(0x1, &res0, &res1, &cpu_features, &res2);
 
 		if ( ( cpu_features & (1<<5) ) == 0 ){
 			_XDPRINTF_("No VMX support. Halting!\n");

@@ -381,7 +381,7 @@ bool txt_supports_txt(void) {
     u64 feat_ctrl_msr;
     capabilities_t cap;
 
-    cpuid(1, &dummy, &dummy, &cpuid_ext_feat_info, &dummy);
+    xmhfhw_cpu_cpuid(1, &dummy, &dummy, &cpuid_ext_feat_info, &dummy);
     feat_ctrl_msr = rdmsr64(MSR_EFCR);
 
     /* Check for VMX support */
@@ -589,7 +589,7 @@ static bool svm_verify_platform(void)
     uint32_t eax, edx, ebx, ecx;
     uint64_t efer;
 
-    cpuid(0x80000001, &eax, &ebx, &ecx, &edx);
+    xmhfhw_cpu_cpuid(0x80000001, &eax, &ebx, &ecx, &edx);
 
     if ((ecx & SVM_CPUID_FEATURE) == 0) {
         _XDPRINTF_("ERR: CPU does not support AMD SVM\n");
@@ -612,7 +612,7 @@ static bool svm_verify_platform(void)
         return false;
     }
 
-    cpuid(0x8000000A, &eax, &ebx, &ecx, &edx);
+    xmhfhw_cpu_cpuid(0x8000000A, &eax, &ebx, &ecx, &edx);
     _XDPRINTF_("AMD SVM version %d enabled\n", eax & 0xff);
 
     return true;

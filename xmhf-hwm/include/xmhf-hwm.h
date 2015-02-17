@@ -48,23 +48,37 @@
 //XMHF hardware interface
 //author: amit vasudevan (amitvasudevan@acm.org)
 
+#ifndef __XMHF_HWM_H__
+#define __XMHF_HWM_H__
+
+#define __CASMFNDEF__(x) __attribute__((naked))
+#define __CASMFNCALL__(x) (x);
+
+
 #if defined(__XMHF_TARGET_TRIAD_X86_VMX_X86PC__)
 
-    #include <arch/x86-vmx-x86pc/_memaccess.h>		//platform memory access
-    #include <arch/x86-vmx-x86pc/_msr.h>        			//model specific registers
-    #include <arch/x86-vmx-x86pc/_apic.h>       			//APIC
-    #include <arch/x86-vmx-x86pc/_processor.h>  			//CPU
-    #include <arch/x86-vmx-x86pc/_paging.h>     			//MMU
-    #include <arch/x86-vmx-x86pc/_io.h>         			//legacy I/O
-    #include <arch/x86-vmx-x86pc/_txt.h>				//Trusted eXecution Technology (SENTER support)
-    #include <arch/x86-vmx-x86pc/_vmx.h>				//VMX extensions
-    #include <arch/x86-vmx-x86pc/_pci.h>        		//PCI bus glue
-    #include <arch/x86-vmx-x86pc/_pit.h>        		//PIT
-    #include <arch/x86-vmx-x86pc/_acpi.h>			//ACPI glue
-    #include <arch/x86-vmx-x86pc/vtd.h>			//VMX DMA protection
-    #include <arch/x86-vmx-x86pc/_biosdata.h>		//BIOS data areas
+    #include <_xmhfhwm_cpu.h>  			//CPU
+    #include <_xmhfhwm_cpu_msr.h>        			//model specific registers
+    #include <_xmhfhwm_cpu_paging.h>     			//MMU
+    #include <_xmhfhwm_cpu_txt.h>				//Trusted eXecution Technology (SENTER support)
+    #include <_xmhfhwm_cpu_vmx.h>				//VMX extensions
+    #include <_xmhfhwm_cpu_legio.h>         			//legacy I/O
+    #include <_xmhfhwm_cpu_mem.h>		//platform memory access
+
+    #include <_xmhfhwm_legio_pci.h>        		//PCI bus glue
+    #include <_xmhfhwm_legio_pit.h>        		//PIT
+
+    #include <_xmhfhwm_mmio_vtd.h>			//VMX DMA protection
+    #include <_xmhfhwm_mmio_lapic.h>       			//APIC
+
+    #include <_xmhfhwm_sysmem_bios.h>			//ACPI glue
 
 
 #else
+
 	#error "You must define a valid cpu-container-platform triad before trying to build."
+
 #endif
+
+
+#endif //__XMHF_HWM_H__

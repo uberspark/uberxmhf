@@ -125,7 +125,7 @@ bool set_mtrrs_for_acmod(acm_hdr_t *hdr)
                  :
                  );
 
-    disable_intr();
+    __CASMFNCALL__(xmhfhw_cpu_disable_intr());
 
     /* save CR0 then disable cache (CRO.CD=1, CR0.NW=0) */
     cr0 = read_cr0();

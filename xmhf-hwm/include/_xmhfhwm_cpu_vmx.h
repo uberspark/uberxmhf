@@ -44,8 +44,12 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-//vmx.h - Intel VMX definitions
+// XMHF CPU VMX decls.
 //author: amit vasudevan (amitvasudevan@acm.org)
+
+#ifndef __XMHFHWM_CPU_VMX_H__
+#define __XMHFHWM_CPU_VMX_H__
+
 
 #define VMXON_SIZE		(4096)
 #define VMCS_SIZE			(8192)
@@ -729,77 +733,10 @@ struct _vmx_vmcsrwfields_encodings	{
 
 
 
-//VMX functions
-//static inline void __vmx_vmxon(u64 vmxonRegion){
-//  __asm__("vmxon %0\n\t"
-//	  : //no outputs
-//	  : "m"(vmxonRegion));
-//}
-
-static inline bool __vmx_vmxon(u64 vmxonregion_paddr){
-		u32 retval=0;
-
-		asm volatile( "vmxon %1 \n"
-				 "jbe vmfail \n"
-				 "movl $0x1, %%eax \n"
-				 "movl %%eax, %0 \n"
-				 "jmp vmsuccess \n"
-				 "vmfail: \n"
-				 "movl $0x0, %%eax \n"
-				 "movl %%eax, %0 \n"
-				 "vmsuccess: \n"
-		   : "=g" (retval)
-		   : "m"(vmxonregion_paddr)
-		   : "eax");
-
-		if(!retval)
-            return false;
-        else
-            return true;
-}
 
 
 
-static inline void xmhfhw_cpu_x86vmx_vmwrite(u64 encoding, u64 value){
-  asm volatile ("vmwrite %1, %0 \r\n" :: "r"(encoding  & 0x00000000FFFFFFFFULL), "r"(value) : "cc");
-}
 
-static inline u64 xmhfhw_cpu_x86vmx_vmread(u64 encoding){
-    u64 __value;
-    asm volatile("vmread %1, %0 \r\n" : "=r"(__value) : "r"(encoding  & 0x00000000FFFFFFFFULL) : "cc");
-    return __value;
-}
-
-
-static inline u32 __vmx_vmclear(u64 vmcs){
-  u32 status;
-  __asm__("vmclear %1			\r\n"
-	   	"jbe	1f    		\r\n"
-      "movl $1, %%eax \r\n"
-      "jmp  2f  \r\n"
-      "1: movl $0, %%eax \r\n"
-      "2: movl %%eax, %0 \r\n"
-    : "=m" (status)
-    : "m"(vmcs)
-    : "%eax"
-  );
-  return status;
-}
-
-static inline u32 __vmx_vmptrld(u64 vmcs){
-  u32 status;
-  __asm__("vmptrld %1			\r\n"
-	   	"jbe	1f    		\r\n"
-      "movl $1, %%eax \r\n"
-      "jmp  2f  \r\n"
-      "1: movl $0, %%eax \r\n"
-      "2: movl %%eax, %0 \r\n"
-    : "=m" (status)
-    : "m"(vmcs)
-    : "%eax"
-  );
-  return status;
-}
 
 // VMX instruction INVVPID
 //		Invalidate Translations Based on VPID
@@ -811,31 +748,6 @@ static inline u32 __vmx_vmptrld(u64 vmcs){
 #define VMX_INVVPID_ALLCONTEXTS				2
 #define VMX_INVVPID_SINGLECONTEXTGLOBAL		3
 
-static inline u32 __vmx_invvpid(int invalidation_type, u16 vpid, u32 linearaddress){
-	//return status (1 or 0)
-	u32 status;
-
-	//invvpid descriptor
-	struct {
-		u64 vpid 	 : 16;
-		u64 reserved : 48;
-		u64 linearaddress;
-    } invvpiddescriptor = { vpid, 0, linearaddress };
-
-	//issue invvpid instruction
-	//note: GCC does not seem to support this instruction directly
-	//so we encode it as hex
-	__asm__(".byte 0x66, 0x0f, 0x38, 0x81, 0x08 \r\n"
-          "movl $1, %%eax \r\n"
-		  "ja	1f    	  \r\n"
-		  "movl $0, %%eax \r\n"
-		  "1: movl %%eax, %0 \r\n"
-    : "=m" (status)
-    : "a"(&invvpiddescriptor), "c"(invalidation_type)
-	: "cc", "memory");
-
-	return status;
-}
 
 
 
@@ -845,16 +757,8 @@ static inline u32 __vmx_invvpid(int invalidation_type, u16 vpid, u32 linearaddre
 #define	VMX_INVEPT_SINGLECONTEXT			1
 #define VMX_INVEPT_GLOBAL					2
 
-static inline void __vmx_invept(u64 invalidation_type, u64 eptp){
-	//invept descriptor
-	struct {
-		u64 eptp;
-		u64 reserved;
-    } __attribute__((packed)) __inveptdescriptor = { eptp, 0};
-
-	//issue invept instruction
-	asm volatile("invept %0, %1 \r\n" ::"m" (__inveptdescriptor), "r" (invalidation_type):"cc");
-}
 
 
-#endif
+#endif //__ASSEMBLY__
+
+#endif //__XMHFHWM_CPU_VMX_H_

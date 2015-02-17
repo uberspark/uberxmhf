@@ -44,20 +44,44 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-// apic.h - APIC defines
+// XMHF HW CPU MSR declarations
 // author: amit vasudevan (amitvasudevan@acm.org)
 
-#ifndef __APIC_H__
-#define __APIC_H__
-
-#define LAPIC_ICR_LOW   (0x300)
-#define LAPIC_ICR_HIGH  (0x310)
-#define LAPIC_ID        (0x20)
-
-//LAPIC emulation defines
-#define LAPIC_OP_RSVD   (3)
-#define LAPIC_OP_READ   (2)
-#define LAPIC_OP_WRITE  (1)
+#ifndef __XMHFHW_CPU_MSR_H__
+#define __XMHFHW_CPU_MSR_H__
 
 
-#endif // __APIC_H__ 
+#ifndef __ASSEMBLY__
+
+static inline void rdmsr(u32 msr, u32 *eax, u32 *edx) __attribute__((always_inline));
+static inline void wrmsr(u32 msr, u32 eax, u32 edx) __attribute__((always_inline));
+
+//*
+static inline void rdmsr(u32 msr, u32 *eax, u32 *edx){
+  asm volatile("rdmsr \r\n"
+	  :"=a"(*eax), "=d"(*edx)
+	  :"c"(msr));
+}
+
+//*
+static inline void wrmsr(u32 msr, u32 eax, u32 edx){
+  asm volatile("wrmsr \r\n"
+	  : /* no outputs */
+	  :"c"(msr), "a"(eax), "d"(edx));
+}
+
+
+static inline u64 rdmsr64(u32 msr){
+    u32 eax, edx;
+    rdmsr(msr, &eax, &edx);
+    return (((u64)edx << 32) | (u64)eax);
+}
+
+static inline void wrmsr64(u32 msr, u64 newval){
+    wrmsr(msr, (u32)newval, (u32)((u64)newval >> 32));
+}
+
+#endif /* __ASSEMBLY__ */
+
+
+#endif/* __XMHFHW_CPU_MSR_H__ */
