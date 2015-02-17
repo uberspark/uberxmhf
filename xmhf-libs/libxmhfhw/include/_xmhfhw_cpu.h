@@ -241,9 +241,14 @@ static inline uint32_t bsrl(uint32_t mask)
 
 
 
-static inline void disable_intr(void)
+/*static inline void disable_intr(void)
 {
-    __asm__ __volatile__ ("cli" : : : "memory");
+    _asm__ __volatile__ ("cli" : : : "memory");
+}*/
+
+__CASMFNDEF__(xmhfhw_cpu_disable_intr) static void xmhfhw_cpu_disable_intr(void){
+    asm volatile ("cli" : : : "memory");
+    asm volatile ("ret");
 }
 
 
