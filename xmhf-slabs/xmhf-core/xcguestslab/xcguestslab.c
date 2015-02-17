@@ -118,7 +118,7 @@ static void xcguestslab_do_vmcall(void){
 }
 
 
-static void xcguestslab_do_cpuid(void){
+static void xcguestslab_do_xmhfhw_cpu_cpuid(void){
     u32 dummy;
     u32 vendor_dword1, vendor_dword2, vendor_dword3;
 
@@ -126,7 +126,7 @@ static void xcguestslab_do_cpuid(void){
     _XDPRINTF_("%s: Preparing to execute CPUID...\n",
                 __FUNCTION__);
 
-    cpuid(0, &dummy, &vendor_dword1, &vendor_dword3, &vendor_dword2);
+    xmhfhw_cpu_cpuid(0, &dummy, &vendor_dword1, &vendor_dword3, &vendor_dword2);
 
     _XDPRINTF_("%s: CPUID(0) %x, %x, %x\n",
                 __FUNCTION__, vendor_dword1, vendor_dword2, vendor_dword3);
@@ -485,7 +485,7 @@ void xcguestslab_interface(void) {
 
     //xcguestslab_do_vmcall();
 
-    //xcguestslab_do_cpuid();
+    //xcguestslab_do_xmhfhw_cpu_cpuid();
 
     //xcguestslab_do_testxhhyperdep();
 

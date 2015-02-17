@@ -91,7 +91,7 @@
 }*/
 
 
-static inline void cpuid(u32 op, u32 *eax, u32 *ebx, u32 *ecx, u32 *edx){
+__CASMFNDEF__(xmhfhw_cpu_cpuid) static void xmhfhw_cpu_cpuid(u32 op, u32 *eax, u32 *ebx, u32 *ecx, u32 *edx){
 
     asm volatile(
                  "cpuid \r\n"
@@ -99,6 +99,7 @@ static inline void cpuid(u32 op, u32 *eax, u32 *ebx, u32 *ecx, u32 *edx){
                 :"a"(op), "c"(*(ecx))
                 :
                );
+
 
 }
 
@@ -437,7 +438,7 @@ static inline int fls(int mask)
 	    u32 dummy;
 	    u32 vendor_dword1, vendor_dword2, vendor_dword3;
 
-	    cpuid(0, &dummy, &vendor_dword1, &vendor_dword3, &vendor_dword2);
+	    xmhfhw_cpu_cpuid(0, &dummy, &vendor_dword1, &vendor_dword3, &vendor_dword2);
 	    if(vendor_dword1 == AMD_STRING_DWORD1 && vendor_dword2 == AMD_STRING_DWORD2
 	       && vendor_dword3 == AMD_STRING_DWORD3)
 		return CPU_VENDOR_AMD;
@@ -459,7 +460,7 @@ static inline bool xmhf_baseplatform_arch_x86_cpuhasxsavefeature(void){
 	//bit 26 of ECX is 1 in CPUID function 0x00000001 if
 	//XSAVE/XRSTOR feature is available
 
-	cpuid(0x00000001, &eax, &ebx, &ecx, &edx);
+	xmhfhw_cpu_cpuid(0x00000001, &eax, &ebx, &ecx, &edx);
 
 	if((ecx & (1UL << 26)))
 		return true;
@@ -478,7 +479,7 @@ static inline u32 xmhf_baseplatform_arch_x86_getcpuvendor(void){
 	u32 reserved, vendor_dword1, vendor_dword2, vendor_dword3;
 	u32 cpu_vendor;
 
-    cpuid(0, &reserved, &vendor_dword1, &vendor_dword3, &vendor_dword2);
+    xmhfhw_cpu_cpuid(0, &reserved, &vendor_dword1, &vendor_dword3, &vendor_dword2);
 
 	if(vendor_dword1 == AMD_STRING_DWORD1 && vendor_dword2 == AMD_STRING_DWORD2
 			&& vendor_dword3 == AMD_STRING_DWORD3)
