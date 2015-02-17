@@ -63,7 +63,7 @@
 
 //from _processor.h
 //#define get_eflags(x)  __asm__ __volatile__("pushfl ; popl %0 ":"=g" (x): /* no input */ :"memory")
-static inline u64 get_rflags(void){
+/*static inline u64 get_rflags(void){
     u64 _rflags;
 
     asm volatile(
@@ -75,10 +75,10 @@ static inline u64 get_rflags(void){
                  );
 
     return _rflags;
-}
+}*/
 
 //#define set_eflags(x) __asm__ __volatile__("pushl %0 ; popfl": /* no output */ :"g" (x):"memory", "cc")
-static inline void set_rflags(u64 rflags){
+/*static inline void set_rflags(u64 rflags){
 
     asm volatile(
                  "pushq %0 \r\n"
@@ -88,7 +88,7 @@ static inline void set_rflags(u64 rflags){
                  : "cc"
                  );
 
-}
+}*/
 
 
 static inline void cpuid(u32 op, u32 *eax, u32 *ebx, u32 *ecx, u32 *edx){
