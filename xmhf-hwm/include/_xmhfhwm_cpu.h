@@ -316,10 +316,9 @@ typedef struct {
 
 
 
-#define xmhfhwm_cpu_insn_cli() asm volatile ("cli" : : : "memory");
+#define xmhfhwm_cpu_insn_cli() asm volatile ("cli \r\n" : : : "memory");
 
-#define xmhfhwm_cpu_insn_ret() asm volatile ("ret");
-
+#define xmhfhwm_cpu_insn_ret() asm volatile ("ret \r\n");
 
 
 
