@@ -47,6 +47,7 @@
 #include <xmhf.h>
 #include <xmhf-debug.h>
 
+#include <xc.h>
 #include <xcguestslab.h>
 
 //////
