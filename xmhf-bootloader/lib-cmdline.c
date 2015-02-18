@@ -83,10 +83,10 @@
  * Modified for XMHF.
  */
 
-#include <xmhf.h> 
+#include <xmhf.h>
 #include <xmhf-debug.h>
 
-#include <cmdline.h>
+#include "cmdline.h"
 
 const char* cmdline_get_option_val(const cmdline_option_t *options,
                                    char vals[][MAX_VALUE_LEN],

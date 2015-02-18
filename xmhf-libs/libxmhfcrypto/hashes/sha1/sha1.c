@@ -49,11 +49,7 @@
 
 
 #include <xmhf.h>
-#include <xmhf-debug.h>
-
 #include <xmhfcrypto.h>
-#include <euchk.h>
-
 #include <sha1.h>
 
 #define F0(x,y,z)  (z ^ (x & (y ^ z)))
@@ -127,23 +123,12 @@ int sha1_buffer(const unsigned char *buffer, size_t len,
   int rv=0;
   hash_state hs;
 
-  EU_CHKN( rv = sha1_init( &hs));
-  EU_CHKN( rv = sha1_process( &hs, buffer, len));
-  EU_CHKN( rv = sha1_done( &hs, md));
+  rv = sha1_init( &hs);
+  rv = sha1_process( &hs, buffer, len);
+  rv = sha1_done( &hs, md);
 
- out:
   return rv;
 }
-
-/*void hashandprint(const char* prefix, const u8 *bytes, size_t len) {
-    u8 digest[SHA_DIGEST_LENGTH];
-
-    _XDPRINTF_("\nhashandprint: processing 0x%08x bytes at addr 0x%08x", len, (u32)bytes);
-
-    EU_VERIFYN( sha1_buffer(bytes, len, digest));
-
-    _XDPRINTF_("%s: %*D\n", prefix, SHA_DIGEST_LENGTH, digest, " ");
-}*/
 
 /**
    Initialize the hash state
@@ -173,8 +158,8 @@ int sha1_done(hash_state * md, unsigned char *out)
 {
     int i;
 
-    assert(md  != NULL);
-    assert(out != NULL);
+    if( md == NULL || out == NULL)
+        return CRYPT_INVALID_ARG;
 
     if (md->sha1.curlen >= sizeof(md->sha1.buf)) {
        return CRYPT_INVALID_ARG;
@@ -212,23 +197,9 @@ int sha1_done(hash_state * md, unsigned char *out)
         STORE32H(md->sha1.state[i], out+(4*i));
     }
 
-#ifdef LTC_CLEAN_STACK
-    zeromem(md, sizeof(hash_state));
-#endif
-
     return CRYPT_OK;
 }
 
-
-/**
-  Self-test the hash
-  @return CRYPT_OK if successful, CRYPT_NOP if self-tests have been disabled
-*/
-int  sha1_test(void)
-{
-    return CRYPT_NOP;
-
-}
 
 
 
@@ -241,20 +212,3 @@ int  sha1_test(void)
 */
 HASH_PROCESS(sha1_process, sha1_compress, sha1, 64)
 
-const struct ltc_hash_descriptor sha1_desc =
-{
-    "sha1",
-    2,
-    20,
-    64,
-
-    /* OID */
-   { 1, 3, 14, 3, 2, 26,  },
-   6,
-
-    &sha1_init,
-    &sha1_process,
-    &sha1_done,
-    &sha1_test,
-    NULL
-};
