@@ -83,10 +83,10 @@
  * Modified for XMHF.
  */
 
-#include <xmhf.h> 
+#include <xmhf.h>
 #include <xmhf-debug.h>
 
-#include <cmdline.h>
+#include "cmdline.h"
 
 //#include "platform/x86pc/include/common/_com.h"			//UART/serial
 
@@ -144,7 +144,7 @@ void tboot_parse_cmdline(void)
         return;
 
     if ( strcmp(loglvl, "none") == 0 )
-        g_log_level = LOG_LEVEL_NONE; // print nothing 
+        g_log_level = LOG_LEVEL_NONE; // print nothing
 }*/
 
 /*void get_tboot_log_targets(void)
@@ -152,17 +152,17 @@ void tboot_parse_cmdline(void)
     const char *targets = cmdline_get_option_val(g_tboot_cmdline_options,
                                          g_tboot_param_values, "logging");
 
-    // nothing set, leave defaults 
+    // nothing set, leave defaults
     if ( targets == NULL || *targets == '\0' )
         return;
 
-    // determine if no targets set explicitly 
+    // determine if no targets set explicitly
     if ( strcmp(targets, "none") == 0 ) {
-        g_log_targets = LOG_TARGET_NONE; // print nothing 
+        g_log_targets = LOG_TARGET_NONE; // print nothing
         return;
     }
 
-    // else init to nothing and parse the possible targets 
+    // else init to nothing and parse the possible targets
     g_log_targets = LOG_TARGET_NONE;
 
     while ( *targets != '\0' ) {
@@ -178,13 +178,13 @@ void tboot_parse_cmdline(void)
             g_log_targets |= LOG_TARGET_VGA;
             targets += 3;
         }
-        else 
-            break; // unrecognized, end loop 
+        else
+            break; // unrecognized, end loop
 
         if ( *targets == ',' )
             targets++;
         else
-            break; // unrecognized, end loop 
+            break; // unrecognized, end loop
     }
 }*/
 
@@ -250,7 +250,7 @@ static bool parse_com_fmt(const char **fmt)
     /* parity */
     if ( **fmt == 'n' || **fmt == 'o' || **fmt == 'e' || **fmt == 'm' ||
          **fmt == 's' )
-        g_uart_config.parity = 
+        g_uart_config.parity =
             (**fmt == 'n')
             ? PARITY_NONE
             : (**fmt == 'o')
