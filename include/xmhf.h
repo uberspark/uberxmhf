@@ -85,15 +85,15 @@
 #include <xmhf-error.h>
 
 
-#ifdef __XMHF_VERIFICATION__
-	//include verification related primitives
-	#include <xmhf-verification.h>
-#endif //__XMHF_VERIFICATION__
+//#ifdef __XMHF_VERIFICATION__
+//	//include verification related primitives
+//	#include <xmhf-verification.h>
+//#endif //__XMHF_VERIFICATION__
 
 #include <xmhf-hwm.h>            //XMHF hardware interfaces
 #include <xmhfhw.h>
 
-#include <xmhf-arch.h>			//XMHF arch. specific types/defn.
+//#include <xmhf-arch.h>			//XMHF arch. specific types/defn.
 
 //#include <xmhf-slab.h>
 
