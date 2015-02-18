@@ -49,8 +49,9 @@
 
 //---includes-------------------------------------------------------------------
 #include <xmhf.h>
-#include <xmhf-core.h>
 #include <xmhf-debug.h>
+
+#include <xc.h>
 
 #include <xmhfcrypto.h>
 //#include <tpm.h>

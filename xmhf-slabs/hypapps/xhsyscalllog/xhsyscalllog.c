@@ -49,8 +49,8 @@
 
 #include <xmhf.h>
 #include <xmhf-debug.h>
-#include <xmhf-core.h>
 
+#include <xc.h>
 #include <xhsyscalllog.h>
 
 

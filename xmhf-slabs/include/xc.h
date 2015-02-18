@@ -49,8 +49,8 @@
 // headers
 //author: amit vasudevan (amitvasudevan@acm.org)
 //
-#ifndef __XMHF_CORE_H_
-#define __XMHF_CORE_H_
+#ifndef __XC_H_
+#define __XC_H_
 
 
 #ifndef __ASSEMBLY__
@@ -247,4 +247,4 @@ static inline u64 xc_hcbinvoke(u64 cbtype, u64 cbqual, u64 guest_slab_index){
     return status;
 }
 
-#endif /* __XMHF_CORE_H_ */
+#endif /* __XC_H_ */
