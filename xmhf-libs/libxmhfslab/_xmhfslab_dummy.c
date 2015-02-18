@@ -44,13 +44,15 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-#ifndef __CBC_H__
-#define __CBC_H__
+/*
+ * dummy module to generate libxmhfslab.a
+ * author: amit vasudevan (amitvasudevan@acm.org)
+*/
 
-int cbc_start(int cipher, const unsigned char *IV, const unsigned char *key,
-               int keylen, int num_rounds, symmetric_CBC *cbc);
-int cbc_encrypt(const unsigned char *pt, unsigned char *ct, unsigned long len, symmetric_CBC *cbc);
-int cbc_decrypt(const unsigned char *ct, unsigned char *pt, unsigned long len, symmetric_CBC *cbc);
-int cbc_done(symmetric_CBC *cbc);
 
-#endif // __CBC_H__
+#include <xmhf.h>
+#include <xmhf-debug.h>
+
+void _xmhfslab_dummy(void){
+
+}

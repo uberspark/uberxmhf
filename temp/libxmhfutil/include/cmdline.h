@@ -44,32 +44,26 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-#ifndef __AES_H__
-#define __AES_H__
+#ifndef __COMMAND_LINE_H__
+#define __COMMAND_LINE_H__
 
-/* make aes an alias */
-#define aes_setup           rijndael_setup
-#define aes_ecb_encrypt     rijndael_ecb_encrypt
-#define aes_ecb_decrypt     rijndael_ecb_decrypt
-#define aes_test            rijndael_test
-#define aes_done            rijndael_done
-#define aes_keysize         rijndael_keysize
+#ifndef ARRAY_SIZE
+#define ARRAY_SIZE(a) (sizeof(a) / sizeof((a)[0]))
+#endif /* ARRAY_SIZE */
 
-#define aes_enc_setup           rijndael_enc_setup
-#define aes_enc_ecb_encrypt     rijndael_enc_ecb_encrypt
-#define aes_enc_keysize         rijndael_enc_keysize
+typedef struct {
+    const char *name;    /* set to NULL for last item in list */
+    const char *def_val;
+} cmdline_option_t;
 
-int rijndael_setup(const unsigned char *key, int keylen, int num_rounds, symmetric_key *skey);
-int rijndael_ecb_encrypt(const unsigned char *pt, unsigned char *ct, symmetric_key *skey);
-int rijndael_ecb_decrypt(const unsigned char *ct, unsigned char *pt, symmetric_key *skey);
-int rijndael_test(void);
-void rijndael_done(symmetric_key *skey);
-int rijndael_keysize(int *keysize);
-int rijndael_enc_setup(const unsigned char *key, int keylen, int num_rounds, symmetric_key *skey);
-int rijndael_enc_ecb_encrypt(const unsigned char *pt, unsigned char *ct, symmetric_key *skey);
-void rijndael_enc_done(symmetric_key *skey);
-int rijndael_enc_keysize(int *keysize);
-extern const struct ltc_cipher_descriptor rijndael_desc, aes_desc;
-extern const struct ltc_cipher_descriptor rijndael_enc_desc, aes_enc_desc;
+#define MAX_VALUE_LEN 64
+#define MAX_CMDLINE_SIZE   512
 
-#endif // __AES_H__
+const char* cmdline_get_option_val(const cmdline_option_t *options,
+                                   char vals[][MAX_VALUE_LEN],
+                                   const char *opt_name);
+
+void cmdline_parse(const char *cmdline, const cmdline_option_t *options,
+                   char vals[][MAX_VALUE_LEN]);
+
+#endif /* __COMMAND_LINE_H__ */

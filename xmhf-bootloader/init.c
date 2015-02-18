@@ -54,7 +54,7 @@
 
 #include <xmhfcrypto.h>
 //#include <tpm.h>
-#include <cmdline.h>
+#include "cmdline.h"
 
 #include "_txt_hash.h"
 #include "_txt_acmod.h"
@@ -887,12 +887,12 @@ void cstartup(multiboot_info_t *mbi){
 	_XDPRINTF_("\neXtensible Modular Hypervisor Framework (XMHF) %s", ___XMHF_BUILD_VERSION___);
 	_XDPRINTF_("\nBuild revision: %s\n", ___XMHF_BUILD_REVISION___);
 
-    _XDPRINTF_("\nXMHF boot-loader: initializing, total modules=%u", mods_count);
+    _XDPRINTF_("XMHF boot-loader: initializing, total modules=%u\n", mods_count);
 
 	//we need at least 2 modules passed to us via GRUB, the hypapp binary and the guest OS boot-sector.
 	//If we don't have the bare minimum, bail out early
 	if(mods_count < 2){
-		_XDPRINTF_("\nXMHF boot-loader: Halting, you need a hypapp and the guest OS boot sector at bare minimum!");
+		_XDPRINTF_("XMHF boot-loader: Halting, you need a hypapp and the guest OS boot sector at bare minimum!\n");
 		HALT();
 	}
 
@@ -900,17 +900,17 @@ void cstartup(multiboot_info_t *mbi){
     cpu_vendor = get_cpu_vendor_or_die(); // HALT()'s if unrecognized
 
     if(CPU_VENDOR_INTEL == cpu_vendor) {
-        _XDPRINTF_("\nINIT(early): detected an Intel CPU");
+        _XDPRINTF_("INIT(early): detected an Intel CPU\n");
 
         /* Intel systems require an SINIT module */
         if(!txt_parse_sinit(mod_array, mods_count)) {
-            _XDPRINTF_("\nINIT(early): FATAL ERROR: Intel CPU without SINIT module!\n");
+            _XDPRINTF_("INIT(early): FATAL ERROR: Intel CPU without SINIT module!\n");
             HALT();
         }
     } else if(CPU_VENDOR_AMD == cpu_vendor) {
-        _XDPRINTF_("\nINIT(early): detected an AMD CPU");
+        _XDPRINTF_("INIT(early): detected an AMD CPU\n");
     } else {
-        _XDPRINTF_("\nINIT(early): Dazed and confused: Unknown CPU vendor %d\n", cpu_vendor);
+        _XDPRINTF_("INIT(early): Dazed and confused: Unknown CPU vendor %d\n", cpu_vendor);
     }
 
     //deal with MP and get CPU table
