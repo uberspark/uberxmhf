@@ -91,8 +91,8 @@
 }*/
 
 
-__CASMFNDEF__(xmhfhw_cpu_cpuid) static void xmhfhw_cpu_cpuid(u32 op, u32 *eax, u32 *ebx, u32 *ecx, u32 *edx){
-
+//__CASMFNDEF__(xmhfhw_cpu_cpuid) static void xmhfhw_cpu_cpuid(u32 op, u32 *eax, u32 *ebx, u32 *ecx, u32 *edx){
+static void xmhfhw_cpu_cpuid(u32 op, u32 *eax, u32 *ebx, u32 *ecx, u32 *edx){
     asm volatile(
                  "cpuid \r\n"
                 :"=a"(*(eax)), "=b"(*(ebx)), "=c"(*(ecx)), "=d"(*(edx))
