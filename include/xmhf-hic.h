@@ -51,6 +51,91 @@
 #ifndef __XMHF_HIC_H__
 #define __XMHF_HIC_H__
 
+
+//arch. specific decls.
+#define HIC_SLAB_X86VMXX86PC_HYPERVISOR (1)
+#define HIC_SLAB_X86VMXX86PC_GUEST      (2)
+
+//---platform
+//VMX MSR indices
+#define INDEX_IA32_VMX_BASIC_MSR            0x0
+#define INDEX_IA32_VMX_PINBASED_CTLS_MSR    0x1
+#define INDEX_IA32_VMX_PROCBASED_CTLS_MSR   0x2
+#define INDEX_IA32_VMX_EXIT_CTLS_MSR        0x3
+#define INDEX_IA32_VMX_ENTRY_CTLS_MSR       0x4
+#define INDEX_IA32_VMX_MISC_MSR       	    0x5
+#define INDEX_IA32_VMX_CR0_FIXED0_MSR       0x6
+#define INDEX_IA32_VMX_CR0_FIXED1_MSR       0x7
+#define INDEX_IA32_VMX_CR4_FIXED0_MSR       0x8
+#define INDEX_IA32_VMX_CR4_FIXED1_MSR       0x9
+#define INDEX_IA32_VMX_VMCS_ENUM_MSR        0xA
+#define INDEX_IA32_VMX_PROCBASED_CTLS2_MSR  0xB
+
+// segment selectors
+#define 	__CS_CPL0 	    0x0008 	//CPL-0 code segment selector
+#define 	__DS_CPL0 	    0x0010 	//CPL-0 data segment selector
+#define		__CS_CPL3	    0x001b	//CPL-3 code segment selector
+#define		__DS_CPL3	    0x0023  //CPL-3 data segment selector
+#define		__CS_CPL3_SE	0x002b	//CPL-3 code segment selector
+#define		__DS_CPL3_SE	0x0033  //CPL-3 data segment selector
+#define 	__TRSEL 	    0x0038  //TSS (task) selector
+
+#define	EMHF_XCPHANDLER_MAXEXCEPTIONS	32
+
+#ifndef __ASSEMBLY__
+
+typedef struct {
+    u64 pci_bus;
+    u64 pci_device;
+    u64 pci_function;
+    u64 vendor_id;
+    u64 device_id;
+}__attribute__((packed)) xc_platformdevice_arch_desc_t;
+
+
+typedef struct {
+    u32 ap_cr3;
+    u32 ap_cr4;
+    u32 ap_entrypoint;
+    u32 ap_gdtdesc_limit __attribute__((aligned(16)));
+    u32 ap_gdtdesc_base;
+    u32 ap_cs_selector;
+    u32 ap_eip;
+    u32 cpuidtable;
+    u64 ap_gdt[X86SMP_APBOOTSTRAP_MAXGDTENTRIES] __attribute__ ((aligned (16)));
+}__attribute__((aligned(16),packed)) x86smp_apbootstrapdata_t;
+
+//MTRR memory type structure
+struct _memorytype {
+  u64 startaddr;
+  u64 endaddr;
+  u32 type;
+  u32 invalid;
+  u32 reserved[6];
+} __attribute__((packed));
+
+
+typedef struct {
+  u8 vmx_vmxon_region[PAGE_SIZE_4K] __attribute__((aligned(4096)));
+  u8 vmx_vmcs_region[PAGE_SIZE_4K] __attribute__((aligned(4096)));
+  u8 vmx_msr_area_host_region[2*PAGE_SIZE_4K] __attribute__((aligned(4096)));
+  u8 vmx_msr_area_guest_region[2*PAGE_SIZE_4K] __attribute__((aligned(4096)));
+  u8 vmx_iobitmap_region[2][PAGE_SIZE_4K] __attribute__((aligned(4096)));		//I/O Bitmap area
+  u8 vmx_msrbitmaps_region[PAGE_SIZE_4K] __attribute__((aligned(4096)));		//MSR bitmap area
+  u64 vmx_msrs[IA32_VMX_MSRCOUNT];
+  u64 vmx_msr_efer;
+  u64 vmx_msr_efcr;
+  x86regs64_t vmx_gprs;
+} __attribute__((packed)) xc_cpuarchdata_x86vmx_t;
+
+#endif //__ASSEMBLY__
+
+
+
+
+
+
+
 #if defined (__XMHF_VERIFICATION__)
 
 #define XMHF_HIC_MAX_SLABS                  (2)

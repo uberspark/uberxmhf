@@ -189,6 +189,7 @@
 #define	VMX_UG_E820HOOK_IP				(0x00AC)
 
 
+#define     MAX_X86_APIC_ID     256
 
 
 #endif //__XMHF_CONFIG_H__
