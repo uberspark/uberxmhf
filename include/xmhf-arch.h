@@ -44,14 +44,14 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-// XMHF arch. specific header file 
+// XMHF arch. specific header file
 // author: amit vasudevan (amitvasudevan@acm.org)
 
 #ifndef __XMHF_ARCH_H_
 #define __XMHF_ARCH_H_
 
 #if defined(__XMHF_TARGET_TRIAD_X86_VMX_X86PC__)
-	#include <arch/x86-vmx-x86pc/xmhf-x86-vmx-x86pc.h>
+	//#include <arch/x86-vmx-x86pc/xmhf-x86-vmx-x86pc.h>
 #else
 	#error "You must define a valid cpu-container-platform triad before trying to build."
 #endif

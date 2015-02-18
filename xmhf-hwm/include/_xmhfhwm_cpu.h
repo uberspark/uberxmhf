@@ -311,8 +311,111 @@ typedef struct {
 } x86desc_t;
 
 
+//arch. specific
+//---platform
+#define MAX_MEMORYTYPE_ENTRIES    98    //8*11 fixed MTRRs and 10 variable MTRRs
+#define MAX_FIXED_MEMORYTYPE_ENTRIES  88
+#define MAX_VARIABLE_MEMORYTYPE_ENTRIES 10
 
 
+//---platform
+//total number of FIXED and VARIABLE MTRRs on current x86 platforms
+#define NUM_MTRR_MSRS		31
+
+#ifndef __ASSEMBLY__
+
+typedef struct {
+  u32 eip;
+  u32 cs;
+  u32 eflags;
+} __attribute__((packed)) INTR_SAMEPRIVILEGE_STACKFRAME_NOERRORCODE;
+
+//---platform
+typedef struct {
+  u32 errorcode;
+  u32 eip;
+  u32 cs;
+  u32 eflags;
+} __attribute__((packed)) INTR_SAMEPRIVILEGE_STACKFRAME_ERRORCODE;
+
+#endif //__ASSEMBLY__
+
+//---platform
+#define IA32_VMX_MSRCOUNT   								12
+
+
+typedef struct {
+    u64 r8;
+    u64 r9;
+    u64 r10;
+    u64 r11;
+    u64 r12;
+    u64 r13;
+    u64 r14;
+    u64 r15;
+    u64 rax;
+    u64 rbx;
+    u64 rcx;
+    u64 rdx;
+    u64 rsi;
+    u64 rdi;
+    u64 rbp;
+    u64 rsp;
+    u64 vector;
+    u64 orig_rip;
+    u64 orig_cs;
+    u64 orig_rflags;
+    u64 orig_rsp;
+    u64 orig_ss;
+} __attribute__((packed)) x86vmx_exception_frame_t;
+
+
+typedef struct {
+    u64 r8;
+    u64 r9;
+    u64 r10;
+    u64 r11;
+    u64 r12;
+    u64 r13;
+    u64 r14;
+    u64 r15;
+    u64 rax;
+    u64 rbx;
+    u64 rcx;
+    u64 rdx;
+    u64 rsi;
+    u64 rdi;
+    u64 rbp;
+    u64 rsp;
+    u64 vector;
+    u64 errorcode;
+    u64 orig_rip;
+    u64 orig_cs;
+    u64 orig_rflags;
+    u64 orig_rsp;
+    u64 orig_ss;
+} __attribute__((packed)) x86vmx_exception_frame_errcode_t;
+
+//*
+//x86 GDT descriptor type
+typedef struct {
+		u16 size;
+		u64 base;
+} __attribute__((packed)) arch_x86_gdtdesc_t;
+
+//*
+//x86 IDT descriptor type
+typedef struct {
+		u16 size;
+		u64 base;
+} __attribute__((packed)) arch_x86_idtdesc_t;
+
+//*
+//TSS descriptor (partial)
+typedef struct __tss {
+	u32 reserved;
+	u64 rsp0;
+} __attribute__((packed)) tss_t;
 
 
 

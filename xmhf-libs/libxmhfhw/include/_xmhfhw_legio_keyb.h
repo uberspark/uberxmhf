@@ -44,17 +44,29 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-#ifndef __XMHFHW_H__
-#define __XMHFHW_H__
+// programmable interval timer (for micro second delay)
+//author: amit vasudevan (amitvasudevan@acm.org)
 
-#include <_xmhfhw_cpu.h>
+#ifndef __XMHFHW_LEGIO_KEYB_H__
+#define __XMHFHW_LEGIO_KEYB_H__
 
-#include <_xmhfhw_legio_pci.h>
-#include <_xmhfhw_legio_pit.h>
-#include <_xmhfhw_legio_keyb.h>
-#include <_xmhfhw_sysmem_bios.h>
-#include <_xmhfhw_mmio_vtd.h>
-#include <_xmhfhw_mmio_lapic.h>
+#ifndef __ASSEMBLY__
+
+//generic x86 platform reboot
+static inline void xmhf_baseplatform_arch_x86_reboot(void){
+	unsigned char flush = 0x02;
+
+	while ((flush & 0x02) != 0)
+		flush = inb(0x64);
+	outb(0xFE, 0x64);
+
+	//never get here
+	//_XDPRINTF_("\n%s: should never get here. halt!", __FUNCTION__);
+	HALT();
+
+}
 
 
-#endif // __XMHFHW_H__
+
+#endif /* __ASSEMBLY__ */
+#endif // __XMHFHW_LEGIO_KEYB_H__
