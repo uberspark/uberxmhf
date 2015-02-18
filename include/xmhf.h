@@ -98,7 +98,7 @@
 //#include <xmhf-slab.h>
 
 #include <xmhf-hic.h>
-
+#include <xmhfslab.h>
 
 //#include <shared.h>				//shared slab mappings
 
