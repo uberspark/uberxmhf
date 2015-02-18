@@ -117,21 +117,78 @@
 //======================================================================
 
 #define	XMHF_SLAB_STACKSIZE		(16384)
-/*
-//#define XMHF_SLAB_NUMBEROFSLABS			14
-#define XMHF_SLAB_NUMBEROFSLABS			2
 
-#define XMHF_SLAB_REGION_SHARED_RODATA 	0x11000000
-#define XMHF_SLAB_REGION_START			0x12000000
 
-#define XMHF_SLAB_INITBS_REGION_START	0x13000000
-#define XMHF_SLAB_INIT_REGION_START		0x14000000
-#define XMHF_SLAB_IHUB_REGION_START		0x15000000
-#define XMHF_SLAB_COREAPI_REGION_START	0x16000000
 
-#define XMHF_SLAB_HYPAPP_HYPERDEP_REGION_START	0x18000000
 
-#define XMHF_SLAB_NEXT_REGION_START		0x19000000
-*/
+//======================================================================
+//XMHF platform/arch. specific configurable constant definitions
+
+//----------------------------------------------------------------------
+// XMHF platform memory map
+	//size of memory that is pre-allocated by XMHF on the platform (currently 256MB)
+	//#define __TARGET_BASE_XMHF				0x10000000		//at 256M
+	//#define __TARGET_SIZE_XMHF				0x10000000
+	#define __TARGET_BASE_XMHF				0x02000000		//at 32M
+	#define __TARGET_SIZE_XMHF				0x10000000      //256M size
+
+	//physical address where the XMHF boot-loader is loaded (e.g., via GRUB)
+	#define __TARGET_BASE_BOOTLOADER		0x01E00000		//30MB
+	#define __TARGET_SIZE_BOOTLOADER		0x00200000		//2MB
+
+	//physical address of XMHF secure loader
+	#define __TARGET_BASE_SL				0x02200000		//34MB
+	#define __TARGET_SIZE_SL				0x00200000
+
+
+	//physical address of XMHF hypapp
+	//#define __TARGET_BASE_XMHFHYPAPP		0x1D000000      //480M
+	//#define __TARGET_SIZE_XMHFHYPAPP		0x02000000		//32M
+//----------------------------------------------------------------------
+
+//"sl" parameter block magic value
+//#define SL_PARAMETER_BLOCK_MAGIC		0xDEADBEEF
+
+//size of core DMA protection buffer (if platform DMA protections need to be re-initialized within the core)
+#define SIZE_CORE_DMAPROT_BUFFER		(128*1024)
+
+//preferred TPM locality to use for access inside hypervisor
+//needs to be 2 or 1 (4 is hw-only, 3 is sinit-only on Intel)
+#define EMHF_TPM_LOCALITY_PREF 2
+
+//where the guest OS boot record is loaded
+#define __GUESTOSBOOTMODULE_BASE		0x7c00
+#define __GUESTOSBOOTMODULESUP1_BASE	0x7C00
+
+//----------------------------------------------------------------------
+
+//code segment of memory address where APs startup initially
+//address 0x1000:0x0000 or 0x10000 physical
+#define X86SMP_APBOOTSTRAP_CODESEG 			0x1000
+
+//data segment of memory address where APs startup initially
+//address 0x1100:0x0000 or 0x11000 physical
+#define X86SMP_APBOOTSTRAP_DATASEG 			0x1100
+
+#define X86SMP_APBOOTSTRAP_MAXGDTENTRIES    4
+
+#define X86SMP_LAPIC_MEMORYADDRESS          0xFEE00000
+#define X86SMP_LAPIC_ID_MEMORYADDRESS       0xFEE00020
+
+//----------------------------------------------------------------------
+
+//TXT SENTER MLE specific constants
+#define TEMPORARY_HARDCODED_MLE_SIZE       0x10000
+#define TEMPORARY_MAX_MLE_HEADER_SIZE      0x80
+#define TEMPORARY_HARDCODED_MLE_ENTRYPOINT TEMPORARY_MAX_MLE_HEADER_SIZE
+
+//VMX Unrestricted Guest (UG) E820 hook support
+//we currently use the BIOS data area (BDA) unused region
+//at 0x0040:0x00AC
+#define	VMX_UG_E820HOOK_CS				(0x0040)
+#define	VMX_UG_E820HOOK_IP				(0x00AC)
+
+
+
 
 #endif //__XMHF_CONFIG_H__
