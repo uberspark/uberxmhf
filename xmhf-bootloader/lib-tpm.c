@@ -90,6 +90,8 @@
  * by Amit Vasudevan amitvasudevan@acm.org
  */
 #include <xmhf.h>
+#include <xmhf-hwm.h>
+#include <xmhfhw.h>
 #include <xmhf-debug.h>
 
 #include <stddef.h>

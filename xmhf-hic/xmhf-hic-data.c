@@ -46,6 +46,7 @@
 
 
 #include <xmhf.h>
+#include <xmhf-hic.h>
 
 /*
  * data used by HIC

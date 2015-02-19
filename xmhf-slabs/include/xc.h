@@ -195,8 +195,6 @@ typedef struct {
 
 #define XC_HYPAPPCB_MASK(x) (1 << x)
 
-
-
 static xc_hypapp_info_t _xcihub_hypapp_info_table[] = {
     {
         XMHF_HYP_SLAB_XHHYPERDEP,
@@ -246,5 +244,7 @@ static inline u64 xc_hcbinvoke(u64 cbtype, u64 cbqual, u64 guest_slab_index){
 
     return status;
 }
+
+
 
 #endif /* __XC_H_ */
