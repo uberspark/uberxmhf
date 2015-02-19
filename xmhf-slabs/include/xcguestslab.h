@@ -50,6 +50,8 @@
 #ifndef __XCGUESTSLAB_H__
 #define __XCGUESTSLAB_H__
 
+#define 	__CS_CPL0 	    0x0008 	//guest slab CPL-0 code segment selector
+#define 	__DS_CPL0 	    0x0010 	//guest slab CPL-0 data segment selector
 
 #ifndef __ASSEMBLY__
 

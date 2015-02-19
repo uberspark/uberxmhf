@@ -51,6 +51,9 @@
 #ifndef __XMHFHICSLAB_H__
 #define __XMHFHICSLAB_H__
 
+#include <xmhf-hwm.h>
+#include <xmhfhw.h>
+
 #define XMHF_HIC_UAPI                       (0x666)
 
 #define XMHF_HIC_UAPI_CPUSTATE                  (0)

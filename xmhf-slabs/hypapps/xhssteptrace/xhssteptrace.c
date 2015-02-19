@@ -48,7 +48,7 @@
 // author: amit vasudevan (amitvasudevan@acm.org)
 
 #include <xmhf.h>
-#include <xmhf-hic.h>
+#include <xmhfhicslab.h>
 #include <xmhf-debug.h>
 
 #include <xc.h>
