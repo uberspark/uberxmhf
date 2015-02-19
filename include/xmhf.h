@@ -70,7 +70,6 @@
 #include <xmhf-hwm.h>            //XMHF hardware interfaces
 #include <xmhfhw.h>
 #include <xmhf-hic.h>
-#include <xmhfslab.h>
 
 
 #endif /* __XMHF_H_ */
