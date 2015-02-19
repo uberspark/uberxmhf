@@ -51,8 +51,8 @@
  */
 
 #include <xmhf.h>
+#include <xmhf-hic.h>
 #include <xmhf-debug.h>
-
 
 //asm blobs
 extern void __xmhfhic_trampoline_slabxfer_h2h(u64 iparams, u64 iparams_size,

@@ -44,17 +44,29 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-// XMHF arch. specific header file 
-// author: amit vasudevan (amitvasudevan@acm.org)
+// programmable interval timer (for micro second delay)
+//author: amit vasudevan (amitvasudevan@acm.org)
 
-#ifndef __XMHF_ARCH_H_
-#define __XMHF_ARCH_H_
+#ifndef __XMHFHW_LEGIO_KEYB_H__
+#define __XMHFHW_LEGIO_KEYB_H__
 
-#if defined(__XMHF_TARGET_TRIAD_X86_VMX_X86PC__)
-	#include <arch/x86-vmx-x86pc/xmhf-x86-vmx-x86pc.h>
-#else
-	#error "You must define a valid cpu-container-platform triad before trying to build."
-#endif
+#ifndef __ASSEMBLY__
+
+//generic x86 platform reboot
+static inline void xmhf_baseplatform_arch_x86_reboot(void){
+	unsigned char flush = 0x02;
+
+	while ((flush & 0x02) != 0)
+		flush = inb(0x64);
+	outb(0xFE, 0x64);
+
+	//never get here
+	//_XDPRINTF_("\n%s: should never get here. halt!", __FUNCTION__);
+	HALT();
+
+}
 
 
-#endif /* __XMHF_ARCH_H_ */
+
+#endif /* __ASSEMBLY__ */
+#endif // __XMHFHW_LEGIO_KEYB_H__

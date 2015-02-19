@@ -52,82 +52,24 @@
 
 #ifndef __ASSEMBLY__
 
-
-
 //pull in required libxmhfc C includes
 #include <stdint.h>
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdarg.h>
-//#include <stdio.h>
 #include <string.h>
 #include <ctype.h>
 #include <assert.h>
 
 #endif // __ASSEMBLY__
 
-//pull in required crypto (SHA-1)
-//libXMHFcrypto
-//#ifndef __ASSEMBLY__
-//	#include <xmhfcrypto.h>
-//	#include <sha1.h>
-//#endif // __ASSEMBLY__
-
-
-//pull in required TPM library
-//libtpm
-//#ifndef __ASSEMBLY__
-//	#include <tpm.h>
-//#endif // __ASSEMBLY__
 
 #include <xmhf-config.h>		//XMHF platform/arch config, TODO: this needs to be platform/arch independent push arch dependent stuff into arch/
 #include <xmhf-types.h>			//XMHF specific base types
 #include <xmhf-error.h>
+//#include <xmhf-hwm.h>            //XMHF hardware interfaces
+//#include <xmhfhw.h>
+//#include <xmhf-hic.h>
 
-
-#ifdef __XMHF_VERIFICATION__
-	//include verification related primitives
-	#include <xmhf-verification.h>
-#endif //__XMHF_VERIFICATION__
-
-#include <xmhf-hwm.h>            //XMHF hardware interfaces
-#include <xmhfhw.h>
-
-#include <xmhf-arch.h>			//XMHF arch. specific types/defn.
-
-//#include <xmhf-slab.h>
-
-#include <xmhf-hic.h>
-#include <xmhfslab.h>
-
-//#include <shared.h>				//shared slab mappings
-
-
-//#include <xmhf-debug.h>			//libxmhfdebug
-
-
-
-/*
-//forward declaration of runtime parameter block
-#ifndef __ASSEMBLY__
-extern RPB *rpb;
-#endif	//__ASSEMBLY__
-
-
-//----------------------------------------------------------------------
-// component headers
-#include <xmhf-baseplatform.h>	//XMHF base platform component
-#include <xmhf-memprot.h>		//XMHF memory protection component
-#include <xmhf-dmaprot.h>		//XMHF DMA protection component
-#include <xmhf-partition.h>		//XMHF partition component
-#include <xmhf-smpguest.h>		//XMHF SMP guest component
-#include <xmhf-parteventhub.h>	//XMHF partition event-hub component
-#include <xmhf-xcphandler.h>	//XMHF exception handler component
-#include <xmhf-tpm.h>			//XMHF Trusted Platform Module component
-#include <xmhf-sl.h>			//XMHF secure loader component
-#include <xmhf-runtime.h>		//XMHF secure loader component
-#include <xmhf-app.h>			//XMHF Application callback declarations
-#include <xmhf-apihub.h>		//XMHF core API interface component
-*/
 
 #endif /* __XMHF_H_ */

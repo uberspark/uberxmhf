@@ -51,8 +51,8 @@
  */
 
 #include <xmhf.h>
+#include <xmhf-hic.h>
 #include <xmhf-debug.h>
-
 
 //extern x_slab_info_t _xmhfhic_common_slab_info_table[XMHF_HIC_MAX_SLABS];
 extern u64 guestslab_mempgtbl_buffer[1048576];
