@@ -480,7 +480,8 @@ static void xcguestslab_do_testxhsyscalllog(void){
 
 
 
-void xcguestslab_interface(void) {
+//void slab_interface(void) {
+void slab_interface(slab_input_params_t *iparams, u64 iparams_size, slab_output_params_t *oparams, u64 oparams_size, u64 src_slabid, u64 cpuindex){
     _XDPRINTF_("%s: Hello world from Guest slab!\n", __FUNCTION__);
 
     //xcguestslab_dotest_vmcall();

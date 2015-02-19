@@ -591,7 +591,7 @@ __attribute__(( aligned(16) )) static u64 _xcguestslab_init_gdt[]  = {
 
 
 
-void xcinit_interface(slab_input_params_t *iparams, u64 iparams_size, slab_output_params_t *oparams, u64 oparams_size, u64 src_slabid, u64 cpuid){
+void slab_interface(slab_input_params_t *iparams, u64 iparams_size, slab_output_params_t *oparams, u64 oparams_size, u64 src_slabid, u64 cpuid){
     bool isbsp = (cpuid & 0x8000000000000000ULL) ? true : false;
     u64 inputval, outputval;
     static u64 cpucount=0;
