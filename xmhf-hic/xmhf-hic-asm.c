@@ -45,6 +45,7 @@
  */
 
 #include <xmhf.h>
+#include <xmhf-hic.h>
 #include <xmhf-debug.h>
 
 // XMHF HIC prime assembly language code blobs

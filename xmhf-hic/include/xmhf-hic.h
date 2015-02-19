@@ -51,6 +51,8 @@
 #ifndef __XMHF_HIC_H__
 #define __XMHF_HIC_H__
 
+#include <xmhf-hwm.h>            //XMHF hardware interfaces
+#include <xmhfhw.h>
 
 //arch. specific decls.
 #define HIC_SLAB_X86VMXX86PC_HYPERVISOR (1)
@@ -136,32 +138,6 @@ typedef struct {
 
 
 
-#if defined (__XMHF_VERIFICATION__)
-
-#define XMHF_HIC_MAX_SLABS                  (2)
-
-#else
-
-#define XMHF_HIC_MAX_SLABS                  (9)
-
-
-#endif //__XMHF_VERIFICATION__
-
-
-#define XMHF_HYP_SLAB_XCINIT                (0)
-#define XMHF_HYP_SLAB_XCIHUB                (1)
-#define XMHF_HYP_SLAB_XCEXHUB               (2)
-#define XMHF_HYP_SLAB_XCTESTSLAB1           (3)
-#define XMHF_HYP_SLAB_XHHYPERDEP            (4)
-#define XMHF_HYP_SLAB_XHAPPROVEXEC          (5)
-#define XMHF_HYP_SLAB_XHSYSCALLLOG          (6)
-#define XMHF_HYP_SLAB_XHSSTEPTRACE          (7)
-
-#if defined (__XMHF_VERIFICATION__)
-#define XMHF_GUEST_SLAB_XCGUESTSLAB         (1)
-#else
-#define XMHF_GUEST_SLAB_XCGUESTSLAB         (8)
-#endif
 
 #define XMHF_HIC_SLABCALL                   (0xA0)
 #define XMHF_HIC_SLABRET                    (0xA1)
