@@ -13,6 +13,8 @@ XMHF_INC = $(CURDIR)/include
 # XMHF hardware model include directory
 XMHF_HWM_INC = $(CURDIR)/xmhf-hwm/include
 
+# XMHF HIC include directory
+XMHF_HIC_INC = $(CURDIR)/xmhf-hic/include
 
 # verification directory (used for verification without polluting source namespace)
 export XMHF_VERIFYDIR := $(CURDIR)/_verify
@@ -42,7 +44,7 @@ XMHFLIBS_INC = $(foreach dir,$(XMHFLIBS_SUBLIBS),-I$(dir)/include)
 export ADDL_INCLUDES := -I$(realpath xmhf-slabs/include)
 export XMHFLIBS_DIR := $(XMHF_OBJDIR)/_objs_xmhf-libs
 #ADDL_INCLUDES += -I$(XMHF_INC) $(XMHFCORE_INC) $(XMHFLIBS_INC)
-ADDL_INCLUDES += -I$(XMHF_INC) -I$(XMHF_HWM_INC) $(XMHFLIBS_INC)
+ADDL_INCLUDES += -I$(XMHF_INC) -I$(XMHF_HWM_INC) -I$(XMHF_HIC_INC) $(XMHFLIBS_INC)
 
 ##################################################################################
 ### BEGIN Variables controlled using autoconf

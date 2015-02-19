@@ -51,6 +51,7 @@
 
 #include <_xmhfhw_legio_pci.h>
 #include <_xmhfhw_legio_pit.h>
+#include <_xmhfhw_legio_keyb.h>
 #include <_xmhfhw_sysmem_bios.h>
 #include <_xmhfhw_mmio_vtd.h>
 #include <_xmhfhw_mmio_lapic.h>

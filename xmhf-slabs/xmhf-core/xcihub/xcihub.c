@@ -45,9 +45,10 @@
  */
 
 #include <xmhf.h>
+#include <xmhfhicslab.h>
 #include <xmhf-debug.h>
-#include <xmhf-core.h>
 
+#include <xc.h>
 #include <xcihub.h>
 
 /*

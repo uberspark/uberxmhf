@@ -45,9 +45,11 @@
  */
 
 #include <xmhf.h>
+//#include <xmhfhicslab.h>
+#include <xmhf-hic.h>
 #include <xmhf-debug.h>
-#include <xmhf-core.h>
 
+#include <xc.h>
 #include <xcinit.h>
 
 extern x_slab_info_t _x_xmhfhic_common_slab_info_table[XMHF_HIC_MAX_SLABS];

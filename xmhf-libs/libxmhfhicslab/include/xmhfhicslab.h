@@ -44,17 +44,80 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-// XMHF slab entry, uapi, and trampoline call stubs decls./defns.
+// XMHF slab decls./defns.
 // author: amit vasudevan (amitvasudevan@acm.org)
 // XXX: need to split arch. dependent portions
 
-#ifndef __XMHFSLAB_H__
-#define __XMHFSLAB_H__
+#ifndef __XMHFHICSLAB_H__
+#define __XMHFHICSLAB_H__
+
+#include <xmhf-hwm.h>
+#include <xmhfhw.h>
+
+#define XMHF_HIC_UAPI                       (0x666)
+
+#define XMHF_HIC_UAPI_CPUSTATE                  (0)
+
+#define XMHF_HIC_UAPI_CPUSTATE_VMREAD           (1)
+#define XMHF_HIC_UAPI_CPUSTATE_VMWRITE          (2)
+#define XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSREAD    (3)
+#define XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSWRITE   (4)
+#define XMHF_HIC_UAPI_CPUSTATE_WRMSR            (5)
+#define XMHF_HIC_UAPI_CPUSTATE_RDMSR            (6)
 
 
+#define XMHF_HIC_UAPI_PHYSMEM                   (16)
+
+#define XMHF_HIC_UAPI_PHYSMEM_PEEK              (17)
+#define XMHF_HIC_UAPI_PHYSMEM_POKE              (18)
+
+#define XMHF_HIC_UAPI_MEMPGTBL                  (24)
+
+#define XMHF_HIC_UAPI_MEMPGTBL_GETENTRY         (25)
+#define XMHF_HIC_UAPI_MEMPGTBL_SETENTRY         (26)
+
+
+#define GUEST_SLAB_HEADER_MAGIC     (0x76543210)
+
+#define XMHF_HIC_SLABCALL                   (0xA0)
+#define XMHF_HIC_SLABRET                    (0xA1)
+
+#define XMHF_HIC_SLABCALLEXCEPTION          (0xA2)
+#define XMHF_HIC_SLABRETEXCEPTION           (0xA3)
+
+#define XMHF_HIC_SLABCALLINTERCEPT          (0xA4)
+#define XMHF_HIC_SLABRETINTERCEPT           (0xA5)
 
 
 #ifndef __ASSEMBLY__
+
+typedef void slab_input_params_t;
+typedef void slab_output_params_t;
+
+//////
+// uapi related types
+
+typedef struct {
+    u64 guest_slab_index;
+    void *addr_from;
+    void *addr_to;
+    u64 numbytes;
+}__attribute__((packed)) xmhf_hic_uapi_physmem_desc_t;
+
+typedef struct {
+    u64 guest_slab_index;
+    u64 gpa;
+    u64 entry;
+}__attribute__((packed)) xmhf_hic_uapi_mempgtbl_desc_t;
+
+//guest slab header data type
+typedef struct {
+    u64 magic;
+    __attribute__((aligned(4096))) u64 lvl2mempgtbl_pml4t[PAE_MAXPTRS_PER_PDPT];
+    __attribute__((aligned(4096))) u64 lvl2mempgtbl_pdpt[PAE_MAXPTRS_PER_PDPT];
+    __attribute__((aligned(4096))) u64 lvl2mempgtbl_pdts[PAE_PTRS_PER_PDPT][PAE_PTRS_PER_PDT];
+    __attribute__(( aligned(16) )) u64 gdt[16];
+} __attribute__((packed)) guest_slab_header_t;
 
 
 
@@ -417,11 +480,9 @@ R11 = cpuid
 
 
 
-
-
 #endif //__ASSEMBLY__
 
 
-#endif //__XMHFSLAB_H__
+#endif //__XMHFHICSLAB_H__
 
 

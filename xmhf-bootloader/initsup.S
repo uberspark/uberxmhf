@@ -48,6 +48,8 @@
 // author: amit vasudevan (amitvasudevan@acm.org)
 
 #include <xmhf.h>
+#include <xmhf-hwm.h>
+#include <xmhfhw.h>
 
 .extern midtable_numentries
 .extern mp_cstartup

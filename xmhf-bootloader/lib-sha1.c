@@ -49,6 +49,8 @@
 
 
 #include <xmhf.h>
+#include <xmhf-hwm.h>
+#include <xmhfhw.h>
 #include <xmhf-debug.h>
 
 #include <xmhfcrypto.h>
