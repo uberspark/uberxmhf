@@ -60,7 +60,8 @@ all: xmhflibs32 $(THE_ARCHIVE)
 xmhflibs32:
 	mkdir -p $(XMHF_BOOTLOADER_LIBS_DIR)
 	@echo Building XMHF libs 32-bit...
-	cd $(XMHF_BOOTLOADER_LIBS_DIR) && $(MAKE) -f $(XMHFLIBS_SRC)/Makefile -w all
+	#cd $(XMHF_BOOTLOADER_LIBS_DIR) && $(MAKE) -f $(XMHFLIBS_SRC)/Makefile -w all
+	cd $(XMHF_BOOTLOADER_LIBS_DIR) && $(MAKE) -f $(XMHFLIBS_SRC)/libxmhfdebug/Makefile -w all
 	@echo XMHF libs build SUCCESS
 
 
