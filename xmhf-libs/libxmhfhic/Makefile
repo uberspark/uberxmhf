@@ -9,8 +9,8 @@ I_SOURCES :=  $(wildcard $(srcdir)/include/*.h)
 
 CFLAGS += -I$(srcdir)/include -nostdinc -fno-builtin -nostdlib -Wall
 
-LIBXMHFSLAB_OBJECTS_DIR = _objs_libxmhfslab
-THE_ARCHIVE = libxmhfslab.a
+LIBXMHFHIC_OBJECTS_DIR = _objs_libxmhfhic
+THE_ARCHIVE = libxmhfhic.a
 
 # targets
 .PHONY: all
@@ -18,16 +18,16 @@ all: $(THE_ARCHIVE)
 #all:
 
 $(THE_ARCHIVE): $(OBJECTS)
-	mkdir -p $(LIBXMHFSLAB_OBJECTS_DIR)
-	cd $(LIBXMHFSLAB_OBJECTS_DIR) && $(AR) -rcs $(THE_ARCHIVE) $(OBJECTS)
+	mkdir -p $(LIBXMHFHIC_OBJECTS_DIR)
+	cd $(LIBXMHFHIC_OBJECTS_DIR) && $(AR) -rcs $(THE_ARCHIVE) $(OBJECTS)
 
 %.o: %.c
 	#mkdir -p "$(@D)"
-	mkdir -p $(LIBXMHFSLAB_OBJECTS_DIR)
+	mkdir -p $(LIBXMHFHIC_OBJECTS_DIR)
 	@echo Building "$@" from "$<"
-	$(CC) -c $(CFLAGS) -o $(LIBXMHFSLAB_OBJECTS_DIR)/$@ $<
+	$(CC) -c $(CFLAGS) -o $(LIBXMHFHIC_OBJECTS_DIR)/$@ $<
 
 .PHONY: clean
 clean:
-	$(RM) -rf $(LIBXMHFSLAB_OBJECTS_DIR)
+	$(RM) -rf $(LIBXMHFHIC_OBJECTS_DIR)
 
