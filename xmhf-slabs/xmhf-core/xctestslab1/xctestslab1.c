@@ -103,7 +103,7 @@ static void _xcinit_dotests(u64 cpuid){
 }*/
 
 
-void xctestslab1_interface(slab_input_params_t *iparams, u64 iparams_size, slab_output_params_t *oparams, u64 oparams_size, u64 src_slabid, u64 cpuid){
+void slab_interface(slab_input_params_t *iparams, u64 iparams_size, slab_output_params_t *oparams, u64 oparams_size, u64 src_slabid, u64 cpuid){
     u64 *inputval = (u64 *)iparams;
     u64 *outputval = (u64 *)oparams;
 

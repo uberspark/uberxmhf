@@ -185,7 +185,7 @@ static void _hcb_memoryfault(u64 cpuindex, u64 guest_slab_index, u64 gpa, u64 gv
 //////
 // slab interface
 
-void xhhyperdep_interface(slab_input_params_t *iparams, u64 iparams_size, slab_output_params_t *oparams, u64 oparams_size, u64 src_slabid, u64 cpuindex){
+void slab_interface(slab_input_params_t *iparams, u64 iparams_size, slab_output_params_t *oparams, u64 oparams_size, u64 src_slabid, u64 cpuindex){
     xc_hypappcb_inputparams_t *hcb_iparams = (xc_hypappcb_inputparams_t *)iparams;
     xc_hypappcb_outputparams_t *hcb_oparams = (xc_hypappcb_outputparams_t *)oparams;
     hcb_oparams->cbresult=XC_HYPAPPCB_CHAIN;
