@@ -25,7 +25,12 @@ $(THE_ARCHIVE): $(OBJECTS)
 	#mkdir -p "$(@D)"
 	mkdir -p $(LIBXMHFHICSLAB_OBJECTS_DIR)
 	@echo Building "$@" from "$<"
-	$(CC) -c $(CFLAGS) -o $(LIBXMHFHICSLAB_OBJECTS_DIR)/$@ $<
+	#$(CC) -c $(CFLAGS) -o $(LIBXMHFHICSLAB_OBJECTS_DIR)/$@ $<
+	$(CC) -fomit-frame-pointer -O2 -S -emit-llvm $(CFLAGS) $< -o $(LIBXMHFHICSLAB_OBJECTS_DIR)/$(@F).ll
+	cd $(LIBXMHFHICSLAB_OBJECTS_DIR) && fixnaked.pl $(@F).ll
+	cd $(LIBXMHFHICSLAB_OBJECTS_DIR) && llc -O=2 -march=x86-64 -mcpu=corei7 -mattr=$(LLC_ATTR) $(@F).ll
+	cd $(LIBXMHFHICSLAB_OBJECTS_DIR) && $(CC) -O2 -c $(CFLAGS) $(@F).s -o $(@F)
+
 
 .PHONY: clean
 clean:
