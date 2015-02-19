@@ -129,38 +129,9 @@ typedef struct {
 //HIC UAPI
 
 
-/*
-__slab_calluapi register mappings:
-
-RDI = XMHF_HIC_UAPI
-RSI = uapi_fn
-RDX = uapi_subfn
-RCX = undefined
-R8 = iparams
-R9 = oparams
-R10 = return RSP
-R11 = return_address
-
-*/
-
-__attribute__((naked)) __attribute__ ((noinline)) static inline bool __slab_calluapi(u64 reserved_uapicall, u64 reserved_uapicall_num,
-                                           u64 uapi_subfn,
-                                           u64 reserved, u64 iparams, u64 oparams){
-
-    asm volatile (
-        "movq %%rsp, %%r10 \r\n"
-        "movq $1f, %%r11 \r\n"\
-        "sysenter \r\n" \
-        \
-        "1:\r\n" \
-        "retq \r\n" \
-        :
-        :
-        :
-    );
-
-
-}
+__attribute__((naked)) bool __slab_calluapi(u64 reserved_uapicall,
+        u64 reserved_uapicall_num,  u64 uapi_subfn,
+        u64 reserved, u64 iparams, u64 oparams);
 
 
 #define XMHF_HIC_SLAB_UAPI_CPUSTATE(cpustatefn, iparams, oparams) \
@@ -179,46 +150,9 @@ __attribute__((naked)) __attribute__ ((noinline)) static inline bool __slab_call
 
 //HIC trampoline
 
-/*
-__slab_calltrampoline register mappings:
-
-RDI = call type (XMHF_HIC_SLABCALL)
-RSI = iparams
-RDX = iparams_size
-RCX = oparams
-R8 = oparams_size
-R9 = dst_slabid
-R10 = return RSP;
-R11 = return_address
-
-*/
-
-
-__attribute__((naked)) __attribute__ ((noinline)) static inline bool __slab_calltrampoline(u64 reserved, slab_input_params_t *iparams, u64 iparams_size, slab_output_params_t *oparams, u64 oparams_size, u64 dst_slabid){
-    asm volatile (
-        "pushq %%rbx \r\n"
-        "pushq %%r12 \r\n"
-        "pushq %%r13 \r\n"
-        "pushq %%r14 \r\n"
-        "pushq %%r15 \r\n"
-
-        "movq %0, %%rdi \r\n"
-        "movq %%rsp, %%r10 \r\n"
-        "movq $1f, %%r11 \r\n"\
-        "sysenter \r\n" \
-        \
-        "1:\r\n" \
-        "popq %%r15 \r\n"
-        "popq %%r14 \r\n"
-        "popq %%r13 \r\n"
-        "popq %%r12 \r\n"
-        "popq %%rbx \r\n"
-        "retq \r\n" \
-        :
-        : "i" (XMHF_HIC_SLABCALL)
-        :
-    );
-}
+__attribute__((naked)) bool __slab_calltrampoline(u64 reserved,
+    slab_input_params_t *iparams, u64 iparams_size,
+    slab_output_params_t *oparams, u64 oparams_size, u64 dst_slabid);
 
 
 
