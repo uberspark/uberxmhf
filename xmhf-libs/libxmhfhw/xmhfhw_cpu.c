@@ -113,10 +113,10 @@ void write_cr4(u64 val){
 }
 
 
-void skinit(unsigned long eax) {
+/*void skinit(unsigned long eax) {
     __asm__("mov %0, %%eax": :"r" (eax));
     __asm__("skinit %%eax":);
-}
+}*/
 
 
 //segment register access
