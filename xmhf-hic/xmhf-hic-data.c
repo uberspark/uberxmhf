@@ -259,10 +259,18 @@ __attribute__(( aligned(16) )) u64 __xmhfhic_x86vmx_gdt_start[]  = {
 	0x0000000000000000ULL,
 };
 
+/* x86_64
 // GDT descriptor
 __attribute__(( aligned(16) )) arch_x86_gdtdesc_t __xmhfhic_x86vmx_gdt  = {
 	.size=sizeof(__xmhfhic_x86vmx_gdt_start)-1,
 	.base=(u64)&__xmhfhic_x86vmx_gdt_start,
+};
+*/
+
+// GDT descriptor
+__attribute__(( aligned(16) )) arch_x86_gdtdesc_t __xmhfhic_x86vmx_gdt  = {
+	.size=sizeof(__xmhfhic_x86vmx_gdt_start)-1,
+	.base=(u32)&__xmhfhic_x86vmx_gdt_start,
 };
 
 // TSS
@@ -277,10 +285,18 @@ __attribute__(( aligned(4096) )) u8 __xmhfhic_x86vmx_tss_stack[MAX_PLATFORM_CPUS
 // IDT
 __attribute__(( aligned(16) )) idtentry_t __xmhfhic_x86vmx_idt_start[EMHF_XCPHANDLER_MAXEXCEPTIONS] ;
 
+/* x86_64
 // IDT descriptor
 __attribute__(( aligned(16) )) arch_x86_idtdesc_t __xmhfhic_x86vmx_idt = {
 	.size=sizeof(__xmhfhic_x86vmx_idt_start)-1,
 	.base=(u64)&__xmhfhic_x86vmx_idt_start,
+};
+*/
+
+// IDT descriptor
+__attribute__(( aligned(16) )) arch_x86_idtdesc_t __xmhfhic_x86vmx_idt = {
+	.size=sizeof(__xmhfhic_x86vmx_idt_start)-1,
+	.base=(u32)&__xmhfhic_x86vmx_idt_start,
 };
 
 

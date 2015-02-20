@@ -396,6 +396,8 @@ typedef struct {
     u64 orig_ss;
 } __attribute__((packed)) x86vmx_exception_frame_errcode_t;
 
+
+/* x86_64
 //*
 //x86 GDT descriptor type
 typedef struct {
@@ -415,6 +417,26 @@ typedef struct {
 typedef struct __tss {
 	u32 reserved;
 	u64 rsp0;
+} __attribute__((packed)) tss_t;
+*/
+
+
+//x86 GDT descriptor type
+typedef struct {
+		u16 size;
+		u32 base;
+} __attribute__((packed)) arch_x86_gdtdesc_t;
+
+//x86 IDT descriptor type
+typedef struct {
+		u16 size;
+		u32 base;
+} __attribute__((packed)) arch_x86_idtdesc_t;
+
+//TSS descriptor (partial)
+typedef struct __tss {
+	u32 reserved;
+	u32 esp0;
 } __attribute__((packed)) tss_t;
 
 

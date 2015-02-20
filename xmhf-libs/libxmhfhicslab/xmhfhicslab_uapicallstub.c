@@ -72,6 +72,8 @@ __attribute__((naked)) bool __slab_calluapi(u64 reserved_uapicall,
         u64 reserved_uapicall_num,  u64 uapi_subfn,
         u64 reserved, u64 iparams, u64 oparams){
 
+/*
+    // TODO: x86_64 --> x86
     asm volatile (
         "movq %%rsp, %%r10 \r\n"
         "movq $1f, %%r11 \r\n"\
@@ -83,6 +85,6 @@ __attribute__((naked)) bool __slab_calluapi(u64 reserved_uapicall,
         :
         :
     );
-
+*/
 
 }

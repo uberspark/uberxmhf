@@ -10,6 +10,9 @@ print "\n/* author: amit vasudevan (amitvasudevan@acm.org) */";
 
 print "\n#include <xmhf.h>";
 print "\n";
+print "\n";
+print "\nOUTPUT_ARCH(\"i386\")";
+print "\n";
 print "\nENTRY(xmhf_runtime_entry)";
 print "\nMEMORY";
 print "\n{";

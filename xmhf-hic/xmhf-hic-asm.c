@@ -51,7 +51,8 @@
 // XMHF HIC prime assembly language code blobs
 // author: amit vasudevan (amitvasudevan@acm.org)
 
-
+/*
+// TODO: x86_64 --> x86
 __attribute__((aligned(4096))) static u64 _xcprimeon_init_pdt[(PAE_PTRS_PER_PDPT*PAE_PTRS_PER_PDT)] = {
 	0x0000000000000087,0x0000000000200087,0x0000000000400087,0x0000000000600087,
 	0x0000000000800087,0x0000000000a00087,0x0000000000c00087,0x0000000000e00087,
@@ -579,7 +580,7 @@ __attribute__((aligned(4096))) static u64 _xcprimeon_init_pml4t[PAE_MAXPTRS_PER_
     ((u64)(&_xcprimeon_init_pdpt) + (u64)(_PAGE_PRESENT | _PAGE_RW | _PAGE_USER) ),
     0
 };
-
+*/
 
 __attribute__(( aligned(16) )) static u64 _xcprimeon_init_gdt_start[]  = {
 	0x0000000000000000ULL,	//NULL descriptor
@@ -595,6 +596,8 @@ __attribute__(( aligned(16) )) static arch_x86_gdtdesc_t _xcprimeon_init_gdt  = 
 
 __attribute__((naked)) __attribute__ ((section(".hic_entrystub"))) __attribute__(( align(4096) )) void xcprimeon_arch_entry(void) {
 
+/*
+	//TODO: x86_64 --> x86
 	asm volatile (
                     ".code32 \r\n"
 					".fill 4096, 1, 0 \r\n"
@@ -652,6 +655,8 @@ __attribute__((naked)) __attribute__ ((section(".hic_entrystub"))) __attribute__
 			    : "i" (&_xcprimeon_init_pml4t), "i" (&_xcprimeon_init_gdt)
                 :
 	);
+*/
+
 }
 
 
@@ -696,6 +701,8 @@ __attribute__(( section(".stack") )) __attribute__(( aligned(4096) )) static u8 
 
 __attribute__((naked)) void _ap_bootstrap_code(void) {
 
+/*
+    //TODO: x86_64 --> x86
     asm volatile (
            " .code32 \r\n"
            " movw %0, %%ax \r\n"
@@ -722,6 +729,8 @@ __attribute__((naked)) void _ap_bootstrap_code(void) {
             :
 
         );
+*/
+
 }
 
 
@@ -733,6 +742,7 @@ __attribute__((naked)) void _ap_bootstrap_code(void) {
 bool __xmhfhic_ap_entry(void) __attribute__((naked)){
     extern u64 _ap_cr3;
 
+/*    //TODO: x86_64 --> x86
     asm volatile(
                     ".code32 \r\n"
 					"_xcsmp_ap_start: \r\n"
@@ -819,7 +829,7 @@ bool __xmhfhic_ap_entry(void) __attribute__((naked)){
 
                     :
 	);
-
+*/
 
 }
 
@@ -856,6 +866,8 @@ bool __xmhfhic_ap_entry(void) __attribute__((naked)){
 //load GDT and initialize segment registers
 void __xmhfhic_x86vmx_loadGDT(arch_x86_gdtdesc_t *gdt_addr){
 
+/*
+    //TODO: x86_64 --> x86
 	asm volatile(
 		"lgdt  %0 \r\n"
 		"pushq	%1 \r\n"				// far jump to runtime entry point
@@ -872,6 +884,8 @@ void __xmhfhic_x86vmx_loadGDT(arch_x86_gdtdesc_t *gdt_addr){
 		: "m" (*gdt_addr), "i" (__CS_CPL0), "i" (__DS_CPL0)
 		: "eax"
 	);
+*/
+
 }
 
 
@@ -888,6 +902,9 @@ void __xmhfhic_x86vmx_loadIDT(arch_x86_idtdesc_t *idt_addr){
 
 //load TR
 void __xmhfhic_x86vmx_loadTR(u64 cpuid){
+
+/*
+      //TODO:x86_64 --> x86
 	  asm volatile(
 		"movq %0, %%rax\r\n"
 		"ltr %%ax\r\n"				//load TR
@@ -895,12 +912,16 @@ void __xmhfhic_x86vmx_loadTR(u64 cpuid){
 	     : "g"(__TRSEL + ((u32)cpuid * 16) )
 	     : "rax"
 	  );
+*/
+
 }
 
 
 //set IOPl to CPl-3
 void __xmhfhic_x86vmx_setIOPL3(u64 cpuid){
 
+/*
+    //TODO: x86_64 --> x86
 	asm volatile(
         "pushfq \r\n"
         "popq %%rax \r\n"
@@ -911,7 +932,7 @@ void __xmhfhic_x86vmx_setIOPL3(u64 cpuid){
 		: //no inputs
 		: "rax", "cc"
 	);
-
+*/
 
 }
 
@@ -940,6 +961,8 @@ void __xmhfhic_x86vmx_setIOPL3(u64 cpuid){
 
 void xmhfhic_arch_relinquish_control_to_init_slab(u64 cpuid, u64 entrystub, u64 mempgtbl_cr3, u64 slabtos){
 
+/*
+    //TODO: x86_64 --> x86
     //switch page tables to init slab pagetables
     asm volatile(
          "movq %0, %%rax \r\n"
@@ -950,18 +973,16 @@ void xmhfhic_arch_relinquish_control_to_init_slab(u64 cpuid, u64 entrystub, u64 
     );
 
 
-    /*
 
-    RDI = iparams
-    RSI = iparams_size
-    RDX = slab entrystub; used for SYSEXIT
-    RCX = slab entrystub stack TOS for the CPU; used for SYSEXIT
-    R8 = oparams
-    R9 = oparams_size
-    R10 = src_slabid
-    R11 = cpuid
+    //RDI = iparams
+    //RSI = iparams_size
+    //RDX = slab entrystub; used for SYSEXIT
+    //RCX = slab entrystub stack TOS for the CPU; used for SYSEXIT
+    //R8 = oparams
+    //R9 = oparams_size
+    //R10 = src_slabid
+    //R11 = cpuid
 
-    */
 
     asm volatile(
          "movq %0, %%rdi \r\n"
@@ -988,7 +1009,7 @@ void xmhfhic_arch_relinquish_control_to_init_slab(u64 cpuid, u64 entrystub, u64 
 
         : "rdi", "rsi", "rdx", "rcx", "r8", "r9", "r10", "r11"
     );
-
+*/
 
 }
 
@@ -1042,22 +1063,22 @@ void xmhfhic_arch_relinquish_control_to_init_slab(u64 cpuid, u64 entrystub, u64 
 
 //HIC runtime trampoline stub
 
-/*
-__xmhfhic_rtm_trampoline stub entry register mappings:
+//__xmhfhic_rtm_trampoline stub entry register mappings:
+//
+//RDI = call type (XMHF_HIC_SLABCALL)
+//RSI = iparams
+//RDX = iparams_size
+//RCX = oparams
+//R8 = oparams_size
+//R9 = dst_slabid
+//R10 = return RSP;
+//R11 = return_address
 
-RDI = call type (XMHF_HIC_SLABCALL)
-RSI = iparams
-RDX = iparams_size
-RCX = oparams
-R8 = oparams_size
-R9 = dst_slabid
-R10 = return RSP;
-R11 = return_address
-
-*/
 
 __attribute__((naked)) void __xmhfhic_rtm_trampoline_stub(void){
 
+/*
+    //TODO: x86_64 --> x86
     asm volatile (
         "cmpq %0, %%rdi \r\n"
         "je 1f \r\n"
@@ -1106,7 +1127,10 @@ __attribute__((naked)) void __xmhfhic_rtm_trampoline_stub(void){
       : "i" (XMHF_HIC_UAPI), "i" (X86SMP_LAPIC_ID_MEMORYADDRESS)
       :
     );
+
+    */
 }
+
 
 
 
@@ -1140,6 +1164,8 @@ R9 = dst_slabid
 
 __attribute__((naked)) void __xmhfhic_rtm_exception_stub(void){
 
+/*
+    //TODO: x86_64 --> x86
 	asm volatile(
                         "pushq %%rsp \r\n"
                         "pushq %%rbp \r\n"
@@ -1208,9 +1234,11 @@ __attribute__((naked)) void __xmhfhic_rtm_exception_stub(void){
 					    "i" (X86SMP_LAPIC_ID_MEMORYADDRESS)
                     :
 		);
+    */
+
 }
 
-
+/* x86_64
 #define XMHF_EXCEPTION_HANDLER_DEFINE(vector) 												\
 	static void __xmhf_exception_handler_##vector(void) __attribute__((naked)) { 					\
 		asm volatile(												\
@@ -1227,6 +1255,30 @@ __attribute__((naked)) void __xmhfhic_rtm_exception_stub(void){
 		asm volatile(												\
                         "pushq $0x0 \r\n" \
                         "pushq %0 \r\n"\
+                        "jmp __xmhfhic_rtm_exception_stub\r\n"\
+					: \
+					: "i" (vector) \
+                    : \
+               		);	\
+    }\
+*/
+
+#define XMHF_EXCEPTION_HANDLER_DEFINE(vector) 												\
+	static void __xmhf_exception_handler_##vector(void) __attribute__((naked)) { 					\
+		asm volatile(												\
+                        "pushl %0 \r\n"\
+                        "jmp __xmhfhic_rtm_exception_stub\r\n"\
+					: \
+					: "i" (vector) \
+                    : \
+               		);	\
+    }\
+
+#define XMHF_EXCEPTION_HANDLER_DEFINE_WITHERRORCODE(vector) 												\
+	static void __xmhf_exception_handler_##vector(void) __attribute__((naked)) { 					\
+		asm volatile(												\
+                        "pushl $0x0 \r\n" \
+                        "pushl %0 \r\n"\
                         "jmp __xmhfhic_rtm_exception_stub\r\n"\
 					: \
 					: "i" (vector) \
@@ -1270,7 +1322,44 @@ XMHF_EXCEPTION_HANDLER_DEFINE_WITHERRORCODE(29)
 XMHF_EXCEPTION_HANDLER_DEFINE_WITHERRORCODE(30)
 XMHF_EXCEPTION_HANDLER_DEFINE_WITHERRORCODE(31)
 
+/* x86_64
 u64  __xmhfhic_exceptionstubs[] = { XMHF_EXCEPTION_HANDLER_ADDROF(0),
+							XMHF_EXCEPTION_HANDLER_ADDROF(1),
+							XMHF_EXCEPTION_HANDLER_ADDROF(2),
+							XMHF_EXCEPTION_HANDLER_ADDROF(3),
+							XMHF_EXCEPTION_HANDLER_ADDROF(4),
+							XMHF_EXCEPTION_HANDLER_ADDROF(5),
+							XMHF_EXCEPTION_HANDLER_ADDROF(6),
+							XMHF_EXCEPTION_HANDLER_ADDROF(7),
+							XMHF_EXCEPTION_HANDLER_ADDROF(8),
+							XMHF_EXCEPTION_HANDLER_ADDROF(9),
+							XMHF_EXCEPTION_HANDLER_ADDROF(10),
+							XMHF_EXCEPTION_HANDLER_ADDROF(11),
+							XMHF_EXCEPTION_HANDLER_ADDROF(12),
+							XMHF_EXCEPTION_HANDLER_ADDROF(13),
+							XMHF_EXCEPTION_HANDLER_ADDROF(14),
+							XMHF_EXCEPTION_HANDLER_ADDROF(15),
+							XMHF_EXCEPTION_HANDLER_ADDROF(16),
+							XMHF_EXCEPTION_HANDLER_ADDROF(17),
+							XMHF_EXCEPTION_HANDLER_ADDROF(18),
+							XMHF_EXCEPTION_HANDLER_ADDROF(19),
+							XMHF_EXCEPTION_HANDLER_ADDROF(20),
+							XMHF_EXCEPTION_HANDLER_ADDROF(21),
+							XMHF_EXCEPTION_HANDLER_ADDROF(22),
+							XMHF_EXCEPTION_HANDLER_ADDROF(23),
+							XMHF_EXCEPTION_HANDLER_ADDROF(24),
+							XMHF_EXCEPTION_HANDLER_ADDROF(25),
+							XMHF_EXCEPTION_HANDLER_ADDROF(26),
+							XMHF_EXCEPTION_HANDLER_ADDROF(27),
+							XMHF_EXCEPTION_HANDLER_ADDROF(28),
+							XMHF_EXCEPTION_HANDLER_ADDROF(29),
+							XMHF_EXCEPTION_HANDLER_ADDROF(30),
+							XMHF_EXCEPTION_HANDLER_ADDROF(31),
+};
+
+*/
+
+u32  __xmhfhic_exceptionstubs[] = { XMHF_EXCEPTION_HANDLER_ADDROF(0),
 							XMHF_EXCEPTION_HANDLER_ADDROF(1),
 							XMHF_EXCEPTION_HANDLER_ADDROF(2),
 							XMHF_EXCEPTION_HANDLER_ADDROF(3),
@@ -1317,12 +1406,11 @@ u64  __xmhfhic_exceptionstubs[] = { XMHF_EXCEPTION_HANDLER_ADDROF(0),
 
 
 
-
-
-
 //HIC runtime intercept stub
 __attribute__((naked)) void __xmhfhic_rtm_intercept_stub(void){
 
+/*
+    //TODO: x86_64--> x86
 	asm volatile(
                         "pushq %%rsp \r\n"
                         "pushq %%rbp \r\n"
@@ -1394,6 +1482,9 @@ __attribute__((naked)) void __xmhfhic_rtm_intercept_stub(void){
                         "i" (VMCS_CONTROL_VPID)
                     :
 		);
+
+*/
+
 }
 
 
@@ -1413,18 +1504,18 @@ void __xmhfhic_trampoline_slabxfer_h2h(u64 iparams, u64 iparams_size,
                                        u64 oparams, u64 oparams_size,
                                        u64 src_slabid, u64 cpuid){
 
-    /*
+/*
+                    //TODO: x86_64 --> x86
 
-                    RDI = newiparams
-                    RSI = iparams_size
-                    RDX = slab entrystub; used for SYSEXIT
-                    RCX = slab entrystub stack TOS for the CPU; used for SYSEXIT
-                    R8 = newoparams
-                    R9 = oparams_size
-                    R10 = src_slabid
-                    R11 = cpuid
+                    //RDI = newiparams
+                    //RSI = iparams_size
+                    //RDX = slab entrystub; used for SYSEXIT
+                    //RCX = slab entrystub stack TOS for the CPU; used for SYSEXIT
+                    //R8 = newoparams
+                    //R9 = oparams_size
+                    //R10 = src_slabid
+                    //R11 = cpuid
 
-                    */
 
                     asm volatile(
                          "movq %0, %%rdi \r\n"
@@ -1450,7 +1541,7 @@ void __xmhfhic_trampoline_slabxfer_h2h(u64 iparams, u64 iparams_size,
                           "m" (cpuid)
                         : "rdi", "rsi", "rdx", "rcx", "r8", "r9", "r10", "r11"
                     );
-
+*/
 
 
 
@@ -1507,18 +1598,20 @@ void __xmhfhic_trampoline_slabxfer_callexception(u64 iparams, u64 iparams_size,
                                                  u64 entrystub, u64 slabtos,
                                                  u64 src_slabid, u64 cpuid){
 
-                /*
 
-                RDI = newiparams
-                RSI = iparams_size
-                RDX = slab entrystub; used for SYSEXIT
-                RCX = slab entrystub stack TOS for the CPU; used for SYSEXIT
-                R8 = 0 (oparams)
-                R9 = 0 (oparams_size)
-                R10 = src_slabid
-                R11 = cpuid
+/*
+                //TODO: x86_64 --> x86
 
-                */
+                //RDI = newiparams
+                //RSI = iparams_size
+                //RDX = slab entrystub; used for SYSEXIT
+                //RCX = slab entrystub stack TOS for the CPU; used for SYSEXIT
+                //R8 = 0 (oparams)
+                //R9 = 0 (oparams_size)
+                //R10 = src_slabid
+                //R11 = cpuid
+
+
 
                 asm volatile(
                      "movq %0, %%rdi \r\n"
@@ -1544,7 +1637,7 @@ void __xmhfhic_trampoline_slabxfer_callexception(u64 iparams, u64 iparams_size,
                       "m" (cpuid)
                     : "rdi", "rsi", "rdx", "rcx", "r8", "r9", "r10", "r11"
                 );
-
+*/
 
 
 }
@@ -1555,18 +1648,19 @@ void __xmhfhic_trampoline_slabxfer_callexception(u64 iparams, u64 iparams_size,
 void __xmhfhic_trampoline_slabxfer_callintercept(u64 entrystub, u64 slabtos,
                                                  u64 src_slabid, u64 cpuid){
 
-            /*
+/*
+            //TODO: x86_64 --> x86
 
-            RDI = newiparams (NULL)
-            RSI = iparams_size (0)
-            RDX = slab entrystub; used for SYSEXIT
-            RCX = slab entrystub stack TOS for the CPU; used for SYSEXIT
-            R8 = newoparams (NULL)
-            R9 = oparams_size (0)
-            R10 = src_slabid
-            R11 = cpuid
+            //RDI = newiparams (NULL)
+            //RSI = iparams_size (0)
+            //RDX = slab entrystub; used for SYSEXIT
+            //RCX = slab entrystub stack TOS for the CPU; used for SYSEXIT
+            //R8 = newoparams (NULL)
+            //R9 = oparams_size (0)
+            //R10 = src_slabid
+            //R11 = cpuid
 
-            */
+
 
             asm volatile(
                  "movq %0, %%rdi \r\n"
@@ -1591,13 +1685,15 @@ void __xmhfhic_trampoline_slabxfer_callintercept(u64 entrystub, u64 slabtos,
                   "m" (cpuid)
                 : "rdi", "rsi", "rdx", "rcx", "r8", "r9", "r10", "r11"
             );
+*/
 
 }
 
 
 void __xmhfhic_trampoline_slabxfer_retintercept(u64 addrgprs){
 
-
+/*
+            //TODO: x86_64 --> x86
             asm volatile (
                 "movq %0, %%rsp \r\n"
                 "popq %%r8 \r\n"
@@ -1623,7 +1719,7 @@ void __xmhfhic_trampoline_slabxfer_retintercept(u64 addrgprs){
                   "rax", "rbx", "rcx", "rdx", "rsi", "rdi", "rbp"
 
             );
-
+*/
 
 
 }
@@ -1632,6 +1728,8 @@ void __xmhfhic_trampoline_slabxfer_retintercept(u64 addrgprs){
 
 void __xmhfhic_trampoline_slabxfer_retexception(u64 addr_exframe){
 
+/*
+                    //TODO: x86_64 --> x86
                     asm volatile (
                         "movq %0, %%rsp \r\n"
                         "popq %%r8 \r\n"
@@ -1658,6 +1756,6 @@ void __xmhfhic_trampoline_slabxfer_retexception(u64 addr_exframe){
                           "rax", "rbx", "rcx", "rdx", "rsi", "rdi", "rbp", "rsp"
 
                     );
-
+*/
 
 }
