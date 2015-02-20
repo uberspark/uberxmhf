@@ -44,17 +44,13 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-//pci.h - peripheral component interconnect (PCI) spec.
-// implementation declarations
+//PCI functions
 //author: amit vasudevan (amitvasudevan@acm.org)
 
-#ifndef __XMHFHW_LEGIO_PCI_H__
-#define __XMHFHW_LEGIO_PCI_H__
-
-
-//from _pci.h
-
-#ifndef __ASSEMBLY__
+#include <xmhf.h>
+#include <xmhf-hwm.h>
+#include <xmhfhw.h>
+#include <xmhf-debug.h>
 
 
 /*
@@ -168,7 +164,7 @@
 //function and index
 //len = 1(byte), 2(word) and 4(dword)
 //value is a pointer to a 32-bit dword which contains the value read
-static inline void xmhf_baseplatform_arch_x86_pci_type1_read(u32 bus, u32 device, u32 function, u32 index, u32 len,
+void xmhf_baseplatform_arch_x86_pci_type1_read(u32 bus, u32 device, u32 function, u32 index, u32 len,
 			u32 *value){
 
 	//sanity checks
@@ -199,7 +195,7 @@ static inline void xmhf_baseplatform_arch_x86_pci_type1_read(u32 bus, u32 device
 //len = 1(byte), 2(word) and 4(dword)
 //value contains the value to be written
 
-static inline void xmhf_baseplatform_arch_x86_pci_type1_write(u32 bus, u32 device, u32 function, u32 index, u32 len,
+void xmhf_baseplatform_arch_x86_pci_type1_write(u32 bus, u32 device, u32 function, u32 index, u32 len,
 	u32 value){
 
  	//sanity checks
@@ -231,7 +227,7 @@ static inline void xmhf_baseplatform_arch_x86_pci_type1_write(u32 bus, u32 devic
 //PCI subsystem initialization
 //check that PCI chipset supports type-1 accesses
 //true for most systems after 2001
-static inline void xmhfhw_platform_bus_init(void){
+void xmhfhw_platform_bus_init(void){
   u32 tmp;
 
 	//save value at PCI_CONFIG_ADDR_PORT
@@ -252,29 +248,3 @@ static inline void xmhfhw_platform_bus_init(void){
   outl(tmp, PCI_CONFIG_ADDR_PORT);
 }
 
-/*//enumerates the PCI bus on the system
-static void _pci_enumeratebus(void){
-	u32 b, d, f;
-
-	//bus numbers range from 0-255, device from 0-31 and function from 0-7
-	for(b=0; b < PCI_BUS_MAX; b++){
-		for(d=0; d < PCI_DEVICE_MAX; d++){
-			for(f=0; f < PCI_FUNCTION_MAX; f++){
-				u32 vendor_id, device_id;
-				//read device and vendor ids, if no device then both will be 0xFFFF
-				xmhf_baseplatform_arch_x86_pci_type1_read(b, d, f, PCI_CONF_HDR_IDX_VENDOR_ID, sizeof(u16), &vendor_id);
-				xmhf_baseplatform_arch_x86_pci_type1_read(b, d, f, PCI_CONF_HDR_IDX_DEVICE_ID, sizeof(u16), &device_id);
-				if(vendor_id == 0xFFFF && device_id == 0xFFFF)
-					break;
-
-				_XDPRINTF_("\n	%02x:%02x.%1x -> vendor_id=%04x, device_id=%04x", b, d, f, vendor_id, device_id);
-			}
-		}
-	}
-
-
-}*/
-
-
-#endif /* __ASSEMBLY__ */
-#endif // __XMHFHW_LEGIO_PCI_H__

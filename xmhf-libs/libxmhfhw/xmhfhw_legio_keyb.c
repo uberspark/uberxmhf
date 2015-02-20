@@ -44,16 +44,16 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-// programmable interval timer (for micro second delay)
+//keyboard controller (for platform reset)
 //author: amit vasudevan (amitvasudevan@acm.org)
 
-#ifndef __XMHFHW_LEGIO_KEYB_H__
-#define __XMHFHW_LEGIO_KEYB_H__
-
-#ifndef __ASSEMBLY__
+#include <xmhf.h>
+#include <xmhf-hwm.h>
+#include <xmhfhw.h>
+#include <xmhf-debug.h>
 
 //generic x86 platform reboot
-static inline void xmhf_baseplatform_arch_x86_reboot(void){
+void xmhf_baseplatform_arch_x86_reboot(void){
 	unsigned char flush = 0x02;
 
 	while ((flush & 0x02) != 0)
