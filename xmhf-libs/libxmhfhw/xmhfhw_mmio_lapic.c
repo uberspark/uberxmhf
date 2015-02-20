@@ -47,12 +47,12 @@
 // XMHF HW CPU LAPIC decls.
 // author: amit vasudevan (amitvasudevan@acm.org)
 
-#ifndef __XMHFHW_MMIO_LAPIC_H__
-#define __XMHFHW_MMIO_LAPIC_H__
+#include <xmhf.h>
+#include <xmhf-hwm.h>
+#include <xmhfhw.h>
+#include <xmhf-debug.h>
 
-#ifndef __ASSEMBLY__
-
-static inline u32 xmhf_baseplatform_arch_x86_getcpulapicid(void){
+u32 xmhf_baseplatform_arch_x86_getcpulapicid(void){
   u32 eax, edx, *lapic_reg;
   u32 lapic_id;
 
@@ -70,6 +70,3 @@ static inline u32 xmhf_baseplatform_arch_x86_getcpulapicid(void){
   return lapic_id;
 }
 
-#endif //__ASSEMBLY__
-
-#endif // __XMHFHW_MMIO_LAPIC_H__

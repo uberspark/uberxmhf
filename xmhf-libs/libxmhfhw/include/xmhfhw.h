@@ -275,30 +275,48 @@ void xmhfhw_sysmemaccess_copy(u8 *dest, u8 *src, u32 size);
 #endif //__ASSEMBLY__
 
 
-/*
-//////xmhfhw_cpu_msr
+
+//////xmhfhw_legio_pci
 
 #ifndef __ASSEMBLY__
 
+void xmhf_baseplatform_arch_x86_pci_type1_read(u32 bus, u32 device, u32 function, u32 index, u32 len, u32 *value);
+void xmhf_baseplatform_arch_x86_pci_type1_write(u32 bus, u32 device, u32 function, u32 index, u32 len, u32 value);
+void xmhfhw_platform_bus_init(void);
 
 #endif //__ASSEMBLY__
-*/
 
 
-/*#include <_xmhfhw_cpu.h> --
-    #include <_xmhfhw_cpu_msr.h> --
-    #include <_xmhfhw_cpu_paging.h> --
-    #include <_xmhfhw_cpu_txt.h> --
-    #include <_xmhfhw_cpu_vmx.h> --
-    #include <_xmhfhw_cpu_legio.h> --
-    #include <_xmhfhw_cpu_mem.h> --
+
+//////xmhfhw_legio_pit
+
+#ifndef __ASSEMBLY__
+
+void xmhf_baseplatform_arch_x86_udelay(u32 usecs);
+
+#endif //__ASSEMBLY__
 
 
-#include <_xmhfhw_legio_pci.h>
-#include <_xmhfhw_legio_pit.h>
-#include <_xmhfhw_legio_keyb.h>
-#include <_xmhfhw_sysmem_bios.h>
-*/
+
+//////xmhfhw_legio_keyb
+
+#ifndef __ASSEMBLY__
+
+void xmhf_baseplatform_arch_x86_reboot(void);
+
+#endif //__ASSEMBLY__
+
+
+//////xmhfhw_sysmem_bios
+
+#ifndef __ASSEMBLY__
+
+u32 xmhfhw_platform_x86pc_acpi_getRSDP(ACPI_RSDP *rsdp);
+
+#endif //__ASSEMBLY__
+
+
+//////xmhfhw_mmio_vtd
 
 #ifndef __ASSEMBLY__
 
@@ -314,9 +332,51 @@ typedef struct {
     u64 addr_vtd_pdpt;
 }__attribute__((packed)) vtd_slpgtbl_handle_t;
 
+//vt-d register access function
+void _vtd_reg(VTD_DRHD *dmardevice, u32 access, u32 reg, void *value);
+VTD_DRHD *_vtd_get_drhd_struct(vtd_drhd_handle_t drhd_handle);
+bool xmhfhw_platform_x86pc_vtd_scanfor_drhd_units(vtd_drhd_handle_t *maxhandle, u32 *dmar_phys_addr_var);
+bool xmhfhw_platform_x86pc_vtd_drhd_initialize(vtd_drhd_handle_t drhd_handle);
+bool xmhfhw_platform_x86pc_vtd_drhd_invalidatecaches(vtd_drhd_handle_t drhd_handle);
+bool xmhfhw_platform_x86pc_vtd_drhd_set_root_entry_table(vtd_drhd_handle_t drhd_handle,  u64 ret_addr);
+void xmhfhw_platform_x86pc_vtd_drhd_enable_translation(vtd_drhd_handle_t drhd_handle);
+void xmhfhw_platform_x86pc_vtd_drhd_disable_translation(vtd_drhd_handle_t drhd_handle);
+void xmhfhw_platform_x86pc_vtd_drhd_enable_pmr(vtd_drhd_handle_t drhd_handle);
+void xmhfhw_platform_x86pc_vtd_drhd_disable_pmr(vtd_drhd_handle_t drhd_handle);
+void xmhfhw_platform_x86pc_vtd_drhd_set_plm_base_and_limit(vtd_drhd_handle_t drhd_handle, u32 base, u32 limit);
+void xmhfhw_platform_x86pc_vtd_drhd_set_phm_base_and_limit(vtd_drhd_handle_t drhd_handle, u64 base, u64 limit);
+u64 xmhfhw_platform_x86pc_vtd_drhd_reg_read(vtd_drhd_handle_t drhd_handle, u32 reg);
+void xmhfhw_platform_x86pc_vtd_drhd_reg_write(vtd_drhd_handle_t drhd_handle, u32 reg, u64 value);
+
+
 #endif //__ASSEMBLY__
 
-/*
+
+//////xmhfhw_mmio_lapic
+
+#ifndef __ASSEMBLY__
+
+u32 xmhf_baseplatform_arch_x86_getcpulapicid(void);
+
+#endif //__ASSEMBLY__
+
+
+
+
+
+/*#include <_xmhfhw_cpu.h> --
+    #include <_xmhfhw_cpu_msr.h> --
+    #include <_xmhfhw_cpu_paging.h> --
+    #include <_xmhfhw_cpu_txt.h> --
+    #include <_xmhfhw_cpu_vmx.h> --
+    #include <_xmhfhw_cpu_legio.h> --
+    #include <_xmhfhw_cpu_mem.h> --
+
+
+#include <_xmhfhw_legio_pci.h>
+#include <_xmhfhw_legio_pit.h>
+#include <_xmhfhw_legio_keyb.h>
+#include <_xmhfhw_sysmem_bios.h>
 #include <_xmhfhw_mmio_vtd.h>
 #include <_xmhfhw_mmio_lapic.h>
 */

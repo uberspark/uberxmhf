@@ -44,22 +44,19 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-// Advanced Configuration and Power-management Interface (ACPI) definitions
+// Platform BIOS data structure access
 // author: amit vasudevan (amitvasudevan@acm.org)
 
-//from _acpi.h
-
-#ifndef __XMHFHW_SYSMEM_BIOS_H__
-#define __XMHFHW_SYSMEM_BIOS_H__
-
-
-#ifndef __ASSEMBLY__
+#include <xmhf.h>
+#include <xmhf-hwm.h>
+#include <xmhfhw.h>
+#include <xmhf-debug.h>
 
 
 
 //------------------------------------------------------------------------------
 //compute checksum of ACPI table
-static inline u32 _acpi_computetablechecksum(u32 spaddr, u32 size){
+static u32 _acpi_computetablechecksum(u32 spaddr, u32 size){
   char *p;
   char checksum=0;
   u32 i;
@@ -77,7 +74,7 @@ static inline u32 _acpi_computetablechecksum(u32 spaddr, u32 size){
 //get the physical address of the root system description pointer (rsdp)
 //return 0 in case of error (ACPI RSDP not found) else the absolute physical
 //memory address of the RSDP
-static inline u32 xmhfhw_platform_x86pc_acpi_getRSDP(ACPI_RSDP *rsdp){
+u32 xmhfhw_platform_x86pc_acpi_getRSDP(ACPI_RSDP *rsdp){
   u16 ebdaseg;
   u32 ebdaphys;
   u32 i, found=0;
@@ -123,10 +120,3 @@ static inline u32 xmhfhw_platform_x86pc_acpi_getRSDP(ACPI_RSDP *rsdp){
 }
 //------------------------------------------------------------------------------
 
-
-
-
-
-#endif	//__ASSEMBLY__
-
-#endif //__XMHFHW_SYSMEM_BIOS_H__

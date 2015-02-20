@@ -47,15 +47,13 @@
 // programmable interval timer (for micro second delay)
 //author: amit vasudevan (amitvasudevan@acm.org)
 
-#ifndef __XMHFHW_LEGIO_PIT_H__
-#define __XMHFHW_LEGIO_PIT_H__
-
-//from _pit.h
-
-#ifndef __ASSEMBLY__
+#include <xmhf.h>
+#include <xmhf-hwm.h>
+#include <xmhfhw.h>
+#include <xmhf-debug.h>
 
 //---microsecond delay----------------------------------------------------------
-static inline void xmhf_baseplatform_arch_x86_udelay(u32 usecs){
+void xmhf_baseplatform_arch_x86_udelay(u32 usecs){
   u8 val;
   u32 latchregval;
 
@@ -89,6 +87,3 @@ static inline void xmhf_baseplatform_arch_x86_udelay(u32 usecs){
   outb(val, 0x61);
 }
 
-
-#endif /* __ASSEMBLY__ */
-#endif // __XMHFHW_LEGIO_PIT_H__
