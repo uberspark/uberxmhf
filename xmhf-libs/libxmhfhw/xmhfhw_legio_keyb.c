@@ -44,32 +44,25 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-// XMHF HW CPU LAPIC decls.
-// author: amit vasudevan (amitvasudevan@acm.org)
+//keyboard controller (for platform reset)
+//author: amit vasudevan (amitvasudevan@acm.org)
 
-#ifndef __XMHFHW_MMIO_LAPIC_H__
-#define __XMHFHW_MMIO_LAPIC_H__
+#include <xmhf.h>
+#include <xmhf-hwm.h>
+#include <xmhfhw.h>
+#include <xmhf-debug.h>
 
-#ifndef __ASSEMBLY__
+//generic x86 platform reboot
+void xmhf_baseplatform_arch_x86_reboot(void){
+	unsigned char flush = 0x02;
 
-static inline u32 xmhf_baseplatform_arch_x86_getcpulapicid(void){
-  u32 eax, edx, *lapic_reg;
-  u32 lapic_id;
+	while ((flush & 0x02) != 0)
+		flush = inb(0x64);
+	outb(0xFE, 0x64);
 
-  //read LAPIC id of this core
-  rdmsr(MSR_APIC_BASE, &eax, &edx);
-  //if (edx != 0 ){ //APIC is not below 4G, unsupported
-  //	_XDPRINTF_("%s: APIC is not below 4G, unsupported. Halting!", __FUNCTION__);
-  //	HALT();
-  //}
-  eax &= (u32)0xFFFFF000UL;
-  lapic_reg = (u32 *)((u32)eax+ (u32)LAPIC_ID);
-  lapic_id = xmhfhw_sysmemaccess_readu32((u32)lapic_reg);
-  lapic_id = lapic_id >> 24;
+	//never get here
+	//_XDPRINTF_("\n%s: should never get here. halt!", __FUNCTION__);
+	HALT();
 
-  return lapic_id;
 }
 
-#endif //__ASSEMBLY__
-
-#endif // __XMHFHW_MMIO_LAPIC_H__

@@ -44,15 +44,19 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-/*
- * dummy module to generate libxmhfslab.a
- * author: amit vasudevan (amitvasudevan@acm.org)
-*/
-
+// xmhfhw_cpu_paging: CPU paging related functions
+// author: amit vasudevan (amitvasudevan@acm.org)
 
 #include <xmhf.h>
+#include <xmhf-hwm.h>
+#include <xmhfhw.h>
 #include <xmhf-debug.h>
 
-void _xmhfslab_dummy(void){
+void cache_wbinvd(void){
+    asm volatile("wbinvd\n" :::"memory");
+}
+
+void tlb_invlpg(u64 addr){
+    asm volatile("invlpg (%0)\n": /* no output */ : "r" (addr): "memory");
 
 }

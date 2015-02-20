@@ -98,7 +98,7 @@ static void _xcexhub_unhandled(x86vmx_exception_frame_errcode_t *exframe){
 }
 
 
-void xcexhub_interface(slab_input_params_t *iparams, u64 iparams_size, slab_output_params_t *oparams, u64 oparams_size, u64 src_slabid, u64 cpuid){
+void slab_interface(slab_input_params_t *iparams, u64 iparams_size, slab_output_params_t *oparams, u64 oparams_size, u64 src_slabid, u64 cpuid){
     x86vmx_exception_frame_errcode_t *exframe = (x86vmx_exception_frame_errcode_t *)iparams;
 
 	_XDPRINTF_("%s[%u]: Got control: RSP=%016llx\n",

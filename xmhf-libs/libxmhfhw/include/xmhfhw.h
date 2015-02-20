@@ -47,14 +47,319 @@
 #ifndef __XMHFHW_H__
 #define __XMHFHW_H__
 
-#include <_xmhfhw_cpu.h>
 
-#include <_xmhfhw_legio_pci.h>
-#include <_xmhfhw_legio_pit.h>
-#include <_xmhfhw_legio_keyb.h>
-#include <_xmhfhw_sysmem_bios.h>
-#include <_xmhfhw_mmio_vtd.h>
-#include <_xmhfhw_mmio_lapic.h>
+//////xmhfhw_cpu
+
+#define MAX_LCP_PO_DATA_SIZE     64*1024  /* 64k */
+
+#ifndef __ASSEMBLY__
+
+typedef struct {
+    mtrr_def_type_t	    mtrr_def_type;
+    int	                num_var_mtrrs;
+    mtrr_physbase_t     mtrr_physbases[MAX_VARIABLE_MTRRS];
+    mtrr_physmask_t     mtrr_physmasks[MAX_VARIABLE_MTRRS];
+} __attribute__((packed)) mtrr_state_t;
+
+
+/*
+ * OS/loader to MLE structure
+ *   - private to tboot (so can be any format we need)
+ */
+
+typedef struct {
+    uint32_t          version;           /* currently 2 */
+    mtrr_state_t      saved_mtrr_state;  /* saved prior to changes for SINIT */
+    //multiboot_info_t* mbi;               /* needs to be restored to ebx */
+    void *mbi;
+    uint32_t          saved_misc_enable_msr;  /* saved prior to SENTER */
+                                         /* PO policy data */
+    uint8_t           lcp_po_data[MAX_LCP_PO_DATA_SIZE];
+} __attribute__ ((packed)) os_mle_data_t;
+
+
+/*
+ * TXT heap data format and field accessor fns
+ */
+
+/*
+ * offset                 length                      field
+ * ------                 ------                      -----
+ *  0                      8                          bios_data_size
+ *  8                      bios_data_size - 8      bios_data
+ *
+ *  bios_data_size      8                          os_mle_data_size
+ *  bios_data_size +    os_mle_data_size - 8       os_mle_data
+ *   8
+ *
+ *  bios_data_size +    8                          os_sinit_data_size
+ *   os_mle_data_size
+ *  bios_data_size +    os_sinit_data_size - 8     os_sinit_data
+ *   os_mle_data_size +
+ *   8
+ *
+ *  bios_data_size +    8                          sinit_mle_data_size
+ *   os_mle_data_size +
+ *   os_sinit_data_size
+ *  bios_data_size +    sinit_mle_data_size - 8    sinit_mle_data
+ *   os_mle_data_size +
+ *   os_sinit_data_size +
+ *   8
+ */
+
+
+
+void xmhfhw_cpu_cpuid(u32 op, u32 *eax, u32 *ebx, u32 *ecx, u32 *edx);
+uint64_t rdtsc64(void);
+u64 read_cr0(void);
+void write_cr0(u64 val);
+u64 read_cr3(void);
+u64 read_rsp(void);
+void write_cr3(u64 val);
+u64 read_cr4(void);
+void write_cr4(u64 val);
+void skinit(unsigned long eax);
+u32 read_segreg_cs(void);
+u32 read_segreg_ds(void);
+u32 read_segreg_es(void);
+u32 read_segreg_fs(void);
+u32 read_segreg_gs(void);
+u32 read_segreg_ss(void);
+u16 read_tr_sel(void);
+void wbinvd(void);
+uint32_t bsrl(uint32_t mask);
+void xmhfhw_cpu_disable_intr(void);
+void enable_intr(void);
+u64 xgetbv(u32 xcr_reg);
+void xsetbv(u32 xcr_reg, u64 value);
+void sysexitq(u64 rip, u64 rsp);
+void spin_lock(volatile u32 *lock);
+void spin_unlock(volatile u32 *lock);
+u64 xmhf_baseplatform_arch_x86_getgdtbase(void);
+u64 xmhf_baseplatform_arch_x86_getidtbase(void);
+u64  xmhf_baseplatform_arch_x86_gettssbase(void);
+int fls(int mask);
+u32 get_cpu_vendor_or_die(void);
+bool xmhf_baseplatform_arch_x86_cpuhasxsavefeature(void);
+u32 xmhf_baseplatform_arch_x86_getcpuvendor(void);
+u32 xmhf_baseplatform_arch_getcpuvendor(void);
+
+
+uint64_t read_pub_config_reg(uint32_t reg);
+void write_pub_config_reg(uint32_t reg, uint64_t val);
+uint64_t read_priv_config_reg(uint32_t reg);
+void write_priv_config_reg(uint32_t reg, uint64_t val);
+bool txt_is_launched(void);
+
+
+void set_all_mtrrs(bool enable);
+bool set_mem_type(void *base, uint32_t size, uint32_t mem_type);
+void print_mtrrs(const mtrr_state_t *saved_state);
+void xmhfhw_cpu_x86_save_mtrrs(mtrr_state_t *saved_state);
+bool validate_mtrrs(const mtrr_state_t *saved_state);
+void xmhfhw_cpu_x86_restore_mtrrs(mtrr_state_t *saved_state);
+
+
+txt_heap_t *get_txt_heap(void);
+uint64_t get_bios_data_size(txt_heap_t *heap);
+bios_data_t *get_bios_data_start(txt_heap_t *heap);
+uint64_t get_os_mle_data_size(txt_heap_t *heap);
+os_mle_data_t *get_os_mle_data_start(txt_heap_t *heap);
+uint64_t get_os_sinit_data_size(txt_heap_t *heap);
+os_sinit_data_t *get_os_sinit_data_start(txt_heap_t *heap);
+uint64_t get_sinit_mle_data_size(txt_heap_t *heap);
+sinit_mle_data_t *get_sinit_mle_data_start(txt_heap_t *heap);
+
+
+#endif //__ASSEMBLY__
+
+
+//////xmhfhw_cpu_msr
+
+#ifndef __ASSEMBLY__
+
+void rdmsr(u32 msr, u32 *eax, u32 *edx);
+void wrmsr(u32 msr, u32 eax, u32 edx);
+u64 rdmsr64(u32 msr);
+void wrmsr64(u32 msr, u64 newval);
+
+#endif //__ASSEMBLY__
+
+
+
+//////xmhfhw_cpu_paging
+
+
+#ifndef __ASSEMBLY__
+
+void cache_wbinvd(void);
+void tlb_invlpg(u64 addr);
+
+#endif //__ASSEMBLY__
+
+
+
+//////xmhfhw_cpu_txt
+
+#ifndef __ASSEMBLY__
+
+
+uint64_t read_config_reg(uint32_t config_regs_base, uint32_t reg);
+void write_config_reg(uint32_t config_regs_base, uint32_t reg, uint64_t val);
+uint32_t __getsec_capabilities(uint32_t index);
+void __getsec_senter(uint32_t sinit_base, uint32_t sinit_size);
+void __getsec_sexit(void);
+void __getsec_wakeup(void);
+void __getsec_smctrl(void);
+void __getsec_parameters(uint32_t index, int* param_type, uint32_t* peax, uint32_t* pebx, uint32_t* pecx);
+
+
+#endif //__ASSEMBLY__
+
+
+//////xmhfhw_cpu_vmx
+
+#ifndef __ASSEMBLY__
+
+bool __vmx_vmxon(u64 vmxonregion_paddr);
+void xmhfhw_cpu_x86vmx_vmwrite(u64 encoding, u64 value);
+u64 xmhfhw_cpu_x86vmx_vmread(u64 encoding);
+u32 __vmx_vmclear(u64 vmcs);
+u32 __vmx_vmptrld(u64 vmcs);
+u32 __vmx_invvpid(int invalidation_type, u16 vpid, u32 linearaddress);
+void __vmx_invept(u64 invalidation_type, u64 eptp);
+
+#endif //__ASSEMBLY__
+
+
+
+//////xmhfhw_cpu_legio
+
+#ifndef __ASSEMBLY__
+
+void outl(u32 val, u32 port);
+void outw (u32 value, u32 port);
+void outb (u32 value, u32 port);
+u32 inl(u32 port);
+u16 inw (u32 port);
+u8 inb (u32 port);
+
+#endif //__ASSEMBLY__
+
+
+
+
+
+//////xmhfhw_cpu_mem
+
+#ifndef __ASSEMBLY__
+
+void * hva2sla(void *hva);
+spa_t sla2spa(void *sla);
+spa_t hva2spa(void *hva);
+void * spa2hva(spa_t spa);
+spa_t gpa2spa(gpa_t gpa);
+gpa_t spa2gpa(spa_t spa);
+void* gpa2hva(gpa_t gpa);
+gpa_t hva2gpa(hva_t hva);
+u8 xmhfhw_sysmemaccess_readu8(u32 addr);
+u16 xmhfhw_sysmemaccess_readu16(u32 addr);
+u32 xmhfhw_sysmemaccess_readu32(u32 addr);
+u64 xmhfhw_sysmemaccess_readu64(u32 addr);
+void xmhfhw_sysmemaccess_writeu8(u32 addr, u8 val);
+void xmhfhw_sysmemaccess_writeu16(u32 addr, u16 val);
+void xmhfhw_sysmemaccess_writeu32(u32 addr, u32 val);
+void xmhfhw_sysmemaccess_writeu64(u32 addr, u64 val);
+void xmhfhw_sysmemaccess_copy(u8 *dest, u8 *src, u32 size);
+
+#endif //__ASSEMBLY__
+
+
+
+//////xmhfhw_legio_pci
+
+#ifndef __ASSEMBLY__
+
+void xmhf_baseplatform_arch_x86_pci_type1_read(u32 bus, u32 device, u32 function, u32 index, u32 len, u32 *value);
+void xmhf_baseplatform_arch_x86_pci_type1_write(u32 bus, u32 device, u32 function, u32 index, u32 len, u32 value);
+void xmhfhw_platform_bus_init(void);
+
+#endif //__ASSEMBLY__
+
+
+
+//////xmhfhw_legio_pit
+
+#ifndef __ASSEMBLY__
+
+void xmhf_baseplatform_arch_x86_udelay(u32 usecs);
+
+#endif //__ASSEMBLY__
+
+
+
+//////xmhfhw_legio_keyb
+
+#ifndef __ASSEMBLY__
+
+void xmhf_baseplatform_arch_x86_reboot(void);
+
+#endif //__ASSEMBLY__
+
+
+//////xmhfhw_sysmem_bios
+
+#ifndef __ASSEMBLY__
+
+u32 xmhfhw_platform_x86pc_acpi_getRSDP(ACPI_RSDP *rsdp);
+
+#endif //__ASSEMBLY__
+
+
+//////xmhfhw_mmio_vtd
+
+#ifndef __ASSEMBLY__
+
+typedef struct {
+    vtd_pml4te_t pml4t[PAE_MAXPTRS_PER_PML4T];
+    vtd_pdpte_t pdpt[PAE_MAXPTRS_PER_PDPT];
+    vtd_pdte_t pdt[PAE_PTRS_PER_PDPT][PAE_PTRS_PER_PDT];
+    vtd_pte_t pt[PAE_PTRS_PER_PDPT][PAE_PTRS_PER_PDT][PAE_PTRS_PER_PT];
+}__attribute__((packed)) vtd_slpgtbl_t;
+
+typedef struct {
+    u64 addr_vtd_pml4t;
+    u64 addr_vtd_pdpt;
+}__attribute__((packed)) vtd_slpgtbl_handle_t;
+
+//vt-d register access function
+void _vtd_reg(VTD_DRHD *dmardevice, u32 access, u32 reg, void *value);
+VTD_DRHD *_vtd_get_drhd_struct(vtd_drhd_handle_t drhd_handle);
+bool xmhfhw_platform_x86pc_vtd_scanfor_drhd_units(vtd_drhd_handle_t *maxhandle, u32 *dmar_phys_addr_var);
+bool xmhfhw_platform_x86pc_vtd_drhd_initialize(vtd_drhd_handle_t drhd_handle);
+bool xmhfhw_platform_x86pc_vtd_drhd_invalidatecaches(vtd_drhd_handle_t drhd_handle);
+bool xmhfhw_platform_x86pc_vtd_drhd_set_root_entry_table(vtd_drhd_handle_t drhd_handle,  u64 ret_addr);
+void xmhfhw_platform_x86pc_vtd_drhd_enable_translation(vtd_drhd_handle_t drhd_handle);
+void xmhfhw_platform_x86pc_vtd_drhd_disable_translation(vtd_drhd_handle_t drhd_handle);
+void xmhfhw_platform_x86pc_vtd_drhd_enable_pmr(vtd_drhd_handle_t drhd_handle);
+void xmhfhw_platform_x86pc_vtd_drhd_disable_pmr(vtd_drhd_handle_t drhd_handle);
+void xmhfhw_platform_x86pc_vtd_drhd_set_plm_base_and_limit(vtd_drhd_handle_t drhd_handle, u32 base, u32 limit);
+void xmhfhw_platform_x86pc_vtd_drhd_set_phm_base_and_limit(vtd_drhd_handle_t drhd_handle, u64 base, u64 limit);
+u64 xmhfhw_platform_x86pc_vtd_drhd_reg_read(vtd_drhd_handle_t drhd_handle, u32 reg);
+void xmhfhw_platform_x86pc_vtd_drhd_reg_write(vtd_drhd_handle_t drhd_handle, u32 reg, u64 value);
+
+
+#endif //__ASSEMBLY__
+
+
+//////xmhfhw_mmio_lapic
+
+#ifndef __ASSEMBLY__
+
+u32 xmhf_baseplatform_arch_x86_getcpulapicid(void);
+
+#endif //__ASSEMBLY__
+
 
 
 #endif // __XMHFHW_H__

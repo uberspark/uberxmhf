@@ -47,24 +47,11 @@
 //Intel VT-d declarations/definitions
 //author: amit vasudevan (amitvasudevan@acm.org)
 
-#ifndef __XMHFHW_MMIO_VTD_H__
-#define __XMHFHW_MMIO_VTD_H__
+#include <xmhf.h>
+#include <xmhf-hwm.h>
+#include <xmhfhw.h>
+#include <xmhf-debug.h>
 
-//from vtd.h
-
-#ifndef __ASSEMBLY__
-
-typedef struct {
-    vtd_pml4te_t pml4t[PAE_MAXPTRS_PER_PML4T];
-    vtd_pdpte_t pdpt[PAE_MAXPTRS_PER_PDPT];
-    vtd_pdte_t pdt[PAE_PTRS_PER_PDPT][PAE_PTRS_PER_PDT];
-    vtd_pte_t pt[PAE_PTRS_PER_PDPT][PAE_PTRS_PER_PDT][PAE_PTRS_PER_PT];
-}__attribute__((packed)) vtd_slpgtbl_t;
-
-typedef struct {
-    u64 addr_vtd_pml4t;
-    u64 addr_vtd_pdpt;
-}__attribute__((packed)) vtd_slpgtbl_handle_t;
 
 
 
@@ -78,7 +65,7 @@ static u32 vtd_num_drhd=0;	//total number of DMAR h/w units
 static bool vtd_drhd_scanned=false;	//set to true once DRHD units have been scanned in the system
 
 //vt-d register access function
-static inline void _vtd_reg(VTD_DRHD *dmardevice, u32 access, u32 reg, void *value){
+void _vtd_reg(VTD_DRHD *dmardevice, u32 access, u32 reg, void *value){
   u32 regtype=VTD_REG_32BITS, regaddr=0;
 
 	//obtain register type and base address
@@ -162,7 +149,7 @@ static inline void _vtd_reg(VTD_DRHD *dmardevice, u32 access, u32 reg, void *val
 }
 
 
-static inline VTD_DRHD *_vtd_get_drhd_struct(vtd_drhd_handle_t drhd_handle){
+VTD_DRHD *_vtd_get_drhd_struct(vtd_drhd_handle_t drhd_handle){
 		VTD_DRHD *drhd = NULL;
 
 		if(!vtd_drhd_scanned)
@@ -184,7 +171,7 @@ static inline VTD_DRHD *_vtd_get_drhd_struct(vtd_drhd_handle_t drhd_handle){
 //max. value of DRHD unit handle (0 through maxhandle-1 are valid handles
 //that can subsequently be passed to any of the other vtd drhd functions)
 //physical address of the DMAR table in the system
-static inline bool xmhfhw_platform_x86pc_vtd_scanfor_drhd_units(vtd_drhd_handle_t *maxhandle, u32 *dmar_phys_addr_var){
+bool xmhfhw_platform_x86pc_vtd_scanfor_drhd_units(vtd_drhd_handle_t *maxhandle, u32 *dmar_phys_addr_var){
 	ACPI_RSDP rsdp;
 	ACPI_RSDT rsdt;
 	u32 num_rsdtentries;
@@ -298,7 +285,7 @@ static inline bool xmhfhw_platform_x86pc_vtd_scanfor_drhd_units(vtd_drhd_handle_
 }
 
 //initialize a given DRHD unit to meet our requirements
-static inline bool xmhfhw_platform_x86pc_vtd_drhd_initialize(vtd_drhd_handle_t drhd_handle){
+bool xmhfhw_platform_x86pc_vtd_drhd_initialize(vtd_drhd_handle_t drhd_handle){
 	VTD_GCMD_REG gcmd;
 	VTD_GSTS_REG gsts;
 	VTD_FECTL_REG fectl;
@@ -357,7 +344,7 @@ static inline bool xmhfhw_platform_x86pc_vtd_drhd_initialize(vtd_drhd_handle_t d
 //invalidate DRHD caches
 //note: we do global invalidation currently
 //returns: true if all went well, else false
-static inline bool xmhfhw_platform_x86pc_vtd_drhd_invalidatecaches(vtd_drhd_handle_t drhd_handle){
+bool xmhfhw_platform_x86pc_vtd_drhd_invalidatecaches(vtd_drhd_handle_t drhd_handle){
 	VTD_CCMD_REG ccmd;
 	VTD_IOTLB_REG iotlb;
 	VTD_DRHD *drhd = _vtd_get_drhd_struct(drhd_handle);
@@ -423,7 +410,7 @@ static inline bool xmhfhw_platform_x86pc_vtd_drhd_invalidatecaches(vtd_drhd_hand
 //the CET, accounting for 32 devices with 8 functions each as per the
 //PCI spec.
 //each CE points to a PDPT type paging structure for  device
-static inline bool xmhfhw_platform_x86pc_vtd_drhd_set_root_entry_table(vtd_drhd_handle_t drhd_handle,  u64 ret_addr){
+bool xmhfhw_platform_x86pc_vtd_drhd_set_root_entry_table(vtd_drhd_handle_t drhd_handle,  u64 ret_addr){
 	VTD_RTADDR_REG rtaddr;
 	VTD_GCMD_REG gcmd;
 	VTD_GSTS_REG gsts;
@@ -461,7 +448,7 @@ static inline bool xmhfhw_platform_x86pc_vtd_drhd_set_root_entry_table(vtd_drhd_
 
 
 //enable VT-d translation
-static inline void xmhfhw_platform_x86pc_vtd_drhd_enable_translation(vtd_drhd_handle_t drhd_handle){
+void xmhfhw_platform_x86pc_vtd_drhd_enable_translation(vtd_drhd_handle_t drhd_handle){
 	VTD_GCMD_REG gcmd;
 	VTD_GSTS_REG gsts;
 	VTD_DRHD *drhd = _vtd_get_drhd_struct(drhd_handle);
@@ -494,7 +481,7 @@ static inline void xmhfhw_platform_x86pc_vtd_drhd_enable_translation(vtd_drhd_ha
 }
 
 //disable VT-d translation
-static inline void xmhfhw_platform_x86pc_vtd_drhd_disable_translation(vtd_drhd_handle_t drhd_handle){
+void xmhfhw_platform_x86pc_vtd_drhd_disable_translation(vtd_drhd_handle_t drhd_handle){
 	VTD_GCMD_REG gcmd;
 	VTD_GSTS_REG gsts;
 	VTD_DRHD *drhd = _vtd_get_drhd_struct(drhd_handle);
@@ -523,7 +510,7 @@ static inline void xmhfhw_platform_x86pc_vtd_drhd_disable_translation(vtd_drhd_h
 }
 
 //enable protected memory region (PMR)
-static inline void xmhfhw_platform_x86pc_vtd_drhd_enable_pmr(vtd_drhd_handle_t drhd_handle){
+void xmhfhw_platform_x86pc_vtd_drhd_enable_pmr(vtd_drhd_handle_t drhd_handle){
     VTD_PMEN_REG pmen;
 	VTD_DRHD *drhd = _vtd_get_drhd_struct(drhd_handle);
 
@@ -546,7 +533,7 @@ static inline void xmhfhw_platform_x86pc_vtd_drhd_enable_pmr(vtd_drhd_handle_t d
 }
 
 //disable protected memory region (PMR)
-static inline void xmhfhw_platform_x86pc_vtd_drhd_disable_pmr(vtd_drhd_handle_t drhd_handle){
+void xmhfhw_platform_x86pc_vtd_drhd_disable_pmr(vtd_drhd_handle_t drhd_handle){
     VTD_PMEN_REG pmen;
 	VTD_DRHD *drhd = _vtd_get_drhd_struct(drhd_handle);
 
@@ -569,7 +556,7 @@ static inline void xmhfhw_platform_x86pc_vtd_drhd_disable_pmr(vtd_drhd_handle_t 
 }
 
 //set DRHD PLMBASE and PLMLIMIT PMRs
-static inline void xmhfhw_platform_x86pc_vtd_drhd_set_plm_base_and_limit(vtd_drhd_handle_t drhd_handle, u32 base, u32 limit){
+void xmhfhw_platform_x86pc_vtd_drhd_set_plm_base_and_limit(vtd_drhd_handle_t drhd_handle, u32 base, u32 limit){
 	VTD_PLMBASE_REG plmbase;
 	VTD_PLMLIMIT_REG plmlimit;
 	VTD_DRHD *drhd = _vtd_get_drhd_struct(drhd_handle);
@@ -589,7 +576,7 @@ static inline void xmhfhw_platform_x86pc_vtd_drhd_set_plm_base_and_limit(vtd_drh
 
 
 //set DRHD PHMBASE and PHMLIMIT PMRs
-static inline void xmhfhw_platform_x86pc_vtd_drhd_set_phm_base_and_limit(vtd_drhd_handle_t drhd_handle, u64 base, u64 limit){
+void xmhfhw_platform_x86pc_vtd_drhd_set_phm_base_and_limit(vtd_drhd_handle_t drhd_handle, u64 base, u64 limit){
 	VTD_PHMBASE_REG phmbase;
 	VTD_PHMLIMIT_REG phmlimit;
 	VTD_DRHD *drhd = _vtd_get_drhd_struct(drhd_handle);
@@ -608,7 +595,7 @@ static inline void xmhfhw_platform_x86pc_vtd_drhd_set_phm_base_and_limit(vtd_drh
 }
 
 //read VT-d register
-static inline u64 xmhfhw_platform_x86pc_vtd_drhd_reg_read(vtd_drhd_handle_t drhd_handle, u32 reg){
+u64 xmhfhw_platform_x86pc_vtd_drhd_reg_read(vtd_drhd_handle_t drhd_handle, u32 reg){
     u64 __regval=0;
 	VTD_DRHD *drhd = _vtd_get_drhd_struct(drhd_handle);
 
@@ -618,13 +605,10 @@ static inline u64 xmhfhw_platform_x86pc_vtd_drhd_reg_read(vtd_drhd_handle_t drhd
 }
 
 //write VT-d register
-static inline void xmhfhw_platform_x86pc_vtd_drhd_reg_write(vtd_drhd_handle_t drhd_handle, u32 reg, u64 value){
+void xmhfhw_platform_x86pc_vtd_drhd_reg_write(vtd_drhd_handle_t drhd_handle, u32 reg, u64 value){
 	VTD_DRHD *drhd = _vtd_get_drhd_struct(drhd_handle);
 
 	_vtd_reg(drhd, VTD_REG_WRITE, reg, (void *)&value);
 }
 
 
-#endif //__ASSEMBLY__
-
-#endif //__XMHFHW_MMIO_VTD_H__

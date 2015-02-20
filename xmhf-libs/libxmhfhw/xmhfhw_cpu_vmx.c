@@ -44,27 +44,16 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-// XMHF CPU VMX decls.
+//xmhfhw_cpu_vmx: CPU VMX functions
 //author: amit vasudevan (amitvasudevan@acm.org)
 
-#ifndef __XMHFHW_CPU_VMX_H__
-#define __XMHFHW_CPU_VMX_H__
+#include <xmhf.h>
+#include <xmhf-hwm.h>
+#include <xmhfhw.h>
+#include <xmhf-debug.h>
 
 
-
-
-
-
-#ifndef __ASSEMBLY__
-
-
-
-
-
-
-//VMX functions
-
-static inline bool __vmx_vmxon(u64 vmxonregion_paddr){
+bool __vmx_vmxon(u64 vmxonregion_paddr){
 		u32 retval=0;
 
 		asm volatile( "vmxon %1 \n"
@@ -88,18 +77,18 @@ static inline bool __vmx_vmxon(u64 vmxonregion_paddr){
 
 
 
-static inline void xmhfhw_cpu_x86vmx_vmwrite(u64 encoding, u64 value){
+void xmhfhw_cpu_x86vmx_vmwrite(u64 encoding, u64 value){
   asm volatile ("vmwrite %1, %0 \r\n" :: "r"(encoding  & 0x00000000FFFFFFFFULL), "r"(value) : "cc");
 }
 
-static inline u64 xmhfhw_cpu_x86vmx_vmread(u64 encoding){
+u64 xmhfhw_cpu_x86vmx_vmread(u64 encoding){
     u64 __value;
     asm volatile("vmread %1, %0 \r\n" : "=r"(__value) : "r"(encoding  & 0x00000000FFFFFFFFULL) : "cc");
     return __value;
 }
 
 
-static inline u32 __vmx_vmclear(u64 vmcs){
+u32 __vmx_vmclear(u64 vmcs){
   u32 status;
   __asm__("vmclear %1			\r\n"
 	   	"jbe	1f    		\r\n"
@@ -114,7 +103,7 @@ static inline u32 __vmx_vmclear(u64 vmcs){
   return status;
 }
 
-static inline u32 __vmx_vmptrld(u64 vmcs){
+u32 __vmx_vmptrld(u64 vmcs){
   u32 status;
   __asm__("vmptrld %1			\r\n"
 	   	"jbe	1f    		\r\n"
@@ -135,7 +124,7 @@ static inline u32 __vmx_vmptrld(u64 vmcs){
 //returns 1 on success, 0 on failure
 
 
-static inline u32 __vmx_invvpid(int invalidation_type, u16 vpid, u32 linearaddress){
+u32 __vmx_invvpid(int invalidation_type, u16 vpid, u32 linearaddress){
 	//return status (1 or 0)
 	u32 status;
 
@@ -167,7 +156,7 @@ static inline u32 __vmx_invvpid(int invalidation_type, u16 vpid, u32 linearaddre
 //		Invalidate Translations Derived from EPT
 
 
-static inline void __vmx_invept(u64 invalidation_type, u64 eptp){
+void __vmx_invept(u64 invalidation_type, u64 eptp){
 	//invept descriptor
 	struct {
 		u64 eptp;
@@ -178,7 +167,3 @@ static inline void __vmx_invept(u64 invalidation_type, u64 eptp){
 	asm volatile("invept %0, %1 \r\n" ::"m" (__inveptdescriptor), "r" (invalidation_type):"cc");
 }
 
-
-#endif //__ASSEMBLY__
-
-#endif //__XMHFHW_CPU_VMX_H_
