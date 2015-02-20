@@ -54,17 +54,6 @@
 
 #ifndef __ASSEMBLY__
 
-typedef struct {
-    vtd_pml4te_t pml4t[PAE_MAXPTRS_PER_PML4T];
-    vtd_pdpte_t pdpt[PAE_MAXPTRS_PER_PDPT];
-    vtd_pdte_t pdt[PAE_PTRS_PER_PDPT][PAE_PTRS_PER_PDT];
-    vtd_pte_t pt[PAE_PTRS_PER_PDPT][PAE_PTRS_PER_PDT][PAE_PTRS_PER_PT];
-}__attribute__((packed)) vtd_slpgtbl_t;
-
-typedef struct {
-    u64 addr_vtd_pml4t;
-    u64 addr_vtd_pdpt;
-}__attribute__((packed)) vtd_slpgtbl_handle_t;
 
 
 
