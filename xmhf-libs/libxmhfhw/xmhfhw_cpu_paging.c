@@ -57,6 +57,6 @@ void cache_wbinvd(void){
 }
 
 void tlb_invlpg(u64 addr){
-    asm volatile("invlpg (%0)\n": /* no output */ : "r" (addr): "memory")
+    asm volatile("invlpg (%0)\n": /* no output */ : "r" (addr): "memory");
 
 }

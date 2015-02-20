@@ -66,7 +66,3 @@ void xmhf_baseplatform_arch_x86_reboot(void){
 
 }
 
-
-
-#endif /* __ASSEMBLY__ */
-#endif // __XMHFHW_LEGIO_KEYB_H__
