@@ -44,13 +44,13 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-// XMHF HW CPU TXT decls.
+// xmhfhw_cpu_txt: CPU TXT functions
 // authors: amit vasudevan (amitvasudevan@acm.org) and jonmccune@cmu.edu
 
-#ifndef __XMHFHW_CPU_TXT_H__
-#define __XMHFHW_CPU_TXT_H__
-
-#ifndef __ASSEMBLY__
+#include <xmhf.h>
+#include <xmhf-hwm.h>
+#include <xmhfhw.h>
+#include <xmhf-debug.h>
 
 
 /*
@@ -59,7 +59,7 @@
  * NOTE: MODIFIED TO ALWAYS USE %FS SEGMENT-OVERRIDE
  */
 
-static inline uint64_t read_config_reg(uint32_t config_regs_base, uint32_t reg)
+uint64_t read_config_reg(uint32_t config_regs_base, uint32_t reg)
 {
     /* these are MMIO so make sure compiler doesn't optimize */
     //return *(volatile uint64_t *)(unsigned long)(config_regs_base +
@@ -75,7 +75,7 @@ static inline uint64_t read_config_reg(uint32_t config_regs_base, uint32_t reg)
     return ret;
 }
 
-static inline void write_config_reg(uint32_t config_regs_base, uint32_t reg,
+void write_config_reg(uint32_t config_regs_base, uint32_t reg,
                                     uint64_t val)
 {
     /* these are MMIO so make sure compiler doesn't optimize */
@@ -91,26 +91,7 @@ static inline void write_config_reg(uint32_t config_regs_base, uint32_t reg,
 
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-//#include "_txt_smx.h"
-
-static inline uint32_t __getsec_capabilities(uint32_t index)
+uint32_t __getsec_capabilities(uint32_t index)
 {
     uint32_t cap;
     __asm__ __volatile__ (IA32_GETSEC_OPCODE "\n"
@@ -120,7 +101,7 @@ static inline uint32_t __getsec_capabilities(uint32_t index)
 }
 
 
-static inline void __getsec_senter(uint32_t sinit_base, uint32_t sinit_size)
+void __getsec_senter(uint32_t sinit_base, uint32_t sinit_size)
 {
     __asm__ __volatile__ (IA32_GETSEC_OPCODE "\n"
 			  :
@@ -130,25 +111,25 @@ static inline void __getsec_senter(uint32_t sinit_base, uint32_t sinit_size)
 			    "d"(0x0));
 }
 
-static inline void __getsec_sexit(void)
+void __getsec_sexit(void)
 {
     __asm__ __volatile__ (IA32_GETSEC_OPCODE "\n"
                           : : "a"(IA32_GETSEC_SEXIT));
 }
 
-static inline void __getsec_wakeup(void)
+void __getsec_wakeup(void)
 {
     __asm__ __volatile__ (IA32_GETSEC_OPCODE "\n"
                           : : "a"(IA32_GETSEC_WAKEUP));
 }
 
-static inline void __getsec_smctrl(void)
+void __getsec_smctrl(void)
 {
     __asm__ __volatile__ (IA32_GETSEC_OPCODE "\n"
                           : : "a"(IA32_GETSEC_SMCTRL), "b"(0x0));
 }
 
-static inline void __getsec_parameters(uint32_t index, int* param_type,
+void __getsec_parameters(uint32_t index, int* param_type,
                                        uint32_t* peax, uint32_t* pebx,
                                        uint32_t* pecx)
 {
@@ -164,17 +145,3 @@ static inline void __getsec_parameters(uint32_t index, int* param_type,
 }
 
 
-
-
-
-
-
-
-
-
-
-
-
-#endif //__ASSEMBLY__
-
-#endif /* __XMHFHW_CPU_TXT_H__ */

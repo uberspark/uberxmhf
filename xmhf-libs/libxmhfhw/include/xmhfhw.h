@@ -186,6 +186,37 @@ void wrmsr64(u32 msr, u64 newval);
 #endif //__ASSEMBLY__
 
 
+
+//////xmhfhw_cpu_paging
+
+
+#ifndef __ASSEMBLY__
+
+void cache_wbinvd(void);
+void tlb_invlpg(u64 addr);
+
+#endif //__ASSEMBLY__
+
+
+
+//////xmhfhw_cpu_txt
+
+#ifndef __ASSEMBLY__
+
+
+uint64_t read_config_reg(uint32_t config_regs_base, uint32_t reg);
+void write_config_reg(uint32_t config_regs_base, uint32_t reg, uint64_t val);
+uint32_t __getsec_capabilities(uint32_t index);
+void __getsec_senter(uint32_t sinit_base, uint32_t sinit_size);
+void __getsec_sexit(void);
+void __getsec_wakeup(void);
+void __getsec_smctrl(void);
+void __getsec_parameters(uint32_t index, int* param_type, uint32_t* peax, uint32_t* pebx, uint32_t* pecx);
+
+
+#endif //__ASSEMBLY__
+
+
 /*
 //////xmhfhw_cpu_msr
 
@@ -197,8 +228,8 @@ void wrmsr64(u32 msr, u64 newval);
 
 
 /*#include <_xmhfhw_cpu.h> --
-    #include <_xmhfhw_cpu_msr.h>
-    #include <_xmhfhw_cpu_paging.h>
+    #include <_xmhfhw_cpu_msr.h> --
+    #include <_xmhfhw_cpu_paging.h> --
     #include <_xmhfhw_cpu_txt.h>
     #include <_xmhfhw_cpu_vmx.h>
     #include <_xmhfhw_cpu_legio.h>

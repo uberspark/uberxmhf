@@ -44,21 +44,19 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-// XMHF HW CPU paging decls.
+// xmhfhw_cpu_paging: CPU paging related functions
 // author: amit vasudevan (amitvasudevan@acm.org)
 
-#ifndef __XMHFHW_CPU_PAGING_H__
-#define __XMHFHW_CPU_PAGING_H__
+#include <xmhf.h>
+#include <xmhf-hwm.h>
+#include <xmhfhw.h>
+#include <xmhf-debug.h>
 
+void cache_wbinvd(void){
+    asm volatile("wbinvd\n" :::"memory");
+}
 
-// page sizes
-#ifndef __ASSEMBLY__
+void tlb_invlpg(u64 addr){
+    asm volatile("invlpg (%0)\n": /* no output */ : "r" (addr): "memory")
 
-
-#define CACHE_WBINV()  __asm__ __volatile__("wbinvd\n" :::"memory")
-#define TLB_INVLPG(x) __asm__ __volatile__("invlpg (%0)\n": /* no output */ : "r" (x): "memory")
-
-
-#endif /* __ASSEMBLY__ */
-
-#endif /* __XMHFHW_CPU_PAGING_H__ */
+}
