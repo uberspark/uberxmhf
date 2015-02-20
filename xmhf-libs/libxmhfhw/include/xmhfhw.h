@@ -128,7 +128,7 @@ u32 read_segreg_ss(void);
 u16 read_tr_sel(void);
 void wbinvd(void);
 uint32_t bsrl(uint32_t mask);
-__CASMFNDEF__(xmhfhw_cpu_disable_intr) static void xmhfhw_cpu_disable_intr(void);
+void xmhfhw_cpu_disable_intr(void);
 void enable_intr(void);
 u64 xgetbv(u32 xcr_reg);
 void xsetbv(u32 xcr_reg, u64 value);

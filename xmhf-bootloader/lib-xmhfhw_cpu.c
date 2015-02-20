@@ -92,11 +92,11 @@ u64 read_cr3(void){
 }
 
 
-u64 read_rsp(void){
+/*u64 read_rsp(void){
   u64 __rsp;
   asm volatile("movq %%rsp,%0\n\t" :"=r" (__rsp));
   return __rsp;
-}
+}*/
 
 void write_cr3(u64 val){
   asm volatile("mov %0,%%cr3 \r\n"::"r" (val));
@@ -113,10 +113,10 @@ void write_cr4(u64 val){
 }
 
 
-/*void skinit(unsigned long eax) {
+void skinit(unsigned long eax) {
     __asm__("mov %0, %%eax": :"r" (eax));
     __asm__("skinit %%eax":);
-}*/
+}
 
 
 //segment register access
@@ -177,7 +177,7 @@ uint32_t bsrl(uint32_t mask)
 
 
 void xmhfhw_cpu_disable_intr(void){
-    asm volatile ("cli \r\n");
+    __asm__ __volatile__ ("cli");
 }
 
 void enable_intr(void)
@@ -204,24 +204,6 @@ void xsetbv(u32 xcr_reg, u64 value){
 	asm volatile(".byte 0x0f,0x01,0xd1"
 			:
 			: "a" (eax), "d" (edx), "c" (xcr_reg));
-}
-
-
-void sysexitq(u64 rip, u64 rsp){
-
-            asm volatile(
-                 "movq %0, %%rdx \r\n"
-                 "movq %1, %%rcx \r\n"
-
-                 "sysexitq \r\n"
-                 //"int $0x03 \r\n"
-                 //"1: jmp 1b \r\n"
-                :
-                : "m" (rip),
-                  "m" (rsp)
-                : "rdx", "rcx"
-            );
-
 }
 
 
