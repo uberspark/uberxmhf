@@ -44,44 +44,46 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-// XMHF HW CPU MSR declarations
-// author: amit vasudevan (amitvasudevan@acm.org)
+// programmable interval timer (for micro second delay)
+//author: amit vasudevan (amitvasudevan@acm.org)
 
-#ifndef __XMHFHW_CPU_MSR_H__
-#define __XMHFHW_CPU_MSR_H__
+#include <xmhf.h>
+#include <xmhf-hwm.h>
+#include <xmhfhw.h>
+#include <xmhf-debug.h>
 
+//---microsecond delay----------------------------------------------------------
+void xmhf_baseplatform_arch_x86_udelay(u32 usecs){
+  u8 val;
+  u32 latchregval;
 
-#ifndef __ASSEMBLY__
+  //enable 8254 ch-2 counter
+  val = inb(0x61);
+  val &= 0x0d; //turn PC speaker off
+  val |= 0x01; //turn on ch-2
+  outb(val, 0x61);
 
-static inline void rdmsr(u32 msr, u32 *eax, u32 *edx) __attribute__((always_inline));
-static inline void wrmsr(u32 msr, u32 eax, u32 edx) __attribute__((always_inline));
+  //program ch-2 as one-shot
+  outb(0xB0, 0x43);
 
-//*
-static inline void rdmsr(u32 msr, u32 *eax, u32 *edx){
-  asm volatile("rdmsr \r\n"
-	  :"=a"(*eax), "=d"(*edx)
-	  :"c"(msr));
+  //compute appropriate latch register value depending on usecs
+  latchregval = (1193182 * usecs) / 1000000;
+
+  //write latch register to ch-2
+  val = (u8)latchregval;
+  outb(val, 0x42);
+  val = (u8)((u32)latchregval >> (u32)8);
+  outb(val , 0x42);
+
+  #ifndef __XMHF_VERIFICATION__
+	//TODO: plug in a 8254 programmable interval timer h/w model
+	//wait for countdown
+	while(!(inb(0x61) & 0x20));
+  #endif //__XMHF_VERIFICATION__
+
+  //disable ch-2 counter
+  val = inb(0x61);
+  val &= 0x0c;
+  outb(val, 0x61);
 }
 
-//*
-static inline void wrmsr(u32 msr, u32 eax, u32 edx){
-  asm volatile("wrmsr \r\n"
-	  : /* no outputs */
-	  :"c"(msr), "a"(eax), "d"(edx));
-}
-
-
-static inline u64 rdmsr64(u32 msr){
-    u32 eax, edx;
-    rdmsr(msr, &eax, &edx);
-    return (((u64)edx << 32) | (u64)eax);
-}
-
-static inline void wrmsr64(u32 msr, u64 newval){
-    wrmsr(msr, (u32)newval, (u32)((u64)newval >> 32));
-}
-
-#endif /* __ASSEMBLY__ */
-
-
-#endif/* __XMHFHW_CPU_MSR_H__ */

@@ -44,51 +44,56 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-// programmable interval timer (for micro second delay)
-//author: amit vasudevan (amitvasudevan@acm.org)
+/*
+ * dummy module to generate libxmhfslab.a
+ * author: amit vasudevan (amitvasudevan@acm.org)
+*/
 
-#ifndef __XMHFHW_LEGIO_PIT_H__
-#define __XMHFHW_LEGIO_PIT_H__
 
-//from _pit.h
+#include <xmhf.h>
+#include <xmhfhicslab.h>
+#include <xmhf-debug.h>
 
-#ifndef __ASSEMBLY__
+/*
+__slab_calltrampoline register mappings:
 
-//---microsecond delay----------------------------------------------------------
-static inline void xmhf_baseplatform_arch_x86_udelay(u32 usecs){
-  u8 val;
-  u32 latchregval;
+RDI = call type (XMHF_HIC_SLABCALL)
+RSI = iparams
+RDX = iparams_size
+RCX = oparams
+R8 = oparams_size
+R9 = dst_slabid
+R10 = return RSP;
+R11 = return_address
 
-  //enable 8254 ch-2 counter
-  val = inb(0x61);
-  val &= 0x0d; //turn PC speaker off
-  val |= 0x01; //turn on ch-2
-  outb(val, 0x61);
+*/
 
-  //program ch-2 as one-shot
-  outb(0xB0, 0x43);
 
-  //compute appropriate latch register value depending on usecs
-  latchregval = (1193182 * usecs) / 1000000;
+__attribute__((naked)) bool __slab_calltrampoline(u64 reserved,
+    slab_input_params_t *iparams, u64 iparams_size,
+    slab_output_params_t *oparams, u64 oparams_size, u64 dst_slabid){
 
-  //write latch register to ch-2
-  val = (u8)latchregval;
-  outb(val, 0x42);
-  val = (u8)((u32)latchregval >> (u32)8);
-  outb(val , 0x42);
+    asm volatile (
+        "pushq %%rbx \r\n"
+        "pushq %%r12 \r\n"
+        "pushq %%r13 \r\n"
+        "pushq %%r14 \r\n"
+        "pushq %%r15 \r\n"
 
-  #ifndef __XMHF_VERIFICATION__
-	//TODO: plug in a 8254 programmable interval timer h/w model
-	//wait for countdown
-	while(!(inb(0x61) & 0x20));
-  #endif //__XMHF_VERIFICATION__
-
-  //disable ch-2 counter
-  val = inb(0x61);
-  val &= 0x0c;
-  outb(val, 0x61);
+        "movq %0, %%rdi \r\n"
+        "movq %%rsp, %%r10 \r\n"
+        "movq $1f, %%r11 \r\n"\
+        "sysenter \r\n" \
+        \
+        "1:\r\n" \
+        "popq %%r15 \r\n"
+        "popq %%r14 \r\n"
+        "popq %%r13 \r\n"
+        "popq %%r12 \r\n"
+        "popq %%rbx \r\n"
+        "retq \r\n" \
+        :
+        : "i" (XMHF_HIC_SLABCALL)
+        :
+    );
 }
-
-
-#endif /* __ASSEMBLY__ */
-#endif // __XMHFHW_LEGIO_PIT_H__

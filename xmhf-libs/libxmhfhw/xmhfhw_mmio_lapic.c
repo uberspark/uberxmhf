@@ -44,21 +44,29 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-// XMHF HW CPU paging decls.
+// XMHF HW CPU LAPIC decls.
 // author: amit vasudevan (amitvasudevan@acm.org)
 
-#ifndef __XMHFHW_CPU_PAGING_H__
-#define __XMHFHW_CPU_PAGING_H__
+#include <xmhf.h>
+#include <xmhf-hwm.h>
+#include <xmhfhw.h>
+#include <xmhf-debug.h>
 
+u32 xmhf_baseplatform_arch_x86_getcpulapicid(void){
+  u32 eax, edx, *lapic_reg;
+  u32 lapic_id;
 
-// page sizes
-#ifndef __ASSEMBLY__
+  //read LAPIC id of this core
+  rdmsr(MSR_APIC_BASE, &eax, &edx);
+  //if (edx != 0 ){ //APIC is not below 4G, unsupported
+  //	_XDPRINTF_("%s: APIC is not below 4G, unsupported. Halting!", __FUNCTION__);
+  //	HALT();
+  //}
+  eax &= (u32)0xFFFFF000UL;
+  lapic_reg = (u32 *)((u32)eax+ (u32)LAPIC_ID);
+  lapic_id = xmhfhw_sysmemaccess_readu32((u32)lapic_reg);
+  lapic_id = lapic_id >> 24;
 
+  return lapic_id;
+}
 
-#define CACHE_WBINV()  __asm__ __volatile__("wbinvd\n" :::"memory")
-#define TLB_INVLPG(x) __asm__ __volatile__("invlpg (%0)\n": /* no output */ : "r" (x): "memory")
-
-
-#endif /* __ASSEMBLY__ */
-
-#endif /* __XMHFHW_CPU_PAGING_H__ */

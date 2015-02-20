@@ -44,56 +44,53 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-// XMHF HW platform memory access interface (sysmem)
+//xmhfhw_cpu_mem: CPU platform memory access interface (sysmem)
 // author: amit vasudevan (amitvasudevan@acm.org)
 
-#ifndef __XMHFHW_CPU_MEM_H__
-#define __XMHFHW_CPU_MEM_H__
+#include <xmhf.h>
+#include <xmhf-hwm.h>
+#include <xmhfhw.h>
+#include <xmhf-debug.h>
 
 
-#ifndef __ASSEMBLY__
+// Note: since we are unity mapped, runtime VA = system PA
 
+//hypervisor runtime virtual address to secure loader address
+void * hva2sla(void *hva){
+    return (void*)((u32)hva);
+}
 
-#ifndef __XMHF_VERIFICATION__
-	// Note: since we are unity mapped, runtime VA = system PA
+//secure loader address to system physical address
+spa_t sla2spa(void *sla){
+    return (spa_t) ((u32)sla );
+}
 
-	//hypervisor runtime virtual address to secure loader address
-	static inline void * hva2sla(void *hva){
-		return (void*)((u32)hva);
-	}
+// XMHF runtime virtual-address to system-physical-address and vice-versa
+spa_t hva2spa(void *hva){
+    uintptr_t hva_ui = (uintptr_t)hva;
+    return hva_ui;
+}
 
-	//secure loader address to system physical address
-	static inline spa_t sla2spa(void *sla){
-		return (spa_t) ((u32)sla );
-	}
+void * spa2hva(spa_t spa){
+    return (void *)(uintptr_t)spa;
+}
 
-	// XMHF runtime virtual-address to system-physical-address and vice-versa
-	static inline spa_t hva2spa(void *hva){
-		uintptr_t hva_ui = (uintptr_t)hva;
-		return hva_ui;
-	}
+spa_t gpa2spa(gpa_t gpa)
+{
+        return gpa;
+}
 
-	static inline void * spa2hva(spa_t spa){
-		return (void *)(uintptr_t)spa;
-	}
+gpa_t spa2gpa(spa_t spa){
+        return spa;
+}
 
-	static inline spa_t gpa2spa(gpa_t gpa) { return gpa; }
-	static inline gpa_t spa2gpa(spa_t spa) { return spa; }
-	static inline void* gpa2hva(gpa_t gpa) { return spa2hva(gpa2spa(gpa)); }
-	static inline gpa_t hva2gpa(hva_t hva) { return spa2gpa(hva2spa(hva)); }
+void* gpa2hva(gpa_t gpa){
+        return spa2hva(gpa2spa(gpa));
+}
 
-#else //__XMHF_VERIFICATION__
-
-	static inline void * hva2sla(void *hva){ return (void*)((u32)hva);	}
-	static inline spa_t sla2spa(void *sla){	return (spa_t) ((u32)sla ); }
-	#define hva2spa(x) (u32)(x)
-	static inline void * spa2hva(spa_t spa) { (void *)(uintptr_t)(spa); }
-	static inline spa_t gpa2spa(gpa_t gpa) { return gpa; }
-	static inline gpa_t spa2gpa(spa_t spa) { return spa; }
-	static inline void* gpa2hva(gpa_t gpa) { return spa2hva(gpa2spa(gpa)); }
-	static inline gpa_t hva2gpa(hva_t hva) { return spa2gpa(hva2spa(hva)); }
-
-#endif //__XMHF_VERIFICATION__
+gpa_t hva2gpa(hva_t hva){
+        return spa2gpa(hva2spa(hva));
+}
 
 
 //functions to read/write memory from "system physical address"
@@ -102,86 +99,56 @@
 //here
 
 //read 8-bits from absolute physical address
-static inline u8 xmhfhw_sysmemaccess_readu8(u32 addr){
+u8 xmhfhw_sysmemaccess_readu8(u32 addr){
     u8 *valueptr = (u8 *)addr;
-    #ifdef __XMHF_VERIFICATION__
-    u8 value = nondet_u8();
-    #else
     u8 value = *valueptr;
-    #endif
     return value;
 }
 
 //read 16-bits from absolute physical address
-static inline u16 xmhfhw_sysmemaccess_readu16(u32 addr){
+u16 xmhfhw_sysmemaccess_readu16(u32 addr){
     u16 *valueptr = (u16 *)addr;
-    #ifdef __XMHF_VERIFICATION__
-	u16 value = nondet_u16();
-	#else
     u16 value = *valueptr;
-	#endif
     return value;
 }
 
 //read 32-bits from absolute physical address
-static inline u32 xmhfhw_sysmemaccess_readu32(u32 addr){
+u32 xmhfhw_sysmemaccess_readu32(u32 addr){
     u32 *valueptr = (u32 *)addr;
-    #ifdef __XMHF_VERIFICATION__
-    u32 value = nondet_u32();
-    #else
     u32 value = *valueptr;
-	#endif
     return value;
 }
 
 //read 64-bits from absolute physical address
-static inline u64 xmhfhw_sysmemaccess_readu64(u32 addr){
+u64 xmhfhw_sysmemaccess_readu64(u32 addr){
     u64 *valueptr = (u64 *)addr;
-    #ifdef __XMHF_VERIFICATION__
-	u64 value = nondet_u64();
-	#else
     u64 value = *valueptr;
-	#endif
     return value;
 }
 
-// the following four _writexx functions should not be used to write
-// to framework memory areas
 
 //write 8-bits to absolute physical address
-static inline void xmhfhw_sysmemaccess_writeu8(u32 addr, u8 val) {
+void xmhfhw_sysmemaccess_writeu8(u32 addr, u8 val) {
     u8 *valueptr = (u8 *)addr;
-	assert( ! ( ((u32)valueptr >= __TARGET_BASE_XMHF) && ((u32)valueptr <= (__TARGET_BASE_XMHF+__TARGET_SIZE_XMHF)) ) );
-    #ifndef __XMHF_VERIFICATION__
     *valueptr = val;
-    #endif
 }
 
 //write 16-bits to absolute physical address
-static inline void xmhfhw_sysmemaccess_writeu16(u32 addr, u16 val) {
+void xmhfhw_sysmemaccess_writeu16(u32 addr, u16 val) {
     u16 *valueptr = (u16 *)addr;
-	assert( ! ( ((u32)valueptr >= __TARGET_BASE_XMHF) && ((u32)valueptr <= (__TARGET_BASE_XMHF+__TARGET_SIZE_XMHF)) ) );
-    #ifndef __XMHF_VERIFICATION__
     *valueptr = val;
-	#endif
 }
 
 //write 32-bits to absolute physical address
-static inline void xmhfhw_sysmemaccess_writeu32(u32 addr, u32 val) {
+void xmhfhw_sysmemaccess_writeu32(u32 addr, u32 val) {
     u32 *valueptr = (u32 *)addr;
-	assert( ! ( ((u32)valueptr >= __TARGET_BASE_XMHF) && ((u32)valueptr <= (__TARGET_BASE_XMHF+__TARGET_SIZE_XMHF)) ) );
-    #ifndef __XMHF_VERIFICATION__
     *valueptr = val;
-	#endif
 }
 
 //write 64-bits to absolute physical address
-static inline void xmhfhw_sysmemaccess_writeu64(u32 addr, u64 val) {
+void xmhfhw_sysmemaccess_writeu64(u32 addr, u64 val) {
     u64 *valueptr = (u64 *)addr;
-	assert( ! ( ((u32)valueptr >= __TARGET_BASE_XMHF) && ((u32)valueptr <= (__TARGET_BASE_XMHF+__TARGET_SIZE_XMHF)) ) );
-    #ifndef __XMHF_VERIFICATION__
     *valueptr = val;
-	#endif
 }
 
 //the following function can be used to write to framework data areas
@@ -189,13 +156,8 @@ static inline void xmhfhw_sysmemaccess_writeu64(u32 addr, u64 val) {
 //memory copy from absolute physical address (src) to
 //absolute physical address (dest)
 //TODO: ensure dest does not fall within framework code regions
-static inline void xmhfhw_sysmemaccess_copy(u8 *dest, u8 *src, u32 size){
-    #ifndef __XMHF_VERIFICATION__
+void xmhfhw_sysmemaccess_copy(u8 *dest, u8 *src, u32 size){
 	memcpy(dest, src, size);
-	#endif
 }
 
 
-#endif	//__ASSEMBLY__
-
-#endif //__XMHFHW_CPU_MEM_H__

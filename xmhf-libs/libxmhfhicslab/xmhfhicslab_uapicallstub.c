@@ -44,93 +44,45 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-// XMHF HWM Legacy IO decls.
-// author: amit vasudevan (amitvasudevan@acm.org)
+/*
+ * dummy module to generate libxmhfslab.a
+ * author: amit vasudevan (amitvasudevan@acm.org)
+*/
 
-#ifndef __XMHFHW_CPU_LEGIO_H__
-#define __XMHFHW_CPU_LEGIO_H__
 
-#ifndef __ASSEMBLY__
+#include <xmhf.h>
+#include <xmhfhicslab.h>
+#include <xmhf-debug.h>
 
-#ifndef __XMHF_VERIFICATION__
+/*
+__slab_calluapi register mappings:
 
-	static inline void outl(u32 val, u32 port){
-	  __asm__ __volatile__("out %0, %w1"
-			     : /* no outputs */
-			     :"a"(val), "Nd"((u16)port));
-	}
+RDI = XMHF_HIC_UAPI
+RSI = uapi_fn
+RDX = uapi_subfn
+RCX = undefined
+R8 = iparams
+R9 = oparams
+R10 = return RSP
+R11 = return_address
 
-	static inline void outw (u32 value, u32 port){
-	  __asm__ __volatile__ ("outw %w0,%w1": :"a" ((u16)value), "Nd" ((u16)port));
-	}
+*/
 
-	static inline void outb (u32 value, u32 port){
-	  __asm__ __volatile__ ("outb %b0,%w1": :"a" ((u8)value), "Nd" ((u16)port));
-	}
+__attribute__((naked)) bool __slab_calluapi(u64 reserved_uapicall,
+        u64 reserved_uapicall_num,  u64 uapi_subfn,
+        u64 reserved, u64 iparams, u64 oparams){
 
-	static inline u32 inl(u32 port){
-	  u32 val;
+    asm volatile (
+        "movq %%rsp, %%r10 \r\n"
+        "movq $1f, %%r11 \r\n"\
+        "sysenter \r\n" \
+        \
+        "1:\r\n" \
+        "retq \r\n" \
+        :
+        :
+        :
+    );
 
-	  __asm__ __volatile__("in %w1, %0"
-			       :"=a"(val)
-			       :"Nd"((u16)port));
-	  return val;
-	}
 
-	static inline unsigned short inw (u32 port){
-	  unsigned short _v;
-
-	  __asm__ __volatile__ ("inw %w1,%0":"=a" (_v):"Nd" ((u16)port));
-	  return _v;
-	}
-
-	static inline unsigned char inb (u32 port){
-	  unsigned char _v;
-
-	  __asm__ __volatile__ ("inb %w1,%0":"=a" (_v):"Nd" ((u16)port));
-	  return _v;
-	}
-
-#else //__XMHF_VERIFICATION__
-
-	static inline void outl(u32 val, u32 port){
-	  (void)val;
-	  (void)port;
-	}
-
-	static inline void outw (u32 value, u32 port){
-	  (void)value;
-	  (void)port;
-	}
-
-	static inline void outb (u32 value, u32 port){
-	  (void)value;
-	  (void)port;
-	}
-
-	static inline u32 inl(u32 port){
-	  u32 val;
-	  val = nondet_u32();
-	  return val;
-	}
-
-	static inline unsigned short inw (u32 port){
-	  unsigned short _v;
-	  _v = nondet_u16();
-	  return _v;
-	}
-
-	static inline unsigned char inb (u32 port){
-	  unsigned char _v;
-
-	  _v = (u8)nondet_u16();
-	  return _v;
-	}
-
-#endif //__XMHF_VERIFICATION__
-
-//void udelay(u32 usecs);
-
-#endif /* __ASSEMBLY__ */
-
-#endif /* __XMHFHW_CPU_LEGIO_H__ */
+}

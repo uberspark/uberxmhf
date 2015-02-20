@@ -44,78 +44,49 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
+//xmhfhw_cpu_legio: CPU Legacy IO functions
+// author: amit vasudevan (amitvasudevan@acm.org)
+
 #include <xmhf.h>
-#include <xmhfhicslab.h>
+#include <xmhf-hwm.h>
+#include <xmhfhw.h>
 #include <xmhf-debug.h>
 
-#include <xctestslab1.h>
 
-//////
-XMHF_SLAB(xctestslab1)
-
-/*
- * slab code
- *
- * author: amit vasudevan (amitvasudevan@acm.org)
- */
-
-
-/*
-static u8 _ae_page_buffer_src[PAGE_SIZE_4K];
-
-static u8 _ae_page_buffer[PAGE_SIZE_4K];
-
-static void _xcinit_dotests(u64 cpuid){
-
-    {
-        u64 tscbefore, tscafter, tscavg=0;
-        u32 iterations=128;
-        u32 i;
-        u8 digest[SHA_DIGEST_LENGTH];
-
-        _XDPRINTF_("%s: proceeding with test...\n", __FUNCTION__);
-
-
-
-        for(i=0; i < iterations; i++){
-            tscbefore = rdtsc64();
-
-            {
-
-                //memcpy(_ae_page_buffer, &_ae_page_buffer_src, PAGE_SIZE_4K);
-                //compute SHA-1 of the local page buffer
-                sha1_buffer(&_ae_page_buffer, PAGE_SIZE_4K, digest);
-
-                //XMHF_SLAB_CALL(hictestslab2, XMHF_HYP_SLAB_HICTESTSLAB2, NULL, 0, NULL, 0);
-
-            }
-
-            tscafter = rdtsc64();
-            tscavg += (tscafter - tscbefore);
-        }
-
-        tscavg = tscavg / iterations;
-
-        _XDPRINTF_("%s: clock cycles for test = %u\n", __FUNCTION__, (u32)tscavg);
-
-    }
-
-}*/
-
-
-void slab_interface(slab_input_params_t *iparams, u64 iparams_size, slab_output_params_t *oparams, u64 oparams_size, u64 src_slabid, u64 cpuid){
-    u64 *inputval = (u64 *)iparams;
-    u64 *outputval = (u64 *)oparams;
-
-	_XDPRINTF_("%s[%u]: Got control: RSP=%016llx\n",
-                __FUNCTION__, (u32)cpuid, read_rsp());
-
-	_XDPRINTF_("%s[%u]: inputval=%x\n",
-                __FUNCTION__, (u32)cpuid, *inputval);
-
-    *outputval = 0xBBCCDDEE;
-
-    return;
+void outl(u32 val, u32 port){
+    __asm__ __volatile__("out %0, %w1"
+         : /* no outputs */
+         :"a"(val), "Nd"((u16)port));
 }
 
+void outw (u32 value, u32 port){
+  __asm__ __volatile__ ("outw %w0,%w1": :"a" ((u16)value), "Nd" ((u16)port));
+}
+
+void outb (u32 value, u32 port){
+  __asm__ __volatile__ ("outb %b0,%w1": :"a" ((u8)value), "Nd" ((u16)port));
+}
+
+u32 inl(u32 port){
+  u32 val;
+
+  __asm__ __volatile__("in %w1, %0"
+               :"=a"(val)
+               :"Nd"((u16)port));
+  return val;
+}
+
+u16 inw (u32 port){
+  u16 _v;
+
+  __asm__ __volatile__ ("inw %w1,%0":"=a" (_v):"Nd" ((u16)port));
+  return _v;
+}
+
+u8 inb (u32 port){
+  u8 _v;
+
+  __asm__ __volatile__ ("inb %w1,%0":"=a" (_v):"Nd" ((u16)port));
+  return _v;
+}
 
