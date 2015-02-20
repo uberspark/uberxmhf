@@ -107,6 +107,74 @@ typedef struct {
  *   8
  */
 
+
+
+void xmhfhw_cpu_cpuid(u32 op, u32 *eax, u32 *ebx, u32 *ecx, u32 *edx);
+uint64_t rdtsc64(void);
+u64 read_cr0(void);
+void write_cr0(u64 val);
+u64 read_cr3(void);
+u64 read_rsp(void);
+void write_cr3(u64 val);
+u64 read_cr4(void);
+void write_cr4(u64 val);
+void skinit(unsigned long eax);
+u32 read_segreg_cs(void);
+u32 read_segreg_ds(void);
+u32 read_segreg_es(void);
+u32 read_segreg_fs(void);
+u32 read_segreg_gs(void);
+u32 read_segreg_ss(void);
+u16 read_tr_sel(void);
+void wbinvd(void);
+uint32_t bsrl(uint32_t mask);
+__CASMFNDEF__(xmhfhw_cpu_disable_intr) static void xmhfhw_cpu_disable_intr(void);
+void enable_intr(void);
+u64 xgetbv(u32 xcr_reg);
+void xsetbv(u32 xcr_reg, u64 value);
+void sysexitq(u64 rip, u64 rsp);
+void spin_lock(volatile u32 *lock);
+void spin_unlock(volatile u32 *lock);
+u64 xmhf_baseplatform_arch_x86_getgdtbase(void);
+u64 xmhf_baseplatform_arch_x86_getidtbase(void);
+u64  xmhf_baseplatform_arch_x86_gettssbase(void);
+int fls(int mask);
+u32 get_cpu_vendor_or_die(void);
+bool xmhf_baseplatform_arch_x86_cpuhasxsavefeature(void);
+u32 xmhf_baseplatform_arch_x86_getcpuvendor(void);
+u32 xmhf_baseplatform_arch_getcpuvendor(void);
+
+
+uint64_t read_pub_config_reg(uint32_t reg);
+void write_pub_config_reg(uint32_t reg, uint64_t val);
+uint64_t read_priv_config_reg(uint32_t reg);
+void write_priv_config_reg(uint32_t reg, uint64_t val);
+bool txt_is_launched(void);
+
+
+void set_all_mtrrs(bool enable);
+bool set_mem_type(void *base, uint32_t size, uint32_t mem_type);
+void print_mtrrs(const mtrr_state_t *saved_state);
+void xmhfhw_cpu_x86_save_mtrrs(mtrr_state_t *saved_state);
+bool validate_mtrrs(const mtrr_state_t *saved_state);
+void xmhfhw_cpu_x86_restore_mtrrs(mtrr_state_t *saved_state);
+
+
+txt_heap_t *get_txt_heap(void);
+uint64_t get_bios_data_size(txt_heap_t *heap);
+bios_data_t *get_bios_data_start(txt_heap_t *heap);
+uint64_t get_os_mle_data_size(txt_heap_t *heap);
+os_mle_data_t *get_os_mle_data_start(txt_heap_t *heap);
+uint64_t get_os_sinit_data_size(txt_heap_t *heap);
+os_sinit_data_t *get_os_sinit_data_start(txt_heap_t *heap);
+uint64_t get_sinit_mle_data_size(txt_heap_t *heap);
+sinit_mle_data_t *get_sinit_mle_data_start(txt_heap_t *heap);
+
+
+
+
+
+
 #endif //__ASSEMBLY__
 
 /*#include <_xmhfhw_cpu.h>
