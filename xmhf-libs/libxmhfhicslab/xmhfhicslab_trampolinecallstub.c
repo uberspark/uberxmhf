@@ -73,6 +73,8 @@ __attribute__((naked)) bool __slab_calltrampoline(u64 reserved,
     slab_input_params_t *iparams, u64 iparams_size,
     slab_output_params_t *oparams, u64 oparams_size, u64 dst_slabid){
 
+/*  //TODO: x86_64 --> x86
+
     asm volatile (
         "pushq %%rbx \r\n"
         "pushq %%r12 \r\n"
@@ -96,4 +98,6 @@ __attribute__((naked)) bool __slab_calltrampoline(u64 reserved,
         : "i" (XMHF_HIC_SLABCALL)
         :
     );
+*/
+
 }

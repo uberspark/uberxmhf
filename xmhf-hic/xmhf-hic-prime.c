@@ -1694,7 +1694,10 @@ static void __xmhfhic_x86vmx_initializeTSS(void){
 		//initialize TSS descriptors for all CPUs
 		for(i=0; i < xcbootinfo->cpuinfo_numentries; i++){
             tss_t *tss= (tss_t *)__xmhfhic_x86vmx_tss[i];
+            /* x86_64
             tss->rsp0 = (u64) ( &__xmhfhic_x86vmx_tss_stack[i] + sizeof(__xmhfhic_x86vmx_tss_stack[0]) );
+            */
+            tss->esp0 = (u32) ( &__xmhfhic_x86vmx_tss_stack[i] + sizeof(__xmhfhic_x86vmx_tss_stack[0]) );
 		}
 }
 

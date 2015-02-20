@@ -94,7 +94,10 @@ u64 read_cr3(void){
 
 u64 read_rsp(void){
   u64 __rsp;
+/*
+  // TODO: x86_64 --> x86
   asm volatile("movq %%rsp,%0\n\t" :"=r" (__rsp));
+*/
   return __rsp;
 }
 
@@ -209,6 +212,8 @@ void xsetbv(u32 xcr_reg, u64 value){
 
 void sysexitq(u64 rip, u64 rsp){
 
+/*
+    //TODO: x86_64 --> x86
             asm volatile(
                  "movq %0, %%rdx \r\n"
                  "movq %1, %%rcx \r\n"
@@ -221,6 +226,7 @@ void sysexitq(u64 rip, u64 rsp){
                   "m" (rsp)
                 : "rdx", "rcx"
             );
+*/
 
 }
 

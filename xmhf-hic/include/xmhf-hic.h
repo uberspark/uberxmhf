@@ -150,17 +150,33 @@ typedef struct {
 
 
 typedef void * slab_entrystub_t;
+
+/* x86_64
 typedef u64 slab_privilegemask_t;
 typedef u64 slab_callcaps_t;
 typedef u64 slab_uapicaps_t;
+*/
 
+typedef u32 slab_privilegemask_t;
+typedef u32 slab_callcaps_t;
+typedef u32 slab_uapicaps_t;
+
+/* x86_64
 typedef struct {
 	bool desc_valid;
 	u64 numdevices;
     xc_platformdevice_arch_desc_t arch_desc[MAX_PLATFORM_DEVICES];
 } __attribute__((packed)) slab_platformdevices_t;
+*/
+
+typedef struct {
+	bool desc_valid;
+	u32 numdevices;
+    xc_platformdevice_arch_desc_t arch_desc[MAX_PLATFORM_DEVICES];
+} __attribute__((packed)) slab_platformdevices_t;
 
 
+/* x86_64
 //slab capabilities type
 typedef struct {
     slab_privilegemask_t slab_privilegemask;
@@ -169,7 +185,16 @@ typedef struct {
     slab_platformdevices_t slab_devices;
     u64 slab_archparams;
 } __attribute__((packed)) slab_caps_t;
+*/
 
+//slab capabilities type
+typedef struct {
+    slab_privilegemask_t slab_privilegemask;
+    slab_callcaps_t slab_callcaps;
+    slab_uapicaps_t slab_uapicaps;
+    slab_platformdevices_t slab_devices;
+    u32 slab_archparams;
+} __attribute__((packed)) slab_caps_t;
 
 
 #define HIC_SLAB_CALLCAP(x) (1 << x)
@@ -204,12 +229,23 @@ typedef struct {
 
 #define HIC_SLAB_PHYSMEM_MAXEXTENTS         5
 
+/* x86_64
 //slab physical memory extent type
 typedef struct {
     u64 addr_start;
     u64 addr_end;
     u64 protection;
 } slab_physmem_extent_t;
+*/
+
+//slab physical memory extent type
+typedef struct {
+    u32 addr_start;
+    u32 addr_end;
+    u32 protection;
+} slab_physmem_extent_t;
+
+
 
 /*
 typedef struct {
@@ -335,7 +371,10 @@ extern __attribute__(( aligned(16) )) u64 __xmhfhic_x86vmx_gdt_start[];     //ro
 extern __attribute__(( aligned(16) )) arch_x86_gdtdesc_t __xmhfhic_x86vmx_gdt;  //ro
 extern __attribute__(( aligned(4096) )) u8 __xmhfhic_x86vmx_tss[MAX_PLATFORM_CPUS][PAGE_SIZE_4K]; //ro
 extern __attribute__(( aligned(8) )) u64 __xmhfhic_x86vmx_cpuidtable[MAX_X86_APIC_ID]; //ro
-extern u64  __xmhfhic_exceptionstubs[]; //ro
+
+//extern u64  __xmhfhic_exceptionstubs[]; //ro
+extern u32  __xmhfhic_exceptionstubs[]; //ro
+
 extern __attribute__(( aligned(16) )) idtentry_t __xmhfhic_x86vmx_idt_start[EMHF_XCPHANDLER_MAXEXCEPTIONS]; //ro
 extern __attribute__(( aligned(16) )) arch_x86_idtdesc_t __xmhfhic_x86vmx_idt; //ro
 //extern __attribute__(( aligned(4096) )) u8 _init_cpustacks[MAX_PLATFORM_CPUS][MAX_PLATFORM_CPUSTACK_SIZE]; //ro
