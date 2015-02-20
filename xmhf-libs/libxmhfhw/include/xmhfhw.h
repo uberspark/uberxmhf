@@ -217,6 +217,64 @@ void __getsec_parameters(uint32_t index, int* param_type, uint32_t* peax, uint32
 #endif //__ASSEMBLY__
 
 
+//////xmhfhw_cpu_vmx
+
+#ifndef __ASSEMBLY__
+
+bool __vmx_vmxon(u64 vmxonregion_paddr);
+void xmhfhw_cpu_x86vmx_vmwrite(u64 encoding, u64 value);
+u64 xmhfhw_cpu_x86vmx_vmread(u64 encoding);
+u32 __vmx_vmclear(u64 vmcs);
+u32 __vmx_vmptrld(u64 vmcs);
+u32 __vmx_invvpid(int invalidation_type, u16 vpid, u32 linearaddress);
+void __vmx_invept(u64 invalidation_type, u64 eptp);
+
+#endif //__ASSEMBLY__
+
+
+
+//////xmhfhw_cpu_legio
+
+#ifndef __ASSEMBLY__
+
+void outl(u32 val, u32 port);
+void outw (u32 value, u32 port);
+void outb (u32 value, u32 port);
+u32 inl(u32 port);
+u16 inw (u32 port);
+u8 inb (u32 port);
+
+#endif //__ASSEMBLY__
+
+
+
+
+
+//////xmhfhw_cpu_mem
+
+#ifndef __ASSEMBLY__
+
+void * hva2sla(void *hva);
+spa_t sla2spa(void *sla);
+spa_t hva2spa(void *hva);
+void * spa2hva(spa_t spa);
+spa_t gpa2spa(gpa_t gpa);
+gpa_t spa2gpa(spa_t spa);
+void* gpa2hva(gpa_t gpa);
+gpa_t hva2gpa(hva_t hva);
+u8 xmhfhw_sysmemaccess_readu8(u32 addr);
+u16 xmhfhw_sysmemaccess_readu16(u32 addr);
+u32 xmhfhw_sysmemaccess_readu32(u32 addr);
+u64 xmhfhw_sysmemaccess_readu64(u32 addr);
+void xmhfhw_sysmemaccess_writeu8(u32 addr, u8 val);
+void xmhfhw_sysmemaccess_writeu16(u32 addr, u16 val);
+void xmhfhw_sysmemaccess_writeu32(u32 addr, u32 val);
+void xmhfhw_sysmemaccess_writeu64(u32 addr, u64 val);
+void xmhfhw_sysmemaccess_copy(u8 *dest, u8 *src, u32 size);
+
+#endif //__ASSEMBLY__
+
+
 /*
 //////xmhfhw_cpu_msr
 
@@ -230,10 +288,10 @@ void __getsec_parameters(uint32_t index, int* param_type, uint32_t* peax, uint32
 /*#include <_xmhfhw_cpu.h> --
     #include <_xmhfhw_cpu_msr.h> --
     #include <_xmhfhw_cpu_paging.h> --
-    #include <_xmhfhw_cpu_txt.h>
-    #include <_xmhfhw_cpu_vmx.h>
-    #include <_xmhfhw_cpu_legio.h>
-    #include <_xmhfhw_cpu_mem.h>
+    #include <_xmhfhw_cpu_txt.h> --
+    #include <_xmhfhw_cpu_vmx.h> --
+    #include <_xmhfhw_cpu_legio.h> --
+    #include <_xmhfhw_cpu_mem.h> --
 
 
 #include <_xmhfhw_legio_pci.h>
