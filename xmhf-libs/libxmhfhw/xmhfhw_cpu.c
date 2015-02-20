@@ -44,56 +44,16 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-//_cpu.h - CPU declarations
+//xmhfhw_cpu - base CPU functions
 //author: amit vasudevan (amitvasudevan@acm.org)
 
-#ifndef __XMHFHW_CPU_H__
-#define __XMHFHW_CPU_H__
+#include <xmhf.h>
+#include <xmhf-hwm.h>
+#include <xmhfhw.h>
+#include <xmhf-debug.h>
 
 
-
-#include <_xmhfhw_cpu_msr.h>
-#include <_xmhfhw_cpu_paging.h>
-#include <_xmhfhw_cpu_txt.h>
-#include <_xmhfhw_cpu_vmx.h>
-#include <_xmhfhw_cpu_legio.h>
-#include <_xmhfhw_cpu_mem.h>
-
-#ifndef __ASSEMBLY__
-
-
-//from _processor.h
-//#define get_eflags(x)  __asm__ __volatile__("pushfl ; popl %0 ":"=g" (x): /* no input */ :"memory")
-/*static inline u64 get_rflags(void){
-    u64 _rflags;
-
-    asm volatile(
-                 "pushfq \r\n"
-                 "popq %0 \r\n"
-                 : "=g" (_rflags)
-                 :
-                 :
-                 );
-
-    return _rflags;
-}*/
-
-//#define set_eflags(x) __asm__ __volatile__("pushl %0 ; popfl": /* no output */ :"g" (x):"memory", "cc")
-/*static inline void set_rflags(u64 rflags){
-
-    asm volatile(
-                 "pushq %0 \r\n"
-                 "popfq \r\n"
-                 :
-                 : "g" (rflags)
-                 : "cc"
-                 );
-
-}*/
-
-
-//__CASMFNDEF__(xmhfhw_cpu_cpuid) static void xmhfhw_cpu_cpuid(u32 op, u32 *eax, u32 *ebx, u32 *ecx, u32 *edx){
-static void xmhfhw_cpu_cpuid(u32 op, u32 *eax, u32 *ebx, u32 *ecx, u32 *edx){
+void xmhfhw_cpu_cpuid(u32 op, u32 *eax, u32 *ebx, u32 *ecx, u32 *edx){
     asm volatile(
                  "cpuid \r\n"
                 :"=a"(*(eax)), "=b"(*(ebx)), "=c"(*(ecx)), "=d"(*(edx))
@@ -104,14 +64,8 @@ static void xmhfhw_cpu_cpuid(u32 op, u32 *eax, u32 *ebx, u32 *ecx, u32 *edx){
 
 }
 
-/*#define rdtsc(eax, edx)		\
-({						\
-  __asm__ __volatile__ ("rdtsc"				\
-          :"=a"(*(eax)), "=d"(*(edx))	\
-          :);			\
-})*/
 
-static inline uint64_t rdtsc64(void)
+uint64_t rdtsc64(void)
 {
         uint64_t rv;
 
@@ -121,118 +75,99 @@ static inline uint64_t rdtsc64(void)
 
 
 /* Calls to read and write control registers */
-static inline u64 read_cr0(void){
+u64 read_cr0(void){
   u64 __cr0;
   asm volatile("mov %%cr0,%0 \r\n" :"=r" (__cr0));
   return __cr0;
 }
 
-static inline void write_cr0(u64 val){
+void write_cr0(u64 val){
   asm volatile("mov %0,%%cr0 \r\n": :"r" (val));
 }
 
-static inline u64 read_cr3(void){
+u64 read_cr3(void){
   u64 __cr3;
   asm volatile("mov %%cr3,%0 \r\n" :"=r" (__cr3));
   return __cr3;
 }
 
-/*static inline u32 read_esp(void){
-  u32 __esp;
-  asm volatile("mov %%esp,%0 \r\n" :"=r" (__esp));
-  return __esp;
-}*/
 
-static inline u64 read_rsp(void){
+u64 read_rsp(void){
   u64 __rsp;
   asm volatile("movq %%rsp,%0\n\t" :"=r" (__rsp));
   return __rsp;
 }
 
-/*static inline unsigned long read_ebp(void){
-  unsigned long __ebp;
-  __asm__("mov %%ebp,%0\n\t" :"=r" (__ebp));
-  return __ebp;
-}*/
-
-static inline void write_cr3(u64 val){
+void write_cr3(u64 val){
   asm volatile("mov %0,%%cr3 \r\n"::"r" (val));
 }
 
-/*static inline u64 read_cr2(void){
-  u64 __cr2;
-  asm volatile("mov %%cr2,%0 \r\n" :"=r" (__cr2));
-  return __cr2;
-}*/
-
-//*
-static inline u64 read_cr4(void){
+u64 read_cr4(void){
   u64 __cr4;
   asm volatile("mov %%cr4, %0 \r\n" :"=r" (__cr4));
   return __cr4;
 }
 
-//*
-static inline void write_cr4(u64 val){
+void write_cr4(u64 val){
   asm volatile("mov %0,%%cr4": :"r" (val));
 }
 
 
-static inline void skinit(unsigned long eax) {
+void skinit(unsigned long eax) {
     __asm__("mov %0, %%eax": :"r" (eax));
     __asm__("skinit %%eax":);
 }
 
 
 //segment register access
-static inline u32 read_segreg_cs(void){
+u32 read_segreg_cs(void){
   u32 __cs;
   __asm__("mov %%cs, %0 \r\n" :"=r" (__cs));
   return __cs;
 }
 
-static inline u32 read_segreg_ds(void){
+u32 read_segreg_ds(void){
   u32 __ds;
   __asm__("mov %%ds, %0 \r\n" :"=r" (__ds));
   return __ds;
 }
 
-static inline u32 read_segreg_es(void){
+u32 read_segreg_es(void){
   u32 __es;
   __asm__("mov %%es, %0 \r\n" :"=r" (__es));
   return __es;
 }
 
-static inline u32 read_segreg_fs(void){
+u32 read_segreg_fs(void){
   u32 __fs;
   __asm__("mov %%fs, %0 \r\n" :"=r" (__fs));
   return __fs;
 }
 
-static inline u32 read_segreg_gs(void){
+u32 read_segreg_gs(void){
   u32 __gs;
   __asm__("mov %%gs, %0 \r\n" :"=r" (__gs));
   return __gs;
 }
 
-static inline u32 read_segreg_ss(void){
+u32 read_segreg_ss(void){
   u32 __ss;
   __asm__("mov %%ss, %0 \r\n" :"=r" (__ss));
   return __ss;
 }
 
-static inline u16 read_tr_sel(void){
+u16 read_tr_sel(void){
   u16 __trsel;
   __asm__("str %0 \r\n" :"=r" (__trsel));
   return __trsel;
 }
 
-static inline void wbinvd(void)
+void wbinvd(void)
 {
     __asm__ __volatile__ ("wbinvd");
 }
 
-static inline uint32_t bsrl(uint32_t mask)
+uint32_t bsrl(uint32_t mask)
 {
     uint32_t   result;
 
@@ -241,27 +176,18 @@ static inline uint32_t bsrl(uint32_t mask)
 }
 
 
-
-
-/*static inline void disable_intr(void)
-{
-    _asm__ __volatile__ ("cli" : : : "memory");
-}*/
-
 __CASMFNDEF__(xmhfhw_cpu_disable_intr) static void xmhfhw_cpu_disable_intr(void){
     xmhfhwm_cpu_insn_cli();
     xmhfhwm_cpu_insn_ret();
 }
 
-
-
-static inline void enable_intr(void)
+void enable_intr(void)
 {
     __asm__ __volatile__ ("sti");
 }
 
 //get extended control register (xcr)
-static inline u64 xgetbv(u32 xcr_reg){
+u64 xgetbv(u32 xcr_reg){
 	u32 eax, edx;
 
 	asm volatile(".byte 0x0f,0x01,0xd0"
@@ -272,7 +198,7 @@ static inline u64 xgetbv(u32 xcr_reg){
 }
 
 //set extended control register (xcr)
-static inline void xsetbv(u32 xcr_reg, u64 value){
+void xsetbv(u32 xcr_reg, u64 value){
 	u32 eax = (u32)value;
 	u32 edx = value >> 32;
 
@@ -282,15 +208,7 @@ static inline void xsetbv(u32 xcr_reg, u64 value){
 }
 
 
-
-
-
-
-
-
-
-
-static inline void sysexitq(u64 rip, u64 rsp){
+void sysexitq(u64 rip, u64 rsp){
 
             asm volatile(
                  "movq %0, %%rdx \r\n"
@@ -308,18 +226,7 @@ static inline void sysexitq(u64 rip, u64 rsp){
 }
 
 
-
-
-
-
-
-
-
-#ifndef __XMHF_VERIFICATION__
-
-
-
-    static inline void spin_lock(volatile u32 *lock){
+void spin_lock(volatile u32 *lock){
         __asm__ __volatile__ (
             "1:	btl	$0, %0	\r\n"	//mutex is available?
             "		jnc 1b	\r\n"	//wait till it is
@@ -331,7 +238,7 @@ static inline void sysexitq(u64 rip, u64 rsp){
         );
     }
 
-    static inline void spin_unlock(volatile u32 *lock){
+void spin_unlock(volatile u32 *lock){
         __asm__ __volatile__ (
             "btsl	$0, %0		\r\n"	//release spinlock
             : //no asm outputs
@@ -340,30 +247,8 @@ static inline void sysexitq(u64 rip, u64 rsp){
     }
 
 
-#else //__XMHF_VERIFICATION__
 
-	static inline u32 get_cpu_vendor_or_die(void) {
-			extern u32 xmhf_verify_cpu_vendor;
-			return xmhf_verify_cpu_vendor;
-	}
-
-	inline void spin_lock(volatile u32 *lock){
-			(void)lock;
-	}
-
-	inline void spin_unlock(volatile u32 *lock){
-			(void)lock;
-	}
-
-#endif //__XMHF_VERIFICATION__
-
-//void xmhfhw_cpu_x86_save_mtrrs(mtrr_state_t *saved_state);
-//void xmhfhw_cpu_x86_restore_mtrrs(mtrr_state_t *saved_state);
-
-
-
-
-static inline u64 xmhf_baseplatform_arch_x86_getgdtbase(void){
+u64 xmhf_baseplatform_arch_x86_getgdtbase(void){
 		struct {
 			u16 limit;
 			u64 base;
@@ -380,7 +265,7 @@ static inline u64 xmhf_baseplatform_arch_x86_getgdtbase(void){
 		return gdtr.base;
 }
 
-static inline u64 xmhf_baseplatform_arch_x86_getidtbase(void){
+u64 xmhf_baseplatform_arch_x86_getidtbase(void){
 		struct {
 			u16 limit;
 			u64 base;
@@ -397,7 +282,7 @@ static inline u64 xmhf_baseplatform_arch_x86_getidtbase(void){
 		return idtr.base;
 }
 
-static inline u64  xmhf_baseplatform_arch_x86_gettssbase(void){
+u64  xmhf_baseplatform_arch_x86_gettssbase(void){
 	  u64 gdtbase = xmhf_baseplatform_arch_x86_getgdtbase();
 	  u32 tssdesc_low, tssdesc_high;
 
@@ -418,18 +303,14 @@ static inline u64  xmhf_baseplatform_arch_x86_gettssbase(void){
 }
 
 
-
-
-
-
-static inline int fls(int mask)
+int fls(int mask)
 {
     return (mask == 0 ? mask : (int)bsrl((u32)mask) + 1);
 }
 
 
 
-	static inline u32 get_cpu_vendor_or_die(void) {
+u32 get_cpu_vendor_or_die(void) {
 	    u32 dummy;
 	    u32 vendor_dword1, vendor_dword2, vendor_dword3;
 
@@ -449,7 +330,7 @@ static inline int fls(int mask)
 
 //*
 //returns true if CPU has support for XSAVE/XRSTOR
-static inline bool xmhf_baseplatform_arch_x86_cpuhasxsavefeature(void){
+bool xmhf_baseplatform_arch_x86_cpuhasxsavefeature(void){
 	u32 eax, ebx, ecx, edx;
 
 	//bit 26 of ECX is 1 in CPUID function 0x00000001 if
@@ -465,12 +346,9 @@ static inline bool xmhf_baseplatform_arch_x86_cpuhasxsavefeature(void){
 }
 
 
-
-
-
 //*
 //get CPU vendor
-static inline u32 xmhf_baseplatform_arch_x86_getcpuvendor(void){
+u32 xmhf_baseplatform_arch_x86_getcpuvendor(void){
 	u32 reserved, vendor_dword1, vendor_dword2, vendor_dword3;
 	u32 cpu_vendor;
 
@@ -493,47 +371,31 @@ static inline u32 xmhf_baseplatform_arch_x86_getcpuvendor(void){
 }
 
 //*
-static inline u32 xmhf_baseplatform_arch_getcpuvendor(void){
+u32 xmhf_baseplatform_arch_getcpuvendor(void){
 	return xmhf_baseplatform_arch_x86_getcpuvendor();
 }
 
-
-
-
-
-
-
-
-
-
-
-//from _txt_config_regs.h
-static inline uint64_t read_pub_config_reg(uint32_t reg)
+uint64_t read_pub_config_reg(uint32_t reg)
 {
     return read_config_reg(TXT_PUB_CONFIG_REGS_BASE, reg);
 }
 
-static inline void write_pub_config_reg(uint32_t reg, uint64_t val)
+void write_pub_config_reg(uint32_t reg, uint64_t val)
 {
     write_config_reg(TXT_PUB_CONFIG_REGS_BASE, reg, val);
 }
 
-static inline uint64_t read_priv_config_reg(uint32_t reg)
+uint64_t read_priv_config_reg(uint32_t reg)
 {
     return read_config_reg(TXT_PRIV_CONFIG_REGS_BASE, reg);
 }
 
-static inline void write_priv_config_reg(uint32_t reg, uint64_t val)
+void write_priv_config_reg(uint32_t reg, uint64_t val)
 {
     write_config_reg(TXT_PRIV_CONFIG_REGS_BASE, reg, val);
 }
 
-
-
-
-
-//from _txt_smx.h
-static inline bool txt_is_launched(void)
+bool txt_is_launched(void)
 {
     txt_sts_t sts;
 
@@ -543,20 +405,8 @@ static inline bool txt_is_launched(void)
 }
 
 
-
-
-
-
-
-
-
-
-
-
-//from _txt_mtrrs.h
-
 /* enable/disable all MTRRs */
-static inline void set_all_mtrrs(bool enable)
+void set_all_mtrrs(bool enable)
 {
     mtrr_def_type_t mtrr_def_type;
 
@@ -570,7 +420,7 @@ static inline void set_all_mtrrs(bool enable)
  * set the memory type for specified range (base to base+size)
  * to mem_type and everything else to UC
  */
-static inline bool set_mem_type(void *base, uint32_t size, uint32_t mem_type)
+bool set_mem_type(void *base, uint32_t size, uint32_t mem_type)
 {
     int num_pages;
     int ndx;
@@ -653,7 +503,7 @@ static inline bool set_mem_type(void *base, uint32_t size, uint32_t mem_type)
 
 
 
-static inline void print_mtrrs(const mtrr_state_t *saved_state)
+void print_mtrrs(const mtrr_state_t *saved_state)
 {
     //int i;
 
@@ -671,7 +521,7 @@ static inline void print_mtrrs(const mtrr_state_t *saved_state)
     //}
 }
 
-static inline void xmhfhw_cpu_x86_save_mtrrs(mtrr_state_t *saved_state)
+void xmhfhw_cpu_x86_save_mtrrs(mtrr_state_t *saved_state)
 {
     mtrr_cap_t mtrr_cap;
     int ndx;
@@ -706,7 +556,7 @@ static inline void xmhfhw_cpu_x86_save_mtrrs(mtrr_state_t *saved_state)
 
 
 
-static inline bool validate_mtrrs(const mtrr_state_t *saved_state)
+bool validate_mtrrs(const mtrr_state_t *saved_state)
 {
     mtrr_cap_t mtrr_cap;
     int ndx;
@@ -825,7 +675,7 @@ static inline bool validate_mtrrs(const mtrr_state_t *saved_state)
     return true;
 }
 
-static inline void xmhfhw_cpu_x86_restore_mtrrs(mtrr_state_t *saved_state)
+void xmhfhw_cpu_x86_restore_mtrrs(mtrr_state_t *saved_state)
 {
     int ndx;
 
@@ -861,48 +711,35 @@ static inline void xmhfhw_cpu_x86_restore_mtrrs(mtrr_state_t *saved_state)
 }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-/* this is a common use with annoying casting, so make it an inline */
-static inline txt_heap_t *get_txt_heap(void)
+txt_heap_t *get_txt_heap(void)
 {
     return (txt_heap_t *)(unsigned long)read_pub_config_reg(TXTCR_HEAP_BASE);
 }
 
-static inline uint64_t get_bios_data_size(txt_heap_t *heap)
+uint64_t get_bios_data_size(txt_heap_t *heap)
 {
     return *(uint64_t *)heap;
     //return xmhf_arch_baseplatform_flat_readu64((u32)heap);
 }
 
-static inline bios_data_t *get_bios_data_start(txt_heap_t *heap)
+bios_data_t *get_bios_data_start(txt_heap_t *heap)
 {
     return (bios_data_t *)((char*)heap + sizeof(uint64_t));
 }
 
-static inline uint64_t get_os_mle_data_size(txt_heap_t *heap)
+uint64_t get_os_mle_data_size(txt_heap_t *heap)
 {
     return *(uint64_t *)(heap + get_bios_data_size(heap));
     //return xmhf_arch_baseplatform_flat_readu64((u32)(heap + get_bios_data_size(heap)));
 }
 
-static inline os_mle_data_t *get_os_mle_data_start(txt_heap_t *heap)
+os_mle_data_t *get_os_mle_data_start(txt_heap_t *heap)
 {
     return (os_mle_data_t *)(heap + get_bios_data_size(heap) +
                               sizeof(uint64_t));
 }
 
-static inline uint64_t get_os_sinit_data_size(txt_heap_t *heap)
+uint64_t get_os_sinit_data_size(txt_heap_t *heap)
 {
     return *(uint64_t *)(heap + get_bios_data_size(heap) +
                          get_os_mle_data_size(heap));
@@ -911,14 +748,14 @@ static inline uint64_t get_os_sinit_data_size(txt_heap_t *heap)
 
 }
 
-static inline os_sinit_data_t *get_os_sinit_data_start(txt_heap_t *heap)
+os_sinit_data_t *get_os_sinit_data_start(txt_heap_t *heap)
 {
     return (os_sinit_data_t *)(heap + get_bios_data_size(heap) +
                                get_os_mle_data_size(heap) +
                                sizeof(uint64_t));
 }
 
-static inline uint64_t get_sinit_mle_data_size(txt_heap_t *heap)
+uint64_t get_sinit_mle_data_size(txt_heap_t *heap)
 {
     return *(uint64_t *)(heap + get_bios_data_size(heap) +
                          get_os_mle_data_size(heap) +
@@ -928,7 +765,7 @@ static inline uint64_t get_sinit_mle_data_size(txt_heap_t *heap)
     //                     get_os_sinit_data_size(heap)));
 }
 
-static inline sinit_mle_data_t *get_sinit_mle_data_start(txt_heap_t *heap)
+sinit_mle_data_t *get_sinit_mle_data_start(txt_heap_t *heap)
 {
     return (sinit_mle_data_t *)(heap + get_bios_data_size(heap) +
                                 get_os_mle_data_size(heap) +
@@ -937,6 +774,3 @@ static inline sinit_mle_data_t *get_sinit_mle_data_start(txt_heap_t *heap)
 }
 
 
-#endif //__ASSEMBLY__
-
-#endif // __XMHFHW_CPU_H__

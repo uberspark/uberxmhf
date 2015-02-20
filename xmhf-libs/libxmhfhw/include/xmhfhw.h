@@ -47,6 +47,11 @@
 #ifndef __XMHFHW_H__
 #define __XMHFHW_H__
 
+
+//////xmhfhw_cpu
+
+#define MAX_LCP_PO_DATA_SIZE     64*1024  /* 64k */
+
 #ifndef __ASSEMBLY__
 
 typedef struct {
@@ -57,13 +62,10 @@ typedef struct {
 } __attribute__((packed)) mtrr_state_t;
 
 
-//from _txt_heap.h
-
 /*
  * OS/loader to MLE structure
  *   - private to tboot (so can be any format we need)
  */
-#define MAX_LCP_PO_DATA_SIZE     64*1024  /* 64k */
 
 typedef struct {
     uint32_t          version;           /* currently 2 */
@@ -107,13 +109,20 @@ typedef struct {
 
 #endif //__ASSEMBLY__
 
-#include <_xmhfhw_cpu.h>
+/*#include <_xmhfhw_cpu.h>
+    #include <_xmhfhw_cpu_msr.h>
+    #include <_xmhfhw_cpu_paging.h>
+    #include <_xmhfhw_cpu_txt.h>
+    #include <_xmhfhw_cpu_vmx.h>
+    #include <_xmhfhw_cpu_legio.h>
+    #include <_xmhfhw_cpu_mem.h>
 
 
 #include <_xmhfhw_legio_pci.h>
 #include <_xmhfhw_legio_pit.h>
 #include <_xmhfhw_legio_keyb.h>
 #include <_xmhfhw_sysmem_bios.h>
+*/
 
 #ifndef __ASSEMBLY__
 
@@ -131,8 +140,9 @@ typedef struct {
 
 #endif //__ASSEMBLY__
 
+/*
 #include <_xmhfhw_mmio_vtd.h>
 #include <_xmhfhw_mmio_lapic.h>
-
+*/
 
 #endif // __XMHFHW_H__
