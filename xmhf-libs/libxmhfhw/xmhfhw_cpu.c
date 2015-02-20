@@ -405,6 +405,11 @@ bool txt_is_launched(void)
 }
 
 
+
+
+
+
+
 /* enable/disable all MTRRs */
 void set_all_mtrrs(bool enable)
 {
@@ -709,6 +714,10 @@ void xmhfhw_cpu_x86_restore_mtrrs(mtrr_state_t *saved_state)
     /* IA32_MTRR_DEF_TYPE MSR */
     wrmsr64(MSR_MTRRdefType, saved_state->mtrr_def_type.raw);
 }
+
+
+
+
 
 
 txt_heap_t *get_txt_heap(void)
