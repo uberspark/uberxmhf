@@ -171,13 +171,32 @@ uint64_t get_sinit_mle_data_size(txt_heap_t *heap);
 sinit_mle_data_t *get_sinit_mle_data_start(txt_heap_t *heap);
 
 
+#endif //__ASSEMBLY__
 
 
+//////xmhfhw_cpu_msr
 
+#ifndef __ASSEMBLY__
+
+void rdmsr(u32 msr, u32 *eax, u32 *edx);
+void wrmsr(u32 msr, u32 eax, u32 edx);
+u64 rdmsr64(u32 msr);
+void wrmsr64(u32 msr, u64 newval);
 
 #endif //__ASSEMBLY__
 
-/*#include <_xmhfhw_cpu.h>
+
+/*
+//////xmhfhw_cpu_msr
+
+#ifndef __ASSEMBLY__
+
+
+#endif //__ASSEMBLY__
+*/
+
+
+/*#include <_xmhfhw_cpu.h> --
     #include <_xmhfhw_cpu_msr.h>
     #include <_xmhfhw_cpu_paging.h>
     #include <_xmhfhw_cpu_txt.h>

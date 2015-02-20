@@ -44,44 +44,34 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-// XMHF HW CPU MSR declarations
+// xmhfhw_cpu_msr: CPU MSR functions
 // author: amit vasudevan (amitvasudevan@acm.org)
 
-#ifndef __XMHFHW_CPU_MSR_H__
-#define __XMHFHW_CPU_MSR_H__
+#include <xmhf.h>
+#include <xmhf-hwm.h>
+#include <xmhfhw.h>
+#include <xmhf-debug.h>
 
-
-#ifndef __ASSEMBLY__
-
-static inline void rdmsr(u32 msr, u32 *eax, u32 *edx) __attribute__((always_inline));
-static inline void wrmsr(u32 msr, u32 eax, u32 edx) __attribute__((always_inline));
-
-//*
-static inline void rdmsr(u32 msr, u32 *eax, u32 *edx){
+void rdmsr(u32 msr, u32 *eax, u32 *edx){
   asm volatile("rdmsr \r\n"
 	  :"=a"(*eax), "=d"(*edx)
 	  :"c"(msr));
 }
 
-//*
-static inline void wrmsr(u32 msr, u32 eax, u32 edx){
+void wrmsr(u32 msr, u32 eax, u32 edx){
   asm volatile("wrmsr \r\n"
 	  : /* no outputs */
 	  :"c"(msr), "a"(eax), "d"(edx));
 }
 
 
-static inline u64 rdmsr64(u32 msr){
+u64 rdmsr64(u32 msr){
     u32 eax, edx;
     rdmsr(msr, &eax, &edx);
     return (((u64)edx << 32) | (u64)eax);
 }
 
-static inline void wrmsr64(u32 msr, u64 newval){
+void wrmsr64(u32 msr, u64 newval){
     wrmsr(msr, (u32)newval, (u32)((u64)newval >> 32));
 }
 
-#endif /* __ASSEMBLY__ */
-
-
-#endif/* __XMHFHW_CPU_MSR_H__ */
