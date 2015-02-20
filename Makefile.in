@@ -109,7 +109,7 @@ FLAGS += -Wsign-compare
 FLAGS += -Wno-bad-function-cast -Wall
 FLAGS += -Waggregate-return
 FLAGS += -Winline
-#FLAGS += -m32 -march=k8
+FLAGS += -m32
 FLAGS += -mno-mmx -mno-sse -mno-sse2 -mno-sse3 -mno-ssse3
 FLAGS += -mno-sse4.1 -mno-sse4.2 -mno-sse4 -mno-avx -mno-aes
 #FLAGS += -mno-pclmul -mno-sse4a -mno-sse5 -mno-3dnow -mno-popcnt -mno-abm
@@ -227,7 +227,8 @@ xmhfbin: $(XMHFLIBS_SRC) $(XMHFCORE_SRC)
 	@echo Linking XMHF binary...
 	cd $(XMHF_OBJDIR) && cp -f xmhf.lscript xmhf.lscript.c
 	cd $(XMHF_OBJDIR) && $(CC) $(CFLAGS) -D__ASSEMBLY__ -P -E xmhf.lscript.c -o xmhf.lds
-	cd $(XMHF_OBJDIR) && $(LD) --oformat elf64-x86-64 -T xmhf.lds -o xmhf.exe -L$(CCLIB)/lib/linux -L$(XMHFLIBS_DIR) -lxmhfc -lxmhfdebug -lxmhfc -lclang_rt.builtins-x86_64
+	#cd $(XMHF_OBJDIR) && $(LD) --oformat elf64-x86-64 -T xmhf.lds -o xmhf.exe -L$(CCLIB)/lib/linux -L$(XMHFLIBS_DIR) -lxmhfc -lxmhfdebug -lxmhfc -lclang_rt.builtins-x86_64
+	cd $(XMHF_OBJDIR) && $(LD) --oformat elf32-i386 -T xmhf.lds -o xmhf.exe -L$(CCLIB)/lib/linux -L$(XMHFLIBS_DIR) -lxmhfc -lxmhfdebug -lxmhfc -lclang_rt.full-i386
 	cd $(XMHF_OBJDIR) && $(OBJCOPY) --output-format=binary xmhf.exe xmhf.bin
 	@echo XMHF link SUCCESS
 	@echo Building XMHF boot loader...
