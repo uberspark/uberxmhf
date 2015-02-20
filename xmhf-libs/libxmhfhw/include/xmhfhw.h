@@ -362,23 +362,4 @@ u32 xmhf_baseplatform_arch_x86_getcpulapicid(void);
 
 
 
-
-
-/*#include <_xmhfhw_cpu.h> --
-    #include <_xmhfhw_cpu_msr.h> --
-    #include <_xmhfhw_cpu_paging.h> --
-    #include <_xmhfhw_cpu_txt.h> --
-    #include <_xmhfhw_cpu_vmx.h> --
-    #include <_xmhfhw_cpu_legio.h> --
-    #include <_xmhfhw_cpu_mem.h> --
-
-
-#include <_xmhfhw_legio_pci.h>
-#include <_xmhfhw_legio_pit.h>
-#include <_xmhfhw_legio_keyb.h>
-#include <_xmhfhw_sysmem_bios.h>
-#include <_xmhfhw_mmio_vtd.h>
-#include <_xmhfhw_mmio_lapic.h>
-*/
-
 #endif // __XMHFHW_H__
