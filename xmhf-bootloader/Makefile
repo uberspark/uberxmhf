@@ -63,6 +63,8 @@ xmhflibs32:
 	#cd $(XMHF_BOOTLOADER_LIBS_DIR) && $(MAKE) -f $(XMHFLIBS_SRC)/Makefile -w all
 	cd $(XMHF_BOOTLOADER_LIBS_DIR) && $(MAKE) -f $(XMHFLIBS_SRC)/libxmhfdebug/Makefile -w all
 	(cd $(XMHF_BOOTLOADER_LIBS_DIR)/_objs_libxmhfdebug && cp *.a ../.) || exit 1;
+	#cd $(XMHF_BOOTLOADER_LIBS_DIR) && $(MAKE) -f $(XMHFLIBS_SRC)/libxmhfhw/Makefile -w all
+	#(cd $(XMHF_BOOTLOADER_LIBS_DIR)/_objs_libxmhfhw && cp *.a ../.) || exit 1;
 	@echo XMHF libs build SUCCESS
 
 
