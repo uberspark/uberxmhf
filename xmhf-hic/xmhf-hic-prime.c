@@ -60,6 +60,67 @@ extern void __xmhfhic_x86vmx_loadGDT(arch_x86_gdtdesc_t *gdt_addr);
 
 
 
+
+
+__attribute__((aligned(4096))) static u64 _xcprimeon_init_pdt[PAE_PTRS_PER_PDPT][PAE_PTRS_PER_PDT];
+__attribute__((aligned(4096))) static u64 _xcprimeon_init_pdpt[PAE_MAXPTRS_PER_PDPT];
+
+static void xmhfhic_setupinitpgtables(void){
+    u32 paddr=0;
+    u32 i, j;
+    u64 pdpe_flags = (_PAGE_USER | _PAGE_RW | _PAGE_PRESENT);
+    u64 pdte_flags = (_PAGE_USER | _PAGE_RW | _PAGE_PSE | _PAGE_PRESENT);
+
+    memset(&_xcprimeon_init_pdpt, 0, sizeof(_xcprimeon_init_pdpt));
+
+    for(i=0; i < PAE_PTRS_PER_PDPT; i++){
+        u64 entry_addr = (u64)&_xcprimeon_init_pdt[i][0];
+        _xcprimeon_init_pdpt[i] = pae_make_pdpe(entry_addr, pdpe_flags);
+
+        for(j=0; j < PAE_PTRS_PER_PDT; j++){
+            if(paddr == 0xfee00000 || paddr == 0xfec00000)
+                _xcprimeon_init_pdt[i][j] = pae_make_pde_big(paddr, (pdte_flags | _PAGE_PCD));
+            else
+                _xcprimeon_init_pdt[i][j] = pae_make_pde_big(paddr, pdte_flags);
+
+            paddr += PAGE_SIZE_2M;
+        }
+    }
+
+    /*//debug
+    _XDPRINTF_("page-table dump:\n");
+
+    for(i=0; i < PAE_PTRS_PER_PDPT; i++){
+        _XDPRINTF_("pdpd[%u]=%016llx\n\n", i, _xcprimeon_init_pdpt[i]);
+
+        for(j=0; j < PAE_PTRS_PER_PDT; j++)
+            _XDPRINTF_("pdt[%u][%u]=%016llx\n", i, j, _xcprimeon_init_pdt[i][j]);
+    }*/
+
+    {
+        _XDPRINTF_("fn:%s, line:%u\n", __FUNCTION__, __LINE__);
+        wrmsr64(MSR_EFER, (rdmsr64(MSR_EFER) | (0x800)) );
+        _XDPRINTF_("EFER=%016llx\n", rdmsr64(MSR_EFER));
+        write_cr4(read_cr4() | (0x30) );
+        _XDPRINTF_("CR4=%08x\n", read_cr4());
+        write_cr3((u32)&_xcprimeon_init_pdpt);
+        _XDPRINTF_("CR3=%08x\n", read_cr3());
+        write_cr0(0x80000015);
+        _XDPRINTF_("fn:%s, line:%u\n", __FUNCTION__, __LINE__);
+        HALT();
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
 void xmhfhic_entry(void){
     u64 pgtblbase;
 
@@ -94,6 +155,10 @@ void xmhfhic_entry(void){
 		}
   	}
 #endif
+
+    _XDPRINTF_("Proceeding to setup init pagetables...\n");
+    xmhfhic_setupinitpgtables();
+    _XDPRINTF_("Init page table setup.\n");
 
     //debug
     _XDPRINTF_("Halting!\n");

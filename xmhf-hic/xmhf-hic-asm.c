@@ -684,6 +684,8 @@ __attribute__((naked)) __attribute__ ((section(".hic_entrystub"))) __attribute__
 					"movw %%ax, %%gs \r\n"
 					"movw %%ax, %%ss \r\n"
 
+					//"movl $0x10200000, %%esp \r\n" //TODO: get rid of hard-coded stack top
+
 					"movl %0, %%eax \r\n"
 					"movl %%eax, %%esp \r\n"
 
