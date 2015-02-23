@@ -48,6 +48,11 @@
 #include <xmhf-hic.h>
 #include <xmhf-debug.h>
 
+
+// initialization phase CPU stacks
+__attribute__(( section(".stack") )) __attribute__(( aligned(4096) )) static u8 _init_cpustacks[MAX_PLATFORM_CPUS][MAX_PLATFORM_CPUSTACK_SIZE];
+
+
 // XMHF HIC prime assembly language code blobs
 // author: amit vasudevan (amitvasudevan@acm.org)
 
@@ -582,7 +587,7 @@ __attribute__((aligned(4096))) static u64 _xcprimeon_init_pml4t[PAE_MAXPTRS_PER_
 };
 */
 
-__attribute__(( aligned(16) )) static u64 _xcprimeon_init_gdt_start[]  = {
+/*__attribute__(( aligned(16) )) static u64 _xcprimeon_init_gdt_start[]  = {
 	0x0000000000000000ULL,	//NULL descriptor
 	0x00af9b000000ffffULL,	//CPL-0 64-bit code descriptor (CS64)
 	0x00af93000000ffffULL,	//CPL-0 64-bit data descriptor (DS/SS/ES/FS/GS)
@@ -591,12 +596,12 @@ __attribute__(( aligned(16) )) static u64 _xcprimeon_init_gdt_start[]  = {
 __attribute__(( aligned(16) )) static arch_x86_gdtdesc_t _xcprimeon_init_gdt  = {
 	.size=sizeof(_xcprimeon_init_gdt_start)-1,
 	.base=&_xcprimeon_init_gdt_start,
-};
+};*/
 
 
-__attribute__((naked)) __attribute__ ((section(".hic_entrystub"))) __attribute__(( align(4096) )) void xcprimeon_arch_entry(void) {
+/* __attribute__((naked)) __attribute__ ((section(".hic_entrystub"))) __attribute__(( align(4096) )) void xcprimeon_arch_entry(void) {
 
-/*
+
 	//TODO: x86_64 --> x86
 	asm volatile (
                     ".code32 \r\n"
@@ -652,12 +657,45 @@ __attribute__((naked)) __attribute__ ((section(".hic_entrystub"))) __attribute__
 
                     "jmp xmhfhic_entry \r\n"
 			    :
-			    : "i" (&_xcprimeon_init_pml4t), "i" (&_xcprimeon_init_gdt)
+			    : "i" (&_init_cpustacks + &_xcprimeon_init_pml4t), "i" (&_xcprimeon_init_gdt)
                 :
 	);
-*/
+
+
+}*/
+
+
+
+
+__attribute__((naked)) __attribute__ ((section(".hic_entrystub"))) __attribute__(( align(4096) )) void xcprimeon_arch_entry(void) {
+
+
+	asm volatile (
+                    ".code32 \r\n"
+					".fill 4096, 1, 0 \r\n"
+					".fill 4096, 1, 0 \r\n"
+					".fill 4096, 1, 0 \r\n"
+					".fill 0x80, 1, 0x90\r\n" //TODO: should really be sizeof(mle_hdr_t)
+					"_xcprimeon_start: \r\n"
+
+					"movw %%ds, %%ax \r\n"
+					"movw %%ax, %%es \r\n"
+					"movw %%ax, %%fs \r\n"
+					"movw %%ax, %%gs \r\n"
+					"movw %%ax, %%ss \r\n"
+
+					"movl %0, %%eax \r\n"
+					"movl %%eax, %%esp \r\n"
+
+                    "call xmhfhic_entry \r\n"
+			    :
+			    : "i" (&_init_cpustacks + MAX_PLATFORM_CPUSTACK_SIZE)
+                :
+	);
+
 
 }
+
 
 
 
@@ -695,8 +733,6 @@ __attribute__(( aligned(16) )) static arch_x86_gdtdesc_t _xcsmp_ap_init_gdt  = {
 	.base=&_xcsmp_ap_init_gdt_start,
 };
 
-// initialization phase CPU stacks
-__attribute__(( section(".stack") )) __attribute__(( aligned(4096) )) static u8 _init_cpustacks[MAX_PLATFORM_CPUS][MAX_PLATFORM_CPUSTACK_SIZE];
 
 
 __attribute__((naked)) void _ap_bootstrap_code(void) {
