@@ -95,6 +95,13 @@ void xmhfhic_entry(void){
   	}
 #endif
 
+    //debug
+    _XDPRINTF_("Halting!\n");
+    _XDPRINTF_("XMHF Tester Finished!\n");
+    HALT();
+
+
+
     //initialize slab info table based on setup data
     xmhfhic_arch_setup_slab_info();
 
