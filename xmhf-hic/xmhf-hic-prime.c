@@ -1649,10 +1649,10 @@ static bool __xmhfhic_smp_arch_smpinitialize(void){
     //save page table base which we will later replicate on all APs
     _ap_cr3 = read_cr3();
 
-	/*//wake up APS
+	//wake up APS
 	if(xcbootinfo->cpuinfo_numentries > 1){
 	  __xmhfhic_smp_container_vmx_wakeupAPs();
-	}*/
+	}
 
 	//fall through to common code
 	_XDPRINTF_("%s: Relinquishing BSP thread and moving to common...\n", __FUNCTION__);
