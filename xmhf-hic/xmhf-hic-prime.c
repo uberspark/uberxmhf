@@ -163,13 +163,14 @@ void xmhfhic_entry(void){
     //initialize slab info table based on setup data
     xmhfhic_arch_setup_slab_info();
 
+    //sanity check HIC (hardware) requirements
+    xmhfhic_arch_sanity_check_requirements();
+
     //debug
     _XDPRINTF_("Halting!\n");
     _XDPRINTF_("XMHF Tester Finished!\n");
     HALT();
 
-    //sanity check HIC (hardware) requirements
-    xmhfhic_arch_sanity_check_requirements();
 
 #if !defined (__XMHF_VERIFICATION__)
     //setup slab system device allocation and device page tables
