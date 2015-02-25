@@ -317,8 +317,8 @@ __attribute__(( section(".stack") )) __attribute__(( aligned(4096) )) u8 _rtmxcp
 __attribute__(( aligned(4096) )) u64 _rtmxcp_bssavearea[512] = { 1ULL };
 
 
-__attribute__(( aligned(8) )) u64 __xmhfhic_x86vmx_cpuidtable[MAX_X86_APIC_ID];
-
+//__attribute__(( aligned(8) )) u64 __xmhfhic_x86vmx_cpuidtable[MAX_X86_APIC_ID];
+__attribute__(( aligned(4) )) u32 __xmhfhic_x86vmx_cpuidtable[MAX_X86_APIC_ID];
 
 __attribute__(( aligned(4096) )) xc_cpuarchdata_x86vmx_t __xmhfhic_x86vmx_archdata[MAX_PLATFORM_CPUS];
 
