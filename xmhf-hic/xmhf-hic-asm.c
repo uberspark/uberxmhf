@@ -691,7 +691,7 @@ __attribute__((naked)) __attribute__ ((section(".hic_entrystub"))) __attribute__
 
                     "call xmhfhic_entry \r\n"
 			    :
-			    : "i" (&_init_cpustacks + MAX_PLATFORM_CPUSTACK_SIZE)
+			    : "i" (&_init_cpustacks[1])
                 :
 	);
 
