@@ -115,6 +115,7 @@ u64 read_cr0(void);
 void write_cr0(u64 val);
 u64 read_cr3(void);
 u64 read_rsp(void);
+u32 read_esp(void);
 void write_cr3(u64 val);
 u64 read_cr4(void);
 void write_cr4(u64 val);

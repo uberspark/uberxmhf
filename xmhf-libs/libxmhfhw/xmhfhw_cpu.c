@@ -98,9 +98,14 @@ u64 read_rsp(void){
   // TODO: x86_64 --> x86
   asm volatile("movq %%rsp,%0\n\t" :"=r" (__rsp));
 */
-  asm volatile("mov %%esp,%0\n\t" :"=r" (__rsp));
 
   return __rsp;
+}
+
+u32 read_esp(void){
+  u32 __esp;
+  asm volatile("mov %%esp,%0\n\t" :"=r" (__esp));
+  return __esp;
 }
 
 void write_cr3(u64 val){
