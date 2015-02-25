@@ -179,13 +179,13 @@ void xmhfhic_entry(void){
     xmhfhic_arch_setup_slab_mem_page_tables();
 #endif //__XMHF_VERIFICATION__
 
+    //setup base CPU data structures
+    xmhfhic_arch_setup_base_cpu_data_structures();
+
     //debug
     _XDPRINTF_("Halting!\n");
     _XDPRINTF_("XMHF Tester Finished!\n");
     HALT();
-
-    //setup base CPU data structures
-    xmhfhic_arch_setup_base_cpu_data_structures();
 
     //setup SMP and move on to xmhfhic_smp_entry
     xmhfhic_arch_switch_to_smp();
