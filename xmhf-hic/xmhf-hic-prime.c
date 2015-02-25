@@ -97,7 +97,7 @@ static void xmhfhic_setupinitpgtables(void){
             _XDPRINTF_("pdt[%u][%u]=%016llx\n", i, j, _xcprimeon_init_pdt[i][j]);
     }*/
 
-    /*{
+    {
         _XDPRINTF_("fn:%s, line:%u\n", __FUNCTION__, __LINE__);
         wrmsr64(MSR_EFER, (rdmsr64(MSR_EFER) | (0x800)) );
         _XDPRINTF_("EFER=%016llx\n", rdmsr64(MSR_EFER));
@@ -107,7 +107,7 @@ static void xmhfhic_setupinitpgtables(void){
         _XDPRINTF_("CR3=%08x\n", read_cr3());
         write_cr0(0x80000015);
         _XDPRINTF_("fn:%s, line:%u\n", __FUNCTION__, __LINE__);
-    }*/
+    }
 }
 
 
@@ -171,14 +171,14 @@ void xmhfhic_entry(void){
     //setup slab system device allocation and device page tables
     xmhfhic_arch_setup_slab_device_allocation();
 
+    //setup slab memory page tables
+    xmhfhic_arch_setup_slab_mem_page_tables();
+#endif //__XMHF_VERIFICATION__
+
     //debug
     _XDPRINTF_("Halting!\n");
     _XDPRINTF_("XMHF Tester Finished!\n");
     HALT();
-
-    //setup slab memory page tables
-    xmhfhic_arch_setup_slab_mem_page_tables();
-#endif //__XMHF_VERIFICATION__
 
     //setup base CPU data structures
     xmhfhic_arch_setup_base_cpu_data_structures();
@@ -996,13 +996,15 @@ static u64 __xmhfhic_hyp_slab_getptflagsforspa(u64 slabid, u32 spa){
 // initialize slab page tables for a given slab index, returns the macm base
 static u64 __xmhfhic_arch_smt_slab_populate_hyp_pagetables(u64 slabid){
 		u32 i, j;
-		u64 default_flags = (u64)(_PAGE_PRESENT) | (u64)(_PAGE_USER) | (u64)(_PAGE_RW);
+		//u64 default_flags = (u64)(_PAGE_PRESENT) | (u64)(_PAGE_USER) | (u64)(_PAGE_RW);
+        u64 default_flags = (u64)(_PAGE_PRESENT);
 
         //_dbuf_mempgtbl_pml4t/pdpt/pdt/pt[slabid] is the data backing for slabid
 
+        /* x86_64
         for(i=0; i < PAE_PTRS_PER_PML4T; i++){
             _dbuf_mempgtbl_pml4t[slabid][i] = pae_make_pml4e(hva2spa(&_dbuf_mempgtbl_pdpt[slabid]), default_flags);
-        }
+        }*/
 
 		for(i=0; i < PAE_PTRS_PER_PDPT; i++){
 			_dbuf_mempgtbl_pdpt[slabid][i] = pae_make_pdpe(hva2spa(&_dbuf_mempgtbl_pdt[slabid][i]), default_flags);
@@ -1018,10 +1020,10 @@ static u64 __xmhfhic_arch_smt_slab_populate_hyp_pagetables(u64 slabid){
 			}
 		}
 
-        _xmhfhic_common_slab_info_table[slabid].archdata.mempgtbl_pml4t = (u64)&_dbuf_mempgtbl_pml4t[slabid];
+        //_xmhfhic_common_slab_info_table[slabid].archdata.mempgtbl_pml4t = (u64)&_dbuf_mempgtbl_pml4t[slabid];
         _xmhfhic_common_slab_info_table[slabid].archdata.mempgtbl_pdpt = (u64)&_dbuf_mempgtbl_pdpt[slabid];
         _xmhfhic_common_slab_info_table[slabid].archdata.mempgtbl_pdt = (u64)&_dbuf_mempgtbl_pdt[slabid];
-        _xmhfhic_common_slab_info_table[slabid].archdata.mempgtbl_pt = (u64)&_dbuf_mempgtbl_pt[slabid]; //FIXME: we dont need this allocation
+        //_xmhfhic_common_slab_info_table[slabid].archdata.mempgtbl_pt = (u64)&_dbuf_mempgtbl_pt[slabid]; //FIXME: we dont need this allocation
 
 
 /*        for(i=0; i < PAE_PTRS_PER_PML4T; i++){
@@ -1053,7 +1055,8 @@ static u64 __xmhfhic_arch_smt_slab_populate_hyp_pagetables(u64 slabid){
 			}
 		}*/
 
-		return _xmhfhic_common_slab_info_table[slabid].archdata.mempgtbl_pml4t;
+		return _xmhfhic_common_slab_info_table[slabid].archdata.mempgtbl_pdpt;
+		//return _xmhfhic_common_slab_info_table[slabid].archdata.mempgtbl_pml4t;
 		//return _xmhfhic_common_slab_archdata_mempgtbl_pml4t[slabid];
 }
 #endif
@@ -1431,7 +1434,7 @@ void xmhfhic_arch_setup_slab_mem_page_tables(void){
                     case HIC_SLAB_X86VMXX86PC_HYPERVISOR:{
                         _XDPRINTF_("  HYPERVISOR slab: populating page tables\n");
 
-                        #if 1
+                        #if 0
                         _xmhfhic_common_slab_info_table[i].archdata.mempgtbl_cr3 = __xmhfhic_arch_smt_slab_populate_hyp_pagetables(i) | (u32)(i+1) | 0x8000000000000000ULL;
                         #else
                         _xmhfhic_common_slab_info_table[i].archdata.mempgtbl_cr3 = __xmhfhic_arch_smt_slab_populate_hyp_pagetables(i);
