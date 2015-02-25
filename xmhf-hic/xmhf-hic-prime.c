@@ -73,6 +73,10 @@ static void xmhfhic_setupinitpgtables(void){
 
     memset(&_xcprimeon_init_pdpt, 0, sizeof(_xcprimeon_init_pdpt));
 
+    /*_XDPRINTF_("_xcprimeon_init_pdt size=%u\n", sizeof(_xcprimeon_init_pdt));
+    _XDPRINTF_("_xcprimeon_init_pdpt size=%u\n", sizeof(_xcprimeon_init_pdpt));
+*/
+
     for(i=0; i < PAE_PTRS_PER_PDPT; i++){
         u64 entry_addr = (u64)&_xcprimeon_init_pdt[i][0];
         _xcprimeon_init_pdpt[i] = pae_make_pdpe(entry_addr, pdpe_flags);
@@ -87,8 +91,8 @@ static void xmhfhic_setupinitpgtables(void){
         }
     }
 
-    /*//debug
-    _XDPRINTF_("page-table dump:\n");
+    //debug
+    /*_XDPRINTF_("page-table dump:\n");
 
     for(i=0; i < PAE_PTRS_PER_PDPT; i++){
         _XDPRINTF_("pdpd[%u]=%016llx\n\n", i, _xcprimeon_init_pdpt[i]);
@@ -108,6 +112,7 @@ static void xmhfhic_setupinitpgtables(void){
         write_cr0(0x80000015);
         _XDPRINTF_("fn:%s, line:%u\n", __FUNCTION__, __LINE__);
     }
+
 }
 
 
@@ -159,7 +164,6 @@ void xmhfhic_entry(void){
     xmhfhic_setupinitpgtables();
     _XDPRINTF_("Init page table setup.\n");
 
-
     //initialize slab info table based on setup data
     xmhfhic_arch_setup_slab_info();
 
@@ -171,14 +175,15 @@ void xmhfhic_entry(void){
     //setup slab system device allocation and device page tables
     xmhfhic_arch_setup_slab_device_allocation();
 
-    //setup slab memory page tables
-    xmhfhic_arch_setup_slab_mem_page_tables();
-#endif //__XMHF_VERIFICATION__
-
     //debug
     _XDPRINTF_("Halting!\n");
     _XDPRINTF_("XMHF Tester Finished!\n");
     HALT();
+
+    //setup slab memory page tables
+    xmhfhic_arch_setup_slab_mem_page_tables();
+#endif //__XMHF_VERIFICATION__
+
 
     //setup base CPU data structures
     xmhfhic_arch_setup_base_cpu_data_structures();
@@ -461,6 +466,8 @@ static bool _platform_x86pc_vtd_initialize(void){
 
     _XDPRINTF_("%s: maxhandle = %u, dmar table addr=0x%08x\n", __FUNCTION__,
                 (u32)vtd_drhd_maxhandle, (u32)vtd_dmar_table_physical_address);
+
+
 
 	//initialize all DRHD units
 	for(drhd_handle=0; drhd_handle < vtd_drhd_maxhandle; drhd_handle++){
