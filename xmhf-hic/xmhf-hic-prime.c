@@ -166,15 +166,15 @@ void xmhfhic_entry(void){
     //sanity check HIC (hardware) requirements
     xmhfhic_arch_sanity_check_requirements();
 
-    //debug
-    _XDPRINTF_("Halting!\n");
-    _XDPRINTF_("XMHF Tester Finished!\n");
-    HALT();
-
 
 #if !defined (__XMHF_VERIFICATION__)
     //setup slab system device allocation and device page tables
     xmhfhic_arch_setup_slab_device_allocation();
+
+    //debug
+    _XDPRINTF_("Halting!\n");
+    _XDPRINTF_("XMHF Tester Finished!\n");
+    HALT();
 
     //setup slab memory page tables
     xmhfhic_arch_setup_slab_mem_page_tables();
@@ -780,12 +780,22 @@ static slab_platformdevices_t __xmhfhic_arch_sda_get_devices_for_slab(u64 slabid
     retval.desc_valid=false;
     retval.numdevices=0;
 
+    /* x86_64
     //for now detect rich guest slab and allocate all platform devices to it
     if(_xmhfhic_common_slab_info_table[slabid].slab_devices.desc_valid &&
         _xmhfhic_common_slab_info_table[slabid].slab_devices.numdevices == 0xFFFFFFFFFFFFFFFFULL)
         return devices;
     else
         return retval;
+    */
+
+    //for now detect rich guest slab and allocate all platform devices to it
+    if(_xmhfhic_common_slab_info_table[slabid].slab_devices.desc_valid &&
+        _xmhfhic_common_slab_info_table[slabid].slab_devices.numdevices == 0xFFFFFFFFUL)
+        return devices;
+    else
+        return retval;
+
 }
 
 void xmhfhic_arch_setup_slab_device_allocation(void){
