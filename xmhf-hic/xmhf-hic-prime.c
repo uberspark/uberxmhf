@@ -68,8 +68,8 @@ __attribute__((aligned(4096))) static u64 _xcprimeon_init_pdpt[PAE_MAXPTRS_PER_P
 static void xmhfhic_setupinitpgtables(void){
     u32 paddr=0;
     u32 i, j;
-    u64 pdpe_flags = (_PAGE_USER | _PAGE_RW | _PAGE_PRESENT);
-    u64 pdte_flags = (_PAGE_USER | _PAGE_RW | _PAGE_PSE | _PAGE_PRESENT);
+    u64 pdpe_flags = (_PAGE_PRESENT);
+    u64 pdte_flags = (_PAGE_RW | _PAGE_PSE | _PAGE_PRESENT);
 
     memset(&_xcprimeon_init_pdpt, 0, sizeof(_xcprimeon_init_pdpt));
 
@@ -107,7 +107,6 @@ static void xmhfhic_setupinitpgtables(void){
         _XDPRINTF_("CR3=%08x\n", read_cr3());
         write_cr0(0x80000015);
         _XDPRINTF_("fn:%s, line:%u\n", __FUNCTION__, __LINE__);
-        HALT();
     }
 }
 
