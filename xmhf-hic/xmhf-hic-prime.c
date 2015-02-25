@@ -192,14 +192,14 @@ void xmhfhic_entry(void){
 
 
 void xmhfhic_smp_entry(u32 cpuid){
-    bool isbsp = (cpuid & 0x8000000000000000ULL) ? true : false;
+    bool isbsp = (cpuid & 0x80000000UL) ? true : false;
     #if defined (__XMHF_VERIFICATION__)
     cpuid = 0;
     isbsp = true;
     #endif // defined
 
-    _XDPRINTF_("%s[%u,%u]: rsp=%016llx. Starting...\n",
-            __FUNCTION__, cpuid, isbsp, read_rsp());
+    _XDPRINTF_("%s[%u,%u]: esp=%08x. Starting...\n",
+            __FUNCTION__, cpuid, isbsp, read_esp());
 
     _XDPRINTF_("%s[%u,%u]: Halting!\n");
     HALT();
@@ -1649,10 +1649,10 @@ static bool __xmhfhic_smp_arch_smpinitialize(void){
     //save page table base which we will later replicate on all APs
     _ap_cr3 = read_cr3();
 
-	//wake up APS
+	/*//wake up APS
 	if(xcbootinfo->cpuinfo_numentries > 1){
 	  __xmhfhic_smp_container_vmx_wakeupAPs();
-	}
+	}*/
 
 	//fall through to common code
 	_XDPRINTF_("%s: Relinquishing BSP thread and moving to common...\n", __FUNCTION__);
