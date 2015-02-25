@@ -175,15 +175,14 @@ void xmhfhic_entry(void){
     //setup slab system device allocation and device page tables
     xmhfhic_arch_setup_slab_device_allocation();
 
-    //debug
-    _XDPRINTF_("Halting!\n");
-    _XDPRINTF_("XMHF Tester Finished!\n");
-    HALT();
-
     //setup slab memory page tables
     xmhfhic_arch_setup_slab_mem_page_tables();
 #endif //__XMHF_VERIFICATION__
 
+    //debug
+    _XDPRINTF_("Halting!\n");
+    _XDPRINTF_("XMHF Tester Finished!\n");
+    HALT();
 
     //setup base CPU data structures
     xmhfhic_arch_setup_base_cpu_data_structures();
