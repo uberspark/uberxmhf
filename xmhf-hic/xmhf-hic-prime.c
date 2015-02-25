@@ -97,7 +97,7 @@ static void xmhfhic_setupinitpgtables(void){
             _XDPRINTF_("pdt[%u][%u]=%016llx\n", i, j, _xcprimeon_init_pdt[i][j]);
     }*/
 
-    {
+    /*{
         _XDPRINTF_("fn:%s, line:%u\n", __FUNCTION__, __LINE__);
         wrmsr64(MSR_EFER, (rdmsr64(MSR_EFER) | (0x800)) );
         _XDPRINTF_("EFER=%016llx\n", rdmsr64(MSR_EFER));
@@ -107,7 +107,7 @@ static void xmhfhic_setupinitpgtables(void){
         _XDPRINTF_("CR3=%08x\n", read_cr3());
         write_cr0(0x80000015);
         _XDPRINTF_("fn:%s, line:%u\n", __FUNCTION__, __LINE__);
-    }
+    }*/
 }
 
 
@@ -159,15 +159,14 @@ void xmhfhic_entry(void){
     xmhfhic_setupinitpgtables();
     _XDPRINTF_("Init page table setup.\n");
 
+
+    //initialize slab info table based on setup data
+    xmhfhic_arch_setup_slab_info();
+
     //debug
     _XDPRINTF_("Halting!\n");
     _XDPRINTF_("XMHF Tester Finished!\n");
     HALT();
-
-
-
-    //initialize slab info table based on setup data
-    xmhfhic_arch_setup_slab_info();
 
     //sanity check HIC (hardware) requirements
     xmhfhic_arch_sanity_check_requirements();
@@ -268,7 +267,9 @@ void xmhfhic_arch_setup_slab_info(void){
             #if !defined(__XMHF_VERIFICATION__)
             {
                 u32 j;
-                u64 *slab_stackhdr = (u64 *)_xmhfhic_common_slab_info_table[i].slab_physmem_extents[3].addr_start;
+                //u64 *slab_stackhdr = (u64 *)_xmhfhic_common_slab_info_table[i].slab_physmem_extents[3].addr_start;
+                u32 *slab_stackhdr = (u32 *)_xmhfhic_common_slab_info_table[i].slab_physmem_extents[3].addr_start;
+
                 if(slab_stackhdr){
                     for(j=0; j < MAX_PLATFORM_CPUS; j++)
                         _xmhfhic_common_slab_info_table[i].archdata.slabtos[j]=slab_stackhdr[j];
@@ -307,11 +308,9 @@ void xmhfhic_arch_setup_slab_info(void){
 				_XDPRINTF_("slab %u: dumping slab header\n", i);
 				_XDPRINTF_("	slabtype=%08x\n", _xmhfhic_common_slab_info_table[i].archdata.slabtype);
 				_XDPRINTF_("	slab_inuse=%s\n", ( _xmhfhic_common_slab_info_table[i].slab_inuse ? "true" : "false") );
-				//_XDPRINTF_("	slab_macmid=%08x\n", _xmhfhic_common_slab_info_table[i].slab_macmid);
 				_XDPRINTF_("	slab_privilegemask=%08x\n", _xmhfhic_common_slab_info_table[i].slab_privilegemask);
 				_XDPRINTF_("	slab_callcaps=%08x\n", _xmhfhic_common_slab_info_table[i].slab_callcaps);
 				_XDPRINTF_("	slab_devices=%s\n", ( _xmhfhic_common_slab_info_table[i].slab_devices.desc_valid ? "true" : "false") );
-				//_XDPRINTF_("	slab_tos=%08x\n", _xmhfhic_common_slab_info_table[i].slab_tos);
 				_XDPRINTF_("  slab_code(%08x-%08x)\n", _xmhfhic_common_slab_info_table[i].slab_physmem_extents[0].addr_start, _xmhfhic_common_slab_info_table[i].slab_physmem_extents[0].addr_end);
 				_XDPRINTF_("  slab_rwdata(%08x-%08x)\n", _xmhfhic_common_slab_info_table[i].slab_physmem_extents[1].addr_start, _xmhfhic_common_slab_info_table[i].slab_physmem_extents[1].addr_end);
 				_XDPRINTF_("  slab_rodata(%08x-%08x)\n", _xmhfhic_common_slab_info_table[i].slab_physmem_extents[2].addr_start, _xmhfhic_common_slab_info_table[i].slab_physmem_extents[2].addr_end);
@@ -323,7 +322,9 @@ void xmhfhic_arch_setup_slab_info(void){
                     u32 j;
 
                     for(j=0; j < MAX_PLATFORM_CPUS; j++)
-                        _XDPRINTF_("     CPU %u: stack TOS=%016llx\n", j,
+                        //_XDPRINTF_("     CPU %u: stack TOS=%016llx\n", j,
+                        //       _xmhfhic_common_slab_info_table[i].archdata.slabtos[j]);
+                        _XDPRINTF_("     CPU %u: stack TOS=%08x\n", j,
                                _xmhfhic_common_slab_info_table[i].archdata.slabtos[j]);
                 }
 
