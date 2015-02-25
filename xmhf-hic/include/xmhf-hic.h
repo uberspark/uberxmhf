@@ -283,7 +283,7 @@ typedef struct {
 	bool mempgtbl_initialized;
 	bool devpgtbl_initialized;
 	u64 mempgtbl_cr3;
-	u64 slabtos[MAX_PLATFORM_CPUS];
+	u32 slabtos[MAX_PLATFORM_CPUS];
 } __attribute__((packed)) __attribute__((aligned(4096))) x_slab_info_archdata_t;
 
 
