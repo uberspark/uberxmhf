@@ -182,11 +182,6 @@ void xmhfhic_entry(void){
     //setup base CPU data structures
     xmhfhic_arch_setup_base_cpu_data_structures();
 
-    //debug
-    _XDPRINTF_("Halting!\n");
-    _XDPRINTF_("XMHF Tester Finished!\n");
-    HALT();
-
     //setup SMP and move on to xmhfhic_smp_entry
     xmhfhic_arch_switch_to_smp();
 
@@ -196,7 +191,7 @@ void xmhfhic_entry(void){
 }
 
 
-void xmhfhic_smp_entry(u64 cpuid){
+void xmhfhic_smp_entry(u32 cpuid){
     bool isbsp = (cpuid & 0x8000000000000000ULL) ? true : false;
     #if defined (__XMHF_VERIFICATION__)
     cpuid = 0;
@@ -205,6 +200,9 @@ void xmhfhic_smp_entry(u64 cpuid){
 
     _XDPRINTF_("%s[%u,%u]: rsp=%016llx. Starting...\n",
             __FUNCTION__, cpuid, isbsp, read_rsp());
+
+    _XDPRINTF_("%s[%u,%u]: Halting!\n");
+    HALT();
 
     xmhf_hic_arch_setup_cpu_state(cpuid);
 
@@ -1682,7 +1680,7 @@ static bool __xmhfhic_smp_cpu_x86_isbsp(void){
 //common function which is entered by all CPUs upon SMP initialization
 //note: this is specific to the x86 architecture backend
 void __xmhfhic_smp_cpu_x86_smpinitialize_commonstart(void){
-	u64 cpuid;
+	u32 cpuid;
 	#if !defined(__XMHF_VERIFICATION__)
 	cpuid  = __xmhfhic_x86vmx_cpuidtable[xmhf_baseplatform_arch_x86_getcpulapicid()];
     #endif
@@ -1699,13 +1697,15 @@ void xmhfhic_arch_switch_to_smp(void){
 	{
 	    u32 i, j;
 	    for(i=0; i < MAX_X86_APIC_ID; i++)
-            __xmhfhic_x86vmx_cpuidtable[i] = 0xFFFFFFFFFFFFFFFFULL;
+           // __xmhfhic_x86vmx_cpuidtable[i] = 0xFFFFFFFFFFFFFFFFULL;
+            __xmhfhic_x86vmx_cpuidtable[i] = 0xFFFFFFFFUL;
 
 	    for(i=0; i < xcbootinfo->cpuinfo_numentries; i++){
             u64 value = i;
 
             if(xcbootinfo->cpuinfo_buffer[i].isbsp)
-                value |= 0x8000000000000000ULL;
+                //value |= 0x8000000000000000ULL;
+                value |= 0x80000000UL;
 
             //XXX: TODO sanity check xcbootinfo->cpuinfo_buffer[i].lapic_id < MAX_X86_APIC_ID
             __xmhfhic_x86vmx_cpuidtable[xcbootinfo->cpuinfo_buffer[i].lapic_id] = value;

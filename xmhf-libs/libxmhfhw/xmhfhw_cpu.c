@@ -98,6 +98,8 @@ u64 read_rsp(void){
   // TODO: x86_64 --> x86
   asm volatile("movq %%rsp,%0\n\t" :"=r" (__rsp));
 */
+  asm volatile("mov %%esp,%0\n\t" :"=r" (__rsp));
+
   return __rsp;
 }
 
