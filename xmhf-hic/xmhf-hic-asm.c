@@ -769,6 +769,35 @@ __attribute__((naked)) void _ap_bootstrap_code(void) {
         );
 */
 
+
+    asm volatile (
+           " .code32 \r\n"
+           " movw %0, %%ax \r\n"
+           " movw %%ax, %%ds \r\n"
+
+           " movl %1, %%eax \r\n"
+           " movl (%%eax), %%eax \r\n"
+
+           " movl %2, %%ebx \r\n"
+           " movl (%%ebx), %%ebx \r\n"
+
+           " movl %3, %%edi \r\n"
+           " movl (%%edi), %%edi \r\n"
+
+           " jmpl *%%eax \r\n"
+           " hlt \r\n"
+           " .balign 4096 \r\n"
+            :
+            : "i" (__DS_CPL0),
+              "i" ((X86SMP_APBOOTSTRAP_DATASEG << 4) + offsetof(x86smp_apbootstrapdata_t, ap_entrypoint)),
+              "i" ((X86SMP_APBOOTSTRAP_DATASEG << 4) + offsetof(x86smp_apbootstrapdata_t, ap_cr3)),
+              "i" ((X86SMP_APBOOTSTRAP_DATASEG << 4) + offsetof(x86smp_apbootstrapdata_t, cpuidtable))
+            :
+
+        );
+
+
+
 }
 
 
@@ -868,6 +897,81 @@ bool __xmhfhic_ap_entry(void) __attribute__((naked)){
                     :
 	);
 */
+
+
+
+    asm volatile(
+                    ".code32 \r\n"
+					"_xcsmp_ap_start: \r\n"
+
+					"movw %%ds, %%ax \r\n"
+					"movw %%ax, %%es \r\n"
+					"movw %%ax, %%fs \r\n"
+					"movw %%ax, %%gs \r\n"
+					"movw %%ax, %%ss \r\n"
+
+    				"movl %%cr4, %%eax \r\n"
+   					"orl $0x00000030, %%eax \r\n"
+   					"movl %%eax, %%cr4 \r\n"
+
+                    "movl %%ebx, %%cr3 \r\n"
+
+                    "movl $0xc0000080, %%ecx \r\n"
+                    "rdmsr \r\n"
+                    "orl $0x00000800, %%eax \r\n"
+                    "wrmsr \r\n"
+
+                    "movl %%cr0, %%eax \r\n"
+                    "orl $0x80000015, %%eax \r\n"
+                    "movl %%eax, %%cr0 \r\n"
+
+                    //TODO: for non-TXT wakeup we need to reload GDT
+                    //"movl %1, %%esi \r\n"
+                    //"lgdt (%%esi) \r\n"
+
+                    "movl %2, %%ecx \r\n"
+                    "rdmsr \r\n"
+                    "andl $0x00000FFF, %%eax \r\n"
+                    "orl %3, %%eax \r\n"
+                    "wrmsr \r\n"
+
+					:
+					:   "i" (0), //unused
+                        "i" (0), //unused
+                        "i" (MSR_APIC_BASE),
+                        "i" (X86SMP_LAPIC_MEMORYADDRESS)
+	);
+
+
+
+    asm volatile(   ".code32 \r\n"
+                 	"xorl %%eax, %%eax \r\n"                //EAX=0
+                 	"movl %0, %%eax\r\n"                    //EAX=X86SMP_LAPIC_ID_MEMORYADDRESS
+					"movl (%%eax), %%eax\r\n"               //EAX(bits 0-7)=LAPIC ID
+					"shr $24, %%eax\r\n"                    //EAX=LAPIC ID
+
+                    "xorl %%ebx, %%ebx \r\n"                //EBX=0
+                    "movl %%edi, %%ebx \r\n"                //EBX=&__xmhfhic_x86vmx_cpuidtable
+
+                    "movl (%%ebx, %%eax, 4), %%eax \r\n"    //EAX= 0-based cpu index for the CPU
+
+					"movl %2, %%ecx \r\n"					//ecx = sizeof(_cpustack[0])
+					"mull %%ecx \r\n"						//eax = sizeof(_cpustack[0]) * eax
+					"addl %%ecx, %%eax \r\n"				//eax = (sizeof(_cpustack[0]) * eax) + sizeof(_cpustack[0])
+					"addl %3, %%eax \r\n"				    //eax = &_cpustack + (sizeof(_cpustack[0]) * eax) + sizeof(_cpustack[0])
+					"movl %%eax, %%esp \r\n"				//esp = top of stack for the cpu
+
+                    "jmp __xmhfhic_smp_cpu_x86_smpinitialize_commonstart \r\n"
+
+					:
+					:   "i" (X86SMP_LAPIC_ID_MEMORYADDRESS),
+                        "i" (0), //unused
+                        "i" (sizeof(_init_cpustacks[0])),
+                        "i" (&_init_cpustacks)
+
+                    :
+	);
+
 
 }
 
