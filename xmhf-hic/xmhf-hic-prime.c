@@ -201,18 +201,9 @@ void xmhfhic_smp_entry(u32 cpuid){
     _XDPRINTF_("%s[%u,%u]: esp=%08x. Starting...\n",
             __FUNCTION__, cpuid, isbsp, read_esp());
 
-    if(!isbsp){
-        _XDPRINTF_("%s[%u,%u]: AP, Halting!\n");
-        HALT();
-    }
-
-
     xmhf_hic_arch_setup_cpu_state(cpuid);
 
-
-    //debug
-    _XDPRINTF_("Halting!\n");
-    _XDPRINTF_("XMHF Tester Finished!\n");
+    _XDPRINTF_("%s[%u,%u]: Halting!\n");
     HALT();
 
 
