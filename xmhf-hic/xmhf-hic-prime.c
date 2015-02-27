@@ -203,21 +203,29 @@ void xmhfhic_smp_entry(u32 cpuid){
 
     xmhf_hic_arch_setup_cpu_state(cpuid);
 
-    _XDPRINTF_("%s[%u,%u]: Halting!\n");
-    HALT();
+    //_XDPRINTF_("%s[%u,%u]: Halting!\n", __FUNCTION__, (u16)cpuid, isbsp);
+    //HALT();
 
 
     //relinquish HIC initialization and move on to the first slab
-#if !defined (__XMHF_VERIFICATION__)
-    _XDPRINTF_("%s[%u]: proceeding to call init slab at %x\n", __FUNCTION__, (u32)cpuid,
+    _XDPRINTF_("%s[%u]: proceeding to call init slab at %x\n", __FUNCTION__, (u16)cpuid,
                 _xmhfhic_common_slab_info_table[XMHF_HYP_SLAB_XCINIT].entrystub);
 
-    xmhfhic_arch_relinquish_control_to_init_slab(cpuid,
-        _xmhfhic_common_slab_info_table[XMHF_HYP_SLAB_XCINIT].entrystub,
-        _xmhfhic_common_slab_info_table[XMHF_HYP_SLAB_XCINIT].archdata.mempgtbl_cr3,
-        _xmhfhic_common_slab_info_table[XMHF_HYP_SLAB_XCINIT].archdata.slabtos[(u32)cpuid]);
+    //xmhfhic_arch_relinquish_control_to_init_slab(cpuid,
+    //    _xmhfhic_common_slab_info_table[XMHF_HYP_SLAB_XCINIT].entrystub,
+    //    _xmhfhic_common_slab_info_table[XMHF_HYP_SLAB_XCINIT].archdata.mempgtbl_cr3,
+    //    _xmhfhic_common_slab_info_table[XMHF_HYP_SLAB_XCINIT].archdata.slabtos[(u32)cpuid]);
 
-#endif //__XMHF_VERIFICATION__
+    {
+        FPSLABMAIN xcinit_slab_main = (FPSLABMAIN)_xmhfhic_common_slab_info_table[XMHF_HYP_SLAB_XCINIT].entrystub;
+        slab_params_t sp;
+
+        memset(&sp, 0, sizeof(sp));
+        sp.cpuid = cpuid;
+
+        xcinit_slab_main(&sp);
+    }
+
 
     _XDPRINTF_("%s[%u,%u]: Should never be here. Halting!\n", __FUNCTION__, cpuid, isbsp);
     HALT();

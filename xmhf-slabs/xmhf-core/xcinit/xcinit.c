@@ -56,7 +56,7 @@ extern x_slab_info_t _x_xmhfhic_common_slab_info_table[XMHF_HIC_MAX_SLABS];
 
 
 //////
-XMHF_SLAB(xcinit)
+XMHF_SLABNEW(xcinit)
 
 /*
  * slab code
@@ -591,16 +591,17 @@ __attribute__(( aligned(16) )) static u64 _xcguestslab_init_gdt[]  = {
 
 
 
-void slab_interface(slab_input_params_t *iparams, u64 iparams_size, slab_output_params_t *oparams, u64 oparams_size, u64 src_slabid, u64 cpuid){
-    bool isbsp = (cpuid & 0x8000000000000000ULL) ? true : false;
+void slab_main(slab_params_t *sp){
+
+    bool isbsp = (sp->cpuid & 0x80000000UL) ? true : false;
     u64 inputval, outputval;
     static u64 cpucount=0;
     static u32 __xcinit_smplock = 1;
 
-	_XDPRINTF_("%s[%u]: Got control: RSP=%016llx\n", __FUNCTION__, (u32)cpuid, read_rsp());
+	_XDPRINTF_("%s[%u]: Got control: ESP=%08x\n", __FUNCTION__, (u16)sp->cpuid, read_esp());
 
     if(!isbsp){
-        _XDPRINTF_("%s[%u]: AP Halting!\n", __FUNCTION__, (u32)cpuid);
+        _XDPRINTF_("%s[%u]: AP Halting!\n", __FUNCTION__, (u16)sp->cpuid);
 
         spin_lock(&__xcinit_smplock);
         cpucount++;
@@ -610,15 +611,22 @@ void slab_interface(slab_input_params_t *iparams, u64 iparams_size, slab_output_
     }else{
         //BSP
         _XDPRINTF_("%s[%u]: BSP waiting to rally APs...\n",
-                __FUNCTION__, (u32)cpuid);
+                __FUNCTION__, (u16)sp->cpuid);
 
         while(cpucount < (xcbootinfo->cpuinfo_numentries-1));
 
         _XDPRINTF_("%s[%u]: BSP, APs halted. Proceeding...\n",
-                __FUNCTION__, (u32)cpuid);
+                __FUNCTION__, (u16)sp->cpuid);
     }
 
 
+    //debug
+    _XDPRINTF_("Halting!\n");
+    _XDPRINTF_("XMHF Tester Finished!\n");
+    HALT();
+
+
+/*
     {
         u64 entries_pml4t[PAE_PTRS_PER_PML4T];
         u64 entries_pdpt[PAE_PTRS_PER_PDPT];
@@ -701,7 +709,7 @@ void slab_interface(slab_input_params_t *iparams, u64 iparams_size, slab_output_
 
     _XDPRINTF_("%s[%u]: Should  never get here.Halting!\n", __FUNCTION__, (u32)cpuid);
     HALT();
-
+*/
     return;
 }
 
