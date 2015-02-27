@@ -314,7 +314,7 @@ void slab_interface(slab_input_params_t *iparams, u64 iparams_size, slab_output_
 
 
 
-
+/*
 
 #define XMHF_SLAB(slab_name)	\
 	__attribute__ ((section(".rodata"))) char * _namestring="_xmhfslab_hyp";	\
@@ -403,6 +403,94 @@ void slab_interface(slab_input_params_t *iparams, u64 iparams_size, slab_output_
 			:  \
 		);	\
     }\
+
+*/
+
+
+
+
+
+
+#define XMHF_SLAB(slab_name)	\
+	__attribute__ ((section(".rodata"))) char * _namestring="_xmhfslab_hyp";	\
+	__attribute__ ((section(".stack"))) __attribute__ ((aligned(4096))) u8 _slab_stack[MAX_PLATFORM_CPUS][XMHF_SLAB_STACKSIZE];	\
+	__attribute__ ((section(".stackhdr"))) u32 _slab_tos[MAX_PLATFORM_CPUS]= { ((u32)&_slab_stack[0] + XMHF_SLAB_STACKSIZE), ((u32)&_slab_stack[1] + XMHF_SLAB_STACKSIZE), ((u32)_slab_stack[2] + XMHF_SLAB_STACKSIZE), ((u32)&_slab_stack[3] + XMHF_SLAB_STACKSIZE), ((u32)&_slab_stack[4] + XMHF_SLAB_STACKSIZE), ((u32)&_slab_stack[5] + XMHF_SLAB_STACKSIZE), ((u32)&_slab_stack[6] + XMHF_SLAB_STACKSIZE), ((u32)&_slab_stack[7] + XMHF_SLAB_STACKSIZE)  };	\
+    __attribute__ ((section(".slab_dmadata"))) u8 _dmadataplaceholder[1];\
+    \
+    \
+	__attribute__((naked)) __attribute__ ((section(".slab_entrystub"))) __attribute__((align(1))) void _slab_entrystub(void){	\
+	asm volatile ( \
+            "int $0x03 \r\n" \
+            "1: jmp 1b \r\n" \
+            \
+			:  \
+			:  "i" (XMHF_HIC_SLABRET) \
+			:  \
+		);	\
+    }\
+
+
+
+
+
+#define XMHF_SLAB_GUEST(slab_name)	\
+	__attribute__ ((section(".rodata"))) char * _namestring="_xmhfslab_guest";	\
+	__attribute__ ((section(".stack"))) __attribute__ ((aligned(4096))) u8 _slab_stack[MAX_PLATFORM_CPUS][XMHF_SLAB_STACKSIZE]; \
+	__attribute__ ((section(".stackhdr"))) u32 _slab_tos[MAX_PLATFORM_CPUS]= { ((u32)&_slab_stack[0] + XMHF_SLAB_STACKSIZE), ((u32)&_slab_stack[1] + XMHF_SLAB_STACKSIZE), ((u32)_slab_stack[2] + XMHF_SLAB_STACKSIZE), ((u32)&_slab_stack[3] + XMHF_SLAB_STACKSIZE), ((u32)&_slab_stack[4] + XMHF_SLAB_STACKSIZE), ((u32)&_slab_stack[5] + XMHF_SLAB_STACKSIZE), ((u32)&_slab_stack[6] + XMHF_SLAB_STACKSIZE), ((u32)&_slab_stack[7] + XMHF_SLAB_STACKSIZE)  };	\
+    __attribute__ ((section(".slab_dmadata"))) u8 _dmadataplaceholder[1];\
+    __attribute__ ((section(".rwdatahdr"))) guest_slab_header_t _guestslabheader = {GUEST_SLAB_HEADER_MAGIC, 0};\
+    \
+    \
+	__attribute__((naked)) __attribute__ ((section(".slab_entrystub"))) __attribute__((align(1))) void _slab_entrystub(void){	\
+	asm volatile ( \
+            "int $0x03 \r\n" \
+            "1: jmp 1b \r\n" \
+ 			:  \
+			:  \
+			:  \
+		);	\
+    }\
+
+
+
+#define XMHF_SLAB_INTERCEPT(slab_name)	\
+	__attribute__ ((section(".rodata"))) char * _namestring="_xmhfslab_hyp";	\
+	__attribute__ ((section(".stack"))) __attribute__ ((aligned(4096))) u8 _slab_stack[MAX_PLATFORM_CPUS][XMHF_SLAB_STACKSIZE];	\
+	__attribute__ ((section(".stackhdr"))) u32 _slab_tos[MAX_PLATFORM_CPUS]= { ((u32)&_slab_stack[0] + XMHF_SLAB_STACKSIZE), ((u32)&_slab_stack[1] + XMHF_SLAB_STACKSIZE), ((u32)_slab_stack[2] + XMHF_SLAB_STACKSIZE), ((u32)&_slab_stack[3] + XMHF_SLAB_STACKSIZE), ((u32)&_slab_stack[4] + XMHF_SLAB_STACKSIZE), ((u32)&_slab_stack[5] + XMHF_SLAB_STACKSIZE), ((u32)&_slab_stack[6] + XMHF_SLAB_STACKSIZE), ((u32)&_slab_stack[7] + XMHF_SLAB_STACKSIZE)  };	\
+    __attribute__ ((section(".slab_dmadata"))) u8 _dmadataplaceholder[1];\
+    \
+    \
+	__attribute__((naked)) __attribute__ ((section(".slab_entrystub"))) __attribute__((align(1))) void _slab_entrystub(void){	\
+	asm volatile ( \
+            "int $0x03 \r\n" \
+            "1: jmp 1b \r\n" \
+            \
+			:  \
+			:  "i" (XMHF_HIC_SLABRETINTERCEPT) \
+			:  \
+		);	\
+    }\
+
+
+
+#define XMHF_SLAB_EXCEPTION(slab_name)	\
+	__attribute__ ((section(".rodata"))) char * _namestring="_xmhfslab_hyp";	\
+	__attribute__ ((section(".stack"))) __attribute__ ((aligned(4096))) u8 _slab_stack[MAX_PLATFORM_CPUS][XMHF_SLAB_STACKSIZE];	\
+	__attribute__ ((section(".stackhdr"))) u32 _slab_tos[MAX_PLATFORM_CPUS]= { ((u32)&_slab_stack[0] + XMHF_SLAB_STACKSIZE), ((u32)&_slab_stack[1] + XMHF_SLAB_STACKSIZE), ((u32)_slab_stack[2] + XMHF_SLAB_STACKSIZE), ((u32)&_slab_stack[3] + XMHF_SLAB_STACKSIZE), ((u32)&_slab_stack[4] + XMHF_SLAB_STACKSIZE), ((u32)&_slab_stack[5] + XMHF_SLAB_STACKSIZE), ((u32)&_slab_stack[6] + XMHF_SLAB_STACKSIZE), ((u32)&_slab_stack[7] + XMHF_SLAB_STACKSIZE)  };	\
+    __attribute__ ((section(".slab_dmadata"))) u8 _dmadataplaceholder[1];\
+    \
+    \
+	__attribute__((naked)) __attribute__ ((section(".slab_entrystub"))) __attribute__((align(1))) void _slab_entrystub(void){	\
+	asm volatile ( \
+            "int $0x03 \r\n" \
+            "1: jmp 1b \r\n" \
+            \
+			:  \
+			:  "i" (XMHF_HIC_SLABRETEXCEPTION) \
+			:  \
+		);	\
+    }\
+
 
 
 
