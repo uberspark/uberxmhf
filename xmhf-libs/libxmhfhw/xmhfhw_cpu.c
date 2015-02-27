@@ -270,6 +270,31 @@ void xmhfhw_cpu_loadGDT(arch_x86_gdtdesc_t *gdt_addr){
 
 }
 
+//load CPU TR
+void xmhfhw_cpu_loadTR(u32 tr_selector){
+
+	  asm volatile(
+		"movl %0, %%eax\r\n"
+		"ltr %%ax\r\n"				//load TR
+	     :
+	     : "g"(tr_selector)
+	     : "eax"
+	  );
+
+}
+
+//load CPU IDT
+void xmhfhw_cpu_loadIDT(arch_x86_idtdesc_t *idt_addr){
+
+	asm volatile(
+		"lidt  %0 \r\n"
+		: //no outputs
+		: "m" (*idt_addr)
+		: //no clobber
+	);
+
+}
+
 
 u64 xmhf_baseplatform_arch_x86_getgdtbase(void){
 		struct {

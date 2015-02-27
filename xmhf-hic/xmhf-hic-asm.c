@@ -1032,7 +1032,7 @@ void __xmhfhic_x86vmx_loadGDT(arch_x86_gdtdesc_t *gdt_addr){
 
 
 
-
+/*
 //load IDT
 void __xmhfhic_x86vmx_loadIDT(arch_x86_idtdesc_t *idt_addr){
 	//load IDT
@@ -1044,10 +1044,13 @@ void __xmhfhic_x86vmx_loadIDT(arch_x86_idtdesc_t *idt_addr){
 	);
 }
 
+*/
+
+/*
+
 //load TR
 void __xmhfhic_x86vmx_loadTR(u64 cpuid){
 
-/*
       //TODO:x86_64 --> x86
 	  asm volatile(
 		"movq %0, %%rax\r\n"
@@ -1056,27 +1059,25 @@ void __xmhfhic_x86vmx_loadTR(u64 cpuid){
 	     : "g"(__TRSEL + ((u32)cpuid * 16) )
 	     : "rax"
 	  );
-*/
 
 }
+
+*/
 
 
 //set IOPl to CPl-3
 void __xmhfhic_x86vmx_setIOPL3(u64 cpuid){
 
-/*
-    //TODO: x86_64 --> x86
 	asm volatile(
-        "pushfq \r\n"
-        "popq %%rax \r\n"
-		"orq $0x3000, %%rax \r\n"					// clear flags, but set IOPL=3 (CPL-3)
-		"pushq %%rax \r\n"
-		"popfq \r\n"
+        "pushfl \r\n"
+        "popl %%eax \r\n"
+		"orl $0x3000, %%eax \r\n"					// clear flags, but set IOPL=3 (CPL-3)
+		"pushl %%eax \r\n"
+		"popfl \r\n"
 		: //no outputs
 		: //no inputs
-		: "rax", "cc"
+		: "eax", "cc"
 	);
-*/
 
 }
 
