@@ -166,10 +166,16 @@ __attribute__((naked)) bool __slab_calltrampoline(u64 reserved,
     slab_input_params_t *iparams, u64 iparams_size,
     slab_output_params_t *oparams, u64 oparams_size, u64 dst_slabid);
 
+void __slab_calltrampolinenew(slab_params_t *sp);
 
 
 #define XMHF_SLAB_CALL(dst_slabname, dst_slabid, iparams, iparams_size, oparams, oparams_size) \
     __slab_calltrampoline(0, iparams, iparams_size, oparams, oparams_size, dst_slabid)
+
+
+#define XMHF_SLAB_CALLNEW(sp) \
+    __slab_calltrampolinenew(sp)
+
 
 
 

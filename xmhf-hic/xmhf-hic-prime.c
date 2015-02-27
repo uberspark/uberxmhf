@@ -217,13 +217,12 @@ void xmhfhic_smp_entry(u32 cpuid){
     //    _xmhfhic_common_slab_info_table[XMHF_HYP_SLAB_XCINIT].archdata.slabtos[(u32)cpuid]);
 
     {
-        FPSLABMAIN xcinit_slab_main = (FPSLABMAIN)_xmhfhic_common_slab_info_table[XMHF_HYP_SLAB_XCINIT].entrystub;
         slab_params_t sp;
 
         memset(&sp, 0, sizeof(sp));
         sp.cpuid = cpuid;
-
-        xcinit_slab_main(&sp);
+        sp.dst_slabid = XMHF_HYP_SLAB_XCINIT;
+        XMHF_SLAB_CALLNEW(&sp);
     }
 
 

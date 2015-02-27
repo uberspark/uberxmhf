@@ -51,7 +51,8 @@
 
 
 #include <xmhf.h>
-#include <xmhfhicslab.h>
+//#include <xmhfhicslab.h>
+#include <xmhf-hic.h>
 #include <xmhf-debug.h>
 
 /*
@@ -99,5 +100,15 @@ __attribute__((naked)) bool __slab_calltrampoline(u64 reserved,
         :
     );
 */
+
+}
+
+
+
+void __slab_calltrampolinenew(slab_params_t *sp){
+    FPSLABMAIN slab_main;
+
+    slab_main = (FPSLABMAIN)_xmhfhic_common_slab_info_table[sp->dst_slabid].entrystub;
+    slab_main(sp);
 
 }
