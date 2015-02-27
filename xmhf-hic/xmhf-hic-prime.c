@@ -1929,16 +1929,17 @@ static bool __xmhfhic_x86vmx_setupvmxstate(u64 cpuid){
 	rdmsr(IA32_MSR_GS_BASE, &lodword, &hidword);
 	xmhfhw_cpu_x86vmx_vmwrite(VMCS_HOST_GS_BASE, (((u64)hidword << 32) | (u64)lodword) );
 
-	//xmhfhw_cpu_x86vmx_vmwrite(VMCS_HOST_IA32_EFER_FULL, rdmsr64(MSR_EFER));
-
 	//setup default VMX controls
 	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VMX_PIN_BASED, (u32)__xmhfhic_x86vmx_archdata[cpuindex].vmx_msrs[INDEX_IA32_VMX_PINBASED_CTLS_MSR]);
 	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VMX_CPU_BASED, (u32)__xmhfhic_x86vmx_archdata[cpuindex].vmx_msrs[INDEX_IA32_VMX_PROCBASED_CTLS_MSR]);
 	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VM_EXIT_CONTROLS, (u32)__xmhfhic_x86vmx_archdata[cpuindex].vmx_msrs[INDEX_IA32_VMX_EXIT_CTLS_MSR]);
 	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VM_ENTRY_CONTROLS, (u32)__xmhfhic_x86vmx_archdata[cpuindex].vmx_msrs[INDEX_IA32_VMX_ENTRY_CTLS_MSR]);
 
+    /*
+    x86_64
     //64-bit host
   	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VM_EXIT_CONTROLS, (u32)(xmhfhw_cpu_x86vmx_vmread(VMCS_CONTROL_VM_EXIT_CONTROLS) | (1 << 9)) );
+    */
 
 	//IO bitmap support
 	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_IO_BITMAPA_ADDRESS_FULL, hva2spa(__xmhfhic_x86vmx_archdata[cpuindex].vmx_iobitmap_region[0] ));
@@ -2013,7 +2014,7 @@ static bool __xmhfhic_x86vmx_setupvmxstate(u64 cpuid){
 
 
 
-
+/*
     //64-bit specific guest slab setup
     {
 
@@ -2124,8 +2125,9 @@ static bool __xmhfhic_x86vmx_setupvmxstate(u64 cpuid){
 
 
     }
+*/
 
-/*    //32-bit specific guest slab setup
+    //32-bit specific guest slab setup
     {
 
         //Critical MSR load/store
@@ -2233,7 +2235,7 @@ static bool __xmhfhic_x86vmx_setupvmxstate(u64 cpuid){
 
 
     }
-*/
+
 
 
 
@@ -2293,22 +2295,17 @@ void xmhf_hic_arch_setup_cpu_state(u64 cpuid){
     __xmhfhic_x86vmx_loadGDT(&__xmhfhic_x86vmx_gdt);
     _XDPRINTF_("%s[%u]: GDT loaded\n", __FUNCTION__, (u32)cpuid);
 
-    //debug
-    _XDPRINTF_("Halting!\n");
-    _XDPRINTF_("XMHF Tester Finished!\n");
-    HALT();
-
     //load TR
-    __xmhfhic_x86vmx_loadTR(cpuid);
+    xmhfhw_cpu_loadTR( (__TRSEL + ((u32)cpuid * 16) ) );
     _XDPRINTF_("%s[%u]: TR loaded\n", __FUNCTION__, (u32)cpuid);
 
     //load IDT
-    __xmhfhic_x86vmx_loadIDT(&__xmhfhic_x86vmx_idt);
+    xmhfhw_cpu_loadIDT(&__xmhfhic_x86vmx_idt);
     _XDPRINTF_("%s[%u]: IDT loaded\n", __FUNCTION__, (u32)cpuid);
 
-    //turn on CR0.WP bit for supervisor mode write protection
-    write_cr0(read_cr0() | CR0_WP);
-    _XDPRINTF_("%s[%u]: Enabled supervisor mode write protection\n", __FUNCTION__, (u32)cpuid);
+    ////turn on CR0.WP bit for supervisor mode write protection
+    //write_cr0(read_cr0() | CR0_WP);
+    //_XDPRINTF_("%s[%u]: Enabled supervisor mode write protection\n", __FUNCTION__, (u32)cpuid);
 
     //set IOPL3
     __xmhfhic_x86vmx_setIOPL3(cpuid);
@@ -2323,15 +2320,11 @@ void xmhf_hic_arch_setup_cpu_state(u64 cpuid){
     _XDPRINTF_("%s[%u]: set LAPIC base address to %016llx\n", __FUNCTION__, (u32)cpuid, rdmsr64(MSR_APIC_BASE));
 
 	//turn on NX protections
-	{
-		u32 eax, edx;
-		rdmsr(MSR_EFER, &eax, &edx);
-		eax |= (1 << EFER_NXE);
-		wrmsr(MSR_EFER, eax, edx);
-	}
+    wrmsr64(MSR_EFER, (rdmsr64(MSR_EFER) | (1 << EFER_NXE)) );
     _XDPRINTF_("%s[%u]: NX protections enabled\n", __FUNCTION__, (u32)cpuid);
 
-#if 1
+
+#if 0
 	//enable PCIDE support
 	{
 		write_cr4(read_cr4() | CR4_PCIDE);
@@ -2362,6 +2355,7 @@ void xmhf_hic_arch_setup_cpu_state(u64 cpuid){
     _XDPRINTF_("SYSENTER CS=%016llx\n", rdmsr64(IA32_SYSENTER_CS_MSR));
     _XDPRINTF_("SYSENTER RIP=%016llx\n", rdmsr64(IA32_SYSENTER_EIP_MSR));
     _XDPRINTF_("SYSENTER RSP=%016llx\n", rdmsr64(IA32_SYSENTER_ESP_MSR));
+
 
     //setup VMX state
     if(!__xmhfhic_x86vmx_setupvmxstate(cpuid)){

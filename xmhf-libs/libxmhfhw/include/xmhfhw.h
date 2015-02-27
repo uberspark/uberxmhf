@@ -137,6 +137,8 @@ void sysexitq(u64 rip, u64 rsp);
 void spin_lock(volatile u32 *lock);
 void spin_unlock(volatile u32 *lock);
 void xmhfhw_cpu_loadGDT(arch_x86_gdtdesc_t *gdt_addr);
+void xmhfhw_cpu_loadTR(u32 tr_selector);
+void xmhfhw_cpu_loadIDT(arch_x86_idtdesc_t *idt_addr);
 u64 xmhf_baseplatform_arch_x86_getgdtbase(void);
 u64 xmhf_baseplatform_arch_x86_getidtbase(void);
 u64  xmhf_baseplatform_arch_x86_gettssbase(void);
