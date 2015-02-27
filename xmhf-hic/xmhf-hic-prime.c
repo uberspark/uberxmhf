@@ -201,10 +201,20 @@ void xmhfhic_smp_entry(u32 cpuid){
     _XDPRINTF_("%s[%u,%u]: esp=%08x. Starting...\n",
             __FUNCTION__, cpuid, isbsp, read_esp());
 
-    _XDPRINTF_("%s[%u,%u]: Halting!\n");
-    HALT();
+    if(!isbsp){
+        _XDPRINTF_("%s[%u,%u]: AP, Halting!\n");
+        HALT();
+    }
+
 
     xmhf_hic_arch_setup_cpu_state(cpuid);
+
+
+    //debug
+    _XDPRINTF_("Halting!\n");
+    _XDPRINTF_("XMHF Tester Finished!\n");
+    HALT();
+
 
     //relinquish HIC initialization and move on to the first slab
 #if !defined (__XMHF_VERIFICATION__)
@@ -2282,6 +2292,11 @@ void xmhf_hic_arch_setup_cpu_state(u64 cpuid){
     //load GDT
     __xmhfhic_x86vmx_loadGDT(&__xmhfhic_x86vmx_gdt);
     _XDPRINTF_("%s[%u]: GDT loaded\n", __FUNCTION__, (u32)cpuid);
+
+    //debug
+    _XDPRINTF_("Halting!\n");
+    _XDPRINTF_("XMHF Tester Finished!\n");
+    HALT();
 
     //load TR
     __xmhfhic_x86vmx_loadTR(cpuid);

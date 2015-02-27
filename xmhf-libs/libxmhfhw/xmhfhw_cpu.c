@@ -258,6 +258,17 @@ void spin_unlock(volatile u32 *lock){
         );
     }
 
+//load CPU GDT
+void xmhfhw_cpu_loadGDT(arch_x86_gdtdesc_t *gdt_addr){
+
+	asm volatile(
+		"lgdt  %0 \r\n"
+		: //no outputs
+		: "m" (*gdt_addr)
+		:
+	);
+
+}
 
 
 u64 xmhf_baseplatform_arch_x86_getgdtbase(void){
