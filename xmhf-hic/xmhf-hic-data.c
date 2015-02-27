@@ -233,13 +233,13 @@ __attribute__((aligned(4096)))  u64 _dbuf_mempgtbl_pt[XMHF_HIC_MAX_SLABS][PAE_PT
 // GDT
 __attribute__(( aligned(16) )) u64 __xmhfhic_x86vmx_gdt_start[]  = {
 	0x0000000000000000ULL,	//NULL descriptor
-	0x00af9a000000ffffULL,	//CPL-0 64-bit code descriptor (CS64)
-	0x00af92000000ffffULL,	//CPL-0 64-bit data descriptor (DS/SS/ES/FS/GS)
-	0x00affa000000ffffULL,	//TODO: CPL-3 64-bit code descriptor (CS64)
-	0x00aff2000000ffffULL,	//TODO: CPL-3 64-bit data descriptor (DS/SS/ES/FS/GS)
-	0x00affa000000ffffULL,	//TODO: CPL-3 64-bit code descriptor (CS64)
-	0x00aff2000000ffffULL,	//TODO: CPL-3 64-bit data descriptor (DS/SS/ES/FS/GS)
-	0x0000000000000000ULL,  //TSS descriptors (128-bits each)
+	0x00cf9a000000ffffULL,	//CPL-0 32-bit code descriptor (CS64)
+	0x00cf92000000ffffULL,	//CPL-0 32-bit data descriptor (DS/SS/ES/FS/GS)
+	0x00cffa000000ffffULL,	//TODO: CPL-3 32-bit code descriptor (CS64)
+	0x00cff2000000ffffULL,	//TODO: CPL-3 32-bit data descriptor (DS/SS/ES/FS/GS)
+	0x00cffa000000ffffULL,	//TODO: CPL-3 32-bit code descriptor (CS64)
+	0x00cff2000000ffffULL,	//TODO: CPL-3 32-bit data descriptor (DS/SS/ES/FS/GS)
+	0x0000000000000000ULL,  //TSS descriptors (64-bits each)
 	0x0000000000000000ULL,
 	0x0000000000000000ULL,
 	0x0000000000000000ULL,

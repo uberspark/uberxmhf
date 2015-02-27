@@ -1005,30 +1005,32 @@ bool __xmhfhic_ap_entry(void) __attribute__((naked)){
 // setup cpu state for hic
 
 
+
 //load GDT and initialize segment registers
 void __xmhfhic_x86vmx_loadGDT(arch_x86_gdtdesc_t *gdt_addr){
 
-/*
-    //TODO: x86_64 --> x86
+    xmhfhw_cpu_loadGDT(gdt_addr);
+
 	asm volatile(
-		"lgdt  %0 \r\n"
-		"pushq	%1 \r\n"				// far jump to runtime entry point
-		"pushq	$reloadsegs \r\n"
-		"lretq \r\n"
+		"pushl	%0 \r\n"				// far jump to reload CS
+		"pushl	$reloadsegs \r\n"
+		"lret \r\n"
 		"reloadsegs: \r\n"
-		"movw	%2, %%ax \r\n"
+		"movw	%1, %%ax \r\n"
 		"movw	%%ax, %%ds \r\n"
 		"movw	%%ax, %%es \r\n"
 		"movw	%%ax, %%fs \r\n"
 		"movw	%%ax, %%gs \r\n"
 		"movw   %%ax, %%ss \r\n"
 		: //no outputs
-		: "m" (*gdt_addr), "i" (__CS_CPL0), "i" (__DS_CPL0)
+		: "i" (__CS_CPL0), "i" (__DS_CPL0)
 		: "eax"
 	);
-*/
+
 
 }
+
+
 
 
 //load IDT
