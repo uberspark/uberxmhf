@@ -139,7 +139,8 @@ typedef struct {
   u64 vmx_msrs[IA32_VMX_MSRCOUNT];
   u64 vmx_msr_efer;
   u64 vmx_msr_efcr;
-  x86regs64_t vmx_gprs;
+  //x86regs64_t vmx_gprs;
+  x86regs_t vmx_gprs;
 } __attribute__((packed)) xc_cpuarchdata_x86vmx_t;
 
 #endif //__ASSEMBLY__
@@ -347,9 +348,12 @@ void __xmhfhic_safepop(u64 cpuid, u64 *src_slabid, u64 *dst_slabid, u64 *hic_cal
 __attribute__((naked)) void __xmhfhic_rtm_intercept_stub(void);
 __attribute__((naked)) void __xmhfhic_rtm_trampoline_stub(void);
 void __xmhfhic_rtm_trampoline(u64 hic_calltype, slab_input_params_t *iparams, u64 iparams_size, slab_output_params_t *oparams, u64 oparams_size, u64 dst_slabid, u64 src_slabid, u64 cpuid, u64 return_address, u64 return_rsp);
-void __xmhfhic_rtm_uapihandler(u64 uapicall, u64 uapicall_num, u64 uapicall_subnum,
-                               u64 reserved, u64 iparams, u64 oparams,
-                               u64 src_slabid, u64 cpuid);
+//void __xmhfhic_rtm_uapihandler(u64 uapicall, u64 uapicall_num, u64 uapicall_subnum,
+//                               u64 reserved, u64 iparams, u64 oparams,
+//                               u64 src_slabid, u64 cpuid);
+
+
+void __xmhfhic_rtm_uapihandler(slab_params_t *sp);
 
 
 

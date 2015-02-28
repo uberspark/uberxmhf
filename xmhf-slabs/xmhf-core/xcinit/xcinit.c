@@ -620,23 +620,22 @@ void slab_main(slab_params_t *sp){
     }
 
 
-    //debug
-    _XDPRINTF_("Halting!\n");
-    _XDPRINTF_("XMHF Tester Finished!\n");
-    HALT();
 
 
-/*
+
     {
-        u64 entries_pml4t[PAE_PTRS_PER_PML4T];
+        /*u64 entries_pml4t[PAE_PTRS_PER_PML4T];
         u64 entries_pdpt[PAE_PTRS_PER_PDPT];
-
-        u64 guest_slab_header_paddr = _xmhfhic_common_slab_info_table[XMHF_GUEST_SLAB_XCGUESTSLAB].slab_physmem_extents[1].addr_start;
+        */
+        u32 guest_slab_header_paddr = _xmhfhic_common_slab_info_table[XMHF_GUEST_SLAB_XCGUESTSLAB].slab_physmem_extents[1].addr_start;
+        /*
         u64 guest_slab_pml4t_paddr = guest_slab_header_paddr + offsetof(guest_slab_header_t, lvl2mempgtbl_pml4t);
         u64 guest_slab_pdpt_paddr = guest_slab_header_paddr + offsetof(guest_slab_header_t, lvl2mempgtbl_pdpt);
-        u64 guest_slab_pdts_paddr = guest_slab_header_paddr + offsetof(guest_slab_header_t, lvl2mempgtbl_pdts);        u64 guest_slab_gdt_paddr = guest_slab_header_paddr + offsetof(guest_slab_header_t, gdt);
-        u64 guest_slab_magic_paddr = guest_slab_header_paddr + offsetof(guest_slab_header_t, magic);
-        u64 guest_slab_magic;
+        u64 guest_slab_pdts_paddr = guest_slab_header_paddr + offsetof(guest_slab_header_t, lvl2mempgtbl_pdts);
+        */
+        u32 guest_slab_gdt_paddr = guest_slab_header_paddr + offsetof(guest_slab_header_t, gdt);
+        u32 guest_slab_magic_paddr = guest_slab_header_paddr + offsetof(guest_slab_header_t, magic);
+        u32 guest_slab_magic;
         xmhf_hic_uapi_physmem_desc_t pdesc;
 
         pdesc.guest_slab_index = XMHF_GUEST_SLAB_XCGUESTSLAB;
@@ -645,9 +644,10 @@ void slab_main(slab_params_t *sp){
         pdesc.numbytes = sizeof(guest_slab_magic);
         XMHF_HIC_SLAB_UAPI_PHYSMEM(XMHF_HIC_UAPI_PHYSMEM_PEEK, &pdesc, NULL);
 
-        _XDPRINTF_("%s[%u]: guest slab header magic=%x\n", __FUNCTION__, (u32)cpuid, guest_slab_magic);
 
+        _XDPRINTF_("%s[%u]: guest slab header magic=%x\n", __FUNCTION__, (u16)sp->cpuid, guest_slab_magic);
 
+/*
         //initialize guest slab level-2 page tables shape
         {
             u32 i;
@@ -674,7 +674,7 @@ void slab_main(slab_params_t *sp){
             pdesc.addr_from = &_xcguestslab_init_pdt;
             pdesc.numbytes = sizeof(_xcguestslab_init_pdt);
             XMHF_HIC_SLAB_UAPI_PHYSMEM(XMHF_HIC_UAPI_PHYSMEM_POKE, &pdesc, NULL);
-        }
+        }*/
 
         //initialize guest slab gdt
         pdesc.addr_to = guest_slab_gdt_paddr;
@@ -684,12 +684,13 @@ void slab_main(slab_params_t *sp){
 
 
         //initialize guest slab VMCS PDPT, CR3 and GDTR fields
-        XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMWRITE, VMCS_GUEST_PDPTE0_FULL, entries_pdpt[0]);
+        /*XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMWRITE, VMCS_GUEST_PDPTE0_FULL, entries_pdpt[0]);
         XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMWRITE, VMCS_GUEST_PDPTE1_FULL, entries_pdpt[1]);
         XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMWRITE, VMCS_GUEST_PDPTE2_FULL, entries_pdpt[2]);
         XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMWRITE, VMCS_GUEST_PDPTE3_FULL, entries_pdpt[3]);
+        */
 
-        XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMWRITE, VMCS_GUEST_CR3, guest_slab_pml4t_paddr);
+        //XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMWRITE, VMCS_GUEST_CR3, guest_slab_pml4t_paddr);
 
         XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMWRITE, VMCS_GUEST_GDTR_BASE, guest_slab_gdt_paddr);
         XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMWRITE, VMCS_GUEST_GDTR_LIMIT, (sizeof(_xcguestslab_init_gdt)-1));
@@ -698,6 +699,12 @@ void slab_main(slab_params_t *sp){
     }
 
 
+    //debug
+    _XDPRINTF_("Halting!\n");
+    _XDPRINTF_("XMHF Tester Finished!\n");
+    HALT();
+
+/*
     //invoke hypapp initialization callbacks
     xc_hcbinvoke(XC_HYPAPPCB_INITIALIZE, 0, XMHF_GUEST_SLAB_XCGUESTSLAB);
 
