@@ -100,7 +100,7 @@ typedef struct {
     u32 src_slabid;
     u32 dst_slabid;
     u32 cpuid;
-    u32 in_out_params[4];
+    u32 in_out_params[8];
 } __attribute__((packed)) slab_params_t;
 
 
@@ -124,7 +124,7 @@ typedef struct {
 
 //guest slab header data type
 typedef struct {
-    u64 magic;
+    u32 magic;
     __attribute__((aligned(4096))) u64 lvl2mempgtbl_pml4t[PAE_MAXPTRS_PER_PDPT];
     __attribute__((aligned(4096))) u64 lvl2mempgtbl_pdpt[PAE_MAXPTRS_PER_PDPT];
     __attribute__((aligned(4096))) u64 lvl2mempgtbl_pdts[PAE_PTRS_PER_PDPT][PAE_PTRS_PER_PDT];
@@ -145,6 +145,8 @@ __attribute__((naked)) bool __slab_calluapi(u64 reserved_uapicall,
         u64 reserved_uapicall_num,  u64 uapi_subfn,
         u64 reserved, u64 iparams, u64 oparams);
 
+void __slab_calluapinew(slab_params_t *sp);
+
 
 #define XMHF_HIC_SLAB_UAPI_CPUSTATE(cpustatefn, iparams, oparams) \
     __slab_calluapi(XMHF_HIC_UAPI, XMHF_HIC_UAPI_CPUSTATE, cpustatefn, 0, iparams, oparams)
@@ -158,7 +160,7 @@ __attribute__((naked)) bool __slab_calluapi(u64 reserved_uapicall,
     __slab_calluapi(XMHF_HIC_UAPI, XMHF_HIC_UAPI_MEMPGTBL, mempgtblfn, 0, iparams, oparams)
 
 
-
+#define XMHF_SLAB_UAPI(sp) __slab_calluapinew(sp)
 
 //HIC trampoline
 

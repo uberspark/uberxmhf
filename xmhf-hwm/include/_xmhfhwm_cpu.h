@@ -253,6 +253,17 @@ struct regs
   u64 eax;
 }__attribute__ ((packed));
 
+typedef struct
+{
+  u32 edi;
+  u32 esi;
+  u32 ebp;
+  u32 esp;
+  u32 ebx;
+  u32 edx;
+  u32 ecx;
+  u32 eax;
+}__attribute__ ((packed)) x86regs_t;
 
 typedef struct {
   u64 r8;
