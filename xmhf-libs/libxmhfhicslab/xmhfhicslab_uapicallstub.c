@@ -51,7 +51,8 @@
 
 
 #include <xmhf.h>
-#include <xmhfhicslab.h>
+//#include <xmhfhicslab.h>
+#include <xmhf-hic.h>
 #include <xmhf-debug.h>
 
 /*
@@ -93,6 +94,6 @@ __attribute__((naked)) bool __slab_calluapi(u64 reserved_uapicall,
 
 void __slab_calluapinew(slab_params_t *sp){
 
-
+    __xmhfhic_rtm_uapihandler(sp);
 
 }
