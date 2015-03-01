@@ -482,6 +482,7 @@ typedef void (*FPSLABMAIN)(slab_params_t *sp);
     \
 	__attribute__((naked)) __attribute__ ((section(".slab_entrystub"))) __attribute__((align(1))) void _slab_entrystub(void){	\
 	asm volatile ( \
+            "jmp slab_main \r\n" \
             "int $0x03 \r\n" \
             "1: jmp 1b \r\n" \
  			:  \
