@@ -748,24 +748,34 @@ void slab_main(slab_params_t *sp){
     }
 
 
-    //debug
+/*    //debug
     _XDPRINTF_("Halting!\n");
     _XDPRINTF_("XMHF Tester Finished!\n");
     HALT();
-
+*/
 /*
     //invoke hypapp initialization callbacks
     xc_hcbinvoke(XC_HYPAPPCB_INITIALIZE, 0, XMHF_GUEST_SLAB_XCGUESTSLAB);
-
+*/
 
     //call guestslab
-    _XDPRINTF_("%s[%u]: Proceeding to call xcguestslab; RSP=%016llx\n", __FUNCTION__, (u32)cpuid, read_rsp());
-    XMHF_SLAB_CALL(xcguestslab, XMHF_GUEST_SLAB_XCGUESTSLAB, NULL, 0, NULL, 0);
+    {
+        slab_params_t spl;
+
+        memset(&spl, 0, sizeof(spl));
+        spl.cpuid = sp->cpuid;
+        spl.src_slabid = XMHF_HYP_SLAB_XCINIT;
+        spl.dst_slabid = XMHF_GUEST_SLAB_XCGUESTSLAB;
+
+        _XDPRINTF_("%s[%u]: Proceeding to call xcguestslab; ESP=%08x\n", __FUNCTION__, (u16)sp->cpuid, read_esp());
+
+        XMHF_SLAB_CALLNEW(&spl);
+    }
 
 
-    _XDPRINTF_("%s[%u]: Should  never get here.Halting!\n", __FUNCTION__, (u32)cpuid);
+    _XDPRINTF_("%s[%u]: Should  never get here.Halting!\n", __FUNCTION__, (u16)sp->cpuid);
     HALT();
-*/
+
     return;
 }
 
