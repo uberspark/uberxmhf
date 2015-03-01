@@ -636,16 +636,34 @@ void slab_main(slab_params_t *sp){
         u32 guest_slab_gdt_paddr = guest_slab_header_paddr + offsetof(guest_slab_header_t, gdt);
         u32 guest_slab_magic_paddr = guest_slab_header_paddr + offsetof(guest_slab_header_t, magic);
         u32 guest_slab_magic;
-        xmhf_hic_uapi_physmem_desc_t pdesc;
+        //xmhf_hic_uapi_physmem_desc_t pdesc;
 
-        pdesc.guest_slab_index = XMHF_GUEST_SLAB_XCGUESTSLAB;
-        pdesc.addr_to = &guest_slab_magic;
-        pdesc.addr_from = guest_slab_magic_paddr;
-        pdesc.numbytes = sizeof(guest_slab_magic);
-        XMHF_HIC_SLAB_UAPI_PHYSMEM(XMHF_HIC_UAPI_PHYSMEM_PEEK, &pdesc, NULL);
+        //pdesc.guest_slab_index = XMHF_GUEST_SLAB_XCGUESTSLAB;
+        //pdesc.addr_to = &guest_slab_magic;
+        //pdesc.addr_from = guest_slab_magic_paddr;
+        //pdesc.numbytes = sizeof(guest_slab_magic);
+        //XMHF_HIC_SLAB_UAPI_PHYSMEM(XMHF_HIC_UAPI_PHYSMEM_PEEK, &pdesc, NULL);
 
 
-        _XDPRINTF_("%s[%u]: guest slab header magic=%x\n", __FUNCTION__, (u16)sp->cpuid, guest_slab_magic);
+        //get and dump slab header magic
+        {
+            slab_params_t spl;
+            xmhf_hic_uapi_physmem_desc_t *pdesc = (xmhf_hic_uapi_physmem_desc_t *)&spl.in_out_params[2];
+
+            pdesc->guest_slab_index = XMHF_GUEST_SLAB_XCGUESTSLAB;
+            pdesc->addr_to = &guest_slab_magic;
+            pdesc->addr_from = guest_slab_magic_paddr;
+            pdesc->numbytes = sizeof(guest_slab_magic);
+
+            spl.in_out_params[0] = XMHF_HIC_UAPI_PHYSMEM;
+            spl.in_out_params[1] = XMHF_HIC_UAPI_PHYSMEM_PEEK;
+            spl.cpuid = sp->cpuid;
+            spl.src_slabid = XMHF_HYP_SLAB_XCINIT;
+
+            XMHF_SLAB_UAPI(&spl);
+            _XDPRINTF_("%s[%u]: guest slab header magic=%x\n", __FUNCTION__, (u16)sp->cpuid, guest_slab_magic);
+        }
+
 
 /*
         //initialize guest slab level-2 page tables shape
@@ -677,11 +695,22 @@ void slab_main(slab_params_t *sp){
         }*/
 
         //initialize guest slab gdt
-        pdesc.addr_to = guest_slab_gdt_paddr;
-        pdesc.addr_from = &_xcguestslab_init_gdt;
-        pdesc.numbytes = sizeof(_xcguestslab_init_gdt);
-        XMHF_HIC_SLAB_UAPI_PHYSMEM(XMHF_HIC_UAPI_PHYSMEM_POKE, &pdesc, NULL);
+        {
+            slab_params_t spl;
+            xmhf_hic_uapi_physmem_desc_t *pdesc = (xmhf_hic_uapi_physmem_desc_t *)&spl.in_out_params[2];
 
+            pdesc->guest_slab_index = XMHF_GUEST_SLAB_XCGUESTSLAB;
+            pdesc->addr_to = guest_slab_gdt_paddr;
+            pdesc->addr_from = &_xcguestslab_init_gdt;
+            pdesc->numbytes = sizeof(_xcguestslab_init_gdt);
+
+            spl.in_out_params[0] = XMHF_HIC_UAPI_PHYSMEM;
+            spl.in_out_params[1] = XMHF_HIC_UAPI_PHYSMEM_POKE;
+            spl.cpuid = sp->cpuid;
+            spl.src_slabid = XMHF_HYP_SLAB_XCINIT;
+
+            XMHF_SLAB_UAPI(&spl);
+        }
 
         //initialize guest slab VMCS PDPT, CR3 and GDTR fields
         /*XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMWRITE, VMCS_GUEST_PDPTE0_FULL, entries_pdpt[0]);
@@ -692,8 +721,28 @@ void slab_main(slab_params_t *sp){
 
         //XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMWRITE, VMCS_GUEST_CR3, guest_slab_pml4t_paddr);
 
-        XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMWRITE, VMCS_GUEST_GDTR_BASE, guest_slab_gdt_paddr);
-        XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMWRITE, VMCS_GUEST_GDTR_LIMIT, (sizeof(_xcguestslab_init_gdt)-1));
+        //setup guest slab VMCS GDT base and limit
+        {
+            slab_params_t spl;
+
+            spl.cpuid = sp->cpuid;
+            spl.src_slabid = XMHF_HYP_SLAB_XCINIT;
+
+            spl.in_out_params[0] = XMHF_HIC_UAPI_CPUSTATE;
+            spl.in_out_params[1] = XMHF_HIC_UAPI_CPUSTATE_VMWRITE;
+            spl.in_out_params[3] = 0;
+            spl.in_out_params[2] = VMCS_GUEST_GDTR_BASE;
+            spl.in_out_params[5] = 0;
+            spl.in_out_params[4] = guest_slab_gdt_paddr;
+
+            XMHF_SLAB_UAPI(&spl);
+
+            spl.in_out_params[2] = VMCS_GUEST_GDTR_LIMIT;
+            spl.in_out_params[4] =  (sizeof(_xcguestslab_init_gdt)-1);
+
+            XMHF_SLAB_UAPI(&spl);
+
+        }
 
 
     }
