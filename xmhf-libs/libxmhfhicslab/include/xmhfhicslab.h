@@ -117,7 +117,7 @@ typedef struct {
 }__attribute__((packed)) xmhf_hic_uapi_physmem_desc_t;
 
 typedef struct {
-    u64 guest_slab_index;
+    u32 guest_slab_index;
     u64 gpa;
     u64 entry;
 }__attribute__((packed)) xmhf_hic_uapi_mempgtbl_desc_t;
