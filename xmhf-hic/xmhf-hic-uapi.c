@@ -168,11 +168,11 @@ void __xmhfhic_rtm_uapihandler(slab_params_t *sp){
             __xmhfhic_rtm_uapihandler_physmem(sp);
             break;
 
-        /*case XMHF_HIC_UAPI_MEMPGTBL:
+        case XMHF_HIC_UAPI_MEMPGTBL:
             //__xmhfhic_rtm_uapihandler_mempgtbl(uapicall_subnum, iparams, oparams, cpuid, src_slabid);
             __xmhfhic_rtm_uapihandler_mempgtbl(sp);
             break;
-        */
+
 
         default:
             _XDPRINTF_("%s[%u]: Unknown UAPI call %x. Halting!\n",
