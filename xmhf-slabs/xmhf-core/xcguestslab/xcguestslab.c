@@ -524,3 +524,10 @@ void slab_interface(slab_input_params_t *iparams, u64 iparams_size, slab_output_
     HALT();
 }
 
+
+void slab_main(slab_params_t *sp){
+    _XDPRINTF_("%s: Hello world from Guest slab!\n", __FUNCTION__);
+
+    _XDPRINTF_("%s: Guest Slab Halting\n", __FUNCTION__);
+    HALT();
+}
