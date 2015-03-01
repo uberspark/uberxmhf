@@ -1552,9 +1552,12 @@ u32  __xmhfhic_exceptionstubs[] = { XMHF_EXCEPTION_HANDLER_ADDROF(0),
 
 
 //HIC runtime intercept stub
-__attribute__((naked)) void __xmhfhic_rtm_intercept_stub(void){
+//__attribute__((naked)) void __xmhfhic_rtm_intercept_stub(void){
+void __xmhfhic_rtm_intercept_stub(void){
+    _XDPRINTF_("%s: ihub, some issue. Halting\n", __FUNCTION__);
+    HALT();
 
-/*
+    /*
     //TODO: x86_64--> x86
 	asm volatile(
                         "pushq %%rsp \r\n"

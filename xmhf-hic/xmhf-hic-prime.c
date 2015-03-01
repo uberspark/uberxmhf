@@ -201,7 +201,7 @@ void xmhfhic_smp_entry(u32 cpuid){
     _XDPRINTF_("%s[%u,%u]: esp=%08x. Starting...\n",
             __FUNCTION__, cpuid, isbsp, read_esp());
 
-    xmhf_hic_arch_setup_cpu_state(cpuid);
+    xmhf_hic_arch_setup_cpu_state((u16)cpuid);
 
     //_XDPRINTF_("%s[%u,%u]: Halting!\n", __FUNCTION__, (u16)cpuid, isbsp);
     //HALT();
@@ -226,7 +226,7 @@ void xmhfhic_smp_entry(u32 cpuid){
     }
 
 
-    _XDPRINTF_("%s[%u,%u]: Should never be here. Halting!\n", __FUNCTION__, cpuid, isbsp);
+    _XDPRINTF_("%s[%u,%u]: Should never be here. Halting!\n", __FUNCTION__, (u16)cpuid, isbsp);
     HALT();
 
 }
