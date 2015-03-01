@@ -110,10 +110,10 @@ typedef struct {
 // uapi related types
 
 typedef struct {
-    u64 guest_slab_index;
+    u32 guest_slab_index;
     void *addr_from;
     void *addr_to;
-    u64 numbytes;
+    u32 numbytes;
 }__attribute__((packed)) xmhf_hic_uapi_physmem_desc_t;
 
 typedef struct {
