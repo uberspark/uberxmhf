@@ -269,7 +269,7 @@ static void __xmhfhic_rtm_uapihandler_cpustate(slab_params_t *sp){
 
 
         case XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSREAD:{
-            //output = in_out_params[0..7] = x86regs_t
+            //output = in_out_params[2..9] = x86regs_t
 
             /*//checks:
             //1. oparams should be within source slab memory extents
@@ -286,7 +286,7 @@ static void __xmhfhic_rtm_uapihandler_cpustate(slab_params_t *sp){
             #if !defined (__XMHF_VERIFICATION__)
             //memcpy(oparams, & __xmhfhic_x86vmx_archdata[(u32)cpuid].vmx_gprs,
             //       sizeof(x86regs64_t));
-            memcpy(&sp->in_out_params[0],
+            memcpy(&sp->in_out_params[2],
                    &__xmhfhic_x86vmx_archdata[(u16)sp->cpuid].vmx_gprs,
                    sizeof(x86regs_t));
 
@@ -295,7 +295,7 @@ static void __xmhfhic_rtm_uapihandler_cpustate(slab_params_t *sp){
         break;
 
         case XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSWRITE:{
-            //input: in_out_params[0..7] = x86regs_t
+            //input: in_out_params[2..9] = x86regs_t
 
             //checks:
             /*//1. iparams should be within source slab memory extents
@@ -311,7 +311,7 @@ static void __xmhfhic_rtm_uapihandler_cpustate(slab_params_t *sp){
 
             #if !defined (__XMHF_VERIFICATION__)
             memcpy(&__xmhfhic_x86vmx_archdata[(u16)sp->cpuid].vmx_gprs,
-                   &sp->in_out_params[0],
+                   &sp->in_out_params[2],
                    sizeof(x86regs_t));
             #endif
         }
