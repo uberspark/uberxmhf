@@ -62,7 +62,44 @@ XMHF_SLAB_INTERCEPT(xcihub)
 
 
 
+void slab_main(slab_params_t *sp){
+    u32 info_vmexit_reason;
+    slab_params_t spl;
 
+	_XDPRINTF_("%s[%u]: Got control: ESP=%08x\n",
+                __FUNCTION__, (u16)sp->cpuid, read_esp());
+
+    spl.cpuid = sp->cpuid;
+    spl.src_slabid = XMHF_HYP_SLAB_XCIHUB;
+    spl.in_out_params[0] = XMHF_HIC_UAPI_CPUSTATE;
+
+
+    //XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMREAD, VMCS_INFO_VMEXIT_REASON, &info_vmexit_reason);
+    spl.in_out_params[1] = XMHF_HIC_UAPI_CPUSTATE_VMREAD;
+    spl.in_out_params[2] = VMCS_INFO_VMEXIT_REASON;
+    XMHF_SLAB_UAPI(&spl);
+    info_vmexit_reason = spl.in_out_params[4];
+
+    switch(info_vmexit_reason){
+
+
+
+        default:
+            _XDPRINTF_("%s[%u]: unhandled intercept %x. Halting!\n",
+                    __FUNCTION__, (u16)sp->cpuid, info_vmexit_reason);
+
+            HALT();
+    }
+
+
+    //resume guest slab
+    return;
+}
+
+
+
+
+/*
 void slab_interface(slab_input_params_t *iparams, u64 iparams_size, slab_output_params_t *oparams, u64 oparams_size, u64 src_slabid, u64 cpuindex){
     u64 info_vmexit_reason;
     xc_hypappcb_inputparams_t hcb_iparams;
@@ -265,7 +302,7 @@ void slab_interface(slab_input_params_t *iparams, u64 iparams_size, slab_output_
     //resume guest slab
     return;
 }
-
+*/
 
 
 
