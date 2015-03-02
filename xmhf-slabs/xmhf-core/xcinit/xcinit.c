@@ -583,8 +583,8 @@ __attribute__((aligned(4096))) static u64 _xcguestslab_init_pdt[(PAE_PTRS_PER_PD
 
 __attribute__(( aligned(16) )) static u64 _xcguestslab_init_gdt[]  = {
 	0x0000000000000000ULL,	//NULL descriptor
-	0x00af9b000000ffffULL,	//CPL-0 64-bit code descriptor (CS64)
-	0x00af93000000ffffULL,	//CPL-0 64-bit data descriptor (DS/SS/ES/FS/GS)
+	0x00cf9b000000ffffULL,	//CPL-0 32-bit code descriptor (CS32)
+	0x00cf93000000ffffULL,	//CPL-0 32-bit data descriptor (DS/SS/ES/FS/GS)
 	0x0000000000000000ULL,	//NULL descriptor
 };
 
