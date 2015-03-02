@@ -146,7 +146,19 @@ static void xcguestslab_do_xmhfhw_cpu_cpuid(void){
 }
 
 
+static void xcguestslab_do_msrtest(void){
+    u64 sysenter_cs_msr;
 
+
+    wrmsr64(IA32_SYSENTER_CS_MSR, 0xAA);
+
+    _XDPRINTF_("%s: wrote SYSENTER_CS_MSR.\n", __FUNCTION__);
+
+    sysenter_cs_msr = rdmsr64(IA32_SYSENTER_CS_MSR);
+
+    _XDPRINTF_("%s: read SYSENTER_CS_MSR=%016llx...\n", __FUNCTION__, sysenter_cs_msr);
+
+}
 
 
 
@@ -539,8 +551,9 @@ void slab_main(slab_params_t *sp){
 
     //xcguestslab_do_vmcall();
 
-    xcguestslab_do_xmhfhw_cpu_cpuid();
+    //xcguestslab_do_xmhfhw_cpu_cpuid();
 
+    xcguestslab_do_msrtest();
 
     _XDPRINTF_("%s: Guest Slab Halting\n", __FUNCTION__);
     HALT();

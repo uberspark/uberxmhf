@@ -169,6 +169,163 @@ void slab_main(slab_params_t *sp){
         break;
 
 
+        case VMX_VMEXIT_WRMSR:{
+
+            if(xc_hcbinvoke(XMHF_HYP_SLAB_XCIHUB, sp->cpuid,
+                            XC_HYPAPPCB_TRAP_INSTRUCTION, XC_HYPAPPCB_TRAP_INSTRUCTION_WRMSR, sp->src_slabid) == XC_HYPAPPCB_CHAIN){
+
+                u32 guest_rip;
+                u32 info_vmexit_instruction_length;
+                x86regs_t r;
+
+                _XDPRINTF_("%s[%u]: VMX_VMEXIT_WRMSR\n", __FUNCTION__, (u16)sp->cpuid);
+
+                //XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSREAD, NULL, &r);
+                spl.in_out_params[1] = XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSREAD;
+                XMHF_SLAB_UAPI(&spl);
+                memcpy(&r, &spl.in_out_params[2], sizeof(x86regs_t));
+
+                switch((u32)r.ecx){
+                    case IA32_SYSENTER_CS_MSR:
+                        //XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMWRITE, VMCS_GUEST_SYSENTER_CS, ( ((u64)(u32)r.rdx << 32) | (u32)r.rax ));
+                        spl.in_out_params[1] = XMHF_HIC_UAPI_CPUSTATE_VMWRITE;
+                        spl.in_out_params[2] = VMCS_GUEST_SYSENTER_CS;
+                        spl.in_out_params[4] = r.eax;
+                        XMHF_SLAB_UAPI(&spl);
+                        break;
+                    case IA32_SYSENTER_EIP_MSR:
+                        //XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMWRITE, VMCS_GUEST_SYSENTER_EIP, ( ((u64)(u32)r.rdx << 32) | (u32)r.rax ));
+                        spl.in_out_params[1] = XMHF_HIC_UAPI_CPUSTATE_VMWRITE;
+                        spl.in_out_params[2] = VMCS_GUEST_SYSENTER_EIP;
+                        spl.in_out_params[4] = r.eax;
+                        XMHF_SLAB_UAPI(&spl);
+                        break;
+                    case IA32_SYSENTER_ESP_MSR:
+                        //XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMWRITE, VMCS_GUEST_SYSENTER_ESP, ( ((u64)(u32)r.rdx << 32) | (u32)r.rax ));
+                        spl.in_out_params[1] = XMHF_HIC_UAPI_CPUSTATE_VMWRITE;
+                        spl.in_out_params[2] = VMCS_GUEST_SYSENTER_ESP;
+                        spl.in_out_params[4] = r.eax;
+                        XMHF_SLAB_UAPI(&spl);
+                        break;
+                    default:
+                        //XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_WRMSR, r.rcx, ( ((u64)(u32)r.rdx << 32) | (u32)r.rax ));
+                        spl.in_out_params[1] = XMHF_HIC_UAPI_CPUSTATE_WRMSR;
+                        spl.in_out_params[2] = r.ecx;
+                        spl.in_out_params[3] = r.eax;
+                        spl.in_out_params[4] = r.edx;
+                        XMHF_SLAB_UAPI(&spl);
+                        break;
+                }
+
+                //XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMREAD, VMCS_INFO_VMEXIT_INSTRUCTION_LENGTH, &info_vmexit_instruction_length);
+                spl.in_out_params[1] = XMHF_HIC_UAPI_CPUSTATE_VMREAD;
+                spl.in_out_params[2] = VMCS_INFO_VMEXIT_INSTRUCTION_LENGTH;
+                XMHF_SLAB_UAPI(&spl);
+                info_vmexit_instruction_length = spl.in_out_params[4];
+
+                //XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMREAD, VMCS_GUEST_RIP, &guest_rip);
+                spl.in_out_params[2] = VMCS_GUEST_RIP;
+                XMHF_SLAB_UAPI(&spl);
+                guest_rip = spl.in_out_params[4];
+                guest_rip+=info_vmexit_instruction_length;
+
+                //XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMWRITE, VMCS_GUEST_RIP, guest_rip);
+                spl.in_out_params[1] = XMHF_HIC_UAPI_CPUSTATE_VMWRITE;
+                spl.in_out_params[2] = VMCS_GUEST_RIP;
+                spl.in_out_params[4] = guest_rip;
+                XMHF_SLAB_UAPI(&spl);
+
+                _XDPRINTF_("%s[%u]: adjusted guest_rip=%08x\n",
+                    __FUNCTION__, (u16)sp->cpuid, guest_rip);
+
+            }
+        }
+        break;
+
+
+        case VMX_VMEXIT_RDMSR:{
+            if(xc_hcbinvoke(XMHF_HYP_SLAB_XCIHUB, sp->cpuid, XC_HYPAPPCB_TRAP_INSTRUCTION,
+                            XC_HYPAPPCB_TRAP_INSTRUCTION_RDMSR, sp->src_slabid) == XC_HYPAPPCB_CHAIN){
+                u32 guest_rip;
+                u64 msrvalue;
+                u32 info_vmexit_instruction_length;
+                x86regs_t r;
+
+                _XDPRINTF_("%s[%u]: VMX_VMEXIT_RDMSR\n", __FUNCTION__, (u16)sp->cpuid);
+
+                //XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSREAD, NULL, &r);
+                spl.in_out_params[1] = XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSREAD;
+                XMHF_SLAB_UAPI(&spl);
+                memcpy(&r, &spl.in_out_params[2], sizeof(x86regs_t));
+
+
+                switch((u32)r.ecx){
+                    case IA32_SYSENTER_CS_MSR:
+                        //XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMREAD, VMCS_GUEST_SYSENTER_CS, &msrvalue);
+                        spl.in_out_params[1] = XMHF_HIC_UAPI_CPUSTATE_VMREAD;
+                        spl.in_out_params[2] = VMCS_GUEST_SYSENTER_CS;
+                        XMHF_SLAB_UAPI(&spl);
+                        r.edx = 0;
+                        r.eax = spl.in_out_params[4];
+                        break;
+                    case IA32_SYSENTER_EIP_MSR:
+                        //XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMREAD, VMCS_GUEST_SYSENTER_EIP, &msrvalue);
+                        spl.in_out_params[1] = XMHF_HIC_UAPI_CPUSTATE_VMREAD;
+                        spl.in_out_params[2] = VMCS_GUEST_SYSENTER_EIP;
+                        XMHF_SLAB_UAPI(&spl);
+                        r.edx = 0;
+                        r.eax = spl.in_out_params[4];
+                        break;
+                    case IA32_SYSENTER_ESP_MSR:
+                        //XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMREAD, VMCS_GUEST_SYSENTER_ESP, &msrvalue);
+                        spl.in_out_params[1] = XMHF_HIC_UAPI_CPUSTATE_VMREAD;
+                        spl.in_out_params[2] = VMCS_GUEST_SYSENTER_ESP;
+                        XMHF_SLAB_UAPI(&spl);
+                        r.edx = 0;
+                        r.eax = spl.in_out_params[4];
+                        break;
+                    default:
+                        //XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_RDMSR, r.rcx, &msrvalue);
+                        spl.in_out_params[1] = XMHF_HIC_UAPI_CPUSTATE_RDMSR;
+                        spl.in_out_params[2] = r.ecx;
+                        XMHF_SLAB_UAPI(&spl);
+                        r.edx = spl.in_out_params[4];
+                        r.eax = spl.in_out_params[3];
+                        break;
+                }
+
+                //XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSWRITE, &r, NULL);
+                spl.in_out_params[1] = XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSWRITE;
+                memcpy(&spl.in_out_params[2], &r, sizeof(x86regs_t));
+                XMHF_SLAB_UAPI(&spl);
+
+                //XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMREAD, VMCS_INFO_VMEXIT_INSTRUCTION_LENGTH, &info_vmexit_instruction_length);
+                spl.in_out_params[1] = XMHF_HIC_UAPI_CPUSTATE_VMREAD;
+                spl.in_out_params[2] = VMCS_INFO_VMEXIT_INSTRUCTION_LENGTH;
+                XMHF_SLAB_UAPI(&spl);
+                info_vmexit_instruction_length = spl.in_out_params[4];
+
+                //XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMREAD, VMCS_GUEST_RIP, &guest_rip);
+                spl.in_out_params[2] = VMCS_GUEST_RIP;
+                XMHF_SLAB_UAPI(&spl);
+                guest_rip = spl.in_out_params[4];
+                guest_rip+=info_vmexit_instruction_length;
+
+                //XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMWRITE, VMCS_GUEST_RIP, guest_rip);
+                spl.in_out_params[1] = XMHF_HIC_UAPI_CPUSTATE_VMWRITE;
+                spl.in_out_params[2] = VMCS_GUEST_RIP;
+                spl.in_out_params[4] = guest_rip;
+                XMHF_SLAB_UAPI(&spl);
+
+                _XDPRINTF_("%s[%u]: adjusted guest_rip=%08x\n",
+                    __FUNCTION__, (u16)sp->cpuid, guest_rip);
+            }
+
+        }
+        break;
+
+
+
         default:
             _XDPRINTF_("%s[%u]: unhandled intercept %x. Halting!\n",
                     __FUNCTION__, (u16)sp->cpuid, info_vmexit_reason);
