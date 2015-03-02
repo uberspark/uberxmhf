@@ -1571,7 +1571,7 @@ void __xmhfhic_rtm_intercept(x86regs_t *r){
 
     memset(&spl, 0, sizeof(spl));
 
-    spl.cpuid = 0; //TODO: fixme, need to grab correct CPU id
+    spl.cpuid = __xmhfhic_x86vmx_cpuidtable[xmhf_baseplatform_arch_x86_getcpulapicid()];
 
     //store GPRs
     memcpy(&__xmhfhic_x86vmx_archdata[(u16)spl.cpuid].vmx_gprs,
