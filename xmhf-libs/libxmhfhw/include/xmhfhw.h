@@ -226,8 +226,10 @@ void __getsec_parameters(uint32_t index, int* param_type, uint32_t* peax, uint32
 #ifndef __ASSEMBLY__
 
 bool __vmx_vmxon(u64 vmxonregion_paddr);
-void xmhfhw_cpu_x86vmx_vmwrite(u64 encoding, u64 value);
-u64 xmhfhw_cpu_x86vmx_vmread(u64 encoding);
+//void xmhfhw_cpu_x86vmx_vmwrite(u64 encoding, u64 value);
+//u64 xmhfhw_cpu_x86vmx_vmread(u64 encoding);
+void xmhfhw_cpu_x86vmx_vmwrite(u32 encoding, u32 value);
+u32 xmhfhw_cpu_x86vmx_vmread(u32 encoding);
 u32 __vmx_vmclear(u64 vmcs);
 u32 __vmx_vmptrld(u64 vmcs);
 u32 __vmx_invvpid(int invalidation_type, u16 vpid, u32 linearaddress);
