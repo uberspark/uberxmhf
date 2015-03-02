@@ -99,9 +99,9 @@ static void xcguestslab_dotest_vmcall(void){
 
 
 static void xcguestslab_do_vmcall(void){
-    u64 magic = 0xAABBCCDDAABBCCDDULL;
+    u32 magic = 0xAABBCCDDUL;
 
-    _XDPRINTF_("%s: Going for VMCALL, magic=%016llx\n",
+    _XDPRINTF_("%s: Going for VMCALL, magic=%08x\n",
                 __FUNCTION__, magic);
 
 /*    //TODO: x86_64 --> x86
@@ -115,7 +115,16 @@ static void xcguestslab_do_vmcall(void){
     );
 */
 
-    _XDPRINTF_("%s: Came back from VMCALL, magic=%016llx\n",
+    asm volatile(
+        "movl %0, %%eax \r\n"
+        "vmcall \r\n"
+        "movl %%eax, %0 \r\n"
+        :
+        : "m" (magic)
+        : "eax"
+    );
+
+    _XDPRINTF_("%s: Came back from VMCALL, magic=%08x\n",
                 __FUNCTION__, magic);
 
 
@@ -527,6 +536,8 @@ void slab_interface(slab_input_params_t *iparams, u64 iparams_size, slab_output_
 
 void slab_main(slab_params_t *sp){
     _XDPRINTF_("%s: Hello world from Guest slab!\n", __FUNCTION__);
+
+    xcguestslab_do_vmcall();
 
     _XDPRINTF_("%s: Guest Slab Halting\n", __FUNCTION__);
     HALT();
