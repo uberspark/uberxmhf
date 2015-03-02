@@ -1553,29 +1553,39 @@ u32  __xmhfhic_exceptionstubs[] = { XMHF_EXCEPTION_HANDLER_ADDROF(0),
 
 //HIC runtime intercept stub
 //__attribute__((naked)) void __xmhfhic_rtm_intercept_stub(void){
-void __xmhfhic_rtm_intercept_stub(void){
+__attribute__((naked)) void __xmhfhic_rtm_intercept_stub(void){
+
+    asm volatile ("pushal \r\n");
+    asm volatile ("pushl %esp \r\n");
+    asm volatile ("call __xmhfhic_rtm_intercept \r\n");
+    asm volatile ("addl $0x4, %esp \r\n");
+    asm volatile ("popal \r\n");
+    asm volatile ("vmresume \r\n");
+    asm volatile ("hlt \r\n");
+}
+
+
+
+void __xmhfhic_rtm_intercept(x86regs_t *r){
+    slab_params_t spl;
+
+    memset(&spl, 0, sizeof(spl));
+
+    spl.cpuid = 0; //TODO: fixme, need to grab correct CPU id
+
+    //store GPRs
+    memcpy(&__xmhfhic_x86vmx_archdata[(u16)spl.cpuid].vmx_gprs,
+           r, sizeof(x86regs_t));
+
     //call xcihub
-    {
-        slab_params_t spl;
+    spl.src_slabid = xmhfhw_cpu_x86vmx_vmread(VMCS_CONTROL_VPID);
+    spl.dst_slabid = XMHF_HYP_SLAB_XCIHUB;
+    XMHF_SLAB_CALLNEW(&spl);
 
-        memset(&spl, 0, sizeof(spl));
-        spl.cpuid = 0; //TODO: fixme, need to grab correct CPU id
-        spl.src_slabid = xmhfhw_cpu_x86vmx_vmread(VMCS_CONTROL_VPID);
-        spl.dst_slabid = XMHF_HYP_SLAB_XCIHUB;
+    //load GPRs
+    memcpy(r, &__xmhfhic_x86vmx_archdata[(u16)spl.cpuid].vmx_gprs,
+           sizeof(x86regs_t));
 
-        XMHF_SLAB_CALLNEW(&spl);
-    }
-
-            asm volatile (
-                "vmresume \r\n"
-                :
-                :
-                :
-
-           );
-
-    _XDPRINTF_("ihub: should never get here. Halting!\n");
-    HALT();
 
     /*
     //TODO: x86_64--> x86
