@@ -1560,11 +1560,22 @@ void __xmhfhic_rtm_intercept_stub(void){
 
         memset(&spl, 0, sizeof(spl));
         spl.cpuid = 0; //TODO: fixme, need to grab correct CPU id
-        spl.src_slabid = 0xFFFFFFFFUL;
+        spl.src_slabid = xmhfhw_cpu_x86vmx_vmread(VMCS_CONTROL_VPID);
         spl.dst_slabid = XMHF_HYP_SLAB_XCIHUB;
 
         XMHF_SLAB_CALLNEW(&spl);
     }
+
+            asm volatile (
+                "vmresume \r\n"
+                :
+                :
+                :
+
+           );
+
+    _XDPRINTF_("ihub: should never get here. Halting!\n");
+    HALT();
 
     /*
     //TODO: x86_64--> x86

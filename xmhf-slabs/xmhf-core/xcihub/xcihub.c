@@ -82,6 +82,36 @@ void slab_main(slab_params_t *sp){
 
     switch(info_vmexit_reason){
 
+        //hypercall
+        case VMX_VMEXIT_VMCALL:{
+            if(xc_hcbinvoke(XMHF_HYP_SLAB_XCIHUB, sp->cpuid, XC_HYPAPPCB_HYPERCALL, 0, sp->src_slabid) == XC_HYPAPPCB_CHAIN){
+                u32 guest_rip;
+                u32 info_vmexit_instruction_length;
+
+                _XDPRINTF_("%s[%u]: VMX_VMEXIT_VMCALL\n", __FUNCTION__, (u16)sp->cpuid);
+
+                //XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMREAD, VMCS_INFO_VMEXIT_INSTRUCTION_LENGTH, &info_vmexit_instruction_length);
+                spl.in_out_params[2] = VMCS_INFO_VMEXIT_INSTRUCTION_LENGTH;
+                XMHF_SLAB_UAPI(&spl);
+                info_vmexit_instruction_length = spl.in_out_params[4];
+
+                //XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMREAD, VMCS_GUEST_RIP, &guest_rip);
+                spl.in_out_params[2] = VMCS_GUEST_RIP;
+                XMHF_SLAB_UAPI(&spl);
+                guest_rip = spl.in_out_params[4];
+                guest_rip+=info_vmexit_instruction_length;
+
+                //XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMWRITE, VMCS_GUEST_RIP, guest_rip);
+                spl.in_out_params[1] = XMHF_HIC_UAPI_CPUSTATE_VMWRITE;
+                spl.in_out_params[2] = VMCS_GUEST_RIP;
+                spl.in_out_params[4] = guest_rip;
+                XMHF_SLAB_UAPI(&spl);
+
+                _XDPRINTF_("%s[%u]: adjusted guest_rip=%08x\n", __FUNCTION__, (u16)sp->cpuid, guest_rip);
+            }
+        }
+        break;
+
 
 
         default:
