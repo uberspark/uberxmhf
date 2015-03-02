@@ -537,7 +537,10 @@ void slab_interface(slab_input_params_t *iparams, u64 iparams_size, slab_output_
 void slab_main(slab_params_t *sp){
     _XDPRINTF_("%s: Hello world from Guest slab!\n", __FUNCTION__);
 
-    xcguestslab_do_vmcall();
+    //xcguestslab_do_vmcall();
+
+    xcguestslab_do_xmhfhw_cpu_cpuid();
+
 
     _XDPRINTF_("%s: Guest Slab Halting\n", __FUNCTION__);
     HALT();
