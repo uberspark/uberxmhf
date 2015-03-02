@@ -1554,9 +1554,17 @@ u32  __xmhfhic_exceptionstubs[] = { XMHF_EXCEPTION_HANDLER_ADDROF(0),
 //HIC runtime intercept stub
 //__attribute__((naked)) void __xmhfhic_rtm_intercept_stub(void){
 void __xmhfhic_rtm_intercept_stub(void){
-    u64 exitreason = xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_VMEXIT_REASON);
-    _XDPRINTF_("%s: ihub, exit reason=%08x\n", __FUNCTION__, (u32)exitreason);
-    HALT();
+    //call xcihub
+    {
+        slab_params_t spl;
+
+        memset(&spl, 0, sizeof(spl));
+        spl.cpuid = 0; //TODO: fixme, need to grab correct CPU id
+        spl.src_slabid = 0xFFFFFFFFUL;
+        spl.dst_slabid = XMHF_HYP_SLAB_XCIHUB;
+
+        XMHF_SLAB_CALLNEW(&spl);
+    }
 
     /*
     //TODO: x86_64--> x86
