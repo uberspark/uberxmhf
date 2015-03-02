@@ -1554,7 +1554,8 @@ u32  __xmhfhic_exceptionstubs[] = { XMHF_EXCEPTION_HANDLER_ADDROF(0),
 //HIC runtime intercept stub
 //__attribute__((naked)) void __xmhfhic_rtm_intercept_stub(void){
 void __xmhfhic_rtm_intercept_stub(void){
-    _XDPRINTF_("%s: ihub, some issue. Halting\n", __FUNCTION__);
+    u64 exitreason = xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_VMEXIT_REASON);
+    _XDPRINTF_("%s: ihub, exit reason=%08x\n", __FUNCTION__, (u32)exitreason);
     HALT();
 
     /*
