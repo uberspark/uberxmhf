@@ -196,7 +196,7 @@ typedef struct {
 #define XC_HYPAPPCB_MASK(x) (1 << x)
 
 static xc_hypapp_info_t _xcihub_hypapp_info_table[] = {
-    {
+/*    {
         XMHF_HYP_SLAB_XHHYPERDEP,
         (XC_HYPAPPCB_MASK(XC_HYPAPPCB_HYPERCALL) | XC_HYPAPPCB_MASK(XC_HYPAPPCB_MEMORYFAULT) | XC_HYPAPPCB_MASK(XC_HYPAPPCB_SHUTDOWN) )
     },
@@ -216,12 +216,14 @@ static xc_hypapp_info_t _xcihub_hypapp_info_table[] = {
         XMHF_HYP_SLAB_XHSYSCALLLOG,
         (XC_HYPAPPCB_MASK(XC_HYPAPPCB_HYPERCALL) | XC_HYPAPPCB_MASK(XC_HYPAPPCB_MEMORYFAULT) | XC_HYPAPPCB_MASK(XC_HYPAPPCB_TRAP_INSTRUCTION) | XC_HYPAPPCB_MASK(XC_HYPAPPCB_SHUTDOWN) )
     },
-
+*/
 };
 
 #define HYPAPP_INFO_TABLE_NUMENTRIES (sizeof(_xcihub_hypapp_info_table)/sizeof(_xcihub_hypapp_info_table[0]))
 
 
+/*
+x86_64
 static inline u64 xc_hcbinvoke(u64 cbtype, u64 cbqual, u64 guest_slab_index){
     u64 status = XC_HYPAPPCB_CHAIN;
     u64 i;
@@ -236,6 +238,32 @@ static inline u64 xc_hcbinvoke(u64 cbtype, u64 cbqual, u64 guest_slab_index){
         if(_xcihub_hypapp_info_table[i].cbmask & XC_HYPAPPCB_MASK(cbtype)){
             XMHF_SLAB_CALL(hypapp, _xcihub_hypapp_info_table[i].xmhfhic_slab_index, &hcb_iparams, sizeof(hcb_iparams), &hcb_oparams, sizeof(hcb_oparams));
             if(hcb_oparams.cbresult == XC_HYPAPPCB_NOCHAIN){
+                status = XC_HYPAPPCB_NOCHAIN;
+                break;
+            }
+        }
+    }
+
+    return status;
+}
+*/
+
+static inline u32 xc_hcbinvoke(u32 src_slabid, u32 cpuid, u32 cbtype, u32 cbqual, u32 guest_slab_index){
+    u32 status = XC_HYPAPPCB_CHAIN;
+    u32 i;
+    slab_params_t spl;
+
+    spl.src_slabid = src_slabid;
+    spl.cpuid = cpuid;
+    spl.in_out_params[0]=cbtype;
+    spl.in_out_params[1]=cbqual;
+    spl.in_out_params[2]=guest_slab_index;
+
+    for(i=0; i < HYPAPP_INFO_TABLE_NUMENTRIES; i++){
+        if(_xcihub_hypapp_info_table[i].cbmask & XC_HYPAPPCB_MASK(cbtype)){
+            spl.dst_slabid = _xcihub_hypapp_info_table[i].xmhfhic_slab_index;
+            XMHF_SLAB_CALLNEW(&spl);
+            if(spl.in_out_params[3] == XC_HYPAPPCB_NOCHAIN){
                 status = XC_HYPAPPCB_NOCHAIN;
                 break;
             }
