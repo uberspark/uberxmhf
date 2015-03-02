@@ -610,13 +610,13 @@ void slab_main(slab_params_t *sp){
         HALT();
     }else{
         //BSP
-        _XDPRINTF_("%s[%u]: BSP waiting to rally APs...\n",
-                __FUNCTION__, (u16)sp->cpuid);
+        //_XDPRINTF_("%s[%u]: BSP waiting to rally APs...\n",
+        //        __FUNCTION__, (u16)sp->cpuid);
 
-        while(cpucount < (xcbootinfo->cpuinfo_numentries-1));
+        //while(cpucount < (xcbootinfo->cpuinfo_numentries-1));
 
-        _XDPRINTF_("%s[%u]: BSP, APs halted. Proceeding...\n",
-                __FUNCTION__, (u16)sp->cpuid);
+        //_XDPRINTF_("%s[%u]: BSP, APs halted. Proceeding...\n",
+        //        __FUNCTION__, (u16)sp->cpuid);
     }
 
 

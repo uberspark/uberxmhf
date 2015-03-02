@@ -198,6 +198,14 @@ void xmhfhic_smp_entry(u32 cpuid){
     isbsp = true;
     #endif // defined
 
+
+    //[debug] halt all APs
+    if(!isbsp){
+        _XDPRINTF_("%s[%u,%u]: esp=%08x. AP Halting!\n",
+            __FUNCTION__, (u16)cpuid, isbsp, read_esp());
+        HALT();
+    }
+
     _XDPRINTF_("%s[%u,%u]: esp=%08x. Starting...\n",
             __FUNCTION__, cpuid, isbsp, read_esp());
 
