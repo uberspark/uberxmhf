@@ -180,16 +180,17 @@ static void xcguestslab_do_testxhhyperdep(void){
 
     _XDPRINTF_("%s: Going to activate DEP on page %x\n", __FUNCTION__, gpa);
 
-/*    //TODO: x86_64 --> x86
     asm volatile(
-        "movq %0, %%rax \r\n"
-        "movq %1, %%rbx \r\n"
+        "movl %0, %%eax \r\n"
+        "movl %1, %%edx \r\n"
+        "movl %2, %%ebx \r\n"
         "vmcall \r\n"
         :
-        : "i" (HYPERDEP_ACTIVATEDEP), "m" (gpa)
-        : "rax", "rbx"
+        : "i" (HYPERDEP_ACTIVATEDEP),
+          "g" ( (u32) ((u64)(gpa >> 32)) ),
+          "g" ((u32)gpa)
+        : "eax", "ebx", "edx"
     );
-*/
 
     _XDPRINTF_("%s: Activated DEP\n", __FUNCTION__);
 
@@ -197,18 +198,19 @@ static void xcguestslab_do_testxhhyperdep(void){
 
     _XDPRINTF_("%s: Going to de-activate DEP on page %x\n", __FUNCTION__, gpa);
 
-/*    //TODO: x86_64 --> x86
     asm volatile(
-        "movq %0, %%rax \r\n"
-        "movq %1, %%rbx \r\n"
+        "movl %0, %%eax \r\n"
+        "movl %1, %%edx \r\n"
+        "movl %2, %%ebx \r\n"
         "vmcall \r\n"
         :
-        : "i" (HYPERDEP_DEACTIVATEDEP), "m" (gpa)
-        : "rax", "rbx"
-    );*/
+        : "i" (HYPERDEP_DEACTIVATEDEP),
+          "g" ( (u32) ((u64)(gpa >> 32)) ),
+          "g" ((u32)gpa)
+        : "eax", "ebx", "edx"
+    );
 
     _XDPRINTF_("%s: Deactivated DEP\n", __FUNCTION__);
-
 
 }
 
@@ -553,7 +555,9 @@ void slab_main(slab_params_t *sp){
 
     //xcguestslab_do_xmhfhw_cpu_cpuid();
 
-    xcguestslab_do_msrtest();
+    //xcguestslab_do_msrtest();
+
+    xcguestslab_do_testxhhyperdep();
 
     _XDPRINTF_("%s: Guest Slab Halting\n", __FUNCTION__);
     HALT();

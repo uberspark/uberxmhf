@@ -572,7 +572,7 @@ static void __xmhfhic_rtm_uapihandler_physmem(slab_params_t *sp){
 //////
 // mempgtbl UAPI sub-handler
 static void __xmhfhic_rtm_uapihandler_mempgtbl(slab_params_t *sp){
-    //_XDPRINTF_("%s[%u]: Got control...\n", __FUNCTION__, (u32)cpuid);
+    _XDPRINTF_("%s[%u]: Got control...\n", __FUNCTION__, (u16)sp->cpuid);
 
     switch(sp->in_out_params[1]){
         case XMHF_HIC_UAPI_MEMPGTBL_GETENTRY:{
@@ -645,6 +645,10 @@ static void __xmhfhic_rtm_uapihandler_mempgtbl(slab_params_t *sp){
                 u64 *table = (u64 *)_xmhfhic_common_slab_info_table[mdesc->guest_slab_index].archdata.mempgtbl_pt;
                 mdesc->entry = table[pt_index];
             }
+
+            //debug
+            //_XDPRINTF_("MEMPGTBL_GETENTRY: guest slab id=%u, gpa=%016llx(index=%u), entry=%016llx\n", mdesc->guest_slab_index,
+            //           mdesc->gpa, pt_index, mdesc->entry);
 
         }
         break;

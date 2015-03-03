@@ -112,6 +112,30 @@ void slab_main(slab_params_t *sp){
         }
         break;
 
+
+        //memory fault
+		case VMX_VMEXIT_EPT_VIOLATION:{
+            xc_hcbinvoke(XMHF_HYP_SLAB_XCIHUB, sp->cpuid, XC_HYPAPPCB_MEMORYFAULT, 0, sp->src_slabid);
+        }
+		break;
+
+
+        //shutdown
+        case VMX_VMEXIT_INIT:
+   		case VMX_VMEXIT_TASKSWITCH:
+            xc_hcbinvoke(XMHF_HYP_SLAB_XCIHUB, sp->cpuid, XC_HYPAPPCB_SHUTDOWN, 0, sp->src_slabid);
+		break;
+
+
+
+        ////io traps
+		//case VMX_VMEXIT_IOIO:{
+        //
+        //
+		//}
+		//break;
+
+
         //instruction traps
         case VMX_VMEXIT_CPUID:{
             if(xc_hcbinvoke(XMHF_HYP_SLAB_XCIHUB, sp->cpuid, XC_HYPAPPCB_TRAP_INSTRUCTION,
@@ -324,6 +348,12 @@ void slab_main(slab_params_t *sp){
         }
         break;
 
+
+        //exception traps
+        case VMX_VMEXIT_EXCEPTION:{
+            xc_hcbinvoke(XMHF_HYP_SLAB_XCIHUB, sp->cpuid, XC_HYPAPPCB_TRAP_EXCEPTION, 0, sp->src_slabid);
+        }
+        break;
 
 
         default:

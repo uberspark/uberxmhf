@@ -176,32 +176,39 @@ typedef struct {
 
 
 typedef struct {
-    u64 cbtype;
-    u64 cbqual;
-    u64 guest_slab_index;
+    u32 cbtype;
+    u32 cbqual;
+    u32 guest_slab_index;
 }__attribute__((packed)) xc_hypappcb_inputparams_t;
 
 
 typedef struct {
-    u64 cbresult;
+    u32 cbresult;
 }__attribute__((packed)) xc_hypappcb_outputparams_t;
 
 
 typedef struct {
-    u64 xmhfhic_slab_index;
-    u64 cbmask;
+    u32 cbtype;
+    u32 cbqual;
+    u32 guest_slab_index;
+    u32 cbresult;
+}__attribute__((packed)) xc_hypappcb_params_t;
+
+typedef struct {
+    u32 xmhfhic_slab_index;
+    u32 cbmask;
 } __attribute__((packed)) xc_hypapp_info_t;
 
 
 #define XC_HYPAPPCB_MASK(x) (1 << x)
 
 static xc_hypapp_info_t _xcihub_hypapp_info_table[] = {
-/*    {
+    {
         XMHF_HYP_SLAB_XHHYPERDEP,
         (XC_HYPAPPCB_MASK(XC_HYPAPPCB_HYPERCALL) | XC_HYPAPPCB_MASK(XC_HYPAPPCB_MEMORYFAULT) | XC_HYPAPPCB_MASK(XC_HYPAPPCB_SHUTDOWN) )
     },
 
-    {
+/*    {
         XMHF_HYP_SLAB_XHAPPROVEXEC,
         (XC_HYPAPPCB_MASK(XC_HYPAPPCB_HYPERCALL) | XC_HYPAPPCB_MASK(XC_HYPAPPCB_MEMORYFAULT) | XC_HYPAPPCB_MASK(XC_HYPAPPCB_SHUTDOWN) )
     },
@@ -252,18 +259,19 @@ static inline u32 xc_hcbinvoke(u32 src_slabid, u32 cpuid, u32 cbtype, u32 cbqual
     u32 status = XC_HYPAPPCB_CHAIN;
     u32 i;
     slab_params_t spl;
+    xc_hypappcb_params_t *hcbp = (xc_hypappcb_params_t *)&spl.in_out_params[0];
 
     spl.src_slabid = src_slabid;
     spl.cpuid = cpuid;
-    spl.in_out_params[0]=cbtype;
-    spl.in_out_params[1]=cbqual;
-    spl.in_out_params[2]=guest_slab_index;
+    hcbp->cbtype=cbtype;
+    hcbp->cbqual=cbqual;
+    hcbp->guest_slab_index=guest_slab_index;
 
     for(i=0; i < HYPAPP_INFO_TABLE_NUMENTRIES; i++){
         if(_xcihub_hypapp_info_table[i].cbmask & XC_HYPAPPCB_MASK(cbtype)){
             spl.dst_slabid = _xcihub_hypapp_info_table[i].xmhfhic_slab_index;
             XMHF_SLAB_CALLNEW(&spl);
-            if(spl.in_out_params[3] == XC_HYPAPPCB_NOCHAIN){
+            if(hcbp->cbresult == XC_HYPAPPCB_NOCHAIN){
                 status = XC_HYPAPPCB_NOCHAIN;
                 break;
             }
