@@ -465,7 +465,7 @@ static void xcguestslab_do_testxhsyscalllog(void){
 	);
 
 
-/*    //register syscall handler
+    //register syscall handler
     asm volatile(
         "movl %0, %%eax \r\n"
         "movl %1, %%edx \r\n"
@@ -477,7 +477,7 @@ static void xcguestslab_do_testxhsyscalllog(void){
           "g" ((u32)gpa)
         : "eax", "ebx", "edx"
     );
-*/
+
 
     _XDPRINTF_("%s: registered syscall handler on page %x\n", __FUNCTION__, gpa);
 
