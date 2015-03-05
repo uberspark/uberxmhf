@@ -753,10 +753,11 @@ void slab_main(slab_params_t *sp){
     _XDPRINTF_("XMHF Tester Finished!\n");
     HALT();
 */
-/*
+
     //invoke hypapp initialization callbacks
-    xc_hcbinvoke(XC_HYPAPPCB_INITIALIZE, 0, XMHF_GUEST_SLAB_XCGUESTSLAB);
-*/
+    xc_hcbinvoke(XMHF_HYP_SLAB_XCINIT,
+                 sp->cpuid, XC_HYPAPPCB_INITIALIZE, 0, XMHF_GUEST_SLAB_XCGUESTSLAB);
+
 
     //call guestslab
     {
