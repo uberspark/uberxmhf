@@ -290,13 +290,12 @@ __attribute__((aligned(4096))) void _xcguestslab_do_testxhssteptrace_func(void){
 
     _XDPRINTF_("%s: Turning on tracing...\n", __FUNCTION__);
 
-/*    //TODO: x86_64 --> x86
     asm volatile(
-        "movq %0, %%rax \r\n"
+        "movl %0, %%eax \r\n"
         "vmcall \r\n"
         :
         : "i" (SSTEPTRACE_ON)
-        : "rax", "rbx"
+        : "eax"
     );
 
 
@@ -310,13 +309,13 @@ __attribute__((aligned(4096))) void _xcguestslab_do_testxhssteptrace_func(void){
     );
 
     asm volatile(
-        "movq %0, %%rax \r\n"
+        "movl %0, %%eax \r\n"
         "vmcall \r\n"
         :
         : "i" (SSTEPTRACE_OFF)
-        : "rax", "rbx"
+        : "eax"
     );
-*/
+
 
     _XDPRINTF_("%s: Tracing off...\n", __FUNCTION__);
 
@@ -324,26 +323,29 @@ __attribute__((aligned(4096))) void _xcguestslab_do_testxhssteptrace_func(void){
 
 
 static void xcguestslab_do_testxhssteptrace(void){
-    u64 gpa = &_xcguestslab_do_testxhssteptrace_func;
+    /*u64 gpa = &_xcguestslab_do_testxhssteptrace_func;
 
-    //_XDPRINTF_("%s: Going to register function at %x\n", __FUNCTION__, gpa);
+    _XDPRINTF_("%s: Going to register function at %016llx\n", __FUNCTION__, gpa);
 
-    //asm volatile(
-    //    "movq %0, %%rax \r\n"
-    //    "movq %1, %%rbx \r\n"
-    //    "vmcall \r\n"
-    //    :
-    //    : "i" (SSTEPTRACE_REGISTER), "m" (gpa)
-    //    : "rax", "rbx"
-    //);
+    asm volatile(
+        "movl %0, %%eax \r\n"
+        "movl %1, %%edx \r\n"
+        "movl %2, %%ebx \r\n"
+        "vmcall \r\n"
+        :
+        : "i" (SSTEPTRACE_REGISTER),
+          "g" ( (u32) ((u64)(gpa >> 32)) ),
+          "g" ((u32)gpa)
+        : "eax", "ebx", "edx"
+    );
 
-    //_XDPRINTF_("%s: Registered function\n", __FUNCTION__);
-
-    _XDPRINTF_("%s: Proceeding to call function...\n", __FUNCTION__, gpa);
+    _XDPRINTF_("%s: Registered function\n", __FUNCTION__);
+*/
+    _XDPRINTF_("%s: Proceeding to call function...\n", __FUNCTION__);
 
     _xcguestslab_do_testxhssteptrace_func();
 
-    _XDPRINTF_("%s: Came back from calling function.\n", __FUNCTION__, gpa);
+    _XDPRINTF_("%s: Came back from calling function.\n", __FUNCTION__);
 
 }
 
@@ -563,7 +565,9 @@ void slab_main(slab_params_t *sp){
 
     //xcguestslab_do_testxhhyperdep();
 
-    xcguestslab_do_testxhapprovexec();
+    //xcguestslab_do_testxhapprovexec();
+
+    xcguestslab_do_testxhssteptrace();
 
     _XDPRINTF_("%s: Guest Slab Halting\n", __FUNCTION__);
     HALT();
