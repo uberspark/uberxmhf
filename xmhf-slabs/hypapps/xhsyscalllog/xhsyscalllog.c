@@ -56,7 +56,7 @@
 
 
 //////
-XMHF_SLAB(xhsyscalllog)
+XMHF_SLABNEW(xhsyscalllog)
 
 #define SYSCALLLOG_REGISTER     			0xF0
 
@@ -71,7 +71,7 @@ static u64 shadow_sysenter_rip=0;
 typedef struct {
     bool syscallmodified;
     u8 syscalldigest[SHA_DIGEST_LENGTH];
-    x86regs64_t r;
+    x86regs_t r;
 } sl_log_type_t;
 
 sl_log_type_t sl_log[128];
@@ -79,11 +79,11 @@ sl_log_type_t sl_log[128];
 static u64 sl_log_index=0;
 
 // logs given info into memory buffer sl_log
-static void sl_loginfo(bool syscallmodified, u8 *digest, x86regs64_t *r){
+static void sl_loginfo(bool syscallmodified, u8 *digest, x86regs_t *r){
     if(sl_log_index < MAX_SL_LOG_SIZE){
         sl_log[sl_log_index].syscallmodified = syscallmodified;
         memcpy(&sl_log[sl_log_index].syscalldigest, digest, SHA_DIGEST_LENGTH);
-        memcpy(&sl_log[sl_log_index].r, r, sizeof(x86regs64_t));
+        memcpy(&sl_log[sl_log_index].r, r, sizeof(x86regs_t));
         sl_log_index++;
     }
 }
@@ -91,27 +91,33 @@ static void sl_loginfo(bool syscallmodified, u8 *digest, x86regs64_t *r){
 
 
 //register a syscall handler code page (at gpa)
-static void sl_register(u64 cpuindex, u64 guest_slab_index, u64 gpa){
-        xmhf_hic_uapi_physmem_desc_t pdesc;
+static void sl_register(u32 cpuindex, u32 guest_slab_index, u64 gpa){
+        slab_params_t spl;
+        xmhf_hic_uapi_physmem_desc_t *pdesc = (xmhf_hic_uapi_physmem_desc_t *)&spl.in_out_params[2];
 
-        _XDPRINTF_("%s[%u]: starting...\n", __FUNCTION__, (u32)cpuindex);
+        _XDPRINTF_("%s[%u]: starting...\n", __FUNCTION__, (u16)cpuindex);
+        spl.src_slabid = XMHF_HYP_SLAB_XHSYSCALLLOG;
+        spl.cpuid = cpuindex;
+        spl.in_out_params[0] = XMHF_HIC_UAPI_PHYSMEM;
 
         //copy code page at gpa
-        pdesc.guest_slab_index = guest_slab_index;
-        pdesc.addr_to = &_sl_pagebuffer;
-        pdesc.addr_from = gpa;
-        pdesc.numbytes = sizeof(_sl_pagebuffer);
-        XMHF_HIC_SLAB_UAPI_PHYSMEM(XMHF_HIC_UAPI_PHYSMEM_PEEK, &pdesc, NULL);
+        pdesc->guest_slab_index = guest_slab_index;
+        pdesc->addr_to = &_sl_pagebuffer;
+        pdesc->addr_from = gpa;
+        pdesc->numbytes = sizeof(_sl_pagebuffer);
+        //XMHF_HIC_SLAB_UAPI_PHYSMEM(XMHF_HIC_UAPI_PHYSMEM_PEEK, &pdesc, NULL);
+        spl.in_out_params[1] = XMHF_HIC_UAPI_PHYSMEM_PEEK;
+        XMHF_SLAB_UAPI(&spl);
 
-        _XDPRINTF_("%s[%u]: grabbed page contents at gpa=%x\n",
-               __FUNCTION__, (u32)cpuindex, gpa);
+        _XDPRINTF_("%s[%u]: grabbed page contents at gpa=%016llx\n",
+               __FUNCTION__, (u16)cpuindex, gpa);
 
         //compute SHA-1 of the syscall page
         sha1_buffer(&_sl_pagebuffer, sizeof(_sl_pagebuffer), _sl_syscalldigest);
 
 
         _XDPRINTF_("%s[%u]: computed SHA-1: %*D\n",
-               __FUNCTION__, (u32)cpuindex, SHA_DIGEST_LENGTH, _sl_syscalldigest, " ");
+               __FUNCTION__, (u16)cpuindex, SHA_DIGEST_LENGTH, _sl_syscalldigest, " ");
 
         _sl_registered=true;
 }
@@ -121,23 +127,29 @@ static void sl_register(u64 cpuindex, u64 guest_slab_index, u64 gpa){
 // hypapp callbacks
 
 // initialization
-static void _hcb_initialize(u64 cpuindex){
-	_XDPRINTF_("%s[%u]: syscalllog initializing...\n", __FUNCTION__, (u32)cpuindex);
+static void _hcb_initialize(u32 cpuindex){
+	_XDPRINTF_("%s[%u]: syscalllog initializing...\n", __FUNCTION__, (u16)cpuindex);
 }
 
 // hypercall
-static void _hcb_hypercall(u64 cpuindex, u64 guest_slab_index){
-    x86regs64_t gprs;
-	u64 call_id;
+static void _hcb_hypercall(u32 cpuindex, u32 guest_slab_index){
+    slab_params_t spl;
+    x86regs_t *gprs = (x86regs_t *)&spl.in_out_params[2];
+	u32 call_id;
 	u64 gpa;
 
-    XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSREAD, NULL, &gprs);
+    spl.src_slabid = XMHF_HYP_SLAB_XHAPPROVEXEC;
+    spl.cpuid = cpuindex;
+    spl.in_out_params[0] = XMHF_HIC_UAPI_CPUSTATE;
 
-    call_id = gprs.rax;
-    gpa = gprs.rbx;
+    //XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSREAD, NULL, &gprs);
+    spl.in_out_params[1] = XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSREAD;
+    XMHF_SLAB_UAPI(&spl);
 
-	_XDPRINTF_("%s[%u]: call_id=%x, gpa=%x\n", __FUNCTION__, (u32)cpuindex,
-            call_id, gpa);
+    call_id = gprs->eax;
+    gpa = ((u64)gprs->edx << 32) | gprs->ebx;
+
+	_XDPRINTF_("%s[%u]: call_id=%x, gpa=%016llx\n", __FUNCTION__, (u16)cpuindex, call_id, gpa);
 
 
 	switch(call_id){
@@ -149,7 +161,7 @@ static void _hcb_hypercall(u64 cpuindex, u64 guest_slab_index){
 
 		default:
             _XDPRINTF_("%s[%u]: unsupported hypercall %x. Ignoring\n",
-                       __FUNCTION__, (u32)cpuindex, call_id);
+                       __FUNCTION__, (u16)cpuindex, call_id);
 			break;
 	}
 
@@ -157,28 +169,39 @@ static void _hcb_hypercall(u64 cpuindex, u64 guest_slab_index){
 
 
 // memory fault
-static void _hcb_memoryfault(u64 cpuindex, u64 guest_slab_index, u64 gpa, u64 gva, u64 errorcode){
-    xmhf_hic_uapi_physmem_desc_t pdesc;
+static void _hcb_memoryfault(u32 cpuindex, u32 guest_slab_index, u64 gpa, u64 gva, u64 errorcode){
+    slab_params_t spl;
+    xmhf_hic_uapi_physmem_desc_t *pdesc = (xmhf_hic_uapi_physmem_desc_t *)&spl.in_out_params[2];
     u8 syscalldigest[SHA_DIGEST_LENGTH];
     bool syscallhandler_modified=false;
-    x86regs64_t r;
+    x86regs_t r;
 
     if(!_sl_registered)
         return;
 
-	_XDPRINTF_("%s[%u]: memory fault in guest slab %u; gpa=%x, gva=%x, errorcode=%x, sysenter execution?\n",
-            __FUNCTION__, (u32)cpuindex, guest_slab_index, gpa, gva, errorcode);
+	_XDPRINTF_("%s[%u]: memory fault in guest slab %u; gpa=%016llx, gva=%016llx, errorcode=%016llx, sysenter execution?\n",
+            __FUNCTION__, (u16)cpuindex, guest_slab_index, gpa, gva, errorcode);
+
+    spl.src_slabid = XMHF_HYP_SLAB_XHAPPROVEXEC;
+    spl.cpuid = cpuindex;
+    spl.in_out_params[0] = XMHF_HIC_UAPI_CPUSTATE;
 
 
     //read GPR state
-    XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSREAD, NULL, &r);
+    //XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSREAD, NULL, &r);
+    spl.in_out_params[1] = XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSREAD;
+    XMHF_SLAB_UAPI(&spl);
+    memcpy(&r, &spl.in_out_params[2], sizeof(x86regs_t));
 
     //copy code page at SYSENTER (referenced by shadow_sysenter_rip)
-    pdesc.guest_slab_index = guest_slab_index;
-    pdesc.addr_to = &_sl_pagebuffer;
-    pdesc.addr_from = shadow_sysenter_rip;
-    pdesc.numbytes = sizeof(_sl_pagebuffer);
-    XMHF_HIC_SLAB_UAPI_PHYSMEM(XMHF_HIC_UAPI_PHYSMEM_PEEK, &pdesc, NULL);
+    pdesc->guest_slab_index = guest_slab_index;
+    pdesc->addr_to = &_sl_pagebuffer;
+    pdesc->addr_from = shadow_sysenter_rip;
+    pdesc->numbytes = sizeof(_sl_pagebuffer);
+    //XMHF_HIC_SLAB_UAPI_PHYSMEM(XMHF_HIC_UAPI_PHYSMEM_PEEK, &pdesc, NULL);
+    spl.in_out_params[0] = XMHF_HIC_UAPI_PHYSMEM;
+    spl.in_out_params[1] = XMHF_HIC_UAPI_PHYSMEM_PEEK;
+    XMHF_SLAB_UAPI(&spl);
 
     //compute SHA-1 of the syscall page
     sha1_buffer(&_sl_pagebuffer, sizeof(_sl_pagebuffer), syscalldigest);
@@ -188,46 +211,74 @@ static void _hcb_memoryfault(u64 cpuindex, u64 guest_slab_index, u64 gpa, u64 gv
         syscallhandler_modified=true;
 
 	_XDPRINTF_("%s[%u]: syscall modified = %s\n",
-            __FUNCTION__, (u32)cpuindex, (syscallhandler_modified ? "true" : "false"));
+            __FUNCTION__, (u16)cpuindex, (syscallhandler_modified ? "true" : "false"));
 
 
     //log GPR state, syscall modified status and digest
     sl_loginfo(syscallhandler_modified, &syscalldigest, &r);
 
     //set guest RIP to shadow_sysenter_rip to continue execution
-    XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMWRITE, VMCS_GUEST_RIP, shadow_sysenter_rip);
+    //XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMWRITE, VMCS_GUEST_RIP, shadow_sysenter_rip);
+    spl.in_out_params[0] = XMHF_HIC_UAPI_CPUSTATE;
+    spl.in_out_params[1] = XMHF_HIC_UAPI_CPUSTATE_VMWRITE;
+    spl.in_out_params[2] = VMCS_GUEST_RIP;
+    spl.in_out_params[4] = (u32)shadow_sysenter_rip;
+    XMHF_SLAB_UAPI(&spl);
+
 }
 
 
 // instruction trap
-static u64 _hcb_trap_instruction(u64 cpuindex, u64 guest_slab_index, u64 insntype){
-    u64 status=XC_HYPAPPCB_CHAIN;
-    u64 guest_rip, msrvalue;
-    u64 info_vmexit_instruction_length;
-    x86regs64_t r;
+static u32 _hcb_trap_instruction(u32 cpuindex, u32 guest_slab_index, u32 insntype){
+    slab_params_t spl;
+    u32 status=XC_HYPAPPCB_CHAIN;
+    u32 guest_rip, msrvalue;
+    u32 info_vmexit_instruction_length;
+    x86regs_t *r = (x86regs_t *)&spl.in_out_params[2];
 
     if(!_sl_registered)
         return status;
 
+    spl.src_slabid = XMHF_HYP_SLAB_XHSYSCALLLOG;
+    spl.cpuid = cpuindex;
+    spl.in_out_params[0] = XMHF_HIC_UAPI_CPUSTATE;
+
+
     if (insntype == XC_HYPAPPCB_TRAP_INSTRUCTION_WRMSR){
 
-        XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSREAD, NULL, &r);
+        //XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSREAD, NULL, &r);
+        spl.in_out_params[1] = XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSREAD;
+        XMHF_SLAB_UAPI(&spl);
+        msrvalue = r->ecx;
 
-        switch((u32)r.rcx){
+        switch(msrvalue){
             case IA32_SYSENTER_EIP_MSR:{
-                xmhf_hic_uapi_mempgtbl_desc_t mdesc;
+                xmhf_hic_uapi_mempgtbl_desc_t *mdesc = (xmhf_hic_uapi_mempgtbl_desc_t *)&spl.in_out_params[2];
 
-              	_XDPRINTF_("%s[%u]: emulating WRMSR SYSENTER_EIP_MSR\n", __FUNCTION__, (u32)cpuindex);
+              	_XDPRINTF_("%s[%u]: emulating WRMSR SYSENTER_EIP_MSR\n", __FUNCTION__, (u16)cpuindex);
 
-                shadow_sysenter_rip = ( ((u64)(u32)r.rdx << 32) | (u32)r.rax ) ;
-                XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMWRITE, VMCS_GUEST_SYSENTER_EIP, 0);
+                shadow_sysenter_rip = ( ((u64)(u32)r->edx << 32) | (u32)r->eax ) ;
+
+                //XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMWRITE, VMCS_GUEST_SYSENTER_EIP, 0);
+                spl.in_out_params[1] = XMHF_HIC_UAPI_CPUSTATE_VMWRITE;
+                spl.in_out_params[2] = VMCS_GUEST_SYSENTER_EIP;
+                spl.in_out_params[4] = 0;
+                XMHF_SLAB_UAPI(&spl);
 
                 if(!sl_activated){
-                    mdesc.guest_slab_index = guest_slab_index;
-                    mdesc.gpa = 0;
-                    XMHF_HIC_SLAB_UAPI_MEMPGTBL(XMHF_HIC_UAPI_MEMPGTBL_GETENTRY, &mdesc, &mdesc);
-                    mdesc.entry &= ~(0x7);
-                    XMHF_HIC_SLAB_UAPI_MEMPGTBL(XMHF_HIC_UAPI_MEMPGTBL_SETENTRY, &mdesc, NULL);
+                    mdesc->guest_slab_index = guest_slab_index;
+                    mdesc->gpa = 0;
+                    spl.in_out_params[0] = XMHF_HIC_UAPI_MEMPGTBL;
+                    spl.in_out_params[1] = XMHF_HIC_UAPI_MEMPGTBL_GETENTRY;
+                    //XMHF_HIC_SLAB_UAPI_MEMPGTBL(XMHF_HIC_UAPI_MEMPGTBL_GETENTRY, &mdesc, &mdesc);
+                    XMHF_SLAB_UAPI(&spl);
+
+                    mdesc->entry &= ~(0x7);
+
+                    //XMHF_HIC_SLAB_UAPI_MEMPGTBL(XMHF_HIC_UAPI_MEMPGTBL_SETENTRY, &mdesc, NULL);
+                    spl.in_out_params[1] = XMHF_HIC_UAPI_MEMPGTBL_SETENTRY;
+                    XMHF_SLAB_UAPI(&spl);
+
                     sl_activated=true;
                 }
 
@@ -241,16 +292,22 @@ static u64 _hcb_trap_instruction(u64 cpuindex, u64 guest_slab_index, u64 insntyp
 
     }else if (insntype == XC_HYPAPPCB_TRAP_INSTRUCTION_RDMSR){
 
-        XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSREAD, NULL, &r);
+        //XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSREAD, NULL, &r);
+        spl.in_out_params[1] = XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSREAD;
+        XMHF_SLAB_UAPI(&spl);
+        msrvalue = r->ecx;
 
-        switch((u32)r.rcx){
+        switch(msrvalue){
             case IA32_SYSENTER_EIP_MSR:
-              	_XDPRINTF_("%s[%u]: emulating RDMSR SYSENTER_EIP_MSR\n", __FUNCTION__, (u32)cpuindex);
+              	_XDPRINTF_("%s[%u]: emulating RDMSR SYSENTER_EIP_MSR\n", __FUNCTION__, (u16)cpuindex);
 
-                r.rdx = shadow_sysenter_rip >> 32;
-                r.rax = (u32)shadow_sysenter_rip;
+                r->edx = shadow_sysenter_rip >> 32;
+                r->eax = (u32)shadow_sysenter_rip;
 
-                XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSWRITE, &r, NULL);
+                //XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSWRITE, &r, NULL);
+                spl.in_out_params[1] = XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSWRITE;
+                XMHF_SLAB_UAPI(&spl);
+
                 status = XC_HYPAPPCB_NOCHAIN;
                 break;
             default:
@@ -265,10 +322,26 @@ static u64 _hcb_trap_instruction(u64 cpuindex, u64 guest_slab_index, u64 insntyp
     //if we emulated the instruction then do not chain, but update instruction pointer
     //accordingly
     if(status == XC_HYPAPPCB_NOCHAIN){
-        XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMREAD, VMCS_INFO_VMEXIT_INSTRUCTION_LENGTH, &info_vmexit_instruction_length);
-        XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMREAD, VMCS_GUEST_RIP, &guest_rip);
+        spl.in_out_params[0] = XMHF_HIC_UAPI_CPUSTATE;
+
+        //XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMREAD, VMCS_INFO_VMEXIT_INSTRUCTION_LENGTH, &info_vmexit_instruction_length);
+        spl.in_out_params[1] = XMHF_HIC_UAPI_CPUSTATE_VMREAD;
+        spl.in_out_params[2] = VMCS_INFO_VMEXIT_INSTRUCTION_LENGTH;
+        XMHF_SLAB_UAPI(&spl);
+        info_vmexit_instruction_length = spl.in_out_params[4];
+
+        //XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMREAD, VMCS_GUEST_RIP, &guest_rip);
+        spl.in_out_params[2] = VMCS_GUEST_RIP;
+        XMHF_SLAB_UAPI(&spl);
+        guest_rip = spl.in_out_params[4];
+
         guest_rip+=info_vmexit_instruction_length;
-        XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMWRITE, VMCS_GUEST_RIP, guest_rip);
+
+        //XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMWRITE, VMCS_GUEST_RIP, guest_rip);
+        spl.in_out_params[1] = XMHF_HIC_UAPI_CPUSTATE_VMWRITE;
+        spl.in_out_params[2] = VMCS_GUEST_RIP;
+        spl.in_out_params[4] = guest_rip;
+        XMHF_SLAB_UAPI(&spl);
     }
 
     return status;
@@ -276,8 +349,9 @@ static u64 _hcb_trap_instruction(u64 cpuindex, u64 guest_slab_index, u64 insntyp
 
 
 // shutdown
-static void _hcb_shutdown(u64 cpuindex, u64 guest_slab_index){
-	_XDPRINTF_("%s[%u]: guest slab %u shutdown...\n", __FUNCTION__, (u32)cpuindex, guest_slab_index);
+static void _hcb_shutdown(u32 cpuindex, u32 guest_slab_index){
+	_XDPRINTF_("%s[%u]: guest slab %u shutdown...\n",
+            __FUNCTION__, (u16)cpuindex, guest_slab_index);
 }
 
 
@@ -294,24 +368,26 @@ static void _hcb_shutdown(u64 cpuindex, u64 guest_slab_index){
 //////
 // slab interface
 
-void slab_interface(slab_input_params_t *iparams, u64 iparams_size, slab_output_params_t *oparams, u64 oparams_size, u64 src_slabid, u64 cpuindex){
-    xc_hypappcb_inputparams_t *hcb_iparams = (xc_hypappcb_inputparams_t *)iparams;
-    xc_hypappcb_outputparams_t *hcb_oparams = (xc_hypappcb_outputparams_t *)oparams;
-    hcb_oparams->cbresult=XC_HYPAPPCB_CHAIN;
+//void slab_interface(slab_input_params_t *iparams, u64 iparams_size, slab_output_params_t *oparams, u64 oparams_size, u64 src_slabid, u64 cpuindex){
+void slab_main(slab_params_t *sp){
+    //xc_hypappcb_inputparams_t *hcb_iparams = (xc_hypappcb_inputparams_t *)iparams;
+    //xc_hypappcb_outputparams_t *hcb_oparams = (xc_hypappcb_outputparams_t *)oparams;
+    xc_hypappcb_params_t *hcbp = (xc_hypappcb_params_t *)&sp->in_out_params[0];
+    hcbp->cbresult=XC_HYPAPPCB_CHAIN;
 
 
-	_XDPRINTF_("%s[%u]: Got control, cbtype=%x: RSP=%016llx\n",
-                __FUNCTION__, (u32)cpuindex, hcb_iparams->cbtype, read_rsp());
+	_XDPRINTF_("%s[%u]: Got control, cbtype=%x: ESP=%08x\n",
+                __FUNCTION__, (u16)sp->cpuid, hcbp->cbtype, read_esp());
 
 
-    switch(hcb_iparams->cbtype){
+    switch(hcbp->cbtype){
         case XC_HYPAPPCB_INITIALIZE:{
-            _hcb_initialize(cpuindex);
+            _hcb_initialize(sp->cpuid);
         }
         break;
 
         case XC_HYPAPPCB_HYPERCALL:{
-            _hcb_hypercall(cpuindex, hcb_iparams->guest_slab_index);
+            _hcb_hypercall(sp->cpuid, hcbp->guest_slab_index);
         }
         break;
 
@@ -319,17 +395,34 @@ void slab_interface(slab_input_params_t *iparams, u64 iparams_size, slab_output_
          	u64 errorcode;
          	u64 gpa;
          	u64 gva;
+         	slab_params_t spl;
 
-         	XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMREAD, VMCS_INFO_EXIT_QUALIFICATION, &errorcode);
-         	XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMREAD, VMCS_INFO_GUEST_PADDR_FULL, &gpa);
-         	XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMREAD, VMCS_INFO_GUEST_LINEAR_ADDRESS, &gva);
+         	spl.src_slabid = XMHF_HYP_SLAB_XHAPPROVEXEC;
+         	spl.cpuid = sp->cpuid;
+            spl.in_out_params[0] = XMHF_HIC_UAPI_CPUSTATE;
+            spl.in_out_params[1] = XMHF_HIC_UAPI_CPUSTATE_VMREAD;
 
-            _hcb_memoryfault(cpuindex, hcb_iparams->guest_slab_index, gpa, gva, errorcode);
+         	//XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMREAD, VMCS_INFO_EXIT_QUALIFICATION, &errorcode);
+            spl.in_out_params[2] = VMCS_INFO_EXIT_QUALIFICATION;
+            XMHF_SLAB_UAPI(&spl);
+            errorcode = spl.in_out_params[4];
+
+         	//XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMREAD, VMCS_INFO_GUEST_PADDR_FULL, &gpa);
+            spl.in_out_params[2] = VMCS_INFO_GUEST_PADDR_FULL;
+            XMHF_SLAB_UAPI(&spl);
+            gpa = spl.in_out_params[4];
+
+         	//XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMREAD, VMCS_INFO_GUEST_LINEAR_ADDRESS, &gva);
+            spl.in_out_params[2] = VMCS_INFO_GUEST_LINEAR_ADDRESS;
+            XMHF_SLAB_UAPI(&spl);
+            gva = spl.in_out_params[4];
+
+            _hcb_memoryfault(sp->cpuid, hcbp->guest_slab_index, gpa, gva, errorcode);
         }
         break;
 
         case XC_HYPAPPCB_SHUTDOWN:{
-            _hcb_shutdown(cpuindex, hcb_iparams->guest_slab_index);
+            _hcb_shutdown(sp->cpuid, hcbp->guest_slab_index);
         }
         break;
 
@@ -340,7 +433,7 @@ void slab_interface(slab_input_params_t *iparams, u64 iparams_size, slab_output_
         //break;
 
         case XC_HYPAPPCB_TRAP_INSTRUCTION:{
-            hcb_oparams->cbresult = _hcb_trap_instruction(cpuindex, hcb_iparams->guest_slab_index, hcb_iparams->cbqual);
+            hcbp->cbresult = _hcb_trap_instruction(sp->cpuid, hcbp->guest_slab_index, hcbp->cbqual);
         }
         break;
 
@@ -353,7 +446,7 @@ void slab_interface(slab_input_params_t *iparams, u64 iparams_size, slab_output_
 
         default:{
             _XDPRINTF_("%s[%u]: Unknown cbtype. Halting!\n",
-                __FUNCTION__, (u32)cpuindex);
+                __FUNCTION__, (u16)sp->cpuid);
             //HALT();
         }
     }
