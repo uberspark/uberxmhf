@@ -239,37 +239,41 @@ __attribute__((aligned(4096))) void _xcguestslab_do_testxhapprovexec_functoprote
 #define APPROVEXEC_UNLOCK   			0xD1
 
 static void xcguestslab_do_testxhapprovexec(void){
-    u64 gpa = &_xcguestslab_do_testxhapprovexec_functoprotect;
+    u32 gpa = &_xcguestslab_do_testxhapprovexec_functoprotect;
 
     _XDPRINTF_("%s: Going to approve and lock function at %x\n", __FUNCTION__, gpa);
 
-/*    //TODO: x86_64 --> x86
     asm volatile(
-        "movq %0, %%rax \r\n"
-        "movq %1, %%rbx \r\n"
+        "movl %0, %%eax \r\n"
+        "movl %1, %%edx \r\n"
+        "movl %2, %%ebx \r\n"
         "vmcall \r\n"
         :
-        : "i" (APPROVEXEC_LOCK), "m" (gpa)
-        : "rax", "rbx"
-    );*/
+        : "i" (APPROVEXEC_LOCK),
+          "g" ( (u32) ((u64)(gpa >> 32)) ),
+          "g" ((u32)gpa)
+        : "eax", "ebx", "edx"
+    );
+
 
     _XDPRINTF_("%s: Locked function\n", __FUNCTION__);
 
 
     _XDPRINTF_("%s: Going to unlock function on page %x\n", __FUNCTION__, gpa);
 
-/*    //TODO: x86_64 --> x86
     asm volatile(
-        "movq %0, %%rax \r\n"
-        "movq %1, %%rbx \r\n"
+        "movl %0, %%eax \r\n"
+        "movl %1, %%edx \r\n"
+        "movl %2, %%ebx \r\n"
         "vmcall \r\n"
         :
-        : "i" (APPROVEXEC_UNLOCK), "m" (gpa)
-        : "rax", "rbx"
-    );*/
+        : "i" (APPROVEXEC_UNLOCK),
+          "g" ( (u32) ((u64)(gpa >> 32)) ),
+          "g" ((u32)gpa)
+        : "eax", "ebx", "edx"
+    );
 
     _XDPRINTF_("%s: unlocked function\n", __FUNCTION__);
-
 
 }
 
@@ -557,7 +561,9 @@ void slab_main(slab_params_t *sp){
 
     //xcguestslab_do_msrtest();
 
-    xcguestslab_do_testxhhyperdep();
+    //xcguestslab_do_testxhhyperdep();
+
+    xcguestslab_do_testxhapprovexec();
 
     _XDPRINTF_("%s: Guest Slab Halting\n", __FUNCTION__);
     HALT();
