@@ -195,8 +195,9 @@ void slab_main(slab_params_t *sp){
 
         case VMX_VMEXIT_WRMSR:{
 
-            if(xc_hcbinvoke(XMHF_HYP_SLAB_XCIHUB, sp->cpuid,
-                            XC_HYPAPPCB_TRAP_INSTRUCTION, XC_HYPAPPCB_TRAP_INSTRUCTION_WRMSR, sp->src_slabid) == XC_HYPAPPCB_CHAIN){
+            //if(xc_hcbinvoke(XMHF_HYP_SLAB_XCIHUB, sp->cpuid,
+            //                XC_HYPAPPCB_TRAP_INSTRUCTION, XC_HYPAPPCB_TRAP_INSTRUCTION_WRMSR, sp->src_slabid) == XC_HYPAPPCB_CHAIN)
+            {
 
                 u32 guest_rip;
                 u32 info_vmexit_instruction_length;
@@ -268,8 +269,9 @@ void slab_main(slab_params_t *sp){
 
 
         case VMX_VMEXIT_RDMSR:{
-            if(xc_hcbinvoke(XMHF_HYP_SLAB_XCIHUB, sp->cpuid, XC_HYPAPPCB_TRAP_INSTRUCTION,
-                            XC_HYPAPPCB_TRAP_INSTRUCTION_RDMSR, sp->src_slabid) == XC_HYPAPPCB_CHAIN){
+            //if(xc_hcbinvoke(XMHF_HYP_SLAB_XCIHUB, sp->cpuid, XC_HYPAPPCB_TRAP_INSTRUCTION,
+            //                XC_HYPAPPCB_TRAP_INSTRUCTION_RDMSR, sp->src_slabid) == XC_HYPAPPCB_CHAIN)
+            {
                 u32 guest_rip;
                 u64 msrvalue;
                 u32 info_vmexit_instruction_length;
