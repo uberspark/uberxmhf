@@ -55,42 +55,6 @@
 #include <xmhf-hic.h>
 #include <xmhf-debug.h>
 
-/*
-__slab_calluapi register mappings:
-
-RDI = XMHF_HIC_UAPI
-RSI = uapi_fn
-RDX = uapi_subfn
-RCX = undefined
-R8 = iparams
-R9 = oparams
-R10 = return RSP
-R11 = return_address
-
-*/
-
-__attribute__((naked)) bool __slab_calluapi(u64 reserved_uapicall,
-        u64 reserved_uapicall_num,  u64 uapi_subfn,
-        u64 reserved, u64 iparams, u64 oparams){
-
-
-/*
-    // TODO: x86_64 --> x86
-    asm volatile (
-        "movq %%rsp, %%r10 \r\n"
-        "movq $1f, %%r11 \r\n"\
-        "sysenter \r\n" \
-        \
-        "1:\r\n" \
-        "retq \r\n" \
-        :
-        :
-        :
-    );
-*/
-
-}
-
 
 void __slab_calluapinew(slab_params_t *sp){
 

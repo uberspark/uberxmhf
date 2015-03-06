@@ -46,6 +46,10 @@ print "\n		_xmhfhic_stack_start = .;";
 print "\n		_objs_xmhf-hic/xmhf-hic.slo(.hicstack)";
 print "\n		. = ALIGN(0x200000);";
 print "\n		_xmhfhic_stack_end = .;";
+print "\n		_xmhfhic_dmadata_start = .;";
+print "\n		_objs_xmhf-hic/xmhf-hic.slo(.hicdmadata)";
+print "\n		. = ALIGN(0x200000);";
+print "\n		_xmhfhic_dmadata_end = .;";
 print "\n		. = ALIGN(0x200000);";
 print "\n	} >all=0x0000";
 
