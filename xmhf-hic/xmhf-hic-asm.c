@@ -1311,9 +1311,29 @@ R9 = dst_slabid
 
 void __xmhfhic_rtm_exception_stub(x86vmx_exception_frame_t *exframe){
 
-    _XDPRINTF_("%s: exception: vector=%x, error_code=%x. Halting!\n", __FUNCTION__,
-               exframe->vector, exframe->error_code);
-    HALT();
+//    _XDPRINTF_("%s: exception: vector=%x, error_code=%x. Halting!\n", __FUNCTION__,
+//               exframe->vector, exframe->error_code);
+//    HALT();
+
+    slab_params_t spl;
+
+    memset(&spl, 0, sizeof(spl));
+
+    spl.cpuid = __xmhfhic_x86vmx_cpuidtable[xmhf_baseplatform_arch_x86_getcpulapicid()];
+
+    //store exception frame
+    memcpy(&spl.in_out_params[0], exframe,
+           sizeof(x86vmx_exception_frame_t));
+
+    //call xcexhub
+    spl.src_slabid = 0xFFFFFFFFUL; //todo: grab source slab id
+    spl.dst_slabid = XMHF_HYP_SLAB_XCEXHUB;
+    XMHF_SLAB_CALLNEW(&spl);
+
+    //load exception frame
+    memcpy(exframe, &spl.in_out_params[0],
+           sizeof(x86vmx_exception_frame_t) );
+
 
 /*
     //TODO: x86_64 --> x86
