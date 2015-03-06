@@ -9,6 +9,8 @@ export srcdir := $(dir $(lastword $(MAKEFILE_LIST)))
 vpath %.c $(srcdir)
 vpath %.S $(srcdir)
 vpath %.lscript $(srcdir)
+vpath %.cS $(srcdir)
+
 
 #export PKG_CONFIG ?= pkg-config
 #export XMHF_PKG_CONFIG_MODNAME=xmhf
@@ -20,7 +22,7 @@ vpath %.lscript $(srcdir)
 export XMHF_HIC_NAME := xmhf-hic
 export XMHF_HIC_SOURCES := $(wildcard $(srcdir)/*.c)
 XMHF_HIC_SOURCES += $(shell find $(srcdir)/arch/$(XMHF_TARGET_TRIAD)/ -type f -name '*.c')
-
+XMHF_HIC_SOURCES += $(wildcard $(srcdir)/*.cS)
 
 ########################################################################
 # generic build harness
@@ -31,11 +33,11 @@ XMHF_HIC_SOURCES_SUBST := $(patsubst $(srcdir)/%, %, $(XMHF_HIC_SOURCES))
 XMHF_HIC_SOURCES_FILENAMEONLY := $(notdir $(XMHF_HIC_SOURCES_SUBST))
 
 XMHF_HIC_OBJECTS_ARCHIVE := $(patsubst %.c, %.o, $(XMHF_HIC_SOURCES_FILENAMEONLY))
-#XMHF_HIC_OBJECTS_ARCHIVE := $(patsubst %.S, %.o, $(XMHF_HIC_OBJECTS_ARCHIVE))
+XMHF_HIC_OBJECTS_ARCHIVE := $(patsubst %.cS, %.o, $(XMHF_HIC_OBJECTS_ARCHIVE))
 
 # list of object dependencies
 XMHF_HIC_OBJECTS := $(patsubst %.c, %.o, $(XMHF_HIC_SOURCES_SUBST))
-#XMHF_HIC_OBJECTS := $(patsubst %.S, %.o, $(XMHF_HIC_OBJECTS))
+XMHF_HIC_OBJECTS := $(patsubst %.cS, %.o, $(XMHF_HIC_OBJECTS))
 
 # folder where objects go
 XMHF_HIC_OBJECTS_DIR := _objs_$(XMHF_HIC_NAME)
@@ -55,7 +57,6 @@ all: buildhicbin
 buildhicbin: $(XMHF_HIC_OBJECTS)
 	cd $(XMHF_HIC_OBJECTS_DIR) && cp -f $(LINKER_SCRIPT_INPUT) $(XMHF_HIC_NAME).lscript.c
 	cd $(XMHF_HIC_OBJECTS_DIR) && $(CC) $(CFLAGS) -D__ASSEMBLY__ -P -E $(XMHF_HIC_NAME).lscript.c -o $(LINKER_SCRIPT_OUTPUT)
-	#cd $(XMHF_HIC_OBJECTS_DIR) && $(LD) -r --oformat elf64-x86-64 -T $(LINKER_SCRIPT_OUTPUT) -o $(XMHF_HIC_NAME).slo $(XMHF_HIC_OBJECTS_ARCHIVE) -L$(CCLIB)/lib/linux -L$(XMHFLIBS_DIR) -lxmhfc -lxmhfcrypto -lxmhfdebug -lxmhfhw -lxmhfc -lclang_rt.builtins-x86_64
 	cd $(XMHF_HIC_OBJECTS_DIR) && $(LD) -r --oformat elf32-i386 -T $(LINKER_SCRIPT_OUTPUT) -o $(XMHF_HIC_NAME).slo $(XMHF_HIC_OBJECTS_ARCHIVE) -L$(CCLIB)/lib/linux -L$(XMHFLIBS_DIR) -lxmhfc -lxmhfcrypto -lxmhfdebug -lxmhfhw -whole-archive -lxmhfhicslab -no-whole-archive -lxmhfc -lclang_rt.full-i386
 	cd $(XMHF_HIC_OBJECTS_DIR) && nm $(XMHF_HIC_NAME).slo | awk '{ print $$3 }' | awk NF >$(XMHF_HIC_NAME).slo.syms
 	cd $(XMHF_HIC_OBJECTS_DIR) && $(OBJCOPY) --localize-symbols=$(XMHF_HIC_NAME).slo.syms $(XMHF_HIC_NAME).slo $(XMHF_HIC_NAME).slo
@@ -66,6 +67,15 @@ buildhicbin: $(XMHF_HIC_OBJECTS)
 	$(CC) -fomit-frame-pointer -O2 -S -emit-llvm $(CFLAGS) $< -o $(XMHF_HIC_OBJECTS_DIR)/$(@F).ll
 	cd $(XMHF_HIC_OBJECTS_DIR) && fixnaked.pl $(@F).ll
 	#cd $(XMHF_HIC_OBJECTS_DIR) && llc -O=2 -march=x86-64 -mcpu=corei7 -mattr=$(LLC_ATTR) $(@F).ll
+	cd $(XMHF_HIC_OBJECTS_DIR) && llc -O=2 -march=x86 -mcpu=corei7 -mattr=$(LLC_ATTR) $(@F).ll
+	cd $(XMHF_HIC_OBJECTS_DIR) && $(CC) -O2 -c $(CFLAGS) $(@F).s -o $(@F)
+
+%.o: %.cS
+	mkdir -p $(XMHF_HIC_OBJECTS_DIR)
+	@echo Building "$@" from "$<"
+	cp -f $< $(XMHF_HIC_OBJECTS_DIR)/$(@F).c
+	$(CC) -fomit-frame-pointer -O2 -S -emit-llvm $(CFLAGS) $(XMHF_HIC_OBJECTS_DIR)/$(@F).c -o $(XMHF_HIC_OBJECTS_DIR)/$(@F).ll
+	cd $(XMHF_HIC_OBJECTS_DIR) && fixnaked.pl $(@F).ll
 	cd $(XMHF_HIC_OBJECTS_DIR) && llc -O=2 -march=x86 -mcpu=corei7 -mattr=$(LLC_ATTR) $(@F).ll
 	cd $(XMHF_HIC_OBJECTS_DIR) && $(CC) -O2 -c $(CFLAGS) $(@F).s -o $(@F)
 

@@ -522,3 +522,204 @@ void __xmhfhic_rtm_trampoline(u64 hic_calltype, slab_input_params_t *iparams, u6
 
 
 
+//HIC runtime exception stub
+void __xmhfhic_rtm_exception_stub(x86vmx_exception_frame_t *exframe){
+
+//    _XDPRINTF_("%s: exception: vector=%x, error_code=%x. Halting!\n", __FUNCTION__,
+//               exframe->vector, exframe->error_code);
+//    HALT();
+
+    slab_params_t spl;
+
+    memset(&spl, 0, sizeof(spl));
+
+    spl.cpuid = __xmhfhic_x86vmx_cpuidtable[xmhf_baseplatform_arch_x86_getcpulapicid()];
+
+    //store exception frame
+    memcpy(&spl.in_out_params[0], exframe,
+           sizeof(x86vmx_exception_frame_t));
+
+    //call xcexhub
+    spl.src_slabid = 0xFFFFFFFFUL; //todo: grab source slab id
+    spl.dst_slabid = XMHF_HYP_SLAB_XCEXHUB;
+    XMHF_SLAB_CALLNEW(&spl);
+
+    //load exception frame
+    memcpy(exframe, &spl.in_out_params[0],
+           sizeof(x86vmx_exception_frame_t) );
+
+
+/*
+    //TODO: x86_64 --> x86
+	asm volatile(
+                        "pushq %%rsp \r\n"
+                        "pushq %%rbp \r\n"
+                        "pushq %%rdi \r\n"
+                        "pushq %%rsi \r\n"
+                        "pushq %%rdx \r\n"
+                        "pushq %%rcx \r\n"
+                        "pushq %%rbx \r\n"
+                        "pushq %%rax \r\n"
+                        "pushq %%r15 \r\n"
+                        "pushq %%r14 \r\n"
+                        "pushq %%r13 \r\n"
+                        "pushq %%r12 \r\n"
+                        "pushq %%r11 \r\n"
+                        "pushq %%r10 \r\n"
+                        "pushq %%r9 \r\n"
+                        "pushq %%r8 \r\n"
+
+                        //rdi = hic_calltype = XMHF_HIC_SLABCALLEXCEPTION
+                        "movq %0, %%rdi \r\n"
+
+                        //iparams
+                        "movq %%rsp, %%rsi \r\n"
+
+                        //iparams_size
+                        "movq %1, %%rdx \r\n"
+
+                        //oparams
+                        "movq %%rsi, %%rcx \r\n"
+
+                        //oparams_size
+                        "movq %%rdx, %%r8 \r\n"
+
+                        //dst_slabid
+                        "movq %2, %%r9 \r\n"
+
+                        "movq %%rsp, %%rbx \r\n"
+
+                        //return_rsp
+                        "movq 168(%%rbx), %%rax \r\n"
+                        "pushq %%rax \r\n"
+
+                        //return_address
+                        "movq 144(%%rbx), %%rax \r\n"
+                        "pushq %%rax \r\n"
+
+                        //cpuid
+                        "movq %3, %%rax \r\n"       //RAX=X86XMP_LAPIC_ID_MEMORYADDRESS
+                        "movl (%%eax), %%eax\r\n"   //EAX(bits 0-7)=LAPIC ID
+                        "shrl $24, %%eax\r\n"       //EAX=LAPIC ID
+                        "movq __xmhfhic_x86vmx_cpuidtable+0x0(,%%eax,8), %%rax\r\n" //RAX = 0-based cpu index for the CPU
+                        "pushq %%rax \r\n"
+
+                        //src_slabid
+                        "movq %%cr3, %%rax \r\n"
+                        "andq $0x00000000000FF000, %%rax \r\n"
+                        "shr $12, %%rax \r\n"
+                        "pushq %%rax \r\n"
+
+
+                        "callq __xmhfhic_rtm_trampoline \r\n"
+					:
+					:   "i" (XMHF_HIC_SLABCALLEXCEPTION),
+                        "i" (sizeof(x86vmx_exception_frame_errcode_t)),
+                        "i" (XMHF_HYP_SLAB_XCEXHUB),
+					    "i" (X86SMP_LAPIC_ID_MEMORYADDRESS)
+                    :
+		);
+    */
+
+}
+
+
+void __xmhfhic_rtm_intercept(x86regs_t *r){
+    slab_params_t spl;
+
+    memset(&spl, 0, sizeof(spl));
+
+    spl.cpuid = __xmhfhic_x86vmx_cpuidtable[xmhf_baseplatform_arch_x86_getcpulapicid()];
+
+    //store GPRs
+    memcpy(&__xmhfhic_x86vmx_archdata[(u16)spl.cpuid].vmx_gprs,
+           r, sizeof(x86regs_t));
+
+    //call xcihub
+    spl.src_slabid = xmhfhw_cpu_x86vmx_vmread(VMCS_CONTROL_VPID);
+    spl.dst_slabid = XMHF_HYP_SLAB_XCIHUB;
+    XMHF_SLAB_CALLNEW(&spl);
+
+    //load GPRs
+    memcpy(r, &__xmhfhic_x86vmx_archdata[(u16)spl.cpuid].vmx_gprs,
+           sizeof(x86regs_t));
+
+
+    /*
+    //TODO: x86_64--> x86
+	asm volatile(
+                        "pushq %%rsp \r\n"
+                        "pushq %%rbp \r\n"
+                        "pushq %%rdi \r\n"
+                        "pushq %%rsi \r\n"
+                        "pushq %%rdx \r\n"
+                        "pushq %%rcx \r\n"
+                        "pushq %%rbx \r\n"
+                        "pushq %%rax \r\n"
+                        "pushq %%r15 \r\n"
+                        "pushq %%r14 \r\n"
+                        "pushq %%r13 \r\n"
+                        "pushq %%r12 \r\n"
+                        "pushq %%r11 \r\n"
+                        "pushq %%r10 \r\n"
+                        "pushq %%r9 \r\n"
+                        "pushq %%r8 \r\n"
+
+                        "pushfq \r\n"
+                        "popq %%rax \r\n"
+                        "orq $0x3000, %%rax \r\n"
+                        "pushq %%rax \r\n"
+                        "popfq \r\n"
+
+                        //rdi = hic_calltype = XMHF_HIC_SLABCALLINTERCEPT
+                        "movq %0, %%rdi \r\n"
+
+                        //iparams
+                        "movq %%rsp, %%rsi \r\n"
+
+                        //iparams_size
+                        "movq %1, %%rdx \r\n"
+
+                        //oparams
+                        "movq %%rsi, %%rcx \r\n"
+
+                        //oparams_size
+                        "movq %%rdx, %%r8 \r\n"
+
+                        //dst_slabid
+                        "movq %2, %%r9 \r\n"
+
+                        //return_rsp (NA -- since its stored in VMCS)
+                        "pushq $0x0 \r\n"
+
+                        //return_address (NA -- since its stored in VMCS)
+                        "pushq $0x0 \r\n"
+
+                        //cpuid
+                        "movq %3, %%rax \r\n"       //RAX=X86XMP_LAPIC_ID_MEMORYADDRESS
+                        "movl (%%eax), %%eax\r\n"   //EAX(bits 0-7)=LAPIC ID
+                        "shrl $24, %%eax\r\n"       //EAX=LAPIC ID
+                        "movq __xmhfhic_x86vmx_cpuidtable+0x0(,%%eax,8), %%rax\r\n" //RAX = 0-based cpu index for the CPU
+                        "pushq %%rax \r\n"
+
+                        //src_slabid
+                        "movq %4, %%rax \r\n"
+                        "vmread %%rax, %%rax \r\n"     //RAX = VPID = slab_id
+                        "decq %%rax \r\n"
+                        "pushq %%rax \r\n"
+
+
+                        "callq __xmhfhic_rtm_trampoline \r\n"
+					:
+					:   "i" (XMHF_HIC_SLABCALLINTERCEPT),
+                        "i" (sizeof(x86regs64_t)),
+                        "i" (XMHF_HYP_SLAB_XCIHUB),
+					    "i" (X86SMP_LAPIC_ID_MEMORYADDRESS),
+                        "i" (VMCS_CONTROL_VPID)
+                    :
+		);
+
+*/
+
+}
+
