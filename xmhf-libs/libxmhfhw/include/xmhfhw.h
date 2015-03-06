@@ -113,6 +113,7 @@ void xmhfhw_cpu_cpuid(u32 op, u32 *eax, u32 *ebx, u32 *ecx, u32 *edx);
 uint64_t rdtsc64(void);
 u64 read_cr0(void);
 void write_cr0(u64 val);
+u32 read_cr2(void);
 u64 read_cr3(void);
 u64 read_rsp(void);
 u32 read_esp(void);
