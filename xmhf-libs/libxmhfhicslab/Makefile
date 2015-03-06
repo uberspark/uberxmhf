@@ -6,7 +6,11 @@ vpath %.cS $(srcdir)
 C_SOURCES:= $(wildcard $(srcdir)/*.c)
 C_SOURCES:= $(patsubst $(srcdir)/%, %, $(C_SOURCES))
 
+CS_SOURCES:= $(wildcard $(srcdir)/*.cS)
+CS_SOURCES:= $(patsubst $(srcdir)/%, %, $(CS_SOURCES))
+
 OBJECTS = $(patsubst %.c, %.o, $(C_SOURCES))
+OBJECTS += $(patsubst %.cS, %.o, $(CS_SOURCES))
 
 I_SOURCES :=  $(wildcard $(srcdir)/include/*.h)
 
@@ -24,6 +28,7 @@ $(THE_ARCHIVE): $(OBJECTS)
 	mkdir -p $(LIBXMHFHICSLAB_OBJECTS_DIR)
 	cd $(LIBXMHFHICSLAB_OBJECTS_DIR) && $(AR) -rcs $(THE_ARCHIVE) $(OBJECTS)
 
+
 %.o: %.c
 	#mkdir -p "$(@D)"
 	mkdir -p $(LIBXMHFHICSLAB_OBJECTS_DIR)
@@ -32,6 +37,16 @@ $(THE_ARCHIVE): $(OBJECTS)
 	$(CC) -fomit-frame-pointer -O2 -S -emit-llvm $(CFLAGS) $< -o $(LIBXMHFHICSLAB_OBJECTS_DIR)/$(@F).ll
 	cd $(LIBXMHFHICSLAB_OBJECTS_DIR) && fixnaked.pl $(@F).ll
 	#cd $(LIBXMHFHICSLAB_OBJECTS_DIR) && llc -O=2 -march=x86-64 -mcpu=corei7 -mattr=$(LLC_ATTR) $(@F).ll
+	cd $(LIBXMHFHICSLAB_OBJECTS_DIR) && llc -O=2 -march=x86 -mcpu=corei7 -mattr=$(LLC_ATTR) $(@F).ll
+	cd $(LIBXMHFHICSLAB_OBJECTS_DIR) && $(CC) -O2 -c $(CFLAGS) $(@F).s -o $(@F)
+
+
+%.o: %.cS
+	mkdir -p $(LIBXMHFHICSLAB_OBJECTS_DIR)
+	@echo Building "$@" from "$<"
+	cp -f $< $(LIBXMHFHICSLAB_OBJECTS_DIR)/$(@F).c
+	$(CC) -fomit-frame-pointer -O2 -S -emit-llvm $(CFLAGS) $(LIBXMHFHICSLAB_OBJECTS_DIR)/$(@F).c -o $(LIBXMHFHICSLAB_OBJECTS_DIR)/$(@F).ll
+	cd $(LIBXMHFHICSLAB_OBJECTS_DIR) && fixnaked.pl $(@F).ll
 	cd $(LIBXMHFHICSLAB_OBJECTS_DIR) && llc -O=2 -march=x86 -mcpu=corei7 -mattr=$(LLC_ATTR) $(@F).ll
 	cd $(LIBXMHFHICSLAB_OBJECTS_DIR) && $(CC) -O2 -c $(CFLAGS) $(@F).s -o $(@F)
 
