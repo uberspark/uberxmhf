@@ -1307,7 +1307,12 @@ R9 = dst_slabid
 */
 
 
-__attribute__((naked)) void __xmhfhic_rtm_exception_stub(void){
+//__attribute__((naked)) void __xmhfhic_rtm_exception_stub(void){
+
+void __xmhfhic_rtm_exception_stub(u32 vector, u32 error_code){
+    _XDPRINTF_("%s: exception: vector=%x, error_code=%x. Halting!\n", __FUNCTION__,
+               vector, error_code);
+    HALT();
 
 /*
     //TODO: x86_64 --> x86
@@ -1412,7 +1417,9 @@ __attribute__((naked)) void __xmhfhic_rtm_exception_stub(void){
 	static void __xmhf_exception_handler_##vector(void) __attribute__((naked)) { 					\
 		asm volatile(												\
                         "pushl %0 \r\n"\
-                        "jmp __xmhfhic_rtm_exception_stub\r\n"\
+                        "call __xmhfhic_rtm_exception_stub\r\n"\
+                        "addl $0x08, %%esp \r\n" \
+                        "iretl \r\n" \
 					: \
 					: "i" (vector) \
                     : \
@@ -1424,7 +1431,9 @@ __attribute__((naked)) void __xmhfhic_rtm_exception_stub(void){
 		asm volatile(												\
                         "pushl $0x0 \r\n" \
                         "pushl %0 \r\n"\
-                        "jmp __xmhfhic_rtm_exception_stub\r\n"\
+                        "call __xmhfhic_rtm_exception_stub\r\n"\
+                        "addl $0x08, %%esp \r\n" \
+                        "iretl \r\n" \
 					: \
 					: "i" (vector) \
                     : \

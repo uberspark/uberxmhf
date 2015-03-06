@@ -1788,8 +1788,8 @@ static void __xmhfhic_x86vmx_initializeIDT(void){
 		__xmhfhic_x86vmx_idt_start[i].count=0x0;
 		__xmhfhic_x86vmx_idt_start[i].type=0xEE;	//32-bit interrupt gate
                                 //present=1, DPL=11b, system=0, type=1110b
-        __xmhfhic_x86vmx_idt_start[i].offset3263=0;
-        __xmhfhic_x86vmx_idt_start[i].reserved=0;
+        //__xmhfhic_x86vmx_idt_start[i].offset3263=0;
+        //__xmhfhic_x86vmx_idt_start[i].reserved=0;
 	}
 
 }
