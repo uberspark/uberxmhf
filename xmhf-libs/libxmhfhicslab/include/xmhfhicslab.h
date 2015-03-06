@@ -187,7 +187,7 @@ void __slab_calltrampolinenew(slab_params_t *sp);
 
 void slab_interface(slab_input_params_t *iparams, u64 iparams_size, slab_output_params_t *oparams, u64 oparams_size, u64 src_slabid, u64 cpuindex);
 
-void slab_main(slab_params_t *sp);
+extern void slab_main(slab_params_t *sp);
 
 typedef void (*FPSLABMAIN)(slab_params_t *sp);
 /* x86-64
@@ -429,7 +429,7 @@ typedef void (*FPSLABMAIN)(slab_params_t *sp);
 
 
 
-
+/*
 
 #define XMHF_SLABNEW(slab_name)	\
 	__attribute__ ((section(".rodata"))) char * _namestring="_xmhfslab_hyp";	\
@@ -533,7 +533,7 @@ typedef void (*FPSLABMAIN)(slab_params_t *sp);
 		);	\
     }\
 
-
+*/
 
 
 #endif //__ASSEMBLY__
