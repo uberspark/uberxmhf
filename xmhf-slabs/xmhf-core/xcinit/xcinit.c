@@ -620,6 +620,11 @@ void slab_main(slab_params_t *sp){
     }
 
 
+    //test exception
+    {
+        asm volatile ("int $0x04 \r\n");
+    }
+
 
 
 

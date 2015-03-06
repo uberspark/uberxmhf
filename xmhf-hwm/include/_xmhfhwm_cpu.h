@@ -294,6 +294,8 @@ typedef struct {
 }__attribute__ ((packed)) x86idt64_stackframe_t;
 
 //*
+/*
+x86_64
 typedef struct {
   u16 isrLow;
   u16 isrSelector;
@@ -303,6 +305,16 @@ typedef struct {
   u32 offset3263;
   u32 reserved;
 } __attribute__ ((packed)) idtentry_t;
+*/
+
+typedef struct {
+  u16 isrLow;
+  u16 isrSelector;
+  u8  count;
+  u8  type;
+  u16 isrHigh;
+} __attribute__ ((packed)) idtentry_t;
+
 
 typedef struct {
   u16 limit0_15;
