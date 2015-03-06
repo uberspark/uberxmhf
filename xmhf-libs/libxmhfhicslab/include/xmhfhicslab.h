@@ -100,7 +100,7 @@ typedef struct {
     u32 src_slabid;
     u32 dst_slabid;
     u32 cpuid;
-    u32 in_out_params[10];
+    u32 in_out_params[16];
 } __attribute__((packed)) slab_params_t;
 
 
