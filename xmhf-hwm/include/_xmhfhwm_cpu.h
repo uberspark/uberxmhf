@@ -368,6 +368,25 @@ typedef struct {
 
 
 typedef struct {
+    u32 edi;
+    u32 esi;
+    u32 ebp;
+    u32 esp;
+    u32 ebx;
+    u32 edx;
+    u32 ecx;
+    u32 eax;
+    u32 vector;
+    u32 error_code;
+    u32 orig_rip;
+    u32 orig_cs;
+    u32 orig_rflags;
+    u32 orig_rsp;
+    u32 orig_ss;
+} __attribute__((packed)) x86vmx_exception_frame_t;
+
+/* x86_64
+typedef struct {
     u64 r8;
     u64 r9;
     u64 r10;
@@ -385,13 +404,14 @@ typedef struct {
     u64 rbp;
     u64 rsp;
     u64 vector;
+    u64 errorcode;
     u64 orig_rip;
     u64 orig_cs;
     u64 orig_rflags;
     u64 orig_rsp;
     u64 orig_ss;
-} __attribute__((packed)) x86vmx_exception_frame_t;
-
+} __attribute__((packed)) x86vmx_exception_frame_errcode_t;
+*/
 
 typedef struct {
     u64 r8;
@@ -418,6 +438,8 @@ typedef struct {
     u64 orig_rsp;
     u64 orig_ss;
 } __attribute__((packed)) x86vmx_exception_frame_errcode_t;
+
+
 
 
 /* x86_64

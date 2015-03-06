@@ -1309,9 +1309,10 @@ R9 = dst_slabid
 
 //__attribute__((naked)) void __xmhfhic_rtm_exception_stub(void){
 
-void __xmhfhic_rtm_exception_stub(u32 vector, u32 error_code){
+void __xmhfhic_rtm_exception_stub(x86vmx_exception_frame_t *exframe){
+
     _XDPRINTF_("%s: exception: vector=%x, error_code=%x. Halting!\n", __FUNCTION__,
-               vector, error_code);
+               exframe->vector, exframe->error_code);
     HALT();
 
 /*
@@ -1417,7 +1418,11 @@ void __xmhfhic_rtm_exception_stub(u32 vector, u32 error_code){
 	static void __xmhf_exception_handler_##vector(void) __attribute__((naked)) { 					\
 		asm volatile(												\
                         "pushl %0 \r\n"\
+                        "pushal \r\n" \
+                        "pushl %%esp \r\n" \
                         "call __xmhfhic_rtm_exception_stub\r\n"\
+                        "addl $0x4, %%esp \r\n" \
+                        "popal \r\n" \
                         "addl $0x08, %%esp \r\n" \
                         "iretl \r\n" \
 					: \
@@ -1431,7 +1436,11 @@ void __xmhfhic_rtm_exception_stub(u32 vector, u32 error_code){
 		asm volatile(												\
                         "pushl $0x0 \r\n" \
                         "pushl %0 \r\n"\
+                        "pushal \r\n" \
+                        "pushl %%esp \r\n" \
                         "call __xmhfhic_rtm_exception_stub\r\n"\
+                        "addl $0x4, %%esp \r\n" \
+                        "popal \r\n" \
                         "addl $0x08, %%esp \r\n" \
                         "iretl \r\n" \
 					: \

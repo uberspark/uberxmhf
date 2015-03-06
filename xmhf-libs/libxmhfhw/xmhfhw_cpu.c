@@ -85,6 +85,12 @@ void write_cr0(u64 val){
   asm volatile("mov %0,%%cr0 \r\n": :"r" (val));
 }
 
+u32 read_cr2(void){
+  u32 __cr2;
+  asm volatile("mov %%cr2,%0 \r\n" :"=r" (__cr2));
+  return __cr2;
+}
+
 u64 read_cr3(void){
   u64 __cr3;
   asm volatile("mov %%cr3,%0 \r\n" :"=r" (__cr3));
