@@ -55,7 +55,11 @@
 
 #ifndef __ASSEMBLY__
 
-//void xcguestslab_interface(slab_input_params_t *iparams, u64 iparams_size, slab_output_params_t *oparams, u64 oparams_size, u64 src_slabid, u64 cpuid);
+extern void xcguestslab_do_vmcall(void);
+extern void xcguestslab_do_testxhhyperdep(void);
+extern void xcguestslab_do_testxhapprovexec(void);
+extern __attribute__((aligned(4096))) void _xcguestslab_do_testxhssteptrace_func(void);
+extern void xcguestslab_do_testxhsyscalllog(void);
 
 #endif //__ASSEMBLY__
 
