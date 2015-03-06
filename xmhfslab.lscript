@@ -46,7 +46,7 @@
 
 #include <xmhf.h>
 
-/*OUTPUT_ARCH("x86-64")*/
+OUTPUT_ARCH("i386")
 
 MEMORY
 {

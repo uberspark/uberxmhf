@@ -263,19 +263,19 @@ bool xmhfhw_platform_x86pc_vtd_scanfor_drhd_units(vtd_drhd_handle_t *maxhandle, 
 				break;
 		}
 	}
-    //_XDPRINTF_("\n%s: total DRHDs detected= %u units", __FUNCTION__, vtd_num_drhd);
+    _XDPRINTF_("%s: total DRHDs detected= %u units\n", __FUNCTION__, vtd_num_drhd);
 
 	//[DEBUG]: be a little verbose about what we found
 	//_XDPRINTF_("\n%s: DMAR Devices:", __FUNCTION__);
 	for(i=0; i < vtd_num_drhd; i++){
 		VTD_CAP_REG cap;
 		VTD_ECAP_REG ecap;
-		//_XDPRINTF_("\n	Device %u on PCI seg %04x; base=0x%016llx", i,
-		//			vtd_drhd[i].pcisegment, vtd_drhd[i].regbaseaddr);
+		_XDPRINTF_("	Device %u on PCI seg %04x; base=0x%016llx\n", i,
+					vtd_drhd[i].pcisegment, vtd_drhd[i].regbaseaddr);
 		_vtd_reg(&vtd_drhd[i], VTD_REG_READ, VTD_CAP_REG_OFF, (void *)&cap.value);
-		//_XDPRINTF_("\n		cap=0x%016llx", (u64)cap.value);
+		_XDPRINTF_("		cap=0x%016llx\n", (u64)cap.value);
 		_vtd_reg(&vtd_drhd[i], VTD_REG_READ, VTD_ECAP_REG_OFF, (void *)&ecap.value);
-		//_XDPRINTF_("\n		ecap=0x%016llx", (u64)ecap.value);
+		_XDPRINTF_("		ecap=0x%016llx\n", (u64)ecap.value);
 	}
 
 	*maxhandle = vtd_num_drhd;
@@ -422,7 +422,8 @@ bool xmhfhw_platform_x86pc_vtd_drhd_set_root_entry_table(vtd_drhd_handle_t drhd_
 		return false;
 
 	//setup DRHD RET (root-entry)
-	//_XDPRINTF_("\nSetting up DRHD RET...");
+	//_XDPRINTF_("Setting up DRHD RET: Unit %u, RETaddr=%016llx, %08x...\n",
+    //            drhd_handle, ret_addr, retbuffer_paddr);
 	{
 		//setup RTADDR with base of RET
 		rtaddr.value=(u64)retbuffer_paddr;
@@ -437,11 +438,11 @@ bool xmhfhw_platform_x86pc_vtd_drhd_set_root_entry_table(vtd_drhd_handle_t drhd_
 		_vtd_reg(drhd, VTD_REG_READ, VTD_GSTS_REG_OFF, (void *)&gsts.value);
 
 		if(!gsts.bits.rtps){
-			//_XDPRINTF_("\n%s: Error	Failed to latch RTADDR");
+			//_XDPRINTF_("Error	Failed to latch RTADDR\n");
 			return false;
 		}
 	}
-	//_XDPRINTF_("\nDRHD RET initialized.");
+	//_XDPRINTF_("DRHD RET initialized.\n");
 
 	return true;
 }

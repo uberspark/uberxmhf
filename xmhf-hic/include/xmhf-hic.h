@@ -88,12 +88,22 @@
 
 #ifndef __ASSEMBLY__
 
+/* x86_64
 typedef struct {
     u64 pci_bus;
     u64 pci_device;
     u64 pci_function;
     u64 vendor_id;
     u64 device_id;
+}__attribute__((packed)) xc_platformdevice_arch_desc_t;
+*/
+
+typedef struct {
+    u32 pci_bus;
+    u32 pci_device;
+    u32 pci_function;
+    u32 vendor_id;
+    u32 device_id;
 }__attribute__((packed)) xc_platformdevice_arch_desc_t;
 
 
@@ -129,7 +139,8 @@ typedef struct {
   u64 vmx_msrs[IA32_VMX_MSRCOUNT];
   u64 vmx_msr_efer;
   u64 vmx_msr_efcr;
-  x86regs64_t vmx_gprs;
+  //x86regs64_t vmx_gprs;
+  x86regs_t vmx_gprs;
 } __attribute__((packed)) xc_cpuarchdata_x86vmx_t;
 
 #endif //__ASSEMBLY__
@@ -150,17 +161,33 @@ typedef struct {
 
 
 typedef void * slab_entrystub_t;
+
+/* x86_64
 typedef u64 slab_privilegemask_t;
 typedef u64 slab_callcaps_t;
 typedef u64 slab_uapicaps_t;
+*/
 
+typedef u32 slab_privilegemask_t;
+typedef u32 slab_callcaps_t;
+typedef u32 slab_uapicaps_t;
+
+/* x86_64
 typedef struct {
 	bool desc_valid;
 	u64 numdevices;
     xc_platformdevice_arch_desc_t arch_desc[MAX_PLATFORM_DEVICES];
 } __attribute__((packed)) slab_platformdevices_t;
+*/
+
+typedef struct {
+	bool desc_valid;
+	u32 numdevices;
+    xc_platformdevice_arch_desc_t arch_desc[MAX_PLATFORM_DEVICES];
+} __attribute__((packed)) slab_platformdevices_t;
 
 
+/* x86_64
 //slab capabilities type
 typedef struct {
     slab_privilegemask_t slab_privilegemask;
@@ -169,7 +196,16 @@ typedef struct {
     slab_platformdevices_t slab_devices;
     u64 slab_archparams;
 } __attribute__((packed)) slab_caps_t;
+*/
 
+//slab capabilities type
+typedef struct {
+    slab_privilegemask_t slab_privilegemask;
+    slab_callcaps_t slab_callcaps;
+    slab_uapicaps_t slab_uapicaps;
+    slab_platformdevices_t slab_devices;
+    u32 slab_archparams;
+} __attribute__((packed)) slab_caps_t;
 
 
 #define HIC_SLAB_CALLCAP(x) (1 << x)
@@ -204,12 +240,23 @@ typedef struct {
 
 #define HIC_SLAB_PHYSMEM_MAXEXTENTS         5
 
+/* x86_64
 //slab physical memory extent type
 typedef struct {
     u64 addr_start;
     u64 addr_end;
     u64 protection;
 } slab_physmem_extent_t;
+*/
+
+//slab physical memory extent type
+typedef struct {
+    u32 addr_start;
+    u32 addr_end;
+    u32 protection;
+} slab_physmem_extent_t;
+
+
 
 /*
 typedef struct {
@@ -247,7 +294,7 @@ typedef struct {
 	bool mempgtbl_initialized;
 	bool devpgtbl_initialized;
 	u64 mempgtbl_cr3;
-	u64 slabtos[MAX_PLATFORM_CPUS];
+	u32 slabtos[MAX_PLATFORM_CPUS];
 } __attribute__((packed)) __attribute__((aligned(4096))) x_slab_info_archdata_t;
 
 
@@ -282,7 +329,7 @@ void xmhfhic_arch_setup_slab_mem_page_tables(void);
 void xmhfhic_arch_switch_to_smp(void);
 void xmhfhic_arch_setup_base_cpu_data_structures(void);
 void xmhf_hic_arch_setup_cpu_state(u64 cpuid);
-void xmhfhic_smp_entry(u64 cpuid);
+void xmhfhic_smp_entry(u32 cpuid);
 
 
 extern void xmhfhic_arch_relinquish_control_to_init_slab(u64 cpuid, u64 entrystub, u64 mempgtbl_cr3, u64 slabtos);
@@ -299,11 +346,19 @@ void __xmhfhic_safepop(u64 cpuid, u64 *src_slabid, u64 *dst_slabid, u64 *hic_cal
 
 
 __attribute__((naked)) void __xmhfhic_rtm_intercept_stub(void);
+void __xmhfhic_rtm_intercept(x86regs_t *r);
 __attribute__((naked)) void __xmhfhic_rtm_trampoline_stub(void);
+
+//void __xmhfhic_rtm_exception_stub(u32 vector, u32 error_code);
+void __xmhfhic_rtm_exception_stub(x86vmx_exception_frame_t *exframe);
+
 void __xmhfhic_rtm_trampoline(u64 hic_calltype, slab_input_params_t *iparams, u64 iparams_size, slab_output_params_t *oparams, u64 oparams_size, u64 dst_slabid, u64 src_slabid, u64 cpuid, u64 return_address, u64 return_rsp);
-void __xmhfhic_rtm_uapihandler(u64 uapicall, u64 uapicall_num, u64 uapicall_subnum,
-                               u64 reserved, u64 iparams, u64 oparams,
-                               u64 src_slabid, u64 cpuid);
+//void __xmhfhic_rtm_uapihandler(u64 uapicall, u64 uapicall_num, u64 uapicall_subnum,
+//                               u64 reserved, u64 iparams, u64 oparams,
+//                               u64 src_slabid, u64 cpuid);
+
+
+void __xmhfhic_rtm_uapihandler(slab_params_t *sp);
 
 
 
@@ -334,8 +389,12 @@ extern __xmhfhic_safestack_element_t __xmhfhic_safestack[MAX_PLATFORM_CPUS][512]
 extern __attribute__(( aligned(16) )) u64 __xmhfhic_x86vmx_gdt_start[];     //ro
 extern __attribute__(( aligned(16) )) arch_x86_gdtdesc_t __xmhfhic_x86vmx_gdt;  //ro
 extern __attribute__(( aligned(4096) )) u8 __xmhfhic_x86vmx_tss[MAX_PLATFORM_CPUS][PAGE_SIZE_4K]; //ro
-extern __attribute__(( aligned(8) )) u64 __xmhfhic_x86vmx_cpuidtable[MAX_X86_APIC_ID]; //ro
-extern u64  __xmhfhic_exceptionstubs[]; //ro
+//extern __attribute__(( aligned(8) )) u64 __xmhfhic_x86vmx_cpuidtable[MAX_X86_APIC_ID]; //ro
+extern __attribute__(( aligned(8) )) u32 __xmhfhic_x86vmx_cpuidtable[MAX_X86_APIC_ID]; //ro
+
+//extern u64  __xmhfhic_exceptionstubs[]; //ro
+extern u32  __xmhfhic_exceptionstubs[]; //ro
+
 extern __attribute__(( aligned(16) )) idtentry_t __xmhfhic_x86vmx_idt_start[EMHF_XCPHANDLER_MAXEXCEPTIONS]; //ro
 extern __attribute__(( aligned(16) )) arch_x86_idtdesc_t __xmhfhic_x86vmx_idt; //ro
 //extern __attribute__(( aligned(4096) )) u8 _init_cpustacks[MAX_PLATFORM_CPUS][MAX_PLATFORM_CPUSTACK_SIZE]; //ro

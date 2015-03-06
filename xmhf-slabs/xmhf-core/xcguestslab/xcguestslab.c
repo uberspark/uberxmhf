@@ -99,11 +99,12 @@ static void xcguestslab_dotest_vmcall(void){
 
 
 static void xcguestslab_do_vmcall(void){
-    u64 magic = 0xAABBCCDDAABBCCDDULL;
+    u32 magic = 0xAABBCCDDUL;
 
-    _XDPRINTF_("%s: Going for VMCALL, magic=%016llx\n",
+    _XDPRINTF_("%s: Going for VMCALL, magic=%08x\n",
                 __FUNCTION__, magic);
 
+/*    //TODO: x86_64 --> x86
     asm volatile(
         "movq %0, %%rax \r\n"
         "vmcall \r\n"
@@ -112,8 +113,18 @@ static void xcguestslab_do_vmcall(void){
         : "m" (magic)
         : "rax"
     );
+*/
 
-    _XDPRINTF_("%s: Came back from VMCALL, magic=%016llx\n",
+    asm volatile(
+        "movl %0, %%eax \r\n"
+        "vmcall \r\n"
+        "movl %%eax, %0 \r\n"
+        :
+        : "m" (magic)
+        : "eax"
+    );
+
+    _XDPRINTF_("%s: Came back from VMCALL, magic=%08x\n",
                 __FUNCTION__, magic);
 
 
@@ -135,7 +146,19 @@ static void xcguestslab_do_xmhfhw_cpu_cpuid(void){
 }
 
 
+static void xcguestslab_do_msrtest(void){
+    u64 sysenter_cs_msr;
 
+
+    wrmsr64(IA32_SYSENTER_CS_MSR, 0xAA);
+
+    _XDPRINTF_("%s: wrote SYSENTER_CS_MSR.\n", __FUNCTION__);
+
+    sysenter_cs_msr = rdmsr64(IA32_SYSENTER_CS_MSR);
+
+    _XDPRINTF_("%s: read SYSENTER_CS_MSR=%016llx...\n", __FUNCTION__, sysenter_cs_msr);
+
+}
 
 
 
@@ -158,12 +181,15 @@ static void xcguestslab_do_testxhhyperdep(void){
     _XDPRINTF_("%s: Going to activate DEP on page %x\n", __FUNCTION__, gpa);
 
     asm volatile(
-        "movq %0, %%rax \r\n"
-        "movq %1, %%rbx \r\n"
+        "movl %0, %%eax \r\n"
+        "movl %1, %%edx \r\n"
+        "movl %2, %%ebx \r\n"
         "vmcall \r\n"
         :
-        : "i" (HYPERDEP_ACTIVATEDEP), "m" (gpa)
-        : "rax", "rbx"
+        : "i" (HYPERDEP_ACTIVATEDEP),
+          "g" ( (u32) ((u64)(gpa >> 32)) ),
+          "g" ((u32)gpa)
+        : "eax", "ebx", "edx"
     );
 
     _XDPRINTF_("%s: Activated DEP\n", __FUNCTION__);
@@ -173,16 +199,18 @@ static void xcguestslab_do_testxhhyperdep(void){
     _XDPRINTF_("%s: Going to de-activate DEP on page %x\n", __FUNCTION__, gpa);
 
     asm volatile(
-        "movq %0, %%rax \r\n"
-        "movq %1, %%rbx \r\n"
+        "movl %0, %%eax \r\n"
+        "movl %1, %%edx \r\n"
+        "movl %2, %%ebx \r\n"
         "vmcall \r\n"
         :
-        : "i" (HYPERDEP_DEACTIVATEDEP), "m" (gpa)
-        : "rax", "rbx"
+        : "i" (HYPERDEP_DEACTIVATEDEP),
+          "g" ( (u32) ((u64)(gpa >> 32)) ),
+          "g" ((u32)gpa)
+        : "eax", "ebx", "edx"
     );
 
     _XDPRINTF_("%s: Deactivated DEP\n", __FUNCTION__);
-
 
 }
 
@@ -211,18 +239,22 @@ __attribute__((aligned(4096))) void _xcguestslab_do_testxhapprovexec_functoprote
 #define APPROVEXEC_UNLOCK   			0xD1
 
 static void xcguestslab_do_testxhapprovexec(void){
-    u64 gpa = &_xcguestslab_do_testxhapprovexec_functoprotect;
+    u32 gpa = &_xcguestslab_do_testxhapprovexec_functoprotect;
 
     _XDPRINTF_("%s: Going to approve and lock function at %x\n", __FUNCTION__, gpa);
 
     asm volatile(
-        "movq %0, %%rax \r\n"
-        "movq %1, %%rbx \r\n"
+        "movl %0, %%eax \r\n"
+        "movl %1, %%edx \r\n"
+        "movl %2, %%ebx \r\n"
         "vmcall \r\n"
         :
-        : "i" (APPROVEXEC_LOCK), "m" (gpa)
-        : "rax", "rbx"
+        : "i" (APPROVEXEC_LOCK),
+          "g" ( (u32) ((u64)(gpa >> 32)) ),
+          "g" ((u32)gpa)
+        : "eax", "ebx", "edx"
     );
+
 
     _XDPRINTF_("%s: Locked function\n", __FUNCTION__);
 
@@ -230,16 +262,18 @@ static void xcguestslab_do_testxhapprovexec(void){
     _XDPRINTF_("%s: Going to unlock function on page %x\n", __FUNCTION__, gpa);
 
     asm volatile(
-        "movq %0, %%rax \r\n"
-        "movq %1, %%rbx \r\n"
+        "movl %0, %%eax \r\n"
+        "movl %1, %%edx \r\n"
+        "movl %2, %%ebx \r\n"
         "vmcall \r\n"
         :
-        : "i" (APPROVEXEC_UNLOCK), "m" (gpa)
-        : "rax", "rbx"
+        : "i" (APPROVEXEC_UNLOCK),
+          "g" ( (u32) ((u64)(gpa >> 32)) ),
+          "g" ((u32)gpa)
+        : "eax", "ebx", "edx"
     );
 
     _XDPRINTF_("%s: unlocked function\n", __FUNCTION__);
-
 
 }
 
@@ -257,11 +291,11 @@ __attribute__((aligned(4096))) void _xcguestslab_do_testxhssteptrace_func(void){
     _XDPRINTF_("%s: Turning on tracing...\n", __FUNCTION__);
 
     asm volatile(
-        "movq %0, %%rax \r\n"
+        "movl %0, %%eax \r\n"
         "vmcall \r\n"
         :
         : "i" (SSTEPTRACE_ON)
-        : "rax", "rbx"
+        : "eax"
     );
 
 
@@ -275,11 +309,11 @@ __attribute__((aligned(4096))) void _xcguestslab_do_testxhssteptrace_func(void){
     );
 
     asm volatile(
-        "movq %0, %%rax \r\n"
+        "movl %0, %%eax \r\n"
         "vmcall \r\n"
         :
         : "i" (SSTEPTRACE_OFF)
-        : "rax", "rbx"
+        : "eax"
     );
 
 
@@ -289,26 +323,29 @@ __attribute__((aligned(4096))) void _xcguestslab_do_testxhssteptrace_func(void){
 
 
 static void xcguestslab_do_testxhssteptrace(void){
-    u64 gpa = &_xcguestslab_do_testxhssteptrace_func;
+    /*u64 gpa = &_xcguestslab_do_testxhssteptrace_func;
 
-    //_XDPRINTF_("%s: Going to register function at %x\n", __FUNCTION__, gpa);
+    _XDPRINTF_("%s: Going to register function at %016llx\n", __FUNCTION__, gpa);
 
-    //asm volatile(
-    //    "movq %0, %%rax \r\n"
-    //    "movq %1, %%rbx \r\n"
-    //    "vmcall \r\n"
-    //    :
-    //    : "i" (SSTEPTRACE_REGISTER), "m" (gpa)
-    //    : "rax", "rbx"
-    //);
+    asm volatile(
+        "movl %0, %%eax \r\n"
+        "movl %1, %%edx \r\n"
+        "movl %2, %%ebx \r\n"
+        "vmcall \r\n"
+        :
+        : "i" (SSTEPTRACE_REGISTER),
+          "g" ( (u32) ((u64)(gpa >> 32)) ),
+          "g" ((u32)gpa)
+        : "eax", "ebx", "edx"
+    );
 
-    //_XDPRINTF_("%s: Registered function\n", __FUNCTION__);
-
-    _XDPRINTF_("%s: Proceeding to call function...\n", __FUNCTION__, gpa);
+    _XDPRINTF_("%s: Registered function\n", __FUNCTION__);
+*/
+    _XDPRINTF_("%s: Proceeding to call function...\n", __FUNCTION__);
 
     _xcguestslab_do_testxhssteptrace_func();
 
-    _XDPRINTF_("%s: Came back from calling function.\n", __FUNCTION__, gpa);
+    _XDPRINTF_("%s: Came back from calling function.\n", __FUNCTION__);
 
 }
 
@@ -329,13 +366,13 @@ static void xcguestslab_do_testxhssteptrace(void){
 // GDT
 __attribute__(( aligned(16) )) u64 _xcguestslab_gdt_start[]  = {
 	0x0000000000000000ULL,	//NULL descriptor
-	0x00af9a000000ffffULL,	//CPL-0 64-bit code descriptor (CS64)
-	0x00af92000000ffffULL,	//CPL-0 64-bit data descriptor (DS/SS/ES/FS/GS)
-	0x00affa000000ffffULL,	//TODO: CPL-3 64-bit code descriptor (CS64)
-	0x00aff2000000ffffULL,	//TODO: CPL-3 64-bit data descriptor (DS/SS/ES/FS/GS)
-	0x00affa000000ffffULL,	//TODO: CPL-3 64-bit code descriptor (CS64)
-	0x00aff2000000ffffULL,	//TODO: CPL-3 64-bit data descriptor (DS/SS/ES/FS/GS)
-	0x0000000000000000ULL,  //TSS descriptors (128-bits each)
+	0x00cf9a000000ffffULL,	//CPL-0 32-bit code descriptor (CS32)
+	0x00cf92000000ffffULL,	//CPL-0 32-bit data descriptor (DS/SS/ES/FS/GS)
+	0x00cffa000000ffffULL,	//TODO: CPL-3 32-bit code descriptor (CS32)
+	0x00cff2000000ffffULL,	//TODO: CPL-3 32-bit data descriptor (DS/SS/ES/FS/GS)
+	0x00cffa000000ffffULL,	//TODO: CPL-3 32-bit code descriptor (CS32)
+	0x00cff2000000ffffULL,	//TODO: CPL-3 32-bit data descriptor (DS/SS/ES/FS/GS)
+	0x0000000000000000ULL,  //TSS descriptors
 	0x0000000000000000ULL,
 	0x0000000000000000ULL,
 	0x0000000000000000ULL,
@@ -355,11 +392,19 @@ __attribute__(( aligned(16) )) u64 _xcguestslab_gdt_start[]  = {
 	0x0000000000000000ULL,
 };
 
+/* x86_64
 //*
 // GDT descriptor
 __attribute__(( aligned(16) )) arch_x86_gdtdesc_t _xcguestslab_gdt  = {
 	.size=sizeof(_xcguestslab_gdt_start)-1,
 	.base=(u64)&_xcguestslab_gdt_start,
+};
+*/
+
+// GDT descriptor
+__attribute__(( aligned(16) )) arch_x86_gdtdesc_t _xcguestslab_gdt  = {
+	.size=sizeof(_xcguestslab_gdt_start)-1,
+	.base=(u32)&_xcguestslab_gdt_start,
 };
 
 
@@ -372,7 +417,7 @@ static u8 _xcguestslab_do_testxhsyscalllog_sysenterhandler_stack[PAGE_SIZE_4K];
 static void _xcguestslab_do_testxhsyscalllog_sysenterhandler(void){
 
     asm volatile(
-         "sysexitq \r\n"
+         "sysexit \r\n"
         :
         :
         :
@@ -389,9 +434,9 @@ static void xcguestslab_do_testxhsyscalllog(void){
     //load GDTR
 	asm volatile(
 		"lgdt  %0 \r\n"
-		"pushq	%1 \r\n"
-		"pushq	$reloadsegs \r\n"
-		"lretq \r\n"
+		"pushl	%1 \r\n"
+		"pushl	$reloadsegs \r\n"
+		"lret \r\n"
 		"reloadsegs: \r\n"
 		"movw	%2, %%ax \r\n"
 		"movw	%%ax, %%ds \r\n"
@@ -409,26 +454,30 @@ static void xcguestslab_do_testxhsyscalllog(void){
 
     //set IOPL to CPL-3
 	asm volatile(
-        "pushfq \r\n"
-        "popq %%rax \r\n"
-		"orq $0x3000, %%rax \r\n"					// clear flags, but set IOPL=3 (CPL-3)
-		"pushq %%rax \r\n"
-		"popfq \r\n"
+        "pushfl \r\n"
+        "popl %%eax \r\n"
+		"orl $0x3000, %%eax \r\n"					// clear flags, but set IOPL=3 (CPL-3)
+		"pushl %%eax \r\n"
+		"popfl \r\n"
 		: //no outputs
 		: //no inputs
-		: "rax", "cc"
+		: "eax", "cc"
 	);
 
 
     //register syscall handler
     asm volatile(
-        "movq %0, %%rax \r\n"
-        "movq %1, %%rbx \r\n"
+        "movl %0, %%eax \r\n"
+        "movl %1, %%edx \r\n"
+        "movl %2, %%ebx \r\n"
         "vmcall \r\n"
         :
-        : "i" (SYSCALLLOG_REGISTER), "m" (gpa)
-        : "rax", "rbx"
+        : "i" (SYSCALLLOG_REGISTER),
+          "g" ( (u32) ((u64)(gpa >> 32)) ),
+          "g" ((u32)gpa)
+        : "eax", "ebx", "edx"
     );
+
 
     _XDPRINTF_("%s: registered syscall handler on page %x\n", __FUNCTION__, gpa);
 
@@ -436,9 +485,9 @@ static void xcguestslab_do_testxhsyscalllog(void){
 
     //setup SYSENTER/SYSEXIT mechanism
     {
-        wrmsr(IA32_SYSENTER_CS_MSR, __CS_CPL0, 0);
-        wrmsr(IA32_SYSENTER_EIP_MSR, &_xcguestslab_do_testxhsyscalllog_sysenterhandler, 0);
-        wrmsr(IA32_SYSENTER_ESP_MSR, (u32)&_xcguestslab_do_testxhsyscalllog_sysenterhandler_stack + (u32)PAGE_SIZE_4K, 0);
+        wrmsr64(IA32_SYSENTER_CS_MSR, __CS_CPL0);
+        wrmsr64(IA32_SYSENTER_EIP_MSR, &_xcguestslab_do_testxhsyscalllog_sysenterhandler);
+        wrmsr64(IA32_SYSENTER_ESP_MSR, ((u32)&_xcguestslab_do_testxhsyscalllog_sysenterhandler_stack + (u32)PAGE_SIZE_4K));
     }
     _XDPRINTF_("%s: setup SYSENTER/SYSEXIT mechanism\n", __FUNCTION__);
     _XDPRINTF_("%s: SYSENTER CS=%016llx\n", __FUNCTION__, rdmsr64(IA32_SYSENTER_CS_MSR));
@@ -448,27 +497,26 @@ static void xcguestslab_do_testxhsyscalllog(void){
 
     //switch to ring-3
     asm volatile(
-         "movq $1f, %%rdx \r\n"
-         "movq %%rsp, %%rcx \r\n"
-         "sysexitq \r\n"
+         "movl $1f, %%edx \r\n"
+         "movl %%esp, %%ecx \r\n"
+         "sysexit \r\n"
          "1: \r\n"
         :
         :
-        : "rdx", "rcx"
+        : "edx", "ecx"
     );
-
 
     _XDPRINTF_("%s: Guest Slab at Ring-3. Proceeding to execute sysenter...Halting!\n", __FUNCTION__);
 
     //invoke sysenter
     asm volatile(
-         "movq $1f, %%rdx \r\n"
-         "movq %%rsp, %%rcx \r\n"
+         "movl $1f, %%edx \r\n"
+         "movl %%esp, %%ecx \r\n"
          "sysenter \r\n"
          "1: \r\n"
         :
         :
-        : "rdx", "rcx"
+        : "edx", "ecx"
     );
 
     _XDPRINTF_("%s: Came back from SYSENTER\n", __FUNCTION__);
@@ -502,3 +550,24 @@ void slab_interface(slab_input_params_t *iparams, u64 iparams_size, slab_output_
     HALT();
 }
 
+
+void slab_main(slab_params_t *sp){
+    _XDPRINTF_("%s: Hello world from Guest slab!\n", __FUNCTION__);
+
+    //xcguestslab_do_vmcall();
+
+    //xcguestslab_do_xmhfhw_cpu_cpuid();
+
+    //xcguestslab_do_msrtest();
+
+    //xcguestslab_do_testxhhyperdep();
+
+    //xcguestslab_do_testxhapprovexec();
+
+    //xcguestslab_do_testxhssteptrace();
+
+    xcguestslab_do_testxhsyscalllog();
+
+    _XDPRINTF_("%s: Guest Slab Halting\n", __FUNCTION__);
+    HALT();
+}

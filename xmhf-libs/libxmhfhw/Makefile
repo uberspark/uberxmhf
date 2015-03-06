@@ -12,6 +12,8 @@ CFLAGS += -I$(srcdir)/include -nostdinc -fno-builtin -nostdlib -Wall
 LIBXMHFHW_OBJECTS_DIR = _objs_libxmhfhw
 THE_ARCHIVE = libxmhfhw.a
 
+LLC_ATTR = -3dnow,-3dnowa,-64bit,-64bit-mode,-adx,-aes,-atom,-avx,-avx2,-bmi,-bmi2,-cmpxchg16b,-f16c,-hle,-lea-sp,-lea-uses-ag,-lzcnt,-mmx,-movbe,-pclmul,-popcnt,-prfchw,-rdrand,-rdseed,-rtm,-slow-bt-mem,-sse,-sse3,-sse41,-sse42,-sse4a,-sse3,-vector-unaligned-mem,-xop
+
 # targets
 .PHONY: all
 all: $(THE_ARCHIVE)
@@ -28,7 +30,8 @@ $(THE_ARCHIVE): $(OBJECTS)
 	#$(CC) -c $(CFLAGS) -o $(LIBXMHFHW_OBJECTS_DIR)/$@ $<
 	$(CC) -fomit-frame-pointer -O2 -S -emit-llvm $(CFLAGS) $< -o $(LIBXMHFHW_OBJECTS_DIR)/$(@F).ll
 	cd $(LIBXMHFHW_OBJECTS_DIR) && fixnaked.pl $(@F).ll
-	cd $(LIBXMHFHW_OBJECTS_DIR) && llc -O=2 -march=x86-64 -mcpu=corei7 -mattr=$(LLC_ATTR) $(@F).ll
+	#cd $(LIBXMHFHW_OBJECTS_DIR) && llc -O=2 -march=x86-64 -mcpu=corei7 -mattr=$(LLC_ATTR) $(@F).ll
+	cd $(LIBXMHFHW_OBJECTS_DIR) && llc -O=2 -march=x86 -mcpu=corei7 -mattr=$(LLC_ATTR) $(@F).ll
 	cd $(LIBXMHFHW_OBJECTS_DIR) && $(CC) -O2 -c $(CFLAGS) $(@F).s -o $(@F)
 
 

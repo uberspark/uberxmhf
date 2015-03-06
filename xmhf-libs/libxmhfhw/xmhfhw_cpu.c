@@ -85,6 +85,12 @@ void write_cr0(u64 val){
   asm volatile("mov %0,%%cr0 \r\n": :"r" (val));
 }
 
+u32 read_cr2(void){
+  u32 __cr2;
+  asm volatile("mov %%cr2,%0 \r\n" :"=r" (__cr2));
+  return __cr2;
+}
+
 u64 read_cr3(void){
   u64 __cr3;
   asm volatile("mov %%cr3,%0 \r\n" :"=r" (__cr3));
@@ -94,8 +100,18 @@ u64 read_cr3(void){
 
 u64 read_rsp(void){
   u64 __rsp;
+/*
+  // TODO: x86_64 --> x86
   asm volatile("movq %%rsp,%0\n\t" :"=r" (__rsp));
+*/
+
   return __rsp;
+}
+
+u32 read_esp(void){
+  u32 __esp;
+  asm volatile("mov %%esp,%0\n\t" :"=r" (__esp));
+  return __esp;
 }
 
 void write_cr3(u64 val){
@@ -209,6 +225,8 @@ void xsetbv(u32 xcr_reg, u64 value){
 
 void sysexitq(u64 rip, u64 rsp){
 
+/*
+    //TODO: x86_64 --> x86
             asm volatile(
                  "movq %0, %%rdx \r\n"
                  "movq %1, %%rcx \r\n"
@@ -221,6 +239,7 @@ void sysexitq(u64 rip, u64 rsp){
                   "m" (rsp)
                 : "rdx", "rcx"
             );
+*/
 
 }
 
@@ -245,6 +264,42 @@ void spin_unlock(volatile u32 *lock){
         );
     }
 
+//load CPU GDT
+void xmhfhw_cpu_loadGDT(arch_x86_gdtdesc_t *gdt_addr){
+
+	asm volatile(
+		"lgdt  %0 \r\n"
+		: //no outputs
+		: "m" (*gdt_addr)
+		:
+	);
+
+}
+
+//load CPU TR
+void xmhfhw_cpu_loadTR(u32 tr_selector){
+
+	  asm volatile(
+		"movl %0, %%eax\r\n"
+		"ltr %%ax\r\n"				//load TR
+	     :
+	     : "g"(tr_selector)
+	     : "eax"
+	  );
+
+}
+
+//load CPU IDT
+void xmhfhw_cpu_loadIDT(arch_x86_idtdesc_t *idt_addr){
+
+	asm volatile(
+		"lidt  %0 \r\n"
+		: //no outputs
+		: "m" (*idt_addr)
+		: //no clobber
+	);
+
+}
 
 
 u64 xmhf_baseplatform_arch_x86_getgdtbase(void){

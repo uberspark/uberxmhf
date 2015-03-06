@@ -61,7 +61,8 @@ void rdmsr(u32 msr, u32 *eax, u32 *edx){
 void wrmsr(u32 msr, u32 eax, u32 edx){
   asm volatile("wrmsr \r\n"
 	  : /* no outputs */
-	  :"c"(msr), "a"(eax), "d"(edx));
+	  :"c"(msr), "a"(eax), "d"(edx)
+      :);
 }
 
 

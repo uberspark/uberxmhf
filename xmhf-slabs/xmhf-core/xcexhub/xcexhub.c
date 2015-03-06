@@ -63,26 +63,22 @@ XMHF_SLAB_EXCEPTION(xcexhub)
  */
 
 
-static void _xcexhub_unhandled(x86vmx_exception_frame_errcode_t *exframe){
+static void _xcexhub_unhandled(x86vmx_exception_frame_t *exframe){
     //dump relevant info
     _XDPRINTF_("exception %x\n", exframe->vector);
     _XDPRINTF_("state dump:\n\n");
-    _XDPRINTF_("errorcode=0x%016llx\n", exframe->errorcode);
-    _XDPRINTF_("CS:RIP:RFLAGS = 0x%016llx:0x%016llx:0x%016llx\n", exframe->orig_cs, exframe->orig_rip, exframe->orig_rflags);
-    _XDPRINTF_("SS:RSP = 0x%016llx:0x%016llx\n", exframe->orig_ss, exframe->orig_rsp);
-    //_XDPRINTF_("CR0=0x%016llx, CR2=0x%016llx\n", read_cr0(), read_cr2());
-    //_XDPRINTF_("CR3=0x%016llx, CR4=0x%016llx\n", read_cr3(), read_cr4());
+    _XDPRINTF_("errorcode=0x%08x\n", exframe->error_code);
+    _XDPRINTF_("CS:EIP:EFLAGS = 0x%08x:0x%08x:0x%08x\n", exframe->orig_cs, exframe->orig_rip, exframe->orig_rflags);
+    _XDPRINTF_("SS:ESP = 0x%08x:0x%08x\n", exframe->orig_ss, exframe->orig_rsp);
+    _XDPRINTF_("CR0=0x%08x, CR2=0x%08x\n", read_cr0(), read_cr2());
+    _XDPRINTF_("CR3=0x%08x, CR4=0x%08x\n", read_cr3(), read_cr4());
     _XDPRINTF_("CS=0x%04x, DS=0x%04x, ES=0x%04x, SS=0x%04x\n", (u16)read_segreg_cs(), (u16)read_segreg_ds(), (u16)read_segreg_es(), (u16)read_segreg_ss());
     _XDPRINTF_("FS=0x%04x, GS=0x%04x\n", (u16)read_segreg_fs(), (u16)read_segreg_gs());
-    //_XDPRINTF_("TR=0x%04x\n", (u16)read_tr_sel());
-    _XDPRINTF_("RAX=0x%016llx, RBX=0%016llx\n", exframe->rax, exframe->rbx);
-    _XDPRINTF_("RCX=0x%016llx, RDX=0%016llx\n", exframe->rcx, exframe->rdx);
-    _XDPRINTF_("RSI=0x%016llx, RDI=0%016llx\n", exframe->rsi, exframe->rdi);
-    _XDPRINTF_("RBP=0x%016llx, RSP=0%016llx\n", exframe->rbp, exframe->rsp);
-    _XDPRINTF_("R8=0x%016llx, R9=0%016llx\n", exframe->r8, exframe->r9);
-    _XDPRINTF_("R10=0x%016llx, R11=0%016llx\n", exframe->r10, exframe->r11);
-    _XDPRINTF_("R12=0x%016llx, R13=0%016llx\n", exframe->r12, exframe->r13);
-    _XDPRINTF_("R14=0x%016llx, R15=0%016llx\n", exframe->r14, exframe->r15);
+    _XDPRINTF_("TR=0x%04x\n", (u16)read_tr_sel());
+    _XDPRINTF_("EAX=0x%08x, EBX=0x%08x\n", exframe->eax, exframe->ebx);
+    _XDPRINTF_("ECX=0x%08x, EDX=0x%08x\n", exframe->ecx, exframe->edx);
+    _XDPRINTF_("ESI=0x%08x, EDI=0x%08x\n", exframe->esi, exframe->edi);
+    _XDPRINTF_("EBP=0x%08x, ESP=0x%08x\n", exframe->ebp, exframe->esp);
 
     ////do a stack dump in the hopes of getting more info.
     //{
@@ -98,11 +94,12 @@ static void _xcexhub_unhandled(x86vmx_exception_frame_errcode_t *exframe){
 }
 
 
-void slab_interface(slab_input_params_t *iparams, u64 iparams_size, slab_output_params_t *oparams, u64 oparams_size, u64 src_slabid, u64 cpuid){
-    x86vmx_exception_frame_errcode_t *exframe = (x86vmx_exception_frame_errcode_t *)iparams;
+//void slab_interface(slab_input_params_t *iparams, u64 iparams_size, slab_output_params_t *oparams, u64 oparams_size, u64 src_slabid, u64 cpuid){
+void slab_main(slab_params_t *sp){
+    x86vmx_exception_frame_t *exframe = (x86vmx_exception_frame_t *)&sp->in_out_params[0];
 
-	_XDPRINTF_("%s[%u]: Got control: RSP=%016llx\n",
-                __FUNCTION__, (u32)cpuid, read_rsp());
+	_XDPRINTF_("%s[%u]: Got control: ESP=%08x\n",
+                __FUNCTION__, (u16)sp->cpuid, read_esp());
 
 
    	switch(exframe->vector){

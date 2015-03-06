@@ -253,6 +253,17 @@ struct regs
   u64 eax;
 }__attribute__ ((packed));
 
+typedef struct
+{
+  u32 edi;
+  u32 esi;
+  u32 ebp;
+  u32 esp;
+  u32 ebx;
+  u32 edx;
+  u32 ecx;
+  u32 eax;
+}__attribute__ ((packed)) x86regs_t;
 
 typedef struct {
   u64 r8;
@@ -283,6 +294,8 @@ typedef struct {
 }__attribute__ ((packed)) x86idt64_stackframe_t;
 
 //*
+/*
+x86_64
 typedef struct {
   u16 isrLow;
   u16 isrSelector;
@@ -292,6 +305,16 @@ typedef struct {
   u32 offset3263;
   u32 reserved;
 } __attribute__ ((packed)) idtentry_t;
+*/
+
+typedef struct {
+  u16 isrLow;
+  u16 isrSelector;
+  u8  count;
+  u8  type;
+  u16 isrHigh;
+} __attribute__ ((packed)) idtentry_t;
+
 
 typedef struct {
   u16 limit0_15;
@@ -345,6 +368,25 @@ typedef struct {
 
 
 typedef struct {
+    u32 edi;
+    u32 esi;
+    u32 ebp;
+    u32 esp;
+    u32 ebx;
+    u32 edx;
+    u32 ecx;
+    u32 eax;
+    u32 vector;
+    u32 error_code;
+    u32 orig_rip;
+    u32 orig_cs;
+    u32 orig_rflags;
+    u32 orig_rsp;
+    u32 orig_ss;
+} __attribute__((packed)) x86vmx_exception_frame_t;
+
+/* x86_64
+typedef struct {
     u64 r8;
     u64 r9;
     u64 r10;
@@ -362,13 +404,14 @@ typedef struct {
     u64 rbp;
     u64 rsp;
     u64 vector;
+    u64 errorcode;
     u64 orig_rip;
     u64 orig_cs;
     u64 orig_rflags;
     u64 orig_rsp;
     u64 orig_ss;
-} __attribute__((packed)) x86vmx_exception_frame_t;
-
+} __attribute__((packed)) x86vmx_exception_frame_errcode_t;
+*/
 
 typedef struct {
     u64 r8;
@@ -396,6 +439,10 @@ typedef struct {
     u64 orig_ss;
 } __attribute__((packed)) x86vmx_exception_frame_errcode_t;
 
+
+
+
+/* x86_64
 //*
 //x86 GDT descriptor type
 typedef struct {
@@ -415,6 +462,26 @@ typedef struct {
 typedef struct __tss {
 	u32 reserved;
 	u64 rsp0;
+} __attribute__((packed)) tss_t;
+*/
+
+
+//x86 GDT descriptor type
+typedef struct {
+		u16 size;
+		u32 base;
+} __attribute__((packed)) arch_x86_gdtdesc_t;
+
+//x86 IDT descriptor type
+typedef struct {
+		u16 size;
+		u32 base;
+} __attribute__((packed)) arch_x86_idtdesc_t;
+
+//TSS descriptor (partial)
+typedef struct __tss {
+	u32 reserved;
+	u32 esp0;
 } __attribute__((packed)) tss_t;
 
 
