@@ -45,7 +45,8 @@ LINKER_SCRIPT_OUTPUT := $(XMHF_HIC_NAME).lds
 
 
 # LLC flags
-LLC_ATTR = -3dnow,-3dnowa,+64bit,+64bit-mode,-adx,-aes,-atom,-avx,-avx2,-bmi,-bmi2,-cmpxchg16b,-f16c,-hle,-lea-sp,-lea-uses-ag,-lzcnt,-mmx,-movbe,-pclmul,-popcnt,-prfchw,-rdrand,-rdseed,-rtm,-slow-bt-mem,-sse,-sse3,-sse41,-sse42,-sse4a,-sse3,-vector-unaligned-mem,-xop
+#LLC_ATTR = -3dnow,-3dnowa,+64bit,+64bit-mode,-adx,-aes,-atom,-avx,-avx2,-bmi,-bmi2,-cmpxchg16b,-f16c,-hle,-lea-sp,-lea-uses-ag,-lzcnt,-mmx,-movbe,-pclmul,-popcnt,-prfchw,-rdrand,-rdseed,-rtm,-slow-bt-mem,-sse,-sse3,-sse41,-sse42,-sse4a,-sse3,-vector-unaligned-mem,-xop
+LLC_ATTR = -3dnow,-3dnowa,-64bit,-64bit-mode,-adx,-aes,-atom,-avx,-avx2,-bmi,-bmi2,-cmpxchg16b,-f16c,-hle,-lea-sp,-lea-uses-ag,-lzcnt,-mmx,-movbe,-pclmul,-popcnt,-prfchw,-rdrand,-rdseed,-rtm,-slow-bt-mem,-sse,-sse3,-sse41,-sse42,-sse4a,-sse3,-vector-unaligned-mem,-xop
 
 # targets
 .PHONY: all
@@ -54,16 +55,18 @@ all: buildhicbin
 buildhicbin: $(XMHF_HIC_OBJECTS)
 	cd $(XMHF_HIC_OBJECTS_DIR) && cp -f $(LINKER_SCRIPT_INPUT) $(XMHF_HIC_NAME).lscript.c
 	cd $(XMHF_HIC_OBJECTS_DIR) && $(CC) $(CFLAGS) -D__ASSEMBLY__ -P -E $(XMHF_HIC_NAME).lscript.c -o $(LINKER_SCRIPT_OUTPUT)
-	cd $(XMHF_HIC_OBJECTS_DIR) && $(LD) -r --oformat elf64-x86-64 -T $(LINKER_SCRIPT_OUTPUT) -o $(XMHF_HIC_NAME).slo $(XMHF_HIC_OBJECTS_ARCHIVE) -L$(CCLIB)/lib/linux -L$(XMHFLIBS_DIR) -lxmhfc -lxmhfcrypto -lxmhfdebug -lxmhfhw -lxmhfc -lclang_rt.builtins-x86_64
+	#cd $(XMHF_HIC_OBJECTS_DIR) && $(LD) -r --oformat elf64-x86-64 -T $(LINKER_SCRIPT_OUTPUT) -o $(XMHF_HIC_NAME).slo $(XMHF_HIC_OBJECTS_ARCHIVE) -L$(CCLIB)/lib/linux -L$(XMHFLIBS_DIR) -lxmhfc -lxmhfcrypto -lxmhfdebug -lxmhfhw -lxmhfc -lclang_rt.builtins-x86_64
+	cd $(XMHF_HIC_OBJECTS_DIR) && $(LD) -r --oformat elf32-i386 -T $(LINKER_SCRIPT_OUTPUT) -o $(XMHF_HIC_NAME).slo $(XMHF_HIC_OBJECTS_ARCHIVE) -L$(CCLIB)/lib/linux -L$(XMHFLIBS_DIR) -lxmhfc -lxmhfcrypto -lxmhfdebug -lxmhfhw -lxmhfhicslab -lxmhfc -lclang_rt.full-i386
 	cd $(XMHF_HIC_OBJECTS_DIR) && nm $(XMHF_HIC_NAME).slo | awk '{ print $$3 }' | awk NF >$(XMHF_HIC_NAME).slo.syms
 	cd $(XMHF_HIC_OBJECTS_DIR) && $(OBJCOPY) --localize-symbols=$(XMHF_HIC_NAME).slo.syms $(XMHF_HIC_NAME).slo $(XMHF_HIC_NAME).slo
-	cd $(XMHF_HIC_OBJECTS_DIR) && $(OBJCOPY) --globalize-symbol libxmhfdebug_lock --globalize-symbol xcbootinfo --globalize-symbol _xmhfhic_common_slab_info_table $(XMHF_HIC_NAME).slo $(XMHF_HIC_NAME).slo
+	cd $(XMHF_HIC_OBJECTS_DIR) && $(OBJCOPY) --globalize-symbol __xmhfhic_rtm_uapihandler --globalize-symbol libxmhfdebug_lock --globalize-symbol xcbootinfo --globalize-symbol _xmhfhic_common_slab_info_table $(XMHF_HIC_NAME).slo $(XMHF_HIC_NAME).slo
 
 %.o: %.c
 	mkdir -p $(XMHF_HIC_OBJECTS_DIR)
 	$(CC) -fomit-frame-pointer -O2 -S -emit-llvm $(CFLAGS) $< -o $(XMHF_HIC_OBJECTS_DIR)/$(@F).ll
 	cd $(XMHF_HIC_OBJECTS_DIR) && fixnaked.pl $(@F).ll
-	cd $(XMHF_HIC_OBJECTS_DIR) && llc -O=2 -march=x86-64 -mcpu=corei7 -mattr=$(LLC_ATTR) $(@F).ll
+	#cd $(XMHF_HIC_OBJECTS_DIR) && llc -O=2 -march=x86-64 -mcpu=corei7 -mattr=$(LLC_ATTR) $(@F).ll
+	cd $(XMHF_HIC_OBJECTS_DIR) && llc -O=2 -march=x86 -mcpu=corei7 -mattr=$(LLC_ATTR) $(@F).ll
 	cd $(XMHF_HIC_OBJECTS_DIR) && $(CC) -O2 -c $(CFLAGS) $(@F).s -o $(@F)
 
 #%.o: %.S

@@ -76,14 +76,27 @@ bool __vmx_vmxon(u64 vmxonregion_paddr){
 }
 
 
-
+/*
+x86_64
 void xmhfhw_cpu_x86vmx_vmwrite(u64 encoding, u64 value){
   asm volatile ("vmwrite %1, %0 \r\n" :: "r"(encoding  & 0x00000000FFFFFFFFULL), "r"(value) : "cc");
 }
 
 u64 xmhfhw_cpu_x86vmx_vmread(u64 encoding){
-    u64 __value;
+    u64 __value=0;
     asm volatile("vmread %1, %0 \r\n" : "=r"(__value) : "r"(encoding  & 0x00000000FFFFFFFFULL) : "cc");
+    return __value;
+}
+*/
+
+
+void xmhfhw_cpu_x86vmx_vmwrite(u32 encoding, u32 value){
+  asm volatile ("vmwrite %1, %0 \r\n" :: "r"(encoding), "r"(value) : "cc");
+}
+
+u32 xmhfhw_cpu_x86vmx_vmread(u32 encoding){
+    u32 __value;
+    asm volatile("vmread %1, %0 \r\n" : "=r"(__value) : "r"(encoding) : "cc");
     return __value;
 }
 

@@ -56,7 +56,7 @@
 
 
 //////
-XMHF_SLAB(xhapprovexec)
+XMHF_SLABNEW(xhapprovexec)
 
 
 #define APPROVEXEC_LOCK     			0xD0
@@ -75,29 +75,36 @@ static u8 _ae_database[][SHA_DIGEST_LENGTH] = {
 
 
 //approve and lock a page (at gpa)
-static void ae_lock(u64 cpuindex, u64 guest_slab_index, u64 gpa){
-    xmhf_hic_uapi_physmem_desc_t pdesc;
+static void ae_lock(u32 cpuindex, u32 guest_slab_index, u64 gpa){
+    slab_params_t spl;
+    xmhf_hic_uapi_physmem_desc_t *pdesc = (xmhf_hic_uapi_physmem_desc_t *)&spl.in_out_params[2];
     u8 digest[SHA_DIGEST_LENGTH];
     bool found_in_database=false;
     u32 i;
 
-    _XDPRINTF_("%s[%u]: starting...\n", __FUNCTION__, (u32)cpuindex);
-
+    _XDPRINTF_("%s[%u]: starting...\n", __FUNCTION__, (u16)cpuindex);
+    spl.src_slabid = XMHF_HYP_SLAB_XHAPPROVEXEC;
+    spl.cpuid = cpuindex;
 
 if(!ae_activated){
     //grab page contents at gpa into local page buffer
-    pdesc.guest_slab_index = guest_slab_index;
-    pdesc.addr_to = &_ae_page_buffer;
-    pdesc.addr_from = gpa;
-    pdesc.numbytes = PAGE_SIZE_4K;
-    XMHF_HIC_SLAB_UAPI_PHYSMEM(XMHF_HIC_UAPI_PHYSMEM_PEEK, &pdesc, NULL);
+    pdesc->guest_slab_index = guest_slab_index;
+    pdesc->addr_to = &_ae_page_buffer;
+    pdesc->addr_from = gpa;
+    pdesc->numbytes = PAGE_SIZE_4K;
+    //XMHF_HIC_SLAB_UAPI_PHYSMEM(XMHF_HIC_UAPI_PHYSMEM_PEEK, &pdesc, NULL);
+    spl.in_out_params[0] = XMHF_HIC_UAPI_PHYSMEM;
+    spl.in_out_params[1] = XMHF_HIC_UAPI_PHYSMEM_PEEK;
+    XMHF_SLAB_UAPI(&spl);
 
-    _XDPRINTF_("%s[%u]: grabbed page contents at gpa=%x\n",  __FUNCTION__, (u32)cpuindex, gpa);
+    _XDPRINTF_("%s[%u]: grabbed page contents at gpa=%016x\n",
+                __FUNCTION__, (u16)cpuindex, gpa);
 
     //compute SHA-1 of the local page buffer
     sha1_buffer(&_ae_page_buffer, PAGE_SIZE_4K, digest);
 
-    _XDPRINTF_("%s[%u]: computed SHA-1: %*D\n", __FUNCTION__, (u32)cpuindex, SHA_DIGEST_LENGTH, digest, " ");
+    _XDPRINTF_("%s[%u]: computed SHA-1: %*D\n",
+               __FUNCTION__, (u16)cpuindex, SHA_DIGEST_LENGTH, digest, " ");
 
     //compare computed SHA-1 to the database
     for(i=0; i < NUMENTRIES_AE_DATABASE; i++){
@@ -110,32 +117,38 @@ if(!ae_activated){
     //if not approved then just return
     if(!found_in_database){
         _XDPRINTF_("%s[%u]: could not find entry in database. returning\n",
-               __FUNCTION__, (u32)cpuindex);
+               __FUNCTION__, (u16)cpuindex);
         return;
     }
 
     _XDPRINTF_("%s[%u]: entry matched in database, proceeding to lock page...\n",
-               __FUNCTION__, (u32)cpuindex);
+               __FUNCTION__, (u16)cpuindex);
 
     {
         //lock the code page so no one can write to it
-        xmhf_hic_uapi_mempgtbl_desc_t mdesc;
+        xmhf_hic_uapi_mempgtbl_desc_t *mdesc = (xmhf_hic_uapi_mempgtbl_desc_t *)&spl.in_out_params[2];
 
-        mdesc.guest_slab_index = guest_slab_index;
-        mdesc.gpa = gpa;
+        mdesc->guest_slab_index = guest_slab_index;
+        mdesc->gpa = gpa;
+        spl.in_out_params[0] = XMHF_HIC_UAPI_MEMPGTBL;
 
-        XMHF_HIC_SLAB_UAPI_MEMPGTBL(XMHF_HIC_UAPI_MEMPGTBL_GETENTRY, &mdesc, &mdesc);
-        _XDPRINTF_("%s[%u]: original entry for gpa=%x is %x\n",
-                   __FUNCTION__, (u32)cpuindex, gpa, mdesc.entry);
+        //XMHF_HIC_SLAB_UAPI_MEMPGTBL(XMHF_HIC_UAPI_MEMPGTBL_GETENTRY, &mdesc, &mdesc);
+        spl.in_out_params[1] = XMHF_HIC_UAPI_MEMPGTBL_GETENTRY;
+        XMHF_SLAB_UAPI(&spl);
+        _XDPRINTF_("%s[%u]: original entry for gpa=%016llx is %016llx\n",
+                   __FUNCTION__, (u16)cpuindex, gpa, mdesc->entry);
 
-        mdesc.entry &= ~(0x7);
-        mdesc.entry |= 0x5; // execute, read-only
+        mdesc->entry &= ~(0x7);
+        mdesc->entry |= 0x5; // execute, read-only
 
-        XMHF_HIC_SLAB_UAPI_MEMPGTBL(XMHF_HIC_UAPI_MEMPGTBL_SETENTRY, &mdesc, NULL);
+        spl.in_out_params[1] = XMHF_HIC_UAPI_MEMPGTBL_SETENTRY;
+        //XMHF_HIC_SLAB_UAPI_MEMPGTBL(XMHF_HIC_UAPI_MEMPGTBL_SETENTRY, &mdesc, NULL);
+        XMHF_SLAB_UAPI(&spl);
 
         ae_activated = true;
 
-        _XDPRINTF_("%s[%u]: approved and locked page at gpa %x\n", __FUNCTION__, (u32)cpuindex, gpa);
+        _XDPRINTF_("%s[%u]: approved and locked page at gpa %x\n",
+                   __FUNCTION__, (u16)cpuindex, gpa);
     }
 }
 
@@ -143,29 +156,38 @@ if(!ae_activated){
 
 
 //unlock a page (at gpa)
-static void ae_unlock(u64 cpuindex, u64 guest_slab_index, u64 gpa){
-     xmhf_hic_uapi_mempgtbl_desc_t mdesc;
+static void ae_unlock(u32 cpuindex, u32 guest_slab_index, u64 gpa){
+     slab_params_t spl;
+     xmhf_hic_uapi_mempgtbl_desc_t *mdesc = (xmhf_hic_uapi_mempgtbl_desc_t *)&spl.in_out_params[2];
 
-    _XDPRINTF_("%s[%u]: starting...\n", __FUNCTION__, (u32)cpuindex);
+     spl.src_slabid = XMHF_HYP_SLAB_XHAPPROVEXEC;
+     spl.cpuid = cpuindex;
+     spl.in_out_params[0] = XMHF_HIC_UAPI_MEMPGTBL;
 
-if(ae_activated){
-     //unlock the code page
-     mdesc.guest_slab_index = guest_slab_index;
-     mdesc.gpa = gpa;
+    _XDPRINTF_("%s[%u]: starting...\n", __FUNCTION__, (u16)cpuindex);
 
-     XMHF_HIC_SLAB_UAPI_MEMPGTBL(XMHF_HIC_UAPI_MEMPGTBL_GETENTRY, &mdesc, &mdesc);
-     _XDPRINTF_("%s[%u]: original entry for gpa=%x is %x\n",  __FUNCTION__, (u32)cpuindex, gpa, mdesc.entry);
+    if(ae_activated){
+         //unlock the code page
+         mdesc->guest_slab_index = guest_slab_index;
+         mdesc->gpa = gpa;
 
-    mdesc.entry &= ~(0x7);
-    mdesc.entry |= 0x7; // execute, read-write
+         //XMHF_HIC_SLAB_UAPI_MEMPGTBL(XMHF_HIC_UAPI_MEMPGTBL_GETENTRY, &mdesc, &mdesc);
+         spl.in_out_params[1] = XMHF_HIC_UAPI_MEMPGTBL_GETENTRY;
+         XMHF_SLAB_UAPI(&spl);
 
-    XMHF_HIC_SLAB_UAPI_MEMPGTBL(XMHF_HIC_UAPI_MEMPGTBL_SETENTRY, &mdesc, NULL);
+         _XDPRINTF_("%s[%u]: original entry for gpa=%016llx is %016llx\n",  __FUNCTION__, (u16)cpuindex, gpa, mdesc->entry);
 
+        mdesc->entry &= ~(0x7);
+        mdesc->entry |= 0x7; // execute, read-write
 
-    ae_activated=false;
+        //XMHF_HIC_SLAB_UAPI_MEMPGTBL(XMHF_HIC_UAPI_MEMPGTBL_SETENTRY, &mdesc, NULL);
+        spl.in_out_params[1] = XMHF_HIC_UAPI_MEMPGTBL_GETENTRY;
+        XMHF_SLAB_UAPI(&spl);
 
-    _XDPRINTF_("%s[%u]: restored permissions for page at %x\n", __FUNCTION__, (u32)cpuindex, gpa);
-}
+        ae_activated=false;
+
+        _XDPRINTF_("%s[%u]: restored permissions for page at %016llx\n", __FUNCTION__, (u16)cpuindex, gpa);
+    }
 }
 
 
@@ -175,23 +197,29 @@ if(ae_activated){
 
 
 //initialization
-static void _hcb_initialize(u64 cpuindex){
-	_XDPRINTF_("%s[%u]: approvexec initializing...\n", __FUNCTION__, (u32)cpuindex);
+static void _hcb_initialize(u32 cpuindex){
+	_XDPRINTF_("%s[%u]: approvexec initializing...\n", __FUNCTION__, (u16)cpuindex);
 }
 
 //hypercall
 static void _hcb_hypercall(u64 cpuindex, u64 guest_slab_index){
-    x86regs64_t gprs;
-	u64 call_id;
+    slab_params_t spl;
+    x86regs_t *gprs = (x86regs_t *)&spl.in_out_params[2];
+	u32 call_id;
 	u64 gpa;
 
-    XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSREAD, NULL, &gprs);
+    spl.src_slabid = XMHF_HYP_SLAB_XHAPPROVEXEC;
+    spl.cpuid = cpuindex;
+    spl.in_out_params[0] = XMHF_HIC_UAPI_CPUSTATE;
 
-    call_id = gprs.rax;
-    gpa = gprs.rbx;
+    //XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSREAD, NULL, &gprs);
+    spl.in_out_params[1] = XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSREAD;
+    XMHF_SLAB_UAPI(&spl);
 
-	_XDPRINTF_("%s[%u]: call_id=%x, gpa=%x\n", __FUNCTION__, (u32)cpuindex,
-            call_id, gpa);
+    call_id = gprs->eax;
+    gpa = ((u64)gprs->edx << 32) | gprs->ebx;
+
+	_XDPRINTF_("%s[%u]: call_id=%x, gpa=%016llx\n", __FUNCTION__, (u16)cpuindex, call_id, gpa);
 
 
 	switch(call_id){
@@ -208,7 +236,7 @@ static void _hcb_hypercall(u64 cpuindex, u64 guest_slab_index){
 
 		default:
             _XDPRINTF_("%s[%u]: unsupported hypercall %x. Ignoring\n",
-                       __FUNCTION__, (u32)cpuindex, call_id);
+                       __FUNCTION__, (u16)cpuindex, call_id);
 			break;
 	}
 
@@ -216,16 +244,16 @@ static void _hcb_hypercall(u64 cpuindex, u64 guest_slab_index){
 
 
 //memory fault
-static void _hcb_memoryfault(u64 cpuindex, u64 guest_slab_index, u64 gpa, u64 gva, u64 errorcode){
+static void _hcb_memoryfault(u32 cpuindex, u32 guest_slab_index, u64 gpa, u64 gva, u64 errorcode){
 
-	_XDPRINTF_("%s[%u]: memory fault in guest slab %u; gpa=%x, gva=%x, errorcode=%x, write error to approved code?\n",
-            __FUNCTION__, (u32)cpuindex, guest_slab_index, gpa, gva, errorcode);
+	_XDPRINTF_("%s[%u]: memory fault in guest slab %u; gpa=%016llx, gva=%016llx, errorcode=%016llx, write error to approved code?\n",
+            __FUNCTION__, (u16)cpuindex, guest_slab_index, gpa, gva, errorcode);
 
 }
 
 // shutdown
-static void _hcb_shutdown(u64 cpuindex, u64 guest_slab_index){
-	_XDPRINTF_("%s[%u]: guest slab %u shutdown...\n", __FUNCTION__, (u32)cpuindex, guest_slab_index);
+static void _hcb_shutdown(u32 cpuindex, u32 guest_slab_index){
+	_XDPRINTF_("%s[%u]: guest slab %u shutdown...\n", __FUNCTION__, (u16)cpuindex, guest_slab_index);
 }
 
 
@@ -239,24 +267,25 @@ static void _hcb_shutdown(u64 cpuindex, u64 guest_slab_index){
 //////
 // slab interface
 
-void slab_interface(slab_input_params_t *iparams, u64 iparams_size, slab_output_params_t *oparams, u64 oparams_size, u64 src_slabid, u64 cpuindex){
-    xc_hypappcb_inputparams_t *hcb_iparams = (xc_hypappcb_inputparams_t *)iparams;
-    xc_hypappcb_outputparams_t *hcb_oparams = (xc_hypappcb_outputparams_t *)oparams;
-    hcb_oparams->cbresult=XC_HYPAPPCB_CHAIN;
+//void slab_interface(slab_input_params_t *iparams, u64 iparams_size, slab_output_params_t *oparams, u64 oparams_size, u64 src_slabid, u64 cpuindex){
+void slab_main(slab_params_t *sp){
+    //xc_hypappcb_inputparams_t *hcb_iparams = (xc_hypappcb_inputparams_t *)iparams;
+    //xc_hypappcb_outputparams_t *hcb_oparams = (xc_hypappcb_outputparams_t *)oparams;
+    xc_hypappcb_params_t *hcbp = (xc_hypappcb_params_t *)&sp->in_out_params[0];
+    hcbp->cbresult=XC_HYPAPPCB_CHAIN;
+
+	_XDPRINTF_("%s[%u]: Got control, cbtype=%x: ESP=%08x\n",
+                __FUNCTION__, (u16)sp->cpuid, hcbp->cbtype, read_esp());
 
 
-	_XDPRINTF_("%s[%u]: Got control, cbtype=%x: RSP=%016llx\n",
-                __FUNCTION__, (u32)cpuindex, hcb_iparams->cbtype, read_rsp());
-
-
-    switch(hcb_iparams->cbtype){
+    switch(hcbp->cbtype){
         case XC_HYPAPPCB_INITIALIZE:{
-            _hcb_initialize(cpuindex);
+            _hcb_initialize(sp->cpuid);
         }
         break;
 
         case XC_HYPAPPCB_HYPERCALL:{
-            _hcb_hypercall(cpuindex, hcb_iparams->guest_slab_index);
+            _hcb_hypercall(sp->cpuid, hcbp->guest_slab_index);
         }
         break;
 
@@ -264,17 +293,34 @@ void slab_interface(slab_input_params_t *iparams, u64 iparams_size, slab_output_
          	u64 errorcode;
          	u64 gpa;
          	u64 gva;
+         	slab_params_t spl;
 
-         	XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMREAD, VMCS_INFO_EXIT_QUALIFICATION, &errorcode);
-         	XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMREAD, VMCS_INFO_GUEST_PADDR_FULL, &gpa);
-         	XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMREAD, VMCS_INFO_GUEST_LINEAR_ADDRESS, &gva);
+         	spl.src_slabid = XMHF_HYP_SLAB_XHAPPROVEXEC;
+         	spl.cpuid = sp->cpuid;
+            spl.in_out_params[0] = XMHF_HIC_UAPI_CPUSTATE;
+            spl.in_out_params[1] = XMHF_HIC_UAPI_CPUSTATE_VMREAD;
 
-            _hcb_memoryfault(cpuindex, hcb_iparams->guest_slab_index, gpa, gva, errorcode);
+         	//XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMREAD, VMCS_INFO_EXIT_QUALIFICATION, &errorcode);
+            spl.in_out_params[2] = VMCS_INFO_EXIT_QUALIFICATION;
+            XMHF_SLAB_UAPI(&spl);
+            errorcode = spl.in_out_params[4];
+
+         	//XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMREAD, VMCS_INFO_GUEST_PADDR_FULL, &gpa);
+            spl.in_out_params[2] = VMCS_INFO_GUEST_PADDR_FULL;
+            XMHF_SLAB_UAPI(&spl);
+            gpa = spl.in_out_params[4];
+
+         	//XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMREAD, VMCS_INFO_GUEST_LINEAR_ADDRESS, &gva);
+            spl.in_out_params[2] = VMCS_INFO_GUEST_LINEAR_ADDRESS;
+            XMHF_SLAB_UAPI(&spl);
+            gva = spl.in_out_params[4];
+
+            _hcb_memoryfault(sp->cpuid, hcbp->guest_slab_index, gpa, gva, errorcode);
         }
         break;
 
         case XC_HYPAPPCB_SHUTDOWN:{
-            _hcb_shutdown(cpuindex, hcb_iparams->guest_slab_index);
+            _hcb_shutdown(sp->cpuid, hcbp->guest_slab_index);
         }
         break;
 
@@ -299,7 +345,7 @@ void slab_interface(slab_input_params_t *iparams, u64 iparams_size, slab_output_
 
         default:{
             _XDPRINTF_("%s[%u]: Unknown cbtype. Halting!\n",
-                __FUNCTION__, (u32)cpuindex);
+                __FUNCTION__, (u16)sp->cpuid);
             //HALT();
         }
     }

@@ -51,7 +51,8 @@
 
 
 #include <xmhf.h>
-#include <xmhfhicslab.h>
+//#include <xmhfhicslab.h>
+#include <xmhf-hic.h>
 #include <xmhf-debug.h>
 
 /*
@@ -72,6 +73,9 @@ __attribute__((naked)) bool __slab_calluapi(u64 reserved_uapicall,
         u64 reserved_uapicall_num,  u64 uapi_subfn,
         u64 reserved, u64 iparams, u64 oparams){
 
+
+/*
+    // TODO: x86_64 --> x86
     asm volatile (
         "movq %%rsp, %%r10 \r\n"
         "movq $1f, %%r11 \r\n"\
@@ -83,6 +87,13 @@ __attribute__((naked)) bool __slab_calluapi(u64 reserved_uapicall,
         :
         :
     );
+*/
 
+}
+
+
+void __slab_calluapinew(slab_params_t *sp){
+
+    __xmhfhic_rtm_uapihandler(sp);
 
 }

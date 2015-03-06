@@ -56,7 +56,7 @@ extern x_slab_info_t _x_xmhfhic_common_slab_info_table[XMHF_HIC_MAX_SLABS];
 
 
 //////
-XMHF_SLAB(xcinit)
+XMHF_SLABNEW(xcinit)
 
 /*
  * slab code
@@ -583,24 +583,25 @@ __attribute__((aligned(4096))) static u64 _xcguestslab_init_pdt[(PAE_PTRS_PER_PD
 
 __attribute__(( aligned(16) )) static u64 _xcguestslab_init_gdt[]  = {
 	0x0000000000000000ULL,	//NULL descriptor
-	0x00af9b000000ffffULL,	//CPL-0 64-bit code descriptor (CS64)
-	0x00af93000000ffffULL,	//CPL-0 64-bit data descriptor (DS/SS/ES/FS/GS)
+	0x00cf9b000000ffffULL,	//CPL-0 32-bit code descriptor (CS32)
+	0x00cf93000000ffffULL,	//CPL-0 32-bit data descriptor (DS/SS/ES/FS/GS)
 	0x0000000000000000ULL,	//NULL descriptor
 };
 
 
 
 
-void slab_interface(slab_input_params_t *iparams, u64 iparams_size, slab_output_params_t *oparams, u64 oparams_size, u64 src_slabid, u64 cpuid){
-    bool isbsp = (cpuid & 0x8000000000000000ULL) ? true : false;
+void slab_main(slab_params_t *sp){
+
+    bool isbsp = (sp->cpuid & 0x80000000UL) ? true : false;
     u64 inputval, outputval;
     static u64 cpucount=0;
     static u32 __xcinit_smplock = 1;
 
-	_XDPRINTF_("%s[%u]: Got control: RSP=%016llx\n", __FUNCTION__, (u32)cpuid, read_rsp());
+	_XDPRINTF_("%s[%u]: Got control: ESP=%08x\n", __FUNCTION__, (u16)sp->cpuid, read_esp());
 
     if(!isbsp){
-        _XDPRINTF_("%s[%u]: AP Halting!\n", __FUNCTION__, (u32)cpuid);
+        _XDPRINTF_("%s[%u]: AP Halting!\n", __FUNCTION__, (u16)sp->cpuid);
 
         spin_lock(&__xcinit_smplock);
         cpucount++;
@@ -610,36 +611,66 @@ void slab_interface(slab_input_params_t *iparams, u64 iparams_size, slab_output_
     }else{
         //BSP
         _XDPRINTF_("%s[%u]: BSP waiting to rally APs...\n",
-                __FUNCTION__, (u32)cpuid);
+                __FUNCTION__, (u16)sp->cpuid);
 
         while(cpucount < (xcbootinfo->cpuinfo_numentries-1));
 
         _XDPRINTF_("%s[%u]: BSP, APs halted. Proceeding...\n",
-                __FUNCTION__, (u32)cpuid);
+                __FUNCTION__, (u16)sp->cpuid);
     }
 
 
-    {
-        u64 entries_pml4t[PAE_PTRS_PER_PML4T];
-        u64 entries_pdpt[PAE_PTRS_PER_PDPT];
+    //test exception
+    //{
+    //    asm volatile ("int $0x03 \r\n");
+    // }
 
-        u64 guest_slab_header_paddr = _xmhfhic_common_slab_info_table[XMHF_GUEST_SLAB_XCGUESTSLAB].slab_physmem_extents[1].addr_start;
+
+
+
+    {
+        /*u64 entries_pml4t[PAE_PTRS_PER_PML4T];
+        u64 entries_pdpt[PAE_PTRS_PER_PDPT];
+        */
+        u32 guest_slab_header_paddr = _xmhfhic_common_slab_info_table[XMHF_GUEST_SLAB_XCGUESTSLAB].slab_physmem_extents[1].addr_start;
+        /*
         u64 guest_slab_pml4t_paddr = guest_slab_header_paddr + offsetof(guest_slab_header_t, lvl2mempgtbl_pml4t);
         u64 guest_slab_pdpt_paddr = guest_slab_header_paddr + offsetof(guest_slab_header_t, lvl2mempgtbl_pdpt);
-        u64 guest_slab_pdts_paddr = guest_slab_header_paddr + offsetof(guest_slab_header_t, lvl2mempgtbl_pdts);        u64 guest_slab_gdt_paddr = guest_slab_header_paddr + offsetof(guest_slab_header_t, gdt);
-        u64 guest_slab_magic_paddr = guest_slab_header_paddr + offsetof(guest_slab_header_t, magic);
-        u64 guest_slab_magic;
-        xmhf_hic_uapi_physmem_desc_t pdesc;
+        u64 guest_slab_pdts_paddr = guest_slab_header_paddr + offsetof(guest_slab_header_t, lvl2mempgtbl_pdts);
+        */
+        u32 guest_slab_gdt_paddr = guest_slab_header_paddr + offsetof(guest_slab_header_t, gdt);
+        u32 guest_slab_magic_paddr = guest_slab_header_paddr + offsetof(guest_slab_header_t, magic);
+        u32 guest_slab_magic;
+        //xmhf_hic_uapi_physmem_desc_t pdesc;
 
-        pdesc.guest_slab_index = XMHF_GUEST_SLAB_XCGUESTSLAB;
-        pdesc.addr_to = &guest_slab_magic;
-        pdesc.addr_from = guest_slab_magic_paddr;
-        pdesc.numbytes = sizeof(guest_slab_magic);
-        XMHF_HIC_SLAB_UAPI_PHYSMEM(XMHF_HIC_UAPI_PHYSMEM_PEEK, &pdesc, NULL);
-
-        _XDPRINTF_("%s[%u]: guest slab header magic=%x\n", __FUNCTION__, (u32)cpuid, guest_slab_magic);
+        //pdesc.guest_slab_index = XMHF_GUEST_SLAB_XCGUESTSLAB;
+        //pdesc.addr_to = &guest_slab_magic;
+        //pdesc.addr_from = guest_slab_magic_paddr;
+        //pdesc.numbytes = sizeof(guest_slab_magic);
+        //XMHF_HIC_SLAB_UAPI_PHYSMEM(XMHF_HIC_UAPI_PHYSMEM_PEEK, &pdesc, NULL);
 
 
+        //get and dump slab header magic
+        {
+            slab_params_t spl;
+            xmhf_hic_uapi_physmem_desc_t *pdesc = (xmhf_hic_uapi_physmem_desc_t *)&spl.in_out_params[2];
+
+            pdesc->guest_slab_index = XMHF_GUEST_SLAB_XCGUESTSLAB;
+            pdesc->addr_to = &guest_slab_magic;
+            pdesc->addr_from = guest_slab_magic_paddr;
+            pdesc->numbytes = sizeof(guest_slab_magic);
+
+            spl.in_out_params[0] = XMHF_HIC_UAPI_PHYSMEM;
+            spl.in_out_params[1] = XMHF_HIC_UAPI_PHYSMEM_PEEK;
+            spl.cpuid = sp->cpuid;
+            spl.src_slabid = XMHF_HYP_SLAB_XCINIT;
+
+            XMHF_SLAB_UAPI(&spl);
+            _XDPRINTF_("%s[%u]: guest slab header magic=%x\n", __FUNCTION__, (u16)sp->cpuid, guest_slab_magic);
+        }
+
+
+/*
         //initialize guest slab level-2 page tables shape
         {
             u32 i;
@@ -666,40 +697,89 @@ void slab_interface(slab_input_params_t *iparams, u64 iparams_size, slab_output_
             pdesc.addr_from = &_xcguestslab_init_pdt;
             pdesc.numbytes = sizeof(_xcguestslab_init_pdt);
             XMHF_HIC_SLAB_UAPI_PHYSMEM(XMHF_HIC_UAPI_PHYSMEM_POKE, &pdesc, NULL);
-        }
+        }*/
 
         //initialize guest slab gdt
-        pdesc.addr_to = guest_slab_gdt_paddr;
-        pdesc.addr_from = &_xcguestslab_init_gdt;
-        pdesc.numbytes = sizeof(_xcguestslab_init_gdt);
-        XMHF_HIC_SLAB_UAPI_PHYSMEM(XMHF_HIC_UAPI_PHYSMEM_POKE, &pdesc, NULL);
+        {
+            slab_params_t spl;
+            xmhf_hic_uapi_physmem_desc_t *pdesc = (xmhf_hic_uapi_physmem_desc_t *)&spl.in_out_params[2];
 
+            pdesc->guest_slab_index = XMHF_GUEST_SLAB_XCGUESTSLAB;
+            pdesc->addr_to = guest_slab_gdt_paddr;
+            pdesc->addr_from = &_xcguestslab_init_gdt;
+            pdesc->numbytes = sizeof(_xcguestslab_init_gdt);
+
+            spl.in_out_params[0] = XMHF_HIC_UAPI_PHYSMEM;
+            spl.in_out_params[1] = XMHF_HIC_UAPI_PHYSMEM_POKE;
+            spl.cpuid = sp->cpuid;
+            spl.src_slabid = XMHF_HYP_SLAB_XCINIT;
+
+            XMHF_SLAB_UAPI(&spl);
+        }
 
         //initialize guest slab VMCS PDPT, CR3 and GDTR fields
-        XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMWRITE, VMCS_GUEST_PDPTE0_FULL, entries_pdpt[0]);
+        /*XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMWRITE, VMCS_GUEST_PDPTE0_FULL, entries_pdpt[0]);
         XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMWRITE, VMCS_GUEST_PDPTE1_FULL, entries_pdpt[1]);
         XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMWRITE, VMCS_GUEST_PDPTE2_FULL, entries_pdpt[2]);
         XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMWRITE, VMCS_GUEST_PDPTE3_FULL, entries_pdpt[3]);
+        */
 
-        XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMWRITE, VMCS_GUEST_CR3, guest_slab_pml4t_paddr);
+        //XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMWRITE, VMCS_GUEST_CR3, guest_slab_pml4t_paddr);
 
-        XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMWRITE, VMCS_GUEST_GDTR_BASE, guest_slab_gdt_paddr);
-        XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMWRITE, VMCS_GUEST_GDTR_LIMIT, (sizeof(_xcguestslab_init_gdt)-1));
+        //setup guest slab VMCS GDT base and limit
+        {
+            slab_params_t spl;
+
+            spl.cpuid = sp->cpuid;
+            spl.src_slabid = XMHF_HYP_SLAB_XCINIT;
+
+            spl.in_out_params[0] = XMHF_HIC_UAPI_CPUSTATE;
+            spl.in_out_params[1] = XMHF_HIC_UAPI_CPUSTATE_VMWRITE;
+            spl.in_out_params[3] = 0;
+            spl.in_out_params[2] = VMCS_GUEST_GDTR_BASE;
+            spl.in_out_params[5] = 0;
+            spl.in_out_params[4] = guest_slab_gdt_paddr;
+
+            XMHF_SLAB_UAPI(&spl);
+
+            spl.in_out_params[2] = VMCS_GUEST_GDTR_LIMIT;
+            spl.in_out_params[4] =  (sizeof(_xcguestslab_init_gdt)-1);
+
+            XMHF_SLAB_UAPI(&spl);
+
+        }
 
 
     }
 
 
+/*    //debug
+    _XDPRINTF_("Halting!\n");
+    _XDPRINTF_("XMHF Tester Finished!\n");
+    HALT();
+*/
+
     //invoke hypapp initialization callbacks
-    xc_hcbinvoke(XC_HYPAPPCB_INITIALIZE, 0, XMHF_GUEST_SLAB_XCGUESTSLAB);
+    xc_hcbinvoke(XMHF_HYP_SLAB_XCINIT,
+                 sp->cpuid, XC_HYPAPPCB_INITIALIZE, 0, XMHF_GUEST_SLAB_XCGUESTSLAB);
 
 
     //call guestslab
-    _XDPRINTF_("%s[%u]: Proceeding to call xcguestslab; RSP=%016llx\n", __FUNCTION__, (u32)cpuid, read_rsp());
-    XMHF_SLAB_CALL(xcguestslab, XMHF_GUEST_SLAB_XCGUESTSLAB, NULL, 0, NULL, 0);
+    {
+        slab_params_t spl;
+
+        memset(&spl, 0, sizeof(spl));
+        spl.cpuid = sp->cpuid;
+        spl.src_slabid = XMHF_HYP_SLAB_XCINIT;
+        spl.dst_slabid = XMHF_GUEST_SLAB_XCGUESTSLAB;
+
+        _XDPRINTF_("%s[%u]: Proceeding to call xcguestslab; ESP=%08x\n", __FUNCTION__, (u16)sp->cpuid, read_esp());
+
+        XMHF_SLAB_CALLNEW(&spl);
+    }
 
 
-    _XDPRINTF_("%s[%u]: Should  never get here.Halting!\n", __FUNCTION__, (u32)cpuid);
+    _XDPRINTF_("%s[%u]: Should  never get here.Halting!\n", __FUNCTION__, (u16)sp->cpuid);
     HALT();
 
     return;

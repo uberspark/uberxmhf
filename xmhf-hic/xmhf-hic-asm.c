@@ -48,10 +48,16 @@
 #include <xmhf-hic.h>
 #include <xmhf-debug.h>
 
+
+// initialization phase CPU stacks
+__attribute__(( section(".stack") )) __attribute__(( aligned(4096) )) static u8 _init_cpustacks[MAX_PLATFORM_CPUS][MAX_PLATFORM_CPUSTACK_SIZE];
+
+
 // XMHF HIC prime assembly language code blobs
 // author: amit vasudevan (amitvasudevan@acm.org)
 
-
+/*
+// TODO: x86_64 --> x86
 __attribute__((aligned(4096))) static u64 _xcprimeon_init_pdt[(PAE_PTRS_PER_PDPT*PAE_PTRS_PER_PDT)] = {
 	0x0000000000000087,0x0000000000200087,0x0000000000400087,0x0000000000600087,
 	0x0000000000800087,0x0000000000a00087,0x0000000000c00087,0x0000000000e00087,
@@ -579,9 +585,9 @@ __attribute__((aligned(4096))) static u64 _xcprimeon_init_pml4t[PAE_MAXPTRS_PER_
     ((u64)(&_xcprimeon_init_pdpt) + (u64)(_PAGE_PRESENT | _PAGE_RW | _PAGE_USER) ),
     0
 };
+*/
 
-
-__attribute__(( aligned(16) )) static u64 _xcprimeon_init_gdt_start[]  = {
+/*__attribute__(( aligned(16) )) static u64 _xcprimeon_init_gdt_start[]  = {
 	0x0000000000000000ULL,	//NULL descriptor
 	0x00af9b000000ffffULL,	//CPL-0 64-bit code descriptor (CS64)
 	0x00af93000000ffffULL,	//CPL-0 64-bit data descriptor (DS/SS/ES/FS/GS)
@@ -590,11 +596,13 @@ __attribute__(( aligned(16) )) static u64 _xcprimeon_init_gdt_start[]  = {
 __attribute__(( aligned(16) )) static arch_x86_gdtdesc_t _xcprimeon_init_gdt  = {
 	.size=sizeof(_xcprimeon_init_gdt_start)-1,
 	.base=&_xcprimeon_init_gdt_start,
-};
+};*/
 
 
-__attribute__((naked)) __attribute__ ((section(".hic_entrystub"))) __attribute__(( align(4096) )) void xcprimeon_arch_entry(void) {
+/* __attribute__((naked)) __attribute__ ((section(".hic_entrystub"))) __attribute__(( align(4096) )) void xcprimeon_arch_entry(void) {
 
+
+	//TODO: x86_64 --> x86
 	asm volatile (
                     ".code32 \r\n"
 					".fill 4096, 1, 0 \r\n"
@@ -649,10 +657,47 @@ __attribute__((naked)) __attribute__ ((section(".hic_entrystub"))) __attribute__
 
                     "jmp xmhfhic_entry \r\n"
 			    :
-			    : "i" (&_xcprimeon_init_pml4t), "i" (&_xcprimeon_init_gdt)
+			    : "i" (&_init_cpustacks + &_xcprimeon_init_pml4t), "i" (&_xcprimeon_init_gdt)
                 :
 	);
+
+
+}*/
+
+
+
+
+__attribute__((naked)) __attribute__ ((section(".hic_entrystub"))) __attribute__(( align(4096) )) void xcprimeon_arch_entry(void) {
+
+
+	asm volatile (
+                    ".code32 \r\n"
+					".fill 4096, 1, 0 \r\n"
+					".fill 4096, 1, 0 \r\n"
+					".fill 4096, 1, 0 \r\n"
+					".fill 0x80, 1, 0x90\r\n" //TODO: should really be sizeof(mle_hdr_t)
+					"_xcprimeon_start: \r\n"
+
+					"movw %%ds, %%ax \r\n"
+					"movw %%ax, %%es \r\n"
+					"movw %%ax, %%fs \r\n"
+					"movw %%ax, %%gs \r\n"
+					"movw %%ax, %%ss \r\n"
+
+					//"movl $0x10200000, %%esp \r\n" //TODO: get rid of hard-coded stack top
+
+					"movl %0, %%eax \r\n"
+					"movl %%eax, %%esp \r\n"
+
+                    "call xmhfhic_entry \r\n"
+			    :
+			    : "i" (&_init_cpustacks[1])
+                :
+	);
+
+
 }
+
 
 
 
@@ -690,12 +735,12 @@ __attribute__(( aligned(16) )) static arch_x86_gdtdesc_t _xcsmp_ap_init_gdt  = {
 	.base=&_xcsmp_ap_init_gdt_start,
 };
 
-// initialization phase CPU stacks
-__attribute__(( section(".stack") )) __attribute__(( aligned(4096) )) static u8 _init_cpustacks[MAX_PLATFORM_CPUS][MAX_PLATFORM_CPUSTACK_SIZE];
 
 
 __attribute__((naked)) void _ap_bootstrap_code(void) {
 
+/*
+    //TODO: x86_64 --> x86
     asm volatile (
            " .code32 \r\n"
            " movw %0, %%ax \r\n"
@@ -722,6 +767,37 @@ __attribute__((naked)) void _ap_bootstrap_code(void) {
             :
 
         );
+*/
+
+
+    asm volatile (
+           " .code32 \r\n"
+           " movw %0, %%ax \r\n"
+           " movw %%ax, %%ds \r\n"
+
+           " movl %1, %%eax \r\n"
+           " movl (%%eax), %%eax \r\n"
+
+           " movl %2, %%ebx \r\n"
+           " movl (%%ebx), %%ebx \r\n"
+
+           " movl %3, %%edi \r\n"
+           " movl (%%edi), %%edi \r\n"
+
+           " jmpl *%%eax \r\n"
+           " hlt \r\n"
+           " .balign 4096 \r\n"
+            :
+            : "i" (__DS_CPL0),
+              "i" ((X86SMP_APBOOTSTRAP_DATASEG << 4) + offsetof(x86smp_apbootstrapdata_t, ap_entrypoint)),
+              "i" ((X86SMP_APBOOTSTRAP_DATASEG << 4) + offsetof(x86smp_apbootstrapdata_t, ap_cr3)),
+              "i" ((X86SMP_APBOOTSTRAP_DATASEG << 4) + offsetof(x86smp_apbootstrapdata_t, cpuidtable))
+            :
+
+        );
+
+
+
 }
 
 
@@ -733,6 +809,7 @@ __attribute__((naked)) void _ap_bootstrap_code(void) {
 bool __xmhfhic_ap_entry(void) __attribute__((naked)){
     extern u64 _ap_cr3;
 
+/*    //TODO: x86_64 --> x86
     asm volatile(
                     ".code32 \r\n"
 					"_xcsmp_ap_start: \r\n"
@@ -819,6 +896,81 @@ bool __xmhfhic_ap_entry(void) __attribute__((naked)){
 
                     :
 	);
+*/
+
+
+
+    asm volatile(
+                    ".code32 \r\n"
+					"_xcsmp_ap_start: \r\n"
+
+					"movw %%ds, %%ax \r\n"
+					"movw %%ax, %%es \r\n"
+					"movw %%ax, %%fs \r\n"
+					"movw %%ax, %%gs \r\n"
+					"movw %%ax, %%ss \r\n"
+
+    				"movl %%cr4, %%eax \r\n"
+   					"orl $0x00000030, %%eax \r\n"
+   					"movl %%eax, %%cr4 \r\n"
+
+                    "movl %%ebx, %%cr3 \r\n"
+
+                    "movl $0xc0000080, %%ecx \r\n"
+                    "rdmsr \r\n"
+                    "orl $0x00000800, %%eax \r\n"
+                    "wrmsr \r\n"
+
+                    "movl %%cr0, %%eax \r\n"
+                    "orl $0x80000015, %%eax \r\n"
+                    "movl %%eax, %%cr0 \r\n"
+
+                    //TODO: for non-TXT wakeup we need to reload GDT
+                    //"movl %1, %%esi \r\n"
+                    //"lgdt (%%esi) \r\n"
+
+                    "movl %2, %%ecx \r\n"
+                    "rdmsr \r\n"
+                    "andl $0x00000FFF, %%eax \r\n"
+                    "orl %3, %%eax \r\n"
+                    "wrmsr \r\n"
+
+					:
+					:   "i" (0), //unused
+                        "i" (0), //unused
+                        "i" (MSR_APIC_BASE),
+                        "i" (X86SMP_LAPIC_MEMORYADDRESS)
+	);
+
+
+
+    asm volatile(   ".code32 \r\n"
+                 	"xorl %%eax, %%eax \r\n"                //EAX=0
+                 	"movl %0, %%eax\r\n"                    //EAX=X86SMP_LAPIC_ID_MEMORYADDRESS
+					"movl (%%eax), %%eax\r\n"               //EAX(bits 0-7)=LAPIC ID
+					"shr $24, %%eax\r\n"                    //EAX=LAPIC ID
+
+                    "xorl %%ebx, %%ebx \r\n"                //EBX=0
+                    "movl %%edi, %%ebx \r\n"                //EBX=&__xmhfhic_x86vmx_cpuidtable
+
+                    "movl (%%ebx, %%eax, 4), %%eax \r\n"    //EAX= 0-based cpu index for the CPU
+
+					"movl %2, %%ecx \r\n"					//ecx = sizeof(_cpustack[0])
+					"mull %%ecx \r\n"						//eax = sizeof(_cpustack[0]) * eax
+					"addl %%ecx, %%eax \r\n"				//eax = (sizeof(_cpustack[0]) * eax) + sizeof(_cpustack[0])
+					"addl %3, %%eax \r\n"				    //eax = &_cpustack + (sizeof(_cpustack[0]) * eax) + sizeof(_cpustack[0])
+					"movl %%eax, %%esp \r\n"				//esp = top of stack for the cpu
+
+                    "jmp __xmhfhic_smp_cpu_x86_smpinitialize_commonstart \r\n"
+
+					:
+					:   "i" (X86SMP_LAPIC_ID_MEMORYADDRESS),
+                        "i" (0), //unused
+                        "i" (sizeof(_init_cpustacks[0])),
+                        "i" (&_init_cpustacks)
+
+                    :
+	);
 
 
 }
@@ -853,28 +1005,34 @@ bool __xmhfhic_ap_entry(void) __attribute__((naked)){
 // setup cpu state for hic
 
 
+
 //load GDT and initialize segment registers
 void __xmhfhic_x86vmx_loadGDT(arch_x86_gdtdesc_t *gdt_addr){
 
+    xmhfhw_cpu_loadGDT(gdt_addr);
+
 	asm volatile(
-		"lgdt  %0 \r\n"
-		"pushq	%1 \r\n"				// far jump to runtime entry point
-		"pushq	$reloadsegs \r\n"
-		"lretq \r\n"
+		"pushl	%0 \r\n"				// far jump to reload CS
+		"pushl	$reloadsegs \r\n"
+		"lret \r\n"
 		"reloadsegs: \r\n"
-		"movw	%2, %%ax \r\n"
+		"movw	%1, %%ax \r\n"
 		"movw	%%ax, %%ds \r\n"
 		"movw	%%ax, %%es \r\n"
 		"movw	%%ax, %%fs \r\n"
 		"movw	%%ax, %%gs \r\n"
 		"movw   %%ax, %%ss \r\n"
 		: //no outputs
-		: "m" (*gdt_addr), "i" (__CS_CPL0), "i" (__DS_CPL0)
+		: "i" (__CS_CPL0), "i" (__DS_CPL0)
 		: "eax"
 	);
+
+
 }
 
 
+
+/*
 //load IDT
 void __xmhfhic_x86vmx_loadIDT(arch_x86_idtdesc_t *idt_addr){
 	//load IDT
@@ -886,8 +1044,14 @@ void __xmhfhic_x86vmx_loadIDT(arch_x86_idtdesc_t *idt_addr){
 	);
 }
 
+*/
+
+/*
+
 //load TR
 void __xmhfhic_x86vmx_loadTR(u64 cpuid){
+
+      //TODO:x86_64 --> x86
 	  asm volatile(
 		"movq %0, %%rax\r\n"
 		"ltr %%ax\r\n"				//load TR
@@ -895,23 +1059,25 @@ void __xmhfhic_x86vmx_loadTR(u64 cpuid){
 	     : "g"(__TRSEL + ((u32)cpuid * 16) )
 	     : "rax"
 	  );
+
 }
+
+*/
 
 
 //set IOPl to CPl-3
 void __xmhfhic_x86vmx_setIOPL3(u64 cpuid){
 
 	asm volatile(
-        "pushfq \r\n"
-        "popq %%rax \r\n"
-		"orq $0x3000, %%rax \r\n"					// clear flags, but set IOPL=3 (CPL-3)
-		"pushq %%rax \r\n"
-		"popfq \r\n"
+        "pushfl \r\n"
+        "popl %%eax \r\n"
+		"orl $0x3000, %%eax \r\n"					// clear flags, but set IOPL=3 (CPL-3)
+		"pushl %%eax \r\n"
+		"popfl \r\n"
 		: //no outputs
 		: //no inputs
-		: "rax", "cc"
+		: "eax", "cc"
 	);
-
 
 }
 
@@ -940,6 +1106,8 @@ void __xmhfhic_x86vmx_setIOPL3(u64 cpuid){
 
 void xmhfhic_arch_relinquish_control_to_init_slab(u64 cpuid, u64 entrystub, u64 mempgtbl_cr3, u64 slabtos){
 
+/*
+    //TODO: x86_64 --> x86
     //switch page tables to init slab pagetables
     asm volatile(
          "movq %0, %%rax \r\n"
@@ -950,18 +1118,16 @@ void xmhfhic_arch_relinquish_control_to_init_slab(u64 cpuid, u64 entrystub, u64 
     );
 
 
-    /*
 
-    RDI = iparams
-    RSI = iparams_size
-    RDX = slab entrystub; used for SYSEXIT
-    RCX = slab entrystub stack TOS for the CPU; used for SYSEXIT
-    R8 = oparams
-    R9 = oparams_size
-    R10 = src_slabid
-    R11 = cpuid
+    //RDI = iparams
+    //RSI = iparams_size
+    //RDX = slab entrystub; used for SYSEXIT
+    //RCX = slab entrystub stack TOS for the CPU; used for SYSEXIT
+    //R8 = oparams
+    //R9 = oparams_size
+    //R10 = src_slabid
+    //R11 = cpuid
 
-    */
 
     asm volatile(
          "movq %0, %%rdi \r\n"
@@ -988,7 +1154,7 @@ void xmhfhic_arch_relinquish_control_to_init_slab(u64 cpuid, u64 entrystub, u64 
 
         : "rdi", "rsi", "rdx", "rcx", "r8", "r9", "r10", "r11"
     );
-
+*/
 
 }
 
@@ -1042,22 +1208,22 @@ void xmhfhic_arch_relinquish_control_to_init_slab(u64 cpuid, u64 entrystub, u64 
 
 //HIC runtime trampoline stub
 
-/*
-__xmhfhic_rtm_trampoline stub entry register mappings:
+//__xmhfhic_rtm_trampoline stub entry register mappings:
+//
+//RDI = call type (XMHF_HIC_SLABCALL)
+//RSI = iparams
+//RDX = iparams_size
+//RCX = oparams
+//R8 = oparams_size
+//R9 = dst_slabid
+//R10 = return RSP;
+//R11 = return_address
 
-RDI = call type (XMHF_HIC_SLABCALL)
-RSI = iparams
-RDX = iparams_size
-RCX = oparams
-R8 = oparams_size
-R9 = dst_slabid
-R10 = return RSP;
-R11 = return_address
-
-*/
 
 __attribute__((naked)) void __xmhfhic_rtm_trampoline_stub(void){
 
+/*
+    //TODO: x86_64 --> x86
     asm volatile (
         "cmpq %0, %%rdi \r\n"
         "je 1f \r\n"
@@ -1106,7 +1272,10 @@ __attribute__((naked)) void __xmhfhic_rtm_trampoline_stub(void){
       : "i" (XMHF_HIC_UAPI), "i" (X86SMP_LAPIC_ID_MEMORYADDRESS)
       :
     );
+
+    */
 }
+
 
 
 
@@ -1138,8 +1307,36 @@ R9 = dst_slabid
 */
 
 
-__attribute__((naked)) void __xmhfhic_rtm_exception_stub(void){
+//__attribute__((naked)) void __xmhfhic_rtm_exception_stub(void){
 
+void __xmhfhic_rtm_exception_stub(x86vmx_exception_frame_t *exframe){
+
+//    _XDPRINTF_("%s: exception: vector=%x, error_code=%x. Halting!\n", __FUNCTION__,
+//               exframe->vector, exframe->error_code);
+//    HALT();
+
+    slab_params_t spl;
+
+    memset(&spl, 0, sizeof(spl));
+
+    spl.cpuid = __xmhfhic_x86vmx_cpuidtable[xmhf_baseplatform_arch_x86_getcpulapicid()];
+
+    //store exception frame
+    memcpy(&spl.in_out_params[0], exframe,
+           sizeof(x86vmx_exception_frame_t));
+
+    //call xcexhub
+    spl.src_slabid = 0xFFFFFFFFUL; //todo: grab source slab id
+    spl.dst_slabid = XMHF_HYP_SLAB_XCEXHUB;
+    XMHF_SLAB_CALLNEW(&spl);
+
+    //load exception frame
+    memcpy(exframe, &spl.in_out_params[0],
+           sizeof(x86vmx_exception_frame_t) );
+
+
+/*
+    //TODO: x86_64 --> x86
 	asm volatile(
                         "pushq %%rsp \r\n"
                         "pushq %%rbp \r\n"
@@ -1208,9 +1405,11 @@ __attribute__((naked)) void __xmhfhic_rtm_exception_stub(void){
 					    "i" (X86SMP_LAPIC_ID_MEMORYADDRESS)
                     :
 		);
+    */
+
 }
 
-
+/* x86_64
 #define XMHF_EXCEPTION_HANDLER_DEFINE(vector) 												\
 	static void __xmhf_exception_handler_##vector(void) __attribute__((naked)) { 					\
 		asm volatile(												\
@@ -1228,6 +1427,42 @@ __attribute__((naked)) void __xmhfhic_rtm_exception_stub(void){
                         "pushq $0x0 \r\n" \
                         "pushq %0 \r\n"\
                         "jmp __xmhfhic_rtm_exception_stub\r\n"\
+					: \
+					: "i" (vector) \
+                    : \
+               		);	\
+    }\
+*/
+
+#define XMHF_EXCEPTION_HANDLER_DEFINE(vector) 												\
+	static void __xmhf_exception_handler_##vector(void) __attribute__((naked)) { 					\
+		asm volatile(												\
+                        "pushl %0 \r\n"\
+                        "pushal \r\n" \
+                        "pushl %%esp \r\n" \
+                        "call __xmhfhic_rtm_exception_stub\r\n"\
+                        "addl $0x4, %%esp \r\n" \
+                        "popal \r\n" \
+                        "addl $0x08, %%esp \r\n" \
+                        "iretl \r\n" \
+					: \
+					: "i" (vector) \
+                    : \
+               		);	\
+    }\
+
+#define XMHF_EXCEPTION_HANDLER_DEFINE_WITHERRORCODE(vector) 												\
+	static void __xmhf_exception_handler_##vector(void) __attribute__((naked)) { 					\
+		asm volatile(												\
+                        "pushl $0x0 \r\n" \
+                        "pushl %0 \r\n"\
+                        "pushal \r\n" \
+                        "pushl %%esp \r\n" \
+                        "call __xmhfhic_rtm_exception_stub\r\n"\
+                        "addl $0x4, %%esp \r\n" \
+                        "popal \r\n" \
+                        "addl $0x08, %%esp \r\n" \
+                        "iretl \r\n" \
 					: \
 					: "i" (vector) \
                     : \
@@ -1270,7 +1505,44 @@ XMHF_EXCEPTION_HANDLER_DEFINE_WITHERRORCODE(29)
 XMHF_EXCEPTION_HANDLER_DEFINE_WITHERRORCODE(30)
 XMHF_EXCEPTION_HANDLER_DEFINE_WITHERRORCODE(31)
 
+/* x86_64
 u64  __xmhfhic_exceptionstubs[] = { XMHF_EXCEPTION_HANDLER_ADDROF(0),
+							XMHF_EXCEPTION_HANDLER_ADDROF(1),
+							XMHF_EXCEPTION_HANDLER_ADDROF(2),
+							XMHF_EXCEPTION_HANDLER_ADDROF(3),
+							XMHF_EXCEPTION_HANDLER_ADDROF(4),
+							XMHF_EXCEPTION_HANDLER_ADDROF(5),
+							XMHF_EXCEPTION_HANDLER_ADDROF(6),
+							XMHF_EXCEPTION_HANDLER_ADDROF(7),
+							XMHF_EXCEPTION_HANDLER_ADDROF(8),
+							XMHF_EXCEPTION_HANDLER_ADDROF(9),
+							XMHF_EXCEPTION_HANDLER_ADDROF(10),
+							XMHF_EXCEPTION_HANDLER_ADDROF(11),
+							XMHF_EXCEPTION_HANDLER_ADDROF(12),
+							XMHF_EXCEPTION_HANDLER_ADDROF(13),
+							XMHF_EXCEPTION_HANDLER_ADDROF(14),
+							XMHF_EXCEPTION_HANDLER_ADDROF(15),
+							XMHF_EXCEPTION_HANDLER_ADDROF(16),
+							XMHF_EXCEPTION_HANDLER_ADDROF(17),
+							XMHF_EXCEPTION_HANDLER_ADDROF(18),
+							XMHF_EXCEPTION_HANDLER_ADDROF(19),
+							XMHF_EXCEPTION_HANDLER_ADDROF(20),
+							XMHF_EXCEPTION_HANDLER_ADDROF(21),
+							XMHF_EXCEPTION_HANDLER_ADDROF(22),
+							XMHF_EXCEPTION_HANDLER_ADDROF(23),
+							XMHF_EXCEPTION_HANDLER_ADDROF(24),
+							XMHF_EXCEPTION_HANDLER_ADDROF(25),
+							XMHF_EXCEPTION_HANDLER_ADDROF(26),
+							XMHF_EXCEPTION_HANDLER_ADDROF(27),
+							XMHF_EXCEPTION_HANDLER_ADDROF(28),
+							XMHF_EXCEPTION_HANDLER_ADDROF(29),
+							XMHF_EXCEPTION_HANDLER_ADDROF(30),
+							XMHF_EXCEPTION_HANDLER_ADDROF(31),
+};
+
+*/
+
+u32  __xmhfhic_exceptionstubs[] = { XMHF_EXCEPTION_HANDLER_ADDROF(0),
 							XMHF_EXCEPTION_HANDLER_ADDROF(1),
 							XMHF_EXCEPTION_HANDLER_ADDROF(2),
 							XMHF_EXCEPTION_HANDLER_ADDROF(3),
@@ -1317,12 +1589,44 @@ u64  __xmhfhic_exceptionstubs[] = { XMHF_EXCEPTION_HANDLER_ADDROF(0),
 
 
 
-
-
-
 //HIC runtime intercept stub
+//__attribute__((naked)) void __xmhfhic_rtm_intercept_stub(void){
 __attribute__((naked)) void __xmhfhic_rtm_intercept_stub(void){
 
+    asm volatile ("pushal \r\n");
+    asm volatile ("pushl %esp \r\n");
+    asm volatile ("call __xmhfhic_rtm_intercept \r\n");
+    asm volatile ("addl $0x4, %esp \r\n");
+    asm volatile ("popal \r\n");
+    asm volatile ("vmresume \r\n");
+    asm volatile ("hlt \r\n");
+}
+
+
+
+void __xmhfhic_rtm_intercept(x86regs_t *r){
+    slab_params_t spl;
+
+    memset(&spl, 0, sizeof(spl));
+
+    spl.cpuid = __xmhfhic_x86vmx_cpuidtable[xmhf_baseplatform_arch_x86_getcpulapicid()];
+
+    //store GPRs
+    memcpy(&__xmhfhic_x86vmx_archdata[(u16)spl.cpuid].vmx_gprs,
+           r, sizeof(x86regs_t));
+
+    //call xcihub
+    spl.src_slabid = xmhfhw_cpu_x86vmx_vmread(VMCS_CONTROL_VPID);
+    spl.dst_slabid = XMHF_HYP_SLAB_XCIHUB;
+    XMHF_SLAB_CALLNEW(&spl);
+
+    //load GPRs
+    memcpy(r, &__xmhfhic_x86vmx_archdata[(u16)spl.cpuid].vmx_gprs,
+           sizeof(x86regs_t));
+
+
+    /*
+    //TODO: x86_64--> x86
 	asm volatile(
                         "pushq %%rsp \r\n"
                         "pushq %%rbp \r\n"
@@ -1394,6 +1698,9 @@ __attribute__((naked)) void __xmhfhic_rtm_intercept_stub(void){
                         "i" (VMCS_CONTROL_VPID)
                     :
 		);
+
+*/
+
 }
 
 
@@ -1413,18 +1720,18 @@ void __xmhfhic_trampoline_slabxfer_h2h(u64 iparams, u64 iparams_size,
                                        u64 oparams, u64 oparams_size,
                                        u64 src_slabid, u64 cpuid){
 
-    /*
+/*
+                    //TODO: x86_64 --> x86
 
-                    RDI = newiparams
-                    RSI = iparams_size
-                    RDX = slab entrystub; used for SYSEXIT
-                    RCX = slab entrystub stack TOS for the CPU; used for SYSEXIT
-                    R8 = newoparams
-                    R9 = oparams_size
-                    R10 = src_slabid
-                    R11 = cpuid
+                    //RDI = newiparams
+                    //RSI = iparams_size
+                    //RDX = slab entrystub; used for SYSEXIT
+                    //RCX = slab entrystub stack TOS for the CPU; used for SYSEXIT
+                    //R8 = newoparams
+                    //R9 = oparams_size
+                    //R10 = src_slabid
+                    //R11 = cpuid
 
-                    */
 
                     asm volatile(
                          "movq %0, %%rdi \r\n"
@@ -1450,7 +1757,7 @@ void __xmhfhic_trampoline_slabxfer_h2h(u64 iparams, u64 iparams_size,
                           "m" (cpuid)
                         : "rdi", "rsi", "rdx", "rcx", "r8", "r9", "r10", "r11"
                     );
-
+*/
 
 
 
@@ -1507,18 +1814,20 @@ void __xmhfhic_trampoline_slabxfer_callexception(u64 iparams, u64 iparams_size,
                                                  u64 entrystub, u64 slabtos,
                                                  u64 src_slabid, u64 cpuid){
 
-                /*
 
-                RDI = newiparams
-                RSI = iparams_size
-                RDX = slab entrystub; used for SYSEXIT
-                RCX = slab entrystub stack TOS for the CPU; used for SYSEXIT
-                R8 = 0 (oparams)
-                R9 = 0 (oparams_size)
-                R10 = src_slabid
-                R11 = cpuid
+/*
+                //TODO: x86_64 --> x86
 
-                */
+                //RDI = newiparams
+                //RSI = iparams_size
+                //RDX = slab entrystub; used for SYSEXIT
+                //RCX = slab entrystub stack TOS for the CPU; used for SYSEXIT
+                //R8 = 0 (oparams)
+                //R9 = 0 (oparams_size)
+                //R10 = src_slabid
+                //R11 = cpuid
+
+
 
                 asm volatile(
                      "movq %0, %%rdi \r\n"
@@ -1544,7 +1853,7 @@ void __xmhfhic_trampoline_slabxfer_callexception(u64 iparams, u64 iparams_size,
                       "m" (cpuid)
                     : "rdi", "rsi", "rdx", "rcx", "r8", "r9", "r10", "r11"
                 );
-
+*/
 
 
 }
@@ -1555,18 +1864,19 @@ void __xmhfhic_trampoline_slabxfer_callexception(u64 iparams, u64 iparams_size,
 void __xmhfhic_trampoline_slabxfer_callintercept(u64 entrystub, u64 slabtos,
                                                  u64 src_slabid, u64 cpuid){
 
-            /*
+/*
+            //TODO: x86_64 --> x86
 
-            RDI = newiparams (NULL)
-            RSI = iparams_size (0)
-            RDX = slab entrystub; used for SYSEXIT
-            RCX = slab entrystub stack TOS for the CPU; used for SYSEXIT
-            R8 = newoparams (NULL)
-            R9 = oparams_size (0)
-            R10 = src_slabid
-            R11 = cpuid
+            //RDI = newiparams (NULL)
+            //RSI = iparams_size (0)
+            //RDX = slab entrystub; used for SYSEXIT
+            //RCX = slab entrystub stack TOS for the CPU; used for SYSEXIT
+            //R8 = newoparams (NULL)
+            //R9 = oparams_size (0)
+            //R10 = src_slabid
+            //R11 = cpuid
 
-            */
+
 
             asm volatile(
                  "movq %0, %%rdi \r\n"
@@ -1591,13 +1901,15 @@ void __xmhfhic_trampoline_slabxfer_callintercept(u64 entrystub, u64 slabtos,
                   "m" (cpuid)
                 : "rdi", "rsi", "rdx", "rcx", "r8", "r9", "r10", "r11"
             );
+*/
 
 }
 
 
 void __xmhfhic_trampoline_slabxfer_retintercept(u64 addrgprs){
 
-
+/*
+            //TODO: x86_64 --> x86
             asm volatile (
                 "movq %0, %%rsp \r\n"
                 "popq %%r8 \r\n"
@@ -1623,7 +1935,7 @@ void __xmhfhic_trampoline_slabxfer_retintercept(u64 addrgprs){
                   "rax", "rbx", "rcx", "rdx", "rsi", "rdi", "rbp"
 
             );
-
+*/
 
 
 }
@@ -1632,6 +1944,8 @@ void __xmhfhic_trampoline_slabxfer_retintercept(u64 addrgprs){
 
 void __xmhfhic_trampoline_slabxfer_retexception(u64 addr_exframe){
 
+/*
+                    //TODO: x86_64 --> x86
                     asm volatile (
                         "movq %0, %%rsp \r\n"
                         "popq %%r8 \r\n"
@@ -1658,6 +1972,6 @@ void __xmhfhic_trampoline_slabxfer_retexception(u64 addr_exframe){
                           "rax", "rbx", "rcx", "rdx", "rsi", "rdi", "rbp", "rsp"
 
                     );
-
+*/
 
 }

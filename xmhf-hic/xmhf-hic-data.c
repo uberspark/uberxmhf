@@ -146,7 +146,7 @@ slab_caps_t _xmhfhic_init_setupdata_slab_caps[XMHF_HIC_MAX_SLABS] = {
         0,
         0,
         0,
-        {true, 0xFFFFFFFFFFFFFFFFULL, {0}},
+        {true, 0xFFFFFFFFUL, {0}},
         HIC_SLAB_X86VMXX86PC_GUEST
     },
 #endif
@@ -233,13 +233,13 @@ __attribute__((aligned(4096)))  u64 _dbuf_mempgtbl_pt[XMHF_HIC_MAX_SLABS][PAE_PT
 // GDT
 __attribute__(( aligned(16) )) u64 __xmhfhic_x86vmx_gdt_start[]  = {
 	0x0000000000000000ULL,	//NULL descriptor
-	0x00af9a000000ffffULL,	//CPL-0 64-bit code descriptor (CS64)
-	0x00af92000000ffffULL,	//CPL-0 64-bit data descriptor (DS/SS/ES/FS/GS)
-	0x00affa000000ffffULL,	//TODO: CPL-3 64-bit code descriptor (CS64)
-	0x00aff2000000ffffULL,	//TODO: CPL-3 64-bit data descriptor (DS/SS/ES/FS/GS)
-	0x00affa000000ffffULL,	//TODO: CPL-3 64-bit code descriptor (CS64)
-	0x00aff2000000ffffULL,	//TODO: CPL-3 64-bit data descriptor (DS/SS/ES/FS/GS)
-	0x0000000000000000ULL,  //TSS descriptors (128-bits each)
+	0x00cf9a000000ffffULL,	//CPL-0 32-bit code descriptor (CS64)
+	0x00cf92000000ffffULL,	//CPL-0 32-bit data descriptor (DS/SS/ES/FS/GS)
+	0x00cffa000000ffffULL,	//TODO: CPL-3 32-bit code descriptor (CS64)
+	0x00cff2000000ffffULL,	//TODO: CPL-3 32-bit data descriptor (DS/SS/ES/FS/GS)
+	0x00cffa000000ffffULL,	//TODO: CPL-3 32-bit code descriptor (CS64)
+	0x00cff2000000ffffULL,	//TODO: CPL-3 32-bit data descriptor (DS/SS/ES/FS/GS)
+	0x0000000000000000ULL,  //TSS descriptors (64-bits each)
 	0x0000000000000000ULL,
 	0x0000000000000000ULL,
 	0x0000000000000000ULL,
@@ -259,10 +259,18 @@ __attribute__(( aligned(16) )) u64 __xmhfhic_x86vmx_gdt_start[]  = {
 	0x0000000000000000ULL,
 };
 
+/* x86_64
 // GDT descriptor
 __attribute__(( aligned(16) )) arch_x86_gdtdesc_t __xmhfhic_x86vmx_gdt  = {
 	.size=sizeof(__xmhfhic_x86vmx_gdt_start)-1,
 	.base=(u64)&__xmhfhic_x86vmx_gdt_start,
+};
+*/
+
+// GDT descriptor
+__attribute__(( aligned(16) )) arch_x86_gdtdesc_t __xmhfhic_x86vmx_gdt  = {
+	.size=sizeof(__xmhfhic_x86vmx_gdt_start)-1,
+	.base=(u32)&__xmhfhic_x86vmx_gdt_start,
 };
 
 // TSS
@@ -277,10 +285,18 @@ __attribute__(( aligned(4096) )) u8 __xmhfhic_x86vmx_tss_stack[MAX_PLATFORM_CPUS
 // IDT
 __attribute__(( aligned(16) )) idtentry_t __xmhfhic_x86vmx_idt_start[EMHF_XCPHANDLER_MAXEXCEPTIONS] ;
 
+/* x86_64
 // IDT descriptor
 __attribute__(( aligned(16) )) arch_x86_idtdesc_t __xmhfhic_x86vmx_idt = {
 	.size=sizeof(__xmhfhic_x86vmx_idt_start)-1,
 	.base=(u64)&__xmhfhic_x86vmx_idt_start,
+};
+*/
+
+// IDT descriptor
+__attribute__(( aligned(16) )) arch_x86_idtdesc_t __xmhfhic_x86vmx_idt = {
+	.size=sizeof(__xmhfhic_x86vmx_idt_start)-1,
+	.base=(u32)&__xmhfhic_x86vmx_idt_start,
 };
 
 
@@ -301,8 +317,8 @@ __attribute__(( section(".stack") )) __attribute__(( aligned(4096) )) u8 _rtmxcp
 __attribute__(( aligned(4096) )) u64 _rtmxcp_bssavearea[512] = { 1ULL };
 
 
-__attribute__(( aligned(8) )) u64 __xmhfhic_x86vmx_cpuidtable[MAX_X86_APIC_ID];
-
+//__attribute__(( aligned(8) )) u64 __xmhfhic_x86vmx_cpuidtable[MAX_X86_APIC_ID];
+__attribute__(( aligned(4) )) u32 __xmhfhic_x86vmx_cpuidtable[MAX_X86_APIC_ID];
 
 __attribute__(( aligned(4096) )) xc_cpuarchdata_x86vmx_t __xmhfhic_x86vmx_archdata[MAX_PLATFORM_CPUS];
 

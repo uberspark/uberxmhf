@@ -60,6 +60,71 @@ extern void __xmhfhic_x86vmx_loadGDT(arch_x86_gdtdesc_t *gdt_addr);
 
 
 
+
+
+__attribute__((aligned(4096))) static u64 _xcprimeon_init_pdt[PAE_PTRS_PER_PDPT][PAE_PTRS_PER_PDT];
+__attribute__((aligned(4096))) static u64 _xcprimeon_init_pdpt[PAE_MAXPTRS_PER_PDPT];
+
+static void xmhfhic_setupinitpgtables(void){
+    u32 paddr=0;
+    u32 i, j;
+    u64 pdpe_flags = (_PAGE_PRESENT);
+    u64 pdte_flags = (_PAGE_RW | _PAGE_PSE | _PAGE_PRESENT);
+
+    memset(&_xcprimeon_init_pdpt, 0, sizeof(_xcprimeon_init_pdpt));
+
+    /*_XDPRINTF_("_xcprimeon_init_pdt size=%u\n", sizeof(_xcprimeon_init_pdt));
+    _XDPRINTF_("_xcprimeon_init_pdpt size=%u\n", sizeof(_xcprimeon_init_pdpt));
+*/
+
+    for(i=0; i < PAE_PTRS_PER_PDPT; i++){
+        u64 entry_addr = (u64)&_xcprimeon_init_pdt[i][0];
+        _xcprimeon_init_pdpt[i] = pae_make_pdpe(entry_addr, pdpe_flags);
+
+        for(j=0; j < PAE_PTRS_PER_PDT; j++){
+            if(paddr == 0xfee00000 || paddr == 0xfec00000)
+                _xcprimeon_init_pdt[i][j] = pae_make_pde_big(paddr, (pdte_flags | _PAGE_PCD));
+            else
+                _xcprimeon_init_pdt[i][j] = pae_make_pde_big(paddr, pdte_flags);
+
+            paddr += PAGE_SIZE_2M;
+        }
+    }
+
+    //debug
+    /*_XDPRINTF_("page-table dump:\n");
+
+    for(i=0; i < PAE_PTRS_PER_PDPT; i++){
+        _XDPRINTF_("pdpd[%u]=%016llx\n\n", i, _xcprimeon_init_pdpt[i]);
+
+        for(j=0; j < PAE_PTRS_PER_PDT; j++)
+            _XDPRINTF_("pdt[%u][%u]=%016llx\n", i, j, _xcprimeon_init_pdt[i][j]);
+    }*/
+
+    {
+        _XDPRINTF_("fn:%s, line:%u\n", __FUNCTION__, __LINE__);
+        wrmsr64(MSR_EFER, (rdmsr64(MSR_EFER) | (0x800)) );
+        _XDPRINTF_("EFER=%016llx\n", rdmsr64(MSR_EFER));
+        write_cr4(read_cr4() | (0x30) );
+        _XDPRINTF_("CR4=%08x\n", read_cr4());
+        write_cr3((u32)&_xcprimeon_init_pdpt);
+        _XDPRINTF_("CR3=%08x\n", read_cr3());
+        write_cr0(0x80000015);
+        _XDPRINTF_("fn:%s, line:%u\n", __FUNCTION__, __LINE__);
+    }
+
+}
+
+
+
+
+
+
+
+
+
+
+
 void xmhfhic_entry(void){
     u64 pgtblbase;
 
@@ -95,11 +160,16 @@ void xmhfhic_entry(void){
   	}
 #endif
 
+    _XDPRINTF_("Proceeding to setup init pagetables...\n");
+    xmhfhic_setupinitpgtables();
+    _XDPRINTF_("Init page table setup.\n");
+
     //initialize slab info table based on setup data
     xmhfhic_arch_setup_slab_info();
 
     //sanity check HIC (hardware) requirements
     xmhfhic_arch_sanity_check_requirements();
+
 
 #if !defined (__XMHF_VERIFICATION__)
     //setup slab system device allocation and device page tables
@@ -121,31 +191,50 @@ void xmhfhic_entry(void){
 }
 
 
-void xmhfhic_smp_entry(u64 cpuid){
-    bool isbsp = (cpuid & 0x8000000000000000ULL) ? true : false;
+void xmhfhic_smp_entry(u32 cpuid){
+    bool isbsp = (cpuid & 0x80000000UL) ? true : false;
     #if defined (__XMHF_VERIFICATION__)
     cpuid = 0;
     isbsp = true;
     #endif // defined
 
-    _XDPRINTF_("%s[%u,%u]: rsp=%016llx. Starting...\n",
-            __FUNCTION__, cpuid, isbsp, read_rsp());
 
-    xmhf_hic_arch_setup_cpu_state(cpuid);
+    //[debug] halt all APs
+    //if(!isbsp){
+    //    _XDPRINTF_("%s[%u,%u]: esp=%08x. AP Halting!\n",
+    //        __FUNCTION__, (u16)cpuid, isbsp, read_esp());
+    //    HALT();
+    //}
+
+    _XDPRINTF_("%s[%u,%u]: esp=%08x. Starting...\n",
+            __FUNCTION__, cpuid, isbsp, read_esp());
+
+    xmhf_hic_arch_setup_cpu_state((u16)cpuid);
+
+    //_XDPRINTF_("%s[%u,%u]: Halting!\n", __FUNCTION__, (u16)cpuid, isbsp);
+    //HALT();
+
 
     //relinquish HIC initialization and move on to the first slab
-#if !defined (__XMHF_VERIFICATION__)
-    _XDPRINTF_("%s[%u]: proceeding to call init slab at %x\n", __FUNCTION__, (u32)cpuid,
+    _XDPRINTF_("%s[%u]: proceeding to call init slab at %x\n", __FUNCTION__, (u16)cpuid,
                 _xmhfhic_common_slab_info_table[XMHF_HYP_SLAB_XCINIT].entrystub);
 
-    xmhfhic_arch_relinquish_control_to_init_slab(cpuid,
-        _xmhfhic_common_slab_info_table[XMHF_HYP_SLAB_XCINIT].entrystub,
-        _xmhfhic_common_slab_info_table[XMHF_HYP_SLAB_XCINIT].archdata.mempgtbl_cr3,
-        _xmhfhic_common_slab_info_table[XMHF_HYP_SLAB_XCINIT].archdata.slabtos[(u32)cpuid]);
+    //xmhfhic_arch_relinquish_control_to_init_slab(cpuid,
+    //    _xmhfhic_common_slab_info_table[XMHF_HYP_SLAB_XCINIT].entrystub,
+    //    _xmhfhic_common_slab_info_table[XMHF_HYP_SLAB_XCINIT].archdata.mempgtbl_cr3,
+    //    _xmhfhic_common_slab_info_table[XMHF_HYP_SLAB_XCINIT].archdata.slabtos[(u32)cpuid]);
 
-#endif //__XMHF_VERIFICATION__
+    {
+        slab_params_t sp;
 
-    _XDPRINTF_("%s[%u,%u]: Should never be here. Halting!\n", __FUNCTION__, cpuid, isbsp);
+        memset(&sp, 0, sizeof(sp));
+        sp.cpuid = cpuid;
+        sp.dst_slabid = XMHF_HYP_SLAB_XCINIT;
+        XMHF_SLAB_CALLNEW(&sp);
+    }
+
+
+    _XDPRINTF_("%s[%u,%u]: Should never be here. Halting!\n", __FUNCTION__, (u16)cpuid, isbsp);
     HALT();
 
 }
@@ -197,7 +286,9 @@ void xmhfhic_arch_setup_slab_info(void){
             #if !defined(__XMHF_VERIFICATION__)
             {
                 u32 j;
-                u64 *slab_stackhdr = (u64 *)_xmhfhic_common_slab_info_table[i].slab_physmem_extents[3].addr_start;
+                //u64 *slab_stackhdr = (u64 *)_xmhfhic_common_slab_info_table[i].slab_physmem_extents[3].addr_start;
+                u32 *slab_stackhdr = (u32 *)_xmhfhic_common_slab_info_table[i].slab_physmem_extents[3].addr_start;
+
                 if(slab_stackhdr){
                     for(j=0; j < MAX_PLATFORM_CPUS; j++)
                         _xmhfhic_common_slab_info_table[i].archdata.slabtos[j]=slab_stackhdr[j];
@@ -236,11 +327,9 @@ void xmhfhic_arch_setup_slab_info(void){
 				_XDPRINTF_("slab %u: dumping slab header\n", i);
 				_XDPRINTF_("	slabtype=%08x\n", _xmhfhic_common_slab_info_table[i].archdata.slabtype);
 				_XDPRINTF_("	slab_inuse=%s\n", ( _xmhfhic_common_slab_info_table[i].slab_inuse ? "true" : "false") );
-				//_XDPRINTF_("	slab_macmid=%08x\n", _xmhfhic_common_slab_info_table[i].slab_macmid);
 				_XDPRINTF_("	slab_privilegemask=%08x\n", _xmhfhic_common_slab_info_table[i].slab_privilegemask);
 				_XDPRINTF_("	slab_callcaps=%08x\n", _xmhfhic_common_slab_info_table[i].slab_callcaps);
 				_XDPRINTF_("	slab_devices=%s\n", ( _xmhfhic_common_slab_info_table[i].slab_devices.desc_valid ? "true" : "false") );
-				//_XDPRINTF_("	slab_tos=%08x\n", _xmhfhic_common_slab_info_table[i].slab_tos);
 				_XDPRINTF_("  slab_code(%08x-%08x)\n", _xmhfhic_common_slab_info_table[i].slab_physmem_extents[0].addr_start, _xmhfhic_common_slab_info_table[i].slab_physmem_extents[0].addr_end);
 				_XDPRINTF_("  slab_rwdata(%08x-%08x)\n", _xmhfhic_common_slab_info_table[i].slab_physmem_extents[1].addr_start, _xmhfhic_common_slab_info_table[i].slab_physmem_extents[1].addr_end);
 				_XDPRINTF_("  slab_rodata(%08x-%08x)\n", _xmhfhic_common_slab_info_table[i].slab_physmem_extents[2].addr_start, _xmhfhic_common_slab_info_table[i].slab_physmem_extents[2].addr_end);
@@ -252,7 +341,9 @@ void xmhfhic_arch_setup_slab_info(void){
                     u32 j;
 
                     for(j=0; j < MAX_PLATFORM_CPUS; j++)
-                        _XDPRINTF_("     CPU %u: stack TOS=%016llx\n", j,
+                        //_XDPRINTF_("     CPU %u: stack TOS=%016llx\n", j,
+                        //       _xmhfhic_common_slab_info_table[i].archdata.slabtos[j]);
+                        _XDPRINTF_("     CPU %u: stack TOS=%08x\n", j,
                                _xmhfhic_common_slab_info_table[i].archdata.slabtos[j]);
                 }
 
@@ -388,6 +479,8 @@ static bool _platform_x86pc_vtd_initialize(void){
 
     _XDPRINTF_("%s: maxhandle = %u, dmar table addr=0x%08x\n", __FUNCTION__,
                 (u32)vtd_drhd_maxhandle, (u32)vtd_dmar_table_physical_address);
+
+
 
 	//initialize all DRHD units
 	for(drhd_handle=0; drhd_handle < vtd_drhd_maxhandle; drhd_handle++){
@@ -707,12 +800,22 @@ static slab_platformdevices_t __xmhfhic_arch_sda_get_devices_for_slab(u64 slabid
     retval.desc_valid=false;
     retval.numdevices=0;
 
+    /* x86_64
     //for now detect rich guest slab and allocate all platform devices to it
     if(_xmhfhic_common_slab_info_table[slabid].slab_devices.desc_valid &&
         _xmhfhic_common_slab_info_table[slabid].slab_devices.numdevices == 0xFFFFFFFFFFFFFFFFULL)
         return devices;
     else
         return retval;
+    */
+
+    //for now detect rich guest slab and allocate all platform devices to it
+    if(_xmhfhic_common_slab_info_table[slabid].slab_devices.desc_valid &&
+        _xmhfhic_common_slab_info_table[slabid].slab_devices.numdevices == 0xFFFFFFFFUL)
+        return devices;
+    else
+        return retval;
+
 }
 
 void xmhfhic_arch_setup_slab_device_allocation(void){
@@ -913,13 +1016,15 @@ static u64 __xmhfhic_hyp_slab_getptflagsforspa(u64 slabid, u32 spa){
 // initialize slab page tables for a given slab index, returns the macm base
 static u64 __xmhfhic_arch_smt_slab_populate_hyp_pagetables(u64 slabid){
 		u32 i, j;
-		u64 default_flags = (u64)(_PAGE_PRESENT) | (u64)(_PAGE_USER) | (u64)(_PAGE_RW);
+		//u64 default_flags = (u64)(_PAGE_PRESENT) | (u64)(_PAGE_USER) | (u64)(_PAGE_RW);
+        u64 default_flags = (u64)(_PAGE_PRESENT);
 
         //_dbuf_mempgtbl_pml4t/pdpt/pdt/pt[slabid] is the data backing for slabid
 
+        /* x86_64
         for(i=0; i < PAE_PTRS_PER_PML4T; i++){
             _dbuf_mempgtbl_pml4t[slabid][i] = pae_make_pml4e(hva2spa(&_dbuf_mempgtbl_pdpt[slabid]), default_flags);
-        }
+        }*/
 
 		for(i=0; i < PAE_PTRS_PER_PDPT; i++){
 			_dbuf_mempgtbl_pdpt[slabid][i] = pae_make_pdpe(hva2spa(&_dbuf_mempgtbl_pdt[slabid][i]), default_flags);
@@ -935,10 +1040,10 @@ static u64 __xmhfhic_arch_smt_slab_populate_hyp_pagetables(u64 slabid){
 			}
 		}
 
-        _xmhfhic_common_slab_info_table[slabid].archdata.mempgtbl_pml4t = (u64)&_dbuf_mempgtbl_pml4t[slabid];
+        //_xmhfhic_common_slab_info_table[slabid].archdata.mempgtbl_pml4t = (u64)&_dbuf_mempgtbl_pml4t[slabid];
         _xmhfhic_common_slab_info_table[slabid].archdata.mempgtbl_pdpt = (u64)&_dbuf_mempgtbl_pdpt[slabid];
         _xmhfhic_common_slab_info_table[slabid].archdata.mempgtbl_pdt = (u64)&_dbuf_mempgtbl_pdt[slabid];
-        _xmhfhic_common_slab_info_table[slabid].archdata.mempgtbl_pt = (u64)&_dbuf_mempgtbl_pt[slabid]; //FIXME: we dont need this allocation
+        //_xmhfhic_common_slab_info_table[slabid].archdata.mempgtbl_pt = (u64)&_dbuf_mempgtbl_pt[slabid]; //FIXME: we dont need this allocation
 
 
 /*        for(i=0; i < PAE_PTRS_PER_PML4T; i++){
@@ -970,7 +1075,8 @@ static u64 __xmhfhic_arch_smt_slab_populate_hyp_pagetables(u64 slabid){
 			}
 		}*/
 
-		return _xmhfhic_common_slab_info_table[slabid].archdata.mempgtbl_pml4t;
+		return _xmhfhic_common_slab_info_table[slabid].archdata.mempgtbl_pdpt;
+		//return _xmhfhic_common_slab_info_table[slabid].archdata.mempgtbl_pml4t;
 		//return _xmhfhic_common_slab_archdata_mempgtbl_pml4t[slabid];
 }
 #endif
@@ -1348,7 +1454,7 @@ void xmhfhic_arch_setup_slab_mem_page_tables(void){
                     case HIC_SLAB_X86VMXX86PC_HYPERVISOR:{
                         _XDPRINTF_("  HYPERVISOR slab: populating page tables\n");
 
-                        #if 1
+                        #if 0
                         _xmhfhic_common_slab_info_table[i].archdata.mempgtbl_cr3 = __xmhfhic_arch_smt_slab_populate_hyp_pagetables(i) | (u32)(i+1) | 0x8000000000000000ULL;
                         #else
                         _xmhfhic_common_slab_info_table[i].archdata.mempgtbl_cr3 = __xmhfhic_arch_smt_slab_populate_hyp_pagetables(i);
@@ -1590,7 +1696,7 @@ static bool __xmhfhic_smp_cpu_x86_isbsp(void){
 //common function which is entered by all CPUs upon SMP initialization
 //note: this is specific to the x86 architecture backend
 void __xmhfhic_smp_cpu_x86_smpinitialize_commonstart(void){
-	u64 cpuid;
+	u32 cpuid;
 	#if !defined(__XMHF_VERIFICATION__)
 	cpuid  = __xmhfhic_x86vmx_cpuidtable[xmhf_baseplatform_arch_x86_getcpulapicid()];
     #endif
@@ -1607,13 +1713,15 @@ void xmhfhic_arch_switch_to_smp(void){
 	{
 	    u32 i, j;
 	    for(i=0; i < MAX_X86_APIC_ID; i++)
-            __xmhfhic_x86vmx_cpuidtable[i] = 0xFFFFFFFFFFFFFFFFULL;
+           // __xmhfhic_x86vmx_cpuidtable[i] = 0xFFFFFFFFFFFFFFFFULL;
+            __xmhfhic_x86vmx_cpuidtable[i] = 0xFFFFFFFFUL;
 
 	    for(i=0; i < xcbootinfo->cpuinfo_numentries; i++){
             u64 value = i;
 
             if(xcbootinfo->cpuinfo_buffer[i].isbsp)
-                value |= 0x8000000000000000ULL;
+                //value |= 0x8000000000000000ULL;
+                value |= 0x80000000UL;
 
             //XXX: TODO sanity check xcbootinfo->cpuinfo_buffer[i].lapic_id < MAX_X86_APIC_ID
             __xmhfhic_x86vmx_cpuidtable[xcbootinfo->cpuinfo_buffer[i].lapic_id] = value;
@@ -1680,8 +1788,8 @@ static void __xmhfhic_x86vmx_initializeIDT(void){
 		__xmhfhic_x86vmx_idt_start[i].count=0x0;
 		__xmhfhic_x86vmx_idt_start[i].type=0xEE;	//32-bit interrupt gate
                                 //present=1, DPL=11b, system=0, type=1110b
-        __xmhfhic_x86vmx_idt_start[i].offset3263=0;
-        __xmhfhic_x86vmx_idt_start[i].reserved=0;
+        //__xmhfhic_x86vmx_idt_start[i].offset3263=0;
+        //__xmhfhic_x86vmx_idt_start[i].reserved=0;
 	}
 
 }
@@ -1694,7 +1802,10 @@ static void __xmhfhic_x86vmx_initializeTSS(void){
 		//initialize TSS descriptors for all CPUs
 		for(i=0; i < xcbootinfo->cpuinfo_numentries; i++){
             tss_t *tss= (tss_t *)__xmhfhic_x86vmx_tss[i];
+            /* x86_64
             tss->rsp0 = (u64) ( &__xmhfhic_x86vmx_tss_stack[i] + sizeof(__xmhfhic_x86vmx_tss_stack[0]) );
+            */
+            tss->esp0 = (u32) ( &__xmhfhic_x86vmx_tss_stack[i] + sizeof(__xmhfhic_x86vmx_tss_stack[0]) );
 		}
 }
 
@@ -1824,20 +1935,23 @@ static bool __xmhfhic_x86vmx_setupvmxstate(u64 cpuid){
 	rdmsr(IA32_MSR_GS_BASE, &lodword, &hidword);
 	xmhfhw_cpu_x86vmx_vmwrite(VMCS_HOST_GS_BASE, (((u64)hidword << 32) | (u64)lodword) );
 
-	//xmhfhw_cpu_x86vmx_vmwrite(VMCS_HOST_IA32_EFER_FULL, rdmsr64(MSR_EFER));
-
 	//setup default VMX controls
 	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VMX_PIN_BASED, (u32)__xmhfhic_x86vmx_archdata[cpuindex].vmx_msrs[INDEX_IA32_VMX_PINBASED_CTLS_MSR]);
 	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VMX_CPU_BASED, (u32)__xmhfhic_x86vmx_archdata[cpuindex].vmx_msrs[INDEX_IA32_VMX_PROCBASED_CTLS_MSR]);
 	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VM_EXIT_CONTROLS, (u32)__xmhfhic_x86vmx_archdata[cpuindex].vmx_msrs[INDEX_IA32_VMX_EXIT_CTLS_MSR]);
 	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VM_ENTRY_CONTROLS, (u32)__xmhfhic_x86vmx_archdata[cpuindex].vmx_msrs[INDEX_IA32_VMX_ENTRY_CTLS_MSR]);
 
+    /*
+    x86_64
     //64-bit host
   	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VM_EXIT_CONTROLS, (u32)(xmhfhw_cpu_x86vmx_vmread(VMCS_CONTROL_VM_EXIT_CONTROLS) | (1 << 9)) );
+    */
 
 	//IO bitmap support
-	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_IO_BITMAPA_ADDRESS_FULL, hva2spa(__xmhfhic_x86vmx_archdata[cpuindex].vmx_iobitmap_region[0] ));
-	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_IO_BITMAPB_ADDRESS_FULL, hva2spa(__xmhfhic_x86vmx_archdata[cpuindex].vmx_iobitmap_region[1] ));
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_IO_BITMAPA_ADDRESS_FULL, __xmhfhic_x86vmx_archdata[cpuindex].vmx_iobitmap_region[0]);
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_IO_BITMAPA_ADDRESS_HIGH, 0);
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_IO_BITMAPB_ADDRESS_FULL, __xmhfhic_x86vmx_archdata[cpuindex].vmx_iobitmap_region[1]);
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_IO_BITMAPB_ADDRESS_HIGH, 0);
 	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VMX_CPU_BASED, (xmhfhw_cpu_x86vmx_vmread(VMCS_CONTROL_VMX_CPU_BASED) | (u64)(1 << 25)) );
 
 	//MSR bitmap support
@@ -1858,7 +1972,8 @@ static bool __xmhfhic_x86vmx_setupvmxstate(u64 cpuid){
 	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VMX_SECCPU_BASED, (u32)(xmhfhw_cpu_x86vmx_vmread(VMCS_CONTROL_VMX_SECCPU_BASED) | (u64)(1 << 7)) );
 
 	//setup VMCS link pointer
-	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_VMCS_LINK_POINTER_FULL, 0xFFFFFFFFFFFFFFFFULL);
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_VMCS_LINK_POINTER_FULL, 0xFFFFFFFFUL);
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_VMCS_LINK_POINTER_HIGH, 0xFFFFFFFFUL);
 
 	//setup NMI intercept for core-quiescing
 	//XXX: needs to go in xcinit/richguest slab
@@ -1875,6 +1990,7 @@ static bool __xmhfhic_x86vmx_setupvmxstate(u64 cpuid){
 	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VMX_SECCPU_BASED, (xmhfhw_cpu_x86vmx_vmread(VMCS_CONTROL_VMX_SECCPU_BASED) | (u64)(1 <<1) | (u64)(1 << 5)) );
 	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VPID, 0); //[need to populate in trampoline]
 	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_EPT_POINTER_FULL, 0); // [need to populate in trampoline]
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_EPT_POINTER_HIGH, 0); // [need to populate in trampoline]
 	xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VMX_CPU_BASED, (xmhfhw_cpu_x86vmx_vmread(VMCS_CONTROL_VMX_CPU_BASED) & (u64)~(1 << 15) & (u64)~(1 << 16)) );
 
 	xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_CR0, (u32)__xmhfhic_x86vmx_archdata[cpuindex].vmx_msrs[INDEX_IA32_VMX_CR0_FIXED0_MSR]);
@@ -1908,7 +2024,7 @@ static bool __xmhfhic_x86vmx_setupvmxstate(u64 cpuid){
 
 
 
-
+/*
     //64-bit specific guest slab setup
     {
 
@@ -2019,8 +2135,9 @@ static bool __xmhfhic_x86vmx_setupvmxstate(u64 cpuid){
 
 
     }
+*/
 
-/*    //32-bit specific guest slab setup
+    //32-bit specific guest slab setup
     {
 
         //Critical MSR load/store
@@ -2058,13 +2175,16 @@ static bool __xmhfhic_x86vmx_setupvmxstate(u64 cpuid){
             }
 
             //host MSR load on exit, we store it ourselves before entry
-            xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VM_EXIT_MSR_LOAD_ADDRESS_FULL, hva2spa((void*)__xmhfhic_x86vmx_archdata[cpuindex].vmx_msr_area_host_region));
+            xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VM_EXIT_MSR_LOAD_ADDRESS_FULL, __xmhfhic_x86vmx_archdata[cpuindex].vmx_msr_area_host_region);
+            xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VM_EXIT_MSR_LOAD_ADDRESS_HIGH, 0);
             xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VM_EXIT_MSR_LOAD_COUNT, vmx_msr_area_msrs_count);
 
             //guest MSR load on entry, store on exit
-            xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VM_ENTRY_MSR_LOAD_ADDRESS_FULL, hva2spa((void*)__xmhfhic_x86vmx_archdata[cpuindex].vmx_msr_area_guest_region));
+            xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VM_ENTRY_MSR_LOAD_ADDRESS_FULL, __xmhfhic_x86vmx_archdata[cpuindex].vmx_msr_area_guest_region);
+            xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VM_ENTRY_MSR_LOAD_ADDRESS_HIGH, 0);
             xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VM_ENTRY_MSR_LOAD_COUNT, vmx_msr_area_msrs_count);
-            xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VM_EXIT_MSR_STORE_ADDRESS_FULL, hva2spa((void*)__xmhfhic_x86vmx_archdata[cpuindex].vmx_msr_area_guest_region));
+            xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VM_EXIT_MSR_STORE_ADDRESS_FULL, __xmhfhic_x86vmx_archdata[cpuindex].vmx_msr_area_guest_region);
+            xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VM_EXIT_MSR_STORE_ADDRESS_HIGH, 0);
             xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VM_EXIT_MSR_STORE_COUNT, vmx_msr_area_msrs_count);
 
         }
@@ -2128,7 +2248,7 @@ static bool __xmhfhic_x86vmx_setupvmxstate(u64 cpuid){
 
 
     }
-*/
+
 
 
 
@@ -2164,12 +2284,12 @@ static bool __xmhfhic_x86vmx_setupvmxstate(u64 cpuid){
 	_XDPRINTF_("%s: msrbitmap exit load vmcs=%016llx\n", __FUNCTION__, xmhfhw_cpu_x86vmx_vmread(VMCS_CONTROL_VM_EXIT_MSR_LOAD_ADDRESS_FULL));
 	_XDPRINTF_("%s: ept pointer vmcs=%016llx\n", __FUNCTION__, xmhfhw_cpu_x86vmx_vmread(VMCS_CONTROL_EPT_POINTER_FULL));
     */
-	_XDPRINTF_("%s: CR0 vmcs=%016llx\n", __FUNCTION__, xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_CR0));
-	_XDPRINTF_("%s: CR4 vmcs=%016llx\n", __FUNCTION__, xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_CR4));
-	_XDPRINTF_("%s: CR0 mask vmcs=%016llx\n", __FUNCTION__, xmhfhw_cpu_x86vmx_vmread(VMCS_CONTROL_CR0_MASK));
-	_XDPRINTF_("%s: CR4 mask vmcs=%016llx\n", __FUNCTION__, xmhfhw_cpu_x86vmx_vmread(VMCS_CONTROL_CR4_MASK));
-	_XDPRINTF_("%s: CR0 shadow vmcs=%016llx\n", __FUNCTION__, xmhfhw_cpu_x86vmx_vmread(VMCS_CONTROL_CR0_SHADOW));
-	_XDPRINTF_("%s: CR4 shadow vmcs=%016llx\n", __FUNCTION__, xmhfhw_cpu_x86vmx_vmread(VMCS_CONTROL_CR4_SHADOW));
+	_XDPRINTF_("%s: CR0 vmcs=%08x\n", __FUNCTION__, xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_CR0));
+	_XDPRINTF_("%s: CR4 vmcs=%08x\n", __FUNCTION__, xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_CR4));
+	_XDPRINTF_("%s: CR0 mask vmcs=%08x\n", __FUNCTION__, xmhfhw_cpu_x86vmx_vmread(VMCS_CONTROL_CR0_MASK));
+	_XDPRINTF_("%s: CR4 mask vmcs=%08x\n", __FUNCTION__, xmhfhw_cpu_x86vmx_vmread(VMCS_CONTROL_CR4_MASK));
+	_XDPRINTF_("%s: CR0 shadow vmcs=%08x\n", __FUNCTION__, xmhfhw_cpu_x86vmx_vmread(VMCS_CONTROL_CR0_SHADOW));
+	_XDPRINTF_("%s: CR4 shadow vmcs=%08x\n", __FUNCTION__, xmhfhw_cpu_x86vmx_vmread(VMCS_CONTROL_CR4_SHADOW));
 
 
     return true;
@@ -2189,16 +2309,16 @@ void xmhf_hic_arch_setup_cpu_state(u64 cpuid){
     _XDPRINTF_("%s[%u]: GDT loaded\n", __FUNCTION__, (u32)cpuid);
 
     //load TR
-    __xmhfhic_x86vmx_loadTR(cpuid);
+    xmhfhw_cpu_loadTR( (__TRSEL + ((u32)cpuid * 16) ) );
     _XDPRINTF_("%s[%u]: TR loaded\n", __FUNCTION__, (u32)cpuid);
 
     //load IDT
-    __xmhfhic_x86vmx_loadIDT(&__xmhfhic_x86vmx_idt);
+    xmhfhw_cpu_loadIDT(&__xmhfhic_x86vmx_idt);
     _XDPRINTF_("%s[%u]: IDT loaded\n", __FUNCTION__, (u32)cpuid);
 
-    //turn on CR0.WP bit for supervisor mode write protection
-    write_cr0(read_cr0() | CR0_WP);
-    _XDPRINTF_("%s[%u]: Enabled supervisor mode write protection\n", __FUNCTION__, (u32)cpuid);
+    ////turn on CR0.WP bit for supervisor mode write protection
+    //write_cr0(read_cr0() | CR0_WP);
+    //_XDPRINTF_("%s[%u]: Enabled supervisor mode write protection\n", __FUNCTION__, (u32)cpuid);
 
     //set IOPL3
     __xmhfhic_x86vmx_setIOPL3(cpuid);
@@ -2213,15 +2333,11 @@ void xmhf_hic_arch_setup_cpu_state(u64 cpuid){
     _XDPRINTF_("%s[%u]: set LAPIC base address to %016llx\n", __FUNCTION__, (u32)cpuid, rdmsr64(MSR_APIC_BASE));
 
 	//turn on NX protections
-	{
-		u32 eax, edx;
-		rdmsr(MSR_EFER, &eax, &edx);
-		eax |= (1 << EFER_NXE);
-		wrmsr(MSR_EFER, eax, edx);
-	}
+    wrmsr64(MSR_EFER, (rdmsr64(MSR_EFER) | (1 << EFER_NXE)) );
     _XDPRINTF_("%s[%u]: NX protections enabled\n", __FUNCTION__, (u32)cpuid);
 
-#if 1
+
+#if 0
 	//enable PCIDE support
 	{
 		write_cr4(read_cr4() | CR4_PCIDE);
@@ -2252,6 +2368,7 @@ void xmhf_hic_arch_setup_cpu_state(u64 cpuid){
     _XDPRINTF_("SYSENTER CS=%016llx\n", rdmsr64(IA32_SYSENTER_CS_MSR));
     _XDPRINTF_("SYSENTER RIP=%016llx\n", rdmsr64(IA32_SYSENTER_EIP_MSR));
     _XDPRINTF_("SYSENTER RSP=%016llx\n", rdmsr64(IA32_SYSENTER_ESP_MSR));
+
 
     //setup VMX state
     if(!__xmhfhic_x86vmx_setupvmxstate(cpuid)){

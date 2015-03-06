@@ -113,8 +113,10 @@ void xmhfhw_cpu_cpuid(u32 op, u32 *eax, u32 *ebx, u32 *ecx, u32 *edx);
 uint64_t rdtsc64(void);
 u64 read_cr0(void);
 void write_cr0(u64 val);
+u32 read_cr2(void);
 u64 read_cr3(void);
 u64 read_rsp(void);
+u32 read_esp(void);
 void write_cr3(u64 val);
 u64 read_cr4(void);
 void write_cr4(u64 val);
@@ -135,6 +137,9 @@ void xsetbv(u32 xcr_reg, u64 value);
 void sysexitq(u64 rip, u64 rsp);
 void spin_lock(volatile u32 *lock);
 void spin_unlock(volatile u32 *lock);
+void xmhfhw_cpu_loadGDT(arch_x86_gdtdesc_t *gdt_addr);
+void xmhfhw_cpu_loadTR(u32 tr_selector);
+void xmhfhw_cpu_loadIDT(arch_x86_idtdesc_t *idt_addr);
 u64 xmhf_baseplatform_arch_x86_getgdtbase(void);
 u64 xmhf_baseplatform_arch_x86_getidtbase(void);
 u64  xmhf_baseplatform_arch_x86_gettssbase(void);
@@ -222,8 +227,10 @@ void __getsec_parameters(uint32_t index, int* param_type, uint32_t* peax, uint32
 #ifndef __ASSEMBLY__
 
 bool __vmx_vmxon(u64 vmxonregion_paddr);
-void xmhfhw_cpu_x86vmx_vmwrite(u64 encoding, u64 value);
-u64 xmhfhw_cpu_x86vmx_vmread(u64 encoding);
+//void xmhfhw_cpu_x86vmx_vmwrite(u64 encoding, u64 value);
+//u64 xmhfhw_cpu_x86vmx_vmread(u64 encoding);
+void xmhfhw_cpu_x86vmx_vmwrite(u32 encoding, u32 value);
+u32 xmhfhw_cpu_x86vmx_vmread(u32 encoding);
 u32 __vmx_vmclear(u64 vmcs);
 u32 __vmx_vmptrld(u64 vmcs);
 u32 __vmx_invvpid(int invalidation_type, u16 vpid, u32 linearaddress);
