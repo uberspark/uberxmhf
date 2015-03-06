@@ -56,7 +56,7 @@
 
 
 //////
-XMHF_SLABNEW(xhhyperdep)
+//XMHF_SLABNEW(xhhyperdep)
 
 #define HYPERDEP_ACTIVATEDEP			0xC0
 #define HYPERDEP_DEACTIVATEDEP			0xC1

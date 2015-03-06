@@ -52,7 +52,7 @@
 #include <xcguestslab.h>
 
 //////
-XMHF_SLAB_GUEST(xcguestslab)
+//XMHF_SLAB_GUEST(xcguestslab)
 
 
 

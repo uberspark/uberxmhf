@@ -56,7 +56,7 @@
 
 
 //////
-XMHF_SLABNEW(xhapprovexec)
+//XMHF_SLABNEW(xhapprovexec)
 
 
 #define APPROVEXEC_LOCK     			0xD0

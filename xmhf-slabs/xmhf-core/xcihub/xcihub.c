@@ -58,7 +58,7 @@
  */
 
 //////
-XMHF_SLAB_INTERCEPT(xcihub)
+//XMHF_SLAB_INTERCEPT(xcihub)
 
 
 

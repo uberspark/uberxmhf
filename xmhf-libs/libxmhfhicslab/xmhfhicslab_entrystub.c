@@ -44,93 +44,33 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
+/*
+ * slab entry stub
+ * author: amit vasudevan (amitvasudevan@acm.org)
+*/
+
+
 #include <xmhf.h>
 #include <xmhfhicslab.h>
 #include <xmhf-debug.h>
 
-#include <xctestslab1.h>
+__attribute__ ((section(".rodata"))) char * _namestring="_xmhfslab_";
+__attribute__ ((section(".stack"))) __attribute__ ((aligned(4096))) u8 _slab_stack[MAX_PLATFORM_CPUS][XMHF_SLAB_STACKSIZE];
+__attribute__ ((section(".stackhdr"))) u32 _slab_tos[MAX_PLATFORM_CPUS]= { ((u32)&_slab_stack[0] + XMHF_SLAB_STACKSIZE), ((u32)&_slab_stack[1] + XMHF_SLAB_STACKSIZE), ((u32)_slab_stack[2] + XMHF_SLAB_STACKSIZE), ((u32)&_slab_stack[3] + XMHF_SLAB_STACKSIZE), ((u32)&_slab_stack[4] + XMHF_SLAB_STACKSIZE), ((u32)&_slab_stack[5] + XMHF_SLAB_STACKSIZE), ((u32)&_slab_stack[6] + XMHF_SLAB_STACKSIZE), ((u32)&_slab_stack[7] + XMHF_SLAB_STACKSIZE)  };
+__attribute__ ((section(".slab_dmadata"))) u8 _dmadataplaceholder[1] = {0};
 
-//////
-//XMHF_SLAB(xctestslab1)
-
-/*
- * slab code
- *
- * author: amit vasudevan (amitvasudevan@acm.org)
- */
+// only used for guest slabs
+__attribute__ ((section(".rwdatahdr"))) guest_slab_header_t _guestslabheader = {GUEST_SLAB_HEADER_MAGIC, 0};
 
 
-/*
-static u8 _ae_page_buffer_src[PAGE_SIZE_4K];
+__attribute__((naked)) __attribute__ ((section(".slab_entrystub"))) __attribute__((align(1))) void _slab_entrystub(void){
+	asm volatile (
+            "jmp slab_main \r\n"
+            "int $0x03 \r\n"
+            "1: jmp 1b \r\n"
 
-static u8 _ae_page_buffer[PAGE_SIZE_4K];
-
-static void _xcinit_dotests(u64 cpuid){
-
-    {
-        u64 tscbefore, tscafter, tscavg=0;
-        u32 iterations=128;
-        u32 i;
-        u8 digest[SHA_DIGEST_LENGTH];
-
-        _XDPRINTF_("%s: proceeding with test...\n", __FUNCTION__);
-
-
-
-        for(i=0; i < iterations; i++){
-            tscbefore = rdtsc64();
-
-            {
-
-                //memcpy(_ae_page_buffer, &_ae_page_buffer_src, PAGE_SIZE_4K);
-                //compute SHA-1 of the local page buffer
-                sha1_buffer(&_ae_page_buffer, PAGE_SIZE_4K, digest);
-
-                //XMHF_SLAB_CALL(hictestslab2, XMHF_HYP_SLAB_HICTESTSLAB2, NULL, 0, NULL, 0);
-
-            }
-
-            tscafter = rdtsc64();
-            tscavg += (tscafter - tscbefore);
-        }
-
-        tscavg = tscavg / iterations;
-
-        _XDPRINTF_("%s: clock cycles for test = %u\n", __FUNCTION__, (u32)tscavg);
-
-    }
-
-}*/
-
-
-/*void slab_interface(slab_input_params_t *iparams, u64 iparams_size, slab_output_params_t *oparams, u64 oparams_size, u64 src_slabid, u64 cpuid){
-    u64 *inputval = (u64 *)iparams;
-    u64 *outputval = (u64 *)oparams;
-
-	_XDPRINTF_("%s[%u]: Got control: RSP=%016llx\n",
-                __FUNCTION__, (u32)cpuid, read_rsp());
-
-	_XDPRINTF_("%s[%u]: inputval=%x\n",
-                __FUNCTION__, (u32)cpuid, *inputval);
-
-    *outputval = 0xBBCCDDEE;
-
-    return;
-}*/
-
-
-void slab_main(slab_params_t *sp){
-    u32 inputval = sp->in_out_params[0];
-    u32 *outputval = (u32 *)sp->in_out_params[1];
-
-	_XDPRINTF_("%s[%u]: Got control: ESP=%016llx\n",
-                __FUNCTION__, (u16)sp->cpuid, read_esp());
-
-	_XDPRINTF_("%s[%u]: inputval=%x\n",
-                __FUNCTION__, (u16)sp->cpuid, inputval);
-
-    *outputval = 0xBBCCDDEE;
-
-    return;
+			:
+			:
+			:
+		);
 }
-

@@ -56,7 +56,7 @@
 
 
 //////
-XMHF_SLABNEW(xhsyscalllog)
+//XMHF_SLABNEW(xhsyscalllog)
 
 #define SYSCALLLOG_REGISTER     			0xF0
 
