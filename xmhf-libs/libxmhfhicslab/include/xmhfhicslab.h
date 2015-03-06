@@ -139,12 +139,6 @@ typedef struct {
 
 
 //HIC UAPI
-
-
-__attribute__((naked)) bool __slab_calluapi(u64 reserved_uapicall,
-        u64 reserved_uapicall_num,  u64 uapi_subfn,
-        u64 reserved, u64 iparams, u64 oparams);
-
 void __slab_calluapinew(slab_params_t *sp);
 
 
@@ -162,12 +156,9 @@ void __slab_calluapinew(slab_params_t *sp);
 
 #define XMHF_SLAB_UAPI(sp) __slab_calluapinew(sp)
 
+
 //HIC trampoline
-
-__attribute__((naked)) bool __slab_calltrampoline(u64 reserved,
-    slab_input_params_t *iparams, u64 iparams_size,
-    slab_output_params_t *oparams, u64 oparams_size, u64 dst_slabid);
-
+__attribute__((naked)) u32 __slab_calltrampolinenew_h2g(void);
 void __slab_calltrampolinenew(slab_params_t *sp);
 
 
@@ -183,12 +174,7 @@ void __slab_calltrampolinenew(slab_params_t *sp);
 
 //////
 // slab entry stub definitions
-
-
-void slab_interface(slab_input_params_t *iparams, u64 iparams_size, slab_output_params_t *oparams, u64 oparams_size, u64 src_slabid, u64 cpuindex);
-
 extern void slab_main(slab_params_t *sp);
-
 typedef void (*FPSLABMAIN)(slab_params_t *sp);
 
 

@@ -689,7 +689,8 @@ __attribute__((naked)) __attribute__ ((section(".hic_entrystub"))) __attribute__
 					"movl %0, %%eax \r\n"
 					"movl %%eax, %%esp \r\n"
 
-                    "call xmhfhic_entry \r\n"
+                    //"call xmhfhic_entry \r\n"
+                    "call slab_main \r\n"
 			    :
 			    : "i" (&_init_cpustacks[1])
                 :

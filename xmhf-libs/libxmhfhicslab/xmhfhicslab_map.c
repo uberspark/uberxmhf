@@ -63,14 +63,3 @@ __attribute__ ((section(".slab_dmadata"))) u8 _dmadataplaceholder[1] = {0};
 __attribute__ ((section(".rwdatahdr"))) guest_slab_header_t _guestslabheader = {GUEST_SLAB_HEADER_MAGIC, 0};
 
 
-__attribute__((naked)) __attribute__ ((section(".slab_entrystub"))) __attribute__((align(1))) void _slab_entrystub(void){
-	asm volatile (
-            "jmp slab_main \r\n"
-            "int $0x03 \r\n"
-            "1: jmp 1b \r\n"
-
-			:
-			:
-			:
-		);
-}

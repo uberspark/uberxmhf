@@ -1,8 +1,11 @@
 srcdir := $(dir $(lastword $(MAKEFILE_LIST)))
 vpath %.c $(srcdir)
+vpath %.cS $(srcdir)
+
 
 C_SOURCES:= $(wildcard $(srcdir)/*.c)
 C_SOURCES:= $(patsubst $(srcdir)/%, %, $(C_SOURCES))
+
 OBJECTS = $(patsubst %.c, %.o, $(C_SOURCES))
 
 I_SOURCES :=  $(wildcard $(srcdir)/include/*.h)
@@ -31,6 +34,7 @@ $(THE_ARCHIVE): $(OBJECTS)
 	#cd $(LIBXMHFHICSLAB_OBJECTS_DIR) && llc -O=2 -march=x86-64 -mcpu=corei7 -mattr=$(LLC_ATTR) $(@F).ll
 	cd $(LIBXMHFHICSLAB_OBJECTS_DIR) && llc -O=2 -march=x86 -mcpu=corei7 -mattr=$(LLC_ATTR) $(@F).ll
 	cd $(LIBXMHFHICSLAB_OBJECTS_DIR) && $(CC) -O2 -c $(CFLAGS) $(@F).s -o $(@F)
+
 
 
 .PHONY: clean

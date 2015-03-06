@@ -125,7 +125,7 @@ static void xmhfhic_setupinitpgtables(void){
 
 
 
-void xmhfhic_entry(void){
+void slab_main(slab_params_t *sp){
     u64 pgtblbase;
 
 #if !defined(__XMHF_VERIFICATION__)
