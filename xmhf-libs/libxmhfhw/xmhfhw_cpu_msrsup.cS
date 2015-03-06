@@ -44,15 +44,24 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-/*
- * dummy module to generate libxmhfhw.a
- * author: amit vasudevan (amitvasudevan@acm.org)
-*/
-
+// xmhfhw_cpu_msr: CPU MSR functions
+// author: amit vasudevan (amitvasudevan@acm.org)
 
 #include <xmhf.h>
+#include <xmhf-hwm.h>
+#include <xmhfhw.h>
 #include <xmhf-debug.h>
 
-void _xmhfhw_dummy(void){
-
+void rdmsr(u32 msr, u32 *eax, u32 *edx){
+  asm volatile("rdmsr \r\n"
+	  :"=a"(*eax), "=d"(*edx)
+	  :"c"(msr));
 }
+
+void wrmsr(u32 msr, u32 eax, u32 edx){
+  asm volatile("wrmsr \r\n"
+	  : /* no outputs */
+	  :"c"(msr), "a"(eax), "d"(edx)
+      :);
+}
+
