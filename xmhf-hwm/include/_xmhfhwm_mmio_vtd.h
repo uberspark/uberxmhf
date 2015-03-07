@@ -133,99 +133,107 @@ typedef u32 vtd_drhd_handle_t;
 
 
 typedef union {
-    u64 qwords[2];
+    u32 dwords[4];
     struct {
-        u64 p : 1;
-        u64 rsv0 : 11;
-        u64 ctp : 52;
-        u64 rsv1 : 64;
+        u32 p : 1;
+        u32 rsv0 : 11;
+        u32 ctp : 32;
+        u32 ctp_high : 20;
+        u32 rsv1 : 32;
+        u32 rsv2 : 32;
     }fields;
 } __attribute__((packed)) vtd_ret_entry_t;
 
 typedef union {
-    u64 qwords[2];
+    u32 dwords[4];
     struct {
-        u64 p : 1;
-        u64 fpd : 1;
-        u64 t : 2;
-        u64 rsv0 : 8;
-        u64 slptptr : 52;
-        u64 aw : 3;
-        u64 ign0 : 4;
-        u64 rsv1 : 1;
-        u64 did : 16;
-        u64 rsv2 : 40;
+        u32 p : 1;
+        u32 fpd : 1;
+        u32 t : 2;
+        u32 rsv0 : 8;
+        u32 slptptr : 32;
+        u32 slptptr_high : 20;
+        u32 aw : 3;
+        u32 ign0 : 4;
+        u32 rsv1 : 1;
+        u32 did : 16;
+        u32 rsv2 : 32;
+        u32 rsv3 : 8;
     }fields;
 } __attribute__((packed)) vtd_cet_entry_t;
 
 
 typedef union {
-    u64 entry;
+    u32 entry[2];
     struct {
-        u64 r : 1;
-        u64 w : 1;
-        u64 x : 1;
-        u64 ign0 : 4;
-        u64 rsv0 : 1;
-        u64 ign1 : 3;
-        u64 rsv1 : 1;
-        u64 slpdpt : 40;
-        u64 ign2 : 10;
-        u64 rsv2 : 1;
-        u64 ign3 : 1;
+        u32 r : 1;
+        u32 w : 1;
+        u32 x : 1;
+        u32 ign0 : 4;
+        u32 rsv0 : 1;
+        u32 ign1 : 3;
+        u32 rsv1 : 1;
+        u32 slpdpt : 32;
+        u32 slpdpt_high : 8;
+        u32 ign2 : 10;
+        u32 rsv2 : 1;
+        u32 ign3 : 1;
     }fields;
 }__attribute__((packed)) vtd_pml4te_t;
 
 typedef union {
-    u64 entry;
+    u32 entry[2];
     struct {
-        u64 r : 1;
-        u64 w : 1;
-        u64 x : 1;
-        u64 emt : 3;
-        u64 pat : 1;
-        u64 big : 1;
-        u64 ign0 : 3;
-        u64 snp : 1;
-        u64 slpdt : 40;
-        u64 ign1 : 10;
-        u64 tm : 1;
-        u64 ign2 : 1;
+        u32 r : 1;
+        u32 w : 1;
+        u32 x : 1;
+        u32 emt : 3;
+        u32 pat : 1;
+        u32 big : 1;
+        u32 ign0 : 3;
+        u32 snp : 1;
+        u32 slpdt : 32;
+        u32 slpdt_high : 8;
+        u32 ign1 : 10;
+        u32 tm : 1;
+        u32 ign2 : 1;
     }fields;
 }__attribute__((packed)) vtd_pdpte_t;
 
 typedef union {
-    u64 entry;
+    u32 entry[2];
     struct {
-        u64 r : 1;
-        u64 w : 1;
-        u64 x : 1;
-        u64 emt : 3;
-        u64 pat : 1;
-        u64 big : 1;
-        u64 ign0 : 3;
-        u64 snp : 1;
-        u64 slpt : 40;
-        u64 ign1 : 10;
-        u64 tm : 1;
-        u64 ign2 : 1;
+        u32 r : 1;
+        u32 w : 1;
+        u32 x : 1;
+        u32 emt : 3;
+        u32 pat : 1;
+        u32 big : 1;
+        u32 ign0 : 3;
+        u32 snp : 1;
+        u32 slpt : 32;
+        u32 slpt_high : 8;
+        u32 ign1 : 10;
+        u32 tm : 1;
+        u32 ign2 : 1;
     }fields;
 }__attribute__((packed)) vtd_pdte_t;
 
 typedef union {
-    u64 entry;
+    u32 entry[2];
     struct {
-        u64 r : 1;
-        u64 w : 1;
-        u64 x : 1;
-        u64 emt : 3;
-        u64 pat : 1;
-        u64 ign0 : 4;
-        u64 snp : 1;
-        u64 pageaddr : 40;
-        u64 ign1 : 10;
-        u64 tm : 1;
-        u64 ign2 : 1;
+        u32 r : 1;
+        u32 w : 1;
+        u32 x : 1;
+        u32 emt : 3;
+        u32 pat : 1;
+        u32 ign0 : 4;
+        u32 snp : 1;
+        u32 pageaddr : 32;
+        u32 pageaddr : 8;
+        u32 ign1 : 10;
+        u32 tm : 1;
+        u32 ign2 : 1;
     }fields;
 }__attribute__((packed)) vtd_pte_t;
 
@@ -246,7 +254,7 @@ typedef union {
 
 //VTD_CAP_REG (sec. 10.4.2)
 typedef union {
-  u64 value;
+  u32 value[2];
   struct
   {
     u32 nd : 3;    		//no. of domains
@@ -274,7 +282,7 @@ typedef union {
 
 //VTD_ECAP_REG (sec. 10.4.3)
 typedef union {
-  u64 value;
+  u32 value[0];
   struct
   {
     u32 c:1;					//coherency
@@ -288,7 +296,8 @@ typedef union {
     u32 iro:10;				//IOTLB register offset
     u32 rsvdz0: 2;		//reserved
     u32 mhmv: 4;			//maximum handle mask value
-    u64 rsvdz1: 40;		//reserved
+    u32 rsvdz1: 32;		//reserved
+    u32 rsvdz2: 8;		//reserved
   } bits;
 } __attribute__ ((packed)) VTD_ECAP_REG;
 
@@ -330,17 +339,18 @@ typedef union {
 
 //VTD_RTADDR_REG (sec. 10.4.6)
 typedef union {
-  u64 value;
+  u32 value[2];
   struct
   {
     u32 rsvdz0: 12;		//reserved
-    u64 rta: 52;			//root table address
+    u32 rta: 32;			//root table address
+    u32 rta_high : 22;			//root table address
   } bits;
 } __attribute__ ((packed)) VTD_RTADDR_REG;
 
 //VTD_CCMD_REG (sec. 10.4.7)
 typedef union {
-  u64 value;
+  u32 value[2];
   struct
   {
     u32 did:16;				//domain id
@@ -355,7 +365,7 @@ typedef union {
 
 //VTD_IOTLB_REG (sec. 10.4.8.1)
 typedef union {
-  u64 value;
+  u32 value[2];
   struct
   {
     u32 rsvdz0: 32;		//reserved
@@ -371,13 +381,14 @@ typedef union {
 
 //VTD_IVA_REG (sec. 10.4.8.2)
 typedef union {
-  u64 value;
+  u32 value[2];
   struct
   {
     u32 am: 6;				//address mask
     u32 ih:1;					//invalidation hint
     u32 rsvdz0: 5;		//reserved
-    u64 addr:52;			//address
+    u32 addr:32;			//address
+    u32 addr_high :20;			//address
   } bits;
 } __attribute__ ((packed)) VTD_IVA_REG;
 
