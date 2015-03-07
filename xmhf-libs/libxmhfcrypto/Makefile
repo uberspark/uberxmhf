@@ -33,10 +33,9 @@ $(THE_ARCHIVE): $(OBJECTS)
 	cd $(LIBXMHFCRYPTO_OBJECTS_DIR) && $(AR) -rcs $(THE_ARCHIVE) $(OBJECTS)
 
 %.o: %.c
-	#mkdir -p "$(@D)"
 	mkdir -p $(LIBXMHFCRYPTO_OBJECTS_DIR)
 	@echo Building "$@" from "$<"
-	$(CC) -c $(CFLAGS) -o $(LIBXMHFCRYPTO_OBJECTS_DIR)/$@ $<
+	$(CCERT) -c $(CCERT_FLAGS) -o $(LIBXMHFCRYPTO_OBJECTS_DIR)/$@ $<
 
 .PHONY: clean
 clean:
