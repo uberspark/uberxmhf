@@ -96,11 +96,11 @@
  * format of ERRORCODE register
  */
 typedef union {
-    uint64_t _raw;
+    u32 _raw[2];
     struct {
-        uint64_t   type       : 30;    /* external-specific error code */
-        uint64_t   external   : 1;     /* 0=from proc, 1=from external SW */
-        uint64_t   valid      : 1;     /* 1=valid */
+        u32   type       : 30;    /* external-specific error code */
+        u32   external   : 1;     /* 0=from proc, 1=from external SW */
+        u32   valid      : 1;     /* 1=valid */
     };
 } txt_errorcode_t;
 
@@ -108,12 +108,12 @@ typedef union {
  * format of ESTS register
  */
 typedef union {
-    uint64_t _raw;
+    u32 _raw[2];
     struct {
-        uint64_t   txt_reset_sts      : 1;
-        uint64_t   reserved1          : 5;
-        uint64_t   txt_wake_error_sts : 1;
-        uint64_t   reserved2          : 1;
+        u32   txt_reset_sts      : 1;
+        u32   reserved1          : 5;
+        u32   txt_wake_error_sts : 1;
+        u32   reserved2          : 1;
     };
 } txt_ests_t;
 
@@ -121,12 +121,12 @@ typedef union {
  * format of E2STS register
  */
 typedef union {
-    uint64_t _raw;
+    u32 _raw[2];
     struct {
-        uint64_t   slp_entry_error_sts  : 1;
-        uint64_t   secrets_sts          : 1;
-        uint64_t   block_mem_sts        : 1;
-        uint64_t   reset_sts            : 1;
+        u32   slp_entry_error_sts  : 1;
+        u32   secrets_sts          : 1;
+        u32   block_mem_sts        : 1;
+        u32   reset_sts            : 1;
     };
 } txt_e2sts_t;
 
@@ -134,17 +134,17 @@ typedef union {
  * format of STS register
  */
 typedef union {
-    uint64_t _raw;
+    u32 _raw[2];
     struct {
-        uint64_t   senter_done_sts         : 1;
-        uint64_t   sexit_done_sts          : 1;
-        uint64_t   reserved1               : 2;
-        uint64_t   mem_unlock_sts          : 1;
-        uint64_t   reserved2               : 1;
-        uint64_t   mem_config_lock_sts     : 1;
-        uint64_t   private_open_sts        : 1;
-        uint64_t   reserved3               : 3;
-        uint64_t   mem_config_ok_sts       : 1;
+        u32   senter_done_sts         : 1;
+        u32   sexit_done_sts          : 1;
+        u32   reserved1               : 2;
+        u32   mem_unlock_sts          : 1;
+        u32   reserved2               : 1;
+        u32   mem_config_lock_sts     : 1;
+        u32   private_open_sts        : 1;
+        u32   reserved3               : 3;
+        u32   mem_config_ok_sts       : 1;
     };
 } txt_sts_t;
 
@@ -165,10 +165,10 @@ typedef union {
  * format of VER.FSBIF and VER.EMIF registers
  */
 typedef union {
-    uint64_t _raw;
+    u32 _raw[2];
     struct {
-        uint64_t  reserved       : 31;
-        uint64_t  prod_fused     : 1;
+        u32  reserved       : 31;
+        u32  prod_fused     : 1;
     };
 } txt_ver_fsbif_emif_t;
 
@@ -176,14 +176,14 @@ typedef union {
  * format of DPR register
  */
 typedef union {
-    uint64_t _raw;
+    u32 _raw[2];
     struct {
-        uint64_t  lock           : 1;
-        uint64_t  reserved1      : 3;
-        uint64_t  size           : 8;
-        uint64_t  reserved2      : 8;
-        uint64_t  top            : 12;
-        uint64_t  reserved3      : 32;
+        u32  lock           : 1;
+        u32  reserved1      : 3;
+        u32  size           : 8;
+        u32  reserved2      : 8;
+        u32  top            : 12;
+        u32  reserved3      : 32;
     };
 } txt_dpr_t;
 
