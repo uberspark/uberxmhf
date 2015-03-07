@@ -51,7 +51,7 @@
 #include <xctestslab1.h>
 
 //////
-XMHF_SLAB(xctestslab1)
+//XMHF_SLAB(xctestslab1)
 
 /*
  * slab code
@@ -103,7 +103,7 @@ static void _xcinit_dotests(u64 cpuid){
 }*/
 
 
-void slab_interface(slab_input_params_t *iparams, u64 iparams_size, slab_output_params_t *oparams, u64 oparams_size, u64 src_slabid, u64 cpuid){
+/*void slab_interface(slab_input_params_t *iparams, u64 iparams_size, slab_output_params_t *oparams, u64 oparams_size, u64 src_slabid, u64 cpuid){
     u64 *inputval = (u64 *)iparams;
     u64 *outputval = (u64 *)oparams;
 
@@ -116,6 +116,21 @@ void slab_interface(slab_input_params_t *iparams, u64 iparams_size, slab_output_
     *outputval = 0xBBCCDDEE;
 
     return;
-}
+}*/
 
+
+void slab_main(slab_params_t *sp){
+    u32 inputval = sp->in_out_params[0];
+    u32 *outputval = (u32 *)sp->in_out_params[1];
+
+	_XDPRINTF_("%s[%u]: Got control: ESP=%016llx\n",
+                __FUNCTION__, (u16)sp->cpuid, read_esp());
+
+	_XDPRINTF_("%s[%u]: inputval=%x\n",
+                __FUNCTION__, (u16)sp->cpuid, inputval);
+
+    *outputval = 0xBBCCDDEE;
+
+    return;
+}
 

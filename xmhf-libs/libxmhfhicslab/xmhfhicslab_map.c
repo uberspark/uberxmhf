@@ -45,56 +45,21 @@
  */
 
 /*
- * trampoline call stub
+ * slab entry stub
  * author: amit vasudevan (amitvasudevan@acm.org)
 */
 
 
 #include <xmhf.h>
-//#include <xmhfhicslab.h>
-#include <xmhf-hic.h>
+#include <xmhfhicslab.h>
 #include <xmhf-debug.h>
 
-void __slab_calltrampolinenew(slab_params_t *sp){
-    u32 errorcode;
+__attribute__ ((section(".rodata"))) char * _namestring="_xmhfslab_";
+__attribute__ ((section(".stack"))) __attribute__ ((aligned(4096))) u8 _slab_stack[MAX_PLATFORM_CPUS][XMHF_SLAB_STACKSIZE];
+__attribute__ ((section(".stackhdr"))) u32 _slab_tos[MAX_PLATFORM_CPUS]= { ((u32)&_slab_stack[0] + XMHF_SLAB_STACKSIZE), ((u32)&_slab_stack[1] + XMHF_SLAB_STACKSIZE), ((u32)_slab_stack[2] + XMHF_SLAB_STACKSIZE), ((u32)&_slab_stack[3] + XMHF_SLAB_STACKSIZE), ((u32)&_slab_stack[4] + XMHF_SLAB_STACKSIZE), ((u32)&_slab_stack[5] + XMHF_SLAB_STACKSIZE), ((u32)&_slab_stack[6] + XMHF_SLAB_STACKSIZE), ((u32)&_slab_stack[7] + XMHF_SLAB_STACKSIZE)  };
+__attribute__ ((section(".slab_dmadata"))) u8 _dmadataplaceholder[1] = {0};
 
-    switch (_xmhfhic_common_slab_info_table[sp->dst_slabid].archdata.slabtype){
+// only used for guest slabs
+__attribute__ ((section(".rwdatahdr"))) guest_slab_header_t _guestslabheader = {GUEST_SLAB_HEADER_MAGIC, 0};
 
-        case HIC_SLAB_X86VMXX86PC_HYPERVISOR:{
-            FPSLABMAIN slab_main;
 
-            slab_main = (FPSLABMAIN)_xmhfhic_common_slab_info_table[sp->dst_slabid].entrystub;
-            slab_main(sp);
-        }
-        break;
-
-        case HIC_SLAB_X86VMXX86PC_GUEST:{
-            xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VPID, sp->dst_slabid );
-            xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_EPT_POINTER_FULL, _xmhfhic_common_slab_info_table[sp->dst_slabid].archdata.mempgtbl_cr3);
-            xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_EPT_POINTER_HIGH, 0);
-            xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_RSP, _xmhfhic_common_slab_info_table[sp->dst_slabid].archdata.slabtos[(u16)sp->cpuid]);
-            xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_RIP, _xmhfhic_common_slab_info_table[sp->dst_slabid].entrystub);
-
-            errorcode = __slab_calltrampolinenew_h2g();
-
-            switch(errorcode){
-                case 0:	//no error code, VMCS pointer is invalid
-                    _XDPRINTF_("%s: VMLAUNCH error; VMCS pointer invalid?\n", __FUNCTION__);
-                    break;
-                case 1:{//error code available, so dump it
-                    u32 code=xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_VMINSTR_ERROR);
-                    _XDPRINTF_("\n%s: VMLAUNCH error; code=%x\n", __FUNCTION__, code);
-                    break;
-                }
-            }
-
-            HALT();
-
-        }
-        break;
-
-        default:
-        break;
-    }
-
-}

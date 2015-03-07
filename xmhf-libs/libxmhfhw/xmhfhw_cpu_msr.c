@@ -52,19 +52,6 @@
 #include <xmhfhw.h>
 #include <xmhf-debug.h>
 
-void rdmsr(u32 msr, u32 *eax, u32 *edx){
-  asm volatile("rdmsr \r\n"
-	  :"=a"(*eax), "=d"(*edx)
-	  :"c"(msr));
-}
-
-void wrmsr(u32 msr, u32 eax, u32 edx){
-  asm volatile("wrmsr \r\n"
-	  : /* no outputs */
-	  :"c"(msr), "a"(eax), "d"(edx)
-      :);
-}
-
 
 u64 rdmsr64(u32 msr){
     u32 eax, edx;

@@ -125,7 +125,7 @@ static void xmhfhic_setupinitpgtables(void){
 
 
 
-void xmhfhic_entry(void){
+void slab_main(slab_params_t *sp){
     u64 pgtblbase;
 
 #if !defined(__XMHF_VERIFICATION__)
@@ -1155,11 +1155,12 @@ static void __xmhfhic_vmx_gathermemorytypes(void){
   	//check MTRR support
   	eax=0x00000001;
   	ecx=0x00000000;
-	#ifndef __XMHF_VERIFICATION__
+	/*#ifndef __XMHF_VERIFICATION__
   	asm volatile ("cpuid\r\n"
             :"=a"(eax), "=b"(ebx), "=c"(ecx), "=d"(edx)
             :"a"(eax), "c" (ecx));
-  	#endif
+  	#endif*/
+  	xmhfhw_cpu_cpuid(0x00000001, &eax, &ebx, &ecx, &edx);
 
   	if( !(edx & (u32)(1 << 12)) ){
   		_XDPRINTF_("\n%s: CPU does not support MTRRs!", __FUNCTION__);

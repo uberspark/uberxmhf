@@ -56,7 +56,7 @@
 
 
 //////
-XMHF_SLABNEW(xhssteptrace)
+//XMHF_SLABNEW(xhssteptrace)
 
 #define SSTEPTRACE_REGISTER    			0xE0
 #define SSTEPTRACE_ON          			0xE1

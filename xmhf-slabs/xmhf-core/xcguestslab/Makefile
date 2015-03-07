@@ -9,6 +9,7 @@ export srcdir := $(dir $(lastword $(MAKEFILE_LIST)))
 vpath %.c $(srcdir)
 vpath %.S $(srcdir)
 vpath %.lscript $(srcdir)
+vpath %.cS $(srcdir)
 
 #export PKG_CONFIG ?= pkg-config
 #export XMHF_PKG_CONFIG_MODNAME=xmhf
@@ -21,6 +22,7 @@ vpath %.lscript $(srcdir)
 export XMHF_SLAB_NAME := xcguestslab
 export XMHF_SLAB_PRIVILEGED := y
 export XMHF_SLAB_SOURCES := $(wildcard $(srcdir)/*.c)
+XMHF_SLAB_SOURCES += $(wildcard $(srcdir)/*.cS)
 
 
 ########################################################################
