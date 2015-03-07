@@ -73,6 +73,7 @@ export pkgincludedir=@pkgincludedir@
 
 # Tool settings; our project is not unique in this aspect
 export CC = @CC@
+export CCERT = @CCERT@
 export AS = @AS@
 export LD = @LD@
 export OBJDUMP = @OBJDUMP@
