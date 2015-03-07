@@ -67,11 +67,13 @@ SECTIONS
 
 	.hiccode : {
 		*(.hic_entrystub)
+		*(.slab_entrystub)
 		*(.text)
         . = ALIGN(0x200000);
 	} >hicmem =0x9090
 
 	.hicrwdata : {
+		*(.rwdatahdr)
 		*(.data)
 		*(.bss)
         . = ALIGN(0x200000);
@@ -86,11 +88,15 @@ SECTIONS
 	} >hicmem =0x0000
 
 	.hicstack : {
+		*(.stackhdr)
 		*(.stack)
 		*(.note.GNU-stack)
         . = ALIGN(0x200000);
 	} >hicmem =0x0000
 
+	.hicdmadata : {
+		*(.slab_dmadata)
+	} >hicmem =0x0000
 
 	.libxmhfdebugdata : {
 		*(.libxmhfdebugdata)
@@ -102,9 +108,9 @@ SECTIONS
 	* this part out to see what sections end up in the output
 	* which are not handled above, and handle them.
 	*/
-	.unaccounted : {
+/*	.unaccounted : {
 	*(*)
 	} >unaccounted
-
+*/
 
 }

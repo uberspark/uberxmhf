@@ -45,56 +45,23 @@
  */
 
 /*
- * trampoline call stub
+ * slab entry stub asm
  * author: amit vasudevan (amitvasudevan@acm.org)
 */
 
 
 #include <xmhf.h>
-//#include <xmhfhicslab.h>
-#include <xmhf-hic.h>
+#include <xmhfhicslab.h>
 #include <xmhf-debug.h>
 
-void __slab_calltrampolinenew(slab_params_t *sp){
-    u32 errorcode;
+__attribute__((naked)) __attribute__ ((section(".slab_entrystub"))) __attribute__((align(1))) void _slab_entrystub(void){
+	asm volatile (
+            "jmp slab_main \r\n"
+            "int $0x03 \r\n"
+            "1: jmp 1b \r\n"
 
-    switch (_xmhfhic_common_slab_info_table[sp->dst_slabid].archdata.slabtype){
-
-        case HIC_SLAB_X86VMXX86PC_HYPERVISOR:{
-            FPSLABMAIN slab_main;
-
-            slab_main = (FPSLABMAIN)_xmhfhic_common_slab_info_table[sp->dst_slabid].entrystub;
-            slab_main(sp);
-        }
-        break;
-
-        case HIC_SLAB_X86VMXX86PC_GUEST:{
-            xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VPID, sp->dst_slabid );
-            xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_EPT_POINTER_FULL, _xmhfhic_common_slab_info_table[sp->dst_slabid].archdata.mempgtbl_cr3);
-            xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_EPT_POINTER_HIGH, 0);
-            xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_RSP, _xmhfhic_common_slab_info_table[sp->dst_slabid].archdata.slabtos[(u16)sp->cpuid]);
-            xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_RIP, _xmhfhic_common_slab_info_table[sp->dst_slabid].entrystub);
-
-            errorcode = __slab_calltrampolinenew_h2g();
-
-            switch(errorcode){
-                case 0:	//no error code, VMCS pointer is invalid
-                    _XDPRINTF_("%s: VMLAUNCH error; VMCS pointer invalid?\n", __FUNCTION__);
-                    break;
-                case 1:{//error code available, so dump it
-                    u32 code=xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_VMINSTR_ERROR);
-                    _XDPRINTF_("\n%s: VMLAUNCH error; code=%x\n", __FUNCTION__, code);
-                    break;
-                }
-            }
-
-            HALT();
-
-        }
-        break;
-
-        default:
-        break;
-    }
-
+			:
+			:
+			:
+		);
 }
