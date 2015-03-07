@@ -12,6 +12,7 @@ AC_PROG_INSTALL
 # on PATH)
 #AC_CHECK_PROG([CC], [gcc], [gcc])
 AC_CHECK_PROG([CC], [clang], [clang])
+AC_CHECK_PROG([CCERT], [ccomp], [ccomp])
 AC_CHECK_PROG([AS], [as], [as])
 AC_CHECK_PROG([LD], [ld], [ld])
 AC_CHECK_PROG([OBJDUMP], [objdump], [objdump])
