@@ -79,11 +79,11 @@ void __slab_calltrampolinenew(slab_params_t *sp){
 
             switch(errorcode){
                 case 0:	//no error code, VMCS pointer is invalid
-                    _XDPRINTF_("%s: VMLAUNCH error; VMCS pointer invalid?\n", __FUNCTION__);
+                    _XDPRINTF_("%s: VMLAUNCH error; VMCS pointer invalid?\n", __func__);
                     break;
                 case 1:{//error code available, so dump it
                     u32 code=xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_VMINSTR_ERROR);
-                    _XDPRINTF_("\n%s: VMLAUNCH error; code=%x\n", __FUNCTION__, code);
+                    _XDPRINTF_("\n%s: VMLAUNCH error; code=%x\n", __func__, code);
                     break;
                 }
             }
