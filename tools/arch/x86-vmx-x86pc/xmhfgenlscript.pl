@@ -16,7 +16,7 @@ print "\n";
 print "\nENTRY(xmhf_runtime_entry)";
 print "\nMEMORY";
 print "\n{";
-print "\n  all (rwxai) : ORIGIN = 0x02000000, LENGTH = 256M";
+print "\n  all (rwxai) : ORIGIN = 0x02000000, LENGTH = 300M";
 print "\n  unaccounted (rwxai) : ORIGIN = 0, LENGTH = 0 /* see section .unaccounted at end */";
 print "\n}";
 print "\nSECTIONS";
