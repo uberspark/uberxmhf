@@ -96,7 +96,7 @@
  * format of ERRORCODE register
  */
 typedef union {
-    u32 _raw[2];
+    u64 _raw;
     struct {
         u32   type       : 30;    /* external-specific error code */
         u32   external   : 1;     /* 0=from proc, 1=from external SW */
@@ -108,7 +108,7 @@ typedef union {
  * format of ESTS register
  */
 typedef union {
-    u32 _raw[2];
+    u64 _raw;
     struct {
         u32   txt_reset_sts      : 1;
         u32   reserved1          : 5;
@@ -121,7 +121,7 @@ typedef union {
  * format of E2STS register
  */
 typedef union {
-    u32 _raw[2];
+    u64 _raw;
     struct {
         u32   slp_entry_error_sts  : 1;
         u32   secrets_sts          : 1;
@@ -165,7 +165,7 @@ typedef union {
  * format of VER.FSBIF and VER.EMIF registers
  */
 typedef union {
-    u32 _raw[2];
+    u64 _raw;
     struct {
         u32  reserved       : 31;
         u32  prod_fused     : 1;
@@ -176,7 +176,7 @@ typedef union {
  * format of DPR register
  */
 typedef union {
-    u32 _raw[2];
+    u64 _raw;
     struct {
         u32  lock           : 1;
         u32  reserved1      : 3;
