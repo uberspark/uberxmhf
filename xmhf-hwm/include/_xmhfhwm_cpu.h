@@ -259,7 +259,7 @@ typedef union {
         // the MTRRs are set for SINIT and it must be <4GB, can use 24b
         u32 base      : 24;
         u32 reserved2 : 28;
-    };
+    } __attribute__((packed));
 } __attribute__((packed)) mtrr_physbase_t;
 
 
@@ -285,7 +285,7 @@ typedef union {
         // the MTRRs are set for SINIT and it must be <4GB, can use 24b
         u32 mask      : 24;
         u32 reserved2 : 28;
-    };
+    } __attribute__((packed));
 } __attribute__((packed)) mtrr_physmask_t;
 
 /* current procs only have 8, so this should hold us for a while */
