@@ -599,6 +599,7 @@ void slab_main(slab_params_t *sp){
     static u32 __xcinit_smplock = 1;
 
 	_XDPRINTF_("%s[%u]: Got control: ESP=%08x\n", __FUNCTION__, (u16)sp->cpuid, read_esp());
+    HALT();
 
     if(!isbsp){
         _XDPRINTF_("%s[%u]: AP Halting!\n", __FUNCTION__, (u16)sp->cpuid);
