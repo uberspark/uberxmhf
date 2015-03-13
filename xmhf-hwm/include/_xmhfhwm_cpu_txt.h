@@ -101,7 +101,7 @@ typedef union {
         u32   type       : 30;    /* external-specific error code */
         u32   external   : 1;     /* 0=from proc, 1=from external SW */
         u32   valid      : 1;     /* 1=valid */
-    };
+    } __attribute__((packed));
 } txt_errorcode_t;
 
 /*
@@ -114,7 +114,7 @@ typedef union {
         u32   reserved1          : 5;
         u32   txt_wake_error_sts : 1;
         u32   reserved2          : 1;
-    };
+    } __attribute__((packed));
 } txt_ests_t;
 
 /*
@@ -127,7 +127,7 @@ typedef union {
         u32   secrets_sts          : 1;
         u32   block_mem_sts        : 1;
         u32   reset_sts            : 1;
-    };
+    } __attribute__((packed));
 } txt_e2sts_t;
 
 /*
@@ -145,7 +145,7 @@ typedef union {
         u32   private_open_sts        : 1;
         u32   reserved3               : 3;
         u32   mem_config_ok_sts       : 1;
-    };
+    } __attribute__((packed));
 } txt_sts_t;
 
 /*
@@ -169,7 +169,7 @@ typedef union {
     struct {
         u32  reserved       : 31;
         u32  prod_fused     : 1;
-    };
+    } __attribute__((packed));
 } txt_ver_fsbif_emif_t;
 
 /*
@@ -184,7 +184,7 @@ typedef union {
         u32  reserved2      : 8;
         u32  top            : 12;
         u32  reserved3      : 32;
-    };
+    } __attribute__((packed));
 } txt_dpr_t;
 
 /*
@@ -226,7 +226,7 @@ typedef union {
         uint32_t  err1    : 15;     /* specific to src */
         uint32_t  src     : 1;      /* 0=ACM, 1=other */
         uint32_t  err2    : 14;     /* specific to src */
-    };
+    } __attribute__((packed));
 } txt_errorcode_sw_t;
 
 /*
@@ -242,7 +242,7 @@ typedef union {
         uint32_t reserved  : 1;
         uint32_t src       : 1;  /* above value */
         uint32_t error2    : 14; /* sub-error */
-    };
+    } __attribute__((packed));
 } acmod_error_t;
 
 
@@ -268,7 +268,7 @@ typedef union {
         uint32_t  rlp_wake_monitor    : 1;
         uint32_t  ecx_pgtbl           : 1;
         uint32_t  reserved            : 29;
-    };
+    } __attribute__((packed));
 } txt_caps_t;
 
 
@@ -390,7 +390,7 @@ typedef union {
         uint32_t wakeup	          : 1;
         uint32_t undefined9	  : 22;
         uint32_t extended_leafs   : 1;
-    };
+    } __attribute__((packed));
 } capabilities_t;
 
 
