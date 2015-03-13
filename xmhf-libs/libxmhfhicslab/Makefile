@@ -32,11 +32,11 @@ $(THE_ARCHIVE): $(OBJECTS)
 %.o: %.c
 	mkdir -p $(LIBXMHFHICSLAB_OBJECTS_DIR)
 	@echo Building "$@" from "$<"
-	#$(CCERT) -c $(CCERT_FLAGS) $< -o $(LIBXMHFHICSLAB_OBJECTS_DIR)/$@
-	$(CC) -fomit-frame-pointer -O2 -S -emit-llvm $(CFLAGS) $< -o $(LIBXMHFHICSLAB_OBJECTS_DIR)/$(@F).ll
-	cd $(LIBXMHFHICSLAB_OBJECTS_DIR) && fixnaked.pl $(@F).ll
-	cd $(LIBXMHFHICSLAB_OBJECTS_DIR) && llc -O=2 -march=x86 -mcpu=corei7 -mattr=$(LLC_ATTR) $(@F).ll
-	cd $(LIBXMHFHICSLAB_OBJECTS_DIR) && $(CC) -O2 -c $(CFLAGS) $(@F).s -o $(@F)
+	$(CCERT) -c $(CCERT_FLAGS) $< -o $(LIBXMHFHICSLAB_OBJECTS_DIR)/$@
+	#$(CC) -fomit-frame-pointer -O2 -S -emit-llvm $(CFLAGS) $< -o $(LIBXMHFHICSLAB_OBJECTS_DIR)/$(@F).ll
+	#cd $(LIBXMHFHICSLAB_OBJECTS_DIR) && fixnaked.pl $(@F).ll
+	#cd $(LIBXMHFHICSLAB_OBJECTS_DIR) && llc -O=2 -march=x86 -mcpu=corei7 -mattr=$(LLC_ATTR) $(@F).ll
+	#cd $(LIBXMHFHICSLAB_OBJECTS_DIR) && $(CC) -O2 -c $(CFLAGS) $(@F).s -o $(@F)
 
 
 %.o: %.cS

@@ -64,7 +64,7 @@ void __slab_calltrampolinenew(slab_params_t *sp){
             FPSLABMAIN slab_main;
 
             slab_main = (FPSLABMAIN)_xmhfhic_common_slab_info_table[sp->dst_slabid].entrystub;
-            _XDPRINTF_("%s: slab_main at %08x\n", __func__, (u32)slab_main);
+            //_XDPRINTF_("%s: slab_main at %08x\n", __func__, (u32)slab_main);
             slab_main(sp);
         }
         break;

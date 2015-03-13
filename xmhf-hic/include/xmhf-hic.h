@@ -295,11 +295,11 @@ typedef struct {
 	bool devpgtbl_initialized;
 	u64 mempgtbl_cr3;
 	u32 slabtos[MAX_PLATFORM_CPUS];
-} __attribute__((packed)) __attribute__((aligned(4096))) x_slab_info_archdata_t;
+} __attribute__((packed)) x_slab_info_archdata_t;
 
 
 typedef struct {
-    __attribute__((aligned(4096))) x_slab_info_archdata_t archdata;
+    x_slab_info_archdata_t archdata;
 	bool slab_inuse;
     slab_privilegemask_t slab_privilegemask;
     slab_callcaps_t slab_callcaps;
@@ -307,7 +307,7 @@ typedef struct {
     slab_platformdevices_t slab_devices;
     slab_physmem_extent_t slab_physmem_extents[HIC_SLAB_PHYSMEM_MAXEXTENTS];
 	slab_entrystub_t entrystub;
-} __attribute__((packed)) __attribute__((aligned(4096))) x_slab_info_t;
+} __attribute__((packed)) x_slab_info_t;
 
 
 
