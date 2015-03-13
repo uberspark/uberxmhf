@@ -200,7 +200,7 @@ enum var_mtrr_t {
 */
 
 typedef union {
-    u32	raw[2];
+    u64	raw;
     struct {
         u32 vcnt        : 8;    // num variable MTRR pairs
         u32 fix         : 1;    // fixed range MTRRs are supported
@@ -225,7 +225,7 @@ typedef union {
 */
 
 typedef union {
-    u32	raw[2];
+    u64	raw;
     struct {
         u32 type        : 8;
         u32 reserved1   : 2;
@@ -251,7 +251,7 @@ typedef union {
 */
 
 typedef union {
-    u32	raw[2];
+    u64	raw;
     struct {
         u32 type      : 8;
         u32 reserved1 : 4;
@@ -277,7 +277,7 @@ typedef union {
 */
 
 typedef union {
-    u32	raw[2];
+    u64	raw;
     struct {
         u32 reserved1 : 11;
         u32 v         : 1;      // valid
