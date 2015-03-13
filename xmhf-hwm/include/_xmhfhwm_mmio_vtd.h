@@ -141,7 +141,7 @@ typedef union {
         u32 ctp_high : 20;
         u32 rsv1 : 32;
         u32 rsv2 : 32;
-    }fields;
+    } __attribute__((packed)) fields;
 } __attribute__((packed)) vtd_ret_entry_t;
 
 typedef union {
@@ -159,7 +159,7 @@ typedef union {
         u32 did : 16;
         u32 rsv2 : 32;
         u32 rsv3 : 8;
-    }fields;
+    } __attribute__((packed)) fields;
 } __attribute__((packed)) vtd_cet_entry_t;
 
 
@@ -178,7 +178,7 @@ typedef union {
         u32 ign2 : 10;
         u32 rsv2 : 1;
         u32 ign3 : 1;
-    }fields;
+    } __attribute__((packed)) fields;
 }__attribute__((packed)) vtd_pml4te_t;
 
 typedef union {
@@ -197,7 +197,7 @@ typedef union {
         u32 ign1 : 10;
         u32 tm : 1;
         u32 ign2 : 1;
-    }fields;
+    } __attribute__((packed)) fields;
 }__attribute__((packed)) vtd_pdpte_t;
 
 typedef union {
@@ -216,7 +216,7 @@ typedef union {
         u32 ign1 : 10;
         u32 tm : 1;
         u32 ign2 : 1;
-    }fields;
+    } __attribute__((packed)) fields;
 }__attribute__((packed)) vtd_pdte_t;
 
 typedef union {
@@ -234,7 +234,7 @@ typedef union {
         u32 ign1 : 10;
         u32 tm : 1;
         u32 ign2 : 1;
-    }fields;
+    } __attribute__((packed)) fields;
 }__attribute__((packed)) vtd_pte_t;
 
 
@@ -249,7 +249,7 @@ typedef union {
     u32 min : 4;			//minor version no.
     u32 max : 4;			//major version no.
     u32 rsvdz : 24;		//reserved
-  } bits;
+  } __attribute__((packed)) bits;
 } __attribute__ ((packed)) VTD_VER_REG;
 
 //VTD_CAP_REG (sec. 10.4.2)
@@ -277,7 +277,7 @@ typedef union {
     u32 dwd: 1;				//DMA write draining
     u32 drd: 1;				//DMA read draining
     u32 rsvdz2: 8;		//reserved
-  } bits;
+  } __attribute__((packed)) bits;
 } __attribute__ ((packed)) VTD_CAP_REG;
 
 //VTD_ECAP_REG (sec. 10.4.3)
@@ -298,7 +298,7 @@ typedef union {
     u32 mhmv: 4;			//maximum handle mask value
     u32 rsvdz1: 32;		//reserved
     u32 rsvdz2: 8;		//reserved
-  } bits;
+  } __attribute__((packed)) bits;
 } __attribute__ ((packed)) VTD_ECAP_REG;
 
 //VTD_GCMD_REG (sec. 10.4.4)
@@ -316,7 +316,7 @@ typedef union {
     u32 sfl:1;				//set fault log
     u32 srtp:1;				//set root table pointer
     u32 te:1;					//translation enable
-  } bits;
+  } __attribute__((packed)) bits;
 } __attribute__ ((packed)) VTD_GCMD_REG;
 
 //VTD_GSTS_REG (sec. 10.4.5)
@@ -334,7 +334,7 @@ typedef union {
     u32 fls:1;				//fault log status
     u32 rtps:1;				//root table pointer status
     u32 tes:1;				//translation enable status
-  } bits;
+  } __attribute__((packed)) bits;
 } __attribute__ ((packed)) VTD_GSTS_REG;
 
 //VTD_RTADDR_REG (sec. 10.4.6)
@@ -345,7 +345,7 @@ typedef union {
     u32 rsvdz0: 12;		//reserved
     u32 rta: 32;			//root table address
     u32 rta_high : 22;			//root table address
-  } bits;
+  } __attribute__((packed)) bits;
 } __attribute__ ((packed)) VTD_RTADDR_REG;
 
 //VTD_CCMD_REG (sec. 10.4.7)
@@ -360,7 +360,7 @@ typedef union {
     u32 caig:2;				//context invalidation actual granularity
     u32 cirg:2;				//context invalidation request granularity
     u32 icc:1;				//invalidate context-cache
-  } bits;
+  } __attribute__((packed)) bits;
 } __attribute__ ((packed)) VTD_CCMD_REG;
 
 //VTD_IOTLB_REG (sec. 10.4.8.1)
@@ -376,7 +376,7 @@ typedef union {
     u32 iaig: 3;			//IOTLB actual invalidation granularity
     u32 iirg: 3;			//IOTLB request invalidation granularity
     u32 ivt: 1;				//invalidate IOTLB
-  } bits;
+  } __attribute__((packed)) bits;
 } __attribute__ ((packed)) VTD_IOTLB_REG;
 
 //VTD_IVA_REG (sec. 10.4.8.2)
@@ -389,7 +389,7 @@ typedef union {
     u32 rsvdz0: 5;		//reserved
     u32 addr:32;			//address
     u32 addr_high :20;			//address
-  } bits;
+  } __attribute__((packed)) bits;
 } __attribute__ ((packed)) VTD_IVA_REG;
 
 
@@ -408,7 +408,7 @@ typedef union {
     u32 rsvdz0: 1;		//reserved
     u32 fri:8;				//fault record index
     u32 rsvdz1: 16;		//reserved
-  } bits;
+  } __attribute__((packed)) bits;
 } __attribute__ ((packed)) VTD_FSTS_REG;
 
 //VTD_FECTL_REG	(sec. 10.4.10)

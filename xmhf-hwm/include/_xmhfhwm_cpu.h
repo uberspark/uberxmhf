@@ -208,7 +208,7 @@ typedef union {
         u32 wc          : 1;    // write-combining mem type supported
         u32 reserved2   : 32;
         u32 reserved3   : 21;
-    };
+    } __attribute__((packed));
 } __attribute__((packed)) mtrr_cap_t;
 
 
@@ -233,7 +233,7 @@ typedef union {
         u32 e           : 1;    // (all) MTRR enable
         u32 reserved2   : 32;
         u32 reserved3   : 20;
-    };
+    } __attribute__((packed));
 } __attribute__((packed)) mtrr_def_type_t;
 
 
