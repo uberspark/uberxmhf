@@ -134,7 +134,7 @@ typedef union {
  * format of STS register
  */
 typedef union {
-    u32 _raw[2];
+    u64 _raw;
     struct {
         u32   senter_done_sts         : 1;
         u32   sexit_done_sts          : 1;

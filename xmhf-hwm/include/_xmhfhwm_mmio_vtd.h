@@ -133,7 +133,7 @@ typedef u32 vtd_drhd_handle_t;
 
 
 typedef union {
-    u32 dwords[4];
+    u64 qwords[2];
     struct {
         u32 p : 1;
         u32 rsv0 : 11;
@@ -145,7 +145,7 @@ typedef union {
 } __attribute__((packed)) vtd_ret_entry_t;
 
 typedef union {
-    u32 dwords[4];
+    u64 qwords[2];
     struct {
         u32 p : 1;
         u32 fpd : 1;
@@ -164,7 +164,7 @@ typedef union {
 
 
 typedef union {
-    u32 entry[2];
+    u64 entry;
     struct {
         u32 r : 1;
         u32 w : 1;
@@ -182,7 +182,7 @@ typedef union {
 }__attribute__((packed)) vtd_pml4te_t;
 
 typedef union {
-    u32 entry[2];
+    u64 entry;
     struct {
         u32 r : 1;
         u32 w : 1;
@@ -201,7 +201,7 @@ typedef union {
 }__attribute__((packed)) vtd_pdpte_t;
 
 typedef union {
-    u32 entry[2];
+    u64 entry;
     struct {
         u32 r : 1;
         u32 w : 1;
@@ -220,7 +220,7 @@ typedef union {
 }__attribute__((packed)) vtd_pdte_t;
 
 typedef union {
-    u32 entry[2];
+    u64 entry;
     struct {
         u32 r : 1;
         u32 w : 1;
@@ -230,7 +230,7 @@ typedef union {
         u32 ign0 : 4;
         u32 snp : 1;
         u32 pageaddr : 32;
-        u32 pageaddr : 8;
+        u32 pageaddr_high : 8;
         u32 ign1 : 10;
         u32 tm : 1;
         u32 ign2 : 1;
@@ -254,7 +254,7 @@ typedef union {
 
 //VTD_CAP_REG (sec. 10.4.2)
 typedef union {
-  u32 value[2];
+  u64 value;
   struct
   {
     u32 nd : 3;    		//no. of domains
@@ -282,7 +282,7 @@ typedef union {
 
 //VTD_ECAP_REG (sec. 10.4.3)
 typedef union {
-  u32 value[0];
+  u64 value;
   struct
   {
     u32 c:1;					//coherency
@@ -339,7 +339,7 @@ typedef union {
 
 //VTD_RTADDR_REG (sec. 10.4.6)
 typedef union {
-  u32 value[2];
+  u64 value;
   struct
   {
     u32 rsvdz0: 12;		//reserved
@@ -350,7 +350,7 @@ typedef union {
 
 //VTD_CCMD_REG (sec. 10.4.7)
 typedef union {
-  u32 value[2];
+  u64 value;
   struct
   {
     u32 did:16;				//domain id
@@ -365,7 +365,7 @@ typedef union {
 
 //VTD_IOTLB_REG (sec. 10.4.8.1)
 typedef union {
-  u32 value[2];
+  u64 value;
   struct
   {
     u32 rsvdz0: 32;		//reserved
@@ -381,7 +381,7 @@ typedef union {
 
 //VTD_IVA_REG (sec. 10.4.8.2)
 typedef union {
-  u32 value[2];
+  u64 value;
   struct
   {
     u32 am: 6;				//address mask
