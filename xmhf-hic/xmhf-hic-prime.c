@@ -160,8 +160,6 @@ void slab_main(slab_params_t *sp){
   	}
 #endif
 
-    HALT();
-
     _XDPRINTF_("Proceeding to setup init pagetables...\n");
     xmhfhic_setupinitpgtables();
     _XDPRINTF_("Init page table setup.\n");
