@@ -146,6 +146,12 @@ INTEGRITY_MEASUREMENT_VALUES g_init_gold /* __attribute__(( section("") )) */ = 
 //size_t sl_rt_size;
 
 
+void skinit(unsigned long eax) {
+    __asm__("mov %0, %%eax": :"r" (eax));
+    __asm__("skinit %%eax":);
+}
+
+
 //---MP config table handling---------------------------------------------------
 void dealwithMP(void){
     if(!smp_getinfo(pcpus, &pcpus_numentries)){

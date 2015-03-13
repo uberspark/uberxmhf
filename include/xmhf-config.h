@@ -165,7 +165,7 @@
 	//#define __TARGET_BASE_XMHF				0x10000000		//at 256M
 	//#define __TARGET_SIZE_XMHF				0x10000000
 	#define __TARGET_BASE_XMHF				0x02000000		//at 32M
-	#define __TARGET_SIZE_XMHF				0x10000000      //256M size
+	#define __TARGET_SIZE_XMHF				0x12C00000      //300M size
 
 	//physical address where the XMHF boot-loader is loaded (e.g., via GRUB)
 	#define __TARGET_BASE_BOOTLOADER		0x01E00000		//30MB
