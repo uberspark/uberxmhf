@@ -145,7 +145,7 @@ typedef union {
         u32   private_open_sts        : 1;
         u32   reserved3               : 3;
         u32   mem_config_ok_sts       : 1;
-    } __attribute__((packed));
+    } __attribute__((packed)) fields;
 } txt_sts_t;
 
 /*

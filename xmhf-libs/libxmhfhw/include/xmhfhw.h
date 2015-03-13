@@ -158,7 +158,7 @@ bool txt_is_launched(void);
 
 
 void set_all_mtrrs(bool enable);
-bool set_mem_type(void *base, uint32_t size, uint32_t mem_type);
+bool set_mem_type(u8 *base, uint32_t size, uint32_t mem_type);
 void print_mtrrs(const mtrr_state_t *saved_state);
 void xmhfhw_cpu_x86_save_mtrrs(mtrr_state_t *saved_state);
 bool validate_mtrrs(const mtrr_state_t *saved_state);

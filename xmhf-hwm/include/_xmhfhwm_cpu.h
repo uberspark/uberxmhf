@@ -187,17 +187,6 @@ enum var_mtrr_t {
     MTRR_PHYS_MASK7_MSR = 0x20F
 };
 
-/*typedef union {
-    uint64_t	raw;
-    struct {
-        uint64_t vcnt        : 8;    // num variable MTRR pairs
-        uint64_t fix         : 1;    // fixed range MTRRs are supported
-        uint64_t reserved1   : 1;
-        uint64_t wc          : 1;    // write-combining mem type supported
-        uint64_t reserved2   : 53;
-    };
-} __attribute__((packed)) mtrr_cap_t;
-*/
 
 typedef union {
     u64	raw;
@@ -208,21 +197,9 @@ typedef union {
         u32 wc          : 1;    // write-combining mem type supported
         u32 reserved2   : 32;
         u32 reserved3   : 21;
-    } __attribute__((packed));
+    } __attribute__((packed)) fields;
 } __attribute__((packed)) mtrr_cap_t;
 
-
-/*typedef union {
-    uint64_t	raw;
-    struct {
-        uint64_t type        : 8;
-        uint64_t reserved1   : 2;
-        uint64_t fe          : 1;    // fixed MTRR enable
-        uint64_t e           : 1;    // (all) MTRR enable
-        uint64_t reserved2   : 52;
-    };
-} __attribute__((packed)) mtrr_def_type_t;
-*/
 
 typedef union {
     u64	raw;
@@ -233,22 +210,9 @@ typedef union {
         u32 e           : 1;    // (all) MTRR enable
         u32 reserved2   : 32;
         u32 reserved3   : 20;
-    } __attribute__((packed));
+    } __attribute__((packed)) fields;
 } __attribute__((packed)) mtrr_def_type_t;
 
-
-/*typedef union {
-    uint64_t	raw;
-    struct {
-        uint64_t type      : 8;
-        uint64_t reserved1 : 4;
-        // TBD: the end of base really depends on MAXPHYADDR, but since
-        // the MTRRs are set for SINIT and it must be <4GB, can use 24b
-        uint64_t base      : 24;
-        uint64_t reserved2 : 28;
-    };
-} __attribute__((packed)) mtrr_physbase_t;
-*/
 
 typedef union {
     u64	raw;
@@ -259,22 +223,9 @@ typedef union {
         // the MTRRs are set for SINIT and it must be <4GB, can use 24b
         u32 base      : 24;
         u32 reserved2 : 28;
-    } __attribute__((packed));
+    } __attribute__((packed)) fields;
 } __attribute__((packed)) mtrr_physbase_t;
 
-
-/*typedef union {
-    uint64_t	raw;
-    struct {
-        uint64_t reserved1 : 11;
-        uint64_t v         : 1;      // valid
-        // TBD: the end of mask really depends on MAXPHYADDR, but since
-        // the MTRRs are set for SINIT and it must be <4GB, can use 24b
-        uint64_t mask      : 24;
-        uint64_t reserved2 : 28;
-    };
-} __attribute__((packed)) mtrr_physmask_t;
-*/
 
 typedef union {
     u64	raw;
@@ -285,7 +236,7 @@ typedef union {
         // the MTRRs are set for SINIT and it must be <4GB, can use 24b
         u32 mask      : 24;
         u32 reserved2 : 28;
-    } __attribute__((packed));
+    } __attribute__((packed)) fields;
 } __attribute__((packed)) mtrr_physmask_t;
 
 /* current procs only have 8, so this should hold us for a while */
