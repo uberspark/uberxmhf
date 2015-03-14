@@ -115,7 +115,7 @@ void _vtd_reg(VTD_DRHD *dmardevice, u32 access, u32 reg, void *value){
     }
 
     default:
-      //_XDPRINTF_("\n%s: Halt, Unsupported register=%08x", __FUNCTION__, reg);
+      //_XDPRINTF_("\n%s: Halt, Unsupported register=%08x", __func__, reg);
       HALT();
       break;
   }
@@ -141,7 +141,7 @@ void _vtd_reg(VTD_DRHD *dmardevice, u32 access, u32 reg, void *value){
     }
 
     default:
-     //_XDPRINTF_("\n%s: Halt, Unsupported access width=%08x", __FUNCTION__, regtype);
+     //_XDPRINTF_("\n%s: Halt, Unsupported access width=%08x", __func__, regtype);
      HALT();
   }
 
@@ -198,23 +198,23 @@ bool xmhfhw_platform_x86pc_vtd_scanfor_drhd_units(vtd_drhd_handle_t *maxhandle, 
 	if(status == 0)
 		return false;
 
-	//_XDPRINTF_("\n%s: RSDP at %08x", __FUNCTION__, status);
+	//_XDPRINTF_("\n%s: RSDP at %08x", __func__, status);
 
 	//grab ACPI RSDT
 	xmhfhw_sysmemaccess_copy((u8 *)&rsdt, (u8 *)rsdp.rsdtaddress, sizeof(ACPI_RSDT));
 	//_XDPRINTF_("\n%s: RSDT at %08x, len=%u bytes, hdrlen=%u bytes",
-	//	__FUNCTION__, rsdp.rsdtaddress, rsdt.length, sizeof(ACPI_RSDT));
+	//	__func__, rsdp.rsdtaddress, rsdt.length, sizeof(ACPI_RSDT));
 
 	//get the RSDT entry list
 	num_rsdtentries = (rsdt.length - sizeof(ACPI_RSDT))/ sizeof(u32);
 	if(num_rsdtentries >= ACPI_MAX_RSDT_ENTRIES){
-			//_XDPRINTF_("\n%s: Error num_rsdtentries(%u) > ACPI_MAX_RSDT_ENTRIES (%u)", __FUNCTION__, num_rsdtentries, ACPI_MAX_RSDT_ENTRIES);
+			//_XDPRINTF_("\n%s: Error num_rsdtentries(%u) > ACPI_MAX_RSDT_ENTRIES (%u)", __func__, num_rsdtentries, ACPI_MAX_RSDT_ENTRIES);
 			return false;
 	}
 
 	xmhfhw_sysmemaccess_copy((u8 *)&rsdtentries, (u8 *)(rsdp.rsdtaddress + sizeof(ACPI_RSDT)),
 			sizeof(u32)*num_rsdtentries);
-	//_XDPRINTF_("\n%s: RSDT entry list at %08x, len=%u", __FUNCTION__,
+	//_XDPRINTF_("\n%s: RSDT entry list at %08x, len=%u", __func__,
 	//	(rsdp.rsdtaddress + sizeof(ACPI_RSDT)), num_rsdtentries);
 
 	//find the VT-d DMAR table in the list (if any)
@@ -228,18 +228,18 @@ bool xmhfhw_platform_x86pc_vtd_scanfor_drhd_units(vtd_drhd_handle_t *maxhandle, 
 
 	//if no DMAR table, bail out
 	if(!dmarfound){
-		//_XDPRINTF_("\n%s: Error No DMAR table", __FUNCTION__);
+		//_XDPRINTF_("\n%s: Error No DMAR table", __func__);
 		return false;
 	}
 
 	vtd_dmar_table_physical_address = rsdtentries[i]; //DMAR table physical memory address;
 	*dmar_phys_addr_var = vtd_dmar_table_physical_address; //store it in supplied argument
-	//_XDPRINTF_("\n%s: DMAR at %08x", __FUNCTION__, vtd_dmar_table_physical_address);
+	//_XDPRINTF_("\n%s: DMAR at %08x", __func__, vtd_dmar_table_physical_address);
 
 	//detect DRHDs in the DMAR table
 	i=0;
 	remappingstructuresaddrphys=vtd_dmar_table_physical_address+sizeof(VTD_DMAR);
-	//_XDPRINTF_("\n%s: remapping structures at %08x", __FUNCTION__, remappingstructuresaddrphys);
+	//_XDPRINTF_("\n%s: remapping structures at %08x", __func__, remappingstructuresaddrphys);
 
 	while(i < (dmar.length-sizeof(VTD_DMAR))){
 		u16 type, length;
@@ -250,7 +250,7 @@ bool xmhfhw_platform_x86pc_vtd_scanfor_drhd_units(vtd_drhd_handle_t *maxhandle, 
 			case  0:  //DRHD
 				//_XDPRINTF_("\nDRHD at %08x, len=%u bytes", (u32)(remappingstructuresaddrphys+i), length);
 				if(vtd_num_drhd >= VTD_MAX_DRHD){
-						//_XDPRINTF_("\n%s: Error vtd_num_drhd (%u) > VTD_MAX_DRHD (%u)", __FUNCTION__, vtd_num_drhd, VTD_MAX_DRHD);
+						//_XDPRINTF_("\n%s: Error vtd_num_drhd (%u) > VTD_MAX_DRHD (%u)", __func__, vtd_num_drhd, VTD_MAX_DRHD);
 						return false;
 				}
 				xmhfhw_sysmemaccess_copy((u8 *)&vtd_drhd[vtd_num_drhd], (u8 *)(remappingstructuresaddrphys+i), length);
@@ -263,10 +263,10 @@ bool xmhfhw_platform_x86pc_vtd_scanfor_drhd_units(vtd_drhd_handle_t *maxhandle, 
 				break;
 		}
 	}
-    _XDPRINTF_("%s: total DRHDs detected= %u units\n", __FUNCTION__, vtd_num_drhd);
+    _XDPRINTF_("%s: total DRHDs detected= %u units\n", __func__, vtd_num_drhd);
 
 	//[DEBUG]: be a little verbose about what we found
-	//_XDPRINTF_("\n%s: DMAR Devices:", __FUNCTION__);
+	//_XDPRINTF_("\n%s: DMAR Devices:", __func__);
 	for(i=0; i < vtd_num_drhd; i++){
 		VTD_CAP_REG cap;
 		VTD_ECAP_REG ecap;
@@ -304,12 +304,12 @@ bool xmhfhw_platform_x86pc_vtd_drhd_initialize(vtd_drhd_handle_t drhd_handle){
 		_vtd_reg(drhd, VTD_REG_READ, VTD_CAP_REG_OFF, (void *)&cap.value);
 
 		if(! (cap.bits.plmr && cap.bits.phmr) ){
-			//_XDPRINTF_("\n%s: Error: PLMR unsupported", __FUNCTION__);
+			//_XDPRINTF_("\n%s: Error: PLMR unsupported", __func__);
 			return false;
 		}
 
         if ( !((cap.bits.sagaw & 0x2) || (cap.bits.sagaw & 0x4)) ){
-            //_XDPRINTF_("%s: Error: we only support 3-level or 4-level tables (%x)\n", __FUNCTION__, cap.bits.sagaw);
+            //_XDPRINTF_("%s: Error: we only support 3-level or 4-level tables (%x)\n", __func__, cap.bits.sagaw);
 			return false;
         }
 
@@ -331,7 +331,7 @@ bool xmhfhw_platform_x86pc_vtd_drhd_initialize(vtd_drhd_handle_t drhd_handle){
 		_vtd_reg(drhd, VTD_REG_READ, VTD_FECTL_REG_OFF, (void *)&fectl.value);
 
 		if(!fectl.bits.im){
-		  //_XDPRINTF_("\n%s: Error: Failed to set fault-reporting.", __FUNCTION__);
+		  //_XDPRINTF_("\n%s: Error: Failed to set fault-reporting.", __func__);
 		  return false;
 		}
 	}
@@ -374,7 +374,7 @@ bool xmhfhw_platform_x86pc_vtd_drhd_invalidatecaches(vtd_drhd_handle_t drhd_hand
 
 	//if all went well CCMD CAIG = CCMD CIRG (i.e., actual = requested invalidation granularity)
 	if(ccmd.bits.caig != 0x1){
-		//_XDPRINTF_("\n%s: Error: Invalidatation of CET failed (%u)", __FUNCTION__, ccmd.bits.caig);
+		//_XDPRINTF_("\n%s: Error: Invalidatation of CET failed (%u)", __func__, ccmd.bits.caig);
 		return false;
 	}
 
@@ -394,7 +394,7 @@ bool xmhfhw_platform_x86pc_vtd_drhd_invalidatecaches(vtd_drhd_handle_t drhd_hand
 
     //if all went well IOTLB IAIG = IOTLB IIRG (i.e., actual = requested invalidation granularity)
 	if(iotlb.bits.iaig != 0x1){
-		//_XDPRINTF_("\n%s: Error: Invalidation of IOTLB failed (%u)", __FUNCTION__, iotlb.bits.iaig);
+		//_XDPRINTF_("\n%s: Error: Invalidation of IOTLB failed (%u)", __func__, iotlb.bits.iaig);
 		return false;
     }
 
