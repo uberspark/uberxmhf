@@ -185,6 +185,8 @@ bool set_mem_type(u8 *base, uint32_t size, uint32_t mem_type)
     mtrr_physmask_t mtrr_physmask;
     mtrr_physbase_t mtrr_physbase;
 
+    _XDPRINTF_("%s: %u\n", __func__, __LINE__);
+
     /*
      * disable all fixed MTRRs
      * set default type to UC
@@ -193,6 +195,8 @@ bool set_mem_type(u8 *base, uint32_t size, uint32_t mem_type)
     mtrr_def_type.fields.fe = 0;
     mtrr_def_type.fields.type = MTRR_TYPE_UNCACHABLE;
     wrmsr64(MSR_MTRRdefType, mtrr_def_type.raw);
+
+    _XDPRINTF_("%s: %u\n", __func__, __LINE__);
 
     /*
      * initially disable all variable MTRRs (we'll enable the ones we use)
@@ -204,6 +208,8 @@ bool set_mem_type(u8 *base, uint32_t size, uint32_t mem_type)
         wrmsr64(MTRR_PHYS_MASK0_MSR + ndx*2, mtrr_physmask.raw);
     }
 
+    _XDPRINTF_("%s: %u\n", __func__, __LINE__);
+
     /*
      * map all AC module pages as mem_type
      */
@@ -211,19 +217,27 @@ bool set_mem_type(u8 *base, uint32_t size, uint32_t mem_type)
     num_pages = (size + PAGE_SIZE_4K - 1) >> PAGE_SHIFT_4K;
     ndx = 0;
 
-    //_XDPRINTF_("setting MTRRs for acmod: base=%p, size=%x, num_pages=%d\n",
-    //       base, size, num_pages);
+    _XDPRINTF_("setting MTRRs for acmod: base=%p, size=%x, num_pages=%d\n",
+           base, size, num_pages);
 
     while ( num_pages > 0 ) {
         uint32_t pages_in_range;
 
         /* set the base of the current MTRR */
         mtrr_physbase.raw = rdmsr64(MTRR_PHYS_BASE0_MSR + ndx*2);
+
+        mtrr_physbase.fields.reserved1 = 0;
         mtrr_physbase.fields.base = (unsigned long)base >> PAGE_SHIFT_4K;
         mtrr_physbase.fields.type = mem_type;
         /* set explicitly in case base field is >24b (MAXPHYADDR >36) */
         mtrr_physbase.fields.reserved2 = 0;
+
+        _XDPRINTF_("%s: %u writing %016llx\n", __func__, __LINE__,
+                   mtrr_physbase.raw);
+
         wrmsr64(MTRR_PHYS_BASE0_MSR + ndx*2, mtrr_physbase.raw);
+
+        _XDPRINTF_("%s: %u\n", __func__, __LINE__);
 
         /*
          * calculate MTRR mask
@@ -232,12 +246,21 @@ bool set_mem_type(u8 *base, uint32_t size, uint32_t mem_type)
          */
         pages_in_range = 1 << (fls(num_pages) - 1);
 
+        _XDPRINTF_("%s: %u pages_in_range=%u\n", __func__, __LINE__, pages_in_range);
+
         mtrr_physmask.raw = rdmsr64(MTRR_PHYS_MASK0_MSR + ndx*2);
-        mtrr_physmask.fields.mask = ~(pages_in_range - 1);
+
+        mtrr_physmask.fields.reserved1 = 0;
+        mtrr_physmask.fields.mask = (u32) ~(pages_in_range - 1);
         mtrr_physmask.fields.v = 1;
         /* set explicitly in case mask field is >24b (MAXPHYADDR >36) */
         mtrr_physmask.fields.reserved2 = 0;
+
+        _XDPRINTF_("%s: %u writing %016llx\n", __func__, __LINE__, mtrr_physmask.raw);
+
         wrmsr64(MTRR_PHYS_MASK0_MSR + ndx*2, mtrr_physmask.raw);
+
+        _XDPRINTF_("%s: %u\n", __func__, __LINE__);
 
         /* prepare for the next loop depending on number of pages
          * We figure out from the above how many pages could be used in this
@@ -249,10 +272,12 @@ bool set_mem_type(u8 *base, uint32_t size, uint32_t mem_type)
         num_pages -= pages_in_range;
         ndx++;
         if ( ndx == mtrr_cap.fields.vcnt ) {
-            //_XDPRINTF_("exceeded number of var MTRRs when mapping range\n");
+            _XDPRINTF_("exceeded number of var MTRRs when mapping range\n");
             return false;
         }
     }
+
+    _XDPRINTF_("%s: %u\n", __func__, __LINE__);
 
     return true;
 }
