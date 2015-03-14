@@ -166,9 +166,10 @@ void set_all_mtrrs(bool enable)
 {
     mtrr_def_type_t mtrr_def_type;
 
-    mtrr_def_type.raw = rdmsr64(MSR_MTRRdefType);
-    mtrr_def_type.fields.e = enable ? 1 : 0;
-    wrmsr64(MSR_MTRRdefType, mtrr_def_type.raw);
+    //mtrr_def_type.raw = rdmsr64(MSR_MTRRdefType);
+    unpack_mtrr_def_type_t(&mtrr_def_type, rdmsr64(MSR_MTRRdefType));
+    mtrr_def_type.e = enable ? 1 : 0;
+    wrmsr64(MSR_MTRRdefType, pack_mtrr_def_type_t(&mtrr_def_type));
 }
 
 
@@ -191,18 +192,20 @@ bool set_mem_type(u8 *base, uint32_t size, uint32_t mem_type)
      * disable all fixed MTRRs
      * set default type to UC
      */
-    mtrr_def_type.raw = rdmsr64(MSR_MTRRdefType);
-    mtrr_def_type.fields.fe = 0;
-    mtrr_def_type.fields.type = MTRR_TYPE_UNCACHABLE;
-    wrmsr64(MSR_MTRRdefType, mtrr_def_type.raw);
+    //mtrr_def_type.raw = rdmsr64(MSR_MTRRdefType);
+    unpack_mtrr_def_type_t(&mtrr_def_type, rdmsr64(MSR_MTRRdefType));
+    mtrr_def_type.fe = 0;
+    mtrr_def_type.type = MTRR_TYPE_UNCACHABLE;
+    wrmsr64(MSR_MTRRdefType, pack_mtrr_def_type_t(&mtrr_def_type));
 
     _XDPRINTF_("%s: %u\n", __func__, __LINE__);
 
     /*
      * initially disable all variable MTRRs (we'll enable the ones we use)
      */
-    mtrr_cap.raw = rdmsr64(MSR_MTRRcap);
-    for ( ndx = 0; ndx < mtrr_cap.fields.vcnt; ndx++ ) {
+    //mtrr_cap.raw = rdmsr64(MSR_MTRRcap);
+    unpack_mtrr_cap_t(&mtrr_cap, rdmsr64(MSR_MTRRcap));
+    for ( ndx = 0; ndx < mtrr_cap.vcnt; ndx++ ) {
         mtrr_physmask.raw = rdmsr64(MTRR_PHYS_MASK0_MSR + ndx*2);
         mtrr_physmask.fields.v = 0;
         wrmsr64(MTRR_PHYS_MASK0_MSR + ndx*2, mtrr_physmask.raw);
@@ -271,7 +274,7 @@ bool set_mem_type(u8 *base, uint32_t size, uint32_t mem_type)
         base += (pages_in_range * PAGE_SIZE_4K);
         num_pages -= pages_in_range;
         ndx++;
-        if ( ndx == mtrr_cap.fields.vcnt ) {
+        if ( ndx == mtrr_cap.vcnt ) {
             _XDPRINTF_("exceeded number of var MTRRs when mapping range\n");
             return false;
         }
@@ -308,11 +311,13 @@ void xmhfhw_cpu_x86_save_mtrrs(mtrr_state_t *saved_state)
     int ndx;
 
     /* IA32_MTRR_DEF_TYPE MSR */
-    saved_state->mtrr_def_type.raw = rdmsr64(MSR_MTRRdefType);
+    //saved_state->mtrr_def_type.raw = rdmsr64(MSR_MTRRdefType);
+    unpack_mtrr_def_type_t(&saved_state->mtrr_def_type, rdmsr64(MSR_MTRRdefType));
 
     /* number variable MTTRRs */
-    mtrr_cap.raw = rdmsr64(MSR_MTRRcap);
-    if ( mtrr_cap.fields.vcnt > MAX_VARIABLE_MTRRS ) {
+    //mtrr_cap.raw = rdmsr64(MSR_MTRRcap);
+    unpack_mtrr_cap_t(&mtrr_cap, rdmsr64(MSR_MTRRcap));
+    if ( mtrr_cap.vcnt > MAX_VARIABLE_MTRRS ) {
         /* print warning but continue saving what we can */
         /* (set_mem_type() won't exceed the array, so we're safe doing this) */
         //_XDPRINTF_("actual # var MTRRs (%d) > MAX_VARIABLE_MTRRS (%d)\n",
@@ -320,7 +325,7 @@ void xmhfhw_cpu_x86_save_mtrrs(mtrr_state_t *saved_state)
         saved_state->num_var_mtrrs = MAX_VARIABLE_MTRRS;
     }
     else
-        saved_state->num_var_mtrrs = mtrr_cap.fields.vcnt;
+        saved_state->num_var_mtrrs = mtrr_cap.vcnt;
 
     /* physmask's and physbase's */
     for ( ndx = 0; ndx < saved_state->num_var_mtrrs; ndx++ ) {
@@ -343,14 +348,15 @@ bool validate_mtrrs(const mtrr_state_t *saved_state)
     int ndx;
 
     /* check is meaningless if MTRRs were disabled */
-    if ( saved_state->mtrr_def_type.fields.e == 0 )
+    if ( saved_state->mtrr_def_type.e == 0 )
         return true;
 
     //print_mtrrs(saved_state);
 
     /* number variable MTRRs */
-    mtrr_cap.raw = rdmsr64(MSR_MTRRcap);
-    if ( mtrr_cap.fields.vcnt < saved_state->num_var_mtrrs ) {
+    //mtrr_cap.raw = rdmsr64(MSR_MTRRcap);
+    unpack_mtrr_cap_t(&mtrr_cap, rdmsr64(MSR_MTRRcap));
+    if ( mtrr_cap.vcnt < saved_state->num_var_mtrrs ) {
         //_XDPRINTF_("actual # var MTRRs (%d) < saved # (%d)\n",
         //       mtrr_cap.vcnt, saved_state->num_var_mtrrs);
         return false;
@@ -488,7 +494,7 @@ void xmhfhw_cpu_x86_restore_mtrrs(mtrr_state_t *saved_state)
 
 
     /* IA32_MTRR_DEF_TYPE MSR */
-    wrmsr64(MSR_MTRRdefType, saved_state->mtrr_def_type.raw);
+    wrmsr64(MSR_MTRRdefType, pack_mtrr_def_type_t(&saved_state->mtrr_def_type));
 }
 
 

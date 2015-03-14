@@ -188,7 +188,7 @@ enum var_mtrr_t {
 };
 
 
-typedef union {
+/*typedef union {
     u64	raw;
     struct {
         u32 vcnt        : 8;    // num variable MTRR pairs
@@ -199,9 +199,37 @@ typedef union {
         u32 reserved3   : 21;
     } __attribute__((packed)) fields;
 } __attribute__((packed)) mtrr_cap_t;
+*/
+
+typedef struct {
+    u32 vcnt        ; //: 8;    // num variable MTRR pairs
+    u32 fix         ; //: 1;    // fixed range MTRRs are supported
+    u32 reserved1   ; //: 1;
+    u32 wc          ; //: 1;    // write-combining mem type supported
+    u32 reserved2   ; //: 32;
+    u32 reserved3   ; //: 21;
+} __attribute__((packed)) mtrr_cap_t;
+
+#define pack_mtrr_cap_t(s) \
+    (u64)( \
+    (((u64)(s)->reserved3 & 0x00000000001FFFFFULL) << 43) | \
+    (((u64)(s)->reserved2 & 0x00000000FFFFFFFFULL) << 11) | \
+    (((u64)(s)->wc & 0x0000000000000001ULL) << 10) | \
+    (((u64)(s)->reserved1 & 0x0000000000000001ULL) << 9) | \
+    (((u64)(s)->fix & 0x0000000000000001ULL) << 8) | \
+    (((u64)(s)->vcnt & 0x00000000000000FFULL) << 0) \
+    )
+
+#define unpack_mtrr_cap_t(s, value) \
+    (s)->reserved3 = (u32)(((u64)value >> 43) & 0x00000000001FFFFFULL); \
+    (s)->reserved2 = (u32)(((u64)value >> 11) & 0x00000000FFFFFFFFULL); \
+    (s)->wc = (u32)(((u64)value >> 10) & 0x0000000000000001ULL); \
+    (s)->reserved1 = (u32)(((u64)value >> 9) & 0x0000000000000001ULL); \
+    (s)->fix = (u32)(((u64)value >> 8) & 0x0000000000000001ULL); \
+    (s)->vcnt = (u32)(((u64)value >> 0) & 0x00000000000000FFULL);
 
 
-typedef union {
+/*typedef union {
     u64	raw;
     struct {
         u32 type        : 8;
@@ -212,6 +240,35 @@ typedef union {
         u32 reserved3   : 20;
     } __attribute__((packed)) fields;
 } __attribute__((packed)) mtrr_def_type_t;
+*/
+
+typedef struct {
+    u32 type        ; //: 8;
+    u32 reserved1   ; //: 2;
+    u32 fe          ; //: 1;    // fixed MTRR enable
+    u32 e           ; //: 1;    // (all) MTRR enable
+    u32 reserved2   ; //: 32;
+    u32 reserved3   ; //: 20;
+} __attribute__((packed)) mtrr_def_type_t;
+
+#define pack_mtrr_def_type_t(s) \
+    (u64)( \
+    (((u64)(s)->reserved3 & 0x00000000000FFFFFULL) << 44) | \
+    (((u64)(s)->reserved2 & 0x00000000FFFFFFFFULL) << 12) | \
+    (((u64)(s)->e & 0x0000000000000001ULL) << 11) | \
+    (((u64)(s)->fe & 0x0000000000000001ULL) << 10) | \
+    (((u64)(s)->reserved1 & 0x0000000000000003ULL) << 8) | \
+    (((u64)(s)->type & 0x00000000000000FFULL) << 0) \
+    )
+
+#define unpack_mtrr_def_type_t(s, value) \
+    (s)->reserved3 = (u32)(((u64)value >> 44) & 0x00000000000FFFFFULL); \
+    (s)->reserved2 = (u32)(((u64)value >> 12) & 0x00000000FFFFFFFFULL); \
+    (s)->e = (u32)(((u64)value >> 11) & 0x0000000000000001ULL); \
+    (s)->fe = (u32)(((u64)value >> 10) & 0x0000000000000001ULL); \
+    (s)->reserved1 = (u32)(((u64)value >> 8) & 0x0000000000000003ULL); \
+    (s)->type = (u32)(((u64)value >> 0) & 0x00000000000000FFULL);
+
 
 
 typedef union {
