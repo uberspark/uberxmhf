@@ -444,9 +444,8 @@ static u64 _platform_x86pc_vtd_setup_retcet(void){
     u32 i, j;
 
     for(i=0; i< VTD_RET_MAXPTRS; i++){
-        _vtd_ret[i].qwords[0] = _vtd_ret[i].qwords[1] = 0ULL;
-        _vtd_ret[i].fields.p = 1;
-        _vtd_ret[i].fields.ctp = ((u64)&_vtd_cet[i] >> 12);
+        _vtd_ret[i].qwords[0] = vtd_make_rete((u64)&_vtd_cet[i], VTD_RET_PRESENT);
+        _vtd_ret[i].qwords[1] = 0ULL;
 
         for(j=0; j < VTD_CET_MAXPTRS; j++){
             _vtd_cet[i][j].qwords[0] = _vtd_cet[i][j].qwords[1] = 0ULL;
@@ -675,7 +674,7 @@ static bool __xmhfhic_arch_sda_allocdevices_to_slab(u64 slabid, slab_platformdev
 
         //b is our index into ret
         // (d* PCI_FUNCTION_MAX) + f = index into the cet
-        #if !defined(__XMHF_VERIFICATION__)
+        /*#if !defined(__XMHF_VERIFICATION__)
         if(vtd_pagewalk_level == VTD_PAGEWALK_4LEVEL){
             _vtd_cet[b][((d*PCI_FUNCTION_MAX) + f)].fields.slptptr = ((u64)_xmhfhic_common_slab_info_table[slabid].archdata.devpgtbl_pml4t >> 12);
             _vtd_cet[b][((d*PCI_FUNCTION_MAX) + f)].fields.aw = 2; //4-level
@@ -689,7 +688,22 @@ static bool __xmhfhic_arch_sda_allocdevices_to_slab(u64 slabid, slab_platformdev
         }else{ //unknown page walk length, fail
             return false;
         }
-        #endif
+        #endif*/
+
+        if(vtd_pagewalk_level == VTD_PAGEWALK_4LEVEL){
+            _vtd_cet[b][((d*PCI_FUNCTION_MAX) + f)].qwords[0] =
+                vtd_make_cete((u64)_xmhfhic_common_slab_info_table[slabid].archdata.devpgtbl_pml4t, VTD_CET_PRESENT);
+            _vtd_cet[b][((d*PCI_FUNCTION_MAX) + f)].qwords[1] =
+                vtd_make_cetehigh(2, (slabid+1));
+        }else if (vtd_pagewalk_level == VTD_PAGEWALK_3LEVEL){
+            _vtd_cet[b][((d*PCI_FUNCTION_MAX) + f)].qwords[0] =
+                vtd_make_cete((u64)_xmhfhic_common_slab_info_table[slabid].archdata.devpgtbl_pdpt, VTD_CET_PRESENT);
+            _vtd_cet[b][((d*PCI_FUNCTION_MAX) + f)].qwords[1] =
+                vtd_make_cetehigh(1, (slabid+1));
+        }else{ //unknown page walk length, fail
+            return false;
+        }
+
     }
 
 
