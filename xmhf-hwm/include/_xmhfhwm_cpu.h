@@ -271,7 +271,7 @@ typedef struct {
 
 
 
-typedef union {
+/*typedef union {
     u64	raw;
     struct {
         u32 type      : 8;
@@ -282,9 +282,35 @@ typedef union {
         u32 reserved2 : 28;
     } __attribute__((packed)) fields;
 } __attribute__((packed)) mtrr_physbase_t;
+*/
+
+typedef struct {
+    u32 type      ; //: 8;
+    u32 reserved1 ; //: 4;
+    // TBD: the end of base really depends on MAXPHYADDR, but since
+    // the MTRRs are set for SINIT and it must be <4GB, can use 24b
+    u32 base      ; //: 24;
+    u32 reserved2 ; //: 28;
+} __attribute__((packed)) mtrr_physbase_t;
+
+#define pack_mtrr_physbase_t(s) \
+    (u64)( \
+    (((u64)(s)->reserved2 & 0x000000000FFFFFFFULL) << 36) | \
+    (((u64)(s)->base & 0x0000000000FFFFFFULL) << 12) | \
+    (((u64)(s)->reserved1 & 0x000000000000000FULL) << 8) | \
+    (((u64)(s)->type & 0x00000000000000FFULL) << 0) \
+    )
+
+#define unpack_mtrr_physbase_t(s, value) \
+    (s)->reserved2 = (u32)(((u64)value >> 36) & 0x000000000FFFFFFFULL); \
+    (s)->base = (u32)(((u64)value >> 12) & 0x0000000000FFFFFFULL); \
+    (s)->reserved1 = (u32)(((u64)value >> 8) & 0x000000000000000FULL); \
+    (s)->type = (u32)(((u64)value >> 0) & 0x00000000000000FFULL);
 
 
-typedef union {
+
+
+/*typedef union {
     u64	raw;
     struct {
         u32 reserved1 : 11;
@@ -295,6 +321,32 @@ typedef union {
         u32 reserved2 : 28;
     } __attribute__((packed)) fields;
 } __attribute__((packed)) mtrr_physmask_t;
+*/
+
+typedef struct {
+    u32 reserved1 ; //: 11;
+    u32 v         ; //: 1;      // valid
+    // TBD: the end of mask really depends on MAXPHYADDR, but since
+    // the MTRRs are set for SINIT and it must be <4GB, can use 24b
+    u32 mask      ; //: 24;
+    u32 reserved2 ; //: 28;
+} __attribute__((packed)) mtrr_physmask_t;
+
+#define pack_mtrr_physmask_t(s) \
+    (u64)( \
+    (((u64)(s)->reserved2 & 0x000000000FFFFFFFULL) << 36) | \
+    (((u64)(s)->mask & 0x0000000000FFFFFFULL) << 12) | \
+    (((u64)(s)->v & 0x0000000000000001ULL) << 11) | \
+    (((u64)(s)->reserved1 & 0x00000000000007FFULL) << 0) \
+    )
+
+#define unpack_mtrr_physmask_t(s, value) \
+    (s)->reserved2 = (u32)(((u64)value >> 36) & 0x000000000FFFFFFFULL); \
+    (s)->mask = (u32)(((u64)value >> 12) & 0x0000000000FFFFFFULL); \
+    (s)->v = (u32)(((u64)value >> 11) & 0x0000000000000001ULL); \
+    (s)->reserved1 = (u32)(((u64)value >> 0) & 0x00000000000007FFULL);
+
+
 
 /* current procs only have 8, so this should hold us for a while */
 #define MAX_VARIABLE_MTRRS      16

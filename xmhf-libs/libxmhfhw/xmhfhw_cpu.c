@@ -206,9 +206,10 @@ bool set_mem_type(u8 *base, uint32_t size, uint32_t mem_type)
     //mtrr_cap.raw = rdmsr64(MSR_MTRRcap);
     unpack_mtrr_cap_t(&mtrr_cap, rdmsr64(MSR_MTRRcap));
     for ( ndx = 0; ndx < mtrr_cap.vcnt; ndx++ ) {
-        mtrr_physmask.raw = rdmsr64(MTRR_PHYS_MASK0_MSR + ndx*2);
-        mtrr_physmask.fields.v = 0;
-        wrmsr64(MTRR_PHYS_MASK0_MSR + ndx*2, mtrr_physmask.raw);
+        //mtrr_physmask.raw = rdmsr64(MTRR_PHYS_MASK0_MSR + ndx*2);
+        unpack_mtrr_physmask_t(&mtrr_physmask, rdmsr64(MTRR_PHYS_MASK0_MSR + ndx*2));
+        mtrr_physmask.v = 0;
+        wrmsr64(MTRR_PHYS_MASK0_MSR + ndx*2, pack_mtrr_physmask_t(&mtrr_physmask));
     }
 
     _XDPRINTF_("%s: %u\n", __func__, __LINE__);
@@ -227,18 +228,19 @@ bool set_mem_type(u8 *base, uint32_t size, uint32_t mem_type)
         uint32_t pages_in_range;
 
         /* set the base of the current MTRR */
-        mtrr_physbase.raw = rdmsr64(MTRR_PHYS_BASE0_MSR + ndx*2);
+        //mtrr_physbase.raw = rdmsr64(MTRR_PHYS_BASE0_MSR + ndx*2);
+        unpack_mtrr_physbase_t(&mtrr_physbase, rdmsr64(MTRR_PHYS_BASE0_MSR + ndx*2));
 
-        mtrr_physbase.fields.reserved1 = 0;
-        mtrr_physbase.fields.base = (unsigned long)base >> PAGE_SHIFT_4K;
-        mtrr_physbase.fields.type = mem_type;
+        mtrr_physbase.reserved1 = 0;
+        mtrr_physbase.base = (unsigned long)base >> PAGE_SHIFT_4K;
+        mtrr_physbase.type = mem_type;
         /* set explicitly in case base field is >24b (MAXPHYADDR >36) */
-        mtrr_physbase.fields.reserved2 = 0;
+        mtrr_physbase.reserved2 = 0;
 
         _XDPRINTF_("%s: %u writing %016llx\n", __func__, __LINE__,
-                   mtrr_physbase.raw);
+                   pack_mtrr_physbase_t(&mtrr_physbase));
 
-        wrmsr64(MTRR_PHYS_BASE0_MSR + ndx*2, mtrr_physbase.raw);
+        wrmsr64(MTRR_PHYS_BASE0_MSR + ndx*2, pack_mtrr_physbase_t(&mtrr_physbase));
 
         _XDPRINTF_("%s: %u\n", __func__, __LINE__);
 
@@ -251,17 +253,19 @@ bool set_mem_type(u8 *base, uint32_t size, uint32_t mem_type)
 
         _XDPRINTF_("%s: %u pages_in_range=%u\n", __func__, __LINE__, pages_in_range);
 
-        mtrr_physmask.raw = rdmsr64(MTRR_PHYS_MASK0_MSR + ndx*2);
+        //mtrr_physmask.raw = rdmsr64(MTRR_PHYS_MASK0_MSR + ndx*2);
+        unpack_mtrr_physmask_t(&mtrr_physmask, rdmsr64(MTRR_PHYS_MASK0_MSR + ndx*2));
 
-        mtrr_physmask.fields.reserved1 = 0;
-        mtrr_physmask.fields.mask = (u32) ~(pages_in_range - 1);
-        mtrr_physmask.fields.v = 1;
+        mtrr_physmask.reserved1 = 0;
+        mtrr_physmask.mask = (u32) ~(pages_in_range - 1);
+        mtrr_physmask.v = 1;
         /* set explicitly in case mask field is >24b (MAXPHYADDR >36) */
-        mtrr_physmask.fields.reserved2 = 0;
+        mtrr_physmask.reserved2 = 0;
 
-        _XDPRINTF_("%s: %u writing %016llx\n", __func__, __LINE__, mtrr_physmask.raw);
+        _XDPRINTF_("%s: %u writing %016llx\n", __func__, __LINE__,
+                   pack_mtrr_physmask_t(&mtrr_physmask));
 
-        wrmsr64(MTRR_PHYS_MASK0_MSR + ndx*2, mtrr_physmask.raw);
+        wrmsr64(MTRR_PHYS_MASK0_MSR + ndx*2, pack_mtrr_physmask_t(&mtrr_physmask));
 
         _XDPRINTF_("%s: %u\n", __func__, __LINE__);
 
@@ -329,10 +333,14 @@ void xmhfhw_cpu_x86_save_mtrrs(mtrr_state_t *saved_state)
 
     /* physmask's and physbase's */
     for ( ndx = 0; ndx < saved_state->num_var_mtrrs; ndx++ ) {
-        saved_state->mtrr_physmasks[ndx].raw =
-            rdmsr64(MTRR_PHYS_MASK0_MSR + ndx*2);
-        saved_state->mtrr_physbases[ndx].raw =
-            rdmsr64(MTRR_PHYS_BASE0_MSR + ndx*2);
+        //saved_state->mtrr_physmasks[ndx].raw =
+        //    rdmsr64(MTRR_PHYS_MASK0_MSR + ndx*2);
+        unpack_mtrr_physmask_t(&saved_state->mtrr_physmasks[ndx],
+                               rdmsr64(MTRR_PHYS_MASK0_MSR + ndx*2));
+        //saved_state->mtrr_physbases[ndx].raw =
+        //    rdmsr64(MTRR_PHYS_BASE0_MSR + ndx*2);
+        unpack_mtrr_physbase_t(&saved_state->mtrr_physbases[ndx],
+                               rdmsr64(MTRR_PHYS_BASE0_MSR + ndx*2));
     }
 
     print_mtrrs(saved_state);
@@ -367,15 +375,15 @@ bool validate_mtrrs(const mtrr_state_t *saved_state)
     for ( ndx = 0; ndx < saved_state->num_var_mtrrs; ndx++ ) {
         uint64_t tb;
 
-        if ( saved_state->mtrr_physmasks[ndx].fields.v == 0 )
+        if ( saved_state->mtrr_physmasks[ndx].v == 0 )
             continue;
 
         for ( tb = 0x1; tb != 0x1000000; tb = tb << 1 ) {
-            if ( (tb & saved_state->mtrr_physmasks[ndx].fields.mask) != 0 )
+            if ( (tb & saved_state->mtrr_physmasks[ndx].mask) != 0 )
                 break;
         }
         for ( ; tb != 0x1000000; tb = tb << 1 ) {
-            if ( (tb & saved_state->mtrr_physmasks[ndx].fields.mask) == 0 )
+            if ( (tb & saved_state->mtrr_physmasks[ndx].mask) == 0 )
                 break;
         }
         if ( tb != 0x1000000 ) {
@@ -394,7 +402,7 @@ bool validate_mtrrs(const mtrr_state_t *saved_state)
         const mtrr_physbase_t *base_ndx = &saved_state->mtrr_physbases[ndx];
         const mtrr_physmask_t *mask_ndx = &saved_state->mtrr_physmasks[ndx];
 
-        if ( mask_ndx->fields.v == 0 )
+        if ( mask_ndx->v == 0 )
             continue;
 
         for ( i = ndx + 1; i < saved_state->num_var_mtrrs; i++ ) {
@@ -402,25 +410,25 @@ bool validate_mtrrs(const mtrr_state_t *saved_state)
             const mtrr_physbase_t *base_i = &saved_state->mtrr_physbases[i];
             const mtrr_physmask_t *mask_i = &saved_state->mtrr_physmasks[i];
 
-            if ( mask_i->fields.v == 0 )
+            if ( mask_i->v == 0 )
                 continue;
 
-            if ( (base_ndx->fields.base & mask_ndx->fields.mask & mask_i->fields.mask)
-                    != (base_i->fields.base & mask_i->fields.mask)
-                 && (base_i->fields.base & mask_i->fields.mask & mask_ndx->fields.mask)
-                    != (base_ndx->fields.base & mask_ndx->fields.mask) )
+            if ( (base_ndx->base & mask_ndx->mask & mask_i->mask)
+                    != (base_i->base & mask_i->mask)
+                 && (base_i->base & mask_i->mask & mask_ndx->mask)
+                    != (base_ndx->base & mask_ndx->mask) )
                 continue;
 
-            if ( base_ndx->fields.type == base_i->fields.type )
+            if ( base_ndx->type == base_i->type )
                 continue;
-            if ( base_ndx->fields.type == MTRR_TYPE_UNCACHABLE
-                 || base_i->fields.type == MTRR_TYPE_UNCACHABLE )
+            if ( base_ndx->type == MTRR_TYPE_UNCACHABLE
+                 || base_i->type == MTRR_TYPE_UNCACHABLE )
                 continue;
-            if ( base_ndx->fields.type == MTRR_TYPE_WRTHROUGH
-                 && base_i->fields.type == MTRR_TYPE_WRBACK )
+            if ( base_ndx->type == MTRR_TYPE_WRTHROUGH
+                 && base_i->type == MTRR_TYPE_WRBACK )
                 continue;
-            if ( base_ndx->fields.type == MTRR_TYPE_WRBACK
-                 && base_i->fields.type == MTRR_TYPE_WRTHROUGH )
+            if ( base_ndx->type == MTRR_TYPE_WRBACK
+                 && base_i->type == MTRR_TYPE_WRTHROUGH )
                 continue;
 
             /* 2 overlapped regions have invalid mem type combination, */
@@ -433,20 +441,20 @@ bool validate_mtrrs(const mtrr_state_t *saved_state)
                 const mtrr_physmask_t *mask_j
                         = &saved_state->mtrr_physmasks[j];
 
-                if ( mask_j->fields.v == 0 )
+                if ( mask_j->v == 0 )
                     continue;
 
-                if ( base_j->fields.type != MTRR_TYPE_UNCACHABLE )
+                if ( base_j->type != MTRR_TYPE_UNCACHABLE )
                     continue;
 
-                if ( (base_ndx->fields.base & mask_ndx->fields.mask & mask_j->fields.mask)
-                        == (base_j->fields.base & mask_j->fields.mask)
-                     && (mask_j->fields.mask & ~mask_ndx->fields.mask) == 0 )
+                if ( (base_ndx->base & mask_ndx->mask & mask_j->mask)
+                        == (base_j->base & mask_j->mask)
+                     && (mask_j->mask & ~mask_ndx->mask) == 0 )
                     break;
 
-                if ( (base_i->fields.base & mask_i->fields.mask & mask_j->fields.mask)
-                        == (base_j->fields.base & mask_j->fields.mask)
-                     && (mask_j->fields.mask & ~mask_i->fields.mask) == 0 )
+                if ( (base_i->base & mask_i->mask & mask_j->mask)
+                        == (base_j->base & mask_j->mask)
+                     && (mask_j->mask & ~mask_i->mask) == 0 )
                     break;
             }
             if ( j < saved_state->num_var_mtrrs )
@@ -487,9 +495,9 @@ void xmhfhw_cpu_x86_restore_mtrrs(mtrr_state_t *saved_state)
     /* physmask's and physbase's */
     for ( ndx = 0; ndx < saved_state->num_var_mtrrs; ndx++ ) {
         wrmsr64(MTRR_PHYS_MASK0_MSR + ndx*2,
-              saved_state->mtrr_physmasks[ndx].raw);
+              pack_mtrr_physmask_t(&saved_state->mtrr_physmasks[ndx]));
         wrmsr64(MTRR_PHYS_BASE0_MSR + ndx*2,
-              saved_state->mtrr_physbases[ndx].raw);
+              pack_mtrr_physbase_t(&saved_state->mtrr_physbases[ndx]));
     }
 
 
