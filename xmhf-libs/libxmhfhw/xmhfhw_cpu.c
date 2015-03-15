@@ -150,9 +150,10 @@ bool txt_is_launched(void)
 {
     txt_sts_t sts;
 
-    sts._raw = read_pub_config_reg(TXTCR_STS);
+    //sts._raw = read_pub_config_reg(TXTCR_STS);
+    unpack_txt_sts_t(&sts, read_pub_config_reg(TXTCR_STS));
 
-    return sts.fields.senter_done_sts;
+    return sts.senter_done_sts;
 }
 
 

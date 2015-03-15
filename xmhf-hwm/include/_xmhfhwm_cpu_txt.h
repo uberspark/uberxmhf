@@ -92,6 +92,21 @@
 #define TXTCR_CMD_NO_SECRETS        0x08e8
 #define TXTCR_E2STS                 0x08f0
 
+
+//////
+//////
+//////
+// **NOTE**: Any bitfield union here that is solely used by
+// xmhf-bootloader is not converted into a simple struct with
+// pack/unpack since the bootloader is built using clang which
+// can handle the unions
+//////
+//////
+/////
+
+
+
+
 /*
 * format of ERRORCODE register
 */
@@ -132,23 +147,65 @@ typedef union {
     } __attribute__((packed));
 } txt_e2sts_t;
 
+
+// /*
+// * format of STS register
+// */
+//typedef union {
+//    u64 _raw;
+//   struct {
+//        u32   senter_done_sts         : 1;
+//        u32   sexit_done_sts          : 1;
+//        u32   reserved1               : 2;
+//        u32   mem_unlock_sts          : 1;
+//        u32   reserved2               : 1;
+//        u32   mem_config_lock_sts     : 1;
+//        u32   private_open_sts        : 1;
+//        u32   reserved3               : 3;
+//        u32   mem_config_ok_sts       : 1;
+//    } __attribute__((packed)) fields;
+//} txt_sts_t;
+
+
 /*
  * format of STS register
  */
-typedef union {
-    u64 _raw;
-    struct {
-        u32   senter_done_sts         : 1;
-        u32   sexit_done_sts          : 1;
-        u32   reserved1               : 2;
-        u32   mem_unlock_sts          : 1;
-        u32   reserved2               : 1;
-        u32   mem_config_lock_sts     : 1;
-        u32   private_open_sts        : 1;
-        u32   reserved3               : 3;
-        u32   mem_config_ok_sts       : 1;
-    } __attribute__((packed)) fields;
-} txt_sts_t;
+typedef struct {
+    u32   senter_done_sts         ; //: 1;
+    u32   sexit_done_sts          ; //: 1;
+    u32   reserved1               ; //: 2;
+    u32   mem_unlock_sts          ; //: 1;
+    u32   reserved2               ; //: 1;
+    u32   mem_config_lock_sts     ; //: 1;
+    u32   private_open_sts        ; //: 1;
+    u32   reserved3               ; //: 3;
+    u32   mem_config_ok_sts       ; //: 1;
+} __attribute__((packed)) txt_sts_t;
+
+#define pack_txt_sts_t(s) \
+    (u64)( \
+    (((u64)(s)->mem_config_ok_sts & 0x0000000000000001ULL) << 11) | \
+    (((u64)(s)->reserved3 & 0x0000000000000007ULL) << 8) | \
+    (((u64)(s)->private_open_sts & 0x0000000000000001ULL) << 7) | \
+    (((u64)(s)->mem_config_lock_sts & 0x0000000000000001ULL) << 6) | \
+    (((u64)(s)->reserved2 & 0x0000000000000001ULL) << 5) | \
+    (((u64)(s)->mem_unlock_sts & 0x0000000000000001ULL) << 4) | \
+    (((u64)(s)->reserved1 & 0x0000000000000003ULL) << 2) | \
+    (((u64)(s)->sexit_done_sts & 0x0000000000000001ULL) << 1) | \
+    (((u64)(s)->senter_done_sts & 0x0000000000000001ULL) << 0) \
+    )
+
+#define unpack_txt_sts_t(s, value) \
+    (s)->mem_config_ok_sts = (u32)(((u64)value >> 11) & 0x0000000000000001ULL); \
+    (s)->reserved3 = (u32)(((u64)value >> 8) & 0x0000000000000007ULL); \
+    (s)->private_open_sts = (u32)(((u64)value >> 7) & 0x0000000000000001ULL); \
+    (s)->mem_config_lock_sts = (u32)(((u64)value >> 6) & 0x0000000000000001ULL); \
+    (s)->reserved2 = (u32)(((u64)value >> 5) & 0x0000000000000001ULL); \
+    (s)->mem_unlock_sts = (u32)(((u64)value >> 4) & 0x0000000000000001ULL); \
+    (s)->reserved1 = (u32)(((u64)value >> 2) & 0x0000000000000003ULL); \
+    (s)->sexit_done_sts = (u32)(((u64)value >> 1) & 0x0000000000000001ULL); \
+    (s)->senter_done_sts = (u32)(((u64)value >> 0) & 0x0000000000000001ULL);
+
 
 /*
  * format of DIDVID register
@@ -160,8 +217,8 @@ typedef union {
         uint16_t  device_id;
         uint16_t  revision_id;
         uint16_t  reserved;
-    };
-} txt_didvid_t;
+    } __attribute__((packed));
+} __attribute__((packed)) txt_didvid_t;
 
 /*
  * format of VER.FSBIF and VER.EMIF registers
