@@ -149,46 +149,12 @@ typedef struct{
 
 typedef u32 vtd_drhd_handle_t;
 
-
-/*typedef union {
-    u64 qwords[2];
-    struct {
-        u32 p : 1;
-        u32 rsv0 : 11;
-        u32 ctp : 32;
-        u32 ctp_high : 20;
-        u32 rsv1 : 32;
-        u32 rsv2 : 32;
-    } __attribute__((packed)) fields;
-} __attribute__((packed)) vtd_ret_entry_t;
-*/
-
 typedef struct {
     u64 qwords[2];
 } __attribute__((packed)) vtd_ret_entry_t;
 
 #define vtd_make_rete(paddr, flags) \
   ((u64)(paddr) & (~(((u64)PAGE_SIZE_4K - 1)))) | (u64)(flags)
-
-/*
-typedef union {
-    u64 qwords[2];
-    struct {
-        u32 p : 1;
-        u32 fpd : 1;
-        u32 t : 2;
-        u32 rsv0 : 8;
-        u32 slptptr : 32;
-        u32 slptptr_high : 20;
-        u32 aw : 3;
-        u32 ign0 : 4;
-        u32 rsv1 : 1;
-        u32 did : 16;
-        u32 rsv2 : 32;
-        u32 rsv3 : 8;
-    } __attribute__((packed)) fields;
-} __attribute__((packed)) vtd_cet_entry_t;
-*/
 
 typedef struct {
     u64 qwords[2];
@@ -224,81 +190,6 @@ typedef u64 vtd_pte_t;
   ((u64)(paddr) & (~(((u64)PAGE_SIZE_4K - 1)))) | (u64)(flags)
 
 
-/*
-typedef union {
-    u64 entry;
-    struct {
-        u32 r : 1;
-        u32 w : 1;
-        u32 x : 1;
-        u32 ign0 : 4;
-        u32 rsv0 : 1;
-        u32 ign1 : 3;
-        u32 rsv1 : 1;
-        u32 slpdpt : 32;
-        u32 slpdpt_high : 8;
-        u32 ign2 : 10;
-        u32 rsv2 : 1;
-        u32 ign3 : 1;
-    } __attribute__((packed)) fields;
-}__attribute__((packed)) vtd_pml4te_t;
-
-typedef union {
-    u64 entry;
-    struct {
-        u32 r : 1;
-        u32 w : 1;
-        u32 x : 1;
-        u32 emt : 3;
-        u32 pat : 1;
-        u32 big : 1;
-        u32 ign0 : 3;
-        u32 snp : 1;
-        u32 slpdt : 32;
-        u32 slpdt_high : 8;
-        u32 ign1 : 10;
-        u32 tm : 1;
-        u32 ign2 : 1;
-    } __attribute__((packed)) fields;
-}__attribute__((packed)) vtd_pdpte_t;
-
-typedef union {
-    u64 entry;
-    struct {
-        u32 r : 1;
-        u32 w : 1;
-        u32 x : 1;
-        u32 emt : 3;
-        u32 pat : 1;
-        u32 big : 1;
-        u32 ign0 : 3;
-        u32 snp : 1;
-        u32 slpt : 32;
-        u32 slpt_high : 8;
-        u32 ign1 : 10;
-        u32 tm : 1;
-        u32 ign2 : 1;
-    } __attribute__((packed)) fields;
-}__attribute__((packed)) vtd_pdte_t;
-
-typedef union {
-    u64 entry;
-    struct {
-        u32 r : 1;
-        u32 w : 1;
-        u32 x : 1;
-        u32 emt : 3;
-        u32 pat : 1;
-        u32 ign0 : 4;
-        u32 snp : 1;
-        u32 pageaddr : 32;
-        u32 pageaddr_high : 8;
-        u32 ign1 : 10;
-        u32 tm : 1;
-        u32 ign2 : 1;
-    } __attribute__((packed)) fields;
-}__attribute__((packed)) vtd_pte_t;
-*/
 
 //------------------------------------------------------------------------------
 //VT-d register structure definitions

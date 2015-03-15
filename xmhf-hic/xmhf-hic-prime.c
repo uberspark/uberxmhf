@@ -674,22 +674,6 @@ static bool __xmhfhic_arch_sda_allocdevices_to_slab(u64 slabid, slab_platformdev
 
         //b is our index into ret
         // (d* PCI_FUNCTION_MAX) + f = index into the cet
-        /*#if !defined(__XMHF_VERIFICATION__)
-        if(vtd_pagewalk_level == VTD_PAGEWALK_4LEVEL){
-            _vtd_cet[b][((d*PCI_FUNCTION_MAX) + f)].fields.slptptr = ((u64)_xmhfhic_common_slab_info_table[slabid].archdata.devpgtbl_pml4t >> 12);
-            _vtd_cet[b][((d*PCI_FUNCTION_MAX) + f)].fields.aw = 2; //4-level
-            _vtd_cet[b][((d*PCI_FUNCTION_MAX) + f)].fields.did = (slabid + 1); //domain
-            _vtd_cet[b][((d*PCI_FUNCTION_MAX) + f)].fields.p = 1; //present
-        }else if (vtd_pagewalk_level == VTD_PAGEWALK_3LEVEL){
-            _vtd_cet[b][((d*PCI_FUNCTION_MAX) + f)].fields.slptptr = ((u64)_xmhfhic_common_slab_info_table[slabid].archdata.devpgtbl_pdpt >> 12);
-            _vtd_cet[b][((d*PCI_FUNCTION_MAX) + f)].fields.aw = 1; //3-level
-            _vtd_cet[b][((d*PCI_FUNCTION_MAX) + f)].fields.did = (slabid + 1); //domain
-            _vtd_cet[b][((d*PCI_FUNCTION_MAX) + f)].fields.p = 1; //present
-        }else{ //unknown page walk length, fail
-            return false;
-        }
-        #endif*/
-
         if(vtd_pagewalk_level == VTD_PAGEWALK_4LEVEL){
             _vtd_cet[b][((d*PCI_FUNCTION_MAX) + f)].qwords[0] =
                 vtd_make_cete((u64)_xmhfhic_common_slab_info_table[slabid].archdata.devpgtbl_pml4t, VTD_CET_PRESENT);
