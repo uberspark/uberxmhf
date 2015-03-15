@@ -89,9 +89,10 @@
 #define VTD_REG_64BITS  		0x64ff
 
 //Vt-d page-table bits
-#define VTD_READ						0x1
-#define VTD_WRITE						0x2
-#define VTD_SUPERPAGE				(0x1UL << 7)
+#define VTD_PAGE_READ						(1UL << 0)
+#define VTD_PAGE_WRITE						(1UL << 1)
+#define VTD_PAGE_EXECUTE                    (1UL << 2)
+#define VTD_PAGE_SUPER      			    (1UL << 7)
 
 //vt-d page table page walk lengths
 #define VTD_PAGEWALK_3LEVEL     (0x3)
@@ -100,6 +101,19 @@
 
 #define VTD_RET_MAXPTRS         (256)
 #define VTD_CET_MAXPTRS         (256)
+
+//vt-d page table max entries
+#define VTD_PTRS_PER_PML4T          1
+#define VTD_MAXPTRS_PER_PML4T       512
+
+#define VTD_PTRS_PER_PDPT           4
+#define VTD_MAXPTRS_PER_PDPT        512
+
+#define VTD_PTRS_PER_PDT            512
+
+#define VTD_PTRS_PER_PT             512
+
+
 
 #ifndef __ASSEMBLY__
 
@@ -164,7 +178,30 @@ typedef union {
     } __attribute__((packed)) fields;
 } __attribute__((packed)) vtd_cet_entry_t;
 
+typedef u64 vtd_pml4te_t;
+typedef u64 vtd_pdpte_t;
+typedef u64 vtd_pdte_t;
+typedef u64 vtd_pte_t;
 
+
+/* make a pml4 entry from individual fields */
+#define vtd_make_pml4te(paddr, flags) \
+  ((u64)(paddr) & (~(((u64)PAGE_SIZE_4K - 1)))) | (u64)(flags)
+
+/* make a page directory pointer entry from individual fields */
+#define vtd_make_pdpte(paddr, flags) \
+  ((u64)(paddr) & (~(((u64)PAGE_SIZE_4K - 1)))) | (u64)(flags)
+
+/* make a page directory entry for a 4KB page from individual fields */
+#define vtd_make_pdte(paddr, flags) \
+  ((u64)(paddr) & (~(((u64)PAGE_SIZE_4K - 1)))) | (u64)(flags)
+
+/* make a page table entry from individual fields */
+#define vtd_make_pte(paddr, flags) \
+  ((u64)(paddr) & (~(((u64)PAGE_SIZE_4K - 1)))) | (u64)(flags)
+
+
+/*
 typedef union {
     u64 entry;
     struct {
@@ -238,7 +275,7 @@ typedef union {
         u32 ign2 : 1;
     } __attribute__((packed)) fields;
 }__attribute__((packed)) vtd_pte_t;
-
+*/
 
 //------------------------------------------------------------------------------
 //VT-d register structure definitions
