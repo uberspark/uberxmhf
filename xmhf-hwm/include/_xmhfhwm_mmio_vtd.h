@@ -89,6 +89,8 @@
 #define VTD_REG_64BITS  		0x64ff
 
 //Vt-d page-table bits
+#define VTD_RET_PRESENT                     (1UL << 0)
+#define VTD_CET_PRESENT                     (1UL << 0)
 #define VTD_PAGE_READ						(1UL << 0)
 #define VTD_PAGE_WRITE						(1UL << 1)
 #define VTD_PAGE_EXECUTE                    (1UL << 2)
@@ -148,7 +150,7 @@ typedef struct{
 typedef u32 vtd_drhd_handle_t;
 
 
-typedef union {
+/*typedef union {
     u64 qwords[2];
     struct {
         u32 p : 1;
@@ -159,7 +161,16 @@ typedef union {
         u32 rsv2 : 32;
     } __attribute__((packed)) fields;
 } __attribute__((packed)) vtd_ret_entry_t;
+*/
 
+typedef struct {
+    u64 qwords[2];
+} __attribute__((packed)) vtd_ret_entry_t;
+
+#define vtd_make_rete(paddr, flags) \
+  ((u64)(paddr) & (~(((u64)PAGE_SIZE_4K - 1)))) | (u64)(flags)
+
+/*
 typedef union {
     u64 qwords[2];
     struct {
@@ -177,6 +188,18 @@ typedef union {
         u32 rsv3 : 8;
     } __attribute__((packed)) fields;
 } __attribute__((packed)) vtd_cet_entry_t;
+*/
+
+typedef struct {
+    u64 qwords[2];
+} __attribute__((packed)) vtd_cet_entry_t;
+
+#define vtd_make_cete(paddr, flags) \
+  ((u64)(paddr) & (~(((u64)PAGE_SIZE_4K - 1)))) | (u64)(flags)
+
+#define vtd_make_cetehigh(address_width, domain_id) \
+  (((u64)domain_id & 0x000000000000FFFFULL) << 7) | ((u64)(address_width) & 0x0000000000000007ULL)
+
 
 typedef u64 vtd_pml4te_t;
 typedef u64 vtd_pdpte_t;
