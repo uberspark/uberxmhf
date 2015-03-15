@@ -376,15 +376,24 @@ typedef union {
 } __attribute__ ((packed)) VTD_FECTL_REG;
 
 //VTD_PMEN_REG (sec. 10.4.16)
-typedef union {
-  u32 value;
-  struct
-  {
-    u32 prs:1;			//protected region status
-    u32 rsvdp:30;		//reserved
-    u32 epm:1;			//enable protected memory
-  } bits;
+typedef struct {
+    u32 prs     ; // :1;			//protected region status
+    u32 rsvdp   ; //:30;		//reserved
+    u32 epm     ; //:1;			//enable protected memory
 } __attribute__ ((packed)) VTD_PMEN_REG;
+
+#define pack_VTD_PMEN_REG(s) \
+    (u32)( \
+    (((u32)(s)->epm & 0x00000001UL) << 31) | \
+    (((u32)(s)->rsvdp & 0x3FFFFFFFUL) << 1) | \
+    (((u32)(s)->prs & 0x00000001UL) << 0) \
+    )
+
+#define unpack_VTD_PMEN_REG(s, value) \
+    (s)->epm = (u32)(((u32)value >> 31) & 0x00000001UL); \
+    (s)->rsvdp = (u32)(((u32)value >> 1) & 0x3FFFFFFFUL); \
+    (s)->prs = (u32)(((u32)value >> 0) & 0x00000001UL);
+
 
 
 //VTD_PLMBASE_REG (sec. 10.4.17)
