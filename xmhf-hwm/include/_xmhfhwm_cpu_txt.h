@@ -93,8 +93,8 @@
 #define TXTCR_E2STS                 0x08f0
 
 /*
- * format of ERRORCODE register
- */
+* format of ERRORCODE register
+*/
 typedef union {
     u64 _raw;
     struct {
@@ -103,6 +103,8 @@ typedef union {
         u32   valid      : 1;     /* 1=valid */
     } __attribute__((packed));
 } txt_errorcode_t;
+
+
 
 /*
  * format of ESTS register
