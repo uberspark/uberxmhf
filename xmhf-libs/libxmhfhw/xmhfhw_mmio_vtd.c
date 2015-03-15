@@ -64,6 +64,7 @@ static VTD_DRHD vtd_drhd[VTD_MAX_DRHD];
 static u32 vtd_num_drhd=0;	//total number of DMAR h/w units
 static bool vtd_drhd_scanned=false;	//set to true once DRHD units have been scanned in the system
 
+
 //vt-d register access function
 void _vtd_reg(VTD_DRHD *dmardevice, u32 access, u32 reg, void *value){
   u32 regtype=VTD_REG_32BITS, regaddr=0;
@@ -139,6 +140,144 @@ void _vtd_reg(VTD_DRHD *dmardevice, u32 access, u32 reg, void *value){
 
   return;
 }
+
+
+
+//vt-d register read function
+u64 _vtd_reg_read(VTD_DRHD *dmardevice, u32 reg){
+    u32 regtype=VTD_REG_32BITS, regaddr=0;
+    u64 retval=0;
+
+	//obtain register type and base address
+  switch(reg){
+    //32-bit registers
+    case  VTD_VER_REG_OFF:
+    case  VTD_GCMD_REG_OFF:
+    case  VTD_GSTS_REG_OFF:
+    case  VTD_FSTS_REG_OFF:
+    case  VTD_FECTL_REG_OFF:
+    case  VTD_PMEN_REG_OFF:
+    case  VTD_PLMBASE_REG_OFF:
+    case  VTD_PLMLIMIT_REG_OFF:
+      regtype=VTD_REG_32BITS;
+      regaddr=dmardevice->regbaseaddr+reg;
+      break;
+
+    //64-bit registers
+    case  VTD_CAP_REG_OFF:
+    case  VTD_ECAP_REG_OFF:
+    case  VTD_RTADDR_REG_OFF:
+    case  VTD_CCMD_REG_OFF:
+    case  VTD_PHMBASE_REG_OFF:
+    case  VTD_PHMLIMIT_REG_OFF:
+      regtype=VTD_REG_64BITS;
+      regaddr=dmardevice->regbaseaddr+reg;
+      break;
+
+    case  VTD_IOTLB_REG_OFF:
+      regtype=VTD_REG_64BITS;
+      regaddr=dmardevice->iotlb_regaddr;
+      break;
+
+
+    case  VTD_IVA_REG_OFF:
+      regtype=VTD_REG_64BITS;
+      regaddr=dmardevice->iva_regaddr;
+      break;
+
+
+    default:
+      _XDPRINTF_("%s: Halt, Unsupported register=%08x\n", __func__, reg);
+      HALT();
+      break;
+  }
+
+  //perform the actual read or write request
+	switch(regtype){
+    case VTD_REG_32BITS:	//32-bit read
+      retval = xmhfhw_sysmemaccess_readu32(regaddr);
+      break;
+
+    case VTD_REG_64BITS:	//64-bit read
+      retval = xmhfhw_sysmemaccess_readu64(regaddr);
+      break;
+
+    default:
+     _XDPRINTF_("%s: Halt, Unsupported access width=%08x\n", __func__, regtype);
+     HALT();
+  }
+
+  return retval;
+}
+
+
+
+//vt-d register write function
+void _vtd_reg_write(VTD_DRHD *dmardevice, u32 reg, u64 value){
+  u32 regtype=VTD_REG_32BITS, regaddr=0;
+
+	//obtain register type and base address
+  switch(reg){
+    //32-bit registers
+    case  VTD_VER_REG_OFF:
+    case  VTD_GCMD_REG_OFF:
+    case  VTD_GSTS_REG_OFF:
+    case  VTD_FSTS_REG_OFF:
+    case  VTD_FECTL_REG_OFF:
+    case  VTD_PMEN_REG_OFF:
+    case  VTD_PLMBASE_REG_OFF:
+    case  VTD_PLMLIMIT_REG_OFF:
+      regtype=VTD_REG_32BITS;
+      regaddr=dmardevice->regbaseaddr+reg;
+      break;
+
+    //64-bit registers
+    case  VTD_CAP_REG_OFF:
+    case  VTD_ECAP_REG_OFF:
+    case  VTD_RTADDR_REG_OFF:
+    case  VTD_CCMD_REG_OFF:
+    case  VTD_PHMBASE_REG_OFF:
+    case  VTD_PHMLIMIT_REG_OFF:
+      regtype=VTD_REG_64BITS;
+      regaddr=dmardevice->regbaseaddr+reg;
+      break;
+
+    case  VTD_IOTLB_REG_OFF:
+      regtype=VTD_REG_64BITS;
+      regaddr=dmardevice->iotlb_regaddr;
+      break;
+
+
+    case  VTD_IVA_REG_OFF:
+      regtype=VTD_REG_64BITS;
+      regaddr=dmardevice->iva_regaddr;
+      break;
+
+
+    default:
+      _XDPRINTF_("%s: Halt, Unsupported register=%08x\n", __func__, reg);
+      HALT();
+      break;
+  }
+
+  //perform the actual read or write request
+	switch(regtype){
+    case VTD_REG_32BITS:	//32-bit write
+      xmhfhw_sysmemaccess_writeu32(regaddr, (u32)value);
+      break;
+
+    case VTD_REG_64BITS:	//64-bit write
+      xmhfhw_sysmemaccess_writeu64(regaddr, value);
+      break;
+
+    default:
+     _XDPRINTF_("%s: Halt, Unsupported access width=%08x\n", __func__, regtype);
+     HALT();
+  }
+
+  return;
+}
+
 
 
 VTD_DRHD *_vtd_get_drhd_struct(vtd_drhd_handle_t drhd_handle){
