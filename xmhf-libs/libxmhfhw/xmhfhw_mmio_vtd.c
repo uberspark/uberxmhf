@@ -95,22 +95,14 @@ void _vtd_reg(VTD_DRHD *dmardevice, u32 access, u32 reg, void *value){
       break;
 
     case  VTD_IOTLB_REG_OFF:{
-      VTD_ECAP_REG  t_vtd_ecap_reg;
       regtype=VTD_REG_64BITS;
-      #ifndef __XMHF_VERIFICATION__
-      _vtd_reg(dmardevice, VTD_REG_READ, VTD_ECAP_REG_OFF, (void *)&t_vtd_ecap_reg.value);
-      #endif
-      regaddr=dmardevice->regbaseaddr+(t_vtd_ecap_reg.bits.iro*16)+0x8;
+      regaddr=dmardevice->iotlb_regaddr;
       break;
     }
 
     case  VTD_IVA_REG_OFF:{
-      VTD_ECAP_REG  t_vtd_ecap_reg;
       regtype=VTD_REG_64BITS;
-      #ifndef __XMHF_VERIFICATION__
-      _vtd_reg(dmardevice, VTD_REG_READ, VTD_ECAP_REG_OFF, (void *)&t_vtd_ecap_reg.value);
-      #endif
-      regaddr=dmardevice->regbaseaddr+(t_vtd_ecap_reg.bits.iro*16);
+      regaddr=dmardevice->iva_regaddr;
       break;
     }
 
@@ -265,6 +257,18 @@ bool xmhfhw_platform_x86pc_vtd_scanfor_drhd_units(vtd_drhd_handle_t *maxhandle, 
 	}
     _XDPRINTF_("%s: total DRHDs detected= %u units\n", __func__, vtd_num_drhd);
 
+    //populate IVA and IOTLB register addresses within all the DRHD unit
+    //structures
+    for(i=0; i < vtd_num_drhd; i++){
+        VTD_ECAP_REG ecap;
+
+        _vtd_reg(&vtd_drhd[i], VTD_REG_READ, VTD_ECAP_REG_OFF, (void *)&ecap.value);
+        vtd_drhd[i].iotlb_regaddr= vtd_drhd[i].regbaseaddr+(ecap.bits.iro*16)+0x8;
+        vtd_drhd[i].iva_regaddr= vtd_drhd[i].regbaseaddr+(ecap.bits.iro*16);
+	}
+
+
+
 	//[DEBUG]: be a little verbose about what we found
 	//_XDPRINTF_("\n%s: DMAR Devices:", __func__);
 	for(i=0; i < vtd_num_drhd; i++){
@@ -276,6 +280,9 @@ bool xmhfhw_platform_x86pc_vtd_scanfor_drhd_units(vtd_drhd_handle_t *maxhandle, 
 		_XDPRINTF_("		cap=0x%016llx\n", (u64)cap.value);
 		_vtd_reg(&vtd_drhd[i], VTD_REG_READ, VTD_ECAP_REG_OFF, (void *)&ecap.value);
 		_XDPRINTF_("		ecap=0x%016llx\n", (u64)ecap.value);
+		_XDPRINTF_("	iotlb_regaddr=%08x, iva_regaddr=%08x\n",
+					vtd_drhd[i].iotlb_regaddr, vtd_drhd[i].iva_regaddr);
+
 	}
 
 	*maxhandle = vtd_num_drhd;

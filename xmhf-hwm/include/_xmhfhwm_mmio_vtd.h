@@ -127,6 +127,8 @@ typedef struct{
   u8 rsvdz0;
   u16 pcisegment;
   u64 regbaseaddr;
+  u32 iotlb_regaddr;    //not part of ACPI structure
+  u32 iva_regaddr;      //not part of ACPI structure
 }__attribute__ ((packed)) VTD_DRHD;
 
 typedef u32 vtd_drhd_handle_t;
