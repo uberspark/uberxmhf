@@ -554,6 +554,7 @@ static bool _platform_x86pc_vtd_initialize(void){
 static vtd_slpgtbl_handle_t _platform_x86pc_vtd_setup_slpgtbl(u32 slabid){
     vtd_slpgtbl_handle_t retval = {0, 0};
     u32 i, j, k, paddr=0;
+    u64 default_flags = (VTD_PAGE_READ | VTD_PAGE_WRITE);
 
     //sanity check partition index
     if(slabid > XMHF_HIC_MAX_SLABS){
@@ -562,28 +563,18 @@ static vtd_slpgtbl_handle_t _platform_x86pc_vtd_setup_slpgtbl(u32 slabid){
     }
 
 
+
     //setup device memory access for the partition
-    _dbuf_devpgtbl[slabid].pml4t[0].fields.r = 1;
-    _dbuf_devpgtbl[slabid].pml4t[0].fields.w = 1;
-    _dbuf_devpgtbl[slabid].pml4t[0].fields.slpdpt =
-        ((u64)_dbuf_devpgtbl[slabid].pdpt >> 12);
+    _dbuf_devpgtbl[slabid].pml4t[0] = vtd_make_pml4te((u64)_dbuf_devpgtbl[slabid].pdpt, default_flags);
 
-    for(i=0; i < PAE_PTRS_PER_PDPT; i++){
-        _dbuf_devpgtbl[slabid].pdpt[i].fields.r = 1;
-        _dbuf_devpgtbl[slabid].pdpt[i].fields.w = 1;
-        _dbuf_devpgtbl[slabid].pdpt[i].fields.slpdt =
-            ((u64)_dbuf_devpgtbl[slabid].pdt[i] >> 12);
+    for(i=0; i < VTD_PTRS_PER_PDPT; i++){
+        _dbuf_devpgtbl[slabid].pdpt[i] = vtd_make_pdpte((u64)_dbuf_devpgtbl[slabid].pdt[i], default_flags);
 
-        for(j=0; j < PAE_PTRS_PER_PDT; j++){
-            _dbuf_devpgtbl[slabid].pdt[i][j].fields.r = 1;
-            _dbuf_devpgtbl[slabid].pdt[i][j].fields.w = 1;
-            _dbuf_devpgtbl[slabid].pdt[i][j].fields.slpt =
-                ((u64)_dbuf_devpgtbl[slabid].pt[i][j] >> 12);
+        for(j=0; j < VTD_PTRS_PER_PDT; j++){
+            _dbuf_devpgtbl[slabid].pdt[i][j] = vtd_make_pdte((u64)_dbuf_devpgtbl[slabid].pt[i][j], default_flags);
 
             for(k=0; k < PAE_PTRS_PER_PT; k++){
-                _dbuf_devpgtbl[slabid].pt[i][j][k].fields.r = 1;
-                _dbuf_devpgtbl[slabid].pt[i][j][k].fields.w = 1;
-                _dbuf_devpgtbl[slabid].pt[i][j][k].fields.pageaddr = ((u64)paddr >> 12);
+                _dbuf_devpgtbl[slabid].pt[i][j][k] = vtd_make_pte(paddr, default_flags);
                 paddr += PAGE_SIZE_4K;
             }
         }
@@ -595,31 +586,6 @@ static vtd_slpgtbl_handle_t _platform_x86pc_vtd_setup_slpgtbl(u32 slabid){
     _xmhfhic_common_slab_info_table[slabid].archdata.devpgtbl_pdt = &_dbuf_devpgtbl[slabid].pdt;
     _xmhfhic_common_slab_info_table[slabid].archdata.devpgtbl_pt = &_dbuf_devpgtbl[slabid].pt;
 
-
-
-    /*//setup device memory access for the partition
-    _xmhfhic_common_slab_info_table[slabid].archdata.devpgtbl.pml4t[0].fields.r = 1;
-    _xmhfhic_common_slab_info_table[slabid].archdata.devpgtbl.pml4t[0].fields.w = 1;
-    _xmhfhic_common_slab_info_table[slabid].archdata.devpgtbl.pml4t[0].fields.slpdpt = ((u64)&_xmhfhic_common_slab_info_table[slabid].archdata.devpgtbl.pdpt >> 12);
-
-    for(i=0; i < PAE_PTRS_PER_PDPT; i++){
-        _xmhfhic_common_slab_info_table[slabid].archdata.devpgtbl.pdpt[i].fields.r = 1;
-        _xmhfhic_common_slab_info_table[slabid].archdata.devpgtbl.pdpt[i].fields.w = 1;
-        _xmhfhic_common_slab_info_table[slabid].archdata.devpgtbl.pdpt[i].fields.slpdt = ((u64)&_xmhfhic_common_slab_info_table[slabid].archdata.devpgtbl.pdt[i] >> 12);
-
-        for(j=0; j < PAE_PTRS_PER_PDT; j++){
-            _xmhfhic_common_slab_info_table[slabid].archdata.devpgtbl.pdt[i][j].fields.r = 1;
-            _xmhfhic_common_slab_info_table[slabid].archdata.devpgtbl.pdt[i][j].fields.w = 1;
-            _xmhfhic_common_slab_info_table[slabid].archdata.devpgtbl.pdt[i][j].fields.slpt = ((u64)&_xmhfhic_common_slab_info_table[slabid].archdata.devpgtbl.pt[i][j] >> 12);
-
-            for(k=0; k < PAE_PTRS_PER_PT; k++){
-                _xmhfhic_common_slab_info_table[slabid].archdata.devpgtbl.pt[i][j][k].fields.r = 1;
-                _xmhfhic_common_slab_info_table[slabid].archdata.devpgtbl.pt[i][j][k].fields.w = 1;
-                _xmhfhic_common_slab_info_table[slabid].archdata.devpgtbl.pt[i][j][k].fields.pageaddr = ((u64)paddr >> 12);
-                paddr += PAGE_SIZE_4K;
-            }
-        }
-    }*/
 
     retval.addr_vtd_pml4t = _xmhfhic_common_slab_info_table[slabid].archdata.devpgtbl_pml4t;
     retval.addr_vtd_pdpt = _xmhfhic_common_slab_info_table[slabid].archdata.devpgtbl_pdpt;
