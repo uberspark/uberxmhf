@@ -590,13 +590,14 @@ void xmhfhw_platform_x86pc_vtd_drhd_enable_pmr(vtd_drhd_handle_t drhd_handle){
 
 	//_XDPRINTF_("\nEnabling PMR...");
 	{
-		pmen.bits.epm=1;	//enable PMR
-		_vtd_reg_write(drhd, VTD_PMEN_REG_OFF, pmen.value);
+		pmen.epm=1;	//enable PMR
+		_vtd_reg_write(drhd, VTD_PMEN_REG_OFF, pack_VTD_PMEN_REG(&pmen));
 
 		//wait for PMR enabled...
 		do{
-			pmen.value = _vtd_reg_read(drhd, VTD_PMEN_REG_OFF);
-		}while(!pmen.bits.prs);
+			//pmen.value = _vtd_reg_read(drhd, VTD_PMEN_REG_OFF);
+			unpack_VTD_PMEN_REG(&pmen, _vtd_reg_read(drhd, VTD_PMEN_REG_OFF));
+		}while(!pmen.prs);
 	}
 	//_XDPRINTF_("\nDRHD PMR enabled.");
 
@@ -613,13 +614,14 @@ void xmhfhw_platform_x86pc_vtd_drhd_disable_pmr(vtd_drhd_handle_t drhd_handle){
 
 	//_XDPRINTF_("\nDisabling PMR...");
 	{
-		pmen.bits.epm=0;	//disable PMR
-		_vtd_reg_write(drhd, VTD_PMEN_REG_OFF, pmen.value);
+		pmen.epm=0;	//disable PMR
+		_vtd_reg_write(drhd, VTD_PMEN_REG_OFF, pack_VTD_PMEN_REG(&pmen));
 
 		//wait for PMR disabled...
 		do{
-			pmen.value = _vtd_reg_read(drhd, VTD_PMEN_REG_OFF);
-		}while(pmen.bits.prs);
+			//pmen.value = _vtd_reg_read(drhd, VTD_PMEN_REG_OFF);
+			unpack_VTD_PMEN_REG(&pmen, _vtd_reg_read(drhd, VTD_PMEN_REG_OFF));
+		}while(pmen.prs);
 	}
 	//_XDPRINTF_("\nDRHD PMR disabled.");
 
