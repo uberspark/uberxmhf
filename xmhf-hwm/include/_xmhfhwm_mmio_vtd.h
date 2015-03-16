@@ -194,7 +194,7 @@ typedef u64 vtd_pte_t;
 //------------------------------------------------------------------------------
 //VT-d register structure definitions
 
-//VTD_VER_REG (sec. 10.4.1)
+/*//VTD_VER_REG (sec. 10.4.1)
 typedef union {
   u32 value;
   struct
@@ -204,6 +204,7 @@ typedef union {
     u32 rsvdz : 24;		//reserved
   } __attribute__((packed)) bits;
 } __attribute__ ((packed)) VTD_VER_REG;
+*/
 
 //VTD_CAP_REG (sec. 10.4.2)
 typedef union {
