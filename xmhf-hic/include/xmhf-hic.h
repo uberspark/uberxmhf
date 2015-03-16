@@ -134,17 +134,17 @@ struct _memorytype {
 
 
 typedef struct {
-  u8 vmx_vmxon_region[PAGE_SIZE_4K] __attribute__((aligned(4096)));
-  u8 vmx_vmcs_region[PAGE_SIZE_4K] __attribute__((aligned(4096)));
-  u8 vmx_msr_area_host_region[2*PAGE_SIZE_4K] __attribute__((aligned(4096)));
-  u8 vmx_msr_area_guest_region[2*PAGE_SIZE_4K] __attribute__((aligned(4096)));
-  u8 vmx_iobitmap_region[2][PAGE_SIZE_4K] __attribute__((aligned(4096)));		//I/O Bitmap area
-  u8 vmx_msrbitmaps_region[PAGE_SIZE_4K] __attribute__((aligned(4096)));		//MSR bitmap area
+  u8 vmx_vmxon_region[PAGE_SIZE_4K];
+  u8 vmx_vmcs_region[PAGE_SIZE_4K];
+  u8 vmx_msr_area_host_region[2*PAGE_SIZE_4K];
+  u8 vmx_msr_area_guest_region[2*PAGE_SIZE_4K];
+  u8 vmx_iobitmap_region[2][PAGE_SIZE_4K];		//I/O Bitmap area
+  u8 vmx_msrbitmaps_region[PAGE_SIZE_4K];		//MSR bitmap area
   u64 vmx_msrs[IA32_VMX_MSRCOUNT];
   u64 vmx_msr_efer;
   u64 vmx_msr_efcr;
-  //x86regs64_t vmx_gprs;
   x86regs_t vmx_gprs;
+  u8 _filler0[3952]; //page-align the whole structure
 } __attribute__((packed)) xc_cpuarchdata_x86vmx_t;
 
 #endif //__ASSEMBLY__
