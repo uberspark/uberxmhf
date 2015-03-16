@@ -324,9 +324,10 @@ bool xmhfhw_platform_x86pc_vtd_scanfor_drhd_units(vtd_drhd_handle_t *maxhandle, 
     for(i=0; i < vtd_num_drhd; i++){
         VTD_ECAP_REG ecap;
 
-        ecap.value = _vtd_reg_read(&vtd_drhd[i], VTD_ECAP_REG_OFF);
-        vtd_drhd[i].iotlb_regaddr= vtd_drhd[i].regbaseaddr+(ecap.bits.iro*16)+0x8;
-        vtd_drhd[i].iva_regaddr= vtd_drhd[i].regbaseaddr+(ecap.bits.iro*16);
+        //ecap.value = _vtd_reg_read(&vtd_drhd[i], VTD_ECAP_REG_OFF);
+        unpack_VTD_ECAP_REG(&ecap, _vtd_reg_read(&vtd_drhd[i], VTD_ECAP_REG_OFF));
+        vtd_drhd[i].iotlb_regaddr= vtd_drhd[i].regbaseaddr+(ecap.iro*16)+0x8;
+        vtd_drhd[i].iva_regaddr= vtd_drhd[i].regbaseaddr+(ecap.iro*16);
 	}
 
 
@@ -338,10 +339,11 @@ bool xmhfhw_platform_x86pc_vtd_scanfor_drhd_units(vtd_drhd_handle_t *maxhandle, 
 		VTD_ECAP_REG ecap;
 		_XDPRINTF_("	Device %u on PCI seg %04x; base=0x%016llx\n", i,
 					vtd_drhd[i].pcisegment, vtd_drhd[i].regbaseaddr);
-		cap.value = _vtd_reg_read(&vtd_drhd[i], VTD_CAP_REG_OFF);
-		_XDPRINTF_("		cap=0x%016llx\n", (u64)cap.value);
-		ecap.value = _vtd_reg_read(&vtd_drhd[i], VTD_ECAP_REG_OFF);
-		_XDPRINTF_("		ecap=0x%016llx\n", (u64)ecap.value);
+		unpack_VTD_CAP_REG(&cap, _vtd_reg_read(&vtd_drhd[i], VTD_CAP_REG_OFF));
+		_XDPRINTF_("		cap=0x%016llx\n", pack_VTD_CAP_REG(&cap));
+		//ecap.value = _vtd_reg_read(&vtd_drhd[i], VTD_ECAP_REG_OFF);
+		unpack_VTD_ECAP_REG(&ecap, _vtd_reg_read(&vtd_drhd[i], VTD_ECAP_REG_OFF));
+		_XDPRINTF_("		ecap=0x%016llx\n", (u64)pack_VTD_ECAP_REG(&ecap));
 		_XDPRINTF_("	iotlb_regaddr=%08x, iva_regaddr=%08x\n",
 					vtd_drhd[i].iotlb_regaddr, vtd_drhd[i].iva_regaddr);
 
@@ -370,14 +372,14 @@ bool xmhfhw_platform_x86pc_vtd_drhd_initialize(vtd_drhd_handle_t drhd_handle){
 		//_XDPRINTF_("\nVerifying DRHD capabilities...");
 
 		//read CAP register
-		cap.value = _vtd_reg_read(drhd, VTD_CAP_REG_OFF);
+		unpack_VTD_CAP_REG(&cap, _vtd_reg_read(drhd, VTD_CAP_REG_OFF));
 
-		if(! (cap.bits.plmr && cap.bits.phmr) ){
+		if(! (cap.plmr && cap.phmr) ){
 			//_XDPRINTF_("\n%s: Error: PLMR unsupported", __func__);
 			return false;
 		}
 
-        if ( !((cap.bits.sagaw & 0x2) || (cap.bits.sagaw & 0x4)) ){
+        if ( !((cap.sagaw & 0x2) || (cap.sagaw & 0x4)) ){
             //_XDPRINTF_("%s: Error: we only support 3-level or 4-level tables (%x)\n", __func__, cap.bits.sagaw);
 			return false;
         }
@@ -389,17 +391,19 @@ bool xmhfhw_platform_x86pc_vtd_drhd_initialize(vtd_drhd_handle_t drhd_handle){
 	//_XDPRINTF_("\nSetting DRHD Fault-reporting to NON-INTERRUPT mode...");
 	{
 		//read FECTL
-		  fectl.value=0;
-		fectl.value = _vtd_reg_read(drhd, VTD_FECTL_REG_OFF);
+		//  fectl.value=0;
+		//fectl.value = _vtd_reg_read(drhd, VTD_FECTL_REG_OFF);
+		unpack_VTD_FECTL_REG(&fectl, _vtd_reg_read(drhd, VTD_FECTL_REG_OFF));
 
 		//set interrupt mask bit and write
-		fectl.bits.im=1;
-		_vtd_reg_write(drhd, VTD_FECTL_REG_OFF, fectl.value);
+		fectl.im=1;
+		_vtd_reg_write(drhd, VTD_FECTL_REG_OFF, pack_VTD_FECTL_REG(&fectl) );
 
 		//check to see if the IM bit actually stuck
-		fectl.value = _vtd_reg_read(drhd, VTD_FECTL_REG_OFF);
+		//fectl.value = _vtd_reg_read(drhd, VTD_FECTL_REG_OFF);
+		unpack_VTD_FECTL_REG(&fectl, _vtd_reg_read(drhd, VTD_FECTL_REG_OFF));
 
-		if(!fectl.bits.im){
+		if(!fectl.im){
 		  //_XDPRINTF_("\n%s: Error: Failed to set fault-reporting.", __func__);
 		  return false;
 		}
@@ -425,44 +429,49 @@ bool xmhfhw_platform_x86pc_vtd_drhd_invalidatecaches(vtd_drhd_handle_t drhd_hand
 	//invalidate CET cache
   	//wait for context cache invalidation request to send
     do{
-      ccmd.value = _vtd_reg_read(drhd, VTD_CCMD_REG_OFF);
-    }while(ccmd.bits.icc);
+      //ccmd.value = _vtd_reg_read(drhd, VTD_CCMD_REG_OFF);
+      unpack_VTD_CCMD_REG(&ccmd, _vtd_reg_read(drhd, VTD_CCMD_REG_OFF));
+    }while(ccmd.icc);
 
 	//initialize CCMD to perform a global invalidation
-    ccmd.value=0;
-    ccmd.bits.cirg=1; //global invalidation
-    ccmd.bits.icc=1;  //invalidate context cache
+    //ccmd.value=0;
+    memset(&ccmd, 0, sizeof(VTD_CCMD_REG));
+    ccmd.cirg=1; //global invalidation
+    ccmd.icc=1;  //invalidate context cache
 
     //perform the invalidation
-    _vtd_reg_write(drhd, VTD_CCMD_REG_OFF, ccmd.value);
+    _vtd_reg_write(drhd, VTD_CCMD_REG_OFF, pack_VTD_CCMD_REG(&ccmd));
 
 	//wait for context cache invalidation completion status
     do{
-      ccmd.value = _vtd_reg_read(drhd, VTD_CCMD_REG_OFF);
-    }while(ccmd.bits.icc);
+      //ccmd.value = _vtd_reg_read(drhd, VTD_CCMD_REG_OFF);
+      unpack_VTD_CCMD_REG(&ccmd, _vtd_reg_read(drhd, VTD_CCMD_REG_OFF));
+    }while(ccmd.icc);
 
 	//if all went well CCMD CAIG = CCMD CIRG (i.e., actual = requested invalidation granularity)
-	if(ccmd.bits.caig != 0x1){
+	if(ccmd.caig != 0x1){
 		//_XDPRINTF_("\n%s: Error: Invalidatation of CET failed (%u)", __func__, ccmd.bits.caig);
 		return false;
 	}
 
 	//invalidate IOTLB
     //initialize IOTLB to perform a global invalidation
-	iotlb.value=0;
-    iotlb.bits.iirg=1; //global invalidation
-    iotlb.bits.ivt=1;	 //invalidate
+	//iotlb.value=0;
+	memset(&iotlb, 0, sizeof(VTD_IOTLB_REG));
+    iotlb.iirg=1; //global invalidation
+    iotlb.ivt=1;	 //invalidate
 
     //perform the invalidation
-	_vtd_reg_write(drhd, VTD_IOTLB_REG_OFF, iotlb.value);
+	_vtd_reg_write(drhd, VTD_IOTLB_REG_OFF, pack_VTD_IOTLB_REG(&iotlb));
 
     //wait for the invalidation to complete
     do{
-      iotlb.value = _vtd_reg_read(drhd, VTD_IOTLB_REG_OFF);
-    }while(iotlb.bits.ivt);
+      //iotlb.value = _vtd_reg_read(drhd, VTD_IOTLB_REG_OFF);
+      unpack_VTD_IOTLB_REG(&iotlb, _vtd_reg_read(drhd, VTD_IOTLB_REG_OFF));
+    }while(iotlb.ivt);
 
     //if all went well IOTLB IAIG = IOTLB IIRG (i.e., actual = requested invalidation granularity)
-	if(iotlb.bits.iaig != 0x1){
+	if(iotlb.iaig != 0x1){
 		//_XDPRINTF_("\n%s: Error: Invalidation of IOTLB failed (%u)", __func__, iotlb.bits.iaig);
 		return false;
     }
@@ -495,18 +504,20 @@ bool xmhfhw_platform_x86pc_vtd_drhd_set_root_entry_table(vtd_drhd_handle_t drhd_
     //            drhd_handle, ret_addr, retbuffer_paddr);
 	{
 		//setup RTADDR with base of RET
-		rtaddr.value=(u64)retbuffer_paddr;
-		_vtd_reg_write(drhd, VTD_RTADDR_REG_OFF, rtaddr.value);
+		unpack_VTD_RTADDR_REG(&rtaddr, retbuffer_paddr);
+		_vtd_reg_write(drhd, VTD_RTADDR_REG_OFF, pack_VTD_RTADDR_REG(&rtaddr));
 
 		//latch RET address by using GCMD.SRTP
-		gcmd.value=0;
-		gcmd.bits.srtp=1;
-		_vtd_reg_write(drhd, VTD_GCMD_REG_OFF, gcmd.value);
+		//gcmd.value=0;
+		unpack_VTD_GCMD_REG(&gcmd, 0);
+		gcmd.srtp=1;
+		_vtd_reg_write(drhd, VTD_GCMD_REG_OFF, pack_VTD_GCMD_REG(&gcmd));
 
 		//ensure the RET address was latched by the h/w
-		gsts.value = _vtd_reg_read(drhd, VTD_GSTS_REG_OFF);
+		//gsts.value = _vtd_reg_read(drhd, VTD_GSTS_REG_OFF);
+        unpack_VTD_GSTS_REG(&gsts, _vtd_reg_read(drhd, VTD_GSTS_REG_OFF));
 
-		if(!gsts.bits.rtps){
+		if(!gsts.rtps){
 			//_XDPRINTF_("Error	Failed to latch RTADDR\n");
 			return false;
 		}
@@ -531,18 +542,21 @@ void xmhfhw_platform_x86pc_vtd_drhd_enable_translation(vtd_drhd_handle_t drhd_ha
 	//turn on translation
 	//_XDPRINTF_("\nEnabling VT-d translation...");
 	{
-		gcmd.value=0;
-		gcmd.bits.te=1;
+		unpack_VTD_GCMD_REG(&gcmd, 0);
+		gcmd.te=1;
 		#ifdef __XMHF_VERIFICATION_DRIVEASSERTS__
-		assert(gcmd.bits.te == 1);
+		assert(gcmd.te == 1);
 		#endif
 
-		_vtd_reg_write(drhd, VTD_GCMD_REG_OFF, gcmd.value);
+		_vtd_reg_write(drhd, VTD_GCMD_REG_OFF, pack_VTD_GCMD_REG(&gcmd));
 
 		//wait for translation enabled status to go green...
-		gsts.value = _vtd_reg_read(drhd, VTD_GSTS_REG_OFF);
-		while(!gsts.bits.tes){
-			gsts.value = _vtd_reg_read(drhd, VTD_GSTS_REG_OFF);
+		//gsts.value = _vtd_reg_read(drhd, VTD_GSTS_REG_OFF);
+        unpack_VTD_GSTS_REG(&gsts, _vtd_reg_read(drhd, VTD_GSTS_REG_OFF));
+
+		while(!gsts.tes){
+			//gsts.value = _vtd_reg_read(drhd, VTD_GSTS_REG_OFF);
+            unpack_VTD_GSTS_REG(&gsts, _vtd_reg_read(drhd, VTD_GSTS_REG_OFF));
 		}
 	}
 	//_XDPRINTF_("\nVT-d translation enabled.");
@@ -563,15 +577,18 @@ void xmhfhw_platform_x86pc_vtd_drhd_disable_translation(vtd_drhd_handle_t drhd_h
 	//disable translation
 	//_XDPRINTF_("\nDisabling VT-d translation...");
 	{
-		gcmd.value=0;
-		gcmd.bits.te=0;
+		unpack_VTD_GCMD_REG(&gcmd, 0);
+		gcmd.te=0;
 
-		_vtd_reg_write(drhd, VTD_GCMD_REG_OFF, gcmd.value);
+		_vtd_reg_write(drhd, VTD_GCMD_REG_OFF, pack_VTD_GCMD_REG(&gcmd));
 
 		//wait for translation enabled status to go red...
-		gsts.value = _vtd_reg_read(drhd, VTD_GSTS_REG_OFF);
-		while(gsts.bits.tes){
-			gsts.value = _vtd_reg_read(drhd, VTD_GSTS_REG_OFF);
+		//gsts.value = _vtd_reg_read(drhd, VTD_GSTS_REG_OFF);
+        unpack_VTD_GSTS_REG(&gsts, _vtd_reg_read(drhd, VTD_GSTS_REG_OFF));
+
+		while(gsts.tes){
+			//gsts.value = _vtd_reg_read(drhd, VTD_GSTS_REG_OFF);
+            unpack_VTD_GSTS_REG(&gsts, _vtd_reg_read(drhd, VTD_GSTS_REG_OFF));
 		}
 	}
 	//_XDPRINTF_("\nVT-d translation disabled.");
