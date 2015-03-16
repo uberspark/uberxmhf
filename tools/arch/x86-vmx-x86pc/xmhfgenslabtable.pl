@@ -24,7 +24,7 @@ print "\nextern u8 _xmhfhic_stack_end[];";
 
 
 print "\n";
-print "\nslab_physmem_extent_t _xmhfhic_init_setupdata_hic_physmem_extents[HIC_SLAB_PHYSMEM_MAXEXTENTS] = {";
+print "\n__attribute__((section(\".data\"))) slab_physmem_extent_t _xmhfhic_init_setupdata_hic_physmem_extents[HIC_SLAB_PHYSMEM_MAXEXTENTS] = {";
 	print "\n";
 	print "\n	{.addr_start = _xmhfhic_sharedro_start, .addr_end = _xmhfhic_sharedro_end, .protection = 0},";
 	print "\n	{.addr_start = _xmhfhic_code_start, .addr_end = _xmhfhic_code_end, .protection = 0},";
@@ -54,7 +54,7 @@ while( $i <= $#ARGV) {
 }
 
 print "\n";
-print "\nslab_physmem_extent_t _xmhfhic_init_setupdata_slab_physmem_extents[XMHF_HIC_MAX_SLABS][HIC_SLAB_PHYSMEM_MAXEXTENTS] = {";
+print "\n__attribute__((section(\".data\"))) slab_physmem_extent_t _xmhfhic_init_setupdata_slab_physmem_extents[XMHF_HIC_MAX_SLABS][HIC_SLAB_PHYSMEM_MAXEXTENTS] = {";
 
 $i = 0;
 while( $i <= $#ARGV) {

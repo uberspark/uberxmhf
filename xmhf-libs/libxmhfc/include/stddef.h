@@ -47,6 +47,11 @@
 
 typedef __ptrdiff_t     ptrdiff_t;
 
-#define offsetof(type, field)   __builtin_offsetof(type, field)
+#if defined (__clang__)
+    #define offsetof(type, field)   __builtin_offsetof(type, field)
+#else
+    //TODO: find a way to get offsetof working with compcert
+    //#define offsetof(type,field) (int)&(((struct type *)0)->field)
+#endif
 
 #endif // __STDDEF_H__

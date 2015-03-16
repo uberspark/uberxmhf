@@ -196,10 +196,10 @@ static acm_chipset_id_list_t *get_acmod_chipset_list(acm_hdr_t* hdr)
 
 void print_txt_caps(const char *prefix, txt_caps_t caps)
 {
-    _XDPRINTF_("%scapabilities: 0x%08x\n", prefix, caps._raw);
-    _XDPRINTF_("%s    rlp_wake_getsec: %d\n", prefix, caps.rlp_wake_getsec);
-    _XDPRINTF_("%s    rlp_wake_monitor: %d\n", prefix, caps.rlp_wake_monitor);
-    _XDPRINTF_("%s    ecx_pgtbl: %d\n", prefix, caps.ecx_pgtbl);
+    _XDPRINTF_("%scapabilities: 0x%08x\n", prefix, caps);
+    _XDPRINTF_("%s    rlp_wake_getsec: %d\n", prefix, caps & TXT_CAPS_T_RLP_WAKE_GETSEC);
+    _XDPRINTF_("%s    rlp_wake_monitor: %d\n", prefix, caps & TXT_CAPS_T_RLP_WAKE_MONITOR);
+    _XDPRINTF_("%s    ecx_pgtbl: %d\n", prefix, caps & TXT_CAPS_T_ECX_PGTBL);
 }
 
 /* UUID helpers from tboot-20101005/include/uuid.h */
@@ -324,7 +324,7 @@ uint32_t get_sinit_capabilities(acm_hdr_t* hdr)
     if ( info_table == NULL || info_table->version < 3 )
         return 0;
 
-    return info_table->capabilities._raw;
+    return info_table->capabilities;
 }
 
 static bool is_acmod(void *acmod_base, size_t acmod_size, uint8_t *type,
@@ -632,15 +632,16 @@ bool verify_acmod(acm_hdr_t *acm_hdr)
 
     /* check capabilities */
     /* we need to match one of rlp_wake_{getsec, monitor} */
-    caps_mask.rlp_wake_getsec = caps_mask.rlp_wake_monitor = 1;
+    //caps_mask.rlp_wake_getsec = caps_mask.rlp_wake_monitor = 1;
+    caps_mask = TXT_CAPS_T_RLP_WAKE_GETSEC | TXT_CAPS_T_RLP_WAKE_MONITOR;
 
-    if ( ( ( MLE_HDR_CAPS & caps_mask._raw ) &
-           ( info_table->capabilities._raw & caps_mask._raw) ) == 0 ) {
+    if ( ( ( MLE_HDR_CAPS & caps_mask ) &
+           ( info_table->capabilities & caps_mask) ) == 0 ) {
         _XDPRINTF_("SINIT and MLE not support compatible RLP wake mechanisms\n");
         return false;
     }
     /* we also expect ecx_pgtbl to be set */
-    if ( !info_table->capabilities.ecx_pgtbl ) {
+    if ( !info_table->capabilities & TXT_CAPS_T_ECX_PGTBL ) {
         _XDPRINTF_("SINIT does not support launch with MLE pagetable in ECX\n");
         /* TODO when SINIT ready
          * return false;

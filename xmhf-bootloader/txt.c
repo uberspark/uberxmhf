@@ -317,23 +317,24 @@ static txt_heap_t *init_txt_heap(void *ptab_base, acm_hdr_t *sinit,
 
     /* capabilities : choose monitor wake mechanism first */
     ///XXX I don't really understand this
-    sinit_caps._raw = get_sinit_capabilities(sinit);
-    caps_mask._raw = 0;
-    caps_mask.rlp_wake_getsec = caps_mask.rlp_wake_monitor = 1;
-    os_sinit_data->capabilities._raw = MLE_HDR_CAPS & ~caps_mask._raw;
-    if ( sinit_caps.rlp_wake_monitor )
-        os_sinit_data->capabilities.rlp_wake_monitor = 1;
-    else if ( sinit_caps.rlp_wake_getsec )
-        os_sinit_data->capabilities.rlp_wake_getsec = 1;
+    sinit_caps = get_sinit_capabilities(sinit);
+    caps_mask = 0;
+    //caps_mask.rlp_wake_getsec = caps_mask.rlp_wake_monitor = 1;
+    caps_mask = TXT_CAPS_T_RLP_WAKE_GETSEC | TXT_CAPS_T_RLP_WAKE_MONITOR;
+    os_sinit_data->capabilities = MLE_HDR_CAPS & ~caps_mask;
+    if ( sinit_caps & TXT_CAPS_T_RLP_WAKE_MONITOR )
+        os_sinit_data->capabilities |= TXT_CAPS_T_RLP_WAKE_MONITOR;
+    else if ( sinit_caps & TXT_CAPS_T_RLP_WAKE_GETSEC )
+        os_sinit_data->capabilities |= TXT_CAPS_T_RLP_WAKE_GETSEC;
     else {     /* should have been detected in verify_acmod() */
-        _XDPRINTF_("SINIT capabilities are icompatible (0x%x)\n", sinit_caps._raw);
+        _XDPRINTF_("SINIT capabilities are icompatible (0x%x)\n", sinit_caps);
         return NULL;
     }
     /* capabilities : require MLE pagetable in ECX on launch */
     /* TODO: when SINIT ready
      * os_sinit_data->capabilities.ecx_pgtbl = 1;
      */
-    os_sinit_data->capabilities.ecx_pgtbl = 0;
+    os_sinit_data->capabilities &= ~(TXT_CAPS_T_ECX_PGTBL);
     /* TODO: when tboot supports EFI then set efi_rsdt_ptr */
 
     print_os_sinit_data(os_sinit_data);

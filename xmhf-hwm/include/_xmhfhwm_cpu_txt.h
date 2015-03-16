@@ -320,7 +320,7 @@ typedef union {
 /*
  * SINIT/MLE capabilities
  */
-typedef union {
+/*typedef union {
     uint32_t  _raw;
     struct {
         uint32_t  rlp_wake_getsec     : 1;
@@ -329,6 +329,13 @@ typedef union {
         uint32_t  reserved            : 29;
     } __attribute__((packed));
 } txt_caps_t;
+*/
+
+typedef uint32_t txt_caps_t;
+
+#define TXT_CAPS_T_RLP_WAKE_GETSEC      (1UL << 0)
+#define TXT_CAPS_T_RLP_WAKE_MONITOR     (1UL << 1)
+#define TXT_CAPS_T_ECX_PGTBL            (1UL << 2)
 
 
 /* taken from tboot-20101005/include/uuid.h */
