@@ -598,10 +598,10 @@ void slab_main(slab_params_t *sp){
     static u64 cpucount=0;
     static u32 __xcinit_smplock = 1;
 
-	_XDPRINTF_("%s[%u]: Got control: ESP=%08x\n", __FUNCTION__, (u16)sp->cpuid, read_esp());
+	_XDPRINTF_("%s[%u]: Got control: ESP=%08x\n", __func__, (u16)sp->cpuid, read_esp());
 
     if(!isbsp){
-        _XDPRINTF_("%s[%u]: AP Halting!\n", __FUNCTION__, (u16)sp->cpuid);
+        _XDPRINTF_("%s[%u]: AP Halting!\n", __func__, (u16)sp->cpuid);
 
         spin_lock(&__xcinit_smplock);
         cpucount++;
@@ -611,12 +611,12 @@ void slab_main(slab_params_t *sp){
     }else{
         //BSP
         _XDPRINTF_("%s[%u]: BSP waiting to rally APs...\n",
-                __FUNCTION__, (u16)sp->cpuid);
+                __func__, (u16)sp->cpuid);
 
         while(cpucount < (xcbootinfo->cpuinfo_numentries-1));
 
         _XDPRINTF_("%s[%u]: BSP, APs halted. Proceeding...\n",
-                __FUNCTION__, (u16)sp->cpuid);
+                __func__, (u16)sp->cpuid);
     }
 
 
@@ -638,8 +638,10 @@ void slab_main(slab_params_t *sp){
         u64 guest_slab_pdpt_paddr = guest_slab_header_paddr + offsetof(guest_slab_header_t, lvl2mempgtbl_pdpt);
         u64 guest_slab_pdts_paddr = guest_slab_header_paddr + offsetof(guest_slab_header_t, lvl2mempgtbl_pdts);
         */
-        u32 guest_slab_gdt_paddr = guest_slab_header_paddr + offsetof(guest_slab_header_t, gdt);
-        u32 guest_slab_magic_paddr = guest_slab_header_paddr + offsetof(guest_slab_header_t, magic);
+        //u32 guest_slab_gdt_paddr = guest_slab_header_paddr + offsetof(guest_slab_header_t, gdt);
+        //u32 guest_slab_magic_paddr = guest_slab_header_paddr + offsetof(guest_slab_header_t, magic);
+        u32 guest_slab_gdt_paddr = guest_slab_header_paddr + 24580UL;
+        u32 guest_slab_magic_paddr = guest_slab_header_paddr + 24576UL;
         u32 guest_slab_magic;
         //xmhf_hic_uapi_physmem_desc_t pdesc;
 
@@ -666,7 +668,7 @@ void slab_main(slab_params_t *sp){
             spl.src_slabid = XMHF_HYP_SLAB_XCINIT;
 
             XMHF_SLAB_UAPI(&spl);
-            _XDPRINTF_("%s[%u]: guest slab header magic=%x\n", __FUNCTION__, (u16)sp->cpuid, guest_slab_magic);
+            _XDPRINTF_("%s[%u]: guest slab header magic=%x\n", __func__, (u16)sp->cpuid, guest_slab_magic);
         }
 
 
@@ -773,13 +775,13 @@ void slab_main(slab_params_t *sp){
         spl.src_slabid = XMHF_HYP_SLAB_XCINIT;
         spl.dst_slabid = XMHF_GUEST_SLAB_XCGUESTSLAB;
 
-        _XDPRINTF_("%s[%u]: Proceeding to call xcguestslab; ESP=%08x\n", __FUNCTION__, (u16)sp->cpuid, read_esp());
+        _XDPRINTF_("%s[%u]: Proceeding to call xcguestslab; ESP=%08x\n", __func__, (u16)sp->cpuid, read_esp());
 
         XMHF_SLAB_CALLNEW(&spl);
     }
 
 
-    _XDPRINTF_("%s[%u]: Should  never get here.Halting!\n", __FUNCTION__, (u16)sp->cpuid);
+    _XDPRINTF_("%s[%u]: Should  never get here.Halting!\n", __func__, (u16)sp->cpuid);
     HALT();
 
     return;
@@ -798,7 +800,7 @@ void slab_main(slab_params_t *sp){
     _xcinit_dotests(cpuid);
 
     _XDPRINTF_("%s[%u]: Should  never get here.Halting!\n",
-        __FUNCTION__, (u32)cpuid);
+        __func__, (u32)cpuid);
 
     HALT();
 
