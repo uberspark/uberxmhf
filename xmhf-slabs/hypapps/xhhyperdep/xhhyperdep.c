@@ -81,7 +81,7 @@ static void hd_activatedep(u32 cpuindex, u32 guest_slab_index, u64 gpa){
             spl.in_out_params[1] = XMHF_HIC_UAPI_MEMPGTBL_GETENTRY;
             XMHF_SLAB_UAPI(&spl);
 
-            _XDPRINTF_("%s[%u]: original entry for gpa=%016llx is %016llx\n", __FUNCTION__, (u16)cpuindex,
+            _XDPRINTF_("%s[%u]: original entry for gpa=%016llx is %016llx\n", __func__, (u16)cpuindex,
                        gpa, mdesc->entry);
 
             mdesc->entry &= ~(0x4); //execute-disable
@@ -90,7 +90,7 @@ static void hd_activatedep(u32 cpuindex, u32 guest_slab_index, u64 gpa){
             spl.in_out_params[1] = XMHF_HIC_UAPI_MEMPGTBL_SETENTRY;
             XMHF_SLAB_UAPI(&spl);
 
-            _XDPRINTF_("%s[%u]: activated DEP for page at gpa %016llx\n", __FUNCTION__, (u16)cpuindex, gpa);
+            _XDPRINTF_("%s[%u]: activated DEP for page at gpa %016llx\n", __func__, (u16)cpuindex, gpa);
 
             hd_activated=true;
         }
@@ -111,7 +111,7 @@ static void hd_deactivatedep(u32 cpuindex, u32 guest_slab_index, u64 gpa){
             spl.in_out_params[1] = XMHF_HIC_UAPI_MEMPGTBL_GETENTRY;
             XMHF_SLAB_UAPI(&spl);
 
-            _XDPRINTF_("%s[%u]: original entry for gpa=%016llx is %016llx\n", __FUNCTION__, (u16)cpuindex, gpa, mdesc->entry);
+            _XDPRINTF_("%s[%u]: original entry for gpa=%016llx is %016llx\n", __func__, (u16)cpuindex, gpa, mdesc->entry);
 
             mdesc->entry &= ~(0x7);
             mdesc->entry |= 0x7; //execute, read-write
@@ -121,7 +121,7 @@ static void hd_deactivatedep(u32 cpuindex, u32 guest_slab_index, u64 gpa){
             XMHF_SLAB_UAPI(&spl);
 
 
-            _XDPRINTF_("%s[%u]: deactivated DEP for page at gpa %016llx\n", __FUNCTION__, (u16)cpuindex, gpa);
+            _XDPRINTF_("%s[%u]: deactivated DEP for page at gpa %016llx\n", __func__, (u16)cpuindex, gpa);
 
             hd_activated=false;
         }
@@ -140,7 +140,7 @@ static void hd_deactivatedep(u32 cpuindex, u32 guest_slab_index, u64 gpa){
 
 // initialization
 static void _hcb_initialize(u32 cpuindex){
-	_XDPRINTF_("%s[%u]: hyperDEP initializing...\n", __FUNCTION__, (u16)cpuindex);
+	_XDPRINTF_("%s[%u]: hyperDEP initializing...\n", __func__, (u16)cpuindex);
 }
 
 
@@ -162,7 +162,7 @@ static void _hcb_hypercall(u32 cpuindex, u32 guest_slab_index){
     call_id = gprs->eax;
     gpa = ((u64)gprs->edx << 32) | gprs->ebx;
 
-	_XDPRINTF_("%s[%u]: call_id=%x, gpa=%016llx\n", __FUNCTION__, (u16)cpuindex, call_id, gpa);
+	_XDPRINTF_("%s[%u]: call_id=%x, gpa=%016llx\n", __func__, (u16)cpuindex, call_id, gpa);
 
 
 	switch(call_id){
@@ -179,7 +179,7 @@ static void _hcb_hypercall(u32 cpuindex, u32 guest_slab_index){
 
 		default:
             _XDPRINTF_("%s[%u]: unsupported hypercall %x. Ignoring\n",
-                       __FUNCTION__, (u16)cpuindex, call_id);
+                       __func__, (u16)cpuindex, call_id);
 			break;
 	}
 
@@ -187,14 +187,14 @@ static void _hcb_hypercall(u32 cpuindex, u32 guest_slab_index){
 
 //shutdown
 static void _hcb_shutdown(u32 cpuindex, u32 guest_slab_index){
-	_XDPRINTF_("%s[%u]: guest slab %u shutdown...\n", __FUNCTION__, (u16)cpuindex, guest_slab_index);
+	_XDPRINTF_("%s[%u]: guest slab %u shutdown...\n", __func__, (u16)cpuindex, guest_slab_index);
 }
 
 
 //memory fault
 static void _hcb_memoryfault(u32 cpuindex, u32 guest_slab_index, u64 gpa, u64 gva, u64 errorcode){
 	_XDPRINTF_("%s[%u]: memory fault in guest slab %u; gpa=%016llx, gva=%016llx, errorcode=%016llx, data page execution?\n",
-            __FUNCTION__, (u16)cpuindex, guest_slab_index, gpa, gva, errorcode);
+            __func__, (u16)cpuindex, guest_slab_index, gpa, gva, errorcode);
     HALT();
 }
 
@@ -221,7 +221,7 @@ void slab_main(slab_params_t *sp){
 
 
 	_XDPRINTF_("%s[%u]: Got control, cbtype=%x: ESP=%08x\n",
-                __FUNCTION__, (u16)sp->cpuid, hcbp->cbtype, read_esp());
+                __func__, (u16)sp->cpuid, hcbp->cbtype, read_esp());
 
 
     switch(hcbp->cbtype){
@@ -292,7 +292,7 @@ void slab_main(slab_params_t *sp){
 
         default:{
             _XDPRINTF_("%s[%u]: Unknown cbtype. Halting!\n",
-                __FUNCTION__, (u16)sp->cpuid);
+                __func__, (u16)sp->cpuid);
             HALT();
         }
     }

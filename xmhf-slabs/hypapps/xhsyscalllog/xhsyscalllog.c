@@ -95,7 +95,7 @@ static void sl_register(u32 cpuindex, u32 guest_slab_index, u64 gpa){
         slab_params_t spl;
         xmhf_hic_uapi_physmem_desc_t *pdesc = (xmhf_hic_uapi_physmem_desc_t *)&spl.in_out_params[2];
 
-        _XDPRINTF_("%s[%u]: starting...\n", __FUNCTION__, (u16)cpuindex);
+        _XDPRINTF_("%s[%u]: starting...\n", __func__, (u16)cpuindex);
         spl.src_slabid = XMHF_HYP_SLAB_XHSYSCALLLOG;
         spl.cpuid = cpuindex;
         spl.in_out_params[0] = XMHF_HIC_UAPI_PHYSMEM;
@@ -110,14 +110,14 @@ static void sl_register(u32 cpuindex, u32 guest_slab_index, u64 gpa){
         XMHF_SLAB_UAPI(&spl);
 
         _XDPRINTF_("%s[%u]: grabbed page contents at gpa=%016llx\n",
-               __FUNCTION__, (u16)cpuindex, gpa);
+               __func__, (u16)cpuindex, gpa);
 
         //compute SHA-1 of the syscall page
         sha1_buffer(&_sl_pagebuffer, sizeof(_sl_pagebuffer), _sl_syscalldigest);
 
 
         _XDPRINTF_("%s[%u]: computed SHA-1: %*D\n",
-               __FUNCTION__, (u16)cpuindex, SHA_DIGEST_LENGTH, _sl_syscalldigest, " ");
+               __func__, (u16)cpuindex, SHA_DIGEST_LENGTH, _sl_syscalldigest, " ");
 
         _sl_registered=true;
 }
@@ -128,7 +128,7 @@ static void sl_register(u32 cpuindex, u32 guest_slab_index, u64 gpa){
 
 // initialization
 static void _hcb_initialize(u32 cpuindex){
-	_XDPRINTF_("%s[%u]: syscalllog initializing...\n", __FUNCTION__, (u16)cpuindex);
+	_XDPRINTF_("%s[%u]: syscalllog initializing...\n", __func__, (u16)cpuindex);
 }
 
 // hypercall
@@ -149,7 +149,7 @@ static void _hcb_hypercall(u32 cpuindex, u32 guest_slab_index){
     call_id = gprs->eax;
     gpa = ((u64)gprs->edx << 32) | gprs->ebx;
 
-	_XDPRINTF_("%s[%u]: call_id=%x, gpa=%016llx\n", __FUNCTION__, (u16)cpuindex, call_id, gpa);
+	_XDPRINTF_("%s[%u]: call_id=%x, gpa=%016llx\n", __func__, (u16)cpuindex, call_id, gpa);
 
 
 	switch(call_id){
@@ -161,7 +161,7 @@ static void _hcb_hypercall(u32 cpuindex, u32 guest_slab_index){
 
 		default:
             _XDPRINTF_("%s[%u]: unsupported hypercall %x. Ignoring\n",
-                       __FUNCTION__, (u16)cpuindex, call_id);
+                       __func__, (u16)cpuindex, call_id);
 			break;
 	}
 
@@ -180,7 +180,7 @@ static void _hcb_memoryfault(u32 cpuindex, u32 guest_slab_index, u64 gpa, u64 gv
         return;
 
 	_XDPRINTF_("%s[%u]: memory fault in guest slab %u; gpa=%016llx, gva=%016llx, errorcode=%016llx, sysenter execution?\n",
-            __FUNCTION__, (u16)cpuindex, guest_slab_index, gpa, gva, errorcode);
+            __func__, (u16)cpuindex, guest_slab_index, gpa, gva, errorcode);
 
     spl.src_slabid = XMHF_HYP_SLAB_XHAPPROVEXEC;
     spl.cpuid = cpuindex;
@@ -211,7 +211,7 @@ static void _hcb_memoryfault(u32 cpuindex, u32 guest_slab_index, u64 gpa, u64 gv
         syscallhandler_modified=true;
 
 	_XDPRINTF_("%s[%u]: syscall modified = %s\n",
-            __FUNCTION__, (u16)cpuindex, (syscallhandler_modified ? "true" : "false"));
+            __func__, (u16)cpuindex, (syscallhandler_modified ? "true" : "false"));
 
 
     //log GPR state, syscall modified status and digest
@@ -255,7 +255,7 @@ static u32 _hcb_trap_instruction(u32 cpuindex, u32 guest_slab_index, u32 insntyp
             case IA32_SYSENTER_EIP_MSR:{
                 xmhf_hic_uapi_mempgtbl_desc_t *mdesc = (xmhf_hic_uapi_mempgtbl_desc_t *)&spl.in_out_params[2];
 
-              	_XDPRINTF_("%s[%u]: emulating WRMSR SYSENTER_EIP_MSR\n", __FUNCTION__, (u16)cpuindex);
+              	_XDPRINTF_("%s[%u]: emulating WRMSR SYSENTER_EIP_MSR\n", __func__, (u16)cpuindex);
 
                 shadow_sysenter_rip = ( ((u64)(u32)r->edx << 32) | (u32)r->eax ) ;
 
@@ -299,7 +299,7 @@ static u32 _hcb_trap_instruction(u32 cpuindex, u32 guest_slab_index, u32 insntyp
 
         switch(msrvalue){
             case IA32_SYSENTER_EIP_MSR:
-              	_XDPRINTF_("%s[%u]: emulating RDMSR SYSENTER_EIP_MSR\n", __FUNCTION__, (u16)cpuindex);
+              	_XDPRINTF_("%s[%u]: emulating RDMSR SYSENTER_EIP_MSR\n", __func__, (u16)cpuindex);
 
                 r->edx = shadow_sysenter_rip >> 32;
                 r->eax = (u32)shadow_sysenter_rip;
@@ -351,7 +351,7 @@ static u32 _hcb_trap_instruction(u32 cpuindex, u32 guest_slab_index, u32 insntyp
 // shutdown
 static void _hcb_shutdown(u32 cpuindex, u32 guest_slab_index){
 	_XDPRINTF_("%s[%u]: guest slab %u shutdown...\n",
-            __FUNCTION__, (u16)cpuindex, guest_slab_index);
+            __func__, (u16)cpuindex, guest_slab_index);
 }
 
 
@@ -377,7 +377,7 @@ void slab_main(slab_params_t *sp){
 
 
 	_XDPRINTF_("%s[%u]: Got control, cbtype=%x: ESP=%08x\n",
-                __FUNCTION__, (u16)sp->cpuid, hcbp->cbtype, read_esp());
+                __func__, (u16)sp->cpuid, hcbp->cbtype, read_esp());
 
 
     switch(hcbp->cbtype){
@@ -446,7 +446,7 @@ void slab_main(slab_params_t *sp){
 
         default:{
             _XDPRINTF_("%s[%u]: Unknown cbtype. Halting!\n",
-                __FUNCTION__, (u16)sp->cpuid);
+                __func__, (u16)sp->cpuid);
             //HALT();
         }
     }

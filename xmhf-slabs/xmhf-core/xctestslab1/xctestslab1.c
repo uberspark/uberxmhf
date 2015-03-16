@@ -73,7 +73,7 @@ static void _xcinit_dotests(u64 cpuid){
         u32 i;
         u8 digest[SHA_DIGEST_LENGTH];
 
-        _XDPRINTF_("%s: proceeding with test...\n", __FUNCTION__);
+        _XDPRINTF_("%s: proceeding with test...\n", __func__);
 
 
 
@@ -96,7 +96,7 @@ static void _xcinit_dotests(u64 cpuid){
 
         tscavg = tscavg / iterations;
 
-        _XDPRINTF_("%s: clock cycles for test = %u\n", __FUNCTION__, (u32)tscavg);
+        _XDPRINTF_("%s: clock cycles for test = %u\n", __func__, (u32)tscavg);
 
     }
 
@@ -108,10 +108,10 @@ static void _xcinit_dotests(u64 cpuid){
     u64 *outputval = (u64 *)oparams;
 
 	_XDPRINTF_("%s[%u]: Got control: RSP=%016llx\n",
-                __FUNCTION__, (u32)cpuid, read_rsp());
+                __func__, (u32)cpuid, read_rsp());
 
 	_XDPRINTF_("%s[%u]: inputval=%x\n",
-                __FUNCTION__, (u32)cpuid, *inputval);
+                __func__, (u32)cpuid, *inputval);
 
     *outputval = 0xBBCCDDEE;
 
@@ -124,10 +124,10 @@ void slab_main(slab_params_t *sp){
     u32 *outputval = (u32 *)sp->in_out_params[1];
 
 	_XDPRINTF_("%s[%u]: Got control: ESP=%016llx\n",
-                __FUNCTION__, (u16)sp->cpuid, read_esp());
+                __func__, (u16)sp->cpuid, read_esp());
 
 	_XDPRINTF_("%s[%u]: inputval=%x\n",
-                __FUNCTION__, (u16)sp->cpuid, inputval);
+                __func__, (u16)sp->cpuid, inputval);
 
     *outputval = 0xBBCCDDEE;
 
