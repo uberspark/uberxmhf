@@ -495,8 +495,8 @@ static bool _platform_x86pc_vtd_initialize(void){
 		}
 
         //read and store DRHD supported page-walk length
-        cap.value = xmhfhw_platform_x86pc_vtd_drhd_reg_read(drhd_handle, VTD_CAP_REG_OFF);
-        if(cap.bits.sagaw & 0x2){
+        unpack_VTD_CAP_REG(&cap, xmhfhw_platform_x86pc_vtd_drhd_reg_read(drhd_handle, VTD_CAP_REG_OFF));
+        if(cap.sagaw & 0x2){
             if(vtd_pagewalk_level == VTD_PAGEWALK_NONE || vtd_pagewalk_level == VTD_PAGEWALK_3LEVEL){
                 vtd_pagewalk_level = VTD_PAGEWALK_3LEVEL;
                 _XDPRINTF_("%s: DRHD unit %u - 3-level page-walk\n", __FUNCTION__, drhd_handle);
@@ -507,7 +507,7 @@ static bool _platform_x86pc_vtd_initialize(void){
             }
         }
 
-        if(cap.bits.sagaw & 0x4){
+        if(cap.sagaw & 0x4){
             if(vtd_pagewalk_level == VTD_PAGEWALK_NONE || vtd_pagewalk_level == VTD_PAGEWALK_4LEVEL){
                 vtd_pagewalk_level = VTD_PAGEWALK_4LEVEL;
                 _XDPRINTF_("%s: DRHD unit %u - 4-level page-walk\n", __FUNCTION__, drhd_handle);
