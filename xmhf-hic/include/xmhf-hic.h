@@ -111,13 +111,17 @@ typedef struct {
     u32 ap_cr3;
     u32 ap_cr4;
     u32 ap_entrypoint;
-    u32 ap_gdtdesc_limit __attribute__((aligned(16)));
+    u32 _filler0;
+    u32 ap_gdtdesc_limit;
     u32 ap_gdtdesc_base;
     u32 ap_cs_selector;
     u32 ap_eip;
     u32 cpuidtable;
-    u64 ap_gdt[X86SMP_APBOOTSTRAP_MAXGDTENTRIES] __attribute__ ((aligned (16)));
-}__attribute__((aligned(16),packed)) x86smp_apbootstrapdata_t;
+    u32 _filler1;
+    u32 _filler2;
+    u32 _filler3;
+    u64 ap_gdt[X86SMP_APBOOTSTRAP_MAXGDTENTRIES];
+}__attribute__((packed)) x86smp_apbootstrapdata_t;
 
 //MTRR memory type structure
 struct _memorytype {
