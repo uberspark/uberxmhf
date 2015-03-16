@@ -74,7 +74,7 @@ typedef struct {
     x86regs_t r;
 } sl_log_type_t;
 
-sl_log_type_t sl_log[128];
+static sl_log_type_t sl_log[128];
 
 static u64 sl_log_index=0;
 
