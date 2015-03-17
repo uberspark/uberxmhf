@@ -484,7 +484,7 @@ typedef enum {
  * GETSEC[] leaf functions
  */
 
-typedef union {
+/*typedef union {
     uint32_t _raw;
     struct {
         uint32_t chipset_present  : 1;
@@ -500,6 +500,49 @@ typedef union {
         uint32_t extended_leafs   : 1;
     } __attribute__((packed));
 } capabilities_t;
+*/
+
+typedef struct {
+        uint32_t chipset_present    ;//: 1;
+        uint32_t undefined1	        ;//: 1;
+        uint32_t enteraccs	        ;//: 1;
+        uint32_t exitac	            ;//: 1;
+        uint32_t senter	            ;//: 1;
+        uint32_t sexit	            ;//: 1;
+        uint32_t parameters	        ;//: 1;
+        uint32_t smctrl	            ;//: 1;
+        uint32_t wakeup	            ;//: 1;
+        uint32_t undefined9	        ;//: 22;
+        uint32_t extended_leafs     ;//: 1;
+} __attribute__((packed)) capabilities_t;
+
+#define pack_capabilities_t(s) \
+    (u32)( \
+    (((u32)(s)->extended_leafs      & 0x00000001UL) << 31) | \
+    (((u32)(s)->undefined9          & 0x003FFFFFUL) << 9 ) | \
+    (((u32)(s)->wakeup              & 0x00000001UL) << 8 ) | \
+    (((u32)(s)->smctrl              & 0x00000001UL) << 7 ) | \
+    (((u32)(s)->parameters          & 0x00000001UL) << 6 ) | \
+    (((u32)(s)->sexit               & 0x00000001UL) << 5 ) | \
+    (((u32)(s)->senter              & 0x00000001UL) << 4 ) | \
+    (((u32)(s)->exitac              & 0x00000001UL) << 3 ) | \
+    (((u32)(s)->enteraccs           & 0x00000001UL) << 2 ) | \
+    (((u32)(s)->undefined1          & 0x00000001UL) << 1 ) | \
+    (((u32)(s)->chipset_present     & 0x00000001UL) << 0 ) \
+    )
+
+#define unpack_capabilities_t(s, value) \
+    (s)->extended_leafs      = (u32)(((u32)value >> 31) & 0x00000001UL); \
+    (s)->undefined9          = (u32)(((u32)value >> 9 ) & 0x003FFFFFUL); \
+    (s)->wakeup              = (u32)(((u32)value >> 8 ) & 0x00000001UL); \
+    (s)->smctrl              = (u32)(((u32)value >> 7 ) & 0x00000001UL); \
+    (s)->parameters          = (u32)(((u32)value >> 6 ) & 0x00000001UL); \
+    (s)->sexit               = (u32)(((u32)value >> 5 ) & 0x00000001UL); \
+    (s)->senter              = (u32)(((u32)value >> 4 ) & 0x00000001UL); \
+    (s)->exitac              = (u32)(((u32)value >> 3 ) & 0x00000001UL); \
+    (s)->enteraccs           = (u32)(((u32)value >> 2 ) & 0x00000001UL); \
+    (s)->undefined1          = (u32)(((u32)value >> 1 ) & 0x00000001UL); \
+    (s)->chipset_present     = (u32)(((u32)value >> 0 ) & 0x00000001UL);
 
 
 /* helper fn. for getsec_capabilities */

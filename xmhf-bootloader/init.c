@@ -435,17 +435,17 @@ bool txt_supports_txt(void) {
     /* Verify that an TXT-capable chipset is present and check that
      * all needed SMX capabilities are supported. */
 
-    cap = (capabilities_t)__getsec_capabilities(0);
+    unpack_capabilities_t(&cap, __getsec_capabilities(0));
     if(!cap.chipset_present) {
         _XDPRINTF_("ERR: TXT-capable chipset not present\n");
         return false;
     }
     if (!(cap.senter && cap.sexit && cap.parameters && cap.smctrl &&
           cap.wakeup)) {
-        _XDPRINTF_("ERR: insufficient SMX capabilities (0x%08x)\n", cap._raw);
+        _XDPRINTF_("ERR: insufficient SMX capabilities (0x%08x)\n", pack_capabilities_t(&cap));
         return false;
     }
-    _XDPRINTF_("TXT chipset and all needed capabilities (0x%08x) present\n", cap._raw);
+    _XDPRINTF_("TXT chipset and all needed capabilities (0x%08x) present\n", pack_capabilities_t(&cap));
 
     return true;
 }
