@@ -278,7 +278,7 @@ static u32 mp_scan_config(u32 base, u32 length, MPFP **mpfp){
   MPFP *mpf;
 
   _XDPRINTF_("\n%s: Finding MP table from 0x%08x for %u bytes",
-                        __FUNCTION__, (u32)bp, length);
+                        __func__, (u32)bp, length);
 
   while (length > 0) {
      mpf = (MPFP *)bp;
@@ -289,7 +289,7 @@ static u32 mp_scan_config(u32 base, u32 length, MPFP **mpfp){
                      || (mpf->spec_rev == 4))) {
 
                         _XDPRINTF_("\n%s: found SMP MP-table at 0x%08x",
-                               __FUNCTION__, (u32)mpf);
+                               __func__, (u32)mpf);
 
 												*mpfp = mpf;
                         return 1;
