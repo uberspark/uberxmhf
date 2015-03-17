@@ -67,6 +67,9 @@
 ////libxmhfdebug
 //u32 libxmhfdebug_lock = 1;
 
+
+
+
 //the vcpu structure which holds the current state of a core
 typedef struct _bootvcpu {
   u32 esp;                //used to establish stack for the CPU

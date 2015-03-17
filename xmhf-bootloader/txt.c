@@ -99,6 +99,94 @@
 #include "_txt_hash.h"
 #include "_txt_acmod.h"
 
+#define MTRR_TYPE_MIXED         -1
+#define MMIO_APIC_BASE          0xFEE00000
+#define NR_MMIO_APIC_PAGES      1
+#define NR_MMIO_IOAPIC_PAGES    1
+#define NR_MMIO_PCICFG_PAGES    1
+
+/* saved MTRR state or NULL if orig. MTRRs have not been changed */
+static mtrr_state_t *g_saved_mtrrs = NULL;
+
+
+/*
+ * this must be done for each processor so that all have the same
+ * memory types
+ */
+bool set_mtrrs_for_acmod(acm_hdr_t *hdr)
+{
+    u32 eflags;
+    unsigned long cr0, cr4;
+
+    /*
+     * need to do some things before we start changing MTRRs
+     *
+     * since this will modify some of the MTRRs, they should be saved first
+     * so that they can be restored once the AC mod is done
+     */
+
+    /* disable interrupts */
+    asm volatile(
+                 "pushfl \r\n"
+                 "popl %0 \r\n"
+                 : "=g" (eflags)
+                 :
+                 :
+                 );
+
+    __CASMFNCALL__(xmhfhw_cpu_disable_intr());
+
+    /* save CR0 then disable cache (CRO.CD=1, CR0.NW=0) */
+    cr0 = read_cr0();
+    write_cr0((cr0 & ~CR0_NW) | CR0_CD);
+
+    /* flush caches */
+    wbinvd();
+
+    /* save CR4 and disable global pages (CR4.PGE=0) */
+    cr4 = read_cr4();
+    write_cr4(cr4 & ~CR4_PGE);
+
+    /* disable MTRRs */
+    set_all_mtrrs(false);
+
+    /*
+     * now set MTRRs for AC mod and rest of memory
+     */
+    if ( !set_mem_type(hdr, hdr->size*4, MTRR_TYPE_WRBACK) )
+        return false;
+
+    /*
+     * now undo some of earlier changes and enable our new settings
+     */
+
+    /* flush caches */
+    wbinvd();
+
+    /* enable MTRRs */
+    set_all_mtrrs(true);
+
+    /* restore CR0 (cacheing) */
+    write_cr0(cr0);
+
+    /* restore CR4 (global pages) */
+    write_cr4(cr4);
+
+    /* enable interrupts */
+    asm volatile(
+                 "pushl %0 \r\n"
+                 "popfl \r\n"
+                 :
+                 : "g" (eflags)
+                 : "cc"
+                 );
+
+
+
+
+    return true;
+}
+
 
 //extern SL_PARAMETER_BLOCK *slpb; /* Ugh; ugly global from init.c */
 
