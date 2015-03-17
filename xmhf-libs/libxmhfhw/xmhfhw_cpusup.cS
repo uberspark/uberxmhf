@@ -73,6 +73,29 @@ uint64_t rdtsc64(void)
         return (rv);
 }
 
+u32 read_eflags(void){
+    u32 __eflags;
+    asm volatile(
+                 "pushfl \r\n"
+                 "popl %0 \r\n"
+                 : "=g" (__eflags)
+                 :
+                 :
+                 );
+
+    return __eflags;
+}
+
+void write_eflags(u32 eflags){
+    asm volatile(
+                 "pushl %0 \r\n"
+                 "popfl \r\n"
+                 :
+                 : "g" (eflags)
+                 : "cc"
+                 );
+}
+
 
 /* Calls to read and write control registers */
 u64 read_cr0(void){

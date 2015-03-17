@@ -210,7 +210,7 @@ typedef struct {
 /*
  * format of DIDVID register
  */
-typedef union {
+/*typedef union {
     uint64_t _raw;
     struct {
         uint16_t  vendor_id;
@@ -219,17 +219,59 @@ typedef union {
         uint16_t  reserved;
     } __attribute__((packed));
 } __attribute__((packed)) txt_didvid_t;
+*/
+
+typedef struct {
+        u32  vendor_id; //16
+        u32  device_id; //16
+        u32  revision_id; //16
+        u32  reserved; //16
+} __attribute__((packed)) txt_didvid_t;
+
+#define pack_txt_didvid_t(s) \
+    (u64)( \
+    (((u64)(s)->reserved    & 0x000000000000FFFFULL) << 48) | \
+    (((u64)(s)->revision_id & 0x000000000000FFFFULL) << 32) | \
+    (((u64)(s)->device_id   & 0x000000000000FFFFULL) << 16) | \
+    (((u64)(s)->vendor_id   & 0x000000000000FFFFULL) << 0 ) \
+    )
+
+#define unpack_txt_didvid_t(s, value) \
+    (s)->reserved       = (u32)(((u64)value >> 48) & 0x000000000000FFFFULL); \
+    (s)->revision_id    = (u32)(((u64)value >> 32) & 0x000000000000FFFFULL); \
+    (s)->device_id      = (u32)(((u64)value >> 16) & 0x000000000000FFFFULL); \
+    (s)->vendor_id      = (u32)(((u64)value >> 0 ) & 0x000000000000FFFFULL);
+
+
 
 /*
  * format of VER.FSBIF and VER.EMIF registers
  */
-typedef union {
+/*typedef union {
     u64 _raw;
     struct {
         u32  reserved       : 31;
         u32  prod_fused     : 1;
     } __attribute__((packed));
 } txt_ver_fsbif_emif_t;
+*/
+
+typedef struct {
+    u32  reserved       ;//: 31;
+    u32  prod_fused     ;//: 1;
+} __attribute__((packed)) txt_ver_fsbif_emif_t;
+
+#define pack_txt_ver_fsbif_emif_t(s) \
+    (u64)( \
+    (((u64)(s)->prod_fused  & 0x0000000000000001ULL) << 31) | \
+    (((u64)(s)->reserved    & 0x000000007FFFFFFFULL) << 0 ) \
+    )
+
+#define unpack_txt_ver_fsbif_emif_t(s, value) \
+    (s)->prod_fused     = (u32)(((u64)value >> 31) & 0x0000000000000001ULL); \
+    (s)->reserved       = (u32)(((u64)value >> 0 ) & 0x000000007FFFFFFFULL);
+
+
 
 /*
  * format of DPR register

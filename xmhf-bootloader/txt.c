@@ -126,15 +126,9 @@ bool set_mtrrs_for_acmod(acm_hdr_t *hdr)
      */
 
     /* disable interrupts */
-    asm volatile(
-                 "pushfl \r\n"
-                 "popl %0 \r\n"
-                 : "=g" (eflags)
-                 :
-                 :
-                 );
+    eflags = read_eflags();
 
-    __CASMFNCALL__(xmhfhw_cpu_disable_intr());
+    xmhfhw_cpu_disable_intr();
 
     /* save CR0 then disable cache (CRO.CD=1, CR0.NW=0) */
     cr0 = read_cr0();
@@ -173,14 +167,7 @@ bool set_mtrrs_for_acmod(acm_hdr_t *hdr)
     write_cr4(cr4);
 
     /* enable interrupts */
-    asm volatile(
-                 "pushl %0 \r\n"
-                 "popfl \r\n"
-                 :
-                 : "g" (eflags)
-                 : "cc"
-                 );
-
+    write_eflags(eflags);
 
 
 
@@ -197,17 +184,17 @@ bool get_parameters(getsec_parameters_t *params);
  * it needs to be within the MLE pages, so force it to the .text section
  */
 static mle_hdr_t g_mle_hdr = {
-    uuid              :  MLE_HDR_UUID,
-    length            :  sizeof(mle_hdr_t),
-    version           :  MLE_HDR_VER,
-    entry_point       :  TEMPORARY_HARDCODED_MLE_ENTRYPOINT, // XXX TODO remove magic number
-    first_valid_page  :  0,
+    .uuid              =  MLE_HDR_UUID,
+    .length            =  sizeof(mle_hdr_t),
+    .version           =  MLE_HDR_VER,
+    .entry_point       =  TEMPORARY_HARDCODED_MLE_ENTRYPOINT, // XXX TODO remove magic number
+    .first_valid_page  =  0,
     ///XXX I thnk these should be phys addres
-    mle_start_off     :  0, /* In MLE address space as accessed via MLE page tables */
-    mle_end_off       :  TEMPORARY_HARDCODED_MLE_SIZE, // XXX TODO remove magic number
-    capabilities      :  { MLE_HDR_CAPS },
-    cmdline_start_off :  0,
-    cmdline_end_off   :  0,
+    .mle_start_off     =  0, /* In MLE address space as accessed via MLE page tables */
+    .mle_end_off       =  TEMPORARY_HARDCODED_MLE_SIZE, // XXX TODO remove magic number
+    .capabilities      =  { MLE_HDR_CAPS },
+    .cmdline_start_off =  0,
+    .cmdline_end_off   =  0
 };
 
 ///XXX
@@ -265,9 +252,9 @@ static void *build_mle_pagetable(uint32_t mle_start, uint32_t mle_size)
     memset(ptab_base, 0, ptab_size);
     _XDPRINTF_("ptab_size=%x, ptab_base=%p\n", ptab_size, ptab_base);
 
-    pg_dir_ptr_tab = ptab_base;
-    pg_dir         = pg_dir_ptr_tab + PAGE_SIZE_4K;
-    pg_tab         = pg_dir + PAGE_SIZE_4K;
+    pg_dir_ptr_tab = (void *)ptab_base;
+    pg_dir         = (void *)((u32)pg_dir_ptr_tab + PAGE_SIZE_4K);
+    pg_tab         = (void *)((u32)pg_dir + PAGE_SIZE_4K);
 
     /* only use first entry in page dir ptr table */
     *(uint64_t *)pg_dir_ptr_tab = MAKE_PDTE(pg_dir);
@@ -308,13 +295,13 @@ static bool check_sinit_module(void *base, size_t size)
         return false;
 
     /* display chipset fuse and device and vendor id info */
-    didvid._raw = read_pub_config_reg(TXTCR_DIDVID);
+    unpack_txt_didvid_t(&didvid, read_pub_config_reg(TXTCR_DIDVID));
     _XDPRINTF_("chipset ids: vendor: 0x%x, device: 0x%x, revision: 0x%x\n",
            didvid.vendor_id, didvid.device_id, didvid.revision_id);
-    ver._raw = read_pub_config_reg(TXTCR_VER_FSBIF);
-    if ( (ver._raw & 0xffffffff) == 0xffffffff ||
-         (ver._raw & 0xffffffff) == 0x00 )         /* need to use VER.EMIF */
-        ver._raw = read_pub_config_reg(TXTCR_VER_EMIF);
+    unpack_txt_ver_fsbif_emif_t(&ver, read_pub_config_reg(TXTCR_VER_FSBIF));
+    if ( (pack_txt_ver_fsbif_emif_t(&ver) & 0xffffffff) == 0xffffffff ||
+         (pack_txt_ver_fsbif_emif_t(&ver) & 0xffffffff) == 0x00 )         /* need to use VER.EMIF */
+        unpack_txt_ver_fsbif_emif_t(&ver, read_pub_config_reg(TXTCR_VER_EMIF));
     _XDPRINTF_("chipset production fused: %x\n", ver.prod_fused );
 
     if ( is_sinit_acmod(base, size, false) &&
@@ -549,23 +536,11 @@ bool txt_prepare_cpu(void)
     write_cr0(cr0);
 
     /* cannot be in virtual-8086 mode (EFLAGS.VM=1) */
-        asm volatile(
-                 "pushfl \r\n"
-                 "popl %0 \r\n"
-                 : "=g" (eflags)
-                 :
-                 :
-                 );
+    eflags = read_eflags();
 
     if ( eflags & EFLAGS_VM ) {
         _XDPRINTF_("EFLAGS.VM set; clearing it.\n");
-            asm volatile(
-                 "pushl %0 \r\n"
-                 "popfl \r\n"
-                 :
-                 : "g" ((eflags | ~EFLAGS_VM))
-                 : "cc"
-                 );
+        write_eflags(eflags | ~EFLAGS_VM);
 
     }
 
