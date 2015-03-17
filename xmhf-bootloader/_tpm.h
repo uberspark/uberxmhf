@@ -576,20 +576,58 @@ bool xmhf_tpm_arch_prepare_tpm(void);
 /* TPM_ACCESS_x */
 #define TPM_REG_ACCESS           0x00
 typedef union {
-    u8 _raw[1];                      /* 1-byte reg */
+    u8 _raw[1];                      //  1-byte reg
     struct __attribute__ ((packed)) {
-        u8 tpm_establishment   : 1;  /* RO, 0=T/OS has been established
-                                        before */
-        u8 request_use         : 1;  /* RW, 1=locality is requesting TPM use */
-        u8 pending_request     : 1;  /* RO, 1=other locality is requesting
-                                        TPM usage */
-        u8 seize               : 1;  /* WO, 1=seize locality */
-        u8 been_seized         : 1;  /* RW, 1=locality seized while active */
-        u8 active_locality     : 1;  /* RW, 1=locality is active */
-        u8 reserved            : 1;
-        u8 tpm_reg_valid_sts   : 1;  /* RO, 1=other bits are valid */
+        u8 tpm_establishment   : 1;  //  RO, 0=T/OS has been established
+                                     //   before
+        u8 request_use         : 1;  //  RW, 1=locality is requesting TPM use
+        u8 pending_request     : 1;  //  RO, 1=other locality is requesting
+                                     //   TPM usage
+        u8 seize               : 1;  //  WO, 1=seize locality
+        u8 been_seized         : 1;  //  RW, 1=locality seized while active
+        u8 active_locality     : 1;  //  RW, 1=locality is active
+        u8 reserved            : 1;  //
+        u8 tpm_reg_valid_sts   : 1;  //  RO, 1=other bits are valid
     };
 } tpm_reg_access_t;
+
+
+/*typedef struct {
+    u32 tpm_establishment   ; //: 1;  //  RO, 0=T/OS has been established
+                                 //   before
+    u32 request_use         ; //: 1;  //  RW, 1=locality is requesting TPM use
+    u32 pending_request     ; //: 1;  //  RO, 1=other locality is requesting
+                                 //   TPM usage
+    u32 seize               ; //: 1;  //  WO, 1=seize locality
+    u32 been_seized         ; //: 1;  //  RW, 1=locality seized while active
+    u32 active_locality     ; //: 1;  //  RW, 1=locality is active
+    u32 reserved            ; //: 1;  //
+    u32 tpm_reg_valid_sts   ; //: 1;  //  RO, 1=other bits are valid
+} __attribute__((packed)) tpm_reg_access_t;
+
+#define pack_tpm_reg_access_t(s) \
+    (u8)( \
+    (((u32)(s)->tpm_reg_valid_sts    & 0x00000001UL) << 7) | \
+    (((u32)(s)->reserved             & 0x00000001UL) << 6) | \
+    (((u32)(s)->active_locality      & 0x00000001UL) << 5) | \
+    (((u32)(s)->been_seized          & 0x00000001UL) << 4) | \
+    (((u32)(s)->seize                & 0x00000001UL) << 3) | \
+    (((u32)(s)->pending_request      & 0x00000001UL) << 2) | \
+    (((u32)(s)->request_use          & 0x00000001UL) << 1) | \
+    (((u32)(s)->tpm_establishment    & 0x00000001UL) << 0 ) \
+    )
+
+#define unpack_tpm_reg_access_t(s, value) \
+    (s)->tpm_reg_valid_sts      = (u32)(((u8)value >> 7) & 0x00000001UL); \
+    (s)->reserved               = (u32)(((u8)value >> 6) & 0x00000001UL); \
+    (s)->active_locality        = (u32)(((u8)value >> 5) & 0x00000001UL); \
+    (s)->been_seized            = (u32)(((u8)value >> 4) & 0x00000001UL); \
+    (s)->seize                  = (u32)(((u8)value >> 3) & 0x00000001UL); \
+    (s)->pending_request        = (u32)(((u8)value >> 2) & 0x00000001UL); \
+    (s)->request_use            = (u32)(((u8)value >> 1) & 0x00000001UL); \
+    (s)->tpm_establishment      = (u32)(((u8)value >> 0) & 0x00000001UL);
+*/
+
 
 /* TPM_STS_x */
 #define TPM_REG_STS              0x18
@@ -633,10 +671,10 @@ typedef union {
  *********************************************************************/
 
 /* TODO: Give these a more appropriate home */
-/* #define readb(va)       (*(volatile uint8_t *) (va)) */
-/* #define writeb(va, d)   (*(volatile uint8_t *) (va) = (d)) */
+#define readb(va)       xmhfhw_sysmemaccess_readu8(va)
+#define writeb(va, d)   xmhfhw_sysmemaccess_writeu8(va, d)
 
-#ifndef __XMHF_VERIFICATION__
+/*#ifndef __XMHF_VERIFICATION__
 
 	static inline void writeb(u32 addr, u8 val) {
 	    __asm__ __volatile__("movb %%al, %%fs:(%%ebx)\r\n"
@@ -666,6 +704,7 @@ typedef union {
 	}
 
 #endif //__XMHF_VERIFICATION__
+*/
 
 //TPM timeouts
 #define TIMEOUT_UNIT    (0x100000 / 330) /* ~1ms, 1 tpm r/w need > 330ns */
@@ -756,7 +795,11 @@ static inline bool tpm_validate_locality(uint32_t locality)
          * while this locality is not available, so check seize bit too)
          * It also defines that reading reg_acc.seize should always return 0
          */
-        read_tpm_reg(locality, TPM_REG_ACCESS, &reg_acc);
+        {
+            //u8 value;
+            read_tpm_reg(locality, TPM_REG_ACCESS, &reg_acc);
+            //unpack_tpm_reg_access_t(&reg_acc, value);
+        }
         if ( reg_acc.tpm_reg_valid_sts == 1 && reg_acc.seize == 0)
             return true;
         cpu_relax();
@@ -949,18 +992,32 @@ static inline bool release_locality(uint32_t locality)
     if ( !tpm_validate_locality(locality) )
         return true;
 
-    read_tpm_reg(locality, TPM_REG_ACCESS, &reg_acc);
+    {
+        //u8 value;
+        read_tpm_reg(locality, TPM_REG_ACCESS, &reg_acc);
+        //unpack_tpm_reg_access_t(&reg_acc, value);
+    }
+
     if ( reg_acc.active_locality == 0 )
         return true;
 
     /* make inactive by writing a 1 */
-    reg_acc._raw[0] = 0;
+    //unpack_tpm_reg_access_t(&reg_acc, 0);
+    reg_acc._raw[0]= 0;
     reg_acc.active_locality = 1;
-    write_tpm_reg(locality, TPM_REG_ACCESS, &reg_acc);
+
+    {
+        //u8 value = pack_tpm_reg_access_t(&reg_acc);
+        write_tpm_reg(locality, TPM_REG_ACCESS, &reg_acc);
+    }
 
     i = 0;
     do {
-        read_tpm_reg(locality, TPM_REG_ACCESS, &reg_acc);
+        {
+            //u8 value;
+            read_tpm_reg(locality, TPM_REG_ACCESS, &reg_acc);
+            //unpack_tpm_reg_access_t(&reg_acc, value);
+        }
         if ( reg_acc.active_locality == 0 )
             return true;
         else
@@ -983,9 +1040,13 @@ static inline void xmhf_tpm_arch_deactivate_all_localities(void) {
 
     //_XDPRINTF_("\nTPM: %s()\n", __FUNCTION__);
     for(locality=0; locality <= 3; locality++) {
+        //unpack_tpm_reg_access_t(&reg_acc, 0);
         reg_acc._raw[0] = 0;
         reg_acc.active_locality = 1;
-        write_tpm_reg(locality, TPM_REG_ACCESS, &reg_acc);
+        {
+            //u8 value = pack_tpm_reg_access_t(&reg_acc);
+            write_tpm_reg(locality, TPM_REG_ACCESS, &reg_acc);
+        }
     }
 }
 
@@ -1026,7 +1087,11 @@ static inline uint32_t tpm_wait_cmd_ready(uint32_t locality)
 /*     dump_locality_access_regs(); */
 
     /* ensure the contents of the ACCESS register are valid */
-    read_tpm_reg(locality, TPM_REG_ACCESS, &reg_acc);
+    {
+        //u8 value;
+        read_tpm_reg(locality, TPM_REG_ACCESS, &reg_acc);
+        //unpack_tpm_reg_access_t(&reg_acc, value);
+    }
 //#ifdef TPM_TRACE
 //    _XDPRINTF_("\nTPM: Access reg content: 0x%02x\n", (uint32_t)reg_acc._raw[0]);
 //#endif
@@ -1036,13 +1101,21 @@ static inline uint32_t tpm_wait_cmd_ready(uint32_t locality)
     }
 
     /* request access to the TPM from locality N */
+    //unpack_tpm_reg_access_t(&reg_acc, 0);
     reg_acc._raw[0] = 0;
     reg_acc.request_use = 1;
-    write_tpm_reg(locality, TPM_REG_ACCESS, &reg_acc);
 
+    {
+        //u8 value = pack_tpm_reg_access_t(&reg_acc);
+        write_tpm_reg(locality, TPM_REG_ACCESS, &reg_acc);
+    }
     i = 0;
     do {
-        read_tpm_reg(locality, TPM_REG_ACCESS, &reg_acc);
+        {
+            //u8 value;
+            read_tpm_reg(locality, TPM_REG_ACCESS, &reg_acc);
+            //unpack_tpm_reg_access_t(&reg_acc, value);
+        }
         if ( reg_acc.active_locality == 1 )
             break;
         else
@@ -1268,9 +1341,13 @@ static inline uint32_t tpm_write_cmd_fifo(uint32_t locality, uint8_t *in,
 
 RelinquishControl:
     /* deactivate current locality */
+    //unpack_tpm_reg_access_t(&reg_acc, 0);
     reg_acc._raw[0] = 0;
     reg_acc.active_locality = 1;
-    write_tpm_reg(locality, TPM_REG_ACCESS, &reg_acc);
+    {
+        //u8 value = pack_tpm_reg_access_t(&reg_acc);
+        write_tpm_reg(locality, TPM_REG_ACCESS, &reg_acc);
+    }
 
     return ret;
 }

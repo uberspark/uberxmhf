@@ -144,7 +144,7 @@ bool hash_buffer(const unsigned char* buf, size_t size, tb_hash_t *hash,
  * perform "extend" of two hashes (i.e. hash1 = SHA(hash1 || hash2)
  *
  */
-bool extend_hash(tb_hash_t *hash1, const tb_hash_t *hash2, uint8_t hash_alg)
+/*bool extend_hash(tb_hash_t *hash1, const tb_hash_t *hash2, uint8_t hash_alg)
 {
     uint8_t buf[2*get_hash_size(hash_alg)];
 
@@ -163,7 +163,7 @@ bool extend_hash(tb_hash_t *hash1, const tb_hash_t *hash2, uint8_t hash_alg)
         _XDPRINTF_("unsupported hash alg (%u)\n", hash_alg);
         return false;
     }
-}
+}*/
 
 void print_hash(const tb_hash_t *hash, uint8_t hash_alg)
 {

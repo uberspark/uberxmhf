@@ -94,14 +94,20 @@
  * authenticated code (AC) module header (ver 0.0)
  */
 
-typedef union {
+/*typedef union {
     uint16_t _raw;
     struct {
         uint16_t  reserved          : 14;
         uint16_t  pre_production    : 1;
         uint16_t  debug_signed      : 1;
     };
-} acm_flags_t;
+} acm_flags_t;*/
+
+typedef uint16_t acm_flags_t;
+
+#define ACM_FLAGS_T_PRE_PRODUCTION  (1 << 15)
+#define ACM_FLAGS_T_DEBUG_SIGNED    (1 << 16)
+
 
 typedef struct {
     uint32_t     module_type;

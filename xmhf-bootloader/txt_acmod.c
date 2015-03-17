@@ -237,9 +237,9 @@ static void print_acm_hdr(acm_hdr_t *hdr, const char *mod_name)
     _XDPRINTF_("\t length: 0x%x (%u)\n", hdr->header_len, hdr->header_len);
     _XDPRINTF_("\t version: %u\n", hdr->header_ver);
     _XDPRINTF_("\t chipset_id: 0x%x\n", (uint32_t)hdr->chipset_id);
-    _XDPRINTF_("\t flags: 0x%x\n", (uint32_t)hdr->flags._raw);
-    _XDPRINTF_("\t\t pre_production: %d\n", (int)hdr->flags.pre_production);
-    _XDPRINTF_("\t\t debug_signed: %d\n", (int)hdr->flags.debug_signed);
+    _XDPRINTF_("\t flags: 0x%x\n", (uint32_t)hdr->flags);
+    _XDPRINTF_("\t\t pre_production: %d\n", (int)hdr->flags & ACM_FLAGS_T_PRE_PRODUCTION);
+    _XDPRINTF_("\t\t debug_signed: %d\n", (int)hdr->flags & ACM_FLAGS_T_DEBUG_SIGNED);
     _XDPRINTF_("\t vendor: 0x%x\n", hdr->module_vendor);
     _XDPRINTF_("\t date: 0x%08x\n", hdr->date);
     _XDPRINTF_("\t size*4: 0x%x (%u)\n", hdr->size*4, hdr->size*4);
@@ -431,7 +431,7 @@ bool does_acmod_match_chipset(acm_hdr_t* hdr)
     if ( (pack_txt_ver_fsbif_emif_t(&ver) & 0xffffffff) == 0xffffffff ||
          (pack_txt_ver_fsbif_emif_t(&ver) & 0xffffffff) == 0x00 )         /* need to use VER.EMIF */
         unpack_txt_ver_fsbif_emif_t(&ver, read_pub_config_reg(TXTCR_VER_EMIF));
-    if ( ver.prod_fused != !hdr->flags.debug_signed ) {
+    if ( ver.prod_fused != !(hdr->flags & ACM_FLAGS_T_DEBUG_SIGNED) ) {
         _XDPRINTF_("\t production/debug mismatch between chipset and ACM\n");
         return false;
     }
