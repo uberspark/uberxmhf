@@ -783,9 +783,6 @@ static inline uint32_t tpm_get_capability(
 
 
 
-static inline void cpu_relax(void){
-    __asm__ __volatile__ ("pause");
-}
 
 
 static inline void _read_tpm_reg(int locality, u32 reg, u8 *_raw, size_t size)

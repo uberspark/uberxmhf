@@ -52,6 +52,10 @@
 #include <xmhfhw.h>
 #include <xmhf-debug.h>
 
+void cpu_relax(void){
+    asm volatile ("pause");
+}
+
 
 void xmhfhw_cpu_cpuid(u32 op, u32 *eax, u32 *ebx, u32 *ecx, u32 *edx){
     asm volatile(
