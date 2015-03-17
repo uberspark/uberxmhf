@@ -84,8 +84,8 @@ $(THE_ARCHIVE): $(OBJECTS)
 %.o: %.c
 	mkdir -p $(XMHF_BOOTLOADER_OBJECTS_DIR)
 	@echo Building "$(@F)" from "$<"
-	#$(CCERT) -c $(CCERT_FLAGS) -o $(XMHF_BOOTLOADER_OBJECTS_DIR)/$@ $<
-	$(CC) -c $(CFLAGS) -o $(XMHF_BOOTLOADER_OBJECTS_DIR)/$(@F) $<
+	$(CCERT) -c $(CCERT_FLAGS) -o $(XMHF_BOOTLOADER_OBJECTS_DIR)/$@ $<
+	#$(CC) -c $(CFLAGS) -o $(XMHF_BOOTLOADER_OBJECTS_DIR)/$(@F) $<
 
 
 .PHONY: clean
