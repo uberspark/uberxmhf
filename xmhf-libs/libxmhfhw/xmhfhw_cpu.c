@@ -54,6 +54,7 @@
 
 
 
+
 int fls(int mask)
 {
     return (mask == 0 ? mask : (int)bsrl((u32)mask) + 1);

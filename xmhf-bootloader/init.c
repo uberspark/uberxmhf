@@ -150,8 +150,10 @@ INTEGRITY_MEASUREMENT_VALUES g_init_gold /* __attribute__(( section("") )) */ = 
 
 
 void skinit(unsigned long eax) {
-    __asm__("mov %0, %%eax": :"r" (eax));
-    __asm__("skinit %%eax":);
+    /*__asm__("mov %0, %%eax": :"r" (eax));
+    __asm__("skinit %%eax":);*/
+    _XDPRINTF_("%s: AMD SKINIT currently voided out. Halting!\n", __func__);
+    HALT();
 }
 
 
@@ -234,7 +236,7 @@ void send_init_ipi_to_all_APs(void) {
 u32 dealwithE820(multiboot_info_t *mbi, u32 runtimesize __attribute__((unused))){
     //check if GRUB has a valid E820 map
     if(!(mbi->flags & MBI_MEMMAP)){
-        _XDPRINTF_("\n%s: no E820 map provided. HALT!", __FUNCTION__);
+        _XDPRINTF_("\n%s: no E820 map provided. HALT!", __func__);
         HALT();
     }
 
@@ -763,10 +765,10 @@ void setupvcpus(u32 cpu_vendor, MIDTAB *midtable, u32 midtable_numentries){
     BOOTVCPU *vcpu;
 
     _XDPRINTF_("\n%s: cpustacks range 0x%08x-0x%08x in 0x%08x chunks",
-           __FUNCTION__, (u32)cpustacks, (u32)cpustacks + (RUNTIME_STACK_SIZE * MAX_VCPU_ENTRIES),
+           __func__, (u32)cpustacks, (u32)cpustacks + (RUNTIME_STACK_SIZE * MAX_VCPU_ENTRIES),
            RUNTIME_STACK_SIZE);
     _XDPRINTF_("\n%s: vcpubuffers range 0x%08x-0x%08x in 0x%08x chunks",
-           __FUNCTION__, (u32)vcpubuffers, (u32)vcpubuffers + (SIZE_STRUCT_BOOTVCPU * MAX_VCPU_ENTRIES),
+           __func__, (u32)vcpubuffers, (u32)vcpubuffers + (SIZE_STRUCT_BOOTVCPU * MAX_VCPU_ENTRIES),
            SIZE_STRUCT_BOOTVCPU);
 
     for(i=0; i < midtable_numentries; i++){
@@ -929,7 +931,7 @@ void cstartup(multiboot_info_t *mbi){
     dealwithMP();
 
     //check (and revise) platform E820 memory map to see if we can load at __TARGET_BASE_XMHF
-    _XDPRINTF_("xmhf-bootloader: %s:%u\n", __FUNCTION__, __LINE__);
+    _XDPRINTF_("xmhf-bootloader: %s:%u\n", __func__, __LINE__);
 	//sl_rt_size = (mod_array[0].mod_start - __TARGET_BASE_BOOTLOADER) - __TARGET_SIZE_BOOTLOADER;
 	hypervisor_image_baseaddress = dealwithE820(mbi, __TARGET_SIZE_XMHF);
 	_XDPRINTF_("xmhf-bootloader: XMHF binary base=%08x, reserved size=%08x bytes\n", hypervisor_image_baseaddress, __TARGET_SIZE_XMHF);
@@ -959,10 +961,10 @@ void cstartup(multiboot_info_t *mbi){
 	//	}
 
 
-    //_XDPRINTF_("xmhf-bootloader: %s:%u\n", __FUNCTION__, __LINE__);
+    //_XDPRINTF_("xmhf-bootloader: %s:%u\n", __func__, __LINE__);
     ////relocate XMHF hypervisor binary to preferred load address
     // memcpy((void*)__TARGET_BASE_XMHF, (void*)(__TARGET_BASE_BOOTLOADER+__TARGET_SIZE_BOOTLOADER), sl_rt_size);
-    //_XDPRINTF_("xmhf-bootloader: %s:%u\n", __FUNCTION__, __LINE__);
+    //_XDPRINTF_("xmhf-bootloader: %s:%u\n", __func__, __LINE__);
 
 
     /* runtime */
@@ -1055,7 +1057,7 @@ void cstartup(multiboot_info_t *mbi){
         strncpy(xslbootinfo->cmdline_buffer, (const char *)mbi->cmdline, sizeof(xslbootinfo->cmdline_buffer));
     }
 
-    _XDPRINTF_("xmhf-bootloader: %s:%u\n", __FUNCTION__, __LINE__);
+    _XDPRINTF_("xmhf-bootloader: %s:%u\n", __func__, __LINE__);
 
     //switch to MP mode
     //setup Master-ID Table (MIDTABLE)
