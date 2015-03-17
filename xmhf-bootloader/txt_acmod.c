@@ -427,10 +427,10 @@ bool does_acmod_match_chipset(acm_hdr_t* hdr)
      * check if fusing is same
      */
     txt_ver_fsbif_emif_t ver;
-    ver._raw = read_pub_config_reg(TXTCR_VER_FSBIF);
-    if ( (ver._raw & 0xffffffff) == 0xffffffff ||
-         (ver._raw & 0xffffffff) == 0x00 )         /* need to use VER.EMIF */
-        ver._raw = read_pub_config_reg(TXTCR_VER_EMIF);
+    unpack_txt_ver_fsbif_emif_t(&ver, read_pub_config_reg(TXTCR_VER_FSBIF));
+    if ( (pack_txt_ver_fsbif_emif_t(&ver) & 0xffffffff) == 0xffffffff ||
+         (pack_txt_ver_fsbif_emif_t(&ver) & 0xffffffff) == 0x00 )         /* need to use VER.EMIF */
+        unpack_txt_ver_fsbif_emif_t(&ver, read_pub_config_reg(TXTCR_VER_EMIF));
     if ( ver.prod_fused != !hdr->flags.debug_signed ) {
         _XDPRINTF_("\t production/debug mismatch between chipset and ACM\n");
         return false;
@@ -444,7 +444,7 @@ bool does_acmod_match_chipset(acm_hdr_t* hdr)
         return false;
 
     /* get chipset device and vendor id info */
-    didvid._raw = read_pub_config_reg(TXTCR_DIDVID);
+    unpack_txt_didvid_t(&didvid, read_pub_config_reg(TXTCR_DIDVID));
 
     _XDPRINTF_("\t %x ACM chipset id entries:\n", chipset_id_list->count);
     for ( i = 0; i < chipset_id_list->count; i++ ) {
