@@ -576,20 +576,6 @@ bool xmhf_tpm_arch_prepare_tpm(void);
 /* TPM_ACCESS_x */
 #define TPM_REG_ACCESS           0x00
 #define SIZE_TPM_REG_ACCESS      0x1
-/*typedef struct {
-        u8 tpm_establishment   : 1;  //  RO, 0=T/OS has been established
-                                     //   before
-        u8 request_use         : 1;  //  RW, 1=locality is requesting TPM use
-        u8 pending_request     : 1;  //  RO, 1=other locality is requesting
-                                     //   TPM usage
-        u8 seize               : 1;  //  WO, 1=seize locality
-        u8 been_seized         : 1;  //  RW, 1=locality seized while active
-        u8 active_locality     : 1;  //  RW, 1=locality is active
-        u8 reserved            : 1;  //
-        u8 tpm_reg_valid_sts   : 1;  //  RO, 1=other bits are valid
-} __attribute__((packed)) tpm_reg_access_t;
-*/
-
 
 typedef struct {
     u32 tpm_establishment   ; //: 1;  //  RO, 0=T/OS has been established
@@ -631,24 +617,7 @@ typedef struct {
 /* TPM_STS_x */
 #define TPM_REG_STS              0x18
 #define SIZE_TPM_REG_STS         0x3
-/*typedef union {
-    u8 _raw[3];                  // 3-byte reg
-    struct __attribute__ ((packed)) {
-        u8 reserved1       : 1;
-        u8 response_retry  : 1;  // WO, 1=re-send response
-        u8 reserved2       : 1;
-        u8 expect          : 1;  // RO, 1=more data for command expected
-        u8 data_avail      : 1;  // RO, 0=no more data for response
-        u8 tpm_go          : 1;  // WO, 1=execute sent command
-        u8 command_ready   : 1;  // RW, 1=TPM ready to receive new cmd
-        u8 sts_valid       : 1;  // RO, 1=data_avail and expect bits are
-                                 //   valid
-        u16 burst_count    : 16; // RO, # read/writes bytes before wait
-    };
-} tpm_reg_sts_t;
-*/
-
-typedef struct {
+/*typedef struct {
         u8 reserved1       : 1;
         u8 response_retry  : 1;  // WO, 1=re-send response
         u8 reserved2       : 1;
@@ -660,6 +629,45 @@ typedef struct {
                                  //   valid
         u16 burst_count    : 16; // RO, # read/writes bytes before wait
 } __attribute__((packed)) tpm_reg_sts_t;
+*/
+
+typedef struct {
+        u32 reserved1       ;//: 1;
+        u32 response_retry  ;//: 1;  // WO, 1=re-send response
+        u32 reserved2       ;//: 1;
+        u32 expect          ;//: 1;  // RO, 1=more data for command expected
+        u32 data_avail      ;//: 1;  // RO, 0=no more data for response
+        u32 tpm_go          ;//: 1;  // WO, 1=execute sent command
+        u32 command_ready   ;//: 1;  // RW, 1=TPM ready to receive new cmd
+        u32 sts_valid       ;//: 1;  // RO, 1=data_avail and expect bits are
+                                 //   valid
+        u32 burst_count     ;//: 16; // RO, # read/writes bytes before wait
+} __attribute__((packed)) tpm_reg_sts_t;
+
+#define pack_tpm_reg_sts_t(s) \
+    (u32)( \
+    (((u32)(s)->burst_count     & 0x0000FFFFUL) << 8) | \
+    (((u32)(s)->sts_valid       & 0x00000001UL) << 7) | \
+    (((u32)(s)->command_ready   & 0x00000001UL) << 6) | \
+    (((u32)(s)->tpm_go          & 0x00000001UL) << 5) | \
+    (((u32)(s)->data_avail      & 0x00000001UL) << 4) | \
+    (((u32)(s)->expect          & 0x00000001UL) << 3) | \
+    (((u32)(s)->reserved2       & 0x00000001UL) << 2) | \
+    (((u32)(s)->response_retry  & 0x00000001UL) << 1) | \
+    (((u32)(s)->reserved1       & 0x00000001UL) << 0 ) \
+    )
+
+#define unpack_tpm_reg_sts_t(s, value) \
+     (s)->burst_count       = (u32)(((u32)value >> 8) & 0x0000FFFFUL); \
+     (s)->sts_valid         = (u32)(((u32)value >> 7) & 0x00000001UL); \
+     (s)->command_ready     = (u32)(((u32)value >> 6) & 0x00000001UL); \
+     (s)->tpm_go            = (u32)(((u32)value >> 5) & 0x00000001UL); \
+     (s)->data_avail        = (u32)(((u32)value >> 4) & 0x00000001UL); \
+     (s)->expect            = (u32)(((u32)value >> 3) & 0x00000001UL); \
+     (s)->reserved2         = (u32)(((u32)value >> 2) & 0x00000001UL); \
+     (s)->response_retry    = (u32)(((u32)value >> 1) & 0x00000001UL); \
+     (s)->reserved1         = (u32)(((u32)value >> 0) & 0x00000001UL);
+
 
 
 /* TPM_DATA_FIFO_x */
@@ -1154,11 +1162,18 @@ static inline uint32_t tpm_wait_cmd_ready(uint32_t locality)
         /* write 1 to TPM_STS_x.commandReady to let TPM enter ready state */
         memset((void *)&reg_sts, 0, sizeof(reg_sts));
         reg_sts.command_ready = 1;
-        _write_tpm_reg(locality, TPM_REG_STS, &reg_sts, SIZE_TPM_REG_STS);
+        {
+            u32 value = pack_tpm_reg_sts_t(&reg_sts);
+            _write_tpm_reg(locality, TPM_REG_STS, &value, SIZE_TPM_REG_STS);
+        }
         cpu_relax();
 
         /* then see if it has */
-        _read_tpm_reg(locality, TPM_REG_STS, &reg_sts, SIZE_TPM_REG_STS);
+        {
+            u32 value;
+            _read_tpm_reg(locality, TPM_REG_STS, &value, SIZE_TPM_REG_STS);
+            unpack_tpm_reg_sts_t(&reg_sts, value);
+        }
 //#ifdef TPM_TRACE
 //        _XDPRINTF_(".");
 //#endif
@@ -1261,7 +1276,11 @@ static inline uint32_t tpm_write_cmd_fifo(uint32_t locality, uint8_t *in,
     do {
         i = 0;
         do {
-            _read_tpm_reg(locality, TPM_REG_STS, &reg_sts, SIZE_TPM_REG_STS);
+            {
+                u32 value;
+                _read_tpm_reg(locality, TPM_REG_STS, &value, SIZE_TPM_REG_STS);
+                unpack_tpm_reg_sts_t(&reg_sts, value);
+            }
             /* find out how many bytes the TPM can accept in a row */
             row_size = reg_sts.burst_count;
             if ( row_size > 0 )
@@ -1284,12 +1303,18 @@ static inline uint32_t tpm_write_cmd_fifo(uint32_t locality, uint8_t *in,
     /* command has been written to the TPM, it is time to execute it. */
     memset(&reg_sts, 0,  sizeof(reg_sts));
     reg_sts.tpm_go = 1;
-    _write_tpm_reg(locality, TPM_REG_STS, &reg_sts, SIZE_TPM_REG_STS);
-
+    {
+        u32 value = pack_tpm_reg_sts_t(&reg_sts);
+        _write_tpm_reg(locality, TPM_REG_STS, &value, SIZE_TPM_REG_STS);
+    }
     /* check for data available */
     i = 0;
     do {
-        _read_tpm_reg(locality,TPM_REG_STS, &reg_sts, SIZE_TPM_REG_STS);
+        {
+            u32 value;
+            _read_tpm_reg(locality,TPM_REG_STS, &value, SIZE_TPM_REG_STS);
+            unpack_tpm_reg_sts_t(&reg_sts, value);
+        }
         if ( reg_sts.sts_valid == 1 && reg_sts.data_avail == 1 )
             break;
         else
@@ -1308,7 +1333,11 @@ static inline uint32_t tpm_write_cmd_fifo(uint32_t locality, uint8_t *in,
         /* find out how many bytes the TPM returned in a row */
         i = 0;
         do {
-            _read_tpm_reg(locality, TPM_REG_STS, &reg_sts, SIZE_TPM_REG_STS);
+            {
+                u32 value;
+                _read_tpm_reg(locality,TPM_REG_STS, &value, SIZE_TPM_REG_STS);
+                unpack_tpm_reg_sts_t(&reg_sts, value);
+            }
             row_size = reg_sts.burst_count;
             if ( row_size > 0 )
                 break;
@@ -1357,8 +1386,10 @@ static inline uint32_t tpm_write_cmd_fifo(uint32_t locality, uint8_t *in,
 
     memset(&reg_sts, 0, sizeof(reg_sts));
     reg_sts.command_ready = 1;
-    _write_tpm_reg(locality, TPM_REG_STS, &reg_sts, SIZE_TPM_REG_STS);
-
+    {
+        u32 value = pack_tpm_reg_sts_t(&reg_sts);
+        _write_tpm_reg(locality, TPM_REG_STS, &value, SIZE_TPM_REG_STS);
+    }
 RelinquishControl:
     /* deactivate current locality */
     unpack_tpm_reg_access_t(&reg_acc, 0);
