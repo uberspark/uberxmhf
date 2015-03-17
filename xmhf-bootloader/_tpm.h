@@ -576,24 +576,7 @@ bool xmhf_tpm_arch_prepare_tpm(void);
 /* TPM_ACCESS_x */
 #define TPM_REG_ACCESS           0x00
 #define SIZE_TPM_REG_ACCESS      0x1
-/*typedef union {
-    u8 _raw[1];                      //  1-byte reg
-    struct __attribute__ ((packed)) {
-        u8 tpm_establishment   : 1;  //  RO, 0=T/OS has been established
-                                     //   before
-        u8 request_use         : 1;  //  RW, 1=locality is requesting TPM use
-        u8 pending_request     : 1;  //  RO, 1=other locality is requesting
-                                     //   TPM usage
-        u8 seize               : 1;  //  WO, 1=seize locality
-        u8 been_seized         : 1;  //  RW, 1=locality seized while active
-        u8 active_locality     : 1;  //  RW, 1=locality is active
-        u8 reserved            : 1;  //
-        u8 tpm_reg_valid_sts   : 1;  //  RO, 1=other bits are valid
-    };
-} tpm_reg_access_t;
-*/
-
-typedef struct {
+/*typedef struct {
         u8 tpm_establishment   : 1;  //  RO, 0=T/OS has been established
                                      //   before
         u8 request_use         : 1;  //  RW, 1=locality is requesting TPM use
@@ -605,10 +588,10 @@ typedef struct {
         u8 reserved            : 1;  //
         u8 tpm_reg_valid_sts   : 1;  //  RO, 1=other bits are valid
 } __attribute__((packed)) tpm_reg_access_t;
+*/
 
 
-
-/*typedef struct {
+typedef struct {
     u32 tpm_establishment   ; //: 1;  //  RO, 0=T/OS has been established
                                  //   before
     u32 request_use         ; //: 1;  //  RW, 1=locality is requesting TPM use
@@ -642,7 +625,7 @@ typedef struct {
     (s)->pending_request        = (u32)(((u8)value >> 2) & 0x00000001UL); \
     (s)->request_use            = (u32)(((u8)value >> 1) & 0x00000001UL); \
     (s)->tpm_establishment      = (u32)(((u8)value >> 0) & 0x00000001UL);
-*/
+
 
 
 /* TPM_STS_x */
@@ -830,9 +813,9 @@ static inline bool tpm_validate_locality(uint32_t locality)
          * It also defines that reading reg_acc.seize should always return 0
          */
         {
-            //u8 value;
-            _read_tpm_reg(locality, TPM_REG_ACCESS, &reg_acc, SIZE_TPM_REG_ACCESS);
-            //unpack_tpm_reg_access_t(&reg_acc, value);
+            u8 value;
+            _read_tpm_reg(locality, TPM_REG_ACCESS, &value, SIZE_TPM_REG_ACCESS);
+            unpack_tpm_reg_access_t(&reg_acc, value);
         }
         if ( reg_acc.tpm_reg_valid_sts == 1 && reg_acc.seize == 0)
             return true;
@@ -1027,31 +1010,31 @@ static inline bool release_locality(uint32_t locality)
         return true;
 
     {
-        //u8 value;
-        _read_tpm_reg(locality, TPM_REG_ACCESS, &reg_acc, SIZE_TPM_REG_ACCESS);
-        //unpack_tpm_reg_access_t(&reg_acc, value);
+        u8 value;
+        _read_tpm_reg(locality, TPM_REG_ACCESS, &value, SIZE_TPM_REG_ACCESS);
+        unpack_tpm_reg_access_t(&reg_acc, value);
     }
 
     if ( reg_acc.active_locality == 0 )
         return true;
 
     /* make inactive by writing a 1 */
-    //unpack_tpm_reg_access_t(&reg_acc, 0);
+    unpack_tpm_reg_access_t(&reg_acc, 0);
     //reg_acc._raw[0]= 0;
-    memset(&reg_acc, 0, SIZE_TPM_REG_ACCESS);
+    //memset(&reg_acc, 0, SIZE_TPM_REG_ACCESS);
     reg_acc.active_locality = 1;
 
     {
-        //u8 value = pack_tpm_reg_access_t(&reg_acc);
-        _write_tpm_reg(locality, TPM_REG_ACCESS, &reg_acc, SIZE_TPM_REG_ACCESS);
+        u8 value = pack_tpm_reg_access_t(&reg_acc);
+        _write_tpm_reg(locality, TPM_REG_ACCESS, &value, SIZE_TPM_REG_ACCESS);
     }
 
     i = 0;
     do {
         {
-            //u8 value;
-            _read_tpm_reg(locality, TPM_REG_ACCESS, &reg_acc, SIZE_TPM_REG_ACCESS);
-            //unpack_tpm_reg_access_t(&reg_acc, value);
+            u8 value;
+            _read_tpm_reg(locality, TPM_REG_ACCESS, &value, SIZE_TPM_REG_ACCESS);
+            unpack_tpm_reg_access_t(&reg_acc, value);
         }
         if ( reg_acc.active_locality == 0 )
             return true;
@@ -1075,12 +1058,11 @@ static inline void xmhf_tpm_arch_deactivate_all_localities(void) {
 
     //_XDPRINTF_("\nTPM: %s()\n", __FUNCTION__);
     for(locality=0; locality <= 3; locality++) {
-        //unpack_tpm_reg_access_t(&reg_acc, 0);
-        memset(&reg_acc, 0, SIZE_TPM_REG_ACCESS);
+        unpack_tpm_reg_access_t(&reg_acc, 0);
         reg_acc.active_locality = 1;
         {
-            //u8 value = pack_tpm_reg_access_t(&reg_acc);
-            _write_tpm_reg(locality, TPM_REG_ACCESS, &reg_acc, SIZE_TPM_REG_ACCESS);
+            u8 value = pack_tpm_reg_access_t(&reg_acc);
+            _write_tpm_reg(locality, TPM_REG_ACCESS, &value, SIZE_TPM_REG_ACCESS);
         }
     }
 }
@@ -1123,9 +1105,9 @@ static inline uint32_t tpm_wait_cmd_ready(uint32_t locality)
 
     /* ensure the contents of the ACCESS register are valid */
     {
-        //u8 value;
-        _read_tpm_reg(locality, TPM_REG_ACCESS, &reg_acc, SIZE_TPM_REG_ACCESS);
-        //unpack_tpm_reg_access_t(&reg_acc, value);
+        u8 value;
+        _read_tpm_reg(locality, TPM_REG_ACCESS, &value, SIZE_TPM_REG_ACCESS);
+        unpack_tpm_reg_access_t(&reg_acc, value);
     }
 //#ifdef TPM_TRACE
 //    _XDPRINTF_("\nTPM: Access reg content: 0x%02x\n", (uint32_t)reg_acc._raw[0]);
@@ -1136,20 +1118,20 @@ static inline uint32_t tpm_wait_cmd_ready(uint32_t locality)
     }
 
     /* request access to the TPM from locality N */
-    //unpack_tpm_reg_access_t(&reg_acc, 0);
-    memset(&reg_acc, 0, SIZE_TPM_REG_ACCESS);
+    unpack_tpm_reg_access_t(&reg_acc, 0);
+    //memset(&reg_acc, 0, SIZE_TPM_REG_ACCESS);
     reg_acc.request_use = 1;
 
     {
-        //u8 value = pack_tpm_reg_access_t(&reg_acc);
-        _write_tpm_reg(locality, TPM_REG_ACCESS, &reg_acc, SIZE_TPM_REG_ACCESS);
+        u8 value = pack_tpm_reg_access_t(&reg_acc);
+        _write_tpm_reg(locality, TPM_REG_ACCESS, &value, SIZE_TPM_REG_ACCESS);
     }
     i = 0;
     do {
         {
-            //u8 value;
-            _read_tpm_reg(locality, TPM_REG_ACCESS, &reg_acc, SIZE_TPM_REG_ACCESS);
-            //unpack_tpm_reg_access_t(&reg_acc, value);
+            u8 value;
+            _read_tpm_reg(locality, TPM_REG_ACCESS, &value, SIZE_TPM_REG_ACCESS);
+            unpack_tpm_reg_access_t(&reg_acc, value);
         }
         if ( reg_acc.active_locality == 1 )
             break;
@@ -1202,9 +1184,12 @@ static inline uint32_t tpm_wait_cmd_ready(uint32_t locality)
 
 RelinquishControl:
     /* deactivate current locality */
-    memset(&reg_acc, 0, SIZE_TPM_REG_ACCESS);
+    unpack_tpm_reg_access_t(&reg_acc, 0);
     reg_acc.active_locality = 1;
-    _write_tpm_reg(locality, TPM_REG_ACCESS, &reg_acc, SIZE_TPM_REG_ACCESS);
+    {
+        u8 value = pack_tpm_reg_access_t(&reg_acc);
+        _write_tpm_reg(locality, TPM_REG_ACCESS, &value, SIZE_TPM_REG_ACCESS);
+    }
 
     return TPM_FAIL;
 }
@@ -1376,12 +1361,12 @@ static inline uint32_t tpm_write_cmd_fifo(uint32_t locality, uint8_t *in,
 
 RelinquishControl:
     /* deactivate current locality */
-    //unpack_tpm_reg_access_t(&reg_acc, 0);
-    memset(&reg_acc, 0, SIZE_TPM_REG_ACCESS);
+    unpack_tpm_reg_access_t(&reg_acc, 0);
+    //memset(&reg_acc, 0, SIZE_TPM_REG_ACCESS);
     reg_acc.active_locality = 1;
     {
-        //u8 value = pack_tpm_reg_access_t(&reg_acc);
-        _write_tpm_reg(locality, TPM_REG_ACCESS, &reg_acc, SIZE_TPM_REG_ACCESS);
+        u8 value = pack_tpm_reg_access_t(&reg_acc);
+        _write_tpm_reg(locality, TPM_REG_ACCESS, &value, SIZE_TPM_REG_ACCESS);
     }
 
     return ret;
