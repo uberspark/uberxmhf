@@ -110,16 +110,6 @@
 /*
 * format of ERRORCODE register
 */
-/*typedef union {
-    u64 _raw;
-    struct {
-        u32   type       : 30;    //external-specific error code
-        u32   external   : 1;     // 0=from proc, 1=from external SW
-        u32   valid      : 1;     // 1=valid
-    } __attribute__((packed));
-} txt_errorcode_t;
-*/
-
 typedef struct {
         u32   type       ;//: 30;    //external-specific error code
         u32   external   ;//: 1;     // 0=from proc, 1=from external SW
@@ -143,17 +133,6 @@ typedef struct {
 /*
  * format of ESTS register
  */
-/*typedef union {
-    u64 _raw;
-    struct {
-        u32   txt_reset_sts      : 1;
-        u32   reserved1          : 5;
-        u32   txt_wake_error_sts : 1;
-        u32   reserved2          : 1;
-    } __attribute__((packed));
-} txt_ests_t;
-*/
-
 typedef struct {
         u32   txt_reset_sts      ;//: 1;
         u32   reserved1          ;//: 5;
@@ -189,24 +168,6 @@ typedef union {
     } __attribute__((packed));
 } txt_e2sts_t;
 
-
-// /*
-// * format of STS register
-// */
-//typedef union {
-//    u64 _raw;
-//   struct {
-//        u32   senter_done_sts         : 1;
-//        u32   sexit_done_sts          : 1;
-//        u32   reserved1               : 2;
-//        u32   mem_unlock_sts          : 1;
-//        u32   reserved2               : 1;
-//        u32   mem_config_lock_sts     : 1;
-//        u32   private_open_sts        : 1;
-//        u32   reserved3               : 3;
-//        u32   mem_config_ok_sts       : 1;
-//    } __attribute__((packed)) fields;
-//} txt_sts_t;
 
 
 /*
@@ -252,17 +213,6 @@ typedef struct {
 /*
  * format of DIDVID register
  */
-/*typedef union {
-    uint64_t _raw;
-    struct {
-        uint16_t  vendor_id;
-        uint16_t  device_id;
-        uint16_t  revision_id;
-        uint16_t  reserved;
-    } __attribute__((packed));
-} __attribute__((packed)) txt_didvid_t;
-*/
-
 typedef struct {
         u32  vendor_id; //16
         u32  device_id; //16
@@ -289,15 +239,6 @@ typedef struct {
 /*
  * format of VER.FSBIF and VER.EMIF registers
  */
-/*typedef union {
-    u64 _raw;
-    struct {
-        u32  reserved       : 31;
-        u32  prod_fused     : 1;
-    } __attribute__((packed));
-} txt_ver_fsbif_emif_t;
-*/
-
 typedef struct {
     u32  reserved       ;//: 31;
     u32  prod_fused     ;//: 1;
