@@ -56,7 +56,6 @@
 /*
  * fns to read/write TXT config regs
  *
- * NOTE: MODIFIED TO ALWAYS USE %FS SEGMENT-OVERRIDE
  */
 
 uint64_t read_config_reg(uint32_t config_regs_base, uint32_t reg)
@@ -67,8 +66,8 @@ uint64_t read_config_reg(uint32_t config_regs_base, uint32_t reg)
 
     u64 ret;
     u32 addr = config_regs_base + reg;
-    __asm__ __volatile__("movl %%fs:(%%ebx), %%eax\r\n"
-                         "movl %%fs:4(%%ebx), %%edx\r\n"
+    __asm__ __volatile__("movl (%%ebx), %%eax\r\n"
+                         "movl 4(%%ebx), %%edx\r\n"
                          : "=A"(ret)
                          : "b"(addr)
                          );
@@ -83,8 +82,8 @@ void write_config_reg(uint32_t config_regs_base, uint32_t reg,
     //val;
     u32 addr = config_regs_base + reg;
 
-    __asm__ __volatile__("movl %%eax, %%fs:(%%ebx)\r\n"
-                         "movl %%edx, %%fs:4(%%ebx)\r\n"
+    __asm__ __volatile__("movl %%eax, (%%ebx)\r\n"
+                         "movl %%edx, 4(%%ebx)\r\n"
                          :
                          : "A"(val), "b"(addr)
                          );
