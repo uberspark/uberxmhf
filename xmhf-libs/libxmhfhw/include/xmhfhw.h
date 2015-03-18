@@ -210,7 +210,7 @@ void tlb_invlpg(u64 addr);
 
 #ifndef __ASSEMBLY__
 
-
+void xmhfhw_cpu_getsec(u32 *eax, u32 *ebx, u32 *ecx, u32 *edx);
 uint64_t read_config_reg(uint32_t config_regs_base, uint32_t reg);
 void write_config_reg(uint32_t config_regs_base, uint32_t reg, uint64_t val);
 uint32_t __getsec_capabilities(uint32_t index);
