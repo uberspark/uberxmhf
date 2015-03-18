@@ -53,94 +53,107 @@
 #include <xmhf-debug.h>
 
 
-/*
- * fns to read/write TXT config regs
- *
- */
-
-uint64_t read_config_reg(uint32_t config_regs_base, uint32_t reg)
-{
-    /* these are MMIO so make sure compiler doesn't optimize */
-    //return *(volatile uint64_t *)(unsigned long)(config_regs_base +
-    //reg);
-
-    u64 ret;
-    u32 addr = config_regs_base + reg;
-    __asm__ __volatile__("movl (%%ebx), %%eax\r\n"
-                         "movl 4(%%ebx), %%edx\r\n"
-                         : "=A"(ret)
-                         : "b"(addr)
-                         );
-    return ret;
-}
-
-void write_config_reg(uint32_t config_regs_base, uint32_t reg,
-                                    uint64_t val)
-{
-    /* these are MMIO so make sure compiler doesn't optimize */
-    //*(volatile uint64_t *)(unsigned long)(config_regs_base + reg) =
-    //val;
-    u32 addr = config_regs_base + reg;
-
-    __asm__ __volatile__("movl %%eax, (%%ebx)\r\n"
-                         "movl %%edx, 4(%%ebx)\r\n"
-                         :
-                         : "A"(val), "b"(addr)
-                         );
-
-}
-
 uint32_t __getsec_capabilities(uint32_t index)
 {
     uint32_t cap;
-    __asm__ __volatile__ (IA32_GETSEC_OPCODE "\n"
-              : "=a"(cap)
-              : "a"(IA32_GETSEC_CAPABILITIES), "b"(index));
+    uint32_t eax=0, ebx=0, ecx=0, edx=0;
+
+    eax = IA32_GETSEC_CAPABILITIES;
+    ebx = index;
+
+    xmhfhw_cpu_getsec(&eax, &ebx, &ecx, &edx);
+
+    cap = eax;
+//    __asm__ __volatile__ (IA32_GETSEC_OPCODE "\n"
+//              : "=a"(cap)
+//              : "a"(IA32_GETSEC_CAPABILITIES), "b"(index));
+
     return cap;
 }
 
 
 void __getsec_senter(uint32_t sinit_base, uint32_t sinit_size)
 {
-    __asm__ __volatile__ (IA32_GETSEC_OPCODE "\n"
-			  :
-			  : "a"(IA32_GETSEC_SENTER),
-			    "b"(sinit_base),
-			    "c"(sinit_size),
-			    "d"(0x0));
+    uint32_t eax=0, ebx=0, ecx=0, edx=0;
+
+    eax = IA32_GETSEC_SENTER;
+    ebx = sinit_base;
+    ecx = sinit_size;
+    edx = 0;
+
+    xmhfhw_cpu_getsec(&eax, &ebx, &ecx, &edx);
+
+
+//    __asm__ __volatile__ (IA32_GETSEC_OPCODE "\n"
+//			  :
+//			  : "a"(IA32_GETSEC_SENTER),
+//			    "b"(sinit_base),
+//			    "c"(sinit_size),
+//			    "d"(0x0));
 }
 
 void __getsec_sexit(void)
 {
-    __asm__ __volatile__ (IA32_GETSEC_OPCODE "\n"
-                          : : "a"(IA32_GETSEC_SEXIT));
+
+    uint32_t eax=0, ebx=0, ecx=0, edx=0;
+
+    eax = IA32_GETSEC_SEXIT;
+
+    xmhfhw_cpu_getsec(&eax, &ebx, &ecx, &edx);
+
+
+//    __asm__ __volatile__ (IA32_GETSEC_OPCODE "\n"
+//                          : : "a"(IA32_GETSEC_SEXIT));
 }
 
 void __getsec_wakeup(void)
 {
-    __asm__ __volatile__ (IA32_GETSEC_OPCODE "\n"
-                          : : "a"(IA32_GETSEC_WAKEUP));
+
+    uint32_t eax=0, ebx=0, ecx=0, edx=0;
+
+    eax = IA32_GETSEC_WAKEUP;
+
+    xmhfhw_cpu_getsec(&eax, &ebx, &ecx, &edx);
+
+
+//    __asm__ __volatile__ (IA32_GETSEC_OPCODE "\n"
+//                          : : "a"(IA32_GETSEC_WAKEUP));
 }
+
+
 
 void __getsec_smctrl(void)
 {
-    __asm__ __volatile__ (IA32_GETSEC_OPCODE "\n"
-                          : : "a"(IA32_GETSEC_SMCTRL), "b"(0x0));
+    uint32_t eax=0, ebx=0, ecx=0, edx=0;
+
+    eax = IA32_GETSEC_SMCTRL;
+    ebx = 0;
+
+    xmhfhw_cpu_getsec(&eax, &ebx, &ecx, &edx);
+//    __asm__ __volatile__ (IA32_GETSEC_OPCODE "\n"
+//                          : : "a"(IA32_GETSEC_SMCTRL), "b"(0x0));
 }
 
-void __getsec_parameters(uint32_t index, int* param_type,
-                                       uint32_t* peax, uint32_t* pebx,
-                                       uint32_t* pecx)
-{
-    uint32_t eax=0, ebx=0, ecx=0;
-    __asm__ __volatile__ (IA32_GETSEC_OPCODE "\n"
-                          : "=a"(eax), "=b"(ebx), "=c"(ecx)
-                          : "a"(IA32_GETSEC_PARAMETERS), "b"(index));
+
+void __getsec_parameters(uint32_t index,
+                         int* param_type,
+                         uint32_t* peax,
+                         uint32_t* pebx,
+                         uint32_t* pecx){
+    uint32_t eax=0, ebx=0, ecx=0, edx=0;
+
+    eax = IA32_GETSEC_PARAMETERS;
+    ebx = index;
+
+
+    xmhfhw_cpu_getsec(&eax, &ebx, &ecx, &edx);
+
 
     if ( param_type != NULL )   *param_type = eax & 0x1f;
     if ( peax != NULL )         *peax = eax;
     if ( pebx != NULL )         *pebx = ebx;
     if ( pecx != NULL )         *pecx = ecx;
+
 }
 
 
