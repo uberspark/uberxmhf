@@ -88,12 +88,12 @@ u32 _MPFPComputeChecksum(u32 spaddr, u32 size);
 u32 isbsp(void);
 
 //---globals--------------------------------------------------------------------
-PCPU pcpus[MAX_PCPU_ENTRIES];
+ __attribute__(( section(".data") )) PCPU pcpus[MAX_PCPU_ENTRIES];
 u32 pcpus_numentries=0;
 u32 cpu_vendor;    //CPU_VENDOR_INTEL or CPU_VENDOR_AMD
 u32 hypervisor_image_baseaddress;    //2M aligned highest physical memory address
 //where the hypervisor binary is relocated to
-GRUBE820 grube820list[MAX_E820_ENTRIES];
+ __attribute__(( section(".data") )) GRUBE820 grube820list[MAX_E820_ENTRIES];
 u32 grube820list_numentries=0;        //actual number of e820 entries returned
 //by grub
 
@@ -500,11 +500,11 @@ void txt_status_regs(void) {
         if ( err.external == 0 )       /* processor error */
             _XDPRINTF_("\t processor error %x\n", (uint32_t)err.type);
         else {                         /* external SW error */
-            sw_err._raw = err.type;
+            unpack_txt_errorcode_sw_t(&sw_err, err.type);
             if ( sw_err.src == 1 )     /* unknown SW error */
                 _XDPRINTF_("unknown SW error %x:%x\n", sw_err.err1, sw_err.err2);
             else {                     /* ACM error */
-                acmod_err._raw = sw_err._raw;
+                unpack_acmod_error_t(&acmod_err, pack_txt_errorcode_sw_t(&sw_err));
                 _XDPRINTF_("AC module error : acm_type=%x, progress=%02x, "
                        "error=%x\n", acmod_err.acm_type, acmod_err.progress,
                        acmod_err.error);
@@ -527,8 +527,9 @@ void txt_status_regs(void) {
      * - only valid if LT.WAKE-ERROR.STS set in LT.STS reg
      */
     if ( ests.txt_wake_error_sts ) {
-        e2sts = (txt_e2sts_t)read_pub_config_reg(TXTCR_E2STS);
-        _XDPRINTF_("LT.E2STS=%llx\n", e2sts._raw);
+        //e2sts = (txt_e2sts_t)read_pub_config_reg(TXTCR_E2STS);
+        unpack_txt_e2sts_t(&e2sts, read_pub_config_reg(TXTCR_E2STS));
+        _XDPRINTF_("LT.E2STS=%llx\n", pack_txt_e2sts_t(&e2sts));
     }
 }
 
