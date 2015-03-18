@@ -124,7 +124,7 @@ typedef union {
 /*
  * format of ESTS register
  */
-typedef union {
+/*typedef union {
     u64 _raw;
     struct {
         u32   txt_reset_sts      : 1;
@@ -133,6 +133,29 @@ typedef union {
         u32   reserved2          : 1;
     } __attribute__((packed));
 } txt_ests_t;
+*/
+
+typedef struct {
+        u32   txt_reset_sts      ;//: 1;
+        u32   reserved1          ;//: 5;
+        u32   txt_wake_error_sts ;//: 1;
+        u32   reserved2          ;//: 1;
+} __attribute__((packed)) txt_ests_t;
+
+#define pack_txt_ests_t(s) \
+    (u64)( \
+    (((u64)(s)->reserved2           & 0x0000000000000001ULL) << 7) | \
+    (((u64)(s)->txt_wake_error_sts  & 0x0000000000000001ULL) << 6) | \
+    (((u64)(s)->reserved1           & 0x000000000000001FULL) << 1) | \
+    (((u64)(s)->txt_reset_sts       & 0x0000000000000001ULL) << 0) \
+    )
+
+#define unpack_txt_ests_t(s, value) \
+   (s)->reserved2             = (u32)(((u64)value >> 7) & 0x0000000000000001ULL); \
+   (s)->txt_wake_error_sts    = (u32)(((u64)value >> 6) & 0x0000000000000001ULL); \
+   (s)->reserved1             = (u32)(((u64)value >> 1) & 0x000000000000001FULL); \
+   (s)->txt_reset_sts         = (u32)(((u64)value >> 0) & 0x0000000000000001ULL);
+
 
 /*
  * format of E2STS register

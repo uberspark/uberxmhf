@@ -465,10 +465,11 @@ tb_error_t txt_verify_platform(void)
     }
 
     /* check is TXT_RESET.STS is set, since if it is SENTER will fail */
-    ests = (txt_ests_t)read_pub_config_reg(TXTCR_ESTS);
+    //ests = (txt_ests_t)read_pub_config_reg(TXTCR_ESTS);
+    unpack_txt_ests_t(&ests, read_pub_config_reg(TXTCR_ESTS));
     if ( ests.txt_reset_sts ) {
         _XDPRINTF_("TXT_RESET.STS is set and SENTER is disabled (%llx)\n",
-               ests._raw);
+               pack_txt_ests_t(&ests));
         return TB_ERR_SMX_NOT_SUPPORTED;
     }
 
@@ -516,8 +517,9 @@ void txt_status_regs(void) {
     /*
      * display LT.ESTS error
      */
-    ests = (txt_ests_t)read_pub_config_reg(TXTCR_ESTS);
-    _XDPRINTF_("LT.ESTS=%llx\n", ests._raw);
+    //ests = (txt_ests_t)read_pub_config_reg(TXTCR_ESTS);
+    unpack_txt_ests_t(&ests, read_pub_config_reg(TXTCR_ESTS));
+    _XDPRINTF_("LT.ESTS=%llx\n", pack_txt_ests_t(&ests));
 
     /*
      * display LT.E2STS error
