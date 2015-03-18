@@ -53,7 +53,8 @@ THE_ARCHIVE = xmhf-bootloader
 
 # targets
 .PHONY: all
-all: xmhflibs32 $(THE_ARCHIVE)
+#all: xmhflibs32 $(THE_ARCHIVE)
+all: $(THE_ARCHIVE)
 
 
 .PHONY: xmhflibs32
@@ -69,23 +70,22 @@ xmhflibs32:
 
 
 $(THE_ARCHIVE): $(OBJECTS)
-	#cd $(XMHF_BOOTLOADER_OBJECTS_DIR) && $(LD) --oformat elf32-i386 -T $(srcdir)/init.lds -o $(THE_ARCHIVE).exe $(OBJECTS_ARCHIVE) -L$(CCLIB)/lib/linux -L$(XMHFLIBS_DIR) -lxmhfc -lxmhfcrypto -lxmhfutil -lxmhfhw -lxmhfutil -ltpm -lxmhfc -lclang_rt.full-i386
-	cd $(XMHF_BOOTLOADER_OBJECTS_DIR) && $(LD) --oformat elf32-i386 -T $(srcdir)/init.lds -o $(THE_ARCHIVE).exe $(OBJECTS_ARCHIVE) -L$(CCLIB)/lib/linux -L./libs32 -lxmhfdebug -lclang_rt.full-i386
-	cd $(XMHF_BOOTLOADER_OBJECTS_DIR) && $(STRIP) -s $(THE_ARCHIVE).exe
+	cd $(XMHF_BOOTLOADER_OBJECTS_DIR) && $(LD) --oformat elf32-i386 -T $(srcdir)/init.lds -o $(THE_ARCHIVE).exe $(OBJECTS_ARCHIVE) -L$(CCERT_LIB) -L$(CCLIB)/lib/linux -L$(XMHFLIBS_DIR) -lxmhfc -lxmhfdebug -lxmhfcrypto -lxmhfhw -lxmhfc -lclang_rt.full-i386 -lcompcert
+	#cd $(XMHF_BOOTLOADER_OBJECTS_DIR) && $(LD) --oformat elf32-i386 -T $(srcdir)/init.lds -o $(THE_ARCHIVE).exe $(OBJECTS_ARCHIVE) -L$(CCERT_LIB) -L$(CCLIB)/lib/linux -L./libs32 -lxmhfdebug -lclang_rt.full-i386 -lcompcert
+	#cd $(XMHF_BOOTLOADER_OBJECTS_DIR) && $(STRIP) -s $(THE_ARCHIVE).exe
 	cd $(XMHF_BOOTLOADER_OBJECTS_DIR) && $(OBJCOPY) --output-format=binary $(THE_ARCHIVE).exe $(THE_ARCHIVE).bin
 
 
 %.o: %.S
 	mkdir -p $(XMHF_BOOTLOADER_OBJECTS_DIR)
-	#mkdir -p "$(@D)"
 	@echo Building "$(@F)" from "$<"
 	gcc -c $(ASFLAGS) -o $(XMHF_BOOTLOADER_OBJECTS_DIR)/$(@F) $<
 
 %.o: %.c
 	mkdir -p $(XMHF_BOOTLOADER_OBJECTS_DIR)
-	#mkdir -p "$(@D)"
 	@echo Building "$(@F)" from "$<"
-	$(CC) -c $(CFLAGS) -o $(XMHF_BOOTLOADER_OBJECTS_DIR)/$(@F) $<
+	$(CCERT) -c $(CCERT_FLAGS) -o $(XMHF_BOOTLOADER_OBJECTS_DIR)/$@ $<
+	#$(CC) -c $(CFLAGS) -o $(XMHF_BOOTLOADER_OBJECTS_DIR)/$(@F) $<
 
 
 .PHONY: clean

@@ -124,11 +124,12 @@ typedef struct {
 
 //guest slab header data type
 typedef struct {
+    u64 lvl2mempgtbl_pml4t[PAE_MAXPTRS_PER_PDPT];
+    u64 lvl2mempgtbl_pdpt[PAE_MAXPTRS_PER_PDPT];
+    u64 lvl2mempgtbl_pdts[PAE_PTRS_PER_PDPT][PAE_PTRS_PER_PDT];
     u32 magic;
-    __attribute__((aligned(4096))) u64 lvl2mempgtbl_pml4t[PAE_MAXPTRS_PER_PDPT];
-    __attribute__((aligned(4096))) u64 lvl2mempgtbl_pdpt[PAE_MAXPTRS_PER_PDPT];
-    __attribute__((aligned(4096))) u64 lvl2mempgtbl_pdts[PAE_PTRS_PER_PDPT][PAE_PTRS_PER_PDT];
-    __attribute__(( aligned(16) )) u64 gdt[16];
+    u64 gdt[16];
+    u8 _filler0[3964]; //page-align the whole struct
 } __attribute__((packed)) guest_slab_header_t;
 
 

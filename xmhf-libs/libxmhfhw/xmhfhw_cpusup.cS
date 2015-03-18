@@ -52,6 +52,10 @@
 #include <xmhfhw.h>
 #include <xmhf-debug.h>
 
+void cpu_relax(void){
+    asm volatile ("pause");
+}
+
 
 void xmhfhw_cpu_cpuid(u32 op, u32 *eax, u32 *ebx, u32 *ecx, u32 *edx){
     asm volatile(
@@ -71,6 +75,29 @@ uint64_t rdtsc64(void)
 
         __asm__ __volatile__ ("rdtsc" : "=A" (rv));
         return (rv);
+}
+
+u32 read_eflags(void){
+    u32 __eflags;
+    asm volatile(
+                 "pushfl \r\n"
+                 "popl %0 \r\n"
+                 : "=g" (__eflags)
+                 :
+                 :
+                 );
+
+    return __eflags;
+}
+
+void write_eflags(u32 eflags){
+    asm volatile(
+                 "pushl %0 \r\n"
+                 "popfl \r\n"
+                 :
+                 : "g" (eflags)
+                 : "cc"
+                 );
 }
 
 

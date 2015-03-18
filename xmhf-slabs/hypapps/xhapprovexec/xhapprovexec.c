@@ -82,7 +82,7 @@ static void ae_lock(u32 cpuindex, u32 guest_slab_index, u64 gpa){
     bool found_in_database=false;
     u32 i;
 
-    _XDPRINTF_("%s[%u]: starting...\n", __FUNCTION__, (u16)cpuindex);
+    _XDPRINTF_("%s[%u]: starting...\n", __func__, (u16)cpuindex);
     spl.src_slabid = XMHF_HYP_SLAB_XHAPPROVEXEC;
     spl.cpuid = cpuindex;
 
@@ -98,13 +98,13 @@ if(!ae_activated){
     XMHF_SLAB_UAPI(&spl);
 
     _XDPRINTF_("%s[%u]: grabbed page contents at gpa=%016x\n",
-                __FUNCTION__, (u16)cpuindex, gpa);
+                __func__, (u16)cpuindex, gpa);
 
     //compute SHA-1 of the local page buffer
     sha1_buffer(&_ae_page_buffer, PAGE_SIZE_4K, digest);
 
     _XDPRINTF_("%s[%u]: computed SHA-1: %*D\n",
-               __FUNCTION__, (u16)cpuindex, SHA_DIGEST_LENGTH, digest, " ");
+               __func__, (u16)cpuindex, SHA_DIGEST_LENGTH, digest, " ");
 
     //compare computed SHA-1 to the database
     for(i=0; i < NUMENTRIES_AE_DATABASE; i++){
@@ -117,12 +117,12 @@ if(!ae_activated){
     //if not approved then just return
     if(!found_in_database){
         _XDPRINTF_("%s[%u]: could not find entry in database. returning\n",
-               __FUNCTION__, (u16)cpuindex);
+               __func__, (u16)cpuindex);
         return;
     }
 
     _XDPRINTF_("%s[%u]: entry matched in database, proceeding to lock page...\n",
-               __FUNCTION__, (u16)cpuindex);
+               __func__, (u16)cpuindex);
 
     {
         //lock the code page so no one can write to it
@@ -136,7 +136,7 @@ if(!ae_activated){
         spl.in_out_params[1] = XMHF_HIC_UAPI_MEMPGTBL_GETENTRY;
         XMHF_SLAB_UAPI(&spl);
         _XDPRINTF_("%s[%u]: original entry for gpa=%016llx is %016llx\n",
-                   __FUNCTION__, (u16)cpuindex, gpa, mdesc->entry);
+                   __func__, (u16)cpuindex, gpa, mdesc->entry);
 
         mdesc->entry &= ~(0x7);
         mdesc->entry |= 0x5; // execute, read-only
@@ -148,7 +148,7 @@ if(!ae_activated){
         ae_activated = true;
 
         _XDPRINTF_("%s[%u]: approved and locked page at gpa %x\n",
-                   __FUNCTION__, (u16)cpuindex, gpa);
+                   __func__, (u16)cpuindex, gpa);
     }
 }
 
@@ -164,7 +164,7 @@ static void ae_unlock(u32 cpuindex, u32 guest_slab_index, u64 gpa){
      spl.cpuid = cpuindex;
      spl.in_out_params[0] = XMHF_HIC_UAPI_MEMPGTBL;
 
-    _XDPRINTF_("%s[%u]: starting...\n", __FUNCTION__, (u16)cpuindex);
+    _XDPRINTF_("%s[%u]: starting...\n", __func__, (u16)cpuindex);
 
     if(ae_activated){
          //unlock the code page
@@ -175,7 +175,7 @@ static void ae_unlock(u32 cpuindex, u32 guest_slab_index, u64 gpa){
          spl.in_out_params[1] = XMHF_HIC_UAPI_MEMPGTBL_GETENTRY;
          XMHF_SLAB_UAPI(&spl);
 
-         _XDPRINTF_("%s[%u]: original entry for gpa=%016llx is %016llx\n",  __FUNCTION__, (u16)cpuindex, gpa, mdesc->entry);
+         _XDPRINTF_("%s[%u]: original entry for gpa=%016llx is %016llx\n",  __func__, (u16)cpuindex, gpa, mdesc->entry);
 
         mdesc->entry &= ~(0x7);
         mdesc->entry |= 0x7; // execute, read-write
@@ -186,7 +186,7 @@ static void ae_unlock(u32 cpuindex, u32 guest_slab_index, u64 gpa){
 
         ae_activated=false;
 
-        _XDPRINTF_("%s[%u]: restored permissions for page at %016llx\n", __FUNCTION__, (u16)cpuindex, gpa);
+        _XDPRINTF_("%s[%u]: restored permissions for page at %016llx\n", __func__, (u16)cpuindex, gpa);
     }
 }
 
@@ -198,7 +198,7 @@ static void ae_unlock(u32 cpuindex, u32 guest_slab_index, u64 gpa){
 
 //initialization
 static void _hcb_initialize(u32 cpuindex){
-	_XDPRINTF_("%s[%u]: approvexec initializing...\n", __FUNCTION__, (u16)cpuindex);
+	_XDPRINTF_("%s[%u]: approvexec initializing...\n", __func__, (u16)cpuindex);
 }
 
 //hypercall
@@ -219,7 +219,7 @@ static void _hcb_hypercall(u64 cpuindex, u64 guest_slab_index){
     call_id = gprs->eax;
     gpa = ((u64)gprs->edx << 32) | gprs->ebx;
 
-	_XDPRINTF_("%s[%u]: call_id=%x, gpa=%016llx\n", __FUNCTION__, (u16)cpuindex, call_id, gpa);
+	_XDPRINTF_("%s[%u]: call_id=%x, gpa=%016llx\n", __func__, (u16)cpuindex, call_id, gpa);
 
 
 	switch(call_id){
@@ -236,7 +236,7 @@ static void _hcb_hypercall(u64 cpuindex, u64 guest_slab_index){
 
 		default:
             _XDPRINTF_("%s[%u]: unsupported hypercall %x. Ignoring\n",
-                       __FUNCTION__, (u16)cpuindex, call_id);
+                       __func__, (u16)cpuindex, call_id);
 			break;
 	}
 
@@ -247,13 +247,13 @@ static void _hcb_hypercall(u64 cpuindex, u64 guest_slab_index){
 static void _hcb_memoryfault(u32 cpuindex, u32 guest_slab_index, u64 gpa, u64 gva, u64 errorcode){
 
 	_XDPRINTF_("%s[%u]: memory fault in guest slab %u; gpa=%016llx, gva=%016llx, errorcode=%016llx, write error to approved code?\n",
-            __FUNCTION__, (u16)cpuindex, guest_slab_index, gpa, gva, errorcode);
+            __func__, (u16)cpuindex, guest_slab_index, gpa, gva, errorcode);
 
 }
 
 // shutdown
 static void _hcb_shutdown(u32 cpuindex, u32 guest_slab_index){
-	_XDPRINTF_("%s[%u]: guest slab %u shutdown...\n", __FUNCTION__, (u16)cpuindex, guest_slab_index);
+	_XDPRINTF_("%s[%u]: guest slab %u shutdown...\n", __func__, (u16)cpuindex, guest_slab_index);
 }
 
 
@@ -275,7 +275,7 @@ void slab_main(slab_params_t *sp){
     hcbp->cbresult=XC_HYPAPPCB_CHAIN;
 
 	_XDPRINTF_("%s[%u]: Got control, cbtype=%x: ESP=%08x\n",
-                __FUNCTION__, (u16)sp->cpuid, hcbp->cbtype, read_esp());
+                __func__, (u16)sp->cpuid, hcbp->cbtype, read_esp());
 
 
     switch(hcbp->cbtype){
@@ -345,7 +345,7 @@ void slab_main(slab_params_t *sp){
 
         default:{
             _XDPRINTF_("%s[%u]: Unknown cbtype. Halting!\n",
-                __FUNCTION__, (u16)sp->cpuid);
+                __func__, (u16)sp->cpuid);
             //HALT();
         }
     }

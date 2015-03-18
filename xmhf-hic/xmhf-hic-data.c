@@ -66,7 +66,7 @@ __attribute__(( section(".sharedro_xcbootinfoptr") )) XMHF_BOOTINFO *xcbootinfo=
 
 
 // slab capabilities (privilegemask, call capabilities, type ...)
-slab_caps_t _xmhfhic_init_setupdata_slab_caps[XMHF_HIC_MAX_SLABS] = {
+__attribute__((section(".data"))) slab_caps_t _xmhfhic_init_setupdata_slab_caps[XMHF_HIC_MAX_SLABS] = {
 
     //XMHF_HYP_SLAB_XCINIT
     {
@@ -180,9 +180,9 @@ slab_physmem_extent_t _xmhfhic_init_setupdata_slab_physmem_extents[XMHF_HIC_MAX_
 //////
 // runtime stage
 
-u64 __xmhfhic_safestack_indices[MAX_PLATFORM_CPUS] = { 0 };
+__attribute__((section(".data"))) u64 __xmhfhic_safestack_indices[MAX_PLATFORM_CPUS] = { 0 };
 
-__xmhfhic_safestack_element_t __xmhfhic_safestack[MAX_PLATFORM_CPUS][512];
+__attribute__((section(".data"))) __xmhfhic_safestack_element_t __xmhfhic_safestack[MAX_PLATFORM_CPUS][512];
 
 
 
@@ -219,19 +219,17 @@ __attribute__(( section(".sharedro") )) slab_physmem_extent_t _xmhfhic_common_hi
 // backing data buffers for slab memory and device page tables
 #if !defined (__XMHF_VERIFICATION__)
 
-__attribute__((aligned(4096))) vtd_slpgtbl_t _dbuf_devpgtbl[XMHF_HIC_MAX_SLABS];
-
-
-__attribute__(( aligned(2097152) )) u64 _dbuf_mempgtbl_pml4t[XMHF_HIC_MAX_SLABS][PAE_MAXPTRS_PER_PML4T];
-__attribute__((aligned(4096)))	u64 _dbuf_mempgtbl_pdpt[XMHF_HIC_MAX_SLABS][PAE_MAXPTRS_PER_PDPT];
-__attribute__((aligned(4096)))	u64 _dbuf_mempgtbl_pdt[XMHF_HIC_MAX_SLABS][PAE_PTRS_PER_PDPT][PAE_PTRS_PER_PDT];
-__attribute__((aligned(4096)))  u64 _dbuf_mempgtbl_pt[XMHF_HIC_MAX_SLABS][PAE_PTRS_PER_PDPT][PAE_PTRS_PER_PDT][PAE_PTRS_PER_PT];
+__attribute__((section(".data"))) __attribute__((aligned(4096))) vtd_slpgtbl_t _dbuf_devpgtbl[XMHF_HIC_MAX_SLABS];
+__attribute__((section(".data"))) __attribute__(( aligned(2097152) )) u64 _dbuf_mempgtbl_pml4t[XMHF_HIC_MAX_SLABS][PAE_MAXPTRS_PER_PML4T];
+__attribute__((section(".data"))) __attribute__((aligned(4096)))	u64 _dbuf_mempgtbl_pdpt[XMHF_HIC_MAX_SLABS][PAE_MAXPTRS_PER_PDPT];
+__attribute__((section(".data"))) __attribute__((aligned(4096)))	u64 _dbuf_mempgtbl_pdt[XMHF_HIC_MAX_SLABS][PAE_PTRS_PER_PDPT][PAE_PTRS_PER_PDT];
+__attribute__((section(".data"))) __attribute__((aligned(4096)))  u64 _dbuf_mempgtbl_pt[XMHF_HIC_MAX_SLABS][PAE_PTRS_PER_PDPT][PAE_PTRS_PER_PDT][PAE_PTRS_PER_PT];
 
 #endif //__XMHF_VERIFICATION__
 
 
 // GDT
-__attribute__(( aligned(16) )) u64 __xmhfhic_x86vmx_gdt_start[]  = {
+__attribute__((section(".data"))) __attribute__(( aligned(16) )) u64 __xmhfhic_x86vmx_gdt_start[]  = {
 	0x0000000000000000ULL,	//NULL descriptor
 	0x00cf9a000000ffffULL,	//CPL-0 32-bit code descriptor (CS64)
 	0x00cf92000000ffffULL,	//CPL-0 32-bit data descriptor (DS/SS/ES/FS/GS)
@@ -268,22 +266,22 @@ __attribute__(( aligned(16) )) arch_x86_gdtdesc_t __xmhfhic_x86vmx_gdt  = {
 */
 
 // GDT descriptor
-__attribute__(( aligned(16) )) arch_x86_gdtdesc_t __xmhfhic_x86vmx_gdt  = {
+__attribute__((section(".data"))) __attribute__(( aligned(16) )) arch_x86_gdtdesc_t __xmhfhic_x86vmx_gdt  = {
 	.size=sizeof(__xmhfhic_x86vmx_gdt_start)-1,
 	.base=(u32)&__xmhfhic_x86vmx_gdt_start,
 };
 
 // TSS
-__attribute__(( aligned(4096) )) u8 __xmhfhic_x86vmx_tss[MAX_PLATFORM_CPUS][PAGE_SIZE_4K] = { 0 };
+__attribute__((section(".data"))) __attribute__(( aligned(4096) )) u8 __xmhfhic_x86vmx_tss[MAX_PLATFORM_CPUS][PAGE_SIZE_4K] = { 0 };
 
 
 // TSS stacks
-__attribute__(( aligned(4096) )) u8 __xmhfhic_x86vmx_tss_stack[MAX_PLATFORM_CPUS][PAGE_SIZE_4K];
+__attribute__((section(".data"))) __attribute__(( aligned(4096) )) u8 __xmhfhic_x86vmx_tss_stack[MAX_PLATFORM_CPUS][PAGE_SIZE_4K];
 
 
 
 // IDT
-__attribute__(( aligned(16) )) idtentry_t __xmhfhic_x86vmx_idt_start[EMHF_XCPHANDLER_MAXEXCEPTIONS] ;
+__attribute__((section(".data"))) __attribute__(( aligned(16) )) idtentry_t __xmhfhic_x86vmx_idt_start[EMHF_XCPHANDLER_MAXEXCEPTIONS] ;
 
 /* x86_64
 // IDT descriptor
@@ -294,7 +292,7 @@ __attribute__(( aligned(16) )) arch_x86_idtdesc_t __xmhfhic_x86vmx_idt = {
 */
 
 // IDT descriptor
-__attribute__(( aligned(16) )) arch_x86_idtdesc_t __xmhfhic_x86vmx_idt = {
+__attribute__((section(".data"))) __attribute__(( aligned(16) )) arch_x86_idtdesc_t __xmhfhic_x86vmx_idt = {
 	.size=sizeof(__xmhfhic_x86vmx_idt_start)-1,
 	.base=(u32)&__xmhfhic_x86vmx_idt_start,
 };
@@ -314,13 +312,13 @@ __attribute__(( section(".stack") )) __attribute__(( aligned(4096) )) u8 _rtmxcp
 
 //////
 // runtime exception bootstrap save area
-__attribute__(( aligned(4096) )) u64 _rtmxcp_bssavearea[512] = { 1ULL };
+__attribute__((section(".data"))) __attribute__(( aligned(4096) )) u64 _rtmxcp_bssavearea[512] = { 1ULL };
 
 
 //__attribute__(( aligned(8) )) u64 __xmhfhic_x86vmx_cpuidtable[MAX_X86_APIC_ID];
-__attribute__(( aligned(4) )) u32 __xmhfhic_x86vmx_cpuidtable[MAX_X86_APIC_ID];
+__attribute__((section(".data"))) __attribute__(( aligned(4) )) u32 __xmhfhic_x86vmx_cpuidtable[MAX_X86_APIC_ID];
 
-__attribute__(( aligned(4096) )) xc_cpuarchdata_x86vmx_t __xmhfhic_x86vmx_archdata[MAX_PLATFORM_CPUS];
+__attribute__((section(".data"))) __attribute__(( aligned(4096) )) xc_cpuarchdata_x86vmx_t __xmhfhic_x86vmx_archdata[MAX_PLATFORM_CPUS];
 
 
 

@@ -73,6 +73,7 @@ export pkgincludedir=@pkgincludedir@
 
 # Tool settings; our project is not unique in this aspect
 export CC = @CC@
+export CCERT = @CCERT@
 export AS = @AS@
 export LD = @LD@
 export OBJDUMP = @OBJDUMP@
@@ -87,7 +88,7 @@ export CAT = @CAT@
 
 export CCLIB = @CCLIB@
 export CCLIB := $(realpath $(CCLIB))
-
+export CCERT_LIB := /usr/local/lib/compcert/
 
 #-----build configuration
 
@@ -100,6 +101,7 @@ export XMHF_BUILD_REVISION_COMMIT := $(shell git log --pretty=format:'%H' -n 1)
 export XMHF_BUILD_REVISION := $(XMHF_BUILD_REVISION_BRANCH)-$(XMHF_BUILD_REVISION_COMMIT)
 
 #-----basic flags for compiling and assembling
+
 FLAGS = -O0 -fno-builtin -fno-common -fno-strict-aliasing -iwithprefix include
 FLAGS += -fno-stack-protector
 FLAGS += -Wstrict-prototypes -Wdeclaration-after-statement
@@ -116,53 +118,73 @@ FLAGS += -mno-sse4.1 -mno-sse4.2 -mno-sse4 -mno-avx -mno-aes
 FLAGS += -mno-pclmul -mno-sse4a -mno-3dnow -mno-popcnt
 FLAGS += -nostdinc -pipe
 
+
+CCERT_FLAGS = -O
+CCERT_FLAGS += -fno-fpu
+CCERT_FLAGS += -fbitfields
+CCERT_FLAGS += -fpacked-structs
+CCERT_FLAGS += -fstruct-return
+CCERT_FLAGS += -fno-inline-asm
+
+
 FLAGS += $(ADDL_INCLUDES)
+CCERT_FLAGS += $(ADDL_INCLUDES)
 VFLAGS = $(ADDL_INCLUDES)
 
 #-----generate compiler/assembler defines from configuration options selected
 FLAGS += -D___XMHF_BUILD_VERSION___=\"$(XMHF_BUILD_VERSION)\"
+CCERT_FLAGS += -D___XMHF_BUILD_VERSION___=\"$(XMHF_BUILD_VERSION)\"
 VFLAGS += -D___XMHF_BUILD_VERSION___=\"$(XMHF_BUILD_VERSION)\"
 
 FLAGS += -D___XMHF_BUILD_REVISION___=\"$(XMHF_BUILD_REVISION)\"
+CCERT_FLAGS += -D___XMHF_BUILD_REVISION___=\"$(XMHF_BUILD_REVISION)\"
 VFLAGS += -D___XMHF_BUILD_REVISION___=\"$(XMHF_BUILD_REVISION)\"
 
 # target cpu
 ifeq ($(XMHF_TARGET_CPU), x86)
 	FLAGS += -D__XMHF_TARGET_CPU_X86__
+	CCERT_FLAGS += -D__XMHF_TARGET_CPU_X86__
 	VFLAGS += -D__XMHF_TARGET_CPU_X86__
 endif
 
 # target container
 ifeq ($(XMHF_TARGET_CONTAINER), vmx)
 	FLAGS += -D__XMHF_TARGET_CONTAINER_VMX__
+	CCERT_FLAGS += -D__XMHF_TARGET_CONTAINER_VMX__
 	VFLAGS += -D__XMHF_TARGET_CONTAINER_VMX__
 endif
 
 # target platform
 ifeq ($(XMHF_TARGET_PLATFORM), x86pc)
 	FLAGS += -D__XMHF_TARGET_PLATFORM_X86PC__
+	CCERT_FLAGS += -D__XMHF_TARGET_PLATFORM_X86PC__
 	VFLAGS += -D__XMHF_TARGET_PLATFORM_X86PC__
 endif
 
 # target triad
 ifeq ($(XMHF_TARGET_TRIAD), x86-vmx-x86pc)
 	FLAGS += -D__XMHF_TARGET_TRIAD_X86_VMX_X86PC__
+	CCERT_FLAGS += -D__XMHF_TARGET_TRIAD_X86_VMX_X86PC__
 	VFLAGS += -D__XMHF_TARGET_TRIAD_X86_VMX_X86PC__
 endif
 
 # other options
 ifeq ($(DEBUG_SERIAL), y)
 	FLAGS += -D__DEBUG_SERIAL__
+	CCERT_FLAGS += -D__DEBUG_SERIAL__
 	VFLAGS += -D__DEBUG_SERIAL__
 	FLAGS += -DDEBUG_PORT=$(DEBUG_SERIAL_PORT)
+	CCERT_FLAGS += -DDEBUG_PORT=$(DEBUG_SERIAL_PORT)
 	VFLAGS += -DDEBUG_PORT=$(DEBUG_SERIAL_PORT)
 endif
 ifeq ($(DRT), y)
 	FLAGS += -D__DRT__
+	CCERT_FLAGS += -D__DRT__
 	VFLAGS += -D__DRT__
 endif
 ifeq ($(DMAP), y)
 	FLAGS += -D__DMAP__
+	CCERT_FLAGS += -D__DMAP__
 	VFLAGS += -D__DMAP__
 endif
 
@@ -174,6 +196,7 @@ CFLAGS = $(FLAGS)
 export ASFLAGS
 export CFLAGS
 export VFLAGS
+export CCERT_FLAGS
 
 export XMHF_SLAB_DIRS := $(shell cat $(XMHF_DIR)/SLABS)
 XMHF_SLAB_NAMES := $(notdir $(XMHF_SLAB_DIRS))
@@ -228,7 +251,7 @@ xmhfbin: $(XMHFLIBS_SRC) $(XMHFCORE_SRC)
 	cd $(XMHF_OBJDIR) && cp -f xmhf.lscript xmhf.lscript.c
 	cd $(XMHF_OBJDIR) && $(CC) $(CFLAGS) -D__ASSEMBLY__ -P -E xmhf.lscript.c -o xmhf.lds
 	#cd $(XMHF_OBJDIR) && $(LD) --oformat elf64-x86-64 -T xmhf.lds -o xmhf.exe -L$(CCLIB)/lib/linux -L$(XMHFLIBS_DIR) -lxmhfc -lxmhfdebug -lxmhfc -lclang_rt.builtins-x86_64
-	cd $(XMHF_OBJDIR) && $(LD) --oformat elf32-i386 -T xmhf.lds -o xmhf.exe -L$(CCLIB)/lib/linux -L$(XMHFLIBS_DIR) -lxmhfc -lxmhfdebug -lxmhfc -lclang_rt.full-i386
+	cd $(XMHF_OBJDIR) && $(LD) --oformat elf32-i386 -T xmhf.lds -o xmhf.exe -L$(CCERT_LIB) -L$(CCLIB)/lib/linux -L$(XMHFLIBS_DIR) -lxmhfc -lxmhfdebug -lxmhfc -lclang_rt.full-i386 -lcompcert
 	cd $(XMHF_OBJDIR) && $(OBJCOPY) --output-format=binary xmhf.exe xmhf.bin
 	@echo XMHF link SUCCESS
 	@echo Building XMHF boot loader...

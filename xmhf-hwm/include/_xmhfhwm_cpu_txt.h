@@ -92,100 +92,206 @@
 #define TXTCR_CMD_NO_SECRETS        0x08e8
 #define TXTCR_E2STS                 0x08f0
 
+
+//////
+//////
+//////
+// **NOTE**: Any bitfield union here that is solely used by
+// xmhf-bootloader is not converted into a simple struct with
+// pack/unpack since the bootloader is built using clang which
+// can handle the unions
+//////
+//////
+/////
+
+
+
+
 /*
- * format of ERRORCODE register
- */
-typedef union {
-    uint64_t _raw;
-    struct {
-        uint64_t   type       : 30;    /* external-specific error code */
-        uint64_t   external   : 1;     /* 0=from proc, 1=from external SW */
-        uint64_t   valid      : 1;     /* 1=valid */
-    };
-} txt_errorcode_t;
+* format of ERRORCODE register
+*/
+typedef struct {
+        u32   type       ;//: 30;    //external-specific error code
+        u32   external   ;//: 1;     // 0=from proc, 1=from external SW
+        u32   valid      ;//: 1;     // 1=valid
+} __attribute__((packed)) txt_errorcode_t;
+
+#define pack_txt_errorcode_t(s) \
+    (u64)( \
+    (((u64)(s)->valid               & 0x000000003FFFFFFFULL) << 31) | \
+    (((u64)(s)->external            & 0x0000000000000001ULL) << 1 ) | \
+    (((u64)(s)->type                & 0x0000000000000001ULL) << 0 ) \
+    )
+
+#define unpack_txt_errorcode_t(s, value) \
+    (s)->valid     = (u32)(((u64)value >> 31) & 0x000000003FFFFFFFULL); \
+    (s)->external  = (u32)(((u64)value >> 1 ) & 0x0000000000000001ULL); \
+    (s)->type      = (u32)(((u64)value >> 0 ) & 0x0000000000000001ULL);
+
+
 
 /*
  * format of ESTS register
  */
-typedef union {
-    uint64_t _raw;
-    struct {
-        uint64_t   txt_reset_sts      : 1;
-        uint64_t   reserved1          : 5;
-        uint64_t   txt_wake_error_sts : 1;
-        uint64_t   reserved2          : 1;
-    };
-} txt_ests_t;
+typedef struct {
+        u32   txt_reset_sts      ;//: 1;
+        u32   reserved1          ;//: 5;
+        u32   txt_wake_error_sts ;//: 1;
+        u32   reserved2          ;//: 1;
+} __attribute__((packed)) txt_ests_t;
+
+#define pack_txt_ests_t(s) \
+    (u64)( \
+    (((u64)(s)->reserved2           & 0x0000000000000001ULL) << 7) | \
+    (((u64)(s)->txt_wake_error_sts  & 0x0000000000000001ULL) << 6) | \
+    (((u64)(s)->reserved1           & 0x000000000000001FULL) << 1) | \
+    (((u64)(s)->txt_reset_sts       & 0x0000000000000001ULL) << 0) \
+    )
+
+#define unpack_txt_ests_t(s, value) \
+   (s)->reserved2             = (u32)(((u64)value >> 7) & 0x0000000000000001ULL); \
+   (s)->txt_wake_error_sts    = (u32)(((u64)value >> 6) & 0x0000000000000001ULL); \
+   (s)->reserved1             = (u32)(((u64)value >> 1) & 0x000000000000001FULL); \
+   (s)->txt_reset_sts         = (u32)(((u64)value >> 0) & 0x0000000000000001ULL);
+
 
 /*
  * format of E2STS register
  */
-typedef union {
-    uint64_t _raw;
+/*typedef union {
+    u64 _raw;
     struct {
-        uint64_t   slp_entry_error_sts  : 1;
-        uint64_t   secrets_sts          : 1;
-        uint64_t   block_mem_sts        : 1;
-        uint64_t   reset_sts            : 1;
-    };
+        u32   slp_entry_error_sts  : 1;
+        u32   secrets_sts          : 1;
+        u32   block_mem_sts        : 1;
+        u32   reset_sts            : 1;
+    } __attribute__((packed));
 } txt_e2sts_t;
+*/
+
+typedef struct {
+        u32   slp_entry_error_sts  ;//: 1;
+        u32   secrets_sts          ;//: 1;
+        u32   block_mem_sts        ;//: 1;
+        u32   reset_sts            ;//: 1;
+} __attribute__((packed)) txt_e2sts_t;
+
+#define pack_txt_e2sts_t(s) \
+    (u64)( \
+    (((u64)(s)->reset_sts           & 0x0000000000000001ULL) << 3) | \
+    (((u64)(s)->block_mem_sts       & 0x0000000000000001ULL) << 2) | \
+    (((u64)(s)->secrets_sts         & 0x0000000000000001ULL) << 1) | \
+    (((u64)(s)->slp_entry_error_sts & 0x0000000000000001ULL) << 0) \
+    )
+
+#define unpack_txt_e2sts_t(s, value) \
+    (s)->reset_sts             = (u32)(((u64)value >> 3) & 0x0000000000000001ULL); \
+    (s)->block_mem_sts         = (u32)(((u64)value >> 2) & 0x0000000000000001ULL); \
+    (s)->secrets_sts           = (u32)(((u64)value >> 1) & 0x0000000000000001ULL); \
+    (s)->slp_entry_error_sts   = (u32)(((u64)value >> 0) & 0x0000000000000001ULL);
+
 
 /*
  * format of STS register
  */
-typedef union {
-    uint64_t _raw;
-    struct {
-        uint64_t   senter_done_sts         : 1;
-        uint64_t   sexit_done_sts          : 1;
-        uint64_t   reserved1               : 2;
-        uint64_t   mem_unlock_sts          : 1;
-        uint64_t   reserved2               : 1;
-        uint64_t   mem_config_lock_sts     : 1;
-        uint64_t   private_open_sts        : 1;
-        uint64_t   reserved3               : 3;
-        uint64_t   mem_config_ok_sts       : 1;
-    };
-} txt_sts_t;
+typedef struct {
+    u32   senter_done_sts         ; //: 1;
+    u32   sexit_done_sts          ; //: 1;
+    u32   reserved1               ; //: 2;
+    u32   mem_unlock_sts          ; //: 1;
+    u32   reserved2               ; //: 1;
+    u32   mem_config_lock_sts     ; //: 1;
+    u32   private_open_sts        ; //: 1;
+    u32   reserved3               ; //: 3;
+    u32   mem_config_ok_sts       ; //: 1;
+} __attribute__((packed)) txt_sts_t;
+
+#define pack_txt_sts_t(s) \
+    (u64)( \
+    (((u64)(s)->mem_config_ok_sts & 0x0000000000000001ULL) << 11) | \
+    (((u64)(s)->reserved3 & 0x0000000000000007ULL) << 8) | \
+    (((u64)(s)->private_open_sts & 0x0000000000000001ULL) << 7) | \
+    (((u64)(s)->mem_config_lock_sts & 0x0000000000000001ULL) << 6) | \
+    (((u64)(s)->reserved2 & 0x0000000000000001ULL) << 5) | \
+    (((u64)(s)->mem_unlock_sts & 0x0000000000000001ULL) << 4) | \
+    (((u64)(s)->reserved1 & 0x0000000000000003ULL) << 2) | \
+    (((u64)(s)->sexit_done_sts & 0x0000000000000001ULL) << 1) | \
+    (((u64)(s)->senter_done_sts & 0x0000000000000001ULL) << 0) \
+    )
+
+#define unpack_txt_sts_t(s, value) \
+    (s)->mem_config_ok_sts = (u32)(((u64)value >> 11) & 0x0000000000000001ULL); \
+    (s)->reserved3 = (u32)(((u64)value >> 8) & 0x0000000000000007ULL); \
+    (s)->private_open_sts = (u32)(((u64)value >> 7) & 0x0000000000000001ULL); \
+    (s)->mem_config_lock_sts = (u32)(((u64)value >> 6) & 0x0000000000000001ULL); \
+    (s)->reserved2 = (u32)(((u64)value >> 5) & 0x0000000000000001ULL); \
+    (s)->mem_unlock_sts = (u32)(((u64)value >> 4) & 0x0000000000000001ULL); \
+    (s)->reserved1 = (u32)(((u64)value >> 2) & 0x0000000000000003ULL); \
+    (s)->sexit_done_sts = (u32)(((u64)value >> 1) & 0x0000000000000001ULL); \
+    (s)->senter_done_sts = (u32)(((u64)value >> 0) & 0x0000000000000001ULL);
+
 
 /*
  * format of DIDVID register
  */
-typedef union {
-    uint64_t _raw;
-    struct {
-        uint16_t  vendor_id;
-        uint16_t  device_id;
-        uint16_t  revision_id;
-        uint16_t  reserved;
-    };
-} txt_didvid_t;
+typedef struct {
+        u32  vendor_id; //16
+        u32  device_id; //16
+        u32  revision_id; //16
+        u32  reserved; //16
+} __attribute__((packed)) txt_didvid_t;
+
+#define pack_txt_didvid_t(s) \
+    (u64)( \
+    (((u64)(s)->reserved    & 0x000000000000FFFFULL) << 48) | \
+    (((u64)(s)->revision_id & 0x000000000000FFFFULL) << 32) | \
+    (((u64)(s)->device_id   & 0x000000000000FFFFULL) << 16) | \
+    (((u64)(s)->vendor_id   & 0x000000000000FFFFULL) << 0 ) \
+    )
+
+#define unpack_txt_didvid_t(s, value) \
+    (s)->reserved       = (u32)(((u64)value >> 48) & 0x000000000000FFFFULL); \
+    (s)->revision_id    = (u32)(((u64)value >> 32) & 0x000000000000FFFFULL); \
+    (s)->device_id      = (u32)(((u64)value >> 16) & 0x000000000000FFFFULL); \
+    (s)->vendor_id      = (u32)(((u64)value >> 0 ) & 0x000000000000FFFFULL);
+
+
 
 /*
  * format of VER.FSBIF and VER.EMIF registers
  */
-typedef union {
-    uint64_t _raw;
-    struct {
-        uint64_t  reserved       : 31;
-        uint64_t  prod_fused     : 1;
-    };
-} txt_ver_fsbif_emif_t;
+typedef struct {
+    u32  reserved       ;//: 31;
+    u32  prod_fused     ;//: 1;
+} __attribute__((packed)) txt_ver_fsbif_emif_t;
+
+#define pack_txt_ver_fsbif_emif_t(s) \
+    (u64)( \
+    (((u64)(s)->prod_fused  & 0x0000000000000001ULL) << 31) | \
+    (((u64)(s)->reserved    & 0x000000007FFFFFFFULL) << 0 ) \
+    )
+
+#define unpack_txt_ver_fsbif_emif_t(s, value) \
+    (s)->prod_fused     = (u32)(((u64)value >> 31) & 0x0000000000000001ULL); \
+    (s)->reserved       = (u32)(((u64)value >> 0 ) & 0x000000007FFFFFFFULL);
+
+
 
 /*
  * format of DPR register
  */
-typedef union {
-    uint64_t _raw;
+/*typedef union {
+    u64 _raw;
     struct {
-        uint64_t  lock           : 1;
-        uint64_t  reserved1      : 3;
-        uint64_t  size           : 8;
-        uint64_t  reserved2      : 8;
-        uint64_t  top            : 12;
-        uint64_t  reserved3      : 32;
-    };
+        u32  lock           : 1;
+        u32  reserved1      : 3;
+        u32  size           : 8;
+        u32  reserved2      : 8;
+        u32  top            : 12;
+        u32  reserved3      : 32;
+    } __attribute__((packed));
 } txt_dpr_t;
+*/
 
 /*
  * RLP JOIN structure for GETSEC[WAKEUP] and MLE_JOIN register
@@ -220,32 +326,81 @@ typedef struct {
 /*
  * for SW errors (ERRORCODE.external = 1)
  */
-typedef union {
+/*typedef union {
     uint32_t _raw;
     struct {
-        uint32_t  err1    : 15;     /* specific to src */
-        uint32_t  src     : 1;      /* 0=ACM, 1=other */
-        uint32_t  err2    : 14;     /* specific to src */
-    };
+        uint32_t  err1    : 15;     // specific to src
+        uint32_t  src     : 1;      // 0=ACM, 1=other
+        uint32_t  err2    : 14;     // specific to src
+    } __attribute__((packed));
 } txt_errorcode_sw_t;
+*/
+
+typedef struct {
+        uint32_t  err1    ;//: 15;     //pecific to src
+        uint32_t  src     ;//: 1;      // 0=ACM, 1=other
+        uint32_t  err2    ;//: 14;     // specific to src
+} __attribute__((packed)) txt_errorcode_sw_t;
+
+
+#define pack_txt_errorcode_sw_t(s) \
+    (u32)( \
+    (((u32)(s)->err2    & 0x00003FFFUL) << 16) | \
+    (((u32)(s)->src     & 0x00000001UL) << 15) | \
+    (((u32)(s)->err1    & 0x00007FFFUL) << 0 ) \
+    )
+
+#define unpack_txt_errorcode_sw_t(s, value) \
+    (s)->err2    = (u32)(((u32)value >> 16) & 0x00003FFFUL); \
+    (s)->src     = (u32)(((u32)value >> 15) & 0x00000001UL); \
+    (s)->err1    = (u32)(((u32)value >> 0 ) & 0x00007FFFUL);
+
+
 
 /*
  * ACM errors (txt_errorcode_sw_t.src=0), format of err field
  */
-typedef union {
+/*typedef union {
     uint32_t _raw;
     struct {
-        uint32_t acm_type  : 4;  /* 0000=BIOS ACM, 0001=SINIT, */
-                                 /* 0010-1111=reserved */
+        uint32_t acm_type  : 4;  // 0000=BIOS ACM, 0001=SINIT,
+                                 // 0010-1111=reserved
         uint32_t progress  : 6;
         uint32_t error     : 4;
         uint32_t reserved  : 1;
-        uint32_t src       : 1;  /* above value */
-        uint32_t error2    : 14; /* sub-error */
-    };
+        uint32_t src       : 1;  // above value
+        uint32_t error2    : 14; // sub-error
+    } __attribute__((packed));
 } acmod_error_t;
+*/
 
+typedef struct {
+        uint32_t acm_type  ;//: 4;  // 0000=BIOS ACM, 0001=SINIT,
+                                 // 0010-1111=reserved
+        uint32_t progress  ;//: 6;
+        uint32_t error     ;//: 4;
+        uint32_t reserved  ;//: 1;
+        uint32_t src       ;//: 1;  // above value
+        uint32_t error2    ;//: 14; // sub-error
+} __attribute__((packed)) acmod_error_t;
 
+#define pack_acmod_error_t(s) \
+    (u32)( \
+    (((u32)(s)->error2      & 0x00000001UL) << 16) | \
+    (((u32)(s)->src         & 0x00000001UL) << 15) | \
+    (((u32)(s)->reserved    & 0x00000001UL) << 14) | \
+    (((u32)(s)->error       & 0x0000000FUL) << 10) | \
+    (((u32)(s)->progress    & 0x0000003FUL) << 4 ) | \
+    (((u32)(s)->acm_type    & 0x0000000FUL) << 0 ) \
+    )
+
+#define unpack_acmod_error_t(s, value) \
+    (s)->error2     = (u32)(((u32)value >> 16) & 0x00000001UL); \
+    (s)->src        = (u32)(((u32)value >> 15) & 0x00000001UL); \
+    (s)->reserved   = (u32)(((u32)value >> 14) & 0x00000001UL); \
+    (s)->error      = (u32)(((u32)value >> 10) & 0x0000000FUL); \
+    (s)->progress   = (u32)(((u32)value >> 4 ) & 0x0000003FUL); \
+    (s)->acm_type   = (u32)(((u32)value >> 0 ) & 0x0000000FUL);
 
 
 
@@ -261,15 +416,22 @@ typedef union {
 /*
  * SINIT/MLE capabilities
  */
-typedef union {
+/*typedef union {
     uint32_t  _raw;
     struct {
         uint32_t  rlp_wake_getsec     : 1;
         uint32_t  rlp_wake_monitor    : 1;
         uint32_t  ecx_pgtbl           : 1;
         uint32_t  reserved            : 29;
-    };
+    } __attribute__((packed));
 } txt_caps_t;
+*/
+
+typedef uint32_t txt_caps_t;
+
+#define TXT_CAPS_T_RLP_WAKE_GETSEC      (1UL << 0)
+#define TXT_CAPS_T_RLP_WAKE_MONITOR     (1UL << 1)
+#define TXT_CAPS_T_ECX_PGTBL            (1UL << 2)
 
 
 /* taken from tboot-20101005/include/uuid.h */
@@ -376,7 +538,7 @@ typedef enum {
  * GETSEC[] leaf functions
  */
 
-typedef union {
+/*typedef union {
     uint32_t _raw;
     struct {
         uint32_t chipset_present  : 1;
@@ -390,8 +552,51 @@ typedef union {
         uint32_t wakeup	          : 1;
         uint32_t undefined9	  : 22;
         uint32_t extended_leafs   : 1;
-    };
+    } __attribute__((packed));
 } capabilities_t;
+*/
+
+typedef struct {
+        uint32_t chipset_present    ;//: 1;
+        uint32_t undefined1	        ;//: 1;
+        uint32_t enteraccs	        ;//: 1;
+        uint32_t exitac	            ;//: 1;
+        uint32_t senter	            ;//: 1;
+        uint32_t sexit	            ;//: 1;
+        uint32_t parameters	        ;//: 1;
+        uint32_t smctrl	            ;//: 1;
+        uint32_t wakeup	            ;//: 1;
+        uint32_t undefined9	        ;//: 22;
+        uint32_t extended_leafs     ;//: 1;
+} __attribute__((packed)) capabilities_t;
+
+#define pack_capabilities_t(s) \
+    (u32)( \
+    (((u32)(s)->extended_leafs      & 0x00000001UL) << 31) | \
+    (((u32)(s)->undefined9          & 0x003FFFFFUL) << 9 ) | \
+    (((u32)(s)->wakeup              & 0x00000001UL) << 8 ) | \
+    (((u32)(s)->smctrl              & 0x00000001UL) << 7 ) | \
+    (((u32)(s)->parameters          & 0x00000001UL) << 6 ) | \
+    (((u32)(s)->sexit               & 0x00000001UL) << 5 ) | \
+    (((u32)(s)->senter              & 0x00000001UL) << 4 ) | \
+    (((u32)(s)->exitac              & 0x00000001UL) << 3 ) | \
+    (((u32)(s)->enteraccs           & 0x00000001UL) << 2 ) | \
+    (((u32)(s)->undefined1          & 0x00000001UL) << 1 ) | \
+    (((u32)(s)->chipset_present     & 0x00000001UL) << 0 ) \
+    )
+
+#define unpack_capabilities_t(s, value) \
+    (s)->extended_leafs      = (u32)(((u32)value >> 31) & 0x00000001UL); \
+    (s)->undefined9          = (u32)(((u32)value >> 9 ) & 0x003FFFFFUL); \
+    (s)->wakeup              = (u32)(((u32)value >> 8 ) & 0x00000001UL); \
+    (s)->smctrl              = (u32)(((u32)value >> 7 ) & 0x00000001UL); \
+    (s)->parameters          = (u32)(((u32)value >> 6 ) & 0x00000001UL); \
+    (s)->sexit               = (u32)(((u32)value >> 5 ) & 0x00000001UL); \
+    (s)->senter              = (u32)(((u32)value >> 4 ) & 0x00000001UL); \
+    (s)->exitac              = (u32)(((u32)value >> 3 ) & 0x00000001UL); \
+    (s)->enteraccs           = (u32)(((u32)value >> 2 ) & 0x00000001UL); \
+    (s)->undefined1          = (u32)(((u32)value >> 1 ) & 0x00000001UL); \
+    (s)->chipset_present     = (u32)(((u32)value >> 0 ) & 0x00000001UL);
 
 
 /* helper fn. for getsec_capabilities */

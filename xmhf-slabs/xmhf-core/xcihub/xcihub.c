@@ -67,7 +67,7 @@ void slab_main(slab_params_t *sp){
     slab_params_t spl;
 
 	_XDPRINTF_("%s[%u]: Got control: ESP=%08x\n",
-                __FUNCTION__, (u16)sp->cpuid, read_esp());
+                __func__, (u16)sp->cpuid, read_esp());
 
     spl.cpuid = sp->cpuid;
     spl.src_slabid = XMHF_HYP_SLAB_XCIHUB;
@@ -88,7 +88,7 @@ void slab_main(slab_params_t *sp){
                 u32 guest_rip;
                 u32 info_vmexit_instruction_length;
 
-                _XDPRINTF_("%s[%u]: VMX_VMEXIT_VMCALL\n", __FUNCTION__, (u16)sp->cpuid);
+                _XDPRINTF_("%s[%u]: VMX_VMEXIT_VMCALL\n", __func__, (u16)sp->cpuid);
 
                 //XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMREAD, VMCS_INFO_VMEXIT_INSTRUCTION_LENGTH, &info_vmexit_instruction_length);
                 spl.in_out_params[2] = VMCS_INFO_VMEXIT_INSTRUCTION_LENGTH;
@@ -107,7 +107,7 @@ void slab_main(slab_params_t *sp){
                 spl.in_out_params[4] = guest_rip;
                 XMHF_SLAB_UAPI(&spl);
 
-                _XDPRINTF_("%s[%u]: adjusted guest_rip=%08x\n", __FUNCTION__, (u16)sp->cpuid, guest_rip);
+                _XDPRINTF_("%s[%u]: adjusted guest_rip=%08x\n", __func__, (u16)sp->cpuid, guest_rip);
             }
         }
         break;
@@ -146,7 +146,7 @@ void slab_main(slab_params_t *sp){
                 x86regs_t r;
 
                 _XDPRINTF_("%s[%u]: VMX_VMEXIT_CPUID\n",
-                    __FUNCTION__, (u16)sp->cpuid);
+                    __func__, (u16)sp->cpuid);
 
                 //XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSREAD, NULL, &r);
                 spl.in_out_params[1] = XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSREAD;
@@ -187,7 +187,7 @@ void slab_main(slab_params_t *sp){
                 XMHF_SLAB_UAPI(&spl);
 
                 _XDPRINTF_("%s[%u]: adjusted guest_rip=%08x\n",
-                    __FUNCTION__, (u16)sp->cpuid, guest_rip);
+                    __func__, (u16)sp->cpuid, guest_rip);
             }
         }
         break;
@@ -203,7 +203,7 @@ void slab_main(slab_params_t *sp){
                 u32 info_vmexit_instruction_length;
                 x86regs_t r;
 
-                _XDPRINTF_("%s[%u]: VMX_VMEXIT_WRMSR\n", __FUNCTION__, (u16)sp->cpuid);
+                _XDPRINTF_("%s[%u]: VMX_VMEXIT_WRMSR\n", __func__, (u16)sp->cpuid);
 
                 //XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSREAD, NULL, &r);
                 spl.in_out_params[1] = XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSREAD;
@@ -261,7 +261,7 @@ void slab_main(slab_params_t *sp){
                 XMHF_SLAB_UAPI(&spl);
 
                 _XDPRINTF_("%s[%u]: adjusted guest_rip=%08x\n",
-                    __FUNCTION__, (u16)sp->cpuid, guest_rip);
+                    __func__, (u16)sp->cpuid, guest_rip);
 
             }
         }
@@ -277,7 +277,7 @@ void slab_main(slab_params_t *sp){
                 u32 info_vmexit_instruction_length;
                 x86regs_t r;
 
-                _XDPRINTF_("%s[%u]: VMX_VMEXIT_RDMSR\n", __FUNCTION__, (u16)sp->cpuid);
+                _XDPRINTF_("%s[%u]: VMX_VMEXIT_RDMSR\n", __func__, (u16)sp->cpuid);
 
                 //XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSREAD, NULL, &r);
                 spl.in_out_params[1] = XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSREAD;
@@ -344,7 +344,7 @@ void slab_main(slab_params_t *sp){
                 XMHF_SLAB_UAPI(&spl);
 
                 _XDPRINTF_("%s[%u]: adjusted guest_rip=%08x\n",
-                    __FUNCTION__, (u16)sp->cpuid, guest_rip);
+                    __func__, (u16)sp->cpuid, guest_rip);
             }
 
         }
@@ -360,7 +360,7 @@ void slab_main(slab_params_t *sp){
 
         default:
             _XDPRINTF_("%s[%u]: unhandled intercept %x. Halting!\n",
-                    __FUNCTION__, (u16)sp->cpuid, info_vmexit_reason);
+                    __func__, (u16)sp->cpuid, info_vmexit_reason);
 
             HALT();
     }
@@ -380,7 +380,7 @@ void slab_interface(slab_input_params_t *iparams, u64 iparams_size, slab_output_
     xc_hypappcb_outputparams_t hcb_oparams;
 
 	_XDPRINTF_("%s[%u]: Got control: RSP=%016llx\n",
-                __FUNCTION__, (u32)cpuindex, read_rsp());
+                __func__, (u32)cpuindex, read_rsp());
 
     XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMREAD, VMCS_INFO_VMEXIT_REASON, &info_vmexit_reason);
 
@@ -393,14 +393,14 @@ void slab_interface(slab_input_params_t *iparams, u64 iparams_size, slab_output_
                 u64 guest_rip;
                 u64 info_vmexit_instruction_length;
 
-                _XDPRINTF_("%s[%u]: VMX_VMEXIT_VMCALL\n", __FUNCTION__, (u32)cpuindex);
+                _XDPRINTF_("%s[%u]: VMX_VMEXIT_VMCALL\n", __func__, (u32)cpuindex);
 
                 XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMREAD, VMCS_INFO_VMEXIT_INSTRUCTION_LENGTH, &info_vmexit_instruction_length);
                 XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMREAD, VMCS_GUEST_RIP, &guest_rip);
                 guest_rip+=info_vmexit_instruction_length;
                 XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMWRITE, VMCS_GUEST_RIP, guest_rip);
 
-                _XDPRINTF_("%s[%u]: adjusted guest_rip=%016llx\n", __FUNCTION__, (u32)cpuindex, guest_rip);
+                _XDPRINTF_("%s[%u]: adjusted guest_rip=%016llx\n", __func__, (u32)cpuindex, guest_rip);
             }
         }
         break;
@@ -439,7 +439,7 @@ void slab_interface(slab_input_params_t *iparams, u64 iparams_size, slab_output_
                 x86regs64_t r;
 
                 _XDPRINTF_("%s[%u]: VMX_VMEXIT_CPUID\n",
-                    __FUNCTION__, (u32)cpuindex);
+                    __func__, (u32)cpuindex);
 
                 XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSREAD, NULL, &r);
 
@@ -459,7 +459,7 @@ void slab_interface(slab_input_params_t *iparams, u64 iparams_size, slab_output_
                 XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMWRITE, VMCS_GUEST_RIP, guest_rip);
 
                 _XDPRINTF_("%s[%u]: adjusted guest_rip=%016llx\n",
-                    __FUNCTION__, (u32)cpuindex, guest_rip);
+                    __func__, (u32)cpuindex, guest_rip);
             }
         }
         break;
@@ -473,7 +473,7 @@ void slab_interface(slab_input_params_t *iparams, u64 iparams_size, slab_output_
                 u64 info_vmexit_instruction_length;
                 x86regs64_t r;
 
-                _XDPRINTF_("%s[%u]: VMX_VMEXIT_WRMSR\n", __FUNCTION__, (u32)cpuindex);
+                _XDPRINTF_("%s[%u]: VMX_VMEXIT_WRMSR\n", __func__, (u32)cpuindex);
 
                 XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSREAD, NULL, &r);
 
@@ -498,7 +498,7 @@ void slab_interface(slab_input_params_t *iparams, u64 iparams_size, slab_output_
                 XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMWRITE, VMCS_GUEST_RIP, guest_rip);
 
                 _XDPRINTF_("%s[%u]: adjusted guest_rip=%016llx\n",
-                    __FUNCTION__, (u32)cpuindex, guest_rip);
+                    __func__, (u32)cpuindex, guest_rip);
 
             }
         }
@@ -511,7 +511,7 @@ void slab_interface(slab_input_params_t *iparams, u64 iparams_size, slab_output_
                 u64 info_vmexit_instruction_length;
                 x86regs64_t r;
 
-                _XDPRINTF_("%s[%u]: VMX_VMEXIT_RDMSR\n", __FUNCTION__, (u32)cpuindex);
+                _XDPRINTF_("%s[%u]: VMX_VMEXIT_RDMSR\n", __func__, (u32)cpuindex);
 
                 XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSREAD, NULL, &r);
 
@@ -546,7 +546,7 @@ void slab_interface(slab_input_params_t *iparams, u64 iparams_size, slab_output_
                 XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMWRITE, VMCS_GUEST_RIP, guest_rip);
 
                 _XDPRINTF_("%s[%u]: adjusted guest_rip=%016llx\n",
-                    __FUNCTION__, (u32)cpuindex, guest_rip);
+                    __func__, (u32)cpuindex, guest_rip);
             }
 
         }
@@ -567,7 +567,7 @@ void slab_interface(slab_input_params_t *iparams, u64 iparams_size, slab_output_
 
         default:
             _XDPRINTF_("%s[%u]: unhandled intercept %x. Halting!\n",
-                    __FUNCTION__, (u32)cpuindex, info_vmexit_reason);
+                    __func__, (u32)cpuindex, info_vmexit_reason);
 
             HALT();
     }

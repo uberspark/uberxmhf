@@ -61,13 +61,13 @@ SECTIONS
 	. = 0x1E00000;
 	.multiboot_header : {
 		*(.multiboot_header)
-		. = ALIGN(4096);    
+		. = ALIGN(4096);
 	} >all=0x0000
 
 	.text : {
 		*(.text)
-		. = ALIGN(4096);    
-	} >all=0x9090 
+		. = ALIGN(4096);
+	} >all=0x9090
 
 	.data : {
 		*(.data)
@@ -75,9 +75,9 @@ SECTIONS
 		*(.rodata.str1.1)
 		*(.eh_frame)
 		*(.bss)
-		. = ALIGN(4096);    
-	} >all=0x0000 
-  
+		. = ALIGN(4096);
+	} >all=0x0000
+
 	.stack : {
 		*(.stack)
 	} >all=0x0000
