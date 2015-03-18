@@ -158,7 +158,7 @@ typedef struct {
 /*
  * format of E2STS register
  */
-typedef union {
+/*typedef union {
     u64 _raw;
     struct {
         u32   slp_entry_error_sts  : 1;
@@ -167,7 +167,28 @@ typedef union {
         u32   reset_sts            : 1;
     } __attribute__((packed));
 } txt_e2sts_t;
+*/
 
+typedef struct {
+        u32   slp_entry_error_sts  ;//: 1;
+        u32   secrets_sts          ;//: 1;
+        u32   block_mem_sts        ;//: 1;
+        u32   reset_sts            ;//: 1;
+} __attribute__((packed)) txt_e2sts_t;
+
+#define pack_txt_e2sts_t(s) \
+    (u64)( \
+    (((u64)(s)->reset_sts           & 0x0000000000000001ULL) << 3) | \
+    (((u64)(s)->block_mem_sts       & 0x0000000000000001ULL) << 2) | \
+    (((u64)(s)->secrets_sts         & 0x0000000000000001ULL) << 1) | \
+    (((u64)(s)->slp_entry_error_sts & 0x0000000000000001ULL) << 0) \
+    )
+
+#define unpack_txt_e2sts_t(s, value) \
+    (s)->reset_sts             = (u32)(((u64)value >> 3) & 0x0000000000000001ULL); \
+    (s)->block_mem_sts         = (u32)(((u64)value >> 2) & 0x0000000000000001ULL); \
+    (s)->secrets_sts           = (u32)(((u64)value >> 1) & 0x0000000000000001ULL); \
+    (s)->slp_entry_error_sts   = (u32)(((u64)value >> 0) & 0x0000000000000001ULL);
 
 
 /*
@@ -259,7 +280,7 @@ typedef struct {
 /*
  * format of DPR register
  */
-typedef union {
+/*typedef union {
     u64 _raw;
     struct {
         u32  lock           : 1;
@@ -270,6 +291,7 @@ typedef union {
         u32  reserved3      : 32;
     } __attribute__((packed));
 } txt_dpr_t;
+*/
 
 /*
  * RLP JOIN structure for GETSEC[WAKEUP] and MLE_JOIN register
@@ -304,32 +326,81 @@ typedef struct {
 /*
  * for SW errors (ERRORCODE.external = 1)
  */
-typedef union {
+/*typedef union {
     uint32_t _raw;
     struct {
-        uint32_t  err1    : 15;     /* specific to src */
-        uint32_t  src     : 1;      /* 0=ACM, 1=other */
-        uint32_t  err2    : 14;     /* specific to src */
+        uint32_t  err1    : 15;     // specific to src
+        uint32_t  src     : 1;      // 0=ACM, 1=other
+        uint32_t  err2    : 14;     // specific to src
     } __attribute__((packed));
 } txt_errorcode_sw_t;
+*/
+
+typedef struct {
+        uint32_t  err1    ;//: 15;     //pecific to src
+        uint32_t  src     ;//: 1;      // 0=ACM, 1=other
+        uint32_t  err2    ;//: 14;     // specific to src
+} __attribute__((packed)) txt_errorcode_sw_t;
+
+
+#define pack_txt_errorcode_sw_t(s) \
+    (u32)( \
+    (((u32)(s)->err2    & 0x00003FFFUL) << 16) | \
+    (((u32)(s)->src     & 0x00000001UL) << 15) | \
+    (((u32)(s)->err1    & 0x00007FFFUL) << 0 ) \
+    )
+
+#define unpack_txt_errorcode_sw_t(s, value) \
+    (s)->err2    = (u32)(((u32)value >> 16) & 0x00003FFFUL); \
+    (s)->src     = (u32)(((u32)value >> 15) & 0x00000001UL); \
+    (s)->err1    = (u32)(((u32)value >> 0 ) & 0x00007FFFUL);
+
+
 
 /*
  * ACM errors (txt_errorcode_sw_t.src=0), format of err field
  */
-typedef union {
+/*typedef union {
     uint32_t _raw;
     struct {
-        uint32_t acm_type  : 4;  /* 0000=BIOS ACM, 0001=SINIT, */
-                                 /* 0010-1111=reserved */
+        uint32_t acm_type  : 4;  // 0000=BIOS ACM, 0001=SINIT,
+                                 // 0010-1111=reserved
         uint32_t progress  : 6;
         uint32_t error     : 4;
         uint32_t reserved  : 1;
-        uint32_t src       : 1;  /* above value */
-        uint32_t error2    : 14; /* sub-error */
+        uint32_t src       : 1;  // above value
+        uint32_t error2    : 14; // sub-error
     } __attribute__((packed));
 } acmod_error_t;
+*/
 
+typedef struct {
+        uint32_t acm_type  ;//: 4;  // 0000=BIOS ACM, 0001=SINIT,
+                                 // 0010-1111=reserved
+        uint32_t progress  ;//: 6;
+        uint32_t error     ;//: 4;
+        uint32_t reserved  ;//: 1;
+        uint32_t src       ;//: 1;  // above value
+        uint32_t error2    ;//: 14; // sub-error
+} __attribute__((packed)) acmod_error_t;
 
+#define pack_acmod_error_t(s) \
+    (u32)( \
+    (((u32)(s)->error2      & 0x00000001UL) << 16) | \
+    (((u32)(s)->src         & 0x00000001UL) << 15) | \
+    (((u32)(s)->reserved    & 0x00000001UL) << 14) | \
+    (((u32)(s)->error       & 0x0000000FUL) << 10) | \
+    (((u32)(s)->progress    & 0x0000003FUL) << 4 ) | \
+    (((u32)(s)->acm_type    & 0x0000000FUL) << 0 ) \
+    )
+
+#define unpack_acmod_error_t(s, value) \
+    (s)->error2     = (u32)(((u32)value >> 16) & 0x00000001UL); \
+    (s)->src        = (u32)(((u32)value >> 15) & 0x00000001UL); \
+    (s)->reserved   = (u32)(((u32)value >> 14) & 0x00000001UL); \
+    (s)->error      = (u32)(((u32)value >> 10) & 0x0000000FUL); \
+    (s)->progress   = (u32)(((u32)value >> 4 ) & 0x0000003FUL); \
+    (s)->acm_type   = (u32)(((u32)value >> 0 ) & 0x0000000FUL);
 
 
 
