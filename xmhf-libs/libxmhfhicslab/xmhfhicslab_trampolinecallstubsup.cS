@@ -59,23 +59,18 @@
 //corresponding error code
 __attribute__((naked)) u32 __slab_calltrampolinenew_h2g(void){
 
-    asm volatile (
-            "vmlaunch\r\n"
+    asm volatile ("vmlaunch\r\n");
+    asm volatile ("jc __vmx_start_hvm_failinvalid\r\n");
+    asm volatile ("jnz	__vmx_start_hvm_undefinedimplementation	\r\n");
+    asm volatile ("movl $0x1, %eax\r\n");		//VMLAUNCH error, XXX: need to read from VM instruction error field in VMCS
+    asm volatile ("jmp __vmx_start_continue \r\n");
+    asm volatile ("__vmx_start_hvm_undefinedimplementation:\r\n");
+    asm volatile ("movl $0x2, %eax\r\n");		//violation of VMLAUNCH specs., handle it anyways
+    asm volatile ("jmp __vmx_start_continue \r\n");
+    asm volatile ("__vmx_start_hvm_failinvalid:\r\n");
+    asm volatile ("xorl %eax, %eax\r\n");		//return 0 as we have no error code available
+    asm volatile ("__vmx_start_continue:\r\n");
 
-            "jc __vmx_start_hvm_failinvalid\r\n"
-            "jnz	__vmx_start_hvm_undefinedimplementation	\r\n"
-            "movl $0x1, %%eax\r\n"		//VMLAUNCH error, XXX: need to read from VM instruction error field in VMCS
-            "jmp __vmx_start_continue \r\n"
-            "__vmx_start_hvm_undefinedimplementation:\r\n"
-            "movl $0x2, %%eax\r\n"		//violation of VMLAUNCH specs., handle it anyways
-            "jmp __vmx_start_continue \r\n"
-            "__vmx_start_hvm_failinvalid:\r\n"
-            "xorl %%eax, %%eax\r\n"		//return 0 as we have no error code available
-            "__vmx_start_continue:\r\n"
-        :
-        :
-        :
-    );
 }
 
 
