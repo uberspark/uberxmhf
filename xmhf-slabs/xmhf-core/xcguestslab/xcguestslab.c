@@ -70,7 +70,7 @@ static void xcguestslab_dotest_vmcall(void){
         u32 iterations=8192;
         u32 i;
 
-        _XDPRINTF_("%s: proceeding with test...\n", __FUNCTION__);
+        _XDPRINTF_("%s: proceeding with test...\n", __func__);
 
 
 
@@ -89,7 +89,7 @@ static void xcguestslab_dotest_vmcall(void){
 
         tscavg = tscavg / iterations;
 
-        _XDPRINTF_("%s: clock cycles for test = %u\n", __FUNCTION__, (u32)tscavg);
+        _XDPRINTF_("%s: clock cycles for test = %u\n", __func__, (u32)tscavg);
 
     }
 
@@ -104,12 +104,12 @@ static void xcguestslab_do_xmhfhw_cpu_cpuid(void){
 
 
     _XDPRINTF_("%s: Preparing to execute CPUID...\n",
-                __FUNCTION__);
+                __func__);
 
     xmhfhw_cpu_cpuid(0, &dummy, &vendor_dword1, &vendor_dword3, &vendor_dword2);
 
     _XDPRINTF_("%s: CPUID(0) %x, %x, %x\n",
-                __FUNCTION__, vendor_dword1, vendor_dword2, vendor_dword3);
+                __func__, vendor_dword1, vendor_dword2, vendor_dword3);
 }
 
 
@@ -119,11 +119,11 @@ static void xcguestslab_do_msrtest(void){
 
     wrmsr64(IA32_SYSENTER_CS_MSR, 0xAA);
 
-    _XDPRINTF_("%s: wrote SYSENTER_CS_MSR.\n", __FUNCTION__);
+    _XDPRINTF_("%s: wrote SYSENTER_CS_MSR.\n", __func__);
 
     sysenter_cs_msr = rdmsr64(IA32_SYSENTER_CS_MSR);
 
-    _XDPRINTF_("%s: read SYSENTER_CS_MSR=%016llx...\n", __FUNCTION__, sysenter_cs_msr);
+    _XDPRINTF_("%s: read SYSENTER_CS_MSR=%016llx...\n", __func__, sysenter_cs_msr);
 
 }
 
@@ -135,7 +135,7 @@ static void xcguestslab_do_msrtest(void){
 static void xcguestslab_do_testxhssteptrace(void){
     /*u64 gpa = &_xcguestslab_do_testxhssteptrace_func;
 
-    _XDPRINTF_("%s: Going to register function at %016llx\n", __FUNCTION__, gpa);
+    _XDPRINTF_("%s: Going to register function at %016llx\n", __func__, gpa);
 
     asm volatile(
         "movl %0, %%eax \r\n"
@@ -149,13 +149,13 @@ static void xcguestslab_do_testxhssteptrace(void){
         : "eax", "ebx", "edx"
     );
 
-    _XDPRINTF_("%s: Registered function\n", __FUNCTION__);
+    _XDPRINTF_("%s: Registered function\n", __func__);
 */
-    _XDPRINTF_("%s: Proceeding to call function...\n", __FUNCTION__);
+    _XDPRINTF_("%s: Proceeding to call function...\n", __func__);
 
     _xcguestslab_do_testxhssteptrace_func();
 
-    _XDPRINTF_("%s: Came back from calling function.\n", __FUNCTION__);
+    _XDPRINTF_("%s: Came back from calling function.\n", __func__);
 
 }
 
@@ -166,7 +166,7 @@ static void xcguestslab_do_testxhssteptrace(void){
 
 
 void slab_main(slab_params_t *sp){
-    _XDPRINTF_("%s: Hello world from Guest slab!\n", __FUNCTION__);
+    _XDPRINTF_("%s: Hello world from Guest slab!\n", __func__);
 
     //xcguestslab_do_vmcall();
 
@@ -182,6 +182,6 @@ void slab_main(slab_params_t *sp){
 
     xcguestslab_do_testxhsyscalllog();
 
-    _XDPRINTF_("%s: Guest Slab Halting\n", __FUNCTION__);
+    _XDPRINTF_("%s: Guest Slab Halting\n", __func__);
     HALT();
 }

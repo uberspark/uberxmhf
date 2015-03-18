@@ -20,10 +20,9 @@ $(THE_ARCHIVE): $(OBJECTS)
 	cd $(LIBXMHFDEBUG_OBJECTS_DIR) && $(AR) -rcs $(THE_ARCHIVE) $(OBJECTS)
 
 %.o: %.c
-	#mkdir -p "$(@D)"
 	mkdir -p $(LIBXMHFDEBUG_OBJECTS_DIR)
 	@echo Building "$@" from "$<"
-	$(CC) -c $(CFLAGS) -o $(LIBXMHFDEBUG_OBJECTS_DIR)/$@ $<
+	$(CCERT) -c $(CCERT_FLAGS) -o $(LIBXMHFDEBUG_OBJECTS_DIR)/$@ $<
 
 .PHONY: clean
 clean:

@@ -196,10 +196,10 @@ static acm_chipset_id_list_t *get_acmod_chipset_list(acm_hdr_t* hdr)
 
 void print_txt_caps(const char *prefix, txt_caps_t caps)
 {
-    _XDPRINTF_("%scapabilities: 0x%08x\n", prefix, caps._raw);
-    _XDPRINTF_("%s    rlp_wake_getsec: %d\n", prefix, caps.rlp_wake_getsec);
-    _XDPRINTF_("%s    rlp_wake_monitor: %d\n", prefix, caps.rlp_wake_monitor);
-    _XDPRINTF_("%s    ecx_pgtbl: %d\n", prefix, caps.ecx_pgtbl);
+    _XDPRINTF_("%scapabilities: 0x%08x\n", prefix, caps);
+    _XDPRINTF_("%s    rlp_wake_getsec: %d\n", prefix, caps & TXT_CAPS_T_RLP_WAKE_GETSEC);
+    _XDPRINTF_("%s    rlp_wake_monitor: %d\n", prefix, caps & TXT_CAPS_T_RLP_WAKE_MONITOR);
+    _XDPRINTF_("%s    ecx_pgtbl: %d\n", prefix, caps & TXT_CAPS_T_ECX_PGTBL);
 }
 
 /* UUID helpers from tboot-20101005/include/uuid.h */
@@ -237,9 +237,9 @@ static void print_acm_hdr(acm_hdr_t *hdr, const char *mod_name)
     _XDPRINTF_("\t length: 0x%x (%u)\n", hdr->header_len, hdr->header_len);
     _XDPRINTF_("\t version: %u\n", hdr->header_ver);
     _XDPRINTF_("\t chipset_id: 0x%x\n", (uint32_t)hdr->chipset_id);
-    _XDPRINTF_("\t flags: 0x%x\n", (uint32_t)hdr->flags._raw);
-    _XDPRINTF_("\t\t pre_production: %d\n", (int)hdr->flags.pre_production);
-    _XDPRINTF_("\t\t debug_signed: %d\n", (int)hdr->flags.debug_signed);
+    _XDPRINTF_("\t flags: 0x%x\n", (uint32_t)hdr->flags);
+    _XDPRINTF_("\t\t pre_production: %d\n", (int)hdr->flags & ACM_FLAGS_T_PRE_PRODUCTION);
+    _XDPRINTF_("\t\t debug_signed: %d\n", (int)hdr->flags & ACM_FLAGS_T_DEBUG_SIGNED);
     _XDPRINTF_("\t vendor: 0x%x\n", hdr->module_vendor);
     _XDPRINTF_("\t date: 0x%08x\n", hdr->date);
     _XDPRINTF_("\t size*4: 0x%x (%u)\n", hdr->size*4, hdr->size*4);
@@ -324,7 +324,7 @@ uint32_t get_sinit_capabilities(acm_hdr_t* hdr)
     if ( info_table == NULL || info_table->version < 3 )
         return 0;
 
-    return info_table->capabilities._raw;
+    return info_table->capabilities;
 }
 
 static bool is_acmod(void *acmod_base, size_t acmod_size, uint8_t *type,
@@ -427,11 +427,11 @@ bool does_acmod_match_chipset(acm_hdr_t* hdr)
      * check if fusing is same
      */
     txt_ver_fsbif_emif_t ver;
-    ver._raw = read_pub_config_reg(TXTCR_VER_FSBIF);
-    if ( (ver._raw & 0xffffffff) == 0xffffffff ||
-         (ver._raw & 0xffffffff) == 0x00 )         /* need to use VER.EMIF */
-        ver._raw = read_pub_config_reg(TXTCR_VER_EMIF);
-    if ( ver.prod_fused != !hdr->flags.debug_signed ) {
+    unpack_txt_ver_fsbif_emif_t(&ver, read_pub_config_reg(TXTCR_VER_FSBIF));
+    if ( (pack_txt_ver_fsbif_emif_t(&ver) & 0xffffffff) == 0xffffffff ||
+         (pack_txt_ver_fsbif_emif_t(&ver) & 0xffffffff) == 0x00 )         /* need to use VER.EMIF */
+        unpack_txt_ver_fsbif_emif_t(&ver, read_pub_config_reg(TXTCR_VER_EMIF));
+    if ( ver.prod_fused != !(hdr->flags & ACM_FLAGS_T_DEBUG_SIGNED) ) {
         _XDPRINTF_("\t production/debug mismatch between chipset and ACM\n");
         return false;
     }
@@ -444,7 +444,7 @@ bool does_acmod_match_chipset(acm_hdr_t* hdr)
         return false;
 
     /* get chipset device and vendor id info */
-    didvid._raw = read_pub_config_reg(TXTCR_DIDVID);
+    unpack_txt_didvid_t(&didvid, read_pub_config_reg(TXTCR_DIDVID));
 
     _XDPRINTF_("\t %x ACM chipset id entries:\n", chipset_id_list->count);
     for ( i = 0; i < chipset_id_list->count; i++ ) {
@@ -632,15 +632,16 @@ bool verify_acmod(acm_hdr_t *acm_hdr)
 
     /* check capabilities */
     /* we need to match one of rlp_wake_{getsec, monitor} */
-    caps_mask.rlp_wake_getsec = caps_mask.rlp_wake_monitor = 1;
+    //caps_mask.rlp_wake_getsec = caps_mask.rlp_wake_monitor = 1;
+    caps_mask = TXT_CAPS_T_RLP_WAKE_GETSEC | TXT_CAPS_T_RLP_WAKE_MONITOR;
 
-    if ( ( ( MLE_HDR_CAPS & caps_mask._raw ) &
-           ( info_table->capabilities._raw & caps_mask._raw) ) == 0 ) {
+    if ( ( ( MLE_HDR_CAPS & caps_mask ) &
+           ( info_table->capabilities & caps_mask) ) == 0 ) {
         _XDPRINTF_("SINIT and MLE not support compatible RLP wake mechanisms\n");
         return false;
     }
     /* we also expect ecx_pgtbl to be set */
-    if ( !info_table->capabilities.ecx_pgtbl ) {
+    if ( !info_table->capabilities & TXT_CAPS_T_ECX_PGTBL ) {
         _XDPRINTF_("SINIT does not support launch with MLE pagetable in ECX\n");
         /* TODO when SINIT ready
          * return false;

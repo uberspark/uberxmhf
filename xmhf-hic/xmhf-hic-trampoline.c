@@ -136,12 +136,12 @@ void __xmhfhic_rtm_trampoline(u64 hic_calltype, slab_input_params_t *iparams, u6
 
 
     //_XDPRINTF_("%s[%u]: Trampoline got control: RSP=%016llx\n",
-    //                __FUNCTION__, (u32)cpuid, read_rsp());
+    //                __func__, (u32)cpuid, read_rsp());
 
     //_XDPRINTF_("%s[%u]: Trampoline got control: hic_calltype=%x, iparams=%x, iparams_size=%u, \
     //           oparams=%x, oparams_size=%u, dst_slabid=%x, src_slabid=%x, cpuid=%x, return_address=%016llx \
     //           return_rsp=%x\n",
-    //                __FUNCTION__, (u32)cpuid,
+    //                __func__, (u32)cpuid,
     //           hic_calltype, iparams, iparams_size, oparams, oparams_size,
     //           dst_slabid, src_slabid, cpuid, return_address, return_rsp);
 
@@ -151,7 +151,7 @@ void __xmhfhic_rtm_trampoline(u64 hic_calltype, slab_input_params_t *iparams, u6
             //check to see if source slab can invoke destination slab
             if(!__xmhfhic_callcaps(src_slabid, dst_slabid)){
                 _XDPRINTF_("%s[%u]: Fatal: Slab %u does not have capabilities to invoke Slab %u. Halting!\n",
-                    __FUNCTION__, (u32)cpuid, src_slabid, dst_slabid);
+                    __func__, (u32)cpuid, src_slabid, dst_slabid);
                 HALT();
             }
 
@@ -195,7 +195,7 @@ void __xmhfhic_rtm_trampoline(u64 hic_calltype, slab_input_params_t *iparams, u6
                     //safe stack
                     //_XDPRINTF_("%s[%u]: safepush: {cpuid: %016llx, srcsid: %u, dstsid: %u, ctype: %x, ra=%016llx, \
                     //           op=%016llx, newop=%016llx, opsize=%u\n",
-                    //        __FUNCTION__, (u32)cpuid,
+                    //        __func__, (u32)cpuid,
                     //           cpuid, src_slabid, dst_slabid, hic_calltype, return_address,
                     //           oparams, newoparams, oparams_size);
 
@@ -216,7 +216,7 @@ void __xmhfhic_rtm_trampoline(u64 hic_calltype, slab_input_params_t *iparams, u6
                 case HIC_SLAB_X86VMXX86PC_GUEST:{
 
                     //_XDPRINTF_("%s[%u]: going to invoke guest slab %u\n",
-                    //           __FUNCTION__, (u32)cpuid, dst_slabid);
+                    //           __func__, (u32)cpuid, dst_slabid);
                     xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VPID, dst_slabid+1);
                     xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_EPT_POINTER_FULL, _xmhfhic_common_slab_info_table[dst_slabid].archdata.mempgtbl_cr3);
                     xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_RSP, _xmhfhic_common_slab_info_table[dst_slabid].archdata.slabtos[(u32)cpuid]);
@@ -230,7 +230,7 @@ void __xmhfhic_rtm_trampoline(u64 hic_calltype, slab_input_params_t *iparams, u6
 
 
                 default:
-                    _XDPRINTF_("%s[%u]: Unknown slabtype=%x. Halting!\n", __FUNCTION__, (u32)cpuid, hic_calltype);
+                    _XDPRINTF_("%s[%u]: Unknown slabtype=%x. Halting!\n", __func__, (u32)cpuid, hic_calltype);
                     HALT();
 
             }
@@ -248,14 +248,14 @@ void __xmhfhic_rtm_trampoline(u64 hic_calltype, slab_input_params_t *iparams, u6
 
             //_XDPRINTF_("%s[%u]: safepop: {cpuid: %016llx, srcsid: %u, dstsid: %u, ctype: %x, ra=%016llx, \
             //           op=%016llx, newop=%016llx, opsize=%u\n",
-            //        __FUNCTION__, (u32)cpuid,
+            //        __func__, (u32)cpuid,
             //           cpuid, elem.src_slabid, elem.dst_slabid, elem.hic_calltype, elem.return_address,
             //           elem.oparams, elem.newoparams, elem.oparams_size);
 
             //check to ensure this SLABRET is paired with a prior SLABCALL
             if ( !((elem.src_slabid == dst_slabid) && (elem.dst_slabid == src_slabid) && (elem.hic_calltype ==XMHF_HIC_SLABCALL)) ){
                 _XDPRINTF_("%s[%u]: Fatal: SLABRET does not match prior SLABCALL. Halting!\n",
-                    __FUNCTION__, (u32)cpuid);
+                    __func__, (u32)cpuid);
                 HALT();
             }
 
@@ -331,7 +331,7 @@ void __xmhfhic_rtm_trampoline(u64 hic_calltype, slab_input_params_t *iparams, u6
                 //safe stack
                 //_XDPRINTF_("%s[%u]: safepush: {cpuid: %016llx, srcsid: %u, dstsid: %u, ctype: %x, ra=%016llx, \
                 //           ip=%016llx, newip=%016llx, ipsize=%u\n",
-                //        __FUNCTION__, (u32)cpuid,
+                //        __func__, (u32)cpuid,
                 //           cpuid, src_slabid, dst_slabid, hic_calltype, return_address,
                 //           iparams, newiparams, iparams_size);
 
@@ -356,7 +356,7 @@ void __xmhfhic_rtm_trampoline(u64 hic_calltype, slab_input_params_t *iparams, u6
             //check to ensure that we get SLABRETEXCEPTION only from the exception slab
             if ( !(src_slabid == XMHF_HYP_SLAB_XCEXHUB) ){
                 _XDPRINTF_("%s[%u]: Fatal: SLABRETEXCEPTION from a non-exception slab. Halting!\n",
-                    __FUNCTION__, (u32)cpuid);
+                    __func__, (u32)cpuid);
                 HALT();
             }
 
@@ -366,14 +366,14 @@ void __xmhfhic_rtm_trampoline(u64 hic_calltype, slab_input_params_t *iparams, u6
 
             //_XDPRINTF_("%s[%u]: safepop: {cpuid: %016llx, srcsid: %u, dstsid: %u, ctype: %x, ra=%016llx, \
             //           op=%016llx, newop=%016llx, opsize=%u\n",
-            //        __FUNCTION__, (u32)cpuid,
+            //        __func__, (u32)cpuid,
             //           cpuid, elem.src_slabid, elem.dst_slabid, elem.hic_calltype, elem.return_address,
             //           elem.oparams, elem.newoparams, elem.oparams_size);
 
             //check to ensure this SLABRETEXCEPTION is paired with a prior SLABCALLEXCEPTION
             if ( !((elem.src_slabid == dst_slabid) && (elem.dst_slabid == src_slabid) && (elem.hic_calltype ==XMHF_HIC_SLABCALLEXCEPTION)) ){
                 _XDPRINTF_("%s[%u]: Fatal: SLABRETEXCEPTION does not match prior SLABCALLEXCEPTION. Halting!\n",
-                    __FUNCTION__, (u32)cpuid);
+                    __func__, (u32)cpuid);
                 HALT();
             }
 
@@ -391,7 +391,7 @@ void __xmhfhic_rtm_trampoline(u64 hic_calltype, slab_input_params_t *iparams, u6
                     #endif
 
                     _XDPRINTF_("%s[%u]: returning from exception to %016llx\n",
-                        __FUNCTION__, (u32)cpuid, exframe->orig_rip);
+                        __func__, (u32)cpuid, exframe->orig_rip);
 
 
                     __xmhfhic_trampoline_slabxfer_retexception((u64)exframe);
@@ -424,7 +424,7 @@ void __xmhfhic_rtm_trampoline(u64 hic_calltype, slab_input_params_t *iparams, u6
             #endif // defined
 
             //_XDPRINTF_("%s[%u]: Trampoline Intercept call\n",
-            //        __FUNCTION__, (u32)cpuid, read_rsp());
+            //        __func__, (u32)cpuid, read_rsp());
 
             #if !defined (__XMHF_VERIFICATION__)
             //copy iparams (CPU GPR state) into arch. data for cpuid
@@ -435,7 +435,7 @@ void __xmhfhic_rtm_trampoline(u64 hic_calltype, slab_input_params_t *iparams, u6
             //push cpuid, src_slabid, dst_slabid, hic_calltype tuple to
             //safe stack
             //_XDPRINTF_("%s[%u]: safepush: {cpuid: %016llx, srcsid: %u, dstsid: %u, ctype: %x\n",
-            //        __FUNCTION__, (u32)cpuid,
+            //        __func__, (u32)cpuid,
             //           cpuid, src_slabid, dst_slabid, hic_calltype);
 
             __xmhfhic_safepush(cpuid, src_slabid, dst_slabid, hic_calltype, 0, 0, 0, 0, 0);
@@ -463,7 +463,7 @@ void __xmhfhic_rtm_trampoline(u64 hic_calltype, slab_input_params_t *iparams, u6
             //check to ensure that we get SLABRETINTERCEPT only from the intercept slab
             if ( !(src_slabid == XMHF_HYP_SLAB_XCIHUB) ){
                 _XDPRINTF_("%s[%u]: Fatal: SLABRETINTERCEPT from a non-intercept slab. Halting!\n",
-                    __FUNCTION__, (u32)cpuid);
+                    __func__, (u32)cpuid);
                 HALT();
             }
 
@@ -473,13 +473,13 @@ void __xmhfhic_rtm_trampoline(u64 hic_calltype, slab_input_params_t *iparams, u6
                                 &elem.oparams, &elem.newoparams, &elem.oparams_size, &elem.iparams_size);
 
             //_XDPRINTF_("%s[%u]: safepop: {cpuid: %016llx, srcsid: %u, dstsid: %u, ctype: %x\n",
-            //        __FUNCTION__, (u32)cpuid,
+            //        __func__, (u32)cpuid,
             //           cpuid, elem.src_slabid, elem.dst_slabid, elem.hic_calltype);
 
             //check to ensure this SLABRETINTERCEPT is paired with a prior SLABCALLINTERCEPT
             if ( !((elem.src_slabid == dst_slabid) && (elem.dst_slabid == src_slabid) && (elem.hic_calltype ==XMHF_HIC_SLABCALLINTERCEPT)) ){
                 _XDPRINTF_("%s[%u]: Fatal: SLABRETINTERCEPT does not match prior SLABCALLINTERCEPT. Halting!\n",
-                    __FUNCTION__, (u32)cpuid);
+                    __func__, (u32)cpuid);
                 HALT();
             }
 
@@ -504,14 +504,14 @@ void __xmhfhic_rtm_trampoline(u64 hic_calltype, slab_input_params_t *iparams, u6
 
         default:
             _XDPRINTF_("%s[%u]: Unknown hic_calltype=%x. Halting!\n",
-                    __FUNCTION__, (u32)cpuid, hic_calltype);
+                    __func__, (u32)cpuid, hic_calltype);
             HALT();
 
 
     }
 
     _XDPRINTF_("%s[%u]: Should never come here. Halting!\n",
-                    __FUNCTION__, (u32)cpuid);
+                    __func__, (u32)cpuid);
     HALT();
 }
 
@@ -525,7 +525,7 @@ void __xmhfhic_rtm_trampoline(u64 hic_calltype, slab_input_params_t *iparams, u6
 //HIC runtime exception stub
 void __xmhfhic_rtm_exception_stub(x86vmx_exception_frame_t *exframe){
 
-//    _XDPRINTF_("%s: exception: vector=%x, error_code=%x. Halting!\n", __FUNCTION__,
+//    _XDPRINTF_("%s: exception: vector=%x, error_code=%x. Halting!\n", __func__,
 //               exframe->vector, exframe->error_code);
 //    HALT();
 

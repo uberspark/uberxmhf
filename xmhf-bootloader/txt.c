@@ -99,6 +99,81 @@
 #include "_txt_hash.h"
 #include "_txt_acmod.h"
 
+#define MTRR_TYPE_MIXED         -1
+#define MMIO_APIC_BASE          0xFEE00000
+#define NR_MMIO_APIC_PAGES      1
+#define NR_MMIO_IOAPIC_PAGES    1
+#define NR_MMIO_PCICFG_PAGES    1
+
+/* saved MTRR state or NULL if orig. MTRRs have not been changed */
+static mtrr_state_t *g_saved_mtrrs = NULL;
+
+
+/*
+ * this must be done for each processor so that all have the same
+ * memory types
+ */
+bool set_mtrrs_for_acmod(acm_hdr_t *hdr)
+{
+    u32 eflags;
+    unsigned long cr0, cr4;
+
+    /*
+     * need to do some things before we start changing MTRRs
+     *
+     * since this will modify some of the MTRRs, they should be saved first
+     * so that they can be restored once the AC mod is done
+     */
+
+    /* disable interrupts */
+    eflags = read_eflags();
+
+    xmhfhw_cpu_disable_intr();
+
+    /* save CR0 then disable cache (CRO.CD=1, CR0.NW=0) */
+    cr0 = read_cr0();
+    write_cr0((cr0 & ~CR0_NW) | CR0_CD);
+
+    /* flush caches */
+    wbinvd();
+
+    /* save CR4 and disable global pages (CR4.PGE=0) */
+    cr4 = read_cr4();
+    write_cr4(cr4 & ~CR4_PGE);
+
+    /* disable MTRRs */
+    set_all_mtrrs(false);
+
+    /*
+     * now set MTRRs for AC mod and rest of memory
+     */
+    if ( !set_mem_type(hdr, hdr->size*4, MTRR_TYPE_WRBACK) )
+        return false;
+
+    /*
+     * now undo some of earlier changes and enable our new settings
+     */
+
+    /* flush caches */
+    wbinvd();
+
+    /* enable MTRRs */
+    set_all_mtrrs(true);
+
+    /* restore CR0 (cacheing) */
+    write_cr0(cr0);
+
+    /* restore CR4 (global pages) */
+    write_cr4(cr4);
+
+    /* enable interrupts */
+    write_eflags(eflags);
+
+
+
+    return true;
+}
+
 
 //extern SL_PARAMETER_BLOCK *slpb; /* Ugh; ugly global from init.c */
 
@@ -109,17 +184,17 @@ bool get_parameters(getsec_parameters_t *params);
  * it needs to be within the MLE pages, so force it to the .text section
  */
 static mle_hdr_t g_mle_hdr = {
-    uuid              :  MLE_HDR_UUID,
-    length            :  sizeof(mle_hdr_t),
-    version           :  MLE_HDR_VER,
-    entry_point       :  TEMPORARY_HARDCODED_MLE_ENTRYPOINT, // XXX TODO remove magic number
-    first_valid_page  :  0,
+    .uuid              =  MLE_HDR_UUID,
+    .length            =  sizeof(mle_hdr_t),
+    .version           =  MLE_HDR_VER,
+    .entry_point       =  TEMPORARY_HARDCODED_MLE_ENTRYPOINT, // XXX TODO remove magic number
+    .first_valid_page  =  0,
     ///XXX I thnk these should be phys addres
-    mle_start_off     :  0, /* In MLE address space as accessed via MLE page tables */
-    mle_end_off       :  TEMPORARY_HARDCODED_MLE_SIZE, // XXX TODO remove magic number
-    capabilities      :  { MLE_HDR_CAPS },
-    cmdline_start_off :  0,
-    cmdline_end_off   :  0,
+    .mle_start_off     =  0, /* In MLE address space as accessed via MLE page tables */
+    .mle_end_off       =  TEMPORARY_HARDCODED_MLE_SIZE, // XXX TODO remove magic number
+    .capabilities      =  { MLE_HDR_CAPS },
+    .cmdline_start_off =  0,
+    .cmdline_end_off   =  0
 };
 
 ///XXX
@@ -177,9 +252,9 @@ static void *build_mle_pagetable(uint32_t mle_start, uint32_t mle_size)
     memset(ptab_base, 0, ptab_size);
     _XDPRINTF_("ptab_size=%x, ptab_base=%p\n", ptab_size, ptab_base);
 
-    pg_dir_ptr_tab = ptab_base;
-    pg_dir         = pg_dir_ptr_tab + PAGE_SIZE_4K;
-    pg_tab         = pg_dir + PAGE_SIZE_4K;
+    pg_dir_ptr_tab = (void *)ptab_base;
+    pg_dir         = (void *)((u32)pg_dir_ptr_tab + PAGE_SIZE_4K);
+    pg_tab         = (void *)((u32)pg_dir + PAGE_SIZE_4K);
 
     /* only use first entry in page dir ptr table */
     *(uint64_t *)pg_dir_ptr_tab = MAKE_PDTE(pg_dir);
@@ -220,13 +295,13 @@ static bool check_sinit_module(void *base, size_t size)
         return false;
 
     /* display chipset fuse and device and vendor id info */
-    didvid._raw = read_pub_config_reg(TXTCR_DIDVID);
+    unpack_txt_didvid_t(&didvid, read_pub_config_reg(TXTCR_DIDVID));
     _XDPRINTF_("chipset ids: vendor: 0x%x, device: 0x%x, revision: 0x%x\n",
            didvid.vendor_id, didvid.device_id, didvid.revision_id);
-    ver._raw = read_pub_config_reg(TXTCR_VER_FSBIF);
-    if ( (ver._raw & 0xffffffff) == 0xffffffff ||
-         (ver._raw & 0xffffffff) == 0x00 )         /* need to use VER.EMIF */
-        ver._raw = read_pub_config_reg(TXTCR_VER_EMIF);
+    unpack_txt_ver_fsbif_emif_t(&ver, read_pub_config_reg(TXTCR_VER_FSBIF));
+    if ( (pack_txt_ver_fsbif_emif_t(&ver) & 0xffffffff) == 0xffffffff ||
+         (pack_txt_ver_fsbif_emif_t(&ver) & 0xffffffff) == 0x00 )         /* need to use VER.EMIF */
+        unpack_txt_ver_fsbif_emif_t(&ver, read_pub_config_reg(TXTCR_VER_EMIF));
     _XDPRINTF_("chipset production fused: %x\n", ver.prod_fused );
 
     if ( is_sinit_acmod(base, size, false) &&
@@ -317,23 +392,24 @@ static txt_heap_t *init_txt_heap(void *ptab_base, acm_hdr_t *sinit,
 
     /* capabilities : choose monitor wake mechanism first */
     ///XXX I don't really understand this
-    sinit_caps._raw = get_sinit_capabilities(sinit);
-    caps_mask._raw = 0;
-    caps_mask.rlp_wake_getsec = caps_mask.rlp_wake_monitor = 1;
-    os_sinit_data->capabilities._raw = MLE_HDR_CAPS & ~caps_mask._raw;
-    if ( sinit_caps.rlp_wake_monitor )
-        os_sinit_data->capabilities.rlp_wake_monitor = 1;
-    else if ( sinit_caps.rlp_wake_getsec )
-        os_sinit_data->capabilities.rlp_wake_getsec = 1;
+    sinit_caps = get_sinit_capabilities(sinit);
+    caps_mask = 0;
+    //caps_mask.rlp_wake_getsec = caps_mask.rlp_wake_monitor = 1;
+    caps_mask = TXT_CAPS_T_RLP_WAKE_GETSEC | TXT_CAPS_T_RLP_WAKE_MONITOR;
+    os_sinit_data->capabilities = MLE_HDR_CAPS & ~caps_mask;
+    if ( sinit_caps & TXT_CAPS_T_RLP_WAKE_MONITOR )
+        os_sinit_data->capabilities |= TXT_CAPS_T_RLP_WAKE_MONITOR;
+    else if ( sinit_caps & TXT_CAPS_T_RLP_WAKE_GETSEC )
+        os_sinit_data->capabilities |= TXT_CAPS_T_RLP_WAKE_GETSEC;
     else {     /* should have been detected in verify_acmod() */
-        _XDPRINTF_("SINIT capabilities are icompatible (0x%x)\n", sinit_caps._raw);
+        _XDPRINTF_("SINIT capabilities are icompatible (0x%x)\n", sinit_caps);
         return NULL;
     }
     /* capabilities : require MLE pagetable in ECX on launch */
     /* TODO: when SINIT ready
      * os_sinit_data->capabilities.ecx_pgtbl = 1;
      */
-    os_sinit_data->capabilities.ecx_pgtbl = 0;
+    os_sinit_data->capabilities &= ~(TXT_CAPS_T_ECX_PGTBL);
     /* TODO: when tboot supports EFI then set efi_rsdt_ptr */
 
     print_os_sinit_data(os_sinit_data);
@@ -460,23 +536,11 @@ bool txt_prepare_cpu(void)
     write_cr0(cr0);
 
     /* cannot be in virtual-8086 mode (EFLAGS.VM=1) */
-        asm volatile(
-                 "pushfl \r\n"
-                 "popl %0 \r\n"
-                 : "=g" (eflags)
-                 :
-                 :
-                 );
+    eflags = read_eflags();
 
     if ( eflags & EFLAGS_VM ) {
         _XDPRINTF_("EFLAGS.VM set; clearing it.\n");
-            asm volatile(
-                 "pushl %0 \r\n"
-                 "popfl \r\n"
-                 :
-                 : "g" ((eflags | ~EFLAGS_VM))
-                 : "cc"
-                 );
+        write_eflags(eflags | ~EFLAGS_VM);
 
     }
 

@@ -67,6 +67,9 @@
 ////libxmhfdebug
 //u32 libxmhfdebug_lock = 1;
 
+
+
+
 //the vcpu structure which holds the current state of a core
 typedef struct _bootvcpu {
   u32 esp;                //used to establish stack for the CPU
@@ -85,12 +88,12 @@ u32 _MPFPComputeChecksum(u32 spaddr, u32 size);
 u32 isbsp(void);
 
 //---globals--------------------------------------------------------------------
-PCPU pcpus[MAX_PCPU_ENTRIES];
+ __attribute__(( section(".data") )) PCPU pcpus[MAX_PCPU_ENTRIES];
 u32 pcpus_numentries=0;
-u32 cpu_vendor;    //CPU_VENDOR_INTEL or CPU_VENDOR_AMD
-u32 hypervisor_image_baseaddress;    //2M aligned highest physical memory address
+ __attribute__(( section(".data") )) u32 cpu_vendor;    //CPU_VENDOR_INTEL or CPU_VENDOR_AMD
+ __attribute__(( section(".data") )) u32 hypervisor_image_baseaddress;    //2M aligned highest physical memory address
 //where the hypervisor binary is relocated to
-GRUBE820 grube820list[MAX_E820_ENTRIES];
+ __attribute__(( section(".data") )) GRUBE820 grube820list[MAX_E820_ENTRIES];
 u32 grube820list_numentries=0;        //actual number of e820 entries returned
 //by grub
 
@@ -136,14 +139,22 @@ extern void get_tboot_fmt(void);
 
 // we should get all of these from the build process, but don't forget
 // that here in 'init' these values are UNTRUSTED
-INTEGRITY_MEASUREMENT_VALUES g_init_gold /* __attribute__(( section("") )) */ = {
+/*INTEGRITY_MEASUREMENT_VALUES g_init_gold  = {
     .sha_runtime = ___RUNTIME_INTEGRITY_HASH___,
     .sha_slabove64K = ___SLABOVE64K_INTEGRITY_HASH___,
     .sha_slbelow64K = ___SLBELOW64K_INTEGRITY_HASH___
 };
-
+*/
 //size of SL + runtime in bytes
 //size_t sl_rt_size;
+
+
+void skinit(unsigned long eax) {
+    /*__asm__("mov %0, %%eax": :"r" (eax));
+    __asm__("skinit %%eax":);*/
+    _XDPRINTF_("%s: AMD SKINIT currently voided out. Halting!\n", __func__);
+    HALT();
+}
 
 
 //---MP config table handling---------------------------------------------------
@@ -225,7 +236,7 @@ void send_init_ipi_to_all_APs(void) {
 u32 dealwithE820(multiboot_info_t *mbi, u32 runtimesize __attribute__((unused))){
     //check if GRUB has a valid E820 map
     if(!(mbi->flags & MBI_MEMMAP)){
-        _XDPRINTF_("\n%s: no E820 map provided. HALT!", __FUNCTION__);
+        _XDPRINTF_("\n%s: no E820 map provided. HALT!", __func__);
         HALT();
     }
 
@@ -424,17 +435,17 @@ bool txt_supports_txt(void) {
     /* Verify that an TXT-capable chipset is present and check that
      * all needed SMX capabilities are supported. */
 
-    cap = (capabilities_t)__getsec_capabilities(0);
+    unpack_capabilities_t(&cap, __getsec_capabilities(0));
     if(!cap.chipset_present) {
         _XDPRINTF_("ERR: TXT-capable chipset not present\n");
         return false;
     }
     if (!(cap.senter && cap.sexit && cap.parameters && cap.smctrl &&
           cap.wakeup)) {
-        _XDPRINTF_("ERR: insufficient SMX capabilities (0x%08x)\n", cap._raw);
+        _XDPRINTF_("ERR: insufficient SMX capabilities (0x%08x)\n", pack_capabilities_t(&cap));
         return false;
     }
-    _XDPRINTF_("TXT chipset and all needed capabilities (0x%08x) present\n", cap._raw);
+    _XDPRINTF_("TXT chipset and all needed capabilities (0x%08x) present\n", pack_capabilities_t(&cap));
 
     return true;
 }
@@ -454,10 +465,11 @@ tb_error_t txt_verify_platform(void)
     }
 
     /* check is TXT_RESET.STS is set, since if it is SENTER will fail */
-    ests = (txt_ests_t)read_pub_config_reg(TXTCR_ESTS);
+    //ests = (txt_ests_t)read_pub_config_reg(TXTCR_ESTS);
+    unpack_txt_ests_t(&ests, read_pub_config_reg(TXTCR_ESTS));
     if ( ests.txt_reset_sts ) {
         _XDPRINTF_("TXT_RESET.STS is set and SENTER is disabled (%llx)\n",
-               ests._raw);
+               pack_txt_ests_t(&ests));
         return TB_ERR_SMX_NOT_SUPPORTED;
     }
 
@@ -479,19 +491,20 @@ void txt_status_regs(void) {
     txt_errorcode_sw_t sw_err;
     acmod_error_t acmod_err;
 
-    err = (txt_errorcode_t)read_pub_config_reg(TXTCR_ERRORCODE);
-    _XDPRINTF_("TXT.ERRORCODE=%llx\n", err._raw);
+    //err = (txt_errorcode_t)read_pub_config_reg(TXTCR_ERRORCODE);
+    unpack_txt_errorcode_t(&err, read_pub_config_reg(TXTCR_ERRORCODE));
+    _XDPRINTF_("TXT.ERRORCODE=%llx\n", pack_txt_errorcode_t(&err));
 
     /* AC module error (don't know how to parse other errors) */
     if ( err.valid ) {
         if ( err.external == 0 )       /* processor error */
             _XDPRINTF_("\t processor error %x\n", (uint32_t)err.type);
         else {                         /* external SW error */
-            sw_err._raw = err.type;
+            unpack_txt_errorcode_sw_t(&sw_err, err.type);
             if ( sw_err.src == 1 )     /* unknown SW error */
                 _XDPRINTF_("unknown SW error %x:%x\n", sw_err.err1, sw_err.err2);
             else {                     /* ACM error */
-                acmod_err._raw = sw_err._raw;
+                unpack_acmod_error_t(&acmod_err, pack_txt_errorcode_sw_t(&sw_err));
                 _XDPRINTF_("AC module error : acm_type=%x, progress=%02x, "
                        "error=%x\n", acmod_err.acm_type, acmod_err.progress,
                        acmod_err.error);
@@ -505,16 +518,18 @@ void txt_status_regs(void) {
     /*
      * display LT.ESTS error
      */
-    ests = (txt_ests_t)read_pub_config_reg(TXTCR_ESTS);
-    _XDPRINTF_("LT.ESTS=%llx\n", ests._raw);
+    //ests = (txt_ests_t)read_pub_config_reg(TXTCR_ESTS);
+    unpack_txt_ests_t(&ests, read_pub_config_reg(TXTCR_ESTS));
+    _XDPRINTF_("LT.ESTS=%llx\n", pack_txt_ests_t(&ests));
 
     /*
      * display LT.E2STS error
      * - only valid if LT.WAKE-ERROR.STS set in LT.STS reg
      */
     if ( ests.txt_wake_error_sts ) {
-        e2sts = (txt_e2sts_t)read_pub_config_reg(TXTCR_E2STS);
-        _XDPRINTF_("LT.E2STS=%llx\n", e2sts._raw);
+        //e2sts = (txt_e2sts_t)read_pub_config_reg(TXTCR_E2STS);
+        unpack_txt_e2sts_t(&e2sts, read_pub_config_reg(TXTCR_E2STS));
+        _XDPRINTF_("LT.E2STS=%llx\n", pack_txt_e2sts_t(&e2sts));
     }
 }
 
@@ -754,10 +769,10 @@ void setupvcpus(u32 cpu_vendor, MIDTAB *midtable, u32 midtable_numentries){
     BOOTVCPU *vcpu;
 
     _XDPRINTF_("\n%s: cpustacks range 0x%08x-0x%08x in 0x%08x chunks",
-           __FUNCTION__, (u32)cpustacks, (u32)cpustacks + (RUNTIME_STACK_SIZE * MAX_VCPU_ENTRIES),
+           __func__, (u32)cpustacks, (u32)cpustacks + (RUNTIME_STACK_SIZE * MAX_VCPU_ENTRIES),
            RUNTIME_STACK_SIZE);
     _XDPRINTF_("\n%s: vcpubuffers range 0x%08x-0x%08x in 0x%08x chunks",
-           __FUNCTION__, (u32)vcpubuffers, (u32)vcpubuffers + (SIZE_STRUCT_BOOTVCPU * MAX_VCPU_ENTRIES),
+           __func__, (u32)vcpubuffers, (u32)vcpubuffers + (SIZE_STRUCT_BOOTVCPU * MAX_VCPU_ENTRIES),
            SIZE_STRUCT_BOOTVCPU);
 
     for(i=0; i < midtable_numentries; i++){
@@ -920,7 +935,7 @@ void cstartup(multiboot_info_t *mbi){
     dealwithMP();
 
     //check (and revise) platform E820 memory map to see if we can load at __TARGET_BASE_XMHF
-    _XDPRINTF_("xmhf-bootloader: %s:%u\n", __FUNCTION__, __LINE__);
+    _XDPRINTF_("xmhf-bootloader: %s:%u\n", __func__, __LINE__);
 	//sl_rt_size = (mod_array[0].mod_start - __TARGET_BASE_BOOTLOADER) - __TARGET_SIZE_BOOTLOADER;
 	hypervisor_image_baseaddress = dealwithE820(mbi, __TARGET_SIZE_XMHF);
 	_XDPRINTF_("xmhf-bootloader: XMHF binary base=%08x, reserved size=%08x bytes\n", hypervisor_image_baseaddress, __TARGET_SIZE_XMHF);
@@ -950,10 +965,10 @@ void cstartup(multiboot_info_t *mbi){
 	//	}
 
 
-    //_XDPRINTF_("xmhf-bootloader: %s:%u\n", __FUNCTION__, __LINE__);
+    //_XDPRINTF_("xmhf-bootloader: %s:%u\n", __func__, __LINE__);
     ////relocate XMHF hypervisor binary to preferred load address
     // memcpy((void*)__TARGET_BASE_XMHF, (void*)(__TARGET_BASE_BOOTLOADER+__TARGET_SIZE_BOOTLOADER), sl_rt_size);
-    //_XDPRINTF_("xmhf-bootloader: %s:%u\n", __FUNCTION__, __LINE__);
+    //_XDPRINTF_("xmhf-bootloader: %s:%u\n", __func__, __LINE__);
 
 
     /* runtime */
@@ -1046,7 +1061,7 @@ void cstartup(multiboot_info_t *mbi){
         strncpy(xslbootinfo->cmdline_buffer, (const char *)mbi->cmdline, sizeof(xslbootinfo->cmdline_buffer));
     }
 
-    _XDPRINTF_("xmhf-bootloader: %s:%u\n", __FUNCTION__, __LINE__);
+    _XDPRINTF_("xmhf-bootloader: %s:%u\n", __func__, __LINE__);
 
     //switch to MP mode
     //setup Master-ID Table (MIDTABLE)

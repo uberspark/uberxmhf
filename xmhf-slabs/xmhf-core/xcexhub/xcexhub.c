@@ -99,13 +99,13 @@ void slab_main(slab_params_t *sp){
     x86vmx_exception_frame_t *exframe = (x86vmx_exception_frame_t *)&sp->in_out_params[0];
 
 	_XDPRINTF_("%s[%u]: Got control: ESP=%08x\n",
-                __FUNCTION__, (u16)sp->cpuid, read_esp());
+                __func__, (u16)sp->cpuid, read_esp());
 
 
    	switch(exframe->vector){
 			case 0x3:{
                 _xcexhub_unhandled(exframe);
-				_XDPRINTF_("%s: exception 3, returning\n", __FUNCTION__);
+				_XDPRINTF_("%s: exception 3, returning\n", __func__);
 			}
 			break;
 

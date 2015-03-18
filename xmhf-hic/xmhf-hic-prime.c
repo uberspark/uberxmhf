@@ -102,7 +102,7 @@ static void xmhfhic_setupinitpgtables(void){
     }*/
 
     {
-        _XDPRINTF_("fn:%s, line:%u\n", __FUNCTION__, __LINE__);
+        _XDPRINTF_("fn:%s, line:%u\n", __func__, __LINE__);
         wrmsr64(MSR_EFER, (rdmsr64(MSR_EFER) | (0x800)) );
         _XDPRINTF_("EFER=%016llx\n", rdmsr64(MSR_EFER));
         write_cr4(read_cr4() | (0x30) );
@@ -110,7 +110,7 @@ static void xmhfhic_setupinitpgtables(void){
         write_cr3((u32)&_xcprimeon_init_pdpt);
         _XDPRINTF_("CR3=%08x\n", read_cr3());
         write_cr0(0x80000015);
-        _XDPRINTF_("fn:%s, line:%u\n", __FUNCTION__, __LINE__);
+        _XDPRINTF_("fn:%s, line:%u\n", __func__, __LINE__);
     }
 
 }
@@ -134,7 +134,7 @@ void slab_main(slab_params_t *sp){
 
 
 	//[debug] print relevant startup info.
-	_XDPRINTF_("%s: alive and starting...\n", __FUNCTION__);
+	_XDPRINTF_("%s: alive and starting...\n", __func__);
 
 	_XDPRINTF_("    xcbootinfo at = 0x%08x\n", (u32)xcbootinfo);
 	_XDPRINTF_("	numE820Entries=%u\n", xcbootinfo->memmapinfo_numentries);
@@ -159,6 +159,8 @@ void slab_main(slab_params_t *sp){
 		}
   	}
 #endif
+
+    //HALT();
 
     _XDPRINTF_("Proceeding to setup init pagetables...\n");
     xmhfhic_setupinitpgtables();
@@ -202,21 +204,21 @@ void xmhfhic_smp_entry(u32 cpuid){
     //[debug] halt all APs
     //if(!isbsp){
     //    _XDPRINTF_("%s[%u,%u]: esp=%08x. AP Halting!\n",
-    //        __FUNCTION__, (u16)cpuid, isbsp, read_esp());
+    //        __func__, (u16)cpuid, isbsp, read_esp());
     //    HALT();
     //}
 
     _XDPRINTF_("%s[%u,%u]: esp=%08x. Starting...\n",
-            __FUNCTION__, cpuid, isbsp, read_esp());
+            __func__, cpuid, isbsp, read_esp());
 
     xmhf_hic_arch_setup_cpu_state((u16)cpuid);
 
-    //_XDPRINTF_("%s[%u,%u]: Halting!\n", __FUNCTION__, (u16)cpuid, isbsp);
+    //_XDPRINTF_("%s[%u,%u]: Halting!\n", __func__, (u16)cpuid, isbsp);
     //HALT();
 
 
     //relinquish HIC initialization and move on to the first slab
-    _XDPRINTF_("%s[%u]: proceeding to call init slab at %x\n", __FUNCTION__, (u16)cpuid,
+    _XDPRINTF_("%s[%u]: proceeding to call init slab at %x\n", __func__, (u16)cpuid,
                 _xmhfhic_common_slab_info_table[XMHF_HYP_SLAB_XCINIT].entrystub);
 
     //xmhfhic_arch_relinquish_control_to_init_slab(cpuid,
@@ -234,7 +236,7 @@ void xmhfhic_smp_entry(u32 cpuid){
     }
 
 
-    _XDPRINTF_("%s[%u,%u]: Should never be here. Halting!\n", __FUNCTION__, (u16)cpuid, isbsp);
+    _XDPRINTF_("%s[%u,%u]: Should never be here. Halting!\n", __func__, (u16)cpuid, isbsp);
     HALT();
 
 }
@@ -370,7 +372,7 @@ void xmhfhic_arch_sanity_check_requirements(void){
 	//grab CPU vendor
 	cpu_vendor = xmhf_baseplatform_arch_getcpuvendor();
 	if (cpu_vendor != CPU_VENDOR_INTEL){
-		_XDPRINTF_("%s: not an Intel CPU but running VMX backend. Halting!\n", __FUNCTION__);
+		_XDPRINTF_("%s: not an Intel CPU but running VMX backend. Halting!\n", __func__);
 		HALT();
 	}
 
@@ -391,12 +393,12 @@ void xmhfhic_arch_sanity_check_requirements(void){
     {
         u64 msr_procctls2 = rdmsr64(IA32_VMX_PROCBASED_CTLS2_MSR);
         if( !( (msr_procctls2 >> 32) & 0x80 ) ){
-            _XDPRINTF_("%s: need unrestricted guest support but did not find any!\n", __FUNCTION__);
+            _XDPRINTF_("%s: need unrestricted guest support but did not find any!\n", __func__);
             HALT();
         }
 
         if( !( (msr_procctls2 >> 32) & 0x2) ){
-            _XDPRINTF_("%s: need EPTt support but did not find any!\n", __FUNCTION__);
+            _XDPRINTF_("%s: need EPTt support but did not find any!\n", __func__);
             HALT();
         }
 
@@ -442,9 +444,8 @@ static u64 _platform_x86pc_vtd_setup_retcet(void){
     u32 i, j;
 
     for(i=0; i< VTD_RET_MAXPTRS; i++){
-        _vtd_ret[i].qwords[0] = _vtd_ret[i].qwords[1] = 0ULL;
-        _vtd_ret[i].fields.p = 1;
-        _vtd_ret[i].fields.ctp = ((u64)&_vtd_cet[i] >> 12);
+        _vtd_ret[i].qwords[0] = vtd_make_rete((u64)&_vtd_cet[i], VTD_RET_PRESENT);
+        _vtd_ret[i].qwords[1] = 0ULL;
 
         for(j=0; j < VTD_CET_MAXPTRS; j++){
             _vtd_cet[i][j].qwords[0] = _vtd_cet[i][j].qwords[1] = 0ULL;
@@ -473,11 +474,11 @@ static bool _platform_x86pc_vtd_initialize(void){
 
 	//scan for available DRHD units in the platform
 	if(!xmhfhw_platform_x86pc_vtd_scanfor_drhd_units(&vtd_drhd_maxhandle, &vtd_dmar_table_physical_address)){
-        _XDPRINTF_("%s: unable to scan for DRHD units. bailing out!\n", __FUNCTION__);
+        _XDPRINTF_("%s: unable to scan for DRHD units. bailing out!\n", __func__);
 		return false;
 	}
 
-    _XDPRINTF_("%s: maxhandle = %u, dmar table addr=0x%08x\n", __FUNCTION__,
+    _XDPRINTF_("%s: maxhandle = %u, dmar table addr=0x%08x\n", __func__,
                 (u32)vtd_drhd_maxhandle, (u32)vtd_dmar_table_physical_address);
 
 
@@ -486,33 +487,33 @@ static bool _platform_x86pc_vtd_initialize(void){
 	for(drhd_handle=0; drhd_handle < vtd_drhd_maxhandle; drhd_handle++){
    		VTD_CAP_REG cap;
 
-		_XDPRINTF_("%s: Setting up DRHD unit %u...\n", __FUNCTION__, drhd_handle);
+		_XDPRINTF_("%s: Setting up DRHD unit %u...\n", __func__, drhd_handle);
 
 		if(!xmhfhw_platform_x86pc_vtd_drhd_initialize(drhd_handle) ){
-            _XDPRINTF_("%s: error setting up DRHD unit %u. bailing out!\n", __FUNCTION__, drhd_handle);
+            _XDPRINTF_("%s: error setting up DRHD unit %u. bailing out!\n", __func__, drhd_handle);
 			return false;
 		}
 
         //read and store DRHD supported page-walk length
-        cap.value = xmhfhw_platform_x86pc_vtd_drhd_reg_read(drhd_handle, VTD_CAP_REG_OFF);
-        if(cap.bits.sagaw & 0x2){
+        unpack_VTD_CAP_REG(&cap, xmhfhw_platform_x86pc_vtd_drhd_reg_read(drhd_handle, VTD_CAP_REG_OFF));
+        if(cap.sagaw & 0x2){
             if(vtd_pagewalk_level == VTD_PAGEWALK_NONE || vtd_pagewalk_level == VTD_PAGEWALK_3LEVEL){
                 vtd_pagewalk_level = VTD_PAGEWALK_3LEVEL;
-                _XDPRINTF_("%s: DRHD unit %u - 3-level page-walk\n", __FUNCTION__, drhd_handle);
+                _XDPRINTF_("%s: DRHD unit %u - 3-level page-walk\n", __func__, drhd_handle);
             }else{
                 _XDPRINTF_("%s: Halting: mixed hardware supported page-walk lengths\n",
-                            __FUNCTION__);
+                            __func__);
                 HALT();
             }
         }
 
-        if(cap.bits.sagaw & 0x4){
+        if(cap.sagaw & 0x4){
             if(vtd_pagewalk_level == VTD_PAGEWALK_NONE || vtd_pagewalk_level == VTD_PAGEWALK_4LEVEL){
                 vtd_pagewalk_level = VTD_PAGEWALK_4LEVEL;
-                _XDPRINTF_("%s: DRHD unit %u - 4-level page-walk\n", __FUNCTION__, drhd_handle);
+                _XDPRINTF_("%s: DRHD unit %u - 4-level page-walk\n", __func__, drhd_handle);
             }else{
                 _XDPRINTF_("%s: Halting: mixed hardware supported page-walk lengths\n",
-                            __FUNCTION__);
+                            __func__);
                 HALT();
             }
         }
@@ -532,7 +533,7 @@ static bool _platform_x86pc_vtd_initialize(void){
 		//disable PMRs now (since DMA protection is active via translation)
 		xmhfhw_platform_x86pc_vtd_drhd_disable_pmr(drhd_handle);
 
-		_XDPRINTF_("%s: Successfully setup DRHD unit %u\n", __FUNCTION__, drhd_handle);
+		_XDPRINTF_("%s: Successfully setup DRHD unit %u\n", __func__, drhd_handle);
 	}
 
 	//zap VT-d presence in ACPI table...
@@ -541,7 +542,7 @@ static bool _platform_x86pc_vtd_initialize(void){
 	xmhfhw_sysmemaccess_writeu32(vtd_dmar_table_physical_address, 0UL);
 
 
-    _XDPRINTF_("%s: final page-walk level=%u\n", __FUNCTION__, vtd_pagewalk_level);
+    _XDPRINTF_("%s: final page-walk level=%u\n", __func__, vtd_pagewalk_level);
 
     vtd_initialized = true;
 
@@ -552,36 +553,27 @@ static bool _platform_x86pc_vtd_initialize(void){
 static vtd_slpgtbl_handle_t _platform_x86pc_vtd_setup_slpgtbl(u32 slabid){
     vtd_slpgtbl_handle_t retval = {0, 0};
     u32 i, j, k, paddr=0;
+    u64 default_flags = (VTD_PAGE_READ | VTD_PAGE_WRITE);
 
     //sanity check partition index
     if(slabid > XMHF_HIC_MAX_SLABS){
-        _XDPRINTF_("%s: Error: slabid (%u) > XMHF_HIC_MAX_SLABS(%u). bailing out!\n", __FUNCTION__, slabid, XMHF_HIC_MAX_SLABS);
+        _XDPRINTF_("%s: Error: slabid (%u) > XMHF_HIC_MAX_SLABS(%u). bailing out!\n", __func__, slabid, XMHF_HIC_MAX_SLABS);
         return retval;
     }
 
 
+
     //setup device memory access for the partition
-    _dbuf_devpgtbl[slabid].pml4t[0].fields.r = 1;
-    _dbuf_devpgtbl[slabid].pml4t[0].fields.w = 1;
-    _dbuf_devpgtbl[slabid].pml4t[0].fields.slpdpt =
-        ((u64)_dbuf_devpgtbl[slabid].pdpt >> 12);
+    _dbuf_devpgtbl[slabid].pml4t[0] = vtd_make_pml4te((u64)_dbuf_devpgtbl[slabid].pdpt, default_flags);
 
-    for(i=0; i < PAE_PTRS_PER_PDPT; i++){
-        _dbuf_devpgtbl[slabid].pdpt[i].fields.r = 1;
-        _dbuf_devpgtbl[slabid].pdpt[i].fields.w = 1;
-        _dbuf_devpgtbl[slabid].pdpt[i].fields.slpdt =
-            ((u64)_dbuf_devpgtbl[slabid].pdt[i] >> 12);
+    for(i=0; i < VTD_PTRS_PER_PDPT; i++){
+        _dbuf_devpgtbl[slabid].pdpt[i] = vtd_make_pdpte((u64)_dbuf_devpgtbl[slabid].pdt[i], default_flags);
 
-        for(j=0; j < PAE_PTRS_PER_PDT; j++){
-            _dbuf_devpgtbl[slabid].pdt[i][j].fields.r = 1;
-            _dbuf_devpgtbl[slabid].pdt[i][j].fields.w = 1;
-            _dbuf_devpgtbl[slabid].pdt[i][j].fields.slpt =
-                ((u64)_dbuf_devpgtbl[slabid].pt[i][j] >> 12);
+        for(j=0; j < VTD_PTRS_PER_PDT; j++){
+            _dbuf_devpgtbl[slabid].pdt[i][j] = vtd_make_pdte((u64)_dbuf_devpgtbl[slabid].pt[i][j], default_flags);
 
             for(k=0; k < PAE_PTRS_PER_PT; k++){
-                _dbuf_devpgtbl[slabid].pt[i][j][k].fields.r = 1;
-                _dbuf_devpgtbl[slabid].pt[i][j][k].fields.w = 1;
-                _dbuf_devpgtbl[slabid].pt[i][j][k].fields.pageaddr = ((u64)paddr >> 12);
+                _dbuf_devpgtbl[slabid].pt[i][j][k] = vtd_make_pte(paddr, default_flags);
                 paddr += PAGE_SIZE_4K;
             }
         }
@@ -593,31 +585,6 @@ static vtd_slpgtbl_handle_t _platform_x86pc_vtd_setup_slpgtbl(u32 slabid){
     _xmhfhic_common_slab_info_table[slabid].archdata.devpgtbl_pdt = &_dbuf_devpgtbl[slabid].pdt;
     _xmhfhic_common_slab_info_table[slabid].archdata.devpgtbl_pt = &_dbuf_devpgtbl[slabid].pt;
 
-
-
-    /*//setup device memory access for the partition
-    _xmhfhic_common_slab_info_table[slabid].archdata.devpgtbl.pml4t[0].fields.r = 1;
-    _xmhfhic_common_slab_info_table[slabid].archdata.devpgtbl.pml4t[0].fields.w = 1;
-    _xmhfhic_common_slab_info_table[slabid].archdata.devpgtbl.pml4t[0].fields.slpdpt = ((u64)&_xmhfhic_common_slab_info_table[slabid].archdata.devpgtbl.pdpt >> 12);
-
-    for(i=0; i < PAE_PTRS_PER_PDPT; i++){
-        _xmhfhic_common_slab_info_table[slabid].archdata.devpgtbl.pdpt[i].fields.r = 1;
-        _xmhfhic_common_slab_info_table[slabid].archdata.devpgtbl.pdpt[i].fields.w = 1;
-        _xmhfhic_common_slab_info_table[slabid].archdata.devpgtbl.pdpt[i].fields.slpdt = ((u64)&_xmhfhic_common_slab_info_table[slabid].archdata.devpgtbl.pdt[i] >> 12);
-
-        for(j=0; j < PAE_PTRS_PER_PDT; j++){
-            _xmhfhic_common_slab_info_table[slabid].archdata.devpgtbl.pdt[i][j].fields.r = 1;
-            _xmhfhic_common_slab_info_table[slabid].archdata.devpgtbl.pdt[i][j].fields.w = 1;
-            _xmhfhic_common_slab_info_table[slabid].archdata.devpgtbl.pdt[i][j].fields.slpt = ((u64)&_xmhfhic_common_slab_info_table[slabid].archdata.devpgtbl.pt[i][j] >> 12);
-
-            for(k=0; k < PAE_PTRS_PER_PT; k++){
-                _xmhfhic_common_slab_info_table[slabid].archdata.devpgtbl.pt[i][j][k].fields.r = 1;
-                _xmhfhic_common_slab_info_table[slabid].archdata.devpgtbl.pt[i][j][k].fields.w = 1;
-                _xmhfhic_common_slab_info_table[slabid].archdata.devpgtbl.pt[i][j][k].fields.pageaddr = ((u64)paddr >> 12);
-                paddr += PAGE_SIZE_4K;
-            }
-        }
-    }*/
 
     retval.addr_vtd_pml4t = _xmhfhic_common_slab_info_table[slabid].archdata.devpgtbl_pml4t;
     retval.addr_vtd_pdpt = _xmhfhic_common_slab_info_table[slabid].archdata.devpgtbl_pdpt;
@@ -685,7 +652,7 @@ static bool __xmhfhic_arch_sda_allocdevices_to_slab(u64 slabid, slab_platformdev
 
         if(vtd_slpgtbl_handle.addr_vtd_pml4t == 0 &&
             vtd_slpgtbl_handle.addr_vtd_pdpt == 0){
-            _XDPRINTF_("%s: unable to initialize vt-d pagetables for slab %u\n", __FUNCTION__, slabid);
+            _XDPRINTF_("%s: unable to initialize vt-d pagetables for slab %u\n", __func__, slabid);
             return false;
         }
 
@@ -707,21 +674,20 @@ static bool __xmhfhic_arch_sda_allocdevices_to_slab(u64 slabid, slab_platformdev
 
         //b is our index into ret
         // (d* PCI_FUNCTION_MAX) + f = index into the cet
-        #if !defined(__XMHF_VERIFICATION__)
         if(vtd_pagewalk_level == VTD_PAGEWALK_4LEVEL){
-            _vtd_cet[b][((d*PCI_FUNCTION_MAX) + f)].fields.slptptr = ((u64)_xmhfhic_common_slab_info_table[slabid].archdata.devpgtbl_pml4t >> 12);
-            _vtd_cet[b][((d*PCI_FUNCTION_MAX) + f)].fields.aw = 2; //4-level
-            _vtd_cet[b][((d*PCI_FUNCTION_MAX) + f)].fields.did = (slabid + 1); //domain
-            _vtd_cet[b][((d*PCI_FUNCTION_MAX) + f)].fields.p = 1; //present
+            _vtd_cet[b][((d*PCI_FUNCTION_MAX) + f)].qwords[0] =
+                vtd_make_cete((u64)_xmhfhic_common_slab_info_table[slabid].archdata.devpgtbl_pml4t, VTD_CET_PRESENT);
+            _vtd_cet[b][((d*PCI_FUNCTION_MAX) + f)].qwords[1] =
+                vtd_make_cetehigh(2, (slabid+1));
         }else if (vtd_pagewalk_level == VTD_PAGEWALK_3LEVEL){
-            _vtd_cet[b][((d*PCI_FUNCTION_MAX) + f)].fields.slptptr = ((u64)_xmhfhic_common_slab_info_table[slabid].archdata.devpgtbl_pdpt >> 12);
-            _vtd_cet[b][((d*PCI_FUNCTION_MAX) + f)].fields.aw = 1; //3-level
-            _vtd_cet[b][((d*PCI_FUNCTION_MAX) + f)].fields.did = (slabid + 1); //domain
-            _vtd_cet[b][((d*PCI_FUNCTION_MAX) + f)].fields.p = 1; //present
+            _vtd_cet[b][((d*PCI_FUNCTION_MAX) + f)].qwords[0] =
+                vtd_make_cete((u64)_xmhfhic_common_slab_info_table[slabid].archdata.devpgtbl_pdpt, VTD_CET_PRESENT);
+            _vtd_cet[b][((d*PCI_FUNCTION_MAX) + f)].qwords[1] =
+                vtd_make_cetehigh(1, (slabid+1));
         }else{ //unknown page walk length, fail
             return false;
         }
-        #endif
+
     }
 
 
@@ -834,7 +800,7 @@ void xmhfhic_arch_setup_slab_device_allocation(void){
 	{
 		ACPI_RSDP rsdp;
 		if(!xmhfhw_platform_x86pc_acpi_getRSDP(&rsdp)){
-			_XDPRINTF_("%s: ACPI RSDP not found, Halting!\n", __FUNCTION__);
+			_XDPRINTF_("%s: ACPI RSDP not found, Halting!\n", __func__);
 			HALT();
 		}
 	}
@@ -844,7 +810,7 @@ void xmhfhic_arch_setup_slab_device_allocation(void){
 
     if(!ddescs.desc_valid){
         _XDPRINTF_("%s: Error: could not obtain platform device descriptors\n",
-                    __FUNCTION__);
+                    __func__);
         HALT();
     }
 
@@ -864,17 +830,17 @@ void xmhfhic_arch_setup_slab_device_allocation(void){
 
         if(slab_ddescs.desc_valid){
             _XDPRINTF_("%s: Allocating %u devices to slab %u...\n",
-                            __FUNCTION__, slab_ddescs.numdevices, i);
+                            __func__, slab_ddescs.numdevices, i);
 
 
             if(!__xmhfhic_arch_sda_allocdevices_to_slab(i, slab_ddescs)){
                     _XDPRINTF_("%s: Halting.unable to allocate devices to slab %u\n",
-                                __FUNCTION__, i);
+                                __func__, i);
                     HALT();
             }
         }else{
             _XDPRINTF_("%s: No devices to allocate for slab %u...\n",
-                            __FUNCTION__, i);
+                            __func__, i);
         }
     }
 
@@ -964,7 +930,7 @@ static u32 __xmhfhic_hyp_slab_getspatype(u64 slab_index, u32 spa){
 static u64 __xmhfhic_hyp_slab_getptflagsforspa(u64 slabid, u32 spa){
 	u64 flags;
 	u32 spatype = __xmhfhic_hyp_slab_getspatype(slabid, spa);
-	//_XDPRINTF_("\n%s: slab_index=%u, spa=%08x, spatype = %x\n", __FUNCTION__, slab_index, spa, spatype);
+	//_XDPRINTF_("\n%s: slab_index=%u, spa=%08x, spatype = %x\n", __func__, slab_index, spa, spatype);
 
 	switch(spatype){
 		case _SLAB_SPATYPE_OTHER_SLAB_CODE:
@@ -1163,7 +1129,7 @@ static void __xmhfhic_vmx_gathermemorytypes(void){
   	xmhfhw_cpu_cpuid(0x00000001, &eax, &ebx, &ecx, &edx);
 
   	if( !(edx & (u32)(1 << 12)) ){
-  		_XDPRINTF_("\n%s: CPU does not support MTRRs!", __FUNCTION__);
+  		_XDPRINTF_("\n%s: CPU does not support MTRRs!", __func__);
   		HALT();
   	}
 
@@ -1323,7 +1289,7 @@ static void __xmhfhic_vmx_gathermemorytypes(void){
 		}
 	}
 
-	_XDPRINTF_("\n%s: gathered MTRR details, number of entries=%u", __FUNCTION__, index);
+	_XDPRINTF_("\n%s: gathered MTRR details, number of entries=%u", __func__, index);
 	HALT_ON_ERRORCOND( index <= (MAX_MEMORYTYPE_ENTRIES+1) );
 
   //[debug: dump the contents of _vmx_ept_memorytypes]
@@ -1363,7 +1329,7 @@ static u32 __xmhfhic_vmx_getmemorytypeforphysicalpage(u64 pagebaseaddr){
         return _vmx_ept_memorytypes[i].type;
     }
 
-    _XDPRINTF_("\n%s: endaddr < 1M and unmatched fixed MTRR. Halt!", __FUNCTION__);
+    _XDPRINTF_("\n%s: endaddr < 1M and unmatched fixed MTRR. Halt!", __func__);
     HALT();
   }
 
@@ -1433,7 +1399,7 @@ static u64 __xmhfhic_arch_smt_slab_populate_guest_pagetables(u64 slabid){
 
 void xmhfhic_arch_setup_slab_mem_page_tables(void){
 
-	_XDPRINTF_("%s: starting...\n", __FUNCTION__);
+	_XDPRINTF_("%s: starting...\n", __func__);
 
     //gather memory types for EPT (for guest slabs)
     __xmhfhic_vmx_gathermemorytypes();
@@ -1478,7 +1444,7 @@ void xmhfhic_arch_setup_slab_mem_page_tables(void){
 
 	}
 
-	_XDPRINTF_("%s: setup slab memory page tables\n", __FUNCTION__);
+	_XDPRINTF_("%s: setup slab memory page tables\n", __func__);
 
 }
 
@@ -1589,7 +1555,8 @@ static void __xmhfhic_smp_container_vmx_wakeupAPs(void){
     apdata.ap_cr4 = read_cr4();
     apdata.ap_entrypoint = (u32)&__xmhfhic_ap_entry;
     apdata.ap_gdtdesc_limit = sizeof(apdata.ap_gdt) - 1;
-    apdata.ap_gdtdesc_base = (X86SMP_APBOOTSTRAP_DATASEG << 4) + offsetof(x86smp_apbootstrapdata_t, ap_gdt);
+    //apdata.ap_gdtdesc_base = (X86SMP_APBOOTSTRAP_DATASEG << 4) + offsetof(x86smp_apbootstrapdata_t, ap_gdt);
+    apdata.ap_gdtdesc_base = (X86SMP_APBOOTSTRAP_DATASEG << 4) + 48;
     apdata.ap_cs_selector = __CS_CPL0;
     apdata.ap_eip = (X86SMP_APBOOTSTRAP_CODESEG << 4);
     apdata.cpuidtable = (u32)&__xmhfhic_x86vmx_cpuidtable;
@@ -1597,7 +1564,7 @@ static void __xmhfhic_smp_container_vmx_wakeupAPs(void){
     apdata.ap_gdt[1] = 0x00cf9a000000ffffULL;
     apdata.ap_gdt[2] = 0x00cf92000000ffffULL;
 
-    _XDPRINTF_("%s: sizeof(apdata)=%u bytes\n", __FUNCTION__, sizeof(apdata));
+    _XDPRINTF_("%s: sizeof(apdata)=%u bytes\n", __func__, sizeof(apdata));
     _XDPRINTF_("  apdata.ap_gdtdesc_limit at %08x\n", &apdata.ap_gdtdesc_limit);
     _XDPRINTF_("  apdata.ap_gdt at %08x\n", &apdata.ap_gdt);
 
@@ -1623,7 +1590,8 @@ static void __xmhfhic_smp_container_vmx_wakeupAPs(void){
         //_XDPRINTF_("Enabling SMIs on BSP\n");
         //__getsec_smctrl();
 
-        mle_join = (mle_join_t *)((u32)(X86SMP_APBOOTSTRAP_DATASEG << 4) + offsetof(x86smp_apbootstrapdata_t, ap_gdtdesc_limit));
+        //mle_join = (mle_join_t *)((u32)(X86SMP_APBOOTSTRAP_DATASEG << 4) + offsetof(x86smp_apbootstrapdata_t, ap_gdtdesc_limit));
+        mle_join = (mle_join_t *)((u32)(X86SMP_APBOOTSTRAP_DATASEG << 4) + 16);
 
         _XDPRINTF_("\nBSP: mle_join.gdt_limit = %x", mle_join->gdt_limit);
         _XDPRINTF_("\nBSP: mle_join.gdt_base = %x", mle_join->gdt_base);
@@ -1632,7 +1600,7 @@ static void __xmhfhic_smp_container_vmx_wakeupAPs(void){
 
         write_priv_config_reg(TXTCR_MLE_JOIN, (uint64_t)(unsigned long)mle_join);
 
-        if (os_sinit_data->capabilities.rlp_wake_monitor) {
+        if (os_sinit_data->capabilities & TXT_CAPS_T_RLP_WAKE_MONITOR) {
             _XDPRINTF_("\nBSP: joining RLPs to MLE with MONITOR wakeup");
             _XDPRINTF_("\nBSP: rlp_wakeup_addr = 0x%x", sinit_mle_data->rlp_wakeup_addr);
             *((uint32_t *)(unsigned long)(sinit_mle_data->rlp_wakeup_addr)) = 0x01;
@@ -1672,10 +1640,10 @@ static bool __xmhfhic_smp_arch_smpinitialize(void){
 	}
 
 	//fall through to common code
-	_XDPRINTF_("%s: Relinquishing BSP thread and moving to common...\n", __FUNCTION__);
+	_XDPRINTF_("%s: Relinquishing BSP thread and moving to common...\n", __func__);
 	__xmhfhic_smp_cpu_x86_smpinitialize_commonstart();
 
-	_XDPRINTF_("%s:%u: Must never get here. Halting\n", __FUNCTION__, __LINE__);
+	_XDPRINTF_("%s:%u: Must never get here. Halting\n", __func__, __LINE__);
 	HALT();
 
 }
@@ -1889,7 +1857,7 @@ static bool __xmhfhic_x86vmx_setupvmxstate(u64 cpuid){
 		*((u32 *)__xmhfhic_x86vmx_archdata[cpuindex].vmx_vmxon_region) = (u32)__xmhfhic_x86vmx_archdata[cpuindex].vmx_msrs[INDEX_IA32_VMX_BASIC_MSR];
 
         if(!__vmx_vmxon(vmxonregion_paddr)){
-			_XDPRINTF_("%s(%u): unable to enter VMX root operation\n", __FUNCTION__, (u32)cpuid);
+			_XDPRINTF_("%s(%u): unable to enter VMX root operation\n", __func__, (u32)cpuid);
 			return false;
         }
 	}
@@ -2268,29 +2236,29 @@ static bool __xmhfhic_x86vmx_setupvmxstate(u64 cpuid){
 
 
 
-	/*_XDPRINTF_("%s: vmcs pinbased=%016llx\n", __FUNCTION__, xmhfhw_cpu_x86vmx_vmread(VMCS_CONTROL_VMX_PIN_BASED));
-	_XDPRINTF_("%s: pinbase MSR=%016llx\n", __FUNCTION__, _cpustate_archdatavmx[context_desc.cpu_desc.cpu_index].vmx_msrs[INDEX_IA32_VMX_PINBASED_CTLS_MSR]);
-	_XDPRINTF_("%s: cpu_based vmcs=%016llx\n", __FUNCTION__, xmhfhw_cpu_x86vmx_vmread(VMCS_CONTROL_VMX_CPU_BASED));
-	_XDPRINTF_("%s: cpu_based MSR=%016llx\n", __FUNCTION__, _cpustate_archdatavmx[context_desc.cpu_desc.cpu_index].vmx_msrs[INDEX_IA32_VMX_PROCBASED_CTLS_MSR]);
-	_XDPRINTF_("%s: seccpu_based vmcs=%016llx\n", __FUNCTION__, xmhfhw_cpu_x86vmx_vmread(VMCS_CONTROL_VMX_SECCPU_BASED));
-	_XDPRINTF_("%s: seccpu_based MSR=%016llx\n", __FUNCTION__, _cpustate_archdatavmx[context_desc.cpu_desc.cpu_index].vmx_msrs[INDEX_IA32_VMX_PROCBASED_CTLS2_MSR]);
-	_XDPRINTF_("%s: entrycontrols vmcs=%016llx\n", __FUNCTION__, xmhfhw_cpu_x86vmx_vmread(VMCS_CONTROL_VM_ENTRY_CONTROLS));
-	_XDPRINTF_("%s: entrycontrols MSR=%016llx\n", __FUNCTION__, _cpustate_archdatavmx[context_desc.cpu_desc.cpu_index].vmx_msrs[INDEX_IA32_VMX_ENTRY_CTLS_MSR]);
-	_XDPRINTF_("%s: exitcontrols vmcs=%016llx\n", __FUNCTION__, xmhfhw_cpu_x86vmx_vmread(VMCS_CONTROL_VM_EXIT_CONTROLS));
-	_XDPRINTF_("%s: exitcontrols MSR=%016llx\n", __FUNCTION__, _cpustate_archdatavmx[context_desc.cpu_desc.cpu_index].vmx_msrs[INDEX_IA32_VMX_EXIT_CTLS_MSR]);
-	_XDPRINTF_("%s: iobitmapa vmcs=%016llx\n", __FUNCTION__, xmhfhw_cpu_x86vmx_vmread(VMCS_CONTROL_IO_BITMAPA_ADDRESS_FULL));
-	_XDPRINTF_("%s: iobitmapb vmcs=%016llx\n", __FUNCTION__, xmhfhw_cpu_x86vmx_vmread(VMCS_CONTROL_IO_BITMAPB_ADDRESS_FULL));
-	_XDPRINTF_("%s: msrbitmap load vmcs=%016llx\n", __FUNCTION__, xmhfhw_cpu_x86vmx_vmread(VMCS_CONTROL_VM_ENTRY_MSR_LOAD_ADDRESS_FULL));
-	_XDPRINTF_("%s: msrbitmap store vmcs=%016llx\n", __FUNCTION__, xmhfhw_cpu_x86vmx_vmread(VMCS_CONTROL_VM_EXIT_MSR_STORE_ADDRESS_FULL));
-	_XDPRINTF_("%s: msrbitmap exit load vmcs=%016llx\n", __FUNCTION__, xmhfhw_cpu_x86vmx_vmread(VMCS_CONTROL_VM_EXIT_MSR_LOAD_ADDRESS_FULL));
-	_XDPRINTF_("%s: ept pointer vmcs=%016llx\n", __FUNCTION__, xmhfhw_cpu_x86vmx_vmread(VMCS_CONTROL_EPT_POINTER_FULL));
+	/*_XDPRINTF_("%s: vmcs pinbased=%016llx\n", __func__, xmhfhw_cpu_x86vmx_vmread(VMCS_CONTROL_VMX_PIN_BASED));
+	_XDPRINTF_("%s: pinbase MSR=%016llx\n", __func__, _cpustate_archdatavmx[context_desc.cpu_desc.cpu_index].vmx_msrs[INDEX_IA32_VMX_PINBASED_CTLS_MSR]);
+	_XDPRINTF_("%s: cpu_based vmcs=%016llx\n", __func__, xmhfhw_cpu_x86vmx_vmread(VMCS_CONTROL_VMX_CPU_BASED));
+	_XDPRINTF_("%s: cpu_based MSR=%016llx\n", __func__, _cpustate_archdatavmx[context_desc.cpu_desc.cpu_index].vmx_msrs[INDEX_IA32_VMX_PROCBASED_CTLS_MSR]);
+	_XDPRINTF_("%s: seccpu_based vmcs=%016llx\n", __func__, xmhfhw_cpu_x86vmx_vmread(VMCS_CONTROL_VMX_SECCPU_BASED));
+	_XDPRINTF_("%s: seccpu_based MSR=%016llx\n", __func__, _cpustate_archdatavmx[context_desc.cpu_desc.cpu_index].vmx_msrs[INDEX_IA32_VMX_PROCBASED_CTLS2_MSR]);
+	_XDPRINTF_("%s: entrycontrols vmcs=%016llx\n", __func__, xmhfhw_cpu_x86vmx_vmread(VMCS_CONTROL_VM_ENTRY_CONTROLS));
+	_XDPRINTF_("%s: entrycontrols MSR=%016llx\n", __func__, _cpustate_archdatavmx[context_desc.cpu_desc.cpu_index].vmx_msrs[INDEX_IA32_VMX_ENTRY_CTLS_MSR]);
+	_XDPRINTF_("%s: exitcontrols vmcs=%016llx\n", __func__, xmhfhw_cpu_x86vmx_vmread(VMCS_CONTROL_VM_EXIT_CONTROLS));
+	_XDPRINTF_("%s: exitcontrols MSR=%016llx\n", __func__, _cpustate_archdatavmx[context_desc.cpu_desc.cpu_index].vmx_msrs[INDEX_IA32_VMX_EXIT_CTLS_MSR]);
+	_XDPRINTF_("%s: iobitmapa vmcs=%016llx\n", __func__, xmhfhw_cpu_x86vmx_vmread(VMCS_CONTROL_IO_BITMAPA_ADDRESS_FULL));
+	_XDPRINTF_("%s: iobitmapb vmcs=%016llx\n", __func__, xmhfhw_cpu_x86vmx_vmread(VMCS_CONTROL_IO_BITMAPB_ADDRESS_FULL));
+	_XDPRINTF_("%s: msrbitmap load vmcs=%016llx\n", __func__, xmhfhw_cpu_x86vmx_vmread(VMCS_CONTROL_VM_ENTRY_MSR_LOAD_ADDRESS_FULL));
+	_XDPRINTF_("%s: msrbitmap store vmcs=%016llx\n", __func__, xmhfhw_cpu_x86vmx_vmread(VMCS_CONTROL_VM_EXIT_MSR_STORE_ADDRESS_FULL));
+	_XDPRINTF_("%s: msrbitmap exit load vmcs=%016llx\n", __func__, xmhfhw_cpu_x86vmx_vmread(VMCS_CONTROL_VM_EXIT_MSR_LOAD_ADDRESS_FULL));
+	_XDPRINTF_("%s: ept pointer vmcs=%016llx\n", __func__, xmhfhw_cpu_x86vmx_vmread(VMCS_CONTROL_EPT_POINTER_FULL));
     */
-	_XDPRINTF_("%s: CR0 vmcs=%08x\n", __FUNCTION__, xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_CR0));
-	_XDPRINTF_("%s: CR4 vmcs=%08x\n", __FUNCTION__, xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_CR4));
-	_XDPRINTF_("%s: CR0 mask vmcs=%08x\n", __FUNCTION__, xmhfhw_cpu_x86vmx_vmread(VMCS_CONTROL_CR0_MASK));
-	_XDPRINTF_("%s: CR4 mask vmcs=%08x\n", __FUNCTION__, xmhfhw_cpu_x86vmx_vmread(VMCS_CONTROL_CR4_MASK));
-	_XDPRINTF_("%s: CR0 shadow vmcs=%08x\n", __FUNCTION__, xmhfhw_cpu_x86vmx_vmread(VMCS_CONTROL_CR0_SHADOW));
-	_XDPRINTF_("%s: CR4 shadow vmcs=%08x\n", __FUNCTION__, xmhfhw_cpu_x86vmx_vmread(VMCS_CONTROL_CR4_SHADOW));
+	_XDPRINTF_("%s: CR0 vmcs=%08x\n", __func__, xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_CR0));
+	_XDPRINTF_("%s: CR4 vmcs=%08x\n", __func__, xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_CR4));
+	_XDPRINTF_("%s: CR0 mask vmcs=%08x\n", __func__, xmhfhw_cpu_x86vmx_vmread(VMCS_CONTROL_CR0_MASK));
+	_XDPRINTF_("%s: CR4 mask vmcs=%08x\n", __func__, xmhfhw_cpu_x86vmx_vmread(VMCS_CONTROL_CR4_MASK));
+	_XDPRINTF_("%s: CR0 shadow vmcs=%08x\n", __func__, xmhfhw_cpu_x86vmx_vmread(VMCS_CONTROL_CR0_SHADOW));
+	_XDPRINTF_("%s: CR4 shadow vmcs=%08x\n", __func__, xmhfhw_cpu_x86vmx_vmread(VMCS_CONTROL_CR4_SHADOW));
 
 
     return true;
@@ -2307,23 +2275,23 @@ void xmhf_hic_arch_setup_cpu_state(u64 cpuid){
 
     //load GDT
     __xmhfhic_x86vmx_loadGDT(&__xmhfhic_x86vmx_gdt);
-    _XDPRINTF_("%s[%u]: GDT loaded\n", __FUNCTION__, (u32)cpuid);
+    _XDPRINTF_("%s[%u]: GDT loaded\n", __func__, (u32)cpuid);
 
     //load TR
     xmhfhw_cpu_loadTR( (__TRSEL + ((u32)cpuid * 16) ) );
-    _XDPRINTF_("%s[%u]: TR loaded\n", __FUNCTION__, (u32)cpuid);
+    _XDPRINTF_("%s[%u]: TR loaded\n", __func__, (u32)cpuid);
 
     //load IDT
     xmhfhw_cpu_loadIDT(&__xmhfhic_x86vmx_idt);
-    _XDPRINTF_("%s[%u]: IDT loaded\n", __FUNCTION__, (u32)cpuid);
+    _XDPRINTF_("%s[%u]: IDT loaded\n", __func__, (u32)cpuid);
 
     ////turn on CR0.WP bit for supervisor mode write protection
     //write_cr0(read_cr0() | CR0_WP);
-    //_XDPRINTF_("%s[%u]: Enabled supervisor mode write protection\n", __FUNCTION__, (u32)cpuid);
+    //_XDPRINTF_("%s[%u]: Enabled supervisor mode write protection\n", __func__, (u32)cpuid);
 
     //set IOPL3
     __xmhfhic_x86vmx_setIOPL3(cpuid);
-    _XDPRINTF_("%s[%u]: set IOPL to CPL-3\n", __FUNCTION__, (u32)cpuid);
+    _XDPRINTF_("%s[%u]: set IOPL to CPL-3\n", __func__, (u32)cpuid);
 
 
     //set LAPIC base address to preferred address
@@ -2331,11 +2299,11 @@ void xmhf_hic_arch_setup_cpu_state(u64 cpuid){
         u64 msrapic = rdmsr64(MSR_APIC_BASE);
         wrmsr64(MSR_APIC_BASE, ((msrapic & 0x0000000000000FFFULL) | X86SMP_LAPIC_MEMORYADDRESS));
     }
-    _XDPRINTF_("%s[%u]: set LAPIC base address to %016llx\n", __FUNCTION__, (u32)cpuid, rdmsr64(MSR_APIC_BASE));
+    _XDPRINTF_("%s[%u]: set LAPIC base address to %016llx\n", __func__, (u32)cpuid, rdmsr64(MSR_APIC_BASE));
 
 	//turn on NX protections
     wrmsr64(MSR_EFER, (rdmsr64(MSR_EFER) | (1 << EFER_NXE)) );
-    _XDPRINTF_("%s[%u]: NX protections enabled\n", __FUNCTION__, (u32)cpuid);
+    _XDPRINTF_("%s[%u]: NX protections enabled\n", __func__, (u32)cpuid);
 
 
 #if 0
@@ -2343,20 +2311,20 @@ void xmhf_hic_arch_setup_cpu_state(u64 cpuid){
 	{
 		write_cr4(read_cr4() | CR4_PCIDE);
 	}
-    _XDPRINTF_("%s[%u]: PCIDE enabled\n", __FUNCTION__, (u32)cpuid);
+    _XDPRINTF_("%s[%u]: PCIDE enabled\n", __func__, (u32)cpuid);
 #endif
 
 	//set OSXSAVE bit in CR4 to enable us to pass-thru XSETBV intercepts
 	//when the CPU supports XSAVE feature
 	if(xmhf_baseplatform_arch_x86_cpuhasxsavefeature()){
         write_cr4(read_cr4() | CR4_OSXSAVE);
-        _XDPRINTF_("%s[%u]: XSETBV passthrough enabled\n", __FUNCTION__, (u32)cpuid);
+        _XDPRINTF_("%s[%u]: XSETBV passthrough enabled\n", __func__, (u32)cpuid);
 	}
 
 
 	//set bit 5 (EM) of CR0 to be VMX compatible in case of Intel cores
 	write_cr0(read_cr0() | 0x20);
-    _XDPRINTF_("%s[%u]: Set CR0.EM to be VMX compatible\n", __FUNCTION__, (u32)cpuid);
+    _XDPRINTF_("%s[%u]: Set CR0.EM to be VMX compatible\n", __func__, (u32)cpuid);
 
 
     //setup SYSENTER/SYSEXIT mechanism
@@ -2365,7 +2333,7 @@ void xmhf_hic_arch_setup_cpu_state(u64 cpuid){
         wrmsr(IA32_SYSENTER_EIP_MSR, (u32)&__xmhfhic_rtm_trampoline_stub, 0);
         wrmsr(IA32_SYSENTER_ESP_MSR, ((u32)__xmhfhic_rtm_trampoline_stack[(u32)cpuid] + MAX_PLATFORM_CPUSTACK_SIZE), 0);
     }
-    _XDPRINTF_("%s: setup SYSENTER/SYSEXIT mechanism\n", __FUNCTION__);
+    _XDPRINTF_("%s: setup SYSENTER/SYSEXIT mechanism\n", __func__);
     _XDPRINTF_("SYSENTER CS=%016llx\n", rdmsr64(IA32_SYSENTER_CS_MSR));
     _XDPRINTF_("SYSENTER RIP=%016llx\n", rdmsr64(IA32_SYSENTER_EIP_MSR));
     _XDPRINTF_("SYSENTER RSP=%016llx\n", rdmsr64(IA32_SYSENTER_ESP_MSR));
@@ -2373,10 +2341,10 @@ void xmhf_hic_arch_setup_cpu_state(u64 cpuid){
 
     //setup VMX state
     if(!__xmhfhic_x86vmx_setupvmxstate(cpuid)){
-        _XDPRINTF_("%s[%u]: Unable to set VMX state. Halting!\n", __FUNCTION__, (u32)cpuid);
+        _XDPRINTF_("%s[%u]: Unable to set VMX state. Halting!\n", __func__, (u32)cpuid);
         HALT();
     }
-    _XDPRINTF_("%s[%u]: Setup VMX state\n", __FUNCTION__, (u32)cpuid);
+    _XDPRINTF_("%s[%u]: Setup VMX state\n", __func__, (u32)cpuid);
 
 }
 

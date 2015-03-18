@@ -56,7 +56,15 @@
 
 __attribute__ ((section(".rodata"))) char * _namestring="_xmhfslab_";
 __attribute__ ((section(".stack"))) __attribute__ ((aligned(4096))) u8 _slab_stack[MAX_PLATFORM_CPUS][XMHF_SLAB_STACKSIZE];
-__attribute__ ((section(".stackhdr"))) u32 _slab_tos[MAX_PLATFORM_CPUS]= { ((u32)&_slab_stack[0] + XMHF_SLAB_STACKSIZE), ((u32)&_slab_stack[1] + XMHF_SLAB_STACKSIZE), ((u32)_slab_stack[2] + XMHF_SLAB_STACKSIZE), ((u32)&_slab_stack[3] + XMHF_SLAB_STACKSIZE), ((u32)&_slab_stack[4] + XMHF_SLAB_STACKSIZE), ((u32)&_slab_stack[5] + XMHF_SLAB_STACKSIZE), ((u32)&_slab_stack[6] + XMHF_SLAB_STACKSIZE), ((u32)&_slab_stack[7] + XMHF_SLAB_STACKSIZE)  };
+__attribute__ ((section(".stackhdr"))) u32 _slab_tos[MAX_PLATFORM_CPUS]= {
+    ((u32)&_slab_stack[1]),
+    ((u32)&_slab_stack[2]),
+    ((u32)&_slab_stack[3]),
+    ((u32)&_slab_stack[4]),
+    ((u32)&_slab_stack[5]),
+    ((u32)&_slab_stack[6]),
+    ((u32)&_slab_stack[7]),
+    ((u32)&_slab_stack[8])  };
 __attribute__ ((section(".slab_dmadata"))) u8 _dmadataplaceholder[1] = {0};
 
 // only used for guest slabs
