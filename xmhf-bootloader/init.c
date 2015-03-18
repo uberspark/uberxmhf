@@ -491,8 +491,9 @@ void txt_status_regs(void) {
     txt_errorcode_sw_t sw_err;
     acmod_error_t acmod_err;
 
-    err = (txt_errorcode_t)read_pub_config_reg(TXTCR_ERRORCODE);
-    _XDPRINTF_("TXT.ERRORCODE=%llx\n", err._raw);
+    //err = (txt_errorcode_t)read_pub_config_reg(TXTCR_ERRORCODE);
+    unpack_txt_errorcode_t(&err, read_pub_config_reg(TXTCR_ERRORCODE));
+    _XDPRINTF_("TXT.ERRORCODE=%llx\n", pack_txt_errorcode_t(&err));
 
     /* AC module error (don't know how to parse other errors) */
     if ( err.valid ) {

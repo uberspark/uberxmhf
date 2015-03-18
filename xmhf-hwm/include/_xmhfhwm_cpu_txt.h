@@ -110,14 +110,33 @@
 /*
 * format of ERRORCODE register
 */
-typedef union {
+/*typedef union {
     u64 _raw;
     struct {
-        u32   type       : 30;    /* external-specific error code */
-        u32   external   : 1;     /* 0=from proc, 1=from external SW */
-        u32   valid      : 1;     /* 1=valid */
+        u32   type       : 30;    //external-specific error code
+        u32   external   : 1;     // 0=from proc, 1=from external SW
+        u32   valid      : 1;     // 1=valid
     } __attribute__((packed));
 } txt_errorcode_t;
+*/
+
+typedef struct {
+        u32   type       ;//: 30;    //external-specific error code
+        u32   external   ;//: 1;     // 0=from proc, 1=from external SW
+        u32   valid      ;//: 1;     // 1=valid
+} __attribute__((packed)) txt_errorcode_t;
+
+#define pack_txt_errorcode_t(s) \
+    (u64)( \
+    (((u64)(s)->valid               & 0x000000003FFFFFFFULL) << 31) | \
+    (((u64)(s)->external            & 0x0000000000000001ULL) << 1 ) | \
+    (((u64)(s)->type                & 0x0000000000000001ULL) << 0 ) \
+    )
+
+#define unpack_txt_errorcode_t(s, value) \
+    (s)->valid     = (u32)(((u64)value >> 31) & 0x000000003FFFFFFFULL); \
+    (s)->external  = (u32)(((u64)value >> 1 ) & 0x0000000000000001ULL); \
+    (s)->type      = (u32)(((u64)value >> 0 ) & 0x0000000000000001ULL);
 
 
 
