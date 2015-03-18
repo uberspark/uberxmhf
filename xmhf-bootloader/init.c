@@ -90,8 +90,8 @@ u32 isbsp(void);
 //---globals--------------------------------------------------------------------
  __attribute__(( section(".data") )) PCPU pcpus[MAX_PCPU_ENTRIES];
 u32 pcpus_numentries=0;
-u32 cpu_vendor;    //CPU_VENDOR_INTEL or CPU_VENDOR_AMD
-u32 hypervisor_image_baseaddress;    //2M aligned highest physical memory address
+ __attribute__(( section(".data") )) u32 cpu_vendor;    //CPU_VENDOR_INTEL or CPU_VENDOR_AMD
+ __attribute__(( section(".data") )) u32 hypervisor_image_baseaddress;    //2M aligned highest physical memory address
 //where the hypervisor binary is relocated to
  __attribute__(( section(".data") )) GRUBE820 grube820list[MAX_E820_ENTRIES];
 u32 grube820list_numentries=0;        //actual number of e820 entries returned
@@ -139,12 +139,12 @@ extern void get_tboot_fmt(void);
 
 // we should get all of these from the build process, but don't forget
 // that here in 'init' these values are UNTRUSTED
-INTEGRITY_MEASUREMENT_VALUES g_init_gold /* __attribute__(( section("") )) */ = {
+/*INTEGRITY_MEASUREMENT_VALUES g_init_gold  = {
     .sha_runtime = ___RUNTIME_INTEGRITY_HASH___,
     .sha_slabove64K = ___SLABOVE64K_INTEGRITY_HASH___,
     .sha_slbelow64K = ___SLBELOW64K_INTEGRITY_HASH___
 };
-
+*/
 //size of SL + runtime in bytes
 //size_t sl_rt_size;
 
