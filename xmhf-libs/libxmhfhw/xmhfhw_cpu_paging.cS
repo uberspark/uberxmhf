@@ -52,11 +52,12 @@
 #include <xmhfhw.h>
 #include <xmhf-debug.h>
 
-void cache_wbinvd(void){
-    asm volatile("wbinvd\n" :::"memory");
+__attribute__((naked)) void cache_wbinvd(void){
+    asm volatile("wbinvd \r\n");
+    asm volatile("ret \r\n");
 }
 
-void tlb_invlpg(u64 addr){
-    asm volatile("invlpg (%0)\n": /* no output */ : "r" (addr): "memory");
-
+__attribute__((naked)) void tlb_invlpg(u64 addr){
+    asm volatile("invlpg 0x4(%esp) \r\n");
+    asm volatile("ret \r\n");
 }
