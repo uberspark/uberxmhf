@@ -52,14 +52,13 @@
 #include <xmhfhw.h>
 #include <xmhf-debug.h>
 
-
-u64 rdmsr64(u32 msr){
-    u32 eax, edx;
-    rdmsr(msr, &eax, &edx);
-    return (((u64)edx << 32) | (u64)eax);
+void rdmsr(u32 msr, u32 *eax, u32 *edx){
+    u64 value;
+    value = rdmsr64(msr);
+    *eax = (u32)value;
+    *edx = (u32)((u64)value >> 32);
 }
 
-void wrmsr64(u32 msr, u64 newval){
-    wrmsr(msr, (u32)newval, (u32)((u64)newval >> 32));
+void wrmsr(u32 msr, u32 eax, u32 edx){
+    wrmsr64(msr, (((u64)edx << 32) | (u64)eax));
 }
-
