@@ -235,6 +235,25 @@ __attribute__((aligned(4096))) void _xcguestslab_do_testxhssteptrace_func(void){
 }
 
 
+u32 _xcguestslab_vmcall(u32 eax, u32 ebx, u32 edx){
+    u32 result;
+
+    //register syscall handler
+    asm volatile(
+        "movl %1, %%eax \r\n"
+        "movl %2, %%edx \r\n"
+        "movl %3, %%ebx \r\n"
+        "vmcall \r\n"
+        "movl %%eax, %0 \r\n"
+        : "=r" (result)
+        : "g" (eax),
+          "g" (edx),
+          "g" (ebx)
+        : "eax", "ebx", "edx"
+    );
+
+    return result;
+}
 
 
 
@@ -242,8 +261,7 @@ __attribute__((aligned(4096))) void _xcguestslab_do_testxhssteptrace_func(void){
 
 
 
-
-/*//////
+//////
 // syscalllog
 
 void _xcguestslab_do_testxhsyscalllog_sysenterhandler(void){
@@ -258,101 +276,29 @@ void _xcguestslab_do_testxhsyscalllog_sysenterhandler(void){
 }
 
 
-void _xcguestslab_do_testxhsyscalllog_loadGDT(u32 addr_gdt, u32 )
-*/
-
-
-
-
-//*
-// GDT
-__attribute__(( aligned(16) )) u64 _xcguestslab_gdt_start[]  = {
-	0x0000000000000000ULL,	//NULL descriptor
-	0x00cf9a000000ffffULL,	//CPL-0 32-bit code descriptor (CS32)
-	0x00cf92000000ffffULL,	//CPL-0 32-bit data descriptor (DS/SS/ES/FS/GS)
-	0x00cffa000000ffffULL,	//TODO: CPL-3 32-bit code descriptor (CS32)
-	0x00cff2000000ffffULL,	//TODO: CPL-3 32-bit data descriptor (DS/SS/ES/FS/GS)
-	0x00cffa000000ffffULL,	//TODO: CPL-3 32-bit code descriptor (CS32)
-	0x00cff2000000ffffULL,	//TODO: CPL-3 32-bit data descriptor (DS/SS/ES/FS/GS)
-	0x0000000000000000ULL,  //TSS descriptors
-	0x0000000000000000ULL,
-	0x0000000000000000ULL,
-	0x0000000000000000ULL,
-	0x0000000000000000ULL,
-	0x0000000000000000ULL,
-	0x0000000000000000ULL,
-	0x0000000000000000ULL,
-	0x0000000000000000ULL,
-	0x0000000000000000ULL,
-	0x0000000000000000ULL,
-	0x0000000000000000ULL,
-	0x0000000000000000ULL,
-	0x0000000000000000ULL,
-	0x0000000000000000ULL,
-	0x0000000000000000ULL,
-
-	0x0000000000000000ULL,
-};
-
-/* x86_64
-//*
-// GDT descriptor
-__attribute__(( aligned(16) )) arch_x86_gdtdesc_t _xcguestslab_gdt  = {
-	.size=sizeof(_xcguestslab_gdt_start)-1,
-	.base=(u64)&_xcguestslab_gdt_start,
-};
-*/
-
-// GDT descriptor
-__attribute__(( aligned(16) )) arch_x86_gdtdesc_t _xcguestslab_gdt  = {
-	.size=sizeof(_xcguestslab_gdt_start)-1,
-	.base=(u32)&_xcguestslab_gdt_start,
-};
-
-
-/////////
-#define SYSCALLLOG_REGISTER     			0xF0
-
-static u8 _xcguestslab_do_testxhsyscalllog_sysenterhandler_stack[PAGE_SIZE_4K];
-
-
-void _xcguestslab_do_testxhsyscalllog_sysenterhandler(void){
-
-    asm volatile(
-         "sysexit \r\n"
-        :
-        :
-        :
-    );
-
-}
-
-
-void xcguestslab_do_testxhsyscalllog(void){
-    u64 gpa = &_xcguestslab_do_testxhsyscalllog_sysenterhandler;
-
-    _XDPRINTF_("%s: proceeding to load GDT\n", __FUNCTION__);
+void _xcguestslab_do_testxhsyscalllog_loadGDT(u32 addr_gdt, u32 cs_sel, u32 ds_sel){
 
     //load GDTR
 	asm volatile(
-		"lgdt  %0 \r\n"
+		"lgdt  (%0) \r\n"
 		"pushl	%1 \r\n"
 		"pushl	$reloadsegs \r\n"
 		"lret \r\n"
 		"reloadsegs: \r\n"
-		"movw	%2, %%ax \r\n"
+		"movl	%2, %%eax \r\n"
 		"movw	%%ax, %%ds \r\n"
 		"movw	%%ax, %%es \r\n"
 		"movw	%%ax, %%fs \r\n"
 		"movw	%%ax, %%gs \r\n"
 		"movw   %%ax, %%ss \r\n"
 		: //no outputs
-		: "m" (_xcguestslab_gdt), "i" (__CS_CPL0), "i" (__DS_CPL0)
-		: "rax"
+		: "r" (addr_gdt), "r" (cs_sel), "r" (ds_sel)
+		: "eax"
 	);
 
-    _XDPRINTF_("%s: GDT loaded\n", __FUNCTION__);
+}
 
+void  _xcguestslab_do_testxhsyscalllog_setIOPL3(void){
 
     //set IOPL to CPL-3
 	asm volatile(
@@ -367,36 +313,9 @@ void xcguestslab_do_testxhsyscalllog(void){
 	);
 
 
-    //register syscall handler
-    asm volatile(
-        "movl %0, %%eax \r\n"
-        "movl %1, %%edx \r\n"
-        "movl %2, %%ebx \r\n"
-        "vmcall \r\n"
-        :
-        : "i" (SYSCALLLOG_REGISTER),
-          "g" ( (u32) ((u64)(gpa >> 32)) ),
-          "g" ((u32)gpa)
-        : "eax", "ebx", "edx"
-    );
+}
 
-
-    _XDPRINTF_("%s: registered syscall handler on page %x\n", __FUNCTION__, gpa);
-
-
-
-    //setup SYSENTER/SYSEXIT mechanism
-    {
-        wrmsr64(IA32_SYSENTER_CS_MSR, __CS_CPL0);
-        wrmsr64(IA32_SYSENTER_EIP_MSR, &_xcguestslab_do_testxhsyscalllog_sysenterhandler);
-        wrmsr64(IA32_SYSENTER_ESP_MSR, ((u32)&_xcguestslab_do_testxhsyscalllog_sysenterhandler_stack + (u32)PAGE_SIZE_4K));
-    }
-    _XDPRINTF_("%s: setup SYSENTER/SYSEXIT mechanism\n", __FUNCTION__);
-    _XDPRINTF_("%s: SYSENTER CS=%016llx\n", __FUNCTION__, rdmsr64(IA32_SYSENTER_CS_MSR));
-    _XDPRINTF_("%s: SYSENTER RIP=%016llx\n", __FUNCTION__, rdmsr64(IA32_SYSENTER_EIP_MSR));
-    _XDPRINTF_("%s: SYSENTER RSP=%016llx\n", __FUNCTION__, rdmsr64(IA32_SYSENTER_ESP_MSR));
-
-
+void _xcguestslab_do_testxhsyscalllog_switchtoring3(void){
     //switch to ring-3
     asm volatile(
          "movl $1f, %%edx \r\n"
@@ -407,9 +326,10 @@ void xcguestslab_do_testxhsyscalllog(void){
         :
         : "edx", "ecx"
     );
+}
 
-    _XDPRINTF_("%s: Guest Slab at Ring-3. Proceeding to execute sysenter...Halting!\n", __FUNCTION__);
 
+void _xcguestslab_do_testxhsyscalllog_invokesyscall(void){
     //invoke sysenter
     asm volatile(
          "movl $1f, %%edx \r\n"
@@ -420,13 +340,4 @@ void xcguestslab_do_testxhsyscalllog(void){
         :
         : "edx", "ecx"
     );
-
-    _XDPRINTF_("%s: Came back from SYSENTER\n", __FUNCTION__);
-
-
-    _XDPRINTF_("%s: Guest Slab Halting\n", __FUNCTION__);
-    HALT();
 }
-
-
-

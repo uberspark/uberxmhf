@@ -162,7 +162,7 @@ static void xcguestslab_do_testxhssteptrace(void){
 
 
 
-/*
+
 //////
 // syscalllog test harness
 
@@ -211,63 +211,24 @@ static u8 _xcguestslab_do_testxhsyscalllog_sysenterhandler_stack[PAGE_SIZE_4K];
 
 
 
+extern void _xcguestslab_do_testxhsyscalllog_sysenterhandler(void);
 
 void xcguestslab_do_testxhsyscalllog(void){
     u64 gpa = &_xcguestslab_do_testxhsyscalllog_sysenterhandler;
 
-    _XDPRINTF_("%s: proceeding to load GDT\n", __FUNCTION__);
+    _XDPRINTF_("%s: proceeding to load GDT\n", __func__);
 
-    //load GDTR
-	asm volatile(
-		"lgdt  %0 \r\n"
-		"pushl	%1 \r\n"
-		"pushl	$reloadsegs \r\n"
-		"lret \r\n"
-		"reloadsegs: \r\n"
-		"movw	%2, %%ax \r\n"
-		"movw	%%ax, %%ds \r\n"
-		"movw	%%ax, %%es \r\n"
-		"movw	%%ax, %%fs \r\n"
-		"movw	%%ax, %%gs \r\n"
-		"movw   %%ax, %%ss \r\n"
-		: //no outputs
-		: "m" (_xcguestslab_gdt), "i" (__CS_CPL0), "i" (__DS_CPL0)
-		: "rax"
-	);
+    _xcguestslab_do_testxhsyscalllog_loadGDT( (u32)&_xcguestslab_gdt, __CS_CPL0, __DS_CPL0 );
 
-    _XDPRINTF_("%s: GDT loaded\n", __FUNCTION__);
+    _XDPRINTF_("%s: GDT loaded\n", __func__);
 
+    _xcguestslab_do_testxhsyscalllog_setIOPL3();
 
-    //set IOPL to CPL-3
-	asm volatile(
-        "pushfl \r\n"
-        "popl %%eax \r\n"
-		"orl $0x3000, %%eax \r\n"					// clear flags, but set IOPL=3 (CPL-3)
-		"pushl %%eax \r\n"
-		"popfl \r\n"
-		: //no outputs
-		: //no inputs
-		: "eax", "cc"
-	);
+    _xcguestslab_vmcall(SYSCALLLOG_REGISTER,
+                        ( (u32) ((u64)(gpa >> 32)) ),
+                        ((u32)gpa) );
 
-
-    //register syscall handler
-    asm volatile(
-        "movl %0, %%eax \r\n"
-        "movl %1, %%edx \r\n"
-        "movl %2, %%ebx \r\n"
-        "vmcall \r\n"
-        :
-        : "i" (SYSCALLLOG_REGISTER),
-          "g" ( (u32) ((u64)(gpa >> 32)) ),
-          "g" ((u32)gpa)
-        : "eax", "ebx", "edx"
-    );
-
-
-    _XDPRINTF_("%s: registered syscall handler on page %x\n", __FUNCTION__, gpa);
-
-
+    _XDPRINTF_("%s: registered syscall handler on page %x\n", __func__, gpa);
 
     //setup SYSENTER/SYSEXIT mechanism
     {
@@ -275,44 +236,25 @@ void xcguestslab_do_testxhsyscalllog(void){
         wrmsr64(IA32_SYSENTER_EIP_MSR, &_xcguestslab_do_testxhsyscalllog_sysenterhandler);
         wrmsr64(IA32_SYSENTER_ESP_MSR, ((u32)&_xcguestslab_do_testxhsyscalllog_sysenterhandler_stack + (u32)PAGE_SIZE_4K));
     }
-    _XDPRINTF_("%s: setup SYSENTER/SYSEXIT mechanism\n", __FUNCTION__);
-    _XDPRINTF_("%s: SYSENTER CS=%016llx\n", __FUNCTION__, rdmsr64(IA32_SYSENTER_CS_MSR));
-    _XDPRINTF_("%s: SYSENTER RIP=%016llx\n", __FUNCTION__, rdmsr64(IA32_SYSENTER_EIP_MSR));
-    _XDPRINTF_("%s: SYSENTER RSP=%016llx\n", __FUNCTION__, rdmsr64(IA32_SYSENTER_ESP_MSR));
+    _XDPRINTF_("%s: setup SYSENTER/SYSEXIT mechanism\n", __func__);
+    _XDPRINTF_("%s: SYSENTER CS=%016llx\n", __func__, rdmsr64(IA32_SYSENTER_CS_MSR));
+    _XDPRINTF_("%s: SYSENTER RIP=%016llx\n", __func__, rdmsr64(IA32_SYSENTER_EIP_MSR));
+    _XDPRINTF_("%s: SYSENTER RSP=%016llx\n", __func__, rdmsr64(IA32_SYSENTER_ESP_MSR));
 
 
-    //switch to ring-3
-    asm volatile(
-         "movl $1f, %%edx \r\n"
-         "movl %%esp, %%ecx \r\n"
-         "sysexit \r\n"
-         "1: \r\n"
-        :
-        :
-        : "edx", "ecx"
-    );
+    _xcguestslab_do_testxhsyscalllog_switchtoring3();
 
-    _XDPRINTF_("%s: Guest Slab at Ring-3. Proceeding to execute sysenter...Halting!\n", __FUNCTION__);
+    _XDPRINTF_("%s: Guest Slab at Ring-3. Proceeding to execute sysenter...Halting!\n", __func__);
 
-    //invoke sysenter
-    asm volatile(
-         "movl $1f, %%edx \r\n"
-         "movl %%esp, %%ecx \r\n"
-         "sysenter \r\n"
-         "1: \r\n"
-        :
-        :
-        : "edx", "ecx"
-    );
+    _xcguestslab_do_testxhsyscalllog_invokesyscall();
 
-    _XDPRINTF_("%s: Came back from SYSENTER\n", __FUNCTION__);
+    _XDPRINTF_("%s: Came back from SYSENTER\n", __func__);
 
-
-    _XDPRINTF_("%s: Guest Slab Halting\n", __FUNCTION__);
+    _XDPRINTF_("%s: Guest Slab Halting\n", __func__);
     HALT();
 }
 
-*/
+
 
 
 
