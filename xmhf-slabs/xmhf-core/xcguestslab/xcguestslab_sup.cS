@@ -243,8 +243,23 @@ __attribute__((aligned(4096))) void _xcguestslab_do_testxhssteptrace_func(void){
 
 
 
+/*//////
+// syscalllog
+
+void _xcguestslab_do_testxhsyscalllog_sysenterhandler(void){
+
+    asm volatile(
+         "sysexit \r\n"
+        :
+        :
+        :
+    );
+
+}
 
 
+void _xcguestslab_do_testxhsyscalllog_loadGDT(u32 addr_gdt, u32 )
+*/
 
 
 
