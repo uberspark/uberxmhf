@@ -132,6 +132,45 @@ static void xcguestslab_do_msrtest(void){
 
 
 //////
+// approvexec test harness
+extern void _xcguestslab_do_testxhapprovexec_functoprotect(void);
+
+
+
+#define APPROVEXEC_LOCK     			0xD0
+#define APPROVEXEC_UNLOCK   			0xD1
+
+void xcguestslab_do_testxhapprovexec(void){
+    u32 gpa = &_xcguestslab_do_testxhapprovexec_functoprotect;
+
+    _XDPRINTF_("%s: Going to approve and lock function at %x\n", __func__, gpa);
+
+    _xcguestslab_vmcall(APPROVEXEC_LOCK, ( (u32) ((u64)(gpa >> 32)) ),
+                  ((u32)gpa)       );
+
+    _XDPRINTF_("%s: Locked function\n", __func__);
+
+    /*{
+        u8 *pokefun = (u8 *)&_xcguestslab_do_testxhapprovexec_functoprotect;
+        pokefun[0] = 0xAB;
+    }*/
+
+    _XDPRINTF_("%s: Going to unlock function on page %x\n", __func__, gpa);
+
+    _xcguestslab_vmcall(APPROVEXEC_UNLOCK, ( (u32) ((u64)(gpa >> 32)) ),
+                  ((u32)gpa)       );
+
+    _XDPRINTF_("%s: unlocked function\n", __func__);
+
+}
+
+
+
+
+
+
+
+//////
 // ssteptrace test harness
 
 //////////////////////////////////////////////////////////////////////////////
@@ -302,9 +341,9 @@ void slab_main(slab_params_t *sp){
 
     //xcguestslab_do_testxhhyperdep();
 
-    //xcguestslab_do_testxhapprovexec();
+    xcguestslab_do_testxhapprovexec();
 
-    xcguestslab_do_testxhssteptrace();
+    //xcguestslab_do_testxhssteptrace();
 
     //xcguestslab_do_testxhsyscalllog();
 

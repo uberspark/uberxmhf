@@ -148,48 +148,6 @@ __attribute__((aligned(4096))) void _xcguestslab_do_testxhapprovexec_functoprote
 
 }
 
-#define APPROVEXEC_LOCK     			0xD0
-#define APPROVEXEC_UNLOCK   			0xD1
-
-void xcguestslab_do_testxhapprovexec(void){
-    u32 gpa = &_xcguestslab_do_testxhapprovexec_functoprotect;
-
-    _XDPRINTF_("%s: Going to approve and lock function at %x\n", __FUNCTION__, gpa);
-
-    asm volatile(
-        "movl %0, %%eax \r\n"
-        "movl %1, %%edx \r\n"
-        "movl %2, %%ebx \r\n"
-        "vmcall \r\n"
-        :
-        : "i" (APPROVEXEC_LOCK),
-          "g" ( (u32) ((u64)(gpa >> 32)) ),
-          "g" ((u32)gpa)
-        : "eax", "ebx", "edx"
-    );
-
-
-    _XDPRINTF_("%s: Locked function\n", __FUNCTION__);
-
-
-    _XDPRINTF_("%s: Going to unlock function on page %x\n", __FUNCTION__, gpa);
-
-    asm volatile(
-        "movl %0, %%eax \r\n"
-        "movl %1, %%edx \r\n"
-        "movl %2, %%ebx \r\n"
-        "vmcall \r\n"
-        :
-        : "i" (APPROVEXEC_UNLOCK),
-          "g" ( (u32) ((u64)(gpa >> 32)) ),
-          "g" ((u32)gpa)
-        : "eax", "ebx", "edx"
-    );
-
-    _XDPRINTF_("%s: unlocked function\n", __FUNCTION__);
-
-}
-
 
 
 
