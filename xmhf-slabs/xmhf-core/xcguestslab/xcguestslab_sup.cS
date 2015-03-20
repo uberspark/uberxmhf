@@ -192,48 +192,12 @@ void xcguestslab_do_testxhapprovexec(void){
 
 
 
-//////////////////////////////////////////////////////////////////////////////
-// xhssteptrace test
-
-#define SSTEPTRACE_REGISTER    			0xE0
-#define SSTEPTRACE_ON          			0xE1
-#define SSTEPTRACE_OFF         			0xE2
-
-__attribute__((aligned(4096))) void _xcguestslab_do_testxhssteptrace_func(void){
-
-    _XDPRINTF_("%s: Turning on tracing...\n", __FUNCTION__);
-
-    asm volatile(
-        "movl %0, %%eax \r\n"
-        "vmcall \r\n"
-        :
-        : "i" (SSTEPTRACE_ON)
-        : "eax"
-    );
 
 
-    asm volatile(
-        "nop \r\n"
-        "nop \r\n"
-        "nop \r\n"
-        :
-        :
-        :
-    );
-
-    asm volatile(
-        "movl %0, %%eax \r\n"
-        "vmcall \r\n"
-        :
-        : "i" (SSTEPTRACE_OFF)
-        : "eax"
-    );
 
 
-    _XDPRINTF_("%s: Tracing off...\n", __FUNCTION__);
 
-}
-
+//////
 
 u32 _xcguestslab_vmcall(u32 eax, u32 ebx, u32 edx){
     u32 result;

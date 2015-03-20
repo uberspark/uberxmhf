@@ -131,6 +131,37 @@ static void xcguestslab_do_msrtest(void){
 
 
 
+//////
+// ssteptrace test harness
+
+//////////////////////////////////////////////////////////////////////////////
+// xhssteptrace test
+
+#define SSTEPTRACE_REGISTER    			0xE0
+#define SSTEPTRACE_ON          			0xE1
+#define SSTEPTRACE_OFF         			0xE2
+
+__attribute__((aligned(4096))) void _xcguestslab_do_testxhssteptrace_func(void){
+
+    _XDPRINTF_("%s: Turning on tracing...\n", __func__);
+
+    _xcguestslab_vmcall(SSTEPTRACE_ON, 0, 0);
+
+    /*asm volatile(
+        "nop \r\n"
+        "nop \r\n"
+        "nop \r\n"
+        :
+        :
+        :
+    );*/
+
+    _xcguestslab_vmcall(SSTEPTRACE_OFF, 0 , 0);
+
+    _XDPRINTF_("%s: Tracing off...\n", __func__);
+
+}
+
 
 static void xcguestslab_do_testxhssteptrace(void){
     /*u64 gpa = &_xcguestslab_do_testxhssteptrace_func;
@@ -273,9 +304,9 @@ void slab_main(slab_params_t *sp){
 
     //xcguestslab_do_testxhapprovexec();
 
-    //xcguestslab_do_testxhssteptrace();
+    xcguestslab_do_testxhssteptrace();
 
-    xcguestslab_do_testxhsyscalllog();
+    //xcguestslab_do_testxhsyscalllog();
 
     _XDPRINTF_("%s: Guest Slab Halting\n", __func__);
     HALT();
