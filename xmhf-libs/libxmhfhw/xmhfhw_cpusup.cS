@@ -52,12 +52,18 @@
 #include <xmhfhw.h>
 #include <xmhf-debug.h>
 
-void cpu_relax(void){
+/*void cpu_relax(void){
     asm volatile ("pause");
+}
+*/
+
+__attribute__((naked)) void cpu_relax(void){
+    asm volatile ("pause \r\n");
+    asm volatile ("ret \r\n");
 }
 
 
-void xmhfhw_cpu_cpuid(u32 op, u32 *eax, u32 *ebx, u32 *ecx, u32 *edx){
+/*void xmhfhw_cpu_cpuid(u32 op, u32 *eax, u32 *ebx, u32 *ecx, u32 *edx){
     asm volatile(
                  "cpuid \r\n"
                 :"=a"(*(eax)), "=b"(*(ebx)), "=c"(*(ecx)), "=d"(*(edx))
@@ -66,16 +72,51 @@ void xmhfhw_cpu_cpuid(u32 op, u32 *eax, u32 *ebx, u32 *ecx, u32 *edx){
                );
 
 
+}*/
+
+__attribute__((naked)) void xmhfhw_cpu_cpuid(u32 op,    //0xC
+                                             u32 *eax,  //0x10
+                                             u32 *ebx,  //0x14
+                                             u32 *ecx,  //0x18
+                                             u32 *edx){ //0x1C
+    asm volatile ("pushl %esi \r\n");
+    asm volatile ("pushl %ebx \r\n");
+
+    asm volatile ("movl 0xc(%esp), %eax \r\n"); //eax = op
+    asm volatile ("movl 0x18(%esp), %ecx \r\n");
+    asm volatile ("movl (%ecx), %ecx \r\n");
+
+    asm volatile ("cpuid \r\n");
+
+    asm volatile ("movl 0x10(%esp), %esi \r\n");
+    asm volatile ("movl %eax, (%esi) \r\n");
+    asm volatile ("movl 0x14(%esp), %esi \r\n");
+    asm volatile ("movl %ebx, (%esi) \r\n");
+    asm volatile ("movl 0x18(%esp), %esi \r\n");
+    asm volatile ("movl %ecx, (%esi) \r\n");
+    asm volatile ("movl 0x1c(%esp), %esi \r\n");
+    asm volatile ("movl %edx, (%esi) \r\n");
+
+    asm volatile ("pop %ebx \r\n");
+    asm volatile ("pop %esi \r\n");
+    asm volatile ("ret \r\n");
 }
 
 
-uint64_t rdtsc64(void)
+
+/*uint64_t rdtsc64(void)
 {
         uint64_t rv;
 
         __asm__ __volatile__ ("rdtsc" : "=A" (rv));
         return (rv);
+}*/
+
+__attribute__((naked)) uint64_t rdtsc64(void){
+    asm volatile ("rdtsc \r\n");
+    asm volatile ("ret \r\n");
 }
+
 
 u32 read_eflags(void){
     u32 __eflags;
@@ -346,7 +387,7 @@ u64 xmhf_baseplatform_arch_x86_getgdtbase(void){
 		return gdtr.base;
 }
 
-u64 xmhf_baseplatform_arch_x86_getidtbase(void){
+/*u64 xmhf_baseplatform_arch_x86_getidtbase(void){
 		struct {
 			u16 limit;
 			u64 base;
@@ -361,9 +402,21 @@ u64 xmhf_baseplatform_arch_x86_getidtbase(void){
 		);
 
 		return idtr.base;
+}*/
+
+
+__attribute__((naked)) u64 xmhf_baseplatform_arch_x86_getidtbase(void){
+		asm volatile ("subl 0x8, %esp \r\n");
+		asm volatile ("sidt (%esp) \r\n");
+		asm volatile ("movl 0x2(%esp), %eax \r\n");
+		asm volatile ("xorl %edx, %edx \r\n");
+        asm volatile ("addl 0x8, %esp \r\n");
+        asm volatile ("ret \r\n");
 }
 
-u64  xmhf_baseplatform_arch_x86_gettssbase(void){
+
+
+/*u64  xmhf_baseplatform_arch_x86_gettssbase(void){
 	  u64 gdtbase = xmhf_baseplatform_arch_x86_getgdtbase();
 	  u32 tssdesc_low, tssdesc_high;
 
@@ -381,7 +434,33 @@ u64  xmhf_baseplatform_arch_x86_gettssbase(void){
 	  );
 
        return (  (u64)(  ((u32)tssdesc_high & 0xFF000000UL) | (((u32)tssdesc_high & 0x000000FFUL) << 16)  | ((u32)tssdesc_low >> 16)  ) );
+}*/
+
+__attribute__((naked)) u64  xmhf_baseplatform_arch_x86_gettssbase(void){
+    asm volatile ("subl 0x8, %esp \r\n");
+    asm volatile ("sgdt (%esp) \r\n");
+    asm volatile ("movl 0x2(%esp), %ecx \r\n");
+    asm volatile ("xorl %eax, %eax\r\n");
+    asm volatile ("str %ax \r\n");
+    asm volatile ("addl %eax, %ecx\r\n");		//%ecx is pointer to TSS descriptor in GDT
+    asm volatile ("movl (%ecx), %eax \r\n");	//eax = low 32-bits of TSS descriptor
+    asm volatile ("addl $0x4, %ecx\r\n");		//%ecx points to top 32-bits of 64-bit TSS desc.
+    asm volatile ("movl (%ecx), %edx \r\n");	//edx = high 32-bits of TSS descriptor
+
+    asm volatile ("movl %edx, %ecx \r\n");
+    asm volatile ("andl $0xFF000000, %edx \r\n");
+    asm volatile ("andl $0x000000FF, %ecx \r\n");
+    asm volatile ("shl $16, %ecx \r\n");
+    asm volatile ("shr $16, %eax \r\n");
+    asm volatile ("orl %ecx, %eax \r\n");
+    asm volatile ("orl %edx, %eax \r\n");
+    asm volatile ("xorl %edx, %edx \r\n");
+
+    asm volatile ("addl 0x8, %esp \r\n");
+    asm volatile ("ret \r\n");
 }
+
+
 
 
 
