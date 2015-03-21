@@ -128,6 +128,45 @@ static void xcguestslab_do_msrtest(void){
 }
 
 
+//////
+// hyperdep test harness
+
+//////////////////////////////////////////////////////////////////////////////
+// xhhyperdep test
+
+__attribute__((aligned(4096))) static u8 _xcguestslab_do_testxhhyperdep_page[4096];
+
+#define HYPERDEP_ACTIVATEDEP			0xC0
+#define HYPERDEP_DEACTIVATEDEP			0xC1
+
+typedef void (*DEPFN)(void);
+
+void xcguestslab_do_testxhhyperdep(void){
+    u64 gpa = &_xcguestslab_do_testxhhyperdep_page;
+    DEPFN fn = (DEPFN)gpa;
+
+    _xcguestslab_do_testxhhyperdep_page[0] = 0xC3; //ret instruction
+
+    _XDPRINTF_("%s: Going to activate DEP on page %x\n", __func__, gpa);
+
+
+    _xcguestslab_vmcall(HYPERDEP_ACTIVATEDEP,  ( (u32) ((u64)(gpa >> 32)) ),
+              ((u32)gpa)    );
+
+    _XDPRINTF_("%s: Activated DEP\n", __func__);
+
+    //fn();
+
+    _XDPRINTF_("%s: Going to de-activate DEP on page %x\n", __func__, gpa);
+
+    _xcguestslab_vmcall(HYPERDEP_DEACTIVATEDEP,  ( (u32) ((u64)(gpa >> 32)) ),
+              ((u32)gpa)    );
+
+
+    _XDPRINTF_("%s: Deactivated DEP\n", __func__);
+
+}
+
 
 
 
@@ -339,9 +378,9 @@ void slab_main(slab_params_t *sp){
 
     //xcguestslab_do_msrtest();
 
-    //xcguestslab_do_testxhhyperdep();
+    xcguestslab_do_testxhhyperdep();
 
-    xcguestslab_do_testxhapprovexec();
+    //xcguestslab_do_testxhapprovexec();
 
     //xcguestslab_do_testxhssteptrace();
 
