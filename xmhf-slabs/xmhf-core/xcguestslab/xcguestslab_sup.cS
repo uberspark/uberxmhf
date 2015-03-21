@@ -75,57 +75,6 @@ void xcguestslab_do_vmcall(void){
 
 
 
-//////////////////////////////////////////////////////////////////////////////
-// xhhyperdep test
-
-__attribute__((aligned(4096))) u8 _xcguestslab_do_testxhhyperdep_page[4096];
-
-#define HYPERDEP_ACTIVATEDEP			0xC0
-#define HYPERDEP_DEACTIVATEDEP			0xC1
-
-typedef void (*DEPFN)(void);
-
-void xcguestslab_do_testxhhyperdep(void){
-    u64 gpa = &_xcguestslab_do_testxhhyperdep_page;
-    DEPFN fn = (DEPFN)gpa;
-
-    _xcguestslab_do_testxhhyperdep_page[0] = 0xC3; //ret instruction
-
-    _XDPRINTF_("%s: Going to activate DEP on page %x\n", __FUNCTION__, gpa);
-
-    asm volatile(
-        "movl %0, %%eax \r\n"
-        "movl %1, %%edx \r\n"
-        "movl %2, %%ebx \r\n"
-        "vmcall \r\n"
-        :
-        : "i" (HYPERDEP_ACTIVATEDEP),
-          "g" ( (u32) ((u64)(gpa >> 32)) ),
-          "g" ((u32)gpa)
-        : "eax", "ebx", "edx"
-    );
-
-    _XDPRINTF_("%s: Activated DEP\n", __FUNCTION__);
-
-    //fn();
-
-    _XDPRINTF_("%s: Going to de-activate DEP on page %x\n", __FUNCTION__, gpa);
-
-    asm volatile(
-        "movl %0, %%eax \r\n"
-        "movl %1, %%edx \r\n"
-        "movl %2, %%ebx \r\n"
-        "vmcall \r\n"
-        :
-        : "i" (HYPERDEP_DEACTIVATEDEP),
-          "g" ( (u32) ((u64)(gpa >> 32)) ),
-          "g" ((u32)gpa)
-        : "eax", "ebx", "edx"
-    );
-
-    _XDPRINTF_("%s: Deactivated DEP\n", __FUNCTION__);
-
-}
 
 
 
