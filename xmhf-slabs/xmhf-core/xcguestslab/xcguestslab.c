@@ -97,6 +97,20 @@ static void xcguestslab_dotest_vmcall(void){
 
 }
 
+static void xcguestslab_do_vmcall(void){
+    u32 magic = 0xAABBCCDDUL;
+
+    _XDPRINTF_("%s: Going for VMCALL, magic=%08x\n",
+                __func__, magic);
+
+    magic =  _xcguestslab_vmcall(magic, 0, 0);
+
+    _XDPRINTF_("%s: Came back from VMCALL, magic=%08x\n",
+                __func__, magic);
+
+
+}
+
 
 static void xcguestslab_do_xmhfhw_cpu_cpuid(void){
     u32 dummy;

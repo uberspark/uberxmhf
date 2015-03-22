@@ -52,26 +52,6 @@
 #include <xcguestslab.h>
 
 
-void xcguestslab_do_vmcall(void){
-    u32 magic = 0xAABBCCDDUL;
-
-    _XDPRINTF_("%s: Going for VMCALL, magic=%08x\n",
-                __FUNCTION__, magic);
-
-    asm volatile(
-        "movl %0, %%eax \r\n"
-        "vmcall \r\n"
-        "movl %%eax, %0 \r\n"
-        :
-        : "m" (magic)
-        : "eax"
-    );
-
-    _XDPRINTF_("%s: Came back from VMCALL, magic=%08x\n",
-                __FUNCTION__, magic);
-
-
-}
 
 
 
