@@ -102,6 +102,10 @@ static void hd_deactivatedep(u32 cpuindex, u32 guest_slab_index, u64 gpa){
 	slab_params_t spl;
 	xmhf_hic_uapi_mempgtbl_desc_t *mdesc = (xmhf_hic_uapi_mempgtbl_desc_t *)&spl.in_out_params[2];
 
+	spl.src_slabid = XMHF_HYP_SLAB_XHHYPERDEP;
+	spl.cpuid = cpuindex;
+	spl.in_out_params[0] = XMHF_HIC_UAPI_MEMPGTBL;
+
     if(hd_activated){
         mdesc->guest_slab_index = guest_slab_index;
         mdesc->gpa = gpa;

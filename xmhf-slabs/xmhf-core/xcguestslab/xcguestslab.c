@@ -150,8 +150,8 @@ void xcguestslab_do_testxhhyperdep(void){
     _XDPRINTF_("%s: Going to activate DEP on page %x\n", __func__, gpa);
 
 
-    _xcguestslab_vmcall(HYPERDEP_ACTIVATEDEP,  ( (u32) ((u64)(gpa >> 32)) ),
-              ((u32)gpa)    );
+    _xcguestslab_vmcall(HYPERDEP_ACTIVATEDEP,  ((u32)gpa), ( (u32) ((u64)(gpa >> 32)) )
+                  );
 
     _XDPRINTF_("%s: Activated DEP\n", __func__);
 
@@ -159,8 +159,8 @@ void xcguestslab_do_testxhhyperdep(void){
 
     _XDPRINTF_("%s: Going to de-activate DEP on page %x\n", __func__, gpa);
 
-    _xcguestslab_vmcall(HYPERDEP_DEACTIVATEDEP,  ( (u32) ((u64)(gpa >> 32)) ),
-              ((u32)gpa)    );
+    _xcguestslab_vmcall(HYPERDEP_DEACTIVATEDEP,  ((u32)gpa), ( (u32) ((u64)(gpa >> 32)) )
+                  );
 
 
     _XDPRINTF_("%s: Deactivated DEP\n", __func__);
