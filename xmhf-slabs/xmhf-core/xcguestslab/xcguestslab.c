@@ -392,9 +392,9 @@ void slab_main(slab_params_t *sp){
 
     //xcguestslab_do_msrtest();
 
-    xcguestslab_do_testxhhyperdep();
+    //xcguestslab_do_testxhhyperdep();
 
-    //xcguestslab_do_testxhapprovexec();
+    xcguestslab_do_testxhapprovexec();
 
     //xcguestslab_do_testxhssteptrace();
 
