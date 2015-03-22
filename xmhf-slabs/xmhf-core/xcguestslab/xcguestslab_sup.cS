@@ -86,24 +86,14 @@ __attribute__((aligned(4096))) void _xcguestslab_do_testxhapprovexec_functoprote
 
 //////
 
-u32 _xcguestslab_vmcall(u32 eax, u32 ebx, u32 edx){
-    u32 result;
-
-    //register syscall handler
-    asm volatile(
-        "movl %1, %%eax \r\n"
-        "movl %2, %%edx \r\n"
-        "movl %3, %%ebx \r\n"
-        "vmcall \r\n"
-        "movl %%eax, %0 \r\n"
-        : "=r" (result)
-        : "g" (eax),
-          "g" (edx),
-          "g" (ebx)
-        : "eax", "ebx", "edx"
-    );
-
-    return result;
+__attribute__((naked)) u32 _xcguestslab_vmcall(u32 eax, u32 ebx, u32 edx){
+    asm volatile ("pushl %ebx \r\n");
+    asm volatile ("movl 0x8(%esp), %eax \r\n");
+    asm volatile ("movl 0x10(%esp), %edx \r\n");
+    asm volatile ("movl 0xC(%esp), %ebx \r\n");
+    asm volatile ("vmcall \r\n");
+    asm volatile ("popl %ebx \r\n");
+    asm volatile ("ret \r\n");
 }
 
 
@@ -135,26 +125,6 @@ __attribute__((naked)) void _xcguestslab_do_testxhsyscalllog_loadGDT(u32 addr_gd
 	asm volatile ("movw	%ax, %gs \r\n");
 	asm volatile ("movw %ax, %ss \r\n");
     asm volatile ("ret \r\n");
-
-/*    //load GDTR
-	asm volatile(
-		"lgdt  (%0) \r\n"
-		"pushl	%1 \r\n"
-		"pushl	$reloadsegs \r\n"
-		"lret \r\n"
-		"reloadsegs: \r\n"
-		"movl	%2, %%eax \r\n"
-		"movw	%%ax, %%ds \r\n"
-		"movw	%%ax, %%es \r\n"
-		"movw	%%ax, %%fs \r\n"
-		"movw	%%ax, %%gs \r\n"
-		"movw   %%ax, %%ss \r\n"
-		: //no outputs
-		: "r" (addr_gdt), "r" (cs_sel), "r" (ds_sel)
-		: "eax"
-	);
-*/
-
 }
 
 __attribute__((naked)) void  _xcguestslab_do_testxhsyscalllog_setIOPL3(void){
@@ -164,20 +134,6 @@ __attribute__((naked)) void  _xcguestslab_do_testxhsyscalllog_setIOPL3(void){
     asm volatile ("pushl %eax \r\n");
     asm volatile ("popfl \r\n");
     asm volatile ("ret \r\n");
-
-/*    //set IOPL to CPL-3
-	asm volatile(
-        "pushfl \r\n"
-        "popl %%eax \r\n"
-		"orl $0x3000, %%eax \r\n"					// clear flags, but set IOPL=3 (CPL-3)
-		"pushl %%eax \r\n"
-		"popfl \r\n"
-		: //no outputs
-		: //no inputs
-		: "eax", "cc"
-	);
-*/
-
 }
 
 __attribute__((naked)) void _xcguestslab_do_testxhsyscalllog_switchtoring3(void){
