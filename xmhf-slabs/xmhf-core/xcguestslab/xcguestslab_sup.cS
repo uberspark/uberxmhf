@@ -115,21 +115,28 @@ u32 _xcguestslab_vmcall(u32 eax, u32 ebx, u32 edx){
 //////
 // syscalllog
 
-void _xcguestslab_do_testxhsyscalllog_sysenterhandler(void){
-
-    asm volatile(
-         "sysexit \r\n"
-        :
-        :
-        :
-    );
-
+__attribute__((naked)) void _xcguestslab_do_testxhsyscalllog_sysenterhandler(void){
+    asm volatile ("sysexit \r\n");
+    asm volatile ("hlt \r\n");
 }
 
 
-void _xcguestslab_do_testxhsyscalllog_loadGDT(u32 addr_gdt, u32 cs_sel, u32 ds_sel){
+__attribute__((naked)) void _xcguestslab_do_testxhsyscalllog_loadGDT(u32 addr_gdt, u32 cs_sel, u32 ds_sel){
+    asm volatile ("movl 0x4(%esp), %eax \r\n");
+    asm volatile ("lgdt (%eax) \r\n");
+    asm volatile ("pushl 0x8(%esp) \r\n");
+    asm volatile ("pushl $reload_sregs \r\n");
+    asm volatile ("lret \r\n");
+    asm volatile ("reload_sregs: \r\n");
+    asm volatile ("movl 0xC(%esp), %eax \r\n");
+    asm volatile ("movw	%ax, %ds \r\n");
+	asm volatile ("movw	%ax, %es \r\n");
+	asm volatile ("movw	%ax, %fs \r\n");
+	asm volatile ("movw	%ax, %gs \r\n");
+	asm volatile ("movw %ax, %ss \r\n");
+    asm volatile ("ret \r\n");
 
-    //load GDTR
+/*    //load GDTR
 	asm volatile(
 		"lgdt  (%0) \r\n"
 		"pushl	%1 \r\n"
@@ -146,12 +153,19 @@ void _xcguestslab_do_testxhsyscalllog_loadGDT(u32 addr_gdt, u32 cs_sel, u32 ds_s
 		: "r" (addr_gdt), "r" (cs_sel), "r" (ds_sel)
 		: "eax"
 	);
+*/
 
 }
 
-void  _xcguestslab_do_testxhsyscalllog_setIOPL3(void){
+__attribute__((naked)) void  _xcguestslab_do_testxhsyscalllog_setIOPL3(void){
+    asm volatile ("pushfl \r\n");
+    asm volatile ("popl %eax \r\n");
+    asm volatile ("orl $0x3000, %eax \r\n");
+    asm volatile ("pushl %eax \r\n");
+    asm volatile ("popfl \r\n");
+    asm volatile ("ret \r\n");
 
-    //set IOPL to CPL-3
+/*    //set IOPL to CPL-3
 	asm volatile(
         "pushfl \r\n"
         "popl %%eax \r\n"
@@ -162,33 +176,23 @@ void  _xcguestslab_do_testxhsyscalllog_setIOPL3(void){
 		: //no inputs
 		: "eax", "cc"
 	);
-
+*/
 
 }
 
-void _xcguestslab_do_testxhsyscalllog_switchtoring3(void){
-    //switch to ring-3
-    asm volatile(
-         "movl $1f, %%edx \r\n"
-         "movl %%esp, %%ecx \r\n"
-         "sysexit \r\n"
-         "1: \r\n"
-        :
-        :
-        : "edx", "ecx"
-    );
+__attribute__((naked)) void _xcguestslab_do_testxhsyscalllog_switchtoring3(void){
+    asm volatile ("movl $land_in_ring3, %edx \r\n");
+    asm volatile ("movl %esp, %ecx \r\n");
+    asm volatile ("sysexit \r\n");
+    asm volatile ("land_in_ring3: \r\n");
+    asm volatile ("ret \r\n");
 }
 
 
-void _xcguestslab_do_testxhsyscalllog_invokesyscall(void){
-    //invoke sysenter
-    asm volatile(
-         "movl $1f, %%edx \r\n"
-         "movl %%esp, %%ecx \r\n"
-         "sysenter \r\n"
-         "1: \r\n"
-        :
-        :
-        : "edx", "ecx"
-    );
+__attribute__((naked)) void _xcguestslab_do_testxhsyscalllog_invokesyscall(void){
+    asm volatile ("movl $syscall_return, %edx \r\n");
+    asm volatile ("movl %esp, %ecx \r\n");
+    asm volatile ("sysenter \r\n");
+    asm volatile ("syscall_return: \r\n");
+    asm volatile ("ret \r\n");
 }
