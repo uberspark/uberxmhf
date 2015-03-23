@@ -623,6 +623,7 @@ typedef struct __tss {
 #define xmhfhwm_cpu_insn_movl_imm_eax(x) asm volatile ("movl $"#x", %eax\r\n");
 #define xmhfhwm_cpu_insn_movl_mesp_edx(x) asm volatile ("movl "#x"(%esp), %edx \r\n");
 #define xmhfhwm_cpu_insn_movl_mesp_eax(x) asm volatile ("movl "#x"(%esp), %eax \r\n");
+#define xmhfhwm_cpu_insn_movl_mesp_ecx(x) asm volatile ("movl "#x"(%esp), %ecx \r\n");
 
 // arithmetic/logical
 #define xmhfhwm_cpu_insn_xorl_eax_eax() asm volatile ("xorl %eax, %eax \r\n");
@@ -636,6 +637,8 @@ typedef struct __tss {
 #define xmhfhwm_cpu_insn_outb_al_dx() asm volatile ("outb %al, %dx \r\n");
 #define xmhfhwm_cpu_insn_outw_ax_dx() asm volatile ("outw %ax, %dx \r\n");
 #define xmhfhwm_cpu_insn_outl_eax_dx() asm volatile ("outl %eax, %dx \r\n");
+#define xmhfhwm_cpu_insn_rdmsr() asm volatile ("rdmsr \r\n");
+#define xmhfhwm_cpu_insn_wrmsr() asm volatile ("wrmsr \r\n");
 
 
 
