@@ -54,16 +54,16 @@
 
 
 __attribute__((naked)) u64 rdmsr64(u32 msr){
-  asm volatile ("movl 0x4(%esp), %ecx \r\n"); //ecx = msr
-  asm volatile ("rdmsr \r\n");
-  asm volatile ("ret \r\n");
+  xmhfhwm_cpu_insn_movl_mesp_ecx(0x4); //ecx = msr
+  xmhfhwm_cpu_insn_rdmsr();
+  xmhfhwm_cpu_insn_ret();
 }
 
 __attribute__((naked)) void wrmsr64(u32 msr, u64 newval){
-  asm volatile ("movl 0x4(%esp), %ecx \r\n"); //ecx = msr
-  asm volatile ("movl 0x8(%esp), %eax \r\n"); //eax = (u32)newval
-  asm volatile ("movl 0xC(%esp), %edx \r\n"); //edx = (u32)((u64)newval >> 32)
-  asm volatile ("wrmsr \r\n");
-  asm volatile ("ret \r\n");
+  xmhfhwm_cpu_insn_movl_mesp_ecx(0x4); //ecx = msr
+  xmhfhwm_cpu_insn_movl_mesp_eax(0x8); //eax = (u32)newval
+  xmhfhwm_cpu_insn_movl_mesp_edx(0xC); //edx = (u32)((u64)newval >> 32)
+  xmhfhwm_cpu_insn_wrmsr();
+  xmhfhwm_cpu_insn_ret();
 }
 
