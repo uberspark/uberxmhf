@@ -278,7 +278,9 @@ void __xmhfhic_rtm_trampoline(u64 hic_calltype, slab_input_params_t *iparams, u6
             #endif
 
             //return back to slab
-            sysexitq(elem.return_address, _xmhfhic_common_slab_info_table[elem.src_slabid].archdata.slabtos[(u32)cpuid]);
+            //sysexitq(elem.return_address, _xmhfhic_common_slab_info_table[elem.src_slabid].archdata.slabtos[(u32)cpuid]);
+            _XDPRINTF_("%s: Halting, sysexit harness not tied in yet!\n", __func__);
+            HALT();
         }
         break;
 

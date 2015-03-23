@@ -731,7 +731,6 @@ static void __xmhfhic_rtm_uapihandler_mempgtbl(slab_params_t *sp){
             //assert(0);
             //#endif //__XMHF_VERIFICATION__
 
-
         }
         break;
 

@@ -97,6 +97,20 @@ static void xcguestslab_dotest_vmcall(void){
 
 }
 
+static void xcguestslab_do_vmcall(void){
+    u32 magic = 0xAABBCCDDUL;
+
+    _XDPRINTF_("%s: Going for VMCALL, magic=%08x\n",
+                __func__, magic);
+
+    magic =  _xcguestslab_vmcall(magic, 0, 0);
+
+    _XDPRINTF_("%s: Came back from VMCALL, magic=%08x\n",
+                __func__, magic);
+
+
+}
+
 
 static void xcguestslab_do_xmhfhw_cpu_cpuid(void){
     u32 dummy;
@@ -128,8 +142,117 @@ static void xcguestslab_do_msrtest(void){
 }
 
 
+//////
+// hyperdep test harness
+
+//////////////////////////////////////////////////////////////////////////////
+// xhhyperdep test
+
+__attribute__((aligned(4096))) static u8 _xcguestslab_do_testxhhyperdep_page[4096];
+
+#define HYPERDEP_ACTIVATEDEP			0xC0
+#define HYPERDEP_DEACTIVATEDEP			0xC1
+
+typedef void (*DEPFN)(void);
+
+void xcguestslab_do_testxhhyperdep(void){
+    u64 gpa = &_xcguestslab_do_testxhhyperdep_page;
+    DEPFN fn = (DEPFN)gpa;
+
+    _xcguestslab_do_testxhhyperdep_page[0] = 0xC3; //ret instruction
+
+    _XDPRINTF_("%s: Going to activate DEP on page %x\n", __func__, gpa);
 
 
+    _xcguestslab_vmcall(HYPERDEP_ACTIVATEDEP,  ((u32)gpa), ( (u32) ((u64)(gpa >> 32)) )
+                  );
+
+    _XDPRINTF_("%s: Activated DEP\n", __func__);
+
+    //fn();
+
+    _XDPRINTF_("%s: Going to de-activate DEP on page %x\n", __func__, gpa);
+
+    _xcguestslab_vmcall(HYPERDEP_DEACTIVATEDEP,  ((u32)gpa), ( (u32) ((u64)(gpa >> 32)) )
+                  );
+
+
+    _XDPRINTF_("%s: Deactivated DEP\n", __func__);
+
+}
+
+
+
+
+//////
+// approvexec test harness
+extern void _xcguestslab_do_testxhapprovexec_functoprotect(void);
+
+
+
+#define APPROVEXEC_LOCK     			0xD0
+#define APPROVEXEC_UNLOCK   			0xD1
+
+void xcguestslab_do_testxhapprovexec(void){
+    u32 gpa = &_xcguestslab_do_testxhapprovexec_functoprotect;
+
+    _XDPRINTF_("%s: Going to approve and lock function at %x\n", __func__, gpa);
+
+    _xcguestslab_vmcall(APPROVEXEC_LOCK, ( (u32) ((u64)(gpa >> 32)) ),
+                  ((u32)gpa)       );
+
+    _XDPRINTF_("%s: Locked function\n", __func__);
+
+    /*{
+        u8 *pokefun = (u8 *)&_xcguestslab_do_testxhapprovexec_functoprotect;
+        pokefun[0] = 0xAB;
+    }*/
+
+    _XDPRINTF_("%s: Going to unlock function on page %x\n", __func__, gpa);
+
+    _xcguestslab_vmcall(APPROVEXEC_UNLOCK, ( (u32) ((u64)(gpa >> 32)) ),
+                  ((u32)gpa)       );
+
+    _XDPRINTF_("%s: unlocked function\n", __func__);
+
+}
+
+
+
+
+
+
+
+//////
+// ssteptrace test harness
+
+//////////////////////////////////////////////////////////////////////////////
+// xhssteptrace test
+
+#define SSTEPTRACE_REGISTER    			0xE0
+#define SSTEPTRACE_ON          			0xE1
+#define SSTEPTRACE_OFF         			0xE2
+
+__attribute__((aligned(4096))) void _xcguestslab_do_testxhssteptrace_func(void){
+
+    _XDPRINTF_("%s: Turning on tracing...\n", __func__);
+
+    _xcguestslab_vmcall(SSTEPTRACE_ON, 0, 0);
+
+    /*asm volatile(
+        "nop \r\n"
+        "nop \r\n"
+        "nop \r\n"
+        :
+        :
+        :
+    );*/
+
+    _xcguestslab_vmcall(SSTEPTRACE_OFF, 0 , 0);
+
+    _XDPRINTF_("%s: Tracing off...\n", __func__);
+
+}
 
 
 static void xcguestslab_do_testxhssteptrace(void){
@@ -163,6 +286,101 @@ static void xcguestslab_do_testxhssteptrace(void){
 
 
 
+//////
+// syscalllog test harness
+
+
+//*
+// GDT
+__attribute__(( aligned(16) )) u64 _xcguestslab_gdt_start[]  = {
+	0x0000000000000000ULL,	//NULL descriptor
+	0x00cf9a000000ffffULL,	//CPL-0 32-bit code descriptor (CS32)
+	0x00cf92000000ffffULL,	//CPL-0 32-bit data descriptor (DS/SS/ES/FS/GS)
+	0x00cffa000000ffffULL,	//TODO: CPL-3 32-bit code descriptor (CS32)
+	0x00cff2000000ffffULL,	//TODO: CPL-3 32-bit data descriptor (DS/SS/ES/FS/GS)
+	0x00cffa000000ffffULL,	//TODO: CPL-3 32-bit code descriptor (CS32)
+	0x00cff2000000ffffULL,	//TODO: CPL-3 32-bit data descriptor (DS/SS/ES/FS/GS)
+	0x0000000000000000ULL,  //TSS descriptors
+	0x0000000000000000ULL,
+	0x0000000000000000ULL,
+	0x0000000000000000ULL,
+	0x0000000000000000ULL,
+	0x0000000000000000ULL,
+	0x0000000000000000ULL,
+	0x0000000000000000ULL,
+	0x0000000000000000ULL,
+	0x0000000000000000ULL,
+	0x0000000000000000ULL,
+	0x0000000000000000ULL,
+	0x0000000000000000ULL,
+	0x0000000000000000ULL,
+	0x0000000000000000ULL,
+	0x0000000000000000ULL,
+
+	0x0000000000000000ULL,
+};
+
+// GDT descriptor
+__attribute__(( aligned(16) )) arch_x86_gdtdesc_t _xcguestslab_gdt  = {
+	.size=sizeof(_xcguestslab_gdt_start)-1,
+	.base=(u32)&_xcguestslab_gdt_start,
+};
+
+
+/////////
+#define SYSCALLLOG_REGISTER     			0xF0
+
+static u8 _xcguestslab_do_testxhsyscalllog_sysenterhandler_stack[PAGE_SIZE_4K];
+
+
+
+extern void _xcguestslab_do_testxhsyscalllog_sysenterhandler(void);
+
+void xcguestslab_do_testxhsyscalllog(void){
+    u64 gpa = &_xcguestslab_do_testxhsyscalllog_sysenterhandler;
+
+    _XDPRINTF_("%s: proceeding to load GDT\n", __func__);
+
+    _xcguestslab_do_testxhsyscalllog_loadGDT( (u32)&_xcguestslab_gdt, __CS_CPL0, __DS_CPL0 );
+
+    _XDPRINTF_("%s: GDT loaded\n", __func__);
+
+    _xcguestslab_do_testxhsyscalllog_setIOPL3();
+
+    _xcguestslab_vmcall(SYSCALLLOG_REGISTER,
+                        ( (u32) ((u64)(gpa >> 32)) ),
+                        ((u32)gpa) );
+
+    _XDPRINTF_("%s: registered syscall handler on page %x\n", __func__, gpa);
+
+    //setup SYSENTER/SYSEXIT mechanism
+    {
+        wrmsr64(IA32_SYSENTER_CS_MSR, __CS_CPL0);
+        wrmsr64(IA32_SYSENTER_EIP_MSR, &_xcguestslab_do_testxhsyscalllog_sysenterhandler);
+        wrmsr64(IA32_SYSENTER_ESP_MSR, ((u32)&_xcguestslab_do_testxhsyscalllog_sysenterhandler_stack + (u32)PAGE_SIZE_4K));
+    }
+    _XDPRINTF_("%s: setup SYSENTER/SYSEXIT mechanism\n", __func__);
+    _XDPRINTF_("%s: SYSENTER CS=%016llx\n", __func__, rdmsr64(IA32_SYSENTER_CS_MSR));
+    _XDPRINTF_("%s: SYSENTER RIP=%016llx\n", __func__, rdmsr64(IA32_SYSENTER_EIP_MSR));
+    _XDPRINTF_("%s: SYSENTER RSP=%016llx\n", __func__, rdmsr64(IA32_SYSENTER_ESP_MSR));
+
+
+    _xcguestslab_do_testxhsyscalllog_switchtoring3();
+
+    _XDPRINTF_("%s: Guest Slab at Ring-3. Proceeding to execute sysenter...Halting!\n", __func__);
+
+    _xcguestslab_do_testxhsyscalllog_invokesyscall();
+
+    _XDPRINTF_("%s: Came back from SYSENTER\n", __func__);
+
+    _XDPRINTF_("%s: Guest Slab Halting\n", __func__);
+    HALT();
+}
+
+
+
+
+
 
 
 void slab_main(slab_params_t *sp){
@@ -176,11 +394,11 @@ void slab_main(slab_params_t *sp){
 
     //xcguestslab_do_testxhhyperdep();
 
-    //xcguestslab_do_testxhapprovexec();
+    xcguestslab_do_testxhapprovexec();
 
     //xcguestslab_do_testxhssteptrace();
 
-    xcguestslab_do_testxhsyscalllog();
+    //xcguestslab_do_testxhsyscalllog();
 
     _XDPRINTF_("%s: Guest Slab Halting\n", __func__);
     HALT();

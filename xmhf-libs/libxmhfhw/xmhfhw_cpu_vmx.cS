@@ -53,8 +53,8 @@
 #include <xmhf-debug.h>
 
 
-bool __vmx_vmxon(u64 vmxonregion_paddr){
-		u32 retval=0;
+__attribute__((naked)) bool __vmx_vmxon(u64 vmxonregion_paddr){
+/*		u32 retval=0;
 
 		asm volatile( "vmxon %1 \n"
 				 "jbe vmfail \n"
@@ -73,6 +73,18 @@ bool __vmx_vmxon(u64 vmxonregion_paddr){
             return false;
         else
             return true;
+*/
+
+    asm volatile ("vmxon 0x4(%esp) \r\n");
+	asm volatile ("jbe vo_fail \r\n");
+    asm volatile ("movl $0x1, %eax \r\n");
+	asm volatile ("jmp vo_success \r\n");
+    asm volatile ("vo_fail: \r\n");
+    asm volatile ("movl $0x0, %eax \r\n");
+	asm volatile ("vo_success: \r\n");
+    asm volatile ("ret \r\n");
+
+
 }
 
 
@@ -90,19 +102,26 @@ u64 xmhfhw_cpu_x86vmx_vmread(u64 encoding){
 */
 
 
-void xmhfhw_cpu_x86vmx_vmwrite(u32 encoding, u32 value){
-  asm volatile ("vmwrite %1, %0 \r\n" :: "r"(encoding), "r"(value) : "cc");
+__attribute__((naked)) void xmhfhw_cpu_x86vmx_vmwrite(u32 encoding, u32 value){
+  asm volatile ("movl 0x4(%esp), %ecx \r\n");
+  asm volatile ("movl 0x8(%esp), %eax \r\n");
+  //asm volatile ("vmwrite %1, %0 \r\n" :: "r"(encoding), "r"(value) : "cc");
+  asm volatile ("vmwrite %eax, %ecx \r\n");
+  asm volatile ("ret \r\n");
 }
 
-u32 xmhfhw_cpu_x86vmx_vmread(u32 encoding){
-    u32 __value;
+__attribute__((naked)) u32 xmhfhw_cpu_x86vmx_vmread(u32 encoding){
+/*    u32 __value;
     asm volatile("vmread %1, %0 \r\n" : "=r"(__value) : "r"(encoding) : "cc");
-    return __value;
+    return __value;*/
+    asm volatile ("movl 0x4(%esp), %ecx \r\n");
+    asm volatile ("vmread %ecx, %eax\r\n");
+    asm volatile ("ret \r\n");
 }
 
 
-u32 __vmx_vmclear(u64 vmcs){
-  u32 status;
+__attribute__((naked)) u32 __vmx_vmclear(u64 vmcs){
+/*  u32 status;
   __asm__("vmclear %1			\r\n"
 	   	"jbe	1f    		\r\n"
       "movl $1, %%eax \r\n"
@@ -114,10 +133,21 @@ u32 __vmx_vmclear(u64 vmcs){
     : "%eax"
   );
   return status;
+*/
+
+    asm volatile ("vmclear 0x4(%esp) \r\n");
+    asm volatile ("jbe vmclear_error \r\n");
+    asm volatile ("movl $1, %eax \r\n");
+    asm volatile ("jmp vmclear_done \r\n");
+    asm volatile ("vmclear_error: \r\n");
+    asm volatile ("mov $0, %eax \r\n");
+    asm volatile ("vmclear_done: \r\n");
+    asm volatile ("ret \r\n");
+
 }
 
-u32 __vmx_vmptrld(u64 vmcs){
-  u32 status;
+__attribute__((naked)) u32 __vmx_vmptrld(u64 vmcs){
+/*  u32 status;
   __asm__("vmptrld %1			\r\n"
 	   	"jbe	1f    		\r\n"
       "movl $1, %%eax \r\n"
@@ -128,7 +158,18 @@ u32 __vmx_vmptrld(u64 vmcs){
     : "m"(vmcs)
     : "%eax"
   );
-  return status;
+  return status;*/
+
+  asm volatile ("vmptrld 0x4(%esp) \r\n");
+  asm volatile ("jbe vptrld_error \r\n");
+asm volatile ("movl $1, %eax \r\n");
+asm volatile ("jmp vptrld_done \r\n");
+asm volatile ("vptrld_error: \r\n");
+asm volatile ("movl $0, %eax \r\n");
+asm volatile ("vptrld_done: \r\n");
+asm volatile ("ret \r\n");
+
+
 }
 
 // VMX instruction INVVPID
@@ -137,8 +178,10 @@ u32 __vmx_vmptrld(u64 vmcs){
 //returns 1 on success, 0 on failure
 
 
-u32 __vmx_invvpid(int invalidation_type, u16 vpid, u32 linearaddress){
-	//return status (1 or 0)
+__attribute__((naked)) u32 __vmx_invvpid(int invalidation_type, //0x14
+                  u32 vpid,              //0x18
+                  u32 linearaddress){    //0x1C
+/*	//return status (1 or 0)
 	u32 status;
 
 	//invvpid descriptor
@@ -160,7 +203,30 @@ u32 __vmx_invvpid(int invalidation_type, u16 vpid, u32 linearaddress){
     : "a"(&invvpiddescriptor), "c"(invalidation_type)
 	: "cc", "memory");
 
-	return status;
+	return status;*/
+
+    asm volatile ("subl 0x10, %esp \r\n");
+
+    asm volatile ("xorl %eax, %eax \r\n");
+    asm volatile ("movw 0x18(%esp), %ax \r\n");
+    asm volatile ("movl %eax, (%esp) \r\n");
+    asm volatile ("movl $0, 0x4(%esp) \r\n");
+    asm volatile ("movl 0x1C(%esp), %eax \r\n");
+    asm volatile ("movl %eax, 0x8(%esp) \r\n");
+    asm volatile ("movl $0, 0xC(%esp) \r\n");
+
+    asm volatile ("movl 0x14(%esp), %ecx \r\n");
+
+    asm volatile ("invvpid (%esp), %ecx\r\n");
+
+    asm volatile ("movl $1, %eax \r\n");
+    asm volatile ("ja vinvpid_success \r\n");
+    asm volatile ("movl $0, %eax \r\n");
+    asm volatile ("vinvpid_success: \r\n");
+
+    asm volatile ("addl 0x10, %esp \r\n");
+    asm volatile ("ret \r\n");
+
 }
 
 
@@ -169,8 +235,8 @@ u32 __vmx_invvpid(int invalidation_type, u16 vpid, u32 linearaddress){
 //		Invalidate Translations Derived from EPT
 
 
-void __vmx_invept(u64 invalidation_type, u64 eptp){
-	//invept descriptor
+__attribute__((naked)) void __vmx_invept(u64 invalidation_type, u64 eptp){
+/*	//invept descriptor
 	struct {
 		u64 eptp;
 		u64 reserved;
@@ -178,5 +244,17 @@ void __vmx_invept(u64 invalidation_type, u64 eptp){
 
 	//issue invept instruction
 	asm volatile("invept %0, %1 \r\n" ::"m" (__inveptdescriptor), "r" (invalidation_type):"cc");
+*/
+    asm volatile ("subl 0x10, %esp \r\n");
+    asm volatile ("movl 0x14(%esp), %edx \r\n"); //edx = invalidation_type
+    asm volatile ("movl 0x1C(%esp), %eax \r\n");
+    asm volatile ("movl %eax, (%esp) \r\n");
+    asm volatile ("movl 0x20(%esp), %eax \r\n");
+    asm volatile ("movl %eax, 0x4(%esp) \r\n");
+    asm volatile ("movl $0, 0x8(%esp) \r\n");
+    asm volatile ("movl $0, 0xC(%esp) \r\n");
+    asm volatile ("invept (%esp), %edx \r\n");
+    asm volatile ("addl 0x10, %esp \r\n");
+    asm volatile ("ret \r\n");
 }
 
