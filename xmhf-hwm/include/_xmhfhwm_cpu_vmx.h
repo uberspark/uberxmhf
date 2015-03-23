@@ -759,6 +759,9 @@ struct _vmx_vmcsrwfields_encodings	{
 
 
 
+
+
+
 #endif //__ASSEMBLY__
 
 #endif //__XMHFHWM_CPU_VMX_H_

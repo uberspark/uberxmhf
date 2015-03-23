@@ -744,6 +744,10 @@ extern void print_os_sinit_data(os_sinit_data_t *os_sinit_data);
 
 
 
+
+
+
+
 #endif //__ASSEMBLY__
 
 #endif /* __XMHFHWM_CPU_TXT_H__ */
