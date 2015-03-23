@@ -621,13 +621,38 @@ typedef struct __tss {
 
 // load/store instructions
 #define xmhfhwm_cpu_insn_movl_imm_eax(x) asm volatile ("movl $"#x", %eax\r\n");
-#define xmhfhwm_cpu_insn_movl_mesp_edx(x) asm volatile ("movl "#x"(%esp), %edx \r\n");
 #define xmhfhwm_cpu_insn_movl_mesp_eax(x) asm volatile ("movl "#x"(%esp), %eax \r\n");
+#define xmhfhwm_cpu_insn_movl_mesp_ebx(x) asm volatile ("movl "#x"(%esp), %ebx \r\n");
 #define xmhfhwm_cpu_insn_movl_mesp_ecx(x) asm volatile ("movl "#x"(%esp), %ecx \r\n");
+#define xmhfhwm_cpu_insn_movl_mesp_edx(x) asm volatile ("movl "#x"(%esp), %edx \r\n");
+#define xmhfhwm_cpu_insn_movl_mesp_esi(x) asm volatile ("movl "#x"(%esp), %esi \r\n");
+#define xmhfhwm_cpu_insn_movl_mecx_eax(x) asm volatile ("movl "#x"(%ecx), %eax \r\n");
+#define xmhfhwm_cpu_insn_movl_mecx_edx(x) asm volatile ("movl "#x"(%ecx), %edx \r\n");
+#define xmhfhwm_cpu_insn_movl_eax_mecx(x) asm volatile ("movl %eax, "#x"(%ecx) \r\n");
+#define xmhfhwm_cpu_insn_movl_edx_mecx(x) asm volatile ("movl %edx, "#x"(%ecx) \r\n");
+
+#define xmhfhwm_cpu_insn_movl_eax_mesi(x) asm volatile ("movl %eax, "#x"(%esi) \r\n");
+#define xmhfhwm_cpu_insn_movl_ebx_mesi(x) asm volatile ("movl %ebx, "#x"(%esi) \r\n");
+#define xmhfhwm_cpu_insn_movl_ecx_mesi(x) asm volatile ("movl %ecx, "#x"(%esi) \r\n");
+#define xmhfhwm_cpu_insn_movl_edx_mesi(x) asm volatile ("movl %edx, "#x"(%esi) \r\n");
+
+#define xmhfhwm_cpu_insn_movl_meax_eax(x) asm volatile ("movl "#x"(%eax), %eax \r\n");
+#define xmhfhwm_cpu_insn_movl_mebx_ebx(x) asm volatile ("movl "#x"(%ebx), %ebx \r\n");
+#define xmhfhwm_cpu_insn_movl_mecx_ecx(x) asm volatile ("movl "#x"(%ecx), %ecx \r\n");
+#define xmhfhwm_cpu_insn_movl_medx_edx(x) asm volatile ("movl "#x"(%edx), %edx \r\n");
+
+
+#define xmhfhwm_cpu_insn_popl_ebx() asm volatile ("popl %ebx \r\n");
+#define xmhfhwm_cpu_insn_popl_esi() asm volatile ("popl %esi \r\n");
+#define xmhfhwm_cpu_insn_pushl_esi() asm volatile ("pushl %esi \r\n");
+#define xmhfhwm_cpu_insn_pushl_ebx() asm volatile ("pushl %ebx \r\n");
+
+
 
 // arithmetic/logical
 #define xmhfhwm_cpu_insn_xorl_eax_eax() asm volatile ("xorl %eax, %eax \r\n");
 #define xmhfhwm_cpu_insn_xorl_edx_edx() asm volatile ("xorl %edx, %edx \r\n");
+#define xmhfhwm_cpu_insn_addl_mesp_ecx(x) asm volatile ("addl "#x"(%esp), %ecx \r\n");
 
 // system instructions
 #define xmhfhwm_cpu_insn_cli() asm volatile ("cli \r\n");
