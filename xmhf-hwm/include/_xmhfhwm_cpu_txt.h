@@ -745,6 +745,7 @@ extern void print_os_sinit_data(os_sinit_data_t *os_sinit_data);
 
 
 
+#define xmhfhwm_cpu_insn_getsec() asm volatile (IA32_GETSEC_OPCODE "\r\n");
 
 
 
