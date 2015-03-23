@@ -639,6 +639,8 @@ typedef struct __tss {
 #define xmhfhwm_cpu_insn_outl_eax_dx() asm volatile ("outl %eax, %dx \r\n");
 #define xmhfhwm_cpu_insn_rdmsr() asm volatile ("rdmsr \r\n");
 #define xmhfhwm_cpu_insn_wrmsr() asm volatile ("wrmsr \r\n");
+#define xmhfhwm_cpu_insn_wbinvd() asm volatile ("wbinvd \r\n");
+#define xmhfhwm_cpu_insn_invlpg_mesp(x) asm volatile ("invlpg "#x"(%esp) \r\n");
 
 
 
