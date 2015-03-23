@@ -601,9 +601,32 @@ typedef struct __tss {
 
 
 
-#define xmhfhwm_cpu_insn_cli() asm volatile ("cli \r\n" : : : "memory");
 
+
+//////
+
+// label
+// TODO: move into xmhf-hic.h as a CASM pseudo-language definition
+#define CASM_LABEL(x)   asm volatile (#x": \r\n");
+
+// branch instructions
+#define xmhfhwm_cpu_insn_jmp(x) asm volatile ("jmp "#x" \r\n");
+#define xmhfhwm_cpu_insn_jc(x) asm volatile ("jc "#x" \r\n");
+#define xmhfhwm_cpu_insn_jnz(x) asm volatile ("jnz "#x" \r\n");
+#define xmhfhwm_cpu_insn_int(x) asm volatile ("int $"#x" \r\n");
 #define xmhfhwm_cpu_insn_ret() asm volatile ("ret \r\n");
+
+// vmx instructions
+#define xmhfhwm_cpu_insn_vmlaunch() asm volatile ("vmlaunch \r\n");
+
+// load/store instructions
+#define xmhfhwm_cpu_insn_movl_imm_eax(x) asm volatile ("movl $"#x", %eax\r\n");
+
+// arithmetic/logical
+#define xmhfhwm_cpu_insn_xorl_eax_eax() asm volatile ("xorl %eax, %eax \r\n");
+
+// system instructions
+#define xmhfhwm_cpu_insn_cli() asm volatile ("cli \r\n");
 
 
 
