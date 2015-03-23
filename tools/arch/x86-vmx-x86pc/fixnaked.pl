@@ -14,7 +14,7 @@ my $i = 0;
 while( $i <= $#array) {
    my $line = $array[$i];
    chomp($line);
-   
+
    if( $line =~ /naked/ )
  {
 	#print "$line\n";
@@ -29,7 +29,7 @@ while( $i <= $#array) {
 		chomp($line);
 		if( $line =~ /^define/ ){
 
-			#ok we found a define, so skip that line 
+			#ok we found a define, so skip that line
 			#print "$line\n";
 			$i = $i + 1;
 			if ($i > $#array){
@@ -38,26 +38,38 @@ while( $i <= $#array) {
 			}
 			$line = $array[$i];
 			chomp($line);
-			
+
 			# move on until the next closing }
 			my $trimline = $line;
 			$trimline =~ s/^\s+|\s+$//g ;     # remove both leading and trailing whitespace
-			
+
 			while($trimline ne "}"){
 				if(  !( ($trimline =~ /^call /) || ($trimline =~ /^ret/) ) ){
 					#$line = ";$line";
 					$array[$i] = ";$line";
 				}
-				if ($trimline =~ /^ret i32/){
-					#$line = "ret i32 0";
+
+
+				if ($trimline =~ /^ret i8/){
+					#$line = "ret i8 0";
+					$array[$i] = "ret i8 0";
+				}
+				if ($trimline =~ /^ret i16/){
+					#$line = "ret i16 0";
+					$array[$i] = "ret i16 0";
+				}
+                if ($trimline =~ /^ret i32/){
+				#	#$line = "ret i32 0";
 					$array[$i] = "ret i32 0";
 				}
 				if ($trimline =~ /^ret i64/){
 					#$line = "ret i64 0";
 					$array[$i] = "ret i64 0";
 				}
+
+
 				#print "$line\n";
-			
+
 				$i = $i + 1;
 				if ($i >= $#array){
 					print "unexpected end of file!";
@@ -71,7 +83,7 @@ while( $i <= $#array) {
 
 			#print "$line\n";
 		}
-	
+
    }else{
 	   #print "$line\n";
    }

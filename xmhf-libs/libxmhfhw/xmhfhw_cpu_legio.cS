@@ -53,40 +53,74 @@
 #include <xmhf-debug.h>
 
 
-void outl(u32 val, u32 port){
-    __asm__ __volatile__("out %0, %w1"
-         : /* no outputs */
-         :"a"(val), "Nd"((u16)port));
+__attribute__((naked)) void outl(u32 val, u32 port){
+    asm volatile ("movl 0x4(%esp), %eax \r\n"); //eax = val
+    asm volatile ("movl 0x8(%esp), %edx \r\n"); //edx = port
+    asm volatile ("outl %eax, %dx \r\n"); //output eax to dx
+    asm volatile ("ret \r\n");
+//    asm__ __volatile__("out %0, %w1"
+//         :
+//         :"a"(val), "Nd"((u16)port));
 }
 
-void outw (u32 value, u32 port){
-  __asm__ __volatile__ ("outw %w0,%w1": :"a" ((u16)value), "Nd" ((u16)port));
+__attribute__((naked)) void outw (u32 value, u32 port){
+    asm volatile ("movl 0x4(%esp), %eax \r\n"); //eax = val
+    asm volatile ("movl 0x8(%esp), %edx \r\n"); //edx = port
+    asm volatile ("outw %ax, %dx \r\n"); //output ax to dx
+    asm volatile ("ret \r\n");
+
+//  __asm__ __volatile__ ("outw %w0,%w1": :"a" ((u16)value), "Nd" ((u16)port));
 }
 
-void outb (u32 value, u32 port){
-  __asm__ __volatile__ ("outb %b0,%w1": :"a" ((u8)value), "Nd" ((u16)port));
+__attribute__((naked)) void outb (u32 value, u32 port){
+    asm volatile ("movl 0x4(%esp), %eax \r\n"); //eax = val
+    asm volatile ("movl 0x8(%esp), %edx \r\n"); //edx = port
+    asm volatile ("outb %al, %dx \r\n"); //output al to dx
+    asm volatile ("ret \r\n");
+
+//  __asm__ __volatile__ ("outb %b0,%w1": :"a" ((u8)value), "Nd" ((u16)port));
 }
 
-u32 inl(u32 port){
-  u32 val;
+__attribute__((naked)) u32 inl(u32 port){
+    asm volatile ("movl 0x4(%esp), %edx \r\n"); //edx = port
+    asm volatile ("xorl %eax, %eax \r\n");
+    asm volatile ("inl %dx, %eax \r\n");
+    asm volatile ("xorl %edx, %edx \r\n");
+    asm volatile ("ret \r\n");
+
+/*  u32 val;
 
   __asm__ __volatile__("in %w1, %0"
                :"=a"(val)
                :"Nd"((u16)port));
-  return val;
+  return val;*/
 }
 
-u16 inw (u32 port){
-  u16 _v;
+__attribute__((naked)) u16 inw (u32 port){
+
+/*  u16 _v;
 
   __asm__ __volatile__ ("inw %w1,%0":"=a" (_v):"Nd" ((u16)port));
-  return _v;
+  return _v;*/
+    asm volatile ("movl 0x4(%esp), %edx \r\n"); //edx = port
+    asm volatile ("xorl %eax, %eax \r\n");
+    asm volatile ("inw %dx, %ax \r\n");
+    asm volatile ("xorl %edx, %edx \r\n");
+    asm volatile ("ret \r\n");
+
 }
 
-u8 inb (u32 port){
-  u8 _v;
+__attribute__((naked)) u8 inb (u32 port){
+/*  u8 _v;
 
   __asm__ __volatile__ ("inb %w1,%0":"=a" (_v):"Nd" ((u16)port));
-  return _v;
+  return _v;*/
+
+    asm volatile ("movl 0x4(%esp), %edx \r\n"); //edx = port
+    asm volatile ("xorl %eax, %eax \r\n");
+    asm volatile ("inb %dx, %al \r\n");
+    asm volatile ("xorl %edx, %edx \r\n");
+    asm volatile ("ret \r\n");
+
 }
 

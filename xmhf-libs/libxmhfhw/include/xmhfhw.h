@@ -210,7 +210,7 @@ void tlb_invlpg(u64 addr);
 
 #ifndef __ASSEMBLY__
 
-
+void xmhfhw_cpu_getsec(u32 *eax, u32 *ebx, u32 *ecx, u32 *edx);
 uint64_t read_config_reg(uint32_t config_regs_base, uint32_t reg);
 void write_config_reg(uint32_t config_regs_base, uint32_t reg, uint64_t val);
 uint32_t __getsec_capabilities(uint32_t index);
@@ -235,7 +235,7 @@ void xmhfhw_cpu_x86vmx_vmwrite(u32 encoding, u32 value);
 u32 xmhfhw_cpu_x86vmx_vmread(u32 encoding);
 u32 __vmx_vmclear(u64 vmcs);
 u32 __vmx_vmptrld(u64 vmcs);
-u32 __vmx_invvpid(int invalidation_type, u16 vpid, u32 linearaddress);
+u32 __vmx_invvpid(int invalidation_type, u32 vpid, u32 linearaddress);
 void __vmx_invept(u64 invalidation_type, u64 eptp);
 
 #endif //__ASSEMBLY__
