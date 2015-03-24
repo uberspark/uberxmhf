@@ -56,12 +56,15 @@
 
 CASM_BEGINCODE()
 
-__attribute__((naked)) __attribute__ ((section(".slab_entrystub"))) __attribute__((align(1))) void _slab_entrystub(void){
-
+__attribute__ ((section(".slab_entrystub")))
+__attribute__((align(1)))
+CASM_FUNCDEF(void, _slab_entrystub,
+{
 	xmhfhwm_cpu_insn_jmp(slab_main);
 	xmhfhwm_cpu_insn_int(0x03);
 	CASM_LABEL(_slab_entrystub_loop);
 	xmhfhwm_cpu_insn_jmp(_slab_entrystub_loop);
-}
+},
+void)
 
 CASM_ENDCODE()
