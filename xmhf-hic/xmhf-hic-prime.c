@@ -52,7 +52,7 @@
 extern void _ap_bootstrap_code(void);
 extern bool __xmhfhic_ap_entry(void);
 extern void xmhfhic_arch_relinquish_control_to_init_slab(u64 cpuid, u64 entrystub, u64 mempgtbl_cr3, u64 slabtos);
-extern void __xmhfhic_x86vmx_setIOPL3(u64 cpuid);
+//extern void __xmhfhic_x86vmx_setIOPL3(u64 cpuid);
 extern void __xmhfhic_x86vmx_loadTR(u64 cpuid);
 extern void __xmhfhic_x86vmx_loadIDT(arch_x86_idtdesc_t *idt_addr);
 //extern void __xmhfhic_x86vmx_loadGDT(arch_x86_gdtdesc_t *gdt_addr);
@@ -118,6 +118,13 @@ static void xmhfhic_setupinitpgtables(void){
 
 
 
+//set IOPl to CPl-3
+static void __xmhfhic_x86vmx_setIOPL3(u64 cpuid){
+    u32 eflags;
+    eflags = read_eflags();
+    eflags |= EFLAGS_IOPL;
+    write_eflags(eflags);
+}
 
 
 
