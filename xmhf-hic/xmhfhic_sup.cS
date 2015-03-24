@@ -71,16 +71,6 @@ __attribute__(( aligned(16) )) static arch_x86_gdtdesc_t _xcsmp_ap_init_gdt  = {
 
 __attribute__((naked)) __attribute__ ((section(".hic_entrystub"))) __attribute__(( align(4096) )) void xcprimeon_arch_entry(void) {
 
-/*	asm volatile ("movw %ds, %ax \r\n");
-    asm volatile ("movw %ax, %es \r\n");
-    asm volatile ("movw %ax, %fs \r\n");
-    asm volatile ("movw %ax, %gs \r\n");
-    asm volatile ("movw %ax, %ss \r\n");
-    asm volatile ("movl $_init_cpustacks, %eax \r\n");
-    asm volatile ("addl $16384, %eax \r\n");
-    asm volatile ("movl %eax, %esp \r\n");
-    asm volatile ("call slab_main \r\n");
-    asm volatile ("hlt \r\n");*/
     xmhfhwm_cpu_insn_movw_ds_ax();
     xmhfhwm_cpu_insn_movw_ax_es();
     xmhfhwm_cpu_insn_movw_ax_fs();
@@ -95,32 +85,6 @@ __attribute__((naked)) __attribute__ ((section(".hic_entrystub"))) __attribute__
 
 
 __attribute__((naked)) void _ap_bootstrap_code(void) {
-
-    /*asm volatile (
-           " .code32 \r\n"
-           " movw %0, %%ax \r\n"
-           " movw %%ax, %%ds \r\n"
-
-           " movl %1, %%eax \r\n"
-           " movl (%%eax), %%eax \r\n"
-
-           " movl %2, %%ebx \r\n"
-           " movl (%%ebx), %%ebx \r\n"
-
-           " movl %3, %%edi \r\n"
-           " movl (%%edi), %%edi \r\n"
-
-           " jmpl *%%eax \r\n"
-           " hlt \r\n"
-           " .balign 4096 \r\n"
-            :
-            : "i" (__DS_CPL0),
-              "i" ((X86SMP_APBOOTSTRAP_DATASEG << 4) + offsetof(x86smp_apbootstrapdata_t, ap_entrypoint)),
-              "i" ((X86SMP_APBOOTSTRAP_DATASEG << 4) + offsetof(x86smp_apbootstrapdata_t, ap_cr3)),
-              "i" ((X86SMP_APBOOTSTRAP_DATASEG << 4) + offsetof(x86smp_apbootstrapdata_t, cpuidtable))
-            :
-
-        );*/
 
     xmhfhwm_cpu_insn_movw_imm_ax(__DS_CPL0);
     xmhfhwm_cpu_insn_movw_ax_ds();
