@@ -71,7 +71,7 @@ __attribute__(( aligned(16) )) static arch_x86_gdtdesc_t _xcsmp_ap_init_gdt  = {
 
 __attribute__((naked)) __attribute__ ((section(".hic_entrystub"))) __attribute__(( align(4096) )) void xcprimeon_arch_entry(void) {
 
-	asm volatile ("movw %ds, %ax \r\n");
+/*	asm volatile ("movw %ds, %ax \r\n");
     asm volatile ("movw %ax, %es \r\n");
     asm volatile ("movw %ax, %fs \r\n");
     asm volatile ("movw %ax, %gs \r\n");
@@ -80,8 +80,17 @@ __attribute__((naked)) __attribute__ ((section(".hic_entrystub"))) __attribute__
     asm volatile ("addl $16384, %eax \r\n");
     asm volatile ("movl %eax, %esp \r\n");
     asm volatile ("call slab_main \r\n");
-    asm volatile ("hlt \r\n");
-
+    asm volatile ("hlt \r\n");*/
+    xmhfhwm_cpu_insn_movw_ds_ax();
+    xmhfhwm_cpu_insn_movw_ax_es();
+    xmhfhwm_cpu_insn_movw_ax_fs();
+    xmhfhwm_cpu_insn_movw_ax_gs();
+    xmhfhwm_cpu_insn_movw_ax_ss();
+    xmhfhwm_cpu_insn_movl_imm_eax(_init_cpustacks);
+    xmhfhwm_cpu_insn_addl_imms_eax(MAX_PLATFORM_CPUSTACK_SIZE);
+    xmhfhwm_cpu_insn_movl_eax_esp();
+    xmhfhwm_cpu_insn_call(slab_main);
+    xmhfhwm_cpu_insn_hlt();
 }
 
 
