@@ -605,10 +605,6 @@ typedef struct __tss {
 
 //////
 
-// label
-// TODO: move into xmhf-hic.h as a CASM pseudo-language definition
-#define CASM_LABEL(x)   asm volatile (#x": \r\n");
-#define CASM_BALIGN(x)  asm volatile (".balign "#x" \r\n");
 
 // branch instructions
 #define xmhfhwm_cpu_insn_jmp(x) asm volatile ("jmp "#x" \r\n");
