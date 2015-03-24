@@ -54,122 +54,51 @@
 
 
 __attribute__((naked)) bool __vmx_vmxon(u64 vmxonregion_paddr){
-/*		u32 retval=0;
-
-		asm volatile( "vmxon %1 \n"
-				 "jbe vmfail \n"
-				 "movl $0x1, %%eax \n"
-				 "movl %%eax, %0 \n"
-				 "jmp vmsuccess \n"
-				 "vmfail: \n"
-				 "movl $0x0, %%eax \n"
-				 "movl %%eax, %0 \n"
-				 "vmsuccess: \n"
-		   : "=g" (retval)
-		   : "m"(vmxonregion_paddr)
-		   : "eax");
-
-		if(!retval)
-            return false;
-        else
-            return true;
-*/
-
-    asm volatile ("vmxon 0x4(%esp) \r\n");
-	asm volatile ("jbe vo_fail \r\n");
-    asm volatile ("movl $0x1, %eax \r\n");
-	asm volatile ("jmp vo_success \r\n");
-    asm volatile ("vo_fail: \r\n");
-    asm volatile ("movl $0x0, %eax \r\n");
-	asm volatile ("vo_success: \r\n");
-    asm volatile ("ret \r\n");
-
-
+    xmhfhwm_cpu_insn_vmxon_mesp(0x4);
+	xmhfhwm_cpu_insn_jbe(vo_fail);
+    xmhfhwm_cpu_insn_movl_imm_eax(0x1);
+	xmhfhwm_cpu_insn_jmp(vo_success);
+    CASM_LABEL(vo_fail);
+    xmhfhwm_cpu_insn_movl_imm_eax(0x0);
+	CASM_LABEL(vo_success);
+    xmhfhwm_cpu_insn_ret();
 }
-
-
-/*
-x86_64
-void xmhfhw_cpu_x86vmx_vmwrite(u64 encoding, u64 value){
-  asm volatile ("vmwrite %1, %0 \r\n" :: "r"(encoding  & 0x00000000FFFFFFFFULL), "r"(value) : "cc");
-}
-
-u64 xmhfhw_cpu_x86vmx_vmread(u64 encoding){
-    u64 __value=0;
-    asm volatile("vmread %1, %0 \r\n" : "=r"(__value) : "r"(encoding  & 0x00000000FFFFFFFFULL) : "cc");
-    return __value;
-}
-*/
 
 
 __attribute__((naked)) void xmhfhw_cpu_x86vmx_vmwrite(u32 encoding, u32 value){
-  asm volatile ("movl 0x4(%esp), %ecx \r\n");
-  asm volatile ("movl 0x8(%esp), %eax \r\n");
-  //asm volatile ("vmwrite %1, %0 \r\n" :: "r"(encoding), "r"(value) : "cc");
-  asm volatile ("vmwrite %eax, %ecx \r\n");
-  asm volatile ("ret \r\n");
+  xmhfhwm_cpu_insn_movl_mesp_ecx(0x4);
+  xmhfhwm_cpu_insn_movl_mesp_eax(0x8);
+  xmhfhwm_cpu_insn_vmwrite_eax_ecx();
+  xmhfhwm_cpu_insn_ret();
 }
 
 __attribute__((naked)) u32 xmhfhw_cpu_x86vmx_vmread(u32 encoding){
-/*    u32 __value;
-    asm volatile("vmread %1, %0 \r\n" : "=r"(__value) : "r"(encoding) : "cc");
-    return __value;*/
-    asm volatile ("movl 0x4(%esp), %ecx \r\n");
-    asm volatile ("vmread %ecx, %eax\r\n");
-    asm volatile ("ret \r\n");
+    xmhfhwm_cpu_insn_movl_mesp_ecx(0x4);
+    xmhfhwm_cpu_insn_vmread_ecx_eax();
+    xmhfhwm_cpu_insn_ret();
 }
 
 
 __attribute__((naked)) u32 __vmx_vmclear(u64 vmcs){
-/*  u32 status;
-  __asm__("vmclear %1			\r\n"
-	   	"jbe	1f    		\r\n"
-      "movl $1, %%eax \r\n"
-      "jmp  2f  \r\n"
-      "1: movl $0, %%eax \r\n"
-      "2: movl %%eax, %0 \r\n"
-    : "=m" (status)
-    : "m"(vmcs)
-    : "%eax"
-  );
-  return status;
-*/
-
-    asm volatile ("vmclear 0x4(%esp) \r\n");
-    asm volatile ("jbe vmclear_error \r\n");
-    asm volatile ("movl $1, %eax \r\n");
-    asm volatile ("jmp vmclear_done \r\n");
-    asm volatile ("vmclear_error: \r\n");
-    asm volatile ("mov $0, %eax \r\n");
-    asm volatile ("vmclear_done: \r\n");
-    asm volatile ("ret \r\n");
-
+    xmhfhwm_cpu_insn_vmclear_mesp(0x4);
+    xmhfhwm_cpu_insn_jbe(vmclear_error);
+    xmhfhwm_cpu_insn_movl_imm_eax(0x1);
+    xmhfhwm_cpu_insn_jmp(vmclear_done);
+    CASM_LABEL(vmclear_error);
+    xmhfhwm_cpu_insn_movl_imm_eax(0x0);
+    CASM_LABEL(vmclear_done);
+    xmhfhwm_cpu_insn_ret();
 }
 
 __attribute__((naked)) u32 __vmx_vmptrld(u64 vmcs){
-/*  u32 status;
-  __asm__("vmptrld %1			\r\n"
-	   	"jbe	1f    		\r\n"
-      "movl $1, %%eax \r\n"
-      "jmp  2f  \r\n"
-      "1: movl $0, %%eax \r\n"
-      "2: movl %%eax, %0 \r\n"
-    : "=m" (status)
-    : "m"(vmcs)
-    : "%eax"
-  );
-  return status;*/
-
-  asm volatile ("vmptrld 0x4(%esp) \r\n");
-  asm volatile ("jbe vptrld_error \r\n");
-asm volatile ("movl $1, %eax \r\n");
-asm volatile ("jmp vptrld_done \r\n");
-asm volatile ("vptrld_error: \r\n");
-asm volatile ("movl $0, %eax \r\n");
-asm volatile ("vptrld_done: \r\n");
-asm volatile ("ret \r\n");
-
-
+    xmhfhwm_cpu_insn_vmptrld_mesp(0x4);
+    xmhfhwm_cpu_insn_jbe(vptrld_error);
+    xmhfhwm_cpu_insn_movl_imm_eax(0x1);
+    xmhfhwm_cpu_insn_jmp(vptrld_done);
+    CASM_LABEL(vptrld_error);
+    xmhfhwm_cpu_insn_movl_imm_eax(0x0);
+    CASM_LABEL(vptrld_done);
+    xmhfhwm_cpu_insn_ret();
 }
 
 // VMX instruction INVVPID
@@ -181,51 +110,29 @@ asm volatile ("ret \r\n");
 __attribute__((naked)) u32 __vmx_invvpid(int invalidation_type, //0x14
                   u32 vpid,              //0x18
                   u32 linearaddress){    //0x1C
-/*	//return status (1 or 0)
-	u32 status;
 
-	//invvpid descriptor
-	struct {
-		u64 vpid 	 : 16;
-		u64 reserved : 48;
-		u64 linearaddress;
-    } invvpiddescriptor = { vpid, 0, linearaddress };
+    xmhfhwm_cpu_insn_subl_imm_esp(0x10);
 
-	//issue invvpid instruction
-	//note: GCC does not seem to support this instruction directly
-	//so we encode it as hex
-	__asm__(".byte 0x66, 0x0f, 0x38, 0x81, 0x08 \r\n"
-          "movl $1, %%eax \r\n"
-		  "ja	1f    	  \r\n"
-		  "movl $0, %%eax \r\n"
-		  "1: movl %%eax, %0 \r\n"
-    : "=m" (status)
-    : "a"(&invvpiddescriptor), "c"(invalidation_type)
-	: "cc", "memory");
+    xmhfhwm_cpu_insn_xorl_eax_eax();
+    xmhfhwm_cpu_insn_movw_mesp_ax(0x18);
+    xmhfhwm_cpu_insn_movl_eax_mesp(0x0);
+    xmhfhwm_cpu_insn_movl_imm_mesp(0x0,0x4);
+    xmhfhwm_cpu_insn_movl_mesp_eax(0x1C);
+    xmhfhwm_cpu_insn_movl_eax_mesp(0x8);
+    xmhfhwm_cpu_insn_movl_imm_mesp(0x0, 0xC);
 
-	return status;*/
+    xmhfhwm_cpu_insn_movl_mesp_ecx(0x14);
 
-    asm volatile ("subl 0x10, %esp \r\n");
+    xmhfhwm_cpu_insn_invvpid_mesp_ecx(0x0);
 
-    asm volatile ("xorl %eax, %eax \r\n");
-    asm volatile ("movw 0x18(%esp), %ax \r\n");
-    asm volatile ("movl %eax, (%esp) \r\n");
-    asm volatile ("movl $0, 0x4(%esp) \r\n");
-    asm volatile ("movl 0x1C(%esp), %eax \r\n");
-    asm volatile ("movl %eax, 0x8(%esp) \r\n");
-    asm volatile ("movl $0, 0xC(%esp) \r\n");
+    xmhfhwm_cpu_insn_movl_imm_eax(0x1);
+    xmhfhwm_cpu_insn_ja(vinvpid_success);
+    xmhfhwm_cpu_insn_movl_imm_eax(0x0);
+    CASM_LABEL(vinvpid_success);
 
-    asm volatile ("movl 0x14(%esp), %ecx \r\n");
+    xmhfhwm_cpu_insn_addl_imm_esp(0x10);
+    xmhfhwm_cpu_insn_ret();
 
-    asm volatile ("invvpid (%esp), %ecx\r\n");
-
-    asm volatile ("movl $1, %eax \r\n");
-    asm volatile ("ja vinvpid_success \r\n");
-    asm volatile ("movl $0, %eax \r\n");
-    asm volatile ("vinvpid_success: \r\n");
-
-    asm volatile ("addl 0x10, %esp \r\n");
-    asm volatile ("ret \r\n");
 
 }
 
@@ -236,25 +143,18 @@ __attribute__((naked)) u32 __vmx_invvpid(int invalidation_type, //0x14
 
 
 __attribute__((naked)) void __vmx_invept(u64 invalidation_type, u64 eptp){
-/*	//invept descriptor
-	struct {
-		u64 eptp;
-		u64 reserved;
-    } __attribute__((packed)) __inveptdescriptor = { eptp, 0};
 
-	//issue invept instruction
-	asm volatile("invept %0, %1 \r\n" ::"m" (__inveptdescriptor), "r" (invalidation_type):"cc");
-*/
-    asm volatile ("subl 0x10, %esp \r\n");
-    asm volatile ("movl 0x14(%esp), %edx \r\n"); //edx = invalidation_type
-    asm volatile ("movl 0x1C(%esp), %eax \r\n");
-    asm volatile ("movl %eax, (%esp) \r\n");
-    asm volatile ("movl 0x20(%esp), %eax \r\n");
-    asm volatile ("movl %eax, 0x4(%esp) \r\n");
-    asm volatile ("movl $0, 0x8(%esp) \r\n");
-    asm volatile ("movl $0, 0xC(%esp) \r\n");
-    asm volatile ("invept (%esp), %edx \r\n");
-    asm volatile ("addl 0x10, %esp \r\n");
-    asm volatile ("ret \r\n");
+    xmhfhwm_cpu_insn_subl_imm_esp(0x10);
+    xmhfhwm_cpu_insn_movl_mesp_edx(0x14);
+    xmhfhwm_cpu_insn_movl_mesp_eax(0x1C);
+    xmhfhwm_cpu_insn_movl_eax_mesp(0x0);
+    xmhfhwm_cpu_insn_movl_mesp_eax(0x20);
+    xmhfhwm_cpu_insn_movl_eax_mesp(0x4);
+    xmhfhwm_cpu_insn_movl_imm_mesp(0x0,0x8);
+    xmhfhwm_cpu_insn_movl_imm_mesp(0x0,0xC);
+    xmhfhwm_cpu_insn_invept_mesp_edx(0x0);
+    xmhfhwm_cpu_insn_addl_imm_esp(0x10);
+    xmhfhwm_cpu_insn_ret();
+
 }
 

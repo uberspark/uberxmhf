@@ -179,6 +179,7 @@ slab_physmem_extent_t _xmhfhic_init_setupdata_slab_physmem_extents[XMHF_HIC_MAX_
 
 //////
 // runtime stage
+__attribute__((section(".hic_mleheader"))) x86vmx_mle_header_t mleheader = { 0 };
 
 __attribute__((section(".data"))) u64 __xmhfhic_safestack_indices[MAX_PLATFORM_CPUS] = { 0 };
 

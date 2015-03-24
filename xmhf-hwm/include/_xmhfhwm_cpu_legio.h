@@ -52,6 +52,11 @@
 
 #ifndef __ASSEMBLY__
 
+
+
+
+
+
 #endif /* __ASSEMBLY__ */
 
 #endif /* __XMHFHWM_CPU_LEGIO_H__ */
