@@ -87,7 +87,7 @@ __attribute__((naked)) __attribute__ ((section(".hic_entrystub"))) __attribute__
     xmhfhwm_cpu_insn_movw_ax_gs();
     xmhfhwm_cpu_insn_movw_ax_ss();
     xmhfhwm_cpu_insn_movl_imm_eax(_init_cpustacks);
-    xmhfhwm_cpu_insn_addl_imms_eax(MAX_PLATFORM_CPUSTACK_SIZE);
+    xmhfhwm_cpu_insn_addl_imm_eax(MAX_PLATFORM_CPUSTACK_SIZE);
     xmhfhwm_cpu_insn_movl_eax_esp();
     xmhfhwm_cpu_insn_call(slab_main);
     xmhfhwm_cpu_insn_hlt();
@@ -96,7 +96,7 @@ __attribute__((naked)) __attribute__ ((section(".hic_entrystub"))) __attribute__
 
 __attribute__((naked)) void _ap_bootstrap_code(void) {
 
-    asm volatile (
+    /*asm volatile (
            " .code32 \r\n"
            " movw %0, %%ax \r\n"
            " movw %%ax, %%ds \r\n"
@@ -120,10 +120,19 @@ __attribute__((naked)) void _ap_bootstrap_code(void) {
               "i" ((X86SMP_APBOOTSTRAP_DATASEG << 4) + offsetof(x86smp_apbootstrapdata_t, cpuidtable))
             :
 
-        );
+        );*/
 
-
-
+    xmhfhwm_cpu_insn_movw_imm_ax(__DS_CPL0);
+    xmhfhwm_cpu_insn_movw_ax_ds();
+    xmhfhwm_cpu_insn_movl_imm_eax(((X86SMP_APBOOTSTRAP_DATASEG << 4) + 8));
+    xmhfhwm_cpu_insn_movl_meax_eax(0x0);
+    xmhfhwm_cpu_insn_movl_imm_ebx(((X86SMP_APBOOTSTRAP_DATASEG << 4) + 0));
+    xmhfhwm_cpu_insn_movl_mebx_ebx(0x0);
+    xmhfhwm_cpu_insn_movl_imm_edi(((X86SMP_APBOOTSTRAP_DATASEG << 4) + 32))
+    xmhfhwm_cpu_insn_movl_medi_edi(0x0);
+    xmhfhwm_cpu_insn_jmpl_eax();
+    xmhfhwm_cpu_insn_hlt();
+    CASM_BALIGN(4096);
 }
 
 
