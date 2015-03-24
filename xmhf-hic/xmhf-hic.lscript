@@ -66,6 +66,8 @@ SECTIONS
     } >hicmem =0x0000
 
 	.hiccode : {
+		*(.hic_mleheader)
+		. = ALIGN(1);
 		*(.hic_entrystub)
 		*(.slab_entrystub)
 		*(.text)
