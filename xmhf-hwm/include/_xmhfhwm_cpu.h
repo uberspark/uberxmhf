@@ -613,15 +613,19 @@ typedef struct __tss {
 #define xmhfhwm_cpu_insn_jmp(x) asm volatile ("jmp "#x" \r\n");
 #define xmhfhwm_cpu_insn_jc(x) asm volatile ("jc "#x" \r\n");
 #define xmhfhwm_cpu_insn_jnz(x) asm volatile ("jnz "#x" \r\n");
+#define xmhfhwm_cpu_insn_jbe(x) asm volatile ("jbe "#x" \r\n");
+#define xmhfhwm_cpu_insn_ja(x) asm volatile ("ja "#x" \r\n");
 #define xmhfhwm_cpu_insn_int(x) asm volatile ("int $"#x" \r\n");
 #define xmhfhwm_cpu_insn_ret() asm volatile ("ret \r\n");
 
-// vmx instructions
-#define xmhfhwm_cpu_insn_vmlaunch() asm volatile ("vmlaunch \r\n");
 
 // load/store instructions
 #define xmhfhwm_cpu_insn_movl_imm_eax(x) asm volatile ("movl $"#x", %eax\r\n");
+
+#define xmhfhwm_cpu_insn_movl_eax_mesp(x) asm volatile ("movl %eax, "#x"(%esp) \r\n");
+
 #define xmhfhwm_cpu_insn_movl_mesp_eax(x) asm volatile ("movl "#x"(%esp), %eax \r\n");
+#define xmhfhwm_cpu_insn_movw_mesp_ax(x) asm volatile ("movw "#x"(%esp), %ax \r\n");
 #define xmhfhwm_cpu_insn_movl_mesp_ebx(x) asm volatile ("movl "#x"(%esp), %ebx \r\n");
 #define xmhfhwm_cpu_insn_movl_mesp_ecx(x) asm volatile ("movl "#x"(%esp), %ecx \r\n");
 #define xmhfhwm_cpu_insn_movl_mesp_edx(x) asm volatile ("movl "#x"(%esp), %edx \r\n");
@@ -641,6 +645,8 @@ typedef struct __tss {
 #define xmhfhwm_cpu_insn_movl_mecx_ecx(x) asm volatile ("movl "#x"(%ecx), %ecx \r\n");
 #define xmhfhwm_cpu_insn_movl_medx_edx(x) asm volatile ("movl "#x"(%edx), %edx \r\n");
 
+#define xmhfhwm_cpu_insn_movl_imm_mesp(x,y) asm volatile ("movl $"#x", "#y"(%esp) \r\n");
+
 
 #define xmhfhwm_cpu_insn_popl_ebx() asm volatile ("popl %ebx \r\n");
 #define xmhfhwm_cpu_insn_popl_esi() asm volatile ("popl %esi \r\n");
@@ -653,6 +659,8 @@ typedef struct __tss {
 #define xmhfhwm_cpu_insn_xorl_eax_eax() asm volatile ("xorl %eax, %eax \r\n");
 #define xmhfhwm_cpu_insn_xorl_edx_edx() asm volatile ("xorl %edx, %edx \r\n");
 #define xmhfhwm_cpu_insn_addl_mesp_ecx(x) asm volatile ("addl "#x"(%esp), %ecx \r\n");
+#define xmhfhwm_cpu_insn_addl_imm_esp(x) asm volatile ("addl "#x", %esp \r\n");
+#define xmhfhwm_cpu_insn_subl_imm_esp(x) asm volatile ("subl "#x", %esp \r\n");
 
 // system instructions
 #define xmhfhwm_cpu_insn_cli() asm volatile ("cli \r\n");
