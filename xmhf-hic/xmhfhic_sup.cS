@@ -48,14 +48,25 @@
 #include <xmhf-hic.h>
 #include <xmhf-debug.h>
 
+// XMHF HIC prime assembly language code blobs
+// author: amit vasudevan (amitvasudevan@acm.org)
+
 
 // initialization phase CPU stacks
 __attribute__(( section(".stack") )) __attribute__(( aligned(4096) )) static u8 _init_cpustacks[MAX_PLATFORM_CPUS][MAX_PLATFORM_CPUSTACK_SIZE];
 
 
-// XMHF HIC prime assembly language code blobs
-// author: amit vasudevan (amitvasudevan@acm.org)
+// following two data structures used for SMP bootup
+__attribute__(( aligned(16) )) static u64 _xcsmp_ap_init_gdt_start[]  = {
+	0x0000000000000000ULL,	//NULL descriptor
+	0x00af9b000000ffffULL,	//CPL-0 64-bit code descriptor (CS64)
+	0x00af93000000ffffULL,	//CPL-0 64-bit data descriptor (DS/SS/ES/FS/GS)
+};
 
+__attribute__(( aligned(16) )) static arch_x86_gdtdesc_t _xcsmp_ap_init_gdt  = {
+	.size=sizeof(_xcsmp_ap_init_gdt_start)-1,
+	.base=&_xcsmp_ap_init_gdt_start,
+};
 
 
 __attribute__((naked)) __attribute__ ((section(".hic_entrystub"))) __attribute__(( align(4096) )) void xcprimeon_arch_entry(void) {
@@ -74,76 +85,7 @@ __attribute__((naked)) __attribute__ ((section(".hic_entrystub"))) __attribute__
 }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-//////////////////////////////////////////////////////////////////////////////
-// switch to smp
-
-
-__attribute__(( aligned(16) )) static u64 _xcsmp_ap_init_gdt_start[]  = {
-	0x0000000000000000ULL,	//NULL descriptor
-	0x00af9b000000ffffULL,	//CPL-0 64-bit code descriptor (CS64)
-	0x00af93000000ffffULL,	//CPL-0 64-bit data descriptor (DS/SS/ES/FS/GS)
-};
-
-__attribute__(( aligned(16) )) static arch_x86_gdtdesc_t _xcsmp_ap_init_gdt  = {
-	.size=sizeof(_xcsmp_ap_init_gdt_start)-1,
-	.base=&_xcsmp_ap_init_gdt_start,
-};
-
-
-
 __attribute__((naked)) void _ap_bootstrap_code(void) {
-
-/*
-    //TODO: x86_64 --> x86
-    asm volatile (
-           " .code32 \r\n"
-           " movw %0, %%ax \r\n"
-           " movw %%ax, %%ds \r\n"
-
-           " movl %1, %%eax \r\n"
-           " movl (%%eax), %%eax \r\n"
-
-           " movl %2, %%ebx \r\n"
-           " movl (%%ebx), %%ebx \r\n"
-
-           " movl %3, %%edi \r\n"
-           " movl (%%edi), %%edi \r\n"
-
-           " jmpl *%%eax \r\n"
-           " hlt \r\n"
-           " .balign 4096 \r\n"
-           ".code64"
-            :
-            : "i" (__DS_CPL0),
-              "i" ((X86SMP_APBOOTSTRAP_DATASEG << 4) + offsetof(x86smp_apbootstrapdata_t, ap_entrypoint)),
-              "i" ((X86SMP_APBOOTSTRAP_DATASEG << 4) + offsetof(x86smp_apbootstrapdata_t, ap_cr3)),
-              "i" ((X86SMP_APBOOTSTRAP_DATASEG << 4) + offsetof(x86smp_apbootstrapdata_t, cpuidtable))
-            :
-
-        );
-*/
-
 
     asm volatile (
            " .code32 \r\n"
