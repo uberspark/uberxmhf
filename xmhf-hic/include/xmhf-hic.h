@@ -88,6 +88,12 @@
 
 #ifndef __ASSEMBLY__
 
+typedef struct {
+    u8 pgtbl[3 * PAGE_SIZE_4K];
+    u8 mlehdr[0x80];
+} __attribute__((packed)) x86vmx_mle_header_t;
+
+
 /* x86_64
 typedef struct {
     u64 pci_bus;

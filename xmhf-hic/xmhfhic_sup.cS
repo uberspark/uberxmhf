@@ -62,12 +62,12 @@ __attribute__((naked)) __attribute__ ((section(".hic_entrystub"))) __attribute__
 
 
 	asm volatile (
-                    ".code32 \r\n"
-					".fill 4096, 1, 0 \r\n"
-					".fill 4096, 1, 0 \r\n"
-					".fill 4096, 1, 0 \r\n"
-					".fill 0x80, 1, 0x90\r\n" //TODO: should really be sizeof(mle_hdr_t)
-					"_xcprimeon_start: \r\n"
+                    //".code32 \r\n"
+					//".fill 4096, 1, 0 \r\n"
+					//".fill 4096, 1, 0 \r\n"
+					//".fill 4096, 1, 0 \r\n"
+					//".fill 0x80, 1, 0x90\r\n" //TODO: should really be sizeof(mle_hdr_t)
+					//"_xcprimeon_start: \r\n"
 
 					"movw %%ds, %%ax \r\n"
 					"movw %%ax, %%es \r\n"
