@@ -60,33 +60,16 @@ __attribute__(( section(".stack") )) __attribute__(( aligned(4096) )) static u8 
 
 __attribute__((naked)) __attribute__ ((section(".hic_entrystub"))) __attribute__(( align(4096) )) void xcprimeon_arch_entry(void) {
 
-
-	asm volatile (
-                    //".code32 \r\n"
-					//".fill 4096, 1, 0 \r\n"
-					//".fill 4096, 1, 0 \r\n"
-					//".fill 4096, 1, 0 \r\n"
-					//".fill 0x80, 1, 0x90\r\n" //TODO: should really be sizeof(mle_hdr_t)
-					//"_xcprimeon_start: \r\n"
-
-					"movw %%ds, %%ax \r\n"
-					"movw %%ax, %%es \r\n"
-					"movw %%ax, %%fs \r\n"
-					"movw %%ax, %%gs \r\n"
-					"movw %%ax, %%ss \r\n"
-
-					//"movl $0x10200000, %%esp \r\n" //TODO: get rid of hard-coded stack top
-
-					"movl %0, %%eax \r\n"
-					"movl %%eax, %%esp \r\n"
-
-                    //"call xmhfhic_entry \r\n"
-                    "call slab_main \r\n"
-			    :
-			    : "i" (&_init_cpustacks[1])
-                :
-	);
-
+	asm volatile ("movw %ds, %ax \r\n");
+    asm volatile ("movw %ax, %es \r\n");
+    asm volatile ("movw %ax, %fs \r\n");
+    asm volatile ("movw %ax, %gs \r\n");
+    asm volatile ("movw %ax, %ss \r\n");
+    asm volatile ("movl $_init_cpustacks, %eax \r\n");
+    asm volatile ("addl $16384, %eax \r\n");
+    asm volatile ("movl %eax, %esp \r\n");
+    asm volatile ("call slab_main \r\n");
+    asm volatile ("hlt \r\n");
 
 }
 
