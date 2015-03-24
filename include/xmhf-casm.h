@@ -44,32 +44,15 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-// xmhf.h - main XMHF header file
+// xmhf-casm.h - CASM pseudo-language decls.
 // author: amit vasudevan (amitvasudevan@acm.org)
 
-#ifndef __XMHF_H_
-#define __XMHF_H_
+#ifndef __XMHF_CASM_H_
+#define __XMHF_CASM_H_
 
 #ifndef __ASSEMBLY__
 
-//pull in required libxmhfc C includes
-#include <stdint.h>
-#include <stdbool.h>
-#include <stddef.h>
-#include <stdarg.h>
-#include <string.h>
-#include <ctype.h>
-#include <assert.h>
 
 #endif // __ASSEMBLY__
 
-
-#include <xmhf-config.h>		//XMHF platform/arch config, TODO: this needs to be platform/arch independent push arch dependent stuff into arch/
-#include <xmhf-types.h>			//XMHF specific base types
-#include <xmhf-error.h>
-//#include <xmhf-hwm.h>            //XMHF hardware interfaces
-//#include <xmhfhw.h>
-//#include <xmhf-hic.h>
-#include <xmhf-casm.h>
-
-#endif /* __XMHF_H_ */
+#endif /* __XMHF_CASM_H_ */
