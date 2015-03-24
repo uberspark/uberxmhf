@@ -63,6 +63,12 @@
     static void __casm_endcode(void){ \
     } \
 
+#define CASM_FUNCDEF(fn_rettype, fn_name, fn_body, ...) \
+    __attribute__((naked)) fn_rettype fn_name (__VA_ARGS__) \
+    { \
+    fn_body \
+    } \
+
 #endif // __ASSEMBLY__
 
 #endif /* __XMHF_CASM_H_ */
