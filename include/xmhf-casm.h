@@ -52,6 +52,9 @@
 
 #ifndef __ASSEMBLY__
 
+#define CASM_LABEL(x)   asm volatile (#x": \r\n");
+#define CASM_BALIGN(x)  asm volatile (".balign "#x" \r\n");
+
 
 #endif // __ASSEMBLY__
 
