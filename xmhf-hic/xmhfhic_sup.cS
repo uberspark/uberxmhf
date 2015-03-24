@@ -164,31 +164,6 @@ bool __xmhfhic_ap_entry(void) __attribute__((naked)){
 }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 //////////////////////////////////////////////////////////////////////////////
 // setup cpu state for hic
 
@@ -213,37 +188,27 @@ __attribute__((naked)) void __xmhfhic_x86vmx_reloadsegregs(u32 ds_sel){
 
 #define XMHF_EXCEPTION_HANDLER_DEFINE(vector) 												\
 	static void __xmhf_exception_handler_##vector(void) __attribute__((naked)) { 					\
-		asm volatile(												\
-                        "pushl %0 \r\n"\
-                        "pushal \r\n" \
-                        "pushl %%esp \r\n" \
-                        "call __xmhfhic_rtm_exception_stub\r\n"\
-                        "addl $0x4, %%esp \r\n" \
-                        "popal \r\n" \
-                        "addl $0x08, %%esp \r\n" \
-                        "iretl \r\n" \
-					: \
-					: "i" (vector) \
-                    : \
-               		);	\
+		asm volatile ("pushl $"#vector" \r\n"); \
+        asm volatile ("pushal \r\n"); \
+        asm volatile ("pushl %esp \r\n"); \
+        asm volatile ("call __xmhfhic_rtm_exception_stub \r\n"); \
+        asm volatile ("addl $0x4, %esp \r\n"); \
+        asm volatile ("popal \r\n"); \
+        asm volatile ("addl $0x08, %esp \r\n"); \
+        asm volatile ("iretl \r\n"); \
     }\
 
 #define XMHF_EXCEPTION_HANDLER_DEFINE_WITHERRORCODE(vector) 												\
 	static void __xmhf_exception_handler_##vector(void) __attribute__((naked)) { 					\
-		asm volatile(												\
-                        "pushl $0x0 \r\n" \
-                        "pushl %0 \r\n"\
-                        "pushal \r\n" \
-                        "pushl %%esp \r\n" \
-                        "call __xmhfhic_rtm_exception_stub\r\n"\
-                        "addl $0x4, %%esp \r\n" \
-                        "popal \r\n" \
-                        "addl $0x08, %%esp \r\n" \
-                        "iretl \r\n" \
-					: \
-					: "i" (vector) \
-                    : \
-               		);	\
+		asm volatile ("pushl $0x0 \r\n"); \
+        asm volatile ("pushl $"#vector" \r\n"); \
+        asm volatile ("pushal \r\n"); \
+        asm volatile ("pushl %esp \r\n"); \
+        asm volatile ("call __xmhfhic_rtm_exception_stub \r\n"); \
+        asm volatile ("addl $0x4, %esp \r\n"); \
+        asm volatile ("popal \r\n"); \
+        asm volatile ("addl $0x08, %esp \r\n"); \
+        asm volatile ("iretl \r\n"); \
     }\
 
 
@@ -318,18 +283,6 @@ u32  __xmhfhic_exceptionstubs[] = { XMHF_EXCEPTION_HANDLER_ADDROF(0),
 };
 
 
-
-
-
-
-
-
-
-
-
-
-
-
 //HIC runtime intercept stub
 //__attribute__((naked)) void __xmhfhic_rtm_intercept_stub(void){
 __attribute__((naked)) void __xmhfhic_rtm_intercept_stub(void){
@@ -342,6 +295,49 @@ __attribute__((naked)) void __xmhfhic_rtm_intercept_stub(void){
     asm volatile ("vmresume \r\n");
     asm volatile ("hlt \r\n");
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
