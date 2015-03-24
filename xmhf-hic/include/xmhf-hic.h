@@ -86,7 +86,15 @@
 #define	EMHF_XCPHANDLER_MAXEXCEPTIONS	32
 
 
+
+
 #ifndef __ASSEMBLY__
+
+typedef struct {
+    u8 pgtbl[3 * PAGE_SIZE_4K];
+    u8 mlehdr[0x80];
+} __attribute__((packed)) x86vmx_mle_header_t;
+
 
 /* x86_64
 typedef struct {
@@ -108,15 +116,15 @@ typedef struct {
 
 
 typedef struct {
-    u32 ap_cr3;
-    u32 ap_cr4;
-    u32 ap_entrypoint;
-    u32 _filler0;
-    u32 ap_gdtdesc_limit;
-    u32 ap_gdtdesc_base;
-    u32 ap_cs_selector;
-    u32 ap_eip;
-    u32 cpuidtable;
+    u32 ap_cr3;             //0
+    u32 ap_cr4;             //4
+    u32 ap_entrypoint;      //8
+    u32 _filler0;           //12
+    u32 ap_gdtdesc_limit;   //16
+    u32 ap_gdtdesc_base;    //20
+    u32 ap_cs_selector;     //24
+    u32 ap_eip;             //28
+    u32 cpuidtable;         //32
     u32 _filler1;
     u32 _filler2;
     u32 _filler3;

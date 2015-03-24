@@ -759,6 +759,19 @@ struct _vmx_vmcsrwfields_encodings	{
 
 
 
+
+// vmx instructions
+#define xmhfhwm_cpu_insn_vmlaunch() asm volatile ("vmlaunch \r\n");
+#define xmhfhwm_cpu_insn_vmxon_mesp(x) asm volatile ("vmxon "#x"(%esp) \r\n");
+#define xmhfhwm_cpu_insn_vmwrite_eax_ecx() asm volatile ("vmwrite %eax, %ecx \r\n");
+#define xmhfhwm_cpu_insn_vmread_ecx_eax() asm volatile ("vmread %ecx, %eax\r\n");
+#define xmhfhwm_cpu_insn_vmclear_mesp(x) asm volatile ("vmclear "#x"(%esp) \r\n");
+#define xmhfhwm_cpu_insn_vmptrld_mesp(x) asm volatile ("vmptrld "#x"(%esp) \r\n");
+#define xmhfhwm_cpu_insn_invvpid_mesp_ecx(x) asm volatile ("invvpid "#x"(%esp), %ecx\r\n");
+#define xmhfhwm_cpu_insn_invept_mesp_edx(x) asm volatile ("invept "#x"(%esp), %edx \r\n");
+#define xmhfhwm_cpu_insn_vmresume() asm volatile ("vmresume \r\n");
+
+
 #endif //__ASSEMBLY__
 
 #endif //__XMHFHWM_CPU_VMX_H_

@@ -59,17 +59,18 @@
 //corresponding error code
 __attribute__((naked)) u32 __slab_calltrampolinenew_h2g(void){
 
-    asm volatile ("vmlaunch\r\n");
-    asm volatile ("jc __vmx_start_hvm_failinvalid\r\n");
-    asm volatile ("jnz	__vmx_start_hvm_undefinedimplementation	\r\n");
-    asm volatile ("movl $0x1, %eax\r\n");		//VMLAUNCH error, XXX: need to read from VM instruction error field in VMCS
-    asm volatile ("jmp __vmx_start_continue \r\n");
-    asm volatile ("__vmx_start_hvm_undefinedimplementation:\r\n");
-    asm volatile ("movl $0x2, %eax\r\n");		//violation of VMLAUNCH specs., handle it anyways
-    asm volatile ("jmp __vmx_start_continue \r\n");
-    asm volatile ("__vmx_start_hvm_failinvalid:\r\n");
-    asm volatile ("xorl %eax, %eax\r\n");		//return 0 as we have no error code available
-    asm volatile ("__vmx_start_continue:\r\n");
+    xmhfhwm_cpu_insn_vmlaunch();
+    xmhfhwm_cpu_insn_jc(__vmx_start_hvm_failinvalid);
+    xmhfhwm_cpu_insn_jnz(__vmx_start_hvm_undefinedimplementation);
+    xmhfhwm_cpu_insn_movl_imm_eax(0x1);		//VMLAUNCH error, XXX: need to read from VM instruction error field in VMCS
+    xmhfhwm_cpu_insn_jmp(__vmx_start_continue);
+    CASM_LABEL(__vmx_start_hvm_undefinedimplementation);
+    xmhfhwm_cpu_insn_movl_imm_eax(0x2);		//violation of VMLAUNCH specs., handle it anyways
+    xmhfhwm_cpu_insn_jmp(__vmx_start_continue);
+    CASM_LABEL(__vmx_start_hvm_failinvalid);
+    xmhfhwm_cpu_insn_xorl_eax_eax();		//return 0 as we have no error code available
+    CASM_LABEL(__vmx_start_continue);
+    xmhfhwm_cpu_insn_ret();
 
 }
 

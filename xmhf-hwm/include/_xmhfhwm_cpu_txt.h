@@ -463,7 +463,7 @@ typedef struct {
     txt_caps_t  capabilities;
     uint32_t    cmdline_start_off;
     uint32_t    cmdline_end_off;
-} mle_hdr_t;
+} __attribute__((packed)) mle_hdr_t;
 
 #define MLE_HDR_UUID      {0x9082ac5a, 0x476f, 0x74a7, 0x5c0f, \
                               {0x55, 0xa2, 0xcb, 0x51, 0xb6, 0x42}}
@@ -741,6 +741,11 @@ typedef struct {
 extern bool verify_txt_heap(txt_heap_t *txt_heap, bool bios_data_only);
 extern bool verify_bios_data(txt_heap_t *txt_heap);
 extern void print_os_sinit_data(os_sinit_data_t *os_sinit_data);
+
+
+
+
+#define xmhfhwm_cpu_insn_getsec() asm volatile (IA32_GETSEC_OPCODE "\r\n");
 
 
 

@@ -23,6 +23,7 @@ export XMHF_SLAB_NAME := xcguestslab
 export XMHF_SLAB_PRIVILEGED := y
 export XMHF_SLAB_SOURCES := $(wildcard $(srcdir)/*.c)
 XMHF_SLAB_SOURCES += $(wildcard $(srcdir)/*.cS)
+XMHF_SLAB_SOURCES += $(wildcard $(srcdir)/*.S)
 
 
 ########################################################################

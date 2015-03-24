@@ -155,7 +155,6 @@ typedef struct {
 	} param;
 } __attribute__ ((packed)) xc_hypapp_arch_param_t;
 
-#endif //__ASSEMBLY__
 
 
 #define XC_HYPAPPCB_CHAIN                       (1)
@@ -281,6 +280,7 @@ static inline u32 xc_hcbinvoke(u32 src_slabid, u32 cpuid, u32 cbtype, u32 cbqual
     return status;
 }
 
+#endif //__ASSEMBLY__
 
 
 #endif /* __XC_H_ */

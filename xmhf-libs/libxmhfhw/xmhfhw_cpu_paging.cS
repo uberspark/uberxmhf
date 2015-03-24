@@ -53,11 +53,11 @@
 #include <xmhf-debug.h>
 
 __attribute__((naked)) void cache_wbinvd(void){
-    asm volatile("wbinvd \r\n");
-    asm volatile("ret \r\n");
+    xmhfhwm_cpu_insn_wbinvd();
+    xmhfhwm_cpu_insn_ret();
 }
 
 __attribute__((naked)) void tlb_invlpg(u64 addr){
-    asm volatile("invlpg 0x4(%esp) \r\n");
-    asm volatile("ret \r\n");
+    xmhfhwm_cpu_insn_invlpg_mesp(0x4);
+    xmhfhwm_cpu_insn_ret();
 }
