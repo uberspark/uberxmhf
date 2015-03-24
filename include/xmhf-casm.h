@@ -55,6 +55,13 @@
 #define CASM_LABEL(x)   asm volatile (#x": \r\n");
 #define CASM_BALIGN(x)  asm volatile (".balign "#x" \r\n");
 
+#define CASM_BEGINCODE() \
+    static void __casm_begincode(void){ \
+    } \
+
+#define CASM_ENDCODE() \
+    static void __casm_endcode(void){ \
+    } \
 
 #endif // __ASSEMBLY__
 
