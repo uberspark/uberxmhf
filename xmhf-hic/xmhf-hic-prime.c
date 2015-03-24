@@ -55,8 +55,9 @@ extern void xmhfhic_arch_relinquish_control_to_init_slab(u64 cpuid, u64 entrystu
 extern void __xmhfhic_x86vmx_setIOPL3(u64 cpuid);
 extern void __xmhfhic_x86vmx_loadTR(u64 cpuid);
 extern void __xmhfhic_x86vmx_loadIDT(arch_x86_idtdesc_t *idt_addr);
-extern void __xmhfhic_x86vmx_loadGDT(arch_x86_gdtdesc_t *gdt_addr);
-
+//extern void __xmhfhic_x86vmx_loadGDT(arch_x86_gdtdesc_t *gdt_addr);
+extern void __xmhfhic_x86vmx_reloadCS(u32 cs_sel);
+extern void __xmhfhic_x86vmx_reloadsegregs(u32 ds_sel);
 
 
 
@@ -2274,8 +2275,17 @@ void xmhf_hic_arch_setup_cpu_state(u64 cpuid){
     #endif
 
     //load GDT
-    __xmhfhic_x86vmx_loadGDT(&__xmhfhic_x86vmx_gdt);
+    //__xmhfhic_x86vmx_loadGDT(&__xmhfhic_x86vmx_gdt);
+
+    xmhfhw_cpu_loadGDT(&__xmhfhic_x86vmx_gdt);
     _XDPRINTF_("%s[%u]: GDT loaded\n", __func__, (u32)cpuid);
+
+    __xmhfhic_x86vmx_reloadCS(__CS_CPL0);
+    _XDPRINTF_("%s[%u]: Reloaded CS\n", __func__, (u32)cpuid);
+
+    __xmhfhic_x86vmx_reloadsegregs(__DS_CPL0);
+    _XDPRINTF_("%s[%u]: Reloaded segment registers\n", __func__, (u32)cpuid);
+
 
     //load TR
     xmhfhw_cpu_loadTR( (__TRSEL + ((u32)cpuid * 16) ) );

@@ -192,31 +192,23 @@ bool __xmhfhic_ap_entry(void) __attribute__((naked)){
 //////////////////////////////////////////////////////////////////////////////
 // setup cpu state for hic
 
-
-
-//load GDT and initialize segment registers
-void __xmhfhic_x86vmx_loadGDT(arch_x86_gdtdesc_t *gdt_addr){
-
-    xmhfhw_cpu_loadGDT(gdt_addr);
-
-	asm volatile(
-		"pushl	%0 \r\n"				// far jump to reload CS
-		"pushl	$reloadsegs \r\n"
-		"lret \r\n"
-		"reloadsegs: \r\n"
-		"movw	%1, %%ax \r\n"
-		"movw	%%ax, %%ds \r\n"
-		"movw	%%ax, %%es \r\n"
-		"movw	%%ax, %%fs \r\n"
-		"movw	%%ax, %%gs \r\n"
-		"movw   %%ax, %%ss \r\n"
-		: //no outputs
-		: "i" (__CS_CPL0), "i" (__DS_CPL0)
-		: "eax"
-	);
-
-
+__attribute__((naked)) void __xmhfhic_x86vmx_reloadCS(u32 cs_sel){
+	asm volatile ("popl %eax \r\n");
+	asm volatile ("pushl (%esp) \r\n");
+	asm volatile ("pushl %eax \r\n");
+	asm volatile ("lret \r\n");
 }
+
+__attribute__((naked)) void __xmhfhic_x86vmx_reloadsegregs(u32 ds_sel){
+	asm volatile ("movl 0x4(%esp), %eax \r\n");
+    asm volatile ("movw	%ax, %ds \r\n");
+    asm volatile ("movw	%ax, %es \r\n");
+    asm volatile ("movw	%ax, %fs \r\n");
+    asm volatile ("movw	%ax, %gs \r\n");
+    asm volatile ("movw %ax, %ss \r\n");
+    asm volatile ("ret \r\n");
+}
+
 
 
 
