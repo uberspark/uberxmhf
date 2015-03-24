@@ -617,13 +617,16 @@ typedef struct __tss {
 #define xmhfhwm_cpu_insn_jbe(x) asm volatile ("jbe "#x" \r\n");
 #define xmhfhwm_cpu_insn_ja(x) asm volatile ("ja "#x" \r\n");
 #define xmhfhwm_cpu_insn_int(x) asm volatile ("int $"#x" \r\n");
+#define xmhfhwm_cpu_insn_call(x) asm volatile ("call "#x" \r\n");
 #define xmhfhwm_cpu_insn_ret() asm volatile ("ret \r\n");
 
 
 // load/store instructions
 #define xmhfhwm_cpu_insn_movl_imm_eax(x) asm volatile ("movl $"#x", %eax\r\n");
+#define xmhfhwm_cpu_insn_movl_imms_eax(x) xmhfhwm_cpu_insn_movl_imm_eax(x)
 
 #define xmhfhwm_cpu_insn_movl_eax_mesp(x) asm volatile ("movl %eax, "#x"(%esp) \r\n");
+#define xmhfhwm_cpu_insn_movl_eax_esp() asm volatile ("movl %eax, %esp \r\n");
 
 #define xmhfhwm_cpu_insn_movl_mesp_eax(x) asm volatile ("movl "#x"(%esp), %eax \r\n");
 #define xmhfhwm_cpu_insn_movw_mesp_ax(x) asm volatile ("movw "#x"(%esp), %ax \r\n");
@@ -668,6 +671,7 @@ typedef struct __tss {
 #define xmhfhwm_cpu_insn_subl_imm_esp(x) asm volatile ("subl "#x", %esp \r\n");
 #define xmhfhwm_cpu_insn_addl_eax_ecx() asm volatile ("addl %eax, %ecx\r\n");
 #define xmhfhwm_cpu_insn_addl_imm_ecx(x) asm volatile ("addl "#x", %ecx \r\n");
+#define xmhfhwm_cpu_insn_addl_imm_eax(x) asm volatile ("addl "#x", %eax \r\n");
 
 #define xmhfhwm_cpu_insn_andl_imm_edx(x) asm volatile ("andl $"#x", %edx \r\n");
 #define xmhfhwm_cpu_insn_andl_imm_ecx(x) asm volatile ("andl $"#x", %ecx \r\n");
@@ -689,6 +693,11 @@ typedef struct __tss {
 #define xmhfhwm_cpu_insn_movl_cs_eax() asm volatile ("movl %fs, %eax \r\n");
 #define xmhfhwm_cpu_insn_movl_cs_eax() asm volatile ("movl %gs, %eax \r\n");
 #define xmhfhwm_cpu_insn_movl_cs_eax() asm volatile ("movl %ss, %eax \r\n");
+#define xmhfhwm_cpu_insn_movw_ds_ax() asm volatile ("movw %ds, %ax \r\n");
+#define xmhfhwm_cpu_insn_movw_ax_es() asm volatile ("movw %ax, %es \r\n");
+#define xmhfhwm_cpu_insn_movw_ax_fs() asm volatile ("movw %ax, %fs \r\n");
+#define xmhfhwm_cpu_insn_movw_ax_gs() asm volatile ("movw %ax, %gs \r\n");
+#define xmhfhwm_cpu_insn_movw_ax_ss() asm volatile ("movw %ax, %ss \r\n");
 
 //control registers
 #define xmhfhwm_cpu_insn_movl_cr0_eax() asm volatile ("movl %cr0, %eax \r\n");
@@ -706,7 +715,7 @@ typedef struct __tss {
 #define xmhfhwm_cpu_insn_pushfl() asm volatile ("pushfl \r\n");
 #define xmhfhwm_cpu_insn_popfl() asm volatile ("popfl \r\n");
 #define xmhfhwm_cpu_insn_rdtsc() asm volatile ("rdtsc \r\n");
-
+#define xmhfhwm_cpu_insn_hlt() asm volatile ("hlt \r\n");
 
 // system instructions
 #define xmhfhwm_cpu_insn_cli() asm volatile ("cli \r\n");
