@@ -52,106 +52,62 @@
 #include <xmhfhw.h>
 #include <xmhf-debug.h>
 
-/*void cpu_relax(void){
-    asm volatile ("pause");
-}
-*/
 
 __attribute__((naked)) void cpu_relax(void){
-    asm volatile ("pause \r\n");
-    asm volatile ("ret \r\n");
+    xmhfhwm_cpu_insn_pause();
+    xmhfhwm_cpu_insn_ret();
 }
 
-
-/*void xmhfhw_cpu_cpuid(u32 op, u32 *eax, u32 *ebx, u32 *ecx, u32 *edx){
-    asm volatile(
-                 "cpuid \r\n"
-                :"=a"(*(eax)), "=b"(*(ebx)), "=c"(*(ecx)), "=d"(*(edx))
-                :"a"(op), "c"(*(ecx))
-                :
-               );
-
-
-}*/
 
 __attribute__((naked)) void xmhfhw_cpu_cpuid(u32 op,    //0xC
                                              u32 *eax,  //0x10
                                              u32 *ebx,  //0x14
                                              u32 *ecx,  //0x18
                                              u32 *edx){ //0x1C
-    asm volatile ("pushl %esi \r\n");
-    asm volatile ("pushl %ebx \r\n");
 
-    asm volatile ("movl 0xc(%esp), %eax \r\n"); //eax = op
-    asm volatile ("movl 0x18(%esp), %ecx \r\n");
-    asm volatile ("movl (%ecx), %ecx \r\n");
+    xmhfhwm_cpu_insn_pushl_esi();
+    xmhfhwm_cpu_insn_pushl_ebx();
 
-    asm volatile ("cpuid \r\n");
+    xmhfhwm_cpu_insn_movl_mesp_eax(0xc); //eax = op
+    xmhfhwm_cpu_insn_movl_mesp_ecx(0x18);
+    xmhfhwm_cpu_insn_movl_mecx_ecx(0x0);
 
-    asm volatile ("movl 0x10(%esp), %esi \r\n");
-    asm volatile ("movl %eax, (%esi) \r\n");
-    asm volatile ("movl 0x14(%esp), %esi \r\n");
-    asm volatile ("movl %ebx, (%esi) \r\n");
-    asm volatile ("movl 0x18(%esp), %esi \r\n");
-    asm volatile ("movl %ecx, (%esi) \r\n");
-    asm volatile ("movl 0x1c(%esp), %esi \r\n");
-    asm volatile ("movl %edx, (%esi) \r\n");
+    xmhfhwm_cpu_insn_cpuid();
 
-    asm volatile ("pop %ebx \r\n");
-    asm volatile ("pop %esi \r\n");
-    asm volatile ("ret \r\n");
+    xmhfhwm_cpu_insn_movl_mesp_esi(0x10);
+    xmhfhwm_cpu_insn_movl_eax_mesi(0x0);
+    xmhfhwm_cpu_insn_movl_mesp_esi(0x14);
+    xmhfhwm_cpu_insn_movl_ebx_mesi(0x0);
+    xmhfhwm_cpu_insn_movl_mesp_esi(0x18);
+    xmhfhwm_cpu_insn_movl_ecx_mesi(0x0);
+    xmhfhwm_cpu_insn_movl_mesp_esi(0x1c);
+    xmhfhwm_cpu_insn_movl_edx_mesi(0x0);
+
+    xmhfhwm_cpu_insn_popl_eax();
+    xmhfhwm_cpu_insn_popl_esi();
+    xmhfhwm_cpu_insn_ret();
 }
 
 
 
-/*uint64_t rdtsc64(void)
-{
-        uint64_t rv;
-
-        __asm__ __volatile__ ("rdtsc" : "=A" (rv));
-        return (rv);
-}*/
 
 __attribute__((naked)) uint64_t rdtsc64(void){
-    asm volatile ("rdtsc \r\n");
-    asm volatile ("ret \r\n");
+    xmhfhwm_cpu_insn_rdtsc();
+    xmhfhwm_cpu_insn_ret();
 }
 
-
-/*u32 read_eflags(void){
-    u32 __eflags;
-    asm volatile(
-                 "pushfl \r\n"
-                 "popl %0 \r\n"
-                 : "=g" (__eflags)
-                 :
-                 :
-                 );
-
-    return __eflags;
-}*/
 
 __attribute__((naked)) u32 read_eflags(void){
-    asm volatile ("pushfl \r\n");
-    asm volatile ("pop %eax \r\n");
-    asm volatile ("ret \r\n");
+    xmhfhwm_cpu_insn_pushfl();
+    xmhfhwm_cpu_insn_popl_eax();
+    xmhfhwm_cpu_insn_ret();
 }
 
 
-/*void write_eflags(u32 eflags){
-    asm volatile(
-                 "pushl %0 \r\n"
-                 "popfl \r\n"
-                 :
-                 : "g" (eflags)
-                 : "cc"
-                 );
-}*/
-
 __attribute__((naked)) void write_eflags(u32 eflags){
-    asm volatile ("pushl 0x4(%esp) \r\n");
-    asm volatile ("popfl \r\n");
-    asm volatile ("ret \r\n");
+    xmhfhwm_cpu_insn_pushl_mesp(0x4);
+    xmhfhwm_cpu_insn_popfl();
+    xmhfhwm_cpu_insn_ret();
 }
 
 
@@ -160,83 +116,58 @@ __attribute__((naked)) void write_eflags(u32 eflags){
 
 /* Calls to read and write control registers */
 __attribute__((naked)) u64 read_cr0(void){
-    asm volatile ("xorl %edx, %edx \r\n");
-    asm volatile ("movl %cr0, %eax \r\n");
-    asm volatile ("ret \r\n");
-/*  u64 __cr0;
-  asm volatile("mov %%cr0,%0 \r\n" :"=r" (__cr0));
-  return __cr0;*/
+    xmhfhwm_cpu_insn_xorl_edx_edx();
+    xmhfhwm_cpu_insn_movl_cr0_eax();
+    xmhfhwm_cpu_insn_ret();
 }
 
 
 __attribute__((naked)) void write_cr0(u64 val){
-  asm volatile ("movl 0x4(%esp), %eax \r\n");
-  asm volatile ("movl %eax, %cr0 \r\n");
-  asm volatile ("ret \r\n");
-  //asm volatile("mov %0,%%cr0 \r\n": :"r" (val));
+  xmhfhwm_cpu_insn_movl_mesp_eax(0x4);
+  xmhfhwm_cpu_insn_movl_eax_cr0();
+  xmhfhwm_cpu_insn_ret();
 }
 
 __attribute__((naked)) u32 read_cr2(void){
-  asm volatile ("movl %cr2, %eax \r\n");
-  asm volatile ("ret \r\n");
-/*  u32 __cr2;
-  asm volatile("mov %%cr2,%0 \r\n" :"=r" (__cr2));
-  return __cr2;*/
+  xmhfhwm_cpu_insn_movl_cr2_eax();
+  xmhfhwm_cpu_insn_ret();
 }
 
 __attribute__((naked)) u64 read_cr3(void){
-    asm volatile ("xorl %edx, %edx \r\n");
-    asm volatile ("movl %cr3, %eax \r\n");
-    asm volatile ("ret \r\n");
-/*  u64 __cr3;
-  asm volatile("mov %%cr3,%0 \r\n" :"=r" (__cr3));
-  return __cr3;*/
+    xmhfhwm_cpu_insn_xorl_edx_edx();
+    xmhfhwm_cpu_insn_movl_cr3_eax();
+    xmhfhwm_cpu_insn_ret();
 }
 
 __attribute__((naked)) u64 read_rsp(void){
-    asm volatile ("xorl %edx, %edx \r\n");
-    asm volatile ("movl %esp, %eax \r\n");
-    asm volatile ("ret \r\n");
-/*  u64 __rsp=0;
-  asm volatile("movl %%esp,%0\n\t" :"=r" (__rsp));
-
-  return __rsp;*/
-
+    xmhfhwm_cpu_insn_xorl_edx_edx();
+    xmhfhwm_cpu_insn_movl_esp_eax();
+    xmhfhwm_cpu_insn_ret();
 }
 
 __attribute__((naked)) u32 read_esp(void){
-    asm volatile ("movl %esp, %eax \r\n");
-    asm volatile ("ret \r\n");
-/*  u32 __esp;
-  asm volatile("mov %%esp,%0\n\t" :"=r" (__esp));
-  return __esp;*/
+    xmhfhwm_cpu_insn_movl_esp_eax();
+    xmhfhwm_cpu_insn_ret();
 }
 
 
 __attribute__((naked)) void write_cr3(u64 val){
-  asm volatile ("movl 0x4(%esp), %eax \r\n");
-  asm volatile ("movl %eax, %cr3 \r\n");
-  asm volatile ("ret \r\n");
-
-  //asm volatile("mov %0,%%cr3 \r\n"::"r" (val));
+  xmhfhwm_cpu_insn_movl_mesp_eax(0x4);
+  xmhfhwm_cpu_insn_movl_eax_cr3();
+  xmhfhwm_cpu_insn_ret();
 }
 
 
 __attribute__((naked)) u64 read_cr4(void){
-    asm volatile ("xorl %edx, %edx \r\n");
-    asm volatile ("movl %cr4, %eax \r\n");
-    asm volatile ("ret \r\n");
-/*  u64 __cr4;
-  asm volatile("mov %%cr4, %0 \r\n" :"=r" (__cr4));
-  return __cr4;*/
+    xmhfhwm_cpu_insn_xorl_edx_edx();
+    xmhfhwm_cpu_insn_movl_cr4_eax();
+    xmhfhwm_cpu_insn_ret();
 }
 
 __attribute__((naked)) void write_cr4(u64 val){
-  asm volatile ("movl 0x4(%esp), %eax \r\n");
-  asm volatile ("movl %eax, %cr4 \r\n");
-  asm volatile ("ret \r\n");
-
-  //asm volatile("mov %0,%%cr4": :"r" (val));
+  xmhfhwm_cpu_insn_movl_mesp_eax(0x4);
+  xmhfhwm_cpu_insn_movl_eax_cr4();
+  xmhfhwm_cpu_insn_ret();
 }
 
 
@@ -249,55 +180,34 @@ __attribute__((naked)) void write_cr4(u64 val){
 
 //segment register access
 __attribute__((naked)) u32 read_segreg_cs(void){
-  /*u32 __cs;
-  __asm__("mov %%cs, %0 \r\n" :"=r" (__cs));
-  return __cs;*/
-  asm volatile ("movl %cs, %eax \r\n");
-  asm volatile ("ret \r\n");
+  xmhfhwm_cpu_insn_movl_cs_eax();
+  xmhfhwm_cpu_insn_ret();
 }
 
 __attribute__((naked)) u32 read_segreg_ds(void){
-  /*u32 __ds;
-  __asm__("mov %%ds, %0 \r\n" :"=r" (__ds));
-  return __ds;*/
-  asm volatile ("movl %ds, %eax \r\n");
-  asm volatile ("ret \r\n");
+  xmhfhwm_cpu_insn_movl_ds_eax();
+  xmhfhwm_cpu_insn_ret();
 }
 
 __attribute__((naked)) u32 read_segreg_es(void){
-/*  u32 __es;
-  __asm__("mov %%es, %0 \r\n" :"=r" (__es));
-  return __es;*/
-  asm volatile ("movl %es, %eax \r\n");
-  asm volatile ("ret \r\n");
-
+  xmhfhwm_cpu_insn_movl_es_eax();
+  xmhfhwm_cpu_insn_ret();
 }
 
 __attribute__((naked)) u32 read_segreg_fs(void){
-/*  u32 __fs;
-  __asm__("mov %%fs, %0 \r\n" :"=r" (__fs));
-  return __fs;*/
-  asm volatile ("movl %fs, %eax \r\n");
-  asm volatile ("ret \r\n");
-
+  xmhfhwm_cpu_insn_movl_fs_eax();
+  xmhfhwm_cpu_insn_ret();
 }
 
 __attribute__((naked)) u32 read_segreg_gs(void){
-/*  u32 __gs;
-  __asm__("mov %%gs, %0 \r\n" :"=r" (__gs));
-  return __gs;*/
-  asm volatile ("movl %gs, %eax \r\n");
-  asm volatile ("ret \r\n");
+  xmhfhwm_cpu_insn_movl_gs_eax();
+  xmhfhwm_cpu_insn_ret();
 
 }
 
 __attribute__((naked)) u32 read_segreg_ss(void){
-/*  u32 __ss;
-  __asm__("mov %%ss, %0 \r\n" :"=r" (__ss));
-  return __ss;*/
-  asm volatile ("movl %ss, %eax \r\n");
-  asm volatile ("ret \r\n");
-
+  xmhfhwm_cpu_insn_movl_ss_eax();
+  xmhfhwm_cpu_insn_ret();
 }
 
 
@@ -308,20 +218,17 @@ __attribute__((naked)) u32 read_segreg_ss(void){
 
 
 __attribute__((naked)) u16 read_tr_sel(void){
-  asm volatile ("xorl %eax, %eax \r\n");
-  asm volatile ("str %ax \r\n");
-  asm volatile ("ret \r\n");
-  /*u16 __trsel;
-  __asm__("str %0 \r\n" :"=r" (__trsel));
-  return __trsel;*/
+  xmhfhwm_cpu_insn_xorl_eax_eax();
+  xmhfhwm_cpu_insn_str_ax();
+  xmhfhwm_cpu_insn_ret();
 }
 
 
 
 __attribute__((naked)) void wbinvd(void)
 {
-    asm volatile ("wbinvd \r\n");
-    asm volatile ("ret \r\n");
+    xmhfhwm_cpu_insn_wbinvd();
+    xmhfhwm_cpu_insn_ret();
 }
 
 
@@ -330,12 +237,8 @@ __attribute__((naked)) void wbinvd(void)
 
 __attribute__((naked)) uint32_t bsrl(uint32_t mask)
 {
-    asm volatile ("bsrl 0x4(%esp), %eax \r\n");
-    asm volatile ("ret \r\n");
-    /*uint32_t   result;
-
-    __asm__ __volatile__ ("bsrl %1,%0" : "=r" (result) : "rm" (mask) : "cc");
-    return (result);*/
+    xmhfhwm_cpu_insn_bsrl_mesp_eax(0x4);
+    xmhfhwm_cpu_insn_ret();
 }
 
 
@@ -343,52 +246,33 @@ __attribute__((naked)) uint32_t bsrl(uint32_t mask)
 
 
 __attribute__((naked)) void xmhfhw_cpu_disable_intr(void){
-    asm volatile ("cli \r\n");
-    asm volatile ("ret \r\n");
+    xmhfhwm_cpu_insn_cli();
+    xmhfhwm_cpu_insn_ret();
 }
 
 __attribute__((naked)) void enable_intr(void)
 {
-    asm volatile ("sti \r\n");
-    asm volatile ("ret \r\n");
+    xmhfhwm_cpu_insn_sti();
+    xmhfhwm_cpu_insn_ret();
 }
 
 
 //////
 //get extended control register (xcr)
-/*u64 xgetbv(u32 xcr_reg){
-	u32 eax, edx;
-
-	asm volatile(".byte 0x0f,0x01,0xd0"
-			: "=a" (eax), "=d" (edx)
-			: "c" (xcr_reg));
-
-	return ((u64)edx << 32) + (u64)eax;
-}*/
-
 __attribute__((naked)) u64 xgetbv(u32 xcr_reg){
-    asm volatile ("movl 0x4(%esp), %ecx \r\n");
-    asm volatile ("xgetbv \r\n");
-    asm volatile ("ret \r\n");
+    xmhfhwm_cpu_insn_movl_mesp_ecx(0x4);
+    xmhfhwm_cpu_insn_xgetbv();
+    xmhfhwm_cpu_insn_ret();
 }
 
 //////
 //set extended control register (xcr)
-/*void xsetbv(u32 xcr_reg, u64 value){
-	u32 eax = (u32)value;
-	u32 edx = value >> 32;
-
-	asm volatile(".byte 0x0f,0x01,0xd1"
-			:
-			: "a" (eax), "d" (edx), "c" (xcr_reg));
-}*/
-
 void xsetbv(u32 xcr_reg, u64 value){
-    asm volatile ("movl 0x4(%esp), %ecx \r\n");
-    asm volatile ("movl 0x8(%esp), %eax \r\n");
-    asm volatile ("movl 0xC(%esp), %edx \r\n");
-    asm volatile ("xsetbv \r\n");
-    asm volatile ("ret \r\n");
+    xmhfhwm_cpu_insn_movl_mesp_ecx(0x4);
+    xmhfhwm_cpu_insn_movl_mesp_eax(0x8);
+    xmhfhwm_cpu_insn_movl_mesp_edx(0xC);
+    xmhfhwm_cpu_insn_xsetbv();
+    xmhfhwm_cpu_insn_ret();
 }
 
 
@@ -418,137 +302,66 @@ void sysexitq(u64 rip, u64 rsp){
 
 
 //////
-/*void spin_lock(volatile u32 *lock){
-        __asm__ __volatile__ (
-            "1:	btl	$0, %0	\r\n"	//mutex is available?
-            "		jnc 1b	\r\n"	//wait till it is
-            "      	lock		\r\n"   //lock the bus (exclusive access)
-            "		btrl	$0, %0	\r\n"   //and try to grab the mutex
-            "		jnc	1b	\r\n"   //spin until successful --> spinlock :p
-            : //no asm outputs
-            : "m" (*lock)
-        );
-}*/
 __attribute__((naked)) void spin_lock(volatile u32 *lock){
-    asm volatile ("movl 0x4(%esp), %ecx \r\n");
-    asm volatile ("splock: \r\n");
-    asm volatile ("btl $0, (%ecx) \r\n");
-    asm volatile ("jnc splock \r\n");
-    asm volatile ("lock \r\n");
-    asm volatile ("btrl $0, (%ecx) \r\n");
-    asm volatile ("jnc splock \r\n");
-    asm volatile ("ret \r\n");
+    xmhfhwm_cpu_insn_movl_mesp_ecx(0x4);
+    CASM_LABEL(splock);
+    xmhfhwm_cpu_insn_btl_imm_mecx(0x0, 0x0);
+    xmhfhwm_cpu_insn_jnc(splock);
+    xmhfhwm_cpu_insn_lock();
+    xmhfhwm_cpu_insn_btrl_imm_mecx(0x0,0x0);
+    xmhfhwm_cpu_insn_jnc(splock);
+    xmhfhwm_cpu_insn_ret();
+
 }
 
 
 //////
-/*void spin_unlock(volatile u32 *lock){
-        __asm__ __volatile__ (
-            "btsl	$0, %0		\r\n"	//release spinlock
-            : //no asm outputs
-            : "m" (*lock)
-        );
-    }
-*/
-
 __attribute__((naked)) void spin_unlock(volatile u32 *lock){
-    asm volatile ("movl 0x4(%esp), %ecx \r\n");
-    asm volatile ("btsl $0, (%ecx) \r\n");
-    asm volatile ("ret \r\n");
+    xmhfhwm_cpu_insn_movl_mesp_ecx(0x4);
+    xmhfhwm_cpu_insn_btsl_imm_mecx(0x0,0x0);
+    xmhfhwm_cpu_insn_ret();
 }
 
 
 
 //////
 //load CPU GDT
-/*void xmhfhw_cpu_loadGDT(arch_x86_gdtdesc_t *gdt_addr){
-
-	asm volatile(
-		"lgdt  %0 \r\n"
-		: //no outputs
-		: "m" (*gdt_addr)
-		:
-	);
-
-}*/
-
-
 __attribute__((naked)) void xmhfhw_cpu_loadGDT(arch_x86_gdtdesc_t *gdt_addr){
-    asm volatile ("movl 0x4(%esp), %ecx \r\n");
-    asm volatile ("lgdt (%ecx) \r\n");
-    asm volatile ("ret \r\n");
+    xmhfhwm_cpu_insn_movl_mesp_ecx(0x4);
+    xmhfhwm_cpu_insn_lgdt_mecx(0x0);
+    xmhfhwm_cpu_insn_ret();
 }
 
 
 
 //////
 //load CPU TR
-/*void xmhfhw_cpu_loadTR(u32 tr_selector){
-
-	  asm volatile(
-		"movl %0, %%eax\r\n"
-		"ltr %%ax\r\n"				//load TR
-	     :
-	     : "g"(tr_selector)
-	     : "eax"
-	  );
-
-}*/
-
 __attribute__((naked)) void xmhfhw_cpu_loadTR(u32 tr_selector){
-    asm volatile ("movl 0x4(%esp), %eax \r\n");
-    asm volatile ("ltr %ax \r\n");
-    asm volatile ("ret \r\n");
+    xmhfhwm_cpu_insn_movl_mesp_eax(0x4);
+    xmhfhwm_cpu_insn_ltr_ax();
+    xmhfhwm_cpu_insn_ret();
 }
 
 
 
 //////
 //load CPU IDT
-/*void xmhfhw_cpu_loadIDT(arch_x86_idtdesc_t *idt_addr){
-
-	asm volatile(
-		"lidt  %0 \r\n"
-		: //no outputs
-		: "m" (*idt_addr)
-		: //no clobber
-	);
-
-}*/
-
 __attribute__((naked)) void xmhfhw_cpu_loadIDT(arch_x86_idtdesc_t *idt_addr){
-    asm volatile ("movl 0x4(%esp), %ecx \r\n");
-    asm volatile ("lidt (%ecx) \r\n");
-    asm volatile ("ret \r\n");
+    xmhfhwm_cpu_insn_movl_mesp_ecx(0x4);
+    xmhfhwm_cpu_insn_lidt_mecx(0x0);
+    xmhfhwm_cpu_insn_ret();
 }
 
 
 
 //////
-/*u64 xmhf_baseplatform_arch_x86_getgdtbase(void){
-		struct {
-			u16 limit;
-			u32 base;
-		} __attribute__ ((packed)) gdtr;
-
-
-		asm volatile(
-			"sgdt %0 \r\n"
-			: //no output
-			: "m" (gdtr)
-			: //no clobber
-		);
-
-		return gdtr.base;
-}*/
-
 __attribute__((naked)) u64 xmhf_baseplatform_arch_x86_getgdtbase(void){
-		asm volatile ("subl $0x8, %esp \r\n");
-		asm volatile ("sgdtl (%esp) \r\n");
-		asm volatile ("movl 0x2(%esp), %eax \r\n");
-		asm volatile ("xorl %edx, %edx \r\n");
-        asm volatile ("addl $0x8, %esp \r\n");
-        asm volatile ("ret \r\n");
+		xmhfhwm_cpu_insn_subl_imm_esp(0x8);
+		xmhfhwm_cpu_insn_sgdt_mesp(0x0);
+		xmhfhwm_cpu_insn_movl_mesp_eax(0x2);
+		xmhfhwm_cpu_insn_xorl_edx_edx();
+        xmhfhwm_cpu_insn_addl_imm_esp(0x8);
+        xmhfhwm_cpu_insn_ret();
 }
 
 
@@ -556,79 +369,41 @@ __attribute__((naked)) u64 xmhf_baseplatform_arch_x86_getgdtbase(void){
 
 
 //////
-/*u64 xmhf_baseplatform_arch_x86_getidtbase(void){
-		struct {
-			u16 limit;
-			u64 base;
-		} __attribute__ ((packed)) idtr;
-
-
-		asm volatile(
-			"sidt %0 \r\n"
-			: //no output
-			: "m" (idtr)
-			: //no clobber
-		);
-
-		return idtr.base;
-}*/
-
-
 __attribute__((naked)) u64 xmhf_baseplatform_arch_x86_getidtbase(void){
-		asm volatile ("subl $0x8, %esp \r\n");
-		asm volatile ("sidt (%esp) \r\n");
-		asm volatile ("movl 0x2(%esp), %eax \r\n");
-		asm volatile ("xorl %edx, %edx \r\n");
-        asm volatile ("addl $0x8, %esp \r\n");
-        asm volatile ("ret \r\n");
+		xmhfhwm_cpu_insn_subl_imm_esp(0x8);
+		xmhfhwm_cpu_insn_sidt_mesp(0x0);
+		xmhfhwm_cpu_insn_movl_mesp_eax(0x2);
+		xmhfhwm_cpu_insn_xorl_edx_edx();
+        xmhfhwm_cpu_insn_addl_imm_esp(0x8);
+        xmhfhwm_cpu_insn_ret();
 }
 
 
 
 
 //////
-/*u64  xmhf_baseplatform_arch_x86_gettssbase(void){
-	  u64 gdtbase = xmhf_baseplatform_arch_x86_getgdtbase();
-	  u32 tssdesc_low, tssdesc_high;
-
-	  asm volatile(
-            "movl %2, %%edi\r\n"
-            "xorl %%eax, %%eax\r\n"
-            "str %%ax \r\n"
-            "addl %%eax, %%edi\r\n"		//%edi is pointer to TSS descriptor in GDT
-            "movl (%%edi), %0 \r\n"		//move low 32-bits of TSS descriptor into tssdesc_low
-            "addl $0x4, %%edi\r\n"		//%edi points to top 32-bits of 64-bit TSS desc.
-            "movl (%%edi), %1 \r\n"		//move high 32-bits of TSS descriptor into tssdesc_high
-	     : "=r" (tssdesc_low), "=r" (tssdesc_high)
-	     : "m"(gdtbase)
-	     : "edi", "eax"
-	  );
-
-       return (  (u64)(  ((u32)tssdesc_high & 0xFF000000UL) | (((u32)tssdesc_high & 0x000000FFUL) << 16)  | ((u32)tssdesc_low >> 16)  ) );
-}*/
-
 __attribute__((naked)) u64  xmhf_baseplatform_arch_x86_gettssbase(void){
-    asm volatile ("subl $0x8, %esp \r\n");
-    asm volatile ("sgdt (%esp) \r\n");
-    asm volatile ("movl 0x2(%esp), %ecx \r\n");
-    asm volatile ("xorl %eax, %eax\r\n");
-    asm volatile ("str %ax \r\n");
-    asm volatile ("addl %eax, %ecx\r\n");		//%ecx is pointer to TSS descriptor in GDT
-    asm volatile ("movl (%ecx), %eax \r\n");	//eax = low 32-bits of TSS descriptor
-    asm volatile ("addl $0x4, %ecx\r\n");		//%ecx points to top 32-bits of 64-bit TSS desc.
-    asm volatile ("movl (%ecx), %edx \r\n");	//edx = high 32-bits of TSS descriptor
+    xmhfhwm_cpu_insn_subl_imm_esp(0x8);
+    xmhfhwm_cpu_insn_sgdt_mesp(0x0);
+    xmhfhwm_cpu_insn_movl_mesp_ecx(0x2);
+    xmhfhwm_cpu_insn_xorl_eax_eax();
+    xmhfhwm_cpu_insn_str_ax();
+    xmhfhwm_cpu_insn_addl_eax_ecx();		//%ecx is pointer to TSS descriptor in GDT
+    xmhfhwm_cpu_insn_movl_mecx_eax(0x0);	//eax = low 32-bits of TSS descriptor
+    xmhfhwm_cpu_insn_addl_imm_ecx(0x4);		//%ecx points to top 32-bits of 64-bit TSS desc.
+    xmhfhwm_cpu_insn_movl_mecx_edx(0x0);	//edx = high 32-bits of TSS descriptor
 
-    asm volatile ("movl %edx, %ecx \r\n");
-    asm volatile ("andl $0xFF000000, %edx \r\n");
-    asm volatile ("andl $0x000000FF, %ecx \r\n");
-    asm volatile ("shl $16, %ecx \r\n");
-    asm volatile ("shr $16, %eax \r\n");
-    asm volatile ("orl %ecx, %eax \r\n");
-    asm volatile ("orl %edx, %eax \r\n");
-    asm volatile ("xorl %edx, %edx \r\n");
+    xmhfhwm_cpu_insn_movl_edx_ecx();
+    xmhfhwm_cpu_insn_andl_imm_edx(0xFF000000);
+    xmhfhwm_cpu_insn_andl_imm_ecx(0x000000FF);
+    xmhfhwm_cpu_insn_shl_imm_ecx(16);
+    xmhfhwm_cpu_insn_shr_imm_eax(16);
+    xmhfhwm_cpu_insn_orl_ecx_eax();
+    xmhfhwm_cpu_insn_orl_edx_eax();
+    xmhfhwm_cpu_insn_xorl_edx_edx();
 
-    asm volatile ("addl $0x8, %esp \r\n");
-    asm volatile ("ret \r\n");
+    xmhfhwm_cpu_insn_addl_imm_esp(0x8);
+    xmhfhwm_cpu_insn_ret();
 }
 
 
