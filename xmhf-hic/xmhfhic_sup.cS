@@ -107,60 +107,54 @@ __attribute__((naked)) void _ap_bootstrap_code(void) {
 //__xmhfhic_x86vmx_cpuidtable
 bool __xmhfhic_ap_entry(void) __attribute__((naked)){
 
-    asm volatile ("movw %ds, %ax \r\n");
-    asm volatile ("movw %ax, %es \r\n");
-	asm volatile ("movw %ax, %fs \r\n");
-    asm volatile ("movw %ax, %gs \r\n");
-    asm volatile ("movw %ax, %ss \r\n");
+    xmhfhwm_cpu_insn_movw_ds_ax();
+    xmhfhwm_cpu_insn_movw_ax_es();
+    xmhfhwm_cpu_insn_movw_ax_fs();
+    xmhfhwm_cpu_insn_movw_ax_gs();
+    xmhfhwm_cpu_insn_movw_ax_ss();
 
-    asm volatile ("movl %cr4, %eax \r\n");
-    asm volatile ("orl $0x00000030, %eax \r\n");
-    asm volatile ("movl %eax, %cr4 \r\n");
+    xmhfhwm_cpu_insn_movl_cr4_eax();
+    xmhfhwm_cpu_insn_orl_imm_eax(0x00000030);
+    xmhfhwm_cpu_insn_movl_eax_cr4();
 
-    asm volatile ("movl %ebx, %cr3 \r\n");
+    xmhfhwm_cpu_insn_movl_ebx_cr3();
 
-    asm volatile ("movl $0xc0000080, %ecx \r\n");
-    asm volatile ("rdmsr \r\n");
-    asm volatile ("orl $0x00000800, %eax \r\n");
-    asm volatile ("wrmsr \r\n");
+    xmhfhwm_cpu_insn_movl_imm_ecx(0xc0000080);
+    xmhfhwm_cpu_insn_rdmsr();
+    xmhfhwm_cpu_insn_orl_imm_eax(0x00000800);
+    xmhfhwm_cpu_insn_wrmsr();
 
-    asm volatile ("movl %cr0, %eax \r\n");
-    asm volatile ("orl $0x80000015, %eax \r\n");
-    asm volatile ("movl %eax, %cr0 \r\n");
+    xmhfhwm_cpu_insn_movl_cr0_eax();
+    xmhfhwm_cpu_insn_orl_imm_eax(0x80000015);
+    xmhfhwm_cpu_insn_movl_eax_cr0();
 
     //TODO: for non-TXT wakeup we need to reload GDT
     //"movl %1, %esi \r\n");
     //"lgdt (%esi) \r\n");
 
-    asm volatile ("movl $0x0000001B, %ecx \r\n");
-    asm volatile ("rdmsr \r\n");
-    asm volatile ("andl $0x00000FFF, %eax \r\n");
-    asm volatile ("orl $0xFEE00000, %eax \r\n");
-    asm volatile ("wrmsr \r\n");
+    xmhfhwm_cpu_insn_movl_imm_ecx(0x0000001B);
+    xmhfhwm_cpu_insn_rdmsr();
+    xmhfhwm_cpu_insn_andl_imm_ecx(0x00000FFF);
+    xmhfhwm_cpu_insn_orl_imm_eax(0xFEE00000);
+    xmhfhwm_cpu_insn_wrmsr();
 
-    // 0x0000001B MSR_APIC_BASE
-    // 0xFEE00000 X86SMP_LAPIC_MEMORYADDRESS
+    xmhfhwm_cpu_insn_xorl_eax_eax();
+    xmhfhwm_cpu_insn_movl_imm_eax(0xFEE00020);
+    xmhfhwm_cpu_insn_movl_meax_eax(0x0);
+    xmhfhwm_cpu_insn_shr_imm_eax(24);
 
-    asm volatile ("xorl %eax, %eax \r\n");                //EAX=0
-    asm volatile ("movl $0xFEE00020, %eax\r\n");                    //EAX=X86SMP_LAPIC_ID_MEMORYADDRESS
-    asm volatile ("movl (%eax), %eax\r\n");               //EAX(bits 0-7)=LAPIC ID
-    asm volatile ("shr $24, %eax\r\n");                    //EAX=LAPIC ID
+    xmhfhwm_cpu_insn_xorl_ebx_ebx();
+    xmhfhwm_cpu_insn_movl_edi_ebx();
 
-    asm volatile ("xorl %ebx, %ebx \r\n");                //EBX=0
-    asm volatile ("movl %edi, %ebx \r\n");                //EBX=&__xmhfhic_x86vmx_cpuidtable
+    xmhfhwm_cpu_insn_movl_mebxeax_eax(4);
 
-    asm volatile ("movl (%ebx, %eax, 4), %eax \r\n");    //EAX= 0-based cpu index for the CPU
+    xmhfhwm_cpu_insn_movl_imm_ecx(16384);
+    xmhfhwm_cpu_insn_mull_ecx();
+    xmhfhwm_cpu_insn_addl_ecx_eax();
+    xmhfhwm_cpu_insn_addl_imm_eax(_init_cpustacks);
+    xmhfhwm_cpu_insn_movl_eax_esp();
 
-    asm volatile ("movl $16384, %ecx \r\n");					//ecx = sizeof(_cpustack[0])
-    asm volatile ("mull %ecx \r\n");						//eax = sizeof(_cpustack[0]) * eax
-    asm volatile ("addl %ecx, %eax \r\n");				//eax = (sizeof(_cpustack[0]) * eax) + sizeof(_cpustack[0])
-    asm volatile ("addl $_init_cpustacks, %eax \r\n");				    //eax = &_cpustack + (sizeof(_cpustack[0]) * eax) + sizeof(_cpustack[0])
-    asm volatile ("movl %eax, %esp \r\n");				//esp = top of stack for the cpu
-
-    asm volatile ("jmp __xmhfhic_smp_cpu_x86_smpinitialize_commonstart \r\n");
-
-    //X86SMP_LAPIC_ID_MEMORYADDRESS 0xFEE00020
-
+    xmhfhwm_cpu_insn_jmp(__xmhfhic_smp_cpu_x86_smpinitialize_commonstart);
 }
 
 
@@ -168,47 +162,47 @@ bool __xmhfhic_ap_entry(void) __attribute__((naked)){
 // setup cpu state for hic
 
 __attribute__((naked)) void __xmhfhic_x86vmx_reloadCS(u32 cs_sel){
-	asm volatile ("popl %eax \r\n");
-	asm volatile ("pushl (%esp) \r\n");
-	asm volatile ("pushl %eax \r\n");
-	asm volatile ("lret \r\n");
+    xmhfhwm_cpu_insn_popl_eax();
+    xmhfhwm_cpu_insn_pushl_mesp(0x0);
+    xmhfhwm_cpu_insn_pushl_eax();
+    xmhfhwm_cpu_insn_lret();
 }
 
 __attribute__((naked)) void __xmhfhic_x86vmx_reloadsegregs(u32 ds_sel){
-	asm volatile ("movl 0x4(%esp), %eax \r\n");
-    asm volatile ("movw	%ax, %ds \r\n");
-    asm volatile ("movw	%ax, %es \r\n");
-    asm volatile ("movw	%ax, %fs \r\n");
-    asm volatile ("movw	%ax, %gs \r\n");
-    asm volatile ("movw %ax, %ss \r\n");
-    asm volatile ("ret \r\n");
-}
+    xmhfhwm_cpu_insn_movl_mesp_eax(0x4);
+    xmhfhwm_cpu_insn_movw_ax_ds();
+    xmhfhwm_cpu_insn_movw_ax_es();
+    xmhfhwm_cpu_insn_movw_ax_fs();
+    xmhfhwm_cpu_insn_movw_ax_gs();
+    xmhfhwm_cpu_insn_movw_ax_ss();
+    xmhfhwm_cpu_insn_ret();
 
+}
 
 
 #define XMHF_EXCEPTION_HANDLER_DEFINE(vector) 												\
 	static void __xmhf_exception_handler_##vector(void) __attribute__((naked)) { 					\
-		asm volatile ("pushl $"#vector" \r\n"); \
-        asm volatile ("pushal \r\n"); \
-        asm volatile ("pushl %esp \r\n"); \
-        asm volatile ("call __xmhfhic_rtm_exception_stub \r\n"); \
-        asm volatile ("addl $0x4, %esp \r\n"); \
-        asm volatile ("popal \r\n"); \
-        asm volatile ("addl $0x08, %esp \r\n"); \
-        asm volatile ("iretl \r\n"); \
+        xmhfhwm_cpu_insn_pushl_imm(vector); \
+        xmhfhwm_cpu_insn_pushal(); \
+        xmhfhwm_cpu_insn_pushl_esp(); \
+        xmhfhwm_cpu_insn_call(__xmhfhic_rtm_exception_stub); \
+        xmhfhwm_cpu_insn_addl_imm_esp(0x4); \
+        xmhfhwm_cpu_insn_popal(); \
+        xmhfhwm_cpu_insn_addl_imm_esp(0x8); \
+        xmhfhwm_cpu_insn_iretl(); \
     }\
 
 #define XMHF_EXCEPTION_HANDLER_DEFINE_WITHERRORCODE(vector) 												\
 	static void __xmhf_exception_handler_##vector(void) __attribute__((naked)) { 					\
-		asm volatile ("pushl $0x0 \r\n"); \
-        asm volatile ("pushl $"#vector" \r\n"); \
-        asm volatile ("pushal \r\n"); \
-        asm volatile ("pushl %esp \r\n"); \
-        asm volatile ("call __xmhfhic_rtm_exception_stub \r\n"); \
-        asm volatile ("addl $0x4, %esp \r\n"); \
-        asm volatile ("popal \r\n"); \
-        asm volatile ("addl $0x08, %esp \r\n"); \
-        asm volatile ("iretl \r\n"); \
+		xmhfhwm_cpu_insn_pushl_imm(0x0); \
+        xmhfhwm_cpu_insn_pushl_imm(vector); \
+        xmhfhwm_cpu_insn_pushal(); \
+        xmhfhwm_cpu_insn_pushl_esp(); \
+        xmhfhwm_cpu_insn_call(__xmhfhic_rtm_exception_stub); \
+        xmhfhwm_cpu_insn_addl_imm_esp(0x4); \
+        xmhfhwm_cpu_insn_popal(); \
+        xmhfhwm_cpu_insn_addl_imm_esp(0x8); \
+        xmhfhwm_cpu_insn_iretl(); \
     }\
 
 
@@ -284,16 +278,14 @@ u32  __xmhfhic_exceptionstubs[] = { XMHF_EXCEPTION_HANDLER_ADDROF(0),
 
 
 //HIC runtime intercept stub
-//__attribute__((naked)) void __xmhfhic_rtm_intercept_stub(void){
 __attribute__((naked)) void __xmhfhic_rtm_intercept_stub(void){
-
-    asm volatile ("pushal \r\n");
-    asm volatile ("pushl %esp \r\n");
-    asm volatile ("call __xmhfhic_rtm_intercept \r\n");
-    asm volatile ("addl $0x4, %esp \r\n");
-    asm volatile ("popal \r\n");
-    asm volatile ("vmresume \r\n");
-    asm volatile ("hlt \r\n");
+    xmhfhwm_cpu_insn_pushal();
+    xmhfhwm_cpu_insn_pushl_esp();
+    xmhfhwm_cpu_insn_call(__xmhfhic_rtm_intercept);
+    xmhfhwm_cpu_insn_addl_imm_esp(0x4);
+    xmhfhwm_cpu_insn_popal();
+    xmhfhwm_cpu_insn_vmresume();
+    xmhfhwm_cpu_insn_hlt();
 }
 
 
