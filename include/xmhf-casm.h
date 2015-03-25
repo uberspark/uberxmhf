@@ -57,14 +57,6 @@
 #define CASM_LABEL(x)   asm volatile (#x": \r\n");
 #define CASM_BALIGN(x)  asm volatile (".balign "#x" \r\n");
 
-#define CASM_BEGINCODE() \
-    static void __casm_begincode(void){ \
-    } \
-
-#define CASM_ENDCODE() \
-    static void __casm_endcode(void){ \
-    } \
-
 #define CASM_FUNCDEF(fn_section, fn_align, fn_rettype, fn_name, fn_body, ...) \
     __attribute__((naked)) __attribute__((section(#fn_section))) __attribute__((align(#fn_align))) fn_rettype fn_name (__VA_ARGS__) \
     { \
@@ -75,16 +67,6 @@
 
 #define CASM_LABEL(x)   __builtin_annot(#x": ");
 #define CASM_BALIGN(x)  __builtin_annot(".balign "#x" ");
-
-#define CASM_BEGINCODE() \
-    static void __casm_begincode(void){ \
-        __builtin_annot(".section .text"); \
-    } \
-
-#define CASM_ENDCODE() \
-    static void __casm_endcode(void){ \
-        __builtin_annot(".section .text"); \
-    } \
 
 #define CASM_FUNCDEF(fn_section, fn_align, fn_rettype, fn_name, fn_body, ...) \
     void __casmdef_##fn_name(void){ \

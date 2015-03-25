@@ -54,8 +54,6 @@
 #include <xmhf-hic.h>
 #include <xmhf-debug.h>
 
-CASM_BEGINCODE()
-
 //if we return, we had an error and we return the
 //corresponding error code
 CASM_FUNCDEF(.text, 4, u32, __slab_calltrampolinenew_h2g,
@@ -75,4 +73,3 @@ CASM_FUNCDEF(.text, 4, u32, __slab_calltrampolinenew_h2g,
 },
 void)
 
-CASM_ENDCODE()

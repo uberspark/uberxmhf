@@ -54,10 +54,6 @@
 #include <xmhfhicslab.h>
 #include <xmhf-debug.h>
 
-CASM_BEGINCODE()
-
-//__attribute__ ((section(".slab_entrystub")))
-//__attribute__((align(1)))
 CASM_FUNCDEF(.slab_entrystub, 1, void, _slab_entrystub,
 {
 	xmhfhwm_cpu_insn_jmp(slab_main);
@@ -67,4 +63,3 @@ CASM_FUNCDEF(.slab_entrystub, 1, void, _slab_entrystub,
 },
 void)
 
-CASM_ENDCODE()
