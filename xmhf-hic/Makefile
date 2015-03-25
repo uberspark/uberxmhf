@@ -74,10 +74,19 @@ buildhicbin: $(XMHF_HIC_OBJECTS)
 	mkdir -p $(XMHF_HIC_OBJECTS_DIR)
 	@echo Building "$@" from "$<"
 	cp -f $< $(XMHF_HIC_OBJECTS_DIR)/$(@F).c
-	$(CC) -fomit-frame-pointer -O2 -S -emit-llvm $(CFLAGS) $(XMHF_HIC_OBJECTS_DIR)/$(@F).c -o $(XMHF_HIC_OBJECTS_DIR)/$(@F).ll
-	cd $(XMHF_HIC_OBJECTS_DIR) && fixnaked.pl $(@F).ll
-	cd $(XMHF_HIC_OBJECTS_DIR) && llc -O=2 -march=x86 -mcpu=corei7 -mattr=$(LLC_ATTR) $(@F).ll
-	cd $(XMHF_HIC_OBJECTS_DIR) && $(CC) -O2 -c $(CFLAGS) $(@F).s -o $(@F)
+	cd $(XMHF_HIC_OBJECTS_DIR) && $(CCERT) -c -dmach $(CCERT_FLAGS) $(@F).c
+	cd $(XMHF_HIC_OBJECTS_DIR) && extractasm.pl $(@F).mach > $(@F).S
+	cd $(XMHF_HIC_OBJECTS_DIR) && gcc -c $(ASFLAGS) -o $@ $(@F).S
+	#cd $(XMHF_HIC_OBJECTS_DIR) && mv $(@F).o $@
+
+#%.o: %.cS
+#	mkdir -p $(XMHF_HIC_OBJECTS_DIR)
+#	@echo Building "$@" from "$<"
+#	cp -f $< $(XMHF_HIC_OBJECTS_DIR)/$(@F).c
+#	$(CC) -fomit-frame-pointer -O2 -S -emit-llvm $(CFLAGS) $(XMHF_HIC_OBJECTS_DIR)/$(@F).c -o $(XMHF_HIC_OBJECTS_DIR)/$(@F).ll
+#	cd $(XMHF_HIC_OBJECTS_DIR) && fixnaked.pl $(@F).ll
+#	cd $(XMHF_HIC_OBJECTS_DIR) && llc -O=2 -march=x86 -mcpu=corei7 -mattr=$(LLC_ATTR) $(@F).ll
+#	cd $(XMHF_HIC_OBJECTS_DIR) && $(CC) -O2 -c $(CFLAGS) $(@F).s -o $(@F)
 
 #%.o: %.S
 #	mkdir -p $(XMHF_HIC_OBJECTS_DIR)
