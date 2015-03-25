@@ -44,10 +44,21 @@ $(THE_ARCHIVE): $(OBJECTS)
 	mkdir -p $(LIBXMHFHW_OBJECTS_DIR)
 	@echo Building "$@" from "$<"
 	cp -f $< $(LIBXMHFHW_OBJECTS_DIR)/$(@F).c
-	$(CC) -fomit-frame-pointer -O2 -S -emit-llvm $(CFLAGS) $(LIBXMHFHW_OBJECTS_DIR)/$(@F).c -o $(LIBXMHFHW_OBJECTS_DIR)/$(@F).ll
-	cd $(LIBXMHFHW_OBJECTS_DIR) && fixnaked.pl $(@F).ll
-	cd $(LIBXMHFHW_OBJECTS_DIR) && llc -O=2 -march=x86 -mcpu=corei7 -mattr=$(LLC_ATTR) $(@F).ll
-	cd $(LIBXMHFHW_OBJECTS_DIR) && $(CC) -O2 -c $(CFLAGS) $(@F).s -o $(@F)
+	cd $(LIBXMHFHW_OBJECTS_DIR) && $(CCERT) -c -dmach $(CCERT_FLAGS) $(@F).c
+	cd $(LIBXMHFHW_OBJECTS_DIR) && extractasm.pl $(@F).mach > $(@F).S
+	cd $(LIBXMHFHW_OBJECTS_DIR) && gcc -c $(ASFLAGS) -o $@ $(@F).S
+	#cd $(LIBXMHFHW_OBJECTS_DIR) && mv $(@F).o $@
+
+
+
+#%.o: %.cS
+#	mkdir -p $(LIBXMHFHW_OBJECTS_DIR)
+#	@echo Building "$@" from "$<"
+#	cp -f $< $(LIBXMHFHW_OBJECTS_DIR)/$(@F).c
+#	$(CC) -fomit-frame-pointer -O2 -S -emit-llvm $(CFLAGS) $(LIBXMHFHW_OBJECTS_DIR)/$(@F).c -o $(LIBXMHFHW_OBJECTS_DIR)/$(@F).ll
+#	cd $(LIBXMHFHW_OBJECTS_DIR) && fixnaked.pl $(@F).ll
+#	cd $(LIBXMHFHW_OBJECTS_DIR) && llc -O=2 -march=x86 -mcpu=corei7 -mattr=$(LLC_ATTR) $(@F).ll
+#	cd $(LIBXMHFHW_OBJECTS_DIR) && $(CC) -O2 -c $(CFLAGS) $(@F).s -o $(@F)
 
 
 .PHONY: clean

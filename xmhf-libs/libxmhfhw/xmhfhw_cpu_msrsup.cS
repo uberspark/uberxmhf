@@ -53,17 +53,24 @@
 #include <xmhf-debug.h>
 
 
-__attribute__((naked)) u64 rdmsr64(u32 msr){
+//__attribute__((naked)) u64 rdmsr64(u32 msr){
+CASM_FUNCDEF(u64, rdmsr64,
+{
   xmhfhwm_cpu_insn_movl_mesp_ecx(0x4); //ecx = msr
   xmhfhwm_cpu_insn_rdmsr();
   xmhfhwm_cpu_insn_ret();
-}
+},
+u32 msr)
 
-__attribute__((naked)) void wrmsr64(u32 msr, u64 newval){
+//__attribute__((naked)) void wrmsr64(u32 msr, u64 newval){
+CASM_FUNCDEF(void, wrmsr64,
+{
   xmhfhwm_cpu_insn_movl_mesp_ecx(0x4); //ecx = msr
   xmhfhwm_cpu_insn_movl_mesp_eax(0x8); //eax = (u32)newval
   xmhfhwm_cpu_insn_movl_mesp_edx(0xC); //edx = (u32)((u64)newval >> 32)
   xmhfhwm_cpu_insn_wrmsr();
   xmhfhwm_cpu_insn_ret();
-}
+},
+u32 msr,
+u64 newval)
 
