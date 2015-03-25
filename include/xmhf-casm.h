@@ -52,6 +52,8 @@
 
 #ifndef __ASSEMBLY__
 
+#if defined (__clang__)
+
 #define CASM_LABEL(x)   asm volatile (#x": \r\n");
 #define CASM_BALIGN(x)  asm volatile (".balign "#x" \r\n");
 
@@ -68,6 +70,35 @@
     { \
     fn_body \
     } \
+
+#else //!__clang__
+
+#define CASM_LABEL(x)   __builtin_annot(#x": ");
+#define CASM_BALIGN(x)  __builtin_annot(".balign "#x" ");
+
+#define CASM_BEGINCODE() \
+    static void __casm_begincode(void){ \
+        __builtin_annot(".section .text"); \
+    } \
+
+#define CASM_ENDCODE() \
+    static void __casm_endcode(void){ \
+        __builtin_annot(".section .text"); \
+    } \
+
+#define CASM_FUNCDEF(fn_rettype, fn_name, fn_body, ...) \
+    void __casmdef_##fn_name(void){ \
+        __builtin_annot(".global "#fn_name); \
+        __builtin_annot(#fn_name": "); \
+    } \
+    fn_rettype fn_name (__VA_ARGS__) \
+    { \
+    fn_body \
+    } \
+
+
+#endif //__clang__
+
 
 #endif // __ASSEMBLY__
 
