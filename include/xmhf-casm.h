@@ -65,8 +65,8 @@
     static void __casm_endcode(void){ \
     } \
 
-#define CASM_FUNCDEF(fn_rettype, fn_name, fn_body, ...) \
-    __attribute__((naked)) fn_rettype fn_name (__VA_ARGS__) \
+#define CASM_FUNCDEF(fn_section, fn_align, fn_rettype, fn_name, fn_body, ...) \
+    __attribute__((naked)) __attribute__((section(#fn_section))) __attribute__((align(#fn_align))) fn_rettype fn_name (__VA_ARGS__) \
     { \
     fn_body \
     } \
@@ -86,9 +86,10 @@
         __builtin_annot(".section .text"); \
     } \
 
-#define CASM_FUNCDEF(fn_rettype, fn_name, fn_body, ...) \
+#define CASM_FUNCDEF(fn_section, fn_align, fn_rettype, fn_name, fn_body, ...) \
     void __casmdef_##fn_name(void){ \
-        __builtin_annot(".section .text"); \
+        __builtin_annot(".section "#fn_section); \
+        __builtin_annot(".align "#fn_align); \
         __builtin_annot(".global "#fn_name); \
         __builtin_annot(#fn_name": "); \
     } \
