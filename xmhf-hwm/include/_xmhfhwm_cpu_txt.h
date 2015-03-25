@@ -742,17 +742,7 @@ extern bool verify_txt_heap(txt_heap_t *txt_heap, bool bios_data_only);
 extern bool verify_bios_data(txt_heap_t *txt_heap);
 extern void print_os_sinit_data(os_sinit_data_t *os_sinit_data);
 
-
-#if defined (__clang__)
-
-#define xmhfhwm_cpu_insn_getsec() asm volatile (IA32_GETSEC_OPCODE "\r\n");
-
-#else //!__clang__
-
 #define xmhfhwm_cpu_insn_getsec() __builtin_annot(IA32_GETSEC_OPCODE);
-
-#endif //__clang__
-
 
 #endif //__ASSEMBLY__
 
