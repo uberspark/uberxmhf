@@ -53,7 +53,9 @@
 #include <xmhf-debug.h>
 
 
-__attribute__((naked)) bool __vmx_vmxon(u64 vmxonregion_paddr){
+//__attribute__((naked)) bool __vmx_vmxon(u64 vmxonregion_paddr)
+CASM_FUNCDEF(bool, __vmx_vmxon,
+{
     xmhfhwm_cpu_insn_vmxon_mesp(0x4);
 	xmhfhwm_cpu_insn_jbe(vo_fail);
     xmhfhwm_cpu_insn_movl_imm_eax(0x1);
@@ -62,24 +64,35 @@ __attribute__((naked)) bool __vmx_vmxon(u64 vmxonregion_paddr){
     xmhfhwm_cpu_insn_movl_imm_eax(0x0);
 	CASM_LABEL(vo_success);
     xmhfhwm_cpu_insn_ret();
-}
+},
+u64 vmxonregion_paddr)
 
 
-__attribute__((naked)) void xmhfhw_cpu_x86vmx_vmwrite(u32 encoding, u32 value){
+//__attribute__((naked)) void xmhfhw_cpu_x86vmx_vmwrite(u32 encoding, u32 value)
+CASM_FUNCDEF(void, xmhfhw_cpu_x86vmx_vmwrite,
+{
   xmhfhwm_cpu_insn_movl_mesp_ecx(0x4);
   xmhfhwm_cpu_insn_movl_mesp_eax(0x8);
   xmhfhwm_cpu_insn_vmwrite_eax_ecx();
   xmhfhwm_cpu_insn_ret();
-}
+},
+u32 encoding,
+u32 value)
 
-__attribute__((naked)) u32 xmhfhw_cpu_x86vmx_vmread(u32 encoding){
+
+//__attribute__((naked)) u32 xmhfhw_cpu_x86vmx_vmread(u32 encoding)
+CASM_FUNCDEF(u32, xmhfhw_cpu_x86vmx_vmread,
+{
     xmhfhwm_cpu_insn_movl_mesp_ecx(0x4);
     xmhfhwm_cpu_insn_vmread_ecx_eax();
     xmhfhwm_cpu_insn_ret();
-}
+},
+u32 encoding)
 
 
-__attribute__((naked)) u32 __vmx_vmclear(u64 vmcs){
+//__attribute__((naked)) u32 __vmx_vmclear(u64 vmcs)
+CASM_FUNCDEF(u32, __vmx_vmclear,
+{
     xmhfhwm_cpu_insn_vmclear_mesp(0x4);
     xmhfhwm_cpu_insn_jbe(vmclear_error);
     xmhfhwm_cpu_insn_movl_imm_eax(0x1);
@@ -88,9 +101,13 @@ __attribute__((naked)) u32 __vmx_vmclear(u64 vmcs){
     xmhfhwm_cpu_insn_movl_imm_eax(0x0);
     CASM_LABEL(vmclear_done);
     xmhfhwm_cpu_insn_ret();
-}
+},
+u64 vmcs)
 
-__attribute__((naked)) u32 __vmx_vmptrld(u64 vmcs){
+
+//__attribute__((naked)) u32 __vmx_vmptrld(u64 vmcs)
+CASM_FUNCDEF(u32, __vmx_vmptrld,
+{
     xmhfhwm_cpu_insn_vmptrld_mesp(0x4);
     xmhfhwm_cpu_insn_jbe(vptrld_error);
     xmhfhwm_cpu_insn_movl_imm_eax(0x1);
@@ -99,18 +116,19 @@ __attribute__((naked)) u32 __vmx_vmptrld(u64 vmcs){
     xmhfhwm_cpu_insn_movl_imm_eax(0x0);
     CASM_LABEL(vptrld_done);
     xmhfhwm_cpu_insn_ret();
-}
+},
+u64 vmcs)
+
 
 // VMX instruction INVVPID
 //		Invalidate Translations Based on VPID
 // INVVPID r32, m128
 //returns 1 on success, 0 on failure
-
-
-__attribute__((naked)) u32 __vmx_invvpid(int invalidation_type, //0x14
-                  u32 vpid,              //0x18
-                  u32 linearaddress){    //0x1C
-
+//__attribute__((naked)) u32 __vmx_invvpid(int invalidation_type, //0x14
+//                  u32 vpid,              //0x18
+//                  u32 linearaddress){    //0x1C
+CASM_FUNCDEF(u32, __vmx_invvpid,
+{
     xmhfhwm_cpu_insn_subl_imm_esp(0x10);
 
     xmhfhwm_cpu_insn_xorl_eax_eax();
@@ -132,18 +150,18 @@ __attribute__((naked)) u32 __vmx_invvpid(int invalidation_type, //0x14
 
     xmhfhwm_cpu_insn_addl_imm_esp(0x10);
     xmhfhwm_cpu_insn_ret();
-
-
-}
+},
+int invalidation_type,
+u32 vpid,
+u32 linearaddress)
 
 
 
 // VMX instruction INVEPT
 //		Invalidate Translations Derived from EPT
-
-
-__attribute__((naked)) void __vmx_invept(u64 invalidation_type, u64 eptp){
-
+//__attribute__((naked)) void __vmx_invept(u64 invalidation_type, u64 eptp)
+CASM_FUNCDEF(void, __vmx_invept,
+{
     xmhfhwm_cpu_insn_subl_imm_esp(0x10);
     xmhfhwm_cpu_insn_movl_mesp_edx(0x14);
     xmhfhwm_cpu_insn_movl_mesp_eax(0x1C);
@@ -155,6 +173,7 @@ __attribute__((naked)) void __vmx_invept(u64 invalidation_type, u64 eptp){
     xmhfhwm_cpu_insn_invept_mesp_edx(0x0);
     xmhfhwm_cpu_insn_addl_imm_esp(0x10);
     xmhfhwm_cpu_insn_ret();
-
-}
+},
+u64 invalidation_type,
+u64 eptp)
 
