@@ -42,8 +42,8 @@ $(THE_ARCHIVE): $(OBJECTS)
 	mkdir -p $(LIBXMHFHICSLAB_OBJECTS_DIR)
 	@echo Building "$@" from "$<"
 	cp -f $< $(LIBXMHFHICSLAB_OBJECTS_DIR)/$(@F).c
-	$(CCERT) -c $(CCERT_FLAGS) $(LIBXMHFHICSLAB_OBJECTS_DIR)/$(@F).c -o $(LIBXMHFHICSLAB_OBJECTS_DIR)/$@
-
+	cd $(LIBXMHFHICSLAB_OBJECTS_DIR) && $(CCERT) -c -dmach $(CCERT_FLAGS) $(@F).c
+	cd $(LIBXMHFHICSLAB_OBJECTS_DIR) && mv $(@F).o $@
 
 #%.o: %.cS
 #	mkdir -p $(LIBXMHFHICSLAB_OBJECTS_DIR)
