@@ -88,6 +88,7 @@
 
 #define CASM_FUNCDEF(fn_rettype, fn_name, fn_body, ...) \
     void __casmdef_##fn_name(void){ \
+        __builtin_annot(".section .text"); \
         __builtin_annot(".global "#fn_name); \
         __builtin_annot(#fn_name": "); \
     } \
