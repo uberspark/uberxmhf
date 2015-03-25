@@ -58,7 +58,7 @@ CASM_BEGINCODE()
 
 //if we return, we had an error and we return the
 //corresponding error code
-CASM_FUNCDEF(u32, __slab_calltrampolinenew_h2g,
+CASM_FUNCDEF(.text, 4, u32, __slab_calltrampolinenew_h2g,
 {
     xmhfhwm_cpu_insn_vmlaunch();
     xmhfhwm_cpu_insn_jc(__vmx_start_hvm_failinvalid);
