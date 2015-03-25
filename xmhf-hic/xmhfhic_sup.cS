@@ -52,23 +52,6 @@
 // author: amit vasudevan (amitvasudevan@acm.org)
 
 
-// initialization phase CPU stacks
-__attribute__(( section(".stack") )) __attribute__(( aligned(4096) )) u8 _init_cpustacks[MAX_PLATFORM_CPUS][MAX_PLATFORM_CPUSTACK_SIZE];
-
-
-// following two data structures used for SMP bootup
-__attribute__(( aligned(16) )) static u64 _xcsmp_ap_init_gdt_start[]  = {
-	0x0000000000000000ULL,	//NULL descriptor
-	0x00af9b000000ffffULL,	//CPL-0 64-bit code descriptor (CS64)
-	0x00af93000000ffffULL,	//CPL-0 64-bit data descriptor (DS/SS/ES/FS/GS)
-};
-
-__attribute__(( aligned(16) )) static arch_x86_gdtdesc_t _xcsmp_ap_init_gdt  = {
-	.size=sizeof(_xcsmp_ap_init_gdt_start)-1,
-	.base=&_xcsmp_ap_init_gdt_start,
-};
-
-
 __attribute__((naked)) __attribute__ ((section(".hic_entrystub"))) __attribute__(( align(4096) )) void xcprimeon_arch_entry(void) {
 
     xmhfhwm_cpu_insn_movw_ds_ax();
@@ -181,7 +164,7 @@ __attribute__((naked)) void __xmhfhic_x86vmx_reloadsegregs(u32 ds_sel){
 
 
 #define XMHF_EXCEPTION_HANDLER_DEFINE(vector) 												\
-	static void __xmhf_exception_handler_##vector(void) __attribute__((naked)) { 					\
+	void __xmhf_exception_handler_##vector(void) __attribute__((naked)) { 					\
         xmhfhwm_cpu_insn_pushl_imm(vector); \
         xmhfhwm_cpu_insn_pushal(); \
         xmhfhwm_cpu_insn_pushl_esp(); \
@@ -193,7 +176,7 @@ __attribute__((naked)) void __xmhfhic_x86vmx_reloadsegregs(u32 ds_sel){
     }\
 
 #define XMHF_EXCEPTION_HANDLER_DEFINE_WITHERRORCODE(vector) 												\
-	static void __xmhf_exception_handler_##vector(void) __attribute__((naked)) { 					\
+	void __xmhf_exception_handler_##vector(void) __attribute__((naked)) { 					\
 		xmhfhwm_cpu_insn_pushl_imm(0x0); \
         xmhfhwm_cpu_insn_pushl_imm(vector); \
         xmhfhwm_cpu_insn_pushal(); \
@@ -206,7 +189,6 @@ __attribute__((naked)) void __xmhfhic_x86vmx_reloadsegregs(u32 ds_sel){
     }\
 
 
-#define XMHF_EXCEPTION_HANDLER_ADDROF(vector) &__xmhf_exception_handler_##vector
 
 XMHF_EXCEPTION_HANDLER_DEFINE_WITHERRORCODE(0)
 XMHF_EXCEPTION_HANDLER_DEFINE_WITHERRORCODE(1)
@@ -242,39 +224,6 @@ XMHF_EXCEPTION_HANDLER_DEFINE_WITHERRORCODE(30)
 XMHF_EXCEPTION_HANDLER_DEFINE_WITHERRORCODE(31)
 
 
-u32  __xmhfhic_exceptionstubs[] = { XMHF_EXCEPTION_HANDLER_ADDROF(0),
-							XMHF_EXCEPTION_HANDLER_ADDROF(1),
-							XMHF_EXCEPTION_HANDLER_ADDROF(2),
-							XMHF_EXCEPTION_HANDLER_ADDROF(3),
-							XMHF_EXCEPTION_HANDLER_ADDROF(4),
-							XMHF_EXCEPTION_HANDLER_ADDROF(5),
-							XMHF_EXCEPTION_HANDLER_ADDROF(6),
-							XMHF_EXCEPTION_HANDLER_ADDROF(7),
-							XMHF_EXCEPTION_HANDLER_ADDROF(8),
-							XMHF_EXCEPTION_HANDLER_ADDROF(9),
-							XMHF_EXCEPTION_HANDLER_ADDROF(10),
-							XMHF_EXCEPTION_HANDLER_ADDROF(11),
-							XMHF_EXCEPTION_HANDLER_ADDROF(12),
-							XMHF_EXCEPTION_HANDLER_ADDROF(13),
-							XMHF_EXCEPTION_HANDLER_ADDROF(14),
-							XMHF_EXCEPTION_HANDLER_ADDROF(15),
-							XMHF_EXCEPTION_HANDLER_ADDROF(16),
-							XMHF_EXCEPTION_HANDLER_ADDROF(17),
-							XMHF_EXCEPTION_HANDLER_ADDROF(18),
-							XMHF_EXCEPTION_HANDLER_ADDROF(19),
-							XMHF_EXCEPTION_HANDLER_ADDROF(20),
-							XMHF_EXCEPTION_HANDLER_ADDROF(21),
-							XMHF_EXCEPTION_HANDLER_ADDROF(22),
-							XMHF_EXCEPTION_HANDLER_ADDROF(23),
-							XMHF_EXCEPTION_HANDLER_ADDROF(24),
-							XMHF_EXCEPTION_HANDLER_ADDROF(25),
-							XMHF_EXCEPTION_HANDLER_ADDROF(26),
-							XMHF_EXCEPTION_HANDLER_ADDROF(27),
-							XMHF_EXCEPTION_HANDLER_ADDROF(28),
-							XMHF_EXCEPTION_HANDLER_ADDROF(29),
-							XMHF_EXCEPTION_HANDLER_ADDROF(30),
-							XMHF_EXCEPTION_HANDLER_ADDROF(31),
-};
 
 
 //HIC runtime intercept stub
