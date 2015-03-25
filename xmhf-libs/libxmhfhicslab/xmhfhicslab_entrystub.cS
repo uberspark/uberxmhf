@@ -54,7 +54,7 @@
 #include <xmhfhicslab.h>
 #include <xmhf-debug.h>
 
-CASM_FUNCDEF(.slab_entrystub, 1, void, _slab_entrystub,
+CASM_FUNCDEF_FULL(.slab_entrystub, 1, void, _slab_entrystub,
 {
 	xmhfhwm_cpu_insn_jmp(slab_main);
 	xmhfhwm_cpu_insn_int(0x03);
