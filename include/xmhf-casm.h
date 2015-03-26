@@ -85,7 +85,7 @@
     CASM_FUNCDEF_FULL(.text, 0x4, fn_rettype, fn_name, fn_body, __VA_ARGS__) \
 
 #if defined (__XMHF_VERIFICATION__)
-    #define CASM_FUNCCALL_PARAM(X)    xmhfhwm_cpu_insn_pushl(X),
+    #define CASM_FUNCCALL_PARAM(X)    to_be_added(X),
 #else
     #define CASM_FUNCCALL_PARAM(X)
 #endif // defined
