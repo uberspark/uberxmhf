@@ -69,6 +69,9 @@
 #define CASM_LABEL(x)   __builtin_annot(#x": ");
 #define CASM_BALIGN(x)  __builtin_annot(".balign "#x" ");
 
+
+#define CASM_FUNCDECL(x)    x
+
 #define CASM_FUNCDEF_FULL(fn_section, fn_align, fn_rettype, fn_name, fn_body, ...) \
     void __casmdef_##fn_name(void){ \
         __builtin_annot(".section "#fn_section); \
