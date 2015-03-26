@@ -108,43 +108,45 @@ typedef struct {
  */
 
 
-void cpu_relax(void);
-void xmhfhw_cpu_cpuid(u32 op, u32 *eax, u32 *ebx, u32 *ecx, u32 *edx);
-uint64_t rdtsc64(void);
-u32 read_eflags(void);
-void write_eflags(u32 eflags);
-u64 read_cr0(void);
-void write_cr0(u64 val);
-u32 read_cr2(void);
-u64 read_cr3(void);
-u64 read_rsp(void);
-u32 read_esp(void);
-void write_cr3(u64 val);
-u64 read_cr4(void);
-void write_cr4(u64 val);
-void skinit(unsigned long eax);
-u32 read_segreg_cs(void);
-u32 read_segreg_ds(void);
-u32 read_segreg_es(void);
-u32 read_segreg_fs(void);
-u32 read_segreg_gs(void);
-u32 read_segreg_ss(void);
-u16 read_tr_sel(void);
-void wbinvd(void);
-uint32_t bsrl(uint32_t mask);
-void xmhfhw_cpu_disable_intr(void);
-void enable_intr(void);
-u64 xgetbv(u32 xcr_reg);
-void xsetbv(u32 xcr_reg, u64 value);
-void sysexitq(u64 rip, u64 rsp);
-void spin_lock(volatile u32 *lock);
-void spin_unlock(volatile u32 *lock);
-void xmhfhw_cpu_loadGDT(arch_x86_gdtdesc_t *gdt_addr);
-void xmhfhw_cpu_loadTR(u32 tr_selector);
-void xmhfhw_cpu_loadIDT(arch_x86_idtdesc_t *idt_addr);
-u64 xmhf_baseplatform_arch_x86_getgdtbase(void);
-u64 xmhf_baseplatform_arch_x86_getidtbase(void);
-u64  xmhf_baseplatform_arch_x86_gettssbase(void);
+CASM_FUNCDECL(void cpu_relax(void));
+CASM_FUNCDECL(void xmhfhw_cpu_cpuid(u32 op, u32 *eax, u32 *ebx, u32 *ecx, u32 *edx));
+CASM_FUNCDECL(uint64_t rdtsc64(void));
+CASM_FUNCDECL(u32 read_eflags(void));
+CASM_FUNCDECL(void write_eflags(u32 eflags));
+CASM_FUNCDECL(u64 read_cr0(void));
+CASM_FUNCDECL(void write_cr0(u64 val));
+CASM_FUNCDECL(u32 read_cr2(void));
+CASM_FUNCDECL(u64 read_cr3(void));
+CASM_FUNCDECL(u64 read_rsp(void));
+CASM_FUNCDECL(u32 read_esp(void));
+CASM_FUNCDECL(void write_cr3(u64 val));
+CASM_FUNCDECL(u64 read_cr4(void));
+CASM_FUNCDECL(void write_cr4(u64 val));
+//void skinit(unsigned long eax));
+CASM_FUNCDECL(u32 read_segreg_cs(void));
+CASM_FUNCDECL(u32 read_segreg_ds(void));
+CASM_FUNCDECL(u32 read_segreg_es(void));
+CASM_FUNCDECL(u32 read_segreg_fs(void));
+CASM_FUNCDECL(u32 read_segreg_gs(void));
+CASM_FUNCDECL(u32 read_segreg_ss(void));
+CASM_FUNCDECL(u16 read_tr_sel(void));
+CASM_FUNCDECL(void wbinvd(void));
+CASM_FUNCDECL(uint32_t bsrl(uint32_t mask));
+CASM_FUNCDECL(void xmhfhw_cpu_disable_intr(void));
+CASM_FUNCDECL(void enable_intr(void));
+CASM_FUNCDECL(u64 xgetbv(u32 xcr_reg));
+CASM_FUNCDECL(void xsetbv(u32 xcr_reg, u64 value));
+//void sysexitq(u64 rip, u64 rsp));
+CASM_FUNCDECL(void spin_lock(volatile u32 *lock));
+CASM_FUNCDECL(void spin_unlock(volatile u32 *lock));
+CASM_FUNCDECL(void xmhfhw_cpu_loadGDT(arch_x86_gdtdesc_t *gdt_addr));
+CASM_FUNCDECL(void xmhfhw_cpu_loadTR(u32 tr_selector));
+CASM_FUNCDECL(void xmhfhw_cpu_loadIDT(arch_x86_idtdesc_t *idt_addr));
+CASM_FUNCDECL(u64 xmhf_baseplatform_arch_x86_getgdtbase(void));
+CASM_FUNCDECL(u64 xmhf_baseplatform_arch_x86_getidtbase(void));
+CASM_FUNCDECL(u64  xmhf_baseplatform_arch_x86_gettssbase(void));
+
+
 int fls(int mask);
 u32 get_cpu_vendor_or_die(void);
 bool xmhf_baseplatform_arch_x86_cpuhasxsavefeature(void);
@@ -187,8 +189,8 @@ sinit_mle_data_t *get_sinit_mle_data_start(txt_heap_t *heap);
 
 void rdmsr(u32 msr, u32 *eax, u32 *edx);
 void wrmsr(u32 msr, u32 eax, u32 edx);
-u64 rdmsr64(u32 msr);
-void wrmsr64(u32 msr, u64 newval);
+CASM_FUNCDECL(u64 rdmsr64(u32 msr));
+CASM_FUNCDECL(void wrmsr64(u32 msr, u64 newval));
 
 #endif //__ASSEMBLY__
 
@@ -199,8 +201,8 @@ void wrmsr64(u32 msr, u64 newval);
 
 #ifndef __ASSEMBLY__
 
-void cache_wbinvd(void);
-void tlb_invlpg(u64 addr);
+CASM_FUNCDECL(void cache_wbinvd(void));
+CASM_FUNCDECL(void tlb_invlpg(u64 addr));
 
 #endif //__ASSEMBLY__
 
@@ -210,9 +212,9 @@ void tlb_invlpg(u64 addr);
 
 #ifndef __ASSEMBLY__
 
-void xmhfhw_cpu_getsec(u32 *eax, u32 *ebx, u32 *ecx, u32 *edx);
-uint64_t read_config_reg(uint32_t config_regs_base, uint32_t reg);
-void write_config_reg(uint32_t config_regs_base, uint32_t reg, uint64_t val);
+CASM_FUNCDECL(void xmhfhw_cpu_getsec(u32 *eax, u32 *ebx, u32 *ecx, u32 *edx));
+CASM_FUNCDECL(uint64_t read_config_reg(uint32_t config_regs_base, uint32_t reg));
+CASM_FUNCDECL(void write_config_reg(uint32_t config_regs_base, uint32_t reg, uint64_t val));
 uint32_t __getsec_capabilities(uint32_t index);
 void __getsec_senter(uint32_t sinit_base, uint32_t sinit_size);
 void __getsec_sexit(void);
@@ -228,15 +230,13 @@ void __getsec_parameters(uint32_t index, int* param_type, uint32_t* peax, uint32
 
 #ifndef __ASSEMBLY__
 
-bool __vmx_vmxon(u64 vmxonregion_paddr);
-//void xmhfhw_cpu_x86vmx_vmwrite(u64 encoding, u64 value);
-//u64 xmhfhw_cpu_x86vmx_vmread(u64 encoding);
-void xmhfhw_cpu_x86vmx_vmwrite(u32 encoding, u32 value);
-u32 xmhfhw_cpu_x86vmx_vmread(u32 encoding);
-u32 __vmx_vmclear(u64 vmcs);
-u32 __vmx_vmptrld(u64 vmcs);
-u32 __vmx_invvpid(int invalidation_type, u32 vpid, u32 linearaddress);
-void __vmx_invept(u64 invalidation_type, u64 eptp);
+CASM_FUNCDECL(bool __vmx_vmxon(u64 vmxonregion_paddr));
+CASM_FUNCDECL(void xmhfhw_cpu_x86vmx_vmwrite(u32 encoding, u32 value));
+CASM_FUNCDECL(u32 xmhfhw_cpu_x86vmx_vmread(u32 encoding));
+CASM_FUNCDECL(u32 __vmx_vmclear(u64 vmcs));
+CASM_FUNCDECL(u32 __vmx_vmptrld(u64 vmcs));
+CASM_FUNCDECL(u32 __vmx_invvpid(int invalidation_type, u32 vpid, u32 linearaddress));
+CASM_FUNCDECL(void __vmx_invept(u64 invalidation_type, u64 eptp));
 
 #endif //__ASSEMBLY__
 
@@ -246,12 +246,12 @@ void __vmx_invept(u64 invalidation_type, u64 eptp);
 
 #ifndef __ASSEMBLY__
 
-void outl(u32 val, u32 port);
-void outw (u32 value, u32 port);
-void outb (u32 value, u32 port);
-u32 inl(u32 port);
-u16 inw (u32 port);
-u8 inb (u32 port);
+CASM_FUNCDECL(void outl(u32 val, u32 port));
+CASM_FUNCDECL(void outw (u32 value, u32 port));
+CASM_FUNCDECL(void outb (u32 value, u32 port));
+CASM_FUNCDECL(u32 inl(u32 port));
+CASM_FUNCDECL(u16 inw (u32 port));
+CASM_FUNCDECL(u8 inb (u32 port));
 
 #endif //__ASSEMBLY__
 
