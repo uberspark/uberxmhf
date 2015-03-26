@@ -71,5 +71,5 @@ CASM_FUNCDEF(u32, __slab_calltrampolinenew_h2g,
     CASM_LABEL(__vmx_start_continue);
     xmhfhwm_cpu_insn_ret();
 },
-void)
+void *noparam)
 

@@ -76,7 +76,7 @@ void __slab_calltrampolinenew(slab_params_t *sp){
             xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_RSP, _xmhfhic_common_slab_info_table[sp->dst_slabid].archdata.slabtos[(u16)sp->cpuid]);
             xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_RIP, _xmhfhic_common_slab_info_table[sp->dst_slabid].entrystub);
 
-            errorcode = __slab_calltrampolinenew_h2g();
+            errorcode = CASM_FUNCCALL(__slab_calltrampolinenew_h2g, NULL);
 
             switch(errorcode){
                 case 0:	//no error code, VMCS pointer is invalid
