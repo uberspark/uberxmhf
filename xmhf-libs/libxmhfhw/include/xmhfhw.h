@@ -108,21 +108,31 @@ typedef struct {
  */
 
 
-CASM_FUNCDECL(void cpu_relax(void));
+CASM_FUNCDECL(void cpu_relax(void *noparam));
+
 CASM_FUNCDECL(void xmhfhw_cpu_cpuid(u32 op, u32 *eax, u32 *ebx, u32 *ecx, u32 *edx));
-CASM_FUNCDECL(uint64_t rdtsc64(void));
-CASM_FUNCDECL(u32 read_eflags(void));
+
+CASM_FUNCDECL(uint64_t rdtsc64(void *noparam));
+CASM_FUNCDECL(u32 read_eflags(void *noparam));
+
 CASM_FUNCDECL(void write_eflags(u32 eflags));
-CASM_FUNCDECL(u64 read_cr0(void));
+
+CASM_FUNCDECL(u64 read_cr0(void *noparam));
+
 CASM_FUNCDECL(void write_cr0(u64 val));
-CASM_FUNCDECL(u32 read_cr2(void));
-CASM_FUNCDECL(u64 read_cr3(void));
-CASM_FUNCDECL(u64 read_rsp(void));
-CASM_FUNCDECL(u32 read_esp(void));
+
+CASM_FUNCDECL(u32 read_cr2(void *noparam));
+CASM_FUNCDECL(u64 read_cr3(void *noparam));
+CASM_FUNCDECL(u64 read_rsp(void *noparam));
+CASM_FUNCDECL(u32 read_esp(void *noparam));
+
 CASM_FUNCDECL(void write_cr3(u64 val));
-CASM_FUNCDECL(u64 read_cr4(void));
+
+CASM_FUNCDECL(u64 read_cr4(void *noparam));
+
 CASM_FUNCDECL(void write_cr4(u64 val));
 //void skinit(unsigned long eax));
+
 CASM_FUNCDECL(u32 read_segreg_cs(void));
 CASM_FUNCDECL(u32 read_segreg_ds(void));
 CASM_FUNCDECL(u32 read_segreg_es(void));
@@ -131,9 +141,12 @@ CASM_FUNCDECL(u32 read_segreg_gs(void));
 CASM_FUNCDECL(u32 read_segreg_ss(void));
 CASM_FUNCDECL(u16 read_tr_sel(void));
 CASM_FUNCDECL(void wbinvd(void));
+
 CASM_FUNCDECL(uint32_t bsrl(uint32_t mask));
+
 CASM_FUNCDECL(void xmhfhw_cpu_disable_intr(void));
 CASM_FUNCDECL(void enable_intr(void));
+
 CASM_FUNCDECL(u64 xgetbv(u32 xcr_reg));
 CASM_FUNCDECL(void xsetbv(u32 xcr_reg, u64 value));
 //void sysexitq(u64 rip, u64 rsp));
@@ -142,6 +155,7 @@ CASM_FUNCDECL(void spin_unlock(volatile u32 *lock));
 CASM_FUNCDECL(void xmhfhw_cpu_loadGDT(arch_x86_gdtdesc_t *gdt_addr));
 CASM_FUNCDECL(void xmhfhw_cpu_loadTR(u32 tr_selector));
 CASM_FUNCDECL(void xmhfhw_cpu_loadIDT(arch_x86_idtdesc_t *idt_addr));
+
 CASM_FUNCDECL(u64 xmhf_baseplatform_arch_x86_getgdtbase(void));
 CASM_FUNCDECL(u64 xmhf_baseplatform_arch_x86_getidtbase(void));
 CASM_FUNCDECL(u64  xmhf_baseplatform_arch_x86_gettssbase(void));
@@ -201,7 +215,7 @@ CASM_FUNCDECL(void wrmsr64(u32 msr, u64 newval));
 
 #ifndef __ASSEMBLY__
 
-CASM_FUNCDECL(void cache_wbinvd(void));
+CASM_FUNCDECL(void cache_wbinvd(void *noparam));
 CASM_FUNCDECL(void tlb_invlpg(u64 addr));
 
 #endif //__ASSEMBLY__

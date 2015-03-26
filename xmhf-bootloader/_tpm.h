@@ -824,7 +824,7 @@ static inline bool tpm_validate_locality(uint32_t locality)
         }
         if ( reg_acc.tpm_reg_valid_sts == 1 && reg_acc.seize == 0)
             return true;
-        cpu_relax();
+        cpu_relax(CASM_NOPARAM);
     }
 
     //if ( i <= 0 )
@@ -1044,7 +1044,7 @@ static inline bool release_locality(uint32_t locality)
         if ( reg_acc.active_locality == 0 )
             return true;
         else
-            cpu_relax();
+            cpu_relax(CASM_NOPARAM);
         i++;
     } while ( i <= TPM_ACTIVE_LOCALITY_TIME_OUT );
 
@@ -1141,7 +1141,7 @@ static inline uint32_t tpm_wait_cmd_ready(uint32_t locality)
         if ( reg_acc.active_locality == 1 )
             break;
         else
-            cpu_relax();
+            cpu_relax(CASM_NOPARAM);
         i++;
     } while ( i <= TPM_ACTIVE_LOCALITY_TIME_OUT);
 
@@ -1163,7 +1163,7 @@ static inline uint32_t tpm_wait_cmd_ready(uint32_t locality)
             u32 value = pack_tpm_reg_sts_t(&reg_sts);
             _write_tpm_reg(locality, TPM_REG_STS, &value, SIZE_TPM_REG_STS);
         }
-        cpu_relax();
+        cpu_relax(CASM_NOPARAM);
 
         /* then see if it has */
         {
@@ -1177,7 +1177,7 @@ static inline uint32_t tpm_wait_cmd_ready(uint32_t locality)
         if ( reg_sts.command_ready == 1 )
             break;
         else
-            cpu_relax();
+            cpu_relax(CASM_NOPARAM);
         i++;
     } while ( i <= TPM_CMD_READY_TIME_OUT );
 //#ifdef TPM_TRACE
@@ -1283,7 +1283,7 @@ static inline uint32_t tpm_write_cmd_fifo(uint32_t locality, uint8_t *in,
             if ( row_size > 0 )
                 break;
             else
-                cpu_relax();
+                cpu_relax(CASM_NOPARAM);
             i++;
         } while ( i <= TPM_CMD_WRITE_TIME_OUT );
         if ( i > TPM_CMD_WRITE_TIME_OUT ) {
@@ -1315,7 +1315,7 @@ static inline uint32_t tpm_write_cmd_fifo(uint32_t locality, uint8_t *in,
         if ( reg_sts.sts_valid == 1 && reg_sts.data_avail == 1 )
             break;
         else
-            cpu_relax();
+            cpu_relax(CASM_NOPARAM);
         i++;
     } while ( i <= TPM_DATA_AVAIL_TIME_OUT );
     if ( i > TPM_DATA_AVAIL_TIME_OUT ) {
@@ -1339,7 +1339,7 @@ static inline uint32_t tpm_write_cmd_fifo(uint32_t locality, uint8_t *in,
             if ( row_size > 0 )
                 break;
             else
-                cpu_relax();
+                cpu_relax(CASM_NOPARAM);
             i++;
         } while ( i <= TPM_RSP_READ_TIME_OUT );
         if ( i > TPM_RSP_READ_TIME_OUT ) {
