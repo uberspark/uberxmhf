@@ -52,6 +52,20 @@
 
 #ifndef __ASSEMBLY__
 
+#define _NUM_ARGS(X8, X7, X6, X5, X4, X3, X2, X1, N, ...)   N
+
+#define NUM_ARGS(...) _NUM_ARGS(__VA_ARGS__, 8, 7, 6, 5, 4, 3, 2, 1)
+
+#define EXPAND(X)       X
+#define FIRSTARG(X, ...)    (X)
+#define RESTARGS(X, ...)    (__VA_ARGS__)
+#define FOREACH(MACRO, LIST)    FOREACH_(NUM_ARGS LIST, MACRO, LIST)
+#define FOREACH_(N, M, LIST)    FOREACH__(N, M, LIST)
+#define FOREACH__(N, M, LIST)   FOREACH_##N(M, LIST)
+#define FOREACH_1(M, LIST)  M LIST
+#define FOREACH_2(M, LIST)  EXPAND(M FIRSTARG LIST) FOREACH_1(M, RESTARGS LIST)
+#define FOREACH_3(M, LIST)  EXPAND(M FIRSTARG LIST) FOREACH_2(M, RESTARGS LIST)
+
 #define CASM_LABEL(x)   __builtin_annot(#x": ");
 #define CASM_BALIGN(x)  __builtin_annot(".balign "#x" ");
 
@@ -69,6 +83,17 @@
 
 #define CASM_FUNCDEF(fn_rettype, fn_name, fn_body, ...) \
     CASM_FUNCDEF_FULL(.text, 0x4, fn_rettype, fn_name, fn_body, __VA_ARGS__) \
+
+#if defined (__XMHF_VERIFICATION__)
+    #define CASM_FUNCCALL_PARAM(X)    xmhfhwm_cpu_insn_pushl(X),
+#else
+    #define CASM_FUNCCALL_PARAM(X)
+#endif // defined
+
+#define CASM_FUNCCALL(fn_name, ...)   (\
+    FOREACH(CASM_FUNCCALL_PARAM, (__VA_ARGS__)) \
+    fn_name(__VA_ARGS__) \
+    )\
 
 
 
