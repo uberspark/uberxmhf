@@ -126,19 +126,19 @@ bool set_mtrrs_for_acmod(acm_hdr_t *hdr)
      */
 
     /* disable interrupts */
-    eflags = read_eflags();
+    eflags = read_eflags(CASM_NOPARAM);
 
     xmhfhw_cpu_disable_intr();
 
     /* save CR0 then disable cache (CRO.CD=1, CR0.NW=0) */
-    cr0 = read_cr0();
+    cr0 = read_cr0(CASM_NOPARAM);
     write_cr0((cr0 & ~CR0_NW) | CR0_CD);
 
     /* flush caches */
     wbinvd();
 
     /* save CR4 and disable global pages (CR4.PGE=0) */
-    cr4 = read_cr4();
+    cr4 = read_cr4(CASM_NOPARAM);
     write_cr4(cr4 & ~CR4_PGE);
 
     /* disable MTRRs */
@@ -423,9 +423,9 @@ static txt_heap_t *init_txt_heap(void *ptab_base, acm_hdr_t *sinit,
 
 void delay(u64 cycles)
 {
-    uint64_t start = rdtsc64();
+    uint64_t start = rdtsc64(CASM_NOPARAM);
 
-    while ( rdtsc64()-start < cycles ) ;
+    while ( rdtsc64(CASM_NOPARAM)-start < cycles ) ;
 }
 
 
@@ -508,7 +508,7 @@ bool txt_prepare_cpu(void)
 
     /* must be running at CPL 0 => this is implicit in even getting this far */
     /* since our bootstrap code loads a GDT, etc. */
-    cr0 = read_cr0();
+    cr0 = read_cr0(CASM_NOPARAM);
 
     /* must be in protected mode */
     if ( !(cr0 & CR0_PE) ) {
@@ -536,7 +536,7 @@ bool txt_prepare_cpu(void)
     write_cr0(cr0);
 
     /* cannot be in virtual-8086 mode (EFLAGS.VM=1) */
-    eflags = read_eflags();
+    eflags = read_eflags(CASM_NOPARAM);
 
     if ( eflags & EFLAGS_VM ) {
         _XDPRINTF_("EFLAGS.VM set; clearing it.\n");
@@ -617,7 +617,7 @@ bool get_parameters(getsec_parameters_t *params)
     int param_type;
 
     /* sanity check because GETSEC[PARAMETERS] will fail if not set */
-    cr4 = read_cr4();
+    cr4 = read_cr4(CASM_NOPARAM);
     if ( !(cr4 & CR4_SMXE) ) {
         _XDPRINTF_("SMXE not enabled, can't read parameters\n");
         return false;

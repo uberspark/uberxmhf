@@ -75,7 +75,7 @@ static void xcguestslab_dotest_vmcall(void){
 
 
         for(i=0; i < iterations; i++){
-            tscbefore = rdtsc64();
+            tscbefore = rdtsc64(CASM_NOPARAM);
 
             {
 
@@ -83,7 +83,7 @@ static void xcguestslab_dotest_vmcall(void){
 
             }
 
-            tscafter = rdtsc64();
+            tscafter = rdtsc64(CASM_NOPARAM);
             tscavg += (tscafter - tscbefore);
         }
 

@@ -67,7 +67,7 @@ void slab_main(slab_params_t *sp){
     slab_params_t spl;
 
 	_XDPRINTF_("%s[%u]: Got control: ESP=%08x\n",
-                __func__, (u16)sp->cpuid, read_esp());
+                __func__, (u16)sp->cpuid, read_esp(CASM_NOPARAM));
 
     spl.cpuid = sp->cpuid;
     spl.src_slabid = XMHF_HYP_SLAB_XCIHUB;

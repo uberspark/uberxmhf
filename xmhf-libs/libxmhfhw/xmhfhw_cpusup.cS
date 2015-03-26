@@ -59,7 +59,7 @@ CASM_FUNCDEF(void, cpu_relax,
     xmhfhwm_cpu_insn_pause();
     xmhfhwm_cpu_insn_ret();
 },
-void)
+void *noparam)
 
 
 //__attribute__((naked)) void xmhfhw_cpu_cpuid(u32 op,    //0xC
@@ -104,7 +104,7 @@ CASM_FUNCDEF(uint64_t, rdtsc64,
     xmhfhwm_cpu_insn_rdtsc();
     xmhfhwm_cpu_insn_ret();
 },
-void)
+void *noparam)
 
 
 //__attribute__((naked)) u32 read_eflags(void)
@@ -114,7 +114,7 @@ CASM_FUNCDEF(u32, read_eflags,
     xmhfhwm_cpu_insn_popl_eax();
     xmhfhwm_cpu_insn_ret();
 },
-void)
+void *noparam)
 
 
 //__attribute__((naked)) void write_eflags(u32 eflags){
@@ -135,7 +135,7 @@ CASM_FUNCDEF(u64, read_cr0,
     xmhfhwm_cpu_insn_movl_cr0_eax();
     xmhfhwm_cpu_insn_ret();
 },
-void)
+void *noparam)
 
 
 //__attribute__((naked)) void write_cr0(u64 val)
@@ -154,7 +154,7 @@ CASM_FUNCDEF(u32, read_cr2,
   xmhfhwm_cpu_insn_movl_cr2_eax();
   xmhfhwm_cpu_insn_ret();
 },
-void)
+void *noparam)
 
 
 //__attribute__((naked)) u64 read_cr3(void){
@@ -164,7 +164,7 @@ CASM_FUNCDEF(u64, read_cr3,
     xmhfhwm_cpu_insn_movl_cr3_eax();
     xmhfhwm_cpu_insn_ret();
 },
-void)
+void *noparam)
 
 //__attribute__((naked)) u64 read_rsp(void)
 CASM_FUNCDEF(u64, read_rsp,
@@ -173,7 +173,7 @@ CASM_FUNCDEF(u64, read_rsp,
     xmhfhwm_cpu_insn_movl_esp_eax();
     xmhfhwm_cpu_insn_ret();
 },
-void)
+void *noparam)
 
 
 //__attribute__((naked)) u32 read_esp(void)
@@ -182,7 +182,7 @@ CASM_FUNCDEF(u32, read_esp,
     xmhfhwm_cpu_insn_movl_esp_eax();
     xmhfhwm_cpu_insn_ret();
 },
-void)
+void *noparam)
 
 
 //__attribute__((naked)) void write_cr3(u64 val)
@@ -202,7 +202,7 @@ CASM_FUNCDEF(u64, read_cr4,
     xmhfhwm_cpu_insn_movl_cr4_eax();
     xmhfhwm_cpu_insn_ret();
 },
-void)
+void *noparam)
 
 
 //__attribute__((naked)) void write_cr4(u64 val)

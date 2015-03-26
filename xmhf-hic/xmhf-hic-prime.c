@@ -106,10 +106,10 @@ static void xmhfhic_setupinitpgtables(void){
         _XDPRINTF_("fn:%s, line:%u\n", __func__, __LINE__);
         wrmsr64(MSR_EFER, (rdmsr64(MSR_EFER) | (0x800)) );
         _XDPRINTF_("EFER=%016llx\n", rdmsr64(MSR_EFER));
-        write_cr4(read_cr4() | (0x30) );
-        _XDPRINTF_("CR4=%08x\n", read_cr4());
+        write_cr4(read_cr4(CASM_NOPARAM) | (0x30) );
+        _XDPRINTF_("CR4=%08x\n", read_cr4(CASM_NOPARAM));
         write_cr3((u32)&_xcprimeon_init_pdpt);
-        _XDPRINTF_("CR3=%08x\n", read_cr3());
+        _XDPRINTF_("CR3=%08x\n", read_cr3(CASM_NOPARAM));
         write_cr0(0x80000015);
         _XDPRINTF_("fn:%s, line:%u\n", __func__, __LINE__);
     }
@@ -121,7 +121,7 @@ static void xmhfhic_setupinitpgtables(void){
 //set IOPl to CPl-3
 static void __xmhfhic_x86vmx_setIOPL3(u64 cpuid){
     u32 eflags;
-    eflags = read_eflags();
+    eflags = read_eflags(CASM_NOPARAM);
     eflags |= EFLAGS_IOPL;
     write_eflags(eflags);
 }
@@ -217,7 +217,7 @@ void xmhfhic_smp_entry(u32 cpuid){
     //}
 
     _XDPRINTF_("%s[%u,%u]: esp=%08x. Starting...\n",
-            __func__, cpuid, isbsp, read_esp());
+            __func__, cpuid, isbsp, read_esp(CASM_NOPARAM));
 
     xmhf_hic_arch_setup_cpu_state((u16)cpuid);
 
@@ -1559,8 +1559,8 @@ static void __xmhfhic_smp_cpu_x86_wakeupAPs(void){
 static void __xmhfhic_smp_container_vmx_wakeupAPs(void){
     static x86smp_apbootstrapdata_t apdata;
 
-    apdata.ap_cr3 = read_cr3();
-    apdata.ap_cr4 = read_cr4();
+    apdata.ap_cr3 = read_cr3(CASM_NOPARAM);
+    apdata.ap_cr4 = read_cr4(CASM_NOPARAM);
     apdata.ap_entrypoint = (u32)&__xmhfhic_ap_entry;
     apdata.ap_gdtdesc_limit = sizeof(apdata.ap_gdt) - 1;
     //apdata.ap_gdtdesc_base = (X86SMP_APBOOTSTRAP_DATASEG << 4) + offsetof(x86smp_apbootstrapdata_t, ap_gdt);
@@ -1640,7 +1640,7 @@ static bool __xmhfhic_smp_arch_smpinitialize(void){
     #endif
 
     //save page table base which we will later replicate on all APs
-    _ap_cr3 = read_cr3();
+    _ap_cr3 = read_cr3(CASM_NOPARAM);
 
 	//wake up APS
 	if(xcbootinfo->cpuinfo_numentries > 1){
@@ -1854,7 +1854,7 @@ static bool __xmhfhic_x86vmx_setupvmxstate(u64 cpuid){
 		__xmhfhic_x86vmx_archdata[cpuindex].vmx_msr_efcr = (u64)edx << 32 | (u64) eax;
   	}
 
-    write_cr4( read_cr4() |  CR4_VMXE);
+    write_cr4( read_cr4(CASM_NOPARAM) |  CR4_VMXE);
 
 #if !defined (__XMHF_VERIFICATION__)
 	//enter VMX root operation using VMXON
@@ -1884,9 +1884,9 @@ static bool __xmhfhic_x86vmx_setupvmxstate(u64 cpuid){
 
 
 	//setup host state
-	xmhfhw_cpu_x86vmx_vmwrite(VMCS_HOST_CR0, read_cr0());
-	xmhfhw_cpu_x86vmx_vmwrite(VMCS_HOST_CR4, read_cr4());
-	xmhfhw_cpu_x86vmx_vmwrite(VMCS_HOST_CR3, read_cr3());
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_HOST_CR0, read_cr0(CASM_NOPARAM));
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_HOST_CR4, read_cr4(CASM_NOPARAM));
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_HOST_CR3, read_cr3(CASM_NOPARAM));
 	xmhfhw_cpu_x86vmx_vmwrite(VMCS_HOST_CS_SELECTOR, read_segreg_cs());
 	xmhfhw_cpu_x86vmx_vmwrite(VMCS_HOST_DS_SELECTOR, read_segreg_ds());
 	xmhfhw_cpu_x86vmx_vmwrite(VMCS_HOST_ES_SELECTOR, read_segreg_es());
@@ -1900,7 +1900,7 @@ static bool __xmhfhic_x86vmx_setupvmxstate(u64 cpuid){
 
 	xmhfhw_cpu_x86vmx_vmwrite(VMCS_HOST_RIP, __xmhfhic_rtm_intercept_stub);
 
-	xmhfhw_cpu_x86vmx_vmwrite(VMCS_HOST_RSP, read_rsp());
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_HOST_RSP, read_rsp(CASM_NOPARAM));
 	rdmsr(IA32_SYSENTER_CS_MSR, &lodword, &hidword);
 	xmhfhw_cpu_x86vmx_vmwrite(VMCS_HOST_SYSENTER_CS, lodword);
 	rdmsr(IA32_SYSENTER_ESP_MSR, &lodword, &hidword);
@@ -2334,13 +2334,13 @@ void xmhf_hic_arch_setup_cpu_state(u64 cpuid){
 	//set OSXSAVE bit in CR4 to enable us to pass-thru XSETBV intercepts
 	//when the CPU supports XSAVE feature
 	if(xmhf_baseplatform_arch_x86_cpuhasxsavefeature()){
-        write_cr4(read_cr4() | CR4_OSXSAVE);
+        write_cr4(read_cr4(CASM_NOPARAM) | CR4_OSXSAVE);
         _XDPRINTF_("%s[%u]: XSETBV passthrough enabled\n", __func__, (u32)cpuid);
 	}
 
 
 	//set bit 5 (EM) of CR0 to be VMX compatible in case of Intel cores
-	write_cr0(read_cr0() | 0x20);
+	write_cr0(read_cr0(CASM_NOPARAM) | 0x20);
     _XDPRINTF_("%s[%u]: Set CR0.EM to be VMX compatible\n", __func__, (u32)cpuid);
 
 

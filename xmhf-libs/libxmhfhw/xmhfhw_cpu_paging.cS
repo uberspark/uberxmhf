@@ -58,7 +58,7 @@ CASM_FUNCDEF(void, cache_wbinvd,
     xmhfhwm_cpu_insn_wbinvd();
     xmhfhwm_cpu_insn_ret();
 },
-void)
+void *noparam)
 
 //__attribute__((naked)) void tlb_invlpg(u64 addr){
 CASM_FUNCDEF(void, tlb_invlpg,

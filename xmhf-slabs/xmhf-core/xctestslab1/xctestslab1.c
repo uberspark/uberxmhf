@@ -124,7 +124,7 @@ void slab_main(slab_params_t *sp){
     u32 *outputval = (u32 *)sp->in_out_params[1];
 
 	_XDPRINTF_("%s[%u]: Got control: ESP=%016llx\n",
-                __func__, (u16)sp->cpuid, read_esp());
+                __func__, (u16)sp->cpuid, read_esp(CASM_NOPARAM));
 
 	_XDPRINTF_("%s[%u]: inputval=%x\n",
                 __func__, (u16)sp->cpuid, inputval);
