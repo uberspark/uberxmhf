@@ -52,6 +52,8 @@
 
 #ifndef __ASSEMBLY__
 
+
+
 #define _NUM_ARGS(X8, X7, X6, X5, X4, X3, X2, X1, N, ...)   N
 
 #define NUM_ARGS(...) _NUM_ARGS(__VA_ARGS__, 8, 7, 6, 5, 4, 3, 2, 1)
@@ -69,6 +71,7 @@
 #define CASM_LABEL(x)   __builtin_annot(#x": ");
 #define CASM_BALIGN(x)  __builtin_annot(".balign "#x" ");
 
+#define CASM_NOPARAM        NULL
 
 #define CASM_FUNCDECL(x)    x
 
