@@ -48,20 +48,6 @@
 #include <xmhf-hic.h>
 #include <xmhf-debug.h>
 
-//external assembly language blobs
-extern void _ap_bootstrap_code(void);
-extern bool __xmhfhic_ap_entry(void);
-extern void xmhfhic_arch_relinquish_control_to_init_slab(u64 cpuid, u64 entrystub, u64 mempgtbl_cr3, u64 slabtos);
-//extern void __xmhfhic_x86vmx_setIOPL3(u64 cpuid);
-extern void __xmhfhic_x86vmx_loadTR(u64 cpuid);
-extern void __xmhfhic_x86vmx_loadIDT(arch_x86_idtdesc_t *idt_addr);
-//extern void __xmhfhic_x86vmx_loadGDT(arch_x86_gdtdesc_t *gdt_addr);
-extern void __xmhfhic_x86vmx_reloadCS(u32 cs_sel);
-extern void __xmhfhic_x86vmx_reloadsegregs(u32 ds_sel);
-
-
-
-
 
 __attribute__((aligned(4096))) static u64 _xcprimeon_init_pdt[PAE_PTRS_PER_PDPT][PAE_PTRS_PER_PDT];
 __attribute__((aligned(4096))) static u64 _xcprimeon_init_pdpt[PAE_MAXPTRS_PER_PDPT];
