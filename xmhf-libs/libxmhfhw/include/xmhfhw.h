@@ -134,12 +134,13 @@ CASM_FUNCDECL(void write_cr4(u64 val));
 //void skinit(unsigned long eax));
 
 CASM_FUNCDECL(u32 read_segreg_cs(void *noparam));
-CASM_FUNCDECL(u32 read_segreg_ds(void));
-CASM_FUNCDECL(u32 read_segreg_es(void));
-CASM_FUNCDECL(u32 read_segreg_fs(void));
-CASM_FUNCDECL(u32 read_segreg_gs(void));
+CASM_FUNCDECL(u32 read_segreg_ds(void *noparam));
+CASM_FUNCDECL(u32 read_segreg_es(void *noparam));
+CASM_FUNCDECL(u32 read_segreg_fs(void *noparam));
+CASM_FUNCDECL(u32 read_segreg_gs(void *noparam));
 CASM_FUNCDECL(u32 read_segreg_ss(void *noparam));
 CASM_FUNCDECL(u32 read_tr_sel(void *noparam));
+
 CASM_FUNCDECL(void wbinvd(void));
 
 CASM_FUNCDECL(uint32_t bsrl(uint32_t mask));
