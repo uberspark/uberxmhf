@@ -54,29 +54,6 @@
 #include <xmhf-hic.h>
 #include <xmhf-debug.h>
 
-//asm blobs
-extern void __xmhfhic_trampoline_slabxfer_h2h(u64 iparams, u64 iparams_size,
-                                       u64 entrystub, u64 slabtos,
-                                       u64 oparams, u64 oparams_size,
-                                       u64 src_slabid, u64 cpuid);
-
-extern void __xmhfhic_trampoline_slabxfer_h2g(void);
-
-
-extern void __xmhfhic_trampoline_slabxfer_callexception(u64 iparams, u64 iparams_size,
-                                                 u64 entrystub, u64 slabtos,
-                                                 u64 src_slabid, u64 cpuid);
-
-
-extern void __xmhfhic_trampoline_slabxfer_callintercept(u64 entrystub, u64 slabtos,
-                                                 u64 src_slabid, u64 cpuid);
-
-
-extern void __xmhfhic_trampoline_slabxfer_retintercept(u64 addrgprs);
-
-
-extern void __xmhfhic_trampoline_slabxfer_retexception(u64 addr_exframe);
-
 
 #if defined (__XMHF_VERIFICATION__)
 u64 __xmhfhic_safestack_indices[MAX_PLATFORM_CPUS] = { 0 };
@@ -222,7 +199,7 @@ void __xmhfhic_rtm_trampoline(u64 hic_calltype, slab_input_params_t *iparams, u6
                     xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_RSP, _xmhfhic_common_slab_info_table[dst_slabid].archdata.slabtos[(u32)cpuid]);
                     xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_RIP, _xmhfhic_common_slab_info_table[dst_slabid].entrystub);
 
-                    __xmhfhic_trampoline_slabxfer_h2g();
+                    __xmhfhic_trampoline_slabxfer_h2g(CASM_NOPARAM);
 
 
                 }
