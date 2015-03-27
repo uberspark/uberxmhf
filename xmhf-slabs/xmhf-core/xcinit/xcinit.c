@@ -638,10 +638,10 @@ void slab_main(slab_params_t *sp){
         u64 guest_slab_pdpt_paddr = guest_slab_header_paddr + offsetof(guest_slab_header_t, lvl2mempgtbl_pdpt);
         u64 guest_slab_pdts_paddr = guest_slab_header_paddr + offsetof(guest_slab_header_t, lvl2mempgtbl_pdts);
         */
-        //u32 guest_slab_gdt_paddr = guest_slab_header_paddr + offsetof(guest_slab_header_t, gdt);
-        //u32 guest_slab_magic_paddr = guest_slab_header_paddr + offsetof(guest_slab_header_t, magic);
-        u32 guest_slab_gdt_paddr = guest_slab_header_paddr + 24580UL;
-        u32 guest_slab_magic_paddr = guest_slab_header_paddr + 24576UL;
+        u32 guest_slab_gdt_paddr = guest_slab_header_paddr + offsetof(guest_slab_header_t, gdt);
+        u32 guest_slab_magic_paddr = guest_slab_header_paddr + offsetof(guest_slab_header_t, magic);
+        //u32 guest_slab_gdt_paddr = guest_slab_header_paddr + 24580UL;
+        //u32 guest_slab_magic_paddr = guest_slab_header_paddr + 24576UL;
         u32 guest_slab_magic;
         //xmhf_hic_uapi_physmem_desc_t pdesc;
 

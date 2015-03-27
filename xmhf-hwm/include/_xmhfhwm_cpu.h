@@ -722,11 +722,11 @@ typedef struct __tss {
 
 //segment registers
 #define xmhfhwm_cpu_insn_movl_cs_eax() __builtin_annot("movl %cs, %eax ");
-#define xmhfhwm_cpu_insn_movl_cs_eax() __builtin_annot("movl %ds, %eax ");
-#define xmhfhwm_cpu_insn_movl_cs_eax() __builtin_annot("movl %es, %eax ");
-#define xmhfhwm_cpu_insn_movl_cs_eax() __builtin_annot("movl %fs, %eax ");
-#define xmhfhwm_cpu_insn_movl_cs_eax() __builtin_annot("movl %gs, %eax ");
-#define xmhfhwm_cpu_insn_movl_cs_eax() __builtin_annot("movl %ss, %eax ");
+#define xmhfhwm_cpu_insn_movl_ds_eax() __builtin_annot("movl %ds, %eax ");
+#define xmhfhwm_cpu_insn_movl_es_eax() __builtin_annot("movl %es, %eax ");
+#define xmhfhwm_cpu_insn_movl_fs_eax() __builtin_annot("movl %fs, %eax ");
+#define xmhfhwm_cpu_insn_movl_gs_eax() __builtin_annot("movl %gs, %eax ");
+#define xmhfhwm_cpu_insn_movl_ss_eax() __builtin_annot("movl %ss, %eax ");
 #define xmhfhwm_cpu_insn_movw_ds_ax() __builtin_annot("movw %ds, %ax ");
 #define xmhfhwm_cpu_insn_movw_ax_ds() __builtin_annot("movw %ax, %ds ");
 #define xmhfhwm_cpu_insn_movw_ax_es() __builtin_annot("movw %ax, %es ");

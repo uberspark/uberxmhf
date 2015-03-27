@@ -72,9 +72,9 @@ static void _xcexhub_unhandled(x86vmx_exception_frame_t *exframe){
     _XDPRINTF_("SS:ESP = 0x%08x:0x%08x\n", exframe->orig_ss, exframe->orig_rsp);
     _XDPRINTF_("CR0=0x%08x, CR2=0x%08x\n", read_cr0(CASM_NOPARAM), read_cr2(CASM_NOPARAM));
     _XDPRINTF_("CR3=0x%08x, CR4=0x%08x\n", read_cr3(CASM_NOPARAM), read_cr4(CASM_NOPARAM));
-    _XDPRINTF_("CS=0x%04x, DS=0x%04x, ES=0x%04x, SS=0x%04x\n", (u16)read_segreg_cs(), (u16)read_segreg_ds(), (u16)read_segreg_es(), (u16)read_segreg_ss());
+    _XDPRINTF_("CS=0x%04x, DS=0x%04x, ES=0x%04x, SS=0x%04x\n", (u16)read_segreg_cs(CASM_NOPARAM), (u16)read_segreg_ds(), (u16)read_segreg_es(), (u16)read_segreg_ss(CASM_NOPARAM));
     _XDPRINTF_("FS=0x%04x, GS=0x%04x\n", (u16)read_segreg_fs(), (u16)read_segreg_gs());
-    _XDPRINTF_("TR=0x%04x\n", (u16)read_tr_sel());
+    _XDPRINTF_("TR=0x%04x\n", (u16)read_tr_sel(CASM_NOPARAM));
     _XDPRINTF_("EAX=0x%08x, EBX=0x%08x\n", exframe->eax, exframe->ebx);
     _XDPRINTF_("ECX=0x%08x, EDX=0x%08x\n", exframe->ecx, exframe->edx);
     _XDPRINTF_("ESI=0x%08x, EDI=0x%08x\n", exframe->esi, exframe->edi);
