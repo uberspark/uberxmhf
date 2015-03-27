@@ -113,7 +113,7 @@ void __xmhfhic_rtm_trampoline(u64 hic_calltype, slab_input_params_t *iparams, u6
 
 
     //_XDPRINTF_("%s[%u]: Trampoline got control: RSP=%016llx\n",
-    //                __func__, (u32)cpuid, read_rsp());
+    //                __func__, (u32)cpuid, CASM_FUNCCALL(read_rsp,));
 
     //_XDPRINTF_("%s[%u]: Trampoline got control: hic_calltype=%x, iparams=%x, iparams_size=%u, \
     //           oparams=%x, oparams_size=%u, dst_slabid=%x, src_slabid=%x, cpuid=%x, return_address=%016llx \
@@ -148,7 +148,7 @@ void __xmhfhic_rtm_trampoline(u64 hic_calltype, slab_input_params_t *iparams, u6
                     #endif
 
                     //switch to destination slab page tables
-                    write_cr3(_xmhfhic_common_slab_info_table[dst_slabid].archdata.mempgtbl_cr3);
+ CASM_FUNCCALL(write_cr3,_xmhfhic_common_slab_info_table[dst_slabid].archdata.mempgtbl_cr3);
 
                     //make space on destination slab stack for iparams and copy iparams and obtain newiparams
                     {
@@ -180,7 +180,7 @@ void __xmhfhic_rtm_trampoline(u64 hic_calltype, slab_input_params_t *iparams, u6
 
 
                     //jump to destination slab entrystub
-                    __xmhfhic_trampoline_slabxfer_h2h(newiparams, iparams_size,
+ CASM_FUNCCALL(__xmhfhic_trampoline_slabxfer_h2h,newiparams, iparams_size,
                             _xmhfhic_common_slab_info_table[dst_slabid].entrystub,
                             _xmhfhic_common_slab_info_table[dst_slabid].archdata.slabtos[(u32)cpuid],
                             newoparams, oparams_size,
@@ -194,12 +194,12 @@ void __xmhfhic_rtm_trampoline(u64 hic_calltype, slab_input_params_t *iparams, u6
 
                     //_XDPRINTF_("%s[%u]: going to invoke guest slab %u\n",
                     //           __func__, (u32)cpuid, dst_slabid);
-                    xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VPID, dst_slabid+1);
-                    xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_EPT_POINTER_FULL, _xmhfhic_common_slab_info_table[dst_slabid].archdata.mempgtbl_cr3);
-                    xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_RSP, _xmhfhic_common_slab_info_table[dst_slabid].archdata.slabtos[(u32)cpuid]);
-                    xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_RIP, _xmhfhic_common_slab_info_table[dst_slabid].entrystub);
+ CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_CONTROL_VPID, dst_slabid+1);
+ CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_CONTROL_EPT_POINTER_FULL, _xmhfhic_common_slab_info_table[dst_slabid].archdata.mempgtbl_cr3);
+ CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_GUEST_RSP, _xmhfhic_common_slab_info_table[dst_slabid].archdata.slabtos[(u32)cpuid]);
+ CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_GUEST_RIP, _xmhfhic_common_slab_info_table[dst_slabid].entrystub);
 
-                    __xmhfhic_trampoline_slabxfer_h2g(CASM_NOPARAM);
+ CASM_FUNCCALL(__xmhfhic_trampoline_slabxfer_h2g,CASM_NOPARAM);
 
 
                 }
@@ -246,7 +246,7 @@ void __xmhfhic_rtm_trampoline(u64 hic_calltype, slab_input_params_t *iparams, u6
              _xmhfhic_common_slab_info_table[src_slabid].archdata.slabtos[(u32)cpuid] += (elem.iparams_size+elem.oparams_size);
 
             //switch to destination slab page tables
-            write_cr3(_xmhfhic_common_slab_info_table[dst_slabid].archdata.mempgtbl_cr3);
+ CASM_FUNCCALL(write_cr3,_xmhfhic_common_slab_info_table[dst_slabid].archdata.mempgtbl_cr3);
 
 
             #if !defined (__XMHF_VERIFICATION__)
@@ -294,7 +294,7 @@ void __xmhfhic_rtm_trampoline(u64 hic_calltype, slab_input_params_t *iparams, u6
                 #endif
 
                 //switch to destination slab page tables
-                write_cr3(_xmhfhic_common_slab_info_table[dst_slabid].archdata.mempgtbl_cr3);
+ CASM_FUNCCALL(write_cr3,_xmhfhic_common_slab_info_table[dst_slabid].archdata.mempgtbl_cr3);
 
                 //make space on destination slab stack for iparams and copy iparams and obtain newiparams
                 {
@@ -318,7 +318,7 @@ void __xmhfhic_rtm_trampoline(u64 hic_calltype, slab_input_params_t *iparams, u6
 
 
                 //jump to exception slab entrystub
-                __xmhfhic_trampoline_slabxfer_callexception(newiparams, iparams_size,
+ CASM_FUNCCALL(__xmhfhic_trampoline_slabxfer_callexception,newiparams, iparams_size,
                                                  _xmhfhic_common_slab_info_table[dst_slabid].entrystub,
                                                  _xmhfhic_common_slab_info_table[dst_slabid].archdata.slabtos[(u32)cpuid],
                                                  src_slabid, cpuid);
@@ -360,7 +360,7 @@ void __xmhfhic_rtm_trampoline(u64 hic_calltype, slab_input_params_t *iparams, u6
              _xmhfhic_common_slab_info_table[src_slabid].archdata.slabtos[(u32)cpuid] += (elem.iparams_size);
 
             //switch to destination slab page tables
-            write_cr3(_xmhfhic_common_slab_info_table[dst_slabid].archdata.mempgtbl_cr3);
+ CASM_FUNCCALL(write_cr3,_xmhfhic_common_slab_info_table[dst_slabid].archdata.mempgtbl_cr3);
 
             //return back to slab where exception originally occurred
             {
@@ -373,7 +373,7 @@ void __xmhfhic_rtm_trampoline(u64 hic_calltype, slab_input_params_t *iparams, u6
                         __func__, (u32)cpuid, exframe->orig_rip);
 
 
-                    __xmhfhic_trampoline_slabxfer_retexception((u64)exframe);
+ CASM_FUNCCALL(__xmhfhic_trampoline_slabxfer_retexception,(u64)exframe);
 
             }
 
@@ -403,7 +403,7 @@ void __xmhfhic_rtm_trampoline(u64 hic_calltype, slab_input_params_t *iparams, u6
             #endif // defined
 
             //_XDPRINTF_("%s[%u]: Trampoline Intercept call\n",
-            //        __func__, (u32)cpuid, read_rsp());
+            //        __func__, (u32)cpuid, CASM_FUNCCALL(read_rsp,));
 
             #if !defined (__XMHF_VERIFICATION__)
             //copy iparams (CPU GPR state) into arch. data for cpuid
@@ -422,12 +422,12 @@ void __xmhfhic_rtm_trampoline(u64 hic_calltype, slab_input_params_t *iparams, u6
 
             //switch to destination slab page tables
             //XXX: eliminate this by preloading VMCS CR3 with xcihub CR3
-            write_cr3(_xmhfhic_common_slab_info_table[dst_slabid].archdata.mempgtbl_cr3);
+ CASM_FUNCCALL(write_cr3,_xmhfhic_common_slab_info_table[dst_slabid].archdata.mempgtbl_cr3);
 
             //intercept slab does not get any input parameters and does not
             //return any output parameters
             //jump to intercept slab entrystub
-            __xmhfhic_trampoline_slabxfer_callintercept(_xmhfhic_common_slab_info_table[dst_slabid].entrystub,
+ CASM_FUNCCALL(__xmhfhic_trampoline_slabxfer_callintercept,_xmhfhic_common_slab_info_table[dst_slabid].entrystub,
                                                          _xmhfhic_common_slab_info_table[dst_slabid].archdata.slabtos[(u32)cpuid],
                                                  src_slabid, cpuid);
 
@@ -463,7 +463,7 @@ void __xmhfhic_rtm_trampoline(u64 hic_calltype, slab_input_params_t *iparams, u6
             }
 
             //resume caller (guest) slab where the intercept was triggered
-            __xmhfhic_trampoline_slabxfer_retintercept((u64)&__xmhfhic_x86vmx_archdata[(u32)cpuid].vmx_gprs);
+ CASM_FUNCCALL(__xmhfhic_trampoline_slabxfer_retintercept,(u64)&__xmhfhic_x86vmx_archdata[(u32)cpuid].vmx_gprs);
 
         }
         break;
@@ -615,7 +615,7 @@ void __xmhfhic_rtm_intercept(x86regs_t *r){
            r, sizeof(x86regs_t));
 
     //call xcihub
-    spl.src_slabid = xmhfhw_cpu_x86vmx_vmread(VMCS_CONTROL_VPID);
+    spl.src_slabid = CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmread,VMCS_CONTROL_VPID);
     spl.dst_slabid = XMHF_HYP_SLAB_XCIHUB;
     XMHF_SLAB_CALLNEW(&spl);
 

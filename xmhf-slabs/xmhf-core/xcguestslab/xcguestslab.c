@@ -75,7 +75,7 @@ static void xcguestslab_dotest_vmcall(void){
 
 
         for(i=0; i < iterations; i++){
-            tscbefore = rdtsc64(CASM_NOPARAM);
+            tscbefore = CASM_FUNCCALL(rdtsc64,CASM_NOPARAM);
 
             {
 
@@ -83,7 +83,7 @@ static void xcguestslab_dotest_vmcall(void){
 
             }
 
-            tscafter = rdtsc64(CASM_NOPARAM);
+            tscafter = CASM_FUNCCALL(rdtsc64,CASM_NOPARAM);
             tscavg += (tscafter - tscbefore);
         }
 
@@ -120,7 +120,7 @@ static void xcguestslab_do_xmhfhw_cpu_cpuid(void){
     _XDPRINTF_("%s: Preparing to execute CPUID...\n",
                 __func__);
 
-    xmhfhw_cpu_cpuid(0, &dummy, &vendor_dword1, &vendor_dword3, &vendor_dword2);
+ CASM_FUNCCALL(xmhfhw_cpu_cpuid,0, &dummy, &vendor_dword1, &vendor_dword3, &vendor_dword2);
 
     _XDPRINTF_("%s: CPUID(0) %x, %x, %x\n",
                 __func__, vendor_dword1, vendor_dword2, vendor_dword3);
@@ -131,11 +131,11 @@ static void xcguestslab_do_msrtest(void){
     u64 sysenter_cs_msr;
 
 
-    wrmsr64(IA32_SYSENTER_CS_MSR, 0xAA);
+ CASM_FUNCCALL(wrmsr64,IA32_SYSENTER_CS_MSR, 0xAA);
 
     _XDPRINTF_("%s: wrote SYSENTER_CS_MSR.\n", __func__);
 
-    sysenter_cs_msr = rdmsr64(IA32_SYSENTER_CS_MSR);
+    sysenter_cs_msr = CASM_FUNCCALL(rdmsr64,IA32_SYSENTER_CS_MSR);
 
     _XDPRINTF_("%s: read SYSENTER_CS_MSR=%016llx...\n", __func__, sysenter_cs_msr);
 
@@ -355,14 +355,14 @@ void xcguestslab_do_testxhsyscalllog(void){
 
     //setup SYSENTER/SYSEXIT mechanism
     {
-        wrmsr64(IA32_SYSENTER_CS_MSR, __CS_CPL0);
-        wrmsr64(IA32_SYSENTER_EIP_MSR, &_xcguestslab_do_testxhsyscalllog_sysenterhandler);
-        wrmsr64(IA32_SYSENTER_ESP_MSR, ((u32)&_xcguestslab_do_testxhsyscalllog_sysenterhandler_stack + (u32)PAGE_SIZE_4K));
+ CASM_FUNCCALL(wrmsr64,IA32_SYSENTER_CS_MSR, __CS_CPL0);
+ CASM_FUNCCALL(wrmsr64,IA32_SYSENTER_EIP_MSR, &_xcguestslab_do_testxhsyscalllog_sysenterhandler);
+ CASM_FUNCCALL(wrmsr64,IA32_SYSENTER_ESP_MSR, ((u32)&_xcguestslab_do_testxhsyscalllog_sysenterhandler_stack + (u32)PAGE_SIZE_4K));
     }
     _XDPRINTF_("%s: setup SYSENTER/SYSEXIT mechanism\n", __func__);
-    _XDPRINTF_("%s: SYSENTER CS=%016llx\n", __func__, rdmsr64(IA32_SYSENTER_CS_MSR));
-    _XDPRINTF_("%s: SYSENTER RIP=%016llx\n", __func__, rdmsr64(IA32_SYSENTER_EIP_MSR));
-    _XDPRINTF_("%s: SYSENTER RSP=%016llx\n", __func__, rdmsr64(IA32_SYSENTER_ESP_MSR));
+    _XDPRINTF_("%s: SYSENTER CS=%016llx\n", __func__, CASM_FUNCCALL(rdmsr64,IA32_SYSENTER_CS_MSR));
+    _XDPRINTF_("%s: SYSENTER RIP=%016llx\n", __func__, CASM_FUNCCALL(rdmsr64,IA32_SYSENTER_EIP_MSR));
+    _XDPRINTF_("%s: SYSENTER RSP=%016llx\n", __func__, CASM_FUNCCALL(rdmsr64,IA32_SYSENTER_ESP_MSR));
 
 
     _xcguestslab_do_testxhsyscalllog_switchtoring3();

@@ -67,7 +67,7 @@ void slab_main(slab_params_t *sp){
     slab_params_t spl;
 
 	_XDPRINTF_("%s[%u]: Got control: ESP=%08x\n",
-                __func__, (u16)sp->cpuid, read_esp(CASM_NOPARAM));
+                __func__, (u16)sp->cpuid, CASM_FUNCCALL(read_esp,CASM_NOPARAM));
 
     spl.cpuid = sp->cpuid;
     spl.src_slabid = XMHF_HYP_SLAB_XCIHUB;
@@ -157,7 +157,7 @@ void slab_main(slab_params_t *sp){
                 //if((u32)r.eax == 0x80000001)
                 //    clearsyscallretbit = true;
 
-                xmhfhw_cpu_cpuid((u32)r.eax, (u32 *)&r.eax, (u32 *)&r.ebx, (u32 *)&r.ecx, (u32 *)&r.edx);
+ CASM_FUNCCALL(xmhfhw_cpu_cpuid,(u32)r.eax, (u32 *)&r.eax, (u32 *)&r.ebx, (u32 *)&r.ecx, (u32 *)&r.edx);
 
                 //x86_64
                 //if(clearsyscallretbit)
@@ -380,7 +380,7 @@ void slab_interface(slab_input_params_t *iparams, u64 iparams_size, slab_output_
     xc_hypappcb_outputparams_t hcb_oparams;
 
 	_XDPRINTF_("%s[%u]: Got control: RSP=%016llx\n",
-                __func__, (u32)cpuindex, read_rsp());
+                __func__, (u32)cpuindex, CASM_FUNCCALL(read_rsp,));
 
     XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMREAD, VMCS_INFO_VMEXIT_REASON, &info_vmexit_reason);
 
@@ -446,7 +446,7 @@ void slab_interface(slab_input_params_t *iparams, u64 iparams_size, slab_output_
                 if((u32)r.rax == 0x80000001)
                     clearsyscallretbit = true;
 
-                xmhfhw_cpu_cpuid((u32)r.rax, (u32 *)&r.rax, (u32 *)&r.rbx, (u32 *)&r.rcx, (u32 *)&r.rdx);
+ CASM_FUNCCALL(xmhfhw_cpu_cpuid,(u32)r.rax, (u32 *)&r.rax, (u32 *)&r.rbx, (u32 *)&r.rcx, (u32 *)&r.rdx);
 
                 if(clearsyscallretbit)
                     r.rdx = r.rdx & (u64)~(1ULL << 11);

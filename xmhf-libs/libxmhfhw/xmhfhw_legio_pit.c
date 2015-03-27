@@ -58,22 +58,22 @@ void xmhf_baseplatform_arch_x86_udelay(u32 usecs){
   u32 latchregval;
 
   //enable 8254 ch-2 counter
-  val = inb(0x61);
+  val = CASM_FUNCCALL(inb,0x61);
   val &= 0x0d; //turn PC speaker off
   val |= 0x01; //turn on ch-2
-  outb(val, 0x61);
+ CASM_FUNCCALL(outb,val, 0x61);
 
   //program ch-2 as one-shot
-  outb(0xB0, 0x43);
+ CASM_FUNCCALL(outb,0xB0, 0x43);
 
   //compute appropriate latch register value depending on usecs
   latchregval = (1193182 * usecs) / 1000000;
 
   //write latch register to ch-2
   val = (u8)latchregval;
-  outb(val, 0x42);
+ CASM_FUNCCALL(outb,val, 0x42);
   val = (u8)((u32)latchregval >> (u32)8);
-  outb(val , 0x42);
+ CASM_FUNCCALL(outb,val , 0x42);
 
   #ifndef __XMHF_VERIFICATION__
 	//TODO: plug in a 8254 programmable interval timer h/w model
@@ -82,8 +82,8 @@ void xmhf_baseplatform_arch_x86_udelay(u32 usecs){
   #endif //__XMHF_VERIFICATION__
 
   //disable ch-2 counter
-  val = inb(0x61);
+  val = CASM_FUNCCALL(inb,0x61);
   val &= 0x0c;
-  outb(val, 0x61);
+ CASM_FUNCCALL(outb,val, 0x61);
 }
 

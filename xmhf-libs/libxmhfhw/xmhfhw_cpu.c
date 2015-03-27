@@ -66,7 +66,7 @@ u32 get_cpu_vendor_or_die(void) {
 	    u32 dummy;
 	    u32 vendor_dword1, vendor_dword2, vendor_dword3;
 
-	    xmhfhw_cpu_cpuid(0, &dummy, &vendor_dword1, &vendor_dword3, &vendor_dword2);
+ CASM_FUNCCALL(xmhfhw_cpu_cpuid,0, &dummy, &vendor_dword1, &vendor_dword3, &vendor_dword2);
 	    if(vendor_dword1 == AMD_STRING_DWORD1 && vendor_dword2 == AMD_STRING_DWORD2
 	       && vendor_dword3 == AMD_STRING_DWORD3)
 		return CPU_VENDOR_AMD;
@@ -88,7 +88,7 @@ bool xmhf_baseplatform_arch_x86_cpuhasxsavefeature(void){
 	//bit 26 of ECX is 1 in CPUID function 0x00000001 if
 	//XSAVE/XRSTOR feature is available
 
-	xmhfhw_cpu_cpuid(0x00000001, &eax, &ebx, &ecx, &edx);
+ CASM_FUNCCALL(xmhfhw_cpu_cpuid,0x00000001, &eax, &ebx, &ecx, &edx);
 
 	if((ecx & (1UL << 26)))
 		return true;
@@ -104,7 +104,7 @@ u32 xmhf_baseplatform_arch_x86_getcpuvendor(void){
 	u32 reserved, vendor_dword1, vendor_dword2, vendor_dword3;
 	u32 cpu_vendor;
 
-    xmhfhw_cpu_cpuid(0, &reserved, &vendor_dword1, &vendor_dword3, &vendor_dword2);
+ CASM_FUNCCALL(xmhfhw_cpu_cpuid,0, &reserved, &vendor_dword1, &vendor_dword3, &vendor_dword2);
 
 	if(vendor_dword1 == AMD_STRING_DWORD1 && vendor_dword2 == AMD_STRING_DWORD2
 			&& vendor_dword3 == AMD_STRING_DWORD3)
@@ -129,22 +129,22 @@ u32 xmhf_baseplatform_arch_getcpuvendor(void){
 
 uint64_t read_pub_config_reg(uint32_t reg)
 {
-    return read_config_reg(TXT_PUB_CONFIG_REGS_BASE, reg);
+    return CASM_FUNCCALL(read_config_reg,TXT_PUB_CONFIG_REGS_BASE, reg);
 }
 
 void write_pub_config_reg(uint32_t reg, uint64_t val)
 {
-    write_config_reg(TXT_PUB_CONFIG_REGS_BASE, reg, val);
+ CASM_FUNCCALL(write_config_reg,TXT_PUB_CONFIG_REGS_BASE, reg, val);
 }
 
 uint64_t read_priv_config_reg(uint32_t reg)
 {
-    return read_config_reg(TXT_PRIV_CONFIG_REGS_BASE, reg);
+    return CASM_FUNCCALL(read_config_reg,TXT_PRIV_CONFIG_REGS_BASE, reg);
 }
 
 void write_priv_config_reg(uint32_t reg, uint64_t val)
 {
-    write_config_reg(TXT_PRIV_CONFIG_REGS_BASE, reg, val);
+ CASM_FUNCCALL(write_config_reg,TXT_PRIV_CONFIG_REGS_BASE, reg, val);
 }
 
 bool txt_is_launched(void)
@@ -168,10 +168,10 @@ void set_all_mtrrs(bool enable)
 {
     mtrr_def_type_t mtrr_def_type;
 
-    //mtrr_def_type.raw = rdmsr64(MSR_MTRRdefType);
-    unpack_mtrr_def_type_t(&mtrr_def_type, rdmsr64(MSR_MTRRdefType));
+    //mtrr_def_type.raw = CASM_FUNCCALL(rdmsr64,MSR_MTRRdefType);
+    unpack_mtrr_def_type_t(&mtrr_def_type, CASM_FUNCCALL(rdmsr64,MSR_MTRRdefType));
     mtrr_def_type.e = enable ? 1 : 0;
-    wrmsr64(MSR_MTRRdefType, pack_mtrr_def_type_t(&mtrr_def_type));
+ CASM_FUNCCALL(wrmsr64,MSR_MTRRdefType, pack_mtrr_def_type_t(&mtrr_def_type));
 }
 
 
@@ -194,24 +194,24 @@ bool set_mem_type(u8 *base, uint32_t size, uint32_t mem_type)
      * disable all fixed MTRRs
      * set default type to UC
      */
-    //mtrr_def_type.raw = rdmsr64(MSR_MTRRdefType);
-    unpack_mtrr_def_type_t(&mtrr_def_type, rdmsr64(MSR_MTRRdefType));
+    //mtrr_def_type.raw = CASM_FUNCCALL(rdmsr64,MSR_MTRRdefType);
+    unpack_mtrr_def_type_t(&mtrr_def_type, CASM_FUNCCALL(rdmsr64,MSR_MTRRdefType));
     mtrr_def_type.fe = 0;
     mtrr_def_type.type = MTRR_TYPE_UNCACHABLE;
-    wrmsr64(MSR_MTRRdefType, pack_mtrr_def_type_t(&mtrr_def_type));
+ CASM_FUNCCALL(wrmsr64,MSR_MTRRdefType, pack_mtrr_def_type_t(&mtrr_def_type));
 
     _XDPRINTF_("%s: %u\n", __func__, __LINE__);
 
     /*
      * initially disable all variable MTRRs (we'll enable the ones we use)
      */
-    //mtrr_cap.raw = rdmsr64(MSR_MTRRcap);
-    unpack_mtrr_cap_t(&mtrr_cap, rdmsr64(MSR_MTRRcap));
+    //mtrr_cap.raw = CASM_FUNCCALL(rdmsr64,MSR_MTRRcap);
+    unpack_mtrr_cap_t(&mtrr_cap, CASM_FUNCCALL(rdmsr64,MSR_MTRRcap));
     for ( ndx = 0; ndx < mtrr_cap.vcnt; ndx++ ) {
-        //mtrr_physmask.raw = rdmsr64(MTRR_PHYS_MASK0_MSR + ndx*2);
-        unpack_mtrr_physmask_t(&mtrr_physmask, rdmsr64(MTRR_PHYS_MASK0_MSR + ndx*2));
+        //mtrr_physmask.raw = CASM_FUNCCALL(rdmsr64,MTRR_PHYS_MASK0_MSR + ndx*2);
+        unpack_mtrr_physmask_t(&mtrr_physmask, CASM_FUNCCALL(rdmsr64,MTRR_PHYS_MASK0_MSR + ndx*2));
         mtrr_physmask.v = 0;
-        wrmsr64(MTRR_PHYS_MASK0_MSR + ndx*2, pack_mtrr_physmask_t(&mtrr_physmask));
+ CASM_FUNCCALL(wrmsr64,MTRR_PHYS_MASK0_MSR + ndx*2, pack_mtrr_physmask_t(&mtrr_physmask));
     }
 
     _XDPRINTF_("%s: %u\n", __func__, __LINE__);
@@ -230,8 +230,8 @@ bool set_mem_type(u8 *base, uint32_t size, uint32_t mem_type)
         uint32_t pages_in_range;
 
         /* set the base of the current MTRR */
-        //mtrr_physbase.raw = rdmsr64(MTRR_PHYS_BASE0_MSR + ndx*2);
-        unpack_mtrr_physbase_t(&mtrr_physbase, rdmsr64(MTRR_PHYS_BASE0_MSR + ndx*2));
+        //mtrr_physbase.raw = CASM_FUNCCALL(rdmsr64,MTRR_PHYS_BASE0_MSR + ndx*2);
+        unpack_mtrr_physbase_t(&mtrr_physbase, CASM_FUNCCALL(rdmsr64,MTRR_PHYS_BASE0_MSR + ndx*2));
 
         mtrr_physbase.reserved1 = 0;
         mtrr_physbase.base = (unsigned long)base >> PAGE_SHIFT_4K;
@@ -242,7 +242,7 @@ bool set_mem_type(u8 *base, uint32_t size, uint32_t mem_type)
         _XDPRINTF_("%s: %u writing %016llx\n", __func__, __LINE__,
                    pack_mtrr_physbase_t(&mtrr_physbase));
 
-        wrmsr64(MTRR_PHYS_BASE0_MSR + ndx*2, pack_mtrr_physbase_t(&mtrr_physbase));
+ CASM_FUNCCALL(wrmsr64,MTRR_PHYS_BASE0_MSR + ndx*2, pack_mtrr_physbase_t(&mtrr_physbase));
 
         _XDPRINTF_("%s: %u\n", __func__, __LINE__);
 
@@ -255,8 +255,8 @@ bool set_mem_type(u8 *base, uint32_t size, uint32_t mem_type)
 
         _XDPRINTF_("%s: %u pages_in_range=%u\n", __func__, __LINE__, pages_in_range);
 
-        //mtrr_physmask.raw = rdmsr64(MTRR_PHYS_MASK0_MSR + ndx*2);
-        unpack_mtrr_physmask_t(&mtrr_physmask, rdmsr64(MTRR_PHYS_MASK0_MSR + ndx*2));
+        //mtrr_physmask.raw = CASM_FUNCCALL(rdmsr64,MTRR_PHYS_MASK0_MSR + ndx*2);
+        unpack_mtrr_physmask_t(&mtrr_physmask, CASM_FUNCCALL(rdmsr64,MTRR_PHYS_MASK0_MSR + ndx*2));
 
         mtrr_physmask.reserved1 = 0;
         mtrr_physmask.mask = (u32) ~(pages_in_range - 1);
@@ -267,7 +267,7 @@ bool set_mem_type(u8 *base, uint32_t size, uint32_t mem_type)
         _XDPRINTF_("%s: %u writing %016llx\n", __func__, __LINE__,
                    pack_mtrr_physmask_t(&mtrr_physmask));
 
-        wrmsr64(MTRR_PHYS_MASK0_MSR + ndx*2, pack_mtrr_physmask_t(&mtrr_physmask));
+ CASM_FUNCCALL(wrmsr64,MTRR_PHYS_MASK0_MSR + ndx*2, pack_mtrr_physmask_t(&mtrr_physmask));
 
         _XDPRINTF_("%s: %u\n", __func__, __LINE__);
 
@@ -317,12 +317,12 @@ void xmhfhw_cpu_x86_save_mtrrs(mtrr_state_t *saved_state)
     int ndx;
 
     /* IA32_MTRR_DEF_TYPE MSR */
-    //saved_state->mtrr_def_type.raw = rdmsr64(MSR_MTRRdefType);
-    unpack_mtrr_def_type_t(&saved_state->mtrr_def_type, rdmsr64(MSR_MTRRdefType));
+    //saved_state->mtrr_def_type.raw = CASM_FUNCCALL(rdmsr64,MSR_MTRRdefType);
+    unpack_mtrr_def_type_t(&saved_state->mtrr_def_type, CASM_FUNCCALL(rdmsr64,MSR_MTRRdefType));
 
     /* number variable MTTRRs */
-    //mtrr_cap.raw = rdmsr64(MSR_MTRRcap);
-    unpack_mtrr_cap_t(&mtrr_cap, rdmsr64(MSR_MTRRcap));
+    //mtrr_cap.raw = CASM_FUNCCALL(rdmsr64,MSR_MTRRcap);
+    unpack_mtrr_cap_t(&mtrr_cap, CASM_FUNCCALL(rdmsr64,MSR_MTRRcap));
     if ( mtrr_cap.vcnt > MAX_VARIABLE_MTRRS ) {
         /* print warning but continue saving what we can */
         /* (set_mem_type() won't exceed the array, so we're safe doing this) */
@@ -336,13 +336,13 @@ void xmhfhw_cpu_x86_save_mtrrs(mtrr_state_t *saved_state)
     /* physmask's and physbase's */
     for ( ndx = 0; ndx < saved_state->num_var_mtrrs; ndx++ ) {
         //saved_state->mtrr_physmasks[ndx].raw =
-        //    rdmsr64(MTRR_PHYS_MASK0_MSR + ndx*2);
+        // CASM_FUNCCALL(rdmsr64,MTRR_PHYS_MASK0_MSR + ndx*2);
         unpack_mtrr_physmask_t(&saved_state->mtrr_physmasks[ndx],
-                               rdmsr64(MTRR_PHYS_MASK0_MSR + ndx*2));
+ CASM_FUNCCALL(rdmsr64,MTRR_PHYS_MASK0_MSR + ndx*2));
         //saved_state->mtrr_physbases[ndx].raw =
-        //    rdmsr64(MTRR_PHYS_BASE0_MSR + ndx*2);
+        // CASM_FUNCCALL(rdmsr64,MTRR_PHYS_BASE0_MSR + ndx*2);
         unpack_mtrr_physbase_t(&saved_state->mtrr_physbases[ndx],
-                               rdmsr64(MTRR_PHYS_BASE0_MSR + ndx*2));
+ CASM_FUNCCALL(rdmsr64,MTRR_PHYS_BASE0_MSR + ndx*2));
     }
 
     print_mtrrs(saved_state);
@@ -364,8 +364,8 @@ bool validate_mtrrs(const mtrr_state_t *saved_state)
     //print_mtrrs(saved_state);
 
     /* number variable MTRRs */
-    //mtrr_cap.raw = rdmsr64(MSR_MTRRcap);
-    unpack_mtrr_cap_t(&mtrr_cap, rdmsr64(MSR_MTRRcap));
+    //mtrr_cap.raw = CASM_FUNCCALL(rdmsr64,MSR_MTRRcap);
+    unpack_mtrr_cap_t(&mtrr_cap, CASM_FUNCCALL(rdmsr64,MSR_MTRRcap));
     if ( mtrr_cap.vcnt < saved_state->num_var_mtrrs ) {
         //_XDPRINTF_("actual # var MTRRs (%d) < saved # (%d)\n",
         //       mtrr_cap.vcnt, saved_state->num_var_mtrrs);
@@ -496,15 +496,15 @@ void xmhfhw_cpu_x86_restore_mtrrs(mtrr_state_t *saved_state)
 
     /* physmask's and physbase's */
     for ( ndx = 0; ndx < saved_state->num_var_mtrrs; ndx++ ) {
-        wrmsr64(MTRR_PHYS_MASK0_MSR + ndx*2,
+ CASM_FUNCCALL(wrmsr64,MTRR_PHYS_MASK0_MSR + ndx*2,
               pack_mtrr_physmask_t(&saved_state->mtrr_physmasks[ndx]));
-        wrmsr64(MTRR_PHYS_BASE0_MSR + ndx*2,
+ CASM_FUNCCALL(wrmsr64,MTRR_PHYS_BASE0_MSR + ndx*2,
               pack_mtrr_physbase_t(&saved_state->mtrr_physbases[ndx]));
     }
 
 
     /* IA32_MTRR_DEF_TYPE MSR */
-    wrmsr64(MSR_MTRRdefType, pack_mtrr_def_type_t(&saved_state->mtrr_def_type));
+ CASM_FUNCCALL(wrmsr64,MSR_MTRRdefType, pack_mtrr_def_type_t(&saved_state->mtrr_def_type));
 }
 
 

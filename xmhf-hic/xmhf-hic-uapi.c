@@ -128,7 +128,7 @@ void __xmhfhic_rtm_uapihandler(slab_params_t *sp){
     //            __func__, (u32)cpuid,
     //           uapicall, uapicall_num, uapicall_subnum,
     //           iparams, oparams,
-    //           src_slabid, cpuid, read_cr3());
+    //           src_slabid, cpuid, CASM_FUNCCALL(read_cr3,));
 
     //checks
     //1. src_slabid is a hypervisor slab
@@ -231,11 +231,11 @@ static void __xmhfhic_rtm_uapihandler_cpustate(slab_params_t *sp){
             #if !defined(__XMHF_VERIFICATION__)
             {
                 u64 encoding = ((u64)sp->in_out_params[3] << 32) | (u64)sp->in_out_params[2];
-                u64 value = xmhfhw_cpu_x86vmx_vmread(encoding);
+                u64 value = CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmread,encoding);
                 sp->in_out_params[5] = (value >> 32);
                 sp->in_out_params[4] = (u32)value;
             }
-            // *(u64 *)oparams = xmhfhw_cpu_x86vmx_vmread(iparams);
+            // *(u64 *)oparams = CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmread,iparams);
             #endif // defined
 
         }
@@ -261,7 +261,7 @@ static void __xmhfhic_rtm_uapihandler_cpustate(slab_params_t *sp){
             {
               u64 encoding = ((u64)sp->in_out_params[3] << 32) | sp->in_out_params[2];
               u64 value = ((u64)sp->in_out_params[5] << 32) | sp->in_out_params[4];
-              xmhfhw_cpu_x86vmx_vmwrite(encoding, value);
+ CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,encoding, value);
             }
             #endif
         }
@@ -339,7 +339,7 @@ static void __xmhfhic_rtm_uapihandler_cpustate(slab_params_t *sp){
             {
                 u32 msr = sp->in_out_params[2];
                 u64 value = ((u64)sp->in_out_params[4] << 32) | sp->in_out_params[3];
-                wrmsr64(msr, value);
+ CASM_FUNCCALL(wrmsr64,msr, value);
             }
             #endif
         }
@@ -378,11 +378,11 @@ static void __xmhfhic_rtm_uapihandler_cpustate(slab_params_t *sp){
             #if !defined (__XMHF_VERIFICATION__)
             {
                 u32 msr = sp->in_out_params[2];
-                u64 value = rdmsr64(msr);
+                u64 value = CASM_FUNCCALL(rdmsr64,msr);
                 sp->in_out_params[4] = value >> 32;
                 sp->in_out_params[3] = (u32)value;
             }
-            // *(u64 *)oparams = rdmsr64((u32)iparams);
+            // *(u64 *)oparams = CASM_FUNCCALL(rdmsr64,(u32)iparams);
             #endif
         }
         break;
