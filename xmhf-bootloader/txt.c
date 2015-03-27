@@ -128,14 +128,14 @@ bool set_mtrrs_for_acmod(acm_hdr_t *hdr)
     /* disable interrupts */
     eflags = read_eflags(CASM_NOPARAM);
 
-    xmhfhw_cpu_disable_intr();
+    xmhfhw_cpu_disable_intr(CASM_NOPARAM);
 
     /* save CR0 then disable cache (CRO.CD=1, CR0.NW=0) */
     cr0 = read_cr0(CASM_NOPARAM);
     write_cr0((cr0 & ~CR0_NW) | CR0_CD);
 
     /* flush caches */
-    wbinvd();
+    wbinvd(CASM_NOPARAM);
 
     /* save CR4 and disable global pages (CR4.PGE=0) */
     cr4 = read_cr4(CASM_NOPARAM);
@@ -155,7 +155,7 @@ bool set_mtrrs_for_acmod(acm_hdr_t *hdr)
      */
 
     /* flush caches */
-    wbinvd();
+    wbinvd(CASM_NOPARAM);
 
     /* enable MTRRs */
     set_all_mtrrs(true);

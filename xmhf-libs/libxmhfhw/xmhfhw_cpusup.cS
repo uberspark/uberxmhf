@@ -300,7 +300,7 @@ CASM_FUNCDEF(void, wbinvd,
     xmhfhwm_cpu_insn_wbinvd();
     xmhfhwm_cpu_insn_ret();
 },
-void)
+void *noparam)
 
 
 //__attribute__((naked)) uint32_t bsrl(uint32_t mask)
@@ -318,7 +318,7 @@ CASM_FUNCDEF(void, xmhfhw_cpu_disable_intr,
     xmhfhwm_cpu_insn_cli();
     xmhfhwm_cpu_insn_ret();
 },
-void)
+void *noparam)
 
 
 //__attribute__((naked)) void enable_intr(void)
@@ -327,7 +327,7 @@ CASM_FUNCDEF(void, enable_intr,
     xmhfhwm_cpu_insn_sti();
     xmhfhwm_cpu_insn_ret();
 },
-void)
+void *noparam)
 
 
 
@@ -458,7 +458,7 @@ CASM_FUNCDEF(u64, xmhf_baseplatform_arch_x86_getgdtbase,
         xmhfhwm_cpu_insn_addl_imm_esp(0x8);
         xmhfhwm_cpu_insn_ret();
 },
-void)
+void *noparam)
 
 
 
@@ -475,7 +475,7 @@ CASM_FUNCDEF(u64, xmhf_baseplatform_arch_x86_getidtbase,
         xmhfhwm_cpu_insn_addl_imm_esp(0x8);
         xmhfhwm_cpu_insn_ret();
 },
-void)
+void *noparam)
 
 
 //////
@@ -504,7 +504,7 @@ CASM_FUNCDEF(u64,  xmhf_baseplatform_arch_x86_gettssbase,
     xmhfhwm_cpu_insn_addl_imm_esp(0x8);
     xmhfhwm_cpu_insn_ret();
 },
-void)
+void *noparam)
 
 
 
