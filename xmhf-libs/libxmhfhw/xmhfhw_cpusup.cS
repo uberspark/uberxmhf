@@ -237,7 +237,7 @@ CASM_FUNCDEF(u32, read_segreg_ds,
   xmhfhwm_cpu_insn_movl_ds_eax();
   xmhfhwm_cpu_insn_ret();
 },
-void)
+void *noparam)
 
 
 //__attribute__((naked)) u32 read_segreg_es(void)
@@ -246,7 +246,7 @@ CASM_FUNCDEF(u32, read_segreg_es,
   xmhfhwm_cpu_insn_movl_es_eax();
   xmhfhwm_cpu_insn_ret();
 },
-void)
+void *noparam)
 
 
 //__attribute__((naked)) u32 read_segreg_fs(void)
@@ -255,7 +255,7 @@ CASM_FUNCDEF(u32, read_segreg_fs,
   xmhfhwm_cpu_insn_movl_fs_eax();
   xmhfhwm_cpu_insn_ret();
 },
-void)
+void *noparam)
 
 
 //__attribute__((naked)) u32 read_segreg_gs(void)
@@ -264,7 +264,7 @@ CASM_FUNCDEF(u32, read_segreg_gs,
   xmhfhwm_cpu_insn_movl_gs_eax();
   xmhfhwm_cpu_insn_ret();
 },
-void)
+void *noparam)
 
 
 //__attribute__((naked)) u32 read_segreg_ss(void)
@@ -290,6 +290,8 @@ CASM_FUNCDEF(u32, read_tr_sel,
   xmhfhwm_cpu_insn_ret();
 },
 void *noparam)
+
+
 
 
 //__attribute__((naked)) void wbinvd(void)
