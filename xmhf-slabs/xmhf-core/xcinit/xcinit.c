@@ -598,14 +598,14 @@ void slab_main(slab_params_t *sp){
     static u64 cpucount=0;
     static u32 __xcinit_smplock = 1;
 
-	_XDPRINTF_("%s[%u]: Got control: ESP=%08x\n", __func__, (u16)sp->cpuid, read_esp(CASM_NOPARAM));
+	_XDPRINTF_("%s[%u]: Got control: ESP=%08x\n", __func__, (u16)sp->cpuid, CASM_FUNCCALL(read_esp,CASM_NOPARAM));
 
     if(!isbsp){
         _XDPRINTF_("%s[%u]: AP Halting!\n", __func__, (u16)sp->cpuid);
 
-        spin_lock(&__xcinit_smplock);
+ CASM_FUNCCALL(spin_lock,&__xcinit_smplock);
         cpucount++;
-        spin_unlock(&__xcinit_smplock);
+ CASM_FUNCCALL(spin_unlock,&__xcinit_smplock);
 
         HALT();
     }else{
@@ -775,7 +775,7 @@ void slab_main(slab_params_t *sp){
         spl.src_slabid = XMHF_HYP_SLAB_XCINIT;
         spl.dst_slabid = XMHF_GUEST_SLAB_XCGUESTSLAB;
 
-        _XDPRINTF_("%s[%u]: Proceeding to call xcguestslab; ESP=%08x\n", __func__, (u16)sp->cpuid, read_esp(CASM_NOPARAM));
+        _XDPRINTF_("%s[%u]: Proceeding to call xcguestslab; ESP=%08x\n", __func__, (u16)sp->cpuid, CASM_FUNCCALL(read_esp,CASM_NOPARAM));
 
         XMHF_SLAB_CALLNEW(&spl);
     }

@@ -78,7 +78,7 @@ static void _xcinit_dotests(u64 cpuid){
 
 
         for(i=0; i < iterations; i++){
-            tscbefore = rdtsc64();
+            tscbefore = CASM_FUNCCALL(rdtsc64,);
 
             {
 
@@ -90,7 +90,7 @@ static void _xcinit_dotests(u64 cpuid){
 
             }
 
-            tscafter = rdtsc64();
+            tscafter = CASM_FUNCCALL(rdtsc64,);
             tscavg += (tscafter - tscbefore);
         }
 
@@ -108,7 +108,7 @@ static void _xcinit_dotests(u64 cpuid){
     u64 *outputval = (u64 *)oparams;
 
 	_XDPRINTF_("%s[%u]: Got control: RSP=%016llx\n",
-                __func__, (u32)cpuid, read_rsp());
+                __func__, (u32)cpuid, CASM_FUNCCALL(read_rsp,));
 
 	_XDPRINTF_("%s[%u]: inputval=%x\n",
                 __func__, (u32)cpuid, *inputval);
@@ -124,7 +124,7 @@ void slab_main(slab_params_t *sp){
     u32 *outputval = (u32 *)sp->in_out_params[1];
 
 	_XDPRINTF_("%s[%u]: Got control: ESP=%016llx\n",
-                __func__, (u16)sp->cpuid, read_esp(CASM_NOPARAM));
+                __func__, (u16)sp->cpuid, CASM_FUNCCALL(read_esp,CASM_NOPARAM));
 
 	_XDPRINTF_("%s[%u]: inputval=%x\n",
                 __func__, (u16)sp->cpuid, inputval);

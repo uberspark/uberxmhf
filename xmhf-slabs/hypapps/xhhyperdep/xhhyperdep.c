@@ -225,7 +225,7 @@ void slab_main(slab_params_t *sp){
 
 
 	_XDPRINTF_("%s[%u]: Got control, cbtype=%x: ESP=%08x\n",
-                __func__, (u16)sp->cpuid, hcbp->cbtype, read_esp(CASM_NOPARAM));
+                __func__, (u16)sp->cpuid, hcbp->cbtype, CASM_FUNCCALL(read_esp,CASM_NOPARAM));
 
 
     switch(hcbp->cbtype){

@@ -172,18 +172,18 @@ void xmhf_baseplatform_arch_x86_pci_type1_read(u32 bus, u32 device, u32 function
 		return;
 
   //encode and send the 32-bit type-1 address to PCI address port
-	outl(PCI_TYPE1_ADDRESS(bus, device, function, index), PCI_CONFIG_ADDR_PORT);
+ CASM_FUNCCALL(outl,PCI_TYPE1_ADDRESS(bus, device, function, index), PCI_CONFIG_ADDR_PORT);
 
   //read a byte, word or dword depending on len
   switch (len) {
   	case 1:	//byte
-          *value = inb(PCI_CONFIG_DATA_PORT + (index & 3));
+          *value = CASM_FUNCCALL(inb,PCI_CONFIG_DATA_PORT + (index & 3));
           break;
   	case 2:	//word
-          *value = inw(PCI_CONFIG_DATA_PORT + (index & 2));
+          *value = CASM_FUNCCALL(inw,PCI_CONFIG_DATA_PORT + (index & 2));
           break;
   	case 4:	//dword
-          *value = inl(PCI_CONFIG_DATA_PORT);
+          *value = CASM_FUNCCALL(inl,PCI_CONFIG_DATA_PORT);
           break;
   }
 
@@ -203,20 +203,20 @@ void xmhf_baseplatform_arch_x86_pci_type1_write(u32 bus, u32 device, u32 functio
 		return;
 
   //encode and send the 32-bit type-1 address to PCI address port
-	outl(PCI_TYPE1_ADDRESS(bus, device, function, index), PCI_CONFIG_ADDR_PORT);
+ CASM_FUNCCALL(outl,PCI_TYPE1_ADDRESS(bus, device, function, index), PCI_CONFIG_ADDR_PORT);
 
   //write a byte, word or dword depending on len
 	switch (len) {
   	case 1:	//byte
-      outb((u8)value, PCI_CONFIG_DATA_PORT + (index & 3));
+ CASM_FUNCCALL(outb,(u8)value, PCI_CONFIG_DATA_PORT + (index & 3));
       break;
 
 		case 2:	//word
-      outw((u16)value, PCI_CONFIG_DATA_PORT + (index & 2));
+ CASM_FUNCCALL(outw,(u16)value, PCI_CONFIG_DATA_PORT + (index & 2));
       break;
 
 	  case 4:	//dword
-      outl((u32)value, PCI_CONFIG_DATA_PORT);
+ CASM_FUNCCALL(outl,(u32)value, PCI_CONFIG_DATA_PORT);
       break;
   }
 
@@ -231,10 +231,10 @@ void xmhfhw_platform_bus_init(void){
   u32 tmp;
 
 	//save value at PCI_CONFIG_ADDR_PORT
-  tmp = inl(PCI_CONFIG_ADDR_PORT);
+  tmp = CASM_FUNCCALL(inl,PCI_CONFIG_ADDR_PORT);
 
   //select command register on bus 0, device 0 and function 0
-  outl(0x80000000, PCI_CONFIG_ADDR_PORT);
+ CASM_FUNCCALL(outl,0x80000000, PCI_CONFIG_ADDR_PORT);
 
   //reading PCI_CONFIG_ADDR_PORT should return with bit 31 set
 	//if system supports type-1 access
@@ -245,6 +245,6 @@ void xmhfhw_platform_bus_init(void){
   }
 
   //restore previous value at PCI_CONFIG_ADDR_PORT
-  outl(tmp, PCI_CONFIG_ADDR_PORT);
+ CASM_FUNCCALL(outl,tmp, PCI_CONFIG_ADDR_PORT);
 }
 
