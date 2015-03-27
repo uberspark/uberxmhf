@@ -66,7 +66,7 @@ CASM_FUNCDEF_FULL(.hic_entrystub, 4096, void, xcprimeon_arch_entry,
     xmhfhwm_cpu_insn_call(slab_main);
     xmhfhwm_cpu_insn_hlt();
 },
-void)
+void *noparam)
 
 
 //__attribute__((naked)) void _ap_bootstrap_code(void) {
@@ -84,7 +84,7 @@ CASM_FUNCDEF(void, _ap_bootstrap_code,
     xmhfhwm_cpu_insn_hlt();
     CASM_BALIGN(4096);
 },
-void)
+void *noparam)
 
 
 //bool __xmhfhic_ap_entry(void) __attribute__((naked)){
@@ -139,7 +139,7 @@ CASM_FUNCDEF(bool, __xmhfhic_ap_entry,
 
     xmhfhwm_cpu_insn_jmp(__xmhfhic_smp_cpu_x86_smpinitialize_commonstart);
 },
-void)
+void *noparam)
 
 
 //////////////////////////////////////////////////////////////////////////////
@@ -181,7 +181,7 @@ u32 ds_sel)
         xmhfhwm_cpu_insn_addl_imm_esp(0x8); \
         xmhfhwm_cpu_insn_iretl(); \
     },\
-    void) \
+    void *noparam) \
 
 #define XMHF_EXCEPTION_HANDLER_DEFINE_WITHERRORCODE(vector) 												\
 	CASM_FUNCDEF(void, __xmhf_exception_handler_##vector, 					\
@@ -196,7 +196,7 @@ u32 ds_sel)
         xmhfhwm_cpu_insn_addl_imm_esp(0x8); \
         xmhfhwm_cpu_insn_iretl(); \
     },\
-    void) \
+    void *noparam) \
 
 
 
@@ -248,7 +248,7 @@ CASM_FUNCDEF(void, __xmhfhic_rtm_intercept_stub,
     xmhfhwm_cpu_insn_vmresume();
     xmhfhwm_cpu_insn_hlt();
 },
-void)
+void *noparam)
 
 
 
@@ -442,7 +442,7 @@ CASM_FUNCDEF(void, __xmhfhic_rtm_trampoline_stub,
 
     */
 },
-void)
+void *noparam)
 
 
 
@@ -546,7 +546,7 @@ CASM_FUNCDEF(void, __xmhfhic_trampoline_slabxfer_h2g,
 
 */
 },
-void)
+void *noparam)
 
 
 
