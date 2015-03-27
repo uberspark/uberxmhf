@@ -1896,9 +1896,9 @@ static bool __xmhfhic_x86vmx_setupvmxstate(u64 cpuid){
 	xmhfhw_cpu_x86vmx_vmwrite(VMCS_HOST_TR_SELECTOR, read_tr_sel(CASM_NOPARAM));
 	//_XDPRINTF_("%s: read_tr_sel = %08x\n", __func__, read_tr_sel(CASM_NOPARAM));
 	//_XDPRINTF_("%s: HOST TR SELECTOR = %08x\n", __func__, xmhfhw_cpu_x86vmx_vmread(VMCS_HOST_TR_SELECTOR));
-	xmhfhw_cpu_x86vmx_vmwrite(VMCS_HOST_GDTR_BASE, xmhf_baseplatform_arch_x86_getgdtbase());
-	xmhfhw_cpu_x86vmx_vmwrite(VMCS_HOST_IDTR_BASE, xmhf_baseplatform_arch_x86_getidtbase());
-	xmhfhw_cpu_x86vmx_vmwrite(VMCS_HOST_TR_BASE, xmhf_baseplatform_arch_x86_gettssbase());
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_HOST_GDTR_BASE, xmhf_baseplatform_arch_x86_getgdtbase(CASM_NOPARAM));
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_HOST_IDTR_BASE, xmhf_baseplatform_arch_x86_getidtbase(CASM_NOPARAM));
+	xmhfhw_cpu_x86vmx_vmwrite(VMCS_HOST_TR_BASE, xmhf_baseplatform_arch_x86_gettssbase(CASM_NOPARAM));
 
 	xmhfhw_cpu_x86vmx_vmwrite(VMCS_HOST_RIP, __xmhfhic_rtm_intercept_stub);
 
