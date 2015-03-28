@@ -42,7 +42,7 @@ XMHF_HIC_OBJECTS := $(patsubst %.cS, %.o, $(XMHF_HIC_OBJECTS))
 # folder where objects go
 XMHF_HIC_OBJECTS_DIR := _objs_$(XMHF_HIC_NAME)
 
-LINKER_SCRIPT_INPUT := $(XMHF_DIR)/xmhf-slabs/xmhf-hic/xmhf-hic.lscript
+LINKER_SCRIPT_INPUT := $(XMHF_DIR)/xmhf-slabs/geec-prime/xmhf-hic.lscript
 LINKER_SCRIPT_OUTPUT := $(XMHF_HIC_NAME).lds
 
 
