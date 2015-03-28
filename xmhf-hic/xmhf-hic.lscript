@@ -67,6 +67,13 @@ SECTIONS
         . = ALIGN(0x200000);
 	} >hicmem =0x9090
 
+	.hicstack : {
+		*(.stackhdr)
+		*(.stack)
+		*(.note.GNU-stack)
+        . = ALIGN(0x200000);
+	} >hicmem =0x0000
+
 	.hicdata : {
         *(.sharedro_xcbootinfo)
         *(.sharedro_xcbootinfoptr)
@@ -78,14 +85,6 @@ SECTIONS
 		*(.rodata.str1.1)
 		*(.comment)
 		*(.eh_frame)
-        . = ALIGN(0x200000);
-	} >hicmem =0x0000
-
-
-	.hicstack : {
-		*(.stackhdr)
-		*(.stack)
-		*(.note.GNU-stack)
         . = ALIGN(0x200000);
 	} >hicmem =0x0000
 
