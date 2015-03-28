@@ -1042,7 +1042,7 @@ void cstartup(multiboot_info_t *mbi){
 
     //fill in bootinfo
     {
-        xslbootinfo = (XMHF_BOOTINFO *)((u32)hypervisor_image_baseaddress);
+        xslbootinfo = (XMHF_BOOTINFO *)((u32)hypervisor_image_baseaddress + PAGE_SIZE_2M);
         _XDPRINTF_("xmhf-bootloader: xslbootinfo=%08x, magic=%x\n", (u32)xslbootinfo, xslbootinfo->magic);
         HALT_ON_ERRORCOND(xslbootinfo->magic == RUNTIME_PARAMETER_BLOCK_MAGIC);
         xslbootinfo->memmapinfo_numentries = grube820list_numentries;

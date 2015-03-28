@@ -58,13 +58,6 @@ SECTIONS
 {
 	. = 0;
 
-    .hicsharedro : {
-        *(.sharedro_xcbootinfo)
-        *(.sharedro_xcbootinfoptr)
-        *(.sharedro)
-        . = ALIGN(0x200000);
-    } >hicmem =0x0000
-
 	.hiccode : {
 		*(.hic_mleheader)
 		. = ALIGN(1);
@@ -75,6 +68,9 @@ SECTIONS
 	} >hicmem =0x9090
 
 	.hicrwdata : {
+        *(.sharedro_xcbootinfo)
+        *(.sharedro_xcbootinfoptr)
+        *(.sharedro)
 		*(.rwdatahdr)
 		*(.data)
 		*(.bss)
@@ -110,9 +106,9 @@ SECTIONS
 	* this part out to see what sections end up in the output
 	* which are not handled above, and handle them.
 	*/
-/*	.unaccounted : {
+	.unaccounted : {
 	*(*)
 	} >unaccounted
-*/
+
 
 }
