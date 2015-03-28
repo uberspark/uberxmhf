@@ -67,23 +67,20 @@ SECTIONS
         . = ALIGN(0x200000);
 	} >hicmem =0x9090
 
-	.hicrwdata : {
+	.hicdata : {
         *(.sharedro_xcbootinfo)
         *(.sharedro_xcbootinfoptr)
         *(.sharedro)
 		*(.rwdatahdr)
 		*(.data)
 		*(.bss)
-        . = ALIGN(0x200000);
-	} >hicmem =0x0000
-
-	.hicrodata : {
 		*(.rodata)
 		*(.rodata.str1.1)
 		*(.comment)
 		*(.eh_frame)
         . = ALIGN(0x200000);
 	} >hicmem =0x0000
+
 
 	.hicstack : {
 		*(.stackhdr)
