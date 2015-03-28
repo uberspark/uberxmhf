@@ -172,7 +172,7 @@
 	#define __TARGET_SIZE_BOOTLOADER		0x00200000		//2MB
 
 	//physical address of XMHF secure loader
-	#define __TARGET_BASE_SL				0x02200000		//34MB
+	#define __TARGET_BASE_SL				0x02000000		//32MB
 	#define __TARGET_SIZE_SL				0x00200000
 
 
