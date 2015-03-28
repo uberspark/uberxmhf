@@ -70,11 +70,13 @@ static void _xcexhub_unhandled(x86vmx_exception_frame_t *exframe){
     _XDPRINTF_("errorcode=0x%08x\n", exframe->error_code);
     _XDPRINTF_("CS:EIP:EFLAGS = 0x%08x:0x%08x:0x%08x\n", exframe->orig_cs, exframe->orig_rip, exframe->orig_rflags);
     _XDPRINTF_("SS:ESP = 0x%08x:0x%08x\n", exframe->orig_ss, exframe->orig_rsp);
-    _XDPRINTF_("CR0=0x%08x, CR2=0x%08x\n", read_cr0(), read_cr2());
-    _XDPRINTF_("CR3=0x%08x, CR4=0x%08x\n", read_cr3(), read_cr4());
-    _XDPRINTF_("CS=0x%04x, DS=0x%04x, ES=0x%04x, SS=0x%04x\n", (u16)read_segreg_cs(), (u16)read_segreg_ds(), (u16)read_segreg_es(), (u16)read_segreg_ss());
-    _XDPRINTF_("FS=0x%04x, GS=0x%04x\n", (u16)read_segreg_fs(), (u16)read_segreg_gs());
-    _XDPRINTF_("TR=0x%04x\n", (u16)read_tr_sel());
+    _XDPRINTF_("CR0=0x%08x, CR2=0x%08x\n", CASM_FUNCCALL(read_cr0,CASM_NOPARAM), CASM_FUNCCALL(read_cr2,CASM_NOPARAM));
+    _XDPRINTF_("CR3=0x%08x, CR4=0x%08x\n", CASM_FUNCCALL(read_cr3,CASM_NOPARAM), CASM_FUNCCALL(read_cr4,CASM_NOPARAM));
+    _XDPRINTF_("CS=0x%04x, DS=0x%04x, ES=0x%04x, SS=0x%04x\n",
+               (u16)read_segreg_cs(CASM_NOPARAM), (u16)read_segreg_ds(CASM_NOPARAM),
+               (u16)read_segreg_es(CASM_NOPARAM), (u16)read_segreg_ss(CASM_NOPARAM));
+    _XDPRINTF_("FS=0x%04x, GS=0x%04x\n", (u16)read_segreg_fs(CASM_NOPARAM), (u16)read_segreg_gs(CASM_NOPARAM));
+    _XDPRINTF_("TR=0x%04x\n", (u16)read_tr_sel(CASM_NOPARAM));
     _XDPRINTF_("EAX=0x%08x, EBX=0x%08x\n", exframe->eax, exframe->ebx);
     _XDPRINTF_("ECX=0x%08x, EDX=0x%08x\n", exframe->ecx, exframe->edx);
     _XDPRINTF_("ESI=0x%08x, EDI=0x%08x\n", exframe->esi, exframe->edi);
@@ -99,7 +101,7 @@ void slab_main(slab_params_t *sp){
     x86vmx_exception_frame_t *exframe = (x86vmx_exception_frame_t *)&sp->in_out_params[0];
 
 	_XDPRINTF_("%s[%u]: Got control: ESP=%08x\n",
-                __func__, (u16)sp->cpuid, read_esp());
+                __func__, (u16)sp->cpuid, CASM_FUNCCALL(read_esp,CASM_NOPARAM));
 
 
    	switch(exframe->vector){

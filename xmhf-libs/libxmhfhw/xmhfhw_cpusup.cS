@@ -53,18 +53,22 @@
 #include <xmhf-debug.h>
 
 
-__attribute__((naked)) void cpu_relax(void){
+//__attribute__((naked)) void cpu_relax(void)
+CASM_FUNCDEF(void, cpu_relax,
+{
     xmhfhwm_cpu_insn_pause();
     xmhfhwm_cpu_insn_ret();
-}
+},
+void *noparam)
 
 
-__attribute__((naked)) void xmhfhw_cpu_cpuid(u32 op,    //0xC
-                                             u32 *eax,  //0x10
-                                             u32 *ebx,  //0x14
-                                             u32 *ecx,  //0x18
-                                             u32 *edx){ //0x1C
-
+//__attribute__((naked)) void xmhfhw_cpu_cpuid(u32 op,    //0xC
+//                                             u32 *eax,  //0x10
+//                                             u32 *ebx,  //0x14
+//                                             u32 *ecx,  //0x18
+//                                             u32 *edx){ //0x1C
+CASM_FUNCDEF(void, xmhfhw_cpu_cpuid,
+{
     xmhfhwm_cpu_insn_pushl_esi();
     xmhfhwm_cpu_insn_pushl_ebx();
 
@@ -86,89 +90,129 @@ __attribute__((naked)) void xmhfhw_cpu_cpuid(u32 op,    //0xC
     xmhfhwm_cpu_insn_popl_eax();
     xmhfhwm_cpu_insn_popl_esi();
     xmhfhwm_cpu_insn_ret();
-}
+},
+u32 op,
+u32 *eax,
+u32 *ebx,
+u32 *ecx,
+u32 *edx)
 
 
-
-
-__attribute__((naked)) uint64_t rdtsc64(void){
+//__attribute__((naked)) uint64_t rdtsc64(void)
+CASM_FUNCDEF(uint64_t, rdtsc64,
+{
     xmhfhwm_cpu_insn_rdtsc();
     xmhfhwm_cpu_insn_ret();
-}
+},
+void *noparam)
 
 
-__attribute__((naked)) u32 read_eflags(void){
+//__attribute__((naked)) u32 read_eflags(void)
+CASM_FUNCDEF(u32, read_eflags,
+{
     xmhfhwm_cpu_insn_pushfl();
     xmhfhwm_cpu_insn_popl_eax();
     xmhfhwm_cpu_insn_ret();
-}
+},
+void *noparam)
 
 
-__attribute__((naked)) void write_eflags(u32 eflags){
+//__attribute__((naked)) void write_eflags(u32 eflags){
+CASM_FUNCDEF(void, write_eflags,
+{
     xmhfhwm_cpu_insn_pushl_mesp(0x4);
     xmhfhwm_cpu_insn_popfl();
     xmhfhwm_cpu_insn_ret();
-}
-
-
-
+},
+u32 eflags)
 
 
 /* Calls to read and write control registers */
-__attribute__((naked)) u64 read_cr0(void){
+//__attribute__((naked)) u64 read_cr0(void)
+CASM_FUNCDEF(u64, read_cr0,
+{
     xmhfhwm_cpu_insn_xorl_edx_edx();
     xmhfhwm_cpu_insn_movl_cr0_eax();
     xmhfhwm_cpu_insn_ret();
-}
+},
+void *noparam)
 
 
-__attribute__((naked)) void write_cr0(u64 val){
+//__attribute__((naked)) void write_cr0(u64 val)
+CASM_FUNCDEF(void, write_cr0,
+{
   xmhfhwm_cpu_insn_movl_mesp_eax(0x4);
   xmhfhwm_cpu_insn_movl_eax_cr0();
   xmhfhwm_cpu_insn_ret();
-}
+},
+u64 val)
 
-__attribute__((naked)) u32 read_cr2(void){
+
+//__attribute__((naked)) u32 read_cr2(void)
+CASM_FUNCDEF(u32, read_cr2,
+{
   xmhfhwm_cpu_insn_movl_cr2_eax();
   xmhfhwm_cpu_insn_ret();
-}
+},
+void *noparam)
 
-__attribute__((naked)) u64 read_cr3(void){
+
+//__attribute__((naked)) u64 read_cr3(void){
+CASM_FUNCDEF(u64, read_cr3,
+{
     xmhfhwm_cpu_insn_xorl_edx_edx();
     xmhfhwm_cpu_insn_movl_cr3_eax();
     xmhfhwm_cpu_insn_ret();
-}
+},
+void *noparam)
 
-__attribute__((naked)) u64 read_rsp(void){
+//__attribute__((naked)) u64 read_rsp(void)
+CASM_FUNCDEF(u64, read_rsp,
+{
     xmhfhwm_cpu_insn_xorl_edx_edx();
     xmhfhwm_cpu_insn_movl_esp_eax();
     xmhfhwm_cpu_insn_ret();
-}
+},
+void *noparam)
 
-__attribute__((naked)) u32 read_esp(void){
+
+//__attribute__((naked)) u32 read_esp(void)
+CASM_FUNCDEF(u32, read_esp,
+{
     xmhfhwm_cpu_insn_movl_esp_eax();
     xmhfhwm_cpu_insn_ret();
-}
+},
+void *noparam)
 
 
-__attribute__((naked)) void write_cr3(u64 val){
+//__attribute__((naked)) void write_cr3(u64 val)
+CASM_FUNCDEF(void, write_cr3,
+{
   xmhfhwm_cpu_insn_movl_mesp_eax(0x4);
   xmhfhwm_cpu_insn_movl_eax_cr3();
   xmhfhwm_cpu_insn_ret();
-}
+},
+u64 val)
 
 
-__attribute__((naked)) u64 read_cr4(void){
+//__attribute__((naked)) u64 read_cr4(void)
+CASM_FUNCDEF(u64, read_cr4,
+{
     xmhfhwm_cpu_insn_xorl_edx_edx();
     xmhfhwm_cpu_insn_movl_cr4_eax();
     xmhfhwm_cpu_insn_ret();
-}
+},
+void *noparam)
 
-__attribute__((naked)) void write_cr4(u64 val){
+
+//__attribute__((naked)) void write_cr4(u64 val)
+CASM_FUNCDEF(void, write_cr4,
+{
   xmhfhwm_cpu_insn_movl_mesp_eax(0x4);
   xmhfhwm_cpu_insn_movl_eax_cr4();
   xmhfhwm_cpu_insn_ret();
-}
+},
+u64 val)
 
 
 
@@ -179,36 +223,57 @@ __attribute__((naked)) void write_cr4(u64 val){
 
 
 //segment register access
-__attribute__((naked)) u32 read_segreg_cs(void){
+//__attribute__((naked)) u32 read_segreg_cs(void)
+CASM_FUNCDEF(u32, read_segreg_cs,
+{
   xmhfhwm_cpu_insn_movl_cs_eax();
   xmhfhwm_cpu_insn_ret();
-}
+},
+void *noparam)
 
-__attribute__((naked)) u32 read_segreg_ds(void){
+//__attribute__((naked)) u32 read_segreg_ds(void)
+CASM_FUNCDEF(u32, read_segreg_ds,
+{
   xmhfhwm_cpu_insn_movl_ds_eax();
   xmhfhwm_cpu_insn_ret();
-}
+},
+void *noparam)
 
-__attribute__((naked)) u32 read_segreg_es(void){
+
+//__attribute__((naked)) u32 read_segreg_es(void)
+CASM_FUNCDEF(u32, read_segreg_es,
+{
   xmhfhwm_cpu_insn_movl_es_eax();
   xmhfhwm_cpu_insn_ret();
-}
+},
+void *noparam)
 
-__attribute__((naked)) u32 read_segreg_fs(void){
+
+//__attribute__((naked)) u32 read_segreg_fs(void)
+CASM_FUNCDEF(u32, read_segreg_fs,
+{
   xmhfhwm_cpu_insn_movl_fs_eax();
   xmhfhwm_cpu_insn_ret();
-}
+},
+void *noparam)
 
-__attribute__((naked)) u32 read_segreg_gs(void){
+
+//__attribute__((naked)) u32 read_segreg_gs(void)
+CASM_FUNCDEF(u32, read_segreg_gs,
+{
   xmhfhwm_cpu_insn_movl_gs_eax();
   xmhfhwm_cpu_insn_ret();
+},
+void *noparam)
 
-}
 
-__attribute__((naked)) u32 read_segreg_ss(void){
+//__attribute__((naked)) u32 read_segreg_ss(void)
+CASM_FUNCDEF(u32, read_segreg_ss,
+{
   xmhfhwm_cpu_insn_movl_ss_eax();
   xmhfhwm_cpu_insn_ret();
-}
+},
+void *noparam)
 
 
 
@@ -217,65 +282,79 @@ __attribute__((naked)) u32 read_segreg_ss(void){
 
 
 
-__attribute__((naked)) u16 read_tr_sel(void){
+//__attribute__((naked)) u16 read_tr_sel(void)
+CASM_FUNCDEF(u32, read_tr_sel,
+{
   xmhfhwm_cpu_insn_xorl_eax_eax();
   xmhfhwm_cpu_insn_str_ax();
   xmhfhwm_cpu_insn_ret();
-}
+},
+void *noparam)
 
 
 
-__attribute__((naked)) void wbinvd(void)
+
+//__attribute__((naked)) void wbinvd(void)
+CASM_FUNCDEF(void, wbinvd,
 {
     xmhfhwm_cpu_insn_wbinvd();
     xmhfhwm_cpu_insn_ret();
-}
+},
+void *noparam)
 
 
-
-
-
-__attribute__((naked)) uint32_t bsrl(uint32_t mask)
+//__attribute__((naked)) uint32_t bsrl(uint32_t mask)
+CASM_FUNCDEF(uint32_t, bsrl,
 {
     xmhfhwm_cpu_insn_bsrl_mesp_eax(0x4);
     xmhfhwm_cpu_insn_ret();
-}
+},
+uint32_t mask)
 
 
-
-
-
-__attribute__((naked)) void xmhfhw_cpu_disable_intr(void){
+//__attribute__((naked)) void xmhfhw_cpu_disable_intr(void)
+CASM_FUNCDEF(void, xmhfhw_cpu_disable_intr,
+{
     xmhfhwm_cpu_insn_cli();
     xmhfhwm_cpu_insn_ret();
-}
+},
+void *noparam)
 
-__attribute__((naked)) void enable_intr(void)
+
+//__attribute__((naked)) void enable_intr(void)
+CASM_FUNCDEF(void, enable_intr,
 {
     xmhfhwm_cpu_insn_sti();
     xmhfhwm_cpu_insn_ret();
-}
+},
+void *noparam)
+
 
 
 //////
 //get extended control register (xcr)
-__attribute__((naked)) u64 xgetbv(u32 xcr_reg){
+//__attribute__((naked)) u64 xgetbv(u32 xcr_reg)
+CASM_FUNCDEF(u64, xgetbv,
+{
     xmhfhwm_cpu_insn_movl_mesp_ecx(0x4);
     xmhfhwm_cpu_insn_xgetbv();
     xmhfhwm_cpu_insn_ret();
-}
+},
+u32 xcr_reg)
 
 //////
 //set extended control register (xcr)
-void xsetbv(u32 xcr_reg, u64 value){
+//void xsetbv(u32 xcr_reg, u64 value){
+CASM_FUNCDEF(void, xsetbv,
+{
     xmhfhwm_cpu_insn_movl_mesp_ecx(0x4);
     xmhfhwm_cpu_insn_movl_mesp_eax(0x8);
     xmhfhwm_cpu_insn_movl_mesp_edx(0xC);
     xmhfhwm_cpu_insn_xsetbv();
     xmhfhwm_cpu_insn_ret();
-}
-
-
+},
+u32 xcr_reg,
+u64 value)
 
 /*
 void sysexitq(u64 rip, u64 rsp){
@@ -302,7 +381,9 @@ void sysexitq(u64 rip, u64 rsp){
 
 
 //////
-__attribute__((naked)) void spin_lock(volatile u32 *lock){
+//__attribute__((naked)) void spin_lock(volatile u32 *lock)
+CASM_FUNCDEF(void, spin_lock,
+{
     xmhfhwm_cpu_insn_movl_mesp_ecx(0x4);
     CASM_LABEL(splock);
     xmhfhwm_cpu_insn_btl_imm_mecx(0x0, 0x0);
@@ -311,78 +392,96 @@ __attribute__((naked)) void spin_lock(volatile u32 *lock){
     xmhfhwm_cpu_insn_btrl_imm_mecx(0x0,0x0);
     xmhfhwm_cpu_insn_jnc(splock);
     xmhfhwm_cpu_insn_ret();
-
-}
+},
+volatile u32 *lock)
 
 
 //////
-__attribute__((naked)) void spin_unlock(volatile u32 *lock){
+//__attribute__((naked)) void spin_unlock(volatile u32 *lock)
+CASM_FUNCDEF(void, spin_unlock,
+{
     xmhfhwm_cpu_insn_movl_mesp_ecx(0x4);
     xmhfhwm_cpu_insn_btsl_imm_mecx(0x0,0x0);
     xmhfhwm_cpu_insn_ret();
-}
+},
+volatile u32 *lock)
 
 
 
 //////
 //load CPU GDT
-__attribute__((naked)) void xmhfhw_cpu_loadGDT(arch_x86_gdtdesc_t *gdt_addr){
+//__attribute__((naked)) void xmhfhw_cpu_loadGDT(arch_x86_gdtdesc_t *gdt_addr)
+CASM_FUNCDEF(void, xmhfhw_cpu_loadGDT,
+{
     xmhfhwm_cpu_insn_movl_mesp_ecx(0x4);
     xmhfhwm_cpu_insn_lgdt_mecx(0x0);
     xmhfhwm_cpu_insn_ret();
-}
+},
+arch_x86_gdtdesc_t *gdt_addr)
 
 
 
 //////
 //load CPU TR
-__attribute__((naked)) void xmhfhw_cpu_loadTR(u32 tr_selector){
+//__attribute__((naked)) void xmhfhw_cpu_loadTR(u32 tr_selector)
+CASM_FUNCDEF(void, xmhfhw_cpu_loadTR,
+{
     xmhfhwm_cpu_insn_movl_mesp_eax(0x4);
     xmhfhwm_cpu_insn_ltr_ax();
     xmhfhwm_cpu_insn_ret();
-}
+},
+u32 tr_selector)
 
 
 
 //////
 //load CPU IDT
-__attribute__((naked)) void xmhfhw_cpu_loadIDT(arch_x86_idtdesc_t *idt_addr){
+//__attribute__((naked)) void xmhfhw_cpu_loadIDT(arch_x86_idtdesc_t *idt_addr)
+CASM_FUNCDEF(void, xmhfhw_cpu_loadIDT,
+{
     xmhfhwm_cpu_insn_movl_mesp_ecx(0x4);
     xmhfhwm_cpu_insn_lidt_mecx(0x0);
     xmhfhwm_cpu_insn_ret();
-}
+},
+arch_x86_idtdesc_t *idt_addr)
 
 
 
 //////
-__attribute__((naked)) u64 xmhf_baseplatform_arch_x86_getgdtbase(void){
+//__attribute__((naked)) u64 xmhf_baseplatform_arch_x86_getgdtbase(void)
+CASM_FUNCDEF(u64, xmhf_baseplatform_arch_x86_getgdtbase,
+{
 		xmhfhwm_cpu_insn_subl_imm_esp(0x8);
 		xmhfhwm_cpu_insn_sgdt_mesp(0x0);
 		xmhfhwm_cpu_insn_movl_mesp_eax(0x2);
 		xmhfhwm_cpu_insn_xorl_edx_edx();
         xmhfhwm_cpu_insn_addl_imm_esp(0x8);
         xmhfhwm_cpu_insn_ret();
-}
+},
+void *noparam)
 
 
 
 
 
 //////
-__attribute__((naked)) u64 xmhf_baseplatform_arch_x86_getidtbase(void){
+//__attribute__((naked)) u64 xmhf_baseplatform_arch_x86_getidtbase(void)
+CASM_FUNCDEF(u64, xmhf_baseplatform_arch_x86_getidtbase,
+{
 		xmhfhwm_cpu_insn_subl_imm_esp(0x8);
 		xmhfhwm_cpu_insn_sidt_mesp(0x0);
 		xmhfhwm_cpu_insn_movl_mesp_eax(0x2);
 		xmhfhwm_cpu_insn_xorl_edx_edx();
         xmhfhwm_cpu_insn_addl_imm_esp(0x8);
         xmhfhwm_cpu_insn_ret();
-}
-
-
+},
+void *noparam)
 
 
 //////
-__attribute__((naked)) u64  xmhf_baseplatform_arch_x86_gettssbase(void){
+//__attribute__((naked)) u64  xmhf_baseplatform_arch_x86_gettssbase(void)
+CASM_FUNCDEF(u64,  xmhf_baseplatform_arch_x86_gettssbase,
+{
     xmhfhwm_cpu_insn_subl_imm_esp(0x8);
     xmhfhwm_cpu_insn_sgdt_mesp(0x0);
     xmhfhwm_cpu_insn_movl_mesp_ecx(0x2);
@@ -404,7 +503,8 @@ __attribute__((naked)) u64  xmhf_baseplatform_arch_x86_gettssbase(void){
 
     xmhfhwm_cpu_insn_addl_imm_esp(0x8);
     xmhfhwm_cpu_insn_ret();
-}
+},
+void *noparam)
 
 
 

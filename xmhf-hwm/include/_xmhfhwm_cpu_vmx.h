@@ -758,18 +758,16 @@ struct _vmx_vmcsrwfields_encodings	{
 #define VMX_INVEPT_GLOBAL					2
 
 
-
-
 // vmx instructions
-#define xmhfhwm_cpu_insn_vmlaunch() asm volatile ("vmlaunch \r\n");
-#define xmhfhwm_cpu_insn_vmxon_mesp(x) asm volatile ("vmxon "#x"(%esp) \r\n");
-#define xmhfhwm_cpu_insn_vmwrite_eax_ecx() asm volatile ("vmwrite %eax, %ecx \r\n");
-#define xmhfhwm_cpu_insn_vmread_ecx_eax() asm volatile ("vmread %ecx, %eax\r\n");
-#define xmhfhwm_cpu_insn_vmclear_mesp(x) asm volatile ("vmclear "#x"(%esp) \r\n");
-#define xmhfhwm_cpu_insn_vmptrld_mesp(x) asm volatile ("vmptrld "#x"(%esp) \r\n");
-#define xmhfhwm_cpu_insn_invvpid_mesp_ecx(x) asm volatile ("invvpid "#x"(%esp), %ecx\r\n");
-#define xmhfhwm_cpu_insn_invept_mesp_edx(x) asm volatile ("invept "#x"(%esp), %edx \r\n");
-#define xmhfhwm_cpu_insn_vmresume() asm volatile ("vmresume \r\n");
+#define xmhfhwm_cpu_insn_vmlaunch() __builtin_annot("vmlaunch ");
+#define xmhfhwm_cpu_insn_vmxon_mesp(x) __builtin_annot("vmxon "#x"(%esp) ");
+#define xmhfhwm_cpu_insn_vmwrite_eax_ecx() __builtin_annot("vmwrite %eax, %ecx ");
+#define xmhfhwm_cpu_insn_vmread_ecx_eax() __builtin_annot("vmread %ecx, %eax");
+#define xmhfhwm_cpu_insn_vmclear_mesp(x) __builtin_annot("vmclear "#x"(%esp) ");
+#define xmhfhwm_cpu_insn_vmptrld_mesp(x) __builtin_annot("vmptrld "#x"(%esp) ");
+#define xmhfhwm_cpu_insn_invvpid_mesp_ecx(x) __builtin_annot("invvpid "#x"(%esp), %ecx");
+#define xmhfhwm_cpu_insn_invept_mesp_edx(x) __builtin_annot("invept "#x"(%esp), %edx ");
+#define xmhfhwm_cpu_insn_vmresume() __builtin_annot("vmresume ");
 
 
 #endif //__ASSEMBLY__

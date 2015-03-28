@@ -54,11 +54,11 @@
 
 void rdmsr(u32 msr, u32 *eax, u32 *edx){
     u64 value;
-    value = rdmsr64(msr);
+    value = CASM_FUNCCALL(rdmsr64,msr);
     *eax = (u32)value;
     *edx = (u32)((u64)value >> 32);
 }
 
 void wrmsr(u32 msr, u32 eax, u32 edx){
-    wrmsr64(msr, (((u64)edx << 32) | (u64)eax));
+ CASM_FUNCCALL(wrmsr64,msr, (((u64)edx << 32) | (u64)eax));
 }

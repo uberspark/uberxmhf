@@ -52,25 +52,9 @@
 // author: amit vasudevan (amitvasudevan@acm.org)
 
 
-// initialization phase CPU stacks
-__attribute__(( section(".stack") )) __attribute__(( aligned(4096) )) u8 _init_cpustacks[MAX_PLATFORM_CPUS][MAX_PLATFORM_CPUSTACK_SIZE];
-
-
-// following two data structures used for SMP bootup
-__attribute__(( aligned(16) )) static u64 _xcsmp_ap_init_gdt_start[]  = {
-	0x0000000000000000ULL,	//NULL descriptor
-	0x00af9b000000ffffULL,	//CPL-0 64-bit code descriptor (CS64)
-	0x00af93000000ffffULL,	//CPL-0 64-bit data descriptor (DS/SS/ES/FS/GS)
-};
-
-__attribute__(( aligned(16) )) static arch_x86_gdtdesc_t _xcsmp_ap_init_gdt  = {
-	.size=sizeof(_xcsmp_ap_init_gdt_start)-1,
-	.base=&_xcsmp_ap_init_gdt_start,
-};
-
-
-__attribute__((naked)) __attribute__ ((section(".hic_entrystub"))) __attribute__(( align(4096) )) void xcprimeon_arch_entry(void) {
-
+//__attribute__((naked)) __attribute__ ((section(".hic_entrystub"))) __attribute__(( align(4096) )) void xcprimeon_arch_entry(void) {
+CASM_FUNCDEF_FULL(.hic_entrystub, 4096, void, xcprimeon_arch_entry,
+{
     xmhfhwm_cpu_insn_movw_ds_ax();
     xmhfhwm_cpu_insn_movw_ax_es();
     xmhfhwm_cpu_insn_movw_ax_fs();
@@ -81,11 +65,13 @@ __attribute__((naked)) __attribute__ ((section(".hic_entrystub"))) __attribute__
     xmhfhwm_cpu_insn_movl_eax_esp();
     xmhfhwm_cpu_insn_call(slab_main);
     xmhfhwm_cpu_insn_hlt();
-}
+},
+void *noparam)
 
 
-__attribute__((naked)) void _ap_bootstrap_code(void) {
-
+//__attribute__((naked)) void _ap_bootstrap_code(void) {
+CASM_FUNCDEF(void, _ap_bootstrap_code,
+{
     xmhfhwm_cpu_insn_movw_imm_ax(__DS_CPL0);
     xmhfhwm_cpu_insn_movw_ax_ds();
     xmhfhwm_cpu_insn_movl_imm_eax(((X86SMP_APBOOTSTRAP_DATASEG << 4) + 8));
@@ -97,16 +83,13 @@ __attribute__((naked)) void _ap_bootstrap_code(void) {
     xmhfhwm_cpu_insn_jmpl_eax();
     xmhfhwm_cpu_insn_hlt();
     CASM_BALIGN(4096);
-}
+},
+void *noparam)
 
 
-//
-//XXX: globals:
-//_ap_cr3
-//void __xmhfhic_smp_cpu_x86_smpinitialize_commonstart(void);
-//__xmhfhic_x86vmx_cpuidtable
-bool __xmhfhic_ap_entry(void) __attribute__((naked)){
-
+//bool __xmhfhic_ap_entry(void) __attribute__((naked)){
+CASM_FUNCDEF(bool, __xmhfhic_ap_entry,
+{
     xmhfhwm_cpu_insn_movw_ds_ax();
     xmhfhwm_cpu_insn_movw_ax_es();
     xmhfhwm_cpu_insn_movw_ax_fs();
@@ -155,20 +138,26 @@ bool __xmhfhic_ap_entry(void) __attribute__((naked)){
     xmhfhwm_cpu_insn_movl_eax_esp();
 
     xmhfhwm_cpu_insn_jmp(__xmhfhic_smp_cpu_x86_smpinitialize_commonstart);
-}
+},
+void *noparam)
 
 
 //////////////////////////////////////////////////////////////////////////////
 // setup cpu state for hic
 
-__attribute__((naked)) void __xmhfhic_x86vmx_reloadCS(u32 cs_sel){
+//__attribute__((naked)) void __xmhfhic_x86vmx_reloadCS(u32 cs_sel)
+CASM_FUNCDEF(void, __xmhfhic_x86vmx_reloadCS,
+{
     xmhfhwm_cpu_insn_popl_eax();
     xmhfhwm_cpu_insn_pushl_mesp(0x0);
     xmhfhwm_cpu_insn_pushl_eax();
     xmhfhwm_cpu_insn_lret();
-}
+},
+u32 cs_sel)
 
-__attribute__((naked)) void __xmhfhic_x86vmx_reloadsegregs(u32 ds_sel){
+//__attribute__((naked)) void __xmhfhic_x86vmx_reloadsegregs(u32 ds_sel){
+CASM_FUNCDEF(void, __xmhfhic_x86vmx_reloadsegregs,
+{
     xmhfhwm_cpu_insn_movl_mesp_eax(0x4);
     xmhfhwm_cpu_insn_movw_ax_ds();
     xmhfhwm_cpu_insn_movw_ax_es();
@@ -176,12 +165,13 @@ __attribute__((naked)) void __xmhfhic_x86vmx_reloadsegregs(u32 ds_sel){
     xmhfhwm_cpu_insn_movw_ax_gs();
     xmhfhwm_cpu_insn_movw_ax_ss();
     xmhfhwm_cpu_insn_ret();
-
-}
+},
+u32 ds_sel)
 
 
 #define XMHF_EXCEPTION_HANDLER_DEFINE(vector) 												\
-	static void __xmhf_exception_handler_##vector(void) __attribute__((naked)) { 					\
+	CASM_FUNCDEF(void, __xmhf_exception_handler_##vector, 					\
+    { \
         xmhfhwm_cpu_insn_pushl_imm(vector); \
         xmhfhwm_cpu_insn_pushal(); \
         xmhfhwm_cpu_insn_pushl_esp(); \
@@ -190,10 +180,12 @@ __attribute__((naked)) void __xmhfhic_x86vmx_reloadsegregs(u32 ds_sel){
         xmhfhwm_cpu_insn_popal(); \
         xmhfhwm_cpu_insn_addl_imm_esp(0x8); \
         xmhfhwm_cpu_insn_iretl(); \
-    }\
+    },\
+    void *noparam) \
 
 #define XMHF_EXCEPTION_HANDLER_DEFINE_WITHERRORCODE(vector) 												\
-	static void __xmhf_exception_handler_##vector(void) __attribute__((naked)) { 					\
+	CASM_FUNCDEF(void, __xmhf_exception_handler_##vector, 					\
+    {\
 		xmhfhwm_cpu_insn_pushl_imm(0x0); \
         xmhfhwm_cpu_insn_pushl_imm(vector); \
         xmhfhwm_cpu_insn_pushal(); \
@@ -203,10 +195,10 @@ __attribute__((naked)) void __xmhfhic_x86vmx_reloadsegregs(u32 ds_sel){
         xmhfhwm_cpu_insn_popal(); \
         xmhfhwm_cpu_insn_addl_imm_esp(0x8); \
         xmhfhwm_cpu_insn_iretl(); \
-    }\
+    },\
+    void *noparam) \
 
 
-#define XMHF_EXCEPTION_HANDLER_ADDROF(vector) &__xmhf_exception_handler_##vector
 
 XMHF_EXCEPTION_HANDLER_DEFINE_WITHERRORCODE(0)
 XMHF_EXCEPTION_HANDLER_DEFINE_WITHERRORCODE(1)
@@ -242,43 +234,12 @@ XMHF_EXCEPTION_HANDLER_DEFINE_WITHERRORCODE(30)
 XMHF_EXCEPTION_HANDLER_DEFINE_WITHERRORCODE(31)
 
 
-u32  __xmhfhic_exceptionstubs[] = { XMHF_EXCEPTION_HANDLER_ADDROF(0),
-							XMHF_EXCEPTION_HANDLER_ADDROF(1),
-							XMHF_EXCEPTION_HANDLER_ADDROF(2),
-							XMHF_EXCEPTION_HANDLER_ADDROF(3),
-							XMHF_EXCEPTION_HANDLER_ADDROF(4),
-							XMHF_EXCEPTION_HANDLER_ADDROF(5),
-							XMHF_EXCEPTION_HANDLER_ADDROF(6),
-							XMHF_EXCEPTION_HANDLER_ADDROF(7),
-							XMHF_EXCEPTION_HANDLER_ADDROF(8),
-							XMHF_EXCEPTION_HANDLER_ADDROF(9),
-							XMHF_EXCEPTION_HANDLER_ADDROF(10),
-							XMHF_EXCEPTION_HANDLER_ADDROF(11),
-							XMHF_EXCEPTION_HANDLER_ADDROF(12),
-							XMHF_EXCEPTION_HANDLER_ADDROF(13),
-							XMHF_EXCEPTION_HANDLER_ADDROF(14),
-							XMHF_EXCEPTION_HANDLER_ADDROF(15),
-							XMHF_EXCEPTION_HANDLER_ADDROF(16),
-							XMHF_EXCEPTION_HANDLER_ADDROF(17),
-							XMHF_EXCEPTION_HANDLER_ADDROF(18),
-							XMHF_EXCEPTION_HANDLER_ADDROF(19),
-							XMHF_EXCEPTION_HANDLER_ADDROF(20),
-							XMHF_EXCEPTION_HANDLER_ADDROF(21),
-							XMHF_EXCEPTION_HANDLER_ADDROF(22),
-							XMHF_EXCEPTION_HANDLER_ADDROF(23),
-							XMHF_EXCEPTION_HANDLER_ADDROF(24),
-							XMHF_EXCEPTION_HANDLER_ADDROF(25),
-							XMHF_EXCEPTION_HANDLER_ADDROF(26),
-							XMHF_EXCEPTION_HANDLER_ADDROF(27),
-							XMHF_EXCEPTION_HANDLER_ADDROF(28),
-							XMHF_EXCEPTION_HANDLER_ADDROF(29),
-							XMHF_EXCEPTION_HANDLER_ADDROF(30),
-							XMHF_EXCEPTION_HANDLER_ADDROF(31),
-};
 
 
 //HIC runtime intercept stub
-__attribute__((naked)) void __xmhfhic_rtm_intercept_stub(void){
+//__attribute__((naked)) void __xmhfhic_rtm_intercept_stub(void){
+CASM_FUNCDEF(void, __xmhfhic_rtm_intercept_stub,
+{
     xmhfhwm_cpu_insn_pushal();
     xmhfhwm_cpu_insn_pushl_esp();
     xmhfhwm_cpu_insn_call(__xmhfhic_rtm_intercept);
@@ -286,7 +247,8 @@ __attribute__((naked)) void __xmhfhic_rtm_intercept_stub(void){
     xmhfhwm_cpu_insn_popal();
     xmhfhwm_cpu_insn_vmresume();
     xmhfhwm_cpu_insn_hlt();
-}
+},
+void *noparam)
 
 
 
@@ -343,7 +305,9 @@ __attribute__((naked)) void __xmhfhic_rtm_intercept_stub(void){
 /////////////////////////////////////////////////////////////////////////////
 // relinquish HIC initialization and move on to the first slab
 
-void xmhfhic_arch_relinquish_control_to_init_slab(u64 cpuid, u64 entrystub, u64 mempgtbl_cr3, u64 slabtos){
+//void xmhfhic_arch_relinquish_control_to_init_slab(u64 cpuid, u64 entrystub, u64 mempgtbl_cr3, u64 slabtos){
+CASM_FUNCDEF(void, xmhfhic_arch_relinquish_control_to_init_slab,
+{
 
 /*
     //TODO: x86_64 --> x86
@@ -394,8 +358,11 @@ void xmhfhic_arch_relinquish_control_to_init_slab(u64 cpuid, u64 entrystub, u64 
         : "rdi", "rsi", "rdx", "rcx", "r8", "r9", "r10", "r11"
     );
 */
-
-}
+},
+u64 cpuid,
+u64 entrystub,
+u64 mempgtbl_cr3,
+u64 slabtos)
 
 
 //////////////////////////////////////////////////////////////////////////////
@@ -418,7 +385,9 @@ void xmhfhic_arch_relinquish_control_to_init_slab(u64 cpuid, u64 entrystub, u64 
 //R11 = return_address
 
 
-__attribute__((naked)) void __xmhfhic_rtm_trampoline_stub(void){
+//__attribute__((naked)) void __xmhfhic_rtm_trampoline_stub(void){
+CASM_FUNCDEF(void, __xmhfhic_rtm_trampoline_stub,
+{
 
 /*
     //TODO: x86_64 --> x86
@@ -472,19 +441,18 @@ __attribute__((naked)) void __xmhfhic_rtm_trampoline_stub(void){
     );
 
     */
-}
+},
+void *noparam)
 
 
 
 
-
-
-
-
-void __xmhfhic_trampoline_slabxfer_h2h(u64 iparams, u64 iparams_size,
-                                       u64 entrystub, u64 slabtos,
-                                       u64 oparams, u64 oparams_size,
-                                       u64 src_slabid, u64 cpuid){
+//void __xmhfhic_trampoline_slabxfer_h2h(u64 iparams, u64 iparams_size,
+//                                       u64 entrystub, u64 slabtos,
+//                                       u64 oparams, u64 oparams_size,
+//                                       u64 src_slabid, u64 cpuid){
+CASM_FUNCDEF(void, __xmhfhic_trampoline_slabxfer_h2h,
+{
 
 /*
                     //TODO: x86_64 --> x86
@@ -524,14 +492,21 @@ void __xmhfhic_trampoline_slabxfer_h2h(u64 iparams, u64 iparams_size,
                         : "rdi", "rsi", "rdx", "rcx", "r8", "r9", "r10", "r11"
                     );
 */
+},
+u64 iparams,
+u64 iparams_size,
+u64 entrystub,
+u64 slabtos,
+u64 oparams,
+u64 oparams_size,
+u64 src_slabid,
+u64 cpuid)
 
 
 
-}
-
-
-
-void __xmhfhic_trampoline_slabxfer_h2g(void){
+//void __xmhfhic_trampoline_slabxfer_h2g(void){
+CASM_FUNCDEF(void, __xmhfhic_trampoline_slabxfer_h2g,
+{
 /*                    u32 errorcode;
 
                     asm volatile (
@@ -570,15 +545,18 @@ void __xmhfhic_trampoline_slabxfer_h2g(void){
                     HALT();
 
 */
-}
+},
+void *noparam)
 
 
 
 
 
-void __xmhfhic_trampoline_slabxfer_callexception(u64 iparams, u64 iparams_size,
-                                                 u64 entrystub, u64 slabtos,
-                                                 u64 src_slabid, u64 cpuid){
+//void __xmhfhic_trampoline_slabxfer_callexception(u64 iparams, u64 iparams_size,
+//                                                 u64 entrystub, u64 slabtos,
+//                                                 u64 src_slabid, u64 cpuid){
+CASM_FUNCDEF(void, __xmhfhic_trampoline_slabxfer_callexception,
+{
 
 
 /*
@@ -620,15 +598,21 @@ void __xmhfhic_trampoline_slabxfer_callexception(u64 iparams, u64 iparams_size,
                     : "rdi", "rsi", "rdx", "rcx", "r8", "r9", "r10", "r11"
                 );
 */
+},
+u64 iparams,
+u64 iparams_size,
+u64 entrystub,
+u64 slabtos,
+u64 src_slabid,
+u64 cpuid)
 
 
-}
 
 
-
-
-void __xmhfhic_trampoline_slabxfer_callintercept(u64 entrystub, u64 slabtos,
-                                                 u64 src_slabid, u64 cpuid){
+//void __xmhfhic_trampoline_slabxfer_callintercept(u64 entrystub, u64 slabtos,
+//                                                 u64 src_slabid, u64 cpuid){
+CASM_FUNCDEF(void, __xmhfhic_trampoline_slabxfer_callintercept,
+{
 
 /*
             //TODO: x86_64 --> x86
@@ -668,11 +652,17 @@ void __xmhfhic_trampoline_slabxfer_callintercept(u64 entrystub, u64 slabtos,
                 : "rdi", "rsi", "rdx", "rcx", "r8", "r9", "r10", "r11"
             );
 */
+},
+u64 entrystub,
+u64 slabtos,
+u64 src_slabid,
+u64 cpuid)
 
-}
 
 
-void __xmhfhic_trampoline_slabxfer_retintercept(u64 addrgprs){
+//void __xmhfhic_trampoline_slabxfer_retintercept(u64 addrgprs)
+CASM_FUNCDEF(void, __xmhfhic_trampoline_slabxfer_retintercept,
+{
 
 /*
             //TODO: x86_64 --> x86
@@ -702,13 +692,14 @@ void __xmhfhic_trampoline_slabxfer_retintercept(u64 addrgprs){
 
             );
 */
+},
+u64 addrgprs)
 
 
-}
 
-
-
-void __xmhfhic_trampoline_slabxfer_retexception(u64 addr_exframe){
+//void __xmhfhic_trampoline_slabxfer_retexception(u64 addr_exframe)
+CASM_FUNCDEF(void, __xmhfhic_trampoline_slabxfer_retexception,
+{
 
 /*
                     //TODO: x86_64 --> x86
@@ -739,5 +730,5 @@ void __xmhfhic_trampoline_slabxfer_retexception(u64 addr_exframe){
 
                     );
 */
-
-}
+},
+u64 addr_exframe)

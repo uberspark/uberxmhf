@@ -159,7 +159,8 @@ void __slab_calluapinew(slab_params_t *sp);
 
 
 //HIC trampoline
-__attribute__((naked)) u32 __slab_calltrampolinenew_h2g(void);
+CASM_FUNCDECL(u32 __slab_calltrampolinenew_h2g(void *noparam));
+
 void __slab_calltrampolinenew(slab_params_t *sp);
 
 
