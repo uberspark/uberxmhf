@@ -38,15 +38,23 @@ $(THE_ARCHIVE): $(OBJECTS)
 	#cd $(LIBXMHFHICSLAB_OBJECTS_DIR) && llc -O=2 -march=x86 -mcpu=corei7 -mattr=$(LLC_ATTR) $(@F).ll
 	#cd $(LIBXMHFHICSLAB_OBJECTS_DIR) && $(CC) -O2 -c $(CFLAGS) $(@F).s -o $(@F)
 
-
 %.o: %.cS
 	mkdir -p $(LIBXMHFHICSLAB_OBJECTS_DIR)
 	@echo Building "$@" from "$<"
 	cp -f $< $(LIBXMHFHICSLAB_OBJECTS_DIR)/$(@F).c
-	$(CC) -fomit-frame-pointer -O2 -S -emit-llvm $(CFLAGS) $(LIBXMHFHICSLAB_OBJECTS_DIR)/$(@F).c -o $(LIBXMHFHICSLAB_OBJECTS_DIR)/$(@F).ll
-	cd $(LIBXMHFHICSLAB_OBJECTS_DIR) && fixnaked.pl $(@F).ll
-	cd $(LIBXMHFHICSLAB_OBJECTS_DIR) && llc -O=2 -march=x86 -mcpu=corei7 -mattr=$(LLC_ATTR) $(@F).ll
-	cd $(LIBXMHFHICSLAB_OBJECTS_DIR) && $(CC) -O2 -c $(CFLAGS) $(@F).s -o $(@F)
+	cd $(LIBXMHFHICSLAB_OBJECTS_DIR) && $(CCERT) -c -dmach $(CCERT_FLAGS) $(@F).c
+	cd $(LIBXMHFHICSLAB_OBJECTS_DIR) && extractasm.pl $(@F).mach > $(@F).S
+	cd $(LIBXMHFHICSLAB_OBJECTS_DIR) && gcc -c $(ASFLAGS) -o $@ $(@F).S
+	#cd $(LIBXMHFHICSLAB_OBJECTS_DIR) && mv $(@F).o $@
+
+#%.o: %.cS
+#	mkdir -p $(LIBXMHFHICSLAB_OBJECTS_DIR)
+#	@echo Building "$@" from "$<"
+#	cp -f $< $(LIBXMHFHICSLAB_OBJECTS_DIR)/$(@F).c
+#	$(CC) -fomit-frame-pointer -O2 -S -emit-llvm $(CFLAGS) $(LIBXMHFHICSLAB_OBJECTS_DIR)/$(@F).c -o $(LIBXMHFHICSLAB_OBJECTS_DIR)/$(@F).ll
+#	cd $(LIBXMHFHICSLAB_OBJECTS_DIR) && fixnaked.pl $(@F).ll
+#	cd $(LIBXMHFHICSLAB_OBJECTS_DIR) && llc -O=2 -march=x86 -mcpu=corei7 -mattr=$(LLC_ATTR) $(@F).ll
+#	cd $(LIBXMHFHICSLAB_OBJECTS_DIR) && $(CC) -O2 -c $(CFLAGS) $(@F).s -o $(@F)
 
 
 

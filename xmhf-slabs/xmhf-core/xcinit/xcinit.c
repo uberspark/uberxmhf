@@ -598,14 +598,14 @@ void slab_main(slab_params_t *sp){
     static u64 cpucount=0;
     static u32 __xcinit_smplock = 1;
 
-	_XDPRINTF_("%s[%u]: Got control: ESP=%08x\n", __func__, (u16)sp->cpuid, read_esp());
+	_XDPRINTF_("%s[%u]: Got control: ESP=%08x\n", __func__, (u16)sp->cpuid, CASM_FUNCCALL(read_esp,CASM_NOPARAM));
 
     if(!isbsp){
         _XDPRINTF_("%s[%u]: AP Halting!\n", __func__, (u16)sp->cpuid);
 
-        spin_lock(&__xcinit_smplock);
+ CASM_FUNCCALL(spin_lock,&__xcinit_smplock);
         cpucount++;
-        spin_unlock(&__xcinit_smplock);
+ CASM_FUNCCALL(spin_unlock,&__xcinit_smplock);
 
         HALT();
     }else{
@@ -638,10 +638,10 @@ void slab_main(slab_params_t *sp){
         u64 guest_slab_pdpt_paddr = guest_slab_header_paddr + offsetof(guest_slab_header_t, lvl2mempgtbl_pdpt);
         u64 guest_slab_pdts_paddr = guest_slab_header_paddr + offsetof(guest_slab_header_t, lvl2mempgtbl_pdts);
         */
-        //u32 guest_slab_gdt_paddr = guest_slab_header_paddr + offsetof(guest_slab_header_t, gdt);
-        //u32 guest_slab_magic_paddr = guest_slab_header_paddr + offsetof(guest_slab_header_t, magic);
-        u32 guest_slab_gdt_paddr = guest_slab_header_paddr + 24580UL;
-        u32 guest_slab_magic_paddr = guest_slab_header_paddr + 24576UL;
+        u32 guest_slab_gdt_paddr = guest_slab_header_paddr + offsetof(guest_slab_header_t, gdt);
+        u32 guest_slab_magic_paddr = guest_slab_header_paddr + offsetof(guest_slab_header_t, magic);
+        //u32 guest_slab_gdt_paddr = guest_slab_header_paddr + 24580UL;
+        //u32 guest_slab_magic_paddr = guest_slab_header_paddr + 24576UL;
         u32 guest_slab_magic;
         //xmhf_hic_uapi_physmem_desc_t pdesc;
 
@@ -775,7 +775,7 @@ void slab_main(slab_params_t *sp){
         spl.src_slabid = XMHF_HYP_SLAB_XCINIT;
         spl.dst_slabid = XMHF_GUEST_SLAB_XCGUESTSLAB;
 
-        _XDPRINTF_("%s[%u]: Proceeding to call xcguestslab; ESP=%08x\n", __func__, (u16)sp->cpuid, read_esp());
+        _XDPRINTF_("%s[%u]: Proceeding to call xcguestslab; ESP=%08x\n", __func__, (u16)sp->cpuid, CASM_FUNCCALL(read_esp,CASM_NOPARAM));
 
         XMHF_SLAB_CALLNEW(&spl);
     }

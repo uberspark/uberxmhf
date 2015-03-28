@@ -324,13 +324,6 @@ typedef struct {
 
 
 
-
-
-
-
-
-
-
 //////
 // HIC function prototypes
 
@@ -342,36 +335,33 @@ void xmhfhic_arch_switch_to_smp(void);
 void xmhfhic_arch_setup_base_cpu_data_structures(void);
 void xmhf_hic_arch_setup_cpu_state(u64 cpuid);
 void xmhfhic_smp_entry(u32 cpuid);
-
-
-extern void xmhfhic_arch_relinquish_control_to_init_slab(u64 cpuid, u64 entrystub, u64 mempgtbl_cr3, u64 slabtos);
-
-
-
+void __xmhfhic_rtm_uapihandler(slab_params_t *sp);
 bool __xmhfhic_callcaps(u64 src_slabid, u64 dst_slabid);
-
 void __xmhfhic_safepush(u64 cpuid, u64 src_slabid, u64 dst_slabid, u64 hic_calltype, u64 return_address,
                         slab_output_params_t *oparams, slab_output_params_t *newoparams, u64 oparams_size, u64 iparams_size);
-
 void __xmhfhic_safepop(u64 cpuid, u64 *src_slabid, u64 *dst_slabid, u64 *hic_calltype, u64 *return_address,
                        slab_output_params_t **oparams, slab_output_params_t **newoparams, u64 *oparams_size, u64 *iparams_size);
-
-
-__attribute__((naked)) void __xmhfhic_rtm_intercept_stub(void);
 void __xmhfhic_rtm_intercept(x86regs_t *r);
-__attribute__((naked)) void __xmhfhic_rtm_trampoline_stub(void);
-
-//void __xmhfhic_rtm_exception_stub(u32 vector, u32 error_code);
 void __xmhfhic_rtm_exception_stub(x86vmx_exception_frame_t *exframe);
-
 void __xmhfhic_rtm_trampoline(u64 hic_calltype, slab_input_params_t *iparams, u64 iparams_size, slab_output_params_t *oparams, u64 oparams_size, u64 dst_slabid, u64 src_slabid, u64 cpuid, u64 return_address, u64 return_rsp);
-//void __xmhfhic_rtm_uapihandler(u64 uapicall, u64 uapicall_num, u64 uapicall_subnum,
-//                               u64 reserved, u64 iparams, u64 oparams,
-//                               u64 src_slabid, u64 cpuid);
 
 
-void __xmhfhic_rtm_uapihandler(slab_params_t *sp);
 
+
+CASM_FUNCDECL(void xcprimeon_arch_entry(void *noparam));
+CASM_FUNCDECL(void _ap_bootstrap_code(void *noparam));
+CASM_FUNCDECL(bool __xmhfhic_ap_entry(void *noparam));
+CASM_FUNCDECL(void __xmhfhic_x86vmx_reloadCS(u32 cs_sel));
+CASM_FUNCDECL(void __xmhfhic_x86vmx_reloadsegregs(u32 ds_sel));
+CASM_FUNCDECL(void __xmhfhic_rtm_intercept_stub(void *noparam));
+CASM_FUNCDECL(void xmhfhic_arch_relinquish_control_to_init_slab(u64 cpuid, u64 entrystub, u64 mempgtbl_cr3, u64 slabtos));
+CASM_FUNCDECL(void __xmhfhic_rtm_trampoline_stub(void *noparam));
+CASM_FUNCDECL(void __xmhfhic_trampoline_slabxfer_h2h(u64 iparams,u64 iparams_size,u64 entrystub,u64 slabtos,u64 oparams,u64 oparams_size,u64 src_slabid,u64 cpuid));
+CASM_FUNCDECL(void __xmhfhic_trampoline_slabxfer_h2g(void *noparam));
+CASM_FUNCDECL(void __xmhfhic_trampoline_slabxfer_callexception(u64 iparams,u64 iparams_size,u64 entrystub,u64 slabtos,u64 src_slabid,u64 cpuid));
+CASM_FUNCDECL(void __xmhfhic_trampoline_slabxfer_callintercept(u64 entrystub,u64 slabtos,u64 src_slabid,u64 cpuid));
+CASM_FUNCDECL(void __xmhfhic_trampoline_slabxfer_retintercept(u64 addrgprs));
+CASM_FUNCDECL(void __xmhfhic_trampoline_slabxfer_retexception(u64 addr_exframe));
 
 
 //////

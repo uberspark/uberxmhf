@@ -52,12 +52,18 @@
 #include <xmhfhw.h>
 #include <xmhf-debug.h>
 
-__attribute__((naked)) void cache_wbinvd(void){
+//__attribute__((naked)) void cache_wbinvd(void){
+CASM_FUNCDEF(void, cache_wbinvd,
+{
     xmhfhwm_cpu_insn_wbinvd();
     xmhfhwm_cpu_insn_ret();
-}
+},
+void *noparam)
 
-__attribute__((naked)) void tlb_invlpg(u64 addr){
+//__attribute__((naked)) void tlb_invlpg(u64 addr){
+CASM_FUNCDEF(void, tlb_invlpg,
+{
     xmhfhwm_cpu_insn_invlpg_mesp(0x4);
     xmhfhwm_cpu_insn_ret();
-}
+},
+u64 addr);

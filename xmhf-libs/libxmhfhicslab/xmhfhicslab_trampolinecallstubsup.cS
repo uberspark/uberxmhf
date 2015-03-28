@@ -51,14 +51,13 @@
 
 
 #include <xmhf.h>
-//#include <xmhfhicslab.h>
 #include <xmhf-hic.h>
 #include <xmhf-debug.h>
 
 //if we return, we had an error and we return the
 //corresponding error code
-__attribute__((naked)) u32 __slab_calltrampolinenew_h2g(void){
-
+CASM_FUNCDEF(u32, __slab_calltrampolinenew_h2g,
+{
     xmhfhwm_cpu_insn_vmlaunch();
     xmhfhwm_cpu_insn_jc(__vmx_start_hvm_failinvalid);
     xmhfhwm_cpu_insn_jnz(__vmx_start_hvm_undefinedimplementation);
@@ -71,7 +70,6 @@ __attribute__((naked)) u32 __slab_calltrampolinenew_h2g(void){
     xmhfhwm_cpu_insn_xorl_eax_eax();		//return 0 as we have no error code available
     CASM_LABEL(__vmx_start_continue);
     xmhfhwm_cpu_insn_ret();
-
-}
-
+},
+void *noparam)
 

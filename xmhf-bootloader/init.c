@@ -429,7 +429,7 @@ bool txt_supports_txt(void) {
     _XDPRINTF_("SENTER should work.\n");
 
     /* testing for chipset support requires enabling SMX on the processor */
-    write_cr4(read_cr4() | CR4_SMXE);
+    write_cr4(read_cr4(CASM_NOPARAM) | CR4_SMXE);
     _XDPRINTF_("SMX enabled in CR4\n");
 
     /* Verify that an TXT-capable chipset is present and check that
@@ -651,7 +651,7 @@ static bool svm_prepare_cpu(void)
     /* since our bootstrap code loads a GDT, etc. */
 
     /* must be in protected mode */
-    cr0 = read_cr0();
+    cr0 = read_cr0(CASM_NOPARAM);
     if (!(cr0 & CR0_PE)) {
         _XDPRINTF_("ERR: not in protected mode\n");
         return false;

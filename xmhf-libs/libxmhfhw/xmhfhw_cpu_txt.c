@@ -61,7 +61,7 @@ uint32_t __getsec_capabilities(uint32_t index)
     eax = IA32_GETSEC_CAPABILITIES;
     ebx = index;
 
-    xmhfhw_cpu_getsec(&eax, &ebx, &ecx, &edx);
+ CASM_FUNCCALL(xmhfhw_cpu_getsec,&eax, &ebx, &ecx, &edx);
 
     cap = eax;
 //    __asm__ __volatile__ (IA32_GETSEC_OPCODE "\n"
@@ -81,7 +81,7 @@ void __getsec_senter(uint32_t sinit_base, uint32_t sinit_size)
     ecx = sinit_size;
     edx = 0;
 
-    xmhfhw_cpu_getsec(&eax, &ebx, &ecx, &edx);
+ CASM_FUNCCALL(xmhfhw_cpu_getsec,&eax, &ebx, &ecx, &edx);
 
 
 //    __asm__ __volatile__ (IA32_GETSEC_OPCODE "\n"
@@ -99,7 +99,7 @@ void __getsec_sexit(void)
 
     eax = IA32_GETSEC_SEXIT;
 
-    xmhfhw_cpu_getsec(&eax, &ebx, &ecx, &edx);
+ CASM_FUNCCALL(xmhfhw_cpu_getsec,&eax, &ebx, &ecx, &edx);
 
 
 //    __asm__ __volatile__ (IA32_GETSEC_OPCODE "\n"
@@ -113,7 +113,7 @@ void __getsec_wakeup(void)
 
     eax = IA32_GETSEC_WAKEUP;
 
-    xmhfhw_cpu_getsec(&eax, &ebx, &ecx, &edx);
+ CASM_FUNCCALL(xmhfhw_cpu_getsec,&eax, &ebx, &ecx, &edx);
 
 
 //    __asm__ __volatile__ (IA32_GETSEC_OPCODE "\n"
@@ -129,7 +129,7 @@ void __getsec_smctrl(void)
     eax = IA32_GETSEC_SMCTRL;
     ebx = 0;
 
-    xmhfhw_cpu_getsec(&eax, &ebx, &ecx, &edx);
+ CASM_FUNCCALL(xmhfhw_cpu_getsec,&eax, &ebx, &ecx, &edx);
 //    __asm__ __volatile__ (IA32_GETSEC_OPCODE "\n"
 //                          : : "a"(IA32_GETSEC_SMCTRL), "b"(0x0));
 }
@@ -146,7 +146,7 @@ void __getsec_parameters(uint32_t index,
     ebx = index;
 
 
-    xmhfhw_cpu_getsec(&eax, &ebx, &ecx, &edx);
+ CASM_FUNCCALL(xmhfhw_cpu_getsec,&eax, &ebx, &ecx, &edx);
 
 
     if ( param_type != NULL )   *param_type = eax & 0x1f;

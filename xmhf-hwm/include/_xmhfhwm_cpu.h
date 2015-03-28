@@ -605,184 +605,180 @@ typedef struct __tss {
 
 //////
 
-// label
-// TODO: move into xmhf-hic.h as a CASM pseudo-language definition
-#define CASM_LABEL(x)   asm volatile (#x": \r\n");
-#define CASM_BALIGN(x)  asm volatile (".balign "#x" \r\n");
 
 // branch instructions
-#define xmhfhwm_cpu_insn_jmp(x) asm volatile ("jmp "#x" \r\n");
-#define xmhfhwm_cpu_insn_jmpl_eax() asm volatile ("jmpl *%eax \r\n");
-#define xmhfhwm_cpu_insn_jc(x) asm volatile ("jc "#x" \r\n");
-#define xmhfhwm_cpu_insn_jnc(x) asm volatile ("jnc "#x" \r\n");
-#define xmhfhwm_cpu_insn_jnz(x) asm volatile ("jnz "#x" \r\n");
-#define xmhfhwm_cpu_insn_jbe(x) asm volatile ("jbe "#x" \r\n");
-#define xmhfhwm_cpu_insn_ja(x) asm volatile ("ja "#x" \r\n");
-#define xmhfhwm_cpu_insn_int(x) asm volatile ("int $"#x" \r\n");
-#define xmhfhwm_cpu_insn_call(x) asm volatile ("call "#x" \r\n");
-#define xmhfhwm_cpu_insn_ret() asm volatile ("ret \r\n");
-#define xmhfhwm_cpu_insn_lret() asm volatile ("lret \r\n");
+#define xmhfhwm_cpu_insn_jmp(x) __builtin_annot("jmp "#x" ");
+#define xmhfhwm_cpu_insn_jmpl_eax() __builtin_annot("jmpl *%eax ");
+#define xmhfhwm_cpu_insn_jc(x) __builtin_annot("jc "#x" ");
+#define xmhfhwm_cpu_insn_jnc(x) __builtin_annot("jnc "#x" ");
+#define xmhfhwm_cpu_insn_jnz(x) __builtin_annot("jnz "#x" ");
+#define xmhfhwm_cpu_insn_jbe(x) __builtin_annot("jbe "#x" ");
+#define xmhfhwm_cpu_insn_ja(x) __builtin_annot("ja "#x" ");
+#define xmhfhwm_cpu_insn_int(x) __builtin_annot("int $"#x" ");
+#define xmhfhwm_cpu_insn_call(x) __builtin_annot("call "#x" ");
+#define xmhfhwm_cpu_insn_ret() __builtin_annot("ret ");
+#define xmhfhwm_cpu_insn_lret() __builtin_annot("lret ");
 
 
 // load/store instructions
-#define _xmhfhwm_cpu_insn_movl_imm_eax(x) asm volatile ("movl $"#x", %eax\r\n");
+#define _xmhfhwm_cpu_insn_movl_imm_eax(x) __builtin_annot("movl $"#x", %eax");
 #define xmhfhwm_cpu_insn_movl_imm_eax(x) _xmhfhwm_cpu_insn_movl_imm_eax(x)
 
-#define _xmhfhwm_cpu_insn_movl_imm_ebx(x) asm volatile ("movl $"#x", %ebx\r\n");
+#define _xmhfhwm_cpu_insn_movl_imm_ebx(x) __builtin_annot("movl $"#x", %ebx");
 #define xmhfhwm_cpu_insn_movl_imm_ebx(x) _xmhfhwm_cpu_insn_movl_imm_ebx(x)
 
-#define _xmhfhwm_cpu_insn_movl_imm_ecx(x) asm volatile ("movl $"#x", %ecx\r\n");
+#define _xmhfhwm_cpu_insn_movl_imm_ecx(x) __builtin_annot("movl $"#x", %ecx");
 #define xmhfhwm_cpu_insn_movl_imm_ecx(x) _xmhfhwm_cpu_insn_movl_imm_ecx(x)
 
-#define _xmhfhwm_cpu_insn_movl_imm_edi(x) asm volatile ("movl $"#x", %edi\r\n");
+#define _xmhfhwm_cpu_insn_movl_imm_edi(x) __builtin_annot("movl $"#x", %edi");
 #define xmhfhwm_cpu_insn_movl_imm_edi(x) _xmhfhwm_cpu_insn_movl_imm_edi(x)
 
 
-#define _xmhfhwm_cpu_insn_movw_imm_ax(x) asm volatile ("movw $"#x", %ax\r\n");
+#define _xmhfhwm_cpu_insn_movw_imm_ax(x) __builtin_annot("movw $"#x", %ax");
 #define xmhfhwm_cpu_insn_movw_imm_ax(x) _xmhfhwm_cpu_insn_movw_imm_ax(x)
 
-#define xmhfhwm_cpu_insn_movl_eax_mesp(x) asm volatile ("movl %eax, "#x"(%esp) \r\n");
-#define xmhfhwm_cpu_insn_movl_eax_esp() asm volatile ("movl %eax, %esp \r\n");
+#define xmhfhwm_cpu_insn_movl_eax_mesp(x) __builtin_annot("movl %eax, "#x"(%esp) ");
+#define xmhfhwm_cpu_insn_movl_eax_esp() __builtin_annot("movl %eax, %esp ");
 
-#define xmhfhwm_cpu_insn_movl_mesp_eax(x) asm volatile ("movl "#x"(%esp), %eax \r\n");
-#define xmhfhwm_cpu_insn_movw_mesp_ax(x) asm volatile ("movw "#x"(%esp), %ax \r\n");
-#define xmhfhwm_cpu_insn_movl_mesp_ebx(x) asm volatile ("movl "#x"(%esp), %ebx \r\n");
-#define xmhfhwm_cpu_insn_movl_mesp_ecx(x) asm volatile ("movl "#x"(%esp), %ecx \r\n");
-#define xmhfhwm_cpu_insn_movl_mesp_edx(x) asm volatile ("movl "#x"(%esp), %edx \r\n");
-#define xmhfhwm_cpu_insn_movl_mesp_esi(x) asm volatile ("movl "#x"(%esp), %esi \r\n");
-#define xmhfhwm_cpu_insn_movl_mecx_eax(x) asm volatile ("movl "#x"(%ecx), %eax \r\n");
-#define xmhfhwm_cpu_insn_movl_mecx_edx(x) asm volatile ("movl "#x"(%ecx), %edx \r\n");
-#define xmhfhwm_cpu_insn_movl_eax_mecx(x) asm volatile ("movl %eax, "#x"(%ecx) \r\n");
-#define xmhfhwm_cpu_insn_movl_edx_mecx(x) asm volatile ("movl %edx, "#x"(%ecx) \r\n");
+#define xmhfhwm_cpu_insn_movl_mesp_eax(x) __builtin_annot("movl "#x"(%esp), %eax ");
+#define xmhfhwm_cpu_insn_movw_mesp_ax(x) __builtin_annot("movw "#x"(%esp), %ax ");
+#define xmhfhwm_cpu_insn_movl_mesp_ebx(x) __builtin_annot("movl "#x"(%esp), %ebx ");
+#define xmhfhwm_cpu_insn_movl_mesp_ecx(x) __builtin_annot("movl "#x"(%esp), %ecx ");
+#define xmhfhwm_cpu_insn_movl_mesp_edx(x) __builtin_annot("movl "#x"(%esp), %edx ");
+#define xmhfhwm_cpu_insn_movl_mesp_esi(x) __builtin_annot("movl "#x"(%esp), %esi ");
+#define xmhfhwm_cpu_insn_movl_mecx_eax(x) __builtin_annot("movl "#x"(%ecx), %eax ");
+#define xmhfhwm_cpu_insn_movl_mecx_edx(x) __builtin_annot("movl "#x"(%ecx), %edx ");
+#define xmhfhwm_cpu_insn_movl_eax_mecx(x) __builtin_annot("movl %eax, "#x"(%ecx) ");
+#define xmhfhwm_cpu_insn_movl_edx_mecx(x) __builtin_annot("movl %edx, "#x"(%ecx) ");
 
-#define xmhfhwm_cpu_insn_movl_eax_mesi(x) asm volatile ("movl %eax, "#x"(%esi) \r\n");
-#define xmhfhwm_cpu_insn_movl_ebx_mesi(x) asm volatile ("movl %ebx, "#x"(%esi) \r\n");
-#define xmhfhwm_cpu_insn_movl_ecx_mesi(x) asm volatile ("movl %ecx, "#x"(%esi) \r\n");
-#define xmhfhwm_cpu_insn_movl_edx_mesi(x) asm volatile ("movl %edx, "#x"(%esi) \r\n");
+#define xmhfhwm_cpu_insn_movl_eax_mesi(x) __builtin_annot("movl %eax, "#x"(%esi) ");
+#define xmhfhwm_cpu_insn_movl_ebx_mesi(x) __builtin_annot("movl %ebx, "#x"(%esi) ");
+#define xmhfhwm_cpu_insn_movl_ecx_mesi(x) __builtin_annot("movl %ecx, "#x"(%esi) ");
+#define xmhfhwm_cpu_insn_movl_edx_mesi(x) __builtin_annot("movl %edx, "#x"(%esi) ");
 
-#define xmhfhwm_cpu_insn_movl_meax_eax(x) asm volatile ("movl "#x"(%eax), %eax \r\n");
-#define xmhfhwm_cpu_insn_movl_mebx_ebx(x) asm volatile ("movl "#x"(%ebx), %ebx \r\n");
-#define xmhfhwm_cpu_insn_movl_mecx_ecx(x) asm volatile ("movl "#x"(%ecx), %ecx \r\n");
-#define xmhfhwm_cpu_insn_movl_medx_edx(x) asm volatile ("movl "#x"(%edx), %edx \r\n");
-#define xmhfhwm_cpu_insn_movl_medi_edi(x) asm volatile ("movl "#x"(%edi), %edi \r\n");
+#define xmhfhwm_cpu_insn_movl_meax_eax(x) __builtin_annot("movl "#x"(%eax), %eax ");
+#define xmhfhwm_cpu_insn_movl_mebx_ebx(x) __builtin_annot("movl "#x"(%ebx), %ebx ");
+#define xmhfhwm_cpu_insn_movl_mecx_ecx(x) __builtin_annot("movl "#x"(%ecx), %ecx ");
+#define xmhfhwm_cpu_insn_movl_medx_edx(x) __builtin_annot("movl "#x"(%edx), %edx ");
+#define xmhfhwm_cpu_insn_movl_medi_edi(x) __builtin_annot("movl "#x"(%edi), %edi ");
 
-#define xmhfhwm_cpu_insn_movl_imm_mesp(x,y) asm volatile ("movl $"#x", "#y"(%esp) \r\n");
+#define xmhfhwm_cpu_insn_movl_imm_mesp(x,y) __builtin_annot("movl $"#x", "#y"(%esp) ");
 
-#define xmhfhwm_cpu_insn_movl_edx_ecx() asm volatile ("movl %edx, %ecx \r\n");
-#define xmhfhwm_cpu_insn_movl_edi_ebx() asm volatile ("movl %edi, %ebx \r\n");
+#define xmhfhwm_cpu_insn_movl_edx_ecx() __builtin_annot("movl %edx, %ecx ");
+#define xmhfhwm_cpu_insn_movl_edi_ebx() __builtin_annot("movl %edi, %ebx ");
 
-#define xmhfhwm_cpu_insn_movl_esp_eax() asm volatile ("movl %esp, %eax \r\n");
+#define xmhfhwm_cpu_insn_movl_esp_eax() __builtin_annot("movl %esp, %eax ");
 
-#define xmhfhwm_cpu_insn_movl_mebxeax_eax(x) asm volatile ("movl (%ebx, %eax, "#x"), %eax \r\n");
+#define xmhfhwm_cpu_insn_movl_mebxeax_eax(x) __builtin_annot("movl (%ebx, %eax, "#x"), %eax ");
 
 
 
-#define xmhfhwm_cpu_insn_popl_ebx() asm volatile ("popl %ebx \r\n");
-#define xmhfhwm_cpu_insn_popl_esi() asm volatile ("popl %esi \r\n");
-#define xmhfhwm_cpu_insn_pushl_esi() asm volatile ("pushl %esi \r\n");
-#define xmhfhwm_cpu_insn_pushl_eax() asm volatile ("pushl %eax \r\n");
-#define xmhfhwm_cpu_insn_pushl_ebx() asm volatile ("pushl %ebx \r\n");
-#define xmhfhwm_cpu_insn_pushl_esp() asm volatile ("pushl %esp \r\n");
-#define xmhfhwm_cpu_insn_pushl_mesp(x) asm volatile ("pushl "#x"(%esp) \r\n");
-#define xmhfhwm_cpu_insn_popl_eax() asm volatile ("popl %eax \r\n");
-#define xmhfhwm_cpu_insn_pushl_imm(x) asm volatile ("pushl $"#x" \r\n");
+#define xmhfhwm_cpu_insn_popl_ebx() __builtin_annot("popl %ebx ");
+#define xmhfhwm_cpu_insn_popl_esi() __builtin_annot("popl %esi ");
+#define xmhfhwm_cpu_insn_pushl_esi() __builtin_annot("pushl %esi ");
+#define xmhfhwm_cpu_insn_pushl_eax() __builtin_annot("pushl %eax ");
+#define xmhfhwm_cpu_insn_pushl_ebx() __builtin_annot("pushl %ebx ");
+#define xmhfhwm_cpu_insn_pushl_esp() __builtin_annot("pushl %esp ");
+#define xmhfhwm_cpu_insn_pushl_mesp(x) __builtin_annot("pushl "#x"(%esp) ");
+#define xmhfhwm_cpu_insn_popl_eax() __builtin_annot("popl %eax ");
+#define xmhfhwm_cpu_insn_pushl_imm(x) __builtin_annot("pushl $"#x" ");
 
 
 // arithmetic/logical
-#define xmhfhwm_cpu_insn_xorl_eax_eax() asm volatile ("xorl %eax, %eax \r\n");
-#define xmhfhwm_cpu_insn_xorl_ebx_ebx() asm volatile ("xorl %ebx, %ebx \r\n");
-#define xmhfhwm_cpu_insn_xorl_edx_edx() asm volatile ("xorl %edx, %edx \r\n");
+#define xmhfhwm_cpu_insn_xorl_eax_eax() __builtin_annot("xorl %eax, %eax ");
+#define xmhfhwm_cpu_insn_xorl_ebx_ebx() __builtin_annot("xorl %ebx, %ebx ");
+#define xmhfhwm_cpu_insn_xorl_edx_edx() __builtin_annot("xorl %edx, %edx ");
 
 
-#define xmhfhwm_cpu_insn_addl_mesp_ecx(x) asm volatile ("addl "#x"(%esp), %ecx \r\n");
-#define xmhfhwm_cpu_insn_addl_imm_esp(x) asm volatile ("addl "#x", %esp \r\n");
-#define xmhfhwm_cpu_insn_subl_imm_esp(x) asm volatile ("subl "#x", %esp \r\n");
-#define xmhfhwm_cpu_insn_addl_eax_ecx() asm volatile ("addl %eax, %ecx\r\n");
-#define xmhfhwm_cpu_insn_addl_ecx_eax() asm volatile ("addl %ecx, %eax\r\n");
+#define xmhfhwm_cpu_insn_addl_mesp_ecx(x) __builtin_annot("addl "#x"(%esp), %ecx ");
+#define xmhfhwm_cpu_insn_addl_imm_esp(x) __builtin_annot("addl "#x", %esp ");
+#define xmhfhwm_cpu_insn_subl_imm_esp(x) __builtin_annot("subl "#x", %esp ");
+#define xmhfhwm_cpu_insn_addl_eax_ecx() __builtin_annot("addl %eax, %ecx");
+#define xmhfhwm_cpu_insn_addl_ecx_eax() __builtin_annot("addl %ecx, %eax");
 
-#define xmhfhwm_cpu_insn_addl_imm_ecx(x) asm volatile ("addl "#x", %ecx \r\n");
+#define xmhfhwm_cpu_insn_addl_imm_ecx(x) __builtin_annot("addl "#x", %ecx ");
 
-#define _xmhfhwm_cpu_insn_addl_imm_eax(x) asm volatile ("addl "#x", %eax \r\n");
+#define _xmhfhwm_cpu_insn_addl_imm_eax(x) __builtin_annot("addl "#x", %eax ");
 #define xmhfhwm_cpu_insn_addl_imm_eax(x) _xmhfhwm_cpu_insn_addl_imm_eax(x)
 
-#define xmhfhwm_cpu_insn_andl_imm_edx(x) asm volatile ("andl $"#x", %edx \r\n");
-#define xmhfhwm_cpu_insn_andl_imm_ecx(x) asm volatile ("andl $"#x", %ecx \r\n");
-#define xmhfhwm_cpu_insn_shl_imm_ecx(x) asm volatile ("shl $"#x", %ecx \r\n");
-#define xmhfhwm_cpu_insn_shr_imm_eax(x) asm volatile ("shr $"#x", %eax \r\n");
+#define xmhfhwm_cpu_insn_andl_imm_edx(x) __builtin_annot("andl $"#x", %edx ");
+#define xmhfhwm_cpu_insn_andl_imm_ecx(x) __builtin_annot("andl $"#x", %ecx ");
+#define xmhfhwm_cpu_insn_shl_imm_ecx(x) __builtin_annot("shl $"#x", %ecx ");
+#define xmhfhwm_cpu_insn_shr_imm_eax(x) __builtin_annot("shr $"#x", %eax ");
 
-#define xmhfhwm_cpu_insn_orl_ecx_eax() asm volatile ("orl %ecx, %eax \r\n");
-#define xmhfhwm_cpu_insn_orl_edx_eax() asm volatile ("orl %edx, %eax \r\n");
-#define xmhfhwm_cpu_insn_orl_imm_eax(x) asm volatile ("orl $"#x", %eax \r\n");
-#define xmhfhwm_cpu_insn_orl_imm_ecx(x) asm volatile ("orl $"#x", %ecx \r\n");
+#define xmhfhwm_cpu_insn_orl_ecx_eax() __builtin_annot("orl %ecx, %eax ");
+#define xmhfhwm_cpu_insn_orl_edx_eax() __builtin_annot("orl %edx, %eax ");
+#define xmhfhwm_cpu_insn_orl_imm_eax(x) __builtin_annot("orl $"#x", %eax ");
+#define xmhfhwm_cpu_insn_orl_imm_ecx(x) __builtin_annot("orl $"#x", %ecx ");
 
 
-#define xmhfhwm_cpu_insn_btl_imm_mecx(x,y) asm volatile ("btl $"#x", "#y"(%ecx) \r\n");
-#define xmhfhwm_cpu_insn_btrl_imm_mecx(x,y) asm volatile ("btrl $"#x", "#y"(%ecx) \r\n");
-#define xmhfhwm_cpu_insn_btsl_imm_mecx(x,y) asm volatile ("btsl $"#x", "#y"(%ecx) \r\n");
-#define xmhfhwm_cpu_insn_bsrl_mesp_eax(x) asm volatile ("bsrl "#x"(%esp), %eax \r\n");
+#define xmhfhwm_cpu_insn_btl_imm_mecx(x,y) __builtin_annot("btl $"#x", "#y"(%ecx) ");
+#define xmhfhwm_cpu_insn_btrl_imm_mecx(x,y) __builtin_annot("btrl $"#x", "#y"(%ecx) ");
+#define xmhfhwm_cpu_insn_btsl_imm_mecx(x,y) __builtin_annot("btsl $"#x", "#y"(%ecx) ");
+#define xmhfhwm_cpu_insn_bsrl_mesp_eax(x) __builtin_annot("bsrl "#x"(%esp), %eax ");
 
-#define xmhfhwm_cpu_insn_mull_ecx() asm volatile ("mull %ecx \r\n");
+#define xmhfhwm_cpu_insn_mull_ecx() __builtin_annot("mull %ecx ");
 
 
 //segment registers
-#define xmhfhwm_cpu_insn_movl_cs_eax() asm volatile ("movl %cs, %eax \r\n");
-#define xmhfhwm_cpu_insn_movl_cs_eax() asm volatile ("movl %ds, %eax \r\n");
-#define xmhfhwm_cpu_insn_movl_cs_eax() asm volatile ("movl %es, %eax \r\n");
-#define xmhfhwm_cpu_insn_movl_cs_eax() asm volatile ("movl %fs, %eax \r\n");
-#define xmhfhwm_cpu_insn_movl_cs_eax() asm volatile ("movl %gs, %eax \r\n");
-#define xmhfhwm_cpu_insn_movl_cs_eax() asm volatile ("movl %ss, %eax \r\n");
-#define xmhfhwm_cpu_insn_movw_ds_ax() asm volatile ("movw %ds, %ax \r\n");
-#define xmhfhwm_cpu_insn_movw_ax_ds() asm volatile ("movw %ax, %ds \r\n");
-#define xmhfhwm_cpu_insn_movw_ax_es() asm volatile ("movw %ax, %es \r\n");
-#define xmhfhwm_cpu_insn_movw_ax_fs() asm volatile ("movw %ax, %fs \r\n");
-#define xmhfhwm_cpu_insn_movw_ax_gs() asm volatile ("movw %ax, %gs \r\n");
-#define xmhfhwm_cpu_insn_movw_ax_ss() asm volatile ("movw %ax, %ss \r\n");
+#define xmhfhwm_cpu_insn_movl_cs_eax() __builtin_annot("movl %cs, %eax ");
+#define xmhfhwm_cpu_insn_movl_ds_eax() __builtin_annot("movl %ds, %eax ");
+#define xmhfhwm_cpu_insn_movl_es_eax() __builtin_annot("movl %es, %eax ");
+#define xmhfhwm_cpu_insn_movl_fs_eax() __builtin_annot("movl %fs, %eax ");
+#define xmhfhwm_cpu_insn_movl_gs_eax() __builtin_annot("movl %gs, %eax ");
+#define xmhfhwm_cpu_insn_movl_ss_eax() __builtin_annot("movl %ss, %eax ");
+#define xmhfhwm_cpu_insn_movw_ds_ax() __builtin_annot("movw %ds, %ax ");
+#define xmhfhwm_cpu_insn_movw_ax_ds() __builtin_annot("movw %ax, %ds ");
+#define xmhfhwm_cpu_insn_movw_ax_es() __builtin_annot("movw %ax, %es ");
+#define xmhfhwm_cpu_insn_movw_ax_fs() __builtin_annot("movw %ax, %fs ");
+#define xmhfhwm_cpu_insn_movw_ax_gs() __builtin_annot("movw %ax, %gs ");
+#define xmhfhwm_cpu_insn_movw_ax_ss() __builtin_annot("movw %ax, %ss ");
 
 //control registers
-#define xmhfhwm_cpu_insn_movl_cr0_eax() asm volatile ("movl %cr0, %eax \r\n");
-#define xmhfhwm_cpu_insn_movl_eax_cr0() asm volatile ("movl %eax, %cr0 \r\n");
-#define xmhfhwm_cpu_insn_movl_cr2_eax() asm volatile ("movl %cr2, %eax \r\n");
-#define xmhfhwm_cpu_insn_movl_eax_cr2() asm volatile ("movl %eax, %cr2 \r\n");
-#define xmhfhwm_cpu_insn_movl_cr3_eax() asm volatile ("movl %cr3, %eax \r\n");
-#define xmhfhwm_cpu_insn_movl_eax_cr3() asm volatile ("movl %eax, %cr3 \r\n");
-#define xmhfhwm_cpu_insn_movl_ebx_cr3() asm volatile ("movl %ebx, %cr3 \r\n");
+#define xmhfhwm_cpu_insn_movl_cr0_eax() __builtin_annot("movl %cr0, %eax ");
+#define xmhfhwm_cpu_insn_movl_eax_cr0() __builtin_annot("movl %eax, %cr0 ");
+#define xmhfhwm_cpu_insn_movl_cr2_eax() __builtin_annot("movl %cr2, %eax ");
+#define xmhfhwm_cpu_insn_movl_eax_cr2() __builtin_annot("movl %eax, %cr2 ");
+#define xmhfhwm_cpu_insn_movl_cr3_eax() __builtin_annot("movl %cr3, %eax ");
+#define xmhfhwm_cpu_insn_movl_eax_cr3() __builtin_annot("movl %eax, %cr3 ");
+#define xmhfhwm_cpu_insn_movl_ebx_cr3() __builtin_annot("movl %ebx, %cr3 ");
 
-#define xmhfhwm_cpu_insn_movl_cr4_eax() asm volatile ("movl %cr4, %eax \r\n");
-#define xmhfhwm_cpu_insn_movl_eax_cr4() asm volatile ("movl %eax, %cr4 \r\n");
+#define xmhfhwm_cpu_insn_movl_cr4_eax() __builtin_annot("movl %cr4, %eax ");
+#define xmhfhwm_cpu_insn_movl_eax_cr4() __builtin_annot("movl %eax, %cr4 ");
 
 //other instructions
-#define xmhfhwm_cpu_insn_pause() asm volatile ("pause \r\n");
-#define xmhfhwm_cpu_insn_cpuid() asm volatile ("cpuid \r\n");
-#define xmhfhwm_cpu_insn_pushfl() asm volatile ("pushfl \r\n");
-#define xmhfhwm_cpu_insn_popfl() asm volatile ("popfl \r\n");
-#define xmhfhwm_cpu_insn_rdtsc() asm volatile ("rdtsc \r\n");
-#define xmhfhwm_cpu_insn_hlt() asm volatile ("hlt \r\n");
-#define xmhfhwm_cpu_insn_pushal() asm volatile ("pushal \r\n");
-#define xmhfhwm_cpu_insn_popal() asm volatile ("popal \r\n");
+#define xmhfhwm_cpu_insn_pause() __builtin_annot("pause ");
+#define xmhfhwm_cpu_insn_cpuid() __builtin_annot("cpuid ");
+#define xmhfhwm_cpu_insn_pushfl() __builtin_annot("pushfl ");
+#define xmhfhwm_cpu_insn_popfl() __builtin_annot("popfl ");
+#define xmhfhwm_cpu_insn_rdtsc() __builtin_annot("rdtsc ");
+#define xmhfhwm_cpu_insn_hlt() __builtin_annot("hlt ");
+#define xmhfhwm_cpu_insn_pushal() __builtin_annot("pushal ");
+#define xmhfhwm_cpu_insn_popal() __builtin_annot("popal ");
 
 // system instructions
-#define xmhfhwm_cpu_insn_cli() asm volatile ("cli \r\n");
-#define xmhfhwm_cpu_insn_sti() asm volatile ("sti \r\n");
-#define xmhfhwm_cpu_insn_inb_dx_al() asm volatile ("inb %dx, %al \r\n");
-#define xmhfhwm_cpu_insn_inw_dx_ax() asm volatile ("inw %dx, %ax \r\n");
-#define xmhfhwm_cpu_insn_inl_dx_eax() asm volatile ("inl %dx, %eax \r\n");
-#define xmhfhwm_cpu_insn_outb_al_dx() asm volatile ("outb %al, %dx \r\n");
-#define xmhfhwm_cpu_insn_outw_ax_dx() asm volatile ("outw %ax, %dx \r\n");
-#define xmhfhwm_cpu_insn_outl_eax_dx() asm volatile ("outl %eax, %dx \r\n");
-#define xmhfhwm_cpu_insn_rdmsr() asm volatile ("rdmsr \r\n");
-#define xmhfhwm_cpu_insn_wrmsr() asm volatile ("wrmsr \r\n");
-#define xmhfhwm_cpu_insn_wbinvd() asm volatile ("wbinvd \r\n");
-#define xmhfhwm_cpu_insn_invlpg_mesp(x) asm volatile ("invlpg "#x"(%esp) \r\n");
-#define xmhfhwm_cpu_insn_sgdt_mesp(x) asm volatile ("sgdt "#x"(%esp) \r\n");
-#define xmhfhwm_cpu_insn_str_ax() asm volatile ("str %ax \r\n");
-#define xmhfhwm_cpu_insn_sidt_mesp(x) asm volatile ("sidt "#x"(%esp) \r\n");
-#define xmhfhwm_cpu_insn_lidt_mecx(x) asm volatile ("lidt "#x"(%ecx) \r\n");
-#define xmhfhwm_cpu_insn_ltr_ax() asm volatile ("ltr %ax \r\n");
-#define xmhfhwm_cpu_insn_lgdt_mecx(x) asm volatile ("lgdt "#x"(%ecx) \r\n");
-#define xmhfhwm_cpu_insn_lock() asm volatile ("lock \r\n");
-#define xmhfhwm_cpu_insn_xsetbv() asm volatile ("xsetbv \r\n");
-#define xmhfhwm_cpu_insn_xgetbv() asm volatile ("xgetbv \r\n");
-#define xmhfhwm_cpu_insn_iretl() asm volatile ("iretl \r\n");
+#define xmhfhwm_cpu_insn_cli() __builtin_annot("cli ");
+#define xmhfhwm_cpu_insn_sti() __builtin_annot("sti ");
+#define xmhfhwm_cpu_insn_inb_dx_al() __builtin_annot("inb %dx, %al ");
+#define xmhfhwm_cpu_insn_inw_dx_ax() __builtin_annot("inw %dx, %ax ");
+#define xmhfhwm_cpu_insn_inl_dx_eax() __builtin_annot("inl %dx, %eax ");
+#define xmhfhwm_cpu_insn_outb_al_dx() __builtin_annot("outb %al, %dx ");
+#define xmhfhwm_cpu_insn_outw_ax_dx() __builtin_annot("outw %ax, %dx ");
+#define xmhfhwm_cpu_insn_outl_eax_dx() __builtin_annot("outl %eax, %dx ");
+#define xmhfhwm_cpu_insn_rdmsr() __builtin_annot("rdmsr ");
+#define xmhfhwm_cpu_insn_wrmsr() __builtin_annot("wrmsr ");
+#define xmhfhwm_cpu_insn_wbinvd() __builtin_annot("wbinvd ");
+#define xmhfhwm_cpu_insn_invlpg_mesp(x) __builtin_annot("invlpg "#x"(%esp) ");
+#define xmhfhwm_cpu_insn_sgdt_mesp(x) __builtin_annot("sgdt "#x"(%esp) ");
+#define xmhfhwm_cpu_insn_str_ax() __builtin_annot("str %ax ");
+#define xmhfhwm_cpu_insn_sidt_mesp(x) __builtin_annot("sidt "#x"(%esp) ");
+#define xmhfhwm_cpu_insn_lidt_mecx(x) __builtin_annot("lidt "#x"(%ecx) ");
+#define xmhfhwm_cpu_insn_ltr_ax() __builtin_annot("ltr %ax ");
+#define xmhfhwm_cpu_insn_lgdt_mecx(x) __builtin_annot("lgdt "#x"(%ecx) ");
+#define xmhfhwm_cpu_insn_lock() __builtin_annot("lock ");
+#define xmhfhwm_cpu_insn_xsetbv() __builtin_annot("xsetbv ");
+#define xmhfhwm_cpu_insn_xgetbv() __builtin_annot("xgetbv ");
+#define xmhfhwm_cpu_insn_iretl() __builtin_annot("iretl ");
 
 
 #endif //__ASSEMBLY__
