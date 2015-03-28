@@ -23,7 +23,7 @@ export XMHF_VERIFYDIR := $(CURDIR)/_verify
 export XMHFLIBS_SRC := $(realpath @XMHFLIBS_SRC@)
 
 # XMHF HIC source location
-export XMHFHIC_SRC := $(realpath xmhf-hic/)
+export XMHFHIC_SRC := $(realpath xmhf-slabs/xmhf-hic/)
 
 # XMHF core source location
 export XMHFCORE_SRC := $(realpath xmhf-slabs/xmhf-core)
@@ -212,7 +212,7 @@ genfiles:
 	mkdir -p $(XMHF_OBJDIR)
 	cd $(XMHF_OBJDIR) && xmhfgenlscript.pl $(XMHF_SLAB_NAMES) >xmhf.lscript
 #	cd $(XMHF_OBJDIR) && xmhfgenslabtable.pl $(XMHF_SLAB_NAMES) >$(XMHF_DIR)/xmhf-slabs/shared/shared-slabtable.c
-	cd $(XMHF_OBJDIR) && xmhfgenslabtable.pl $(XMHF_SLAB_NAMES) >$(XMHF_DIR)/xmhf-hic/__xmhfhic_initdata_slabtable
+	cd $(XMHF_OBJDIR) && xmhfgenslabtable.pl $(XMHF_SLAB_NAMES) >$(XMHF_DIR)/xmhf-slabs/xmhf-hic/__xmhfhic_initdata_slabtable
 
 
 .PHONY: xmhflibs
