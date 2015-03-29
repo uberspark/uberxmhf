@@ -296,24 +296,24 @@ void xmhfhic_arch_setup_slab_info(void){
     }
 
 
-    #if !defined (__XMHF_VERIFICATION__)
-    //initialize HIC physical memory extents
-    memcpy(_xmhfhic_common_hic_physmem_extents,
-           _xmhfhic_init_setupdata_hic_physmem_extents,
-           sizeof(_xmhfhic_common_hic_physmem_extents));
-    #endif
+    //#if !defined (__XMHF_VERIFICATION__)
+    ////initialize HIC physical memory extents
+    //memcpy(_xmhfhic_common_hic_physmem_extents,
+    //       _xmhfhic_init_setupdata_hic_physmem_extents,
+    //       sizeof(_xmhfhic_common_hic_physmem_extents));
+    //#endif
 
     #if !defined (__XMHF_VERIFICATION__)
-	//print out HIC section information
-    {
-		_XDPRINTF_("xmhfhic section info:\n");
-		_XDPRINTF_("  xmhfhic sharedro(%08x-%08x)\n", _xmhfhic_common_hic_physmem_extents[0].addr_start, _xmhfhic_common_hic_physmem_extents[0].addr_end);
-		_XDPRINTF_("  xmhfhic code(%08x-%08x)\n", _xmhfhic_common_hic_physmem_extents[1].addr_start, _xmhfhic_common_hic_physmem_extents[1].addr_end);
-		_XDPRINTF_("  xmhfhic rwdata(%08x-%08x)\n", _xmhfhic_common_hic_physmem_extents[2].addr_start, _xmhfhic_common_hic_physmem_extents[2].addr_end);
-		_XDPRINTF_("  xmhfhic rodata(%08x-%08x)\n", _xmhfhic_common_hic_physmem_extents[3].addr_start, _xmhfhic_common_hic_physmem_extents[3].addr_end);
-		_XDPRINTF_("  xmhfhic stack(%08x-%08x)\n", _xmhfhic_common_hic_physmem_extents[4].addr_start, _xmhfhic_common_hic_physmem_extents[4].addr_end);
-
-    }
+	////print out HIC section information
+    //{
+	//	_XDPRINTF_("xmhfhic section info:\n");
+	//	_XDPRINTF_("  xmhfhic sharedro(%08x-%08x)\n", _xmhfhic_common_hic_physmem_extents[0].addr_start, _xmhfhic_common_hic_physmem_extents[0].addr_end);
+	//	_XDPRINTF_("  xmhfhic code(%08x-%08x)\n", _xmhfhic_common_hic_physmem_extents[1].addr_start, _xmhfhic_common_hic_physmem_extents[1].addr_end);
+	//	_XDPRINTF_("  xmhfhic rwdata(%08x-%08x)\n", _xmhfhic_common_hic_physmem_extents[2].addr_start, _xmhfhic_common_hic_physmem_extents[2].addr_end);
+	//	_XDPRINTF_("  xmhfhic rodata(%08x-%08x)\n", _xmhfhic_common_hic_physmem_extents[3].addr_start, _xmhfhic_common_hic_physmem_extents[3].addr_end);
+	//	_XDPRINTF_("  xmhfhic stack(%08x-%08x)\n", _xmhfhic_common_hic_physmem_extents[4].addr_start, _xmhfhic_common_hic_physmem_extents[4].addr_end);
+    //
+    //}
 
 	//print out slab table
 	{
@@ -905,18 +905,18 @@ static u32 __xmhfhic_hyp_slab_getspatype(u64 slab_index, u32 spa){
 
 	//HIC shared ro region
 	//TODO: add per shared data variable access policy rather than entire section
-	if(spa >= _xmhfhic_common_hic_physmem_extents[0].addr_start && spa < _xmhfhic_common_hic_physmem_extents[0].addr_end)
-		return _SLAB_SPATYPE_HIC_SHAREDRO;
+	//if(spa >= _xmhfhic_common_hic_physmem_extents[0].addr_start && spa < _xmhfhic_common_hic_physmem_extents[0].addr_end)
+	//	return _SLAB_SPATYPE_HIC_SHAREDRO;
 
 	//HIC code,rodata,rwdat and stack
-    if(spa >= _xmhfhic_common_hic_physmem_extents[1].addr_start && spa < _xmhfhic_common_hic_physmem_extents[1].addr_end)
-		return _SLAB_SPATYPE_HIC;
-    if(spa >= _xmhfhic_common_hic_physmem_extents[2].addr_start && spa < _xmhfhic_common_hic_physmem_extents[2].addr_end)
-		return _SLAB_SPATYPE_HIC;
-    if(spa >= _xmhfhic_common_hic_physmem_extents[3].addr_start && spa < _xmhfhic_common_hic_physmem_extents[3].addr_end)
-		return _SLAB_SPATYPE_HIC;
-    if(spa >= _xmhfhic_common_hic_physmem_extents[4].addr_start && spa < _xmhfhic_common_hic_physmem_extents[4].addr_end)
-		return _SLAB_SPATYPE_HIC;
+    //if(spa >= _xmhfhic_common_hic_physmem_extents[1].addr_start && spa < _xmhfhic_common_hic_physmem_extents[1].addr_end)
+	//	return _SLAB_SPATYPE_HIC;
+    //if(spa >= _xmhfhic_common_hic_physmem_extents[2].addr_start && spa < _xmhfhic_common_hic_physmem_extents[2].addr_end)
+	//	return _SLAB_SPATYPE_HIC;
+    //if(spa >= _xmhfhic_common_hic_physmem_extents[3].addr_start && spa < _xmhfhic_common_hic_physmem_extents[3].addr_end)
+	//	return _SLAB_SPATYPE_HIC;
+    //if(spa >= _xmhfhic_common_hic_physmem_extents[4].addr_start && spa < _xmhfhic_common_hic_physmem_extents[4].addr_end)
+	//	return _SLAB_SPATYPE_HIC;
 
 
 	return _SLAB_SPATYPE_OTHER;
