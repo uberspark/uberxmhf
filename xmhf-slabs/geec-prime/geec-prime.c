@@ -1002,8 +1002,8 @@ static u64 __xmhfhic_arch_smt_slab_populate_hyp_pagetables(u64 slabid){
 		}
 
         //_xmhfhic_common_slab_info_table[slabid].archdata.mempgtbl_pml4t = (u64)&_dbuf_mempgtbl_pml4t[slabid];
-        _xmhfhic_common_slab_info_table[slabid].archdata.mempgtbl_pdpt = (u64)&_dbuf_mempgtbl_pdpt[slabid];
-        _xmhfhic_common_slab_info_table[slabid].archdata.mempgtbl_pdt = (u64)&_dbuf_mempgtbl_pdt[slabid];
+        //_xmhfhic_common_slab_info_table[slabid].archdata.mempgtbl_pdpt = (u64)&_dbuf_mempgtbl_pdpt[slabid];
+        //_xmhfhic_common_slab_info_table[slabid].archdata.mempgtbl_pdt = (u64)&_dbuf_mempgtbl_pdt[slabid];
         //_xmhfhic_common_slab_info_table[slabid].archdata.mempgtbl_pt = (u64)&_dbuf_mempgtbl_pt[slabid]; //FIXME: we dont need this allocation
 
 
@@ -1036,7 +1036,8 @@ static u64 __xmhfhic_arch_smt_slab_populate_hyp_pagetables(u64 slabid){
 			}
 		}*/
 
-		return _xmhfhic_common_slab_info_table[slabid].archdata.mempgtbl_pdpt;
+        return (u64)&_dbuf_mempgtbl_pdpt[slabid];
+		//return _xmhfhic_common_slab_info_table[slabid].archdata.mempgtbl_pdpt;
 		//return _xmhfhic_common_slab_info_table[slabid].archdata.mempgtbl_pml4t;
 		//return _xmhfhic_common_slab_archdata_mempgtbl_pml4t[slabid];
 }
@@ -1052,13 +1053,14 @@ static void __xmhfhic_vmx_setupEPT(u64 guestslab_id);
 
 #if !defined (__XMHF_VERIFICATION__)
 static void __xmhfhic_guestpgtbl_setentry(u64 slabid,  u64 gpa, u64 entry){
-    //u64 pdpt_index = pae_get_pdpt_index(gpa);
-    //u64 pd_index = pae_get_pdt_index(gpa);
-    //u64 pt_index = pae_get_pt_index(gpa);
+    u64 pdpt_index = pae_get_pdpt_index(gpa);
+    u64 pd_index = pae_get_pdt_index(gpa);
+    u64 pt_index = pae_get_pt_index(gpa);
 
     //_xmhfhic_common_slab_info_table[slabid].archdata.mempgtbl_pt[pdpt_index][pd_index][pt_index] = entry;
-    _xmhfhic_common_slab_info_table[slabid].archdata.mempgtbl_pt[(gpa/PAGE_SIZE_4K)]= entry;
+    //_xmhfhic_common_slab_info_table[slabid].archdata.mempgtbl_pt[(gpa/PAGE_SIZE_4K)]= entry;
 
+    _dbuf_mempgtbl_pt[slabid][pdpt_index][pd_index][pt_index] = entry;
 	return;
 }
 #endif
@@ -1096,10 +1098,10 @@ static void __xmhfhic_guestpgtbl_establishshape(u64 slabid){
 	}*/
 
 
-    _xmhfhic_common_slab_info_table[slabid].archdata.mempgtbl_pml4t = (u64)&_dbuf_mempgtbl_pml4t[slabid];
-    _xmhfhic_common_slab_info_table[slabid].archdata.mempgtbl_pdpt = (u64)&_dbuf_mempgtbl_pdpt[slabid];
-    _xmhfhic_common_slab_info_table[slabid].archdata.mempgtbl_pdt = (u64)&_dbuf_mempgtbl_pdt[slabid];
-    _xmhfhic_common_slab_info_table[slabid].archdata.mempgtbl_pt = (u64)&_dbuf_mempgtbl_pt[slabid]; //FIXME: we dont need this allocation
+    //_xmhfhic_common_slab_info_table[slabid].archdata.mempgtbl_pml4t = (u64)&_dbuf_mempgtbl_pml4t[slabid];
+    //_xmhfhic_common_slab_info_table[slabid].archdata.mempgtbl_pdpt = (u64)&_dbuf_mempgtbl_pdpt[slabid];
+    //_xmhfhic_common_slab_info_table[slabid].archdata.mempgtbl_pdt = (u64)&_dbuf_mempgtbl_pdt[slabid];
+    //_xmhfhic_common_slab_info_table[slabid].archdata.mempgtbl_pt = (u64)&_dbuf_mempgtbl_pt[slabid]; //FIXME: we dont need this allocation
 
 
 }
@@ -1387,7 +1389,8 @@ static u64 __xmhfhic_arch_smt_slab_populate_guest_pagetables(u64 slabid){
 
 	__xmhfhic_vmx_setupEPT(slabid);
 
-    return _xmhfhic_common_slab_info_table[slabid].archdata.mempgtbl_pml4t;
+    return &_dbuf_mempgtbl_pml4t[slabid];
+    //return _xmhfhic_common_slab_info_table[slabid].archdata.mempgtbl_pml4t;
     //return _xmhfhic_common_slab_archdata_mempgtbl_pml4t[slabid];
 }
 
