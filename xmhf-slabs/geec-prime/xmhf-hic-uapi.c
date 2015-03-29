@@ -642,8 +642,12 @@ static void __xmhfhic_rtm_uapihandler_mempgtbl(slab_params_t *sp){
             #endif // defined
 
             {
-                u64 *table = (u64 *)_xmhfhic_common_slab_info_table[mdesc->guest_slab_index].archdata.mempgtbl_pt;
-                mdesc->entry = table[pt_index];
+                //u64 *table = (u64 *)_xmhfhic_common_slab_info_table[mdesc->guest_slab_index].archdata.mempgtbl_pt;
+                //mdesc->entry = table[pt_index];
+                u64 pdpt_index = pae_get_pdpt_index(mdesc->gpa);
+                u64 pd_index = pae_get_pdt_index(mdesc->gpa);
+                u64 pt_index = pae_get_pt_index(mdesc->gpa);
+                mdesc->entry = _dbuf_mempgtbl_pt[mdesc->guest_slab_index][pdpt_index][pd_index][pt_index];
             }
 
             //debug
@@ -723,8 +727,13 @@ static void __xmhfhic_rtm_uapihandler_mempgtbl(slab_params_t *sp){
             }
 
             {
-                u64 *table = (u64 *)_xmhfhic_common_slab_info_table[mdesc->guest_slab_index].archdata.mempgtbl_pt;
-                table[pt_index] = mdesc->entry;
+                //u64 *table = (u64 *)_xmhfhic_common_slab_info_table[mdesc->guest_slab_index].archdata.mempgtbl_pt;
+                //table[pt_index] = mdesc->entry;
+                u64 pdpt_index = pae_get_pdpt_index(mdesc->gpa);
+                u64 pd_index = pae_get_pdt_index(mdesc->gpa);
+                u64 pt_index = pae_get_pt_index(mdesc->gpa);
+                _dbuf_mempgtbl_pt[mdesc->guest_slab_index][pdpt_index][pd_index][pt_index] = mdesc->entry;
+
             }
 
             //#if defined (__XMHF_VERIFICATION__)

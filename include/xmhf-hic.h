@@ -291,17 +291,6 @@ typedef struct {
 //////
 //modified data types
 typedef struct {
-    u64 *mempgtbl_pml4t;
-	u64 *mempgtbl_pdpt;
-	u64 *mempgtbl_pdt;
-	u64 *mempgtbl_pt;
-
-	//u64 *devpgtbl_pml4t;
-	//u64 *devpgtbl_pdpt;
-	//u64 *devpgtbl_pdt;
-	//u64 *devpgtbl_pt;
-
-	//u8  *deviomap;
 	u32 slabtype; //hypervisor, guest
 	bool mempgtbl_initialized;
 	bool devpgtbl_initialized;
