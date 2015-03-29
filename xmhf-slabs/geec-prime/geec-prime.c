@@ -574,14 +574,15 @@ static vtd_slpgtbl_handle_t _platform_x86pc_vtd_setup_slpgtbl(u32 slabid){
     }
 
     //populate device page tables pml4t, pdpt, pdt and pt pointers in slab info table
-    _xmhfhic_common_slab_info_table[slabid].archdata.devpgtbl_pml4t = &_dbuf_devpgtbl[slabid].pml4t;
-    _xmhfhic_common_slab_info_table[slabid].archdata.devpgtbl_pdpt = &_dbuf_devpgtbl[slabid].pdpt;
-    _xmhfhic_common_slab_info_table[slabid].archdata.devpgtbl_pdt = &_dbuf_devpgtbl[slabid].pdt;
-    _xmhfhic_common_slab_info_table[slabid].archdata.devpgtbl_pt = &_dbuf_devpgtbl[slabid].pt;
+    //XXX: these will move into devicepgtbl uapi slab
+    //_xmhfhic_common_slab_info_table[slabid].archdata.devpgtbl_pml4t = &_dbuf_devpgtbl[slabid].pml4t;
+    //_xmhfhic_common_slab_info_table[slabid].archdata.devpgtbl_pdpt = &_dbuf_devpgtbl[slabid].pdpt;
+    //_xmhfhic_common_slab_info_table[slabid].archdata.devpgtbl_pdt = &_dbuf_devpgtbl[slabid].pdt;
+    //_xmhfhic_common_slab_info_table[slabid].archdata.devpgtbl_pt = &_dbuf_devpgtbl[slabid].pt;
 
 
-    retval.addr_vtd_pml4t = _xmhfhic_common_slab_info_table[slabid].archdata.devpgtbl_pml4t;
-    retval.addr_vtd_pdpt = _xmhfhic_common_slab_info_table[slabid].archdata.devpgtbl_pdpt;
+    retval.addr_vtd_pml4t = &_dbuf_devpgtbl[slabid].pml4t;
+    retval.addr_vtd_pdpt = &_dbuf_devpgtbl[slabid].pdpt;
 
     return retval;
 }
@@ -670,12 +671,12 @@ static bool __xmhfhic_arch_sda_allocdevices_to_slab(u64 slabid, slab_platformdev
         // (d* PCI_FUNCTION_MAX) + f = index into the cet
         if(vtd_pagewalk_level == VTD_PAGEWALK_4LEVEL){
             _vtd_cet[b][((d*PCI_FUNCTION_MAX) + f)].qwords[0] =
-                vtd_make_cete((u64)_xmhfhic_common_slab_info_table[slabid].archdata.devpgtbl_pml4t, VTD_CET_PRESENT);
+                vtd_make_cete((u64)&_dbuf_devpgtbl[slabid].pml4t, VTD_CET_PRESENT);
             _vtd_cet[b][((d*PCI_FUNCTION_MAX) + f)].qwords[1] =
                 vtd_make_cetehigh(2, (slabid+1));
         }else if (vtd_pagewalk_level == VTD_PAGEWALK_3LEVEL){
             _vtd_cet[b][((d*PCI_FUNCTION_MAX) + f)].qwords[0] =
-                vtd_make_cete((u64)_xmhfhic_common_slab_info_table[slabid].archdata.devpgtbl_pdpt, VTD_CET_PRESENT);
+                vtd_make_cete((u64)&_dbuf_devpgtbl[slabid].pdpt, VTD_CET_PRESENT);
             _vtd_cet[b][((d*PCI_FUNCTION_MAX) + f)].qwords[1] =
                 vtd_make_cetehigh(1, (slabid+1));
         }else{ //unknown page walk length, fail

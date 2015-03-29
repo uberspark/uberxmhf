@@ -296,16 +296,16 @@ typedef struct {
 	u64 *mempgtbl_pdt;
 	u64 *mempgtbl_pt;
 
-	u64 *devpgtbl_pml4t;
-	u64 *devpgtbl_pdpt;
-	u64 *devpgtbl_pdt;
-	u64 *devpgtbl_pt;
+	//u64 *devpgtbl_pml4t;
+	//u64 *devpgtbl_pdpt;
+	//u64 *devpgtbl_pdt;
+	//u64 *devpgtbl_pt;
 
-	u8  *deviomap;
-	u64 slabtype; //hypervisor, guest
+	//u8  *deviomap;
+	u32 slabtype; //hypervisor, guest
 	bool mempgtbl_initialized;
 	bool devpgtbl_initialized;
-	u64 mempgtbl_cr3;
+	u32 mempgtbl_cr3;
 	u32 slabtos[MAX_PLATFORM_CPUS];
 } __attribute__((packed)) x_slab_info_archdata_t;
 
