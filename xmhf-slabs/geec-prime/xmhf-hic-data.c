@@ -342,7 +342,22 @@ __attribute__(( section(".sharedro") )) __attribute__((aligned(4096))) x_slab_in
 
     //XMHF_HYP_SLAB_GEECPRIME
     {
-        {HIC_SLAB_X86VMXX86PC_HYPERVISOR, false, false, 0, {0}},
+        {
+            HIC_SLAB_X86VMXX86PC_HYPERVISOR,
+            false,
+            false,
+            0,
+            {
+                ((u32)&_xmhfhic_stack_start[1*XMHF_SLAB_STACKSIZE]),
+                ((u32)&_xmhfhic_stack_start[2*XMHF_SLAB_STACKSIZE]),
+                ((u32)&_xmhfhic_stack_start[3*XMHF_SLAB_STACKSIZE]),
+                ((u32)&_xmhfhic_stack_start[4*XMHF_SLAB_STACKSIZE]),
+                ((u32)&_xmhfhic_stack_start[5*XMHF_SLAB_STACKSIZE]),
+                ((u32)&_xmhfhic_stack_start[6*XMHF_SLAB_STACKSIZE]),
+                ((u32)&_xmhfhic_stack_start[7*XMHF_SLAB_STACKSIZE]),
+                ((u32)&_xmhfhic_stack_start[8*XMHF_SLAB_STACKSIZE]),
+            }
+        },
         true,
         0,
         HIC_SLAB_CALLCAP(XMHF_HYP_SLAB_XCINIT),
@@ -361,7 +376,22 @@ __attribute__(( section(".sharedro") )) __attribute__((aligned(4096))) x_slab_in
 
     //XMHF_HYP_SLAB_XCINIT
     {
-        {HIC_SLAB_X86VMXX86PC_HYPERVISOR, false, false, 0, {0}},
+        {
+            HIC_SLAB_X86VMXX86PC_HYPERVISOR,
+            false,
+            false,
+            0,
+            {
+                ((u32)&_slab_xcinit_stack_start[1*XMHF_SLAB_STACKSIZE]),
+                ((u32)&_slab_xcinit_stack_start[2*XMHF_SLAB_STACKSIZE]),
+                ((u32)&_slab_xcinit_stack_start[3*XMHF_SLAB_STACKSIZE]),
+                ((u32)&_slab_xcinit_stack_start[4*XMHF_SLAB_STACKSIZE]),
+                ((u32)&_slab_xcinit_stack_start[5*XMHF_SLAB_STACKSIZE]),
+                ((u32)&_slab_xcinit_stack_start[6*XMHF_SLAB_STACKSIZE]),
+                ((u32)&_slab_xcinit_stack_start[7*XMHF_SLAB_STACKSIZE]),
+                ((u32)&_slab_xcinit_stack_start[8*XMHF_SLAB_STACKSIZE]),
+            }
+        },
         true,
         0,
         HIC_SLAB_CALLCAP(XMHF_HYP_SLAB_XCTESTSLAB1) | HIC_SLAB_CALLCAP(XMHF_GUEST_SLAB_XCGUESTSLAB),
@@ -380,7 +410,22 @@ __attribute__(( section(".sharedro") )) __attribute__((aligned(4096))) x_slab_in
 
     //XMHF_HYP_SLAB_XCIHUB
     {
-        {HIC_SLAB_X86VMXX86PC_HYPERVISOR, false, false, 0, {0}},
+        {
+            HIC_SLAB_X86VMXX86PC_HYPERVISOR,
+            false,
+            false,
+            0,
+            {
+                ((u32)&_slab_xcihub_stack_start[1*XMHF_SLAB_STACKSIZE]),
+                ((u32)&_slab_xcihub_stack_start[2*XMHF_SLAB_STACKSIZE]),
+                ((u32)&_slab_xcihub_stack_start[3*XMHF_SLAB_STACKSIZE]),
+                ((u32)&_slab_xcihub_stack_start[4*XMHF_SLAB_STACKSIZE]),
+                ((u32)&_slab_xcihub_stack_start[5*XMHF_SLAB_STACKSIZE]),
+                ((u32)&_slab_xcihub_stack_start[6*XMHF_SLAB_STACKSIZE]),
+                ((u32)&_slab_xcihub_stack_start[7*XMHF_SLAB_STACKSIZE]),
+                ((u32)&_slab_xcihub_stack_start[8*XMHF_SLAB_STACKSIZE]),
+            }
+        },
         true,
         0,
         HIC_SLAB_CALLCAP(XMHF_HYP_SLAB_XHHYPERDEP) | HIC_SLAB_CALLCAP(XMHF_HYP_SLAB_XHAPPROVEXEC) | HIC_SLAB_CALLCAP(XMHF_HYP_SLAB_XHSSTEPTRACE) | HIC_SLAB_CALLCAP(XMHF_HYP_SLAB_XHSYSCALLLOG),
@@ -399,7 +444,22 @@ __attribute__(( section(".sharedro") )) __attribute__((aligned(4096))) x_slab_in
 
     //XMHF_HYP_SLAB_XCEXHUB
     {
-        {HIC_SLAB_X86VMXX86PC_HYPERVISOR, false, false, 0, {0}},
+        {
+            HIC_SLAB_X86VMXX86PC_HYPERVISOR,
+            false,
+            false,
+            0,
+            {
+                ((u32)&_slab_xcexhub_stack_start[1*XMHF_SLAB_STACKSIZE]),
+                ((u32)&_slab_xcexhub_stack_start[2*XMHF_SLAB_STACKSIZE]),
+                ((u32)&_slab_xcexhub_stack_start[3*XMHF_SLAB_STACKSIZE]),
+                ((u32)&_slab_xcexhub_stack_start[4*XMHF_SLAB_STACKSIZE]),
+                ((u32)&_slab_xcexhub_stack_start[5*XMHF_SLAB_STACKSIZE]),
+                ((u32)&_slab_xcexhub_stack_start[6*XMHF_SLAB_STACKSIZE]),
+                ((u32)&_slab_xcexhub_stack_start[7*XMHF_SLAB_STACKSIZE]),
+                ((u32)&_slab_xcexhub_stack_start[8*XMHF_SLAB_STACKSIZE]),
+            }
+        },
         true,
         0,
         0,
@@ -418,7 +478,22 @@ __attribute__(( section(".sharedro") )) __attribute__((aligned(4096))) x_slab_in
 
     //XMHF_HYP_SLAB_XCTESTSLAB1
     {
-        {HIC_SLAB_X86VMXX86PC_HYPERVISOR, false, false, 0, {0}},
+        {
+            HIC_SLAB_X86VMXX86PC_HYPERVISOR,
+            false,
+            false,
+            0,
+            {
+                ((u32)&_slab_xctestslab1_stack_start[1*XMHF_SLAB_STACKSIZE]),
+                ((u32)&_slab_xctestslab1_stack_start[2*XMHF_SLAB_STACKSIZE]),
+                ((u32)&_slab_xctestslab1_stack_start[3*XMHF_SLAB_STACKSIZE]),
+                ((u32)&_slab_xctestslab1_stack_start[4*XMHF_SLAB_STACKSIZE]),
+                ((u32)&_slab_xctestslab1_stack_start[5*XMHF_SLAB_STACKSIZE]),
+                ((u32)&_slab_xctestslab1_stack_start[6*XMHF_SLAB_STACKSIZE]),
+                ((u32)&_slab_xctestslab1_stack_start[7*XMHF_SLAB_STACKSIZE]),
+                ((u32)&_slab_xctestslab1_stack_start[8*XMHF_SLAB_STACKSIZE]),
+            }
+        },
         true,
         0,
         0,
@@ -437,7 +512,22 @@ __attribute__(( section(".sharedro") )) __attribute__((aligned(4096))) x_slab_in
 
     //XMHF_HYP_SLAB_XHHYPERDEP
     {
-        {HIC_SLAB_X86VMXX86PC_HYPERVISOR, false, false, 0, {0}},
+        {
+            HIC_SLAB_X86VMXX86PC_HYPERVISOR,
+            false,
+            false,
+            0,
+            {
+                ((u32)&_slab_xhhyperdep_stack_start[1*XMHF_SLAB_STACKSIZE]),
+                ((u32)&_slab_xhhyperdep_stack_start[2*XMHF_SLAB_STACKSIZE]),
+                ((u32)&_slab_xhhyperdep_stack_start[3*XMHF_SLAB_STACKSIZE]),
+                ((u32)&_slab_xhhyperdep_stack_start[4*XMHF_SLAB_STACKSIZE]),
+                ((u32)&_slab_xhhyperdep_stack_start[5*XMHF_SLAB_STACKSIZE]),
+                ((u32)&_slab_xhhyperdep_stack_start[6*XMHF_SLAB_STACKSIZE]),
+                ((u32)&_slab_xhhyperdep_stack_start[7*XMHF_SLAB_STACKSIZE]),
+                ((u32)&_slab_xhhyperdep_stack_start[8*XMHF_SLAB_STACKSIZE]),
+            }
+        },
         true,
         0,
         0,
@@ -456,7 +546,22 @@ __attribute__(( section(".sharedro") )) __attribute__((aligned(4096))) x_slab_in
 
     //XMHF_HYP_SLAB_XHAPPROVEXEC
     {
-        {HIC_SLAB_X86VMXX86PC_HYPERVISOR, false, false, 0, {0}},
+        {
+            HIC_SLAB_X86VMXX86PC_HYPERVISOR,
+            false,
+            false,
+            0,
+            {
+                ((u32)&_slab_xhapprovexec_stack_start[1*XMHF_SLAB_STACKSIZE]),
+                ((u32)&_slab_xhapprovexec_stack_start[2*XMHF_SLAB_STACKSIZE]),
+                ((u32)&_slab_xhapprovexec_stack_start[3*XMHF_SLAB_STACKSIZE]),
+                ((u32)&_slab_xhapprovexec_stack_start[4*XMHF_SLAB_STACKSIZE]),
+                ((u32)&_slab_xhapprovexec_stack_start[5*XMHF_SLAB_STACKSIZE]),
+                ((u32)&_slab_xhapprovexec_stack_start[6*XMHF_SLAB_STACKSIZE]),
+                ((u32)&_slab_xhapprovexec_stack_start[7*XMHF_SLAB_STACKSIZE]),
+                ((u32)&_slab_xhapprovexec_stack_start[8*XMHF_SLAB_STACKSIZE]),
+            }
+        },
         true,
         0,
         0,
@@ -474,7 +579,22 @@ __attribute__(( section(".sharedro") )) __attribute__((aligned(4096))) x_slab_in
 
     //XMHF_HYP_SLAB_XHSYSCALLLOG
     {
-        {HIC_SLAB_X86VMXX86PC_HYPERVISOR, false, false, 0, {0}},
+        {
+            HIC_SLAB_X86VMXX86PC_HYPERVISOR,
+            false,
+            false,
+            0,
+            {
+                ((u32)&_slab_xhsyscalllog_stack_start[1*XMHF_SLAB_STACKSIZE]),
+                ((u32)&_slab_xhsyscalllog_stack_start[2*XMHF_SLAB_STACKSIZE]),
+                ((u32)&_slab_xhsyscalllog_stack_start[3*XMHF_SLAB_STACKSIZE]),
+                ((u32)&_slab_xhsyscalllog_stack_start[4*XMHF_SLAB_STACKSIZE]),
+                ((u32)&_slab_xhsyscalllog_stack_start[5*XMHF_SLAB_STACKSIZE]),
+                ((u32)&_slab_xhsyscalllog_stack_start[6*XMHF_SLAB_STACKSIZE]),
+                ((u32)&_slab_xhsyscalllog_stack_start[7*XMHF_SLAB_STACKSIZE]),
+                ((u32)&_slab_xhsyscalllog_stack_start[8*XMHF_SLAB_STACKSIZE]),
+            }
+        },
         true,
         0,
         0,
@@ -492,7 +612,22 @@ __attribute__(( section(".sharedro") )) __attribute__((aligned(4096))) x_slab_in
 
     //XMHF_HYP_SLAB_XHSSTEPTRACE
     {
-        {HIC_SLAB_X86VMXX86PC_HYPERVISOR, false, false, 0, {0}},
+        {
+            HIC_SLAB_X86VMXX86PC_HYPERVISOR,
+            false,
+            false,
+            0,
+            {
+                ((u32)&_slab_xhssteptrace_stack_start[1*XMHF_SLAB_STACKSIZE]),
+                ((u32)&_slab_xhssteptrace_stack_start[2*XMHF_SLAB_STACKSIZE]),
+                ((u32)&_slab_xhssteptrace_stack_start[3*XMHF_SLAB_STACKSIZE]),
+                ((u32)&_slab_xhssteptrace_stack_start[4*XMHF_SLAB_STACKSIZE]),
+                ((u32)&_slab_xhssteptrace_stack_start[5*XMHF_SLAB_STACKSIZE]),
+                ((u32)&_slab_xhssteptrace_stack_start[6*XMHF_SLAB_STACKSIZE]),
+                ((u32)&_slab_xhssteptrace_stack_start[7*XMHF_SLAB_STACKSIZE]),
+                ((u32)&_slab_xhssteptrace_stack_start[8*XMHF_SLAB_STACKSIZE]),
+            }
+        },
         true,
         0,
         0,
