@@ -251,7 +251,7 @@ void xmhfhic_arch_setup_slab_info(void){
 
         for(i=0; i < XMHF_HIC_MAX_SLABS; i++){
 
-            _xmhfhic_common_slab_info_table[i].slab_inuse = true;
+/*            _xmhfhic_common_slab_info_table[i].slab_inuse = true;
             _xmhfhic_common_slab_info_table[i].slab_privilegemask =
                 _xmhfhic_init_setupdata_slab_caps[i].slab_privilegemask;
             _xmhfhic_common_slab_info_table[i].slab_callcaps =
@@ -278,8 +278,8 @@ void xmhfhic_arch_setup_slab_info(void){
 
             _xmhfhic_common_slab_info_table[i].archdata.mempgtbl_initialized=false;
             _xmhfhic_common_slab_info_table[i].archdata.devpgtbl_initialized=false;
-
-            #if !defined(__XMHF_VERIFICATION__)
+*/
+/*            #if !defined(__XMHF_VERIFICATION__)
             {
                 u32 j;
                 //u64 *slab_stackhdr = (u64 *)_xmhfhic_common_slab_info_table[i].slab_physmem_extents[3].addr_start;
@@ -291,7 +291,7 @@ void xmhfhic_arch_setup_slab_info(void){
                 }
             }
             #endif
-
+*/
         }
     }
 
