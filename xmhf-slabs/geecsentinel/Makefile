@@ -15,7 +15,7 @@ vpath %.lscript $(srcdir)
 ########################################################################
 # options that each slab will customize
 
-export XMHF_SLAB_NAME := geec-sentinel
+export XMHF_SLAB_NAME := geecsentinel
 export XMHF_SLAB_PRIVILEGED := y
 export XMHF_SLAB_SOURCES := $(wildcard $(srcdir)/*.c)
 

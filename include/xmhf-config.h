@@ -123,19 +123,20 @@
 
 
 
-#define XMHF_HIC_MAX_SLABS                  (10)
+#define XMHF_HIC_MAX_SLABS                  (11)
 
 
 #define XMHF_HYP_SLAB_GEECPRIME             (0)
-#define XMHF_HYP_SLAB_XCINIT                (1)
-#define XMHF_HYP_SLAB_XCIHUB                (2)
-#define XMHF_HYP_SLAB_XCEXHUB               (3)
-#define XMHF_HYP_SLAB_XCTESTSLAB1           (4)
-#define XMHF_HYP_SLAB_XHHYPERDEP            (5)
-#define XMHF_HYP_SLAB_XHAPPROVEXEC          (6)
-#define XMHF_HYP_SLAB_XHSYSCALLLOG          (7)
-#define XMHF_HYP_SLAB_XHSSTEPTRACE          (8)
-#define XMHF_GUEST_SLAB_XCGUESTSLAB         (9)
+#define XMHF_HYP_SLAB_GEECSENTINEL          (1)
+#define XMHF_HYP_SLAB_XCINIT                (2)
+#define XMHF_HYP_SLAB_XCIHUB                (3)
+#define XMHF_HYP_SLAB_XCEXHUB               (4)
+#define XMHF_HYP_SLAB_XCTESTSLAB1           (5)
+#define XMHF_HYP_SLAB_XHHYPERDEP            (6)
+#define XMHF_HYP_SLAB_XHAPPROVEXEC          (7)
+#define XMHF_HYP_SLAB_XHSYSCALLLOG          (8)
+#define XMHF_HYP_SLAB_XHSSTEPTRACE          (9)
+#define XMHF_GUEST_SLAB_XCGUESTSLAB         (10)
 
 
 
