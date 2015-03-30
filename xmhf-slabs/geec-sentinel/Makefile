@@ -1,101 +1,73 @@
 ########################################################################
 #
-# Makefile for XMHF HIC
+# Makefile for XMHF GEEC sentinel
 # author: amit vasudevan (amitvasudevan@acm.org)
 #
 ########################################################################
 
 export srcdir := $(dir $(lastword $(MAKEFILE_LIST)))
+
 vpath %.c $(srcdir)
 vpath %.S $(srcdir)
 vpath %.lscript $(srcdir)
 vpath %.cS $(srcdir)
 
-
-#export PKG_CONFIG ?= pkg-config
-#export XMHF_PKG_CONFIG_MODNAME=xmhf
-#XMHF_DIR=$(shell $(PKG_CONFIG) $(XMHF_PKG_CONFIG_MODNAME) --variable=xmhf_dir)
-
-
 ########################################################################
 
-export XMHF_HIC_NAME := xmhf-hic
-export XMHF_HIC_SOURCES := $(wildcard $(srcdir)/*.c)
-XMHF_HIC_SOURCES += $(shell find $(srcdir)/arch/$(XMHF_TARGET_TRIAD)/ -type f -name '*.c')
-XMHF_HIC_SOURCES += $(wildcard $(srcdir)/*.cS)
+export XMHF_GEECSENTINEL_NAME := geec-sentinel
+export XMHF_GEECSENTINEL_SOURCES := $(wildcard $(srcdir)/*.c)
+XMHF_GEECSENTINEL_SOURCES += $(wildcard $(srcdir)/*.cS)
+
 
 ########################################################################
 # generic build harness
 
-XMHF_HIC_SOURCES_SUBST := $(patsubst $(srcdir)/%, %, $(XMHF_HIC_SOURCES))
+XMHF_GEECSENTINEL_SOURCES_SUBST := $(patsubst $(srcdir)/%, %, $(XMHF_GEECSENTINEL_SOURCES))
 
 # grab list of file names only for binary generation
-XMHF_HIC_SOURCES_FILENAMEONLY := $(notdir $(XMHF_HIC_SOURCES_SUBST))
+XMHF_GEECSENTINEL_SOURCES_FILENAMEONLY := $(notdir $(XMHF_GEECSENTINEL_SOURCES_SUBST))
 
-XMHF_HIC_OBJECTS_ARCHIVE := $(patsubst %.c, %.o, $(XMHF_HIC_SOURCES_FILENAMEONLY))
-XMHF_HIC_OBJECTS_ARCHIVE := $(patsubst %.cS, %.o, $(XMHF_HIC_OBJECTS_ARCHIVE))
+XMHF_GEECSENTINEL_OBJECTS_ARCHIVE := $(patsubst %.c, %.o, $(XMHF_GEECSENTINEL_SOURCES_FILENAMEONLY))
+XMHF_GEECSENTINEL_OBJECTS_ARCHIVE := $(patsubst %.cS, %.o, $(XMHF_GEECSENTINEL_OBJECTS_ARCHIVE))
 
 # list of object dependencies
-XMHF_HIC_OBJECTS := $(patsubst %.c, %.o, $(XMHF_HIC_SOURCES_SUBST))
-XMHF_HIC_OBJECTS := $(patsubst %.cS, %.o, $(XMHF_HIC_OBJECTS))
+XMHF_GEECSENTINEL_OBJECTS := $(patsubst %.c, %.o, $(XMHF_GEECSENTINEL_SOURCES_SUBST))
+XMHF_GEECSENTINEL_OBJECTS := $(patsubst %.cS, %.o, $(XMHF_GEECSENTINEL_OBJECTS))
 
 # folder where objects go
-XMHF_HIC_OBJECTS_DIR := _objs_$(XMHF_HIC_NAME)
+XMHF_GEECSENTINEL_OBJECTS_DIR := _objs_$(XMHF_GEECSENTINEL_NAME)
 
-LINKER_SCRIPT_INPUT := $(XMHF_DIR)/xmhf-slabs/geec-prime/xmhf-hic.lscript
-LINKER_SCRIPT_OUTPUT := $(XMHF_HIC_NAME).lds
-
-
-# LLC flags
-#LLC_ATTR = -3dnow,-3dnowa,+64bit,+64bit-mode,-adx,-aes,-atom,-avx,-avx2,-bmi,-bmi2,-cmpxchg16b,-f16c,-hle,-lea-sp,-lea-uses-ag,-lzcnt,-mmx,-movbe,-pclmul,-popcnt,-prfchw,-rdrand,-rdseed,-rtm,-slow-bt-mem,-sse,-sse3,-sse41,-sse42,-sse4a,-sse3,-vector-unaligned-mem,-xop
-LLC_ATTR = -3dnow,-3dnowa,-64bit,-64bit-mode,-adx,-aes,-atom,-avx,-avx2,-bmi,-bmi2,-cmpxchg16b,-f16c,-hle,-lea-sp,-lea-uses-ag,-lzcnt,-mmx,-movbe,-pclmul,-popcnt,-prfchw,-rdrand,-rdseed,-rtm,-slow-bt-mem,-sse,-sse3,-sse41,-sse42,-sse4a,-sse3,-vector-unaligned-mem,-xop
+LINKER_SCRIPT_INPUT := $(XMHF_DIR)/xmhf-slabs/geec-sentinel/geec-sentinel.lscript
+LINKER_SCRIPT_OUTPUT := $(XMHF_GEECSENTINEL_NAME).lds
 
 # targets
 .PHONY: all
-all: buildhicbin
+all: buildgeecsentinelbin
 
-buildhicbin: $(XMHF_HIC_OBJECTS)
-	cd $(XMHF_HIC_OBJECTS_DIR) && cp -f $(LINKER_SCRIPT_INPUT) $(XMHF_HIC_NAME).lscript.c
-	cd $(XMHF_HIC_OBJECTS_DIR) && $(CC) $(CFLAGS) -D__ASSEMBLY__ -P -E $(XMHF_HIC_NAME).lscript.c -o $(LINKER_SCRIPT_OUTPUT)
-	cd $(XMHF_HIC_OBJECTS_DIR) && $(LD) -r --oformat elf32-i386 -T $(LINKER_SCRIPT_OUTPUT) -o $(XMHF_HIC_NAME).slo $(XMHF_HIC_OBJECTS_ARCHIVE) -L$(CCERT_LIB) -L$(CCLIB)/lib/linux -L$(XMHFLIBS_DIR) -lxmhfc -lxmhfcrypto -lxmhfdebug -lxmhfhw -whole-archive -lxmhfhicslab -no-whole-archive -lxmhfc -lclang_rt.full-i386 -lcompcert
-	cd $(XMHF_HIC_OBJECTS_DIR) && nm $(XMHF_HIC_NAME).slo | awk '{ print $$3 }' | awk NF >$(XMHF_HIC_NAME).slo.syms
-	cd $(XMHF_HIC_OBJECTS_DIR) && $(OBJCOPY) --localize-symbols=$(XMHF_HIC_NAME).slo.syms $(XMHF_HIC_NAME).slo $(XMHF_HIC_NAME).slo
-	cd $(XMHF_HIC_OBJECTS_DIR) && $(OBJCOPY) --globalize-symbol __xmhfhic_rtm_uapihandler --globalize-symbol libxmhfdebug_lock --globalize-symbol xcbootinfo --globalize-symbol _xmhfhic_common_slab_info_table $(XMHF_HIC_NAME).slo $(XMHF_HIC_NAME).slo
+buildgeecsentinelbin: $(XMHF_GEECSENTINEL_OBJECTS)
+	cd $(XMHF_GEECSENTINEL_OBJECTS_DIR) && cp -f $(LINKER_SCRIPT_INPUT) $(XMHF_GEECSENTINEL_NAME).lscript.c
+	cd $(XMHF_GEECSENTINEL_OBJECTS_DIR) && $(CC) $(CFLAGS) -D__ASSEMBLY__ -P -E $(XMHF_GEECSENTINEL_NAME).lscript.c -o $(LINKER_SCRIPT_OUTPUT)
+	cd $(XMHF_GEECSENTINEL_OBJECTS_DIR) && $(LD) -r --oformat elf32-i386 -T $(LINKER_SCRIPT_OUTPUT) -o $(XMHF_GEECSENTINEL_NAME).slo $(XMHF_GEECSENTINEL_OBJECTS_ARCHIVE) -L$(CCERT_LIB) -L$(CCLIB)/lib/linux -L$(XMHFLIBS_DIR) -lxmhfc -lxmhfcrypto -lxmhfdebug -lxmhfhw -whole-archive -lxmhfhicslab -no-whole-archive -lxmhfc -lclang_rt.full-i386 -lcompcert
+	cd $(XMHF_GEECSENTINEL_OBJECTS_DIR) && nm $(XMHF_GEECSENTINEL_NAME).slo | awk '{ print $$3 }' | awk NF >$(XMHF_GEECSENTINEL_NAME).slo.syms
+	cd $(XMHF_GEECSENTINEL_OBJECTS_DIR) && $(OBJCOPY) --localize-symbols=$(XMHF_GEECSENTINEL_NAME).slo.syms $(XMHF_GEECSENTINEL_NAME).slo $(XMHF_GEECSENTINEL_NAME).slo
+	cd $(XMHF_GEECSENTINEL_OBJECTS_DIR) && $(OBJCOPY) --globalize-symbol __xmhfhic_rtm_intercept --globalize-symbol __xmhfhic_rtm_exception_stub --globalize-symbol __xmhfhic_rtm_trampoline --globalize-symbol __xmhfhic_rtm_uapihandler $(XMHF_GEECSENTINEL_NAME).slo $(XMHF_GEECSENTINEL_NAME).slo
 
 %.o: %.c
-	mkdir -p $(XMHF_HIC_OBJECTS_DIR)
-	$(CCERT) -c $(CCERT_FLAGS) -o $(XMHF_HIC_OBJECTS_DIR)/$@ $<
-	#$(CC) -fomit-frame-pointer -O2 -S -emit-llvm $(CFLAGS) $< -o $(XMHF_HIC_OBJECTS_DIR)/$(@F).ll
-	#cd $(XMHF_HIC_OBJECTS_DIR) && fixnaked.pl $(@F).ll
-	#cd $(XMHF_HIC_OBJECTS_DIR) && llc -O=2 -march=x86 -mcpu=corei7 -mattr=$(LLC_ATTR) $(@F).ll
-	#cd $(XMHF_HIC_OBJECTS_DIR) && $(CC) -O2 -c $(CFLAGS) $(@F).s -o $(@F)
+	mkdir -p $(XMHF_GEECSENTINEL_OBJECTS_DIR)
+	$(CCERT) -c $(CCERT_FLAGS) -o $(XMHF_GEECSENTINEL_OBJECTS_DIR)/$@ $<
 
 %.o: %.cS
-	mkdir -p $(XMHF_HIC_OBJECTS_DIR)
+	mkdir -p $(XMHF_GEECSENTINEL_OBJECTS_DIR)
 	@echo Building "$@" from "$<"
-	cp -f $< $(XMHF_HIC_OBJECTS_DIR)/$(@F).c
-	cd $(XMHF_HIC_OBJECTS_DIR) && $(CCERT) -c -dmach $(CCERT_FLAGS) $(@F).c
-	cd $(XMHF_HIC_OBJECTS_DIR) && extractasm.pl $(@F).mach > $(@F).S
-	cd $(XMHF_HIC_OBJECTS_DIR) && gcc -c $(ASFLAGS) -o $@ $(@F).S
-	#cd $(XMHF_HIC_OBJECTS_DIR) && mv $(@F).o $@
-
-#%.o: %.cS
-#	mkdir -p $(XMHF_HIC_OBJECTS_DIR)
-#	@echo Building "$@" from "$<"
-#	cp -f $< $(XMHF_HIC_OBJECTS_DIR)/$(@F).c
-#	$(CC) -fomit-frame-pointer -O2 -S -emit-llvm $(CFLAGS) $(XMHF_HIC_OBJECTS_DIR)/$(@F).c -o $(XMHF_HIC_OBJECTS_DIR)/$(@F).ll
-#	cd $(XMHF_HIC_OBJECTS_DIR) && fixnaked.pl $(@F).ll
-#	cd $(XMHF_HIC_OBJECTS_DIR) && llc -O=2 -march=x86 -mcpu=corei7 -mattr=$(LLC_ATTR) $(@F).ll
-#	cd $(XMHF_HIC_OBJECTS_DIR) && $(CC) -O2 -c $(CFLAGS) $(@F).s -o $(@F)
-
-#%.o: %.S
-#	mkdir -p $(XMHF_HIC_OBJECTS_DIR)
-#	cd $(XMHF_HIC_OBJECTS_DIR) && gcc -c $(CFLAGS) $< -o $(@F)
+	cp -f $< $(XMHF_GEECSENTINEL_OBJECTS_DIR)/$(@F).c
+	cd $(XMHF_GEECSENTINEL_OBJECTS_DIR) && $(CCERT) -c -dmach $(CCERT_FLAGS) $(@F).c
+	cd $(XMHF_GEECSENTINEL_OBJECTS_DIR) && extractasm.pl $(@F).mach > $(@F).S
+	cd $(XMHF_GEECSENTINEL_OBJECTS_DIR) && gcc -c $(ASFLAGS) -o $@ $(@F).S
 
 
 .PHONY: clean
 clean:
-	$(RM) -rf $(XMHF_HIC_OBJECTS_DIR)
+	$(RM) -rf $(XMHF_GEECSENTINEL_OBJECTS_DIR)
 
 
 
