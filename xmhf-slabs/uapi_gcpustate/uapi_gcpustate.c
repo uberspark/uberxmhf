@@ -58,4 +58,22 @@
 void slab_main(slab_params_t *sp){
 
 
+    switch(sp->in_out_params[1]){
+        case XMHF_HIC_UAPI_CPUSTATE_VMREAD:{
+            xmhf_uapi_gcpustate_vmrw_params_t *vmrwp =
+                (xmhf_uapi_gcpustate_gprs_params_t *)sp->in_out_params[2];
+
+            vmrwp->value = CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmread,vmrwp->encoding);
+        }
+        break;
+
+
+        default:
+            _XDPRINTF_("%s[%u]: Unknown uAPI function %x. Halting!\n",
+                    __func__, (u16)sp->cpuid, sp->in_out_params[1]);
+            HALT();
+            return;
+    }
+
+
 }
