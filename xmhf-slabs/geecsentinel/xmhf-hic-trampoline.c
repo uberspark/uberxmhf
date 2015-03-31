@@ -60,6 +60,12 @@ u64 __xmhfhic_safestack_indices[MAX_PLATFORM_CPUS] = { 0 };
 __xmhfhic_safestack_element_t __xmhfhic_safestack[MAX_PLATFORM_CPUS][512];
 #endif //__XMHF_VERIFICATION__
 
+__attribute__((section(".data"))) u64 __xmhfhic_safestack_indices[MAX_PLATFORM_CPUS] = { 0 };
+
+__attribute__((section(".data"))) __xmhfhic_safestack_element_t __xmhfhic_safestack[MAX_PLATFORM_CPUS][512];
+
+
+
 bool __xmhfhic_callcaps(u64 src_slabid, u64 dst_slabid){
     if( _xmhfhic_common_slab_info_table[src_slabid].slab_callcaps & HIC_SLAB_CALLCAP(dst_slabid))
         return true;
@@ -702,3 +708,8 @@ void __xmhfhic_rtm_intercept(x86regs_t *r){
 
 }
 
+
+void slab_main(slab_params_t *sp){
+
+
+}

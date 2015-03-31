@@ -9,6 +9,7 @@ export srcdir := $(dir $(lastword $(MAKEFILE_LIST)))
 
 vpath %.c $(srcdir)
 vpath %.S $(srcdir)
+vpath %.cS $(srcdir)
 vpath %.lscript $(srcdir)
 
 
@@ -18,7 +19,9 @@ vpath %.lscript $(srcdir)
 export XMHF_SLAB_NAME := geecsentinel
 export XMHF_SLAB_PRIVILEGED := y
 export XMHF_SLAB_SOURCES := $(wildcard $(srcdir)/*.c)
+XMHF_SLAB_SOURCES += $(wildcard $(srcdir)/*.cS)
 
+export XMHF_SLAB_GLOBAL_SYMS := --globalize-symbol __xmhfhic_rtm_uapihandler --globalize-symbol __xmhfhic_rtm_exception_stub --globalize-symbol __xmhfhic_rtm_intercept
 
 ########################################################################
 # generic slab build harness
