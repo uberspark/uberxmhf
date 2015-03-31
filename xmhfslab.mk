@@ -42,7 +42,8 @@ buildslabbin: $(XMHF_SLAB_OBJECTS)
 	cd $(XMHF_SLAB_OBJECTS_DIR) && $(LD) -r --oformat elf32-i386 -T $(LINKER_SCRIPT_OUTPUT) -o $(XMHF_SLAB_NAME).slo $(XMHF_SLAB_OBJECTS_ARCHIVE) -L$(CCERT_LIB) -L$(CCLIB)/lib/linux -L$(XMHFLIBS_DIR) -lxmhfc -lxmhfcrypto -lxmhfhw -whole-archive -lxmhfhicslab -no-whole-archive -lxmhfhw -lxmhfc -lclang_rt.full-i386 -lcompcert
 	cd $(XMHF_SLAB_OBJECTS_DIR) && nm $(XMHF_SLAB_NAME).slo | awk '{ print $$3 }' | awk NF >$(XMHF_SLAB_NAME).slo.syms
 	cd $(XMHF_SLAB_OBJECTS_DIR) && $(OBJCOPY) --localize-symbols=$(XMHF_SLAB_NAME).slo.syms $(XMHF_SLAB_NAME).slo $(XMHF_SLAB_NAME).slo
-	cd $(XMHF_SLAB_OBJECTS_DIR) && $(OBJCOPY) --globalize-symbol $(XMHF_SLAB_NAME)_interface $(XMHF_SLAB_NAME).slo $(XMHF_SLAB_NAME).slo
+	#cd $(XMHF_SLAB_OBJECTS_DIR) && $(OBJCOPY) --globalize-symbol $(XMHF_SLAB_NAME)_interface $(XMHF_SLAB_NAME).slo $(XMHF_SLAB_NAME).slo
+	cd $(XMHF_SLAB_OBJECTS_DIR) && $(OBJCOPY) $(XMHF_SLAB_GLOBAL_SYMS) $(XMHF_SLAB_NAME).slo $(XMHF_SLAB_NAME).slo
 
 
 %.o: %.c
@@ -53,18 +54,28 @@ buildslabbin: $(XMHF_SLAB_OBJECTS)
 	#cd $(XMHF_SLAB_OBJECTS_DIR) && llc -O=2 -march=x86 -mcpu=corei7 -mattr=$(LLC_ATTR) $(@F).ll
 	#cd $(XMHF_SLAB_OBJECTS_DIR) && $(CC) -c $(CFLAGS) $(@F).s -o $(@F)
 
-%.o: %.S
-	mkdir -p $(XMHF_SLAB_OBJECTS_DIR)
-	cd $(XMHF_SLAB_OBJECTS_DIR) && gcc -c $(ASFLAGS) $< -o $(@F)
+#%.o: %.cS
+#	mkdir -p $(XMHF_SLAB_OBJECTS_DIR)
+#	@echo Building "$@" from "$<"
+#	cp -f $< $(XMHF_SLAB_OBJECTS_DIR)/$(@F).c
+#	$(CC) -fomit-frame-pointer -O2 -S -emit-llvm $(CFLAGS) $(XMHF_SLAB_OBJECTS_DIR)/$(@F).c -o $(XMHF_SLAB_OBJECTS_DIR)/$(@F).ll
+#	cd $(XMHF_SLAB_OBJECTS_DIR) && fixnaked.pl $(@F).ll
+#	cd $(XMHF_SLAB_OBJECTS_DIR) && llc -O=2 -march=x86 -mcpu=corei7 -mattr=$(LLC_ATTR) $(@F).ll
+#	cd $(XMHF_SLAB_OBJECTS_DIR) && $(CC) -O2 -c $(CFLAGS) $(@F).s -o $(@F)
 
 %.o: %.cS
 	mkdir -p $(XMHF_SLAB_OBJECTS_DIR)
 	@echo Building "$@" from "$<"
 	cp -f $< $(XMHF_SLAB_OBJECTS_DIR)/$(@F).c
-	$(CC) -fomit-frame-pointer -O2 -S -emit-llvm $(CFLAGS) $(XMHF_SLAB_OBJECTS_DIR)/$(@F).c -o $(XMHF_SLAB_OBJECTS_DIR)/$(@F).ll
-	cd $(XMHF_SLAB_OBJECTS_DIR) && fixnaked.pl $(@F).ll
-	cd $(XMHF_SLAB_OBJECTS_DIR) && llc -O=2 -march=x86 -mcpu=corei7 -mattr=$(LLC_ATTR) $(@F).ll
-	cd $(XMHF_SLAB_OBJECTS_DIR) && $(CC) -O2 -c $(CFLAGS) $(@F).s -o $(@F)
+	cd $(XMHF_SLAB_OBJECTS_DIR) && $(CCERT) -c -dmach $(CCERT_FLAGS) $(@F).c
+	cd $(XMHF_SLAB_OBJECTS_DIR) && extractasm.pl $(@F).mach > $(@F).S
+	cd $(XMHF_SLAB_OBJECTS_DIR) && gcc -c $(ASFLAGS) -o $@ $(@F).S
+
+
+%.o: %.S
+	mkdir -p $(XMHF_SLAB_OBJECTS_DIR)
+	cd $(XMHF_SLAB_OBJECTS_DIR) && gcc -c $(ASFLAGS) $< -o $(@F)
+
 
 
 

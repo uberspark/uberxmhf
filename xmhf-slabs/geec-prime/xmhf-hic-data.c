@@ -190,9 +190,6 @@ __attribute__((section(".data"))) slab_caps_t _xmhfhic_init_setupdata_slab_caps[
 // runtime stage
 __attribute__((section(".hic_mleheader"))) x86vmx_mle_header_t mleheader = { 0 };
 
-__attribute__((section(".data"))) u64 __xmhfhic_safestack_indices[MAX_PLATFORM_CPUS] = { 0 };
-
-__attribute__((section(".data"))) __xmhfhic_safestack_element_t __xmhfhic_safestack[MAX_PLATFORM_CPUS][512];
 
 
 
