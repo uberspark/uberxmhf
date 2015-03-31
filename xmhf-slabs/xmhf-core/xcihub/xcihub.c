@@ -50,6 +50,7 @@
 
 #include <xc.h>
 #include <xcihub.h>
+#include <uapi_gcpustate.h>
 
 /*
  * slab code
@@ -65,6 +66,8 @@
 void slab_main(slab_params_t *sp){
     u32 info_vmexit_reason;
     slab_params_t spl;
+    xmhf_uapi_gcpustate_vmrw_params_t *gcpustate_vmrwp =
+        (xmhf_uapi_gcpustate_vmrw_params_t *)spl.in_out_params;
 
 	_XDPRINTF_("XCIHUB[%u]: Got control: ESP=%08x\n",
                 (u16)sp->cpuid, CASM_FUNCCALL(read_esp,CASM_NOPARAM));
@@ -73,12 +76,14 @@ void slab_main(slab_params_t *sp){
     spl.src_slabid = XMHF_HYP_SLAB_XCIHUB;
     spl.in_out_params[0] = XMHF_HIC_UAPI_CPUSTATE;
 
+    {
 
-    //XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMREAD, VMCS_INFO_VMEXIT_REASON, &info_vmexit_reason);
-    spl.in_out_params[1] = XMHF_HIC_UAPI_CPUSTATE_VMREAD;
-    spl.in_out_params[2] = VMCS_INFO_VMEXIT_REASON;
-    XMHF_SLAB_UAPI(&spl);
-    info_vmexit_reason = spl.in_out_params[4];
+        spl.dst_slabid = XMHF_HYP_SLAB_UAPI_GCPUSTATE;
+        gcpustate_vmrwp->uapip.uapifn = XMHF_HIC_UAPI_CPUSTATE_VMREAD;
+        gcpustate_vmrwp->encoding = VMCS_INFO_VMEXIT_REASON;
+        XMHF_SLAB_CALLNEW(&spl);
+        info_vmexit_reason = gcpustate_vmrwp->value;
+    }
 
     switch(info_vmexit_reason){
 
@@ -90,10 +95,11 @@ void slab_main(slab_params_t *sp){
 
                 _XDPRINTF_("%s[%u]: VMX_VMEXIT_VMCALL\n", __func__, (u16)sp->cpuid);
 
-                //XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMREAD, VMCS_INFO_VMEXIT_INSTRUCTION_LENGTH, &info_vmexit_instruction_length);
-                spl.in_out_params[2] = VMCS_INFO_VMEXIT_INSTRUCTION_LENGTH;
-                XMHF_SLAB_UAPI(&spl);
-                info_vmexit_instruction_length = spl.in_out_params[4];
+                {
+                    gcpustate_vmrwp->encoding = VMCS_INFO_VMEXIT_INSTRUCTION_LENGTH;
+                    XMHF_SLAB_CALLNEW(&spl);
+                    info_vmexit_instruction_length = gcpustate_vmrwp->value;
+                }
 
                 //XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMREAD, VMCS_GUEST_RIP, &guest_rip);
                 spl.in_out_params[2] = VMCS_GUEST_RIP;
