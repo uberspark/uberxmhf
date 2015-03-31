@@ -123,20 +123,21 @@
 
 
 
-#define XMHF_HIC_MAX_SLABS                  (11)
+#define XMHF_HIC_MAX_SLABS                  (12)
 
 
 #define XMHF_HYP_SLAB_GEECPRIME             (0)
 #define XMHF_HYP_SLAB_GEECSENTINEL          (1)
-#define XMHF_HYP_SLAB_XCINIT                (2)
-#define XMHF_HYP_SLAB_XCIHUB                (3)
-#define XMHF_HYP_SLAB_XCEXHUB               (4)
-#define XMHF_HYP_SLAB_XCTESTSLAB1           (5)
-#define XMHF_HYP_SLAB_XHHYPERDEP            (6)
-#define XMHF_HYP_SLAB_XHAPPROVEXEC          (7)
-#define XMHF_HYP_SLAB_XHSYSCALLLOG          (8)
-#define XMHF_HYP_SLAB_XHSSTEPTRACE          (9)
-#define XMHF_GUEST_SLAB_XCGUESTSLAB         (10)
+#define XMHF_HYP_SLAB_UAPI_GCPUSTATE        (2)
+#define XMHF_HYP_SLAB_XCINIT                (3)
+#define XMHF_HYP_SLAB_XCIHUB                (4)
+#define XMHF_HYP_SLAB_XCEXHUB               (5)
+#define XMHF_HYP_SLAB_XCTESTSLAB1           (6)
+#define XMHF_HYP_SLAB_XHHYPERDEP            (7)
+#define XMHF_HYP_SLAB_XHAPPROVEXEC          (8)
+#define XMHF_HYP_SLAB_XHSYSCALLLOG          (9)
+#define XMHF_HYP_SLAB_XHSSTEPTRACE          (10)
+#define XMHF_GUEST_SLAB_XCGUESTSLAB         (11)
 
 
 
@@ -153,7 +154,7 @@
 	//#define __TARGET_BASE_XMHF				0x10000000		//at 256M
 	//#define __TARGET_SIZE_XMHF				0x10000000
 	#define __TARGET_BASE_XMHF				0x02000000		//at 32M
-	#define __TARGET_SIZE_XMHF				0x12C00000      //300M size
+	#define __TARGET_SIZE_XMHF				0x13C00000      //316M size
 
 	//physical address where the XMHF boot-loader is loaded (e.g., via GRUB)
 	#define __TARGET_BASE_BOOTLOADER		0x01E00000		//30MB
