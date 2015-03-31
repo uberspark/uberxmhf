@@ -112,6 +112,56 @@ void __xmhfhic_safepop(u64 cpuid, u64 *src_slabid, u64 *dst_slabid, u64 *hic_cal
 
 
 
+void __xmhfhic_rtm_trampolinehandler(slab_params_t *sp){
+
+    u32 errorcode;
+
+    switch (_xmhfhic_common_slab_info_table[sp->dst_slabid].archdata.slabtype){
+
+        case HIC_SLAB_X86VMXX86PC_HYPERVISOR:{
+            FPSLABMAIN slab_main;
+
+            slab_main = (FPSLABMAIN)_xmhfhic_common_slab_info_table[sp->dst_slabid].entrystub;
+            //_XDPRINTF_("%s: slab_main at %08x\n", __func__, (u32)slab_main);
+            slab_main(sp);
+        }
+        break;
+
+        case HIC_SLAB_X86VMXX86PC_GUEST:{
+             CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_CONTROL_VPID, sp->dst_slabid );
+             CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_CONTROL_EPT_POINTER_FULL, _xmhfhic_common_slab_info_table[sp->dst_slabid].archdata.mempgtbl_cr3);
+             CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_CONTROL_EPT_POINTER_HIGH, 0);
+             CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_GUEST_RSP, _xmhfhic_common_slab_info_table[sp->dst_slabid].archdata.slabtos[(u16)sp->cpuid]);
+             CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_GUEST_RIP, _xmhfhic_common_slab_info_table[sp->dst_slabid].entrystub);
+
+            errorcode = CASM_FUNCCALL(__slab_calltrampolinenew_h2g, CASM_NOPARAM);
+
+            switch(errorcode){
+                case 0:	//no error code, VMCS pointer is invalid
+                    _XDPRINTF_("%s: VMLAUNCH error; VMCS pointer invalid?\n", __func__);
+                    break;
+                case 1:{//error code available, so dump it
+                    u32 code=xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_VMINSTR_ERROR);
+                    _XDPRINTF_("\n%s: VMLAUNCH error; code=%x\n", __func__, code);
+                    break;
+                }
+            }
+
+            HALT();
+
+        }
+        break;
+
+        default:
+        break;
+    }
+
+
+
+}
+
+
+
 
 //HIC runtime trampoline
 void __xmhfhic_rtm_trampoline(u64 hic_calltype, slab_input_params_t *iparams, u64 iparams_size, slab_output_params_t *oparams, u64 oparams_size, u64 dst_slabid, u64 src_slabid, u64 cpuid, u64 return_address, u64 return_rsp) {

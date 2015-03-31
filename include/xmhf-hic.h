@@ -325,6 +325,8 @@ void xmhfhic_arch_setup_base_cpu_data_structures(void);
 void xmhf_hic_arch_setup_cpu_state(u64 cpuid);
 void xmhfhic_smp_entry(u32 cpuid);
 void __xmhfhic_rtm_uapihandler(slab_params_t *sp);
+void __xmhfhic_rtm_trampolinehandler(slab_params_t *sp);
+
 bool __xmhfhic_callcaps(u64 src_slabid, u64 dst_slabid);
 void __xmhfhic_safepush(u64 cpuid, u64 src_slabid, u64 dst_slabid, u64 hic_calltype, u64 return_address,
                         slab_output_params_t *oparams, slab_output_params_t *newoparams, u64 oparams_size, u64 iparams_size);
