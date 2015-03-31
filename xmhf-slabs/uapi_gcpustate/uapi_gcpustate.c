@@ -54,14 +54,17 @@
 #include <xmhf-hic.h>
 #include <xmhf-debug.h>
 
+#include <xc.h>
+#include <uapi_gcpustate.h>
+
 /////
 void slab_main(slab_params_t *sp){
+    xmhf_uapi_params_t *uapip = (xmhf_uapi_params_t *)sp->in_out_params[0];
 
-
-    switch(sp->in_out_params[1]){
+    switch(uapip->uapifn){
         case XMHF_HIC_UAPI_CPUSTATE_VMREAD:{
             xmhf_uapi_gcpustate_vmrw_params_t *vmrwp =
-                (xmhf_uapi_gcpustate_gprs_params_t *)sp->in_out_params[2];
+                (xmhf_uapi_gcpustate_gprs_params_t *)sp->in_out_params[0];
 
             vmrwp->value = CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmread,vmrwp->encoding);
         }
@@ -70,7 +73,7 @@ void slab_main(slab_params_t *sp){
 
         default:
             _XDPRINTF_("%s[%u]: Unknown uAPI function %x. Halting!\n",
-                    __func__, (u16)sp->cpuid, sp->in_out_params[1]);
+                    __func__, (u16)sp->cpuid, uapip->uapifn);
             HALT();
             return;
     }
