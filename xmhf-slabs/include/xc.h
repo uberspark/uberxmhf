@@ -173,10 +173,6 @@ typedef struct {
 #define XC_HYPAPPCB_TRAP_INSTRUCTION_WRMSR      (0x61)
 #define XC_HYPAPPCB_TRAP_INSTRUCTION_RDMSR      (0x62)
 
-typedef struct {
-    u32 reserved;
-    u32 uapifn;
-}__attribute__((packed)) xmhf_uapi_params_t;
 
 
 typedef struct {

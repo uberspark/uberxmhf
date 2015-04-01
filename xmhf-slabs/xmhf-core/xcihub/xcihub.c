@@ -79,7 +79,7 @@ void slab_main(slab_params_t *sp){
     {
 
         spl.dst_slabid = XMHF_HYP_SLAB_UAPI_GCPUSTATE;
-        gcpustate_vmrwp->uapip.uapifn = XMHF_HIC_UAPI_CPUSTATE_VMREAD;
+        gcpustate_vmrwp->uapiphdr.uapifn = XMHF_HIC_UAPI_CPUSTATE_VMREAD;
         gcpustate_vmrwp->encoding = VMCS_INFO_VMEXIT_REASON;
         XMHF_SLAB_CALLNEW(&spl);
         info_vmexit_reason = gcpustate_vmrwp->value;

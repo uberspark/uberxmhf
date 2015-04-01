@@ -103,6 +103,10 @@ typedef struct {
     u32 in_out_params[16];
 } __attribute__((packed)) slab_params_t;
 
+typedef struct {
+    u32 reserved;
+    u32 uapifn;
+}__attribute__((packed)) xmhf_uapi_params_hdr_t;
 
 
 
