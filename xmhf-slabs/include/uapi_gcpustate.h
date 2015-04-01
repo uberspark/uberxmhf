@@ -60,14 +60,14 @@
 
 
 typedef struct {
-    xmhf_uapi_params_t uapip;
+    xmhf_uapi_params_hdr_t uapiphdr;
     u64 encoding;
     u64 value;
 }__attribute__((packed)) xmhf_uapi_gcpustate_vmrw_params_t;
 
 
 typedef struct {
-    xmhf_uapi_params_t uapip;
+    xmhf_uapi_params_hdr_t uapiphdr;
     x86regs_t gprs;
 }__attribute__((packed)) xmhf_uapi_gcpustate_gprs_params_t;
 
