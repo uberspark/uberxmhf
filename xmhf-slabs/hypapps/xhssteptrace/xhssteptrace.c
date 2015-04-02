@@ -367,9 +367,8 @@ void slab_main(slab_params_t *sp){
 
 
         default:{
-            _XDPRINTF_("%s[%u]: Unknown cbtype. Halting!\n",
+            _XDPRINTF_("%s[%u]: Unknown cbtype. Ignoring!\n",
                 __func__, (u16)sp->cpuid);
-            //HALT();
         }
     }
 

@@ -378,8 +378,8 @@ void slab_main(slab_params_t *sp){
     hcbp->cbresult=XC_HYPAPPCB_CHAIN;
 
 
-	_XDPRINTF_("%s[%u]: Got control, cbtype=%x: ESP=%08x\n",
-                __func__, (u16)sp->cpuid, hcbp->cbtype, CASM_FUNCCALL(read_esp,CASM_NOPARAM));
+	_XDPRINTF_("XHSYSCALLLOG[%u]: Got control, cbtype=%x: ESP=%08x\n",
+                (u16)sp->cpuid, hcbp->cbtype, CASM_FUNCCALL(read_esp,CASM_NOPARAM));
 
 
     switch(hcbp->cbtype){
@@ -447,9 +447,8 @@ void slab_main(slab_params_t *sp){
 
 
         default:{
-            _XDPRINTF_("%s[%u]: Unknown cbtype. Halting!\n",
+            _XDPRINTF_("%s[%u]: Unknown cbtype. Ignoring!\n",
                 __func__, (u16)sp->cpuid);
-            //HALT();
         }
     }
 

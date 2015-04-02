@@ -200,7 +200,7 @@ static void _hcb_shutdown(u32 cpuindex, u32 guest_slab_index){
 static void _hcb_memoryfault(u32 cpuindex, u32 guest_slab_index, u64 gpa, u64 gva, u64 errorcode){
 	_XDPRINTF_("%s[%u]: memory fault in guest slab %u; gpa=%016llx, gva=%016llx, errorcode=%016llx, data page execution?\n",
             __func__, (u16)cpuindex, guest_slab_index, gpa, gva, errorcode);
-    HALT();
+
 }
 
 
@@ -225,8 +225,8 @@ void slab_main(slab_params_t *sp){
     hcbp->cbresult=XC_HYPAPPCB_CHAIN;
 
 
-	_XDPRINTF_("%s[%u]: Got control, cbtype=%x: ESP=%08x\n",
-                __func__, (u16)sp->cpuid, hcbp->cbtype, CASM_FUNCCALL(read_esp,CASM_NOPARAM));
+	_XDPRINTF_("XHHYPERDEP[%u]: Got control, cbtype=%x: ESP=%08x\n",
+                (u16)sp->cpuid, hcbp->cbtype, CASM_FUNCCALL(read_esp,CASM_NOPARAM));
 
 
     switch(hcbp->cbtype){
@@ -296,9 +296,8 @@ void slab_main(slab_params_t *sp){
 
 
         default:{
-            _XDPRINTF_("%s[%u]: Unknown cbtype. Halting!\n",
+            _XDPRINTF_("%s[%u]: Unknown cbtype. Ignoring!\n",
                 __func__, (u16)sp->cpuid);
-            HALT();
         }
     }
 

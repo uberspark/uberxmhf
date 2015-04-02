@@ -253,7 +253,6 @@ static void _hcb_memoryfault(u32 cpuindex, u32 guest_slab_index, u64 gpa, u64 gv
 
 	_XDPRINTF_("%s[%u]: memory fault in guest slab %u; gpa=%016llx, gva=%016llx, errorcode=%016llx, write error to approved code?\n",
             __func__, (u16)cpuindex, guest_slab_index, gpa, gva, errorcode);
-    HALT();
 
 }
 
@@ -280,8 +279,8 @@ void slab_main(slab_params_t *sp){
     xc_hypappcb_params_t *hcbp = (xc_hypappcb_params_t *)&sp->in_out_params[0];
     hcbp->cbresult=XC_HYPAPPCB_CHAIN;
 
-	_XDPRINTF_("%s[%u]: Got control, cbtype=%x: ESP=%08x\n",
-                __func__, (u16)sp->cpuid, hcbp->cbtype, CASM_FUNCCALL(read_esp,CASM_NOPARAM));
+	_XDPRINTF_("XHAPPROVEXEC[%u]: Got control, cbtype=%x: ESP=%08x\n",
+                 (u16)sp->cpuid, hcbp->cbtype, CASM_FUNCCALL(read_esp,CASM_NOPARAM));
 
 
     switch(hcbp->cbtype){
@@ -351,9 +350,8 @@ void slab_main(slab_params_t *sp){
 
 
         default:{
-            _XDPRINTF_("%s[%u]: Unknown cbtype. Halting!\n",
+            _XDPRINTF_("%s[%u]: Unknown cbtype. Ignoring!\n",
                 __func__, (u16)sp->cpuid);
-            //HALT();
         }
     }
 
