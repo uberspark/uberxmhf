@@ -198,8 +198,7 @@ void xcguestslab_do_testxhapprovexec(void){
 
     _XDPRINTF_("%s: Going to approve and lock function at %x\n", __func__, gpa);
 
-    _xcguestslab_vmcall(APPROVEXEC_LOCK, ( (u32) ((u64)(gpa >> 32)) ),
-                  ((u32)gpa)       );
+    _xcguestslab_vmcall(APPROVEXEC_LOCK, 0, gpa);
 
     _XDPRINTF_("%s: Locked function\n", __func__);
 
@@ -210,8 +209,7 @@ void xcguestslab_do_testxhapprovexec(void){
 
     _XDPRINTF_("%s: Going to unlock function on page %x\n", __func__, gpa);
 
-    _xcguestslab_vmcall(APPROVEXEC_UNLOCK, ( (u32) ((u64)(gpa >> 32)) ),
-                  ((u32)gpa)       );
+    _xcguestslab_vmcall(APPROVEXEC_UNLOCK, 0, gpa );
 
     _XDPRINTF_("%s: unlocked function\n", __func__);
 
