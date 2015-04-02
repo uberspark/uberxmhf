@@ -92,16 +92,14 @@ if(!ssteptrace_on){
     guest_rflags |= EFLAGS_TF;
     exception_bitmap |= (1 << 1);
 
-    //XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMWRITE, VMCS_CONTROL_EXCEPTION_BITMAP, exception_bitmap);
-    spl.in_out_params[1] = XMHF_HIC_UAPI_CPUSTATE_VMWRITE;
-    spl.in_out_params[2] = VMCS_CONTROL_EXCEPTION_BITMAP;
-    spl.in_out_params[4] = exception_bitmap;
-    XMHF_SLAB_UAPI(&spl);
+    gcpustate_vmrwp->uapiphdr.uapifn = XMHF_HIC_UAPI_CPUSTATE_VMWRITE;
+    gcpustate_vmrwp->encoding = VMCS_CONTROL_EXCEPTION_BITMAP;
+    gcpustate_vmrwp->value = exception_bitmap;
+    XMHF_SLAB_CALLNEW(&spl);
 
-    //XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMWRITE, VMCS_GUEST_RFLAGS, guest_rflags);
-    spl.in_out_params[2] = VMCS_GUEST_RFLAGS;
-    spl.in_out_params[4] = guest_rflags;
-    XMHF_SLAB_UAPI(&spl);
+    gcpustate_vmrwp->encoding = VMCS_GUEST_RFLAGS;
+    gcpustate_vmrwp->value = guest_rflags;
+    XMHF_SLAB_CALLNEW(&spl);
 
     ssteptrace_on=true;
 }
@@ -135,16 +133,14 @@ if(ssteptrace_on){
     guest_rflags &= ~(EFLAGS_TF);
     exception_bitmap &= ~(1 << 1);
 
-    //XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMWRITE, VMCS_CONTROL_EXCEPTION_BITMAP, exception_bitmap);
-    spl.in_out_params[1] = XMHF_HIC_UAPI_CPUSTATE_VMWRITE;
-    spl.in_out_params[2] = VMCS_CONTROL_EXCEPTION_BITMAP;
-    spl.in_out_params[4] = exception_bitmap;
-    XMHF_SLAB_UAPI(&spl);
+    gcpustate_vmrwp->uapiphdr.uapifn = XMHF_HIC_UAPI_CPUSTATE_VMWRITE;
+    gcpustate_vmrwp->encoding = VMCS_CONTROL_EXCEPTION_BITMAP;
+    gcpustate_vmrwp->value = exception_bitmap;
+    XMHF_SLAB_CALLNEW(&spl);
 
-    //XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMWRITE, VMCS_GUEST_RFLAGS, guest_rflags);
-    spl.in_out_params[2] = VMCS_GUEST_RFLAGS;
-    spl.in_out_params[4] = guest_rflags;
-    XMHF_SLAB_UAPI(&spl);
+    gcpustate_vmrwp->encoding = VMCS_GUEST_RFLAGS;
+    gcpustate_vmrwp->value = guest_rflags;
+    XMHF_SLAB_CALLNEW(&spl);
 
     ssteptrace_on=false;
 }
