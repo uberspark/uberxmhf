@@ -917,45 +917,6 @@ static void __xmhfhic_rtm_uapihandler_cpustate(slab_params_t *sp){
     //_XDPRINTF_("%s[%u]: Got control...\n", __func__, (u32)cpuid);
 
     switch(sp->in_out_params[1]){
-        case XMHF_HIC_UAPI_CPUSTATE_VMREAD:{
-            //input: encoding (u64) = in_out_params[2], [3]
-            //output: u64 = in_out_params[4], [5]
-
-            //checks:
-            /*//1. oparams should be within source slab memory extents
-            if(!_uapicheck_is_within_slab_memory_extents(src_slabid, oparams, sizeof(u64))){
-                _XDPRINTF_("%s[%u],%u: uapierr: oparams should be within source slab memory extents. Halting!\n", __func__, (u32)cpuid, __LINE__);
-                //HALT();
-                return;
-            }*/
-
-            #if defined(__XMHF_VERIFICATION__)
-            assert(_uapicheck_is_within_slab_memory_extents(src_slabid, oparams, sizeof(u64)));
-            #endif // defined
-
-            /*//2. encoding cannot contain any value that is specific to HIC
-            if(_uapicheck_encoding_used_by_hic(iparams)){
-                _XDPRINTF_("%s[%u],%u: uapierr: encoding reserved for HIC. Halting!\n", __func__, (u32)cpuid, __LINE__);
-                //HALT();
-                return;
-            }*/
-
-            #if defined(__XMHF_VERIFICATION__)
-            assert(!_uapicheck_encoding_used_by_hic(iparams));
-            #endif // defined
-
-            #if !defined(__XMHF_VERIFICATION__)
-            {
-                u64 encoding = ((u64)sp->in_out_params[3] << 32) | (u64)sp->in_out_params[2];
-                u64 value = CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmread,encoding);
-                sp->in_out_params[5] = (value >> 32);
-                sp->in_out_params[4] = (u32)value;
-            }
-            // *(u64 *)oparams = CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmread,iparams);
-            #endif // defined
-
-        }
-        break;
 
         case XMHF_HIC_UAPI_CPUSTATE_VMWRITE:{
             //input: encoding (u64) = in_out_params[2], [3]
@@ -1106,7 +1067,7 @@ static void __xmhfhic_rtm_uapihandler_cpustate(slab_params_t *sp){
         default:
             _XDPRINTF_("%s[%u]: Unknown cpustate subcall %x. Halting!\n",
                     __func__, (u16)sp->cpuid, sp->in_out_params[1]);
-            //HALT();
+            HALT();
             return;
     }
 
