@@ -172,6 +172,8 @@ static void _hcb_hypercall(u32 cpuindex, u32 guest_slab_index){
 // memory fault
 static void _hcb_memoryfault(u32 cpuindex, u32 guest_slab_index, u64 gpa, u64 gva, u64 errorcode){
     slab_params_t spl;
+    xmhf_uapi_gcpustate_vmrw_params_t *gcpustate_vmrwp =
+        (xmhf_uapi_gcpustate_vmrw_params_t *)spl.in_out_params;
     xmhf_hic_uapi_physmem_desc_t *pdesc = (xmhf_hic_uapi_physmem_desc_t *)&spl.in_out_params[2];
     u8 syscalldigest[SHA_DIGEST_LENGTH];
     bool syscallhandler_modified=false;
@@ -184,6 +186,7 @@ static void _hcb_memoryfault(u32 cpuindex, u32 guest_slab_index, u64 gpa, u64 gv
             __func__, (u16)cpuindex, guest_slab_index, gpa, gva, errorcode);
 
     spl.src_slabid = XMHF_HYP_SLAB_XHAPPROVEXEC;
+    spl.dst_slabid = XMHF_HYP_SLAB_UAPI_GCPUSTATE;
     spl.cpuid = cpuindex;
     spl.in_out_params[0] = XMHF_HIC_UAPI_CPUSTATE;
 
@@ -219,12 +222,11 @@ static void _hcb_memoryfault(u32 cpuindex, u32 guest_slab_index, u64 gpa, u64 gv
     sl_loginfo(syscallhandler_modified, &syscalldigest, &r);
 
     //set guest RIP to shadow_sysenter_rip to continue execution
-    //XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMWRITE, VMCS_GUEST_RIP, shadow_sysenter_rip);
     spl.in_out_params[0] = XMHF_HIC_UAPI_CPUSTATE;
-    spl.in_out_params[1] = XMHF_HIC_UAPI_CPUSTATE_VMWRITE;
-    spl.in_out_params[2] = VMCS_GUEST_RIP;
-    spl.in_out_params[4] = (u32)shadow_sysenter_rip;
-    XMHF_SLAB_UAPI(&spl);
+    gcpustate_vmrwp->uapiphdr.uapifn = XMHF_HIC_UAPI_CPUSTATE_VMWRITE;
+    gcpustate_vmrwp->encoding = VMCS_GUEST_RIP;
+    gcpustate_vmrwp->value = shadow_sysenter_rip;
+    XMHF_SLAB_CALLNEW(&spl);
 
 }
 
@@ -263,11 +265,10 @@ static u32 _hcb_trap_instruction(u32 cpuindex, u32 guest_slab_index, u32 insntyp
 
                 shadow_sysenter_rip = ( ((u64)(u32)r->edx << 32) | (u32)r->eax ) ;
 
-                //XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMWRITE, VMCS_GUEST_SYSENTER_EIP, 0);
-                spl.in_out_params[1] = XMHF_HIC_UAPI_CPUSTATE_VMWRITE;
-                spl.in_out_params[2] = VMCS_GUEST_SYSENTER_EIP;
-                spl.in_out_params[4] = 0;
-                XMHF_SLAB_UAPI(&spl);
+                gcpustate_vmrwp->uapiphdr.uapifn = XMHF_HIC_UAPI_CPUSTATE_VMWRITE;
+                gcpustate_vmrwp->encoding = VMCS_GUEST_SYSENTER_EIP;
+                gcpustate_vmrwp->value = 0;
+                XMHF_SLAB_CALLNEW(&spl);
 
                 if(!sl_activated){
                     mdesc->guest_slab_index = guest_slab_index;
@@ -339,11 +340,10 @@ static u32 _hcb_trap_instruction(u32 cpuindex, u32 guest_slab_index, u32 insntyp
 
         guest_rip+=info_vmexit_instruction_length;
 
-        //XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMWRITE, VMCS_GUEST_RIP, guest_rip);
-        spl.in_out_params[1] = XMHF_HIC_UAPI_CPUSTATE_VMWRITE;
-        spl.in_out_params[2] = VMCS_GUEST_RIP;
-        spl.in_out_params[4] = guest_rip;
-        XMHF_SLAB_UAPI(&spl);
+        gcpustate_vmrwp->uapiphdr.uapifn = XMHF_HIC_UAPI_CPUSTATE_VMWRITE;
+        gcpustate_vmrwp->encoding = VMCS_GUEST_RIP;
+        gcpustate_vmrwp->value = guest_rip;
+        XMHF_SLAB_CALLNEW(&spl);
     }
 
     return status;
