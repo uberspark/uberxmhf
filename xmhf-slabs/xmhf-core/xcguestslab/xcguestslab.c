@@ -332,7 +332,7 @@ static u8 _xcguestslab_do_testxhsyscalllog_sysenterhandler_stack[PAGE_SIZE_4K];
 extern void _xcguestslab_do_testxhsyscalllog_sysenterhandler(void);
 
 void xcguestslab_do_testxhsyscalllog(void){
-    u64 gpa = &_xcguestslab_do_testxhsyscalllog_sysenterhandler;
+    u32 gpa = &_xcguestslab_do_testxhsyscalllog_sysenterhandler;
 
     _XDPRINTF_("%s: proceeding to load GDT\n", __func__);
 
@@ -342,9 +342,7 @@ void xcguestslab_do_testxhsyscalllog(void){
 
     _xcguestslab_do_testxhsyscalllog_setIOPL3();
 
-    _xcguestslab_vmcall(SYSCALLLOG_REGISTER,
-                        ( (u32) ((u64)(gpa >> 32)) ),
-                        ((u32)gpa) );
+    _xcguestslab_vmcall(SYSCALLLOG_REGISTER, 0, gpa);
 
     _XDPRINTF_("%s: registered syscall handler on page %x\n", __func__, gpa);
 
@@ -391,9 +389,9 @@ void slab_main(slab_params_t *sp){
 
     //xcguestslab_do_testxhapprovexec();
 
-    xcguestslab_do_testxhssteptrace();
+    //xcguestslab_do_testxhssteptrace();
 
-    //xcguestslab_do_testxhsyscalllog();
+    xcguestslab_do_testxhsyscalllog();
 
     _XDPRINTF_("%s: Guest Slab Halting\n", __func__);
     HALT();
