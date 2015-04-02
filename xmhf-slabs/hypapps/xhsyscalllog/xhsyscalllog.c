@@ -243,6 +243,7 @@ static u32 _hcb_trap_instruction(u32 cpuindex, u32 guest_slab_index, u32 insntyp
         return status;
 
     spl.src_slabid = XMHF_HYP_SLAB_XHSYSCALLLOG;
+    spl.dst_slabid = XMHF_HYP_SLAB_UAPI_GCPUSTATE;
     spl.cpuid = cpuindex;
     spl.in_out_params[0] = XMHF_HIC_UAPI_CPUSTATE;
 
@@ -401,6 +402,7 @@ void slab_main(slab_params_t *sp){
                 (xmhf_uapi_gcpustate_vmrw_params_t *)spl.in_out_params;
 
          	spl.src_slabid = XMHF_HYP_SLAB_XHAPPROVEXEC;
+         	spl.dst_slabid = XMHF_HYP_SLAB_UAPI_GCPUSTATE;
          	spl.cpuid = sp->cpuid;
             spl.in_out_params[0] = XMHF_HIC_UAPI_CPUSTATE;
             gcpustate_vmrwp->uapiphdr.uapifn = XMHF_HIC_UAPI_CPUSTATE_VMREAD;

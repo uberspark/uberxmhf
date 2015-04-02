@@ -305,6 +305,7 @@ void slab_main(slab_params_t *sp){
 
 
          	spl.src_slabid = XMHF_HYP_SLAB_XHAPPROVEXEC;
+         	spl.dst_slabid = XMHF_HYP_SLAB_UAPI_GCPUSTATE;
          	spl.cpuid = sp->cpuid;
             spl.in_out_params[0] = XMHF_HIC_UAPI_CPUSTATE;
             gcpustate_vmrwp->uapiphdr.uapifn = XMHF_HIC_UAPI_CPUSTATE_VMREAD;
