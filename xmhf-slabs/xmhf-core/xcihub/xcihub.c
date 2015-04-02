@@ -66,8 +66,8 @@ void slab_main(slab_params_t *sp){
     u32 info_vmexit_reason;
     slab_params_t spl;
 
-	_XDPRINTF_("%s[%u]: Got control: ESP=%08x\n",
-                __func__, (u16)sp->cpuid, CASM_FUNCCALL(read_esp,CASM_NOPARAM));
+	_XDPRINTF_("XCIHUB[%u]: Got control: ESP=%08x\n",
+                (u16)sp->cpuid, CASM_FUNCCALL(read_esp,CASM_NOPARAM));
 
     spl.cpuid = sp->cpuid;
     spl.src_slabid = XMHF_HYP_SLAB_XCIHUB;
@@ -365,6 +365,8 @@ void slab_main(slab_params_t *sp){
             HALT();
     }
 
+
+	_XDPRINTF_("XCIHUB[%u]: Resuming guest\n", (u16)sp->cpuid);
 
     //resume guest slab
     return;

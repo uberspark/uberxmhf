@@ -670,6 +670,10 @@ void __xmhfhic_rtm_intercept(x86regs_t *r){
     memcpy(&__xmhfhic_x86vmx_archdata[(u16)spl.cpuid].vmx_gprs,
            r, sizeof(x86regs_t));
 
+    //_XDPRINTF_("%s[%u]: Entry GPRS, eax=%x, ebx=%x, edx=%x, esp=%x\n",
+    //        __func__, (u16)spl.cpuid, r->eax, r->ebx, r->edx, r->esp);
+
+
     //call xcihub
     spl.src_slabid = CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmread,VMCS_CONTROL_VPID);
     spl.dst_slabid = XMHF_HYP_SLAB_XCIHUB;
@@ -678,6 +682,9 @@ void __xmhfhic_rtm_intercept(x86regs_t *r){
     //load GPRs
     memcpy(r, &__xmhfhic_x86vmx_archdata[(u16)spl.cpuid].vmx_gprs,
            sizeof(x86regs_t));
+
+    //_XDPRINTF_("%s[%u]: Exit GPRS, eax=%x, ebx=%x, edx=%x, esp=%x\n",
+    //        __func__, (u16)spl.cpuid, r->eax, r->ebx, r->edx, r->esp);
 
 
     /*
