@@ -918,32 +918,6 @@ static void __xmhfhic_rtm_uapihandler_cpustate(slab_params_t *sp){
 
     switch(sp->in_out_params[1]){
 
-        case XMHF_HIC_UAPI_CPUSTATE_VMWRITE:{
-            //input: encoding (u64) = in_out_params[2], [3]
-            //input: value (u64) = in_out_params[4], [5]
-
-            //checks:
-            /*//1. encoding cannot contain any value that is specific to HIC
-            if(_uapicheck_encoding_used_by_hic(iparams)){
-                _XDPRINTF_("%s[%u],%u: uapierr: encoding reserved for HIC. Halting!\n", __func__, (u32)cpuid, __LINE__);
-                //HALT();
-                return;
-            }*/
-
-            #if defined(__XMHF_VERIFICATION__)
-            assert(!_uapicheck_encoding_used_by_hic(iparams));
-            #endif // defined
-
-            #if !defined(__XMHF_VERIFICATION__)
-            {
-              u64 encoding = ((u64)sp->in_out_params[3] << 32) | sp->in_out_params[2];
-              u64 value = ((u64)sp->in_out_params[5] << 32) | sp->in_out_params[4];
- CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,encoding, value);
-            }
-            #endif
-        }
-        break;
-
 
         case XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSREAD:{
             //output = in_out_params[2..9] = x86regs_t
