@@ -160,23 +160,24 @@ void slab_main(slab_params_t *sp){
         //setup guest slab VMCS GDT base and limit
         {
             slab_params_t spl;
+            xmhf_uapi_gcpustate_vmrw_params_t *gcpustate_vmrwp =
+                (xmhf_uapi_gcpustate_vmrw_params_t *)spl.in_out_params;
 
             spl.cpuid = sp->cpuid;
             spl.src_slabid = XMHF_HYP_SLAB_XCINIT;
+            spl.dst_slabid = XMHF_HYP_SLAB_UAPI_GCPUSTATE;
 
             spl.in_out_params[0] = XMHF_HIC_UAPI_CPUSTATE;
-            spl.in_out_params[1] = XMHF_HIC_UAPI_CPUSTATE_VMWRITE;
-            spl.in_out_params[3] = 0;
-            spl.in_out_params[2] = VMCS_GUEST_GDTR_BASE;
-            spl.in_out_params[5] = 0;
-            spl.in_out_params[4] = guest_slab_gdt_paddr;
+            gcpustate_vmrwp->uapiphdr.uapifn = XMHF_HIC_UAPI_CPUSTATE_VMWRITE;
+            gcpustate_vmrwp->encoding = VMCS_GUEST_GDTR_BASE;
+            gcpustate_vmrwp->value = guest_slab_gdt_paddr;
 
-            XMHF_SLAB_UAPI(&spl);
+            XMHF_SLAB_CALLNEW(&spl);
 
-            spl.in_out_params[2] = VMCS_GUEST_GDTR_LIMIT;
-            spl.in_out_params[4] =  (sizeof(_xcguestslab_init_gdt)-1);
+            gcpustate_vmrwp->encoding = VMCS_GUEST_GDTR_LIMIT;
+            gcpustate_vmrwp->value =  (sizeof(_xcguestslab_init_gdt)-1);
 
-            XMHF_SLAB_UAPI(&spl);
+            XMHF_SLAB_CALLNEW(&spl);
 
         }
 
