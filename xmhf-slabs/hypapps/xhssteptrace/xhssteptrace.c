@@ -200,7 +200,7 @@ static void _hcb_hypercall(u32 cpuindex, u32 guest_slab_index){
 	u32 call_id;
 	//u64 gpa;
 
-    spl.src_slabid = XMHF_HYP_SLAB_XHAPPROVEXEC;
+    spl.src_slabid = XMHF_HYP_SLAB_XHSSTEPTRACE;
     spl.cpuid = cpuindex;
     spl.in_out_params[0] = XMHF_HIC_UAPI_CPUSTATE;
 
@@ -267,6 +267,9 @@ static void _hcb_trap_exception(u32 cpuindex, u32 guest_slab_index){
         XMHF_SLAB_UAPI(&spl);
         guest_rip = spl.in_out_params[4];
 
+        _XDPRINTF_("%s[%u]: guest slab RIP=%x\n",
+                   __func__, (u16)cpuindex, guest_rip);
+
         //copy 256 bytes from the current guest RIP for trace inference
         pdesc->guest_slab_index = guest_slab_index;
         pdesc->addr_to = &_st_tracebuffer;
@@ -279,6 +282,9 @@ static void _hcb_trap_exception(u32 cpuindex, u32 guest_slab_index){
 
         //try to see if we found a match in our trace database
         st_scanforsignature(&_st_tracebuffer, sizeof(_st_tracebuffer));
+        _XDPRINTF_("%s[%u]: scan complete\n",
+                   __func__, (u16)cpuindex);
+
     }
 
 }
@@ -311,8 +317,8 @@ void slab_main(slab_params_t *sp){
     hcbp->cbresult=XC_HYPAPPCB_CHAIN;
 
 
-	_XDPRINTF_("%s[%u]: Got control, cbtype=%x: ESP=%08x\n",
-                __func__, (u16)sp->cpuid, hcbp->cbtype, CASM_FUNCCALL(read_esp,CASM_NOPARAM));
+	_XDPRINTF_("XHSSTEPTRACE[%u]: Got control, cbtype=%x: ESP=%08x\n",
+                (u16)sp->cpuid, hcbp->cbtype, CASM_FUNCCALL(read_esp,CASM_NOPARAM));
 
 
     switch(hcbp->cbtype){

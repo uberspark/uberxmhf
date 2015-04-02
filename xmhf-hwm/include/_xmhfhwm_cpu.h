@@ -691,14 +691,14 @@ typedef struct __tss {
 
 
 #define xmhfhwm_cpu_insn_addl_mesp_ecx(x) __builtin_annot("addl "#x"(%esp), %ecx ");
-#define xmhfhwm_cpu_insn_addl_imm_esp(x) __builtin_annot("addl "#x", %esp ");
-#define xmhfhwm_cpu_insn_subl_imm_esp(x) __builtin_annot("subl "#x", %esp ");
+#define xmhfhwm_cpu_insn_addl_imm_esp(x) __builtin_annot("addl $"#x", %esp ");
+#define xmhfhwm_cpu_insn_subl_imm_esp(x) __builtin_annot("subl $"#x", %esp ");
 #define xmhfhwm_cpu_insn_addl_eax_ecx() __builtin_annot("addl %eax, %ecx");
 #define xmhfhwm_cpu_insn_addl_ecx_eax() __builtin_annot("addl %ecx, %eax");
 
-#define xmhfhwm_cpu_insn_addl_imm_ecx(x) __builtin_annot("addl "#x", %ecx ");
+#define xmhfhwm_cpu_insn_addl_imm_ecx(x) __builtin_annot("addl $"#x", %ecx ");
 
-#define _xmhfhwm_cpu_insn_addl_imm_eax(x) __builtin_annot("addl "#x", %eax ");
+#define _xmhfhwm_cpu_insn_addl_imm_eax(x) __builtin_annot("addl $"#x", %eax ");
 #define xmhfhwm_cpu_insn_addl_imm_eax(x) _xmhfhwm_cpu_insn_addl_imm_eax(x)
 
 #define xmhfhwm_cpu_insn_andl_imm_edx(x) __builtin_annot("andl $"#x", %edx ");
