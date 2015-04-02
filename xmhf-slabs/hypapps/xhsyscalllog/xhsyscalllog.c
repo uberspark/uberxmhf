@@ -147,7 +147,7 @@ static void _hcb_hypercall(u32 cpuindex, u32 guest_slab_index){
     XMHF_SLAB_UAPI(&spl);
 
     call_id = gprs->eax;
-    gpa = ((u64)gprs->edx << 32) | gprs->ebx;
+    gpa = ((u64)gprs->ebx << 32) | gprs->edx;
 
 	_XDPRINTF_("%s[%u]: call_id=%x, gpa=%016llx\n", __func__, (u16)cpuindex, call_id, gpa);
 
