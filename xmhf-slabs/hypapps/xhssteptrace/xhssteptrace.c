@@ -52,6 +52,7 @@
 #include <xmhf-debug.h>
 
 #include <xc.h>
+#include <uapi_gcpustate.h>
 #include <xhssteptrace.h>
 
 
@@ -70,22 +71,23 @@ static void st_on(u32 cpuindex, u32 guest_slab_index){
     u32 guest_rflags;
     u32 exception_bitmap;
     slab_params_t spl;
+    xmhf_uapi_gcpustate_vmrw_params_t *gcpustate_vmrwp =
+        (xmhf_uapi_gcpustate_vmrw_params_t *)spl.in_out_params;
 
     spl.src_slabid = XMHF_HYP_SLAB_XHSSTEPTRACE;
+    spl.dst_slabid = XMHF_HYP_SLAB_UAPI_GCPUSTATE;
     spl.cpuid = cpuindex;
     spl.in_out_params[0] = XMHF_HIC_UAPI_CPUSTATE;
 
 if(!ssteptrace_on){
-    //XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMREAD, VMCS_GUEST_RFLAGS, &guest_rflags);
-    spl.in_out_params[1] = XMHF_HIC_UAPI_CPUSTATE_VMREAD;
-    spl.in_out_params[2] = VMCS_GUEST_RFLAGS;
-    XMHF_SLAB_UAPI(&spl);
-    guest_rflags = spl.in_out_params[4];
+    gcpustate_vmrwp->uapiphdr.uapifn = XMHF_HIC_UAPI_CPUSTATE_VMREAD;
+    gcpustate_vmrwp->encoding = VMCS_GUEST_RFLAGS;
+    XMHF_SLAB_CALLNEW(&spl);
+    guest_rflags = gcpustate_vmrwp->value;
 
-    //XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMREAD, VMCS_CONTROL_EXCEPTION_BITMAP, &exception_bitmap);
-    spl.in_out_params[2] = VMCS_CONTROL_EXCEPTION_BITMAP;
-    XMHF_SLAB_UAPI(&spl);
-    exception_bitmap = spl.in_out_params[4];
+    gcpustate_vmrwp->encoding = VMCS_CONTROL_EXCEPTION_BITMAP;
+    XMHF_SLAB_CALLNEW(&spl);
+    exception_bitmap = gcpustate_vmrwp->value;
 
     guest_rflags |= EFLAGS_TF;
     exception_bitmap |= (1 << 1);
@@ -110,23 +112,24 @@ static void st_off(u32 cpuindex, u32 guest_slab_index){
     u32 guest_rflags;
     u32 exception_bitmap;
     slab_params_t spl;
+    xmhf_uapi_gcpustate_vmrw_params_t *gcpustate_vmrwp =
+        (xmhf_uapi_gcpustate_vmrw_params_t *)spl.in_out_params;
 
     spl.src_slabid = XMHF_HYP_SLAB_XHSSTEPTRACE;
+    spl.dst_slabid = XMHF_HYP_SLAB_UAPI_GCPUSTATE;
     spl.cpuid = cpuindex;
     spl.in_out_params[0] = XMHF_HIC_UAPI_CPUSTATE;
 
 
 if(ssteptrace_on){
-    //XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMREAD, VMCS_GUEST_RFLAGS, &guest_rflags);
-    spl.in_out_params[1] = XMHF_HIC_UAPI_CPUSTATE_VMREAD;
-    spl.in_out_params[2] = VMCS_GUEST_RFLAGS;
-    XMHF_SLAB_UAPI(&spl);
-    guest_rflags = spl.in_out_params[4];
+    gcpustate_vmrwp->uapiphdr.uapifn = XMHF_HIC_UAPI_CPUSTATE_VMREAD;
+    gcpustate_vmrwp->encoding = VMCS_GUEST_RFLAGS;
+    XMHF_SLAB_CALLNEW(&spl);
+    guest_rflags = gcpustate_vmrwp->value;
 
-    //XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMREAD, VMCS_CONTROL_EXCEPTION_BITMAP, &exception_bitmap);
-    spl.in_out_params[2] = VMCS_CONTROL_EXCEPTION_BITMAP;
-    XMHF_SLAB_UAPI(&spl);
-    exception_bitmap = spl.in_out_params[4];
+    gcpustate_vmrwp->encoding = VMCS_CONTROL_EXCEPTION_BITMAP;
+    XMHF_SLAB_CALLNEW(&spl);
+    exception_bitmap = gcpustate_vmrwp->value;
 
 
     guest_rflags &= ~(EFLAGS_TF);
@@ -242,18 +245,21 @@ static void _hcb_trap_exception(u32 cpuindex, u32 guest_slab_index){
     u32 info_vmexit_interruption_information;
     u32 guest_rip;
     slab_params_t spl;
+    xmhf_uapi_gcpustate_vmrw_params_t *gcpustate_vmrwp =
+        (xmhf_uapi_gcpustate_vmrw_params_t *)spl.in_out_params;
+
     xmhf_hic_uapi_physmem_desc_t *pdesc = (xmhf_hic_uapi_physmem_desc_t *)&spl.in_out_params[2];
 
     spl.src_slabid = XMHF_HYP_SLAB_XHSSTEPTRACE;
+    spl.dst_slabid = XMHF_HYP_SLAB_UAPI_GCPUSTATE;
     spl.cpuid = cpuindex;
 
     if(ssteptrace_on){
-        //XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMREAD, VMCS_INFO_VMEXIT_INTERRUPT_INFORMATION, &info_vmexit_interruption_information);
         spl.in_out_params[0] = XMHF_HIC_UAPI_CPUSTATE;
-        spl.in_out_params[1] = XMHF_HIC_UAPI_CPUSTATE_VMREAD;
-        spl.in_out_params[2] = VMCS_INFO_VMEXIT_INTERRUPT_INFORMATION;
-        XMHF_SLAB_UAPI(&spl);
-        info_vmexit_interruption_information = spl.in_out_params[4];
+        gcpustate_vmrwp->uapiphdr.uapifn = XMHF_HIC_UAPI_CPUSTATE_VMREAD;
+        gcpustate_vmrwp->encoding = VMCS_INFO_VMEXIT_INTERRUPT_INFORMATION;
+        XMHF_SLAB_CALLNEW(&spl);
+        info_vmexit_interruption_information = gcpustate_vmrwp->value;
 
         _XDPRINTF_("%s[%u]: guest slab %u exception %u...\n",
                    __func__, (u16)cpuindex, guest_slab_index,
@@ -262,10 +268,9 @@ static void _hcb_trap_exception(u32 cpuindex, u32 guest_slab_index){
         if((u8)info_vmexit_interruption_information != 0x1)
             return;
 
-        //XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_VMREAD, VMCS_GUEST_RIP, &guest_rip);
-        spl.in_out_params[2] = VMCS_GUEST_RIP;
-        XMHF_SLAB_UAPI(&spl);
-        guest_rip = spl.in_out_params[4];
+        gcpustate_vmrwp->encoding = VMCS_GUEST_RIP;
+        XMHF_SLAB_CALLNEW(&spl);
+        guest_rip = gcpustate_vmrwp->value;
 
         _XDPRINTF_("%s[%u]: guest slab RIP=%x\n",
                    __func__, (u16)cpuindex, guest_rip);
