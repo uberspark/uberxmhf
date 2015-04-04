@@ -135,17 +135,19 @@ static void _hcb_initialize(u32 cpuindex){
 // hypercall
 static void _hcb_hypercall(u32 cpuindex, u32 guest_slab_index){
     slab_params_t spl;
-    x86regs_t *gprs = (x86regs_t *)&spl.in_out_params[2];
+    xmhf_uapi_gcpustate_gprs_params_t *gcpustate_gprs =
+        (xmhf_uapi_gcpustate_gprs_params_t *)spl.in_out_params;
+    x86regs_t *gprs = (x86regs_t *)&gcpustate_gprs->gprs;
 	u32 call_id;
 	u64 gpa;
 
     spl.src_slabid = XMHF_HYP_SLAB_XHAPPROVEXEC;
+    spl.dst_slabid = XMHF_HYP_SLAB_UAPI_GCPUSTATE;
     spl.cpuid = cpuindex;
     spl.in_out_params[0] = XMHF_HIC_UAPI_CPUSTATE;
 
-    //XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSREAD, NULL, &gprs);
-    spl.in_out_params[1] = XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSREAD;
-    XMHF_SLAB_UAPI(&spl);
+    gcpustate_gprs->uapiphdr.uapifn = XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSREAD;
+    XMHF_SLAB_CALLNEW(&spl);
 
     call_id = gprs->eax;
     gpa = ((u64)gprs->ebx << 32) | gprs->edx;
@@ -174,6 +176,8 @@ static void _hcb_memoryfault(u32 cpuindex, u32 guest_slab_index, u64 gpa, u64 gv
     slab_params_t spl;
     xmhf_uapi_gcpustate_vmrw_params_t *gcpustate_vmrwp =
         (xmhf_uapi_gcpustate_vmrw_params_t *)spl.in_out_params;
+    xmhf_uapi_gcpustate_gprs_params_t *gcpustate_gprs =
+        (xmhf_uapi_gcpustate_gprs_params_t *)spl.in_out_params;
     xmhf_hic_uapi_physmem_desc_t *pdesc = (xmhf_hic_uapi_physmem_desc_t *)&spl.in_out_params[2];
     u8 syscalldigest[SHA_DIGEST_LENGTH];
     bool syscallhandler_modified=false;
@@ -192,10 +196,9 @@ static void _hcb_memoryfault(u32 cpuindex, u32 guest_slab_index, u64 gpa, u64 gv
 
 
     //read GPR state
-    //XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSREAD, NULL, &r);
-    spl.in_out_params[1] = XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSREAD;
-    XMHF_SLAB_UAPI(&spl);
-    memcpy(&r, &spl.in_out_params[2], sizeof(x86regs_t));
+    gcpustate_gprs->uapiphdr.uapifn = XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSREAD;
+    XMHF_SLAB_CALLNEW(&spl);
+    memcpy(&r, &gcpustate_gprs->gprs, sizeof(x86regs_t));
 
     //copy code page at SYSENTER (referenced by shadow_sysenter_rip)
     pdesc->guest_slab_index = guest_slab_index;
@@ -236,10 +239,12 @@ static u32 _hcb_trap_instruction(u32 cpuindex, u32 guest_slab_index, u32 insntyp
     slab_params_t spl;
     xmhf_uapi_gcpustate_vmrw_params_t *gcpustate_vmrwp =
         (xmhf_uapi_gcpustate_vmrw_params_t *)spl.in_out_params;
+    xmhf_uapi_gcpustate_gprs_params_t *gcpustate_gprs =
+        (xmhf_uapi_gcpustate_gprs_params_t *)spl.in_out_params;
     u32 status=XC_HYPAPPCB_CHAIN;
     u32 guest_rip, msrvalue;
     u32 info_vmexit_instruction_length;
-    x86regs_t *r = (x86regs_t *)&spl.in_out_params[2];
+    x86regs_t *r = (x86regs_t *)&gcpustate_gprs->gprs;
 
     if(!_sl_registered)
         return status;
@@ -252,9 +257,8 @@ static u32 _hcb_trap_instruction(u32 cpuindex, u32 guest_slab_index, u32 insntyp
 
     if (insntype == XC_HYPAPPCB_TRAP_INSTRUCTION_WRMSR){
 
-        //XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSREAD, NULL, &r);
-        spl.in_out_params[1] = XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSREAD;
-        XMHF_SLAB_UAPI(&spl);
+        gcpustate_gprs->uapiphdr.uapifn = XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSREAD;
+        XMHF_SLAB_CALLNEW(&spl);
         msrvalue = r->ecx;
 
         switch(msrvalue){
@@ -297,9 +301,8 @@ static u32 _hcb_trap_instruction(u32 cpuindex, u32 guest_slab_index, u32 insntyp
 
     }else if (insntype == XC_HYPAPPCB_TRAP_INSTRUCTION_RDMSR){
 
-        //XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSREAD, NULL, &r);
-        spl.in_out_params[1] = XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSREAD;
-        XMHF_SLAB_UAPI(&spl);
+        gcpustate_gprs->uapiphdr.uapifn = XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSREAD;
+        XMHF_SLAB_CALLNEW(&spl);
         msrvalue = r->ecx;
 
         switch(msrvalue){
@@ -309,9 +312,8 @@ static u32 _hcb_trap_instruction(u32 cpuindex, u32 guest_slab_index, u32 insntyp
                 r->edx = shadow_sysenter_rip >> 32;
                 r->eax = (u32)shadow_sysenter_rip;
 
-                //XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSWRITE, &r, NULL);
-                spl.in_out_params[1] = XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSWRITE;
-                XMHF_SLAB_UAPI(&spl);
+                gcpustate_gprs->uapiphdr.uapifn = XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSWRITE;
+                XMHF_SLAB_CALLNEW(&spl);
 
                 status = XC_HYPAPPCB_NOCHAIN;
                 break;

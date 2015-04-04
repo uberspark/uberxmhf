@@ -68,6 +68,8 @@ void slab_main(slab_params_t *sp){
     slab_params_t spl;
     xmhf_uapi_gcpustate_vmrw_params_t *gcpustate_vmrwp =
         (xmhf_uapi_gcpustate_vmrw_params_t *)spl.in_out_params;
+    xmhf_uapi_gcpustate_gprs_params_t *gcpustate_gprs =
+        (xmhf_uapi_gcpustate_gprs_params_t *)spl.in_out_params;
 
 	_XDPRINTF_("XCIHUB[%u]: Got control: ESP=%08x\n",
                 (u16)sp->cpuid, CASM_FUNCCALL(read_esp,CASM_NOPARAM));
@@ -154,10 +156,9 @@ void slab_main(slab_params_t *sp){
                 _XDPRINTF_("%s[%u]: VMX_VMEXIT_CPUID\n",
                     __func__, (u16)sp->cpuid);
 
-                //XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSREAD, NULL, &r);
-                spl.in_out_params[1] = XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSREAD;
-                XMHF_SLAB_UAPI(&spl);
-                memcpy(&r, &spl.in_out_params[2], sizeof(x86regs_t));
+                gcpustate_gprs->uapiphdr.uapifn = XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSREAD;
+                XMHF_SLAB_CALLNEW(&spl);
+                memcpy(&r, &gcpustate_gprs->gprs, sizeof(x86regs_t));
 
                 //x86_64
                 //if((u32)r.eax == 0x80000001)
@@ -169,10 +170,9 @@ void slab_main(slab_params_t *sp){
                 //if(clearsyscallretbit)
                 //    r.edx = r.edx & (u64)~(1ULL << 11);
 
-                //XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSWRITE, &r, NULL);
-                spl.in_out_params[1] = XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSWRITE;
-                memcpy(&spl.in_out_params[2], &r, sizeof(x86regs_t));
-                XMHF_SLAB_UAPI(&spl);
+                gcpustate_gprs->uapiphdr.uapifn = XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSWRITE;
+                memcpy(&gcpustate_gprs->gprs, &r, sizeof(x86regs_t));
+                XMHF_SLAB_CALLNEW(&spl);
 
                 {
                     gcpustate_vmrwp->uapiphdr.uapifn = XMHF_HIC_UAPI_CPUSTATE_VMREAD;
@@ -213,10 +213,9 @@ void slab_main(slab_params_t *sp){
 
                 _XDPRINTF_("%s[%u]: VMX_VMEXIT_WRMSR\n", __func__, (u16)sp->cpuid);
 
-                //XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSREAD, NULL, &r);
-                spl.in_out_params[1] = XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSREAD;
-                XMHF_SLAB_UAPI(&spl);
-                memcpy(&r, &spl.in_out_params[2], sizeof(x86regs_t));
+                gcpustate_gprs->uapiphdr.uapifn = XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSREAD;
+                XMHF_SLAB_CALLNEW(&spl);
+                memcpy(&r, &gcpustate_gprs->gprs, sizeof(x86regs_t));
 
                 switch((u32)r.ecx){
                     case IA32_SYSENTER_CS_MSR:
@@ -285,10 +284,9 @@ void slab_main(slab_params_t *sp){
 
                 _XDPRINTF_("%s[%u]: VMX_VMEXIT_RDMSR\n", __func__, (u16)sp->cpuid);
 
-                //XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSREAD, NULL, &r);
-                spl.in_out_params[1] = XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSREAD;
-                XMHF_SLAB_UAPI(&spl);
-                memcpy(&r, &spl.in_out_params[2], sizeof(x86regs_t));
+                gcpustate_gprs->uapiphdr.uapifn = XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSREAD;
+                XMHF_SLAB_CALLNEW(&spl);
+                memcpy(&r, &gcpustate_gprs->gprs, sizeof(x86regs_t));
 
 
                 switch((u32)r.ecx){
@@ -325,10 +323,9 @@ void slab_main(slab_params_t *sp){
                         break;
                 }
 
-                //XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSWRITE, &r, NULL);
-                spl.in_out_params[1] = XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSWRITE;
-                memcpy(&spl.in_out_params[2], &r, sizeof(x86regs_t));
-                XMHF_SLAB_UAPI(&spl);
+                gcpustate_gprs->uapiphdr.uapifn = XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSWRITE;
+                memcpy(&gcpustate_gprs->gprs, &r, sizeof(x86regs_t));
+                XMHF_SLAB_CALLNEW(&spl);
 
                 gcpustate_vmrwp->uapiphdr.uapifn = XMHF_HIC_UAPI_CPUSTATE_VMREAD;
                 gcpustate_vmrwp->encoding = VMCS_INFO_VMEXIT_INSTRUCTION_LENGTH;
