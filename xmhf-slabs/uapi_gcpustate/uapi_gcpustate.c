@@ -91,6 +91,14 @@ void slab_main(slab_params_t *sp){
         }
         break;
 
+        case XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSWRITE:{
+            xmhf_uapi_gcpustate_gprs_params_t *gprs =
+                (xmhf_uapi_gcpustate_gprs_params_t *)sp->in_out_params;
+
+            memcpy(&guestgprs[(u16)sp->cpuid], &gprs->gprs, sizeof(x86regs_t));
+
+        }
+        break;
 
 
         default:
