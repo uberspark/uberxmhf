@@ -54,6 +54,8 @@
 #include <xmhf-hic.h>
 #include <xmhf-debug.h>
 
+#include <xc.h>
+#include <uapi_gcpustate.h>
 
 #if defined (__XMHF_VERIFICATION__)
 u64 __xmhfhic_safestack_indices[MAX_PLATFORM_CPUS] = { 0 };
@@ -661,27 +663,39 @@ void __xmhfhic_rtm_exception_stub(x86vmx_exception_frame_t *exframe){
 
 void __xmhfhic_rtm_intercept(x86regs_t *r){
     slab_params_t spl;
+    xmhf_uapi_gcpustate_gprs_params_t *gcpustate_gprs =
+        (xmhf_uapi_gcpustate_gprs_params_t *)spl.in_out_params;
 
     memset(&spl, 0, sizeof(spl));
 
+    spl.src_slabid = CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmread,VMCS_CONTROL_VPID);
     spl.cpuid = __xmhfhic_x86vmx_cpuidtable[xmhf_baseplatform_arch_x86_getcpulapicid()];
 
+
     //store GPRs
-    memcpy(&__xmhfhic_x86vmx_archdata[(u16)spl.cpuid].vmx_gprs,
-           r, sizeof(x86regs_t));
+    spl.dst_slabid = XMHF_HYP_SLAB_UAPI_GCPUSTATE;
+    gcpustate_gprs->uapiphdr.uapifn = XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSWRITE;
+    memcpy(&gcpustate_gprs->gprs, r, sizeof(x86regs_t));
+    XMHF_SLAB_CALLNEW(&spl);
+    //memcpy(&__xmhfhic_x86vmx_archdata[(u16)spl.cpuid].vmx_gprs,
+    //       r, sizeof(x86regs_t));
 
     //_XDPRINTF_("%s[%u]: Entry GPRS, eax=%x, ebx=%x, edx=%x, esp=%x\n",
     //        __func__, (u16)spl.cpuid, r->eax, r->ebx, r->edx, r->esp);
 
 
     //call xcihub
-    spl.src_slabid = CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmread,VMCS_CONTROL_VPID);
     spl.dst_slabid = XMHF_HYP_SLAB_XCIHUB;
     XMHF_SLAB_CALLNEW(&spl);
 
     //load GPRs
-    memcpy(r, &__xmhfhic_x86vmx_archdata[(u16)spl.cpuid].vmx_gprs,
-           sizeof(x86regs_t));
+    //memcpy(r, &__xmhfhic_x86vmx_archdata[(u16)spl.cpuid].vmx_gprs,
+    //       sizeof(x86regs_t));
+    spl.dst_slabid = XMHF_HYP_SLAB_UAPI_GCPUSTATE;
+    gcpustate_gprs->uapiphdr.uapifn = XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSREAD;
+    XMHF_SLAB_CALLNEW(&spl);
+    memcpy(r, &gcpustate_gprs->gprs, sizeof(x86regs_t));
+
 
     //_XDPRINTF_("%s[%u]: Exit GPRS, eax=%x, ebx=%x, edx=%x, esp=%x\n",
     //        __func__, (u16)spl.cpuid, r->eax, r->ebx, r->edx, r->esp);
@@ -917,56 +931,6 @@ static void __xmhfhic_rtm_uapihandler_cpustate(slab_params_t *sp){
     //_XDPRINTF_("%s[%u]: Got control...\n", __func__, (u32)cpuid);
 
     switch(sp->in_out_params[1]){
-
-
-        case XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSREAD:{
-            //output = in_out_params[2..9] = x86regs_t
-
-            /*//checks:
-            //1. oparams should be within source slab memory extents
-            if(!_uapicheck_is_within_slab_memory_extents(src_slabid, oparams, sizeof(x86regs64_t))){
-                _XDPRINTF_("%s[%u],%u: uapierr: oparams should be within source slab memory extents. Halting!\n", __func__, (u32)cpuid, __LINE__);
-                //HALT();
-                return;
-            }*/
-
-            #if defined(__XMHF_VERIFICATION__)
-            assert(_uapicheck_is_within_slab_memory_extents(src_slabid, oparams, sizeof(x86regs64_t)));
-            #endif // defined
-
-            #if !defined (__XMHF_VERIFICATION__)
-            //memcpy(oparams, & __xmhfhic_x86vmx_archdata[(u32)cpuid].vmx_gprs,
-            //       sizeof(x86regs64_t));
-            memcpy(&sp->in_out_params[2],
-                   &__xmhfhic_x86vmx_archdata[(u16)sp->cpuid].vmx_gprs,
-                   sizeof(x86regs_t));
-
-            #endif
-        }
-        break;
-
-        case XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSWRITE:{
-            //input: in_out_params[2..9] = x86regs_t
-
-            //checks:
-            /*//1. iparams should be within source slab memory extents
-            if(!_uapicheck_is_within_slab_memory_extents(src_slabid, iparams, sizeof(x86regs64_t))){
-                _XDPRINTF_("%s[%u],%u: uapierr: oparams should be within source slab memory extents. Halting!\n", __func__, (u32)cpuid, __LINE__);
-                //HALT();
-                return;
-            }*/
-
-            #if defined(__XMHF_VERIFICATION__)
-            assert(_uapicheck_is_within_slab_memory_extents(src_slabid, iparams, sizeof(x86regs64_t)));
-            #endif // defined
-
-            #if !defined (__XMHF_VERIFICATION__)
-            memcpy(&__xmhfhic_x86vmx_archdata[(u16)sp->cpuid].vmx_gprs,
-                   &sp->in_out_params[2],
-                   sizeof(x86regs_t));
-            #endif
-        }
-        break;
 
 
         case XMHF_HIC_UAPI_CPUSTATE_WRMSR:{

@@ -152,17 +152,19 @@ static void _hcb_initialize(u32 cpuindex){
 // hypercall
 static void _hcb_hypercall(u32 cpuindex, u32 guest_slab_index){
     slab_params_t spl;
-    x86regs_t *gprs = (x86regs_t *)&spl.in_out_params[2];
+    xmhf_uapi_gcpustate_gprs_params_t *gcpustate_gprs =
+        (xmhf_uapi_gcpustate_gprs_params_t *)spl.in_out_params;
+    x86regs_t *gprs = (x86regs_t *)&gcpustate_gprs->gprs;
 	u32 call_id;
 	u64 gpa;
 
     spl.src_slabid = XMHF_HYP_SLAB_XHHYPERDEP;
+    spl.dst_slabid = XMHF_HYP_SLAB_UAPI_GCPUSTATE;
     spl.cpuid = cpuindex;
     spl.in_out_params[0] = XMHF_HIC_UAPI_CPUSTATE;
 
-    //XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSREAD, NULL, &gprs);
-    spl.in_out_params[1] = XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSREAD;
-    XMHF_SLAB_UAPI(&spl);
+    gcpustate_gprs->uapiphdr.uapifn = XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSREAD;
+    XMHF_SLAB_CALLNEW(&spl);
 
     call_id = gprs->eax;
     gpa = ((u64)gprs->ebx << 32) | gprs->edx;
