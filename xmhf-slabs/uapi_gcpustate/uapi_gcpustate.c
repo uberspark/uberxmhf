@@ -58,6 +58,9 @@
 #include <xc.h>
 #include <uapi_gcpustate.h>
 
+static x86regs_t guestgprs[MAX_PLATFORM_CPUS];
+
+
 /////
 void slab_main(slab_params_t *sp){
     xmhf_uapi_params_hdr_t *uapiphdr = (xmhf_uapi_params_hdr_t *)sp->in_out_params;
@@ -78,6 +81,17 @@ void slab_main(slab_params_t *sp){
             CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite, vmrwp->encoding, vmrwp->value);
         }
         break;
+
+
+        case XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSREAD:{
+            xmhf_uapi_gcpustate_gprs_params_t *gprs =
+                (xmhf_uapi_gcpustate_gprs_params_t *)sp->in_out_params;
+
+            memcpy(&gprs->gprs, &guestgprs[(u16)sp->cpuid], sizeof(x86regs_t));
+        }
+        break;
+
+
 
         default:
             _XDPRINTF_("%s[%u]: Unknown uAPI function %x. Halting!\n",
