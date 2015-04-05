@@ -248,6 +248,19 @@ extern u8 _slab_uapi_gcpustate_dmadata_start[];
 extern u8 _slab_uapi_gcpustate_dmadata_end[];
 extern u8 _slab_uapi_gcpustate_entrypoint[];
 
+extern u8 _slab_uapi_hcpustate_code_start[];
+extern u8 _slab_uapi_hcpustate_code_end[];
+extern u8 _slab_uapi_hcpustate_rwdata_start[];
+extern u8 _slab_uapi_hcpustate_rwdata_end[];
+extern u8 _slab_uapi_hcpustate_rodata_start[];
+extern u8 _slab_uapi_hcpustate_rodata_end[];
+extern u8 _slab_uapi_hcpustate_stack_start[];
+extern u8 _slab_uapi_hcpustate_stack_end[];
+extern u8 _slab_uapi_hcpustate_dmadata_start[];
+extern u8 _slab_uapi_hcpustate_dmadata_end[];
+extern u8 _slab_uapi_hcpustate_entrypoint[];
+
+
 extern u8 _slab_xcinit_code_start[];
 extern u8 _slab_xcinit_code_end[];
 extern u8 _slab_xcinit_rwdata_start[];
@@ -462,6 +475,39 @@ __attribute__(( section(".sharedro") )) __attribute__((aligned(4096))) x_slab_in
         (u32)_slab_uapi_gcpustate_entrypoint
     },
 
+
+    //XMHF_HYP_SLAB_UAPI_HCPUSTATE
+    {
+        {
+            HIC_SLAB_X86VMXX86PC_HYPERVISOR,
+            false,
+            false,
+            0,
+            {
+                ((u32)&_slab_uapi_hcpustate_stack_start[1*XMHF_SLAB_STACKSIZE]),
+                ((u32)&_slab_uapi_hcpustate_stack_start[2*XMHF_SLAB_STACKSIZE]),
+                ((u32)&_slab_uapi_hcpustate_stack_start[3*XMHF_SLAB_STACKSIZE]),
+                ((u32)&_slab_uapi_hcpustate_stack_start[4*XMHF_SLAB_STACKSIZE]),
+                ((u32)&_slab_uapi_hcpustate_stack_start[5*XMHF_SLAB_STACKSIZE]),
+                ((u32)&_slab_uapi_hcpustate_stack_start[6*XMHF_SLAB_STACKSIZE]),
+                ((u32)&_slab_uapi_hcpustate_stack_start[7*XMHF_SLAB_STACKSIZE]),
+                ((u32)&_slab_uapi_hcpustate_stack_start[8*XMHF_SLAB_STACKSIZE]),
+            }
+        },
+        true,
+        0,
+        HIC_SLAB_CALLCAP(XMHF_HYP_SLAB_XCTESTSLAB1) | HIC_SLAB_CALLCAP(XMHF_GUEST_SLAB_XCGUESTSLAB),
+        HIC_SLAB_UAPICAP(XMHF_HIC_UAPI_CPUSTATE) | HIC_SLAB_UAPICAP(XMHF_HIC_UAPI_PHYSMEM) | HIC_SLAB_UAPICAP(XMHF_HIC_UAPI_MEMPGTBL),
+        {false, 0, {0}},
+        {
+            {.addr_start = _slab_uapi_hcpustate_code_start, .addr_end = _slab_uapi_hcpustate_code_end, .protection = 0},
+            {.addr_start = _slab_uapi_hcpustate_rwdata_start, .addr_end = _slab_uapi_hcpustate_rwdata_end, .protection = 0},
+            {.addr_start = _slab_uapi_hcpustate_rodata_start, .addr_end = _slab_uapi_hcpustate_rodata_end, .protection = 0},
+            {.addr_start = _slab_uapi_hcpustate_stack_start, .addr_end = _slab_uapi_hcpustate_stack_end, .protection = 0},
+            {.addr_start = _slab_uapi_hcpustate_dmadata_start, .addr_end = _slab_uapi_hcpustate_dmadata_end, .protection = 0},
+        },
+        (u32)_slab_uapi_hcpustate_entrypoint
+    },
 
 
     //XMHF_HYP_SLAB_XCINIT
