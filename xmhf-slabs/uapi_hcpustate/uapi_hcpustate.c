@@ -62,5 +62,34 @@
 /////
 void slab_main(slab_params_t *sp){
 
+    xmhf_uapi_params_hdr_t *uapiphdr = (xmhf_uapi_params_hdr_t *)sp->in_out_params;
+
+    switch(uapiphdr->uapifn){
+
+        case XMHF_HIC_UAPI_CPUSTATE_WRMSR:{
+            xmhf_uapi_hcpustate_msr_params_t *msrp =
+                (xmhf_uapi_hcpustate_msr_params_t *)sp->in_out_params;
+
+            CASM_FUNCCALL(wrmsr64, msrp->msr, msrp->value);
+        }
+        break;
+
+
+        case XMHF_HIC_UAPI_CPUSTATE_RDMSR:{
+            xmhf_uapi_hcpustate_msr_params_t *msrp =
+                (xmhf_uapi_hcpustate_msr_params_t *)sp->in_out_params;
+
+            msrp->value = CASM_FUNCCALL(rdmsr64, msrp->msr);
+        }
+        break;
+
+        default:
+            _XDPRINTF_("%s[%u]: Unknown uAPI function %x. Halting!\n",
+                    __func__, (u16)sp->cpuid, uapiphdr->uapifn);
+            HALT();
+            return;
+    }
+
+
 
 }
