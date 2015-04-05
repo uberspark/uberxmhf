@@ -51,6 +51,7 @@
 #include <xc.h>
 #include <xcihub.h>
 #include <uapi_gcpustate.h>
+#include <uapi_hcpustate.h>
 
 /*
  * slab code
@@ -70,6 +71,8 @@ void slab_main(slab_params_t *sp){
         (xmhf_uapi_gcpustate_vmrw_params_t *)spl.in_out_params;
     xmhf_uapi_gcpustate_gprs_params_t *gcpustate_gprs =
         (xmhf_uapi_gcpustate_gprs_params_t *)spl.in_out_params;
+    xmhf_uapi_hcpustate_msr_params_t *hcpustate_msrp =
+        (xmhf_uapi_hcpustate_msr_params_t *)spl.in_out_params;
 
 	_XDPRINTF_("XCIHUB[%u]: Got control: ESP=%08x\n",
                 (u16)sp->cpuid, CASM_FUNCCALL(read_esp,CASM_NOPARAM));
@@ -237,16 +240,16 @@ void slab_main(slab_params_t *sp){
                         XMHF_SLAB_CALLNEW(&spl);
                         break;
                     default:
-                        //XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_WRMSR, r.rcx, ( ((u64)(u32)r.rdx << 32) | (u32)r.rax ));
-                        spl.in_out_params[1] = XMHF_HIC_UAPI_CPUSTATE_WRMSR;
-                        spl.in_out_params[2] = r.ecx;
-                        spl.in_out_params[3] = r.eax;
-                        spl.in_out_params[4] = r.edx;
-                        XMHF_SLAB_UAPI(&spl);
+                        spl.dst_slabid = XMHF_HYP_SLAB_UAPI_HCPUSTATE;
+                        hcpustate_msrp->uapiphdr.uapifn = XMHF_HIC_UAPI_CPUSTATE_WRMSR;
+                        hcpustate_msrp->msr = r.ecx;
+                        hcpustate_msrp->value = ((u64)r.edx << 32) | (u64)r.eax;
+                        XMHF_SLAB_CALLNEW(&spl);
                         break;
                 }
 
                 {
+                    spl.dst_slabid = XMHF_HYP_SLAB_UAPI_GCPUSTATE;
                     gcpustate_vmrwp->uapiphdr.uapifn = XMHF_HIC_UAPI_CPUSTATE_VMREAD;
                     gcpustate_vmrwp->encoding = VMCS_INFO_VMEXIT_INSTRUCTION_LENGTH;
                     XMHF_SLAB_CALLNEW(&spl);
@@ -314,15 +317,16 @@ void slab_main(slab_params_t *sp){
                         r.eax = gcpustate_vmrwp->value;
                         break;
                     default:
-                        //XMHF_HIC_SLAB_UAPI_CPUSTATE(XMHF_HIC_UAPI_CPUSTATE_RDMSR, r.rcx, &msrvalue);
-                        spl.in_out_params[1] = XMHF_HIC_UAPI_CPUSTATE_RDMSR;
-                        spl.in_out_params[2] = r.ecx;
-                        XMHF_SLAB_UAPI(&spl);
-                        r.edx = spl.in_out_params[4];
-                        r.eax = spl.in_out_params[3];
+                        spl.dst_slabid = XMHF_HYP_SLAB_UAPI_HCPUSTATE;
+                        hcpustate_msrp->uapiphdr.uapifn = XMHF_HIC_UAPI_CPUSTATE_RDMSR;
+                        hcpustate_msrp->msr = r.ecx;
+                        XMHF_SLAB_CALLNEW(&spl);
+                        r.edx = (u32)((u64)hcpustate_msrp->value >> 32);
+                        r.eax = (u32)hcpustate_msrp->value;
                         break;
                 }
 
+                spl.dst_slabid = XMHF_HYP_SLAB_UAPI_GCPUSTATE;
                 gcpustate_gprs->uapiphdr.uapifn = XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSWRITE;
                 memcpy(&gcpustate_gprs->gprs, &r, sizeof(x86regs_t));
                 XMHF_SLAB_CALLNEW(&spl);
