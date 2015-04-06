@@ -44,67 +44,24 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
+/*
+ * slab memory access uAPI
+ *
+ * author: amit vasudevan (amitvasudevan@acm.org)
+ */
+
 #include <xmhf.h>
+#include <xmhf-hic.h>
+#include <xmhf-debug.h>
 
-OUTPUT_ARCH("i386")
+#include <xmhfhicslab.h>
+#include <xc.h>
+#include <uapi_slabmemacc.h>
 
-MEMORY
-{
-  hicmem (rwxai) : ORIGIN = 0, LENGTH = 248M /* max. length */
-  unaccounted (rwxai) : ORIGIN = 0, LENGTH = 0 /* see section .unaccounted at end */
-}
 
-SECTIONS
-{
-	. = 0;
 
-	.hiccode : {
-		*(.hic_mleheader)
-		. = ALIGN(1);
-		*(.hic_entrystub)
-		*(.slab_entrystub)
-		*(.text)
-        . = ALIGN(0x200000);
-	} >hicmem =0x9090
-
-	.hicstack : {
-		*(.stackhdr)
-		*(.stack)
-		*(.note.GNU-stack)
-        . = ALIGN(0x200000);
-	} >hicmem =0x0000
-
-	.hicdata : {
-        *(.sharedro_xcbootinfo)
-        *(.sharedro_xcbootinfoptr)
-        *(.sharedro)
-		*(.rwdatahdr)
-		*(.data)
-		*(.bss)
-		*(.rodata)
-		*(.rodata.str1.1)
-		*(.comment)
-		*(.eh_frame)
-        . = ALIGN(0x200000);
-	} >hicmem =0x0000
-
-	.hicdmadata : {
-		*(.slab_dmadata)
-	} >hicmem =0x0000
-
-	.libxmhfdebugdata : {
-		*(.libxmhfdebugdata)
-	} >hicmem
-
-	/* this is to cause the link to fail if there is
-	* anything we didn't explicitly place.
-	* when this does cause link to fail, temporarily comment
-	* this part out to see what sections end up in the output
-	* which are not handled above, and handle them.
-	*/
-	.unaccounted : {
-	*(*)
-	} >unaccounted
+/////
+void slab_main(slab_params_t *sp){
 
 
 }
