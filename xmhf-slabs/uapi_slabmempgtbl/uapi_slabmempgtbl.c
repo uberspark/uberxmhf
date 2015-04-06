@@ -63,5 +63,50 @@
 /////
 void slab_main(slab_params_t *sp){
 
+    xmhf_uapi_params_hdr_t *uapiphdr = (xmhf_uapi_params_hdr_t *)sp->in_out_params;
+
+    switch(uapiphdr->uapifn){
+
+       case XMHF_HIC_UAPI_MEMPGTBL_GETENTRY:{
+            xmhf_uapi_slabmempgtbl_entry_params_t *smempgtblentryp =
+                (xmhf_uapi_slabmempgtbl_entry_params_t *)sp->in_out_params;
+
+            {
+                u64 pdpt_index = pae_get_pdpt_index(smempgtblentryp->gpa);
+                u64 pd_index = pae_get_pdt_index(smempgtblentryp->gpa);
+                u64 pt_index = pae_get_pt_index(smempgtblentryp->gpa);
+                smempgtblentryp->entry =
+                    _dbuf_mempgtbl_pt[smempgtblentryp->dst_slabid][pdpt_index][pd_index][pt_index];
+            }
+
+        }
+        break;
+
+
+        case XMHF_HIC_UAPI_MEMPGTBL_SETENTRY:{
+            xmhf_uapi_slabmempgtbl_entry_params_t *smempgtblentryp =
+                (xmhf_uapi_slabmempgtbl_entry_params_t *)sp->in_out_params;
+
+            {
+                u64 pdpt_index = pae_get_pdpt_index(smempgtblentryp->gpa);
+                u64 pd_index = pae_get_pdt_index(smempgtblentryp->gpa);
+                u64 pt_index = pae_get_pt_index(smempgtblentryp->gpa);
+                _dbuf_mempgtbl_pt[smempgtblentryp->dst_slabid][pdpt_index][pd_index][pt_index]
+                    = smempgtblentryp->entry;
+
+            }
+
+        }
+        break;
+
+
+
+        default:
+            _XDPRINTF_("UAPI_SLABMEMPGTBL[%u]: Unknown uAPI function %x. Halting!\n",
+                    (u16)sp->cpuid, uapiphdr->uapifn);
+            HALT();
+            return;
+    }
+
 
 }

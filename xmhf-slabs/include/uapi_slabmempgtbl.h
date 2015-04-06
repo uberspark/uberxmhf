@@ -59,7 +59,12 @@
 #ifndef __ASSEMBLY__
 
 
-
+typedef struct {
+    xmhf_uapi_params_hdr_t uapiphdr;
+    u32 dst_slabid;
+    u64 gpa;
+    u64 entry;
+}__attribute__((packed)) xmhf_uapi_slabmempgtbl_entry_params_t;
 
 
 #endif	//__ASSEMBLY__
