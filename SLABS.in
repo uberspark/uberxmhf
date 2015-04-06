@@ -2,6 +2,7 @@ xmhf-slabs/geecsentinel
 xmhf-slabs/uapi_gcpustate
 xmhf-slabs/uapi_hcpustate
 xmhf-slabs/uapi_slabmemacc
+xmhf-slabs/uapi_slabmempgtbl
 xmhf-slabs/xmhf-core/xcinit
 xmhf-slabs/xmhf-core/xcihub
 xmhf-slabs/xmhf-core/xcexhub
