@@ -63,9 +63,11 @@ bool sl_activated=false;
 bool _sl_registered=false;
 #endif // defined
 
+/*
 void xhsyscalllog_inv_xmhf_hic_uapi_mempgtbl_setentry(xmhf_hic_uapi_mempgtbl_desc_t *imdesc){
     if(!sl_activated){
         if(imdesc->gpa == 0)
             assert( !(imdesc->entry & 0x4) );
     }
 }
+*/

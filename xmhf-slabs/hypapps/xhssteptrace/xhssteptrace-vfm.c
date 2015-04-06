@@ -61,7 +61,7 @@ static bool ssteptrace_on= nondet_bool();
 static bool ssteptrace_on = false;
 #endif
 
-
+/*
 void xhssteptrace_inv_xmhf_hic_uapi_cpustate_vmwrite(u64 encoding, u64 value){
     if(!ssteptrace_on){
         if(encoding == VMCS_CONTROL_EXCEPTION_BITMAP)
@@ -70,4 +70,4 @@ void xhssteptrace_inv_xmhf_hic_uapi_cpustate_vmwrite(u64 encoding, u64 value){
         if(encoding == VMCS_GUEST_RFLAGS)
             assert (value & EFLAGS_TF);
     }
-}
+}*/

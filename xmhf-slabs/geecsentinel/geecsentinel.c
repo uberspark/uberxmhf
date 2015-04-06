@@ -837,6 +837,8 @@ static bool _uapicheck_encoding_used_by_hic(u64 encoding){
 }
 
 
+/*
+
 //uapicall = sp->slab_ctype
 //uapicall_num = sp->in_out_params[0];
 //uapicall_subnum  = sp->in_out_params[1];
@@ -997,7 +999,7 @@ static void __xmhfhic_rtm_uapihandler_mempgtbl(slab_params_t *sp){
 
 
 
-
+*/
 
 
 

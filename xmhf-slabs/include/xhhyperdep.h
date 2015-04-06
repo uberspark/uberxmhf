@@ -64,7 +64,7 @@ void xhhyperdep_interface(slab_input_params_t *iparams, u64 iparams_size, slab_o
 //VFM
 extern bool hd_activated;
 
-void xhhyperdep_inv_xmhf_hic_uapi_mempgtbl_setentry(xmhf_hic_uapi_mempgtbl_desc_t *imdesc);
+//void xhhyperdep_inv_xmhf_hic_uapi_mempgtbl_setentry(xmhf_hic_uapi_mempgtbl_desc_t *imdesc);
 
 #endif	//__ASSEMBLY__
 
