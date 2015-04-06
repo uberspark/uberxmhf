@@ -113,7 +113,7 @@ typedef struct {
 //////
 // uapi related types
 
-typedef struct {
+/*typedef struct {
     u32 guest_slab_index;
     void *addr_from;
     void *addr_to;
@@ -125,6 +125,7 @@ typedef struct {
     u64 gpa;
     u64 entry;
 }__attribute__((packed)) xmhf_hic_uapi_mempgtbl_desc_t;
+*/
 
 //guest slab header data type
 typedef struct {
@@ -144,7 +145,8 @@ typedef struct {
 
 
 //HIC UAPI
-void __slab_calluapinew(slab_params_t *sp);
+
+/*void __slab_calluapinew(slab_params_t *sp);
 
 
 #define XMHF_HIC_SLAB_UAPI_CPUSTATE(cpustatefn, iparams, oparams) \
@@ -160,7 +162,7 @@ void __slab_calluapinew(slab_params_t *sp);
 
 
 #define XMHF_SLAB_UAPI(sp) __slab_calluapinew(sp)
-
+*/
 
 //HIC trampoline
 CASM_FUNCDECL(u32 __slab_calltrampolinenew_h2g(void *noparam));

@@ -54,15 +54,18 @@
 #include <xc.h>
 #include <xhapprovexec.h>
 
+
 #if defined (__XMHF_VERIFICATION__)
 bool ae_activated=nondet_bool();
 #else
 bool ae_activated=false;
 #endif // defined
 
+/*
 void xhapprovexec_inv_xmhf_hic_uapi_mempgtbl_setentry(xmhf_hic_uapi_mempgtbl_desc_t *imdesc){
     if(!ae_activated){
         assert( (imdesc->entry & 0x7) == 0x5 );
     }
 }
 
+*/

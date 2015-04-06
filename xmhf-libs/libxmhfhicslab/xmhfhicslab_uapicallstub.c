@@ -55,9 +55,9 @@
 #include <xmhf-hic.h>
 #include <xmhf-debug.h>
 
-
+/*
 void __slab_calluapinew(slab_params_t *sp){
 
     __xmhfhic_rtm_uapihandler(sp);
 
-}
+}*/

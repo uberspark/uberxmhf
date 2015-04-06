@@ -64,7 +64,7 @@ void xhsyscalllog_interface(slab_input_params_t *iparams, u64 iparams_size, slab
 //VFM
 extern bool sl_activated;
 extern bool _sl_registered;
-void xhsyscalllog_inv_xmhf_hic_uapi_mempgtbl_setentry(xmhf_hic_uapi_mempgtbl_desc_t *imdesc);
+//void xhsyscalllog_inv_xmhf_hic_uapi_mempgtbl_setentry(xmhf_hic_uapi_mempgtbl_desc_t *imdesc);
 
 
 #endif	//__ASSEMBLY__

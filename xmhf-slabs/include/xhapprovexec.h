@@ -62,7 +62,7 @@ void xhapprovexec_interface(slab_input_params_t *iparams, u64 iparams_size, slab
 
 //VFM
 extern bool ae_activated;
-void xhapprovexec_inv_xmhf_hic_uapi_mempgtbl_setentry(xmhf_hic_uapi_mempgtbl_desc_t *imdesc);
+//void xhapprovexec_inv_xmhf_hic_uapi_mempgtbl_setentry(xmhf_hic_uapi_mempgtbl_desc_t *imdesc);
 
 
 #endif	//__ASSEMBLY__
