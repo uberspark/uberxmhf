@@ -54,6 +54,8 @@
 #include <xc.h>
 #include <uapi_gcpustate.h>
 #include <uapi_slabmemacc.h>
+#include <uapi_slabmempgtbl.h>
+
 #include <xhsyscalllog.h>
 
 
@@ -268,7 +270,9 @@ static u32 _hcb_trap_instruction(u32 cpuindex, u32 guest_slab_index, u32 insntyp
 
         switch(msrvalue){
             case IA32_SYSENTER_EIP_MSR:{
-                xmhf_hic_uapi_mempgtbl_desc_t *mdesc = (xmhf_hic_uapi_mempgtbl_desc_t *)&spl.in_out_params[2];
+                //xmhf_hic_uapi_mempgtbl_desc_t *mdesc = (xmhf_hic_uapi_mempgtbl_desc_t *)&spl.in_out_params[2];
+                xmhf_uapi_slabmempgtbl_entry_params_t *smpgtblep =
+                    (xmhf_uapi_slabmempgtbl_entry_params_t *)spl.in_out_params;
 
               	_XDPRINTF_("%s[%u]: emulating WRMSR SYSENTER_EIP_MSR\n", __func__, (u16)cpuindex);
 
@@ -280,18 +284,17 @@ static u32 _hcb_trap_instruction(u32 cpuindex, u32 guest_slab_index, u32 insntyp
                 XMHF_SLAB_CALLNEW(&spl);
 
                 if(!sl_activated){
-                    mdesc->guest_slab_index = guest_slab_index;
-                    mdesc->gpa = 0;
-                    spl.in_out_params[0] = XMHF_HIC_UAPI_MEMPGTBL;
-                    spl.in_out_params[1] = XMHF_HIC_UAPI_MEMPGTBL_GETENTRY;
-                    //XMHF_HIC_SLAB_UAPI_MEMPGTBL(XMHF_HIC_UAPI_MEMPGTBL_GETENTRY, &mdesc, &mdesc);
-                    XMHF_SLAB_UAPI(&spl);
+                    spl.dst_slabid = XMHF_HYP_SLAB_UAPI_SLABMEMPGTBL;
+                    smpgtblep->dst_slabid = guest_slab_index;
+                    smpgtblep->gpa = 0;
+                    //spl.in_out_params[0] = XMHF_HIC_UAPI_MEMPGTBL;
+                    smpgtblep->uapiphdr.uapifn = XMHF_HIC_UAPI_MEMPGTBL_GETENTRY;
+                    XMHF_SLAB_CALLNEW(&spl);
 
-                    mdesc->entry &= ~(0x7);
+                    smpgtblep->entry &= ~(0x7);
 
-                    //XMHF_HIC_SLAB_UAPI_MEMPGTBL(XMHF_HIC_UAPI_MEMPGTBL_SETENTRY, &mdesc, NULL);
-                    spl.in_out_params[1] = XMHF_HIC_UAPI_MEMPGTBL_SETENTRY;
-                    XMHF_SLAB_UAPI(&spl);
+                    smpgtblep->uapiphdr.uapifn = XMHF_HIC_UAPI_MEMPGTBL_SETENTRY;
+                    XMHF_SLAB_CALLNEW(&spl);
 
                     sl_activated=true;
                 }
@@ -334,6 +337,7 @@ static u32 _hcb_trap_instruction(u32 cpuindex, u32 guest_slab_index, u32 insntyp
     //if we emulated the instruction then do not chain, but update instruction pointer
     //accordingly
     if(status == XC_HYPAPPCB_NOCHAIN){
+        spl.dst_slabid = XMHF_HYP_SLAB_UAPI_GCPUSTATE;
         spl.in_out_params[0] = XMHF_HIC_UAPI_CPUSTATE;
 
         gcpustate_vmrwp->uapiphdr.uapifn = XMHF_HIC_UAPI_CPUSTATE_VMREAD;
