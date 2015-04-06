@@ -53,6 +53,7 @@
 
 #include <xc.h>
 #include <uapi_gcpustate.h>
+#include <uapi_slabmemacc.h>
 #include <xhapprovexec.h>
 
 
@@ -79,25 +80,26 @@ static u8 _ae_database[][SHA_DIGEST_LENGTH] = {
 //approve and lock a page (at gpa)
 static void ae_lock(u32 cpuindex, u32 guest_slab_index, u64 gpa){
     slab_params_t spl;
-    xmhf_hic_uapi_physmem_desc_t *pdesc = (xmhf_hic_uapi_physmem_desc_t *)&spl.in_out_params[2];
+    //xmhf_hic_uapi_physmem_desc_t *pdesc = (xmhf_hic_uapi_physmem_desc_t *)&spl.in_out_params[2];
+    xmhf_uapi_slabmemacc_params_t *smemaccp = (xmhf_uapi_slabmemacc_params_t *)spl.in_out_params;
     u8 digest[SHA_DIGEST_LENGTH];
     bool found_in_database=false;
     u32 i;
 
     _XDPRINTF_("%s[%u]: starting...\n", __func__, (u16)cpuindex);
     spl.src_slabid = XMHF_HYP_SLAB_XHAPPROVEXEC;
+    spl.dst_slabid = XMHF_HYP_SLAB_UAPI_SLABMEMACC;
     spl.cpuid = cpuindex;
 
 if(!ae_activated){
     //grab page contents at gpa into local page buffer
-    pdesc->guest_slab_index = guest_slab_index;
-    pdesc->addr_to = &_ae_page_buffer;
-    pdesc->addr_from = gpa;
-    pdesc->numbytes = PAGE_SIZE_4K;
-    //XMHF_HIC_SLAB_UAPI_PHYSMEM(XMHF_HIC_UAPI_PHYSMEM_PEEK, &pdesc, NULL);
-    spl.in_out_params[0] = XMHF_HIC_UAPI_PHYSMEM;
-    spl.in_out_params[1] = XMHF_HIC_UAPI_PHYSMEM_PEEK;
-    XMHF_SLAB_UAPI(&spl);
+    smemaccp->dst_slabid = guest_slab_index;
+    smemaccp->addr_to = &_ae_page_buffer;
+    smemaccp->addr_from = gpa;
+    smemaccp->numbytes = PAGE_SIZE_4K;
+    //spl.in_out_params[0] = XMHF_HIC_UAPI_PHYSMEM;
+    smemaccp->uapiphdr.uapifn = XMHF_HIC_UAPI_PHYSMEM_PEEK;
+    XMHF_SLAB_CALLNEW(&spl);
 
     _XDPRINTF_("%s[%u]: grabbed page contents at gpa=%016x\n",
                 __func__, (u16)cpuindex, gpa);

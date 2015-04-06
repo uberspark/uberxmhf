@@ -50,6 +50,7 @@
 
 #include <xc.h>
 #include <uapi_gcpustate.h>
+#include <uapi_slabmemacc.h>
 #include <xcinit.h>
 
 extern x_slab_info_t _x_xmhfhic_common_slab_info_table[XMHF_HIC_MAX_SLABS];
@@ -122,19 +123,22 @@ void slab_main(slab_params_t *sp){
         //get and dump slab header magic
         {
             slab_params_t spl;
-            xmhf_hic_uapi_physmem_desc_t *pdesc = (xmhf_hic_uapi_physmem_desc_t *)&spl.in_out_params[2];
+            //xmhf_hic_uapi_physmem_desc_t *pdesc = (xmhf_hic_uapi_physmem_desc_t *)&spl.in_out_params[2];
+            xmhf_uapi_slabmemacc_params_t *smemaccp = (xmhf_uapi_slabmemacc_params_t *)spl.in_out_params;
 
-            pdesc->guest_slab_index = XMHF_GUEST_SLAB_XCGUESTSLAB;
-            pdesc->addr_to = &guest_slab_magic;
-            pdesc->addr_from = guest_slab_magic_paddr;
-            pdesc->numbytes = sizeof(guest_slab_magic);
 
-            spl.in_out_params[0] = XMHF_HIC_UAPI_PHYSMEM;
-            spl.in_out_params[1] = XMHF_HIC_UAPI_PHYSMEM_PEEK;
+            smemaccp->dst_slabid = XMHF_GUEST_SLAB_XCGUESTSLAB;
+            smemaccp->addr_to = &guest_slab_magic;
+            smemaccp->addr_from = guest_slab_magic_paddr;
+            smemaccp->numbytes = sizeof(guest_slab_magic);
+
+            //spl.in_out_params[0] = XMHF_HIC_UAPI_PHYSMEM;
+            smemaccp->uapiphdr.uapifn = XMHF_HIC_UAPI_PHYSMEM_PEEK;
             spl.cpuid = sp->cpuid;
             spl.src_slabid = XMHF_HYP_SLAB_XCINIT;
+            spl.dst_slabid = XMHF_HYP_SLAB_UAPI_SLABMEMACC;
 
-            XMHF_SLAB_UAPI(&spl);
+            XMHF_SLAB_CALLNEW(&spl);
             _XDPRINTF_("%s[%u]: guest slab header magic=%x\n", __func__, (u16)sp->cpuid, guest_slab_magic);
         }
 
@@ -142,19 +146,21 @@ void slab_main(slab_params_t *sp){
         //initialize guest slab gdt
         {
             slab_params_t spl;
-            xmhf_hic_uapi_physmem_desc_t *pdesc = (xmhf_hic_uapi_physmem_desc_t *)&spl.in_out_params[2];
+            //xmhf_hic_uapi_physmem_desc_t *pdesc = (xmhf_hic_uapi_physmem_desc_t *)&spl.in_out_params[2];
+            xmhf_uapi_slabmemacc_params_t *smemaccp = (xmhf_uapi_slabmemacc_params_t *)spl.in_out_params;
 
-            pdesc->guest_slab_index = XMHF_GUEST_SLAB_XCGUESTSLAB;
-            pdesc->addr_to = guest_slab_gdt_paddr;
-            pdesc->addr_from = &_xcguestslab_init_gdt;
-            pdesc->numbytes = sizeof(_xcguestslab_init_gdt);
+            smemaccp->dst_slabid = XMHF_GUEST_SLAB_XCGUESTSLAB;
+            smemaccp->addr_to = guest_slab_gdt_paddr;
+            smemaccp->addr_from = &_xcguestslab_init_gdt;
+            smemaccp->numbytes = sizeof(_xcguestslab_init_gdt);
 
-            spl.in_out_params[0] = XMHF_HIC_UAPI_PHYSMEM;
-            spl.in_out_params[1] = XMHF_HIC_UAPI_PHYSMEM_POKE;
+            //spl.in_out_params[0] = XMHF_HIC_UAPI_PHYSMEM;
+            smemaccp->uapiphdr.uapifn = XMHF_HIC_UAPI_PHYSMEM_POKE;
             spl.cpuid = sp->cpuid;
             spl.src_slabid = XMHF_HYP_SLAB_XCINIT;
+            spl.dst_slabid = XMHF_HYP_SLAB_UAPI_SLABMEMACC;
 
-            XMHF_SLAB_UAPI(&spl);
+            XMHF_SLAB_CALLNEW(&spl);
         }
 
         //setup guest slab VMCS GDT base and limit

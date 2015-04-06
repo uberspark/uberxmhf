@@ -84,7 +84,7 @@ void slab_main(slab_params_t *sp){
 
         default:
             _XDPRINTF_("UAPI_SLABMEMACC[%u]: Unknown uAPI function %x. Halting!\n",
-                    __func__, (u16)sp->cpuid, uapiphdr->uapifn);
+                    (u16)sp->cpuid, uapiphdr->uapifn);
             HALT();
             return;
     }

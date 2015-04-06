@@ -102,8 +102,8 @@ void slab_main(slab_params_t *sp){
 
 
         default:
-            _XDPRINTF_("%s[%u]: Unknown uAPI function %x. Halting!\n",
-                    __func__, (u16)sp->cpuid, uapiphdr->uapifn);
+            _XDPRINTF_("UAPI_GCPUSTATE[%u]: Unknown uAPI function %x. Halting!\n",
+                    (u16)sp->cpuid, uapiphdr->uapifn);
             HALT();
             return;
     }

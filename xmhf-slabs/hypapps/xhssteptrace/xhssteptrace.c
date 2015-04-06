@@ -53,6 +53,7 @@
 
 #include <xc.h>
 #include <uapi_gcpustate.h>
+#include <uapi_slabmemacc.h>
 #include <xhssteptrace.h>
 
 
@@ -246,7 +247,8 @@ static void _hcb_trap_exception(u32 cpuindex, u32 guest_slab_index){
     xmhf_uapi_gcpustate_vmrw_params_t *gcpustate_vmrwp =
         (xmhf_uapi_gcpustate_vmrw_params_t *)spl.in_out_params;
 
-    xmhf_hic_uapi_physmem_desc_t *pdesc = (xmhf_hic_uapi_physmem_desc_t *)&spl.in_out_params[2];
+    //xmhf_hic_uapi_physmem_desc_t *pdesc = (xmhf_hic_uapi_physmem_desc_t *)&spl.in_out_params[2];
+    xmhf_uapi_slabmemacc_params_t *smemaccp = (xmhf_uapi_slabmemacc_params_t *)spl.in_out_params;
 
     spl.src_slabid = XMHF_HYP_SLAB_XHSSTEPTRACE;
     spl.dst_slabid = XMHF_HYP_SLAB_UAPI_GCPUSTATE;
@@ -274,14 +276,14 @@ static void _hcb_trap_exception(u32 cpuindex, u32 guest_slab_index){
                    __func__, (u16)cpuindex, guest_rip);
 
         //copy 256 bytes from the current guest RIP for trace inference
-        pdesc->guest_slab_index = guest_slab_index;
-        pdesc->addr_to = &_st_tracebuffer;
-        pdesc->addr_from = guest_rip;
-        pdesc->numbytes = sizeof(_st_tracebuffer);
-        //XMHF_HIC_SLAB_UAPI_PHYSMEM(XMHF_HIC_UAPI_PHYSMEM_PEEK, &pdesc, NULL);
-        spl.in_out_params[0] = XMHF_HIC_UAPI_PHYSMEM;
-        spl.in_out_params[1] = XMHF_HIC_UAPI_PHYSMEM_PEEK;
-        XMHF_SLAB_UAPI(&spl);
+        spl.dst_slabid = XMHF_HYP_SLAB_UAPI_SLABMEMACC;
+        smemaccp->dst_slabid = guest_slab_index;
+        smemaccp->addr_to = &_st_tracebuffer;
+        smemaccp->addr_from = guest_rip;
+        smemaccp->numbytes = sizeof(_st_tracebuffer);
+        //spl.in_out_params[0] = XMHF_HIC_UAPI_PHYSMEM;
+        smemaccp->uapiphdr.uapifn = XMHF_HIC_UAPI_PHYSMEM_PEEK;
+        XMHF_SLAB_CALLNEW(&spl);
 
         //try to see if we found a match in our trace database
         st_scanforsignature(&_st_tracebuffer, sizeof(_st_tracebuffer));

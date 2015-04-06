@@ -53,6 +53,7 @@
 
 #include <xc.h>
 #include <uapi_gcpustate.h>
+#include <uapi_slabmemacc.h>
 #include <xhsyscalllog.h>
 
 
@@ -94,21 +95,22 @@ static void sl_loginfo(bool syscallmodified, u8 *digest, x86regs_t *r){
 //register a syscall handler code page (at gpa)
 static void sl_register(u32 cpuindex, u32 guest_slab_index, u64 gpa){
         slab_params_t spl;
-        xmhf_hic_uapi_physmem_desc_t *pdesc = (xmhf_hic_uapi_physmem_desc_t *)&spl.in_out_params[2];
+        //xmhf_hic_uapi_physmem_desc_t *pdesc = (xmhf_hic_uapi_physmem_desc_t *)&spl.in_out_params[2];
+        xmhf_uapi_slabmemacc_params_t *smemaccp = (xmhf_uapi_slabmemacc_params_t *)spl.in_out_params;
 
         _XDPRINTF_("%s[%u]: starting...\n", __func__, (u16)cpuindex);
         spl.src_slabid = XMHF_HYP_SLAB_XHSYSCALLLOG;
+        spl.dst_slabid = XMHF_HYP_SLAB_UAPI_SLABMEMACC;
         spl.cpuid = cpuindex;
-        spl.in_out_params[0] = XMHF_HIC_UAPI_PHYSMEM;
+        //spl.in_out_params[0] = XMHF_HIC_UAPI_PHYSMEM;
 
         //copy code page at gpa
-        pdesc->guest_slab_index = guest_slab_index;
-        pdesc->addr_to = &_sl_pagebuffer;
-        pdesc->addr_from = gpa;
-        pdesc->numbytes = sizeof(_sl_pagebuffer);
-        //XMHF_HIC_SLAB_UAPI_PHYSMEM(XMHF_HIC_UAPI_PHYSMEM_PEEK, &pdesc, NULL);
-        spl.in_out_params[1] = XMHF_HIC_UAPI_PHYSMEM_PEEK;
-        XMHF_SLAB_UAPI(&spl);
+        smemaccp->dst_slabid = guest_slab_index;
+        smemaccp->addr_to = &_sl_pagebuffer;
+        smemaccp->addr_from = gpa;
+        smemaccp->numbytes = sizeof(_sl_pagebuffer);
+        smemaccp->uapiphdr.uapifn = XMHF_HIC_UAPI_PHYSMEM_PEEK;
+        XMHF_SLAB_CALLNEW(&spl);
 
         _XDPRINTF_("%s[%u]: grabbed page contents at gpa=%016llx\n",
                __func__, (u16)cpuindex, gpa);
@@ -178,7 +180,9 @@ static void _hcb_memoryfault(u32 cpuindex, u32 guest_slab_index, u64 gpa, u64 gv
         (xmhf_uapi_gcpustate_vmrw_params_t *)spl.in_out_params;
     xmhf_uapi_gcpustate_gprs_params_t *gcpustate_gprs =
         (xmhf_uapi_gcpustate_gprs_params_t *)spl.in_out_params;
-    xmhf_hic_uapi_physmem_desc_t *pdesc = (xmhf_hic_uapi_physmem_desc_t *)&spl.in_out_params[2];
+    //xmhf_hic_uapi_physmem_desc_t *pdesc = (xmhf_hic_uapi_physmem_desc_t *)&spl.in_out_params[2];
+    xmhf_uapi_slabmemacc_params_t *smemaccp = (xmhf_uapi_slabmemacc_params_t *)spl.in_out_params;
+
     u8 syscalldigest[SHA_DIGEST_LENGTH];
     bool syscallhandler_modified=false;
     x86regs_t r;
@@ -201,14 +205,14 @@ static void _hcb_memoryfault(u32 cpuindex, u32 guest_slab_index, u64 gpa, u64 gv
     memcpy(&r, &gcpustate_gprs->gprs, sizeof(x86regs_t));
 
     //copy code page at SYSENTER (referenced by shadow_sysenter_rip)
-    pdesc->guest_slab_index = guest_slab_index;
-    pdesc->addr_to = &_sl_pagebuffer;
-    pdesc->addr_from = shadow_sysenter_rip;
-    pdesc->numbytes = sizeof(_sl_pagebuffer);
-    //XMHF_HIC_SLAB_UAPI_PHYSMEM(XMHF_HIC_UAPI_PHYSMEM_PEEK, &pdesc, NULL);
-    spl.in_out_params[0] = XMHF_HIC_UAPI_PHYSMEM;
-    spl.in_out_params[1] = XMHF_HIC_UAPI_PHYSMEM_PEEK;
-    XMHF_SLAB_UAPI(&spl);
+    spl.dst_slabid = XMHF_HYP_SLAB_UAPI_SLABMEMACC;
+    smemaccp->dst_slabid = guest_slab_index;
+    smemaccp->addr_to = &_sl_pagebuffer;
+    smemaccp->addr_from = shadow_sysenter_rip;
+    smemaccp->numbytes = sizeof(_sl_pagebuffer);
+    //spl.in_out_params[0] = XMHF_HIC_UAPI_PHYSMEM;
+    smemaccp->uapiphdr.uapifn = XMHF_HIC_UAPI_PHYSMEM_PEEK;
+    XMHF_SLAB_CALLNEW(&spl);
 
     //compute SHA-1 of the syscall page
     sha1_buffer(&_sl_pagebuffer, sizeof(_sl_pagebuffer), syscalldigest);
@@ -225,6 +229,7 @@ static void _hcb_memoryfault(u32 cpuindex, u32 guest_slab_index, u64 gpa, u64 gv
     sl_loginfo(syscallhandler_modified, &syscalldigest, &r);
 
     //set guest RIP to shadow_sysenter_rip to continue execution
+    spl.dst_slabid = XMHF_HYP_SLAB_UAPI_GCPUSTATE;
     spl.in_out_params[0] = XMHF_HIC_UAPI_CPUSTATE;
     gcpustate_vmrwp->uapiphdr.uapifn = XMHF_HIC_UAPI_CPUSTATE_VMWRITE;
     gcpustate_vmrwp->encoding = VMCS_GUEST_RIP;
