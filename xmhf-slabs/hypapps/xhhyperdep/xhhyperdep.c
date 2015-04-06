@@ -53,6 +53,8 @@
 
 #include <xc.h>
 #include <uapi_gcpustate.h>
+#include <uapi_slabmempgtbl.h>
+
 #include <xhhyperdep.h>
 
 
@@ -67,29 +69,30 @@
 //activate DEP for a given page (at gpa)
 static void hd_activatedep(u32 cpuindex, u32 guest_slab_index, u64 gpa){
 	slab_params_t spl;
-	xmhf_hic_uapi_mempgtbl_desc_t *mdesc = (xmhf_hic_uapi_mempgtbl_desc_t *)&spl.in_out_params[2];
+	//xmhf_hic_uapi_mempgtbl_desc_t *mdesc = (xmhf_hic_uapi_mempgtbl_desc_t *)&spl.in_out_params[2];
+        xmhf_uapi_slabmempgtbl_entry_params_t *smpgtblep =
+            (xmhf_uapi_slabmempgtbl_entry_params_t *)spl.in_out_params;
 
 	spl.src_slabid = XMHF_HYP_SLAB_XHHYPERDEP;
+    spl.dst_slabid = XMHF_HYP_SLAB_UAPI_SLABMEMPGTBL;
 	spl.cpuid = cpuindex;
-	spl.in_out_params[0] = XMHF_HIC_UAPI_MEMPGTBL;
+	//spl.in_out_params[0] = XMHF_HIC_UAPI_MEMPGTBL;
 
     if(!hd_activated){
-        mdesc->guest_slab_index = guest_slab_index;
-        mdesc->gpa = gpa;
+        smpgtblep->dst_slabid = guest_slab_index;
+        smpgtblep->gpa = gpa;
 
-        if(mdesc->gpa != 0){
-            //XMHF_HIC_SLAB_UAPI_MEMPGTBL(XMHF_HIC_UAPI_MEMPGTBL_GETENTRY, &mdesc, &mdesc);
-            spl.in_out_params[1] = XMHF_HIC_UAPI_MEMPGTBL_GETENTRY;
-            XMHF_SLAB_UAPI(&spl);
+        if(smpgtblep->gpa != 0){
+            smpgtblep->uapiphdr.uapifn = XMHF_HIC_UAPI_MEMPGTBL_GETENTRY;
+            XMHF_SLAB_CALLNEW(&spl);
 
             _XDPRINTF_("%s[%u]: original entry for gpa=%016llx is %016llx\n", __func__, (u16)cpuindex,
-                       gpa, mdesc->entry);
+                       gpa, smpgtblep->entry);
 
-            mdesc->entry &= ~(0x4); //execute-disable
+            smpgtblep->entry &= ~(0x4); //execute-disable
 
-            //XMHF_HIC_SLAB_UAPI_MEMPGTBL(XMHF_HIC_UAPI_MEMPGTBL_SETENTRY, &mdesc, NULL);
-            spl.in_out_params[1] = XMHF_HIC_UAPI_MEMPGTBL_SETENTRY;
-            XMHF_SLAB_UAPI(&spl);
+            smpgtblep->uapiphdr.uapifn = XMHF_HIC_UAPI_MEMPGTBL_SETENTRY;
+            XMHF_SLAB_CALLNEW(&spl);
 
             _XDPRINTF_("%s[%u]: activated DEP for page at gpa %016llx\n", __func__, (u16)cpuindex, gpa);
 
@@ -101,30 +104,31 @@ static void hd_activatedep(u32 cpuindex, u32 guest_slab_index, u64 gpa){
 //deactivate DEP for a given page (at gpa)
 static void hd_deactivatedep(u32 cpuindex, u32 guest_slab_index, u64 gpa){
 	slab_params_t spl;
-	xmhf_hic_uapi_mempgtbl_desc_t *mdesc = (xmhf_hic_uapi_mempgtbl_desc_t *)&spl.in_out_params[2];
+	//xmhf_hic_uapi_mempgtbl_desc_t *mdesc = (xmhf_hic_uapi_mempgtbl_desc_t *)&spl.in_out_params[2];
+        xmhf_uapi_slabmempgtbl_entry_params_t *smpgtblep =
+            (xmhf_uapi_slabmempgtbl_entry_params_t *)spl.in_out_params;
+
 
 	spl.src_slabid = XMHF_HYP_SLAB_XHHYPERDEP;
+    spl.dst_slabid = XMHF_HYP_SLAB_UAPI_SLABMEMPGTBL;
 	spl.cpuid = cpuindex;
-	spl.in_out_params[0] = XMHF_HIC_UAPI_MEMPGTBL;
+	//spl.in_out_params[0] = XMHF_HIC_UAPI_MEMPGTBL;
 
     if(hd_activated){
-        mdesc->guest_slab_index = guest_slab_index;
-        mdesc->gpa = gpa;
+        smpgtblep->dst_slabid = guest_slab_index;
+        smpgtblep->gpa = gpa;
 
-        if(mdesc->gpa != 0){
-            //XMHF_HIC_SLAB_UAPI_MEMPGTBL(XMHF_HIC_UAPI_MEMPGTBL_GETENTRY, &mdesc, &mdesc);
-            spl.in_out_params[1] = XMHF_HIC_UAPI_MEMPGTBL_GETENTRY;
-            XMHF_SLAB_UAPI(&spl);
+        if(smpgtblep->gpa != 0){
+            smpgtblep->uapiphdr.uapifn = XMHF_HIC_UAPI_MEMPGTBL_GETENTRY;
+            XMHF_SLAB_CALLNEW(&spl);
 
-            _XDPRINTF_("%s[%u]: original entry for gpa=%016llx is %016llx\n", __func__, (u16)cpuindex, gpa, mdesc->entry);
+            _XDPRINTF_("%s[%u]: original entry for gpa=%016llx is %016llx\n", __func__, (u16)cpuindex, gpa, smpgtblep->entry);
 
-            mdesc->entry &= ~(0x7);
-            mdesc->entry |= 0x7; //execute, read-write
+            smpgtblep->entry &= ~(0x7);
+            smpgtblep->entry |= 0x7; //execute, read-write
 
-            //XMHF_HIC_SLAB_UAPI_MEMPGTBL(XMHF_HIC_UAPI_MEMPGTBL_SETENTRY, &mdesc, NULL);
-            spl.in_out_params[1] = XMHF_HIC_UAPI_MEMPGTBL_SETENTRY;
-            XMHF_SLAB_UAPI(&spl);
-
+            smpgtblep->uapiphdr.uapifn = XMHF_HIC_UAPI_MEMPGTBL_SETENTRY;
+            XMHF_SLAB_CALLNEW(&spl);
 
             _XDPRINTF_("%s[%u]: deactivated DEP for page at gpa %016llx\n", __func__, (u16)cpuindex, gpa);
 

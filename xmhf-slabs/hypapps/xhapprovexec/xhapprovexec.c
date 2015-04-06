@@ -54,6 +54,8 @@
 #include <xc.h>
 #include <uapi_gcpustate.h>
 #include <uapi_slabmemacc.h>
+#include <uapi_slabmempgtbl.h>
+
 #include <xhapprovexec.h>
 
 
@@ -72,6 +74,7 @@ static u8 _ae_database[][SHA_DIGEST_LENGTH] = {
   {0xf1, 0x4e, 0x30, 0x25,  0x8e,  0x16, 0x85, 0x9b, 0x21, 0x81, 0x54, 0x78, 0xbb, 0x1b, 0x5d, 0x99, 0xb5, 0x48, 0x60, 0xca},
   {0xe1, 0x4e, 0x30, 0x25,  0x9e,  0x16, 0x85, 0x9b, 0x21, 0x81, 0x74, 0x78, 0x6b, 0x1b, 0x5d, 0x99, 0xb5, 0x48, 0x60, 0xca},
   {0x88, 0x3a, 0x97, 0x59,  0x09,  0x80, 0x12, 0xa9, 0x3b, 0xfb, 0x38, 0x09, 0xb2, 0xf2, 0xca, 0xb6, 0x12, 0x8c, 0x64, 0x52},
+  {0x9d, 0xe8, 0x61, 0x2a,  0xea,  0x00, 0xc7, 0xe7, 0x8f, 0xd5, 0xf3, 0x6f, 0x7d, 0xec, 0xff, 0xda, 0xf9, 0xd9, 0xf9, 0x2f},
 };
 
 #define NUMENTRIES_AE_DATABASE  (sizeof(_ae_database)/sizeof(_ae_database[0]))
@@ -130,24 +133,23 @@ if(!ae_activated){
 
     {
         //lock the code page so no one can write to it
-        xmhf_hic_uapi_mempgtbl_desc_t *mdesc = (xmhf_hic_uapi_mempgtbl_desc_t *)&spl.in_out_params[2];
+        //xmhf_hic_uapi_mempgtbl_desc_t *mdesc = (xmhf_hic_uapi_mempgtbl_desc_t *)&spl.in_out_params[2];
+        xmhf_uapi_slabmempgtbl_entry_params_t *smpgtblep =
+            (xmhf_uapi_slabmempgtbl_entry_params_t *)spl.in_out_params;
 
-        mdesc->guest_slab_index = guest_slab_index;
-        mdesc->gpa = gpa;
-        spl.in_out_params[0] = XMHF_HIC_UAPI_MEMPGTBL;
-
-        //XMHF_HIC_SLAB_UAPI_MEMPGTBL(XMHF_HIC_UAPI_MEMPGTBL_GETENTRY, &mdesc, &mdesc);
-        spl.in_out_params[1] = XMHF_HIC_UAPI_MEMPGTBL_GETENTRY;
-        XMHF_SLAB_UAPI(&spl);
+        spl.dst_slabid = XMHF_HYP_SLAB_UAPI_SLABMEMPGTBL;
+        smpgtblep->dst_slabid = guest_slab_index;
+        smpgtblep->gpa = gpa;
+        smpgtblep->uapiphdr.uapifn = XMHF_HIC_UAPI_MEMPGTBL_GETENTRY;
+        XMHF_SLAB_CALLNEW(&spl);
         _XDPRINTF_("%s[%u]: original entry for gpa=%016llx is %016llx\n",
-                   __func__, (u16)cpuindex, gpa, mdesc->entry);
+                   __func__, (u16)cpuindex, gpa, smpgtblep->entry);
 
-        mdesc->entry &= ~(0x7);
-        mdesc->entry |= 0x5; // execute, read-only
+        smpgtblep->entry &= ~(0x7);
+        smpgtblep->entry |= 0x5; // execute, read-only
 
-        spl.in_out_params[1] = XMHF_HIC_UAPI_MEMPGTBL_SETENTRY;
-        //XMHF_HIC_SLAB_UAPI_MEMPGTBL(XMHF_HIC_UAPI_MEMPGTBL_SETENTRY, &mdesc, NULL);
-        XMHF_SLAB_UAPI(&spl);
+        smpgtblep->uapiphdr.uapifn = XMHF_HIC_UAPI_MEMPGTBL_SETENTRY;
+        XMHF_SLAB_CALLNEW(&spl);
 
         ae_activated = true;
 
@@ -162,31 +164,31 @@ if(!ae_activated){
 //unlock a page (at gpa)
 static void ae_unlock(u32 cpuindex, u32 guest_slab_index, u64 gpa){
      slab_params_t spl;
-     xmhf_hic_uapi_mempgtbl_desc_t *mdesc = (xmhf_hic_uapi_mempgtbl_desc_t *)&spl.in_out_params[2];
+     //xmhf_hic_uapi_mempgtbl_desc_t *mdesc = (xmhf_hic_uapi_mempgtbl_desc_t *)&spl.in_out_params[2];
+    xmhf_uapi_slabmempgtbl_entry_params_t *smpgtblep =
+        (xmhf_uapi_slabmempgtbl_entry_params_t *)spl.in_out_params;
 
      spl.src_slabid = XMHF_HYP_SLAB_XHAPPROVEXEC;
+     spl.dst_slabid = XMHF_HYP_SLAB_UAPI_SLABMEMPGTBL;
      spl.cpuid = cpuindex;
-     spl.in_out_params[0] = XMHF_HIC_UAPI_MEMPGTBL;
+     //spl.in_out_params[0] = XMHF_HIC_UAPI_MEMPGTBL;
 
     _XDPRINTF_("%s[%u]: starting...\n", __func__, (u16)cpuindex);
 
     if(ae_activated){
          //unlock the code page
-         mdesc->guest_slab_index = guest_slab_index;
-         mdesc->gpa = gpa;
+         smpgtblep->dst_slabid = guest_slab_index;
+         smpgtblep->gpa = gpa;
+         smpgtblep->uapiphdr.uapifn = XMHF_HIC_UAPI_MEMPGTBL_GETENTRY;
+         XMHF_SLAB_CALLNEW(&spl);
 
-         //XMHF_HIC_SLAB_UAPI_MEMPGTBL(XMHF_HIC_UAPI_MEMPGTBL_GETENTRY, &mdesc, &mdesc);
-         spl.in_out_params[1] = XMHF_HIC_UAPI_MEMPGTBL_GETENTRY;
-         XMHF_SLAB_UAPI(&spl);
+         _XDPRINTF_("%s[%u]: original entry for gpa=%016llx is %016llx\n",  __func__, (u16)cpuindex, gpa, smpgtblep->entry);
 
-         _XDPRINTF_("%s[%u]: original entry for gpa=%016llx is %016llx\n",  __func__, (u16)cpuindex, gpa, mdesc->entry);
+        smpgtblep->entry &= ~(0x7);
+        smpgtblep->entry |= 0x7; // execute, read-write
 
-        mdesc->entry &= ~(0x7);
-        mdesc->entry |= 0x7; // execute, read-write
-
-        //XMHF_HIC_SLAB_UAPI_MEMPGTBL(XMHF_HIC_UAPI_MEMPGTBL_SETENTRY, &mdesc, NULL);
-        spl.in_out_params[1] = XMHF_HIC_UAPI_MEMPGTBL_GETENTRY;
-        XMHF_SLAB_UAPI(&spl);
+        smpgtblep->uapiphdr.uapifn = XMHF_HIC_UAPI_MEMPGTBL_GETENTRY;
+        XMHF_SLAB_CALLNEW(&spl);
 
         ae_activated=false;
 
