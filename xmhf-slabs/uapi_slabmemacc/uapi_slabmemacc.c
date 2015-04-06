@@ -63,5 +63,31 @@
 /////
 void slab_main(slab_params_t *sp){
 
+    xmhf_uapi_params_hdr_t *uapiphdr = (xmhf_uapi_params_hdr_t *)sp->in_out_params;
+
+    switch(uapiphdr->uapifn){
+
+        case XMHF_HIC_UAPI_PHYSMEM_PEEK:{
+            xmhf_uapi_slabmemacc_params_t *smemaccp = (xmhf_uapi_slabmemacc_params_t *)sp->in_out_params;
+
+            memcpy(smemaccp->addr_to, smemaccp->addr_from, smemaccp->numbytes);
+        }
+        break;
+
+        case XMHF_HIC_UAPI_PHYSMEM_POKE:{
+            xmhf_uapi_slabmemacc_params_t *smemaccp = (xmhf_uapi_slabmemacc_params_t *)sp->in_out_params;
+
+            memcpy(smemaccp->addr_to, smemaccp->addr_from, smemaccp->numbytes);
+        }
+        break;
+
+
+        default:
+            _XDPRINTF_("UAPI_SLABMEMACC[%u]: Unknown uAPI function %x. Halting!\n",
+                    __func__, (u16)sp->cpuid, uapiphdr->uapifn);
+            HALT();
+            return;
+    }
+
 
 }
