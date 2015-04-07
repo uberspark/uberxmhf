@@ -123,24 +123,25 @@
 
 
 
-#define XMHF_HIC_MAX_SLABS                  (15)
+#define XMHF_HIC_MAX_SLABS                  (16)
 
 
 #define XMHF_HYP_SLAB_GEECPRIME             (0)
-#define XMHF_HYP_SLAB_GEECSENTINEL          (1)
-#define XMHF_HYP_SLAB_UAPI_GCPUSTATE        (2)
-#define XMHF_HYP_SLAB_UAPI_HCPUSTATE        (3)
-#define XMHF_HYP_SLAB_UAPI_SLABMEMACC       (4)
-#define XMHF_HYP_SLAB_UAPI_SLABMEMPGTBL     (5)
-#define XMHF_HYP_SLAB_XCINIT                (6)
-#define XMHF_HYP_SLAB_XCIHUB                (7)
-#define XMHF_HYP_SLAB_XCEXHUB               (8)
-#define XMHF_HYP_SLAB_XCTESTSLAB1           (9)
-#define XMHF_HYP_SLAB_XHHYPERDEP            (10)
-#define XMHF_HYP_SLAB_XHAPPROVEXEC          (11)
-#define XMHF_HYP_SLAB_XHSYSCALLLOG          (12)
-#define XMHF_HYP_SLAB_XHSSTEPTRACE          (13)
-#define XMHF_GUEST_SLAB_XCGUESTSLAB         (14)
+#define XMHF_HYP_SLAB_GEEC_PRIMESMP         (1)
+#define XMHF_HYP_SLAB_GEECSENTINEL          (2)
+#define XMHF_HYP_SLAB_UAPI_GCPUSTATE        (3)
+#define XMHF_HYP_SLAB_UAPI_HCPUSTATE        (4)
+#define XMHF_HYP_SLAB_UAPI_SLABMEMACC       (5)
+#define XMHF_HYP_SLAB_UAPI_SLABMEMPGTBL     (6)
+#define XMHF_HYP_SLAB_XCINIT                (7)
+#define XMHF_HYP_SLAB_XCIHUB                (8)
+#define XMHF_HYP_SLAB_XCEXHUB               (9)
+#define XMHF_HYP_SLAB_XCTESTSLAB1           (10)
+#define XMHF_HYP_SLAB_XHHYPERDEP            (11)
+#define XMHF_HYP_SLAB_XHAPPROVEXEC          (12)
+#define XMHF_HYP_SLAB_XHSYSCALLLOG          (13)
+#define XMHF_HYP_SLAB_XHSSTEPTRACE          (14)
+#define XMHF_GUEST_SLAB_XCGUESTSLAB         (15)
 
 
 
