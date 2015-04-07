@@ -67,6 +67,18 @@ extern u8 _xmhfhic_rodata_end[];
 extern u8 _xmhfhic_stack_start[];
 extern u8 _xmhfhic_stack_end[];
 
+extern u8 _slab_geec_primesmp_code_start[];
+extern u8 _slab_geec_primesmp_code_end[];
+extern u8 _slab_geec_primesmp_rwdata_start[];
+extern u8 _slab_geec_primesmp_rwdata_end[];
+extern u8 _slab_geec_primesmp_rodata_start[];
+extern u8 _slab_geec_primesmp_rodata_end[];
+extern u8 _slab_geec_primesmp_stack_start[];
+extern u8 _slab_geec_primesmp_stack_end[];
+extern u8 _slab_geec_primesmp_dmadata_start[];
+extern u8 _slab_geec_primesmp_dmadata_end[];
+extern u8 _slab_geec_primesmp_entrypoint[];
+
 extern u8 _slab_geecsentinel_code_start[];
 extern u8 _slab_geecsentinel_code_end[];
 extern u8 _slab_geecsentinel_rwdata_start[];
@@ -262,8 +274,7 @@ __attribute__(( section(".data") )) __attribute__((aligned(4096))) x_slab_info_t
             }
         },
         true,
-        0,
-        HIC_SLAB_CALLCAP(XMHF_HYP_SLAB_XCINIT),
+        0,        HIC_SLAB_CALLCAP(XMHF_HYP_SLAB_XCINIT),
         HIC_SLAB_UAPICAP(XMHF_HIC_UAPI_CPUSTATE) | HIC_SLAB_UAPICAP(XMHF_HIC_UAPI_PHYSMEM) | HIC_SLAB_UAPICAP(XMHF_HIC_UAPI_MEMPGTBL),
         {false, 0, {0}},
         {
@@ -274,6 +285,40 @@ __attribute__(( section(".data") )) __attribute__((aligned(4096))) x_slab_info_t
             {.addr_start = _xmhfhic_stack_start, .addr_end = _xmhfhic_stack_end, .protection = 0},
         },
         (u32)_xmhfhic_code_start
+    },
+
+
+    //XMHF_HYP_SLAB_GEEC_PRIMESMP
+    {
+        {
+            HIC_SLAB_X86VMXX86PC_HYPERVISOR,
+            false,
+            false,
+            0,
+            {
+                ((u32)&_slab_geec_primesmp_stack_start[1*XMHF_SLAB_STACKSIZE]),
+                ((u32)&_slab_geec_primesmp_stack_start[2*XMHF_SLAB_STACKSIZE]),
+                ((u32)&_slab_geec_primesmp_stack_start[3*XMHF_SLAB_STACKSIZE]),
+                ((u32)&_slab_geec_primesmp_stack_start[4*XMHF_SLAB_STACKSIZE]),
+                ((u32)&_slab_geec_primesmp_stack_start[5*XMHF_SLAB_STACKSIZE]),
+                ((u32)&_slab_geec_primesmp_stack_start[6*XMHF_SLAB_STACKSIZE]),
+                ((u32)&_slab_geec_primesmp_stack_start[7*XMHF_SLAB_STACKSIZE]),
+                ((u32)&_slab_geec_primesmp_stack_start[8*XMHF_SLAB_STACKSIZE]),
+            }
+        },
+        true,
+        0,
+        HIC_SLAB_CALLCAP(XMHF_HYP_SLAB_XCTESTSLAB1) | HIC_SLAB_CALLCAP(XMHF_GUEST_SLAB_XCGUESTSLAB),
+        HIC_SLAB_UAPICAP(XMHF_HIC_UAPI_CPUSTATE) | HIC_SLAB_UAPICAP(XMHF_HIC_UAPI_PHYSMEM) | HIC_SLAB_UAPICAP(XMHF_HIC_UAPI_MEMPGTBL),
+        {false, 0, {0}},
+        {
+            {.addr_start = _slab_geec_primesmp_code_start, .addr_end = _slab_geec_primesmp_code_end, .protection = 0},
+            {.addr_start = _slab_geec_primesmp_rwdata_start, .addr_end = _slab_geec_primesmp_rwdata_end, .protection = 0},
+            {.addr_start = _slab_geec_primesmp_rodata_start, .addr_end = _slab_geec_primesmp_rodata_end, .protection = 0},
+            {.addr_start = _slab_geec_primesmp_stack_start, .addr_end = _slab_geec_primesmp_stack_end, .protection = 0},
+            {.addr_start = _slab_geec_primesmp_dmadata_start, .addr_end = _slab_geec_primesmp_dmadata_end, .protection = 0},
+        },
+        (u32)_slab_geec_primesmp_entrypoint
     },
 
 
