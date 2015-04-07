@@ -801,41 +801,6 @@ static void __xmhfhic_rtm_uapihandler_mempgtbl(slab_params_t *sp);
 
 
 
-static bool _uapicheck_is_within_slab_memory_extents(u64 slab_id, u64 addr, u64 size){
-    u64 i;
-    bool status=false;
-
-    for(i=0; i < HIC_SLAB_PHYSMEM_MAXEXTENTS; i++){
-        if(_xmhfhic_common_slab_info_table[slab_id].slab_physmem_extents[i].addr_start == 0 &&
-           _xmhfhic_common_slab_info_table[slab_id].slab_physmem_extents[i].addr_end == 0)
-           continue;
-
-        if(addr >= _xmhfhic_common_slab_info_table[slab_id].slab_physmem_extents[i].addr_start &&
-           (addr+size) < _xmhfhic_common_slab_info_table[slab_id].slab_physmem_extents[i].addr_end)
-            return true;
-
-    }
-
-    return status;
-}
-
-static bool _uapicheck_encoding_used_by_hic(u64 encoding){
-    if( (u32)encoding & 0xFFFF0000 )
-        return false;
-
-    if( (u16)encoding == 0x0000 || (u16)encoding == 0x4000 || (u16)encoding == 0x4002 || (u16)encoding == 0x401E )
-        return true;
-
-    if( ((u16)encoding & 0xFF00) == 0x20 ||
-       ((u16)encoding & 0xFF00) == 0x6C ||
-       ((u16)encoding & 0xFF00) == 0x4C ||
-       ((u16)encoding & 0xFF00) == 0x2C ||
-       ((u16)encoding & 0xFF00) == 0x0C)
-        return true;
-
-    return false;
-}
-
 
 /*
 

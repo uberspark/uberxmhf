@@ -59,6 +59,24 @@
 #include <uapi_slabmemacc.h>
 
 
+/*
+static bool _uapicheck_is_within_slab_memory_extents(u64 slab_id, u64 addr, u64 size){
+    u64 i;
+    bool status=false;
+
+    for(i=0; i < HIC_SLAB_PHYSMEM_MAXEXTENTS; i++){
+        if(_xmhfhic_common_slab_info_table[slab_id].slab_physmem_extents[i].addr_start == 0 &&
+           _xmhfhic_common_slab_info_table[slab_id].slab_physmem_extents[i].addr_end == 0)
+           continue;
+
+        if(addr >= _xmhfhic_common_slab_info_table[slab_id].slab_physmem_extents[i].addr_start &&
+           (addr+size) < _xmhfhic_common_slab_info_table[slab_id].slab_physmem_extents[i].addr_end)
+            return true;
+
+    }
+
+    return status;
+}*/
 
 /////
 void slab_main(slab_params_t *sp){
