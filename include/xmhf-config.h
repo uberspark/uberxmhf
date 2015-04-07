@@ -127,8 +127,8 @@
 
 
 #define XMHF_HYP_SLAB_GEECPRIME             (0)
-#define XMHF_HYP_SLAB_GEEC_PRIMESMP         (1)
-#define XMHF_HYP_SLAB_GEECSENTINEL          (2)
+#define XMHF_HYP_SLAB_GEECSENTINEL          (1)
+#define XMHF_HYP_SLAB_GEEC_PRIMESMP         (2)
 #define XMHF_HYP_SLAB_UAPI_GCPUSTATE        (3)
 #define XMHF_HYP_SLAB_UAPI_HCPUSTATE        (4)
 #define XMHF_HYP_SLAB_UAPI_SLABMEMACC       (5)
