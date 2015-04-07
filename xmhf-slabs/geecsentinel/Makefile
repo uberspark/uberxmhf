@@ -21,7 +21,7 @@ export XMHF_SLAB_PRIVILEGED := y
 export XMHF_SLAB_SOURCES := $(wildcard $(srcdir)/*.c)
 XMHF_SLAB_SOURCES += $(wildcard $(srcdir)/*.cS)
 
-export XMHF_SLAB_GLOBAL_SYMS := --globalize-symbol __xmhfhic_rtm_uapihandler --globalize-symbol __xmhfhic_rtm_exception_stub --globalize-symbol __xmhfhic_rtm_intercept --globalize-symbol __xmhfhic_rtm_trampolinehandler
+export XMHF_SLAB_GLOBAL_SYMS := --globalize-symbol __xmhfhic_rtm_uapihandler --globalize-symbol __xmhfhic_rtm_exception_stub --globalize-symbol __xmhfhic_rtm_intercept --globalize-symbol __xmhfhic_rtm_trampolinehandler --globalize-symbol _xmhfhic_common_slab_info_table
 
 ########################################################################
 # generic slab build harness
