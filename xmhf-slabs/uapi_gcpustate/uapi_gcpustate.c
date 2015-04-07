@@ -61,6 +61,26 @@
 static x86regs_t guestgprs[MAX_PLATFORM_CPUS];
 
 
+
+/*
+static bool _uapicheck_encoding_used_by_hic(u64 encoding){
+    if( (u32)encoding & 0xFFFF0000 )
+        return false;
+
+    if( (u16)encoding == 0x0000 || (u16)encoding == 0x4000 || (u16)encoding == 0x4002 || (u16)encoding == 0x401E )
+        return true;
+
+    if( ((u16)encoding & 0xFF00) == 0x20 ||
+       ((u16)encoding & 0xFF00) == 0x6C ||
+       ((u16)encoding & 0xFF00) == 0x4C ||
+       ((u16)encoding & 0xFF00) == 0x2C ||
+       ((u16)encoding & 0xFF00) == 0x0C)
+        return true;
+
+    return false;
+}*/
+
+
 /////
 void slab_main(slab_params_t *sp){
     xmhf_uapi_params_hdr_t *uapiphdr = (xmhf_uapi_params_hdr_t *)sp->in_out_params;
