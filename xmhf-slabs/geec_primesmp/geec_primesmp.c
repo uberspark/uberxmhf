@@ -211,6 +211,10 @@ __attribute__((section(".data"))) __attribute__(( aligned(16) )) arch_x86_idtdes
 __attribute__(( section(".stack") )) __attribute__(( aligned(4096) )) u8 __xmhfhic_rtm_trampoline_stack[MAX_PLATFORM_CPUS][MAX_PLATFORM_CPUSTACK_SIZE];
 
 
+__attribute__((section(".data"))) __attribute__(( aligned(4) )) u32 __xmhfhic_x86vmx_cpuidtable[MAX_X86_APIC_ID];
+
+__attribute__((section(".data"))) __attribute__(( aligned(4096) )) xc_cpuarchdata_x86vmx_t __xmhfhic_x86vmx_archdata[MAX_PLATFORM_CPUS];
+
 
 
 //////
