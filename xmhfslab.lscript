@@ -50,7 +50,7 @@ OUTPUT_ARCH("i386")
 
 MEMORY
 {
-  slabmem (rwxai) : ORIGIN = 0, LENGTH = 32M /* max. length */
+  slabmem (rwxai) : ORIGIN = 0, LENGTH = 280M /* max. length */
   unaccounted (rwxai) : ORIGIN = 0, LENGTH = 0 /* see section .unaccounted at end */
 }
 
