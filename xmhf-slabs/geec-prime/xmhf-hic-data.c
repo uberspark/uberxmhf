@@ -233,11 +233,11 @@ __attribute__((section(".data"))) __attribute__((aligned(4096)))  u64 _dbuf_memp
 //////
 // runtime exception CPU stacks
 
-__attribute__(( section(".stack") )) __attribute__(( aligned(4096) )) u8 _rtmxcp_cpustacks[MAX_PLATFORM_CPUS][MAX_PLATFORM_CPUSTACK_SIZE];
+//__attribute__(( section(".stack") )) __attribute__(( aligned(4096) )) u8 _rtmxcp_cpustacks[MAX_PLATFORM_CPUS][MAX_PLATFORM_CPUSTACK_SIZE];
 
 //////
 // runtime exception bootstrap save area
-__attribute__((section(".data"))) __attribute__(( aligned(4096) )) u64 _rtmxcp_bssavearea[512] = { 1ULL };
+//__attribute__((section(".data"))) __attribute__(( aligned(4096) )) u64 _rtmxcp_bssavearea[512] = { 1ULL };
 
 
 //__attribute__(( aligned(8) )) u64 __xmhfhic_x86vmx_cpuidtable[MAX_X86_APIC_ID];
