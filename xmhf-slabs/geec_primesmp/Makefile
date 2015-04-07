@@ -21,7 +21,7 @@ export XMHF_SLAB_PRIVILEGED := y
 export XMHF_SLAB_SOURCES := $(wildcard $(srcdir)/*.c)
 XMHF_SLAB_SOURCES += $(wildcard $(srcdir)/*.cS)
 
-#export XMHF_SLAB_GLOBAL_SYMS :=
+export XMHF_SLAB_GLOBAL_SYMS := --globalize-symbol __xmhfhic_x86vmx_archdata --globalize-symbol __xmhfhic_x86vmx_cpuidtable
 
 ########################################################################
 # generic slab build harness
