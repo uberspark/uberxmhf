@@ -60,7 +60,7 @@ buildhicbin: $(XMHF_HIC_OBJECTS)
 	cd $(XMHF_HIC_OBJECTS_DIR) && $(LD) -r --oformat elf32-i386 -T $(LINKER_SCRIPT_OUTPUT) -o $(XMHF_HIC_NAME).slo $(XMHF_HIC_OBJECTS_ARCHIVE) -L$(CCERT_LIB) -L$(CCLIB)/lib/linux -L$(XMHFLIBS_DIR) -lxmhfc -lxmhfcrypto -lxmhfdebug -lxmhfhw -whole-archive -lxmhfhicslab -no-whole-archive -lxmhfc -lclang_rt.full-i386 -lcompcert
 	cd $(XMHF_HIC_OBJECTS_DIR) && nm $(XMHF_HIC_NAME).slo | awk '{ print $$3 }' | awk NF >$(XMHF_HIC_NAME).slo.syms
 	cd $(XMHF_HIC_OBJECTS_DIR) && $(OBJCOPY) --localize-symbols=$(XMHF_HIC_NAME).slo.syms $(XMHF_HIC_NAME).slo $(XMHF_HIC_NAME).slo
-	cd $(XMHF_HIC_OBJECTS_DIR) && $(OBJCOPY) --globalize-symbol libxmhfdebug_lock --globalize-symbol xcbootinfo   --globalize-symbol _dbuf_mempgtbl_pt $(XMHF_HIC_NAME).slo $(XMHF_HIC_NAME).slo
+	cd $(XMHF_HIC_OBJECTS_DIR) && $(OBJCOPY) --globalize-symbol libxmhfdebug_lock --globalize-symbol xcbootinfo    $(XMHF_HIC_NAME).slo $(XMHF_HIC_NAME).slo
 
 %.o: %.c
 	mkdir -p $(XMHF_HIC_OBJECTS_DIR)
