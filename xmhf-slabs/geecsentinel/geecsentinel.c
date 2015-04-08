@@ -974,5 +974,7 @@ static void __xmhfhic_rtm_uapihandler_mempgtbl(slab_params_t *sp){
 
 void slab_main(slab_params_t *sp){
 
+    _XDPRINTF_("GEEC_SENTINEL: Work-in-progress\n");
+    HALT();
 
 }
