@@ -73,3 +73,10 @@ CASM_FUNCDEF(u32, __slab_calltrampolinenew_h2g,
 },
 void *noparam)
 
+CASM_FUNCDEF(void, __slab_calltrampolinenew,
+{
+    xmhfhwm_cpu_insn_movl_imm_eax(0x02800000);
+    xmhfhwm_cpu_insn_jmpl_eax();
+},
+slab_params_t *sp)
+

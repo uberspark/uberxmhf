@@ -55,8 +55,8 @@
 #include <xmhf-hic.h>
 #include <xmhf-debug.h>
 
-void __slab_calltrampolinenew(slab_params_t *sp){
+/*void __slab_calltrampolinenew(slab_params_t *sp){
 
     __xmhfhic_rtm_trampolinehandler(sp);
 
-}
+}*/
