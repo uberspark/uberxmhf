@@ -53,10 +53,194 @@
 #include <xmhf-hic.h>
 #include <xmhf-debug.h>
 
-//void __xmhfhic_trampoline_slabxfer_h2h(u64 iparams, u64 iparams_size,
-//                                       u64 entrystub, u64 slabtos,
-//                                       u64 oparams, u64 oparams_size,
-//                                       u64 src_slabid, u64 cpuid){
+
+//////
+// CASM sentinel stubs -- the following get called by the hardware
+//////
+
+
+
+//////////////////////////////////////////////////////////////////////////////
+//
+// HIC trampoline
+
+
+
+//HIC runtime trampoline stub
+
+//__xmhfhic_rtm_trampoline stub entry register mappings:
+//
+//RDI = call type (XMHF_HIC_SLABCALL)
+//RSI = iparams
+//RDX = iparams_size
+//RCX = oparams
+//R8 = oparams_size
+//R9 = dst_slabid
+//R10 = return RSP;
+//R11 = return_address
+
+
+//__attribute__((naked)) void __xmhfhic_rtm_trampoline_stub(void){
+CASM_FUNCDEF(void, __xmhfhic_rtm_trampoline_stub,
+{
+
+/*
+    //TODO: x86_64 --> x86
+    asm volatile (
+        "cmpq %0, %%rdi \r\n"
+        "je 1f \r\n"
+
+        "pushq %%r10 \r\n"          //push return RSP
+        "pushq %%r11 \r\n"          //push return address
+
+       	"movq %1, %%rax \r\n"       //RAX=X86XMP_LAPIC_ID_MEMORYADDRESS
+		"movl (%%eax), %%eax\r\n"   //EAX(bits 0-7)=LAPIC ID
+        "shrl $24, %%eax\r\n"       //EAX=LAPIC ID
+        "movq __xmhfhic_x86vmx_cpuidtable+0x0(,%%eax,8), %%rax\r\n" //RAX = 0-based cpu index for the CPU
+        "pushq %%rax \r\n"          //push cpuid
+
+        "movq %%cr3, %%rax \r\n"
+        "andq $0x00000000000FF000, %%rax \r\n"
+        "shr $12, %%rax \r\n"
+        "pushq %%rax \r\n"          //push source slab id
+
+        "callq __xmhfhic_rtm_trampoline \r\n"
+        "hlt \r\n"
+
+        "1: \r\n"
+        "pushq %%r10 \r\n"          //push return RSP
+        "pushq %%r11 \r\n"          //push return address
+
+       	"movq %1, %%rax \r\n"       //RAX=X86XMP_LAPIC_ID_MEMORYADDRESS
+		"movl (%%eax), %%eax\r\n"   //EAX(bits 0-7)=LAPIC ID
+        "shrl $24, %%eax\r\n"       //EAX=LAPIC ID
+        "movq __xmhfhic_x86vmx_cpuidtable+0x0(,%%eax,8), %%rax\r\n" //RAX = 0-based cpu index for the CPU
+        "pushq %%rax \r\n"          //push cpuid
+
+        "movq %%cr3, %%rax \r\n"
+        "andq $0x00000000000FF000, %%rax \r\n"
+        "shr $12, %%rax \r\n"
+        "pushq %%rax \r\n"          //push source slab id
+
+        "callq __xmhfhic_rtm_uapihandler \r\n"
+
+        "addq $16, %%rsp \r\n"
+        "popq %%rdx \r\n"
+        "popq %%rcx \r\n"
+        "sysexitq \r\n"
+
+        "hlt \r\n"
+      :
+      : "i" (XMHF_HIC_UAPI), "i" (X86SMP_LAPIC_ID_MEMORYADDRESS)
+      :
+    );
+
+    */
+},
+void *noparam)
+
+
+
+#define XMHF_EXCEPTION_HANDLER_DEFINE(vector) 												\
+	CASM_FUNCDEF(void, __xmhf_exception_handler_##vector, 					\
+    { \
+        xmhfhwm_cpu_insn_pushl_imm(vector); \
+        xmhfhwm_cpu_insn_pushal(); \
+        xmhfhwm_cpu_insn_pushl_esp(); \
+        xmhfhwm_cpu_insn_call(__xmhfhic_rtm_exception_stub); \
+        xmhfhwm_cpu_insn_addl_imm_esp(0x4); \
+        xmhfhwm_cpu_insn_popal(); \
+        xmhfhwm_cpu_insn_addl_imm_esp(0x8); \
+        xmhfhwm_cpu_insn_iretl(); \
+    },\
+    void *noparam) \
+
+#define XMHF_EXCEPTION_HANDLER_DEFINE_WITHERRORCODE(vector) 												\
+	CASM_FUNCDEF(void, __xmhf_exception_handler_##vector, 					\
+    {\
+		xmhfhwm_cpu_insn_pushl_imm(0x0); \
+        xmhfhwm_cpu_insn_pushl_imm(vector); \
+        xmhfhwm_cpu_insn_pushal(); \
+        xmhfhwm_cpu_insn_pushl_esp(); \
+        xmhfhwm_cpu_insn_call(__xmhfhic_rtm_exception_stub); \
+        xmhfhwm_cpu_insn_addl_imm_esp(0x4); \
+        xmhfhwm_cpu_insn_popal(); \
+        xmhfhwm_cpu_insn_addl_imm_esp(0x8); \
+        xmhfhwm_cpu_insn_iretl(); \
+    },\
+    void *noparam) \
+
+
+
+XMHF_EXCEPTION_HANDLER_DEFINE_WITHERRORCODE(0)
+XMHF_EXCEPTION_HANDLER_DEFINE_WITHERRORCODE(1)
+XMHF_EXCEPTION_HANDLER_DEFINE_WITHERRORCODE(2)
+XMHF_EXCEPTION_HANDLER_DEFINE_WITHERRORCODE(3)
+XMHF_EXCEPTION_HANDLER_DEFINE_WITHERRORCODE(4)
+XMHF_EXCEPTION_HANDLER_DEFINE_WITHERRORCODE(5)
+XMHF_EXCEPTION_HANDLER_DEFINE_WITHERRORCODE(6)
+XMHF_EXCEPTION_HANDLER_DEFINE_WITHERRORCODE(7)
+XMHF_EXCEPTION_HANDLER_DEFINE(8)
+XMHF_EXCEPTION_HANDLER_DEFINE_WITHERRORCODE(9)
+XMHF_EXCEPTION_HANDLER_DEFINE(10)
+XMHF_EXCEPTION_HANDLER_DEFINE(11)
+XMHF_EXCEPTION_HANDLER_DEFINE(12)
+XMHF_EXCEPTION_HANDLER_DEFINE(13)
+XMHF_EXCEPTION_HANDLER_DEFINE(14)
+XMHF_EXCEPTION_HANDLER_DEFINE_WITHERRORCODE(15)
+XMHF_EXCEPTION_HANDLER_DEFINE_WITHERRORCODE(16)
+XMHF_EXCEPTION_HANDLER_DEFINE(17)
+XMHF_EXCEPTION_HANDLER_DEFINE_WITHERRORCODE(18)
+XMHF_EXCEPTION_HANDLER_DEFINE_WITHERRORCODE(19)
+XMHF_EXCEPTION_HANDLER_DEFINE_WITHERRORCODE(20)
+XMHF_EXCEPTION_HANDLER_DEFINE_WITHERRORCODE(21)
+XMHF_EXCEPTION_HANDLER_DEFINE_WITHERRORCODE(22)
+XMHF_EXCEPTION_HANDLER_DEFINE_WITHERRORCODE(23)
+XMHF_EXCEPTION_HANDLER_DEFINE_WITHERRORCODE(24)
+XMHF_EXCEPTION_HANDLER_DEFINE_WITHERRORCODE(25)
+XMHF_EXCEPTION_HANDLER_DEFINE_WITHERRORCODE(26)
+XMHF_EXCEPTION_HANDLER_DEFINE_WITHERRORCODE(27)
+XMHF_EXCEPTION_HANDLER_DEFINE_WITHERRORCODE(28)
+XMHF_EXCEPTION_HANDLER_DEFINE_WITHERRORCODE(29)
+XMHF_EXCEPTION_HANDLER_DEFINE_WITHERRORCODE(30)
+XMHF_EXCEPTION_HANDLER_DEFINE_WITHERRORCODE(31)
+
+
+//HIC runtime intercept stub
+//__attribute__((naked)) void __xmhfhic_rtm_intercept_stub(void){
+CASM_FUNCDEF(void, __xmhfhic_rtm_intercept_stub,
+{
+    xmhfhwm_cpu_insn_pushal();
+    xmhfhwm_cpu_insn_pushl_esp();
+    xmhfhwm_cpu_insn_call(__xmhfhic_rtm_intercept);
+    xmhfhwm_cpu_insn_addl_imm_esp(0x4);
+    xmhfhwm_cpu_insn_popal();
+    xmhfhwm_cpu_insn_vmresume();
+    xmhfhwm_cpu_insn_hlt();
+},
+void *noparam)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//////
+// support CASM functions used by the sentinel
+/////
+
 CASM_FUNCDEF(void, __xmhfhic_trampoline_slabxfer_h2h,
 {
 
@@ -110,7 +294,6 @@ u64 cpuid)
 
 
 
-//void __xmhfhic_trampoline_slabxfer_h2g(void){
 CASM_FUNCDEF(void, __xmhfhic_trampoline_slabxfer_h2g,
 {
 /*                    u32 errorcode;
@@ -158,9 +341,6 @@ void *noparam)
 
 
 
-//void __xmhfhic_trampoline_slabxfer_callexception(u64 iparams, u64 iparams_size,
-//                                                 u64 entrystub, u64 slabtos,
-//                                                 u64 src_slabid, u64 cpuid){
 CASM_FUNCDEF(void, __xmhfhic_trampoline_slabxfer_callexception,
 {
 
@@ -213,10 +393,42 @@ u64 src_slabid,
 u64 cpuid)
 
 
+CASM_FUNCDEF(void, __xmhfhic_trampoline_slabxfer_retexception,
+{
+
+/*
+                    //TODO: x86_64 --> x86
+                    asm volatile (
+                        "movq %0, %%rsp \r\n"
+                        "popq %%r8 \r\n"
+                        "popq %%r9 \r\n"
+                        "popq %%r10 \r\n"
+                        "popq %%r11 \r\n"
+                        "popq %%r12 \r\n"
+                        "popq %%r13 \r\n"
+                        "popq %%r14 \r\n"
+                        "popq %%r15 \r\n"
+                        "popq %%rax \r\n"
+                        "popq %%rbx \r\n"
+                        "popq %%rcx \r\n"
+                        "popq %%rdx \r\n"
+                        "popq %%rsi \r\n"
+                        "popq %%rdi \r\n"
+                        "popq %%rbp \r\n"
+                        "popq %%rsp \r\n"
+                        "addq $16, %%rsp \r\n"
+                        "iretq \r\n"
+                        :
+                        : "m" (addr_exframe)
+                        : "r8", "r9", "r10", "r11", "r12", "r13", "r14", "r15",
+                          "rax", "rbx", "rcx", "rdx", "rsi", "rdi", "rbp", "rsp"
+
+                    );
+*/
+},
+u64 addr_exframe)
 
 
-//void __xmhfhic_trampoline_slabxfer_callintercept(u64 entrystub, u64 slabtos,
-//                                                 u64 src_slabid, u64 cpuid){
 CASM_FUNCDEF(void, __xmhfhic_trampoline_slabxfer_callintercept,
 {
 
@@ -266,7 +478,6 @@ u64 cpuid)
 
 
 
-//void __xmhfhic_trampoline_slabxfer_retintercept(u64 addrgprs)
 CASM_FUNCDEF(void, __xmhfhic_trampoline_slabxfer_retintercept,
 {
 
@@ -301,40 +512,3 @@ CASM_FUNCDEF(void, __xmhfhic_trampoline_slabxfer_retintercept,
 },
 u64 addrgprs)
 
-
-
-//void __xmhfhic_trampoline_slabxfer_retexception(u64 addr_exframe)
-CASM_FUNCDEF(void, __xmhfhic_trampoline_slabxfer_retexception,
-{
-
-/*
-                    //TODO: x86_64 --> x86
-                    asm volatile (
-                        "movq %0, %%rsp \r\n"
-                        "popq %%r8 \r\n"
-                        "popq %%r9 \r\n"
-                        "popq %%r10 \r\n"
-                        "popq %%r11 \r\n"
-                        "popq %%r12 \r\n"
-                        "popq %%r13 \r\n"
-                        "popq %%r14 \r\n"
-                        "popq %%r15 \r\n"
-                        "popq %%rax \r\n"
-                        "popq %%rbx \r\n"
-                        "popq %%rcx \r\n"
-                        "popq %%rdx \r\n"
-                        "popq %%rsi \r\n"
-                        "popq %%rdi \r\n"
-                        "popq %%rbp \r\n"
-                        "popq %%rsp \r\n"
-                        "addq $16, %%rsp \r\n"
-                        "iretq \r\n"
-                        :
-                        : "m" (addr_exframe)
-                        : "r8", "r9", "r10", "r11", "r12", "r13", "r14", "r15",
-                          "rax", "rbx", "rcx", "rdx", "rsi", "rdi", "rbp", "rsp"
-
-                    );
-*/
-},
-u64 addr_exframe)
