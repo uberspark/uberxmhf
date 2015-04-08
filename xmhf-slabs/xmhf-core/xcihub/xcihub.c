@@ -64,6 +64,7 @@
 
 
 
+
 void slab_main(slab_params_t *sp){
     u32 info_vmexit_reason;
     slab_params_t spl;
@@ -80,6 +81,14 @@ void slab_main(slab_params_t *sp){
     spl.cpuid = sp->cpuid;
     spl.src_slabid = XMHF_HYP_SLAB_XCIHUB;
     spl.in_out_params[0] = XMHF_HIC_UAPI_CPUSTATE;
+
+
+    //store GPRs
+    spl.dst_slabid = XMHF_HYP_SLAB_UAPI_GCPUSTATE;
+    gcpustate_gprs->uapiphdr.uapifn = XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSWRITE;
+    memcpy(&gcpustate_gprs->gprs, &sp->in_out_params[0], sizeof(x86regs_t));
+    XMHF_SLAB_CALLNEW(&spl);
+
 
     {
 
@@ -367,6 +376,14 @@ void slab_main(slab_params_t *sp){
 
             HALT();
     }
+
+
+
+    //load GPRs
+    spl.dst_slabid = XMHF_HYP_SLAB_UAPI_GCPUSTATE;
+    gcpustate_gprs->uapiphdr.uapifn = XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSREAD;
+    XMHF_SLAB_CALLNEW(&spl);
+    memcpy(&sp->in_out_params[0], &gcpustate_gprs->gprs, sizeof(x86regs_t));
 
 
 	_XDPRINTF_("XCIHUB[%u]: Resuming guest\n", (u16)sp->cpuid);
