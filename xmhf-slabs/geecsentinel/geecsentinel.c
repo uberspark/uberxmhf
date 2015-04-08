@@ -57,11 +57,8 @@
 #include <xc.h>
 #include <uapi_gcpustate.h>
 
-#if defined (__XMHF_VERIFICATION__)
-u64 __xmhfhic_safestack_indices[MAX_PLATFORM_CPUS] = { 0 };
-__xmhfhic_safestack_element_t __xmhfhic_safestack[MAX_PLATFORM_CPUS][512];
-#endif //__XMHF_VERIFICATION__
 
+#if 0
 __attribute__((section(".data"))) u64 __xmhfhic_safestack_indices[MAX_PLATFORM_CPUS] = { 0 };
 
 __attribute__((section(".data"))) __xmhfhic_safestack_element_t __xmhfhic_safestack[MAX_PLATFORM_CPUS][512];
@@ -502,7 +499,7 @@ void __xmhfhic_rtm_trampoline(u64 hic_calltype, slab_input_params_t *iparams, u6
     HALT();
 }
 
-
+#endif //0
 
 
 
@@ -729,192 +726,6 @@ void __xmhfhic_rtm_intercept(x86regs_t *r){
 
 }
 
-
-
-
-//////
-
-//extern x_slab_info_t _xmhfhic_common_slab_info_table[XMHF_HIC_MAX_SLABS];
-extern u64 guestslab_mempgtbl_buffer[1048576];
-
-
-/////
-// forward prototypes
-
-//static void __xmhfhic_rtm_uapihandler_cpustate(u64 uapicall_subnum, u64 iparams, u64 oparams, u64 cpuid, u64 src_slabid);
-//static void __xmhfhic_rtm_uapihandler_physmem(u64 uapicall_subnum, u64 iparams, u64 oparams, u64 cpuid, u64 src_slabid);
-//static void __xmhfhic_rtm_uapihandler_mempgtbl(u64 uapicall_subnum, u64 iparams, u64 oparams, u64 cpuid, u64 src_slabid);
-
-static void __xmhfhic_rtm_uapihandler_cpustate(slab_params_t *sp);
-static void __xmhfhic_rtm_uapihandler_physmem(slab_params_t *sp);
-static void __xmhfhic_rtm_uapihandler_mempgtbl(slab_params_t *sp);
-
-
-
-
-/*
-
-//uapicall = sp->slab_ctype
-//uapicall_num = sp->in_out_params[0];
-//uapicall_subnum  = sp->in_out_params[1];
-//cpuid = sp->cpuid
-
-
-//////
-// main UAPI handler, gets called by a slab
-// src_slabid and cpuid are trusted input parameters provided by HIC
-//void __xmhfhic_rtm_uapihandler(u64 uapicall, u64 uapicall_num, u64 uapicall_subnum,
-//                               u64 reserved, u64 iparams, u64 oparams,
-//                               u64 src_slabid, u64 cpuid){
-void __xmhfhic_rtm_uapihandler(slab_params_t *sp){
-
-
-    //_XDPRINTF_("%s[%u]: uapi handler got control: uapicall=%x, uapicall_num=%x, \
-    //           uapicall_subnum=%x, iparams=%x, oparams=%x, \
-    //           src_slabid=%u, cpuid=%x, cr3=%x\n",
-    //            __func__, (u32)cpuid,
-    //           uapicall, uapicall_num, uapicall_subnum,
-    //           iparams, oparams,
-    //           src_slabid, cpuid, CASM_FUNCCALL(read_cr3,));
-
-    //checks
-    //1. src_slabid is a hypervisor slab
-    if( !(_xmhfhic_common_slab_info_table[sp->src_slabid].archdata.slabtype == HIC_SLAB_X86VMXX86PC_HYPERVISOR) ){
-        _XDPRINTF_("%s[%u]: uapierr: src_slabid (%u) is not a hypervisor slab. Halting!\n", __func__, (u16)sp->cpuid, sp->src_slabid);
-        //HALT();
-        return;
-    }
-
-    #if defined (__XMHF_VERIFICATION__)
-    assert( _xmhfhic_common_slab_info_table[src_slabid].archdata.slabtype == HIC_SLAB_X86VMXX86PC_HYPERVISOR );
-    #endif //__XMHF_VERIFICATION__
-
-
-    //2. src_slabid should have capabilities for the requested uapicall_num
-    if( !(_xmhfhic_common_slab_info_table[sp->src_slabid].slab_uapicaps & HIC_SLAB_UAPICAP(sp->in_out_params[0])) ){
-        _XDPRINTF_("%s[%u]: uapierr: src_slabid (%u) does not have uapi capability. Halting!\n", __func__, (u16)sp->cpuid, sp->src_slabid);
-        //HALT();
-        return;
-    }
-
-
-    #if defined (__XMHF_VERIFICATION__)
-        assert( _xmhfhic_common_slab_info_table[src_slabid].slab_uapicaps & HIC_SLAB_UAPICAP(uapicall_num));
-    #endif //__XMHF_VERIFICATION__
-
-
-
-    switch(sp->in_out_params[0]){
-        case XMHF_HIC_UAPI_CPUSTATE:
-            //__xmhfhic_rtm_uapihandler_cpustate(uapicall_subnum, iparams, oparams, cpuid, src_slabid);
-            __xmhfhic_rtm_uapihandler_cpustate(sp);
-            break;
-
-        case XMHF_HIC_UAPI_PHYSMEM:
-            //__xmhfhic_rtm_uapihandler_physmem(uapicall_subnum, iparams, oparams, cpuid, src_slabid);
-            __xmhfhic_rtm_uapihandler_physmem(sp);
-            break;
-
-        case XMHF_HIC_UAPI_MEMPGTBL:
-            //__xmhfhic_rtm_uapihandler_mempgtbl(uapicall_subnum, iparams, oparams, cpuid, src_slabid);
-            __xmhfhic_rtm_uapihandler_mempgtbl(sp);
-            break;
-
-
-        default:
-            _XDPRINTF_("%s[%u]: Unknown UAPI call %x. Halting!\n",
-                    __func__, (u16)sp->cpuid, sp->in_out_params[0]);
-            //HALT();
-            return;
-    }
-
-
-    return;
-}
-
-
-
-
-
-
-
-
-
-
-//////
-// cpustate UAPI sub-handler
-//static void __xmhfhic_rtm_uapihandler_cpustate(u64 uapicall_subnum, u64 iparams, u64 oparams, u64 cpuid, u64 src_slabid){
-static void __xmhfhic_rtm_uapihandler_cpustate(slab_params_t *sp){
-    //_XDPRINTF_("%s[%u]: Got control...\n", __func__, (u32)cpuid);
-
-    switch(sp->in_out_params[1]){
-
-
-       default:
-            _XDPRINTF_("%s[%u]: Unknown cpustate subcall %x. Halting!\n",
-                    __func__, (u16)sp->cpuid, sp->in_out_params[1]);
-            HALT();
-            return;
-    }
-
-}
-
-
-
-
-
-
-
-
-
-
-//////
-// physmem UAPI sub-handler
-//static void __xmhfhic_rtm_uapihandler_physmem(u64 uapicall_subnum, u64 iparams, u64 oparams, u64 cpuid, u64 src_slabid){
-static void __xmhfhic_rtm_uapihandler_physmem(slab_params_t *sp){
-    //_XDPRINTF_("%s[%u]: Got control...\n", __func__, (u32)cpuid);
-
-    switch(sp->in_out_params[1]){
-
-
-        default:
-            _XDPRINTF_("%s[%u]: Unknown physmem subcall %x. Halting!\n",
-                    __func__, (u16)sp->cpuid, sp->in_out_params[1]);
-            HALT();
-            return;
-
-    }
-
-}
-
-
-
-
-
-
-
-
-
-//////
-// mempgtbl UAPI sub-handler
-static void __xmhfhic_rtm_uapihandler_mempgtbl(slab_params_t *sp){
-    _XDPRINTF_("%s[%u]: Got control...\n", __func__, (u16)sp->cpuid);
-
-    switch(sp->in_out_params[1]){
-
-        default:
-            _XDPRINTF_("%s[%u]: Unknown mempgtbl subcall %x. Halting!\n",
-                    __func__, (u16)sp->cpuid, sp->in_out_params[1]);
-            HALT();
-            return;
-
-    }
-
-}
-
-
-
-*/
 
 
 
