@@ -48,8 +48,8 @@
 // author: amit vasudevan (amitvasudevan@acm.org)
 // XXX: need to split arch. dependent portions
 
-#ifndef __XMHFHICSLAB_H__
-#define __XMHFHICSLAB_H__
+#ifndef __XMHFGEEC_H__
+#define __XMHFGEEC_H__
 
 #include <xmhf-hwm.h>
 #include <xmhfhw.h>
@@ -189,6 +189,6 @@ typedef void (*FPSLABMAIN)(slab_params_t *sp);
 #endif //__ASSEMBLY__
 
 
-#endif //__XMHFHICSLAB_H__
+#endif //__XMHFGEEC_H__
 
 
