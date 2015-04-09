@@ -51,8 +51,9 @@
  */
 
 #include <xmhf.h>
-#include <xmhf-hic.h>
 #include <xmhf-debug.h>
+
+#include <xmhfgeec.h>
 
 #include <xc.h>
 #include <geecsentinel.h>
