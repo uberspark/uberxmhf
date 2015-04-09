@@ -9,9 +9,6 @@ srcdir := $(realpath $(dir $(lastword $(MAKEFILE_LIST))))
 
 # grab all the sub-library directories
 LIBDIRS = $(wildcard $(srcdir)/lib*)
-LIBDIRSRELATIVE := $(patsubst $(srcdir)/%, %, $(LIBDIRS))
-
-
 LIBS_OBJECTS_DIR = _objs_xmhf-libs
 
 .PHONY: all
@@ -24,11 +21,7 @@ subdirs: $(LIBDIRS)
 	do \
 		(cd $(LIBS_OBJECTS_DIR) &&	echo "Making all in $$i..." && $(MAKE) -f $$i/Makefile -w all) || exit 1; \
 	done;
-	@for i in $(LIBDIRSRELATIVE); \
-	do \
-		#(cd $(LIBS_OBJECTS_DIR)/_objs_$$i && ar -rcs ../libbaremetal.a *.o) || exit 1; \
-		(cd $(LIBS_OBJECTS_DIR)/_objs_$$i && cp *.a ../.) || exit 1; \
-	done;
+
 
 .PHONY: clean
 clean:
