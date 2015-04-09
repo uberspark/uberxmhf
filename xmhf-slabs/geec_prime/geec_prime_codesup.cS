@@ -45,8 +45,9 @@
  */
 
 #include <xmhf.h>
-#include <xmhf-hic.h>
 #include <xmhf-debug.h>
+
+#include <xmhfgeec.h>
 
 // XMHF HIC prime assembly language code blobs
 // author: amit vasudevan (amitvasudevan@acm.org)

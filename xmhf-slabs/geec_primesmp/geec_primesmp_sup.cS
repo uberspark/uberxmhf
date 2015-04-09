@@ -45,10 +45,10 @@
  */
 
 #include <xmhf.h>
-#include <xmhf-hic.h>
 #include <xmhf-debug.h>
 
 #include <xmhfgeec.h>
+
 #include <geec_primesmp.h>
 
 // GEEC prime SMP assembly language code blobs
