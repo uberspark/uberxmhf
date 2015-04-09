@@ -56,6 +56,8 @@
 
 #include <xc.h>
 #include <geecsentinel.h>
+#include <geec_primesmp.h> //TODO: we rely on this only for cpuidtable, need to eliminate
+
 
 #if 0
 __attribute__((section(".data"))) u64 __xmhfhic_safestack_indices[MAX_PLATFORM_CPUS] = { 0 };

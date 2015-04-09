@@ -55,7 +55,8 @@
 #include <xmhf-debug.h>
 
 #include <xmhfgeec.h>
-
+#include <geec_primesmp.h>
+#include <geecsentinel.h>
 
 //////
 // data

@@ -54,8 +54,87 @@
 #include <xmhf-hwm.h>
 #include <xmhfhw.h>
 
+//arch. specific decls.
+#define HIC_SLAB_X86VMXX86PC_HYPERVISOR (1)
+#define HIC_SLAB_X86VMXX86PC_GUEST      (2)
+
+
+
+#define HIC_SLAB_PHYSMEM_EXTENT_READ       (1 << 0)
+#define HIC_SLAB_PHYSMEM_EXTENT_WRITE      (1 << 1)
+#define HIC_SLAB_PHYSMEM_EXTENT_EXECUTE    (1 << 2)
+
+#define HIC_SLAB_PHYSMEM_MAXEXTENTS         5
+
 
 #ifndef __ASSEMBLY__
+
+typedef void * slab_entrystub_t;
+
+
+typedef u32 slab_privilegemask_t;
+typedef u32 slab_callcaps_t;
+typedef u32 slab_uapicaps_t;
+
+typedef struct {
+    u32 pci_bus;
+    u32 pci_device;
+    u32 pci_function;
+    u32 vendor_id;
+    u32 device_id;
+}__attribute__((packed)) xc_platformdevice_arch_desc_t;
+
+
+typedef struct {
+	bool desc_valid;
+	u32 numdevices;
+    xc_platformdevice_arch_desc_t arch_desc[MAX_PLATFORM_DEVICES];
+} __attribute__((packed)) slab_platformdevices_t;
+
+
+//slab capabilities type
+typedef struct {
+    slab_privilegemask_t slab_privilegemask;
+    slab_callcaps_t slab_callcaps;
+    slab_uapicaps_t slab_uapicaps;
+    slab_platformdevices_t slab_devices;
+    u32 slab_archparams;
+} __attribute__((packed)) slab_caps_t;
+
+
+#define HIC_SLAB_CALLCAP(x) (1 << x)
+#define HIC_SLAB_UAPICAP(x) (1 << x)
+
+//slab physical memory extent type
+typedef struct {
+    u32 addr_start;
+    u32 addr_end;
+    u32 protection;
+} slab_physmem_extent_t;
+
+
+//////
+//modified data types
+typedef struct {
+	u32 slabtype; //hypervisor, guest
+	bool mempgtbl_initialized;
+	bool devpgtbl_initialized;
+	u32 mempgtbl_cr3;
+	u32 slabtos[MAX_PLATFORM_CPUS];
+} __attribute__((packed)) x_slab_info_archdata_t;
+
+
+typedef struct {
+    x_slab_info_archdata_t archdata;
+	bool slab_inuse;
+    slab_privilegemask_t slab_privilegemask;
+    slab_callcaps_t slab_callcaps;
+    slab_uapicaps_t slab_uapicaps;
+    slab_platformdevices_t slab_devices;
+    slab_physmem_extent_t slab_physmem_extents[HIC_SLAB_PHYSMEM_MAXEXTENTS];
+	slab_entrystub_t entrystub;
+} __attribute__((packed)) x_slab_info_t;
+
 
 typedef struct {
     u32 slab_ctype;
