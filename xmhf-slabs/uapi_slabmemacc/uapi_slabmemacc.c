@@ -89,6 +89,9 @@ void slab_main(slab_params_t *sp){
             xmhf_uapi_slabmemacc_params_t *smemaccp = (xmhf_uapi_slabmemacc_params_t *)sp->in_out_params;
 
             memcpy(smemaccp->addr_to, smemaccp->addr_from, smemaccp->numbytes);
+            //_XDPRINTF_("UAPI_SLABMEMACC[%u]: PEEK: addr_to=%x, addr_from=%x, \
+            //           numbytes=%x\n", (u16)sp->cpuid, smemaccp->addr_to,
+            //           smemaccp->addr_from, smemaccp->numbytes);
         }
         break;
 

@@ -139,6 +139,7 @@ void slab_main(slab_params_t *sp){
             spl.dst_slabid = XMHF_HYP_SLAB_UAPI_SLABMEMACC;
 
             XMHF_SLAB_CALLNEW(&spl);
+            _XDPRINTF_("%s[%u]: guest slab header at=%x\n", __func__, (u16)sp->cpuid, guest_slab_header_paddr);
             _XDPRINTF_("%s[%u]: guest slab header magic=%x\n", __func__, (u16)sp->cpuid, guest_slab_magic);
         }
 
