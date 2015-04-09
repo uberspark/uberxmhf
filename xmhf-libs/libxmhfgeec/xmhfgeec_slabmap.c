@@ -51,7 +51,7 @@
 
 
 #include <xmhf.h>
-#include <xmhfhicslab.h>
+#include <xmhfgeec.h>
 #include <xmhf-debug.h>
 
 __attribute__ ((section(".rodata"))) char * _namestring="_xmhfslab_";

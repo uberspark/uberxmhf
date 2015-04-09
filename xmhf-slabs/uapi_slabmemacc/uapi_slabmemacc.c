@@ -54,7 +54,7 @@
 #include <xmhf-hic.h>
 #include <xmhf-debug.h>
 
-#include <xmhfhicslab.h>
+#include <xmhfgeec.h>
 #include <xc.h>
 #include <uapi_slabmemacc.h>
 
