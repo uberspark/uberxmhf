@@ -66,6 +66,7 @@ __attribute__ ((section(".stackhdr"))) u32 _slab_tos[MAX_PLATFORM_CPUS]= {
     ((u32)&_slab_stack[7]),
     ((u32)&_slab_stack[8])  };
 __attribute__ ((section(".slab_dmadata"))) u8 _dmadataplaceholder[1] = {0};
+__attribute__ ((section(".slab_mmio"))) u8 _mmioplaceholder[1] = {0};
 
 // only used for guest slabs
 __attribute__ ((section(".rwdatahdr"))) guest_slab_header_t _guestslabheader = {GUEST_SLAB_HEADER_MAGIC, 0};

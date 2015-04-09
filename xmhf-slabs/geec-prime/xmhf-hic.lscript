@@ -91,6 +91,11 @@ SECTIONS
 		*(.slab_dmadata)
 	} >hicmem =0x0000
 
+
+	.hicmmio : {
+		*(.slab_mmio)
+	} >hicmem =0x0000
+
 	.libxmhfdebugdata : {
 		*(.libxmhfdebugdata)
 	} >hicmem
