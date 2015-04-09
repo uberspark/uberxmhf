@@ -17,12 +17,16 @@ I_SOURCES :=  $(wildcard $(srcdir)/include/*.h)
 CFLAGS += -I$(srcdir)/include -nostdinc -fno-builtin -nostdlib -Wall
 
 LIBXMHFGEEC_OBJECTS_DIR = _objs_libxmhfgeec
-THE_ARCHIVE = libxmhfgeec.a
+#THE_ARCHIVE = libxmhfgeec.a
 
 # targets
 .PHONY: all
-all: $(THE_ARCHIVE)
-#all:
+#all: $(THE_ARCHIVE)
+all: $(OBJECTS)
+	mkdir -p $(LIBXMHFGEEC_OBJECTS_DIR)
+	cp $(LIBXMHFGEEC_OBJECTS_DIR)/xmhfgeec_slabmap.o .
+	cp $(LIBXMHFGEEC_OBJECTS_DIR)/xmhfgeec_tprogslab.o .
+
 
 $(THE_ARCHIVE): $(OBJECTS)
 	mkdir -p $(LIBXMHFGEEC_OBJECTS_DIR)
