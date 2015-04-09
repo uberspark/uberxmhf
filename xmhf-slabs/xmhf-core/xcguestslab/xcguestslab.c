@@ -63,6 +63,11 @@
  */
 
 
+// only used for guest slabs
+__attribute__ ((section(".rwdatahdr"))) guest_slab_header_t _guestslabheader = {GUEST_SLAB_HEADER_MAGIC, 0};
+
+
+
 static void xcguestslab_dotest_vmcall(void){
 
     {
