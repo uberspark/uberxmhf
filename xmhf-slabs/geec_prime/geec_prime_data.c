@@ -44,71 +44,27 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
+
 #include <xmhf.h>
+#include <xmhf-hic.h>
 
-OUTPUT_ARCH("i386")
+/*
+ * data used by HIC
+ *
+ * author: amit vasudevan (amitvasudevan@acm.org)
+ */
 
-MEMORY
-{
-  hicmem (rwxai) : ORIGIN = 0, LENGTH = 8M /* max. length */
-  unaccounted (rwxai) : ORIGIN = 0, LENGTH = 0 /* see section .unaccounted at end */
-}
+static XMHF_BOOTINFO xcbootinfo_store __attribute__(( section(".rwdatahdr") )) = {
+	.magic= RUNTIME_PARAMETER_BLOCK_MAGIC,
+};
 
-SECTIONS
-{
-	. = 0;
+// XMHF boot information block
+__attribute__(( section(".data") )) XMHF_BOOTINFO *xcbootinfo= &xcbootinfo_store;
 
-	.hiccode : {
-		*(.slab_codehdr)
-		. = ALIGN(1);
-		*(.hic_entrystub)
-		*(.slab_entrystub)
-		*(.text)
-        . = ALIGN(0x200000);
-	} >hicmem =0x9090
-
-	.hicstack : {
-		*(.stackhdr)
-		*(.stack)
-		*(.note.GNU-stack)
-        . = ALIGN(0x200000);
-	} >hicmem =0x0000
-
-	.hicdata : {
-        *(.sharedro_xcbootinfo)
-        *(.sharedro)
-		*(.rwdatahdr)
-		*(.data)
-		*(.bss)
-		*(.rodata)
-		*(.rodata.str1.1)
-		*(.comment)
-		*(.eh_frame)
-        . = ALIGN(0x200000);
-	} >hicmem =0x0000
-
-	.hicdmadata : {
-		*(.slab_dmadata)
-	} >hicmem =0x0000
+__attribute__((section(".slab_codehdr"))) x86vmx_mle_header_t mleheader = { 0 };
 
 
-	.hicmmio : {
-		*(.slab_mmio)
-	} >hicmem =0x0000
-
-	.libxmhfdebugdata : {
-		*(.libxmhfdebugdata)
-	} >hicmem
-
-	/* this is to cause the link to fail if there is
-	* anything we didn't explicitly place.
-	* when this does cause link to fail, temporarily comment
-	* this part out to see what sections end up in the output
-	* which are not handled above, and handle them.
-	*/
-	.unaccounted : {
-	*(*)
-	} >unaccounted
+// initialization BSP stack
+__attribute__(( section(".stack") )) __attribute__(( aligned(4096) )) u8 _init_bsp_cpustack[MAX_PLATFORM_CPUSTACK_SIZE];
 
 
-}

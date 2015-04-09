@@ -1,0 +1,29 @@
+########################################################################
+#
+# Makefile for XMHF GEEC sentinel
+# author: amit vasudevan (amitvasudevan@acm.org)
+#
+########################################################################
+
+export srcdir := $(dir $(lastword $(MAKEFILE_LIST)))
+
+vpath %.c $(srcdir)
+vpath %.S $(srcdir)
+vpath %.cS $(srcdir)
+vpath %.lscript $(srcdir)
+
+
+########################################################################
+# options that each slab will customize
+
+export XMHF_SLAB_NAME := geec_prime
+export XMHF_SLAB_TYPE := tprimeslab
+export XMHF_SLAB_PRIVILEGED := y
+export XMHF_SLAB_SOURCES := $(wildcard $(srcdir)/*.c)
+XMHF_SLAB_SOURCES += $(wildcard $(srcdir)/*.cS)
+
+export XMHF_SLAB_GLOBAL_SYMS := --globalize-symbol libxmhfdebug_lock --globalize-symbol xcbootinfo
+
+########################################################################
+# generic slab build harness
+include $(XMHF_DIR)/xmhfslab.mk
