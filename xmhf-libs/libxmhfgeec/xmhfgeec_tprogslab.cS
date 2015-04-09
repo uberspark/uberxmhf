@@ -63,3 +63,10 @@ CASM_FUNCDEF_FULL(.slab_entrystub, 1, void, _slab_entrystub,
 },
 void)
 
+CASM_FUNCDEF(void, __slab_calltrampolinenew,
+{
+    xmhfhwm_cpu_insn_movl_imm_eax(0x02800000);
+    xmhfhwm_cpu_insn_jmpl_eax();
+},
+slab_params_t *sp)
+
