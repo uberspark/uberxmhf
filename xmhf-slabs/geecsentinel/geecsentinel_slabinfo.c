@@ -56,16 +56,17 @@
 
 
 
-extern u8 _xmhfhic_code_start[];
-extern u8 _xmhfhic_code_end[];
-extern u8 _xmhfhic_data_start[];
-extern u8 _xmhfhic_data_end[];
-extern u8 _xmhfhic_stack_start[];
-extern u8 _xmhfhic_stack_end[];
-extern u8 _xmhfhic_dmadata_start[];
-extern u8 _xmhfhic_dmadata_end[];
-extern u8 _xmhfhic_mmio_start[];
-extern u8 _xmhfhic_mmio_end[];
+extern u8 _slab_geec_prime_code_start[];
+extern u8 _slab_geec_prime_code_end[];
+extern u8 _slab_geec_prime_data_start[];
+extern u8 _slab_geec_prime_data_end[];
+extern u8 _slab_geec_prime_stack_start[];
+extern u8 _slab_geec_prime_stack_end[];
+extern u8 _slab_geec_prime_dmadata_start[];
+extern u8 _slab_geec_prime_dmadata_end[];
+extern u8 _slab_geec_prime_mmio_start[];
+extern u8 _slab_geec_prime_mmio_end[];
+extern u8 _slab_geec_prime_entrypoint[];
 
 extern u8 _slab_geecsentinel_code_start[];
 extern u8 _slab_geecsentinel_code_end[];
@@ -263,14 +264,14 @@ __attribute__(( section(".data") )) __attribute__((aligned(4096))) x_slab_info_t
             false,
             0,
             {
-                ((u32)&_xmhfhic_stack_start[1*XMHF_SLAB_STACKSIZE]),
-                ((u32)&_xmhfhic_stack_start[2*XMHF_SLAB_STACKSIZE]),
-                ((u32)&_xmhfhic_stack_start[3*XMHF_SLAB_STACKSIZE]),
-                ((u32)&_xmhfhic_stack_start[4*XMHF_SLAB_STACKSIZE]),
-                ((u32)&_xmhfhic_stack_start[5*XMHF_SLAB_STACKSIZE]),
-                ((u32)&_xmhfhic_stack_start[6*XMHF_SLAB_STACKSIZE]),
-                ((u32)&_xmhfhic_stack_start[7*XMHF_SLAB_STACKSIZE]),
-                ((u32)&_xmhfhic_stack_start[8*XMHF_SLAB_STACKSIZE]),
+                ((u32)&_slab_geec_prime_stack_start[1*XMHF_SLAB_STACKSIZE]),
+                ((u32)&_slab_geec_prime_stack_start[2*XMHF_SLAB_STACKSIZE]),
+                ((u32)&_slab_geec_prime_stack_start[3*XMHF_SLAB_STACKSIZE]),
+                ((u32)&_slab_geec_prime_stack_start[4*XMHF_SLAB_STACKSIZE]),
+                ((u32)&_slab_geec_prime_stack_start[5*XMHF_SLAB_STACKSIZE]),
+                ((u32)&_slab_geec_prime_stack_start[6*XMHF_SLAB_STACKSIZE]),
+                ((u32)&_slab_geec_prime_stack_start[7*XMHF_SLAB_STACKSIZE]),
+                ((u32)&_slab_geec_prime_stack_start[8*XMHF_SLAB_STACKSIZE]),
             }
         },
         true,
@@ -278,13 +279,13 @@ __attribute__(( section(".data") )) __attribute__((aligned(4096))) x_slab_info_t
         HIC_SLAB_UAPICAP(XMHF_HIC_UAPI_CPUSTATE) | HIC_SLAB_UAPICAP(XMHF_HIC_UAPI_PHYSMEM) | HIC_SLAB_UAPICAP(XMHF_HIC_UAPI_MEMPGTBL),
         {false, 0, {0}},
         {
-            {.addr_start = _xmhfhic_code_start, .addr_end = _xmhfhic_code_end, .protection = 0},
-            {.addr_start = _xmhfhic_data_start, .addr_end = _xmhfhic_data_end, .protection = 0},
-            {.addr_start = _xmhfhic_stack_start, .addr_end = _xmhfhic_stack_end, .protection = 0},
-            {.addr_start = _xmhfhic_dmadata_start, .addr_end = _xmhfhic_dmadata_end, .protection = 0},
-            {.addr_start = _xmhfhic_mmio_start, .addr_end = _xmhfhic_mmio_end, .protection = 0},
+            {.addr_start = _slab_geec_prime_code_start, .addr_end = _slab_geec_prime_code_end, .protection = 0},
+            {.addr_start = _slab_geec_prime_data_start, .addr_end = _slab_geec_prime_data_end, .protection = 0},
+            {.addr_start = _slab_geec_prime_stack_start, .addr_end = _slab_geec_prime_stack_end, .protection = 0},
+            {.addr_start = _slab_geec_prime_dmadata_start, .addr_end = _slab_geec_prime_dmadata_end, .protection = 0},
+            {.addr_start = _slab_geec_prime_mmio_start, .addr_end = _slab_geec_prime_mmio_end, .protection = 0},
         },
-        (u32)_xmhfhic_code_start
+        (u32)_slab_geec_prime_entrypoint
     },
 
 
