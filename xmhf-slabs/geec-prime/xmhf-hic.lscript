@@ -76,7 +76,6 @@ SECTIONS
 
 	.hicdata : {
         *(.sharedro_xcbootinfo)
-        *(.sharedro_xcbootinfoptr)
         *(.sharedro)
 		*(.rwdatahdr)
 		*(.data)
