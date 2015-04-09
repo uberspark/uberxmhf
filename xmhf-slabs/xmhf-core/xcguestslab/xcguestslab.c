@@ -64,7 +64,15 @@
 
 
 // only used for guest slabs
-__attribute__ ((section(".rwdatahdr"))) guest_slab_header_t _guestslabheader = {GUEST_SLAB_HEADER_MAGIC, 0};
+__attribute__ ((section(".rwdatahdr"))) guest_slab_header_t _guestslabheader =
+    {
+        {0},
+        {0},
+        {0},
+        GUEST_SLAB_HEADER_MAGIC,
+        {0},
+        {0},
+    };
 
 
 
