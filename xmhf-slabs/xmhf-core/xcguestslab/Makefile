@@ -20,6 +20,7 @@ vpath %.cS $(srcdir)
 # options that each slab will customize
 
 export XMHF_SLAB_NAME := xcguestslab
+export XMHF_SLAB_TYPE := ugprogslab
 export XMHF_SLAB_PRIVILEGED := y
 export XMHF_SLAB_SOURCES := $(wildcard $(srcdir)/*.c)
 XMHF_SLAB_SOURCES += $(wildcard $(srcdir)/*.cS)
