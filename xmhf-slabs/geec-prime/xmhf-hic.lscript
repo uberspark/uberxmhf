@@ -59,7 +59,7 @@ SECTIONS
 	. = 0;
 
 	.hiccode : {
-		*(.hic_mleheader)
+		*(.slab_codehdr)
 		. = ALIGN(1);
 		*(.hic_entrystub)
 		*(.slab_entrystub)

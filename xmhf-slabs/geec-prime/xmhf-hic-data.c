@@ -61,7 +61,7 @@ static XMHF_BOOTINFO xcbootinfo_store __attribute__(( section(".sharedro_xcbooti
 // XMHF boot information block
 __attribute__(( section(".data") )) XMHF_BOOTINFO *xcbootinfo= &xcbootinfo_store;
 
-__attribute__((section(".hic_mleheader"))) x86vmx_mle_header_t mleheader = { 0 };
+__attribute__((section(".slab_codehdr"))) x86vmx_mle_header_t mleheader = { 0 };
 
 
 // initialization BSP stack
