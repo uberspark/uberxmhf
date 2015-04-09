@@ -241,6 +241,27 @@ void *noparam)
 // support CASM functions used by the sentinel
 /////
 
+
+//if we return, we had an error and we return the
+//corresponding error code
+CASM_FUNCDEF(u32, __slab_calltrampolinenew_h2g,
+{
+    xmhfhwm_cpu_insn_vmlaunch();
+    xmhfhwm_cpu_insn_jc(__vmx_start_hvm_failinvalid);
+    xmhfhwm_cpu_insn_jnz(__vmx_start_hvm_undefinedimplementation);
+    xmhfhwm_cpu_insn_movl_imm_eax(0x1);		//VMLAUNCH error, XXX: need to read from VM instruction error field in VMCS
+    xmhfhwm_cpu_insn_jmp(__vmx_start_continue);
+    CASM_LABEL(__vmx_start_hvm_undefinedimplementation);
+    xmhfhwm_cpu_insn_movl_imm_eax(0x2);		//violation of VMLAUNCH specs., handle it anyways
+    xmhfhwm_cpu_insn_jmp(__vmx_start_continue);
+    CASM_LABEL(__vmx_start_hvm_failinvalid);
+    xmhfhwm_cpu_insn_xorl_eax_eax();		//return 0 as we have no error code available
+    CASM_LABEL(__vmx_start_continue);
+    xmhfhwm_cpu_insn_ret();
+},
+void *noparam)
+
+
 CASM_FUNCDEF(void, __xmhfhic_trampoline_slabxfer_h2h,
 {
 
