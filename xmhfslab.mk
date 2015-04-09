@@ -26,11 +26,11 @@ LINKER_SCRIPT_OUTPUT := $(XMHF_SLAB_NAME).lds
 
 # populate slab stub type based on the slab type
 ifeq ($(XMHF_SLAB_TYPE), tprogslab)
-	XMHF_SLAB_STUBOBJECTS := $(XMHFLIBS_DIR)/xmhfgeec_slabmap.o $(XMHFLIBS_DIR)/xmhfgeec_tprogslab.o
+	XMHF_SLAB_STUBOBJECTS := $(XMHFLIBS_DIR)/xmhfgeec_slabmapdef.o $(XMHFLIBS_DIR)/xmhfgeec_tprogslab_stubs.o
 endif
 
 ifeq ($(XMHF_SLAB_TYPE), ugprogslab)
-	XMHF_SLAB_STUBOBJECTS := $(XMHFLIBS_DIR)/xmhfgeec_slabmap.o $(XMHFLIBS_DIR)/xmhfgeec_tprogslab.o
+	XMHF_SLAB_STUBOBJECTS := $(XMHFLIBS_DIR)/xmhfgeec_slabmapdef.o $(XMHFLIBS_DIR)/xmhfgeec_tprogslab_stubs.o
 endif
 
 
