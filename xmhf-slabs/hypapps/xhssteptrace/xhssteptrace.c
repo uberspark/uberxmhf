@@ -78,7 +78,7 @@ static void st_on(u32 cpuindex, u32 guest_slab_index){
     spl.src_slabid = XMHF_HYP_SLAB_XHSSTEPTRACE;
     spl.dst_slabid = XMHF_HYP_SLAB_UAPI_GCPUSTATE;
     spl.cpuid = cpuindex;
-    spl.in_out_params[0] = XMHF_HIC_UAPI_CPUSTATE;
+    //spl.in_out_params[0] = XMHF_HIC_UAPI_CPUSTATE;
 
 if(!ssteptrace_on){
     gcpustate_vmrwp->uapiphdr.uapifn = XMHF_HIC_UAPI_CPUSTATE_VMREAD;
@@ -117,7 +117,7 @@ static void st_off(u32 cpuindex, u32 guest_slab_index){
     spl.src_slabid = XMHF_HYP_SLAB_XHSSTEPTRACE;
     spl.dst_slabid = XMHF_HYP_SLAB_UAPI_GCPUSTATE;
     spl.cpuid = cpuindex;
-    spl.in_out_params[0] = XMHF_HIC_UAPI_CPUSTATE;
+    //spl.in_out_params[0] = XMHF_HIC_UAPI_CPUSTATE;
 
 
 if(ssteptrace_on){
@@ -205,7 +205,7 @@ static void _hcb_hypercall(u32 cpuindex, u32 guest_slab_index){
     spl.src_slabid = XMHF_HYP_SLAB_XHSSTEPTRACE;
     spl.dst_slabid = XMHF_HYP_SLAB_UAPI_GCPUSTATE;
     spl.cpuid = cpuindex;
-    spl.in_out_params[0] = XMHF_HIC_UAPI_CPUSTATE;
+    //spl.in_out_params[0] = XMHF_HIC_UAPI_CPUSTATE;
 
     gcpustate_gprs->uapiphdr.uapifn = XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSREAD;
     XMHF_SLAB_CALLNEW(&spl);
@@ -255,7 +255,7 @@ static void _hcb_trap_exception(u32 cpuindex, u32 guest_slab_index){
     spl.cpuid = cpuindex;
 
     if(ssteptrace_on){
-        spl.in_out_params[0] = XMHF_HIC_UAPI_CPUSTATE;
+        //spl.in_out_params[0] = XMHF_HIC_UAPI_CPUSTATE;
         gcpustate_vmrwp->uapiphdr.uapifn = XMHF_HIC_UAPI_CPUSTATE_VMREAD;
         gcpustate_vmrwp->encoding = VMCS_INFO_VMEXIT_INTERRUPT_INFORMATION;
         XMHF_SLAB_CALLNEW(&spl);

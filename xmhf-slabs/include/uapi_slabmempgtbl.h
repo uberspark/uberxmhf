@@ -55,6 +55,9 @@
 #ifndef __UAPI_SLABMEMPGTBL_H__
 #define __UAPI_SLABMEMPGTBL_H__
 
+#define XMHF_HIC_UAPI_MEMPGTBL_GETENTRY         (25)
+#define XMHF_HIC_UAPI_MEMPGTBL_SETENTRY         (26)
+
 
 #ifndef __ASSEMBLY__
 

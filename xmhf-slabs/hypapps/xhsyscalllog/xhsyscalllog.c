@@ -148,7 +148,7 @@ static void _hcb_hypercall(u32 cpuindex, u32 guest_slab_index){
     spl.src_slabid = XMHF_HYP_SLAB_XHAPPROVEXEC;
     spl.dst_slabid = XMHF_HYP_SLAB_UAPI_GCPUSTATE;
     spl.cpuid = cpuindex;
-    spl.in_out_params[0] = XMHF_HIC_UAPI_CPUSTATE;
+    //spl.in_out_params[0] = XMHF_HIC_UAPI_CPUSTATE;
 
     gcpustate_gprs->uapiphdr.uapifn = XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSREAD;
     XMHF_SLAB_CALLNEW(&spl);
@@ -198,7 +198,7 @@ static void _hcb_memoryfault(u32 cpuindex, u32 guest_slab_index, u64 gpa, u64 gv
     spl.src_slabid = XMHF_HYP_SLAB_XHAPPROVEXEC;
     spl.dst_slabid = XMHF_HYP_SLAB_UAPI_GCPUSTATE;
     spl.cpuid = cpuindex;
-    spl.in_out_params[0] = XMHF_HIC_UAPI_CPUSTATE;
+    //spl.in_out_params[0] = XMHF_HIC_UAPI_CPUSTATE;
 
 
     //read GPR state
@@ -232,7 +232,7 @@ static void _hcb_memoryfault(u32 cpuindex, u32 guest_slab_index, u64 gpa, u64 gv
 
     //set guest RIP to shadow_sysenter_rip to continue execution
     spl.dst_slabid = XMHF_HYP_SLAB_UAPI_GCPUSTATE;
-    spl.in_out_params[0] = XMHF_HIC_UAPI_CPUSTATE;
+    //spl.in_out_params[0] = XMHF_HIC_UAPI_CPUSTATE;
     gcpustate_vmrwp->uapiphdr.uapifn = XMHF_HIC_UAPI_CPUSTATE_VMWRITE;
     gcpustate_vmrwp->encoding = VMCS_GUEST_RIP;
     gcpustate_vmrwp->value = shadow_sysenter_rip;
@@ -259,7 +259,7 @@ static u32 _hcb_trap_instruction(u32 cpuindex, u32 guest_slab_index, u32 insntyp
     spl.src_slabid = XMHF_HYP_SLAB_XHSYSCALLLOG;
     spl.dst_slabid = XMHF_HYP_SLAB_UAPI_GCPUSTATE;
     spl.cpuid = cpuindex;
-    spl.in_out_params[0] = XMHF_HIC_UAPI_CPUSTATE;
+    //spl.in_out_params[0] = XMHF_HIC_UAPI_CPUSTATE;
 
 
     if (insntype == XC_HYPAPPCB_TRAP_INSTRUCTION_WRMSR){
@@ -338,7 +338,7 @@ static u32 _hcb_trap_instruction(u32 cpuindex, u32 guest_slab_index, u32 insntyp
     //accordingly
     if(status == XC_HYPAPPCB_NOCHAIN){
         spl.dst_slabid = XMHF_HYP_SLAB_UAPI_GCPUSTATE;
-        spl.in_out_params[0] = XMHF_HIC_UAPI_CPUSTATE;
+        //spl.in_out_params[0] = XMHF_HIC_UAPI_CPUSTATE;
 
         gcpustate_vmrwp->uapiphdr.uapifn = XMHF_HIC_UAPI_CPUSTATE_VMREAD;
         gcpustate_vmrwp->encoding = VMCS_INFO_VMEXIT_INSTRUCTION_LENGTH;
@@ -415,7 +415,7 @@ void slab_main(slab_params_t *sp){
          	spl.src_slabid = XMHF_HYP_SLAB_XHAPPROVEXEC;
          	spl.dst_slabid = XMHF_HYP_SLAB_UAPI_GCPUSTATE;
          	spl.cpuid = sp->cpuid;
-            spl.in_out_params[0] = XMHF_HIC_UAPI_CPUSTATE;
+            //spl.in_out_params[0] = XMHF_HIC_UAPI_CPUSTATE;
             gcpustate_vmrwp->uapiphdr.uapifn = XMHF_HIC_UAPI_CPUSTATE_VMREAD;
 
             gcpustate_vmrwp->encoding = VMCS_INFO_EXIT_QUALIFICATION;
