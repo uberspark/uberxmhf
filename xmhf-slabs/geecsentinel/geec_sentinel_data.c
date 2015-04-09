@@ -54,6 +54,9 @@
  * author: amit vasudevan (amitvasudevan@acm.org)
  */
 
+#include "__geec_sentinel_autogendata_slabinfotable"
+
+/*
 
 
 extern u8 _slab_geec_prime_code_start[];
@@ -798,3 +801,4 @@ __attribute__(( section(".data") )) __attribute__((aligned(4096))) x_slab_info_t
 
 
 
+*/
