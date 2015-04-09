@@ -51,6 +51,8 @@
 #include <xc.h>
 #include <uapi_gcpustate.h>
 #include <uapi_slabmemacc.h>
+#include <xcguestslab.h>
+
 #include <xcinit.h>
 
 extern x_slab_info_t _x_xmhfhic_common_slab_info_table[XMHF_HIC_MAX_SLABS];
@@ -174,7 +176,7 @@ void slab_main(slab_params_t *sp){
             spl.src_slabid = XMHF_HYP_SLAB_XCINIT;
             spl.dst_slabid = XMHF_HYP_SLAB_UAPI_GCPUSTATE;
 
-            spl.in_out_params[0] = XMHF_HIC_UAPI_CPUSTATE;
+            //spl.in_out_params[0] = XMHF_HIC_UAPI_CPUSTATE;
             gcpustate_vmrwp->uapiphdr.uapifn = XMHF_HIC_UAPI_CPUSTATE_VMWRITE;
             gcpustate_vmrwp->encoding = VMCS_GUEST_GDTR_BASE;
             gcpustate_vmrwp->value = guest_slab_gdt_paddr;

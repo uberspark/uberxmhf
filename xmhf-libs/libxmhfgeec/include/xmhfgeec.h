@@ -54,46 +54,8 @@
 #include <xmhf-hwm.h>
 #include <xmhfhw.h>
 
-#define XMHF_HIC_UAPI                       (0x666)
-
-#define XMHF_HIC_UAPI_CPUSTATE                  (0)
-
-#define XMHF_HIC_UAPI_CPUSTATE_VMREAD           (1)
-#define XMHF_HIC_UAPI_CPUSTATE_VMWRITE          (2)
-#define XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSREAD    (3)
-#define XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSWRITE   (4)
-#define XMHF_HIC_UAPI_CPUSTATE_WRMSR            (5)
-#define XMHF_HIC_UAPI_CPUSTATE_RDMSR            (6)
-
-
-#define XMHF_HIC_UAPI_PHYSMEM                   (16)
-
-#define XMHF_HIC_UAPI_PHYSMEM_PEEK              (17)
-#define XMHF_HIC_UAPI_PHYSMEM_POKE              (18)
-
-#define XMHF_HIC_UAPI_MEMPGTBL                  (24)
-
-#define XMHF_HIC_UAPI_MEMPGTBL_GETENTRY         (25)
-#define XMHF_HIC_UAPI_MEMPGTBL_SETENTRY         (26)
-
-
-#define GUEST_SLAB_HEADER_MAGIC     (0x76543210)
-
-#define XMHF_HIC_SLABCALL                   (0xA0)
-#define XMHF_HIC_SLABRET                    (0xA1)
-
-#define XMHF_HIC_SLABCALLEXCEPTION          (0xA2)
-#define XMHF_HIC_SLABRETEXCEPTION           (0xA3)
-
-#define XMHF_HIC_SLABCALLINTERCEPT          (0xA4)
-#define XMHF_HIC_SLABRETINTERCEPT           (0xA5)
-
 
 #ifndef __ASSEMBLY__
-
-typedef void slab_input_params_t;
-typedef void slab_output_params_t;
-
 
 typedef struct {
     u32 slab_ctype;
@@ -110,36 +72,8 @@ typedef struct {
 
 
 
-//////
-// uapi related types
-
-
-//guest slab header data type
-typedef struct {
-    u64 lvl2mempgtbl_pml4t[PAE_MAXPTRS_PER_PDPT];
-    u64 lvl2mempgtbl_pdpt[PAE_MAXPTRS_PER_PDPT];
-    u64 lvl2mempgtbl_pdts[PAE_PTRS_PER_PDPT][PAE_PTRS_PER_PDT];
-    u32 magic;
-    u64 gdt[16];
-    u8 _filler0[3964]; //page-align the whole struct
-} __attribute__((packed)) guest_slab_header_t;
-
-
-
-//////
-// HIC UAPI and trampoline invocation macros
-
-
-
-//HIC UAPI
-//HIC trampoline
-CASM_FUNCDECL(u32 __slab_calltrampolinenew_h2g(void *noparam));
 
 void __slab_calltrampolinenew(slab_params_t *sp);
-
-
-#define XMHF_SLAB_CALL(dst_slabname, dst_slabid, iparams, iparams_size, oparams, oparams_size) \
-    __slab_calltrampoline(0, iparams, iparams_size, oparams, oparams_size, dst_slabid)
 
 
 #define XMHF_SLAB_CALLNEW(sp) \
@@ -151,7 +85,6 @@ void __slab_calltrampolinenew(slab_params_t *sp);
 //////
 // slab entry stub definitions
 extern void slab_main(slab_params_t *sp);
-typedef void (*FPSLABMAIN)(slab_params_t *sp);
 
 
 #endif //__ASSEMBLY__

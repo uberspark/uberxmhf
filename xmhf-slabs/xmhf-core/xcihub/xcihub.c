@@ -80,7 +80,7 @@ void slab_main(slab_params_t *sp){
 
     spl.cpuid = sp->cpuid;
     spl.src_slabid = XMHF_HYP_SLAB_XCIHUB;
-    spl.in_out_params[0] = XMHF_HIC_UAPI_CPUSTATE;
+    //spl.in_out_params[0] = XMHF_HIC_UAPI_CPUSTATE;
 
 
     //store GPRs

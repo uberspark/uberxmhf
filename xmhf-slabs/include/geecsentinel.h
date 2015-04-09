@@ -44,26 +44,29 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
+// XMHF/GEEC sentinel header file
+//author: amit vasudevan (amitvasudevan@acm.org)
 
-/*
- *
- *  hyperdep hypapp slab decls.
- *
- *  author: amit vasudevan (amitvasudevan@acm.org)
- */
+#ifndef __GEECSENTINEL_H_
+#define __GEECSENTINEL_H_
 
-#ifndef __XHAPPROVEXEC_H__
-#define __XHAPPROVEXEC_H__
+#define XMHF_HIC_SLABCALL                   (0xA0)
+#define XMHF_HIC_SLABRET                    (0xA1)
+
+#define XMHF_HIC_SLABCALLEXCEPTION          (0xA2)
+#define XMHF_HIC_SLABRETEXCEPTION           (0xA3)
+
+#define XMHF_HIC_SLABCALLINTERCEPT          (0xA4)
+#define XMHF_HIC_SLABRETINTERCEPT           (0xA5)
 
 
 #ifndef __ASSEMBLY__
 
+CASM_FUNCDECL(u32 __slab_calltrampolinenew_h2g(void *noparam));
 
-//VFM
-extern bool ae_activated;
-//void xhapprovexec_inv_xmhf_hic_uapi_mempgtbl_setentry(xmhf_hic_uapi_mempgtbl_desc_t *imdesc);
+typedef void (*FPSLABMAIN)(slab_params_t *sp);
+
+#endif // __ASSEMBLY__
 
 
-#endif	//__ASSEMBLY__
-
-#endif //__XHAPPROVEXEC_H__
+#endif /* __GEECSENTINEL_H_ */

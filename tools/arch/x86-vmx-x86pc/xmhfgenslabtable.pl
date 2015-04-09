@@ -54,8 +54,8 @@ while( $i <= ($#ARGV - 1) ){
     print "\n	    },";
     print "\n	    true,";
     print "\n	    0,";
-    print "\n       HIC_SLAB_CALLCAP(XMHF_HYP_SLAB_XCINIT),";
-    print "\n	    HIC_SLAB_UAPICAP(XMHF_HIC_UAPI_CPUSTATE) | HIC_SLAB_UAPICAP(XMHF_HIC_UAPI_PHYSMEM) | HIC_SLAB_UAPICAP(XMHF_HIC_UAPI_MEMPGTBL),";
+    print "\n       0,";
+    print "\n	    0,";
     print "\n	    {false, 0, {0}},";
     print "\n	    {";
     print "\n	        {.addr_start = _slab_$ARGV[$i]_code_start, .addr_end = _slab_$ARGV[$i]_code_end, .protection = 0},";

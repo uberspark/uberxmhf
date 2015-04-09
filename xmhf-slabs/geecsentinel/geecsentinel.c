@@ -55,7 +55,7 @@
 #include <xmhf-debug.h>
 
 #include <xc.h>
-
+#include <geecsentinel.h>
 
 #if 0
 __attribute__((section(".data"))) u64 __xmhfhic_safestack_indices[MAX_PLATFORM_CPUS] = { 0 };

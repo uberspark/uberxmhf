@@ -53,7 +53,6 @@
 
 #ifndef __ASSEMBLY__
 
-void xctestslab1_interface(slab_input_params_t *iparams, u64 iparams_size, slab_output_params_t *oparams, u64 oparams_size, u64 src_slabid, u64 cpuid);
 
 #endif //__ASSEMBLY__
 

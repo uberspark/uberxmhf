@@ -55,6 +55,9 @@
 #ifndef __UAPI_HCPUSTATE_H__
 #define __UAPI_HCPUSTATE_H__
 
+#define XMHF_HIC_UAPI_CPUSTATE_WRMSR            (5)
+#define XMHF_HIC_UAPI_CPUSTATE_RDMSR            (6)
+
 
 #ifndef __ASSEMBLY__
 
