@@ -45,7 +45,7 @@
  */
 
 /*
- * slab entry stub asm
+ * slab stubs for program slabs
  * author: amit vasudevan (amitvasudevan@acm.org)
 */
 
@@ -61,7 +61,7 @@ CASM_FUNCDEF_FULL(.slab_entrystub, 1, void, _slab_entrystub,
 	CASM_LABEL(_slab_entrystub_loop);
 	xmhfhwm_cpu_insn_jmp(_slab_entrystub_loop);
 },
-void)
+void *noparam)
 
 CASM_FUNCDEF(void, __slab_calltrampolinenew,
 {
