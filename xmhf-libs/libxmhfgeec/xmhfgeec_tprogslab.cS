@@ -51,7 +51,7 @@
 
 
 #include <xmhf.h>
-#include <xmhfhicslab.h>
+#include <xmhfgeec.h>
 #include <xmhf-debug.h>
 
 CASM_FUNCDEF_FULL(.slab_entrystub, 1, void, _slab_entrystub,

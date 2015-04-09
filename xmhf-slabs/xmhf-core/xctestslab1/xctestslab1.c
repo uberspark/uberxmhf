@@ -45,7 +45,7 @@
  */
 
 #include <xmhf.h>
-#include <xmhfhicslab.h>
+#include <xmhfgeec.h>
 #include <xmhf-debug.h>
 
 #include <xctestslab1.h>

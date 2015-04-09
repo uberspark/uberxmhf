@@ -53,7 +53,7 @@
 
 #include <xmhf-hwm.h>            //XMHF hardware interfaces
 #include <xmhfhw.h>
-#include <xmhfhicslab.h>
+#include <xmhfgeec.h>
 
 //arch. specific decls.
 #define HIC_SLAB_X86VMXX86PC_HYPERVISOR (1)
