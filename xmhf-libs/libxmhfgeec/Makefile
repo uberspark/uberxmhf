@@ -16,8 +16,8 @@ I_SOURCES :=  $(wildcard $(srcdir)/include/*.h)
 
 CFLAGS += -I$(srcdir)/include -nostdinc -fno-builtin -nostdlib -Wall
 
-LIBXMHFHICSLAB_OBJECTS_DIR = _objs_libxmhfhicslab
-THE_ARCHIVE = libxmhfhicslab.a
+LIBXMHFGEEC_OBJECTS_DIR = _objs_libxmhfgeec
+THE_ARCHIVE = libxmhfgeec.a
 
 # targets
 .PHONY: all
@@ -25,40 +25,40 @@ all: $(THE_ARCHIVE)
 #all:
 
 $(THE_ARCHIVE): $(OBJECTS)
-	mkdir -p $(LIBXMHFHICSLAB_OBJECTS_DIR)
-	cd $(LIBXMHFHICSLAB_OBJECTS_DIR) && $(AR) -rcs $(THE_ARCHIVE) $(OBJECTS)
-	cp $(LIBXMHFHICSLAB_OBJECTS_DIR)/$(THE_ARCHIVE) .
+	mkdir -p $(LIBXMHFGEEC_OBJECTS_DIR)
+	cd $(LIBXMHFGEEC_OBJECTS_DIR) && $(AR) -rcs $(THE_ARCHIVE) $(OBJECTS)
+	cp $(LIBXMHFGEEC_OBJECTS_DIR)/$(THE_ARCHIVE) .
 
 %.o: %.c
-	mkdir -p $(LIBXMHFHICSLAB_OBJECTS_DIR)
+	mkdir -p $(LIBXMHFGEEC_OBJECTS_DIR)
 	@echo Building "$@" from "$<"
-	$(CCERT) -c $(CCERT_FLAGS) $< -o $(LIBXMHFHICSLAB_OBJECTS_DIR)/$@
-	#$(CC) -fomit-frame-pointer -O2 -S -emit-llvm $(CFLAGS) $< -o $(LIBXMHFHICSLAB_OBJECTS_DIR)/$(@F).ll
-	#cd $(LIBXMHFHICSLAB_OBJECTS_DIR) && fixnaked.pl $(@F).ll
-	#cd $(LIBXMHFHICSLAB_OBJECTS_DIR) && llc -O=2 -march=x86 -mcpu=corei7 -mattr=$(LLC_ATTR) $(@F).ll
-	#cd $(LIBXMHFHICSLAB_OBJECTS_DIR) && $(CC) -O2 -c $(CFLAGS) $(@F).s -o $(@F)
+	$(CCERT) -c $(CCERT_FLAGS) $< -o $(LIBXMHFGEEC_OBJECTS_DIR)/$@
+	#$(CC) -fomit-frame-pointer -O2 -S -emit-llvm $(CFLAGS) $< -o $(LIBXMHFGEEC_OBJECTS_DIR)/$(@F).ll
+	#cd $(LIBXMHFGEEC_OBJECTS_DIR) && fixnaked.pl $(@F).ll
+	#cd $(LIBXMHFGEEC_OBJECTS_DIR) && llc -O=2 -march=x86 -mcpu=corei7 -mattr=$(LLC_ATTR) $(@F).ll
+	#cd $(LIBXMHFGEEC_OBJECTS_DIR) && $(CC) -O2 -c $(CFLAGS) $(@F).s -o $(@F)
 
 %.o: %.cS
-	mkdir -p $(LIBXMHFHICSLAB_OBJECTS_DIR)
+	mkdir -p $(LIBXMHFGEEC_OBJECTS_DIR)
 	@echo Building "$@" from "$<"
-	cp -f $< $(LIBXMHFHICSLAB_OBJECTS_DIR)/$(@F).c
-	cd $(LIBXMHFHICSLAB_OBJECTS_DIR) && $(CCERT) -c -dmach $(CCERT_FLAGS) $(@F).c
-	cd $(LIBXMHFHICSLAB_OBJECTS_DIR) && extractasm.pl $(@F).mach > $(@F).S
-	cd $(LIBXMHFHICSLAB_OBJECTS_DIR) && gcc -c $(ASFLAGS) -o $@ $(@F).S
-	#cd $(LIBXMHFHICSLAB_OBJECTS_DIR) && mv $(@F).o $@
+	cp -f $< $(LIBXMHFGEEC_OBJECTS_DIR)/$(@F).c
+	cd $(LIBXMHFGEEC_OBJECTS_DIR) && $(CCERT) -c -dmach $(CCERT_FLAGS) $(@F).c
+	cd $(LIBXMHFGEEC_OBJECTS_DIR) && extractasm.pl $(@F).mach > $(@F).S
+	cd $(LIBXMHFGEEC_OBJECTS_DIR) && gcc -c $(ASFLAGS) -o $@ $(@F).S
+	#cd $(LIBXMHFGEEC_OBJECTS_DIR) && mv $(@F).o $@
 
 #%.o: %.cS
-#	mkdir -p $(LIBXMHFHICSLAB_OBJECTS_DIR)
+#	mkdir -p $(LIBXMHFGEEC_OBJECTS_DIR)
 #	@echo Building "$@" from "$<"
-#	cp -f $< $(LIBXMHFHICSLAB_OBJECTS_DIR)/$(@F).c
-#	$(CC) -fomit-frame-pointer -O2 -S -emit-llvm $(CFLAGS) $(LIBXMHFHICSLAB_OBJECTS_DIR)/$(@F).c -o $(LIBXMHFHICSLAB_OBJECTS_DIR)/$(@F).ll
-#	cd $(LIBXMHFHICSLAB_OBJECTS_DIR) && fixnaked.pl $(@F).ll
-#	cd $(LIBXMHFHICSLAB_OBJECTS_DIR) && llc -O=2 -march=x86 -mcpu=corei7 -mattr=$(LLC_ATTR) $(@F).ll
-#	cd $(LIBXMHFHICSLAB_OBJECTS_DIR) && $(CC) -O2 -c $(CFLAGS) $(@F).s -o $(@F)
+#	cp -f $< $(LIBXMHFGEEC_OBJECTS_DIR)/$(@F).c
+#	$(CC) -fomit-frame-pointer -O2 -S -emit-llvm $(CFLAGS) $(LIBXMHFGEEC_OBJECTS_DIR)/$(@F).c -o $(LIBXMHFGEEC_OBJECTS_DIR)/$(@F).ll
+#	cd $(LIBXMHFGEEC_OBJECTS_DIR) && fixnaked.pl $(@F).ll
+#	cd $(LIBXMHFGEEC_OBJECTS_DIR) && llc -O=2 -march=x86 -mcpu=corei7 -mattr=$(LLC_ATTR) $(@F).ll
+#	cd $(LIBXMHFGEEC_OBJECTS_DIR) && $(CC) -O2 -c $(CFLAGS) $(@F).s -o $(@F)
 
 
 
 .PHONY: clean
 clean:
-	$(RM) -rf $(LIBXMHFHICSLAB_OBJECTS_DIR)
+	$(RM) -rf $(LIBXMHFGEEC_OBJECTS_DIR)
 
