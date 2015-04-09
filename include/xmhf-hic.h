@@ -96,16 +96,6 @@ typedef struct {
 } __attribute__((packed)) x86vmx_mle_header_t;
 
 
-/* x86_64
-typedef struct {
-    u64 pci_bus;
-    u64 pci_device;
-    u64 pci_function;
-    u64 vendor_id;
-    u64 device_id;
-}__attribute__((packed)) xc_platformdevice_arch_desc_t;
-*/
-
 typedef struct {
     u32 pci_bus;
     u32 pci_device;
@@ -174,23 +164,11 @@ typedef struct {
 
 typedef void * slab_entrystub_t;
 
-/* x86_64
-typedef u64 slab_privilegemask_t;
-typedef u64 slab_callcaps_t;
-typedef u64 slab_uapicaps_t;
-*/
 
 typedef u32 slab_privilegemask_t;
 typedef u32 slab_callcaps_t;
 typedef u32 slab_uapicaps_t;
 
-/* x86_64
-typedef struct {
-	bool desc_valid;
-	u64 numdevices;
-    xc_platformdevice_arch_desc_t arch_desc[MAX_PLATFORM_DEVICES];
-} __attribute__((packed)) slab_platformdevices_t;
-*/
 
 typedef struct {
 	bool desc_valid;
@@ -198,17 +176,6 @@ typedef struct {
     xc_platformdevice_arch_desc_t arch_desc[MAX_PLATFORM_DEVICES];
 } __attribute__((packed)) slab_platformdevices_t;
 
-
-/* x86_64
-//slab capabilities type
-typedef struct {
-    slab_privilegemask_t slab_privilegemask;
-    slab_callcaps_t slab_callcaps;
-    slab_uapicaps_t slab_uapicaps;
-    slab_platformdevices_t slab_devices;
-    u64 slab_archparams;
-} __attribute__((packed)) slab_caps_t;
-*/
 
 //slab capabilities type
 typedef struct {
@@ -222,16 +189,6 @@ typedef struct {
 
 #define HIC_SLAB_CALLCAP(x) (1 << x)
 #define HIC_SLAB_UAPICAP(x) (1 << x)
-
-
-
-
-
-
-
-
-
-
 
 
 typedef struct {
@@ -252,40 +209,12 @@ typedef struct {
 
 #define HIC_SLAB_PHYSMEM_MAXEXTENTS         5
 
-/* x86_64
-//slab physical memory extent type
-typedef struct {
-    u64 addr_start;
-    u64 addr_end;
-    u64 protection;
-} slab_physmem_extent_t;
-*/
-
 //slab physical memory extent type
 typedef struct {
     u32 addr_start;
     u32 addr_end;
     u32 protection;
 } slab_physmem_extent_t;
-
-
-
-/*
-typedef struct {
-    __attribute__((aligned(4096))) slab_info_archdata_t archdata;
-	bool slab_inuse;
-    slab_privilegemask_t slab_privilegemask;
-    slab_callcaps_t slab_callcaps;
-    slab_uapicaps_t slab_uapicaps;
-    slab_platformdevices_t slab_devices;
-    slab_physmem_extent_t slab_physmem_extents[HIC_SLAB_PHYSMEM_MAXEXTENTS];
-	slab_entrystub_t entrystub;
-} __attribute__((packed)) __attribute__((aligned(4096))) slab_info_t;
-*/
-
-
-
-
 
 
 //////

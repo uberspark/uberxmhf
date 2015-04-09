@@ -55,6 +55,8 @@
 
 #ifndef __ASSEMBLY__
 
+
+
 extern void xcguestslab_do_vmcall(void);
 extern void xcguestslab_do_testxhhyperdep(void);
 extern void xcguestslab_do_testxhapprovexec(void);
