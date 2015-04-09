@@ -48,6 +48,8 @@
 #include <xmhf-hic.h>
 #include <xmhf-debug.h>
 
+#include <xmhfgeec.h>
+#include <geecsentinel.h>
 #include <xc.h>
 #include <uapi_gcpustate.h>
 #include <uapi_slabmemacc.h>

@@ -48,6 +48,8 @@
 #include <xmhf.h>
 #include <xmhf-hic.h>
 
+#include <geec_prime.h>
+
 /*
  * data used by HIC
  *
