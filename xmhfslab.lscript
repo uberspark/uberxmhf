@@ -63,13 +63,10 @@ SECTIONS
 		*(.text)
 	} >slabmem =0x9090
 
-	.slabrwdata : {
+	.slabdata : {
 		*(.rwdatahdr)
 		*(.data)
 		*(.bss)
-	} >slabmem =0x0000
-
-	.slabrodata : {
 		*(.rodata)
 		*(.rodata.str1.1)
 		*(.comment)

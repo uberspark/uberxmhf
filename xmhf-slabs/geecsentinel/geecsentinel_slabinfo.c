@@ -56,23 +56,19 @@
 
 
 
-extern u8 _xmhfhic_sharedro_start[];
-extern u8 _xmhfhic_sharedro_end[];
 extern u8 _xmhfhic_code_start[];
 extern u8 _xmhfhic_code_end[];
-extern u8 _xmhfhic_rwdata_start[];
-extern u8 _xmhfhic_rwdata_end[];
-extern u8 _xmhfhic_rodata_start[];
-extern u8 _xmhfhic_rodata_end[];
+extern u8 _xmhfhic_data_start[];
+extern u8 _xmhfhic_data_end[];
 extern u8 _xmhfhic_stack_start[];
 extern u8 _xmhfhic_stack_end[];
+extern u8 _xmhfhic_dmadata_start[];
+extern u8 _xmhfhic_dmadata_end[];
 
 extern u8 _slab_geecsentinel_code_start[];
 extern u8 _slab_geecsentinel_code_end[];
-extern u8 _slab_geecsentinel_rwdata_start[];
-extern u8 _slab_geecsentinel_rwdata_end[];
-extern u8 _slab_geecsentinel_rodata_start[];
-extern u8 _slab_geecsentinel_rodata_end[];
+extern u8 _slab_geecsentinel_data_start[];
+extern u8 _slab_geecsentinel_data_end[];
 extern u8 _slab_geecsentinel_stack_start[];
 extern u8 _slab_geecsentinel_stack_end[];
 extern u8 _slab_geecsentinel_dmadata_start[];
@@ -81,10 +77,8 @@ extern u8 _slab_geecsentinel_entrypoint[];
 
 extern u8 _slab_geec_primesmp_code_start[];
 extern u8 _slab_geec_primesmp_code_end[];
-extern u8 _slab_geec_primesmp_rwdata_start[];
-extern u8 _slab_geec_primesmp_rwdata_end[];
-extern u8 _slab_geec_primesmp_rodata_start[];
-extern u8 _slab_geec_primesmp_rodata_end[];
+extern u8 _slab_geec_primesmp_data_start[];
+extern u8 _slab_geec_primesmp_data_end[];
 extern u8 _slab_geec_primesmp_stack_start[];
 extern u8 _slab_geec_primesmp_stack_end[];
 extern u8 _slab_geec_primesmp_dmadata_start[];
@@ -93,10 +87,8 @@ extern u8 _slab_geec_primesmp_entrypoint[];
 
 extern u8 _slab_uapi_gcpustate_code_start[];
 extern u8 _slab_uapi_gcpustate_code_end[];
-extern u8 _slab_uapi_gcpustate_rwdata_start[];
-extern u8 _slab_uapi_gcpustate_rwdata_end[];
-extern u8 _slab_uapi_gcpustate_rodata_start[];
-extern u8 _slab_uapi_gcpustate_rodata_end[];
+extern u8 _slab_uapi_gcpustate_data_start[];
+extern u8 _slab_uapi_gcpustate_data_end[];
 extern u8 _slab_uapi_gcpustate_stack_start[];
 extern u8 _slab_uapi_gcpustate_stack_end[];
 extern u8 _slab_uapi_gcpustate_dmadata_start[];
@@ -105,10 +97,8 @@ extern u8 _slab_uapi_gcpustate_entrypoint[];
 
 extern u8 _slab_uapi_hcpustate_code_start[];
 extern u8 _slab_uapi_hcpustate_code_end[];
-extern u8 _slab_uapi_hcpustate_rwdata_start[];
-extern u8 _slab_uapi_hcpustate_rwdata_end[];
-extern u8 _slab_uapi_hcpustate_rodata_start[];
-extern u8 _slab_uapi_hcpustate_rodata_end[];
+extern u8 _slab_uapi_hcpustate_data_start[];
+extern u8 _slab_uapi_hcpustate_data_end[];
 extern u8 _slab_uapi_hcpustate_stack_start[];
 extern u8 _slab_uapi_hcpustate_stack_end[];
 extern u8 _slab_uapi_hcpustate_dmadata_start[];
@@ -118,10 +108,8 @@ extern u8 _slab_uapi_hcpustate_entrypoint[];
 
 extern u8 _slab_uapi_slabmemacc_code_start[];
 extern u8 _slab_uapi_slabmemacc_code_end[];
-extern u8 _slab_uapi_slabmemacc_rwdata_start[];
-extern u8 _slab_uapi_slabmemacc_rwdata_end[];
-extern u8 _slab_uapi_slabmemacc_rodata_start[];
-extern u8 _slab_uapi_slabmemacc_rodata_end[];
+extern u8 _slab_uapi_slabmemacc_data_start[];
+extern u8 _slab_uapi_slabmemacc_data_end[];
 extern u8 _slab_uapi_slabmemacc_stack_start[];
 extern u8 _slab_uapi_slabmemacc_stack_end[];
 extern u8 _slab_uapi_slabmemacc_dmadata_start[];
@@ -130,10 +118,8 @@ extern u8 _slab_uapi_slabmemacc_entrypoint[];
 
 extern u8 _slab_uapi_slabmempgtbl_code_start[];
 extern u8 _slab_uapi_slabmempgtbl_code_end[];
-extern u8 _slab_uapi_slabmempgtbl_rwdata_start[];
-extern u8 _slab_uapi_slabmempgtbl_rwdata_end[];
-extern u8 _slab_uapi_slabmempgtbl_rodata_start[];
-extern u8 _slab_uapi_slabmempgtbl_rodata_end[];
+extern u8 _slab_uapi_slabmempgtbl_data_start[];
+extern u8 _slab_uapi_slabmempgtbl_data_end[];
 extern u8 _slab_uapi_slabmempgtbl_stack_start[];
 extern u8 _slab_uapi_slabmempgtbl_stack_end[];
 extern u8 _slab_uapi_slabmempgtbl_dmadata_start[];
@@ -144,10 +130,8 @@ extern u8 _slab_uapi_slabmempgtbl_entrypoint[];
 
 extern u8 _slab_xcinit_code_start[];
 extern u8 _slab_xcinit_code_end[];
-extern u8 _slab_xcinit_rwdata_start[];
-extern u8 _slab_xcinit_rwdata_end[];
-extern u8 _slab_xcinit_rodata_start[];
-extern u8 _slab_xcinit_rodata_end[];
+extern u8 _slab_xcinit_data_start[];
+extern u8 _slab_xcinit_data_end[];
 extern u8 _slab_xcinit_stack_start[];
 extern u8 _slab_xcinit_stack_end[];
 extern u8 _slab_xcinit_dmadata_start[];
@@ -156,10 +140,8 @@ extern u8 _slab_xcinit_entrypoint[];
 
 extern u8 _slab_xcihub_code_start[];
 extern u8 _slab_xcihub_code_end[];
-extern u8 _slab_xcihub_rwdata_start[];
-extern u8 _slab_xcihub_rwdata_end[];
-extern u8 _slab_xcihub_rodata_start[];
-extern u8 _slab_xcihub_rodata_end[];
+extern u8 _slab_xcihub_data_start[];
+extern u8 _slab_xcihub_data_end[];
 extern u8 _slab_xcihub_stack_start[];
 extern u8 _slab_xcihub_stack_end[];
 extern u8 _slab_xcihub_dmadata_start[];
@@ -168,10 +150,8 @@ extern u8 _slab_xcihub_entrypoint[];
 
 extern u8 _slab_xcexhub_code_start[];
 extern u8 _slab_xcexhub_code_end[];
-extern u8 _slab_xcexhub_rwdata_start[];
-extern u8 _slab_xcexhub_rwdata_end[];
-extern u8 _slab_xcexhub_rodata_start[];
-extern u8 _slab_xcexhub_rodata_end[];
+extern u8 _slab_xcexhub_data_start[];
+extern u8 _slab_xcexhub_data_end[];
 extern u8 _slab_xcexhub_stack_start[];
 extern u8 _slab_xcexhub_stack_end[];
 extern u8 _slab_xcexhub_dmadata_start[];
@@ -180,10 +160,8 @@ extern u8 _slab_xcexhub_entrypoint[];
 
 extern u8 _slab_xctestslab1_code_start[];
 extern u8 _slab_xctestslab1_code_end[];
-extern u8 _slab_xctestslab1_rwdata_start[];
-extern u8 _slab_xctestslab1_rwdata_end[];
-extern u8 _slab_xctestslab1_rodata_start[];
-extern u8 _slab_xctestslab1_rodata_end[];
+extern u8 _slab_xctestslab1_data_start[];
+extern u8 _slab_xctestslab1_data_end[];
 extern u8 _slab_xctestslab1_stack_start[];
 extern u8 _slab_xctestslab1_stack_end[];
 extern u8 _slab_xctestslab1_dmadata_start[];
@@ -192,10 +170,8 @@ extern u8 _slab_xctestslab1_entrypoint[];
 
 extern u8 _slab_xhhyperdep_code_start[];
 extern u8 _slab_xhhyperdep_code_end[];
-extern u8 _slab_xhhyperdep_rwdata_start[];
-extern u8 _slab_xhhyperdep_rwdata_end[];
-extern u8 _slab_xhhyperdep_rodata_start[];
-extern u8 _slab_xhhyperdep_rodata_end[];
+extern u8 _slab_xhhyperdep_data_start[];
+extern u8 _slab_xhhyperdep_data_end[];
 extern u8 _slab_xhhyperdep_stack_start[];
 extern u8 _slab_xhhyperdep_stack_end[];
 extern u8 _slab_xhhyperdep_dmadata_start[];
@@ -204,10 +180,8 @@ extern u8 _slab_xhhyperdep_entrypoint[];
 
 extern u8 _slab_xhapprovexec_code_start[];
 extern u8 _slab_xhapprovexec_code_end[];
-extern u8 _slab_xhapprovexec_rwdata_start[];
-extern u8 _slab_xhapprovexec_rwdata_end[];
-extern u8 _slab_xhapprovexec_rodata_start[];
-extern u8 _slab_xhapprovexec_rodata_end[];
+extern u8 _slab_xhapprovexec_data_start[];
+extern u8 _slab_xhapprovexec_data_end[];
 extern u8 _slab_xhapprovexec_stack_start[];
 extern u8 _slab_xhapprovexec_stack_end[];
 extern u8 _slab_xhapprovexec_dmadata_start[];
@@ -216,10 +190,8 @@ extern u8 _slab_xhapprovexec_entrypoint[];
 
 extern u8 _slab_xhsyscalllog_code_start[];
 extern u8 _slab_xhsyscalllog_code_end[];
-extern u8 _slab_xhsyscalllog_rwdata_start[];
-extern u8 _slab_xhsyscalllog_rwdata_end[];
-extern u8 _slab_xhsyscalllog_rodata_start[];
-extern u8 _slab_xhsyscalllog_rodata_end[];
+extern u8 _slab_xhsyscalllog_data_start[];
+extern u8 _slab_xhsyscalllog_data_end[];
 extern u8 _slab_xhsyscalllog_stack_start[];
 extern u8 _slab_xhsyscalllog_stack_end[];
 extern u8 _slab_xhsyscalllog_dmadata_start[];
@@ -229,10 +201,8 @@ extern u8 _slab_xhsyscalllog_entrypoint[];
 
 extern u8 _slab_xhssteptrace_code_start[];
 extern u8 _slab_xhssteptrace_code_end[];
-extern u8 _slab_xhssteptrace_rwdata_start[];
-extern u8 _slab_xhssteptrace_rwdata_end[];
-extern u8 _slab_xhssteptrace_rodata_start[];
-extern u8 _slab_xhssteptrace_rodata_end[];
+extern u8 _slab_xhssteptrace_data_start[];
+extern u8 _slab_xhssteptrace_data_end[];
 extern u8 _slab_xhssteptrace_stack_start[];
 extern u8 _slab_xhssteptrace_stack_end[];
 extern u8 _slab_xhssteptrace_dmadata_start[];
@@ -241,10 +211,8 @@ extern u8 _slab_xhssteptrace_entrypoint[];
 
 extern u8 _slab_xcguestslab_code_start[];
 extern u8 _slab_xcguestslab_code_end[];
-extern u8 _slab_xcguestslab_rwdata_start[];
-extern u8 _slab_xcguestslab_rwdata_end[];
-extern u8 _slab_xcguestslab_rodata_start[];
-extern u8 _slab_xcguestslab_rodata_end[];
+extern u8 _slab_xcguestslab_data_start[];
+extern u8 _slab_xcguestslab_data_end[];
 extern u8 _slab_xcguestslab_stack_start[];
 extern u8 _slab_xcguestslab_stack_end[];
 extern u8 _slab_xcguestslab_dmadata_start[];
@@ -278,11 +246,11 @@ __attribute__(( section(".data") )) __attribute__((aligned(4096))) x_slab_info_t
         HIC_SLAB_UAPICAP(XMHF_HIC_UAPI_CPUSTATE) | HIC_SLAB_UAPICAP(XMHF_HIC_UAPI_PHYSMEM) | HIC_SLAB_UAPICAP(XMHF_HIC_UAPI_MEMPGTBL),
         {false, 0, {0}},
         {
-            {.addr_start = _xmhfhic_sharedro_start, .addr_end = _xmhfhic_sharedro_end, .protection = 0},
             {.addr_start = _xmhfhic_code_start, .addr_end = _xmhfhic_code_end, .protection = 0},
-            {.addr_start = _xmhfhic_rwdata_start, .addr_end = _xmhfhic_rwdata_end, .protection = 0},
-            {.addr_start = _xmhfhic_rodata_start, .addr_end = _xmhfhic_rodata_end, .protection = 0},
+            {.addr_start = _xmhfhic_data_start, .addr_end = _xmhfhic_data_end, .protection = 0},
             {.addr_start = _xmhfhic_stack_start, .addr_end = _xmhfhic_stack_end, .protection = 0},
+            {.addr_start = _xmhfhic_dmadata_start, .addr_end = _xmhfhic_dmadata_end, .protection = 0},
+            {.addr_start = 0, .addr_end = 0, .protection = 0},
         },
         (u32)_xmhfhic_code_start
     },
@@ -313,10 +281,10 @@ __attribute__(( section(".data") )) __attribute__((aligned(4096))) x_slab_info_t
         {false, 0, {0}},
         {
             {.addr_start = _slab_geecsentinel_code_start, .addr_end = _slab_geecsentinel_code_end, .protection = 0},
-            {.addr_start = _slab_geecsentinel_rwdata_start, .addr_end = _slab_geecsentinel_rwdata_end, .protection = 0},
-            {.addr_start = _slab_geecsentinel_rodata_start, .addr_end = _slab_geecsentinel_rodata_end, .protection = 0},
+            {.addr_start = _slab_geecsentinel_data_start, .addr_end = _slab_geecsentinel_data_end, .protection = 0},
             {.addr_start = _slab_geecsentinel_stack_start, .addr_end = _slab_geecsentinel_stack_end, .protection = 0},
             {.addr_start = _slab_geecsentinel_dmadata_start, .addr_end = _slab_geecsentinel_dmadata_end, .protection = 0},
+            {.addr_start = 0, .addr_end = 0, .protection = 0},
         },
         (u32)_slab_geecsentinel_entrypoint
     },
@@ -347,10 +315,10 @@ __attribute__(( section(".data") )) __attribute__((aligned(4096))) x_slab_info_t
         {false, 0, {0}},
         {
             {.addr_start = _slab_geec_primesmp_code_start, .addr_end = _slab_geec_primesmp_code_end, .protection = 0},
-            {.addr_start = _slab_geec_primesmp_rwdata_start, .addr_end = _slab_geec_primesmp_rwdata_end, .protection = 0},
-            {.addr_start = _slab_geec_primesmp_rodata_start, .addr_end = _slab_geec_primesmp_rodata_end, .protection = 0},
+            {.addr_start = _slab_geec_primesmp_data_start, .addr_end = _slab_geec_primesmp_data_end, .protection = 0},
             {.addr_start = _slab_geec_primesmp_stack_start, .addr_end = _slab_geec_primesmp_stack_end, .protection = 0},
             {.addr_start = _slab_geec_primesmp_dmadata_start, .addr_end = _slab_geec_primesmp_dmadata_end, .protection = 0},
+            {.addr_start = 0, .addr_end = 0, .protection = 0},
         },
         (u32)_slab_geec_primesmp_entrypoint
     },
@@ -382,10 +350,10 @@ __attribute__(( section(".data") )) __attribute__((aligned(4096))) x_slab_info_t
         {false, 0, {0}},
         {
             {.addr_start = _slab_uapi_gcpustate_code_start, .addr_end = _slab_uapi_gcpustate_code_end, .protection = 0},
-            {.addr_start = _slab_uapi_gcpustate_rwdata_start, .addr_end = _slab_uapi_gcpustate_rwdata_end, .protection = 0},
-            {.addr_start = _slab_uapi_gcpustate_rodata_start, .addr_end = _slab_uapi_gcpustate_rodata_end, .protection = 0},
+            {.addr_start = _slab_uapi_gcpustate_data_start, .addr_end = _slab_uapi_gcpustate_data_end, .protection = 0},
             {.addr_start = _slab_uapi_gcpustate_stack_start, .addr_end = _slab_uapi_gcpustate_stack_end, .protection = 0},
             {.addr_start = _slab_uapi_gcpustate_dmadata_start, .addr_end = _slab_uapi_gcpustate_dmadata_end, .protection = 0},
+            {.addr_start = 0, .addr_end = 0, .protection = 0},
         },
         (u32)_slab_uapi_gcpustate_entrypoint
     },
@@ -416,10 +384,10 @@ __attribute__(( section(".data") )) __attribute__((aligned(4096))) x_slab_info_t
         {false, 0, {0}},
         {
             {.addr_start = _slab_uapi_hcpustate_code_start, .addr_end = _slab_uapi_hcpustate_code_end, .protection = 0},
-            {.addr_start = _slab_uapi_hcpustate_rwdata_start, .addr_end = _slab_uapi_hcpustate_rwdata_end, .protection = 0},
-            {.addr_start = _slab_uapi_hcpustate_rodata_start, .addr_end = _slab_uapi_hcpustate_rodata_end, .protection = 0},
+            {.addr_start = _slab_uapi_hcpustate_data_start, .addr_end = _slab_uapi_hcpustate_data_end, .protection = 0},
             {.addr_start = _slab_uapi_hcpustate_stack_start, .addr_end = _slab_uapi_hcpustate_stack_end, .protection = 0},
             {.addr_start = _slab_uapi_hcpustate_dmadata_start, .addr_end = _slab_uapi_hcpustate_dmadata_end, .protection = 0},
+            {.addr_start = 0, .addr_end = 0, .protection = 0},
         },
         (u32)_slab_uapi_hcpustate_entrypoint
     },
@@ -450,10 +418,10 @@ __attribute__(( section(".data") )) __attribute__((aligned(4096))) x_slab_info_t
         {false, 0, {0}},
         {
             {.addr_start = _slab_uapi_slabmemacc_code_start, .addr_end = _slab_uapi_slabmemacc_code_end, .protection = 0},
-            {.addr_start = _slab_uapi_slabmemacc_rwdata_start, .addr_end = _slab_uapi_slabmemacc_rwdata_end, .protection = 0},
-            {.addr_start = _slab_uapi_slabmemacc_rodata_start, .addr_end = _slab_uapi_slabmemacc_rodata_end, .protection = 0},
+            {.addr_start = _slab_uapi_slabmemacc_data_start, .addr_end = _slab_uapi_slabmemacc_data_end, .protection = 0},
             {.addr_start = _slab_uapi_slabmemacc_stack_start, .addr_end = _slab_uapi_slabmemacc_stack_end, .protection = 0},
             {.addr_start = _slab_uapi_slabmemacc_dmadata_start, .addr_end = _slab_uapi_slabmemacc_dmadata_end, .protection = 0},
+            {.addr_start = 0, .addr_end = 0, .protection = 0},
         },
         (u32)_slab_uapi_slabmemacc_entrypoint
     },
@@ -483,10 +451,10 @@ __attribute__(( section(".data") )) __attribute__((aligned(4096))) x_slab_info_t
         {false, 0, {0}},
         {
             {.addr_start = _slab_uapi_slabmempgtbl_code_start, .addr_end = _slab_uapi_slabmempgtbl_code_end, .protection = 0},
-            {.addr_start = _slab_uapi_slabmempgtbl_rwdata_start, .addr_end = _slab_uapi_slabmempgtbl_rwdata_end, .protection = 0},
-            {.addr_start = _slab_uapi_slabmempgtbl_rodata_start, .addr_end = _slab_uapi_slabmempgtbl_rodata_end, .protection = 0},
+            {.addr_start = _slab_uapi_slabmempgtbl_data_start, .addr_end = _slab_uapi_slabmempgtbl_data_end, .protection = 0},
             {.addr_start = _slab_uapi_slabmempgtbl_stack_start, .addr_end = _slab_uapi_slabmempgtbl_stack_end, .protection = 0},
             {.addr_start = _slab_uapi_slabmempgtbl_dmadata_start, .addr_end = _slab_uapi_slabmempgtbl_dmadata_end, .protection = 0},
+            {.addr_start = 0, .addr_end = 0, .protection = 0},
         },
         (u32)_slab_uapi_slabmempgtbl_entrypoint
     },
@@ -516,10 +484,10 @@ __attribute__(( section(".data") )) __attribute__((aligned(4096))) x_slab_info_t
         {false, 0, {0}},
         {
             {.addr_start = _slab_xcinit_code_start, .addr_end = _slab_xcinit_code_end, .protection = 0},
-            {.addr_start = _slab_xcinit_rwdata_start, .addr_end = _slab_xcinit_rwdata_end, .protection = 0},
-            {.addr_start = _slab_xcinit_rodata_start, .addr_end = _slab_xcinit_rodata_end, .protection = 0},
+            {.addr_start = _slab_xcinit_data_start, .addr_end = _slab_xcinit_data_end, .protection = 0},
             {.addr_start = _slab_xcinit_stack_start, .addr_end = _slab_xcinit_stack_end, .protection = 0},
             {.addr_start = _slab_xcinit_dmadata_start, .addr_end = _slab_xcinit_dmadata_end, .protection = 0},
+            {.addr_start = 0, .addr_end = 0, .protection = 0},
         },
         (u32)_slab_xcinit_entrypoint
     },
@@ -550,10 +518,10 @@ __attribute__(( section(".data") )) __attribute__((aligned(4096))) x_slab_info_t
         {false, 0, {0}},
         {
             {.addr_start = _slab_xcihub_code_start, .addr_end = _slab_xcihub_code_end, .protection = 0},
-            {.addr_start = _slab_xcihub_rwdata_start, .addr_end = _slab_xcihub_rwdata_end, .protection = 0},
-            {.addr_start = _slab_xcihub_rodata_start, .addr_end = _slab_xcihub_rodata_end, .protection = 0},
+            {.addr_start = _slab_xcihub_data_start, .addr_end = _slab_xcihub_data_end, .protection = 0},
             {.addr_start = _slab_xcihub_stack_start, .addr_end = _slab_xcihub_stack_end, .protection = 0},
             {.addr_start = _slab_xcihub_dmadata_start, .addr_end = _slab_xcihub_dmadata_end, .protection = 0},
+            {.addr_start = 0, .addr_end = 0, .protection = 0},
         },
         (u32)_slab_xcihub_entrypoint
     },
@@ -584,10 +552,10 @@ __attribute__(( section(".data") )) __attribute__((aligned(4096))) x_slab_info_t
         {false, 0, {0}},
         {
             {.addr_start = _slab_xcexhub_code_start, .addr_end = _slab_xcexhub_code_end, .protection = 0},
-            {.addr_start = _slab_xcexhub_rwdata_start, .addr_end = _slab_xcexhub_rwdata_end, .protection = 0},
-            {.addr_start = _slab_xcexhub_rodata_start, .addr_end = _slab_xcexhub_rodata_end, .protection = 0},
+            {.addr_start = _slab_xcexhub_data_start, .addr_end = _slab_xcexhub_data_end, .protection = 0},
             {.addr_start = _slab_xcexhub_stack_start, .addr_end = _slab_xcexhub_stack_end, .protection = 0},
             {.addr_start = _slab_xcexhub_dmadata_start, .addr_end = _slab_xcexhub_dmadata_end, .protection = 0},
+            {.addr_start = 0, .addr_end = 0, .protection = 0},
         },
         (u32)_slab_xcexhub_entrypoint
     },
@@ -618,10 +586,10 @@ __attribute__(( section(".data") )) __attribute__((aligned(4096))) x_slab_info_t
         {false, 0, {0}},
         {
             {.addr_start = _slab_xctestslab1_code_start, .addr_end = _slab_xctestslab1_code_end, .protection = 0},
-            {.addr_start = _slab_xctestslab1_rwdata_start, .addr_end = _slab_xctestslab1_rwdata_end, .protection = 0},
-            {.addr_start = _slab_xctestslab1_rodata_start, .addr_end = _slab_xctestslab1_rodata_end, .protection = 0},
+            {.addr_start = _slab_xctestslab1_data_start, .addr_end = _slab_xctestslab1_data_end, .protection = 0},
             {.addr_start = _slab_xctestslab1_stack_start, .addr_end = _slab_xctestslab1_stack_end, .protection = 0},
             {.addr_start = _slab_xctestslab1_dmadata_start, .addr_end = _slab_xctestslab1_dmadata_end, .protection = 0},
+            {.addr_start = 0, .addr_end = 0, .protection = 0},
         },
         (u32)_slab_xctestslab1_entrypoint
     },
@@ -652,10 +620,10 @@ __attribute__(( section(".data") )) __attribute__((aligned(4096))) x_slab_info_t
         {false, 0, {0}},
         {
             {.addr_start = _slab_xhhyperdep_code_start, .addr_end = _slab_xhhyperdep_code_end, .protection = 0},
-            {.addr_start = _slab_xhhyperdep_rwdata_start, .addr_end = _slab_xhhyperdep_rwdata_end, .protection = 0},
-            {.addr_start = _slab_xhhyperdep_rodata_start, .addr_end = _slab_xhhyperdep_rodata_end, .protection = 0},
+            {.addr_start = _slab_xhhyperdep_data_start, .addr_end = _slab_xhhyperdep_data_end, .protection = 0},
             {.addr_start = _slab_xhhyperdep_stack_start, .addr_end = _slab_xhhyperdep_stack_end, .protection = 0},
             {.addr_start = _slab_xhhyperdep_dmadata_start, .addr_end = _slab_xhhyperdep_dmadata_end, .protection = 0},
+            {.addr_start = 0, .addr_end = 0, .protection = 0},
         },
         (u32)_slab_xhhyperdep_entrypoint
     },
@@ -686,10 +654,10 @@ __attribute__(( section(".data") )) __attribute__((aligned(4096))) x_slab_info_t
         {false, 0, {0}},
         {
             {.addr_start = _slab_xhapprovexec_code_start, .addr_end = _slab_xhapprovexec_code_end, .protection = 0},
-            {.addr_start = _slab_xhapprovexec_rwdata_start, .addr_end = _slab_xhapprovexec_rwdata_end, .protection = 0},
-            {.addr_start = _slab_xhapprovexec_rodata_start, .addr_end = _slab_xhapprovexec_rodata_end, .protection = 0},
+            {.addr_start = _slab_xhapprovexec_data_start, .addr_end = _slab_xhapprovexec_data_end, .protection = 0},
             {.addr_start = _slab_xhapprovexec_stack_start, .addr_end = _slab_xhapprovexec_stack_end, .protection = 0},
             {.addr_start = _slab_xhapprovexec_dmadata_start, .addr_end = _slab_xhapprovexec_dmadata_end, .protection = 0},
+            {.addr_start = 0, .addr_end = 0, .protection = 0},
         },
         (u32)_slab_xhapprovexec_entrypoint
     },
@@ -719,10 +687,10 @@ __attribute__(( section(".data") )) __attribute__((aligned(4096))) x_slab_info_t
         {false, 0, {0}},
         {
             {.addr_start = _slab_xhsyscalllog_code_start, .addr_end = _slab_xhsyscalllog_code_end, .protection = 0},
-            {.addr_start = _slab_xhsyscalllog_rwdata_start, .addr_end = _slab_xhsyscalllog_rwdata_end, .protection = 0},
-            {.addr_start = _slab_xhsyscalllog_rodata_start, .addr_end = _slab_xhsyscalllog_rodata_end, .protection = 0},
+            {.addr_start = _slab_xhsyscalllog_data_start, .addr_end = _slab_xhsyscalllog_data_end, .protection = 0},
             {.addr_start = _slab_xhsyscalllog_stack_start, .addr_end = _slab_xhsyscalllog_stack_end, .protection = 0},
             {.addr_start = _slab_xhsyscalllog_dmadata_start, .addr_end = _slab_xhsyscalllog_dmadata_end, .protection = 0},
+            {.addr_start = 0, .addr_end = 0, .protection = 0},
         },
         (u32)_slab_xhsyscalllog_entrypoint
     },
@@ -752,10 +720,10 @@ __attribute__(( section(".data") )) __attribute__((aligned(4096))) x_slab_info_t
         {false, 0, {0}},
         {
             {.addr_start = _slab_xhssteptrace_code_start, .addr_end = _slab_xhssteptrace_code_end, .protection = 0},
-            {.addr_start = _slab_xhssteptrace_rwdata_start, .addr_end = _slab_xhssteptrace_rwdata_end, .protection = 0},
-            {.addr_start = _slab_xhssteptrace_rodata_start, .addr_end = _slab_xhssteptrace_rodata_end, .protection = 0},
+            {.addr_start = _slab_xhssteptrace_data_start, .addr_end = _slab_xhssteptrace_data_end, .protection = 0},
             {.addr_start = _slab_xhssteptrace_stack_start, .addr_end = _slab_xhssteptrace_stack_end, .protection = 0},
             {.addr_start = _slab_xhssteptrace_dmadata_start, .addr_end = _slab_xhssteptrace_dmadata_end, .protection = 0},
+            {.addr_start = 0, .addr_end = 0, .protection = 0},
         },
         (u32)_slab_xhssteptrace_entrypoint
     },
@@ -785,10 +753,10 @@ __attribute__(( section(".data") )) __attribute__((aligned(4096))) x_slab_info_t
         {true, 0xFFFFFFFFUL, {0}},
         {
             {.addr_start = _slab_xcguestslab_code_start, .addr_end = _slab_xcguestslab_code_end, .protection = 0},
-            {.addr_start = _slab_xcguestslab_rwdata_start, .addr_end = _slab_xcguestslab_rwdata_end, .protection = 0},
-            {.addr_start = _slab_xcguestslab_rodata_start, .addr_end = _slab_xcguestslab_rodata_end, .protection = 0},
+            {.addr_start = _slab_xcguestslab_data_start, .addr_end = _slab_xcguestslab_data_end, .protection = 0},
             {.addr_start = _slab_xcguestslab_stack_start, .addr_end = _slab_xcguestslab_stack_end, .protection = 0},
             {.addr_start = _slab_xcguestslab_dmadata_start, .addr_end = _slab_xcguestslab_dmadata_end, .protection = 0},
+            {.addr_start = 0, .addr_end = 0, .protection = 0},
         },
         (u32)_slab_xcguestslab_entrypoint
     },
