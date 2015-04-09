@@ -201,6 +201,12 @@ export CCERT_FLAGS
 export XMHF_SLAB_DIRS := $(shell cat $(XMHF_DIR)/SLABS)
 XMHF_SLAB_NAMES := $(notdir $(XMHF_SLAB_DIRS))
 
+
+export XMHF_LIBDIRS := $(wildcard $(XMHF_DIR)/xmhf-libs/lib*)
+export XMHF_LIBS_OBJECTS_DIR := $(XMHF_OBJDIR)/_objs_xmhf-libs
+
+
+
 .PHONY: all
 #all: genfiles libshared subdirs
 #all: genfiles xmhflibs xmhfhic xmhfslabs xmhfbin
@@ -219,7 +225,12 @@ genfiles:
 .PHONY: xmhflibs
 xmhflibs:
 	@echo Building XMHF libs...
-	cd $(XMHF_OBJDIR) && $(MAKE) -f $(XMHFLIBS_SRC)/Makefile -w all
+	#cd $(XMHF_OBJDIR) && $(MAKE) -f $(XMHFLIBS_SRC)/Makefile -w all
+	mkdir -p $(XMHF_LIBS_OBJECTS_DIR)
+	@for i in $(XMHF_LIBDIRS); \
+	do \
+		(cd $(XMHF_LIBS_OBJECTS_DIR) &&	echo "Making all in $$i..." && $(MAKE) -f $$i/Makefile -w all) || exit 1; \
+	done;
 	@echo XMHF libs build SUCCESS
 
 .PHONY: xmhfhic
