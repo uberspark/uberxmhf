@@ -57,106 +57,6 @@
 	#include <xmhfcrypto.h>
 #endif // __ASSEMBLY__
 
-
-//arch. specific stuff
-#define XC_HYPAPP_ARCH_PARAM_OPERATION_CBTRAP_IO		(0x101)
-
-
-
-#define XC_HYPAPP_ARCH_PARAM_OPERATION_TRAP_IO			(0xC01)
-
-
-#define XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_CPUGPRS		(0xD01)
-#define XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_DESC		(0xD02)
-#define XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_ACTIVITY	(0xD03)
-#define XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_CONTROLREGS	(0xD04)
-#define XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_INFOREGS	(0xD05)
-#define XC_HYPAPP_ARCH_PARAM_OPERATION_CPUSTATE_SYSENTER	(0xD06)
-
-
-
-#ifndef __ASSEMBLY__
-
-
-typedef struct {
-	u32 portnum;
-	u32 access_type;
-	u32 access_size;
-} xc_hypapp_arch_param_x86vmx_cbtrapio_t;
-
-typedef struct {
-	u32 portnum;
-	u32 access_size;
-} xc_hypapp_arch_param_x86vmx_trapio_t;
-
-typedef struct {
-	x86desc_t cs;
-	x86desc_t ds;
-	x86desc_t es;
-	x86desc_t fs;
-	x86desc_t gs;
-	x86desc_t ss;
-	x86desc_t idtr;
-	x86desc_t ldtr;
-	x86desc_t gdtr;
-	x86desc_t tr;
-} xc_hypapp_arch_param_x86vmx_cpustate_desc_t;
-
-typedef struct {
-	u64 rip;
-	u64 rflags;
-	u32 activity_state;
-	u32 interruptibility;
-} xc_hypapp_arch_param_x86vmx_cpustate_activity_t;
-
-typedef struct {
-	u64 cr0;
-	u64 control_cr0_shadow;
-	u64 cr3;
-	u64 cr4;
-} xc_hypapp_arch_param_x86vmx_cpustate_controlregs_t;
-
-typedef struct {
-	u32 sysenter_cs;
-	u64 sysenter_rsp;
-	u64 sysenter_rip;
-} xc_hypapp_arch_param_x86vmx_cpustate_sysenter_t;
-
-typedef struct {
-  u32  info_vminstr_error;
-  u32  info_vmexit_reason;
-  u32  info_vmexit_interrupt_information;
-  u32  info_vmexit_interrupt_error_code;
-  u32  info_idt_vectoring_information;
-  u32  info_idt_vectoring_error_code;
-  u32  info_vmexit_instruction_length;
-  u32  info_vmx_instruction_information;
-  u64  info_exit_qualification;
-  u64  info_io_rcx;
-  u64  info_io_rsi;
-  u64  info_io_rdi;
-  u64  info_io_rip;
-  u64  info_guest_linear_address;
-  u64  info_guest_paddr_full;
-} xc_hypapp_arch_param_x86vmx_cpustate_inforegs_t;
-
-
-typedef struct {
-	u32 operation;
-	union {
-		struct regs cpugprs;
-		xc_hypapp_arch_param_x86vmx_cbtrapio_t cbtrapio;
-		xc_hypapp_arch_param_x86vmx_trapio_t trapio;
-		xc_hypapp_arch_param_x86vmx_cpustate_desc_t desc;
-		xc_hypapp_arch_param_x86vmx_cpustate_activity_t activity;
-		xc_hypapp_arch_param_x86vmx_cpustate_controlregs_t controlregs;
-		xc_hypapp_arch_param_x86vmx_cpustate_inforegs_t inforegs;
-		xc_hypapp_arch_param_x86vmx_cpustate_sysenter_t sysenter;
-	} param;
-} __attribute__ ((packed)) xc_hypapp_arch_param_t;
-
-
-
 #define XC_HYPAPPCB_CHAIN                       (1)
 #define XC_HYPAPPCB_NOCHAIN                     (2)
 
@@ -173,18 +73,9 @@ typedef struct {
 #define XC_HYPAPPCB_TRAP_INSTRUCTION_WRMSR      (0x61)
 #define XC_HYPAPPCB_TRAP_INSTRUCTION_RDMSR      (0x62)
 
+#ifndef __ASSEMBLY__
 
 
-typedef struct {
-    u32 cbtype;
-    u32 cbqual;
-    u32 guest_slab_index;
-}__attribute__((packed)) xc_hypappcb_inputparams_t;
-
-
-typedef struct {
-    u32 cbresult;
-}__attribute__((packed)) xc_hypappcb_outputparams_t;
 
 
 typedef struct {
@@ -226,33 +117,6 @@ static xc_hypapp_info_t _xcihub_hypapp_info_table[] = {
 };
 
 #define HYPAPP_INFO_TABLE_NUMENTRIES (sizeof(_xcihub_hypapp_info_table)/sizeof(_xcihub_hypapp_info_table[0]))
-
-
-/*
-x86_64
-static inline u64 xc_hcbinvoke(u64 cbtype, u64 cbqual, u64 guest_slab_index){
-    u64 status = XC_HYPAPPCB_CHAIN;
-    u64 i;
-    xc_hypappcb_inputparams_t hcb_iparams;
-    xc_hypappcb_outputparams_t hcb_oparams;
-
-    hcb_iparams.cbtype = cbtype;
-    hcb_iparams.cbqual = cbqual;
-    hcb_iparams.guest_slab_index = guest_slab_index;
-
-    for(i=0; i < HYPAPP_INFO_TABLE_NUMENTRIES; i++){
-        if(_xcihub_hypapp_info_table[i].cbmask & XC_HYPAPPCB_MASK(cbtype)){
-            XMHF_SLAB_CALL(hypapp, _xcihub_hypapp_info_table[i].xmhfhic_slab_index, &hcb_iparams, sizeof(hcb_iparams), &hcb_oparams, sizeof(hcb_oparams));
-            if(hcb_oparams.cbresult == XC_HYPAPPCB_NOCHAIN){
-                status = XC_HYPAPPCB_NOCHAIN;
-                break;
-            }
-        }
-    }
-
-    return status;
-}
-*/
 
 static inline u32 xc_hcbinvoke(u32 src_slabid, u32 cpuid, u32 cbtype, u32 cbqual, u32 guest_slab_index){
     u32 status = XC_HYPAPPCB_CHAIN;
