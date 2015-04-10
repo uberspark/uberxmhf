@@ -241,6 +241,16 @@ xmhfhic:
 
 .PHONY: xmhfslabs
 xmhfslabs:
+	@echo Preparing slabs...
+	-@for i in $(XMHF_SLAB_DIRS); \
+	do \
+		(cd $(XMHF_DIR)/$$i/ &&	echo "Prepping in $$i..." && autoreconf --install && automake --add-missing --copy >/dev/null 2>&1); \
+	done;
+	@echo Configuring slabs...
+	@for i in $(XMHF_SLAB_DIRS); \
+	do \
+		(cd $(XMHF_DIR)/$$i/ &&	echo "Configuring in $$i..." && ./configure); \
+	done;
 	@echo Building slabs...
 	@for i in $(XMHF_SLAB_DIRS); \
 	do \
