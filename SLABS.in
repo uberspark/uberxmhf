@@ -1,19 +1,19 @@
 xmhf-slabs/geec_prime
-xmhf-slabs/geecsentinel
+xmhf-slabs/geec_sentinel
 xmhf-slabs/geec_primesmp
 xmhf-slabs/uapi_gcpustate
 xmhf-slabs/uapi_hcpustate
 xmhf-slabs/uapi_slabmemacc
 xmhf-slabs/uapi_slabmempgtbl
-xmhf-slabs/xmhf-core/xcinit
-xmhf-slabs/xmhf-core/xcihub
-xmhf-slabs/xmhf-core/xcexhub
-xmhf-slabs/xmhf-core/xctestslab1
-xmhf-slabs/hypapps/xhhyperdep
-xmhf-slabs/hypapps/xhapprovexec
-xmhf-slabs/hypapps/xhsyscalllog
-xmhf-slabs/hypapps/xhssteptrace
-xmhf-slabs/xmhf-core/xcguestslab
+xmhf-slabs/xc_init
+xmhf-slabs/xc_ihub
+xmhf-slabs/xc_exhub
+xmhf-slabs/xc_testslab
+xmhf-slabs/xh_hyperdep
+xmhf-slabs/xh_approvexec
+xmhf-slabs/xh_syscalllog
+xmhf-slabs/xh_ssteptrace
+xmhf-slabs/xg_richguest
 
 
 
