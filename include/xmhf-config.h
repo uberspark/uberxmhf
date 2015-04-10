@@ -123,32 +123,25 @@
 
 
 
-#if defined (__XMHF_VERIFICATION__)
-
-#define XMHF_HIC_MAX_SLABS                  (2)
-
-#else
-
-#define XMHF_HIC_MAX_SLABS                  (9)
+#define XMHF_HIC_MAX_SLABS                  (16)
 
 
-#endif //__XMHF_VERIFICATION__
-
-
-#define XMHF_HYP_SLAB_XCINIT                (0)
-#define XMHF_HYP_SLAB_XCIHUB                (1)
-#define XMHF_HYP_SLAB_XCEXHUB               (2)
-#define XMHF_HYP_SLAB_XCTESTSLAB1           (3)
-#define XMHF_HYP_SLAB_XHHYPERDEP            (4)
-#define XMHF_HYP_SLAB_XHAPPROVEXEC          (5)
-#define XMHF_HYP_SLAB_XHSYSCALLLOG          (6)
-#define XMHF_HYP_SLAB_XHSSTEPTRACE          (7)
-
-#if defined (__XMHF_VERIFICATION__)
-#define XMHF_GUEST_SLAB_XCGUESTSLAB         (1)
-#else
-#define XMHF_GUEST_SLAB_XCGUESTSLAB         (8)
-#endif
+#define XMHF_HYP_SLAB_GEECPRIME             (0)
+#define XMHF_HYP_SLAB_GEECSENTINEL          (1)
+#define XMHF_HYP_SLAB_GEEC_PRIMESMP         (2)
+#define XMHF_HYP_SLAB_UAPI_GCPUSTATE        (3)
+#define XMHF_HYP_SLAB_UAPI_HCPUSTATE        (4)
+#define XMHF_HYP_SLAB_UAPI_SLABMEMACC       (5)
+#define XMHF_HYP_SLAB_UAPI_SLABMEMPGTBL     (6)
+#define XMHF_HYP_SLAB_XCINIT                (7)
+#define XMHF_HYP_SLAB_XCIHUB                (8)
+#define XMHF_HYP_SLAB_XCEXHUB               (9)
+#define XMHF_HYP_SLAB_XCTESTSLAB1           (10)
+#define XMHF_HYP_SLAB_XHHYPERDEP            (11)
+#define XMHF_HYP_SLAB_XHAPPROVEXEC          (12)
+#define XMHF_HYP_SLAB_XHSYSCALLLOG          (13)
+#define XMHF_HYP_SLAB_XHSSTEPTRACE          (14)
+#define XMHF_GUEST_SLAB_XCGUESTSLAB         (15)
 
 
 
@@ -165,14 +158,14 @@
 	//#define __TARGET_BASE_XMHF				0x10000000		//at 256M
 	//#define __TARGET_SIZE_XMHF				0x10000000
 	#define __TARGET_BASE_XMHF				0x02000000		//at 32M
-	#define __TARGET_SIZE_XMHF				0x12C00000      //300M size
+	#define __TARGET_SIZE_XMHF				0x1C200000      //450M size
 
 	//physical address where the XMHF boot-loader is loaded (e.g., via GRUB)
 	#define __TARGET_BASE_BOOTLOADER		0x01E00000		//30MB
 	#define __TARGET_SIZE_BOOTLOADER		0x00200000		//2MB
 
 	//physical address of XMHF secure loader
-	#define __TARGET_BASE_SL				0x02200000		//34MB
+	#define __TARGET_BASE_SL				0x02000000		//32MB
 	#define __TARGET_SIZE_SL				0x00200000
 
 
