@@ -198,7 +198,9 @@ export CFLAGS
 export VFLAGS
 export CCERT_FLAGS
 
-export XMHF_SLAB_DIRS := $(shell cat $(XMHF_DIR)/SLABS)
+#export XMHF_SLAB_DIRS := $(shell cat $(XMHF_DIR)/SLABS)
+export XMHF_SLAB_DIRS := $(shell awk -F, '{print $$1}' $(XMHF_DIR)/SLABS)
+
 XMHF_SLAB_NAMES := $(notdir $(XMHF_SLAB_DIRS))
 
 
@@ -213,6 +215,7 @@ export XMHF_LIBS_OBJECTS_DIR := $(XMHF_OBJDIR)/_objs_xmhf-libs
 all: genfiles xmhflibs xmhfslabs xmhfbin
 #all:
 #	xmhfgenslabtable.pl $(XMHF_SLAB_NAMES)
+#	echo $(XMHF_SLAB_DIRS)
 
 .PHONY: genfiles
 genfiles:
