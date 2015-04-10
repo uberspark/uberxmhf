@@ -14,7 +14,7 @@ XMHF_INC = $(CURDIR)/include
 XMHF_HWM_INC = $(CURDIR)/xmhf-hwm/include
 
 # XMHF HIC include directory
-XMHF_HIC_INC = $(CURDIR)/xmhf-hic/include
+# XMHF_HIC_INC = $(CURDIR)/xmhf-hic/include
 
 # verification directory (used for verification without polluting source namespace)
 export XMHF_VERIFYDIR := $(CURDIR)/_verify
@@ -23,7 +23,7 @@ export XMHF_VERIFYDIR := $(CURDIR)/_verify
 export XMHFLIBS_SRC := $(realpath @XMHFLIBS_SRC@)
 
 # XMHF HIC source location
-export XMHFHIC_SRC := $(realpath xmhf-hic/)
+export XMHFHIC_SRC := $(realpath xmhf-slabs/geec-prime/)
 
 # XMHF core source location
 export XMHFCORE_SRC := $(realpath xmhf-slabs/xmhf-core)
@@ -44,7 +44,7 @@ XMHFLIBS_INC = $(foreach dir,$(XMHFLIBS_SUBLIBS),-I$(dir)/include)
 export ADDL_INCLUDES := -I$(realpath xmhf-slabs/include)
 export XMHFLIBS_DIR := $(XMHF_OBJDIR)/_objs_xmhf-libs
 #ADDL_INCLUDES += -I$(XMHF_INC) $(XMHFCORE_INC) $(XMHFLIBS_INC)
-ADDL_INCLUDES += -I$(XMHF_INC) -I$(XMHF_HWM_INC) -I$(XMHF_HIC_INC) $(XMHFLIBS_INC)
+ADDL_INCLUDES += -I$(XMHF_INC) -I$(XMHF_HWM_INC) $(XMHFLIBS_INC)
 
 ##################################################################################
 ### BEGIN Variables controlled using autoconf
@@ -198,27 +198,42 @@ export CFLAGS
 export VFLAGS
 export CCERT_FLAGS
 
-export XMHF_SLAB_DIRS := $(shell cat $(XMHF_DIR)/SLABS)
+#export XMHF_SLAB_DIRS := $(shell cat $(XMHF_DIR)/SLABS)
+export XMHF_SLAB_DIRS := $(shell awk -F, '{print $$1}' $(XMHF_DIR)/SLABS)
+
 XMHF_SLAB_NAMES := $(notdir $(XMHF_SLAB_DIRS))
+
+
+export XMHF_LIBDIRS := $(wildcard $(XMHF_DIR)/xmhf-libs/lib*)
+export XMHF_LIBS_OBJECTS_DIR := $(XMHF_OBJDIR)/_objs_xmhf-libs
+
+
 
 .PHONY: all
 #all: genfiles libshared subdirs
-all: genfiles xmhflibs xmhfhic xmhfslabs xmhfbin
+#all: genfiles xmhflibs xmhfhic xmhfslabs xmhfbin
+all: genfiles xmhflibs xmhfslabs xmhfbin
 #all:
 #	xmhfgenslabtable.pl $(XMHF_SLAB_NAMES)
+#	echo $(XMHF_SLAB_DIRS)
 
 .PHONY: genfiles
 genfiles:
 	mkdir -p $(XMHF_OBJDIR)
 	cd $(XMHF_OBJDIR) && xmhfgenlscript.pl $(XMHF_SLAB_NAMES) >xmhf.lscript
 #	cd $(XMHF_OBJDIR) && xmhfgenslabtable.pl $(XMHF_SLAB_NAMES) >$(XMHF_DIR)/xmhf-slabs/shared/shared-slabtable.c
-	cd $(XMHF_OBJDIR) && xmhfgenslabtable.pl $(XMHF_SLAB_NAMES) >$(XMHF_DIR)/xmhf-hic/__xmhfhic_initdata_slabtable
+	cd $(XMHF_OBJDIR) && xmhfgenslabtable.pl $(XMHF_SLAB_NAMES) >$(XMHF_DIR)/xmhf-slabs/geec_sentinel/__geec_sentinel_autogendata_slabinfotable
 
 
 .PHONY: xmhflibs
 xmhflibs:
 	@echo Building XMHF libs...
-	cd $(XMHF_OBJDIR) && $(MAKE) -f $(XMHFLIBS_SRC)/Makefile -w all
+	#cd $(XMHF_OBJDIR) && $(MAKE) -f $(XMHFLIBS_SRC)/Makefile -w all
+	mkdir -p $(XMHF_LIBS_OBJECTS_DIR)
+	@for i in $(XMHF_LIBDIRS); \
+	do \
+		(cd $(XMHF_LIBS_OBJECTS_DIR) &&	echo "Making all in $$i..." && $(MAKE) -f $$i/Makefile -w all) || exit 1; \
+	done;
 	@echo XMHF libs build SUCCESS
 
 .PHONY: xmhfhic
@@ -229,6 +244,7 @@ xmhfhic:
 
 .PHONY: xmhfslabs
 xmhfslabs:
+	cd $(XMHF_DIR) && slabconf.pl $(XMHF_DIR) SLABS
 	@echo Building slabs...
 	@for i in $(XMHF_SLAB_DIRS); \
 	do \
@@ -284,7 +300,7 @@ test:
 #.PHONY: clean distclean init-late-clean
 .PHONY: clean distclean
 clean:
-	$(RM) -f $(XMHF_DIR)/xmhf-hic/__xmhfhic_initdata_slabtable
+	$(RM) -f $(XMHF_DIR)/geec-prime/__xmhfhic_initdata_slabtable
 	rm -rf *.html
 	rm -rf doc
 	$(RM) -rf $(XMHF_OBJDIR)

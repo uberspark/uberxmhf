@@ -1,18 +1,16 @@
-xmhf-slabs/xmhf-core/xcinit
-xmhf-slabs/xmhf-core/xcihub
-xmhf-slabs/xmhf-core/xcexhub
-xmhf-slabs/xmhf-core/xctestslab1
-xmhf-slabs/hypapps/xhhyperdep
-xmhf-slabs/hypapps/xhapprovexec
-xmhf-slabs/hypapps/xhsyscalllog
-xmhf-slabs/hypapps/xhssteptrace
-xmhf-slabs/xmhf-core/xcguestslab
-
-
-
-
-
-
-
-
-
+xmhf-slabs/geec_prime , tprimeslab
+xmhf-slabs/geec_sentinel , tprogslab
+xmhf-slabs/geec_primesmp , tprogslab
+xmhf-slabs/uapi_gcpustate , tprogslab
+xmhf-slabs/uapi_hcpustate , tprogslab
+xmhf-slabs/uapi_slabmemacc , tprogslab
+xmhf-slabs/uapi_slabmempgtbl , tprogslab
+xmhf-slabs/xc_init , tprogslab
+xmhf-slabs/xc_ihub , tprogslab
+xmhf-slabs/xc_exhub , tprogslab
+xmhf-slabs/xc_testslab , tprogslab
+xmhf-slabs/xh_hyperdep , tprogslab
+xmhf-slabs/xh_approvexec , tprogslab
+xmhf-slabs/xh_syscalllog , tprogslab
+xmhf-slabs/xh_ssteptrace , tprogslab
+xmhf-slabs/xg_richguest , ugprogslab
