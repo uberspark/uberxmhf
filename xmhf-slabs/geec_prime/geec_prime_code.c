@@ -50,7 +50,7 @@
 #include <xmhfgeec.h>
 
 #include <geec_prime.h>
-#include <geecsentinel.h>
+#include <geec_sentinel.h>
 #include <uapi_slabmempgtbl.h>
 
 __attribute__((aligned(4096))) static u64 _xcprimeon_init_pdt[PAE_PTRS_PER_PDPT][PAE_PTRS_PER_PDT];
