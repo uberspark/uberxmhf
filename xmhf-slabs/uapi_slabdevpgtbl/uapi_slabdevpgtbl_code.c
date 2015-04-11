@@ -58,6 +58,27 @@
 #include <uapi_slabdevpgtbl.h>
 
 
+__attribute__((section(".data"))) __attribute__((aligned(4096))) static vtd_ret_entry_t _slabdevpgtbl_vtd_ret[VTD_RET_MAXPTRS];
+__attribute__((section(".data"))) __attribute__((aligned(4096))) static vtd_cet_entry_t _slabdevpgtbl_vtd_cet[VTD_RET_MAXPTRS][VTD_CET_MAXPTRS];
+__attribute__((section(".data"))) static bool _slabdevpgtbl_initretcet_done = false;
+
+
+static void _slabdevpgtbl_initretcet(void){
+    u32 i, j;
+
+    for(i=0; i< VTD_RET_MAXPTRS; i++){
+        _slabdevpgtbl_vtd_ret[i].qwords[0] =
+            vtd_make_rete((u64)&_slabdevpgtbl_vtd_cet[i], VTD_RET_PRESENT);
+        _slabdevpgtbl_vtd_ret[i].qwords[1] = 0ULL;
+
+        for(j=0; j < VTD_CET_MAXPTRS; j++){
+            _slabdevpgtbl_vtd_cet[i][j].qwords[0] =
+                _slabdevpgtbl_vtd_cet[i][j].qwords[1] = 0ULL;
+        }
+    }
+}
+
+
 
 /////
 void slab_main(slab_params_t *sp){
@@ -65,7 +86,18 @@ void slab_main(slab_params_t *sp){
     xmhf_uapi_params_hdr_t *uapiphdr = (xmhf_uapi_params_hdr_t *)sp->in_out_params;
 
     switch(uapiphdr->uapifn){
+        case XMHFGEEC_UAPI_SDEVPGTBL_INITRETCET:{
+            xmhfgeec_uapi_slabdevpgtbl_initretcet_params_t *initretcetp =
+                (xmhfgeec_uapi_slabdevpgtbl_initretcet_params_t *)sp->in_out_params;
 
+            if(!_slabdevpgtbl_initretcet_done){
+                _slabdevpgtbl_initretcet();
+                _slabdevpgtbl_initretcet_done = true;
+            }
+
+            initretcetp->result_retpaddr = (u32)&_slabdevpgtbl_vtd_ret;
+        }
+        break;
 
         default:
             _XDPRINTF_("UAPI_SLABDEVPGTBL[%u]: Unknown uAPI function %x. Halting!\n",

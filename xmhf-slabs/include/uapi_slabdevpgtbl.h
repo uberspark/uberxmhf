@@ -55,9 +55,15 @@
 #ifndef __UAPI_SLABDEVPGTBL_H__
 #define __UAPI_SLABDEVPGTBL_H__
 
+#define XMHFGEEC_UAPI_SDEVPGTBL_INITRETCET      (0x1)
+
 
 #ifndef __ASSEMBLY__
 
+typedef struct {
+    xmhf_uapi_params_hdr_t uapiphdr;
+    u32 result_retpaddr;
+}__attribute__((packed)) xmhfgeec_uapi_slabdevpgtbl_initretcet_params_t;
 
 
 
