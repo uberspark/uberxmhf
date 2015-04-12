@@ -88,8 +88,6 @@ typedef struct {
 
 
 typedef struct {
-    u32 paddr_lvl1table;
-    u32 paddr_lvl2table;
     bool devpgtbl_initialized;
 }__attribute__((packed)) _slabdevpgtbl_infotable_t;
 

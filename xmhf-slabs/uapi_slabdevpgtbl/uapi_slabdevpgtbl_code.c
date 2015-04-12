@@ -80,8 +80,6 @@ static void _slabdevpgtbl_init(void){
     u32 i;
 
     for(i=0; i < XMHF_HIC_MAX_SLABS; i++){
-        _slabdevpgtbl_infotable[i].paddr_lvl1table = 0;
-        _slabdevpgtbl_infotable[i].paddr_lvl2table = 0;
         _slabdevpgtbl_infotable[i].devpgtbl_initialized=false;
     }
 
@@ -168,10 +166,7 @@ static void _slabdevpgtbl_initdevpgtbl(u32 slabid){
     } while (paddr < paddr_dmadata_end);
 
 
-    _slabdevpgtbl_infotable[slabid].paddr_lvl1table = (u32)&_slabdevpgtbl_pml4t[slabid];
-    _slabdevpgtbl_infotable[slabid].paddr_lvl2table = (u32)&_slabdevpgtbl_pdpt[slabid];
     _slabdevpgtbl_infotable[slabid].devpgtbl_initialized = true;
-
 }
 
 
