@@ -61,7 +61,11 @@
 
 __attribute__((section(".data"))) __attribute__((aligned(4096))) static vtd_ret_entry_t _slabdevpgtbl_vtd_ret[VTD_RET_MAXPTRS];
 __attribute__((section(".data"))) __attribute__((aligned(4096))) static vtd_cet_entry_t _slabdevpgtbl_vtd_cet[VTD_RET_MAXPTRS][VTD_CET_MAXPTRS];
+
+__attribute__((section(".data"))) static bool _slabdevpgtbl_init_done = false;
 __attribute__((section(".data"))) static bool _slabdevpgtbl_initretcet_done = false;
+
+
 
 
 __attribute__((section(".data"))) __attribute__((aligned(4096))) vtd_pml4te_t _slabdevpgtbl_pml4t[XMHF_HIC_MAX_SLABS][PAE_MAXPTRS_PER_PML4T];
@@ -69,6 +73,20 @@ __attribute__((section(".data"))) __attribute__((aligned(4096))) vtd_pdpte_t _sl
 __attribute__((section(".data"))) __attribute__((aligned(4096))) vtd_pdte_t _slabdevpgtbl_pdt[XMHF_HIC_MAX_SLABS][PAE_PTRS_PER_PDPT][PAE_PTRS_PER_PDT];
 __attribute__((section(".data"))) __attribute__((aligned(4096))) vtd_pte_t _slabdevpgtbl_pt[XMHF_HIC_MAX_SLABS][16][PAE_PTRS_PER_PT];
 __attribute__((section(".data"))) _slabdevpgtbl_infotable_t _slabdevpgtbl_infotable[XMHF_HIC_MAX_SLABS];
+
+
+static void _slabdevpgtbl_init(void){
+    u32 i;
+
+    for(i=0; i < XMHF_HIC_MAX_SLABS; i++){
+        _slabdevpgtbl_infotable[i].paddr_lvl1table = 0;
+        _slabdevpgtbl_infotable[i].paddr_lvl2table = 0;
+        _slabdevpgtbl_infotable[i].devpgtbl_initialized=false;
+    }
+
+}
+
+
 
 static void _slabdevpgtbl_initretcet(void){
     u32 i, j;
@@ -163,26 +181,43 @@ void slab_main(slab_params_t *sp){
     xmhf_uapi_params_hdr_t *uapiphdr = (xmhf_uapi_params_hdr_t *)sp->in_out_params;
 
     switch(uapiphdr->uapifn){
+        case XMHFGEEC_UAPI_SDEVPGTBL_INIT:{
+            if(!_slabdevpgtbl_init_done){
+                _slabdevpgtbl_init();
+                _slabdevpgtbl_init_done=true;
+            }
+        }
+        break;
+
+
         case XMHFGEEC_UAPI_SDEVPGTBL_INITRETCET:{
             xmhfgeec_uapi_slabdevpgtbl_initretcet_params_t *initretcetp =
                 (xmhfgeec_uapi_slabdevpgtbl_initretcet_params_t *)sp->in_out_params;
 
-            if(!_slabdevpgtbl_initretcet_done){
-                _slabdevpgtbl_initretcet();
-                _slabdevpgtbl_initretcet_done = true;
+            if(_slabdevpgtbl_init_done){
+                if(!_slabdevpgtbl_initretcet_done){
+                    _slabdevpgtbl_initretcet();
+                    _slabdevpgtbl_initretcet_done = true;
+                }
+
+                initretcetp->result_retpaddr = (u32)&_slabdevpgtbl_vtd_ret;
+            }else{
+                initretcetp->result_retpaddr = 0;
             }
 
-            initretcetp->result_retpaddr = (u32)&_slabdevpgtbl_vtd_ret;
         }
         break;
+
 
         case XMHFGEEC_UAPI_SDEVPGTBL_INITDEVPGTBL:{
             xmhfgeec_uapi_slabdevpgtbl_initdevpgtbl_params_t *initdevpgtbl =
                 (xmhfgeec_uapi_slabdevpgtbl_initdevpgtbl_params_t *)sp->in_out_params;
 
-            _slabdevpgtbl_initdevpgtbl(initdevpgtbl->dst_slabid);
+            if(_slabdevpgtbl_init_done)
+                _slabdevpgtbl_initdevpgtbl(initdevpgtbl->dst_slabid);
         }
         break;
+
 
         default:
             _XDPRINTF_("UAPI_SLABDEVPGTBL[%u]: Unknown uAPI function %x. Halting!\n",
