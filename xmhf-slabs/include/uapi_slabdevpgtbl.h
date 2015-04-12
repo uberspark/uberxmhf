@@ -56,6 +56,7 @@
 #define __UAPI_SLABDEVPGTBL_H__
 
 #define XMHFGEEC_UAPI_SDEVPGTBL_INITRETCET      (0x1)
+#define XMHFGEEC_UAPI_SDEVPGTBL_INITDEVPGTBL    (0x2)
 
 
 #ifndef __ASSEMBLY__
@@ -66,7 +67,16 @@ typedef struct {
 }__attribute__((packed)) xmhfgeec_uapi_slabdevpgtbl_initretcet_params_t;
 
 
+typedef struct {
+    xmhf_uapi_params_hdr_t uapiphdr;
+    u32 dst_slabid;
+}__attribute__((packed)) xmhfgeec_uapi_slabdevpgtbl_initdevpgtbl_params_t;
 
+typedef struct {
+    u32 paddr_lvl1table;
+    u32 paddr_lvl2table;
+    bool devpgtbl_initialized;
+}__attribute__((packed)) _slabdevpgtbl_infotable_t;
 
 #endif	//__ASSEMBLY__
 

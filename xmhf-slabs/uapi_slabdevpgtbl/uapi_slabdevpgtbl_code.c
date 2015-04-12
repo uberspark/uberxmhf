@@ -55,6 +55,7 @@
 
 #include <xmhfgeec.h>
 
+#include <geec_sentinel.h>
 #include <uapi_slabdevpgtbl.h>
 
 
@@ -62,6 +63,12 @@ __attribute__((section(".data"))) __attribute__((aligned(4096))) static vtd_ret_
 __attribute__((section(".data"))) __attribute__((aligned(4096))) static vtd_cet_entry_t _slabdevpgtbl_vtd_cet[VTD_RET_MAXPTRS][VTD_CET_MAXPTRS];
 __attribute__((section(".data"))) static bool _slabdevpgtbl_initretcet_done = false;
 
+
+__attribute__((section(".data"))) __attribute__((aligned(4096))) vtd_pml4te_t _slabdevpgtbl_pml4t[XMHF_HIC_MAX_SLABS][PAE_MAXPTRS_PER_PML4T];
+__attribute__((section(".data"))) __attribute__((aligned(4096))) vtd_pdpte_t _slabdevpgtbl_pdpt[XMHF_HIC_MAX_SLABS][PAE_MAXPTRS_PER_PDPT];
+__attribute__((section(".data"))) __attribute__((aligned(4096))) vtd_pdte_t _slabdevpgtbl_pdt[XMHF_HIC_MAX_SLABS][PAE_PTRS_PER_PDPT][PAE_PTRS_PER_PDT];
+__attribute__((section(".data"))) __attribute__((aligned(4096))) vtd_pte_t _slabdevpgtbl_pt[XMHF_HIC_MAX_SLABS][16][PAE_PTRS_PER_PT];
+__attribute__((section(".data"))) _slabdevpgtbl_infotable_t _slabdevpgtbl_infotable[XMHF_HIC_MAX_SLABS];
 
 static void _slabdevpgtbl_initretcet(void){
     u32 i, j;
@@ -76,6 +83,76 @@ static void _slabdevpgtbl_initretcet(void){
                 _slabdevpgtbl_vtd_cet[i][j].qwords[1] = 0ULL;
         }
     }
+}
+
+
+
+static void _slabdevpgtbl_initdevpgtbl(u32 slabid){
+    u32 i;
+    u64 default_flags = (VTD_PAGE_READ | VTD_PAGE_WRITE);
+    u32 paddr=0, pt_paddr;
+    u32 pt_index=0;
+    u32 paddr_dmadata_start, paddr_dmadata_end;
+
+    paddr_dmadata_start =
+        _xmhfhic_common_slab_info_table[slabid].slab_physmem_extents[3].addr_start;
+    paddr_dmadata_end =
+        _xmhfhic_common_slab_info_table[slabid].slab_physmem_extents[3].addr_end;
+
+    //sanity checks
+    if(slabid > XMHF_HIC_MAX_SLABS){
+        _XDPRINTF_("%s: Error: slabid (%u) > XMHF_HIC_MAX_SLABS(%u). bailing out!\n", __func__, slabid, XMHF_HIC_MAX_SLABS);
+        return;
+    }
+    if( (paddr_dmadata_end - paddr_dmadata_start) >
+        (PAGE_SIZE_2M * 16) ){
+        _XDPRINTF_("%s: Error: slab %u dmadata section over limit. bailing out!\n",
+                   __func__, slabid);
+        return;
+    }
+
+
+    //initialize lvl1 page table (pml4t)
+    memset(&_slabdevpgtbl_pml4t[slabid], 0, sizeof(_slabdevpgtbl_pml4t[0]));
+    _slabdevpgtbl_pml4t[slabid][0] =
+        vtd_make_pml4te((u64)_slabdevpgtbl_pdpt[slabid], default_flags);
+
+    //initialize lvl2 page table (pdpt)
+    memset(&_slabdevpgtbl_pdpt[slabid], 0, sizeof(_slabdevpgtbl_pdpt[0]));
+    for(i=0; i < VTD_PTRS_PER_PDPT; i++){
+        _slabdevpgtbl_pdpt[slabid][i] =
+            vtd_make_pdpte((u64)_slabdevpgtbl_pdt[slabid][i], default_flags);
+    }
+
+
+    paddr = paddr_dmadata_start;
+
+    do {
+        //grab index of pdpt, pdt this paddr
+        u32 pdpt_index = pae_get_pdpt_index(paddr);
+        u32 pdt_index = pae_get_pdt_index(paddr);
+
+        //stick a pt for the pdt entry
+        _slabdevpgtbl_pdt[slabid][pdpt_index][pdt_index] =
+            vtd_make_pdte((u64)_slabdevpgtbl_pt[slabid][pt_index], default_flags);
+
+        //populate pt entries
+        pt_paddr = paddr;
+        for(i=0; i < VTD_PTRS_PER_PT; i++){
+            _slabdevpgtbl_pt[slabid][pt_index][i] =
+                vtd_make_pte(pt_paddr, default_flags);
+            pt_paddr += PAGE_SIZE_4K;
+        }
+
+        pt_index++;
+        paddr += PAGE_SIZE_2M;
+    } while (paddr < paddr_dmadata_end);
+
+
+    _slabdevpgtbl_infotable[slabid].paddr_lvl1table = (u32)&_slabdevpgtbl_pml4t[slabid];
+    _slabdevpgtbl_infotable[slabid].paddr_lvl2table = (u32)&_slabdevpgtbl_pdpt[slabid];
+    _slabdevpgtbl_infotable[slabid].devpgtbl_initialized = true;
+
 }
 
 
@@ -96,6 +173,14 @@ void slab_main(slab_params_t *sp){
             }
 
             initretcetp->result_retpaddr = (u32)&_slabdevpgtbl_vtd_ret;
+        }
+        break;
+
+        case XMHFGEEC_UAPI_SDEVPGTBL_INITDEVPGTBL:{
+            xmhfgeec_uapi_slabdevpgtbl_initdevpgtbl_params_t *initdevpgtbl =
+                (xmhfgeec_uapi_slabdevpgtbl_initdevpgtbl_params_t *)sp->in_out_params;
+
+            _slabdevpgtbl_initdevpgtbl(initdevpgtbl->dst_slabid);
         }
         break;
 
