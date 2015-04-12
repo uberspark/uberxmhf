@@ -64,6 +64,7 @@ __attribute__((section(".data"))) __attribute__((aligned(4096))) static vtd_cet_
 
 __attribute__((section(".data"))) static bool _slabdevpgtbl_init_done = false;
 __attribute__((section(".data"))) static bool _slabdevpgtbl_initretcet_done = false;
+__attribute__((section(".data"))) static u32 _slabdevpgtbl_vtd_pagewalk_level = VTD_PAGEWALK_NONE;
 
 
 
@@ -174,6 +175,49 @@ static void _slabdevpgtbl_initdevpgtbl(u32 slabid){
 }
 
 
+static void _slabdevpgtbl_binddevice(u32 slabid, u32 bus, u32 dev, u32 func){
+    //sanity checks
+    if(slabid > XMHF_HIC_MAX_SLABS){
+        _XDPRINTF_("%s: Error: slabid (%u) > XMHF_HIC_MAX_SLABS(%u). bailing out!\n", __func__, slabid, XMHF_HIC_MAX_SLABS);
+        return;
+    }
+
+    if(!_slabdevpgtbl_infotable[slabid].devpgtbl_initialized){
+        _XDPRINTF_("%s: Error: slabid (%u) devpgtbl not initialized\n",
+                   __func__, slabid);
+        return;
+    }
+
+    if ( !(bus < PCI_BUS_MAX &&
+           dev < PCI_DEVICE_MAX &&
+           func < PCI_FUNCTION_MAX) ){
+        _XDPRINTF_("%s: Error: slabid (%u) b:d:f out of limits\n",
+                   __func__, slabid);
+        return;
+    }
+
+    //b is our index into ret
+    // (d* PCI_FUNCTION_MAX) + f = index into the cet
+    if(_slabdevpgtbl_vtd_pagewalk_level == VTD_PAGEWALK_4LEVEL){
+        _slabdevpgtbl_vtd_cet[bus][((dev*PCI_FUNCTION_MAX) + func)].qwords[0] =
+            vtd_make_cete((u64)&_slabdevpgtbl_pml4t[slabid], VTD_CET_PRESENT);
+        _slabdevpgtbl_vtd_cet[bus][((dev*PCI_FUNCTION_MAX) + func)].qwords[1] =
+            vtd_make_cetehigh(2, (slabid+1));
+    }else if (_slabdevpgtbl_vtd_pagewalk_level == VTD_PAGEWALK_3LEVEL){
+        _slabdevpgtbl_vtd_cet[bus][((dev*PCI_FUNCTION_MAX) + func)].qwords[0] =
+            vtd_make_cete((u64)&_slabdevpgtbl_pdpt[slabid], VTD_CET_PRESENT);
+        _slabdevpgtbl_vtd_cet[bus][((dev*PCI_FUNCTION_MAX) + func)].qwords[1] =
+            vtd_make_cetehigh(1, (slabid+1));
+    }else{ //unknown page walk length, fail
+        _XDPRINTF_("%s: Error: slabid (%u) unknown pagewalk\n",
+                   __func__, slabid);
+        return;
+    }
+
+
+}
+
+
 
 /////
 void slab_main(slab_params_t *sp){
@@ -218,6 +262,16 @@ void slab_main(slab_params_t *sp){
         }
         break;
 
+
+        case XMHFGEEC_UAPI_SDEVPGTBL_BINDDEVICE:{
+            xmhfgeec_uapi_slabdevpgtbl_binddevice_params_t *binddevice =
+                (xmhfgeec_uapi_slabdevpgtbl_binddevice_params_t *)sp->in_out_params;
+
+            if(_slabdevpgtbl_init_done)
+                _slabdevpgtbl_binddevice(binddevice->dst_slabid,
+                                        binddevice->bus, binddevice->dev, binddevice->func);
+        }
+        break;
 
         default:
             _XDPRINTF_("UAPI_SLABDEVPGTBL[%u]: Unknown uAPI function %x. Halting!\n",
