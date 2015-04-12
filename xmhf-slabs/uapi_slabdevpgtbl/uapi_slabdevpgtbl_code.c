@@ -76,13 +76,14 @@ __attribute__((section(".data"))) __attribute__((aligned(4096))) vtd_pte_t _slab
 __attribute__((section(".data"))) _slabdevpgtbl_infotable_t _slabdevpgtbl_infotable[XMHF_HIC_MAX_SLABS];
 
 
-static void _slabdevpgtbl_init(void){
+static void _slabdevpgtbl_init(u32 pagewalk_level){
     u32 i;
 
     for(i=0; i < XMHF_HIC_MAX_SLABS; i++){
         _slabdevpgtbl_infotable[i].devpgtbl_initialized=false;
     }
 
+    _slabdevpgtbl_vtd_pagewalk_level = pagewalk_level;
 }
 
 
@@ -221,8 +222,11 @@ void slab_main(slab_params_t *sp){
 
     switch(uapiphdr->uapifn){
         case XMHFGEEC_UAPI_SDEVPGTBL_INIT:{
+            xmhfgeec_uapi_slabdevpgtbl_init_params_t *initp =
+                (xmhfgeec_uapi_slabdevpgtbl_init_params_t *)sp->in_out_params;
+
             if(!_slabdevpgtbl_init_done){
-                _slabdevpgtbl_init();
+                _slabdevpgtbl_init(initp->pagewalk_level);
                 _slabdevpgtbl_init_done=true;
             }
         }
