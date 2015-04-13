@@ -104,6 +104,34 @@ static void _slabmempgtbl_initmempgtbl_pae2Mmmio(u32 slabid){
 
 }
 
+static void _slabmempgtbl_initmempgtbl_ept4K(u32 slabid){
+    //pml4t = _slabmempgtbl_lvl4t[slabid];
+    //pdpt = _slabmempgtbl_lvl3t[slabid];
+    //pdt = _slabmempgtbl_lvl2t[slabid];
+    //pt = _slabmempgtbl_lvl1t_richguest[slabid];
+    u32 i, j;
+
+    //pml4t
+    memset(&_slabmempgtbl_lvl4t[slabid], 0, PAGE_SIZE_4K);
+    for(i=0; i < PAE_PTRS_PER_PML4T; i++)
+        _slabmempgtbl_lvl4t[slabid][i] =
+            ((u64)&_slabmempgtbl_lvl3t[slabid] | 0x7);
+
+    //pdpt
+    memset(&_slabmempgtbl_lvl3t[slabid], 0, PAGE_SIZE_4K);
+    for(i=0; i < PAE_PTRS_PER_PDPT; i++)
+		_slabmempgtbl_lvl3t[slabid][i] =
+            ((u64)&_slabmempgtbl_lvl2t[slabid][i] | 0x7 );
+
+    //pdt
+	for(i=0; i < PAE_PTRS_PER_PDPT; i++){
+		for(j=0; j < PAE_PTRS_PER_PDT; j++){
+			_slabmempgtbl_lvl2t[slabid][i][j] =
+                ((u64)&_slabmempgtbl_lvl1t_richguest[slabid][i][j] | 0x7 );
+		}
+	}
+}
+
 
 static void _slabmempgtbl_initmempgtbl(u32 slabid){
     u32 slabtype;
@@ -122,6 +150,10 @@ static void _slabmempgtbl_initmempgtbl(u32 slabid){
         }
         break;
 
+        case XMHFGEEC_SLABTYPE_UGRICHGUESTSLAB:{
+            _slabmempgtbl_initmempgtbl_ept4K(slabid);
+        }
+        break;
 
         default:
             _XDPRINTF_("%s: unknown slab type %u\n", __func__, slabtype);
