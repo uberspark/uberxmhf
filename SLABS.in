@@ -5,6 +5,7 @@ xmhf-slabs/uapi_gcpustate , tprogslab
 xmhf-slabs/uapi_hcpustate , tprogslab
 xmhf-slabs/uapi_slabmemacc , tprogslab
 xmhf-slabs/uapi_slabmempgtbl , tprogslab
+xmhf-slabs/uapi_slabdevpgtbl , tprogslab
 xmhf-slabs/xc_init , tprogslab
 xmhf-slabs/xc_ihub , tprogslab
 xmhf-slabs/xc_exhub , tprogslab
