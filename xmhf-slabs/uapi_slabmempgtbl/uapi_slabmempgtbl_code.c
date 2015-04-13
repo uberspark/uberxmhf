@@ -71,6 +71,13 @@ __attribute__((section(".data"))) __attribute__((aligned(4096)))  u64 _dbuf_memp
 #endif //__XMHF_VERIFICATION__
 
 
+__attribute__((section(".rwdatahdr"))) __attribute__((aligned(4096))) u64 _slabmempgtbl_lvl4t[XMHF_HIC_MAX_SLABS][PAE_MAXPTRS_PER_PML4T];
+__attribute__((section(".data"))) __attribute__((aligned(4096))) u64 _slabmempgtbl_lvl3t[XMHF_HIC_MAX_SLABS][PAE_MAXPTRS_PER_PDPT];
+__attribute__((section(".data"))) __attribute__((aligned(4096))) u64 _slabmempgtbl_lvl2t[XMHF_HIC_MAX_SLABS][PAE_PTRS_PER_PDPT][PAE_PTRS_PER_PDT];
+__attribute__((section(".data"))) __attribute__((aligned(4096)))  u64 _slabmempgtbl_lvl1t_mmio[XMHF_HIC_MAX_SLABS][PAE_PTRS_PER_PT];
+__attribute__((section(".data"))) __attribute__((aligned(4096)))  u64 _slabmempgtbl_lvl1t_richguest[PAE_PTRS_PER_PDPT][PAE_PTRS_PER_PDT][PAE_PTRS_PER_PT];
+
+
 static void _slabmempgtbl_initmempgtbl(u32 slabid){
     //sanity checks
     if(slabid >= XMHF_HIC_MAX_SLABS)
