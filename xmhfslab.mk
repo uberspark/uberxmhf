@@ -33,6 +33,10 @@ ifeq ($(XMHF_SLAB_TYPE), ugprogslab)
 	XMHF_SLAB_STUBOBJECTS := $(XMHFLIBS_DIR)/xmhfgeec_slabmapdef.o $(XMHFLIBS_DIR)/xmhfgeec_tprogslab_stubs.o
 endif
 
+ifeq ($(XMHF_SLAB_TYPE), ugrichguestslab)
+	XMHF_SLAB_STUBOBJECTS := $(XMHFLIBS_DIR)/xmhfgeec_slabmapdef.o $(XMHFLIBS_DIR)/xmhfgeec_tprogslab_stubs.o
+endif
+
 ifeq ($(XMHF_SLAB_TYPE), tprimeslab)
 	XMHF_SLAB_STUBOBJECTS := $(XMHFLIBS_DIR)/xmhfgeec_slabmapdef.o $(XMHFLIBS_DIR)/xmhfgeec_tprimeslab_stubs.o
 endif

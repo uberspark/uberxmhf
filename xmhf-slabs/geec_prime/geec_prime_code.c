@@ -1310,7 +1310,9 @@ void xmhfhic_arch_setup_slab_mem_page_tables(void){
                //);
 
                 switch(_xmhfhic_common_slab_info_table[i].archdata.slabtype){
-                    case HIC_SLAB_X86VMXX86PC_HYPERVISOR:{
+                    case XMHFGEEC_SLABTYPE_TPRIMESLAB:
+                    case XMHFGEEC_SLABTYPE_TPROGSLAB:
+                    case XMHFGEEC_SLABTYPE_UPROGSLAB:{
                         _XDPRINTF_("  HYPERVISOR slab: populating page tables\n");
 
                         #if 0
@@ -1321,7 +1323,8 @@ void xmhfhic_arch_setup_slab_mem_page_tables(void){
                     }
                     break;
 
-                    case HIC_SLAB_X86VMXX86PC_GUEST:{
+                    case XMHFGEEC_SLABTYPE_UGPROGSLAB:
+                    case XMHFGEEC_SLABTYPE_UGRICHGUESTSLAB:{
                         _XDPRINTF_("  GUEST slab: populating page tables\n");
 
                         _xmhfhic_common_slab_info_table[i].archdata.mempgtbl_cr3 = __xmhfhic_arch_smt_slab_populate_guest_pagetables(i) | 0x1E;

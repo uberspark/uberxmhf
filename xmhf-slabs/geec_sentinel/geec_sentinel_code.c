@@ -142,7 +142,7 @@ void __xmhfhic_rtm_trampoline(u64 hic_calltype, slab_input_params_t *iparams, u6
 
             switch(_xmhfhic_common_slab_info_table[dst_slabid].archdata.slabtype){
 
-                case HIC_SLAB_X86VMXX86PC_HYPERVISOR:{
+                case XMHFGEHIC_SLAB_X86VMXX86PC_HYPERVISOR:{
                     slab_input_params_t *newiparams;
                     slab_output_params_t *newoparams;
 
@@ -724,7 +724,7 @@ void slab_main(slab_params_t *sp){
 
     switch (_xmhfhic_common_slab_info_table[sp->dst_slabid].archdata.slabtype){
 
-        case HIC_SLAB_X86VMXX86PC_HYPERVISOR:{
+        case XMHFGEEC_SLABTYPE_TPROGSLAB:{
             FPSLABMAIN slab_main;
 
             slab_main = (FPSLABMAIN)_xmhfhic_common_slab_info_table[sp->dst_slabid].entrystub;
@@ -733,7 +733,8 @@ void slab_main(slab_params_t *sp){
         }
         break;
 
-        case HIC_SLAB_X86VMXX86PC_GUEST:{
+        case XMHFGEEC_SLABTYPE_UGPROGSLAB:
+        case XMHFGEEC_SLABTYPE_UGRICHGUESTSLAB:{
              CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_CONTROL_VPID, sp->dst_slabid );
              CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_CONTROL_EPT_POINTER_FULL, _xmhfhic_common_slab_info_table[sp->dst_slabid].archdata.mempgtbl_cr3);
              CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_CONTROL_EPT_POINTER_HIGH, 0);
