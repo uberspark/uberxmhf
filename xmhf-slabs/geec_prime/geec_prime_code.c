@@ -378,7 +378,7 @@ void xmhfhic_arch_sanity_check_requirements(void){
 //setup slab device allocation (sda)
 
 
-__attribute__((section(".data"))) __attribute__((aligned(4096))) static vtd_ret_entry_t _vtd_ret[VTD_RET_MAXPTRS];
+//__attribute__((section(".data"))) __attribute__((aligned(4096))) static vtd_ret_entry_t _vtd_ret[VTD_RET_MAXPTRS];
 
 /*
 __attribute__((aligned(4096))) static vtd_cet_entry_t _vtd_cet[VTD_RET_MAXPTRS][VTD_CET_MAXPTRS];
@@ -404,19 +404,13 @@ static u64 _platform_x86pc_vtd_setup_retcet(void){
 */
 
 //initialize vtd hardware and return vt-d pagewalk level
-static u32 _geec_prime_vtd_initialize(void){
-    u64 vtd_ret_addr;
+static u32 _geec_prime_vtd_initialize(u32 vtd_ret_addr){
     u32 vtd_pagewalk_level = VTD_PAGEWALK_NONE;
     vtd_drhd_handle_t vtd_drhd_maxhandle=0;
 	vtd_drhd_handle_t drhd_handle;
 	u32 vtd_dmar_table_physical_address=0;
     vtd_slpgtbl_handle_t vtd_slpgtbl_handle;
     u32 i, b, d, f;
-
-	//setup NULL RET; will initially prevent DMA reads and writes
-	//for the entire system
-    memset(&_vtd_ret, 0, sizeof(_vtd_ret));
-    vtd_ret_addr = (u64)&_vtd_ret;
 
 	//scan for available DRHD units in the platform
 	if(!xmhfhw_platform_x86pc_vtd_scanfor_drhd_units(&vtd_drhd_maxhandle, &vtd_dmar_table_physical_address)){
@@ -795,6 +789,8 @@ void xmhfhic_arch_setup_slab_device_allocation(void){
     slab_params_t spl;
     xmhfgeec_uapi_slabdevpgtbl_init_params_t *initp =
         (xmhfgeec_uapi_slabdevpgtbl_init_params_t *)spl.in_out_params;
+    xmhfgeec_uapi_slabdevpgtbl_initretcet_params_t *initretcetp =
+        (xmhfgeec_uapi_slabdevpgtbl_initretcet_params_t *)spl.in_out_params;
 
 
     spl.src_slabid = XMHF_HYP_SLAB_GEECPRIME;
@@ -819,9 +815,18 @@ void xmhfhic_arch_setup_slab_device_allocation(void){
 		}
 	}
 
+    //slabdevpgtbl:init
+    initp->uapiphdr.uapifn = XMHFGEEC_UAPI_SDEVPGTBL_INIT;
+    XMHF_SLAB_CALLNEW(&spl);
+
+    //slabdevpgtbl:initretcet
+    initretcetp->uapiphdr.uapifn = XMHFGEEC_UAPI_SDEVPGTBL_INITRETCET;
+    XMHF_SLAB_CALLNEW(&spl);
+
     //intialize VT-d subsystem and obtain
-    vtd_pagewalk_level = _geec_prime_vtd_initialize();
+    vtd_pagewalk_level = _geec_prime_vtd_initialize(initretcetp->result_retpaddr);
     _XDPRINTF_("%s: setup vt-d, page-walk level=%u\n", __func__, vtd_pagewalk_level);
+
 
 
     _XDPRINTF_("\n%s: wip. halting!\n", __func__);

@@ -64,7 +64,7 @@ __attribute__((section(".data"))) __attribute__((aligned(4096))) static vtd_cet_
 
 __attribute__((section(".data"))) static bool _slabdevpgtbl_init_done = false;
 __attribute__((section(".data"))) static bool _slabdevpgtbl_initretcet_done = false;
-__attribute__((section(".data"))) static u32 _slabdevpgtbl_vtd_pagewalk_level = VTD_PAGEWALK_NONE;
+//__attribute__((section(".data"))) static u32 _slabdevpgtbl_vtd_pagewalk_level = VTD_PAGEWALK_NONE;
 
 
 
@@ -76,14 +76,14 @@ __attribute__((section(".data"))) __attribute__((aligned(4096))) vtd_pte_t _slab
 __attribute__((section(".data"))) _slabdevpgtbl_infotable_t _slabdevpgtbl_infotable[XMHF_HIC_MAX_SLABS];
 
 
-static void _slabdevpgtbl_init(u32 pagewalk_level){
+static void _slabdevpgtbl_init(void){
     u32 i;
 
     for(i=0; i < XMHF_HIC_MAX_SLABS; i++){
         _slabdevpgtbl_infotable[i].devpgtbl_initialized=false;
     }
 
-    _slabdevpgtbl_vtd_pagewalk_level = pagewalk_level;
+    //_slabdevpgtbl_vtd_pagewalk_level = pagewalk_level;
 }
 
 
@@ -171,7 +171,7 @@ static void _slabdevpgtbl_initdevpgtbl(u32 slabid){
 }
 
 
-static void _slabdevpgtbl_binddevice(u32 slabid, u32 bus, u32 dev, u32 func){
+static void _slabdevpgtbl_binddevice(u32 slabid, u32 pagewalk_lvl,  u32 bus, u32 dev, u32 func){
     //sanity checks
     if(slabid > XMHF_HIC_MAX_SLABS){
         _XDPRINTF_("%s: Error: slabid (%u) > XMHF_HIC_MAX_SLABS(%u). bailing out!\n", __func__, slabid, XMHF_HIC_MAX_SLABS);
@@ -194,12 +194,12 @@ static void _slabdevpgtbl_binddevice(u32 slabid, u32 bus, u32 dev, u32 func){
 
     //b is our index into ret
     // (d* PCI_FUNCTION_MAX) + f = index into the cet
-    if(_slabdevpgtbl_vtd_pagewalk_level == VTD_PAGEWALK_4LEVEL){
+    if(pagewalk_lvl == VTD_PAGEWALK_4LEVEL){
         _slabdevpgtbl_vtd_cet[bus][((dev*PCI_FUNCTION_MAX) + func)].qwords[0] =
             vtd_make_cete((u64)&_slabdevpgtbl_pml4t[slabid], VTD_CET_PRESENT);
         _slabdevpgtbl_vtd_cet[bus][((dev*PCI_FUNCTION_MAX) + func)].qwords[1] =
             vtd_make_cetehigh(2, (slabid+1));
-    }else if (_slabdevpgtbl_vtd_pagewalk_level == VTD_PAGEWALK_3LEVEL){
+    }else if (pagewalk_lvl == VTD_PAGEWALK_3LEVEL){
         _slabdevpgtbl_vtd_cet[bus][((dev*PCI_FUNCTION_MAX) + func)].qwords[0] =
             vtd_make_cete((u64)&_slabdevpgtbl_pdpt[slabid], VTD_CET_PRESENT);
         _slabdevpgtbl_vtd_cet[bus][((dev*PCI_FUNCTION_MAX) + func)].qwords[1] =
@@ -226,7 +226,7 @@ void slab_main(slab_params_t *sp){
                 (xmhfgeec_uapi_slabdevpgtbl_init_params_t *)sp->in_out_params;
 
             if(!_slabdevpgtbl_init_done){
-                _slabdevpgtbl_init(initp->pagewalk_level);
+                _slabdevpgtbl_init();
                 _slabdevpgtbl_init_done=true;
             }
         }
@@ -267,7 +267,7 @@ void slab_main(slab_params_t *sp){
                 (xmhfgeec_uapi_slabdevpgtbl_binddevice_params_t *)sp->in_out_params;
 
             if(_slabdevpgtbl_init_done)
-                _slabdevpgtbl_binddevice(binddevice->dst_slabid,
+                _slabdevpgtbl_binddevice(binddevice->dst_slabid, binddevice->pagewalk_level,
                                         binddevice->bus, binddevice->dev, binddevice->func);
         }
         break;
