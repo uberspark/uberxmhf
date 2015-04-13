@@ -72,7 +72,7 @@ __attribute__((section(".data"))) static bool _slabdevpgtbl_initretcet_done = fa
 __attribute__((section(".data"))) __attribute__((aligned(4096))) vtd_pml4te_t _slabdevpgtbl_pml4t[XMHF_HIC_MAX_SLABS][PAE_MAXPTRS_PER_PML4T];
 __attribute__((section(".data"))) __attribute__((aligned(4096))) vtd_pdpte_t _slabdevpgtbl_pdpt[XMHF_HIC_MAX_SLABS][PAE_MAXPTRS_PER_PDPT];
 __attribute__((section(".data"))) __attribute__((aligned(4096))) vtd_pdte_t _slabdevpgtbl_pdt[XMHF_HIC_MAX_SLABS][PAE_PTRS_PER_PDPT][PAE_PTRS_PER_PDT];
-__attribute__((section(".data"))) __attribute__((aligned(4096))) vtd_pte_t _slabdevpgtbl_pt[XMHF_HIC_MAX_SLABS][16][PAE_PTRS_PER_PT];
+__attribute__((section(".data"))) __attribute__((aligned(4096))) vtd_pte_t _slabdevpgtbl_pt[XMHF_HIC_MAX_SLABS][MAX_SLAB_DMADATA_PDT_ENTRIES][PAE_PTRS_PER_PT];
 __attribute__((section(".data"))) _slabdevpgtbl_infotable_t _slabdevpgtbl_infotable[XMHF_HIC_MAX_SLABS];
 
 
@@ -123,7 +123,7 @@ static void _slabdevpgtbl_initdevpgtbl(u32 slabid){
         return;
     }
     if( (paddr_dmadata_end - paddr_dmadata_start) >
-        (PAGE_SIZE_2M * 16) ){
+        MAX_SLAB_DMADATA_SIZE ){
         _XDPRINTF_("%s: Error: slab %u dmadata section over limit. bailing out!\n",
                    __func__, slabid);
         return;
