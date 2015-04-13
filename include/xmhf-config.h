@@ -221,4 +221,7 @@
 #define     MAX_X86_APIC_ID     256
 
 
+#define     MAX_SLAB_DMADATA_SIZE           (32*1024*1024)
+#define     MAX_SLAB_DMADATA_PDT_ENTRIES    (MAX_SLAB_DMADATA_SIZE/(2*1024*1024))
+
 #endif //__XMHF_CONFIG_H__
