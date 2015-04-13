@@ -56,6 +56,7 @@
 #include <xmhfgeec.h>
 
 #include <xc.h>
+#include <geec_sentinel.h>
 #include <uapi_slabmempgtbl.h>
 
 
@@ -78,12 +79,54 @@ __attribute__((section(".data"))) __attribute__((aligned(4096)))  u64 _slabmempg
 __attribute__((section(".data"))) __attribute__((aligned(4096)))  u64 _slabmempgtbl_lvl1t_richguest[PAE_PTRS_PER_PDPT][PAE_PTRS_PER_PDT][PAE_PTRS_PER_PT];
 
 
+static void _slabmempgtbl_initmempgtbl_pae2Mmmio(u32 slabid){
+    //pdpt = _slabmempgtbl_lvl4t[slabid];
+    //pdt = _slabmempgtbl_lvl2t[slabid];
+    //mmio = _slabmempgtbl_lvl1t_mmio[slabid];
+    u32 i;
+    u64 default_flags = (u64)(_PAGE_PRESENT);
+    u32 mmio_paddr;
+    u32 pdpt_index, pdt_index;
+
+    //setup pdpt to point to pdts
+    memset(&_slabmempgtbl_lvl4t[slabid], 0, PAGE_SIZE_4K);
+    for(i=0; i < PAE_PTRS_PER_PDPT; i++){
+        _slabmempgtbl_lvl4t[slabid][i] =
+            pae_make_pdpe(&_slabmempgtbl_lvl2t[slabid][i], default_flags);
+    }
+
+    //splinter mmio page into 4K mappings
+    mmio_paddr = _xmhfhic_common_slab_info_table[slabid].slab_physmem_extents[4].addr_start;
+    pdpt_index = pae_get_pdpt_index(mmio_paddr);
+    pdt_index = pae_get_pdt_index(mmio_paddr);
+    _slabmempgtbl_lvl2t[slabid][pdpt_index][pdt_index] =
+        pae_make_pde(&_slabmempgtbl_lvl1t_mmio[slabid], default_flags);
+
+}
+
+
 static void _slabmempgtbl_initmempgtbl(u32 slabid){
+    u32 slabtype;
+
     //sanity checks
     if(slabid >= XMHF_HIC_MAX_SLABS)
         return;
 
+    slabtype = _xmhfhic_common_slab_info_table[slabid].archdata.slabtype;
 
+    switch(slabtype){
+        case XMHFGEEC_SLABTYPE_TPROGSLAB:
+        case XMHFGEEC_SLABTYPE_UPROGSLAB:
+        case XMHFGEEC_SLABTYPE_TPRIMESLAB:{
+            _slabmempgtbl_initmempgtbl_pae2Mmmio(slabid);
+        }
+        break;
+
+
+        default:
+            _XDPRINTF_("%s: unknown slab type %u\n", __func__, slabtype);
+            break;
+    }
 
 }
 
