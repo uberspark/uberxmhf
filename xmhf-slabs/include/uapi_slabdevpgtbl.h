@@ -66,7 +66,6 @@
 
 typedef struct {
     xmhf_uapi_params_hdr_t uapiphdr;
-    u32 pagewalk_level;
 }__attribute__((packed)) xmhfgeec_uapi_slabdevpgtbl_init_params_t;
 
 typedef struct {
@@ -84,6 +83,7 @@ typedef struct {
 typedef struct {
     xmhf_uapi_params_hdr_t uapiphdr;
     u32 dst_slabid;
+    u32 pagewalk_level;
     u32 bus;
     u32 dev;
     u32 func;
