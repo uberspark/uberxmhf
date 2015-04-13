@@ -52,6 +52,7 @@
 #include <geec_prime.h>
 #include <geec_sentinel.h>
 #include <uapi_slabmempgtbl.h>
+#include <uapi_slabdevpgtbl.h>
 
 __attribute__((aligned(4096))) static u64 _xcprimeon_init_pdt[PAE_PTRS_PER_PDPT][PAE_PTRS_PER_PDT];
 __attribute__((aligned(4096))) static u64 _xcprimeon_init_pdpt[PAE_MAXPTRS_PER_PDPT];
@@ -376,7 +377,7 @@ void xmhfhic_arch_sanity_check_requirements(void){
 //////////////////////////////////////////////////////////////////////////////
 //setup slab device allocation (sda)
 
-
+/*
 __attribute__((aligned(4096))) static vtd_ret_entry_t _vtd_ret[VTD_RET_MAXPTRS];
 __attribute__((aligned(4096))) static vtd_cet_entry_t _vtd_cet[VTD_RET_MAXPTRS][VTD_CET_MAXPTRS];
 
@@ -681,7 +682,7 @@ static bool __xmhfhic_arch_sda_deallocdevices_from_slab(u64 slabid, slab_platfor
 
     return true;
 }
-
+*/
 
 
 static void __xmhfhic_x86vmxx86pc_postdrt(void){
@@ -704,21 +705,13 @@ static void __xmhfhic_x86vmxx86pc_postdrt(void){
     _XDPRINTF_("SL: Restored MTRRs\n");
 }
 
-
+/*
 static slab_platformdevices_t __xmhfhic_arch_sda_get_devices_for_slab(u64 slabid, slab_platformdevices_t devices){
     slab_platformdevices_t retval;
 
     retval.desc_valid=false;
     retval.numdevices=0;
 
-    /* x86_64
-    //for now detect rich guest slab and allocate all platform devices to it
-    if(_xmhfhic_common_slab_info_table[slabid].slab_devices.desc_valid &&
-        _xmhfhic_common_slab_info_table[slabid].slab_devices.numdevices == 0xFFFFFFFFFFFFFFFFULL)
-        return devices;
-    else
-        return retval;
-    */
 
     //for now detect rich guest slab and allocate all platform devices to it
     if(_xmhfhic_common_slab_info_table[slabid].slab_devices.desc_valid &&
@@ -727,8 +720,9 @@ static slab_platformdevices_t __xmhfhic_arch_sda_get_devices_for_slab(u64 slabid
     else
         return retval;
 
-}
+}*/
 
+/*
 void xmhfhic_arch_setup_slab_device_allocation(void){
     u32 i;
     slab_platformdevices_t ddescs;
@@ -790,8 +784,45 @@ void xmhfhic_arch_setup_slab_device_allocation(void){
     }
 
 }
+*/
+
+void xmhfhic_arch_setup_slab_device_allocation(void){
+    u32 i;
+    slab_platformdevices_t ddescs;
+    slab_params_t spl;
+    xmhfgeec_uapi_slabdevpgtbl_init_params_t *initp =
+        (xmhfgeec_uapi_slabdevpgtbl_init_params_t *)spl.in_out_params;
 
 
+    spl.src_slabid = XMHF_HYP_SLAB_GEECPRIME;
+    spl.dst_slabid = XMHF_HYP_SLAB_UAPI_SLABDEVPGTBL;
+    spl.cpuid = 0; //XXX: fixme, needs to be BSP id
+
+
+#if defined (__DRT__)
+    //post DRT cleanup first
+    __xmhfhic_x86vmxx86pc_postdrt();
+#endif	//__DRT__
+
+	//initialize platform bus
+	xmhfhw_platform_bus_init();
+
+	//check ACPI subsystem
+	{
+		ACPI_RSDP rsdp;
+		if(!xmhfhw_platform_x86pc_acpi_getRSDP(&rsdp)){
+			_XDPRINTF_("%s: ACPI RSDP not found, Halting!\n", __func__);
+			HALT();
+		}
+	}
+
+    //intialize VT-d subsystem and obtain
+
+
+
+    _XDPRINTF_("\n%s: wip. halting!\n", __func__);
+    HALT();
+}
 
 
 
