@@ -71,7 +71,14 @@ __attribute__((section(".data"))) __attribute__((aligned(4096)))  u64 _dbuf_memp
 #endif //__XMHF_VERIFICATION__
 
 
+static void _slabmempgtbl_initmempgtbl(u32 slabid){
+    //sanity checks
+    if(slabid >= XMHF_HIC_MAX_SLABS)
+        return;
 
+
+
+}
 
 
 /////
@@ -80,6 +87,14 @@ void slab_main(slab_params_t *sp){
     xmhf_uapi_params_hdr_t *uapiphdr = (xmhf_uapi_params_hdr_t *)sp->in_out_params;
 
     switch(uapiphdr->uapifn){
+
+       case XMHFGEEC_UAPI_SLABMEMPGTBL_INITMEMPGTBL:{
+            xmhfgeec_uapi_slabmempgtbl_initmempgtbl_params_t *initmempgtblp =
+                (xmhfgeec_uapi_slabmempgtbl_initmempgtbl_params_t *)sp->in_out_params;
+
+            _slabmempgtbl_initmempgtbl(initmempgtblp->dst_slabid);
+       }
+       break;
 
        case XMHF_HIC_UAPI_MEMPGTBL_GETENTRY:{
             xmhf_uapi_slabmempgtbl_entry_params_t *smempgtblentryp =
