@@ -702,22 +702,20 @@ static void __xmhfhic_x86vmxx86pc_postdrt(void){
     _XDPRINTF_("SL: Restored MTRRs\n");
 }
 
-/*
-static slab_platformdevices_t __xmhfhic_arch_sda_get_devices_for_slab(u64 slabid, slab_platformdevices_t devices){
-    slab_platformdevices_t retval;
 
-    retval.desc_valid=false;
-    retval.numdevices=0;
+//returns 0xFFFFFFFF on error
+static u32 _geec_prime_getslabfordevice(u32 bus, u32 dev, u32 func){
+    u32 i;
 
+    for(i=0; i < XMHF_HIC_MAX_SLABS; i++){
+        //for now detect rich guest slab and allocate all platform devices to it
+        if(_xmhfhic_common_slab_info_table[i].slab_devices.desc_valid &&
+            _xmhfhic_common_slab_info_table[i].slab_devices.numdevices == 0xFFFFFFFFUL)
+            return i;
+    }
 
-    //for now detect rich guest slab and allocate all platform devices to it
-    if(_xmhfhic_common_slab_info_table[slabid].slab_devices.desc_valid &&
-        _xmhfhic_common_slab_info_table[slabid].slab_devices.numdevices == 0xFFFFFFFFUL)
-        return devices;
-    else
-        return retval;
-
-}*/
+    return 0xFFFFFFFFUL;
+}
 
 /*
 void xmhfhic_arch_setup_slab_device_allocation(void){
@@ -785,6 +783,7 @@ void xmhfhic_arch_setup_slab_device_allocation(void){
 
 void xmhfhic_arch_setup_slab_device_allocation(void){
     u32 i, vtd_pagewalk_level;
+    u32 b, d, f;
     slab_platformdevices_t ddescs;
     slab_params_t spl;
     xmhfgeec_uapi_slabdevpgtbl_init_params_t *initp =
@@ -793,6 +792,8 @@ void xmhfhic_arch_setup_slab_device_allocation(void){
         (xmhfgeec_uapi_slabdevpgtbl_initretcet_params_t *)spl.in_out_params;
     xmhfgeec_uapi_slabdevpgtbl_initdevpgtbl_params_t *initdevpgtblp =
         (xmhfgeec_uapi_slabdevpgtbl_initdevpgtbl_params_t *)spl.in_out_params;
+    xmhfgeec_uapi_slabdevpgtbl_binddevice_params_t *binddevicep =
+        (xmhfgeec_uapi_slabdevpgtbl_binddevice_params_t *)spl.in_out_params;
 
 
     spl.src_slabid = XMHF_HYP_SLAB_GEECPRIME;
@@ -838,9 +839,38 @@ void xmhfhic_arch_setup_slab_device_allocation(void){
     _XDPRINTF_("%s: setup vt-d, page-walk level=%u\n", __func__, vtd_pagewalk_level);
 
 
+    //enumerate PCI bus to find out all the devices
+	//bus numbers range from 0-255, device from 0-31 and function from 0-7
+	for(b=0; b < PCI_BUS_MAX; b++){
+		for(d=0; d < PCI_DEVICE_MAX; d++){
+			for(f=0; f < PCI_FUNCTION_MAX; f++){
+				u32 vendor_id, device_id;
 
-    _XDPRINTF_("\n%s: wip. halting!\n", __func__);
-    HALT();
+				//read device and vendor ids, if no device then both will be 0xFFFF
+				xmhf_baseplatform_arch_x86_pci_type1_read(b, d, f, PCI_CONF_HDR_IDX_VENDOR_ID, sizeof(u16), &vendor_id);
+				xmhf_baseplatform_arch_x86_pci_type1_read(b, d, f, PCI_CONF_HDR_IDX_DEVICE_ID, sizeof(u16), &device_id);
+				if(vendor_id == 0xFFFF && device_id == 0xFFFF)
+					break;
+
+                binddevicep->uapiphdr.uapifn = XMHFGEEC_UAPI_SDEVPGTBL_BINDDEVICE;
+                binddevicep->dst_slabid = _geec_prime_getslabfordevice(b, d, f);
+                if(binddevicep->dst_slabid == 0xFFFFFFFFUL){
+                    _XDPRINTF_("%s: Halting, could not find slab for device!\n", __func__);
+                    HALT();
+                }
+                binddevicep->bus = b;
+                binddevicep->dev = d;
+                binddevicep->func = f;
+                binddevicep->pagewalk_level = vtd_pagewalk_level;
+                XMHF_SLAB_CALLNEW(&spl);
+
+                _XDPRINTF_("  Allocated device %x:%x:%x(%x:%x) to slab %u\n",
+                           b, d, f, vendor_id, device_id, binddevicep->dst_slabid);
+
+			}
+		}
+	}
+
 }
 
 
