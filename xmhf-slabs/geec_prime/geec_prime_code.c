@@ -791,6 +791,8 @@ void xmhfhic_arch_setup_slab_device_allocation(void){
         (xmhfgeec_uapi_slabdevpgtbl_init_params_t *)spl.in_out_params;
     xmhfgeec_uapi_slabdevpgtbl_initretcet_params_t *initretcetp =
         (xmhfgeec_uapi_slabdevpgtbl_initretcet_params_t *)spl.in_out_params;
+    xmhfgeec_uapi_slabdevpgtbl_initdevpgtbl_params_t *initdevpgtblp =
+        (xmhfgeec_uapi_slabdevpgtbl_initdevpgtbl_params_t *)spl.in_out_params;
 
 
     spl.src_slabid = XMHF_HYP_SLAB_GEECPRIME;
@@ -822,6 +824,14 @@ void xmhfhic_arch_setup_slab_device_allocation(void){
     //slabdevpgtbl:initretcet
     initretcetp->uapiphdr.uapifn = XMHFGEEC_UAPI_SDEVPGTBL_INITRETCET;
     XMHF_SLAB_CALLNEW(&spl);
+
+    //use slabdevpgtbl:initdevpgtbl to initialize all slab device page tables
+    for(i=0; i < XMHF_HIC_MAX_SLABS; i++){
+        initdevpgtblp->uapiphdr.uapifn = XMHFGEEC_UAPI_SDEVPGTBL_INITDEVPGTBL;
+        initdevpgtblp->dst_slabid = i;
+        XMHF_SLAB_CALLNEW(&spl);
+    }
+    _XDPRINTF_("%s: initialized slab device page tables\n", __func__);
 
     //intialize VT-d subsystem and obtain
     vtd_pagewalk_level = _geec_prime_vtd_initialize(initretcetp->result_retpaddr);
