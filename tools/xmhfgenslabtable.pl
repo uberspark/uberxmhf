@@ -37,7 +37,7 @@ while( $i <= ($#ARGV - 1) ){
     print "\n	//$ARGV[$i]";
     print "\n	{";
     print "\n	    {";
-    print "\n	        HIC_SLAB_X86VMXX86PC_HYPERVISOR,";
+    print "\n	        XMHFGEEC_SLABTYPE_TPROGSLAB,";
     print "\n	        false,";
     print "\n	        false,";
     print "\n	        0,";
@@ -76,7 +76,7 @@ while( $i <= ($#ARGV - 1) ){
     print "\n	//$ARGV[$i]";
     print "\n	{";
     print "\n	    {";
-    print "\n	        HIC_SLAB_X86VMXX86PC_GUEST,";
+    print "\n	        XMHFGEEC_SLABTYPE_UGRICHGUESTSLAB,";
     print "\n	        false,";
     print "\n	        false,";
     print "\n	        0,";
