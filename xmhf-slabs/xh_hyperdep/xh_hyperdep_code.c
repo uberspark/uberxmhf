@@ -70,8 +70,13 @@
 static void hd_activatedep(u32 cpuindex, u32 guest_slab_index, u64 gpa){
 	slab_params_t spl;
 	//xmhf_hic_uapi_mempgtbl_desc_t *mdesc = (xmhf_hic_uapi_mempgtbl_desc_t *)&spl.in_out_params[2];
-        xmhf_uapi_slabmempgtbl_entry_params_t *smpgtblep =
-            (xmhf_uapi_slabmempgtbl_entry_params_t *)spl.in_out_params;
+        //xmhf_uapi_slabmempgtbl_entry_params_t *smpgtblep =
+        //    (xmhf_uapi_slabmempgtbl_entry_params_t *)spl.in_out_params;
+    xmhfgeec_uapi_slabmempgtbl_getentryforpaddr_params_t *getentryforpaddrp =
+        (xmhfgeec_uapi_slabmempgtbl_getentryforpaddr_params_t *)spl.in_out_params;
+    xmhfgeec_uapi_slabmempgtbl_setentryforpaddr_params_t *setentryforpaddrp =
+        (xmhfgeec_uapi_slabmempgtbl_setentryforpaddr_params_t *)spl.in_out_params;
+
 
 	spl.src_slabid = XMHF_HYP_SLAB_XHHYPERDEP;
     spl.dst_slabid = XMHF_HYP_SLAB_UAPI_SLABMEMPGTBL;
@@ -79,19 +84,20 @@ static void hd_activatedep(u32 cpuindex, u32 guest_slab_index, u64 gpa){
 	//spl.in_out_params[0] = XMHF_HIC_UAPI_MEMPGTBL;
 
     if(!hd_activated){
-        smpgtblep->dst_slabid = guest_slab_index;
-        smpgtblep->gpa = gpa;
 
-        if(smpgtblep->gpa != 0){
-            smpgtblep->uapiphdr.uapifn = XMHF_HIC_UAPI_MEMPGTBL_GETENTRY;
+        if(gpa != 0){
+            getentryforpaddrp->uapiphdr.uapifn = XMHFGEEC_UAPI_SLABMEMPGTBL_GETENTRYFORPADDR;
+            getentryforpaddrp->dst_slabid = guest_slab_index;
+            getentryforpaddrp->gpa = gpa;
             XMHF_SLAB_CALLNEW(&spl);
 
             _XDPRINTF_("%s[%u]: original entry for gpa=%016llx is %016llx\n", __func__, (u16)cpuindex,
-                       gpa, smpgtblep->entry);
+                       gpa, getentryforpaddrp->result_entry);
 
-            smpgtblep->entry &= ~(0x4); //execute-disable
-
-            smpgtblep->uapiphdr.uapifn = XMHF_HIC_UAPI_MEMPGTBL_SETENTRY;
+            setentryforpaddrp->uapiphdr.uapifn = XMHFGEEC_UAPI_SLABMEMPGTBL_SETENTRYFORPADDR;
+            setentryforpaddrp->dst_slabid = guest_slab_index;
+            setentryforpaddrp->gpa = gpa;
+            setentryforpaddrp->entry = getentryforpaddrp->result_entry & ~(0x4); //execute-disable
             XMHF_SLAB_CALLNEW(&spl);
 
             _XDPRINTF_("%s[%u]: activated DEP for page at gpa %016llx\n", __func__, (u16)cpuindex, gpa);
@@ -105,8 +111,12 @@ static void hd_activatedep(u32 cpuindex, u32 guest_slab_index, u64 gpa){
 static void hd_deactivatedep(u32 cpuindex, u32 guest_slab_index, u64 gpa){
 	slab_params_t spl;
 	//xmhf_hic_uapi_mempgtbl_desc_t *mdesc = (xmhf_hic_uapi_mempgtbl_desc_t *)&spl.in_out_params[2];
-        xmhf_uapi_slabmempgtbl_entry_params_t *smpgtblep =
-            (xmhf_uapi_slabmempgtbl_entry_params_t *)spl.in_out_params;
+    //    xmhf_uapi_slabmempgtbl_entry_params_t *smpgtblep =
+    //        (xmhf_uapi_slabmempgtbl_entry_params_t *)spl.in_out_params;
+    xmhfgeec_uapi_slabmempgtbl_getentryforpaddr_params_t *getentryforpaddrp =
+        (xmhfgeec_uapi_slabmempgtbl_getentryforpaddr_params_t *)spl.in_out_params;
+    xmhfgeec_uapi_slabmempgtbl_setentryforpaddr_params_t *setentryforpaddrp =
+        (xmhfgeec_uapi_slabmempgtbl_setentryforpaddr_params_t *)spl.in_out_params;
 
 
 	spl.src_slabid = XMHF_HYP_SLAB_XHHYPERDEP;
@@ -115,19 +125,21 @@ static void hd_deactivatedep(u32 cpuindex, u32 guest_slab_index, u64 gpa){
 	//spl.in_out_params[0] = XMHF_HIC_UAPI_MEMPGTBL;
 
     if(hd_activated){
-        smpgtblep->dst_slabid = guest_slab_index;
-        smpgtblep->gpa = gpa;
 
-        if(smpgtblep->gpa != 0){
-            smpgtblep->uapiphdr.uapifn = XMHF_HIC_UAPI_MEMPGTBL_GETENTRY;
+        if(gpa != 0){
+            getentryforpaddrp->uapiphdr.uapifn = XMHFGEEC_UAPI_SLABMEMPGTBL_GETENTRYFORPADDR;
+            getentryforpaddrp->dst_slabid = guest_slab_index;
+            getentryforpaddrp->gpa = gpa;
             XMHF_SLAB_CALLNEW(&spl);
 
-            _XDPRINTF_("%s[%u]: original entry for gpa=%016llx is %016llx\n", __func__, (u16)cpuindex, gpa, smpgtblep->entry);
+            _XDPRINTF_("%s[%u]: original entry for gpa=%016llx is %016llx\n", __func__,
+                       (u16)cpuindex, gpa, getentryforpaddrp->result_entry);
 
-            smpgtblep->entry &= ~(0x7);
-            smpgtblep->entry |= 0x7; //execute, read-write
-
-            smpgtblep->uapiphdr.uapifn = XMHF_HIC_UAPI_MEMPGTBL_SETENTRY;
+            setentryforpaddrp->uapiphdr.uapifn = XMHFGEEC_UAPI_SLABMEMPGTBL_SETENTRYFORPADDR;
+            setentryforpaddrp->dst_slabid = guest_slab_index;
+            setentryforpaddrp->gpa = gpa;
+            setentryforpaddrp->entry = getentryforpaddrp->result_entry & ~(0x7);
+            setentryforpaddrp->entry |= 0x7; //execute, read-write
             XMHF_SLAB_CALLNEW(&spl);
 
             _XDPRINTF_("%s[%u]: deactivated DEP for page at gpa %016llx\n", __func__, (u16)cpuindex, gpa);
