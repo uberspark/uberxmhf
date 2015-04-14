@@ -1376,8 +1376,8 @@ void xmhfhic_arch_setup_slab_mem_page_tables(void){
 
 
 	_XDPRINTF_("%s: setup slab memory page tables\n", __func__);
-    _XDPRINTF_("%s: wip. halting!\n");
-    HALT();
+    //_XDPRINTF_("%s: wip. halting!\n");
+    //HALT();
 }
 
 
