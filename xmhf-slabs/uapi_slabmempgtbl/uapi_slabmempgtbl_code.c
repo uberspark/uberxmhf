@@ -201,6 +201,51 @@ static void _slabmempgtbl_initmempgtbl(u32 slabid){
 }
 
 
+static void _slabmempgtbl_setentryforpaddr(u32 slabid, u64 gpa, u64 entry){
+
+    u64 pdpt_index = pae_get_pdpt_index(gpa);
+    u64 pdt_index = pae_get_pdt_index(gpa);
+    u64 pt_index = pae_get_pt_index(gpa);
+    u32 slabtype, mmio_paddr;
+
+    //sanity checks
+    if(slabid >= XMHF_HIC_MAX_SLABS)
+        return;
+
+    slabtype = _xmhfhic_common_slab_info_table[slabid].archdata.slabtype;
+    mmio_paddr = _xmhfhic_common_slab_info_table[slabid].slab_physmem_extents[4].addr_start;
+
+    switch(slabtype){
+
+        case XMHFGEEC_SLABTYPE_TPROGSLAB:
+        case XMHFGEEC_SLABTYPE_UPROGSLAB:
+        case XMHFGEEC_SLABTYPE_TPRIMESLAB:
+        case XMHFGEEC_SLABTYPE_UGPROGSLAB:{
+            //2M mappings with 4K splintered mmio
+            if(gpa >= mmio_paddr && gpa < (mmio_paddr + PAGE_SIZE_2M)){
+                _slabmempgtbl_lvl1t_mmio[slabid][pt_index] = entry;
+            }else{
+                _slabmempgtbl_lvl2t[slabid][pdpt_index][pdt_index] = entry;
+            }
+        }
+        break;
+
+        case XMHFGEEC_SLABTYPE_UGRICHGUESTSLAB:{
+            //4K mappings throughout
+            _slabmempgtbl_lvl1t_richguest[pdpt_index][pdt_index][pt_index] =
+                entry;
+        }
+        break;
+
+        default:
+            _XDPRINTF_("%s: unknown slab type %u\n", __func__, slabtype);
+            break;
+
+    }
+
+}
+
+
 /////
 void slab_main(slab_params_t *sp){
 
@@ -215,6 +260,18 @@ void slab_main(slab_params_t *sp){
             _slabmempgtbl_initmempgtbl(initmempgtblp->dst_slabid);
        }
        break;
+
+
+       case XMHFGEEC_UAPI_SLABMEMPGTBL_SETENTRYFORPADDR:{
+            xmhfgeec_uapi_slabmempgtbl_setentryforpaddr_params_t *setentryforpaddrp =
+                (xmhfgeec_uapi_slabmempgtbl_setentryforpaddr_params_t *)sp->in_out_params;
+
+            _slabmempgtbl_setentryforpaddr(setentryforpaddrp->dst_slabid,
+                                           setentryforpaddrp->gpa,
+                                           setentryforpaddrp->entry);
+
+       }
+        break;
 
        case XMHF_HIC_UAPI_MEMPGTBL_GETENTRY:{
             xmhf_uapi_slabmempgtbl_entry_params_t *smempgtblentryp =
