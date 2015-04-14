@@ -198,49 +198,37 @@ export CFLAGS
 export VFLAGS
 export CCERT_FLAGS
 
-#export XMHF_SLAB_DIRS := $(shell cat $(XMHF_DIR)/SLABS)
-export XMHF_SLAB_DIRS := $(shell awk -F, '{print $$1}' $(XMHF_DIR)/SLABS)
-
-XMHF_SLAB_NAMES := $(notdir $(XMHF_SLAB_DIRS))
-
-
 export XMHF_LIBDIRS := $(wildcard $(XMHF_DIR)/xmhf-libs/lib*)
 export XMHF_LIBS_OBJECTS_DIR := $(XMHF_OBJDIR)/_objs_xmhf-libs
 
 
 
+######
+# top-level build harness
+######
+
+export XMHF_SLAB_DIRS := $(shell awk -F, '{print $$1}' $(XMHF_DIR)/SLABS)
+XMHF_SLAB_NAMES := $(notdir $(XMHF_SLAB_DIRS))
+
 .PHONY: all
-#all: genfiles libshared subdirs
-#all: genfiles xmhflibs xmhfhic xmhfslabs xmhfbin
 all: genfiles xmhflibs xmhfslabs xmhfbin
-#all:
-#	xmhfgenslabtable.pl $(XMHF_SLAB_NAMES)
-#	echo $(XMHF_SLAB_DIRS)
 
 .PHONY: genfiles
 genfiles:
 	mkdir -p $(XMHF_OBJDIR)
 	cd $(XMHF_OBJDIR) && xmhfgenlscript.pl $(XMHF_SLAB_NAMES) >xmhf.lscript
-#	cd $(XMHF_OBJDIR) && xmhfgenslabtable.pl $(XMHF_SLAB_NAMES) >$(XMHF_DIR)/xmhf-slabs/shared/shared-slabtable.c
 	cd $(XMHF_DIR) && xmhfgenslabtable.pl SLABS >$(XMHF_DIR)/xmhf-slabs/geec_sentinel/__geec_sentinel_autogendata_slabinfotable
 
 
 .PHONY: xmhflibs
 xmhflibs:
 	@echo Building XMHF libs...
-	#cd $(XMHF_OBJDIR) && $(MAKE) -f $(XMHFLIBS_SRC)/Makefile -w all
 	mkdir -p $(XMHF_LIBS_OBJECTS_DIR)
 	@for i in $(XMHF_LIBDIRS); \
 	do \
 		(cd $(XMHF_LIBS_OBJECTS_DIR) &&	echo "Making all in $$i..." && $(MAKE) -f $$i/Makefile -w all) || exit 1; \
 	done;
 	@echo XMHF libs build SUCCESS
-
-.PHONY: xmhfhic
-xmhfhic:
-	@echo Building XMHF HIC...
-	cd $(XMHF_OBJDIR) && $(MAKE) -f $(XMHFHIC_SRC)/Makefile -w all
-	@echo XMHF HIC build SUCCESS
 
 .PHONY: xmhfslabs
 xmhfslabs:
@@ -253,20 +241,11 @@ xmhfslabs:
 	@echo Slabs build SUCCESS
 
 
-#.PHONY: libshared
-#libshared:
-#	mkdir -p $(XMHF_OBJDIR)
-#	cd $(XMHF_OBJDIR) && $(MAKE) -f $(XMHF_DIR)/xmhf-slabs/shared/Makefile -w all
-
 .PHONY: xmhfbin
 xmhfbin: $(XMHFLIBS_SRC) $(XMHFCORE_SRC)
-#	@echo Building XMHF libs...
-#	cd $(XMHF_OBJDIR) && $(MAKE) -f $(XMHFLIBS_SRC)/Makefile -w all
-#	@echo XMHF libs build SUCCESS
 	@echo Linking XMHF binary...
 	cd $(XMHF_OBJDIR) && cp -f xmhf.lscript xmhf.lscript.c
 	cd $(XMHF_OBJDIR) && $(CC) $(CFLAGS) -D__ASSEMBLY__ -P -E xmhf.lscript.c -o xmhf.lds
-	#cd $(XMHF_OBJDIR) && $(LD) --oformat elf64-x86-64 -T xmhf.lds -o xmhf.exe -L$(CCLIB)/lib/linux -L$(XMHFLIBS_DIR) -lxmhfc -lxmhfdebug -lxmhfc -lclang_rt.builtins-x86_64
 	cd $(XMHF_OBJDIR) && $(LD) --oformat elf32-i386 -T xmhf.lds -o xmhf.exe -L$(CCERT_LIB) -L$(CCLIB)/lib/linux -L$(XMHFLIBS_DIR) -lxmhfc -lxmhfdebug -lxmhfc -lclang_rt.full-i386 -lcompcert
 	cd $(XMHF_OBJDIR) && $(OBJCOPY) --output-format=binary xmhf.exe xmhf.bin
 	@echo XMHF link SUCCESS
@@ -291,16 +270,9 @@ install-bin:
 	install -d $(DESTDIR)/boot
 	install --mode=644 $(XMHF_OBJDIR)/_objs_xmhf-core/xmhf-$(XMHF_TARGET_TRIAD).bin.gz $(DESTDIR)/boot
 
-# Currently the only tests we have are in the TrustVisor tree
-.PHONY: test
-test:
-	cd $(APP_ROOT) && $(MAKE) -w test
-
-
-#.PHONY: clean distclean init-late-clean
 .PHONY: clean distclean
 clean:
-	$(RM) -f $(XMHF_DIR)/geec-prime/__xmhfhic_initdata_slabtable
+	$(RM) -f $(XMHF_DIR)/xmhf-slabs/geec_sentinel/__geec_sentinel_autogendata_slabinfotable
 	rm -rf *.html
 	rm -rf doc
 	$(RM) -rf $(XMHF_OBJDIR)
@@ -309,15 +281,6 @@ distclean: clean
 	$(RM) config.log config.status
 	# http://www.gnu.org/software/automake/manual/automake.html#Clean
 	$(RM) -rf Makefile
-	$(RM) -rf xmhf.pc
-
-verify:
-	mkdir -p $(XMHF_VERIFYDIR)
-	@echo **************************************************************
-	@echo Starting verification...
-	@echo **************************************************************
-	cd $(XMHF_VERIFYDIR) && $(MAKE) -f  $(XMHF_DIR)/xmhf-verification/Makefile -w all
-
 
 .PHONY: htmldoc
 htmldoc:
