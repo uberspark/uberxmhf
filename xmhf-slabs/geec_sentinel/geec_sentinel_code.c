@@ -741,6 +741,36 @@ void slab_main(slab_params_t *sp){
              CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_GUEST_RSP, _xmhfhic_common_slab_info_table[sp->dst_slabid].archdata.slabtos[(u16)sp->cpuid]);
              CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_GUEST_RIP, _xmhfhic_common_slab_info_table[sp->dst_slabid].entrystub);
 
+            /*//[debug]
+            {
+                u32 i, j;
+                u64 *pml4t = (u64 *)_xmhfhic_common_slab_info_table[sp->dst_slabid].archdata.mempgtbl_cr3;
+                u64 *pdpt, *pdt;
+
+                _XDPRINTF_(" pml4t at %08x\n", (u32)pml4t);
+
+                for(i=0; i < PAE_PTRS_PER_PML4T; i++)
+                    _XDPRINTF_("  %u --> %016llx\n", i, pml4t[i]);
+
+                pdpt = (u64 *)(pml4t[0] & 0xFFFFFFFFFFFFF000ULL);
+
+                _XDPRINTF_(" pdpt at %08x\n", (u32)pdpt);
+
+                for(i=0; i < PAE_PTRS_PER_PDPT; i++){
+                    _XDPRINTF_("  pdpt %u --> %016llx\n", i, pdpt[i]);
+                    pdt = (u64 *)(pdpt[i] & 0xFFFFFFFFFFFFF000ULL);
+                    _XDPRINTF_("   pdt at %x\n", pdt);
+
+                    for(j=0; j < PAE_PTRS_PER_PDT; j++){
+                        _XDPRINTF_("    pdt %u --> %016llx\n", j, pdt[j]);
+                    }
+                }
+
+                _XDPRINTF_("\n\n");
+
+            }*/
+
+
             errorcode = CASM_FUNCCALL(__slab_calltrampolinenew_h2g, CASM_NOPARAM);
 
             switch(errorcode){
