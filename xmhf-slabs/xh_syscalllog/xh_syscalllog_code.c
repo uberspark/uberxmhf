@@ -271,8 +271,13 @@ static u32 _hcb_trap_instruction(u32 cpuindex, u32 guest_slab_index, u32 insntyp
         switch(msrvalue){
             case IA32_SYSENTER_EIP_MSR:{
                 //xmhf_hic_uapi_mempgtbl_desc_t *mdesc = (xmhf_hic_uapi_mempgtbl_desc_t *)&spl.in_out_params[2];
-                xmhf_uapi_slabmempgtbl_entry_params_t *smpgtblep =
-                    (xmhf_uapi_slabmempgtbl_entry_params_t *)spl.in_out_params;
+                //xmhf_uapi_slabmempgtbl_entry_params_t *smpgtblep =
+                //    (xmhf_uapi_slabmempgtbl_entry_params_t *)spl.in_out_params;
+                xmhfgeec_uapi_slabmempgtbl_getentryforpaddr_params_t *getentryforpaddrp =
+                (xmhfgeec_uapi_slabmempgtbl_getentryforpaddr_params_t *)spl.in_out_params;
+                xmhfgeec_uapi_slabmempgtbl_setentryforpaddr_params_t *setentryforpaddrp =
+                (xmhfgeec_uapi_slabmempgtbl_setentryforpaddr_params_t *)spl.in_out_params;
+
 
               	_XDPRINTF_("%s[%u]: emulating WRMSR SYSENTER_EIP_MSR\n", __func__, (u16)cpuindex);
 
@@ -285,15 +290,16 @@ static u32 _hcb_trap_instruction(u32 cpuindex, u32 guest_slab_index, u32 insntyp
 
                 if(!sl_activated){
                     spl.dst_slabid = XMHF_HYP_SLAB_UAPI_SLABMEMPGTBL;
-                    smpgtblep->dst_slabid = guest_slab_index;
-                    smpgtblep->gpa = 0;
-                    //spl.in_out_params[0] = XMHF_HIC_UAPI_MEMPGTBL;
-                    smpgtblep->uapiphdr.uapifn = XMHF_HIC_UAPI_MEMPGTBL_GETENTRY;
+
+                    getentryforpaddrp->uapiphdr.uapifn = XMHFGEEC_UAPI_SLABMEMPGTBL_GETENTRYFORPADDR;
+                    getentryforpaddrp->dst_slabid = guest_slab_index;
+                    getentryforpaddrp->gpa = 0;
                     XMHF_SLAB_CALLNEW(&spl);
 
-                    smpgtblep->entry &= ~(0x7);
-
-                    smpgtblep->uapiphdr.uapifn = XMHF_HIC_UAPI_MEMPGTBL_SETENTRY;
+                    setentryforpaddrp->uapiphdr.uapifn = XMHFGEEC_UAPI_SLABMEMPGTBL_SETENTRYFORPADDR;
+                    setentryforpaddrp->dst_slabid = guest_slab_index;
+                    setentryforpaddrp->gpa = 0;
+                    setentryforpaddrp->entry = getentryforpaddrp->result_entry & ~(0x7);
                     XMHF_SLAB_CALLNEW(&spl);
 
                     sl_activated=true;
