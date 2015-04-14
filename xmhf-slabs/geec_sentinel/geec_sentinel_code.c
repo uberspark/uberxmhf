@@ -736,7 +736,7 @@ void slab_main(slab_params_t *sp){
         case XMHFGEEC_SLABTYPE_UGPROGSLAB:
         case XMHFGEEC_SLABTYPE_UGRICHGUESTSLAB:{
              CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_CONTROL_VPID, sp->dst_slabid );
-             CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_CONTROL_EPT_POINTER_FULL, _xmhfhic_common_slab_info_table[sp->dst_slabid].archdata.mempgtbl_cr3);
+             CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_CONTROL_EPT_POINTER_FULL, (_xmhfhic_common_slab_info_table[sp->dst_slabid].archdata.mempgtbl_cr3  | 0x1E) );
              CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_CONTROL_EPT_POINTER_HIGH, 0);
              CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_GUEST_RSP, _xmhfhic_common_slab_info_table[sp->dst_slabid].archdata.slabtos[(u16)sp->cpuid]);
              CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_GUEST_RIP, _xmhfhic_common_slab_info_table[sp->dst_slabid].entrystub);
