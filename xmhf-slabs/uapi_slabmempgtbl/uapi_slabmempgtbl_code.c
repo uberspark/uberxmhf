@@ -180,16 +180,19 @@ static void _slabmempgtbl_initmempgtbl(u32 slabid){
         case XMHFGEEC_SLABTYPE_UPROGSLAB:
         case XMHFGEEC_SLABTYPE_TPRIMESLAB:{
             _slabmempgtbl_initmempgtbl_pae2Mmmio(slabid);
+            _XDPRINTF_("%s: setup slab %u with pae2Mmmio\n", __func__, slabid);
         }
         break;
 
         case XMHFGEEC_SLABTYPE_UGPROGSLAB:{
             _slabmempgtbl_initmempgtbl_ept2Mmmio(slabid);
+            _XDPRINTF_("%s: setup slab %u with ept2Mmmio\n", __func__, slabid);
         }
         break;
 
         case XMHFGEEC_SLABTYPE_UGRICHGUESTSLAB:{
             _slabmempgtbl_initmempgtbl_ept4K(slabid);
+            _XDPRINTF_("%s: setup slab %u with ept4K\n", __func__, slabid);
         }
         break;
 
