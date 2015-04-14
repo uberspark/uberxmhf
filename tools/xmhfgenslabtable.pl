@@ -96,7 +96,9 @@ while( $i <= $#slabnamearray ){
 
     print "\n	        false,";
     print "\n	        false,";
-    print "\n	        0,";
+
+    printf "\n	        &_slab_uapi_slabmempgtbl_data_start[%u],", ($i * 4096);
+
     print "\n	        {";
     print "\n	            ((u32)&_slab_$slabnamearray[$i]_stack_start[1*XMHF_SLAB_STACKSIZE]),";
     print "\n	            ((u32)&_slab_$slabnamearray[$i]_stack_start[2*XMHF_SLAB_STACKSIZE]),";
