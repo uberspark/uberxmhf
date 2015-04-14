@@ -404,7 +404,7 @@ void slab_main(slab_params_t *sp){
 
     xcguestslab_do_testxhssteptrace();
 
-    //xcguestslab_do_testxhsyscalllog();
+    xcguestslab_do_testxhsyscalllog();
 
     _XDPRINTF_("%s: Guest Slab Halting\n", __func__);
     HALT();
