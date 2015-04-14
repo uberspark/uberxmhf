@@ -28,7 +28,7 @@ AC_SUBST([SLABTYPE])
 AC_ARG_WITH([slabtype],
         AS_HELP_STRING([--with-slabtype=@<:@TYPE@:>@],
                 [select slab type (tprimeslab, tprogslab, uprogslab, ugprogslab)]),
-                , [with_slabtype=ugprogslab])
+                , [with_slabtype=ugrichguestslab])
 SLABTYPE=$[]with_slabtype
 
 

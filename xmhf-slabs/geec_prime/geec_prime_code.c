@@ -277,6 +277,7 @@ void xmhfhic_arch_setup_slab_info(void){
 				_XDPRINTF_("	slab_privilegemask=%08x\n", _xmhfhic_common_slab_info_table[i].slab_privilegemask);
 				_XDPRINTF_("	slab_callcaps=%08x\n", _xmhfhic_common_slab_info_table[i].slab_callcaps);
 				_XDPRINTF_("	slab_devices=%s\n", ( _xmhfhic_common_slab_info_table[i].slab_devices.desc_valid ? "true" : "false") );
+				_XDPRINTF_("	slab_pgtblbase=%x\n", ( _xmhfhic_common_slab_info_table[i].archdata.mempgtbl_cr3) );
 				_XDPRINTF_("  slab_code(%08x-%08x)\n", _xmhfhic_common_slab_info_table[i].slab_physmem_extents[0].addr_start, _xmhfhic_common_slab_info_table[i].slab_physmem_extents[0].addr_end);
 				_XDPRINTF_("  slab_data(%08x-%08x)\n", _xmhfhic_common_slab_info_table[i].slab_physmem_extents[1].addr_start, _xmhfhic_common_slab_info_table[i].slab_physmem_extents[1].addr_end);
 				_XDPRINTF_("  slab_stack(%08x-%08x)\n", _xmhfhic_common_slab_info_table[i].slab_physmem_extents[2].addr_start, _xmhfhic_common_slab_info_table[i].slab_physmem_extents[2].addr_end);
@@ -758,7 +759,7 @@ void xmhfhic_arch_setup_slab_device_allocation(void){
 //////////////////////////////////////////////////////////////////////////////
 // setup slab memory page tables (smt)
 
-
+/*
 #define	_SLAB_SPATYPE_OTHER_SLAB_MASK			(0xF0)
 
 #define	_SLAB_SPATYPE_OTHER_SLAB_CODE			(0xF0)
@@ -876,10 +877,6 @@ static u64 __xmhfhic_arch_smt_slab_populate_hyp_pagetables(u64 slabid){
 
         //_dbuf_mempgtbl_pml4t/pdpt/pdt/pt[slabid] is the data backing for slabid
 
-        /* x86_64
-        for(i=0; i < PAE_PTRS_PER_PML4T; i++){
-            _dbuf_mempgtbl_pml4t[slabid][i] = pae_make_pml4e(hva2spa(&_dbuf_mempgtbl_pdpt[slabid]), default_flags);
-        }*/
 
 		for(i=0; i < PAE_PTRS_PER_PDPT; i++){
 			_dbuf_mempgtbl_pdpt[slabid][i] = pae_make_pdpe(hva2spa(&_dbuf_mempgtbl_pdt[slabid][i]), default_flags);
@@ -901,34 +898,6 @@ static u64 __xmhfhic_arch_smt_slab_populate_hyp_pagetables(u64 slabid){
         //_xmhfhic_common_slab_info_table[slabid].archdata.mempgtbl_pt = (u64)&_dbuf_mempgtbl_pt[slabid]; //FIXME: we dont need this allocation
 
 
-/*        for(i=0; i < PAE_PTRS_PER_PML4T; i++){
-            //_xmhfhic_common_slab_info_table[slabid].archdata.mempgtbl_pml4t[i] = pae_make_pml4e(hva2spa(&_xmhfhic_common_slab_info_table[slabid].archdata.mempgtbl_pdpt), default_flags);
-            _xmhfhic_common_slab_archdata_mempgtbl_pml4t[slabid][i] = pae_make_pml4e(hva2spa(&_xmhfhic_common_slab_info_table[slabid].archdata.mempgtbl_pdpt), default_flags);
-            //    if(slabid == 0){
-            //        _XDPRINTF_("pml4t[%u] = %016llx\n", i, _xmhfhic_common_slab_info_table[slabid].archdata.mempgtbl_pml4t[i]);
-            //    }
-        }
-
-		for(i=0; i < PAE_PTRS_PER_PDPT; i++){
-			_xmhfhic_common_slab_info_table[slabid].archdata.mempgtbl_pdpt[i] = pae_make_pdpe(hva2spa(_xmhfhic_common_slab_info_table[slabid].archdata.mempgtbl_pdt[i]), default_flags);
-            //    if(slabid == 0){
-            //        _XDPRINTF_("pdpt[%u] = %016llx\n", i, _xmhfhic_common_slab_info_table[slabid].archdata.mempgtbl_pdpt[i]);
-            //    }
-		}
-
-		//init pdts with unity mappings
-		for(i=0; i < PAE_PTRS_PER_PDPT; i++){
-			for(j=0; j < PAE_PTRS_PER_PDT; j++){
-				u32 hva = ((i * PAE_PTRS_PER_PDT) + j) * PAGE_SIZE_2M;
-				u64 spa = hva2spa((void*)hva);
-				u64 flags = __xmhfhic_hyp_slab_getptflagsforspa(slabid, (u32)spa);
-				_xmhfhic_common_slab_info_table[slabid].archdata.mempgtbl_pdt[i][j] = pae_make_pde_big(spa, flags);
-
-                //if(slabid == 0){
-                //    _XDPRINTF_("pdt[%u][%u] = %016llx\n", i, j, _xmhfhic_common_slab_info_table[slabid].archdata.mempgtbl_pdt[i][j]);
-                //}
-			}
-		}*/
 
         return (u64)&_dbuf_mempgtbl_pdpt[slabid];
 		//return _xmhfhic_common_slab_info_table[slabid].archdata.mempgtbl_pdpt;
@@ -937,10 +906,11 @@ static u64 __xmhfhic_arch_smt_slab_populate_hyp_pagetables(u64 slabid){
 }
 #endif
 
-
+*/
 
 static struct _memorytype _vmx_ept_memorytypes[MAX_MEMORYTYPE_ENTRIES]; //EPT memory types array
 
+/*
 static void __xmhfhic_vmx_gathermemorytypes(void);
 static u32 __xmhfhic_vmx_getmemorytypeforphysicalpage(u64 pagebaseaddr);
 static void __xmhfhic_vmx_setupEPT(u64 guestslab_id);
@@ -978,18 +948,6 @@ static void __xmhfhic_guestpgtbl_establishshape(u64 slabid){
 	}
 
 
-/*    for(i=0; i < PAE_PTRS_PER_PML4T; i++)
-        //_xmhfhic_common_slab_info_table[slabid].archdata.mempgtbl_pml4t[i] = (u64) (hva2spa((void*)_xmhfhic_common_slab_info_table[slabid].archdata.mempgtbl_pdpt) | 0x7);
-        _xmhfhic_common_slab_archdata_mempgtbl_pml4t[slabid][i] = (u64) (hva2spa((void*)_xmhfhic_common_slab_info_table[slabid].archdata.mempgtbl_pdpt) | 0x7);
-
-	for(i=0; i < PAE_PTRS_PER_PDPT; i++)
-		_xmhfhic_common_slab_info_table[slabid].archdata.mempgtbl_pdpt[i] = (u64) ( hva2spa((void*)_xmhfhic_common_slab_info_table[slabid].archdata.mempgtbl_pdt[i]) | 0x7 );
-
-	for(i=0; i < PAE_PTRS_PER_PDPT; i++){
-		for(j=0; j < PAE_PTRS_PER_PDT; j++){
-			_xmhfhic_common_slab_info_table[slabid].archdata.mempgtbl_pdt[i][j] = (u64) ( hva2spa((void*)_xmhfhic_common_slab_info_table[slabid].archdata.mempgtbl_pt[i][j]) | 0x7 );
-		}
-	}*/
 
 
     //_xmhfhic_common_slab_info_table[slabid].archdata.mempgtbl_pml4t = (u64)&_dbuf_mempgtbl_pml4t[slabid];
@@ -1000,7 +958,7 @@ static void __xmhfhic_guestpgtbl_establishshape(u64 slabid){
 
 }
 #endif
-
+*/
 
 //---gather memory types for system physical memory------------------------------
 static void __xmhfhic_vmx_gathermemorytypes(void){
@@ -1195,6 +1153,7 @@ static void __xmhfhic_vmx_gathermemorytypes(void){
 
 }
 
+
 //---get memory type for a given physical page address--------------------------
 //
 //11.11.4.1 MTRR Precedences
@@ -1209,7 +1168,7 @@ static void __xmhfhic_vmx_gathermemorytypes(void){
      //else
        // return default memory type
 //
-static u32 __xmhfhic_vmx_getmemorytypeforphysicalpage(u64 pagebaseaddr){
+static u32 _geec_prime_vmx_getmemorytypeforphysicalpage(u64 pagebaseaddr){
  int i;
  u32 prev_type= MTRR_TYPE_RESV;
 
@@ -1251,7 +1210,7 @@ static u32 __xmhfhic_vmx_getmemorytypeforphysicalpage(u64 pagebaseaddr){
   return prev_type;
 }
 
-
+/*
 //---setup EPT for VMX----------------------------------------------------------
 static void __xmhfhic_vmx_setupEPT(u64 slabid){
 	u64 p_table_value;
@@ -1275,20 +1234,38 @@ static void __xmhfhic_vmx_setupEPT(u64 slabid){
 
 	}
 }
+*/
 
+static void _geec_prime_populate_richguest_slab_pagetables(u32 slabid){
+	u64 p_table_value;
+	u64 gpa;
+    slab_params_t spl;
+    xmhfgeec_uapi_slabmempgtbl_setentryforpaddr_params_t *setentryforpaddrp =
+        (xmhfgeec_uapi_slabmempgtbl_setentryforpaddr_params_t *)spl.in_out_params;
 
-static u64 __xmhfhic_arch_smt_slab_populate_guest_pagetables(u64 slabid){
+    spl.src_slabid = XMHF_HYP_SLAB_GEECPRIME;
+    spl.dst_slabid = XMHF_HYP_SLAB_UAPI_SLABMEMPGTBL;
+    spl.cpuid = 0; //XXX: fixme, need to plug in BSP cpuid
 
-    __xmhfhic_guestpgtbl_establishshape(slabid);
+	for(gpa=0; gpa < ADDR_4GB; gpa += PAGE_SIZE_4K){
+		u32 memorytype = _geec_prime_vmx_getmemorytypeforphysicalpage((u64)gpa);
 
-	__xmhfhic_vmx_setupEPT(slabid);
+        if(memorytype == 0)
+            p_table_value = (u64) (gpa)  | ((u64)memorytype << 3) |  (u64)0x7 ;	//present, UC
+        else
+            p_table_value = (u64) (gpa)  | ((u64)6 << 3) | (u64)0x7 ;	//present, WB, track host MTRR
 
-    return &_dbuf_mempgtbl_pml4t[slabid];
-    //return _xmhfhic_common_slab_info_table[slabid].archdata.mempgtbl_pml4t;
-    //return _xmhfhic_common_slab_archdata_mempgtbl_pml4t[slabid];
+        setentryforpaddrp->uapiphdr.uapifn = XMHFGEEC_UAPI_SLABMEMPGTBL_SETENTRYFORPADDR;
+        setentryforpaddrp->dst_slabid = slabid;
+        setentryforpaddrp->gpa = gpa;
+        setentryforpaddrp->entry = p_table_value;
+        XMHF_SLAB_CALLNEW(&spl);
+
+	}
 }
 
 
+/*
 void xmhfhic_arch_setup_slab_mem_page_tables(void){
 
 	_XDPRINTF_("%s: starting...\n", __func__);
@@ -1310,7 +1287,9 @@ void xmhfhic_arch_setup_slab_mem_page_tables(void){
                //);
 
                 switch(_xmhfhic_common_slab_info_table[i].archdata.slabtype){
-                    case HIC_SLAB_X86VMXX86PC_HYPERVISOR:{
+                    case XMHFGEEC_SLABTYPE_TPRIMESLAB:
+                    case XMHFGEEC_SLABTYPE_TPROGSLAB:
+                    case XMHFGEEC_SLABTYPE_UPROGSLAB:{
                         _XDPRINTF_("  HYPERVISOR slab: populating page tables\n");
 
                         #if 0
@@ -1321,7 +1300,8 @@ void xmhfhic_arch_setup_slab_mem_page_tables(void){
                     }
                     break;
 
-                    case HIC_SLAB_X86VMXX86PC_GUEST:{
+                    case XMHFGEEC_SLABTYPE_UGPROGSLAB:
+                    case XMHFGEEC_SLABTYPE_UGRICHGUESTSLAB:{
                         _XDPRINTF_("  GUEST slab: populating page tables\n");
 
                         _xmhfhic_common_slab_info_table[i].archdata.mempgtbl_cr3 = __xmhfhic_arch_smt_slab_populate_guest_pagetables(i) | 0x1E;
@@ -1339,8 +1319,66 @@ void xmhfhic_arch_setup_slab_mem_page_tables(void){
 	_XDPRINTF_("%s: setup slab memory page tables\n", __func__);
 
 }
+*/
 
 
+
+void xmhfhic_arch_setup_slab_mem_page_tables(void){
+    slab_params_t spl;
+    xmhfgeec_uapi_slabmempgtbl_initmempgtbl_params_t *initmempgtblp =
+        (xmhfgeec_uapi_slabmempgtbl_initmempgtbl_params_t *)spl.in_out_params;
+    u32 i, slabtype;
+
+    _XDPRINTF_("%s: starting...\n", __func__);
+
+    spl.src_slabid = XMHF_HYP_SLAB_GEECPRIME;
+    spl.dst_slabid = XMHF_HYP_SLAB_UAPI_SLABMEMPGTBL;
+    spl.cpuid = 0; //XXX: fixme, need to plug in BSP cpuid here
+
+    //gather memory types for EPT (for guest slabs)
+    __xmhfhic_vmx_gathermemorytypes();
+    _XDPRINTF_("%s: gathered EPT memory types\n", __func__);
+
+
+    for(i=0; i < XMHF_HIC_MAX_SLABS; i++){
+        slabtype = _xmhfhic_common_slab_info_table[i].archdata.slabtype;
+
+        //setup slab memory table shape
+        initmempgtblp->uapiphdr.uapifn = XMHFGEEC_UAPI_SLABMEMPGTBL_INITMEMPGTBL;
+        initmempgtblp->dst_slabid = i;
+        XMHF_SLAB_CALLNEW(&spl);
+
+        switch(slabtype){
+            case XMHFGEEC_SLABTYPE_TPROGSLAB:
+            case XMHFGEEC_SLABTYPE_UPROGSLAB:
+            case XMHFGEEC_SLABTYPE_TPRIMESLAB:{
+            }
+            break;
+
+            case XMHFGEEC_SLABTYPE_UGPROGSLAB:{
+            }
+            break;
+
+            case XMHFGEEC_SLABTYPE_UGRICHGUESTSLAB:{
+              	_XDPRINTF_("%s: populating richguest slab page tables for slab %u...\n",
+                          __func__, i);
+                _geec_prime_populate_richguest_slab_pagetables(i);
+              	_XDPRINTF_("%s: richguest slab page tables populated for slab %u\n",
+                          __func__, i);
+            }
+            break;
+
+            default:
+                _XDPRINTF_("%s: halting!. unknown slab type %u\n", __func__, slabtype);
+                HALT();
+        }
+    }
+
+
+	_XDPRINTF_("%s: setup slab memory page tables\n", __func__);
+    //_XDPRINTF_("%s: wip. halting!\n");
+    //HALT();
+}
 
 
 

@@ -14,4 +14,4 @@ xmhf-slabs/xh_hyperdep , tprogslab
 xmhf-slabs/xh_approvexec , tprogslab
 xmhf-slabs/xh_syscalllog , tprogslab
 xmhf-slabs/xh_ssteptrace , tprogslab
-xmhf-slabs/xg_richguest , ugprogslab
+xmhf-slabs/xg_richguest , ugrichguestslab
