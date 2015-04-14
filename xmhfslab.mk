@@ -22,23 +22,23 @@ XMHF_SLAB_OBJECTS_DIR := _objs_slab_$(XMHF_SLAB_NAME)
 LINKER_SCRIPT_INPUT := $(XMHF_DIR)/xmhfslab.lscript
 LINKER_SCRIPT_OUTPUT := $(XMHF_SLAB_NAME).lds
 
-#XMHF_SLAB_STUBOBJECTS := $(XMHFLIBS_DIR)/xmhfgeec_slabmap.o $(XMHFLIBS_DIR)/xmhfgeec_tprogslab.o
+#XMHF_SLAB_STUBOBJECTS := $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_slabmap.o $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_tprogslab.o
 
 # populate slab stub type based on the slab type
 ifeq ($(XMHF_SLAB_TYPE), tprogslab)
-	XMHF_SLAB_STUBOBJECTS := $(XMHFLIBS_DIR)/xmhfgeec_slabmapdef.o $(XMHFLIBS_DIR)/xmhfgeec_tprogslab_stubs.o
+	XMHF_SLAB_STUBOBJECTS := $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_slabmapdef.o $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_tprogslab_stubs.o
 endif
 
 ifeq ($(XMHF_SLAB_TYPE), ugprogslab)
-	XMHF_SLAB_STUBOBJECTS := $(XMHFLIBS_DIR)/xmhfgeec_slabmapdef.o $(XMHFLIBS_DIR)/xmhfgeec_tprogslab_stubs.o
+	XMHF_SLAB_STUBOBJECTS := $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_slabmapdef.o $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_tprogslab_stubs.o
 endif
 
 ifeq ($(XMHF_SLAB_TYPE), ugrichguestslab)
-	XMHF_SLAB_STUBOBJECTS := $(XMHFLIBS_DIR)/xmhfgeec_slabmapdef.o $(XMHFLIBS_DIR)/xmhfgeec_tprogslab_stubs.o
+	XMHF_SLAB_STUBOBJECTS := $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_slabmapdef.o $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_tprogslab_stubs.o
 endif
 
 ifeq ($(XMHF_SLAB_TYPE), tprimeslab)
-	XMHF_SLAB_STUBOBJECTS := $(XMHFLIBS_DIR)/xmhfgeec_slabmapdef.o $(XMHFLIBS_DIR)/xmhfgeec_tprimeslab_stubs.o
+	XMHF_SLAB_STUBOBJECTS := $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_slabmapdef.o $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_tprimeslab_stubs.o
 endif
 
 # targets
@@ -48,7 +48,7 @@ all: buildslabbin
 buildslabbin: $(XMHF_SLAB_OBJECTS)
 	cd $(XMHF_SLAB_OBJECTS_DIR) && cp -f $(LINKER_SCRIPT_INPUT) $(XMHF_SLAB_NAME).lscript.c
 	cd $(XMHF_SLAB_OBJECTS_DIR) && $(CC) $(CFLAGS) -D__ASSEMBLY__ -P -E $(XMHF_SLAB_NAME).lscript.c -o $(LINKER_SCRIPT_OUTPUT)
-	cd $(XMHF_SLAB_OBJECTS_DIR) && $(LD) -r --oformat elf32-i386 -T $(LINKER_SCRIPT_OUTPUT) -o $(XMHF_SLAB_NAME).slo $(XMHF_SLAB_OBJECTS_ARCHIVE) $(XMHF_SLAB_STUBOBJECTS) -L$(CCERT_LIB) -L$(CCLIB)/lib/linux -L$(XMHFLIBS_DIR) -lxmhfc -lxmhfcrypto -lxmhfhw -lxmhfhw -lxmhfc -lclang_rt.full-i386 -lcompcert
+	cd $(XMHF_SLAB_OBJECTS_DIR) && $(LD) -r --oformat elf32-i386 -T $(LINKER_SCRIPT_OUTPUT) -o $(XMHF_SLAB_NAME).slo $(XMHF_SLAB_OBJECTS_ARCHIVE) $(XMHF_SLAB_STUBOBJECTS) -L$(CCERT_LIB) -L$(CCLIB)/lib/linux -L$(XMHF_LIBS_OBJECTS_DIR) -lxmhfc -lxmhfcrypto -lxmhfhw -lxmhfhw -lxmhfc -lclang_rt.full-i386 -lcompcert
 	cd $(XMHF_SLAB_OBJECTS_DIR) && nm $(XMHF_SLAB_NAME).slo | awk '{ print $$3 }' | awk NF >$(XMHF_SLAB_NAME).slo.syms
 	cd $(XMHF_SLAB_OBJECTS_DIR) && $(OBJCOPY) --localize-symbols=$(XMHF_SLAB_NAME).slo.syms $(XMHF_SLAB_NAME).slo $(XMHF_SLAB_NAME).slo
 	cd $(XMHF_SLAB_OBJECTS_DIR) && $(OBJCOPY) $(XMHF_SLAB_GLOBAL_SYMS) $(XMHF_SLAB_NAME).slo $(XMHF_SLAB_NAME).slo
