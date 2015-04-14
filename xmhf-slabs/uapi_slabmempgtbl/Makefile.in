@@ -22,7 +22,7 @@ export XMHF_SLAB_PRIVILEGED := y
 export XMHF_SLAB_SOURCES := $(wildcard $(srcdir)/*.c)
 #XMHF_SLAB_SOURCES += $(wildcard $(srcdir)/*.cS)
 
-export XMHF_SLAB_GLOBAL_SYMS := --globalize-symbol _dbuf_devpgtbl --globalize-symbol _dbuf_mempgtbl_pml4t --globalize-symbol _dbuf_mempgtbl_pdpt --globalize-symbol _dbuf_mempgtbl_pdt --globalize-symbol _dbuf_mempgtbl_pt
+#export XMHF_SLAB_GLOBAL_SYMS := --globalize-symbol _dbuf_devpgtbl --globalize-symbol _dbuf_mempgtbl_pml4t --globalize-symbol _dbuf_mempgtbl_pdpt --globalize-symbol _dbuf_mempgtbl_pdt --globalize-symbol _dbuf_mempgtbl_pt
 
 ########################################################################
 # generic slab build harness

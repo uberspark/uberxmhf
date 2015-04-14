@@ -59,8 +59,6 @@
 #define XMHFGEEC_UAPI_SLABMEMPGTBL_SETENTRYFORPADDR (0x2)
 #define XMHFGEEC_UAPI_SLABMEMPGTBL_GETENTRYFORPADDR (0x3)
 
-#define XMHF_HIC_UAPI_MEMPGTBL_GETENTRY         (25)
-#define XMHF_HIC_UAPI_MEMPGTBL_SETENTRY         (26)
 
 
 #ifndef __ASSEMBLY__
@@ -83,23 +81,6 @@ typedef struct {
     u64 gpa;
     u64 result_entry;
 }__attribute__((packed)) xmhfgeec_uapi_slabmempgtbl_getentryforpaddr_params_t;
-
-
-
-typedef struct {
-    xmhf_uapi_params_hdr_t uapiphdr;
-    u32 dst_slabid;
-    u64 gpa;
-    u64 entry;
-}__attribute__((packed)) xmhf_uapi_slabmempgtbl_entry_params_t;
-
-
-extern __attribute__((section(".data"))) __attribute__((aligned(4096))) vtd_slpgtbl_t _dbuf_devpgtbl[XMHF_HIC_MAX_SLABS];
-extern __attribute__((section(".data"))) __attribute__(( aligned(2097152) )) u64 _dbuf_mempgtbl_pml4t[XMHF_HIC_MAX_SLABS][PAE_MAXPTRS_PER_PML4T]; //ro
-extern __attribute__((section(".data"))) __attribute__((aligned(4096)))	u64 _dbuf_mempgtbl_pdpt[XMHF_HIC_MAX_SLABS][PAE_MAXPTRS_PER_PDPT];
-extern __attribute__((section(".data"))) __attribute__((aligned(4096)))	u64 _dbuf_mempgtbl_pdt[XMHF_HIC_MAX_SLABS][PAE_PTRS_PER_PDPT][PAE_PTRS_PER_PDT];
-extern __attribute__((section(".data"))) __attribute__((aligned(4096)))  u64 _dbuf_mempgtbl_pt[XMHF_HIC_MAX_SLABS][PAE_PTRS_PER_PDPT][PAE_PTRS_PER_PDT][PAE_PTRS_PER_PT];
-
 
 
 #endif	//__ASSEMBLY__
