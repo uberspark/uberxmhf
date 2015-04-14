@@ -134,21 +134,28 @@ if(!ae_activated){
     {
         //lock the code page so no one can write to it
         //xmhf_hic_uapi_mempgtbl_desc_t *mdesc = (xmhf_hic_uapi_mempgtbl_desc_t *)&spl.in_out_params[2];
-        xmhf_uapi_slabmempgtbl_entry_params_t *smpgtblep =
-            (xmhf_uapi_slabmempgtbl_entry_params_t *)spl.in_out_params;
+        //xmhf_uapi_slabmempgtbl_entry_params_t *smpgtblep =
+        //    (xmhf_uapi_slabmempgtbl_entry_params_t *)spl.in_out_params;
+            xmhfgeec_uapi_slabmempgtbl_getentryforpaddr_params_t *getentryforpaddrp =
+        (xmhfgeec_uapi_slabmempgtbl_getentryforpaddr_params_t *)spl.in_out_params;
+    xmhfgeec_uapi_slabmempgtbl_setentryforpaddr_params_t *setentryforpaddrp =
+        (xmhfgeec_uapi_slabmempgtbl_setentryforpaddr_params_t *)spl.in_out_params;
+
 
         spl.dst_slabid = XMHF_HYP_SLAB_UAPI_SLABMEMPGTBL;
-        smpgtblep->dst_slabid = guest_slab_index;
-        smpgtblep->gpa = gpa;
-        smpgtblep->uapiphdr.uapifn = XMHF_HIC_UAPI_MEMPGTBL_GETENTRY;
+
+        getentryforpaddrp->uapiphdr.uapifn = XMHFGEEC_UAPI_SLABMEMPGTBL_GETENTRYFORPADDR;
+        getentryforpaddrp->dst_slabid = guest_slab_index;
+        getentryforpaddrp->gpa = gpa;
         XMHF_SLAB_CALLNEW(&spl);
         _XDPRINTF_("%s[%u]: original entry for gpa=%016llx is %016llx\n",
-                   __func__, (u16)cpuindex, gpa, smpgtblep->entry);
+                   __func__, (u16)cpuindex, gpa, getentryforpaddrp->result_entry);
 
-        smpgtblep->entry &= ~(0x7);
-        smpgtblep->entry |= 0x5; // execute, read-only
-
-        smpgtblep->uapiphdr.uapifn = XMHF_HIC_UAPI_MEMPGTBL_SETENTRY;
+        setentryforpaddrp->uapiphdr.uapifn = XMHFGEEC_UAPI_SLABMEMPGTBL_SETENTRYFORPADDR;
+        setentryforpaddrp->dst_slabid = guest_slab_index;
+        setentryforpaddrp->gpa = gpa;
+        setentryforpaddrp->entry = getentryforpaddrp->result_entry & ~(0x7);
+        setentryforpaddrp->entry |= 0x5; // execute, read-only
         XMHF_SLAB_CALLNEW(&spl);
 
         ae_activated = true;
@@ -165,8 +172,13 @@ if(!ae_activated){
 static void ae_unlock(u32 cpuindex, u32 guest_slab_index, u64 gpa){
      slab_params_t spl;
      //xmhf_hic_uapi_mempgtbl_desc_t *mdesc = (xmhf_hic_uapi_mempgtbl_desc_t *)&spl.in_out_params[2];
-    xmhf_uapi_slabmempgtbl_entry_params_t *smpgtblep =
-        (xmhf_uapi_slabmempgtbl_entry_params_t *)spl.in_out_params;
+    //xmhf_uapi_slabmempgtbl_entry_params_t *smpgtblep =
+    //    (xmhf_uapi_slabmempgtbl_entry_params_t *)spl.in_out_params;
+    xmhfgeec_uapi_slabmempgtbl_getentryforpaddr_params_t *getentryforpaddrp =
+        (xmhfgeec_uapi_slabmempgtbl_getentryforpaddr_params_t *)spl.in_out_params;
+    xmhfgeec_uapi_slabmempgtbl_setentryforpaddr_params_t *setentryforpaddrp =
+        (xmhfgeec_uapi_slabmempgtbl_setentryforpaddr_params_t *)spl.in_out_params;
+
 
      spl.src_slabid = XMHF_HYP_SLAB_XHAPPROVEXEC;
      spl.dst_slabid = XMHF_HYP_SLAB_UAPI_SLABMEMPGTBL;
@@ -177,22 +189,25 @@ static void ae_unlock(u32 cpuindex, u32 guest_slab_index, u64 gpa){
 
     if(ae_activated){
          //unlock the code page
-         smpgtblep->dst_slabid = guest_slab_index;
-         smpgtblep->gpa = gpa;
-         smpgtblep->uapiphdr.uapifn = XMHF_HIC_UAPI_MEMPGTBL_GETENTRY;
+        getentryforpaddrp->uapiphdr.uapifn = XMHFGEEC_UAPI_SLABMEMPGTBL_GETENTRYFORPADDR;
+        getentryforpaddrp->dst_slabid = guest_slab_index;
+        getentryforpaddrp->gpa = gpa;
          XMHF_SLAB_CALLNEW(&spl);
 
-         _XDPRINTF_("%s[%u]: original entry for gpa=%016llx is %016llx\n",  __func__, (u16)cpuindex, gpa, smpgtblep->entry);
+         _XDPRINTF_("%s[%u]: original entry for gpa=%016llx is %016llx\n",
+                    __func__, (u16)cpuindex, gpa, getentryforpaddrp->result_entry);
 
-        smpgtblep->entry &= ~(0x7);
-        smpgtblep->entry |= 0x7; // execute, read-write
-
-        smpgtblep->uapiphdr.uapifn = XMHF_HIC_UAPI_MEMPGTBL_GETENTRY;
+        setentryforpaddrp->uapiphdr.uapifn = XMHFGEEC_UAPI_SLABMEMPGTBL_SETENTRYFORPADDR;
+        setentryforpaddrp->dst_slabid = guest_slab_index;
+        setentryforpaddrp->gpa = gpa;
+        setentryforpaddrp->entry = getentryforpaddrp->result_entry & ~(0x7);
+        setentryforpaddrp->entry |= 0x7; // execute, read-write
         XMHF_SLAB_CALLNEW(&spl);
 
         ae_activated=false;
 
-        _XDPRINTF_("%s[%u]: restored permissions for page at %016llx\n", __func__, (u16)cpuindex, gpa);
+        _XDPRINTF_("%s[%u]: restored permissions for page at %016llx\n",
+                   __func__, (u16)cpuindex, gpa);
     }
 }
 

@@ -54,10 +54,11 @@
 #include <xmhf-hwm.h>
 #include <xmhfhw.h>
 
-//arch. specific decls.
-#define HIC_SLAB_X86VMXX86PC_HYPERVISOR (1)
-#define HIC_SLAB_X86VMXX86PC_GUEST      (2)
-
+#define XMHFGEEC_SLABTYPE_TPRIMESLAB        (0)
+#define XMHFGEEC_SLABTYPE_TPROGSLAB         (1)
+#define XMHFGEEC_SLABTYPE_UPROGSLAB         (2)
+#define XMHFGEEC_SLABTYPE_UGPROGSLAB        (3)
+#define XMHFGEEC_SLABTYPE_UGRICHGUESTSLAB   (4)
 
 
 #define HIC_SLAB_PHYSMEM_EXTENT_READ       (1 << 0)
