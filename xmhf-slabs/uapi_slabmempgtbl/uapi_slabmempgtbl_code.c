@@ -60,18 +60,6 @@
 #include <uapi_slabmempgtbl.h>
 
 
-//////
-// backing data buffers for slab memory and device page tables
-#if !defined (__XMHF_VERIFICATION__)
-
-__attribute__((section(".data"))) __attribute__(( aligned(2097152) )) u64 _dbuf_mempgtbl_pml4t[XMHF_HIC_MAX_SLABS][PAE_MAXPTRS_PER_PML4T];
-__attribute__((section(".data"))) __attribute__((aligned(4096)))	u64 _dbuf_mempgtbl_pdpt[XMHF_HIC_MAX_SLABS][PAE_MAXPTRS_PER_PDPT];
-__attribute__((section(".data"))) __attribute__((aligned(4096)))	u64 _dbuf_mempgtbl_pdt[XMHF_HIC_MAX_SLABS][PAE_PTRS_PER_PDPT][PAE_PTRS_PER_PDT];
-__attribute__((section(".data"))) __attribute__((aligned(4096)))  u64 _dbuf_mempgtbl_pt[XMHF_HIC_MAX_SLABS][PAE_PTRS_PER_PDPT][PAE_PTRS_PER_PDT][PAE_PTRS_PER_PT];
-
-#endif //__XMHF_VERIFICATION__
-
-
 __attribute__((section(".rwdatahdr"))) __attribute__((aligned(4096))) u64 _slabmempgtbl_lvl4t[XMHF_HIC_MAX_SLABS][PAE_MAXPTRS_PER_PML4T];
 __attribute__((section(".data"))) __attribute__((aligned(4096))) u64 _slabmempgtbl_lvl3t[XMHF_HIC_MAX_SLABS][PAE_MAXPTRS_PER_PDPT];
 __attribute__((section(".data"))) __attribute__((aligned(4096))) u64 _slabmempgtbl_lvl2t[XMHF_HIC_MAX_SLABS][PAE_PTRS_PER_PDPT][PAE_PTRS_PER_PDT];
@@ -330,40 +318,6 @@ void slab_main(slab_params_t *sp){
 
        }
         break;
-
-
-       case XMHF_HIC_UAPI_MEMPGTBL_GETENTRY:{
-            xmhf_uapi_slabmempgtbl_entry_params_t *smempgtblentryp =
-                (xmhf_uapi_slabmempgtbl_entry_params_t *)sp->in_out_params;
-
-            {
-                u64 pdpt_index = pae_get_pdpt_index(smempgtblentryp->gpa);
-                u64 pd_index = pae_get_pdt_index(smempgtblentryp->gpa);
-                u64 pt_index = pae_get_pt_index(smempgtblentryp->gpa);
-                smempgtblentryp->entry =
-                    _dbuf_mempgtbl_pt[smempgtblentryp->dst_slabid][pdpt_index][pd_index][pt_index];
-            }
-
-        }
-        break;
-
-
-        case XMHF_HIC_UAPI_MEMPGTBL_SETENTRY:{
-            xmhf_uapi_slabmempgtbl_entry_params_t *smempgtblentryp =
-                (xmhf_uapi_slabmempgtbl_entry_params_t *)sp->in_out_params;
-
-            {
-                u64 pdpt_index = pae_get_pdpt_index(smempgtblentryp->gpa);
-                u64 pd_index = pae_get_pdt_index(smempgtblentryp->gpa);
-                u64 pt_index = pae_get_pt_index(smempgtblentryp->gpa);
-                _dbuf_mempgtbl_pt[smempgtblentryp->dst_slabid][pdpt_index][pd_index][pt_index]
-                    = smempgtblentryp->entry;
-
-            }
-
-        }
-        break;
-
 
 
         default:
