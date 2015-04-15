@@ -1,6 +1,11 @@
 # common makefile for slabs
 # author: amit vasudevan (amitvasudevan@acm.org)
+export srcdir := $(dir $(lastword $(MAKEFILE_LIST)))
 
+vpath %.c $(srcdir)
+vpath %.S $(srcdir)
+vpath %.cS $(srcdir)
+vpath %.lscript $(srcdir)
 
 XMHF_SLAB_SOURCES_SUBST := $(patsubst $(srcdir)/%, %, $(XMHF_SLAB_SOURCES))
 
@@ -23,6 +28,9 @@ LINKER_SCRIPT_INPUT := $(XMHF_DIR)/xmhfgeecslab.lscript
 LINKER_SCRIPT_OUTPUT := $(XMHF_SLAB_NAME).lds
 
 #XMHF_SLAB_STUBOBJECTS := $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_slabmap.o $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_tprogslab.o
+
+export XMHF_SLAB_TYPE := @SLABTYPE@
+
 
 # populate slab stub type based on the slab type
 ifeq ($(XMHF_SLAB_TYPE), tprogslab)
