@@ -1,7 +1,4 @@
 AC_INIT([xmhfgeecslab], [1.0.0])
-AC_CONFIG_AUX_DIR([build-aux]) # use this if\when switching to automake
-
-AC_PROG_INSTALL
 
 
 # simple configuration of tools. (just looks for matching binary
@@ -27,8 +24,8 @@ AC_CHECK_PROG([CAT], [cat], [cat])
 AC_SUBST([SLABTYPE])
 AC_ARG_WITH([slabtype],
         AS_HELP_STRING([--with-slabtype=@<:@TYPE@:>@],
-                [select slab type (tprimeslab, tprogslab, uprogslab, ugprogslab)]),
-                , [with_slabtype=tprogslab])
+                [select slab type]),
+                , [with_slabtype=])
 SLABTYPE=$[]with_slabtype
 
 
@@ -41,5 +38,6 @@ AC_SUBST([pkgdatadir], ['${datadir}/AC_PACKAGE_NAME'])
 AC_SUBST([pkgconfigdir], ['${libdir}/pkgconfig'])
 AC_SUBST([pkgincludedir], ['${includedir}/AC_PACKAGE_NAME'])
 
-AC_CONFIG_FILES([Makefile])
+AC_CONFIG_FILES(
+	[Makefile:../../xmhfgeecslab_commonharness.mk.in:xmhfgeecslab.mk.in:../../xmhfgeecslab_commontargets.mk.in])
 AC_OUTPUT
