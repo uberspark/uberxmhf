@@ -1,0 +1,34 @@
+# common makefile for slabs
+# author: amit vasudevan (amitvasudevan@acm.org)
+export srcdir := $(dir $(lastword $(MAKEFILE_LIST)))
+
+vpath %.c $(srcdir)
+vpath %.S $(srcdir)
+vpath %.cS $(srcdir)
+vpath %.lscript $(srcdir)
+
+include $(srcdir)/../../common.mk
+
+
+#XMHF_SLAB_STUBOBJECTS := $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_slabmap.o $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_tprogslab.o
+
+export XMHF_SLAB_TYPE := @SLABTYPE@
+
+
+# populate slab stub type based on the slab type
+ifeq ($(XMHF_SLAB_TYPE), tprogslab)
+	XMHF_SLAB_STUBOBJECTS := $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_slabmapdef.o $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_tprogslab_stubs.o
+endif
+
+ifeq ($(XMHF_SLAB_TYPE), ugprogslab)
+	XMHF_SLAB_STUBOBJECTS := $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_slabmapdef.o $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_tprogslab_stubs.o
+endif
+
+ifeq ($(XMHF_SLAB_TYPE), ugrichguestslab)
+	XMHF_SLAB_STUBOBJECTS := $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_slabmapdef.o $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_tprogslab_stubs.o
+endif
+
+ifeq ($(XMHF_SLAB_TYPE), tprimeslab)
+	XMHF_SLAB_STUBOBJECTS := $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_slabmapdef.o $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_tprimeslab_stubs.o
+endif
+

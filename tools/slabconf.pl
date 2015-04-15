@@ -28,8 +28,7 @@ while( $i <= $#array) {
 
 
     print "Configuring slab: $rootdir/$slabdir with type:$slabtype ...\n";
-    system "cd $rootdir/$slabdir && autoreconf --install && automake --add-missing --copy >/dev/null 2>&1";
-    system "cd $rootdir/$slabdir && ./configure --with-slabtype=$slabtype";
+    system "cd $rootdir/$slabdir && ../../configure_slab --with-slabtype=$slabtype";
 
 
     # move on to the next line
