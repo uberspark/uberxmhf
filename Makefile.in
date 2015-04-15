@@ -1,6 +1,7 @@
 # top-level Makefile for XMHF
 # author: amit vasudevan (amitvasudevan@acm.org)
 
+include ./common.mk
 
 ######
 # top-level build harness

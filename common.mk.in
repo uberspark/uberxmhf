@@ -1,22 +1,25 @@
 # common Makefile boilerplate for XMHF
 # author: amit vasudevan (amitvasudevan@acm.org)
 
+mydir := $(dir $(lastword $(MAKEFILE_LIST)))
+mydir := $(realpath $(mydir))
+
 ######
 # common paths
 ######
 
 # directory where this Makefile resides (source root)
-export XMHF_DIR := $(CURDIR)
+export XMHF_DIR := $(mydir)
 
 # objects directory (used for building binaries without polluting source namespace)
-export XMHF_OBJDIR = $(CURDIR)/_objects
+export XMHF_OBJDIR = $(XMHF_DIR)/_objects
 
 # XMHF libs dirs and object locations
 export XMHF_LIBDIRS := $(wildcard $(XMHF_DIR)/xmhf-libs/lib*)
 export XMHF_LIBS_OBJECTS_DIR := $(XMHF_OBJDIR)/_objs_xmhf-libs
 
 # construct include paths
-export ADDL_INCLUDES := -I$(realpath include) -I$(realpath xmhf-slabs/include) -I$(realpath xmhf-hwm/include)
+export ADDL_INCLUDES := -I$(XMHF_DIR)/include -I$(XMHF_DIR)/xmhf-slabs/include -I$(XMHF_DIR)/xmhf-hwm/include
 XMHFLIBS_INC = $(foreach dir,$(XMHF_LIBDIRS),-I$(dir)/include)
 ADDL_INCLUDES += $(XMHFLIBS_INC)
 
