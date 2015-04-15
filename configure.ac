@@ -1,7 +1,7 @@
 AC_INIT([xmhf], [1.0.0])
-AC_CONFIG_AUX_DIR([build-aux]) # use this if\when switching to automake
+#AC_CONFIG_AUX_DIR([build-aux]) # use this if\when switching to automake
 
-AC_PROG_INSTALL
+#AC_PROG_INSTALL
 
 #AC_PROG_CC
 # disabled for now. this macro would test gcc with compiling a
@@ -118,7 +118,8 @@ AC_SUBST([pkgconfigdir], ['${libdir}/pkgconfig'])
 AC_SUBST([pkgincludedir], ['${includedir}/AC_PACKAGE_NAME'])
 
 AC_CONFIG_FILES(
-			[Makefile:common.mk.in:Makefile.in]
+			[common.mk]
+			[Makefile]
 			[SLABS])
 
 AC_OUTPUT
