@@ -1,0 +1,43 @@
+# common makefile for slabs
+# author: amit vasudevan (amitvasudevan@acm.org)
+
+
+XMHF_SLAB_SOURCES_SUBST := $(patsubst $(srcdir)/%, %, $(XMHF_SLAB_SOURCES))
+
+# grab list of file names only for binary generation
+XMHF_SLAB_SOURCES_FILENAMEONLY := $(notdir $(XMHF_SLAB_SOURCES_SUBST))
+
+XMHF_SLAB_OBJECTS_ARCHIVE := $(patsubst %.c, %.o, $(XMHF_SLAB_SOURCES_FILENAMEONLY))
+XMHF_SLAB_OBJECTS_ARCHIVE := $(patsubst %.cS, %.o, $(XMHF_SLAB_OBJECTS_ARCHIVE))
+XMHF_SLAB_OBJECTS_ARCHIVE := $(patsubst %.S, %.o, $(XMHF_SLAB_OBJECTS_ARCHIVE))
+
+# list of object dependencies
+XMHF_SLAB_OBJECTS := $(patsubst %.c, %.o, $(XMHF_SLAB_SOURCES_SUBST))
+XMHF_SLAB_OBJECTS := $(patsubst %.cS, %.o, $(XMHF_SLAB_OBJECTS))
+XMHF_SLAB_OBJECTS := $(patsubst %.S, %.o, $(XMHF_SLAB_OBJECTS))
+
+# folder where objects go
+XMHF_SLAB_OBJECTS_DIR := _objs_slab_$(XMHF_SLAB_NAME)
+
+LINKER_SCRIPT_INPUT := $(XMHF_DIR)/xmhfslab.lscript
+LINKER_SCRIPT_OUTPUT := $(XMHF_SLAB_NAME).lds
+
+#XMHF_SLAB_STUBOBJECTS := $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_slabmap.o $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_tprogslab.o
+
+# populate slab stub type based on the slab type
+ifeq ($(XMHF_SLAB_TYPE), tprogslab)
+	XMHF_SLAB_STUBOBJECTS := $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_slabmapdef.o $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_tprogslab_stubs.o
+endif
+
+ifeq ($(XMHF_SLAB_TYPE), ugprogslab)
+	XMHF_SLAB_STUBOBJECTS := $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_slabmapdef.o $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_tprogslab_stubs.o
+endif
+
+ifeq ($(XMHF_SLAB_TYPE), ugrichguestslab)
+	XMHF_SLAB_STUBOBJECTS := $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_slabmapdef.o $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_tprogslab_stubs.o
+endif
+
+ifeq ($(XMHF_SLAB_TYPE), tprimeslab)
+	XMHF_SLAB_STUBOBJECTS := $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_slabmapdef.o $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_tprimeslab_stubs.o
+endif
+
