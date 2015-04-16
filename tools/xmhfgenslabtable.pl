@@ -87,6 +87,8 @@ while( $i <= $#slabnamearray ){
         print "\n	        XMHFGEEC_SLABTYPE_uVU_PROG,";
     }elsif($slabtypearray[$i] eq "uVU_PROG_GUEST"){
         print "\n	        XMHFGEEC_SLABTYPE_uVU_PROG_GUEST,";
+    }elsif($slabtypearray[$i] eq "uVT_PROG_GUEST"){
+        print "\n	        XMHFGEEC_SLABTYPE_uVT_PROG_GUEST,";
     }elsif($slabtypearray[$i] eq "uVU_PROG_RICHGUEST"){
         print "\n	        XMHFGEEC_SLABTYPE_uVU_PROG_RICHGUEST,";
     }else{
