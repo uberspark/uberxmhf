@@ -724,7 +724,7 @@ void slab_main(slab_params_t *sp){
 
     switch (_xmhfhic_common_slab_info_table[sp->dst_slabid].archdata.slabtype){
 
-        case XMHFGEEC_SLABTYPE_TPROGSLAB:{
+        case XMHFGEEC_SLABTYPE_VfT_PROG:{
             FPSLABMAIN slab_main;
 
             slab_main = (FPSLABMAIN)_xmhfhic_common_slab_info_table[sp->dst_slabid].entrystub;
@@ -733,8 +733,9 @@ void slab_main(slab_params_t *sp){
         }
         break;
 
-        case XMHFGEEC_SLABTYPE_UGPROGSLAB:
-        case XMHFGEEC_SLABTYPE_UGRICHGUESTSLAB:{
+        case XMHFGEEC_SLABTYPE_uVT_PROG_GUEST:
+        case XMHFGEEC_SLABTYPE_uVU_PROG_GUEST:
+        case XMHFGEEC_SLABTYPE_uVU_PROG_RICHGUEST:{
              CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_CONTROL_VPID, sp->dst_slabid );
              CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_CONTROL_EPT_POINTER_FULL, (_xmhfhic_common_slab_info_table[sp->dst_slabid].archdata.mempgtbl_cr3  | 0x1E) );
              CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_CONTROL_EPT_POINTER_HIGH, 0);

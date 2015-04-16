@@ -164,21 +164,23 @@ static void _slabmempgtbl_initmempgtbl(u32 slabid){
     slabtype = _xmhfhic_common_slab_info_table[slabid].archdata.slabtype;
 
     switch(slabtype){
-        case XMHFGEEC_SLABTYPE_TPROGSLAB:
-        case XMHFGEEC_SLABTYPE_UPROGSLAB:
-        case XMHFGEEC_SLABTYPE_TPRIMESLAB:{
+        case XMHFGEEC_SLABTYPE_VfT_PROG_PRIME:
+        case XMHFGEEC_SLABTYPE_VfT_PROG:
+        case XMHFGEEC_SLABTYPE_uVT_PROG:
+        case XMHFGEEC_SLABTYPE_uVU_PROG:{
             _slabmempgtbl_initmempgtbl_pae2Mmmio(slabid);
             _XDPRINTF_("%s: setup slab %u with pae2Mmmio\n", __func__, slabid);
         }
         break;
 
-        case XMHFGEEC_SLABTYPE_UGPROGSLAB:{
+        case XMHFGEEC_SLABTYPE_uVT_PROG_GUEST:
+        case XMHFGEEC_SLABTYPE_uVU_PROG_GUEST:{
             _slabmempgtbl_initmempgtbl_ept2Mmmio(slabid);
             _XDPRINTF_("%s: setup slab %u with ept2Mmmio\n", __func__, slabid);
         }
         break;
 
-        case XMHFGEEC_SLABTYPE_UGRICHGUESTSLAB:{
+        case XMHFGEEC_SLABTYPE_uVU_PROG_RICHGUEST:{
             _slabmempgtbl_initmempgtbl_ept4K(slabid);
             _XDPRINTF_("%s: setup slab %u with ept4K\n", __func__, slabid);
         }
@@ -208,23 +210,25 @@ static void _slabmempgtbl_setentryforpaddr(u32 slabid, u64 gpa, u64 entry){
 
     switch(slabtype){
 
-        case XMHFGEEC_SLABTYPE_TPROGSLAB:
-        case XMHFGEEC_SLABTYPE_UPROGSLAB:
-        case XMHFGEEC_SLABTYPE_TPRIMESLAB:
-        case XMHFGEEC_SLABTYPE_UGPROGSLAB:{
+        case XMHFGEEC_SLABTYPE_VfT_PROG_PRIME:
+        case XMHFGEEC_SLABTYPE_VfT_PROG:
+        case XMHFGEEC_SLABTYPE_uVT_PROG:
+        case XMHFGEEC_SLABTYPE_uVU_PROG:
+        case XMHFGEEC_SLABTYPE_uVT_PROG_GUEST:
+        case XMHFGEEC_SLABTYPE_uVU_PROG_GUEST:{
             //2M mappings with 4K splintered mmio
             if(gpa >= mmio_paddr && gpa < (mmio_paddr + PAGE_SIZE_2M)){
-                _slabmempgtbl_lvl1t_mmio[slabid][pt_index] = entry;
+                _slabmempgtbl_lvl1t_mmio[slabid][pt_index] = entry & (~0x80);
             }else{
-                _slabmempgtbl_lvl2t[slabid][pdpt_index][pdt_index] = entry;
+                _slabmempgtbl_lvl2t[slabid][pdpt_index][pdt_index] = entry | 0x80;
             }
         }
         break;
 
-        case XMHFGEEC_SLABTYPE_UGRICHGUESTSLAB:{
+        case XMHFGEEC_SLABTYPE_uVU_PROG_RICHGUEST:{
             //4K mappings throughout
             _slabmempgtbl_lvl1t_richguest[pdpt_index][pdt_index][pt_index] =
-                entry;
+                entry & (~0x80);
         }
         break;
 
@@ -253,10 +257,12 @@ static u64 _slabmempgtbl_getentryforpaddr(u32 slabid, u64 gpa){
 
     switch(slabtype){
 
-        case XMHFGEEC_SLABTYPE_TPROGSLAB:
-        case XMHFGEEC_SLABTYPE_UPROGSLAB:
-        case XMHFGEEC_SLABTYPE_TPRIMESLAB:
-        case XMHFGEEC_SLABTYPE_UGPROGSLAB:{
+        case XMHFGEEC_SLABTYPE_VfT_PROG_PRIME:
+        case XMHFGEEC_SLABTYPE_VfT_PROG:
+        case XMHFGEEC_SLABTYPE_uVT_PROG:
+        case XMHFGEEC_SLABTYPE_uVU_PROG:
+        case XMHFGEEC_SLABTYPE_uVT_PROG_GUEST:
+        case XMHFGEEC_SLABTYPE_uVU_PROG_GUEST:{
             //2M mappings with 4K splintered mmio
             if(gpa >= mmio_paddr && gpa < (mmio_paddr + PAGE_SIZE_2M)){
                 result_entry = _slabmempgtbl_lvl1t_mmio[slabid][pt_index];
@@ -266,7 +272,7 @@ static u64 _slabmempgtbl_getentryforpaddr(u32 slabid, u64 gpa){
         }
         break;
 
-        case XMHFGEEC_SLABTYPE_UGRICHGUESTSLAB:{
+        case XMHFGEEC_SLABTYPE_uVU_PROG_RICHGUEST:{
             //4K mappings throughout
             result_entry = _slabmempgtbl_lvl1t_richguest[pdpt_index][pdt_index][pt_index];
         }

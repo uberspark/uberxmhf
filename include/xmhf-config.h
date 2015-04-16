@@ -137,7 +137,7 @@
 #define XMHF_HYP_SLAB_XCINIT                (8)
 #define XMHF_HYP_SLAB_XCIHUB                (9)
 #define XMHF_HYP_SLAB_XCEXHUB               (10)
-#define XMHF_HYP_SLAB_XCTESTSLAB1           (11)
+#define XMHF_HYP_SLAB_XC_TESTSLAB           (11)
 #define XMHF_HYP_SLAB_XHHYPERDEP            (12)
 #define XMHF_HYP_SLAB_XHAPPROVEXEC          (13)
 #define XMHF_HYP_SLAB_XHSYSCALLLOG          (14)
@@ -223,5 +223,9 @@
 
 #define     MAX_SLAB_DMADATA_SIZE           (32*1024*1024)
 #define     MAX_SLAB_DMADATA_PDT_ENTRIES    (MAX_SLAB_DMADATA_SIZE/(2*1024*1024))
+
+
+#define     ADDR_LIBXMHFDEBUGDATA           (0x0DC00000UL)
+
 
 #endif //__XMHF_CONFIG_H__
