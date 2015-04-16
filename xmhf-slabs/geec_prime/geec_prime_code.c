@@ -1541,25 +1541,20 @@ void xmhfhic_arch_setup_slab_mem_page_tables(void){
             case XMHFGEEC_SLABTYPE_uVT_PROG:
             case XMHFGEEC_SLABTYPE_uVU_PROG:{
                 _geec_prime_populate_slab_pagetables_uVT_uVU_prog(i);
+              	_XDPRINTF_("%s: slab %u --> uV{T,U}_prog page-tables populated\n", __func__, i);
             }
             break;
 
             case XMHFGEEC_SLABTYPE_uVT_PROG_GUEST:
             case XMHFGEEC_SLABTYPE_uVU_PROG_GUEST:{
-              	_XDPRINTF_("%s: populating guest prog slab page tables for slab %u...\n",
-                          __func__, i);
                 _geec_prime_populate_slab_pagetables_uVT_uVU_prog_guest(i);
-              	_XDPRINTF_("%s: guest prog slab page tables populated for slab %u\n",
-                          __func__, i);
+              	_XDPRINTF_("%s: slab %u --> uV{T,U}_prog_guest page-tables populated\n", __func__, i);
             }
             break;
 
             case XMHFGEEC_SLABTYPE_uVU_PROG_RICHGUEST:{
-              	_XDPRINTF_("%s: populating richguest slab page tables for slab %u...\n",
-                          __func__, i);
                 _geec_prime_populate_slab_pagetables_uVU_prog_richguest(i);
-              	_XDPRINTF_("%s: richguest slab page tables populated for slab %u\n",
-                          __func__, i);
+              	_XDPRINTF_("%s: slab %u --> uVU_prog_richguest page-tables populated\n", __func__, i);
             }
             break;
 
