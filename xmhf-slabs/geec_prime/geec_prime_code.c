@@ -167,7 +167,7 @@ void slab_main(slab_params_t *sp){
 
 #if !defined (__XMHF_VERIFICATION__)
     //setup slab system device allocation and device page tables
-    xmhfhic_arch_setup_slab_device_allocation();
+        xmhfhic_arch_setup_slab_device_allocation();
 
     //setup slab memory page tables
     xmhfhic_arch_setup_slab_mem_page_tables();
@@ -1349,17 +1349,19 @@ void xmhfhic_arch_setup_slab_mem_page_tables(void){
         XMHF_SLAB_CALLNEW(&spl);
 
         switch(slabtype){
-            case XMHFGEEC_SLABTYPE_TPROGSLAB:
-            case XMHFGEEC_SLABTYPE_UPROGSLAB:
-            case XMHFGEEC_SLABTYPE_TPRIMESLAB:{
+            case XMHFGEEC_SLABTYPE_VfT_PROG_PRIME:
+            case XMHFGEEC_SLABTYPE_VfT_PROG:
+            case XMHFGEEC_SLABTYPE_uVT_PROG:
+            case XMHFGEEC_SLABTYPE_uVU_PROG:{
             }
             break;
 
-            case XMHFGEEC_SLABTYPE_UGPROGSLAB:{
+            case XMHFGEEC_SLABTYPE_uVT_PROG_GUEST:
+            case XMHFGEEC_SLABTYPE_uVU_PROG_GUEST:{
             }
             break;
 
-            case XMHFGEEC_SLABTYPE_UGRICHGUESTSLAB:{
+            case XMHFGEEC_SLABTYPE_uVU_PROG_RICHGUEST:{
               	_XDPRINTF_("%s: populating richguest slab page tables for slab %u...\n",
                           __func__, i);
                 _geec_prime_populate_richguest_slab_pagetables(i);
