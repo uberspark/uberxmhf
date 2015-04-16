@@ -72,13 +72,13 @@
 */
 
 
-#define XMHFGEEC_SLABTYPE_VfT_PROG_PRIME        (0)
-#define XMHFGEEC_SLABTYPE_VfT_PROG              (1)
-#define XMHFGEEC_SLABTYPE_uVU_PROG              (2)
-#define XMHFGEEC_SLABTYPE_uVT_PROG              (3)
-#define XMHFGEEC_SLABTYPE_uVU_PROG_GUEST        (4)
-#define XMHFGEEC_SLABTYPE_uVT_PROG_GUEST        (5)
-#define XMHFGEEC_SLABTYPE_uVU_PROG_RICHGUEST    (6)
+#define XMHFGEEC_SLABTYPE_VfT_PROG_PRIME        (0x10)
+#define XMHFGEEC_SLABTYPE_VfT_PROG              (0x20)
+#define XMHFGEEC_SLABTYPE_uVU_PROG              (0x30)
+#define XMHFGEEC_SLABTYPE_uVT_PROG              (0x40)
+#define XMHFGEEC_SLABTYPE_uVU_PROG_GUEST        (0x50)
+#define XMHFGEEC_SLABTYPE_uVT_PROG_GUEST        (0x60)
+#define XMHFGEEC_SLABTYPE_uVU_PROG_RICHGUEST    (0x70)
 
 
 #define HIC_SLAB_PHYSMEM_EXTENT_READ       (1 << 0)
