@@ -173,6 +173,11 @@ void slab_main(slab_params_t *sp){
     xmhfhic_arch_setup_slab_mem_page_tables();
 #endif //__XMHF_VERIFICATION__
 
+    //switch to prime page tables
+    _XDPRINTF_("Proceeding to switch to GEEC_PRIME pagetables...\n");
+    CASM_FUNCCALL(write_cr3,(u32)_xmhfhic_common_slab_info_table[XMHF_HYP_SLAB_GEECPRIME].archdata.mempgtbl_cr3);
+    _XDPRINTF_("Switched to GEEC_PRIME pagetables...\n");
+
 
     //transfer control to geec_primesmp
     {
