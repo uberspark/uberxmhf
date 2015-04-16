@@ -1358,12 +1358,12 @@ static void _geec_prime_populate_slab_pagetables_uVT_uVU_prog_guest(u32 slabid){
     spl.dst_slabid = XMHF_HYP_SLAB_UAPI_SLABMEMPGTBL;
     spl.cpuid = 0; //XXX: fixme, need to plug in BSP cpuid
 
-    _XDPRINTF_("%s: mapping guest prog 2M slab %u...\n", __func__,
+/*    _XDPRINTF_("%s: mapping guest prog 2M slab %u...\n", __func__,
                slabid);
     _XDPRINTF_("%s: mapping %x-%x\n", __func__,
                _xmhfhic_common_slab_info_table[slabid].slab_physmem_extents[0].addr_start,
                _xmhfhic_common_slab_info_table[slabid].slab_physmem_extents[4].addr_end);
-
+*/
 
     //code=rx, 2M mapping
     for(gpa = _xmhfhic_common_slab_info_table[slabid].slab_physmem_extents[0].addr_start;
@@ -1417,7 +1417,7 @@ static void _geec_prime_populate_slab_pagetables_uVT_uVU_prog_guest(u32 slabid){
 
 
 
-static void _geec_prime_populate_richguest_slab_pagetables(u32 slabid){
+static void _geec_prime_populate_slab_pagetables_uVU_prog_richguest(u32 slabid){
 	u64 p_table_value;
 	u64 gpa;
 	u64 flags;
@@ -1557,7 +1557,7 @@ void xmhfhic_arch_setup_slab_mem_page_tables(void){
             case XMHFGEEC_SLABTYPE_uVU_PROG_RICHGUEST:{
               	_XDPRINTF_("%s: populating richguest slab page tables for slab %u...\n",
                           __func__, i);
-                _geec_prime_populate_richguest_slab_pagetables(i);
+                _geec_prime_populate_slab_pagetables_uVU_prog_richguest(i);
               	_XDPRINTF_("%s: richguest slab page tables populated for slab %u\n",
                           __func__, i);
             }
