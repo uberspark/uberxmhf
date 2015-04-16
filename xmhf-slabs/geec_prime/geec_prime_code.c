@@ -720,18 +720,17 @@ void xmhfhic_arch_setup_slab_device_allocation(void){
                 binddevicep->uapiphdr.uapifn = XMHFGEEC_UAPI_SDEVPGTBL_BINDDEVICE;
                 binddevicep->dst_slabid = _geec_prime_getslabfordevice(b, d, f);
                 if(binddevicep->dst_slabid == 0xFFFFFFFFUL){
-                    _XDPRINTF_("%s: Halting, could not find slab for device!\n", __func__);
-                    HALT();
-                }
-                binddevicep->bus = b;
-                binddevicep->dev = d;
-                binddevicep->func = f;
-                binddevicep->pagewalk_level = vtd_pagewalk_level;
-                XMHF_SLAB_CALLNEW(&spl);
-
-                _XDPRINTF_("  Allocated device %x:%x:%x(%x:%x) to slab %u\n",
+                    _XDPRINTF_("%s: Warning, could not find slab for device, skipping\n", __func__);
+                    //HALT();
+                }else{
+                    binddevicep->bus = b;
+                    binddevicep->dev = d;
+                    binddevicep->func = f;
+                    binddevicep->pagewalk_level = vtd_pagewalk_level;
+                    XMHF_SLAB_CALLNEW(&spl);
+                    _XDPRINTF_("  Allocated device %x:%x:%x(%x:%x) to slab %u\n",
                            b, d, f, vendor_id, device_id, binddevicep->dst_slabid);
-
+                }
 			}
 		}
 	}
@@ -1295,6 +1294,13 @@ static void _geec_prime_populate_guest_prog_slab_pagetables(u32 slabid){
     spl.dst_slabid = XMHF_HYP_SLAB_UAPI_SLABMEMPGTBL;
     spl.cpuid = 0; //XXX: fixme, need to plug in BSP cpuid
 
+    _XDPRINTF_("%s: mapping guest prog 2M slab %u...\n", __func__,
+               slabid);
+    _XDPRINTF_("%s: mapping %x-%x\n", __func__,
+               _xmhfhic_common_slab_info_table[slabid].slab_physmem_extents[0].addr_start,
+               _xmhfhic_common_slab_info_table[slabid].slab_physmem_extents[4].addr_end);
+
+
     //code=rx, 2M mapping
     for(gpa = _xmhfhic_common_slab_info_table[slabid].slab_physmem_extents[0].addr_start;
         gpa < _xmhfhic_common_slab_info_table[slabid].slab_physmem_extents[0].addr_end;
@@ -1332,6 +1338,16 @@ static void _geec_prime_populate_guest_prog_slab_pagetables(u32 slabid){
         setentryforpaddrp->entry = p_table_value;
         XMHF_SLAB_CALLNEW(&spl);
     }
+
+
+#if defined (__DEBUG_SERIAL__)
+        setentryforpaddrp->uapiphdr.uapifn = XMHFGEEC_UAPI_SLABMEMPGTBL_SETENTRYFORPADDR;
+        setentryforpaddrp->dst_slabid = slabid;
+        setentryforpaddrp->gpa = ADDR_LIBXMHFDEBUGDATA;
+        p_table_value = (u64) (ADDR_LIBXMHFDEBUGDATA)  | ((u64)6 << 3) | 0x87 ;	//present, WB, track host MTRR
+        setentryforpaddrp->entry = p_table_value;
+        XMHF_SLAB_CALLNEW(&spl);
+#endif
 
 }
 

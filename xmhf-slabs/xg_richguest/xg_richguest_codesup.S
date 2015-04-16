@@ -56,11 +56,11 @@
 
     // xhapprovexec test
 
-    .align 4096
+    .align 2097152
     .global _xcguestslab_do_testxhapprovexec_functoprotect
     _xcguestslab_do_testxhapprovexec_functoprotect:
     ret
-    .balign 4096, 0x90
+    .balign 2097152, 0x90
 
 
 
@@ -86,12 +86,12 @@ ret
 //////
 // syscalllog
 //__attribute__((naked)) void _xcguestslab_do_testxhsyscalllog_sysenterhandler(void){
-    .align 4096
+    .align 2097152
     .global _xcguestslab_do_testxhsyscalllog_sysenterhandler
     _xcguestslab_do_testxhsyscalllog_sysenterhandler:
     sysexit
     hlt
-    .balign 4096, 0x90
+    .balign 2097152, 0x90
 
 
 //__attribute__((naked)) void _xcguestslab_do_testxhsyscalllog_loadGDT(u32 addr_gdt, u32 cs_sel, u32 ds_sel){

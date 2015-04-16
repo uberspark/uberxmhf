@@ -224,4 +224,8 @@
 #define     MAX_SLAB_DMADATA_SIZE           (32*1024*1024)
 #define     MAX_SLAB_DMADATA_PDT_ENTRIES    (MAX_SLAB_DMADATA_SIZE/(2*1024*1024))
 
+
+#define     ADDR_LIBXMHFDEBUGDATA           (0x0DC00000UL)
+
+
 #endif //__XMHF_CONFIG_H__
