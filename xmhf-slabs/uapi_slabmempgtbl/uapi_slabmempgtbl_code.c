@@ -228,7 +228,7 @@ static void _slabmempgtbl_setentryforpaddr(u32 slabid, u64 gpa, u64 entry){
         case XMHFGEEC_SLABTYPE_uVU_PROG_RICHGUEST:{
             //4K mappings throughout
             _slabmempgtbl_lvl1t_richguest[pdpt_index][pdt_index][pt_index] =
-                entry;
+                entry & (~0x80);
         }
         break;
 
