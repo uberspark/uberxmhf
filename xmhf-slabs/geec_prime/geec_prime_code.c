@@ -1346,7 +1346,7 @@ static void _geec_prime_populate_slab_pagetables_uVT_uVU_prog(u32 slabid){
 
 
 
-static void _geec_prime_populate_guest_prog_slab_pagetables(u32 slabid){
+static void _geec_prime_populate_slab_pagetables_uVT_uVU_prog_guest(u32 slabid){
 	u64 p_table_value;
 	u64 gpa;
 	u64 flags;
@@ -1548,7 +1548,7 @@ void xmhfhic_arch_setup_slab_mem_page_tables(void){
             case XMHFGEEC_SLABTYPE_uVU_PROG_GUEST:{
               	_XDPRINTF_("%s: populating guest prog slab page tables for slab %u...\n",
                           __func__, i);
-                _geec_prime_populate_guest_prog_slab_pagetables(i);
+                _geec_prime_populate_slab_pagetables_uVT_uVU_prog_guest(i);
               	_XDPRINTF_("%s: guest prog slab page tables populated for slab %u\n",
                           __func__, i);
             }
