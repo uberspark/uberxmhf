@@ -1286,6 +1286,7 @@ static void __xmhfhic_vmx_setupEPT(u64 slabid){
 static void _geec_prime_populate_richguest_slab_pagetables(u32 slabid){
 	u64 p_table_value;
 	u64 gpa;
+	u64 flags;
     slab_params_t spl;
     xmhfgeec_uapi_slabmempgtbl_setentryforpaddr_params_t *setentryforpaddrp =
         (xmhfgeec_uapi_slabmempgtbl_setentryforpaddr_params_t *)spl.in_out_params;
@@ -1296,11 +1297,12 @@ static void _geec_prime_populate_richguest_slab_pagetables(u32 slabid){
 
 	for(gpa=0; gpa < ADDR_4GB; gpa += PAGE_SIZE_4K){
 		u32 memorytype = _geec_prime_vmx_getmemorytypeforphysicalpage((u64)gpa);
+        flags = _geec_prime_slab_getptflagsforspa_ept(slabid, (u32)gpa);
 
         if(memorytype == 0)
-            p_table_value = (u64) (gpa)  | ((u64)memorytype << 3) |  (u64)0x7 ;	//present, UC
+            p_table_value = (u64) (gpa)  | ((u64)memorytype << 3) |  flags ;	//present, UC
         else
-            p_table_value = (u64) (gpa)  | ((u64)6 << 3) | (u64)0x7 ;	//present, WB, track host MTRR
+            p_table_value = (u64) (gpa)  | ((u64)6 << 3) | flags ;	//present, WB, track host MTRR
 
         setentryforpaddrp->uapiphdr.uapifn = XMHFGEEC_UAPI_SLABMEMPGTBL_SETENTRYFORPADDR;
         setentryforpaddrp->dst_slabid = slabid;
