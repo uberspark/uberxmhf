@@ -54,6 +54,7 @@
 #include <uapi_gcpustate.h>
 #include <uapi_slabmemacc.h>
 #include <xg_richguest.h>
+#include <xc_testslab.h>
 
 #include <xc_init.h>
 
@@ -114,6 +115,18 @@ void slab_main(slab_params_t *sp){
     //    asm volatile ("int $0x03 \r\n");
     // }
 
+
+    // call test slab
+    {
+        slab_params_t spl;
+        spl.src_slabid = XMHF_HYP_SLAB_XCINIT;
+        spl.dst_slabid = XMHF_HYP_SLAB_XC_TESTSLAB;
+        spl.cpuid = 0;
+        spl.in_out_params[0] = 0xF00DDEAD;
+        XMHF_SLAB_CALLNEW(&spl);
+        _XDPRINTF_("XC_INIT[%u]: called test slab, return value=%x\n",
+                   (u16)sp->cpuid, spl.in_out_params[1]);
+    }
 
 
 

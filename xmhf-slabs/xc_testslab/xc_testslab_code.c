@@ -121,13 +121,13 @@ static void _xcinit_dotests(u64 cpuid){
 
 void slab_main(slab_params_t *sp){
     u32 inputval = sp->in_out_params[0];
-    u32 *outputval = (u32 *)sp->in_out_params[1];
+    u32 *outputval = (u32 *)&sp->in_out_params[1];
 
-	_XDPRINTF_("%s[%u]: Got control: ESP=%016llx\n",
-                __func__, (u16)sp->cpuid, CASM_FUNCCALL(read_esp,CASM_NOPARAM));
+	_XDPRINTF_("XC_TESTSLAB[%u]: Got control: ESP=%x\n",
+                (u16)sp->cpuid, CASM_FUNCCALL(read_esp,CASM_NOPARAM));
 
-	_XDPRINTF_("%s[%u]: inputval=%x\n",
-                __func__, (u16)sp->cpuid, inputval);
+	_XDPRINTF_("XC_TESTSLAB[%u]: inputval=%x\n",
+                (u16)sp->cpuid, inputval);
 
     *outputval = 0xBBCCDDEE;
 
