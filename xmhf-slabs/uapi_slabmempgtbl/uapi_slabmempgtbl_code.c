@@ -218,9 +218,9 @@ static void _slabmempgtbl_setentryforpaddr(u32 slabid, u64 gpa, u64 entry){
         case XMHFGEEC_SLABTYPE_uVU_PROG_GUEST:{
             //2M mappings with 4K splintered mmio
             if(gpa >= mmio_paddr && gpa < (mmio_paddr + PAGE_SIZE_2M)){
-                _slabmempgtbl_lvl1t_mmio[slabid][pt_index] = entry;
+                _slabmempgtbl_lvl1t_mmio[slabid][pt_index] = entry & (~0x80);
             }else{
-                _slabmempgtbl_lvl2t[slabid][pdpt_index][pdt_index] = entry;
+                _slabmempgtbl_lvl2t[slabid][pdpt_index][pdt_index] = entry | 0x80;
             }
         }
         break;
