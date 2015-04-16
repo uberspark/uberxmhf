@@ -54,11 +54,31 @@
 #include <xmhf-hwm.h>
 #include <xmhfhw.h>
 
-#define XMHFGEEC_SLABTYPE_TPRIMESLAB        (0)
+/*#define XMHFGEEC_SLABTYPE_TPRIMESLAB        (0)
 #define XMHFGEEC_SLABTYPE_TPROGSLAB         (1)
 #define XMHFGEEC_SLABTYPE_UPROGSLAB         (2)
 #define XMHFGEEC_SLABTYPE_UGPROGSLAB        (3)
 #define XMHFGEEC_SLABTYPE_UGRICHGUESTSLAB   (4)
+*/
+
+/*
+	1. XMHFGEEC_SLABTYPE_VfT_PROG_PRIME     -- verified trusted special prime slab
+	2. XMHFGEEC_SLABTYPE_VfT_PROG           -- verified trusted (hypervisor) program slab
+	3. XMHFGEEC_SLABTYPE_uVU_PROG           -- unverified untrusted (hypervisor) program slab
+	4. XMHFGEEC_SLABTYPE_uVT_PROG           -- unverified trusted (hypervisor) program slab
+	5. XMHFGEEC_SLABTYPE_uVU_PROG_GUEST     -- unverified untrusted (guest) program slab
+	6. XMHFGEEC_SLABTYPE_uVT_PROG_GUEST     -- unverified trusted (guest) program slab
+	7. XMHFGEEC_SLABTYPE_uVU_PROG_RICHGUEST -- uverified untrusted richguest slab
+*/
+
+
+#define XMHFGEEC_SLABTYPE_VfT_PROG_PRIME        (0)
+#define XMHFGEEC_SLABTYPE_VfT_PROG              (1)
+#define XMHFGEEC_SLABTYPE_uVU_PROG              (2)
+#define XMHFGEEC_SLABTYPE_uVT_PROG              (3)
+#define XMHFGEEC_SLABTYPE_uVU_PROG_GUEST        (4)
+#define XMHFGEEC_SLABTYPE_uVT_PROG_GUEST        (5)
+#define XMHFGEEC_SLABTYPE_uVU_PROG_RICHGUEST    (6)
 
 
 #define HIC_SLAB_PHYSMEM_EXTENT_READ       (1 << 0)
