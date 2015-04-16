@@ -14,4 +14,4 @@ xmhf-slabs/xh_hyperdep , VfT_PROG
 xmhf-slabs/xh_approvexec , VfT_PROG
 xmhf-slabs/xh_syscalllog , VfT_PROG
 xmhf-slabs/xh_ssteptrace , VfT_PROG
-xmhf-slabs/xg_richguest , uVU_PROG_GUEST
+xmhf-slabs/xg_richguest , uVT_PROG_GUEST
