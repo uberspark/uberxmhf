@@ -1533,9 +1533,14 @@ void xmhfhic_arch_setup_slab_mem_page_tables(void){
 
         switch(slabtype){
             case XMHFGEEC_SLABTYPE_VfT_PROG_PRIME:
-            case XMHFGEEC_SLABTYPE_VfT_PROG:
+            case XMHFGEEC_SLABTYPE_VfT_PROG:{
+
+            }
+            break;
+
             case XMHFGEEC_SLABTYPE_uVT_PROG:
             case XMHFGEEC_SLABTYPE_uVU_PROG:{
+                _geec_prime_populate_slab_pagetables_uVT_uVU_prog(i);
             }
             break;
 
