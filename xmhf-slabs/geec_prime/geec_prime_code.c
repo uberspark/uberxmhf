@@ -760,68 +760,112 @@ void xmhfhic_arch_setup_slab_device_allocation(void){
 // setup slab memory page tables (smt)
 
 /*
-#define	_SLAB_SPATYPE_OTHER_SLAB_MASK			(0xF0)
+#define _SLAB_SPATYPE_MASK_VfT_PROG_PRIME        (0x10)
+#define _SLAB_SPATYPE_MASK_VfT_PROG              (0x20)
+#define _SLAB_SPATYPE_MASK_uVU_PROG              (0x30)
+#define _SLAB_SPATYPE_MASK_uVT_PROG              (0x40)
+#define _SLAB_SPATYPE_MASK_uVU_PROG_GUEST        (0x50)
+#define _SLAB_SPATYPE_MASK_uVT_PROG_GUEST        (0x60)
+#define _SLAB_SPATYPE_MASK_uVU_PROG_RICHGUEST    (0x70)
+*/
 
-#define	_SLAB_SPATYPE_OTHER_SLAB_CODE			(0xF0)
-#define	_SLAB_SPATYPE_OTHER_SLAB_RWDATA			(0xF1)
-#define _SLAB_SPATYPE_OTHER_SLAB_RODATA			(0xF2)
-#define _SLAB_SPATYPE_OTHER_SLAB_STACK			(0xF3)
-#define _SLAB_SPATYPE_OTHER_SLAB_DMADATA        (0xF4)
+#define _SLAB_SPATYPE_MASK_SAMESLAB             (0x100)
 
 #define	_SLAB_SPATYPE_SLAB_CODE					(0x0)
-#define	_SLAB_SPATYPE_SLAB_RWDATA				(0x1)
-#define _SLAB_SPATYPE_SLAB_RODATA				(0x2)
-#define _SLAB_SPATYPE_SLAB_STACK				(0x3)
-#define _SLAB_SPATYPE_SLAB_DMADATA				(0x4)
+#define	_SLAB_SPATYPE_SLAB_DATA	    			(0x1)
+#define _SLAB_SPATYPE_SLAB_STACK				(0x2)
+#define _SLAB_SPATYPE_SLAB_DMADATA				(0x3)
+#define _SLAB_SPATYPE_SLAB_MMIO 				(0x4)
+#define _SLAB_SPATYPE_OTHER	    				(0x5)
 
-#define _SLAB_SPATYPE_HIC           			(0x5)
-#define _SLAB_SPATYPE_HIC_SHAREDRO     			(0x6)
 
-#define _SLAB_SPATYPE_OTHER	    				(0xFF00)
-
-static u32 __xmhfhic_hyp_slab_getspatype(u64 slab_index, u32 spa){
-	u64 i;
+static u32 _geec_prime_slab_getspatype(u32 slab_index, u32 spa){
+	u32 i;
 
 	//slab memory regions
 	for(i=0; i < XMHF_HIC_MAX_SLABS; i++){
-		u64 mask = (i == slab_index) ? 0 : _SLAB_SPATYPE_OTHER_SLAB_MASK;
+		u32 mask = _xmhfhic_common_slab_info_table[i].archdata.slabtype;
+
+        if( i == slab_index)
+            mask |= _SLAB_SPATYPE_MASK_SAMESLAB;
 
 		if(spa >= _xmhfhic_common_slab_info_table[i].slab_physmem_extents[0].addr_start && spa < _xmhfhic_common_slab_info_table[i].slab_physmem_extents[0].addr_end)
 			return _SLAB_SPATYPE_SLAB_CODE | mask;
 		if(spa >= _xmhfhic_common_slab_info_table[i].slab_physmem_extents[1].addr_start && spa < _xmhfhic_common_slab_info_table[i].slab_physmem_extents[1].addr_end)
-			return _SLAB_SPATYPE_SLAB_RWDATA | mask;
-		//if(spa >= _xmhfhic_common_slab_info_table[i].slab_physmem_extents[2].addr_start && spa < _xmhfhic_common_slab_info_table[i].slab_physmem_extents[2].addr_end)
-		//	return _SLAB_SPATYPE_SLAB_RODATA | mask;
-		if(spa >= _xmhfhic_common_slab_info_table[i].slab_physmem_extents[2].addr_start && spa < _xmhfhic_common_slab_info_table[i].slab_physmem_extents[3].addr_end)
+			return _SLAB_SPATYPE_SLAB_DATA | mask;
+		if(spa >= _xmhfhic_common_slab_info_table[i].slab_physmem_extents[2].addr_start && spa < _xmhfhic_common_slab_info_table[i].slab_physmem_extents[2].addr_end)
 			return _SLAB_SPATYPE_SLAB_STACK | mask;
-		if(spa >= _xmhfhic_common_slab_info_table[i].slab_physmem_extents[3].addr_start && spa < _xmhfhic_common_slab_info_table[i].slab_physmem_extents[4].addr_end)
+		if(spa >= _xmhfhic_common_slab_info_table[i].slab_physmem_extents[3].addr_start && spa < _xmhfhic_common_slab_info_table[i].slab_physmem_extents[3].addr_end)
 			return _SLAB_SPATYPE_SLAB_DMADATA | mask;
+		if(spa >= _xmhfhic_common_slab_info_table[i].slab_physmem_extents[4].addr_start && spa < _xmhfhic_common_slab_info_table[i].slab_physmem_extents[4].addr_end)
+			return _SLAB_SPATYPE_SLAB_MMIO | mask;
 	}
-
-	//HIC shared ro region
-	//TODO: add per shared data variable access policy rather than entire section
-	//if(spa >= _xmhfhic_common_hic_physmem_extents[0].addr_start && spa < _xmhfhic_common_hic_physmem_extents[0].addr_end)
-	//	return _SLAB_SPATYPE_HIC_SHAREDRO;
-
-	//HIC code,rodata,rwdat and stack
-    //if(spa >= _xmhfhic_common_hic_physmem_extents[1].addr_start && spa < _xmhfhic_common_hic_physmem_extents[1].addr_end)
-	//	return _SLAB_SPATYPE_HIC;
-    //if(spa >= _xmhfhic_common_hic_physmem_extents[2].addr_start && spa < _xmhfhic_common_hic_physmem_extents[2].addr_end)
-	//	return _SLAB_SPATYPE_HIC;
-    //if(spa >= _xmhfhic_common_hic_physmem_extents[3].addr_start && spa < _xmhfhic_common_hic_physmem_extents[3].addr_end)
-	//	return _SLAB_SPATYPE_HIC;
-    //if(spa >= _xmhfhic_common_hic_physmem_extents[4].addr_start && spa < _xmhfhic_common_hic_physmem_extents[4].addr_end)
-	//	return _SLAB_SPATYPE_HIC;
-
 
 	return _SLAB_SPATYPE_OTHER;
 }
 
-static u64 __xmhfhic_hyp_slab_getptflagsforspa(u64 slabid, u32 spa){
-	u64 flags;
-	u32 spatype = __xmhfhic_hyp_slab_getspatype(slabid, spa);
+// only for uVU_PROG_GUEST, uVU_PROG_RICHGUEST and uVT_PROG_GUEST
+static u64 _geec_prime_slab_getptflagsforspa_ept(u32 slabid, u32 spa){
+	u64 flags=0;
+    u8 spa_slabtype, spa_slabregion;
+    bool spa_sameslab=false;
+	u32 spatype = _geec_prime_slab_getspatype(slabid, spa);
 	//_XDPRINTF_("\n%s: slab_index=%u, spa=%08x, spatype = %x\n", __func__, slab_index, spa, spatype);
+    u32 slabtype = _xmhfhic_common_slab_info_table[slabid].archdata.slabtype;
 
+    spa_slabregion = spatype & 0x0000000FUL;
+    spa_slabtype =spatype & 0x000000F0UL;
+    if(spatype & _SLAB_SPATYPE_MASK_SAMESLAB)
+        spa_sameslab = true;
+
+
+    switch(slabtype){
+        case XMHFGEEC_SLABTYPE_uVU_PROG_GUEST:
+        case XMHFGEEC_SLABTYPE_uVT_PROG_GUEST:{
+            //code=rx, data,stack,dmadata,mmio=rw; 2M mapping, mmio=4K;
+            //other slabs = no mapping; other region = no mapping
+            if(spa_sameslab && spa_slabregion != _SLAB_SPATYPE_OTHER){
+                switch(spa_slabregion){
+                    case _SLAB_SPATYPE_SLAB_CODE:
+                        flags = 0x85;
+                        break;
+                    case _SLAB_SPATYPE_SLAB_DATA:
+                    case _SLAB_SPATYPE_SLAB_STACK:
+                    case _SLAB_SPATYPE_SLAB_DMADATA:
+                        flags = 0x83;
+                        break;
+                    case _SLAB_SPATYPE_SLAB_MMIO:
+                        flags = 0x5;
+                        break;
+                }
+            }else{
+                flags=0;
+            }
+        }
+        break;
+
+        case XMHFGEEC_SLABTYPE_uVU_PROG_RICHGUEST:{
+            //code,data,stack,dmadata,mmio=rwx; 4K mapping;
+            //other slabs = no mapping; other region = rwx
+            if(spa_sameslab || spa_slabregion == _SLAB_SPATYPE_OTHER)
+                flags = 0x7;
+            else
+                flags = 0;
+        }
+        break;
+
+        default:
+            _XDPRINTF_("%s: invalid slab type=%x. Halting!\n", __func__,
+                       slabtype);
+            HALT();
+    }
+
+    return flags;
+
+}
+
+
+/*
 	switch(spatype){
 		case _SLAB_SPATYPE_OTHER_SLAB_CODE:
 		case _SLAB_SPATYPE_OTHER_SLAB_RWDATA:
@@ -865,8 +909,11 @@ static u64 __xmhfhic_hyp_slab_getptflagsforspa(u64 slabid, u32 spa){
 
 
 	return flags;
-}
 
+*/
+
+
+/*
 #if !defined (__XMHF_VERIFICATION__)
 //
 // initialize slab page tables for a given slab index, returns the macm base
