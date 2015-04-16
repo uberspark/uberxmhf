@@ -16,19 +16,19 @@ export XMHF_SLAB_TYPE := @SLABTYPE@
 
 
 # populate slab stub type based on the slab type
-ifeq ($(XMHF_SLAB_TYPE), tprogslab)
+ifeq ($(XMHF_SLAB_TYPE), VfT_PROG)
 	XMHF_SLAB_STUBOBJECTS := $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_slabmapdef.o $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_tprogslab_stubs.o
 endif
 
-ifeq ($(XMHF_SLAB_TYPE), ugprogslab)
+ifeq ($(XMHF_SLAB_TYPE), uVU_PROG_GUEST)
 	XMHF_SLAB_STUBOBJECTS := $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_slabmapdef.o $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_tprogslab_stubs.o
 endif
 
-ifeq ($(XMHF_SLAB_TYPE), ugrichguestslab)
+ifeq ($(XMHF_SLAB_TYPE), uVU_PROG_RICHGUEST)
 	XMHF_SLAB_STUBOBJECTS := $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_slabmapdef.o $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_tprogslab_stubs.o
 endif
 
-ifeq ($(XMHF_SLAB_TYPE), tprimeslab)
+ifeq ($(XMHF_SLAB_TYPE), VfT_PROG_PRIME)
 	XMHF_SLAB_STUBOBJECTS := $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_slabmapdef.o $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_tprimeslab_stubs.o
 endif
 
