@@ -79,16 +79,16 @@ while( $i <= $#slabnamearray ){
     print "\n	{";
     print "\n	    {";
 
-    if($slabtypearray[$i] eq "tprimeslab"){
-        print "\n	        XMHFGEEC_SLABTYPE_TPRIMESLAB,";
-    }elsif($slabtypearray[$i] eq "tprogslab"){
-        print "\n	        XMHFGEEC_SLABTYPE_TPROGSLAB,";
-    }elsif($slabtypearray[$i] eq "uprogslab"){
-        print "\n	        XMHFGEEC_SLABTYPE_UPROGSLAB,";
-    }elsif($slabtypearray[$i] eq "ugprogslab"){
-        print "\n	        XMHFGEEC_SLABTYPE_UGPROGSLAB,";
-    }elsif($slabtypearray[$i] eq "ugrichguestslab"){
-        print "\n	        XMHFGEEC_SLABTYPE_UGRICHGUESTSLAB,";
+    if($slabtypearray[$i] eq "VfT_PROG_PRIME"){
+        print "\n	        XMHFGEEC_SLABTYPE_VfT_PROG_PRIME,";
+    }elsif($slabtypearray[$i] eq "VfT_PROG"){
+        print "\n	        XMHFGEEC_SLABTYPE_VfT_PROG,";
+    }elsif($slabtypearray[$i] eq "uVU_PROG"){
+        print "\n	        XMHFGEEC_SLABTYPE_uVU_PROG,";
+    }elsif($slabtypearray[$i] eq "uVU_PROG_GUEST"){
+        print "\n	        XMHFGEEC_SLABTYPE_uVU_PROG_GUEST,";
+    }elsif($slabtypearray[$i] eq "uVU_PROG_RICHGUEST"){
+        print "\n	        XMHFGEEC_SLABTYPE_uVU_PROG_RICHGUEST,";
     }else{
         print "\nError: Unknown slab type!";
         exit 1;
@@ -115,7 +115,7 @@ while( $i <= $#slabnamearray ){
     print "\n       0,";
     print "\n	    0,";
 
-    if($slabtypearray[$i] eq "ugrichguestslab"){
+    if($slabtypearray[$i] eq "uVU_PROG_RICHGUEST"){
         print "\n	    {true, 0xFFFFFFFFUL, {0}},";
     }else{
         print "\n	    {false, 0, {0}},";
