@@ -65,7 +65,7 @@ void *noparam)
 
 CASM_FUNCDEF(void, __slab_calltrampolinenew,
 {
-    xmhfhwm_cpu_insn_movl_imm_eax(0x02a00000);
+    xmhfhwm_cpu_insn_movl_imm_eax(0x02000000);
     xmhfhwm_cpu_insn_jmpl_eax();
 },
 slab_params_t *sp)
