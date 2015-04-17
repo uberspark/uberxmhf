@@ -720,84 +720,64 @@ void __xmhfhic_rtm_intercept(x86regs_t *r){
 
 void slab_main(slab_params_t *sp){
 
-    u32 errorcode;
+    switch(sp->slab_ctype){
+        case XMHFGEEC_SENTINEL_CALL_VfT_PROG_TO_VfT_uVU_uVT_PROG_uVU_uVT_PROG_GUEST:{
 
-    if(!(sp->slab_ctype == XMHFGEEC_SENTINEL_CALL_VfT_PROG_TO_VfT_uVU_uVT_PROG_uVU_uVT_PROG_GUEST)){
-        _XDPRINTF_("GEEC_SENTINEL: invalid ctype %x\n", sp->slab_ctype);
-        HALT();
-    }
+            switch (_xmhfhic_common_slab_info_table[sp->dst_slabid].archdata.slabtype){
 
-    switch (_xmhfhic_common_slab_info_table[sp->dst_slabid].archdata.slabtype){
+                case XMHFGEEC_SLABTYPE_VfT_PROG:{
+                    FPSLABMAIN slab_main;
 
-        case XMHFGEEC_SLABTYPE_VfT_PROG:{
-            FPSLABMAIN slab_main;
+                    slab_main = (FPSLABMAIN)_xmhfhic_common_slab_info_table[sp->dst_slabid].entrystub;
+                    //_XDPRINTF_("%s: slab_main at %08x\n", __func__, (u32)slab_main);
+                    slab_main(sp);
+                }
+                break;
 
-            slab_main = (FPSLABMAIN)_xmhfhic_common_slab_info_table[sp->dst_slabid].entrystub;
-            //_XDPRINTF_("%s: slab_main at %08x\n", __func__, (u32)slab_main);
-            slab_main(sp);
-        }
-        break;
+                case XMHFGEEC_SLABTYPE_uVT_PROG_GUEST:
+                case XMHFGEEC_SLABTYPE_uVU_PROG_GUEST:
+                case XMHFGEEC_SLABTYPE_uVU_PROG_RICHGUEST:{
+                    u32 errorcode;
+                    CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_CONTROL_VPID, sp->dst_slabid );
+                    CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_CONTROL_EPT_POINTER_FULL, (_xmhfhic_common_slab_info_table[sp->dst_slabid].archdata.mempgtbl_cr3  | 0x1E) );
+                    CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_CONTROL_EPT_POINTER_HIGH, 0);
+                    CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_GUEST_RSP, _xmhfhic_common_slab_info_table[sp->dst_slabid].archdata.slabtos[(u16)sp->cpuid]);
+                    CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_GUEST_RIP, _xmhfhic_common_slab_info_table[sp->dst_slabid].entrystub);
 
-        case XMHFGEEC_SLABTYPE_uVT_PROG_GUEST:
-        case XMHFGEEC_SLABTYPE_uVU_PROG_GUEST:
-        case XMHFGEEC_SLABTYPE_uVU_PROG_RICHGUEST:{
-             CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_CONTROL_VPID, sp->dst_slabid );
-             CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_CONTROL_EPT_POINTER_FULL, (_xmhfhic_common_slab_info_table[sp->dst_slabid].archdata.mempgtbl_cr3  | 0x1E) );
-             CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_CONTROL_EPT_POINTER_HIGH, 0);
-             CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_GUEST_RSP, _xmhfhic_common_slab_info_table[sp->dst_slabid].archdata.slabtos[(u16)sp->cpuid]);
-             CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_GUEST_RIP, _xmhfhic_common_slab_info_table[sp->dst_slabid].entrystub);
+                    errorcode = CASM_FUNCCALL(__slab_calltrampolinenew_h2g, CASM_NOPARAM);
 
-            /*//[debug]
-            {
-                u32 i, j;
-                u64 *pml4t = (u64 *)_xmhfhic_common_slab_info_table[sp->dst_slabid].archdata.mempgtbl_cr3;
-                u64 *pdpt, *pdt;
-
-                _XDPRINTF_(" pml4t at %08x\n", (u32)pml4t);
-
-                for(i=0; i < PAE_PTRS_PER_PML4T; i++)
-                    _XDPRINTF_("  %u --> %016llx\n", i, pml4t[i]);
-
-                pdpt = (u64 *)(pml4t[0] & 0xFFFFFFFFFFFFF000ULL);
-
-                _XDPRINTF_(" pdpt at %08x\n", (u32)pdpt);
-
-                for(i=0; i < PAE_PTRS_PER_PDPT; i++){
-                    _XDPRINTF_("  pdpt %u --> %016llx\n", i, pdpt[i]);
-                    pdt = (u64 *)(pdpt[i] & 0xFFFFFFFFFFFFF000ULL);
-                    _XDPRINTF_("   pdt at %x\n", pdt);
-
-                    for(j=0; j < PAE_PTRS_PER_PDT; j++){
-                        _XDPRINTF_("    pdt %u --> %016llx\n", j, pdt[j]);
+                    switch(errorcode){
+                        case 0:	//no error code, VMCS pointer is invalid
+                            _XDPRINTF_("GEEC_SENTINEL: VMLAUNCH error; VMCS pointer invalid?\n");
+                            break;
+                        case 1:{//error code available, so dump it
+                            u32 code=xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_VMINSTR_ERROR);
+                            _XDPRINTF_("GEEC_SENTINEL: VMLAUNCH error; code=%x\n", code);
+                            break;
+                        }
                     }
+
+                    HALT();
+
                 }
+                break;
 
-                _XDPRINTF_("\n\n");
-
-            }*/
-
-
-            errorcode = CASM_FUNCCALL(__slab_calltrampolinenew_h2g, CASM_NOPARAM);
-
-            switch(errorcode){
-                case 0:	//no error code, VMCS pointer is invalid
-                    _XDPRINTF_("GEEC_SENTINEL: VMLAUNCH error; VMCS pointer invalid?\n");
-                    break;
-                case 1:{//error code available, so dump it
-                    u32 code=xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_VMINSTR_ERROR);
-                    _XDPRINTF_("GEEC_SENTINEL: VMLAUNCH error; code=%x\n", code);
-                    break;
-                }
+                default:
+                    _XDPRINTF_("GEEC_SENTINEL(ln:%u): Unrecognized transition. Halting!", __LINE__);
+                    HALT();
             }
 
-            HALT();
 
         }
         break;
 
+
         default:
-            _XDPRINTF_("GEEC_SENTINEL: Unrecognized transition. Halting!");
+            _XDPRINTF_("GEEC_SENTINEL: unkown call type %x. Halting!\n", sp->slab_ctype);
             HALT();
+
     }
 
 }
+
+
