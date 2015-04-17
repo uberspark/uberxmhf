@@ -117,7 +117,7 @@ static void xmhfhic_setupinitpgtables(void){
 
 
 
-void slab_main(slab_params_t *sp){
+void _geec_prime_main(slab_params_t *sp){
     u64 pgtblbase;
 
 #if !defined(__XMHF_VERIFICATION__)
