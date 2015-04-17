@@ -722,6 +722,11 @@ void slab_main(slab_params_t *sp){
 
     u32 errorcode;
 
+    if(!(sp->slab_ctype == XMHFGEEC_SENTINEL_CALL_VfT_PROG_TO_VfT_uVU_uVT_PROG_uVU_uVT_PROG_GUEST)){
+        _XDPRINTF_("GEEC_SENTINEL: invalid ctype %x\n", sp->slab_ctype);
+        HALT();
+    }
+
     switch (_xmhfhic_common_slab_info_table[sp->dst_slabid].archdata.slabtype){
 
         case XMHFGEEC_SLABTYPE_VfT_PROG:{
