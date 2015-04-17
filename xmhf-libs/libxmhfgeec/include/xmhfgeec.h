@@ -54,13 +54,6 @@
 #include <xmhf-hwm.h>
 #include <xmhfhw.h>
 
-/*#define XMHFGEEC_SLABTYPE_TPRIMESLAB        (0)
-#define XMHFGEEC_SLABTYPE_TPROGSLAB         (1)
-#define XMHFGEEC_SLABTYPE_UPROGSLAB         (2)
-#define XMHFGEEC_SLABTYPE_UGPROGSLAB        (3)
-#define XMHFGEEC_SLABTYPE_UGRICHGUESTSLAB   (4)
-*/
-
 /*
 	1. XMHFGEEC_SLABTYPE_VfT_PROG_PRIME     -- verified trusted special prime slab
 	2. XMHFGEEC_SLABTYPE_VfT_PROG           -- verified trusted (hypervisor) program slab
