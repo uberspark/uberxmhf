@@ -644,6 +644,7 @@ typedef struct __tss {
 
 #define xmhfhwm_cpu_insn_movl_eax_mesp(x) __builtin_annot("movl %eax, "#x"(%esp) ");
 #define xmhfhwm_cpu_insn_movl_eax_esp() __builtin_annot("movl %eax, %esp ");
+#define xmhfhwm_cpu_insn_movl_edx_esp() __builtin_annot("movl %edx, %esp ");
 
 #define xmhfhwm_cpu_insn_movl_mesp_eax(x) __builtin_annot("movl "#x"(%esp), %eax ");
 #define xmhfhwm_cpu_insn_movw_mesp_ax(x) __builtin_annot("movw "#x"(%esp), %ax ");
@@ -672,19 +673,26 @@ typedef struct __tss {
 #define xmhfhwm_cpu_insn_movl_edi_ebx() __builtin_annot("movl %edi, %ebx ");
 
 #define xmhfhwm_cpu_insn_movl_esp_eax() __builtin_annot("movl %esp, %eax ");
+#define xmhfhwm_cpu_insn_movl_esp_edx() __builtin_annot("movl %esp, %edx ");
 
 #define xmhfhwm_cpu_insn_movl_mebxeax_eax(x) __builtin_annot("movl (%ebx, %eax, "#x"), %eax ");
 
 
-
-#define xmhfhwm_cpu_insn_popl_ebx() __builtin_annot("popl %ebx ");
-#define xmhfhwm_cpu_insn_popl_esi() __builtin_annot("popl %esi ");
+#define xmhfhwm_cpu_insn_pushl_ebp() __builtin_annot("pushl %ebp ");
+#define xmhfhwm_cpu_insn_pushl_edi() __builtin_annot("pushl %edi ");
 #define xmhfhwm_cpu_insn_pushl_esi() __builtin_annot("pushl %esi ");
 #define xmhfhwm_cpu_insn_pushl_eax() __builtin_annot("pushl %eax ");
 #define xmhfhwm_cpu_insn_pushl_ebx() __builtin_annot("pushl %ebx ");
+#define xmhfhwm_cpu_insn_pushl_edx() __builtin_annot("pushl %edx ");
 #define xmhfhwm_cpu_insn_pushl_esp() __builtin_annot("pushl %esp ");
 #define xmhfhwm_cpu_insn_pushl_mesp(x) __builtin_annot("pushl "#x"(%esp) ");
+
 #define xmhfhwm_cpu_insn_popl_eax() __builtin_annot("popl %eax ");
+#define xmhfhwm_cpu_insn_popl_ebx() __builtin_annot("popl %ebx ");
+#define xmhfhwm_cpu_insn_popl_esi() __builtin_annot("popl %esi ");
+#define xmhfhwm_cpu_insn_popl_edi() __builtin_annot("popl %edi ");
+#define xmhfhwm_cpu_insn_popl_ebp() __builtin_annot("popl %ebp ");
+
 #define xmhfhwm_cpu_insn_pushl_imm(x) __builtin_annot("pushl $"#x" ");
 
 

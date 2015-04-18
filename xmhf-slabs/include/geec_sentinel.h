@@ -81,6 +81,7 @@ extern __attribute__((section(".data"))) __attribute__((aligned(4096))) x_slab_i
 extern __attribute__((section(".data"))) u64 __xmhfhic_safestack_indices[MAX_PLATFORM_CPUS];
 
 
+
 void __xmhfhic_rtm_uapihandler(slab_params_t *sp);
 void __xmhfhic_rtm_trampolinehandler(slab_params_t *sp);
 
@@ -104,6 +105,7 @@ CASM_FUNCDECL(void __xmhfhic_trampoline_slabxfer_callexception(u64 iparams,u64 i
 CASM_FUNCDECL(void __xmhfhic_trampoline_slabxfer_callintercept(u64 entrystub,u64 slabtos,u64 src_slabid,u64 cpuid));
 CASM_FUNCDECL(void __xmhfhic_trampoline_slabxfer_retintercept(u64 addrgprs));
 CASM_FUNCDECL(void __xmhfhic_trampoline_slabxfer_retexception(u64 addr_exframe));
+CASM_FUNCDECL(void _geec_sentinel_xfer_vft_prog_to_vft_prog(u32 entry_point, void *caller_stack_frame));
 
 
 #endif // __ASSEMBLY__
