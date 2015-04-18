@@ -55,6 +55,30 @@
 #include <xmhfgeec.h>
 #include <geec_sentinel.h>
 
+
+//////
+// sentinel entry point
+//////
+
+CASM_FUNCDEF(void, slab_main,
+{
+    xmhfhwm_cpu_insn_movl_mesp_eax(0x4);
+    xmhfhwm_cpu_insn_pushl_ebp();
+    xmhfhwm_cpu_insn_pushl_edi();
+    xmhfhwm_cpu_insn_pushl_esi();
+    xmhfhwm_cpu_insn_pushl_ebx();
+    xmhfhwm_cpu_insn_movl_esp_edx();
+    xmhfhwm_cpu_insn_pushl_edx();
+    xmhfhwm_cpu_insn_pushl_eax();
+    xmhfhwm_cpu_insn_call(geec_sentinel_main);
+    xmhfhwm_cpu_insn_hlt();
+},
+slab_params_t *sp)
+
+
+
+
+
 //////
 // CASM sentinel stubs -- the following get called by the hardware
 //////
@@ -241,6 +265,21 @@ void *noparam)
 //////
 // support CASM functions used by the sentinel
 /////
+
+
+CASM_FUNCDEF(void, _geec_sentinel_xfer_vft_prog_to_vft_prog,
+{
+    xmhfhwm_cpu_insn_movl_mesp_eax(0x4);
+    xmhfhwm_cpu_insn_movl_mesp_edx(0x8);
+    xmhfhwm_cpu_insn_movl_edx_esp();
+    xmhfhwm_cpu_insn_popl_ebx();
+    xmhfhwm_cpu_insn_popl_esi();
+    xmhfhwm_cpu_insn_popl_edi();
+    xmhfhwm_cpu_insn_popl_ebp();
+    xmhfhwm_cpu_insn_jmpl_eax();
+    xmhfhwm_cpu_insn_hlt();
+},
+u32 entry_point, void *caller_stack_frame)
 
 
 //if we return, we had an error and we return the

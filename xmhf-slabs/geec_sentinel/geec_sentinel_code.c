@@ -718,7 +718,7 @@ void __xmhfhic_rtm_intercept(x86regs_t *r){
 
 /////
 
-void slab_main(slab_params_t *sp){
+void geec_sentinel_main(slab_params_t *sp, void *caller_stack_frame){
 
     switch(sp->slab_ctype){
         case XMHFGEEC_SENTINEL_CALL_VfT_PROG_TO_VfT_uVU_uVT_PROG_uVU_uVT_PROG_GUEST:{
@@ -726,11 +726,13 @@ void slab_main(slab_params_t *sp){
             switch (_xmhfhic_common_slab_info_table[sp->dst_slabid].archdata.slabtype){
 
                 case XMHFGEEC_SLABTYPE_VfT_PROG:{
-                    FPSLABMAIN slab_main;
+                    CASM_FUNCCALL(_geec_sentinel_xfer_vft_prog_to_vft_prog,
+                                  _xmhfhic_common_slab_info_table[sp->dst_slabid].entrystub,
+                                  caller_stack_frame);
+                    _XDPRINTF_("GEEC_SENTINEL[ln:%u]: halting. should never be here!\n",
+                               __LINE__);
+                    HALT();
 
-                    slab_main = (FPSLABMAIN)_xmhfhic_common_slab_info_table[sp->dst_slabid].entrystub;
-                    //_XDPRINTF_("%s: slab_main at %08x\n", __func__, (u32)slab_main);
-                    slab_main(sp);
                 }
                 break;
 
