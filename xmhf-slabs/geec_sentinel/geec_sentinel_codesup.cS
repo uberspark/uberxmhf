@@ -284,7 +284,7 @@ u32 entry_point, void *caller_stack_frame)
 
 //if we return, we had an error and we return the
 //corresponding error code
-CASM_FUNCDEF(u32, __slab_calltrampolinenew_h2g,
+CASM_FUNCDEF(u32, _geec_sentinel_xfer_vft_prog_to_uvt_uvu_prog_guest,
 {
     xmhfhwm_cpu_insn_vmlaunch();
     xmhfhwm_cpu_insn_jc(__vmx_start_hvm_failinvalid);
