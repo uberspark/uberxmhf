@@ -746,7 +746,7 @@ void geec_sentinel_main(slab_params_t *sp, void *caller_stack_frame){
                     CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_GUEST_RSP, _xmhfhic_common_slab_info_table[sp->dst_slabid].archdata.slabtos[(u16)sp->cpuid]);
                     CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_GUEST_RIP, _xmhfhic_common_slab_info_table[sp->dst_slabid].entrystub);
 
-                    errorcode = CASM_FUNCCALL(__slab_calltrampolinenew_h2g, CASM_NOPARAM);
+                    errorcode = CASM_FUNCCALL(_geec_sentinel_xfer_vft_prog_to_uvt_uvu_prog_guest, CASM_NOPARAM);
 
                     switch(errorcode){
                         case 0:	//no error code, VMCS pointer is invalid
