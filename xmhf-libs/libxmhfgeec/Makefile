@@ -26,6 +26,7 @@ all: $(OBJECTS)
 	mkdir -p $(LIBXMHFGEEC_OBJECTS_DIR)
 	cp $(LIBXMHFGEEC_OBJECTS_DIR)/xmhfgeec_slabmapdef.o .
 	cp $(LIBXMHFGEEC_OBJECTS_DIR)/xmhfgeec_tprogslab_stubs.o .
+	cp $(LIBXMHFGEEC_OBJECTS_DIR)/xmhfgeec_vft_prog_exception_stubs.o .
 
 
 $(THE_ARCHIVE): $(OBJECTS)
