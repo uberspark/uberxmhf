@@ -53,6 +53,7 @@
 
 #ifndef __ASSEMBLY__
 
+CASM_FUNCDECL(void _xc_testslab_int3(void *noparam));
 
 #endif //__ASSEMBLY__
 
