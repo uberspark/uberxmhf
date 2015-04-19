@@ -507,9 +507,15 @@ void __xmhfhic_rtm_trampoline(u64 hic_calltype, slab_input_params_t *iparams, u6
 
 
 
+//////
+// sentinel stubs, invoked by their CASM counterparts
+//////
 
-//HIC runtime exception stub
-void __xmhfhic_rtm_exception_stub(x86vmx_exception_frame_t *exframe){
+
+
+////// exceptions
+
+void _geec_sentinel_exception_stub(x86vmx_exception_frame_t *exframe){
 
 //    _XDPRINTF_("%s: exception: vector=%x, error_code=%x. Halting!\n", __func__,
 //               exframe->vector, exframe->error_code);
