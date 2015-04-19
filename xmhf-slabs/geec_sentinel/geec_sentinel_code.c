@@ -516,22 +516,21 @@ void __xmhfhic_rtm_trampoline(u64 hic_calltype, slab_input_params_t *iparams, u6
 ////// exceptions
 
 void _geec_sentinel_exception_stub(x86vmx_exception_frame_t *exframe){
-
-//    _XDPRINTF_("%s: exception: vector=%x, error_code=%x. Halting!\n", __func__,
-//               exframe->vector, exframe->error_code);
-//    HALT();
-
     slab_params_t spl;
 
     memset(&spl, 0, sizeof(spl));
 
+    spl.slab_ctype = XMHFGEEC_SENTINEL_CALL_EXCEPTION;
+    spl.src_slabid = XMHF_HYP_SLAB_GEECSENTINEL; //XXX: TODO: grab src_slabid based on exframe->orig_rip
+    spl.dst_slabid = XMHF_HYP_SLAB_XCEXHUB;
     spl.cpuid = __xmhfhic_x86vmx_cpuidtable[xmhf_baseplatform_arch_x86_getcpulapicid()];
-
-    //store exception frame
     memcpy(&spl.in_out_params[0], exframe,
            sizeof(x86vmx_exception_frame_t));
 
-    //call xcexhub
+
+    geec_sentinel_main(&spl, &spl);
+
+/*    //call xcexhub
     spl.src_slabid = 0xFFFFFFFFUL; //todo: grab source slab id
     spl.dst_slabid = XMHF_HYP_SLAB_XCEXHUB;
     XMHF_SLAB_CALLNEW(&spl);
@@ -539,7 +538,7 @@ void _geec_sentinel_exception_stub(x86vmx_exception_frame_t *exframe){
     //load exception frame
     memcpy(exframe, &spl.in_out_params[0],
            sizeof(x86vmx_exception_frame_t) );
-
+*/
 
 /*
     //TODO: x86_64 --> x86
@@ -778,6 +777,30 @@ void geec_sentinel_main(slab_params_t *sp, void *caller_stack_frame){
 
         }
         break;
+
+
+
+
+
+        case XMHFGEEC_SENTINEL_CALL_EXCEPTION:{
+            if(!(_xmhfhic_common_slab_info_table[sp->dst_slabid].archdata.slabtype == XMHFGEEC_SLABTYPE_VfT_PROG)){
+                _XDPRINTF_("GEEC_SENTINEL(ln:%u): exception target slab not VfT_PROG. Halting!\n");
+                HALT();
+            }
+
+            CASM_FUNCCALL(_geec_sentinel_xfer_exception_to_vft_prog,
+              _xmhfhic_common_slab_info_table[sp->dst_slabid].entrystub,
+              caller_stack_frame);
+            _XDPRINTF_("GEEC_SENTINEL[ln:%u]: halting. should never be here!\n",
+                       __LINE__);
+            HALT();
+
+        }
+        break;
+
+
+
+
 
 
         default:
