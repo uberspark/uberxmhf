@@ -85,6 +85,77 @@ slab_params_t *sp)
 
 
 
+////// exceptions
+
+#define XMHF_EXCEPTION_HANDLER_DEFINE(vector) 												\
+	CASM_FUNCDEF(void, __xmhf_exception_handler_##vector, 					\
+    { \
+        xmhfhwm_cpu_insn_pushl_imm(vector); \
+        xmhfhwm_cpu_insn_pushal(); \
+        xmhfhwm_cpu_insn_pushl_esp(); \
+        xmhfhwm_cpu_insn_call(_geec_sentinel_exception_stub); \
+        xmhfhwm_cpu_insn_addl_imm_esp(0x4); \
+        xmhfhwm_cpu_insn_popal(); \
+        xmhfhwm_cpu_insn_addl_imm_esp(0x8); \
+        xmhfhwm_cpu_insn_iretl(); \
+    },\
+    void *noparam) \
+
+#define XMHF_EXCEPTION_HANDLER_DEFINE_WITHERRORCODE(vector) 												\
+	CASM_FUNCDEF(void, __xmhf_exception_handler_##vector, 					\
+    {\
+		xmhfhwm_cpu_insn_pushl_imm(0x0); \
+        xmhfhwm_cpu_insn_pushl_imm(vector); \
+        xmhfhwm_cpu_insn_pushal(); \
+        xmhfhwm_cpu_insn_pushl_esp(); \
+        xmhfhwm_cpu_insn_call(_geec_sentinel_exception_stub); \
+        xmhfhwm_cpu_insn_addl_imm_esp(0x4); \
+        xmhfhwm_cpu_insn_popal(); \
+        xmhfhwm_cpu_insn_addl_imm_esp(0x8); \
+        xmhfhwm_cpu_insn_iretl(); \
+    },\
+    void *noparam) \
+
+
+
+XMHF_EXCEPTION_HANDLER_DEFINE_WITHERRORCODE(0)
+XMHF_EXCEPTION_HANDLER_DEFINE_WITHERRORCODE(1)
+XMHF_EXCEPTION_HANDLER_DEFINE_WITHERRORCODE(2)
+XMHF_EXCEPTION_HANDLER_DEFINE_WITHERRORCODE(3)
+XMHF_EXCEPTION_HANDLER_DEFINE_WITHERRORCODE(4)
+XMHF_EXCEPTION_HANDLER_DEFINE_WITHERRORCODE(5)
+XMHF_EXCEPTION_HANDLER_DEFINE_WITHERRORCODE(6)
+XMHF_EXCEPTION_HANDLER_DEFINE_WITHERRORCODE(7)
+XMHF_EXCEPTION_HANDLER_DEFINE(8)
+XMHF_EXCEPTION_HANDLER_DEFINE_WITHERRORCODE(9)
+XMHF_EXCEPTION_HANDLER_DEFINE(10)
+XMHF_EXCEPTION_HANDLER_DEFINE(11)
+XMHF_EXCEPTION_HANDLER_DEFINE(12)
+XMHF_EXCEPTION_HANDLER_DEFINE(13)
+XMHF_EXCEPTION_HANDLER_DEFINE(14)
+XMHF_EXCEPTION_HANDLER_DEFINE_WITHERRORCODE(15)
+XMHF_EXCEPTION_HANDLER_DEFINE_WITHERRORCODE(16)
+XMHF_EXCEPTION_HANDLER_DEFINE(17)
+XMHF_EXCEPTION_HANDLER_DEFINE_WITHERRORCODE(18)
+XMHF_EXCEPTION_HANDLER_DEFINE_WITHERRORCODE(19)
+XMHF_EXCEPTION_HANDLER_DEFINE_WITHERRORCODE(20)
+XMHF_EXCEPTION_HANDLER_DEFINE_WITHERRORCODE(21)
+XMHF_EXCEPTION_HANDLER_DEFINE_WITHERRORCODE(22)
+XMHF_EXCEPTION_HANDLER_DEFINE_WITHERRORCODE(23)
+XMHF_EXCEPTION_HANDLER_DEFINE_WITHERRORCODE(24)
+XMHF_EXCEPTION_HANDLER_DEFINE_WITHERRORCODE(25)
+XMHF_EXCEPTION_HANDLER_DEFINE_WITHERRORCODE(26)
+XMHF_EXCEPTION_HANDLER_DEFINE_WITHERRORCODE(27)
+XMHF_EXCEPTION_HANDLER_DEFINE_WITHERRORCODE(28)
+XMHF_EXCEPTION_HANDLER_DEFINE_WITHERRORCODE(29)
+XMHF_EXCEPTION_HANDLER_DEFINE_WITHERRORCODE(30)
+XMHF_EXCEPTION_HANDLER_DEFINE_WITHERRORCODE(31)
+
+
+
+
+
+
 //////////////////////////////////////////////////////////////////////////////
 //
 // HIC trampoline
@@ -166,69 +237,6 @@ void *noparam)
 
 
 
-#define XMHF_EXCEPTION_HANDLER_DEFINE(vector) 												\
-	CASM_FUNCDEF(void, __xmhf_exception_handler_##vector, 					\
-    { \
-        xmhfhwm_cpu_insn_pushl_imm(vector); \
-        xmhfhwm_cpu_insn_pushal(); \
-        xmhfhwm_cpu_insn_pushl_esp(); \
-        xmhfhwm_cpu_insn_call(__xmhfhic_rtm_exception_stub); \
-        xmhfhwm_cpu_insn_addl_imm_esp(0x4); \
-        xmhfhwm_cpu_insn_popal(); \
-        xmhfhwm_cpu_insn_addl_imm_esp(0x8); \
-        xmhfhwm_cpu_insn_iretl(); \
-    },\
-    void *noparam) \
-
-#define XMHF_EXCEPTION_HANDLER_DEFINE_WITHERRORCODE(vector) 												\
-	CASM_FUNCDEF(void, __xmhf_exception_handler_##vector, 					\
-    {\
-		xmhfhwm_cpu_insn_pushl_imm(0x0); \
-        xmhfhwm_cpu_insn_pushl_imm(vector); \
-        xmhfhwm_cpu_insn_pushal(); \
-        xmhfhwm_cpu_insn_pushl_esp(); \
-        xmhfhwm_cpu_insn_call(__xmhfhic_rtm_exception_stub); \
-        xmhfhwm_cpu_insn_addl_imm_esp(0x4); \
-        xmhfhwm_cpu_insn_popal(); \
-        xmhfhwm_cpu_insn_addl_imm_esp(0x8); \
-        xmhfhwm_cpu_insn_iretl(); \
-    },\
-    void *noparam) \
-
-
-
-XMHF_EXCEPTION_HANDLER_DEFINE_WITHERRORCODE(0)
-XMHF_EXCEPTION_HANDLER_DEFINE_WITHERRORCODE(1)
-XMHF_EXCEPTION_HANDLER_DEFINE_WITHERRORCODE(2)
-XMHF_EXCEPTION_HANDLER_DEFINE_WITHERRORCODE(3)
-XMHF_EXCEPTION_HANDLER_DEFINE_WITHERRORCODE(4)
-XMHF_EXCEPTION_HANDLER_DEFINE_WITHERRORCODE(5)
-XMHF_EXCEPTION_HANDLER_DEFINE_WITHERRORCODE(6)
-XMHF_EXCEPTION_HANDLER_DEFINE_WITHERRORCODE(7)
-XMHF_EXCEPTION_HANDLER_DEFINE(8)
-XMHF_EXCEPTION_HANDLER_DEFINE_WITHERRORCODE(9)
-XMHF_EXCEPTION_HANDLER_DEFINE(10)
-XMHF_EXCEPTION_HANDLER_DEFINE(11)
-XMHF_EXCEPTION_HANDLER_DEFINE(12)
-XMHF_EXCEPTION_HANDLER_DEFINE(13)
-XMHF_EXCEPTION_HANDLER_DEFINE(14)
-XMHF_EXCEPTION_HANDLER_DEFINE_WITHERRORCODE(15)
-XMHF_EXCEPTION_HANDLER_DEFINE_WITHERRORCODE(16)
-XMHF_EXCEPTION_HANDLER_DEFINE(17)
-XMHF_EXCEPTION_HANDLER_DEFINE_WITHERRORCODE(18)
-XMHF_EXCEPTION_HANDLER_DEFINE_WITHERRORCODE(19)
-XMHF_EXCEPTION_HANDLER_DEFINE_WITHERRORCODE(20)
-XMHF_EXCEPTION_HANDLER_DEFINE_WITHERRORCODE(21)
-XMHF_EXCEPTION_HANDLER_DEFINE_WITHERRORCODE(22)
-XMHF_EXCEPTION_HANDLER_DEFINE_WITHERRORCODE(23)
-XMHF_EXCEPTION_HANDLER_DEFINE_WITHERRORCODE(24)
-XMHF_EXCEPTION_HANDLER_DEFINE_WITHERRORCODE(25)
-XMHF_EXCEPTION_HANDLER_DEFINE_WITHERRORCODE(26)
-XMHF_EXCEPTION_HANDLER_DEFINE_WITHERRORCODE(27)
-XMHF_EXCEPTION_HANDLER_DEFINE_WITHERRORCODE(28)
-XMHF_EXCEPTION_HANDLER_DEFINE_WITHERRORCODE(29)
-XMHF_EXCEPTION_HANDLER_DEFINE_WITHERRORCODE(30)
-XMHF_EXCEPTION_HANDLER_DEFINE_WITHERRORCODE(31)
 
 
 //HIC runtime intercept stub

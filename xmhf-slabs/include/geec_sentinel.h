@@ -91,7 +91,7 @@ bool __xmhfhic_callcaps(u64 src_slabid, u64 dst_slabid);
 //void __xmhfhic_safepop(u64 cpuid, u64 *src_slabid, u64 *dst_slabid, u64 *hic_calltype, u64 *return_address,
 //                       slab_output_params_t **oparams, slab_output_params_t **newoparams, u64 *oparams_size, u64 *iparams_size);
 void __xmhfhic_rtm_intercept(x86regs_t *r);
-void __xmhfhic_rtm_exception_stub(x86vmx_exception_frame_t *exframe);
+//void __xmhfhic_rtm_exception_stub(x86vmx_exception_frame_t *exframe);
 //void __xmhfhic_rtm_trampoline(u64 hic_calltype, slab_input_params_t *iparams, u64 iparams_size, slab_output_params_t *oparams, u64 oparams_size, u64 dst_slabid, u64 src_slabid, u64 cpuid, u64 return_address, u64 return_rsp);
 
 
@@ -104,6 +104,9 @@ CASM_FUNCDECL(void __xmhfhic_trampoline_slabxfer_callexception(u64 iparams,u64 i
 CASM_FUNCDECL(void __xmhfhic_trampoline_slabxfer_callintercept(u64 entrystub,u64 slabtos,u64 src_slabid,u64 cpuid));
 CASM_FUNCDECL(void __xmhfhic_trampoline_slabxfer_retintercept(u64 addrgprs));
 CASM_FUNCDECL(void __xmhfhic_trampoline_slabxfer_retexception(u64 addr_exframe));
+
+void _geec_sentinel_exception_stub(x86vmx_exception_frame_t *exframe);
+
 
 CASM_FUNCDECL(void _geec_sentinel_xfer_vft_prog_to_vft_prog(u32 entry_point, void *caller_stack_frame));
 CASM_FUNCDECL(u32 _geec_sentinel_xfer_vft_prog_to_uvt_uvu_prog_guest(void *noparam));
