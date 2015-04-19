@@ -803,6 +803,30 @@ void geec_sentinel_main(slab_params_t *sp, void *caller_stack_frame){
 
 
 
+        case XMHFGEEC_SENTINEL_RET_EXCEPTION:{
+            if(!
+               (_xmhfhic_common_slab_info_table[sp->src_slabid].archdata.slabtype == XMHFGEEC_SLABTYPE_VfT_PROG_EXCEPTION &&
+                sp->dst_slabid == XMHF_HYP_SLAB_GEECSENTINEL)){
+                _XDPRINTF_("GEEC_SENTINEL(ln:%u): exception ret source slab not VfT_PROG_EXCEPTION. Halting!\n");
+                HALT();
+            }
+
+            //CASM_FUNCCALL(_geec_sentinel_xfer_exception_to_vft_prog,
+            //  _xmhfhic_common_slab_info_table[sp->dst_slabid].entrystub,
+            //  caller_stack_frame);
+            _XDPRINTF_("GEEC_SENTINEL[ln:%u]: halting. should never be here!\n",
+                       __LINE__);
+            HALT();
+
+        }
+        break;
+
+
+
+
+
+
+
         default:
             _XDPRINTF_("GEEC_SENTINEL: unkown call type %x. Halting!\n", sp->slab_ctype);
             HALT();
