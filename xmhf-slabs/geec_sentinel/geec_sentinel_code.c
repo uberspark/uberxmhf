@@ -811,9 +811,8 @@ void geec_sentinel_main(slab_params_t *sp, void *caller_stack_frame){
                 HALT();
             }
 
-            //CASM_FUNCCALL(_geec_sentinel_xfer_exception_to_vft_prog,
-            //  _xmhfhic_common_slab_info_table[sp->dst_slabid].entrystub,
-            //  caller_stack_frame);
+            CASM_FUNCCALL(_geec_sentinel_xfer_ret_from_exception,
+                sp->in_out_params);
             _XDPRINTF_("GEEC_SENTINEL[ln:%u]: halting. should never be here!\n",
                        __LINE__);
             HALT();
