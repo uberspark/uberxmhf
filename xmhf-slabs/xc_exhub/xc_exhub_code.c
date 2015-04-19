@@ -103,7 +103,6 @@ void slab_main(slab_params_t *sp){
 	_XDPRINTF_("XC_EXHUB[%u]: Got control: ESP=%08x, src_slabid=%u, dst_slabid=%u\n",
                 (u16)sp->cpuid, CASM_FUNCCALL(read_esp,CASM_NOPARAM), sp->src_slabid, sp->dst_slabid);
 
-    HALT();
    	switch(exframe->vector){
 			case 0x3:{
                 _xcexhub_unhandled(exframe);
