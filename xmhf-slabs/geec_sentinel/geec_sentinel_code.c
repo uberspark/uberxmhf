@@ -545,7 +545,7 @@ void _geec_sentinel_exception_stub(x86vmx_exception_frame_t *exframe){
 }
 
 
-void __xmhfhic_rtm_intercept(x86regs_t *r){
+void _geec_sentinel_intercept_stub(x86regs_t *r){
     slab_params_t spl;
     //xmhf_uapi_gcpustate_gprs_params_t *gcpustate_gprs =
     //    (xmhf_uapi_gcpustate_gprs_params_t *)spl.in_out_params;

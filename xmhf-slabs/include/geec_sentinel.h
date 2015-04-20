@@ -105,6 +105,10 @@ CASM_FUNCDECL(void __xmhfhic_trampoline_slabxfer_callintercept(u64 entrystub,u64
 CASM_FUNCDECL(void __xmhfhic_trampoline_slabxfer_retintercept(u64 addrgprs));
 CASM_FUNCDECL(void __xmhfhic_trampoline_slabxfer_retexception(u64 addr_exframe));
 
+
+CASM_FUNCDECL(void _geec_sentinel_intercept_casmstub(void *noparam));
+
+void _geec_sentinel_intercept_stub(x86regs_t *r);
 void _geec_sentinel_exception_stub(x86vmx_exception_frame_t *exframe);
 
 
