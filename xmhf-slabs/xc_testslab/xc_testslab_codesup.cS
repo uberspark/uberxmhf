@@ -43,3 +43,17 @@
  *
  * @XMHF_LICENSE_HEADER_END@
  */
+
+#include <xmhf.h>
+#include <xmhf-debug.h>
+
+#include <xmhfgeec.h>
+#include <xc_testslab.h>
+
+
+CASM_FUNCDEF(void, _xc_testslab_int3,
+{
+    xmhfhwm_cpu_insn_int(0x3);
+    xmhfhwm_cpu_insn_ret();
+},
+void *noparam)

@@ -83,6 +83,10 @@ while( $i <= $#slabnamearray ){
         print "\n	        XMHFGEEC_SLABTYPE_VfT_PROG_PRIME,";
     }elsif($slabtypearray[$i] eq "VfT_PROG"){
         print "\n	        XMHFGEEC_SLABTYPE_VfT_PROG,";
+    }elsif($slabtypearray[$i] eq "VfT_PROG_EXCEPTION"){
+        print "\n	        XMHFGEEC_SLABTYPE_VfT_PROG_EXCEPTION,";
+    }elsif($slabtypearray[$i] eq "VfT_PROG_INTERCEPT"){
+        print "\n	        XMHFGEEC_SLABTYPE_VfT_PROG_INTERCEPT,";
     }elsif($slabtypearray[$i] eq "uVU_PROG"){
         print "\n	        XMHFGEEC_SLABTYPE_uVU_PROG,";
     }elsif($slabtypearray[$i] eq "uVU_PROG_GUEST"){

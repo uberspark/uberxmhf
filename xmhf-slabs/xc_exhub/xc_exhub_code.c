@@ -100,9 +100,8 @@ static void _xcexhub_unhandled(x86vmx_exception_frame_t *exframe){
 void slab_main(slab_params_t *sp){
     x86vmx_exception_frame_t *exframe = (x86vmx_exception_frame_t *)&sp->in_out_params[0];
 
-	_XDPRINTF_("%s[%u]: Got control: ESP=%08x\n",
-                __func__, (u16)sp->cpuid, CASM_FUNCCALL(read_esp,CASM_NOPARAM));
-
+	_XDPRINTF_("XC_EXHUB[%u]: Got control: ESP=%08x, src_slabid=%u, dst_slabid=%u\n",
+                (u16)sp->cpuid, CASM_FUNCCALL(read_esp,CASM_NOPARAM), sp->src_slabid, sp->dst_slabid);
 
    	switch(exframe->vector){
 			case 0x3:{

@@ -117,7 +117,7 @@ static void xmhfhic_setupinitpgtables(void){
 
 
 
-void slab_main(slab_params_t *sp){
+void _geec_prime_main(slab_params_t *sp){
     u64 pgtblbase;
 
 #if !defined(__XMHF_VERIFICATION__)
@@ -800,7 +800,7 @@ static u32 _geec_prime_slab_getspatype(u32 slab_index, u32 spa){
 
 
 
-// only for VfT_PROG and VfT_PROG_PRIME
+// only for VfT_PROG, Vft_PROG_EXCEPTION, VfT_PROG_INTERCEPT and VfT_PROG_PRIME
 static u64 _geec_prime_slab_getptflagsforspa_pae(u32 slabid, u32 spa){
 	u64 flags=0;
     u8 spa_slabtype, spa_slabregion;
@@ -1379,6 +1379,8 @@ void xmhfhic_arch_setup_slab_mem_page_tables(void){
         XMHF_SLAB_CALLNEW(&spl);
 
         switch(slabtype){
+            case XMHFGEEC_SLABTYPE_VfT_PROG_INTERCEPT:
+            case XMHFGEEC_SLABTYPE_VfT_PROG_EXCEPTION:
             case XMHFGEEC_SLABTYPE_VfT_PROG_PRIME:
             case XMHFGEEC_SLABTYPE_VfT_PROG:{
                 _geec_prime_populate_slab_pagetables_VfT_prog(i);

@@ -126,8 +126,8 @@
 #define XMHF_HIC_MAX_SLABS                  (17)
 
 
-#define XMHF_HYP_SLAB_GEECPRIME             (0)
-#define XMHF_HYP_SLAB_GEECSENTINEL          (1)
+#define XMHF_HYP_SLAB_GEECSENTINEL          (0)
+#define XMHF_HYP_SLAB_GEECPRIME             (1)
 #define XMHF_HYP_SLAB_GEEC_PRIMESMP         (2)
 #define XMHF_HYP_SLAB_UAPI_GCPUSTATE        (3)
 #define XMHF_HYP_SLAB_UAPI_HCPUSTATE        (4)
@@ -166,7 +166,7 @@
 	#define __TARGET_SIZE_BOOTLOADER		0x00200000		//2MB
 
 	//physical address of XMHF secure loader
-	#define __TARGET_BASE_SL				0x02000000		//32MB
+	#define __TARGET_BASE_SL				0x02a00000		//32+10MB
 	#define __TARGET_SIZE_SL				0x00200000
 
 

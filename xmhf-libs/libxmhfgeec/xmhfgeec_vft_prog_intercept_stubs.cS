@@ -45,7 +45,7 @@
  */
 
 /*
- * slab stubs for prime slab
+ * slab stubs for verified intercept slab
  * author: amit vasudevan (amitvasudevan@acm.org)
 */
 
@@ -54,26 +54,28 @@
 #include <xmhfgeec.h>
 #include <xmhf-debug.h>
 
-
 CASM_FUNCDEF_FULL(.slab_entrystub, 1, void, _slab_entrystub,
 {
-    xmhfhwm_cpu_insn_movw_ds_ax();
-    xmhfhwm_cpu_insn_movw_ax_es();
-    xmhfhwm_cpu_insn_movw_ax_fs();
-    xmhfhwm_cpu_insn_movw_ax_gs();
-    xmhfhwm_cpu_insn_movw_ax_ss();
-    xmhfhwm_cpu_insn_movl_imm_eax(_init_bsp_cpustack);
-    xmhfhwm_cpu_insn_addl_imm_eax(MAX_PLATFORM_CPUSTACK_SIZE);
-    xmhfhwm_cpu_insn_movl_eax_esp();
-    xmhfhwm_cpu_insn_call(slab_main);
+	xmhfhwm_cpu_insn_addl_imm_esp(0x4); //skip return rip placeholder
+	xmhfhwm_cpu_insn_call(slab_main);   //invoke slab_main
+    xmhfhwm_cpu_insn_movl_mesp_eax(0x0);
+    xmhfhwm_cpu_insn_movl_imm_meax(XMHFGEEC_SENTINEL_RET_INTERCEPT, 0x0);
+    xmhfhwm_cpu_insn_movl_meax_edx(0x4); //edx = src_slabid
+    xmhfhwm_cpu_insn_movl_meax_ecx(0x8); //ecx = dst_slabid
+    xmhfhwm_cpu_insn_movl_ecx_meax(0x4); //[eax+4] = src_slabid = dst_slabid
+    xmhfhwm_cpu_insn_movl_edx_meax(0x8); //[eax+8] = dst_slabid = src_slabid
+    xmhfhwm_cpu_insn_pushl_imm(0x0);    //push in a placeholder return rip
+    xmhfhwm_cpu_insn_movl_imm_eax(0x02000000);
+    xmhfhwm_cpu_insn_jmpl_eax();
     xmhfhwm_cpu_insn_hlt();
 },
 void *noparam)
 
-
 CASM_FUNCDEF(void, __slab_calltrampolinenew,
 {
-    xmhfhwm_cpu_insn_movl_imm_eax(0x02a00000);
+    xmhfhwm_cpu_insn_movl_mesp_eax(0x4);
+    xmhfhwm_cpu_insn_movl_imm_meax(XMHFGEEC_SENTINEL_CALL_VfT_PROG_TO_VfT_uVU_uVT_PROG_uVU_uVT_PROG_GUEST, 0x0);
+    xmhfhwm_cpu_insn_movl_imm_eax(0x02000000);
     xmhfhwm_cpu_insn_jmpl_eax();
 },
 slab_params_t *sp)

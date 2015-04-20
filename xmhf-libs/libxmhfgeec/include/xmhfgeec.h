@@ -54,13 +54,6 @@
 #include <xmhf-hwm.h>
 #include <xmhfhw.h>
 
-/*#define XMHFGEEC_SLABTYPE_TPRIMESLAB        (0)
-#define XMHFGEEC_SLABTYPE_TPROGSLAB         (1)
-#define XMHFGEEC_SLABTYPE_UPROGSLAB         (2)
-#define XMHFGEEC_SLABTYPE_UGPROGSLAB        (3)
-#define XMHFGEEC_SLABTYPE_UGRICHGUESTSLAB   (4)
-*/
-
 /*
 	1. XMHFGEEC_SLABTYPE_VfT_PROG_PRIME     -- verified trusted special prime slab
 	2. XMHFGEEC_SLABTYPE_VfT_PROG           -- verified trusted (hypervisor) program slab
@@ -72,13 +65,21 @@
 */
 
 
-#define XMHFGEEC_SLABTYPE_VfT_PROG_PRIME        (0x10)
-#define XMHFGEEC_SLABTYPE_VfT_PROG              (0x20)
-#define XMHFGEEC_SLABTYPE_uVU_PROG              (0x30)
-#define XMHFGEEC_SLABTYPE_uVT_PROG              (0x40)
-#define XMHFGEEC_SLABTYPE_uVU_PROG_GUEST        (0x50)
-#define XMHFGEEC_SLABTYPE_uVT_PROG_GUEST        (0x60)
-#define XMHFGEEC_SLABTYPE_uVU_PROG_RICHGUEST    (0x70)
+#define XMHFGEEC_SLABTYPE_VfT_PROG              (0x10)
+#define XMHFGEEC_SLABTYPE_VfT_PROG_PRIME        (0x20)
+#define XMHFGEEC_SLABTYPE_VfT_PROG_EXCEPTION    (0x30)
+#define XMHFGEEC_SLABTYPE_VfT_PROG_INTERCEPT    (0x40)
+#define XMHFGEEC_SLABTYPE_uVU_PROG              (0x50)
+#define XMHFGEEC_SLABTYPE_uVT_PROG              (0x60)
+#define XMHFGEEC_SLABTYPE_uVU_PROG_GUEST        (0x70)
+#define XMHFGEEC_SLABTYPE_uVT_PROG_GUEST        (0x80)
+#define XMHFGEEC_SLABTYPE_uVU_PROG_RICHGUEST    (0x90)
+
+#define XMHFGEEC_SENTINEL_CALL_VfT_PROG_TO_VfT_uVU_uVT_PROG_uVU_uVT_PROG_GUEST  (0x1)
+#define XMHFGEEC_SENTINEL_CALL_EXCEPTION  (0x2)
+#define XMHFGEEC_SENTINEL_RET_EXCEPTION  (0x3)
+#define XMHFGEEC_SENTINEL_CALL_INTERCEPT  (0x4)
+#define XMHFGEEC_SENTINEL_RET_INTERCEPT  (0x5)
 
 
 #define HIC_SLAB_PHYSMEM_EXTENT_READ       (1 << 0)
