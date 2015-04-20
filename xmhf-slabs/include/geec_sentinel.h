@@ -96,14 +96,7 @@ void __xmhfhic_rtm_intercept(x86regs_t *r);
 
 
 
-CASM_FUNCDECL(void __xmhfhic_rtm_intercept_stub(void *noparam));
 CASM_FUNCDECL(void __xmhfhic_rtm_trampoline_stub(void *noparam));
-CASM_FUNCDECL(void __xmhfhic_trampoline_slabxfer_h2h(u64 iparams,u64 iparams_size,u64 entrystub,u64 slabtos,u64 oparams,u64 oparams_size,u64 src_slabid,u64 cpuid));
-CASM_FUNCDECL(void __xmhfhic_trampoline_slabxfer_h2g(void *noparam));
-CASM_FUNCDECL(void __xmhfhic_trampoline_slabxfer_callexception(u64 iparams,u64 iparams_size,u64 entrystub,u64 slabtos,u64 src_slabid,u64 cpuid));
-CASM_FUNCDECL(void __xmhfhic_trampoline_slabxfer_callintercept(u64 entrystub,u64 slabtos,u64 src_slabid,u64 cpuid));
-CASM_FUNCDECL(void __xmhfhic_trampoline_slabxfer_retintercept(u64 addrgprs));
-CASM_FUNCDECL(void __xmhfhic_trampoline_slabxfer_retexception(u64 addr_exframe));
 
 
 CASM_FUNCDECL(void _geec_sentinel_intercept_casmstub(void *noparam));
