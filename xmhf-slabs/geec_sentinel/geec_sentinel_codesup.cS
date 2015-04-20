@@ -55,9 +55,117 @@
 #include <xmhfgeec.h>
 #include <geec_sentinel.h>
 
+
+//////
+// sentinel entry point
+//////
+
+CASM_FUNCDEF(void, slab_main,
+{
+    xmhfhwm_cpu_insn_movl_mesp_eax(0x4);
+    xmhfhwm_cpu_insn_pushl_ebp();
+    xmhfhwm_cpu_insn_pushl_edi();
+    xmhfhwm_cpu_insn_pushl_esi();
+    xmhfhwm_cpu_insn_pushl_ebx();
+    xmhfhwm_cpu_insn_movl_esp_edx();
+    xmhfhwm_cpu_insn_pushl_edx();
+    xmhfhwm_cpu_insn_pushl_eax();
+    xmhfhwm_cpu_insn_call(geec_sentinel_main);
+    xmhfhwm_cpu_insn_hlt();
+},
+slab_params_t *sp)
+
+
+
+
+
 //////
 // CASM sentinel stubs -- the following get called by the hardware
 //////
+
+
+
+////// exceptions
+
+#define XMHF_EXCEPTION_HANDLER_DEFINE(vector) 												\
+	CASM_FUNCDEF(void, __xmhf_exception_handler_##vector, 					\
+    { \
+        xmhfhwm_cpu_insn_pushl_imm(vector); \
+        xmhfhwm_cpu_insn_pushal(); \
+        xmhfhwm_cpu_insn_pushl_esp(); \
+        xmhfhwm_cpu_insn_call(_geec_sentinel_exception_stub); \
+        xmhfhwm_cpu_insn_hlt(); \
+    },\
+    void *noparam) \
+
+#define XMHF_EXCEPTION_HANDLER_DEFINE_WITHERRORCODE(vector) 												\
+	CASM_FUNCDEF(void, __xmhf_exception_handler_##vector, 					\
+    {\
+		xmhfhwm_cpu_insn_pushl_imm(0x0); \
+        xmhfhwm_cpu_insn_pushl_imm(vector); \
+        xmhfhwm_cpu_insn_pushal(); \
+        xmhfhwm_cpu_insn_pushl_esp(); \
+        xmhfhwm_cpu_insn_call(_geec_sentinel_exception_stub); \
+        xmhfhwm_cpu_insn_hlt(); \
+    },\
+    void *noparam) \
+
+
+
+XMHF_EXCEPTION_HANDLER_DEFINE_WITHERRORCODE(0)
+XMHF_EXCEPTION_HANDLER_DEFINE_WITHERRORCODE(1)
+XMHF_EXCEPTION_HANDLER_DEFINE_WITHERRORCODE(2)
+XMHF_EXCEPTION_HANDLER_DEFINE_WITHERRORCODE(3)
+XMHF_EXCEPTION_HANDLER_DEFINE_WITHERRORCODE(4)
+XMHF_EXCEPTION_HANDLER_DEFINE_WITHERRORCODE(5)
+XMHF_EXCEPTION_HANDLER_DEFINE_WITHERRORCODE(6)
+XMHF_EXCEPTION_HANDLER_DEFINE_WITHERRORCODE(7)
+XMHF_EXCEPTION_HANDLER_DEFINE(8)
+XMHF_EXCEPTION_HANDLER_DEFINE_WITHERRORCODE(9)
+XMHF_EXCEPTION_HANDLER_DEFINE(10)
+XMHF_EXCEPTION_HANDLER_DEFINE(11)
+XMHF_EXCEPTION_HANDLER_DEFINE(12)
+XMHF_EXCEPTION_HANDLER_DEFINE(13)
+XMHF_EXCEPTION_HANDLER_DEFINE(14)
+XMHF_EXCEPTION_HANDLER_DEFINE_WITHERRORCODE(15)
+XMHF_EXCEPTION_HANDLER_DEFINE_WITHERRORCODE(16)
+XMHF_EXCEPTION_HANDLER_DEFINE(17)
+XMHF_EXCEPTION_HANDLER_DEFINE_WITHERRORCODE(18)
+XMHF_EXCEPTION_HANDLER_DEFINE_WITHERRORCODE(19)
+XMHF_EXCEPTION_HANDLER_DEFINE_WITHERRORCODE(20)
+XMHF_EXCEPTION_HANDLER_DEFINE_WITHERRORCODE(21)
+XMHF_EXCEPTION_HANDLER_DEFINE_WITHERRORCODE(22)
+XMHF_EXCEPTION_HANDLER_DEFINE_WITHERRORCODE(23)
+XMHF_EXCEPTION_HANDLER_DEFINE_WITHERRORCODE(24)
+XMHF_EXCEPTION_HANDLER_DEFINE_WITHERRORCODE(25)
+XMHF_EXCEPTION_HANDLER_DEFINE_WITHERRORCODE(26)
+XMHF_EXCEPTION_HANDLER_DEFINE_WITHERRORCODE(27)
+XMHF_EXCEPTION_HANDLER_DEFINE_WITHERRORCODE(28)
+XMHF_EXCEPTION_HANDLER_DEFINE_WITHERRORCODE(29)
+XMHF_EXCEPTION_HANDLER_DEFINE_WITHERRORCODE(30)
+XMHF_EXCEPTION_HANDLER_DEFINE_WITHERRORCODE(31)
+
+
+
+
+
+
+
+////// intercepts
+
+CASM_FUNCDEF(void, _geec_sentinel_intercept_casmstub,
+{
+    xmhfhwm_cpu_insn_pushal();
+    xmhfhwm_cpu_insn_pushl_esp();
+    xmhfhwm_cpu_insn_call(_geec_sentinel_intercept_stub);
+    //xmhfhwm_cpu_insn_addl_imm_esp(0x4);
+    //xmhfhwm_cpu_insn_popal();
+    //xmhfhwm_cpu_insn_vmresume();
+    xmhfhwm_cpu_insn_hlt();
+},
+void *noparam)
+
+
 
 
 
@@ -142,84 +250,7 @@ void *noparam)
 
 
 
-#define XMHF_EXCEPTION_HANDLER_DEFINE(vector) 												\
-	CASM_FUNCDEF(void, __xmhf_exception_handler_##vector, 					\
-    { \
-        xmhfhwm_cpu_insn_pushl_imm(vector); \
-        xmhfhwm_cpu_insn_pushal(); \
-        xmhfhwm_cpu_insn_pushl_esp(); \
-        xmhfhwm_cpu_insn_call(__xmhfhic_rtm_exception_stub); \
-        xmhfhwm_cpu_insn_addl_imm_esp(0x4); \
-        xmhfhwm_cpu_insn_popal(); \
-        xmhfhwm_cpu_insn_addl_imm_esp(0x8); \
-        xmhfhwm_cpu_insn_iretl(); \
-    },\
-    void *noparam) \
 
-#define XMHF_EXCEPTION_HANDLER_DEFINE_WITHERRORCODE(vector) 												\
-	CASM_FUNCDEF(void, __xmhf_exception_handler_##vector, 					\
-    {\
-		xmhfhwm_cpu_insn_pushl_imm(0x0); \
-        xmhfhwm_cpu_insn_pushl_imm(vector); \
-        xmhfhwm_cpu_insn_pushal(); \
-        xmhfhwm_cpu_insn_pushl_esp(); \
-        xmhfhwm_cpu_insn_call(__xmhfhic_rtm_exception_stub); \
-        xmhfhwm_cpu_insn_addl_imm_esp(0x4); \
-        xmhfhwm_cpu_insn_popal(); \
-        xmhfhwm_cpu_insn_addl_imm_esp(0x8); \
-        xmhfhwm_cpu_insn_iretl(); \
-    },\
-    void *noparam) \
-
-
-
-XMHF_EXCEPTION_HANDLER_DEFINE_WITHERRORCODE(0)
-XMHF_EXCEPTION_HANDLER_DEFINE_WITHERRORCODE(1)
-XMHF_EXCEPTION_HANDLER_DEFINE_WITHERRORCODE(2)
-XMHF_EXCEPTION_HANDLER_DEFINE_WITHERRORCODE(3)
-XMHF_EXCEPTION_HANDLER_DEFINE_WITHERRORCODE(4)
-XMHF_EXCEPTION_HANDLER_DEFINE_WITHERRORCODE(5)
-XMHF_EXCEPTION_HANDLER_DEFINE_WITHERRORCODE(6)
-XMHF_EXCEPTION_HANDLER_DEFINE_WITHERRORCODE(7)
-XMHF_EXCEPTION_HANDLER_DEFINE(8)
-XMHF_EXCEPTION_HANDLER_DEFINE_WITHERRORCODE(9)
-XMHF_EXCEPTION_HANDLER_DEFINE(10)
-XMHF_EXCEPTION_HANDLER_DEFINE(11)
-XMHF_EXCEPTION_HANDLER_DEFINE(12)
-XMHF_EXCEPTION_HANDLER_DEFINE(13)
-XMHF_EXCEPTION_HANDLER_DEFINE(14)
-XMHF_EXCEPTION_HANDLER_DEFINE_WITHERRORCODE(15)
-XMHF_EXCEPTION_HANDLER_DEFINE_WITHERRORCODE(16)
-XMHF_EXCEPTION_HANDLER_DEFINE(17)
-XMHF_EXCEPTION_HANDLER_DEFINE_WITHERRORCODE(18)
-XMHF_EXCEPTION_HANDLER_DEFINE_WITHERRORCODE(19)
-XMHF_EXCEPTION_HANDLER_DEFINE_WITHERRORCODE(20)
-XMHF_EXCEPTION_HANDLER_DEFINE_WITHERRORCODE(21)
-XMHF_EXCEPTION_HANDLER_DEFINE_WITHERRORCODE(22)
-XMHF_EXCEPTION_HANDLER_DEFINE_WITHERRORCODE(23)
-XMHF_EXCEPTION_HANDLER_DEFINE_WITHERRORCODE(24)
-XMHF_EXCEPTION_HANDLER_DEFINE_WITHERRORCODE(25)
-XMHF_EXCEPTION_HANDLER_DEFINE_WITHERRORCODE(26)
-XMHF_EXCEPTION_HANDLER_DEFINE_WITHERRORCODE(27)
-XMHF_EXCEPTION_HANDLER_DEFINE_WITHERRORCODE(28)
-XMHF_EXCEPTION_HANDLER_DEFINE_WITHERRORCODE(29)
-XMHF_EXCEPTION_HANDLER_DEFINE_WITHERRORCODE(30)
-XMHF_EXCEPTION_HANDLER_DEFINE_WITHERRORCODE(31)
-
-
-//HIC runtime intercept stub
-//__attribute__((naked)) void __xmhfhic_rtm_intercept_stub(void){
-CASM_FUNCDEF(void, __xmhfhic_rtm_intercept_stub,
-{
-    xmhfhwm_cpu_insn_pushal();
-    xmhfhwm_cpu_insn_pushl_esp();
-    xmhfhwm_cpu_insn_call(__xmhfhic_rtm_intercept);
-    xmhfhwm_cpu_insn_addl_imm_esp(0x4);
-    xmhfhwm_cpu_insn_popal();
-    xmhfhwm_cpu_insn_vmresume();
-    xmhfhwm_cpu_insn_hlt();
-},
-void *noparam)
 
 
 
@@ -243,9 +274,67 @@ void *noparam)
 /////
 
 
+CASM_FUNCDEF(void, _geec_sentinel_xfer_vft_prog_to_vft_prog,
+{
+    xmhfhwm_cpu_insn_movl_mesp_eax(0x4);
+    xmhfhwm_cpu_insn_movl_mesp_edx(0x8);
+    xmhfhwm_cpu_insn_movl_edx_esp();
+    xmhfhwm_cpu_insn_popl_ebx();
+    xmhfhwm_cpu_insn_popl_esi();
+    xmhfhwm_cpu_insn_popl_edi();
+    xmhfhwm_cpu_insn_popl_ebp();
+    xmhfhwm_cpu_insn_jmpl_eax();
+    xmhfhwm_cpu_insn_hlt();
+},
+u32 entry_point, void *caller_stack_frame)
+
+
+
+CASM_FUNCDEF(void, _geec_sentinel_xfer_exception_to_vft_prog,
+{
+    xmhfhwm_cpu_insn_movl_mesp_eax(0x4);
+    xmhfhwm_cpu_insn_movl_mesp_edx(0x8);
+    xmhfhwm_cpu_insn_movl_edx_esp();
+    xmhfhwm_cpu_insn_pushl_esp();
+    xmhfhwm_cpu_insn_pushl_imm(0x0);
+    xmhfhwm_cpu_insn_jmpl_eax();
+    xmhfhwm_cpu_insn_hlt();
+},
+u32 entry_point, void *caller_stack_frame)
+
+CASM_FUNCDEF(void, _geec_sentinel_xfer_ret_from_exception,
+{
+    xmhfhwm_cpu_insn_movl_mesp_eax(0x4);    //eax = exception frame
+    xmhfhwm_cpu_insn_movl_meax_edi(0x0);
+    xmhfhwm_cpu_insn_movl_meax_esi(0x4);
+    xmhfhwm_cpu_insn_movl_meax_ebp(0x8);
+    xmhfhwm_cpu_insn_movl_meax_esp(0xC);
+    xmhfhwm_cpu_insn_movl_meax_ebx(0x10);
+    xmhfhwm_cpu_insn_movl_meax_edx(0x14);
+    xmhfhwm_cpu_insn_movl_meax_ecx(0x18);
+    xmhfhwm_cpu_insn_movl_meax_eax(0x1C);
+    xmhfhwm_cpu_insn_addl_imm_esp(0x8);
+    xmhfhwm_cpu_insn_iretl();
+},
+x86vmx_exception_frame_t *exframe)
+
+
+CASM_FUNCDEF(void, _geec_sentinel_xfer_intercept_to_vft_prog,
+{
+    xmhfhwm_cpu_insn_movl_mesp_eax(0x4);
+    xmhfhwm_cpu_insn_movl_mesp_edx(0x8);
+    xmhfhwm_cpu_insn_movl_edx_esp();
+    xmhfhwm_cpu_insn_pushl_esp();
+    xmhfhwm_cpu_insn_pushl_imm(0x0);
+    xmhfhwm_cpu_insn_jmpl_eax();
+    xmhfhwm_cpu_insn_hlt();
+},
+u32 entry_point, void *caller_stack_frame)
+
+
 //if we return, we had an error and we return the
 //corresponding error code
-CASM_FUNCDEF(u32, __slab_calltrampolinenew_h2g,
+CASM_FUNCDEF(u32, _geec_sentinel_xfer_vft_prog_to_uvt_uvu_prog_guest,
 {
     xmhfhwm_cpu_insn_vmlaunch();
     xmhfhwm_cpu_insn_jc(__vmx_start_hvm_failinvalid);
@@ -263,274 +352,23 @@ CASM_FUNCDEF(u32, __slab_calltrampolinenew_h2g,
 void *noparam)
 
 
-CASM_FUNCDEF(void, __xmhfhic_trampoline_slabxfer_h2h,
+
+
+CASM_FUNCDEF(void, _geec_sentinel_xfer_ret_from_intercept,
 {
-
-/*
-                    //TODO: x86_64 --> x86
-
-                    //RDI = newiparams
-                    //RSI = iparams_size
-                    //RDX = slab entrystub; used for SYSEXIT
-                    //RCX = slab entrystub stack TOS for the CPU; used for SYSEXIT
-                    //R8 = newoparams
-                    //R9 = oparams_size
-                    //R10 = src_slabid
-                    //R11 = cpuid
-
-
-                    asm volatile(
-                         "movq %0, %%rdi \r\n"
-                         "movq %1, %%rsi \r\n"
-                         "movq %2, %%rdx \r\n"
-                         "movq %3, %%rcx \r\n"
-                         "movq %4, %%r8 \r\n"
-                         "movq %5, %%r9 \r\n"
-                         "movq %6, %%r10 \r\n"
-                         "movq %7, %%r11 \r\n"
-
-                         "sysexitq \r\n"
-                         //"int $0x03 \r\n"
-                         //"1: jmp 1b \r\n"
-                        :
-                        : "m" (iparams),
-                          "m" (iparams_size),
-                          "m" (entrystub),
-                          "m" (slabtos),
-                          "m" (oparams),
-                          "m" (oparams_size),
-                          "m" (src_slabid),
-                          "m" (cpuid)
-                        : "rdi", "rsi", "rdx", "rcx", "r8", "r9", "r10", "r11"
-                    );
-*/
+    xmhfhwm_cpu_insn_movl_mesp_eax(0x4);
+    xmhfhwm_cpu_insn_movl_meax_edi(0x0);
+    xmhfhwm_cpu_insn_movl_meax_esi(0x4);
+    xmhfhwm_cpu_insn_movl_meax_ebp(0x8);
+    xmhfhwm_cpu_insn_movl_meax_esp(0xC);
+    xmhfhwm_cpu_insn_movl_meax_ebx(0x10);
+    xmhfhwm_cpu_insn_movl_meax_edx(0x14);
+    xmhfhwm_cpu_insn_movl_meax_ecx(0x18);
+    xmhfhwm_cpu_insn_movl_meax_eax(0x1C);
+    xmhfhwm_cpu_insn_vmresume();
+    xmhfhwm_cpu_insn_hlt();
 },
-u64 iparams,
-u64 iparams_size,
-u64 entrystub,
-u64 slabtos,
-u64 oparams,
-u64 oparams_size,
-u64 src_slabid,
-u64 cpuid)
+x86regs_t *r)
 
 
-
-CASM_FUNCDEF(void, __xmhfhic_trampoline_slabxfer_h2g,
-{
-/*                    u32 errorcode;
-
-                    asm volatile (
-                            "vmlaunch\r\n"
-
-                            "jc __vmx_start_hvm_failinvalid\r\n"
-                            "jnz	__vmx_start_hvm_undefinedimplementation	\r\n"
-                            "movl $0x1, %%eax\r\n"		//VMLAUNCH error, XXX: need to read from VM instruction error field in VMCS
-                            "movl %%eax, %0 \r\n"
-                            "jmp __vmx_start_continue \r\n"
-                            "__vmx_start_hvm_undefinedimplementation:\r\n"
-                            "movl $0x2, %%eax\r\n"		//violation of VMLAUNCH specs., handle it anyways
-                            "movl %%eax, %0 \r\n"
-                            "jmp __vmx_start_continue \r\n"
-                            "__vmx_start_hvm_failinvalid:\r\n"
-                            "xorl %%eax, %%eax\r\n"		//return 0 as we have no error code available
-                            "movl %%eax, %0 \r\n"
-                            "__vmx_start_continue:\r\n"
-                        : "=g"(errorcode)
-                        :
-                        : "eax", "cc"
-                    );
-
-
-                    switch(errorcode){
-                        case 0:	//no error code, VMCS pointer is invalid
-                            _XDPRINTF_("%s: VMLAUNCH error; VMCS pointer invalid?\n", __FUNCTION__);
-                            break;
-                        case 1:{//error code available, so dump it
-                            u32 code=xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_VMINSTR_ERROR);
-                            _XDPRINTF_("\n%s: VMLAUNCH error; code=%x\n", __FUNCTION__, code);
-                            break;
-                        }
-                    }
-
-                    HALT();
-
-*/
-},
-void *noparam)
-
-
-
-
-
-CASM_FUNCDEF(void, __xmhfhic_trampoline_slabxfer_callexception,
-{
-
-
-/*
-                //TODO: x86_64 --> x86
-
-                //RDI = newiparams
-                //RSI = iparams_size
-                //RDX = slab entrystub; used for SYSEXIT
-                //RCX = slab entrystub stack TOS for the CPU; used for SYSEXIT
-                //R8 = 0 (oparams)
-                //R9 = 0 (oparams_size)
-                //R10 = src_slabid
-                //R11 = cpuid
-
-
-
-                asm volatile(
-                     "movq %0, %%rdi \r\n"
-                     "movq %1, %%rsi \r\n"
-                     "movq %2, %%rdx \r\n"
-                     "movq %3, %%rcx \r\n"
-                     "movq %4, %%r8 \r\n"
-                     "movq %5, %%r9 \r\n"
-                     "movq %6, %%r10 \r\n"
-                     "movq %7, %%r11 \r\n"
-
-                     "sysexitq \r\n"
-                     //"int $0x03 \r\n"
-                     //"1: jmp 1b \r\n"
-                    :
-                    : "m" (iparams),
-                      "m" (iparams_size),
-                      "m" (entrystub),
-                      "m" (slabtos),
-                      "i" (0),
-                      "i" (0),
-                      "m" (src_slabid),
-                      "m" (cpuid)
-                    : "rdi", "rsi", "rdx", "rcx", "r8", "r9", "r10", "r11"
-                );
-*/
-},
-u64 iparams,
-u64 iparams_size,
-u64 entrystub,
-u64 slabtos,
-u64 src_slabid,
-u64 cpuid)
-
-
-CASM_FUNCDEF(void, __xmhfhic_trampoline_slabxfer_retexception,
-{
-
-/*
-                    //TODO: x86_64 --> x86
-                    asm volatile (
-                        "movq %0, %%rsp \r\n"
-                        "popq %%r8 \r\n"
-                        "popq %%r9 \r\n"
-                        "popq %%r10 \r\n"
-                        "popq %%r11 \r\n"
-                        "popq %%r12 \r\n"
-                        "popq %%r13 \r\n"
-                        "popq %%r14 \r\n"
-                        "popq %%r15 \r\n"
-                        "popq %%rax \r\n"
-                        "popq %%rbx \r\n"
-                        "popq %%rcx \r\n"
-                        "popq %%rdx \r\n"
-                        "popq %%rsi \r\n"
-                        "popq %%rdi \r\n"
-                        "popq %%rbp \r\n"
-                        "popq %%rsp \r\n"
-                        "addq $16, %%rsp \r\n"
-                        "iretq \r\n"
-                        :
-                        : "m" (addr_exframe)
-                        : "r8", "r9", "r10", "r11", "r12", "r13", "r14", "r15",
-                          "rax", "rbx", "rcx", "rdx", "rsi", "rdi", "rbp", "rsp"
-
-                    );
-*/
-},
-u64 addr_exframe)
-
-
-CASM_FUNCDEF(void, __xmhfhic_trampoline_slabxfer_callintercept,
-{
-
-/*
-            //TODO: x86_64 --> x86
-
-            //RDI = newiparams (NULL)
-            //RSI = iparams_size (0)
-            //RDX = slab entrystub; used for SYSEXIT
-            //RCX = slab entrystub stack TOS for the CPU; used for SYSEXIT
-            //R8 = newoparams (NULL)
-            //R9 = oparams_size (0)
-            //R10 = src_slabid
-            //R11 = cpuid
-
-
-
-            asm volatile(
-                 "movq %0, %%rdi \r\n"
-                 "movq %1, %%rsi \r\n"
-                 "movq %2, %%rdx \r\n"
-                 "movq %3, %%rcx \r\n"
-                 "movq %4, %%r8 \r\n"
-                 "movq %5, %%r9 \r\n"
-                 "movq %6, %%r10 \r\n"
-                 "movq %7, %%r11 \r\n"
-                 "sysexitq \r\n"
-                 //"int $0x03 \r\n"
-                 //"1: jmp 1b \r\n"
-                :
-                : "i" (0),
-                  "i" (0),
-                  "m" (entrystub),
-                  "m" (slabtos),
-                  "i" (0),
-                  "i" (0),
-                  "m" (src_slabid),
-                  "m" (cpuid)
-                : "rdi", "rsi", "rdx", "rcx", "r8", "r9", "r10", "r11"
-            );
-*/
-},
-u64 entrystub,
-u64 slabtos,
-u64 src_slabid,
-u64 cpuid)
-
-
-
-CASM_FUNCDEF(void, __xmhfhic_trampoline_slabxfer_retintercept,
-{
-
-/*
-            //TODO: x86_64 --> x86
-            asm volatile (
-                "movq %0, %%rsp \r\n"
-                "popq %%r8 \r\n"
-                "popq %%r9 \r\n"
-                "popq %%r10 \r\n"
-                "popq %%r11 \r\n"
-                "popq %%r12 \r\n"
-                "popq %%r13 \r\n"
-                "popq %%r14 \r\n"
-                "popq %%r15 \r\n"
-                "popq %%rax \r\n"
-                "popq %%rbx \r\n"
-                "popq %%rcx \r\n"
-                "popq %%rdx \r\n"
-                "popq %%rsi \r\n"
-                "popq %%rdi \r\n"
-                "popq %%rbp \r\n"
-
-                "vmresume \r\n"
-                :
-                : "g" (addrgprs)
-                : "r8", "r9", "r10", "r11", "r12", "r13", "r14", "r15",
-                  "rax", "rbx", "rcx", "rdx", "rsi", "rdi", "rbp"
-
-            );
-*/
-},
-u64 addrgprs)
 
