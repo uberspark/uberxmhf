@@ -33,6 +33,18 @@ ifeq ($(XMHF_SLAB_TYPE), VfT_PROG_INTERCEPT)
 endif
 
 
+
+ifeq ($(XMHF_SLAB_TYPE), uVT_PROG)
+	XMHF_SLAB_STUBOBJECTS := $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_slabmapdef.o $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_uvt_uvu_prog_stubs.o
+endif
+
+ifeq ($(XMHF_SLAB_TYPE), uVU_PROG)
+	XMHF_SLAB_STUBOBJECTS := $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_slabmapdef.o $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_uvt_uvu_prog_stubs.o
+endif
+
+
+
+
 ifeq ($(XMHF_SLAB_TYPE), uVU_PROG_GUEST)
 	XMHF_SLAB_STUBOBJECTS := $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_slabmapdef.o $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_tprogslab_stubs.o
 endif
