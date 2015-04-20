@@ -545,26 +545,29 @@ void _geec_sentinel_exception_stub(x86vmx_exception_frame_t *exframe){
 }
 
 
+
+////// intercepts
+
 void _geec_sentinel_intercept_stub(x86regs_t *r){
     slab_params_t spl;
-    //xmhf_uapi_gcpustate_gprs_params_t *gcpustate_gprs =
-    //    (xmhf_uapi_gcpustate_gprs_params_t *)spl.in_out_params;
 
     memset(&spl, 0, sizeof(spl));
 
+    spl.slab_ctype = XMHFGEEC_SENTINEL_CALL_INTERCEPT;
     spl.src_slabid = CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmread,VMCS_CONTROL_VPID);
+    spl.dst_slabid = XMHF_HYP_SLAB_XCIHUB;
     spl.cpuid = __xmhfhic_x86vmx_cpuidtable[xmhf_baseplatform_arch_x86_getcpulapicid()];
-
-    //copy incoming register state
     memcpy(&spl.in_out_params[0], r, sizeof(x86regs_t));
 
-    //call xcihub
+    geec_sentinel_main(&spl, &spl);
+
+/*    //call xcihub
     spl.dst_slabid = XMHF_HYP_SLAB_XCIHUB;
     XMHF_SLAB_CALLNEW(&spl);
 
     //store updated register state
     memcpy(r, &spl.in_out_params[0], sizeof(x86regs_t));
-
+*/
 
 
 
