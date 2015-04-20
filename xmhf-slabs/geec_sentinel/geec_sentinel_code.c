@@ -588,6 +588,20 @@ void geec_sentinel_main(slab_params_t *sp, void *caller_stack_frame){
                 }
                 break;
 
+
+                case XMHFGEEC_SLABTYPE_uVT_PROG:
+                case XMHFGEEC_SLABTYPE_uVU_PROG:{
+                    CASM_FUNCCALL(_geec_sentinel_xfer_vft_prog_to_vft_prog,
+                                  _xmhfhic_common_slab_info_table[sp->dst_slabid].entrystub,
+                                  caller_stack_frame);
+                    _XDPRINTF_("GEEC_SENTINEL[ln:%u]: halting. should never be here!\n",
+                               __LINE__);
+                    HALT();
+
+                }
+                break;
+
+
                 case XMHFGEEC_SLABTYPE_uVT_PROG_GUEST:
                 case XMHFGEEC_SLABTYPE_uVU_PROG_GUEST:
                 case XMHFGEEC_SLABTYPE_uVU_PROG_RICHGUEST:{
