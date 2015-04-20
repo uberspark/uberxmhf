@@ -305,9 +305,15 @@ u32 entry_point, void *caller_stack_frame)
 
 CASM_FUNCDEF(void, _geec_sentinel_xfer_ret_from_exception,
 {
-    xmhfhwm_cpu_insn_movl_mesp_eax(0x4);
-    xmhfhwm_cpu_insn_movl_eax_esp();
-    xmhfhwm_cpu_insn_popal();
+    xmhfhwm_cpu_insn_movl_mesp_eax(0x4);    //eax = exception frame
+    xmhfhwm_cpu_insn_movl_meax_edi(0x0);
+    xmhfhwm_cpu_insn_movl_meax_esi(0x4);
+    xmhfhwm_cpu_insn_movl_meax_ebp(0x8);
+    xmhfhwm_cpu_insn_movl_meax_esp(0xC);
+    xmhfhwm_cpu_insn_movl_meax_ebx(0x10);
+    xmhfhwm_cpu_insn_movl_meax_edx(0x14);
+    xmhfhwm_cpu_insn_movl_meax_ecx(0x18);
+    xmhfhwm_cpu_insn_movl_meax_eax(0x1C);
     xmhfhwm_cpu_insn_addl_imm_esp(0x8);
     xmhfhwm_cpu_insn_iretl();
 },

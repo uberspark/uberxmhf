@@ -667,8 +667,13 @@ typedef struct __tss {
 #define xmhfhwm_cpu_insn_movl_edx_mesi(x) __builtin_annot("movl %edx, "#x"(%esi) ");
 
 #define xmhfhwm_cpu_insn_movl_meax_eax(x) __builtin_annot("movl "#x"(%eax), %eax ");
+#define xmhfhwm_cpu_insn_movl_meax_ebx(x) __builtin_annot("movl "#x"(%eax), %ebx ");
 #define xmhfhwm_cpu_insn_movl_meax_ecx(x) __builtin_annot("movl "#x"(%eax), %ecx ");
 #define xmhfhwm_cpu_insn_movl_meax_edx(x) __builtin_annot("movl "#x"(%eax), %edx ");
+#define xmhfhwm_cpu_insn_movl_meax_edi(x) __builtin_annot("movl "#x"(%eax), %edi ");
+#define xmhfhwm_cpu_insn_movl_meax_esi(x) __builtin_annot("movl "#x"(%eax), %esi ");
+#define xmhfhwm_cpu_insn_movl_meax_ebp(x) __builtin_annot("movl "#x"(%eax), %ebp ");
+#define xmhfhwm_cpu_insn_movl_meax_esp(x) __builtin_annot("movl "#x"(%eax), %esp ");
 
 #define xmhfhwm_cpu_insn_movl_mebx_ebx(x) __builtin_annot("movl "#x"(%ebx), %ebx ");
 #define xmhfhwm_cpu_insn_movl_mecx_ecx(x) __builtin_annot("movl "#x"(%ecx), %ecx ");
