@@ -782,6 +782,31 @@ void geec_sentinel_main(slab_params_t *sp, void *caller_stack_frame){
 
 
 
+        case XMHFGEEC_SENTINEL_RET_INTERCEPT:{
+            if(!
+               (_xmhfhic_common_slab_info_table[sp->src_slabid].archdata.slabtype == XMHFGEEC_SLABTYPE_VfT_PROG_INTERCEPT &&
+                (_xmhfhic_common_slab_info_table[sp->dst_slabid].archdata.slabtype == XMHFGEEC_SLABTYPE_uVT_PROG_GUEST ||
+                 _xmhfhic_common_slab_info_table[sp->dst_slabid].archdata.slabtype == XMHFGEEC_SLABTYPE_uVU_PROG_GUEST ||
+                 _xmhfhic_common_slab_info_table[sp->dst_slabid].archdata.slabtype == XMHFGEEC_SLABTYPE_uVU_PROG_RICHGUEST
+                )
+               )){
+                _XDPRINTF_("GEEC_SENTINEL(ln:%u): intercept ret source slab not VfT_PROG_INTERCEPT. Halting!\n", __LINE__);
+                HALT();
+            }
+
+            CASM_FUNCCALL(_geec_sentinel_xfer_ret_from_intercept, sp->in_out_params);
+            _XDPRINTF_("GEEC_SENTINEL[ln:%u]: halting. should never be here!\n",
+                       __LINE__);
+            HALT();
+
+        }
+        break;
+
+
+
+
+
+
         default:
             _XDPRINTF_("GEEC_SENTINEL: unkown call type %x. Halting!\n", sp->slab_ctype);
             HALT();

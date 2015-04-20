@@ -352,6 +352,26 @@ CASM_FUNCDEF(u32, _geec_sentinel_xfer_vft_prog_to_uvt_uvu_prog_guest,
 void *noparam)
 
 
+
+
+CASM_FUNCDEF(void, _geec_sentinel_xfer_ret_from_intercept,
+{
+    xmhfhwm_cpu_insn_movl_mesp_eax(0x4);
+    xmhfhwm_cpu_insn_movl_meax_edi(0x0);
+    xmhfhwm_cpu_insn_movl_meax_esi(0x4);
+    xmhfhwm_cpu_insn_movl_meax_ebp(0x8);
+    xmhfhwm_cpu_insn_movl_meax_esp(0xC);
+    xmhfhwm_cpu_insn_movl_meax_ebx(0x10);
+    xmhfhwm_cpu_insn_movl_meax_edx(0x14);
+    xmhfhwm_cpu_insn_movl_meax_ecx(0x18);
+    xmhfhwm_cpu_insn_movl_meax_eax(0x1C);
+    xmhfhwm_cpu_insn_vmresume();
+    xmhfhwm_cpu_insn_hlt();
+},
+x86regs_t *r)
+
+
+
 CASM_FUNCDEF(void, __xmhfhic_trampoline_slabxfer_h2h,
 {
 

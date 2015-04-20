@@ -117,7 +117,7 @@ CASM_FUNCDECL(void _geec_sentinel_xfer_exception_to_vft_prog(u32 entry_point, vo
 CASM_FUNCDECL(void _geec_sentinel_xfer_ret_from_exception(x86vmx_exception_frame_t *exframe));
 CASM_FUNCDECL(u32 _geec_sentinel_xfer_vft_prog_to_uvt_uvu_prog_guest(void *noparam));
 CASM_FUNCDECL(void _geec_sentinel_xfer_intercept_to_vft_prog(u32 entry_point, void *caller_stack_frame));
-
+CASM_FUNCDECL(void _geec_sentinel_xfer_ret_from_intercept(x86regs_t *r));
 
 #endif // __ASSEMBLY__
 
