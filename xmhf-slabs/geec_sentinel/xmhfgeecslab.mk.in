@@ -17,7 +17,7 @@ export XMHF_SLAB_GLOBAL_SYMS := 						\
 	--globalize-symbol __xmhfhic_rtm_trampolinehandler 	\
 	--globalize-symbol _xmhfhic_common_slab_info_table 	\
 	--globalize-symbol __xmhfhic_rtm_trampoline_stub 	\
-	--globalize-symbol __xmhfhic_rtm_intercept_stub		\
+	--globalize-symbol _geec_sentinel_intercept_casmstub	\
 	--globalize-symbol __xmhf_exception_handler_0  \
 	--globalize-symbol __xmhf_exception_handler_1  \
 	--globalize-symbol __xmhf_exception_handler_2  \
