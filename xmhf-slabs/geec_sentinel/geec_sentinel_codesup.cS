@@ -319,6 +319,19 @@ CASM_FUNCDEF(void, _geec_sentinel_xfer_ret_from_exception,
 x86vmx_exception_frame_t *exframe)
 
 
+CASM_FUNCDEF(void, _geec_sentinel_xfer_intercept_to_vft_prog,
+{
+    xmhfhwm_cpu_insn_movl_mesp_eax(0x4);
+    xmhfhwm_cpu_insn_movl_mesp_edx(0x8);
+    xmhfhwm_cpu_insn_movl_edx_esp();
+    xmhfhwm_cpu_insn_pushl_esp();
+    xmhfhwm_cpu_insn_pushl_imm(0x0);
+    xmhfhwm_cpu_insn_jmpl_eax();
+    xmhfhwm_cpu_insn_hlt();
+},
+u32 entry_point, void *caller_stack_frame)
+
+
 //if we return, we had an error and we return the
 //corresponding error code
 CASM_FUNCDEF(u32, _geec_sentinel_xfer_vft_prog_to_uvt_uvu_prog_guest,

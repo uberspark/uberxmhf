@@ -717,7 +717,7 @@ void geec_sentinel_main(slab_params_t *sp, void *caller_stack_frame){
 
         case XMHFGEEC_SENTINEL_CALL_EXCEPTION:{
             if(!(_xmhfhic_common_slab_info_table[sp->dst_slabid].archdata.slabtype == XMHFGEEC_SLABTYPE_VfT_PROG_EXCEPTION)){
-                _XDPRINTF_("GEEC_SENTINEL(ln:%u): exception target slab not VfT_PROG. Halting!\n");
+                _XDPRINTF_("GEEC_SENTINEL(ln:%u): exception target slab not VfT_PROG. Halting!\n", __LINE__);
                 HALT();
             }
 
@@ -740,7 +740,7 @@ void geec_sentinel_main(slab_params_t *sp, void *caller_stack_frame){
             if(!
                (_xmhfhic_common_slab_info_table[sp->src_slabid].archdata.slabtype == XMHFGEEC_SLABTYPE_VfT_PROG_EXCEPTION &&
                 sp->dst_slabid == XMHF_HYP_SLAB_GEECSENTINEL)){
-                _XDPRINTF_("GEEC_SENTINEL(ln:%u): exception ret source slab not VfT_PROG_EXCEPTION. Halting!\n");
+                _XDPRINTF_("GEEC_SENTINEL(ln:%u): exception ret source slab not VfT_PROG_EXCEPTION. Halting!\n", __LINE__);
                 HALT();
             }
 
@@ -755,6 +755,27 @@ void geec_sentinel_main(slab_params_t *sp, void *caller_stack_frame){
         }
         break;
 
+
+
+
+
+
+
+        case XMHFGEEC_SENTINEL_CALL_INTERCEPT:{
+            if(!(_xmhfhic_common_slab_info_table[sp->dst_slabid].archdata.slabtype == XMHFGEEC_SLABTYPE_VfT_PROG_INTERCEPT)){
+                _XDPRINTF_("GEEC_SENTINEL(ln:%u): intercept target slab not VfT_PROG_INTERCEPT. Halting!\n", __LINE__);
+                HALT();
+            }
+
+            CASM_FUNCCALL(_geec_sentinel_xfer_intercept_to_vft_prog,
+              _xmhfhic_common_slab_info_table[sp->dst_slabid].entrystub,
+              caller_stack_frame);
+            _XDPRINTF_("GEEC_SENTINEL[ln:%u]: halting. should never be here!\n",
+                       __LINE__);
+            HALT();
+
+        }
+        break;
 
 
 
