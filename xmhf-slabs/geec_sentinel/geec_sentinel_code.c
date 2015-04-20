@@ -511,7 +511,19 @@ void __xmhfhic_rtm_trampoline(u64 hic_calltype, slab_input_params_t *iparams, u6
 // sentinel stubs, invoked by their CASM counterparts
 //////
 
-
+/*static void _geec_sentinel_dump_exframe(x86vmx_exception_frame_t *exframe){
+    //dump relevant info
+    _XDPRINTF_("%s: [START]\n\n", __func__);
+    _XDPRINTF_("exception %x\n", exframe->vector);
+    _XDPRINTF_("errorcode=0x%08x\n", exframe->error_code);
+    _XDPRINTF_("CS:EIP:EFLAGS = 0x%08x:0x%08x:0x%08x\n", exframe->orig_cs, exframe->orig_rip, exframe->orig_rflags);
+    _XDPRINTF_("SS:ESP = 0x%08x:0x%08x\n", exframe->orig_ss, exframe->orig_rsp);
+    _XDPRINTF_("EAX=0x%08x, EBX=0x%08x\n", exframe->eax, exframe->ebx);
+    _XDPRINTF_("ECX=0x%08x, EDX=0x%08x\n", exframe->ecx, exframe->edx);
+    _XDPRINTF_("ESI=0x%08x, EDI=0x%08x\n", exframe->esi, exframe->edi);
+    _XDPRINTF_("EBP=0x%08x, ESP=0x%08x\n", exframe->ebp, exframe->esp);
+    _XDPRINTF_("%s: [END]\n\n", __func__);
+}*/
 
 ////// exceptions
 
@@ -520,6 +532,7 @@ void _geec_sentinel_exception_stub(x86vmx_exception_frame_t *exframe){
 
     memset(&spl, 0, sizeof(spl));
 
+
     spl.slab_ctype = XMHFGEEC_SENTINEL_CALL_EXCEPTION;
     spl.src_slabid = XMHF_HYP_SLAB_GEECSENTINEL; //XXX: TODO: grab src_slabid based on exframe->orig_rip
     spl.dst_slabid = XMHF_HYP_SLAB_XCEXHUB;
@@ -527,7 +540,7 @@ void _geec_sentinel_exception_stub(x86vmx_exception_frame_t *exframe){
     memcpy(&spl.in_out_params[0], exframe,
            sizeof(x86vmx_exception_frame_t));
 
-
+    //_geec_sentinel_dump_exframe(spl.in_out_params);
     geec_sentinel_main(&spl, &spl);
 
 /*    //call xcexhub
@@ -810,6 +823,8 @@ void geec_sentinel_main(slab_params_t *sp, void *caller_stack_frame){
                 _XDPRINTF_("GEEC_SENTINEL(ln:%u): exception ret source slab not VfT_PROG_EXCEPTION. Halting!\n");
                 HALT();
             }
+
+            //_geec_sentinel_dump_exframe(sp->in_out_params);
 
             CASM_FUNCCALL(_geec_sentinel_xfer_ret_from_exception,
                 sp->in_out_params);
