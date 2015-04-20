@@ -617,7 +617,7 @@ void geec_sentinel_main(slab_params_t *sp, void *caller_stack_frame){
                 break;
 
                 default:
-                    _XDPRINTF_("GEEC_SENTINEL(ln:%u): Unrecognized transition. Halting!", __LINE__);
+                    _XDPRINTF_("GEEC_SENTINEL(ln:%u): Unrecognized transition. Halting!\n", __LINE__);
                     HALT();
             }
 
