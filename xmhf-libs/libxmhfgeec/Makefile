@@ -27,6 +27,7 @@ all: $(OBJECTS)
 	cp $(LIBXMHFGEEC_OBJECTS_DIR)/xmhfgeec_slabmapdef.o .
 	cp $(LIBXMHFGEEC_OBJECTS_DIR)/xmhfgeec_tprogslab_stubs.o .
 	cp $(LIBXMHFGEEC_OBJECTS_DIR)/xmhfgeec_vft_prog_exception_stubs.o .
+	cp $(LIBXMHFGEEC_OBJECTS_DIR)/xmhfgeec_vft_prog_intercept_stubs.o .
 
 
 $(THE_ARCHIVE): $(OBJECTS)
