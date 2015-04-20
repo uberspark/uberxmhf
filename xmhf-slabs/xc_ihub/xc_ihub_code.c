@@ -77,7 +77,6 @@ void slab_main(slab_params_t *sp){
 
 	_XDPRINTF_("XCIHUB[%u]: Got control: src=%u, dst=%u, esp=%08x\n",
                 (u16)sp->cpuid, sp->src_slabid, sp->dst_slabid, CASM_FUNCCALL(read_esp,CASM_NOPARAM));
-    HALT();
 
     spl.cpuid = sp->cpuid;
     spl.src_slabid = XMHF_HYP_SLAB_XCIHUB;
