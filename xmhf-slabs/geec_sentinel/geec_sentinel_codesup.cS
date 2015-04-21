@@ -320,3 +320,16 @@ CASM_FUNCDEF(void, _geec_sentinel_xfer_vft_prog_to_uvt_uvu_prog,
 
 },
 u32 entry_point, void *callee_stack_frame)
+
+
+CASM_FUNCDEF(void, _geec_sentinel_xfer_ret_vft_prog_to_uvt_uvu_prog,
+{
+    xmhfhwm_cpu_insn_movl_mesp_eax(0x4);
+    xmhfhwm_cpu_insn_movl_eax_esp();
+    xmhfhwm_cpu_insn_popl_ebx();
+    xmhfhwm_cpu_insn_popl_esi();
+    xmhfhwm_cpu_insn_popl_edi();
+    xmhfhwm_cpu_insn_popl_ebp();
+    xmhfhwm_cpu_insn_ret();
+},
+void *caller_stack_frame)
