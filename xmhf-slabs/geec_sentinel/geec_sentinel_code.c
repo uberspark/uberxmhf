@@ -648,11 +648,80 @@ static void _geec_sentinel_transition_vft_prog_to_uvt_uvu_prog(slab_params_t *sp
 
 
 
+/*
+
+            __xmhfhic_safestack_element_t elem;
+
+            //pop tuple from safe stack
+            __xmhfhic_safepop(cpuid, &elem.src_slabid, &elem.dst_slabid, &elem.hic_calltype, &elem.return_address,
+                                &elem.oparams, &elem.newoparams, &elem.oparams_size, &elem.iparams_size);
+
+            //_XDPRINTF_("%s[%u]: safepop: {cpuid: %016llx, srcsid: %u, dstsid: %u, ctype: %x, ra=%016llx, \
+            //           op=%016llx, newop=%016llx, opsize=%u\n",
+            //        __func__, (u32)cpuid,
+            //           cpuid, elem.src_slabid, elem.dst_slabid, elem.hic_calltype, elem.return_address,
+            //           elem.oparams, elem.newoparams, elem.oparams_size);
+
+            //check to ensure this SLABRET is paired with a prior SLABCALL
+            if ( !((elem.src_slabid == dst_slabid) && (elem.dst_slabid == src_slabid) && (elem.hic_calltype ==XMHF_HIC_SLABCALL)) ){
+                _XDPRINTF_("%s[%u]: Fatal: SLABRET does not match prior SLABCALL. Halting!\n",
+                    __func__, (u32)cpuid);
+                HALT();
+            }
+
+
+            #if !defined (__XMHF_VERIFICATION__)
+            //copy newoparams to internal buffer __paramsbuffer
+            memcpy(&__paramsbuffer, elem.newoparams, (elem.oparams_size > 1024 ? 1024 : elem.oparams_size) );
+            #endif
+
+            //adjust slab stack by popping off iparams_size and oparams_size
+             _xmhfhic_common_slab_info_table[src_slabid].archdata.slabtos[(u32)cpuid] += (elem.iparams_size+elem.oparams_size);
+
+            //switch to destination slab page tables
+ CASM_FUNCCALL(write_cr3,_xmhfhic_common_slab_info_table[dst_slabid].archdata.mempgtbl_cr3);
+
+
+            #if !defined (__XMHF_VERIFICATION__)
+            //copy internal buffer __paramsbuffer to oparams
+            memcpy(elem.oparams, &__paramsbuffer, (elem.oparams_size > 1024 ? 1024 : elem.oparams_size) );
+            #endif
+
+            //return back to slab
+            //sysexitq(elem.return_address, _xmhfhic_common_slab_info_table[elem.src_slabid].archdata.slabtos[(u32)cpuid]);
+            _XDPRINTF_("%s: Halting, sysexit harness not tied in yet!\n", __func__);
+            HALT();
+        }
+        break;
+
+*/
+
+
+
 
 static void _geec_sentinel_transition_ret_vft_prog_to_uvt_uvu_prog(slab_params_t *sp, void *caller_stack_frame){
     slab_params_t *dst_sp;
+    __xmhfhic_safestack_element_t elem;
 
     _XDPRINTF_("%s[%u]: src=%u, dst=%u\n", __func__, (u16)sp->cpuid, sp->src_slabid, sp->dst_slabid);
+
+    //pop tuple from safe stack
+    __xmhfhic_safepop((u16)sp->cpuid, &elem.src_slabid, &elem.dst_slabid, &elem.hic_calltype, &elem.caller_stack_frame,
+                        &elem.sp);
+
+    _XDPRINTF_("%s[%u]: safepop: {cpuid: %u, src: %u, dst: %u, ctype: 0x%x, \
+               csf=0x%x, sp=0x%x \n",
+            __func__, (u16)sp->cpuid,
+               (u16)sp->cpuid, elem.src_slabid, elem.dst_slabid, elem.hic_calltype,
+               elem.caller_stack_frame, elem.sp);
+
+    //check to ensure this return is paired with a prior call
+    if ( !((elem.src_slabid == sp->dst_slabid) && (elem.dst_slabid == sp->src_slabid) &&
+           (elem.hic_calltype == XMHFGEEC_SENTINEL_CALL_VfT_PROG_TO_VfT_uVU_uVT_PROG_uVU_uVT_PROG_GUEST)) ){
+        _XDPRINTF_("%s[ln:%u]: Fatal: ret does not match prior call. Halting!\n",
+            __func__, __LINE__);
+        HALT();
+    }
 
 
     _XDPRINTF_("%s[%u]: wip. halting!\n", __func__, (u16)sp->cpuid);
