@@ -74,6 +74,7 @@ CASM_FUNCDECL(void _geec_sentinel_sysenter_casmstub(void *noparam));
 
 void _geec_sentinel_intercept_stub(x86regs_t *r);
 void _geec_sentinel_exception_stub(x86vmx_exception_frame_t *exframe);
+void _geec_sentinel_sysenter_stub(slab_params_t *sp);
 
 
 CASM_FUNCDECL(void _geec_sentinel_xfer_vft_prog_to_vft_prog(u32 entry_point, void *caller_stack_frame));

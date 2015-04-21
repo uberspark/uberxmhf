@@ -173,6 +173,8 @@ void *noparam)
 
 CASM_FUNCDEF(void, _geec_sentinel_sysenter_casmstub,
 {
+    xmhfhwm_cpu_insn_pushl_ecx();
+    xmhfhwm_cpu_insn_call(_geec_sentinel_sysenter_stub);
     xmhfhwm_cpu_insn_hlt();
 },
 void *noparam)

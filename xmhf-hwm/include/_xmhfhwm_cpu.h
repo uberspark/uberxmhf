@@ -696,6 +696,7 @@ typedef struct __tss {
 #define xmhfhwm_cpu_insn_pushl_esi() __builtin_annot("pushl %esi ");
 #define xmhfhwm_cpu_insn_pushl_eax() __builtin_annot("pushl %eax ");
 #define xmhfhwm_cpu_insn_pushl_ebx() __builtin_annot("pushl %ebx ");
+#define xmhfhwm_cpu_insn_pushl_ecx() __builtin_annot("pushl %ecx ");
 #define xmhfhwm_cpu_insn_pushl_edx() __builtin_annot("pushl %edx ");
 #define xmhfhwm_cpu_insn_pushl_esp() __builtin_annot("pushl %esp ");
 #define xmhfhwm_cpu_insn_pushl_mesp(x) __builtin_annot("pushl "#x"(%esp) ");
