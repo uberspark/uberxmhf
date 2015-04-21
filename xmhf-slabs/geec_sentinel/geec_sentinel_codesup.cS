@@ -374,9 +374,16 @@ x86regs_t *r)
 
 CASM_FUNCDEF(void, _geec_sentinel_xfer_vft_prog_to_uvt_uvu_prog,
 {
-    xmhfhwm_cpu_insn_movl_mesp_edx(0x4);    //edx = entry_point
-    xmhfhwm_cpu_insn_movl_mesp_ecx(0x8);    //edx = callee_stack_frame
-    xmhfhwm_cpu_insn_sysexit();             //sysexit to ring-3
+    //xmhfhwm_cpu_insn_movl_mesp_edx(0x4);    //edx = entry_point
+    //xmhfhwm_cpu_insn_movl_mesp_ecx(0x8);    //edx = callee_stack_frame
+    //xmhfhwm_cpu_insn_sysexit();             //sysexit to ring-3
+    //xmhfhwm_cpu_insn_hlt();
+
+    xmhfhwm_cpu_insn_movl_mesp_eax(0x4);
+    xmhfhwm_cpu_insn_movl_mesp_edx(0x8);
+    xmhfhwm_cpu_insn_movl_edx_esp();
+    xmhfhwm_cpu_insn_jmpl_eax();
     xmhfhwm_cpu_insn_hlt();
+
 },
 u32 entry_point, void *callee_stack_frame)
