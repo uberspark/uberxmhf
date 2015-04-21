@@ -162,7 +162,7 @@ void _geec_sentinel_intercept_stub(x86regs_t *r){
 ////// sysenter
 
 //in general sp->xxx is untrusted and must be sanity checked
-void _geec_sentinel_sysenter_stub(slab_params_t *sp){
+void _geec_sentinel_sysenter_stub(slab_params_t *sp, void *caller_stack_frame){
 
     //sanity check sp
     sp->cpuid = __xmhfhic_x86vmx_cpuidtable[xmhf_baseplatform_arch_x86_getcpulapicid()];
@@ -178,7 +178,7 @@ void _geec_sentinel_sysenter_stub(slab_params_t *sp){
     _XDPRINTF_("%s: sp=%x, cpuid=%u, src=%u, dst=%u, ctype=%x\n", __func__,
                (u32)sp, (u16)sp->cpuid, sp->src_slabid, sp->dst_slabid, sp->slab_ctype);
 
-    geec_sentinel_main(sp, sp);
+    geec_sentinel_main(sp, caller_stack_frame);
 }
 
 

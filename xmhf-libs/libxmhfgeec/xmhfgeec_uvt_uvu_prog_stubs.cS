@@ -76,9 +76,11 @@ void *noparam)
 CASM_FUNCDEF(void, __slab_calltrampolinenew,
 {
     xmhfhwm_cpu_insn_movl_mesp_eax(0x4);
-    xmhfhwm_cpu_insn_movl_imm_meax(XMHFGEEC_SENTINEL_CALL_VfT_PROG_TO_VfT_uVU_uVT_PROG_uVU_uVT_PROG_GUEST, 0x0);
-    xmhfhwm_cpu_insn_movl_imm_eax(0x02000000);
-    xmhfhwm_cpu_insn_jmpl_eax();
+    xmhfhwm_cpu_insn_movl_imm_meax(XMHFGEEC_SENTINEL_CALL_uVT_uVU_PROG_TO_VfTPROG, 0x0);
+    xmhfhwm_cpu_insn_movl_esp_edx();        //caller_stack_frame
+    xmhfhwm_cpu_insn_movl_mesp_ecx(0x4);    //slab_params_t *
+    xmhfhwm_cpu_insn_sysenter();
+    xmhfhwm_cpu_insn_hlt();
 },
 slab_params_t *sp)
 
