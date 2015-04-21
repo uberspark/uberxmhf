@@ -355,3 +355,22 @@ CASM_FUNCDEF(void, _geec_sentinel_xfer_call_uvt_uvu_prog_to_vft_prog,
     xmhfhwm_cpu_insn_hlt();
 },
 u32 entry_point, void *callee_stack_frame)
+
+
+CASM_FUNCDEF(void, _geec_sentinel_xfer_ret_uvt_uvu_prog_to_vft_prog,
+{
+    //caller_stack_frame:
+    // ebx, esi, edi, ebp, return-eip
+    xmhfhwm_cpu_insn_movl_mesp_eax(0x4);
+    xmhfhwm_cpu_insn_movl_eax_esp();
+    xmhfhwm_cpu_insn_popl_ebx();
+    xmhfhwm_cpu_insn_popl_esi();
+    xmhfhwm_cpu_insn_popl_edi();
+    xmhfhwm_cpu_insn_popl_ebp();
+
+    xmhfhwm_cpu_insn_popl_edx(); //edx = return-eip
+    xmhfhwm_cpu_insn_movl_esp_ecx(); //ecx = stack pointer
+    xmhfhwm_cpu_insn_sysexit();             //sysexit to ring-3
+    xmhfhwm_cpu_insn_hlt();
+},
+void *caller_stack_frame)
