@@ -349,6 +349,19 @@ static void _geec_sentinel_transition_call_uvt_uvu_prog_to_vft_prog(slab_params_
 
 
 
+static void _geec_sentinel_transition_ret_uvt_uvu_prog_to_vft_prog(slab_params_t *sp, void *caller_stack_frame){
+
+    _XDPRINTF_("%s[%u]: src=%u, dst=%u\n", __func__, (u16)sp->cpuid, sp->src_slabid, sp->dst_slabid);
+
+
+
+    _XDPRINTF_("%s[%u]: wip. halting!\n", __func__, (u16)sp->cpuid);
+    HALT();
+}
+
+
+
+
 /////
 // sentinel hub
 /////
@@ -444,6 +457,14 @@ void geec_sentinel_main(slab_params_t *sp, void *caller_stack_frame){
         break;
 
 
+
+
+        case XMHFGEEC_SENTINEL_RET_uVT_uVU_PROG_TO_VfT_PROG:{
+            _geec_sentinel_transition_ret_uvt_uvu_prog_to_vft_prog(sp, caller_stack_frame);
+            _XDPRINTF_("GEEC_SENTINEL[ln:%u]: halting. should never be here!\n", __LINE__);
+            HALT();
+        }
+        break;
 
 
 
