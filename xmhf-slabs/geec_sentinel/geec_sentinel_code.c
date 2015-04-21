@@ -729,7 +729,7 @@ static void _geec_sentinel_transition_ret_vft_prog_to_uvt_uvu_prog(slab_params_t
 
     //return back to VfT_PROG slab
     CASM_FUNCCALL(_geec_sentinel_xfer_ret_vft_prog_to_uvt_uvu_prog,
-                      caller_stack_frame);
+                      elem.caller_stack_frame);
 
 
     _XDPRINTF_("%s[%u]: wip. halting!\n", __func__, (u16)sp->cpuid);
