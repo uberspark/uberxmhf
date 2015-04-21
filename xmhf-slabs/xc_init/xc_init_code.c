@@ -118,9 +118,12 @@ void slab_main(slab_params_t *sp){
         spl.dst_slabid = XMHF_HYP_SLAB_XC_TESTSLAB;
         spl.cpuid = 0;
         spl.in_out_params[0] = 0xF00DDEAD;
+        _XDPRINTF_("XC_INIT[%u]: proceeding to call test slab, esp=%x\n", (u16)sp->cpuid, CASM_FUNCCALL(read_esp,CASM_NOPARAM));
         XMHF_SLAB_CALLNEW(&spl);
+        _XDPRINTF_("XC_INIT[%u]: came back from test slab, esp=%x\n", (u16)sp->cpuid, CASM_FUNCCALL(read_esp,CASM_NOPARAM));
         _XDPRINTF_("XC_INIT[%u]: called test slab, return value=%x\n",
                    (u16)sp->cpuid, spl.in_out_params[1]);
+        HALT();
     }
 
 
