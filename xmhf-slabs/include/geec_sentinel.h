@@ -63,15 +63,12 @@
 #ifndef __ASSEMBLY__
 
 typedef struct {
-    u64 src_slabid;
-    u64 dst_slabid;
-    u64 hic_calltype;
-    u64 return_address;
-    void *oparams;
-    void *newoparams;
-    u64 oparams_size;
-    u64 iparams_size;
-} __xmhfhic_safestack_element_t;
+    u32 src_slabid;
+    u32 dst_slabid;
+    u32 hic_calltype;
+    void *caller_stack_frame;
+    slab_params_t *sp;
+}__attribute__((packed)) __xmhfhic_safestack_element_t;
 
 typedef void (*FPSLABMAIN)(slab_params_t *sp);
 
