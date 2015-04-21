@@ -77,12 +77,12 @@ CASM_FUNCDEF(void, __slab_calltrampolinenew,
 {
     xmhfhwm_cpu_insn_movl_mesp_eax(0x4);
     xmhfhwm_cpu_insn_movl_imm_meax(XMHFGEEC_SENTINEL_CALL_uVT_uVU_PROG_TO_VfT_PROG, 0x0);
+    xmhfhwm_cpu_insn_movl_mesp_ecx(0x4);    //slab_params_t *
     xmhfhwm_cpu_insn_pushl_ebp();
     xmhfhwm_cpu_insn_pushl_edi();
     xmhfhwm_cpu_insn_pushl_esi();
     xmhfhwm_cpu_insn_pushl_ebx();
     xmhfhwm_cpu_insn_movl_esp_edx();        //caller_stack_frame
-    xmhfhwm_cpu_insn_movl_mesp_ecx(0x4);    //slab_params_t *
     xmhfhwm_cpu_insn_sysenter();
     xmhfhwm_cpu_insn_hlt();
 },

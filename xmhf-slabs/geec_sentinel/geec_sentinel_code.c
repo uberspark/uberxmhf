@@ -301,8 +301,49 @@ static void _geec_sentinel_transition_call_uvt_uvu_prog_to_vft_prog(slab_params_
     slab_params_t *dst_sp;
 
     _XDPRINTF_("%s[%u]: src=%u, dst=%u\n", __func__, (u16)sp->cpuid, sp->src_slabid, sp->dst_slabid);
-    HALT();
 
+    //save caller stack frame address (esp)
+    _XDPRINTF_("%s[%u]: src tos before=%x\n", __func__, (u16)sp->cpuid, _xmhfhic_common_slab_info_table[sp->src_slabid].archdata.slabtos[(u16)sp->cpuid]);
+    _xmhfhic_common_slab_info_table[sp->src_slabid].archdata.slabtos[(u16)sp->cpuid] =
+        (u32)caller_stack_frame;
+    _XDPRINTF_("%s[%u]: src tos after=%x\n", __func__, (u16)sp->cpuid, _xmhfhic_common_slab_info_table[sp->src_slabid].archdata.slabtos[(u16)sp->cpuid]);
+
+
+    //make space on destination slab stack for slab_params_t and copy parameters
+    {
+        _XDPRINTF_("%s[%u]: dst tos before=%x\n", __func__, (u16)sp->cpuid, _xmhfhic_common_slab_info_table[sp->dst_slabid].archdata.slabtos[(u16)sp->cpuid]);
+        _xmhfhic_common_slab_info_table[sp->dst_slabid].archdata.slabtos[(u16)sp->cpuid] -= sizeof(slab_params_t);
+        _XDPRINTF_("%s[%u]: dst tos after=%x\n", __func__, (u16)sp->cpuid, _xmhfhic_common_slab_info_table[sp->dst_slabid].archdata.slabtos[(u16)sp->cpuid]);
+        dst_sp = (slab_params_t *) _xmhfhic_common_slab_info_table[sp->dst_slabid].archdata.slabtos[(u16)sp->cpuid];
+        _XDPRINTF_("%s[%u]: copying params to dst_sp=%x from sp=%x\n", __func__, (u16)sp->cpuid,
+                   (u32)dst_sp, (u32)sp);
+        memcpy(dst_sp, sp, sizeof(slab_params_t));
+    }
+
+
+    //push src_slabid, dst_slabid, hic_calltype, caller_stack_frame and sp
+    //tuple to safe stack
+    _XDPRINTF_("%s[%u]: safepush: {cpuid: %u, src: %u, dst: %u, ctype: 0x%x, \
+               csf=0x%x, sp=0x%x \n",
+            __func__, (u16)sp->cpuid,
+               (u16)sp->cpuid, sp->src_slabid, sp->dst_slabid, sp->slab_ctype,
+               caller_stack_frame, sp);
+
+    __xmhfhic_safepush((u16)sp->cpuid, sp->src_slabid, sp->dst_slabid,
+                       sp->slab_ctype, caller_stack_frame, sp);
+
+
+    _XDPRINTF_("%s[%u]: entry=%x, dst_sp=%x, proceeding to xfer...\n", __func__,
+               (u16)sp->cpuid, _xmhfhic_common_slab_info_table[sp->dst_slabid].entrystub, (u32)dst_sp);
+
+
+    CASM_FUNCCALL(_geec_sentinel_xfer_call_uvt_uvu_prog_to_vft_prog,
+                _xmhfhic_common_slab_info_table[sp->dst_slabid].entrystub,
+                                  dst_sp);
+
+
+    _XDPRINTF_("%s[%u]: wip. halting!\n", __func__, (u16)sp->cpuid);
+    HALT();
 }
 
 
