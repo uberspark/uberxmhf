@@ -556,6 +556,7 @@ static void __xmhfhic_x86vmx_initializeTSS(void){
             tss->rsp0 = (u64) ( &__xmhfhic_x86vmx_tss_stack[i] + sizeof(__xmhfhic_x86vmx_tss_stack[0]) );
             */
             tss->esp0 = (u32) ( &__xmhfhic_x86vmx_tss_stack[i] + sizeof(__xmhfhic_x86vmx_tss_stack[0]) );
+            tss->ss0 = __DS_CPL0;
 		}
 }
 

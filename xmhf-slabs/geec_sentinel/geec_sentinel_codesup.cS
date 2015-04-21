@@ -53,8 +53,9 @@
 #include <xmhf-debug.h>
 
 #include <xmhfgeec.h>
-#include <geec_sentinel.h>
 
+#include <geec_sentinel.h>
+#include <geec_primesmp.h>
 
 //////
 // sentinel entry point
@@ -92,6 +93,9 @@ slab_params_t *sp)
     { \
         xmhfhwm_cpu_insn_pushl_imm(vector); \
         xmhfhwm_cpu_insn_pushal(); \
+        xmhfhwm_cpu_insn_movw_imm_ax(__DS_CPL0); \
+        xmhfhwm_cpu_insn_movw_ax_ds();\
+        xmhfhwm_cpu_insn_movw_ax_es();\
         xmhfhwm_cpu_insn_pushl_esp(); \
         xmhfhwm_cpu_insn_call(_geec_sentinel_exception_stub); \
         xmhfhwm_cpu_insn_hlt(); \
@@ -104,6 +108,9 @@ slab_params_t *sp)
 		xmhfhwm_cpu_insn_pushl_imm(0x0); \
         xmhfhwm_cpu_insn_pushl_imm(vector); \
         xmhfhwm_cpu_insn_pushal(); \
+        xmhfhwm_cpu_insn_movw_imm_ax(__DS_CPL0); \
+        xmhfhwm_cpu_insn_movw_ax_ds();\
+        xmhfhwm_cpu_insn_movw_ax_es();\
         xmhfhwm_cpu_insn_pushl_esp(); \
         xmhfhwm_cpu_insn_call(_geec_sentinel_exception_stub); \
         xmhfhwm_cpu_insn_hlt(); \
