@@ -564,7 +564,16 @@ void _geec_sentinel_intercept_stub(x86regs_t *r){
 }
 
 
+static void _geec_sentinel_transition_vft_prog_to_uvt_uvu_prog(slab_params_t *sp){
 
+/*                    CASM_FUNCCALL(_geec_sentinel_xfer_vft_prog_to_vft_prog,
+                                  _xmhfhic_common_slab_info_table[sp->dst_slabid].entrystub,
+                                  caller_stack_frame);
+*/
+
+
+
+}
 
 
 
@@ -591,9 +600,7 @@ void geec_sentinel_main(slab_params_t *sp, void *caller_stack_frame){
 
                 case XMHFGEEC_SLABTYPE_uVT_PROG:
                 case XMHFGEEC_SLABTYPE_uVU_PROG:{
-                    CASM_FUNCCALL(_geec_sentinel_xfer_vft_prog_to_vft_prog,
-                                  _xmhfhic_common_slab_info_table[sp->dst_slabid].entrystub,
-                                  caller_stack_frame);
+                    _geec_sentinel_transition_vft_prog_to_uvt_uvu_prog(sp);
                     _XDPRINTF_("GEEC_SENTINEL[ln:%u]: halting. should never be here!\n",
                                __LINE__);
                     HALT();
