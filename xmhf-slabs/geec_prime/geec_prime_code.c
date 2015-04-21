@@ -1192,6 +1192,8 @@ static void _geec_prime_populate_slab_pagetables_uVT_uVU_prog(u32 slabid){
 	u64 flags;
     slab_params_t spl;
     u32 i;
+    u32 spatype;
+    bool spa_sameslab=false;
     xmhfgeec_uapi_slabmempgtbl_setentryforpaddr_params_t *setentryforpaddrp =
         (xmhfgeec_uapi_slabmempgtbl_setentryforpaddr_params_t *)spl.in_out_params;
 
@@ -1200,49 +1202,28 @@ static void _geec_prime_populate_slab_pagetables_uVT_uVU_prog(u32 slabid){
     spl.cpuid = 0; //XXX: fixme, need to plug in BSP cpuid
 
 
-    for(i=0; i < XMHF_HIC_MAX_SLABS; i++){
-        flags = (_PAGE_PSE | _PAGE_PRESENT);
 
-        if(i == slabid)
-            flags |= _PAGE_USER;
+	for(gpa=0; gpa < ADDR_4GB; gpa += PAGE_SIZE_2M){
+        spatype = _geec_prime_slab_getspatype(slabid, gpa);
+        if(spatype & _SLAB_SPATYPE_MASK_SAMESLAB)
+            spa_sameslab = true;
+        else
+            spa_sameslab = false;
 
-        //code=rx, 2M mapping
-        for(gpa = _xmhfhic_common_slab_info_table[i].slab_physmem_extents[0].addr_start;
-            gpa < _xmhfhic_common_slab_info_table[i].slab_physmem_extents[0].addr_end;
-            gpa += PAGE_SIZE_2M){
-
-            setentryforpaddrp->uapiphdr.uapifn = XMHFGEEC_UAPI_SLABMEMPGTBL_SETENTRYFORPADDR;
-            setentryforpaddrp->dst_slabid = slabid;
-            setentryforpaddrp->gpa = gpa;
-            setentryforpaddrp->entry = pae_make_pde_big(gpa, flags);
-            XMHF_SLAB_CALLNEW(&spl);
+        flags = _geec_prime_slab_getptflagsforspa_pae(slabid, (u32)gpa);
+        if(spa_sameslab){
+            flags |= (_PAGE_USER);
+            _XDPRINTF_("%s: setting USER for addr=%x in slab=%u, flags=%016llx\n", __func__,
+                       (u32)gpa, slabid, flags);
         }
-
-        //data,stack,dmadata=rw, 2M mapping
-        for(gpa = _xmhfhic_common_slab_info_table[slabid].slab_physmem_extents[1].addr_start;
-            gpa < _xmhfhic_common_slab_info_table[slabid].slab_physmem_extents[3].addr_end;
-            gpa += PAGE_SIZE_2M){
-
-            flags |= (_PAGE_RW);
-            flags |= (_PAGE_NX);
-            setentryforpaddrp->uapiphdr.uapifn = XMHFGEEC_UAPI_SLABMEMPGTBL_SETENTRYFORPADDR;
-            setentryforpaddrp->dst_slabid = slabid;
-            setentryforpaddrp->gpa = gpa;
-            setentryforpaddrp->entry = pae_make_pde_big(gpa, flags);
-            XMHF_SLAB_CALLNEW(&spl);
-        }
-
-    }
-
-
-#if defined (__DEBUG_SERIAL__)
-        flags = (_PAGE_PRESENT | _PAGE_PSE | _PAGE_RW);
         setentryforpaddrp->uapiphdr.uapifn = XMHFGEEC_UAPI_SLABMEMPGTBL_SETENTRYFORPADDR;
         setentryforpaddrp->dst_slabid = slabid;
-        setentryforpaddrp->gpa = ADDR_LIBXMHFDEBUGDATA;
-        setentryforpaddrp->entry = pae_make_pde_big(ADDR_LIBXMHFDEBUGDATA, flags);
+        setentryforpaddrp->gpa = gpa;
+        setentryforpaddrp->entry = pae_make_pde_big(gpa, flags);
         XMHF_SLAB_CALLNEW(&spl);
-#endif
+
+	}
+
 
 }
 

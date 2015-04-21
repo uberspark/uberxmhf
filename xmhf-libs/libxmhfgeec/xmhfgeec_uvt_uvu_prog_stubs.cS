@@ -45,7 +45,7 @@
  */
 
 /*
- * slab stubs for program slabs
+ * slab stubs for unverified program slabs
  * author: amit vasudevan (amitvasudevan@acm.org)
 */
 
@@ -56,35 +56,35 @@
 
 CASM_FUNCDEF_FULL(.slab_entrystub, 1, void, _slab_entrystub,
 {
-	xmhfhwm_cpu_insn_pushl_mesp(0x4); //push slab_params_t *
-	xmhfhwm_cpu_insn_call(slab_main);
-	xmhfhwm_cpu_insn_addl_imm_esp(0x4); //remove slab_params_t *
-
-    xmhfhwm_cpu_insn_movl_mesp_eax(0x4);
-    xmhfhwm_cpu_insn_cmpl_imm_meax(XMHFGEEC_SENTINEL_CALL_uVT_uVU_PROG_TO_VfT_PROG,0x0);
-    xmhfhwm_cpu_insn_je(call_uvt_uvu_prog_to_vft_prog);
-
-    xmhfhwm_cpu_insn_ret();
-    xmhfhwm_cpu_insn_hlt();
-
-    CASM_LABEL(call_uvt_uvu_prog_to_vft_prog)
-    xmhfhwm_cpu_insn_movl_imm_meax(XMHFGEEC_SENTINEL_RET_uVT_uVU_PROG_TO_VfT_PROG, 0x0);
+	xmhfhwm_cpu_insn_pushl_esp();
+	xmhfhwm_cpu_insn_call(slab_main);   //invoke slab_main
+    xmhfhwm_cpu_insn_addl_imm_esp(0x4);
+    xmhfhwm_cpu_insn_movl_esp_eax();
+    xmhfhwm_cpu_insn_movl_imm_meax(XMHFGEEC_SENTINEL_RET_VfT_PROG_TO_uVT_uVU_PROG, 0x0);
     xmhfhwm_cpu_insn_movl_meax_edx(0x4); //edx = src_slabid
     xmhfhwm_cpu_insn_movl_meax_ecx(0x8); //ecx = dst_slabid
     xmhfhwm_cpu_insn_movl_ecx_meax(0x4); //[eax+4] = src_slabid = dst_slabid
     xmhfhwm_cpu_insn_movl_edx_meax(0x8); //[eax+8] = dst_slabid = src_slabid
-    xmhfhwm_cpu_insn_movl_imm_eax(0x02000000);
-    xmhfhwm_cpu_insn_jmpl_eax();
+    xmhfhwm_cpu_insn_movl_esp_ecx();
+    xmhfhwm_cpu_insn_xorl_edx_edx();
+    xmhfhwm_cpu_insn_sysenter();
     xmhfhwm_cpu_insn_hlt();
 },
 void *noparam)
 
+//XXX: TODO: need to revise with sysenter
 CASM_FUNCDEF(void, __slab_calltrampolinenew,
 {
     xmhfhwm_cpu_insn_movl_mesp_eax(0x4);
-    xmhfhwm_cpu_insn_movl_imm_meax(XMHFGEEC_SENTINEL_CALL_VfT_PROG_TO_VfT_uVU_uVT_PROG_uVU_uVT_PROG_GUEST, 0x0);
-    xmhfhwm_cpu_insn_movl_imm_eax(0x02000000);
-    xmhfhwm_cpu_insn_jmpl_eax();
+    xmhfhwm_cpu_insn_movl_imm_meax(XMHFGEEC_SENTINEL_CALL_uVT_uVU_PROG_TO_VfT_PROG, 0x0);
+    xmhfhwm_cpu_insn_movl_mesp_ecx(0x4);    //slab_params_t *
+    xmhfhwm_cpu_insn_pushl_ebp();
+    xmhfhwm_cpu_insn_pushl_edi();
+    xmhfhwm_cpu_insn_pushl_esi();
+    xmhfhwm_cpu_insn_pushl_ebx();
+    xmhfhwm_cpu_insn_movl_esp_edx();        //caller_stack_frame
+    xmhfhwm_cpu_insn_sysenter();
+    xmhfhwm_cpu_insn_hlt();
 },
 slab_params_t *sp)
 

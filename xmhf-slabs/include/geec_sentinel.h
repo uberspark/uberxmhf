@@ -50,30 +50,16 @@
 #ifndef __GEEC_SENTINEL_H_
 #define __GEEC_SENTINEL_H_
 
-#define XMHF_HIC_SLABCALL                   (0xA0)
-#define XMHF_HIC_SLABRET                    (0xA1)
-
-#define XMHF_HIC_SLABCALLEXCEPTION          (0xA2)
-#define XMHF_HIC_SLABRETEXCEPTION           (0xA3)
-
-#define XMHF_HIC_SLABCALLINTERCEPT          (0xA4)
-#define XMHF_HIC_SLABRETINTERCEPT           (0xA5)
-
 
 #ifndef __ASSEMBLY__
 
 typedef struct {
-    u64 src_slabid;
-    u64 dst_slabid;
-    u64 hic_calltype;
-    u64 return_address;
-    void *oparams;
-    void *newoparams;
-    u64 oparams_size;
-    u64 iparams_size;
-} __xmhfhic_safestack_element_t;
-
-typedef void (*FPSLABMAIN)(slab_params_t *sp);
+    u32 src_slabid;
+    u32 dst_slabid;
+    u32 hic_calltype;
+    void *caller_stack_frame;
+    slab_params_t *sp;
+}__attribute__((packed)) __xmhfhic_safestack_element_t;
 
 
 extern __attribute__((section(".data"))) __xmhfhic_safestack_element_t __xmhfhic_safestack[MAX_PLATFORM_CPUS][512];
@@ -82,27 +68,13 @@ extern __attribute__((section(".data"))) u64 __xmhfhic_safestack_indices[MAX_PLA
 
 
 
-void __xmhfhic_rtm_uapihandler(slab_params_t *sp);
-void __xmhfhic_rtm_trampolinehandler(slab_params_t *sp);
-
-bool __xmhfhic_callcaps(u64 src_slabid, u64 dst_slabid);
-//void __xmhfhic_safepush(u64 cpuid, u64 src_slabid, u64 dst_slabid, u64 hic_calltype, u64 return_address,
-//                        slab_output_params_t *oparams, slab_output_params_t *newoparams, u64 oparams_size, u64 iparams_size);
-//void __xmhfhic_safepop(u64 cpuid, u64 *src_slabid, u64 *dst_slabid, u64 *hic_calltype, u64 *return_address,
-//                       slab_output_params_t **oparams, slab_output_params_t **newoparams, u64 *oparams_size, u64 *iparams_size);
-void __xmhfhic_rtm_intercept(x86regs_t *r);
-//void __xmhfhic_rtm_exception_stub(x86vmx_exception_frame_t *exframe);
-//void __xmhfhic_rtm_trampoline(u64 hic_calltype, slab_input_params_t *iparams, u64 iparams_size, slab_output_params_t *oparams, u64 oparams_size, u64 dst_slabid, u64 src_slabid, u64 cpuid, u64 return_address, u64 return_rsp);
-
-
-
-CASM_FUNCDECL(void __xmhfhic_rtm_trampoline_stub(void *noparam));
-
-
 CASM_FUNCDECL(void _geec_sentinel_intercept_casmstub(void *noparam));
+CASM_FUNCDECL(void _geec_sentinel_sysenter_casmstub(void *noparam));
+
 
 void _geec_sentinel_intercept_stub(x86regs_t *r);
 void _geec_sentinel_exception_stub(x86vmx_exception_frame_t *exframe);
+void _geec_sentinel_sysenter_stub(slab_params_t *sp, void *caller_stack_frame);
 
 
 CASM_FUNCDECL(void _geec_sentinel_xfer_vft_prog_to_vft_prog(u32 entry_point, void *caller_stack_frame));
@@ -111,6 +83,11 @@ CASM_FUNCDECL(void _geec_sentinel_xfer_ret_from_exception(x86vmx_exception_frame
 CASM_FUNCDECL(u32 _geec_sentinel_xfer_vft_prog_to_uvt_uvu_prog_guest(void *noparam));
 CASM_FUNCDECL(void _geec_sentinel_xfer_intercept_to_vft_prog(u32 entry_point, void *caller_stack_frame));
 CASM_FUNCDECL(void _geec_sentinel_xfer_ret_from_intercept(x86regs_t *r));
+CASM_FUNCDECL(void _geec_sentinel_xfer_vft_prog_to_uvt_uvu_prog(u32 entry_point, void *callee_stack_frame));
+CASM_FUNCDECL(void _geec_sentinel_xfer_ret_vft_prog_to_uvt_uvu_prog(void *caller_stack_frame));
+CASM_FUNCDECL(void _geec_sentinel_xfer_call_uvt_uvu_prog_to_vft_prog(u32 entry_point, void *callee_stack_frame));
+CASM_FUNCDECL(void _geec_sentinel_xfer_ret_uvt_uvu_prog_to_vft_prog(void *caller_stack_frame));
+
 
 #endif // __ASSEMBLY__
 

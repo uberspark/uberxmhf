@@ -164,6 +164,8 @@ static void _slabmempgtbl_initmempgtbl(u32 slabid){
     slabtype = _xmhfhic_common_slab_info_table[slabid].archdata.slabtype;
 
     switch(slabtype){
+        case XMHFGEEC_SLABTYPE_VfT_PROG_EXCEPTION:
+        case XMHFGEEC_SLABTYPE_VfT_PROG_INTERCEPT:
         case XMHFGEEC_SLABTYPE_VfT_PROG_PRIME:
         case XMHFGEEC_SLABTYPE_VfT_PROG:
         case XMHFGEEC_SLABTYPE_uVT_PROG:
