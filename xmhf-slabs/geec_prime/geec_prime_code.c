@@ -1203,8 +1203,8 @@ static void _geec_prime_populate_slab_pagetables_uVT_uVU_prog(u32 slabid){
     for(i=0; i < XMHF_HIC_MAX_SLABS; i++){
         flags = (_PAGE_PSE | _PAGE_PRESENT);
 
-        if(i == slabid)
-            flags |= _PAGE_USER;
+        //if(i == slabid)
+        //    flags |= _PAGE_USER;
 
         //code=rx, 2M mapping
         for(gpa = _xmhfhic_common_slab_info_table[i].slab_physmem_extents[0].addr_start;
@@ -1236,6 +1236,7 @@ static void _geec_prime_populate_slab_pagetables_uVT_uVU_prog(u32 slabid){
 
 
 #if defined (__DEBUG_SERIAL__)
+        //flags = (_PAGE_PRESENT | _PAGE_PSE | _PAGE_RW | _PAGE_USER);
         flags = (_PAGE_PRESENT | _PAGE_PSE | _PAGE_RW);
         setentryforpaddrp->uapiphdr.uapifn = XMHFGEEC_UAPI_SLABMEMPGTBL_SETENTRYFORPADDR;
         setentryforpaddrp->dst_slabid = slabid;

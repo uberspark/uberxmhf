@@ -60,60 +60,56 @@
 #include <geec_primesmp.h> //TODO: we rely on this only for cpuidtable, need to eliminate
 
 
-#if 0
-__attribute__((section(".data"))) u64 __xmhfhic_safestack_indices[MAX_PLATFORM_CPUS] = { 0 };
-
+__attribute__((section(".data"))) u32 __xmhfhic_safestack_indices[MAX_PLATFORM_CPUS] = { 0 };
 __attribute__((section(".data"))) __xmhfhic_safestack_element_t __xmhfhic_safestack[MAX_PLATFORM_CPUS][512];
 
 
-
+#if 0
 bool __xmhfhic_callcaps(u64 src_slabid, u64 dst_slabid){
     if( _xmhfhic_common_slab_info_table[src_slabid].slab_callcaps & HIC_SLAB_CALLCAP(dst_slabid))
         return true;
     else
         return false;
 }
+#endif // 0
 
 
-void __xmhfhic_safepush(u64 cpuid, u64 src_slabid, u64 dst_slabid, u64 hic_calltype, u64 return_address,
-                        slab_output_params_t *oparams, slab_output_params_t *newoparams, u64 oparams_size, u64 iparams_size){
-    u64 safestack_index =  __xmhfhic_safestack_indices[(u32)cpuid];
+
+void __xmhfhic_safepush(u32 cpuid, u32 src_slabid, u32 dst_slabid, u32 hic_calltype,
+                        void *caller_stack_frame, slab_params_t *sp)
+{
+    u32 safestack_index =  __xmhfhic_safestack_indices[(u16)cpuid];
     if(safestack_index >=0 && safestack_index < 512) {
-        __xmhfhic_safestack[(u32)cpuid][safestack_index].src_slabid = src_slabid;
-        __xmhfhic_safestack[(u32)cpuid][safestack_index].dst_slabid = dst_slabid;
-        __xmhfhic_safestack[(u32)cpuid][safestack_index].hic_calltype = hic_calltype;
-        __xmhfhic_safestack[(u32)cpuid][safestack_index].return_address = return_address;
-        __xmhfhic_safestack[(u32)cpuid][safestack_index].oparams = oparams;
-        __xmhfhic_safestack[(u32)cpuid][safestack_index].newoparams = newoparams;
-        __xmhfhic_safestack[(u32)cpuid][safestack_index].oparams_size = oparams_size;
-        __xmhfhic_safestack[(u32)cpuid][safestack_index].iparams_size = iparams_size;
+        __xmhfhic_safestack[(u16)cpuid][safestack_index].src_slabid = src_slabid;
+        __xmhfhic_safestack[(u16)cpuid][safestack_index].dst_slabid = dst_slabid;
+        __xmhfhic_safestack[(u16)cpuid][safestack_index].hic_calltype = hic_calltype;
+        __xmhfhic_safestack[(u16)cpuid][safestack_index].caller_stack_frame = caller_stack_frame;
+        __xmhfhic_safestack[(u16)cpuid][safestack_index].sp = sp;
 
         safestack_index++;
-        __xmhfhic_safestack_indices[(u32)cpuid] = safestack_index;
+        __xmhfhic_safestack_indices[(u16)cpuid] = safestack_index;
     }
 }
 
-void __xmhfhic_safepop(u64 cpuid, u64 *src_slabid, u64 *dst_slabid, u64 *hic_calltype, u64 *return_address,
-                       slab_output_params_t **oparams, slab_output_params_t **newoparams, u64 *oparams_size, u64 *iparams_size){
-    u64 safestack_index =  __xmhfhic_safestack_indices[(u32)cpuid]-1;
+void __xmhfhic_safepop(u32 cpuid, u32 *src_slabid, u32 *dst_slabid, u32 *hic_calltype,
+                       void **caller_stack_framep, slab_params_t **spp)
+{
+    u32 safestack_index =  __xmhfhic_safestack_indices[(u16)cpuid]-1;
     if(safestack_index >=0 && safestack_index < 512){
-        *src_slabid = __xmhfhic_safestack[(u32)cpuid][safestack_index].src_slabid;
-        *dst_slabid = __xmhfhic_safestack[(u32)cpuid][safestack_index].dst_slabid;
-        *hic_calltype = __xmhfhic_safestack[(u32)cpuid][safestack_index].hic_calltype;
-        *return_address = __xmhfhic_safestack[(u32)cpuid][safestack_index].return_address;
-        *oparams = __xmhfhic_safestack[(u32)cpuid][safestack_index].oparams;
-        *newoparams = __xmhfhic_safestack[(u32)cpuid][safestack_index].newoparams;
-        *oparams_size = __xmhfhic_safestack[(u32)cpuid][safestack_index].oparams_size;
-        *iparams_size = __xmhfhic_safestack[(u32)cpuid][safestack_index].iparams_size;
+        *src_slabid = __xmhfhic_safestack[(u16)cpuid][safestack_index].src_slabid;
+        *dst_slabid = __xmhfhic_safestack[(u16)cpuid][safestack_index].dst_slabid;
+        *hic_calltype = __xmhfhic_safestack[(u16)cpuid][safestack_index].hic_calltype;
+        *caller_stack_framep = __xmhfhic_safestack[(u16)cpuid][safestack_index].caller_stack_frame;
+        *spp = __xmhfhic_safestack[(u16)cpuid][safestack_index].sp;
 
-        __xmhfhic_safestack_indices[(u32)cpuid] = safestack_index;
+        __xmhfhic_safestack_indices[(u16)cpuid] = safestack_index;
     }
 }
 
 
 
 
-
+#if 0
 //HIC runtime trampoline
 void __xmhfhic_rtm_trampoline(u64 hic_calltype, slab_input_params_t *iparams, u64 iparams_size, slab_output_params_t *oparams, u64 oparams_size, u64 dst_slabid, u64 src_slabid, u64 cpuid, u64 return_address, u64 return_rsp) {
     u8 __paramsbuffer[1024];
@@ -564,13 +560,104 @@ void _geec_sentinel_intercept_stub(x86regs_t *r){
 }
 
 
-static void _geec_sentinel_transition_vft_prog_to_uvt_uvu_prog(slab_params_t *sp){
+/*
+                    slab_input_params_t *newiparams;
+                    slab_output_params_t *newoparams;
+
+                    //save return RSP
+                    _xmhfhic_common_slab_info_table[src_slabid].archdata.slabtos[(u32)cpuid] = return_rsp;
+
+                    #if !defined (__XMHF_VERIFICATION__)
+                    //copy iparams to internal buffer __paramsbuffer
+                    memcpy(&__paramsbuffer, iparams, (iparams_size > 1024 ? 1024 : iparams_size) );
+                    #endif
+
+                    //switch to destination slab page tables
+ CASM_FUNCCALL(write_cr3,_xmhfhic_common_slab_info_table[dst_slabid].archdata.mempgtbl_cr3);
+
+                    //make space on destination slab stack for iparams and copy iparams and obtain newiparams
+                    {
+                        _xmhfhic_common_slab_info_table[dst_slabid].archdata.slabtos[(u32)cpuid] -= iparams_size;
+                        newiparams = (slab_input_params_t *) _xmhfhic_common_slab_info_table[dst_slabid].archdata.slabtos[(u32)cpuid];
+                        #if !defined (__XMHF_VERIFICATION__)
+                        memcpy((void *)_xmhfhic_common_slab_info_table[dst_slabid].archdata.slabtos[(u32)cpuid],
+                               &__paramsbuffer, (iparams_size > 1024 ? 1024 : iparams_size) );
+                        #endif
+                    }
+
+
+                    //make space on destination slab stack for oparams and obtain newoparams
+                    {
+                        _xmhfhic_common_slab_info_table[dst_slabid].archdata.slabtos[(u32)cpuid] -= oparams_size;
+                        newoparams = (slab_output_params_t *) _xmhfhic_common_slab_info_table[dst_slabid].archdata.slabtos[(u32)cpuid];
+                    }
+
+
+                    //push cpuid, src_slabid, dst_slabid, hic_calltype, return_address, oparams, new oparams and oparams_size tuple to
+                    //safe stack
+                    //_XDPRINTF_("%s[%u]: safepush: {cpuid: %016llx, srcsid: %u, dstsid: %u, ctype: %x, ra=%016llx, \
+                    //           op=%016llx, newop=%016llx, opsize=%u\n",
+                    //        __func__, (u32)cpuid,
+                    //           cpuid, src_slabid, dst_slabid, hic_calltype, return_address,
+                    //           oparams, newoparams, oparams_size);
+
+                    __xmhfhic_safepush(cpuid, src_slabid, dst_slabid, hic_calltype, return_address, oparams, newoparams, oparams_size, iparams_size);
+
+
+                    //jump to destination slab entrystub
+ CASM_FUNCCALL(__xmhfhic_trampoline_slabxfer_h2h,newiparams, iparams_size,
+                            _xmhfhic_common_slab_info_table[dst_slabid].entrystub,
+                            _xmhfhic_common_slab_info_table[dst_slabid].archdata.slabtos[(u32)cpuid],
+                            newoparams, oparams_size,
+                            src_slabid, cpuid
+                            );
+
+                }
+*/
+
+
+static void _geec_sentinel_transition_vft_prog_to_uvt_uvu_prog(slab_params_t *sp, void *caller_stack_frame){
 
 /*                    CASM_FUNCCALL(_geec_sentinel_xfer_vft_prog_to_vft_prog,
                                   _xmhfhic_common_slab_info_table[sp->dst_slabid].entrystub,
                                   caller_stack_frame);
 */
 
+    //save caller stack frame address (esp)
+    _xmhfhic_common_slab_info_table[sp->src_slabid].archdata.slabtos[(u16)sp->cpuid] =
+        (u32)caller_stack_frame;
+
+
+    //make space on destination slab stack for slab_params_t and copy parameters
+    {
+        _xmhfhic_common_slab_info_table[sp->dst_slabid].archdata.slabtos[(u16)sp->cpuid] -= sizeof(slab_params_t);
+        slab_params_t *dst_sp = (slab_params_t *) _xmhfhic_common_slab_info_table[sp->dst_slabid].archdata.slabtos[(u16)sp->cpuid];
+        memcpy((void *)_xmhfhic_common_slab_info_table[sp->dst_slabid].archdata.slabtos[(u16)sp->cpuid],
+               sp, sizeof(slab_params_t));
+    }
+
+    //push src_slabid, dst_slabid, hic_calltype, caller_stack_frame and sp
+    //tuple to safe stack
+    _XDPRINTF_("%s[%u]: safepush: {cpuid: %u, src: %u, dst: %u, ctype: 0x%x, \
+               csf=0x%x, sp=0x%x \n",
+            __func__, (u16)sp->cpuid,
+               (u16)sp->cpuid, sp->src_slabid, sp->dst_slabid, sp->slab_ctype,
+               caller_stack_frame, sp);
+
+    __xmhfhic_safepush((u16)sp->cpuid, sp->src_slabid, sp->dst_slabid,
+                       sp->slab_ctype, caller_stack_frame, sp);
+
+
+    //switch to destination slab page tables
+    _XDPRINTF_("%s[%u]: dst mempgtbl base=%x\n", __func__,
+               (u16)sp->cpuid, _xmhfhic_common_slab_info_table[sp->dst_slabid].archdata.mempgtbl_cr3);
+    CASM_FUNCCALL(write_cr3,_xmhfhic_common_slab_info_table[sp->dst_slabid].archdata.mempgtbl_cr3);
+    _XDPRINTF_("%s[%u]: swiched to dst mempgtbl\n", __func__,
+               (u16)sp->cpuid);
+
+
+    _XDPRINTF_("%s[%u]: wip. halting!\n", __func__, (u16)sp->cpuid);
+    HALT();
 
 
 }
@@ -600,7 +687,7 @@ void geec_sentinel_main(slab_params_t *sp, void *caller_stack_frame){
 
                 case XMHFGEEC_SLABTYPE_uVT_PROG:
                 case XMHFGEEC_SLABTYPE_uVU_PROG:{
-                    _geec_sentinel_transition_vft_prog_to_uvt_uvu_prog(sp);
+                    _geec_sentinel_transition_vft_prog_to_uvt_uvu_prog(sp, caller_stack_frame);
                     _XDPRINTF_("GEEC_SENTINEL[ln:%u]: halting. should never be here!\n",
                                __LINE__);
                     HALT();
