@@ -560,6 +560,18 @@ void _geec_sentinel_intercept_stub(x86regs_t *r){
 }
 
 
+
+
+
+////// sysenter
+
+void _geec_sentinel_sysenter_stub(slab_params_t *sp){
+    _XDPRINTF_("%s: sp=%x, src=%u, dst=%u, ctype=%x\n", __func__,
+               (u32)sp, sp->src_slabid, sp->dst_slabid, sp->slab_ctype);
+    HALT();
+}
+
+
 /*
                     slab_input_params_t *newiparams;
                     slab_output_params_t *newoparams;
