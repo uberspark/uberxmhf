@@ -1193,7 +1193,6 @@ static void _geec_prime_populate_slab_pagetables_uVT_uVU_prog(u32 slabid){
     slab_params_t spl;
     u32 i;
     u32 spatype;
-    u8 spa_slabtype;
     bool spa_sameslab=false;
     xmhfgeec_uapi_slabmempgtbl_setentryforpaddr_params_t *setentryforpaddrp =
         (xmhfgeec_uapi_slabmempgtbl_setentryforpaddr_params_t *)spl.in_out_params;
@@ -1206,16 +1205,17 @@ static void _geec_prime_populate_slab_pagetables_uVT_uVU_prog(u32 slabid){
 
 	for(gpa=0; gpa < ADDR_4GB; gpa += PAGE_SIZE_2M){
         spatype = _geec_prime_slab_getspatype(slabid, gpa);
-        spa_slabtype =spatype & 0x000000F0UL;
         if(spatype & _SLAB_SPATYPE_MASK_SAMESLAB)
             spa_sameslab = true;
         else
             spa_sameslab = false;
 
         flags = _geec_prime_slab_getptflagsforspa_pae(slabid, (u32)gpa);
-        if(spa_sameslab)
+        if(spa_sameslab){
             flags |= (_PAGE_USER);
-
+            _XDPRINTF_("%s: setting USER for addr=%x in slab=%u, flags=%016llx\n", __func__,
+                       (u32)gpa, slabid, flags);
+        }
         setentryforpaddrp->uapiphdr.uapifn = XMHFGEEC_UAPI_SLABMEMPGTBL_SETENTRYFORPADDR;
         setentryforpaddrp->dst_slabid = slabid;
         setentryforpaddrp->gpa = gpa;
