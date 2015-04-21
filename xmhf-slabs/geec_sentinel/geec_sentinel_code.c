@@ -298,11 +298,10 @@ static void _geec_sentinel_transition_ret_vft_prog_to_uvt_uvu_prog(slab_params_t
 
 
 static void _geec_sentinel_transition_call_uvt_uvu_prog_to_vft_prog(slab_params_t *sp, void *caller_stack_frame){
+    slab_params_t *dst_sp;
 
-
-
-
-
+    _XDPRINTF_("%s[%u]: src=%u, dst=%u\n", __func__, (u16)sp->cpuid, sp->src_slabid, sp->dst_slabid);
+    HALT();
 
 }
 
