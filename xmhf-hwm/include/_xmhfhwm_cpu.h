@@ -704,6 +704,9 @@ typedef struct __tss {
 
 #define xmhfhwm_cpu_insn_popl_eax() __builtin_annot("popl %eax ");
 #define xmhfhwm_cpu_insn_popl_ebx() __builtin_annot("popl %ebx ");
+#define xmhfhwm_cpu_insn_popl_ecx() __builtin_annot("popl %ecx ");
+#define xmhfhwm_cpu_insn_popl_edx() __builtin_annot("popl %edx ");
+
 #define xmhfhwm_cpu_insn_popl_esi() __builtin_annot("popl %esi ");
 #define xmhfhwm_cpu_insn_popl_edi() __builtin_annot("popl %edi ");
 #define xmhfhwm_cpu_insn_popl_ebp() __builtin_annot("popl %ebp ");
