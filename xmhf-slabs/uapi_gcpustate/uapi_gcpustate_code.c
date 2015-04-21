@@ -85,6 +85,10 @@ static bool _uapicheck_encoding_used_by_hic(u64 encoding){
 void slab_main(slab_params_t *sp){
     xmhf_uapi_params_hdr_t *uapiphdr = (xmhf_uapi_params_hdr_t *)sp->in_out_params;
 
+    _XDPRINTF_("UAPI_GCPUSTATE: esp=%x, src=%u, dst=%u\n",
+               CASM_FUNCCALL(read_esp, CASM_NOPARAM), sp->src_slabid, sp->dst_slabid);
+    HALT();
+
     switch(uapiphdr->uapifn){
         case XMHF_HIC_UAPI_CPUSTATE_VMREAD:{
             xmhf_uapi_gcpustate_vmrw_params_t *vmrwp =
