@@ -48,6 +48,7 @@
 #include <xmhfgeec.h>
 #include <xmhf-debug.h>
 
+#include <uapi_gcpustate.h>
 #include <xc_testslab.h>
 
 //////
@@ -118,10 +119,29 @@ static void _xcinit_dotests(u64 cpuid){
     return;
 }*/
 
+static u32 _xc_testslab_get_guest_exception_bitmap(u32 cpuid){
+    u32 exception_bitmap;
+    slab_params_t spl;
+    xmhf_uapi_gcpustate_vmrw_params_t *gcpustate_vmrwp =
+        (xmhf_uapi_gcpustate_vmrw_params_t *)spl.in_out_params;
+
+    spl.src_slabid = XMHF_HYP_SLAB_XC_TESTSLAB;
+    spl.dst_slabid = XMHF_HYP_SLAB_UAPI_GCPUSTATE;
+    spl.cpuid = cpuid;
+
+    gcpustate_vmrwp->uapiphdr.uapifn = XMHF_HIC_UAPI_CPUSTATE_VMREAD;
+    gcpustate_vmrwp->encoding = VMCS_CONTROL_EXCEPTION_BITMAP;
+    XMHF_SLAB_CALLNEW(&spl);
+    exception_bitmap = gcpustate_vmrwp->value;
+
+    return exception_bitmap;
+}
+
 
 void slab_main(slab_params_t *sp){
     u32 inputval = sp->in_out_params[0];
     u32 *outputval = (u32 *)&sp->in_out_params[1];
+    u32 exception_bitmap;
 
 	_XDPRINTF_("XC_TESTSLAB[%u]: src=%u, dst=%u, esp=%x\n",
                 (u16)sp->cpuid, sp->src_slabid, sp->dst_slabid, CASM_FUNCCALL(read_esp,CASM_NOPARAM));
@@ -132,6 +152,13 @@ void slab_main(slab_params_t *sp){
 	_XDPRINTF_("XC_TESTSLAB[%u]: ESP after=%x\n",
             (u16)sp->cpuid, CASM_FUNCCALL(read_esp,CASM_NOPARAM));
     */
+
+
+    _XDPRINTF_("XC_TESTSLAB[%u]: proceeding to get guest exception bitmap (esp=%x)...\n",
+               (u16)sp->cpuid, CASM_FUNCCALL(read_esp,CASM_NOPARAM));
+    exception_bitmap = _xc_testslab_get_guest_exception_bitmap(sp->cpuid);
+    _XDPRINTF_("XC_TESTSLAB[%u]: came back, bitmap=%x, esp=%x\n",
+               (u16)sp->cpuid, exception_bitmap, CASM_FUNCCALL(read_esp,CASM_NOPARAM));
 
 	_XDPRINTF_("XC_TESTSLAB[%u]: inputval=%x\n",
                 (u16)sp->cpuid, inputval);
