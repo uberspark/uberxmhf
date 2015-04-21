@@ -350,9 +350,36 @@ static void _geec_sentinel_transition_call_uvt_uvu_prog_to_vft_prog(slab_params_
 
 
 static void _geec_sentinel_transition_ret_uvt_uvu_prog_to_vft_prog(slab_params_t *sp, void *caller_stack_frame){
+    slab_params_t *dst_sp;
+    __xmhfhic_safestack_element_t elem;
 
     _XDPRINTF_("%s[%u]: src=%u, dst=%u\n", __func__, (u16)sp->cpuid, sp->src_slabid, sp->dst_slabid);
 
+    //pop tuple from safe stack
+    __xmhfhic_safepop((u16)sp->cpuid, &elem.src_slabid, &elem.dst_slabid, &elem.hic_calltype, &elem.caller_stack_frame,
+                        &elem.sp);
+
+    _XDPRINTF_("%s[%u]: safepop: {cpuid: %u, src: %u, dst: %u, ctype: 0x%x, \
+               csf=0x%x, sp=0x%x \n",
+            __func__, (u16)sp->cpuid,
+               (u16)sp->cpuid, elem.src_slabid, elem.dst_slabid, elem.hic_calltype,
+               elem.caller_stack_frame, elem.sp);
+
+    //check to ensure this return is paired with a prior call
+    if ( !((elem.src_slabid == sp->dst_slabid) && (elem.dst_slabid == sp->src_slabid) &&
+           (elem.hic_calltype == XMHFGEEC_SENTINEL_CALL_uVT_uVU_PROG_TO_VfT_PROG)) ){
+        _XDPRINTF_("%s[ln:%u]: Fatal: ret does not match prior call. Halting!\n",
+            __func__, __LINE__);
+        HALT();
+    }
+
+    //marshall parameters
+    memcpy( (elem.sp)->in_out_params, sp->in_out_params, sizeof(sp->in_out_params) );
+
+
+    //return back to uVT/uVU_PROG slab
+    CASM_FUNCCALL(_geec_sentinel_xfer_ret_uvt_uvu_prog_to_vft_prog,
+                      elem.caller_stack_frame);
 
 
     _XDPRINTF_("%s[%u]: wip. halting!\n", __func__, (u16)sp->cpuid);
