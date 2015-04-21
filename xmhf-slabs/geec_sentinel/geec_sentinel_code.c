@@ -168,7 +168,7 @@ void _geec_sentinel_sysenter_stub(slab_params_t *sp, void *caller_stack_frame){
     sp->cpuid = __xmhfhic_x86vmx_cpuidtable[xmhf_baseplatform_arch_x86_getcpulapicid()];
 
     if( !(sp->slab_ctype == XMHFGEEC_SENTINEL_RET_VfT_PROG_TO_uVT_uVU_PROG ||
-          sp->slab_ctype == XMHFGEEC_SENTINEL_CALL_uVT_uVU_PROG_TO_VfTPROG
+          sp->slab_ctype == XMHFGEEC_SENTINEL_CALL_uVT_uVU_PROG_TO_VfT_PROG
           ) ){
         _XDPRINTF_("%s[ln:%u]: inconsistent sp->xxx. halting!\n", __func__, __LINE__);
         HALT();
@@ -297,6 +297,17 @@ static void _geec_sentinel_transition_ret_vft_prog_to_uvt_uvu_prog(slab_params_t
 
 
 
+static void _geec_sentinel_transition_call_uvt_uvu_prog_to_vft_prog(slab_params_t *sp, void *caller_stack_frame){
+
+
+
+
+
+
+}
+
+
+
 
 /////
 // sentinel hub
@@ -378,6 +389,17 @@ void geec_sentinel_main(slab_params_t *sp, void *caller_stack_frame){
                     _XDPRINTF_("GEEC_SENTINEL[ln:%u]: halting. should never be here!\n",
                                __LINE__);
                     HALT();
+        }
+        break;
+
+
+
+
+
+        case XMHFGEEC_SENTINEL_CALL_uVT_uVU_PROG_TO_VfT_PROG:{
+            _geec_sentinel_transition_call_uvt_uvu_prog_to_vft_prog(sp, caller_stack_frame);
+            _XDPRINTF_("GEEC_SENTINEL[ln:%u]: halting. should never be here!\n", __LINE__);
+            HALT();
         }
         break;
 
