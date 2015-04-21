@@ -565,9 +565,22 @@ void _geec_sentinel_intercept_stub(x86regs_t *r){
 
 ////// sysenter
 
+//in general sp->xxx is untrusted and must be sanity checked
 void _geec_sentinel_sysenter_stub(slab_params_t *sp){
-    _XDPRINTF_("%s: sp=%x, src=%u, dst=%u, ctype=%x\n", __func__,
-               (u32)sp, sp->src_slabid, sp->dst_slabid, sp->slab_ctype);
+
+    //sanity check sp
+    sp->cpuid = __xmhfhic_x86vmx_cpuidtable[xmhf_baseplatform_arch_x86_getcpulapicid()];
+
+    if( !(sp->slab_ctype == XMHFGEEC_SENTINEL_RET_uVT_uVU_PROG_TO_VfT_PROG) ){
+        _XDPRINTF_("%s[ln:%u]: inconsistent sp->xxx. halting!\n", __func__, __LINE__);
+        HALT();
+    }
+
+    sp->src_slabid =
+        (CASM_FUNCCALL(read_cr3, CASM_NOPARAM) - _xmhfhic_common_slab_info_table[XMHF_HYP_SLAB_GEECSENTINEL].archdata.mempgtbl_cr3)/PAGE_SIZE_4K;
+
+    _XDPRINTF_("%s: sp=%x, cpuid=%u, src=%u, dst=%u, ctype=%x\n", __func__,
+               (u32)sp, (u16)sp->cpuid, sp->src_slabid, sp->dst_slabid, sp->slab_ctype);
     HALT();
 }
 
