@@ -53,8 +53,9 @@
 #include <xmhf-debug.h>
 
 #include <xmhfgeec.h>
-#include <geec_sentinel.h>
 
+#include <geec_sentinel.h>
+#include <geec_primesmp.h>
 
 //////
 // sentinel entry point
@@ -92,6 +93,9 @@ slab_params_t *sp)
     { \
         xmhfhwm_cpu_insn_pushl_imm(vector); \
         xmhfhwm_cpu_insn_pushal(); \
+        xmhfhwm_cpu_insn_movw_imm_ax(__DS_CPL0); \
+        xmhfhwm_cpu_insn_movw_ax_ds();\
+        xmhfhwm_cpu_insn_movw_ax_es();\
         xmhfhwm_cpu_insn_pushl_esp(); \
         xmhfhwm_cpu_insn_call(_geec_sentinel_exception_stub); \
         xmhfhwm_cpu_insn_hlt(); \
@@ -104,6 +108,9 @@ slab_params_t *sp)
 		xmhfhwm_cpu_insn_pushl_imm(0x0); \
         xmhfhwm_cpu_insn_pushl_imm(vector); \
         xmhfhwm_cpu_insn_pushal(); \
+        xmhfhwm_cpu_insn_movw_imm_ax(__DS_CPL0); \
+        xmhfhwm_cpu_insn_movw_ax_ds();\
+        xmhfhwm_cpu_insn_movw_ax_es();\
         xmhfhwm_cpu_insn_pushl_esp(); \
         xmhfhwm_cpu_insn_call(_geec_sentinel_exception_stub); \
         xmhfhwm_cpu_insn_hlt(); \
@@ -168,85 +175,19 @@ void *noparam)
 
 
 
-
-//////////////////////////////////////////////////////////////////////////////
-//
-// HIC trampoline
+////// sysenter
 
 
-
-//HIC runtime trampoline stub
-
-//__xmhfhic_rtm_trampoline stub entry register mappings:
-//
-//RDI = call type (XMHF_HIC_SLABCALL)
-//RSI = iparams
-//RDX = iparams_size
-//RCX = oparams
-//R8 = oparams_size
-//R9 = dst_slabid
-//R10 = return RSP;
-//R11 = return_address
-
-
-//__attribute__((naked)) void __xmhfhic_rtm_trampoline_stub(void){
-CASM_FUNCDEF(void, __xmhfhic_rtm_trampoline_stub,
+CASM_FUNCDEF(void, _geec_sentinel_sysenter_casmstub,
 {
-
-/*
-    //TODO: x86_64 --> x86
-    asm volatile (
-        "cmpq %0, %%rdi \r\n"
-        "je 1f \r\n"
-
-        "pushq %%r10 \r\n"          //push return RSP
-        "pushq %%r11 \r\n"          //push return address
-
-       	"movq %1, %%rax \r\n"       //RAX=X86XMP_LAPIC_ID_MEMORYADDRESS
-		"movl (%%eax), %%eax\r\n"   //EAX(bits 0-7)=LAPIC ID
-        "shrl $24, %%eax\r\n"       //EAX=LAPIC ID
-        "movq __xmhfhic_x86vmx_cpuidtable+0x0(,%%eax,8), %%rax\r\n" //RAX = 0-based cpu index for the CPU
-        "pushq %%rax \r\n"          //push cpuid
-
-        "movq %%cr3, %%rax \r\n"
-        "andq $0x00000000000FF000, %%rax \r\n"
-        "shr $12, %%rax \r\n"
-        "pushq %%rax \r\n"          //push source slab id
-
-        "callq __xmhfhic_rtm_trampoline \r\n"
-        "hlt \r\n"
-
-        "1: \r\n"
-        "pushq %%r10 \r\n"          //push return RSP
-        "pushq %%r11 \r\n"          //push return address
-
-       	"movq %1, %%rax \r\n"       //RAX=X86XMP_LAPIC_ID_MEMORYADDRESS
-		"movl (%%eax), %%eax\r\n"   //EAX(bits 0-7)=LAPIC ID
-        "shrl $24, %%eax\r\n"       //EAX=LAPIC ID
-        "movq __xmhfhic_x86vmx_cpuidtable+0x0(,%%eax,8), %%rax\r\n" //RAX = 0-based cpu index for the CPU
-        "pushq %%rax \r\n"          //push cpuid
-
-        "movq %%cr3, %%rax \r\n"
-        "andq $0x00000000000FF000, %%rax \r\n"
-        "shr $12, %%rax \r\n"
-        "pushq %%rax \r\n"          //push source slab id
-
-        "callq __xmhfhic_rtm_uapihandler \r\n"
-
-        "addq $16, %%rsp \r\n"
-        "popq %%rdx \r\n"
-        "popq %%rcx \r\n"
-        "sysexitq \r\n"
-
-        "hlt \r\n"
-      :
-      : "i" (XMHF_HIC_UAPI), "i" (X86SMP_LAPIC_ID_MEMORYADDRESS)
-      :
-    );
-
-    */
+    xmhfhwm_cpu_insn_pushl_edx();   //original caller_stack_frame
+    xmhfhwm_cpu_insn_pushl_ecx();
+    xmhfhwm_cpu_insn_call(_geec_sentinel_sysenter_stub);
+    xmhfhwm_cpu_insn_hlt();
 },
 void *noparam)
+
+
 
 
 
@@ -372,3 +313,64 @@ x86regs_t *r)
 
 
 
+CASM_FUNCDEF(void, _geec_sentinel_xfer_vft_prog_to_uvt_uvu_prog,
+{
+    xmhfhwm_cpu_insn_movl_mesp_edx(0x4);    //edx = entry_point
+    xmhfhwm_cpu_insn_movl_mesp_ecx(0x8);    //edx = callee_stack_frame
+    xmhfhwm_cpu_insn_sysexit();             //sysexit to ring-3
+    xmhfhwm_cpu_insn_hlt();
+
+    //xmhfhwm_cpu_insn_movl_mesp_eax(0x4);
+    //xmhfhwm_cpu_insn_movl_mesp_edx(0x8);
+    //xmhfhwm_cpu_insn_movl_edx_esp();
+    //xmhfhwm_cpu_insn_jmpl_eax();
+    //xmhfhwm_cpu_insn_hlt();
+
+},
+u32 entry_point, void *callee_stack_frame)
+
+
+CASM_FUNCDEF(void, _geec_sentinel_xfer_ret_vft_prog_to_uvt_uvu_prog,
+{
+    xmhfhwm_cpu_insn_movl_mesp_eax(0x4);
+    xmhfhwm_cpu_insn_movl_eax_esp();
+    xmhfhwm_cpu_insn_popl_ebx();
+    xmhfhwm_cpu_insn_popl_esi();
+    xmhfhwm_cpu_insn_popl_edi();
+    xmhfhwm_cpu_insn_popl_ebp();
+    xmhfhwm_cpu_insn_ret();
+},
+void *caller_stack_frame)
+
+
+
+CASM_FUNCDEF(void, _geec_sentinel_xfer_call_uvt_uvu_prog_to_vft_prog,
+{
+    xmhfhwm_cpu_insn_movl_mesp_eax(0x4);
+    xmhfhwm_cpu_insn_movl_mesp_edx(0x8);
+    xmhfhwm_cpu_insn_movl_edx_esp();
+    xmhfhwm_cpu_insn_pushl_esp();
+    xmhfhwm_cpu_insn_pushl_imm(0x0);
+    xmhfhwm_cpu_insn_jmpl_eax();
+    xmhfhwm_cpu_insn_hlt();
+},
+u32 entry_point, void *callee_stack_frame)
+
+
+CASM_FUNCDEF(void, _geec_sentinel_xfer_ret_uvt_uvu_prog_to_vft_prog,
+{
+    //caller_stack_frame:
+    // ebx, esi, edi, ebp, return-eip
+    xmhfhwm_cpu_insn_movl_mesp_eax(0x4);
+    xmhfhwm_cpu_insn_movl_eax_esp();
+    xmhfhwm_cpu_insn_popl_ebx();
+    xmhfhwm_cpu_insn_popl_esi();
+    xmhfhwm_cpu_insn_popl_edi();
+    xmhfhwm_cpu_insn_popl_ebp();
+
+    xmhfhwm_cpu_insn_popl_edx(); //edx = return-eip
+    xmhfhwm_cpu_insn_movl_esp_ecx(); //ecx = stack pointer
+    xmhfhwm_cpu_insn_sysexit();             //sysexit to ring-3
+    xmhfhwm_cpu_insn_hlt();
+},
+void *caller_stack_frame)
