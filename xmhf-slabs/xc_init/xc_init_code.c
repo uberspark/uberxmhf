@@ -123,7 +123,7 @@ void slab_main(slab_params_t *sp){
         _XDPRINTF_("XC_INIT[%u]: came back from test slab, esp=%x\n", (u16)sp->cpuid, CASM_FUNCCALL(read_esp,CASM_NOPARAM));
         _XDPRINTF_("XC_INIT[%u]: called test slab, return value=%x\n",
                    (u16)sp->cpuid, spl.in_out_params[1]);
-        HALT();
+        //HALT();
     }
 
 
