@@ -154,7 +154,6 @@ void slab_main(slab_params_t *sp){
     */
 
 
-#if 0
     _XDPRINTF_("XC_TESTSLAB[%u]: proceeding to get guest exception bitmap (esp=%x)...\n",
                (u16)sp->cpuid, CASM_FUNCCALL(read_esp,CASM_NOPARAM));
     exception_bitmap = _xc_testslab_get_guest_exception_bitmap(sp->cpuid);
@@ -163,7 +162,6 @@ void slab_main(slab_params_t *sp){
 
 	_XDPRINTF_("XC_TESTSLAB[%u]: inputval=%x\n",
                 (u16)sp->cpuid, inputval);
-#endif
 
     *outputval = 0xBBCCDDEE;
 
