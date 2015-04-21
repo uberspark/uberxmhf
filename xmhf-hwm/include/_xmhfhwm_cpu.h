@@ -803,6 +803,7 @@ typedef struct __tss {
 #define xmhfhwm_cpu_insn_xsetbv() __builtin_annot("xsetbv ");
 #define xmhfhwm_cpu_insn_xgetbv() __builtin_annot("xgetbv ");
 #define xmhfhwm_cpu_insn_iretl() __builtin_annot("iretl ");
+#define xmhfhwm_cpu_insn_sysexit() __builtin_annot("sysexit ");
 
 
 #endif //__ASSEMBLY__
