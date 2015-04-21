@@ -685,6 +685,7 @@ typedef struct __tss {
 #define xmhfhwm_cpu_insn_movl_edi_ebx() __builtin_annot("movl %edi, %ebx ");
 
 #define xmhfhwm_cpu_insn_movl_esp_eax() __builtin_annot("movl %esp, %eax ");
+#define xmhfhwm_cpu_insn_movl_esp_ecx() __builtin_annot("movl %esp, %ecx ");
 #define xmhfhwm_cpu_insn_movl_esp_edx() __builtin_annot("movl %esp, %edx ");
 
 #define xmhfhwm_cpu_insn_movl_mebxeax_eax(x) __builtin_annot("movl (%ebx, %eax, "#x"), %eax ");
@@ -804,7 +805,7 @@ typedef struct __tss {
 #define xmhfhwm_cpu_insn_xgetbv() __builtin_annot("xgetbv ");
 #define xmhfhwm_cpu_insn_iretl() __builtin_annot("iretl ");
 #define xmhfhwm_cpu_insn_sysexit() __builtin_annot("sysexit ");
-
+#define xmhfhwm_cpu_insn_sysenter() __builtin_annot("sysenter ");
 
 #endif //__ASSEMBLY__
 

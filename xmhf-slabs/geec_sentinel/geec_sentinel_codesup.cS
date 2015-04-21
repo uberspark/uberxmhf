@@ -168,85 +168,16 @@ void *noparam)
 
 
 
-
-//////////////////////////////////////////////////////////////////////////////
-//
-// HIC trampoline
+////// sysenter
 
 
-
-//HIC runtime trampoline stub
-
-//__xmhfhic_rtm_trampoline stub entry register mappings:
-//
-//RDI = call type (XMHF_HIC_SLABCALL)
-//RSI = iparams
-//RDX = iparams_size
-//RCX = oparams
-//R8 = oparams_size
-//R9 = dst_slabid
-//R10 = return RSP;
-//R11 = return_address
-
-
-//__attribute__((naked)) void __xmhfhic_rtm_trampoline_stub(void){
-CASM_FUNCDEF(void, __xmhfhic_rtm_trampoline_stub,
+CASM_FUNCDEF(void, _geec_sentinel_sysenter_casmstub,
 {
-
-/*
-    //TODO: x86_64 --> x86
-    asm volatile (
-        "cmpq %0, %%rdi \r\n"
-        "je 1f \r\n"
-
-        "pushq %%r10 \r\n"          //push return RSP
-        "pushq %%r11 \r\n"          //push return address
-
-       	"movq %1, %%rax \r\n"       //RAX=X86XMP_LAPIC_ID_MEMORYADDRESS
-		"movl (%%eax), %%eax\r\n"   //EAX(bits 0-7)=LAPIC ID
-        "shrl $24, %%eax\r\n"       //EAX=LAPIC ID
-        "movq __xmhfhic_x86vmx_cpuidtable+0x0(,%%eax,8), %%rax\r\n" //RAX = 0-based cpu index for the CPU
-        "pushq %%rax \r\n"          //push cpuid
-
-        "movq %%cr3, %%rax \r\n"
-        "andq $0x00000000000FF000, %%rax \r\n"
-        "shr $12, %%rax \r\n"
-        "pushq %%rax \r\n"          //push source slab id
-
-        "callq __xmhfhic_rtm_trampoline \r\n"
-        "hlt \r\n"
-
-        "1: \r\n"
-        "pushq %%r10 \r\n"          //push return RSP
-        "pushq %%r11 \r\n"          //push return address
-
-       	"movq %1, %%rax \r\n"       //RAX=X86XMP_LAPIC_ID_MEMORYADDRESS
-		"movl (%%eax), %%eax\r\n"   //EAX(bits 0-7)=LAPIC ID
-        "shrl $24, %%eax\r\n"       //EAX=LAPIC ID
-        "movq __xmhfhic_x86vmx_cpuidtable+0x0(,%%eax,8), %%rax\r\n" //RAX = 0-based cpu index for the CPU
-        "pushq %%rax \r\n"          //push cpuid
-
-        "movq %%cr3, %%rax \r\n"
-        "andq $0x00000000000FF000, %%rax \r\n"
-        "shr $12, %%rax \r\n"
-        "pushq %%rax \r\n"          //push source slab id
-
-        "callq __xmhfhic_rtm_uapihandler \r\n"
-
-        "addq $16, %%rsp \r\n"
-        "popq %%rdx \r\n"
-        "popq %%rcx \r\n"
-        "sysexitq \r\n"
-
-        "hlt \r\n"
-      :
-      : "i" (XMHF_HIC_UAPI), "i" (X86SMP_LAPIC_ID_MEMORYADDRESS)
-      :
-    );
-
-    */
+    xmhfhwm_cpu_insn_hlt();
 },
 void *noparam)
+
+
 
 
 

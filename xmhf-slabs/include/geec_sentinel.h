@@ -93,10 +93,9 @@ void __xmhfhic_rtm_intercept(x86regs_t *r);
 
 
 
-CASM_FUNCDECL(void __xmhfhic_rtm_trampoline_stub(void *noparam));
-
-
 CASM_FUNCDECL(void _geec_sentinel_intercept_casmstub(void *noparam));
+CASM_FUNCDECL(void _geec_sentinel_sysenter_casmstub(void *noparam));
+
 
 void _geec_sentinel_intercept_stub(x86regs_t *r);
 void _geec_sentinel_exception_stub(x86vmx_exception_frame_t *exframe);
