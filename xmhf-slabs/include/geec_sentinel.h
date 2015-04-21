@@ -50,15 +50,6 @@
 #ifndef __GEEC_SENTINEL_H_
 #define __GEEC_SENTINEL_H_
 
-#define XMHF_HIC_SLABCALL                   (0xA0)
-#define XMHF_HIC_SLABRET                    (0xA1)
-
-#define XMHF_HIC_SLABCALLEXCEPTION          (0xA2)
-#define XMHF_HIC_SLABRETEXCEPTION           (0xA3)
-
-#define XMHF_HIC_SLABCALLINTERCEPT          (0xA4)
-#define XMHF_HIC_SLABRETINTERCEPT           (0xA5)
-
 
 #ifndef __ASSEMBLY__
 
@@ -70,26 +61,10 @@ typedef struct {
     slab_params_t *sp;
 }__attribute__((packed)) __xmhfhic_safestack_element_t;
 
-typedef void (*FPSLABMAIN)(slab_params_t *sp);
-
 
 extern __attribute__((section(".data"))) __xmhfhic_safestack_element_t __xmhfhic_safestack[MAX_PLATFORM_CPUS][512];
 extern __attribute__((section(".data"))) __attribute__((aligned(4096))) x_slab_info_t _xmhfhic_common_slab_info_table[XMHF_HIC_MAX_SLABS];
 extern __attribute__((section(".data"))) u64 __xmhfhic_safestack_indices[MAX_PLATFORM_CPUS];
-
-
-
-void __xmhfhic_rtm_uapihandler(slab_params_t *sp);
-void __xmhfhic_rtm_trampolinehandler(slab_params_t *sp);
-
-bool __xmhfhic_callcaps(u64 src_slabid, u64 dst_slabid);
-//void __xmhfhic_safepush(u64 cpuid, u64 src_slabid, u64 dst_slabid, u64 hic_calltype, u64 return_address,
-//                        slab_output_params_t *oparams, slab_output_params_t *newoparams, u64 oparams_size, u64 iparams_size);
-//void __xmhfhic_safepop(u64 cpuid, u64 *src_slabid, u64 *dst_slabid, u64 *hic_calltype, u64 *return_address,
-//                       slab_output_params_t **oparams, slab_output_params_t **newoparams, u64 *oparams_size, u64 *iparams_size);
-void __xmhfhic_rtm_intercept(x86regs_t *r);
-//void __xmhfhic_rtm_exception_stub(x86vmx_exception_frame_t *exframe);
-//void __xmhfhic_rtm_trampoline(u64 hic_calltype, slab_input_params_t *iparams, u64 iparams_size, slab_output_params_t *oparams, u64 oparams_size, u64 dst_slabid, u64 src_slabid, u64 cpuid, u64 return_address, u64 return_rsp);
 
 
 
