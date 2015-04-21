@@ -123,9 +123,10 @@ void slab_main(slab_params_t *sp){
     u32 inputval = sp->in_out_params[0];
     u32 *outputval = (u32 *)&sp->in_out_params[1];
 
-	_XDPRINTF_("XC_TESTSLAB[%u]: Got control: ESP=%x\n",
-                (u16)sp->cpuid, CASM_FUNCCALL(read_esp,CASM_NOPARAM));
+	_XDPRINTF_("XC_TESTSLAB[%u]: src=%u, dst=%u, esp=%x\n",
+                (u16)sp->cpuid, sp->src_slabid, sp->dst_slabid, CASM_FUNCCALL(read_esp,CASM_NOPARAM));
 
+    HALT();
 
 	/*_XDPRINTF_("XC_TESTSLAB[%u]: ESP before=%x\n",
             (u16)sp->cpuid, CASM_FUNCCALL(read_esp,CASM_NOPARAM));
