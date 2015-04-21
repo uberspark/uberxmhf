@@ -9,7 +9,7 @@ xmhf-slabs/uapi_slabdevpgtbl , VfT_PROG
 xmhf-slabs/xc_init , VfT_PROG
 xmhf-slabs/xc_ihub , VfT_PROG_INTERCEPT
 xmhf-slabs/xc_exhub , VfT_PROG_EXCEPTION
-xmhf-slabs/xc_testslab , uVU_PROG
+xmhf-slabs/xc_testslab , VfT_PROG
 xmhf-slabs/xh_hyperdep , VfT_PROG
 xmhf-slabs/xh_approvexec , VfT_PROG
 xmhf-slabs/xh_syscalllog , VfT_PROG
