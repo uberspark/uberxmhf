@@ -597,6 +597,7 @@ typedef struct {
 typedef struct __tss {
 	u32 reserved;
 	u32 esp0;
+	u32 ss0;
 } __attribute__((packed)) tss_t;
 
 
