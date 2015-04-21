@@ -617,11 +617,8 @@ void _geec_sentinel_intercept_stub(x86regs_t *r){
 
 
 static void _geec_sentinel_transition_vft_prog_to_uvt_uvu_prog(slab_params_t *sp, void *caller_stack_frame){
+    slab_params_t *dst_sp;
 
-/*                    CASM_FUNCCALL(_geec_sentinel_xfer_vft_prog_to_vft_prog,
-                                  _xmhfhic_common_slab_info_table[sp->dst_slabid].entrystub,
-                                  caller_stack_frame);
-*/
 
     //save caller stack frame address (esp)
     _xmhfhic_common_slab_info_table[sp->src_slabid].archdata.slabtos[(u16)sp->cpuid] =
@@ -632,8 +629,7 @@ static void _geec_sentinel_transition_vft_prog_to_uvt_uvu_prog(slab_params_t *sp
     {
         _xmhfhic_common_slab_info_table[sp->dst_slabid].archdata.slabtos[(u16)sp->cpuid] -= sizeof(slab_params_t);
         slab_params_t *dst_sp = (slab_params_t *) _xmhfhic_common_slab_info_table[sp->dst_slabid].archdata.slabtos[(u16)sp->cpuid];
-        memcpy((void *)_xmhfhic_common_slab_info_table[sp->dst_slabid].archdata.slabtos[(u16)sp->cpuid],
-               sp, sizeof(slab_params_t));
+        memcpy(dst_sp, sp, sizeof(slab_params_t));
     }
 
     //push src_slabid, dst_slabid, hic_calltype, caller_stack_frame and sp
@@ -654,6 +650,11 @@ static void _geec_sentinel_transition_vft_prog_to_uvt_uvu_prog(slab_params_t *sp
     CASM_FUNCCALL(write_cr3,_xmhfhic_common_slab_info_table[sp->dst_slabid].archdata.mempgtbl_cr3);
     _XDPRINTF_("%s[%u]: swiched to dst mempgtbl\n", __func__,
                (u16)sp->cpuid);
+
+
+    CASM_FUNCCALL(_geec_sentinel_xfer_vft_prog_to_uvt_uvu_prog,
+                _xmhfhic_common_slab_info_table[sp->dst_slabid].entrystub,
+                                  dst_sp);
 
 
     _XDPRINTF_("%s[%u]: wip. halting!\n", __func__, (u16)sp->cpuid);
