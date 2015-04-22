@@ -81,6 +81,8 @@ while( $i <= $#slabnamearray ){
 
     if($slabtypearray[$i] eq "VfT_PROG_PRIME"){
         print "\n	        XMHFGEEC_SLABTYPE_VfT_PROG_PRIME,";
+    }elsif($slabtypearray[$i] eq "VfT_SENTINEL"){
+        print "\n	        XMHFGEEC_SLABTYPE_VfT_SENTINEL,";
     }elsif($slabtypearray[$i] eq "VfT_PROG"){
         print "\n	        XMHFGEEC_SLABTYPE_VfT_PROG,";
     }elsif($slabtypearray[$i] eq "VfT_PROG_EXCEPTION"){

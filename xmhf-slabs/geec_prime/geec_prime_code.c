@@ -1360,6 +1360,7 @@ void xmhfhic_arch_setup_slab_mem_page_tables(void){
         XMHF_SLAB_CALLNEW(&spl);
 
         switch(slabtype){
+            case XMHFGEEC_SLABTYPE_VfT_SENTINEL:
             case XMHFGEEC_SLABTYPE_VfT_PROG_INTERCEPT:
             case XMHFGEEC_SLABTYPE_VfT_PROG_EXCEPTION:
             case XMHFGEEC_SLABTYPE_VfT_PROG_PRIME:
