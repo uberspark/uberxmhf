@@ -138,6 +138,7 @@ typedef struct {
 	u32 mempgtbl_cr3;
 	u32 slabtos[MAX_PLATFORM_CPUS];
     slab_callcaps_t slab_callcaps;
+    bool slab_uapisupported;
     slab_uapicaps_t slab_uapicaps[XMHFGEEC_TOTAL_SLABS];
     slab_platformdevices_t slab_devices;
     slab_physmem_extent_t slab_physmem_extents[HIC_SLAB_PHYSMEM_MAXEXTENTS];
