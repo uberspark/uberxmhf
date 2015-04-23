@@ -106,9 +106,6 @@ while( $i <= $#slabnamearray ){
         exit 1;
     }
 
-    print "\n	        false,";
-    print "\n	        false,";
-
     printf "\n	        &_slab_uapi_slabmempgtbl_data_start[%u],", ($i * 4096);
 
     print "\n	        {";
@@ -123,7 +120,8 @@ while( $i <= $#slabnamearray ){
     print "\n	        }";
     print "\n	    },";
     print "\n	    true,";
-    print "\n	    0,";
+
+    # call caps
     print "\n       0,";
 
     # uapi caps
