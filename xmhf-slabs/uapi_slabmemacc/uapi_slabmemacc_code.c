@@ -81,9 +81,9 @@ static bool _uapicheck_is_within_slab_memory_extents(u64 slab_id, u64 addr, u64 
 /////
 void slab_main(slab_params_t *sp){
 
-    xmhf_uapi_params_hdr_t *uapiphdr = (xmhf_uapi_params_hdr_t *)sp->in_out_params;
+    //xmhf_uapi_params_hdr_t *uapiphdr = (xmhf_uapi_params_hdr_t *)sp->in_out_params;
 
-    switch(uapiphdr->uapifn){
+    switch(sp->dst_uapifn){
 
         case XMHF_HIC_UAPI_PHYSMEM_PEEK:{
             xmhf_uapi_slabmemacc_params_t *smemaccp = (xmhf_uapi_slabmemacc_params_t *)sp->in_out_params;
@@ -105,7 +105,7 @@ void slab_main(slab_params_t *sp){
 
         default:
             _XDPRINTF_("UAPI_SLABMEMACC[%u]: Unknown uAPI function %x. Halting!\n",
-                    (u16)sp->cpuid, uapiphdr->uapifn);
+                    (u16)sp->cpuid, sp->dst_uapifn);
             HALT();
             return;
     }

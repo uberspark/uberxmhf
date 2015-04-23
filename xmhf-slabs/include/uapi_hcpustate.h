@@ -63,7 +63,6 @@
 
 
 typedef struct {
-    xmhf_uapi_params_hdr_t uapiphdr;
     u32 msr;
     u64 value;
 }__attribute__((packed)) xmhf_uapi_hcpustate_msr_params_t;

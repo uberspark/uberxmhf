@@ -83,7 +83,7 @@ static bool _uapicheck_encoding_used_by_hic(u64 encoding){
 
 /////
 void slab_main(slab_params_t *sp){
-    xmhf_uapi_params_hdr_t *uapiphdr = (xmhf_uapi_params_hdr_t *)sp->in_out_params;
+    //xmhf_uapi_params_hdr_t *uapiphdr = (xmhf_uapi_params_hdr_t *)sp->in_out_params;
 
 #if 0
     _XDPRINTF_("UAPI_GCPUSTATE: esp=%x, src=%u, dst=%u\n",
@@ -91,7 +91,7 @@ void slab_main(slab_params_t *sp){
     HALT();
 #endif // 0
 
-    switch(uapiphdr->uapifn){
+    switch(sp->dst_uapifn){
         case XMHF_HIC_UAPI_CPUSTATE_VMREAD:{
             xmhf_uapi_gcpustate_vmrw_params_t *vmrwp =
                 (xmhf_uapi_gcpustate_gprs_params_t *)sp->in_out_params;
@@ -129,7 +129,7 @@ void slab_main(slab_params_t *sp){
 
         default:
             _XDPRINTF_("UAPI_GCPUSTATE[%u]: Unknown uAPI function %x. Halting!\n",
-                    (u16)sp->cpuid, uapiphdr->uapifn);
+                    (u16)sp->cpuid, sp->dst_uapifn);
             HALT();
             return;
     }

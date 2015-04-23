@@ -64,19 +64,16 @@
 #ifndef __ASSEMBLY__
 
 typedef struct {
-    xmhf_uapi_params_hdr_t uapiphdr;
     u32 dst_slabid;
 }__attribute__((packed)) xmhfgeec_uapi_slabmempgtbl_initmempgtbl_params_t;
 
 typedef struct {
-    xmhf_uapi_params_hdr_t uapiphdr;
     u32 dst_slabid;
     u64 gpa;
     u64 entry;
 }__attribute__((packed)) xmhfgeec_uapi_slabmempgtbl_setentryforpaddr_params_t;
 
 typedef struct {
-    xmhf_uapi_params_hdr_t uapiphdr;
     u32 dst_slabid;
     u64 gpa;
     u64 result_entry;

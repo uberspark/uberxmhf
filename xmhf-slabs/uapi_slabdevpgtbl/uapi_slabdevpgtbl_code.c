@@ -218,12 +218,12 @@ static void _slabdevpgtbl_binddevice(u32 slabid, u32 pagewalk_lvl,  u32 bus, u32
 /////
 void slab_main(slab_params_t *sp){
 
-    xmhf_uapi_params_hdr_t *uapiphdr = (xmhf_uapi_params_hdr_t *)sp->in_out_params;
+    //xmhf_uapi_params_hdr_t *uapiphdr = (xmhf_uapi_params_hdr_t *)sp->in_out_params;
 
-    switch(uapiphdr->uapifn){
+    switch(sp->dst_uapifn){
         case XMHFGEEC_UAPI_SDEVPGTBL_INIT:{
-            xmhfgeec_uapi_slabdevpgtbl_init_params_t *initp =
-                (xmhfgeec_uapi_slabdevpgtbl_init_params_t *)sp->in_out_params;
+            //xmhfgeec_uapi_slabdevpgtbl_init_params_t *initp =
+            //    (xmhfgeec_uapi_slabdevpgtbl_init_params_t *)sp->in_out_params;
 
             if(!_slabdevpgtbl_init_done){
                 _slabdevpgtbl_init();
@@ -274,7 +274,7 @@ void slab_main(slab_params_t *sp){
 
         default:
             _XDPRINTF_("UAPI_SLABDEVPGTBL[%u]: Unknown uAPI function %x. Halting!\n",
-                    (u16)sp->cpuid, uapiphdr->uapifn);
+                    (u16)sp->cpuid, sp->dst_uapifn);
             HALT();
             return;
     }

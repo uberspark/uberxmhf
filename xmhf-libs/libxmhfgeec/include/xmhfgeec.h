@@ -150,15 +150,16 @@ typedef struct {
     u32 slab_ctype;
     u32 src_slabid;
     u32 dst_slabid;
+    u32 dst_uapifn;
     u32 cpuid;
     u32 in_out_params[16];
 } __attribute__((packed)) slab_params_t;
 
-typedef struct {
+/*typedef struct {
     u32 reserved;
     u32 uapifn;
 }__attribute__((packed)) xmhf_uapi_params_hdr_t;
-
+*/
 
 
 
