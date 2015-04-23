@@ -102,9 +102,8 @@
 typedef void * slab_entrystub_t;
 
 
-//typedef u32 slab_privilegemask_t;
 typedef u32 slab_callcaps_t;
-typedef u32 slab_uapicaps_t;
+typedef u8 slab_uapicaps_t;
 
 typedef struct {
     u32 pci_bus;
