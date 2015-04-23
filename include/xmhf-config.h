@@ -138,7 +138,7 @@
 #define XMHFGEEC_SLAB_XC_IHUB                (9)
 #define XMHFGEEC_SLAB_XC_EXHUB               (10)
 #define XMHFGEEC_SLAB_XC_TESTSLAB           (11)
-#define XMHFGEEC_SLAB_XH_HYPEREP            (12)
+#define XMHFGEEC_SLAB_XH_HYPERDEP            (12)
 #define XMHFGEEC_SLAB_XH_APPROVEXEC          (13)
 #define XMHFGEEC_SLAB_XH_SYSCALLLOG          (14)
 #define XMHFGEEC_SLAB_XH_SSTEPTRACE          (15)
