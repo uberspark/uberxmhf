@@ -73,7 +73,7 @@ CASM_FUNCDEF_FULL(.slab_entrystub, 1, void, _slab_entrystub,
 void *noparam)
 
 //XXX: TODO: need to revise with sysenter
-CASM_FUNCDEF(void, __slab_calltrampolinenew,
+CASM_FUNCDEF(void, __slab_callsentinel,
 {
     xmhfhwm_cpu_insn_movl_mesp_eax(0x4);
     xmhfhwm_cpu_insn_movl_imm_meax(XMHFGEEC_SENTINEL_CALL_uVT_uVU_PROG_TO_VfT_PROG, 0x0);
