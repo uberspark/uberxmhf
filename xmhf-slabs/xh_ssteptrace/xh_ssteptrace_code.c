@@ -75,8 +75,8 @@ static void st_on(u32 cpuindex, u32 guest_slab_index){
     xmhf_uapi_gcpustate_vmrw_params_t *gcpustate_vmrwp =
         (xmhf_uapi_gcpustate_vmrw_params_t *)spl.in_out_params;
 
-    spl.src_slabid = XMHF_HYP_SLAB_XHSSTEPTRACE;
-    spl.dst_slabid = XMHF_HYP_SLAB_UAPI_GCPUSTATE;
+    spl.src_slabid = XMHFGEEC_SLAB_XH_SSTEPTRACE;
+    spl.dst_slabid = XMHFGEEC_SLAB_UAPI_GCPUSTATE;
     spl.cpuid = cpuindex;
     //spl.in_out_params[0] = XMHF_HIC_UAPI_CPUSTATE;
 
@@ -114,8 +114,8 @@ static void st_off(u32 cpuindex, u32 guest_slab_index){
     xmhf_uapi_gcpustate_vmrw_params_t *gcpustate_vmrwp =
         (xmhf_uapi_gcpustate_vmrw_params_t *)spl.in_out_params;
 
-    spl.src_slabid = XMHF_HYP_SLAB_XHSSTEPTRACE;
-    spl.dst_slabid = XMHF_HYP_SLAB_UAPI_GCPUSTATE;
+    spl.src_slabid = XMHFGEEC_SLAB_XH_SSTEPTRACE;
+    spl.dst_slabid = XMHFGEEC_SLAB_UAPI_GCPUSTATE;
     spl.cpuid = cpuindex;
     //spl.in_out_params[0] = XMHF_HIC_UAPI_CPUSTATE;
 
@@ -202,8 +202,8 @@ static void _hcb_hypercall(u32 cpuindex, u32 guest_slab_index){
 	u32 call_id;
 	//u64 gpa;
 
-    spl.src_slabid = XMHF_HYP_SLAB_XHSSTEPTRACE;
-    spl.dst_slabid = XMHF_HYP_SLAB_UAPI_GCPUSTATE;
+    spl.src_slabid = XMHFGEEC_SLAB_XH_SSTEPTRACE;
+    spl.dst_slabid = XMHFGEEC_SLAB_UAPI_GCPUSTATE;
     spl.cpuid = cpuindex;
     //spl.in_out_params[0] = XMHF_HIC_UAPI_CPUSTATE;
 
@@ -250,8 +250,8 @@ static void _hcb_trap_exception(u32 cpuindex, u32 guest_slab_index){
     //xmhf_hic_uapi_physmem_desc_t *pdesc = (xmhf_hic_uapi_physmem_desc_t *)&spl.in_out_params[2];
     xmhf_uapi_slabmemacc_params_t *smemaccp = (xmhf_uapi_slabmemacc_params_t *)spl.in_out_params;
 
-    spl.src_slabid = XMHF_HYP_SLAB_XHSSTEPTRACE;
-    spl.dst_slabid = XMHF_HYP_SLAB_UAPI_GCPUSTATE;
+    spl.src_slabid = XMHFGEEC_SLAB_XH_SSTEPTRACE;
+    spl.dst_slabid = XMHFGEEC_SLAB_UAPI_GCPUSTATE;
     spl.cpuid = cpuindex;
 
     if(ssteptrace_on){
@@ -276,7 +276,7 @@ static void _hcb_trap_exception(u32 cpuindex, u32 guest_slab_index){
                    __func__, (u16)cpuindex, guest_rip);
 
         //copy 256 bytes from the current guest RIP for trace inference
-        spl.dst_slabid = XMHF_HYP_SLAB_UAPI_SLABMEMACC;
+        spl.dst_slabid = XMHFGEEC_SLAB_UAPI_SLABMEMACC;
         smemaccp->dst_slabid = guest_slab_index;
         smemaccp->addr_to = &_st_tracebuffer;
         smemaccp->addr_from = guest_rip;

@@ -79,12 +79,12 @@ void slab_main(slab_params_t *sp){
                 (u16)sp->cpuid, sp->src_slabid, sp->dst_slabid, CASM_FUNCCALL(read_esp,CASM_NOPARAM));
 
     spl.cpuid = sp->cpuid;
-    spl.src_slabid = XMHF_HYP_SLAB_XCIHUB;
+    spl.src_slabid = XMHFGEEC_SLAB_XC_IHUB;
     //spl.in_out_params[0] = XMHF_HIC_UAPI_CPUSTATE;
 
 
     //store GPRs
-    spl.dst_slabid = XMHF_HYP_SLAB_UAPI_GCPUSTATE;
+    spl.dst_slabid = XMHFGEEC_SLAB_UAPI_GCPUSTATE;
     gcpustate_gprs->uapiphdr.uapifn = XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSWRITE;
     memcpy(&gcpustate_gprs->gprs, &sp->in_out_params[0], sizeof(x86regs_t));
     XMHF_SLAB_CALLNEW(&spl);
@@ -92,7 +92,7 @@ void slab_main(slab_params_t *sp){
 
     {
 
-        spl.dst_slabid = XMHF_HYP_SLAB_UAPI_GCPUSTATE;
+        spl.dst_slabid = XMHFGEEC_SLAB_UAPI_GCPUSTATE;
         gcpustate_vmrwp->uapiphdr.uapifn = XMHF_HIC_UAPI_CPUSTATE_VMREAD;
         gcpustate_vmrwp->encoding = VMCS_INFO_VMEXIT_REASON;
         XMHF_SLAB_CALLNEW(&spl);
@@ -103,7 +103,7 @@ void slab_main(slab_params_t *sp){
 
         //hypercall
         case VMX_VMEXIT_VMCALL:{
-            if(xc_hcbinvoke(XMHF_HYP_SLAB_XCIHUB, sp->cpuid, XC_HYPAPPCB_HYPERCALL, 0, sp->src_slabid) == XC_HYPAPPCB_CHAIN){
+            if(xc_hcbinvoke(XMHFGEEC_SLAB_XC_IHUB, sp->cpuid, XC_HYPAPPCB_HYPERCALL, 0, sp->src_slabid) == XC_HYPAPPCB_CHAIN){
                 u32 guest_rip;
                 u32 info_vmexit_instruction_length;
 
@@ -135,7 +135,7 @@ void slab_main(slab_params_t *sp){
 
         //memory fault
 		case VMX_VMEXIT_EPT_VIOLATION:{
-            xc_hcbinvoke(XMHF_HYP_SLAB_XCIHUB, sp->cpuid, XC_HYPAPPCB_MEMORYFAULT, 0, sp->src_slabid);
+            xc_hcbinvoke(XMHFGEEC_SLAB_XC_IHUB, sp->cpuid, XC_HYPAPPCB_MEMORYFAULT, 0, sp->src_slabid);
         }
 		break;
 
@@ -143,7 +143,7 @@ void slab_main(slab_params_t *sp){
         //shutdown
         case VMX_VMEXIT_INIT:
    		case VMX_VMEXIT_TASKSWITCH:
-            xc_hcbinvoke(XMHF_HYP_SLAB_XCIHUB, sp->cpuid, XC_HYPAPPCB_SHUTDOWN, 0, sp->src_slabid);
+            xc_hcbinvoke(XMHFGEEC_SLAB_XC_IHUB, sp->cpuid, XC_HYPAPPCB_SHUTDOWN, 0, sp->src_slabid);
 		break;
 
 
@@ -158,7 +158,7 @@ void slab_main(slab_params_t *sp){
 
         //instruction traps
         case VMX_VMEXIT_CPUID:{
-            if(xc_hcbinvoke(XMHF_HYP_SLAB_XCIHUB, sp->cpuid, XC_HYPAPPCB_TRAP_INSTRUCTION,
+            if(xc_hcbinvoke(XMHFGEEC_SLAB_XC_IHUB, sp->cpuid, XC_HYPAPPCB_TRAP_INSTRUCTION,
                             XC_HYPAPPCB_TRAP_INSTRUCTION_CPUID, sp->src_slabid) == XC_HYPAPPCB_CHAIN){
                 u32 guest_rip;
                 u32 info_vmexit_instruction_length;
@@ -215,7 +215,7 @@ void slab_main(slab_params_t *sp){
 
         case VMX_VMEXIT_WRMSR:{
 
-            if(xc_hcbinvoke(XMHF_HYP_SLAB_XCIHUB, sp->cpuid,
+            if(xc_hcbinvoke(XMHFGEEC_SLAB_XC_IHUB, sp->cpuid,
                             XC_HYPAPPCB_TRAP_INSTRUCTION, XC_HYPAPPCB_TRAP_INSTRUCTION_WRMSR, sp->src_slabid) == XC_HYPAPPCB_CHAIN)
             {
 
@@ -249,7 +249,7 @@ void slab_main(slab_params_t *sp){
                         XMHF_SLAB_CALLNEW(&spl);
                         break;
                     default:
-                        spl.dst_slabid = XMHF_HYP_SLAB_UAPI_HCPUSTATE;
+                        spl.dst_slabid = XMHFGEEC_SLAB_UAPI_HCPUSTATE;
                         hcpustate_msrp->uapiphdr.uapifn = XMHF_HIC_UAPI_CPUSTATE_WRMSR;
                         hcpustate_msrp->msr = r.ecx;
                         hcpustate_msrp->value = ((u64)r.edx << 32) | (u64)r.eax;
@@ -258,7 +258,7 @@ void slab_main(slab_params_t *sp){
                 }
 
                 {
-                    spl.dst_slabid = XMHF_HYP_SLAB_UAPI_GCPUSTATE;
+                    spl.dst_slabid = XMHFGEEC_SLAB_UAPI_GCPUSTATE;
                     gcpustate_vmrwp->uapiphdr.uapifn = XMHF_HIC_UAPI_CPUSTATE_VMREAD;
                     gcpustate_vmrwp->encoding = VMCS_INFO_VMEXIT_INSTRUCTION_LENGTH;
                     XMHF_SLAB_CALLNEW(&spl);
@@ -286,7 +286,7 @@ void slab_main(slab_params_t *sp){
 
 
         case VMX_VMEXIT_RDMSR:{
-            if(xc_hcbinvoke(XMHF_HYP_SLAB_XCIHUB, sp->cpuid, XC_HYPAPPCB_TRAP_INSTRUCTION,
+            if(xc_hcbinvoke(XMHFGEEC_SLAB_XC_IHUB, sp->cpuid, XC_HYPAPPCB_TRAP_INSTRUCTION,
                             XC_HYPAPPCB_TRAP_INSTRUCTION_RDMSR, sp->src_slabid) == XC_HYPAPPCB_CHAIN)
             {
                 u32 guest_rip;
@@ -326,7 +326,7 @@ void slab_main(slab_params_t *sp){
                         r.eax = gcpustate_vmrwp->value;
                         break;
                     default:
-                        spl.dst_slabid = XMHF_HYP_SLAB_UAPI_HCPUSTATE;
+                        spl.dst_slabid = XMHFGEEC_SLAB_UAPI_HCPUSTATE;
                         hcpustate_msrp->uapiphdr.uapifn = XMHF_HIC_UAPI_CPUSTATE_RDMSR;
                         hcpustate_msrp->msr = r.ecx;
                         XMHF_SLAB_CALLNEW(&spl);
@@ -335,7 +335,7 @@ void slab_main(slab_params_t *sp){
                         break;
                 }
 
-                spl.dst_slabid = XMHF_HYP_SLAB_UAPI_GCPUSTATE;
+                spl.dst_slabid = XMHFGEEC_SLAB_UAPI_GCPUSTATE;
                 gcpustate_gprs->uapiphdr.uapifn = XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSWRITE;
                 memcpy(&gcpustate_gprs->gprs, &r, sizeof(x86regs_t));
                 XMHF_SLAB_CALLNEW(&spl);
@@ -365,7 +365,7 @@ void slab_main(slab_params_t *sp){
 
         //exception traps
         case VMX_VMEXIT_EXCEPTION:{
-            xc_hcbinvoke(XMHF_HYP_SLAB_XCIHUB, sp->cpuid, XC_HYPAPPCB_TRAP_EXCEPTION, 0, sp->src_slabid);
+            xc_hcbinvoke(XMHFGEEC_SLAB_XC_IHUB, sp->cpuid, XC_HYPAPPCB_TRAP_EXCEPTION, 0, sp->src_slabid);
         }
         break;
 
@@ -380,7 +380,7 @@ void slab_main(slab_params_t *sp){
 
 
     //load GPRs
-    spl.dst_slabid = XMHF_HYP_SLAB_UAPI_GCPUSTATE;
+    spl.dst_slabid = XMHFGEEC_SLAB_UAPI_GCPUSTATE;
     gcpustate_gprs->uapiphdr.uapifn = XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSREAD;
     XMHF_SLAB_CALLNEW(&spl);
     memcpy(&sp->in_out_params[0], &gcpustate_gprs->gprs, sizeof(x86regs_t));
