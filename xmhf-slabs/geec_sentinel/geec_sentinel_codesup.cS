@@ -61,7 +61,7 @@
 // sentinel entry point
 //////
 
-CASM_FUNCDEF(void, slab_main,
+CASM_FUNCDEF_FULL(.slab_entrystub, 1, void, _slab_entrystub,
 {
     xmhfhwm_cpu_insn_movl_mesp_eax(0x4);
     xmhfhwm_cpu_insn_pushl_ebp();
