@@ -71,7 +71,7 @@ while( $i <= $#slabnamearray) {
 }
 
 print "\n";
-print "\n__attribute__(( section(\".data\") )) __attribute__((aligned(4096))) x_slab_info_t _xmhfhic_common_slab_info_table[] = {";
+print "\n__attribute__(( section(\".data\") )) __attribute__((aligned(4096))) xmhfgeec_slab_info_t _xmhfhic_common_slab_info_table[] = {";
 
 
 $i = 0;
@@ -79,8 +79,11 @@ while( $i <= $#slabnamearray ){
 	print "\n";
     print "\n	//$slabnamearray[$i]";
     print "\n	{";
-    print "\n	    {";
 
+    #slab_inuse
+    print "\n	    true,";
+
+    #slab_type
     if($slabtypearray[$i] eq "VfT_PROG_PRIME"){
         print "\n	        XMHFGEEC_SLABTYPE_VfT_PROG_PRIME,";
     }elsif($slabtypearray[$i] eq "VfT_SENTINEL"){
@@ -106,8 +109,10 @@ while( $i <= $#slabnamearray ){
         exit 1;
     }
 
+    #mempgtbl_cr3
     printf "\n	        &_slab_uapi_slabmempgtbl_data_start[%u],", ($i * 4096);
 
+    #slab_tos
     print "\n	        {";
     print "\n	            ((u32)&_slab_$slabnamearray[$i]_stack_start[1*XMHF_SLAB_STACKSIZE]),";
     print "\n	            ((u32)&_slab_$slabnamearray[$i]_stack_start[2*XMHF_SLAB_STACKSIZE]),";
@@ -117,14 +122,12 @@ while( $i <= $#slabnamearray ){
     print "\n	            ((u32)&_slab_$slabnamearray[$i]_stack_start[6*XMHF_SLAB_STACKSIZE]),";
     print "\n	            ((u32)&_slab_$slabnamearray[$i]_stack_start[7*XMHF_SLAB_STACKSIZE]),";
     print "\n	            ((u32)&_slab_$slabnamearray[$i]_stack_start[8*XMHF_SLAB_STACKSIZE]),";
-    print "\n	        }";
-    print "\n	    },";
-    print "\n	    true,";
+    print "\n	        },";
 
-    # call caps
+    #slab_callcaps
     print "\n       0,";
 
-    # uapi caps
+    #slab_uapicaps
     print "\n       {";
     $j = 0;
     while( $j < $total_slabs) {
@@ -133,13 +136,14 @@ while( $i <= $#slabnamearray ){
     }
     print "\n       },";
 
-
+    #slab_devices
     if($slabtypearray[$i] eq "uVU_PROG_RICHGUEST"){
         print "\n	    {true, 0xFFFFFFFFUL, {0}},";
     }else{
         print "\n	    {false, 0, {0}},";
     }
 
+    #slab_physmem_extents
     print "\n	    {";
     print "\n	        {.addr_start = _slab_$slabnamearray[$i]_code_start, .addr_end = _slab_$slabnamearray[$i]_code_end, .protection = 0},";
     print "\n	        {.addr_start = _slab_$slabnamearray[$i]_data_start, .addr_end = _slab_$slabnamearray[$i]_data_end, .protection = 0},";
@@ -147,7 +151,10 @@ while( $i <= $#slabnamearray ){
     print "\n	        {.addr_start = _slab_$slabnamearray[$i]_dmadata_start, .addr_end = _slab_$slabnamearray[$i]_dmadata_end, .protection = 0},";
     print "\n	        {.addr_start = _slab_$slabnamearray[$i]_mmio_start, .addr_end = _slab_$slabnamearray[$i]_mmio_end, .protection = 0},";
     print "\n	    },";
+
+    #slab_entrystub
     print "\n	    (u32)_slab_$slabnamearray[$i]_entrypoint";
+
     print "\n	},";
 	print "\n";
 

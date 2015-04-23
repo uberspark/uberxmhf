@@ -63,7 +63,7 @@ typedef struct {
 
 
 extern __attribute__((section(".data"))) __xmhfhic_safestack_element_t __xmhfhic_safestack[MAX_PLATFORM_CPUS][512];
-extern __attribute__((section(".data"))) __attribute__((aligned(4096))) x_slab_info_t _xmhfhic_common_slab_info_table[XMHFGEEC_TOTAL_SLABS];
+extern __attribute__((section(".data"))) __attribute__((aligned(4096))) xmhfgeec_slab_info_t _xmhfhic_common_slab_info_table[XMHFGEEC_TOTAL_SLABS];
 extern __attribute__((section(".data"))) u64 __xmhfhic_safestack_indices[MAX_PLATFORM_CPUS];
 
 

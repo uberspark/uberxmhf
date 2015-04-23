@@ -161,7 +161,7 @@ static void _slabmempgtbl_initmempgtbl(u32 slabid){
     if(slabid >= XMHFGEEC_TOTAL_SLABS)
         return;
 
-    slabtype = _xmhfhic_common_slab_info_table[slabid].archdata.slabtype;
+    slabtype = _xmhfhic_common_slab_info_table[slabid].slabtype;
 
     switch(slabtype){
         case XMHFGEEC_SLABTYPE_VfT_SENTINEL:
@@ -205,7 +205,7 @@ static void _slabmempgtbl_setentryforpaddr(u32 slabid, u64 gpa, u64 entry){
     if(slabid >= XMHFGEEC_TOTAL_SLABS)
         return;
 
-    slabtype = _xmhfhic_common_slab_info_table[slabid].archdata.slabtype;
+    slabtype = _xmhfhic_common_slab_info_table[slabid].slabtype;
     mmio_paddr = _xmhfhic_common_slab_info_table[slabid].slab_physmem_extents[4].addr_start;
 
     switch(slabtype){
@@ -251,7 +251,7 @@ static u64 _slabmempgtbl_getentryforpaddr(u32 slabid, u64 gpa){
     if(slabid >= XMHFGEEC_TOTAL_SLABS)
         return;
 
-    slabtype = _xmhfhic_common_slab_info_table[slabid].archdata.slabtype;
+    slabtype = _xmhfhic_common_slab_info_table[slabid].slabtype;
     mmio_paddr = _xmhfhic_common_slab_info_table[slabid].slab_physmem_extents[4].addr_start;
 
     switch(slabtype){
