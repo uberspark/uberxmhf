@@ -17,7 +17,7 @@ export XMHF_SLAB_TYPE := @SLABTYPE@
 
 # populate slab stub type based on the slab type
 ifeq ($(XMHF_SLAB_TYPE), VfT_PROG)
-	XMHF_SLAB_STUBOBJECTS := $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_slabmapdef.o $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_tprogslab_stubs.o
+	XMHF_SLAB_STUBOBJECTS := $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_slabmapdef.o $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_vft_prog_stubs.o
 endif
 
 ifeq ($(XMHF_SLAB_TYPE), VfT_SENTINEL)
@@ -25,7 +25,7 @@ ifeq ($(XMHF_SLAB_TYPE), VfT_SENTINEL)
 endif
 
 ifeq ($(XMHF_SLAB_TYPE), VfT_PROG_PRIME)
-	XMHF_SLAB_STUBOBJECTS := $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_slabmapdef.o $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_tprogslab_stubs.o
+	XMHF_SLAB_STUBOBJECTS := $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_slabmapdef.o $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_vft_prog_stubs.o
 endif
 
 
