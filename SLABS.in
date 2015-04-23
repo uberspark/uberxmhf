@@ -7,7 +7,7 @@ xmhf-slabs/uapi_slabmemacc , VfT_PROG
 xmhf-slabs/uapi_slabmempgtbl , VfT_PROG
 xmhf-slabs/uapi_slabdevpgtbl , VfT_PROG
 xmhf-slabs/xc_init , VfT_PROG
-xmhf-slabs/xc_ihub , VfT_PROG_INTERCEPT
+xmhf-slabs/xc_ihub , VfT_PROG
 xmhf-slabs/xc_exhub , VfT_PROG
 xmhf-slabs/xc_testslab , VfT_PROG
 xmhf-slabs/xh_hyperdep , VfT_PROG

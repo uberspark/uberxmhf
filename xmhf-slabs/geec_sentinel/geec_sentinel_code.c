@@ -542,7 +542,7 @@ void geec_sentinel_main(slab_params_t *sp, void *caller_stack_frame){
 
 
         case XMHFGEEC_SENTINEL_CALL_INTERCEPT:{
-            if(!(_xmhfhic_common_slab_info_table[sp->dst_slabid].archdata.slabtype == XMHFGEEC_SLABTYPE_VfT_PROG_INTERCEPT)){
+            if(!(_xmhfhic_common_slab_info_table[sp->dst_slabid].archdata.slabtype == XMHFGEEC_SLABTYPE_VfT_PROG)){
                 _XDPRINTF_("GEEC_SENTINEL(ln:%u): intercept target slab not VfT_PROG_INTERCEPT. Halting!\n", __LINE__);
                 HALT();
             }
@@ -564,7 +564,7 @@ void geec_sentinel_main(slab_params_t *sp, void *caller_stack_frame){
 
         case XMHFGEEC_SENTINEL_RET_INTERCEPT:{
             if(!
-               (_xmhfhic_common_slab_info_table[sp->src_slabid].archdata.slabtype == XMHFGEEC_SLABTYPE_VfT_PROG_INTERCEPT &&
+               (_xmhfhic_common_slab_info_table[sp->src_slabid].archdata.slabtype == XMHFGEEC_SLABTYPE_VfT_PROG &&
                 (_xmhfhic_common_slab_info_table[sp->dst_slabid].archdata.slabtype == XMHFGEEC_SLABTYPE_uVT_PROG_GUEST ||
                  _xmhfhic_common_slab_info_table[sp->dst_slabid].archdata.slabtype == XMHFGEEC_SLABTYPE_uVU_PROG_GUEST ||
                  _xmhfhic_common_slab_info_table[sp->dst_slabid].archdata.slabtype == XMHFGEEC_SLABTYPE_uVU_PROG_RICHGUEST
