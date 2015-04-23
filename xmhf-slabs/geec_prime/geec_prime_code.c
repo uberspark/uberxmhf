@@ -205,7 +205,7 @@ void xmhfhic_arch_setup_slab_info(void){
     {
         u32 i;
 
-        for(i=0; i < XMHF_HIC_MAX_SLABS; i++){
+        for(i=0; i < XMHFGEEC_TOTAL_SLABS; i++){
 
 /*            _xmhfhic_common_slab_info_table[i].slab_inuse = true;
             _xmhfhic_common_slab_info_table[i].slab_privilegemask =
@@ -275,7 +275,7 @@ void xmhfhic_arch_setup_slab_info(void){
 	{
 			u32 i;
 
-			for(i=0; i < XMHF_HIC_MAX_SLABS; i++){
+			for(i=0; i < XMHFGEEC_TOTAL_SLABS; i++){
 				_XDPRINTF_("slab %u: dumping slab header\n", i);
 				_XDPRINTF_("	slabtype=%08x\n", _xmhfhic_common_slab_info_table[i].archdata.slabtype);
 				_XDPRINTF_("	slab_inuse=%s\n", ( _xmhfhic_common_slab_info_table[i].slab_inuse ? "true" : "false") );
@@ -640,7 +640,7 @@ static void __xmhfhic_x86vmxx86pc_postdrt(void){
 static u32 _geec_prime_getslabfordevice(u32 bus, u32 dev, u32 func){
     u32 i;
 
-    for(i=0; i < XMHF_HIC_MAX_SLABS; i++){
+    for(i=0; i < XMHFGEEC_TOTAL_SLABS; i++){
         //for now detect rich guest slab and allocate all platform devices to it
         if(_xmhfhic_common_slab_info_table[i].slab_devices.desc_valid &&
             _xmhfhic_common_slab_info_table[i].slab_devices.numdevices == 0xFFFFFFFFUL)
@@ -697,7 +697,7 @@ void xmhfhic_arch_setup_slab_device_allocation(void){
     XMHF_SLAB_CALLNEW(&spl);
 
     //use slabdevpgtbl:initdevpgtbl to initialize all slab device page tables
-    for(i=0; i < XMHF_HIC_MAX_SLABS; i++){
+    for(i=0; i < XMHFGEEC_TOTAL_SLABS; i++){
         initdevpgtblp->uapiphdr.uapifn = XMHFGEEC_UAPI_SDEVPGTBL_INITDEVPGTBL;
         initdevpgtblp->dst_slabid = i;
         XMHF_SLAB_CALLNEW(&spl);
@@ -777,7 +777,7 @@ static u32 _geec_prime_slab_getspatype(u32 slab_index, u32 spa){
 	u32 i;
 
 	//slab memory regions
-	for(i=0; i < XMHF_HIC_MAX_SLABS; i++){
+	for(i=0; i < XMHFGEEC_TOTAL_SLABS; i++){
 		u32 mask = _xmhfhic_common_slab_info_table[i].archdata.slabtype;
 
         if( i == slab_index)
@@ -1351,7 +1351,7 @@ void xmhfhic_arch_setup_slab_mem_page_tables(void){
     _XDPRINTF_("%s: gathered EPT memory types\n", __func__);
 
 
-    for(i=0; i < XMHF_HIC_MAX_SLABS; i++){
+    for(i=0; i < XMHFGEEC_TOTAL_SLABS; i++){
         slabtype = _xmhfhic_common_slab_info_table[i].archdata.slabtype;
 
         //setup slab memory table shape

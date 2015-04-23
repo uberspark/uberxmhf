@@ -58,7 +58,7 @@
 
 #include <xc_init.h>
 
-extern x_slab_info_t _x_xmhfhic_common_slab_info_table[XMHF_HIC_MAX_SLABS];
+extern x_slab_info_t _x_xmhfhic_common_slab_info_table[XMHFGEEC_TOTAL_SLABS];
 
 
 //////
