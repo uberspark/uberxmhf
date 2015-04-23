@@ -127,6 +127,9 @@ while( $i <= $#slabnamearray ){
     #slab_callcaps
     print "\n       0xFFFFFFFFUL,";
 
+    #slab_uapisupported
+    print "\n       true,";
+
     #slab_uapicaps
     print "\n       {";
     $j = 0;
