@@ -57,7 +57,7 @@
 
 #include <xc.h>
 #include <uapi_slabmemacc.h>
-
+#include <geec_sentinel.h>
 
 /*
 static bool _uapicheck_is_within_slab_memory_extents(u64 slab_id, u64 addr, u64 size){
@@ -88,6 +88,15 @@ void slab_main(slab_params_t *sp){
         case XMHF_HIC_UAPI_PHYSMEM_PEEK:{
             xmhf_uapi_slabmemacc_params_t *smemaccp = (xmhf_uapi_slabmemacc_params_t *)sp->in_out_params;
 
+
+            //check slab memory read capabilities
+            if( !(_xmhfhic_common_slab_info_table[smemaccp->dst_slabid].slab_memgrantreadcaps & XMHFGEEC_SLAB_MEMGRANTREADCAP_MASK(sp->src_slabid)) ){
+                _XDPRINTF_("UAPI_SLABMEMACC: Halt!. memgrantreadcap failed for src(%u)-->dst(%u), dst caps=0x%x\n",
+                   sp->src_slabid, smemaccp->dst_slabid, _xmhfhic_common_slab_info_table[smemaccp->dst_slabid].slab_memgrantreadcaps);
+                HALT();
+            }
+
+
             memcpy(smemaccp->addr_to, smemaccp->addr_from, smemaccp->numbytes);
             //_XDPRINTF_("UAPI_SLABMEMACC[%u]: PEEK: addr_to=%x, addr_from=%x, \
             //           numbytes=%x\n", (u16)sp->cpuid, smemaccp->addr_to,
@@ -97,6 +106,14 @@ void slab_main(slab_params_t *sp){
 
         case XMHF_HIC_UAPI_PHYSMEM_POKE:{
             xmhf_uapi_slabmemacc_params_t *smemaccp = (xmhf_uapi_slabmemacc_params_t *)sp->in_out_params;
+
+            //check slab memory write capabilities
+            if( !(_xmhfhic_common_slab_info_table[smemaccp->dst_slabid].slab_memgrantwritecaps & XMHFGEEC_SLAB_MEMGRANTWRITECAP_MASK(sp->src_slabid)) ){
+                _XDPRINTF_("UAPI_SLABMEMACC: Halt!. memgrantwritecap failed for src(%u)-->dst(%u), dst caps=0x%x\n",
+                   sp->src_slabid, smemaccp->dst_slabid, _xmhfhic_common_slab_info_table[smemaccp->dst_slabid].slab_memgrantwritecaps);
+                HALT();
+            }
+
 
             memcpy(smemaccp->addr_to, smemaccp->addr_from, smemaccp->numbytes);
         }

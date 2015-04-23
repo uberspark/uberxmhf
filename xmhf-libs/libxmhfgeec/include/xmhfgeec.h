@@ -148,8 +148,11 @@ typedef struct {
 } __attribute__((packed)) xmhfgeec_slab_info_t;
 
 
-#define XMHFGEEC_SLAB_CALLCAP_MASK(x) (1UL << x)
-#define XMHFGEEC_SLAB_UAPICAP_MASK(x) (u8)(1 << x)
+#define XMHFGEEC_SLAB_CALLCAP_MASK(x)               (1UL << x)
+#define XMHFGEEC_SLAB_UAPICAP_MASK(x)               (u8)(1 << x)
+#define XMHFGEEC_SLAB_MEMGRANTREADCAP_MASK(x)       (1UL << x)
+#define XMHFGEEC_SLAB_MEMGRANTWRITECAP_MASK(x)      (1UL << x)
+
 
 typedef struct {
     u32 slab_ctype;
