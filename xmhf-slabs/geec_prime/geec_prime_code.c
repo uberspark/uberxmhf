@@ -184,6 +184,7 @@ void _geec_prime_main(slab_params_t *sp){
         slab_params_t spl;
         spl.src_slabid = XMHFGEEC_SLAB_GEEC_PRIME;
         spl.dst_slabid = XMHFGEEC_SLAB_GEEC_PRIMESMP;
+        spl.dst_uapifn = 0;
         spl.cpuid = 0;
         XMHF_SLAB_CALLNEW(&spl);
     }
