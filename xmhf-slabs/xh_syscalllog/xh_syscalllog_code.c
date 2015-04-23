@@ -111,7 +111,7 @@ static void sl_register(u32 cpuindex, u32 guest_slab_index, u64 gpa){
         smemaccp->addr_to = &_sl_pagebuffer;
         smemaccp->addr_from = gpa;
         smemaccp->numbytes = sizeof(_sl_pagebuffer);
-        smemaccp->uapiphdr.uapifn = XMHF_HIC_UAPI_PHYSMEM_PEEK;
+         spl.dst_uapifn = XMHF_HIC_UAPI_PHYSMEM_PEEK;
         XMHF_SLAB_CALLNEW(&spl);
 
         _XDPRINTF_("%s[%u]: grabbed page contents at gpa=%016llx\n",
@@ -150,7 +150,7 @@ static void _hcb_hypercall(u32 cpuindex, u32 guest_slab_index){
     spl.cpuid = cpuindex;
     //spl.in_out_params[0] = XMHF_HIC_UAPI_CPUSTATE;
 
-    gcpustate_gprs->uapiphdr.uapifn = XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSREAD;
+     spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSREAD;
     XMHF_SLAB_CALLNEW(&spl);
 
     call_id = gprs->eax;
@@ -202,7 +202,7 @@ static void _hcb_memoryfault(u32 cpuindex, u32 guest_slab_index, u64 gpa, u64 gv
 
 
     //read GPR state
-    gcpustate_gprs->uapiphdr.uapifn = XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSREAD;
+     spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSREAD;
     XMHF_SLAB_CALLNEW(&spl);
     memcpy(&r, &gcpustate_gprs->gprs, sizeof(x86regs_t));
 
@@ -213,7 +213,7 @@ static void _hcb_memoryfault(u32 cpuindex, u32 guest_slab_index, u64 gpa, u64 gv
     smemaccp->addr_from = shadow_sysenter_rip;
     smemaccp->numbytes = sizeof(_sl_pagebuffer);
     //spl.in_out_params[0] = XMHF_HIC_UAPI_PHYSMEM;
-    smemaccp->uapiphdr.uapifn = XMHF_HIC_UAPI_PHYSMEM_PEEK;
+     spl.dst_uapifn = XMHF_HIC_UAPI_PHYSMEM_PEEK;
     XMHF_SLAB_CALLNEW(&spl);
 
     //compute SHA-1 of the syscall page
@@ -233,7 +233,7 @@ static void _hcb_memoryfault(u32 cpuindex, u32 guest_slab_index, u64 gpa, u64 gv
     //set guest RIP to shadow_sysenter_rip to continue execution
     spl.dst_slabid = XMHFGEEC_SLAB_UAPI_GCPUSTATE;
     //spl.in_out_params[0] = XMHF_HIC_UAPI_CPUSTATE;
-    gcpustate_vmrwp->uapiphdr.uapifn = XMHF_HIC_UAPI_CPUSTATE_VMWRITE;
+     spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_VMWRITE;
     gcpustate_vmrwp->encoding = VMCS_GUEST_RIP;
     gcpustate_vmrwp->value = shadow_sysenter_rip;
     XMHF_SLAB_CALLNEW(&spl);
@@ -264,7 +264,7 @@ static u32 _hcb_trap_instruction(u32 cpuindex, u32 guest_slab_index, u32 insntyp
 
     if (insntype == XC_HYPAPPCB_TRAP_INSTRUCTION_WRMSR){
 
-        gcpustate_gprs->uapiphdr.uapifn = XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSREAD;
+         spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSREAD;
         XMHF_SLAB_CALLNEW(&spl);
         msrvalue = r->ecx;
 
@@ -283,7 +283,7 @@ static u32 _hcb_trap_instruction(u32 cpuindex, u32 guest_slab_index, u32 insntyp
 
                 shadow_sysenter_rip = ( ((u64)(u32)r->edx << 32) | (u32)r->eax ) ;
 
-                gcpustate_vmrwp->uapiphdr.uapifn = XMHF_HIC_UAPI_CPUSTATE_VMWRITE;
+                 spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_VMWRITE;
                 gcpustate_vmrwp->encoding = VMCS_GUEST_SYSENTER_EIP;
                 gcpustate_vmrwp->value = 0;
                 XMHF_SLAB_CALLNEW(&spl);
@@ -291,12 +291,12 @@ static u32 _hcb_trap_instruction(u32 cpuindex, u32 guest_slab_index, u32 insntyp
                 if(!sl_activated){
                     spl.dst_slabid = XMHFGEEC_SLAB_UAPI_SLABMEMPGTBL;
 
-                    getentryforpaddrp->uapiphdr.uapifn = XMHFGEEC_UAPI_SLABMEMPGTBL_GETENTRYFORPADDR;
+                     spl.dst_uapifn = XMHFGEEC_UAPI_SLABMEMPGTBL_GETENTRYFORPADDR;
                     getentryforpaddrp->dst_slabid = guest_slab_index;
                     getentryforpaddrp->gpa = 0;
                     XMHF_SLAB_CALLNEW(&spl);
 
-                    setentryforpaddrp->uapiphdr.uapifn = XMHFGEEC_UAPI_SLABMEMPGTBL_SETENTRYFORPADDR;
+                     spl.dst_uapifn = XMHFGEEC_UAPI_SLABMEMPGTBL_SETENTRYFORPADDR;
                     setentryforpaddrp->dst_slabid = guest_slab_index;
                     setentryforpaddrp->gpa = 0;
                     setentryforpaddrp->entry = getentryforpaddrp->result_entry & ~(0x7);
@@ -315,7 +315,7 @@ static u32 _hcb_trap_instruction(u32 cpuindex, u32 guest_slab_index, u32 insntyp
 
     }else if (insntype == XC_HYPAPPCB_TRAP_INSTRUCTION_RDMSR){
 
-        gcpustate_gprs->uapiphdr.uapifn = XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSREAD;
+         spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSREAD;
         XMHF_SLAB_CALLNEW(&spl);
         msrvalue = r->ecx;
 
@@ -326,7 +326,7 @@ static u32 _hcb_trap_instruction(u32 cpuindex, u32 guest_slab_index, u32 insntyp
                 r->edx = shadow_sysenter_rip >> 32;
                 r->eax = (u32)shadow_sysenter_rip;
 
-                gcpustate_gprs->uapiphdr.uapifn = XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSWRITE;
+                 spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSWRITE;
                 XMHF_SLAB_CALLNEW(&spl);
 
                 status = XC_HYPAPPCB_NOCHAIN;
@@ -346,7 +346,7 @@ static u32 _hcb_trap_instruction(u32 cpuindex, u32 guest_slab_index, u32 insntyp
         spl.dst_slabid = XMHFGEEC_SLAB_UAPI_GCPUSTATE;
         //spl.in_out_params[0] = XMHF_HIC_UAPI_CPUSTATE;
 
-        gcpustate_vmrwp->uapiphdr.uapifn = XMHF_HIC_UAPI_CPUSTATE_VMREAD;
+         spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_VMREAD;
         gcpustate_vmrwp->encoding = VMCS_INFO_VMEXIT_INSTRUCTION_LENGTH;
         XMHF_SLAB_CALLNEW(&spl);
         info_vmexit_instruction_length = gcpustate_vmrwp->value;
@@ -357,7 +357,7 @@ static u32 _hcb_trap_instruction(u32 cpuindex, u32 guest_slab_index, u32 insntyp
 
         guest_rip+=info_vmexit_instruction_length;
 
-        gcpustate_vmrwp->uapiphdr.uapifn = XMHF_HIC_UAPI_CPUSTATE_VMWRITE;
+         spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_VMWRITE;
         gcpustate_vmrwp->encoding = VMCS_GUEST_RIP;
         gcpustate_vmrwp->value = guest_rip;
         XMHF_SLAB_CALLNEW(&spl);
@@ -422,7 +422,7 @@ void slab_main(slab_params_t *sp){
          	spl.dst_slabid = XMHFGEEC_SLAB_UAPI_GCPUSTATE;
          	spl.cpuid = sp->cpuid;
             //spl.in_out_params[0] = XMHF_HIC_UAPI_CPUSTATE;
-            gcpustate_vmrwp->uapiphdr.uapifn = XMHF_HIC_UAPI_CPUSTATE_VMREAD;
+             spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_VMREAD;
 
             gcpustate_vmrwp->encoding = VMCS_INFO_EXIT_QUALIFICATION;
             XMHF_SLAB_CALLNEW(&spl);

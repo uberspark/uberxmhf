@@ -655,8 +655,6 @@ void xmhfhic_arch_setup_slab_device_allocation(void){
     u32 b, d, f;
     slab_platformdevices_t ddescs;
     slab_params_t spl;
-    xmhfgeec_uapi_slabdevpgtbl_init_params_t *initp =
-        (xmhfgeec_uapi_slabdevpgtbl_init_params_t *)spl.in_out_params;
     xmhfgeec_uapi_slabdevpgtbl_initretcet_params_t *initretcetp =
         (xmhfgeec_uapi_slabdevpgtbl_initretcet_params_t *)spl.in_out_params;
     xmhfgeec_uapi_slabdevpgtbl_initdevpgtbl_params_t *initdevpgtblp =
@@ -688,16 +686,16 @@ void xmhfhic_arch_setup_slab_device_allocation(void){
 	}
 
     //slabdevpgtbl:init
-    initp->uapiphdr.uapifn = XMHFGEEC_UAPI_SDEVPGTBL_INIT;
+    spl.dst_uapifn = XMHFGEEC_UAPI_SDEVPGTBL_INIT;
     XMHF_SLAB_CALLNEW(&spl);
 
     //slabdevpgtbl:initretcet
-    initretcetp->uapiphdr.uapifn = XMHFGEEC_UAPI_SDEVPGTBL_INITRETCET;
+    spl.dst_uapifn = XMHFGEEC_UAPI_SDEVPGTBL_INITRETCET;
     XMHF_SLAB_CALLNEW(&spl);
 
     //use slabdevpgtbl:initdevpgtbl to initialize all slab device page tables
     for(i=0; i < XMHFGEEC_TOTAL_SLABS; i++){
-        initdevpgtblp->uapiphdr.uapifn = XMHFGEEC_UAPI_SDEVPGTBL_INITDEVPGTBL;
+        spl.dst_uapifn = XMHFGEEC_UAPI_SDEVPGTBL_INITDEVPGTBL;
         initdevpgtblp->dst_slabid = i;
         XMHF_SLAB_CALLNEW(&spl);
     }
@@ -721,7 +719,7 @@ void xmhfhic_arch_setup_slab_device_allocation(void){
 				if(vendor_id == 0xFFFF && device_id == 0xFFFF)
 					break;
 
-                binddevicep->uapiphdr.uapifn = XMHFGEEC_UAPI_SDEVPGTBL_BINDDEVICE;
+                spl.dst_uapifn = XMHFGEEC_UAPI_SDEVPGTBL_BINDDEVICE;
                 binddevicep->dst_slabid = _geec_prime_getslabfordevice(b, d, f);
                 if(binddevicep->dst_slabid == 0xFFFFFFFFUL){
                     _XDPRINTF_("%s: Warning, could not find slab for device, skipping\n", __func__);
@@ -1173,7 +1171,7 @@ static void _geec_prime_populate_slab_pagetables_VfT_prog(u32 slabid){
 	for(gpa=0; gpa < ADDR_4GB; gpa += PAGE_SIZE_2M){
         flags = _geec_prime_slab_getptflagsforspa_pae(slabid, (u32)gpa);
 
-        setentryforpaddrp->uapiphdr.uapifn = XMHFGEEC_UAPI_SLABMEMPGTBL_SETENTRYFORPADDR;
+        spl.dst_uapifn = XMHFGEEC_UAPI_SLABMEMPGTBL_SETENTRYFORPADDR;
         setentryforpaddrp->dst_slabid = slabid;
         setentryforpaddrp->gpa = gpa;
         setentryforpaddrp->entry = pae_make_pde_big(gpa, flags);
@@ -1215,7 +1213,7 @@ static void _geec_prime_populate_slab_pagetables_uVT_uVU_prog(u32 slabid){
             _XDPRINTF_("%s: setting USER for addr=%x in slab=%u, flags=%016llx\n", __func__,
                        (u32)gpa, slabid, flags);
         }
-        setentryforpaddrp->uapiphdr.uapifn = XMHFGEEC_UAPI_SLABMEMPGTBL_SETENTRYFORPADDR;
+        spl.dst_uapifn = XMHFGEEC_UAPI_SLABMEMPGTBL_SETENTRYFORPADDR;
         setentryforpaddrp->dst_slabid = slabid;
         setentryforpaddrp->gpa = gpa;
         setentryforpaddrp->entry = pae_make_pde_big(gpa, flags);
@@ -1261,7 +1259,7 @@ static void _geec_prime_populate_slab_pagetables_uVT_uVU_prog_guest(u32 slabid){
         else
             p_table_value = (u64) (gpa)  | ((u64)6 << 3) | flags ;	//present, WB, track host MTRR
 
-        setentryforpaddrp->uapiphdr.uapifn = XMHFGEEC_UAPI_SLABMEMPGTBL_SETENTRYFORPADDR;
+        spl.dst_uapifn = XMHFGEEC_UAPI_SLABMEMPGTBL_SETENTRYFORPADDR;
         setentryforpaddrp->dst_slabid = slabid;
         setentryforpaddrp->gpa = gpa;
         setentryforpaddrp->entry = p_table_value;
@@ -1280,7 +1278,7 @@ static void _geec_prime_populate_slab_pagetables_uVT_uVU_prog_guest(u32 slabid){
         else
             p_table_value = (u64) (gpa)  | ((u64)6 << 3) | flags ;	//present, WB, track host MTRR
 
-        setentryforpaddrp->uapiphdr.uapifn = XMHFGEEC_UAPI_SLABMEMPGTBL_SETENTRYFORPADDR;
+        spl.dst_uapifn = XMHFGEEC_UAPI_SLABMEMPGTBL_SETENTRYFORPADDR;
         setentryforpaddrp->dst_slabid = slabid;
         setentryforpaddrp->gpa = gpa;
         setentryforpaddrp->entry = p_table_value;
@@ -1289,7 +1287,7 @@ static void _geec_prime_populate_slab_pagetables_uVT_uVU_prog_guest(u32 slabid){
 
 
 #if defined (__DEBUG_SERIAL__)
-        setentryforpaddrp->uapiphdr.uapifn = XMHFGEEC_UAPI_SLABMEMPGTBL_SETENTRYFORPADDR;
+        spl.dst_uapifn = XMHFGEEC_UAPI_SLABMEMPGTBL_SETENTRYFORPADDR;
         setentryforpaddrp->dst_slabid = slabid;
         setentryforpaddrp->gpa = ADDR_LIBXMHFDEBUGDATA;
         p_table_value = (u64) (ADDR_LIBXMHFDEBUGDATA)  | ((u64)6 << 3) | 0x87 ;	//present, WB, track host MTRR
@@ -1322,7 +1320,7 @@ static void _geec_prime_populate_slab_pagetables_uVU_prog_richguest(u32 slabid){
         else
             p_table_value = (u64) (gpa)  | ((u64)6 << 3) | flags ;	//present, WB, track host MTRR
 
-        setentryforpaddrp->uapiphdr.uapifn = XMHFGEEC_UAPI_SLABMEMPGTBL_SETENTRYFORPADDR;
+        spl.dst_uapifn = XMHFGEEC_UAPI_SLABMEMPGTBL_SETENTRYFORPADDR;
         setentryforpaddrp->dst_slabid = slabid;
         setentryforpaddrp->gpa = gpa;
         setentryforpaddrp->entry = p_table_value;
@@ -1354,7 +1352,7 @@ void xmhfhic_arch_setup_slab_mem_page_tables(void){
         slabtype = _xmhfhic_common_slab_info_table[i].slabtype;
 
         //setup slab memory table shape
-        initmempgtblp->uapiphdr.uapifn = XMHFGEEC_UAPI_SLABMEMPGTBL_INITMEMPGTBL;
+        spl.dst_uapifn = XMHFGEEC_UAPI_SLABMEMPGTBL_INITMEMPGTBL;
         initmempgtblp->dst_slabid = i;
         XMHF_SLAB_CALLNEW(&spl);
 

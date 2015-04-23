@@ -148,7 +148,7 @@ void slab_main(slab_params_t *sp){
             smemaccp->numbytes = sizeof(guest_slab_magic);
 
             //spl.in_out_params[0] = XMHF_HIC_UAPI_PHYSMEM;
-            smemaccp->uapiphdr.uapifn = XMHF_HIC_UAPI_PHYSMEM_PEEK;
+            spl.dst_uapifn = XMHF_HIC_UAPI_PHYSMEM_PEEK;
             spl.cpuid = sp->cpuid;
             spl.src_slabid = XMHFGEEC_SLAB_XC_INIT;
             spl.dst_slabid = XMHFGEEC_SLAB_UAPI_SLABMEMACC;
@@ -171,7 +171,7 @@ void slab_main(slab_params_t *sp){
             smemaccp->numbytes = sizeof(_xcguestslab_init_gdt);
 
             //spl.in_out_params[0] = XMHF_HIC_UAPI_PHYSMEM;
-            smemaccp->uapiphdr.uapifn = XMHF_HIC_UAPI_PHYSMEM_POKE;
+            spl.dst_uapifn = XMHF_HIC_UAPI_PHYSMEM_POKE;
             spl.cpuid = sp->cpuid;
             spl.src_slabid = XMHFGEEC_SLAB_XC_INIT;
             spl.dst_slabid = XMHFGEEC_SLAB_UAPI_SLABMEMACC;
@@ -190,7 +190,7 @@ void slab_main(slab_params_t *sp){
             spl.dst_slabid = XMHFGEEC_SLAB_UAPI_GCPUSTATE;
 
             //spl.in_out_params[0] = XMHF_HIC_UAPI_CPUSTATE;
-            gcpustate_vmrwp->uapiphdr.uapifn = XMHF_HIC_UAPI_CPUSTATE_VMWRITE;
+            spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_VMWRITE;
             gcpustate_vmrwp->encoding = VMCS_GUEST_GDTR_BASE;
             gcpustate_vmrwp->value = guest_slab_gdt_paddr;
 

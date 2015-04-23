@@ -290,9 +290,9 @@ static u64 _slabmempgtbl_getentryforpaddr(u32 slabid, u64 gpa){
 /////
 void slab_main(slab_params_t *sp){
 
-    xmhf_uapi_params_hdr_t *uapiphdr = (xmhf_uapi_params_hdr_t *)sp->in_out_params;
+    //xmhf_uapi_params_hdr_t *uapiphdr = (xmhf_uapi_params_hdr_t *)sp->in_out_params;
 
-    switch(uapiphdr->uapifn){
+    switch(sp->dst_uapifn){
 
        case XMHFGEEC_UAPI_SLABMEMPGTBL_INITMEMPGTBL:{
             xmhfgeec_uapi_slabmempgtbl_initmempgtbl_params_t *initmempgtblp =
@@ -327,7 +327,7 @@ void slab_main(slab_params_t *sp){
 
         default:
             _XDPRINTF_("UAPI_SLABMEMPGTBL[%u]: Unknown uAPI function %x. Halting!\n",
-                    (u16)sp->cpuid, uapiphdr->uapifn);
+                    (u16)sp->cpuid, sp->dst_uapifn);
             HALT();
             return;
     }

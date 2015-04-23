@@ -64,32 +64,24 @@
 
 #ifndef __ASSEMBLY__
 
-typedef struct {
-    xmhf_uapi_params_hdr_t uapiphdr;
-}__attribute__((packed)) xmhfgeec_uapi_slabdevpgtbl_init_params_t;
 
 typedef struct {
-    xmhf_uapi_params_hdr_t uapiphdr;
     u32 result_retpaddr;
 }__attribute__((packed)) xmhfgeec_uapi_slabdevpgtbl_initretcet_params_t;
 
 
 typedef struct {
-    xmhf_uapi_params_hdr_t uapiphdr;
     u32 dst_slabid;
 }__attribute__((packed)) xmhfgeec_uapi_slabdevpgtbl_initdevpgtbl_params_t;
 
 
 typedef struct {
-    xmhf_uapi_params_hdr_t uapiphdr;
     u32 dst_slabid;
     u32 pagewalk_level;
     u32 bus;
     u32 dev;
     u32 func;
 }__attribute__((packed)) xmhfgeec_uapi_slabdevpgtbl_binddevice_params_t;
-
-
 
 
 typedef struct {
