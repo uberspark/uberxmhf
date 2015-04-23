@@ -170,7 +170,8 @@ void _geec_sentinel_sysenter_stub(slab_params_t *sp, void *caller_stack_frame){
     if( !(sp->slab_ctype == XMHFGEEC_SENTINEL_RET_VfT_PROG_TO_uVT_uVU_PROG ||
           sp->slab_ctype == XMHFGEEC_SENTINEL_CALL_uVT_uVU_PROG_TO_VfT_PROG
           ) ){
-        _XDPRINTF_("%s[ln:%u]: inconsistent sp->xxx. halting!\n", __func__, __LINE__);
+        _XDPRINTF_("%s[ln:%u]: inconsistent sp->xxx (%x). halting!\n", __func__,
+                   __LINE__, sp->slab_ctype);
         HALT();
     }
 
