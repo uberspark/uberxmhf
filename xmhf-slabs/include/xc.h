@@ -60,13 +60,13 @@
 #define XC_HYPAPPCB_CHAIN                       (1)
 #define XC_HYPAPPCB_NOCHAIN                     (2)
 
-#define XC_HYPAPPCB_INITIALIZE                  (1)
-#define XC_HYPAPPCB_HYPERCALL                   (2)
-#define XC_HYPAPPCB_MEMORYFAULT                 (3)
-#define XC_HYPAPPCB_SHUTDOWN                    (4)
-#define XC_HYPAPPCB_TRAP_IO                     (5)
-#define XC_HYPAPPCB_TRAP_INSTRUCTION            (6)
-#define XC_HYPAPPCB_TRAP_EXCEPTION              (7)
+#define XC_HYPAPPCB_INITIALIZE                  (0)
+#define XC_HYPAPPCB_HYPERCALL                   (1)
+#define XC_HYPAPPCB_MEMORYFAULT                 (2)
+#define XC_HYPAPPCB_SHUTDOWN                    (3)
+#define XC_HYPAPPCB_TRAP_IO                     (4)
+#define XC_HYPAPPCB_TRAP_INSTRUCTION            (5)
+#define XC_HYPAPPCB_TRAP_EXCEPTION              (6)
 
 
 #define XC_HYPAPPCB_TRAP_INSTRUCTION_CPUID      (0x60)
@@ -126,6 +126,7 @@ static inline u32 xc_hcbinvoke(u32 src_slabid, u32 cpuid, u32 cbtype, u32 cbqual
 
     spl.src_slabid = src_slabid;
     spl.cpuid = cpuid;
+    spl.dst_uapifn = 0;
     hcbp->cbtype=cbtype;
     hcbp->cbqual=cbqual;
     hcbp->guest_slab_index=guest_slab_index;

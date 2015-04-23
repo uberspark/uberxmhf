@@ -134,7 +134,7 @@ while( $i <= $#slabnamearray ){
     print "\n       {";
     $j = 0;
     while( $j < $total_slabs) {
-        print "\n	    0xFF,";
+        print "\n	    0xFFFFFFFFUL,";
         $j=$j+1;
     }
     print "\n       },";
