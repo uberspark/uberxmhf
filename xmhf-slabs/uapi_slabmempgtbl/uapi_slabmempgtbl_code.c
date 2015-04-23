@@ -165,9 +165,6 @@ static void _slabmempgtbl_initmempgtbl(u32 slabid){
 
     switch(slabtype){
         case XMHFGEEC_SLABTYPE_VfT_SENTINEL:
-        case XMHFGEEC_SLABTYPE_VfT_PROG_EXCEPTION:
-        case XMHFGEEC_SLABTYPE_VfT_PROG_INTERCEPT:
-        case XMHFGEEC_SLABTYPE_VfT_PROG_PRIME:
         case XMHFGEEC_SLABTYPE_VfT_PROG:
         case XMHFGEEC_SLABTYPE_uVT_PROG:
         case XMHFGEEC_SLABTYPE_uVU_PROG:{
@@ -213,9 +210,6 @@ static void _slabmempgtbl_setentryforpaddr(u32 slabid, u64 gpa, u64 entry){
 
     switch(slabtype){
         case XMHFGEEC_SLABTYPE_VfT_SENTINEL:
-        case XMHFGEEC_SLABTYPE_VfT_PROG_INTERCEPT:
-        case XMHFGEEC_SLABTYPE_VfT_PROG_EXCEPTION:
-        case XMHFGEEC_SLABTYPE_VfT_PROG_PRIME:
         case XMHFGEEC_SLABTYPE_VfT_PROG:
         case XMHFGEEC_SLABTYPE_uVT_PROG:
         case XMHFGEEC_SLABTYPE_uVU_PROG:
@@ -263,7 +257,6 @@ static u64 _slabmempgtbl_getentryforpaddr(u32 slabid, u64 gpa){
     switch(slabtype){
 
         case XMHFGEEC_SLABTYPE_VfT_SENTINEL:
-        case XMHFGEEC_SLABTYPE_VfT_PROG_PRIME:
         case XMHFGEEC_SLABTYPE_VfT_PROG:
         case XMHFGEEC_SLABTYPE_uVT_PROG:
         case XMHFGEEC_SLABTYPE_uVU_PROG:
