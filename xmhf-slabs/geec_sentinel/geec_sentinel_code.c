@@ -274,7 +274,7 @@ static void _geec_sentinel_transition_ret_vft_prog_to_uvt_uvu_prog(slab_params_t
 
     //check to ensure this return is paired with a prior call
     if ( !((elem.src_slabid == sp->dst_slabid) && (elem.dst_slabid == sp->src_slabid) &&
-           (elem.hic_calltype == XMHFGEEC_SENTINEL_CALL_VfT_PROG_TO_VfT_uVU_uVT_PROG_uVU_uVT_PROG_GUEST)) ){
+           (elem.hic_calltype == XMHFGEEC_SENTINEL_CALL_VfT_PROG_TO_uVT_uVU_PROG)) ){
         _XDPRINTF_("%s[ln:%u]: Fatal: ret does not match prior call. Halting!\n",
             __func__, __LINE__);
         HALT();
@@ -397,7 +397,7 @@ static void _geec_sentinel_transition_ret_uvt_uvu_prog_to_vft_prog(slab_params_t
 void geec_sentinel_main(slab_params_t *sp, void *caller_stack_frame){
 
     switch(sp->slab_ctype){
-        case XMHFGEEC_SENTINEL_CALL_VfT_PROG_TO_VfT_uVU_uVT_PROG_uVU_uVT_PROG_GUEST:{
+        case XMHFGEEC_SENTINEL_CALL_FROM_VfT_PROG:{
 
             switch (_xmhfhic_common_slab_info_table[sp->dst_slabid].archdata.slabtype){
 
@@ -415,6 +415,7 @@ void geec_sentinel_main(slab_params_t *sp, void *caller_stack_frame){
 
                 case XMHFGEEC_SLABTYPE_uVT_PROG:
                 case XMHFGEEC_SLABTYPE_uVU_PROG:{
+                    sp->slab_ctype = XMHFGEEC_SENTINEL_CALL_VfT_PROG_TO_uVT_uVU_PROG;
                     _geec_sentinel_transition_vft_prog_to_uvt_uvu_prog(sp, caller_stack_frame);
                     _XDPRINTF_("GEEC_SENTINEL[ln:%u]: halting. should never be here!\n",
                                __LINE__);
@@ -428,6 +429,7 @@ void geec_sentinel_main(slab_params_t *sp, void *caller_stack_frame){
                 case XMHFGEEC_SLABTYPE_uVU_PROG_GUEST:
                 case XMHFGEEC_SLABTYPE_uVU_PROG_RICHGUEST:{
                     u32 errorcode;
+                    sp->slab_ctype = XMHFGEEC_SENTINEL_CALL_VfT_PROG_TO_uVT_uVU_PROG_GUEST;
                     CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_CONTROL_VPID, sp->dst_slabid );
                     CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_CONTROL_EPT_POINTER_FULL, (_xmhfhic_common_slab_info_table[sp->dst_slabid].archdata.mempgtbl_cr3  | 0x1E) );
                     CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_CONTROL_EPT_POINTER_HIGH, 0);
