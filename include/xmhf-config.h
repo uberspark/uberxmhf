@@ -122,7 +122,7 @@
 
 
 
-
+#define XMHFGEEC_MAX_SLABS                    (32)
 #define XMHFGEEC_TOTAL_SLABS                  (17)
 
 
