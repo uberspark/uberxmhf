@@ -149,7 +149,7 @@ typedef struct {
 
 
 #define XMHFGEEC_SLAB_CALLCAP_MASK(x)               (1UL << x)
-#define XMHFGEEC_SLAB_UAPICAP_MASK(x)               (u8)(1 << x)
+#define XMHFGEEC_SLAB_UAPICAP_MASK(x)               (1UL << x)
 #define XMHFGEEC_SLAB_MEMGRANTREADCAP_MASK(x)       (1UL << x)
 #define XMHFGEEC_SLAB_MEMGRANTWRITECAP_MASK(x)      (1UL << x)
 
