@@ -182,11 +182,11 @@ typedef struct {
 
 
 
-void __slab_calltrampolinenew(slab_params_t *sp);
+void __slab_callsentinel(slab_params_t *sp);
 
 
 #define XMHF_SLAB_CALLNEW(sp) \
-    __slab_calltrampolinenew(sp)
+    __slab_callsentinel(sp)
 
 
 
