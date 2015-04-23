@@ -69,17 +69,17 @@ __attribute__((section(".data"))) static bool _slabdevpgtbl_initretcet_done = fa
 
 
 
-__attribute__((section(".data"))) __attribute__((aligned(4096))) vtd_pml4te_t _slabdevpgtbl_pml4t[XMHF_HIC_MAX_SLABS][PAE_MAXPTRS_PER_PML4T];
-__attribute__((section(".data"))) __attribute__((aligned(4096))) vtd_pdpte_t _slabdevpgtbl_pdpt[XMHF_HIC_MAX_SLABS][PAE_MAXPTRS_PER_PDPT];
-__attribute__((section(".data"))) __attribute__((aligned(4096))) vtd_pdte_t _slabdevpgtbl_pdt[XMHF_HIC_MAX_SLABS][PAE_PTRS_PER_PDPT][PAE_PTRS_PER_PDT];
-__attribute__((section(".data"))) __attribute__((aligned(4096))) vtd_pte_t _slabdevpgtbl_pt[XMHF_HIC_MAX_SLABS][MAX_SLAB_DMADATA_PDT_ENTRIES][PAE_PTRS_PER_PT];
-__attribute__((section(".data"))) _slabdevpgtbl_infotable_t _slabdevpgtbl_infotable[XMHF_HIC_MAX_SLABS];
+__attribute__((section(".data"))) __attribute__((aligned(4096))) vtd_pml4te_t _slabdevpgtbl_pml4t[XMHFGEEC_TOTAL_SLABS][PAE_MAXPTRS_PER_PML4T];
+__attribute__((section(".data"))) __attribute__((aligned(4096))) vtd_pdpte_t _slabdevpgtbl_pdpt[XMHFGEEC_TOTAL_SLABS][PAE_MAXPTRS_PER_PDPT];
+__attribute__((section(".data"))) __attribute__((aligned(4096))) vtd_pdte_t _slabdevpgtbl_pdt[XMHFGEEC_TOTAL_SLABS][PAE_PTRS_PER_PDPT][PAE_PTRS_PER_PDT];
+__attribute__((section(".data"))) __attribute__((aligned(4096))) vtd_pte_t _slabdevpgtbl_pt[XMHFGEEC_TOTAL_SLABS][MAX_SLAB_DMADATA_PDT_ENTRIES][PAE_PTRS_PER_PT];
+__attribute__((section(".data"))) _slabdevpgtbl_infotable_t _slabdevpgtbl_infotable[XMHFGEEC_TOTAL_SLABS];
 
 
 static void _slabdevpgtbl_init(void){
     u32 i;
 
-    for(i=0; i < XMHF_HIC_MAX_SLABS; i++){
+    for(i=0; i < XMHFGEEC_TOTAL_SLABS; i++){
         _slabdevpgtbl_infotable[i].devpgtbl_initialized=false;
     }
 
@@ -118,8 +118,8 @@ static void _slabdevpgtbl_initdevpgtbl(u32 slabid){
         _xmhfhic_common_slab_info_table[slabid].slab_physmem_extents[3].addr_end;
 
     //sanity checks
-    if(slabid > XMHF_HIC_MAX_SLABS){
-        _XDPRINTF_("%s: Error: slabid (%u) > XMHF_HIC_MAX_SLABS(%u). bailing out!\n", __func__, slabid, XMHF_HIC_MAX_SLABS);
+    if(slabid > XMHFGEEC_TOTAL_SLABS){
+        _XDPRINTF_("%s: Error: slabid (%u) > XMHFGEEC_TOTAL_SLABS(%u). bailing out!\n", __func__, slabid, XMHFGEEC_TOTAL_SLABS);
         return;
     }
     if( (paddr_dmadata_end - paddr_dmadata_start) >
@@ -173,8 +173,8 @@ static void _slabdevpgtbl_initdevpgtbl(u32 slabid){
 
 static void _slabdevpgtbl_binddevice(u32 slabid, u32 pagewalk_lvl,  u32 bus, u32 dev, u32 func){
     //sanity checks
-    if(slabid > XMHF_HIC_MAX_SLABS){
-        _XDPRINTF_("%s: Error: slabid (%u) > XMHF_HIC_MAX_SLABS(%u). bailing out!\n", __func__, slabid, XMHF_HIC_MAX_SLABS);
+    if(slabid > XMHFGEEC_TOTAL_SLABS){
+        _XDPRINTF_("%s: Error: slabid (%u) > XMHFGEEC_TOTAL_SLABS(%u). bailing out!\n", __func__, slabid, XMHFGEEC_TOTAL_SLABS);
         return;
     }
 

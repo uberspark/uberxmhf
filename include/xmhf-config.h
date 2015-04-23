@@ -123,7 +123,7 @@
 
 
 
-#define XMHF_HIC_MAX_SLABS                  (17)
+#define XMHFGEEC_TOTAL_SLABS                  (17)
 
 
 #define XMHF_HYP_SLAB_GEECSENTINEL          (0)
