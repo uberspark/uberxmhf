@@ -104,6 +104,8 @@ typedef void * slab_entrystub_t;
 
 typedef u32 slab_callcaps_t;
 typedef u32 slab_uapicaps_t;
+typedef u32 slab_memgrantreadcaps_t;
+typedef u32 slab_memgrantwritecaps_t;
 
 typedef struct {
     u32 pci_bus;
@@ -138,6 +140,8 @@ typedef struct {
     slab_callcaps_t slab_callcaps;
     bool slab_uapisupported;
     slab_uapicaps_t slab_uapicaps[XMHFGEEC_TOTAL_SLABS];
+    slab_memgrantreadcaps_t slab_memgrantreadcaps;
+    slab_memgrantwritecaps_t slab_memgrantwritecaps;
     slab_platformdevices_t slab_devices;
     slab_physmem_extent_t slab_physmem_extents[HIC_SLAB_PHYSMEM_MAXEXTENTS];
 	slab_entrystub_t entrystub;

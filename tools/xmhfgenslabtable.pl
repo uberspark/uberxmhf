@@ -139,6 +139,12 @@ while( $i <= $#slabnamearray ){
     }
     print "\n       },";
 
+    #slab_memgrantreadcaps
+    print "\n       0xFFFFFFFFUL,";
+
+    #slab_memgrantwritecaps
+    print "\n       0xFFFFFFFFUL,";
+
     #slab_devices
     if($slabtypearray[$i] eq "uVU_PROG_RICHGUEST"){
         print "\n	    {true, 0xFFFFFFFFUL, {0}},";
