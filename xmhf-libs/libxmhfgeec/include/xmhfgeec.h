@@ -102,7 +102,7 @@
 typedef void * slab_entrystub_t;
 
 
-typedef u32 slab_privilegemask_t;
+//typedef u32 slab_privilegemask_t;
 typedef u32 slab_callcaps_t;
 typedef u32 slab_uapicaps_t;
 
@@ -122,16 +122,6 @@ typedef struct {
 } __attribute__((packed)) slab_platformdevices_t;
 
 
-//slab capabilities type
-typedef struct {
-    slab_privilegemask_t slab_privilegemask;
-    slab_callcaps_t slab_callcaps;
-    slab_uapicaps_t slab_uapicaps;
-    slab_platformdevices_t slab_devices;
-    u32 slab_archparams;
-} __attribute__((packed)) slab_caps_t;
-
-
 #define HIC_SLAB_CALLCAP(x) (1 << x)
 #define HIC_SLAB_UAPICAP(x) (1 << x)
 
@@ -147,8 +137,6 @@ typedef struct {
 //modified data types
 typedef struct {
 	u32 slabtype; //hypervisor, guest
-	bool mempgtbl_initialized;
-	bool devpgtbl_initialized;
 	u32 mempgtbl_cr3;
 	u32 slabtos[MAX_PLATFORM_CPUS];
 } __attribute__((packed)) x_slab_info_archdata_t;
@@ -157,7 +145,6 @@ typedef struct {
 typedef struct {
     x_slab_info_archdata_t archdata;
 	bool slab_inuse;
-    slab_privilegemask_t slab_privilegemask;
     slab_callcaps_t slab_callcaps;
     slab_uapicaps_t slab_uapicaps[XMHFGEEC_TOTAL_SLABS];
     slab_platformdevices_t slab_devices;
