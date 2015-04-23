@@ -7,9 +7,11 @@ use Tie::File;
 use File::Basename;
 
 chomp(my $filename = $ARGV[0]);
+chomp(my $total_slabs = $ARGV[1]);
 tie my @array, 'Tie::File', $filename or die $!;
 
 my $i = 0;
+my $j = 0;
 my %slabrecord;
 my $slabname;
 my $slabtype;
@@ -123,7 +125,16 @@ while( $i <= $#slabnamearray ){
     print "\n	    true,";
     print "\n	    0,";
     print "\n       0,";
-    print "\n	    0,";
+
+    # uapi caps
+    print "\n       {";
+    $j = 0;
+    while( $j < $total_slabs) {
+        print "\n	    0,";
+        $j=$j+1;
+    }
+    print "\n       },";
+
 
     if($slabtypearray[$i] eq "uVU_PROG_RICHGUEST"){
         print "\n	    {true, 0xFFFFFFFFUL, {0}},";

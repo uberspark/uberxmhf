@@ -159,7 +159,7 @@ typedef struct {
 	bool slab_inuse;
     slab_privilegemask_t slab_privilegemask;
     slab_callcaps_t slab_callcaps;
-    slab_uapicaps_t slab_uapicaps;
+    slab_uapicaps_t slab_uapicaps[XMHFGEEC_TOTAL_SLABS];
     slab_platformdevices_t slab_devices;
     slab_physmem_extent_t slab_physmem_extents[HIC_SLAB_PHYSMEM_MAXEXTENTS];
 	slab_entrystub_t entrystub;
