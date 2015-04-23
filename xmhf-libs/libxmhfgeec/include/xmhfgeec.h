@@ -64,25 +64,30 @@
 	7. XMHFGEEC_SLABTYPE_uVU_PROG_RICHGUEST -- uverified untrusted richguest slab
 */
 
+#define XMHFGEEC_SLABTYPE_VfT_SENTINEL          (0x10)
+#define XMHFGEEC_SLABTYPE_VfT_PROG              (0x20)
+#define XMHFGEEC_SLABTYPE_uVU_PROG              (0x30)
+#define XMHFGEEC_SLABTYPE_uVT_PROG              (0x40)
+#define XMHFGEEC_SLABTYPE_uVU_PROG_GUEST        (0x50)
+#define XMHFGEEC_SLABTYPE_uVT_PROG_GUEST        (0x60)
+#define XMHFGEEC_SLABTYPE_uVU_PROG_RICHGUEST    (0x70)
 
-#define XMHFGEEC_SLABTYPE_VfT_PROG              (0x10)
-#define XMHFGEEC_SLABTYPE_VfT_PROG_PRIME        (0x20)
-#define XMHFGEEC_SLABTYPE_VfT_PROG_EXCEPTION    (0x30)
-#define XMHFGEEC_SLABTYPE_VfT_PROG_INTERCEPT    (0x40)
-#define XMHFGEEC_SLABTYPE_uVU_PROG              (0x50)
-#define XMHFGEEC_SLABTYPE_uVT_PROG              (0x60)
-#define XMHFGEEC_SLABTYPE_uVU_PROG_GUEST        (0x70)
-#define XMHFGEEC_SLABTYPE_uVT_PROG_GUEST        (0x80)
-#define XMHFGEEC_SLABTYPE_uVU_PROG_RICHGUEST    (0x90)
 
-#define XMHFGEEC_SENTINEL_CALL_VfT_PROG_TO_VfT_uVU_uVT_PROG_uVU_uVT_PROG_GUEST  (0x1)
-#define XMHFGEEC_SENTINEL_CALL_EXCEPTION  (0x2)
-#define XMHFGEEC_SENTINEL_RET_EXCEPTION  (0x3)
-#define XMHFGEEC_SENTINEL_CALL_INTERCEPT  (0x4)
-#define XMHFGEEC_SENTINEL_RET_INTERCEPT  (0x5)
-#define XMHFGEEC_SENTINEL_RET_VfT_PROG_TO_uVT_uVU_PROG  (0x6)
-#define XMHFGEEC_SENTINEL_CALL_uVT_uVU_PROG_TO_VfT_PROG  (0x7)
-#define XMHFGEEC_SENTINEL_RET_uVT_uVU_PROG_TO_VfT_PROG  (0x8)
+
+
+#define XMHFGEEC_SENTINEL_CALL_FROM_VfT_PROG                    (0x1)
+#define XMHFGEEC_SENTINEL_CALL_VfT_PROG_TO_uVT_uVU_PROG         (0x2)
+#define XMHFGEEC_SENTINEL_RET_VfT_PROG_TO_uVT_uVU_PROG          (0x3)
+#define XMHFGEEC_SENTINEL_CALL_VfT_PROG_TO_uVT_uVU_PROG_GUEST   (0x4)
+
+#define XMHFGEEC_SENTINEL_CALL_EXCEPTION                        (0x5)
+#define XMHFGEEC_SENTINEL_RET_EXCEPTION                         (0x6)
+
+#define XMHFGEEC_SENTINEL_CALL_INTERCEPT                        (0x7)
+#define XMHFGEEC_SENTINEL_RET_INTERCEPT                         (0x8)
+
+#define XMHFGEEC_SENTINEL_CALL_uVT_uVU_PROG_TO_VfT_PROG         (0x9)
+#define XMHFGEEC_SENTINEL_RET_uVT_uVU_PROG_TO_VfT_PROG          (0xa)
 
 
 #define HIC_SLAB_PHYSMEM_EXTENT_READ       (1 << 0)
@@ -177,11 +182,11 @@ typedef struct {
 
 
 
-void __slab_calltrampolinenew(slab_params_t *sp);
+void __slab_callsentinel(slab_params_t *sp);
 
 
 #define XMHF_SLAB_CALLNEW(sp) \
-    __slab_calltrampolinenew(sp)
+    __slab_callsentinel(sp)
 
 
 
