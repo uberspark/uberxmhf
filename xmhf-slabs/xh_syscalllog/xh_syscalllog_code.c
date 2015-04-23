@@ -101,8 +101,8 @@ static void sl_register(u32 cpuindex, u32 guest_slab_index, u64 gpa){
         xmhf_uapi_slabmemacc_params_t *smemaccp = (xmhf_uapi_slabmemacc_params_t *)spl.in_out_params;
 
         _XDPRINTF_("%s[%u]: starting...\n", __func__, (u16)cpuindex);
-        spl.src_slabid = XMHF_HYP_SLAB_XHSYSCALLLOG;
-        spl.dst_slabid = XMHF_HYP_SLAB_UAPI_SLABMEMACC;
+        spl.src_slabid = XMHFGEEC_SLAB_XH_SYSCALLLOG;
+        spl.dst_slabid = XMHFGEEC_SLAB_UAPI_SLABMEMACC;
         spl.cpuid = cpuindex;
         //spl.in_out_params[0] = XMHF_HIC_UAPI_PHYSMEM;
 
@@ -145,8 +145,8 @@ static void _hcb_hypercall(u32 cpuindex, u32 guest_slab_index){
 	u32 call_id;
 	u64 gpa;
 
-    spl.src_slabid = XMHF_HYP_SLAB_XHAPPROVEXEC;
-    spl.dst_slabid = XMHF_HYP_SLAB_UAPI_GCPUSTATE;
+    spl.src_slabid = XMHFGEEC_SLAB_XH_APPROVEXEC;
+    spl.dst_slabid = XMHFGEEC_SLAB_UAPI_GCPUSTATE;
     spl.cpuid = cpuindex;
     //spl.in_out_params[0] = XMHF_HIC_UAPI_CPUSTATE;
 
@@ -195,8 +195,8 @@ static void _hcb_memoryfault(u32 cpuindex, u32 guest_slab_index, u64 gpa, u64 gv
 	_XDPRINTF_("%s[%u]: memory fault in guest slab %u; gpa=%016llx, gva=%016llx, errorcode=%016llx, sysenter execution?\n",
             __func__, (u16)cpuindex, guest_slab_index, gpa, gva, errorcode);
 
-    spl.src_slabid = XMHF_HYP_SLAB_XHAPPROVEXEC;
-    spl.dst_slabid = XMHF_HYP_SLAB_UAPI_GCPUSTATE;
+    spl.src_slabid = XMHFGEEC_SLAB_XH_APPROVEXEC;
+    spl.dst_slabid = XMHFGEEC_SLAB_UAPI_GCPUSTATE;
     spl.cpuid = cpuindex;
     //spl.in_out_params[0] = XMHF_HIC_UAPI_CPUSTATE;
 
@@ -207,7 +207,7 @@ static void _hcb_memoryfault(u32 cpuindex, u32 guest_slab_index, u64 gpa, u64 gv
     memcpy(&r, &gcpustate_gprs->gprs, sizeof(x86regs_t));
 
     //copy code page at SYSENTER (referenced by shadow_sysenter_rip)
-    spl.dst_slabid = XMHF_HYP_SLAB_UAPI_SLABMEMACC;
+    spl.dst_slabid = XMHFGEEC_SLAB_UAPI_SLABMEMACC;
     smemaccp->dst_slabid = guest_slab_index;
     smemaccp->addr_to = &_sl_pagebuffer;
     smemaccp->addr_from = shadow_sysenter_rip;
@@ -231,7 +231,7 @@ static void _hcb_memoryfault(u32 cpuindex, u32 guest_slab_index, u64 gpa, u64 gv
     sl_loginfo(syscallhandler_modified, &syscalldigest, &r);
 
     //set guest RIP to shadow_sysenter_rip to continue execution
-    spl.dst_slabid = XMHF_HYP_SLAB_UAPI_GCPUSTATE;
+    spl.dst_slabid = XMHFGEEC_SLAB_UAPI_GCPUSTATE;
     //spl.in_out_params[0] = XMHF_HIC_UAPI_CPUSTATE;
     gcpustate_vmrwp->uapiphdr.uapifn = XMHF_HIC_UAPI_CPUSTATE_VMWRITE;
     gcpustate_vmrwp->encoding = VMCS_GUEST_RIP;
@@ -256,8 +256,8 @@ static u32 _hcb_trap_instruction(u32 cpuindex, u32 guest_slab_index, u32 insntyp
     if(!_sl_registered)
         return status;
 
-    spl.src_slabid = XMHF_HYP_SLAB_XHSYSCALLLOG;
-    spl.dst_slabid = XMHF_HYP_SLAB_UAPI_GCPUSTATE;
+    spl.src_slabid = XMHFGEEC_SLAB_XH_SYSCALLLOG;
+    spl.dst_slabid = XMHFGEEC_SLAB_UAPI_GCPUSTATE;
     spl.cpuid = cpuindex;
     //spl.in_out_params[0] = XMHF_HIC_UAPI_CPUSTATE;
 
@@ -289,7 +289,7 @@ static u32 _hcb_trap_instruction(u32 cpuindex, u32 guest_slab_index, u32 insntyp
                 XMHF_SLAB_CALLNEW(&spl);
 
                 if(!sl_activated){
-                    spl.dst_slabid = XMHF_HYP_SLAB_UAPI_SLABMEMPGTBL;
+                    spl.dst_slabid = XMHFGEEC_SLAB_UAPI_SLABMEMPGTBL;
 
                     getentryforpaddrp->uapiphdr.uapifn = XMHFGEEC_UAPI_SLABMEMPGTBL_GETENTRYFORPADDR;
                     getentryforpaddrp->dst_slabid = guest_slab_index;
@@ -343,7 +343,7 @@ static u32 _hcb_trap_instruction(u32 cpuindex, u32 guest_slab_index, u32 insntyp
     //if we emulated the instruction then do not chain, but update instruction pointer
     //accordingly
     if(status == XC_HYPAPPCB_NOCHAIN){
-        spl.dst_slabid = XMHF_HYP_SLAB_UAPI_GCPUSTATE;
+        spl.dst_slabid = XMHFGEEC_SLAB_UAPI_GCPUSTATE;
         //spl.in_out_params[0] = XMHF_HIC_UAPI_CPUSTATE;
 
         gcpustate_vmrwp->uapiphdr.uapifn = XMHF_HIC_UAPI_CPUSTATE_VMREAD;
@@ -418,8 +418,8 @@ void slab_main(slab_params_t *sp){
        	    xmhf_uapi_gcpustate_vmrw_params_t *gcpustate_vmrwp =
                 (xmhf_uapi_gcpustate_vmrw_params_t *)spl.in_out_params;
 
-         	spl.src_slabid = XMHF_HYP_SLAB_XHAPPROVEXEC;
-         	spl.dst_slabid = XMHF_HYP_SLAB_UAPI_GCPUSTATE;
+         	spl.src_slabid = XMHFGEEC_SLAB_XH_APPROVEXEC;
+         	spl.dst_slabid = XMHFGEEC_SLAB_UAPI_GCPUSTATE;
          	spl.cpuid = sp->cpuid;
             //spl.in_out_params[0] = XMHF_HIC_UAPI_CPUSTATE;
             gcpustate_vmrwp->uapiphdr.uapifn = XMHF_HIC_UAPI_CPUSTATE_VMREAD;

@@ -90,8 +90,8 @@ static void ae_lock(u32 cpuindex, u32 guest_slab_index, u64 gpa){
     u32 i;
 
     _XDPRINTF_("%s[%u]: starting...\n", __func__, (u16)cpuindex);
-    spl.src_slabid = XMHF_HYP_SLAB_XHAPPROVEXEC;
-    spl.dst_slabid = XMHF_HYP_SLAB_UAPI_SLABMEMACC;
+    spl.src_slabid = XMHFGEEC_SLAB_XH_APPROVEXEC;
+    spl.dst_slabid = XMHFGEEC_SLAB_UAPI_SLABMEMACC;
     spl.cpuid = cpuindex;
 
 if(!ae_activated){
@@ -142,7 +142,7 @@ if(!ae_activated){
         (xmhfgeec_uapi_slabmempgtbl_setentryforpaddr_params_t *)spl.in_out_params;
 
 
-        spl.dst_slabid = XMHF_HYP_SLAB_UAPI_SLABMEMPGTBL;
+        spl.dst_slabid = XMHFGEEC_SLAB_UAPI_SLABMEMPGTBL;
 
         getentryforpaddrp->uapiphdr.uapifn = XMHFGEEC_UAPI_SLABMEMPGTBL_GETENTRYFORPADDR;
         getentryforpaddrp->dst_slabid = guest_slab_index;
@@ -180,8 +180,8 @@ static void ae_unlock(u32 cpuindex, u32 guest_slab_index, u64 gpa){
         (xmhfgeec_uapi_slabmempgtbl_setentryforpaddr_params_t *)spl.in_out_params;
 
 
-     spl.src_slabid = XMHF_HYP_SLAB_XHAPPROVEXEC;
-     spl.dst_slabid = XMHF_HYP_SLAB_UAPI_SLABMEMPGTBL;
+     spl.src_slabid = XMHFGEEC_SLAB_XH_APPROVEXEC;
+     spl.dst_slabid = XMHFGEEC_SLAB_UAPI_SLABMEMPGTBL;
      spl.cpuid = cpuindex;
      //spl.in_out_params[0] = XMHF_HIC_UAPI_MEMPGTBL;
 
@@ -231,8 +231,8 @@ static void _hcb_hypercall(u64 cpuindex, u64 guest_slab_index){
 	u32 call_id;
 	u64 gpa;
 
-    spl.src_slabid = XMHF_HYP_SLAB_XHAPPROVEXEC;
-    spl.dst_slabid = XMHF_HYP_SLAB_UAPI_GCPUSTATE;
+    spl.src_slabid = XMHFGEEC_SLAB_XH_APPROVEXEC;
+    spl.dst_slabid = XMHFGEEC_SLAB_UAPI_GCPUSTATE;
     spl.cpuid = cpuindex;
     //spl.in_out_params[0] = XMHF_HIC_UAPI_CPUSTATE;
 
@@ -324,8 +324,8 @@ void slab_main(slab_params_t *sp){
                 (xmhf_uapi_gcpustate_vmrw_params_t *)spl.in_out_params;
 
 
-         	spl.src_slabid = XMHF_HYP_SLAB_XHAPPROVEXEC;
-         	spl.dst_slabid = XMHF_HYP_SLAB_UAPI_GCPUSTATE;
+         	spl.src_slabid = XMHFGEEC_SLAB_XH_APPROVEXEC;
+         	spl.dst_slabid = XMHFGEEC_SLAB_UAPI_GCPUSTATE;
          	spl.cpuid = sp->cpuid;
             //spl.in_out_params[0] = XMHF_HIC_UAPI_CPUSTATE;
             gcpustate_vmrwp->uapiphdr.uapifn = XMHF_HIC_UAPI_CPUSTATE_VMREAD;

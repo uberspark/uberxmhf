@@ -126,8 +126,8 @@ void _geec_sentinel_exception_stub(x86vmx_exception_frame_t *exframe){
 
 
     spl.slab_ctype = XMHFGEEC_SENTINEL_CALL_EXCEPTION;
-    spl.src_slabid = XMHF_HYP_SLAB_GEECSENTINEL; //XXX: TODO: grab src_slabid based on exframe->orig_rip
-    spl.dst_slabid = XMHF_HYP_SLAB_XCEXHUB;
+    spl.src_slabid = XMHFGEEC_SLAB_GEEC_SENTINEL; //XXX: TODO: grab src_slabid based on exframe->orig_rip
+    spl.dst_slabid = XMHFGEEC_SLAB_XC_EXHUB;
     spl.cpuid = __xmhfhic_x86vmx_cpuidtable[xmhf_baseplatform_arch_x86_getcpulapicid()];
     memcpy(&spl.in_out_params[0], exframe,
            sizeof(x86vmx_exception_frame_t));
@@ -147,7 +147,7 @@ void _geec_sentinel_intercept_stub(x86regs_t *r){
 
     spl.slab_ctype = XMHFGEEC_SENTINEL_CALL_INTERCEPT;
     spl.src_slabid = CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmread,VMCS_CONTROL_VPID);
-    spl.dst_slabid = XMHF_HYP_SLAB_XCIHUB;
+    spl.dst_slabid = XMHFGEEC_SLAB_XC_IHUB;
     spl.cpuid = __xmhfhic_x86vmx_cpuidtable[xmhf_baseplatform_arch_x86_getcpulapicid()];
     memcpy(&spl.in_out_params[0], r, sizeof(x86regs_t));
 
@@ -176,7 +176,7 @@ void _geec_sentinel_sysenter_stub(slab_params_t *sp, void *caller_stack_frame){
     }
 
     sp->src_slabid =
-        (CASM_FUNCCALL(read_cr3, CASM_NOPARAM) - _xmhfhic_common_slab_info_table[XMHF_HYP_SLAB_GEECSENTINEL].archdata.mempgtbl_cr3)/PAGE_SIZE_4K;
+        (CASM_FUNCCALL(read_cr3, CASM_NOPARAM) - _xmhfhic_common_slab_info_table[XMHFGEEC_SLAB_GEEC_SENTINEL].archdata.mempgtbl_cr3)/PAGE_SIZE_4K;
 
     _XDPRINTF_("%s: sp=%x, cpuid=%u, src=%u, dst=%u, ctype=%x\n", __func__,
                (u32)sp, (u16)sp->cpuid, sp->src_slabid, sp->dst_slabid, sp->slab_ctype);
@@ -522,7 +522,7 @@ void geec_sentinel_main(slab_params_t *sp, void *caller_stack_frame){
         case XMHFGEEC_SENTINEL_RET_EXCEPTION:{
             if(!
                (_xmhfhic_common_slab_info_table[sp->src_slabid].archdata.slabtype == XMHFGEEC_SLABTYPE_VfT_PROG &&
-                sp->dst_slabid == XMHF_HYP_SLAB_GEECSENTINEL)){
+                sp->dst_slabid == XMHFGEEC_SLAB_GEEC_SENTINEL)){
                 _XDPRINTF_("GEEC_SENTINEL(ln:%u): exception ret source slab not VfT_PROG_EXCEPTION. Halting!\n", __LINE__);
                 HALT();
             }
