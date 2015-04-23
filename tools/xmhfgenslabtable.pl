@@ -125,13 +125,13 @@ while( $i <= $#slabnamearray ){
     print "\n	        },";
 
     #slab_callcaps
-    print "\n       0,";
+    print "\n       0xFFFFFFFFUL,";
 
     #slab_uapicaps
     print "\n       {";
     $j = 0;
     while( $j < $total_slabs) {
-        print "\n	    0,";
+        print "\n	    0xFF,";
         $j=$j+1;
     }
     print "\n       },";
