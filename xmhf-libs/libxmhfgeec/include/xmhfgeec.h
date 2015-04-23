@@ -133,24 +133,17 @@ typedef struct {
 } slab_physmem_extent_t;
 
 
-//////
-//modified data types
 typedef struct {
-	u32 slabtype; //hypervisor, guest
+	bool slab_inuse;
+	u32 slabtype;
 	u32 mempgtbl_cr3;
 	u32 slabtos[MAX_PLATFORM_CPUS];
-} __attribute__((packed)) x_slab_info_archdata_t;
-
-
-typedef struct {
-    x_slab_info_archdata_t archdata;
-	bool slab_inuse;
     slab_callcaps_t slab_callcaps;
     slab_uapicaps_t slab_uapicaps[XMHFGEEC_TOTAL_SLABS];
     slab_platformdevices_t slab_devices;
     slab_physmem_extent_t slab_physmem_extents[HIC_SLAB_PHYSMEM_MAXEXTENTS];
 	slab_entrystub_t entrystub;
-} __attribute__((packed)) x_slab_info_t;
+} __attribute__((packed)) xmhfgeec_slab_info_t;
 
 
 typedef struct {
