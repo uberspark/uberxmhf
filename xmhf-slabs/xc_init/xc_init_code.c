@@ -117,6 +117,7 @@ void slab_main(slab_params_t *sp){
         spl.src_slabid = XMHFGEEC_SLAB_XC_INIT;
         spl.dst_slabid = XMHFGEEC_SLAB_XC_TESTSLAB;
         spl.cpuid = 0;
+        spl.dst_uapifn = 0;
         spl.in_out_params[0] = 0xF00DDEAD;
         _XDPRINTF_("XC_INIT[%u]: proceeding to call test slab, esp=%x\n", (u16)sp->cpuid, CASM_FUNCCALL(read_esp,CASM_NOPARAM));
         XMHF_SLAB_CALLNEW(&spl);
