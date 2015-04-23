@@ -146,14 +146,16 @@ void slab_main(slab_params_t *sp){
 	_XDPRINTF_("XC_TESTSLAB[%u]: src=%u, dst=%u, esp=%x\n",
                 (u16)sp->cpuid, sp->src_slabid, sp->dst_slabid, CASM_FUNCCALL(read_esp,CASM_NOPARAM));
 
-	/*_XDPRINTF_("XC_TESTSLAB[%u]: ESP before=%x\n",
+#if 1
+	_XDPRINTF_("XC_TESTSLAB[%u]: ESP before=%x\n",
             (u16)sp->cpuid, CASM_FUNCCALL(read_esp,CASM_NOPARAM));
     CASM_FUNCCALL(_xc_testslab_int3, CASM_NOPARAM);
 	_XDPRINTF_("XC_TESTSLAB[%u]: ESP after=%x\n",
             (u16)sp->cpuid, CASM_FUNCCALL(read_esp,CASM_NOPARAM));
-    */
 
-#if 1
+#endif // 1
+
+#if 0
     _XDPRINTF_("XC_TESTSLAB[%u]: proceeding to get guest exception bitmap (esp=%x)...\n",
                (u16)sp->cpuid, CASM_FUNCCALL(read_esp,CASM_NOPARAM));
     exception_bitmap = _xc_testslab_get_guest_exception_bitmap(sp->cpuid);
