@@ -103,7 +103,7 @@ typedef void * slab_entrystub_t;
 
 
 typedef u32 slab_callcaps_t;
-typedef u8 slab_uapicaps_t;
+typedef u32 slab_uapicaps_t;
 
 typedef struct {
     u32 pci_bus;
@@ -121,8 +121,6 @@ typedef struct {
 } __attribute__((packed)) slab_platformdevices_t;
 
 
-#define HIC_SLAB_CALLCAP(x) (1 << x)
-#define HIC_SLAB_UAPICAP(x) (1 << x)
 
 //slab physical memory extent type
 typedef struct {
@@ -145,6 +143,9 @@ typedef struct {
 	slab_entrystub_t entrystub;
 } __attribute__((packed)) xmhfgeec_slab_info_t;
 
+
+#define XMHFGEEC_SLAB_CALLCAP_MASK(x) (1UL << x)
+#define XMHFGEEC_SLAB_UAPICAP_MASK(x) (u8)(1 << x)
 
 typedef struct {
     u32 slab_ctype;
