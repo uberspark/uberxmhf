@@ -12,6 +12,7 @@ export XMHF_BOOTLOADER_SRC := $(realpath xmhf-bootloader)
 
 export XMHF_SLAB_DIRS := $(shell awk -F, '{print $$1}' $(XMHF_DIR)/SLABS)
 XMHF_SLAB_NAMES := $(notdir $(XMHF_SLAB_DIRS))
+export XMHF_SLAB_TOTAL := $(shell wc -l < $(XMHF_DIR)/SLABS)
 
 .PHONY: all
 all: genfiles xmhflibs xmhfslabs xmhfbin
@@ -20,7 +21,7 @@ all: genfiles xmhflibs xmhfslabs xmhfbin
 genfiles:
 	mkdir -p $(XMHF_OBJDIR)
 	cd $(XMHF_OBJDIR) && $(XMHF_DIR)/tools/xmhfgenlscript.pl $(XMHF_SLAB_NAMES) >xmhf.lscript
-	cd $(XMHF_DIR) && $(XMHF_DIR)/tools/xmhfgenslabtable.pl SLABS >$(XMHF_DIR)/xmhf-slabs/geec_sentinel/__geec_sentinel_autogendata_slabinfotable
+	cd $(XMHF_DIR) && $(XMHF_DIR)/tools/xmhfgenslabtable.pl SLABS $(XMHF_SLAB_TOTAL) >$(XMHF_DIR)/xmhf-slabs/geec_sentinel/__geec_sentinel_autogendata_slabinfotable
 
 
 .PHONY: xmhflibs
