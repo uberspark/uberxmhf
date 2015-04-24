@@ -3,8 +3,87 @@
 # author: amit vasudevan (amitvasudevan@acm.org)
 
 use Tie::File;
+use File::Basename;
 
-parse_gsm($ARGV[0]);
+
+# command line inputs
+# 0: slabname
+# 1: slabid
+# 2: rootdir
+# 3: SLABS file
+
+my $g_slabname = $ARGV[0];
+my $g_slabid = $ARGV[1];
+my $g_rootdir = $ARGV[2];
+my $g_slabsfile = $ARGV[3];
+my $g_totalslabs;
+
+print "slabname:", $g_slabname, "\n";
+print "slabid:", $g_slabid, "\n";
+print "rootdir:", $g_rootdir, "\n";
+print "slabsfile:", $g_slabsfile, "\n";
+#print "g_totalslabs:", $g_totalslabs, "\n";
+
+
+# main loop to iterate through all the slab .gsm's
+tie my @array, 'Tie::File', $g_slabsfile or die $!;
+
+my $i = 0;
+my $slabdir;
+my $slabname;
+my $slabgsm;
+my $slabtype;
+
+my %slab_idtogsm;
+my %slab_idtoname;
+my %slab_idtotype;
+
+
+while( $i <= $#array) {
+
+    my $line = $array[$i];
+    chomp($line);
+
+    my $trimline = $line;
+    $trimline =~ s/^\s+|\s+$//g ;     # remove both leading and trailing whitespace
+
+    # split the line using the comma delimiter
+    my @slabinfo = split(/,/, $trimline);
+
+    $slabdir = $g_rootdir.$slabinfo[0];
+    $slabdir =~ s/^\s+|\s+$//g ;     # remove both leading and trailing whitespace
+    $slabname = basename($slabinfo[0]);
+    $slabname =~ s/^\s+|\s+$//g ;     # remove both leading and trailing whitespace
+    $slabtype = $slabinfo[1];
+    $slabtype =~ s/^\s+|\s+$//g ;     # remove both leading and trailing whitespace
+    $slabgsm = $slabdir."/".$slabname.".gsm";
+
+    #print "Slab name: $slabname, gsm:$slabgsm ...\n";
+    $slab_idtogsm{$i} = $slabgsm;
+    $slab_idtoname{$i} = $slabname;
+    $slab_idtotype{$i} = $slabtype;
+
+    #parse_gsm($slabgsm);
+
+
+    # move on to the next line
+    $i = $i + 1;
+}
+
+$g_totalslabs = $i;
+
+print "g_totalslabs:", $g_totalslabs, "\n";
+
+$i =0;
+
+while($i < $g_totalslabs){
+    print "slabname: $slab_idtoname{$i}, slabgsm: $slab_idtogsm{$i}, slabtype: $slab_idtotype{$i} \n";
+
+    $i=$i+1;
+}
+
+
+
 
 # parses a gsm file and populates relevant
 sub parse_gsm {
