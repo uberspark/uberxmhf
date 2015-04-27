@@ -17,8 +17,8 @@ my %slab_idtogsm;
 my %slab_idtoname;
 my %slab_idtotype;
 my %slab_idtouapifnmask;
+my %slab_idtocallmask;
 
-my %slab_nametocallmask;
 my %slab_nametoid;
 
 my $i = 0;
@@ -83,7 +83,7 @@ print "g_totalslabs:", $g_totalslabs, "\n";
 $i =0;
 
 while($i < $g_totalslabs){
-    print "slabname: $slab_idtoname{$i}, slabgsm: $slab_idtogsm{$i}, slabtype: $slab_idtotype{$i}, slabcallmask: $slab_nametocallmask{$slab_idtoname{$i}} \n";
+    print "slabname: $slab_idtoname{$i}, slabgsm: $slab_idtogsm{$i}, slabtype: $slab_idtotype{$i}, slabcallmask: $slab_idtocallmask{$i} \n";
 
     $slab_idtouapifnmask{$i} = parse_gsm($slab_idtogsm{$i}, $i, $g_totalslabs);
 
@@ -131,10 +131,10 @@ sub parse_gsm {
         if($lineentry[0] eq "S"){
             print $lineentry[0], $lineentry[1], $lineentry[2], $lineentry[3], $lineentry[4], "\n";
             #lineentry[1] = name of destination slab that this slab calls
-            if (exists $slab_nametocallmask{$lineentry[1]}){
-                $slab_nametocallmask{$lineentry[1]} |= (1 << $slabid);
+            if (exists $slab_idtocallmask{$slab_nametoid{$lineentry[1]}}){
+                $slab_idtocallmask{$slab_nametoid{$lineentry[1]}} |= (1 << $slabid);
             }else {
-                $slab_nametocallmask{$lineentry[1]} = (1 << $slabid);
+                $slab_idtocallmask{$slab_nametoid{$lineentry[1]}} = (1 << $slabid);
             }
 
         }elsif( $lineentry[0] eq "U"){
