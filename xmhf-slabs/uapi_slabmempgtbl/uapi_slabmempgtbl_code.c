@@ -182,32 +182,33 @@ static void _slabmempgtbl_initmempgtbl_ept2Mmmio(u32 slabid){
 #endif // 0
 
 
+static inline void _slabmempgtbl_sanitycheckhalt_slabid(u32 slabid){
+    if(slabid > 0 && (slabid-1) <= XMHF_MAX_MEMPGTBL_SETS)
+        return; //memory page tables are only for slab ids 1..XMHF_MAX_MEMPGTBL_SETS
+
+    _XDPRINTF_("%s: Halting!. Invalid slab index %u \n", __func__, slabid);
+    HALT();
+}
+
+
 static void _slabmempgtbl_initmempgtbl(u32 slabid){
     u32 slabtype;
 
-    //sanity checks
-    if(slabid >= XMHFGEEC_TOTAL_SLABS)
-        return;
+    _slabmempgtbl_sanitycheckhalt_slabid(slabid);
 
     slabtype = _xmhfhic_common_slab_info_table[slabid].slabtype;
 
     switch(slabtype){
-        case XMHFGEEC_SLABTYPE_VfT_SENTINEL:
         case XMHFGEEC_SLABTYPE_VfT_PROG:
         case XMHFGEEC_SLABTYPE_uVT_PROG:
         case XMHFGEEC_SLABTYPE_uVU_PROG:{
-            _slabmempgtbl_initmempgtbl_pae2Mmmio(slabid);
-            _XDPRINTF_("%s: setup slab %u with pae2Mmmio\n", __func__, slabid);
+            _slabmempgtbl_initmempgtbl_pae4K(slabid);
+            _XDPRINTF_("%s: setup slab %u with pae4K\n", __func__, slabid);
         }
         break;
 
         case XMHFGEEC_SLABTYPE_uVT_PROG_GUEST:
-        case XMHFGEEC_SLABTYPE_uVU_PROG_GUEST:{
-            _slabmempgtbl_initmempgtbl_ept2Mmmio(slabid);
-            _XDPRINTF_("%s: setup slab %u with ept2Mmmio\n", __func__, slabid);
-        }
-        break;
-
+        case XMHFGEEC_SLABTYPE_uVU_PROG_GUEST:
         case XMHFGEEC_SLABTYPE_uVU_PROG_RICHGUEST:{
             _slabmempgtbl_initmempgtbl_ept4K(slabid);
             _XDPRINTF_("%s: setup slab %u with ept4K\n", __func__, slabid);
@@ -215,7 +216,8 @@ static void _slabmempgtbl_initmempgtbl(u32 slabid){
         break;
 
         default:
-            _XDPRINTF_("%s: unknown slab type %u\n", __func__, slabtype);
+            _XDPRINTF_("%s: Halting. Unknown slab type %u\n", __func__, slabtype);
+            HALT();
             break;
     }
 
@@ -229,9 +231,7 @@ static void _slabmempgtbl_setentryforpaddr(u32 slabid, u64 gpa, u64 entry){
     u64 pt_index = pae_get_pt_index(gpa);
     u32 slabtype, mmio_paddr;
 
-    //sanity checks
-    if(slabid >= XMHFGEEC_TOTAL_SLABS)
-        return;
+    _slabmempgtbl_sanitycheckhalt_slabid(slabid);
 
     slabtype = _xmhfhic_common_slab_info_table[slabid].slabtype;
     mmio_paddr = _xmhfhic_common_slab_info_table[slabid].slab_physmem_extents[4].addr_start;
@@ -275,9 +275,7 @@ static u64 _slabmempgtbl_getentryforpaddr(u32 slabid, u64 gpa){
     u64 pt_index = pae_get_pt_index(gpa);
     u32 slabtype, mmio_paddr;
 
-    //sanity checks
-    if(slabid >= XMHFGEEC_TOTAL_SLABS)
-        return;
+    _slabmempgtbl_sanitycheckhalt_slabid(slabid);
 
     slabtype = _xmhfhic_common_slab_info_table[slabid].slabtype;
     mmio_paddr = _xmhfhic_common_slab_info_table[slabid].slab_physmem_extents[4].addr_start;
