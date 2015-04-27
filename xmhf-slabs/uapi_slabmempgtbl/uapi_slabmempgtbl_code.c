@@ -66,33 +66,6 @@ __attribute__((section(".data"))) __attribute__((aligned(4096))) u64 _slabmempgt
 __attribute__((section(".data"))) __attribute__((aligned(4096))) u64 _slabmempgtbl_lvl2t[XMHF_MAX_MEMPGTBL_SETS][PAE_PTRS_PER_PDPT][PAE_PTRS_PER_PDT];
 __attribute__((section(".data"))) __attribute__((aligned(4096)))  u64 _slabmempgtbl_lvl1t[XMHF_MAX_MEMPGTBL_SETS][PAE_PTRS_PER_PDPT][PAE_PTRS_PER_PDT][PAE_PTRS_PER_PT];
 
-#if 0
-static void _slabmempgtbl_initmempgtbl_pae2Mmmio(u32 slabid){
-    //pdpt = _slabmempgtbl_lvl4t[slabid];
-    //pdt = _slabmempgtbl_lvl2t[slabid];
-    //mmio = _slabmempgtbl_lvl1t_mmio[slabid];
-    u32 i;
-    u64 default_flags = (u64)(_PAGE_PRESENT);
-    u32 mmio_paddr;
-    u32 pdpt_index, pdt_index;
-
-    //setup pdpt to point to pdts
-    memset(&_slabmempgtbl_lvl4t[slabid], 0, PAGE_SIZE_4K);
-    for(i=0; i < PAE_PTRS_PER_PDPT; i++){
-        _slabmempgtbl_lvl4t[slabid][i] =
-            pae_make_pdpe(&_slabmempgtbl_lvl2t[slabid][i], default_flags);
-    }
-
-    //splinter mmio page into 4K mappings
-    mmio_paddr = _xmhfhic_common_slab_info_table[slabid].slab_physmem_extents[4].addr_start;
-    pdpt_index = pae_get_pdpt_index(mmio_paddr);
-    pdt_index = pae_get_pdt_index(mmio_paddr);
-    _slabmempgtbl_lvl2t[slabid][pdpt_index][pdt_index] =
-        pae_make_pde(&_slabmempgtbl_lvl1t_mmio[slabid], default_flags);
-
-}
-#endif
-
 
 static void _slabmempgtbl_initmempgtbl_pae4K(u32 slabid){
     //pdpt = _slabmempgtbl_lvl4t[slabid];
@@ -147,39 +120,6 @@ static void _slabmempgtbl_initmempgtbl_ept4K(u32 slabid){
 	}
 }
 
-#if 0
-static void _slabmempgtbl_initmempgtbl_ept2Mmmio(u32 slabid){
-    //pml4t = _slabmempgtbl_lvl4t[slabid];
-    //pdpt = _slabmempgtbl_lvl3t[slabid];
-    //pdt = _slabmempgtbl_lvl2t[slabid];
-    //mmio = _slabmempgtbl_lvl1t_mmio[slabid];
-    u32 i, j;
-    u32 mmio_paddr;
-    u32 pdpt_index, pdt_index;
-
-    //pml4t
-    memset(&_slabmempgtbl_lvl4t[slabid], 0, PAGE_SIZE_4K);
-    for(i=0; i < PAE_PTRS_PER_PML4T; i++)
-        _slabmempgtbl_lvl4t[slabid][i] =
-            ((u64)&_slabmempgtbl_lvl3t[slabid] | 0x7);
-
-    //pdpt
-    memset(&_slabmempgtbl_lvl3t[slabid], 0, PAGE_SIZE_4K);
-    for(i=0; i < PAE_PTRS_PER_PDPT; i++)
-		_slabmempgtbl_lvl3t[slabid][i] =
-            ((u64)&_slabmempgtbl_lvl2t[slabid][i] | 0x7 );
-
-    //pdt
-    memset(&_slabmempgtbl_lvl2t[slabid], 0, PAE_PTRS_PER_PDPT * PAGE_SIZE_4K);
-    //splinter mmio page into 4K mappings
-    mmio_paddr = _xmhfhic_common_slab_info_table[slabid].slab_physmem_extents[4].addr_start;
-    pdpt_index = pae_get_pdpt_index(mmio_paddr);
-    pdt_index = pae_get_pdt_index(mmio_paddr);
-    _slabmempgtbl_lvl2t[slabid][pdpt_index][pdt_index] =
-        ((u64)&_slabmempgtbl_lvl1t_mmio[slabid] | 0x7 );
-
-}
-#endif // 0
 
 
 static inline void _slabmempgtbl_sanitycheckhalt_slabid(u32 slabid){
