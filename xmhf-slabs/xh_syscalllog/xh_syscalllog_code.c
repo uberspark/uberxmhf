@@ -145,7 +145,7 @@ static void _hcb_hypercall(u32 cpuindex, u32 guest_slab_index){
 	u32 call_id;
 	u64 gpa;
 
-    spl.src_slabid = XMHFGEEC_SLAB_XH_APPROVEXEC;
+    spl.src_slabid = XMHFGEEC_SLAB_XH_SYSCALLLOG;
     spl.dst_slabid = XMHFGEEC_SLAB_UAPI_GCPUSTATE;
     spl.cpuid = cpuindex;
     //spl.in_out_params[0] = XMHF_HIC_UAPI_CPUSTATE;
@@ -195,7 +195,7 @@ static void _hcb_memoryfault(u32 cpuindex, u32 guest_slab_index, u64 gpa, u64 gv
 	_XDPRINTF_("%s[%u]: memory fault in guest slab %u; gpa=%016llx, gva=%016llx, errorcode=%016llx, sysenter execution?\n",
             __func__, (u16)cpuindex, guest_slab_index, gpa, gva, errorcode);
 
-    spl.src_slabid = XMHFGEEC_SLAB_XH_APPROVEXEC;
+    spl.src_slabid = XMHFGEEC_SLAB_XH_SYSCALLLOG;
     spl.dst_slabid = XMHFGEEC_SLAB_UAPI_GCPUSTATE;
     spl.cpuid = cpuindex;
     //spl.in_out_params[0] = XMHF_HIC_UAPI_CPUSTATE;
@@ -418,7 +418,7 @@ void slab_main(slab_params_t *sp){
        	    xmhf_uapi_gcpustate_vmrw_params_t *gcpustate_vmrwp =
                 (xmhf_uapi_gcpustate_vmrw_params_t *)spl.in_out_params;
 
-         	spl.src_slabid = XMHFGEEC_SLAB_XH_APPROVEXEC;
+         	spl.src_slabid = XMHFGEEC_SLAB_XH_SYSCALLLOG;
          	spl.dst_slabid = XMHFGEEC_SLAB_UAPI_GCPUSTATE;
          	spl.cpuid = sp->cpuid;
             //spl.in_out_params[0] = XMHF_HIC_UAPI_CPUSTATE;

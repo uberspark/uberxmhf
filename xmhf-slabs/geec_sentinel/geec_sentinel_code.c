@@ -394,26 +394,30 @@ static void _geec_sentinel_transition_ret_uvt_uvu_prog_to_vft_prog(slab_params_t
 // sentinel hub
 /////
 
-
-void geec_sentinel_main(slab_params_t *sp, void *caller_stack_frame){
-
+static inline void _geec_sentinel_checkandhalt_callcaps(u32 src_slabid, u32 dst_slabid, u32 dst_uapifn){
     //check call capabilities
-    if( !(_xmhfhic_common_slab_info_table[sp->dst_slabid].slab_callcaps & XMHFGEEC_SLAB_CALLCAP_MASK(sp->src_slabid)) ){
+    if( !(_xmhfhic_common_slab_info_table[dst_slabid].slab_callcaps & XMHFGEEC_SLAB_CALLCAP_MASK(src_slabid)) ){
         _XDPRINTF_("GEEC_SENTINEL: Halt!. callcap check failed for src(%u)-->dst(%u), dst caps=0x%x\n",
-                   sp->src_slabid, sp->dst_slabid, _xmhfhic_common_slab_info_table[sp->dst_slabid].slab_callcaps);
+                   src_slabid, dst_slabid, _xmhfhic_common_slab_info_table[dst_slabid].slab_callcaps);
         HALT();
     }
 
     //check uapi capabilities
-    if( _xmhfhic_common_slab_info_table[sp->dst_slabid].slab_uapisupported){
-        if(!(_xmhfhic_common_slab_info_table[sp->src_slabid].slab_uapicaps[sp->dst_slabid] & XMHFGEEC_SLAB_UAPICAP_MASK(sp->dst_uapifn)))
+    if( _xmhfhic_common_slab_info_table[dst_slabid].slab_uapisupported){
+        if(!(_xmhfhic_common_slab_info_table[src_slabid].slab_uapicaps[dst_slabid] & XMHFGEEC_SLAB_UAPICAP_MASK(dst_uapifn)))
         {
             _XDPRINTF_("GEEC_SENTINEL: Halt!. uapicap check failed for src(%u)-->dst(%u), dst_uapifn=%u, dst_uapimask=0x%08x\n",
-                       sp->src_slabid, sp->dst_slabid, sp->dst_uapifn,
-                       (u32)_xmhfhic_common_slab_info_table[sp->src_slabid].slab_uapicaps[sp->dst_slabid]);
+                       src_slabid, dst_slabid, dst_uapifn,
+                       (u32)_xmhfhic_common_slab_info_table[src_slabid].slab_uapicaps[dst_slabid]);
             HALT();
         }
     }
+}
+
+
+
+void geec_sentinel_main(slab_params_t *sp, void *caller_stack_frame){
+
 
 
     switch(sp->slab_ctype){
@@ -422,6 +426,7 @@ void geec_sentinel_main(slab_params_t *sp, void *caller_stack_frame){
             switch (_xmhfhic_common_slab_info_table[sp->dst_slabid].slabtype){
 
                 case XMHFGEEC_SLABTYPE_VfT_PROG:{
+                    _geec_sentinel_checkandhalt_callcaps(sp->src_slabid, sp->dst_slabid, sp->dst_uapifn);
                     CASM_FUNCCALL(_geec_sentinel_xfer_vft_prog_to_vft_prog,
                                   _xmhfhic_common_slab_info_table[sp->dst_slabid].entrystub,
                                   caller_stack_frame);
@@ -435,6 +440,7 @@ void geec_sentinel_main(slab_params_t *sp, void *caller_stack_frame){
 
                 case XMHFGEEC_SLABTYPE_uVT_PROG:
                 case XMHFGEEC_SLABTYPE_uVU_PROG:{
+                    _geec_sentinel_checkandhalt_callcaps(sp->src_slabid, sp->dst_slabid, sp->dst_uapifn);
                     sp->slab_ctype = XMHFGEEC_SENTINEL_CALL_VfT_PROG_TO_uVT_uVU_PROG;
                     _geec_sentinel_transition_vft_prog_to_uvt_uvu_prog(sp, caller_stack_frame);
                     _XDPRINTF_("GEEC_SENTINEL[ln:%u]: halting. should never be here!\n",
@@ -449,6 +455,7 @@ void geec_sentinel_main(slab_params_t *sp, void *caller_stack_frame){
                 case XMHFGEEC_SLABTYPE_uVU_PROG_GUEST:
                 case XMHFGEEC_SLABTYPE_uVU_PROG_RICHGUEST:{
                     u32 errorcode;
+                    _geec_sentinel_checkandhalt_callcaps(sp->src_slabid, sp->dst_slabid, sp->dst_uapifn);
                     sp->slab_ctype = XMHFGEEC_SENTINEL_CALL_VfT_PROG_TO_uVT_uVU_PROG_GUEST;
                     CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_CONTROL_VPID, sp->dst_slabid );
                     CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_CONTROL_EPT_POINTER_FULL, (_xmhfhic_common_slab_info_table[sp->dst_slabid].mempgtbl_cr3  | 0x1E) );
@@ -499,6 +506,7 @@ void geec_sentinel_main(slab_params_t *sp, void *caller_stack_frame){
 
 
         case XMHFGEEC_SENTINEL_CALL_uVT_uVU_PROG_TO_VfT_PROG:{
+            _geec_sentinel_checkandhalt_callcaps(sp->src_slabid, sp->dst_slabid, sp->dst_uapifn);
             _geec_sentinel_transition_call_uvt_uvu_prog_to_vft_prog(sp, caller_stack_frame);
             _XDPRINTF_("GEEC_SENTINEL[ln:%u]: halting. should never be here!\n", __LINE__);
             HALT();
