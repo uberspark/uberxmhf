@@ -1,4 +1,10 @@
-#slab manifest
+//slab manifest
+#include <geec_sentinel.h>
+#include <uapi_gcpustate.h>
+#include <uapi_slabmemacc.h>
+#include <xg_richguest.h>
+#include <xc_testslab.h>
+
 
 S:geec_sentinel:void:void:void
 S:uapi_gcpustate:void:void:void

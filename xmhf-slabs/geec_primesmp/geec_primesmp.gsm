@@ -1,4 +1,6 @@
-# slab manifest
+// slab manifest
+#include <geec_primesmp.h>
+#include <geec_sentinel.h>
 
 S:geec_sentinel:void:void:void
 

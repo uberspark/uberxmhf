@@ -1,4 +1,7 @@
-#slab manifest
+//slab manifest
+#include <uapi_gcpustate.h>
+#include <uapi_slabmempgtbl.h>
+#include <xh_hyperdep.h>
 
 S:uapi_gcpustate:void:void:void
 S:uapi_slabmempgtbl:void:void:void
