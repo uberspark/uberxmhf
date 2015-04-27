@@ -52,6 +52,10 @@
 #include <xc_ihub.h>
 #include <uapi_gcpustate.h>
 #include <uapi_hcpustate.h>
+#include <xh_hyperdep.h>
+#include <xh_syscalllog.h>
+#include <xh_ssteptrace.h>
+#include <xh_approvexec.h>
 
 /*
  * slab code

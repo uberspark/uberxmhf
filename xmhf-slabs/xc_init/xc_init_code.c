@@ -55,6 +55,10 @@
 #include <uapi_slabmemacc.h>
 #include <xg_richguest.h>
 #include <xc_testslab.h>
+#include <xh_hyperdep.h>
+#include <xh_syscalllog.h>
+#include <xh_ssteptrace.h>
+#include <xh_approvexec.h>
 
 #include <xc_init.h>
 

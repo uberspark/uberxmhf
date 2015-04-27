@@ -57,6 +57,7 @@
 
 #include <geec_primesmp.h>
 #include <geec_sentinel.h>
+#include <xc_init.h>
 
 //////
 // data
@@ -486,6 +487,7 @@ void xmhfhic_smp_entry(u32 cpuid){
 
         memset(&sp, 0, sizeof(sp));
         sp.cpuid = cpuid;
+        sp.src_slabid = XMHFGEEC_SLAB_GEEC_PRIMESMP;
         sp.dst_slabid = XMHFGEEC_SLAB_XC_INIT;
         XMHF_SLAB_CALLNEW(&sp);
     }
