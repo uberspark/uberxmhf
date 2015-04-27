@@ -31,9 +31,13 @@ print "slabsfile:", $g_slabsfile, "\n";
 print "rootdir:", $g_rootdir, "\n";
 
 
-# main loop to iterate through the SLABS file
-tie my @array, 'Tie::File', $g_slabsfile or die $!;
 
+
+# iterate through all the entries within SLABS file and
+# compute total number of slabs while populating global
+# slab_idto{gsm,name,type} hashes
+
+tie my @array, 'Tie::File', $g_slabsfile or die $!;
 
 while( $i <= $#array) {
 
@@ -52,15 +56,14 @@ while( $i <= $#array) {
     $slabname =~ s/^\s+|\s+$//g ;     # remove both leading and trailing whitespace
     $slabtype = $slabinfo[1];
     $slabtype =~ s/^\s+|\s+$//g ;     # remove both leading and trailing whitespace
-    $slabgsm = $slabdir."/".$slabname.".gsm";
+    $slabgsm = $slabdir."/".$slabname.".gsm.pp";
 
     #print "Slab name: $slabname, gsm:$slabgsm ...\n";
     $slab_idtogsm{$i} = $slabgsm;
     $slab_idtoname{$i} = $slabname;
     $slab_idtotype{$i} = $slabtype;
 
-    parse_gsm($slabgsm, $i);
-
+    #parse_gsm($slabgsm, $i);
 
     # move on to the next line
     $i = $i + 1;
@@ -70,10 +73,15 @@ $g_totalslabs = $i;
 
 print "g_totalslabs:", $g_totalslabs, "\n";
 
+# now iterate through all the slab id's and populate callmask and
+# uapimasks
+
 $i =0;
 
 while($i < $g_totalslabs){
     print "slabname: $slab_idtoname{$i}, slabgsm: $slab_idtogsm{$i}, slabtype: $slab_idtotype{$i}, slabcallmask: $slab_nametocallmask{$slab_idtoname{$i}} \n";
+
+    parse_gsm($slab_idtogsm{$i}, $i);
 
     $i=$i+1;
 }
@@ -85,6 +93,7 @@ while($i < $g_totalslabs){
 sub parse_gsm {
     my($filename, $slabid) = @_;
     my $i = 0;
+    #my %slab_idtouapifnmask;
 
     chomp($filename);
     tie my @array, 'Tie::File', $filename or die $!;
@@ -108,8 +117,8 @@ sub parse_gsm {
             }
 
         }elsif( $lineentry[0] eq "U"){
-
             print $lineentry[0], $lineentry[1], $lineentry[2], $lineentry[3], $lineentry[4], "\n";
+            #lineentry[1] = destination slab name, lineentry[2] = uapifn
 
         }elsif( $lineentry[0] eq "RD"){
 
