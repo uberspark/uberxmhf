@@ -66,7 +66,7 @@ __attribute__((section(".data"))) __attribute__((aligned(4096))) u64 _slabmempgt
 __attribute__((section(".data"))) __attribute__((aligned(4096)))  u64 _slabmempgtbl_lvl1t_mmio[XMHFGEEC_TOTAL_SLABS][PAE_PTRS_PER_PT];
 __attribute__((section(".data"))) __attribute__((aligned(4096)))  u64 _slabmempgtbl_lvl1t_richguest[PAE_PTRS_PER_PDPT][PAE_PTRS_PER_PDT][PAE_PTRS_PER_PT];
 
-
+#if 0
 static void _slabmempgtbl_initmempgtbl_pae2Mmmio(u32 slabid){
     //pdpt = _slabmempgtbl_lvl4t[slabid];
     //pdt = _slabmempgtbl_lvl2t[slabid];
@@ -91,6 +91,33 @@ static void _slabmempgtbl_initmempgtbl_pae2Mmmio(u32 slabid){
         pae_make_pde(&_slabmempgtbl_lvl1t_mmio[slabid], default_flags);
 
 }
+#endif
+
+
+static void _slabmempgtbl_initmempgtbl_pae4K(u32 slabid){
+    //pdpt = _slabmempgtbl_lvl4t[slabid];
+    //pdt = _slabmempgtbl_lvl2t[slabid];
+    //pt = _slabmempgtbl_lvl1t[slabid];
+    u32 i, j;
+    u64 default_flags = (u64)(_PAGE_PRESENT);
+
+    //pdpt
+    memset(&_slabmempgtbl_lvl4t[slabid], 0, PAGE_SIZE_4K);
+    for(i=0; i < PAE_PTRS_PER_PDPT; i++){
+        _slabmempgtbl_lvl4t[slabid][i] =
+            pae_make_pdpe(&_slabmempgtbl_lvl2t[slabid][i], default_flags);
+    }
+
+    //pdt
+	for(i=0; i < PAE_PTRS_PER_PDPT; i++){
+		for(j=0; j < PAE_PTRS_PER_PDT; j++){
+			_slabmempgtbl_lvl2t[slabid][i][j] =
+                pae_make_pde(&_slabmempgtbl_lvl1t[slabid][i][j], default_flags);
+		}
+	}
+}
+
+
 
 static void _slabmempgtbl_initmempgtbl_ept4K(u32 slabid){
     //pml4t = _slabmempgtbl_lvl4t[slabid];
@@ -120,7 +147,7 @@ static void _slabmempgtbl_initmempgtbl_ept4K(u32 slabid){
 	}
 }
 
-
+#if 0
 static void _slabmempgtbl_initmempgtbl_ept2Mmmio(u32 slabid){
     //pml4t = _slabmempgtbl_lvl4t[slabid];
     //pdpt = _slabmempgtbl_lvl3t[slabid];
@@ -152,6 +179,7 @@ static void _slabmempgtbl_initmempgtbl_ept2Mmmio(u32 slabid){
         ((u64)&_slabmempgtbl_lvl1t_mmio[slabid] | 0x7 );
 
 }
+#endif // 0
 
 
 static void _slabmempgtbl_initmempgtbl(u32 slabid){
