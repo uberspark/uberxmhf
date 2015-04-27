@@ -96,7 +96,7 @@ static void _slabmempgtbl_initmempgtbl_ept4K(u32 slabid){
     //pml4t = _slabmempgtbl_lvl4t[slabid];
     //pdpt = _slabmempgtbl_lvl3t[slabid];
     //pdt = _slabmempgtbl_lvl2t[slabid];
-    //pt = _slabmempgtbl_lvl1t_richguest[slabid];
+    //pt = _slabmempgtbl_lvl1t[slabid];
     u32 i, j;
 
     //pml4t
@@ -115,7 +115,7 @@ static void _slabmempgtbl_initmempgtbl_ept4K(u32 slabid){
 	for(i=0; i < PAE_PTRS_PER_PDPT; i++){
 		for(j=0; j < PAE_PTRS_PER_PDT; j++){
 			_slabmempgtbl_lvl2t[slabid][i][j] =
-                ((u64)&_slabmempgtbl_lvl1t_richguest[i][j] | 0x7 );
+                ((u64)&_slabmempgtbl_lvl1t[slabid][i][j] | 0x7 );
 		}
 	}
 }
