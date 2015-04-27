@@ -169,38 +169,27 @@ static void _slabmempgtbl_setentryforpaddr(u32 slabid, u64 gpa, u64 entry){
     u64 pdpt_index = pae_get_pdpt_index(gpa);
     u64 pdt_index = pae_get_pdt_index(gpa);
     u64 pt_index = pae_get_pt_index(gpa);
-    u32 slabtype, mmio_paddr;
+    u32 slabtype;
 
     _slabmempgtbl_sanitycheckhalt_slabid(slabid);
 
     slabtype = _xmhfhic_common_slab_info_table[slabid].slabtype;
-    mmio_paddr = _xmhfhic_common_slab_info_table[slabid].slab_physmem_extents[4].addr_start;
 
     switch(slabtype){
-        case XMHFGEEC_SLABTYPE_VfT_SENTINEL:
         case XMHFGEEC_SLABTYPE_VfT_PROG:
         case XMHFGEEC_SLABTYPE_uVT_PROG:
         case XMHFGEEC_SLABTYPE_uVU_PROG:
         case XMHFGEEC_SLABTYPE_uVT_PROG_GUEST:
-        case XMHFGEEC_SLABTYPE_uVU_PROG_GUEST:{
-            //2M mappings with 4K splintered mmio
-            if(gpa >= mmio_paddr && gpa < (mmio_paddr + PAGE_SIZE_2M)){
-                _slabmempgtbl_lvl1t_mmio[slabid][pt_index] = entry & (~0x80);
-            }else{
-                _slabmempgtbl_lvl2t[slabid][pdpt_index][pdt_index] = entry | 0x80;
-            }
-        }
-        break;
-
+        case XMHFGEEC_SLABTYPE_uVU_PROG_GUEST:
         case XMHFGEEC_SLABTYPE_uVU_PROG_RICHGUEST:{
-            //4K mappings throughout
-            _slabmempgtbl_lvl1t_richguest[pdpt_index][pdt_index][pt_index] =
+            _slabmempgtbl_lvl1t[slabid][pdpt_index][pdt_index][pt_index] =
                 entry & (~0x80);
         }
         break;
 
         default:
-            _XDPRINTF_("%s: unknown slab type %u\n", __func__, slabtype);
+            _XDPRINTF_("%s: Halting!. unknown slab type %u\n", __func__, slabtype);
+            HALT();
             break;
 
     }
@@ -213,38 +202,27 @@ static u64 _slabmempgtbl_getentryforpaddr(u32 slabid, u64 gpa){
     u64 pdpt_index = pae_get_pdpt_index(gpa);
     u64 pdt_index = pae_get_pdt_index(gpa);
     u64 pt_index = pae_get_pt_index(gpa);
-    u32 slabtype, mmio_paddr;
+    u32 slabtype;
 
     _slabmempgtbl_sanitycheckhalt_slabid(slabid);
 
     slabtype = _xmhfhic_common_slab_info_table[slabid].slabtype;
-    mmio_paddr = _xmhfhic_common_slab_info_table[slabid].slab_physmem_extents[4].addr_start;
 
     switch(slabtype){
 
-        case XMHFGEEC_SLABTYPE_VfT_SENTINEL:
         case XMHFGEEC_SLABTYPE_VfT_PROG:
         case XMHFGEEC_SLABTYPE_uVT_PROG:
         case XMHFGEEC_SLABTYPE_uVU_PROG:
         case XMHFGEEC_SLABTYPE_uVT_PROG_GUEST:
-        case XMHFGEEC_SLABTYPE_uVU_PROG_GUEST:{
-            //2M mappings with 4K splintered mmio
-            if(gpa >= mmio_paddr && gpa < (mmio_paddr + PAGE_SIZE_2M)){
-                result_entry = _slabmempgtbl_lvl1t_mmio[slabid][pt_index];
-            }else{
-                result_entry = _slabmempgtbl_lvl2t[slabid][pdpt_index][pdt_index];
-            }
-        }
-        break;
-
+        case XMHFGEEC_SLABTYPE_uVU_PROG_GUEST:
         case XMHFGEEC_SLABTYPE_uVU_PROG_RICHGUEST:{
-            //4K mappings throughout
-            result_entry = _slabmempgtbl_lvl1t_richguest[pdpt_index][pdt_index][pt_index];
+            result_entry = _slabmempgtbl_lvl1t[slabid][pdpt_index][pdt_index][pt_index];
         }
         break;
 
         default:
-            _XDPRINTF_("%s: unknown slab type %u\n", __func__, slabtype);
+            _XDPRINTF_("%s: Halting!. unknown slab type %u\n", __func__, slabtype);
+            HALT();
             break;
 
     }
@@ -256,7 +234,6 @@ static u64 _slabmempgtbl_getentryforpaddr(u32 slabid, u64 gpa){
 /////
 void slab_main(slab_params_t *sp){
 
-    //xmhf_uapi_params_hdr_t *uapiphdr = (xmhf_uapi_params_hdr_t *)sp->in_out_params;
 
     switch(sp->dst_uapifn){
 
