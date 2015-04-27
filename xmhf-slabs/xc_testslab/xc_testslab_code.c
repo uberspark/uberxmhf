@@ -125,11 +125,11 @@ static u32 _xc_testslab_get_guest_exception_bitmap(u32 cpuid){
     xmhf_uapi_gcpustate_vmrw_params_t *gcpustate_vmrwp =
         (xmhf_uapi_gcpustate_vmrw_params_t *)spl.in_out_params;
 
-    spl.src_slabid = XMHF_HYP_SLAB_XC_TESTSLAB;
-    spl.dst_slabid = XMHF_HYP_SLAB_UAPI_GCPUSTATE;
+    spl.src_slabid = XMHFGEEC_SLAB_XC_TESTSLAB;
+    spl.dst_slabid = XMHFGEEC_SLAB_UAPI_GCPUSTATE;
     spl.cpuid = cpuid;
 
-    gcpustate_vmrwp->uapiphdr.uapifn = XMHF_HIC_UAPI_CPUSTATE_VMREAD;
+    spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_VMREAD;
     gcpustate_vmrwp->encoding = VMCS_CONTROL_EXCEPTION_BITMAP;
     XMHF_SLAB_CALLNEW(&spl);
     exception_bitmap = gcpustate_vmrwp->value;

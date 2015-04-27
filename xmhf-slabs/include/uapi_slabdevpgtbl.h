@@ -55,41 +55,33 @@
 #ifndef __UAPI_SLABDEVPGTBL_H__
 #define __UAPI_SLABDEVPGTBL_H__
 
-#define XMHFGEEC_UAPI_SDEVPGTBL_INIT            (0x1)
-#define XMHFGEEC_UAPI_SDEVPGTBL_INITRETCET      (0x2)
-#define XMHFGEEC_UAPI_SDEVPGTBL_INITDEVPGTBL    (0x3)
-#define XMHFGEEC_UAPI_SDEVPGTBL_BINDDEVICE      (0x4)
-#define XMHFGEEC_UAPI_SDEVPGTBL_UNBINDDEVICE    (0x5)
+#define XMHFGEEC_UAPI_SDEVPGTBL_INIT            0
+#define XMHFGEEC_UAPI_SDEVPGTBL_INITRETCET      1
+#define XMHFGEEC_UAPI_SDEVPGTBL_INITDEVPGTBL    2
+#define XMHFGEEC_UAPI_SDEVPGTBL_BINDDEVICE      3
+#define XMHFGEEC_UAPI_SDEVPGTBL_UNBINDDEVICE    4
 
 
 #ifndef __ASSEMBLY__
 
-typedef struct {
-    xmhf_uapi_params_hdr_t uapiphdr;
-}__attribute__((packed)) xmhfgeec_uapi_slabdevpgtbl_init_params_t;
 
 typedef struct {
-    xmhf_uapi_params_hdr_t uapiphdr;
     u32 result_retpaddr;
 }__attribute__((packed)) xmhfgeec_uapi_slabdevpgtbl_initretcet_params_t;
 
 
 typedef struct {
-    xmhf_uapi_params_hdr_t uapiphdr;
     u32 dst_slabid;
 }__attribute__((packed)) xmhfgeec_uapi_slabdevpgtbl_initdevpgtbl_params_t;
 
 
 typedef struct {
-    xmhf_uapi_params_hdr_t uapiphdr;
     u32 dst_slabid;
     u32 pagewalk_level;
     u32 bus;
     u32 dev;
     u32 func;
 }__attribute__((packed)) xmhfgeec_uapi_slabdevpgtbl_binddevice_params_t;
-
-
 
 
 typedef struct {

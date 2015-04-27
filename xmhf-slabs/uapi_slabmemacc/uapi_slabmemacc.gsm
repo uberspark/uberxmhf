@@ -1,1 +1,6 @@
-# slab manifest
+// slab manifest
+#include <uapi_slabmemacc.h>
+#include <geec_sentinel.h>
+
+S:geec_sentinel:void:void:void
+

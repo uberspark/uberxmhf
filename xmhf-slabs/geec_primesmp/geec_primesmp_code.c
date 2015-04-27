@@ -57,6 +57,7 @@
 
 #include <geec_primesmp.h>
 #include <geec_sentinel.h>
+#include <xc_init.h>
 
 //////
 // data
@@ -474,19 +475,20 @@ void xmhfhic_smp_entry(u32 cpuid){
 
     //relinquish HIC initialization and move on to the first slab
     _XDPRINTF_("%s[%u]: proceeding to call init slab at %x\n", __func__, (u16)cpuid,
-                _xmhfhic_common_slab_info_table[XMHF_HYP_SLAB_XCINIT].entrystub);
+                _xmhfhic_common_slab_info_table[XMHFGEEC_SLAB_XC_INIT].entrystub);
 
     //xmhfhic_arch_relinquish_control_to_init_slab(cpuid,
-    //    _xmhfhic_common_slab_info_table[XMHF_HYP_SLAB_XCINIT].entrystub,
-    //    _xmhfhic_common_slab_info_table[XMHF_HYP_SLAB_XCINIT].archdata.mempgtbl_cr3,
-    //    _xmhfhic_common_slab_info_table[XMHF_HYP_SLAB_XCINIT].archdata.slabtos[(u32)cpuid]);
+    //    _xmhfhic_common_slab_info_table[XMHFGEEC_SLAB_XC_INIT].entrystub,
+    //    _xmhfhic_common_slab_info_table[XMHFGEEC_SLAB_XC_INIT].archdata.mempgtbl_cr3,
+    //    _xmhfhic_common_slab_info_table[XMHFGEEC_SLAB_XC_INIT].archdata.slabtos[(u32)cpuid]);
 
     {
         slab_params_t sp;
 
         memset(&sp, 0, sizeof(sp));
         sp.cpuid = cpuid;
-        sp.dst_slabid = XMHF_HYP_SLAB_XCINIT;
+        sp.src_slabid = XMHFGEEC_SLAB_GEEC_PRIMESMP;
+        sp.dst_slabid = XMHFGEEC_SLAB_XC_INIT;
         XMHF_SLAB_CALLNEW(&sp);
     }
 

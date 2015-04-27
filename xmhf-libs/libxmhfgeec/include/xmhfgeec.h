@@ -102,9 +102,10 @@
 typedef void * slab_entrystub_t;
 
 
-typedef u32 slab_privilegemask_t;
 typedef u32 slab_callcaps_t;
 typedef u32 slab_uapicaps_t;
+typedef u32 slab_memgrantreadcaps_t;
+typedef u32 slab_memgrantwritecaps_t;
 
 typedef struct {
     u32 pci_bus;
@@ -122,18 +123,6 @@ typedef struct {
 } __attribute__((packed)) slab_platformdevices_t;
 
 
-//slab capabilities type
-typedef struct {
-    slab_privilegemask_t slab_privilegemask;
-    slab_callcaps_t slab_callcaps;
-    slab_uapicaps_t slab_uapicaps;
-    slab_platformdevices_t slab_devices;
-    u32 slab_archparams;
-} __attribute__((packed)) slab_caps_t;
-
-
-#define HIC_SLAB_CALLCAP(x) (1 << x)
-#define HIC_SLAB_UAPICAP(x) (1 << x)
 
 //slab physical memory extent type
 typedef struct {
@@ -143,42 +132,42 @@ typedef struct {
 } slab_physmem_extent_t;
 
 
-//////
-//modified data types
 typedef struct {
-	u32 slabtype; //hypervisor, guest
-	bool mempgtbl_initialized;
-	bool devpgtbl_initialized;
+	bool slab_inuse;
+	u32 slabtype;
 	u32 mempgtbl_cr3;
 	u32 slabtos[MAX_PLATFORM_CPUS];
-} __attribute__((packed)) x_slab_info_archdata_t;
-
-
-typedef struct {
-    x_slab_info_archdata_t archdata;
-	bool slab_inuse;
-    slab_privilegemask_t slab_privilegemask;
     slab_callcaps_t slab_callcaps;
-    slab_uapicaps_t slab_uapicaps;
+    bool slab_uapisupported;
+    slab_uapicaps_t slab_uapicaps[XMHFGEEC_TOTAL_SLABS];
+    slab_memgrantreadcaps_t slab_memgrantreadcaps;
+    slab_memgrantwritecaps_t slab_memgrantwritecaps;
     slab_platformdevices_t slab_devices;
     slab_physmem_extent_t slab_physmem_extents[HIC_SLAB_PHYSMEM_MAXEXTENTS];
 	slab_entrystub_t entrystub;
-} __attribute__((packed)) x_slab_info_t;
+} __attribute__((packed)) xmhfgeec_slab_info_t;
+
+
+#define XMHFGEEC_SLAB_CALLCAP_MASK(x)               (1UL << x)
+#define XMHFGEEC_SLAB_UAPICAP_MASK(x)               (1UL << x)
+#define XMHFGEEC_SLAB_MEMGRANTREADCAP_MASK(x)       (1UL << x)
+#define XMHFGEEC_SLAB_MEMGRANTWRITECAP_MASK(x)      (1UL << x)
 
 
 typedef struct {
     u32 slab_ctype;
     u32 src_slabid;
     u32 dst_slabid;
+    u32 dst_uapifn;
     u32 cpuid;
     u32 in_out_params[16];
 } __attribute__((packed)) slab_params_t;
 
-typedef struct {
+/*typedef struct {
     u32 reserved;
     u32 uapifn;
 }__attribute__((packed)) xmhf_uapi_params_hdr_t;
-
+*/
 
 
 

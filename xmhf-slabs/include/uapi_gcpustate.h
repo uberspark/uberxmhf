@@ -56,23 +56,21 @@
 #define __UAPI_GCPUSTATE_H__
 
 
-#define XMHF_HIC_UAPI_CPUSTATE_VMREAD           (1)
-#define XMHF_HIC_UAPI_CPUSTATE_VMWRITE          (2)
-#define XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSREAD    (3)
-#define XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSWRITE   (4)
+#define XMHF_HIC_UAPI_CPUSTATE_VMREAD           0
+#define XMHF_HIC_UAPI_CPUSTATE_VMWRITE          1
+#define XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSREAD    2
+#define XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSWRITE   3
 
 #ifndef __ASSEMBLY__
 
 
 typedef struct {
-    xmhf_uapi_params_hdr_t uapiphdr;
     u64 encoding;
     u64 value;
 }__attribute__((packed)) xmhf_uapi_gcpustate_vmrw_params_t;
 
 
 typedef struct {
-    xmhf_uapi_params_hdr_t uapiphdr;
     x86regs_t gprs;
 }__attribute__((packed)) xmhf_uapi_gcpustate_gprs_params_t;
 

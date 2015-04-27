@@ -60,10 +60,10 @@
 #include <uapi_slabmempgtbl.h>
 
 
-__attribute__((section(".rwdatahdr"))) __attribute__((aligned(4096))) u64 _slabmempgtbl_lvl4t[XMHF_HIC_MAX_SLABS][PAE_MAXPTRS_PER_PML4T];
-__attribute__((section(".data"))) __attribute__((aligned(4096))) u64 _slabmempgtbl_lvl3t[XMHF_HIC_MAX_SLABS][PAE_MAXPTRS_PER_PDPT];
-__attribute__((section(".data"))) __attribute__((aligned(4096))) u64 _slabmempgtbl_lvl2t[XMHF_HIC_MAX_SLABS][PAE_PTRS_PER_PDPT][PAE_PTRS_PER_PDT];
-__attribute__((section(".data"))) __attribute__((aligned(4096)))  u64 _slabmempgtbl_lvl1t_mmio[XMHF_HIC_MAX_SLABS][PAE_PTRS_PER_PT];
+__attribute__((section(".rwdatahdr"))) __attribute__((aligned(4096))) u64 _slabmempgtbl_lvl4t[XMHFGEEC_TOTAL_SLABS][PAE_MAXPTRS_PER_PML4T];
+__attribute__((section(".data"))) __attribute__((aligned(4096))) u64 _slabmempgtbl_lvl3t[XMHFGEEC_TOTAL_SLABS][PAE_MAXPTRS_PER_PDPT];
+__attribute__((section(".data"))) __attribute__((aligned(4096))) u64 _slabmempgtbl_lvl2t[XMHFGEEC_TOTAL_SLABS][PAE_PTRS_PER_PDPT][PAE_PTRS_PER_PDT];
+__attribute__((section(".data"))) __attribute__((aligned(4096)))  u64 _slabmempgtbl_lvl1t_mmio[XMHFGEEC_TOTAL_SLABS][PAE_PTRS_PER_PT];
 __attribute__((section(".data"))) __attribute__((aligned(4096)))  u64 _slabmempgtbl_lvl1t_richguest[PAE_PTRS_PER_PDPT][PAE_PTRS_PER_PDT][PAE_PTRS_PER_PT];
 
 
@@ -158,10 +158,10 @@ static void _slabmempgtbl_initmempgtbl(u32 slabid){
     u32 slabtype;
 
     //sanity checks
-    if(slabid >= XMHF_HIC_MAX_SLABS)
+    if(slabid >= XMHFGEEC_TOTAL_SLABS)
         return;
 
-    slabtype = _xmhfhic_common_slab_info_table[slabid].archdata.slabtype;
+    slabtype = _xmhfhic_common_slab_info_table[slabid].slabtype;
 
     switch(slabtype){
         case XMHFGEEC_SLABTYPE_VfT_SENTINEL:
@@ -202,10 +202,10 @@ static void _slabmempgtbl_setentryforpaddr(u32 slabid, u64 gpa, u64 entry){
     u32 slabtype, mmio_paddr;
 
     //sanity checks
-    if(slabid >= XMHF_HIC_MAX_SLABS)
+    if(slabid >= XMHFGEEC_TOTAL_SLABS)
         return;
 
-    slabtype = _xmhfhic_common_slab_info_table[slabid].archdata.slabtype;
+    slabtype = _xmhfhic_common_slab_info_table[slabid].slabtype;
     mmio_paddr = _xmhfhic_common_slab_info_table[slabid].slab_physmem_extents[4].addr_start;
 
     switch(slabtype){
@@ -248,10 +248,10 @@ static u64 _slabmempgtbl_getentryforpaddr(u32 slabid, u64 gpa){
     u32 slabtype, mmio_paddr;
 
     //sanity checks
-    if(slabid >= XMHF_HIC_MAX_SLABS)
+    if(slabid >= XMHFGEEC_TOTAL_SLABS)
         return;
 
-    slabtype = _xmhfhic_common_slab_info_table[slabid].archdata.slabtype;
+    slabtype = _xmhfhic_common_slab_info_table[slabid].slabtype;
     mmio_paddr = _xmhfhic_common_slab_info_table[slabid].slab_physmem_extents[4].addr_start;
 
     switch(slabtype){
@@ -290,9 +290,9 @@ static u64 _slabmempgtbl_getentryforpaddr(u32 slabid, u64 gpa){
 /////
 void slab_main(slab_params_t *sp){
 
-    xmhf_uapi_params_hdr_t *uapiphdr = (xmhf_uapi_params_hdr_t *)sp->in_out_params;
+    //xmhf_uapi_params_hdr_t *uapiphdr = (xmhf_uapi_params_hdr_t *)sp->in_out_params;
 
-    switch(uapiphdr->uapifn){
+    switch(sp->dst_uapifn){
 
        case XMHFGEEC_UAPI_SLABMEMPGTBL_INITMEMPGTBL:{
             xmhfgeec_uapi_slabmempgtbl_initmempgtbl_params_t *initmempgtblp =
@@ -327,7 +327,7 @@ void slab_main(slab_params_t *sp){
 
         default:
             _XDPRINTF_("UAPI_SLABMEMPGTBL[%u]: Unknown uAPI function %x. Halting!\n",
-                    (u16)sp->cpuid, uapiphdr->uapifn);
+                    (u16)sp->cpuid, sp->dst_uapifn);
             HALT();
             return;
     }

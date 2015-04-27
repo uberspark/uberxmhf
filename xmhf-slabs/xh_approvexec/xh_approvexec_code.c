@@ -90,8 +90,8 @@ static void ae_lock(u32 cpuindex, u32 guest_slab_index, u64 gpa){
     u32 i;
 
     _XDPRINTF_("%s[%u]: starting...\n", __func__, (u16)cpuindex);
-    spl.src_slabid = XMHF_HYP_SLAB_XHAPPROVEXEC;
-    spl.dst_slabid = XMHF_HYP_SLAB_UAPI_SLABMEMACC;
+    spl.src_slabid = XMHFGEEC_SLAB_XH_APPROVEXEC;
+    spl.dst_slabid = XMHFGEEC_SLAB_UAPI_SLABMEMACC;
     spl.cpuid = cpuindex;
 
 if(!ae_activated){
@@ -101,7 +101,7 @@ if(!ae_activated){
     smemaccp->addr_from = gpa;
     smemaccp->numbytes = PAGE_SIZE_4K;
     //spl.in_out_params[0] = XMHF_HIC_UAPI_PHYSMEM;
-    smemaccp->uapiphdr.uapifn = XMHF_HIC_UAPI_PHYSMEM_PEEK;
+     spl.dst_uapifn = XMHF_HIC_UAPI_PHYSMEM_PEEK;
     XMHF_SLAB_CALLNEW(&spl);
 
     _XDPRINTF_("%s[%u]: grabbed page contents at gpa=%016x\n",
@@ -142,16 +142,16 @@ if(!ae_activated){
         (xmhfgeec_uapi_slabmempgtbl_setentryforpaddr_params_t *)spl.in_out_params;
 
 
-        spl.dst_slabid = XMHF_HYP_SLAB_UAPI_SLABMEMPGTBL;
+        spl.dst_slabid = XMHFGEEC_SLAB_UAPI_SLABMEMPGTBL;
 
-        getentryforpaddrp->uapiphdr.uapifn = XMHFGEEC_UAPI_SLABMEMPGTBL_GETENTRYFORPADDR;
+         spl.dst_uapifn = XMHFGEEC_UAPI_SLABMEMPGTBL_GETENTRYFORPADDR;
         getentryforpaddrp->dst_slabid = guest_slab_index;
         getentryforpaddrp->gpa = gpa;
         XMHF_SLAB_CALLNEW(&spl);
         _XDPRINTF_("%s[%u]: original entry for gpa=%016llx is %016llx\n",
                    __func__, (u16)cpuindex, gpa, getentryforpaddrp->result_entry);
 
-        setentryforpaddrp->uapiphdr.uapifn = XMHFGEEC_UAPI_SLABMEMPGTBL_SETENTRYFORPADDR;
+         spl.dst_uapifn = XMHFGEEC_UAPI_SLABMEMPGTBL_SETENTRYFORPADDR;
         setentryforpaddrp->dst_slabid = guest_slab_index;
         setentryforpaddrp->gpa = gpa;
         setentryforpaddrp->entry = getentryforpaddrp->result_entry & ~(0x7);
@@ -180,8 +180,8 @@ static void ae_unlock(u32 cpuindex, u32 guest_slab_index, u64 gpa){
         (xmhfgeec_uapi_slabmempgtbl_setentryforpaddr_params_t *)spl.in_out_params;
 
 
-     spl.src_slabid = XMHF_HYP_SLAB_XHAPPROVEXEC;
-     spl.dst_slabid = XMHF_HYP_SLAB_UAPI_SLABMEMPGTBL;
+     spl.src_slabid = XMHFGEEC_SLAB_XH_APPROVEXEC;
+     spl.dst_slabid = XMHFGEEC_SLAB_UAPI_SLABMEMPGTBL;
      spl.cpuid = cpuindex;
      //spl.in_out_params[0] = XMHF_HIC_UAPI_MEMPGTBL;
 
@@ -189,7 +189,7 @@ static void ae_unlock(u32 cpuindex, u32 guest_slab_index, u64 gpa){
 
     if(ae_activated){
          //unlock the code page
-        getentryforpaddrp->uapiphdr.uapifn = XMHFGEEC_UAPI_SLABMEMPGTBL_GETENTRYFORPADDR;
+         spl.dst_uapifn = XMHFGEEC_UAPI_SLABMEMPGTBL_GETENTRYFORPADDR;
         getentryforpaddrp->dst_slabid = guest_slab_index;
         getentryforpaddrp->gpa = gpa;
          XMHF_SLAB_CALLNEW(&spl);
@@ -197,7 +197,7 @@ static void ae_unlock(u32 cpuindex, u32 guest_slab_index, u64 gpa){
          _XDPRINTF_("%s[%u]: original entry for gpa=%016llx is %016llx\n",
                     __func__, (u16)cpuindex, gpa, getentryforpaddrp->result_entry);
 
-        setentryforpaddrp->uapiphdr.uapifn = XMHFGEEC_UAPI_SLABMEMPGTBL_SETENTRYFORPADDR;
+         spl.dst_uapifn = XMHFGEEC_UAPI_SLABMEMPGTBL_SETENTRYFORPADDR;
         setentryforpaddrp->dst_slabid = guest_slab_index;
         setentryforpaddrp->gpa = gpa;
         setentryforpaddrp->entry = getentryforpaddrp->result_entry & ~(0x7);
@@ -231,12 +231,12 @@ static void _hcb_hypercall(u64 cpuindex, u64 guest_slab_index){
 	u32 call_id;
 	u64 gpa;
 
-    spl.src_slabid = XMHF_HYP_SLAB_XHAPPROVEXEC;
-    spl.dst_slabid = XMHF_HYP_SLAB_UAPI_GCPUSTATE;
+    spl.src_slabid = XMHFGEEC_SLAB_XH_APPROVEXEC;
+    spl.dst_slabid = XMHFGEEC_SLAB_UAPI_GCPUSTATE;
     spl.cpuid = cpuindex;
     //spl.in_out_params[0] = XMHF_HIC_UAPI_CPUSTATE;
 
-    gcpustate_gprs->uapiphdr.uapifn = XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSREAD;
+     spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSREAD;
     XMHF_SLAB_CALLNEW(&spl);
 
     _XDPRINTF_("%s[%u]: call_id=%x, eax=%08x,ebx=%08x,edx=%08x\n",
@@ -324,11 +324,11 @@ void slab_main(slab_params_t *sp){
                 (xmhf_uapi_gcpustate_vmrw_params_t *)spl.in_out_params;
 
 
-         	spl.src_slabid = XMHF_HYP_SLAB_XHAPPROVEXEC;
-         	spl.dst_slabid = XMHF_HYP_SLAB_UAPI_GCPUSTATE;
+         	spl.src_slabid = XMHFGEEC_SLAB_XH_APPROVEXEC;
+         	spl.dst_slabid = XMHFGEEC_SLAB_UAPI_GCPUSTATE;
          	spl.cpuid = sp->cpuid;
             //spl.in_out_params[0] = XMHF_HIC_UAPI_CPUSTATE;
-            gcpustate_vmrwp->uapiphdr.uapifn = XMHF_HIC_UAPI_CPUSTATE_VMREAD;
+             spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_VMREAD;
 
             gcpustate_vmrwp->encoding = VMCS_INFO_EXIT_QUALIFICATION;
             XMHF_SLAB_CALLNEW(&spl);
