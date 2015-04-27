@@ -1,1 +1,6 @@
 #slab manifest
+
+S:uapi_gcpustate:void:void:void
+S:uapi_slabmempgtbl:void:void:void
+
+

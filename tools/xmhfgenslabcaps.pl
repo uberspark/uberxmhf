@@ -7,36 +7,32 @@ use File::Basename;
 
 
 # command line inputs
-# 0: slabname
-# 1: slabid
-# 2: rootdir
-# 3: SLABS file
+# 0: SLABS file with absolute path
 
-my $g_slabname = $ARGV[0];
-my $g_slabid = $ARGV[1];
-my $g_rootdir = $ARGV[2];
-my $g_slabsfile = $ARGV[3];
+my $g_slabsfile = $ARGV[0];
 my $g_totalslabs;
-
-print "slabname:", $g_slabname, "\n";
-print "slabid:", $g_slabid, "\n";
-print "rootdir:", $g_rootdir, "\n";
-print "slabsfile:", $g_slabsfile, "\n";
-#print "g_totalslabs:", $g_totalslabs, "\n";
-
-
-# main loop to iterate through all the slab .gsm's
-tie my @array, 'Tie::File', $g_slabsfile or die $!;
-
-my $i = 0;
-my $slabdir;
-my $slabname;
-my $slabgsm;
-my $slabtype;
+my $g_rootdir;
 
 my %slab_idtogsm;
 my %slab_idtoname;
 my %slab_idtotype;
+my %slab_nametocallmask;
+
+my $i = 0;
+my $slabdir;
+my $slabname;
+my $slabgsmfile;
+my $slabtype;
+
+
+$g_rootdir = dirname($g_slabsfile)."/";
+
+print "slabsfile:", $g_slabsfile, "\n";
+print "rootdir:", $g_rootdir, "\n";
+
+
+# main loop to iterate through the SLABS file
+tie my @array, 'Tie::File', $g_slabsfile or die $!;
 
 
 while( $i <= $#array) {
@@ -63,7 +59,7 @@ while( $i <= $#array) {
     $slab_idtoname{$i} = $slabname;
     $slab_idtotype{$i} = $slabtype;
 
-    #parse_gsm($slabgsm);
+    parse_gsm($slabgsm, $i);
 
 
     # move on to the next line
@@ -77,7 +73,7 @@ print "g_totalslabs:", $g_totalslabs, "\n";
 $i =0;
 
 while($i < $g_totalslabs){
-    print "slabname: $slab_idtoname{$i}, slabgsm: $slab_idtogsm{$i}, slabtype: $slab_idtotype{$i} \n";
+    print "slabname: $slab_idtoname{$i}, slabgsm: $slab_idtogsm{$i}, slabtype: $slab_idtotype{$i}, slabcallmask: $slab_nametocallmask{$slab_idtoname{$i}} \n";
 
     $i=$i+1;
 }
@@ -85,14 +81,15 @@ while($i < $g_totalslabs){
 
 
 
-# parses a gsm file and populates relevant
+# parses a gsm file and populates relevant global structures
 sub parse_gsm {
-    my($filename) = @_;
+    my($filename, $slabid) = @_;
     my $i = 0;
 
     chomp($filename);
     tie my @array, 'Tie::File', $filename or die $!;
 
+    print "parse_gsm: $filename, $slabid...\n";
 
     while( $i <= $#array) {
         my $line = $array[$i];
@@ -103,6 +100,12 @@ sub parse_gsm {
 
         if($lineentry[0] eq "S"){
             print $lineentry[0], $lineentry[1], $lineentry[2], $lineentry[3], $lineentry[4], "\n";
+            #lineentry[1] = name of destination slab that this slab calls
+            if (exists $slab_nametocallmask{$lineentry[1]}){
+                $slab_nametocallmask{$lineentry[1]} |= (1 << $slabid);
+            }else {
+                $slab_nametocallmask{$lineentry[1]} = (1 << $slabid);
+            }
 
         }elsif( $lineentry[0] eq "U"){
 
