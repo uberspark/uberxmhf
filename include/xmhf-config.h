@@ -122,27 +122,27 @@
 
 
 
-#define XMHFGEEC_MAX_SLABS                    (32)
-#define XMHFGEEC_TOTAL_SLABS                  (17)
+#define XMHFGEEC_MAX_SLABS                  32
+#define XMHFGEEC_TOTAL_SLABS                17
 
 
-#define XMHFGEEC_SLAB_GEEC_SENTINEL          (0)
-#define XMHFGEEC_SLAB_GEEC_PRIME             (1)
-#define XMHFGEEC_SLAB_GEEC_PRIMESMP         (2)
-#define XMHFGEEC_SLAB_UAPI_GCPUSTATE        (3)
-#define XMHFGEEC_SLAB_UAPI_HCPUSTATE        (4)
-#define XMHFGEEC_SLAB_UAPI_SLABMEMACC       (5)
-#define XMHFGEEC_SLAB_UAPI_SLABMEMPGTBL     (6)
-#define XMHFGEEC_SLAB_UAPI_SLABDEVPGTBL     (7)
-#define XMHFGEEC_SLAB_XC_INIT                (8)
-#define XMHFGEEC_SLAB_XC_IHUB                (9)
-#define XMHFGEEC_SLAB_XC_EXHUB               (10)
-#define XMHFGEEC_SLAB_XC_TESTSLAB           (11)
-#define XMHFGEEC_SLAB_XH_HYPERDEP            (12)
-#define XMHFGEEC_SLAB_XH_APPROVEXEC          (13)
-#define XMHFGEEC_SLAB_XH_SYSCALLLOG          (14)
-#define XMHFGEEC_SLAB_XH_SSTEPTRACE          (15)
-#define XMHFGEEC_SLAB_XG_RICHGUEST         (16)
+#define XMHFGEEC_SLAB_GEEC_SENTINEL         0
+#define XMHFGEEC_SLAB_GEEC_PRIME            1
+#define XMHFGEEC_SLAB_XC_TESTSLAB           2
+#define XMHFGEEC_SLAB_XG_RICHGUEST          3
+#define XMHFGEEC_SLAB_GEEC_PRIMESMP         4
+#define XMHFGEEC_SLAB_XC_INIT               5
+#define XMHFGEEC_SLAB_XC_EXHUB              6
+#define XMHFGEEC_SLAB_XC_IHUB               7
+#define XMHFGEEC_SLAB_UAPI_GCPUSTATE        8
+#define XMHFGEEC_SLAB_UAPI_HCPUSTATE        9
+#define XMHFGEEC_SLAB_UAPI_SLABMEMACC       10
+#define XMHFGEEC_SLAB_UAPI_SLABMEMPGTBL     11
+#define XMHFGEEC_SLAB_UAPI_SLABDEVPGTBL     12
+#define XMHFGEEC_SLAB_XH_HYPERDEP           13
+#define XMHFGEEC_SLAB_XH_APPROVEXEC         14
+#define XMHFGEEC_SLAB_XH_SYSCALLLOG         15
+#define XMHFGEEC_SLAB_XH_SSTEPTRACE         16
 
 
 
