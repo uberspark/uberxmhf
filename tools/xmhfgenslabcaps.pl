@@ -16,7 +16,10 @@ my $g_rootdir;
 my %slab_idtogsm;
 my %slab_idtoname;
 my %slab_idtotype;
+my %slab_idtouapifnmask;
+
 my %slab_nametocallmask;
+my %slab_nametoid;
 
 my $i = 0;
 my $slabdir;
@@ -62,6 +65,7 @@ while( $i <= $#array) {
     $slab_idtogsm{$i} = $slabgsm;
     $slab_idtoname{$i} = $slabname;
     $slab_idtotype{$i} = $slabtype;
+    $slab_nametoid{$slabname} = $i;
 
     #parse_gsm($slabgsm, $i);
 
@@ -81,19 +85,36 @@ $i =0;
 while($i < $g_totalslabs){
     print "slabname: $slab_idtoname{$i}, slabgsm: $slab_idtogsm{$i}, slabtype: $slab_idtotype{$i}, slabcallmask: $slab_nametocallmask{$slab_idtoname{$i}} \n";
 
-    parse_gsm($slab_idtogsm{$i}, $i);
+    $slab_idtouapifnmask{$i} = parse_gsm($slab_idtogsm{$i}, $i, $g_totalslabs);
+
+    print "uapifnmask:\n";
+    print $slab_idtouapifnmask{$i};
 
     $i=$i+1;
 }
 
+######
 
 
 
+
+
+
+
+
+
+
+
+
+######
 # parses a gsm file and populates relevant global structures
+######
 sub parse_gsm {
-    my($filename, $slabid) = @_;
+    my($filename, $slabid, $totalslabs) = @_;
     my $i = 0;
-    #my %slab_idtouapifnmask;
+    my $j = 0;
+    my %slab_idtouapifnmask;
+    my $slab_uapifnmaskstring = "";
 
     chomp($filename);
     tie my @array, 'Tie::File', $filename or die $!;
@@ -119,6 +140,11 @@ sub parse_gsm {
         }elsif( $lineentry[0] eq "U"){
             print $lineentry[0], $lineentry[1], $lineentry[2], $lineentry[3], $lineentry[4], "\n";
             #lineentry[1] = destination slab name, lineentry[2] = uapifn
+            if (exists $slab_idtouapifnmask{$slab_nametoid{$lineentry[1]}}){
+                $slab_idtouapifnmask{$slab_nametoid{$lineentry[1]}} |= (1 << $lineentry[2]);
+            }else{
+                $slab_idtouapifnmask{$slab_nametoid{$lineentry[1]}} = (1 << $lineentry[2]);
+            }
 
         }elsif( $lineentry[0] eq "RD"){
 
@@ -135,6 +161,14 @@ sub parse_gsm {
 
         $i = $i +1;
     }
+
+    while($j < $totalslabs){
+        $slab_uapifnmaskstring = $slab_uapifnmaskstring.sprintf("0x%08x,\n", $slab_idtouapifnmask{$j});
+        $j=$j+1;
+    }
+
+
+    return $slab_uapifnmaskstring;
 
 }
 
