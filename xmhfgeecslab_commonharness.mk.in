@@ -13,43 +13,72 @@ include $(srcdir)/../../common.mk
 #XMHF_SLAB_STUBOBJECTS := $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_slabmap.o $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_tprogslab.o
 
 export XMHF_SLAB_TYPE := @SLABTYPE@
+export XMHF_SLAB_SUBTYPE := @SLABSUBTYPE@
 
 
 # populate slab stub type based on the slab type
-ifeq ($(XMHF_SLAB_TYPE), VfT_SENTINEL)
-	XMHF_SLAB_STUBOBJECTS := $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_slabmapdef.o
+ifeq ($(XMHF_SLAB_TYPE), VfT_SLAB)
+
+    ifeq ($(XMHF_SLAB_SUBTYPE), SENTINEL)
+        XMHF_SLAB_STUBOBJECTS := $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_slabmapdef.o
+    else ifeq ($(XMHF_SLAB_SUBTYPE), PRIME)
+        XMHF_SLAB_STUBOBJECTS := $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_slabmapdef.o $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_vft_prog_stubs.o
+    else ifeq ($(XMHF_SLAB_SUBTYPE), INIT)
+        XMHF_SLAB_STUBOBJECTS := $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_slabmapdef.o $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_vft_prog_stubs.o
+    else ifeq ($(XMHF_SLAB_SUBTYPE), EXCEPTION)
+        XMHF_SLAB_STUBOBJECTS := $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_slabmapdef.o $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_vft_prog_stubs.o
+    else ifeq ($(XMHF_SLAB_SUBTYPE), INTERCEPT)
+        XMHF_SLAB_STUBOBJECTS := $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_slabmapdef.o $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_vft_prog_stubs.o
+    else ifeq ($(XMHF_SLAB_SUBTYPE), XCORE)
+        XMHF_SLAB_STUBOBJECTS := $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_slabmapdef.o $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_vft_prog_stubs.o
+    else ifeq ($(XMHF_SLAB_SUBTYPE), XHYPAPP)
+        XMHF_SLAB_STUBOBJECTS := $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_slabmapdef.o $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_vft_prog_stubs.o
+    else ifeq ($(XMHF_SLAB_SUBTYPE), XGUEST)
+        XMHF_SLAB_STUBOBJECTS := $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_slabmapdef.o $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_vft_prog_stubs.o
+    else
+        #unsupported slab sub-type
+        XMHF_SLAB_STUBOBJECTS :=
+    endif
+
+
+else ifeq ($(XMHF_SLAB_TYPE), uVT_SLAB)
+
+
+    ifeq ($(XMHF_SLAB_SUBTYPE), INIT)
+        XMHF_SLAB_STUBOBJECTS := $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_slabmapdef.o $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_uvt_uvu_prog_stubs.o
+    else ifeq ($(XMHF_SLAB_SUBTYPE), XCORE)
+        XMHF_SLAB_STUBOBJECTS := $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_slabmapdef.o $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_uvt_uvu_prog_stubs.o
+    else ifeq ($(XMHF_SLAB_SUBTYPE), XHYPAPP)
+        XMHF_SLAB_STUBOBJECTS := $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_slabmapdef.o $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_uvt_uvu_prog_stubs.o
+    else ifeq ($(XMHF_SLAB_SUBTYPE), XGUEST)
+        XMHF_SLAB_STUBOBJECTS := $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_slabmapdef.o $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_uvt_uvu_prog_guest_stubs.o
+    else
+        #unsupported slab sub-type
+        XMHF_SLAB_STUBOBJECTS :=
+    endif
+
+
+else ifeq ($(XMHF_SLAB_TYPE), uVU_SLAB)
+
+
+    ifeq ($(XMHF_SLAB_SUBTYPE), XHYPAPP)
+        XMHF_SLAB_STUBOBJECTS := $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_slabmapdef.o $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_uvt_uvu_prog_stubs.o
+    else ifeq ($(XMHF_SLAB_SUBTYPE), XGUEST)
+        XMHF_SLAB_STUBOBJECTS := $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_slabmapdef.o $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_uvt_uvu_prog_guest_stubs.o
+    else ifeq ($(XMHF_SLAB_SUBTYPE), XRICHGUEST)
+        XMHF_SLAB_STUBOBJECTS := $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_slabmapdef.o $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_uvt_uvu_prog_guest_stubs.o
+    else
+        #unsupported slab sub-type
+        XMHF_SLAB_STUBOBJECTS :=
+    endif
+
+
+else
+
+    #unsupported slab type
+    XMHF_SLAB_STUBOBJECTS :=
+
 endif
 
-
-
-ifeq ($(XMHF_SLAB_TYPE), VfT_PROG)
-	XMHF_SLAB_STUBOBJECTS := $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_slabmapdef.o $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_vft_prog_stubs.o
-endif
-
-
-
-
-ifeq ($(XMHF_SLAB_TYPE), uVT_PROG)
-	XMHF_SLAB_STUBOBJECTS := $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_slabmapdef.o $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_uvt_uvu_prog_stubs.o
-endif
-
-ifeq ($(XMHF_SLAB_TYPE), uVU_PROG)
-	XMHF_SLAB_STUBOBJECTS := $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_slabmapdef.o $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_uvt_uvu_prog_stubs.o
-endif
-
-
-
-
-ifeq ($(XMHF_SLAB_TYPE), uVU_PROG_GUEST)
-	XMHF_SLAB_STUBOBJECTS := $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_slabmapdef.o $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_uvt_uvu_prog_guest_stubs.o
-endif
-
-ifeq ($(XMHF_SLAB_TYPE), uVT_PROG_GUEST)
-	XMHF_SLAB_STUBOBJECTS := $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_slabmapdef.o $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_uvt_uvu_prog_guest_stubs.o
-endif
-
-ifeq ($(XMHF_SLAB_TYPE), uVU_PROG_RICHGUEST)
-	XMHF_SLAB_STUBOBJECTS := $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_slabmapdef.o $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_uvt_uvu_prog_guest_stubs.o
-endif
 
 
