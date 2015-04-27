@@ -6,4 +6,11 @@
 S:uapi_gcpustate:void:void:void
 S:uapi_hcpustate:void:void:void
 
+U:uapi_gcpustate:XMHF_HIC_UAPI_CPUSTATE_VMREAD:void:void
+U:uapi_gcpustate:XMHF_HIC_UAPI_CPUSTATE_VMWRITE:void:void
+U:uapi_gcpustate:XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSREAD:void:void
+U:uapi_gcpustate:XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSWRITE:void:void
+U:uapi_hcpustate:XMHF_HIC_UAPI_CPUSTATE_WRMSR:void:void
+U:uapi_hcpustate:XMHF_HIC_UAPI_CPUSTATE_RDMSR:void:void
+
 

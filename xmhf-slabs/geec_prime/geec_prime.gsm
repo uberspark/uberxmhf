@@ -8,4 +8,12 @@ S:geec_sentinel:void:void:void
 S:uapi_slabmempgtbl:void:void:void
 S:uapi_slabdevpgtbl:void:void:void
 
+U:uapi_slabdevpgtbl:XMHFGEEC_UAPI_SDEVPGTBL_INIT:void:void
+U:uapi_slabdevpgtbl:XMHFGEEC_UAPI_SDEVPGTBL_INITRETCET:void:void
+U:uapi_slabdevpgtbl:XMHFGEEC_UAPI_SDEVPGTBL_INITDEVPGTBL:void:void
+U:uapi_slabdevpgtbl:XMHFGEEC_UAPI_SDEVPGTBL_BINDDEVICE:void:void
+U:uapi_slabmempgtbl:XMHFGEEC_UAPI_SLABMEMPGTBL_SETENTRYFORPADDR:void:void
+U:uapi_slabmempgtbl:XMHFGEEC_UAPI_SLABMEMPGTBL_INITMEMPGTBL:void:void
+
+
 

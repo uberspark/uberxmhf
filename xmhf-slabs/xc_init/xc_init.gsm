@@ -12,4 +12,9 @@ S:uapi_slabmemacc:void:void:void
 S:xg_richguest:void:void:void
 S:xc_testslab:void:void:void
 
+U:uapi_slabmemacc:XMHF_HIC_UAPI_PHYSMEM_PEEK:void:void
+U:uapi_slabmemacc:XMHF_HIC_UAPI_PHYSMEM_POKE:void:void
+U:uapi_gcpustate:XMHF_HIC_UAPI_CPUSTATE_VMWRITE:void:void
+
+
 
