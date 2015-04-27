@@ -15,9 +15,11 @@ my $j = 0;
 my %slabrecord;
 my $slabname;
 my $slabtype;
+my $slabsubtype;
 
 my @slabnamearray;
 my @slabtypearray;
+my @slabsubtypearray;
 
 while( $i <= $#array) {
 
@@ -35,11 +37,14 @@ while( $i <= $#array) {
     $slabname =~ s/^\s+|\s+$//g ;     # remove both leading and trailing whitespace
     $slabtype = $slabinfo[1];
     $slabtype =~ s/^\s+|\s+$//g ;     # remove both leading and trailing whitespace
+    $slabsubtype = $slabinfo[2];
+    $slabsubtype =~ s/^\s+|\s+$//g ;     # remove both leading and trailing whitespace
 
 
     #print "Slab name: $slabname, type:$slabtype ...\n";
     push @slabnamearray, $slabname;
     push @slabtypearray, $slabtype;
+    push @slabsubtypearray, $slabsubtype;
 
     # move on to the next line
     $i = $i + 1;
@@ -84,25 +89,37 @@ while( $i <= $#slabnamearray ){
     print "\n	    true,";
 
     #slab_type
-    if($slabtypearray[$i] eq "VfT_PROG_PRIME"){
-        print "\n	        XMHFGEEC_SLABTYPE_VfT_PROG_PRIME,";
-    }elsif($slabtypearray[$i] eq "VfT_SENTINEL"){
-        print "\n	        XMHFGEEC_SLABTYPE_VfT_SENTINEL,";
-    }elsif($slabtypearray[$i] eq "VfT_PROG"){
+    if($slabtypearray[$i] eq "VfT_SLAB" && $slabsubtypearray[$i] eq "PRIME"){
         print "\n	        XMHFGEEC_SLABTYPE_VfT_PROG,";
-    }elsif($slabtypearray[$i] eq "VfT_PROG_EXCEPTION"){
-        print "\n	        XMHFGEEC_SLABTYPE_VfT_PROG_EXCEPTION,";
-    }elsif($slabtypearray[$i] eq "VfT_PROG_INTERCEPT"){
-        print "\n	        XMHFGEEC_SLABTYPE_VfT_PROG_INTERCEPT,";
-    }elsif($slabtypearray[$i] eq "uVT_PROG"){
+    }elsif($slabtypearray[$i] eq "VfT_SLAB" && $slabsubtypearray[$i] eq "SENTINEL"){
+        print "\n	        XMHFGEEC_SLABTYPE_VfT_SENTINEL,";
+    }elsif($slabtypearray[$i] eq "VfT_SLAB" && $slabsubtypearray[$i] eq "INIT"){
+        print "\n	        XMHFGEEC_SLABTYPE_VfT_PROG,";
+    }elsif($slabtypearray[$i] eq "VfT_SLAB" && $slabsubtypearray[$i] eq "XCORE"){
+        print "\n	        XMHFGEEC_SLABTYPE_VfT_PROG,";
+    }elsif($slabtypearray[$i] eq "VfT_SLAB" && $slabsubtypearray[$i] eq "XHYPAPP"){
+        print "\n	        XMHFGEEC_SLABTYPE_VfT_PROG,";
+    }elsif($slabtypearray[$i] eq "VfT_SLAB" && $slabsubtypearray[$i] eq "UAPI"){
+        print "\n	        XMHFGEEC_SLABTYPE_VfT_PROG,";
+    }elsif($slabtypearray[$i] eq "VfT_SLAB" && $slabsubtypearray[$i] eq "EXCEPTION"){
+        print "\n	        XMHFGEEC_SLABTYPE_VfT_PROG,";
+    }elsif($slabtypearray[$i] eq "VfT_SLAB" && $slabsubtypearray[$i] eq "INTERCEPT"){
+        print "\n	        XMHFGEEC_SLABTYPE_VfT_PROG,";
+    }elsif($slabtypearray[$i] eq "uVT_SLAB" && $slabsubtypearray[$i] eq "INIT"){
         print "\n	        XMHFGEEC_SLABTYPE_uVT_PROG,";
-    }elsif($slabtypearray[$i] eq "uVU_PROG"){
+    }elsif($slabtypearray[$i] eq "uVT_SLAB" && $slabsubtypearray[$i] eq "XCORE"){
+        print "\n	        XMHFGEEC_SLABTYPE_uVT_PROG,";
+    }elsif($slabtypearray[$i] eq "uVT_SLAB" && $slabsubtypearray[$i] eq "XHYPAPP"){
+        print "\n	        XMHFGEEC_SLABTYPE_uVT_PROG,";
+    }elsif($slabtypearray[$i] eq "uVU_SLAB" && $slabsubtypearray[$i] eq "XCORE"){
         print "\n	        XMHFGEEC_SLABTYPE_uVU_PROG,";
-    }elsif($slabtypearray[$i] eq "uVU_PROG_GUEST"){
+    }elsif($slabtypearray[$i] eq "uVU_SLAB" && $slabsubtypearray[$i] eq "XHYPAPP"){
+        print "\n	        XMHFGEEC_SLABTYPE_uVU_PROG,";
+    }elsif($slabtypearray[$i] eq "uVU_SLAB" && $slabsubtypearray[$i] eq "XGUEST"){
         print "\n	        XMHFGEEC_SLABTYPE_uVU_PROG_GUEST,";
-    }elsif($slabtypearray[$i] eq "uVT_PROG_GUEST"){
+    }elsif($slabtypearray[$i] eq "uVT_SLAB" && $slabsubtypearray[$i] eq "XGUEST"){
         print "\n	        XMHFGEEC_SLABTYPE_uVT_PROG_GUEST,";
-    }elsif($slabtypearray[$i] eq "uVU_PROG_RICHGUEST"){
+    }elsif($slabtypearray[$i] eq "uVU_SLAB" && $slabsubtypearray[$i] eq "XRICHGUEST"){
         print "\n	        XMHFGEEC_SLABTYPE_uVU_PROG_RICHGUEST,";
     }else{
         print "\nError: Unknown slab type!";
@@ -146,7 +163,7 @@ while( $i <= $#slabnamearray ){
     print "\n       0xFFFFFFFFUL,";
 
     #slab_devices
-    if($slabtypearray[$i] eq "uVU_PROG_RICHGUEST"){
+    if($slabtypearray[$i] eq "uVU_SLAB" && $slabsubtypearray[$i] eq "XRICHGUEST"){
         print "\n	    {true, 0xFFFFFFFFUL, {0}},";
     }else{
         print "\n	    {false, 0, {0}},";

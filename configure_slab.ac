@@ -28,6 +28,14 @@ AC_ARG_WITH([slabtype],
                 , [with_slabtype=])
 SLABTYPE=$[]with_slabtype
 
+# slab sub type
+AC_SUBST([SLABSUBTYPE])
+AC_ARG_WITH([slabsubtype],
+        AS_HELP_STRING([--with-slabsubtype=@<:@SUBTYPE@:>@],
+                [select slab sub-type]),
+                , [with_slabsubtype=])
+SLABSUBTYPE=$[]with_slabsubtype
+
 
 AC_SUBST([prefix])
 AC_SUBST([exec_prefix])
