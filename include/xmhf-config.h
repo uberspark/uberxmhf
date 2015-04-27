@@ -50,6 +50,17 @@
 #ifndef __XMHF_CONFIG_H__
 #define __XMHF_CONFIG_H__
 
+//unverified slab memory page table sets
+#define XMHF_CONFIG_MAX_UVMEMPGTBL_SETS __XMHF_CONFIG_MAX_UVMEMPGTBL_SETS__
+
+//verified slab memory page table sets
+#define XMHF_CONFIG_MAX_VMEMPGTBL_SETS __XMHF_CONFIG_MAX_VMEMPGTBL_SETS__
+
+#define XMHF_MAX_MEMPGTBL_SETS (XMHF_CONFIG_MAX_UVMEMPGTBL_SETS + XMHF_CONFIG_MAX_VMEMPGTBL_SETS)
+
+
+
+
 //"runtime" parameter block magic value
 #define RUNTIME_PARAMETER_BLOCK_MAGIC	0xF00DDEAD
 
