@@ -70,6 +70,30 @@ export CCLIB := $(realpath $(CCLIB))
 export CCERT_LIB := /usr/local/lib/compcert/
 
 
+
+
+
+
+
+######
+# configuration definitions
+######
+
+export XMHF_CONFIG_MAX_UVMEMPGTBL_SETS := 6
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 ######
 # compiler/assembler flags
 ######
@@ -167,6 +191,13 @@ ifeq ($(DMAP), y)
 	CCERT_FLAGS += -D__DMAP__
 	VFLAGS += -D__DMAP__
 endif
+
+
+# configuration definitions
+FLAGS += -D__XMHF_CONFIG_MAX_UVMEMPGTBL_SETS__=$(XMHF_CONFIG_MAX_UVMEMPGTBL_SETS)
+CCERT_FLAGS += -D__XMHF_CONFIG_MAX_UVMEMPGTBL_SETS__=$(XMHF_CONFIG_MAX_UVMEMPGTBL_SETS)
+VFLAGS += -D__XMHF_CONFIG_MAX_UVMEMPGTBL_SETS__=$(XMHF_CONFIG_MAX_UVMEMPGTBL_SETS)
+
 
 #-----export CFLAGS and ASFLAGS
 ASFLAGS = $(FLAGS) -D__ASSEMBLY__
