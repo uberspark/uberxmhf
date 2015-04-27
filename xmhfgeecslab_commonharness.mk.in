@@ -23,6 +23,8 @@ ifeq ($(XMHF_SLAB_TYPE), VfT_SLAB)
         XMHF_SLAB_STUBOBJECTS := $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_slabmapdef.o
     else ifeq ($(XMHF_SLAB_SUBTYPE), PRIME)
         XMHF_SLAB_STUBOBJECTS := $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_slabmapdef.o $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_vft_prog_stubs.o
+    else ifeq ($(XMHF_SLAB_SUBTYPE), UAPI)
+        XMHF_SLAB_STUBOBJECTS := $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_slabmapdef.o $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_vft_prog_stubs.o
     else ifeq ($(XMHF_SLAB_SUBTYPE), INIT)
         XMHF_SLAB_STUBOBJECTS := $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_slabmapdef.o $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_vft_prog_stubs.o
     else ifeq ($(XMHF_SLAB_SUBTYPE), EXCEPTION)
