@@ -1,2 +1,6 @@
 # slab dependencies
+S:geec_sentinel:void:void:void
+S:uapi_slabmempgtbl:void:void:void
+S:uapi_slabdevpgtbl:void:void:void
+
 
