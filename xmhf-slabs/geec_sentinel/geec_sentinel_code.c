@@ -405,14 +405,14 @@ void geec_sentinel_main(slab_params_t *sp, void *caller_stack_frame){
     }
 
     //check uapi capabilities
-    if( !(_xmhfhic_common_slab_info_table[sp->dst_slabid].slab_uapisupported &&
-           (_xmhfhic_common_slab_info_table[sp->src_slabid].slab_uapicaps[sp->dst_slabid] & XMHFGEEC_SLAB_UAPICAP_MASK(sp->dst_uapifn))
-          )
-        ){
-        _XDPRINTF_("GEEC_SENTINEL: Halt!. uapicap check failed for src(%u)-->dst(%u), dst_uapifn=%u, dst_uapimask=0x%08x\n",
-                   sp->src_slabid, sp->dst_slabid, sp->dst_uapifn,
-                   (u32)_xmhfhic_common_slab_info_table[sp->src_slabid].slab_uapicaps[sp->dst_slabid]);
-        HALT();
+    if( _xmhfhic_common_slab_info_table[sp->dst_slabid].slab_uapisupported){
+        if(!(_xmhfhic_common_slab_info_table[sp->src_slabid].slab_uapicaps[sp->dst_slabid] & XMHFGEEC_SLAB_UAPICAP_MASK(sp->dst_uapifn)))
+        {
+            _XDPRINTF_("GEEC_SENTINEL: Halt!. uapicap check failed for src(%u)-->dst(%u), dst_uapifn=%u, dst_uapimask=0x%08x\n",
+                       sp->src_slabid, sp->dst_slabid, sp->dst_uapifn,
+                       (u32)_xmhfhic_common_slab_info_table[sp->src_slabid].slab_uapicaps[sp->dst_slabid]);
+            HALT();
+        }
     }
 
 

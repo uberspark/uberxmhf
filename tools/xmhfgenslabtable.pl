@@ -145,7 +145,11 @@ while( $i <= $#slabnamearray ){
     print "\n       0xFFFFFFFFUL,";
 
     #slab_uapisupported
-    print "\n       true,";
+    if($slabtypearray[$i] eq "VfT_SLAB" && $slabsubtypearray[$i] eq "UAPI"){
+        print "\n       true,";
+    }else{
+        print "\n       false,";
+    }
 
     #slab_uapicaps
     print "\n       {";
