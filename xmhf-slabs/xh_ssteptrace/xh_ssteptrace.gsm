@@ -1,4 +1,8 @@
-#slab manifest
+//slab manifest
+#include <uapi_gcpustate.h>
+#include <uapi_slabmemacc.h>
+#include <xh_ssteptrace.h>
+
 
 S:uapi_gcpustate:void:void:void
 S:uapi_slabmemacc:void:void:void

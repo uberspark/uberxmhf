@@ -1,4 +1,6 @@
-# slab manifest
+// slab manifest
+#include <geec_sentinel.h>
+#include <uapi_slabmempgtbl.h>
 
 S:geec_sentinel:void:void:void
 

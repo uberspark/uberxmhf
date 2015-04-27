@@ -1,1 +1,3 @@
-#slab manifest
+//slab manifest
+#include <xc_exhub.h>
+

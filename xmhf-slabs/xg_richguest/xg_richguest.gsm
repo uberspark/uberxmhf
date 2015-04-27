@@ -1,1 +1,4 @@
-#slab manifest
+//slab manifest
+#include <xg_richguest.h>
+
+

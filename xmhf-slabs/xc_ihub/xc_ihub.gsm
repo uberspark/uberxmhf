@@ -1,4 +1,7 @@
-#slab manifest
+//slab manifest
+#include <xc_ihub.h>
+#include <uapi_gcpustate.h>
+#include <uapi_hcpustate.h>
 
 S:uapi_gcpustate:void:void:void
 S:uapi_hcpustate:void:void:void
