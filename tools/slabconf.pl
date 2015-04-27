@@ -25,10 +25,12 @@ while( $i <= $#array) {
     $slabdir =~ s/^\s+|\s+$//g ;     # remove both leading and trailing whitespace
     my $slabtype = $slabinfo[1];
     $slabtype =~ s/^\s+|\s+$//g ;     # remove both leading and trailing whitespace
+    my $slabsubtype = $slabinfo[2];
+    $slabsubtype =~ s/^\s+|\s+$//g ;     # remove both leading and trailing whitespace
 
 
-    print "Configuring slab: $rootdir/$slabdir with type:$slabtype ...\n";
-    system "cd $rootdir/$slabdir && ../../configure_slab --with-slabtype=$slabtype";
+    print "Configuring slab: $rootdir/$slabdir with type:$slabtype:$slabsubtype ...\n";
+    system "cd $rootdir/$slabdir && ../../configure_slab --with-slabtype=$slabtype --with-slabsubtype=$slabsubtype";
 
 
     # move on to the next line

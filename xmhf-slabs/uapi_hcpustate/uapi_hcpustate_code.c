@@ -62,9 +62,9 @@
 /////
 void slab_main(slab_params_t *sp){
 
-    xmhf_uapi_params_hdr_t *uapiphdr = (xmhf_uapi_params_hdr_t *)sp->in_out_params;
+    //xmhf_uapi_params_hdr_t *uapiphdr = (xmhf_uapi_params_hdr_t *)sp->in_out_params;
 
-    switch(uapiphdr->uapifn){
+    switch(sp->dst_uapifn){
 
         case XMHF_HIC_UAPI_CPUSTATE_WRMSR:{
             xmhf_uapi_hcpustate_msr_params_t *msrp =
@@ -85,7 +85,7 @@ void slab_main(slab_params_t *sp){
 
         default:
             _XDPRINTF_("UAPI_HCPUSTATE[%u]: Unknown uAPI function %x. Halting!\n",
-                    (u16)sp->cpuid, uapiphdr->uapifn);
+                    (u16)sp->cpuid, sp->dst_uapifn);
             HALT();
             return;
     }

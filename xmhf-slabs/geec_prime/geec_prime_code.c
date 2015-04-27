@@ -53,6 +53,7 @@
 #include <geec_sentinel.h>
 #include <uapi_slabmempgtbl.h>
 #include <uapi_slabdevpgtbl.h>
+#include <geec_primesmp.h>
 
 __attribute__((aligned(4096))) static u64 _xcprimeon_init_pdt[PAE_PTRS_PER_PDPT][PAE_PTRS_PER_PDT];
 __attribute__((aligned(4096))) static u64 _xcprimeon_init_pdpt[PAE_MAXPTRS_PER_PDPT];
@@ -175,15 +176,16 @@ void _geec_prime_main(slab_params_t *sp){
 
     //switch to prime page tables
     _XDPRINTF_("Proceeding to switch to GEEC_PRIME pagetables...\n");
-    CASM_FUNCCALL(write_cr3,(u32)_xmhfhic_common_slab_info_table[XMHF_HYP_SLAB_GEECPRIME].archdata.mempgtbl_cr3);
+    CASM_FUNCCALL(write_cr3,(u32)_xmhfhic_common_slab_info_table[XMHFGEEC_SLAB_GEEC_PRIME].mempgtbl_cr3);
     _XDPRINTF_("Switched to GEEC_PRIME pagetables...\n");
 
 
     //transfer control to geec_primesmp
     {
         slab_params_t spl;
-        spl.src_slabid = XMHF_HYP_SLAB_GEECPRIME;
-        spl.dst_slabid = XMHF_HYP_SLAB_GEEC_PRIMESMP;
+        spl.src_slabid = XMHFGEEC_SLAB_GEEC_PRIME;
+        spl.dst_slabid = XMHFGEEC_SLAB_GEEC_PRIMESMP;
+        spl.dst_uapifn = 0;
         spl.cpuid = 0;
         XMHF_SLAB_CALLNEW(&spl);
     }
@@ -205,7 +207,7 @@ void xmhfhic_arch_setup_slab_info(void){
     {
         u32 i;
 
-        for(i=0; i < XMHF_HIC_MAX_SLABS; i++){
+        for(i=0; i < XMHFGEEC_TOTAL_SLABS; i++){
 
 /*            _xmhfhic_common_slab_info_table[i].slab_inuse = true;
             _xmhfhic_common_slab_info_table[i].slab_privilegemask =
@@ -229,11 +231,11 @@ void xmhfhic_arch_setup_slab_info(void){
             _xmhfhic_common_slab_info_table[i].entrystub = _xmhfhic_common_slab_info_table[i].slab_physmem_extents[0].addr_start;
 
             //arch. specific
-            _xmhfhic_common_slab_info_table[i].archdata.slabtype =
+            _xmhfhic_common_slab_info_table[i].slabtype =
                 _xmhfhic_init_setupdata_slab_caps[i].slab_archparams;
 
-            _xmhfhic_common_slab_info_table[i].archdata.mempgtbl_initialized=false;
-            _xmhfhic_common_slab_info_table[i].archdata.devpgtbl_initialized=false;
+            _xmhfhic_common_slab_info_table[i].mempgtbl_initialized=false;
+            _xmhfhic_common_slab_info_table[i].devpgtbl_initialized=false;
 */
 /*            #if !defined(__XMHF_VERIFICATION__)
             {
@@ -243,7 +245,7 @@ void xmhfhic_arch_setup_slab_info(void){
 
                 if(slab_stackhdr){
                     for(j=0; j < MAX_PLATFORM_CPUS; j++)
-                        _xmhfhic_common_slab_info_table[i].archdata.slabtos[j]=slab_stackhdr[j];
+                        _xmhfhic_common_slab_info_table[i].slabtos[j]=slab_stackhdr[j];
                 }
             }
             #endif
@@ -275,14 +277,13 @@ void xmhfhic_arch_setup_slab_info(void){
 	{
 			u32 i;
 
-			for(i=0; i < XMHF_HIC_MAX_SLABS; i++){
+			for(i=0; i < XMHFGEEC_TOTAL_SLABS; i++){
 				_XDPRINTF_("slab %u: dumping slab header\n", i);
-				_XDPRINTF_("	slabtype=%08x\n", _xmhfhic_common_slab_info_table[i].archdata.slabtype);
+				_XDPRINTF_("	slabtype=%08x\n", _xmhfhic_common_slab_info_table[i].slabtype);
 				_XDPRINTF_("	slab_inuse=%s\n", ( _xmhfhic_common_slab_info_table[i].slab_inuse ? "true" : "false") );
-				_XDPRINTF_("	slab_privilegemask=%08x\n", _xmhfhic_common_slab_info_table[i].slab_privilegemask);
 				_XDPRINTF_("	slab_callcaps=%08x\n", _xmhfhic_common_slab_info_table[i].slab_callcaps);
 				_XDPRINTF_("	slab_devices=%s\n", ( _xmhfhic_common_slab_info_table[i].slab_devices.desc_valid ? "true" : "false") );
-				_XDPRINTF_("	slab_pgtblbase=%x\n", ( _xmhfhic_common_slab_info_table[i].archdata.mempgtbl_cr3) );
+				_XDPRINTF_("	slab_pgtblbase=%x\n", ( _xmhfhic_common_slab_info_table[i].mempgtbl_cr3) );
 				_XDPRINTF_("  slab_code(%08x-%08x)\n", _xmhfhic_common_slab_info_table[i].slab_physmem_extents[0].addr_start, _xmhfhic_common_slab_info_table[i].slab_physmem_extents[0].addr_end);
 				_XDPRINTF_("  slab_data(%08x-%08x)\n", _xmhfhic_common_slab_info_table[i].slab_physmem_extents[1].addr_start, _xmhfhic_common_slab_info_table[i].slab_physmem_extents[1].addr_end);
 				_XDPRINTF_("  slab_stack(%08x-%08x)\n", _xmhfhic_common_slab_info_table[i].slab_physmem_extents[2].addr_start, _xmhfhic_common_slab_info_table[i].slab_physmem_extents[2].addr_end);
@@ -295,9 +296,9 @@ void xmhfhic_arch_setup_slab_info(void){
 
                     for(j=0; j < MAX_PLATFORM_CPUS; j++)
                         //_XDPRINTF_("     CPU %u: stack TOS=%016llx\n", j,
-                        //       _xmhfhic_common_slab_info_table[i].archdata.slabtos[j]);
+                        //       _xmhfhic_common_slab_info_table[i].slabtos[j]);
                         _XDPRINTF_("     CPU %u: stack TOS=%08x\n", j,
-                               _xmhfhic_common_slab_info_table[i].archdata.slabtos[j]);
+                               _xmhfhic_common_slab_info_table[i].slabtos[j]);
                 }
 
 		}
@@ -640,7 +641,7 @@ static void __xmhfhic_x86vmxx86pc_postdrt(void){
 static u32 _geec_prime_getslabfordevice(u32 bus, u32 dev, u32 func){
     u32 i;
 
-    for(i=0; i < XMHF_HIC_MAX_SLABS; i++){
+    for(i=0; i < XMHFGEEC_TOTAL_SLABS; i++){
         //for now detect rich guest slab and allocate all platform devices to it
         if(_xmhfhic_common_slab_info_table[i].slab_devices.desc_valid &&
             _xmhfhic_common_slab_info_table[i].slab_devices.numdevices == 0xFFFFFFFFUL)
@@ -656,8 +657,6 @@ void xmhfhic_arch_setup_slab_device_allocation(void){
     u32 b, d, f;
     slab_platformdevices_t ddescs;
     slab_params_t spl;
-    xmhfgeec_uapi_slabdevpgtbl_init_params_t *initp =
-        (xmhfgeec_uapi_slabdevpgtbl_init_params_t *)spl.in_out_params;
     xmhfgeec_uapi_slabdevpgtbl_initretcet_params_t *initretcetp =
         (xmhfgeec_uapi_slabdevpgtbl_initretcet_params_t *)spl.in_out_params;
     xmhfgeec_uapi_slabdevpgtbl_initdevpgtbl_params_t *initdevpgtblp =
@@ -666,8 +665,8 @@ void xmhfhic_arch_setup_slab_device_allocation(void){
         (xmhfgeec_uapi_slabdevpgtbl_binddevice_params_t *)spl.in_out_params;
 
 
-    spl.src_slabid = XMHF_HYP_SLAB_GEECPRIME;
-    spl.dst_slabid = XMHF_HYP_SLAB_UAPI_SLABDEVPGTBL;
+    spl.src_slabid = XMHFGEEC_SLAB_GEEC_PRIME;
+    spl.dst_slabid = XMHFGEEC_SLAB_UAPI_SLABDEVPGTBL;
     spl.cpuid = 0; //XXX: fixme, needs to be BSP id
 
 
@@ -689,16 +688,16 @@ void xmhfhic_arch_setup_slab_device_allocation(void){
 	}
 
     //slabdevpgtbl:init
-    initp->uapiphdr.uapifn = XMHFGEEC_UAPI_SDEVPGTBL_INIT;
+    spl.dst_uapifn = XMHFGEEC_UAPI_SDEVPGTBL_INIT;
     XMHF_SLAB_CALLNEW(&spl);
 
     //slabdevpgtbl:initretcet
-    initretcetp->uapiphdr.uapifn = XMHFGEEC_UAPI_SDEVPGTBL_INITRETCET;
+    spl.dst_uapifn = XMHFGEEC_UAPI_SDEVPGTBL_INITRETCET;
     XMHF_SLAB_CALLNEW(&spl);
 
     //use slabdevpgtbl:initdevpgtbl to initialize all slab device page tables
-    for(i=0; i < XMHF_HIC_MAX_SLABS; i++){
-        initdevpgtblp->uapiphdr.uapifn = XMHFGEEC_UAPI_SDEVPGTBL_INITDEVPGTBL;
+    for(i=0; i < XMHFGEEC_TOTAL_SLABS; i++){
+        spl.dst_uapifn = XMHFGEEC_UAPI_SDEVPGTBL_INITDEVPGTBL;
         initdevpgtblp->dst_slabid = i;
         XMHF_SLAB_CALLNEW(&spl);
     }
@@ -722,7 +721,7 @@ void xmhfhic_arch_setup_slab_device_allocation(void){
 				if(vendor_id == 0xFFFF && device_id == 0xFFFF)
 					break;
 
-                binddevicep->uapiphdr.uapifn = XMHFGEEC_UAPI_SDEVPGTBL_BINDDEVICE;
+                spl.dst_uapifn = XMHFGEEC_UAPI_SDEVPGTBL_BINDDEVICE;
                 binddevicep->dst_slabid = _geec_prime_getslabfordevice(b, d, f);
                 if(binddevicep->dst_slabid == 0xFFFFFFFFUL){
                     _XDPRINTF_("%s: Warning, could not find slab for device, skipping\n", __func__);
@@ -777,8 +776,8 @@ static u32 _geec_prime_slab_getspatype(u32 slab_index, u32 spa){
 	u32 i;
 
 	//slab memory regions
-	for(i=0; i < XMHF_HIC_MAX_SLABS; i++){
-		u32 mask = _xmhfhic_common_slab_info_table[i].archdata.slabtype;
+	for(i=0; i < XMHFGEEC_TOTAL_SLABS; i++){
+		u32 mask = _xmhfhic_common_slab_info_table[i].slabtype;
 
         if( i == slab_index)
             mask |= _SLAB_SPATYPE_MASK_SAMESLAB;
@@ -807,7 +806,7 @@ static u64 _geec_prime_slab_getptflagsforspa_pae(u32 slabid, u32 spa){
     bool spa_sameslab=false;
 	u32 spatype = _geec_prime_slab_getspatype(slabid, spa);
 	//_XDPRINTF_("\n%s: slab_index=%u, spa=%08x, spatype = %x\n", __func__, slab_index, spa, spatype);
-    u32 slabtype = _xmhfhic_common_slab_info_table[slabid].archdata.slabtype;
+    u32 slabtype = _xmhfhic_common_slab_info_table[slabid].slabtype;
 
     spa_slabregion = spatype & 0x0000000FUL;
     spa_slabtype =spatype & 0x000000F0UL;
@@ -857,7 +856,7 @@ static u64 _geec_prime_slab_getptflagsforspa_ept(u32 slabid, u32 spa){
     bool spa_sameslab=false;
 	u32 spatype = _geec_prime_slab_getspatype(slabid, spa);
 	//_XDPRINTF_("\n%s: slab_index=%u, spa=%08x, spatype = %x\n", __func__, slab_index, spa, spatype);
-    u32 slabtype = _xmhfhic_common_slab_info_table[slabid].archdata.slabtype;
+    u32 slabtype = _xmhfhic_common_slab_info_table[slabid].slabtype;
 
     spa_slabregion = spatype & 0x0000000FUL;
     spa_slabtype =spatype & 0x000000F0UL;
@@ -1167,14 +1166,14 @@ static void _geec_prime_populate_slab_pagetables_VfT_prog(u32 slabid){
     xmhfgeec_uapi_slabmempgtbl_setentryforpaddr_params_t *setentryforpaddrp =
         (xmhfgeec_uapi_slabmempgtbl_setentryforpaddr_params_t *)spl.in_out_params;
 
-    spl.src_slabid = XMHF_HYP_SLAB_GEECPRIME;
-    spl.dst_slabid = XMHF_HYP_SLAB_UAPI_SLABMEMPGTBL;
+    spl.src_slabid = XMHFGEEC_SLAB_GEEC_PRIME;
+    spl.dst_slabid = XMHFGEEC_SLAB_UAPI_SLABMEMPGTBL;
     spl.cpuid = 0; //XXX: fixme, need to plug in BSP cpuid
 
 	for(gpa=0; gpa < ADDR_4GB; gpa += PAGE_SIZE_2M){
         flags = _geec_prime_slab_getptflagsforspa_pae(slabid, (u32)gpa);
 
-        setentryforpaddrp->uapiphdr.uapifn = XMHFGEEC_UAPI_SLABMEMPGTBL_SETENTRYFORPADDR;
+        spl.dst_uapifn = XMHFGEEC_UAPI_SLABMEMPGTBL_SETENTRYFORPADDR;
         setentryforpaddrp->dst_slabid = slabid;
         setentryforpaddrp->gpa = gpa;
         setentryforpaddrp->entry = pae_make_pde_big(gpa, flags);
@@ -1197,8 +1196,8 @@ static void _geec_prime_populate_slab_pagetables_uVT_uVU_prog(u32 slabid){
     xmhfgeec_uapi_slabmempgtbl_setentryforpaddr_params_t *setentryforpaddrp =
         (xmhfgeec_uapi_slabmempgtbl_setentryforpaddr_params_t *)spl.in_out_params;
 
-    spl.src_slabid = XMHF_HYP_SLAB_GEECPRIME;
-    spl.dst_slabid = XMHF_HYP_SLAB_UAPI_SLABMEMPGTBL;
+    spl.src_slabid = XMHFGEEC_SLAB_GEEC_PRIME;
+    spl.dst_slabid = XMHFGEEC_SLAB_UAPI_SLABMEMPGTBL;
     spl.cpuid = 0; //XXX: fixme, need to plug in BSP cpuid
 
 
@@ -1216,7 +1215,7 @@ static void _geec_prime_populate_slab_pagetables_uVT_uVU_prog(u32 slabid){
             _XDPRINTF_("%s: setting USER for addr=%x in slab=%u, flags=%016llx\n", __func__,
                        (u32)gpa, slabid, flags);
         }
-        setentryforpaddrp->uapiphdr.uapifn = XMHFGEEC_UAPI_SLABMEMPGTBL_SETENTRYFORPADDR;
+        spl.dst_uapifn = XMHFGEEC_UAPI_SLABMEMPGTBL_SETENTRYFORPADDR;
         setentryforpaddrp->dst_slabid = slabid;
         setentryforpaddrp->gpa = gpa;
         setentryforpaddrp->entry = pae_make_pde_big(gpa, flags);
@@ -1239,8 +1238,8 @@ static void _geec_prime_populate_slab_pagetables_uVT_uVU_prog_guest(u32 slabid){
     xmhfgeec_uapi_slabmempgtbl_setentryforpaddr_params_t *setentryforpaddrp =
         (xmhfgeec_uapi_slabmempgtbl_setentryforpaddr_params_t *)spl.in_out_params;
 
-    spl.src_slabid = XMHF_HYP_SLAB_GEECPRIME;
-    spl.dst_slabid = XMHF_HYP_SLAB_UAPI_SLABMEMPGTBL;
+    spl.src_slabid = XMHFGEEC_SLAB_GEEC_PRIME;
+    spl.dst_slabid = XMHFGEEC_SLAB_UAPI_SLABMEMPGTBL;
     spl.cpuid = 0; //XXX: fixme, need to plug in BSP cpuid
 
 /*    _XDPRINTF_("%s: mapping guest prog 2M slab %u...\n", __func__,
@@ -1262,7 +1261,7 @@ static void _geec_prime_populate_slab_pagetables_uVT_uVU_prog_guest(u32 slabid){
         else
             p_table_value = (u64) (gpa)  | ((u64)6 << 3) | flags ;	//present, WB, track host MTRR
 
-        setentryforpaddrp->uapiphdr.uapifn = XMHFGEEC_UAPI_SLABMEMPGTBL_SETENTRYFORPADDR;
+        spl.dst_uapifn = XMHFGEEC_UAPI_SLABMEMPGTBL_SETENTRYFORPADDR;
         setentryforpaddrp->dst_slabid = slabid;
         setentryforpaddrp->gpa = gpa;
         setentryforpaddrp->entry = p_table_value;
@@ -1281,7 +1280,7 @@ static void _geec_prime_populate_slab_pagetables_uVT_uVU_prog_guest(u32 slabid){
         else
             p_table_value = (u64) (gpa)  | ((u64)6 << 3) | flags ;	//present, WB, track host MTRR
 
-        setentryforpaddrp->uapiphdr.uapifn = XMHFGEEC_UAPI_SLABMEMPGTBL_SETENTRYFORPADDR;
+        spl.dst_uapifn = XMHFGEEC_UAPI_SLABMEMPGTBL_SETENTRYFORPADDR;
         setentryforpaddrp->dst_slabid = slabid;
         setentryforpaddrp->gpa = gpa;
         setentryforpaddrp->entry = p_table_value;
@@ -1290,7 +1289,7 @@ static void _geec_prime_populate_slab_pagetables_uVT_uVU_prog_guest(u32 slabid){
 
 
 #if defined (__DEBUG_SERIAL__)
-        setentryforpaddrp->uapiphdr.uapifn = XMHFGEEC_UAPI_SLABMEMPGTBL_SETENTRYFORPADDR;
+        spl.dst_uapifn = XMHFGEEC_UAPI_SLABMEMPGTBL_SETENTRYFORPADDR;
         setentryforpaddrp->dst_slabid = slabid;
         setentryforpaddrp->gpa = ADDR_LIBXMHFDEBUGDATA;
         p_table_value = (u64) (ADDR_LIBXMHFDEBUGDATA)  | ((u64)6 << 3) | 0x87 ;	//present, WB, track host MTRR
@@ -1310,8 +1309,8 @@ static void _geec_prime_populate_slab_pagetables_uVU_prog_richguest(u32 slabid){
     xmhfgeec_uapi_slabmempgtbl_setentryforpaddr_params_t *setentryforpaddrp =
         (xmhfgeec_uapi_slabmempgtbl_setentryforpaddr_params_t *)spl.in_out_params;
 
-    spl.src_slabid = XMHF_HYP_SLAB_GEECPRIME;
-    spl.dst_slabid = XMHF_HYP_SLAB_UAPI_SLABMEMPGTBL;
+    spl.src_slabid = XMHFGEEC_SLAB_GEEC_PRIME;
+    spl.dst_slabid = XMHFGEEC_SLAB_UAPI_SLABMEMPGTBL;
     spl.cpuid = 0; //XXX: fixme, need to plug in BSP cpuid
 
 	for(gpa=0; gpa < ADDR_4GB; gpa += PAGE_SIZE_4K){
@@ -1323,7 +1322,7 @@ static void _geec_prime_populate_slab_pagetables_uVU_prog_richguest(u32 slabid){
         else
             p_table_value = (u64) (gpa)  | ((u64)6 << 3) | flags ;	//present, WB, track host MTRR
 
-        setentryforpaddrp->uapiphdr.uapifn = XMHFGEEC_UAPI_SLABMEMPGTBL_SETENTRYFORPADDR;
+        spl.dst_uapifn = XMHFGEEC_UAPI_SLABMEMPGTBL_SETENTRYFORPADDR;
         setentryforpaddrp->dst_slabid = slabid;
         setentryforpaddrp->gpa = gpa;
         setentryforpaddrp->entry = p_table_value;
@@ -1342,8 +1341,8 @@ void xmhfhic_arch_setup_slab_mem_page_tables(void){
 
     _XDPRINTF_("%s: starting...\n", __func__);
 
-    spl.src_slabid = XMHF_HYP_SLAB_GEECPRIME;
-    spl.dst_slabid = XMHF_HYP_SLAB_UAPI_SLABMEMPGTBL;
+    spl.src_slabid = XMHFGEEC_SLAB_GEEC_PRIME;
+    spl.dst_slabid = XMHFGEEC_SLAB_UAPI_SLABMEMPGTBL;
     spl.cpuid = 0; //XXX: fixme, need to plug in BSP cpuid here
 
     //gather memory types for EPT (for guest slabs)
@@ -1351,11 +1350,11 @@ void xmhfhic_arch_setup_slab_mem_page_tables(void){
     _XDPRINTF_("%s: gathered EPT memory types\n", __func__);
 
 
-    for(i=0; i < XMHF_HIC_MAX_SLABS; i++){
-        slabtype = _xmhfhic_common_slab_info_table[i].archdata.slabtype;
+    for(i=0; i < XMHFGEEC_TOTAL_SLABS; i++){
+        slabtype = _xmhfhic_common_slab_info_table[i].slabtype;
 
         //setup slab memory table shape
-        initmempgtblp->uapiphdr.uapifn = XMHFGEEC_UAPI_SLABMEMPGTBL_INITMEMPGTBL;
+        spl.dst_uapifn = XMHFGEEC_UAPI_SLABMEMPGTBL_INITMEMPGTBL;
         initmempgtblp->dst_slabid = i;
         XMHF_SLAB_CALLNEW(&spl);
 

@@ -55,28 +55,25 @@
 #ifndef __UAPI_SLABMEMPGTBL_H__
 #define __UAPI_SLABMEMPGTBL_H__
 
-#define XMHFGEEC_UAPI_SLABMEMPGTBL_INITMEMPGTBL     (0x1)
-#define XMHFGEEC_UAPI_SLABMEMPGTBL_SETENTRYFORPADDR (0x2)
-#define XMHFGEEC_UAPI_SLABMEMPGTBL_GETENTRYFORPADDR (0x3)
+#define XMHFGEEC_UAPI_SLABMEMPGTBL_INITMEMPGTBL     0
+#define XMHFGEEC_UAPI_SLABMEMPGTBL_SETENTRYFORPADDR 1
+#define XMHFGEEC_UAPI_SLABMEMPGTBL_GETENTRYFORPADDR 2
 
 
 
 #ifndef __ASSEMBLY__
 
 typedef struct {
-    xmhf_uapi_params_hdr_t uapiphdr;
     u32 dst_slabid;
 }__attribute__((packed)) xmhfgeec_uapi_slabmempgtbl_initmempgtbl_params_t;
 
 typedef struct {
-    xmhf_uapi_params_hdr_t uapiphdr;
     u32 dst_slabid;
     u64 gpa;
     u64 entry;
 }__attribute__((packed)) xmhfgeec_uapi_slabmempgtbl_setentryforpaddr_params_t;
 
 typedef struct {
-    xmhf_uapi_params_hdr_t uapiphdr;
     u32 dst_slabid;
     u64 gpa;
     u64 result_entry;

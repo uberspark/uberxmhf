@@ -1,1 +1,9 @@
-#slab manifest
+//slab manifest
+#include <uapi_gcpustate.h>
+#include <xc_testslab.h>
+
+S:uapi_gcpustate:void:void:void
+
+
+U:uapi_gcpustate:XMHF_HIC_UAPI_CPUSTATE_VMREAD:void:void
+

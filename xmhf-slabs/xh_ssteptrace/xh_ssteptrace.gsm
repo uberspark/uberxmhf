@@ -1,1 +1,16 @@
-#slab manifest
+//slab manifest
+#include <uapi_gcpustate.h>
+#include <uapi_slabmemacc.h>
+#include <xh_ssteptrace.h>
+
+
+S:uapi_gcpustate:void:void:void
+S:uapi_slabmemacc:void:void:void
+
+
+U:uapi_gcpustate:XMHF_HIC_UAPI_CPUSTATE_VMREAD:void:void
+U:uapi_gcpustate:XMHF_HIC_UAPI_CPUSTATE_VMWRITE:void:void
+U:uapi_gcpustate:XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSREAD:void:void
+U:uapi_slabmemacc:XMHF_HIC_UAPI_PHYSMEM_PEEK:void:void
+
+

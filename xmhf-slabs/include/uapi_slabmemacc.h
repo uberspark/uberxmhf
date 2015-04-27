@@ -55,13 +55,12 @@
 #ifndef __UAPI_SLABMEMACC_H__
 #define __UAPI_SLABMEMACC_H__
 
-#define XMHF_HIC_UAPI_PHYSMEM_PEEK              (17)
-#define XMHF_HIC_UAPI_PHYSMEM_POKE              (18)
+#define XMHF_HIC_UAPI_PHYSMEM_PEEK              0
+#define XMHF_HIC_UAPI_PHYSMEM_POKE              1
 
 #ifndef __ASSEMBLY__
 
 typedef struct {
-    xmhf_uapi_params_hdr_t uapiphdr;
     u32 dst_slabid;
     void *addr_from;
     void *addr_to;
