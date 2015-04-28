@@ -159,6 +159,7 @@ void _geec_prime_main(slab_params_t *sp){
     xmhfhic_setupinitpgtables();
     _XDPRINTF_("Init page table setup.\n");
 
+
     //initialize slab info table based on setup data
     xmhfhic_arch_setup_slab_info();
 
@@ -178,7 +179,6 @@ void _geec_prime_main(slab_params_t *sp){
     _XDPRINTF_("Proceeding to switch to GEEC_PRIME pagetables...\n");
     CASM_FUNCCALL(write_cr3,(u32)_xmhfhic_common_slab_info_table[XMHFGEEC_SLAB_GEEC_PRIME].mempgtbl_cr3);
     _XDPRINTF_("Switched to GEEC_PRIME pagetables...\n");
-
 
     //transfer control to geec_primesmp
     {
@@ -830,7 +830,8 @@ static u64 _geec_prime_slab_getptflagsforspa_pae(u32 slabid, u32 spa){
                     flags |= (u64)(_PAGE_PCD);
                 }
             }else{
-                if(spa_sameslab || spa_slabtype == XMHFGEEC_SLABTYPE_VfT_PROG){
+                if(spa_sameslab || spa_slabtype == XMHFGEEC_SLABTYPE_VfT_PROG ||
+                    spa_slabtype == XMHFGEEC_SLABTYPE_VfT_SENTINEL){
                     switch(spa_slabregion){
                         case _SLAB_SPATYPE_SLAB_CODE:
                             flags = (_PAGE_PRESENT);
@@ -872,7 +873,8 @@ static u64 _geec_prime_slab_getptflagsforspa_pae(u32 slabid, u32 spa){
                     flags |= (u64)(_PAGE_PCD);
                 }
             }else{
-                if(spa_sameslab || spa_slabtype == XMHFGEEC_SLABTYPE_VfT_PROG){
+                if(spa_sameslab || spa_slabtype == XMHFGEEC_SLABTYPE_VfT_PROG ||
+                    spa_slabtype == XMHFGEEC_SLABTYPE_VfT_SENTINEL){
                     switch(spa_slabregion){
                         case _SLAB_SPATYPE_SLAB_CODE:
                             flags = (_PAGE_PRESENT);
@@ -1388,6 +1390,17 @@ static void _geec_prime_populate_slab_pagetables_ept4k(u32 slabid){
         XMHF_SLAB_CALLNEW(&spl);
 
 	}
+
+#if defined (__DEBUG_SERIAL__)
+        spl.dst_uapifn = XMHFGEEC_UAPI_SLABMEMPGTBL_SETENTRYFORPADDR;
+        setentryforpaddrp->dst_slabid = slabid;
+        setentryforpaddrp->gpa = ADDR_LIBXMHFDEBUGDATA;
+        p_table_value = (u64) (ADDR_LIBXMHFDEBUGDATA)  | ((u64)6 << 3) | 0x7 ;	//present, WB, track host MTRR
+        setentryforpaddrp->entry = p_table_value;
+        XMHF_SLAB_CALLNEW(&spl);
+#endif
+
+
 }
 
 //pae4k
@@ -1412,6 +1425,16 @@ static void _geec_prime_populate_slab_pagetables_pae4k(u32 slabid){
         XMHF_SLAB_CALLNEW(&spl);
 
 	}
+
+#if defined (__DEBUG_SERIAL__)
+        spl.dst_uapifn = XMHFGEEC_UAPI_SLABMEMPGTBL_SETENTRYFORPADDR;
+        setentryforpaddrp->dst_slabid = slabid;
+        setentryforpaddrp->gpa = ADDR_LIBXMHFDEBUGDATA;
+        setentryforpaddrp->entry = pae_make_pte(ADDR_LIBXMHFDEBUGDATA, (_PAGE_USER | _PAGE_RW | _PAGE_PRESENT));	//present, WB, track host MTRR
+        XMHF_SLAB_CALLNEW(&spl);
+#endif
+
+
 }
 
 void xmhfhic_arch_setup_slab_mem_page_tables(void){
