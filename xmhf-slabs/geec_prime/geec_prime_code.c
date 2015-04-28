@@ -820,7 +820,7 @@ static u64 _geec_prime_slab_getptflagsforspa_pae(u32 slabid, u32 spa){
             //self slab: code=rx, data,stack,dmadata=rw, perms=USER
             //other slab vft: code=rx, data,stack,dmadata=rw, perms=SUPER
             //SPATYPE_OTHER => rw perms=USER
-            //anything else: unmapped
+            //anything else: mapped rw perms=SUPER
             if(spa_slabregion == _SLAB_SPATYPE_OTHER){
                 flags = (u64)(_PAGE_PRESENT | _PAGE_RW | _PAGE_USER);
                 if(spa == 0xfee00000 || spa == 0xfec00000) {
@@ -846,11 +846,11 @@ static u64 _geec_prime_slab_getptflagsforspa_pae(u32 slabid, u32 spa){
                             break;
                     }
 
-                    if(spa_sameslab)
+                    if(spa_sameslab || spa_slabtype == XMHFGEEC_SLABTYPE_VfT_SENTINEL)
                         flags |= (_PAGE_USER);
 
                 }else{
-                    flags =0;
+                    flags = (_PAGE_PRESENT | _PAGE_RW | _PAGE_NX);
                 }
 
             }
@@ -863,7 +863,7 @@ static u64 _geec_prime_slab_getptflagsforspa_pae(u32 slabid, u32 spa){
             //self slab: code=rx, data,stack,dmadata=rw, perms=SUPER
             //other slab vft: code=rx, data,stack,dmadata=rw, perms=SUPER
             //SPATYPE_OTHER => rw perms=USER
-            //anything else: mapped rw perms=USER
+            //anything else: mapped rw perms=SUPER
             if(spa_slabregion == _SLAB_SPATYPE_OTHER){
                 flags = (u64)(_PAGE_PRESENT | _PAGE_RW | _PAGE_USER);
                 if(spa == 0xfee00000 || spa == 0xfec00000) {
@@ -890,7 +890,7 @@ static u64 _geec_prime_slab_getptflagsforspa_pae(u32 slabid, u32 spa){
                     }
 
                 }else{
-                    flags = (_PAGE_PRESENT | _PAGE_RW | _PAGE_NX | _PAGE_USER);
+                    flags = (_PAGE_PRESENT | _PAGE_RW | _PAGE_NX);
                 }
 
             }
