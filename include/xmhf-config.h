@@ -53,7 +53,10 @@
 //unverified slab memory page table sets
 #define XMHF_CONFIG_MAX_UVMEMPGTBL_SETS __XMHF_CONFIG_MAX_UVMEMPGTBL_SETS__
 
-#define XMHF_MAX_MEMPGTBL_SETS (XMHF_CONFIG_MAX_UVMEMPGTBL_SETS+1)
+//max memory page table sets is two added to the above:
+//geec_sentinel: currently unused
+//geec_prime: used for verified slabs
+#define XMHF_MAX_MEMPGTBL_SETS (XMHF_CONFIG_MAX_UVMEMPGTBL_SETS+2)
 
 
 
@@ -233,7 +236,7 @@
 #define     MAX_SLAB_DMADATA_PDT_ENTRIES    (MAX_SLAB_DMADATA_SIZE/(2*1024*1024))
 
 
-#define     ADDR_LIBXMHFDEBUGDATA           (0x10c00000UL)
+#define     ADDR_LIBXMHFDEBUGDATA           (0x11400000UL)
 
 
 #endif //__XMHF_CONFIG_H__
