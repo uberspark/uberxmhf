@@ -1417,6 +1417,7 @@ static void _geec_prime_populate_slab_pagetables_pae4k(u32 slabid){
 
 	for(gpa=0; gpa < ADDR_4GB; gpa += PAGE_SIZE_4K){
         flags = _geec_prime_slab_getptflagsforspa_pae(slabid, (u32)gpa);
+        //_XDPRINTF_("gpa=%08x, flags=%016llx\n", (u32)gpa, flags);
 
         spl.dst_uapifn = XMHFGEEC_UAPI_SLABMEMPGTBL_SETENTRYFORPADDR;
         setentryforpaddrp->dst_slabid = slabid;
