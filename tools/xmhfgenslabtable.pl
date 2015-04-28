@@ -36,7 +36,7 @@ my $slabsubtype;
 
 
 $g_rootdir = dirname($g_slabsfile)."/";
-$g_totalslabmempgtblsets = $g_totaluvslabmempgtblsets + 1;
+$g_totalslabmempgtblsets = $g_totaluvslabmempgtblsets + 2;
 $g_uvslabcounter = 0;
 
 #print "slabsfile:", $g_slabsfile, "\n";
@@ -186,9 +186,14 @@ while( $i < $g_totalslabs ){
         exit 1;
     }
 
-    #mempgtbl_cr3
+    #mempgtbl_cr3, for VfT_SLAB type point SENTINEL to the base of the page table
+    #bases and for all other slabs point to PRIME slab memory page tables
     if ($slab_idtotype{$i} eq "VfT_SLAB"){
-        printf "\n	        &_slab_uapi_slabmempgtbl_data_start[%u],", (0 * 4096);
+        if($slab_idtosubtype{$i} eq "SENTINEL"){
+            printf "\n	        &_slab_uapi_slabmempgtbl_data_start[%u],", (0 * 4096);
+        }else{
+            printf "\n	        &_slab_uapi_slabmempgtbl_data_start[%u],", (1 * 4096);
+        }
     }else{
         if($g_uvslabcounter >=  $g_totaluvslabmempgtblsets){
             print "\nError: Too many unverified slabs (max=$g_totaluvslabmempgtblsets)!";
@@ -197,8 +202,8 @@ while( $i < $g_totalslabs ){
             $g_uvslabcounter = $g_uvslabcounter + 1;
         }
 
-        if($i > 0 && ($i-1) < $g_totaluvslabmempgtblsets){
-          printf "\n	        &_slab_uapi_slabmempgtbl_data_start[%u],", (($i-1) * 4096);
+        if( $i < $g_totalslabmempgtblsets){
+          printf "\n	        &_slab_uapi_slabmempgtbl_data_start[%u],", ($i * 4096);
         }else{
             print "\nError: Illegal unverified slab id ($i)!";
             exit 1;
