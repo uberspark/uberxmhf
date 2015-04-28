@@ -9,8 +9,12 @@ use File::Basename;
 
 # command line inputs
 # 0: SLABS file with absolute path
+# 1: max number of unverified slab memory page table sets
 
 my $g_slabsfile = $ARGV[0];
+my $g_totaluvslabmempgtblsets = $ARGV[1];
+my $g_totalslabmempgtblsets;
+my $g_uvslabcounter;
 my $g_totalslabs;
 my $g_rootdir;
 
@@ -32,6 +36,8 @@ my $slabsubtype;
 
 
 $g_rootdir = dirname($g_slabsfile)."/";
+$g_totalslabmempgtblsets = $g_totaluvslabmempgtblsets + 2;
+$g_uvslabcounter = 0;
 
 #print "slabsfile:", $g_slabsfile, "\n";
 #print "rootdir:", $g_rootdir, "\n";
@@ -180,8 +186,29 @@ while( $i < $g_totalslabs ){
         exit 1;
     }
 
-    #mempgtbl_cr3
-    printf "\n	        &_slab_uapi_slabmempgtbl_data_start[%u],", ($i * 4096);
+    #mempgtbl_cr3, for VfT_SLAB type point SENTINEL to the base of the page table
+    #bases and for all other slabs point to PRIME slab memory page tables
+    if ($slab_idtotype{$i} eq "VfT_SLAB"){
+        if($slab_idtosubtype{$i} eq "SENTINEL"){
+            printf "\n	        &_slab_uapi_slabmempgtbl_data_start[%u],", (0 * 4096);
+        }else{
+            printf "\n	        &_slab_uapi_slabmempgtbl_data_start[%u],", (1 * 4096);
+        }
+    }else{
+        if($g_uvslabcounter >=  $g_totaluvslabmempgtblsets){
+            print "\nError: Too many unverified slabs (max=$g_totaluvslabmempgtblsets)!";
+            exit 1;
+        }else{
+            $g_uvslabcounter = $g_uvslabcounter + 1;
+        }
+
+        if( $i < $g_totalslabmempgtblsets){
+          printf "\n	        &_slab_uapi_slabmempgtbl_data_start[%u],", ($i * 4096);
+        }else{
+            print "\nError: Illegal unverified slab id ($i)!";
+            exit 1;
+        }
+    }
 
     #slab_tos
     print "\n	        {";
