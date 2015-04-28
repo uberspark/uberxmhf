@@ -1,6 +1,5 @@
 xmhf-slabs/geec_sentinel , VfT_SLAB, SENTINEL
 xmhf-slabs/geec_prime , VfT_SLAB, PRIME
-xmhf-slabs/xc_testslab , uVT_SLAB, XCORE
 xmhf-slabs/xg_richguest , uVU_SLAB, XRICHGUEST
 xmhf-slabs/geec_primesmp , VfT_SLAB, PRIME
 xmhf-slabs/xc_init , VfT_SLAB, INIT
@@ -11,6 +10,7 @@ xmhf-slabs/uapi_hcpustate , VfT_SLAB, UAPI
 xmhf-slabs/uapi_slabmemacc , VfT_SLAB, UAPI
 xmhf-slabs/uapi_slabmempgtbl , VfT_SLAB, UAPI
 xmhf-slabs/uapi_slabdevpgtbl , VfT_SLAB, UAPI
+xmhf-slabs/xc_testslab , VfT_SLAB, XCORE
 xmhf-slabs/xh_hyperdep , VfT_SLAB, XHYPAPP
 xmhf-slabs/xh_approvexec , VfT_SLAB, XHYPAPP
 xmhf-slabs/xh_syscalllog , VfT_SLAB, XHYPAPP
