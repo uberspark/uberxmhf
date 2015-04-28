@@ -1359,8 +1359,8 @@ static void _geec_prime_populate_slab_pagetables_uVT_uVU_prog_guest(u32 slabid){
 }
 
 
-
-static void _geec_prime_populate_slab_pagetables_uVU_prog_richguest(u32 slabid){
+//ept4k
+static void _geec_prime_populate_slab_pagetables_ept4k(u32 slabid){
 	u64 p_table_value;
 	u64 gpa;
 	u64 flags;
@@ -1390,7 +1390,29 @@ static void _geec_prime_populate_slab_pagetables_uVU_prog_richguest(u32 slabid){
 	}
 }
 
+//pae4k
+static void _geec_prime_populate_slab_pagetables_pae4k(u32 slabid){
+	u64 gpa;
+	u64 flags;
+    slab_params_t spl;
+    xmhfgeec_uapi_slabmempgtbl_setentryforpaddr_params_t *setentryforpaddrp =
+        (xmhfgeec_uapi_slabmempgtbl_setentryforpaddr_params_t *)spl.in_out_params;
 
+    spl.src_slabid = XMHFGEEC_SLAB_GEEC_PRIME;
+    spl.dst_slabid = XMHFGEEC_SLAB_UAPI_SLABMEMPGTBL;
+    spl.cpuid = 0; //XXX: fixme, need to plug in BSP cpuid
+
+	for(gpa=0; gpa < ADDR_4GB; gpa += PAGE_SIZE_4K){
+        flags = _geec_prime_slab_getptflagsforspa_pae(slabid, (u32)gpa);
+
+        spl.dst_uapifn = XMHFGEEC_UAPI_SLABMEMPGTBL_SETENTRYFORPADDR;
+        setentryforpaddrp->dst_slabid = slabid;
+        setentryforpaddrp->gpa = gpa;
+        setentryforpaddrp->entry = pae_make_pte(gpa, flags);
+        XMHF_SLAB_CALLNEW(&spl);
+
+	}
+}
 
 void xmhfhic_arch_setup_slab_mem_page_tables(void){
     slab_params_t spl;
@@ -1409,45 +1431,43 @@ void xmhfhic_arch_setup_slab_mem_page_tables(void){
     _XDPRINTF_("%s: gathered EPT memory types\n", __func__);
 
 
+    //setup verified slabs' page tables, uses slab index for GEEC_PRIME
+    spl.dst_uapifn = XMHFGEEC_UAPI_SLABMEMPGTBL_INITMEMPGTBL;
+    initmempgtblp->dst_slabid = XMHFGEEC_SLAB_GEEC_PRIME;
+    XMHF_SLAB_CALLNEW(&spl);
+    _geec_prime_populate_slab_pagetables_pae4k(XMHFGEEC_SLAB_GEEC_PRIME);
+   	_XDPRINTF_("%s: populated verified slabs' memory page tables\n", __func__);
+
+
+    //setup unverified slabs's page tables
     for(i=0; i < XMHFGEEC_TOTAL_SLABS; i++){
         slabtype = _xmhfhic_common_slab_info_table[i].slabtype;
 
-        //setup slab memory table shape
-        spl.dst_uapifn = XMHFGEEC_UAPI_SLABMEMPGTBL_INITMEMPGTBL;
-        initmempgtblp->dst_slabid = i;
-        XMHF_SLAB_CALLNEW(&spl);
-
         switch(slabtype){
-            case XMHFGEEC_SLABTYPE_VfT_SENTINEL:
-            case XMHFGEEC_SLABTYPE_VfT_PROG:{
-                _geec_prime_populate_slab_pagetables_VfT_prog(i);
-              	_XDPRINTF_("%s: slab %u --> VfT_prog page-tables populated\n", __func__, i);
-            }
-            break;
-
             case XMHFGEEC_SLABTYPE_uVT_PROG:
             case XMHFGEEC_SLABTYPE_uVU_PROG:{
-                _geec_prime_populate_slab_pagetables_uVT_uVU_prog(i);
+                spl.dst_uapifn = XMHFGEEC_UAPI_SLABMEMPGTBL_INITMEMPGTBL;
+                initmempgtblp->dst_slabid = i;
+                XMHF_SLAB_CALLNEW(&spl);
+                _geec_prime_populate_slab_pagetables_pae4k(i);
               	_XDPRINTF_("%s: slab %u --> uV{T,U}_prog page-tables populated\n", __func__, i);
             }
             break;
 
+
             case XMHFGEEC_SLABTYPE_uVT_PROG_GUEST:
-            case XMHFGEEC_SLABTYPE_uVU_PROG_GUEST:{
-                _geec_prime_populate_slab_pagetables_uVT_uVU_prog_guest(i);
+            case XMHFGEEC_SLABTYPE_uVU_PROG_GUEST:
+            case XMHFGEEC_SLABTYPE_uVU_PROG_RICHGUEST:{
+                spl.dst_uapifn = XMHFGEEC_UAPI_SLABMEMPGTBL_INITMEMPGTBL;
+                initmempgtblp->dst_slabid = i;
+                XMHF_SLAB_CALLNEW(&spl);
+                _geec_prime_populate_slab_pagetables_ept4k(i);
               	_XDPRINTF_("%s: slab %u --> uV{T,U}_prog_guest page-tables populated\n", __func__, i);
             }
             break;
 
-            case XMHFGEEC_SLABTYPE_uVU_PROG_RICHGUEST:{
-                _geec_prime_populate_slab_pagetables_uVU_prog_richguest(i);
-              	_XDPRINTF_("%s: slab %u --> uVU_prog_richguest page-tables populated\n", __func__, i);
-            }
-            break;
-
             default:
-                _XDPRINTF_("%s: halting!. unknown slab type %u\n", __func__, slabtype);
-                HALT();
+                break;
         }
     }
 
