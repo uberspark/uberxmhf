@@ -178,6 +178,9 @@ void _geec_sentinel_sysenter_stub(slab_params_t *sp, void *caller_stack_frame){
     sp->src_slabid =
         (CASM_FUNCCALL(read_cr3, CASM_NOPARAM) - _xmhfhic_common_slab_info_table[XMHFGEEC_SLAB_GEEC_SENTINEL].mempgtbl_cr3)/PAGE_SIZE_4K;
 
+    //sp->src_slabid =  sp->src_slabid + 1;
+
+
     _XDPRINTF_("%s: sp=%x, cpuid=%u, src=%u, dst=%u, ctype=%x\n", __func__,
                (u32)sp, (u16)sp->cpuid, sp->src_slabid, sp->dst_slabid, sp->slab_ctype);
 
@@ -280,6 +283,8 @@ static void _geec_sentinel_transition_ret_vft_prog_to_uvt_uvu_prog(slab_params_t
             __func__, __LINE__);
         HALT();
     }
+
+
 
     //marshall parameters
     memcpy( (elem.sp)->in_out_params, sp->in_out_params, sizeof(sp->in_out_params) );
