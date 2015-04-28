@@ -82,6 +82,7 @@ static void _slabmempgtbl_initmempgtbl_pae4K(u32 slabid){
     }
 
     //pdt
+    default_flags = (u64)(_PAGE_PRESENT | _PAGE_RW | _PAGE_USER);
 	for(i=0; i < PAE_PTRS_PER_PDPT; i++){
 		for(j=0; j < PAE_PTRS_PER_PDT; j++){
 			_slabmempgtbl_lvl2t[slabid][i][j] =
