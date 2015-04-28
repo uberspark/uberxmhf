@@ -142,7 +142,7 @@ static void _slabmempgtbl_initmempgtbl(u32 slabid){
         case XMHFGEEC_SLABTYPE_VfT_PROG:
         case XMHFGEEC_SLABTYPE_uVT_PROG:
         case XMHFGEEC_SLABTYPE_uVU_PROG:{
-            _slabmempgtbl_initmempgtbl_pae4K(slabid);
+            _slabmempgtbl_initmempgtbl_pae4K(slabid-1);
             _XDPRINTF_("%s: setup slab %u with pae4K\n", __func__, slabid);
         }
         break;
@@ -150,7 +150,7 @@ static void _slabmempgtbl_initmempgtbl(u32 slabid){
         case XMHFGEEC_SLABTYPE_uVT_PROG_GUEST:
         case XMHFGEEC_SLABTYPE_uVU_PROG_GUEST:
         case XMHFGEEC_SLABTYPE_uVU_PROG_RICHGUEST:{
-            _slabmempgtbl_initmempgtbl_ept4K(slabid);
+            _slabmempgtbl_initmempgtbl_ept4K(slabid-1);
             _XDPRINTF_("%s: setup slab %u with ept4K\n", __func__, slabid);
         }
         break;
@@ -182,7 +182,7 @@ static void _slabmempgtbl_setentryforpaddr(u32 slabid, u64 gpa, u64 entry){
         case XMHFGEEC_SLABTYPE_uVT_PROG_GUEST:
         case XMHFGEEC_SLABTYPE_uVU_PROG_GUEST:
         case XMHFGEEC_SLABTYPE_uVU_PROG_RICHGUEST:{
-            _slabmempgtbl_lvl1t[slabid][pdpt_index][pdt_index][pt_index] =
+            _slabmempgtbl_lvl1t[slabid-1][pdpt_index][pdt_index][pt_index] =
                 entry & (~0x80);
         }
         break;
@@ -216,7 +216,7 @@ static u64 _slabmempgtbl_getentryforpaddr(u32 slabid, u64 gpa){
         case XMHFGEEC_SLABTYPE_uVT_PROG_GUEST:
         case XMHFGEEC_SLABTYPE_uVU_PROG_GUEST:
         case XMHFGEEC_SLABTYPE_uVU_PROG_RICHGUEST:{
-            result_entry = _slabmempgtbl_lvl1t[slabid][pdpt_index][pdt_index][pt_index];
+            result_entry = _slabmempgtbl_lvl1t[slabid-1][pdpt_index][pdt_index][pt_index];
         }
         break;
 
