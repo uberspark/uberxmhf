@@ -177,7 +177,7 @@
 	#define __TARGET_SIZE_BOOTLOADER		0x00200000		//2MB
 
 	//physical address of XMHF secure loader
-	#define __TARGET_BASE_SL				0x02a00000		//32+10MB
+	#define __TARGET_BASE_SL				0x02800000		//32+8MB
 	#define __TARGET_SIZE_SL				0x00200000
 
 
@@ -236,7 +236,7 @@
 #define     MAX_SLAB_DMADATA_PDT_ENTRIES    (MAX_SLAB_DMADATA_SIZE/(2*1024*1024))
 
 
-#define     ADDR_LIBXMHFDEBUGDATA           (0x11400000UL)
+#define     ADDR_LIBXMHFDEBUGDATA           (0xf200000UL)
 
 
 #endif //__XMHF_CONFIG_H__

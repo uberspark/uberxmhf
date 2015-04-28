@@ -94,7 +94,7 @@
 #define HIC_SLAB_PHYSMEM_EXTENT_WRITE      (1 << 1)
 #define HIC_SLAB_PHYSMEM_EXTENT_EXECUTE    (1 << 2)
 
-#define HIC_SLAB_PHYSMEM_MAXEXTENTS         5
+#define HIC_SLAB_PHYSMEM_MAXEXTENTS         4
 
 
 #ifndef __ASSEMBLY__

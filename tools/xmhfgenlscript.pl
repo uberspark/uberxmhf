@@ -69,10 +69,6 @@ print "\n		_slab_$ARGV[$i]_dmadata_start = .;";
 print "\n		_objs_slab_$ARGV[$i]/$ARGV[$i].slo(.slabdmadata)";
 print "\n		. = ALIGN(0x200000);";
 print "\n		_slab_$ARGV[$i]_dmadata_end = .;";
-print "\n		_slab_$ARGV[$i]_mmio_start = .;";
-print "\n		_objs_slab_$ARGV[$i]/$ARGV[$i].slo(.slabmmio)";
-print "\n		. = ALIGN(0x200000);";
-print "\n		_slab_$ARGV[$i]_mmio_end = .;";
 print "\n	} >all=0x0000";
 print "\n";
 
