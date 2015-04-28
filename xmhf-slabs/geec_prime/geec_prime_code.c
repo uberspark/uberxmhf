@@ -288,7 +288,6 @@ void xmhfhic_arch_setup_slab_info(void){
 				_XDPRINTF_("  slab_data(%08x-%08x)\n", _xmhfhic_common_slab_info_table[i].slab_physmem_extents[1].addr_start, _xmhfhic_common_slab_info_table[i].slab_physmem_extents[1].addr_end);
 				_XDPRINTF_("  slab_stack(%08x-%08x)\n", _xmhfhic_common_slab_info_table[i].slab_physmem_extents[2].addr_start, _xmhfhic_common_slab_info_table[i].slab_physmem_extents[2].addr_end);
 				_XDPRINTF_("  slab_dmadata(%08x-%08x)\n", _xmhfhic_common_slab_info_table[i].slab_physmem_extents[3].addr_start, _xmhfhic_common_slab_info_table[i].slab_physmem_extents[3].addr_end);
-				_XDPRINTF_("  slab_mmio(%08x-%08x)\n", _xmhfhic_common_slab_info_table[i].slab_physmem_extents[4].addr_start, _xmhfhic_common_slab_info_table[i].slab_physmem_extents[4].addr_end);
 				_XDPRINTF_("  slab_entrystub=%08x\n", _xmhfhic_common_slab_info_table[i].entrystub);
 
                 {
@@ -768,7 +767,7 @@ void xmhfhic_arch_setup_slab_device_allocation(void){
 #define	_SLAB_SPATYPE_SLAB_DATA	    			(0x1)
 #define _SLAB_SPATYPE_SLAB_STACK				(0x2)
 #define _SLAB_SPATYPE_SLAB_DMADATA				(0x3)
-#define _SLAB_SPATYPE_SLAB_MMIO 				(0x4)
+
 #define _SLAB_SPATYPE_OTHER	    				(0x5)
 
 
@@ -790,8 +789,6 @@ static u32 _geec_prime_slab_getspatype(u32 slab_index, u32 spa){
 			return _SLAB_SPATYPE_SLAB_STACK | mask;
 		if(spa >= _xmhfhic_common_slab_info_table[i].slab_physmem_extents[3].addr_start && spa < _xmhfhic_common_slab_info_table[i].slab_physmem_extents[3].addr_end)
 			return _SLAB_SPATYPE_SLAB_DMADATA | mask;
-		if(spa >= _xmhfhic_common_slab_info_table[i].slab_physmem_extents[4].addr_start && spa < _xmhfhic_common_slab_info_table[i].slab_physmem_extents[4].addr_end)
-			return _SLAB_SPATYPE_SLAB_MMIO | mask;
 	}
 
 	return _SLAB_SPATYPE_OTHER;
@@ -940,7 +937,6 @@ static u64 _geec_prime_slab_getptflagsforspa_ept(u32 slabid, u32 spa){
                     case _SLAB_SPATYPE_SLAB_DATA:
                     case _SLAB_SPATYPE_SLAB_STACK:
                     case _SLAB_SPATYPE_SLAB_DMADATA:
-                    case _SLAB_SPATYPE_SLAB_MMIO:
                         flags = 0x3;
                         break;
                 }
@@ -951,7 +947,7 @@ static u64 _geec_prime_slab_getptflagsforspa_ept(u32 slabid, u32 spa){
         break;
 
         case XMHFGEEC_SLABTYPE_uVU_PROG_RICHGUEST:{
-            //code,data,stack,dmadata,mmio=rwx;
+            //code,data,stack,dmadata=rwx;
             //other slabs = no mapping; other region = rwx
             if(spa_sameslab || spa_slabregion == _SLAB_SPATYPE_OTHER)
                 flags = 0x7;

@@ -128,8 +128,6 @@ while( $i < $g_totalslabs) {
 	print "\nextern u8 _slab_$slab_idtoname{$i}_stack_end[];";
 	print "\nextern u8 _slab_$slab_idtoname{$i}_dmadata_start[];";
 	print "\nextern u8 _slab_$slab_idtoname{$i}_dmadata_end[];";
-	print "\nextern u8 _slab_$slab_idtoname{$i}_mmio_start[];";
-	print "\nextern u8 _slab_$slab_idtoname{$i}_mmio_end[];";
 	print "\nextern u8 _slab_$slab_idtoname{$i}_entrypoint[];";
 
 	$i++;
@@ -261,7 +259,6 @@ while( $i < $g_totalslabs ){
     print "\n	        {.addr_start = _slab_$slab_idtoname{$i}_data_start, .addr_end = _slab_$slab_idtoname{$i}_data_end, .protection = 0},";
     print "\n	        {.addr_start = _slab_$slab_idtoname{$i}_stack_start, .addr_end = _slab_$slab_idtoname{$i}_stack_end, .protection = 0},";
     print "\n	        {.addr_start = _slab_$slab_idtoname{$i}_dmadata_start, .addr_end = _slab_$slab_idtoname{$i}_dmadata_end, .protection = 0},";
-    print "\n	        {.addr_start = _slab_$slab_idtoname{$i}_mmio_start, .addr_end = _slab_$slab_idtoname{$i}_mmio_end, .protection = 0},";
     print "\n	    },";
 
     #slab_entrystub
