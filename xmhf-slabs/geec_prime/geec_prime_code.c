@@ -799,7 +799,7 @@ static u32 _geec_prime_slab_getspatype(u32 slab_index, u32 spa){
 
 
 
-// only for VfT_PROG
+// for VfT_PROG, uVT_PROG and uVU_PROG
 static u64 _geec_prime_slab_getptflagsforspa_pae(u32 slabid, u32 spa){
 	u64 flags=0;
     u8 spa_slabtype, spa_slabregion;
@@ -814,34 +814,94 @@ static u64 _geec_prime_slab_getptflagsforspa_pae(u32 slabid, u32 spa){
         spa_sameslab = true;
 
 
-    switch(spa_slabregion){
-        case _SLAB_SPATYPE_SLAB_CODE:
-            flags = (_PAGE_PRESENT | _PAGE_PSE);
-            break;
-        case _SLAB_SPATYPE_SLAB_DATA:
-        case _SLAB_SPATYPE_SLAB_STACK:
-        case _SLAB_SPATYPE_SLAB_DMADATA:
-        case _SLAB_SPATYPE_SLAB_MMIO:
-            flags = (_PAGE_PRESENT | _PAGE_PSE | _PAGE_RW | _PAGE_NX);
-            break;
-        case _SLAB_SPATYPE_OTHER:{
-			flags = (u64)(_PAGE_PRESENT | _PAGE_RW | _PAGE_PSE | _PAGE_USER);
-			if(spa == 0xfee00000 || spa == 0xfec00000) {
-				//map some MMIO regions with Page Cache disabled
-				//0xfed00000 contains Intel TXT config regs & TPM MMIO
-				//0xfee00000 contains LAPIC base
-				flags |= (u64)(_PAGE_PCD);
-			}
+    switch(slabtype){
+        case XMHFGEEC_SLABTYPE_uVT_PROG:
+        case XMHFGEEC_SLABTYPE_uVU_PROG:{
+            //self slab: code=rx, data,stack,dmadata=rw, perms=USER
+            //other slab vft: code=rx, data,stack,dmadata=rw, perms=SUPER
+            //SPATYPE_OTHER => rw perms=USER
+            //anything else: unmapped
+            if(spa_slabregion == _SLAB_SPATYPE_OTHER){
+                flags = (u64)(_PAGE_PRESENT | _PAGE_RW | _PAGE_USER);
+                if(spa == 0xfee00000 || spa == 0xfec00000) {
+                    //map some MMIO regions with Page Cache disabled
+                    //0xfed00000 contains Intel TXT config regs & TPM MMIO
+                    //0xfee00000 contains LAPIC base
+                    flags |= (u64)(_PAGE_PCD);
+                }
+            }else{
+                if(spa_sameslab || spa_slabtype == XMHFGEEC_SLABTYPE_VfT_PROG){
+                    switch(spa_slabregion){
+                        case _SLAB_SPATYPE_SLAB_CODE:
+                            flags = (_PAGE_PRESENT);
+                            break;
+                        case _SLAB_SPATYPE_SLAB_DATA:
+                        case _SLAB_SPATYPE_SLAB_STACK:
+                        case _SLAB_SPATYPE_SLAB_DMADATA:
+                            flags = (_PAGE_PRESENT | _PAGE_RW | _PAGE_NX);
+                            break;
+                        default:
+                            flags = 0;
+                            break;
+                    }
+
+                    if(spa_sameslab)
+                        flags |= (_PAGE_USER);
+
+                }else{
+                    flags =0;
+                }
+
+            }
         }
         break;
-    }
 
-    if(spa_slabtype == XMHFGEEC_SLABTYPE_uVT_PROG ||
-       spa_slabtype == XMHFGEEC_SLABTYPE_uVU_PROG ||
-       spa_slabtype == XMHFGEEC_SLABTYPE_uVT_PROG_GUEST ||
-       spa_slabtype == XMHFGEEC_SLABTYPE_uVU_PROG_GUEST ||
-       spa_slabtype == XMHFGEEC_SLABTYPE_uVU_PROG_RICHGUEST)
-        flags |= (_PAGE_USER);
+
+
+        case XMHFGEEC_SLABTYPE_VfT_PROG:{
+            //self slab: code=rx, data,stack,dmadata=rw, perms=SUPER
+            //other slab vft: code=rx, data,stack,dmadata=rw, perms=SUPER
+            //SPATYPE_OTHER => rw perms=USER
+            //anything else: mapped rw perms=USER
+            if(spa_slabregion == _SLAB_SPATYPE_OTHER){
+                flags = (u64)(_PAGE_PRESENT | _PAGE_RW | _PAGE_USER);
+                if(spa == 0xfee00000 || spa == 0xfec00000) {
+                    //map some MMIO regions with Page Cache disabled
+                    //0xfed00000 contains Intel TXT config regs & TPM MMIO
+                    //0xfee00000 contains LAPIC base
+                    flags |= (u64)(_PAGE_PCD);
+                }
+            }else{
+                if(spa_sameslab || spa_slabtype == XMHFGEEC_SLABTYPE_VfT_PROG){
+                    switch(spa_slabregion){
+                        case _SLAB_SPATYPE_SLAB_CODE:
+                            flags = (_PAGE_PRESENT);
+                            break;
+                        case _SLAB_SPATYPE_SLAB_DATA:
+                        case _SLAB_SPATYPE_SLAB_STACK:
+                        case _SLAB_SPATYPE_SLAB_DMADATA:
+                            flags = (_PAGE_PRESENT | _PAGE_RW | _PAGE_NX);
+                            break;
+                        default:
+                            flags = 0;
+                            break;
+                    }
+
+                }else{
+                    flags = (_PAGE_PRESENT | _PAGE_RW | _PAGE_NX | _PAGE_USER);
+                }
+
+            }
+
+        }
+        break;
+
+        default:
+            _XDPRINTF_("%s: invalid slab type=%x. Halting!\n", __func__,
+                       slabtype);
+            HALT();
+
+    }
 
     return flags;
 }
@@ -865,22 +925,21 @@ static u64 _geec_prime_slab_getptflagsforspa_ept(u32 slabid, u32 spa){
 
 
     switch(slabtype){
-        case XMHFGEEC_SLABTYPE_uVU_PROG_GUEST:
-        case XMHFGEEC_SLABTYPE_uVT_PROG_GUEST:{
-            //code=rx, data,stack,dmadata,mmio=rw; 2M mapping, mmio=4K;
+
+        case XMHFGEEC_SLABTYPE_uVT_PROG_GUEST:
+        case XMHFGEEC_SLABTYPE_uVU_PROG_GUEST:{
+            //code=rx, data,stack,dmadata=rw;
             //other slabs = no mapping; other region = no mapping
             if(spa_sameslab && spa_slabregion != _SLAB_SPATYPE_OTHER){
                 switch(spa_slabregion){
                     case _SLAB_SPATYPE_SLAB_CODE:
-                        flags = 0x85;
+                        flags = 0x5;
                         break;
                     case _SLAB_SPATYPE_SLAB_DATA:
                     case _SLAB_SPATYPE_SLAB_STACK:
                     case _SLAB_SPATYPE_SLAB_DMADATA:
-                        flags = 0x83;
-                        break;
                     case _SLAB_SPATYPE_SLAB_MMIO:
-                        flags = 0x5;
+                        flags = 0x3;
                         break;
                 }
             }else{
@@ -890,7 +949,7 @@ static u64 _geec_prime_slab_getptflagsforspa_ept(u32 slabid, u32 spa){
         break;
 
         case XMHFGEEC_SLABTYPE_uVU_PROG_RICHGUEST:{
-            //code,data,stack,dmadata,mmio=rwx; 4K mapping;
+            //code,data,stack,dmadata,mmio=rwx;
             //other slabs = no mapping; other region = rwx
             if(spa_sameslab || spa_slabregion == _SLAB_SPATYPE_OTHER)
                 flags = 0x7;
