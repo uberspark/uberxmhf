@@ -89,6 +89,17 @@
 #define PCI_DEVICE_MAX			32
 #define	PCI_FUNCTION_MAX		8
 
+
+//XMHF/GEEC PCI vendor/device IDs for devices that are not on the PCI bus
+#define PCI_BUS_XMHFGEEC                0xFFFF
+#define PCI_DEVICE_XMHFGEEC             0xFFFF
+#define PCI_VENDOR_ID_XMHFGEEC          0xFFFF
+#define PCI_DEVICE_ID_XMHFGEEC_LAPIC    0x0000
+#define PCI_DEVICE_ID_XMHFGEEC_TPM      0x0001
+#define PCI_DEVICE_ID_XMHFGEEC_TXT      0x0002
+#define PCI_DEVICE_ID_XMHFGEEC_IOMMU    0x0003
+
+
 //AMD PCI configuration space constants
 #define	PCI_VENDOR_ID_AMD										0x1022	//Vendor ID for AMD
 
