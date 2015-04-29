@@ -849,6 +849,35 @@ void xmhfhic_arch_setup_slab_device_allocation(void){
     //enumerate system devices
     _sda_enumerate_system_devices();
 
+
+    //allocate system devices to slabs for direct DMA
+    {
+        u32 i;
+        for(i=0; i <numentries_sysdev_memioregions; i++){
+            if(sysdev_memioregions[i].dtype == SYSDEV_MEMIOREGIONS_DTYPE_GENERAL ||
+               sysdev_memioregions[i].dtype == SYSDEV_MEMIOREGIONS_DTYPE_BRIDGE ||
+               sysdev_memioregions[i].dtype == SYSDEV_MEMIOREGIONS_DTYPE_UNKNOWN){
+
+                spl.dst_uapifn = XMHFGEEC_UAPI_SDEVPGTBL_BINDDEVICE;
+                binddevicep->dst_slabid = _geec_prime_getslabfordevice(sysdev_memioregions[i].b, sysdev_memioregions[i].d, sysdev_memioregions[i].f);
+                if(binddevicep->dst_slabid == 0xFFFFFFFFUL){
+                    _XDPRINTF_("Could not find slab for device %x:%x:%x (vid:did=%x:%x, type=%x), skipping...\n", sysdev_memioregions[i].b,
+                               sysdev_memioregions[i].d, sysdev_memioregions[i].f, sysdev_memioregions[i].vendor_id,
+                               sysdev_memioregions[i].device_id, sysdev_memioregions[i].dtype);
+                }else{
+                    binddevicep->bus = sysdev_memioregions[i].b;
+                    binddevicep->dev = sysdev_memioregions[i].d;
+                    binddevicep->func = sysdev_memioregions[i].f;
+                    binddevicep->pagewalk_level = vtd_pagewalk_level;
+                    XMHF_SLAB_CALLNEW(&spl);
+                    _XDPRINTF_("Allocated device %x:%x:%x (vid:did=%x:%x, type=%x) to slab %u...\n", sysdev_memioregions[i].b,
+                               sysdev_memioregions[i].d, sysdev_memioregions[i].f, sysdev_memioregions[i].vendor_id,
+                               sysdev_memioregions[i].device_id, sysdev_memioregions[i].dtype, binddevicep->dst_slabid);
+                }
+            }
+        }
+    }
+
     _XDPRINTF_("%s: wip. Halt!\n", __func__);
     HALT();
 
