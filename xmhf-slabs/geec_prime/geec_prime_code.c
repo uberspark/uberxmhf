@@ -713,15 +713,77 @@ void xmhfhic_arch_setup_slab_device_allocation(void){
 		for(d=0; d < PCI_DEVICE_MAX; d++){
 			for(f=0; f < PCI_FUNCTION_MAX; f++){
 				u32 vendor_id, device_id;
+				u32 bar_value, i;
+				u8 hdr_type;
+				u16 command;
 
 				//read device and vendor ids, if no device then both will be 0xFFFF
 				xmhf_baseplatform_arch_x86_pci_type1_read(b, d, f, PCI_CONF_HDR_IDX_VENDOR_ID, sizeof(u16), &vendor_id);
 				xmhf_baseplatform_arch_x86_pci_type1_read(b, d, f, PCI_CONF_HDR_IDX_DEVICE_ID, sizeof(u16), &device_id);
+
 				if(vendor_id == 0xFFFF && device_id == 0xFFFF)
 					break;
 
-                _XDPRINTF_("Device %x:%x:%x(%x:%x)\n",
-                       b, d, f, vendor_id, device_id);
+                xmhf_baseplatform_arch_x86_pci_type1_read(b, d, f, PCI_CONF_HDR_IDX_HEADER_TYPE, sizeof(u8), &hdr_type);
+                xmhf_baseplatform_arch_x86_pci_type1_read(b, d, f, PCI_CONF_HDR_IDX_COMMAND, sizeof(u16), &command);
+
+                _XDPRINTF_("Device %x:%x:%x(%x:%x) HDR=%x, CMD=%x\n",
+                       b, d, f, vendor_id, device_id, hdr_type, command);
+
+                //disable decode
+                xmhf_baseplatform_arch_x86_pci_type1_write(b, d, f, PCI_CONF_HDR_IDX_COMMAND, sizeof(u16), (command & ~(0x3)) ) ;
+
+                switch(hdr_type){
+                    case 0x80:
+                    case 0x00:{
+                        for(i=0; i < PCI_CONF_MAX_BARS; i++){
+                            u32 bar_size;
+                            xmhf_baseplatform_arch_x86_pci_type1_read(b, d, f, PCI_CONF_HDR_IDX_BAR0+(i*4), sizeof(u32), &bar_value);
+                            if(bar_value){
+                                if(bar_value & 0x1){ //I/O
+                                    xmhf_baseplatform_arch_x86_pci_type1_write(b, d, f, PCI_CONF_HDR_IDX_BAR0+(i*4), sizeof(u32), 0xFFFFFFFFUL);
+                                    xmhf_baseplatform_arch_x86_pci_type1_read(b, d, f, PCI_CONF_HDR_IDX_BAR0+(i*4), sizeof(u32), &bar_size);
+                                    bar_size = bar_size & ~(0x1);
+                                    bar_size = ~(bar_size);
+                                    bar_size++;
+                                    _XDPRINTF_("  BAR-%u, IO, range=%x to %x\n", i,
+                                               (u16)(bar_value & ~(0x1)), (u16)((bar_value & ~(0x1)) + bar_size) ) ;
+                                }else{
+                                    //memory
+                                    xmhf_baseplatform_arch_x86_pci_type1_write(b, d, f, PCI_CONF_HDR_IDX_BAR0+(i*4), sizeof(u32), 0xFFFFFFFFUL);
+                                    xmhf_baseplatform_arch_x86_pci_type1_read(b, d, f, PCI_CONF_HDR_IDX_BAR0+(i*4), sizeof(u32), &bar_size);
+                                    bar_size = bar_size & ~(0xF);
+                                    bar_size = ~(bar_size);
+                                    bar_size++;
+                                    _XDPRINTF_("  BAR-%u, Mem, range=%x-%x\n", i,
+                                               (bar_value & ~(0xF)), (bar_value & ~(0xF)) + bar_size) ;
+                                }
+
+                                xmhf_baseplatform_arch_x86_pci_type1_write(b, d, f, PCI_CONF_HDR_IDX_BAR0+(i*4), sizeof(u32), bar_value);
+                            }
+                        }
+                    }
+                    break;
+
+
+                    case 0x81:
+                    case 0x01:{
+                        for(i=0; i < 2; i++){
+                            xmhf_baseplatform_arch_x86_pci_type1_read(b, d, f, PCI_CONF_HDR_IDX_BAR0+(i*4), sizeof(u32), &bar_value);
+                            _XDPRINTF_("  BAR-%u=0x%08x\n", i, bar_value);
+                        }
+                    }
+                    break;
+
+
+                    default:
+                        break;
+                }
+
+                //restore command register
+                xmhf_baseplatform_arch_x86_pci_type1_write(b, d, f, PCI_CONF_HDR_IDX_COMMAND, sizeof(u16), command);
+
+
             }
 		}
 	}

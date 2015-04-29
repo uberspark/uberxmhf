@@ -62,8 +62,15 @@
 #define PCI_CONF_HDR_IDX_REVISION_ID						0x08
 #define PCI_CONF_HDR_IDX_CLASS_CODE							0x09
 #define	PCI_CONF_HDR_IDX_HEADER_TYPE						0x0E
+#define PCI_CONF_HDR_IDX_BAR0                       0x10
+#define PCI_CONF_HDR_IDX_BAR1                       0x14
+#define PCI_CONF_HDR_IDX_BAR2                       0x18
+#define PCI_CONF_HDR_IDX_BAR3                       0x1C
+#define PCI_CONF_HDR_IDX_BAR4                       0x20
+#define PCI_CONF_HDR_IDX_BAR5                       0x24
 #define PCI_CONF_HDR_IDX_CAPABILITIES_POINTER		0x34
 
+#define PCI_CONF_MAX_BARS       6
 //PCI "command" register
 #define PCI_COMMAND_IO          	0x1     /* Enable response in I/O space */
 #define PCI_COMMAND_MEMORY      	0x2     /* Enable response in Memory space */
