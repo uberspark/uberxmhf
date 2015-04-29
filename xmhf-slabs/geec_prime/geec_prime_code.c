@@ -707,6 +707,33 @@ void xmhfhic_arch_setup_slab_device_allocation(void){
     _XDPRINTF_("%s: setup vt-d, page-walk level=%u\n", __func__, vtd_pagewalk_level);
 
 
+
+
+	for(b=0; b < PCI_BUS_MAX; b++){
+		for(d=0; d < PCI_DEVICE_MAX; d++){
+			for(f=0; f < PCI_FUNCTION_MAX; f++){
+				u32 vendor_id, device_id;
+
+				//read device and vendor ids, if no device then both will be 0xFFFF
+				xmhf_baseplatform_arch_x86_pci_type1_read(b, d, f, PCI_CONF_HDR_IDX_VENDOR_ID, sizeof(u16), &vendor_id);
+				xmhf_baseplatform_arch_x86_pci_type1_read(b, d, f, PCI_CONF_HDR_IDX_DEVICE_ID, sizeof(u16), &device_id);
+				if(vendor_id == 0xFFFF && device_id == 0xFFFF)
+					break;
+
+                _XDPRINTF_("Device %x:%x:%x(%x:%x)\n",
+                       b, d, f, vendor_id, device_id);
+            }
+		}
+	}
+
+
+
+
+    _XDPRINTF_("%s: wip. Halt!\n", __func__);
+    HALT();
+
+
+#if 0
     //enumerate PCI bus to find out all the devices
 	//bus numbers range from 0-255, device from 0-31 and function from 0-7
 	for(b=0; b < PCI_BUS_MAX; b++){
@@ -737,6 +764,8 @@ void xmhfhic_arch_setup_slab_device_allocation(void){
 			}
 		}
 	}
+#endif // 0
+
 
 }
 
