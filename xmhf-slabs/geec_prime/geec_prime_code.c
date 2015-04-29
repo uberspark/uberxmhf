@@ -382,6 +382,10 @@ void xmhfhic_arch_sanity_check_requirements(void){
 
 //////////////////////////////////////////////////////////////////////////////
 //setup slab device allocation (sda)
+static sysdev_memioregions_t sysdev_memioregions[MAX_PLATFORM_DEVICES];
+static u32 numentries_sysdev_memioregions=0;
+
+
 
 //DMA Remapping Hardware Unit Definitions
 static VTD_DRHD vtd_drhd[VTD_MAX_DRHD];
@@ -652,12 +656,134 @@ static u32 _geec_prime_getslabfordevice(u32 bus, u32 dev, u32 func){
 
 
 
+static void _sda_enumerate_system_devices(void){
+    u32 b, d, f;
 
+    //enumerate devices on the PCI bus
+	for(b=0; b < PCI_BUS_MAX; b++){
+		for(d=0; d < PCI_DEVICE_MAX; d++){
+			for(f=0; f < PCI_FUNCTION_MAX; f++){
+				u32 vendor_id, device_id;
+				u32 bar_value, i;
+				u8 hdr_type;
+				u16 command;
+
+				//read device and vendor ids, if no device then both will be 0xFFFF
+				xmhf_baseplatform_arch_x86_pci_type1_read(b, d, f, PCI_CONF_HDR_IDX_VENDOR_ID, sizeof(u16), &vendor_id);
+				xmhf_baseplatform_arch_x86_pci_type1_read(b, d, f, PCI_CONF_HDR_IDX_DEVICE_ID, sizeof(u16), &device_id);
+
+				if(vendor_id == 0xFFFF && device_id == 0xFFFF)
+					break;
+
+                if(numentries_sysdev_memioregions >= MAX_PLATFORM_DEVICES){
+                    _XDPRINTF_("%s: Halting!. numentries_sysdev_memioregions >= MAX_PLATFORM_DEVICES(%u)\n",
+                               __func__, MAX_PLATFORM_DEVICES);
+                    HALT();
+                }
+
+                xmhf_baseplatform_arch_x86_pci_type1_read(b, d, f, PCI_CONF_HDR_IDX_HEADER_TYPE, sizeof(u8), &hdr_type);
+                xmhf_baseplatform_arch_x86_pci_type1_read(b, d, f, PCI_CONF_HDR_IDX_COMMAND, sizeof(u16), &command);
+
+                //_XDPRINTF_("Device %x:%x:%x(%x:%x) HDR=%x, CMD=%x\n",
+                //       b, d, f, vendor_id, device_id, hdr_type, command);
+                sysdev_memioregions[numentries_sysdev_memioregions].b=b;
+                sysdev_memioregions[numentries_sysdev_memioregions].d=d;
+                sysdev_memioregions[numentries_sysdev_memioregions].f=f;
+
+
+                //disable decode
+                xmhf_baseplatform_arch_x86_pci_type1_write(b, d, f, PCI_CONF_HDR_IDX_COMMAND, sizeof(u16), (command & ~(0x3)) ) ;
+
+
+                //size BARs
+                for(i=0; i < PCI_CONF_MAX_BARS; i++){
+                    if(i >= 2 && (hdr_type == 0x81 || hdr_type == 0x1)){
+                        //for PCI-to-PCI bridge devices only BAR0 and BAR1 are valid BARs
+                        sysdev_memioregions[numentries_sysdev_memioregions].memioextents[i].extent_type=_MEMIOREGIONS_EXTENTS_TYPE_NONE;
+                        sysdev_memioregions[numentries_sysdev_memioregions].memioextents[i].addr_start=0;
+                        sysdev_memioregions[numentries_sysdev_memioregions].memioextents[i].addr_end=0;
+                    }else{
+                        //for general devices BAR0-BAR5 are valid BARs
+                        u32 bar_size;
+                        xmhf_baseplatform_arch_x86_pci_type1_read(b, d, f, PCI_CONF_HDR_IDX_BAR0+(i*4), sizeof(u32), &bar_value);
+                        if(bar_value){
+                            if(bar_value & 0x1){ //I/O
+                                xmhf_baseplatform_arch_x86_pci_type1_write(b, d, f, PCI_CONF_HDR_IDX_BAR0+(i*4), sizeof(u32), 0xFFFFFFFFUL);
+                                xmhf_baseplatform_arch_x86_pci_type1_read(b, d, f, PCI_CONF_HDR_IDX_BAR0+(i*4), sizeof(u32), &bar_size);
+                                bar_size = bar_size & ~(0x1);
+                                bar_size = ~(bar_size);
+                                bar_size++;
+
+                                //_XDPRINTF_("  BAR-%u, IO, range=%x to %x\n", i,
+                                //           (u16)(bar_value & ~(0x1)), (u16)((bar_value & ~(0x1)) + bar_size) ) ;
+                                sysdev_memioregions[numentries_sysdev_memioregions].memioextents[i].extent_type=_MEMIOREGIONS_EXTENTS_TYPE_IO;
+                                sysdev_memioregions[numentries_sysdev_memioregions].memioextents[i].addr_start=(u16)(bar_value & ~(0x1));
+                                sysdev_memioregions[numentries_sysdev_memioregions].memioextents[i].addr_end=(u16)((bar_value & ~(0x1)) + bar_size);
+
+                           }else{
+                                //memory
+                                xmhf_baseplatform_arch_x86_pci_type1_write(b, d, f, PCI_CONF_HDR_IDX_BAR0+(i*4), sizeof(u32), 0xFFFFFFFFUL);
+                                xmhf_baseplatform_arch_x86_pci_type1_read(b, d, f, PCI_CONF_HDR_IDX_BAR0+(i*4), sizeof(u32), &bar_size);
+                                bar_size = bar_size & ~(0xF);
+                                bar_size = ~(bar_size);
+                                bar_size++;
+
+                                //_XDPRINTF_("  BAR-%u, Mem, range=%x-%x\n", i,
+                                //           (bar_value & ~(0xF)), (bar_value & ~(0xF)) + bar_size) ;
+                                sysdev_memioregions[numentries_sysdev_memioregions].memioextents[i].extent_type=_MEMIOREGIONS_EXTENTS_TYPE_MEM;
+                                sysdev_memioregions[numentries_sysdev_memioregions].memioextents[i].addr_start=(bar_value & ~(0xF));
+                                sysdev_memioregions[numentries_sysdev_memioregions].memioextents[i].addr_end=(bar_value & ~(0xF)) + bar_size;
+
+                            }
+
+                            xmhf_baseplatform_arch_x86_pci_type1_write(b, d, f, PCI_CONF_HDR_IDX_BAR0+(i*4), sizeof(u32), bar_value);
+                        }else{
+                            sysdev_memioregions[numentries_sysdev_memioregions].memioextents[i].extent_type=_MEMIOREGIONS_EXTENTS_TYPE_NONE;
+                            sysdev_memioregions[numentries_sysdev_memioregions].memioextents[i].addr_start=0;
+                            sysdev_memioregions[numentries_sysdev_memioregions].memioextents[i].addr_end=0;
+                        }
+                    }
+                }
+
+
+                //restore command register
+                xmhf_baseplatform_arch_x86_pci_type1_write(b, d, f, PCI_CONF_HDR_IDX_COMMAND, sizeof(u16), command);
+                numentries_sysdev_memioregions++;
+            }
+		}
+	}
+
+
+    //be verbose about the system devices and their MM(IO) extents
+    {
+        u32 i, j;
+        for(i=0; i <numentries_sysdev_memioregions; i++){
+            _XDPRINTF_("Device %x:%x:%x...\n", sysdev_memioregions[i].b,
+                       sysdev_memioregions[i].d, sysdev_memioregions[i].f);
+            for(j=0; j < PCI_CONF_MAX_BARS; j++){
+                switch(sysdev_memioregions[i].memioextents[j].extent_type){
+                    case _MEMIOREGIONS_EXTENTS_TYPE_IO:
+                        _XDPRINTF_("  IO region: %x - %x\n", sysdev_memioregions[i].memioextents[j].addr_start,
+                                        sysdev_memioregions[i].memioextents[j].addr_end);
+                        break;
+
+                    case _MEMIOREGIONS_EXTENTS_TYPE_MEM:
+                        _XDPRINTF_("  MEM region: %x - %x\n", sysdev_memioregions[i].memioextents[j].addr_start,
+                                        sysdev_memioregions[i].memioextents[j].addr_end);
+                        break;
+
+                    default:
+                        break;
+                }
+            }
+        }
+    }
+
+}
 
 
 void xmhfhic_arch_setup_slab_device_allocation(void){
     u32 i, vtd_pagewalk_level;
-    u32 b, d, f;
     slab_platformdevices_t ddescs;
     slab_params_t spl;
     xmhfgeec_uapi_slabdevpgtbl_initretcet_params_t *initretcetp =
@@ -711,89 +837,8 @@ void xmhfhic_arch_setup_slab_device_allocation(void){
     _XDPRINTF_("%s: setup vt-d, page-walk level=%u\n", __func__, vtd_pagewalk_level);
 
 
-
-
-	for(b=0; b < PCI_BUS_MAX; b++){
-		for(d=0; d < PCI_DEVICE_MAX; d++){
-			for(f=0; f < PCI_FUNCTION_MAX; f++){
-				u32 vendor_id, device_id;
-				u32 bar_value, i;
-				u8 hdr_type;
-				u16 command;
-
-				//read device and vendor ids, if no device then both will be 0xFFFF
-				xmhf_baseplatform_arch_x86_pci_type1_read(b, d, f, PCI_CONF_HDR_IDX_VENDOR_ID, sizeof(u16), &vendor_id);
-				xmhf_baseplatform_arch_x86_pci_type1_read(b, d, f, PCI_CONF_HDR_IDX_DEVICE_ID, sizeof(u16), &device_id);
-
-				if(vendor_id == 0xFFFF && device_id == 0xFFFF)
-					break;
-
-                xmhf_baseplatform_arch_x86_pci_type1_read(b, d, f, PCI_CONF_HDR_IDX_HEADER_TYPE, sizeof(u8), &hdr_type);
-                xmhf_baseplatform_arch_x86_pci_type1_read(b, d, f, PCI_CONF_HDR_IDX_COMMAND, sizeof(u16), &command);
-
-                _XDPRINTF_("Device %x:%x:%x(%x:%x) HDR=%x, CMD=%x\n",
-                       b, d, f, vendor_id, device_id, hdr_type, command);
-
-                //disable decode
-                xmhf_baseplatform_arch_x86_pci_type1_write(b, d, f, PCI_CONF_HDR_IDX_COMMAND, sizeof(u16), (command & ~(0x3)) ) ;
-
-                switch(hdr_type){
-                    case 0x80:
-                    case 0x00:{
-                        for(i=0; i < PCI_CONF_MAX_BARS; i++){
-                            u32 bar_size;
-                            xmhf_baseplatform_arch_x86_pci_type1_read(b, d, f, PCI_CONF_HDR_IDX_BAR0+(i*4), sizeof(u32), &bar_value);
-                            if(bar_value){
-                                if(bar_value & 0x1){ //I/O
-                                    xmhf_baseplatform_arch_x86_pci_type1_write(b, d, f, PCI_CONF_HDR_IDX_BAR0+(i*4), sizeof(u32), 0xFFFFFFFFUL);
-                                    xmhf_baseplatform_arch_x86_pci_type1_read(b, d, f, PCI_CONF_HDR_IDX_BAR0+(i*4), sizeof(u32), &bar_size);
-                                    bar_size = bar_size & ~(0x1);
-                                    bar_size = ~(bar_size);
-                                    bar_size++;
-                                    _XDPRINTF_("  BAR-%u, IO, range=%x to %x\n", i,
-                                               (u16)(bar_value & ~(0x1)), (u16)((bar_value & ~(0x1)) + bar_size) ) ;
-                                }else{
-                                    //memory
-                                    xmhf_baseplatform_arch_x86_pci_type1_write(b, d, f, PCI_CONF_HDR_IDX_BAR0+(i*4), sizeof(u32), 0xFFFFFFFFUL);
-                                    xmhf_baseplatform_arch_x86_pci_type1_read(b, d, f, PCI_CONF_HDR_IDX_BAR0+(i*4), sizeof(u32), &bar_size);
-                                    bar_size = bar_size & ~(0xF);
-                                    bar_size = ~(bar_size);
-                                    bar_size++;
-                                    _XDPRINTF_("  BAR-%u, Mem, range=%x-%x\n", i,
-                                               (bar_value & ~(0xF)), (bar_value & ~(0xF)) + bar_size) ;
-                                }
-
-                                xmhf_baseplatform_arch_x86_pci_type1_write(b, d, f, PCI_CONF_HDR_IDX_BAR0+(i*4), sizeof(u32), bar_value);
-                            }
-                        }
-                    }
-                    break;
-
-
-                    case 0x81:
-                    case 0x01:{
-                        for(i=0; i < 2; i++){
-                            xmhf_baseplatform_arch_x86_pci_type1_read(b, d, f, PCI_CONF_HDR_IDX_BAR0+(i*4), sizeof(u32), &bar_value);
-                            _XDPRINTF_("  BAR-%u=0x%08x\n", i, bar_value);
-                        }
-                    }
-                    break;
-
-
-                    default:
-                        break;
-                }
-
-                //restore command register
-                xmhf_baseplatform_arch_x86_pci_type1_write(b, d, f, PCI_CONF_HDR_IDX_COMMAND, sizeof(u16), command);
-
-
-            }
-		}
-	}
-
-
-
+    //enumerate system devices
+    _sda_enumerate_system_devices();
 
     _XDPRINTF_("%s: wip. Halt!\n", __func__);
     HALT();
