@@ -651,6 +651,10 @@ static u32 _geec_prime_getslabfordevice(u32 bus, u32 dev, u32 func){
 }
 
 
+
+
+
+
 void xmhfhic_arch_setup_slab_device_allocation(void){
     u32 i, vtd_pagewalk_level;
     u32 b, d, f;

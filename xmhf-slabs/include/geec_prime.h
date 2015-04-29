@@ -69,6 +69,21 @@ typedef struct {
     u8 mlehdr[0x80];
 } __attribute__((packed)) x86vmx_mle_header_t;
 
+#define MAX_SLAB_MEMIOREGIONS_MEMEXTENTS (PCI_CONF_MAX_BARS * MAX_PLATFORM_DEVICES)
+#define MAX_SLAB_MEMIOREGIONS_IOEXTENTS (PCI_CONF_MAX_BARS * MAX_PLATFORM_DEVICES)
+
+
+typedef struct {
+    u32 addr_start;
+    u32 addr_end;
+} __attribute__((packed)) _slab_memioregions_extents_t;
+
+typedef struct {
+    u32 num_memextents;
+    u32 num_ioextents;
+    _slab_memioregions_extents_t memextents[MAX_SLAB_MEMIOREGIONS_MEMEXTENTS];
+    _slab_memioregions_extents_t ioextents[MAX_SLAB_MEMIOREGIONS_IOEXTENTS];
+} __attribute__((packed)) slab_memioregions_t;
 
 extern __attribute__(( section(".data") )) XMHF_BOOTINFO *xcbootinfo;
 
