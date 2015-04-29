@@ -392,6 +392,10 @@ static VTD_DRHD vtd_drhd[VTD_MAX_DRHD];
 static u32 vtd_num_drhd=0;	//total number of DMAR h/w units
 static bool vtd_drhd_scanned=false;	//set to true once DRHD units have been scanned in the system
 
+static vtd_drhd_handle_t vtd_drhd_maxhandle=0;
+static u32 vtd_dmar_table_physical_address=0;
+
+
 //scan for available DRHD units on the platform and populate the
 //global variables set:
 //vtd_drhd[] (struct representing a DRHD unit)
@@ -401,7 +405,9 @@ static bool vtd_drhd_scanned=false;	//set to true once DRHD units have been scan
 //max. value of DRHD unit handle (0 through maxhandle-1 are valid handles
 //that can subsequently be passed to any of the other vtd drhd functions)
 //physical address of the DMAR table in the system
-static bool xmhfhw_platform_x86pc_vtd_scanfor_drhd_units(vtd_drhd_handle_t *maxhandle, u32 *dmar_phys_addr_var){
+//static bool xmhfhw_platform_x86pc_vtd_scanfor_drhd_units(vtd_drhd_handle_t *maxhandle, u32 *dmar_phys_addr_var){
+static bool xmhfhw_platform_x86pc_vtd_scanfor_drhd_units(void){
+
 	ACPI_RSDP rsdp;
 	ACPI_RSDT rsdt;
 	u32 num_rsdtentries;
@@ -410,18 +416,15 @@ static bool xmhfhw_platform_x86pc_vtd_scanfor_drhd_units(vtd_drhd_handle_t *maxh
 	VTD_DMAR dmar;
 	u32 i, dmarfound;
 	u32 remappingstructuresaddrphys;
-	u32 vtd_dmar_table_physical_address;
+	//u32 vtd_dmar_table_physical_address;
 
 	//zero out rsdp and rsdt structures
 	//memset(&rsdp, 0, sizeof(ACPI_RSDP));
 	//memset(&rsdt, 0, sizeof(ACPI_RSDT));
-	//sanity check NULL parameter
-	if (dmar_phys_addr_var == NULL || maxhandle == NULL)
-		return false;
 
 	//set maxhandle to 0 to start with. if we have any errors before
 	//we finalize maxhandle we can just bail out
-	*maxhandle=0;
+	vtd_drhd_maxhandle=0;
 
 	//get ACPI RSDP
 	status=xmhfhw_platform_x86pc_acpi_getRSDP(&rsdp);
@@ -463,7 +466,7 @@ static bool xmhfhw_platform_x86pc_vtd_scanfor_drhd_units(vtd_drhd_handle_t *maxh
 	}
 
 	vtd_dmar_table_physical_address = rsdtentries[i]; //DMAR table physical memory address;
-	*dmar_phys_addr_var = vtd_dmar_table_physical_address; //store it in supplied argument
+	//*dmar_phys_addr_var = vtd_dmar_table_physical_address; //store it in supplied argument
 	//_XDPRINTF_("\n%s: DMAR at %08x", __func__, vtd_dmar_table_physical_address);
 
 	//detect DRHDs in the DMAR table
@@ -525,139 +528,25 @@ static bool xmhfhw_platform_x86pc_vtd_scanfor_drhd_units(vtd_drhd_handle_t *maxh
 
 	}
 
-	*maxhandle = vtd_num_drhd;
+	vtd_drhd_maxhandle = vtd_num_drhd;
 	vtd_drhd_scanned = true;
 
 	return true;
 }
 
-//initialize vtd hardware and return vt-d pagewalk level
-static u32 _geec_prime_vtd_initialize(u32 vtd_ret_addr){
-    u32 vtd_pagewalk_level = VTD_PAGEWALK_NONE;
-    vtd_drhd_handle_t vtd_drhd_maxhandle=0;
-	vtd_drhd_handle_t drhd_handle;
-	u32 vtd_dmar_table_physical_address=0;
-    vtd_slpgtbl_handle_t vtd_slpgtbl_handle;
-    u32 i, b, d, f;
+
+static void _sda_enumerate_system_devices(void){
+    u32 b, d, f;
 
 	//scan for available DRHD units in the platform
-	if(!xmhfhw_platform_x86pc_vtd_scanfor_drhd_units(&vtd_drhd_maxhandle, &vtd_dmar_table_physical_address)){
+	if(!xmhfhw_platform_x86pc_vtd_scanfor_drhd_units()){
         _XDPRINTF_("%s: unable to scan for DRHD units. halting!\n", __func__);
 		HALT();
 	}
 
-    _XDPRINTF_("%s: maxhandle = %u, dmar table addr=0x%08x\n", __func__,
+    _XDPRINTF_("%s: Vt-d: maxhandle = %u, dmar table addr=0x%08x\n", __func__,
                 (u32)vtd_drhd_maxhandle, (u32)vtd_dmar_table_physical_address);
 
-
-	//initialize all DRHD units
-	for(drhd_handle=0; drhd_handle < vtd_drhd_maxhandle; drhd_handle++){
-   		VTD_CAP_REG cap;
-
-		_XDPRINTF_("%s: Setting up DRHD unit %u...\n", __func__, drhd_handle);
-
-		if(!xmhfhw_platform_x86pc_vtd_drhd_initialize(&vtd_drhd[drhd_handle]) ){
-            _XDPRINTF_("%s: error setting up DRHD unit %u. halting!\n", __func__, drhd_handle);
-			HALT();
-		}
-
-        //read and store DRHD supported page-walk length
-        unpack_VTD_CAP_REG(&cap, xmhfhw_platform_x86pc_vtd_drhd_reg_read(&vtd_drhd[drhd_handle], VTD_CAP_REG_OFF));
-        if(cap.sagaw & 0x2){
-            if(vtd_pagewalk_level == VTD_PAGEWALK_NONE || vtd_pagewalk_level == VTD_PAGEWALK_3LEVEL){
-                vtd_pagewalk_level = VTD_PAGEWALK_3LEVEL;
-                _XDPRINTF_("%s: DRHD unit %u - 3-level page-walk\n", __func__, drhd_handle);
-            }else{
-                _XDPRINTF_("%s: Halting: mixed hardware supported page-walk lengths\n",
-                            __func__);
-                HALT();
-            }
-        }
-
-        if(cap.sagaw & 0x4){
-            if(vtd_pagewalk_level == VTD_PAGEWALK_NONE || vtd_pagewalk_level == VTD_PAGEWALK_4LEVEL){
-                vtd_pagewalk_level = VTD_PAGEWALK_4LEVEL;
-                _XDPRINTF_("%s: DRHD unit %u - 4-level page-walk\n", __func__, drhd_handle);
-            }else{
-                _XDPRINTF_("%s: Halting: mixed hardware supported page-walk lengths\n",
-                            __func__);
-                HALT();
-            }
-        }
-
-
-		//set DRHD root entry table
-		if(!xmhfhw_platform_x86pc_vtd_drhd_set_root_entry_table(&vtd_drhd[drhd_handle], vtd_ret_addr)){
-            _XDPRINTF_("%s: Halting: error in setting DRHD RET\n", __func__);
-            HALT();
-		}
-
-		//invalidate caches
-		if(!xmhfhw_platform_x86pc_vtd_drhd_invalidatecaches(&vtd_drhd[drhd_handle])){
-            _XDPRINTF_("%s: Halting: error in invalidating caches\n", __func__);
-            HALT();
-		}
-
-		//enable VT-d translation
-		xmhfhw_platform_x86pc_vtd_drhd_enable_translation(&vtd_drhd[drhd_handle]);
-
-		//disable PMRs now (since DMA protection is active via translation)
-		xmhfhw_platform_x86pc_vtd_drhd_disable_pmr(&vtd_drhd[drhd_handle]);
-
-		_XDPRINTF_("%s: Successfully setup DRHD unit %u\n", __func__, drhd_handle);
-	}
-
-	//zap VT-d presence in ACPI table...
-	//TODO: we need to be a little elegant here. eventually need to setup
-	//EPT/NPTs such that the DMAR pages are unmapped for the guest
-	xmhfhw_sysmemaccess_writeu32(vtd_dmar_table_physical_address, 0UL);
-
-
-    _XDPRINTF_("%s: final page-walk level=%u\n", __func__, vtd_pagewalk_level);
-
-    return vtd_pagewalk_level;
-}
-
-
-static void __xmhfhic_x86vmxx86pc_postdrt(void){
-	txt_heap_t *txt_heap;
-	os_mle_data_t *os_mle_data;
-
-	txt_heap = get_txt_heap();
-	_XDPRINTF_("SL: txt_heap = 0x%08x\n", (u32)txt_heap);
-	os_mle_data = get_os_mle_data_start((txt_heap_t*)((u32)txt_heap));
-	_XDPRINTF_("SL: os_mle_data = 0x%08x\n", (u32)os_mle_data);
-
-	// restore pre-SENTER MTRRs that were overwritten for SINIT launch
-	if(!validate_mtrrs(&(os_mle_data->saved_mtrr_state))) {
-		_XDPRINTF_("SECURITY FAILURE: validate_mtrrs() failed.\n");
-		HALT();
-	}
-	_XDPRINTF_("SL: Validated MTRRs\n");
-
-	xmhfhw_cpu_x86_restore_mtrrs(&(os_mle_data->saved_mtrr_state));
-    _XDPRINTF_("SL: Restored MTRRs\n");
-}
-
-
-//returns 0xFFFFFFFF on error
-static u32 _geec_prime_getslabfordevice(u32 bus, u32 dev, u32 func){
-    u32 i;
-
-    for(i=0; i < XMHFGEEC_TOTAL_SLABS; i++){
-        //for now detect rich guest slab and allocate all platform devices to it
-        if(_xmhfhic_common_slab_info_table[i].slab_devices.desc_valid &&
-            _xmhfhic_common_slab_info_table[i].slab_devices.numdevices == 0xFFFFFFFFUL)
-            return i;
-    }
-
-    return 0xFFFFFFFFUL;
-}
-
-
-
-static void _sda_enumerate_system_devices(void){
-    u32 b, d, f;
 
     //enumerate devices on the PCI bus
 	for(b=0; b < PCI_BUS_MAX; b++){
@@ -789,6 +678,125 @@ static void _sda_enumerate_system_devices(void){
     }
 
 }
+
+
+
+//initialize vtd hardware and return vt-d pagewalk level
+static u32 _geec_prime_vtd_initialize(u32 vtd_ret_addr){
+    u32 vtd_pagewalk_level = VTD_PAGEWALK_NONE;
+    //vtd_drhd_handle_t vtd_drhd_maxhandle=0;
+	vtd_drhd_handle_t drhd_handle;
+	//u32 vtd_dmar_table_physical_address=0;
+    vtd_slpgtbl_handle_t vtd_slpgtbl_handle;
+    u32 i, b, d, f;
+
+
+	//initialize all DRHD units
+	for(drhd_handle=0; drhd_handle < vtd_drhd_maxhandle; drhd_handle++){
+   		VTD_CAP_REG cap;
+
+		_XDPRINTF_("%s: Setting up DRHD unit %u...\n", __func__, drhd_handle);
+
+		if(!xmhfhw_platform_x86pc_vtd_drhd_initialize(&vtd_drhd[drhd_handle]) ){
+            _XDPRINTF_("%s: error setting up DRHD unit %u. halting!\n", __func__, drhd_handle);
+			HALT();
+		}
+
+        //read and store DRHD supported page-walk length
+        unpack_VTD_CAP_REG(&cap, xmhfhw_platform_x86pc_vtd_drhd_reg_read(&vtd_drhd[drhd_handle], VTD_CAP_REG_OFF));
+        if(cap.sagaw & 0x2){
+            if(vtd_pagewalk_level == VTD_PAGEWALK_NONE || vtd_pagewalk_level == VTD_PAGEWALK_3LEVEL){
+                vtd_pagewalk_level = VTD_PAGEWALK_3LEVEL;
+                _XDPRINTF_("%s: DRHD unit %u - 3-level page-walk\n", __func__, drhd_handle);
+            }else{
+                _XDPRINTF_("%s: Halting: mixed hardware supported page-walk lengths\n",
+                            __func__);
+                HALT();
+            }
+        }
+
+        if(cap.sagaw & 0x4){
+            if(vtd_pagewalk_level == VTD_PAGEWALK_NONE || vtd_pagewalk_level == VTD_PAGEWALK_4LEVEL){
+                vtd_pagewalk_level = VTD_PAGEWALK_4LEVEL;
+                _XDPRINTF_("%s: DRHD unit %u - 4-level page-walk\n", __func__, drhd_handle);
+            }else{
+                _XDPRINTF_("%s: Halting: mixed hardware supported page-walk lengths\n",
+                            __func__);
+                HALT();
+            }
+        }
+
+
+		//set DRHD root entry table
+		if(!xmhfhw_platform_x86pc_vtd_drhd_set_root_entry_table(&vtd_drhd[drhd_handle], vtd_ret_addr)){
+            _XDPRINTF_("%s: Halting: error in setting DRHD RET\n", __func__);
+            HALT();
+		}
+
+		//invalidate caches
+		if(!xmhfhw_platform_x86pc_vtd_drhd_invalidatecaches(&vtd_drhd[drhd_handle])){
+            _XDPRINTF_("%s: Halting: error in invalidating caches\n", __func__);
+            HALT();
+		}
+
+		//enable VT-d translation
+		xmhfhw_platform_x86pc_vtd_drhd_enable_translation(&vtd_drhd[drhd_handle]);
+
+		//disable PMRs now (since DMA protection is active via translation)
+		xmhfhw_platform_x86pc_vtd_drhd_disable_pmr(&vtd_drhd[drhd_handle]);
+
+		_XDPRINTF_("%s: Successfully setup DRHD unit %u\n", __func__, drhd_handle);
+	}
+
+	//zap VT-d presence in ACPI table...
+	//TODO: we need to be a little elegant here. eventually need to setup
+	//EPT/NPTs such that the DMAR pages are unmapped for the guest
+	xmhfhw_sysmemaccess_writeu32(vtd_dmar_table_physical_address, 0UL);
+
+
+    _XDPRINTF_("%s: final page-walk level=%u\n", __func__, vtd_pagewalk_level);
+
+    return vtd_pagewalk_level;
+}
+
+
+static void __xmhfhic_x86vmxx86pc_postdrt(void){
+	txt_heap_t *txt_heap;
+	os_mle_data_t *os_mle_data;
+
+	txt_heap = get_txt_heap();
+	_XDPRINTF_("SL: txt_heap = 0x%08x\n", (u32)txt_heap);
+	os_mle_data = get_os_mle_data_start((txt_heap_t*)((u32)txt_heap));
+	_XDPRINTF_("SL: os_mle_data = 0x%08x\n", (u32)os_mle_data);
+
+	// restore pre-SENTER MTRRs that were overwritten for SINIT launch
+	if(!validate_mtrrs(&(os_mle_data->saved_mtrr_state))) {
+		_XDPRINTF_("SECURITY FAILURE: validate_mtrrs() failed.\n");
+		HALT();
+	}
+	_XDPRINTF_("SL: Validated MTRRs\n");
+
+	xmhfhw_cpu_x86_restore_mtrrs(&(os_mle_data->saved_mtrr_state));
+    _XDPRINTF_("SL: Restored MTRRs\n");
+}
+
+
+//returns 0xFFFFFFFF on error
+static u32 _geec_prime_getslabfordevice(u32 bus, u32 dev, u32 func){
+    u32 i;
+
+    for(i=0; i < XMHFGEEC_TOTAL_SLABS; i++){
+        //for now detect rich guest slab and allocate all platform devices to it
+        if(_xmhfhic_common_slab_info_table[i].slab_devices.desc_valid &&
+            _xmhfhic_common_slab_info_table[i].slab_devices.numdevices == 0xFFFFFFFFUL)
+            return i;
+    }
+
+    return 0xFFFFFFFFUL;
+}
+
+
+
 
 
 void xmhfhic_arch_setup_slab_device_allocation(void){
