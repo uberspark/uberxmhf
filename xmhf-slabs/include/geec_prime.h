@@ -90,10 +90,18 @@ typedef struct {
 } __attribute__((packed)) slab_memioregions_t;
 
 
+#define SYSDEV_MEMIOREGIONS_DTYPE_GENERAL   0
+#define SYSDEV_MEMIOREGIONS_DTYPE_BRIDGE    1
+
+#define SYSDEV_MEMIOREGIONS_DTYPE_UNKNOWN   0xFF
+
 typedef struct {
     u32 b;
     u32 d;
     u32 f;
+    u16 vendor_id;
+    u16 device_id;
+    u32 dtype;
     _memioregions_extents_t memioextents[PCI_CONF_MAX_BARS];
 } __attribute__((packed)) sysdev_memioregions_t;
 
