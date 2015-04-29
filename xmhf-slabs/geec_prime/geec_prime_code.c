@@ -825,6 +825,9 @@ void xmhfhic_arch_setup_slab_device_allocation(void){
 		}
 	}
 
+    //enumerate system devices
+    _sda_enumerate_system_devices();
+
     //slabdevpgtbl:init
     spl.dst_uapifn = XMHFGEEC_UAPI_SDEVPGTBL_INIT;
     XMHF_SLAB_CALLNEW(&spl);
@@ -844,10 +847,6 @@ void xmhfhic_arch_setup_slab_device_allocation(void){
     //intialize VT-d subsystem and obtain
     vtd_pagewalk_level = _geec_prime_vtd_initialize(initretcetp->result_retpaddr);
     _XDPRINTF_("%s: setup vt-d, page-walk level=%u\n", __func__, vtd_pagewalk_level);
-
-
-    //enumerate system devices
-    _sda_enumerate_system_devices();
 
 
     //allocate system devices to slabs for direct DMA
