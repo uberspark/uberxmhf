@@ -215,6 +215,8 @@
 #define X86SMP_LAPIC_MEMORYADDRESS          0xFEE00000
 #define X86SMP_LAPIC_ID_MEMORYADDRESS       0xFEE00020
 
+#define TPM_LOCALITY_BASE             0xfed40000
+
 //----------------------------------------------------------------------
 
 //TXT SENTER MLE specific constants
