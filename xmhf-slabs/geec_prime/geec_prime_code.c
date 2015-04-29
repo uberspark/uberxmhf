@@ -689,7 +689,15 @@ static void _sda_enumerate_system_devices(void){
                 sysdev_memioregions[numentries_sysdev_memioregions].b=b;
                 sysdev_memioregions[numentries_sysdev_memioregions].d=d;
                 sysdev_memioregions[numentries_sysdev_memioregions].f=f;
+                sysdev_memioregions[numentries_sysdev_memioregions].vendor_id=vendor_id;
+                sysdev_memioregions[numentries_sysdev_memioregions].device_id=device_id;
 
+                if(hdr_type == 0x80 || hdr_type == 0x0)
+                    sysdev_memioregions[numentries_sysdev_memioregions].dtype=SYSDEV_MEMIOREGIONS_DTYPE_GENERAL;
+                else if (hdr_type == 0x81 || hdr_type == 0x1)
+                    sysdev_memioregions[numentries_sysdev_memioregions].dtype=SYSDEV_MEMIOREGIONS_DTYPE_BRIDGE;
+                else
+                    sysdev_memioregions[numentries_sysdev_memioregions].dtype=SYSDEV_MEMIOREGIONS_DTYPE_UNKNOWN;
 
                 //disable decode
                 xmhf_baseplatform_arch_x86_pci_type1_write(b, d, f, PCI_CONF_HDR_IDX_COMMAND, sizeof(u16), (command & ~(0x3)) ) ;
@@ -758,8 +766,9 @@ static void _sda_enumerate_system_devices(void){
     {
         u32 i, j;
         for(i=0; i <numentries_sysdev_memioregions; i++){
-            _XDPRINTF_("Device %x:%x:%x...\n", sysdev_memioregions[i].b,
-                       sysdev_memioregions[i].d, sysdev_memioregions[i].f);
+            _XDPRINTF_("Device %x:%x:%x (vid:did=%x:%x, type=%x)...\n", sysdev_memioregions[i].b,
+                       sysdev_memioregions[i].d, sysdev_memioregions[i].f, sysdev_memioregions[i].vendor_id,
+                       sysdev_memioregions[i].device_id, sysdev_memioregions[i].dtype);
             for(j=0; j < PCI_CONF_MAX_BARS; j++){
                 switch(sysdev_memioregions[i].memioextents[j].extent_type){
                     case _MEMIOREGIONS_EXTENTS_TYPE_IO:
