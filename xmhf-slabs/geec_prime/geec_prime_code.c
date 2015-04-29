@@ -878,9 +878,6 @@ void xmhfhic_arch_setup_slab_device_allocation(void){
         }
     }
 
-    _XDPRINTF_("%s: wip. Halt!\n", __func__);
-    HALT();
-
 
 #if 0
     //enumerate PCI bus to find out all the devices
