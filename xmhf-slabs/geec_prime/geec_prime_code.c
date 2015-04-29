@@ -536,7 +536,8 @@ static bool xmhfhw_platform_x86pc_vtd_scanfor_drhd_units(void){
 
 
 static void _sda_enumerate_system_devices(void){
-    u32 b, d, f;
+    u32 b, d, f, i;
+	vtd_drhd_handle_t drhd_handle;
 
 	//scan for available DRHD units in the platform
 	if(!xmhfhw_platform_x86pc_vtd_scanfor_drhd_units()){
@@ -546,6 +547,33 @@ static void _sda_enumerate_system_devices(void){
 
     _XDPRINTF_("%s: Vt-d: maxhandle = %u, dmar table addr=0x%08x\n", __func__,
                 (u32)vtd_drhd_maxhandle, (u32)vtd_dmar_table_physical_address);
+
+    for(drhd_handle =0; drhd_handle < vtd_drhd_maxhandle; drhd_handle++){
+        if(numentries_sysdev_memioregions >= MAX_PLATFORM_DEVICES){
+            _XDPRINTF_("%s: Halting!. numentries_sysdev_memioregions >= MAX_PLATFORM_DEVICES(%u)\n",
+                       __func__, MAX_PLATFORM_DEVICES);
+            HALT();
+        }
+
+        sysdev_memioregions[numentries_sysdev_memioregions].b=PCI_BUS_XMHFGEEC;
+        sysdev_memioregions[numentries_sysdev_memioregions].d=PCI_DEVICE_XMHFGEEC;
+        sysdev_memioregions[numentries_sysdev_memioregions].f=drhd_handle;
+        sysdev_memioregions[numentries_sysdev_memioregions].vendor_id=PCI_VENDOR_ID_XMHFGEEC;
+        sysdev_memioregions[numentries_sysdev_memioregions].device_id=PCI_DEVICE_ID_XMHFGEEC_IOMMU;
+        sysdev_memioregions[numentries_sysdev_memioregions].dtype = SYSDEV_MEMIOREGIONS_DTYPE_IOMMU;
+
+        sysdev_memioregions[numentries_sysdev_memioregions].memioextents[0].extent_type=_MEMIOREGIONS_EXTENTS_TYPE_MEM;
+        sysdev_memioregions[numentries_sysdev_memioregions].memioextents[0].addr_start=vtd_drhd[drhd_handle].regbaseaddr;
+        sysdev_memioregions[numentries_sysdev_memioregions].memioextents[0].addr_end=vtd_drhd[drhd_handle].regbaseaddr + PAGE_SIZE_4K;
+
+        for(i=1; i < PCI_CONF_MAX_BARS; i++){
+            sysdev_memioregions[numentries_sysdev_memioregions].memioextents[i].extent_type=_MEMIOREGIONS_EXTENTS_TYPE_NONE;
+            sysdev_memioregions[numentries_sysdev_memioregions].memioextents[i].addr_start=0;
+            sysdev_memioregions[numentries_sysdev_memioregions].memioextents[i].addr_end=0;
+        }
+
+        numentries_sysdev_memioregions++;
+    }
 
 
     //enumerate devices on the PCI bus
