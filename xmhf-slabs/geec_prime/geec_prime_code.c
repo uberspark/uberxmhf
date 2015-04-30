@@ -282,7 +282,7 @@ void xmhfhic_arch_setup_slab_info(void){
 				_XDPRINTF_("	slabtype=%08x\n", _xmhfhic_common_slab_info_table[i].slabtype);
 				_XDPRINTF_("	slab_inuse=%s\n", ( _xmhfhic_common_slab_info_table[i].slab_inuse ? "true" : "false") );
 				_XDPRINTF_("	slab_callcaps=%08x\n", _xmhfhic_common_slab_info_table[i].slab_callcaps);
-				_XDPRINTF_("	slab_devices=%s\n", ( _xmhfhic_common_slab_info_table[i].slab_devices.desc_valid ? "true" : "false") );
+				//_XDPRINTF_("	slab_devices=%s\n", ( _xmhfhic_common_slab_info_table[i].slab_devices.desc_valid ? "true" : "false") );
 				_XDPRINTF_("	slab_pgtblbase=%x\n", ( _xmhfhic_common_slab_info_table[i].mempgtbl_cr3) );
 				_XDPRINTF_("  slab_code(%08x-%08x)\n", _xmhfhic_common_slab_info_table[i].slab_physmem_extents[0].addr_start, _xmhfhic_common_slab_info_table[i].slab_physmem_extents[0].addr_end);
 				_XDPRINTF_("  slab_data(%08x-%08x)\n", _xmhfhic_common_slab_info_table[i].slab_physmem_extents[1].addr_start, _xmhfhic_common_slab_info_table[i].slab_physmem_extents[1].addr_end);
@@ -877,7 +877,7 @@ static void __xmhfhic_x86vmxx86pc_postdrt(void){
 static u32 _geec_prime_getslabfordevice(u32 bus, u32 dev, u32 func){
     u32 i;
 
-    for(i=0; i < XMHFGEEC_TOTAL_SLABS; i++){
+/*    for(i=0; i < XMHFGEEC_TOTAL_SLABS; i++){
         //for now detect rich guest slab and allocate all platform devices to it
         if(_xmhfhic_common_slab_info_table[i].slab_devices.desc_valid &&
             _xmhfhic_common_slab_info_table[i].slab_devices.numdevices == 0xFFFFFFFFUL)
@@ -885,6 +885,10 @@ static u32 _geec_prime_getslabfordevice(u32 bus, u32 dev, u32 func){
     }
 
     return 0xFFFFFFFFUL;
+*/
+    //XXX: allocate all devices to rich guest slab for now
+    return XMHFGEEC_SLAB_XG_RICHGUEST;
+
 }
 
 
@@ -893,7 +897,7 @@ static u32 _geec_prime_getslabfordevice(u32 bus, u32 dev, u32 func){
 
 void xmhfhic_arch_setup_slab_device_allocation(void){
     u32 i, vtd_pagewalk_level;
-    slab_platformdevices_t ddescs;
+    //slab_platformdevices_t ddescs;
     slab_params_t spl;
     xmhfgeec_uapi_slabdevpgtbl_initretcet_params_t *initretcetp =
         (xmhfgeec_uapi_slabdevpgtbl_initretcet_params_t *)spl.in_out_params;
