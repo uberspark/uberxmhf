@@ -275,7 +275,7 @@ void xmhfhic_arch_setup_slab_info(void){
 
 	//print out slab table
 	{
-			u32 i;
+			u32 i, j;
 
 			for(i=0; i < XMHFGEEC_TOTAL_SLABS; i++){
 				_XDPRINTF_("slab %u: dumping slab header\n", i);
@@ -283,6 +283,17 @@ void xmhfhic_arch_setup_slab_info(void){
 				_XDPRINTF_("	slab_inuse=%s\n", ( _xmhfhic_common_slab_info_table[i].slab_inuse ? "true" : "false") );
 				_XDPRINTF_("	slab_callcaps=%08x\n", _xmhfhic_common_slab_info_table[i].slab_callcaps);
 				//_XDPRINTF_("	slab_devices=%s\n", ( _xmhfhic_common_slab_info_table[i].slab_devices.desc_valid ? "true" : "false") );
+				_XDPRINTF_("	incl_devices_count=%u\n", _xmhfhic_common_slab_info_table[i].incl_devices_count );
+                for(j=0; j < _xmhfhic_common_slab_info_table[i].incl_devices_count; j++)
+                        _XDPRINTF_("        vendor_id=%x, device_id=%x\n",
+                                   _xmhfhic_common_slab_info_table[i].incl_devices[j].vendor_id,
+                                   _xmhfhic_common_slab_info_table[i].incl_devices[j].device_id);
+				_XDPRINTF_("	excl_devices_count=%u\n", _xmhfhic_common_slab_info_table[i].excl_devices_count );
+                for(j=0; j < _xmhfhic_common_slab_info_table[i].excl_devices_count; j++)
+                        _XDPRINTF_("        vendor_id=%x, device_id=%x\n",
+                                   _xmhfhic_common_slab_info_table[i].excl_devices[j].vendor_id,
+                                   _xmhfhic_common_slab_info_table[i].excl_devices[j].device_id);
+
 				_XDPRINTF_("	slab_pgtblbase=%x\n", ( _xmhfhic_common_slab_info_table[i].mempgtbl_cr3) );
 				_XDPRINTF_("  slab_code(%08x-%08x)\n", _xmhfhic_common_slab_info_table[i].slab_physmem_extents[0].addr_start, _xmhfhic_common_slab_info_table[i].slab_physmem_extents[0].addr_end);
 				_XDPRINTF_("  slab_data(%08x-%08x)\n", _xmhfhic_common_slab_info_table[i].slab_physmem_extents[1].addr_start, _xmhfhic_common_slab_info_table[i].slab_physmem_extents[1].addr_end);
