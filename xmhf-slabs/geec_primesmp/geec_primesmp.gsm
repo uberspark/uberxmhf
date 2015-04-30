@@ -6,4 +6,5 @@
 S:geec_sentinel:void:void:void
 S:xc_init:void:void:void
 
+RD:INCL:PCI_VENDOR_ID_XMHFGEEC:PCI_DEVICE_ID_XMHFGEEC_LAPIC:void
 
