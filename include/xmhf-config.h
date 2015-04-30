@@ -58,7 +58,11 @@
 //geec_prime: used for verified slabs
 #define XMHF_MAX_MEMPGTBL_SETS (XMHF_CONFIG_MAX_UVMEMPGTBL_SETS+2)
 
+//max. include device list entries
+#define XMHF_CONFIG_MAX_INCLDEVLIST_ENTRIES __XMHF_CONFIG_MAX_INCLDEVLIST_ENTRIES__
 
+//max. exclude device list entries
+#define XMHF_CONFIG_MAX_EXCLDEVLIST_ENTRIES __XMHF_CONFIG_MAX_EXCLDEVLIST_ENTRIES__
 
 
 //"runtime" parameter block magic value
