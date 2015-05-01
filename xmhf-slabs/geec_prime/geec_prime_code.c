@@ -1028,6 +1028,25 @@ void xmhfhic_arch_setup_slab_device_allocation(void){
 
 static u32 _smt_slabdevicemappings[XMHFGEEC_TOTAL_SLABS][MAX_PLATFORM_DEVICES];
 
+static void _geec_prime_smt_populate_slabdevicemappings(void){
+    u32 i, j, k;
+
+    for(i=0; i < XMHFGEEC_TOTAL_SLABS; i++){
+
+        for(j=0; j < _xmhfhic_common_slab_info_table[i].incl_devices_count; j++){
+
+           //_xmhfhic_common_slab_info_table[i].incl_devices[j].vendor_id,
+           //_xmhfhic_common_slab_info_table[i].incl_devices[j].device_id);
+
+
+        }
+
+    }
+
+}
+
+
+
 static u32 _geec_prime_slab_getspatype(u32 slab_index, u32 spa){
 	u32 i;
 
