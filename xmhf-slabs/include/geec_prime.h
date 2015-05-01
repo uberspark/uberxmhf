@@ -110,6 +110,11 @@ typedef struct {
 } __attribute__((packed)) sysdev_memioregions_t;
 
 
+typedef struct {
+    u32 device_count;
+    u32 sysdev_mmioregions_indices[MAX_PLATFORM_DEVICES];
+} __attribute__((packed)) slab_devicemap_t;
+
 extern __attribute__(( section(".data") )) XMHF_BOOTINFO *xcbootinfo;
 
 
