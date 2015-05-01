@@ -758,7 +758,7 @@ static void _sda_enumerate_system_devices(void){
     {
         u32 i, j;
         for(i=0; i <numentries_sysdev_memioregions; i++){
-            _XDPRINTF_("Device %x:%x:%x (vid:did=%x:%x, type=%x)...\n", sysdev_memioregions[i].b,
+            _XDPRINTF_("Device idx=%u, %x:%x:%x (vid:did=%x:%x, type=%x)...\n", i, sysdev_memioregions[i].b,
                        sysdev_memioregions[i].d, sysdev_memioregions[i].f, sysdev_memioregions[i].vendor_id,
                        sysdev_memioregions[i].device_id, sysdev_memioregions[i].dtype);
             for(j=0; j < PCI_CONF_MAX_BARS; j++){
@@ -1047,6 +1047,9 @@ static bool _geec_prime_smt_populate_slabdevicemap_isdevinexcl(u32 slabid, u32 v
 static void _geec_prime_smt_populate_slabdevicemap(void){
     u32 i, j, k;
 
+    _XDPRINTF_("%s: numentries_sysdev_mmioregions=%u\n", __func__,
+               numentries_sysdev_memioregions);
+
     for(i=0; i < XMHFGEEC_TOTAL_SLABS; i++){
         _smt_slab_devicemap[i].device_count = 0;
 
@@ -1065,17 +1068,37 @@ static void _geec_prime_smt_populate_slabdevicemap(void){
                     }
                 }
             }else{
-                if(!_geec_prime_smt_populate_slabdevicemap_isdevinexcl(i, sysdev_memioregions[k].vendor_id, sysdev_memioregions[k].device_id)){
-                    if( _smt_slab_devicemap[i].device_count >= MAX_PLATFORM_DEVICES){
-                        _XDPRINTF_("%s: Halting! device_count >= MAX_PLATFORM_DEVICES\n", __func__);
-                        HALT();
+                for(k=0; k < numentries_sysdev_memioregions; k++){
+                    if( (sysdev_memioregions[k].vendor_id == _xmhfhic_common_slab_info_table[i].incl_devices[j].vendor_id) &&
+                        (sysdev_memioregions[k].device_id == _xmhfhic_common_slab_info_table[i].incl_devices[j].device_id) &&
+                        !_geec_prime_smt_populate_slabdevicemap_isdevinexcl(i, _xmhfhic_common_slab_info_table[i].incl_devices[j].vendor_id, _xmhfhic_common_slab_info_table[i].incl_devices[j].device_id)
+                    ){
+                        if( _smt_slab_devicemap[i].device_count >= MAX_PLATFORM_DEVICES){
+                            _XDPRINTF_("%s: Halting! device_count >= MAX_PLATFORM_DEVICES\n", __func__);
+                            HALT();
+                        }
+                        _smt_slab_devicemap[i].sysdev_mmioregions_indices[_smt_slab_devicemap[i].device_count]=k;
+                        _smt_slab_devicemap[i].device_count++;
+
                     }
-                    _smt_slab_devicemap[i].sysdev_mmioregions_indices[_smt_slab_devicemap[i].device_count]=k;
-                    _smt_slab_devicemap[i].device_count++;
                 }
             }
         }
     }
+
+
+    //debug dump
+    {
+        u32 i, j;
+        for(i=0; i < XMHFGEEC_TOTAL_SLABS; i++){
+            _XDPRINTF_("%s: slab %u...\n", __func__, i);
+            for(j=0; j < _smt_slab_devicemap[i].device_count; j++){
+                _XDPRINTF_("     device idx=%u\n", _smt_slab_devicemap[i].sysdev_mmioregions_indices[j]);
+            }
+        }
+    }
+
+
 }
 
 static bool _geec_prime_smt_slab_getspatype_isdevicemmio(u32 slabid, u32 spa){
@@ -1635,6 +1658,8 @@ void xmhfhic_arch_setup_slab_mem_page_tables(void){
     _geec_prime_smt_populate_slabdevicemap();
     _XDPRINTF_("%s: populated slab device map\n", __func__);
 
+    _XDPRINTF_("%s: Halting - wip!\n", __func__);
+    HALT();
 
     //gather memory types for EPT (for guest slabs)
     __xmhfhic_vmx_gathermemorytypes();

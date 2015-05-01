@@ -143,8 +143,8 @@
 
 #define XMHFGEEC_SLAB_GEEC_SENTINEL         0
 #define XMHFGEEC_SLAB_GEEC_PRIME            1
-#define XMHFGEEC_SLAB_XC_TESTSLAB           2
-#define XMHFGEEC_SLAB_XG_RICHGUEST          3
+#define XMHFGEEC_SLAB_XG_RICHGUEST          2
+#define XMHFGEEC_SLAB_XC_TESTSLAB           3
 #define XMHFGEEC_SLAB_GEEC_PRIMESMP         4
 #define XMHFGEEC_SLAB_XC_INIT               5
 #define XMHFGEEC_SLAB_XC_EXHUB              6
