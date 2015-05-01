@@ -1022,6 +1022,7 @@ void xmhfhic_arch_setup_slab_device_allocation(void){
 #define	_SLAB_SPATYPE_SLAB_DATA	    			(0x1)
 #define _SLAB_SPATYPE_SLAB_STACK				(0x2)
 #define _SLAB_SPATYPE_SLAB_DMADATA				(0x3)
+#define _SLAB_SPATYPE_SLAB_DEVICEMMIO           (0x4)
 
 #define _SLAB_SPATYPE_OTHER	    				(0x5)
 
@@ -1077,7 +1078,22 @@ static void _geec_prime_smt_populate_slabdevicemap(void){
     }
 }
 
+static bool _geec_prime_smt_slab_getspatype_isdevicemmio(u32 slabid, u32 spa){
+    u32 i, j;
 
+    for(i=0; i < _smt_slab_devicemap[slabid].device_count; i++){
+        u32 sysdev_memioregions_index = _smt_slab_devicemap[slabid].sysdev_mmioregions_indices[i];
+        for(j=0; j < PCI_CONF_MAX_BARS; j++){
+            if(sysdev_memioregions[sysdev_memioregions_index].memioextents[j].extent_type == _MEMIOREGIONS_EXTENTS_TYPE_MEM){
+                if(spa >= sysdev_memioregions[sysdev_memioregions_index].memioextents[j].addr_start &&
+                    spa < sysdev_memioregions[sysdev_memioregions_index].memioextents[j].addr_end)
+                    return true;
+            }
+        }
+    }
+
+    return false;
+}
 
 static u32 _geec_prime_slab_getspatype(u32 slab_index, u32 spa){
 	u32 i;
@@ -1097,6 +1113,8 @@ static u32 _geec_prime_slab_getspatype(u32 slab_index, u32 spa){
 			return _SLAB_SPATYPE_SLAB_STACK | mask;
 		if(spa >= _xmhfhic_common_slab_info_table[i].slab_physmem_extents[3].addr_start && spa < _xmhfhic_common_slab_info_table[i].slab_physmem_extents[3].addr_end)
 			return _SLAB_SPATYPE_SLAB_DMADATA | mask;
+        if(_geec_prime_smt_slab_getspatype_isdevicemmio(slab_index, spa))
+            return _SLAB_SPATYPE_SLAB_DEVICEMMIO | mask;
 	}
 
 	return _SLAB_SPATYPE_OTHER;
