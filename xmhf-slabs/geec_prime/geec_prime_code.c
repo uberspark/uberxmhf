@@ -1619,6 +1619,10 @@ void xmhfhic_arch_setup_slab_mem_page_tables(void){
     spl.dst_slabid = XMHFGEEC_SLAB_UAPI_SLABMEMPGTBL;
     spl.cpuid = 0; //XXX: fixme, need to plug in BSP cpuid here
 
+    _geec_prime_smt_populate_slabdevicemap();
+    _XDPRINTF_("%s: populated slab device map\n", __func__);
+
+
     //gather memory types for EPT (for guest slabs)
     __xmhfhic_vmx_gathermemorytypes();
     _XDPRINTF_("%s: gathered EPT memory types\n", __func__);
