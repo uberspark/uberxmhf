@@ -1028,21 +1028,53 @@ void xmhfhic_arch_setup_slab_device_allocation(void){
 
 static slab_devicemap_t _smt_slab_devicemap[XMHFGEEC_TOTAL_SLABS];
 
-static void _geec_prime_smt_populate_slabdevicemappings(void){
+
+//returns true if a given device vendor_id:device_id is in the slab device exclusion
+//list
+static bool _geec_prime_smt_populate_slabdevicemap_isdevinexcl(u32 slabid, u32 vendor_id, u32 device_id){
+    u32 i;
+
+    for(i=0; i < _xmhfhic_common_slab_info_table[slabid].excl_devices_count; i++){
+        if(_xmhfhic_common_slab_info_table[slabid].excl_devices[i].vendor_id == vendor_id &&
+           _xmhfhic_common_slab_info_table[slabid].excl_devices[i].device_id == device_id)
+            return true;
+    }
+
+    return false;
+}
+
+static void _geec_prime_smt_populate_slabdevicemap(void){
     u32 i, j, k;
 
     for(i=0; i < XMHFGEEC_TOTAL_SLABS; i++){
+        _smt_slab_devicemap[i].device_count = 0;
 
         for(j=0; j < _xmhfhic_common_slab_info_table[i].incl_devices_count; j++){
+            if( _xmhfhic_common_slab_info_table[i].incl_devices[j].vendor_id == 0xFFFF &&
+               _xmhfhic_common_slab_info_table[i].incl_devices[j].device_id == 0xFFFF){
+                for(k=0; k < numentries_sysdev_memioregions; k++){
+                    if(!_geec_prime_smt_populate_slabdevicemap_isdevinexcl(i, sysdev_memioregions[k].vendor_id, sysdev_memioregions[k].device_id)){
+                        if( _smt_slab_devicemap[i].device_count >= MAX_PLATFORM_DEVICES){
+                            _XDPRINTF_("%s: Halting! device_count >= MAX_PLATFORM_DEVICES\n", __func__);
+                            HALT();
+                        }
+                        _smt_slab_devicemap[i].sysdev_mmioregions_indices[_smt_slab_devicemap[i].device_count]=k;
+                        _smt_slab_devicemap[i].device_count++;
 
-           //_xmhfhic_common_slab_info_table[i].incl_devices[j].vendor_id,
-           //_xmhfhic_common_slab_info_table[i].incl_devices[j].device_id);
-
-
+                    }
+                }
+            }else{
+                if(!_geec_prime_smt_populate_slabdevicemap_isdevinexcl(i, sysdev_memioregions[k].vendor_id, sysdev_memioregions[k].device_id)){
+                    if( _smt_slab_devicemap[i].device_count >= MAX_PLATFORM_DEVICES){
+                        _XDPRINTF_("%s: Halting! device_count >= MAX_PLATFORM_DEVICES\n", __func__);
+                        HALT();
+                    }
+                    _smt_slab_devicemap[i].sysdev_mmioregions_indices[_smt_slab_devicemap[i].device_count]=k;
+                    _smt_slab_devicemap[i].device_count++;
+                }
+            }
         }
-
     }
-
 }
 
 
