@@ -1470,7 +1470,7 @@ static u32 _geec_prime_vmx_getmemorytypeforphysicalpage(u64 pagebaseaddr){
   return prev_type;
 }
 
-
+/*
 static void _geec_prime_populate_slab_pagetables_VfT_prog(u32 slabid){
 	u64 gpa;
 	u64 flags;
@@ -1539,9 +1539,9 @@ static void _geec_prime_populate_slab_pagetables_uVT_uVU_prog(u32 slabid){
 }
 
 
+*/
 
-
-
+#if 0
 static void _geec_prime_populate_slab_pagetables_uVT_uVU_prog_guest(u32 slabid){
 	u64 p_table_value;
 	u64 gpa;
@@ -1610,6 +1610,7 @@ static void _geec_prime_populate_slab_pagetables_uVT_uVU_prog_guest(u32 slabid){
 #endif
 
 }
+#endif // 0
 
 
 //ept4k
