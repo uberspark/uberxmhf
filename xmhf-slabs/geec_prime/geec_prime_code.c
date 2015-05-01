@@ -1470,147 +1470,7 @@ static u32 _geec_prime_vmx_getmemorytypeforphysicalpage(u64 pagebaseaddr){
   return prev_type;
 }
 
-/*
-static void _geec_prime_populate_slab_pagetables_VfT_prog(u32 slabid){
-	u64 gpa;
-	u64 flags;
-    slab_params_t spl;
-    xmhfgeec_uapi_slabmempgtbl_setentryforpaddr_params_t *setentryforpaddrp =
-        (xmhfgeec_uapi_slabmempgtbl_setentryforpaddr_params_t *)spl.in_out_params;
 
-    spl.src_slabid = XMHFGEEC_SLAB_GEEC_PRIME;
-    spl.dst_slabid = XMHFGEEC_SLAB_UAPI_SLABMEMPGTBL;
-    spl.cpuid = 0; //XXX: fixme, need to plug in BSP cpuid
-
-	for(gpa=0; gpa < ADDR_4GB; gpa += PAGE_SIZE_2M){
-        flags = _geec_prime_slab_getptflagsforspa_pae(slabid, (u32)gpa);
-
-        spl.dst_uapifn = XMHFGEEC_UAPI_SLABMEMPGTBL_SETENTRYFORPADDR;
-        setentryforpaddrp->dst_slabid = slabid;
-        setentryforpaddrp->gpa = gpa;
-        setentryforpaddrp->entry = pae_make_pde_big(gpa, flags);
-        XMHF_SLAB_CALLNEW(&spl);
-
-	}
-
-
-}
-
-
-
-static void _geec_prime_populate_slab_pagetables_uVT_uVU_prog(u32 slabid){
-	u64 gpa;
-	u64 flags;
-    slab_params_t spl;
-    u32 i;
-    u32 spatype;
-    bool spa_sameslab=false;
-    xmhfgeec_uapi_slabmempgtbl_setentryforpaddr_params_t *setentryforpaddrp =
-        (xmhfgeec_uapi_slabmempgtbl_setentryforpaddr_params_t *)spl.in_out_params;
-
-    spl.src_slabid = XMHFGEEC_SLAB_GEEC_PRIME;
-    spl.dst_slabid = XMHFGEEC_SLAB_UAPI_SLABMEMPGTBL;
-    spl.cpuid = 0; //XXX: fixme, need to plug in BSP cpuid
-
-
-
-	for(gpa=0; gpa < ADDR_4GB; gpa += PAGE_SIZE_2M){
-        spatype = _geec_prime_slab_getspatype(slabid, gpa);
-        if(spatype & _SLAB_SPATYPE_MASK_SAMESLAB)
-            spa_sameslab = true;
-        else
-            spa_sameslab = false;
-
-        flags = _geec_prime_slab_getptflagsforspa_pae(slabid, (u32)gpa);
-        if(spa_sameslab){
-            flags |= (_PAGE_USER);
-            _XDPRINTF_("%s: setting USER for addr=%x in slab=%u, flags=%016llx\n", __func__,
-                       (u32)gpa, slabid, flags);
-        }
-        spl.dst_uapifn = XMHFGEEC_UAPI_SLABMEMPGTBL_SETENTRYFORPADDR;
-        setentryforpaddrp->dst_slabid = slabid;
-        setentryforpaddrp->gpa = gpa;
-        setentryforpaddrp->entry = pae_make_pde_big(gpa, flags);
-        XMHF_SLAB_CALLNEW(&spl);
-
-	}
-
-
-}
-
-
-*/
-
-#if 0
-static void _geec_prime_populate_slab_pagetables_uVT_uVU_prog_guest(u32 slabid){
-	u64 p_table_value;
-	u64 gpa;
-	u64 flags;
-    slab_params_t spl;
-    xmhfgeec_uapi_slabmempgtbl_setentryforpaddr_params_t *setentryforpaddrp =
-        (xmhfgeec_uapi_slabmempgtbl_setentryforpaddr_params_t *)spl.in_out_params;
-
-    spl.src_slabid = XMHFGEEC_SLAB_GEEC_PRIME;
-    spl.dst_slabid = XMHFGEEC_SLAB_UAPI_SLABMEMPGTBL;
-    spl.cpuid = 0; //XXX: fixme, need to plug in BSP cpuid
-
-/*    _XDPRINTF_("%s: mapping guest prog 2M slab %u...\n", __func__,
-               slabid);
-    _XDPRINTF_("%s: mapping %x-%x\n", __func__,
-               _xmhfhic_common_slab_info_table[slabid].slab_physmem_extents[0].addr_start,
-               _xmhfhic_common_slab_info_table[slabid].slab_physmem_extents[4].addr_end);
-*/
-
-    //code=rx, 2M mapping
-    for(gpa = _xmhfhic_common_slab_info_table[slabid].slab_physmem_extents[0].addr_start;
-        gpa < _xmhfhic_common_slab_info_table[slabid].slab_physmem_extents[0].addr_end;
-        gpa += PAGE_SIZE_2M){
-		u32 memorytype = _geec_prime_vmx_getmemorytypeforphysicalpage((u64)gpa);
-        flags = 0x85;
-
-        if(memorytype == 0)
-            p_table_value = (u64) (gpa)  | ((u64)memorytype << 3) |  flags ;	//present, UC
-        else
-            p_table_value = (u64) (gpa)  | ((u64)6 << 3) | flags ;	//present, WB, track host MTRR
-
-        spl.dst_uapifn = XMHFGEEC_UAPI_SLABMEMPGTBL_SETENTRYFORPADDR;
-        setentryforpaddrp->dst_slabid = slabid;
-        setentryforpaddrp->gpa = gpa;
-        setentryforpaddrp->entry = p_table_value;
-        XMHF_SLAB_CALLNEW(&spl);
-    }
-
-    //data,stack,dmadata=rw, 2M mapping
-    for(gpa = _xmhfhic_common_slab_info_table[slabid].slab_physmem_extents[1].addr_start;
-        gpa < _xmhfhic_common_slab_info_table[slabid].slab_physmem_extents[3].addr_end;
-        gpa += PAGE_SIZE_2M){
-		u32 memorytype = _geec_prime_vmx_getmemorytypeforphysicalpage((u64)gpa);
-        flags = 0x83;
-
-        if(memorytype == 0)
-            p_table_value = (u64) (gpa)  | ((u64)memorytype << 3) |  flags ;	//present, UC
-        else
-            p_table_value = (u64) (gpa)  | ((u64)6 << 3) | flags ;	//present, WB, track host MTRR
-
-        spl.dst_uapifn = XMHFGEEC_UAPI_SLABMEMPGTBL_SETENTRYFORPADDR;
-        setentryforpaddrp->dst_slabid = slabid;
-        setentryforpaddrp->gpa = gpa;
-        setentryforpaddrp->entry = p_table_value;
-        XMHF_SLAB_CALLNEW(&spl);
-    }
-
-
-#if defined (__DEBUG_SERIAL__)
-        spl.dst_uapifn = XMHFGEEC_UAPI_SLABMEMPGTBL_SETENTRYFORPADDR;
-        setentryforpaddrp->dst_slabid = slabid;
-        setentryforpaddrp->gpa = ADDR_LIBXMHFDEBUGDATA;
-        p_table_value = (u64) (ADDR_LIBXMHFDEBUGDATA)  | ((u64)6 << 3) | 0x87 ;	//present, WB, track host MTRR
-        setentryforpaddrp->entry = p_table_value;
-        XMHF_SLAB_CALLNEW(&spl);
-#endif
-
-}
-#endif // 0
 
 
 //ept4k
@@ -1689,6 +1549,10 @@ static void _geec_prime_populate_slab_pagetables_pae4k(u32 slabid){
 
 
 }
+
+
+
+
 
 void xmhfhic_arch_setup_slab_mem_page_tables(void){
     slab_params_t spl;
