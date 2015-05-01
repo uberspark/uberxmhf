@@ -1026,6 +1026,8 @@ void xmhfhic_arch_setup_slab_device_allocation(void){
 #define _SLAB_SPATYPE_OTHER	    				(0x5)
 
 
+static u32 _smt_slabdevicemappings[XMHFGEEC_TOTAL_SLABS][MAX_PLATFORM_DEVICES];
+
 static u32 _geec_prime_slab_getspatype(u32 slab_index, u32 spa){
 	u32 i;
 
