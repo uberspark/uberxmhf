@@ -241,9 +241,19 @@
 #define     MAX_SLAB_DMADATA_SIZE           (32*1024*1024)
 #define     MAX_SLAB_DMADATA_PDT_ENTRIES    (MAX_SLAB_DMADATA_SIZE/(2*1024*1024))
 
+#ifndef __ASSEMBLY__
 
-#define     ADDR_LIBXMHFDEBUGDATA_START           (0xf200000UL)
-#define     ADDR_LIBXMHFDEBUGDATA_END             (0xf203000UL)
+#if defined (__DEBUG_SERIAL__)
+
+extern u8 _libxmhfdebugdata_start[];
+extern u8 _libxmhfdebugdata_end[];
+
+#define     ADDR_LIBXMHFDEBUGDATA_START           ((u32)_libxmhfdebugdata_start)
+#define     ADDR_LIBXMHFDEBUGDATA_END             ((u32)_libxmhfdebugdata_end)
+
+#endif // defined
+
+#endif // __ASSEMBLY__
 
 
 #endif //__XMHF_CONFIG_H__
