@@ -1593,12 +1593,14 @@ static void _geec_prime_populate_slab_pagetables_ept4k(u32 slabid){
 	}
 
 #if defined (__DEBUG_SERIAL__)
+	for(gpa=ADDR_LIBXMHFDEBUGDATA_START; gpa < ADDR_LIBXMHFDEBUGDATA_END; gpa += PAGE_SIZE_4K){
         spl.dst_uapifn = XMHFGEEC_UAPI_SLABMEMPGTBL_SETENTRYFORPADDR;
         setentryforpaddrp->dst_slabid = slabid;
-        setentryforpaddrp->gpa = ADDR_LIBXMHFDEBUGDATA;
-        p_table_value = (u64) (ADDR_LIBXMHFDEBUGDATA)  | ((u64)6 << 3) | 0x7 ;	//present, WB, track host MTRR
+        setentryforpaddrp->gpa = gpa;
+        p_table_value = (u64) (gpa)  | ((u64)6 << 3) | 0x7 ;	//present, WB, track host MTRR
         setentryforpaddrp->entry = p_table_value;
         XMHF_SLAB_CALLNEW(&spl);
+	}
 #endif
 
 
@@ -1629,11 +1631,13 @@ static void _geec_prime_populate_slab_pagetables_pae4k(u32 slabid){
 	}
 
 #if defined (__DEBUG_SERIAL__)
+	for(gpa=ADDR_LIBXMHFDEBUGDATA_START; gpa < ADDR_LIBXMHFDEBUGDATA_END; gpa += PAGE_SIZE_4K){
         spl.dst_uapifn = XMHFGEEC_UAPI_SLABMEMPGTBL_SETENTRYFORPADDR;
         setentryforpaddrp->dst_slabid = slabid;
-        setentryforpaddrp->gpa = ADDR_LIBXMHFDEBUGDATA;
-        setentryforpaddrp->entry = pae_make_pte(ADDR_LIBXMHFDEBUGDATA, (_PAGE_USER | _PAGE_RW | _PAGE_PRESENT));	//present, WB, track host MTRR
+        setentryforpaddrp->gpa = gpa;
+        setentryforpaddrp->entry = pae_make_pte(gpa, (_PAGE_PRESENT |  _PAGE_RW | _PAGE_USER));
         XMHF_SLAB_CALLNEW(&spl);
+	}
 #endif
 
 
@@ -1658,8 +1662,8 @@ void xmhfhic_arch_setup_slab_mem_page_tables(void){
     _geec_prime_smt_populate_slabdevicemap();
     _XDPRINTF_("%s: populated slab device map\n", __func__);
 
-    _XDPRINTF_("%s: Halting - wip!\n", __func__);
-    HALT();
+    //_XDPRINTF_("%s: Halting - wip!\n", __func__);
+    //HALT();
 
     //gather memory types for EPT (for guest slabs)
     __xmhfhic_vmx_gathermemorytypes();
