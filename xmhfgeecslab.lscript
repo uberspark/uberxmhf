@@ -84,9 +84,6 @@ SECTIONS
 		*(.slab_dmadata)
 	} >slabmem =0x0000
 
-	.slabmmio : {
-		*(.slab_mmio)
-	} >slabmem =0x0000
 
 	.libxmhfdebugdata : {
 		*(.libxmhfdebugdata)

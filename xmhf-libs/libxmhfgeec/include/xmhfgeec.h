@@ -94,7 +94,7 @@
 #define HIC_SLAB_PHYSMEM_EXTENT_WRITE      (1 << 1)
 #define HIC_SLAB_PHYSMEM_EXTENT_EXECUTE    (1 << 2)
 
-#define HIC_SLAB_PHYSMEM_MAXEXTENTS         5
+#define HIC_SLAB_PHYSMEM_MAXEXTENTS         4
 
 
 #ifndef __ASSEMBLY__
@@ -107,6 +107,7 @@ typedef u32 slab_uapicaps_t;
 typedef u32 slab_memgrantreadcaps_t;
 typedef u32 slab_memgrantwritecaps_t;
 
+/*
 typedef struct {
     u32 pci_bus;
     u32 pci_device;
@@ -121,7 +122,7 @@ typedef struct {
 	u32 numdevices;
     xc_platformdevice_arch_desc_t arch_desc[MAX_PLATFORM_DEVICES];
 } __attribute__((packed)) slab_platformdevices_t;
-
+*/
 
 
 //slab physical memory extent type
@@ -131,6 +132,11 @@ typedef struct {
     u32 protection;
 } slab_physmem_extent_t;
 
+//slab device entry
+typedef struct {
+    u32 vendor_id;
+    u32 device_id;
+} slab_device_entry_t;
 
 typedef struct {
 	bool slab_inuse;
@@ -142,7 +148,11 @@ typedef struct {
     slab_uapicaps_t slab_uapicaps[XMHFGEEC_TOTAL_SLABS];
     slab_memgrantreadcaps_t slab_memgrantreadcaps;
     slab_memgrantwritecaps_t slab_memgrantwritecaps;
-    slab_platformdevices_t slab_devices;
+    //slab_platformdevices_t slab_devices;
+    slab_device_entry_t incl_devices[XMHF_CONFIG_MAX_INCLDEVLIST_ENTRIES];
+    u32 incl_devices_count;
+    slab_device_entry_t excl_devices[XMHF_CONFIG_MAX_EXCLDEVLIST_ENTRIES];
+    u32 excl_devices_count;
     slab_physmem_extent_t slab_physmem_extents[HIC_SLAB_PHYSMEM_MAXEXTENTS];
 	slab_entrystub_t entrystub;
 } __attribute__((packed)) xmhfgeec_slab_info_t;
