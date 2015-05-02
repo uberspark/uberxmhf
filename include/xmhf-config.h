@@ -58,7 +58,11 @@
 //geec_prime: used for verified slabs
 #define XMHF_MAX_MEMPGTBL_SETS (XMHF_CONFIG_MAX_UVMEMPGTBL_SETS+2)
 
+//max. include device list entries
+#define XMHF_CONFIG_MAX_INCLDEVLIST_ENTRIES __XMHF_CONFIG_MAX_INCLDEVLIST_ENTRIES__
 
+//max. exclude device list entries
+#define XMHF_CONFIG_MAX_EXCLDEVLIST_ENTRIES __XMHF_CONFIG_MAX_EXCLDEVLIST_ENTRIES__
 
 
 //"runtime" parameter block magic value
@@ -139,8 +143,8 @@
 
 #define XMHFGEEC_SLAB_GEEC_SENTINEL         0
 #define XMHFGEEC_SLAB_GEEC_PRIME            1
-#define XMHFGEEC_SLAB_XC_TESTSLAB           2
-#define XMHFGEEC_SLAB_XG_RICHGUEST          3
+#define XMHFGEEC_SLAB_XG_RICHGUEST          2
+#define XMHFGEEC_SLAB_XC_TESTSLAB           3
 #define XMHFGEEC_SLAB_GEEC_PRIMESMP         4
 #define XMHFGEEC_SLAB_XC_INIT               5
 #define XMHFGEEC_SLAB_XC_EXHUB              6
@@ -177,7 +181,7 @@
 	#define __TARGET_SIZE_BOOTLOADER		0x00200000		//2MB
 
 	//physical address of XMHF secure loader
-	#define __TARGET_BASE_SL				0x02a00000		//32+10MB
+	#define __TARGET_BASE_SL				0x02800000		//32+8MB
 	#define __TARGET_SIZE_SL				0x00200000
 
 
@@ -215,6 +219,8 @@
 #define X86SMP_LAPIC_MEMORYADDRESS          0xFEE00000
 #define X86SMP_LAPIC_ID_MEMORYADDRESS       0xFEE00020
 
+#define TPM_LOCALITY_BASE             0xfed40000
+
 //----------------------------------------------------------------------
 
 //TXT SENTER MLE specific constants
@@ -235,8 +241,19 @@
 #define     MAX_SLAB_DMADATA_SIZE           (32*1024*1024)
 #define     MAX_SLAB_DMADATA_PDT_ENTRIES    (MAX_SLAB_DMADATA_SIZE/(2*1024*1024))
 
+#ifndef __ASSEMBLY__
 
-#define     ADDR_LIBXMHFDEBUGDATA           (0x11400000UL)
+#if defined (__DEBUG_SERIAL__)
+
+extern u8 _libxmhfdebugdata_start[];
+extern u8 _libxmhfdebugdata_end[];
+
+#define     ADDR_LIBXMHFDEBUGDATA_START           ((u32)_libxmhfdebugdata_start)
+#define     ADDR_LIBXMHFDEBUGDATA_END             ((u32)_libxmhfdebugdata_end)
+
+#endif // defined
+
+#endif // __ASSEMBLY__
 
 
 #endif //__XMHF_CONFIG_H__

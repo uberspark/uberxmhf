@@ -69,6 +69,51 @@ typedef struct {
     u8 mlehdr[0x80];
 } __attribute__((packed)) x86vmx_mle_header_t;
 
+#define MAX_SLAB_MEMIOREGIONS_MEMEXTENTS (PCI_CONF_MAX_BARS * MAX_PLATFORM_DEVICES)
+#define MAX_SLAB_MEMIOREGIONS_IOEXTENTS (PCI_CONF_MAX_BARS * MAX_PLATFORM_DEVICES)
+
+#define _MEMIOREGIONS_EXTENTS_TYPE_MEM  0
+#define _MEMIOREGIONS_EXTENTS_TYPE_IO   1
+#define _MEMIOREGIONS_EXTENTS_TYPE_NONE 3
+
+typedef struct {
+    u32 extent_type;
+    u32 addr_start;
+    u32 addr_end;
+} __attribute__((packed)) _memioregions_extents_t;
+
+typedef struct {
+    u32 num_memextents;
+    u32 num_ioextents;
+    _memioregions_extents_t memextents[MAX_SLAB_MEMIOREGIONS_MEMEXTENTS];
+    _memioregions_extents_t ioextents[MAX_SLAB_MEMIOREGIONS_IOEXTENTS];
+} __attribute__((packed)) slab_memioregions_t;
+
+
+#define SYSDEV_MEMIOREGIONS_DTYPE_GENERAL   0
+#define SYSDEV_MEMIOREGIONS_DTYPE_BRIDGE    1
+#define SYSDEV_MEMIOREGIONS_DTYPE_LAPIC     2
+#define SYSDEV_MEMIOREGIONS_DTYPE_TPM       3
+#define SYSDEV_MEMIOREGIONS_DTYPE_TXT       4
+#define SYSDEV_MEMIOREGIONS_DTYPE_IOMMU     5
+
+#define SYSDEV_MEMIOREGIONS_DTYPE_UNKNOWN   0xFF
+
+typedef struct {
+    u32 b;
+    u32 d;
+    u32 f;
+    u16 vendor_id;
+    u16 device_id;
+    u32 dtype;
+    _memioregions_extents_t memioextents[PCI_CONF_MAX_BARS];
+} __attribute__((packed)) sysdev_memioregions_t;
+
+
+typedef struct {
+    u32 device_count;
+    u32 sysdev_mmioregions_indices[MAX_PLATFORM_DEVICES];
+} __attribute__((packed)) slab_devicemap_t;
 
 extern __attribute__(( section(".data") )) XMHF_BOOTINFO *xcbootinfo;
 

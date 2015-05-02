@@ -13,6 +13,9 @@ use File::Basename;
 
 my $g_slabsfile = $ARGV[0];
 my $g_totaluvslabmempgtblsets = $ARGV[1];
+my $g_maxincldevlistentries = $ARGV[2];
+my $g_maxexcldevlistentries = $ARGV[3];
+
 my $g_totalslabmempgtblsets;
 my $g_uvslabcounter;
 my $g_totalslabs;
@@ -24,6 +27,13 @@ my %slab_idtotype;
 my %slab_idtosubtype;
 my %slab_idtouapifnmask;
 my %slab_idtocallmask;
+
+my %slab_idtordinclentries;
+my %slab_idtordinclcount;
+
+my %slab_idtordexclentries;
+my %slab_idtordexclcount;
+
 
 my %slab_nametoid;
 
@@ -128,8 +138,6 @@ while( $i < $g_totalslabs) {
 	print "\nextern u8 _slab_$slab_idtoname{$i}_stack_end[];";
 	print "\nextern u8 _slab_$slab_idtoname{$i}_dmadata_start[];";
 	print "\nextern u8 _slab_$slab_idtoname{$i}_dmadata_end[];";
-	print "\nextern u8 _slab_$slab_idtoname{$i}_mmio_start[];";
-	print "\nextern u8 _slab_$slab_idtoname{$i}_mmio_end[];";
 	print "\nextern u8 _slab_$slab_idtoname{$i}_entrypoint[];";
 
 	$i++;
@@ -249,11 +257,24 @@ while( $i < $g_totalslabs ){
     print "\n       0xFFFFFFFFUL,";
 
     #slab_devices
-    if($slab_idtotype{$i} eq "uVU_SLAB" && $slab_idtosubtype{$i} eq "XRICHGUEST"){
-        print "\n	    {true, 0xFFFFFFFFUL, {0}},";
-    }else{
-        print "\n	    {false, 0, {0}},";
-    }
+    #if($slab_idtotype{$i} eq "uVU_SLAB" && $slab_idtosubtype{$i} eq "XRICHGUEST"){
+    #    print "\n	    {true, 0xFFFFFFFFUL, {0}},";
+    #}else{
+    #    print "\n	    {false, 0, {0}},";
+    #}
+
+    #incl_devices
+    print "\n\n".$slab_idtordinclentries{$i};
+
+    #incl_devices_count
+    printf("\n0x%08x,", $slab_idtordinclcount{$i});
+
+    #excl_devices
+    print "\n\n".$slab_idtordexclentries{$i};
+
+    #excl_devices_count
+    printf("\n0x%08x,", $slab_idtordexclcount{$i});
+
 
     #slab_physmem_extents
     print "\n	    {";
@@ -261,7 +282,6 @@ while( $i < $g_totalslabs ){
     print "\n	        {.addr_start = _slab_$slab_idtoname{$i}_data_start, .addr_end = _slab_$slab_idtoname{$i}_data_end, .protection = 0},";
     print "\n	        {.addr_start = _slab_$slab_idtoname{$i}_stack_start, .addr_end = _slab_$slab_idtoname{$i}_stack_end, .protection = 0},";
     print "\n	        {.addr_start = _slab_$slab_idtoname{$i}_dmadata_start, .addr_end = _slab_$slab_idtoname{$i}_dmadata_end, .protection = 0},";
-    print "\n	        {.addr_start = _slab_$slab_idtoname{$i}_mmio_start, .addr_end = _slab_$slab_idtoname{$i}_mmio_end, .protection = 0},";
     print "\n	    },";
 
     #slab_entrystub
@@ -306,6 +326,10 @@ sub parse_gsm {
     my($filename, $slabid, $totalslabs) = @_;
     my $i = 0;
     my $j = 0;
+    my $slab_rdinclcount=0;
+    my $slab_rdexclcount=0;
+    my $slab_rdinclentriesstring="";
+    my $slab_rdexclentriesstring="";
     my %slab_idtouapifnmask;
     my $slab_uapifnmaskstring = "";
 
@@ -313,6 +337,9 @@ sub parse_gsm {
     tie my @array, 'Tie::File', $filename or die $!;
 
     #print "parse_gsm: $filename, $slabid...\n";
+
+    $slab_rdinclentriesstring = $slab_rdinclentriesstring."{ \n";
+    $slab_rdexclentriesstring = $slab_rdexclentriesstring."{ \n";
 
     while( $i <= $#array) {
         my $line = $array[$i];
@@ -340,8 +367,26 @@ sub parse_gsm {
             }
 
         }elsif( $lineentry[0] eq "RD"){
-
             #print $lineentry[0], $lineentry[1], $lineentry[2], $lineentry[3], $lineentry[4], "\n";
+            #lineentry[1]=INCL or EXCL, lineentry[2] = vendor_id, lineentry[3] = device_id
+            if ( $lineentry[1] eq "INCL"){
+                if($slab_rdinclcount >= $g_maxincldevlistentries){
+                    print "\nError: Too many RD INCL entries (max=$g_maxincldevlistentries)!";
+                    exit 1;
+                }
+                $slab_rdinclentriesstring = $slab_rdinclentriesstring."\t{ .vendor_id= ".$lineentry[2].", .device_id= ".$lineentry[3]." },\n";
+                $slab_rdinclcount = $slab_rdinclcount + 1;
+            } elsif ( $lineentry[1] eq "EXCL"){
+                if($slab_rdexclcount >= $g_maxexcldevlistentries){
+                    print "\nError: Too many RD EXCL entries (max=$g_maxexcldevlistentries)!";
+                    exit 1;
+                }
+                $slab_rdexclentriesstring = $slab_rdexclentriesstring."\t{ .vendor_id= ".$lineentry[2].", .device_id= ".$lineentry[3]." },\n";
+                $slab_rdexclcount = $slab_rdexclcount + 1;
+            }else {
+                print "\nError: Illegal RD entry qualifier ($lineentry[1])!";
+                exit 1;
+            }
 
         }elsif( $lineentry[0] eq "RC"){
 
@@ -354,6 +399,22 @@ sub parse_gsm {
 
         $i = $i +1;
     }
+
+    if($slab_rdinclcount == 0){
+        $slab_rdinclentriesstring = $slab_rdinclentriesstring."0 \n}, \n";
+    }else{
+        $slab_rdinclentriesstring = $slab_rdinclentriesstring."}, \n";
+    }
+    if($slab_rdexclcount == 0){
+        $slab_rdexclentriesstring = $slab_rdexclentriesstring."0 \n}, \n";
+    }else{
+        $slab_rdexclentriesstring = $slab_rdexclentriesstring."}, \n";
+    }
+
+    $slab_idtordinclentries{$slabid} = $slab_rdinclentriesstring;
+    $slab_idtordexclentries{$slabid} = $slab_rdexclentriesstring;
+    $slab_idtordinclcount{$slabid} = $slab_rdinclcount;
+    $slab_idtordexclcount{$slabid} = $slab_rdexclcount;
 
     while($j < $totalslabs){
         $slab_uapifnmaskstring = $slab_uapifnmaskstring.sprintf("\t0x%08x,\n", $slab_idtouapifnmask{$j});
