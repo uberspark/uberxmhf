@@ -180,7 +180,7 @@ void _geec_prime_main(slab_params_t *sp){
     CASM_FUNCCALL(write_cr3,(u32)_xmhfhic_common_slab_info_table[XMHFGEEC_SLAB_GEEC_PRIME].mempgtbl_cr3);
     _XDPRINTF_("Switched to GEEC_PRIME pagetables...\n");
 
-    //transfer control to geec_primesmp
+/*    //transfer control to geec_primesmp
     {
         slab_params_t spl;
         spl.src_slabid = XMHFGEEC_SLAB_GEEC_PRIME;
@@ -188,7 +188,10 @@ void _geec_prime_main(slab_params_t *sp){
         spl.dst_uapifn = 0;
         spl.cpuid = 0;
         XMHF_SLAB_CALLNEW(&spl);
-    }
+    }*/
+
+    //setup (SMP) CPU state
+    _geec_prime_setup_cpustate();
 
     //we should never get here
     _XDPRINTF_("Should never be here. Halting!\n");
@@ -2710,7 +2713,7 @@ void xmhf_hic_arch_setup_cpu_state(u64 cpuid){
 
 
 /////
-void slab_main(slab_params_t *sp){
+void _geec_prime_setup_cpustate(void){
 
     //setup base CPU data structures
     xmhfhic_arch_setup_base_cpu_data_structures();
