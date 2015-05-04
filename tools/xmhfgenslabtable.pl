@@ -35,6 +35,10 @@ my %slab_idtordexclentries;
 my %slab_idtordexclcount;
 
 
+my %slab_idtomemgrantreadcaps;
+my %slab_idtomemgrantwritecaps;
+
+
 my %slab_nametoid;
 
 my $i = 0;
@@ -251,10 +255,18 @@ while( $i < $g_totalslabs ){
     print "\n       },";
 
     #slab_memgrantreadcaps
-    print "\n       0xFFFFFFFFUL,";
+    if(exists $slab_idtomemgrantreadcaps{$i}){
+        printf("\n       0x%08x,", $slab_idtomemgrantreadcaps{$i});
+    }else{
+        printf("\n       0x00000000UL,");
+    }
 
     #slab_memgrantwritecaps
-    print "\n       0xFFFFFFFFUL,";
+    if(exists $slab_idtomemgrantwritecaps{$i}){
+        printf("\n       0x%08x,", $slab_idtomemgrantreadcaps{$i});
+    }else{
+        printf("\n       0x00000000UL,");
+    }
 
     #slab_devices
     #if($slab_idtotype{$i} eq "uVU_SLAB" && $slab_idtosubtype{$i} eq "XRICHGUEST"){
@@ -387,6 +399,32 @@ sub parse_gsm {
                 print "\nError: Illegal RD entry qualifier ($lineentry[1])!";
                 exit 1;
             }
+
+        }elsif( $lineentry[0] eq "RM"){
+            #print $lineentry[0], $lineentry[1], $lineentry[2], $lineentry[3], $lineentry[4], "\n";
+            #lineentry[1]=READ or WRITE, lineentry[2] = slabname
+            if ( $lineentry[1] eq "READ"){
+
+                if (exists $slab_idtomemgrantreadcaps{$slabid}){
+                    $slab_idtomemgrantreadcaps{$slabid} |= (1 << $slab_nametoid{$lineentry[2]});
+                }else{
+                    $slab_idtomemgrantreadcaps{$slabid} = (1 << $slab_nametoid{$lineentry[2]});
+                }
+
+
+            } elsif ( $lineentry[1] eq "WRITE"){
+
+                if (exists $slab_idtomemgrantwritecaps{$slabid}){
+                    $slab_idtomemgrantwritecaps{$slabid} |= (1 << $slab_nametoid{$lineentry[2]});
+                }else{
+                    $slab_idtomemgrantwritecaps{$slabid} = (1 << $slab_nametoid{$lineentry[2]});
+                }
+
+            }else {
+                print "\nError: Illegal RM entry qualifier ($lineentry[1])!";
+                exit 1;
+            }
+
 
         }elsif( $lineentry[0] eq "RC"){
 
