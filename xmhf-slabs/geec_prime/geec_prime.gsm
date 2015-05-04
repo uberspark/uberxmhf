@@ -3,13 +3,12 @@
 #include <geec_sentinel.h>
 #include <uapi_slabmempgtbl.h>
 #include <uapi_slabdevpgtbl.h>
-#include <geec_primesmp.h>
-
+#include <xc_init.h>
 
 S:geec_sentinel:void:void:void
 S:uapi_slabmempgtbl:void:void:void
 S:uapi_slabdevpgtbl:void:void:void
-S:geec_primesmp:void:void:void
+S:xc_init:void:void:void
 
 U:uapi_slabdevpgtbl:XMHFGEEC_UAPI_SDEVPGTBL_INIT:void:void
 U:uapi_slabdevpgtbl:XMHFGEEC_UAPI_SDEVPGTBL_INITRETCET:void:void
@@ -24,3 +23,5 @@ RD:INCL:PCI_VENDOR_ID_XMHFGEEC:PCI_DEVICE_ID_XMHFGEEC_TPM:void
 RD:INCL:PCI_VENDOR_ID_XMHFGEEC:PCI_DEVICE_ID_XMHFGEEC_IOMMU:void
 
 
+
+RD:INCL:PCI_VENDOR_ID_XMHFGEEC:PCI_DEVICE_ID_XMHFGEEC_LAPIC:void
