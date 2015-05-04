@@ -55,7 +55,7 @@
 #include <xmhfgeec.h>
 
 #include <geec_sentinel.h>
-#include <geec_primesmp.h>
+#include <geec_prime.h> //XXX: eliminate this
 
 //////
 // sentinel entry point
