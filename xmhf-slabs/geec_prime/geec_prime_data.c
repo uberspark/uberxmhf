@@ -167,9 +167,6 @@ __attribute__(( aligned(16) )) arch_x86_gdtdesc_t _xcsmp_ap_init_gdt  = {
 
 //static bool CASM_FUNCCALL(__xmhfhic_ap_entry,void) __attribute__((naked));
 void __xmhfhic_smp_cpu_x86_smpinitialize_commonstart(void);
-u64 _xcsmp_ap_entry_lock = 1;
-mtrr_state_t _mtrrs;
-u64 _ap_cr3=0;
 
 
 // GDT

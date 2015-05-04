@@ -195,6 +195,7 @@ extern __attribute__((section(".data"))) u32  __xmhfhic_exceptionstubs[]; //ro
 extern __attribute__((section(".data"))) __attribute__(( aligned(16) )) arch_x86_idtdesc_t __xmhfhic_x86vmx_idt; //ro
 extern __attribute__((section(".data"))) __attribute__(( aligned(4096) )) u8 __xmhfhic_x86vmx_tss_stack[MAX_PLATFORM_CPUS][PAGE_SIZE_4K];
 extern __attribute__((section(".data"))) __attribute__(( aligned(4096) )) u8 __xmhfhic_rtm_trampoline_stack[MAX_PLATFORM_CPUS][MAX_PLATFORM_CPUSTACK_SIZE];
+extern __attribute__(( section(".stack") )) __attribute__(( aligned(4096) )) u8 _geec_primesmp_sysenter_stack[MAX_PLATFORM_CPUS][MAX_PLATFORM_CPUSTACK_SIZE];
 
 
 
