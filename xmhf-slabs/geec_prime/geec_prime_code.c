@@ -57,6 +57,9 @@
 
 __attribute__((aligned(4096))) static u64 _xcprimeon_init_pdt[PAE_PTRS_PER_PDPT][PAE_PTRS_PER_PDT];
 __attribute__((aligned(4096))) static u64 _xcprimeon_init_pdpt[PAE_MAXPTRS_PER_PDPT];
+static u64 _xcsmp_ap_entry_lock = 1;
+static mtrr_state_t _mtrrs;
+static u64 _ap_cr3=0;
 
 static void xmhfhic_setupinitpgtables(void){
     u32 paddr=0;
@@ -2037,7 +2040,7 @@ void xmhfhic_smp_entry(u32 cpuid){
 
         memset(&sp, 0, sizeof(sp));
         sp.cpuid = cpuid;
-        sp.src_slabid = XMHFGEEC_SLAB_GEEC_PRIMESMP;
+        sp.src_slabid = XMHFGEEC_SLAB_GEEC_PRIME;
         sp.dst_slabid = XMHFGEEC_SLAB_XC_INIT;
         XMHF_SLAB_CALLNEW(&sp);
     }
