@@ -10,5 +10,5 @@ export XMHF_SLAB_NAME := geec_prime
 export XMHF_SLAB_SOURCES := $(wildcard $(srcdir)/*.c)
 XMHF_SLAB_SOURCES += $(wildcard $(srcdir)/*.cS)
 
-export XMHF_SLAB_GLOBAL_SYMS := --globalize-symbol libxmhfdebug_lock --globalize-symbol xcbootinfo --globalize-symbol __xmhfhic_x86vmx_archdata
+export XMHF_SLAB_GLOBAL_SYMS := --globalize-symbol libxmhfdebug_lock --globalize-symbol xcbootinfo
 ########################################################################
