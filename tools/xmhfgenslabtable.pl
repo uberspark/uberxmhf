@@ -12,10 +12,9 @@ use File::Basename;
 # 1: max number of unverified slab memory page table sets
 
 my $g_slabsfile = $ARGV[0];
-my $g_totaluvslabmempgtblsets = $ARGV[1];
-my $g_totaluvslabiotblsets = $ARGV[2];
-my $g_maxincldevlistentries = $ARGV[3];
-my $g_maxexcldevlistentries = $ARGV[4];
+my $g_maxuvslabs = $ARGV[1];
+my $g_maxincldevlistentries = $ARGV[2];
+my $g_maxexcldevlistentries = $ARGV[3];
 
 my $g_totalslabmempgtblsets;
 my $g_totalslabiotblsets;
@@ -54,6 +53,9 @@ my $slabsubtype;
 
 
 $g_rootdir = dirname($g_slabsfile)."/";
+
+$g_totaluvslabmempgtblsets = $g_maxuvslabs;
+$g_totaluvslabiotblsets = $g_maxuvslabs;
 $g_totalslabmempgtblsets = $g_totaluvslabmempgtblsets + 2;
 $g_totalslabiotblsets = $g_totaluvslabiotblsets + 2;
 
