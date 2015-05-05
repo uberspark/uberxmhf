@@ -2100,9 +2100,13 @@ static void __xmhfhic_x86vmx_initializeTSS(void){
 		for(i=0; i < xcbootinfo->cpuinfo_numentries; i++){
             u32 tss_idx = xcbootinfo->cpuinfo_buffer[i].lapic_id;
 
+            memset(&__xmhfhic_x86vmx_tss[tss_idx], 0, sizeof(__xmhfhic_x86vmx_tss[tss_idx]));
             tss_t *tss= (tss_t *)__xmhfhic_x86vmx_tss[tss_idx];
             tss->esp0 = (u32) ( &__xmhfhic_x86vmx_tss_stack[tss_idx] + sizeof(__xmhfhic_x86vmx_tss_stack[0]) );
             tss->ss0 = __DS_CPL0;
+            tss->iotbl_addr = (u32)&__xmhfhic_x86vmx_tss[tss_idx][PAGE_SIZE_4K] - (u32)&__xmhfhic_x86vmx_tss[tss_idx];
+            _XDPRINTF_("%s: tss_idx=%u, iotbl_addr=%x\n", __func__, tss_idx,
+                       tss->iotbl_addr);
 		}
 }
 
