@@ -128,7 +128,8 @@ void _geec_sentinel_exception_stub(x86vmx_exception_frame_t *exframe){
     spl.slab_ctype = XMHFGEEC_SENTINEL_CALL_EXCEPTION;
     spl.src_slabid = XMHFGEEC_SLAB_GEEC_SENTINEL; //XXX: TODO: grab src_slabid based on exframe->orig_rip
     spl.dst_slabid = XMHFGEEC_SLAB_XC_EXHUB;
-    spl.cpuid = __xmhfhic_x86vmx_cpuidtable[xmhf_baseplatform_arch_x86_getcpulapicid()];
+    //spl.cpuid = __xmhfhic_x86vmx_cpuidtable[xmhf_baseplatform_arch_x86_getcpulapicid()];
+    spl.cpuid = xmhf_baseplatform_arch_x86_getcpulapicid();
     memcpy(&spl.in_out_params[0], exframe,
            sizeof(x86vmx_exception_frame_t));
 
@@ -148,7 +149,8 @@ void _geec_sentinel_intercept_stub(x86regs_t *r){
     spl.slab_ctype = XMHFGEEC_SENTINEL_CALL_INTERCEPT;
     spl.src_slabid = CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmread,VMCS_CONTROL_VPID);
     spl.dst_slabid = XMHFGEEC_SLAB_XC_IHUB;
-    spl.cpuid = __xmhfhic_x86vmx_cpuidtable[xmhf_baseplatform_arch_x86_getcpulapicid()];
+    //spl.cpuid = __xmhfhic_x86vmx_cpuidtable[xmhf_baseplatform_arch_x86_getcpulapicid()];
+    spl.cpuid = xmhf_baseplatform_arch_x86_getcpulapicid();
     memcpy(&spl.in_out_params[0], r, sizeof(x86regs_t));
 
     geec_sentinel_main(&spl, &spl);
@@ -165,7 +167,8 @@ void _geec_sentinel_intercept_stub(x86regs_t *r){
 void _geec_sentinel_sysenter_stub(slab_params_t *sp, void *caller_stack_frame){
 
     //sanity check sp
-    sp->cpuid = __xmhfhic_x86vmx_cpuidtable[xmhf_baseplatform_arch_x86_getcpulapicid()];
+    //sp->cpuid = __xmhfhic_x86vmx_cpuidtable[xmhf_baseplatform_arch_x86_getcpulapicid()];
+    sp->cpuid = xmhf_baseplatform_arch_x86_getcpulapicid();
 
     if( !(sp->slab_ctype == XMHFGEEC_SENTINEL_RET_VfT_PROG_TO_uVT_uVU_PROG ||
           sp->slab_ctype == XMHFGEEC_SENTINEL_CALL_uVT_uVU_PROG_TO_VfT_PROG
