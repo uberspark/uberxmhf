@@ -58,6 +58,8 @@
 #include <geec_sentinel.h>
 #include <uapi_slabiotbl.h>
 
+//I/O perms table for 64K legacy I/O addressing space
+__attribute__((section(".rwdatahdr"))) __attribute__((aligned(4096))) u8 _slabiotbl_perms[XMHFGEEC_TOTAL_SLABS][3*PAGE_SIZE_4K];
 
 static inline void _slabiotbl_sanitycheckhalt_slabid(u32 slabid){
     if(slabid < XMHF_MAX_IOTBL_SETS)
@@ -69,8 +71,34 @@ static inline void _slabiotbl_sanitycheckhalt_slabid(u32 slabid){
 
 
 static void _slabiotbl_init(u32 dst_slabid){
+    u32 slabtype;
 
+    _slabiotbl_sanitycheckhalt_slabid(dst_slabid);
 
+    slabtype = _xmhfhic_common_slab_info_table[dst_slabid].slabtype;
+
+    switch(slabtype){
+        case XMHFGEEC_SLABTYPE_uVT_PROG:
+        case XMHFGEEC_SLABTYPE_uVU_PROG:{
+            memset(&_slabiotbl_perms[dst_slabid], 0, sizeof(_slabiotbl_perms[0]));
+            _slabiotbl_perms[dst_slabid][(2*PAGE_SIZE_4K)] = 0xFF;  //terminate the TSS I/O bitmap by all 1's
+            _XDPRINTF_("%s: setup slab %u with TSS I/O perms\n", __func__, dst_slabid);
+        }
+        break;
+
+        case XMHFGEEC_SLABTYPE_uVT_PROG_GUEST:
+        case XMHFGEEC_SLABTYPE_uVU_PROG_GUEST:
+        case XMHFGEEC_SLABTYPE_uVU_PROG_RICHGUEST:{
+            memset(&_slabiotbl_perms[dst_slabid], 0, sizeof(_slabiotbl_perms[0]));
+            _XDPRINTF_("%s: setup slab %u with VMCS I/O perms\n", __func__, dst_slabid);
+        }
+        break;
+
+        default:
+            _XDPRINTF_("%s: Halting. Unknown slab type %u\n", __func__, slabtype);
+            HALT();
+            break;
+    }
 }
 
 
