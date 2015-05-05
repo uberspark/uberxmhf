@@ -60,12 +60,63 @@
 
 
 
+static void _slabiotbl_init(u32 dst_slabid){
+
+
+}
+
+
+static void _slabiotbl_allowaccesstoport(u32 dst_slabid, u16 port, u16 port_size){
+
+
+}
+
+
+
+static void _slabiotbl_denyaccesstoport(u32 dst_slabid, u16 port, u16 port_size){
+
+
+}
+
 
 
 /////
 void slab_main(slab_params_t *sp){
 
     switch(sp->dst_uapifn){
+
+       case XMHFGEEC_UAPI_SLABIOTBL_INIT:{
+            xmhfgeec_uapi_slabiotbl_init_params_t *initp =
+                (xmhfgeec_uapi_slabiotbl_init_params_t *)sp->in_out_params;
+
+            _slabiotbl_init(initp->dst_slabid);
+       }
+       break;
+
+
+       case XMHFGEEC_UAPI_SLABIOTBL_ALLOWACCESSTOPORT:{
+            xmhfgeec_uapi_slabiotbl_allowaccesstoport_params_t *allowaccesstoportp =
+                (xmhfgeec_uapi_slabiotbl_allowaccesstoport_params_t *)sp->in_out_params;
+
+            _slabiotbl_allowaccesstoport(allowaccesstoportp->dst_slabid,
+                                           allowaccesstoportp->port,
+                                           allowaccesstoportp->port_size);
+
+       }
+        break;
+
+       case XMHFGEEC_UAPI_SLABIOTBL_DENYACCESSTOPORT:{
+            xmhfgeec_uapi_slabiotbl_denyaccesstoport_params_t *denyaccesstoportp =
+                (xmhfgeec_uapi_slabiotbl_denyaccesstoport_params_t *)sp->in_out_params;
+
+            _slabiotbl_denyaccesstoport(denyaccesstoportp->dst_slabid,
+                                           denyaccesstoportp->port,
+                                           denyaccesstoportp->port_size);
+
+       }
+        break;
+
+
 
         default:
             _XDPRINTF_("UAPI_SLABIOTBL[%u]: Unknown uAPI function %x. Halting!\n",
