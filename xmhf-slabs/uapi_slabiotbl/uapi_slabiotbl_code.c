@@ -59,6 +59,14 @@
 #include <uapi_slabiotbl.h>
 
 
+static inline void _slabiotbl_sanitycheckhalt_slabid(u32 slabid){
+    if(slabid < XMHF_MAX_IOTBL_SETS)
+        return; //I/O perm table is only for slab ids 0..XMHF_MAX_IOTBL_SETS-1
+
+    _XDPRINTF_("%s: Halting!. Invalid slab index %u \n", __func__, slabid);
+    HALT();
+}
+
 
 static void _slabiotbl_init(u32 dst_slabid){
 
