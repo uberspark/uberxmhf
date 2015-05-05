@@ -197,12 +197,12 @@ CASM_FUNCDEF(bool, __xmhfhic_ap_entry,
     xmhfhwm_cpu_insn_xorl_eax_eax();
     xmhfhwm_cpu_insn_movl_imm_eax(0xFEE00020);
     xmhfhwm_cpu_insn_movl_meax_eax(0x0);
-    xmhfhwm_cpu_insn_shr_imm_eax(24);
+    xmhfhwm_cpu_insn_shr_imm_eax(24);           //eax = lapic id (0-255)
 
-    xmhfhwm_cpu_insn_xorl_ebx_ebx();
-    xmhfhwm_cpu_insn_movl_edi_ebx();
+    //xmhfhwm_cpu_insn_xorl_ebx_ebx();
+    //xmhfhwm_cpu_insn_movl_edi_ebx();
 
-    xmhfhwm_cpu_insn_movl_mebxeax_eax(4);
+    //xmhfhwm_cpu_insn_movl_mebxeax_eax(4);
 
     xmhfhwm_cpu_insn_movl_imm_ecx(16384);
     xmhfhwm_cpu_insn_mull_ecx();

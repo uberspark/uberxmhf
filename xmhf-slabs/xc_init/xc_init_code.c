@@ -87,7 +87,8 @@ __attribute__(( aligned(16) )) static u64 _xcguestslab_init_gdt[]  = {
 
 void slab_main(slab_params_t *sp){
 
-    bool isbsp = (sp->cpuid & 0x80000000UL) ? true : false;
+    //bool isbsp = (sp->cpuid & 0x80000000UL) ? true : false;
+    bool isbsp = xmhfhw_lapic_isbsp();
     u64 inputval, outputval;
     static u64 cpucount=0;
     static u32 __xcinit_smplock = 1;
