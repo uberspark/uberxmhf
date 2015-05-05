@@ -2058,7 +2058,8 @@ static void __xmhfhic_x86vmx_initializeGDT(void){
 
 		for(i=0; i < xcbootinfo->cpuinfo_numentries; i++){
             TSSENTRY *t;
-            u32 tss_base=(u32)&__xmhfhic_x86vmx_tss[i];
+            u32 tss_idx = xcbootinfo->cpuinfo_buffer[i].lapic_id;
+            u32 tss_base=(u32)&__xmhfhic_x86vmx_tss[tss_idx];
 
             //TSS descriptor
             t= (TSSENTRY *)&__xmhfhic_x86vmx_gdt_start[(__TRSEL/8)+(i*2)];
@@ -2096,11 +2097,10 @@ static void __xmhfhic_x86vmx_initializeTSS(void){
 
 		//initialize TSS descriptors for all CPUs
 		for(i=0; i < xcbootinfo->cpuinfo_numentries; i++){
-            tss_t *tss= (tss_t *)__xmhfhic_x86vmx_tss[i];
-            /* x86_64
-            tss->rsp0 = (u64) ( &__xmhfhic_x86vmx_tss_stack[i] + sizeof(__xmhfhic_x86vmx_tss_stack[0]) );
-            */
-            tss->esp0 = (u32) ( &__xmhfhic_x86vmx_tss_stack[i] + sizeof(__xmhfhic_x86vmx_tss_stack[0]) );
+            u32 tss_idx = xcbootinfo->cpuinfo_buffer[i].lapic_id;
+
+            tss_t *tss= (tss_t *)__xmhfhic_x86vmx_tss[tss_idx];
+            tss->esp0 = (u32) ( &__xmhfhic_x86vmx_tss_stack[tss_idx] + sizeof(__xmhfhic_x86vmx_tss_stack[0]) );
             tss->ss0 = __DS_CPL0;
 		}
 }
