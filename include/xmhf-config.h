@@ -250,6 +250,7 @@
 
 
 // segment selectors
+#define     __NULLSEL       0x0000  //NULL selector
 #define 	__CS_CPL0 	    0x0008 	//CPL-0 code segment selector
 #define 	__DS_CPL0 	    0x0010 	//CPL-0 data segment selector
 #define		__CS_CPL3	    0x001b	//CPL-3 code segment selector
@@ -257,6 +258,9 @@
 #define		__CS_CPL3_SE	0x002b	//CPL-3 code segment selector
 #define		__DS_CPL3_SE	0x0033  //CPL-3 data segment selector
 #define 	__TRSEL 	    0x0038  //TSS (task) selector
+
+// max. segment descriptors not including TSS descriptors
+#define     XMHFGEEC_MAX_GDT_CODEDATA_DESCRIPTORS   7
 
 #define	EMHF_XCPHANDLER_MAXEXCEPTIONS	32
 
