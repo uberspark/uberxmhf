@@ -59,7 +59,7 @@
 #include <uapi_slabiotbl.h>
 
 //I/O perms table for 64K legacy I/O addressing space
-__attribute__((section(".rwdatahdr"))) __attribute__((aligned(4096))) u8 _slabiotbl_perms[XMHFGEEC_TOTAL_SLABS][3*PAGE_SIZE_4K];
+__attribute__((section(".rwdatahdr"))) __attribute__((aligned(4096))) u8 _slabiotbl_perms[XMHFGEEC_TOTAL_SLABS][3*PAGE_SIZE_4K] = { 0 };
 
 static inline void _slabiotbl_sanitycheckhalt_slabid(u32 slabid){
     if(slabid < XMHF_MAX_IOTBL_SETS)
