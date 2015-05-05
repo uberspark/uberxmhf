@@ -307,7 +307,7 @@ void xmhfhic_arch_setup_slab_info(void){
 				_XDPRINTF_("  slab_dmadata(%08x-%08x)\n", _xmhfhic_common_slab_info_table[i].slab_physmem_extents[3].addr_start, _xmhfhic_common_slab_info_table[i].slab_physmem_extents[3].addr_end);
 				_XDPRINTF_("  slab_entrystub=%08x\n", _xmhfhic_common_slab_info_table[i].entrystub);
 
-                {
+                /*{
                     u32 j;
 
                     for(j=0; j < MAX_PLATFORM_CPUS; j++)
@@ -315,7 +315,7 @@ void xmhfhic_arch_setup_slab_info(void){
                         //       _xmhfhic_common_slab_info_table[i].slabtos[j]);
                         _XDPRINTF_("     CPU %u: stack TOS=%08x\n", j,
                                _xmhfhic_common_slab_info_table[i].slabtos[j]);
-                }
+                }*/
 
 		}
 	}
@@ -1862,7 +1862,7 @@ static void __xmhfhic_smp_container_vmx_wakeupAPs(void){
     apdata.ap_gdtdesc_base = (X86SMP_APBOOTSTRAP_DATASEG << 4) + 48;
     apdata.ap_cs_selector = __CS_CPL0;
     apdata.ap_eip = (X86SMP_APBOOTSTRAP_CODESEG << 4);
-    apdata.cpuidtable = (u32)&__xmhfhic_x86vmx_cpuidtable;
+    //apdata.cpuidtable = (u32)&__xmhfhic_x86vmx_cpuidtable;
     apdata.ap_gdt[0] = 0x0000000000000000ULL;
     apdata.ap_gdt[1] = 0x00cf9a000000ffffULL;
     apdata.ap_gdt[2] = 0x00cf92000000ffffULL;
@@ -1951,18 +1951,6 @@ static bool __xmhfhic_smp_arch_smpinitialize(void){
 
 }
 
-//return 1 if the calling CPU is the BSP
-static bool __xmhfhic_smp_cpu_x86_isbsp(void){
-  u32 eax, edx;
-  //read LAPIC base address from MSR
-  rdmsr(MSR_APIC_BASE, &eax, &edx);
-  HALT_ON_ERRORCOND( edx == 0 ); //APIC is below 4G
-
-  if(eax & 0x100)
-    return true;
-  else
-    return false;
-}
 
 
 //common function which is entered by all CPUs upon SMP initialization
@@ -1970,7 +1958,8 @@ static bool __xmhfhic_smp_cpu_x86_isbsp(void){
 void __xmhfhic_smp_cpu_x86_smpinitialize_commonstart(void){
 	u32 cpuid;
 	#if !defined(__XMHF_VERIFICATION__)
-	cpuid  = __xmhfhic_x86vmx_cpuidtable[xmhf_baseplatform_arch_x86_getcpulapicid()];
+	//cpuid  = __xmhfhic_x86vmx_cpuidtable[xmhf_baseplatform_arch_x86_getcpulapicid()];
+    cpuid  = xmhf_baseplatform_arch_x86_getcpulapicid();
     #endif
 
     xmhfhic_smp_entry(cpuid);
@@ -1978,7 +1967,7 @@ void __xmhfhic_smp_cpu_x86_smpinitialize_commonstart(void){
 
 
 void xmhfhic_arch_switch_to_smp(void){
-	//initialize cpu table and total platform CPUs
+/*	//initialize cpu table and total platform CPUs
 	{
 	    u32 i, j;
 	    for(i=0; i < MAX_X86_APIC_ID; i++)
@@ -1995,7 +1984,7 @@ void xmhfhic_arch_switch_to_smp(void){
             //XXX: TODO sanity check xcbootinfo->cpuinfo_buffer[i].lapic_id < MAX_X86_APIC_ID
             __xmhfhic_x86vmx_cpuidtable[xcbootinfo->cpuinfo_buffer[i].lapic_id] = value;
         }
-	}
+	}*/
 
     __xmhfhic_smp_arch_smpinitialize();
 
@@ -2003,7 +1992,8 @@ void xmhfhic_arch_switch_to_smp(void){
 
 
 void xmhfhic_smp_entry(u32 cpuid){
-    bool isbsp = (cpuid & 0x80000000UL) ? true : false;
+    //bool isbsp = (cpuid & 0x80000000UL) ? true : false;
+    bool isbsp = xmhfhw_lapic_isbsp();
     #if defined (__XMHF_VERIFICATION__)
     cpuid = 0;
     isbsp = true;

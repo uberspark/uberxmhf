@@ -81,7 +81,7 @@
 
 //max. cores/vcpus we support currently
 #ifndef __XMHF_VERIFICATION__
-	#define	MAX_PLATFORM_CPUS					(8)
+	#define	MAX_PLATFORM_CPUS					(256)
 #else
 	#define	MAX_PLATFORM_CPUS					(1)
 #endif
@@ -169,24 +169,18 @@
 
 //----------------------------------------------------------------------
 // XMHF platform memory map
-	//size of memory that is pre-allocated by XMHF on the platform (currently 256MB)
-	//#define __TARGET_BASE_XMHF				0x10000000		//at 256M
-	//#define __TARGET_SIZE_XMHF				0x10000000
-	#define __TARGET_BASE_XMHF				0x02000000		//at 32M
+	//physical memory extents of the XMHF framework
+	#define __TARGET_BASE_XMHF				0x02400000		//at 36M
 	#define __TARGET_SIZE_XMHF				0x1C200000      //450M size
 
 	//physical address where the XMHF boot-loader is loaded (e.g., via GRUB)
 	#define __TARGET_BASE_BOOTLOADER		0x01E00000		//30MB
-	#define __TARGET_SIZE_BOOTLOADER		0x00200000		//2MB
+	#define __TARGET_SIZE_BOOTLOADER		0x00600000		//6MB
 
-	//physical address of XMHF secure loader
-	#define __TARGET_BASE_SL				0x02800000		//32+8MB
+	//physical address of geec_prime slab (acts as secure loader)
+	#define __TARGET_BASE_SL				0x03200000		//36+14MB
 	#define __TARGET_SIZE_SL				0x00200000
 
-
-	//physical address of XMHF hypapp
-	//#define __TARGET_BASE_XMHFHYPAPP		0x1D000000      //480M
-	//#define __TARGET_SIZE_XMHFHYPAPP		0x02000000		//32M
 //----------------------------------------------------------------------
 
 //"sl" parameter block magic value
@@ -239,6 +233,20 @@
 
 #define     MAX_SLAB_DMADATA_SIZE           (32*1024*1024)
 #define     MAX_SLAB_DMADATA_PDT_ENTRIES    (MAX_SLAB_DMADATA_SIZE/(2*1024*1024))
+
+
+// segment selectors
+#define 	__CS_CPL0 	    0x0008 	//CPL-0 code segment selector
+#define 	__DS_CPL0 	    0x0010 	//CPL-0 data segment selector
+#define		__CS_CPL3	    0x001b	//CPL-3 code segment selector
+#define		__DS_CPL3	    0x0023  //CPL-3 data segment selector
+#define		__CS_CPL3_SE	0x002b	//CPL-3 code segment selector
+#define		__DS_CPL3_SE	0x0033  //CPL-3 data segment selector
+#define 	__TRSEL 	    0x0038  //TSS (task) selector
+
+#define	EMHF_XCPHANDLER_MAXEXCEPTIONS	32
+
+
 
 #ifndef __ASSEMBLY__
 
