@@ -58,6 +58,16 @@
 //geec_prime: used for verified slabs
 #define XMHF_MAX_MEMPGTBL_SETS (XMHF_CONFIG_MAX_UVMEMPGTBL_SETS+2)
 
+
+//unverified slab I/O perm table sets
+#define XMHF_CONFIG_MAX_UVIOTBL_SETS __XMHF_CONFIG_MAX_UVIOTBL_SETS__
+
+//max I/O perm table sets is two added to the above:
+//geec_sentinel: currently unused
+//geec_prime: currently unused
+#define XMHF_MAX_IOTBL_SETS (XMHF_CONFIG_MAX_UVIOTBL_SETS+2)
+
+
 //max. include device list entries
 #define XMHF_CONFIG_MAX_INCLDEVLIST_ENTRIES __XMHF_CONFIG_MAX_INCLDEVLIST_ENTRIES__
 
