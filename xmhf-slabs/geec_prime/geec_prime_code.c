@@ -307,7 +307,7 @@ void xmhfhic_arch_setup_slab_info(void){
 				_XDPRINTF_("  slab_dmadata(%08x-%08x)\n", _xmhfhic_common_slab_info_table[i].slab_physmem_extents[3].addr_start, _xmhfhic_common_slab_info_table[i].slab_physmem_extents[3].addr_end);
 				_XDPRINTF_("  slab_entrystub=%08x\n", _xmhfhic_common_slab_info_table[i].entrystub);
 
-                {
+                /*{
                     u32 j;
 
                     for(j=0; j < MAX_PLATFORM_CPUS; j++)
@@ -315,7 +315,7 @@ void xmhfhic_arch_setup_slab_info(void){
                         //       _xmhfhic_common_slab_info_table[i].slabtos[j]);
                         _XDPRINTF_("     CPU %u: stack TOS=%08x\n", j,
                                _xmhfhic_common_slab_info_table[i].slabtos[j]);
-                }
+                }*/
 
 		}
 	}
