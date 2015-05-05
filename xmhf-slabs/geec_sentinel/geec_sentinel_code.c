@@ -57,7 +57,6 @@
 
 #include <xc.h>
 #include <geec_sentinel.h>
-#include <geec_prime.h> //TODO: we rely on this only for cpuidtable, need to eliminate
 
 
 __attribute__((section(".data"))) u32 __xmhfhic_safestack_indices[MAX_PLATFORM_CPUS] = { 0 };

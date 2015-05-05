@@ -234,6 +234,20 @@
 #define     MAX_SLAB_DMADATA_SIZE           (32*1024*1024)
 #define     MAX_SLAB_DMADATA_PDT_ENTRIES    (MAX_SLAB_DMADATA_SIZE/(2*1024*1024))
 
+
+// segment selectors
+#define 	__CS_CPL0 	    0x0008 	//CPL-0 code segment selector
+#define 	__DS_CPL0 	    0x0010 	//CPL-0 data segment selector
+#define		__CS_CPL3	    0x001b	//CPL-3 code segment selector
+#define		__DS_CPL3	    0x0023  //CPL-3 data segment selector
+#define		__CS_CPL3_SE	0x002b	//CPL-3 code segment selector
+#define		__DS_CPL3_SE	0x0033  //CPL-3 data segment selector
+#define 	__TRSEL 	    0x0038  //TSS (task) selector
+
+#define	EMHF_XCPHANDLER_MAXEXCEPTIONS	32
+
+
+
 #ifndef __ASSEMBLY__
 
 #if defined (__DEBUG_SERIAL__)

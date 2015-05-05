@@ -65,16 +65,6 @@
 #define INDEX_IA32_VMX_VMCS_ENUM_MSR        0xA
 #define INDEX_IA32_VMX_PROCBASED_CTLS2_MSR  0xB
 
-// segment selectors
-#define 	__CS_CPL0 	    0x0008 	//CPL-0 code segment selector
-#define 	__DS_CPL0 	    0x0010 	//CPL-0 data segment selector
-#define		__CS_CPL3	    0x001b	//CPL-3 code segment selector
-#define		__DS_CPL3	    0x0023  //CPL-3 data segment selector
-#define		__CS_CPL3_SE	0x002b	//CPL-3 code segment selector
-#define		__DS_CPL3_SE	0x0033  //CPL-3 data segment selector
-#define 	__TRSEL 	    0x0038  //TSS (task) selector
-
-#define	EMHF_XCPHANDLER_MAXEXCEPTIONS	32
 
 
 
