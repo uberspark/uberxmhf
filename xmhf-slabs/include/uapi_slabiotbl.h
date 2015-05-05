@@ -55,10 +55,28 @@
 #ifndef __UAPI_SLABIOTBL_H__
 #define __UAPI_SLABIOTBL_H__
 
-#define XMHFGEEC_UAPI_SLABIOTBL_INIT            0
+#define XMHFGEEC_UAPI_SLABIOTBL_INIT                0
+#define XMHFGEEC_UAPI_SLABIOTBL_ALLOWACCESSTOPORT   1
+#define XMHFGEEC_UAPI_SLABIOTBL_DENYACCESSTOPORT    2
+
 
 #ifndef __ASSEMBLY__
 
+typedef struct {
+    u32 dst_slabid;
+}__attribute__((packed)) xmhfgeec_uapi_slabiotbl_init_params_t;
+
+typedef struct {
+    u32 dst_slabid;
+    u16 port;
+    u16 port_size;
+}__attribute__((packed)) xmhfgeec_uapi_slabiotbl_allowaccesstoport_params_t;
+
+typedef struct {
+    u32 dst_slabid;
+    u16 port;
+    u16 port_size;
+}__attribute__((packed)) xmhfgeec_uapi_slabiotbl_denyaccesstoport_params_t;
 
 
 
