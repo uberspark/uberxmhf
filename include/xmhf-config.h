@@ -50,17 +50,20 @@
 #ifndef __XMHF_CONFIG_H__
 #define __XMHF_CONFIG_H__
 
+
+//max. unverified slabs
+#define XMHF_CONFIG_MAX_UVSLABS __XMHF_CONFIG_MAX_UVSLABS__
+
 //unverified slab memory page table sets
-#define XMHF_CONFIG_MAX_UVMEMPGTBL_SETS __XMHF_CONFIG_MAX_UVMEMPGTBL_SETS__
+#define XMHF_CONFIG_MAX_UVMEMPGTBL_SETS XMHF_CONFIG_MAX_UVSLABS
 
 //max memory page table sets is two added to the above:
 //geec_sentinel: currently unused
 //geec_prime: used for verified slabs
 #define XMHF_MAX_MEMPGTBL_SETS (XMHF_CONFIG_MAX_UVMEMPGTBL_SETS+2)
 
-
 //unverified slab I/O perm table sets
-#define XMHF_CONFIG_MAX_UVIOTBL_SETS __XMHF_CONFIG_MAX_UVIOTBL_SETS__
+#define XMHF_CONFIG_MAX_UVIOTBL_SETS XMHF_CONFIG_MAX_UVSLABS
 
 //max I/O perm table sets is two added to the above:
 //geec_sentinel: currently unused
