@@ -70,3 +70,17 @@ u32 xmhf_baseplatform_arch_x86_getcpulapicid(void){
   return lapic_id;
 }
 
+
+//return true if the calling CPU is the BSP
+bool xmhfhw_lapic_isbsp(void){
+  u32 eax, edx;
+  //read LAPIC base address from MSR
+  rdmsr(MSR_APIC_BASE, &eax, &edx);
+  HALT_ON_ERRORCOND( edx == 0 ); //APIC is below 4G
+
+  if(eax & 0x100)
+    return true;
+  else
+    return false;
+}
+

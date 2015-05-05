@@ -382,6 +382,7 @@ void xmhfhw_platform_x86pc_vtd_drhd_reg_write(vtd_drhd_handle_t drhd_handle, u32
 #ifndef __ASSEMBLY__
 
 u32 xmhf_baseplatform_arch_x86_getcpulapicid(void);
+bool xmhfhw_lapic_isbsp(void);
 
 #endif //__ASSEMBLY__
 
