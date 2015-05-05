@@ -2068,7 +2068,8 @@ static void __xmhfhic_x86vmx_initializeGDT(void){
             t->baseAddr0_15= (u16)(tss_base & 0x0000FFFF);
             t->baseAddr16_23= (u8)((tss_base & 0x00FF0000) >> 16);
             t->baseAddr24_31= (u8)((tss_base & 0xFF000000) >> 24);
-            t->limit0_15=0x67;
+            //t->limit0_15=0x67;
+            t->limit0_15=sizeof(tss_t)-1;
 		}
 
 }
