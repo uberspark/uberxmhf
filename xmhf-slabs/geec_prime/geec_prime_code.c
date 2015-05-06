@@ -174,6 +174,11 @@ void _geec_prime_main(slab_params_t *sp){
     //setup slab system device allocation and device page tables
         xmhfhic_arch_setup_slab_device_allocation();
 
+
+    //setup (unverified) slab iotbl
+    geec_prime_setup_slab_iotbl();
+
+
     //setup slab memory page tables
     xmhfhic_arch_setup_slab_mem_page_tables();
 #endif //__XMHF_VERIFICATION__
@@ -1000,6 +1005,47 @@ void xmhfhic_arch_setup_slab_device_allocation(void){
 
 
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//////
+// setup (unverified) slab iotbl
+/////
+void geec_prime_setup_slab_iotbl(void){
+
+
+
+
+
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
