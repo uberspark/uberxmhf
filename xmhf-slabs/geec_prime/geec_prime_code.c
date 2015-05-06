@@ -1029,8 +1029,9 @@ void xmhfhic_arch_setup_slab_device_allocation(void){
 #define _SLAB_SPATYPE_SLAB_STACK				(0x2)
 #define _SLAB_SPATYPE_SLAB_DMADATA				(0x3)
 #define _SLAB_SPATYPE_SLAB_DEVICEMMIO           (0x4)
+#define _SLAB_SPATYPE_GEEC_PRIME_IOTBL          (0x5)
 
-#define _SLAB_SPATYPE_OTHER	    				(0x5)
+#define _SLAB_SPATYPE_OTHER	    				(0x6)
 
 
 static slab_devicemap_t _smt_slab_devicemap[XMHFGEEC_TOTAL_SLABS];
@@ -1124,8 +1125,25 @@ static bool _geec_prime_smt_slab_getspatype_isdevicemmio(u32 slabid, u32 spa){
     return false;
 }
 
+
+static bool _geec_prime_smt_slab_getspatype_isiotbl(u32 slabid, u32 spa){
+    u32 i;
+
+    for(i=0; i < MAX_PLATFORM_CPUS; i++){
+      if (spa >= (u32)&__xmhfhic_x86vmx_tss[i].tss_iobitmap &&
+          spa < ((u32)&__xmhfhic_x86vmx_tss[i].tss_iobitmap + sizeof((u32)&__xmhfhic_x86vmx_tss[i].tss_iobitmap)) )
+            return true;
+    }
+
+    return false;
+}
+
+
 static u32 _geec_prime_slab_getspatype(u32 slab_index, u32 spa){
 	u32 i;
+
+
+
 
 	//slab memory regions
 	for(i=0; i < XMHFGEEC_TOTAL_SLABS; i++){
@@ -1134,16 +1152,19 @@ static u32 _geec_prime_slab_getspatype(u32 slab_index, u32 spa){
         if( i == slab_index)
             mask |= _SLAB_SPATYPE_MASK_SAMESLAB;
 
-		if(spa >= _xmhfhic_common_slab_info_table[i].slab_physmem_extents[0].addr_start && spa < _xmhfhic_common_slab_info_table[i].slab_physmem_extents[0].addr_end)
-			return _SLAB_SPATYPE_SLAB_CODE | mask;
-		if(spa >= _xmhfhic_common_slab_info_table[i].slab_physmem_extents[1].addr_start && spa < _xmhfhic_common_slab_info_table[i].slab_physmem_extents[1].addr_end)
-			return _SLAB_SPATYPE_SLAB_DATA | mask;
-		if(spa >= _xmhfhic_common_slab_info_table[i].slab_physmem_extents[2].addr_start && spa < _xmhfhic_common_slab_info_table[i].slab_physmem_extents[2].addr_end)
-			return _SLAB_SPATYPE_SLAB_STACK | mask;
-		if(spa >= _xmhfhic_common_slab_info_table[i].slab_physmem_extents[3].addr_start && spa < _xmhfhic_common_slab_info_table[i].slab_physmem_extents[3].addr_end)
-			return _SLAB_SPATYPE_SLAB_DMADATA | mask;
+        if(_geec_prime_smt_slab_getspatype_isiotbl(slab_index, spa))
+            return _SLAB_SPATYPE_GEEC_PRIME_IOTBL | mask;
+        if(spa >= _xmhfhic_common_slab_info_table[i].slab_physmem_extents[0].addr_start && spa < _xmhfhic_common_slab_info_table[i].slab_physmem_extents[0].addr_end)
+            return _SLAB_SPATYPE_SLAB_CODE | mask;
+        if(spa >= _xmhfhic_common_slab_info_table[i].slab_physmem_extents[1].addr_start && spa < _xmhfhic_common_slab_info_table[i].slab_physmem_extents[1].addr_end)
+            return _SLAB_SPATYPE_SLAB_DATA | mask;
+        if(spa >= _xmhfhic_common_slab_info_table[i].slab_physmem_extents[2].addr_start && spa < _xmhfhic_common_slab_info_table[i].slab_physmem_extents[2].addr_end)
+            return _SLAB_SPATYPE_SLAB_STACK | mask;
+        if(spa >= _xmhfhic_common_slab_info_table[i].slab_physmem_extents[3].addr_start && spa < _xmhfhic_common_slab_info_table[i].slab_physmem_extents[3].addr_end)
+            return _SLAB_SPATYPE_SLAB_DMADATA | mask;
         if(_geec_prime_smt_slab_getspatype_isdevicemmio(slab_index, spa))
             return _SLAB_SPATYPE_SLAB_DEVICEMMIO | mask;
+
 	}
 
 	return _SLAB_SPATYPE_OTHER;
@@ -1184,6 +1205,7 @@ static u64 _geec_prime_slab_getptflagsforspa_pae(u32 slabid, u32 spa, u32 spatyp
                         case _SLAB_SPATYPE_SLAB_DATA:
                         case _SLAB_SPATYPE_SLAB_STACK:
                         case _SLAB_SPATYPE_SLAB_DMADATA:
+                        case _SLAB_SPATYPE_GEEC_PRIME_IOTBL:
                             flags = (_PAGE_PRESENT | _PAGE_RW | _PAGE_NX);
                             break;
                         case _SLAB_SPATYPE_SLAB_DEVICEMMIO:
@@ -1224,6 +1246,7 @@ static u64 _geec_prime_slab_getptflagsforspa_pae(u32 slabid, u32 spa, u32 spatyp
                         case _SLAB_SPATYPE_SLAB_DATA:
                         case _SLAB_SPATYPE_SLAB_STACK:
                         case _SLAB_SPATYPE_SLAB_DMADATA:
+                        case _SLAB_SPATYPE_GEEC_PRIME_IOTBL:
                             flags = (_PAGE_PRESENT | _PAGE_RW | _PAGE_NX);
                             break;
                         case _SLAB_SPATYPE_SLAB_DEVICEMMIO:
@@ -1286,6 +1309,9 @@ static u64 _geec_prime_slab_getptflagsforspa_ept(u32 slabid, u32 spa, u32 spatyp
                     case _SLAB_SPATYPE_SLAB_DMADATA:
                     case _SLAB_SPATYPE_SLAB_DEVICEMMIO:
                         flags = 0x3;
+                        break;
+                    default:
+                        flags = 0;
                         break;
                 }
             }else{
@@ -1617,6 +1643,8 @@ static void _geec_prime_populate_slab_pagetables_pae4k(u32 slabid){
 	u64 gpa;
 	u64 flags;
 	u32 spatype;
+    u32 spa_slabregion, spa_slabtype;
+
 
     slab_params_t spl;
     xmhfgeec_uapi_slabmempgtbl_setentryforpaddr_params_t *setentryforpaddrp =
@@ -1628,14 +1656,39 @@ static void _geec_prime_populate_slab_pagetables_pae4k(u32 slabid){
 
 	for(gpa=0; gpa < ADDR_4GB; gpa += PAGE_SIZE_4K){
         spatype =  _geec_prime_slab_getspatype(slabid, (u32)gpa);
+        spa_slabregion = spatype & 0x0000000FUL;
+        spa_slabtype =spatype & 0x000000F0UL;
         flags = _geec_prime_slab_getptflagsforspa_pae(slabid, (u32)gpa, spatype);
         //_XDPRINTF_("gpa=%08x, flags=%016llx\n", (u32)gpa, flags);
 
-        spl.dst_uapifn = XMHFGEEC_UAPI_SLABMEMPGTBL_SETENTRYFORPADDR;
-        setentryforpaddrp->dst_slabid = slabid;
-        setentryforpaddrp->gpa = gpa;
-        setentryforpaddrp->entry = pae_make_pte(gpa, flags);
-        XMHF_SLAB_CALLNEW(&spl);
+        if(spa_slabregion == _SLAB_SPATYPE_GEEC_PRIME_IOTBL && slabid != XMHFGEEC_SLAB_GEEC_PRIME &&
+           !(spa_slabtype == XMHFGEEC_SLABTYPE_VfT_PROG) && !(spa_slabtype == XMHFGEEC_SLABTYPE_VfT_SENTINEL)){
+            //map unverified slab iotbl instead (12K)
+            spl.dst_uapifn = XMHFGEEC_UAPI_SLABMEMPGTBL_SETENTRYFORPADDR;
+            setentryforpaddrp->dst_slabid = slabid;
+            setentryforpaddrp->gpa = gpa;
+            setentryforpaddrp->entry = pae_make_pte(_xmhfhic_common_slab_info_table[slabid].iotbl_base, flags);
+            XMHF_SLAB_CALLNEW(&spl);
+            gpa += PAGE_SIZE_4K;
+            spl.dst_uapifn = XMHFGEEC_UAPI_SLABMEMPGTBL_SETENTRYFORPADDR;
+            setentryforpaddrp->dst_slabid = slabid;
+            setentryforpaddrp->gpa = gpa;
+            setentryforpaddrp->entry = pae_make_pte(_xmhfhic_common_slab_info_table[slabid].iotbl_base+PAGE_SIZE_4K, flags);
+            XMHF_SLAB_CALLNEW(&spl);
+            gpa += PAGE_SIZE_4K;
+            spl.dst_uapifn = XMHFGEEC_UAPI_SLABMEMPGTBL_SETENTRYFORPADDR;
+            setentryforpaddrp->dst_slabid = slabid;
+            setentryforpaddrp->gpa = gpa;
+            setentryforpaddrp->entry = pae_make_pte(_xmhfhic_common_slab_info_table[slabid].iotbl_base+(2*PAGE_SIZE_4K), flags);
+            XMHF_SLAB_CALLNEW(&spl);
+            gpa += PAGE_SIZE_4K;
+        }else{
+            spl.dst_uapifn = XMHFGEEC_UAPI_SLABMEMPGTBL_SETENTRYFORPADDR;
+            setentryforpaddrp->dst_slabid = slabid;
+            setentryforpaddrp->gpa = gpa;
+            setentryforpaddrp->entry = pae_make_pte(gpa, flags);
+            XMHF_SLAB_CALLNEW(&spl);
+        }
 
 	}
 
