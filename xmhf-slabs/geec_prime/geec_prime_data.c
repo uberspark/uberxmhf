@@ -201,7 +201,8 @@ __attribute__((section(".data"))) __attribute__(( aligned(16) )) arch_x86_idtdes
 // initialization phase CPU stacks
 __attribute__(( section(".stack") )) __attribute__(( aligned(4096) )) u8 _init_cpustacks[MAX_PLATFORM_CPUS][MAX_PLATFORM_CPUSTACK_SIZE];
 // TSS
-__attribute__((section(".data"))) __attribute__(( aligned(4096) )) u8 __xmhfhic_x86vmx_tss[MAX_PLATFORM_CPUS][4*PAGE_SIZE_4K] = { 0 };
+//__attribute__((section(".data"))) __attribute__(( aligned(4096) )) u8 __xmhfhic_x86vmx_tss[MAX_PLATFORM_CPUS][4*PAGE_SIZE_4K] = { 0 };
+__attribute__((section(".data"))) __attribute__(( aligned(4096) )) geec_prime_tss_t __xmhfhic_x86vmx_tss[MAX_PLATFORM_CPUS] = { 0 };
 // TSS stacks
 __attribute__((section(".stack"))) __attribute__(( aligned(4096) )) u8 __xmhfhic_x86vmx_tss_stack[MAX_PLATFORM_CPUS][PAGE_SIZE_4K];
 // sysenter CPU stacks
