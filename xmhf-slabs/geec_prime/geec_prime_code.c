@@ -1029,11 +1029,15 @@ void xmhfhic_arch_setup_slab_device_allocation(void){
 // setup (unverified) slab iotbl
 /////
 void geec_prime_setup_slab_iotbl(void){
-    u32 i;
+    u32 i, j, portnum;
     u32 slabtype;
     slab_params_t spl;
     xmhfgeec_uapi_slabiotbl_init_params_t *initp =
         (xmhfgeec_uapi_slabiotbl_init_params_t *)spl.in_out_params;
+    xmhfgeec_uapi_slabiotbl_allowaccesstoport_params_t *allowaccesstoportp =
+        (xmhfgeec_uapi_slabiotbl_allowaccesstoport_params_t *)spl.in_out_params;
+
+    u32 sysdev_memioregions_index;
 
     spl.src_slabid = XMHFGEEC_SLAB_GEEC_PRIME;
     spl.dst_slabid = XMHFGEEC_SLAB_UAPI_SLABIOTBL;
@@ -1050,9 +1054,28 @@ void geec_prime_setup_slab_iotbl(void){
             case XMHFGEEC_SLABTYPE_uVT_PROG_GUEST:
             case XMHFGEEC_SLABTYPE_uVU_PROG_GUEST:
             case XMHFGEEC_SLABTYPE_uVU_PROG_RICHGUEST:{
+                //initialize I/O perm. table for this slab (default = deny all)
                 spl.dst_uapifn = XMHFGEEC_UAPI_SLABIOTBL_INIT;
                 initp->dst_slabid = i;
                 XMHF_SLAB_CALLNEW(&spl);
+
+                //scan through the list of devices for this slab and add any
+                //legacy I/O ports to the I/O perm. table
+                for(i=0; i < _smt_slab_devicemap[slabid].device_count; i++){
+                    u32 sysdev_memioregions_index = _smt_slab_devicemap[slabid].sysdev_mmioregions_indices[i];
+                    for(j=0; j < PCI_CONF_MAX_BARS; j++){
+                        if(sysdev_memioregions[sysdev_memioregions_index].memioextents[j].extent_type == _MEMIOREGIONS_EXTENTS_TYPE_IO){
+                            for(portnum= sysdev_memioregions[sysdev_memioregions_index].memioextents[j].addr_start;
+                                portnum < sysdev_memioregions[sysdev_memioregions_index].memioextents[j].addr_end; portnum++){
+                                spl.dst_uapifn = XMHFGEEC_UAPI_SLABIOTBL_ALLOWACCESSTOPORT;
+                                allowaccesstoportp->dst_slabid = i;
+                                allowaccesstoportp->port=portnum;
+                                allowaccesstoportp->port_size=1;
+                                XMHF_SLAB_CALLNEW(&spl);
+                            }
+                        }
+                    }
+                }
             }
             break;
 
