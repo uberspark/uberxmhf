@@ -80,8 +80,8 @@ static void _slabiotbl_init(u32 dst_slabid){
     switch(slabtype){
         case XMHFGEEC_SLABTYPE_uVT_PROG:
         case XMHFGEEC_SLABTYPE_uVU_PROG:{
-            memset(&_slabiotbl_perms[dst_slabid], 0xFFFFFFFFUL, sizeof(_slabiotbl_perms[0]));
-            //memset(&_slabiotbl_perms[dst_slabid], 0, sizeof(_slabiotbl_perms[0]));
+            //memset(&_slabiotbl_perms[dst_slabid], 0xFFFFFFFFUL, sizeof(_slabiotbl_perms[0]));
+            memset(&_slabiotbl_perms[dst_slabid], 0, sizeof(_slabiotbl_perms[0]));
             _slabiotbl_perms[dst_slabid][(2*PAGE_SIZE_4K)] = 0xFF;  //terminate the TSS I/O bitmap by all 1's
             _XDPRINTF_("%s: setup slab %u with TSS I/O perms, size=%u bytes\n", __func__, dst_slabid, sizeof(_slabiotbl_perms[0]));
         }
@@ -90,8 +90,8 @@ static void _slabiotbl_init(u32 dst_slabid){
         case XMHFGEEC_SLABTYPE_uVT_PROG_GUEST:
         case XMHFGEEC_SLABTYPE_uVU_PROG_GUEST:
         case XMHFGEEC_SLABTYPE_uVU_PROG_RICHGUEST:{
-            memset(&_slabiotbl_perms[dst_slabid], 0xFFFFFFFFUL, sizeof(_slabiotbl_perms[0]));
-            //memset(&_slabiotbl_perms[dst_slabid], 0, sizeof(_slabiotbl_perms[0]));
+            //memset(&_slabiotbl_perms[dst_slabid], 0xFFFFFFFFUL, sizeof(_slabiotbl_perms[0]));
+            memset(&_slabiotbl_perms[dst_slabid], 0, sizeof(_slabiotbl_perms[0]));
             _XDPRINTF_("%s: setup slab %u with VMCS I/O perms, size=%u bytes\n", __func__, dst_slabid, sizeof(_slabiotbl_perms[0]));
         }
         break;
