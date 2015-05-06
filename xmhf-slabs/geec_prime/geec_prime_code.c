@@ -307,6 +307,7 @@ void xmhfhic_arch_setup_slab_info(void){
                                    _xmhfhic_common_slab_info_table[i].excl_devices[j].device_id);
 
 				_XDPRINTF_("	slab_pgtblbase=%x\n", ( _xmhfhic_common_slab_info_table[i].mempgtbl_cr3) );
+				_XDPRINTF_("	slab_iotblbase=%x\n", ( _xmhfhic_common_slab_info_table[i].iotbl_base) );
 				_XDPRINTF_("  slab_code(%08x-%08x)\n", _xmhfhic_common_slab_info_table[i].slab_physmem_extents[0].addr_start, _xmhfhic_common_slab_info_table[i].slab_physmem_extents[0].addr_end);
 				_XDPRINTF_("  slab_data(%08x-%08x)\n", _xmhfhic_common_slab_info_table[i].slab_physmem_extents[1].addr_start, _xmhfhic_common_slab_info_table[i].slab_physmem_extents[1].addr_end);
 				_XDPRINTF_("  slab_stack(%08x-%08x)\n", _xmhfhic_common_slab_info_table[i].slab_physmem_extents[2].addr_start, _xmhfhic_common_slab_info_table[i].slab_physmem_extents[2].addr_end);
@@ -1720,6 +1721,7 @@ static void _geec_prime_populate_slab_pagetables_pae4k(u32 slabid){
 	u64 flags;
 	u32 spatype;
     u32 spa_slabregion, spa_slabtype;
+    u32 slabtype = _xmhfhic_common_slab_info_table[slabid].slabtype;
 
 
     slab_params_t spl;
@@ -1737,26 +1739,35 @@ static void _geec_prime_populate_slab_pagetables_pae4k(u32 slabid){
         flags = _geec_prime_slab_getptflagsforspa_pae(slabid, (u32)gpa, spatype);
         //_XDPRINTF_("gpa=%08x, flags=%016llx\n", (u32)gpa, flags);
 
-        if(spa_slabregion == _SLAB_SPATYPE_GEEC_PRIME_IOTBL && slabid != XMHFGEEC_SLAB_GEEC_PRIME &&
-           !(spa_slabtype == XMHFGEEC_SLABTYPE_VfT_PROG) && !(spa_slabtype == XMHFGEEC_SLABTYPE_VfT_SENTINEL)){
+        if(spa_slabregion == _SLAB_SPATYPE_GEEC_PRIME_IOTBL &&
+           slabtype != XMHFGEEC_SLABTYPE_VfT_PROG && slabtype != XMHFGEEC_SLABTYPE_VfT_SENTINEL){
             //map unverified slab iotbl instead (12K)
             spl.dst_uapifn = XMHFGEEC_UAPI_SLABMEMPGTBL_SETENTRYFORPADDR;
             setentryforpaddrp->dst_slabid = slabid;
             setentryforpaddrp->gpa = gpa;
             setentryforpaddrp->entry = pae_make_pte(_xmhfhic_common_slab_info_table[slabid].iotbl_base, flags);
             XMHF_SLAB_CALLNEW(&spl);
+            //_XDPRINTF_("slab %u: iotbl mapping, orig gpa=%08x, revised entry=%016llx\n", slabid,
+            //           (u32)gpa, setentryforpaddrp->entry);
+
             gpa += PAGE_SIZE_4K;
             spl.dst_uapifn = XMHFGEEC_UAPI_SLABMEMPGTBL_SETENTRYFORPADDR;
             setentryforpaddrp->dst_slabid = slabid;
             setentryforpaddrp->gpa = gpa;
             setentryforpaddrp->entry = pae_make_pte(_xmhfhic_common_slab_info_table[slabid].iotbl_base+PAGE_SIZE_4K, flags);
             XMHF_SLAB_CALLNEW(&spl);
+            //_XDPRINTF_("slab %u: iotbl mapping, orig gpa=%08x, revised entry=%016llx\n", slabid,
+            //           (u32)gpa, setentryforpaddrp->entry);
+
             gpa += PAGE_SIZE_4K;
             spl.dst_uapifn = XMHFGEEC_UAPI_SLABMEMPGTBL_SETENTRYFORPADDR;
             setentryforpaddrp->dst_slabid = slabid;
             setentryforpaddrp->gpa = gpa;
             setentryforpaddrp->entry = pae_make_pte(_xmhfhic_common_slab_info_table[slabid].iotbl_base+(2*PAGE_SIZE_4K), flags);
             XMHF_SLAB_CALLNEW(&spl);
+            //_XDPRINTF_("slab %u: iotbl mapping, orig gpa=%08x, revised entry=%016llx\n", slabid,
+            //           (u32)gpa, setentryforpaddrp->entry);
+
             gpa += PAGE_SIZE_4K;
         }else{
             spl.dst_uapifn = XMHFGEEC_UAPI_SLABMEMPGTBL_SETENTRYFORPADDR;
@@ -1913,7 +1924,10 @@ void xmhfhic_arch_setup_slab_mem_page_tables(void){
 static void __xmhfhic_x86vmx_setIOPL3(u64 cpuid){
     u32 eflags;
     eflags = CASM_FUNCCALL(read_eflags,CASM_NOPARAM);
-    eflags |= EFLAGS_IOPL;
+    //eflags |= EFLAGS_IOPL;
+    eflags &= ~(EFLAGS_IOPL); //clear out IOPL bits
+    //eflags |= 0x00000000; //set IOPL to 0
+
  CASM_FUNCCALL(write_eflags,eflags);
 }
 
@@ -2202,6 +2216,10 @@ static void __xmhfhic_x86vmx_initializeGDT(void){
             t->baseAddr24_31= (u8)((tss_base & 0xFF000000) >> 24);
             //t->limit0_15=0x67;
             t->limit0_15=sizeof(tss_t)-1;
+
+            _XDPRINTF_("%s: setup TSS CPU idx=%u with base address=%x, iobitmap=%x\n, size=%u bytes", __func__,
+                       tss_idx, tss_base, (u32)&__xmhfhic_x86vmx_tss[tss_idx].tss_iobitmap, t->limit0_15);
+
 		}
 
 }
