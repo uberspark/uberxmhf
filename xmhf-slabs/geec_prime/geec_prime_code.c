@@ -1924,8 +1924,8 @@ void xmhfhic_arch_setup_slab_mem_page_tables(void){
 static void __xmhfhic_x86vmx_setIOPL3(u64 cpuid){
     u32 eflags;
     eflags = CASM_FUNCCALL(read_eflags,CASM_NOPARAM);
-    eflags |= EFLAGS_IOPL;
-    //eflags &= ~(EFLAGS_IOPL); //clear out IOPL bits
+    //eflags |= EFLAGS_IOPL;
+    eflags &= ~(EFLAGS_IOPL); //clear out IOPL bits
     //eflags |= 0x00000000; //set IOPL to 0
 
  CASM_FUNCCALL(write_eflags,eflags);
@@ -2215,7 +2215,8 @@ static void __xmhfhic_x86vmx_initializeGDT(void){
             t->baseAddr16_23= (u8)((tss_base & 0x00FF0000) >> 16);
             t->baseAddr24_31= (u8)((tss_base & 0xFF000000) >> 24);
             //t->limit0_15=0x67;
-            t->limit0_15=sizeof(tss_t)-1;
+            //t->limit0_15=sizeof(tss_t)-1;
+            t->limit0_15=(4*PAGE_SIZE_4K)-1;
 
             _XDPRINTF_("%s: setup TSS CPU idx=%u with base address=%x, iobitmap=%x\n, size=%u bytes", __func__,
                        tss_idx, tss_base, (u32)&__xmhfhic_x86vmx_tss[tss_idx].tss_iobitmap, t->limit0_15);
