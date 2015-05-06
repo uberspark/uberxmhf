@@ -477,6 +477,24 @@ static void _geec_prime_sda_populate_slabdevicemap(void){
                 }
             }
         }
+
+        #if defined (__DEBUG_SERIAL__)
+        //add device SERIAL0 to all the slabs if debugging is enabled
+        for(k=0; k < numentries_sysdev_memioregions; k++){
+            if( (sysdev_memioregions[k].vendor_id == PCI_VENDOR_ID_XMHFGEEC) &&
+                (sysdev_memioregions[k].device_id == PCI_DEVICE_ID_XMHFGEEC_SERIAL0) ){
+                if( _sda_slab_devicemap[i].device_count >= MAX_PLATFORM_DEVICES){
+                    _XDPRINTF_("%s: Halting! device_count >= MAX_PLATFORM_DEVICES\n", __func__);
+                    HALT();
+                }
+                _sda_slab_devicemap[i].sysdev_mmioregions_indices[_sda_slab_devicemap[i].device_count]=k;
+                _sda_slab_devicemap[i].device_count++;
+
+            }
+        }
+
+        #endif // defined
+
     }
 
 
