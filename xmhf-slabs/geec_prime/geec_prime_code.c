@@ -2395,10 +2395,10 @@ static bool __xmhfhic_x86vmx_setupvmxstate(u64 cpuid){
     */
 
 	//IO bitmap support
- CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_CONTROL_IO_BITMAPA_ADDRESS_FULL, __xmhfhic_x86vmx_archdata[cpuindex].vmx_iobitmap_region[0]);
- CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_CONTROL_IO_BITMAPA_ADDRESS_HIGH, 0);
- CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_CONTROL_IO_BITMAPB_ADDRESS_FULL, __xmhfhic_x86vmx_archdata[cpuindex].vmx_iobitmap_region[1]);
- CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_CONTROL_IO_BITMAPB_ADDRESS_HIGH, 0);
+ //CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_CONTROL_IO_BITMAPA_ADDRESS_FULL, (u32)&__xmhfhic_x86vmx_tss[cpuindex].tss_iobitmap);
+ //CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_CONTROL_IO_BITMAPA_ADDRESS_HIGH, 0);
+ //CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_CONTROL_IO_BITMAPB_ADDRESS_FULL, (u32)&__xmhfhic_x86vmx_tss[cpuindex].tss_iobitmap + PAGE_SIZE_4K);
+ //CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_CONTROL_IO_BITMAPB_ADDRESS_HIGH, 0);
  CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_CONTROL_VMX_CPU_BASED, (xmhfhw_cpu_x86vmx_vmread(VMCS_CONTROL_VMX_CPU_BASED) | (u64)(1 << 25)) );
 
 	//MSR bitmap support
