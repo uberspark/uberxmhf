@@ -53,6 +53,7 @@
 #include <geec_sentinel.h>
 #include <uapi_slabmempgtbl.h>
 #include <uapi_slabdevpgtbl.h>
+#include <uapi_slabiotbl.h>
 #include <xc_init.h>
 
 __attribute__((aligned(4096))) static u64 _xcprimeon_init_pdt[PAE_PTRS_PER_PDPT][PAE_PTRS_PER_PDT];
@@ -1027,11 +1028,40 @@ void xmhfhic_arch_setup_slab_device_allocation(void){
 // setup (unverified) slab iotbl
 /////
 void geec_prime_setup_slab_iotbl(void){
+    u32 i;
+    u32 slabtype;
+    slab_params_t spl;
+    xmhfgeec_uapi_slabiotbl_init_params_t *initp =
+        (xmhfgeec_uapi_slabiotbl_init_params_t *)spl.in_out_params;
+
+    spl.src_slabid = XMHFGEEC_SLAB_GEEC_PRIME;
+    spl.dst_slabid = XMHFGEEC_SLAB_UAPI_SLABIOTBL;
+    spl.cpuid = 0; //XXX: fixme, need to plug in BSP cpuid here
 
 
 
+    for(i=0; i < XMHFGEEC_TOTAL_SLABS; i++){
+        slabtype = _xmhfhic_common_slab_info_table[i].slabtype;
+
+        switch(slabtype){
+            case XMHFGEEC_SLABTYPE_uVT_PROG:
+            case XMHFGEEC_SLABTYPE_uVU_PROG:
+            case XMHFGEEC_SLABTYPE_uVT_PROG_GUEST:
+            case XMHFGEEC_SLABTYPE_uVU_PROG_GUEST:
+            case XMHFGEEC_SLABTYPE_uVU_PROG_RICHGUEST:{
+                spl.dst_uapifn = XMHFGEEC_UAPI_SLABIOTBL_INIT;
+                initp->dst_slabid = i;
+                XMHF_SLAB_CALLNEW(&spl);
+            }
+            break;
+
+            default:
+                break;
+        }
+    }
 
 
+	_XDPRINTF_("%s: setup unverified slab legacy I/O permission tables\n", __func__);
 
 }
 
