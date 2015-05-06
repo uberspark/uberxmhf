@@ -98,6 +98,7 @@
 #define PCI_DEVICE_ID_XMHFGEEC_TPM      0x0001
 #define PCI_DEVICE_ID_XMHFGEEC_TXT      0x0002
 #define PCI_DEVICE_ID_XMHFGEEC_IOMMU    0x0003
+#define PCI_DEVICE_ID_XMHFGEEC_SERIAL0  0x0004
 
 
 //AMD PCI configuration space constants

@@ -647,11 +647,12 @@ static void _sda_enumerate_system_devices(void){
     //LAPIC at X86SMP_LAPIC_MEMORYADDRESS (0xFEE00000)
     //TPM at TPM_LOCALITY_BASE (0xfed40000)
     //TXT at TXT_PUB_CONFIG_REGS_BASE (0xfed30000) and TXT_PRIV_CONFIG_REGS_BASE (0xfed20000)
+    //SERIAL0 (used for debugging only) at DEBUG_PORT
     //IOMMU as described by vtd_drhd[]
 
 
     //sanity check available sysdev entries for the above devices
-    if( (numentries_sysdev_memioregions+vtd_drhd_maxhandle+1+1+1) >= MAX_PLATFORM_DEVICES){
+    if( (numentries_sysdev_memioregions+vtd_drhd_maxhandle+1+1+1+1) >= MAX_PLATFORM_DEVICES){
         _XDPRINTF_("%s: Halting!. numentries_sysdev_memioregions >= MAX_PLATFORM_DEVICES(%u)\n",
                    __func__, MAX_PLATFORM_DEVICES);
         HALT();
@@ -711,6 +712,23 @@ static void _sda_enumerate_system_devices(void){
     }
     numentries_sysdev_memioregions++;
 
+
+    //add SERIAL0
+    sysdev_memioregions[numentries_sysdev_memioregions].b=PCI_BUS_XMHFGEEC;
+    sysdev_memioregions[numentries_sysdev_memioregions].d=PCI_DEVICE_XMHFGEEC;
+    sysdev_memioregions[numentries_sysdev_memioregions].f=0;
+    sysdev_memioregions[numentries_sysdev_memioregions].vendor_id=PCI_VENDOR_ID_XMHFGEEC;
+    sysdev_memioregions[numentries_sysdev_memioregions].device_id=PCI_DEVICE_ID_XMHFGEEC_SERIAL0;
+    sysdev_memioregions[numentries_sysdev_memioregions].dtype = SYSDEV_MEMIOREGIONS_DTYPE_SERIAL0;
+    sysdev_memioregions[numentries_sysdev_memioregions].memioextents[0].extent_type=_MEMIOREGIONS_EXTENTS_TYPE_IO;
+    sysdev_memioregions[numentries_sysdev_memioregions].memioextents[0].addr_start=DEBUG_PORT;
+    sysdev_memioregions[numentries_sysdev_memioregions].memioextents[0].addr_end=DEBUG_PORT+0x8;
+    for(i=1; i < PCI_CONF_MAX_BARS; i++){
+        sysdev_memioregions[numentries_sysdev_memioregions].memioextents[i].extent_type=_MEMIOREGIONS_EXTENTS_TYPE_NONE;
+        sysdev_memioregions[numentries_sysdev_memioregions].memioextents[i].addr_start=0;
+        sysdev_memioregions[numentries_sysdev_memioregions].memioextents[i].addr_end=0;
+    }
+    numentries_sysdev_memioregions++;
 
     //add IOMMU
 	if(!xmhfhw_platform_x86pc_vtd_scanfor_drhd_units()){
