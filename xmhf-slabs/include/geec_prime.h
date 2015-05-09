@@ -112,6 +112,7 @@ typedef struct {
 #define SYSDEV_MEMIOREGIONS_DTYPE_TPM       3
 #define SYSDEV_MEMIOREGIONS_DTYPE_TXT       4
 #define SYSDEV_MEMIOREGIONS_DTYPE_IOMMU     5
+#define SYSDEV_MEMIOREGIONS_DTYPE_SERIAL0   6
 
 #define SYSDEV_MEMIOREGIONS_DTYPE_UNKNOWN   0xFF
 
@@ -130,6 +131,13 @@ typedef struct {
     u32 device_count;
     u32 sysdev_mmioregions_indices[MAX_PLATFORM_DEVICES];
 } __attribute__((packed)) slab_devicemap_t;
+
+
+typedef struct {
+    u8 tss_mainblock[PAGE_SIZE_4K];
+    u8 tss_iobitmap[3*PAGE_SIZE_4K];
+} __attribute__((packed)) geec_prime_tss_t;
+
 
 extern __attribute__(( section(".data") )) XMHF_BOOTINFO *xcbootinfo;
 
@@ -183,7 +191,8 @@ extern __attribute__((section(".data"))) __attribute__(( aligned(16) )) arch_x86
 
 
 extern __attribute__(( section(".stack") )) __attribute__(( aligned(4096) )) u8 _init_cpustacks[MAX_PLATFORM_CPUS][MAX_PLATFORM_CPUSTACK_SIZE];
-extern __attribute__((section(".data"))) __attribute__(( aligned(4096) )) u8 __xmhfhic_x86vmx_tss[MAX_PLATFORM_CPUS][PAGE_SIZE_4K]; //ro
+//extern __attribute__((section(".data"))) __attribute__(( aligned(4096) )) u8 __xmhfhic_x86vmx_tss[MAX_PLATFORM_CPUS][PAGE_SIZE_4K]; //ro
+extern __attribute__((section(".data"))) __attribute__(( aligned(4096) )) geec_prime_tss_t __xmhfhic_x86vmx_tss[MAX_PLATFORM_CPUS];
 extern __attribute__((section(".stack"))) __attribute__(( aligned(4096) )) u8 __xmhfhic_x86vmx_tss_stack[MAX_PLATFORM_CPUS][PAGE_SIZE_4K];
 extern __attribute__(( section(".stack") )) __attribute__(( aligned(4096) )) u8 _geec_primesmp_sysenter_stack[MAX_PLATFORM_CPUS][MAX_PLATFORM_CPUSTACK_SIZE];
 extern __attribute__((section(".data"))) __attribute__(( aligned(4096) )) xc_cpuarchdata_x86vmx_t __xmhfhic_x86vmx_archdata[MAX_PLATFORM_CPUS];

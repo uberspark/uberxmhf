@@ -168,7 +168,7 @@ void __xmhfhic_smp_cpu_x86_smpinitialize_commonstart(void);
 
 
 // GDT
-__attribute__((section(".data"))) __attribute__(( aligned(16) )) u64 __xmhfhic_x86vmx_gdt_start[]  = {
+__attribute__((section(".data"))) __attribute__(( aligned(16) )) u64 __xmhfhic_x86vmx_gdt_start[XMHFGEEC_MAX_GDT_CODEDATA_DESCRIPTORS + MAX_PLATFORM_CPUS]  = {
 	0x0000000000000000ULL,	//NULL descriptor
 	0x00cf9a000000ffffULL,	//CPL-0 32-bit code descriptor (CS64)
 	0x00cf92000000ffffULL,	//CPL-0 32-bit data descriptor (DS/SS/ES/FS/GS)
@@ -177,23 +177,6 @@ __attribute__((section(".data"))) __attribute__(( aligned(16) )) u64 __xmhfhic_x
 	0x00cffa000000ffffULL,	//TODO: CPL-3 32-bit code descriptor (CS64)
 	0x00cff2000000ffffULL,	//TODO: CPL-3 32-bit data descriptor (DS/SS/ES/FS/GS)
 	0x0000000000000000ULL,  //TSS descriptors (64-bits each)
-	0x0000000000000000ULL,
-	0x0000000000000000ULL,
-	0x0000000000000000ULL,
-	0x0000000000000000ULL,
-	0x0000000000000000ULL,
-	0x0000000000000000ULL,
-	0x0000000000000000ULL,
-	0x0000000000000000ULL,
-	0x0000000000000000ULL,
-	0x0000000000000000ULL,
-	0x0000000000000000ULL,
-	0x0000000000000000ULL,
-	0x0000000000000000ULL,
-	0x0000000000000000ULL,
-	0x0000000000000000ULL,
-
-	0x0000000000000000ULL,
 };
 // GDT descriptor
 __attribute__((section(".data"))) __attribute__(( aligned(16) )) arch_x86_gdtdesc_t __xmhfhic_x86vmx_gdt  = {
@@ -218,7 +201,8 @@ __attribute__((section(".data"))) __attribute__(( aligned(16) )) arch_x86_idtdes
 // initialization phase CPU stacks
 __attribute__(( section(".stack") )) __attribute__(( aligned(4096) )) u8 _init_cpustacks[MAX_PLATFORM_CPUS][MAX_PLATFORM_CPUSTACK_SIZE];
 // TSS
-__attribute__((section(".data"))) __attribute__(( aligned(4096) )) u8 __xmhfhic_x86vmx_tss[MAX_PLATFORM_CPUS][PAGE_SIZE_4K] = { 0 };
+//__attribute__((section(".data"))) __attribute__(( aligned(4096) )) u8 __xmhfhic_x86vmx_tss[MAX_PLATFORM_CPUS][4*PAGE_SIZE_4K] = { 0 };
+__attribute__((section(".data"))) __attribute__(( aligned(4096) )) geec_prime_tss_t __xmhfhic_x86vmx_tss[MAX_PLATFORM_CPUS] = { 0 };
 // TSS stacks
 __attribute__((section(".stack"))) __attribute__(( aligned(4096) )) u8 __xmhfhic_x86vmx_tss_stack[MAX_PLATFORM_CPUS][PAGE_SIZE_4K];
 // sysenter CPU stacks

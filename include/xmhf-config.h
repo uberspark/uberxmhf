@@ -50,13 +50,26 @@
 #ifndef __XMHF_CONFIG_H__
 #define __XMHF_CONFIG_H__
 
+
+//max. unverified slabs
+#define XMHF_CONFIG_MAX_UVSLABS __XMHF_CONFIG_MAX_UVSLABS__
+
 //unverified slab memory page table sets
-#define XMHF_CONFIG_MAX_UVMEMPGTBL_SETS __XMHF_CONFIG_MAX_UVMEMPGTBL_SETS__
+#define XMHF_CONFIG_MAX_UVMEMPGTBL_SETS XMHF_CONFIG_MAX_UVSLABS
 
 //max memory page table sets is two added to the above:
 //geec_sentinel: currently unused
 //geec_prime: used for verified slabs
 #define XMHF_MAX_MEMPGTBL_SETS (XMHF_CONFIG_MAX_UVMEMPGTBL_SETS+2)
+
+//unverified slab I/O perm table sets
+#define XMHF_CONFIG_MAX_UVIOTBL_SETS XMHF_CONFIG_MAX_UVSLABS
+
+//max I/O perm table sets is two added to the above:
+//geec_sentinel: currently unused
+//geec_prime: currently unused
+#define XMHF_MAX_IOTBL_SETS (XMHF_CONFIG_MAX_UVIOTBL_SETS+2)
+
 
 //max. include device list entries
 #define XMHF_CONFIG_MAX_INCLDEVLIST_ENTRIES __XMHF_CONFIG_MAX_INCLDEVLIST_ENTRIES__
@@ -138,7 +151,7 @@
 
 
 #define XMHFGEEC_MAX_SLABS                  32
-#define XMHFGEEC_TOTAL_SLABS                16
+#define XMHFGEEC_TOTAL_SLABS                17
 
 
 #define XMHFGEEC_SLAB_GEEC_SENTINEL         0
@@ -153,10 +166,11 @@
 #define XMHFGEEC_SLAB_UAPI_SLABMEMACC       9
 #define XMHFGEEC_SLAB_UAPI_SLABMEMPGTBL     10
 #define XMHFGEEC_SLAB_UAPI_SLABDEVPGTBL     11
-#define XMHFGEEC_SLAB_XH_HYPERDEP           12
-#define XMHFGEEC_SLAB_XH_APPROVEXEC         13
-#define XMHFGEEC_SLAB_XH_SYSCALLLOG         14
-#define XMHFGEEC_SLAB_XH_SSTEPTRACE         15
+#define XMHFGEEC_SLAB_UAPI_SLABIOTBL        12
+#define XMHFGEEC_SLAB_XH_HYPERDEP           13
+#define XMHFGEEC_SLAB_XH_APPROVEXEC         14
+#define XMHFGEEC_SLAB_XH_SYSCALLLOG         15
+#define XMHFGEEC_SLAB_XH_SSTEPTRACE         16
 
 
 
@@ -236,6 +250,7 @@
 
 
 // segment selectors
+#define     __NULLSEL       0x0000  //NULL selector
 #define 	__CS_CPL0 	    0x0008 	//CPL-0 code segment selector
 #define 	__DS_CPL0 	    0x0010 	//CPL-0 data segment selector
 #define		__CS_CPL3	    0x001b	//CPL-3 code segment selector
@@ -243,6 +258,9 @@
 #define		__CS_CPL3_SE	0x002b	//CPL-3 code segment selector
 #define		__DS_CPL3_SE	0x0033  //CPL-3 data segment selector
 #define 	__TRSEL 	    0x0038  //TSS (task) selector
+
+// max. segment descriptors not including TSS descriptors
+#define     XMHFGEEC_MAX_GDT_CODEDATA_DESCRIPTORS   7
 
 #define	EMHF_XCPHANDLER_MAXEXCEPTIONS	32
 
