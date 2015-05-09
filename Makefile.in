@@ -28,7 +28,7 @@ export LIBXMHFHW_SRC := $(realpath xmhf-libs/libxmhfhw)
 
 
 .PHONY: all
-all: genfiles xmhflibs xmhfslabs xmhfbin bootloader finalbin
+all: xmhflibs slabs xmhfbin bootloader finalbin
 
 
 .PHONY: _libxmhfc
@@ -75,8 +75,41 @@ _libxmhfhw:
 xmhflibs: _libxmhfc _libxmhfcrypto _libxmhfdebug _libxmhfgeec _libxmhfhw
 
 
-.PHONY: genfiles
-genfiles:
+#.PHONY: genfiles
+#genfiles:
+#	mkdir -p $(XMHF_OBJDIR)
+#	cd $(XMHF_DIR) && $(XMHF_DIR)/tools/slabconf.pl $(XMHF_DIR) SLABS
+#	@for i in $(XMHF_SLAB_DIRS); \
+#	do \
+#		(cd $(XMHF_OBJDIR) &&	echo "Prepping slab $$i..." && $(MAKE) -f $(XMHF_DIR)/$$i/Makefile -w pp_slab_gsm) || exit 1; \
+#	done;
+#	@echo Slabs prepped for build
+#	cd $(XMHF_OBJDIR) && $(XMHF_DIR)/tools/xmhfgenlscript.pl $(XMHF_SLAB_NAMES) >xmhf.lscript
+#	cd $(XMHF_DIR) && $(XMHF_DIR)/tools/xmhfgenslabtable.pl SLABS $(XMHF_CONFIG_MAX_UVSLABS) $(XMHF_CONFIG_MAX_INCLDEVLIST_ENTRIES) $(XMHF_CONFIG_MAX_EXCLDEVLIST_ENTRIES) >$(XMHF_DIR)/xmhf-slabs/geec_sentinel/__geec_sentinel_autogendata_slabinfotable
+
+
+
+#.PHONY: xmhfslabs
+#xmhfslabs:
+#	@echo Building slabs...
+#	@for i in $(XMHF_SLAB_DIRS); \
+#	do \
+#		(cd $(XMHF_OBJDIR) &&	echo "Making all in $$i..." && $(MAKE) -f $(XMHF_DIR)/$$i/Makefile -w all) || exit 1; \
+#	done;
+#	@echo Slabs build SUCCESS
+
+
+.PHONY: _slabs_common
+_slabs_common:
+	@echo Building slabs...
+	@for i in $(XMHF_SLAB_DIRS); \
+	do \
+		(cd $(XMHF_OBJDIR) &&	echo "Making all in $$i..." && $(MAKE) -f $(XMHF_DIR)/$$i/Makefile -w all) || exit 1; \
+	done;
+	@echo Slabs build SUCCESS
+
+.PHONY: _slabs_configureandgenerateslabinfonoexports
+_slabs_configureandgenerateslabinfonoexports:
 	mkdir -p $(XMHF_OBJDIR)
 	cd $(XMHF_DIR) && $(XMHF_DIR)/tools/slabconf.pl $(XMHF_DIR) SLABS
 	@for i in $(XMHF_SLAB_DIRS); \
@@ -87,16 +120,32 @@ genfiles:
 	cd $(XMHF_OBJDIR) && $(XMHF_DIR)/tools/xmhfgenlscript.pl $(XMHF_SLAB_NAMES) >xmhf.lscript
 	cd $(XMHF_DIR) && $(XMHF_DIR)/tools/xmhfgenslabtable.pl SLABS $(XMHF_CONFIG_MAX_UVSLABS) $(XMHF_CONFIG_MAX_INCLDEVLIST_ENTRIES) $(XMHF_CONFIG_MAX_EXCLDEVLIST_ENTRIES) >$(XMHF_DIR)/xmhf-slabs/geec_sentinel/__geec_sentinel_autogendata_slabinfotable
 
+.PHONY: _slabs_generateslabinfoexports
+_slabs_generateslabinfoexports:
+	@echo WiP
+
+.PHONY: slabs_prebuild
+slabs_prebuild: _slabs_configureandgenerateslabinfonoexports xmhflibs _slabs_common
+
+.PHONY: slabs_realbuild
+slabs_realbuild: slabs_prebuild _slabs_generateslabinfoexports _libxmhfgeec  _slabs_common
+
+.PHONY: _slabs_verify
+_slabs_verify:
+	@echo WiP
+
+.PHONY: slabs_verify
+slabs_verify: slabs_prebuild _slabs_generateslabinfoexports _slabs_verify
+
+.PHONY: slabs
+slabs: slabs_prebuild slabs_verify slabs_realbuild
 
 
-.PHONY: xmhfslabs
-xmhfslabs:
-	@echo Building slabs...
-	@for i in $(XMHF_SLAB_DIRS); \
-	do \
-		(cd $(XMHF_OBJDIR) &&	echo "Making all in $$i..." && $(MAKE) -f $(XMHF_DIR)/$$i/Makefile -w all) || exit 1; \
-	done;
-	@echo Slabs build SUCCESS
+
+
+
+
+
 
 
 .PHONY: _xmhf-bootloader
