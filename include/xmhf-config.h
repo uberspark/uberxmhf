@@ -268,7 +268,7 @@
 
 #ifndef __ASSEMBLY__
 
-#if defined (__DEBUG_SERIAL__)
+/*#if defined (__DEBUG_SERIAL__)
 
 extern u8 _libxmhfdebugdata_start[];
 extern u8 _libxmhfdebugdata_end[];
@@ -277,6 +277,7 @@ extern u8 _libxmhfdebugdata_end[];
 #define     ADDR_LIBXMHFDEBUGDATA_END             ((u32)_libxmhfdebugdata_end)
 
 #endif // defined
+*/
 
 #endif // __ASSEMBLY__
 

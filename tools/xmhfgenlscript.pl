@@ -75,19 +75,21 @@ print "\n";
 	$i++;
 }
 
-print "\n	.libxmhfdebugdata : {";
-print "\n       _libxmhfdebugdata_start = .;";
-print "\n		*(.libxmhfdebugdata)";
-print "\n		*(.text)";
-print "\n		*(.rodata)";
-print "\n		*(.rodata.str1.1)";
-print "\n		*(.data)";
-print "\n		*(.bss)";
-print "\n		*(.comment)";
-print "\n		*(.eh_frame)";
-print "\n		. = ALIGN(0x200000);";
-print "\n       _libxmhfdebugdata_end = .;";
-print "\n	} >all=0x0000";
+#print "\n	.libxmhfdebugdata : {";
+#print "\n       _libxmhfdebugdata_start = .;";
+#print "\n		*(.libxmhfdebugdata)";
+#print "\n		*(.text)";
+#print "\n		*(.rodata)";
+#print "\n		*(.rodata.str1.1)";
+#print "\n		*(.data)";
+#print "\n		*(.bss)";
+#print "\n		*(.comment)";
+#print "\n		*(.eh_frame)";
+#print "\n		. = ALIGN(0x200000);";
+#print "\n       _libxmhfdebugdata_end = .;";
+#print "\n	} >all=0x0000";
+
+
 print "\n";
 print "\n	/* this is to cause the link to fail if there is";
 print "\n	* anything we didn't explicitly place.";

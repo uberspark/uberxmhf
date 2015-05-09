@@ -1766,7 +1766,7 @@ static void _geec_prime_populate_slab_pagetables_ept4k(u32 slabid){
 
 	}
 
-#if defined (__DEBUG_SERIAL__)
+/*#if defined (__DEBUG_SERIAL__)
 	for(gpa=ADDR_LIBXMHFDEBUGDATA_START; gpa < ADDR_LIBXMHFDEBUGDATA_END; gpa += PAGE_SIZE_4K){
         spl.dst_uapifn = XMHFGEEC_UAPI_SLABMEMPGTBL_SETENTRYFORPADDR;
         setentryforpaddrp->dst_slabid = slabid;
@@ -1776,7 +1776,7 @@ static void _geec_prime_populate_slab_pagetables_ept4k(u32 slabid){
         XMHF_SLAB_CALLNEW(&spl);
 	}
 #endif
-
+*/
 
 }
 
@@ -1844,7 +1844,7 @@ static void _geec_prime_populate_slab_pagetables_pae4k(u32 slabid){
 
 	}
 
-#if defined (__DEBUG_SERIAL__)
+/*#if defined (__DEBUG_SERIAL__)
 	for(gpa=ADDR_LIBXMHFDEBUGDATA_START; gpa < ADDR_LIBXMHFDEBUGDATA_END; gpa += PAGE_SIZE_4K){
         spl.dst_uapifn = XMHFGEEC_UAPI_SLABMEMPGTBL_SETENTRYFORPADDR;
         setentryforpaddrp->dst_slabid = slabid;
@@ -1853,7 +1853,7 @@ static void _geec_prime_populate_slab_pagetables_pae4k(u32 slabid){
         XMHF_SLAB_CALLNEW(&spl);
 	}
 #endif
-
+*/
 
 }
 
