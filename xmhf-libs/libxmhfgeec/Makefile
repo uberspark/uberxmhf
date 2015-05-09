@@ -25,6 +25,7 @@ LIBXMHFGEEC_OBJECTS_DIR = _objs_libxmhfgeec
 all: $(OBJECTS)
 	mkdir -p $(LIBXMHFGEEC_OBJECTS_DIR)
 	cp $(LIBXMHFGEEC_OBJECTS_DIR)/xmhfgeec_slabmapdef.o .
+	cp $(LIBXMHFGEEC_OBJECTS_DIR)/xmhfgeec_slabinfotable.o .
 	cp $(LIBXMHFGEEC_OBJECTS_DIR)/xmhfgeec_vft_prog_stubs.o .
 	cp $(LIBXMHFGEEC_OBJECTS_DIR)/xmhfgeec_uvt_uvu_prog_stubs.o .
 	cp $(LIBXMHFGEEC_OBJECTS_DIR)/xmhfgeec_uvt_uvu_prog_guest_stubs.o .
