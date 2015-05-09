@@ -90,7 +90,7 @@ void slab_main(slab_params_t *sp){
     //bool isbsp = (sp->cpuid & 0x80000000UL) ? true : false;
     bool isbsp = xmhfhw_lapic_isbsp();
     u64 inputval, outputval;
-    static u64 cpucount=0;
+    //static u64 cpucount=0;
     static u32 __xcinit_smplock = 1;
 
 	_XDPRINTF_("%s[%u]: Got control: ESP=%08x\n", __func__, (u16)sp->cpuid, CASM_FUNCCALL(read_esp,CASM_NOPARAM));
@@ -98,17 +98,17 @@ void slab_main(slab_params_t *sp){
     if(!isbsp){
         _XDPRINTF_("%s[%u]: AP Halting!\n", __func__, (u16)sp->cpuid);
 
-        CASM_FUNCCALL(spin_lock,&__xcinit_smplock);
-        cpucount++;
-        CASM_FUNCCALL(spin_unlock,&__xcinit_smplock);
+        //CASM_FUNCCALL(spin_lock,&__xcinit_smplock);
+        //cpucount++;
+        //CASM_FUNCCALL(spin_unlock,&__xcinit_smplock);
 
         HALT();
     }else{
         //BSP
-        _XDPRINTF_("%s[%u]: BSP waiting to rally APs...\n",
-                __func__, (u16)sp->cpuid);
+        //_XDPRINTF_("%s[%u]: BSP waiting to rally APs...\n",
+        //        __func__, (u16)sp->cpuid);
 
-        while(cpucount < (xcbootinfo->cpuinfo_numentries-1));
+        //while(cpucount < (xcbootinfo->cpuinfo_numentries-1));
 
         _XDPRINTF_("%s[%u]: BSP, APs halted. Proceeding...\n",
                 __func__, (u16)sp->cpuid);
