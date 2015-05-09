@@ -28,7 +28,7 @@ export LIBXMHFHW_SRC := $(realpath xmhf-libs/libxmhfhw)
 
 
 .PHONY: all
-all: genfiles xmhflibs xmhfslabs xmhfbin
+all: genfiles xmhflibs xmhfslabs xmhfbin bootloader finalbin
 
 
 .PHONY: _libxmhfc
@@ -99,6 +99,20 @@ xmhfslabs:
 	@echo Slabs build SUCCESS
 
 
+.PHONY: _xmhf-bootloader
+_xmhf-bootloader:
+
+
+.PHONY: bootloader
+bootloader: xmhflibs _xmhf-bootloader
+	@echo Building XMHF boot loader...
+	cd $(XMHF_OBJDIR) && $(MAKE) -f $(XMHF_BOOTLOADER_SRC)/Makefile -w all \
+		RUNTIME_INTEGRITY_HASH=\""$(shell ( sha1sum $(XMHFCORE_OBJECTS_DIR)/_objs_xmhf-runtime/runtime.bin | perl -nae '$$F[0] =~ s/(..)/\\\\x$$1/g; print $$F[0];' ))"\" \
+		SLBELOW64K_INTEGRITY_HASH=\""$(shell ( dd if=$(XMHF_OBJDIR)/_objs_xmhf-secureloader/sl.bin bs=1024 count=64 | sha1sum | perl -nae '$$F[0] =~ s/(..)/\\\\x$$1/g; print $$F[0];' ))"\" \
+		SLABOVE64K_INTEGRITY_HASH=\""$(shell ( dd if=$(XMHF_OBJDIR)/_objs_xmhf-secureloader/sl.bin bs=1024 skip=64 count=1984 | sha1sum | perl -nae '$$F[0] =~ s/(..)/\\\\x$$1/g; print $$F[0];' ))"\"
+	@echo XMHF boot loader build SUCCESS
+
+
 .PHONY: xmhfbin
 xmhfbin: $(XMHFLIBS_SRC) $(XMHFCORE_SRC)
 	@echo Linking XMHF binary...
@@ -107,12 +121,10 @@ xmhfbin: $(XMHFLIBS_SRC) $(XMHFCORE_SRC)
 	cd $(XMHF_OBJDIR) && $(LD) --oformat elf32-i386 -T xmhf.lds -o xmhf.exe -L$(CCERT_LIB) -L$(CCLIB)/lib/linux -L$(XMHF_LIBS_OBJECTS_DIR) -lxmhfc -lxmhfdebug -lxmhfc -lclang_rt.full-i386 -lcompcert
 	cd $(XMHF_OBJDIR) && $(OBJCOPY) --output-format=binary xmhf.exe xmhf.bin
 	@echo XMHF link SUCCESS
-	@echo Building XMHF boot loader...
-	cd $(XMHF_OBJDIR) && $(MAKE) -f $(XMHF_BOOTLOADER_SRC)/Makefile -w all \
-		RUNTIME_INTEGRITY_HASH=\""$(shell ( sha1sum $(XMHFCORE_OBJECTS_DIR)/_objs_xmhf-runtime/runtime.bin | perl -nae '$$F[0] =~ s/(..)/\\\\x$$1/g; print $$F[0];' ))"\" \
-		SLBELOW64K_INTEGRITY_HASH=\""$(shell ( dd if=$(XMHF_OBJDIR)/_objs_xmhf-secureloader/sl.bin bs=1024 count=64 | sha1sum | perl -nae '$$F[0] =~ s/(..)/\\\\x$$1/g; print $$F[0];' ))"\" \
-		SLABOVE64K_INTEGRITY_HASH=\""$(shell ( dd if=$(XMHF_OBJDIR)/_objs_xmhf-secureloader/sl.bin bs=1024 skip=64 count=1984 | sha1sum | perl -nae '$$F[0] =~ s/(..)/\\\\x$$1/g; print $$F[0];' ))"\"
-	@echo XMHF boot loader build SUCCESS
+
+
+.PHONY: finalbin
+finalbin: bootloader xmhfbin
 	@echo generating final binaries...
 	cd $(XMHF_OBJDIR) && $(CAT) ./_objs_xmhf-bootloader/xmhf-bootloader.bin ./xmhf.bin > ./xmhf.tmp.img
 	cd $(XMHF_OBJDIR) && gzip -c ./xmhf.tmp.img > ./xmhf-$(XMHF_TARGET_TRIAD).bin.gz
