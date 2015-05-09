@@ -142,6 +142,7 @@ typedef struct {
 	bool slab_inuse;
 	u32 slabtype;
 	u32 mempgtbl_cr3;
+	u32 iotbl_base;
 	u32 slabtos[MAX_PLATFORM_CPUS];
     slab_callcaps_t slab_callcaps;
     bool slab_uapisupported;
