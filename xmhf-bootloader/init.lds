@@ -80,12 +80,13 @@ SECTIONS
 
 	.stack : {
 		*(.stack)
+        . = ALIGN(0x200000);
 	} >all=0x0000
 
-	.libxmhfdebugdata : {
+	/*.libxmhfdebugdata : {
 		*(.libxmhfdebugdata)
 		. = ALIGN(0x200000);
-	} >all=0x0000
+	} >all=0x0000*/
 
 	/DISCARD/ : {
 			*(.comment)

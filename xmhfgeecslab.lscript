@@ -85,9 +85,9 @@ SECTIONS
 	} >slabmem =0x0000
 
 
-	.libxmhfdebugdata : {
+	/*.libxmhfdebugdata : {
 		*(.libxmhfdebugdata)
-	} >slabmem
+	} >slabmem*/
 
 	/* this is to cause the link to fail if there is
 	* anything we didn't explicitly place.

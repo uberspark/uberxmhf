@@ -10,5 +10,5 @@ export XMHF_SLAB_NAME := geec_prime
 export XMHF_SLAB_SOURCES := $(wildcard $(srcdir)/*.c)
 XMHF_SLAB_SOURCES += $(wildcard $(srcdir)/*.cS)
 
-export XMHF_SLAB_GLOBAL_SYMS := --globalize-symbol libxmhfdebug_lock
+export XMHF_SLAB_GLOBAL_SYMS :=
 ########################################################################
