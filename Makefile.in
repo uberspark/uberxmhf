@@ -14,8 +14,66 @@ export XMHF_SLAB_DIRS := $(shell awk -F, '{print $$1}' $(XMHF_DIR)/SLABS)
 XMHF_SLAB_NAMES := $(notdir $(XMHF_SLAB_DIRS))
 export XMHF_SLAB_TOTAL := $(shell wc -l < $(XMHF_DIR)/SLABS)
 
+
+export LIBXMHFC_SRC := $(realpath xmhf-libs/libxmhfc)
+export LIBXMHFCRYPTO_SRC := $(realpath xmhf-libs/libxmhfcrypto)
+export LIBXMHFDEBUG_SRC := $(realpath xmhf-libs/libxmhfdebug)
+export LIBXMHFGEEC_SRC := $(realpath xmhf-libs/libxmhfgeec)
+export LIBXMHFHW_SRC := $(realpath xmhf-libs/libxmhfhw)
+
+
+
+
+
+
+
 .PHONY: all
 all: genfiles xmhflibs xmhfslabs xmhfbin
+
+
+.PHONY: _libxmhfc
+_libxmhfc:
+	@echo building libxmhfc...
+	mkdir -p $(XMHF_LIBS_OBJECTS_DIR)
+	cd $(XMHF_LIBS_OBJECTS_DIR) &&	$(MAKE) -f $(LIBXMHFC_SRC)/Makefile -w all
+	@echo libxmhfc built sucessfully.
+
+
+.PHONY: _libxmhfcrypto
+_libxmhfcrypto:
+	@echo building libxmhfcrypto...
+	mkdir -p $(XMHF_LIBS_OBJECTS_DIR)
+	cd $(XMHF_LIBS_OBJECTS_DIR) &&	$(MAKE) -f $(LIBXMHFCRYPTO_SRC)/Makefile -w all
+	@echo libxmhfcrypto built sucessfully.
+
+
+.PHONY: _libxmhfdebug
+_libxmhfdebug:
+	@echo building libxmhfdebug...
+	mkdir -p $(XMHF_LIBS_OBJECTS_DIR)
+	cd $(XMHF_LIBS_OBJECTS_DIR) &&	$(MAKE) -f $(LIBXMHFDEBUG_SRC)/Makefile -w all
+	@echo libxmhfdebug built sucessfully.
+
+
+.PHONY: _libxmhfgeec
+_libxmhfgeec:
+	@echo building libxmhfgeec...
+	mkdir -p $(XMHF_LIBS_OBJECTS_DIR)
+	cd $(XMHF_LIBS_OBJECTS_DIR) &&	$(MAKE) -f $(LIBXMHFGEEC_SRC)/Makefile -w all
+	@echo libxmhfgeec built sucessfully.
+
+
+.PHONY: _libxmhfhw
+_libxmhfhw:
+	@echo building libxmhfhw...
+	mkdir -p $(XMHF_LIBS_OBJECTS_DIR)
+	cd $(XMHF_LIBS_OBJECTS_DIR) &&	$(MAKE) -f $(LIBXMHFHW_SRC)/Makefile -w all
+	@echo libxmhfhw built sucessfully.
+
+
+.PHONY: xmhflibs
+xmhflibs: _libxmhfc _libxmhfcrypto _libxmhfdebug _libxmhfgeec _libxmhfhw
+
 
 .PHONY: genfiles
 genfiles:
@@ -30,15 +88,6 @@ genfiles:
 	cd $(XMHF_DIR) && $(XMHF_DIR)/tools/xmhfgenslabtable.pl SLABS $(XMHF_CONFIG_MAX_UVSLABS) $(XMHF_CONFIG_MAX_INCLDEVLIST_ENTRIES) $(XMHF_CONFIG_MAX_EXCLDEVLIST_ENTRIES) >$(XMHF_DIR)/xmhf-slabs/geec_sentinel/__geec_sentinel_autogendata_slabinfotable
 
 
-.PHONY: xmhflibs
-xmhflibs:
-	@echo Building XMHF libs...
-	mkdir -p $(XMHF_LIBS_OBJECTS_DIR)
-	@for i in $(XMHF_LIBDIRS); \
-	do \
-		(cd $(XMHF_LIBS_OBJECTS_DIR) &&	echo "Making all in $$i..." && $(MAKE) -f $$i/Makefile -w all) || exit 1; \
-	done;
-	@echo XMHF libs build SUCCESS
 
 .PHONY: xmhfslabs
 xmhfslabs:
