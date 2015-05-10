@@ -42,6 +42,13 @@ my %slab_idtomemgrantreadcaps;
 my %slab_idtomemgrantwritecaps;
 
 
+my %slab_idtodatasize;
+my %slab_idtocodesize;
+my %slab_idtostacksize;
+my %slab_idtodmadatasize;
+
+
+
 my %slab_nametoid;
 
 my $i = 0;
@@ -441,6 +448,22 @@ sub parse_gsm {
         }elsif( $lineentry[0] eq "RC"){
 
             #print $lineentry[0], $lineentry[1], $lineentry[2], $lineentry[3], $lineentry[4], "\n";
+
+        }elsif( $lineentry[0] eq "MS"){
+            #$lineentry[1]=DATA,CODE,STACK,DMADATA, $lineentry[2] = size in bytes
+            if ( $lineentry[1] eq "DATA"){
+                $slab_idtodatasize{$slabid} = $lineentry[2];
+            } elsif ( $lineentry[1] eq "CODE"){
+                $slab_idtocodesize{$slabid} = $lineentry[2];
+            } elsif ( $lineentry[1] eq "STACK"){
+                $slab_idtostacksize{$slabid} = $lineentry[2];
+            } elsif ( $lineentry[1] eq "DMADATA"){
+                $slab_idtodmadatasize{$slabid} = $lineentry[2];
+            }else {
+                print "\nError: Illegal MS entry qualifier ($lineentry[1])!";
+                exit 1;
+            }
+
 
         }else{
             #we don't know/care about this line, so just skip it
