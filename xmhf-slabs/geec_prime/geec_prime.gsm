@@ -6,6 +6,13 @@
 #include <uapi_slabiotbl.h>
 #include <xc_init.h>
 
+//slab memory sections
+MS:CODE:0x200000:void:void
+MS:DATA:0x1000000:void:void
+MS:STACK:0xe00000:void:void
+MS:DMADATA:0x200000:void:void
+
+
 S:geec_sentinel:void:void:void
 S:uapi_slabmempgtbl:void:void:void
 S:uapi_slabdevpgtbl:void:void:void
