@@ -5,7 +5,7 @@
 
 use Tie::File;
 use File::Basename;
-
+use Data::Dumper;
 
 # command line inputs
 
@@ -17,7 +17,7 @@ my $g_maxmemoffsetentries = $ARGV[4];
 my $g_loadaddr = $ARGV[5];
 my $g_loadmaxsize = $ARGV[6];
 my $g_outputfile_slabinfotable = $ARGV[7];
-
+my $g_memoffsets = $ARGV[8];
 
 
 
@@ -31,6 +31,7 @@ my $g_totalslabs;
 my $g_rootdir;
 
 my %slab_idtogsm;
+my %slab_idtommapfile;
 my %slab_idtodir;
 my %slab_idtoname;
 my %slab_idtotype;
@@ -64,6 +65,8 @@ my %slab_idtodmadata_addrstart;
 my %slab_idtodmadata_addrend;
 
 
+my %slab_idtomemoffsets;
+
 my %slab_nametoid;
 
 my $i = 0;
@@ -72,6 +75,7 @@ my $slabname;
 my $slabgsmfile;
 my $slabtype;
 my $slabsubtype;
+my $slabmmapfile;
 
 my $g_memmapaddr=0;
 
@@ -114,10 +118,12 @@ while( $i <= $#array) {
     $slabsubtype = $slabinfo[2];
     $slabsubtype =~ s/^\s+|\s+$//g ;     # remove both leading and trailing whitespace
     $slabgsm = $slabdir."/".$slabname.".gsm.pp";
+    $slabmmapfile = $g_rootdir."_objects/_objs_slab_".$slabname."/".$slabname.".mmap";
 
-    #print "Slab name: $slabname, gsm:$slabgsm ...\n";
+    print "Slab name: $slabname, mmap:$slabmmapfile ...\n";
     $slab_idtodir{$i} = $slabdir;
     $slab_idtogsm{$i} = $slabgsm;
+    $slab_idtommapfile{$i} = $slabmmapfile;
     $slab_idtoname{$i} = $slabname;
     $slab_idtotype{$i} = $slabtype;
     $slab_idtosubtype{$i} = $slabsubtype;
@@ -137,6 +143,9 @@ $g_totalslabs = $i;
 $i =0;
 while($i < $g_totalslabs){
     #print "slabname: $slab_idtoname{$i}, slabgsm: $slab_idtogsm{$i}, slabtype: $slab_idtotype{$i}, slabcallmask: $slab_idtocallmask{$i} \n";
+    if($g_memoffsets eq "MEMOFFSETS"){
+        parse_mmap($slab_idtommapfile{$i}, $i, $g_totalslabs);
+    }
     $slab_idtouapifnmask{$i} = parse_gsm($slab_idtogsm{$i}, $i, $g_totalslabs);
     #print "uapifnmask:\n";
     #print $slab_idtouapifnmask{$i};
@@ -195,6 +204,14 @@ while($i < $g_totalslabs){
 #exit 0;
 
 
+
+######
+# debug
+######
+
+print Dumper(\%slab_idtomemoffsets); # much better
+
+exit 0;
 
 
 
@@ -644,6 +661,7 @@ sub parse_mmap {
     my $i = 0;
 
     chomp($filename);
+    print "filename:$filename\n";
     tie my @array, 'Tie::File', $filename or die $!;
 
     #print "parse_mmap: $filename, $slabid...\n";
