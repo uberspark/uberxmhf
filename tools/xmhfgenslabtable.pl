@@ -29,6 +29,7 @@ my $g_totalslabs;
 my $g_rootdir;
 
 my %slab_idtogsm;
+my %slab_idtodir;
 my %slab_idtoname;
 my %slab_idtotype;
 my %slab_idtosubtype;
@@ -113,6 +114,7 @@ while( $i <= $#array) {
     $slabgsm = $slabdir."/".$slabname.".gsm.pp";
 
     #print "Slab name: $slabname, gsm:$slabgsm ...\n";
+    $slab_idtodir{$i} = $slabdir;
     $slab_idtogsm{$i} = $slabgsm;
     $slab_idtoname{$i} = $slabname;
     $slab_idtotype{$i} = $slabtype;
@@ -176,19 +178,38 @@ while($i < $g_totalslabs){
 }
 
 
+#$i =0;
+#while($i < $g_totalslabs){
+#    print "slabname: $slab_idtoname{$i} \n";
+#    printf("code    - addrstart= %x, addrend=%x \n", $slab_idtocode_addrstart{$i}, $slab_idtocode_addrend{$i});
+#    printf("data    - addrstart= %x, addrend=%x \n", $slab_idtodata_addrstart{$i}, $slab_idtodata_addrend{$i});
+#    printf("stack   - addrstart= %x, addrend=%x \n", $slab_idtostack_addrstart{$i}, $slab_idtostack_addrend{$i});
+#    printf("dmadata - addrstart= %x, addrend=%x \n", $slab_idtodmadata_addrstart{$i}, $slab_idtodmadata_addrend{$i});
+#
+#
+#    $i=$i+1;
+#}
+
+#exit 0;
+
+
+
+
+
+
+
+
+######
+# configure the slabs
+######
 $i =0;
 while($i < $g_totalslabs){
-    print "slabname: $slab_idtoname{$i} \n";
-    printf("code    - addrstart= %x, addrend=%x \n", $slab_idtocode_addrstart{$i}, $slab_idtocode_addrend{$i});
-    printf("data    - addrstart= %x, addrend=%x \n", $slab_idtodata_addrstart{$i}, $slab_idtodata_addrend{$i});
-    printf("stack   - addrstart= %x, addrend=%x \n", $slab_idtostack_addrstart{$i}, $slab_idtostack_addrend{$i});
-    printf("dmadata - addrstart= %x, addrend=%x \n", $slab_idtodmadata_addrstart{$i}, $slab_idtodmadata_addrend{$i});
+    #print "Configuring slab: $slab_idtodir{$i} with type:$slab_idtotype{$i}:$slab_idtosubtype{$i} ...\n";
+    system "cd $slab_idtodir{$i} && ../../configure_slab --with-slabtype=$slab_idtotype{$i} --with-slabsubtype=$slab_idtosubtype{$i} >/dev/null 2>&1";
 
-
-    $i=$i+1;
+    $i = $i + 1;
 }
 
-exit 0;
 
 
 
