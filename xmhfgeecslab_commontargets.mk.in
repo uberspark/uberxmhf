@@ -18,7 +18,7 @@ XMHF_SLAB_OBJECTS := $(patsubst %.S, %.o, $(XMHF_SLAB_OBJECTS))
 # folder where objects go
 XMHF_SLAB_OBJECTS_DIR := _objs_slab_$(XMHF_SLAB_NAME)
 
-LINKER_SCRIPT_INPUT := $(XMHF_DIR)/xmhfgeecslab.lscript
+LINKER_SCRIPT_INPUT := $(XMHF_DIR)/xmhf-slabs/$(XMHF_SLAB_NAME)/xmhfgeecslab.lscript
 LINKER_SCRIPT_OUTPUT := $(XMHF_SLAB_NAME).lds
 
 # targets
