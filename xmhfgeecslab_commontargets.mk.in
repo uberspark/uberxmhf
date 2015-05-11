@@ -26,10 +26,10 @@ LINKER_SCRIPT_OUTPUT := $(XMHF_SLAB_NAME).lds
 all: buildslabbin
 
 
-pp_slab_gsm:
-	mkdir -p $(XMHF_SLAB_OBJECTS_DIR)
-	cd $(XMHF_SLAB_OBJECTS_DIR) && $(CP) -f $(XMHF_DIR)/xmhf-slabs/$(XMHF_SLAB_NAME)/$(XMHF_SLAB_NAME).gsm $(XMHF_SLAB_NAME).gsm.c
-	cd $(XMHF_SLAB_OBJECTS_DIR) && $(CCERT) -E -D__ASSEMBLY__ $(CCERT_FLAGS) $(XMHF_SLAB_NAME).gsm.c >$(XMHF_DIR)/xmhf-slabs/$(XMHF_SLAB_NAME)/$(XMHF_SLAB_NAME).gsm.pp
+#pp_slab_gsm:
+#	mkdir -p $(XMHF_SLAB_OBJECTS_DIR)
+#	cd $(XMHF_SLAB_OBJECTS_DIR) && $(CP) -f $(XMHF_DIR)/xmhf-slabs/$(XMHF_SLAB_NAME)/$(XMHF_SLAB_NAME).gsm $(XMHF_SLAB_NAME).gsm.c
+#	cd $(XMHF_SLAB_OBJECTS_DIR) && $(CCERT) -E -D__ASSEMBLY__ $(CCERT_FLAGS) $(XMHF_SLAB_NAME).gsm.c >$(XMHF_DIR)/xmhf-slabs/$(XMHF_SLAB_NAME)/$(XMHF_SLAB_NAME).gsm.pp
 
 
 buildslabbin: $(XMHF_SLAB_OBJECTS)
