@@ -240,21 +240,21 @@ print "\n/* author: amit vasudevan (amitvasudevan@acm.org) */";
 
 print "\n";
 
-$i=0;
-while( $i < $g_totalslabs) {
-	print "\n";
-	print "\nextern u8 _slab_$slab_idtoname{$i}_code_start[];";
-	print "\nextern u8 _slab_$slab_idtoname{$i}_code_end[];";
-	print "\nextern u8 _slab_$slab_idtoname{$i}_data_start[];";
-	print "\nextern u8 _slab_$slab_idtoname{$i}_data_end[];";
-	print "\nextern u8 _slab_$slab_idtoname{$i}_stack_start[];";
-	print "\nextern u8 _slab_$slab_idtoname{$i}_stack_end[];";
-	print "\nextern u8 _slab_$slab_idtoname{$i}_dmadata_start[];";
-	print "\nextern u8 _slab_$slab_idtoname{$i}_dmadata_end[];";
-	print "\nextern u8 _slab_$slab_idtoname{$i}_entrypoint[];";
-
-	$i++;
-}
+#$i=0;
+#while( $i < $g_totalslabs) {
+#	print "\n";
+#	print "\nextern u8 _slab_$slab_idtoname{$i}_code_start[];";
+#	print "\nextern u8 _slab_$slab_idtoname{$i}_code_end[];";
+#	print "\nextern u8 _slab_$slab_idtoname{$i}_data_start[];";
+#	print "\nextern u8 _slab_$slab_idtoname{$i}_data_end[];";
+#	print "\nextern u8 _slab_$slab_idtoname{$i}_stack_start[];";
+#	print "\nextern u8 _slab_$slab_idtoname{$i}_stack_end[];";
+#	print "\nextern u8 _slab_$slab_idtoname{$i}_dmadata_start[];";
+#	print "\nextern u8 _slab_$slab_idtoname{$i}_dmadata_end[];";
+#	print "\nextern u8 _slab_$slab_idtoname{$i}_entrypoint[];";
+#
+#	$i++;
+#}
 
 print "\n";
 print "\n__attribute__(( section(\".data\") )) __attribute__((aligned(4096))) xmhfgeec_slab_info_t _xmhfhic_common_slab_info_table[] = {";
@@ -311,11 +311,15 @@ while( $i < $g_totalslabs ){
     #bases and for all other slabs point to PRIME slab memory page tables
     if ($slab_idtotype{$i} eq "VfT_SLAB"){
         if($slab_idtosubtype{$i} eq "SENTINEL"){
-            printf "\n	        &_slab_uapi_slabmempgtbl_data_start[%u],", (0 * 4096);
-            printf "\n	        &_slab_uapi_slabiotbl_data_start[%u],", (0 * (3*4096));
+            #printf "\n	        &_slab_uapi_slabmempgtbl_data_start[%u],", (0 * 4096);
+            #printf "\n	        &_slab_uapi_slabiotbl_data_start[%u],", (0 * (3*4096));
+            print "\n        ".$slab_idtodata_addrstart{$slab_nametoid{"uapi_slabmempgtbl"}}." + (0 * 4096),";
+            print "\n        ".$slab_idtodata_addrstart{$slab_nametoid{"uapi_slabiotbl"}}." + (0 * (3*4096)),";
         }else{
-            printf "\n	        &_slab_uapi_slabmempgtbl_data_start[%u],", (1 * 4096);
-            printf "\n	        &_slab_uapi_slabiotbl_data_start[%u],", (1 * (3*4096));
+            #printf "\n	        &_slab_uapi_slabmempgtbl_data_start[%u],", (1 * 4096);
+            #printf "\n	        &_slab_uapi_slabiotbl_data_start[%u],", (1 * (3*4096));
+            print "\n        ".$slab_idtodata_addrstart{$slab_nametoid{"uapi_slabmempgtbl"}}." + (1 * 4096),";
+            print "\n        ".$slab_idtodata_addrstart{$slab_nametoid{"uapi_slabiotbl"}}." + (1 * (3*4096)),";
         }
     }else{
         if($g_uvslabcounter >=  $g_totaluvslabmempgtblsets){
@@ -326,8 +330,10 @@ while( $i < $g_totalslabs ){
         }
 
         if( $i < $g_totalslabmempgtblsets){
-          printf "\n	        &_slab_uapi_slabmempgtbl_data_start[%u],", ($i * 4096);
-          printf "\n	        &_slab_uapi_slabiotbl_data_start[%u],", ($i * (3*4096));
+          #printf "\n	        &_slab_uapi_slabmempgtbl_data_start[%u],", ($i * 4096);
+          #printf "\n	        &_slab_uapi_slabiotbl_data_start[%u],", ($i * (3*4096));
+          print "\n        ".$slab_idtodata_addrstart{$slab_nametoid{"uapi_slabmempgtbl"}}." + ($i * 4096),";
+          print "\n        ".$slab_idtodata_addrstart{$slab_nametoid{"uapi_slabiotbl"}}." + ($i * (3*4096)),";
         }else{
             print "\nError: Illegal unverified slab id ($i)!";
             exit 1;
@@ -336,16 +342,28 @@ while( $i < $g_totalslabs ){
 
 
     #slab_tos
+    #print "\n	        {";
+    #print "\n	            ((u32)&_slab_$slab_idtoname{$i}_stack_start[1*XMHF_SLAB_STACKSIZE]),";
+    #print "\n	            ((u32)&_slab_$slab_idtoname{$i}_stack_start[2*XMHF_SLAB_STACKSIZE]),";
+    #print "\n	            ((u32)&_slab_$slab_idtoname{$i}_stack_start[3*XMHF_SLAB_STACKSIZE]),";
+    #print "\n	            ((u32)&_slab_$slab_idtoname{$i}_stack_start[4*XMHF_SLAB_STACKSIZE]),";
+    #print "\n	            ((u32)&_slab_$slab_idtoname{$i}_stack_start[5*XMHF_SLAB_STACKSIZE]),";
+    #print "\n	            ((u32)&_slab_$slab_idtoname{$i}_stack_start[6*XMHF_SLAB_STACKSIZE]),";
+    #print "\n	            ((u32)&_slab_$slab_idtoname{$i}_stack_start[7*XMHF_SLAB_STACKSIZE]),";
+    #print "\n	            ((u32)&_slab_$slab_idtoname{$i}_stack_start[8*XMHF_SLAB_STACKSIZE]),";
+    #print "\n	        },";
     print "\n	        {";
-    print "\n	            ((u32)&_slab_$slab_idtoname{$i}_stack_start[1*XMHF_SLAB_STACKSIZE]),";
-    print "\n	            ((u32)&_slab_$slab_idtoname{$i}_stack_start[2*XMHF_SLAB_STACKSIZE]),";
-    print "\n	            ((u32)&_slab_$slab_idtoname{$i}_stack_start[3*XMHF_SLAB_STACKSIZE]),";
-    print "\n	            ((u32)&_slab_$slab_idtoname{$i}_stack_start[4*XMHF_SLAB_STACKSIZE]),";
-    print "\n	            ((u32)&_slab_$slab_idtoname{$i}_stack_start[5*XMHF_SLAB_STACKSIZE]),";
-    print "\n	            ((u32)&_slab_$slab_idtoname{$i}_stack_start[6*XMHF_SLAB_STACKSIZE]),";
-    print "\n	            ((u32)&_slab_$slab_idtoname{$i}_stack_start[7*XMHF_SLAB_STACKSIZE]),";
-    print "\n	            ((u32)&_slab_$slab_idtoname{$i}_stack_start[8*XMHF_SLAB_STACKSIZE]),";
+    print "\n	            ".$slab_idtostack_addrstart{$i}."+ (1*XMHF_SLAB_STACKSIZE),";
+    print "\n	            ".$slab_idtostack_addrstart{$i}."+ (2*XMHF_SLAB_STACKSIZE),";
+    print "\n	            ".$slab_idtostack_addrstart{$i}."+ (3*XMHF_SLAB_STACKSIZE),";
+    print "\n	            ".$slab_idtostack_addrstart{$i}."+ (4*XMHF_SLAB_STACKSIZE),";
+    print "\n	            ".$slab_idtostack_addrstart{$i}."+ (5*XMHF_SLAB_STACKSIZE),";
+    print "\n	            ".$slab_idtostack_addrstart{$i}."+ (6*XMHF_SLAB_STACKSIZE),";
+    print "\n	            ".$slab_idtostack_addrstart{$i}."+ (7*XMHF_SLAB_STACKSIZE),";
+    print "\n	            ".$slab_idtostack_addrstart{$i}."+ (8*XMHF_SLAB_STACKSIZE),";
     print "\n	        },";
+
+
 
     #slab_callcaps
     printf("\n\t0x%08xUL, ", $slab_idtocallmask{$i});
@@ -403,14 +421,14 @@ while( $i < $g_totalslabs ){
 
     #slab_physmem_extents
     print "\n	    {";
-    print "\n	        {.addr_start = _slab_$slab_idtoname{$i}_code_start, .addr_end = _slab_$slab_idtoname{$i}_code_end, .protection = 0},";
-    print "\n	        {.addr_start = _slab_$slab_idtoname{$i}_data_start, .addr_end = _slab_$slab_idtoname{$i}_data_end, .protection = 0},";
-    print "\n	        {.addr_start = _slab_$slab_idtoname{$i}_stack_start, .addr_end = _slab_$slab_idtoname{$i}_stack_end, .protection = 0},";
-    print "\n	        {.addr_start = _slab_$slab_idtoname{$i}_dmadata_start, .addr_end = _slab_$slab_idtoname{$i}_dmadata_end, .protection = 0},";
+    print "\n	        {.addr_start = $slab_idtocode_addrstart{$i}, .addr_end = $slab_idtocode_addrend{$i}, .protection = 0},";
+    print "\n	        {.addr_start = $slab_idtodata_addrstart{$i}, .addr_end = $slab_idtodata_addrend{$i}, .protection = 0},";
+    print "\n	        {.addr_start = $slab_idtostack_addrstart{$i}, .addr_end = $slab_idtostack_addrend{$i}, .protection = 0},";
+    print "\n	        {.addr_start = $slab_idtodmadata_addrstart{$i}, .addr_end = $slab_idtodmadata_addrend{$i}, .protection = 0},";
     print "\n	    },";
 
     #slab_entrystub
-    print "\n	    (u32)_slab_$slab_idtoname{$i}_entrypoint";
+    print "\n	    $slab_idtocode_addrstart{$i}";
 
     print "\n	},";
 	print "\n";
