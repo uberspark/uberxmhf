@@ -15,6 +15,10 @@ my $g_slabsfile = $ARGV[0];
 my $g_maxuvslabs = $ARGV[1];
 my $g_maxincldevlistentries = $ARGV[2];
 my $g_maxexcldevlistentries = $ARGV[3];
+my $g_loadaddr = $ARGV[4];
+my $g_loadmaxsize = $ARGV[5];
+
+
 
 my $g_totalslabmempgtblsets;
 my $g_totalslabiotblsets;
@@ -47,6 +51,14 @@ my %slab_idtocodesize;
 my %slab_idtostacksize;
 my %slab_idtodmadatasize;
 
+my %slab_idtodata_addrstart;
+my %slab_idtodata_addrend;
+my %slab_idtocode_addrstart;
+my %slab_idtocode_addrend;
+my %slab_idtostack_addrstart;
+my %slab_idtostack_addrend;
+my %slab_idtodmadata_addrstart;
+my %slab_idtodmadata_addrend;
 
 
 my %slab_nametoid;
@@ -58,6 +70,7 @@ my $slabgsmfile;
 my $slabtype;
 my $slabsubtype;
 
+my $g_memmapaddr=0;
 
 $g_rootdir = dirname($g_slabsfile)."/";
 
@@ -140,12 +153,42 @@ while($i < $g_totalslabs){
 # compute memory map
 ######
 $i =0;
+$g_memmapaddr = hex $g_loadaddr;
 while($i < $g_totalslabs){
     #print "slabname: $slab_idtoname{$i}, code: $slab_idtocodesize{$i}, data: $slab_idtodatasize{$i}, stack: $slab_idtostacksize{$i}, dmadata: $slab_idtodmadatasize{$i} \n";
+    $slab_idtocode_addrstart{$i} = $g_memmapaddr;
+    $g_memmapaddr += hex $slab_idtocodesize{$i};
+    $slab_idtocode_addrend{$i} = $g_memmapaddr;
+
+    $slab_idtodata_addrstart{$i} = $g_memmapaddr;
+    $g_memmapaddr += hex $slab_idtodatasize{$i};
+    $slab_idtodata_addrend{$i} = $g_memmapaddr;
+
+    $slab_idtostack_addrstart{$i} = $g_memmapaddr;
+    $g_memmapaddr += hex $slab_idtostacksize{$i};
+    $slab_idtostack_addrend{$i} = $g_memmapaddr;
+
+    $slab_idtodmadata_addrstart{$i} = $g_memmapaddr;
+    $g_memmapaddr += hex $slab_idtodmadatasize{$i};
+    $slab_idtodmadata_addrend{$i} = $g_memmapaddr;
+
     $i=$i+1;
 }
 
 
+$i =0;
+while($i < $g_totalslabs){
+    print "slabname: $slab_idtoname{$i} \n";
+    printf("code    - addrstart= %x, addrend=%x \n", $slab_idtocode_addrstart{$i}, $slab_idtocode_addrend{$i});
+    printf("data    - addrstart= %x, addrend=%x \n", $slab_idtodata_addrstart{$i}, $slab_idtodata_addrend{$i});
+    printf("stack   - addrstart= %x, addrend=%x \n", $slab_idtostack_addrstart{$i}, $slab_idtostack_addrend{$i});
+    printf("dmadata - addrstart= %x, addrend=%x \n", $slab_idtodmadata_addrstart{$i}, $slab_idtodmadata_addrend{$i});
+
+
+    $i=$i+1;
+}
+
+exit 0;
 
 
 
