@@ -136,6 +136,25 @@ while($i < $g_totalslabs){
 
 
 
+######
+# compute memory map
+######
+$i =0;
+while($i < $g_totalslabs){
+    print "slabname: $slab_idtoname{$i}, code: $slab_idtocodesize{$i}, data: $slab_idtodatasize{$i}, stack: $slab_idtostacksize{$i}, dmadata: $slab_idtodmadatasize{$i} \n";
+    $i=$i+1;
+}
+
+
+
+
+
+
+
+
+
+
+
 
 ######
 # output
