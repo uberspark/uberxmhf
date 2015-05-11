@@ -13,9 +13,10 @@ my $g_slabsfile = $ARGV[0];
 my $g_maxuvslabs = $ARGV[1];
 my $g_maxincldevlistentries = $ARGV[2];
 my $g_maxexcldevlistentries = $ARGV[3];
-my $g_loadaddr = $ARGV[4];
-my $g_loadmaxsize = $ARGV[5];
-my $g_outputfile_slabinfotable = $ARGV[6];
+my $g_maxmemoffsetentries = $ARGV[4];
+my $g_loadaddr = $ARGV[5];
+my $g_loadmaxsize = $ARGV[6];
+my $g_outputfile_slabinfotable = $ARGV[7];
 
 
 
@@ -431,6 +432,17 @@ while( $i < $g_totalslabs ){
     print $fh "\n	        {.addr_start = $slab_idtostack_addrstart{$i}, .addr_end = $slab_idtostack_addrend{$i}, .protection = 0},";
     print $fh "\n	        {.addr_start = $slab_idtodmadata_addrstart{$i}, .addr_end = $slab_idtodmadata_addrend{$i}, .protection = 0},";
     print $fh "\n	    },";
+
+
+    #slab memoffset entries
+    $j = 0;
+    print $fh "\n	    {";
+    while( $j < $g_maxmemoffsetentries) {
+        print $fh "\n	    0x00000000UL,";
+        $j=$j+1;
+    }
+    print $fh "\n	    },";
+
 
     #slab_entrystub
     print $fh "\n	    $slab_idtocode_addrstart{$i}";
