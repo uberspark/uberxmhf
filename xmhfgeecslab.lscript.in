@@ -83,12 +83,12 @@ SECTIONS
 		*(.stackhdr)
 		*(.stack)
 		*(.note.GNU-stack)
-		. = (@SLABSTACKEND@ - @SLABSTACKSTART@)
+		. = (@SLABSTACKEND@ - @SLABSTACKSTART@);
 	} >smem_stack =0x0000
 
 	.slabdmadata : {
 		*(.slab_dmadata)
-		. = (@SLABDMADATAEND@ - @SLABDMADATASTART@)
+		. = (@SLABDMADATAEND@ - @SLABDMADATASTART@);
 	} >smem_dmadata =0x0000
 
 
