@@ -65,6 +65,7 @@ SECTIONS
         *(.slab_codehdr)
 		*(.slab_entrystub)
 		*(.text)
+		. = (@SLABCODEEND@ - @SLABCODESTART@);
 	} >smem_code =0x9090
 
 	.slabdata : {
@@ -75,16 +76,19 @@ SECTIONS
 		*(.rodata.str1.1)
 		*(.comment)
 		*(.eh_frame)
+		. = (@SLABDATAEND@ - @SLABDATASTART@);
 	} >smem_data =0x0000
 
 	.slabstack : {
 		*(.stackhdr)
 		*(.stack)
 		*(.note.GNU-stack)
+		. = (@SLABSTACKEND@ - @SLABSTACKSTART@)
 	} >smem_stack =0x0000
 
 	.slabdmadata : {
 		*(.slab_dmadata)
+		. = (@SLABDMADATAEND@ - @SLABDMADATASTART@)
 	} >smem_dmadata =0x0000
 
 
