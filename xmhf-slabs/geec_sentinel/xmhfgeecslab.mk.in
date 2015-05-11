@@ -10,6 +10,8 @@ export XMHF_SLAB_NAME := geec_sentinel
 export XMHF_SLAB_SOURCES := $(wildcard $(srcdir)/*.c)
 XMHF_SLAB_SOURCES += $(wildcard $(srcdir)/*.cS)
 
+export XMHF_SLAB_FULLLINK := n
+
 export XMHF_SLAB_GLOBAL_SYMS := 						\
 	--globalize-symbol _geec_sentinel_sysenter_casmstub 	\
 	--globalize-symbol _geec_sentinel_intercept_casmstub	\
