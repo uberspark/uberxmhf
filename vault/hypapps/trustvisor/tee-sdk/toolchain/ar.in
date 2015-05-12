@@ -1,4 +1,0 @@
-#!/bin/sh
-AR="@AR@"
-
-exec $AR "$@"
