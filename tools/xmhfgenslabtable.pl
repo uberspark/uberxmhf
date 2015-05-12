@@ -691,7 +691,7 @@ sub parse_gsm {
 
     #if we are processing memoffsets, then store memoffsets string indexed by slabid
     if($is_memoffsets == 1){
-        if($slab_memoffsetstring eq ""){
+        if($slab_memoffsetsstring eq ""){
             $slab_idtomemoffsetstring{$slabid} = "0";
         }else{
             $slab_idtomemoffsetstring{$slabid} = $slab_memoffsetsstring;
