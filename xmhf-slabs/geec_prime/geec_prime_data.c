@@ -75,7 +75,7 @@ __attribute__(( section(".stack") )) __attribute__(( aligned(4096) )) u8 _init_b
 //////
 // (SMP) CPU state setup data
 //////
-
+/*
 extern void __xmhf_exception_handler_0(void);
 extern void __xmhf_exception_handler_1(void);
 extern void __xmhf_exception_handler_2(void);
@@ -144,7 +144,7 @@ u32  __xmhfhic_exceptionstubs[] = { XMHF_EXCEPTION_HANDLER_ADDROF(0),
 							XMHF_EXCEPTION_HANDLER_ADDROF(30),
 							XMHF_EXCEPTION_HANDLER_ADDROF(31),
 };
-
+*/
 // CASM module supporting data structures
 
 
