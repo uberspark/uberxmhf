@@ -1,3 +1,0 @@
-#!/bin/sh
-STRIP="@STRIP@"
-exec $STRIP "$@"
