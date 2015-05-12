@@ -10,42 +10,8 @@ export XMHF_SLAB_NAME := geec_sentinel
 export XMHF_SLAB_SOURCES := $(wildcard $(srcdir)/*.c)
 XMHF_SLAB_SOURCES += $(wildcard $(srcdir)/*.cS)
 
-export XMHF_SLAB_FULLLINK := n
+#export XMHF_SLAB_FULLLINK := n
 
-export XMHF_SLAB_GLOBAL_SYMS := 						\
-	--globalize-symbol _geec_sentinel_sysenter_casmstub 	\
-	--globalize-symbol _geec_sentinel_intercept_casmstub	\
-	--globalize-symbol __xmhf_exception_handler_0  \
-	--globalize-symbol __xmhf_exception_handler_1  \
-	--globalize-symbol __xmhf_exception_handler_2  \
-	--globalize-symbol __xmhf_exception_handler_3  \
-	--globalize-symbol __xmhf_exception_handler_4  \
-	--globalize-symbol __xmhf_exception_handler_5  \
-	--globalize-symbol __xmhf_exception_handler_6  \
-	--globalize-symbol __xmhf_exception_handler_7  \
-	--globalize-symbol __xmhf_exception_handler_8  \
-	--globalize-symbol __xmhf_exception_handler_9  \
-	--globalize-symbol __xmhf_exception_handler_10 \
-	--globalize-symbol __xmhf_exception_handler_11 \
-	--globalize-symbol __xmhf_exception_handler_12 \
-	--globalize-symbol __xmhf_exception_handler_13 \
-	--globalize-symbol __xmhf_exception_handler_14 \
-	--globalize-symbol __xmhf_exception_handler_15 \
-	--globalize-symbol __xmhf_exception_handler_16 \
-	--globalize-symbol __xmhf_exception_handler_17 \
-	--globalize-symbol __xmhf_exception_handler_18 \
-	--globalize-symbol __xmhf_exception_handler_19 \
-	--globalize-symbol __xmhf_exception_handler_20 \
-	--globalize-symbol __xmhf_exception_handler_21 \
-	--globalize-symbol __xmhf_exception_handler_22 \
-	--globalize-symbol __xmhf_exception_handler_23 \
-	--globalize-symbol __xmhf_exception_handler_24 \
-	--globalize-symbol __xmhf_exception_handler_25 \
-	--globalize-symbol __xmhf_exception_handler_26 \
-	--globalize-symbol __xmhf_exception_handler_27 \
-	--globalize-symbol __xmhf_exception_handler_28 \
-	--globalize-symbol __xmhf_exception_handler_29 \
-	--globalize-symbol __xmhf_exception_handler_30 \
-	--globalize-symbol __xmhf_exception_handler_31
+export XMHF_SLAB_GLOBAL_SYMS :=
 
 ########################################################################
