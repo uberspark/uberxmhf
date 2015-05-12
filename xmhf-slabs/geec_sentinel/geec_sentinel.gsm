@@ -8,3 +8,8 @@ MS:DMADATA:0x200000:void:void
 // slab dependencies
 
 RD:INCL:PCI_VENDOR_ID_XMHFGEEC:PCI_DEVICE_ID_XMHFGEEC_LAPIC:void
+
+
+EX:_geec_sentinel_sysenter_casmstub:void:void:void
+
+

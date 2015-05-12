@@ -66,6 +66,7 @@ my %slab_idtodmadata_addrend;
 
 
 my %slab_idtomemoffsets;
+my %slab_idtomemoffsetstring;
 
 my %slab_nametoid;
 
@@ -120,7 +121,7 @@ while( $i <= $#array) {
     $slabgsm = $slabdir."/".$slabname.".gsm.pp";
     $slabmmapfile = $g_rootdir."_objects/_objs_slab_".$slabname."/".$slabname.".mmap";
 
-    print "Slab name: $slabname, mmap:$slabmmapfile ...\n";
+    #print "Slab name: $slabname, mmap:$slabmmapfile ...\n";
     $slab_idtodir{$i} = $slabdir;
     $slab_idtogsm{$i} = $slabgsm;
     $slab_idtommapfile{$i} = $slabmmapfile;
@@ -145,8 +146,10 @@ while($i < $g_totalslabs){
     #print "slabname: $slab_idtoname{$i}, slabgsm: $slab_idtogsm{$i}, slabtype: $slab_idtotype{$i}, slabcallmask: $slab_idtocallmask{$i} \n";
     if($g_memoffsets eq "MEMOFFSETS"){
         parse_mmap($slab_idtommapfile{$i}, $i, $g_totalslabs);
+        $slab_idtouapifnmask{$i} = parse_gsm($slab_idtogsm{$i}, $i, $g_totalslabs, 1);
+    }else{
+        $slab_idtouapifnmask{$i} = parse_gsm($slab_idtogsm{$i}, $i, $g_totalslabs, 0);
     }
-    $slab_idtouapifnmask{$i} = parse_gsm($slab_idtogsm{$i}, $i, $g_totalslabs);
     #print "uapifnmask:\n";
     #print $slab_idtouapifnmask{$i};
     $i=$i+1;
@@ -209,9 +212,17 @@ while($i < $g_totalslabs){
 # debug
 ######
 
-print Dumper(\%slab_idtomemoffsets); # much better
+#print Dumper(\%slab_idtomemoffsets); # much better
 
-exit 0;
+
+#$i =0;
+#while($i < $g_totalslabs){
+#    print "slab:$slab_idtoname{$i} exports\n";
+#    print "$slab_idtomemoffsetstring{$i} \n";
+#    $i = $i + 1;
+#}
+
+#exit 0;
 
 
 
@@ -452,11 +463,16 @@ while( $i < $g_totalslabs ){
 
 
     #slab memoffset entries
-    $j = 0;
+    #$j = 0;
     print $fh "\n	    {";
-    while( $j < $g_maxmemoffsetentries) {
-        print $fh "\n	    0x00000000UL,";
-        $j=$j+1;
+    #while( $j < $g_maxmemoffsetentries) {
+    #    print $fh "\n	    0x00000000UL,";
+    #    $j=$j+1;
+    #}
+    if($g_memoffsets eq "MEMOFFSETS"){
+        print $fh $slab_idtomemoffsetstring{$i};
+    }else{
+        print $fh "0";
     }
     print $fh "\n	    },";
 
@@ -504,7 +520,7 @@ exit 0;
 # parses a gsm file and populates relevant global structures
 ######
 sub parse_gsm {
-    my($filename, $slabid, $totalslabs) = @_;
+    my($filename, $slabid, $totalslabs, $is_memoffsets) = @_;
     my $i = 0;
     my $j = 0;
     my $slab_rdinclcount=0;
@@ -513,11 +529,13 @@ sub parse_gsm {
     my $slab_rdexclentriesstring="";
     my %slab_idtouapifnmask;
     my $slab_uapifnmaskstring = "";
+    my $slab_memoffsetsstring = "";
+    my $slab_memoffsetcount=0;
 
     chomp($filename);
     tie my @array, 'Tie::File', $filename or die $!;
 
-    #print "parse_gsm: $filename, $slabid...\n";
+    #print "parse_gsm: $filename, $slabid, $is_memoffsets...\n";
 
     $slab_rdinclentriesstring = $slab_rdinclentriesstring."{ \n";
     $slab_rdexclentriesstring = $slab_rdexclentriesstring."{ \n";
@@ -615,6 +633,27 @@ sub parse_gsm {
             }
 
 
+        }elsif( $lineentry[0] eq "EX"){
+            #$lineentry[1]=export variable name
+            $lineentry[1] =~ s/^\s+|\s+$//g ;     # remove both leading and trailing whitespace
+
+            #if we are processing memoffsets, then lookup this variable address
+            if($is_memoffsets == 1){
+                if(exists $slab_idtomemoffsets{$slabid}{$lineentry[1]}){
+                    if($slab_memoffsetcount < $g_maxmemoffsetentries) {
+                        $slab_memoffsetsstring = $slab_memoffsetsstring."\t0x".$slab_idtomemoffsets{$slabid}{$lineentry[1]}.",\n";
+                        $slab_memoffsetcount += 1;
+                    }else{
+                        print "\nError: Max. EX entries exceeded!";
+                        exit 1;
+                    }
+                }else{
+                    print "\nError: No entry found for slab: $slab_idtoname{$i}, EX entry: $lineentry[1]!";
+                    exit 1;
+                }
+            }
+
+
         }else{
             #we don't know/care about this line, so just skip it
         }
@@ -645,6 +684,11 @@ sub parse_gsm {
     }
 
 
+    #if we are processing memoffsets, then store memoffsets string indexed by slabid
+    if($is_memoffsets == 1){
+        $slab_idtomemoffsetstring{$slabid} = $slab_memoffsetsstring;
+    }
+
     return $slab_uapifnmaskstring;
 
 }
@@ -661,7 +705,7 @@ sub parse_mmap {
     my $i = 0;
 
     chomp($filename);
-    print "filename:$filename\n";
+    #print "filename:$filename\n";
     tie my @array, 'Tie::File', $filename or die $!;
 
     #print "parse_mmap: $filename, $slabid...\n";
