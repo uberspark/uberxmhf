@@ -55,14 +55,6 @@ _libxmhfdebug:
 	@echo libxmhfdebug built sucessfully.
 
 
-.PHONY: _libxmhfgeec
-_libxmhfgeec:
-	@echo building libxmhfgeec...
-	mkdir -p $(XMHF_LIBS_OBJECTS_DIR)
-	cd $(XMHF_LIBS_OBJECTS_DIR) &&	$(MAKE) -f $(LIBXMHFGEEC_SRC)/Makefile -w all
-	@echo libxmhfgeec built sucessfully.
-
-
 .PHONY: _libxmhfhw
 _libxmhfhw:
 	@echo building libxmhfhw...
@@ -72,19 +64,43 @@ _libxmhfhw:
 
 
 .PHONY: xmhflibs
-xmhflibs: _libxmhfc _libxmhfcrypto _libxmhfdebug _libxmhfgeec _libxmhfhw
+xmhflibs: _libxmhfc _libxmhfcrypto _libxmhfdebug _libxmhfhw
+
+.PHONY: _libxmhfgeec_prebuild
+_libxmhfgeec_prebuild:
+	@echo building libxmhfgeec prebuild...
+	mkdir -p $(XMHF_LIBS_OBJECTS_DIR)
+	cd $(XMHF_LIBS_OBJECTS_DIR) &&	$(MAKE) -f $(LIBXMHFGEEC_SRC)/Makefile -w all
+	@echo libxmhfgeec prebuild built sucessfully.
+
+.PHONY: _libxmhfgeec_realbuild
+_libxmhfgeec_realbuild:
+	@echo building libxmhfgeec realbuild...
+	mkdir -p $(XMHF_LIBS_OBJECTS_DIR)
+	touch $(LIBXMHFGEEC_SRC)/xmhfgeec_slabinfotable.c
+	cd $(XMHF_LIBS_OBJECTS_DIR) &&	$(MAKE) -f $(LIBXMHFGEEC_SRC)/Makefile -w all
+	@echo libxmhfgeec realbuild built sucessfully.
 
 
 
-
-.PHONY: _slabs_common
-_slabs_common:
-	@echo Building slabs...
+.PHONY: _slabs_common_prebuild
+_slabs_common_prebuild:
+	@echo Building slabs prebuild...
 	@for i in $(XMHF_SLAB_DIRS); \
 	do \
 		(cd $(XMHF_OBJDIR) &&	echo "Making all in $$i..." && $(MAKE) -f $(XMHF_DIR)/$$i/Makefile -w all) || exit 1; \
 	done;
-	@echo Slabs build SUCCESS
+	@echo Slabs build prebuild SUCCESS
+
+.PHONY: _slabs_common_realbuild
+_slabs_common_realbuild:
+	@echo Building slabs realbuild...
+	@for i in $(XMHF_SLAB_DIRS); \
+	do \
+		(cd $(XMHF_OBJDIR) &&	echo "Making all in $$i..." && $(MAKE) -f $(XMHF_DIR)/$$i/Makefile -w linkslabbin) || exit 1; \
+	done;
+	@echo Slabs build realbuild SUCCESS
+
 
 .PHONY: _slabs_configureandgenerateslabinfonoexports
 _slabs_configureandgenerateslabinfonoexports:
@@ -106,10 +122,10 @@ _slabs_generateslabinfoexports:
 	@echo slab info table with memoffsets ready.
 
 .PHONY: slabs_prebuild
-slabs_prebuild: _slabs_configureandgenerateslabinfonoexports xmhflibs _slabs_common
+slabs_prebuild: _slabs_configureandgenerateslabinfonoexports xmhflibs _libxmhfgeec_prebuild _slabs_common_prebuild
 
 .PHONY: slabs_realbuild
-slabs_realbuild: slabs_prebuild _slabs_generateslabinfoexports _libxmhfgeec  _slabs_common
+slabs_realbuild: slabs_prebuild _slabs_generateslabinfoexports _libxmhfgeec_realbuild  _slabs_common_realbuild
 
 .PHONY: _slabs_verify
 _slabs_verify:
@@ -134,7 +150,7 @@ _xmhf-bootloader:
 
 
 .PHONY: bootloader
-bootloader: xmhflibs _xmhf-bootloader
+bootloader: xmhflibs _libxmhfgeec_realbuild _xmhf-bootloader
 	@echo Building XMHF boot loader...
 	cd $(XMHF_OBJDIR) && $(MAKE) -f $(XMHF_BOOTLOADER_SRC)/Makefile -w all \
 		RUNTIME_INTEGRITY_HASH=\""$(shell ( sha1sum $(XMHFCORE_OBJECTS_DIR)/_objs_xmhf-runtime/runtime.bin | perl -nae '$$F[0] =~ s/(..)/\\\\x$$1/g; print $$F[0];' ))"\" \
