@@ -49,11 +49,3 @@
 
 #include <xmhfgeec.h>
 
-/*
- * slab info data structure
- *
- * author: amit vasudevan (amitvasudevan@acm.org)
- */
-
-#include "__geec_sentinel_autogendata_slabinfotable"
-

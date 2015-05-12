@@ -78,6 +78,11 @@
 #define XMHF_CONFIG_MAX_EXCLDEVLIST_ENTRIES __XMHF_CONFIG_MAX_EXCLDEVLIST_ENTRIES__
 
 
+//max. memoffset entries
+#define XMHF_CONFIG_MAX_MEMOFFSET_ENTRIES __XMHF_CONFIG_MAX_MEMOFFSET_ENTRIES__
+
+
+
 //"runtime" parameter block magic value
 #define RUNTIME_PARAMETER_BLOCK_MAGIC	0xF00DDEAD
 
@@ -184,8 +189,8 @@
 //----------------------------------------------------------------------
 // XMHF platform memory map
 	//physical memory extents of the XMHF framework
-	#define __TARGET_BASE_XMHF				0x02400000		//at 36M
-	#define __TARGET_SIZE_XMHF				0x1C200000      //450M size
+	#define __TARGET_BASE_XMHF				__XMHF_CONFIG_LOADADDR__
+	#define __TARGET_SIZE_XMHF				__XMHF_CONFIG_LOADMAXSIZE__
 
 	//physical address where the XMHF boot-loader is loaded (e.g., via GRUB)
 	#define __TARGET_BASE_BOOTLOADER		0x01E00000		//30MB
@@ -268,7 +273,7 @@
 
 #ifndef __ASSEMBLY__
 
-#if defined (__DEBUG_SERIAL__)
+/*#if defined (__DEBUG_SERIAL__)
 
 extern u8 _libxmhfdebugdata_start[];
 extern u8 _libxmhfdebugdata_end[];
@@ -277,6 +282,7 @@ extern u8 _libxmhfdebugdata_end[];
 #define     ADDR_LIBXMHFDEBUGDATA_END             ((u32)_libxmhfdebugdata_end)
 
 #endif // defined
+*/
 
 #endif // __ASSEMBLY__
 

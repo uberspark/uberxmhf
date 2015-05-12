@@ -44,60 +44,63 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-#ifndef __XMHF_DEBUG_H__
-#define __XMHF_DEBUG_H__
+#include <xmhf.h>
 
-#include "_com.h"        		//UART/serial
+OUTPUT_ARCH("i386")
 
-
-#ifndef __ASSEMBLY__
-
-#define LOG_LEVEL_NONE    0x00
-#define LOG_LEVEL_ALL     0xFF
-
-#define LOG_TARGET_NONE   0x00
-#define LOG_TARGET_VGA    0x01
-#define LOG_TARGET_SERIAL 0x02
-#define LOG_TARGET_MEMORY 0x04
-
-#define LOG_PROFILE (1<<0)
-#define LOG_TRACE   (1<<1)
-#define LOG_ERROR   (1<<2)
-
-#define ENABLED_LOG_TYPES (LOG_PROFILE|LOG_TRACE|LOG_ERROR)
-
-static inline void xmhf_debug_init(char *params){
-	(void)params;
-#ifdef __DEBUG_SERIAL__
-  xmhfhw_platform_serial_init(params);
-#endif
+MEMORY
+{
+  smem_code (rwxai) : ORIGIN = @SLABCODESTART@, LENGTH = (@SLABCODEEND@ - @SLABCODESTART@)
+  smem_data (rwxai) : ORIGIN = @SLABDATASTART@, LENGTH = (@SLABDATAEND@ - @SLABDATASTART@)
+  smem_stack (rwxai) : ORIGIN = @SLABSTACKSTART@, LENGTH = (@SLABSTACKEND@ - @SLABSTACKSTART@)
+  smem_dmadata (rwxai) : ORIGIN = @SLABDMADATASTART@, LENGTH = (@SLABDMADATAEND@ - @SLABDMADATASTART@)
+  unaccounted (rwxai) : ORIGIN = 0, LENGTH = 0 /* see section .unaccounted at end */
 }
 
-#if defined (__DEBUG_SERIAL__)
+SECTIONS
+{
+	. = @SLABCODESTART@;
 
-//extern u32 libxmhfdebug_lock;
-extern __attribute__(( section(".data") )) u32 libxmhfdebug_lock;
+	.slabcode : {
+        *(.slab_codehdr)
+		*(.slab_entrystub)
+		*(.text)
+		. = (@SLABCODEEND@ - @SLABCODESTART@);
+	} >smem_code =0x9090
+
+	.slabdata : {
+		*(.rwdatahdr)
+		*(.data)
+		*(.bss)
+		*(.rodata)
+		*(.rodata.str1.1)
+		*(.comment)
+		*(.eh_frame)
+		. = (@SLABDATAEND@ - @SLABDATASTART@);
+	} >smem_data =0x0000
+
+	.slabstack : {
+		*(.stackhdr)
+		*(.stack)
+		*(.note.GNU-stack)
+		. = (@SLABSTACKEND@ - @SLABSTACKSTART@);
+	} >smem_stack =0x0000
+
+	.slabdmadata : {
+		*(.slab_dmadata)
+		. = (@SLABDMADATAEND@ - @SLABDMADATASTART@);
+	} >smem_dmadata =0x0000
 
 
-static inline void _XDPRINTF_(const char *fmt, ...){
-    va_list       ap;
-	int retval;
-	char buffer[1024];
+	/* this is to cause the link to fail if there is
+	* anything we didn't explicitly place.
+	* when this does cause link to fail, temporarily comment
+	* this part out to see what sections end up in the output
+	* which are not handled above, and handle them.
+	*/
+	.unaccounted : {
+	*(*)
+	} >unaccounted
 
-	va_start(ap, fmt);
-	retval = vsnprintf(&buffer, 1024, fmt, ap);
-	spin_lock(&libxmhfdebug_lock);
-	xmhfhw_platform_serial_puts(&buffer);
-	spin_unlock(&libxmhfdebug_lock);
-    va_end(ap);
+
 }
-
-#else
-
-#define _XDPRINTF_(format, args...)
-
-#endif
-
-#endif	//__ASSEMBLY__
-
-#endif //__XMHF_DEBUG_H__

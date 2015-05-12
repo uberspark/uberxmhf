@@ -1766,7 +1766,7 @@ static void _geec_prime_populate_slab_pagetables_ept4k(u32 slabid){
 
 	}
 
-#if defined (__DEBUG_SERIAL__)
+/*#if defined (__DEBUG_SERIAL__)
 	for(gpa=ADDR_LIBXMHFDEBUGDATA_START; gpa < ADDR_LIBXMHFDEBUGDATA_END; gpa += PAGE_SIZE_4K){
         spl.dst_uapifn = XMHFGEEC_UAPI_SLABMEMPGTBL_SETENTRYFORPADDR;
         setentryforpaddrp->dst_slabid = slabid;
@@ -1776,7 +1776,7 @@ static void _geec_prime_populate_slab_pagetables_ept4k(u32 slabid){
         XMHF_SLAB_CALLNEW(&spl);
 	}
 #endif
-
+*/
 
 }
 
@@ -1844,7 +1844,7 @@ static void _geec_prime_populate_slab_pagetables_pae4k(u32 slabid){
 
 	}
 
-#if defined (__DEBUG_SERIAL__)
+/*#if defined (__DEBUG_SERIAL__)
 	for(gpa=ADDR_LIBXMHFDEBUGDATA_START; gpa < ADDR_LIBXMHFDEBUGDATA_END; gpa += PAGE_SIZE_4K){
         spl.dst_uapifn = XMHFGEEC_UAPI_SLABMEMPGTBL_SETENTRYFORPADDR;
         setentryforpaddrp->dst_slabid = slabid;
@@ -1853,7 +1853,7 @@ static void _geec_prime_populate_slab_pagetables_pae4k(u32 slabid){
         XMHF_SLAB_CALLNEW(&spl);
 	}
 #endif
-
+*/
 
 }
 
@@ -2289,8 +2289,8 @@ static void __xmhfhic_x86vmx_initializeIDT(void){
 	u32 i;
 
 	for(i=0; i < EMHF_XCPHANDLER_MAXEXCEPTIONS; i++){
-		__xmhfhic_x86vmx_idt_start[i].isrLow= (u16)__xmhfhic_exceptionstubs[i];
-		__xmhfhic_x86vmx_idt_start[i].isrHigh= (u16) ( (u32)__xmhfhic_exceptionstubs[i] >> 16 );
+		__xmhfhic_x86vmx_idt_start[i].isrLow= (u16)_xmhfhic_common_slab_info_table[XMHFGEEC_SLAB_GEEC_SENTINEL].slab_memoffset_entries[GEEC_SENTINEL_MEMOFFSETS_EXCEPTIONHANDLERS_IDX+i];
+		__xmhfhic_x86vmx_idt_start[i].isrHigh= (u16) ( _xmhfhic_common_slab_info_table[XMHFGEEC_SLAB_GEEC_SENTINEL].slab_memoffset_entries[GEEC_SENTINEL_MEMOFFSETS_EXCEPTIONHANDLERS_IDX+i] >> 16 );
 		__xmhfhic_x86vmx_idt_start[i].isrSelector = __CS_CPL0;
 		__xmhfhic_x86vmx_idt_start[i].count=0x0;
 		__xmhfhic_x86vmx_idt_start[i].type=0xEE;	//32-bit interrupt gate
@@ -2427,7 +2427,7 @@ static bool __xmhfhic_x86vmx_setupvmxstate(u64 cpuid){
  CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_HOST_IDTR_BASE, CASM_FUNCCALL(xmhf_baseplatform_arch_x86_getidtbase,CASM_NOPARAM));
  CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_HOST_TR_BASE, CASM_FUNCCALL(xmhf_baseplatform_arch_x86_gettssbase,CASM_NOPARAM));
 
- CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_HOST_RIP, _geec_sentinel_intercept_casmstub);
+ CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_HOST_RIP, _xmhfhic_common_slab_info_table[XMHFGEEC_SLAB_GEEC_SENTINEL].slab_memoffset_entries[GEEC_SENTINEL_MEMOFFSETS_INTERCEPTHANDLER_IDX]);
 
  CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_HOST_RSP, CASM_FUNCCALL(read_rsp,CASM_NOPARAM));
 	rdmsr(IA32_SYSENTER_CS_MSR, &lodword, &hidword);
@@ -2876,7 +2876,7 @@ void xmhf_hic_arch_setup_cpu_state(u64 cpuid){
     //setup SYSENTER/SYSEXIT mechanism
     {
         wrmsr(IA32_SYSENTER_CS_MSR, __CS_CPL0, 0);
-        wrmsr(IA32_SYSENTER_EIP_MSR, (u32)&_geec_sentinel_sysenter_casmstub, 0);
+        wrmsr(IA32_SYSENTER_EIP_MSR, _xmhfhic_common_slab_info_table[XMHFGEEC_SLAB_GEEC_SENTINEL].slab_memoffset_entries[GEEC_SENTINEL_MEMOFFSETS_SYSENTERHANDLER_IDX], 0);
         wrmsr(IA32_SYSENTER_ESP_MSR, ((u32)_geec_primesmp_sysenter_stack[(u32)cpuid] + MAX_PLATFORM_CPUSTACK_SIZE), 0);
     }
     _XDPRINTF_("%s: setup SYSENTER/SYSEXIT mechanism\n", __func__);

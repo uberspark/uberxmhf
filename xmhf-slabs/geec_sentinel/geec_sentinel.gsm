@@ -1,3 +1,47 @@
+//slab memory sections
+MS:CODE:0x200000:void:void
+MS:DATA:0x400000:void:void
+MS:STACK:0x600000:void:void
+MS:DMADATA:0x200000:void:void
+
+
 // slab dependencies
 
 RD:INCL:PCI_VENDOR_ID_XMHFGEEC:PCI_DEVICE_ID_XMHFGEEC_LAPIC:void
+
+
+EX:_geec_sentinel_sysenter_casmstub:void:void:void
+EX:_geec_sentinel_intercept_casmstub:void:void:void
+EX:__xmhf_exception_handler_0:void:void:void
+EX:__xmhf_exception_handler_1:void:void:void
+EX:__xmhf_exception_handler_2:void:void:void
+EX:__xmhf_exception_handler_3:void:void:void
+EX:__xmhf_exception_handler_4:void:void:void
+EX:__xmhf_exception_handler_5:void:void:void
+EX:__xmhf_exception_handler_6:void:void:void
+EX:__xmhf_exception_handler_7:void:void:void
+EX:__xmhf_exception_handler_8:void:void:void
+EX:__xmhf_exception_handler_9:void:void:void
+EX:__xmhf_exception_handler_10:void:void:void
+EX:__xmhf_exception_handler_11:void:void:void
+EX:__xmhf_exception_handler_12:void:void:void
+EX:__xmhf_exception_handler_13:void:void:void
+EX:__xmhf_exception_handler_14:void:void:void
+EX:__xmhf_exception_handler_15:void:void:void
+EX:__xmhf_exception_handler_16:void:void:void
+EX:__xmhf_exception_handler_17:void:void:void
+EX:__xmhf_exception_handler_18:void:void:void
+EX:__xmhf_exception_handler_19:void:void:void
+EX:__xmhf_exception_handler_20:void:void:void
+EX:__xmhf_exception_handler_21:void:void:void
+EX:__xmhf_exception_handler_22:void:void:void
+EX:__xmhf_exception_handler_23:void:void:void
+EX:__xmhf_exception_handler_24:void:void:void
+EX:__xmhf_exception_handler_25:void:void:void
+EX:__xmhf_exception_handler_26:void:void:void
+EX:__xmhf_exception_handler_27:void:void:void
+EX:__xmhf_exception_handler_28:void:void:void
+EX:__xmhf_exception_handler_29:void:void:void
+EX:__xmhf_exception_handler_30:void:void:void
+EX:__xmhf_exception_handler_31:void:void:void
+
