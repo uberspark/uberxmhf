@@ -1,3 +1,0 @@
-#!/bin/sh
-OBJDUMP="@OBJDUMP@"
-exec $OBJDUMP "$@"
