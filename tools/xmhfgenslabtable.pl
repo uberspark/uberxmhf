@@ -10,15 +10,15 @@ use Data::Dumper;
 # command line inputs
 
 my $g_slabsfile = $ARGV[0];
-my $g_maxuvslabs = $ARGV[1];
-my $g_maxincldevlistentries = $ARGV[2];
-my $g_maxexcldevlistentries = $ARGV[3];
-my $g_maxmemoffsetentries = $ARGV[4];
-my $g_loadaddr = $ARGV[5];
-my $g_loadmaxsize = $ARGV[6];
-my $g_outputfile_slabinfotable = $ARGV[7];
-my $g_memoffsets = $ARGV[8];
-my $g_outputfile_linkerscript = $ARGV[9];
+my $g_outputfile_slabinfotable = $ARGV[1];
+my $g_outputfile_linkerscript = $ARGV[2];
+my $g_loadaddr = $ARGV[3];
+my $g_loadmaxsize = $ARGV[4];
+my $g_maxuvslabs = $ARGV[5];
+my $g_maxincldevlistentries = $ARGV[6];
+my $g_maxexcldevlistentries = $ARGV[7];
+my $g_maxmemoffsetentries = $ARGV[8];
+my $g_memoffsets = $ARGV[9];
 
 
 
