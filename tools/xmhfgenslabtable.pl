@@ -232,26 +232,31 @@ while($i < $g_totalslabs){
 ######
 # configure the slabs
 ######
-$i =0;
-while($i < $g_totalslabs){
-    #print "Configuring slab: $slab_idtodir{$i} with type:$slab_idtotype{$i}:$slab_idtosubtype{$i} ...\n";
-    system "cd $slab_idtodir{$i} && ../../configure_slab "
-            . " --with-slabtype=$slab_idtotype{$i}"
-            . " --with-slabsubtype=$slab_idtosubtype{$i}"
-            . " --with-slabcodestart=$slab_idtocode_addrstart{$i}"
-            . " --with-slabcodeend=$slab_idtocode_addrend{$i}"
-            . " --with-slabdatastart=$slab_idtodata_addrstart{$i}"
-            . " --with-slabdataend=$slab_idtodata_addrend{$i}"
-            . " --with-slabstackstart=$slab_idtostack_addrstart{$i}"
-            . " --with-slabstackend=$slab_idtostack_addrend{$i}"
-            . " --with-slabdmadatastart=$slab_idtodmadata_addrstart{$i}"
-            . " --with-slabdmadataend=$slab_idtodmadata_addrend{$i}"
-            . " >/dev/null 2>&1";
 
-    $i = $i + 1;
+if($g_memoffsets eq "MEMOFFSETS"){
+    #no configuration needed when doing real build
+}else{
+
+    $i =0;
+    while($i < $g_totalslabs){
+        #print "Configuring slab: $slab_idtodir{$i} with type:$slab_idtotype{$i}:$slab_idtosubtype{$i} ...\n";
+        system "cd $slab_idtodir{$i} && ../../configure_slab "
+                . " --with-slabtype=$slab_idtotype{$i}"
+                . " --with-slabsubtype=$slab_idtosubtype{$i}"
+                . " --with-slabcodestart=$slab_idtocode_addrstart{$i}"
+                . " --with-slabcodeend=$slab_idtocode_addrend{$i}"
+                . " --with-slabdatastart=$slab_idtodata_addrstart{$i}"
+                . " --with-slabdataend=$slab_idtodata_addrend{$i}"
+                . " --with-slabstackstart=$slab_idtostack_addrstart{$i}"
+                . " --with-slabstackend=$slab_idtostack_addrend{$i}"
+                . " --with-slabdmadatastart=$slab_idtodmadata_addrstart{$i}"
+                . " --with-slabdmadataend=$slab_idtodmadata_addrend{$i}"
+                . " >/dev/null 2>&1";
+
+        $i = $i + 1;
+    }
+
 }
-
-
 
 
 
@@ -686,7 +691,11 @@ sub parse_gsm {
 
     #if we are processing memoffsets, then store memoffsets string indexed by slabid
     if($is_memoffsets == 1){
-        $slab_idtomemoffsetstring{$slabid} = $slab_memoffsetsstring;
+        if($slab_memoffsetstring eq ""){
+            $slab_idtomemoffsetstring{$slabid} = "0";
+        }else{
+            $slab_idtomemoffsetstring{$slabid} = $slab_memoffsetsstring;
+        }
     }
 
     return $slab_uapifnmaskstring;
