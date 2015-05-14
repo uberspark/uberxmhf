@@ -7,17 +7,49 @@ Notes:
     2. g_xxx => global variable
     3. hw.xxx => hardware component/state variable
 
+
+MAX_CPUS = max. no. of platform cpus
+MAX_STACKSIZE = size of stack in bytes
+ADDR_4GB_PAGES = (0x100000000ULL/0x1000) = max. 4K pages in 4GB memory address space
+PAGES(memextent) = memory page range (x..y) for a given memory extent (memextent)
+ADDRS(memextent) = memory address range (mx..my) for a given memory extent (memextent)
+
+g_totalslabs;
+g_sinfotable[1..g_totalslabs]{
+    .s_type (s_verified, s_unverified, s_unverified_guest);
+    .s_codeextents;
+    .s_dataextents;
+    .s_stackextents;
+    .s_dmadataextents;
+    .s_deviceallocations;
+}
+
+type oparams = byte [];
+type iparams = byte [];
+type siparams = {
+    .ctype;
+    .caller;
+    .callee;
+    .param_buf
+}
+
+type soparams = {
+    .param_buf
+}
+
+
 //////
 // geec prime (gp)
 //////
 
 
 g_stack[1..MAX_CPUS][MAX_STACKSIZE];
-	1. Entrystub:
-		a. Cpuid = hw.lapic.id;
-		b. hw.cpu.esp = stack[cpuid];
-		c. Call slab_main
-		d. Halt
+g_temp_mempgtbl[0..ADDR_4GB_PAGES]{
+    .addr;
+    .flags (f_readwrite, f_readonly, f_noexecute, f_present, f_super, f_user);
+};
+g_sysdevlist; //list of system devices
+g_sysdevlist_count; //count of system devices
 
 entrystub {
     l_cpuid = hw.lapic.id;
@@ -27,38 +59,109 @@ entrystub {
 }
 
 
+slab_main {
+    //setup temporary unity mapped page-tables
+    gp_setup_temp_mempgtbl();
+
+    //sanity check hw requirements
+    gp_sanitycheck_hw_requirements();
+
+    //setup slab device allocations
+    gp_setup_slab_device_allocations();
+}
+
+
+//setup temporary unity mapped page-tables
+gp_setup_temp_pagetables {
+    for (l_i=0; l_i < g_totalslabs; l_i++){
+        g_temp_mempgtbl[PAGES(sinfotable[l_i].codeextents)].addr = ADDRS(sinfotable[l_i].codeextents);
+        g_temp_mempgtbl[PAGES(sinfotable[l_i].codeextents)].flags = (f_present | f_readonly | f_super);
+        g_temp_mempgtbl[PAGES(sinfotable[l_i].dataextents)].addr = ADDRS(sinfotable[l_i].dataextents);
+        g_temp_mempgtbl[PAGES(sinfotable[l_i].dataextents)].flags = (f_present | f_readwrite | f_noexecute | f_super);
+        g_temp_mempgtbl[PAGES(sinfotable[l_i].stackextents)].addr = ADDRS(sinfotable[l_i].stackextents);
+        g_temp_mempgtbl[PAGES(sinfotable[l_i].stackextents)].flags = (f_present | f_readwrite | f_noexecute | f_super);
+        g_temp_mempgtbl[PAGES(sinfotable[l_i].dmadataextents)].addr = ADDRS(sinfotable[l_i].stackextents);
+        g_temp_mempgtbl[PAGES(sinfotable[l_i].dmadataextents)].flags = (f_present | f_readwrite | f_noexecute | f_super);
+    }
+
+    g_temp_mempgtbl[PAGES(~sinfotable[0..(g_totalslabs-1)].{code,data,stack,dmadata}extents)].addr = ADDRS(~sinfotable[0..(g_totalslabs-1)].{code,data,stack,dmadata}extents);
+    g_temp_mempgtbl[PAGES(~sinfotable[0..(g_totalslabs-1)].{code,data,stack,dmadata}extents)].flags = (f_present | f_readwrite | f_noexecute | f_super);
+
+    hw.cpu.msr_efer |= NX;
+    hw.cpu.cr4 |= PAE, PSE;
+	hw.cpu.cr3 = g_temp_mempgtbl;
+    hw.cpu.cr0 |= PG;
+}
+
+
+//setup slab device allocations
+gp_setup_slab_device_allocations {
+    //enumerate system devices and setup g_sysdevlist and g_sysdevlist_count
+    gp_enumerate_system_devices();
+
+    //setup slab device mappings based on system devices and individual slab device allocations
+    for(l_i=0; l_i < g_totalslabs; l_i++){
+        g_slabdevicemapping[l_i] = gp_getslabdevicemapping(g_sysdevlist, g_sinfotable[l_i].deviceallocations);
+    }
+    l_iommutablebase = gp_call_slab(UAPI_DEVPGTBL, UAPI_DEVPGTBL_INIT);
+
+	//iv. For all slabs: call_slab(uapi_devpgtbl, DEVPGTBL_INITTBL);
+    for(l_i=0; l_i < g_totalslabs; l_i++){
+        gp_call_slab(UAPI_DEVPGTBL, UAPI_DEVPGTBL_INITTABLE, l_i);
+    }
+
+    //v. Initialize IOMMU
+    hw.iommu.tablebase = l_iommutablebase;
+	hw.iommu.translationenable = true
+
+	for(l_i=0; l_i < g_sysdevlist_count; l_i++){
+        if( (l_slabid = gp_getslabid_for_device(g_sysdevlist[l_i])) in 0..g_totalslabs ) {
+            gp_call_slab(UAPI_DEVPGTBL, UAPI_DEVPGTBL_BINDDEVICE, l_slabid, g_sysdevllist[l_i]);
+        }
+	}
+}
+
+//setup (unverified) slab legacy I/O table
+gp_setup_slab_iotbl {
+
+    for(l_i=0; l_i < g_totalslabs; l_i++){
+        if(g_sinfotable[l_i].s_type == s_unverified || s_unverified_guest){
+            gp_call_slab(UAPI_IOTBL, UAPI_IOTBL_INIT, l_i);
+            for(l_k=0; l_k <  g_slabdevicemapping[l_i].devcount; l_k++){
+                gp_call_slab(UAPI_IOTBL, UAPI_IOTBL_ALLOWACCESSTOPORT, l_i, g_slabdevicemapping[l_i].device[l_k].ports);
+            }
+        }
+    }
+
+}
+
+
+oparams gp_call_slab(callee, callee_fn, iparams){
+    l_soparams, l_siparams;
+
+    l_siparams.caller = GEEC_PRIME;
+    l_siparams.callee = callee;
+    l_siparams.callee_fn = callee_fn;
+    l_siparams.parambuf = iparams;
+
+    call_sentinel(ls_iparams, l_soparams);
+
+    return l_soparams.parambuf;
+}
+
+
+call_sentinel (siparams, soparams) {
+    siparams.ctype = CALL_FROM_VERIFIED;
+    l_caller_stackframe = current stack frame;
+	geec_sentinel_verified_ep(l_caller_stackframe);
+}
 
 
 
 
-
+//////
 Geec_prime:
 	2. Slab_main:
-		a. Setup temporary unity mapped page-tables
-			i. For all slabs, slabcode=ro, slabdata=rw, slabstack=rw, slabdmadata=rw
-			ii. Rest of system memory "rw"
-			iii. Hw.cpu.msr_efer |= NX
-			iv. Hw.cpu.cr4 |= PAE, PSE
-			v. Hw.cpu.cr3 = temporary_unity_mapped_table_base
-			vi. Hw.cpu.cr0 |= PG
-		b. Sanity check hw requirements
-		c. Setup slab device allocations
-			i. Sysdevlist = Initialize system bus and enumerate devices
-			ii. Setup slabdevicemap based on sinfotable[].deviceallocation
-			iii. Devtablebase = Call_slab(uapi_devpgtbl, DEVPGTBL_INIT);
-			iv. For all slabs: call_slab(uapi_devpgtbl, DEVPGTBL_INITTBL);
-			v. Initialize IOMMU
-				1) Hw.iommu.base = devtablebase
-				2) Hw.iommu.translationenable = true
-			vi. For all devices in sysdevlist
-				1) If getslabfordevice(device)
-					a) Call_slab(uapi_devpgtbl, DEVPGTBL_BINDDEVICE)
-		d. Setup (unverified) slab iotbl
-			i. For slab = I to totslab
-				1) If sinfotable[slab].type == unverified or unverified guest
-					a) Call_slab(uapi_iotbl, IOTBL_INIT)
-					b) For all device in slabdevicemap
-						i) Call_slab(uapi_iotbl, IOTBL_ALLOWACCESS, port)
 		e. Setup slab memory page tables
 			i. Setup_slab_mem_page_tables
 				1) Call_slab(uapi_mempgtbl, MEMPGTBL_INITTABLE, GEEC_PRIME)
@@ -141,15 +244,6 @@ Geec_prime:
 			x. Hw.cpu.vmexithandler = sinfotable[GEEC_SENTINEL].memoffsets[1];
 			xi. Call_slab(init_slab, 0);
 			xii. halt
-	3. outputp[1..n] Call_slab(callee, callee_fn, inputp[1..m]):
-			i. New iparams, oparams
-			ii. Iparams.caller=GEEC_PRIME;
-			iii. Iparams.callee=callee;
-			iv. Iparams.callee_fn = callee_fn;
-			v. Iparams.inputp = inputp;
-			vi. Verifiedslab_call_sentinel_stub (iparams, oparams)
-			vii. Return oparams
-	4. Verifiedslab_call_sentinel_stub(iparams, oparams)
-		a. Iparams.ctype = CALL_FROM_VERIFIED
-		b. caller_stackframe = current stack frame
-		c. Verified_ep(caller_stackframe)
+
+
+
