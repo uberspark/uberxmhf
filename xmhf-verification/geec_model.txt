@@ -22,6 +22,8 @@ g_sinfotable[1..g_totalslabs]{
     .s_stackextents;
     .s_dmadataextents;
     .s_deviceallocations;
+    .s_iotblbase;
+    .s_mempgtblbase;
 }
 
 type oparams = byte [];
@@ -43,13 +45,15 @@ type soparams = {
 //////
 
 
-g_stack[1..MAX_CPUS][MAX_STACKSIZE];
+g_stack[0..MAX_CPUS-1][MAX_STACKSIZE];
 g_temp_mempgtbl[0..ADDR_4GB_PAGES]{
     .addr;
     .flags (f_readwrite, f_readonly, f_noexecute, f_present, f_super, f_user);
 };
 g_sysdevlist; //list of system devices
 g_sysdevlist_count; //count of system devices
+g_iotbl[0..MAXCPUS-1][MAX_IOTBLSIZE];
+g_slabdevicemapping[0..g_totalslabs-1];
 
 entrystub {
     l_cpuid = hw.lapic.id;
@@ -68,6 +72,9 @@ slab_main {
 
     //setup slab device allocations
     gp_setup_slab_device_allocations();
+
+    //setup slab memory page tables
+    gp_setup_slab_mempgtbl();
 }
 
 
@@ -158,65 +165,121 @@ call_sentinel (siparams, soparams) {
 
 
 
+gp_setup_slab_mempgtbl {
+
+    gp_call_slab(UAPI_MEMPGTBL, UAPI_MEMPGTBL_INITTABLE, GEEC_PRIME);
+    gp_setup_slab_mempgtbl_populate_pt(GEEC_PRIME);
+    for(l_i=0; l_i < g_totalslabs; l_i++){
+        if( g_sinfotable[l_i].s_type == s_unverified || s_unverified_guest ){
+            gp_call_slab(UAPI_MEMPGTBL, UAPI_MEMPGTBL_INITTABLE, l_i);
+            gp_setup_slab_mempgtbl_populate_pt(l_i);
+        }
+    }
+}
+
+gp_setup_slab_mempgtbl_populate_pt (slabid) {
+
+    l_slabtype = g_sinfotable[slabid].s_type;
+    for(l_spa=0; l_spa < ADDR_4GB; l_spa += PAGE_SIZE_4K){
+        l_spa_slabregion, l_spa_slabtype, l_spa_sameslab = gp_setup_slab_mempgtbl_getspatype(slabid, l_spa);
+        l_flags = gp_setup_slab_mempgtbl_getflagsforspa(slabid, l_spa_slabregion, l_spa_slabtype, l_spa_sameslab);
+        if( l_spa_slabregion == REGION_IOTBL && l_slabtype != s_verified)
+            gp_call_slab(UAPI_MEMPGTBL, UAPI_MEMPGTBL_SETENTRYFORPADDR, l_spa, g_sinfotable[slabid].s_iotblbase, l_flags);
+        else
+            gp_call_slab(UAPI_MEMPGTBL, UAPI_MEMPGTBL_SETENTRYFORPADDR, l_spa, l_spa, l_flags);
+    }
+
+}
+
+
+gp_setup_slab_mempgtbl_getspatype(slabid, spa) {
+
+   for(l_i=0; l_i < g_totalslabs; l_i++){
+    switch (spa) {
+        case spa in g_iotbl[]:
+            return REGION_IOTBL, s_not_a_slab, false;
+        case spa in g_slabdevicemapping[l_i].device[0..devcount].mmioregions:
+            return REGION_DEVMMIO, sinfotable[l_i].s_type, ((l_i == slabid) ? true : false);
+        case spa in g_sinfotable[l_i].codeextents
+            return REGION_CODE, sinfotable[l_i].s_type, ((l_i == slabid) ? true : false);
+        case spa in g_sinfotable[l_i].dataextents
+            return REGION_DATA, sinfotable[l_i].s_type, ((l_i == slabid) ? true : false);
+        case spa in g_sinfotable[l_i].stackextents
+            return REGION_STACK, sinfotable[l_i].s_type, ((l_i == slabid) ? true : false);
+        case spa in g_sinfotable[l_i].dmadataextents
+            return REGION_DMADATA, sinfotable[l_i].s_type, ((l_i == slabid) ? true : false);
+        default
+            return REGION_OTHER, s_not_a_slab, false;
+    }
+   }
+
+}
+
+
+gp_setup_slab_mempgtbl_getflagsforspa(slabid, spa_slabregion, spa_slabtype, spa_sameslab) {
+    l_flags=0;
+
+    switch(g_sinfotable[slabid].s_type){
+        case s_verified:
+            if(spa_slabregion == REGION_OTHER){
+                l_flags = f_present + f_readwrite + f_super;
+            }else{
+                if(spa_sameslab || spa_slabtype == s_verified){
+                    switch(spa_slabregion){
+                        case REGION_CODE:
+                            l_flags = f_present + f_readonly + f_super;
+                        case REGION_DATA:
+                        case REGION_STACK:
+                        case REGION_DMADATA:
+                            l_flags = f_present + f_readwrite + f_noexecute + f_super;
+                        case REGION_MMIO:
+                            l_flags = f_present + f_readwrite + f_noexecute + f_super;
+                    }
+                }else{
+                    l_flags = f_present + f_readwrite + f_noexecute + f_super;
+                }
+            }
+            break;
+
+        case s_unverified:
+            if(spa_slabregion == REGION_OTHER){
+                l_flags = f_present + f_readwrite + f_super;
+            }else{
+                if(spa_sameslab || spa_slabtype == s_verified){
+                    switch(spa_slabregion){
+                        case REGION_CODE:
+                            l_flags = f_present + f_readonly + f_super;
+                        case REGION_DATA:
+                        case REGION_STACK:
+                        case REGION_DMADATA:
+                            l_flags = f_present + f_readwrite + f_noexecute + f_super;
+                        case REGION_MMIO:
+                            l_flags = f_present + f_readwrite + f_noexecute + f_super;
+                    }
+
+                    if(spa_sameslab) l_flags += f_user;
+                }else{
+                    l_flags = f_present + f_readwrite + f_noexecute + f_super;
+                }
+            }
+            break;
+
+        case s_unverified guest:
+            if(spa_sameslab && spa_slabregion != REGION_OTHER){
+                l_flags = f_present + f_readwrite;
+            }else{
+                l_flags =0;
+            }
+            break;
+    }
+
+   return l_flags;
+}
+
 
 //////
 Geec_prime:
 	2. Slab_main:
-		e. Setup slab memory page tables
-			i. Setup_slab_mem_page_tables
-				1) Call_slab(uapi_mempgtbl, MEMPGTBL_INITTABLE, GEEC_PRIME)
-				2) Populate page tables (GEEC_PRIME)
-				3) For slabid in 1…totalslabs
-					a) If sinfotable[slabid].type == unverified or unverified guest
-						i) Call_Slab(uapi_mempgtbl, MEMPGTBL_INITTABLE)
-						ii) Populate page tables (slabid)
-			ii. Populate_page_tables (slabid)
-				1) Slabtype = sinfotable[slabid].type;
-				2) For(spa=0; spa < ADDR_4GB; spa += PAGE_SIZE_4K){
-					a) Spa_slabregion, spa_slabtype, spa_sameslab = getspatype(slabid, spa);
-					b) Flags = getflagsforspa(slabid, spa_slabregion, spa_slabtype, spa_sameslab)
-					c) If spa_slabregion == REGION_IOTBL && slabtype != verified
-						i) Call_slab(uapi_mempgtbl, MEMPGTBL_SETENTRYFORPADDR, spa, sinfotable[slabid].iotbl_base, flags
-					d) Else
-						i) Call_slab(uapi_mempgtbl, MEMPGTBL_SETENTRYFORPADDR, spa, spa, flags
-				3) }
-			iii. Getspatype(slabid, spa)
-				1) For I in 1..totslab
-					a) If spa in iotbl[] return REGION_IOTBL
-					b) If spa in slabdevicemap[i].mmioregions return REGION_DEVMMIO
-					c) If spa in sinfotable[slabid].codeextents return REGION_CODE
-					d) If spa in sinfotable[slabid].dataextents return REGION_DATA
-					e) If spa in sinfotable[slabid].stackextents return REGION_STACK
-					f) If spa in sinfotable[slabid].dmadataextents return REGION_DMADATA
-					g) Else
-					h) REGION_OTHER
-				2) Return region, sinfotable[i].type
-			iv. Getflagsforspa(slabid, spa_slabregion, spa_slabtype, spa_sameslab)
-				1) Switch(sinfotable[slabid].slabtype)
-					a) Case verified:
-						i) REGION_OTHER = p, rw, super
-						ii) If sameslab || spa_slabtype == verified
-							One. REGION_CODE = p, ro, super
-							Two. REGION_{DATA,STACK,DMADATA} = p, rw, nx, super
-							Three. REGION_MMIO = p, rw, nx, pcd, super
-						iii) Else
-							One. Flags = p, rw, nx, super
-					b) Case unverified
-						i) REGION_OTHER = p, rw, nx, super
-						ii) If sameslab || spa_labtype == verified
-							One. REGION_CODE = p, ro, super
-							Two. REGION_{DATA,STACK,DMADATA} = p, rw, nx, super
-							Three. REGION_MMIO = p, rw, nx, pcd, super
-							Four. If sameslab flags |= user
-						iii) Else
-							One. Flags = p, rw, nx, super
-					c) Case unverified guest
-						i) If sameslab  && spa_slabregion != REGION_OTHER
-							One. CODE = p, rw
-							Two. DATA,STACK,DMADATA = p, rw
-						ii) Else
-							One. Flags =0
-				2) Return flags
 		f. Cpu.hw.cr3 = sinfotable[GEEC_PRIME].mempgtbl_base
 		g. Setup cpu state and replicate
 			i. Initialize GDT
