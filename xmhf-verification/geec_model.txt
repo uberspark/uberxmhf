@@ -75,6 +75,14 @@ slab_main {
 
     //setup slab memory page tables
     gp_setup_slab_mempgtbl();
+
+	//load verified slabs' memory page table
+	hw.cpu.cr3 = g_sinfotable[GEEC_PRIME].s_mempgtblbase;
+
+    //setup cpu state and transfer control to init slab
+    gp_setup_cpustate_and_replicate();
+
+    halt();
 }
 
 
@@ -277,36 +285,60 @@ gp_setup_slab_mempgtbl_getflagsforspa(slabid, spa_slabregion, spa_slabtype, spa_
 }
 
 
-//////
-Geec_prime:
-	2. Slab_main:
-		f. Cpu.hw.cr3 = sinfotable[GEEC_PRIME].mempgtbl_base
-		g. Setup cpu state and replicate
-			i. Initialize GDT
-				1) TSS desc[1..maxcpus] = iotbl[1..maxcpus]
-			ii. Initialize IDT
-				1) IDT_desc[1..maxexceptions] = sinfotable[GEEC_SENTINEL].memoffets[2..maxexceptions+2]
-			iii. Initialize TSS
-			iv. Replicate_cr3 = hw.cpu.cr3;
-			v. Replicate_cr4 = hw.cpu.cr4;
-			vi. Replicate_msfefer = hw.cpu.msrefer;
-			vii. Replicate_cr0 = hw.cpu.cr0;
-			viii. Hw.lapic.command_register |= WAKE_APS at common_state
-			ix. common_state()
-		h. Common_state
-			i. Cpuid = hw.lapic.id;
-			ii. hw.cpu.esp = stack[cpuid];
-			iii. Hw.cpu.cr3 = replicate_cr3;
-			iv. Hw.cpu.cr4 = replicate_cr4;
-			v. Hw.cpu.cr0 = replicate_cr0;
-			vi. Setup vmcs state
-				1) Call_slab(uapi_cpustate, VMCSREAD,VMCSWRITE,RDMSR,WRMSR)
-			vii. Hw.cpu.vmxon = true
-			viii. Hw.cpu.vmcsbase = sinfotable[UAPI_CPUSTATE].memoffsets[0];
-			ix. Hw.cpu.sysenterhandler = sinfotable[GEEC_SENTINEL].memoffsets[0];
-			x. Hw.cpu.vmexithandler = sinfotable[GEEC_SENTINEL].memoffsets[1];
-			xi. Call_slab(init_slab, 0);
-			xii. halt
+gp_setup_cpustate_and_replicate {
+    //initialize GDT
+    g_gdt[code_desc0] = code_32bit_ring0;
+    g_gdt[data_desc0] = data_32bit_ring0;
+    g_gdt[sysentercode_desc0] = code_32bit_ring0;
+    g_gdt[sysenterdata_desc0] = data_32bit_ring0;
+    g_gdt[sysentercode_desc3] = code_32bit_ring3;
+    g_gdt[sysenterdata_desc3] = data_32bit_ring3;
+    g_gdt[tssdesc_cpu0..tssdesc_cpu(maxcpus-1)] = g_tss[0..(maxcpus-1)];
+
+    //initialize TSS
+    g_tss[0..(maxcpus-1)].ss0 = data_desc0;
+    g_tss[0..(maxcpus-1)].esp0 = g_tsstack[0..(maxcpus-1)];
+    g_tss[0..(maxcpus-1)].iobitmap = g_iotbl[0..(maxcpus-1)];
+
+    //initialize IDT
+    g_idt[0..maxexceptions-1] = g_sinfotable[GEEC_SENTINEL].memoffets[2..(maxexceptions-1)+2]
+
+    g_replicate_cr3 = hw.cpu.cr3;
+    g_replicate_cr4 = hw.cpu.cr4;
+    g_replicate_msrefer = hw.cpu.msrefer;
+    g_replicate_cr0 = hw.cpu.cr0;
+
+    hw.lapic.command_register |= WAKE_APS at gp_common_state
+
+    gp_common_state();
+
+    halt();
+}
 
 
+gp_common_state {
+
+    l_cpuid = hw.lapic.id;
+    hw.cpu.esp = g_stack[cpuid];
+    hw.cpu.cr3 = g_replicate_cr3;
+    hw.cpu.cr4 = g_replicate_cr4;
+    hw.cpu.cr0 = g_replicate_cr0;
+
+    setup unverified_guest_slab VMCS support via:
+    gp_call_slab(UAPI_CPUSTATE, UAPI_CPUSTATE_VMREAD);
+    gp_call_slab(UAPI_CPUSTATE, UAPI_CPUSTATE_VMWRITE);
+    gp_call_slab(UAPI_CPUSTATE, UAPI_CPUSTATE_RDMSR);
+    gp_call_slab(UAPI_CPUSTATE, UAPI_CPUSTATE_WRMSR);
+
+    hw.cpu.vmxon = true
+    hw.cpu.vmcsbase = g_sinfotable[UAPI_CPUSTATE].memoffsets[0];
+    hw.cpu.sysenterhandler = g_sinfotable[GEEC_SENTINEL].memoffsets[0];
+    hw.cpu.sysenterstack = g_sysenterstack[cpuid];
+    hw.cpu.vmexithandler = g_sinfotable[GEEC_SENTINEL].memoffsets[1];
+
+    gp_call_slab(INIT_SLAB, 0);
+
+    halt();
+
+}
 
