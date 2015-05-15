@@ -40,6 +40,16 @@ type soparams = {
 }
 
 
+
+//=============================================================================
+//
+// Initialization phase
+//
+//=============================================================================
+
+
+
+
 //////
 // geec prime (gp)
 //////
@@ -342,3 +352,262 @@ gp_common_state {
 
 }
 
+
+
+//=============================================================================
+//
+// Runtime phase
+//
+//=============================================================================
+
+spawn thread_verifiedslab(INIT_SLAB);
+
+
+//////
+// slab threads
+//////
+
+Thread_verifiedslab(slabid):
+	1. Choose instruction execution from below
+	2. Entrystub (caller_stack_frame):
+		a. Iparams = extract iparams from caller_stack_frame
+		b. Oparams = extract oparams from caller_stack_frame
+		c. Call slab_main(iparams, oparams)
+		d. Ctype = extract ctype from iparams
+		e. If ctype == CALL_FROM_VERIFIED
+			i. Restore caller registers from caller_stack_frame
+			ii. Resume caller via RET instruction
+			iii. Halt
+
+		f. If ctype == CALL_FROM_UNVERIFIED
+			i. Iparams.ctype = RET_TO_UNVERIFIED
+			ii. Swap iparams.caller and iparams.callee
+			iii. Sentinel_verifiedep(caller_stackframe)
+			iv. Halt
+
+		g. If ctype == CALL_EXCEPTION
+			i. Iparams.ctype = RET_EXCEPTION
+			ii. Swap iparams.caller and iparams.callee
+			iii. Sentinel_verifiedep(caller_stackframe)
+			iv. Halt
+
+		h. If ctype == CALL_INTERCEPT
+			i. Iparams.ctype = RET_INTERCEPT
+			ii. Swap iparams.caller and iparams.callee
+			iii. Sentinel_verifiedep(caller_stackframe)
+			iv. Halt
+
+
+	3. Slab_main(iparams, oparams):
+		a. Choose either call_other_slabs or return_from_slab
+		b. Call_other_slabs:
+			i. Select callee_slabid in sinfotable[slabid].callee_slabs
+			ii. Select callee_fn in sinfotable[slabid].callee_fn[callee_slabid]
+			iii. New iparams, oparams
+			iv. Iparams.caller=slabid;
+			v. Iparams.callee=callee_slabid;
+			vi. Iparams.callee_fn = callee_fn;
+			vii. Verifiedslab_call_sentinel_stub (iparams, oparams)
+		c. Return_from_slab:
+			i. return
+
+	3. Verifiedslab_call_sentinel_stub(iparams, oparams)
+		a. Iparams.ctype = CALL_FROM_VERIFIED
+		b. caller_stackframe = current stack frame
+		c. Verified_ep(caller_stackframe)
+
+
+
+Thread_unverifiedslab(slabid):
+	1. Choose between instruction execution and exception; if instruction execution it is one of the below
+	2. Entrystub (caller_stack_frame):
+		a. Iparams = extract iparams from caller_stack_frame
+		b. Oparams = extract oparams from caller_stack_frame
+		c. Call slab_main(iparams, oparams)
+		d. Iparams.ctype = RET_TO_VERIFIED
+		e. Swap iparams.caller and iparams.callee
+		f. Sentinel_unverifiedep(caller_stackframe)
+		g. halt
+
+	3. Slab_main(iparams, oparams):
+		a. Choose either call_other_slabs or return_from_slab
+		b. Call_other_slabs:
+			i. Select callee_slabid in sinfotable[slabid].callee_slabs
+			ii. Select callee_fn in sinfotable[slabid].callee_fn[callee_slabid]
+			iii. New iparams, oparams
+			iv. Iparams.caller=slabid;
+			v. Iparams.callee=callee_slabid;
+			vi. Iparams.callee_fn = callee_fn;
+			vii. unverifiedslab_call_sentinel_stub (iparams, oparams)
+		c. Return_from_slab:
+			i. return
+
+	3. unverifiedslab_call_sentinel_stub(iparams, oparams)
+		a. Iparams.ctype = CALL_FROM_UNVERIFIED
+		b. Save caller saved registers on stack
+		c. caller_stackframe = current stack frame (with caller saved registers)
+		d. Sentinel_unverifiedep(caller_stackframe)
+
+
+Thread_unverifiedguestslab(slabid):
+	1. Choose between instruction execution and #INTERCEPT
+
+
+
+
+//////
+// geec_sentinel
+//////
+
+Verified_ep (caller_stackframe):
+	1. Save caller saved registers on stack
+	2. Caller_stackframe = stack frame with caller saved registers
+	3. Iparams = extract iparams from caller_stackframe
+	4. Cpuid = current cpu id
+	5. Common_ep (cpuid, iparams.ctype, iparams.caller, iparams.callee, caller_stackframe)
+
+Unverified_ep (caller_stackframe):
+	1. Cpuid = current cpu id
+	2. Iparams = extract iparams from caller_stackframe
+	3. Assert iparams.ctype == RET_TO_VERIFIED or iparams.ctype == CALL_FROM_UNVERIFIED
+	4. Get authentic iparams.caller
+	5. Common_ep(cpuid, iparams.ctype, iparams.caller, iparams.callee, caller_stackframe)
+
+Exception_ep ():
+	1. Cpuid = curent cpu id
+	2. New iparams
+	3. Iparams.ctype = CALL_EXCEPTION
+	4. Iparams.caller = GEEC_SENTINEL
+	5. Iparams.calee = signal_slab
+	6. Iparams.params = exception details (source slab id, registers etc.)
+	7. Common_ep(cpuid, iparams.ctype, iparams.caller, iparams.callee,  iparams)
+
+
+Unverified_guest_ep ():
+	1. Cpuid = curent cpu id
+	2. New iparams
+	3. Iparams.ctype = CALL_INTERCEPT
+	4. Iparams.caller = GEEC_SENTINEL
+	5. Iparams.calee = signal_guest_slab
+	6. Iparams.params = intercept details (source slab id, registers etc.)
+	7. Common_ep(cpuid, iparams.ctype, iparams.caller, iparams.callee,  iparams)
+
+
+Common_ep(cpuid, ctype, caller, callee, caller_stackframe):
+	1. If ctype == CALL_FROM_VERIFIED
+		a. If sinfotable[callee].type == VERIFIED
+			i. Checkandhaltcallcaps(caller,callee)
+			ii. Sentinel_transition_call_from_verified_to_verified(sinfotable[callee].entrystub, caller_stackframe)
+			iii. Halt
+		b. If sinfotable[callee].type == UNVERIFIED
+			i. Checkandhaltcallcaps(caller,callee)
+			ii. Sentinel_transition_call_from_verified_to_unverified(cpuid, ctype, caller, callee, sinfotable[callee].emtrystb, caller_stackframe)
+			iii. halt
+		c. If sinfotable[callee].type == UNVERIFIED GUEST
+			i. Checkandhaltcallcaps(caller,callee)
+			ii. Sentinel_transition_call_from_verified_to_unverified_guest(sinfotable[callee].entrystub, caller_stackframe)
+			iii. halt
+
+	2. If ctype == RET_TO_VERIFIED
+		a. Sentinel_transition_ret_to_verified(cpuid, ctype, caller, callee, caller_stackframe)
+		b. Halt
+
+	3. If ctype == CALL_FROM_UNVERIFIED
+		a. Assert sinfotable[callee].type == VERIFIED
+		b. Checkandhaltcallcaps(caller,callee)
+		c. Sentinel_transition_call_from_unverified_to_verified(cpuid, ctype, caller, callee, sinfotable[callee].entrystub, caller_stackframe)
+		d. halt
+
+	4. If ctype == RET_TO_UNVERIFIED
+		a. Sentinel_transition_ret_to_unverified(cpuid, ctype, caller, callee, caller_stackframe)
+		b. halt
+
+	5. If ctype == CALL_EXCEPTION
+		a. Sentinel_transition_call_exception(cpuid, ctype, caller, callee, sinfotable[callee].entrystub, caller_stackframe);
+		b. Halt
+
+	6. If ctype == RET_EXCEPTION
+		a. Sentinel_transition_ret_exception(cpuid, ctype, caller, callee, caller_stackframe);
+		b. Halt
+
+	7. If ctype == CALL_INTERCEPT
+		a. Sentinel_transition_call_intercept(cpuid, ctype, caller, callee, sinfotable[callee].entrystub, caller_stackframe);
+		b. halt
+
+	8. If ctype == RET_INTERCEPT
+		a. Sentinel_transition_ret_intercept(cpuid, ctype, caller, callee, caller_stackframe);
+		b. halt
+
+
+
+Sentinel_transition_call_from_verified_to_verified(entrystub, caller_stackframe)
+	Entrystub(caller_stackframe) via JMP instruction
+
+
+Sentinel_transition_call_from_verified_to_unverified(cpuid, ctype, caller, callee, callee_entrystub, caller_stackframe)
+	1. Sinfotable[caller].tos[cpuid] = caller_stackframe
+	2. Sinfotable[callee].tos[cpuid] -= space for iparams and oparams
+	3. Iparams = extract iparams from caller_stackframe
+	4. Oparams = extract oparams from caller_stackframe
+	5. Copy iparams to callee slab stack at sinfotable[callee].tos[cpuid]
+	6. Safestack_push(cpuid, caller, callee, ctype, caller_stackframe, oparams)
+	7. Switch to callee slab page-tables (sinfotable[callee].mempgtbl_base)
+	8. Callee_stack_frame = sinfotable[callee].tos[cpuid]
+	9. Callee_entrystub(callee_stack_frame) via SYSEXIT instruction
+
+
+Sentinel_transition_ret_to_verified(cpuid, ctype, caller, callee, caller_stackframe)
+	1. Safestack_pop(l.cpuid, l.caller, l.callee, l.ctype, l.caller_stackframe, l.oparams)
+	2. Assert l.caller == callee and l.callee == caller and l.cpuid == cpuid
+	3. Assert l.ctype == CALL_FROM_VERIFIED
+	4. Oparams = extracts oparams from caller_stackframe
+	5. Copy oparams to caller slab at l.oparams
+	6. Sinfotable[caller].tos[cpuid] += free iparams and oparams space
+	7. Setup stack frame to l.caller_stackframe and restore caller registers
+	8. Resume caller via RET instruction
+
+
+
+Sentinel_transition_call_from_unverified_to_verified(cpuid, ctype, caller, callee, callee_entrystub, caller_stackframe)
+	1. Sinfotable[caller].tos[cpuid] = caller_stackframe
+	2. Sinfotable[callee].tos[cpuid] -= space for iparams and oparams
+	3. Iparams = extract iparams from caller_stackframe
+	4. Oparams = extract oparams from caller_stackframe
+	5. Copy iparams to callee slab stack at sinfotable[callee].tos[cpuid]
+	6. Safestack_push(cpuid, caller, callee, ctype, caller_stackframe, oparams)
+	7. Callee_stack_frame = sinfotable[callee].tos[cpuid]
+	8. Callee_entrystub(callee_stack_frame) via JMP instruction
+
+Sentinel_transition_ret_to_unverified(cpuid, ctype, caller, callee, caller_stackframe)
+	1. Safestack_pop(l.cpuid, l.caller, l.callee, l.ctype, l.caller_stackframe, l.oparams)
+	2. Assert l.caller == callee and l.callee == caller and l.cpuid == cpuid
+	3. Assert l.ctype == CALL_FROM_UNVERIFIED
+	4. Oparams = extracts oparams from caller_stackframe
+	5. Copy oparams to caller slab at l.oparams
+	6. Sinfotable[caller].tos[cpuid] += free  iparams and oparams
+	7. Setup stack frame to l.caller_stackframe and restore caller registers
+	8. Resume caller via SYSEXIT instruction
+
+
+Sentinel_transition_call_exception((cpuid, ctype, caller, callee, callee_entrystub, caller_stackframe)
+	1. Sinfotable[callee].tos[cpuid] -= space for iparams
+	2. Iparams = extract iparams from caller_stackframe
+	3. Copy iparams to callee slab stack at sinfotable[callee].tos[cpuid]
+	4. Callee_stack_frame = sinfotable[callee].tos[cpuid]
+	5. Callee_entrystub(callee_stack_frame) via JMP instruction
+
+
+Sentinel_transition_ret_exception((cpuid, ctype, caller, callee, caller_stackframe)
+	1. Extract iparams from caller_stackframe
+	2. Sinfotable[caller].tos[cpuid] += space for iparams and oparams
+	3. Caller_stack_frame = iparams.params; //exception frame
+	4. Resume caller via IRETL instruction
+
+
+Sentinel_transition_call_intercept(cpuid, ctype, caller, callee, callee_entrystub, caller_stackframe)
+	1. Callee_entrystub(callee_stack_frame) via JMP instruction
+
+Sentinel_transition_ret_intercept(cpuid, ctype, caller, callee, caller_stackframe)
+	1. Extract iparams from caller_stackframe
+	2. Caller_stack_frame = iparams.params; //intercept frame
+	3. Resume caller via VMRESUME instruction
