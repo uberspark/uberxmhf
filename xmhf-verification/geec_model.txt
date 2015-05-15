@@ -69,7 +69,72 @@ g_sinfotable[1..g_totalslabs]{
 //
 // Initialization phase
 //
+//
+//                                     +-----------------------------------+
+//                                     |                                   |
+//                 +-----------------<>| uapi_slabs{V}{mempgtbl,devpgtbl,  |
+//                 |                   | iotbl,cpustate}                   |
+//                 |                   |                                   |
+//                 |                   +-----------------------------------+
+//                 |
+//        +--------------------+             +--------------+
+// []-----| geec_prime_slab{V} |------------>| init_slab{V} |
+//        +--------------------+             +--------------+
+//
+//
+// -----> control transfer initiated by slab with geec_sentinel enforced one-way call
+// ----<> control transfer initiated by slab with geec_sentinel enforced roundtrip call
+// []---- one-way control transfer initiated and enforced by hardware
+//
 //=============================================================================
+
+gp_entry_stub();
+
+
+
+
+
+
+
+//=============================================================================
+//
+// Runtime phase
+//
+//
+//       +----------------------+                     +---------------------+<>---+
+// []--<>| signal_guest_slab{V} |--------+----------<>|                     |-----+
+//       +----------------------+        |            | verified_slabs{...} |----------+
+//                                       |            |                     |--------+ |
+//           +----------------+          |     +----<>|                     |----+   | |
+// []------<>| signal_slab{V} |----------+     |      +---------------------+    |   | |
+//           +----------------+                |                                 |   | |
+//                                             |                                 |   | |
+//                                  +----------+    +-----------------------+    |   | |
+//                                  |               |                       |<>--+   | |
+//                                  +-------------<>| unverified_slabs{...} |----+   | |
+//                                  |               +-----------------------+    |   | |
+//                                  |                                            |   | |
+//                                  |                                            |   | |
+//                                  |   +-----------------------------------+    |   | |
+// from       +--------------+      |   |                                   |<>--+   | |
+// prime  --->+ init_slab{V} |------+-<>| uapi_slabs{V}{mempgtbl,devpgtbl,  |<>------+ |
+//            +--------------+      |   | iotbl,cpustate,...}               |          |
+//                                  |   |                                   |          |
+//                                  |   +-----------------------------------+          |
+//                                  |                                                  |
+//                                  |        +------------------------------+          |
+//                                  +------->| unverified_guest_slabs{...}  |<---------+
+//                                           +------------------------------+
+//
+//
+// -----> control transfer initiated by slab with geec_sentinel enforced one-way call
+// ----<> control transfer initiated by slab with geec_sentinel enforced roundtrip call
+// []--<> control transfer initiated by hardware with geec_sentinel enforced roundtrip call
+//
+//
+//=============================================================================
+
+thread_verifiedslab(INIT_SLAB);
 
 
 
@@ -89,15 +154,15 @@ g_sysdevlist_count; //count of system devices
 g_iotbl[0..MAXCPUS-1][MAX_IOTBLSIZE];
 g_slabdevicemapping[0..g_totalslabs-1];
 
-entrystub {
+gp_entrystub {
     l_cpuid = hw.lapic.id;
     hw.cpu.esp = g_stack[cpuid];
-	slab_main();
+	gp_slab_main();
     halt();
 }
 
 
-slab_main {
+gp_slab_main {
     //setup temporary unity mapped page-tables
     gp_setup_temp_mempgtbl();
 
@@ -199,7 +264,7 @@ oparams gp_call_slab(callee, callee_fn, iparams){
 }
 
 
-call_sentinel (siparams, soparams) {
+gp_call_sentinel (siparams, soparams) {
     siparams.ctype = CALL_FROM_VERIFIED;
     l_caller_stackframe = current stack frame;
 	geec_sentinel_verified_ep(l_caller_stackframe);
@@ -378,13 +443,6 @@ gp_common_state {
 
 
 
-//=============================================================================
-//
-// Runtime phase
-//
-//=============================================================================
-
-spawn thread_verifiedslab(INIT_SLAB);
 
 
 //////
