@@ -23,24 +23,21 @@ Notes:
 
 
 
+//=============================================================================
+//
+// constants, type definitions and global input data
+//
+//=============================================================================
+
+
+////// constants
 MAX_CPUS = max. no. of platform cpus
 MAX_STACKSIZE = size of stack in bytes
 ADDR_4GB_PAGES = (0x100000000ULL/0x1000) = max. 4K pages in 4GB memory address space
 PAGES(memextent) = memory page range (x..y) for a given memory extent (memextent)
 ADDRS(memextent) = memory address range (mx..my) for a given memory extent (memextent)
 
-g_totalslabs;
-g_sinfotable[1..g_totalslabs]{
-    .s_type (s_verified, s_unverified, s_unverified_guest);
-    .s_codeextents;
-    .s_dataextents;
-    .s_stackextents;
-    .s_dmadataextents;
-    .s_deviceallocations;
-    .s_iotblbase;
-    .s_mempgtblbase;
-}
-
+////// type defs
 type oparams = byte [];
 type iparams = byte [];
 type siparams = {
@@ -54,6 +51,18 @@ type soparams = {
     .param_buf
 }
 
+////// global input data
+g_totalslabs;
+g_sinfotable[1..g_totalslabs]{
+    .s_type (s_verified, s_unverified, s_unverified_guest);
+    .s_codeextents;
+    .s_dataextents;
+    .s_stackextents;
+    .s_dmadataextents;
+    .s_deviceallocations;
+    .s_iotblbase;
+    .s_mempgtblbase;
+}
 
 
 //=============================================================================
