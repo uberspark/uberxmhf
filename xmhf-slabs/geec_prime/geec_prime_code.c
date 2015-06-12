@@ -61,6 +61,11 @@ __attribute__((aligned(4096))) static u64 _xcprimeon_init_pdpt[PAE_MAXPTRS_PER_P
 static u64 _xcsmp_ap_entry_lock = 1;
 static mtrr_state_t _mtrrs;
 static u64 _ap_cr3=0;
+void geec_prime_setup_slab_iotbl(void);
+void __xmhfhic_smp_cpu_x86_smpinitialize_commonstart(void);
+void _geec_prime_setup_cpustate(void);
+
+
 
 static void xmhfhic_setupinitpgtables(void){
     u32 paddr=0;
