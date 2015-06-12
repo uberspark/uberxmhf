@@ -35,7 +35,7 @@ all: buildslabbin
 
 .PHONY: verify
 verify:
-	frama-c -val -cpp-extra-args=-nostdinc -cpp-extra-args=$(VFLAGS) $(XMHF_SLAB_SOURCES_SUBST)
+	frama-c -val -cpp-extra-args=-nostdinc $(VFLAGS) $(XMHF_SLAB_SOURCES_SUBST)
 
 
 
