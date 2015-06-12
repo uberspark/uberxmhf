@@ -127,7 +127,8 @@ void _geec_prime_main(slab_params_t *sp){
 
 #if !defined(__XMHF_VERIFICATION__)
 	//initialize debugging early on
-	xmhfhw_platform_serial_init((char *)&xcbootinfo->debugcontrol_buffer);
+	//xmhfhw_platform_serial_init((char *)&xcbootinfo->debugcontrol_buffer);
+	xmhf_debug_init((char *)&xcbootinfo->debugcontrol_buffer);
 
 
 	//[debug] print relevant startup info.
@@ -730,7 +731,7 @@ static void _sda_enumerate_system_devices(void){
     }
     numentries_sysdev_memioregions++;
 
-
+#if defined (__DEBUG_SERIAL__)
     //add SERIAL0
     sysdev_memioregions[numentries_sysdev_memioregions].b=PCI_BUS_XMHFGEEC;
     sysdev_memioregions[numentries_sysdev_memioregions].d=PCI_DEVICE_XMHFGEEC;
@@ -747,6 +748,7 @@ static void _sda_enumerate_system_devices(void){
         sysdev_memioregions[numentries_sysdev_memioregions].memioextents[i].addr_end=0;
     }
     numentries_sysdev_memioregions++;
+#endif
 
     //add IOMMU
 	if(!xmhfhw_platform_x86pc_vtd_scanfor_drhd_units()){

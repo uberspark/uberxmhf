@@ -47,10 +47,12 @@
 #ifndef __XMHF_DEBUG_H__
 #define __XMHF_DEBUG_H__
 
-#include "_com.h"        		//UART/serial
-
-
 #ifndef __ASSEMBLY__
+
+
+#if defined (__DEBUG_SERIAL__)
+
+#include "_com.h"        		//UART/serial
 
 #define LOG_LEVEL_NONE    0x00
 #define LOG_LEVEL_ALL     0xFF
@@ -68,16 +70,10 @@
 
 static inline void xmhf_debug_init(char *params){
 	(void)params;
-#ifdef __DEBUG_SERIAL__
   xmhfhw_platform_serial_init(params);
-#endif
 }
 
-#if defined (__DEBUG_SERIAL__)
-
-//extern u32 libxmhfdebug_lock;
 extern __attribute__(( section(".data") )) u32 libxmhfdebug_lock;
-
 
 static inline void _XDPRINTF_(const char *fmt, ...){
     va_list       ap;
@@ -94,9 +90,17 @@ static inline void _XDPRINTF_(const char *fmt, ...){
 
 #else
 
+static inline void xmhf_debug_init(char *params){
+	(void)params;
+}
+
 #define _XDPRINTF_(format, args...)
 
-#endif
+#endif // defined
+
+
+
+
 
 #endif	//__ASSEMBLY__
 
