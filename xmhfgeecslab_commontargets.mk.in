@@ -33,6 +33,15 @@ export LDFLAGS := --oformat elf32-i386
 all: buildslabbin
 
 
+.PHONY: verify
+verify:
+	frama-c -val -cpp-extra-args=-nostdinc -cpp-extra-args=$(VFLAGS) $(XMHF_SLAB_SOURCES_SUBST)
+
+
+
+
+
+
 #pp_slab_gsm:
 #	mkdir -p $(XMHF_SLAB_OBJECTS_DIR)
 #	cd $(XMHF_SLAB_OBJECTS_DIR) && $(CP) -f $(XMHF_DIR)/xmhf-slabs/$(XMHF_SLAB_NAME)/$(XMHF_SLAB_NAME).gsm $(XMHF_SLAB_NAME).gsm.c
@@ -71,6 +80,11 @@ buildslabbin: $(XMHF_SLAB_OBJECTS) linkslabbin
 .PHONY: clean
 clean:
 	$(RM) -rf $(XMHF_SLAB_OBJECTS_DIR)
+
+
+
+
+
 
 
 
