@@ -10,6 +10,10 @@ XMHF_SLAB_OBJECTS_ARCHIVE := $(patsubst %.c, %.o, $(XMHF_SLAB_SOURCES_FILENAMEON
 XMHF_SLAB_OBJECTS_ARCHIVE := $(patsubst %.cS, %.o, $(XMHF_SLAB_OBJECTS_ARCHIVE))
 XMHF_SLAB_OBJECTS_ARCHIVE := $(patsubst %.S, %.o, $(XMHF_SLAB_OBJECTS_ARCHIVE))
 
+XMHF_SLAB_VERIFICATION_SOURCES := $(patsubst %.c, %.c.v.c, $(XMHF_SLAB_SOURCES_FILENAMEONLY))
+XMHF_SLAB_VERIFICATION_SOURCES := $(patsubst %.cS, %.cS.v.c, $(XMHF_SLAB_VERIFICATION_SOURCES))
+
+
 # list of object dependencies
 XMHF_SLAB_OBJECTS := $(patsubst %.c, %.o, $(XMHF_SLAB_SOURCES_SUBST))
 XMHF_SLAB_OBJECTS := $(patsubst %.cS, %.o, $(XMHF_SLAB_OBJECTS))
@@ -31,6 +35,21 @@ export LDFLAGS := --oformat elf32-i386
 # targets
 .PHONY: all
 all: buildslabbin
+
+
+.PHONY: verify
+verify:
+	@echo Prepping sources...
+	@for i in $(XMHF_SLAB_SOURCES_SUBST); \
+	do \
+		(cp -f $$i $$i.v.c) || exit 1; \
+	done;
+	@echo Sources prepped.
+	frama-c -val -main $(XMHF_SLAB_MAIN) -cpp-extra-args=-nostdinc $(VFLAGS) $(XMHF_SLAB_VERIFICATION_SOURCES)
+
+
+
+
 
 
 #pp_slab_gsm:
@@ -71,6 +90,11 @@ buildslabbin: $(XMHF_SLAB_OBJECTS) linkslabbin
 .PHONY: clean
 clean:
 	$(RM) -rf $(XMHF_SLAB_OBJECTS_DIR)
+
+
+
+
+
 
 
 

@@ -61,6 +61,11 @@ __attribute__((aligned(4096))) static u64 _xcprimeon_init_pdpt[PAE_MAXPTRS_PER_P
 static u64 _xcsmp_ap_entry_lock = 1;
 static mtrr_state_t _mtrrs;
 static u64 _ap_cr3=0;
+void geec_prime_setup_slab_iotbl(void);
+void __xmhfhic_smp_cpu_x86_smpinitialize_commonstart(void);
+void _geec_prime_setup_cpustate(void);
+
+
 
 static void xmhfhic_setupinitpgtables(void){
     u32 paddr=0;
@@ -127,7 +132,8 @@ void _geec_prime_main(slab_params_t *sp){
 
 #if !defined(__XMHF_VERIFICATION__)
 	//initialize debugging early on
-	xmhfhw_platform_serial_init((char *)&xcbootinfo->debugcontrol_buffer);
+	//xmhfhw_platform_serial_init((char *)&xcbootinfo->debugcontrol_buffer);
+	xmhf_debug_init((char *)&xcbootinfo->debugcontrol_buffer);
 
 
 	//[debug] print relevant startup info.
@@ -730,7 +736,7 @@ static void _sda_enumerate_system_devices(void){
     }
     numentries_sysdev_memioregions++;
 
-
+#if defined (__DEBUG_SERIAL__)
     //add SERIAL0
     sysdev_memioregions[numentries_sysdev_memioregions].b=PCI_BUS_XMHFGEEC;
     sysdev_memioregions[numentries_sysdev_memioregions].d=PCI_DEVICE_XMHFGEEC;
@@ -747,6 +753,7 @@ static void _sda_enumerate_system_devices(void){
         sysdev_memioregions[numentries_sysdev_memioregions].memioextents[i].addr_end=0;
     }
     numentries_sysdev_memioregions++;
+#endif
 
     //add IOMMU
 	if(!xmhfhw_platform_x86pc_vtd_scanfor_drhd_units()){
