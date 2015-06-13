@@ -61,6 +61,7 @@
 
 __attribute__((section(".data"))) u32 __xmhfhic_safestack_indices[MAX_PLATFORM_CPUS] = { 0 };
 __attribute__((section(".data"))) __xmhfhic_safestack_element_t __xmhfhic_safestack[MAX_PLATFORM_CPUS][512];
+void geec_sentinel_main(slab_params_t *sp, void *caller_stack_frame);
 
 
 void __xmhfhic_safepush(u32 cpuid, u32 src_slabid, u32 dst_slabid, u32 hic_calltype,
