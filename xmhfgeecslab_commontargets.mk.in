@@ -45,7 +45,7 @@ verify:
 		(cp -f $$i $$i.v.c) || exit 1; \
 	done;
 	@echo Sources prepped.
-	frama-c -val -main slab_main -cpp-extra-args=-nostdinc $(VFLAGS) $(XMHF_SLAB_VERIFICATION_SOURCES)
+	frama-c -val -main $(XMHF_SLAB_MAIN) -cpp-extra-args=-nostdinc $(VFLAGS) $(XMHF_SLAB_VERIFICATION_SOURCES)
 
 
 

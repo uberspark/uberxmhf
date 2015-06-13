@@ -7,6 +7,7 @@
 
 
 export XMHF_SLAB_NAME := geec_sentinel
+export XMHF_SLAB_MAIN :=_slab_entrystub
 export XMHF_SLAB_SOURCES := $(wildcard $(srcdir)/*.c)
 XMHF_SLAB_SOURCES += $(wildcard $(srcdir)/*.cS)
 
