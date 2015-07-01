@@ -16,6 +16,12 @@ LIBXMHFC_OBJECTS_DIR = _objs_libxmhfc
 THE_ARCHIVE = libxmhfc.a
 
 # targets
+.PHONY: verify
+verify:
+	frama-c -val -cpp-extra-args=-nostdinc $(VFLAGS) $(srcdir)/memcmp.c
+
+
+
 .PHONY: all
 all: $(THE_ARCHIVE)
 
