@@ -57,7 +57,30 @@
 
 #ifndef __ASSEMBLY__
 
-int memcmp(const void *b1, const void *b2, size_t len);
+
+/*@
+  requires n >= 0;
+  requires \valid(((char*)s1)+(0..n-1));
+  requires \valid(((char*)s2)+(0..n-1));
+  requires \separated(((char*)s1)+(0..n-1), ((char*)s2)+(0..n-1));
+  assigns \nothing;
+  behavior eq:
+    assumes n >= 0;
+    assumes \forall integer i; 0 <= i < n ==> ((unsigned char*)s1)[i] == ((unsigned char*)s2)[i];
+    ensures \result == 0;
+  behavior not_eq:
+    assumes n > 0;
+    assumes \exists integer i; 0 <= i < n && ((unsigned char*)s1)[i] != ((unsigned char*)s2)[i];
+    ensures \result != 0;
+  complete behaviors;
+  disjoint behaviors;
+@*/
+int memcmp(const void *s1, const void *s2, size_t n);
+
+
+
+
+
 void *memcpy(void * to, const void * from, uint32_t n);
 void *memmove(void *dst_void, const void *src_void, uint32_t length);
 void *memset (void *str, int c, size_t len);
