@@ -1,6 +1,8 @@
 srcdir := $(dir $(lastword $(MAKEFILE_LIST)))
 vpath %.c $(srcdir)
 
+include $(srcdir)/../../common.mk
+
 C_SOURCES:= $(wildcard $(srcdir)/*.c)
 C_SOURCES:= $(patsubst $(srcdir)/%, %, $(C_SOURCES))
 
