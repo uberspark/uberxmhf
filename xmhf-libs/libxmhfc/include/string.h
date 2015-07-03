@@ -64,16 +64,16 @@
   requires \valid(((char*)s2)+(0..n-1));
   requires \separated(((char*)s1)+(0..n-1), ((char*)s2)+(0..n-1));
   assigns \nothing;
-  behavior eq:
-    assumes n >= 0;
-    assumes \forall integer i; 0 <= i < n ==> ((unsigned char*)s1)[i] == ((unsigned char*)s2)[i];
-    ensures \result == 0;
-  behavior not_eq:
-    assumes n > 0;
-    assumes \exists integer i; 0 <= i < n && ((unsigned char*)s1)[i] != ((unsigned char*)s2)[i];
-    ensures \result != 0;
-  complete behaviors;
-  disjoint behaviors;
+  //behavior eq:
+  //  assumes n >= 0;
+  //  assumes \forall integer i; 0 <= i < n ==> ((unsigned char*)s1)[i] == ((unsigned char*)s2)[i];
+  //  ensures \result == 0;
+  //behavior not_eq:
+  //  assumes n > 0;
+  //  assumes \exists integer i; 0 <= i < n && ((unsigned char*)s1)[i] != ((unsigned char*)s2)[i];
+  //  ensures \result != 0;
+  //complete behaviors;
+  //disjoint behaviors;
 @*/
 int memcmp(const void *s1, const void *s2, size_t n);
 
