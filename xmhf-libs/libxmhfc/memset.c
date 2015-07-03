@@ -48,11 +48,37 @@
 #include <string.h>
 
 
-void *memset (void *str, int c, size_t len) {
+/*void *memset (void *str, int c, size_t len) {
   register u8 *st = str;
 
   while (len-- > 0)
     *st++ = (u8)c;
   return str;
-}
+}*/
 
+/*@
+	requires n >= 0;
+	requires \valid(((char*)dst)+(0..n-1));
+	requires -128 <= c <= 127;
+	assigns ((char*)dst)[0..n-1];
+	ensures \forall integer i; 0 <= i < n ==> ((char*)dst)[i] == c;
+	ensures \result == dst;
+@*/
+void *memset(void* dst, int c, size_t n)
+{
+	char *q = dst;
+
+	/*@
+		loop invariant 0 <= n <= \at(n,Pre);
+		loop invariant \forall integer i; 0 <= i < (\at(n,Pre) - n) ==> ((char*)dst)[i] == c;
+		loop invariant q == (char*)dst+(\at(n,Pre) - n);
+		loop assigns n, q, ((char*)dst)[0..(\at(n,Pre)-n)-1];
+		loop variant n;
+	@*/
+	while (n) {
+		*q++ = c;
+		n--;
+	}
+
+	return dst;
+}

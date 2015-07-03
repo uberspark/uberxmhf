@@ -91,10 +91,19 @@ void *memcpy(void *dst, const void *src, size_t n);
 
 
 
-
-
 void *memmove(void *dst_void, const void *src_void, uint32_t length);
-void *memset (void *str, int c, size_t len);
+
+
+/*@
+	requires n >= 0;
+	requires \valid(((char*)dst)+(0..n-1));
+	requires -128 <= c <= 127;
+	assigns ((char*)dst)[0..n-1];
+	ensures \forall integer i; 0 <= i < n ==> ((char*)dst)[i] == c;
+	ensures \result == dst;
+@*/
+void *memset(void* dst, int c, size_t n);
+
 
 char *strchr(const char *s, int c);
 int strcmp(const char * cs,const char * ct);
