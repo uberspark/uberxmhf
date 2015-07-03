@@ -19,7 +19,7 @@ THE_ARCHIVE = libxmhfc.a
 .PHONY: verify
 verify:
 	#frama-c -wp -cpp-extra-args=-nostdinc $(VFLAGS) $(srcdir)/memcmp.c
-	frama-c -wp -wp-rte -wp-timeout 20 -cpp-extra-args=-nostdinc $(VFLAGS) $(srcdir)/memcpy.c
+	frama-c -wp -wp-rte -wp-prover alt-ergo,cvc4 -cpp-extra-args=-nostdinc $(VFLAGS) $(srcdir)/memcpy.c
 	#frama-c -wp -wp-rte -cpp-extra-args=-nostdinc $(VFLAGS) $(srcdir)/memset.c
 
 
