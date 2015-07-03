@@ -78,10 +78,21 @@
 int memcmp(const void *s1, const void *s2, size_t n);
 
 
+/*@
+    requires \separated(((char*)src)+(0..n-1), ((char*)dst)+(0..n-1));
+    requires n >= 0;
+    requires \valid(((char*)dst)+(0..n-1));
+    requires \valid(((char*)src)+(0..n-1));
+    assigns ((char*)dst)[0..n-1];
+    ensures \forall integer i; 0 <= i < n ==> ((char*)dst)[i] == ((char*)src)[i];
+    ensures \result == dst;
+ */
+void *memcpy(void *dst, const void *src, size_t n);
 
 
 
-void *memcpy(void * to, const void * from, uint32_t n);
+
+
 void *memmove(void *dst_void, const void *src_void, uint32_t length);
 void *memset (void *str, int c, size_t len);
 
