@@ -48,12 +48,45 @@
 #include <string.h>
 
 
-void *memcpy(void * to, const void * from, u32 n)
+/*void *memcpy(void * to, const void * from, u32 n)
 {
   size_t i;
   for(i=0; i<n; i++) {
     ((uint8_t*)to)[i] = ((const uint8_t*)from)[i];
   }
   return to;
+}*/
+
+
+/*@
+    requires \separated(((char*)src)+(0..n-1), ((char*)dst)+(0..n-1));
+    requires n >= 0;
+    requires \valid(((char*)dst)+(0..n-1));
+    requires \valid(((char*)src)+(0..n-1));
+    assigns ((char*)dst)[0..n-1];
+    ensures \forall integer i; 0 <= i < n ==> ((char*)dst)[i] == ((char*)src)[i];
+    ensures \result == dst;
+ */
+void *memcpy(void *dst, const void *src, size_t n)
+{
+	const char *p = src;
+	char *q = dst;
+
+	/*@
+		loop invariant 0 <= n <= \at(n,Pre);
+		loop invariant p == ((char*)src)+(\at(n, Pre) - n);
+		loop invariant q == ((char*)dst)+(\at(n, Pre) - n);
+		loop invariant (char*)dst <= q <= (char*)dst+\at(n,Pre);
+		loop invariant (char*)src <= p <= (char*)src+\at(n,Pre);
+		loop invariant \forall integer i; 0 <= i < (\at(n, Pre) - n) ==> ((char*)dst)[i] == ((char*)src)[i];
+		loop assigns n, q, p, ((char*)dst)[0..(\at(n,Pre)- n - 1)];
+		loop variant n;
+	*/
+	while (n) {
+		*q++ = *p++;
+		n--;
+	}
+
+	return dst;
 }
 
