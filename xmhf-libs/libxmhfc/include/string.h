@@ -91,7 +91,16 @@ void *memcpy(void *dst, const void *src, size_t n);
 
 
 
-void *memmove(void *dst_void, const void *src_void, uint32_t length);
+/*@
+	requires n >= 0;
+	requires \valid(((char*)dst)+(0..n-1));
+	requires \valid(((char*)src)+(0..n-1));
+	// this function does not requires \separate. refer to manpages
+	assigns ((char*)dst)[0..n-1];
+	//ensures \forall integer i; 0 <= i < n ==> ((char*)dst)[i] == \old(((char*)src)[i]);
+	//ensures \result == dst;
+@*/
+void *memmove(void *dst, const void *src, size_t n);
 
 
 /*@
