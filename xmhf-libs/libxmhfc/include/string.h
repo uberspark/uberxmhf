@@ -166,9 +166,62 @@ int strcmp(const char *s1, const char *s2);
  @*/
 int strlen(const char *s);
 
+/*@
+	requires n >= 0;
+	requires \valid(s1+(0..n-1));
+	requires \valid(s2+(0..n-1));
+	requires \separated(s1+(0..n-1), s2+(0..n-1));
+	assigns \nothing;
 
+	//behavior normal_n_eq:
+	//	assumes \exists integer i; 0 <= i < n && Length_of_str_is(s1,i) && Length_of_str_is(s2,i)
+	//											&& (\forall integer k; 0 <= k < i ==> s1[k] == s2[k]);
+  	//	ensures \result == 0;
+	//behavior normal_n_not_eq:
+	//	assumes \exists integer i; 0 <= i < n && Length_of_str_is(s1,i) && Length_of_str_is(s2,i)
+	//											&& (\exists integer k; 0 <= k <= i && s1[k] != s2[k]);
+  	//	ensures \result != 0;
+	//behavior larger_n_eq:
+	//	assumes \forall integer i; 0 <= i < n ==> s1[i] != 0;
+	//	assumes \forall integer i; 0 <= i < n ==> s2[i] != 0;
+	//	assumes \forall integer i; 0 <= i < n ==> s1[i] == s2[i];
+	//	ensures \result == 0;
+	//behavior larger_n_not_eq:
+	//	assumes \forall integer i; 0 <= i < n ==> s1[i] != 0;
+	//	assumes \forall integer i; 0 <= i < n ==> s2[i] != 0;
+	//	assumes \exists integer i; 0 <= i < n && s1[i] != s2[i];
+	//	ensures \result != 0;
+	//behavior s1_s2_smaller:
+	//	assumes \exists integer i, j; 0 <= i < n && 0 <= j < n
+	//			&& i != j && Length_of_str_is(s1, i) && Length_of_str_is(s2, j);
+	//	ensures \result != 0;
+	//behavior s1_smaller:
+	//	assumes \exists integer i; 0 <= i < n && Length_of_str_is(s1, i);
+	//	assumes \forall integer i; 0 <= i < n ==> s2[i] != 0;
+	//	ensures \result != 0;
+	//behavior s2_smaller:
+	//	assumes \forall integer i; 0 <= i < n ==> s1[i] != 0;
+	//	assumes \exists integer i; 0 <= i < n && Length_of_str_is(s2, i);
+	//	ensures \result != 0;
+	//behavior zero:
+	//	assumes n == 0;
+	//	ensures \result == 0;
+  //complete behaviors;
+  //disjoint behaviors;
+@*/
 int strncmp(const char *s1, const char *s2, size_t n);
-char *strncpy(char * dst, const char * src, size_t n);
+
+/*@
+	requires n >= 0;
+	requires \exists integer i; Length_of_str_is(src, i);
+	requires \valid(dst+(0..n-1));
+	requires \valid(((char*)src)+(0..n-1));
+	requires \separated(src+(0..n-1), dst+(0..n-1));
+	assigns dst[0..n-1];
+	ensures \result == dst;
+@*/
+char *strncpy(char *dst, const char *src, size_t n);
+
 u32 strnlen(const char * s, uint32_t count);
 unsigned long strtoul(const char *cp,const char **endp, unsigned int base);
 
