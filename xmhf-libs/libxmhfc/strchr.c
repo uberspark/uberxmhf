@@ -34,8 +34,8 @@
  */
 
 #include <stdint.h>
-#include <string.h> 
-
+#include <string.h>
+/*
 char *
 strchr(const char *p, int ch)
 {
@@ -51,5 +51,32 @@ strchr(const char *p, int ch)
                 if (*u.p == '\0')
                         return(NULL);
         }
-        /* NOTREACHED */
+}
+*/
+
+
+
+/*@
+  requires \exists integer i; Length_of_str_is(s,i);
+  requires -128 <= c <= 127;
+  assigns \nothing;
+@*/
+char *strchr(const char *s, int c)
+{
+  /*@
+     loop invariant \base_addr(s) == \base_addr(\at(s, Pre));
+     loop invariant \at(s,Pre) <= s <= (\at(s,Pre) + Length(\at(s,Pre)));
+     loop invariant s == \at(s,Pre) + (s - \at(s,Pre));
+     loop assigns s;
+     loop variant Length(\at(s,Pre)) - (s - \at(s,Pre));
+   */
+  while (*s != (char)c) {
+    if (!*s)
+      return NULL;
+    s++;
+  }
+
+  //@ assert \base_addr(\at(s, Pre)) == \base_addr(\at(s, Here));
+  //@ assert \at(s, Pre) <= \at(s, Here) <= \at(s, Pre) + Length(\at(s, Pre));
+  return (char *)s;
 }

@@ -21,7 +21,8 @@ verify:
 	#frama-c -wp -wp-rte -wp-prover alt-ergo,z3,cvc3 -cpp-extra-args=-nostdinc $(VFLAGS) $(srcdir)/memcmp.c
 	#frama-c -wp -wp-rte -wp-prover alt-ergo,cvc3 -cpp-extra-args=-nostdinc $(VFLAGS) $(srcdir)/memcpy.c
 	#frama-c -wp -wp-rte -cpp-extra-args=-nostdinc $(VFLAGS) $(srcdir)/memset.c
-	frama-c -wp -wp-rte -wp-prover alt-ergo,z3,cvc3 -cpp-extra-args=-nostdinc $(VFLAGS) $(srcdir)/memmove.c
+	#frama-c -wp -wp-rte -wp-prover alt-ergo,z3,cvc3 -cpp-extra-args=-nostdinc $(VFLAGS) $(srcdir)/memmove.c
+	frama-c -wp -wp-rte -wp-prover alt-ergo,z3,cvc3 -cpp-extra-args=-nostdinc $(VFLAGS) $(srcdir)/strchr.c
 
 .PHONY: all
 all: $(THE_ARCHIVE)
