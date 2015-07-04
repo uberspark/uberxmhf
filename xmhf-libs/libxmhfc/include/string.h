@@ -158,7 +158,15 @@ char *strchr(const char *s, int c);
 @*/
 int strcmp(const char *s1, const char *s2);
 
-size_t strlen(const char * s);
+/*@
+   requires \exists integer i; Length_of_str_is(s,i);
+   assigns \nothing;
+   //ensures \exists integer i; Length_of_str_is(s,i) && \result == i;
+   ensures \result == Length(s);
+ @*/
+int strlen(const char *s);
+
+
 int strncmp(const char *s1, const char *s2, size_t n);
 char *strncpy(char * dst, const char * src, size_t n);
 u32 strnlen(const char * s, uint32_t count);
