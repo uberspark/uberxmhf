@@ -222,7 +222,23 @@ int strncmp(const char *s1, const char *s2, size_t n);
 @*/
 char *strncpy(char *dst, const char *src, size_t n);
 
-u32 strnlen(const char * s, uint32_t count);
+/*@
+  requires maxlen >= 0;
+  requires \valid(s+(0..maxlen-1));
+  assigns \nothing;
+  behavior bigger:
+    assumes \forall integer i; 0 <= i < maxlen ==> s[i] != 0;
+    ensures \result == maxlen;
+
+  behavior smaller:
+    assumes \exists integer i; 0 <= i < maxlen && s[i] == 0;
+    ensures \result <= maxlen;
+  complete behaviors;
+  disjoint behaviors;
+*/
+size_t strnlen(const char *s, size_t maxlen);
+
+
 unsigned long strtoul(const char *cp,const char **endp, unsigned int base);
 
 #endif /* __ASSEMBLY__ */
