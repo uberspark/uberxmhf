@@ -37,12 +37,12 @@
  */
 
 #include <stdint.h>
-#include <string.h> 
+#include <string.h>
 /*
  * Copy src to dst, truncating or null-padding to always copy n bytes.
  * Return dst.
  */
-char *strncpy(char * dst, const char * src, size_t n)
+/*char *strncpy(char * dst, const char * src, size_t n)
 {
 	if (n != 0) {
 		register char *d = dst;
@@ -50,7 +50,7 @@ char *strncpy(char * dst, const char * src, size_t n)
 
 		do {
 			if ((*d++ = *s++) == 0) {
-				/* NUL pad the remaining n-1 bytes */
+				// NUL pad the remaining n-1 bytes
 				while (--n != 0)
 					*d++ = 0;
 				break;
@@ -58,4 +58,46 @@ char *strncpy(char * dst, const char * src, size_t n)
 		} while (--n != 0);
 	}
 	return (dst);
+}
+*/
+
+
+/*@
+	requires n >= 0;
+	requires \exists integer i; Length_of_str_is(src, i);
+	requires \valid(dst+(0..n-1));
+	requires \valid(((char*)src)+(0..n-1));
+	requires \separated(src+(0..n-1), dst+(0..n-1));
+	assigns dst[0..n-1];
+	ensures \result == dst;
+@*/
+char *strncpy(char *dst, const char *src, size_t n)
+{
+	char *q = dst;
+	const char *p = src;
+	char ch;
+
+	/*@
+		loop invariant 0 <= n <= \at(n,Pre);
+		loop invariant \at(n, Here) != \at(n, Pre) ==> ch != 0;
+		loop invariant p == ((char*)src)+(\at(n, Pre) - n);
+		loop invariant q == ((char*)dst)+(\at(n, Pre) - n);
+		loop invariant (char*)dst <= q <= (char*)dst+\at(n,Pre);
+		loop invariant (char*)src <= p <= (char*)src+\at(n,Pre);
+		loop assigns n, q, ch, p, ((char*)dst)[0..(\at(n,Pre)- n - 1)];
+		loop variant n;
+	@*/
+	while (n) {
+		ch = *p;
+		*q = ch;
+		if (!ch)
+			break;
+		q++;
+		p++;
+		n--;
+	}
+
+	memset(q, 0, n);
+
+	return dst;
 }
