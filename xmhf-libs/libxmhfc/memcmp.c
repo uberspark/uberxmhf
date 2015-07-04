@@ -83,16 +83,20 @@ memcmp(const void *s1, const void *s2, size_t n)
 @*/
 int memcmp(const void *s1, const void *s2, size_t n)
 {
-  const unsigned char *c1 = s1, *c2 = s2;
+  const char *c1 = s1, *c2 = s2;
   int d = 0;
 
 
   /*@
     loop invariant N_RANGE: 0 <= n <= \at(n, Pre);
-    //loop invariant C1_RANGE: (unsigned char*)s1 <= c1 <= (unsigned char*)s1+\at(n, Pre);
+    //loop invariant C1_RANGE: (unsigned char*)s1 <= c1 < (unsigned char*)s1+n;
     //loop invariant C2_RANGE: (unsigned char*)s2 <= c2 <= (unsigned char*)s2+\at(n, Pre);
     //loop invariant COMPARE: \forall integer i; 0 <= i < (\at(n, Pre) - n) ==> ((unsigned char*)s1)[i] == ((unsigned char*)s2)[i];
     //loop invariant D_ZERO: d == 0;
+	loop invariant c1 == ((char*)s1)+(\at(n, Pre) - n);
+	loop invariant c2 == ((char*)s2)+(\at(n, Pre) - n);
+	loop invariant (char*)s2 <= c2 <= (char*)s2+\at(n,Pre);
+	loop invariant (char*)s1 <= c1 <= (char*)s1+\at(n,Pre);
     loop assigns n, d, c1, c2;
     loop variant n;
   @*/
