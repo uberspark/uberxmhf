@@ -59,6 +59,21 @@
 
 
 /*@
+  predicate Length_of_str_is{L}(char *s, integer n) =
+      n >= 0 && \valid(s+(0..n)) && s[n] == 0 &&
+      \forall integer k ; (0 <= k < n) ==> (s[k] != 0) ;
+  axiomatic Length
+  {
+    logic integer Length{L}(char *s) reads s[..];
+    axiom string_length{L}:
+       \forall integer n, char *s ; Length_of_str_is(s, n) ==> Length(s) == n ;
+  }
+@*/
+
+
+
+
+/*@
   requires n >= 0;
   requires \valid(((char*)s1)+(0..n-1));
   requires \valid(((char*)s2)+(0..n-1));
@@ -114,7 +129,15 @@ void *memmove(void *dst, const void *src, size_t n);
 void *memset(void* dst, int c, size_t n);
 
 
+/*@
+  requires \exists integer i; Length_of_str_is(s,i);
+  requires -128 <= c <= 127;
+  assigns \nothing;
+@*/
 char *strchr(const char *s, int c);
+
+
+
 int strcmp(const char * cs,const char * ct);
 size_t strlen(const char * s);
 int strncmp(const char *s1, const char *s2, size_t n);
