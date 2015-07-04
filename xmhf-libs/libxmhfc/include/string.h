@@ -137,8 +137,27 @@ void *memset(void* dst, int c, size_t n);
 char *strchr(const char *s, int c);
 
 
+/*@
+  requires \exists integer i; Length_of_str_is(s1,i);
+  requires \exists integer i; Length_of_str_is(s2,i);
+  requires \separated(s1+(0..Length(s1)), s2+(0..Length(s2)));
+  assigns \nothing;
+  behavior eq:
+	assumes \exists integer i; Length_of_str_is(s1,i) && Length_of_str_is(s2,i) &&
+		  \forall integer j; 0 <= j <= i ==> s1[j] == s2[j];
+	ensures \result == 0;
+  behavior not_eq_i_j:
+	assumes \exists integer i,j; i != j && Length_of_str_is(s1,i) && Length_of_str_is(s2,j);
+	ensures \result != 0;
+  behavior not_eq:
+	assumes \exists integer i; Length_of_str_is(s1,i) && Length_of_str_is(s2,i) &&
+		  \exists integer j; 0 <= j <= i && s1[j] != s2[j];
+	ensures \result != 0;
+	complete behaviors;
+	disjoint behaviors;
+@*/
+int strcmp(const char *s1, const char *s2);
 
-int strcmp(const char * cs,const char * ct);
 size_t strlen(const char * s);
 int strncmp(const char *s1, const char *s2, size_t n);
 char *strncpy(char * dst, const char * src, size_t n);
