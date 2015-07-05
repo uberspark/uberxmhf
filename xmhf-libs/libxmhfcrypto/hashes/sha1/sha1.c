@@ -118,8 +118,6 @@ static int  sha1_compress(hash_state *md, unsigned char *buf)
 }
 
 
-#if 1
-
 /**
    Initialize the hash state
    @param md   The hash state you wish to initialize
@@ -249,8 +247,6 @@ int sha1(const unsigned char *buffer, size_t len,
   return rv;
 }
 
-
-#endif // 0
 
 
 
