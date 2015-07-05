@@ -239,7 +239,6 @@ char *strncpy(char *dst, const char *src, size_t n);
 size_t strnlen(const char *s, size_t maxlen);
 
 
-unsigned long strtoul(const char *cp,const char **endp, unsigned int base);
 
 #endif /* __ASSEMBLY__ */
 
