@@ -118,24 +118,14 @@ static int  sha1_compress(hash_state *md, unsigned char *buf)
 }
 
 
-int sha1_buffer(const unsigned char *buffer, size_t len,
-                unsigned char md[SHA_DIGEST_LENGTH]){
-  int rv=0;
-  hash_state hs;
-
-  rv = sha1_init( &hs);
-  rv = sha1_process( &hs, buffer, len);
-  rv = sha1_done( &hs, md);
-
-  return rv;
-}
+#if 1
 
 /**
    Initialize the hash state
    @param md   The hash state you wish to initialize
    @return CRYPT_OK if successful
 */
-int sha1_init(hash_state * md)
+static int sha1_init(hash_state * md)
 {
    assert(md != NULL);
    md->sha1.state[0] = 0x67452301UL;
@@ -154,7 +144,7 @@ int sha1_init(hash_state * md)
    @param out [out] The destination of the hash (20 bytes)
    @return CRYPT_OK if successful
 */
-int sha1_done(hash_state * md, unsigned char *out)
+static int sha1_done(hash_state * md, unsigned char *out)
 {
     int i;
 
@@ -211,4 +201,30 @@ int sha1_done(hash_state * md, unsigned char *out)
    @return CRYPT_OK if successful
 */
 HASH_PROCESS(sha1_process, sha1_compress, sha1, 64)
+
+int sha1(const unsigned char *buffer, size_t len,
+                unsigned char md[SHA_DIGEST_LENGTH]){
+  int rv=0;
+  hash_state hs;
+
+  rv = sha1_init( &hs);
+  rv = sha1_process( &hs, buffer, len);
+  rv = sha1_done( &hs, md);
+
+  return rv;
+}
+
+
+#endif // 0
+
+
+
+
+
+
+
+
+
+
+
 

@@ -108,7 +108,7 @@ if(!ae_activated){
                 __func__, (u16)cpuindex, gpa);
 
     //compute SHA-1 of the local page buffer
-    sha1_buffer(&_ae_page_buffer, PAGE_SIZE_4K, digest);
+    sha1(&_ae_page_buffer, PAGE_SIZE_4K, digest);
 
     _XDPRINTF_("%s[%u]: computed SHA-1: %*D\n",
                __func__, (u16)cpuindex, SHA_DIGEST_LENGTH, digest, " ");

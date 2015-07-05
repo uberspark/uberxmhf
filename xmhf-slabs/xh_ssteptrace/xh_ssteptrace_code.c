@@ -165,7 +165,7 @@ static bool st_scanforsignature(u8 *buffer, u32 buffer_size){
     u64 i;
 
     //compute SHA-1 of the buffer
-    sha1_buffer(buffer, buffer_size, digest);
+    sha1(buffer, buffer_size, digest);
 
     //compare computed SHA-1 to the signature database
     for(i=0; i < NUMENTRIES_ST_SIGDATABASE; i++){

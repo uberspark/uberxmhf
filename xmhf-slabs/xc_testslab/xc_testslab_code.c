@@ -85,7 +85,7 @@ static void _xcinit_dotests(u64 cpuid){
 
                 //memcpy(_ae_page_buffer, &_ae_page_buffer_src, PAGE_SIZE_4K);
                 //compute SHA-1 of the local page buffer
-                sha1_buffer(&_ae_page_buffer, PAGE_SIZE_4K, digest);
+                sha1(&_ae_page_buffer, PAGE_SIZE_4K, digest);
 
                 //XMHF_SLAB_CALL(hictestslab2, XMHF_HYP_SLAB_HICTESTSLAB2, NULL, 0, NULL, 0);
 
