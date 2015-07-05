@@ -118,7 +118,7 @@ static void sl_register(u32 cpuindex, u32 guest_slab_index, u64 gpa){
                __func__, (u16)cpuindex, gpa);
 
         //compute SHA-1 of the syscall page
-        sha1_buffer(&_sl_pagebuffer, sizeof(_sl_pagebuffer), _sl_syscalldigest);
+        sha1(&_sl_pagebuffer, sizeof(_sl_pagebuffer), _sl_syscalldigest);
 
 
         _XDPRINTF_("%s[%u]: computed SHA-1: %*D\n",
@@ -217,7 +217,7 @@ static void _hcb_memoryfault(u32 cpuindex, u32 guest_slab_index, u64 gpa, u64 gv
     XMHF_SLAB_CALLNEW(&spl);
 
     //compute SHA-1 of the syscall page
-    sha1_buffer(&_sl_pagebuffer, sizeof(_sl_pagebuffer), syscalldigest);
+    sha1(&_sl_pagebuffer, sizeof(_sl_pagebuffer), syscalldigest);
 
     //check to see if syscall handler has been modified
     if(memcmp(&_sl_syscalldigest, &syscalldigest, SHA_DIGEST_LENGTH))
