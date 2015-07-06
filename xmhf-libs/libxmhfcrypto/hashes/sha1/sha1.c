@@ -198,39 +198,39 @@ static int sha1_done(hash_state * md, unsigned char *out)
    @param inlen  The length of the data (octets)
    @return CRYPT_OK if successful
 */
-static int sha1_process (hash_state * md, const unsigned char *in, unsigned long inlen)               \
-{                                                                                           \
-    unsigned long n;                                                                        \
-    int           err;                                                                      \
-    assert(md != NULL);                                                                 \
-    assert(in != NULL);                                                                 \
-    if (md-> sha1 .curlen > sizeof(md-> sha1 .buf)) {                             \
-       return CRYPT_INVALID_ARG;                                                            \
-    }                                                                                       \
-    while (inlen > 0) {                                                                     \
-        if (md-> sha1 .curlen == 0 && inlen >= 64) {                           \
-           if ((err = sha1_compress (md, (unsigned char *)in)) != CRYPT_OK) {               \
-              return err;                                                                   \
-           }                                                                                \
-           md-> sha1 .length += 64 * 8;                                        \
-           in             += 64;                                                    \
-           inlen          -= 64;                                                    \
-        } else {                                                                            \
-           n = MIN(inlen, (64 - md-> sha1 .curlen));                           \
-           memcpy(md-> sha1 .buf + md-> sha1.curlen, in, (size_t)n);              \
-           md-> sha1 .curlen += n;                                                     \
-           in             += n;                                                             \
-           inlen          -= n;                                                             \
-           if (md-> sha1 .curlen == 64) {                                      \
-              if ((err = sha1_compress (md, (unsigned char *)md-> sha1 .buf)) != CRYPT_OK) {            \
-                 return err;                                                                \
-              }                                                                             \
-              md-> sha1 .length += 8*64;                                       \
-              md-> sha1 .curlen = 0;                                                   \
-           }                                                                                \
-       }                                                                                    \
-    }                                                                                       \
-    return CRYPT_OK;                                                                        \
+static int sha1_process (hash_state * md, const unsigned char *in, unsigned long inlen)
+{
+    unsigned long n;
+    int           err;
+    assert(md != NULL);
+    assert(in != NULL);
+    if (md-> sha1 .curlen > sizeof(md-> sha1 .buf)) {
+       return CRYPT_INVALID_ARG;
+    }
+    while (inlen > 0) {
+        if (md-> sha1 .curlen == 0 && inlen >= 64) {
+           if ((err = sha1_compress (md, (unsigned char *)in)) != CRYPT_OK) {
+		return err;
+           }
+           md-> sha1 .length += 64 * 8;
+           in             += 64;
+           inlen          -= 64;
+        } else {
+           n = MIN(inlen, (64 - md-> sha1 .curlen));
+           memcpy(md-> sha1 .buf + md-> sha1.curlen, in, (size_t)n);
+           md-> sha1 .curlen += n;
+           in             += n;
+           inlen          -= n;
+           if (md-> sha1 .curlen == 64) {
+              if ((err = sha1_compress (md, (unsigned char *)md-> sha1 .buf)) != CRYPT_OK) {
+                 return err;
+              }
+              md-> sha1 .length += 8*64;
+              md-> sha1 .curlen = 0;
+           }
+       }
+    }
+    return CRYPT_OK;
 }
 
 
