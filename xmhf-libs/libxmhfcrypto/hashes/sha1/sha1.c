@@ -165,6 +165,9 @@ static int  sha1_compress(hash_state *md, unsigned char *buf)
 }
 
 
+
+#if 0
+
 /**
    Initialize the hash state
    @param md   The hash state you wish to initialize
@@ -182,6 +185,9 @@ static int sha1_init(hash_state * md)
    md->sha1.length = 0;
    return CRYPT_OK;
 }
+
+#endif // 0
+
 
 /**
    Terminate the hash to get the digest
@@ -281,6 +287,7 @@ static int sha1_process (hash_state * md, const unsigned char *in, unsigned long
 }
 
 
+#if 0
 
 int sha1(const unsigned char *buffer, size_t len,
                 unsigned char md[SHA_DIGEST_LENGTH]){
@@ -288,6 +295,36 @@ int sha1(const unsigned char *buffer, size_t len,
   hash_state hs;
 
   rv = sha1_init( &hs);
+  rv = sha1_process( &hs, buffer, len);
+  rv = sha1_done( &hs, md);
+
+  return rv;
+}
+
+#endif
+
+
+
+
+
+int sha1(const unsigned char *buffer, size_t len,
+                unsigned char md[SHA_DIGEST_LENGTH]){
+
+	int rv=0;
+	hash_state hs;
+
+	//
+	//rv = sha1_init( &hs);
+	//
+	hs.sha1.state[0] = 0x67452301UL;
+	hs.sha1.state[1] = 0xefcdab89UL;
+	hs.sha1.state[2] = 0x98badcfeUL;
+	hs.sha1.state[3] = 0x10325476UL;
+	hs.sha1.state[4] = 0xc3d2e1f0UL;
+	hs.sha1.curlen = 0;
+	hs.sha1.length = 0;
+
+
   rv = sha1_process( &hs, buffer, len);
   rv = sha1_done( &hs, md);
 
