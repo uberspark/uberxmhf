@@ -189,6 +189,8 @@ static int sha1_init(hash_state * md)
 #endif // 0
 
 
+#if 0
+
 /**
    Terminate the hash to get the digest
    @param md  The hash state
@@ -240,6 +242,8 @@ static int sha1_done(hash_state * md, unsigned char *out)
 
     return CRYPT_OK;
 }
+
+#endif // 0
 
 
 #if 0
@@ -310,7 +314,7 @@ int sha1(const unsigned char *buffer, size_t len,
 int sha1(const unsigned char *buffer, size_t len,
                 unsigned char md[SHA_DIGEST_LENGTH]){
 
-	int rv=0;
+	int rv=CRYPT_OK;
 	hash_state hs;
 
 	//
@@ -364,10 +368,57 @@ int sha1(const unsigned char *buffer, size_t len,
 		}
 	}
 
+	//
+	//rv = sha1_done( &hs, md);
+	//
+	//static int sha1_done(hash_state * md, unsigned char *out)
+	//md = hs, out = md
+	{
+		int i;
+		unsigned char *out = md;
 
-  rv = sha1_done( &hs, md);
+		//if( md == NULL || out == NULL)
+		//return CRYPT_INVALID_ARG;
 
-  return rv;
+		if (hs.sha1.curlen >= sizeof(hs.sha1.buf)) {
+			return CRYPT_INVALID_ARG;
+		}
+
+		/* increase the length of the message */
+		hs.sha1.length += hs.sha1.curlen * 8;
+
+		/* append the '1' bit */
+		hs.sha1.buf[hs.sha1.curlen++] = (unsigned char)0x80;
+
+		/* if the length is currently above 56 bytes we append zeros
+		* then compress.  Then we can fall back to padding zeros and length
+		* encoding like normal.
+		*/
+		if (hs.sha1.curlen > 56) {
+			while (hs.sha1.curlen < 64) {
+				hs.sha1.buf[hs.sha1.curlen++] = (unsigned char)0;
+			}
+			sha1_compress(&hs, hs.sha1.buf);
+			hs.sha1.curlen = 0;
+		}
+
+		/* pad upto 56 bytes of zeroes */
+		while (hs.sha1.curlen < 56) {
+			hs.sha1.buf[hs.sha1.curlen++] = (unsigned char)0;
+		}
+
+		/* store length */
+		STORE64H(hs.sha1.length, hs.sha1.buf+56);
+		sha1_compress(&hs, hs.sha1.buf);
+
+		/* copy output */
+		for (i = 0; i < 5; i++) {
+			STORE32H(hs.sha1.state[i], out+(4*i));
+		}
+
+	}
+
+	return rv;
 }
 
 
