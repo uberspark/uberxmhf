@@ -242,6 +242,7 @@ static int sha1_done(hash_state * md, unsigned char *out)
 }
 
 
+#if 0
 
 
 /**
@@ -287,7 +288,6 @@ static int sha1_process (hash_state * md, const unsigned char *in, unsigned long
 }
 
 
-#if 0
 
 int sha1(const unsigned char *buffer, size_t len,
                 unsigned char md[SHA_DIGEST_LENGTH]){
@@ -325,7 +325,46 @@ int sha1(const unsigned char *buffer, size_t len,
 	hs.sha1.length = 0;
 
 
-  rv = sha1_process( &hs, buffer, len);
+	//
+	//rv = sha1_process( &hs, buffer, len);
+	//
+	//md = hs, in = buffer, inlen = len
+	{
+		unsigned long n;
+		int           err;
+		const unsigned char *in = buffer;
+		size_t inlen = len;
+
+		if (hs.sha1.curlen > sizeof(hs.sha1.buf)) {
+			return CRYPT_INVALID_ARG;
+		}
+
+		while (inlen > 0) {
+			if (hs.sha1.curlen == 0 && inlen >= 64) {
+			   if ((err = sha1_compress (&hs, (unsigned char *)in)) != CRYPT_OK) {
+				return err;
+			   }
+			   hs.sha1.length += 64 * 8;
+			   in             += 64;
+			   inlen          -= 64;
+			} else {
+			   n = MIN(inlen, (64 - hs.sha1.curlen));
+			   memcpy(hs.sha1.buf + hs.sha1.curlen, in, (size_t)n);
+			   hs.sha1.curlen += n;
+			   in             += n;
+			   inlen          -= n;
+			   if (hs.sha1.curlen == 64) {
+			      if ((err = sha1_compress (&hs, (unsigned char *)hs.sha1.buf)) != CRYPT_OK) {
+				 return err;
+			      }
+			      hs.sha1.length += 8*64;
+			      hs.sha1.curlen = 0;
+			   }
+			}
+		}
+	}
+
+
   rv = sha1_done( &hs, md);
 
   return rv;
