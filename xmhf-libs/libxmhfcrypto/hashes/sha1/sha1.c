@@ -57,6 +57,16 @@
 #define F2(x,y,z)  ((x & y) | (z & (x | y)))
 #define F3(x,y,z)  (x ^ y ^ z)
 
+
+/*@
+	requires \valid(md);
+	requires \valid(((unsigned char*)buf)+(0..63));
+	assigns md->sha1.state[0..4];
+	ensures \result == CRYPT_OK;
+@*/
+static int  sha1_compress(hash_state *md, unsigned char *buf);
+
+#if 0
 /*@
 	requires \valid(md);
 	requires \valid(((unsigned char*)buf)+(0..63));
@@ -163,10 +173,16 @@ static int  sha1_compress(hash_state *md, unsigned char *buf)
 
     return CRYPT_OK;
 }
+#endif // 0
 
 
 
-
+/*@
+	requires len >= 0;
+	requires \valid(((unsigned char*)buffer)+(0..len-1));
+	requires \valid(((unsigned char*)&md)+(0..19));
+	//TODO: assign md
+@*/
 int sha1(const unsigned char *buffer, size_t len,
                 unsigned char md[SHA_DIGEST_LENGTH]){
 
@@ -183,6 +199,7 @@ int sha1(const unsigned char *buffer, size_t len,
 	hs.sha1.length = 0;
 
 
+#if 0
 	//sha1_process
 	{
 		unsigned long n;
@@ -261,6 +278,8 @@ int sha1(const unsigned char *buffer, size_t len,
 		}
 
 	}
+
+#endif // 0
 
 	return rv;
 }
