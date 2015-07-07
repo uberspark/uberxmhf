@@ -52,12 +52,14 @@
 #include <xmhfcrypto.h>
 #include <sha1.h>
 
+
+
 #define F0(x,y,z)  (z ^ (x & (y ^ z)))
 #define F1(x,y,z)  (x ^ y ^ z)
 #define F2(x,y,z)  ((x & y) | (z & (x | y)))
 #define F3(x,y,z)  (x ^ y ^ z)
 
-
+#if 0
 /*@
 	requires \valid(md);
 	requires \valid(((unsigned char*)buf)+(0..63));
@@ -65,8 +67,10 @@
 	ensures \result == CRYPT_OK;
 @*/
 static int  sha1_compress(hash_state *md, unsigned char *buf);
+#endif // 0
 
-#if 0
+
+
 /*@
 	requires \valid(md);
 	requires \valid(((unsigned char*)buf)+(0..63));
@@ -173,10 +177,9 @@ static int  sha1_compress(hash_state *md, unsigned char *buf)
 
     return CRYPT_OK;
 }
-#endif // 0
 
 
-
+#if 0
 /*@
 	requires len >= 0;
 	requires \valid(((unsigned char*)buffer)+(0..len-1));
@@ -283,6 +286,63 @@ int sha1(const unsigned char *buffer, size_t len,
 
 	return rv;
 }
+
+
+#endif // 0
+
+
+
+int sha1(const uint8_t *message, uint32_t len, unsigned char md[SHA_DIGEST_LENGTH]){
+	hash_state hs;
+	unsigned char *out = md;
+	int rv=CRYPT_OK;
+	uint32_t i;
+	uint8_t block[64];
+	uint32_t rem;
+
+	//init
+	hs.sha1.state[0] = 0x67452301UL;
+	hs.sha1.state[1] = 0xefcdab89UL;
+	hs.sha1.state[2] = 0x98badcfeUL;
+	hs.sha1.state[3] = 0x10325476UL;
+	hs.sha1.state[4] = 0xc3d2e1f0UL;
+	hs.sha1.curlen = 0;
+	hs.sha1.length = 0;
+
+	for (i = 0; len - i >= 64; i += 64)
+		sha1_compress(&hs, message + i);
+
+	rem = len - i;
+	memcpy(block, message + i, rem);
+
+	block[rem] = 0x80;
+	rem++;
+	if (64 - rem >= 8)
+		memset(block + rem, 0, 56 - rem);
+	else {
+		memset(block + rem, 0, 64 - rem);
+		sha1_compress(&hs, block);
+		memset(block, 0, 56);
+	}
+
+	uint64_t longLen = ((uint64_t)len) << 3;
+	for (i = 0; i < 8; i++)
+		block[64 - 1 - i] = (uint8_t)(longLen >> (i * 8));
+	sha1_compress(&hs, block);
+
+	/* copy output */
+	for (i = 0; i < 5; i++) {
+		STORE32H(hs.sha1.state[i], out+(4*i));
+	}
+
+	return rv;
+}
+
+
+
+
+
+
 
 
 
