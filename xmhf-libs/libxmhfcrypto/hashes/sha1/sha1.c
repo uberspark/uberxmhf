@@ -164,7 +164,6 @@ static int  sha1_compress(hash_state *md, unsigned char *buf)
     return CRYPT_OK;
 }
 
-#if 0
 
 /**
    Initialize the hash state
@@ -295,7 +294,6 @@ int sha1(const unsigned char *buffer, size_t len,
   return rv;
 }
 
-#endif // 0
 
 
 
