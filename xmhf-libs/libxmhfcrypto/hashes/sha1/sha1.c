@@ -166,150 +166,6 @@ static int  sha1_compress(hash_state *md, unsigned char *buf)
 
 
 
-#if 0
-
-/**
-   Initialize the hash state
-   @param md   The hash state you wish to initialize
-   @return CRYPT_OK if successful
-*/
-static int sha1_init(hash_state * md)
-{
-   assert(md != NULL);
-   md->sha1.state[0] = 0x67452301UL;
-   md->sha1.state[1] = 0xefcdab89UL;
-   md->sha1.state[2] = 0x98badcfeUL;
-   md->sha1.state[3] = 0x10325476UL;
-   md->sha1.state[4] = 0xc3d2e1f0UL;
-   md->sha1.curlen = 0;
-   md->sha1.length = 0;
-   return CRYPT_OK;
-}
-
-#endif // 0
-
-
-#if 0
-
-/**
-   Terminate the hash to get the digest
-   @param md  The hash state
-   @param out [out] The destination of the hash (20 bytes)
-   @return CRYPT_OK if successful
-*/
-static int sha1_done(hash_state * md, unsigned char *out)
-{
-    int i;
-
-    if( md == NULL || out == NULL)
-        return CRYPT_INVALID_ARG;
-
-    if (md->sha1.curlen >= sizeof(md->sha1.buf)) {
-       return CRYPT_INVALID_ARG;
-    }
-
-    /* increase the length of the message */
-    md->sha1.length += md->sha1.curlen * 8;
-
-    /* append the '1' bit */
-    md->sha1.buf[md->sha1.curlen++] = (unsigned char)0x80;
-
-    /* if the length is currently above 56 bytes we append zeros
-     * then compress.  Then we can fall back to padding zeros and length
-     * encoding like normal.
-     */
-    if (md->sha1.curlen > 56) {
-        while (md->sha1.curlen < 64) {
-            md->sha1.buf[md->sha1.curlen++] = (unsigned char)0;
-        }
-        sha1_compress(md, md->sha1.buf);
-        md->sha1.curlen = 0;
-    }
-
-    /* pad upto 56 bytes of zeroes */
-    while (md->sha1.curlen < 56) {
-        md->sha1.buf[md->sha1.curlen++] = (unsigned char)0;
-    }
-
-    /* store length */
-    STORE64H(md->sha1.length, md->sha1.buf+56);
-    sha1_compress(md, md->sha1.buf);
-
-    /* copy output */
-    for (i = 0; i < 5; i++) {
-        STORE32H(md->sha1.state[i], out+(4*i));
-    }
-
-    return CRYPT_OK;
-}
-
-#endif // 0
-
-
-#if 0
-
-
-/**
-   Process a block of memory though the hash
-   @param md     The hash state
-   @param in     The data to hash
-   @param inlen  The length of the data (octets)
-   @return CRYPT_OK if successful
-*/
-static int sha1_process (hash_state * md, const unsigned char *in, unsigned long inlen)
-{
-    unsigned long n;
-    int           err;
-    assert(md != NULL);
-    assert(in != NULL);
-    if (md-> sha1 .curlen > sizeof(md-> sha1 .buf)) {
-       return CRYPT_INVALID_ARG;
-    }
-    while (inlen > 0) {
-        if (md-> sha1 .curlen == 0 && inlen >= 64) {
-           if ((err = sha1_compress (md, (unsigned char *)in)) != CRYPT_OK) {
-		return err;
-           }
-           md-> sha1 .length += 64 * 8;
-           in             += 64;
-           inlen          -= 64;
-        } else {
-           n = MIN(inlen, (64 - md-> sha1 .curlen));
-           memcpy(md-> sha1 .buf + md-> sha1.curlen, in, (size_t)n);
-           md-> sha1 .curlen += n;
-           in             += n;
-           inlen          -= n;
-           if (md-> sha1 .curlen == 64) {
-              if ((err = sha1_compress (md, (unsigned char *)md-> sha1 .buf)) != CRYPT_OK) {
-                 return err;
-              }
-              md-> sha1 .length += 8*64;
-              md-> sha1 .curlen = 0;
-           }
-       }
-    }
-    return CRYPT_OK;
-}
-
-
-
-int sha1(const unsigned char *buffer, size_t len,
-                unsigned char md[SHA_DIGEST_LENGTH]){
-  int rv=0;
-  hash_state hs;
-
-  rv = sha1_init( &hs);
-  rv = sha1_process( &hs, buffer, len);
-  rv = sha1_done( &hs, md);
-
-  return rv;
-}
-
-#endif
-
-
-
-
 
 int sha1(const unsigned char *buffer, size_t len,
                 unsigned char md[SHA_DIGEST_LENGTH]){
@@ -317,9 +173,7 @@ int sha1(const unsigned char *buffer, size_t len,
 	int rv=CRYPT_OK;
 	hash_state hs;
 
-	//
-	//rv = sha1_init( &hs);
-	//
+	//sha1_init
 	hs.sha1.state[0] = 0x67452301UL;
 	hs.sha1.state[1] = 0xefcdab89UL;
 	hs.sha1.state[2] = 0x98badcfeUL;
@@ -329,10 +183,7 @@ int sha1(const unsigned char *buffer, size_t len,
 	hs.sha1.length = 0;
 
 
-	//
-	//rv = sha1_process( &hs, buffer, len);
-	//
-	//md = hs, in = buffer, inlen = len
+	//sha1_process
 	{
 		unsigned long n;
 		int           err;
@@ -368,17 +219,10 @@ int sha1(const unsigned char *buffer, size_t len,
 		}
 	}
 
-	//
-	//rv = sha1_done( &hs, md);
-	//
-	//static int sha1_done(hash_state * md, unsigned char *out)
-	//md = hs, out = md
+	//sha1_done
 	{
 		int i;
 		unsigned char *out = md;
-
-		//if( md == NULL || out == NULL)
-		//return CRYPT_INVALID_ARG;
 
 		if (hs.sha1.curlen >= sizeof(hs.sha1.buf)) {
 			return CRYPT_INVALID_ARG;
