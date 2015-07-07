@@ -70,7 +70,7 @@ static int  sha1_compress(hash_state *md, unsigned char *buf);
 #endif // 0
 
 
-
+#if 0
 /*@
 	requires \valid(md);
 	requires \valid(((unsigned char*)buf)+(0..63));
@@ -177,6 +177,8 @@ static int  sha1_compress(hash_state *md, unsigned char *buf)
 
     return CRYPT_OK;
 }
+#endif // 0
+
 
 
 #if 0
@@ -291,7 +293,12 @@ int sha1(const unsigned char *buffer, size_t len,
 #endif // 0
 
 
-
+/*@
+	requires len >= 0;
+	requires \valid(((unsigned char*)message)+(0..len-1));
+	requires \valid(((unsigned char*)&md)+(0..19));
+	//TODO: assign md
+@*/
 int sha1(const uint8_t *message, uint32_t len, unsigned char md[SHA_DIGEST_LENGTH]){
 	hash_state hs;
 	unsigned char *out = md;
@@ -309,6 +316,7 @@ int sha1(const uint8_t *message, uint32_t len, unsigned char md[SHA_DIGEST_LENGT
 	hs.sha1.curlen = 0;
 	hs.sha1.length = 0;
 
+#if 0
 	for (i = 0; len - i >= 64; i += 64)
 		sha1_compress(&hs, message + i);
 
@@ -334,6 +342,7 @@ int sha1(const uint8_t *message, uint32_t len, unsigned char md[SHA_DIGEST_LENGT
 	for (i = 0; i < 5; i++) {
 		STORE32H(hs.sha1.state[i], out+(4*i));
 	}
+#endif
 
 	return rv;
 }
