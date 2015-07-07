@@ -57,15 +57,28 @@
 #define F2(x,y,z)  ((x & y) | (z & (x | y)))
 #define F3(x,y,z)  (x ^ y ^ z)
 
+/*@
+	requires \valid(md);
+	requires \valid(((unsigned char*)buf)+(0..63));
+	assigns md->sha1.state[0..4];
+	ensures \result == CRYPT_OK;
+@*/
 static int  sha1_compress(hash_state *md, unsigned char *buf)
 {
     u32 a,b,c,d,e,W[80],i;
     u32 t;
 
     /* copy the state into 512-bits into W[0..15] */
+    	/*@
+		loop invariant I2: 0 <= i <= 16;
+		loop assigns W[0..15], i;
+		loop variant 16 - i;
+	@*/
     for (i = 0; i < 16; i++) {
         LOAD32H(W[i], buf + (4*i));
     }
+
+
 
     /* copy state */
     a = md->sha1.state[0];
@@ -74,10 +87,18 @@ static int  sha1_compress(hash_state *md, unsigned char *buf)
     d = md->sha1.state[3];
     e = md->sha1.state[4];
 
+
     /* expand it */
+    	/*@
+		loop invariant I3: 16 <= i <= 80;
+		loop assigns W[16..79], i;
+		loop variant 80 - i;
+	@*/
     for (i = 16; i < 80; i++) {
         W[i] = ROL(W[i-3] ^ W[i-8] ^ W[i-14] ^ W[i-16], 1);
     }
+
+
 
     /* compress */
     /* round one */
@@ -86,17 +107,43 @@ static int  sha1_compress(hash_state *md, unsigned char *buf)
     #define FF2(a,b,c,d,e,i) e = (ROLc(a, 5) + F2(b,c,d) + e + W[i] + 0x8f1bbcdcUL); b = ROLc(b, 30);
     #define FF3(a,b,c,d,e,i) e = (ROLc(a, 5) + F3(b,c,d) + e + W[i] + 0xca62c1d6UL); b = ROLc(b, 30);
 
+    	/*@
+		loop invariant I4: 0 <= i <= 20;
+		loop assigns i,t,e,d,c,b,a;
+		loop variant 20 - i;
+	@*/
     for (i = 0; i < 20; ) {
        FF0(a,b,c,d,e,i++); t = e; e = d; d = c; c = b; b = a; a = t;
     }
+
+
+    	/*@
+		loop invariant I4: 20 <= i <= 40;
+		loop assigns i,t,e,d,c,b,a;
+		loop variant 40 - i;
+	@*/
+
 
     for (; i < 40; ) {
        FF1(a,b,c,d,e,i++); t = e; e = d; d = c; c = b; b = a; a = t;
     }
 
+    	/*@
+		loop invariant I4: 40 <= i <= 60;
+		loop assigns i,t,e,d,c,b,a;
+		loop variant 60 - i;
+	@*/
     for (; i < 60; ) {
        FF2(a,b,c,d,e,i++); t = e; e = d; d = c; c = b; b = a; a = t;
     }
+
+
+
+    	/*@
+		loop invariant I4: 60 <= i <= 80;
+		loop assigns i,t,e,d,c,b,a;
+		loop variant 80 - i;
+	@*/
 
     for (; i < 80; ) {
        FF3(a,b,c,d,e,i++); t = e; e = d; d = c; c = b; b = a; a = t;
@@ -117,6 +164,7 @@ static int  sha1_compress(hash_state *md, unsigned char *buf)
     return CRYPT_OK;
 }
 
+#if 0
 
 /**
    Initialize the hash state
@@ -246,6 +294,8 @@ int sha1(const unsigned char *buffer, size_t len,
 
   return rv;
 }
+
+#endif // 0
 
 
 
