@@ -94,15 +94,15 @@ int memcmp(const void *s1, const void *s2, size_t n);
 
 
 /*@
-    requires \separated(((char*)src)+(0..n-1), ((char*)dst)+(0..n-1));
+    requires \separated(((unsigned char*)src)+(0..n-1), ((unsigned char*)dst)+(0..n-1));
     requires n >= 0;
-    requires \valid(((char*)dst)+(0..n-1));
-    requires \valid(((char*)src)+(0..n-1));
-    assigns ((char*)dst)[0..n-1];
-    ensures \forall integer i; 0 <= i < n ==> ((char*)dst)[i] == ((char*)src)[i];
+    requires \valid(((unsigned char*)dst)+(0..n-1));
+    requires \valid(((unsigned char*)src)+(0..n-1));
+    assigns ((unsigned char*)dst)[0..n-1];
+    ensures \forall integer i; 0 <= i < n ==> ((unsigned char*)dst)[i] == ((unsigned char*)src)[i];
     ensures \result == dst;
  */
-void *memcpy(void *dst, const void *src, size_t n);
+unsigned char *memcpy(unsigned char *dst, const unsigned char *src, size_t n);
 
 
 
