@@ -194,6 +194,7 @@ int sha1(const uint8_t *message, uint32_t len, unsigned char md[SHA_DIGEST_LENGT
 	uint32_t i;
 	uint8_t block[64];
 	uint32_t rem;
+	uint64_t longLen;
 
 	//init
 	hs.sha1.state[0] = 0x67452301UL;
@@ -234,12 +235,21 @@ int sha1(const uint8_t *message, uint32_t len, unsigned char md[SHA_DIGEST_LENGT
 		memset(block, 0, 56);
 	}
 
-#if 0
 
 
-	uint64_t longLen = ((uint64_t)len) << 3;
+	longLen = ((uint64_t)len) << 3;
+
+    	/*@
+		loop invariant A: 0 <= i <= 8;
+		loop assigns i, block[56..63];
+		loop variant 8 - i;
+	@*/
 	for (i = 0; i < 8; i++)
 		block[64 - 1 - i] = (uint8_t)(longLen >> (i * 8));
+
+
+#if 0
+
 	sha1_compress(&hs, block);
 
 	/* copy output */
