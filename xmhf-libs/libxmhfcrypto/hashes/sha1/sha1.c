@@ -248,15 +248,19 @@ int sha1(const uint8_t *message, uint32_t len, unsigned char md[SHA_DIGEST_LENGT
 		block[64 - 1 - i] = (uint8_t)(longLen >> (i * 8));
 
 
-#if 0
-
 	sha1_compress(&hs, block);
 
+
 	/* copy output */
+    	/*@
+		loop invariant B: 0 <= i <= 5;
+		loop assigns i, out[0..19];
+		loop variant 5 - i;
+	@*/
 	for (i = 0; i < 5; i++) {
 		STORE32H(hs.sha1.state[i], out+(4*i));
 	}
-#endif
+
 	return rv;
 }
 
