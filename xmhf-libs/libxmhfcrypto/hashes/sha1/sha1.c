@@ -215,10 +215,10 @@ int sha1(const uint8_t *message, uint32_t len, unsigned char md[SHA_DIGEST_LENGT
 
 
 	rem = len - i;
-	//@assert 0 <= rem <= 64;
+	/*//@assert 0 <= rem <= 64;
 	//@assert \separated( ((const uint8_t *)message)+(0..rem-1), ((const uint8_t *)&block)+(0..rem-1) ) ;
 	//@assert \valid( ((const uint8_t *)message+i)+(0..rem-1) );
-	//@assert \valid( ((const uint8_t *)&block)+(0..rem-1) ) ;
+	//@assert \valid( ((const uint8_t *)&block)+(0..rem-1) ) ;*/
 	memcpy(block, message + i, rem);
 
 
