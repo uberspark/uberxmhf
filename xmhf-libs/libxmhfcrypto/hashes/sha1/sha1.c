@@ -59,7 +59,7 @@
 #define F2(x,y,z)  ((x & y) | (z & (x | y)))
 #define F3(x,y,z)  (x ^ y ^ z)
 
-#if 0
+#if 1
 /*@
 	requires \valid(md);
 	requires \valid(((unsigned char*)buf)+(0..63));
@@ -184,7 +184,7 @@ static int  sha1_compress(hash_state *md, unsigned char *buf)
 /*@
 	requires len >= 0;
 	requires \valid(((unsigned char*)message)+(0..len-1));
-	requires \valid(((unsigned char*)&md)+(0..19));
+	requires \valid(((unsigned char*)md)+(0..19));
 	//TODO: assign md
 @*/
 int sha1(const uint8_t *message, uint32_t len, unsigned char md[SHA_DIGEST_LENGTH]){
@@ -204,10 +204,16 @@ int sha1(const uint8_t *message, uint32_t len, unsigned char md[SHA_DIGEST_LENGT
 	hs.sha1.curlen = 0;
 	hs.sha1.length = 0;
 
-#if 0
+    	/*@
+		loop invariant I1: 0 <= i <= len;
+		//loop invariant I2: len - i >= 64;
+		loop assigns i, message[0..len-1], hs.sha1.state[0..4];
+	@*/
+
 	for (i = 0; len - i >= 64; i += 64)
 		sha1_compress(&hs, message + i);
 
+#if 0
 	rem = len - i;
 	memcpy(block, message + i, rem);
 
@@ -231,7 +237,6 @@ int sha1(const uint8_t *message, uint32_t len, unsigned char md[SHA_DIGEST_LENGT
 		STORE32H(hs.sha1.state[i], out+(4*i));
 	}
 #endif
-
 	return rv;
 }
 
