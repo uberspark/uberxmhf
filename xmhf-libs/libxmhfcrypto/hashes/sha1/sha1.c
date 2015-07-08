@@ -222,9 +222,10 @@ int sha1(const uint8_t *message, uint32_t len, unsigned char md[SHA_DIGEST_LENGT
 	memcpy(block, message + i, rem);
 
 
-#if 0
 	block[rem] = 0x80;
 	rem++;
+
+
 	if (64 - rem >= 8)
 		memset(block + rem, 0, 56 - rem);
 	else {
@@ -232,6 +233,9 @@ int sha1(const uint8_t *message, uint32_t len, unsigned char md[SHA_DIGEST_LENGT
 		sha1_compress(&hs, block);
 		memset(block, 0, 56);
 	}
+
+#if 0
+
 
 	uint64_t longLen = ((uint64_t)len) << 3;
 	for (i = 0; i < 8; i++)
