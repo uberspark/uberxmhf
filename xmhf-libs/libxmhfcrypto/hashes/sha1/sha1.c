@@ -59,18 +59,6 @@
 #define F2(x,y,z)  ((x & y) | (z & (x | y)))
 #define F3(x,y,z)  (x ^ y ^ z)
 
-#if 1
-/*@
-	requires \valid(md);
-	requires \valid(((unsigned char*)buf)+(0..63));
-	assigns md->sha1.state[0..4];
-	ensures \result == CRYPT_OK;
-@*/
-static int  sha1_compress(hash_state *md, unsigned char *buf);
-#endif // 0
-
-
-#if 0
 /*@
 	requires \valid(md);
 	requires \valid(((unsigned char*)buf)+(0..63));
@@ -177,7 +165,6 @@ static int  sha1_compress(hash_state *md, unsigned char *buf)
 
     return CRYPT_OK;
 }
-#endif // 0
 
 
 
