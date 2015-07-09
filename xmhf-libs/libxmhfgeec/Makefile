@@ -1,4 +1,4 @@
-srcdir := $(dir $(lastword $(MAKEFILE_LIST)))
+srcdir := $(realpath $(dir $(lastword $(MAKEFILE_LIST))))
 vpath %.c $(srcdir)
 vpath %.cS $(srcdir)
 
@@ -29,7 +29,7 @@ LIBXMHFGEEC_VERIF_DIR = _verif_libxmhfgeec
 verify:
 	mkdir -p $(LIBXMHFGEEC_VERIF_DIR)
 	$(CP) -f $(srcdir)/xmhfgeec_slabstubs_vft.cS $(LIBXMHFGEEC_VERIF_DIR)/xmhfgeec_slabstubs_vft.cS.c
-	cd $(LIBXMHFGEEC_VERIF_DIR) && frama-c -cpp-extra-args=-nostdinc $(VFLAGS) xmhfgeec_slabstubs_vft.cS.c
+	cd $(LIBXMHFGEEC_VERIF_DIR) && frama-c -cpp-extra-args=-nostdinc $(VFLAGS) $(srcdir)/verify/xmhfgeec_slabstubs_vft_driver.c xmhfgeec_slabstubs_vft.cS.c
 
 
 
