@@ -44,19 +44,20 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-// XMHF HWM platform memory access interface (sysmem)
+// XMHF HWM CPU LAPIC decls.
 // author: amit vasudevan (amitvasudevan@acm.org)
 
-#ifndef __XMHFHWM_CPU_MEM_H__
-#define __XMHFHWM_CPU_MEM_H__
+#ifndef __XMHFHWM_LAPIC_H__
+#define __XMHFHWM_LAPIC_H__
+
+#define LAPIC_ICR_LOW   (0x300)
+#define LAPIC_ICR_HIGH  (0x310)
+#define LAPIC_ID        (0x20)
+
+//LAPIC emulation defines
+#define LAPIC_OP_RSVD   (3)
+#define LAPIC_OP_READ   (2)
+#define LAPIC_OP_WRITE  (1)
 
 
-#ifndef __ASSEMBLY__
-
-
-
-
-
-#endif	//__ASSEMBLY__
-
-#endif //__XMHFHWM_CPU_MEM_H__
+#endif // __XMHFHWM_LAPIC_H__

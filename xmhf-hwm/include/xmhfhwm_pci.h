@@ -47,8 +47,8 @@
 // XMHF HWM Legacy I/O PCI decls.
 //author: amit vasudevan (amitvasudevan@acm.org)
 
-#ifndef __XMHFHWM_LEGIO_PCI_H___
-#define __XMHFHWM_LEGIO_PCI_H___
+#ifndef __XMHFHWM_PCI_H___
+#define __XMHFHWM_PCI_H___
 
 //PCI type-1 access ports
 #define PCI_CONFIG_ADDR_PORT 	(0x0cf8)
@@ -128,4 +128,4 @@
 
 
 #endif /* __ASSEMBLY__ */
-#endif /* __XMHFHWM_LEGIO_PCI_H___ */
+#endif /* __XMHFHWM_PCI_H___ */
