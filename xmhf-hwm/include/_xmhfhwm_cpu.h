@@ -153,210 +153,6 @@
 
 #ifndef __ASSEMBLY__
 
-enum fix_mtrr_t {
-    MTRR_FIX64K_00000 = 0x250,
-    MTRR_FIX16K_80000 = 0x258,
-    MTRR_FIX16K_A0000 = 0x259,
-    MTRR_FIX4K_C0000  = 0x268,
-    MTRR_FIX4K_C8000  = 0x269,
-    MTRR_FIX4K_D0000  = 0x26A,
-    MTRR_FIX4K_D8000  = 0x26B,
-    MTRR_FIX4K_E0000  = 0x26C,
-    MTRR_FIX4K_E8000  = 0x26D,
-    MTRR_FIX4K_F0000  = 0x26E,
-    MTRR_FIX4K_F8000  = 0x26F
-};
-
-typedef union {
-    uint64_t raw;
-    uint8_t  type[8];
-} __attribute__((packed)) mtrr_fix_types_t;
-
-enum var_mtrr_t {
-    MTRR_PHYS_BASE0_MSR = 0x200,
-    MTRR_PHYS_MASK0_MSR = 0x201,
-    MTRR_PHYS_BASE1_MSR = 0x202,
-    MTRR_PHYS_MASK1_MSR = 0x203,
-    MTRR_PHYS_BASE2_MSR = 0x204,
-    MTRR_PHYS_MASK2_MSR = 0x205,
-    MTRR_PHYS_BASE3_MSR = 0x206,
-    MTRR_PHYS_MASK3_MSR = 0x207,
-    MTRR_PHYS_BASE4_MSR = 0x208,
-    MTRR_PHYS_MASK4_MSR = 0x209,
-    MTRR_PHYS_BASE5_MSR = 0x20A,
-    MTRR_PHYS_MASK5_MSR = 0x20B,
-    MTRR_PHYS_BASE6_MSR = 0x20C,
-    MTRR_PHYS_MASK6_MSR = 0x20D,
-    MTRR_PHYS_BASE7_MSR = 0x20E,
-    MTRR_PHYS_MASK7_MSR = 0x20F
-};
-
-
-/*typedef union {
-    u64	raw;
-    struct {
-        u32 vcnt        : 8;    // num variable MTRR pairs
-        u32 fix         : 1;    // fixed range MTRRs are supported
-        u32 reserved1   : 1;
-        u32 wc          : 1;    // write-combining mem type supported
-        u32 reserved2   : 32;
-        u32 reserved3   : 21;
-    } __attribute__((packed)) fields;
-} __attribute__((packed)) mtrr_cap_t;
-*/
-
-typedef struct {
-    u32 vcnt        ; //: 8;    // num variable MTRR pairs
-    u32 fix         ; //: 1;    // fixed range MTRRs are supported
-    u32 reserved1   ; //: 1;
-    u32 wc          ; //: 1;    // write-combining mem type supported
-    u32 reserved2   ; //: 32;
-    u32 reserved3   ; //: 21;
-} __attribute__((packed)) mtrr_cap_t;
-
-#define pack_mtrr_cap_t(s) \
-    (u64)( \
-    (((u64)(s)->reserved3 & 0x00000000001FFFFFULL) << 43) | \
-    (((u64)(s)->reserved2 & 0x00000000FFFFFFFFULL) << 11) | \
-    (((u64)(s)->wc & 0x0000000000000001ULL) << 10) | \
-    (((u64)(s)->reserved1 & 0x0000000000000001ULL) << 9) | \
-    (((u64)(s)->fix & 0x0000000000000001ULL) << 8) | \
-    (((u64)(s)->vcnt & 0x00000000000000FFULL) << 0) \
-    )
-
-#define unpack_mtrr_cap_t(s, value) \
-    (s)->reserved3 = (u32)(((u64)value >> 43) & 0x00000000001FFFFFULL); \
-    (s)->reserved2 = (u32)(((u64)value >> 11) & 0x00000000FFFFFFFFULL); \
-    (s)->wc = (u32)(((u64)value >> 10) & 0x0000000000000001ULL); \
-    (s)->reserved1 = (u32)(((u64)value >> 9) & 0x0000000000000001ULL); \
-    (s)->fix = (u32)(((u64)value >> 8) & 0x0000000000000001ULL); \
-    (s)->vcnt = (u32)(((u64)value >> 0) & 0x00000000000000FFULL);
-
-
-/*typedef union {
-    u64	raw;
-    struct {
-        u32 type        : 8;
-        u32 reserved1   : 2;
-        u32 fe          : 1;    // fixed MTRR enable
-        u32 e           : 1;    // (all) MTRR enable
-        u32 reserved2   : 32;
-        u32 reserved3   : 20;
-    } __attribute__((packed)) fields;
-} __attribute__((packed)) mtrr_def_type_t;
-*/
-
-typedef struct {
-    u32 type        ; //: 8;
-    u32 reserved1   ; //: 2;
-    u32 fe          ; //: 1;    // fixed MTRR enable
-    u32 e           ; //: 1;    // (all) MTRR enable
-    u32 reserved2   ; //: 32;
-    u32 reserved3   ; //: 20;
-} __attribute__((packed)) mtrr_def_type_t;
-
-#define pack_mtrr_def_type_t(s) \
-    (u64)( \
-    (((u64)(s)->reserved3 & 0x00000000000FFFFFULL) << 44) | \
-    (((u64)(s)->reserved2 & 0x00000000FFFFFFFFULL) << 12) | \
-    (((u64)(s)->e & 0x0000000000000001ULL) << 11) | \
-    (((u64)(s)->fe & 0x0000000000000001ULL) << 10) | \
-    (((u64)(s)->reserved1 & 0x0000000000000003ULL) << 8) | \
-    (((u64)(s)->type & 0x00000000000000FFULL) << 0) \
-    )
-
-#define unpack_mtrr_def_type_t(s, value) \
-    (s)->reserved3 = (u32)(((u64)value >> 44) & 0x00000000000FFFFFULL); \
-    (s)->reserved2 = (u32)(((u64)value >> 12) & 0x00000000FFFFFFFFULL); \
-    (s)->e = (u32)(((u64)value >> 11) & 0x0000000000000001ULL); \
-    (s)->fe = (u32)(((u64)value >> 10) & 0x0000000000000001ULL); \
-    (s)->reserved1 = (u32)(((u64)value >> 8) & 0x0000000000000003ULL); \
-    (s)->type = (u32)(((u64)value >> 0) & 0x00000000000000FFULL);
-
-
-
-/*typedef union {
-    u64	raw;
-    struct {
-        u32 type      : 8;
-        u32 reserved1 : 4;
-        // TBD: the end of base really depends on MAXPHYADDR, but since
-        // the MTRRs are set for SINIT and it must be <4GB, can use 24b
-        u32 base      : 24;
-        u32 reserved2 : 28;
-    } __attribute__((packed)) fields;
-} __attribute__((packed)) mtrr_physbase_t;
-*/
-
-typedef struct {
-    u32 type      ; //: 8;
-    u32 reserved1 ; //: 4;
-    // TBD: the end of base really depends on MAXPHYADDR, but since
-    // the MTRRs are set for SINIT and it must be <4GB, can use 24b
-    u32 base      ; //: 24;
-    u32 reserved2 ; //: 28;
-} __attribute__((packed)) mtrr_physbase_t;
-
-#define pack_mtrr_physbase_t(s) \
-    (u64)( \
-    (((u64)(s)->reserved2 & 0x000000000FFFFFFFULL) << 36) | \
-    (((u64)(s)->base & 0x0000000000FFFFFFULL) << 12) | \
-    (((u64)(s)->reserved1 & 0x000000000000000FULL) << 8) | \
-    (((u64)(s)->type & 0x00000000000000FFULL) << 0) \
-    )
-
-#define unpack_mtrr_physbase_t(s, value) \
-    (s)->reserved2 = (u32)(((u64)value >> 36) & 0x000000000FFFFFFFULL); \
-    (s)->base = (u32)(((u64)value >> 12) & 0x0000000000FFFFFFULL); \
-    (s)->reserved1 = (u32)(((u64)value >> 8) & 0x000000000000000FULL); \
-    (s)->type = (u32)(((u64)value >> 0) & 0x00000000000000FFULL);
-
-
-
-
-/*typedef union {
-    u64	raw;
-    struct {
-        u32 reserved1 : 11;
-        u32 v         : 1;      // valid
-        // TBD: the end of mask really depends on MAXPHYADDR, but since
-        // the MTRRs are set for SINIT and it must be <4GB, can use 24b
-        u32 mask      : 24;
-        u32 reserved2 : 28;
-    } __attribute__((packed)) fields;
-} __attribute__((packed)) mtrr_physmask_t;
-*/
-
-typedef struct {
-    u32 reserved1 ; //: 11;
-    u32 v         ; //: 1;      // valid
-    // TBD: the end of mask really depends on MAXPHYADDR, but since
-    // the MTRRs are set for SINIT and it must be <4GB, can use 24b
-    u32 mask      ; //: 24;
-    u32 reserved2 ; //: 28;
-} __attribute__((packed)) mtrr_physmask_t;
-
-#define pack_mtrr_physmask_t(s) \
-    (u64)( \
-    (((u64)(s)->reserved2 & 0x000000000FFFFFFFULL) << 36) | \
-    (((u64)(s)->mask & 0x0000000000FFFFFFULL) << 12) | \
-    (((u64)(s)->v & 0x0000000000000001ULL) << 11) | \
-    (((u64)(s)->reserved1 & 0x00000000000007FFULL) << 0) \
-    )
-
-#define unpack_mtrr_physmask_t(s, value) \
-    (s)->reserved2 = (u32)(((u64)value >> 36) & 0x000000000FFFFFFFULL); \
-    (s)->mask = (u32)(((u64)value >> 12) & 0x0000000000FFFFFFULL); \
-    (s)->v = (u32)(((u64)value >> 11) & 0x0000000000000001ULL); \
-    (s)->reserved1 = (u32)(((u64)value >> 0) & 0x00000000000007FFULL);
-
-
-
-/* current procs only have 8, so this should hold us for a while */
-#define MAX_VARIABLE_MTRRS      16
-
-
-
 //x86 GPR set definition (follows the order enforced by PUSHAD/POPAD
 //SDM Vol 2B. 4-427)
 
@@ -412,19 +208,6 @@ typedef struct {
     u64 ss;
 }__attribute__ ((packed)) x86idt64_stackframe_t;
 
-//*
-/*
-x86_64
-typedef struct {
-  u16 isrLow;
-  u16 isrSelector;
-  u8  count;
-  u8  type;
-  u16 isrHigh;
-  u32 offset3263;
-  u32 reserved;
-} __attribute__ ((packed)) idtentry_t;
-*/
 
 typedef struct {
   u16 isrLow;
@@ -453,33 +236,18 @@ typedef struct {
 } x86desc_t;
 
 
-//arch. specific
-//---platform
-#define MAX_MEMORYTYPE_ENTRIES    98    //8*11 fixed MTRRs and 10 variable MTRRs
-#define MAX_FIXED_MEMORYTYPE_ENTRIES  88
-#define MAX_VARIABLE_MEMORYTYPE_ENTRIES 10
-
-
-//---platform
-//total number of FIXED and VARIABLE MTRRs on current x86 platforms
-#define NUM_MTRR_MSRS		31
-
-//#ifndef __ASSEMBLY__
-
 typedef struct {
   u32 eip;
   u32 cs;
   u32 eflags;
 } __attribute__((packed)) INTR_SAMEPRIVILEGE_STACKFRAME_NOERRORCODE;
 
-//---platform
 typedef struct {
   u32 errorcode;
   u32 eip;
   u32 cs;
   u32 eflags;
 } __attribute__((packed)) INTR_SAMEPRIVILEGE_STACKFRAME_ERRORCODE;
-
 
 
 typedef struct {
@@ -500,33 +268,6 @@ typedef struct {
     u32 orig_ss;
 } __attribute__((packed)) x86vmx_exception_frame_t;
 
-/* x86_64
-typedef struct {
-    u64 r8;
-    u64 r9;
-    u64 r10;
-    u64 r11;
-    u64 r12;
-    u64 r13;
-    u64 r14;
-    u64 r15;
-    u64 rax;
-    u64 rbx;
-    u64 rcx;
-    u64 rdx;
-    u64 rsi;
-    u64 rdi;
-    u64 rbp;
-    u64 rsp;
-    u64 vector;
-    u64 errorcode;
-    u64 orig_rip;
-    u64 orig_cs;
-    u64 orig_rflags;
-    u64 orig_rsp;
-    u64 orig_ss;
-} __attribute__((packed)) x86vmx_exception_frame_errcode_t;
-*/
 
 typedef struct {
     u64 r8;
@@ -553,32 +294,6 @@ typedef struct {
     u64 orig_rsp;
     u64 orig_ss;
 } __attribute__((packed)) x86vmx_exception_frame_errcode_t;
-
-
-
-
-/* x86_64
-//*
-//x86 GDT descriptor type
-typedef struct {
-		u16 size;
-		u64 base;
-} __attribute__((packed)) arch_x86_gdtdesc_t;
-
-//*
-//x86 IDT descriptor type
-typedef struct {
-		u16 size;
-		u64 base;
-} __attribute__((packed)) arch_x86_idtdesc_t;
-
-//*
-//TSS descriptor (partial)
-typedef struct __tss {
-	u32 reserved;
-	u64 rsp0;
-} __attribute__((packed)) tss_t;
-*/
 
 
 //x86 GDT descriptor type
@@ -603,27 +318,26 @@ typedef struct __tss {
 	u32 esp2;
 	u32 ss2;
 	u32 cr3;
-    u32 eip;
-    u32 eflags;
-    u32 eax;
-    u32 ecx;
-    u32 edx;
-    u32 ebx;
-    u32 esp;
-    u32 ebp;
-    u32 esi;
-    u32 edi;
-    u32 es;
-    u32 cs;
-    u32 ss;
-    u32 ds;
-    u32 fs;
-    u32 gs;
-    u32 ldt_sel;
-    u16 t_bit;
-    u16 iotbl_addr;
+	u32 eip;
+	u32 eflags;
+	u32 eax;
+	u32 ecx;
+	u32 edx;
+	u32 ebx;
+	u32 esp;
+	u32 ebp;
+	u32 esi;
+	u32 edi;
+	u32 es;
+	u32 cs;
+	u32 ss;
+	u32 ds;
+	u32 fs;
+	u32 gs;
+	u32 ldt_sel;
+	u16 t_bit;
+	u16 iotbl_addr;
 } __attribute__((packed)) tss_t;
-
 
 
 #endif //__ASSEMBLY__
@@ -744,6 +458,166 @@ typedef struct __tss {
 #define MTRR_TYPE_WB   0x6
 #define MTRR_TYPE_RESV  0x7
 
+
+/* current procs only have 8, so this should hold us for a while */
+#define MAX_VARIABLE_MTRRS      16
+
+#define MAX_MEMORYTYPE_ENTRIES    98    //8*11 fixed MTRRs and 10 variable MTRRs
+#define MAX_FIXED_MEMORYTYPE_ENTRIES  88
+#define MAX_VARIABLE_MEMORYTYPE_ENTRIES 10
+
+//total number of FIXED and VARIABLE MTRRs on current x86 platforms
+#define NUM_MTRR_MSRS		31
+
+
+#ifndef __ASSEMBLY__
+
+enum fix_mtrr_t {
+    MTRR_FIX64K_00000 = 0x250,
+    MTRR_FIX16K_80000 = 0x258,
+    MTRR_FIX16K_A0000 = 0x259,
+    MTRR_FIX4K_C0000  = 0x268,
+    MTRR_FIX4K_C8000  = 0x269,
+    MTRR_FIX4K_D0000  = 0x26A,
+    MTRR_FIX4K_D8000  = 0x26B,
+    MTRR_FIX4K_E0000  = 0x26C,
+    MTRR_FIX4K_E8000  = 0x26D,
+    MTRR_FIX4K_F0000  = 0x26E,
+    MTRR_FIX4K_F8000  = 0x26F
+};
+
+typedef union {
+    uint64_t raw;
+    uint8_t  type[8];
+} __attribute__((packed)) mtrr_fix_types_t;
+
+enum var_mtrr_t {
+    MTRR_PHYS_BASE0_MSR = 0x200,
+    MTRR_PHYS_MASK0_MSR = 0x201,
+    MTRR_PHYS_BASE1_MSR = 0x202,
+    MTRR_PHYS_MASK1_MSR = 0x203,
+    MTRR_PHYS_BASE2_MSR = 0x204,
+    MTRR_PHYS_MASK2_MSR = 0x205,
+    MTRR_PHYS_BASE3_MSR = 0x206,
+    MTRR_PHYS_MASK3_MSR = 0x207,
+    MTRR_PHYS_BASE4_MSR = 0x208,
+    MTRR_PHYS_MASK4_MSR = 0x209,
+    MTRR_PHYS_BASE5_MSR = 0x20A,
+    MTRR_PHYS_MASK5_MSR = 0x20B,
+    MTRR_PHYS_BASE6_MSR = 0x20C,
+    MTRR_PHYS_MASK6_MSR = 0x20D,
+    MTRR_PHYS_BASE7_MSR = 0x20E,
+    MTRR_PHYS_MASK7_MSR = 0x20F
+};
+
+
+typedef struct {
+    u32 vcnt        ; //: 8;    // num variable MTRR pairs
+    u32 fix         ; //: 1;    // fixed range MTRRs are supported
+    u32 reserved1   ; //: 1;
+    u32 wc          ; //: 1;    // write-combining mem type supported
+    u32 reserved2   ; //: 32;
+    u32 reserved3   ; //: 21;
+} __attribute__((packed)) mtrr_cap_t;
+
+#define pack_mtrr_cap_t(s) \
+    (u64)( \
+    (((u64)(s)->reserved3 & 0x00000000001FFFFFULL) << 43) | \
+    (((u64)(s)->reserved2 & 0x00000000FFFFFFFFULL) << 11) | \
+    (((u64)(s)->wc & 0x0000000000000001ULL) << 10) | \
+    (((u64)(s)->reserved1 & 0x0000000000000001ULL) << 9) | \
+    (((u64)(s)->fix & 0x0000000000000001ULL) << 8) | \
+    (((u64)(s)->vcnt & 0x00000000000000FFULL) << 0) \
+    )
+
+#define unpack_mtrr_cap_t(s, value) \
+    (s)->reserved3 = (u32)(((u64)value >> 43) & 0x00000000001FFFFFULL); \
+    (s)->reserved2 = (u32)(((u64)value >> 11) & 0x00000000FFFFFFFFULL); \
+    (s)->wc = (u32)(((u64)value >> 10) & 0x0000000000000001ULL); \
+    (s)->reserved1 = (u32)(((u64)value >> 9) & 0x0000000000000001ULL); \
+    (s)->fix = (u32)(((u64)value >> 8) & 0x0000000000000001ULL); \
+    (s)->vcnt = (u32)(((u64)value >> 0) & 0x00000000000000FFULL);
+
+
+typedef struct {
+    u32 type        ; //: 8;
+    u32 reserved1   ; //: 2;
+    u32 fe          ; //: 1;    // fixed MTRR enable
+    u32 e           ; //: 1;    // (all) MTRR enable
+    u32 reserved2   ; //: 32;
+    u32 reserved3   ; //: 20;
+} __attribute__((packed)) mtrr_def_type_t;
+
+#define pack_mtrr_def_type_t(s) \
+    (u64)( \
+    (((u64)(s)->reserved3 & 0x00000000000FFFFFULL) << 44) | \
+    (((u64)(s)->reserved2 & 0x00000000FFFFFFFFULL) << 12) | \
+    (((u64)(s)->e & 0x0000000000000001ULL) << 11) | \
+    (((u64)(s)->fe & 0x0000000000000001ULL) << 10) | \
+    (((u64)(s)->reserved1 & 0x0000000000000003ULL) << 8) | \
+    (((u64)(s)->type & 0x00000000000000FFULL) << 0) \
+    )
+
+#define unpack_mtrr_def_type_t(s, value) \
+    (s)->reserved3 = (u32)(((u64)value >> 44) & 0x00000000000FFFFFULL); \
+    (s)->reserved2 = (u32)(((u64)value >> 12) & 0x00000000FFFFFFFFULL); \
+    (s)->e = (u32)(((u64)value >> 11) & 0x0000000000000001ULL); \
+    (s)->fe = (u32)(((u64)value >> 10) & 0x0000000000000001ULL); \
+    (s)->reserved1 = (u32)(((u64)value >> 8) & 0x0000000000000003ULL); \
+    (s)->type = (u32)(((u64)value >> 0) & 0x00000000000000FFULL);
+
+
+typedef struct {
+    u32 type      ; //: 8;
+    u32 reserved1 ; //: 4;
+    // TBD: the end of base really depends on MAXPHYADDR, but since
+    // the MTRRs are set for SINIT and it must be <4GB, can use 24b
+    u32 base      ; //: 24;
+    u32 reserved2 ; //: 28;
+} __attribute__((packed)) mtrr_physbase_t;
+
+#define pack_mtrr_physbase_t(s) \
+    (u64)( \
+    (((u64)(s)->reserved2 & 0x000000000FFFFFFFULL) << 36) | \
+    (((u64)(s)->base & 0x0000000000FFFFFFULL) << 12) | \
+    (((u64)(s)->reserved1 & 0x000000000000000FULL) << 8) | \
+    (((u64)(s)->type & 0x00000000000000FFULL) << 0) \
+    )
+
+#define unpack_mtrr_physbase_t(s, value) \
+    (s)->reserved2 = (u32)(((u64)value >> 36) & 0x000000000FFFFFFFULL); \
+    (s)->base = (u32)(((u64)value >> 12) & 0x0000000000FFFFFFULL); \
+    (s)->reserved1 = (u32)(((u64)value >> 8) & 0x000000000000000FULL); \
+    (s)->type = (u32)(((u64)value >> 0) & 0x00000000000000FFULL);
+
+
+typedef struct {
+    u32 reserved1 ; //: 11;
+    u32 v         ; //: 1;      // valid
+    // TBD: the end of mask really depends on MAXPHYADDR, but since
+    // the MTRRs are set for SINIT and it must be <4GB, can use 24b
+    u32 mask      ; //: 24;
+    u32 reserved2 ; //: 28;
+} __attribute__((packed)) mtrr_physmask_t;
+
+#define pack_mtrr_physmask_t(s) \
+    (u64)( \
+    (((u64)(s)->reserved2 & 0x000000000FFFFFFFULL) << 36) | \
+    (((u64)(s)->mask & 0x0000000000FFFFFFULL) << 12) | \
+    (((u64)(s)->v & 0x0000000000000001ULL) << 11) | \
+    (((u64)(s)->reserved1 & 0x00000000000007FFULL) << 0) \
+    )
+
+#define unpack_mtrr_physmask_t(s, value) \
+    (s)->reserved2 = (u32)(((u64)value >> 36) & 0x000000000FFFFFFFULL); \
+    (s)->mask = (u32)(((u64)value >> 12) & 0x0000000000FFFFFFULL); \
+    (s)->v = (u32)(((u64)value >> 11) & 0x0000000000000001ULL); \
+    (s)->reserved1 = (u32)(((u64)value >> 0) & 0x00000000000007FFULL);
+
+
+#endif //__ASSEMBLY__
+
+
 /*
  * from: @(#)specialreg.h     7.1 (Berkeley) 5/9/91
  * $FreeBSD: src/sys/i386/include/specialreg.h,v 1.53.2.1.2.2 2009/11/06 17:09:04 attilio Exp $
@@ -788,6 +662,8 @@ typedef struct __tss {
 #define MTRR_TYPE_UNCACHABLE     0
 #define MTRR_TYPE_WRTHROUGH      4
 #define MTRR_TYPE_WRBACK         6
+
+
 
 
 
@@ -1071,14 +947,16 @@ typedef u32 *npt_t;
 #endif // __ASSEMBLY__
 
 
+
+
+
+
 //////
 // TXT (trusted execution technology)
 //////
 
 
 #ifndef __ASSEMBLY__
-
-//#include "_txt_config_regs.h"
 
 /*
  * TXT configuration registers (offsets from TXT_{PUB, PRIV}_CONFIG_REGS_BASE)
@@ -1117,20 +995,6 @@ typedef u32 *npt_t;
 #define TXTCR_CMD_SECRETS           0x08e0
 #define TXTCR_CMD_NO_SECRETS        0x08e8
 #define TXTCR_E2STS                 0x08f0
-
-
-//////
-//////
-//////
-// **NOTE**: Any bitfield union here that is solely used by
-// xmhf-bootloader is not converted into a simple struct with
-// pack/unpack since the bootloader is built using clang which
-// can handle the unions
-//////
-//////
-/////
-
-
 
 
 /*
@@ -1184,16 +1048,6 @@ typedef struct {
 /*
  * format of E2STS register
  */
-/*typedef union {
-    u64 _raw;
-    struct {
-        u32   slp_entry_error_sts  : 1;
-        u32   secrets_sts          : 1;
-        u32   block_mem_sts        : 1;
-        u32   reset_sts            : 1;
-    } __attribute__((packed));
-} txt_e2sts_t;
-*/
 
 typedef struct {
         u32   slp_entry_error_sts  ;//: 1;
@@ -1304,22 +1158,6 @@ typedef struct {
 
 
 /*
- * format of DPR register
- */
-/*typedef union {
-    u64 _raw;
-    struct {
-        u32  lock           : 1;
-        u32  reserved1      : 3;
-        u32  size           : 8;
-        u32  reserved2      : 8;
-        u32  top            : 12;
-        u32  reserved3      : 32;
-    } __attribute__((packed));
-} txt_dpr_t;
-*/
-
-/*
  * RLP JOIN structure for GETSEC[WAKEUP] and MLE_JOIN register
  */
 typedef struct {
@@ -1345,22 +1183,9 @@ typedef struct {
 
 
 
-/***********************************************************
- These next two taken from tboot-20101005/tboot/include/txt/
- **********************************************************/
-
 /*
- * for SW errors (ERRORCODE.external = 1)
+ * format of TXT ERRORCODE SW register
  */
-/*typedef union {
-    uint32_t _raw;
-    struct {
-        uint32_t  err1    : 15;     // specific to src
-        uint32_t  src     : 1;      // 0=ACM, 1=other
-        uint32_t  err2    : 14;     // specific to src
-    } __attribute__((packed));
-} txt_errorcode_sw_t;
-*/
 
 typedef struct {
         uint32_t  err1    ;//: 15;     //pecific to src
@@ -1386,19 +1211,6 @@ typedef struct {
 /*
  * ACM errors (txt_errorcode_sw_t.src=0), format of err field
  */
-/*typedef union {
-    uint32_t _raw;
-    struct {
-        uint32_t acm_type  : 4;  // 0000=BIOS ACM, 0001=SINIT,
-                                 // 0010-1111=reserved
-        uint32_t progress  : 6;
-        uint32_t error     : 4;
-        uint32_t reserved  : 1;
-        uint32_t src       : 1;  // above value
-        uint32_t error2    : 14; // sub-error
-    } __attribute__((packed));
-} acmod_error_t;
-*/
 
 typedef struct {
         uint32_t acm_type  ;//: 4;  // 0000=BIOS ACM, 0001=SINIT,
@@ -1430,29 +1242,9 @@ typedef struct {
 
 
 
-
-
-
-
-
-
-
-
-//#include "_txt_mle.h"
 /*
  * SINIT/MLE capabilities
  */
-/*typedef union {
-    uint32_t  _raw;
-    struct {
-        uint32_t  rlp_wake_getsec     : 1;
-        uint32_t  rlp_wake_monitor    : 1;
-        uint32_t  ecx_pgtbl           : 1;
-        uint32_t  reserved            : 29;
-    } __attribute__((packed));
-} txt_caps_t;
-*/
-
 typedef uint32_t txt_caps_t;
 
 #define TXT_CAPS_T_RLP_WAKE_GETSEC      (1UL << 0)
@@ -1468,11 +1260,6 @@ typedef struct __packed {
   uint16_t    data4;
   uint8_t     data5[6];
 } uuid_t;
-
-/* static inline bool are_uuids_equal(const uuid_t *uuid1, const uuid_t *uuid2) */
-/* { */
-/*     return (memcmp(uuid1, uuid2, sizeof(*uuid1)) == 0); */
-/* } */
 
 /*
  * MLE header structure
@@ -1535,16 +1322,6 @@ typedef enum {
 
 
 
-
-
-
-
-
-
-
-
-
-//#include "_txt_smx.h"
 /*
  * GETSEC[] instructions
  */
@@ -1563,24 +1340,6 @@ typedef enum {
 /*
  * GETSEC[] leaf functions
  */
-
-/*typedef union {
-    uint32_t _raw;
-    struct {
-        uint32_t chipset_present  : 1;
-        uint32_t undefined1	  : 1;
-        uint32_t enteraccs	  : 1;
-        uint32_t exitac	          : 1;
-        uint32_t senter	          : 1;
-        uint32_t sexit	          : 1;
-        uint32_t parameters	  : 1;
-        uint32_t smctrl	          : 1;
-        uint32_t wakeup	          : 1;
-        uint32_t undefined9	  : 22;
-        uint32_t extended_leafs   : 1;
-    } __attribute__((packed));
-} capabilities_t;
-*/
 
 typedef struct {
         uint32_t chipset_present    ;//: 1;
@@ -1641,20 +1400,6 @@ typedef struct {
     bool proc_based_scrtm;
     bool preserve_mce;
 } getsec_parameters_t;
-
-
-
-
-bool txt_prepare_cpu(void);
-tb_error_t txt_launch_environment(void *sinit_ptr, size_t sinit_size,
-                                  void *phys_mle_start, size_t mle_size);
-
-
-
-
-
-
-
 
 
 
