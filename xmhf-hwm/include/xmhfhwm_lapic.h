@@ -44,11 +44,20 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-// XMHF HWM Legacy I/O programmable interval timer (for micro second delay) decls.
-//author: amit vasudevan (amitvasudevan@acm.org)
+// XMHF HWM CPU LAPIC decls.
+// author: amit vasudevan (amitvasudevan@acm.org)
 
-#ifndef __XMHFHWM_LEGIO_PIT_H___
-#define __XMHFHWM_LEGIO_PIT_H___
+#ifndef __XMHFHWM_LAPIC_H__
+#define __XMHFHWM_LAPIC_H__
+
+#define LAPIC_ICR_LOW   (0x300)
+#define LAPIC_ICR_HIGH  (0x310)
+#define LAPIC_ID        (0x20)
+
+//LAPIC emulation defines
+#define LAPIC_OP_RSVD   (3)
+#define LAPIC_OP_READ   (2)
+#define LAPIC_OP_WRITE  (1)
 
 
-#endif /* __XMHFHWM_LEGIO_PIT_H___ */
+#endif // __XMHFHWM_LAPIC_H__
