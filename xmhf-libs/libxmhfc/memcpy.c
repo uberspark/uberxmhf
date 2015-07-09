@@ -59,27 +59,27 @@
 
 
 /*@
-    requires \separated(((char*)src)+(0..n-1), ((char*)dst)+(0..n-1));
+    requires \separated(((unsigned char*)src)+(0..n-1), ((unsigned char*)dst)+(0..n-1));
     requires n >= 0;
-    requires \valid(((char*)dst)+(0..n-1));
-    requires \valid(((char*)src)+(0..n-1));
-    assigns ((char*)dst)[0..n-1];
-    ensures \forall integer i; 0 <= i < n ==> ((char*)dst)[i] == ((char*)src)[i];
+    requires \valid(((unsigned char*)dst)+(0..n-1));
+    requires \valid(((unsigned char*)src)+(0..n-1));
+    assigns ((unsigned char*)dst)[0..n-1];
+    ensures \forall integer i; 0 <= i < n ==> ((unsigned char*)dst)[i] == ((unsigned char*)src)[i];
     ensures \result == dst;
  */
-void *memcpy(void *dst, const void *src, size_t n)
+unsigned char *memcpy(unsigned char *dst, const unsigned char *src, size_t n)
 {
-	const char *p = src;
-	char *q = dst;
+	const unsigned char *p = src;
+	unsigned char *q = dst;
 
 	/*@
 		loop invariant 0 <= n <= \at(n,Pre);
-		loop invariant p == ((char*)src)+(\at(n, Pre) - n);
-		loop invariant q == ((char*)dst)+(\at(n, Pre) - n);
-		loop invariant (char*)dst <= q <= (char*)dst+\at(n,Pre);
-		loop invariant (char*)src <= p <= (char*)src+\at(n,Pre);
-		loop invariant \forall integer i; 0 <= i < (\at(n, Pre) - n) ==> ((char*)dst)[i] == ((char*)src)[i];
-		loop assigns n, q, p, ((char*)dst)[0..(\at(n,Pre)- n - 1)];
+		loop invariant p == ((unsigned char*)src)+(\at(n, Pre) - n);
+		loop invariant q == ((unsigned char*)dst)+(\at(n, Pre) - n);
+		loop invariant (unsigned char*)dst <= q <= (unsigned char*)dst+\at(n,Pre);
+		loop invariant (unsigned char*)src <= p <= (unsigned char*)src+\at(n,Pre);
+		loop invariant \forall integer i; 0 <= i < (\at(n, Pre) - n) ==> ((unsigned char*)dst)[i] == ((unsigned char*)src)[i];
+		loop assigns n, q, p, ((unsigned char*)dst)[0..(\at(n,Pre)- n - 1)];
 		loop variant n;
 	*/
 	while (n) {
