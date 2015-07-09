@@ -52,20 +52,35 @@
 #include <xmhfcrypto.h>
 #include <sha1.h>
 
+
+
 #define F0(x,y,z)  (z ^ (x & (y ^ z)))
 #define F1(x,y,z)  (x ^ y ^ z)
 #define F2(x,y,z)  ((x & y) | (z & (x | y)))
 #define F3(x,y,z)  (x ^ y ^ z)
 
+/*@
+	requires \valid(md);
+	requires \valid(((unsigned char*)buf)+(0..63));
+	assigns md->sha1.state[0..4];
+	ensures \result == CRYPT_OK;
+@*/
 static int  sha1_compress(hash_state *md, unsigned char *buf)
 {
     u32 a,b,c,d,e,W[80],i;
     u32 t;
 
     /* copy the state into 512-bits into W[0..15] */
+    	/*@
+		loop invariant I2: 0 <= i <= 16;
+		loop assigns W[0..15], i;
+		loop variant 16 - i;
+	@*/
     for (i = 0; i < 16; i++) {
         LOAD32H(W[i], buf + (4*i));
     }
+
+
 
     /* copy state */
     a = md->sha1.state[0];
@@ -74,10 +89,18 @@ static int  sha1_compress(hash_state *md, unsigned char *buf)
     d = md->sha1.state[3];
     e = md->sha1.state[4];
 
+
     /* expand it */
+    	/*@
+		loop invariant I3: 16 <= i <= 80;
+		loop assigns W[16..79], i;
+		loop variant 80 - i;
+	@*/
     for (i = 16; i < 80; i++) {
         W[i] = ROL(W[i-3] ^ W[i-8] ^ W[i-14] ^ W[i-16], 1);
     }
+
+
 
     /* compress */
     /* round one */
@@ -86,17 +109,43 @@ static int  sha1_compress(hash_state *md, unsigned char *buf)
     #define FF2(a,b,c,d,e,i) e = (ROLc(a, 5) + F2(b,c,d) + e + W[i] + 0x8f1bbcdcUL); b = ROLc(b, 30);
     #define FF3(a,b,c,d,e,i) e = (ROLc(a, 5) + F3(b,c,d) + e + W[i] + 0xca62c1d6UL); b = ROLc(b, 30);
 
+    	/*@
+		loop invariant I4: 0 <= i <= 20;
+		loop assigns i,t,e,d,c,b,a;
+		loop variant 20 - i;
+	@*/
     for (i = 0; i < 20; ) {
        FF0(a,b,c,d,e,i++); t = e; e = d; d = c; c = b; b = a; a = t;
     }
+
+
+    	/*@
+		loop invariant I4: 20 <= i <= 40;
+		loop assigns i,t,e,d,c,b,a;
+		loop variant 40 - i;
+	@*/
+
 
     for (; i < 40; ) {
        FF1(a,b,c,d,e,i++); t = e; e = d; d = c; c = b; b = a; a = t;
     }
 
+    	/*@
+		loop invariant I4: 40 <= i <= 60;
+		loop assigns i,t,e,d,c,b,a;
+		loop variant 60 - i;
+	@*/
     for (; i < 60; ) {
        FF2(a,b,c,d,e,i++); t = e; e = d; d = c; c = b; b = a; a = t;
     }
+
+
+
+    	/*@
+		loop invariant I4: 60 <= i <= 80;
+		loop assigns i,t,e,d,c,b,a;
+		loop variant 80 - i;
+	@*/
 
     for (; i < 80; ) {
        FF3(a,b,c,d,e,i++); t = e; e = d; d = c; c = b; b = a; a = t;
@@ -118,97 +167,106 @@ static int  sha1_compress(hash_state *md, unsigned char *buf)
 }
 
 
-int sha1_buffer(const unsigned char *buffer, size_t len,
-                unsigned char md[SHA_DIGEST_LENGTH]){
-  int rv=0;
-  hash_state hs;
 
-  rv = sha1_init( &hs);
-  rv = sha1_process( &hs, buffer, len);
-  rv = sha1_done( &hs, md);
+/*@
+	requires len >= 0;
+	requires \valid(((unsigned char*)message)+(0..len-1));
+	requires \valid(((unsigned char*)md)+(0..19));
+	//TODO: assign md
+@*/
+int sha1(const uint8_t *message, uint32_t len, unsigned char md[SHA_DIGEST_LENGTH]){
+	hash_state hs;
+	unsigned char *out = md;
+	int rv=CRYPT_OK;
+	uint32_t i;
+	uint8_t block[64];
+	uint32_t rem;
+	uint64_t longLen;
 
-  return rv;
+	//init
+	hs.sha1.state[0] = 0x67452301UL;
+	hs.sha1.state[1] = 0xefcdab89UL;
+	hs.sha1.state[2] = 0x98badcfeUL;
+	hs.sha1.state[3] = 0x10325476UL;
+	hs.sha1.state[4] = 0xc3d2e1f0UL;
+	hs.sha1.curlen = 0;
+	hs.sha1.length = 0;
+
+    	/*@
+		loop invariant I1: 0 <= i <= len;
+		//loop invariant I2: len - i >= 64;
+		loop assigns i, message[0..len-1], hs.sha1.state[0..4];
+	@*/
+
+	for (i = 0; len - i >= 64; i += 64)
+		sha1_compress(&hs, message + i);
+
+
+	rem = len - i;
+	/*//@assert 0 <= rem <= 64;
+	//@assert \separated( ((const uint8_t *)message)+(0..rem-1), ((const uint8_t *)&block)+(0..rem-1) ) ;
+	//@assert \valid( ((const uint8_t *)message+i)+(0..rem-1) );
+	//@assert \valid( ((const uint8_t *)&block)+(0..rem-1) ) ;*/
+	memcpy(block, message + i, rem);
+
+
+	block[rem] = 0x80;
+	rem++;
+
+
+	if (64 - rem >= 8)
+		memset(block + rem, 0, 56 - rem);
+	else {
+		memset(block + rem, 0, 64 - rem);
+		sha1_compress(&hs, block);
+		memset(block, 0, 56);
+	}
+
+
+
+	longLen = ((uint64_t)len) << 3;
+
+    	/*@
+		loop invariant A: 0 <= i <= 8;
+		loop assigns i, block[56..63];
+		loop variant 8 - i;
+	@*/
+	for (i = 0; i < 8; i++)
+		block[64 - 1 - i] = (uint8_t)(longLen >> (i * 8));
+
+
+	sha1_compress(&hs, block);
+
+
+	/* copy output */
+    	/*@
+		loop invariant B: 0 <= i <= 5;
+		loop assigns i, out[0..19];
+		loop variant 5 - i;
+	@*/
+	for (i = 0; i < 5; i++) {
+		STORE32H(hs.sha1.state[i], out+(4*i));
+	}
+
+	return rv;
 }
 
-/**
-   Initialize the hash state
-   @param md   The hash state you wish to initialize
-   @return CRYPT_OK if successful
-*/
-int sha1_init(hash_state * md)
-{
-   assert(md != NULL);
-   md->sha1.state[0] = 0x67452301UL;
-   md->sha1.state[1] = 0xefcdab89UL;
-   md->sha1.state[2] = 0x98badcfeUL;
-   md->sha1.state[3] = 0x10325476UL;
-   md->sha1.state[4] = 0xc3d2e1f0UL;
-   md->sha1.curlen = 0;
-   md->sha1.length = 0;
-   return CRYPT_OK;
-}
-
-/**
-   Terminate the hash to get the digest
-   @param md  The hash state
-   @param out [out] The destination of the hash (20 bytes)
-   @return CRYPT_OK if successful
-*/
-int sha1_done(hash_state * md, unsigned char *out)
-{
-    int i;
-
-    if( md == NULL || out == NULL)
-        return CRYPT_INVALID_ARG;
-
-    if (md->sha1.curlen >= sizeof(md->sha1.buf)) {
-       return CRYPT_INVALID_ARG;
-    }
-
-    /* increase the length of the message */
-    md->sha1.length += md->sha1.curlen * 8;
-
-    /* append the '1' bit */
-    md->sha1.buf[md->sha1.curlen++] = (unsigned char)0x80;
-
-    /* if the length is currently above 56 bytes we append zeros
-     * then compress.  Then we can fall back to padding zeros and length
-     * encoding like normal.
-     */
-    if (md->sha1.curlen > 56) {
-        while (md->sha1.curlen < 64) {
-            md->sha1.buf[md->sha1.curlen++] = (unsigned char)0;
-        }
-        sha1_compress(md, md->sha1.buf);
-        md->sha1.curlen = 0;
-    }
-
-    /* pad upto 56 bytes of zeroes */
-    while (md->sha1.curlen < 56) {
-        md->sha1.buf[md->sha1.curlen++] = (unsigned char)0;
-    }
-
-    /* store length */
-    STORE64H(md->sha1.length, md->sha1.buf+56);
-    sha1_compress(md, md->sha1.buf);
-
-    /* copy output */
-    for (i = 0; i < 5; i++) {
-        STORE32H(md->sha1.state[i], out+(4*i));
-    }
-
-    return CRYPT_OK;
-}
 
 
 
 
-/**
-   Process a block of memory though the hash
-   @param md     The hash state
-   @param in     The data to hash
-   @param inlen  The length of the data (octets)
-   @return CRYPT_OK if successful
-*/
-HASH_PROCESS(sha1_process, sha1_compress, sha1, 64)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 

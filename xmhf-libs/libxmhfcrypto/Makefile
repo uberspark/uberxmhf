@@ -2,6 +2,8 @@ srcdir := $(dir $(lastword $(MAKEFILE_LIST)))
 ## vpath %.c $(srcdir) $(srcdir)/ciphers/aes $(srcdir)/hashes/sha1 $(srcdir)/modes/cbc $(srcdir)/mac/hmac $(srcdir)/pk/rsa $(srcdir)/pk/asn1/der $(srcdir)/pk/pkcs1 $(srcdir)/math
 vpath %.c $(srcdir) $(srcdir)/hashes/sha1
 
+include $(srcdir)/../../common.mk
+
 #C_SOURCES:= $(wildcard $(srcdir)/*.c)
 #C_SOURCES := ciphers/aes/aes.c ciphers/aes/aes_tab.c hashes/sha1/sha1.c modes/cbc/cbc.c mac/hmac/hmac.c pk/rsa/rsa.c pk/asn1/der/der.c pk/pkcs1/pkcs1.c math/math.c math/mpi.c math/mathhelpers.c helpers.c
 C_SOURCES := hashes/sha1/sha1.c
@@ -26,6 +28,13 @@ LIBXMHFCRYPTO_OBJECTS_DIR = _objs_libxmhfcrypto
 THE_ARCHIVE = libxmhfcrypto.a
 
 # targets
+.PHONY: verify
+verify:
+	#frama-c -main sha1_compress -lib-entry -wp -wp-rte -wp-model +cint -wp-prover alt-ergo,cvc3,z3 -cpp-extra-args=-nostdinc $(VFLAGS) $(srcdir)/hashes/sha1/sha1.c
+	frama-c -main sha1 -lib-entry -wp -wp-rte -wp-model +cint -wp-prover alt-ergo,cvc3,z3 -cpp-extra-args=-nostdinc $(VFLAGS) $(srcdir)/hashes/sha1/sha1.c
+
+
+
 .PHONY: all
 all: $(THE_ARCHIVE)
 

@@ -129,7 +129,7 @@ bool hash_buffer(const unsigned char* buf, size_t size, tb_hash_t *hash,
     }
 
     if ( hash_alg == TB_HALG_SHA1 ) {
-        sha1_buffer(buf, size, hash->sha1);
+        sha1(buf, size, hash->sha1);
         return true;
     }
     else {
@@ -156,7 +156,7 @@ bool hash_buffer(const unsigned char* buf, size_t size, tb_hash_t *hash,
     if ( hash_alg == TB_HALG_SHA1 ) {
         memcpy(buf, &(hash1->sha1), sizeof(hash1->sha1));
         memcpy(buf + sizeof(hash1->sha1), &(hash2->sha1), sizeof(hash1->sha1));
-        sha1_buffer(buf, 2*sizeof(hash1->sha1), hash1->sha1);
+        sha1(buf, 2*sizeof(hash1->sha1), hash1->sha1);
         return true;
     }
     else {
