@@ -50,18 +50,6 @@
 #ifndef __XMHFHWM_CPU_H__
 #define __XMHFHWM_CPU_H__
 
-/*
-    #include <_xmhfhwm_cpu.h>  			//CPU
-    #include <_xmhfhwm_cpu_msr.h>        			//model specific registers
-    #include <_xmhfhwm_cpu_paging.h>     			//MMU
-    #include <_xmhfhwm_cpu_txt.h>				//Trusted eXecution Technology (SENTER support)
-    #include <_xmhfhwm_cpu_vmx.h>				//VMX extensions
-    #include <_xmhfhwm_cpu_legio.h>         			//legacy I/O
-    #include <_xmhfhwm_cpu_mem.h>		//platform memory access
-*/
-
-
-
 //////
 // general
 //////

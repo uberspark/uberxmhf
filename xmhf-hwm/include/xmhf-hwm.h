@@ -58,13 +58,6 @@
 #if defined(__XMHF_TARGET_TRIAD_X86_VMX_X86PC__)
 
     #include <_xmhfhwm_cpu.h>  			//CPU
-/*    #include <_xmhfhwm_cpu_msr.h>        			//model specific registers
-    #include <_xmhfhwm_cpu_paging.h>     			//MMU
-    #include <_xmhfhwm_cpu_txt.h>				//Trusted eXecution Technology (SENTER support)
-    #include <_xmhfhwm_cpu_vmx.h>				//VMX extensions
-    #include <_xmhfhwm_cpu_legio.h>         			//legacy I/O
-    #include <_xmhfhwm_cpu_mem.h>		//platform memory access
-*/
 
     #include <_xmhfhwm_legio_pci.h>        		//PCI bus glue
     #include <_xmhfhwm_legio_pit.h>        		//PIT
