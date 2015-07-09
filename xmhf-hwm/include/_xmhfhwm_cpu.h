@@ -1405,24 +1405,12 @@ typedef struct {
 
 
 
-//#include "_txt_mtrrs.h"
 #define MTRR_TYPE_MIXED         -1
 #define MMIO_APIC_BASE          0xFEE00000
 #define NR_MMIO_APIC_PAGES      1
 #define NR_MMIO_IOAPIC_PAGES    1
 #define NR_MMIO_PCICFG_PAGES    1
 
-
-
-
-
-
-
-
-
-
-
-//#include "_txt_heap.h"
 
 typedef void   txt_heap_t;
 
@@ -1508,14 +1496,13 @@ typedef struct {
 } __attribute__ ((packed)) sinit_mle_data_t;
 
 
-
-extern bool verify_txt_heap(txt_heap_t *txt_heap, bool bios_data_only);
-extern bool verify_bios_data(txt_heap_t *txt_heap);
-extern void print_os_sinit_data(os_sinit_data_t *os_sinit_data);
-
-#define xmhfhwm_cpu_insn_getsec() __builtin_annot(IA32_GETSEC_OPCODE);
-
 #endif //__ASSEMBLY__
+
+
+
+
+
+
 
 
 
@@ -2208,11 +2195,6 @@ struct _vmx_vmcsrwfields_encodings	{
 
 
 
-
-
-
-
-
 // VMX instruction INVVPID
 //		Invalidate Translations Based on VPID
 // INVVPID r32, m128
@@ -2224,8 +2206,6 @@ struct _vmx_vmcsrwfields_encodings	{
 #define VMX_INVVPID_SINGLECONTEXTGLOBAL		3
 
 
-
-
 // VMX instruction INVEPT
 //		Invalidate Translations Derived from EPT
 
@@ -2233,16 +2213,6 @@ struct _vmx_vmcsrwfields_encodings	{
 #define VMX_INVEPT_GLOBAL					2
 
 
-// vmx instructions
-#define xmhfhwm_cpu_insn_vmlaunch() __builtin_annot("vmlaunch ");
-#define xmhfhwm_cpu_insn_vmxon_mesp(x) __builtin_annot("vmxon "#x"(%esp) ");
-#define xmhfhwm_cpu_insn_vmwrite_eax_ecx() __builtin_annot("vmwrite %eax, %ecx ");
-#define xmhfhwm_cpu_insn_vmread_ecx_eax() __builtin_annot("vmread %ecx, %eax");
-#define xmhfhwm_cpu_insn_vmclear_mesp(x) __builtin_annot("vmclear "#x"(%esp) ");
-#define xmhfhwm_cpu_insn_vmptrld_mesp(x) __builtin_annot("vmptrld "#x"(%esp) ");
-#define xmhfhwm_cpu_insn_invvpid_mesp_ecx(x) __builtin_annot("invvpid "#x"(%esp), %ecx");
-#define xmhfhwm_cpu_insn_invept_mesp_edx(x) __builtin_annot("invept "#x"(%esp), %edx ");
-#define xmhfhwm_cpu_insn_vmresume() __builtin_annot("vmresume ");
 
 
 #endif //__ASSEMBLY__
@@ -2251,6 +2221,9 @@ struct _vmx_vmcsrwfields_encodings	{
 
 
 //////
+// CASM instruction macros
+//////
+
 
 
 // branch instructions
@@ -2463,7 +2436,22 @@ struct _vmx_vmcsrwfields_encodings	{
 #define xmhfhwm_cpu_insn_sysexit() __builtin_annot("sysexit ");
 #define xmhfhwm_cpu_insn_sysenter() __builtin_annot("sysenter ");
 
-//#endif //__ASSEMBLY__
+
+//TXT
+#define xmhfhwm_cpu_insn_getsec() __builtin_annot(IA32_GETSEC_OPCODE);
+
+
+// vmx instructions
+#define xmhfhwm_cpu_insn_vmlaunch() __builtin_annot("vmlaunch ");
+#define xmhfhwm_cpu_insn_vmxon_mesp(x) __builtin_annot("vmxon "#x"(%esp) ");
+#define xmhfhwm_cpu_insn_vmwrite_eax_ecx() __builtin_annot("vmwrite %eax, %ecx ");
+#define xmhfhwm_cpu_insn_vmread_ecx_eax() __builtin_annot("vmread %ecx, %eax");
+#define xmhfhwm_cpu_insn_vmclear_mesp(x) __builtin_annot("vmclear "#x"(%esp) ");
+#define xmhfhwm_cpu_insn_vmptrld_mesp(x) __builtin_annot("vmptrld "#x"(%esp) ");
+#define xmhfhwm_cpu_insn_invvpid_mesp_ecx(x) __builtin_annot("invvpid "#x"(%esp), %ecx");
+#define xmhfhwm_cpu_insn_invept_mesp_edx(x) __builtin_annot("invept "#x"(%esp), %edx ");
+#define xmhfhwm_cpu_insn_vmresume() __builtin_annot("vmresume ");
+
 
 #endif /* __XMHFHWM_CPU_H__ */
 
