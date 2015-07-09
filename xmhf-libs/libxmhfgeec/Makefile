@@ -3,6 +3,9 @@ vpath %.c $(srcdir)
 vpath %.cS $(srcdir)
 
 
+include $(srcdir)/../../common.mk
+
+
 C_SOURCES:= $(wildcard $(srcdir)/*.c)
 C_SOURCES:= $(patsubst $(srcdir)/%, %, $(C_SOURCES))
 
@@ -17,9 +20,19 @@ I_SOURCES :=  $(wildcard $(srcdir)/include/*.h)
 CFLAGS += -I$(srcdir)/include -nostdinc -fno-builtin -nostdlib -Wall
 
 LIBXMHFGEEC_OBJECTS_DIR = _objs_libxmhfgeec
+LIBXMHFGEEC_VERIF_DIR = _verif_libxmhfgeec
+
 #THE_ARCHIVE = libxmhfgeec.a
 
 # targets
+.PHONY: verify
+verify:
+	mkdir -p $(LIBXMHFGEEC_VERIF_DIR)
+	$(CP) -f $(srcdir)/xmhfgeec_slabstubs_vft.cS $(LIBXMHFGEEC_VERIF_DIR)/xmhfgeec_slabstubs_vft.cS.c
+	cd $(LIBXMHFGEEC_VERIF_DIR) && frama-c -cpp-extra-args=-nostdinc $(VFLAGS) xmhfgeec_slabstubs_vft.cS.c
+
+
+
 .PHONY: all
 #all: $(THE_ARCHIVE)
 all: $(OBJECTS)
@@ -69,4 +82,5 @@ $(THE_ARCHIVE): $(OBJECTS)
 .PHONY: clean
 clean:
 	$(RM) -rf $(LIBXMHFGEEC_OBJECTS_DIR)
+	$(RM) -rf $(LIBXMHFGEEC_VERIF_DIR)
 
