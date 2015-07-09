@@ -44,19 +44,11 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-// XMHF HWM Legacy IO decls.
-// author: amit vasudevan (amitvasudevan@acm.org)
+// XMHF HWM Legacy I/O programmable interval timer (for micro second delay) decls.
+//author: amit vasudevan (amitvasudevan@acm.org)
 
-#ifndef __XMHFHWM_CPU_LEGIO_H__
-#define __XMHFHWM_CPU_LEGIO_H__
-
-#ifndef __ASSEMBLY__
+#ifndef __XMHFHWM_PIT_H___
+#define __XMHFHWM_PIT_H___
 
 
-
-
-
-
-#endif /* __ASSEMBLY__ */
-
-#endif /* __XMHFHWM_CPU_LEGIO_H__ */
+#endif /* __XMHFHWM_PIT_H___ */

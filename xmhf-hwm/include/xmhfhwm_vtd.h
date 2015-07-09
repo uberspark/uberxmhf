@@ -47,8 +47,8 @@
 // XMHF HWM MMIO VTd decls.
 //author: amit vasudevan (amitvasudevan@acm.org)
 
-#ifndef __XMHFHWM_MMIO_VTD_H___
-#define __XMHFHWM_MMIO_VTD_H___
+#ifndef __XMHFHWM_VTD_H___
+#define __XMHFHWM_VTD_H___
 
 #define VTD_DMAR_SIGNATURE  (0x52414D44) //"DMAR"
 #define VTD_MAX_DRHD   8		//maximum number of DMAR h/w units
@@ -612,4 +612,4 @@ typedef struct {
 
 #endif //__ASSEMBLY__
 
-#endif //__XMHFHWM_MMIO_VTD_H___
+#endif //__XMHFHWM_VTD_H___
