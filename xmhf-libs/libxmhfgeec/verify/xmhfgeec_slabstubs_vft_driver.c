@@ -54,12 +54,14 @@
 #include <xmhfgeec.h>
 #include <xmhf-debug.h>
 
+u32 cpuid = 0;	//BSP cpu
 
 void main(void){
 
 	// upon control transfer to a slab entry stub the stack is
 	// setup by the sentinel as follows:
 	// TOS: <return eip>, slab_params_t *
+
 
 
 }
