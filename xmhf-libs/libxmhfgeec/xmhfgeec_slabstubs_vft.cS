@@ -69,10 +69,10 @@ CASM_FUNCDEF_FULL(.slab_entrystub, 1, void, _slab_entrystub,
 	xmhfhwm_cpu_insn_cmpl_imm_meax(XMHFGEEC_SENTINEL_CALL_INTERCEPT,0x0);
 	xmhfhwm_cpu_insn_je(call_intercept);
 */
-	xmhfhwm_cpu_insn_ret();
-/*	xmhfhwm_cpu_insn_hlt();
+//	xmhfhwm_cpu_insn_ret();
+	xmhfhwm_cpu_insn_hlt();
 
-	CASM_LABEL(call_uvt_uvu_prog_to_vft_prog)
+/*	CASM_LABEL(call_uvt_uvu_prog_to_vft_prog)
 	xmhfhwm_cpu_insn_movl_imm_meax(XMHFGEEC_SENTINEL_RET_uVT_uVU_PROG_TO_VfT_PROG, 0x0);
 	xmhfhwm_cpu_insn_movl_meax_edx(0x4); //edx = src_slabid
 	xmhfhwm_cpu_insn_movl_meax_ecx(0x8); //ecx = dst_slabid

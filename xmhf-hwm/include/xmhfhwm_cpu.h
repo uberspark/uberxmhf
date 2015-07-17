@@ -2220,11 +2220,13 @@ struct _vmx_vmcsrwfields_encodings	{
 
 
 //////
-// cpu model variables
+// cpu model variables and instruction implementations
 //////
 extern u32 xmhfhwm_cpu_gprs_esp;
 extern u32 xmhfhwm_cpu_gprs_eip;
 
+
+extern void _impl_xmhfhwm_cpu_insn_hlt(void);
 
 
 
@@ -2245,8 +2247,6 @@ extern u32 xmhfhwm_cpu_gprs_eip;
 #define xmhfhwm_cpu_insn_ja(x) __builtin_annot("ja "#x" ");
 #define xmhfhwm_cpu_insn_int(x) __builtin_annot("int $"#x" ");
 #define xmhfhwm_cpu_insn_call(x) __builtin_annot("call "#x" ");
-
-//#define xmhfhwm_cpu_insn_ret() __builtin_annot("ret ");
 
 #define xmhfhwm_cpu_insn_ret() \
 	__builtin_annot("ret "); \
@@ -2423,11 +2423,14 @@ extern u32 xmhfhwm_cpu_gprs_eip;
 #define xmhfhwm_cpu_insn_pushfl() __builtin_annot("pushfl ");
 #define xmhfhwm_cpu_insn_popfl() __builtin_annot("popfl ");
 #define xmhfhwm_cpu_insn_rdtsc() __builtin_annot("rdtsc ");
-#define xmhfhwm_cpu_insn_hlt() __builtin_annot("hlt ");
 #define xmhfhwm_cpu_insn_pushal() __builtin_annot("pushal ");
 #define xmhfhwm_cpu_insn_popal() __builtin_annot("popal ");
 
 // system instructions
+#define xmhfhwm_cpu_insn_hlt() \
+	__builtin_annot("hlt "); \
+	_impl_xmhfhwm_cpu_insn_hlt() \
+
 #define xmhfhwm_cpu_insn_cli() __builtin_annot("cli ");
 #define xmhfhwm_cpu_insn_sti() __builtin_annot("sti ");
 #define xmhfhwm_cpu_insn_inb_dx_al() __builtin_annot("inb %dx, %al ");
