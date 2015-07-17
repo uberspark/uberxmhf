@@ -62,7 +62,7 @@ void main(void){
 	// setup by the sentinel as follows:
 	// TOS: <return eip>, slab_params_t *
 
-
+	//@assert _slab_tos[cpuid] == (u32)&_slab_stack[1];
 
 }
 
