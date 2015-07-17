@@ -2219,6 +2219,14 @@ struct _vmx_vmcsrwfields_encodings	{
 
 
 
+//////
+// cpu model variables
+//////
+extern u32 xmhfhwm_cpu_gprs_esp;
+extern u32 xmhfhwm_cpu_gprs_eip;
+
+
+
 
 //////
 // CASM instruction macros
@@ -2237,7 +2245,16 @@ struct _vmx_vmcsrwfields_encodings	{
 #define xmhfhwm_cpu_insn_ja(x) __builtin_annot("ja "#x" ");
 #define xmhfhwm_cpu_insn_int(x) __builtin_annot("int $"#x" ");
 #define xmhfhwm_cpu_insn_call(x) __builtin_annot("call "#x" ");
-#define xmhfhwm_cpu_insn_ret() __builtin_annot("ret ");
+
+//#define xmhfhwm_cpu_insn_ret() __builtin_annot("ret ");
+
+#define xmhfhwm_cpu_insn_ret() \
+	__builtin_annot("ret "); \
+        xmhfhwm_cpu_gprs_eip = *(u32 *)xmhfhwm_cpu_gprs_esp; \
+	xmhfhwm_cpu_gprs_esp += sizeof(u32); \
+	return; \
+
+
 #define xmhfhwm_cpu_insn_lret() __builtin_annot("lret ");
 
 

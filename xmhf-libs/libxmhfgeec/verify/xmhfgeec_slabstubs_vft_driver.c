@@ -51,6 +51,7 @@
 
 
 #include <xmhf.h>
+#include <xmhf-hwm.h>
 #include <xmhfgeec.h>
 #include <xmhf-debug.h>
 
@@ -80,8 +81,11 @@ void main(void){
 
 	//@assert *((u32 *)(_slab_tos[cpuid])) == (u32)&sp;
 
+	xmhfhwm_cpu_gprs_esp = _slab_tos[cpuid];
 
 	CASM_FUNCCALL(_slab_entrystub, CASM_NOPARAM);
+
+	//@assert xmhfhwm_cpu_gprs_esp == (u32)&_slab_stack[1];
 
 }
 
