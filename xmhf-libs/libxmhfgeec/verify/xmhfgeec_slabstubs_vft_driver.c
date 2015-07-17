@@ -81,6 +81,7 @@ void main(void){
 	//@assert *((u32 *)(_slab_tos[cpuid])) == (u32)&sp;
 
 
+	CASM_FUNCCALL(_slab_entrystub, CASM_NOPARAM);
 
 }
 
