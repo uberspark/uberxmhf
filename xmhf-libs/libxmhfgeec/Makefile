@@ -29,7 +29,8 @@ LIBXMHFGEEC_VERIF_DIR = _verif_libxmhfgeec
 verify:
 	mkdir -p $(LIBXMHFGEEC_VERIF_DIR)
 	$(CP) -f $(srcdir)/xmhfgeec_slabstubs_vft.cS $(LIBXMHFGEEC_VERIF_DIR)/xmhfgeec_slabstubs_vft.cS.c
-	cd $(LIBXMHFGEEC_VERIF_DIR) && frama-c -cpp-extra-args=-nostdinc $(VFLAGS) $(srcdir)/verify/xmhfgeec_slabstubs_vft_driver.c xmhfgeec_slabstubs_vft.cS.c $(V_XMHFHWM_MODULES)
+	$(CP) -f $(srcdir)/xmhfgeec_slabmapdef.c $(LIBXMHFGEEC_VERIF_DIR)/xmhfgeec_slabmapdef.c
+	cd $(LIBXMHFGEEC_VERIF_DIR) && frama-c -cpp-extra-args=-nostdinc $(VFLAGS) $(srcdir)/verify/xmhfgeec_slabstubs_vft_driver.c xmhfgeec_slabstubs_vft.cS.c xmhfgeec_slabmapdef.c $(V_XMHFHWM_MODULES)
 
 
 
