@@ -55,14 +55,32 @@
 #include <xmhf-debug.h>
 
 u32 cpuid = 0;	//BSP cpu
+slab_params_t sp;
 
 void main(void){
+	u32 *stackelem;
 
 	// upon control transfer to a slab entry stub the stack is
 	// setup by the sentinel as follows:
 	// TOS: <return eip>, slab_params_t *
 
 	//@assert _slab_tos[cpuid] == (u32)&_slab_stack[1];
+	sp.slab_ctype = 0;
+	sp.src_slabid = 0;
+	sp.dst_slabid = 0;
+	sp.dst_uapifn = 0;
+	sp.cpuid = cpuid;
+
+	_slab_tos[cpuid] -= sizeof(u32);
+
+	stackelem = (u32 *)_slab_tos[cpuid];
+	//@assert (u32)(stackelem) == (u32)_slab_tos[cpuid];
+
+        *stackelem = (u32)&sp;
+
+	//@assert *((u32 *)(_slab_tos[cpuid])) == (u32)&sp;
+
+
 
 }
 
