@@ -197,6 +197,17 @@ void __slab_callsentinel(slab_params_t *sp);
 extern void slab_main(slab_params_t *sp);
 
 
+
+
+//////
+// slab stack variable decls.
+//////
+
+extern __attribute__ ((section(".stack"))) __attribute__ ((aligned(4096))) u8 _slab_stack[MAX_PLATFORM_CPUS][XMHF_SLAB_STACKSIZE];
+extern __attribute__ ((section(".stackhdr"))) u32 _slab_tos[MAX_PLATFORM_CPUS];
+
+
+
 #endif //__ASSEMBLY__
 
 
