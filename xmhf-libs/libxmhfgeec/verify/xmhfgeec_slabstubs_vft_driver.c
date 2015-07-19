@@ -91,9 +91,9 @@ void main(void){
 	//invoke _slab_entrystub
 	CASM_FUNCCALL(_slab_entrystub, CASM_NOPARAM);
 
-	//@assert xmhfhwm_cpu_gprs_esp == check_esp;
+/*	//@assert xmhfhwm_cpu_gprs_esp == check_esp;
 	//@assert xmhfhwm_cpu_gprs_eip == check_eip;
-
+*/
 }
 
 
