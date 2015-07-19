@@ -60,6 +60,13 @@ slab_params_t sp;
 
 #define RET_EIP	0xDEADBEEF
 
+
+void slab_main(slab_params_t *sp){
+	//@assert sp->slab_ctype == 0xFF;
+
+}
+
+
 void main(void){
 	u32 *stackelem;
 	u32 check_esp, check_eip = RET_EIP;
@@ -69,7 +76,7 @@ void main(void){
 	// TOS: <return eip>, slab_params_t *
 
 	//initialize sp
-	sp.slab_ctype = 0;
+	sp.slab_ctype = 0xFF;
 	sp.src_slabid = 0;
 	sp.dst_slabid = 0;
 	sp.dst_uapifn = 0;

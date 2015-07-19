@@ -2246,7 +2246,12 @@ extern void _impl_xmhfhwm_cpu_insn_pushl_mesp(int index);
 #define xmhfhwm_cpu_insn_jbe(x) __builtin_annot("jbe "#x" ");
 #define xmhfhwm_cpu_insn_ja(x) __builtin_annot("ja "#x" ");
 #define xmhfhwm_cpu_insn_int(x) __builtin_annot("int $"#x" ");
+
 #define xmhfhwm_cpu_insn_call(x) __builtin_annot("call "#x" ");
+
+#define xmhfhwm_cpu_insn_call_c_1p(fn_name, fn_p1_type) \
+	__builtin_annot("call "#fn_name" "); \
+	fn_name( (fn_p1_type) *((u32 *)(xmhfhwm_cpu_gprs_esp)) ); \
 
 #define xmhfhwm_cpu_insn_ret() \
 	__builtin_annot("ret "); \
