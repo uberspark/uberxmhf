@@ -95,16 +95,6 @@
 #define CASM_FUNCDEF(fn_rettype, fn_name, fn_body, ...) \
     CASM_FUNCDEF_FULL(.text, 0x4, fn_rettype, fn_name, fn_body, __VA_ARGS__) \
 
-#if defined (__XMHF_VERIFICATION__)
-    #define CASM_FUNCCALL_PARAM(X)    to_be_added(X),
-#else
-    #define CASM_FUNCCALL_PARAM(X)
-#endif // defined
-
-#define CASM_FUNCCALL(fn_name, ...)   (\
-    FOREACH(CASM_FUNCCALL_PARAM, (__VA_ARGS__)) \
-    fn_name(__VA_ARGS__) \
-    )\
 
 
 

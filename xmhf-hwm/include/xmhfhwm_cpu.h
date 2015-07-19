@@ -2219,6 +2219,8 @@ struct _vmx_vmcsrwfields_encodings	{
 
 
 
+#ifndef __ASSEMBLY__
+
 //////
 // cpu model variables and instruction implementations
 //////
@@ -2228,6 +2230,29 @@ extern u32 xmhfhwm_cpu_gprs_eip;
 
 extern void _impl_xmhfhwm_cpu_insn_hlt(void);
 extern void _impl_xmhfhwm_cpu_insn_pushl_mesp(int index);
+
+
+//////
+// CASM C to ASM call macros
+//////
+
+
+#if defined (__XMHF_VERIFICATION__)
+    #define CASM_FUNCCALL_PARAM(X)    to_be_added(X),
+#else
+    #define CASM_FUNCCALL_PARAM(X)
+#endif // defined
+
+#define CASM_FUNCCALL(fn_name, ...)   (\
+    FOREACH(CASM_FUNCCALL_PARAM, (__VA_ARGS__)) \
+    fn_name(__VA_ARGS__) \
+    )\
+
+
+#endif //__ASSEMBLY__
+
+
+
 
 
 //////
