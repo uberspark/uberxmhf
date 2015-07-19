@@ -2227,7 +2227,7 @@ extern u32 xmhfhwm_cpu_gprs_eip;
 
 
 extern void _impl_xmhfhwm_cpu_insn_hlt(void);
-
+extern void _impl_xmhfhwm_cpu_insn_pushl_mesp(int index);
 
 
 //////
@@ -2341,7 +2341,10 @@ extern void _impl_xmhfhwm_cpu_insn_hlt(void);
 #define xmhfhwm_cpu_insn_pushl_ecx() __builtin_annot("pushl %ecx ");
 #define xmhfhwm_cpu_insn_pushl_edx() __builtin_annot("pushl %edx ");
 #define xmhfhwm_cpu_insn_pushl_esp() __builtin_annot("pushl %esp ");
-#define xmhfhwm_cpu_insn_pushl_mesp(x) __builtin_annot("pushl "#x"(%esp) ");
+
+#define xmhfhwm_cpu_insn_pushl_mesp(x) \
+	__builtin_annot("pushl "#x"(%esp) ");\
+	_impl_xmhfhwm_cpu_insn_pushl_mesp(x);\
 
 #define xmhfhwm_cpu_insn_popl_eax() __builtin_annot("popl %eax ");
 #define xmhfhwm_cpu_insn_popl_ebx() __builtin_annot("popl %ebx ");

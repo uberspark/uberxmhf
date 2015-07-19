@@ -63,3 +63,10 @@ void _impl_xmhfhwm_cpu_insn_hlt(void){
 }
 
 
+
+void _impl_xmhfhwm_cpu_insn_pushl_mesp(int index){
+	u32 value;
+	value = *((u32 *)(xmhfhwm_cpu_gprs_esp + index));
+	xmhfhwm_cpu_gprs_esp -= sizeof(u32);
+	*((u32 *)xmhfhwm_cpu_gprs_esp) = value;
+}
