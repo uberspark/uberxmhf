@@ -56,6 +56,9 @@
 u32 xmhfhwm_cpu_gprs_eip = 0;
 u32 xmhfhwm_cpu_gprs_esp = 0;
 
+u32 xmhfhwm_cpu_gprs_eax = 0;
+u32 xmhfhwm_cpu_gprs_edx = 0;
+
 
 void _impl_xmhfhwm_cpu_insn_hlt(void){
 	//@assert 0;
