@@ -2228,6 +2228,9 @@ extern u32 xmhfhwm_cpu_gprs_esp;
 extern u32 xmhfhwm_cpu_gprs_eip;
 
 
+extern u32 xmhfhwm_cpu_gprs_eax;
+extern u32 xmhfhwm_cpu_gprs_edx;
+
 extern void _impl_xmhfhwm_cpu_insn_hlt(void);
 extern void _impl_xmhfhwm_cpu_insn_pushl_mesp(int index);
 
@@ -2238,15 +2241,22 @@ extern void _impl_xmhfhwm_cpu_insn_pushl_mesp(int index);
 
 
 #if defined (__XMHF_VERIFICATION__)
-    #define CASM_FUNCCALL_PARAM(X)    to_be_added(X),
+	#define CASM_FUNCCALL_PARAMSETUP(X)    (xmhfhwm_cpu_gprs_esp -= sizeof(u32), *((u32 *)xmhfhwm_cpu_gprs_esp)=(u32)X ),
+
+	#define CASM_FUNCCALL(fn_name, ...)   (\
+	    PP_FOREACH(CASM_FUNCCALL_PARAMSETUP, (PP_REVERSEARGS(__VA_ARGS__))) \
+	    fn_name(__VA_ARGS__), \
+	    (u64)(((u64)xmhfhwm_cpu_gprs_edx << 32) | xmhfhwm_cpu_gprs_eax) \
+	    )\
+
 #else
-    #define CASM_FUNCCALL_PARAM(X)
+
+	#define CASM_FUNCCALL(fn_name, ...)   (\
+	    fn_name(__VA_ARGS__) \
+	    )\
+
 #endif // defined
 
-#define CASM_FUNCCALL(fn_name, ...)   (\
-    FOREACH(CASM_FUNCCALL_PARAM, (__VA_ARGS__)) \
-    fn_name(__VA_ARGS__) \
-    )\
 
 
 #endif //__ASSEMBLY__

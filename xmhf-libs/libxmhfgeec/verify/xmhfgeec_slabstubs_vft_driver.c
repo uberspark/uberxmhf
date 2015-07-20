@@ -70,6 +70,7 @@ void slab_main(slab_params_t *sp){
 void main(void){
 	u32 *stackelem;
 	u32 check_esp, check_eip = RET_EIP;
+	u64 val;
 
 	// upon control transfer to a slab entry stub the stack is
 	// setup by the sentinel as follows:
@@ -96,7 +97,7 @@ void main(void){
 	xmhfhwm_cpu_gprs_esp = _slab_tos[cpuid];
 
 	//invoke _slab_entrystub
-	CASM_FUNCCALL(_slab_entrystub, CASM_NOPARAM);
+	val = CASM_FUNCCALL(_slab_entrystub, CASM_NOPARAM);
 
 /*	//@assert xmhfhwm_cpu_gprs_esp == check_esp;
 	//@assert xmhfhwm_cpu_gprs_eip == check_eip;
