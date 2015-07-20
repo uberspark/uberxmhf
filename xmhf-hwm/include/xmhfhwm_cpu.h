@@ -2236,6 +2236,8 @@ extern void _impl_xmhfhwm_cpu_insn_pushl_mesp(int index);
 extern void _impl_xmhfhwm_cpu_insn_pushl_mem(u32 value);
 extern u32 _impl_xmhfhwm_cpu_insn_popl_mem(void);
 
+extern void _impl_xmhfhwm_cpu_insn_addl_imm_esp(u32 value);
+
 
 //////
 // CASM C to ASM call macros
@@ -2422,7 +2424,11 @@ extern u32 _impl_xmhfhwm_cpu_insn_popl_mem(void);
 
 
 #define xmhfhwm_cpu_insn_addl_mesp_ecx(x) __builtin_annot("addl "#x"(%esp), %ecx ");
-#define xmhfhwm_cpu_insn_addl_imm_esp(x) __builtin_annot("addl $"#x", %esp ");
+
+#define xmhfhwm_cpu_insn_addl_imm_esp(x) \
+	__builtin_annot("addl $"#x", %esp "); \
+	_impl_xmhfhwm_cpu_insn_addl_imm_esp(x); \
+
 #define xmhfhwm_cpu_insn_subl_imm_esp(x) __builtin_annot("subl $"#x", %esp ");
 #define xmhfhwm_cpu_insn_addl_eax_ecx() __builtin_annot("addl %eax, %ecx");
 #define xmhfhwm_cpu_insn_addl_ecx_eax() __builtin_annot("addl %ecx, %eax");
