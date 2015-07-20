@@ -2245,12 +2245,12 @@ extern void _impl_xmhfhwm_cpu_insn_pushl_mem(u32 value);
 
 #if defined (__XMHF_VERIFICATION__)
 	#define CASM_FUNCCALL_PARAMSETUP(X)    ( \
-		(xmhfhwm_cpu_gprs_esp -= sizeof(u32), *((u32 *)xmhfhwm_cpu_gprs_esp)=(u32)X ) \
+		_impl_xmhfhwm_cpu_insn_pushl_mem((u32)X) \
 		), \
 
 	#define CASM_FUNCCALL(fn_name, ...)   (\
 	    PP_FOREACH(CASM_FUNCCALL_PARAMSETUP, (PP_REVERSEARGS(__VA_ARGS__))) \
-	    (xmhfhwm_cpu_gprs_esp -= sizeof(u32), *((u32 *)xmhfhwm_cpu_gprs_esp)=(u32)CASM_RET_EIP ), \
+	    (_impl_xmhfhwm_cpu_insn_pushl_mem((u32)CASM_RET_EIP)), \
 	    fn_name(__VA_ARGS__), \
 	    (xmhfhwm_cpu_gprs_eip = *((u32 *)xmhfhwm_cpu_gprs_esp), xmhfhwm_cpu_gprs_esp += sizeof(u32)), \
 	    (u64)(((u64)xmhfhwm_cpu_gprs_edx << 32) | xmhfhwm_cpu_gprs_eax) \
