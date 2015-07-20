@@ -58,7 +58,6 @@
 u32 cpuid = 0;	//BSP cpu
 slab_params_t sp;
 
-#define RET_EIP	0xDEADBEEF
 
 
 void slab_main(slab_params_t *sp){
@@ -69,7 +68,7 @@ void slab_main(slab_params_t *sp){
 
 void main(void){
 	u32 *stackelem;
-	u32 check_esp, check_eip = RET_EIP;
+	u32 check_esp, check_eip = CASM_RET_EIP;
 	u64 val;
 
 	// upon control transfer to a slab entry stub the stack is
@@ -83,7 +82,7 @@ void main(void){
 	sp.dst_uapifn = 0;
 	sp.cpuid = cpuid;
 
-	//populate stack for _slab_entrystub; include sp and return eip
+	/*//populate stack for _slab_entrystub; include sp and return eip
 	_slab_tos[cpuid] -= sizeof(u32);
 	stackelem = (u32 *)_slab_tos[cpuid];
         *stackelem = (u32)&sp;
@@ -91,17 +90,18 @@ void main(void){
 
         _slab_tos[cpuid] -= sizeof(u32);
 	stackelem = (u32 *)_slab_tos[cpuid];
-        *stackelem = RET_EIP;
+        *stackelem = RET_EIP;*/
 
-	//populate hardware model
+	//populate hardware model stack
 	xmhfhwm_cpu_gprs_esp = _slab_tos[cpuid];
+	check_esp = xmhfhwm_cpu_gprs_esp - sizeof(u32); // pointing to sp
 
 	//invoke _slab_entrystub
-	val = CASM_FUNCCALL(_slab_entrystub, CASM_NOPARAM);
+	val = CASM_FUNCCALL(_slab_entrystub, (void *)&sp);
 
-/*	//@assert xmhfhwm_cpu_gprs_esp == check_esp;
+	//@assert xmhfhwm_cpu_gprs_esp == check_esp;
 	//@assert xmhfhwm_cpu_gprs_eip == check_eip;
-*/
+
 }
 
 
