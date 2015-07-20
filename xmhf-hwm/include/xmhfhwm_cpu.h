@@ -2237,6 +2237,7 @@ extern void _impl_xmhfhwm_cpu_insn_pushl_mem(u32 value);
 extern u32 _impl_xmhfhwm_cpu_insn_popl_mem(void);
 
 extern void _impl_xmhfhwm_cpu_insn_addl_imm_esp(u32 value);
+extern void _impl_xmhfhwm_cpu_insn_movl_mesp_eax(int index);
 
 
 //////
@@ -2343,7 +2344,11 @@ extern void _impl_xmhfhwm_cpu_insn_addl_imm_esp(u32 value);
 #define xmhfhwm_cpu_insn_movl_eax_esp() __builtin_annot("movl %eax, %esp ");
 #define xmhfhwm_cpu_insn_movl_edx_esp() __builtin_annot("movl %edx, %esp ");
 
-#define xmhfhwm_cpu_insn_movl_mesp_eax(x) __builtin_annot("movl "#x"(%esp), %eax ");
+#define xmhfhwm_cpu_insn_movl_mesp_eax(x) \
+	__builtin_annot("movl "#x"(%esp), %eax "); \
+	_impl_xmhfhwm_cpu_insn_movl_mesp_eax(x); \
+
+
 #define xmhfhwm_cpu_insn_movw_mesp_ax(x) __builtin_annot("movw "#x"(%esp), %ax ");
 #define xmhfhwm_cpu_insn_movl_mesp_ebx(x) __builtin_annot("movl "#x"(%esp), %ebx ");
 #define xmhfhwm_cpu_insn_movl_mesp_ecx(x) __builtin_annot("movl "#x"(%esp), %ecx ");
