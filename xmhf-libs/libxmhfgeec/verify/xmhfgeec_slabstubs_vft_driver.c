@@ -71,9 +71,6 @@ void main(void){
 	u32 check_esp, check_eip = CASM_RET_EIP;
 	u64 val;
 
-	// upon control transfer to a slab entry stub the stack is
-	// setup by the sentinel as follows:
-	// TOS: <return eip>, slab_params_t *
 
 	//initialize sp
 	sp.slab_ctype = 0xFF;
@@ -82,21 +79,15 @@ void main(void){
 	sp.dst_uapifn = 0;
 	sp.cpuid = cpuid;
 
-	/*//populate stack for _slab_entrystub; include sp and return eip
-	_slab_tos[cpuid] -= sizeof(u32);
-	stackelem = (u32 *)_slab_tos[cpuid];
-        *stackelem = (u32)&sp;
-        check_esp = (u32)stackelem;
-
-        _slab_tos[cpuid] -= sizeof(u32);
-	stackelem = (u32 *)_slab_tos[cpuid];
-        *stackelem = RET_EIP;*/
-
 	//populate hardware model stack
 	xmhfhwm_cpu_gprs_esp = _slab_tos[cpuid];
 	check_esp = xmhfhwm_cpu_gprs_esp - sizeof(u32); // pointing to sp
 
-	//invoke _slab_entrystub
+	// upon control transfer to a slab entry stub the stack is
+	// setup by the sentinel as follows:
+	// TOS: <return eip>, slab_params_t *
+	// simulate this by using CASM_FUNCCALL on _slab_entrystub with
+	// sp as the sole parameter
 	val = CASM_FUNCCALL(_slab_entrystub, (void *)&sp);
 
 	//@assert xmhfhwm_cpu_gprs_esp == check_esp;
