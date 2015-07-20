@@ -2234,6 +2234,7 @@ extern u32 xmhfhwm_cpu_gprs_edx;
 extern void _impl_xmhfhwm_cpu_insn_hlt(void);
 extern void _impl_xmhfhwm_cpu_insn_pushl_mesp(int index);
 extern void _impl_xmhfhwm_cpu_insn_pushl_mem(u32 value);
+extern u32 _impl_xmhfhwm_cpu_insn_popl_mem(void);
 
 
 //////
@@ -2410,6 +2411,9 @@ extern void _impl_xmhfhwm_cpu_insn_pushl_mem(u32 value);
 	__builtin_annot("pushl "#x" "); \
 	_impl_xmhfhwm_cpu_insn_pushl_mem(x);\
 
+#define xmhfhwm_cpu_insn_popl_mem(x) \
+	__builtin_annot("popl "#x" "); \
+	x = _impl_xmhfhwm_cpu_insn_popl_mem();\
 
 
 // arithmetic/logical
