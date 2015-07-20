@@ -86,3 +86,8 @@ u32 _impl_xmhfhwm_cpu_insn_popl_mem(void){
 	return value;
 }
 
+void _impl_xmhfhwm_cpu_insn_addl_imm_esp(u32 value){
+	xmhfhwm_cpu_gprs_esp += value;
+}
+
+
