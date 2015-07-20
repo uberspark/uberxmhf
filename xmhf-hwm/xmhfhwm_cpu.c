@@ -91,3 +91,8 @@ void _impl_xmhfhwm_cpu_insn_addl_imm_esp(u32 value){
 }
 
 
+void _impl_xmhfhwm_cpu_insn_movl_mesp_eax(int index){
+	u32 *value;
+	value = (u32 *)((u32)((int)xmhfhwm_cpu_gprs_esp + (int)index));
+	*value = xmhfhwm_cpu_gprs_eax;
+}
