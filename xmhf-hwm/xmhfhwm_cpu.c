@@ -79,3 +79,10 @@ void _impl_xmhfhwm_cpu_insn_pushl_mem(u32 value){
 	*((u32 *)xmhfhwm_cpu_gprs_esp) = value;
 }
 
+
+u32 _impl_xmhfhwm_cpu_insn_popl_mem(void){
+	u32 value = *((u32 *)xmhfhwm_cpu_gprs_esp);
+	xmhfhwm_cpu_gprs_esp += sizeof(u32);
+	return value;
+}
+
