@@ -2253,7 +2253,7 @@ extern u32 _impl_xmhfhwm_cpu_insn_popl_mem(void);
 	    PP_FOREACH(CASM_FUNCCALL_PARAMSETUP, (PP_REVERSEARGS(__VA_ARGS__))) \
 	    (_impl_xmhfhwm_cpu_insn_pushl_mem((u32)CASM_RET_EIP)), \
 	    fn_name(__VA_ARGS__), \
-	    (xmhfhwm_cpu_gprs_eip = *((u32 *)xmhfhwm_cpu_gprs_esp), xmhfhwm_cpu_gprs_esp += sizeof(u32)), \
+	    (xmhfhwm_cpu_gprs_eip = _impl_xmhfhwm_cpu_insn_popl_mem()), \
 	    (u64)(((u64)xmhfhwm_cpu_gprs_edx << 32) | xmhfhwm_cpu_gprs_eax) \
 	    )\
 
