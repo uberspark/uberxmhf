@@ -73,3 +73,9 @@ void _impl_xmhfhwm_cpu_insn_pushl_mesp(int index){
 	xmhfhwm_cpu_gprs_esp -= sizeof(u32);
 	*((u32 *)xmhfhwm_cpu_gprs_esp) = value;
 }
+
+void _impl_xmhfhwm_cpu_insn_pushl_mem(u32 value){
+	xmhfhwm_cpu_gprs_esp -= sizeof(u32);
+	*((u32 *)xmhfhwm_cpu_gprs_esp) = value;
+}
+
