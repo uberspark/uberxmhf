@@ -45,7 +45,7 @@ $(THE_ARCHIVE): $(OBJECTS)
 	mkdir -p $(LIBXMHFHW_OBJECTS_DIR)
 	@echo Building "$@" from "$<"
 	cp -f $< $(LIBXMHFHW_OBJECTS_DIR)/$(@F).c
-	cd $(LIBXMHFHW_OBJECTS_DIR) && $(CCERT) -c -dmach $(CCERT_FLAGS) $(@F).c
+	cd $(LIBXMHFHW_OBJECTS_DIR) && $(CCERT) -c -dmach $(CCERT_FLAGS) -O0 $(@F).c
 	cd $(LIBXMHFHW_OBJECTS_DIR) && $(XMHF_DIR)/tools/extractasm.pl $(@F).mach > $(@F).S
 	cd $(LIBXMHFHW_OBJECTS_DIR) && gcc -c $(ASFLAGS) -o $@ $(@F).S
 	#cd $(LIBXMHFHW_OBJECTS_DIR) && mv $(@F).o $@

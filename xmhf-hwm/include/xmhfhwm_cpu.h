@@ -2285,7 +2285,11 @@ extern void _impl_xmhfhwm_cpu_insn_cmpl_imm_meax(u32 value, int index);
 
 // branch instructions
 #define xmhfhwm_cpu_insn_jmp(x) __builtin_annot("jmp "#x" ");
-#define xmhfhwm_cpu_insn_jmplabel(x) __builtin_annot("jmp "#x" ");
+
+#define xmhfhwm_cpu_insn_jmplabel(x) \
+	__builtin_annot("jmp "#x" "); \
+	goto x; \
+
 
 #define xmhfhwm_cpu_insn_jmpl_eax() __builtin_annot("jmpl *%eax ");
 #define xmhfhwm_cpu_insn_jc(x) __builtin_annot("jc "#x" ");
