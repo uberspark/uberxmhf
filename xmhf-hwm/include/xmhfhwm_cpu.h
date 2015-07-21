@@ -2230,6 +2230,8 @@ extern u32 xmhfhwm_cpu_gprs_eip;
 
 extern u32 xmhfhwm_cpu_gprs_eax;
 extern u32 xmhfhwm_cpu_gprs_edx;
+extern u32 xmhfhwm_cpu_eflags;
+
 
 extern void _impl_xmhfhwm_cpu_insn_hlt(void);
 extern void _impl_xmhfhwm_cpu_insn_pushl_mesp(int index);
@@ -2287,7 +2289,12 @@ extern void _impl_xmhfhwm_cpu_insn_cmpl_imm_meax(u32 value, int index);
 
 #define xmhfhwm_cpu_insn_jmpl_eax() __builtin_annot("jmpl *%eax ");
 #define xmhfhwm_cpu_insn_jc(x) __builtin_annot("jc "#x" ");
-#define xmhfhwm_cpu_insn_je(x) __builtin_annot("je "#x" ");
+
+#define xmhfhwm_cpu_insn_je(x) \
+	__builtin_annot("je "#x" "); \
+	if(xmhfhwm_cpu_eflags & EFLAGS_ZF) goto x; \
+
+
 #define xmhfhwm_cpu_insn_jnc(x) __builtin_annot("jnc "#x" ");
 #define xmhfhwm_cpu_insn_jnz(x) __builtin_annot("jnz "#x" ");
 #define xmhfhwm_cpu_insn_jbe(x) __builtin_annot("jbe "#x" ");

@@ -2813,7 +2813,10 @@
 //////
 // CASM specific definitions
 //////
-#define CASM_LABEL(x)   __builtin_annot(#x": ");
+#define CASM_LABEL(x) \
+	__builtin_annot(#x": "); \
+	x: \
+
 #define CASM_BALIGN(x)  __builtin_annot(".balign "#x" ");
 
 #define CASM_NOPARAM        NULL
