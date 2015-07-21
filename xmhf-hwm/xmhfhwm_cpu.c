@@ -115,3 +115,9 @@ void _impl_xmhfhwm_cpu_insn_movl_imm_meax(u32 value, int index){
 	value_meax = (uint32_t *)((uint32_t)((int32_t)xmhfhwm_cpu_gprs_eax + (int32_t)index));
 	*value_meax = value;
 }
+
+void _impl_xmhfhwm_cpu_insn_movl_meax_edx(int index){
+	uint32_t value_meax;
+	value_meax = *((uint32_t *)((uint32_t)((int32_t)xmhfhwm_cpu_gprs_eax + (int32_t)index)));
+	xmhfhwm_cpu_gprs_edx = value_meax;
+}
