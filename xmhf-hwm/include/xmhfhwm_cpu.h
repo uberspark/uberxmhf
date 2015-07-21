@@ -2244,7 +2244,7 @@ extern void _impl_xmhfhwm_cpu_insn_cmpl_imm_meax(u32 value, int index);
 extern void _impl_xmhfhwm_cpu_insn_movl_imm_meax(u32 value, int index);
 extern void _impl_xmhfhwm_cpu_insn_movl_meax_edx(int index);
 extern void _impl_xmhfhwm_cpu_insn_movl_meax_ecx(int index);
-
+extern void _impl_xmhfhwm_cpu_insn_movl_ecx_meax(int index);
 
 //////
 // CASM C to ASM call macros
@@ -2358,7 +2358,11 @@ extern void _impl_xmhfhwm_cpu_insn_movl_meax_ecx(int index);
 #define xmhfhwm_cpu_insn_cmpl_imm_meax(x,y) _xmhfhwm_cpu_insn_cmpl_imm_meax(x,y)
 
 
-#define xmhfhwm_cpu_insn_movl_ecx_meax(x) __builtin_annot("movl %ecx, "#x"(%eax) ");
+#define xmhfhwm_cpu_insn_movl_ecx_meax(x) \
+	__builtin_annot("movl %ecx, "#x"(%eax) "); \
+	_impl_xmhfhwm_cpu_insn_movl_ecx_meax(x); \
+
+
 #define xmhfhwm_cpu_insn_movl_edx_meax(x) __builtin_annot("movl %edx, "#x"(%eax) ");
 
 
