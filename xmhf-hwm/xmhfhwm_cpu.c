@@ -58,6 +58,7 @@ u32 xmhfhwm_cpu_gprs_esp = 0;
 
 u32 xmhfhwm_cpu_gprs_eax = 0;
 u32 xmhfhwm_cpu_gprs_edx = 0;
+u32 xmhfhwm_cpu_eflags = 0;
 
 
 void _impl_xmhfhwm_cpu_insn_hlt(void){
@@ -95,4 +96,15 @@ void _impl_xmhfhwm_cpu_insn_movl_mesp_eax(int index){
 	u32 *value;
 	value = (u32 *)((u32)((int)xmhfhwm_cpu_gprs_esp + (int)index));
 	*value = xmhfhwm_cpu_gprs_eax;
+}
+
+
+void _impl_xmhfhwm_cpu_insn_cmpl_imm_meax(u32 value, int index){
+	uint32_t value_meax;
+	value_meax = *((uint32_t *)((uint32_t)((int32_t)xmhfhwm_cpu_gprs_eax + (int32_t)index)));
+
+	//XXX: TODO propagation of CF, PF, AF, SF and OF
+        if(value_meax - value == 0)
+		xmhfhwm_cpu_eflags |= EFLAGS_ZF;
+
 }
