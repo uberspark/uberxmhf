@@ -2243,6 +2243,7 @@ extern void _impl_xmhfhwm_cpu_insn_movl_mesp_eax(int index);
 extern void _impl_xmhfhwm_cpu_insn_cmpl_imm_meax(u32 value, int index);
 extern void _impl_xmhfhwm_cpu_insn_movl_imm_meax(u32 value, int index);
 extern void _impl_xmhfhwm_cpu_insn_movl_meax_edx(int index);
+extern void _impl_xmhfhwm_cpu_insn_movl_meax_ecx(int index);
 
 
 //////
@@ -2387,7 +2388,10 @@ extern void _impl_xmhfhwm_cpu_insn_movl_meax_edx(int index);
 
 #define xmhfhwm_cpu_insn_movl_meax_eax(x) __builtin_annot("movl "#x"(%eax), %eax ");
 #define xmhfhwm_cpu_insn_movl_meax_ebx(x) __builtin_annot("movl "#x"(%eax), %ebx ");
-#define xmhfhwm_cpu_insn_movl_meax_ecx(x) __builtin_annot("movl "#x"(%eax), %ecx ");
+
+#define xmhfhwm_cpu_insn_movl_meax_ecx(x) \
+	__builtin_annot("movl "#x"(%eax), %ecx "); \
+	_impl_xmhfhwm_cpu_insn_movl_meax_ecx(x); \
 
 #define xmhfhwm_cpu_insn_movl_meax_edx(x) \
 	__builtin_annot("movl "#x"(%eax), %edx "); \

@@ -58,6 +58,8 @@ u32 xmhfhwm_cpu_gprs_esp = 0;
 
 u32 xmhfhwm_cpu_gprs_eax = 0;
 u32 xmhfhwm_cpu_gprs_edx = 0;
+u32 xmhfhwm_cpu_gprs_ecx = 0;
+
 u32 xmhfhwm_cpu_eflags = 0;
 
 
@@ -121,3 +123,10 @@ void _impl_xmhfhwm_cpu_insn_movl_meax_edx(int index){
 	value_meax = *((uint32_t *)((uint32_t)((int32_t)xmhfhwm_cpu_gprs_eax + (int32_t)index)));
 	xmhfhwm_cpu_gprs_edx = value_meax;
 }
+
+void _impl_xmhfhwm_cpu_insn_movl_meax_ecx(int index){
+	uint32_t value_meax;
+	value_meax = *((uint32_t *)((uint32_t)((int32_t)xmhfhwm_cpu_gprs_eax + (int32_t)index)));
+	xmhfhwm_cpu_gprs_ecx = value_meax;
+}
+
