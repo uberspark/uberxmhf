@@ -57,6 +57,7 @@
 
 #if defined(__XMHF_TARGET_TRIAD_X86_VMX_X86PC__)
 
+    #include <xmhfhwm_casm.h>  			//CPU
     #include <xmhfhwm_cpu.h>  			//CPU
     #include <xmhfhwm_pci.h>        		//PCI bus glue
     #include <xmhfhwm_pit.h>        		//PIT
