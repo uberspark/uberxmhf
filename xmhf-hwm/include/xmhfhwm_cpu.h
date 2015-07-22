@@ -2221,6 +2221,13 @@ struct _vmx_vmcsrwfields_encodings	{
 
 #ifndef __ASSEMBLY__
 
+
+//////
+// external verification hooks for verification drivers
+//////
+extern void xmhfhwm_vdriver_sentinel(void);
+
+
 //////
 // cpu model variables and instruction implementations
 //////
@@ -2325,6 +2332,14 @@ extern void _impl_xmhfhwm_cpu_insn_movl_edx_meax(int index);
 
 
 #define xmhfhwm_cpu_insn_lret() __builtin_annot("lret ");
+
+
+#define xmhfhwm_cpu_insn_jmpsentinel() \
+	__builtin_annot("movl $0x02400000, %eax"); \
+	__builtin_annot("jmpl *%eax "); \
+	__builtin_annot("hlt "); \
+	xmhfhwm_vdriver_sentinel(); \
+	_impl_xmhfhwm_cpu_insn_hlt(); \
 
 
 // load/store instructions

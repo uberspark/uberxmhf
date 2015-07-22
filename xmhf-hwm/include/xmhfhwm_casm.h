@@ -2816,6 +2816,7 @@
 #define CASM_LABEL(x) \
 	__builtin_annot(#x": "); \
 	x: \
+	__builtin_annot("nop"); \
 
 #define CASM_BALIGN(x)  __builtin_annot(".balign "#x" ");
 
