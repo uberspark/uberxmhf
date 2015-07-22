@@ -81,7 +81,8 @@ u32 xmhfhw_sysmemaccess_readu32(u32 addr){
     u32 *valueptr = (u32 *)addr;
     u32 value = *valueptr;
     return value;
-}*/
+}
+
 
 //read 64-bits from absolute physical address
 u64 xmhfhw_sysmemaccess_readu64(u32 addr){
@@ -89,20 +90,23 @@ u64 xmhfhw_sysmemaccess_readu64(u32 addr){
     u64 value = *valueptr;
     return value;
 }
+*/
 
 
-//write 8-bits to absolute physical address
+/*//write 8-bits to absolute physical address
 void xmhfhw_sysmemaccess_writeu8(u32 addr, u8 val) {
     u8 *valueptr = (u8 *)addr;
     *valueptr = val;
-}
+}*/
 
-//write 16-bits to absolute physical address
+
+/*//write 16-bits to absolute physical address
 void xmhfhw_sysmemaccess_writeu16(u32 addr, u16 val) {
     u16 *valueptr = (u16 *)addr;
     *valueptr = val;
-}
+}*/
 
+/*
 //write 32-bits to absolute physical address
 void xmhfhw_sysmemaccess_writeu32(u32 addr, u32 val) {
     u32 *valueptr = (u32 *)addr;
@@ -114,6 +118,7 @@ void xmhfhw_sysmemaccess_writeu64(u32 addr, u64 val) {
     u64 *valueptr = (u64 *)addr;
     *valueptr = val;
 }
+*/
 
 //the following function can be used to write to framework data areas
 //only. e.g., copying from rich guest to hypapp data buffer

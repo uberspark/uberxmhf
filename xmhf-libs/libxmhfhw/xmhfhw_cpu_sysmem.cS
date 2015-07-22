@@ -90,3 +90,67 @@ CASM_FUNCDEF(u32, xmhfhw_sysmemaccess_readu32,
 },
 u32 addr)
 
+
+CASM_FUNCDEF(u64, xmhfhw_sysmemaccess_readu64,
+{
+	xmhfhwm_cpu_insn_pushl_esi();	//save esi
+	xmhfhwm_cpu_insn_movl_mesp_esi(0x8); //esi = addr
+	xmhfhwm_cpu_insn_movl_mesi_eax(0x0); //eax = [esi]
+	xmhfhwm_cpu_insn_movl_mesi_edx(0x4); //edx = [esi+4]
+	xmhfhwm_cpu_insn_popl_esi();	//restore esi
+	xmhfhwm_cpu_insn_ret();		//return
+},
+u32 addr)
+
+
+CASM_FUNCDEF(void, xmhfhw_sysmemaccess_writeu8,
+{
+	xmhfhwm_cpu_insn_pushl_esi();	//save esi
+	xmhfhwm_cpu_insn_movl_mesp_esi(0x8); //esi = addr
+	xmhfhwm_cpu_insn_movl_mesp_eax(0xC); //eax = val
+	xmhfhwm_cpu_insn_movb_al_mesi(0x0); //[esi] = al
+	xmhfhwm_cpu_insn_popl_esi();	//restore esi
+	xmhfhwm_cpu_insn_ret();		//return
+},
+u32 addr,
+u8 val)
+
+
+CASM_FUNCDEF(void, xmhfhw_sysmemaccess_writeu16,
+{
+	xmhfhwm_cpu_insn_pushl_esi();	//save esi
+	xmhfhwm_cpu_insn_movl_mesp_esi(0x8); //esi = addr
+	xmhfhwm_cpu_insn_movl_mesp_eax(0xC); //eax = val
+	xmhfhwm_cpu_insn_movw_ax_mesi(0x0); //[esi] = ax
+	xmhfhwm_cpu_insn_popl_esi();	//restore esi
+	xmhfhwm_cpu_insn_ret();		//return
+},
+u32 addr,
+u16 val)
+
+CASM_FUNCDEF(void, xmhfhw_sysmemaccess_writeu32,
+{
+	xmhfhwm_cpu_insn_pushl_esi();	//save esi
+	xmhfhwm_cpu_insn_movl_mesp_esi(0x8); //esi = addr
+	xmhfhwm_cpu_insn_movl_mesp_eax(0xC); //eax = val
+	xmhfhwm_cpu_insn_movl_eax_mesi(0x0); //[esi] = eax
+	xmhfhwm_cpu_insn_popl_esi();	//restore esi
+	xmhfhwm_cpu_insn_ret();		//return
+},
+u32 addr,
+u32 val)
+
+
+CASM_FUNCDEF(void, xmhfhw_sysmemaccess_writeu64,
+{
+	xmhfhwm_cpu_insn_pushl_esi();	//save esi
+	xmhfhwm_cpu_insn_movl_mesp_esi(0x8); //esi = addr
+	xmhfhwm_cpu_insn_movl_mesp_eax(0xC); //eax = low 32-bits of val
+	xmhfhwm_cpu_insn_movl_mesp_edx(0x10); //edx = high 32-bits of val
+	xmhfhwm_cpu_insn_movl_eax_mesi(0x0); //[esi] = eax
+	xmhfhwm_cpu_insn_movl_edx_mesi(0x4); //[esi+4] = edx
+	xmhfhwm_cpu_insn_popl_esi();	//restore esi
+	xmhfhwm_cpu_insn_ret();		//return
+},
+u32 addr,
+u64 val)
