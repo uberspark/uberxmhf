@@ -60,6 +60,8 @@ slab_params_t sp;
 
 void xmhfhwm_vdriver_sentinel(void){
 	//@assert sp.slab_ctype == XMHFGEEC_SENTINEL_RET_uVT_uVU_PROG_TO_VfT_PROG;
+	//@assert sp.src_slabid == 6;
+	//@assert sp.dst_slabid == 5;
 	//@assert 0;
 }
 
@@ -77,8 +79,8 @@ void main(void){
 
 	//initialize sp
 	sp.slab_ctype = XMHFGEEC_SENTINEL_CALL_uVT_uVU_PROG_TO_VfT_PROG;
-	sp.src_slabid = 0;
-	sp.dst_slabid = 0;
+	sp.src_slabid = 5;
+	sp.dst_slabid = 6;
 	sp.dst_uapifn = 0;
 	sp.cpuid = cpuid;
 
