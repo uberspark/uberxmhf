@@ -89,6 +89,14 @@ void xmhfhwm_vdriver_sentinel(void){
 }
 #endif //__CALL_EXCEPTION__
 
+#if defined (__CALL_INTERCEPT__)
+void xmhfhwm_vdriver_sentinel(void){
+	//@assert sp.slab_ctype == XMHFGEEC_SENTINEL_RET_INTERCEPT;
+	//@assert sp.src_slabid == 6;
+	//@assert sp.dst_slabid == 5;
+	//@assert 0;
+}
+#endif //__CALL_INTERCEPT__
 
 
 void slab_main(slab_params_t *sp){
@@ -113,6 +121,9 @@ void main(void){
 #if defined (__CALL_EXCEPTION__)
 	sp.slab_ctype = XMHFGEEC_SENTINEL_CALL_EXCEPTION;
 #endif //__CALL_EXCEPTION__
+#if defined (__CALL_INTERCEPT__)
+	sp.slab_ctype = XMHFGEEC_SENTINEL_CALL_INTERCEPT;
+#endif //__CALL_INTERCEPT__
 
 	sp.src_slabid = 5;
 	sp.dst_slabid = 6;
