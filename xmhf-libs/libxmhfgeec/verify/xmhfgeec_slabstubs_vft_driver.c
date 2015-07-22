@@ -59,12 +59,12 @@ u32 cpuid = 0;	//BSP cpu
 slab_params_t sp;
 
 void xmhfhwm_vdriver_sentinel(void){
+	//@assert sp.slab_ctype == XMHFGEEC_SENTINEL_RET_uVT_uVU_PROG_TO_VfT_PROG;
 	//@assert 0;
-
 }
 
 void slab_main(slab_params_t *sp){
-	//@assert sp->slab_ctype == 0xFF;
+	// //@assert sp->slab_ctype == 0xFF;
 
 }
 
@@ -76,7 +76,7 @@ void main(void){
 
 
 	//initialize sp
-	sp.slab_ctype = 0xFF;
+	sp.slab_ctype = XMHFGEEC_SENTINEL_CALL_uVT_uVU_PROG_TO_VfT_PROG;
 	sp.src_slabid = 0;
 	sp.dst_slabid = 0;
 	sp.dst_uapifn = 0;
