@@ -80,6 +80,14 @@ void xmhfhwm_vdriver_sentinel(void){
 }
 #endif //__CALL_uVT_uVU_PROG_TO_VfT_PROG__
 
+#if defined (__CALL_EXCEPTION__)
+void xmhfhwm_vdriver_sentinel(void){
+	//@assert sp.slab_ctype == XMHFGEEC_SENTINEL_RET_EXCEPTION;
+	//@assert sp.src_slabid == 6;
+	//@assert sp.dst_slabid == 5;
+	//@assert 0;
+}
+#endif //__CALL_EXCEPTION__
 
 
 
@@ -102,6 +110,10 @@ void main(void){
 #if defined (__CALL_uVT_uVU_PROG_TO_VfT_PROG__)
 	sp.slab_ctype = XMHFGEEC_SENTINEL_CALL_uVT_uVU_PROG_TO_VfT_PROG;
 #endif //__CALL_uVT_uVU_PROG_TO_VfT_PROG__
+#if defined (__CALL_EXCEPTION__)
+	sp.slab_ctype = XMHFGEEC_SENTINEL_CALL_EXCEPTION;
+#endif //__CALL_EXCEPTION__
+
 	sp.src_slabid = 5;
 	sp.dst_slabid = 6;
 	sp.dst_uapifn = 0;
