@@ -289,7 +289,7 @@ CASM_FUNCDECL(void xmhfhw_sysmemaccess_writeu16(u32 addr, u16 val));
 CASM_FUNCDECL(void xmhfhw_sysmemaccess_writeu32(u32 addr, u32 val));
 CASM_FUNCDECL(void xmhfhw_sysmemaccess_writeu64(u32 addr, u64 val));
 
-void xmhfhw_sysmemaccess_copy(u8 *dest, u8 *src, u32 size);
+CASM_FUNCDECL(void xmhfhw_sysmemaccess_copy(u8 *dest, u8 *src, u32 size));
 
 #endif //__ASSEMBLY__
 

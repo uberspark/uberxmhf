@@ -2343,6 +2343,11 @@ extern void _impl_xmhfhwm_cpu_insn_movl_edx_meax(int index);
 
 
 // load/store instructions
+#define xmhfhwm_cpu_insn_cld() __builtin_annot("cld");
+#define xmhfhwm_cpu_insn_rep_movsb() __builtin_annot("rep movsb");
+
+
+
 #define _xmhfhwm_cpu_insn_movl_imm_eax(x) __builtin_annot("movl $"#x", %eax");
 #define xmhfhwm_cpu_insn_movl_imm_eax(x) _xmhfhwm_cpu_insn_movl_imm_eax(x)
 
@@ -2400,6 +2405,8 @@ extern void _impl_xmhfhwm_cpu_insn_movl_edx_meax(int index);
 #define xmhfhwm_cpu_insn_movl_mesp_ecx(x) __builtin_annot("movl "#x"(%esp), %ecx ");
 #define xmhfhwm_cpu_insn_movl_mesp_edx(x) __builtin_annot("movl "#x"(%esp), %edx ");
 #define xmhfhwm_cpu_insn_movl_mesp_esi(x) __builtin_annot("movl "#x"(%esp), %esi ");
+#define xmhfhwm_cpu_insn_movl_mesp_edi(x) __builtin_annot("movl "#x"(%esp), %edi ");
+
 #define xmhfhwm_cpu_insn_movl_mecx_eax(x) __builtin_annot("movl "#x"(%ecx), %eax ");
 #define xmhfhwm_cpu_insn_movl_mecx_edx(x) __builtin_annot("movl "#x"(%ecx), %edx ");
 #define xmhfhwm_cpu_insn_movl_eax_mecx(x) __builtin_annot("movl %eax, "#x"(%ecx) ");
