@@ -337,7 +337,7 @@ bool xmhfhw_platform_x86pc_vtd_drhd_set_root_entry_table(VTD_DRHD *drhd,  u64 re
 	VTD_RTADDR_REG rtaddr;
 	VTD_GCMD_REG gcmd;
 	VTD_GSTS_REG gsts;
-	u32 retbuffer_paddr = hva2spa((u32)ret_addr);
+	u32 retbuffer_paddr = (u32)ret_addr;
 	//VTD_DRHD *drhd = _vtd_get_drhd_struct(drhd_handle);
 
 	//sanity check

@@ -278,14 +278,7 @@ CASM_FUNCDECL(u8 inb (u32 port));
 
 #ifndef __ASSEMBLY__
 
-void * hva2sla(void *hva);
-spa_t sla2spa(void *sla);
-spa_t hva2spa(void *hva);
-void * spa2hva(spa_t spa);
-spa_t gpa2spa(gpa_t gpa);
-gpa_t spa2gpa(spa_t spa);
-void* gpa2hva(gpa_t gpa);
-gpa_t hva2gpa(hva_t hva);
+
 u8 xmhfhw_sysmemaccess_readu8(u32 addr);
 u16 xmhfhw_sysmemaccess_readu16(u32 addr);
 u32 xmhfhw_sysmemaccess_readu32(u32 addr);
