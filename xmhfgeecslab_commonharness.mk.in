@@ -23,21 +23,21 @@ ifeq ($(XMHF_SLAB_TYPE), VfT_SLAB)
     ifeq ($(XMHF_SLAB_SUBTYPE), SENTINEL)
         XMHF_SLAB_STUBOBJECTS := $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_slabmapdef.o $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_slabinfotable.o
     else ifeq ($(XMHF_SLAB_SUBTYPE), PRIME)
-        XMHF_SLAB_STUBOBJECTS := $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_slabmapdef.o $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_slabinfotable.o $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_vft_prog_stubs.o
+        XMHF_SLAB_STUBOBJECTS := $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_slabmapdef.o $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_slabinfotable.o $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_slabstubs_vft.o
     else ifeq ($(XMHF_SLAB_SUBTYPE), UAPI)
-        XMHF_SLAB_STUBOBJECTS := $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_slabmapdef.o $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_slabinfotable.o $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_vft_prog_stubs.o
+        XMHF_SLAB_STUBOBJECTS := $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_slabmapdef.o $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_slabinfotable.o $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_slabstubs_vft.o
     else ifeq ($(XMHF_SLAB_SUBTYPE), INIT)
-        XMHF_SLAB_STUBOBJECTS := $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_slabmapdef.o $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_slabinfotable.o $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_vft_prog_stubs.o
+        XMHF_SLAB_STUBOBJECTS := $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_slabmapdef.o $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_slabinfotable.o $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_slabstubs_vft.o
     else ifeq ($(XMHF_SLAB_SUBTYPE), EXCEPTION)
-        XMHF_SLAB_STUBOBJECTS := $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_slabmapdef.o $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_slabinfotable.o $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_vft_prog_stubs.o
+        XMHF_SLAB_STUBOBJECTS := $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_slabmapdef.o $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_slabinfotable.o $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_slabstubs_vft.o
     else ifeq ($(XMHF_SLAB_SUBTYPE), INTERCEPT)
-        XMHF_SLAB_STUBOBJECTS := $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_slabmapdef.o $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_slabinfotable.o $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_vft_prog_stubs.o
+        XMHF_SLAB_STUBOBJECTS := $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_slabmapdef.o $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_slabinfotable.o $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_slabstubs_vft.o
     else ifeq ($(XMHF_SLAB_SUBTYPE), XCORE)
-        XMHF_SLAB_STUBOBJECTS := $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_slabmapdef.o $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_slabinfotable.o $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_vft_prog_stubs.o
+        XMHF_SLAB_STUBOBJECTS := $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_slabmapdef.o $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_slabinfotable.o $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_slabstubs_vft.o
     else ifeq ($(XMHF_SLAB_SUBTYPE), XHYPAPP)
-        XMHF_SLAB_STUBOBJECTS := $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_slabmapdef.o $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_slabinfotable.o $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_vft_prog_stubs.o
-    else ifeq ($(XMHF_SLAB_SUBTYPE), XGUEST)
-        XMHF_SLAB_STUBOBJECTS := $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_slabmapdef.o $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_slabinfotable.o $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_vft_prog_stubs.o
+        XMHF_SLAB_STUBOBJECTS := $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_slabmapdef.o $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_slabinfotable.o $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_slabstubs_vft.o
+    #else ifeq ($(XMHF_SLAB_SUBTYPE), XGUEST)
+    #    XMHF_SLAB_STUBOBJECTS := $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_slabmapdef.o $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_slabinfotable.o $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_slabstubs_vft.o
     else
         #unsupported slab sub-type
         XMHF_SLAB_STUBOBJECTS :=
@@ -48,13 +48,13 @@ else ifeq ($(XMHF_SLAB_TYPE), uVT_SLAB)
 
 
     ifeq ($(XMHF_SLAB_SUBTYPE), INIT)
-        XMHF_SLAB_STUBOBJECTS := $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_slabmapdef.o $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_slabinfotable.o $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_uvt_uvu_prog_stubs.o
+        XMHF_SLAB_STUBOBJECTS := $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_slabmapdef.o $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_slabinfotable.o $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_slabstubs_uvt.o
     else ifeq ($(XMHF_SLAB_SUBTYPE), XCORE)
-        XMHF_SLAB_STUBOBJECTS := $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_slabmapdef.o $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_slabinfotable.o $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_uvt_uvu_prog_stubs.o
+        XMHF_SLAB_STUBOBJECTS := $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_slabmapdef.o $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_slabinfotable.o $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_slabstubs_uvt.o
     else ifeq ($(XMHF_SLAB_SUBTYPE), XHYPAPP)
-        XMHF_SLAB_STUBOBJECTS := $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_slabmapdef.o $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_slabinfotable.o $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_uvt_uvu_prog_stubs.o
-    else ifeq ($(XMHF_SLAB_SUBTYPE), XGUEST)
-        XMHF_SLAB_STUBOBJECTS := $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_slabmapdef.o $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_slabinfotable.o $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_uvt_uvu_prog_guest_stubs.o
+        XMHF_SLAB_STUBOBJECTS := $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_slabmapdef.o $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_slabinfotable.o $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_slabstubs_uvt.o
+    #else ifeq ($(XMHF_SLAB_SUBTYPE), XGUEST)
+    #    XMHF_SLAB_STUBOBJECTS := $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_slabmapdef.o $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_slabinfotable.o $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_slabstubs_uvtg.o
     else
         #unsupported slab sub-type
         XMHF_SLAB_STUBOBJECTS :=
@@ -65,11 +65,11 @@ else ifeq ($(XMHF_SLAB_TYPE), uVU_SLAB)
 
 
     ifeq ($(XMHF_SLAB_SUBTYPE), XHYPAPP)
-        XMHF_SLAB_STUBOBJECTS := $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_slabmapdef.o $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_slabinfotable.o $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_uvt_uvu_prog_stubs.o
+        XMHF_SLAB_STUBOBJECTS := $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_slabmapdef.o $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_slabinfotable.o $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_slabstubs_uvu.o
     else ifeq ($(XMHF_SLAB_SUBTYPE), XGUEST)
-        XMHF_SLAB_STUBOBJECTS := $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_slabmapdef.o $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_slabinfotable.o $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_uvt_uvu_prog_guest_stubs.o
+        XMHF_SLAB_STUBOBJECTS := $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_slabmapdef.o $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_slabinfotable.o $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_slabstubs_uvug.o
     else ifeq ($(XMHF_SLAB_SUBTYPE), XRICHGUEST)
-        XMHF_SLAB_STUBOBJECTS := $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_slabmapdef.o $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_slabinfotable.o $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_uvt_uvu_prog_guest_stubs.o
+        XMHF_SLAB_STUBOBJECTS := $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_slabmapdef.o $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_slabinfotable.o $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_slabstubs_uvug.o
     else
         #unsupported slab sub-type
         XMHF_SLAB_STUBOBJECTS :=

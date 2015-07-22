@@ -2219,6 +2219,76 @@ struct _vmx_vmcsrwfields_encodings	{
 
 
 
+#ifndef __ASSEMBLY__
+
+
+//////
+// external verification hooks for verification drivers
+//////
+extern void xmhfhwm_vdriver_sentinel(void);
+
+
+//////
+// cpu model variables and instruction implementations
+//////
+extern u32 xmhfhwm_cpu_gprs_esp;
+extern u32 xmhfhwm_cpu_gprs_eip;
+
+
+extern u32 xmhfhwm_cpu_gprs_eax;
+extern u32 xmhfhwm_cpu_gprs_edx;
+extern u32 xmhfhwm_cpu_eflags;
+
+
+extern void _impl_xmhfhwm_cpu_insn_hlt(void);
+extern void _impl_xmhfhwm_cpu_insn_pushl_mesp(int index);
+extern void _impl_xmhfhwm_cpu_insn_pushl_mem(u32 value);
+extern u32 _impl_xmhfhwm_cpu_insn_popl_mem(void);
+
+extern void _impl_xmhfhwm_cpu_insn_addl_imm_esp(u32 value);
+extern void _impl_xmhfhwm_cpu_insn_movl_mesp_eax(int index);
+extern void _impl_xmhfhwm_cpu_insn_cmpl_imm_meax(u32 value, int index);
+extern void _impl_xmhfhwm_cpu_insn_movl_imm_meax(u32 value, int index);
+extern void _impl_xmhfhwm_cpu_insn_movl_meax_edx(int index);
+extern void _impl_xmhfhwm_cpu_insn_movl_meax_ecx(int index);
+extern void _impl_xmhfhwm_cpu_insn_movl_ecx_meax(int index);
+extern void _impl_xmhfhwm_cpu_insn_movl_edx_meax(int index);
+
+
+//////
+// CASM C to ASM call macros
+//////
+
+#define CASM_RET_EIP	0xDEADBEEF
+
+
+#if defined (__XMHF_VERIFICATION__)
+	#define CASM_FUNCCALL_PARAMSETUP(X)    ( \
+		_impl_xmhfhwm_cpu_insn_pushl_mem((u32)X) \
+		), \
+
+	#define CASM_FUNCCALL(fn_name, ...)   (\
+	    PP_FOREACH(CASM_FUNCCALL_PARAMSETUP, (PP_REVERSEARGS(__VA_ARGS__))) \
+	    (_impl_xmhfhwm_cpu_insn_pushl_mem((u32)CASM_RET_EIP)), \
+	    fn_name(__VA_ARGS__), \
+	    (u64)(((u64)xmhfhwm_cpu_gprs_edx << 32) | xmhfhwm_cpu_gprs_eax) \
+	    )\
+
+#else
+
+	#define CASM_FUNCCALL(fn_name, ...)   (\
+	    fn_name(__VA_ARGS__) \
+	    )\
+
+#endif // defined
+
+
+
+#endif //__ASSEMBLY__
+
+
+
+
 
 //////
 // CASM instruction macros
@@ -2228,17 +2298,48 @@ struct _vmx_vmcsrwfields_encodings	{
 
 // branch instructions
 #define xmhfhwm_cpu_insn_jmp(x) __builtin_annot("jmp "#x" ");
+
+#define xmhfhwm_cpu_insn_jmplabel(x) \
+	__builtin_annot("jmp "#x" "); \
+	if(1) goto x; \
+
+
 #define xmhfhwm_cpu_insn_jmpl_eax() __builtin_annot("jmpl *%eax ");
 #define xmhfhwm_cpu_insn_jc(x) __builtin_annot("jc "#x" ");
-#define xmhfhwm_cpu_insn_je(x) __builtin_annot("je "#x" ");
+
+#define xmhfhwm_cpu_insn_je(x) \
+	__builtin_annot("je "#x" "); \
+	if(xmhfhwm_cpu_eflags & EFLAGS_ZF) goto x; \
+
+
 #define xmhfhwm_cpu_insn_jnc(x) __builtin_annot("jnc "#x" ");
 #define xmhfhwm_cpu_insn_jnz(x) __builtin_annot("jnz "#x" ");
 #define xmhfhwm_cpu_insn_jbe(x) __builtin_annot("jbe "#x" ");
 #define xmhfhwm_cpu_insn_ja(x) __builtin_annot("ja "#x" ");
 #define xmhfhwm_cpu_insn_int(x) __builtin_annot("int $"#x" ");
+
 #define xmhfhwm_cpu_insn_call(x) __builtin_annot("call "#x" ");
-#define xmhfhwm_cpu_insn_ret() __builtin_annot("ret ");
+
+#define xmhfhwm_cpu_insn_call_c_1p(fn_name, fn_p1_type) \
+	__builtin_annot("call "#fn_name" "); \
+	fn_name( (fn_p1_type) *((u32 *)(xmhfhwm_cpu_gprs_esp)) ); \
+
+#define xmhfhwm_cpu_insn_ret() \
+	__builtin_annot("ret "); \
+        xmhfhwm_cpu_gprs_eip = *(u32 *)xmhfhwm_cpu_gprs_esp; \
+	xmhfhwm_cpu_gprs_esp += sizeof(u32); \
+	return; \
+
+
 #define xmhfhwm_cpu_insn_lret() __builtin_annot("lret ");
+
+
+#define xmhfhwm_cpu_insn_jmpsentinel() \
+	__builtin_annot("movl $0x02400000, %eax"); \
+	__builtin_annot("jmpl *%eax "); \
+	__builtin_annot("hlt "); \
+	xmhfhwm_vdriver_sentinel(); \
+	_impl_xmhfhwm_cpu_insn_hlt(); \
 
 
 // load/store instructions
@@ -2260,22 +2361,40 @@ struct _vmx_vmcsrwfields_encodings	{
 
 #define xmhfhwm_cpu_insn_movl_imm_mesp(x,y) __builtin_annot("movl $"#x", "#y"(%esp) ");
 
-#define _xmhfhwm_cpu_insn_movl_imm_meax(x,y) __builtin_annot("movl $"#x", "#y"(%eax) ");
+#define _xmhfhwm_cpu_insn_movl_imm_meax(x,y) \
+	__builtin_annot("movl $"#x", "#y"(%eax) "); \
+	_impl_xmhfhwm_cpu_insn_movl_imm_meax(x,y); \
+
 #define xmhfhwm_cpu_insn_movl_imm_meax(x,y) _xmhfhwm_cpu_insn_movl_imm_meax(x,y)
 
-#define _xmhfhwm_cpu_insn_cmpl_imm_meax(x,y) __builtin_annot("cmpl $"#x", "#y"(%eax) ");
+#define _xmhfhwm_cpu_insn_cmpl_imm_meax(x,y) \
+	__builtin_annot("cmpl $"#x", "#y"(%eax) "); \
+	_impl_xmhfhwm_cpu_insn_cmpl_imm_meax(x,y); \
+
+
 #define xmhfhwm_cpu_insn_cmpl_imm_meax(x,y) _xmhfhwm_cpu_insn_cmpl_imm_meax(x,y)
 
 
-#define xmhfhwm_cpu_insn_movl_ecx_meax(x) __builtin_annot("movl %ecx, "#x"(%eax) ");
-#define xmhfhwm_cpu_insn_movl_edx_meax(x) __builtin_annot("movl %edx, "#x"(%eax) ");
+#define xmhfhwm_cpu_insn_movl_ecx_meax(x) \
+	__builtin_annot("movl %ecx, "#x"(%eax) "); \
+	_impl_xmhfhwm_cpu_insn_movl_ecx_meax(x); \
+
+
+#define xmhfhwm_cpu_insn_movl_edx_meax(x) \
+	__builtin_annot("movl %edx, "#x"(%eax) "); \
+        _impl_xmhfhwm_cpu_insn_movl_edx_meax(x); \
+
 
 
 #define xmhfhwm_cpu_insn_movl_eax_mesp(x) __builtin_annot("movl %eax, "#x"(%esp) ");
 #define xmhfhwm_cpu_insn_movl_eax_esp() __builtin_annot("movl %eax, %esp ");
 #define xmhfhwm_cpu_insn_movl_edx_esp() __builtin_annot("movl %edx, %esp ");
 
-#define xmhfhwm_cpu_insn_movl_mesp_eax(x) __builtin_annot("movl "#x"(%esp), %eax ");
+#define xmhfhwm_cpu_insn_movl_mesp_eax(x) \
+	__builtin_annot("movl "#x"(%esp), %eax "); \
+	_impl_xmhfhwm_cpu_insn_movl_mesp_eax(x); \
+
+
 #define xmhfhwm_cpu_insn_movw_mesp_ax(x) __builtin_annot("movw "#x"(%esp), %ax ");
 #define xmhfhwm_cpu_insn_movl_mesp_ebx(x) __builtin_annot("movl "#x"(%esp), %ebx ");
 #define xmhfhwm_cpu_insn_movl_mesp_ecx(x) __builtin_annot("movl "#x"(%esp), %ecx ");
@@ -2293,8 +2412,16 @@ struct _vmx_vmcsrwfields_encodings	{
 
 #define xmhfhwm_cpu_insn_movl_meax_eax(x) __builtin_annot("movl "#x"(%eax), %eax ");
 #define xmhfhwm_cpu_insn_movl_meax_ebx(x) __builtin_annot("movl "#x"(%eax), %ebx ");
-#define xmhfhwm_cpu_insn_movl_meax_ecx(x) __builtin_annot("movl "#x"(%eax), %ecx ");
-#define xmhfhwm_cpu_insn_movl_meax_edx(x) __builtin_annot("movl "#x"(%eax), %edx ");
+
+#define xmhfhwm_cpu_insn_movl_meax_ecx(x) \
+	__builtin_annot("movl "#x"(%eax), %ecx "); \
+	_impl_xmhfhwm_cpu_insn_movl_meax_ecx(x); \
+
+#define xmhfhwm_cpu_insn_movl_meax_edx(x) \
+	__builtin_annot("movl "#x"(%eax), %edx "); \
+	_impl_xmhfhwm_cpu_insn_movl_meax_edx(x); \
+
+
 #define xmhfhwm_cpu_insn_movl_meax_edi(x) __builtin_annot("movl "#x"(%eax), %edi ");
 #define xmhfhwm_cpu_insn_movl_meax_esi(x) __builtin_annot("movl "#x"(%eax), %esi ");
 #define xmhfhwm_cpu_insn_movl_meax_ebp(x) __builtin_annot("movl "#x"(%eax), %ebp ");
@@ -2324,7 +2451,10 @@ struct _vmx_vmcsrwfields_encodings	{
 #define xmhfhwm_cpu_insn_pushl_ecx() __builtin_annot("pushl %ecx ");
 #define xmhfhwm_cpu_insn_pushl_edx() __builtin_annot("pushl %edx ");
 #define xmhfhwm_cpu_insn_pushl_esp() __builtin_annot("pushl %esp ");
-#define xmhfhwm_cpu_insn_pushl_mesp(x) __builtin_annot("pushl "#x"(%esp) ");
+
+#define xmhfhwm_cpu_insn_pushl_mesp(x) \
+	__builtin_annot("pushl "#x"(%esp) ");\
+	_impl_xmhfhwm_cpu_insn_pushl_mesp(x);\
 
 #define xmhfhwm_cpu_insn_popl_eax() __builtin_annot("popl %eax ");
 #define xmhfhwm_cpu_insn_popl_ebx() __builtin_annot("popl %ebx ");
@@ -2337,6 +2467,14 @@ struct _vmx_vmcsrwfields_encodings	{
 
 #define xmhfhwm_cpu_insn_pushl_imm(x) __builtin_annot("pushl $"#x" ");
 
+#define xmhfhwm_cpu_insn_pushl_mem(x) \
+	__builtin_annot("pushl "#x" "); \
+	_impl_xmhfhwm_cpu_insn_pushl_mem(x);\
+
+#define xmhfhwm_cpu_insn_popl_mem(x) \
+	__builtin_annot("popl "#x" "); \
+	x = _impl_xmhfhwm_cpu_insn_popl_mem();\
+
 
 // arithmetic/logical
 #define xmhfhwm_cpu_insn_xorl_eax_eax() __builtin_annot("xorl %eax, %eax ");
@@ -2345,7 +2483,11 @@ struct _vmx_vmcsrwfields_encodings	{
 
 
 #define xmhfhwm_cpu_insn_addl_mesp_ecx(x) __builtin_annot("addl "#x"(%esp), %ecx ");
-#define xmhfhwm_cpu_insn_addl_imm_esp(x) __builtin_annot("addl $"#x", %esp ");
+
+#define xmhfhwm_cpu_insn_addl_imm_esp(x) \
+	__builtin_annot("addl $"#x", %esp "); \
+	_impl_xmhfhwm_cpu_insn_addl_imm_esp(x); \
+
 #define xmhfhwm_cpu_insn_subl_imm_esp(x) __builtin_annot("subl $"#x", %esp ");
 #define xmhfhwm_cpu_insn_addl_eax_ecx() __builtin_annot("addl %eax, %ecx");
 #define xmhfhwm_cpu_insn_addl_ecx_eax() __builtin_annot("addl %ecx, %eax");
@@ -2406,11 +2548,14 @@ struct _vmx_vmcsrwfields_encodings	{
 #define xmhfhwm_cpu_insn_pushfl() __builtin_annot("pushfl ");
 #define xmhfhwm_cpu_insn_popfl() __builtin_annot("popfl ");
 #define xmhfhwm_cpu_insn_rdtsc() __builtin_annot("rdtsc ");
-#define xmhfhwm_cpu_insn_hlt() __builtin_annot("hlt ");
 #define xmhfhwm_cpu_insn_pushal() __builtin_annot("pushal ");
 #define xmhfhwm_cpu_insn_popal() __builtin_annot("popal ");
 
 // system instructions
+#define xmhfhwm_cpu_insn_hlt() \
+	__builtin_annot("hlt "); \
+	_impl_xmhfhwm_cpu_insn_hlt() \
+
 #define xmhfhwm_cpu_insn_cli() __builtin_annot("cli ");
 #define xmhfhwm_cpu_insn_sti() __builtin_annot("sti ");
 #define xmhfhwm_cpu_insn_inb_dx_al() __builtin_annot("inb %dx, %al ");

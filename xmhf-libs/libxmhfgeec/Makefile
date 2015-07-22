@@ -1,6 +1,9 @@
-srcdir := $(dir $(lastword $(MAKEFILE_LIST)))
+srcdir := $(realpath $(dir $(lastword $(MAKEFILE_LIST))))
 vpath %.c $(srcdir)
 vpath %.cS $(srcdir)
+
+
+include $(srcdir)/../../common.mk
 
 
 C_SOURCES:= $(wildcard $(srcdir)/*.c)
@@ -17,18 +20,31 @@ I_SOURCES :=  $(wildcard $(srcdir)/include/*.h)
 CFLAGS += -I$(srcdir)/include -nostdinc -fno-builtin -nostdlib -Wall
 
 LIBXMHFGEEC_OBJECTS_DIR = _objs_libxmhfgeec
+LIBXMHFGEEC_VERIF_DIR = _verif_libxmhfgeec
+
 #THE_ARCHIVE = libxmhfgeec.a
 
 # targets
+.PHONY: verify
+verify:
+	mkdir -p $(LIBXMHFGEEC_VERIF_DIR)
+	$(CP) -f $(srcdir)/xmhfgeec_slabstubs_vft.cS $(LIBXMHFGEEC_VERIF_DIR)/xmhfgeec_slabstubs_vft.cS.c
+	$(CP) -f $(srcdir)/xmhfgeec_slabmapdef.c $(LIBXMHFGEEC_VERIF_DIR)/xmhfgeec_slabmapdef.c
+	cd $(LIBXMHFGEEC_VERIF_DIR) && frama-c -val -cpp-extra-args=-nostdinc -cpp-extra-args=-D__CALL_FROM_VfT_PROG__ $(VFLAGS) $(srcdir)/verify/xmhfgeec_slabstubs_vft_driver.c xmhfgeec_slabstubs_vft.cS.c xmhfgeec_slabmapdef.c $(V_XMHFHWM_MODULES)
+	cd $(LIBXMHFGEEC_VERIF_DIR) && frama-c -val -cpp-extra-args=-nostdinc -cpp-extra-args=-D__CALL_uVT_uVU_PROG_TO_VfT_PROG__ $(VFLAGS) $(srcdir)/verify/xmhfgeec_slabstubs_vft_driver.c xmhfgeec_slabstubs_vft.cS.c xmhfgeec_slabmapdef.c $(V_XMHFHWM_MODULES)
+	cd $(LIBXMHFGEEC_VERIF_DIR) && frama-c -val -cpp-extra-args=-nostdinc -cpp-extra-args=-D__CALL_EXCEPTION__ $(VFLAGS) $(srcdir)/verify/xmhfgeec_slabstubs_vft_driver.c xmhfgeec_slabstubs_vft.cS.c xmhfgeec_slabmapdef.c $(V_XMHFHWM_MODULES)
+	cd $(LIBXMHFGEEC_VERIF_DIR) && frama-c -val -cpp-extra-args=-nostdinc -cpp-extra-args=-D__CALL_INTERCEPT__ $(VFLAGS) $(srcdir)/verify/xmhfgeec_slabstubs_vft_driver.c xmhfgeec_slabstubs_vft.cS.c xmhfgeec_slabmapdef.c $(V_XMHFHWM_MODULES)
+
 .PHONY: all
 #all: $(THE_ARCHIVE)
 all: $(OBJECTS)
 	mkdir -p $(LIBXMHFGEEC_OBJECTS_DIR)
 	cp $(LIBXMHFGEEC_OBJECTS_DIR)/xmhfgeec_slabmapdef.o .
 	cp $(LIBXMHFGEEC_OBJECTS_DIR)/xmhfgeec_slabinfotable.o .
-	cp $(LIBXMHFGEEC_OBJECTS_DIR)/xmhfgeec_vft_prog_stubs.o .
-	cp $(LIBXMHFGEEC_OBJECTS_DIR)/xmhfgeec_uvt_uvu_prog_stubs.o .
-	cp $(LIBXMHFGEEC_OBJECTS_DIR)/xmhfgeec_uvt_uvu_prog_guest_stubs.o .
+	cp $(LIBXMHFGEEC_OBJECTS_DIR)/xmhfgeec_slabstubs_vft.o .
+	cp $(LIBXMHFGEEC_OBJECTS_DIR)/xmhfgeec_slabstubs_uvt.o .
+	cp $(LIBXMHFGEEC_OBJECTS_DIR)/xmhfgeec_slabstubs_uvu.o .
+	cp $(LIBXMHFGEEC_OBJECTS_DIR)/xmhfgeec_slabstubs_uvug.o .
 
 
 $(THE_ARCHIVE): $(OBJECTS)
@@ -49,7 +65,7 @@ $(THE_ARCHIVE): $(OBJECTS)
 	mkdir -p $(LIBXMHFGEEC_OBJECTS_DIR)
 	@echo Building "$@" from "$<"
 	cp -f $< $(LIBXMHFGEEC_OBJECTS_DIR)/$(@F).c
-	cd $(LIBXMHFGEEC_OBJECTS_DIR) && $(CCERT) -c -dmach $(CCERT_FLAGS) $(@F).c
+	cd $(LIBXMHFGEEC_OBJECTS_DIR) && $(CCERT) -c -dmach $(CCERT_FLAGS) -O0 $(@F).c
 	cd $(LIBXMHFGEEC_OBJECTS_DIR) && $(XMHF_DIR)/tools/extractasm.pl $(@F).mach > $(@F).S
 	cd $(LIBXMHFGEEC_OBJECTS_DIR) && gcc -c $(ASFLAGS) -o $@ $(@F).S
 	#cd $(LIBXMHFGEEC_OBJECTS_DIR) && mv $(@F).o $@
@@ -68,4 +84,5 @@ $(THE_ARCHIVE): $(OBJECTS)
 .PHONY: clean
 clean:
 	$(RM) -rf $(LIBXMHFGEEC_OBJECTS_DIR)
+	$(RM) -rf $(LIBXMHFGEEC_VERIF_DIR)
 

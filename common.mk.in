@@ -23,6 +23,9 @@ export ADDL_INCLUDES := -I$(XMHF_DIR)/include -I$(XMHF_DIR)/xmhf-slabs/include -
 XMHFLIBS_INC = $(foreach dir,$(XMHF_LIBDIRS),-I$(dir)/include)
 ADDL_INCLUDES += $(XMHFLIBS_INC)
 
+# construct module list that comprise the hardware model
+export V_XMHFHWM_MODULES := $(realpath $(wildcard $(XMHF_DIR)/xmhf-hwm/*.c))
+
 # for verification
 export V_ADDL_INCLUDES := -cpp-extra-args=-I$(XMHF_DIR)/include -cpp-extra-args=-I$(XMHF_DIR)/xmhf-slabs/include -cpp-extra-args=-I$(XMHF_DIR)/xmhf-hwm/include
 V_XMHFLIBS_INC = $(foreach dir,$(XMHF_LIBDIRS),-cpp-extra-args=-I$(dir)/include)
@@ -145,7 +148,7 @@ CCERT_FLAGS += -fno-inline-asm
 
 FLAGS += $(ADDL_INCLUDES)
 CCERT_FLAGS += $(ADDL_INCLUDES)
-VFLAGS = $(V_ADDL_INCLUDES)
+VFLAGS = $(V_ADDL_INCLUDES)  -cpp-extra-args=-D__XMHF_VERIFICATION__
 
 #-----generate compiler/assembler defines from configuration options selected
 FLAGS += -D___XMHF_BUILD_VERSION___=\"$(XMHF_BUILD_VERSION)\"
