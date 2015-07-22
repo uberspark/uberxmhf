@@ -279,7 +279,9 @@ CASM_FUNCDECL(u8 inb (u32 port));
 #ifndef __ASSEMBLY__
 
 
-u8 xmhfhw_sysmemaccess_readu8(u32 addr);
+//u8 xmhfhw_sysmemaccess_readu8(u32 addr);
+CASM_FUNCDECL(u8 xmhfhw_sysmemaccess_readu8(u32 addr));
+
 u16 xmhfhw_sysmemaccess_readu16(u32 addr);
 u32 xmhfhw_sysmemaccess_readu32(u32 addr);
 u64 xmhfhw_sysmemaccess_readu64(u32 addr);

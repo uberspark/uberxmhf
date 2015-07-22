@@ -44,84 +44,27 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-//xmhfhw_cpu_mem: CPU platform memory access interface (sysmem)
-// author: amit vasudevan (amitvasudevan@acm.org)
+//functions to read/write memory from "system physical address"
+//all reads and writes to non-framework memory areas (e.g., BIOS
+//data areas, MMIO, rich guest memory etc.) should finally end up
+//here
+
+//author: amit vasudevan (amitvasudevan@acm.org)
 
 #include <xmhf.h>
 #include <xmhf-hwm.h>
 #include <xmhfhw.h>
 #include <xmhf-debug.h>
 
-
-
-//functions to read/write memory from "system physical address"
-//all reads and writes to non-framework memory areas (e.g., BIOS
-//data areas, MMIO, rich guest memory etc.) should finally end up
-//here
-
-/*
-//read 8-bits from absolute physical address
-u8 xmhfhw_sysmemaccess_readu8(u32 addr){
-    u8 *valueptr = (u8 *)addr;
-    u8 value = *valueptr;
-    return value;
-}
-*/
-
-
-//read 16-bits from absolute physical address
-u16 xmhfhw_sysmemaccess_readu16(u32 addr){
-    u16 *valueptr = (u16 *)addr;
-    u16 value = *valueptr;
-    return value;
-}
-
-//read 32-bits from absolute physical address
-u32 xmhfhw_sysmemaccess_readu32(u32 addr){
-    u32 *valueptr = (u32 *)addr;
-    u32 value = *valueptr;
-    return value;
-}
-
-//read 64-bits from absolute physical address
-u64 xmhfhw_sysmemaccess_readu64(u32 addr){
-    u64 *valueptr = (u64 *)addr;
-    u64 value = *valueptr;
-    return value;
-}
-
-
-//write 8-bits to absolute physical address
-void xmhfhw_sysmemaccess_writeu8(u32 addr, u8 val) {
-    u8 *valueptr = (u8 *)addr;
-    *valueptr = val;
-}
-
-//write 16-bits to absolute physical address
-void xmhfhw_sysmemaccess_writeu16(u32 addr, u16 val) {
-    u16 *valueptr = (u16 *)addr;
-    *valueptr = val;
-}
-
-//write 32-bits to absolute physical address
-void xmhfhw_sysmemaccess_writeu32(u32 addr, u32 val) {
-    u32 *valueptr = (u32 *)addr;
-    *valueptr = val;
-}
-
-//write 64-bits to absolute physical address
-void xmhfhw_sysmemaccess_writeu64(u32 addr, u64 val) {
-    u64 *valueptr = (u64 *)addr;
-    *valueptr = val;
-}
-
-//the following function can be used to write to framework data areas
-//only. e.g., copying from rich guest to hypapp data buffer
-//memory copy from absolute physical address (src) to
-//absolute physical address (dest)
-//TODO: ensure dest does not fall within framework code regions
-void xmhfhw_sysmemaccess_copy(u8 *dest, u8 *src, u32 size){
-	memcpy(dest, src, size);
-}
+CASM_FUNCDEF(u8, xmhfhw_sysmemaccess_readu8,
+{
+	xmhfhwm_cpu_insn_pushl_esi();	//save esi
+	xmhfhwm_cpu_insn_movl_mesp_esi(0x8); //esi = addr
+	xmhfhwm_cpu_insn_movl_mesi_eax(0x0); //eax = [esi]
+	xmhfhwm_cpu_insn_andl_imm_eax(0x000000FF);  //eax = low 8-bits
+	xmhfhwm_cpu_insn_popl_esi();	//restore esi
+	xmhfhwm_cpu_insn_ret();		//return
+},
+u32 addr)
 
 
