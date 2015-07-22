@@ -120,6 +120,7 @@ void xmhfhw_sysmemaccess_writeu64(u32 addr, u64 val) {
 }
 */
 
+/*
 //the following function can be used to write to framework data areas
 //only. e.g., copying from rich guest to hypapp data buffer
 //memory copy from absolute physical address (src) to
@@ -128,5 +129,5 @@ void xmhfhw_sysmemaccess_writeu64(u32 addr, u64 val) {
 void xmhfhw_sysmemaccess_copy(u8 *dest, u8 *src, u32 size){
 	memcpy(dest, src, size);
 }
-
+*/
 

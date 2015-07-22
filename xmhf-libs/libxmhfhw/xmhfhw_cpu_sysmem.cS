@@ -154,3 +154,27 @@ CASM_FUNCDEF(void, xmhfhw_sysmemaccess_writeu64,
 },
 u32 addr,
 u64 val)
+
+
+
+CASM_FUNCDEF(void, xmhfhw_sysmemaccess_copy,
+{
+	xmhfhwm_cpu_insn_pushl_esi();	//save esi
+	xmhfhwm_cpu_insn_pushl_edi();	//save edi
+
+	xmhfhwm_cpu_insn_movl_mesp_edi(0xC); //edi = dest
+	xmhfhwm_cpu_insn_movl_mesp_esi(0x10); //esi = src
+        xmhfhwm_cpu_insn_movl_mesp_ecx(0x14); //ecx = size
+        xmhfhwm_cpu_insn_cld(); //clear direction flag, copy forward
+        xmhfhwm_cpu_insn_rep_movsb(); //copy
+
+	xmhfhwm_cpu_insn_popl_edi();	//restore edi
+	xmhfhwm_cpu_insn_popl_esi();	//restore esi
+	xmhfhwm_cpu_insn_ret();		//return
+},
+u8 *dest,
+u8 *src,
+u32 size)
+
+
+
