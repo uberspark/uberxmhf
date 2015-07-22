@@ -65,6 +65,12 @@ __CALL_EXCEPTION__
 __CALL_INTERCEPT__
 */
 
+#if defined (__CALL_FROM_VfT_PROG__)
+void xmhfhwm_vdriver_sentinel(void){
+	//@assert 0;
+}
+#endif //__CALL_FROM_VfT_PROG__
+
 #if defined (__CALL_uVT_uVU_PROG_TO_VfT_PROG__)
 void xmhfhwm_vdriver_sentinel(void){
 	//@assert sp.slab_ctype == XMHFGEEC_SENTINEL_RET_uVT_uVU_PROG_TO_VfT_PROG;
@@ -73,6 +79,7 @@ void xmhfhwm_vdriver_sentinel(void){
 	//@assert 0;
 }
 #endif //__CALL_uVT_uVU_PROG_TO_VfT_PROG__
+
 
 
 
@@ -89,6 +96,9 @@ void main(void){
 
 
 	//initialize sp
+#if defined (__CALL_FROM_VfT_PROG__)
+	sp.slab_ctype = XMHFGEEC_SENTINEL_CALL_FROM_VfT_PROG;
+#endif //__CALL_FROM_VfT_PROG__
 #if defined (__CALL_uVT_uVU_PROG_TO_VfT_PROG__)
 	sp.slab_ctype = XMHFGEEC_SENTINEL_CALL_uVT_uVU_PROG_TO_VfT_PROG;
 #endif //__CALL_uVT_uVU_PROG_TO_VfT_PROG__
@@ -108,8 +118,11 @@ void main(void){
 	// sp as the sole parameter
 	val = CASM_FUNCCALL(_slab_entrystub, (void *)&sp);
 
-	// //@assert xmhfhwm_cpu_gprs_esp == check_esp;
-	// //@assert xmhfhwm_cpu_gprs_eip == check_eip;
+#if defined (__CALL_FROM_VfT_PROG__)
+	//@assert xmhfhwm_cpu_gprs_esp == check_esp;
+	//@assert xmhfhwm_cpu_gprs_eip == check_eip;
+#endif //__CALL_FROM_VfT_PROG__
+
 
 }
 
