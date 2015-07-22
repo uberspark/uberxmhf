@@ -58,7 +58,10 @@
 u32 cpuid = 0;	//BSP cpu
 slab_params_t sp;
 
+void xmhfhwm_vdriver_sentinel(void){
+	//@assert 0;
 
+}
 
 void slab_main(slab_params_t *sp){
 	//@assert sp->slab_ctype == 0xFF;
