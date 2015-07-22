@@ -68,3 +68,25 @@ CASM_FUNCDEF(u8, xmhfhw_sysmemaccess_readu8,
 u32 addr)
 
 
+CASM_FUNCDEF(u16, xmhfhw_sysmemaccess_readu16,
+{
+	xmhfhwm_cpu_insn_pushl_esi();	//save esi
+	xmhfhwm_cpu_insn_movl_mesp_esi(0x8); //esi = addr
+	xmhfhwm_cpu_insn_movl_mesi_eax(0x0); //eax = [esi]
+	xmhfhwm_cpu_insn_andl_imm_eax(0x0000FFFF);  //eax = low 16-bits
+	xmhfhwm_cpu_insn_popl_esi();	//restore esi
+	xmhfhwm_cpu_insn_ret();		//return
+},
+u32 addr)
+
+
+CASM_FUNCDEF(u32, xmhfhw_sysmemaccess_readu32,
+{
+	xmhfhwm_cpu_insn_pushl_esi();	//save esi
+	xmhfhwm_cpu_insn_movl_mesp_esi(0x8); //esi = addr
+	xmhfhwm_cpu_insn_movl_mesi_eax(0x0); //eax = [esi]
+	xmhfhwm_cpu_insn_popl_esi();	//restore esi
+	xmhfhwm_cpu_insn_ret();		//return
+},
+u32 addr)
+

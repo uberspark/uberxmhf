@@ -69,7 +69,7 @@ u8 xmhfhw_sysmemaccess_readu8(u32 addr){
 */
 
 
-//read 16-bits from absolute physical address
+/*//read 16-bits from absolute physical address
 u16 xmhfhw_sysmemaccess_readu16(u32 addr){
     u16 *valueptr = (u16 *)addr;
     u16 value = *valueptr;
@@ -81,7 +81,7 @@ u32 xmhfhw_sysmemaccess_readu32(u32 addr){
     u32 *valueptr = (u32 *)addr;
     u32 value = *valueptr;
     return value;
-}
+}*/
 
 //read 64-bits from absolute physical address
 u64 xmhfhw_sysmemaccess_readu64(u32 addr){
