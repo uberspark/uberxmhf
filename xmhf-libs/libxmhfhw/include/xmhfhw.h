@@ -282,12 +282,13 @@ CASM_FUNCDECL(u8 inb (u32 port));
 CASM_FUNCDECL(u8 xmhfhw_sysmemaccess_readu8(u32 addr));
 CASM_FUNCDECL(u16 xmhfhw_sysmemaccess_readu16(u32 addr));
 CASM_FUNCDECL(u32 xmhfhw_sysmemaccess_readu32(u32 addr));
+CASM_FUNCDECL(u64 xmhfhw_sysmemaccess_readu64(u32 addr));
 
-u64 xmhfhw_sysmemaccess_readu64(u32 addr);
-void xmhfhw_sysmemaccess_writeu8(u32 addr, u8 val);
-void xmhfhw_sysmemaccess_writeu16(u32 addr, u16 val);
-void xmhfhw_sysmemaccess_writeu32(u32 addr, u32 val);
-void xmhfhw_sysmemaccess_writeu64(u32 addr, u64 val);
+CASM_FUNCDECL(void xmhfhw_sysmemaccess_writeu8(u32 addr, u8 val));
+CASM_FUNCDECL(void xmhfhw_sysmemaccess_writeu16(u32 addr, u16 val));
+CASM_FUNCDECL(void xmhfhw_sysmemaccess_writeu32(u32 addr, u32 val));
+CASM_FUNCDECL(void xmhfhw_sysmemaccess_writeu64(u32 addr, u64 val));
+
 void xmhfhw_sysmemaccess_copy(u8 *dest, u8 *src, u32 size);
 
 #endif //__ASSEMBLY__
