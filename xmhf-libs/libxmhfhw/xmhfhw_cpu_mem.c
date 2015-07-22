@@ -53,45 +53,6 @@
 #include <xmhf-debug.h>
 
 
-// Note: since we are unity mapped, runtime VA = system PA
-
-//hypervisor runtime virtual address to secure loader address
-void * hva2sla(void *hva){
-    return (void*)((u32)hva);
-}
-
-//secure loader address to system physical address
-spa_t sla2spa(void *sla){
-    return (spa_t) ((u32)sla );
-}
-
-// XMHF runtime virtual-address to system-physical-address and vice-versa
-spa_t hva2spa(void *hva){
-    uintptr_t hva_ui = (uintptr_t)hva;
-    return hva_ui;
-}
-
-void * spa2hva(spa_t spa){
-    return (void *)(uintptr_t)spa;
-}
-
-spa_t gpa2spa(gpa_t gpa)
-{
-        return gpa;
-}
-
-gpa_t spa2gpa(spa_t spa){
-        return spa;
-}
-
-void* gpa2hva(gpa_t gpa){
-        return spa2hva(gpa2spa(gpa));
-}
-
-gpa_t hva2gpa(hva_t hva){
-        return spa2gpa(hva2spa(hva));
-}
-
 
 //functions to read/write memory from "system physical address"
 //all reads and writes to non-framework memory areas (e.g., BIOS
