@@ -105,7 +105,7 @@ static void xmhfhic_setupinitpgtables(void){
 
     {
         _XDPRINTF_("fn:%s, line:%u\n", __func__, __LINE__);
- CASM_FUNCCALL(wrmsr64,MSR_EFER, (rdmsr64(MSR_EFER) | (0x800)) );
+ CASM_FUNCCALL(wrmsr64,MSR_EFER, (CASM_FUNCCALL(rdmsr64, MSR_EFER) | (0x800)) );
         _XDPRINTF_("EFER=%016llx\n", CASM_FUNCCALL(rdmsr64,MSR_EFER));
  CASM_FUNCCALL(write_cr4,read_cr4(CASM_NOPARAM) | (0x30) );
         _XDPRINTF_("CR4=%08x\n", CASM_FUNCCALL(read_cr4,CASM_NOPARAM));
@@ -1512,7 +1512,7 @@ static void __xmhfhic_vmx_gathermemorytypes(void){
   	}
 
   	//check MTRR caps
-	msr_value = rdmsr64(IA32_MTRRCAP);
+	msr_value = CASM_FUNCCALL(rdmsr64, IA32_MTRRCAP);
 	eax = (u32)msr_value;
 	edx = (u32)(msr_value >> 32);
 
@@ -1533,7 +1533,7 @@ static void __xmhfhic_vmx_gathermemorytypes(void){
 
 	//2. grab memory types using FIXED MTRRs
     //0x00000000-0x0007FFFF
-	msr_value = rdmsr64(IA32_MTRR_FIX64K_00000);
+	msr_value = CASM_FUNCCALL(rdmsr64, IA32_MTRR_FIX64K_00000);
 	eax = (u32)msr_value;
 	edx = (u32)(msr_value >> 32);
 
@@ -1546,7 +1546,7 @@ static void __xmhfhic_vmx_gathermemorytypes(void){
     _vmx_ept_memorytypes[index].startaddr = 0x00060000; _vmx_ept_memorytypes[index].endaddr = 0x0006FFFF; _vmx_ept_memorytypes[index++].type= ((edx & 0x00FF0000) >> 16);
     _vmx_ept_memorytypes[index].startaddr = 0x00070000; _vmx_ept_memorytypes[index].endaddr = 0x0007FFFF; _vmx_ept_memorytypes[index++].type= ((edx & 0xFF000000) >> 24);
     //0x00080000-0x0009FFFF
-  	msr_value = rdmsr64(IA32_MTRR_FIX16K_80000);
+  	msr_value = CASM_FUNCCALL(rdmsr64, IA32_MTRR_FIX16K_80000);
 	eax = (u32)msr_value;
 	edx = (u32)(msr_value >> 32);
 
@@ -1560,7 +1560,7 @@ static void __xmhfhic_vmx_gathermemorytypes(void){
     _vmx_ept_memorytypes[index].startaddr = 0x00098000; _vmx_ept_memorytypes[index].endaddr = 0x0009BFFF; _vmx_ept_memorytypes[index++].type= ((edx & 0x00FF0000) >> 16);
     _vmx_ept_memorytypes[index].startaddr = 0x0009C000; _vmx_ept_memorytypes[index].endaddr = 0x0009FFFF; _vmx_ept_memorytypes[index++].type= ((edx & 0xFF000000) >> 24);
     //0x000A0000-0x000BFFFF
-    	msr_value = rdmsr64(IA32_MTRR_FIX16K_A0000);
+    	msr_value = CASM_FUNCCALL(rdmsr64, IA32_MTRR_FIX16K_A0000);
 	eax = (u32)msr_value;
 	edx = (u32)(msr_value >> 32);
 
@@ -1573,7 +1573,7 @@ static void __xmhfhic_vmx_gathermemorytypes(void){
     _vmx_ept_memorytypes[index].startaddr = 0x000B8000; _vmx_ept_memorytypes[index].endaddr = 0x000BBFFF; _vmx_ept_memorytypes[index++].type= ((edx & 0x00FF0000) >> 16);
     _vmx_ept_memorytypes[index].startaddr = 0x000BC000; _vmx_ept_memorytypes[index].endaddr = 0x000BFFFF; _vmx_ept_memorytypes[index++].type= ((edx & 0xFF000000) >> 24);
     //0x000C0000-0x000C7FFF
-       	msr_value = rdmsr64(IA32_MTRR_FIX4K_C0000);
+       	msr_value = CASM_FUNCCALL(rdmsr64, IA32_MTRR_FIX4K_C0000);
 	eax = (u32)msr_value;
 	edx = (u32)(msr_value >> 32);
 
@@ -1586,7 +1586,7 @@ static void __xmhfhic_vmx_gathermemorytypes(void){
     _vmx_ept_memorytypes[index].startaddr = 0x000C6000; _vmx_ept_memorytypes[index].endaddr = 0x000C6FFF; _vmx_ept_memorytypes[index++].type= ((edx & 0x00FF0000) >> 16);
     _vmx_ept_memorytypes[index].startaddr = 0x000C7000; _vmx_ept_memorytypes[index].endaddr = 0x000C7FFF; _vmx_ept_memorytypes[index++].type= ((edx & 0xFF000000) >> 24);
     //0x000C8000-0x000C8FFF
-       	msr_value = rdmsr64(IA32_MTRR_FIX4K_C8000);
+       	msr_value = CASM_FUNCCALL(rdmsr64, IA32_MTRR_FIX4K_C8000);
 	eax = (u32)msr_value;
 	edx = (u32)(msr_value >> 32);
 
@@ -1599,7 +1599,7 @@ static void __xmhfhic_vmx_gathermemorytypes(void){
     _vmx_ept_memorytypes[index].startaddr = 0x000CE000; _vmx_ept_memorytypes[index].endaddr = 0x000CEFFF; _vmx_ept_memorytypes[index++].type= ((edx & 0x00FF0000) >> 16);
     _vmx_ept_memorytypes[index].startaddr = 0x000CF000; _vmx_ept_memorytypes[index].endaddr = 0x000CFFFF; _vmx_ept_memorytypes[index++].type= ((edx & 0xFF000000) >> 24);
     //0x000D0000-0x000D7FFF
-       	msr_value = rdmsr64(IA32_MTRR_FIX4K_D0000);
+       	msr_value = CASM_FUNCCALL(rdmsr64, IA32_MTRR_FIX4K_D0000);
 	eax = (u32)msr_value;
 	edx = (u32)(msr_value >> 32);
 
@@ -1612,7 +1612,7 @@ static void __xmhfhic_vmx_gathermemorytypes(void){
     _vmx_ept_memorytypes[index].startaddr = 0x000D6000; _vmx_ept_memorytypes[index].endaddr = 0x000D6FFF; _vmx_ept_memorytypes[index++].type= ((edx & 0x00FF0000) >> 16);
     _vmx_ept_memorytypes[index].startaddr = 0x000D7000; _vmx_ept_memorytypes[index].endaddr = 0x000D7FFF; _vmx_ept_memorytypes[index++].type= ((edx & 0xFF000000) >> 24);
     //0x000D8000-0x000DFFFF
-       	msr_value = rdmsr64(IA32_MTRR_FIX4K_D8000);
+       	msr_value = CASM_FUNCCALL(rdmsr64, IA32_MTRR_FIX4K_D8000);
 	eax = (u32)msr_value;
 	edx = (u32)(msr_value >> 32);
 
@@ -1625,7 +1625,7 @@ static void __xmhfhic_vmx_gathermemorytypes(void){
     _vmx_ept_memorytypes[index].startaddr = 0x000DE000; _vmx_ept_memorytypes[index].endaddr = 0x000DEFFF; _vmx_ept_memorytypes[index++].type= ((edx & 0x00FF0000) >> 16);
     _vmx_ept_memorytypes[index].startaddr = 0x000DF000; _vmx_ept_memorytypes[index].endaddr = 0x000DFFFF; _vmx_ept_memorytypes[index++].type= ((edx & 0xFF000000) >> 24);
     //0x000E0000-0x000E7FFF
-       	msr_value = rdmsr64(IA32_MTRR_FIX4K_E0000);
+       	msr_value = CASM_FUNCCALL(rdmsr64, IA32_MTRR_FIX4K_E0000);
 	eax = (u32)msr_value;
 	edx = (u32)(msr_value >> 32);
 
@@ -1638,7 +1638,7 @@ static void __xmhfhic_vmx_gathermemorytypes(void){
     _vmx_ept_memorytypes[index].startaddr = 0x000E6000; _vmx_ept_memorytypes[index].endaddr = 0x000E6FFF; _vmx_ept_memorytypes[index++].type= ((edx & 0x00FF0000) >> 16);
     _vmx_ept_memorytypes[index].startaddr = 0x000E7000; _vmx_ept_memorytypes[index].endaddr = 0x000E7FFF; _vmx_ept_memorytypes[index++].type= ((edx & 0xFF000000) >> 24);
     //0x000E8000-0x000EFFFF
-       	msr_value = rdmsr64(IA32_MTRR_FIX4K_E8000);
+       	msr_value = CASM_FUNCCALL(rdmsr64, IA32_MTRR_FIX4K_E8000);
 	eax = (u32)msr_value;
 	edx = (u32)(msr_value >> 32);
 
@@ -1651,7 +1651,7 @@ static void __xmhfhic_vmx_gathermemorytypes(void){
     _vmx_ept_memorytypes[index].startaddr = 0x000EE000; _vmx_ept_memorytypes[index].endaddr = 0x000EEFFF; _vmx_ept_memorytypes[index++].type= ((edx & 0x00FF0000) >> 16);
     _vmx_ept_memorytypes[index].startaddr = 0x000EF000; _vmx_ept_memorytypes[index].endaddr = 0x000EFFFF; _vmx_ept_memorytypes[index++].type= ((edx & 0xFF000000) >> 24);
     //0x000F0000-0x000F7FFF
-       	msr_value = rdmsr64(IA32_MTRR_FIX4K_F0000);
+       	msr_value = CASM_FUNCCALL(rdmsr64, IA32_MTRR_FIX4K_F0000);
 	eax = (u32)msr_value;
 	edx = (u32)(msr_value >> 32);
 
@@ -1664,7 +1664,7 @@ static void __xmhfhic_vmx_gathermemorytypes(void){
     _vmx_ept_memorytypes[index].startaddr = 0x000F6000; _vmx_ept_memorytypes[index].endaddr = 0x000F6FFF; _vmx_ept_memorytypes[index++].type= ((edx & 0x00FF0000) >> 16);
     _vmx_ept_memorytypes[index].startaddr = 0x000F7000; _vmx_ept_memorytypes[index].endaddr = 0x000F7FFF; _vmx_ept_memorytypes[index++].type= ((edx & 0xFF000000) >> 24);
     //0x000F8000-0x000FFFFF
-       	msr_value = rdmsr64(IA32_MTRR_FIX4K_F8000);
+       	msr_value = CASM_FUNCCALL(rdmsr64, IA32_MTRR_FIX4K_F8000);
 	eax = (u32)msr_value;
 	edx = (u32)(msr_value >> 32);
 
@@ -1686,13 +1686,13 @@ static void __xmhfhic_vmx_gathermemorytypes(void){
 		u32 i;
 
 		for(i=0; i < num_vmtrrs; i++){
-			msr_value = rdmsr64(msrval);
+			msr_value = CASM_FUNCCALL(rdmsr64, msrval);
 			eax = (u32)msr_value;
 			edx = (u32)(msr_value >> 32);
 
 			vMTRR_base = ((u64)edx << 32) | (u64)eax;
 			msrval++;
-			msr_value = rdmsr64(msrval);
+			msr_value = CASM_FUNCCALL(rdmsr64, msrval);
 			eax = (u32)msr_value;
 			edx = (u32)(msr_value >> 32);
 
@@ -2065,7 +2065,7 @@ static void __xmhfhic_smp_cpu_x86_wakeupAPs(void){
 	u64 msr_value;
 
 	//read LAPIC base address from MSR
-       	msr_value = rdmsr64(MSR_APIC_BASE);
+       	msr_value = CASM_FUNCCALL(rdmsr64, MSR_APIC_BASE);
 	eax = (u32)msr_value;
 	edx = (u32)(msr_value >> 32);
 
@@ -2428,19 +2428,19 @@ static bool __xmhfhic_x86vmx_setupvmxstate(u64 cpuid){
 		u32 eax, edx;
 		u64 msr_value;
 		for(i=0; i < IA32_VMX_MSRCOUNT; i++){
-			msr_value = rdmsr64((IA32_VMX_BASIC_MSR + i));
+			msr_value = CASM_FUNCCALL(rdmsr64, (IA32_VMX_BASIC_MSR + i));
 			eax = (u32)msr_value;
 			edx = (u32)(msr_value >> 32);
 
 			__xmhfhic_x86vmx_archdata[cpuindex].vmx_msrs[i] = (u64)edx << 32 | (u64) eax;
 		}
 
-		msr_value = rdmsr64(MSR_EFER);
+		msr_value = CASM_FUNCCALL(rdmsr64, MSR_EFER);
 		eax = (u32)msr_value;
 		edx = (u32)(msr_value >> 32);
 
 		__xmhfhic_x86vmx_archdata[cpuindex].vmx_msr_efer = (u64)edx << 32 | (u64) eax;
-		msr_value = rdmsr64(MSR_EFCR);
+		msr_value = CASM_FUNCCALL(rdmsr64, MSR_EFCR);
 		eax = (u32)msr_value;
 		edx = (u32)(msr_value >> 32);
 
@@ -2496,27 +2496,27 @@ static bool __xmhfhic_x86vmx_setupvmxstate(u64 cpuid){
  CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_HOST_RIP, _xmhfhic_common_slab_info_table[XMHFGEEC_SLAB_GEEC_SENTINEL].slab_memoffset_entries[GEEC_SENTINEL_MEMOFFSETS_INTERCEPTHANDLER_IDX]);
 
  CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_HOST_RSP, CASM_FUNCCALL(read_rsp,CASM_NOPARAM));
-	msr_value = rdmsr64(IA32_SYSENTER_CS_MSR);
+	msr_value = CASM_FUNCCALL(rdmsr64, IA32_SYSENTER_CS_MSR);
 	lodword = (u32)msr_value;
 	hidword = (u32)(msr_value >> 32);
 
  CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_HOST_SYSENTER_CS, lodword);
-	msr_value = rdmsr64(IA32_SYSENTER_ESP_MSR);
+	msr_value = CASM_FUNCCALL(rdmsr64, IA32_SYSENTER_ESP_MSR);
 	lodword = (u32)msr_value;
 	hidword = (u32)(msr_value >> 32);
 
  CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_HOST_SYSENTER_ESP, (((u64)hidword << 32) | (u64)lodword));
-	msr_value = rdmsr64(IA32_SYSENTER_EIP_MSR);
+	msr_value = CASM_FUNCCALL(rdmsr64, IA32_SYSENTER_EIP_MSR);
 	lodword = (u32)msr_value;
 	hidword = (u32)(msr_value >> 32);
 
  CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_HOST_SYSENTER_EIP, (((u64)hidword << 32) | (u64)lodword));
-	msr_value = rdmsr64(IA32_MSR_FS_BASE);
+	msr_value = CASM_FUNCCALL(rdmsr64, IA32_MSR_FS_BASE);
 	lodword = (u32)msr_value;
 	hidword = (u32)(msr_value >> 32);
 
  CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_HOST_FS_BASE, (((u64)hidword << 32) | (u64)lodword) );
-	msr_value = rdmsr64(IA32_MSR_GS_BASE);
+	msr_value = CASM_FUNCCALL(rdmsr64, IA32_MSR_GS_BASE);
 	lodword = (u32)msr_value;
 	hidword = (u32)(msr_value >> 32);
 
@@ -2738,7 +2738,7 @@ static bool __xmhfhic_x86vmx_setupvmxstate(u64 cpuid){
                 u32 msr, eax, edx;
                 u64 msr_value;
                 msr = vmx_msr_area_msrs[i];
-		msr_value = rdmsr64(msr);
+		msr_value = CASM_FUNCCALL(rdmsr64, msr);
 		eax = (u32)msr_value;
 		edx = (u32)(msr_value >> 32);
 
@@ -2933,7 +2933,7 @@ void xmhf_hic_arch_setup_cpu_state(u64 cpuid){
     _XDPRINTF_("%s[%u]: set LAPIC base address to %016llx\n", __func__, (u32)cpuid, CASM_FUNCCALL(rdmsr64,MSR_APIC_BASE));
 
 	//turn on NX protections
- CASM_FUNCCALL(wrmsr64,MSR_EFER, (rdmsr64(MSR_EFER) | (1 << EFER_NXE)) );
+ CASM_FUNCCALL(wrmsr64,MSR_EFER, (CASM_FUNCCALL(rdmsr64, MSR_EFER) | (1 << EFER_NXE)) );
     _XDPRINTF_("%s[%u]: NX protections enabled\n", __func__, (u32)cpuid);
 
 
