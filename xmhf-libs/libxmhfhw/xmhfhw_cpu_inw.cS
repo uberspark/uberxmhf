@@ -53,68 +53,11 @@
 #include <xmhf-debug.h>
 
 
-//__attribute__((naked)) void outl(u32 val, u32 port){
-CASM_FUNCDEF(void, outl,
-{
-    xmhfhwm_cpu_insn_movl_mesp_eax(0x4); //eax = val
-    xmhfhwm_cpu_insn_movl_mesp_edx(0x8); //edx = port
-    xmhfhwm_cpu_insn_outl_eax_dx();  //output eax to dx
-    xmhfhwm_cpu_insn_ret();
-},
-u32 val,
-u32 port)
-
-//__attribute__((naked)) void outw (u32 value, u32 port){
-CASM_FUNCDEF(void, outw,
-{
-    xmhfhwm_cpu_insn_movl_mesp_eax(0x4); //eax = val
-    xmhfhwm_cpu_insn_movl_mesp_edx(0x8); //edx = port
-    xmhfhwm_cpu_insn_outw_ax_dx(); //output ax to dx
-    xmhfhwm_cpu_insn_ret();
-},
-u32 value,
-u32 port)
-
-
-//__attribute__((naked)) void outb (u32 value, u32 port){
-CASM_FUNCDEF(void, outb,
-{
-    xmhfhwm_cpu_insn_movl_mesp_eax(0x4); //eax = val
-    xmhfhwm_cpu_insn_movl_mesp_edx(0x8); //edx = port
-    xmhfhwm_cpu_insn_outb_al_dx(); //output al to dx
-    xmhfhwm_cpu_insn_ret();
-},
-u32 value,
-u32 port)
-
-//__attribute__((naked)) u32 inl(u32 port){
-CASM_FUNCDEF(u32, inl,
-{
-    xmhfhwm_cpu_insn_movl_mesp_edx(0x4); //edx = port
-    xmhfhwm_cpu_insn_xorl_eax_eax();
-    xmhfhwm_cpu_insn_inl_dx_eax();
-    xmhfhwm_cpu_insn_xorl_edx_edx();
-    xmhfhwm_cpu_insn_ret();
-},
-u32 port)
-
-//__attribute__((naked)) u16 inw (u32 port){
 CASM_FUNCDEF(u16, inw,
 {
     xmhfhwm_cpu_insn_movl_mesp_edx(0x4); //edx = port
     xmhfhwm_cpu_insn_xorl_eax_eax();
     xmhfhwm_cpu_insn_inw_dx_ax();
-    xmhfhwm_cpu_insn_xorl_edx_edx();
-    xmhfhwm_cpu_insn_ret();
-},
-u32 port)
-
-//__attribute__((naked)) u8 inb (u32 port){
-CASM_FUNCDEF(u8, inb,
-{
-    xmhfhwm_cpu_insn_movl_mesp_edx(0x4); //edx = port
-    xmhfhwm_cpu_insn_xorl_eax_eax();
-    xmhfhwm_cpu_insn_inb_dx_al();
     xmhfhwm_cpu_insn_xorl_edx_edx();
     xmhfhwm_cpu_insn_ret();
 },
