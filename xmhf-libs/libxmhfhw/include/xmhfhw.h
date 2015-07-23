@@ -202,7 +202,6 @@ sinit_mle_data_t *get_sinit_mle_data_start(txt_heap_t *heap);
 
 #ifndef __ASSEMBLY__
 
-void wrmsr(u32 msr, u32 eax, u32 edx);
 CASM_FUNCDECL(u64 rdmsr64(u32 msr));
 CASM_FUNCDECL(void wrmsr64(u32 msr, u64 newval));
 
