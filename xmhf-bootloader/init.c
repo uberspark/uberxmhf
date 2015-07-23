@@ -1140,7 +1140,7 @@ void svm_clear_microcode(BOOTVCPU *vcpu){
     _XDPRINTF_("\nCPU(0x%02x): existing microcode version 0x%08x", vcpu->id, ucode_rev);
 
     if(ucode_rev != 0) {
-        wrmsr(MSR_AMD64_PATCH_CLEAR, dummy, dummy);
+        wrmsr64(MSR_AMD64_PATCH_CLEAR, (u64)(((u64)dummy << 32) | dummy) );
         _XDPRINTF_("\nCPU(0x%02x): microcode CLEARED", vcpu->id);
     }
 }
