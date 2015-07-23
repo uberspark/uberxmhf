@@ -53,25 +53,6 @@
 #include <xmhf-debug.h>
 
 
-/*
- * fns to read/write TXT config regs
- *
- */
-
-//__attribute__((naked)) uint64_t read_config_reg(uint32_t config_regs_base, uint32_t reg)
-CASM_FUNCDEF(uint64_t, read_config_reg,
-{
-    xmhfhwm_cpu_insn_movl_mesp_ecx(0x4); //ecx = config_regs_base
-    xmhfhwm_cpu_insn_addl_mesp_ecx(0x8); //ecx = config_regs_base + reg
-    xmhfhwm_cpu_insn_movl_mecx_eax(0x0);
-    xmhfhwm_cpu_insn_movl_mecx_edx(0x4); //edx:eax = 64-bit val
-    xmhfhwm_cpu_insn_ret();
-},
-uint32_t config_regs_base,
-uint32_t reg)
-
-//__attribute__((naked)) void write_config_reg(uint32_t config_regs_base, uint32_t reg,
-//                                    uint64_t val)
 CASM_FUNCDEF(void, write_config_reg,
 {
     xmhfhwm_cpu_insn_movl_mesp_ecx(0x4); //ecx = config_regs_base
@@ -85,45 +66,5 @@ CASM_FUNCDEF(void, write_config_reg,
 uint32_t config_regs_base,
 uint32_t reg,
 uint64_t val)
-
-
-
-//__attribute__((naked)) void xmhfhw_cpu_getsec(u32 *eax, //0xC
-//                                              u32 *ebx, //0x10
-//                                              u32 *ecx, //0x14
-//                                              u32 *edx){ //0x18
-CASM_FUNCDEF(void, xmhfhw_cpu_getsec,
-{
-    xmhfhwm_cpu_insn_pushl_esi();
-    xmhfhwm_cpu_insn_pushl_ebx();
-
-    xmhfhwm_cpu_insn_movl_mesp_eax(0xC);
-    xmhfhwm_cpu_insn_movl_meax_eax(0x0);
-    xmhfhwm_cpu_insn_movl_mesp_ebx(0x10);
-    xmhfhwm_cpu_insn_movl_mebx_ebx(0x0);
-    xmhfhwm_cpu_insn_movl_mesp_ecx(0x14);
-    xmhfhwm_cpu_insn_movl_mecx_ecx(0x0);
-    xmhfhwm_cpu_insn_movl_mesp_edx(0x18);
-    xmhfhwm_cpu_insn_movl_medx_edx(0x0);
-
-    xmhfhwm_cpu_insn_getsec();
-
-    xmhfhwm_cpu_insn_movl_mesp_esi(0xC);
-    xmhfhwm_cpu_insn_movl_eax_mesi(0x0);
-    xmhfhwm_cpu_insn_movl_mesp_esi(0x10);
-    xmhfhwm_cpu_insn_movl_ebx_mesi(0x0);
-    xmhfhwm_cpu_insn_movl_mesp_esi(0x14);
-    xmhfhwm_cpu_insn_movl_ecx_mesi(0x0);
-    xmhfhwm_cpu_insn_movl_mesp_esi(0x18);
-    xmhfhwm_cpu_insn_movl_edx_mesi(0x0);
-
-    xmhfhwm_cpu_insn_popl_ebx();
-    xmhfhwm_cpu_insn_popl_esi();
-    xmhfhwm_cpu_insn_ret();
-},
-u32 *eax,
-u32 *ebx,
-u32 *ecx,
-u32 *edx)
 
 
