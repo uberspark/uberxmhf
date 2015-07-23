@@ -54,10 +54,14 @@
 
 u32 xmhf_baseplatform_arch_x86_getcpulapicid(void){
   u32 eax, edx, *lapic_reg;
+  u64 msr_value;
   u32 lapic_id;
 
   //read LAPIC id of this core
-  rdmsr(MSR_APIC_BASE, &eax, &edx);
+	msr_value = CASM_FUNCCALL(rdmsr64, MSR_APIC_BASE);
+	eax = (u32)msr_value;
+	edx = (u32)(msr_value >> 32);
+
   //if (edx != 0 ){ //APIC is not below 4G, unsupported
   //	_XDPRINTF_("%s: APIC is not below 4G, unsupported. Halting!", __FUNCTION__);
   //	HALT();
@@ -74,8 +78,14 @@ u32 xmhf_baseplatform_arch_x86_getcpulapicid(void){
 //return true if the calling CPU is the BSP
 bool xmhfhw_lapic_isbsp(void){
   u32 eax, edx;
+  u64 msr_value;
+
   //read LAPIC base address from MSR
-  rdmsr(MSR_APIC_BASE, &eax, &edx);
+	msr_value = CASM_FUNCCALL(rdmsr64, MSR_APIC_BASE);
+	eax = (u32)msr_value;
+	edx = (u32)(msr_value >> 32);
+
+
   HALT_ON_ERRORCOND( edx == 0 ); //APIC is below 4G
 
   if(eax & 0x100)
