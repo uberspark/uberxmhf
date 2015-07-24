@@ -52,28 +52,6 @@
 #include <xmhfhw.h>
 #include <xmhf-debug.h>
 
-u32 xmhf_baseplatform_arch_x86_getcpulapicid(void){
-  u32 eax, edx, *lapic_reg;
-  u64 msr_value;
-  u32 lapic_id;
-
-  //read LAPIC id of this core
-	msr_value = CASM_FUNCCALL(rdmsr64, MSR_APIC_BASE);
-	eax = (u32)msr_value;
-	edx = (u32)(msr_value >> 32);
-
-  //if (edx != 0 ){ //APIC is not below 4G, unsupported
-  //	_XDPRINTF_("%s: APIC is not below 4G, unsupported. Halting!", __FUNCTION__);
-  //	HALT();
-  //}
-  eax &= (u32)0xFFFFF000UL;
-  lapic_reg = (u32 *)((u32)eax+ (u32)LAPIC_ID);
-  lapic_id = xmhfhw_sysmemaccess_readu32((u32)lapic_reg);
-  lapic_id = lapic_id >> 24;
-
-  return lapic_id;
-}
-
 
 //return true if the calling CPU is the BSP
 bool xmhfhw_lapic_isbsp(void){
