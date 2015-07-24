@@ -3058,4 +3058,24 @@ void _geec_prime_setup_cpustate(void){
     _XDPRINTF_("XMHF Tester Finished!\n");
     HALT();
 
+
+void print_mtrrs(const mtrr_state_t *saved_state)
+{
+    //int i;
+
+    //_XDPRINTF_("mtrr_def_type: e = %d, fe = %d, type = %x\n",
+    //       saved_state->mtrr_def_type.e, saved_state->mtrr_def_type.fe,
+    //       saved_state->mtrr_def_type.type );
+    //_XDPRINTF_("mtrrs:\n");
+    //_XDPRINTF_("\t\tbase\tmask\ttype\tv\n");
+    //for ( i = 0; i < saved_state->num_var_mtrrs; i++ ) {
+    //    _XDPRINTF_("\t\t%6.6x\t%6.6x\t%2.2x\t%d\n",
+    //           saved_state->mtrr_physbases[i].base,
+    //           saved_state->mtrr_physmasks[i].mask,
+    //           saved_state->mtrr_physbases[i].type,
+    //           saved_state->mtrr_physmasks[i].v );
+    //}
+}
+
+
 #endif // 0
