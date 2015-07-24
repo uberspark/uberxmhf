@@ -292,25 +292,6 @@ bool set_mem_type(u8 *base, uint32_t size, uint32_t mem_type)
 }
 
 
-
-void print_mtrrs(const mtrr_state_t *saved_state)
-{
-    //int i;
-
-    //_XDPRINTF_("mtrr_def_type: e = %d, fe = %d, type = %x\n",
-    //       saved_state->mtrr_def_type.e, saved_state->mtrr_def_type.fe,
-    //       saved_state->mtrr_def_type.type );
-    //_XDPRINTF_("mtrrs:\n");
-    //_XDPRINTF_("\t\tbase\tmask\ttype\tv\n");
-    //for ( i = 0; i < saved_state->num_var_mtrrs; i++ ) {
-    //    _XDPRINTF_("\t\t%6.6x\t%6.6x\t%2.2x\t%d\n",
-    //           saved_state->mtrr_physbases[i].base,
-    //           saved_state->mtrr_physmasks[i].mask,
-    //           saved_state->mtrr_physbases[i].type,
-    //           saved_state->mtrr_physmasks[i].v );
-    //}
-}
-
 void xmhfhw_cpu_x86_save_mtrrs(mtrr_state_t *saved_state)
 {
     mtrr_cap_t mtrr_cap;
@@ -345,7 +326,6 @@ void xmhfhw_cpu_x86_save_mtrrs(mtrr_state_t *saved_state)
  CASM_FUNCCALL(rdmsr64,MTRR_PHYS_BASE0_MSR + ndx*2));
     }
 
-    print_mtrrs(saved_state);
 
     //g_saved_mtrrs = saved_state;
 }
@@ -361,7 +341,6 @@ bool validate_mtrrs(const mtrr_state_t *saved_state)
     if ( saved_state->mtrr_def_type.e == 0 )
         return true;
 
-    //print_mtrrs(saved_state);
 
     /* number variable MTRRs */
     //mtrr_cap.raw = CASM_FUNCCALL(rdmsr64,MSR_MTRRcap);
@@ -393,7 +372,6 @@ bool validate_mtrrs(const mtrr_state_t *saved_state)
             //       "base=%06x, mask=%06x\n",
             //       (unsigned int) saved_state->mtrr_physbases[ndx].base,
             //       (unsigned int) saved_state->mtrr_physmasks[ndx].mask);
-            print_mtrrs(saved_state);
             return false;
         }
     }
@@ -463,7 +441,6 @@ bool validate_mtrrs(const mtrr_state_t *saved_state)
                 continue;
 
             //_XDPRINTF_("var MTRRs overlaping regions, invalid type combinations\n");
-            print_mtrrs(saved_state);
             return false;
         }
     }
@@ -482,7 +459,6 @@ void xmhfhw_cpu_x86_restore_mtrrs(mtrr_state_t *saved_state)
     //    return;
     //}
 
-    //print_mtrrs(saved_state);
 
     /* called by apply_policy() so use saved ptr */
     //if ( saved_state == NULL )
