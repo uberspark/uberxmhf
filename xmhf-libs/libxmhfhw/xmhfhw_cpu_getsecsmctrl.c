@@ -53,73 +53,6 @@
 #include <xmhf-debug.h>
 
 
-uint32_t __getsec_capabilities(uint32_t index)
-{
-    uint32_t cap;
-    uint32_t eax=0, ebx=0, ecx=0, edx=0;
-
-    eax = IA32_GETSEC_CAPABILITIES;
-    ebx = index;
-
- CASM_FUNCCALL(xmhfhw_cpu_getsec,&eax, &ebx, &ecx, &edx);
-
-    cap = eax;
-//    __asm__ __volatile__ (IA32_GETSEC_OPCODE "\n"
-//              : "=a"(cap)
-//              : "a"(IA32_GETSEC_CAPABILITIES), "b"(index));
-
-    return cap;
-}
-
-
-void __getsec_senter(uint32_t sinit_base, uint32_t sinit_size)
-{
-    uint32_t eax=0, ebx=0, ecx=0, edx=0;
-
-    eax = IA32_GETSEC_SENTER;
-    ebx = sinit_base;
-    ecx = sinit_size;
-    edx = 0;
-
- CASM_FUNCCALL(xmhfhw_cpu_getsec,&eax, &ebx, &ecx, &edx);
-
-
-//    __asm__ __volatile__ (IA32_GETSEC_OPCODE "\n"
-//			  :
-//			  : "a"(IA32_GETSEC_SENTER),
-//			    "b"(sinit_base),
-//			    "c"(sinit_size),
-//			    "d"(0x0));
-}
-
-void __getsec_sexit(void)
-{
-
-    uint32_t eax=0, ebx=0, ecx=0, edx=0;
-
-    eax = IA32_GETSEC_SEXIT;
-
- CASM_FUNCCALL(xmhfhw_cpu_getsec,&eax, &ebx, &ecx, &edx);
-
-
-//    __asm__ __volatile__ (IA32_GETSEC_OPCODE "\n"
-//                          : : "a"(IA32_GETSEC_SEXIT));
-}
-
-void __getsec_wakeup(void)
-{
-
-    uint32_t eax=0, ebx=0, ecx=0, edx=0;
-
-    eax = IA32_GETSEC_WAKEUP;
-
- CASM_FUNCCALL(xmhfhw_cpu_getsec,&eax, &ebx, &ecx, &edx);
-
-
-//    __asm__ __volatile__ (IA32_GETSEC_OPCODE "\n"
-//                          : : "a"(IA32_GETSEC_WAKEUP));
-}
-
 
 
 void __getsec_smctrl(void)
@@ -132,28 +65,6 @@ void __getsec_smctrl(void)
  CASM_FUNCCALL(xmhfhw_cpu_getsec,&eax, &ebx, &ecx, &edx);
 //    __asm__ __volatile__ (IA32_GETSEC_OPCODE "\n"
 //                          : : "a"(IA32_GETSEC_SMCTRL), "b"(0x0));
-}
-
-
-void __getsec_parameters(uint32_t index,
-                         int* param_type,
-                         uint32_t* peax,
-                         uint32_t* pebx,
-                         uint32_t* pecx){
-    uint32_t eax=0, ebx=0, ecx=0, edx=0;
-
-    eax = IA32_GETSEC_PARAMETERS;
-    ebx = index;
-
-
- CASM_FUNCCALL(xmhfhw_cpu_getsec,&eax, &ebx, &ecx, &edx);
-
-
-    if ( param_type != NULL )   *param_type = eax & 0x1f;
-    if ( peax != NULL )         *peax = eax;
-    if ( pebx != NULL )         *pebx = ebx;
-    if ( pecx != NULL )         *pecx = ecx;
-
 }
 
 
