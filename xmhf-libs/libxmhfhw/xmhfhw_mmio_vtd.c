@@ -528,19 +528,3 @@ void xmhfhw_platform_x86pc_vtd_drhd_set_phm_base_and_limit(VTD_DRHD *drhd, u64 b
 	_vtd_reg_write(drhd, VTD_PHMLIMIT_REG_OFF, phmlimit.value);
 }
 
-//read VT-d register
-u64 xmhfhw_platform_x86pc_vtd_drhd_reg_read(VTD_DRHD *drhd, u32 reg){
-    u64 __regval=0;
-	//VTD_DRHD *drhd = _vtd_get_drhd_struct(drhd_handle);
-
-	return _vtd_reg_read(drhd, reg);
-}
-
-//write VT-d register
-void xmhfhw_platform_x86pc_vtd_drhd_reg_write(VTD_DRHD *drhd, u32 reg, u64 value){
-	//VTD_DRHD *drhd = _vtd_get_drhd_struct(drhd_handle);
-
-	_vtd_reg_write(drhd, reg, value);
-}
-
-
