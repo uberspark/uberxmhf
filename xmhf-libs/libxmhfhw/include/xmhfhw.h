@@ -168,7 +168,6 @@ CASM_FUNCDECL(void xmhfhw_cpu_loadIDT(arch_x86_idtdesc_t *idt_addr));
 
 int fls(int mask);
 bool xmhf_baseplatform_arch_x86_cpuhasxsavefeature(void);
-u32 xmhf_baseplatform_arch_x86_getcpuvendor(void);
 u32 xmhf_baseplatform_arch_getcpuvendor(void);
 
 

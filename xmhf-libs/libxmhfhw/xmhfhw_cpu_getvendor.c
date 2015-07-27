@@ -53,9 +53,7 @@
 #include <xmhf-debug.h>
 
 
-//*
-//get CPU vendor
-u32 xmhf_baseplatform_arch_x86_getcpuvendor(void){
+u32 xmhf_baseplatform_arch_getcpuvendor(void){
 	u32 reserved, vendor_dword1, vendor_dword2, vendor_dword3;
 	u32 cpu_vendor;
 
@@ -75,11 +73,6 @@ u32 xmhf_baseplatform_arch_x86_getcpuvendor(void){
 	}
 
 	return cpu_vendor;
-}
-
-//*
-u32 xmhf_baseplatform_arch_getcpuvendor(void){
-	return xmhf_baseplatform_arch_x86_getcpuvendor();
 }
 
 
