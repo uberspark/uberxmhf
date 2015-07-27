@@ -1,6 +1,9 @@
-srcdir := $(dir $(lastword $(MAKEFILE_LIST)))
+srcdir := $(realpath $(dir $(lastword $(MAKEFILE_LIST))))
 vpath %.c $(srcdir)
 vpath %.cS $(srcdir)
+
+include $(srcdir)/../../common.mk
+
 
 C_SOURCES:= $(wildcard $(srcdir)/*.c)
 C_SOURCES:= $(patsubst $(srcdir)/%, %, $(C_SOURCES))
@@ -18,11 +21,22 @@ I_SOURCES :=  $(wildcard $(srcdir)/include/*.h)
 CFLAGS += -I$(srcdir)/include -nostdinc -fno-builtin -nostdlib -Wall
 
 LIBXMHFHW_OBJECTS_DIR = _objs_libxmhfhw
+LIBXMHFHW_VERIF_DIR = _verif_libxmhfhw
+
 THE_ARCHIVE = libxmhfhw.a
 
 LLC_ATTR = -3dnow,-3dnowa,-64bit,-64bit-mode,-adx,-aes,-atom,-avx,-avx2,-bmi,-bmi2,-cmpxchg16b,-f16c,-hle,-lea-sp,-lea-uses-ag,-lzcnt,-mmx,-movbe,-pclmul,-popcnt,-prfchw,-rdrand,-rdseed,-rtm,-slow-bt-mem,-sse,-sse3,-sse41,-sse42,-sse4a,-sse3,-vector-unaligned-mem,-xop
 
 # targets
+.PHONY: verify
+verify:
+	mkdir -p $(LIBXMHFHW_VERIF_DIR)
+	#$(CP) -f $(srcdir)/xmhfhw_cpu_fls.cS $(LIBXMHFHW_VERIF_DIR)/xmhfhw_cpu_fls.cS.c
+	#cd $(LIBXMHFHW_VERIF_DIR) && frama-c -val -cpp-extra-args=-nostdinc $(VFLAGS) $(srcdir)/verify/<something.c> xmhfhw_cpu_fls.cS.c $(V_XMHFHWM_MODULES)
+	#cd $(LIBXMHFHW_VERIF_DIR) && frama-c -main sha1 -lib-entry -wp -wp-rte -wp-model +cint -wp-prover alt-ergo,cvc3,z3 -cpp-extra-args=-nostdinc $(VFLAGS) xmhfhw_cpu_fls.c
+	cd $(LIBXMHFHW_VERIF_DIR) && frama-c -main fls -lib-entry -wp -wp-rte -wp-model +cint -wp-prover alt-ergo,cvc3,z3 -cpp-extra-args=-nostdinc $(VFLAGS) $(srcdir)/xmhfhw_cpu_fls.c
+
+
 .PHONY: all
 all: $(THE_ARCHIVE)
 #all:
