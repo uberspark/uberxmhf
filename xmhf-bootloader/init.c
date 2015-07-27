@@ -930,7 +930,7 @@ void cstartup(multiboot_info_t *mbi){
 	}
 
     //check CPU type (Intel vs AMD)
-    cpu_vendor = get_cpu_vendor_or_die(); // HALT()'s if unrecognized
+	cpu_vendor = xmhf_baseplatform_arch_getcpuvendor();
 
     if(CPU_VENDOR_INTEL == cpu_vendor) {
         _XDPRINTF_("INIT(early): detected an Intel CPU\n");
@@ -943,7 +943,8 @@ void cstartup(multiboot_info_t *mbi){
     } else if(CPU_VENDOR_AMD == cpu_vendor) {
         _XDPRINTF_("INIT(early): detected an AMD CPU\n");
     } else {
-        _XDPRINTF_("INIT(early): Dazed and confused: Unknown CPU vendor %d\n", cpu_vendor);
+        _XDPRINTF_("INIT(early): Dazed and confused: Unknown CPU vendor %d. Halting!\n", cpu_vendor);
+        HALT();
     }
 
     //deal with MP and get CPU table

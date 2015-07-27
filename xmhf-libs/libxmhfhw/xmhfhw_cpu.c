@@ -53,27 +53,6 @@
 #include <xmhf-debug.h>
 
 
-
-
-u32 get_cpu_vendor_or_die(void) {
-	    u32 dummy;
-	    u32 vendor_dword1, vendor_dword2, vendor_dword3;
-
- CASM_FUNCCALL(xmhfhw_cpu_cpuid,0, &dummy, &vendor_dword1, &vendor_dword3, &vendor_dword2);
-	    if(vendor_dword1 == AMD_STRING_DWORD1 && vendor_dword2 == AMD_STRING_DWORD2
-	       && vendor_dword3 == AMD_STRING_DWORD3)
-		return CPU_VENDOR_AMD;
-	    else if(vendor_dword1 == INTEL_STRING_DWORD1 && vendor_dword2 == INTEL_STRING_DWORD2
-		    && vendor_dword3 == INTEL_STRING_DWORD3)
-		return CPU_VENDOR_INTEL;
-	    else
-		HALT();
-
-	    return 0; // never reached
-	}
-
-
-
 //*
 //get CPU vendor
 u32 xmhf_baseplatform_arch_x86_getcpuvendor(void){
