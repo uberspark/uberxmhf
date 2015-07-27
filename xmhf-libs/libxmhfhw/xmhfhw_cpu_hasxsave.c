@@ -55,55 +55,20 @@
 
 
 
-u32 get_cpu_vendor_or_die(void) {
-	    u32 dummy;
-	    u32 vendor_dword1, vendor_dword2, vendor_dword3;
-
- CASM_FUNCCALL(xmhfhw_cpu_cpuid,0, &dummy, &vendor_dword1, &vendor_dword3, &vendor_dword2);
-	    if(vendor_dword1 == AMD_STRING_DWORD1 && vendor_dword2 == AMD_STRING_DWORD2
-	       && vendor_dword3 == AMD_STRING_DWORD3)
-		return CPU_VENDOR_AMD;
-	    else if(vendor_dword1 == INTEL_STRING_DWORD1 && vendor_dword2 == INTEL_STRING_DWORD2
-		    && vendor_dword3 == INTEL_STRING_DWORD3)
-		return CPU_VENDOR_INTEL;
-	    else
-		HALT();
-
-	    return 0; // never reached
-	}
-
-
-
 //*
-//get CPU vendor
-u32 xmhf_baseplatform_arch_x86_getcpuvendor(void){
-	u32 reserved, vendor_dword1, vendor_dword2, vendor_dword3;
-	u32 cpu_vendor;
+//returns true if CPU has support for XSAVE/XRSTOR
+bool xmhf_baseplatform_arch_x86_cpuhasxsavefeature(void){
+	u32 eax, ebx, ecx, edx;
 
- CASM_FUNCCALL(xmhfhw_cpu_cpuid,0, &reserved, &vendor_dword1, &vendor_dword3, &vendor_dword2);
+	//bit 26 of ECX is 1 in CPUID function 0x00000001 if
+	//XSAVE/XRSTOR feature is available
 
-	if(vendor_dword1 == AMD_STRING_DWORD1 && vendor_dword2 == AMD_STRING_DWORD2
-			&& vendor_dword3 == AMD_STRING_DWORD3)
-		cpu_vendor = CPU_VENDOR_AMD;
-	else if(vendor_dword1 == INTEL_STRING_DWORD1 && vendor_dword2 == INTEL_STRING_DWORD2
-			&& vendor_dword3 == INTEL_STRING_DWORD3)
-		cpu_vendor = CPU_VENDOR_INTEL;
-	else{
-		cpu_vendor = CPU_VENDOR_UNKNOWN;
-		//_XDPRINTF_("%s: unrecognized x86 CPU (0x%08x:0x%08x:0x%08x). HALT!\n",
-		//	__FUNCTION__, vendor_dword1, vendor_dword2, vendor_dword3);
-		//HALT();
-	}
+ CASM_FUNCCALL(xmhfhw_cpu_cpuid,0x00000001, &eax, &ebx, &ecx, &edx);
 
-	return cpu_vendor;
+	if((ecx & (1UL << 26)))
+		return true;
+	else
+		return false;
+
 }
-
-//*
-u32 xmhf_baseplatform_arch_getcpuvendor(void){
-	return xmhf_baseplatform_arch_x86_getcpuvendor();
-}
-
-
-
-
 
