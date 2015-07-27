@@ -117,8 +117,17 @@ int fls(int mask);
 @*/
 uint32_t __getsec_capabilities(uint32_t index);
 
-
-
+/*@
+	requires \valid(param_type);
+	requires \valid(peax);
+	requires \valid(pebx);
+	requires \valid(pecx);
+	assigns *param_type;
+	assigns *peax;
+	assigns *pebx;
+	assigns *pecx;
+@*/
+void __getsec_parameters(uint32_t index, int* param_type, uint32_t* peax, uint32_t* pebx, uint32_t* pecx);
 
 
 
@@ -272,7 +281,6 @@ void __getsec_senter(uint32_t sinit_base, uint32_t sinit_size);
 void __getsec_sexit(void);
 void __getsec_wakeup(void);
 void __getsec_smctrl(void);
-void __getsec_parameters(uint32_t index, int* param_type, uint32_t* peax, uint32_t* pebx, uint32_t* pecx);
 
 
 #endif //__ASSEMBLY__

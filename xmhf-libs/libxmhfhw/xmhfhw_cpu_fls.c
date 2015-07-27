@@ -44,14 +44,12 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-//xmhfhw_cpu - base CPU functions
 //author: amit vasudevan (amitvasudevan@acm.org)
 
 #include <xmhf.h>
 #include <xmhf-hwm.h>
 #include <xmhfhw.h>
 #include <xmhf-debug.h>
-
 
 
 /*@
@@ -63,7 +61,5 @@ int fls(int mask)
 	return mask;
     else
 	return (int)bsrl((u32)mask) + 1;
-
-    //return (mask == 0 ? mask : (int)bsrl((u32)mask) + 1);
 }
 
