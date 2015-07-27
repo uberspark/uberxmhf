@@ -52,22 +52,18 @@
 #include <xmhfhw.h>
 #include <xmhf-debug.h>
 
-
+/*@
+  assigns \nothing;
+@*/
 uint32_t __getsec_capabilities(uint32_t index)
 {
-    uint32_t cap;
-    uint32_t eax=0, ebx=0, ecx=0, edx=0;
+	uint32_t eax=0, ebx=0, ecx=0, edx=0;
 
-    eax = IA32_GETSEC_CAPABILITIES;
-    ebx = index;
+	eax = IA32_GETSEC_CAPABILITIES;
+	ebx = index;
 
- CASM_FUNCCALL(xmhfhw_cpu_getsec,&eax, &ebx, &ecx, &edx);
+	CASM_FUNCCALL(xmhfhw_cpu_getsec,&eax, &ebx, &ecx, &edx);
 
-    cap = eax;
-//    __asm__ __volatile__ (IA32_GETSEC_OPCODE "\n"
-//              : "=a"(cap)
-//              : "a"(IA32_GETSEC_CAPABILITIES), "b"(index));
-
-    return cap;
+	return eax;
 }
 
