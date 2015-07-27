@@ -44,7 +44,6 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-// xmhfhw_cpu_txt: CPU TXT functions
 // authors: amit vasudevan (amitvasudevan@acm.org) and jonmccune@cmu.edu
 
 #include <xmhf.h>

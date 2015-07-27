@@ -44,7 +44,6 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-// xmhfhw_cpu_txt: CPU TXT functions
 // authors: amit vasudevan (amitvasudevan@acm.org) and jonmccune@cmu.edu
 
 #include <xmhf.h>
@@ -53,26 +52,34 @@
 #include <xmhf-debug.h>
 
 
-
+/*@
+	requires \valid(param_type);
+	requires \valid(peax);
+	requires \valid(pebx);
+	requires \valid(pecx);
+	assigns *param_type;
+	assigns *peax;
+	assigns *pebx;
+	assigns *pecx;
+@*/
 void __getsec_parameters(uint32_t index,
                          int* param_type,
                          uint32_t* peax,
                          uint32_t* pebx,
                          uint32_t* pecx){
-    uint32_t eax=0, ebx=0, ecx=0, edx=0;
+	uint32_t eax=0, ebx=0, ecx=0, edx=0;
 
-    eax = IA32_GETSEC_PARAMETERS;
-    ebx = index;
-
-
- CASM_FUNCCALL(xmhfhw_cpu_getsec,&eax, &ebx, &ecx, &edx);
+	eax = IA32_GETSEC_PARAMETERS;
+	ebx = index;
 
 
-    if ( param_type != NULL )   *param_type = eax & 0x1f;
-    if ( peax != NULL )         *peax = eax;
-    if ( pebx != NULL )         *pebx = ebx;
-    if ( pecx != NULL )         *pecx = ecx;
+	CASM_FUNCCALL(xmhfhw_cpu_getsec,&eax, &ebx, &ecx, &edx);
 
+
+	if ( param_type != NULL )   *param_type = eax & 0x1f;
+	if ( peax != NULL )         *peax = eax;
+	if ( pebx != NULL )         *pebx = ebx;
+	if ( pecx != NULL )         *pecx = ecx;
 }
 
 
