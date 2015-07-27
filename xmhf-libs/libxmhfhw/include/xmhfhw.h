@@ -112,11 +112,41 @@ typedef struct {
 @*/
 int fls(int mask);
 
+/*@
+  assigns \nothing;
+@*/
+uint32_t __getsec_capabilities(uint32_t index);
+
+
+
+
+
+
+
+
+
+
+
+
 
 /*@
   assigns \nothing;
 @*/
 CASM_FUNCDECL(uint32_t bsrl(uint32_t mask));
+
+
+/*@
+	requires \valid(eax);
+	requires \valid(ebx);
+	requires \valid(ecx);
+	requires \valid(edx);
+	assigns *eax;
+	assigns *ebx;
+	assigns *ecx;
+	assigns *edx;
+@*/
+CASM_FUNCDECL(void xmhfhw_cpu_getsec(u32 *eax, u32 *ebx, u32 *ecx, u32 *edx));
+
 
 
 CASM_FUNCDECL(void xmhfhw_cpu_cpuid(u32 op, u32 *eax, u32 *ebx, u32 *ecx, u32 *edx));
@@ -236,10 +266,8 @@ CASM_FUNCDECL(void tlb_invlpg(u64 addr));
 
 #ifndef __ASSEMBLY__
 
-CASM_FUNCDECL(void xmhfhw_cpu_getsec(u32 *eax, u32 *ebx, u32 *ecx, u32 *edx));
 CASM_FUNCDECL(uint64_t read_config_reg(uint32_t config_regs_base, uint32_t reg));
 CASM_FUNCDECL(void write_config_reg(uint32_t config_regs_base, uint32_t reg, uint64_t val));
-uint32_t __getsec_capabilities(uint32_t index);
 void __getsec_senter(uint32_t sinit_base, uint32_t sinit_size);
 void __getsec_sexit(void);
 void __getsec_wakeup(void);
