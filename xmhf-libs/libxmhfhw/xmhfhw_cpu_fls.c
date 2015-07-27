@@ -54,9 +54,16 @@
 
 
 
-
+/*@
+  assigns \nothing;
+@*/
 int fls(int mask)
 {
-    return (mask == 0 ? mask : (int)bsrl((u32)mask) + 1);
+    if(mask == 0)
+	return mask;
+    else
+	return (int)bsrl((u32)mask) + 1;
+
+    //return (mask == 0 ? mask : (int)bsrl((u32)mask) + 1);
 }
 

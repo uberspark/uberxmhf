@@ -107,8 +107,18 @@ typedef struct {
  *   8
  */
 
+/*@
+  assigns \nothing;
+@*/
+int fls(int mask);
 
+
+/*@
+  assigns \nothing;
+@*/
 CASM_FUNCDECL(uint32_t bsrl(uint32_t mask));
+
+
 CASM_FUNCDECL(void xmhfhw_cpu_cpuid(u32 op, u32 *eax, u32 *ebx, u32 *ecx, u32 *edx));
 CASM_FUNCDECL(void xmhfhw_cpu_disable_intr(void *noparam));
 CASM_FUNCDECL(void enable_intr(void *noparam));
@@ -166,7 +176,6 @@ CASM_FUNCDECL(void xmhfhw_cpu_loadIDT(arch_x86_idtdesc_t *idt_addr));
 
 
 
-int fls(int mask);
 bool xmhf_baseplatform_arch_x86_cpuhasxsavefeature(void);
 u32 xmhf_baseplatform_arch_getcpuvendor(void);
 
