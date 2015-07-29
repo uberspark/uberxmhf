@@ -140,7 +140,10 @@ void __getsec_senter(uint32_t sinit_base, uint32_t sinit_size);
 @*/
 void __getsec_sexit(void);
 
-
+/*@
+  assigns \nothing;
+@*/
+void __getsec_smctrl(void);
 
 
 
@@ -285,7 +288,6 @@ CASM_FUNCDECL(void tlb_invlpg(u64 addr));
 CASM_FUNCDECL(uint64_t read_config_reg(uint32_t config_regs_base, uint32_t reg));
 CASM_FUNCDECL(void write_config_reg(uint32_t config_regs_base, uint32_t reg, uint64_t val));
 void __getsec_wakeup(void);
-void __getsec_smctrl(void);
 
 
 #endif //__ASSEMBLY__
