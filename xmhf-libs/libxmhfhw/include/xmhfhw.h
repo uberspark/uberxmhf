@@ -151,6 +151,15 @@ void __getsec_smctrl(void);
 void __getsec_wakeup(void);
 
 
+/*@
+  assigns \nothing;
+@*/
+u32 xmhf_baseplatform_arch_getcpuvendor(void);
+
+
+
+
+
 
 
 
@@ -176,8 +185,23 @@ CASM_FUNCDECL(uint32_t bsrl(uint32_t mask));
 CASM_FUNCDECL(void xmhfhw_cpu_getsec(u32 *eax, u32 *ebx, u32 *ecx, u32 *edx));
 
 
-
+/*@
+	requires \valid(eax);
+	requires \valid(ebx);
+	requires \valid(ecx);
+	requires \valid(edx);
+	assigns *eax;
+	assigns *ebx;
+	assigns *ecx;
+	assigns *edx;
+@*/
 CASM_FUNCDECL(void xmhfhw_cpu_cpuid(u32 op, u32 *eax, u32 *ebx, u32 *ecx, u32 *edx));
+
+
+
+
+
+
 CASM_FUNCDECL(void xmhfhw_cpu_disable_intr(void *noparam));
 CASM_FUNCDECL(void enable_intr(void *noparam));
 CASM_FUNCDECL(u64 xmhf_baseplatform_arch_x86_getgdtbase(void *noparam));
