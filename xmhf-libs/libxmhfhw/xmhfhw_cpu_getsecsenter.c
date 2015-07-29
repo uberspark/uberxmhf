@@ -53,24 +53,18 @@
 #include <xmhf-debug.h>
 
 
-
+/*@
+  assigns \nothing;
+@*/
 void __getsec_senter(uint32_t sinit_base, uint32_t sinit_size)
 {
-    uint32_t eax=0, ebx=0, ecx=0, edx=0;
+	uint32_t eax=0, ebx=0, ecx=0, edx=0;
 
-    eax = IA32_GETSEC_SENTER;
-    ebx = sinit_base;
-    ecx = sinit_size;
-    edx = 0;
+	eax = IA32_GETSEC_SENTER;
+	ebx = sinit_base;
+	ecx = sinit_size;
+	edx = 0;
 
- CASM_FUNCCALL(xmhfhw_cpu_getsec,&eax, &ebx, &ecx, &edx);
-
-
-//    __asm__ __volatile__ (IA32_GETSEC_OPCODE "\n"
-//			  :
-//			  : "a"(IA32_GETSEC_SENTER),
-//			    "b"(sinit_base),
-//			    "c"(sinit_size),
-//			    "d"(0x0));
+	CASM_FUNCCALL(xmhfhw_cpu_getsec,&eax, &ebx, &ecx, &edx);
 }
 
