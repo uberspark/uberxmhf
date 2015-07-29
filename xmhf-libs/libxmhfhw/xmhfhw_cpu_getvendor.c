@@ -44,7 +44,6 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-//xmhfhw_cpu - base CPU functions
 //author: amit vasudevan (amitvasudevan@acm.org)
 
 #include <xmhf.h>
@@ -57,7 +56,7 @@ u32 xmhf_baseplatform_arch_getcpuvendor(void){
 	u32 reserved, vendor_dword1, vendor_dword2, vendor_dword3;
 	u32 cpu_vendor;
 
- CASM_FUNCCALL(xmhfhw_cpu_cpuid,0, &reserved, &vendor_dword1, &vendor_dword3, &vendor_dword2);
+	CASM_FUNCCALL(xmhfhw_cpu_cpuid,0, &reserved, &vendor_dword1, &vendor_dword3, &vendor_dword2);
 
 	if(vendor_dword1 == AMD_STRING_DWORD1 && vendor_dword2 == AMD_STRING_DWORD2
 			&& vendor_dword3 == AMD_STRING_DWORD3)
@@ -65,12 +64,9 @@ u32 xmhf_baseplatform_arch_getcpuvendor(void){
 	else if(vendor_dword1 == INTEL_STRING_DWORD1 && vendor_dword2 == INTEL_STRING_DWORD2
 			&& vendor_dword3 == INTEL_STRING_DWORD3)
 		cpu_vendor = CPU_VENDOR_INTEL;
-	else{
+	else
 		cpu_vendor = CPU_VENDOR_UNKNOWN;
-		//_XDPRINTF_("%s: unrecognized x86 CPU (0x%08x:0x%08x:0x%08x). HALT!\n",
-		//	__FUNCTION__, vendor_dword1, vendor_dword2, vendor_dword3);
-		//HALT();
-	}
+
 
 	return cpu_vendor;
 }
