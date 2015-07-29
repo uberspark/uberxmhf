@@ -44,7 +44,6 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-// xmhfhw_cpu_txt: CPU TXT functions
 // authors: amit vasudevan (amitvasudevan@acm.org) and jonmccune@cmu.edu
 
 #include <xmhf.h>
@@ -52,18 +51,15 @@
 #include <xmhfhw.h>
 #include <xmhf-debug.h>
 
-
+/*@
+  assigns \nothing;
+@*/
 void __getsec_sexit(void)
 {
+	uint32_t eax=0, ebx=0, ecx=0, edx=0;
 
-    uint32_t eax=0, ebx=0, ecx=0, edx=0;
+	eax = IA32_GETSEC_SEXIT;
 
-    eax = IA32_GETSEC_SEXIT;
-
- CASM_FUNCCALL(xmhfhw_cpu_getsec,&eax, &ebx, &ecx, &edx);
-
-
-//    __asm__ __volatile__ (IA32_GETSEC_OPCODE "\n"
-//                          : : "a"(IA32_GETSEC_SEXIT));
+	CASM_FUNCCALL(xmhfhw_cpu_getsec,&eax, &ebx, &ecx, &edx);
 }
 
