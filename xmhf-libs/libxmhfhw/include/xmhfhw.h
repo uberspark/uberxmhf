@@ -157,7 +157,10 @@ void __getsec_wakeup(void);
 u32 xmhf_baseplatform_arch_getcpuvendor(void);
 
 
-
+/*@
+  assigns \nothing;
+@*/
+bool xmhf_baseplatform_arch_x86_cpuhasxsavefeature(void);
 
 
 
@@ -258,7 +261,6 @@ CASM_FUNCDECL(void xmhfhw_cpu_loadIDT(arch_x86_idtdesc_t *idt_addr));
 
 
 
-bool xmhf_baseplatform_arch_x86_cpuhasxsavefeature(void);
 u32 xmhf_baseplatform_arch_getcpuvendor(void);
 
 
