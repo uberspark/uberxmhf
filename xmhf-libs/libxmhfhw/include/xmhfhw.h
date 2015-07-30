@@ -162,6 +162,20 @@ u32 xmhf_baseplatform_arch_getcpuvendor(void);
 @*/
 bool xmhf_baseplatform_arch_x86_cpuhasxsavefeature(void);
 
+/*@
+  assigns \nothing;
+@*/
+void set_all_mtrrs(bool enable);
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -201,8 +215,16 @@ CASM_FUNCDECL(void xmhfhw_cpu_getsec(u32 *eax, u32 *ebx, u32 *ecx, u32 *edx));
 CASM_FUNCDECL(void xmhfhw_cpu_cpuid(u32 op, u32 *eax, u32 *ebx, u32 *ecx, u32 *edx));
 
 
+/*@
+  assigns \nothing;
+@*/
+CASM_FUNCDECL(void wrmsr64(u32 msr, u64 newval));
 
 
+/*@
+  assigns \nothing;
+@*/
+CASM_FUNCDECL(u64 rdmsr64(u32 msr));
 
 
 CASM_FUNCDECL(void xmhfhw_cpu_disable_intr(void *noparam));
@@ -271,7 +293,6 @@ void write_priv_config_reg(uint32_t reg, uint64_t val);
 bool txt_is_launched(void);
 
 
-void set_all_mtrrs(bool enable);
 bool set_mem_type(u8 *base, uint32_t size, uint32_t mem_type);
 void print_mtrrs(const mtrr_state_t *saved_state);
 void xmhfhw_cpu_x86_save_mtrrs(mtrr_state_t *saved_state);
@@ -297,8 +318,6 @@ sinit_mle_data_t *get_sinit_mle_data_start(txt_heap_t *heap);
 
 #ifndef __ASSEMBLY__
 
-CASM_FUNCDECL(u64 rdmsr64(u32 msr));
-CASM_FUNCDECL(void wrmsr64(u32 msr, u64 newval));
 
 #endif //__ASSEMBLY__
 

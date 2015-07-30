@@ -44,7 +44,6 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-//xmhfhw_cpu - base CPU functions
 //author: amit vasudevan (amitvasudevan@acm.org)
 
 #include <xmhf.h>
@@ -53,18 +52,14 @@
 #include <xmhf-debug.h>
 
 
-
-
-
 /* enable/disable all MTRRs */
 void set_all_mtrrs(bool enable)
 {
-    mtrr_def_type_t mtrr_def_type;
+	mtrr_def_type_t mtrr_def_type;
 
-    //mtrr_def_type.raw = CASM_FUNCCALL(rdmsr64,MSR_MTRRdefType);
-    unpack_mtrr_def_type_t(&mtrr_def_type, CASM_FUNCCALL(rdmsr64,MSR_MTRRdefType));
-    mtrr_def_type.e = enable ? 1 : 0;
- CASM_FUNCCALL(wrmsr64,MSR_MTRRdefType, pack_mtrr_def_type_t(&mtrr_def_type));
+	unpack_mtrr_def_type_t(&mtrr_def_type, CASM_FUNCCALL(rdmsr64,MSR_MTRRdefType));
+	mtrr_def_type.e = enable ? 1 : 0;
+	CASM_FUNCCALL(wrmsr64,MSR_MTRRdefType, pack_mtrr_def_type_t(&mtrr_def_type));
 }
 
 
