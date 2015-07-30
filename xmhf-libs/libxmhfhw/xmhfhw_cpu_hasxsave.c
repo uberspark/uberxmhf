@@ -44,7 +44,6 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-//xmhfhw_cpu - base CPU functions
 //author: amit vasudevan (amitvasudevan@acm.org)
 
 #include <xmhf.h>
@@ -53,22 +52,22 @@
 #include <xmhf-debug.h>
 
 
-
-
-//*
 //returns true if CPU has support for XSAVE/XRSTOR
+
+/*@
+  assigns \nothing;
+@*/
 bool xmhf_baseplatform_arch_x86_cpuhasxsavefeature(void){
 	u32 eax, ebx, ecx, edx;
 
 	//bit 26 of ECX is 1 in CPUID function 0x00000001 if
 	//XSAVE/XRSTOR feature is available
 
- CASM_FUNCCALL(xmhfhw_cpu_cpuid,0x00000001, &eax, &ebx, &ecx, &edx);
+	CASM_FUNCCALL(xmhfhw_cpu_cpuid,0x00000001, &eax, &ebx, &ecx, &edx);
 
 	if((ecx & (1UL << 26)))
 		return true;
 	else
 		return false;
-
 }
 
