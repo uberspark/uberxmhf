@@ -44,7 +44,6 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-//xmhfhw_cpu - base CPU functions
 //author: amit vasudevan (amitvasudevan@acm.org)
 
 #include <xmhf.h>
@@ -52,39 +51,37 @@
 #include <xmhfhw.h>
 #include <xmhf-debug.h>
 
-
+/*@
+	requires \valid(saved_state);
+	requires 0 <= saved_state->num_var_mtrrs < MAX_VARIABLE_MTRRS;
+	assigns \nothing;
+@*/
 void xmhfhw_cpu_x86_restore_mtrrs(mtrr_state_t *saved_state)
 {
-    int ndx;
+	int ndx;
 
-    //if(NULL == saved_state) {
-        //_XDPRINTF_("\nFATAL ERROR: restore_mtrrs(): called with NULL\n");
-        //HALT();
-    //    return;
-    //}
+	if ( saved_state == NULL )
+		return;
 
-
-    /* called by apply_policy() so use saved ptr */
-    //if ( saved_state == NULL )
-    //    saved_state = g_saved_mtrrs;
-    /* haven't saved them yet, so return */
-    if ( saved_state == NULL )
-        return;
-
-    /* disable all MTRRs first */
-    set_all_mtrrs(false);
-
-    /* physmask's and physbase's */
-    for ( ndx = 0; ndx < saved_state->num_var_mtrrs; ndx++ ) {
- CASM_FUNCCALL(wrmsr64,MTRR_PHYS_MASK0_MSR + ndx*2,
-              pack_mtrr_physmask_t(&saved_state->mtrr_physmasks[ndx]));
- CASM_FUNCCALL(wrmsr64,MTRR_PHYS_BASE0_MSR + ndx*2,
-              pack_mtrr_physbase_t(&saved_state->mtrr_physbases[ndx]));
-    }
+	// disable all MTRRs first
+	set_all_mtrrs(false);
 
 
-    /* IA32_MTRR_DEF_TYPE MSR */
- CASM_FUNCCALL(wrmsr64,MSR_MTRRdefType, pack_mtrr_def_type_t(&saved_state->mtrr_def_type));
+    	/*@
+		loop invariant I1: 0 <= ndx <= saved_state->num_var_mtrrs;
+		loop assigns ndx;
+		loop variant saved_state->num_var_mtrrs - ndx;
+	@*/
+	for ( ndx = 0; ndx < saved_state->num_var_mtrrs; ndx++ ) {
+		CASM_FUNCCALL(wrmsr64,MTRR_PHYS_MASK0_MSR + ndx*2,
+			pack_mtrr_physmask_t(&saved_state->mtrr_physmasks[ndx]));
+		CASM_FUNCCALL(wrmsr64,MTRR_PHYS_BASE0_MSR + ndx*2,
+			pack_mtrr_physbase_t(&saved_state->mtrr_physbases[ndx]));
+	}
+
+	// IA32_MTRR_DEF_TYPE MSR
+	CASM_FUNCCALL(wrmsr64,MSR_MTRRdefType, pack_mtrr_def_type_t(&saved_state->mtrr_def_type));
+
 }
 
 

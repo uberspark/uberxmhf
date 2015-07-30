@@ -168,7 +168,12 @@ bool xmhf_baseplatform_arch_x86_cpuhasxsavefeature(void);
 void set_all_mtrrs(bool enable);
 
 
-
+/*@
+	requires \valid(saved_state);
+	requires 0 <= saved_state->num_var_mtrrs < MAX_VARIABLE_MTRRS;
+	assigns \nothing;
+@*/
+void xmhfhw_cpu_x86_restore_mtrrs(mtrr_state_t *saved_state);
 
 
 
@@ -297,7 +302,6 @@ bool set_mem_type(u8 *base, uint32_t size, uint32_t mem_type);
 void print_mtrrs(const mtrr_state_t *saved_state);
 void xmhfhw_cpu_x86_save_mtrrs(mtrr_state_t *saved_state);
 bool validate_mtrrs(const mtrr_state_t *saved_state);
-void xmhfhw_cpu_x86_restore_mtrrs(mtrr_state_t *saved_state);
 
 
 txt_heap_t *get_txt_heap(void);
