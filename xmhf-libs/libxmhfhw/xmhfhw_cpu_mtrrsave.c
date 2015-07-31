@@ -44,7 +44,6 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-//xmhfhw_cpu - base CPU functions
 //author: amit vasudevan (amitvasudevan@acm.org)
 
 #include <xmhf.h>
@@ -52,44 +51,42 @@
 #include <xmhfhw.h>
 #include <xmhf-debug.h>
 
-
-
+/*@
+	requires \valid(saved_state);
+	assigns saved_state->mtrr_def_type;
+	assigns saved_state->num_var_mtrrs;
+	assigns saved_state->mtrr_physbases[0 .. MAX_VARIABLE_MTRRS-1];
+	assigns saved_state->mtrr_physmasks[0 .. MAX_VARIABLE_MTRRS-1];
+@*/
 void xmhfhw_cpu_x86_save_mtrrs(mtrr_state_t *saved_state)
 {
-    mtrr_cap_t mtrr_cap;
-    int ndx;
+	mtrr_cap_t mtrr_cap;
+	int ndx;
 
-    /* IA32_MTRR_DEF_TYPE MSR */
-    //saved_state->mtrr_def_type.raw = CASM_FUNCCALL(rdmsr64,MSR_MTRRdefType);
-    unpack_mtrr_def_type_t(&saved_state->mtrr_def_type, CASM_FUNCCALL(rdmsr64,MSR_MTRRdefType));
+	// IA32_MTRR_DEF_TYPE MSR
+	unpack_mtrr_def_type_t(&saved_state->mtrr_def_type, CASM_FUNCCALL(rdmsr64,MSR_MTRRdefType));
 
-    /* number variable MTTRRs */
-    //mtrr_cap.raw = CASM_FUNCCALL(rdmsr64,MSR_MTRRcap);
-    unpack_mtrr_cap_t(&mtrr_cap, CASM_FUNCCALL(rdmsr64,MSR_MTRRcap));
-    if ( mtrr_cap.vcnt > MAX_VARIABLE_MTRRS ) {
-        /* print warning but continue saving what we can */
-        /* (set_mem_type() won't exceed the array, so we're safe doing this) */
-        //_XDPRINTF_("actual # var MTRRs (%d) > MAX_VARIABLE_MTRRS (%d)\n",
-        //       mtrr_cap.vcnt, MAX_VARIABLE_MTRRS);
-        saved_state->num_var_mtrrs = MAX_VARIABLE_MTRRS;
-    }
-    else
-        saved_state->num_var_mtrrs = mtrr_cap.vcnt;
+	// sanitize saved_state->num_var_mtrrs
+	unpack_mtrr_cap_t(&mtrr_cap, CASM_FUNCCALL(rdmsr64,MSR_MTRRcap));
+	if ( mtrr_cap.vcnt > MAX_VARIABLE_MTRRS )
+		saved_state->num_var_mtrrs = MAX_VARIABLE_MTRRS;
+	else
+		saved_state->num_var_mtrrs = mtrr_cap.vcnt;
 
-    /* physmask's and physbase's */
-    for ( ndx = 0; ndx < saved_state->num_var_mtrrs; ndx++ ) {
-        //saved_state->mtrr_physmasks[ndx].raw =
-        // CASM_FUNCCALL(rdmsr64,MTRR_PHYS_MASK0_MSR + ndx*2);
-        unpack_mtrr_physmask_t(&saved_state->mtrr_physmasks[ndx],
- CASM_FUNCCALL(rdmsr64,MTRR_PHYS_MASK0_MSR + ndx*2));
-        //saved_state->mtrr_physbases[ndx].raw =
-        // CASM_FUNCCALL(rdmsr64,MTRR_PHYS_BASE0_MSR + ndx*2);
-        unpack_mtrr_physbase_t(&saved_state->mtrr_physbases[ndx],
- CASM_FUNCCALL(rdmsr64,MTRR_PHYS_BASE0_MSR + ndx*2));
-    }
+	//@assert 0 <= saved_state->num_var_mtrrs <= MAX_VARIABLE_MTRRS;
 
-
-    //g_saved_mtrrs = saved_state;
+	// save physmask's and physbase's
+    	/*@
+		loop invariant I1: 0 <= ndx <= saved_state->num_var_mtrrs;
+		loop assigns ndx, saved_state->mtrr_physbases[0 .. MAX_VARIABLE_MTRRS-1],saved_state->mtrr_physmasks[0 .. MAX_VARIABLE_MTRRS-1];
+		loop variant saved_state->num_var_mtrrs - ndx;
+	@*/
+	for ( ndx = 0; ndx < saved_state->num_var_mtrrs; ndx++ ) {
+		unpack_mtrr_physmask_t(&saved_state->mtrr_physmasks[ndx],
+			CASM_FUNCCALL(rdmsr64,MTRR_PHYS_MASK0_MSR + ndx*2));
+		unpack_mtrr_physbase_t(&saved_state->mtrr_physbases[ndx],
+			CASM_FUNCCALL(rdmsr64,MTRR_PHYS_BASE0_MSR + ndx*2));
+	}
 }
 
 
