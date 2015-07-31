@@ -56,7 +56,7 @@
 
 typedef struct {
     mtrr_def_type_t	    mtrr_def_type;
-    int	                num_var_mtrrs;
+    u32	                num_var_mtrrs;
     mtrr_physbase_t     mtrr_physbases[MAX_VARIABLE_MTRRS];
     mtrr_physmask_t     mtrr_physmasks[MAX_VARIABLE_MTRRS];
 } __attribute__((packed)) mtrr_state_t;
@@ -175,6 +175,15 @@ void set_all_mtrrs(bool enable);
 @*/
 void xmhfhw_cpu_x86_restore_mtrrs(mtrr_state_t *saved_state);
 
+
+/*@
+	requires \valid(saved_state);
+	assigns saved_state->mtrr_def_type;
+	assigns saved_state->num_var_mtrrs;
+	assigns saved_state->mtrr_physbases[0 .. MAX_VARIABLE_MTRRS-1];
+	assigns saved_state->mtrr_physmasks[0 .. MAX_VARIABLE_MTRRS-1];
+@*/
+void xmhfhw_cpu_x86_save_mtrrs(mtrr_state_t *saved_state);
 
 
 
