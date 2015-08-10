@@ -53,10 +53,10 @@
 #include <xmhf-debug.h>
 
 
-os_sinit_data_t *get_os_sinit_data_start(txt_heap_t *heap)
+os_sinit_data_t *get_os_sinit_data_start(txt_heap_t *heap, uint32_t heap_size)
 {
-    return (os_sinit_data_t *)((u32)heap + (u32)get_bios_data_size(heap) +
-                               (u32)get_os_mle_data_size(heap) +
+    return (os_sinit_data_t *)((u32)heap + (u32)get_bios_data_size(heap, heap_size) +
+                               (u32)get_os_mle_data_size(heap, heap_size) +
                                sizeof(uint64_t));
 }
 

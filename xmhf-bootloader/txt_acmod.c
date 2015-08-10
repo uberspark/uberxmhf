@@ -485,7 +485,7 @@ acm_hdr_t *copy_sinit(acm_hdr_t *sinit)
      * check if BIOS already loaded an SINIT module there
      */
     txt_heap = get_txt_heap();
-    bios_data = get_bios_data_start(txt_heap);
+    bios_data = get_bios_data_start(txt_heap, (uint32_t)read_pub_config_reg(TXTCR_HEAP_SIZE));
     /* BIOS has loaded an SINIT module, so verify that it is valid */
     if ( bios_data->bios_sinit_size != 0 ) {
         _XDPRINTF_("BIOS has already loaded an SINIT module\n");

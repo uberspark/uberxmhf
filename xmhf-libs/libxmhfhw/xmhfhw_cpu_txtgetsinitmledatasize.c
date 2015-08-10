@@ -53,11 +53,11 @@
 #include <xmhf-debug.h>
 
 
-uint64_t get_sinit_mle_data_size(txt_heap_t *heap)
+uint64_t get_sinit_mle_data_size(txt_heap_t *heap, uint32_t heap_size)
 {
-    return *(uint64_t *)((u32)heap + (u32)get_bios_data_size(heap) +
-                         (u32)get_os_mle_data_size(heap) +
-                         (u32)get_os_sinit_data_size(heap));
+    return *(uint64_t *)((u32)heap + (u32)get_bios_data_size(heap, heap_size) +
+                         (u32)get_os_mle_data_size(heap, heap_size) +
+                         (u32)get_os_sinit_data_size(heap, heap_size));
     //return xmhf_arch_baseplatform_flat_readu64((u32)(heap + get_bios_data_size(heap) +
     //                     get_os_mle_data_size(heap) +
     //                     get_os_sinit_data_size(heap)));

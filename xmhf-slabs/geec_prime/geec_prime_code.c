@@ -1001,7 +1001,7 @@ static void __xmhfhic_x86vmxx86pc_postdrt(void){
 
 	txt_heap = get_txt_heap();
 	_XDPRINTF_("SL: txt_heap = 0x%08x\n", (u32)txt_heap);
-	os_mle_data = get_os_mle_data_start((txt_heap_t*)((u32)txt_heap));
+	os_mle_data = get_os_mle_data_start((txt_heap_t*)((u32)txt_heap), (uint32_t)read_pub_config_reg(TXTCR_HEAP_SIZE));
 	_XDPRINTF_("SL: os_mle_data = 0x%08x\n", (u32)os_mle_data);
 
 	// restore pre-SENTER MTRRs that were overwritten for SINIT launch
@@ -2144,9 +2144,9 @@ static void __xmhfhic_smp_container_vmx_wakeupAPs(void){
         os_sinit_data_t *os_sinit_data;
 
         txt_heap = get_txt_heap();
-        os_mle_data = get_os_mle_data_start(txt_heap);
-        sinit_mle_data = get_sinit_mle_data_start(txt_heap);
-        os_sinit_data = get_os_sinit_data_start(txt_heap);
+        os_mle_data = get_os_mle_data_start(txt_heap, (uint32_t)read_pub_config_reg(TXTCR_HEAP_SIZE));
+        sinit_mle_data = get_sinit_mle_data_start(txt_heap, (uint32_t)read_pub_config_reg(TXTCR_HEAP_SIZE));
+        os_sinit_data = get_os_sinit_data_start(txt_heap, (uint32_t)read_pub_config_reg(TXTCR_HEAP_SIZE));
 
         // enable SMIs on BSP before waking APs (which will enable them on APs)
         // because some SMM may take immediate SMI and hang if AP gets in first
