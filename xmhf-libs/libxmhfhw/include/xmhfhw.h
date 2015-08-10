@@ -186,6 +186,8 @@ void xmhfhw_cpu_x86_restore_mtrrs(mtrr_state_t *saved_state);
 void xmhfhw_cpu_x86_save_mtrrs(mtrr_state_t *saved_state);
 
 
+bool set_mem_type(u32 base, uint32_t size, uint32_t mem_type);
+
 
 
 
@@ -307,7 +309,6 @@ void write_priv_config_reg(uint32_t reg, uint64_t val);
 bool txt_is_launched(void);
 
 
-bool set_mem_type(u8 *base, uint32_t size, uint32_t mem_type);
 void print_mtrrs(const mtrr_state_t *saved_state);
 void xmhfhw_cpu_x86_save_mtrrs(mtrr_state_t *saved_state);
 bool validate_mtrrs(const mtrr_state_t *saved_state);
