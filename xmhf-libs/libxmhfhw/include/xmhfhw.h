@@ -196,6 +196,19 @@ bool set_mem_type(u32 base, uint32_t size, uint32_t mem_type);
 bool validate_mtrrs(const mtrr_state_t *saved_state);
 
 
+uint64_t get_bios_data_size(txt_heap_t *heap);
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -319,7 +332,6 @@ void xmhfhw_cpu_x86_save_mtrrs(mtrr_state_t *saved_state);
 
 
 txt_heap_t *get_txt_heap(void);
-uint64_t get_bios_data_size(txt_heap_t *heap);
 bios_data_t *get_bios_data_start(txt_heap_t *heap);
 uint64_t get_os_mle_data_size(txt_heap_t *heap);
 os_mle_data_t *get_os_mle_data_start(txt_heap_t *heap);

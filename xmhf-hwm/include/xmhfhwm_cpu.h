@@ -1412,7 +1412,7 @@ typedef struct {
 #define NR_MMIO_PCICFG_PAGES    1
 
 
-typedef void   txt_heap_t;
+typedef u8   txt_heap_t;
 
 /*
  * data-passing structures contained in TXT heap:
