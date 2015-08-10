@@ -196,7 +196,7 @@ bool set_mem_type(u32 base, uint32_t size, uint32_t mem_type);
 bool validate_mtrrs(const mtrr_state_t *saved_state);
 
 
-uint64_t get_bios_data_size(txt_heap_t *heap);
+uint64_t get_bios_data_size(txt_heap_t *heap, uint32_t heap_size);
 
 
 
@@ -332,13 +332,13 @@ void xmhfhw_cpu_x86_save_mtrrs(mtrr_state_t *saved_state);
 
 
 txt_heap_t *get_txt_heap(void);
-bios_data_t *get_bios_data_start(txt_heap_t *heap);
-uint64_t get_os_mle_data_size(txt_heap_t *heap);
-os_mle_data_t *get_os_mle_data_start(txt_heap_t *heap);
-uint64_t get_os_sinit_data_size(txt_heap_t *heap);
-os_sinit_data_t *get_os_sinit_data_start(txt_heap_t *heap);
-uint64_t get_sinit_mle_data_size(txt_heap_t *heap);
-sinit_mle_data_t *get_sinit_mle_data_start(txt_heap_t *heap);
+bios_data_t *get_bios_data_start(txt_heap_t *heap, uint32_t heap_size);
+uint64_t get_os_mle_data_size(txt_heap_t *heap, uint32_t heap_size);
+os_mle_data_t *get_os_mle_data_start(txt_heap_t *heap, uint32_t heap_size);
+uint64_t get_os_sinit_data_size(txt_heap_t *heap, uint32_t heap_size);
+os_sinit_data_t *get_os_sinit_data_start(txt_heap_t *heap, uint32_t heap_size);
+uint64_t get_sinit_mle_data_size(txt_heap_t *heap, uint32_t heap_size);
+sinit_mle_data_t *get_sinit_mle_data_start(txt_heap_t *heap, uint32_t heap_size);
 
 
 #endif //__ASSEMBLY__

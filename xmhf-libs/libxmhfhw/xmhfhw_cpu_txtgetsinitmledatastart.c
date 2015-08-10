@@ -52,11 +52,11 @@
 #include <xmhfhw.h>
 #include <xmhf-debug.h>
 
-sinit_mle_data_t *get_sinit_mle_data_start(txt_heap_t *heap)
+sinit_mle_data_t *get_sinit_mle_data_start(txt_heap_t *heap, uint32_t heap_size)
 {
-    return (sinit_mle_data_t *)((u32)heap + (u32)get_bios_data_size(heap) +
-                                (u32)get_os_mle_data_size(heap) +
-                                (u32)get_os_sinit_data_size(heap) +
+    return (sinit_mle_data_t *)((u32)heap + (u32)get_bios_data_size(heap, heap_size) +
+                                (u32)get_os_mle_data_size(heap, heap_size) +
+                                (u32)get_os_sinit_data_size(heap, heap_size) +
                                 sizeof(uint64_t));
 }
 

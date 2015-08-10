@@ -340,7 +340,7 @@ static txt_heap_t *init_txt_heap(void *ptab_base, acm_hdr_t *sinit,
     /*
      * OS/loader to MLE data
      */
-    os_mle_data = get_os_mle_data_start(txt_heap);
+    os_mle_data = get_os_mle_data_start(txt_heap, (uint32_t)read_pub_config_reg(TXTCR_HEAP_SIZE));
     size = (uint64_t *)((uint32_t)os_mle_data - sizeof(uint64_t));
     *size = sizeof(*os_mle_data) + sizeof(uint64_t);
     memset(os_mle_data, 0, sizeof(*os_mle_data));
@@ -351,7 +351,7 @@ static txt_heap_t *init_txt_heap(void *ptab_base, acm_hdr_t *sinit,
     /*
      * OS/loader to SINIT data
      */
-    os_sinit_data = get_os_sinit_data_start(txt_heap);
+    os_sinit_data = get_os_sinit_data_start(txt_heap, (uint32_t)read_pub_config_reg(TXTCR_HEAP_SIZE));
     size = (uint64_t *)((uint32_t)os_sinit_data - sizeof(uint64_t));
     *size = sizeof(*os_sinit_data) + sizeof(uint64_t);
     memset(os_sinit_data, 0, sizeof(*os_sinit_data));
@@ -469,7 +469,7 @@ tb_error_t txt_launch_environment(void *sinit_ptr, size_t sinit_size,
         return TB_ERR_FATAL;
 
     /* save MTRRs before we alter them for SINIT launch */
-    os_mle_data = get_os_mle_data_start(txt_heap);
+    os_mle_data = get_os_mle_data_start(txt_heap, (uint32_t)read_pub_config_reg(TXTCR_HEAP_SIZE));
     xmhfhw_cpu_x86_save_mtrrs(&(os_mle_data->saved_mtrr_state));
 
     /* set MTRRs properly for AC module (SINIT) */

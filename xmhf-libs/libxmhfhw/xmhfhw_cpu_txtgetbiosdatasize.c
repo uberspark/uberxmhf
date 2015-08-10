@@ -55,7 +55,7 @@
 	requires \valid(((u8 *)heap));
 	assigns \nothing;
 @*/
-uint64_t get_bios_data_size(txt_heap_t *heap)
+uint64_t get_bios_data_size(txt_heap_t *heap, uint32_t heap_size)
 {
 	return *(uint64_t *)heap;
 }

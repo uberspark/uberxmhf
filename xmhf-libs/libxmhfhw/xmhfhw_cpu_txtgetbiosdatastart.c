@@ -53,7 +53,7 @@
 #include <xmhf-debug.h>
 
 
-bios_data_t *get_bios_data_start(txt_heap_t *heap)
+bios_data_t *get_bios_data_start(txt_heap_t *heap, uint32_t heap_size)
 {
     return (bios_data_t *)((char*)heap + sizeof(uint64_t));
 }
