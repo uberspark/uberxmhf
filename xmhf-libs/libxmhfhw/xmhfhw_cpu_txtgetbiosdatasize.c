@@ -52,7 +52,8 @@
 #include <xmhf-debug.h>
 
 /*@
-	requires \valid(((u8 *)heap));
+	requires heap_size >=8;
+	requires \valid(((u8 *)heap+(0..heap_size-1)));
 	assigns \nothing;
 @*/
 uint64_t get_bios_data_size(txt_heap_t *heap, uint32_t heap_size)
