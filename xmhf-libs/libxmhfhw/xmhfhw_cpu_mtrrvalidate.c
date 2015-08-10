@@ -44,7 +44,6 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-//xmhfhw_cpu - base CPU functions
 //author: amit vasudevan (amitvasudevan@acm.org)
 
 #include <xmhf.h>
@@ -52,52 +51,77 @@
 #include <xmhfhw.h>
 #include <xmhf-debug.h>
 
-
+/*@
+	requires \valid(saved_state);
+	requires 0 <= saved_state->num_var_mtrrs < MAX_VARIABLE_MTRRS;
+	assigns \nothing;
+@*/
 bool validate_mtrrs(const mtrr_state_t *saved_state)
 {
     mtrr_cap_t mtrr_cap;
     int ndx;
 
-    /* check is meaningless if MTRRs were disabled */
+    // check is meaningless if MTRRs were disabled
     if ( saved_state->mtrr_def_type.e == 0 )
         return true;
 
-
-    /* number variable MTRRs */
-    //mtrr_cap.raw = CASM_FUNCCALL(rdmsr64,MSR_MTRRcap);
+    // number variable MTRRs
     unpack_mtrr_cap_t(&mtrr_cap, CASM_FUNCCALL(rdmsr64,MSR_MTRRcap));
-    if ( mtrr_cap.vcnt < saved_state->num_var_mtrrs ) {
-        //_XDPRINTF_("actual # var MTRRs (%d) < saved # (%d)\n",
-        //       mtrr_cap.vcnt, saved_state->num_var_mtrrs);
+    if ( mtrr_cap.vcnt < saved_state->num_var_mtrrs )
         return false;
-    }
 
-    /* variable MTRRs describing non-contiguous memory regions */
-    /* TBD: assert(MAXPHYADDR == 36); */
+
+    // variable MTRRs describing non-contiguous memory regions
+    // TBD: assert(MAXPHYADDR == 36);
+
+
+    	/*@
+		loop invariant I1: 0 <= ndx <= saved_state->num_var_mtrrs;
+		loop assigns ndx;
+		loop variant saved_state->num_var_mtrrs - ndx;
+	@*/
     for ( ndx = 0; ndx < saved_state->num_var_mtrrs; ndx++ ) {
+#if 0
         uint64_t tb;
 
         if ( saved_state->mtrr_physmasks[ndx].v == 0 )
             continue;
 
-        for ( tb = 0x1; tb != 0x1000000; tb = tb << 1 ) {
+    	/*@
+		loop invariant I2: 0x1 <= tb <= 0x2000000;
+		loop assigns tb;
+		loop variant 0x1000000 - tb;
+	@*/
+        for ( tb = 0x1; tb != 0x1000000; tb = tb * 2 ) {
             if ( (tb & saved_state->mtrr_physmasks[ndx].mask) != 0 )
                 break;
         }
+
+    	/*@
+		loop invariant I3: 0x1 <= tb <= 0x2000000;
+		loop assigns tb;
+		loop variant 0x1000000 - tb;
+	@*/
         for ( ; tb != 0x1000000; tb = tb << 1 ) {
             if ( (tb & saved_state->mtrr_physmasks[ndx].mask) == 0 )
                 break;
         }
-        if ( tb != 0x1000000 ) {
-            //_XDPRINTF_("var MTRRs with non-contiguous regions: "
-            //       "base=%06x, mask=%06x\n",
-            //       (unsigned int) saved_state->mtrr_physbases[ndx].base,
-            //       (unsigned int) saved_state->mtrr_physmasks[ndx].mask);
-            return false;
-        }
+
+        if ( tb != 0x1000000 )
+            return false; // var MTRRs with non-contiguous regions
+#endif // 0
+
     }
 
-    /* overlaping regions with invalid memory type combinations */
+
+
+
+    // overlaping regions with invalid memory type combinations
+    	/*@
+		loop invariant J1: 0 <= ndx <= saved_state->num_var_mtrrs;
+		loop assigns ndx;
+		loop variant saved_state->num_var_mtrrs - ndx;
+	@*/
     for ( ndx = 0; ndx < saved_state->num_var_mtrrs; ndx++ ) {
         int i;
         const mtrr_physbase_t *base_ndx = &saved_state->mtrr_physbases[ndx];
@@ -106,6 +130,11 @@ bool validate_mtrrs(const mtrr_state_t *saved_state)
         if ( mask_ndx->v == 0 )
             continue;
 
+    	/*@
+		loop invariant J2: ndx+1 <= i <= saved_state->num_var_mtrrs;
+		loop assigns i;
+		loop variant saved_state->num_var_mtrrs - i;
+	@*/
         for ( i = ndx + 1; i < saved_state->num_var_mtrrs; i++ ) {
             int j;
             const mtrr_physbase_t *base_i = &saved_state->mtrr_physbases[i];
@@ -132,10 +161,18 @@ bool validate_mtrrs(const mtrr_state_t *saved_state)
                  && base_i->type == MTRR_TYPE_WRTHROUGH )
                 continue;
 
+
             /* 2 overlapped regions have invalid mem type combination, */
             /* need to check whether there is a third region which has type */
             /* of UNCACHABLE and contains at least one of these two regions. */
             /* If there is, then the combination of these 3 region is valid */
+		/*@
+			loop invariant J3: 0 <= j <= saved_state->num_var_mtrrs;
+			loop assigns j;
+			loop variant saved_state->num_var_mtrrs - j;
+		@*/
+
+
             for ( j = 0; j < saved_state->num_var_mtrrs; j++ ) {
                 const mtrr_physbase_t *base_j
                         = &saved_state->mtrr_physbases[j];
@@ -158,12 +195,13 @@ bool validate_mtrrs(const mtrr_state_t *saved_state)
                      && (mask_j->mask & ~mask_i->mask) == 0 )
                     break;
             }
+
             if ( j < saved_state->num_var_mtrrs )
                 continue;
 
-            //_XDPRINTF_("var MTRRs overlaping regions, invalid type combinations\n");
-            return false;
+            return false; //var MTRRs overlaping regions, invalid type combinations
         }
+
     }
 
 
