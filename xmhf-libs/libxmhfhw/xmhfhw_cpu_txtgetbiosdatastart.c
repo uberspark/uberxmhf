@@ -44,7 +44,6 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-//xmhfhw_cpu - base CPU functions
 //author: amit vasudevan (amitvasudevan@acm.org)
 
 #include <xmhf.h>
@@ -52,8 +51,12 @@
 #include <xmhfhw.h>
 #include <xmhf-debug.h>
 
-
+/*@
+	requires heap_size >=8;
+	requires \valid(((u8 *)heap+(0..heap_size-1)));
+	assigns \nothing;
+@*/
 bios_data_t *get_bios_data_start(txt_heap_t *heap, uint32_t heap_size)
 {
-    return (bios_data_t *)((char*)heap + sizeof(uint64_t));
+    return (bios_data_t *)((u8 *)heap + sizeof(uint64_t));
 }
