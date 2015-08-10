@@ -189,6 +189,7 @@ void xmhfhw_cpu_x86_save_mtrrs(mtrr_state_t *saved_state);
 bool set_mem_type(u32 base, uint32_t size, uint32_t mem_type);
 
 
+bool validate_mtrrs(const mtrr_state_t *saved_state);
 
 
 
@@ -311,7 +312,6 @@ bool txt_is_launched(void);
 
 void print_mtrrs(const mtrr_state_t *saved_state);
 void xmhfhw_cpu_x86_save_mtrrs(mtrr_state_t *saved_state);
-bool validate_mtrrs(const mtrr_state_t *saved_state);
 
 
 txt_heap_t *get_txt_heap(void);
