@@ -44,7 +44,6 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-//xmhfhw_cpu - base CPU functions
 //author: amit vasudevan (amitvasudevan@acm.org)
 
 #include <xmhf.h>
@@ -52,8 +51,11 @@
 #include <xmhfhw.h>
 #include <xmhf-debug.h>
 
+/*@
+	assigns \nothing;
+@*/
 txt_heap_t *get_txt_heap(void)
 {
-    return (txt_heap_t *)(unsigned long)read_pub_config_reg(TXTCR_HEAP_BASE);
+    return (txt_heap_t *)(uint32_t)read_pub_config_reg(TXTCR_HEAP_BASE);
 }
 

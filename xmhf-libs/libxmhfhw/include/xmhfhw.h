@@ -213,11 +213,20 @@ bios_data_t *get_bios_data_start(txt_heap_t *heap, uint32_t heap_size);
 
 
 
+/*@
+	assigns \nothing;
+@*/
+txt_heap_t *get_txt_heap(void);
 
 
 
 
 
+
+/*@
+	assigns \nothing;
+@*/
+uint64_t read_pub_config_reg(uint32_t reg);
 
 
 
@@ -269,6 +278,9 @@ CASM_FUNCDECL(void wrmsr64(u32 msr, u64 newval));
   assigns \nothing;
 @*/
 CASM_FUNCDECL(u64 rdmsr64(u32 msr));
+
+
+
 
 
 CASM_FUNCDECL(void xmhfhw_cpu_disable_intr(void *noparam));
@@ -330,7 +342,6 @@ CASM_FUNCDECL(void xmhfhw_cpu_loadIDT(arch_x86_idtdesc_t *idt_addr));
 u32 xmhf_baseplatform_arch_getcpuvendor(void);
 
 
-uint64_t read_pub_config_reg(uint32_t reg);
 void write_pub_config_reg(uint32_t reg, uint64_t val);
 uint64_t read_priv_config_reg(uint32_t reg);
 void write_priv_config_reg(uint32_t reg, uint64_t val);
@@ -341,7 +352,6 @@ void print_mtrrs(const mtrr_state_t *saved_state);
 void xmhfhw_cpu_x86_save_mtrrs(mtrr_state_t *saved_state);
 
 
-txt_heap_t *get_txt_heap(void);
 uint64_t get_os_mle_data_size(txt_heap_t *heap, uint32_t heap_size);
 os_mle_data_t *get_os_mle_data_start(txt_heap_t *heap, uint32_t heap_size);
 uint64_t get_os_sinit_data_size(txt_heap_t *heap, uint32_t heap_size);
