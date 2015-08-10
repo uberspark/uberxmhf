@@ -44,7 +44,6 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-//xmhfhw_cpu - base CPU functions
 //author: amit vasudevan (amitvasudevan@acm.org)
 
 #include <xmhf.h>
@@ -54,119 +53,89 @@
 
 
 
-/*
- * set the memory type for specified range (base to base+size)
- * to mem_type and everything else to UC
- */
-bool set_mem_type(u8 *base, uint32_t size, uint32_t mem_type)
+// set the memory type for specified range (base to base+size) to mem_type and everything else to UC
+
+/*@
+  assigns \nothing;
+@*/
+bool set_mem_type(u32 base, uint32_t size, uint32_t mem_type)
 {
-    int num_pages;
-    int ndx;
-    mtrr_def_type_t mtrr_def_type;
-    mtrr_cap_t mtrr_cap;
-    mtrr_physmask_t mtrr_physmask;
-    mtrr_physbase_t mtrr_physbase;
+	uint32_t num_pages;
+	int ndx;
+	uint32_t pages_in_range;
+	mtrr_def_type_t mtrr_def_type;
+	mtrr_cap_t mtrr_cap;
+	mtrr_physmask_t mtrr_physmask;
+	mtrr_physbase_t mtrr_physbase;
 
-    _XDPRINTF_("%s: %u\n", __func__, __LINE__);
+	// disable all fixed MTRRs, set default type to UC
+	unpack_mtrr_def_type_t(&mtrr_def_type, CASM_FUNCCALL(rdmsr64,MSR_MTRRdefType));
+	mtrr_def_type.fe = 0;
+	mtrr_def_type.type = MTRR_TYPE_UNCACHABLE;
+	CASM_FUNCCALL(wrmsr64,MSR_MTRRdefType, pack_mtrr_def_type_t(&mtrr_def_type));
 
-    /*
-     * disable all fixed MTRRs
-     * set default type to UC
-     */
-    //mtrr_def_type.raw = CASM_FUNCCALL(rdmsr64,MSR_MTRRdefType);
-    unpack_mtrr_def_type_t(&mtrr_def_type, CASM_FUNCCALL(rdmsr64,MSR_MTRRdefType));
-    mtrr_def_type.fe = 0;
-    mtrr_def_type.type = MTRR_TYPE_UNCACHABLE;
- CASM_FUNCCALL(wrmsr64,MSR_MTRRdefType, pack_mtrr_def_type_t(&mtrr_def_type));
+	// initially disable all variable MTRRs (we'll enable the ones we use)
+	unpack_mtrr_cap_t(&mtrr_cap, CASM_FUNCCALL(rdmsr64,MSR_MTRRcap));
 
-    _XDPRINTF_("%s: %u\n", __func__, __LINE__);
+    	if(mtrr_cap.vcnt > MAX_VARIABLE_MTRRS)
+		return false;
 
-    /*
-     * initially disable all variable MTRRs (we'll enable the ones we use)
-     */
-    //mtrr_cap.raw = CASM_FUNCCALL(rdmsr64,MSR_MTRRcap);
-    unpack_mtrr_cap_t(&mtrr_cap, CASM_FUNCCALL(rdmsr64,MSR_MTRRcap));
-    for ( ndx = 0; ndx < mtrr_cap.vcnt; ndx++ ) {
-        //mtrr_physmask.raw = CASM_FUNCCALL(rdmsr64,MTRR_PHYS_MASK0_MSR + ndx*2);
-        unpack_mtrr_physmask_t(&mtrr_physmask, CASM_FUNCCALL(rdmsr64,MTRR_PHYS_MASK0_MSR + ndx*2));
-        mtrr_physmask.v = 0;
- CASM_FUNCCALL(wrmsr64,MTRR_PHYS_MASK0_MSR + ndx*2, pack_mtrr_physmask_t(&mtrr_physmask));
-    }
+    	/*@
+		loop invariant I1: 0 <= mtrr_cap.vcnt <= MAX_VARIABLE_MTRRS;
+		loop invariant I2: 0 <= ndx <= mtrr_cap.vcnt;
+		loop assigns ndx, mtrr_physmask.v, mtrr_physmask.mask, mtrr_physmask.reserved1, mtrr_physmask.reserved2;
+		loop variant mtrr_cap.vcnt - ndx;
+	@*/
+	for ( ndx = 0; ndx < mtrr_cap.vcnt; ndx++ ) {
+		unpack_mtrr_physmask_t(&mtrr_physmask, CASM_FUNCCALL(rdmsr64,MTRR_PHYS_MASK0_MSR + ndx*2));
+		mtrr_physmask.v = 0;
+		CASM_FUNCCALL(wrmsr64,MTRR_PHYS_MASK0_MSR + ndx*2, pack_mtrr_physmask_t(&mtrr_physmask));
+	}
 
-    _XDPRINTF_("%s: %u\n", __func__, __LINE__);
+	// map all pages as mem_type
+	num_pages = ((uint32_t)(size + PAGE_SIZE_4K - 1) >> PAGE_SHIFT_4K);
+	//@assert num_pages >= 0;
+	ndx = 0;
 
-    /*
-     * map all AC module pages as mem_type
-     */
+	/*@
+		loop invariant I3: num_pages >= 0;
+		loop assigns num_pages, pages_in_range;
+		loop variant num_pages;
+	@*/
+	while ( num_pages > 0 ) {
+		// set the base of the current MTRR
+		unpack_mtrr_physbase_t(&mtrr_physbase, CASM_FUNCCALL(rdmsr64,MTRR_PHYS_BASE0_MSR + ndx*2));
+		mtrr_physbase.reserved1 = 0;
+		mtrr_physbase.base = (unsigned long)base >> PAGE_SHIFT_4K;
+		mtrr_physbase.type = mem_type;
+		mtrr_physbase.reserved2 = 0;
+		CASM_FUNCCALL(wrmsr64,MTRR_PHYS_BASE0_MSR + ndx*2, pack_mtrr_physbase_t(&mtrr_physbase));
 
-    num_pages = (size + PAGE_SIZE_4K - 1) >> PAGE_SHIFT_4K;
-    ndx = 0;
+		// calculate MTRR mask: MTRRs can map pages in power of 2, may need to use multiple MTRRS to map all of region
+		pages_in_range = 1 << ((uint32_t)fls(num_pages) - 1);
 
-    _XDPRINTF_("setting MTRRs for acmod: base=%p, size=%x, num_pages=%d\n",
-           base, size, num_pages);
+		unpack_mtrr_physmask_t(&mtrr_physmask, CASM_FUNCCALL(rdmsr64,MTRR_PHYS_MASK0_MSR + ndx*2));
+		mtrr_physmask.reserved1 = 0;
+		mtrr_physmask.mask = (u32) ~(pages_in_range - 1);
+		mtrr_physmask.v = 1;
+		mtrr_physmask.reserved2 = 0;
+		CASM_FUNCCALL(wrmsr64,MTRR_PHYS_MASK0_MSR + ndx*2, pack_mtrr_physmask_t(&mtrr_physmask));
 
-    while ( num_pages > 0 ) {
-        uint32_t pages_in_range;
 
-        /* set the base of the current MTRR */
-        //mtrr_physbase.raw = CASM_FUNCCALL(rdmsr64,MTRR_PHYS_BASE0_MSR + ndx*2);
-        unpack_mtrr_physbase_t(&mtrr_physbase, CASM_FUNCCALL(rdmsr64,MTRR_PHYS_BASE0_MSR + ndx*2));
+		// prepare for the next loop depending on number of pages
+		// We figure out from the above how many pages could be used in this
+		// mtrr. Then we decrement the count, increment the base,
+		// increment the mtrr we are dealing with, and if num_pages is
+		// still not zero, we do it again.
+		base += (pages_in_range * PAGE_SIZE_4K);
+		num_pages -= pages_in_range;
+		ndx++;
 
-        mtrr_physbase.reserved1 = 0;
-        mtrr_physbase.base = (unsigned long)base >> PAGE_SHIFT_4K;
-        mtrr_physbase.type = mem_type;
-        /* set explicitly in case base field is >24b (MAXPHYADDR >36) */
-        mtrr_physbase.reserved2 = 0;
+		if ( ndx == mtrr_cap.vcnt ) {
+		    return false;
+		}
+	}
 
-        _XDPRINTF_("%s: %u writing %016llx\n", __func__, __LINE__,
-                   pack_mtrr_physbase_t(&mtrr_physbase));
-
- CASM_FUNCCALL(wrmsr64,MTRR_PHYS_BASE0_MSR + ndx*2, pack_mtrr_physbase_t(&mtrr_physbase));
-
-        _XDPRINTF_("%s: %u\n", __func__, __LINE__);
-
-        /*
-         * calculate MTRR mask
-         * MTRRs can map pages in power of 2
-         * may need to use multiple MTRRS to map all of region
-         */
-        pages_in_range = 1 << (fls(num_pages) - 1);
-
-        _XDPRINTF_("%s: %u pages_in_range=%u\n", __func__, __LINE__, pages_in_range);
-
-        //mtrr_physmask.raw = CASM_FUNCCALL(rdmsr64,MTRR_PHYS_MASK0_MSR + ndx*2);
-        unpack_mtrr_physmask_t(&mtrr_physmask, CASM_FUNCCALL(rdmsr64,MTRR_PHYS_MASK0_MSR + ndx*2));
-
-        mtrr_physmask.reserved1 = 0;
-        mtrr_physmask.mask = (u32) ~(pages_in_range - 1);
-        mtrr_physmask.v = 1;
-        /* set explicitly in case mask field is >24b (MAXPHYADDR >36) */
-        mtrr_physmask.reserved2 = 0;
-
-        _XDPRINTF_("%s: %u writing %016llx\n", __func__, __LINE__,
-                   pack_mtrr_physmask_t(&mtrr_physmask));
-
- CASM_FUNCCALL(wrmsr64,MTRR_PHYS_MASK0_MSR + ndx*2, pack_mtrr_physmask_t(&mtrr_physmask));
-
-        _XDPRINTF_("%s: %u\n", __func__, __LINE__);
-
-        /* prepare for the next loop depending on number of pages
-         * We figure out from the above how many pages could be used in this
-         * mtrr. Then we decrement the count, increment the base,
-         * increment the mtrr we are dealing with, and if num_pages is
-         * still not zero, we do it again.
-         */
-        base += (pages_in_range * PAGE_SIZE_4K);
-        num_pages -= pages_in_range;
-        ndx++;
-        if ( ndx == mtrr_cap.vcnt ) {
-            _XDPRINTF_("exceeded number of var MTRRs when mapping range\n");
-            return false;
-        }
-    }
-
-    _XDPRINTF_("%s: %u\n", __func__, __LINE__);
-
-    return true;
+	return true;
 }
 
