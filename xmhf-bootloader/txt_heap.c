@@ -114,7 +114,7 @@ static void print_bios_data(bios_data_t *bios_data)
 bool verify_bios_data(txt_heap_t *txt_heap)
 {
     uint64_t size, heap_size;
-    bios_data_t *bios_data;
+    bios_data_t bios_data;
 
     /* check size */
     heap_size = read_pub_config_reg(TXTCR_HEAP_SIZE);
@@ -129,31 +129,33 @@ bool verify_bios_data(txt_heap_t *txt_heap)
         return false;
     }
 
-    bios_data = get_bios_data_start(txt_heap, (uint32_t)read_pub_config_reg(TXTCR_HEAP_SIZE));
+    xmhfhw_sysmemaccess_copy(&bios_data,
+			get_bios_data_start(txt_heap, (uint32_t)read_pub_config_reg(TXTCR_HEAP_SIZE)),
+			sizeof(bios_data_t));
 
     /* check version */
-    if ( bios_data->version < 2 ) {
-        _XDPRINTF_("unsupported BIOS data version (%u)\n", bios_data->version);
+    if ( bios_data.version < 2 ) {
+        _XDPRINTF_("unsupported BIOS data version (%u)\n", bios_data.version);
         return false;
     }
     /* we assume backwards compatibility but print a warning */
-    if ( bios_data->version > 3 )
-        _XDPRINTF_("unsupported BIOS data version (%u)\n", bios_data->version);
+    if ( bios_data.version > 3 )
+        _XDPRINTF_("unsupported BIOS data version (%u)\n", bios_data.version);
 
     /* all TXT-capable CPUs support at least 2 cores */
-    if ( bios_data->num_logical_procs < 2 ) {
+    if ( bios_data.num_logical_procs < 2 ) {
         _XDPRINTF_("BIOS data has incorrect num_logical_procs (%u)\n",
-               bios_data->num_logical_procs);
+               bios_data.num_logical_procs);
         return false;
     }
 #define NR_CPUS 8 // XXX arbitrary value; use something sane
-    else if ( bios_data->num_logical_procs > NR_CPUS ) {
+    else if ( bios_data.num_logical_procs > NR_CPUS ) {
         _XDPRINTF_("BIOS data specifies too many CPUs (%u)\n",
-               bios_data->num_logical_procs);
+               bios_data.num_logical_procs);
         return false;
     }
 
-    print_bios_data(bios_data);
+    print_bios_data(&bios_data);
 
     return true;
 }

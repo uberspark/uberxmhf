@@ -56,7 +56,7 @@
 	requires \valid(((u8 *)heap+(0..heap_size-1)));
 	assigns \nothing;
 @*/
-bios_data_t *get_bios_data_start(txt_heap_t *heap, uint32_t heap_size)
+u32 get_bios_data_start(u32 heap_memaddr, uint32_t heap_size)
 {
-    return (bios_data_t *)((u8 *)heap + sizeof(uint64_t));
+    return (bios_data_t *)(heap_memaddr + sizeof(uint64_t));
 }
