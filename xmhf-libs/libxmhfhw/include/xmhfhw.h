@@ -271,7 +271,9 @@ uint64_t read_pub_config_reg(uint32_t reg);
 @*/
 void write_priv_config_reg(uint32_t reg, uint64_t val);
 
-
+/*@
+	assigns \nothing;
+@*/
 void write_pub_config_reg(uint32_t reg, uint64_t val);
 
 
