@@ -69,6 +69,7 @@ static u32 _acpi_computetablechecksum(u32 spaddr, u32 size){
   return (u32)checksum;
 }
 
+#if 0
 //*
 //------------------------------------------------------------------------------
 //get the physical address of the root system description pointer (rsdp)
@@ -120,3 +121,4 @@ u32 xmhfhw_platform_x86pc_acpi_getRSDP(ACPI_RSDP *rsdp){
 }
 //------------------------------------------------------------------------------
 
+#endif
