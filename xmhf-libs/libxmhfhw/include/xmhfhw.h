@@ -301,6 +301,10 @@ bool xmhfhw_lapic_isbsp(void);
 
 
 
+
+
+
+
 /*@
   assigns \nothing;
 @*/
@@ -466,18 +470,8 @@ u32 xmhf_baseplatform_arch_getcpuvendor(void);
 
 
 
-void print_mtrrs(const mtrr_state_t *saved_state);
-void xmhfhw_cpu_x86_save_mtrrs(mtrr_state_t *saved_state);
 
 
-
-
-#endif //__ASSEMBLY__
-
-
-//////xmhfhw_cpu_msr
-
-#ifndef __ASSEMBLY__
 
 
 #endif //__ASSEMBLY__
@@ -496,13 +490,6 @@ CASM_FUNCDECL(void tlb_invlpg(u64 addr));
 
 
 
-//////xmhfhw_cpu_txt
-
-#ifndef __ASSEMBLY__
-
-
-
-#endif //__ASSEMBLY__
 
 
 //////xmhfhw_cpu_vmx
@@ -520,13 +507,6 @@ CASM_FUNCDECL(void __vmx_invept(u64 invalidation_type, u64 eptp));
 #endif //__ASSEMBLY__
 
 
-
-//////xmhfhw_cpu_legio
-
-#ifndef __ASSEMBLY__
-
-
-#endif //__ASSEMBLY__
 
 
 
@@ -573,15 +553,6 @@ void xmhf_baseplatform_arch_x86_udelay(u32 usecs);
 #endif //__ASSEMBLY__
 
 
-
-//////xmhfhw_legio_keyb
-
-#ifndef __ASSEMBLY__
-
-
-#endif //__ASSEMBLY__
-
-
 //////xmhfhw_sysmem_bios
 
 #ifndef __ASSEMBLY__
@@ -621,14 +592,6 @@ void xmhfhw_platform_x86pc_vtd_drhd_enable_pmr(vtd_drhd_handle_t drhd_handle);
 void xmhfhw_platform_x86pc_vtd_drhd_disable_pmr(vtd_drhd_handle_t drhd_handle);
 void xmhfhw_platform_x86pc_vtd_drhd_set_plm_base_and_limit(vtd_drhd_handle_t drhd_handle, u32 base, u32 limit);
 void xmhfhw_platform_x86pc_vtd_drhd_set_phm_base_and_limit(vtd_drhd_handle_t drhd_handle, u64 base, u64 limit);
-
-
-#endif //__ASSEMBLY__
-
-
-//////xmhfhw_mmio_lapic
-
-#ifndef __ASSEMBLY__
 
 
 #endif //__ASSEMBLY__
