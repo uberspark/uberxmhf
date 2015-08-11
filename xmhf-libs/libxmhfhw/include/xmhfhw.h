@@ -197,19 +197,11 @@ bool set_mem_type(u32 base, uint32_t size, uint32_t mem_type);
 bool validate_mtrrs(const mtrr_state_t *saved_state);
 
 
-/*@
-	requires heap_size >=8;
-	requires \valid(((u8 *)heap+(0..heap_size-1)));
-	assigns \nothing;
-@*/
+
+
 uint64_t get_bios_data_size(u32 heap_memaddr, uint32_t heap_size);
 
 
-/*@
-	requires heap_size >=8;
-	requires \valid(((u8 *)heap+(0..heap_size-1)));
-	assigns \nothing;
-@*/
 u32 get_bios_data_start(u32 heap_memaddr, uint32_t heap_size);
 
 
@@ -290,6 +282,16 @@ CASM_FUNCDECL(void wrmsr64(u32 msr, u64 newval));
   assigns \nothing;
 @*/
 CASM_FUNCDECL(u64 rdmsr64(u32 msr));
+
+
+/*@
+  assigns \nothing;
+@*/
+CASM_FUNCDECL(u64 xmhfhw_sysmemaccess_readu64(u32 addr));
+
+
+
+
 
 
 
