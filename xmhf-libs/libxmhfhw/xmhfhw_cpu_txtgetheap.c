@@ -54,8 +54,8 @@
 /*@
 	assigns \nothing;
 @*/
-txt_heap_t *get_txt_heap(void)
+u32 get_txt_heap(void)
 {
-    return (txt_heap_t *)(uint32_t)read_pub_config_reg(TXTCR_HEAP_BASE);
+    return (uint32_t)read_pub_config_reg(TXTCR_HEAP_BASE);
 }
 

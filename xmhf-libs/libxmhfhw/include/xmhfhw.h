@@ -201,7 +201,7 @@ bool validate_mtrrs(const mtrr_state_t *saved_state);
 	requires \valid(((u8 *)heap+(0..heap_size-1)));
 	assigns \nothing;
 @*/
-uint64_t get_bios_data_size(txt_heap_t *heap, uint32_t heap_size);
+uint64_t get_bios_data_size(u32 heap_memaddr, uint32_t heap_size);
 
 
 /*@
@@ -209,16 +209,24 @@ uint64_t get_bios_data_size(txt_heap_t *heap, uint32_t heap_size);
 	requires \valid(((u8 *)heap+(0..heap_size-1)));
 	assigns \nothing;
 @*/
-bios_data_t *get_bios_data_start(txt_heap_t *heap, uint32_t heap_size);
+u32 get_bios_data_start(u32 heap_memaddr, uint32_t heap_size);
 
 
 
 /*@
 	assigns \nothing;
 @*/
-txt_heap_t *get_txt_heap(void);
+u32 get_txt_heap(void);
 
 
+uint64_t get_os_mle_data_size(u32 heap_memaddr, uint32_t heap_size);
+
+os_mle_data_t * get_os_mle_data_start(u32 heap_memaddr, uint32_t heap_size);
+
+uint64_t get_os_sinit_data_size(u32 heap_memaddr, uint32_t heap_size);
+os_sinit_data_t *get_os_sinit_data_start(u32 heap_memaddr, uint32_t heap_size);
+uint64_t get_sinit_mle_data_size(u32 heap_memaddr, uint32_t heap_size);
+sinit_mle_data_t *get_sinit_mle_data_start(u32 heap_memaddr, uint32_t heap_size);
 
 
 
@@ -352,12 +360,6 @@ void print_mtrrs(const mtrr_state_t *saved_state);
 void xmhfhw_cpu_x86_save_mtrrs(mtrr_state_t *saved_state);
 
 
-uint64_t get_os_mle_data_size(txt_heap_t *heap, uint32_t heap_size);
-os_mle_data_t *get_os_mle_data_start(txt_heap_t *heap, uint32_t heap_size);
-uint64_t get_os_sinit_data_size(txt_heap_t *heap, uint32_t heap_size);
-os_sinit_data_t *get_os_sinit_data_start(txt_heap_t *heap, uint32_t heap_size);
-uint64_t get_sinit_mle_data_size(txt_heap_t *heap, uint32_t heap_size);
-sinit_mle_data_t *get_sinit_mle_data_start(txt_heap_t *heap, uint32_t heap_size);
 
 
 #endif //__ASSEMBLY__

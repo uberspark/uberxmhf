@@ -474,7 +474,7 @@ acm_hdr_t *copy_sinit(acm_hdr_t *sinit)
     void *sinit_region_base;
     uint32_t sinit_region_size;
     txt_heap_t *txt_heap;
-    bios_data_t *bios_data;
+    bios_data_t bios_data;
 
     /* get BIOS-reserved region from LT.SINIT.BASE config reg */
     sinit_region_base =
@@ -485,12 +485,14 @@ acm_hdr_t *copy_sinit(acm_hdr_t *sinit)
      * check if BIOS already loaded an SINIT module there
      */
     txt_heap = get_txt_heap();
-    bios_data = get_bios_data_start(txt_heap, (uint32_t)read_pub_config_reg(TXTCR_HEAP_SIZE));
+    xmhfhw_sysmemaccess_copy(&bios_data,
+			get_bios_data_start(txt_heap, (uint32_t)read_pub_config_reg(TXTCR_HEAP_SIZE)),
+			sizeof(bios_data_t));
     /* BIOS has loaded an SINIT module, so verify that it is valid */
-    if ( bios_data->bios_sinit_size != 0 ) {
+    if ( bios_data.bios_sinit_size != 0 ) {
         _XDPRINTF_("BIOS has already loaded an SINIT module\n");
         /* is it a valid SINIT module? */
-        if ( is_sinit_acmod(sinit_region_base, bios_data->bios_sinit_size, false) &&
+        if ( is_sinit_acmod(sinit_region_base, bios_data.bios_sinit_size, false) &&
              does_acmod_match_chipset((acm_hdr_t *)sinit_region_base) ) {
             /* no other SINIT was provided so must use one BIOS provided */
             if ( sinit == NULL )
