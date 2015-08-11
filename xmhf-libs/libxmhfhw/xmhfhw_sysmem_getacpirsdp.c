@@ -53,7 +53,7 @@
 #include <xmhf-debug.h>
 
 
-
+/*
 //------------------------------------------------------------------------------
 //compute checksum of ACPI table
 static u32 _acpi_computetablechecksum(u32 spaddr, u32 size){
@@ -68,8 +68,27 @@ static u32 _acpi_computetablechecksum(u32 spaddr, u32 size){
 
   return (u32)checksum;
 }
+*/
 
-#if 0
+//------------------------------------------------------------------------------
+//compute checksum of ACPI table
+static u32 _acpi_computetablechecksum(char *table, u32 size){
+  char *p;
+  char checksum=0;
+  u32 i;
+
+  p=(char *)table;
+
+  for(i=0; i< size; i++)
+    checksum+= (char)(*(p+i));
+
+  return (u32)checksum;
+}
+
+
+
+
+#if 1
 //*
 //------------------------------------------------------------------------------
 //get the physical address of the root system description pointer (rsdp)
@@ -90,7 +109,7 @@ u32 xmhfhw_platform_x86pc_acpi_getRSDP(ACPI_RSDP *rsdp){
   for(i=0; i < (1024-8); i+=16){
     xmhfhw_sysmemaccess_copy((u8 *)rsdp, (u8 *)(ebdaphys+i), sizeof(ACPI_RSDP));
     if(rsdp->signature == ACPI_RSDP_SIGNATURE){
-      if(!_acpi_computetablechecksum((u32)rsdp, 20)){
+      if(!_acpi_computetablechecksum((char *)rsdp, 20)){
         found=1;
         break;
       }
@@ -105,7 +124,7 @@ u32 xmhfhw_platform_x86pc_acpi_getRSDP(ACPI_RSDP *rsdp){
   for(i=0xE0000; i < (0xFFFFF-8); i+=16){
     xmhfhw_sysmemaccess_copy((u8 *)rsdp, (u8 *)i, sizeof(ACPI_RSDP));
     if(rsdp->signature == ACPI_RSDP_SIGNATURE){
-      if(!_acpi_computetablechecksum((u32)rsdp, 20)){
+      if(!_acpi_computetablechecksum((char *)rsdp, 20)){
         found=1;
         break;
       }
