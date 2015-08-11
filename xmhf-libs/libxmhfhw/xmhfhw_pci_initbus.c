@@ -159,24 +159,24 @@
 //PCI subsystem initialization
 //check that PCI chipset supports type-1 accesses
 //true for most systems after 2001
+/*@
+	assigns \nothing;
+@*/
 void xmhfhw_platform_bus_init(void){
-  u32 tmp;
+	u32 tmp;
 
 	//save value at PCI_CONFIG_ADDR_PORT
-  tmp = CASM_FUNCCALL(inl,PCI_CONFIG_ADDR_PORT);
+	tmp = CASM_FUNCCALL(inl,PCI_CONFIG_ADDR_PORT);
 
-  //select command register on bus 0, device 0 and function 0
- CASM_FUNCCALL(outl,0x80000000, PCI_CONFIG_ADDR_PORT);
+	//select command register on bus 0, device 0 and function 0
+	CASM_FUNCCALL(outl,0x80000000, PCI_CONFIG_ADDR_PORT);
 
-  //reading PCI_CONFIG_ADDR_PORT should return with bit 31 set
+	//reading PCI_CONFIG_ADDR_PORT should return with bit 31 set
 	//if system supports type-1 access
-  if (inl(PCI_CONFIG_ADDR_PORT) != 0x80000000) {
-  	//_XDPRINTF_("%s: system does not support type-1 access. HALT!\n", __FUNCTION__);
-    //HALT();
-    return;
-  }
+	if (inl(PCI_CONFIG_ADDR_PORT) != 0x80000000)
+		return;
 
-  //restore previous value at PCI_CONFIG_ADDR_PORT
- CASM_FUNCCALL(outl,tmp, PCI_CONFIG_ADDR_PORT);
+	//restore previous value at PCI_CONFIG_ADDR_PORT
+	CASM_FUNCCALL(outl,tmp, PCI_CONFIG_ADDR_PORT);
 }
 

@@ -299,7 +299,10 @@ bool xmhfhw_lapic_isbsp(void);
 
 
 
-
+/*@
+	assigns \nothing;
+@*/
+void xmhfhw_platform_bus_init(void);
 
 
 
@@ -538,7 +541,6 @@ CASM_FUNCDECL(void xmhfhw_sysmemaccess_copy(u8 *dest, u8 *src, u32 size));
 
 void xmhf_baseplatform_arch_x86_pci_type1_read(u32 bus, u32 device, u32 function, u32 index, u32 len, u32 *value);
 void xmhf_baseplatform_arch_x86_pci_type1_write(u32 bus, u32 device, u32 function, u32 index, u32 len, u32 value);
-void xmhfhw_platform_bus_init(void);
 
 #endif //__ASSEMBLY__
 
