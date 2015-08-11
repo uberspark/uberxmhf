@@ -72,6 +72,11 @@ static u32 _acpi_computetablechecksum(u32 spaddr, u32 size){
 
 //------------------------------------------------------------------------------
 //compute checksum of ACPI table
+/*@
+	requires size >= 0;
+	requires \valid((char *)table+(0..size-1));
+	assigns \nothing;
+@*/
 static u32 _acpi_computetablechecksum(char *table, u32 size){
   char *p;
   char checksum=0;
@@ -79,8 +84,14 @@ static u32 _acpi_computetablechecksum(char *table, u32 size){
 
   p=(char *)table;
 
-  for(i=0; i< size; i++)
-    checksum+= (char)(*(p+i));
+	/*@
+		loop invariant I1: 0 <= i <= size;
+		loop assigns i, checksum;
+		loop variant size - i;
+	@*/
+
+	for(i=0; i< size; i++)
+	  checksum+= (char)(*(p+i));
 
   return (u32)checksum;
 }
@@ -88,7 +99,7 @@ static u32 _acpi_computetablechecksum(char *table, u32 size){
 
 
 
-#if 1
+#if 0
 //*
 //------------------------------------------------------------------------------
 //get the physical address of the root system description pointer (rsdp)
