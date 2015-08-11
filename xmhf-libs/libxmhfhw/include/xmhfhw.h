@@ -250,6 +250,10 @@ uint64_t get_sinit_mle_data_size(u32 heap_memaddr, uint32_t heap_size);
 @*/
 u32 get_sinit_mle_data_start(u32 heap_memaddr, uint32_t heap_size);
 
+/*@
+	assigns \nothing;
+@*/
+bool txt_is_launched(void);
 
 
 
@@ -385,8 +389,6 @@ u32 xmhf_baseplatform_arch_getcpuvendor(void);
 void write_pub_config_reg(uint32_t reg, uint64_t val);
 uint64_t read_priv_config_reg(uint32_t reg);
 void write_priv_config_reg(uint32_t reg, uint64_t val);
-bool txt_is_launched(void);
-
 
 void print_mtrrs(const mtrr_state_t *saved_state);
 void xmhfhw_cpu_x86_save_mtrrs(mtrr_state_t *saved_state);
