@@ -159,6 +159,10 @@
 //function and index
 //len = 1(byte), 2(word) and 4(dword)
 //value is a pointer to a 32-bit dword which contains the value read
+/*@
+	requires \valid(value);
+	assigns *value;
+@*/
 void xmhf_baseplatform_arch_x86_pci_type1_read(u32 bus, u32 device, u32 function, u32 index, u32 len,
 			u32 *value){
 
@@ -166,21 +170,24 @@ void xmhf_baseplatform_arch_x86_pci_type1_read(u32 bus, u32 device, u32 function
 	if ( bus > 255 || PCI_DEVICE_FN(device,function) > 255 || index > 4095)
 		return;
 
-  //encode and send the 32-bit type-1 address to PCI address port
- CASM_FUNCCALL(outl,PCI_TYPE1_ADDRESS(bus, device, function, index), PCI_CONFIG_ADDR_PORT);
+	//encode and send the 32-bit type-1 address to PCI address port
+	CASM_FUNCCALL(outl,PCI_TYPE1_ADDRESS(bus, device, function, index), PCI_CONFIG_ADDR_PORT);
 
-  //read a byte, word or dword depending on len
-  switch (len) {
-  	case 1:	//byte
-          *value = CASM_FUNCCALL(inb,PCI_CONFIG_DATA_PORT + (index & 3));
-          break;
-  	case 2:	//word
-          *value = CASM_FUNCCALL(inw,PCI_CONFIG_DATA_PORT + (index & 2));
-          break;
-  	case 4:	//dword
-          *value = CASM_FUNCCALL(inl,PCI_CONFIG_DATA_PORT);
-          break;
-  }
+	//read a byte, word or dword depending on len
+	switch (len) {
+		case 1:	//byte
+		  *value = (u32) CASM_FUNCCALL(inb,PCI_CONFIG_DATA_PORT + (index & 3));
+		  break;
+		case 2:	//word
+		  *value = (u32) CASM_FUNCCALL(inw,PCI_CONFIG_DATA_PORT + (index & 2));
+		  break;
+		case 4:	//dword
+		  *value = (u32 ) CASM_FUNCCALL(inl,PCI_CONFIG_DATA_PORT);
+		  break;
+		default:
+		  *value = 0;
+		  break;
+	}
 
 	return;
 }
