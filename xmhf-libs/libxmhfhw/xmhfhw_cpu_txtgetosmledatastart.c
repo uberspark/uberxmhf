@@ -44,14 +44,12 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-//xmhfhw_cpu - base CPU functions
 //author: amit vasudevan (amitvasudevan@acm.org)
 
 #include <xmhf.h>
 #include <xmhf-hwm.h>
 #include <xmhfhw.h>
 #include <xmhf-debug.h>
-
 
 u32 get_os_mle_data_start(u32 heap_memaddr, uint32_t heap_size)
 {
