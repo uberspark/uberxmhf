@@ -286,7 +286,13 @@ void xmhf_baseplatform_arch_x86_reboot(void);
 
 
 
+/*@
+	assigns \nothing;
+@*/
+u32 xmhf_baseplatform_arch_x86_getcpulapicid(void);
 
+
+bool xmhfhw_lapic_isbsp(void);
 
 
 
@@ -335,6 +341,12 @@ CASM_FUNCDECL(void wrmsr64(u32 msr, u64 newval));
 @*/
 CASM_FUNCDECL(u64 rdmsr64(u32 msr));
 
+
+
+/*@
+  assigns \nothing;
+@*/
+CASM_FUNCDECL(u32 xmhfhw_sysmemaccess_readu32(u32 addr));
 
 /*@
   assigns \nothing;
@@ -524,7 +536,6 @@ CASM_FUNCDECL(void __vmx_invept(u64 invalidation_type, u64 eptp));
 
 CASM_FUNCDECL(u8 xmhfhw_sysmemaccess_readu8(u32 addr));
 CASM_FUNCDECL(u16 xmhfhw_sysmemaccess_readu16(u32 addr));
-CASM_FUNCDECL(u32 xmhfhw_sysmemaccess_readu32(u32 addr));
 CASM_FUNCDECL(u64 xmhfhw_sysmemaccess_readu64(u32 addr));
 
 CASM_FUNCDECL(void xmhfhw_sysmemaccess_writeu8(u32 addr, u8 val));
@@ -616,8 +627,6 @@ void xmhfhw_platform_x86pc_vtd_drhd_set_phm_base_and_limit(vtd_drhd_handle_t drh
 
 #ifndef __ASSEMBLY__
 
-u32 xmhf_baseplatform_arch_x86_getcpulapicid(void);
-bool xmhfhw_lapic_isbsp(void);
 
 #endif //__ASSEMBLY__
 
