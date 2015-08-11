@@ -239,7 +239,7 @@ void print_os_sinit_data(os_sinit_data_t *os_sinit_data)
 static bool verify_os_sinit_data(txt_heap_t *txt_heap)
 {
     uint64_t size, heap_size;
-    os_sinit_data_t *os_sinit_data;
+    os_sinit_data_t os_sinit_data;
 
     /* check size */
     heap_size = read_pub_config_reg(TXTCR_HEAP_SIZE);
@@ -254,25 +254,27 @@ static bool verify_os_sinit_data(txt_heap_t *txt_heap)
         return false;
     }
 
-    os_sinit_data = get_os_sinit_data_start(txt_heap, (uint32_t)read_pub_config_reg(TXTCR_HEAP_SIZE));
+    xmhfhw_sysmemaccess_copy(&os_sinit_data,
+	get_os_sinit_data_start(txt_heap, (uint32_t)read_pub_config_reg(TXTCR_HEAP_SIZE)),
+	sizeof(os_sinit_data_t));
 
     /* check version (but since we create this, it should always be OK) */
-    if ( os_sinit_data->version < 4 || os_sinit_data->version > 5 ) {
+    if ( os_sinit_data.version < 4 || os_sinit_data.version > 5 ) {
         _XDPRINTF_("unsupported OS to SINIT data version (%u)\n",
-               os_sinit_data->version);
+               os_sinit_data.version);
         return false;
     }
 
-    if ( (os_sinit_data->version == 4 &&
+    if ( (os_sinit_data.version == 4 &&
           size != offsetof(os_sinit_data_t, efi_rsdt_ptr) + sizeof(uint64_t))
-         || (os_sinit_data->version == 5 &&
+         || (os_sinit_data.version == 5 &&
              size != sizeof(os_sinit_data_t) + sizeof(uint64_t)) ) {
         _XDPRINTF_("OS to SINIT data size (%llx) does not match for version (%x)\n",
                size, sizeof(os_sinit_data_t));
         return false;
     }
 
-    print_os_sinit_data(os_sinit_data);
+    print_os_sinit_data(&os_sinit_data);
 
     return true;
 }
