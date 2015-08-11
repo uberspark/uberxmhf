@@ -219,7 +219,12 @@ u32 get_bios_data_start(u32 heap_memaddr, uint32_t heap_size);
 u32 get_txt_heap(void);
 
 
+/*@
+	assigns \nothing;
+@*/
 uint64_t get_os_mle_data_size(u32 heap_memaddr, uint32_t heap_size);
+
+
 
 u32 get_os_mle_data_start(u32 heap_memaddr, uint32_t heap_size);
 
