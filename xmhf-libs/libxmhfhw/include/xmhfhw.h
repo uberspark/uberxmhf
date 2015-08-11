@@ -279,6 +279,16 @@ void write_pub_config_reg(uint32_t reg, uint64_t val);
 
 
 
+/*@
+	assigns \nothing;
+@*/
+void xmhf_baseplatform_arch_x86_reboot(void);
+
+
+
+
+
+
 
 
 
@@ -342,6 +352,40 @@ CASM_FUNCDECL(uint64_t read_config_reg(uint32_t config_regs_base, uint32_t reg))
 @*/
 CASM_FUNCDECL(void write_config_reg(uint32_t config_regs_base, uint32_t reg, uint64_t val));
 
+
+
+
+/*@
+  assigns \nothing;
+@*/
+CASM_FUNCDECL(void outl(u32 val, u32 port));
+
+/*@
+  assigns \nothing;
+@*/
+CASM_FUNCDECL(void outw (u32 value, u32 port));
+
+
+/*@
+  assigns \nothing;
+@*/
+CASM_FUNCDECL(void outb (u32 value, u32 port));
+
+/*@
+  assigns \nothing;
+@*/
+CASM_FUNCDECL(u32 inl(u32 port));
+
+/*@
+  assigns \nothing;
+@*/
+CASM_FUNCDECL(u16 inw (u32 port));
+
+/*@
+  assigns \nothing;
+  ensures 0 <= \result <= 255;
+@*/
+CASM_FUNCDECL(u8 inb (u32 port));
 
 
 
@@ -466,12 +510,6 @@ CASM_FUNCDECL(void __vmx_invept(u64 invalidation_type, u64 eptp));
 
 #ifndef __ASSEMBLY__
 
-CASM_FUNCDECL(void outl(u32 val, u32 port));
-CASM_FUNCDECL(void outw (u32 value, u32 port));
-CASM_FUNCDECL(void outb (u32 value, u32 port));
-CASM_FUNCDECL(u32 inl(u32 port));
-CASM_FUNCDECL(u16 inw (u32 port));
-CASM_FUNCDECL(u8 inb (u32 port));
 
 #endif //__ASSEMBLY__
 
@@ -526,7 +564,6 @@ void xmhf_baseplatform_arch_x86_udelay(u32 usecs);
 
 #ifndef __ASSEMBLY__
 
-void xmhf_baseplatform_arch_x86_reboot(void);
 
 #endif //__ASSEMBLY__
 

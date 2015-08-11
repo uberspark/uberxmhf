@@ -53,16 +53,25 @@
 #include <xmhf-debug.h>
 
 //generic x86 platform reboot
+/*@
+	assigns \nothing;
+@*/
 void xmhf_baseplatform_arch_x86_reboot(void){
 	unsigned char flush = 0x02;
 
-	while ((flush & 0x02) != 0)
+	/*@
+		loop invariant I3: (flush & 0x02) != 0;
+		loop assigns flush;
+	@*/
+	while (1) {
 		flush = CASM_FUNCCALL(inb,0x64);
- CASM_FUNCCALL(outb,0xFE, 0x64);
+		if((flush & 0x02) == 0)
+			break;
+	}
+
+	CASM_FUNCCALL(outb,0xFE, 0x64);
 
 	//never get here
-	//_XDPRINTF_("\n%s: should never get here. halt!", __FUNCTION__);
 	HALT();
-
 }
 
