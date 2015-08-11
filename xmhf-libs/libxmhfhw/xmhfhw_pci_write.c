@@ -159,32 +159,37 @@
 //function and index
 //len = 1(byte), 2(word) and 4(dword)
 //value contains the value to be written
-
+/*@
+	assigns \nothing;
+@*/
 void xmhf_baseplatform_arch_x86_pci_type1_write(u32 bus, u32 device, u32 function, u32 index, u32 len,
 	u32 value){
 
- 	//sanity checks
+	//sanity checks
 	if( bus > 255 || PCI_DEVICE_FN(device,function) > 255 || index > 4095)
 		return;
 
-  //encode and send the 32-bit type-1 address to PCI address port
- CASM_FUNCCALL(outl,PCI_TYPE1_ADDRESS(bus, device, function, index), PCI_CONFIG_ADDR_PORT);
+	//encode and send the 32-bit type-1 address to PCI address port
+	CASM_FUNCCALL(outl,PCI_TYPE1_ADDRESS(bus, device, function, index), PCI_CONFIG_ADDR_PORT);
 
-  //write a byte, word or dword depending on len
+	//write a byte, word or dword depending on len
 	switch (len) {
-  	case 1:	//byte
- CASM_FUNCCALL(outb,(u8)value, PCI_CONFIG_DATA_PORT + (index & 3));
-      break;
+		case 1:	//byte
+		CASM_FUNCCALL(outb,(u8)value, PCI_CONFIG_DATA_PORT + (index & 3));
+		break;
 
 		case 2:	//word
- CASM_FUNCCALL(outw,(u16)value, PCI_CONFIG_DATA_PORT + (index & 2));
-      break;
+		CASM_FUNCCALL(outw,(u16)value, PCI_CONFIG_DATA_PORT + (index & 2));
+		break;
 
-	  case 4:	//dword
- CASM_FUNCCALL(outl,(u32)value, PCI_CONFIG_DATA_PORT);
-      break;
-  }
+		case 4:	//dword
+		CASM_FUNCCALL(outl,(u32)value, PCI_CONFIG_DATA_PORT);
+		break;
 
-  return;
+		default:
+		break;
+	}
+
+	return;
 }
 
