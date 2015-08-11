@@ -323,7 +323,7 @@ static txt_heap_t *init_txt_heap(void *ptab_base, acm_hdr_t *sinit,
 {
     txt_heap_t *txt_heap;
     uint64_t *size;
-    os_mle_data_t *os_mle_data;
+    os_mle_data_t os_mle_data;
     os_sinit_data_t *os_sinit_data;
     /* uint64_t min_lo_ram, max_lo_ram, min_hi_ram, max_hi_ram; */
     txt_caps_t sinit_caps;
@@ -340,13 +340,29 @@ static txt_heap_t *init_txt_heap(void *ptab_base, acm_hdr_t *sinit,
     /*
      * OS/loader to MLE data
      */
-    os_mle_data =get_os_mle_data_start(txt_heap, (uint32_t)read_pub_config_reg(TXTCR_HEAP_SIZE));
-    size = (uint64_t *)((uint32_t)os_mle_data - sizeof(uint64_t));
-    *size = sizeof(*os_mle_data) + sizeof(uint64_t);
-    memset(os_mle_data, 0, sizeof(*os_mle_data));
-    os_mle_data->version = 0x02;
-    os_mle_data->mbi = NULL;
-    os_mle_data->saved_misc_enable_msr = rdmsr64(MSR_IA32_MISC_ENABLE);
+    //os_mle_data =get_os_mle_data_start(txt_heap, (uint32_t)read_pub_config_reg(TXTCR_HEAP_SIZE));
+    //size = (uint64_t *)((uint32_t)os_mle_data - sizeof(uint64_t));
+    //*size = sizeof(*os_mle_data) + sizeof(uint64_t);
+    //memset(os_mle_data, 0, sizeof(*os_mle_data));
+    //os_mle_data->version = 0x02;
+    //os_mle_data->mbi = NULL;
+    //os_mle_data->saved_misc_enable_msr = rdmsr64(MSR_IA32_MISC_ENABLE);
+
+
+	xmhfhw_sysmemaccess_writeu64(
+		(get_os_mle_data_start(txt_heap, (uint32_t)read_pub_config_reg(TXTCR_HEAP_SIZE)) - sizeof(uint64_t)),
+		(sizeof(os_mle_data) + sizeof(uint64_t)));
+
+	    memset(&os_mle_data, 0, sizeof(os_mle_data));
+	    os_mle_data.version = 0x02;
+	    os_mle_data.mbi = NULL;
+	    os_mle_data.saved_misc_enable_msr = rdmsr64(MSR_IA32_MISC_ENABLE);
+
+	xmhfhw_sysmemaccess_copy(get_os_mle_data_start(txt_heap, (uint32_t)read_pub_config_reg(TXTCR_HEAP_SIZE)),
+			&os_mle_data, sizeof(os_mle_data_t));
+
+	//_XDPRINTF_("Came %s:%u\n", __func__, __LINE__);
+	//HALT();
 
     /*
      * OS/loader to SINIT data
@@ -434,7 +450,7 @@ tb_error_t txt_launch_environment(void *sinit_ptr, size_t sinit_size,
 {
     acm_hdr_t *sinit;
     void *mle_ptab_base;
-    os_mle_data_t *os_mle_data;
+    os_mle_data_t os_mle_data;
     txt_heap_t *txt_heap;
 
     if(NULL == sinit_ptr) return TB_ERR_SINIT_NOT_PRESENT;
@@ -469,8 +485,11 @@ tb_error_t txt_launch_environment(void *sinit_ptr, size_t sinit_size,
         return TB_ERR_FATAL;
 
     /* save MTRRs before we alter them for SINIT launch */
-    os_mle_data = get_os_mle_data_start(txt_heap, (uint32_t)read_pub_config_reg(TXTCR_HEAP_SIZE));
-    xmhfhw_cpu_x86_save_mtrrs(&(os_mle_data->saved_mtrr_state));
+    xmhfhw_sysmemaccess_copy(&os_mle_data, get_os_mle_data_start(txt_heap, (uint32_t)read_pub_config_reg(TXTCR_HEAP_SIZE)),
+				sizeof(os_mle_data_t));
+    xmhfhw_cpu_x86_save_mtrrs(&(os_mle_data.saved_mtrr_state));
+    xmhfhw_sysmemaccess_copy( get_os_mle_data_start(txt_heap, (uint32_t)read_pub_config_reg(TXTCR_HEAP_SIZE)), &os_mle_data,
+				sizeof(os_mle_data_t));
 
     /* set MTRRs properly for AC module (SINIT) */
     if ( !set_mtrrs_for_acmod(sinit) )

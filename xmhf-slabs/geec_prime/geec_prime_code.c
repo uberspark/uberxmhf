@@ -997,21 +997,22 @@ static u32 _geec_prime_vtd_initialize(u32 vtd_ret_addr){
 
 static void __xmhfhic_x86vmxx86pc_postdrt(void){
 	txt_heap_t *txt_heap;
-	os_mle_data_t *os_mle_data;
+	os_mle_data_t os_mle_data;
 
 	txt_heap = get_txt_heap();
 	_XDPRINTF_("SL: txt_heap = 0x%08x\n", (u32)txt_heap);
-	os_mle_data = get_os_mle_data_start((txt_heap_t*)((u32)txt_heap), (uint32_t)read_pub_config_reg(TXTCR_HEAP_SIZE));
-	_XDPRINTF_("SL: os_mle_data = 0x%08x\n", (u32)os_mle_data);
+	xmhfhw_sysmemaccess_copy(&os_mle_data, get_os_mle_data_start((txt_heap_t*)((u32)txt_heap), (uint32_t)read_pub_config_reg(TXTCR_HEAP_SIZE)),
+					sizeof(os_mle_data_t));
+	_XDPRINTF_("SL: os_mle_data = 0x%08x\n", (u32)&os_mle_data);
 
 	// restore pre-SENTER MTRRs that were overwritten for SINIT launch
-	if(!validate_mtrrs(&(os_mle_data->saved_mtrr_state))) {
+	if(!validate_mtrrs(&(os_mle_data.saved_mtrr_state))) {
 		_XDPRINTF_("SECURITY FAILURE: validate_mtrrs() failed.\n");
 		HALT();
 	}
 	_XDPRINTF_("SL: Validated MTRRs\n");
 
-	xmhfhw_cpu_x86_restore_mtrrs(&(os_mle_data->saved_mtrr_state));
+	xmhfhw_cpu_x86_restore_mtrrs(&(os_mle_data.saved_mtrr_state));
     _XDPRINTF_("SL: Restored MTRRs\n");
 }
 
@@ -2138,13 +2139,13 @@ static void __xmhfhic_smp_container_vmx_wakeupAPs(void){
 #if defined (__DRT__)
     {
         txt_heap_t *txt_heap;
-        os_mle_data_t *os_mle_data;
+        //os_mle_data_t *os_mle_data;
         mle_join_t *mle_join;
         sinit_mle_data_t *sinit_mle_data;
         os_sinit_data_t *os_sinit_data;
 
         txt_heap = get_txt_heap();
-        os_mle_data = get_os_mle_data_start(txt_heap, (uint32_t)read_pub_config_reg(TXTCR_HEAP_SIZE));
+        //os_mle_data = get_os_mle_data_start(txt_heap, (uint32_t)read_pub_config_reg(TXTCR_HEAP_SIZE));
         sinit_mle_data = get_sinit_mle_data_start(txt_heap, (uint32_t)read_pub_config_reg(TXTCR_HEAP_SIZE));
         os_sinit_data = get_os_sinit_data_start(txt_heap, (uint32_t)read_pub_config_reg(TXTCR_HEAP_SIZE));
 
