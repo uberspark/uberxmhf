@@ -53,8 +53,8 @@
 #include <xmhf-debug.h>
 
 
-os_mle_data_t * get_os_mle_data_start(u32 heap_memaddr, uint32_t heap_size)
+u32 get_os_mle_data_start(u32 heap_memaddr, uint32_t heap_size)
 {
-    return (os_mle_data_t *)((u32)heap_memaddr + (u32)get_bios_data_size(heap_memaddr, heap_size) +
+    return ((u32)heap_memaddr + (u32)get_bios_data_size(heap_memaddr, heap_size) +
                               sizeof(uint64_t));
 }

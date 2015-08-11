@@ -50,7 +50,8 @@
 
 //////xmhfhw_cpu
 
-#define MAX_LCP_PO_DATA_SIZE     64*1024  /* 64k */
+//#define MAX_LCP_PO_DATA_SIZE     64*1024  /* 64k */
+#define MAX_LCP_PO_DATA_SIZE     64
 
 #ifndef __ASSEMBLY__
 
@@ -221,7 +222,7 @@ u32 get_txt_heap(void);
 
 uint64_t get_os_mle_data_size(u32 heap_memaddr, uint32_t heap_size);
 
-os_mle_data_t * get_os_mle_data_start(u32 heap_memaddr, uint32_t heap_size);
+u32 get_os_mle_data_start(u32 heap_memaddr, uint32_t heap_size);
 
 uint64_t get_os_sinit_data_size(u32 heap_memaddr, uint32_t heap_size);
 os_sinit_data_t *get_os_sinit_data_start(u32 heap_memaddr, uint32_t heap_size);

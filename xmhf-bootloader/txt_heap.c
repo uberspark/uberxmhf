@@ -172,7 +172,7 @@ static void print_os_mle_data(os_mle_data_t *os_mle_data)
 static bool verify_os_mle_data(txt_heap_t *txt_heap)
 {
     uint64_t size, heap_size;
-    os_mle_data_t *os_mle_data;
+    os_mle_data_t os_mle_data;
 
     /* check size */
     heap_size = read_pub_config_reg(TXTCR_HEAP_SIZE);
@@ -192,24 +192,25 @@ static bool verify_os_mle_data(txt_heap_t *txt_heap)
         return false;
     }
 
-    os_mle_data = get_os_mle_data_start(txt_heap, (uint32_t)read_pub_config_reg(TXTCR_HEAP_SIZE));
+    xmhfhw_sysmemaccess_copy(&os_mle_data, get_os_mle_data_start(txt_heap, (uint32_t)read_pub_config_reg(TXTCR_HEAP_SIZE)),
+				sizeof(os_mle_data_t));
 
     /* check version */
     /* since this data is from our pre-launch to post-launch code only, it */
     /* should always be this */
-    if ( os_mle_data->version != 2 ) {
+    if ( os_mle_data.version != 2 ) {
         _XDPRINTF_("unsupported OS to MLE data version (%u)\n",
-               os_mle_data->version);
+               os_mle_data.version);
         return false;
     }
 
     /* field checks */
-    if ( os_mle_data->mbi == NULL ) {
+    if ( os_mle_data.mbi == NULL ) {
         _XDPRINTF_("OS to MLE data mbi field is NULL\n");
         return false;
     }
 
-    print_os_mle_data(os_mle_data);
+    print_os_mle_data(&os_mle_data);
 
     return true;
 }
