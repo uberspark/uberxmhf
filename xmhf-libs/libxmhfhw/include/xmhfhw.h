@@ -255,6 +255,10 @@ u32 get_sinit_mle_data_start(u32 heap_memaddr, uint32_t heap_size);
 @*/
 bool txt_is_launched(void);
 
+/*@
+	assigns \nothing;
+@*/
+uint64_t read_priv_config_reg(uint32_t reg);
 
 
 /*@
@@ -320,7 +324,10 @@ CASM_FUNCDECL(u64 rdmsr64(u32 msr));
 CASM_FUNCDECL(u64 xmhfhw_sysmemaccess_readu64(u32 addr));
 
 
-
+/*@
+  assigns \nothing;
+@*/
+CASM_FUNCDECL(uint64_t read_config_reg(uint32_t config_regs_base, uint32_t reg));
 
 
 
@@ -387,7 +394,6 @@ u32 xmhf_baseplatform_arch_getcpuvendor(void);
 
 
 void write_pub_config_reg(uint32_t reg, uint64_t val);
-uint64_t read_priv_config_reg(uint32_t reg);
 void write_priv_config_reg(uint32_t reg, uint64_t val);
 
 void print_mtrrs(const mtrr_state_t *saved_state);
@@ -424,7 +430,6 @@ CASM_FUNCDECL(void tlb_invlpg(u64 addr));
 
 #ifndef __ASSEMBLY__
 
-CASM_FUNCDECL(uint64_t read_config_reg(uint32_t config_regs_base, uint32_t reg));
 CASM_FUNCDECL(void write_config_reg(uint32_t config_regs_base, uint32_t reg, uint64_t val));
 
 
