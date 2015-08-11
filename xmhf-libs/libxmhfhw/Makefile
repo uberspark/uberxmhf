@@ -53,7 +53,9 @@ verify:
 	#cd $(LIBXMHFHW_VERIF_DIR) && frama-c -main get_txt_heap -lib-entry -wp -wp-rte -wp-model +cint -wp-prover alt-ergo,cvc3,z3 -cpp-extra-args=-nostdinc $(VFLAGS) $(srcdir)/xmhfhw_cpu_txtgetheap.c
 	#cd $(LIBXMHFHW_VERIF_DIR) && frama-c -main get_os_mle_data_size -lib-entry -wp -wp-rte -wp-model +cint -wp-prover alt-ergo,cvc3,z3 -cpp-extra-args=-nostdinc $(VFLAGS) $(srcdir)/xmhfhw_cpu_txtgetosmledatasize.c
 	#cd $(LIBXMHFHW_VERIF_DIR) && frama-c -main get_os_mle_data_start -lib-entry -wp -wp-rte -wp-model +cint -wp-prover alt-ergo,cvc3,z3 -cpp-extra-args=-nostdinc $(VFLAGS) $(srcdir)/xmhfhw_cpu_txtgetosmledatastart.c
-	cd $(LIBXMHFHW_VERIF_DIR) && frama-c -main get_os_sinit_data_size -lib-entry -wp -wp-rte -wp-model +cint -wp-prover alt-ergo,cvc3,z3 -cpp-extra-args=-nostdinc $(VFLAGS) $(srcdir)/xmhfhw_cpu_txtgetossinitdatasize.c
+	#cd $(LIBXMHFHW_VERIF_DIR) && frama-c -main get_os_sinit_data_size -lib-entry -wp -wp-rte -wp-model +cint -wp-prover alt-ergo,cvc3,z3 -cpp-extra-args=-nostdinc $(VFLAGS) $(srcdir)/xmhfhw_cpu_txtgetossinitdatasize.c
+	#cd $(LIBXMHFHW_VERIF_DIR) && frama-c -main get_os_sinit_data_start -lib-entry -wp -wp-rte -wp-model +cint -wp-prover alt-ergo,cvc3,z3 -cpp-extra-args=-nostdinc $(VFLAGS) $(srcdir)/xmhfhw_cpu_txtgetossinitdatastart.c
+	cd $(LIBXMHFHW_VERIF_DIR) && frama-c -main get_sinit_mle_data_size -lib-entry -wp -wp-rte -wp-model +cint -wp-prover alt-ergo,cvc3,z3 -cpp-extra-args=-nostdinc $(VFLAGS) $(srcdir)/xmhfhw_cpu_txtgetsinitmledatasize.c
 
 
 

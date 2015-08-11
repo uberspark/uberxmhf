@@ -44,7 +44,6 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-//xmhfhw_cpu - base CPU functions
 //author: amit vasudevan (amitvasudevan@acm.org)
 
 #include <xmhf.h>
@@ -52,7 +51,9 @@
 #include <xmhfhw.h>
 #include <xmhf-debug.h>
 
-
+/*@
+	assigns \nothing;
+@*/
 u32 get_os_sinit_data_start(u32 heap_memaddr, uint32_t heap_size)
 {
     return (u32)heap_memaddr + (u32)get_bios_data_size(heap_memaddr, heap_size) +

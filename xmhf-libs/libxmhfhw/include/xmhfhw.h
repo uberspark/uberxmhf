@@ -235,8 +235,14 @@ u32 get_os_mle_data_start(u32 heap_memaddr, uint32_t heap_size);
 @*/
 uint64_t get_os_sinit_data_size(u32 heap_memaddr, uint32_t heap_size);
 
+/*@
+	assigns \nothing;
+@*/
 u32 get_os_sinit_data_start(u32 heap_memaddr, uint32_t heap_size);
 
+/*@
+	assigns \nothing;
+@*/
 uint64_t get_sinit_mle_data_size(u32 heap_memaddr, uint32_t heap_size);
 
 u32 get_sinit_mle_data_start(u32 heap_memaddr, uint32_t heap_size);
