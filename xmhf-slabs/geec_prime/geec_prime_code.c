@@ -2141,12 +2141,14 @@ static void __xmhfhic_smp_container_vmx_wakeupAPs(void){
         txt_heap_t *txt_heap;
         //os_mle_data_t *os_mle_data;
         mle_join_t *mle_join;
-        sinit_mle_data_t *sinit_mle_data;
+        //sinit_mle_data_t sinit_mle_data;
         os_sinit_data_t os_sinit_data;
 
         txt_heap = get_txt_heap();
         //os_mle_data = get_os_mle_data_start(txt_heap, (uint32_t)read_pub_config_reg(TXTCR_HEAP_SIZE));
-        sinit_mle_data = get_sinit_mle_data_start(txt_heap, (uint32_t)read_pub_config_reg(TXTCR_HEAP_SIZE));
+        //xmhfhw_sysmemaccess_copy(&sinit_mle_data,
+	//	get_sinit_mle_data_start(txt_heap, (uint32_t)read_pub_config_reg(TXTCR_HEAP_SIZE)),
+	//	sizeof(sinit_mle_data_t));
         xmhfhw_sysmemaccess_copy(&os_sinit_data,
 		get_os_sinit_data_start(txt_heap, (uint32_t)read_pub_config_reg(TXTCR_HEAP_SIZE)),
 		sizeof(os_sinit_data_t));
@@ -2168,8 +2170,13 @@ static void __xmhfhic_smp_container_vmx_wakeupAPs(void){
 
         if (os_sinit_data.capabilities & TXT_CAPS_T_RLP_WAKE_MONITOR) {
             _XDPRINTF_("\nBSP: joining RLPs to MLE with MONITOR wakeup");
-            _XDPRINTF_("\nBSP: rlp_wakeup_addr = 0x%x", sinit_mle_data->rlp_wakeup_addr);
-            *((uint32_t *)(unsigned long)(sinit_mle_data->rlp_wakeup_addr)) = 0x01;
+            //_XDPRINTF_("\nBSP: rlp_wakeup_addr = 0x%x", sinit_mle_data.rlp_wakeup_addr);
+            // *((uint32_t *)(unsigned long)(sinit_mle_data.rlp_wakeup_addr)) = 0x01;
+	    xmhfhw_sysmemaccess_writeu32(
+		(get_sinit_mle_data_start(txt_heap, (uint32_t)read_pub_config_reg(TXTCR_HEAP_SIZE)) + offsetof(sinit_mle_data_t, rlp_wakeup_addr) ),
+					0x01);
+
+
         }else {
             _XDPRINTF_("\nBSP: joining RLPs to MLE with GETSEC[WAKEUP]");
             __getsec_wakeup();
