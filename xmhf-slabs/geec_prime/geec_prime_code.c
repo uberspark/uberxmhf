@@ -2142,12 +2142,14 @@ static void __xmhfhic_smp_container_vmx_wakeupAPs(void){
         //os_mle_data_t *os_mle_data;
         mle_join_t *mle_join;
         sinit_mle_data_t *sinit_mle_data;
-        os_sinit_data_t *os_sinit_data;
+        os_sinit_data_t os_sinit_data;
 
         txt_heap = get_txt_heap();
         //os_mle_data = get_os_mle_data_start(txt_heap, (uint32_t)read_pub_config_reg(TXTCR_HEAP_SIZE));
         sinit_mle_data = get_sinit_mle_data_start(txt_heap, (uint32_t)read_pub_config_reg(TXTCR_HEAP_SIZE));
-        os_sinit_data = get_os_sinit_data_start(txt_heap, (uint32_t)read_pub_config_reg(TXTCR_HEAP_SIZE));
+        xmhfhw_sysmemaccess_copy(&os_sinit_data,
+		get_os_sinit_data_start(txt_heap, (uint32_t)read_pub_config_reg(TXTCR_HEAP_SIZE)),
+		sizeof(os_sinit_data_t));
 
         // enable SMIs on BSP before waking APs (which will enable them on APs)
         // because some SMM may take immediate SMI and hang if AP gets in first
@@ -2164,7 +2166,7 @@ static void __xmhfhic_smp_container_vmx_wakeupAPs(void){
 
         write_priv_config_reg(TXTCR_MLE_JOIN, (uint64_t)(unsigned long)mle_join);
 
-        if (os_sinit_data->capabilities & TXT_CAPS_T_RLP_WAKE_MONITOR) {
+        if (os_sinit_data.capabilities & TXT_CAPS_T_RLP_WAKE_MONITOR) {
             _XDPRINTF_("\nBSP: joining RLPs to MLE with MONITOR wakeup");
             _XDPRINTF_("\nBSP: rlp_wakeup_addr = 0x%x", sinit_mle_data->rlp_wakeup_addr);
             *((uint32_t *)(unsigned long)(sinit_mle_data->rlp_wakeup_addr)) = 0x01;
