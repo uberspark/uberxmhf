@@ -44,7 +44,6 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-//xmhfhw_cpu - base CPU functions
 //author: amit vasudevan (amitvasudevan@acm.org)
 
 #include <xmhf.h>
@@ -52,6 +51,9 @@
 #include <xmhfhw.h>
 #include <xmhf-debug.h>
 
+/*@
+	assigns \nothing;
+@*/
 uint64_t read_priv_config_reg(uint32_t reg)
 {
     return CASM_FUNCCALL(read_config_reg,TXT_PRIV_CONFIG_REGS_BASE, reg);
