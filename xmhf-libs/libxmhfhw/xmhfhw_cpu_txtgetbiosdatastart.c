@@ -52,11 +52,9 @@
 #include <xmhf-debug.h>
 
 /*@
-	requires heap_size >=8;
-	requires \valid(((u8 *)heap+(0..heap_size-1)));
 	assigns \nothing;
 @*/
 u32 get_bios_data_start(u32 heap_memaddr, uint32_t heap_size)
 {
-    return (bios_data_t *)(heap_memaddr + sizeof(uint64_t));
+	return (u32)(heap_memaddr + sizeof(uint64_t));
 }

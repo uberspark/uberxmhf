@@ -206,6 +206,9 @@ bool validate_mtrrs(const mtrr_state_t *saved_state);
 uint64_t get_bios_data_size(u32 heap_memaddr, uint32_t heap_size);
 
 
+/*@
+	assigns \nothing;
+@*/
 u32 get_bios_data_start(u32 heap_memaddr, uint32_t heap_size);
 
 
