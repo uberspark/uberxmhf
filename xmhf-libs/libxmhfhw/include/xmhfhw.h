@@ -318,6 +318,26 @@ void xmhf_baseplatform_arch_x86_pci_type1_write(u32 bus, u32 device, u32 functio
 
 
 /*@
+	assigns \nothing;
+@*/
+void xmhf_baseplatform_arch_x86_udelay(u32 usecs);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*@
   assigns \nothing;
 @*/
 CASM_FUNCDECL(uint32_t bsrl(uint32_t mask));
@@ -557,7 +577,6 @@ CASM_FUNCDECL(void xmhfhw_sysmemaccess_copy(u8 *dest, u8 *src, u32 size));
 
 #ifndef __ASSEMBLY__
 
-void xmhf_baseplatform_arch_x86_udelay(u32 usecs);
 
 #endif //__ASSEMBLY__
 

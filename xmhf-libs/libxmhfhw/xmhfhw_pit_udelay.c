@@ -53,37 +53,49 @@
 #include <xmhf-debug.h>
 
 //---microsecond delay----------------------------------------------------------
+/*@
+	assigns \nothing;
+@*/
 void xmhf_baseplatform_arch_x86_udelay(u32 usecs){
-  u8 val;
-  u32 latchregval;
+	u8 val, latchstatus=0;
+	u32 latchregval;
 
-  //enable 8254 ch-2 counter
-  val = CASM_FUNCCALL(inb,0x61);
-  val &= 0x0d; //turn PC speaker off
-  val |= 0x01; //turn on ch-2
- CASM_FUNCCALL(outb,val, 0x61);
+	//enable 8254 ch-2 counter
+	val = CASM_FUNCCALL(inb,0x61);
+	val &= 0x0d; //turn PC speaker off
+	val |= 0x01; //turn on ch-2
+	CASM_FUNCCALL(outb,val, 0x61);
 
-  //program ch-2 as one-shot
- CASM_FUNCCALL(outb,0xB0, 0x43);
+	//program ch-2 as one-shot
+	CASM_FUNCCALL(outb,0xB0, 0x43);
 
-  //compute appropriate latch register value depending on usecs
-  latchregval = (1193182 * usecs) / 1000000;
+	//compute appropriate latch register value depending on usecs
+	//sanity check and cap usecs
+	if(usecs > 0xD68461C0UL)
+		usecs = 0xD68461C0UL;
+	latchregval = (1193182 / 1000000) * usecs;
 
-  //write latch register to ch-2
-  val = (u8)latchregval;
- CASM_FUNCCALL(outb,val, 0x42);
-  val = (u8)((u32)latchregval >> (u32)8);
- CASM_FUNCCALL(outb,val , 0x42);
+	//write latch register to ch-2
+	val = (u8)latchregval;
+	CASM_FUNCCALL(outb,val, 0x42);
+	val = (u8)((u32)latchregval >> (u32)8);
+	CASM_FUNCCALL(outb,val , 0x42);
 
-  #ifndef __XMHF_VERIFICATION__
-	//TODO: plug in a 8254 programmable interval timer h/w model
-	//wait for countdown
-	while(!(inb(0x61) & 0x20));
-  #endif //__XMHF_VERIFICATION__
+	//while(!(inb(0x61) & 0x20));
 
-  //disable ch-2 counter
-  val = CASM_FUNCCALL(inb,0x61);
-  val &= 0x0c;
- CASM_FUNCCALL(outb,val, 0x61);
+	/*@
+		loop invariant I3: latchstatus == 0;
+		loop assigns latchstatus;
+	@*/
+	while(1){
+		latchstatus = (inb(0x61) & 0x20);
+		if(latchstatus)
+			break;
+	}
+
+	//disable ch-2 counter
+	val = CASM_FUNCCALL(inb,0x61);
+	val &= 0x0c;
+	CASM_FUNCCALL(outb,val, 0x61);
 }
 
