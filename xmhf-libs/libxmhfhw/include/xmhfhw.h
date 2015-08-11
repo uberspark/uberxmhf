@@ -266,7 +266,13 @@ uint64_t read_priv_config_reg(uint32_t reg);
 @*/
 uint64_t read_pub_config_reg(uint32_t reg);
 
+/*@
+	assigns \nothing;
+@*/
+void write_priv_config_reg(uint32_t reg, uint64_t val);
 
+
+void write_pub_config_reg(uint32_t reg, uint64_t val);
 
 
 
@@ -328,6 +334,11 @@ CASM_FUNCDECL(u64 xmhfhw_sysmemaccess_readu64(u32 addr));
   assigns \nothing;
 @*/
 CASM_FUNCDECL(uint64_t read_config_reg(uint32_t config_regs_base, uint32_t reg));
+
+/*@
+  assigns \nothing;
+@*/
+CASM_FUNCDECL(void write_config_reg(uint32_t config_regs_base, uint32_t reg, uint64_t val));
 
 
 
@@ -393,8 +404,6 @@ CASM_FUNCDECL(void xmhfhw_cpu_loadIDT(arch_x86_idtdesc_t *idt_addr));
 u32 xmhf_baseplatform_arch_getcpuvendor(void);
 
 
-void write_pub_config_reg(uint32_t reg, uint64_t val);
-void write_priv_config_reg(uint32_t reg, uint64_t val);
 
 void print_mtrrs(const mtrr_state_t *saved_state);
 void xmhfhw_cpu_x86_save_mtrrs(mtrr_state_t *saved_state);
@@ -430,7 +439,6 @@ CASM_FUNCDECL(void tlb_invlpg(u64 addr));
 
 #ifndef __ASSEMBLY__
 
-CASM_FUNCDECL(void write_config_reg(uint32_t config_regs_base, uint32_t reg, uint64_t val));
 
 
 #endif //__ASSEMBLY__
