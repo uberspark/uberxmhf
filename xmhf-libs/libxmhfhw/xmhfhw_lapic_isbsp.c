@@ -44,7 +44,6 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-// XMHF HW CPU LAPIC decls.
 // author: amit vasudevan (amitvasudevan@acm.org)
 
 #include <xmhf.h>
@@ -54,21 +53,22 @@
 
 
 //return true if the calling CPU is the BSP
+/*@
+	assigns \nothing;
+@*/
 bool xmhfhw_lapic_isbsp(void){
-  u32 eax, edx;
-  u64 msr_value;
+	u32 eax, edx;
+	u64 msr_value;
 
-  //read LAPIC base address from MSR
+	//read LAPIC base address from MSR
 	msr_value = CASM_FUNCCALL(rdmsr64, MSR_APIC_BASE);
 	eax = (u32)msr_value;
 	edx = (u32)(msr_value >> 32);
 
 
-  HALT_ON_ERRORCOND( edx == 0 ); //APIC is below 4G
-
-  if(eax & 0x100)
-    return true;
-  else
-    return false;
+	if(eax & 0x100)
+		return true;
+	else
+		return false;
 }
 

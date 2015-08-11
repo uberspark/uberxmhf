@@ -292,6 +292,9 @@ void xmhf_baseplatform_arch_x86_reboot(void);
 u32 xmhf_baseplatform_arch_x86_getcpulapicid(void);
 
 
+/*@
+	assigns \nothing;
+@*/
 bool xmhfhw_lapic_isbsp(void);
 
 
