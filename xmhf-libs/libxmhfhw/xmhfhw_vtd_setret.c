@@ -61,41 +61,36 @@
 //the CET, accounting for 32 devices with 8 functions each as per the
 //PCI spec.
 //each CE points to a PDPT type paging structure for  device
+/*@
+	requires \valid(drhd);
+	assigns \nothing;
+@*/
 bool xmhfhw_platform_x86pc_vtd_drhd_set_root_entry_table(VTD_DRHD *drhd,  u64 ret_addr){
 	VTD_RTADDR_REG rtaddr;
 	VTD_GCMD_REG gcmd;
 	VTD_GSTS_REG gsts;
 	u32 retbuffer_paddr = (u32)ret_addr;
-	//VTD_DRHD *drhd = _vtd_get_drhd_struct(drhd_handle);
 
 	//sanity check
 	if (drhd == NULL)
 		return false;
 
 	//setup DRHD RET (root-entry)
-	//_XDPRINTF_("Setting up DRHD RET: Unit %u, RETaddr=%016llx, %08x...\n",
-    //            drhd_handle, ret_addr, retbuffer_paddr);
-	{
-		//setup RTADDR with base of RET
-		unpack_VTD_RTADDR_REG(&rtaddr, retbuffer_paddr);
-		_vtd_reg_write(drhd, VTD_RTADDR_REG_OFF, pack_VTD_RTADDR_REG(&rtaddr));
+	unpack_VTD_RTADDR_REG(&rtaddr, retbuffer_paddr);
+	_vtd_reg_write(drhd, VTD_RTADDR_REG_OFF, pack_VTD_RTADDR_REG(&rtaddr));
 
-		//latch RET address by using GCMD.SRTP
-		//gcmd.value=0;
-		unpack_VTD_GCMD_REG(&gcmd, 0);
-		gcmd.srtp=1;
-		_vtd_reg_write(drhd, VTD_GCMD_REG_OFF, pack_VTD_GCMD_REG(&gcmd));
+	//latch RET address by using GCMD.SRTP
+	unpack_VTD_GCMD_REG(&gcmd, 0);
+	gcmd.srtp=1;
+	_vtd_reg_write(drhd, VTD_GCMD_REG_OFF, pack_VTD_GCMD_REG(&gcmd));
 
-		//ensure the RET address was latched by the h/w
-		//gsts.value = _vtd_reg_read(drhd, VTD_GSTS_REG_OFF);
+	//ensure the RET address was latched by the h/w
         unpack_VTD_GSTS_REG(&gsts, _vtd_reg_read(drhd, VTD_GSTS_REG_OFF));
 
-		if(!gsts.rtps){
-			//_XDPRINTF_("Error	Failed to latch RTADDR\n");
-			return false;
-		}
+	if(!gsts.rtps){
+		//_XDPRINTF_("Error	Failed to latch RTADDR\n");
+		return false;
 	}
-	//_XDPRINTF_("DRHD RET initialized.\n");
 
 	return true;
 }

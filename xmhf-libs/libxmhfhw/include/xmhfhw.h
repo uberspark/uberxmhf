@@ -364,6 +364,8 @@ void xmhfhw_platform_x86pc_vtd_drhd_set_phm_base_and_limit(VTD_DRHD *drhd, u64 b
 
 void xmhfhw_platform_x86pc_vtd_drhd_set_plm_base_and_limit(VTD_DRHD *drhd, u32 base, u32 limit);
 
+bool xmhfhw_platform_x86pc_vtd_drhd_set_root_entry_table(VTD_DRHD *drhd,  u64 ret_addr);
+
 /*@
 	requires \valid(dmardevice);
 	assigns \nothing;
@@ -644,9 +646,6 @@ typedef struct {
     u64 addr_vtd_pml4t;
     u64 addr_vtd_pdpt;
 }__attribute__((packed)) vtd_slpgtbl_handle_t;
-
-bool xmhfhw_platform_x86pc_vtd_drhd_set_root_entry_table(vtd_drhd_handle_t drhd_handle,  u64 ret_addr);
-
 
 #endif //__ASSEMBLY__
 
