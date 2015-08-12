@@ -2276,6 +2276,7 @@ extern void _impl_xmhfhwm_cpu_insn_sti(void);
 extern void _impl_xmhfhwm_cpu_insn_subl_imm_esp(u32 value);
 extern void _impl_xmhfhwm_cpu_insn_sgdt_mesp(int index);
 extern void _impl_xmhfhwm_cpu_insn_xorl_edx_edx(void);
+extern void _impl_xmhfhwm_cpu_insn_sidt_mesp(int index);
 
 
 //////
@@ -2704,7 +2705,12 @@ extern void _impl_xmhfhwm_cpu_insn_xorl_edx_edx(void);
 
 
 #define xmhfhwm_cpu_insn_str_ax() __builtin_annot("str %ax ");
-#define xmhfhwm_cpu_insn_sidt_mesp(x) __builtin_annot("sidt "#x"(%esp) ");
+
+#define xmhfhwm_cpu_insn_sidt_mesp(x) \
+	__builtin_annot("sidt "#x"(%esp) "); \
+	_impl_xmhfhwm_cpu_insn_sidt_mesp(x); \
+
+
 #define xmhfhwm_cpu_insn_lidt_mecx(x) __builtin_annot("lidt "#x"(%ecx) ");
 #define xmhfhwm_cpu_insn_ltr_ax() __builtin_annot("ltr %ax ");
 #define xmhfhwm_cpu_insn_lgdt_mecx(x) __builtin_annot("lgdt "#x"(%ecx) ");
