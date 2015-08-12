@@ -56,6 +56,10 @@
 
 
 //vt-d register write function
+/*@
+	requires \valid(dmardevice);
+	assigns \nothing;
+@*/
 void _vtd_reg_write(VTD_DRHD *dmardevice, u32 reg, u64 value){
   u32 regtype=VTD_REG_32BITS, regaddr=0;
 
@@ -98,8 +102,7 @@ void _vtd_reg_write(VTD_DRHD *dmardevice, u32 reg, u64 value){
 
 
     default:
-      _XDPRINTF_("%s: Halt, Unsupported register=%08x\n", __func__, reg);
-      HALT();
+      //_XDPRINTF_("%s: Halt, Unsupported register=%08x\n", __func__, reg);
       break;
   }
 
@@ -114,8 +117,8 @@ void _vtd_reg_write(VTD_DRHD *dmardevice, u32 reg, u64 value){
       break;
 
     default:
-     _XDPRINTF_("%s: Halt, Unsupported access width=%08x\n", __func__, regtype);
-     HALT();
+     //_XDPRINTF_("%s: Halt, Unsupported access width=%08x\n", __func__, regtype);
+     break;
   }
 
   return;
