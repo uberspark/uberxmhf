@@ -232,3 +232,7 @@ void _impl_xmhfhwm_cpu_insn_popl_ebx(void){
 	xmhfhwm_cpu_gprs_esp += sizeof(u32);
 	xmhfhwm_cpu_gprs_ebx = value;
 }
+
+void _impl_xmhfhwm_cpu_insn_cli(void){
+	xmhfhwm_cpu_eflags &= ~(EFLAGS_IF);
+}
