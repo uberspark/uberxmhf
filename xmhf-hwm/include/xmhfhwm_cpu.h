@@ -2297,6 +2297,7 @@ extern void _impl_xmhfhwm_cpu_insn_shl_imm_ecx(u32 value);
 extern void _impl_xmhfhwm_cpu_insn_shr_imm_eax(u32 value);
 extern void _impl_xmhfhwm_cpu_insn_orl_ecx_eax(void);
 extern void _impl_xmhfhwm_cpu_insn_orl_edx_eax(void);
+extern void _impl_xmhfhwm_cpu_insn_inb_dx_al(void);
 
 
 //////
@@ -2760,7 +2761,10 @@ extern void _impl_xmhfhwm_cpu_insn_orl_edx_eax(void);
 	__builtin_annot("sti "); \
 	_impl_xmhfhwm_cpu_insn_sti(); \
 
-#define xmhfhwm_cpu_insn_inb_dx_al() __builtin_annot("inb %dx, %al ");
+#define xmhfhwm_cpu_insn_inb_dx_al() \
+	__builtin_annot("inb %dx, %al "); \
+	_impl_xmhfhwm_cpu_insn_inb_dx_al(); \
+
 #define xmhfhwm_cpu_insn_inw_dx_ax() __builtin_annot("inw %dx, %ax ");
 #define xmhfhwm_cpu_insn_inl_dx_eax() __builtin_annot("inl %dx, %eax ");
 #define xmhfhwm_cpu_insn_outb_al_dx() __builtin_annot("outb %al, %dx ");

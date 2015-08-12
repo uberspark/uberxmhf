@@ -364,5 +364,9 @@ void _impl_xmhfhwm_cpu_insn_orl_edx_eax(void){
 	xmhfhwm_cpu_gprs_eax = xmhfhwm_cpu_gprs_eax | xmhfhwm_cpu_gprs_edx;
 }
 
+void _impl_xmhfhwm_cpu_insn_inb_dx_al(void){
+	xmhfhwm_cpu_gprs_eax &= 0xFFFFFF00UL;
+        //XXX:TODO nondetu8 in lower 8 bits
+}
 
 
