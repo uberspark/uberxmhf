@@ -107,11 +107,24 @@ void _impl_xmhfhwm_cpu_insn_movl_mesp_eax(int index){
 	xmhfhwm_cpu_gprs_eax = *value;
 }
 
+void _impl_xmhfhwm_cpu_insn_movl_mesp_ebx(int index){
+	u32 *value;
+	value = (u32 *)((u32)((int)xmhfhwm_cpu_gprs_esp + (int)index));
+	xmhfhwm_cpu_gprs_ebx = *value;
+}
+
 void _impl_xmhfhwm_cpu_insn_movl_mesp_ecx(int index){
 	u32 *value;
 	value = (u32 *)((u32)((int)xmhfhwm_cpu_gprs_esp + (int)index));
 	xmhfhwm_cpu_gprs_ecx = *value;
 }
+
+void _impl_xmhfhwm_cpu_insn_movl_mesp_edx(int index){
+	u32 *value;
+	value = (u32 *)((u32)((int)xmhfhwm_cpu_gprs_esp + (int)index));
+	xmhfhwm_cpu_gprs_edx = *value;
+}
+
 
 void _impl_xmhfhwm_cpu_insn_cmpl_imm_meax(u32 value, int index){
 	uint32_t value_meax;
@@ -176,10 +189,23 @@ void _impl_xmhfhwm_cpu_insn_pushl_ebx(void){
 	*((u32 *)xmhfhwm_cpu_gprs_esp) = xmhfhwm_cpu_gprs_ebx;
 }
 
+
+void _impl_xmhfhwm_cpu_insn_movl_mebx_ebx(int index){
+	uint32_t value_mebx;
+	value_mebx = *((uint32_t *)((uint32_t)((int32_t)xmhfhwm_cpu_gprs_ebx + (int32_t)index)));
+	xmhfhwm_cpu_gprs_ebx = value_mebx;
+}
+
 void _impl_xmhfhwm_cpu_insn_movl_mecx_ecx(int index){
 	uint32_t value_mecx;
 	value_mecx = *((uint32_t *)((uint32_t)((int32_t)xmhfhwm_cpu_gprs_ecx + (int32_t)index)));
 	xmhfhwm_cpu_gprs_ecx = value_mecx;
+}
+
+void _impl_xmhfhwm_cpu_insn_movl_medx_edx(int index){
+	uint32_t value_medx;
+	value_medx = *((uint32_t *)((uint32_t)((int32_t)xmhfhwm_cpu_gprs_edx + (int32_t)index)));
+	xmhfhwm_cpu_gprs_edx = value_medx;
 }
 
 
@@ -269,4 +295,11 @@ void _impl_xmhfhwm_cpu_insn_sidt_mesp(int index){
 	tmem_idtbase = (u32 *)((u32)((int)xmhfhwm_cpu_gprs_esp + (int)index) + sizeof(u32));
 	*tmem_idtlimit = xmhfhwm_cpu_idtr_limit;
 	*tmem_idtbase = xmhfhwm_cpu_idtr_base;
+}
+
+void _impl_xmhfhwm_cpu_insn_getsec(void){
+	//XXX:TODO
+	if(xmhfhwm_cpu_gprs_ebx == 0)
+		xmhfhwm_cpu_gprs_eax = 0;
+
 }
