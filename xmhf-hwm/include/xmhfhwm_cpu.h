@@ -2271,6 +2271,7 @@ extern void _impl_xmhfhwm_cpu_insn_movl_edx_mesi(int index);
 extern void _impl_xmhfhwm_cpu_insn_popl_eax(void);
 extern void _impl_xmhfhwm_cpu_insn_popl_esi(void);
 extern void _impl_xmhfhwm_cpu_insn_popl_ebx(void);
+extern void _impl_xmhfhwm_cpu_insn_cli(void);
 
 
 //////
@@ -2667,7 +2668,10 @@ extern void _impl_xmhfhwm_cpu_insn_popl_ebx(void);
 	__builtin_annot("hlt "); \
 	_impl_xmhfhwm_cpu_insn_hlt() \
 
-#define xmhfhwm_cpu_insn_cli() __builtin_annot("cli ");
+#define xmhfhwm_cpu_insn_cli() \
+	__builtin_annot("cli "); \
+	_impl_xmhfhwm_cpu_insn_cli(); \
+
 #define xmhfhwm_cpu_insn_sti() __builtin_annot("sti ");
 #define xmhfhwm_cpu_insn_inb_dx_al() __builtin_annot("inb %dx, %al ");
 #define xmhfhwm_cpu_insn_inw_dx_ax() __builtin_annot("inw %dx, %ax ");
