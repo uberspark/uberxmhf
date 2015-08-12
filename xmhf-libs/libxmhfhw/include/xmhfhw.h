@@ -645,11 +645,7 @@ typedef struct {
     u64 addr_vtd_pdpt;
 }__attribute__((packed)) vtd_slpgtbl_handle_t;
 
-//vt-d register access function
-VTD_DRHD *_vtd_get_drhd_struct(vtd_drhd_handle_t drhd_handle);
-//bool xmhfhw_platform_x86pc_vtd_scanfor_drhd_units(vtd_drhd_handle_t *maxhandle, u32 *dmar_phys_addr_var);
 bool xmhfhw_platform_x86pc_vtd_drhd_set_root_entry_table(vtd_drhd_handle_t drhd_handle,  u64 ret_addr);
-void xmhfhw_platform_x86pc_vtd_drhd_enable_pmr(vtd_drhd_handle_t drhd_handle);
 
 
 #endif //__ASSEMBLY__
