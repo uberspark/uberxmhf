@@ -2267,10 +2267,15 @@ extern void _impl_xmhfhwm_cpu_insn_movl_edx_meax(int index);
 		_impl_xmhfhwm_cpu_insn_pushl_mem((u32)X) \
 		), \
 
+	#define CASM_FUNCCALL_PARAMTEARDOWN(X)    ( \
+		_impl_xmhfhwm_cpu_insn_addl_imm_esp(0x4) \
+		), \
+
 	#define CASM_FUNCCALL(fn_name, ...)   (\
 	    PP_FOREACH(CASM_FUNCCALL_PARAMSETUP, (PP_REVERSEARGS(__VA_ARGS__))) \
 	    (_impl_xmhfhwm_cpu_insn_pushl_mem((u32)CASM_RET_EIP)), \
 	    fn_name(__VA_ARGS__), \
+	    PP_FOREACH(CASM_FUNCCALL_PARAMTEARDOWN, (PP_REVERSEARGS(__VA_ARGS__))) \
 	    (u64)(((u64)xmhfhwm_cpu_gprs_edx << 32) | xmhfhwm_cpu_gprs_eax) \
 	    )\
 
