@@ -55,59 +55,50 @@
 
 
 //initialize a given DRHD unit to meet our requirements
+/*@
+	requires \valid(drhd);
+	assigns \nothing;
+@*/
 bool xmhfhw_platform_x86pc_vtd_drhd_initialize(VTD_DRHD *drhd){
 	VTD_GCMD_REG gcmd;
 	VTD_GSTS_REG gsts;
 	VTD_FECTL_REG fectl;
 	VTD_CAP_REG cap;
-	//VTD_DRHD *drhd = _vtd_get_drhd_struct(drhd_handle);
 
 	//sanity check
 	if (drhd == NULL)
 		return false;
 
-	//verify required capabilities
-	{
-		//_XDPRINTF_("\nVerifying DRHD capabilities...");
 
-		//read CAP register
-		unpack_VTD_CAP_REG(&cap, _vtd_reg_read(drhd, VTD_CAP_REG_OFF));
+	//read CAP register
+	unpack_VTD_CAP_REG(&cap, _vtd_reg_read(drhd, VTD_CAP_REG_OFF));
 
-		if(! (cap.plmr && cap.phmr) ){
-			//_XDPRINTF_("\n%s: Error: PLMR unsupported", __func__);
-			return false;
-		}
+	if(! (cap.plmr && cap.phmr) ){
+		//_XDPRINTF_("\n%s: Error: PLMR unsupported", __func__);
+		return false;
+	}
 
         if ( !((cap.sagaw & 0x2) || (cap.sagaw & 0x4)) ){
-            //_XDPRINTF_("%s: Error: we only support 3-level or 4-level tables (%x)\n", __func__, cap.bits.sagaw);
-			return false;
+		//_XDPRINTF_("%s: Error: we only support 3-level or 4-level tables (%x)\n", __func__, cap.bits.sagaw);
+		return false;
         }
 
-		//_XDPRINTF_("\nDRHD unit has all required capabilities");
-	}
 
 	//setup fault logging
-	//_XDPRINTF_("\nSetting DRHD Fault-reporting to NON-INTERRUPT mode...");
-	{
-		//read FECTL
-		//  fectl.value=0;
-		//fectl.value = _vtd_reg_read(drhd, VTD_FECTL_REG_OFF);
-		unpack_VTD_FECTL_REG(&fectl, _vtd_reg_read(drhd, VTD_FECTL_REG_OFF));
+	//read FECTL
+	unpack_VTD_FECTL_REG(&fectl, _vtd_reg_read(drhd, VTD_FECTL_REG_OFF));
 
-		//set interrupt mask bit and write
-		fectl.im=1;
-		_vtd_reg_write(drhd, VTD_FECTL_REG_OFF, pack_VTD_FECTL_REG(&fectl) );
+	//set interrupt mask bit and write
+	fectl.im=1;
+	_vtd_reg_write(drhd, VTD_FECTL_REG_OFF, pack_VTD_FECTL_REG(&fectl) );
 
-		//check to see if the IM bit actually stuck
-		//fectl.value = _vtd_reg_read(drhd, VTD_FECTL_REG_OFF);
-		unpack_VTD_FECTL_REG(&fectl, _vtd_reg_read(drhd, VTD_FECTL_REG_OFF));
+	//check to see if the IM bit actually stuck
+	unpack_VTD_FECTL_REG(&fectl, _vtd_reg_read(drhd, VTD_FECTL_REG_OFF));
 
-		if(!fectl.im){
-		  //_XDPRINTF_("\n%s: Error: Failed to set fault-reporting.", __func__);
-		  return false;
-		}
+	if(!fectl.im){
+		//_XDPRINTF_("\n%s: Error: Failed to set fault-reporting.", __func__);
+		return false;
 	}
-	//_XDPRINTF_("\nDRHD Fault-reporting set to NON-INTERRUPT mode.");
 
 	return true;
 }
