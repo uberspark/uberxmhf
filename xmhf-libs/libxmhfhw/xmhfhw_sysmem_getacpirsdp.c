@@ -53,23 +53,6 @@
 #include <xmhf-debug.h>
 
 
-/*
-//------------------------------------------------------------------------------
-//compute checksum of ACPI table
-static u32 _acpi_computetablechecksum(u32 spaddr, u32 size){
-  char *p;
-  char checksum=0;
-  u32 i;
-
-  p=(char *)spaddr;
-
-  for(i=0; i< size; i++)
-    checksum+= (char)(*(p+i));
-
-  return (u32)checksum;
-}
-*/
-
 //------------------------------------------------------------------------------
 //compute checksum of ACPI table
 /*@
@@ -99,24 +82,36 @@ static u32 _acpi_computetablechecksum(char *table, u32 size){
 
 
 
-#if 0
 //*
 //------------------------------------------------------------------------------
 //get the physical address of the root system description pointer (rsdp)
 //return 0 in case of error (ACPI RSDP not found) else the absolute physical
 //memory address of the RSDP
+/*@
+	requires \valid((unsigned char *)rsdp+(0..sizeof(ACPI_RSDP)));
+	assigns \nothing;
+@*/
 u32 xmhfhw_platform_x86pc_acpi_getRSDP(ACPI_RSDP *rsdp){
   u16 ebdaseg;
   u32 ebdaphys;
   u32 i, found=0;
 
+
   //get EBDA segment from 040E:0000h in BIOS data area
-  xmhfhw_sysmemaccess_copy((u8 *)&ebdaseg, (u8 *)0x0000040E, sizeof(u16));
+  //xmhfhw_sysmemaccess_copy((u8 *)&ebdaseg, (u8 *)0x0000040E, sizeof(u16));
+  ebdaseg = xmhfhw_sysmemaccess_readu16(0x0000040EUL);
 
   //convert it to its 32-bit physical address
   ebdaphys=(u32)(ebdaseg * 16);
 
+
   //search first 1KB of ebda for rsdp signature (8 bytes long)
+	/*@
+		loop invariant I2: 0 <= i <= 1040;
+		loop assigns i, found;
+		loop variant (1024-8) - i;
+	@*/
+
   for(i=0; i < (1024-8); i+=16){
     xmhfhw_sysmemaccess_copy((u8 *)rsdp, (u8 *)(ebdaphys+i), sizeof(ACPI_RSDP));
     if(rsdp->signature == ACPI_RSDP_SIGNATURE){
@@ -127,11 +122,18 @@ u32 xmhfhw_platform_x86pc_acpi_getRSDP(ACPI_RSDP *rsdp){
     }
   }
 
+
 	//found RSDP?
   if(found)
     return (u32)(ebdaphys+i);
 
+
   //nope, search within BIOS areas 0xE0000 to 0xFFFFF
+	/*@
+		loop invariant I3: 0xE0000 <= i <= (0xFFFFF+16);
+		loop assigns i, found;
+		loop variant (0xFFFFF-8) - i;
+	@*/
   for(i=0xE0000; i < (0xFFFFF-8); i+=16){
     xmhfhw_sysmemaccess_copy((u8 *)rsdp, (u8 *)i, sizeof(ACPI_RSDP));
     if(rsdp->signature == ACPI_RSDP_SIGNATURE){
@@ -142,6 +144,7 @@ u32 xmhfhw_platform_x86pc_acpi_getRSDP(ACPI_RSDP *rsdp){
     }
   }
 
+
   //found RSDP?
   if(found)
     return i;
@@ -150,5 +153,3 @@ u32 xmhfhw_platform_x86pc_acpi_getRSDP(ACPI_RSDP *rsdp){
   return 0;
 }
 //------------------------------------------------------------------------------
-
-#endif
