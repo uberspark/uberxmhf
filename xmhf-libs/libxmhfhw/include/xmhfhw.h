@@ -331,8 +331,7 @@ u32 xmhfhw_platform_x86pc_acpi_getRSDP(ACPI_RSDP *rsdp);
 
 
 
-
-
+u64 _vtd_reg_read(VTD_DRHD *dmardevice, u32 reg);
 
 
 
@@ -618,7 +617,6 @@ typedef struct {
 }__attribute__((packed)) vtd_slpgtbl_handle_t;
 
 //vt-d register access function
-u64 _vtd_reg_read(VTD_DRHD *dmardevice, u32 reg);
 void _vtd_reg_write(VTD_DRHD *dmardevice, u32 reg, u64 value);
 VTD_DRHD *_vtd_get_drhd_struct(vtd_drhd_handle_t drhd_handle);
 //bool xmhfhw_platform_x86pc_vtd_scanfor_drhd_units(vtd_drhd_handle_t *maxhandle, u32 *dmar_phys_addr_var);
