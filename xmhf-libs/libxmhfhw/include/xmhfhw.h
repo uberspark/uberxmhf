@@ -394,6 +394,12 @@ CASM_FUNCDECL(u64 rdmsr64(u32 msr));
 /*@
   assigns \nothing;
 @*/
+CASM_FUNCDECL(u8 xmhfhw_sysmemaccess_readu8(u32 addr));
+
+
+/*@
+  assigns \nothing;
+@*/
 CASM_FUNCDECL(u16 xmhfhw_sysmemaccess_readu16(u32 addr));
 
 
@@ -406,6 +412,27 @@ CASM_FUNCDECL(u32 xmhfhw_sysmemaccess_readu32(u32 addr));
   assigns \nothing;
 @*/
 CASM_FUNCDECL(u64 xmhfhw_sysmemaccess_readu64(u32 addr));
+
+/*@
+  assigns \nothing;
+@*/
+CASM_FUNCDECL(void xmhfhw_sysmemaccess_writeu8(u32 addr, u8 val));
+
+/*@
+  assigns \nothing;
+@*/
+CASM_FUNCDECL(void xmhfhw_sysmemaccess_writeu16(u32 addr, u16 val));
+
+/*@
+  assigns \nothing;
+@*/
+CASM_FUNCDECL(void xmhfhw_sysmemaccess_writeu32(u32 addr, u32 val));
+
+/*@
+  assigns \nothing;
+@*/
+CASM_FUNCDECL(void xmhfhw_sysmemaccess_writeu64(u32 addr, u64 val));
+
 
 /*@
   assigns \nothing;
@@ -564,47 +591,12 @@ CASM_FUNCDECL(void __vmx_invept(u64 invalidation_type, u64 eptp));
 
 
 
-//////xmhfhw_cpu_mem
-
-#ifndef __ASSEMBLY__
-
-
-CASM_FUNCDECL(u8 xmhfhw_sysmemaccess_readu8(u32 addr));
-CASM_FUNCDECL(u64 xmhfhw_sysmemaccess_readu64(u32 addr));
-
-CASM_FUNCDECL(void xmhfhw_sysmemaccess_writeu8(u32 addr, u8 val));
-CASM_FUNCDECL(void xmhfhw_sysmemaccess_writeu16(u32 addr, u16 val));
-CASM_FUNCDECL(void xmhfhw_sysmemaccess_writeu32(u32 addr, u32 val));
-CASM_FUNCDECL(void xmhfhw_sysmemaccess_writeu64(u32 addr, u64 val));
-
-
-#endif //__ASSEMBLY__
 
 
 
-//////xmhfhw_legio_pci
-
-#ifndef __ASSEMBLY__
-
-
-#endif //__ASSEMBLY__
 
 
 
-//////xmhfhw_legio_pit
-
-#ifndef __ASSEMBLY__
-
-
-#endif //__ASSEMBLY__
-
-
-//////xmhfhw_sysmem_bios
-
-#ifndef __ASSEMBLY__
-
-
-#endif //__ASSEMBLY__
 
 
 //////xmhfhw_mmio_vtd
