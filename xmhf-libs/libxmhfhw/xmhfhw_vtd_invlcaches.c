@@ -57,10 +57,13 @@
 //invalidate DRHD caches
 //note: we do global invalidation currently
 //returns: true if all went well, else false
+/*@
+	requires \valid(drhd);
+	assigns \nothing;
+@*/
 bool xmhfhw_platform_x86pc_vtd_drhd_invalidatecaches(VTD_DRHD *drhd){
 	VTD_CCMD_REG ccmd;
 	VTD_IOTLB_REG iotlb;
-	//VTD_DRHD *drhd = _vtd_get_drhd_struct(drhd_handle);
 
 	//sanity check
 	if (drhd == NULL)
@@ -68,25 +71,36 @@ bool xmhfhw_platform_x86pc_vtd_drhd_invalidatecaches(VTD_DRHD *drhd){
 
 	//invalidate CET cache
   	//wait for context cache invalidation request to send
-    do{
-      //ccmd.value = _vtd_reg_read(drhd, VTD_CCMD_REG_OFF);
-      unpack_VTD_CCMD_REG(&ccmd, _vtd_reg_read(drhd, VTD_CCMD_REG_OFF));
-    }while(ccmd.icc);
+	ccmd.icc = 1;
+	/*@
+		loop invariant I1: ccmd.icc != 0;
+		loop assigns ccmd;
+	@*/
+	while(1){
+		unpack_VTD_CCMD_REG(&ccmd, _vtd_reg_read(drhd, VTD_CCMD_REG_OFF));
+		if(ccmd.icc == 0)
+			break;
+	}
 
 	//initialize CCMD to perform a global invalidation
-    //ccmd.value=0;
-    memset(&ccmd, 0, sizeof(VTD_CCMD_REG));
-    ccmd.cirg=1; //global invalidation
-    ccmd.icc=1;  //invalidate context cache
+	memset((unsigned char *)&ccmd, 0, sizeof(VTD_CCMD_REG));
+	ccmd.cirg=1; //global invalidation
+	ccmd.icc=1;  //invalidate context cache
 
-    //perform the invalidation
-    _vtd_reg_write(drhd, VTD_CCMD_REG_OFF, pack_VTD_CCMD_REG(&ccmd));
+	//perform the invalidation
+	_vtd_reg_write(drhd, VTD_CCMD_REG_OFF, pack_VTD_CCMD_REG(&ccmd));
 
 	//wait for context cache invalidation completion status
-    do{
-      //ccmd.value = _vtd_reg_read(drhd, VTD_CCMD_REG_OFF);
-      unpack_VTD_CCMD_REG(&ccmd, _vtd_reg_read(drhd, VTD_CCMD_REG_OFF));
-    }while(ccmd.icc);
+	ccmd.icc = 1;
+	/*@
+		loop invariant I2: ccmd.icc != 0;
+		loop assigns ccmd;
+	@*/
+	while(1){
+		unpack_VTD_CCMD_REG(&ccmd, _vtd_reg_read(drhd, VTD_CCMD_REG_OFF));
+		if(ccmd.icc == 0)
+			break;
+	}
 
 	//if all went well CCMD CAIG = CCMD CIRG (i.e., actual = requested invalidation granularity)
 	if(ccmd.caig != 0x1){
@@ -95,26 +109,31 @@ bool xmhfhw_platform_x86pc_vtd_drhd_invalidatecaches(VTD_DRHD *drhd){
 	}
 
 	//invalidate IOTLB
-    //initialize IOTLB to perform a global invalidation
-	//iotlb.value=0;
-	memset(&iotlb, 0, sizeof(VTD_IOTLB_REG));
-    iotlb.iirg=1; //global invalidation
-    iotlb.ivt=1;	 //invalidate
+	//initialize IOTLB to perform a global invalidation
+	memset((unsigned char *)&iotlb, 0, sizeof(iotlb));
+	iotlb.iirg=1; //global invalidation
+	iotlb.ivt=1;	 //invalidate
 
-    //perform the invalidation
+	//perform the invalidation
 	_vtd_reg_write(drhd, VTD_IOTLB_REG_OFF, pack_VTD_IOTLB_REG(&iotlb));
 
-    //wait for the invalidation to complete
-    do{
-      //iotlb.value = _vtd_reg_read(drhd, VTD_IOTLB_REG_OFF);
-      unpack_VTD_IOTLB_REG(&iotlb, _vtd_reg_read(drhd, VTD_IOTLB_REG_OFF));
-    }while(iotlb.ivt);
+	//wait for the invalidation to complete
+	iotlb.ivt = 1;
+	/*@
+		loop invariant I1: iotlb.ivt != 0;
+		loop assigns iotlb;
+	@*/
+	while(1){
+		unpack_VTD_IOTLB_REG(&iotlb, _vtd_reg_read(drhd, VTD_IOTLB_REG_OFF));
+		if(iotlb.ivt == 0)
+			break;
+	}
 
-    //if all went well IOTLB IAIG = IOTLB IIRG (i.e., actual = requested invalidation granularity)
+	//if all went well IOTLB IAIG = IOTLB IIRG (i.e., actual = requested invalidation granularity)
 	if(iotlb.iaig != 0x1){
 		//_XDPRINTF_("\n%s: Error: Invalidation of IOTLB failed (%u)", __func__, iotlb.bits.iaig);
 		return false;
-    }
+	}
 
 	return true;
 }
