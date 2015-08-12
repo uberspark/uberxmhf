@@ -55,10 +55,13 @@
 
 
 //set DRHD PLMBASE and PLMLIMIT PMRs
+/*@
+	requires \valid(drhd);
+	assigns \nothing;
+@*/
 void xmhfhw_platform_x86pc_vtd_drhd_set_plm_base_and_limit(VTD_DRHD *drhd, u32 base, u32 limit){
 	VTD_PLMBASE_REG plmbase;
 	VTD_PLMLIMIT_REG plmlimit;
-	//VTD_DRHD *drhd = _vtd_get_drhd_struct(drhd_handle);
 
 	//sanity check
 	if(drhd == NULL)
