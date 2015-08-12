@@ -95,8 +95,10 @@ verify:
 	#cd $(LIBXMHFHW_VERIF_DIR) && frama-c -val -cpp-extra-args=-nostdinc -cpp-extra-args=-D__XXX__ $(VFLAGS) $(srcdir)/verify/xmhfhw_casmfuncs_driver.c xmhfhw_cpu_getidtbase.cS.c xmhfgeec_slabmapdef.c $(V_XMHFHWM_MODULES)
 	#$(CP) -f $(srcdir)/xmhfhw_cpu_getsec.cS $(LIBXMHFHW_VERIF_DIR)/xmhfhw_cpu_getsec.cS.c
 	#cd $(LIBXMHFHW_VERIF_DIR) && frama-c -val -cpp-extra-args=-nostdinc -cpp-extra-args=-D__XXX__ $(VFLAGS) $(srcdir)/verify/xmhfhw_casmfuncs_driver.c xmhfhw_cpu_getsec.cS.c xmhfgeec_slabmapdef.c $(V_XMHFHWM_MODULES)
-	$(CP) -f $(srcdir)/xmhfhw_cpu_gettssbase.cS $(LIBXMHFHW_VERIF_DIR)/xmhfhw_cpu_gettssbase.cS.c
-	cd $(LIBXMHFHW_VERIF_DIR) && frama-c -val -cpp-extra-args=-nostdinc -cpp-extra-args=-D__XXX__ $(VFLAGS) $(srcdir)/verify/xmhfhw_casmfuncs_driver.c xmhfhw_cpu_gettssbase.cS.c xmhfgeec_slabmapdef.c $(V_XMHFHWM_MODULES)
+	#$(CP) -f $(srcdir)/xmhfhw_cpu_gettssbase.cS $(LIBXMHFHW_VERIF_DIR)/xmhfhw_cpu_gettssbase.cS.c
+	#cd $(LIBXMHFHW_VERIF_DIR) && frama-c -val -cpp-extra-args=-nostdinc -cpp-extra-args=-D__XXX__ $(VFLAGS) $(srcdir)/verify/xmhfhw_casmfuncs_driver.c xmhfhw_cpu_gettssbase.cS.c xmhfgeec_slabmapdef.c $(V_XMHFHWM_MODULES)
+	$(CP) -f $(srcdir)/xmhfhw_cpu_inb.cS $(LIBXMHFHW_VERIF_DIR)/xmhfhw_cpu_inb.cS.c
+	cd $(LIBXMHFHW_VERIF_DIR) && frama-c -val -cpp-extra-args=-nostdinc -cpp-extra-args=-D__XXX__ $(VFLAGS) $(srcdir)/verify/xmhfhw_casmfuncs_driver.c xmhfhw_cpu_inb.cS.c xmhfgeec_slabmapdef.c $(V_XMHFHWM_MODULES)
 
 
 
