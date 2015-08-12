@@ -67,6 +67,8 @@ u32 xmhfhwm_cpu_eflags = 0;
 
 u16 xmhfhwm_cpu_gdtr_limit=0;
 u32 xmhfhwm_cpu_gdtr_base=0;
+u16 xmhfhwm_cpu_idtr_limit=0;
+u32 xmhfhwm_cpu_idtr_base=0;
 
 void _impl_xmhfhwm_cpu_insn_hlt(void){
 	//@assert 0;
@@ -258,4 +260,13 @@ void _impl_xmhfhwm_cpu_insn_sgdt_mesp(int index){
 
 void _impl_xmhfhwm_cpu_insn_xorl_edx_edx(void){
 	xmhfhwm_cpu_gprs_edx = 0;
+}
+
+void _impl_xmhfhwm_cpu_insn_sidt_mesp(int index){
+	u32 *tmem_idtbase;
+	u16 *tmem_idtlimit;
+	tmem_idtlimit = (u16 *)((u32)((int)xmhfhwm_cpu_gprs_esp + (int)index));
+	tmem_idtbase = (u32 *)((u32)((int)xmhfhwm_cpu_gprs_esp + (int)index) + sizeof(u32));
+	*tmem_idtlimit = xmhfhwm_cpu_idtr_limit;
+	*tmem_idtbase = xmhfhwm_cpu_idtr_base;
 }
