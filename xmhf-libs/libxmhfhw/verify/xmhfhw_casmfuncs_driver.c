@@ -82,7 +82,14 @@ void drv_bsrl(void){
         result = CASM_FUNCCALL(bsrl, param1);
 }
 
-
+void drv_cpuid(void){
+	u32 eax = framac_nondetu32();
+	u32 ebx = framac_nondetu32();
+	u32 ecx = framac_nondetu32();
+	u32 edx = framac_nondetu32();
+	u32 op = framac_nondetu32();
+	CASM_FUNCCALL(xmhfhw_cpu_cpuid, op, &eax, &ebx, &ecx, &edx);
+}
 
 
 
@@ -95,7 +102,8 @@ void main(void){
 	check_esp = xmhfhwm_cpu_gprs_esp; // pointing to top-of-stack
 
 	//execute harness: TODO
-	drv_bsrl();
+	//drv_bsrl();
+	drv_cpuid();
 
 	//@assert xmhfhwm_cpu_gprs_esp == check_esp;
 	//@assert xmhfhwm_cpu_gprs_eip == check_eip;
