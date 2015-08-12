@@ -72,7 +72,7 @@ CASM_FUNCDEF(void, xmhfhw_cpu_cpuid,
     xmhfhwm_cpu_insn_movl_mesp_esi(0x1c);
     xmhfhwm_cpu_insn_movl_edx_mesi(0x0);
 
-    xmhfhwm_cpu_insn_popl_eax();
+    xmhfhwm_cpu_insn_popl_ebx();
     xmhfhwm_cpu_insn_popl_esi();
     xmhfhwm_cpu_insn_ret();
 },
