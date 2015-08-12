@@ -2231,12 +2231,16 @@ extern void xmhfhwm_vdriver_sentinel(void);
 //////
 // cpu model variables and instruction implementations
 //////
-extern u32 xmhfhwm_cpu_gprs_esp;
 extern u32 xmhfhwm_cpu_gprs_eip;
-
+extern u32 xmhfhwm_cpu_gprs_esp;
 
 extern u32 xmhfhwm_cpu_gprs_eax;
+extern u32 xmhfhwm_cpu_gprs_ebx;
 extern u32 xmhfhwm_cpu_gprs_edx;
+extern u32 xmhfhwm_cpu_gprs_ecx;
+extern u32 xmhfhwm_cpu_gprs_esi;
+extern u32 xmhfhwm_cpu_gprs_edi;
+
 extern u32 xmhfhwm_cpu_eflags;
 
 
