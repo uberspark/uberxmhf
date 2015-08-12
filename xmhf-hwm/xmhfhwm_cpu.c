@@ -142,3 +142,14 @@ void _impl_xmhfhwm_cpu_insn_movl_edx_meax(int index){
 	value_meax = (uint32_t *)((uint32_t)((int32_t)xmhfhwm_cpu_gprs_eax + (int32_t)index));
 	*value_meax = xmhfhwm_cpu_gprs_edx;
 }
+
+void _impl_xmhfhwm_cpu_insn_bsrl_mesp_eax(int index){
+	uint32_t value = *((uint32_t *)((uint32_t)((int32_t)xmhfhwm_cpu_gprs_esp + (int32_t)index)));
+	u32 i;
+	for(i=31; i >=0; i--){
+		if(value & (1UL << i)){
+			xmhfhwm_cpu_gprs_eax = i;
+			return;
+		}
+	}
+}
