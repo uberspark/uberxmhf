@@ -157,6 +157,15 @@ void drv_getsec(void){
 	cabi_check();
 }
 
+void drv_gettssbase(void){
+	u64 result;
+	cabi_establish();
+	result = CASM_FUNCCALL(xmhf_baseplatform_arch_x86_gettssbase, CASM_NOPARAM);
+	cabi_check();
+}
+
+
+
 
 
 void main(void){
@@ -174,7 +183,8 @@ void main(void){
 	//drv_enableintr();
 	//drv_getgdtbase();
 	//drv_getidtbase();
-	drv_getsec();
+	//drv_getsec();
+	drv_gettssbase();
 
 	//@assert xmhfhwm_cpu_gprs_esp == check_esp;
 	//@assert xmhfhwm_cpu_gprs_eip == check_eip;

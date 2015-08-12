@@ -70,6 +70,8 @@ u32 xmhfhwm_cpu_gdtr_base=0;
 u16 xmhfhwm_cpu_idtr_limit=0;
 u32 xmhfhwm_cpu_idtr_base=0;
 
+u16 xmhfhwm_cpu_tr_selector=0;
+
 void _impl_xmhfhwm_cpu_insn_hlt(void){
 	//@assert 0;
 	while(1);
@@ -284,6 +286,10 @@ void _impl_xmhfhwm_cpu_insn_sgdt_mesp(int index){
 	*tmem_gdtbase = xmhfhwm_cpu_gdtr_base;
 }
 
+void _impl_xmhfhwm_cpu_insn_xorl_eax_eax(void){
+	xmhfhwm_cpu_gprs_eax = 0;
+}
+
 void _impl_xmhfhwm_cpu_insn_xorl_edx_edx(void){
 	xmhfhwm_cpu_gprs_edx = 0;
 }
@@ -303,3 +309,60 @@ void _impl_xmhfhwm_cpu_insn_getsec(void){
 		xmhfhwm_cpu_gprs_eax = 0;
 
 }
+
+void _impl_xmhfhwm_cpu_insn_str_ax(void){
+	xmhfhwm_cpu_gprs_eax &= 0xFFFF0000UL;
+	xmhfhwm_cpu_gprs_eax |= (u16)xmhfhwm_cpu_tr_selector;
+}
+
+void _impl_xmhfhwm_cpu_insn_addl_eax_ecx(void){
+	xmhfhwm_cpu_gprs_ecx += xmhfhwm_cpu_gprs_eax;
+}
+
+void _impl_xmhfhwm_cpu_insn_movl_mecx_eax(int index){
+	u32 *value_mecx;
+	value_mecx = (u32 *)((u32)((int)xmhfhwm_cpu_gprs_ecx + (int)index));
+	xmhfhwm_cpu_gprs_eax = *value_mecx;
+}
+
+void _impl_xmhfhwm_cpu_insn_movl_mecx_edx(int index){
+	u32 *value_mecx;
+	value_mecx = (u32 *)((u32)((int)xmhfhwm_cpu_gprs_ecx + (int)index));
+	xmhfhwm_cpu_gprs_edx = *value_mecx;
+}
+
+
+void _impl_xmhfhwm_cpu_insn_addl_imm_ecx(u32 value){
+	xmhfhwm_cpu_gprs_ecx += value;
+}
+
+void _impl_xmhfhwm_cpu_insn_movl_edx_ecx(void){
+	xmhfhwm_cpu_gprs_ecx = xmhfhwm_cpu_gprs_edx;
+}
+
+void _impl_xmhfhwm_cpu_insn_andl_imm_edx(u32 value){
+	xmhfhwm_cpu_gprs_edx &= value;
+}
+
+void _impl_xmhfhwm_cpu_insn_andl_imm_ecx(u32 value){
+	xmhfhwm_cpu_gprs_ecx &= value;
+}
+
+void _impl_xmhfhwm_cpu_insn_shl_imm_ecx(u32 value){
+	xmhfhwm_cpu_gprs_ecx = xmhfhwm_cpu_gprs_ecx << value;
+}
+
+void _impl_xmhfhwm_cpu_insn_shr_imm_eax(u32 value){
+	xmhfhwm_cpu_gprs_eax = xmhfhwm_cpu_gprs_eax >> value;
+}
+
+void _impl_xmhfhwm_cpu_insn_orl_ecx_eax(void){
+	xmhfhwm_cpu_gprs_eax = xmhfhwm_cpu_gprs_eax | xmhfhwm_cpu_gprs_ecx;
+}
+
+void _impl_xmhfhwm_cpu_insn_orl_edx_eax(void){
+	xmhfhwm_cpu_gprs_eax = xmhfhwm_cpu_gprs_eax | xmhfhwm_cpu_gprs_edx;
+}
+
+
+

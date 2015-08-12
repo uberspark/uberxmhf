@@ -2281,9 +2281,22 @@ extern void _impl_xmhfhwm_cpu_insn_cli(void);
 extern void _impl_xmhfhwm_cpu_insn_sti(void);
 extern void _impl_xmhfhwm_cpu_insn_subl_imm_esp(u32 value);
 extern void _impl_xmhfhwm_cpu_insn_sgdt_mesp(int index);
+extern void _impl_xmhfhwm_cpu_insn_xorl_eax_eax(void);
 extern void _impl_xmhfhwm_cpu_insn_xorl_edx_edx(void);
 extern void _impl_xmhfhwm_cpu_insn_sidt_mesp(int index);
 extern void _impl_xmhfhwm_cpu_insn_getsec(void);
+extern void _impl_xmhfhwm_cpu_insn_str_ax(void);
+extern void _impl_xmhfhwm_cpu_insn_addl_eax_ecx(void);
+extern void _impl_xmhfhwm_cpu_insn_movl_mecx_eax(int index);
+extern void _impl_xmhfhwm_cpu_insn_movl_mecx_edx(int index);
+extern void _impl_xmhfhwm_cpu_insn_addl_imm_ecx(u32 value);
+extern void _impl_xmhfhwm_cpu_insn_movl_edx_ecx(void);
+extern void _impl_xmhfhwm_cpu_insn_andl_imm_edx(u32 value);
+extern void _impl_xmhfhwm_cpu_insn_andl_imm_ecx(u32 value);
+extern void _impl_xmhfhwm_cpu_insn_shl_imm_ecx(u32 value);
+extern void _impl_xmhfhwm_cpu_insn_shr_imm_eax(u32 value);
+extern void _impl_xmhfhwm_cpu_insn_orl_ecx_eax(void);
+extern void _impl_xmhfhwm_cpu_insn_orl_edx_eax(void);
 
 
 //////
@@ -2473,8 +2486,14 @@ extern void _impl_xmhfhwm_cpu_insn_getsec(void);
 
 #define xmhfhwm_cpu_insn_movl_mesp_edi(x) __builtin_annot("movl "#x"(%esp), %edi ");
 
-#define xmhfhwm_cpu_insn_movl_mecx_eax(x) __builtin_annot("movl "#x"(%ecx), %eax ");
-#define xmhfhwm_cpu_insn_movl_mecx_edx(x) __builtin_annot("movl "#x"(%ecx), %edx ");
+#define xmhfhwm_cpu_insn_movl_mecx_eax(x) \
+	__builtin_annot("movl "#x"(%ecx), %eax "); \
+	_impl_xmhfhwm_cpu_insn_movl_mecx_eax(x); \
+
+#define xmhfhwm_cpu_insn_movl_mecx_edx(x) \
+	__builtin_annot("movl "#x"(%ecx), %edx "); \
+	_impl_xmhfhwm_cpu_insn_movl_mecx_edx(x); \
+
 #define xmhfhwm_cpu_insn_movl_eax_mecx(x) __builtin_annot("movl %eax, "#x"(%ecx) ");
 #define xmhfhwm_cpu_insn_movl_edx_mecx(x) __builtin_annot("movl %edx, "#x"(%ecx) ");
 
@@ -2535,7 +2554,11 @@ extern void _impl_xmhfhwm_cpu_insn_getsec(void);
 
 
 
-#define xmhfhwm_cpu_insn_movl_edx_ecx() __builtin_annot("movl %edx, %ecx ");
+#define xmhfhwm_cpu_insn_movl_edx_ecx() \
+	__builtin_annot("movl %edx, %ecx "); \
+	_impl_xmhfhwm_cpu_insn_movl_edx_ecx(); \
+
+
 #define xmhfhwm_cpu_insn_movl_edi_ebx() __builtin_annot("movl %edi, %ebx ");
 
 #define xmhfhwm_cpu_insn_movl_esp_eax() __builtin_annot("movl %esp, %eax ");
@@ -2604,7 +2627,10 @@ extern void _impl_xmhfhwm_cpu_insn_getsec(void);
 
 
 // arithmetic/logical
-#define xmhfhwm_cpu_insn_xorl_eax_eax() __builtin_annot("xorl %eax, %eax ");
+#define xmhfhwm_cpu_insn_xorl_eax_eax() \
+	__builtin_annot("xorl %eax, %eax "); \
+	_impl_xmhfhwm_cpu_insn_xorl_eax_eax(); \
+
 #define xmhfhwm_cpu_insn_xorl_ebx_ebx() __builtin_annot("xorl %ebx, %ebx ");
 
 #define xmhfhwm_cpu_insn_xorl_edx_edx() \
@@ -2623,23 +2649,49 @@ extern void _impl_xmhfhwm_cpu_insn_getsec(void);
 	__builtin_annot("subl $"#x", %esp "); \
 	_impl_xmhfhwm_cpu_insn_subl_imm_esp(x); \
 
-#define xmhfhwm_cpu_insn_addl_eax_ecx() __builtin_annot("addl %eax, %ecx");
+#define xmhfhwm_cpu_insn_addl_eax_ecx() \
+	__builtin_annot("addl %eax, %ecx"); \
+	_impl_xmhfhwm_cpu_insn_addl_eax_ecx(); \
+
 #define xmhfhwm_cpu_insn_addl_ecx_eax() __builtin_annot("addl %ecx, %eax");
 
-#define xmhfhwm_cpu_insn_addl_imm_ecx(x) __builtin_annot("addl $"#x", %ecx ");
+#define xmhfhwm_cpu_insn_addl_imm_ecx(x) \
+	__builtin_annot("addl $"#x", %ecx "); \
+	_impl_xmhfhwm_cpu_insn_addl_imm_ecx(x); \
+
 
 #define _xmhfhwm_cpu_insn_addl_imm_eax(x) __builtin_annot("addl $"#x", %eax ");
 #define xmhfhwm_cpu_insn_addl_imm_eax(x) _xmhfhwm_cpu_insn_addl_imm_eax(x)
 
-#define xmhfhwm_cpu_insn_andl_imm_edx(x) __builtin_annot("andl $"#x", %edx ");
-#define xmhfhwm_cpu_insn_andl_imm_ecx(x) __builtin_annot("andl $"#x", %ecx ");
+#define xmhfhwm_cpu_insn_andl_imm_edx(x) \
+	__builtin_annot("andl $"#x", %edx "); \
+	_impl_xmhfhwm_cpu_insn_andl_imm_edx(x); \
+
+
+#define xmhfhwm_cpu_insn_andl_imm_ecx(x) \
+	__builtin_annot("andl $"#x", %ecx "); \
+	_impl_xmhfhwm_cpu_insn_andl_imm_ecx(x); \
+
+
 #define xmhfhwm_cpu_insn_andl_imm_eax(x) __builtin_annot("andl $"#x", %eax ");
 
-#define xmhfhwm_cpu_insn_shl_imm_ecx(x) __builtin_annot("shl $"#x", %ecx ");
-#define xmhfhwm_cpu_insn_shr_imm_eax(x) __builtin_annot("shr $"#x", %eax ");
+#define xmhfhwm_cpu_insn_shl_imm_ecx(x) \
+	__builtin_annot("shl $"#x", %ecx "); \
+	_impl_xmhfhwm_cpu_insn_shl_imm_ecx(x); \
 
-#define xmhfhwm_cpu_insn_orl_ecx_eax() __builtin_annot("orl %ecx, %eax ");
-#define xmhfhwm_cpu_insn_orl_edx_eax() __builtin_annot("orl %edx, %eax ");
+#define xmhfhwm_cpu_insn_shr_imm_eax(x) \
+	__builtin_annot("shr $"#x", %eax "); \
+	_impl_xmhfhwm_cpu_insn_shr_imm_eax(x); \
+
+
+#define xmhfhwm_cpu_insn_orl_ecx_eax() \
+	__builtin_annot("orl %ecx, %eax "); \
+	_impl_xmhfhwm_cpu_insn_orl_ecx_eax(); \
+
+#define xmhfhwm_cpu_insn_orl_edx_eax() \
+	__builtin_annot("orl %edx, %eax "); \
+	_impl_xmhfhwm_cpu_insn_orl_edx_eax(); \
+
 #define xmhfhwm_cpu_insn_orl_imm_eax(x) __builtin_annot("orl $"#x", %eax ");
 #define xmhfhwm_cpu_insn_orl_imm_ecx(x) __builtin_annot("orl $"#x", %ecx ");
 
@@ -2724,7 +2776,10 @@ extern void _impl_xmhfhwm_cpu_insn_getsec(void);
 	_impl_xmhfhwm_cpu_insn_sgdt_mesp(x); \
 
 
-#define xmhfhwm_cpu_insn_str_ax() __builtin_annot("str %ax ");
+#define xmhfhwm_cpu_insn_str_ax() \
+	__builtin_annot("str %ax "); \
+	_impl_xmhfhwm_cpu_insn_str_ax(); \
+
 
 #define xmhfhwm_cpu_insn_sidt_mesp(x) \
 	__builtin_annot("sidt "#x"(%esp) "); \
