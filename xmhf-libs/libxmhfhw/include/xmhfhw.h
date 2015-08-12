@@ -330,7 +330,10 @@ void xmhf_baseplatform_arch_x86_udelay(u32 usecs);
 u32 xmhfhw_platform_x86pc_acpi_getRSDP(ACPI_RSDP *rsdp);
 
 
-
+/*@
+	requires \valid(dmardevice);
+	assigns \nothing;
+@*/
 u64 _vtd_reg_read(VTD_DRHD *dmardevice, u32 reg);
 
 
