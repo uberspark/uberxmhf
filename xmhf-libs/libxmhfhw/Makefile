@@ -79,7 +79,10 @@ verify:
 	#cd $(LIBXMHFHW_VERIF_DIR) && frama-c -main xmhfhw_platform_x86pc_vtd_drhd_invalidatecaches -lib-entry -wp -wp-rte -wp-model +cint+cast -wp-prover alt-ergo,cvc3,z3 -cpp-extra-args=-nostdinc $(VFLAGS) $(srcdir)/xmhfhw_vtd_invlcaches.c
 	#cd $(LIBXMHFHW_VERIF_DIR) && frama-c -main xmhfhw_platform_x86pc_vtd_drhd_set_phm_base_and_limit -lib-entry -wp -wp-rte -wp-model +cint+cast -wp-prover alt-ergo,cvc3,z3 -cpp-extra-args=-nostdinc $(VFLAGS) $(srcdir)/xmhfhw_vtd_setphm.c
 	#cd $(LIBXMHFHW_VERIF_DIR) && frama-c -main xmhfhw_platform_x86pc_vtd_drhd_set_plm_base_and_limit -lib-entry -wp -wp-rte -wp-model +cint+cast -wp-prover alt-ergo,cvc3,z3 -cpp-extra-args=-nostdinc $(VFLAGS) $(srcdir)/xmhfhw_vtd_setplm.c
-	cd $(LIBXMHFHW_VERIF_DIR) && frama-c -main xmhfhw_platform_x86pc_vtd_drhd_set_root_entry_table -lib-entry -wp -wp-rte -wp-model +cint+cast -wp-prover alt-ergo,cvc3,z3 -cpp-extra-args=-nostdinc $(VFLAGS) $(srcdir)/xmhfhw_vtd_setret.c
+	#cd $(LIBXMHFHW_VERIF_DIR) && frama-c -main xmhfhw_platform_x86pc_vtd_drhd_set_root_entry_table -lib-entry -wp -wp-rte -wp-model +cint+cast -wp-prover alt-ergo,cvc3,z3 -cpp-extra-args=-nostdinc $(VFLAGS) $(srcdir)/xmhfhw_vtd_setret.c
+	$(CP) -f $(srcdir)/xmhfhw_cpu_bsrl.cS $(LIBXMHFHW_VERIF_DIR)/xmhfhw_cpu_bsrl.cS.c
+	$(CP) -f $(srcdir)/../libxmhfgeec/xmhfgeec_slabmapdef.c $(LIBXMHFHW_VERIF_DIR)/xmhfgeec_slabmapdef.c
+	cd $(LIBXMHFHW_VERIF_DIR) && frama-c -val -cpp-extra-args=-nostdinc -cpp-extra-args=-D__XXX__ $(VFLAGS) $(srcdir)/verify/xmhfhw_casmfuncs_driver.c xmhfhw_cpu_bsrl.cS.c xmhfgeec_slabmapdef.c $(V_XMHFHWM_MODULES)
 
 
 
