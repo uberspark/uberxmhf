@@ -331,6 +331,14 @@ u32 xmhfhw_platform_x86pc_acpi_getRSDP(ACPI_RSDP *rsdp);
 
 
 /*@
+	requires \valid(drhd);
+	assigns \nothing;
+@*/
+void xmhfhw_platform_x86pc_vtd_drhd_disable_pmr(VTD_DRHD *drhd);
+
+
+
+/*@
 	requires \valid(dmardevice);
 	assigns \nothing;
 @*/
@@ -342,6 +350,9 @@ u64 _vtd_reg_read(VTD_DRHD *dmardevice, u32 reg);
 	assigns \nothing;
 @*/
 void _vtd_reg_write(VTD_DRHD *dmardevice, u32 reg, u64 value);
+
+
+
 
 
 
@@ -624,7 +635,6 @@ bool xmhfhw_platform_x86pc_vtd_drhd_set_root_entry_table(vtd_drhd_handle_t drhd_
 void xmhfhw_platform_x86pc_vtd_drhd_enable_translation(vtd_drhd_handle_t drhd_handle);
 void xmhfhw_platform_x86pc_vtd_drhd_disable_translation(vtd_drhd_handle_t drhd_handle);
 void xmhfhw_platform_x86pc_vtd_drhd_enable_pmr(vtd_drhd_handle_t drhd_handle);
-void xmhfhw_platform_x86pc_vtd_drhd_disable_pmr(vtd_drhd_handle_t drhd_handle);
 void xmhfhw_platform_x86pc_vtd_drhd_set_plm_base_and_limit(vtd_drhd_handle_t drhd_handle, u32 base, u32 limit);
 void xmhfhw_platform_x86pc_vtd_drhd_set_phm_base_and_limit(vtd_drhd_handle_t drhd_handle, u64 base, u64 limit);
 
