@@ -71,7 +71,8 @@ verify:
 	#cd $(LIBXMHFHW_VERIF_DIR) && frama-c -main xmhf_baseplatform_arch_x86_udelay -lib-entry -wp -wp-rte -wp-model +cint -wp-prover alt-ergo,cvc3,z3 -cpp-extra-args=-nostdinc $(VFLAGS) $(srcdir)/xmhfhw_pit_udelay.c
 	#cd $(LIBXMHFHW_VERIF_DIR) && frama-c -main xmhfhw_platform_x86pc_acpi_getRSDP -lib-entry -wp -wp-rte -wp-model +cint+cast -wp-prover alt-ergo,cvc3,z3 -cpp-extra-args=-nostdinc $(VFLAGS) $(srcdir)/xmhfhw_sysmem_getacpirsdp.c
 	#cd $(LIBXMHFHW_VERIF_DIR) && frama-c -main _vtd_reg_read -lib-entry -wp -wp-rte -wp-model +cint+cast -wp-prover alt-ergo,cvc3,z3 -cpp-extra-args=-nostdinc $(VFLAGS) $(srcdir)/xmhfhw_vtd_readreg.c
-	cd $(LIBXMHFHW_VERIF_DIR) && frama-c -main _vtd_reg_write -lib-entry -wp -wp-rte -wp-model +cint+cast -wp-prover alt-ergo,cvc3,z3 -cpp-extra-args=-nostdinc $(VFLAGS) $(srcdir)/xmhfhw_vtd_writereg.c
+	#cd $(LIBXMHFHW_VERIF_DIR) && frama-c -main _vtd_reg_write -lib-entry -wp -wp-rte -wp-model +cint+cast -wp-prover alt-ergo,cvc3,z3 -cpp-extra-args=-nostdinc $(VFLAGS) $(srcdir)/xmhfhw_vtd_writereg.c
+	cd $(LIBXMHFHW_VERIF_DIR) && frama-c -main xmhfhw_platform_x86pc_vtd_drhd_disable_pmr -lib-entry -wp -wp-rte -wp-model +cint+cast -wp-prover alt-ergo,cvc3,z3 -cpp-extra-args=-nostdinc $(VFLAGS) $(srcdir)/xmhfhw_vtd_disablepmr.c
 
 
 

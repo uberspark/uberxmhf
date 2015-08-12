@@ -53,26 +53,36 @@
 #include <xmhf-debug.h>
 
 //disable protected memory region (PMR)
+/*@
+	requires \valid(drhd);
+	assigns \nothing;
+@*/
 void xmhfhw_platform_x86pc_vtd_drhd_disable_pmr(VTD_DRHD *drhd){
-    VTD_PMEN_REG pmen;
-	//VTD_DRHD *drhd = _vtd_get_drhd_struct(drhd_handle);
+	VTD_PMEN_REG pmen;
 
 	//sanity check
 	if(drhd == NULL)
 		return;
 
-	//_XDPRINTF_("\nDisabling PMR...");
-	{
-		pmen.epm=0;	//disable PMR
-		_vtd_reg_write(drhd, VTD_PMEN_REG_OFF, pack_VTD_PMEN_REG(&pmen));
+	pmen.epm=0;	//disable PMR
+	_vtd_reg_write(drhd, VTD_PMEN_REG_OFF, pack_VTD_PMEN_REG(&pmen));
 
-		//wait for PMR disabled...
-		do{
-			//pmen.value = _vtd_reg_read(drhd, VTD_PMEN_REG_OFF);
-			unpack_VTD_PMEN_REG(&pmen, _vtd_reg_read(drhd, VTD_PMEN_REG_OFF));
-		}while(pmen.prs);
+	//wait for PMR disabled...
+	//do{
+	//	//pmen.value = _vtd_reg_read(drhd, VTD_PMEN_REG_OFF);
+	//	unpack_VTD_PMEN_REG(&pmen, _vtd_reg_read(drhd, VTD_PMEN_REG_OFF));
+	//}while(pmen.prs);
+
+	pmen.prs=1;
+	/*@
+		loop invariant I1: pmen.prs != 0;
+		loop assigns pmen;
+	@*/
+	while(1){
+		unpack_VTD_PMEN_REG(&pmen, _vtd_reg_read(drhd, VTD_PMEN_REG_OFF));
+		if(!pmen.prs)
+			break;
 	}
-	//_XDPRINTF_("\nDRHD PMR disabled.");
 
 }
 
