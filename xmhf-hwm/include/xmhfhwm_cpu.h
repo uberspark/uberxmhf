@@ -2253,6 +2253,7 @@ extern void _impl_xmhfhwm_cpu_insn_movl_meax_edx(int index);
 extern void _impl_xmhfhwm_cpu_insn_movl_meax_ecx(int index);
 extern void _impl_xmhfhwm_cpu_insn_movl_ecx_meax(int index);
 extern void _impl_xmhfhwm_cpu_insn_movl_edx_meax(int index);
+extern void _impl_xmhfhwm_cpu_insn_bsrl_mesp_eax(int index);
 
 
 //////
@@ -2546,7 +2547,11 @@ extern void _impl_xmhfhwm_cpu_insn_movl_edx_meax(int index);
 #define xmhfhwm_cpu_insn_btl_imm_mecx(x,y) __builtin_annot("btl $"#x", "#y"(%ecx) ");
 #define xmhfhwm_cpu_insn_btrl_imm_mecx(x,y) __builtin_annot("btrl $"#x", "#y"(%ecx) ");
 #define xmhfhwm_cpu_insn_btsl_imm_mecx(x,y) __builtin_annot("btsl $"#x", "#y"(%ecx) ");
-#define xmhfhwm_cpu_insn_bsrl_mesp_eax(x) __builtin_annot("bsrl "#x"(%esp), %eax ");
+
+#define xmhfhwm_cpu_insn_bsrl_mesp_eax(x) \
+	__builtin_annot("bsrl "#x"(%esp), %eax "); \
+	_impl_xmhfhwm_cpu_insn_bsrl_mesp_eax(x); \
+
 
 #define xmhfhwm_cpu_insn_mull_ecx() __builtin_annot("mull %ecx ");
 
