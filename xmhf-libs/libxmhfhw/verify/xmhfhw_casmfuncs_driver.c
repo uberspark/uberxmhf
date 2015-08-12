@@ -130,6 +130,13 @@ void drv_disableintr(void){
 	cabi_check();
 }
 
+void drv_enableintr(void){
+	cabi_establish();
+	CASM_FUNCCALL(enable_intr, CASM_NOPARAM);
+	cabi_check();
+}
+
+
 void main(void){
 	u32 check_esp, check_eip = CASM_RET_EIP;
 
@@ -141,7 +148,8 @@ void main(void){
 	//execute harness: TODO
 	//drv_bsrl();
 	//drv_cpuid();
-	drv_disableintr();
+	//drv_disableintr();
+	drv_enableintr();
 
 	//@assert xmhfhwm_cpu_gprs_esp == check_esp;
 	//@assert xmhfhwm_cpu_gprs_eip == check_eip;

@@ -236,3 +236,7 @@ void _impl_xmhfhwm_cpu_insn_popl_ebx(void){
 void _impl_xmhfhwm_cpu_insn_cli(void){
 	xmhfhwm_cpu_eflags &= ~(EFLAGS_IF);
 }
+
+void _impl_xmhfhwm_cpu_insn_sti(void){
+	xmhfhwm_cpu_eflags |= (EFLAGS_IF);
+}

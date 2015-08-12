@@ -2272,7 +2272,7 @@ extern void _impl_xmhfhwm_cpu_insn_popl_eax(void);
 extern void _impl_xmhfhwm_cpu_insn_popl_esi(void);
 extern void _impl_xmhfhwm_cpu_insn_popl_ebx(void);
 extern void _impl_xmhfhwm_cpu_insn_cli(void);
-
+extern void _impl_xmhfhwm_cpu_insn_sti(void);
 
 //////
 // CASM C to ASM call macros
@@ -2672,7 +2672,10 @@ extern void _impl_xmhfhwm_cpu_insn_cli(void);
 	__builtin_annot("cli "); \
 	_impl_xmhfhwm_cpu_insn_cli(); \
 
-#define xmhfhwm_cpu_insn_sti() __builtin_annot("sti ");
+#define xmhfhwm_cpu_insn_sti() \
+	__builtin_annot("sti "); \
+	_impl_xmhfhwm_cpu_insn_sti(); \
+
 #define xmhfhwm_cpu_insn_inb_dx_al() __builtin_annot("inb %dx, %al ");
 #define xmhfhwm_cpu_insn_inw_dx_ax() __builtin_annot("inw %dx, %ax ");
 #define xmhfhwm_cpu_insn_inl_dx_eax() __builtin_annot("inl %dx, %eax ");
