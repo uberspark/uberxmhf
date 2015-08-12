@@ -55,7 +55,7 @@
 CASM_FUNCDEF(uint32_t, bsrl,
 {
     xmhfhwm_cpu_insn_bsrl_mesp_eax(0x4);
-    xmhfhwm_cpu_insn_ret();
+    xmhfhwm_cpu_insn_retu32();
 },
 uint32_t mask)
 
