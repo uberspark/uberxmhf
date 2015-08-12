@@ -323,7 +323,11 @@ void xmhf_baseplatform_arch_x86_pci_type1_write(u32 bus, u32 device, u32 functio
 void xmhf_baseplatform_arch_x86_udelay(u32 usecs);
 
 
-
+/*@
+	requires \valid((unsigned char *)rsdp+(0..sizeof(ACPI_RSDP)));
+	assigns \nothing;
+@*/
+u32 xmhfhw_platform_x86pc_acpi_getRSDP(ACPI_RSDP *rsdp);
 
 
 
@@ -381,6 +385,11 @@ CASM_FUNCDECL(void wrmsr64(u32 msr, u64 newval));
 CASM_FUNCDECL(u64 rdmsr64(u32 msr));
 
 
+/*@
+  assigns \nothing;
+@*/
+CASM_FUNCDECL(u16 xmhfhw_sysmemaccess_readu16(u32 addr));
+
 
 /*@
   assigns \nothing;
@@ -391,6 +400,11 @@ CASM_FUNCDECL(u32 xmhfhw_sysmemaccess_readu32(u32 addr));
   assigns \nothing;
 @*/
 CASM_FUNCDECL(u64 xmhfhw_sysmemaccess_readu64(u32 addr));
+
+/*@
+  assigns \nothing;
+@*/
+CASM_FUNCDECL(void xmhfhw_sysmemaccess_copy(u8 *dest, u8 *src, u32 size));
 
 
 /*@
@@ -550,7 +564,6 @@ CASM_FUNCDECL(void __vmx_invept(u64 invalidation_type, u64 eptp));
 
 
 CASM_FUNCDECL(u8 xmhfhw_sysmemaccess_readu8(u32 addr));
-CASM_FUNCDECL(u16 xmhfhw_sysmemaccess_readu16(u32 addr));
 CASM_FUNCDECL(u64 xmhfhw_sysmemaccess_readu64(u32 addr));
 
 CASM_FUNCDECL(void xmhfhw_sysmemaccess_writeu8(u32 addr, u8 val));
@@ -558,7 +571,6 @@ CASM_FUNCDECL(void xmhfhw_sysmemaccess_writeu16(u32 addr, u16 val));
 CASM_FUNCDECL(void xmhfhw_sysmemaccess_writeu32(u32 addr, u32 val));
 CASM_FUNCDECL(void xmhfhw_sysmemaccess_writeu64(u32 addr, u64 val));
 
-CASM_FUNCDECL(void xmhfhw_sysmemaccess_copy(u8 *dest, u8 *src, u32 size));
 
 #endif //__ASSEMBLY__
 
@@ -585,7 +597,6 @@ CASM_FUNCDECL(void xmhfhw_sysmemaccess_copy(u8 *dest, u8 *src, u32 size));
 
 #ifndef __ASSEMBLY__
 
-u32 xmhfhw_platform_x86pc_acpi_getRSDP(ACPI_RSDP *rsdp);
 
 #endif //__ASSEMBLY__
 
