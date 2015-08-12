@@ -57,6 +57,13 @@
 
 u32 cpuid = 0;	//BSP cpu
 
+void drv_bsrl(void){
+	uint32_t param1=0;
+	uint32_t result;
+        result = CASM_FUNCCALL(bsrl, param1);
+}
+
+
 
 void main(void){
 	u32 check_esp, check_eip = CASM_RET_EIP;
@@ -67,6 +74,7 @@ void main(void){
 	check_esp = xmhfhwm_cpu_gprs_esp; // pointing to top-of-stack
 
 	//execute harness: TODO
+	drv_bsrl();
 
 	//@assert xmhfhwm_cpu_gprs_esp == check_esp;
 	//@assert xmhfhwm_cpu_gprs_eip == check_eip;

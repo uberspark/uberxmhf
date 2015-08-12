@@ -2330,6 +2330,19 @@ extern void _impl_xmhfhwm_cpu_insn_movl_edx_meax(int index);
 	xmhfhwm_cpu_gprs_esp += sizeof(u32); \
 	return; \
 
+#define xmhfhwm_cpu_insn_retu32() \
+	__builtin_annot("ret "); \
+        xmhfhwm_cpu_gprs_eip = *(u32 *)xmhfhwm_cpu_gprs_esp; \
+	xmhfhwm_cpu_gprs_esp += sizeof(u32); \
+	return xmhfhwm_cpu_gprs_eax; \
+
+#define xmhfhwm_cpu_insn_retu64() \
+	__builtin_annot("ret "); \
+        xmhfhwm_cpu_gprs_eip = *(u32 *)xmhfhwm_cpu_gprs_esp; \
+	xmhfhwm_cpu_gprs_esp += sizeof(u32); \
+	return (u64)(((u64)xmhfhwm_cpu_gprs_edx << 32) | xmhfhwm_cpu_gprs_eax); \
+
+
 
 #define xmhfhwm_cpu_insn_lret() __builtin_annot("lret ");
 
