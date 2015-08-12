@@ -348,9 +348,16 @@ void xmhfhw_platform_x86pc_vtd_drhd_disable_translation(VTD_DRHD *drhd);
 @*/
 void xmhfhw_platform_x86pc_vtd_drhd_enable_translation(VTD_DRHD *drhd);
 
+/*@
+	requires \valid(drhd);
+	assigns \nothing;
+@*/
 bool xmhfhw_platform_x86pc_vtd_drhd_initialize(VTD_DRHD *drhd);
 
-
+/*@
+	requires \valid(drhd);
+	assigns \nothing;
+@*/
 bool xmhfhw_platform_x86pc_vtd_drhd_invalidatecaches(VTD_DRHD *drhd);
 
 /*@
@@ -359,11 +366,22 @@ bool xmhfhw_platform_x86pc_vtd_drhd_invalidatecaches(VTD_DRHD *drhd);
 @*/
 u64 _vtd_reg_read(VTD_DRHD *dmardevice, u32 reg);
 
-
+/*@
+	requires \valid(drhd);
+	assigns \nothing;
+@*/
 void xmhfhw_platform_x86pc_vtd_drhd_set_phm_base_and_limit(VTD_DRHD *drhd, u64 base, u64 limit);
 
+/*@
+	requires \valid(drhd);
+	assigns \nothing;
+@*/
 void xmhfhw_platform_x86pc_vtd_drhd_set_plm_base_and_limit(VTD_DRHD *drhd, u32 base, u32 limit);
 
+/*@
+	requires \valid(drhd);
+	assigns \nothing;
+@*/
 bool xmhfhw_platform_x86pc_vtd_drhd_set_root_entry_table(VTD_DRHD *drhd,  u64 ret_addr);
 
 /*@
