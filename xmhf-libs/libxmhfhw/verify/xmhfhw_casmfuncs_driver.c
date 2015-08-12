@@ -102,8 +102,8 @@ void main(void){
 	check_esp = xmhfhwm_cpu_gprs_esp; // pointing to top-of-stack
 
 	//execute harness: TODO
-	drv_bsrl();
-	//drv_cpuid();
+	//drv_bsrl();
+	drv_cpuid();
 
 	//@assert xmhfhwm_cpu_gprs_esp == check_esp;
 	//@assert xmhfhwm_cpu_gprs_eip == check_eip;
