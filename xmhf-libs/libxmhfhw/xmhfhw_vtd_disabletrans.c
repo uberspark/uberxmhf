@@ -53,33 +53,37 @@
 #include <xmhf-debug.h>
 
 //disable VT-d translation
+/*@
+	requires \valid(drhd);
+	assigns \nothing;
+@*/
 void xmhfhw_platform_x86pc_vtd_drhd_disable_translation(VTD_DRHD *drhd){
 	VTD_GCMD_REG gcmd;
 	VTD_GSTS_REG gsts;
-	//VTD_DRHD *drhd = _vtd_get_drhd_struct(drhd_handle);
 
 	//sanity check
 	if ( drhd == NULL)
 		return;
 
 	//disable translation
-	//_XDPRINTF_("\nDisabling VT-d translation...");
-	{
-		unpack_VTD_GCMD_REG(&gcmd, 0);
-		gcmd.te=0;
+	unpack_VTD_GCMD_REG(&gcmd, 0);
+	gcmd.te=0;
 
-		_vtd_reg_write(drhd, VTD_GCMD_REG_OFF, pack_VTD_GCMD_REG(&gcmd));
+	_vtd_reg_write(drhd, VTD_GCMD_REG_OFF, pack_VTD_GCMD_REG(&gcmd));
 
-		//wait for translation enabled status to go red...
-		//gsts.value = _vtd_reg_read(drhd, VTD_GSTS_REG_OFF);
+	//wait for translation enabled status to go red...
         unpack_VTD_GSTS_REG(&gsts, _vtd_reg_read(drhd, VTD_GSTS_REG_OFF));
 
-		while(gsts.tes){
-			//gsts.value = _vtd_reg_read(drhd, VTD_GSTS_REG_OFF);
-            unpack_VTD_GSTS_REG(&gsts, _vtd_reg_read(drhd, VTD_GSTS_REG_OFF));
-		}
+	gsts.tes=1;
+	/*@
+		loop invariant I1: gsts.tes != 0;
+		loop assigns gsts;
+	@*/
+	while(1){
+		unpack_VTD_GSTS_REG(&gsts, _vtd_reg_read(drhd, VTD_GSTS_REG_OFF));
+		if (!gsts.tes)
+			break;
 	}
-	//_XDPRINTF_("\nVT-d translation disabled.");
 
 	return;
 }
