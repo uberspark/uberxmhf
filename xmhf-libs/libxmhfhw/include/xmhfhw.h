@@ -336,10 +336,16 @@ u32 xmhfhw_platform_x86pc_acpi_getRSDP(ACPI_RSDP *rsdp);
 @*/
 void xmhfhw_platform_x86pc_vtd_drhd_disable_pmr(VTD_DRHD *drhd);
 
-
+/*@
+	requires \valid(drhd);
+	assigns \nothing;
+@*/
 void xmhfhw_platform_x86pc_vtd_drhd_disable_translation(VTD_DRHD *drhd);
 
-
+/*@
+	requires \valid(drhd);
+	assigns \nothing;
+@*/
 void xmhfhw_platform_x86pc_vtd_drhd_enable_translation(VTD_DRHD *drhd);
 
 
