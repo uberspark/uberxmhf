@@ -2273,6 +2273,10 @@ extern void _impl_xmhfhwm_cpu_insn_popl_esi(void);
 extern void _impl_xmhfhwm_cpu_insn_popl_ebx(void);
 extern void _impl_xmhfhwm_cpu_insn_cli(void);
 extern void _impl_xmhfhwm_cpu_insn_sti(void);
+extern void _impl_xmhfhwm_cpu_insn_subl_imm_esp(u32 value);
+extern void _impl_xmhfhwm_cpu_insn_sgdt_mesp(int index);
+extern void _impl_xmhfhwm_cpu_insn_xorl_edx_edx(void);
+
 
 //////
 // CASM C to ASM call macros
@@ -2581,7 +2585,11 @@ extern void _impl_xmhfhwm_cpu_insn_sti(void);
 // arithmetic/logical
 #define xmhfhwm_cpu_insn_xorl_eax_eax() __builtin_annot("xorl %eax, %eax ");
 #define xmhfhwm_cpu_insn_xorl_ebx_ebx() __builtin_annot("xorl %ebx, %ebx ");
-#define xmhfhwm_cpu_insn_xorl_edx_edx() __builtin_annot("xorl %edx, %edx ");
+
+#define xmhfhwm_cpu_insn_xorl_edx_edx() \
+	__builtin_annot("xorl %edx, %edx "); \
+	_impl_xmhfhwm_cpu_insn_xorl_edx_edx(); \
+
 
 
 #define xmhfhwm_cpu_insn_addl_mesp_ecx(x) __builtin_annot("addl "#x"(%esp), %ecx ");
@@ -2590,7 +2598,10 @@ extern void _impl_xmhfhwm_cpu_insn_sti(void);
 	__builtin_annot("addl $"#x", %esp "); \
 	_impl_xmhfhwm_cpu_insn_addl_imm_esp(x); \
 
-#define xmhfhwm_cpu_insn_subl_imm_esp(x) __builtin_annot("subl $"#x", %esp ");
+#define xmhfhwm_cpu_insn_subl_imm_esp(x) \
+	__builtin_annot("subl $"#x", %esp "); \
+	_impl_xmhfhwm_cpu_insn_subl_imm_esp(x); \
+
 #define xmhfhwm_cpu_insn_addl_eax_ecx() __builtin_annot("addl %eax, %ecx");
 #define xmhfhwm_cpu_insn_addl_ecx_eax() __builtin_annot("addl %ecx, %eax");
 
@@ -2686,7 +2697,12 @@ extern void _impl_xmhfhwm_cpu_insn_sti(void);
 #define xmhfhwm_cpu_insn_wrmsr() __builtin_annot("wrmsr ");
 #define xmhfhwm_cpu_insn_wbinvd() __builtin_annot("wbinvd ");
 #define xmhfhwm_cpu_insn_invlpg_mesp(x) __builtin_annot("invlpg "#x"(%esp) ");
-#define xmhfhwm_cpu_insn_sgdt_mesp(x) __builtin_annot("sgdt "#x"(%esp) ");
+
+#define xmhfhwm_cpu_insn_sgdt_mesp(x) \
+	__builtin_annot("sgdt "#x"(%esp) "); \
+	_impl_xmhfhwm_cpu_insn_sgdt_mesp(x); \
+
+
 #define xmhfhwm_cpu_insn_str_ax() __builtin_annot("str %ax ");
 #define xmhfhwm_cpu_insn_sidt_mesp(x) __builtin_annot("sidt "#x"(%esp) ");
 #define xmhfhwm_cpu_insn_lidt_mecx(x) __builtin_annot("lidt "#x"(%ecx) ");

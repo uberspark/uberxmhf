@@ -65,6 +65,8 @@ u32 xmhfhwm_cpu_gprs_edi = 0;
 
 u32 xmhfhwm_cpu_eflags = 0;
 
+u16 xmhfhwm_cpu_gdtr_limit=0;
+u32 xmhfhwm_cpu_gdtr_base=0;
 
 void _impl_xmhfhwm_cpu_insn_hlt(void){
 	//@assert 0;
@@ -239,4 +241,21 @@ void _impl_xmhfhwm_cpu_insn_cli(void){
 
 void _impl_xmhfhwm_cpu_insn_sti(void){
 	xmhfhwm_cpu_eflags |= (EFLAGS_IF);
+}
+
+void _impl_xmhfhwm_cpu_insn_subl_imm_esp(u32 value){
+	xmhfhwm_cpu_gprs_esp -= value;
+}
+
+void _impl_xmhfhwm_cpu_insn_sgdt_mesp(int index){
+	u32 *tmem_gdtbase;
+	u16 *tmem_gdtlimit;
+	tmem_gdtlimit = (u16 *)((u32)((int)xmhfhwm_cpu_gprs_esp + (int)index));
+	tmem_gdtbase = (u32 *)((u32)((int)xmhfhwm_cpu_gprs_esp + (int)index) + sizeof(u32));
+	*tmem_gdtlimit = xmhfhwm_cpu_gdtr_limit;
+	*tmem_gdtbase = xmhfhwm_cpu_gdtr_base;
+}
+
+void _impl_xmhfhwm_cpu_insn_xorl_edx_edx(void){
+	xmhfhwm_cpu_gprs_edx = 0;
 }
