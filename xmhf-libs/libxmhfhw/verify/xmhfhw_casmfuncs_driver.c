@@ -71,9 +71,38 @@ u32 framac_nondetu32(void){
   return (u32)Frama_C_entropy_source;
 }
 
+u32 framac_nondetu32interval(u32 min, u32 max)
+{
+  u32 r,aux;
+  Frama_C_update_entropy();
+  aux = Frama_C_entropy_source;
+  if ((aux>=min) && (aux <=max))
+    r = aux;
+  else
+    r = min;
+  return r;
+}
+
+
 //////
+u32 saved_cpu_gprs_ebx=0;
+u32 saved_cpu_gprs_esi=0;
+u32 saved_cpu_gprs_edi=0;
 
+void cabi_establish(void){
+	xmhfhwm_cpu_gprs_ebx = 5UL;
+	xmhfhwm_cpu_gprs_esi = 6UL;
+	xmhfhwm_cpu_gprs_edi = 7UL;
+	saved_cpu_gprs_ebx = xmhfhwm_cpu_gprs_ebx;
+	saved_cpu_gprs_esi = xmhfhwm_cpu_gprs_esi;
+	saved_cpu_gprs_edi = xmhfhwm_cpu_gprs_edi;
+}
 
+void cabi_check(void){
+	//@ assert saved_cpu_gprs_ebx == xmhfhwm_cpu_gprs_ebx;
+	//@ assert saved_cpu_gprs_esi == xmhfhwm_cpu_gprs_esi;
+	//@ assert saved_cpu_gprs_edi == xmhfhwm_cpu_gprs_edi;
+}
 
 
 void drv_bsrl(void){
@@ -88,7 +117,9 @@ void drv_cpuid(void){
 	u32 ecx = framac_nondetu32();
 	u32 edx = framac_nondetu32();
 	u32 op = framac_nondetu32();
+	cabi_establish();
 	CASM_FUNCCALL(xmhfhw_cpu_cpuid, op, &eax, &ebx, &ecx, &edx);
+	cabi_check();
 }
 
 

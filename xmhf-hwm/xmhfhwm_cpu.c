@@ -61,6 +61,7 @@ u32 xmhfhwm_cpu_gprs_ebx = 0;
 u32 xmhfhwm_cpu_gprs_edx = 0;
 u32 xmhfhwm_cpu_gprs_ecx = 0;
 u32 xmhfhwm_cpu_gprs_esi = 0;
+u32 xmhfhwm_cpu_gprs_edi = 0;
 
 u32 xmhfhwm_cpu_eflags = 0;
 
@@ -180,6 +181,8 @@ void _impl_xmhfhwm_cpu_insn_movl_mecx_ecx(int index){
 
 void _impl_xmhfhwm_cpu_insn_cpuid(void){
 	//XXX: TODO
+	xmhfhwm_cpu_gprs_ebx = 0;
+	xmhfhwm_cpu_gprs_edx = 0;
 }
 
 void _impl_xmhfhwm_cpu_insn_movl_mesp_esi(int index){
