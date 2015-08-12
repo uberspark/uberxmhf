@@ -52,9 +52,11 @@
 #include <xmhfhw.h>
 #include <xmhf-debug.h>
 
-
-
 //vt-d register read function
+/*@
+	requires \valid(dmardevice);
+	assigns \nothing;
+@*/
 u64 _vtd_reg_read(VTD_DRHD *dmardevice, u32 reg){
     u32 regtype=VTD_REG_32BITS, regaddr=0;
     u64 retval=0;
@@ -98,8 +100,7 @@ u64 _vtd_reg_read(VTD_DRHD *dmardevice, u32 reg){
 
 
     default:
-      _XDPRINTF_("%s: Halt, Unsupported register=%08x\n", __func__, reg);
-      HALT();
+      //_XDPRINTF_("%s: Halt, Unsupported register=%08x\n", __func__, reg);
       break;
   }
 
@@ -114,8 +115,8 @@ u64 _vtd_reg_read(VTD_DRHD *dmardevice, u32 reg){
       break;
 
     default:
-     _XDPRINTF_("%s: Halt, Unsupported access width=%08x\n", __func__, regtype);
-     HALT();
+     //_XDPRINTF_("%s: Halt, Unsupported access width=%08x\n", __func__, regtype);
+     break;
   }
 
   return retval;
