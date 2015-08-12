@@ -57,11 +57,32 @@
 
 u32 cpuid = 0;	//BSP cpu
 
+//////
+// frama-c non-determinism functions
+//////
+
+u32 Frama_C_entropy_source;
+
+//@ assigns Frama_C_entropy_source \from Frama_C_entropy_source;
+void Frama_C_update_entropy(void);
+
+u32 framac_nondetu32(void){
+  Frama_C_update_entropy();
+  return (u32)Frama_C_entropy_source;
+}
+
+//////
+
+
+
+
 void drv_bsrl(void){
-	uint32_t param1=0;
+	uint32_t param1=framac_nondetu32();
 	uint32_t result;
         result = CASM_FUNCCALL(bsrl, param1);
 }
+
+
 
 
 
