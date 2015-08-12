@@ -55,10 +55,13 @@
 
 
 //set DRHD PHMBASE and PHMLIMIT PMRs
+/*@
+	requires \valid(drhd);
+	assigns \nothing;
+@*/
 void xmhfhw_platform_x86pc_vtd_drhd_set_phm_base_and_limit(VTD_DRHD *drhd, u64 base, u64 limit){
 	VTD_PHMBASE_REG phmbase;
 	VTD_PHMLIMIT_REG phmlimit;
-	//VTD_DRHD *drhd = _vtd_get_drhd_struct(drhd_handle);
 
 	//sanity check
 	if (drhd == NULL)

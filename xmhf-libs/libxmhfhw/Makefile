@@ -76,7 +76,8 @@ verify:
 	#cd $(LIBXMHFHW_VERIF_DIR) && frama-c -main xmhfhw_platform_x86pc_vtd_drhd_disable_translation -lib-entry -wp -wp-rte -wp-model +cint+cast -wp-prover alt-ergo,cvc3,z3 -cpp-extra-args=-nostdinc $(VFLAGS) $(srcdir)/xmhfhw_vtd_disabletrans.c
 	#cd $(LIBXMHFHW_VERIF_DIR) && frama-c -main xmhfhw_platform_x86pc_vtd_drhd_enable_translation -lib-entry -wp -wp-rte -wp-model +cint+cast -wp-prover alt-ergo,cvc3,z3 -cpp-extra-args=-nostdinc $(VFLAGS) $(srcdir)/xmhfhw_vtd_enabletrans.c
 	#cd $(LIBXMHFHW_VERIF_DIR) && frama-c -main xmhfhw_platform_x86pc_vtd_drhd_initialize -lib-entry -wp -wp-rte -wp-model +cint+cast -wp-prover alt-ergo,cvc3,z3 -cpp-extra-args=-nostdinc $(VFLAGS) $(srcdir)/xmhfhw_vtd_initdrhd.c
-	cd $(LIBXMHFHW_VERIF_DIR) && frama-c -main xmhfhw_platform_x86pc_vtd_drhd_invalidatecaches -lib-entry -wp -wp-rte -wp-model +cint+cast -wp-prover alt-ergo,cvc3,z3 -cpp-extra-args=-nostdinc $(VFLAGS) $(srcdir)/xmhfhw_vtd_invlcaches.c
+	#cd $(LIBXMHFHW_VERIF_DIR) && frama-c -main xmhfhw_platform_x86pc_vtd_drhd_invalidatecaches -lib-entry -wp -wp-rte -wp-model +cint+cast -wp-prover alt-ergo,cvc3,z3 -cpp-extra-args=-nostdinc $(VFLAGS) $(srcdir)/xmhfhw_vtd_invlcaches.c
+	cd $(LIBXMHFHW_VERIF_DIR) && frama-c -main xmhfhw_platform_x86pc_vtd_drhd_set_phm_base_and_limit -lib-entry -wp -wp-rte -wp-model +cint+cast -wp-prover alt-ergo,cvc3,z3 -cpp-extra-args=-nostdinc $(VFLAGS) $(srcdir)/xmhfhw_vtd_setphm.c
 
 
 
