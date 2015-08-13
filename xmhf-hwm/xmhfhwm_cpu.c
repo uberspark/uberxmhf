@@ -446,3 +446,7 @@ void _impl_xmhfhwm_cpu_insn_outb_al_dx(void){
 void _impl_xmhfhwm_cpu_insn_outl_eax_dx(void){
 	//TODO: output eax to dx
 }
+
+void _impl_xmhfhwm_cpu_insn_outw_ax_dx(void){
+	//TODO: output ax to dx
+}
