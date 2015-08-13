@@ -367,6 +367,22 @@ void drv_readtr(void){
 }
 
 
+static u32 smplock = 1;
+
+void drv_spinlock(void){
+	cabi_establish();
+	CASM_FUNCCALL(spin_lock, &smplock);
+	cabi_check();
+}
+
+void drv_spinunlock(void){
+	cabi_establish();
+	CASM_FUNCCALL(spin_unlock, &smplock);
+	cabi_check();
+}
+
+
+
 void main(void){
 	u32 check_esp, check_eip = CASM_RET_EIP;
 
@@ -402,16 +418,18 @@ void main(void){
 	//drv_readcr2();
 	//drv_readcr3();
 	//drv_readcr4();
-	drv_readcs();
-	drv_readds();
-	drv_reades();
-	drv_readfs();
-	drv_readgs();
-	drv_readss();
-	drv_readeflags();
-	drv_readesp();
-	drv_readrsp();
-	drv_readtr();
+	//drv_readcs();
+	//drv_readds();
+	//drv_reades();
+	//drv_readfs();
+	//drv_readgs();
+	//drv_readss();
+	//drv_readeflags();
+	//drv_readesp();
+	//drv_readrsp();
+	//drv_readtr();
+	drv_spinlock();
+	drv_spinunlock();
 
 
 	//@assert xmhfhwm_cpu_gprs_esp == check_esp;
