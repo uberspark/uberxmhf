@@ -2313,6 +2313,7 @@ extern void _impl_xmhfhwm_cpu_insn_outb_al_dx(void);
 extern void _impl_xmhfhwm_cpu_insn_outl_eax_dx(void);
 extern void _impl_xmhfhwm_cpu_insn_outw_ax_dx(void);
 extern void _impl_xmhfhwm_cpu_insn_pause(void);
+extern void _impl_xmhfhwm_cpu_insn_rdmsr(void);
 
 
 //////
@@ -2825,7 +2826,11 @@ extern void _impl_xmhfhwm_cpu_insn_pause(void);
 	_impl_xmhfhwm_cpu_insn_outl_eax_dx(); \
 
 
-#define xmhfhwm_cpu_insn_rdmsr() __builtin_annot("rdmsr ");
+#define xmhfhwm_cpu_insn_rdmsr() \
+	__builtin_annot("rdmsr "); \
+	_impl_xmhfhwm_cpu_insn_rdmsr(); \
+
+
 #define xmhfhwm_cpu_insn_wrmsr() __builtin_annot("wrmsr ");
 #define xmhfhwm_cpu_insn_wbinvd() __builtin_annot("wbinvd ");
 #define xmhfhwm_cpu_insn_invlpg_mesp(x) __builtin_annot("invlpg "#x"(%esp) ");
