@@ -2312,6 +2312,7 @@ extern void _impl_xmhfhwm_cpu_insn_ltr_ax(void);
 extern void _impl_xmhfhwm_cpu_insn_outb_al_dx(void);
 extern void _impl_xmhfhwm_cpu_insn_outl_eax_dx(void);
 extern void _impl_xmhfhwm_cpu_insn_outw_ax_dx(void);
+extern void _impl_xmhfhwm_cpu_insn_pause(void);
 
 
 //////
@@ -2767,7 +2768,10 @@ extern void _impl_xmhfhwm_cpu_insn_outw_ax_dx(void);
 #define xmhfhwm_cpu_insn_movl_eax_cr4() __builtin_annot("movl %eax, %cr4 ");
 
 //other instructions
-#define xmhfhwm_cpu_insn_pause() __builtin_annot("pause ");
+#define xmhfhwm_cpu_insn_pause() \
+	__builtin_annot("pause "); \
+	_impl_xmhfhwm_cpu_insn_pause(); \
+
 
 #define xmhfhwm_cpu_insn_cpuid() \
 	__builtin_annot("cpuid "); \

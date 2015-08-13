@@ -450,3 +450,7 @@ void _impl_xmhfhwm_cpu_insn_outl_eax_dx(void){
 void _impl_xmhfhwm_cpu_insn_outw_ax_dx(void){
 	//TODO: output ax to dx
 }
+
+void _impl_xmhfhwm_cpu_insn_pause(void){
+
+}

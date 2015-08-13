@@ -246,6 +246,12 @@ void drv_outw(void){
 	cabi_check();
 }
 
+void drv_pause(void){
+	cabi_establish();
+	CASM_FUNCCALL(cpu_relax, CASM_NOPARAM);
+	cabi_check();
+}
+
 
 void main(void){
 	u32 check_esp, check_eip = CASM_RET_EIP;
@@ -274,7 +280,8 @@ void main(void){
 	//drv_loadtr();
 	//drv_outb();
 	//drv_outl();
-	drv_outw();
+	//drv_outw();
+	drv_pause();
 
 
 	//@assert xmhfhwm_cpu_gprs_esp == check_esp;
