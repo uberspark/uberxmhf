@@ -561,3 +561,33 @@ void _impl_xmhfhwm_cpu_insn_btsl_imm_mecx(u32 value, int index){
 		*value_mecx = *value_mecx | ((1UL << value));
         }
 }
+
+
+void _impl_xmhfhwm_cpu_insn_vmxon_mesp(int index){
+	u64 *value_mesp;
+	value_mesp = (u32 *)((u32)((int)xmhfhwm_cpu_gprs_esp + (int)index));
+	//TODO: vmxon emulation
+	xmhfhwm_cpu_eflags &= ~(EFLAGS_CF);
+	xmhfhwm_cpu_eflags &= ~(EFLAGS_ZF);
+}
+
+void _impl_xmhfhwm_cpu_insn_vmwrite_eax_ecx(void){
+	//TODO: vmwrite emulation
+}
+
+void _impl_xmhfhwm_cpu_insn_vmread_ecx_eax(void){
+	//TODO: vmread emulation
+
+}
+
+void _impl_xmhfhwm_cpu_insn_vmclear_mesp(int index){
+	u64 *value_mesp;
+	value_mesp = (u32 *)((u32)((int)xmhfhwm_cpu_gprs_esp + (int)index));
+
+}
+
+void _impl_xmhfhwm_cpu_insn_vmptrld_mesp(int index){
+	u64 *value_mesp;
+	value_mesp = (u32 *)((u32)((int)xmhfhwm_cpu_gprs_esp + (int)index));
+
+}

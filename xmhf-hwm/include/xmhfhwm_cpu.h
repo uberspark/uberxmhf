@@ -2335,6 +2335,14 @@ extern void _impl_xmhfhwm_cpu_insn_btrl_imm_mecx(u32 value, int index);
 extern void _impl_xmhfhwm_cpu_insn_btsl_imm_mecx(u32 value, int index);
 
 
+extern void _impl_xmhfhwm_cpu_insn_vmxon_mesp(int index);
+extern void _impl_xmhfhwm_cpu_insn_vmwrite_eax_ecx(void);
+extern void _impl_xmhfhwm_cpu_insn_vmread_ecx_eax(void);
+extern void _impl_xmhfhwm_cpu_insn_vmclear_mesp(int index);
+extern void _impl_xmhfhwm_cpu_insn_vmptrld_mesp(int index);
+
+
+
 //////
 // CASM C to ASM call macros
 //////
@@ -2407,7 +2415,11 @@ extern void _impl_xmhfhwm_cpu_insn_btsl_imm_mecx(u32 value, int index);
 
 
 #define xmhfhwm_cpu_insn_jnz(x) __builtin_annot("jnz "#x" ");
-#define xmhfhwm_cpu_insn_jbe(x) __builtin_annot("jbe "#x" ");
+
+#define xmhfhwm_cpu_insn_jbe(x) \
+	__builtin_annot("jbe "#x" "); \
+	if((xmhfhwm_cpu_eflags & EFLAGS_ZF) && (xmhfhwm_cpu_eflags & EFLAGS_CF)) goto x; \
+
 
 #define xmhfhwm_cpu_insn_ja(x) \
 	__builtin_annot("ja "#x" "); \
@@ -2967,11 +2979,29 @@ extern void _impl_xmhfhwm_cpu_insn_btsl_imm_mecx(u32 value, int index);
 
 // vmx instructions
 #define xmhfhwm_cpu_insn_vmlaunch() __builtin_annot("vmlaunch ");
-#define xmhfhwm_cpu_insn_vmxon_mesp(x) __builtin_annot("vmxon "#x"(%esp) ");
-#define xmhfhwm_cpu_insn_vmwrite_eax_ecx() __builtin_annot("vmwrite %eax, %ecx ");
-#define xmhfhwm_cpu_insn_vmread_ecx_eax() __builtin_annot("vmread %ecx, %eax");
-#define xmhfhwm_cpu_insn_vmclear_mesp(x) __builtin_annot("vmclear "#x"(%esp) ");
-#define xmhfhwm_cpu_insn_vmptrld_mesp(x) __builtin_annot("vmptrld "#x"(%esp) ");
+
+#define xmhfhwm_cpu_insn_vmxon_mesp(x) \
+	__builtin_annot("vmxon "#x"(%esp) "); \
+	_impl_xmhfhwm_cpu_insn_vmxon_mesp(x); \
+
+#define xmhfhwm_cpu_insn_vmwrite_eax_ecx() \
+	__builtin_annot("vmwrite %eax, %ecx "); \
+	_impl_xmhfhwm_cpu_insn_vmwrite_eax_ecx(); \
+
+#define xmhfhwm_cpu_insn_vmread_ecx_eax() \
+	__builtin_annot("vmread %ecx, %eax"); \
+        _impl_xmhfhwm_cpu_insn_vmread_ecx_eax(); \
+
+
+#define xmhfhwm_cpu_insn_vmclear_mesp(x) \
+	__builtin_annot("vmclear "#x"(%esp) "); \
+	_impl_xmhfhwm_cpu_insn_vmclear_mesp(x); \
+
+
+#define xmhfhwm_cpu_insn_vmptrld_mesp(x) \
+	__builtin_annot("vmptrld "#x"(%esp) "); \
+	_impl_xmhfhwm_cpu_insn_vmptrld_mesp(x); \
+
 
 #define xmhfhwm_cpu_insn_invvpid_mesp_ecx(x) \
 	__builtin_annot("invvpid "#x"(%esp), %ecx"); \

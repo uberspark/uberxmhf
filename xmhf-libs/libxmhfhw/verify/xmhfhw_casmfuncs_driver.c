@@ -381,6 +381,39 @@ void drv_spinunlock(void){
 	cabi_check();
 }
 
+u8 buf_vmcs[128];
+u8 buf_vmxon[128];
+
+void drv_vmclear(void){
+	cabi_establish();
+	CASM_FUNCCALL(__vmx_vmclear, (u64)&buf_vmcs);
+	cabi_check();
+}
+
+void drv_vmptrld(void){
+	cabi_establish();
+	CASM_FUNCCALL(__vmx_vmptrld, (u64)&buf_vmcs);
+	cabi_check();
+}
+
+void drv_vmread(void){
+	u32 result;
+	cabi_establish();
+	result = CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmread, framac_nondetu32());
+	cabi_check();
+}
+
+void drv_vmwrite(void){
+	cabi_establish();
+	CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite, framac_nondetu32(), framac_nondetu32());
+	cabi_check();
+}
+
+void drv_vmxon(void){
+	cabi_establish();
+	CASM_FUNCCALL(__vmx_vmxon, (u64)&buf_vmxon);
+	cabi_check();
+}
 
 
 void main(void){
@@ -428,8 +461,13 @@ void main(void){
 	//drv_readesp();
 	//drv_readrsp();
 	//drv_readtr();
-	drv_spinlock();
-	drv_spinunlock();
+	//drv_spinlock();
+	//drv_spinunlock();
+	drv_vmclear();
+	drv_vmptrld();
+	drv_vmread();
+	drv_vmwrite();
+	drv_vmxon();
 
 
 	//@assert xmhfhwm_cpu_gprs_esp == check_esp;
