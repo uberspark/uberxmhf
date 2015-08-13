@@ -374,3 +374,20 @@ void _impl_xmhfhwm_cpu_insn_inl_dx_eax(void){
         //XXX:TODO nondetu32
 }
 
+void _impl_xmhfhwm_cpu_insn_movl_eax_mesp(int index){
+	u32 *value_mesp;
+	value_mesp = (u32 *)((u32)((int)xmhfhwm_cpu_gprs_esp + (int)index));
+	*value_mesp = xmhfhwm_cpu_gprs_eax;
+}
+
+void _impl_xmhfhwm_cpu_insn_movl_imm_mesp(u32 value, int index){
+	u32 *value_mesp;
+	value_mesp = (u32 *)((u32)((int)xmhfhwm_cpu_gprs_esp + (int)index));
+	*value_mesp = value;
+}
+
+void _impl_xmhfhwm_cpu_insn_invept_mesp_edx(int index){
+	u32 *value_mesp;
+	value_mesp = (u32 *)((u32)((int)xmhfhwm_cpu_gprs_esp + (int)index));
+        //XXX: TODO invept logic
+}
