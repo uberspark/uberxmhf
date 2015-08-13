@@ -391,3 +391,23 @@ void _impl_xmhfhwm_cpu_insn_invept_mesp_edx(int index){
 	value_mesp = (u32 *)((u32)((int)xmhfhwm_cpu_gprs_esp + (int)index));
         //XXX: TODO invept logic
 }
+
+void _impl_xmhfhwm_cpu_insn_movw_mesp_ax(int index){
+	u16 *value_mesp;
+	value_mesp = (u16 *)((u32)((int)xmhfhwm_cpu_gprs_esp + (int)index));
+	xmhfhwm_cpu_gprs_eax &= 0xFFFF0000UL;
+	xmhfhwm_cpu_gprs_eax |= (u16)*value_mesp;
+}
+
+void _impl_xmhfhwm_cpu_insn_invvpid_mesp_ecx(int index){
+	u32 *value_mesp;
+	value_mesp = (u32 *)((u32)((int)xmhfhwm_cpu_gprs_esp + (int)index));
+        //XXX: TODO invvpid logic
+	xmhfhwm_cpu_eflags &= ~(EFLAGS_CF);
+	xmhfhwm_cpu_eflags &= ~(EFLAGS_ZF);
+
+}
+
+void _impl_xmhfhwm_cpu_insn_movl_imm_eax(u32 value){
+	xmhfhwm_cpu_gprs_eax = value;
+}

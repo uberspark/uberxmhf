@@ -82,7 +82,7 @@ CASM_FUNCDEF(u32, __vmx_invvpid,
     CASM_LABEL(vinvpid_success);
 
     xmhfhwm_cpu_insn_addl_imm_esp(0x10);
-    xmhfhwm_cpu_insn_ret();
+    xmhfhwm_cpu_insn_retu32();
 },
 int invalidation_type,
 u32 vpid,
