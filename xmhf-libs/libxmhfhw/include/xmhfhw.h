@@ -582,18 +582,18 @@ CASM_FUNCDECL(void write_eflags(u32 eflags));
 
 CASM_FUNCDECL(u64 read_cr0(void *noparam));
 
-CASM_FUNCDECL(void write_cr0(u64 val));
+CASM_FUNCDECL(void write_cr0(u32 val));
 
 CASM_FUNCDECL(u32 read_cr2(void *noparam));
 CASM_FUNCDECL(u64 read_cr3(void *noparam));
 CASM_FUNCDECL(u64 read_rsp(void *noparam));
 CASM_FUNCDECL(u32 read_esp(void *noparam));
 
-CASM_FUNCDECL(void write_cr3(u64 val));
+CASM_FUNCDECL(void write_cr3(u32 val));
 
 CASM_FUNCDECL(u64 read_cr4(void *noparam));
 
-CASM_FUNCDECL(void write_cr4(u64 val));
+CASM_FUNCDECL(void write_cr4(u32 val));
 //void skinit(unsigned long eax));
 
 CASM_FUNCDECL(u32 read_segreg_cs(void *noparam));
