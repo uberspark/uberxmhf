@@ -2315,6 +2315,7 @@ extern void _impl_xmhfhwm_cpu_insn_outw_ax_dx(void);
 extern void _impl_xmhfhwm_cpu_insn_pause(void);
 extern void _impl_xmhfhwm_cpu_insn_rdmsr(void);
 extern void _impl_xmhfhwm_cpu_insn_rdtsc(void);
+extern void _impl_xmhfhwm_cpu_insn_movl_cr0_eax(void);
 
 
 //////
@@ -2758,7 +2759,11 @@ extern void _impl_xmhfhwm_cpu_insn_rdtsc(void);
 #define xmhfhwm_cpu_insn_movw_ax_ss() __builtin_annot("movw %ax, %ss ");
 
 //control registers
-#define xmhfhwm_cpu_insn_movl_cr0_eax() __builtin_annot("movl %cr0, %eax ");
+#define xmhfhwm_cpu_insn_movl_cr0_eax() \
+	__builtin_annot("movl %cr0, %eax "); \
+	_impl_xmhfhwm_cpu_insn_movl_cr0_eax(); \
+
+
 #define xmhfhwm_cpu_insn_movl_eax_cr0() __builtin_annot("movl %eax, %cr0 ");
 #define xmhfhwm_cpu_insn_movl_cr2_eax() __builtin_annot("movl %cr2, %eax ");
 #define xmhfhwm_cpu_insn_movl_eax_cr2() __builtin_annot("movl %eax, %cr2 ");
