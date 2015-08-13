@@ -425,3 +425,12 @@ void _impl_xmhfhwm_cpu_insn_lgdt_mecx(int index){
         xmhfhwm_cpu_gdtr_base = *gdtbase;
         xmhfhwm_cpu_gdtr_limit = *gdtlimit;
 }
+
+void _impl_xmhfhwm_cpu_insn_lidt_mecx(int index){
+	u16 *idtlimit;
+	u32 *idtbase;
+	idtlimit = (u16 *)((u32)((int)xmhfhwm_cpu_gprs_ecx + (int)index));
+	idtbase = (u32 *)((u32)((int)xmhfhwm_cpu_gprs_ecx + (int)index + sizeof(u16)));
+        xmhfhwm_cpu_idtr_base = *idtbase;
+        xmhfhwm_cpu_idtr_limit = *idtlimit;
+}
