@@ -526,3 +526,38 @@ void _impl_xmhfhwm_cpu_insn_movl_gs_eax(void){
 void _impl_xmhfhwm_cpu_insn_movl_ss_eax(void){
 	xmhfhwm_cpu_gprs_eax = xmhfhwm_cpu_ss_selector;
 }
+
+
+void _impl_xmhfhwm_cpu_insn_btl_imm_mecx(u32 value, int index){
+	u32 *value_mecx;
+	value_mecx = (u32 *)((u32)((int)xmhfhwm_cpu_gprs_ecx + (int)index));
+	//store bit specified by value in *value_mecx into CF
+        if( *value_mecx & (1UL << value))
+		xmhfhwm_cpu_eflags |= EFLAGS_CF;
+	else
+		xmhfhwm_cpu_eflags &= ~(EFLAGS_CF);
+}
+
+void _impl_xmhfhwm_cpu_insn_btrl_imm_mecx(u32 value, int index){
+	u32 *value_mecx;
+	value_mecx = (u32 *)((u32)((int)xmhfhwm_cpu_gprs_ecx + (int)index));
+	//store bit specified by value in *value_mecx into CF and clear that bit
+        if( *value_mecx & (1UL << value)){
+		xmhfhwm_cpu_eflags |= EFLAGS_CF;
+		*value_mecx = *value_mecx & ~((1UL << value));
+        }else{
+		xmhfhwm_cpu_eflags &= ~(EFLAGS_CF);
+        }
+}
+
+void _impl_xmhfhwm_cpu_insn_btsl_imm_mecx(u32 value, int index){
+	u32 *value_mecx;
+	value_mecx = (u32 *)((u32)((int)xmhfhwm_cpu_gprs_ecx + (int)index));
+	//store bit specified by value in *value_mecx into CF and set that bit
+        if( *value_mecx & (1UL << value)){
+		xmhfhwm_cpu_eflags |= EFLAGS_CF;
+        }else{
+		xmhfhwm_cpu_eflags &= ~(EFLAGS_CF);
+		*value_mecx = *value_mecx | ((1UL << value));
+        }
+}

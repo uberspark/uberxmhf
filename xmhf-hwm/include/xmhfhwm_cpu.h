@@ -2330,6 +2330,11 @@ extern void _impl_xmhfhwm_cpu_insn_movl_gs_eax(void);
 extern void _impl_xmhfhwm_cpu_insn_movl_ss_eax(void);
 
 
+extern void _impl_xmhfhwm_cpu_insn_btl_imm_mecx(u32 value, int index);
+extern void _impl_xmhfhwm_cpu_insn_btrl_imm_mecx(u32 value, int index);
+extern void _impl_xmhfhwm_cpu_insn_btsl_imm_mecx(u32 value, int index);
+
+
 //////
 // CASM C to ASM call macros
 //////
@@ -2385,14 +2390,22 @@ extern void _impl_xmhfhwm_cpu_insn_movl_ss_eax(void);
 
 
 #define xmhfhwm_cpu_insn_jmpl_eax() __builtin_annot("jmpl *%eax ");
-#define xmhfhwm_cpu_insn_jc(x) __builtin_annot("jc "#x" ");
+
+#define xmhfhwm_cpu_insn_jc(x) \
+	__builtin_annot("jc "#x" "); \
+	if(xmhfhwm_cpu_eflags & EFLAGS_CF) goto x; \
+
 
 #define xmhfhwm_cpu_insn_je(x) \
 	__builtin_annot("je "#x" "); \
 	if(xmhfhwm_cpu_eflags & EFLAGS_ZF) goto x; \
 
 
-#define xmhfhwm_cpu_insn_jnc(x) __builtin_annot("jnc "#x" ");
+#define xmhfhwm_cpu_insn_jnc(x) \
+	__builtin_annot("jnc "#x" "); \
+	if(!(xmhfhwm_cpu_eflags & EFLAGS_CF)) goto x; \
+
+
 #define xmhfhwm_cpu_insn_jnz(x) __builtin_annot("jnz "#x" ");
 #define xmhfhwm_cpu_insn_jbe(x) __builtin_annot("jbe "#x" ");
 
@@ -2748,9 +2761,18 @@ extern void _impl_xmhfhwm_cpu_insn_movl_ss_eax(void);
 #define xmhfhwm_cpu_insn_orl_imm_ecx(x) __builtin_annot("orl $"#x", %ecx ");
 
 
-#define xmhfhwm_cpu_insn_btl_imm_mecx(x,y) __builtin_annot("btl $"#x", "#y"(%ecx) ");
-#define xmhfhwm_cpu_insn_btrl_imm_mecx(x,y) __builtin_annot("btrl $"#x", "#y"(%ecx) ");
-#define xmhfhwm_cpu_insn_btsl_imm_mecx(x,y) __builtin_annot("btsl $"#x", "#y"(%ecx) ");
+#define xmhfhwm_cpu_insn_btl_imm_mecx(x,y) \
+	__builtin_annot("btl $"#x", "#y"(%ecx) "); \
+	_impl_xmhfhwm_cpu_insn_btl_imm_mecx(x,y); \
+
+#define xmhfhwm_cpu_insn_btrl_imm_mecx(x,y) \
+	__builtin_annot("btrl $"#x", "#y"(%ecx) "); \
+	_impl_xmhfhwm_cpu_insn_btrl_imm_mecx(x,y); \
+
+#define xmhfhwm_cpu_insn_btsl_imm_mecx(x,y) \
+	__builtin_annot("btsl $"#x", "#y"(%ecx) "); \
+	_impl_xmhfhwm_cpu_insn_btsl_imm_mecx(x,y); \
+
 
 #define xmhfhwm_cpu_insn_bsrl_mesp_eax(x) \
 	__builtin_annot("bsrl "#x"(%esp), %eax "); \
@@ -2926,7 +2948,9 @@ extern void _impl_xmhfhwm_cpu_insn_movl_ss_eax(void);
 	__builtin_annot("lgdt "#x"(%ecx) "); \
 	_impl_xmhfhwm_cpu_insn_lgdt_mecx(x); \
 
-#define xmhfhwm_cpu_insn_lock() __builtin_annot("lock ");
+#define xmhfhwm_cpu_insn_lock() \
+	__builtin_annot("lock "); \
+
 #define xmhfhwm_cpu_insn_xsetbv() __builtin_annot("xsetbv ");
 #define xmhfhwm_cpu_insn_xgetbv() __builtin_annot("xgetbv ");
 #define xmhfhwm_cpu_insn_iretl() __builtin_annot("iretl ");
