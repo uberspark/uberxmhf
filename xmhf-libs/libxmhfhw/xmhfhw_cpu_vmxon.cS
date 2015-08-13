@@ -58,11 +58,11 @@ CASM_FUNCDEF(bool, __vmx_vmxon,
     xmhfhwm_cpu_insn_vmxon_mesp(0x4);
 	xmhfhwm_cpu_insn_jbe(vo_fail);
     xmhfhwm_cpu_insn_movl_imm_eax(0x1);
-	xmhfhwm_cpu_insn_jmp(vo_success);
+	xmhfhwm_cpu_insn_jmplabel(vo_success);
     CASM_LABEL(vo_fail);
     xmhfhwm_cpu_insn_movl_imm_eax(0x0);
 	CASM_LABEL(vo_success);
-    xmhfhwm_cpu_insn_ret();
+    xmhfhwm_cpu_insn_retu32();
 },
 u64 vmxonregion_paddr)
 
