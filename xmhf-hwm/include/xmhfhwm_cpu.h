@@ -2309,6 +2309,7 @@ extern void _impl_xmhfhwm_cpu_insn_inw_dx_ax(void);
 extern void _impl_xmhfhwm_cpu_insn_lgdt_mecx(int index);
 extern void _impl_xmhfhwm_cpu_insn_lidt_mecx(int index);
 extern void _impl_xmhfhwm_cpu_insn_ltr_ax(void);
+extern void _impl_xmhfhwm_cpu_insn_outb_al_dx(void);
 
 
 //////
@@ -2803,7 +2804,11 @@ extern void _impl_xmhfhwm_cpu_insn_ltr_ax(void);
 	_impl_xmhfhwm_cpu_insn_inl_dx_eax(); \
 
 
-#define xmhfhwm_cpu_insn_outb_al_dx() __builtin_annot("outb %al, %dx ");
+#define xmhfhwm_cpu_insn_outb_al_dx() \
+	__builtin_annot("outb %al, %dx "); \
+	_impl_xmhfhwm_cpu_insn_outb_al_dx(); \
+
+
 #define xmhfhwm_cpu_insn_outw_ax_dx() __builtin_annot("outw %ax, %dx ");
 #define xmhfhwm_cpu_insn_outl_eax_dx() __builtin_annot("outl %eax, %dx ");
 #define xmhfhwm_cpu_insn_rdmsr() __builtin_annot("rdmsr ");
