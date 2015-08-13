@@ -434,3 +434,7 @@ void _impl_xmhfhwm_cpu_insn_lidt_mecx(int index){
         xmhfhwm_cpu_idtr_base = *idtbase;
         xmhfhwm_cpu_idtr_limit = *idtlimit;
 }
+
+void _impl_xmhfhwm_cpu_insn_ltr_ax(void){
+	xmhfhwm_cpu_tr_selector = (u16)(xmhfhwm_cpu_gprs_eax & 0x0000FFFFUL);
+}
