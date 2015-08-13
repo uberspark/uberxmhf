@@ -266,6 +266,12 @@ void drv_rdtsc(void){
 	cabi_check();
 }
 
+void drv_readcr0(void){
+	u64 result;
+	cabi_establish();
+	result = CASM_FUNCCALL(read_cr0, CASM_NOPARAM);
+	cabi_check();
+}
 
 void main(void){
 	u32 check_esp, check_eip = CASM_RET_EIP;
@@ -297,7 +303,9 @@ void main(void){
 	//drv_outw();
 	//drv_pause();
 	//drv_rdmsr();
-	drv_rdtsc();
+	//drv_rdtsc();
+	drv_readcr0();
+
 
 
 	//@assert xmhfhwm_cpu_gprs_esp == check_esp;
