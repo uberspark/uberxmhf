@@ -2305,6 +2305,7 @@ extern void _impl_xmhfhwm_cpu_insn_invept_mesp_edx(int index);
 extern void _impl_xmhfhwm_cpu_insn_movw_mesp_ax(int index);
 extern void _impl_xmhfhwm_cpu_insn_movl_imm_eax(u32 value);
 extern void _impl_xmhfhwm_cpu_insn_invvpid_mesp_ecx(int index);
+extern void _impl_xmhfhwm_cpu_insn_inw_dx_ax(void);
 
 
 //////
@@ -2789,7 +2790,10 @@ extern void _impl_xmhfhwm_cpu_insn_invvpid_mesp_ecx(int index);
 	__builtin_annot("inb %dx, %al "); \
 	_impl_xmhfhwm_cpu_insn_inb_dx_al(); \
 
-#define xmhfhwm_cpu_insn_inw_dx_ax() __builtin_annot("inw %dx, %ax ");
+#define xmhfhwm_cpu_insn_inw_dx_ax() \
+	__builtin_annot("inw %dx, %ax "); \
+	_impl_xmhfhwm_cpu_insn_inw_dx_ax(); \
+
 
 #define xmhfhwm_cpu_insn_inl_dx_eax() \
 	__builtin_annot("inl %dx, %eax "); \

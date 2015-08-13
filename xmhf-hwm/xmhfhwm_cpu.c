@@ -411,3 +411,8 @@ void _impl_xmhfhwm_cpu_insn_invvpid_mesp_ecx(int index){
 void _impl_xmhfhwm_cpu_insn_movl_imm_eax(u32 value){
 	xmhfhwm_cpu_gprs_eax = value;
 }
+
+void _impl_xmhfhwm_cpu_insn_inw_dx_ax(void){
+	xmhfhwm_cpu_gprs_eax &= 0xFFFF0000UL;
+	//TODO: nondetu16
+}
