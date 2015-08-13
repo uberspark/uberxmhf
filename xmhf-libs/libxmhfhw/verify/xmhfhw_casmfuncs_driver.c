@@ -180,6 +180,11 @@ void drv_inl(void){
 	cabi_check();
 }
 
+void drv_invept(void){
+	cabi_establish();
+	CASM_FUNCCALL(__vmx_invept, framac_nondetu32(), framac_nondetu32(), framac_nondetu32(), framac_nondetu32());
+	cabi_check();
+}
 
 
 void main(void){
@@ -200,7 +205,8 @@ void main(void){
 	//drv_getsec();
 	//drv_gettssbase();
 	//drv_inb();
-	drv_inl();
+	//drv_inl();
+	drv_invept();
 
 	//@assert xmhfhwm_cpu_gprs_esp == check_esp;
 	//@assert xmhfhwm_cpu_gprs_eip == check_eip;

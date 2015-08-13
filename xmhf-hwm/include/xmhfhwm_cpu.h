@@ -2299,6 +2299,9 @@ extern void _impl_xmhfhwm_cpu_insn_orl_ecx_eax(void);
 extern void _impl_xmhfhwm_cpu_insn_orl_edx_eax(void);
 extern void _impl_xmhfhwm_cpu_insn_inb_dx_al(void);
 extern void _impl_xmhfhwm_cpu_insn_inl_dx_eax(void);
+extern void _impl_xmhfhwm_cpu_insn_movl_eax_mesp(int index);
+extern void _impl_xmhfhwm_cpu_insn_movl_imm_mesp(u32 value, int index);
+extern void _impl_xmhfhwm_cpu_insn_invept_mesp_edx(int index);
 
 
 //////
@@ -2428,7 +2431,10 @@ extern void _impl_xmhfhwm_cpu_insn_inl_dx_eax(void);
 #define _xmhfhwm_cpu_insn_movw_imm_ax(x) __builtin_annot("movw $"#x", %ax");
 #define xmhfhwm_cpu_insn_movw_imm_ax(x) _xmhfhwm_cpu_insn_movw_imm_ax(x)
 
-#define xmhfhwm_cpu_insn_movl_imm_mesp(x,y) __builtin_annot("movl $"#x", "#y"(%esp) ");
+#define xmhfhwm_cpu_insn_movl_imm_mesp(x,y) \
+	__builtin_annot("movl $"#x", "#y"(%esp) "); \
+	_impl_xmhfhwm_cpu_insn_movl_imm_mesp(x,y); \
+
 
 #define _xmhfhwm_cpu_insn_movl_imm_meax(x,y) \
 	__builtin_annot("movl $"#x", "#y"(%eax) "); \
@@ -2455,7 +2461,11 @@ extern void _impl_xmhfhwm_cpu_insn_inl_dx_eax(void);
 
 
 
-#define xmhfhwm_cpu_insn_movl_eax_mesp(x) __builtin_annot("movl %eax, "#x"(%esp) ");
+#define xmhfhwm_cpu_insn_movl_eax_mesp(x) \
+	__builtin_annot("movl %eax, "#x"(%esp) "); \
+	_impl_xmhfhwm_cpu_insn_movl_eax_mesp(x); \
+
+
 #define xmhfhwm_cpu_insn_movl_eax_esp() __builtin_annot("movl %eax, %esp ");
 #define xmhfhwm_cpu_insn_movl_edx_esp() __builtin_annot("movl %edx, %esp ");
 
@@ -2822,7 +2832,12 @@ extern void _impl_xmhfhwm_cpu_insn_inl_dx_eax(void);
 #define xmhfhwm_cpu_insn_vmclear_mesp(x) __builtin_annot("vmclear "#x"(%esp) ");
 #define xmhfhwm_cpu_insn_vmptrld_mesp(x) __builtin_annot("vmptrld "#x"(%esp) ");
 #define xmhfhwm_cpu_insn_invvpid_mesp_ecx(x) __builtin_annot("invvpid "#x"(%esp), %ecx");
-#define xmhfhwm_cpu_insn_invept_mesp_edx(x) __builtin_annot("invept "#x"(%esp), %edx ");
+
+#define xmhfhwm_cpu_insn_invept_mesp_edx(x) \
+	__builtin_annot("invept "#x"(%esp), %edx "); \
+	_impl_xmhfhwm_cpu_insn_invept_mesp_edx(x); \
+
+
 #define xmhfhwm_cpu_insn_vmresume() __builtin_annot("vmresume ");
 
 

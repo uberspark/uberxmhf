@@ -71,6 +71,8 @@ CASM_FUNCDEF(void, __vmx_invept,
     xmhfhwm_cpu_insn_addl_imm_esp(0x10);
     xmhfhwm_cpu_insn_ret();
 },
-u64 invalidation_type,
-u64 eptp)
+u32 invalidation_type_lo,
+u32 invalidation_type_hi,
+u32 eptp_lo,
+u32 eptp_hi)
 
