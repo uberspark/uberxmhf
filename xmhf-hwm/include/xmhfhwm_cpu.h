@@ -2314,6 +2314,7 @@ extern void _impl_xmhfhwm_cpu_insn_outl_eax_dx(void);
 extern void _impl_xmhfhwm_cpu_insn_outw_ax_dx(void);
 extern void _impl_xmhfhwm_cpu_insn_pause(void);
 extern void _impl_xmhfhwm_cpu_insn_rdmsr(void);
+extern void _impl_xmhfhwm_cpu_insn_rdtsc(void);
 
 
 //////
@@ -2780,7 +2781,12 @@ extern void _impl_xmhfhwm_cpu_insn_rdmsr(void);
 
 #define xmhfhwm_cpu_insn_pushfl() __builtin_annot("pushfl ");
 #define xmhfhwm_cpu_insn_popfl() __builtin_annot("popfl ");
-#define xmhfhwm_cpu_insn_rdtsc() __builtin_annot("rdtsc ");
+
+#define xmhfhwm_cpu_insn_rdtsc() \
+	__builtin_annot("rdtsc "); \
+	_impl_xmhfhwm_cpu_insn_rdtsc(); \
+
+
 #define xmhfhwm_cpu_insn_pushal() __builtin_annot("pushal ");
 #define xmhfhwm_cpu_insn_popal() __builtin_annot("popal ");
 
