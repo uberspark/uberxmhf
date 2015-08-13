@@ -55,7 +55,7 @@
 CASM_FUNCDEF(u32, read_segreg_ss,
 {
   xmhfhwm_cpu_insn_movl_ss_eax();
-  xmhfhwm_cpu_insn_ret();
+  xmhfhwm_cpu_insn_retu32();
 },
 void *noparam)
 

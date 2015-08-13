@@ -77,6 +77,15 @@ u32 xmhfhwm_cpu_cr2 = 0;
 u32 xmhfhwm_cpu_cr3 = 0;
 u32 xmhfhwm_cpu_cr4 = 0;
 
+u32 xmhfhwm_cpu_cs_selector = 0;
+u32 xmhfhwm_cpu_ds_selector = 0;
+u32 xmhfhwm_cpu_es_selector = 0;
+u32 xmhfhwm_cpu_fs_selector = 0;
+u32 xmhfhwm_cpu_gs_selector = 0;
+u32 xmhfhwm_cpu_ss_selector = 0;
+
+
+
 void _impl_xmhfhwm_cpu_insn_hlt(void){
 	//@assert 0;
 	while(1);
@@ -484,4 +493,36 @@ void _impl_xmhfhwm_cpu_insn_movl_cr4_eax(void){
 	xmhfhwm_cpu_gprs_eax = xmhfhwm_cpu_cr4;
 }
 
+void _impl_xmhfhwm_cpu_insn_movl_esp_eax(void){
+	xmhfhwm_cpu_gprs_eax = xmhfhwm_cpu_gprs_esp;
 
+}
+
+void _impl_xmhfhwm_cpu_insn_pushfl(void){
+	xmhfhwm_cpu_gprs_esp -= sizeof(u32);
+	*((u32 *)xmhfhwm_cpu_gprs_esp) = xmhfhwm_cpu_eflags;
+}
+
+void _impl_xmhfhwm_cpu_insn_movl_cs_eax(void){
+	xmhfhwm_cpu_gprs_eax = xmhfhwm_cpu_cs_selector;
+}
+
+void _impl_xmhfhwm_cpu_insn_movl_ds_eax(void){
+	xmhfhwm_cpu_gprs_eax = xmhfhwm_cpu_ds_selector;
+}
+
+void _impl_xmhfhwm_cpu_insn_movl_es_eax(void){
+	xmhfhwm_cpu_gprs_eax = xmhfhwm_cpu_es_selector;
+}
+
+void _impl_xmhfhwm_cpu_insn_movl_fs_eax(void){
+	xmhfhwm_cpu_gprs_eax = xmhfhwm_cpu_fs_selector;
+}
+
+void _impl_xmhfhwm_cpu_insn_movl_gs_eax(void){
+	xmhfhwm_cpu_gprs_eax = xmhfhwm_cpu_gs_selector;
+}
+
+void _impl_xmhfhwm_cpu_insn_movl_ss_eax(void){
+	xmhfhwm_cpu_gprs_eax = xmhfhwm_cpu_ss_selector;
+}

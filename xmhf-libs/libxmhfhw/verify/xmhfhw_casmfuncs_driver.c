@@ -295,6 +295,77 @@ void drv_readcr4(void){
 }
 
 
+void drv_readcs(void){
+	u32 result;
+	cabi_establish();
+	result = CASM_FUNCCALL(read_segreg_cs, CASM_NOPARAM);
+	cabi_check();
+}
+
+void drv_readds(void){
+	u32 result;
+	cabi_establish();
+	result = CASM_FUNCCALL(read_segreg_ds, CASM_NOPARAM);
+	cabi_check();
+}
+
+void drv_reades(void){
+	u32 result;
+	cabi_establish();
+	result = CASM_FUNCCALL(read_segreg_es, CASM_NOPARAM);
+	cabi_check();
+}
+
+void drv_readfs(void){
+	u32 result;
+	cabi_establish();
+	result = CASM_FUNCCALL(read_segreg_fs, CASM_NOPARAM);
+	cabi_check();
+}
+
+void drv_readgs(void){
+	u32 result;
+	cabi_establish();
+	result = CASM_FUNCCALL(read_segreg_gs, CASM_NOPARAM);
+	cabi_check();
+}
+
+void drv_readss(void){
+	u32 result;
+	cabi_establish();
+	result = CASM_FUNCCALL(read_segreg_ss, CASM_NOPARAM);
+	cabi_check();
+}
+
+void drv_readeflags(void){
+	u32 result;
+	cabi_establish();
+	result = CASM_FUNCCALL(read_eflags, CASM_NOPARAM);
+	cabi_check();
+}
+
+void drv_readesp(void){
+	u32 result;
+	cabi_establish();
+	result = CASM_FUNCCALL(read_esp, CASM_NOPARAM);
+	cabi_check();
+}
+
+void drv_readrsp(void){
+	u64 result;
+	cabi_establish();
+	result = CASM_FUNCCALL(read_rsp, CASM_NOPARAM);
+	cabi_check();
+}
+
+
+void drv_readtr(void){
+	u32 result;
+	cabi_establish();
+	result = CASM_FUNCCALL(read_tr_sel, CASM_NOPARAM);
+	cabi_check();
+}
+
 
 void main(void){
 	u32 check_esp, check_eip = CASM_RET_EIP;
@@ -328,9 +399,19 @@ void main(void){
 	//drv_rdmsr();
 	//drv_rdtsc();
 	//drv_readcr0();
-	drv_readcr2();
-	drv_readcr3();
-	drv_readcr4();
+	//drv_readcr2();
+	//drv_readcr3();
+	//drv_readcr4();
+	drv_readcs();
+	drv_readds();
+	drv_reades();
+	drv_readfs();
+	drv_readgs();
+	drv_readss();
+	drv_readeflags();
+	drv_readesp();
+	drv_readrsp();
+	drv_readtr();
 
 
 	//@assert xmhfhwm_cpu_gprs_esp == check_esp;
