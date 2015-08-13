@@ -51,11 +51,13 @@
 #include <xmhfhw.h>
 #include <xmhf-debug.h>
 
+
 /*@
 	assigns \nothing;
 @*/
 uint64_t read_priv_config_reg(uint32_t reg)
 {
-    return CASM_FUNCCALL(read_config_reg,TXT_PRIV_CONFIG_REGS_BASE, reg);
+	//return CASM_FUNCCALL(read_config_reg,TXT_PRIV_CONFIG_REGS_BASE, reg);
+	return xmhfhw_sysmemaccess_readu64( TXT_PRIV_CONFIG_REGS_BASE+reg );
 }
 
