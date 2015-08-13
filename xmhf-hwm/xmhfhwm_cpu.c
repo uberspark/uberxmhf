@@ -458,3 +458,7 @@ void _impl_xmhfhwm_cpu_insn_pause(void){
 void _impl_xmhfhwm_cpu_insn_rdmsr(void){
 	//TODO: rdmsr emulation
 }
+
+void _impl_xmhfhwm_cpu_insn_rdtsc(void){
+	//TODO: rdtsc emulation
+}
