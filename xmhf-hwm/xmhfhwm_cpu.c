@@ -438,3 +438,7 @@ void _impl_xmhfhwm_cpu_insn_lidt_mecx(int index){
 void _impl_xmhfhwm_cpu_insn_ltr_ax(void){
 	xmhfhwm_cpu_tr_selector = (u16)(xmhfhwm_cpu_gprs_eax & 0x0000FFFFUL);
 }
+
+void _impl_xmhfhwm_cpu_insn_outb_al_dx(void){
+	//TODO: output al to dx
+}
