@@ -209,6 +209,16 @@ void drv_loadgdt(void){
 	cabi_check();
 }
 
+void drv_loadidt(void){
+	arch_x86_idtdesc_t idtdesc;
+	idtdesc.base = 0;
+	idtdesc.size = 0;
+	cabi_establish();
+	CASM_FUNCCALL(xmhfhw_cpu_loadIDT, &idtdesc);
+	cabi_check();
+}
+
+
 void main(void){
 	u32 check_esp, check_eip = CASM_RET_EIP;
 
@@ -231,7 +241,8 @@ void main(void){
 	//drv_invept();
 	//drv_invvpid();
 	//drv_inw();
-	drv_loadgdt();
+	//drv_loadgdt();
+	drv_loadidt();
 
 	//@assert xmhfhwm_cpu_gprs_esp == check_esp;
 	//@assert xmhfhwm_cpu_gprs_eip == check_eip;
