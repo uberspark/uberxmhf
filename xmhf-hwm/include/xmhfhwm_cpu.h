@@ -2316,6 +2316,9 @@ extern void _impl_xmhfhwm_cpu_insn_pause(void);
 extern void _impl_xmhfhwm_cpu_insn_rdmsr(void);
 extern void _impl_xmhfhwm_cpu_insn_rdtsc(void);
 extern void _impl_xmhfhwm_cpu_insn_movl_cr0_eax(void);
+extern void _impl_xmhfhwm_cpu_insn_movl_cr2_eax(void);
+extern void _impl_xmhfhwm_cpu_insn_movl_cr3_eax(void);
+extern void _impl_xmhfhwm_cpu_insn_movl_cr4_eax(void);
 
 
 //////
@@ -2765,13 +2768,26 @@ extern void _impl_xmhfhwm_cpu_insn_movl_cr0_eax(void);
 
 
 #define xmhfhwm_cpu_insn_movl_eax_cr0() __builtin_annot("movl %eax, %cr0 ");
-#define xmhfhwm_cpu_insn_movl_cr2_eax() __builtin_annot("movl %cr2, %eax ");
+
+#define xmhfhwm_cpu_insn_movl_cr2_eax() \
+	__builtin_annot("movl %cr2, %eax "); \
+	_impl_xmhfhwm_cpu_insn_movl_cr2_eax(); \
+
+
 #define xmhfhwm_cpu_insn_movl_eax_cr2() __builtin_annot("movl %eax, %cr2 ");
-#define xmhfhwm_cpu_insn_movl_cr3_eax() __builtin_annot("movl %cr3, %eax ");
+
+#define xmhfhwm_cpu_insn_movl_cr3_eax() \
+	__builtin_annot("movl %cr3, %eax "); \
+	_impl_xmhfhwm_cpu_insn_movl_cr3_eax(); \
+
+
 #define xmhfhwm_cpu_insn_movl_eax_cr3() __builtin_annot("movl %eax, %cr3 ");
 #define xmhfhwm_cpu_insn_movl_ebx_cr3() __builtin_annot("movl %ebx, %cr3 ");
 
-#define xmhfhwm_cpu_insn_movl_cr4_eax() __builtin_annot("movl %cr4, %eax ");
+#define xmhfhwm_cpu_insn_movl_cr4_eax() \
+	__builtin_annot("movl %cr4, %eax "); \
+	_impl_xmhfhwm_cpu_insn_movl_cr4_eax(); \
+
 #define xmhfhwm_cpu_insn_movl_eax_cr4() __builtin_annot("movl %eax, %cr4 ");
 
 //other instructions

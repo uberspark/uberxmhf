@@ -57,7 +57,7 @@ CASM_FUNCDEF(u64, read_cr0,
 {
     xmhfhwm_cpu_insn_xorl_edx_edx();
     xmhfhwm_cpu_insn_movl_cr0_eax();
-    xmhfhwm_cpu_insn_ret();
+    xmhfhwm_cpu_insn_retu64();
 },
 void *noparam)
 
