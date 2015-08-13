@@ -416,3 +416,12 @@ void _impl_xmhfhwm_cpu_insn_inw_dx_ax(void){
 	xmhfhwm_cpu_gprs_eax &= 0xFFFF0000UL;
 	//TODO: nondetu16
 }
+
+void _impl_xmhfhwm_cpu_insn_lgdt_mecx(int index){
+	u16 *gdtlimit;
+	u32 *gdtbase;
+	gdtlimit = (u16 *)((u32)((int)xmhfhwm_cpu_gprs_ecx + (int)index));
+	gdtbase = (u32 *)((u32)((int)xmhfhwm_cpu_gprs_ecx + (int)index + sizeof(u16)));
+        xmhfhwm_cpu_gdtr_base = *gdtbase;
+        xmhfhwm_cpu_gdtr_limit = *gdtlimit;
+}
