@@ -369,4 +369,8 @@ void _impl_xmhfhwm_cpu_insn_inb_dx_al(void){
         //XXX:TODO nondetu8 in lower 8 bits
 }
 
+void _impl_xmhfhwm_cpu_insn_inl_dx_eax(void){
+	xmhfhwm_cpu_gprs_eax = 0UL;
+        //XXX:TODO nondetu32
+}
 

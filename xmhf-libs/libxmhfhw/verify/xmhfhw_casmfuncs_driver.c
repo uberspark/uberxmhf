@@ -172,6 +172,13 @@ void drv_inb(void){
 	cabi_check();
 }
 
+void drv_inl(void){
+	u32 result;
+	u32 port=framac_nondetu32();
+	cabi_establish();
+	result = CASM_FUNCCALL(inl, port);
+	cabi_check();
+}
 
 
 
@@ -192,7 +199,8 @@ void main(void){
 	//drv_getidtbase();
 	//drv_getsec();
 	//drv_gettssbase();
-	drv_inb();
+	//drv_inb();
+	drv_inl();
 
 	//@assert xmhfhwm_cpu_gprs_esp == check_esp;
 	//@assert xmhfhwm_cpu_gprs_eip == check_eip;
