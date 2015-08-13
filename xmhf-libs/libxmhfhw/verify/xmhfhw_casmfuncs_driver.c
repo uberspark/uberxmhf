@@ -232,6 +232,13 @@ void drv_outb(void){
 	cabi_check();
 }
 
+void drv_outl(void){
+	u32 port=framac_nondetu32();
+	cabi_establish();
+	CASM_FUNCCALL(outl, framac_nondetu32(), port);
+	cabi_check();
+}
+
 
 
 void main(void){
@@ -259,7 +266,8 @@ void main(void){
 	//drv_loadgdt();
 	//drv_loadidt();
 	//drv_loadtr();
-	drv_outb();
+	//drv_outb();
+	drv_outl();
 
 	//@assert xmhfhwm_cpu_gprs_esp == check_esp;
 	//@assert xmhfhwm_cpu_gprs_eip == check_eip;
