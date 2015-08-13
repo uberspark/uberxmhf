@@ -73,6 +73,9 @@ u32 xmhfhwm_cpu_idtr_base=0;
 u16 xmhfhwm_cpu_tr_selector=0;
 
 u32 xmhfhwm_cpu_cr0 = 0;
+u32 xmhfhwm_cpu_cr2 = 0;
+u32 xmhfhwm_cpu_cr3 = 0;
+u32 xmhfhwm_cpu_cr4 = 0;
 
 void _impl_xmhfhwm_cpu_insn_hlt(void){
 	//@assert 0;
@@ -468,3 +471,17 @@ void _impl_xmhfhwm_cpu_insn_rdtsc(void){
 void _impl_xmhfhwm_cpu_insn_movl_cr0_eax(void){
 	xmhfhwm_cpu_gprs_eax = xmhfhwm_cpu_cr0;
 }
+
+void _impl_xmhfhwm_cpu_insn_movl_cr2_eax(void){
+	xmhfhwm_cpu_gprs_eax = xmhfhwm_cpu_cr2;
+}
+
+void _impl_xmhfhwm_cpu_insn_movl_cr3_eax(void){
+	xmhfhwm_cpu_gprs_eax = xmhfhwm_cpu_cr3;
+}
+
+void _impl_xmhfhwm_cpu_insn_movl_cr4_eax(void){
+	xmhfhwm_cpu_gprs_eax = xmhfhwm_cpu_cr4;
+}
+
+
