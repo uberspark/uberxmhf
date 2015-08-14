@@ -638,3 +638,50 @@ void _impl_xmhfhwm_cpu_insn_xsetbv(void){
 	}
 
 }
+
+void _impl_xmhfhwm_cpu_insn_pushl_edi(void){
+	xmhfhwm_cpu_gprs_esp -= sizeof(u32);
+	*((u32 *)xmhfhwm_cpu_gprs_esp) = xmhfhwm_cpu_gprs_edi;
+}
+
+void _impl_xmhfhwm_cpu_insn_movl_mesp_edi(int index){
+	u32 *value;
+	value = (u32 *)((u32)((int)xmhfhwm_cpu_gprs_esp + (int)index));
+	xmhfhwm_cpu_gprs_edi = *value;
+}
+
+void _impl_xmhfhwm_cpu_insn_cld(void){
+	xmhfhwm_cpu_eflags &= ~(EFLAGS_DF);
+}
+
+static unsigned char *rep_movsb_memcpy(unsigned char *dst, const unsigned char *src, size_t n)
+{
+	const unsigned char *p = src;
+	unsigned char *q = dst;
+
+	while (n) {
+		*q++ = *p++;
+		n--;
+	}
+
+	return dst;
+}
+
+void _impl_xmhfhwm_cpu_insn_rep_movsb(void){
+	if(xmhfhwm_cpu_eflags & EFLAGS_DF){
+		//reverse, TODO
+
+	}else{
+		//increment
+		rep_movsb_memcpy(xmhfhwm_cpu_gprs_edi, xmhfhwm_cpu_gprs_esi,
+			xmhfhwm_cpu_gprs_ecx);
+                xmhfhwm_cpu_gprs_edi += xmhfhwm_cpu_gprs_ecx;
+                xmhfhwm_cpu_gprs_esi += xmhfhwm_cpu_gprs_ecx;
+	}
+}
+
+void _impl_xmhfhwm_cpu_insn_popl_edi(void){
+	u32 value = *((u32 *)xmhfhwm_cpu_gprs_esp);
+	xmhfhwm_cpu_gprs_esp += sizeof(u32);
+	xmhfhwm_cpu_gprs_edi = value;
+}
