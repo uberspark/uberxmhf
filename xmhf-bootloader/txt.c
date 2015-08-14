@@ -353,7 +353,8 @@ static txt_heap_t *init_txt_heap(void *ptab_base, acm_hdr_t *sinit,
 
 	xmhfhw_sysmemaccess_writeu64(
 		(get_os_mle_data_start(txt_heap, (uint32_t)read_pub_config_reg(TXTCR_HEAP_SIZE)) - sizeof(uint64_t)),
-		(sizeof(os_mle_data) + sizeof(uint64_t)));
+		(u32)(sizeof(os_mle_data) + sizeof(uint64_t)),
+		(u32)((u64)(sizeof(os_mle_data) + sizeof(uint64_t)) >> 32) );
 
 	    memset(&os_mle_data, 0, sizeof(os_mle_data));
 	    os_mle_data.version = 0x02;
@@ -378,7 +379,8 @@ static txt_heap_t *init_txt_heap(void *ptab_base, acm_hdr_t *sinit,
 
 	xmhfhw_sysmemaccess_writeu64(
 		(get_os_sinit_data_start(txt_heap, (uint32_t)read_pub_config_reg(TXTCR_HEAP_SIZE)) - sizeof(uint64_t)),
-		(sizeof(os_sinit_data) + sizeof(uint64_t)));
+		(u32)(sizeof(os_sinit_data) + sizeof(uint64_t)),
+		(u32)((u64)(sizeof(os_sinit_data) + sizeof(uint64_t)) >> 32) );
 
 
 	memset(&os_sinit_data, 0, sizeof(os_sinit_data));

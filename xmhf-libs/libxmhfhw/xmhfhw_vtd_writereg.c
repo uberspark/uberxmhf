@@ -113,7 +113,7 @@ void _vtd_reg_write(VTD_DRHD *dmardevice, u32 reg, u64 value){
       break;
 
     case VTD_REG_64BITS:	//64-bit write
-      xmhfhw_sysmemaccess_writeu64(regaddr, value);
+      xmhfhw_sysmemaccess_writeu64(regaddr, (u32)value, (u32)((u64)value >> 32) );
       break;
 
     default:
