@@ -609,7 +609,7 @@ CASM_FUNCDECL(void wbinvd(void *noparam));
 
 
 CASM_FUNCDECL(u64 xgetbv(u32 xcr_reg));
-CASM_FUNCDECL(void xsetbv(u32 xcr_reg, u64 value));
+CASM_FUNCDECL(void xsetbv(u32 xcr_reg, u32 value_lo, u32 value_hi));
 //void sysexitq(u64 rip, u64 rsp));
 CASM_FUNCDECL(void spin_lock(volatile u32 *lock));
 CASM_FUNCDECL(void spin_unlock(volatile u32 *lock));

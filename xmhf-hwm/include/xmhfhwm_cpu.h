@@ -2349,6 +2349,9 @@ extern void _impl_xmhfhwm_cpu_insn_movl_eax_cr4(void);
 extern void _impl_xmhfhwm_cpu_insn_popfl(void);
 extern void _impl_xmhfhwm_cpu_insn_wrmsr(void);
 
+extern void _impl_xmhfhwm_cpu_insn_xgetbv(void);
+extern void _impl_xmhfhwm_cpu_insn_xsetbv(void);
+
 
 //////
 // CASM C to ASM call macros
@@ -2986,8 +2989,14 @@ extern void _impl_xmhfhwm_cpu_insn_wrmsr(void);
 #define xmhfhwm_cpu_insn_lock() \
 	__builtin_annot("lock "); \
 
-#define xmhfhwm_cpu_insn_xsetbv() __builtin_annot("xsetbv ");
-#define xmhfhwm_cpu_insn_xgetbv() __builtin_annot("xgetbv ");
+#define xmhfhwm_cpu_insn_xsetbv() \
+	__builtin_annot("xsetbv "); \
+	_impl_xmhfhwm_cpu_insn_xsetbv(); \
+
+#define xmhfhwm_cpu_insn_xgetbv() \
+	__builtin_annot("xgetbv "); \
+	_impl_xmhfhwm_cpu_insn_xgetbv(); \
+
 #define xmhfhwm_cpu_insn_iretl() __builtin_annot("iretl ");
 #define xmhfhwm_cpu_insn_sysexit() __builtin_annot("sysexit ");
 #define xmhfhwm_cpu_insn_sysenter() __builtin_annot("sysenter ");

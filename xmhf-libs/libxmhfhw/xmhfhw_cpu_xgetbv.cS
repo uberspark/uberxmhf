@@ -57,7 +57,7 @@ CASM_FUNCDEF(u64, xgetbv,
 {
     xmhfhwm_cpu_insn_movl_mesp_ecx(0x4);
     xmhfhwm_cpu_insn_xgetbv();
-    xmhfhwm_cpu_insn_ret();
+    xmhfhwm_cpu_insn_retu64();
 },
 u32 xcr_reg)
 
