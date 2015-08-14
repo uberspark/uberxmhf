@@ -465,12 +465,42 @@ void drv_xsetbv(void){
 	cabi_check();
 }
 
+u8 sysmem_src[128], sysmem_dst[128];
+
 void drv_sysmemaccess_bcopy(void){
-	u8 src[128], dst[128];
 	cabi_establish();
-	CASM_FUNCCALL(xmhfhw_sysmemaccess_copy, &dst, &src, sizeof(dst));
+	CASM_FUNCCALL(xmhfhw_sysmemaccess_copy, &sysmem_dst, &sysmem_src, sizeof(sysmem_dst));
 	cabi_check();
 }
+
+void drv_sysmemaccess_readu8(void){
+	u8 result;
+	cabi_establish();
+	result = CASM_FUNCCALL(xmhfhw_sysmemaccess_readu8, &sysmem_dst);
+	cabi_check();
+}
+
+void drv_sysmemaccess_readu16(void){
+	u16 result;
+	cabi_establish();
+	result = CASM_FUNCCALL(xmhfhw_sysmemaccess_readu16, &sysmem_dst);
+	cabi_check();
+}
+
+void drv_sysmemaccess_readu32(void){
+	u32 result;
+	cabi_establish();
+	result = CASM_FUNCCALL(xmhfhw_sysmemaccess_readu32, &sysmem_dst);
+	cabi_check();
+}
+
+void drv_sysmemaccess_readu64(void){
+	u64 result;
+	cabi_establish();
+	result = CASM_FUNCCALL(xmhfhw_sysmemaccess_readu64, &sysmem_dst);
+	cabi_check();
+}
+
 
 
 void main(void){
@@ -533,8 +563,11 @@ void main(void){
 	//drv_wrmsr();
 	//drv_xgetbv();
 	//drv_xsetbv();
-	drv_sysmemaccess_bcopy();
-
+	//drv_sysmemaccess_bcopy();
+	drv_sysmemaccess_readu8();
+	drv_sysmemaccess_readu16();
+	drv_sysmemaccess_readu32();
+	drv_sysmemaccess_readu64();
 
 	//@assert xmhfhwm_cpu_gprs_esp == check_esp;
 	//@assert xmhfhwm_cpu_gprs_eip == check_eip;
