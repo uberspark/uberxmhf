@@ -591,3 +591,30 @@ void _impl_xmhfhwm_cpu_insn_vmptrld_mesp(int index){
 	value_mesp = (u32 *)((u32)((int)xmhfhwm_cpu_gprs_esp + (int)index));
 
 }
+
+void _impl_xmhfhwm_cpu_insn_wbinvd(void){
+	//XXX: wbinvd logic
+}
+
+void _impl_xmhfhwm_cpu_insn_movl_eax_cr0(void){
+	xmhfhwm_cpu_cr0 = xmhfhwm_cpu_gprs_eax;
+}
+
+void _impl_xmhfhwm_cpu_insn_movl_eax_cr3(void){
+	xmhfhwm_cpu_cr3 = xmhfhwm_cpu_gprs_eax;
+}
+
+void _impl_xmhfhwm_cpu_insn_movl_eax_cr4(void){
+	xmhfhwm_cpu_cr4 = xmhfhwm_cpu_gprs_eax;
+}
+
+
+void _impl_xmhfhwm_cpu_insn_popfl(void){
+	u32 value = *((u32 *)xmhfhwm_cpu_gprs_esp);
+	xmhfhwm_cpu_gprs_esp += sizeof(u32);
+	xmhfhwm_cpu_eflags = value;
+}
+
+void _impl_xmhfhwm_cpu_insn_wrmsr(void){
+	//XXX: wrmsr logic
+}

@@ -2342,6 +2342,13 @@ extern void _impl_xmhfhwm_cpu_insn_vmclear_mesp(int index);
 extern void _impl_xmhfhwm_cpu_insn_vmptrld_mesp(int index);
 
 
+extern void _impl_xmhfhwm_cpu_insn_wbinvd(void);
+extern void _impl_xmhfhwm_cpu_insn_movl_eax_cr0(void);
+extern void _impl_xmhfhwm_cpu_insn_movl_eax_cr3(void);
+extern void _impl_xmhfhwm_cpu_insn_movl_eax_cr4(void);
+extern void _impl_xmhfhwm_cpu_insn_popfl(void);
+extern void _impl_xmhfhwm_cpu_insn_wrmsr(void);
+
 
 //////
 // CASM C to ASM call macros
@@ -2832,28 +2839,34 @@ extern void _impl_xmhfhwm_cpu_insn_vmptrld_mesp(int index);
 	_impl_xmhfhwm_cpu_insn_movl_cr0_eax(); \
 
 
-#define xmhfhwm_cpu_insn_movl_eax_cr0() __builtin_annot("movl %eax, %cr0 ");
+#define xmhfhwm_cpu_insn_movl_eax_cr0() \
+	__builtin_annot("movl %eax, %cr0 "); \
+	_impl_xmhfhwm_cpu_insn_movl_eax_cr0(); \
+
 
 #define xmhfhwm_cpu_insn_movl_cr2_eax() \
 	__builtin_annot("movl %cr2, %eax "); \
 	_impl_xmhfhwm_cpu_insn_movl_cr2_eax(); \
-
-
-#define xmhfhwm_cpu_insn_movl_eax_cr2() __builtin_annot("movl %eax, %cr2 ");
 
 #define xmhfhwm_cpu_insn_movl_cr3_eax() \
 	__builtin_annot("movl %cr3, %eax "); \
 	_impl_xmhfhwm_cpu_insn_movl_cr3_eax(); \
 
 
-#define xmhfhwm_cpu_insn_movl_eax_cr3() __builtin_annot("movl %eax, %cr3 ");
+#define xmhfhwm_cpu_insn_movl_eax_cr3() \
+	__builtin_annot("movl %eax, %cr3 "); \
+	_impl_xmhfhwm_cpu_insn_movl_eax_cr3(); \
+
 #define xmhfhwm_cpu_insn_movl_ebx_cr3() __builtin_annot("movl %ebx, %cr3 ");
 
 #define xmhfhwm_cpu_insn_movl_cr4_eax() \
 	__builtin_annot("movl %cr4, %eax "); \
 	_impl_xmhfhwm_cpu_insn_movl_cr4_eax(); \
 
-#define xmhfhwm_cpu_insn_movl_eax_cr4() __builtin_annot("movl %eax, %cr4 ");
+#define xmhfhwm_cpu_insn_movl_eax_cr4() \
+	__builtin_annot("movl %eax, %cr4 "); \
+	_impl_xmhfhwm_cpu_insn_movl_eax_cr4(); \
+
 
 //other instructions
 #define xmhfhwm_cpu_insn_pause() \
@@ -2870,7 +2883,10 @@ extern void _impl_xmhfhwm_cpu_insn_vmptrld_mesp(int index);
 	_impl_xmhfhwm_cpu_insn_pushfl(); \
 
 
-#define xmhfhwm_cpu_insn_popfl() __builtin_annot("popfl ");
+#define xmhfhwm_cpu_insn_popfl() \
+	__builtin_annot("popfl "); \
+	_impl_xmhfhwm_cpu_insn_popfl(); \
+
 
 #define xmhfhwm_cpu_insn_rdtsc() \
 	__builtin_annot("rdtsc "); \
@@ -2927,8 +2943,15 @@ extern void _impl_xmhfhwm_cpu_insn_vmptrld_mesp(int index);
 	_impl_xmhfhwm_cpu_insn_rdmsr(); \
 
 
-#define xmhfhwm_cpu_insn_wrmsr() __builtin_annot("wrmsr ");
-#define xmhfhwm_cpu_insn_wbinvd() __builtin_annot("wbinvd ");
+#define xmhfhwm_cpu_insn_wrmsr() \
+	__builtin_annot("wrmsr "); \
+	_impl_xmhfhwm_cpu_insn_wrmsr(); \
+
+
+#define xmhfhwm_cpu_insn_wbinvd() \
+	__builtin_annot("wbinvd "); \
+	_impl_xmhfhwm_cpu_insn_wbinvd(); \
+
 #define xmhfhwm_cpu_insn_invlpg_mesp(x) __builtin_annot("invlpg "#x"(%esp) ");
 
 #define xmhfhwm_cpu_insn_sgdt_mesp(x) \
