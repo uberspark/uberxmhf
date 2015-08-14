@@ -685,3 +685,21 @@ void _impl_xmhfhwm_cpu_insn_popl_edi(void){
 	xmhfhwm_cpu_gprs_esp += sizeof(u32);
 	xmhfhwm_cpu_gprs_edi = value;
 }
+
+
+
+
+//////
+
+void _impl_xmhfhwm_cpu_insn_movl_mesi_eax(int index){
+	u32 *value_mesi;
+	value_mesi = (u32 *)((u32)((int)xmhfhwm_cpu_gprs_esi + (int)index));
+	xmhfhwm_cpu_gprs_eax = *value_mesi;
+}
+
+void _impl_xmhfhwm_cpu_insn_movl_mesi_edx(int index){
+	u32 *value_mesi;
+	value_mesi = (u32 *)((u32)((int)xmhfhwm_cpu_gprs_esi + (int)index));
+	xmhfhwm_cpu_gprs_edx = *value_mesi;
+}
+
