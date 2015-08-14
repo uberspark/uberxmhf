@@ -59,6 +59,7 @@
 void xmhfhw_cpu_x86_restore_mtrrs(mtrr_state_t *saved_state)
 {
 	int ndx;
+	u64 msrval;
 
 	if ( saved_state == NULL )
 		return;
@@ -69,18 +70,21 @@ void xmhfhw_cpu_x86_restore_mtrrs(mtrr_state_t *saved_state)
 
     	/*@
 		loop invariant I1: 0 <= ndx <= saved_state->num_var_mtrrs;
-		loop assigns ndx;
+		loop assigns ndx, msrval;
 		loop variant saved_state->num_var_mtrrs - ndx;
 	@*/
 	for ( ndx = 0; ndx < saved_state->num_var_mtrrs; ndx++ ) {
+		msrval = pack_mtrr_physmask_t(&saved_state->mtrr_physmasks[ndx]);
 		CASM_FUNCCALL(wrmsr64,MTRR_PHYS_MASK0_MSR + ndx*2,
-			pack_mtrr_physmask_t(&saved_state->mtrr_physmasks[ndx]));
+			(u32)msrval, (u32)((u64)msrval >> 32) );
+		msrval = pack_mtrr_physbase_t(&saved_state->mtrr_physbases[ndx]);
 		CASM_FUNCCALL(wrmsr64,MTRR_PHYS_BASE0_MSR + ndx*2,
-			pack_mtrr_physbase_t(&saved_state->mtrr_physbases[ndx]));
+			(u32)msrval, (u32)((u64)msrval >> 32) );
 	}
 
 	// IA32_MTRR_DEF_TYPE MSR
-	CASM_FUNCCALL(wrmsr64,MSR_MTRRdefType, pack_mtrr_def_type_t(&saved_state->mtrr_def_type));
+	msrval = pack_mtrr_def_type_t(&saved_state->mtrr_def_type);
+	CASM_FUNCCALL(wrmsr64,MSR_MTRRdefType, (u32)msrval, (u32)((u64)msrval >> 32) );
 
 }
 

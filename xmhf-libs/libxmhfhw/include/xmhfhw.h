@@ -456,7 +456,7 @@ CASM_FUNCDECL(void xmhfhw_cpu_cpuid(u32 op, u32 *eax, u32 *ebx, u32 *ecx, u32 *e
 /*@
   assigns \nothing;
 @*/
-CASM_FUNCDECL(void wrmsr64(u32 msr, u64 newval));
+CASM_FUNCDECL(void wrmsr64(u32 msr, u32 newval_lo, u32 newval_hi));
 
 
 /*@

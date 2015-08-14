@@ -104,8 +104,10 @@ static void xmhfhic_setupinitpgtables(void){
     }*/
 
     {
+        u64 msr_efer;
+        msr_efer = (CASM_FUNCCALL(rdmsr64, MSR_EFER) | (0x800));
         _XDPRINTF_("fn:%s, line:%u\n", __func__, __LINE__);
- CASM_FUNCCALL(wrmsr64,MSR_EFER, (CASM_FUNCCALL(rdmsr64, MSR_EFER) | (0x800)) );
+ CASM_FUNCCALL(wrmsr64,MSR_EFER, (u32)msr_efer, (u32)((u64)msr_efer >> 32) );
         _XDPRINTF_("EFER=%016llx\n", CASM_FUNCCALL(rdmsr64,MSR_EFER));
  CASM_FUNCCALL(write_cr4,read_cr4(CASM_NOPARAM) | (0x30) );
         _XDPRINTF_("CR4=%08x\n", CASM_FUNCCALL(read_cr4,CASM_NOPARAM));
@@ -2938,13 +2940,18 @@ void xmhf_hic_arch_setup_cpu_state(u64 cpuid){
     //set LAPIC base address to preferred address
     {
         u64 msrapic = CASM_FUNCCALL(rdmsr64,MSR_APIC_BASE);
- CASM_FUNCCALL(wrmsr64,MSR_APIC_BASE, ((msrapic & 0x0000000000000FFFULL) | X86SMP_LAPIC_MEMORYADDRESS));
+        u64 msrapic_val = ((msrapic & 0x0000000000000FFFULL) | X86SMP_LAPIC_MEMORYADDRESS);
+	CASM_FUNCCALL(wrmsr64,MSR_APIC_BASE, (u32)msrapic_val, (u32)((u64)msrapic_val >> 32) );
     }
     _XDPRINTF_("%s[%u]: set LAPIC base address to %016llx\n", __func__, (u32)cpuid, CASM_FUNCCALL(rdmsr64,MSR_APIC_BASE));
 
-	//turn on NX protections
- CASM_FUNCCALL(wrmsr64,MSR_EFER, (CASM_FUNCCALL(rdmsr64, MSR_EFER) | (1 << EFER_NXE)) );
-    _XDPRINTF_("%s[%u]: NX protections enabled\n", __func__, (u32)cpuid);
+	{
+		//turn on NX protections
+		u64 msrefer_val= (CASM_FUNCCALL(rdmsr64, MSR_EFER) | (1 << EFER_NXE));
+		CASM_FUNCCALL(wrmsr64,MSR_EFER, (u32)msrefer_val, (u32)((u64)msrefer_val >> 32) );
+		_XDPRINTF_("%s[%u]: NX protections enabled\n", __func__, (u32)cpuid);
+
+	}
 
 
 #if 0
@@ -2970,9 +2977,9 @@ void xmhf_hic_arch_setup_cpu_state(u64 cpuid){
 
     //setup SYSENTER/SYSEXIT mechanism
     {
-        wrmsr64(IA32_SYSENTER_CS_MSR, (u64)__CS_CPL0);
-        wrmsr64(IA32_SYSENTER_EIP_MSR, (u64)_xmhfhic_common_slab_info_table[XMHFGEEC_SLAB_GEEC_SENTINEL].slab_memoffset_entries[GEEC_SENTINEL_MEMOFFSETS_SYSENTERHANDLER_IDX]);
-        wrmsr64(IA32_SYSENTER_ESP_MSR, (u64)((u32)_geec_primesmp_sysenter_stack[(u32)cpuid] + MAX_PLATFORM_CPUSTACK_SIZE));
+        wrmsr64(IA32_SYSENTER_CS_MSR, (u32)__CS_CPL0, 0);
+        wrmsr64(IA32_SYSENTER_EIP_MSR, (u32)_xmhfhic_common_slab_info_table[XMHFGEEC_SLAB_GEEC_SENTINEL].slab_memoffset_entries[GEEC_SENTINEL_MEMOFFSETS_SYSENTERHANDLER_IDX], 0);
+        wrmsr64(IA32_SYSENTER_ESP_MSR, (u32)((u32)_geec_primesmp_sysenter_stack[(u32)cpuid] + MAX_PLATFORM_CPUSTACK_SIZE), 0);
     }
     _XDPRINTF_("%s: setup SYSENTER/SYSEXIT mechanism\n", __func__);
     _XDPRINTF_("SYSENTER CS=%016llx\n", CASM_FUNCCALL(rdmsr64,IA32_SYSENTER_CS_MSR));
