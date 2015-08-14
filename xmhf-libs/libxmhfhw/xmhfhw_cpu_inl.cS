@@ -59,7 +59,7 @@ CASM_FUNCDEF(u32, inl,
     xmhfhwm_cpu_insn_xorl_eax_eax();
     xmhfhwm_cpu_insn_inl_dx_eax();
     xmhfhwm_cpu_insn_xorl_edx_edx();
-    xmhfhwm_cpu_insn_ret();
+    xmhfhwm_cpu_insn_retu32();
 },
 u32 port)
 

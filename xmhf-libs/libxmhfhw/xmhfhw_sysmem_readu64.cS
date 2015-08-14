@@ -65,7 +65,7 @@ CASM_FUNCDEF(u64, xmhfhw_sysmemaccess_readu64,
 	xmhfhwm_cpu_insn_movl_mesi_eax(0x0); //eax = [esi]
 	xmhfhwm_cpu_insn_movl_mesi_edx(0x4); //edx = [esi+4]
 	xmhfhwm_cpu_insn_popl_esi();	//restore esi
-	xmhfhwm_cpu_insn_ret();		//return
+	xmhfhwm_cpu_insn_retu64();		//return
 },
 u32 addr)
 
