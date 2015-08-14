@@ -2352,6 +2352,12 @@ extern void _impl_xmhfhwm_cpu_insn_wrmsr(void);
 extern void _impl_xmhfhwm_cpu_insn_xgetbv(void);
 extern void _impl_xmhfhwm_cpu_insn_xsetbv(void);
 
+extern void _impl_xmhfhwm_cpu_insn_pushl_edi(void);
+extern void _impl_xmhfhwm_cpu_insn_movl_mesp_edi(int index);
+
+extern void _impl_xmhfhwm_cpu_insn_cld(void);
+extern void _impl_xmhfhwm_cpu_insn_rep_movsb(void);
+extern void _impl_xmhfhwm_cpu_insn_popl_edi(void);
 
 //////
 // CASM C to ASM call macros
@@ -2475,9 +2481,13 @@ extern void _impl_xmhfhwm_cpu_insn_xsetbv(void);
 
 
 // load/store instructions
-#define xmhfhwm_cpu_insn_cld() __builtin_annot("cld");
-#define xmhfhwm_cpu_insn_rep_movsb() __builtin_annot("rep movsb");
+#define xmhfhwm_cpu_insn_cld() \
+	__builtin_annot("cld"); \
+	_impl_xmhfhwm_cpu_insn_cld(); \
 
+#define xmhfhwm_cpu_insn_rep_movsb() \
+	__builtin_annot("rep movsb"); \
+	_impl_xmhfhwm_cpu_insn_rep_movsb(); \
 
 
 #define _xmhfhwm_cpu_insn_movl_imm_eax(x) \
@@ -2567,7 +2577,10 @@ extern void _impl_xmhfhwm_cpu_insn_xsetbv(void);
 	_impl_xmhfhwm_cpu_insn_movl_mesp_esi(x); \
 
 
-#define xmhfhwm_cpu_insn_movl_mesp_edi(x) __builtin_annot("movl "#x"(%esp), %edi ");
+#define xmhfhwm_cpu_insn_movl_mesp_edi(x) \
+	__builtin_annot("movl "#x"(%esp), %edi "); \
+	_impl_xmhfhwm_cpu_insn_movl_mesp_edi(x); \
+
 
 #define xmhfhwm_cpu_insn_movl_mecx_eax(x) \
 	__builtin_annot("movl "#x"(%ecx), %eax "); \
@@ -2660,7 +2673,10 @@ extern void _impl_xmhfhwm_cpu_insn_xsetbv(void);
 
 
 #define xmhfhwm_cpu_insn_pushl_ebp() __builtin_annot("pushl %ebp ");
-#define xmhfhwm_cpu_insn_pushl_edi() __builtin_annot("pushl %edi ");
+#define xmhfhwm_cpu_insn_pushl_edi() \
+	__builtin_annot("pushl %edi "); \
+	_impl_xmhfhwm_cpu_insn_pushl_edi(); \
+
 
 #define xmhfhwm_cpu_insn_pushl_esi() \
 	__builtin_annot("pushl %esi "); \
@@ -2699,7 +2715,10 @@ extern void _impl_xmhfhwm_cpu_insn_xsetbv(void);
         _impl_xmhfhwm_cpu_insn_popl_esi(); \
 
 
-#define xmhfhwm_cpu_insn_popl_edi() __builtin_annot("popl %edi ");
+#define xmhfhwm_cpu_insn_popl_edi() \
+	__builtin_annot("popl %edi "); \
+        _impl_xmhfhwm_cpu_insn_popl_edi(); \
+
 #define xmhfhwm_cpu_insn_popl_ebp() __builtin_annot("popl %ebp ");
 
 #define xmhfhwm_cpu_insn_pushl_imm(x) __builtin_annot("pushl $"#x" ");

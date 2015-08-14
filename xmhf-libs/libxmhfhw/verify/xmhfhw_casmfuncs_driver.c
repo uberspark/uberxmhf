@@ -465,6 +465,12 @@ void drv_xsetbv(void){
 	cabi_check();
 }
 
+void drv_sysmemaccess_bcopy(void){
+	u8 src[128], dst[128];
+	cabi_establish();
+	CASM_FUNCCALL(xmhfhw_sysmemaccess_copy, &dst, &src, sizeof(dst));
+	cabi_check();
+}
 
 
 void main(void){
@@ -525,8 +531,9 @@ void main(void){
         //drv_writecr4();
 	//drv_writeeflags();
 	//drv_wrmsr();
-	drv_xgetbv();
-	drv_xsetbv();
+	//drv_xgetbv();
+	//drv_xsetbv();
+	drv_sysmemaccess_bcopy();
 
 
 	//@assert xmhfhwm_cpu_gprs_esp == check_esp;
