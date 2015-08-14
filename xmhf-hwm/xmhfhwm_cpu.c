@@ -238,11 +238,6 @@ void _impl_xmhfhwm_cpu_insn_movl_mesp_esi(int index){
 	xmhfhwm_cpu_gprs_esi = *value;
 }
 
-void _impl_xmhfhwm_cpu_insn_movl_eax_mesi(int index){
-	u32 *value;
-	value = (u32 *)((u32)((int)xmhfhwm_cpu_gprs_esi + (int)index));
-	*value = xmhfhwm_cpu_gprs_eax;
-}
 
 void _impl_xmhfhwm_cpu_insn_movl_ebx_mesi(int index){
 	u32 *value;
@@ -256,11 +251,6 @@ void _impl_xmhfhwm_cpu_insn_movl_ecx_mesi(int index){
 	*value = xmhfhwm_cpu_gprs_ecx;
 }
 
-void _impl_xmhfhwm_cpu_insn_movl_edx_mesi(int index){
-	u32 *value;
-	value = (u32 *)((u32)((int)xmhfhwm_cpu_gprs_esi + (int)index));
-	*value = xmhfhwm_cpu_gprs_edx;
-}
 
 void _impl_xmhfhwm_cpu_insn_popl_eax(void){
 	u32 value = *((u32 *)xmhfhwm_cpu_gprs_esp);
@@ -707,3 +697,26 @@ void _impl_xmhfhwm_cpu_insn_movl_mesi_edx(int index){
 	xmhfhwm_cpu_gprs_edx = *value_mesi;
 }
 
+void _impl_xmhfhwm_cpu_insn_movl_eax_mesi(int index){
+	u32 *value;
+	value = (u32 *)((u32)((int)xmhfhwm_cpu_gprs_esi + (int)index));
+	*value = xmhfhwm_cpu_gprs_eax;
+}
+
+void _impl_xmhfhwm_cpu_insn_movl_edx_mesi(int index){
+	u32 *value;
+	value = (u32 *)((u32)((int)xmhfhwm_cpu_gprs_esi + (int)index));
+	*value = xmhfhwm_cpu_gprs_edx;
+}
+
+void _impl_xmhfhwm_cpu_insn_movb_al_mesi(int index){
+	u32 *value_mesi;
+	value_mesi = (u32 *)((u32)((int)xmhfhwm_cpu_gprs_esi + (int)index));
+	*value_mesi |= (xmhfhwm_cpu_gprs_eax & 0x000000FFUL);
+}
+
+void _impl_xmhfhwm_cpu_insn_movw_ax_mesi(int index){
+	u32 *value_mesi;
+	value_mesi = (u32 *)((u32)((int)xmhfhwm_cpu_gprs_esi + (int)index));
+	*value_mesi |= (xmhfhwm_cpu_gprs_eax & 0x0000FFFFUL);
+}
