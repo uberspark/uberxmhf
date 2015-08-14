@@ -452,7 +452,18 @@ void drv_wrmsr(void){
 	cabi_check();
 }
 
+void drv_xgetbv(void){
+	u64 result;
+	cabi_establish();
+	result = CASM_FUNCCALL(xgetbv, 1);
+	cabi_check();
+}
 
+void drv_xsetbv(void){
+	cabi_establish();
+	CASM_FUNCCALL(xsetbv, 1, framac_nondetu32(), framac_nondetu32());
+	cabi_check();
+}
 
 
 
@@ -508,13 +519,14 @@ void main(void){
 	//drv_vmread();
 	//drv_vmwrite();
 	//drv_vmxon();
-        drv_wbinvd();
-        drv_writecr0();
-        drv_writecr3();
-        drv_writecr4();
-	drv_writeeflags();
-	drv_wrmsr();
-
+        //drv_wbinvd();
+        //drv_writecr0();
+        //drv_writecr3();
+        //drv_writecr4();
+	//drv_writeeflags();
+	//drv_wrmsr();
+	drv_xgetbv();
+	drv_xsetbv();
 
 
 	//@assert xmhfhwm_cpu_gprs_esp == check_esp;

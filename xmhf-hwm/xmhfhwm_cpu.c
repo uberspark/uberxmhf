@@ -84,6 +84,7 @@ u32 xmhfhwm_cpu_fs_selector = 0;
 u32 xmhfhwm_cpu_gs_selector = 0;
 u32 xmhfhwm_cpu_ss_selector = 0;
 
+u64 xmhfhwm_cpu_xcr0 = 0;
 
 
 void _impl_xmhfhwm_cpu_insn_hlt(void){
@@ -617,4 +618,23 @@ void _impl_xmhfhwm_cpu_insn_popfl(void){
 
 void _impl_xmhfhwm_cpu_insn_wrmsr(void){
 	//XXX: wrmsr logic
+}
+
+void _impl_xmhfhwm_cpu_insn_xgetbv(void){
+	if(xmhfhwm_cpu_gprs_ecx == 1){
+		xmhfhwm_cpu_gprs_eax = (u32)xmhfhwm_cpu_xcr0;
+		xmhfhwm_cpu_gprs_edx = (u32)((u64)xmhfhwm_cpu_xcr0 >> 32);
+	}else{
+		//XXX: TODO: GPF
+	}
+}
+
+void _impl_xmhfhwm_cpu_insn_xsetbv(void){
+	if(xmhfhwm_cpu_gprs_ecx == 1){
+		xmhfhwm_cpu_xcr0 = ((u64)xmhfhwm_cpu_gprs_edx << 32) |
+			xmhfhwm_cpu_gprs_eax;
+	}else{
+		//XXX: TODO: GPF
+	}
+
 }
