@@ -687,6 +687,10 @@ void _impl_xmhfhwm_cpu_insn_popl_edi(void){
 }
 
 
+void _impl_xmhfhwm_cpu_insn_andl_imm_eax(u32 value){
+	xmhfhwm_cpu_gprs_eax &= value;
+}
+
 
 
 //////
