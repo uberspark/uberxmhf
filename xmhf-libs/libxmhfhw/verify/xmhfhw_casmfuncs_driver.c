@@ -446,6 +446,11 @@ void drv_writeeflags(void){
 	cabi_check();
 }
 
+void drv_wrmsr(void){
+	cabi_establish();
+	CASM_FUNCCALL(wrmsr64, framac_nondetu32(), framac_nondetu32(), framac_nondetu32());
+	cabi_check();
+}
 
 
 

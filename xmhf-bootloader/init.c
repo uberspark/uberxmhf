@@ -632,8 +632,8 @@ static bool svm_verify_platform(void)
     }
 
     /* Turn on SVM */
-    efer = rdmsr64(MSR_EFER);
-    wrmsr64(MSR_EFER, efer | (1<<EFER_SVME));
+    efer = rdmsr64(MSR_EFER) | (1<<EFER_SVME);
+    wrmsr64(MSR_EFER, (u32)efer, (u32)((u64)efer >> 32));
     efer = rdmsr64(MSR_EFER);
     if ((efer & (1<<EFER_SVME)) == 0) {
         _XDPRINTF_("ERR: Could not enable AMD SVM\n");
@@ -1129,7 +1129,7 @@ u32 isbsp(void){
 void svm_clear_microcode(BOOTVCPU *vcpu){
     u32 ucode_rev;
     u32 dummy=0;
-    u64 msr_value;
+    u64 msr_value, clear_value;
 
     // Current microcode patch level available via MSR read
 	msr_value = rdmsr64( MSR_AMD64_PATCH_LEVEL);
@@ -1140,8 +1140,9 @@ void svm_clear_microcode(BOOTVCPU *vcpu){
 
     _XDPRINTF_("\nCPU(0x%02x): existing microcode version 0x%08x", vcpu->id, ucode_rev);
 
+	clear_value = (u64)(((u64)dummy << 32) | dummy);
     if(ucode_rev != 0) {
-        wrmsr64(MSR_AMD64_PATCH_CLEAR, (u64)(((u64)dummy << 32) | dummy) );
+        wrmsr64(MSR_AMD64_PATCH_CLEAR, (u32)clear_value, (u32)((u64)clear_value >> 32) );
         _XDPRINTF_("\nCPU(0x%02x): microcode CLEARED", vcpu->id);
     }
 }

@@ -70,7 +70,7 @@ void slab_main(slab_params_t *sp){
             xmhf_uapi_hcpustate_msr_params_t *msrp =
                 (xmhf_uapi_hcpustate_msr_params_t *)sp->in_out_params;
 
-            CASM_FUNCCALL(wrmsr64, msrp->msr, msrp->value);
+            CASM_FUNCCALL(wrmsr64, msrp->msr, (u32)msrp->value, (u32)((u64)msrp->value >> 32) );
         }
         break;
 
