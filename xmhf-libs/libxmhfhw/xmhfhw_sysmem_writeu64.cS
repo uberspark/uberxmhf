@@ -68,6 +68,7 @@ CASM_FUNCDEF(void, xmhfhw_sysmemaccess_writeu64,
 	xmhfhwm_cpu_insn_ret();		//return
 },
 u32 addr,
-u64 val)
+u32 val_lo,
+u32 val_hi)
 
 

@@ -505,7 +505,7 @@ CASM_FUNCDECL(void xmhfhw_sysmemaccess_writeu32(u32 addr, u32 val));
 /*@
   assigns \nothing;
 @*/
-CASM_FUNCDECL(void xmhfhw_sysmemaccess_writeu64(u32 addr, u64 val));
+CASM_FUNCDECL(void xmhfhw_sysmemaccess_writeu64(u32 addr, u32 val_lo, u32 val_hi));
 
 
 /*@

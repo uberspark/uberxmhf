@@ -502,6 +502,30 @@ void drv_sysmemaccess_readu64(void){
 }
 
 
+void drv_sysmemaccess_writeu8(void){
+	cabi_establish();
+	CASM_FUNCCALL(xmhfhw_sysmemaccess_writeu8, &sysmem_dst, (u8)framac_nondetu32());
+	cabi_check();
+}
+
+void drv_sysmemaccess_writeu16(void){
+	cabi_establish();
+	CASM_FUNCCALL(xmhfhw_sysmemaccess_writeu16, &sysmem_dst, (u16)framac_nondetu32());
+	cabi_check();
+}
+
+void drv_sysmemaccess_writeu32(void){
+	cabi_establish();
+	CASM_FUNCCALL(xmhfhw_sysmemaccess_writeu32, &sysmem_dst, framac_nondetu32());
+	cabi_check();
+}
+
+void drv_sysmemaccess_writeu64(void){
+	cabi_establish();
+	CASM_FUNCCALL(xmhfhw_sysmemaccess_writeu64, &sysmem_dst, framac_nondetu32(), framac_nondetu32());
+	cabi_check();
+}
+
 
 void main(void){
 	u32 check_esp, check_eip = CASM_RET_EIP;
@@ -564,10 +588,14 @@ void main(void){
 	//drv_xgetbv();
 	//drv_xsetbv();
 	//drv_sysmemaccess_bcopy();
-	drv_sysmemaccess_readu8();
-	drv_sysmemaccess_readu16();
-	drv_sysmemaccess_readu32();
-	drv_sysmemaccess_readu64();
+	//drv_sysmemaccess_readu8();
+	//drv_sysmemaccess_readu16();
+	//drv_sysmemaccess_readu32();
+	//drv_sysmemaccess_readu64();
+	drv_sysmemaccess_writeu8();
+	drv_sysmemaccess_writeu16();
+	drv_sysmemaccess_writeu32();
+	drv_sysmemaccess_writeu64();
 
 	//@assert xmhfhwm_cpu_gprs_esp == check_esp;
 	//@assert xmhfhwm_cpu_gprs_eip == check_eip;
