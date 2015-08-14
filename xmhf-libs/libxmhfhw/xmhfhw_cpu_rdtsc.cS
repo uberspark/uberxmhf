@@ -54,7 +54,7 @@
 CASM_FUNCDEF(uint64_t, rdtsc64,
 {
     xmhfhwm_cpu_insn_rdtsc();
-    xmhfhwm_cpu_insn_ret();
+    xmhfhwm_cpu_insn_retu64();
 },
 void *noparam)
 

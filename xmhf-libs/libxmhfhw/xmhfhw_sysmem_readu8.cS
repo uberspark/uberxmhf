@@ -63,7 +63,7 @@ CASM_FUNCDEF(u8, xmhfhw_sysmemaccess_readu8,
 	xmhfhwm_cpu_insn_movl_mesi_eax(0x0); //eax = [esi]
 	xmhfhwm_cpu_insn_andl_imm_eax(0x000000FF);  //eax = low 8-bits
 	xmhfhwm_cpu_insn_popl_esi();	//restore esi
-	xmhfhwm_cpu_insn_ret();		//return
+	xmhfhwm_cpu_insn_retu32();		//return
 },
 u32 addr)
 
