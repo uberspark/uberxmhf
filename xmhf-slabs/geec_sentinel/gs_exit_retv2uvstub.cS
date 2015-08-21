@@ -50,10 +50,9 @@
 */
 
 #include <xmhf.h>
+#include <xmhf-hwm.h>
 #include <xmhf-debug.h>
-
 #include <xmhfgeec.h>
-
 #include <geec_sentinel.h>
 
 CASM_FUNCDEF(void, _geec_sentinel_xfer_ret_vft_prog_to_uvt_uvu_prog,

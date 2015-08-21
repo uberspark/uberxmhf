@@ -50,10 +50,9 @@
 */
 
 #include <xmhf.h>
+#include <xmhf-hwm.h>
 #include <xmhf-debug.h>
-
 #include <xmhfgeec.h>
-
 #include <geec_sentinel.h>
 
 
