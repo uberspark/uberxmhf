@@ -114,11 +114,11 @@ static void print_bios_data(bios_data_t *bios_data)
 bool verify_bios_data(txt_heap_t *txt_heap)
 {
     uint64_t size, heap_size;
-    bios_data_t *bios_data;
+    bios_data_t bios_data;
 
     /* check size */
-    heap_size = read_priv_config_reg(TXTCR_HEAP_SIZE);
-    size = get_bios_data_size(txt_heap);
+    heap_size = read_pub_config_reg(TXTCR_HEAP_SIZE);
+    size = get_bios_data_size(txt_heap, (uint32_t)heap_size);
     if ( size == 0 ) {
         _XDPRINTF_("BIOS data size is 0\n");
         return false;
@@ -129,31 +129,33 @@ bool verify_bios_data(txt_heap_t *txt_heap)
         return false;
     }
 
-    bios_data = get_bios_data_start(txt_heap);
+    xmhfhw_sysmemaccess_copy(&bios_data,
+			get_bios_data_start(txt_heap, (uint32_t)read_pub_config_reg(TXTCR_HEAP_SIZE)),
+			sizeof(bios_data_t));
 
     /* check version */
-    if ( bios_data->version < 2 ) {
-        _XDPRINTF_("unsupported BIOS data version (%u)\n", bios_data->version);
+    if ( bios_data.version < 2 ) {
+        _XDPRINTF_("unsupported BIOS data version (%u)\n", bios_data.version);
         return false;
     }
     /* we assume backwards compatibility but print a warning */
-    if ( bios_data->version > 3 )
-        _XDPRINTF_("unsupported BIOS data version (%u)\n", bios_data->version);
+    if ( bios_data.version > 3 )
+        _XDPRINTF_("unsupported BIOS data version (%u)\n", bios_data.version);
 
     /* all TXT-capable CPUs support at least 2 cores */
-    if ( bios_data->num_logical_procs < 2 ) {
+    if ( bios_data.num_logical_procs < 2 ) {
         _XDPRINTF_("BIOS data has incorrect num_logical_procs (%u)\n",
-               bios_data->num_logical_procs);
+               bios_data.num_logical_procs);
         return false;
     }
 #define NR_CPUS 8 // XXX arbitrary value; use something sane
-    else if ( bios_data->num_logical_procs > NR_CPUS ) {
+    else if ( bios_data.num_logical_procs > NR_CPUS ) {
         _XDPRINTF_("BIOS data specifies too many CPUs (%u)\n",
-               bios_data->num_logical_procs);
+               bios_data.num_logical_procs);
         return false;
     }
 
-    print_bios_data(bios_data);
+    print_bios_data(&bios_data);
 
     return true;
 }
@@ -170,11 +172,11 @@ static void print_os_mle_data(os_mle_data_t *os_mle_data)
 static bool verify_os_mle_data(txt_heap_t *txt_heap)
 {
     uint64_t size, heap_size;
-    os_mle_data_t *os_mle_data;
+    os_mle_data_t os_mle_data;
 
     /* check size */
-    heap_size = read_priv_config_reg(TXTCR_HEAP_SIZE);
-    size = get_os_mle_data_size(txt_heap);
+    heap_size = read_pub_config_reg(TXTCR_HEAP_SIZE);
+    size = get_os_mle_data_size(txt_heap, (uint32_t)read_pub_config_reg(TXTCR_HEAP_SIZE));
     if ( size == 0 ) {
         _XDPRINTF_("OS to MLE data size is 0\n");
         return false;
@@ -190,24 +192,25 @@ static bool verify_os_mle_data(txt_heap_t *txt_heap)
         return false;
     }
 
-    os_mle_data = get_os_mle_data_start(txt_heap);
+    xmhfhw_sysmemaccess_copy(&os_mle_data, get_os_mle_data_start(txt_heap, (uint32_t)read_pub_config_reg(TXTCR_HEAP_SIZE)),
+				sizeof(os_mle_data_t));
 
     /* check version */
     /* since this data is from our pre-launch to post-launch code only, it */
     /* should always be this */
-    if ( os_mle_data->version != 2 ) {
+    if ( os_mle_data.version != 2 ) {
         _XDPRINTF_("unsupported OS to MLE data version (%u)\n",
-               os_mle_data->version);
+               os_mle_data.version);
         return false;
     }
 
     /* field checks */
-    if ( os_mle_data->mbi == NULL ) {
+    if ( os_mle_data.mbi == NULL ) {
         _XDPRINTF_("OS to MLE data mbi field is NULL\n");
         return false;
     }
 
-    print_os_mle_data(os_mle_data);
+    print_os_mle_data(&os_mle_data);
 
     return true;
 }
@@ -236,11 +239,11 @@ void print_os_sinit_data(os_sinit_data_t *os_sinit_data)
 static bool verify_os_sinit_data(txt_heap_t *txt_heap)
 {
     uint64_t size, heap_size;
-    os_sinit_data_t *os_sinit_data;
+    os_sinit_data_t os_sinit_data;
 
     /* check size */
-    heap_size = read_priv_config_reg(TXTCR_HEAP_SIZE);
-    size = get_os_sinit_data_size(txt_heap);
+    heap_size = read_pub_config_reg(TXTCR_HEAP_SIZE);
+    size = get_os_sinit_data_size(txt_heap, (uint32_t)heap_size);
     if ( size == 0 ) {
         _XDPRINTF_("OS to SINIT data size is 0\n");
         return false;
@@ -251,25 +254,27 @@ static bool verify_os_sinit_data(txt_heap_t *txt_heap)
         return false;
     }
 
-    os_sinit_data = get_os_sinit_data_start(txt_heap);
+    xmhfhw_sysmemaccess_copy(&os_sinit_data,
+	get_os_sinit_data_start(txt_heap, (uint32_t)read_pub_config_reg(TXTCR_HEAP_SIZE)),
+	sizeof(os_sinit_data_t));
 
     /* check version (but since we create this, it should always be OK) */
-    if ( os_sinit_data->version < 4 || os_sinit_data->version > 5 ) {
+    if ( os_sinit_data.version < 4 || os_sinit_data.version > 5 ) {
         _XDPRINTF_("unsupported OS to SINIT data version (%u)\n",
-               os_sinit_data->version);
+               os_sinit_data.version);
         return false;
     }
 
-    if ( (os_sinit_data->version == 4 &&
+    if ( (os_sinit_data.version == 4 &&
           size != offsetof(os_sinit_data_t, efi_rsdt_ptr) + sizeof(uint64_t))
-         || (os_sinit_data->version == 5 &&
+         || (os_sinit_data.version == 5 &&
              size != sizeof(os_sinit_data_t) + sizeof(uint64_t)) ) {
         _XDPRINTF_("OS to SINIT data size (%llx) does not match for version (%x)\n",
                size, sizeof(os_sinit_data_t));
         return false;
     }
 
-    print_os_sinit_data(os_sinit_data);
+    print_os_sinit_data(&os_sinit_data);
 
     return true;
 }
@@ -325,11 +330,11 @@ static void print_sinit_mle_data(sinit_mle_data_t *sinit_mle_data)
 static bool verify_sinit_mle_data(txt_heap_t *txt_heap)
 {
     uint64_t size, heap_size;
-    sinit_mle_data_t *sinit_mle_data;
+    sinit_mle_data_t sinit_mle_data;
 
     /* check size */
-    heap_size = read_priv_config_reg(TXTCR_HEAP_SIZE);
-    size = get_sinit_mle_data_size(txt_heap);
+    heap_size = read_pub_config_reg(TXTCR_HEAP_SIZE);
+    size = get_sinit_mle_data_size(txt_heap, (uint32_t)read_pub_config_reg(TXTCR_HEAP_SIZE));
     if ( size == 0 ) {
         _XDPRINTF_("SINIT to MLE data size is 0\n");
         return false;
@@ -340,31 +345,32 @@ static bool verify_sinit_mle_data(txt_heap_t *txt_heap)
         return false;
     }
 
-    sinit_mle_data = get_sinit_mle_data_start(txt_heap);
+    xmhfhw_sysmemaccess_copy(&sinit_mle_data,
+	get_sinit_mle_data_start(txt_heap, (uint32_t)read_pub_config_reg(TXTCR_HEAP_SIZE)),
+	sizeof(sinit_mle_data_t));
 
     /* check version */
-    sinit_mle_data = get_sinit_mle_data_start(txt_heap);
-    if ( sinit_mle_data->version < 6 ) {
+    if ( sinit_mle_data.version < 6 ) {
         _XDPRINTF_("unsupported SINIT to MLE data version (%u)\n",
-               sinit_mle_data->version);
+               sinit_mle_data.version);
         return false;
     }
-    else if ( sinit_mle_data->version > 8 ) {
+    else if ( sinit_mle_data.version > 8 ) {
         _XDPRINTF_("unsupported SINIT to MLE data version (%u)\n",
-               sinit_mle_data->version);
+               sinit_mle_data.version);
     }
 
     /* this data is generated by SINIT and so is implicitly trustworthy, */
     /* so we don't need to validate it's fields */
 
-    print_sinit_mle_data(sinit_mle_data);
+    print_sinit_mle_data(&sinit_mle_data);
 
     return true;
 }
 
 bool verify_txt_heap(txt_heap_t *txt_heap, bool bios_data_only)
 {
-    uint64_t size1, size2, size3, size4;
+    uint64_t size1, size2, size3, size4, heap_size;
 
     /* verify BIOS to OS data */
     if ( !verify_bios_data(txt_heap) )
@@ -374,10 +380,12 @@ bool verify_txt_heap(txt_heap_t *txt_heap, bool bios_data_only)
         return true;
 
     /* check that total size is within the heap */
-    size1 = get_bios_data_size(txt_heap);
-    size2 = get_os_mle_data_size(txt_heap);
-    size3 = get_os_sinit_data_size(txt_heap);
-    size4 = get_sinit_mle_data_size(txt_heap);
+    heap_size = read_pub_config_reg(TXTCR_HEAP_SIZE);
+
+    size1 = get_bios_data_size(txt_heap, (uint32_t)heap_size);
+    size2 = get_os_mle_data_size(txt_heap, (uint32_t)heap_size);
+    size3 = get_os_sinit_data_size(txt_heap, (uint32_t)heap_size);
+    size4 = get_sinit_mle_data_size(txt_heap, (uint32_t)heap_size);
 
     /* overflow? */
     if ( plus_overflow_u64(size1, size2) ) {
@@ -394,10 +402,10 @@ bool verify_txt_heap(txt_heap_t *txt_heap, bool bios_data_only)
     }
 
     if ( (size1 + size2 + size3 + size4) >
-         read_priv_config_reg(TXTCR_HEAP_SIZE) ) {
+         read_pub_config_reg(TXTCR_HEAP_SIZE) ) {
         _XDPRINTF_("TXT heap data sizes (%llx, %llx, %llx, %llx) are larger than\n"
                "heap total size (%llx)\n", size1, size2, size3, size4,
-               read_priv_config_reg(TXTCR_HEAP_SIZE));
+               read_pub_config_reg(TXTCR_HEAP_SIZE));
         return false;
     }
 

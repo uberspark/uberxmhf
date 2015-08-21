@@ -198,6 +198,8 @@ extern __attribute__(( section(".stack") )) __attribute__(( aligned(4096) )) u8 
 extern __attribute__((section(".data"))) __attribute__(( aligned(4096) )) xc_cpuarchdata_x86vmx_t __xmhfhic_x86vmx_archdata[MAX_PLATFORM_CPUS];
 extern __attribute__((section(".data"))) __attribute__(( aligned(8) )) u32 __xmhfhic_x86vmx_cpuidtable[MAX_X86_APIC_ID]; //ro
 
+// initialization BSP stack
+extern __attribute__(( section(".stack") )) __attribute__(( aligned(4096) )) u8 _init_bsp_cpustack[MAX_PLATFORM_CPUSTACK_SIZE];
 
 void xmhfhic_arch_switch_to_smp(void);
 void xmhfhic_arch_setup_base_cpu_data_structures(void);

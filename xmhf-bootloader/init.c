@@ -202,11 +202,16 @@ void udelay(u32 usecs){
 //---INIT IPI routine-----------------------------------------------------------
 void send_init_ipi_to_all_APs(void) {
     u32 eax, edx;
+    u64 msr_value;
     volatile u32 *icr;
     u32 timeout = 0x01000000;
 
     //read LAPIC base address from MSR
-    rdmsr(MSR_APIC_BASE, &eax, &edx);
+	msr_value = rdmsr64( MSR_APIC_BASE);
+	eax = (u32)msr_value;
+	edx = (u32)(msr_value >> 32);
+
+
     HALT_ON_ERRORCOND( edx == 0 ); //APIC is below 4G
     _XDPRINTF_("\nLAPIC base and status=0x%08x", eax);
 
@@ -605,6 +610,7 @@ static bool svm_verify_platform(void) __attribute__((unused));
 static bool svm_verify_platform(void)
 {
     uint32_t eax, edx, ebx, ecx;
+    u64 msr_value;
     uint64_t efer;
 
     xmhfhw_cpu_cpuid(0x80000001, &eax, &ebx, &ecx, &edx);
@@ -615,15 +621,19 @@ static bool svm_verify_platform(void)
     }
 
     /* Check whether SVM feature is disabled in BIOS */
-    rdmsr(VM_CR_MSR, &eax, &edx);
+	msr_value = rdmsr64( VM_CR_MSR);
+	eax = (u32)msr_value;
+	edx = (u32)(msr_value >> 32);
+
+
     if (eax & VM_CR_SVME_DISABLE) {
         _XDPRINTF_("ERR: AMD SVM Extension is disabled in BIOS\n");
         return false;
     }
 
     /* Turn on SVM */
-    efer = rdmsr64(MSR_EFER);
-    wrmsr64(MSR_EFER, efer | (1<<EFER_SVME));
+    efer = rdmsr64(MSR_EFER) | (1<<EFER_SVME);
+    wrmsr64(MSR_EFER, (u32)efer, (u32)((u64)efer >> 32));
     efer = rdmsr64(MSR_EFER);
     if ((efer & (1<<EFER_SVME)) == 0) {
         _XDPRINTF_("ERR: Could not enable AMD SVM\n");
@@ -795,9 +805,14 @@ void setupvcpus(u32 cpu_vendor, MIDTAB *midtable, u32 midtable_numentries){
 void wakeupAPs(void){
     u32 eax, edx;
     volatile u32 *icr;
+    u64 msr_value;
 
     //read LAPIC base address from MSR
-    rdmsr(MSR_APIC_BASE, &eax, &edx);
+	msr_value = rdmsr64( MSR_APIC_BASE);
+	eax = (u32)msr_value;
+	edx = (u32)(msr_value >> 32);
+
+
     HALT_ON_ERRORCOND( edx == 0 ); //APIC is below 4G
     //_XDPRINTF_("\nLAPIC base and status=0x%08x", eax);
 
@@ -915,7 +930,7 @@ void cstartup(multiboot_info_t *mbi){
 	}
 
     //check CPU type (Intel vs AMD)
-    cpu_vendor = get_cpu_vendor_or_die(); // HALT()'s if unrecognized
+	cpu_vendor = xmhf_baseplatform_arch_getcpuvendor();
 
     if(CPU_VENDOR_INTEL == cpu_vendor) {
         _XDPRINTF_("INIT(early): detected an Intel CPU\n");
@@ -928,7 +943,8 @@ void cstartup(multiboot_info_t *mbi){
     } else if(CPU_VENDOR_AMD == cpu_vendor) {
         _XDPRINTF_("INIT(early): detected an AMD CPU\n");
     } else {
-        _XDPRINTF_("INIT(early): Dazed and confused: Unknown CPU vendor %d\n", cpu_vendor);
+        _XDPRINTF_("INIT(early): Dazed and confused: Unknown CPU vendor %d. Halting!\n", cpu_vendor);
+        HALT();
     }
 
     //deal with MP and get CPU table
@@ -1092,8 +1108,14 @@ void cstartup(multiboot_info_t *mbi){
 //returns 1 if the calling CPU is the BSP, else 0
 u32 isbsp(void){
     u32 eax, edx;
+    u64 msr_value;
+
     //read LAPIC base address from MSR
-    rdmsr(MSR_APIC_BASE, &eax, &edx);
+	msr_value = rdmsr64( MSR_APIC_BASE);
+	eax = (u32)msr_value;
+	edx = (u32)(msr_value >> 32);
+
+
     HALT_ON_ERRORCOND( edx == 0 ); //APIC is below 4G
 
     if(eax & 0x100)
@@ -1107,13 +1129,20 @@ u32 isbsp(void){
 void svm_clear_microcode(BOOTVCPU *vcpu){
     u32 ucode_rev;
     u32 dummy=0;
+    u64 msr_value, clear_value;
 
     // Current microcode patch level available via MSR read
-    rdmsr(MSR_AMD64_PATCH_LEVEL, &ucode_rev, &dummy);
+	msr_value = rdmsr64( MSR_AMD64_PATCH_LEVEL);
+	ucode_rev = (u32)msr_value;
+	dummy = (u32)(msr_value >> 32);
+
+
+
     _XDPRINTF_("\nCPU(0x%02x): existing microcode version 0x%08x", vcpu->id, ucode_rev);
 
+	clear_value = (u64)(((u64)dummy << 32) | dummy);
     if(ucode_rev != 0) {
-        wrmsr(MSR_AMD64_PATCH_CLEAR, dummy, dummy);
+        wrmsr64(MSR_AMD64_PATCH_CLEAR, (u32)clear_value, (u32)((u64)clear_value >> 32) );
         _XDPRINTF_("\nCPU(0x%02x): microcode CLEARED", vcpu->id);
     }
 }
