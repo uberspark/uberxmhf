@@ -44,11 +44,36 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
+/*
+ * HIC trampoline and stubs
+ *
+ * author: amit vasudevan (amitvasudevan@acm.org)
+ */
 
 #include <xmhf.h>
 #include <xmhf-debug.h>
+
 #include <xmhfgeec.h>
+
+#include <xc.h>
 #include <geec_sentinel.h>
 
-__attribute__((section(".data"))) u32 __xmhfhic_safestack_indices[MAX_PLATFORM_CPUS] = { 0 };
-__attribute__((section(".data"))) __xmhfhic_safestack_element_t __xmhfhic_safestack[MAX_PLATFORM_CPUS][512];
+
+////// intercepts
+
+void _geec_sentinel_intercept_stub(x86regs_t *r){
+    slab_params_t spl;
+
+    memset(&spl, 0, sizeof(spl));
+
+    spl.slab_ctype = XMHFGEEC_SENTINEL_CALL_INTERCEPT;
+    spl.src_slabid = CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmread,VMCS_CONTROL_VPID);
+    spl.dst_slabid = XMHFGEEC_SLAB_XC_IHUB;
+    //spl.cpuid = __xmhfhic_x86vmx_cpuidtable[xmhf_baseplatform_arch_x86_getcpulapicid()];
+    spl.cpuid = xmhf_baseplatform_arch_x86_getcpulapicid();
+    memcpy(&spl.in_out_params[0], r, sizeof(x86regs_t));
+
+    geec_sentinel_main(&spl, &spl);
+
+}
+

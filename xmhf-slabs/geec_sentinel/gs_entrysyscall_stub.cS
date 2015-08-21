@@ -44,11 +44,33 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
+/*
+ GEEC sentinel low-level support routines
+ author: amit vasudevan (amitvasudevan@acm.org)
+*/
 
 #include <xmhf.h>
 #include <xmhf-debug.h>
+
 #include <xmhfgeec.h>
+
 #include <geec_sentinel.h>
 
-__attribute__((section(".data"))) u32 __xmhfhic_safestack_indices[MAX_PLATFORM_CPUS] = { 0 };
-__attribute__((section(".data"))) __xmhfhic_safestack_element_t __xmhfhic_safestack[MAX_PLATFORM_CPUS][512];
+
+
+////// sysenter
+
+
+CASM_FUNCDEF(void, _geec_sentinel_sysenter_casmstub,
+{
+    xmhfhwm_cpu_insn_pushl_edx();   //original caller_stack_frame
+    xmhfhwm_cpu_insn_pushl_ecx();
+    xmhfhwm_cpu_insn_call(_geec_sentinel_sysenter_stub);
+    xmhfhwm_cpu_insn_hlt();
+},
+void *noparam)
+
+
+
+
+

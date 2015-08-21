@@ -44,11 +44,35 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
+/*
+ * HIC trampoline and stubs
+ *
+ * author: amit vasudevan (amitvasudevan@acm.org)
+ */
 
 #include <xmhf.h>
 #include <xmhf-debug.h>
+
 #include <xmhfgeec.h>
+
+#include <xc.h>
 #include <geec_sentinel.h>
 
-__attribute__((section(".data"))) u32 __xmhfhic_safestack_indices[MAX_PLATFORM_CPUS] = { 0 };
-__attribute__((section(".data"))) __xmhfhic_safestack_element_t __xmhfhic_safestack[MAX_PLATFORM_CPUS][512];
+
+
+void __xmhfhic_safepush(u32 cpuid, u32 src_slabid, u32 dst_slabid, u32 hic_calltype,
+                        void *caller_stack_frame, slab_params_t *sp)
+{
+    u32 safestack_index =  __xmhfhic_safestack_indices[(u16)cpuid];
+    if(safestack_index >=0 && safestack_index < 512) {
+        __xmhfhic_safestack[(u16)cpuid][safestack_index].src_slabid = src_slabid;
+        __xmhfhic_safestack[(u16)cpuid][safestack_index].dst_slabid = dst_slabid;
+        __xmhfhic_safestack[(u16)cpuid][safestack_index].hic_calltype = hic_calltype;
+        __xmhfhic_safestack[(u16)cpuid][safestack_index].caller_stack_frame = caller_stack_frame;
+        __xmhfhic_safestack[(u16)cpuid][safestack_index].sp = sp;
+
+        safestack_index++;
+        __xmhfhic_safestack_indices[(u16)cpuid] = safestack_index;
+    }
+}
+
