@@ -44,11 +44,50 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
+/*
+ * HIC trampoline and stubs
+ *
+ * author: amit vasudevan (amitvasudevan@acm.org)
+ */
 
 #include <xmhf.h>
 #include <xmhf-debug.h>
+
 #include <xmhfgeec.h>
+
+#include <xc.h>
 #include <geec_sentinel.h>
 
-__attribute__((section(".data"))) u32 __xmhfhic_safestack_indices[MAX_PLATFORM_CPUS] = { 0 };
-__attribute__((section(".data"))) __xmhfhic_safestack_element_t __xmhfhic_safestack[MAX_PLATFORM_CPUS][512];
+
+////// sysenter
+
+//in general sp->xxx is untrusted and must be sanity checked
+void _geec_sentinel_sysenter_stub(slab_params_t *sp, void *caller_stack_frame){
+
+    //sanity check sp
+    //sp->cpuid = __xmhfhic_x86vmx_cpuidtable[xmhf_baseplatform_arch_x86_getcpulapicid()];
+    sp->cpuid = xmhf_baseplatform_arch_x86_getcpulapicid();
+
+    if( !(sp->slab_ctype == XMHFGEEC_SENTINEL_RET_VfT_PROG_TO_uVT_uVU_PROG ||
+          sp->slab_ctype == XMHFGEEC_SENTINEL_CALL_uVT_uVU_PROG_TO_VfT_PROG
+          ) ){
+        _XDPRINTF_("%s[ln:%u]: inconsistent sp->xxx (%x). halting!\n", __func__,
+                   __LINE__, sp->slab_ctype);
+        HALT();
+    }
+
+    sp->src_slabid =
+        (CASM_FUNCCALL(read_cr3, CASM_NOPARAM) - _xmhfhic_common_slab_info_table[XMHFGEEC_SLAB_GEEC_SENTINEL].mempgtbl_cr3)/PAGE_SIZE_4K;
+
+    //sp->src_slabid =  sp->src_slabid + 1;
+
+
+    _XDPRINTF_("%s: sp=%x, cpuid=%u, src=%u, dst=%u, ctype=%x\n", __func__,
+               (u32)sp, (u16)sp->cpuid, sp->src_slabid, sp->dst_slabid, sp->slab_ctype);
+
+    geec_sentinel_main(sp, caller_stack_frame);
+}
+
+
+
+
