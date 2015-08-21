@@ -144,7 +144,7 @@ static void xcguestslab_do_msrtest(void){
     u64 sysenter_cs_msr;
 
 
- CASM_FUNCCALL(wrmsr64,IA32_SYSENTER_CS_MSR, 0xAA);
+	CASM_FUNCCALL(wrmsr64,IA32_SYSENTER_CS_MSR, 0xAA, 0);
 
     _XDPRINTF_("%s: wrote SYSENTER_CS_MSR.\n", __func__);
 
@@ -361,9 +361,9 @@ void xcguestslab_do_testxhsyscalllog(void){
 
     //setup SYSENTER/SYSEXIT mechanism
     {
- CASM_FUNCCALL(wrmsr64,IA32_SYSENTER_CS_MSR, __CS_CPL0);
- CASM_FUNCCALL(wrmsr64,IA32_SYSENTER_EIP_MSR, &_xcguestslab_do_testxhsyscalllog_sysenterhandler);
- CASM_FUNCCALL(wrmsr64,IA32_SYSENTER_ESP_MSR, ((u32)&_xcguestslab_do_testxhsyscalllog_sysenterhandler_stack + (u32)PAGE_SIZE_4K));
+ CASM_FUNCCALL(wrmsr64,IA32_SYSENTER_CS_MSR, __CS_CPL0, 0);
+ CASM_FUNCCALL(wrmsr64,IA32_SYSENTER_EIP_MSR, &_xcguestslab_do_testxhsyscalllog_sysenterhandler, 0);
+ CASM_FUNCCALL(wrmsr64,IA32_SYSENTER_ESP_MSR, ((u32)&_xcguestslab_do_testxhsyscalllog_sysenterhandler_stack + (u32)PAGE_SIZE_4K), 0);
     }
     _XDPRINTF_("%s: setup SYSENTER/SYSEXIT mechanism\n", __func__);
     _XDPRINTF_("%s: SYSENTER CS=%016llx\n", __func__, CASM_FUNCCALL(rdmsr64,IA32_SYSENTER_CS_MSR));

@@ -323,11 +323,13 @@ static txt_heap_t *init_txt_heap(void *ptab_base, acm_hdr_t *sinit,
 {
     txt_heap_t *txt_heap;
     uint64_t *size;
-    os_mle_data_t *os_mle_data;
-    os_sinit_data_t *os_sinit_data;
+    os_mle_data_t os_mle_data;
+    os_sinit_data_t os_sinit_data;
     /* uint64_t min_lo_ram, max_lo_ram, min_hi_ram, max_hi_ram; */
     txt_caps_t sinit_caps;
     txt_caps_t caps_mask;
+
+(void)mle_size;
 
     txt_heap = get_txt_heap();
 
@@ -340,79 +342,91 @@ static txt_heap_t *init_txt_heap(void *ptab_base, acm_hdr_t *sinit,
     /*
      * OS/loader to MLE data
      */
-    os_mle_data = get_os_mle_data_start(txt_heap);
-    size = (uint64_t *)((uint32_t)os_mle_data - sizeof(uint64_t));
-    *size = sizeof(*os_mle_data) + sizeof(uint64_t);
-    memset(os_mle_data, 0, sizeof(*os_mle_data));
-    os_mle_data->version = 0x02;
-    os_mle_data->mbi = NULL;
-    os_mle_data->saved_misc_enable_msr = rdmsr64(MSR_IA32_MISC_ENABLE);
+    //os_mle_data =get_os_mle_data_start(txt_heap, (uint32_t)read_pub_config_reg(TXTCR_HEAP_SIZE));
+    //size = (uint64_t *)((uint32_t)os_mle_data - sizeof(uint64_t));
+    //*size = sizeof(*os_mle_data) + sizeof(uint64_t);
+    //memset(os_mle_data, 0, sizeof(*os_mle_data));
+    //os_mle_data->version = 0x02;
+    //os_mle_data->mbi = NULL;
+    //os_mle_data->saved_misc_enable_msr = rdmsr64(MSR_IA32_MISC_ENABLE);
+
+
+	xmhfhw_sysmemaccess_writeu64(
+		(get_os_mle_data_start(txt_heap, (uint32_t)read_pub_config_reg(TXTCR_HEAP_SIZE)) - sizeof(uint64_t)),
+		(u32)(sizeof(os_mle_data) + sizeof(uint64_t)),
+		(u32)((u64)(sizeof(os_mle_data) + sizeof(uint64_t)) >> 32) );
+
+	    memset(&os_mle_data, 0, sizeof(os_mle_data));
+	    os_mle_data.version = 0x02;
+	    os_mle_data.mbi = NULL;
+	    os_mle_data.saved_misc_enable_msr = rdmsr64(MSR_IA32_MISC_ENABLE);
+
+	xmhfhw_sysmemaccess_copy(get_os_mle_data_start(txt_heap, (uint32_t)read_pub_config_reg(TXTCR_HEAP_SIZE)),
+			&os_mle_data, sizeof(os_mle_data_t));
+
+	//_XDPRINTF_("Came %s:%u\n", __func__, __LINE__);
+	//HALT();
+
+
 
     /*
      * OS/loader to SINIT data
      */
-    os_sinit_data = get_os_sinit_data_start(txt_heap);
-    size = (uint64_t *)((uint32_t)os_sinit_data - sizeof(uint64_t));
-    *size = sizeof(*os_sinit_data) + sizeof(uint64_t);
-    memset(os_sinit_data, 0, sizeof(*os_sinit_data));
-    os_sinit_data->version = 5; // XXX too magical
-    /* this is phys addr */
-    os_sinit_data->mle_ptab = (uint64_t)(unsigned long)ptab_base;
-    os_sinit_data->mle_size = g_mle_hdr.mle_end_off - g_mle_hdr.mle_start_off;
-    /* Copy populated MLE header into SL */
-    HALT_ON_ERRORCOND(sizeof(mle_hdr_t) < TEMPORARY_MAX_MLE_HEADER_SIZE);
-    memcpy(phys_mle_start, &g_mle_hdr, sizeof(mle_hdr_t));
-    _XDPRINTF_("Copied mle_hdr (0x%08x, 0x%x bytes) into SL (0x%08x)\n",
-           (u32)&g_mle_hdr, sizeof(mle_hdr_t), (u32)phys_mle_start);
-    /* this is linear addr (offset from MLE base) of mle header, in MLE page tables */
-    os_sinit_data->mle_hdr_base = 0;
 
-    //- (uint64_t)(unsigned long)&_mle_start;
-    /* VT-d PMRs */
-    /* Must protect MLE, o/w get: TXT.ERRORCODE=c0002871
-       AC module error : acm_type=1, progress=07, error=a
-       "page is not covered by DPR nor PMR regions" */
-    {
-		//extern u32 sl_rt_size;	//XXX: Ugly hack to bring in SL + runtime size; ideally this should be passed in as another parameter
-		(void)mle_size;
-		os_sinit_data->vtd_pmr_lo_base = (u64)__TARGET_BASE_SL;
-		os_sinit_data->vtd_pmr_lo_size = (u64)__TARGET_SIZE_SL;
+	//os_sinit_data = get_os_sinit_data_start(txt_heap, (uint32_t)read_pub_config_reg(TXTCR_HEAP_SIZE));
+	//size = (uint64_t *)((uint32_t)os_sinit_data - sizeof(uint64_t));
+	// *size = sizeof(*os_sinit_data) + sizeof(uint64_t);
 
-		//os_sinit_data->vtd_pmr_hi_base = (u64)(__TARGET_BASE_SL+ __TARGET_SIZE_SL);
-		//os_sinit_data->vtd_pmr_hi_size = (u64)PAGE_ALIGN_UP2M(sl_rt_size) - (u64)__TARGET_SIZE_SL;
+	xmhfhw_sysmemaccess_writeu64(
+		(get_os_sinit_data_start(txt_heap, (uint32_t)read_pub_config_reg(TXTCR_HEAP_SIZE)) - sizeof(uint64_t)),
+		(u32)(sizeof(os_sinit_data) + sizeof(uint64_t)),
+		(u32)((u64)(sizeof(os_sinit_data) + sizeof(uint64_t)) >> 32) );
 
-		_XDPRINTF_("\nvtd_pmr_lo_base=%016llx, size=%016llx", os_sinit_data->vtd_pmr_lo_base, os_sinit_data->vtd_pmr_lo_size);
-		//_XDPRINTF_("\nvtd_pmr_hi_base=%016llx, size=%016llx", os_sinit_data->vtd_pmr_hi_base, os_sinit_data->vtd_pmr_hi_size);
 
+	memset(&os_sinit_data, 0, sizeof(os_sinit_data));
+
+	os_sinit_data.version = 5;
+	os_sinit_data.mle_ptab = (uint64_t)(unsigned long)ptab_base;
+	os_sinit_data.mle_size = g_mle_hdr.mle_end_off - g_mle_hdr.mle_start_off;
+
+	HALT_ON_ERRORCOND(sizeof(mle_hdr_t) < TEMPORARY_MAX_MLE_HEADER_SIZE);
+	memcpy(phys_mle_start, &g_mle_hdr, sizeof(mle_hdr_t));
+	_XDPRINTF_("Copied mle_hdr (0x%08x, 0x%x bytes) into SL (0x%08x)\n",
+	   (u32)&g_mle_hdr, sizeof(mle_hdr_t), (u32)phys_mle_start);
+
+	os_sinit_data.mle_hdr_base = 0; // linear addr (offset from MLE base) of mle header, in MLE page tables
+
+
+	os_sinit_data.vtd_pmr_lo_base = (u64)__TARGET_BASE_SL;
+	os_sinit_data.vtd_pmr_lo_size = (u64)__TARGET_SIZE_SL;
+	_XDPRINTF_("\nvtd_pmr_lo_base=%016llx, size=%016llx", os_sinit_data.vtd_pmr_lo_base, os_sinit_data.vtd_pmr_lo_size);
+
+	sinit_caps = get_sinit_capabilities(sinit);
+	caps_mask = 0;
+	caps_mask = TXT_CAPS_T_RLP_WAKE_GETSEC | TXT_CAPS_T_RLP_WAKE_MONITOR;
+	os_sinit_data.capabilities = MLE_HDR_CAPS & ~caps_mask;
+	if ( sinit_caps & TXT_CAPS_T_RLP_WAKE_MONITOR )
+		os_sinit_data.capabilities |= TXT_CAPS_T_RLP_WAKE_MONITOR;
+	else if ( sinit_caps & TXT_CAPS_T_RLP_WAKE_GETSEC )
+		os_sinit_data.capabilities |= TXT_CAPS_T_RLP_WAKE_GETSEC;
+	else {     /* should have been detected in verify_acmod() */
+		_XDPRINTF_("SINIT capabilities are icompatible (0x%x)\n", sinit_caps);
+		return NULL;
 	}
 
+	os_sinit_data.capabilities &= ~(TXT_CAPS_T_ECX_PGTBL);
+
+	print_os_sinit_data(&os_sinit_data);
 
 
-    /* LCP owner policy data -- DELETED */
+	xmhfhw_sysmemaccess_copy(
+		get_os_sinit_data_start(txt_heap, (uint32_t)read_pub_config_reg(TXTCR_HEAP_SIZE)),
+		&os_sinit_data,
+		sizeof(os_sinit_data));
 
-    /* capabilities : choose monitor wake mechanism first */
-    ///XXX I don't really understand this
-    sinit_caps = get_sinit_capabilities(sinit);
-    caps_mask = 0;
-    //caps_mask.rlp_wake_getsec = caps_mask.rlp_wake_monitor = 1;
-    caps_mask = TXT_CAPS_T_RLP_WAKE_GETSEC | TXT_CAPS_T_RLP_WAKE_MONITOR;
-    os_sinit_data->capabilities = MLE_HDR_CAPS & ~caps_mask;
-    if ( sinit_caps & TXT_CAPS_T_RLP_WAKE_MONITOR )
-        os_sinit_data->capabilities |= TXT_CAPS_T_RLP_WAKE_MONITOR;
-    else if ( sinit_caps & TXT_CAPS_T_RLP_WAKE_GETSEC )
-        os_sinit_data->capabilities |= TXT_CAPS_T_RLP_WAKE_GETSEC;
-    else {     /* should have been detected in verify_acmod() */
-        _XDPRINTF_("SINIT capabilities are icompatible (0x%x)\n", sinit_caps);
-        return NULL;
-    }
-    /* capabilities : require MLE pagetable in ECX on launch */
-    /* TODO: when SINIT ready
-     * os_sinit_data->capabilities.ecx_pgtbl = 1;
-     */
-    os_sinit_data->capabilities &= ~(TXT_CAPS_T_ECX_PGTBL);
-    /* TODO: when tboot supports EFI then set efi_rsdt_ptr */
 
-    print_os_sinit_data(os_sinit_data);
+
+
 
     /*
      * SINIT to MLE data will be setup by SINIT
@@ -434,7 +448,7 @@ tb_error_t txt_launch_environment(void *sinit_ptr, size_t sinit_size,
 {
     acm_hdr_t *sinit;
     void *mle_ptab_base;
-    os_mle_data_t *os_mle_data;
+    os_mle_data_t os_mle_data;
     txt_heap_t *txt_heap;
 
     if(NULL == sinit_ptr) return TB_ERR_SINIT_NOT_PRESENT;
@@ -469,8 +483,11 @@ tb_error_t txt_launch_environment(void *sinit_ptr, size_t sinit_size,
         return TB_ERR_FATAL;
 
     /* save MTRRs before we alter them for SINIT launch */
-    os_mle_data = get_os_mle_data_start(txt_heap);
-    xmhfhw_cpu_x86_save_mtrrs(&(os_mle_data->saved_mtrr_state));
+    xmhfhw_sysmemaccess_copy(&os_mle_data, get_os_mle_data_start(txt_heap, (uint32_t)read_pub_config_reg(TXTCR_HEAP_SIZE)),
+				sizeof(os_mle_data_t));
+    xmhfhw_cpu_x86_save_mtrrs(&(os_mle_data.saved_mtrr_state));
+    xmhfhw_sysmemaccess_copy( get_os_mle_data_start(txt_heap, (uint32_t)read_pub_config_reg(TXTCR_HEAP_SIZE)), &os_mle_data,
+				sizeof(os_mle_data_t));
 
     /* set MTRRs properly for AC module (SINIT) */
     if ( !set_mtrrs_for_acmod(sinit) )
