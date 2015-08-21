@@ -61,12 +61,12 @@
 
 void _geec_sentinel_transition_ret_vft_prog_to_uvt_uvu_prog(slab_params_t *sp, void *caller_stack_frame){
     slab_params_t *dst_sp;
-    __xmhfhic_safestack_element_t elem;
+    gs_siss_element_t elem;
 
     _XDPRINTF_("%s[%u]: src=%u, dst=%u\n", __func__, (u16)sp->cpuid, sp->src_slabid, sp->dst_slabid);
 
     //pop tuple from safe stack
-    __xmhfhic_safepop((u16)sp->cpuid, &elem.src_slabid, &elem.dst_slabid, &elem.hic_calltype, &elem.caller_stack_frame,
+    gs_siss_pop((u16)sp->cpuid, &elem.src_slabid, &elem.dst_slabid, &elem.hic_calltype, &elem.caller_stack_frame,
                         &elem.sp);
 
     _XDPRINTF_("%s[%u]: safepop: {cpuid: %u, src: %u, dst: %u, ctype: 0x%x, \

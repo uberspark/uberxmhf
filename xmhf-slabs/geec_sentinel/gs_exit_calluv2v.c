@@ -88,7 +88,7 @@ void _geec_sentinel_transition_call_uvt_uvu_prog_to_vft_prog(slab_params_t *sp, 
                (u16)sp->cpuid, sp->src_slabid, sp->dst_slabid, sp->slab_ctype,
                caller_stack_frame, sp);
 
-    __xmhfhic_safepush((u16)sp->cpuid, sp->src_slabid, sp->dst_slabid,
+    gs_siss_push((u16)sp->cpuid, sp->src_slabid, sp->dst_slabid,
                        sp->slab_ctype, caller_stack_frame, sp);
 
 
