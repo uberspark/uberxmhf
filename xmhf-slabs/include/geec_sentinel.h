@@ -59,18 +59,26 @@
 
 #ifndef __ASSEMBLY__
 
+extern __attribute__((section(".data"))) __attribute__((aligned(4096))) xmhfgeec_slab_info_t _xmhfhic_common_slab_info_table[XMHFGEEC_TOTAL_SLABS];
+
+
 typedef struct {
     u32 src_slabid;
     u32 dst_slabid;
     u32 hic_calltype;
     void *caller_stack_frame;
     slab_params_t *sp;
-}__attribute__((packed)) __xmhfhic_safestack_element_t;
+}__attribute__((packed)) gs_siss_element_t;
 
 
-extern __attribute__((section(".data"))) __xmhfhic_safestack_element_t __xmhfhic_safestack[MAX_PLATFORM_CPUS][512];
-extern __attribute__((section(".data"))) __attribute__((aligned(4096))) xmhfgeec_slab_info_t _xmhfhic_common_slab_info_table[XMHFGEEC_TOTAL_SLABS];
-extern __attribute__((section(".data"))) u32 __xmhfhic_safestack_indices[MAX_PLATFORM_CPUS];
+extern __attribute__((section(".data"))) gs_siss_element_t gs_siss[MAX_PLATFORM_CPUS][512];
+extern __attribute__((section(".data"))) u32 gs_siss_indices[MAX_PLATFORM_CPUS];
+
+void gs_siss_pop(u32 cpuid, u32 *src_slabid, u32 *dst_slabid, u32 *hic_calltype,
+                       void **caller_stack_framep, slab_params_t **spp);
+
+void gs_siss_push(u32 cpuid, u32 src_slabid, u32 dst_slabid, u32 hic_calltype,
+                        void *caller_stack_frame, slab_params_t *sp);
 
 
 

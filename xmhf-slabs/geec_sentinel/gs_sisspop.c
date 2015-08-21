@@ -45,7 +45,7 @@
  */
 
 /*
- * HIC trampoline and stubs
+ * GEEC sentinel SISS stack pop operation
  *
  * author: amit vasudevan (amitvasudevan@acm.org)
  */
@@ -57,18 +57,18 @@
 
 
 
-void __xmhfhic_safepop(u32 cpuid, u32 *src_slabid, u32 *dst_slabid, u32 *hic_calltype,
+void gs_siss_pop(u32 cpuid, u32 *src_slabid, u32 *dst_slabid, u32 *hic_calltype,
                        void **caller_stack_framep, slab_params_t **spp)
 {
-    u32 safestack_index =  __xmhfhic_safestack_indices[(u16)cpuid]-1;
+    u32 safestack_index =  gs_siss_indices[(u16)cpuid]-1;
     if(safestack_index >=0 && safestack_index < 512){
-        *src_slabid = __xmhfhic_safestack[(u16)cpuid][safestack_index].src_slabid;
-        *dst_slabid = __xmhfhic_safestack[(u16)cpuid][safestack_index].dst_slabid;
-        *hic_calltype = __xmhfhic_safestack[(u16)cpuid][safestack_index].hic_calltype;
-        *caller_stack_framep = __xmhfhic_safestack[(u16)cpuid][safestack_index].caller_stack_frame;
-        *spp = __xmhfhic_safestack[(u16)cpuid][safestack_index].sp;
+        *src_slabid = gs_siss[(u16)cpuid][safestack_index].src_slabid;
+        *dst_slabid = gs_siss[(u16)cpuid][safestack_index].dst_slabid;
+        *hic_calltype = gs_siss[(u16)cpuid][safestack_index].hic_calltype;
+        *caller_stack_framep = gs_siss[(u16)cpuid][safestack_index].caller_stack_frame;
+        *spp = gs_siss[(u16)cpuid][safestack_index].sp;
 
-        __xmhfhic_safestack_indices[(u16)cpuid] = safestack_index;
+        gs_siss_indices[(u16)cpuid] = safestack_index;
     }
 }
 

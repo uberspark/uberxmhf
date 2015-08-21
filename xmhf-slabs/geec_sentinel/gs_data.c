@@ -50,5 +50,5 @@
 #include <xmhfgeec.h>
 #include <geec_sentinel.h>
 
-__attribute__((section(".data"))) u32 __xmhfhic_safestack_indices[MAX_PLATFORM_CPUS] = { 0 };
-__attribute__((section(".data"))) __xmhfhic_safestack_element_t __xmhfhic_safestack[MAX_PLATFORM_CPUS][512];
+__attribute__((section(".data"))) u32 gs_siss_indices[MAX_PLATFORM_CPUS] = { 0 };
+__attribute__((section(".data"))) gs_siss_element_t gs_siss[MAX_PLATFORM_CPUS][512];

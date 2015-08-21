@@ -57,19 +57,19 @@
 
 
 
-void __xmhfhic_safepush(u32 cpuid, u32 src_slabid, u32 dst_slabid, u32 hic_calltype,
+void gs_siss_push(u32 cpuid, u32 src_slabid, u32 dst_slabid, u32 hic_calltype,
                         void *caller_stack_frame, slab_params_t *sp)
 {
-    u32 safestack_index =  __xmhfhic_safestack_indices[(u16)cpuid];
+    u32 safestack_index =  gs_siss_indices[(u16)cpuid];
     if(safestack_index >=0 && safestack_index < 512) {
-        __xmhfhic_safestack[(u16)cpuid][safestack_index].src_slabid = src_slabid;
-        __xmhfhic_safestack[(u16)cpuid][safestack_index].dst_slabid = dst_slabid;
-        __xmhfhic_safestack[(u16)cpuid][safestack_index].hic_calltype = hic_calltype;
-        __xmhfhic_safestack[(u16)cpuid][safestack_index].caller_stack_frame = caller_stack_frame;
-        __xmhfhic_safestack[(u16)cpuid][safestack_index].sp = sp;
+        gs_siss[(u16)cpuid][safestack_index].src_slabid = src_slabid;
+        gs_siss[(u16)cpuid][safestack_index].dst_slabid = dst_slabid;
+        gs_siss[(u16)cpuid][safestack_index].hic_calltype = hic_calltype;
+        gs_siss[(u16)cpuid][safestack_index].caller_stack_frame = caller_stack_frame;
+        gs_siss[(u16)cpuid][safestack_index].sp = sp;
 
         safestack_index++;
-        __xmhfhic_safestack_indices[(u16)cpuid] = safestack_index;
+        gs_siss_indices[(u16)cpuid] = safestack_index;
     }
 }
 
