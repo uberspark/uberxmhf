@@ -21,6 +21,8 @@ XMHF_SLAB_OBJECTS := $(patsubst %.S, %.o, $(XMHF_SLAB_OBJECTS))
 
 # folder where objects go
 XMHF_SLAB_OBJECTS_DIR := _objs_slab_$(XMHF_SLAB_NAME)
+XMHF_SLAB_VERIFICATION_DIR := _verif_$(XMHF_SLAB_NAME)
+
 
 LINKER_SCRIPT_INPUT := $(XMHF_DIR)/xmhf-slabs/$(XMHF_SLAB_NAME)/xmhfgeecslab.lscript
 LINKER_SCRIPT_OUTPUT := $(XMHF_SLAB_NAME).lds
@@ -37,15 +39,15 @@ export LDFLAGS := --oformat elf32-i386
 all: buildslabbin
 
 
-.PHONY: verify
-verify:
+.PHONY: verifybase
+verifybase:
 	@echo Prepping sources...
+	mkdir -p $(XMHF_SLAB_VERIFICATION_DIR)
 	@for i in $(XMHF_SLAB_SOURCES_SUBST); \
 	do \
-		(cp -f $$i $$i.v.c) || exit 1; \
+		(cp -f $$i $(XMHF_SLAB_VERIFICATION_DIR)/$$i.v.c) || exit 1; \
 	done;
 	@echo Sources prepped.
-	frama-c -val -main $(XMHF_SLAB_MAIN) -cpp-extra-args=-nostdinc $(VFLAGS) $(XMHF_SLAB_VERIFICATION_SOURCES)
 
 
 
