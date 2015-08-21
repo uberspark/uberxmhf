@@ -52,10 +52,7 @@
 
 #include <xmhf.h>
 #include <xmhf-debug.h>
-
 #include <xmhfgeec.h>
-
-#include <xc.h>
 #include <geec_sentinel.h>
 
 
