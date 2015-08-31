@@ -56,30 +56,30 @@
 #include <geec_sentinel.h>
 
 /*@
-	predicate sissValid{L}(u32 cpuid) =
-		(cpuid < MAX_PLATFORM_CPUS);
+	predicate sissValid{L}(u32 siss_id) =
+		(siss_id < MAX_PLATFORM_CPUS);
 @*/
 
 
 
 /*@
-	requires sissValid(cpuid);
-	assigns gs_siss[cpuid][0..511];
-	assigns gs_siss_indices[cpuid];
+	requires sissValid(siss_id);
+	assigns gs_siss[siss_id][0..511];
+	assigns gs_siss_indices[siss_id];
 @*/
-void gs_siss_push(u32 cpuid, u32 src_slabid, u32 dst_slabid, u32 hic_calltype,
+void gs_siss_push(u32 siss_id, u32 src_slabid, u32 dst_slabid, u32 hic_calltype,
                         void *caller_stack_frame, slab_params_t *sp)
 {
-    u32 safestack_index =  gs_siss_indices[(u16)cpuid];
+    u32 safestack_index =  gs_siss_indices[siss_id];
     if(safestack_index >=0 && safestack_index < 512) {
-        gs_siss[(u16)cpuid][safestack_index].src_slabid = src_slabid;
-        gs_siss[(u16)cpuid][safestack_index].dst_slabid = dst_slabid;
-        gs_siss[(u16)cpuid][safestack_index].hic_calltype = hic_calltype;
-        gs_siss[(u16)cpuid][safestack_index].caller_stack_frame = caller_stack_frame;
-        gs_siss[(u16)cpuid][safestack_index].sp = sp;
+        gs_siss[siss_id][safestack_index].src_slabid = src_slabid;
+        gs_siss[siss_id][safestack_index].dst_slabid = dst_slabid;
+        gs_siss[siss_id][safestack_index].hic_calltype = hic_calltype;
+        gs_siss[siss_id][safestack_index].caller_stack_frame = caller_stack_frame;
+        gs_siss[siss_id][safestack_index].sp = sp;
 
         safestack_index++;
-        gs_siss_indices[(u16)cpuid] = safestack_index;
+        gs_siss_indices[siss_id] = safestack_index;
     }
 }
 
