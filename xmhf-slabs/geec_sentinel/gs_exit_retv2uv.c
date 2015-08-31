@@ -66,18 +66,18 @@ void _geec_sentinel_transition_ret_vft_prog_to_uvt_uvu_prog(slab_params_t *sp, v
     _XDPRINTF_("%s[%u]: src=%u, dst=%u\n", __func__, (u16)sp->cpuid, sp->src_slabid, sp->dst_slabid);
 
     //pop tuple from safe stack
-    gs_siss_pop((u16)sp->cpuid, &elem.src_slabid, &elem.dst_slabid, &elem.hic_calltype, &elem.caller_stack_frame,
+    gs_siss_pop((u16)sp->cpuid, &elem.src_slabid, &elem.dst_slabid, &elem.slab_ctype, &elem.caller_stack_frame,
                         &elem.sp);
 
     _XDPRINTF_("%s[%u]: safepop: {cpuid: %u, src: %u, dst: %u, ctype: 0x%x, \
                csf=0x%x, sp=0x%x \n",
             __func__, (u16)sp->cpuid,
-               (u16)sp->cpuid, elem.src_slabid, elem.dst_slabid, elem.hic_calltype,
+               (u16)sp->cpuid, elem.src_slabid, elem.dst_slabid, elem.slab_ctype,
                elem.caller_stack_frame, elem.sp);
 
     //check to ensure this return is paired with a prior call
     if ( !((elem.src_slabid == sp->dst_slabid) && (elem.dst_slabid == sp->src_slabid) &&
-           (elem.hic_calltype == XMHFGEEC_SENTINEL_CALL_VfT_PROG_TO_uVT_uVU_PROG)) ){
+           (elem.slab_ctype == XMHFGEEC_SENTINEL_CALL_VfT_PROG_TO_uVT_uVU_PROG)) ){
         _XDPRINTF_("%s[ln:%u]: Fatal: ret does not match prior call. Halting!\n",
             __func__, __LINE__);
         HALT();

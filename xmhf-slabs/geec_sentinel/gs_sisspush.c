@@ -69,16 +69,17 @@
 	assigns gs_siss[siss_id][gs_siss_indices[siss_id]];
 
 @*/
-void gs_siss_push(u32 siss_id, u32 src_slabid, u32 dst_slabid, u32 hic_calltype,
-                        void *caller_stack_frame, slab_params_t *sp)
+void gs_siss_push(u32 siss_id, gs_siss_element_t elem)
+//		u32 src_slabid, u32 dst_slabid, u32 hic_calltype,
+//                        void *caller_stack_frame, slab_params_t *sp)
 {
     u32 safestack_index =  gs_siss_indices[siss_id];
     if(safestack_index >=0 && safestack_index < 512) {
-        gs_siss[siss_id][safestack_index].src_slabid = src_slabid;
-        gs_siss[siss_id][safestack_index].dst_slabid = dst_slabid;
-        gs_siss[siss_id][safestack_index].hic_calltype = hic_calltype;
-        gs_siss[siss_id][safestack_index].caller_stack_frame = caller_stack_frame;
-        gs_siss[siss_id][safestack_index].sp = sp;
+        gs_siss[siss_id][safestack_index].src_slabid = elem.src_slabid;
+        gs_siss[siss_id][safestack_index].dst_slabid = elem.dst_slabid;
+        gs_siss[siss_id][safestack_index].slab_ctype = elem.slab_ctype;
+        gs_siss[siss_id][safestack_index].caller_stack_frame = elem.caller_stack_frame;
+        gs_siss[siss_id][safestack_index].sp = elem.sp;
 
         safestack_index++;
         gs_siss_indices[siss_id] = safestack_index;

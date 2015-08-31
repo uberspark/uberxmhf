@@ -58,6 +58,7 @@
 
 void _geec_sentinel_transition_call_uvt_uvu_prog_to_vft_prog(slab_params_t *sp, void *caller_stack_frame){
     slab_params_t *dst_sp;
+	gs_siss_element_t siss_elem;
 
     _XDPRINTF_("%s[%u]: src=%u, dst=%u\n", __func__, (u16)sp->cpuid, sp->src_slabid, sp->dst_slabid);
 
@@ -88,8 +89,15 @@ void _geec_sentinel_transition_call_uvt_uvu_prog_to_vft_prog(slab_params_t *sp, 
                (u16)sp->cpuid, sp->src_slabid, sp->dst_slabid, sp->slab_ctype,
                caller_stack_frame, sp);
 
-    gs_siss_push((u16)sp->cpuid, sp->src_slabid, sp->dst_slabid,
-                       sp->slab_ctype, caller_stack_frame, sp);
+	siss_elem.src_slabid = sp->src_slabid;
+	siss_elem.dst_slabid = sp->dst_slabid;
+	siss_elem.slab_ctype = sp->slab_ctype;
+	siss_elem.caller_stack_frame = caller_stack_frame;
+	siss_elem.sp = sp;
+
+    //gs_siss_push((u16)sp->cpuid, sp->src_slabid, sp->dst_slabid,
+    //                   sp->slab_ctype, caller_stack_frame, sp);
+    gs_siss_push((u16)sp->cpuid, siss_elem);
 
 
     _XDPRINTF_("%s[%u]: entry=%x, dst_sp=%x, proceeding to xfer...\n", __func__,
