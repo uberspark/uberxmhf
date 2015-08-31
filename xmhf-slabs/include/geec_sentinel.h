@@ -77,7 +77,7 @@ extern __attribute__((section(".data"))) u32 gs_siss_indices[MAX_PLATFORM_CPUS];
 void gs_siss_pop(u32 cpuid, u32 *src_slabid, u32 *dst_slabid, u32 *hic_calltype,
                        void **caller_stack_framep, slab_params_t **spp);
 
-void gs_siss_push(u32 cpuid, u32 src_slabid, u32 dst_slabid, u32 hic_calltype,
+void gs_siss_push(u32 siss_id, u32 src_slabid, u32 dst_slabid, u32 hic_calltype,
                         void *caller_stack_frame, slab_params_t *sp);
 
 
