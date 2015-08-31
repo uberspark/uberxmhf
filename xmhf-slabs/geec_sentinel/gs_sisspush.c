@@ -55,9 +55,15 @@
 #include <xmhfgeec.h>
 #include <geec_sentinel.h>
 
+/*@
+	predicate sissValid{L}(u32 cpuid) =
+		(cpuid < MAX_PLATFORM_CPUS);
+@*/
+
+
 
 /*@
-	requires cpuid < MAX_PLATFORM_CPUS;
+	requires sissValid(cpuid);
 	assigns gs_siss[cpuid][0..511];
 	assigns gs_siss_indices[cpuid];
 @*/
