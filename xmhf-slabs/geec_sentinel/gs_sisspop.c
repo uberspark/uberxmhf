@@ -64,7 +64,7 @@ void gs_siss_pop(u32 cpuid, u32 *src_slabid, u32 *dst_slabid, u32 *hic_calltype,
     if(safestack_index >=0 && safestack_index < 512){
         *src_slabid = gs_siss[(u16)cpuid][safestack_index].src_slabid;
         *dst_slabid = gs_siss[(u16)cpuid][safestack_index].dst_slabid;
-        *hic_calltype = gs_siss[(u16)cpuid][safestack_index].hic_calltype;
+        *hic_calltype = gs_siss[(u16)cpuid][safestack_index].slab_ctype;
         *caller_stack_framep = gs_siss[(u16)cpuid][safestack_index].caller_stack_frame;
         *spp = gs_siss[(u16)cpuid][safestack_index].sp;
 
