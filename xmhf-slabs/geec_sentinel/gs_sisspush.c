@@ -64,8 +64,10 @@
 
 /*@
 	requires sissValid(siss_id);
-	assigns gs_siss[siss_id][0..511];
+
 	assigns gs_siss_indices[siss_id];
+	assigns gs_siss[siss_id][gs_siss_indices[siss_id]];
+
 @*/
 void gs_siss_push(u32 siss_id, u32 src_slabid, u32 dst_slabid, u32 hic_calltype,
                         void *caller_stack_frame, slab_params_t *sp)
