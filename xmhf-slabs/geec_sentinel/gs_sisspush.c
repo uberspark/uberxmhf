@@ -55,6 +55,19 @@
 #include <xmhfgeec.h>
 #include <geec_sentinel.h>
 
+//@	logic u32 sissCapacity{L}(u32 siss_id) = (u32)512;
+
+//@	logic u32 sissSize{L}(u32 siss_id) = gs_siss_indices[siss_id];
+
+//@	logic gs_siss_element_t * sissStorage{L}(u32 siss_id) = &gs_siss[siss_id][0];
+
+//@	logic gs_siss_element_t sissTop{L}(u32 siss_id) = gs_siss[siss_id][gs_siss_indices[siss_id]-1];
+
+//@	predicate sissEmpty{L}(u32 siss_id) = (sissSize(siss_id) == 0);
+
+//@	predicate sissFull{L}(u32 siss_id) = (sissSize(siss_id) == sissCapacity(siss_id));
+
+
 /*@
 	predicate sissValid{L}(u32 siss_id) =
 		(siss_id < MAX_PLATFORM_CPUS);
