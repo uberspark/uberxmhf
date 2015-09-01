@@ -59,6 +59,10 @@
 
 #ifndef __ASSEMBLY__
 
+
+
+
+
 extern __attribute__((section(".data"))) __attribute__((aligned(4096))) xmhfgeec_slab_info_t _xmhfhic_common_slab_info_table[XMHFGEEC_TOTAL_SLABS];
 
 
@@ -74,6 +78,48 @@ typedef struct {
 extern __attribute__((section(".data"))) gs_siss_element_t gs_siss[MAX_PLATFORM_CPUS][512];
 extern __attribute__((section(".data"))) u32 gs_siss_indices[MAX_PLATFORM_CPUS];
 
+
+//@	logic u32 sissCapacity{L}(u32 siss_id) = (u32)512;
+
+//@	logic u32 sissSize{L}(u32 siss_id) = gs_siss_indices[siss_id];
+
+//@	logic gs_siss_element_t * sissStorage{L}(u32 siss_id) = &gs_siss[siss_id][0];
+
+/*@
+ predicate sissTop{L}(gs_siss_element_t * elem, integer index, gs_siss_element_t input) =
+		(elem[index].src_slabid == input.src_slabid &&
+		elem[index].dst_slabid == input.dst_slabid &&
+		elem[index].slab_ctype == input.slab_ctype &&
+		elem[index].caller_stack_frame == input.caller_stack_frame &&
+		elem[index].sp == input.sp
+		);
+*/
+
+//@	predicate sissEmpty{L}(u32 siss_id) = (sissSize(siss_id) == 0);
+
+//@	predicate sissFull{L}(u32 siss_id) = (sissSize(siss_id) == sissCapacity(siss_id));
+
+/*@
+	predicate
+	sissUnchanged {A,B } ( gs_siss_element_t * a, integer first, integer last ) =
+	\forall integer i; first <= i < last
+	==> ( (\at (a[i].src_slabid , A) == \at( a[i].src_slabid , B)) &&
+		(\at (a[i].dst_slabid , A) == \at( a[i].dst_slabid , B)) &&
+		(\at (a[i].slab_ctype , A) == \at( a[i].slab_ctype , B)) &&
+		(\at (a[i].caller_stack_frame , A) == \at( a[i].caller_stack_frame , B)) &&
+		(\at (a[i].sp , A) == \at( a[i].sp , B))
+	);
+*/
+
+/*@
+	predicate sissValid{L}(u32 siss_id) =
+		(siss_id < MAX_PLATFORM_CPUS &&
+		0 < sissCapacity( siss_id) &&
+		0 <= sissSize (siss_id) <= sissCapacity ( siss_id) &&
+		\valid (sissStorage (siss_id) + (0 .. sissCapacity (siss_id) - 1))
+		);
+@*/
+
 //void gs_siss_pop(u32 cpuid, u32 *src_slabid, u32 *dst_slabid, u32 *hic_calltype,
                        //void **caller_stack_framep, slab_params_t **spp);
 
@@ -81,8 +127,43 @@ void gs_siss_pop(u32 siss_id, gs_siss_element_t *elem);
                        //void **caller_stack_framep, slab_params_t **spp);
 
 
-//void gs_siss_push(u32 siss_id, u32 src_slabid, u32 dst_slabid, u32 hic_calltype,
-//                        void *caller_stack_frame, slab_params_t *sp);
+
+
+/*@
+	requires sissValid (siss_id);
+
+	assigns gs_siss_indices[siss_id];
+	assigns gs_siss[siss_id][gs_siss_indices[siss_id]];
+
+	behavior not_full:
+		assumes !sissFull(siss_id);
+
+		assigns gs_siss_indices[siss_id];
+		assigns gs_siss[siss_id][gs_siss_indices[siss_id]];
+
+		ensures H:sissValid (siss_id);
+		ensures I:sissSize (siss_id) == sissSize {Old}(siss_id) + 1;
+		ensures K:sissUnchanged {Pre ,Here }(sissStorage (siss_id), 0, sissSize{Pre}(siss_id));
+		ensures J:sissTop( sissStorage (siss_id), sissSize{Pre}(siss_id), elem);
+		ensures !sissEmpty (siss_id);
+		ensures sissStorage (siss_id) == sissStorage {Old }( siss_id) ;
+		ensures sissCapacity ( siss_id) == sissCapacity { Old }(siss_id) ;
+
+	behavior full :
+		assumes sissFull ( siss_id);
+
+		assigns \nothing;
+
+		ensures sissValid (siss_id);
+		ensures sissFull ( siss_id);
+		ensures sissUnchanged {Pre ,Here }(sissStorage (siss_id ), 0, sissSize(siss_id));
+		ensures sissSize ( siss_id ) == sissSize { Old }(siss_id) ;
+		ensures sissStorage (siss_id ) == sissStorage {Old }( siss_id) ;
+		ensures sissCapacity ( siss_id ) == sissCapacity { Old }(siss_id) ;
+
+	complete behaviors ;
+	disjoint behaviors ;
+*/
 void gs_siss_push(u32 siss_id, gs_siss_element_t elem);
 
 
