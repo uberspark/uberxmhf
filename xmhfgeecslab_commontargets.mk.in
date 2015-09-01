@@ -47,6 +47,8 @@ verifybase:
 	do \
 		(cp -f $$i $(XMHF_SLAB_VERIFICATION_DIR)/$$i.v.c) || exit 1; \
 	done;
+	$(CP) -f $(srcdir)/../../xmhf-libs/libxmhfgeec/xmhfgeec_slabmapdef.c $(XMHF_SLAB_VERIFICATION_DIR)/.
+
 	@echo Sources prepped.
 
 

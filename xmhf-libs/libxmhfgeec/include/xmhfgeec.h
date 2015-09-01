@@ -194,7 +194,7 @@ void __slab_callsentinel(slab_params_t *sp);
 
 //////
 // slab entry stub definitions
-CASM_FUNCDECL(void _slab_entrystub(void *noparam));
+CASM_FUNCDECL(void _slab_entrystub(slab_params_t *sp));
 
 extern void slab_main(slab_params_t *sp);
 
