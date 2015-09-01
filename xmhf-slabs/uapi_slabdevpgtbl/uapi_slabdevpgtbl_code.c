@@ -113,9 +113,9 @@ static void _slabdevpgtbl_initdevpgtbl(u32 slabid){
     u32 paddr_dmadata_start, paddr_dmadata_end;
 
     paddr_dmadata_start =
-        _xmhfhic_common_slab_info_table[slabid].slab_physmem_extents[3].addr_start;
+        xmhfgeec_slab_info_table[slabid].slab_physmem_extents[3].addr_start;
     paddr_dmadata_end =
-        _xmhfhic_common_slab_info_table[slabid].slab_physmem_extents[3].addr_end;
+        xmhfgeec_slab_info_table[slabid].slab_physmem_extents[3].addr_end;
 
     //sanity checks
     if(slabid > XMHFGEEC_TOTAL_SLABS){

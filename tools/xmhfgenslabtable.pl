@@ -305,7 +305,7 @@ print $fh "\n";
 #}
 
 print $fh "\n";
-print $fh "\n__attribute__(( section(\".data\") )) __attribute__((aligned(4096))) xmhfgeec_slab_info_t _xmhfhic_common_slab_info_table[] = {";
+print $fh "\n__attribute__(( section(\".data\") )) __attribute__((aligned(4096))) xmhfgeec_slab_info_t xmhfgeec_slab_info_table[] = {";
 
 
 $i = 0;

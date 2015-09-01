@@ -137,7 +137,7 @@ static void _slabmempgtbl_initmempgtbl(u32 slabid){
 
     _slabmempgtbl_sanitycheckhalt_slabid(slabid);
 
-    slabtype = _xmhfhic_common_slab_info_table[slabid].slabtype;
+    slabtype = xmhfgeec_slab_info_table[slabid].slabtype;
 
     switch(slabtype){
         case XMHFGEEC_SLABTYPE_VfT_PROG:
@@ -174,7 +174,7 @@ static void _slabmempgtbl_setentryforpaddr(u32 slabid, u64 gpa, u64 entry){
 
     _slabmempgtbl_sanitycheckhalt_slabid(slabid);
 
-    slabtype = _xmhfhic_common_slab_info_table[slabid].slabtype;
+    slabtype = xmhfgeec_slab_info_table[slabid].slabtype;
 
     switch(slabtype){
         case XMHFGEEC_SLABTYPE_VfT_PROG:
@@ -207,7 +207,7 @@ static u64 _slabmempgtbl_getentryforpaddr(u32 slabid, u64 gpa){
 
     _slabmempgtbl_sanitycheckhalt_slabid(slabid);
 
-    slabtype = _xmhfhic_common_slab_info_table[slabid].slabtype;
+    slabtype = xmhfgeec_slab_info_table[slabid].slabtype;
 
     switch(slabtype){
 

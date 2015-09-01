@@ -73,7 +73,7 @@ void _geec_sentinel_sysenter_stub(slab_params_t *sp, void *caller_stack_frame){
     }
 
     sp->src_slabid =
-        (CASM_FUNCCALL(read_cr3, CASM_NOPARAM) - _xmhfhic_common_slab_info_table[XMHFGEEC_SLAB_GEEC_SENTINEL].mempgtbl_cr3)/PAGE_SIZE_4K;
+        (CASM_FUNCCALL(read_cr3, CASM_NOPARAM) - xmhfgeec_slab_info_table[XMHFGEEC_SLAB_GEEC_SENTINEL].mempgtbl_cr3)/PAGE_SIZE_4K;
 
     //sp->src_slabid =  sp->src_slabid + 1;
 
