@@ -167,6 +167,8 @@ void gs_siss_pop(u32 siss_id, gs_siss_element_t *elem);
 void gs_siss_push(u32 siss_id, gs_siss_element_t elem);
 
 
+void geec_sentinel_main(slab_params_t *sp, void *caller_stack_frame);
+
 
 CASM_FUNCDECL(void _geec_sentinel_intercept_casmstub(void *noparam));
 CASM_FUNCDECL(void _geec_sentinel_sysenter_casmstub(void *noparam));

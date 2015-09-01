@@ -84,7 +84,7 @@ CASM_FUNCDEF_FULL(.slab_entrystub, 1, void, _slab_entrystub,
 	//	[esp+20] = ebp
 	//	[esp+24] = return address to resume the (verified,privileged) caller
 	//	[esp+28] = slab_params_t *sp
-	xmhfhwm_cpu_insn_call(geec_sentinel_main);
+	xmhfhwm_cpu_insn_call_c_2p(geec_sentinel_main, slab_params_t *, void *);
 
 	// Pre: false; should never get here when verifying this CASM
 	// function. if we do end up here the following hlt will trigger
