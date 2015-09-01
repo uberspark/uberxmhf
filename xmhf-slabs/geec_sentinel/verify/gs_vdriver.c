@@ -88,6 +88,7 @@ u32 framac_nondetu32interval(u32 min, u32 max)
 u32 saved_cpu_gprs_ebx=0;
 u32 saved_cpu_gprs_esi=0;
 u32 saved_cpu_gprs_edi=0;
+u32 saved_cpu_gprs_ebp=0;
 
 void cabi_establish(void){
 	xmhfhwm_cpu_gprs_ebx = 5UL;
@@ -106,22 +107,66 @@ void cabi_check(void){
 
 
 
+//////
+slab_params_t drv_slab_entrystub_sp;
+u32 check_esp, check_eip = CASM_RET_EIP;
+
+void geec_sentinel_main(slab_params_t *sp,
+	void *caller_stack_frame){
+	//Pre:
+	//	[esp] = CASM_RET_EIP
+	//  	[esp+4] = slab_params_t *sp
+	//	[esp+8] = &[esp+8]
+	//	[esp+12] = ebx
+	//	[esp+16] = esi
+	//	[esp+20] = edi
+	//	[esp+24] = ebp
+	//	[esp+28] = return address to resume the (verified,privileged) caller
+	//	[esp+32] = slab_params_t *sp
+	//@assert sp->src_slabid == 6UL;
+	//@assert xmhfhwm_cpu_gprs_esp == (check_esp - (9 * sizeof(u32)));
+	//@assert *((u32 *)xmhfhwm_cpu_gprs_esp) == CASM_RET_EIP;
+	//@assert *((u32 *)((u32)xmhfhwm_cpu_gprs_esp+4)) == (unsigned int)&drv_slab_entrystub_sp;
+	//@assert *((u32 *)((u32)xmhfhwm_cpu_gprs_esp+8)) == (u32)xmhfhwm_cpu_gprs_esp+12;
+	//@assert *((u32 *)((u32)xmhfhwm_cpu_gprs_esp+12)) == saved_cpu_gprs_ebx;
+	//@assert *((u32 *)((u32)xmhfhwm_cpu_gprs_esp+16)) == saved_cpu_gprs_esi;
+	//@assert *((u32 *)((u32)xmhfhwm_cpu_gprs_esp+20)) == saved_cpu_gprs_edi;
+	//@assert *((u32 *)((u32)xmhfhwm_cpu_gprs_esp+24)) == saved_cpu_gprs_ebp;
+	//@assert *((u32 *)((u32)xmhfhwm_cpu_gprs_esp+28)) == CASM_RET_EIP;
+	//@assert *((u32 *)((u32)xmhfhwm_cpu_gprs_esp+32)) == (unsigned int)&drv_slab_entrystub_sp;
+
+	//@assert false;
+}
+
+
 void drv_slab_entrystub(void){
-	cabi_establish();
-	//CASM_FUNCCALL(_slab_entrystub, NULL);
-	cabi_check();
+	xmhfhwm_cpu_gprs_ebx = 5UL;
+	xmhfhwm_cpu_gprs_esi = 6UL;
+	xmhfhwm_cpu_gprs_edi = 7UL;
+	xmhfhwm_cpu_gprs_ebp = 8UL;
+	saved_cpu_gprs_ebx = xmhfhwm_cpu_gprs_ebx;
+	saved_cpu_gprs_esi = xmhfhwm_cpu_gprs_esi;
+	saved_cpu_gprs_edi = xmhfhwm_cpu_gprs_edi;
+	saved_cpu_gprs_ebp = xmhfhwm_cpu_gprs_ebp;
+
+
+	drv_slab_entrystub_sp.cpuid = 0;
+	drv_slab_entrystub_sp.src_slabid = 6UL;
+
+	CASM_FUNCCALL(_slab_entrystub, &drv_slab_entrystub_sp);
+	//@assert false;
 }
 
 
 void main(void){
-	u32 check_esp, check_eip = CASM_RET_EIP;
-
 	//populate hardware model stack and program counter
 	xmhfhwm_cpu_gprs_esp = _slab_tos[cpuid];
 	xmhfhwm_cpu_gprs_eip = check_eip;
 	check_esp = xmhfhwm_cpu_gprs_esp; // pointing to top-of-stack
 
 	//execute harness: TODO
+	drv_slab_entrystub();
+
 
 	//@assert xmhfhwm_cpu_gprs_esp == check_esp;
 	//@assert xmhfhwm_cpu_gprs_eip == check_eip;
