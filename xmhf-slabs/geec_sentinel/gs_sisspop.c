@@ -57,18 +57,19 @@
 
 
 
-void gs_siss_pop(u32 cpuid, u32 *src_slabid, u32 *dst_slabid, u32 *hic_calltype,
-                       void **caller_stack_framep, slab_params_t **spp)
+//void gs_siss_pop(u32 cpuid, u32 *src_slabid, u32 *dst_slabid, u32 *hic_calltype,
+//                       void **caller_stack_framep, slab_params_t **spp)
+void gs_siss_pop(u32 siss_id, gs_siss_element_t *elem)
 {
-    u32 safestack_index =  gs_siss_indices[(u16)cpuid]-1;
+    u32 safestack_index =  gs_siss_indices[siss_id]-1;
     if(safestack_index >=0 && safestack_index < 512){
-        *src_slabid = gs_siss[(u16)cpuid][safestack_index].src_slabid;
-        *dst_slabid = gs_siss[(u16)cpuid][safestack_index].dst_slabid;
-        *hic_calltype = gs_siss[(u16)cpuid][safestack_index].slab_ctype;
-        *caller_stack_framep = gs_siss[(u16)cpuid][safestack_index].caller_stack_frame;
-        *spp = gs_siss[(u16)cpuid][safestack_index].sp;
+        elem->src_slabid = gs_siss[siss_id][safestack_index].src_slabid;
+        elem->dst_slabid = gs_siss[siss_id][safestack_index].dst_slabid;
+        elem->slab_ctype = gs_siss[siss_id][safestack_index].slab_ctype;
+        elem->caller_stack_frame = gs_siss[siss_id][safestack_index].caller_stack_frame;
+        elem->sp = gs_siss[siss_id][safestack_index].sp;
 
-        gs_siss_indices[(u16)cpuid] = safestack_index;
+        gs_siss_indices[siss_id] = safestack_index;
     }
 }
 
