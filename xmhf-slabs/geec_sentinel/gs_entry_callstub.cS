@@ -56,22 +56,41 @@
 #include <geec_sentinel.h>
 
 //////
-// sentinel entry point
+// sentinel [p_call] entry point
 //////
+
+
+// C invocation of this function is of type _slab_entrystub(slab_params_t *sp)
+// Pre: [esp] = return address to resume the (verified,privileged) caller
+//	[esp+4] = slab_params_t *sp (pointer to slab_params_t within caller
+//					memory area)
 
 CASM_FUNCDEF_FULL(.slab_entrystub, 1, void, _slab_entrystub,
 {
-    xmhfhwm_cpu_insn_movl_mesp_eax(0x4);
-    xmhfhwm_cpu_insn_pushl_ebp();
-    xmhfhwm_cpu_insn_pushl_edi();
-    xmhfhwm_cpu_insn_pushl_esi();
-    xmhfhwm_cpu_insn_pushl_ebx();
-    xmhfhwm_cpu_insn_movl_esp_edx();
-    xmhfhwm_cpu_insn_pushl_edx();
-    xmhfhwm_cpu_insn_pushl_eax();
-    xmhfhwm_cpu_insn_call(geec_sentinel_main);
-    xmhfhwm_cpu_insn_hlt();
+	xmhfhwm_cpu_insn_movl_mesp_eax(0x4);
+	xmhfhwm_cpu_insn_pushl_ebp();
+	xmhfhwm_cpu_insn_pushl_edi();
+	xmhfhwm_cpu_insn_pushl_esi();
+	xmhfhwm_cpu_insn_pushl_ebx();
+	xmhfhwm_cpu_insn_movl_esp_edx();
+	xmhfhwm_cpu_insn_pushl_edx();
+	xmhfhwm_cpu_insn_pushl_eax();
+	// Post:
+	//  	[esp] = slab_params_t *sp
+	//	[esp+4] = &[esp+8]
+	//	[esp+8] = ebx
+	//	[esp+12] = esi
+	//	[esp+16] = edi
+	//	[esp+20] = ebp
+	//	[esp+24] = return address to resume the (verified,privileged) caller
+	//	[esp+28] = slab_params_t *sp
+	xmhfhwm_cpu_insn_call(geec_sentinel_main);
+
+	// Pre: false; should never get here when verifying this CASM
+	// function. if we do end up here the following hlt will trigger
+	// verification error
+	xmhfhwm_cpu_insn_hlt();
+	// Post: false; should never get here
 },
 slab_params_t *sp)
-
 
