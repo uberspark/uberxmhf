@@ -62,8 +62,13 @@
 //@	logic gs_siss_element_t * sissStorage{L}(u32 siss_id) = &gs_siss[siss_id][0];
 
 /*@
- predicate sissTop{L}(gs_siss_element_t * elem, integer index, u32 val) =
-		(elem[index].src_slabid == val);
+ predicate sissTop{L}(gs_siss_element_t * elem, integer index, gs_siss_element_t input) =
+		(elem[index].src_slabid == input.src_slabid &&
+		elem[index].dst_slabid == input.dst_slabid &&
+		elem[index].slab_ctype == input.slab_ctype &&
+		elem[index].caller_stack_frame == input.caller_stack_frame &&
+		elem[index].sp == input.sp
+		);
 */
 
 //@	predicate sissEmpty{L}(u32 siss_id) = (sissSize(siss_id) == 0);
@@ -74,7 +79,12 @@
 	predicate
 	sissUnchanged {A,B } ( gs_siss_element_t * a, integer first, integer last ) =
 	\forall integer i; first <= i < last
-	==> \at (a[i].src_slabid , A) == \at( a[i].src_slabid , B);
+	==> ( (\at (a[i].src_slabid , A) == \at( a[i].src_slabid , B)) &&
+		(\at (a[i].dst_slabid , A) == \at( a[i].dst_slabid , B)) &&
+		(\at (a[i].slab_ctype , A) == \at( a[i].slab_ctype , B)) &&
+		(\at (a[i].caller_stack_frame , A) == \at( a[i].caller_stack_frame , B)) &&
+		(\at (a[i].sp , A) == \at( a[i].sp , B))
+	);
 */
 
 /*@
@@ -102,7 +112,7 @@
 		ensures H:sissValid (siss_id);
 		ensures I:sissSize (siss_id) == sissSize {Old}(siss_id) + 1;
 		ensures K:sissUnchanged {Pre ,Here }(sissStorage (siss_id), 0, sissSize{Pre}(siss_id));
-		ensures J:sissTop( sissStorage (siss_id), sissSize{Pre}(siss_id), elem.src_slabid);
+		ensures J:sissTop( sissStorage (siss_id), sissSize{Pre}(siss_id), elem);
 		ensures !sissEmpty (siss_id);
 		ensures sissStorage (siss_id) == sissStorage {Old }( siss_id) ;
 		ensures sissCapacity ( siss_id) == sissCapacity { Old }(siss_id) ;
