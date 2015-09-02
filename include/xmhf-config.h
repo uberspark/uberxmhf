@@ -98,11 +98,11 @@
 #define MAX_CMDLINE_BUFFER_SIZE			(128)
 
 //max. cores/vcpus we support currently
-#ifndef __XMHF_VERIFICATION__
+//#ifndef __XMHF_VERIFICATION__
 	#define	MAX_PLATFORM_CPUS					(256)
-#else
-	#define	MAX_PLATFORM_CPUS					(1)
-#endif
+//#else
+//	#define	MAX_PLATFORM_CPUS					(1)
+//#endif
 
 //max. platform devices we support currently
 #define MAX_PLATFORM_DEVICES                    (64)
