@@ -55,6 +55,7 @@
 #include <xmhfgeec.h>
 #include <xmhf-debug.h>
 
+#include <geec_sentinel.h>
 #include <xc_init.h>
 #include <uapi_gcpustate.h>
 
@@ -168,6 +169,11 @@ void drv_slab_entrystub(void){
 
 
 slab_params_t drv_pathv2v_sp;
+
+void xmhfhwm_vdriver_slabep(void){
+	//@assert xmhfhwm_cpu_gprs_eip == (u32)xmhfgeec_slab_info_table[XMHFGEEC_SLAB_UAPI_GCPUSTATE].entrystub;
+	//@assert false;
+}
 
 void drv_pathv2v(void){
 	drv_pathv2v_sp.slab_ctype =XMHFGEEC_SENTINEL_CALL_FROM_VfT_PROG;
