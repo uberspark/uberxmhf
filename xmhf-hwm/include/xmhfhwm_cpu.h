@@ -2226,6 +2226,7 @@ struct _vmx_vmcsrwfields_encodings	{
 // external verification hooks for verification drivers
 //////
 extern void xmhfhwm_vdriver_sentinel(void);
+extern void xmhfhwm_vdriver_slabep(void);
 
 
 //////
@@ -2372,6 +2373,8 @@ extern void _impl_xmhfhwm_cpu_insn_movl_esp_edx(void);
 
 extern void _impl_xmhfhwm_cpu_insn_pushl_eax(void);
 extern void _impl_xmhfhwm_cpu_insn_pushl_edx(void);
+extern void _impl_xmhfhwm_cpu_insn_movl_edx_esp(void);
+extern void _impl_xmhfhwm_cpu_insn_popl_ebp(void);
 
 
 //////
@@ -2502,6 +2505,15 @@ extern void _impl_xmhfhwm_cpu_insn_pushl_edx(void);
 	_impl_xmhfhwm_cpu_insn_hlt(); \
 
 
+#define xmhfhwm_cpu_insn_jmpslabep() \
+	__builtin_annot("jmpl *%eax "); \
+	__builtin_annot("hlt "); \
+	xmhfhwm_cpu_gprs_eip = xmhfhwm_cpu_gprs_eax; \
+	xmhfhwm_vdriver_slabep(); \
+	_impl_xmhfhwm_cpu_insn_hlt(); \
+
+
+
 // load/store instructions
 #define xmhfhwm_cpu_insn_cld() \
 	__builtin_annot("cld"); \
@@ -2567,7 +2579,11 @@ extern void _impl_xmhfhwm_cpu_insn_pushl_edx(void);
 
 
 #define xmhfhwm_cpu_insn_movl_eax_esp() __builtin_annot("movl %eax, %esp ");
-#define xmhfhwm_cpu_insn_movl_edx_esp() __builtin_annot("movl %edx, %esp ");
+
+#define xmhfhwm_cpu_insn_movl_edx_esp() \
+	__builtin_annot("movl %edx, %esp "); \
+        _impl_xmhfhwm_cpu_insn_movl_edx_esp(); \
+
 
 #define xmhfhwm_cpu_insn_movl_mesp_eax(x) \
 	__builtin_annot("movl "#x"(%esp), %eax "); \
@@ -2772,7 +2788,10 @@ extern void _impl_xmhfhwm_cpu_insn_pushl_edx(void);
 	__builtin_annot("popl %edi "); \
         _impl_xmhfhwm_cpu_insn_popl_edi(); \
 
-#define xmhfhwm_cpu_insn_popl_ebp() __builtin_annot("popl %ebp ");
+#define xmhfhwm_cpu_insn_popl_ebp() \
+	__builtin_annot("popl %ebp "); \
+	_impl_xmhfhwm_cpu_insn_popl_ebp(); \
+
 
 #define xmhfhwm_cpu_insn_pushl_imm(x) __builtin_annot("pushl $"#x" ");
 
