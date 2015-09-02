@@ -55,6 +55,9 @@
 #include <xmhfgeec.h>
 #include <xmhf-debug.h>
 
+#include <xc_init.h>
+#include <uapi_gcpustate.h>
+
 u32 cpuid = 0;	//BSP cpu
 
 //////
@@ -163,6 +166,24 @@ void drv_slab_entrystub(void){
 
 #endif // DRV_SLAB_ENTRYSTUB
 
+
+slab_params_t drv_pathv2v_sp;
+
+void drv_pathv2v(void){
+	drv_pathv2v_sp.slab_ctype =XMHFGEEC_SENTINEL_CALL_FROM_VfT_PROG;
+        drv_pathv2v_sp.src_slabid = XMHFGEEC_SLAB_XC_INIT;
+        drv_pathv2v_sp.dst_slabid =XMHFGEEC_SLAB_UAPI_GCPUSTATE;
+        drv_pathv2v_sp.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_VMWRITE;
+	drv_pathv2v_sp.cpuid = 0;
+
+	CASM_FUNCCALL(_slab_entrystub, &drv_pathv2v_sp);
+	//@assert false;
+}
+
+
+
+
+
 void main(void){
 	//populate hardware model stack and program counter
 	xmhfhwm_cpu_gprs_esp = _slab_tos[cpuid];
@@ -174,6 +195,7 @@ void main(void){
 	drv_slab_entrystub();
 #endif //DRV_SLAB_ENTRYSTUB
 
+	drv_pathv2v();
 
 	//@assert xmhfhwm_cpu_gprs_esp == check_esp;
 	//@assert xmhfhwm_cpu_gprs_eip == check_eip;

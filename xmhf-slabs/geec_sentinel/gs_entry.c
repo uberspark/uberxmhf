@@ -94,6 +94,7 @@ void geec_sentinel_main(slab_params_t *sp, void *caller_stack_frame){
             switch (xmhfgeec_slab_info_table[sp->dst_slabid].slabtype){
 
                 case XMHFGEEC_SLABTYPE_VfT_PROG:{
+                    //@assert false;
                     _geec_sentinel_checkandhalt_callcaps(sp->src_slabid, sp->dst_slabid, sp->dst_uapifn);
                     CASM_FUNCCALL(_geec_sentinel_xfer_vft_prog_to_vft_prog,
                                   xmhfgeec_slab_info_table[sp->dst_slabid].entrystub,
