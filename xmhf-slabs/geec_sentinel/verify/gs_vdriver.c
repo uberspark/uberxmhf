@@ -107,9 +107,13 @@ void cabi_check(void){
 
 
 
-//////
-slab_params_t drv_slab_entrystub_sp;
 u32 check_esp, check_eip = CASM_RET_EIP;
+
+
+//////
+#if defined (DRV_SLAB_ENTRYSTUB)
+
+slab_params_t drv_slab_entrystub_sp;
 
 void geec_sentinel_main(slab_params_t *sp,
 	void *caller_stack_frame){
@@ -157,6 +161,7 @@ void drv_slab_entrystub(void){
 	//@assert false;
 }
 
+#endif // DRV_SLAB_ENTRYSTUB
 
 void main(void){
 	//populate hardware model stack and program counter
@@ -165,7 +170,9 @@ void main(void){
 	check_esp = xmhfhwm_cpu_gprs_esp; // pointing to top-of-stack
 
 	//execute harness: TODO
+#if defined (DRV_SLAB_ENTRYSTUB)
 	drv_slab_entrystub();
+#endif //DRV_SLAB_ENTRYSTUB
 
 
 	//@assert xmhfhwm_cpu_gprs_esp == check_esp;
