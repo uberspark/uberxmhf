@@ -168,6 +168,7 @@ void drv_slab_entrystub(void){
 #endif // DRV_SLAB_ENTRYSTUB
 
 
+#if defined (DRV_PATHV2V)
 slab_params_t drv_pathv2v_sp;
 
 void xmhfhwm_vdriver_slabep(void){
@@ -188,8 +189,31 @@ void drv_pathv2v(void){
 	CASM_FUNCCALL(_slab_entrystub, &drv_pathv2v_sp);
 	//@assert false;
 }
+#endif // DRV_PATHV2V
 
 
+
+
+slab_params_t drv_pathv2uv_sp;
+
+void xmhfhwm_vdriver_slabep(void){
+	// //@assert xmhfhwm_cpu_gprs_eip == (u32)xmhfgeec_slab_info_table[XMHFGEEC_SLAB_UAPI_GCPUSTATE].entrystub;
+	// //@assert xmhfhwm_cpu_gprs_esp == check_esp - (2 * sizeof(u32));
+	// //@assert *((u32 *)xmhfhwm_cpu_gprs_esp) == CASM_RET_EIP;
+	// //@assert *((u32 *)((u32)xmhfhwm_cpu_gprs_esp+4)) == (unsigned int)&drv_pathv2v_sp;
+	//@assert false;
+}
+
+void drv_pathv2uv(void){
+	drv_pathv2uv_sp.slab_ctype =XMHFGEEC_SENTINEL_CALL_FROM_VfT_PROG;
+        drv_pathv2uv_sp.src_slabid = XMHFGEEC_SLAB_XC_INIT;
+        drv_pathv2uv_sp.dst_slabid = XMHFGEEC_SLAB_XC_TESTSLAB;
+        drv_pathv2uv_sp.dst_uapifn = 0;
+	drv_pathv2uv_sp.cpuid = 0;
+
+	CASM_FUNCCALL(_slab_entrystub, &drv_pathv2uv_sp);
+	//@assert false;
+}
 
 
 
@@ -204,7 +228,13 @@ void main(void){
 	drv_slab_entrystub();
 #endif //DRV_SLAB_ENTRYSTUB
 
+
+#if defined (DRV_PATHV2V)
 	drv_pathv2v();
+#endif // DRV_PATHV2V
+
+
+	drv_pathv2uv();
 
 	//@assert xmhfhwm_cpu_gprs_esp == check_esp;
 	//@assert xmhfhwm_cpu_gprs_eip == check_eip;
