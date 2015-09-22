@@ -645,6 +645,28 @@ void _impl_xmhfhwm_cpu_insn_cld(void){
 	xmhfhwm_cpu_eflags &= ~(EFLAGS_DF);
 }
 
+
+//////
+// sysmem hardware model
+
+physmem_extent_t xmhfhwm_sysmemaccess_physmem_extents[32];
+u32 xmhfhwm_sysmemaccess_physmem_extents_total=0;
+
+static bool xmhfhwm_sysmemaccess_checkextents(u32 addr_start, u32 size){
+	u32 index;
+	bool within_extents=false;
+	for(index=0; index < xmhfhwm_sysmemaccess_physmem_extents_total; index++){
+		if(addr_start >= xmhfhwm_sysmemaccess_physmem_extents[index].addr_start
+		&& (addr_start + size) <= xmhfhwm_sysmemaccess_physmem_extents[index].addr_end){
+			within_extents = true;
+			break;
+		}
+	}
+
+	//@assert within_extents;
+	return within_extents;
+}
+
 static unsigned char *rep_movsb_memcpy(unsigned char *dst, const unsigned char *src, size_t n)
 {
 	const unsigned char *p = src;
@@ -664,8 +686,13 @@ void _impl_xmhfhwm_cpu_insn_rep_movsb(void){
 
 	}else{
 		//increment
-		rep_movsb_memcpy(xmhfhwm_cpu_gprs_edi, xmhfhwm_cpu_gprs_esi,
-			xmhfhwm_cpu_gprs_ecx);
+		if(xmhfhwm_sysmemaccess_checkextents(xmhfhwm_cpu_gprs_edi,
+						xmhfhwm_cpu_gprs_ecx)){
+			//copy to sysmem is havoc
+		}else{
+			rep_movsb_memcpy(xmhfhwm_cpu_gprs_edi, xmhfhwm_cpu_gprs_esi,
+				xmhfhwm_cpu_gprs_ecx);
+		}
                 xmhfhwm_cpu_gprs_edi += xmhfhwm_cpu_gprs_ecx;
                 xmhfhwm_cpu_gprs_esi += xmhfhwm_cpu_gprs_ecx;
 	}
