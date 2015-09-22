@@ -193,7 +193,7 @@ void drv_pathv2v(void){
 
 
 
-
+#if defined (DRV_PATHV2UV)
 slab_params_t drv_pathv2uv_sp;
 
 void xmhfhwm_vdriver_slabep(void){
@@ -221,6 +221,39 @@ void drv_pathv2uv(void){
 	CASM_FUNCCALL(_slab_entrystub, &drv_pathv2uv_sp);
 	//@assert false;
 }
+#endif // defined
+
+
+
+slab_params_t drv_pathretv2uv_sp;
+
+void xmhfhwm_vdriver_slabep(void){
+	// //@assert xmhfhwm_cpu_gprs_eip == (u32)xmhfgeec_slab_info_table[XMHFGEEC_SLAB_XC_TESTSLAB].entrystub;
+	// //@assert xmhfhwm_cpu_gprs_esp == check_esp - (2 * sizeof(u32));
+	// //@assert *((u32 *)xmhfhwm_cpu_gprs_esp) == CASM_RET_EIP;
+	// //@assert *((u32 *)((u32)xmhfhwm_cpu_gprs_esp+4)) == (unsigned int)&drv_pathv2v_sp;
+	//@assert false;
+}
+
+void drv_pathretv2uv(void){
+	drv_pathv2uv_sp.slab_ctype =XMHFGEEC_SENTINEL_CALL_FROM_VfT_PROG;
+        drv_pathv2uv_sp.src_slabid = XMHFGEEC_SLAB_XC_INIT;
+        drv_pathv2uv_sp.dst_slabid = XMHFGEEC_SLAB_XC_TESTSLAB;
+        drv_pathv2uv_sp.dst_uapifn = 0;
+	drv_pathv2uv_sp.cpuid = 0;
+
+
+	xmhfhwm_sysmemaccess_physmem_extents[xmhfhwm_sysmemaccess_physmem_extents_total].addr_start =
+		xmhfgeec_slab_info_table[XMHFGEEC_SLAB_XC_TESTSLAB].slab_physmem_extents[2].addr_start;
+	xmhfhwm_sysmemaccess_physmem_extents[xmhfhwm_sysmemaccess_physmem_extents_total].addr_end =
+		xmhfgeec_slab_info_table[XMHFGEEC_SLAB_XC_TESTSLAB].slab_physmem_extents[2].addr_end;
+	xmhfhwm_sysmemaccess_physmem_extents_total++;
+
+	CASM_FUNCCALL(_slab_entrystub, &drv_pathretv2uv_sp);
+	//@assert false;
+}
+
+
 
 
 
@@ -240,8 +273,12 @@ void main(void){
 	drv_pathv2v();
 #endif // DRV_PATHV2V
 
-
+#if defined (DRV_PATHV2UV)
 	drv_pathv2uv();
+#endif
+
+	drv_pathretv2uv();
+
 	//{
 	//	unsigned char *p = (unsigned char *)(0x06c00000+ (1*XMHF_SLAB_STACKSIZE));
 	//	*p = 'A';

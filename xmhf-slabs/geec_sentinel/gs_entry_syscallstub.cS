@@ -60,7 +60,7 @@
 ////// sysenter
 
 
-CASM_FUNCDEF(void, _geec_sentinel_sysenter_casmstub,
+CASM_FUNCDEF(void, gs_syscallstub,
 {
     xmhfhwm_cpu_insn_pushl_edx();   //original caller_stack_frame
     xmhfhwm_cpu_insn_pushl_ecx();
