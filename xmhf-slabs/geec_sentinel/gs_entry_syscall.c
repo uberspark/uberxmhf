@@ -58,11 +58,12 @@
 ////// sysenter
 
 //in general sp->xxx is untrusted and must be sanity checked
-void _geec_sentinel_sysenter_stub(slab_params_t *sp, void *caller_stack_frame){
+void gs_entry_syscall(slab_params_t *sp, void *caller_stack_frame){
 
     //sanity check sp
-    //sp->cpuid = __xmhfhic_x86vmx_cpuidtable[xmhf_baseplatform_arch_x86_getcpulapicid()];
     sp->cpuid = xmhf_baseplatform_arch_x86_getcpulapicid();
+
+	//@assert false;
 
     if( !(sp->slab_ctype == XMHFGEEC_SENTINEL_RET_VfT_PROG_TO_uVT_uVU_PROG ||
           sp->slab_ctype == XMHFGEEC_SENTINEL_CALL_uVT_uVU_PROG_TO_VfT_PROG

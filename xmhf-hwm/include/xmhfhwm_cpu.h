@@ -2379,7 +2379,7 @@ extern void _impl_xmhfhwm_cpu_insn_pushl_eax(void);
 extern void _impl_xmhfhwm_cpu_insn_pushl_edx(void);
 extern void _impl_xmhfhwm_cpu_insn_movl_edx_esp(void);
 extern void _impl_xmhfhwm_cpu_insn_popl_ebp(void);
-
+extern void _impl_xmhfhwm_cpu_insn_pushl_ecx(void);
 
 //////
 // CASM C to ASM call macros
@@ -2758,7 +2758,10 @@ extern void _impl_xmhfhwm_cpu_insn_popl_ebp(void);
 	_impl_xmhfhwm_cpu_insn_pushl_ebx(); \
 
 
-#define xmhfhwm_cpu_insn_pushl_ecx() __builtin_annot("pushl %ecx ");
+#define xmhfhwm_cpu_insn_pushl_ecx() \
+	__builtin_annot("pushl %ecx "); \
+	_impl_xmhfhwm_cpu_insn_pushl_ecx(); \
+
 
 #define xmhfhwm_cpu_insn_pushl_edx() \
 	__builtin_annot("pushl %edx "); \

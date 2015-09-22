@@ -236,11 +236,11 @@ void xmhfhwm_vdriver_slabep(void){
 }
 
 void drv_pathretv2uv(void){
-	drv_pathv2uv_sp.slab_ctype =XMHFGEEC_SENTINEL_CALL_FROM_VfT_PROG;
-        drv_pathv2uv_sp.src_slabid = XMHFGEEC_SLAB_XC_INIT;
-        drv_pathv2uv_sp.dst_slabid = XMHFGEEC_SLAB_XC_TESTSLAB;
-        drv_pathv2uv_sp.dst_uapifn = 0;
-	drv_pathv2uv_sp.cpuid = 0;
+	drv_pathretv2uv_sp.slab_ctype = XMHFGEEC_SENTINEL_RET_VfT_PROG_TO_uVT_uVU_PROG;
+        drv_pathretv2uv_sp.src_slabid = XMHFGEEC_SLAB_XC_TESTSLAB;
+        drv_pathretv2uv_sp.dst_slabid = XMHFGEEC_SLAB_XC_INIT;
+        drv_pathretv2uv_sp.dst_uapifn = 0;
+	drv_pathretv2uv_sp.cpuid = 0;
 
 
 	xmhfhwm_sysmemaccess_physmem_extents[xmhfhwm_sysmemaccess_physmem_extents_total].addr_start =
@@ -249,7 +249,9 @@ void drv_pathretv2uv(void){
 		xmhfgeec_slab_info_table[XMHFGEEC_SLAB_XC_TESTSLAB].slab_physmem_extents[2].addr_end;
 	xmhfhwm_sysmemaccess_physmem_extents_total++;
 
-	CASM_FUNCCALL(_slab_entrystub, &drv_pathretv2uv_sp);
+	xmhfhwm_cpu_gprs_edx = 0;
+	xmhfhwm_cpu_gprs_ecx = &drv_pathretv2uv_sp;
+	CASM_FUNCCALL(gs_syscallstub, CASM_NOPARAM);
 	//@assert false;
 }
 
