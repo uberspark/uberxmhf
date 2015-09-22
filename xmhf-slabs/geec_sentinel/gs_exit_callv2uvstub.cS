@@ -56,10 +56,10 @@
 #include <geec_sentinel.h>
 
 
-CASM_FUNCDEF(void, _geec_sentinel_xfer_vft_prog_to_uvt_uvu_prog,
+CASM_FUNCDEF(void, gs_exit_callv2uvstub,
 {
     xmhfhwm_cpu_insn_movl_mesp_edx(0x4);    //edx = entry_point
-    xmhfhwm_cpu_insn_movl_mesp_ecx(0x8);    //edx = callee_stack_frame
+    xmhfhwm_cpu_insn_movl_mesp_ecx(0x8);    //ecx = callee_stack_frame
     xmhfhwm_cpu_insn_sysexit();             //sysexit to ring-3
     xmhfhwm_cpu_insn_hlt();
 

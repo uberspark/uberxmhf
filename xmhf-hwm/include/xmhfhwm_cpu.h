@@ -3092,7 +3092,13 @@ extern void _impl_xmhfhwm_cpu_insn_popl_ebp(void);
 	_impl_xmhfhwm_cpu_insn_xgetbv(); \
 
 #define xmhfhwm_cpu_insn_iretl() __builtin_annot("iretl ");
-#define xmhfhwm_cpu_insn_sysexit() __builtin_annot("sysexit ");
+#define xmhfhwm_cpu_insn_sysexit() \
+	__builtin_annot("sysexit "); \
+	xmhfhwm_cpu_gprs_eip = xmhfhwm_cpu_gprs_edx; \
+	xmhfhwm_cpu_gprs_esp = xmhfhwm_cpu_gprs_ecx; \
+	xmhfhwm_vdriver_slabep(); \
+	_impl_xmhfhwm_cpu_insn_hlt(); \
+
 #define xmhfhwm_cpu_insn_sysenter() __builtin_annot("sysenter ");
 
 
