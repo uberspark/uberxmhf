@@ -180,7 +180,7 @@ void _geec_sentinel_sysenter_stub(slab_params_t *sp, void *caller_stack_frame);
 
 
 void _geec_sentinel_transition_call_uvt_uvu_prog_to_vft_prog(slab_params_t *sp, void *caller_stack_frame);
-void _geec_sentinel_transition_vft_prog_to_uvt_uvu_prog(slab_params_t *sp, void *caller_stack_frame);
+void gs_exit_callv2uv(slab_params_t *sp, void *caller_stack_frame);
 void _geec_sentinel_transition_ret_uvt_uvu_prog_to_vft_prog(slab_params_t *sp, void *caller_stack_frame);
 void _geec_sentinel_transition_ret_vft_prog_to_uvt_uvu_prog(slab_params_t *sp, void *caller_stack_frame);
 

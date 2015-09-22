@@ -235,6 +235,10 @@ void main(void){
 
 
 	drv_pathv2uv();
+	//{
+	//	unsigned char *p = (unsigned char *)(0x06c00000+ (1*XMHF_SLAB_STACKSIZE));
+	//	*p = 'A';
+	//}
 
 	//@assert xmhfhwm_cpu_gprs_esp == check_esp;
 	//@assert xmhfhwm_cpu_gprs_eip == check_eip;

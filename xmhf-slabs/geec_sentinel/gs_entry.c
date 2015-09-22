@@ -108,10 +108,9 @@ void geec_sentinel_main(slab_params_t *sp, void *caller_stack_frame){
 
                 case XMHFGEEC_SLABTYPE_uVT_PROG:
                 case XMHFGEEC_SLABTYPE_uVU_PROG:{
-                    //@assert false;
                     _geec_sentinel_checkandhalt_callcaps(sp->src_slabid, sp->dst_slabid, sp->dst_uapifn);
                     sp->slab_ctype = XMHFGEEC_SENTINEL_CALL_VfT_PROG_TO_uVT_uVU_PROG;
-                    _geec_sentinel_transition_vft_prog_to_uvt_uvu_prog(sp, caller_stack_frame);
+                    gs_exit_callv2uv(sp, caller_stack_frame);
                     _XDPRINTF_("GEEC_SENTINEL[ln:%u]: halting. should never be here!\n",
                                __LINE__);
                     HALT();
