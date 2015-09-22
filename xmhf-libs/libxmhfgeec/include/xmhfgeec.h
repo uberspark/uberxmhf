@@ -126,13 +126,14 @@ typedef struct {
 } __attribute__((packed)) slab_platformdevices_t;
 */
 
-
+/*
 //slab physical memory extent type
 typedef struct {
     u32 addr_start;
     u32 addr_end;
     u32 protection;
 } slab_physmem_extent_t;
+*/
 
 //slab device entry
 typedef struct {
@@ -155,7 +156,7 @@ typedef struct {
     u32 incl_devices_count;
     slab_device_entry_t excl_devices[XMHF_CONFIG_MAX_EXCLDEVLIST_ENTRIES];
     u32 excl_devices_count;
-    slab_physmem_extent_t slab_physmem_extents[HIC_SLAB_PHYSMEM_MAXEXTENTS];
+    physmem_extent_t slab_physmem_extents[HIC_SLAB_PHYSMEM_MAXEXTENTS];
     slab_memoffset_t slab_memoffset_entries[XMHF_CONFIG_MAX_MEMOFFSET_ENTRIES];
 	slab_entrystub_t entrystub;
 } __attribute__((packed)) xmhfgeec_slab_info_t;
