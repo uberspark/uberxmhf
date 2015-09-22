@@ -197,7 +197,7 @@ void drv_pathv2v(void){
 slab_params_t drv_pathv2uv_sp;
 
 void xmhfhwm_vdriver_slabep(void){
-	// //@assert xmhfhwm_cpu_gprs_eip == (u32)xmhfgeec_slab_info_table[XMHFGEEC_SLAB_UAPI_GCPUSTATE].entrystub;
+	//@assert xmhfhwm_cpu_gprs_eip == (u32)xmhfgeec_slab_info_table[XMHFGEEC_SLAB_XC_TESTSLAB].entrystub;
 	// //@assert xmhfhwm_cpu_gprs_esp == check_esp - (2 * sizeof(u32));
 	// //@assert *((u32 *)xmhfhwm_cpu_gprs_esp) == CASM_RET_EIP;
 	// //@assert *((u32 *)((u32)xmhfhwm_cpu_gprs_esp+4)) == (unsigned int)&drv_pathv2v_sp;

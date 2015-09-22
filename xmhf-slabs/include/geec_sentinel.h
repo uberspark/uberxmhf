@@ -180,7 +180,11 @@ void _geec_sentinel_sysenter_stub(slab_params_t *sp, void *caller_stack_frame);
 
 
 void _geec_sentinel_transition_call_uvt_uvu_prog_to_vft_prog(slab_params_t *sp, void *caller_stack_frame);
+
 void gs_exit_callv2uv(slab_params_t *sp, void *caller_stack_frame);
+CASM_FUNCDECL(void gs_exit_callv2uvstub(u32 entry_point, void *callee_stack_frame));
+
+
 void _geec_sentinel_transition_ret_uvt_uvu_prog_to_vft_prog(slab_params_t *sp, void *caller_stack_frame);
 void _geec_sentinel_transition_ret_vft_prog_to_uvt_uvu_prog(slab_params_t *sp, void *caller_stack_frame);
 
@@ -192,7 +196,6 @@ CASM_FUNCDECL(void _geec_sentinel_xfer_ret_from_exception(x86vmx_exception_frame
 CASM_FUNCDECL(u32 _geec_sentinel_xfer_vft_prog_to_uvt_uvu_prog_guest(void *noparam));
 CASM_FUNCDECL(void _geec_sentinel_xfer_intercept_to_vft_prog(u32 entry_point, void *caller_stack_frame));
 CASM_FUNCDECL(void _geec_sentinel_xfer_ret_from_intercept(x86regs_t *r));
-CASM_FUNCDECL(void _geec_sentinel_xfer_vft_prog_to_uvt_uvu_prog(u32 entry_point, void *callee_stack_frame));
 CASM_FUNCDECL(void _geec_sentinel_xfer_ret_vft_prog_to_uvt_uvu_prog(void *caller_stack_frame));
 CASM_FUNCDECL(void _geec_sentinel_xfer_call_uvt_uvu_prog_to_vft_prog(u32 entry_point, void *callee_stack_frame));
 CASM_FUNCDECL(void _geec_sentinel_xfer_ret_uvt_uvu_prog_to_vft_prog(void *caller_stack_frame));
