@@ -176,7 +176,7 @@ CASM_FUNCDECL(void _geec_sentinel_sysenter_casmstub(void *noparam));
 
 void _geec_sentinel_intercept_stub(x86regs_t *r);
 void _geec_sentinel_exception_stub(x86vmx_exception_frame_t *exframe);
-void _geec_sentinel_sysenter_stub(slab_params_t *sp, void *caller_stack_frame);
+CASM_FUNCDECL(void gs_syscallstub(slab_params_t *sp, void *caller_stack_frame));
 
 
 void _geec_sentinel_transition_call_uvt_uvu_prog_to_vft_prog(slab_params_t *sp, void *caller_stack_frame);
