@@ -463,6 +463,11 @@ void _impl_xmhfhwm_cpu_insn_pause(void){
 
 void _impl_xmhfhwm_cpu_insn_rdmsr(void){
 	//TODO: rdmsr emulation
+	if(xmhfhwm_cpu_gprs_ecx == MSR_APIC_BASE){
+		xmhfhwm_cpu_gprs_edx = 0;
+		xmhfhwm_cpu_gprs_eax = MMIO_APIC_BASE;
+	}
+
 }
 
 void _impl_xmhfhwm_cpu_insn_rdtsc(void){
@@ -646,6 +651,59 @@ void _impl_xmhfhwm_cpu_insn_cld(void){
 }
 
 
+
+void _impl_xmhfhwm_cpu_insn_popl_edi(void){
+	u32 value = *((u32 *)xmhfhwm_cpu_gprs_esp);
+	xmhfhwm_cpu_gprs_esp += sizeof(u32);
+	xmhfhwm_cpu_gprs_edi = value;
+}
+
+
+void _impl_xmhfhwm_cpu_insn_andl_imm_eax(u32 value){
+	xmhfhwm_cpu_gprs_eax &= value;
+}
+
+
+
+
+void _impl_xmhfhwm_cpu_insn_pushl_ebp(void){
+	xmhfhwm_cpu_gprs_esp -= sizeof(u32);
+	*((u32 *)xmhfhwm_cpu_gprs_esp) = xmhfhwm_cpu_gprs_ebp;
+}
+
+void _impl_xmhfhwm_cpu_insn_movl_esp_edx(void){
+	xmhfhwm_cpu_gprs_edx = xmhfhwm_cpu_gprs_esp;
+
+}
+
+void _impl_xmhfhwm_cpu_insn_pushl_eax(void){
+	xmhfhwm_cpu_gprs_esp -= sizeof(u32);
+	*((u32 *)xmhfhwm_cpu_gprs_esp) = xmhfhwm_cpu_gprs_eax;
+}
+
+void _impl_xmhfhwm_cpu_insn_pushl_edx(void){
+	xmhfhwm_cpu_gprs_esp -= sizeof(u32);
+	*((u32 *)xmhfhwm_cpu_gprs_esp) = xmhfhwm_cpu_gprs_edx;
+}
+
+void _impl_xmhfhwm_cpu_insn_pushl_ecx(void){
+	xmhfhwm_cpu_gprs_esp -= sizeof(u32);
+	*((u32 *)xmhfhwm_cpu_gprs_esp) = xmhfhwm_cpu_gprs_ecx;
+}
+
+
+void _impl_xmhfhwm_cpu_insn_movl_edx_esp(void){
+	xmhfhwm_cpu_gprs_esp = xmhfhwm_cpu_gprs_edx;
+}
+
+void _impl_xmhfhwm_cpu_insn_popl_ebp(void){
+	u32 value = *((u32 *)xmhfhwm_cpu_gprs_esp);
+	xmhfhwm_cpu_gprs_esp += sizeof(u32);
+	xmhfhwm_cpu_gprs_ebp = value;
+}
+
+
+
 //////
 // sysmem hardware model
 
@@ -698,24 +756,22 @@ void _impl_xmhfhwm_cpu_insn_rep_movsb(void){
 	}
 }
 
-void _impl_xmhfhwm_cpu_insn_popl_edi(void){
-	u32 value = *((u32 *)xmhfhwm_cpu_gprs_esp);
-	xmhfhwm_cpu_gprs_esp += sizeof(u32);
-	xmhfhwm_cpu_gprs_edi = value;
+
+// TODO: parts of the following eventually
+// needs to move to the appropriate hardware
+// model backend
+u8 _impl_xmhfhwm_lapic_mmiospace[PAGE_SIZE_4K];
+
+static u32 _impl_xmhfhwm_gethwmaddrforsysmem(u32 sysmemaddr){
+	if(sysmemaddr >= MMIO_APIC_BASE && sysmemaddr <
+		(MMIO_APIC_BASE+ PAGE_SIZE_4K)){
+		return (u32)&_impl_xmhfhwm_lapic_mmiospace;
+	}
 }
-
-
-void _impl_xmhfhwm_cpu_insn_andl_imm_eax(u32 value){
-	xmhfhwm_cpu_gprs_eax &= value;
-}
-
-
-
-//////
 
 void _impl_xmhfhwm_cpu_insn_movl_mesi_eax(int index){
 	u32 *value_mesi;
-	value_mesi = (u32 *)((u32)((int)xmhfhwm_cpu_gprs_esi + (int)index));
+	value_mesi = (u32 *)_impl_xmhfhwm_gethwmaddrforsysmem(((u32)((int)xmhfhwm_cpu_gprs_esi + (int)index)));
 	xmhfhwm_cpu_gprs_eax = *value_mesi;
 }
 
@@ -747,40 +803,4 @@ void _impl_xmhfhwm_cpu_insn_movw_ax_mesi(int index){
 	u32 *value_mesi;
 	value_mesi = (u32 *)((u32)((int)xmhfhwm_cpu_gprs_esi + (int)index));
 	*value_mesi |= (xmhfhwm_cpu_gprs_eax & 0x0000FFFFUL);
-}
-
-void _impl_xmhfhwm_cpu_insn_pushl_ebp(void){
-	xmhfhwm_cpu_gprs_esp -= sizeof(u32);
-	*((u32 *)xmhfhwm_cpu_gprs_esp) = xmhfhwm_cpu_gprs_ebp;
-}
-
-void _impl_xmhfhwm_cpu_insn_movl_esp_edx(void){
-	xmhfhwm_cpu_gprs_edx = xmhfhwm_cpu_gprs_esp;
-
-}
-
-void _impl_xmhfhwm_cpu_insn_pushl_eax(void){
-	xmhfhwm_cpu_gprs_esp -= sizeof(u32);
-	*((u32 *)xmhfhwm_cpu_gprs_esp) = xmhfhwm_cpu_gprs_eax;
-}
-
-void _impl_xmhfhwm_cpu_insn_pushl_edx(void){
-	xmhfhwm_cpu_gprs_esp -= sizeof(u32);
-	*((u32 *)xmhfhwm_cpu_gprs_esp) = xmhfhwm_cpu_gprs_edx;
-}
-
-void _impl_xmhfhwm_cpu_insn_pushl_ecx(void){
-	xmhfhwm_cpu_gprs_esp -= sizeof(u32);
-	*((u32 *)xmhfhwm_cpu_gprs_esp) = xmhfhwm_cpu_gprs_ecx;
-}
-
-
-void _impl_xmhfhwm_cpu_insn_movl_edx_esp(void){
-	xmhfhwm_cpu_gprs_esp = xmhfhwm_cpu_gprs_edx;
-}
-
-void _impl_xmhfhwm_cpu_insn_popl_ebp(void){
-	u32 value = *((u32 *)xmhfhwm_cpu_gprs_esp);
-	xmhfhwm_cpu_gprs_esp += sizeof(u32);
-	xmhfhwm_cpu_gprs_ebp = value;
 }
