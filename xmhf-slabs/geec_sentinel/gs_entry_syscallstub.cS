@@ -64,7 +64,7 @@ CASM_FUNCDEF(void, gs_syscallstub,
 {
     xmhfhwm_cpu_insn_pushl_edx();   //original caller_stack_frame
     xmhfhwm_cpu_insn_pushl_ecx();
-    xmhfhwm_cpu_insn_call(_geec_sentinel_sysenter_stub);
+    xmhfhwm_cpu_insn_call_c_2p(gs_entry_syscall, slab_params_t *, void *);
     xmhfhwm_cpu_insn_hlt();
 },
 void *noparam)

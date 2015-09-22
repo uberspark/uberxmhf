@@ -66,7 +66,7 @@ u32 xmhf_baseplatform_arch_x86_getcpulapicid(void){
 
 	eax &= (u32)0xFFFFF000UL;
 	lapic_reg = ((u32)eax+ (u32)LAPIC_ID);
-	lapic_id = xmhfhw_sysmemaccess_readu32((u32)lapic_reg);
+	lapic_id = CASM_FUNCCALL(xmhfhw_sysmemaccess_readu32, (u32)lapic_reg);
 	lapic_id = lapic_id >> 24;
 
 	return lapic_id;
