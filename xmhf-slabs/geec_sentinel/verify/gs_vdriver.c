@@ -211,6 +211,13 @@ void drv_pathv2uv(void){
         drv_pathv2uv_sp.dst_uapifn = 0;
 	drv_pathv2uv_sp.cpuid = 0;
 
+
+	xmhfhwm_sysmemaccess_physmem_extents[xmhfhwm_sysmemaccess_physmem_extents_total].addr_start =
+		xmhfgeec_slab_info_table[XMHFGEEC_SLAB_XC_TESTSLAB].slab_physmem_extents[2].addr_start;
+	xmhfhwm_sysmemaccess_physmem_extents[xmhfhwm_sysmemaccess_physmem_extents_total].addr_end =
+		xmhfgeec_slab_info_table[XMHFGEEC_SLAB_XC_TESTSLAB].slab_physmem_extents[2].addr_end;
+	xmhfhwm_sysmemaccess_physmem_extents_total++;
+
 	CASM_FUNCCALL(_slab_entrystub, &drv_pathv2uv_sp);
 	//@assert false;
 }

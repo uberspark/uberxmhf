@@ -2245,6 +2245,10 @@ extern u32 xmhfhwm_cpu_gprs_edi;
 
 extern u32 xmhfhwm_cpu_eflags;
 
+extern physmem_extent_t xmhfhwm_sysmemaccess_physmem_extents[32];
+extern u32 xmhfhwm_sysmemaccess_physmem_extents_total;
+
+
 
 extern void _impl_xmhfhwm_cpu_insn_hlt(void);
 extern void _impl_xmhfhwm_cpu_insn_pushl_mesp(int index);
