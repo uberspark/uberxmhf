@@ -79,7 +79,7 @@ void gs_exit_callv2uv(slab_params_t *sp, void *caller_stack_frame){
         _XDPRINTF_("%s[%u]: copying params to dst_sp=%x from sp=%x\n", __func__, (u16)sp->cpuid,
                    (u32)dst_sp, (u32)sp);
         //memcpy(dst_sp, sp, sizeof(slab_params_t));
-        xmhfhw_sysmemaccess_copy(dst_sp, sp, sizeof(slab_params_t));
+        CASM_FUNCCALL(xmhfhw_sysmemaccess_copy, dst_sp, sp, sizeof(slab_params_t));
 
     }
 
