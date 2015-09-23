@@ -58,9 +58,10 @@
 
 ////// intercepts
 
-void _geec_sentinel_intercept_stub(x86regs_t *r){
+void gs_entry_icpt(x86regs_t *r){
     slab_params_t spl;
 
+	//@assert false;
     memset(&spl, 0, sizeof(spl));
 
     spl.slab_ctype = XMHFGEEC_SENTINEL_CALL_INTERCEPT;

@@ -410,7 +410,7 @@ void drv_path_callv2uvg(void){
 
 
 
-
+#if defined (DRV_PATH_EXCEPTION)
 x86vmx_exception_frame_t drv_path_exception_excpframe;
 
 void drv_path_exception(void){
@@ -421,9 +421,20 @@ void drv_path_exception(void){
 	CASM_FUNCCALL(__xmhf_exception_handler_8, CASM_NOPARAM);
 	//@assert false;
 }
+#endif // defined
 
 
 
+
+
+
+void drv_path_callicpt(void){
+	xmhfhwm_cpu_gprs_esp -= sizeof(x86vmx_exception_frame_t);
+
+	//invoke sentinel intercept stub
+	CASM_FUNCCALL(gs_entry_icptstub, CASM_NOPARAM);
+	//@assert false;
+}
 
 
 
@@ -466,9 +477,12 @@ void main(void){
 	drv_path_callv2uvg();
 #endif // defined
 
-
+#if defined (DRV_PATH_EXCEPTION)
 	drv_path_exception();
+#endif // defined
 
+
+	drv_path_callicpt();
 
 	//{
 	//	unsigned char *p = (unsigned char *)(0x06c00000+ (1*XMHF_SLAB_STACKSIZE));

@@ -58,14 +58,11 @@
 
 ////// intercepts
 
-CASM_FUNCDEF(void, _geec_sentinel_intercept_casmstub,
+CASM_FUNCDEF(void, gs_entry_icptstub,
 {
     xmhfhwm_cpu_insn_pushal();
     xmhfhwm_cpu_insn_pushl_esp();
-    xmhfhwm_cpu_insn_call(_geec_sentinel_intercept_stub);
-    //xmhfhwm_cpu_insn_addl_imm_esp(0x4);
-    //xmhfhwm_cpu_insn_popal();
-    //xmhfhwm_cpu_insn_vmresume();
+    xmhfhwm_cpu_insn_call_c_1p(gs_entry_icpt, x86regs_t *);
     xmhfhwm_cpu_insn_hlt();
 },
 void *noparam)
