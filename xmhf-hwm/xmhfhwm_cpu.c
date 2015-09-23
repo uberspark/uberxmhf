@@ -735,6 +735,14 @@ void _impl_xmhfhwm_cpu_insn_movl_eax_esp(void){
 
 
 
+void _impl_xmhfhwm_cpu_insn_vmlaunch(void){
+	xmhfhwm_vdriver_slabep();
+
+	//xmhfhwm_cpu_eflags |= EFLAGS_CF;
+}
+
+
+
 
 
 
