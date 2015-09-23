@@ -742,6 +742,33 @@ void _impl_xmhfhwm_cpu_insn_vmlaunch(void){
 }
 
 
+void _impl_xmhfhwm_cpu_insn_pushal(void){
+	u32 value = xmhfhwm_cpu_gprs_esp;
+	_impl_xmhfhwm_cpu_insn_pushl_eax();
+	_impl_xmhfhwm_cpu_insn_pushl_ecx();
+	_impl_xmhfhwm_cpu_insn_pushl_edx();
+	_impl_xmhfhwm_cpu_insn_pushl_ebx();
+	_impl_xmhfhwm_cpu_insn_pushl_imm(value);
+	_impl_xmhfhwm_cpu_insn_pushl_ebp();
+	_impl_xmhfhwm_cpu_insn_pushl_esi();
+	_impl_xmhfhwm_cpu_insn_pushl_edi();
+
+}
+
+void _impl_xmhfhwm_cpu_insn_movw_imm_ax(u16 value){
+	xmhfhwm_cpu_gprs_eax &= 0xFFFF0000UL;
+	xmhfhwm_cpu_gprs_eax |= value;
+}
+
+void  _impl_xmhfhwm_cpu_insn_movw_ax_ds(void){
+	xmhfhwm_cpu_ds_selector = xmhfhwm_cpu_gprs_eax & 0x0000FFFFUL;
+}
+
+void  _impl_xmhfhwm_cpu_insn_movw_ax_es(void){
+	xmhfhwm_cpu_es_selector = xmhfhwm_cpu_gprs_eax & 0x0000FFFFUL;
+}
+
+
 
 
 

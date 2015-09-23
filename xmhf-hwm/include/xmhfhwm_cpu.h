@@ -2381,6 +2381,7 @@ extern void _impl_xmhfhwm_cpu_insn_movl_esp_edx(void);
 
 extern void _impl_xmhfhwm_cpu_insn_pushl_eax(void);
 extern void _impl_xmhfhwm_cpu_insn_pushl_edx(void);
+extern void _impl_xmhfhwm_cpu_insn_pushl_edx(void);
 extern void _impl_xmhfhwm_cpu_insn_movl_edx_esp(void);
 extern void _impl_xmhfhwm_cpu_insn_popl_ebp(void);
 extern void _impl_xmhfhwm_cpu_insn_pushl_ecx(void);
@@ -2391,6 +2392,10 @@ extern void _impl_xmhfhwm_cpu_insn_popl_edx(void);
 extern void _impl_xmhfhwm_cpu_insn_movl_esp_ecx(void);
 
 extern void _impl_xmhfhwm_cpu_insn_vmlaunch(void);
+extern void _impl_xmhfhwm_cpu_insn_pushal(void);
+extern void _impl_xmhfhwm_cpu_insn_movw_imm_ax(u16 value);
+extern void  _impl_xmhfhwm_cpu_insn_movw_ax_ds(void);
+extern void  _impl_xmhfhwm_cpu_insn_movw_ax_es(void);
 
 
 
@@ -2577,7 +2582,10 @@ extern void _impl_xmhfhwm_cpu_insn_vmlaunch(void);
 #define xmhfhwm_cpu_insn_movl_imm_edi(x) _xmhfhwm_cpu_insn_movl_imm_edi(x)
 
 
-#define _xmhfhwm_cpu_insn_movw_imm_ax(x) __builtin_annot("movw $"#x", %ax");
+#define _xmhfhwm_cpu_insn_movw_imm_ax(x) \
+	__builtin_annot("movw $"#x", %ax"); \
+	_impl_xmhfhwm_cpu_insn_movw_imm_ax(x); \
+
 #define xmhfhwm_cpu_insn_movw_imm_ax(x) _xmhfhwm_cpu_insn_movw_imm_ax(x)
 
 #define xmhfhwm_cpu_insn_movl_imm_mesp(x,y) \
@@ -2979,8 +2987,14 @@ extern void _impl_xmhfhwm_cpu_insn_vmlaunch(void);
 	_impl_xmhfhwm_cpu_insn_movl_ss_eax(); \
 
 #define xmhfhwm_cpu_insn_movw_ds_ax() __builtin_annot("movw %ds, %ax ");
-#define xmhfhwm_cpu_insn_movw_ax_ds() __builtin_annot("movw %ax, %ds ");
-#define xmhfhwm_cpu_insn_movw_ax_es() __builtin_annot("movw %ax, %es ");
+#define xmhfhwm_cpu_insn_movw_ax_ds() \
+	__builtin_annot("movw %ax, %ds "); \
+        _impl_xmhfhwm_cpu_insn_movw_ax_ds(); \
+
+#define xmhfhwm_cpu_insn_movw_ax_es() \
+	__builtin_annot("movw %ax, %es "); \
+        _impl_xmhfhwm_cpu_insn_movw_ax_es(); \
+
 #define xmhfhwm_cpu_insn_movw_ax_fs() __builtin_annot("movw %ax, %fs ");
 #define xmhfhwm_cpu_insn_movw_ax_gs() __builtin_annot("movw %ax, %gs ");
 #define xmhfhwm_cpu_insn_movw_ax_ss() __builtin_annot("movw %ax, %ss ");
@@ -3045,7 +3059,11 @@ extern void _impl_xmhfhwm_cpu_insn_vmlaunch(void);
 	_impl_xmhfhwm_cpu_insn_rdtsc(); \
 
 
-#define xmhfhwm_cpu_insn_pushal() __builtin_annot("pushal ");
+#define xmhfhwm_cpu_insn_pushal() \
+	__builtin_annot("pushal "); \
+	_impl_xmhfhwm_cpu_insn_pushal(); \
+
+
 #define xmhfhwm_cpu_insn_popal() __builtin_annot("popal ");
 
 // system instructions
