@@ -380,6 +380,8 @@ void drv_path_retuv2v(void){
 
 
 
+#if defined (DRV_PATH_CALLV2UVG)
+
 slab_params_t drv_path_callv2uvg_sp;
 
 void xmhfhwm_vdriver_slabep(void){
@@ -401,6 +403,7 @@ void drv_path_callv2uvg(void){
 	CASM_FUNCCALL(_slab_entrystub, &drv_path_callv2uvg_sp);
 	//@assert false;
 }
+#endif // defined
 
 
 
@@ -436,7 +439,9 @@ void main(void){
 	drv_path_retuv2v();
 #endif // defined
 
+#if defined (DRV_PATH_CALLV2UVG)
 	drv_path_callv2uvg();
+#endif // defined
 
 
 	//{
