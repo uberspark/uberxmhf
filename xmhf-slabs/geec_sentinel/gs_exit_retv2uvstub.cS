@@ -55,7 +55,7 @@
 #include <xmhfgeec.h>
 #include <geec_sentinel.h>
 
-CASM_FUNCDEF(void, _geec_sentinel_xfer_ret_vft_prog_to_uvt_uvu_prog,
+CASM_FUNCDEF(void, gs_exit_retv2uvstub,
 {
     xmhfhwm_cpu_insn_movl_mesp_eax(0x4);
     xmhfhwm_cpu_insn_movl_eax_esp();
@@ -63,7 +63,7 @@ CASM_FUNCDEF(void, _geec_sentinel_xfer_ret_vft_prog_to_uvt_uvu_prog,
     xmhfhwm_cpu_insn_popl_esi();
     xmhfhwm_cpu_insn_popl_edi();
     xmhfhwm_cpu_insn_popl_ebp();
-    xmhfhwm_cpu_insn_ret();
+    xmhfhwm_cpu_insn_jmpvhslabretaddr();
 },
 void *caller_stack_frame)
 

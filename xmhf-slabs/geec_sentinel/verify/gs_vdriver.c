@@ -226,12 +226,12 @@ void drv_pathv2uv(void){
 
 
 slab_params_t drv_pathretv2uv_sp;
+slab_params_t drv_pathretv2uv_callersp;
+gs_siss_element_t siss_elem;
 
-void xmhfhwm_vdriver_slabep(void){
-	// //@assert xmhfhwm_cpu_gprs_eip == (u32)xmhfgeec_slab_info_table[XMHFGEEC_SLAB_XC_TESTSLAB].entrystub;
-	// //@assert xmhfhwm_cpu_gprs_esp == check_esp - (2 * sizeof(u32));
-	// //@assert *((u32 *)xmhfhwm_cpu_gprs_esp) == CASM_RET_EIP;
-	// //@assert *((u32 *)((u32)xmhfhwm_cpu_gprs_esp+4)) == (unsigned int)&drv_pathv2v_sp;
+void xmhfhwm_vdriver_vhslabretaddr(void){
+	//@assert xmhfhwm_cpu_gprs_eip == CASM_RET_EIP;
+	//@assert xmhfhwm_cpu_gprs_esp == _slab_tos[cpuid];
 	//@assert false;
 }
 
@@ -243,12 +243,38 @@ void drv_pathretv2uv(void){
 	drv_pathretv2uv_sp.cpuid = 0;
 
 
+
+
+	//inform hardware model to treat slab stack region as valid memory
 	xmhfhwm_sysmemaccess_physmem_extents[xmhfhwm_sysmemaccess_physmem_extents_total].addr_start =
 		xmhfgeec_slab_info_table[XMHFGEEC_SLAB_XC_TESTSLAB].slab_physmem_extents[2].addr_start;
 	xmhfhwm_sysmemaccess_physmem_extents[xmhfhwm_sysmemaccess_physmem_extents_total].addr_end =
 		xmhfgeec_slab_info_table[XMHFGEEC_SLAB_XC_TESTSLAB].slab_physmem_extents[2].addr_end;
 	xmhfhwm_sysmemaccess_physmem_extents_total++;
 
+	//setup verified slab stack frame that this slab is returning to
+	xmhfhwm_cpu_gprs_esp -= sizeof(u32);
+	*(u32 *)xmhfhwm_cpu_gprs_esp = CASM_RET_EIP;
+	xmhfhwm_cpu_gprs_esp -= sizeof(u32);
+	*(u32 *)xmhfhwm_cpu_gprs_esp = xmhfhwm_cpu_gprs_ebp;
+	xmhfhwm_cpu_gprs_esp -= sizeof(u32);
+	*(u32 *)xmhfhwm_cpu_gprs_esp = xmhfhwm_cpu_gprs_edi;
+	xmhfhwm_cpu_gprs_esp -= sizeof(u32);
+	*(u32 *)xmhfhwm_cpu_gprs_esp = xmhfhwm_cpu_gprs_esi;
+	xmhfhwm_cpu_gprs_esp -= sizeof(u32);
+	*(u32 *)xmhfhwm_cpu_gprs_esp = xmhfhwm_cpu_gprs_ebx;
+
+
+	//plug in an entry in the SISS corresponding to this RET
+	siss_elem.src_slabid = XMHFGEEC_SLAB_XC_INIT;
+	siss_elem.dst_slabid = XMHFGEEC_SLAB_XC_TESTSLAB;
+	siss_elem.slab_ctype = XMHFGEEC_SENTINEL_CALL_VfT_PROG_TO_uVT_uVU_PROG;
+	siss_elem.caller_stack_frame = xmhfhwm_cpu_gprs_esp;
+	siss_elem.sp = &drv_pathretv2uv_callersp;
+
+	gs_siss_push(drv_pathretv2uv_sp.cpuid, siss_elem);
+
+	//invoke syscall sentinel stub
 	xmhfhwm_cpu_gprs_edx = 0;
 	xmhfhwm_cpu_gprs_ecx = &drv_pathretv2uv_sp;
 	CASM_FUNCCALL(gs_syscallstub, CASM_NOPARAM);

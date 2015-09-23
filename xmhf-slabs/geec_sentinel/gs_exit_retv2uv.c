@@ -59,16 +59,19 @@
 
 
 
-void _geec_sentinel_transition_ret_vft_prog_to_uvt_uvu_prog(slab_params_t *sp, void *caller_stack_frame){
+void gs_exit_retv2uv(slab_params_t *sp, void *caller_stack_frame){
     slab_params_t *dst_sp;
     gs_siss_element_t elem;
 
     _XDPRINTF_("%s[%u]: src=%u, dst=%u\n", __func__, (u16)sp->cpuid, sp->src_slabid, sp->dst_slabid);
 
+
     //pop tuple from safe stack
     //gs_siss_pop((u16)sp->cpuid, &elem.src_slabid, &elem.dst_slabid, &elem.slab_ctype, &elem.caller_stack_frame,
     //                    &elem.sp);
     gs_siss_pop((u16)sp->cpuid, &elem);
+
+
 
 
     _XDPRINTF_("%s[%u]: safepop: {cpuid: %u, src: %u, dst: %u, ctype: 0x%x, \
@@ -86,15 +89,13 @@ void _geec_sentinel_transition_ret_vft_prog_to_uvt_uvu_prog(slab_params_t *sp, v
     }
 
 
-
     //marshall parameters
-    memcpy( (elem.sp)->in_out_params, sp->in_out_params, sizeof(sp->in_out_params) );
+    CASM_FUNCCALL(xmhfhw_sysmemaccess_copy, (elem.sp)->in_out_params, sp->in_out_params, sizeof(slab_params_t));
 
 
     //return back to VfT_PROG slab
-    CASM_FUNCCALL(_geec_sentinel_xfer_ret_vft_prog_to_uvt_uvu_prog,
+    CASM_FUNCCALL(gs_exit_retv2uvstub,
                       elem.caller_stack_frame);
-
 
     _XDPRINTF_("%s[%u]: wip. halting!\n", __func__, (u16)sp->cpuid);
     HALT();
