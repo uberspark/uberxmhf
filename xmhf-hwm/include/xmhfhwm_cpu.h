@@ -2246,6 +2246,8 @@ extern u32 xmhfhwm_cpu_gprs_edi;
 
 extern u32 xmhfhwm_cpu_eflags;
 
+extern u32 xmhfhwm_cpu_cr3;
+
 extern physmem_extent_t xmhfhwm_sysmemaccess_physmem_extents[32];
 extern u32 xmhfhwm_sysmemaccess_physmem_extents_total;
 
