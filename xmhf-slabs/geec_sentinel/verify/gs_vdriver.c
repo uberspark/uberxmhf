@@ -302,8 +302,8 @@ void xmhfhwm_vdriver_slabep(void){
 void drv_path_calluv2v(void){
 	drv_path_calluv2v_callersp.slab_ctype = XMHFGEEC_SENTINEL_CALL_uVT_uVU_PROG_TO_VfT_PROG;
         drv_path_calluv2v_callersp.src_slabid = XMHFGEEC_SLAB_XC_TESTSLAB;
-        drv_path_calluv2v_callersp.dst_slabid = XMHFGEEC_SLAB_XC_INIT;
-        drv_path_calluv2v_callersp.dst_uapifn = 0;
+        drv_path_calluv2v_callersp.dst_slabid = XMHFGEEC_SLAB_UAPI_GCPUSTATE;
+        drv_path_calluv2v_callersp.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_VMREAD;
 	drv_path_calluv2v_callersp.cpuid = 0;
 
 
@@ -314,6 +314,8 @@ void drv_path_calluv2v(void){
 		xmhfgeec_slab_info_table[XMHFGEEC_SLAB_XC_TESTSLAB].slab_physmem_extents[2].addr_end;
 	xmhfhwm_sysmemaccess_physmem_extents_total++;
 
+	//load cr3 for xc_testslab
+	xmhfhwm_cpu_cr3 = xmhfgeec_slab_info_table[XMHFGEEC_SLAB_XC_TESTSLAB].mempgtbl_cr3;
 
 	//invoke syscall sentinel stub
 	xmhfhwm_cpu_gprs_edx = 0;
