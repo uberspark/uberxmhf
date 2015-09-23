@@ -271,6 +271,13 @@ void _impl_xmhfhwm_cpu_insn_popl_ebx(void){
 	xmhfhwm_cpu_gprs_ebx = value;
 }
 
+void _impl_xmhfhwm_cpu_insn_popl_edx(void){
+	u32 value = *((u32 *)xmhfhwm_cpu_gprs_esp);
+	xmhfhwm_cpu_gprs_esp += sizeof(u32);
+	xmhfhwm_cpu_gprs_edx = value;
+}
+
+
 void _impl_xmhfhwm_cpu_insn_cli(void){
 	xmhfhwm_cpu_eflags &= ~(EFLAGS_IF);
 }
@@ -494,6 +501,12 @@ void _impl_xmhfhwm_cpu_insn_movl_esp_eax(void){
 	xmhfhwm_cpu_gprs_eax = xmhfhwm_cpu_gprs_esp;
 
 }
+
+void _impl_xmhfhwm_cpu_insn_movl_esp_ecx(void){
+	xmhfhwm_cpu_gprs_ecx = xmhfhwm_cpu_gprs_esp;
+
+}
+
 
 void _impl_xmhfhwm_cpu_insn_pushfl(void){
 	xmhfhwm_cpu_gprs_esp -= sizeof(u32);

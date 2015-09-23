@@ -2228,6 +2228,7 @@ struct _vmx_vmcsrwfields_encodings	{
 extern void xmhfhwm_vdriver_sentinel(void);
 extern void xmhfhwm_vdriver_slabep(void);
 extern void xmhfhwm_vdriver_vhslabretaddr(void);
+extern void xmhfhwm_vdriver_uhslabretaddr(void);
 
 
 //////
@@ -2386,6 +2387,8 @@ extern void _impl_xmhfhwm_cpu_insn_pushl_ecx(void);
 extern void _impl_xmhfhwm_cpu_insn_movl_eax_esp(void);
 extern void _impl_xmhfhwm_cpu_insn_pushl_esp(void);
 extern void _impl_xmhfhwm_cpu_insn_pushl_imm(u32 value);
+extern void _impl_xmhfhwm_cpu_insn_popl_edx(void);
+extern void _impl_xmhfhwm_cpu_insn_movl_esp_ecx(void);
 
 
 
@@ -2534,6 +2537,14 @@ extern void _impl_xmhfhwm_cpu_insn_pushl_imm(u32 value);
 	xmhfhwm_vdriver_vhslabretaddr(); \
 	_impl_xmhfhwm_cpu_insn_hlt(); \
 
+
+#define xmhfhwm_cpu_insn_jmpuhslabretaddr() \
+	__builtin_annot("sysexit "); \
+	__builtin_annot("hlt "); \
+	xmhfhwm_cpu_gprs_eip = xmhfhwm_cpu_gprs_edx; \
+	xmhfhwm_cpu_gprs_esp = xmhfhwm_cpu_gprs_ecx; \
+	xmhfhwm_vdriver_uhslabretaddr(); \
+	_impl_xmhfhwm_cpu_insn_hlt(); \
 
 
 
@@ -2743,7 +2754,10 @@ extern void _impl_xmhfhwm_cpu_insn_pushl_imm(u32 value);
 	_impl_xmhfhwm_cpu_insn_movl_esp_eax(); \
 
 
-#define xmhfhwm_cpu_insn_movl_esp_ecx() __builtin_annot("movl %esp, %ecx ");
+#define xmhfhwm_cpu_insn_movl_esp_ecx() \
+	__builtin_annot("movl %esp, %ecx "); \
+	_impl_xmhfhwm_cpu_insn_movl_esp_ecx(); \
+
 
 #define xmhfhwm_cpu_insn_movl_esp_edx() \
 	__builtin_annot("movl %esp, %edx "); \
@@ -2808,7 +2822,11 @@ extern void _impl_xmhfhwm_cpu_insn_pushl_imm(u32 value);
 
 
 #define xmhfhwm_cpu_insn_popl_ecx() __builtin_annot("popl %ecx ");
-#define xmhfhwm_cpu_insn_popl_edx() __builtin_annot("popl %edx ");
+
+#define xmhfhwm_cpu_insn_popl_edx() \
+	__builtin_annot("popl %edx "); \
+        _impl_xmhfhwm_cpu_insn_popl_edx(); \
+
 
 #define xmhfhwm_cpu_insn_popl_esi() \
 	__builtin_annot("popl %esi "); \

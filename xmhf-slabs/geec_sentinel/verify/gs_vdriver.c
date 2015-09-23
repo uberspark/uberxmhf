@@ -335,10 +335,10 @@ void drv_path_calluv2v(void){
 
 
 slab_params_t drv_path_retuv2v_calleesp;
-u32 drv_path_retuv2v_callerstackframe[5];
+u32 drv_path_retuv2v_callerstackframe[6];
 gs_siss_element_t siss_elem;
 
-void xmhfhwm_vdriver_vhslabretaddr(void){
+void xmhfhwm_vdriver_uhslabretaddr(void){
 	// //@assert xmhfhwm_cpu_gprs_eip == CASM_RET_EIP;
 	// //@assert xmhfhwm_cpu_gprs_esp == _slab_tos[cpuid];
 	//@assert false;
@@ -361,16 +361,12 @@ void drv_path_retuv2v(void){
 	xmhfhwm_sysmemaccess_physmem_extents_total++;
 
 
-	//setup verified slab stack frame that this slab is returning to
-	xmhfgeec_slab_info_table[XMHFGEEC_SLAB_UAPI_GCPUSTATE].slabtos[cpuid] -= sizeof(slab_params_t);
-
-
 	//plug in an entry in the SISS corresponding to this RET
 	siss_elem.src_slabid = XMHFGEEC_SLAB_XC_TESTSLAB;
 	siss_elem.dst_slabid = XMHFGEEC_SLAB_UAPI_GCPUSTATE;
 	siss_elem.slab_ctype = XMHFGEEC_SENTINEL_CALL_uVT_uVU_PROG_TO_VfT_PROG;
-	siss_elem.caller_stack_frame = &drv_path_retuv2v_callerstackframe[5];
-	siss_elem.sp = xmhfgeec_slab_info_table[XMHFGEEC_SLAB_UAPI_GCPUSTATE].slabtos[cpuid];
+	siss_elem.caller_stack_frame = &drv_path_retuv2v_callerstackframe[0];
+	siss_elem.sp = xmhfgeec_slab_info_table[XMHFGEEC_SLAB_XC_TESTSLAB].slabtos[cpuid];
 
 	gs_siss_push(cpuid, siss_elem);
 

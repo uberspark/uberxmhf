@@ -57,7 +57,7 @@
 
 
 
-CASM_FUNCDEF(void, _geec_sentinel_xfer_ret_uvt_uvu_prog_to_vft_prog,
+CASM_FUNCDEF(void, gs_exit_retuv2vstub,
 {
     //caller_stack_frame:
     // ebx, esi, edi, ebp, return-eip
@@ -70,7 +70,6 @@ CASM_FUNCDEF(void, _geec_sentinel_xfer_ret_uvt_uvu_prog_to_vft_prog,
 
     xmhfhwm_cpu_insn_popl_edx(); //edx = return-eip
     xmhfhwm_cpu_insn_movl_esp_ecx(); //ecx = stack pointer
-    xmhfhwm_cpu_insn_sysexit();             //sysexit to ring-3
-    xmhfhwm_cpu_insn_hlt();
+	xmhfhwm_cpu_insn_jmpuhslabretaddr();
 },
 void *caller_stack_frame)
