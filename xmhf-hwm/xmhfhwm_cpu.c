@@ -686,6 +686,19 @@ void _impl_xmhfhwm_cpu_insn_pushl_edx(void){
 	*((u32 *)xmhfhwm_cpu_gprs_esp) = xmhfhwm_cpu_gprs_edx;
 }
 
+void _impl_xmhfhwm_cpu_insn_pushl_esp(void){
+	u32 value = xmhfhwm_cpu_gprs_esp;
+	xmhfhwm_cpu_gprs_esp -= sizeof(u32);
+	*((u32 *)xmhfhwm_cpu_gprs_esp) = value;
+}
+
+
+void _impl_xmhfhwm_cpu_insn_pushl_imm(u32 value){
+	xmhfhwm_cpu_gprs_esp -= sizeof(u32);
+	*((u32 *)xmhfhwm_cpu_gprs_esp) = value;
+}
+
+
 void _impl_xmhfhwm_cpu_insn_pushl_ecx(void){
 	xmhfhwm_cpu_gprs_esp -= sizeof(u32);
 	*((u32 *)xmhfhwm_cpu_gprs_esp) = xmhfhwm_cpu_gprs_ecx;

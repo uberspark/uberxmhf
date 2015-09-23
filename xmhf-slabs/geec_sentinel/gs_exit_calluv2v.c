@@ -56,7 +56,7 @@
 #include <geec_sentinel.h>
 
 
-void _geec_sentinel_transition_call_uvt_uvu_prog_to_vft_prog(slab_params_t *sp, void *caller_stack_frame){
+void gs_exit_calluv2v(slab_params_t *sp, void *caller_stack_frame){
     slab_params_t *dst_sp;
 	gs_siss_element_t siss_elem;
 
@@ -77,8 +77,10 @@ void _geec_sentinel_transition_call_uvt_uvu_prog_to_vft_prog(slab_params_t *sp, 
         dst_sp = (slab_params_t *) xmhfgeec_slab_info_table[sp->dst_slabid].slabtos[(u16)sp->cpuid];
         _XDPRINTF_("%s[%u]: copying params to dst_sp=%x from sp=%x\n", __func__, (u16)sp->cpuid,
                    (u32)dst_sp, (u32)sp);
-        memcpy(dst_sp, sp, sizeof(slab_params_t));
+
+        CASM_FUNCCALL(xmhfhw_sysmemaccess_copy, dst_sp, sp, sizeof(slab_params_t));
     }
+
 
 
     //push src_slabid, dst_slabid, hic_calltype, caller_stack_frame and sp
@@ -104,7 +106,7 @@ void _geec_sentinel_transition_call_uvt_uvu_prog_to_vft_prog(slab_params_t *sp, 
                (u16)sp->cpuid, xmhfgeec_slab_info_table[sp->dst_slabid].entrystub, (u32)dst_sp);
 
 
-    CASM_FUNCCALL(_geec_sentinel_xfer_call_uvt_uvu_prog_to_vft_prog,
+    CASM_FUNCCALL(gs_exit_calluv2vstub,
                 xmhfgeec_slab_info_table[sp->dst_slabid].entrystub,
                                   dst_sp);
 
