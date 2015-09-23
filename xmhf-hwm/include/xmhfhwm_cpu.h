@@ -2227,6 +2227,7 @@ struct _vmx_vmcsrwfields_encodings	{
 //////
 extern void xmhfhwm_vdriver_sentinel(void);
 extern void xmhfhwm_vdriver_slabep(void);
+extern void xmhfhwm_vdriver_vhslabretaddr(void);
 
 
 //////
@@ -2380,6 +2381,10 @@ extern void _impl_xmhfhwm_cpu_insn_pushl_edx(void);
 extern void _impl_xmhfhwm_cpu_insn_movl_edx_esp(void);
 extern void _impl_xmhfhwm_cpu_insn_popl_ebp(void);
 extern void _impl_xmhfhwm_cpu_insn_pushl_ecx(void);
+extern void _impl_xmhfhwm_cpu_insn_movl_eax_esp(void);
+
+
+
 
 //////
 // CASM C to ASM call macros
@@ -2517,6 +2522,16 @@ extern void _impl_xmhfhwm_cpu_insn_pushl_ecx(void);
 	_impl_xmhfhwm_cpu_insn_hlt(); \
 
 
+#define xmhfhwm_cpu_insn_jmpvhslabretaddr() \
+	__builtin_annot("ret "); \
+	__builtin_annot("hlt "); \
+	xmhfhwm_cpu_gprs_eip = *(u32 *)xmhfhwm_cpu_gprs_esp; \
+	xmhfhwm_cpu_gprs_esp += sizeof(u32); \
+	xmhfhwm_vdriver_vhslabretaddr(); \
+	_impl_xmhfhwm_cpu_insn_hlt(); \
+
+
+
 
 // load/store instructions
 #define xmhfhwm_cpu_insn_cld() \
@@ -2582,7 +2597,9 @@ extern void _impl_xmhfhwm_cpu_insn_pushl_ecx(void);
 	_impl_xmhfhwm_cpu_insn_movl_eax_mesp(x); \
 
 
-#define xmhfhwm_cpu_insn_movl_eax_esp() __builtin_annot("movl %eax, %esp ");
+#define xmhfhwm_cpu_insn_movl_eax_esp() \
+	__builtin_annot("movl %eax, %esp "); \
+	_impl_xmhfhwm_cpu_insn_movl_eax_esp(); \
 
 #define xmhfhwm_cpu_insn_movl_edx_esp() \
 	__builtin_annot("movl %edx, %esp "); \

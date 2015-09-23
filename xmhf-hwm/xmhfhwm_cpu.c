@@ -703,6 +703,14 @@ void _impl_xmhfhwm_cpu_insn_popl_ebp(void){
 }
 
 
+void _impl_xmhfhwm_cpu_insn_movl_eax_esp(void){
+	xmhfhwm_cpu_gprs_esp = xmhfhwm_cpu_gprs_eax;
+}
+
+
+
+
+
 
 //////
 // sysmem hardware model
