@@ -1911,9 +1911,50 @@ static void _geec_prime_populate_slab_pagetables_pae4k(u32 slabid){
 
 }
 
-
 static void gp_setup_vhslab_mempgtbl(void){
+	u32 i, j;
+	u64 default_flags = (u64)(_PAGE_PRESENT);
 
+	u64 gpa;
+	u64 flags;
+	u32 spatype;
+	u32 spa_slabregion, spa_slabtype;
+	u32 slabid = XMHFGEEC_SLAB_GEEC_PRIME;
+	u32 slabtype = xmhfgeec_slab_info_table[slabid].slabtype;
+
+
+	//pdpt
+	memset(&gp_vhslabmempgtbl_lvl4t, 0, PAGE_SIZE_4K);
+	for(i=0; i < PAE_PTRS_PER_PDPT; i++){
+	gp_vhslabmempgtbl_lvl4t[i] =
+	    pae_make_pdpe(&gp_vhslabmempgtbl_lvl2t[i], default_flags);
+	}
+
+	//pdt
+	default_flags = (u64)(_PAGE_PRESENT | _PAGE_RW | _PAGE_USER);
+	for(i=0; i < PAE_PTRS_PER_PDPT; i++){
+		for(j=0; j < PAE_PTRS_PER_PDT; j++){
+			gp_vhslabmempgtbl_lvl2t[i][j] =
+				pae_make_pde(&gp_vhslabmempgtbl_lvl1t[i][j], default_flags);
+		}
+	}
+
+
+	//pts
+	for(gpa=0; gpa < ADDR_4GB; gpa += PAGE_SIZE_4K){
+		u64 pdpt_index = pae_get_pdpt_index(gpa);
+		u64 pdt_index = pae_get_pdt_index(gpa);
+		u64 pt_index = pae_get_pt_index(gpa);
+
+		spatype =  _geec_prime_slab_getspatype(slabid, (u32)gpa);
+		spa_slabregion = spatype & 0x0000000FUL;
+		spa_slabtype =spatype & 0x000000F0UL;
+		flags = _geec_prime_slab_getptflagsforspa_pae(slabid, (u32)gpa, spatype);
+		//_XDPRINTF_("gpa=%08x, flags=%016llx\n", (u32)gpa, flags);
+
+		gp_vhslabmempgtbl_lvl1t[pdpt_index][pdt_index][pt_index] =
+			pae_make_pte(gpa, flags) & (~0x80);
+	}
 
 }
 
