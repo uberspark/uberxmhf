@@ -167,6 +167,38 @@ void _impl_xmhfhwm_cpu_insn_movl_meax_edx(int index){
 	xmhfhwm_cpu_gprs_edx = value_meax;
 }
 
+void _impl_xmhfhwm_cpu_insn_movl_meax_edi(int index){
+	uint32_t value_meax;
+	value_meax = *((uint32_t *)((uint32_t)((int32_t)xmhfhwm_cpu_gprs_eax + (int32_t)index)));
+	xmhfhwm_cpu_gprs_edi = value_meax;
+}
+
+void _impl_xmhfhwm_cpu_insn_movl_meax_ebp(int index){
+	uint32_t value_meax;
+	value_meax = *((uint32_t *)((uint32_t)((int32_t)xmhfhwm_cpu_gprs_eax + (int32_t)index)));
+	xmhfhwm_cpu_gprs_ebp = value_meax;
+}
+
+void _impl_xmhfhwm_cpu_insn_movl_meax_esp(int index){
+	uint32_t value_meax;
+	value_meax = *((uint32_t *)((uint32_t)((int32_t)xmhfhwm_cpu_gprs_eax + (int32_t)index)));
+	xmhfhwm_cpu_gprs_esp = value_meax;
+}
+
+void _impl_xmhfhwm_cpu_insn_movl_meax_ebx(int index){
+	uint32_t value_meax;
+	value_meax = *((uint32_t *)((uint32_t)((int32_t)xmhfhwm_cpu_gprs_eax + (int32_t)index)));
+	xmhfhwm_cpu_gprs_ebx = value_meax;
+}
+
+void _impl_xmhfhwm_cpu_insn_movl_meax_eax(int index){
+	uint32_t value_meax;
+	value_meax = *((uint32_t *)((uint32_t)((int32_t)xmhfhwm_cpu_gprs_eax + (int32_t)index)));
+	xmhfhwm_cpu_gprs_eax = value_meax;
+}
+
+
+
 void _impl_xmhfhwm_cpu_insn_movl_meax_ecx(int index){
 	uint32_t value_meax;
 	value_meax = *((uint32_t *)((uint32_t)((int32_t)xmhfhwm_cpu_gprs_eax + (int32_t)index)));
@@ -740,6 +772,12 @@ void _impl_xmhfhwm_cpu_insn_vmlaunch(void){
 
 	//xmhfhwm_cpu_eflags |= EFLAGS_CF;
 }
+
+void  _impl_xmhfhwm_cpu_insn_vmresume(void){
+	xmhfhwm_vdriver_slabep();
+
+}
+
 
 
 void _impl_xmhfhwm_cpu_insn_pushal(void){

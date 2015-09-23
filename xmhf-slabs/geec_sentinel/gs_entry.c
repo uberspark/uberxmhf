@@ -233,7 +233,7 @@ void geec_sentinel_main(slab_params_t *sp, void *caller_stack_frame){
                 HALT();
             }
 
-            CASM_FUNCCALL(_geec_sentinel_xfer_ret_from_intercept, sp->in_out_params);
+            CASM_FUNCCALL(gs_exit_reticpt, sp->in_out_params);
             _XDPRINTF_("GEEC_SENTINEL[ln:%u]: halting. should never be here!\n",
                        __LINE__);
             HALT();

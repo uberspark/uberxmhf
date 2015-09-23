@@ -444,6 +444,10 @@ void drv_path_callicpt(void){
 
 slab_params_t drv_path_reticpt_sp;
 
+void xmhfhwm_vdriver_slabep(void){
+	//@assert false;
+}
+
 void drv_path_reticpt(void){
 	drv_path_reticpt_sp.slab_ctype = XMHFGEEC_SENTINEL_RET_INTERCEPT;
         drv_path_reticpt_sp.src_slabid = XMHFGEEC_SLAB_XC_IHUB;
