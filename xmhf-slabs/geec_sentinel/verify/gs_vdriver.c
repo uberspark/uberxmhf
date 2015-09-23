@@ -225,6 +225,8 @@ void drv_pathv2uv(void){
 
 
 
+
+#if defined (DRV_PATH_RETV2UV)
 slab_params_t drv_pathretv2uv_sp;
 slab_params_t drv_pathretv2uv_callersp;
 gs_siss_element_t siss_elem;
@@ -280,7 +282,45 @@ void drv_pathretv2uv(void){
 	CASM_FUNCCALL(gs_syscallstub, CASM_NOPARAM);
 	//@assert false;
 }
+#endif // DRV_PATH_RETV2UV
 
+
+
+
+
+
+
+
+slab_params_t drv_path_calluv2v_callersp;
+
+void xmhfhwm_vdriver_slabep(void){
+	// //@assert xmhfhwm_cpu_gprs_eip == CASM_RET_EIP;
+	// //@assert xmhfhwm_cpu_gprs_esp == _slab_tos[cpuid];
+	//@assert false;
+}
+
+void drv_path_calluv2v(void){
+	drv_path_calluv2v_callersp.slab_ctype = XMHFGEEC_SENTINEL_CALL_uVT_uVU_PROG_TO_VfT_PROG;
+        drv_path_calluv2v_callersp.src_slabid = XMHFGEEC_SLAB_XC_TESTSLAB;
+        drv_path_calluv2v_callersp.dst_slabid = XMHFGEEC_SLAB_XC_INIT;
+        drv_path_calluv2v_callersp.dst_uapifn = 0;
+	drv_path_calluv2v_callersp.cpuid = 0;
+
+
+	//inform hardware model to treat slab stack region as valid memory
+	xmhfhwm_sysmemaccess_physmem_extents[xmhfhwm_sysmemaccess_physmem_extents_total].addr_start =
+		xmhfgeec_slab_info_table[XMHFGEEC_SLAB_XC_TESTSLAB].slab_physmem_extents[2].addr_start;
+	xmhfhwm_sysmemaccess_physmem_extents[xmhfhwm_sysmemaccess_physmem_extents_total].addr_end =
+		xmhfgeec_slab_info_table[XMHFGEEC_SLAB_XC_TESTSLAB].slab_physmem_extents[2].addr_end;
+	xmhfhwm_sysmemaccess_physmem_extents_total++;
+
+
+	//invoke syscall sentinel stub
+	xmhfhwm_cpu_gprs_edx = 0;
+	xmhfhwm_cpu_gprs_ecx = &drv_path_calluv2v_callersp;
+	CASM_FUNCCALL(gs_syscallstub, CASM_NOPARAM);
+	//@assert false;
+}
 
 
 
@@ -305,7 +345,13 @@ void main(void){
 	drv_pathv2uv();
 #endif
 
+#if defined (DRV_PATH_RETV2UV)
 	drv_pathretv2uv();
+#endif // DRV_PATH_RETV2UV
+
+
+	drv_path_calluv2v();
+
 
 	//{
 	//	unsigned char *p = (unsigned char *)(0x06c00000+ (1*XMHF_SLAB_STACKSIZE));
