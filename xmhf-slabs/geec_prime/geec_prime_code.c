@@ -1912,6 +1912,10 @@ static void _geec_prime_populate_slab_pagetables_pae4k(u32 slabid){
 }
 
 
+static void gp_setup_vhslab_mempgtbl(void){
+
+
+}
 
 
 
@@ -1933,10 +1937,11 @@ void xmhfhic_arch_setup_slab_mem_page_tables(void){
 
 
     //setup verified slabs' page tables, uses slab index for GEEC_PRIME
-    spl.dst_uapifn = XMHFGEEC_UAPI_SLABMEMPGTBL_INITMEMPGTBL;
-    initmempgtblp->dst_slabid = XMHFGEEC_SLAB_GEEC_PRIME;
-    XMHF_SLAB_CALLNEW(&spl);
-    _geec_prime_populate_slab_pagetables_pae4k(XMHFGEEC_SLAB_GEEC_PRIME);
+    //spl.dst_uapifn = XMHFGEEC_UAPI_SLABMEMPGTBL_INITMEMPGTBL;
+    //initmempgtblp->dst_slabid = XMHFGEEC_SLAB_GEEC_PRIME;
+    //XMHF_SLAB_CALLNEW(&spl);
+    //_geec_prime_populate_slab_pagetables_pae4k(XMHFGEEC_SLAB_GEEC_PRIME);
+    gp_setup_vhslab_mempgtbl();
    	_XDPRINTF_("%s: populated verified slabs' memory page tables\n", __func__);
 
 
