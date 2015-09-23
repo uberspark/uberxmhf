@@ -44,31 +44,44 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-// author: amit vasudevan (amitvasudevan@acm.org)
+/*
+ * HIC trampoline and stubs
+ *
+ * author: amit vasudevan (amitvasudevan@acm.org)
+ */
 
 #include <xmhf.h>
-#include <xmhf-hwm.h>
-#include <xmhfhw.h>
 #include <xmhf-debug.h>
+#include <xmhfgeec.h>
+#include <geec_sentinel.h>
 
-/*@
-	assigns \nothing;
-@*/
-u32 xmhf_baseplatform_arch_x86_getcpulapicid(void){
-	u32 eax, edx, lapic_reg;
-	u64 msr_value;
-	u32 lapic_id;
+////// sysenter
 
-	//read LAPIC id of this core
-	msr_value = CASM_FUNCCALL(rdmsr64, MSR_APIC_BASE);
-	eax = (u32)msr_value;
-	edx = (u32)(msr_value >> 32);
+//in general sp->xxx is untrusted and must be sanity checked
+void gs_entry_syscall(slab_params_t *sp, void *caller_stack_frame){
 
-	eax &= (u32)0xFFFFF000UL;
-	lapic_reg = ((u32)eax+ (u32)LAPIC_ID);
-	lapic_id = CASM_FUNCCALL(xmhfhw_sysmemaccess_readu32, (u32)lapic_reg);
-	lapic_id = lapic_id >> 24;
+    //sanity check sp
+    sp->cpuid = xmhf_baseplatform_arch_x86_getcpulapicid();
 
-	return lapic_id;
+    if( !(sp->slab_ctype == XMHFGEEC_SENTINEL_RET_VfT_PROG_TO_uVT_uVU_PROG ||
+          sp->slab_ctype == XMHFGEEC_SENTINEL_CALL_uVT_uVU_PROG_TO_VfT_PROG
+          ) ){
+        _XDPRINTF_("%s[ln:%u]: inconsistent sp->xxx (%x). halting!\n", __func__,
+                   __LINE__, sp->slab_ctype);
+        HALT();
+    }
+
+
+    sp->src_slabid =
+        (CASM_FUNCCALL(read_cr3, CASM_NOPARAM) - xmhfgeec_slab_info_table[XMHFGEEC_SLAB_GEEC_SENTINEL].mempgtbl_cr3)/PAGE_SIZE_4K;
+
+
+    _XDPRINTF_("%s: sp=%x, cpuid=%u, src=%u, dst=%u, ctype=%x\n", __func__,
+               (u32)sp, (u16)sp->cpuid, sp->src_slabid, sp->dst_slabid, sp->slab_ctype);
+
+    geec_sentinel_main(sp, caller_stack_frame);
 }
+
+
+
 

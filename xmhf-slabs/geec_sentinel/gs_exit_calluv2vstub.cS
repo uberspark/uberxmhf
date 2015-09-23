@@ -44,31 +44,28 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-// author: amit vasudevan (amitvasudevan@acm.org)
+/*
+ GEEC sentinel low-level support routines
+ author: amit vasudevan (amitvasudevan@acm.org)
+*/
 
 #include <xmhf.h>
 #include <xmhf-hwm.h>
-#include <xmhfhw.h>
 #include <xmhf-debug.h>
+#include <xmhfgeec.h>
+#include <geec_sentinel.h>
 
-/*@
-	assigns \nothing;
-@*/
-u32 xmhf_baseplatform_arch_x86_getcpulapicid(void){
-	u32 eax, edx, lapic_reg;
-	u64 msr_value;
-	u32 lapic_id;
 
-	//read LAPIC id of this core
-	msr_value = CASM_FUNCCALL(rdmsr64, MSR_APIC_BASE);
-	eax = (u32)msr_value;
-	edx = (u32)(msr_value >> 32);
 
-	eax &= (u32)0xFFFFF000UL;
-	lapic_reg = ((u32)eax+ (u32)LAPIC_ID);
-	lapic_id = CASM_FUNCCALL(xmhfhw_sysmemaccess_readu32, (u32)lapic_reg);
-	lapic_id = lapic_id >> 24;
+CASM_FUNCDEF(void, gs_exit_calluv2vstub,
+{
+    xmhfhwm_cpu_insn_movl_mesp_eax(0x4);
+    xmhfhwm_cpu_insn_movl_mesp_edx(0x8);
+    xmhfhwm_cpu_insn_movl_edx_esp();
+    xmhfhwm_cpu_insn_pushl_esp();
+    xmhfhwm_cpu_insn_pushl_imm(0x0);
+    xmhfhwm_cpu_insn_jmpslabep();
+},
+u32 entry_point, void *callee_stack_frame)
 
-	return lapic_id;
-}
 

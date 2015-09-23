@@ -75,7 +75,7 @@ static void _slabiotbl_init(u32 dst_slabid){
 
     _slabiotbl_sanitycheckhalt_slabid(dst_slabid);
 
-    slabtype = _xmhfhic_common_slab_info_table[dst_slabid].slabtype;
+    slabtype = xmhfgeec_slab_info_table[dst_slabid].slabtype;
 
     switch(slabtype){
         case XMHFGEEC_SLABTYPE_uVT_PROG:

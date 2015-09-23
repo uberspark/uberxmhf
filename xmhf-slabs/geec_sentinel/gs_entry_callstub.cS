@@ -44,31 +44,53 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-// author: amit vasudevan (amitvasudevan@acm.org)
+/*
+ GEEC sentinel low-level support routines
+ author: amit vasudevan (amitvasudevan@acm.org)
+*/
 
 #include <xmhf.h>
 #include <xmhf-hwm.h>
-#include <xmhfhw.h>
 #include <xmhf-debug.h>
+#include <xmhfgeec.h>
+#include <geec_sentinel.h>
 
-/*@
-	assigns \nothing;
-@*/
-u32 xmhf_baseplatform_arch_x86_getcpulapicid(void){
-	u32 eax, edx, lapic_reg;
-	u64 msr_value;
-	u32 lapic_id;
+//////
+// sentinel [p_call] entry point
+//////
 
-	//read LAPIC id of this core
-	msr_value = CASM_FUNCCALL(rdmsr64, MSR_APIC_BASE);
-	eax = (u32)msr_value;
-	edx = (u32)(msr_value >> 32);
 
-	eax &= (u32)0xFFFFF000UL;
-	lapic_reg = ((u32)eax+ (u32)LAPIC_ID);
-	lapic_id = CASM_FUNCCALL(xmhfhw_sysmemaccess_readu32, (u32)lapic_reg);
-	lapic_id = lapic_id >> 24;
+// C invocation of this function is of type _slab_entrystub(slab_params_t *sp)
+// Pre: [esp] = return address to resume the (verified,privileged) caller
+//	[esp+4] = slab_params_t *sp (pointer to slab_params_t within caller
+//					memory area)
 
-	return lapic_id;
-}
+CASM_FUNCDEF_FULL(.slab_entrystub, 1, void, _slab_entrystub,
+{
+	xmhfhwm_cpu_insn_movl_mesp_eax(0x4);
+	xmhfhwm_cpu_insn_pushl_ebp();
+	xmhfhwm_cpu_insn_pushl_edi();
+	xmhfhwm_cpu_insn_pushl_esi();
+	xmhfhwm_cpu_insn_pushl_ebx();
+	xmhfhwm_cpu_insn_movl_esp_edx();
+	xmhfhwm_cpu_insn_pushl_edx();
+	xmhfhwm_cpu_insn_pushl_eax();
+	// Post:
+	//  	[esp] = slab_params_t *sp
+	//	[esp+4] = &[esp+8]
+	//	[esp+8] = ebx
+	//	[esp+12] = esi
+	//	[esp+16] = edi
+	//	[esp+20] = ebp
+	//	[esp+24] = return address to resume the (verified,privileged) caller
+	//	[esp+28] = slab_params_t *sp
+	xmhfhwm_cpu_insn_call_c_2p(geec_sentinel_main, slab_params_t *, void *);
+
+	// Pre: false; should never get here when verifying this CASM
+	// function. if we do end up here the following hlt will trigger
+	// verification error
+	xmhfhwm_cpu_insn_hlt();
+	// Post: false; should never get here
+},
+slab_params_t *sp)
 

@@ -59,40 +59,194 @@
 
 #ifndef __ASSEMBLY__
 
+
+
+
+
+extern __attribute__((section(".data"))) __attribute__((aligned(4096))) xmhfgeec_slab_info_t xmhfgeec_slab_info_table[XMHFGEEC_TOTAL_SLABS];
+
+
 typedef struct {
     u32 src_slabid;
     u32 dst_slabid;
-    u32 hic_calltype;
+    u32 slab_ctype;
     void *caller_stack_frame;
     slab_params_t *sp;
-}__attribute__((packed)) __xmhfhic_safestack_element_t;
+}__attribute__((packed)) gs_siss_element_t;
 
 
-extern __attribute__((section(".data"))) __xmhfhic_safestack_element_t __xmhfhic_safestack[MAX_PLATFORM_CPUS][512];
-extern __attribute__((section(".data"))) __attribute__((aligned(4096))) xmhfgeec_slab_info_t _xmhfhic_common_slab_info_table[XMHFGEEC_TOTAL_SLABS];
-extern __attribute__((section(".data"))) u32 __xmhfhic_safestack_indices[MAX_PLATFORM_CPUS];
+extern __attribute__((section(".data"))) gs_siss_element_t gs_siss[MAX_PLATFORM_CPUS][512];
+extern __attribute__((section(".data"))) u32 gs_siss_indices[MAX_PLATFORM_CPUS];
+
+
+//@	logic u32 sissCapacity{L}(u32 siss_id) = (u32)512;
+
+//@	logic u32 sissSize{L}(u32 siss_id) = gs_siss_indices[siss_id];
+
+//@	logic gs_siss_element_t * sissStorage{L}(u32 siss_id) = &gs_siss[siss_id][0];
+
+/*@
+ predicate sissTop{L}(gs_siss_element_t * elem, integer index, gs_siss_element_t input) =
+		(elem[index].src_slabid == input.src_slabid &&
+		elem[index].dst_slabid == input.dst_slabid &&
+		elem[index].slab_ctype == input.slab_ctype &&
+		elem[index].caller_stack_frame == input.caller_stack_frame &&
+		elem[index].sp == input.sp
+		);
+*/
+
+//@	predicate sissEmpty{L}(u32 siss_id) = (sissSize(siss_id) == 0);
+
+//@	predicate sissFull{L}(u32 siss_id) = (sissSize(siss_id) == sissCapacity(siss_id));
+
+/*@
+	predicate
+	sissUnchanged {A,B } ( gs_siss_element_t * a, integer first, integer last ) =
+	\forall integer i; first <= i < last
+	==> ( (\at (a[i].src_slabid , A) == \at( a[i].src_slabid , B)) &&
+		(\at (a[i].dst_slabid , A) == \at( a[i].dst_slabid , B)) &&
+		(\at (a[i].slab_ctype , A) == \at( a[i].slab_ctype , B)) &&
+		(\at (a[i].caller_stack_frame , A) == \at( a[i].caller_stack_frame , B)) &&
+		(\at (a[i].sp , A) == \at( a[i].sp , B))
+	);
+*/
+
+/*@
+	predicate sissValid{L}(u32 siss_id) =
+		(siss_id < MAX_PLATFORM_CPUS &&
+		0 < sissCapacity( siss_id) &&
+		0 <= sissSize (siss_id) <= sissCapacity ( siss_id) &&
+		\valid (sissStorage (siss_id) + (0 .. sissCapacity (siss_id) - 1))
+		);
+@*/
+
+//void gs_siss_pop(u32 cpuid, u32 *src_slabid, u32 *dst_slabid, u32 *hic_calltype,
+                       //void **caller_stack_framep, slab_params_t **spp);
+
+void gs_siss_pop(u32 siss_id, gs_siss_element_t *elem);
+                       //void **caller_stack_framep, slab_params_t **spp);
 
 
 
-CASM_FUNCDECL(void _geec_sentinel_intercept_casmstub(void *noparam));
-CASM_FUNCDECL(void _geec_sentinel_sysenter_casmstub(void *noparam));
+
+/*@
+	requires sissValid (siss_id);
+
+	assigns gs_siss_indices[siss_id];
+	assigns gs_siss[siss_id][gs_siss_indices[siss_id]];
+
+	behavior not_full:
+		assumes !sissFull(siss_id);
+
+		assigns gs_siss_indices[siss_id];
+		assigns gs_siss[siss_id][gs_siss_indices[siss_id]];
+
+		ensures H:sissValid (siss_id);
+		ensures I:sissSize (siss_id) == sissSize {Old}(siss_id) + 1;
+		ensures K:sissUnchanged {Pre ,Here }(sissStorage (siss_id), 0, sissSize{Pre}(siss_id));
+		ensures J:sissTop( sissStorage (siss_id), sissSize{Pre}(siss_id), elem);
+		ensures !sissEmpty (siss_id);
+		ensures sissStorage (siss_id) == sissStorage {Old }( siss_id) ;
+		ensures sissCapacity ( siss_id) == sissCapacity { Old }(siss_id) ;
+
+	behavior full :
+		assumes sissFull ( siss_id);
+
+		assigns \nothing;
+
+		ensures sissValid (siss_id);
+		ensures sissFull ( siss_id);
+		ensures sissUnchanged {Pre ,Here }(sissStorage (siss_id ), 0, sissSize(siss_id));
+		ensures sissSize ( siss_id ) == sissSize { Old }(siss_id) ;
+		ensures sissStorage (siss_id ) == sissStorage {Old }( siss_id) ;
+		ensures sissCapacity ( siss_id ) == sissCapacity { Old }(siss_id) ;
+
+	complete behaviors ;
+	disjoint behaviors ;
+*/
+void gs_siss_push(u32 siss_id, gs_siss_element_t elem);
 
 
-void _geec_sentinel_intercept_stub(x86regs_t *r);
-void _geec_sentinel_exception_stub(x86vmx_exception_frame_t *exframe);
-void _geec_sentinel_sysenter_stub(slab_params_t *sp, void *caller_stack_frame);
+void geec_sentinel_main(slab_params_t *sp, void *caller_stack_frame);
 
 
-CASM_FUNCDECL(void _geec_sentinel_xfer_vft_prog_to_vft_prog(u32 entry_point, void *caller_stack_frame));
+
+
+void gs_entry_excp(x86vmx_exception_frame_t *exframe);
+
+CASM_FUNCDECL(void gs_syscallstub(void *noparam));
+void gs_entry_syscall(slab_params_t *sp, void *caller_stack_frame);
+
+void gs_exit_retv2uv(slab_params_t *sp, void *caller_stack_frame);
+CASM_FUNCDECL(void gs_exit_retv2uvstub(void *caller_stack_frame));
+
+void gs_exit_calluv2v(slab_params_t *sp, void *caller_stack_frame);
+CASM_FUNCDECL(void gs_exit_calluv2vstub(u32 entry_point, void *callee_stack_frame));
+
+
+
+void gs_exit_callv2uv(slab_params_t *sp, void *caller_stack_frame);
+CASM_FUNCDECL(void gs_exit_callv2uvstub(u32 entry_point, void *callee_stack_frame));
+
+
+void gs_exit_retuv2v(slab_params_t *sp, void *caller_stack_frame);
+CASM_FUNCDECL(void gs_exit_retuv2vstub(void *caller_stack_frame));
+
+
+
+CASM_FUNCDECL(void gs_exit_callv2v(u32 entry_point, void *caller_stack_frame));
+
+CASM_FUNCDECL(u32 gs_exit_callv2uvg(void *noparam));
+
+
+
+
+CASM_FUNCDECL(void gs_entry_icptstub(void *noparam));
+void gs_entry_icpt(x86regs_t *r);
+CASM_FUNCDECL(void gs_exit_callicpt(u32 entry_point, void *caller_stack_frame));
+CASM_FUNCDECL(void gs_exit_reticpt(x86regs_t *r));
+
+
+
+CASM_FUNCDECL(void __xmhf_exception_handler_0(void *noparam));
+CASM_FUNCDECL(void __xmhf_exception_handler_1(void *noparam));
+CASM_FUNCDECL(void __xmhf_exception_handler_2(void *noparam));
+CASM_FUNCDECL(void __xmhf_exception_handler_3(void *noparam));
+CASM_FUNCDECL(void __xmhf_exception_handler_4(void *noparam));
+CASM_FUNCDECL(void __xmhf_exception_handler_5(void *noparam));
+CASM_FUNCDECL(void __xmhf_exception_handler_6(void *noparam));
+CASM_FUNCDECL(void __xmhf_exception_handler_7(void *noparam));
+CASM_FUNCDECL(void __xmhf_exception_handler_8(void *noparam));
+CASM_FUNCDECL(void __xmhf_exception_handler_9(void *noparam));
+CASM_FUNCDECL(void __xmhf_exception_handler_10(void *noparam));
+CASM_FUNCDECL(void __xmhf_exception_handler_11(void *noparam));
+CASM_FUNCDECL(void __xmhf_exception_handler_12(void *noparam));
+CASM_FUNCDECL(void __xmhf_exception_handler_13(void *noparam));
+CASM_FUNCDECL(void __xmhf_exception_handler_14(void *noparam));
+CASM_FUNCDECL(void __xmhf_exception_handler_15(void *noparam));
+CASM_FUNCDECL(void __xmhf_exception_handler_16(void *noparam));
+CASM_FUNCDECL(void __xmhf_exception_handler_17(void *noparam));
+CASM_FUNCDECL(void __xmhf_exception_handler_18(void *noparam));
+CASM_FUNCDECL(void __xmhf_exception_handler_19(void *noparam));
+CASM_FUNCDECL(void __xmhf_exception_handler_20(void *noparam));
+CASM_FUNCDECL(void __xmhf_exception_handler_21(void *noparam));
+CASM_FUNCDECL(void __xmhf_exception_handler_22(void *noparam));
+CASM_FUNCDECL(void __xmhf_exception_handler_23(void *noparam));
+CASM_FUNCDECL(void __xmhf_exception_handler_24(void *noparam));
+CASM_FUNCDECL(void __xmhf_exception_handler_25(void *noparam));
+CASM_FUNCDECL(void __xmhf_exception_handler_26(void *noparam));
+CASM_FUNCDECL(void __xmhf_exception_handler_27(void *noparam));
+CASM_FUNCDECL(void __xmhf_exception_handler_28(void *noparam));
+CASM_FUNCDECL(void __xmhf_exception_handler_29(void *noparam));
+CASM_FUNCDECL(void __xmhf_exception_handler_30(void *noparam));
+CASM_FUNCDECL(void __xmhf_exception_handler_31(void *noparam));
+
+
+
+
+
 CASM_FUNCDECL(void _geec_sentinel_xfer_exception_to_vft_prog(u32 entry_point, void *caller_stack_frame));
 CASM_FUNCDECL(void _geec_sentinel_xfer_ret_from_exception(x86vmx_exception_frame_t *exframe));
-CASM_FUNCDECL(u32 _geec_sentinel_xfer_vft_prog_to_uvt_uvu_prog_guest(void *noparam));
-CASM_FUNCDECL(void _geec_sentinel_xfer_intercept_to_vft_prog(u32 entry_point, void *caller_stack_frame));
-CASM_FUNCDECL(void _geec_sentinel_xfer_ret_from_intercept(x86regs_t *r));
-CASM_FUNCDECL(void _geec_sentinel_xfer_vft_prog_to_uvt_uvu_prog(u32 entry_point, void *callee_stack_frame));
-CASM_FUNCDECL(void _geec_sentinel_xfer_ret_vft_prog_to_uvt_uvu_prog(void *caller_stack_frame));
-CASM_FUNCDECL(void _geec_sentinel_xfer_call_uvt_uvu_prog_to_vft_prog(u32 entry_point, void *callee_stack_frame));
-CASM_FUNCDECL(void _geec_sentinel_xfer_ret_uvt_uvu_prog_to_vft_prog(void *caller_stack_frame));
 
 
 #endif // __ASSEMBLY__
