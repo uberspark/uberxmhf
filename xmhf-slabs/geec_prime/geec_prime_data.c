@@ -213,4 +213,10 @@ __attribute__((section(".data"))) __attribute__(( aligned(4096) )) xc_cpuarchdat
 //__attribute__((section(".data"))) __attribute__(( aligned(4) )) u32 __xmhfhic_x86vmx_cpuidtable[MAX_X86_APIC_ID];
 
 
+//////
+// verified hypervisor slab memory page-tables
+__attribute__((section(".data"))) __attribute__((aligned(4096))) u64 gp_vhslabmempgtbl_lvl4t[PAE_MAXPTRS_PER_PML4T];
+__attribute__((section(".data"))) __attribute__((aligned(4096))) u64 gp_vhslabmempgtbl_lvl3t[PAE_MAXPTRS_PER_PDPT];
+__attribute__((section(".data"))) __attribute__((aligned(4096))) u64 gp_vhslabmempgtbl_lvl2t[PAE_PTRS_PER_PDPT][PAE_PTRS_PER_PDT];
+__attribute__((section(".data"))) __attribute__((aligned(4096)))  u64 gp_vhslabmempgtbl_lvl1t[PAE_PTRS_PER_PDPT][PAE_PTRS_PER_PDT][PAE_PTRS_PER_PT];
 
