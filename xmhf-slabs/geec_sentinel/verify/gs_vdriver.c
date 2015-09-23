@@ -317,6 +317,11 @@ void drv_path_calluv2v(void){
 	//load cr3 for xc_testslab
 	xmhfhwm_cpu_cr3 = xmhfgeec_slab_info_table[XMHFGEEC_SLAB_XC_TESTSLAB].mempgtbl_cr3;
 
+	//setup verified slab stack parameters for parameter marshalling
+	xmhfhwm_cpu_gprs_esp -= sizeof(slab_params_t);
+	xmhfgeec_slab_info_table[XMHFGEEC_SLAB_UAPI_GCPUSTATE].slabtos[cpuid] = xmhfhwm_cpu_gprs_esp;
+
+
 	//invoke syscall sentinel stub
 	xmhfhwm_cpu_gprs_edx = 0;
 	xmhfhwm_cpu_gprs_ecx = &drv_path_calluv2v_callersp;
