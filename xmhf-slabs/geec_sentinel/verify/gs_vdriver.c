@@ -425,7 +425,7 @@ void drv_path_exception(void){
 
 
 
-
+#if defined (DRV_PATH_CALLICPT)
 void xmhfhwm_vdriver_slabep(void){
 	//@assert false;
 }
@@ -438,8 +438,23 @@ void drv_path_callicpt(void){
 	CASM_FUNCCALL(gs_entry_icptstub, CASM_NOPARAM);
 	//@assert false;
 }
+#endif // defined
 
 
+
+slab_params_t drv_path_reticpt_sp;
+
+void drv_path_reticpt(void){
+	drv_path_reticpt_sp.slab_ctype = XMHFGEEC_SENTINEL_RET_INTERCEPT;
+        drv_path_reticpt_sp.src_slabid = XMHFGEEC_SLAB_XC_IHUB;
+        drv_path_reticpt_sp.dst_slabid = XMHFGEEC_SLAB_XG_RICHGUEST;
+        drv_path_reticpt_sp.dst_uapifn = 0;
+	drv_path_reticpt_sp.cpuid = 0;
+
+
+	CASM_FUNCCALL(_slab_entrystub, &drv_path_reticpt_sp);
+	//@assert false;
+}
 
 
 
@@ -484,8 +499,13 @@ void main(void){
 	drv_path_exception();
 #endif // defined
 
-
+#if defined (DRV_PATH_CALLICPT)
 	drv_path_callicpt();
+#endif // defined
+
+
+	drv_path_reticpt();
+
 
 	//{
 	//	unsigned char *p = (unsigned char *)(0x06c00000+ (1*XMHF_SLAB_STACKSIZE));
