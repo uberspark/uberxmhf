@@ -67,7 +67,7 @@
         xmhfhwm_cpu_insn_movw_ax_ds();\
         xmhfhwm_cpu_insn_movw_ax_es();\
         xmhfhwm_cpu_insn_pushl_esp(); \
-        xmhfhwm_cpu_insn_call(gs_entry_excp); \
+	xmhfhwm_cpu_insn_call_c_1p(gs_entry_excp,x86vmx_exception_frame_t *); \
         xmhfhwm_cpu_insn_hlt(); \
     },\
     void *noparam) \
@@ -82,6 +82,7 @@
         xmhfhwm_cpu_insn_movw_ax_ds();\
         xmhfhwm_cpu_insn_movw_ax_es();\
         xmhfhwm_cpu_insn_pushl_esp(); \
+	xmhfhwm_cpu_insn_call_c_1p(gs_entry_excp,x86vmx_exception_frame_t *); \
         xmhfhwm_cpu_insn_call(gs_entry_excp); \
         xmhfhwm_cpu_insn_hlt(); \
     },\
