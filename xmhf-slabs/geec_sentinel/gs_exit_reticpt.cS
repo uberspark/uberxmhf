@@ -59,7 +59,7 @@
 
 
 
-CASM_FUNCDEF(void, _geec_sentinel_xfer_ret_from_intercept,
+CASM_FUNCDEF(void, gs_exit_reticpt,
 {
     xmhfhwm_cpu_insn_movl_mesp_eax(0x4);
     xmhfhwm_cpu_insn_movl_meax_edi(0x0);
