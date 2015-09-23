@@ -191,6 +191,7 @@ void geec_sentinel_main(slab_params_t *sp, void *caller_stack_frame){
 
 
         case XMHFGEEC_SENTINEL_RET_uVT_uVU_PROG_TO_VfT_PROG:{
+            //@assert false;
             _geec_sentinel_transition_ret_uvt_uvu_prog_to_vft_prog(sp, caller_stack_frame);
             _XDPRINTF_("GEEC_SENTINEL[ln:%u]: halting. should never be here!\n", __LINE__);
             HALT();
