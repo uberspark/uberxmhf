@@ -407,6 +407,29 @@ void drv_path_callv2uvg(void){
 
 
 
+
+
+
+
+x86vmx_exception_frame_t drv_path_exception_excpframe;
+
+void drv_path_exception(void){
+	xmhfhwm_cpu_gprs_esp -= sizeof(x86vmx_exception_frame_t);
+
+	//invoke sentinel exception stub
+	//CASM_FUNCCALL(__xmhf_exception_handler_0, CASM_NOPARAM);
+	CASM_FUNCCALL(__xmhf_exception_handler_8, CASM_NOPARAM);
+	//@assert false;
+}
+
+
+
+
+
+
+
+
+
 void main(void){
 	//populate hardware model stack and program counter
 	xmhfhwm_cpu_gprs_esp = _slab_tos[cpuid];
@@ -442,6 +465,9 @@ void main(void){
 #if defined (DRV_PATH_CALLV2UVG)
 	drv_path_callv2uvg();
 #endif // defined
+
+
+	drv_path_exception();
 
 
 	//{
