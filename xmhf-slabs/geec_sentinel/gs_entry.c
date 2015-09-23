@@ -206,7 +206,7 @@ void geec_sentinel_main(slab_params_t *sp, void *caller_stack_frame){
                 HALT();
             }
 
-            CASM_FUNCCALL(_geec_sentinel_xfer_intercept_to_vft_prog,
+            CASM_FUNCCALL(gs_exit_callicpt,
               xmhfgeec_slab_info_table[sp->dst_slabid].entrystub,
               caller_stack_frame);
             _XDPRINTF_("GEEC_SENTINEL[ln:%u]: halting. should never be here!\n",
