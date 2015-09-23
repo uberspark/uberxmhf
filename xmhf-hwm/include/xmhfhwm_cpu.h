@@ -2390,6 +2390,7 @@ extern void _impl_xmhfhwm_cpu_insn_pushl_imm(u32 value);
 extern void _impl_xmhfhwm_cpu_insn_popl_edx(void);
 extern void _impl_xmhfhwm_cpu_insn_movl_esp_ecx(void);
 
+extern void _impl_xmhfhwm_cpu_insn_vmlaunch(void);
 
 
 
@@ -2464,7 +2465,9 @@ extern void _impl_xmhfhwm_cpu_insn_movl_esp_ecx(void);
 	if(!(xmhfhwm_cpu_eflags & EFLAGS_CF)) goto x; \
 
 
-#define xmhfhwm_cpu_insn_jnz(x) __builtin_annot("jnz "#x" ");
+#define xmhfhwm_cpu_insn_jnz(x) \
+	__builtin_annot("jnz "#x" "); \
+	if(!(xmhfhwm_cpu_eflags & EFLAGS_ZF)) goto x; \
 
 #define xmhfhwm_cpu_insn_jbe(x) \
 	__builtin_annot("jbe "#x" "); \
@@ -3162,7 +3165,9 @@ extern void _impl_xmhfhwm_cpu_insn_movl_esp_ecx(void);
 
 
 // vmx instructions
-#define xmhfhwm_cpu_insn_vmlaunch() __builtin_annot("vmlaunch ");
+#define xmhfhwm_cpu_insn_vmlaunch() \
+	__builtin_annot("vmlaunch "); \
+        _impl_xmhfhwm_cpu_insn_vmlaunch(); \
 
 #define xmhfhwm_cpu_insn_vmxon_mesp(x) \
 	__builtin_annot("vmxon "#x"(%esp) "); \
