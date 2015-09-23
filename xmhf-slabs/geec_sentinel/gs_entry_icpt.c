@@ -44,31 +44,34 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-// author: amit vasudevan (amitvasudevan@acm.org)
+/*
+ * HIC trampoline and stubs
+ *
+ * author: amit vasudevan (amitvasudevan@acm.org)
+ */
 
 #include <xmhf.h>
-#include <xmhf-hwm.h>
-#include <xmhfhw.h>
 #include <xmhf-debug.h>
+#include <xmhfgeec.h>
+#include <geec_sentinel.h>
 
-/*@
-	assigns \nothing;
-@*/
-u32 xmhf_baseplatform_arch_x86_getcpulapicid(void){
-	u32 eax, edx, lapic_reg;
-	u64 msr_value;
-	u32 lapic_id;
 
-	//read LAPIC id of this core
-	msr_value = CASM_FUNCCALL(rdmsr64, MSR_APIC_BASE);
-	eax = (u32)msr_value;
-	edx = (u32)(msr_value >> 32);
+////// intercepts
 
-	eax &= (u32)0xFFFFF000UL;
-	lapic_reg = ((u32)eax+ (u32)LAPIC_ID);
-	lapic_id = CASM_FUNCCALL(xmhfhw_sysmemaccess_readu32, (u32)lapic_reg);
-	lapic_id = lapic_id >> 24;
+void gs_entry_icpt(x86regs_t *r){
+    slab_params_t spl;
 
-	return lapic_id;
+    memset(&spl, 0, sizeof(spl));
+
+    spl.slab_ctype = XMHFGEEC_SENTINEL_CALL_INTERCEPT;
+    spl.src_slabid = CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmread,VMCS_CONTROL_VPID);
+    spl.dst_slabid = XMHFGEEC_SLAB_XC_IHUB;
+    spl.cpuid = xmhf_baseplatform_arch_x86_getcpulapicid();
+
+    memcpy(&spl.in_out_params[0], r, sizeof(x86regs_t));
+
+
+    geec_sentinel_main(&spl, &spl);
+
 }
 

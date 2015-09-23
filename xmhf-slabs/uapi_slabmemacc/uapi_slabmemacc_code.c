@@ -65,12 +65,12 @@ static bool _uapicheck_is_within_slab_memory_extents(u64 slab_id, u64 addr, u64 
     bool status=false;
 
     for(i=0; i < HIC_SLAB_PHYSMEM_MAXEXTENTS; i++){
-        if(_xmhfhic_common_slab_info_table[slab_id].slab_physmem_extents[i].addr_start == 0 &&
-           _xmhfhic_common_slab_info_table[slab_id].slab_physmem_extents[i].addr_end == 0)
+        if(xmhfgeec_slab_info_table[slab_id].slab_physmem_extents[i].addr_start == 0 &&
+           xmhfgeec_slab_info_table[slab_id].slab_physmem_extents[i].addr_end == 0)
            continue;
 
-        if(addr >= _xmhfhic_common_slab_info_table[slab_id].slab_physmem_extents[i].addr_start &&
-           (addr+size) < _xmhfhic_common_slab_info_table[slab_id].slab_physmem_extents[i].addr_end)
+        if(addr >= xmhfgeec_slab_info_table[slab_id].slab_physmem_extents[i].addr_start &&
+           (addr+size) < xmhfgeec_slab_info_table[slab_id].slab_physmem_extents[i].addr_end)
             return true;
 
     }
@@ -90,9 +90,9 @@ void slab_main(slab_params_t *sp){
 
 
             //check slab memory read capabilities
-            if( !(_xmhfhic_common_slab_info_table[smemaccp->dst_slabid].slab_memgrantreadcaps & XMHFGEEC_SLAB_MEMGRANTREADCAP_MASK(sp->src_slabid)) ){
+            if( !(xmhfgeec_slab_info_table[smemaccp->dst_slabid].slab_memgrantreadcaps & XMHFGEEC_SLAB_MEMGRANTREADCAP_MASK(sp->src_slabid)) ){
                 _XDPRINTF_("UAPI_SLABMEMACC: Halt!. memgrantreadcap failed for src(%u)-->dst(%u), dst caps=0x%x\n",
-                   sp->src_slabid, smemaccp->dst_slabid, _xmhfhic_common_slab_info_table[smemaccp->dst_slabid].slab_memgrantreadcaps);
+                   sp->src_slabid, smemaccp->dst_slabid, xmhfgeec_slab_info_table[smemaccp->dst_slabid].slab_memgrantreadcaps);
                 HALT();
             }
 
@@ -108,9 +108,9 @@ void slab_main(slab_params_t *sp){
             xmhf_uapi_slabmemacc_params_t *smemaccp = (xmhf_uapi_slabmemacc_params_t *)sp->in_out_params;
 
             //check slab memory write capabilities
-            if( !(_xmhfhic_common_slab_info_table[smemaccp->dst_slabid].slab_memgrantwritecaps & XMHFGEEC_SLAB_MEMGRANTWRITECAP_MASK(sp->src_slabid)) ){
+            if( !(xmhfgeec_slab_info_table[smemaccp->dst_slabid].slab_memgrantwritecaps & XMHFGEEC_SLAB_MEMGRANTWRITECAP_MASK(sp->src_slabid)) ){
                 _XDPRINTF_("UAPI_SLABMEMACC: Halt!. memgrantwritecap failed for src(%u)-->dst(%u), dst caps=0x%x\n",
-                   sp->src_slabid, smemaccp->dst_slabid, _xmhfhic_common_slab_info_table[smemaccp->dst_slabid].slab_memgrantwritecaps);
+                   sp->src_slabid, smemaccp->dst_slabid, xmhfgeec_slab_info_table[smemaccp->dst_slabid].slab_memgrantwritecaps);
                 HALT();
             }
 

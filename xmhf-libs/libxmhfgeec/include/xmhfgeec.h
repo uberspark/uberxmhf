@@ -75,19 +75,20 @@
 
 
 
-#define XMHFGEEC_SENTINEL_CALL_FROM_VfT_PROG                    (0x1)
-#define XMHFGEEC_SENTINEL_CALL_VfT_PROG_TO_uVT_uVU_PROG         (0x2)
-#define XMHFGEEC_SENTINEL_RET_VfT_PROG_TO_uVT_uVU_PROG          (0x3)
-#define XMHFGEEC_SENTINEL_CALL_VfT_PROG_TO_uVT_uVU_PROG_GUEST   (0x4)
+#define XMHFGEEC_SENTINEL_CALL_FROM_VfT_PROG                    (0)
+#define XMHFGEEC_SENTINEL_CALL_VfT_PROG_TO_uVT_uVU_PROG         (1)
 
-#define XMHFGEEC_SENTINEL_CALL_EXCEPTION                        (0x5)
-#define XMHFGEEC_SENTINEL_RET_EXCEPTION                         (0x6)
+#define XMHFGEEC_SENTINEL_CALL_VfT_PROG_TO_uVT_uVU_PROG_GUEST   (2)
+#define XMHFGEEC_SENTINEL_RET_VfT_PROG_TO_uVT_uVU_PROG          (3)
 
-#define XMHFGEEC_SENTINEL_CALL_INTERCEPT                        (0x7)
-#define XMHFGEEC_SENTINEL_RET_INTERCEPT                         (0x8)
+#define XMHFGEEC_SENTINEL_CALL_EXCEPTION                        (4)
+#define XMHFGEEC_SENTINEL_RET_EXCEPTION                         (5)
 
-#define XMHFGEEC_SENTINEL_CALL_uVT_uVU_PROG_TO_VfT_PROG         (0x9)
-#define XMHFGEEC_SENTINEL_RET_uVT_uVU_PROG_TO_VfT_PROG          (0xa)
+#define XMHFGEEC_SENTINEL_CALL_INTERCEPT                        (6)
+#define XMHFGEEC_SENTINEL_RET_INTERCEPT                         (7)
+
+#define XMHFGEEC_SENTINEL_CALL_uVT_uVU_PROG_TO_VfT_PROG         (8)
+#define XMHFGEEC_SENTINEL_RET_uVT_uVU_PROG_TO_VfT_PROG          (9)
 
 
 #define HIC_SLAB_PHYSMEM_EXTENT_READ       (1 << 0)
@@ -125,13 +126,14 @@ typedef struct {
 } __attribute__((packed)) slab_platformdevices_t;
 */
 
-
+/*
 //slab physical memory extent type
 typedef struct {
     u32 addr_start;
     u32 addr_end;
     u32 protection;
 } slab_physmem_extent_t;
+*/
 
 //slab device entry
 typedef struct {
@@ -154,7 +156,7 @@ typedef struct {
     u32 incl_devices_count;
     slab_device_entry_t excl_devices[XMHF_CONFIG_MAX_EXCLDEVLIST_ENTRIES];
     u32 excl_devices_count;
-    slab_physmem_extent_t slab_physmem_extents[HIC_SLAB_PHYSMEM_MAXEXTENTS];
+    physmem_extent_t slab_physmem_extents[HIC_SLAB_PHYSMEM_MAXEXTENTS];
     slab_memoffset_t slab_memoffset_entries[XMHF_CONFIG_MAX_MEMOFFSET_ENTRIES];
 	slab_entrystub_t entrystub;
 } __attribute__((packed)) xmhfgeec_slab_info_t;
@@ -194,7 +196,7 @@ void __slab_callsentinel(slab_params_t *sp);
 
 //////
 // slab entry stub definitions
-CASM_FUNCDECL(void _slab_entrystub(void *noparam));
+CASM_FUNCDECL(void _slab_entrystub(slab_params_t *sp));
 
 extern void slab_main(slab_params_t *sp);
 

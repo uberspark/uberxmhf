@@ -62,7 +62,7 @@
 
 #include <xc_init.h>
 
-//extern x_slab_info_t _x_xmhfhic_common_slab_info_table[XMHFGEEC_TOTAL_SLABS];
+//extern x_slab_info_t _xxmhfgeec_slab_info_table[XMHFGEEC_TOTAL_SLABS];
 
 
 //////
@@ -135,7 +135,7 @@ void slab_main(slab_params_t *sp){
 
 
     {
-        u32 guest_slab_header_paddr = _xmhfhic_common_slab_info_table[XMHFGEEC_SLAB_XG_RICHGUEST].slab_physmem_extents[1].addr_start;
+        u32 guest_slab_header_paddr = xmhfgeec_slab_info_table[XMHFGEEC_SLAB_XG_RICHGUEST].slab_physmem_extents[1].addr_start;
         u32 guest_slab_gdt_paddr = guest_slab_header_paddr + offsetof(guest_slab_header_t, gdt);
         u32 guest_slab_magic_paddr = guest_slab_header_paddr + offsetof(guest_slab_header_t, magic);
         u32 guest_slab_magic;

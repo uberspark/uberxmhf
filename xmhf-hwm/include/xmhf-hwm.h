@@ -57,6 +57,15 @@
 
 #if defined(__XMHF_TARGET_TRIAD_X86_VMX_X86PC__)
 
+#ifndef __ASSEMBLY__
+	typedef struct {
+		u32 addr_start;
+		u32 addr_end;
+		u32 protection;
+	} physmem_extent_t;
+
+#endif // __ASSEMBLY__
+
     #include <xmhfhwm_casm.h>  			//CPU
     #include <xmhfhwm_cpu.h>  			//CPU
     #include <xmhfhwm_pci.h>        		//PCI bus glue

@@ -44,31 +44,68 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-// author: amit vasudevan (amitvasudevan@acm.org)
+/*
+ * GEEC sentinel SISS stack pop operation
+ *
+ * author: amit vasudevan (amitvasudevan@acm.org)
+ */
 
 #include <xmhf.h>
-#include <xmhf-hwm.h>
-#include <xmhfhw.h>
 #include <xmhf-debug.h>
+#include <xmhfgeec.h>
+#include <geec_sentinel.h>
 
+
+
+//void gs_siss_pop(u32 cpuid, u32 *src_slabid, u32 *dst_slabid, u32 *hic_calltype,
+//                       void **caller_stack_framep, slab_params_t **spp)
 /*@
-	assigns \nothing;
-@*/
-u32 xmhf_baseplatform_arch_x86_getcpulapicid(void){
-	u32 eax, edx, lapic_reg;
-	u64 msr_value;
-	u32 lapic_id;
+	requires sissValid (siss_id);
+	requires \valid(elem);
 
-	//read LAPIC id of this core
-	msr_value = CASM_FUNCCALL(rdmsr64, MSR_APIC_BASE);
-	eax = (u32)msr_value;
-	edx = (u32)(msr_value >> 32);
+	behavior not_empty:
+		assumes !sissEmpty(siss_id);
+		assigns gs_siss_indices[siss_id];
+		assigns elem->src_slabid;
+		assigns elem->dst_slabid;
+		assigns elem->slab_ctype;
+		assigns elem->caller_stack_frame;
+		assigns elem->sp;
 
-	eax &= (u32)0xFFFFF000UL;
-	lapic_reg = ((u32)eax+ (u32)LAPIC_ID);
-	lapic_id = CASM_FUNCCALL(xmhfhw_sysmemaccess_readu32, (u32)lapic_reg);
-	lapic_id = lapic_id >> 24;
+		ensures X:sissValid (siss_id);
+		ensures Y:sissSize ( siss_id) == sissSize { Old }(siss_id) - 1;
+		ensures A:!sissFull (siss_id);
+		ensures sissStorage (siss_id ) == sissStorage {Old }( siss_id) ;
+		ensures sissCapacity ( siss_id) == sissCapacity { Old }(siss_id) ;
 
-	return lapic_id;
+	behavior empty:
+		assumes sissEmpty (siss_id);
+
+		assigns \nothing;
+
+		ensures sissValid (siss_id);
+		ensures sissEmpty (siss_id);
+		ensures sissSize ( siss_id) == sissSize { Old }(siss_id) ;
+		ensures sissStorage (siss_id ) == sissStorage {Old }( siss_id) ;
+		ensures sissCapacity ( siss_id) == sissCapacity { Old }(siss_id) ;
+
+	complete behaviors ;
+	disjoint behaviors ;
+
+*/
+void gs_siss_pop(u32 siss_id, gs_siss_element_t *elem)
+{
+    u32 safestack_index = gs_siss_indices[siss_id];
+
+    if(safestack_index >0 && safestack_index <= 512){
+        safestack_index--;
+        elem->src_slabid = gs_siss[siss_id][safestack_index].src_slabid;
+        elem->dst_slabid = gs_siss[siss_id][safestack_index].dst_slabid;
+        elem->slab_ctype = gs_siss[siss_id][safestack_index].slab_ctype;
+        elem->caller_stack_frame = gs_siss[siss_id][safestack_index].caller_stack_frame;
+        elem->sp = gs_siss[siss_id][safestack_index].sp;
+
+        gs_siss_indices[siss_id] = safestack_index;
+    }
 }
 

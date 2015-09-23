@@ -44,31 +44,35 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-// author: amit vasudevan (amitvasudevan@acm.org)
+/*
+ GEEC sentinel low-level support routines
+ author: amit vasudevan (amitvasudevan@acm.org)
+*/
 
 #include <xmhf.h>
 #include <xmhf-hwm.h>
-#include <xmhfhw.h>
 #include <xmhf-debug.h>
+#include <xmhfgeec.h>
+#include <geec_sentinel.h>
 
-/*@
-	assigns \nothing;
-@*/
-u32 xmhf_baseplatform_arch_x86_getcpulapicid(void){
-	u32 eax, edx, lapic_reg;
-	u64 msr_value;
-	u32 lapic_id;
 
-	//read LAPIC id of this core
-	msr_value = CASM_FUNCCALL(rdmsr64, MSR_APIC_BASE);
-	eax = (u32)msr_value;
-	edx = (u32)(msr_value >> 32);
 
-	eax &= (u32)0xFFFFF000UL;
-	lapic_reg = ((u32)eax+ (u32)LAPIC_ID);
-	lapic_id = CASM_FUNCCALL(xmhfhw_sysmemaccess_readu32, (u32)lapic_reg);
-	lapic_id = lapic_id >> 24;
-
-	return lapic_id;
-}
+//if we return, we had an error and we return the
+//corresponding error code
+CASM_FUNCDEF(u32, gs_exit_callv2uvg,
+{
+    xmhfhwm_cpu_insn_vmlaunch();
+    xmhfhwm_cpu_insn_jc(__vmx_start_hvm_failinvalid);
+    xmhfhwm_cpu_insn_jnz(__vmx_start_hvm_undefinedimplementation);
+    xmhfhwm_cpu_insn_movl_imm_eax(0x1);		//VMLAUNCH error, XXX: need to read from VM instruction error field in VMCS
+    xmhfhwm_cpu_insn_jmplabel(__vmx_start_continue);
+    CASM_LABEL(__vmx_start_hvm_undefinedimplementation);
+    xmhfhwm_cpu_insn_movl_imm_eax(0x2);		//violation of VMLAUNCH specs., handle it anyways
+    xmhfhwm_cpu_insn_jmplabel(__vmx_start_continue);
+    CASM_LABEL(__vmx_start_hvm_failinvalid);
+    xmhfhwm_cpu_insn_xorl_eax_eax();		//return 0 as we have no error code available
+    CASM_LABEL(__vmx_start_continue);
+    xmhfhwm_cpu_insn_retu32();
+},
+void *noparam)
 

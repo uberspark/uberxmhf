@@ -10,8 +10,8 @@ MS:DMADATA:0x200000:void:void
 RD:INCL:PCI_VENDOR_ID_XMHFGEEC:PCI_DEVICE_ID_XMHFGEEC_LAPIC:void
 
 
-EX:_geec_sentinel_sysenter_casmstub:void:void:void
-EX:_geec_sentinel_intercept_casmstub:void:void:void
+EX:gs_syscallstub:void:void:void
+EX:gs_entry_icptstub:void:void:void
 EX:__xmhf_exception_handler_0:void:void:void
 EX:__xmhf_exception_handler_1:void:void:void
 EX:__xmhf_exception_handler_2:void:void:void

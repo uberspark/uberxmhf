@@ -44,31 +44,60 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-// author: amit vasudevan (amitvasudevan@acm.org)
+/*
+ * HIC trampoline and stubs
+ *
+ * author: amit vasudevan (amitvasudevan@acm.org)
+ */
 
 #include <xmhf.h>
-#include <xmhf-hwm.h>
-#include <xmhfhw.h>
 #include <xmhf-debug.h>
+#include <xmhfgeec.h>
+#include <geec_sentinel.h>
 
-/*@
-	assigns \nothing;
-@*/
-u32 xmhf_baseplatform_arch_x86_getcpulapicid(void){
-	u32 eax, edx, lapic_reg;
-	u64 msr_value;
-	u32 lapic_id;
 
-	//read LAPIC id of this core
-	msr_value = CASM_FUNCCALL(rdmsr64, MSR_APIC_BASE);
-	eax = (u32)msr_value;
-	edx = (u32)(msr_value >> 32);
 
-	eax &= (u32)0xFFFFF000UL;
-	lapic_reg = ((u32)eax+ (u32)LAPIC_ID);
-	lapic_id = CASM_FUNCCALL(xmhfhw_sysmemaccess_readu32, (u32)lapic_reg);
-	lapic_id = lapic_id >> 24;
+void gs_exit_retuv2v(slab_params_t *sp, void *caller_stack_frame){
+    slab_params_t *dst_sp;
+    gs_siss_element_t elem;
 
-	return lapic_id;
+
+    _XDPRINTF_("%s[%u]: src=%u, dst=%u\n", __func__, (u16)sp->cpuid, sp->src_slabid, sp->dst_slabid);
+
+    //pop tuple from safe stack
+    //gs_siss_pop((u16)sp->cpuid, &elem.src_slabid, &elem.dst_slabid, &elem.slab_ctype, &elem.caller_stack_frame,
+    //                    &elem.sp);
+    gs_siss_pop((u16)sp->cpuid, &elem);
+
+
+
+    _XDPRINTF_("%s[%u]: safepop: {cpuid: %u, src: %u, dst: %u, ctype: 0x%x, \
+               csf=0x%x, sp=0x%x \n",
+            __func__, (u16)sp->cpuid,
+               (u16)sp->cpuid, elem.src_slabid, elem.dst_slabid, elem.slab_ctype,
+               elem.caller_stack_frame, elem.sp);
+
+    //check to ensure this return is paired with a prior call
+    if ( !((elem.src_slabid == sp->dst_slabid) && (elem.dst_slabid == sp->src_slabid) &&
+           (elem.slab_ctype == XMHFGEEC_SENTINEL_CALL_uVT_uVU_PROG_TO_VfT_PROG)) ){
+        _XDPRINTF_("%s[ln:%u]: Fatal: ret does not match prior call. Halting!\n",
+            __func__, __LINE__);
+        HALT();
+    }
+
+
+    //marshall parameters
+    CASM_FUNCCALL(xmhfhw_sysmemaccess_copy, (elem.sp)->in_out_params, sp->in_out_params, sizeof(sp->in_out_params));
+
+
+    //return back to uVT/uVU_PROG slab
+    CASM_FUNCCALL(gs_exit_retuv2vstub,
+                      elem.caller_stack_frame);
+
+
+    _XDPRINTF_("%s[%u]: wip. halting!\n", __func__, (u16)sp->cpuid);
+    HALT();
 }
+
+
 
