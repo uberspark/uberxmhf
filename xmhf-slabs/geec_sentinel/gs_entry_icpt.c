@@ -61,15 +61,15 @@
 void gs_entry_icpt(x86regs_t *r){
     slab_params_t spl;
 
-	//@assert false;
     memset(&spl, 0, sizeof(spl));
 
     spl.slab_ctype = XMHFGEEC_SENTINEL_CALL_INTERCEPT;
     spl.src_slabid = CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmread,VMCS_CONTROL_VPID);
     spl.dst_slabid = XMHFGEEC_SLAB_XC_IHUB;
-    //spl.cpuid = __xmhfhic_x86vmx_cpuidtable[xmhf_baseplatform_arch_x86_getcpulapicid()];
     spl.cpuid = xmhf_baseplatform_arch_x86_getcpulapicid();
+
     memcpy(&spl.in_out_params[0], r, sizeof(x86regs_t));
+
 
     geec_sentinel_main(&spl, &spl);
 

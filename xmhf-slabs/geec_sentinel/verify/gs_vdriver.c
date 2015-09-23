@@ -426,6 +426,9 @@ void drv_path_exception(void){
 
 
 
+void xmhfhwm_vdriver_slabep(void){
+	//@assert false;
+}
 
 
 void drv_path_callicpt(void){

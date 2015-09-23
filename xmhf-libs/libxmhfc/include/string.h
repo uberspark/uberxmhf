@@ -99,6 +99,7 @@ int memcmp(const void *s1, const void *s2, size_t n);
     requires \valid(((unsigned char*)dst)+(0..n-1));
     requires \valid(((unsigned char*)src)+(0..n-1));
     assigns ((unsigned char*)dst)[0..n-1];
+    assigns \result \from dst;
     ensures \forall integer i; 0 <= i < n ==> ((unsigned char*)dst)[i] == ((unsigned char*)src)[i];
     ensures \result == dst;
  */
@@ -123,6 +124,7 @@ void *memmove(void *dst, const void *src, size_t n);
 	requires \valid(((unsigned char*)dst)+(0..n-1));
 	requires -128 <= c <= 127;
 	assigns ((unsigned char*)dst)[0..n-1];
+	assigns \result \from dst;
 	ensures \forall integer i; 0 <= i < n ==> ((unsigned char*)dst)[i] == c;
 	ensures \result == dst;
 @*/

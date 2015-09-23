@@ -203,7 +203,7 @@ CASM_FUNCDECL(u32 gs_exit_callv2uvg(void *noparam));
 
 CASM_FUNCDECL(void gs_entry_icptstub(void *noparam));
 void gs_entry_icpt(x86regs_t *r);
-CASM_FUNCDECL(void _geec_sentinel_xfer_intercept_to_vft_prog(u32 entry_point, void *caller_stack_frame));
+CASM_FUNCDECL(void gs_exit_callicpt(u32 entry_point, void *caller_stack_frame));
 CASM_FUNCDECL(void _geec_sentinel_xfer_ret_from_intercept(x86regs_t *r));
 
 
