@@ -1984,6 +1984,8 @@ void xmhfhic_arch_setup_slab_mem_page_tables(void){
     //_geec_prime_populate_slab_pagetables_pae4k(XMHFGEEC_SLAB_GEEC_PRIME);
     gp_setup_vhslab_mempgtbl();
    	_XDPRINTF_("%s: populated verified slabs' memory page tables\n", __func__);
+	_XDPRINTF_("%s: halting\n", __func__);
+	HALT();
 
 
     //setup unverified slabs's page tables
