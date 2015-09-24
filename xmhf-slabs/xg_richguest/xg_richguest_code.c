@@ -390,7 +390,8 @@ void xcguestslab_do_testxhsyscalllog(void){
 
 
 void slab_main(slab_params_t *sp){
-    _XDPRINTF_("%s: Hello world from Guest slab! ESP=%08x\n", __func__, read_esp(CASM_NOPARAM));
+    _XDPRINTF_("%s: Hello world from Guest slab! ESP=%08x, flags=%08x\n", __func__, read_esp(CASM_NOPARAM),
+		read_eflags(CASM_NOPARAM));
 
     //xcguestslab_do_vmcall();
 

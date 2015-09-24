@@ -2086,7 +2086,7 @@ static void __xmhfhic_x86vmx_setIOPL3(u64 cpuid){
     eflags = CASM_FUNCCALL(read_eflags,CASM_NOPARAM);
     eflags &= ~(EFLAGS_IOPL); //clear out IOPL bits
     //eflags |= 0x00000000; //set IOPL to 0
-    //eflags |= EFLAGS_IOPL;
+    eflags |= EFLAGS_IOPL;
 
  CASM_FUNCCALL(write_eflags,eflags);
 }
