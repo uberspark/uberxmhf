@@ -1982,9 +1982,6 @@ void xmhfhic_arch_setup_slab_mem_page_tables(void){
         switch(slabtype){
             case XMHFGEEC_SLABTYPE_uVT_PROG:
             case XMHFGEEC_SLABTYPE_uVU_PROG:{
-                spl.dst_uapifn = XMHFGEEC_UAPI_SLABMEMPGTBL_INITMEMPGTBL;
-                initmempgtblp->dst_slabid = i;
-                XMHF_SLAB_CALLNEW(&spl);
                 gp_setup_uhslab_mempgtbl(i);
               	_XDPRINTF_("%s: slab %u --> uV{T,U}_prog page-tables populated\n", __func__, i);
             }
