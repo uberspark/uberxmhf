@@ -1831,58 +1831,65 @@ static void gp_setup_uhslab_mempgtbl(u32 slabid){
 	u32 spa_slabregion, spa_slabtype;
 	u32 slabtype = xmhfgeec_slab_info_table[slabid].slabtype;
 
+	u32 i, j;
+	u64 default_flags = (u64)(_PAGE_PRESENT);
 
-	slab_params_t spl;
-	xmhfgeec_uapi_slabmempgtbl_setentryforpaddr_params_t *setentryforpaddrp =
-	(xmhfgeec_uapi_slabmempgtbl_setentryforpaddr_params_t *)spl.in_out_params;
+	//pdpt
+	memset(&gp_rwdatahdr.uhslabmempgtbl_lvl4t[slabid], 0, PAGE_SIZE_4K);
+	for(i=0; i < PAE_PTRS_PER_PDPT; i++){
+		gp_rwdatahdr.uhslabmempgtbl_lvl4t[slabid][i] =
+		    pae_make_pdpe(&gp_uhslabmempgtbl_lvl2t[slabid][i], default_flags);
+	}
 
-	spl.src_slabid = XMHFGEEC_SLAB_GEEC_PRIME;
-	spl.dst_slabid = XMHFGEEC_SLAB_UAPI_SLABMEMPGTBL;
-	spl.cpuid = 0; //XXX: fixme, need to plug in BSP cpuid
+	//pdt
+	default_flags = (u64)(_PAGE_PRESENT | _PAGE_RW | _PAGE_USER);
+	for(i=0; i < PAE_PTRS_PER_PDPT; i++){
+		for(j=0; j < PAE_PTRS_PER_PDT; j++){
+			gp_uhslabmempgtbl_lvl2t[slabid][i][j] =
+				pae_make_pde(&gp_uhslabmempgtbl_lvl1t[slabid][i][j], default_flags);
+		}
+	}
 
+
+	//pts
 	for(gpa=0; gpa < ADDR_4GB; gpa += PAGE_SIZE_4K){
+		u64 pdpt_index = pae_get_pdpt_index(gpa);
+		u64 pdt_index = pae_get_pdt_index(gpa);
+		u64 pt_index = pae_get_pt_index(gpa);
+
 		spatype =  _geec_prime_slab_getspatype(slabid, (u32)gpa);
 		spa_slabregion = spatype & 0x0000000FUL;
 		spa_slabtype =spatype & 0x000000F0UL;
 		flags = _geec_prime_slab_getptflagsforspa_pae(slabid, (u32)gpa, spatype);
+
 		//_XDPRINTF_("gpa=%08x, flags=%016llx\n", (u32)gpa, flags);
 
 		if(spa_slabregion == _SLAB_SPATYPE_GEEC_PRIME_IOTBL &&
 		   slabtype != XMHFGEEC_SLABTYPE_VfT_PROG && slabtype != XMHFGEEC_SLABTYPE_VfT_SENTINEL){
 			//map unverified slab iotbl instead (12K)
-			spl.dst_uapifn = XMHFGEEC_UAPI_SLABMEMPGTBL_SETENTRYFORPADDR;
-			setentryforpaddrp->dst_slabid = slabid;
-			setentryforpaddrp->gpa = gpa;
-			setentryforpaddrp->entry = pae_make_pte(xmhfgeec_slab_info_table[slabid].iotbl_base, flags);
-			XMHF_SLAB_CALLNEW(&spl);
+			gp_uhslabmempgtbl_lvl1t[uslabid][pdpt_index][pdt_index][pt_index] =
+				pae_make_pte(xmhfgeec_slab_info_table[slabid].iotbl_base, flags) & (~0x80);
 			//_XDPRINTF_("slab %u: iotbl mapping, orig gpa=%08x, revised entry=%016llx\n", slabid,
 			//           (u32)gpa, setentryforpaddrp->entry);
 
 			gpa += PAGE_SIZE_4K;
-			spl.dst_uapifn = XMHFGEEC_UAPI_SLABMEMPGTBL_SETENTRYFORPADDR;
-			setentryforpaddrp->dst_slabid = slabid;
-			setentryforpaddrp->gpa = gpa;
-			setentryforpaddrp->entry = pae_make_pte(xmhfgeec_slab_info_table[slabid].iotbl_base+PAGE_SIZE_4K, flags);
-			XMHF_SLAB_CALLNEW(&spl);
+
+			gp_uhslabmempgtbl_lvl1t[uslabid][pdpt_index][pdt_index][pt_index] =
+				pae_make_pte(xmhfgeec_slab_info_table[slabid].iotbl_base+PAGE_SIZE_4K, flags) & (~0x80);
 			//_XDPRINTF_("slab %u: iotbl mapping, orig gpa=%08x, revised entry=%016llx\n", slabid,
 			//           (u32)gpa, setentryforpaddrp->entry);
 
 			gpa += PAGE_SIZE_4K;
-			spl.dst_uapifn = XMHFGEEC_UAPI_SLABMEMPGTBL_SETENTRYFORPADDR;
-			setentryforpaddrp->dst_slabid = slabid;
-			setentryforpaddrp->gpa = gpa;
-			setentryforpaddrp->entry = pae_make_pte(xmhfgeec_slab_info_table[slabid].iotbl_base+(2*PAGE_SIZE_4K), flags);
-			XMHF_SLAB_CALLNEW(&spl);
+
+			gp_uhslabmempgtbl_lvl1t[uslabid][pdpt_index][pdt_index][pt_index] =
+				pae_make_pte(xmhfgeec_slab_info_table[slabid].iotbl_base+(2*PAGE_SIZE_4K), flags) & (~0x80);
 			//_XDPRINTF_("slab %u: iotbl mapping, orig gpa=%08x, revised entry=%016llx\n", slabid,
 			//           (u32)gpa, setentryforpaddrp->entry);
 
 			gpa += PAGE_SIZE_4K;
 		}else{
-			spl.dst_uapifn = XMHFGEEC_UAPI_SLABMEMPGTBL_SETENTRYFORPADDR;
-			setentryforpaddrp->dst_slabid = slabid;
-			setentryforpaddrp->gpa = gpa;
-			setentryforpaddrp->entry = pae_make_pte(gpa, flags);
-			XMHF_SLAB_CALLNEW(&spl);
+			gp_uhslabmempgtbl_lvl1t[uslabid][pdpt_index][pdt_index][pt_index] =
+				pae_make_pte(gpa, flags) & (~0x80);
 		}
 	}
 
