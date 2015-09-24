@@ -57,12 +57,17 @@
  * author: amit vasudevan (amitvasudevan@acm.org)
  */
 
-static XMHF_BOOTINFO xcbootinfo_store __attribute__(( section(".rwdatahdr") )) = {
-	.magic= RUNTIME_PARAMETER_BLOCK_MAGIC,
+
+__attribute__(( section(".rwdatahdr") )) gp_rwdatahdr_t gp_rwdatahdr = {
+		.xcbootinfo_store.magic = RUNTIME_PARAMETER_BLOCK_MAGIC,
 };
 
+//static XMHF_BOOTINFO xcbootinfo_store __attribute__(( section(".rwdatahdr") )) = {
+//	.magic= RUNTIME_PARAMETER_BLOCK_MAGIC,
+//};
+
 // XMHF boot information block
-__attribute__(( section(".data") )) XMHF_BOOTINFO *xcbootinfo= &xcbootinfo_store;
+__attribute__(( section(".data") )) XMHF_BOOTINFO *xcbootinfo= &gp_rwdatahdr.xcbootinfo_store;
 
 __attribute__((section(".slab_codehdr"))) x86vmx_mle_header_t mleheader = { 0 };
 
@@ -215,7 +220,7 @@ __attribute__((section(".data"))) __attribute__(( aligned(4096) )) xc_cpuarchdat
 
 //////
 // verified hypervisor slab memory page-tables
-__attribute__((section(".data"))) __attribute__((aligned(4096))) u64 gp_vhslabmempgtbl_lvl4t[PAE_MAXPTRS_PER_PML4T];
+//__attribute__((section(".data"))) __attribute__((aligned(4096))) u64 gp_vhslabmempgtbl_lvl4t[PAE_MAXPTRS_PER_PML4T];
 __attribute__((section(".data"))) __attribute__((aligned(4096))) u64 gp_vhslabmempgtbl_lvl3t[PAE_MAXPTRS_PER_PDPT];
 __attribute__((section(".data"))) __attribute__((aligned(4096))) u64 gp_vhslabmempgtbl_lvl2t[PAE_PTRS_PER_PDPT][PAE_PTRS_PER_PDT];
 __attribute__((section(".data"))) __attribute__((aligned(4096)))  u64 gp_vhslabmempgtbl_lvl1t[PAE_PTRS_PER_PDPT][PAE_PTRS_PER_PDT][PAE_PTRS_PER_PT];
