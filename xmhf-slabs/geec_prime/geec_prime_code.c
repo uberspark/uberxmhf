@@ -1169,13 +1169,6 @@ static void _gp_setup_uhslab_iotbl_allowaccesstoport(u32 uhslabiobitmap_idx, u16
 static void gp_setup_uhslab_iotbl(u32 slabid){
 	u32 j, k, portnum;
 	u32 uhslabiobitmap_idx;
-	//slab_params_t spl;
-	//xmhfgeec_uapi_slabiotbl_init_params_t *initp =
-	//(xmhfgeec_uapi_slabiotbl_init_params_t *)spl.in_out_params;
-	//xmhfgeec_uapi_slabiotbl_allowaccesstoport_params_t *allowaccesstoportp =
-	//(xmhfgeec_uapi_slabiotbl_allowaccesstoport_params_t *)spl.in_out_params;
-
-
 
 	if( !(slabid >= XMHFGEEC_UHSLAB_BASE_IDX && slabid <= XMHFGEEC_UHSLAB_MAX_IDX) ){
 		_XDPRINTF_("%s: Fatal error, uh slab id out of bounds!\n", __func__);
@@ -1184,15 +1177,6 @@ static void gp_setup_uhslab_iotbl(u32 slabid){
 
 	uhslabiobitmap_idx = slabid - XMHFGEEC_UHSLAB_BASE_IDX;
 
-	//spl.src_slabid = XMHFGEEC_SLAB_GEEC_PRIME;
-	//spl.dst_slabid = XMHFGEEC_SLAB_UAPI_SLABIOTBL;
-	//spl.cpuid = 0; //XXX: fixme, need to plug in BSP cpuid here
-
-
-	//initialize I/O perm. table for this slab (default = deny all)
-	//spl.dst_uapifn = XMHFGEEC_UAPI_SLABIOTBL_INIT;
-	//initp->dst_slabid = slabid;
-	//XMHF_SLAB_CALLNEW(&spl);
         memset(&gp_rwdatahdr.gp_uhslab_iobitmap[uhslabiobitmap_idx], 0xFFFFFFFFUL, sizeof(gp_rwdatahdr.gp_uhslab_iobitmap[0]));
 
 
@@ -1205,11 +1189,6 @@ static void gp_setup_uhslab_iotbl(u32 slabid){
 		    for(portnum= sysdev_memioregions[sysdev_memioregions_index].memioextents[k].addr_start;
 			portnum < sysdev_memioregions[sysdev_memioregions_index].memioextents[k].addr_end; portnum++){
 
-			//spl.dst_uapifn = XMHFGEEC_UAPI_SLABIOTBL_ALLOWACCESSTOPORT;
-			//allowaccesstoportp->dst_slabid = slabid;
-			//allowaccesstoportp->port=portnum;
-			//allowaccesstoportp->port_size=1;
-			//XMHF_SLAB_CALLNEW(&spl);
 			_gp_setup_uhslab_iotbl_allowaccesstoport(uhslabiobitmap_idx, portnum, 1);
 
 		    }
