@@ -376,12 +376,12 @@ while( $i < $g_totalslabs ){
             print "\nError: Too many unverified slabs (max=$g_totaluvslabmempgtblsets)!";
             exit 1;
         }else{
-            $g_uvslabcounter = $g_uvslabcounter + 1;
+		print $fh "\n        ".$slab_idtodata_addrstart{$slab_nametoid{"uapi_slabmempgtbl"}}." + ((2+$g_uvslabcounter) * 4096),";
+		print $fh "\n        ".$slab_idtodata_addrstart{$slab_nametoid{"uapi_slabiotbl"}}." + ($i * (3*4096)),";
+		$g_uvslabcounter = $g_uvslabcounter + 1;
         }
 
         #if( $i < $g_totalslabmempgtblsets){
-          print $fh "\n        ".$slab_idtodata_addrstart{$slab_nametoid{"uapi_slabmempgtbl"}}." + ($i * 4096),";
-          print $fh "\n        ".$slab_idtodata_addrstart{$slab_nametoid{"uapi_slabiotbl"}}." + ($i * (3*4096)),";
         #}else{
         #    print "\nError: Illegal unverified slab id ($i)!";
         #    exit 1;
