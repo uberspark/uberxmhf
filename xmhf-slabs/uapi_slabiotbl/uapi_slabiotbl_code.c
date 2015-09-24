@@ -73,7 +73,7 @@ static inline void _slabiotbl_sanitycheckhalt_slabid(u32 slabid){
 static void _slabiotbl_init(u32 dst_slabid){
     u32 slabtype;
 
-    _slabiotbl_sanitycheckhalt_slabid(dst_slabid);
+    //_slabiotbl_sanitycheckhalt_slabid(dst_slabid);
 
     slabtype = xmhfgeec_slab_info_table[dst_slabid].slabtype;
 
@@ -107,7 +107,7 @@ static void _slabiotbl_init(u32 dst_slabid){
 static void _slabiotbl_allowaccesstoport(u32 dst_slabid, u16 port, u16 port_size){
     u32 i;
 
-    _slabiotbl_sanitycheckhalt_slabid(dst_slabid);
+    //_slabiotbl_sanitycheckhalt_slabid(dst_slabid);
 
     for(i=0; i < port_size; i++){
         u32 idx = (port+i)/8;
@@ -123,7 +123,7 @@ static void _slabiotbl_allowaccesstoport(u32 dst_slabid, u16 port, u16 port_size
 static void _slabiotbl_denyaccesstoport(u32 dst_slabid, u16 port, u16 port_size){
     u32 i;
 
-    _slabiotbl_sanitycheckhalt_slabid(dst_slabid);
+    //_slabiotbl_sanitycheckhalt_slabid(dst_slabid);
 
     for(i=0; i < port_size; i++){
         u32 idx = (port+i)/8;
