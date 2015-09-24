@@ -1789,51 +1789,39 @@ static u32 _geec_prime_vmx_getmemorytypeforphysicalpage(u64 pagebaseaddr){
 
 
 
-//ept4k
+//setup unverified guest (ug) slab memory page tables
 static void gp_setup_ugslab_mempgtbl(u32 slabid){
 	u64 p_table_value;
 	u64 gpa;
 	u64 flags;
 	u32 spatype;
-    slab_params_t spl;
-    xmhfgeec_uapi_slabmempgtbl_setentryforpaddr_params_t *setentryforpaddrp =
-        (xmhfgeec_uapi_slabmempgtbl_setentryforpaddr_params_t *)spl.in_out_params;
+	slab_params_t spl;
+	xmhfgeec_uapi_slabmempgtbl_setentryforpaddr_params_t *setentryforpaddrp =
+	(xmhfgeec_uapi_slabmempgtbl_setentryforpaddr_params_t *)spl.in_out_params;
 
-    spl.src_slabid = XMHFGEEC_SLAB_GEEC_PRIME;
-    spl.dst_slabid = XMHFGEEC_SLAB_UAPI_SLABMEMPGTBL;
-    spl.cpuid = 0; //XXX: fixme, need to plug in BSP cpuid
+	spl.src_slabid = XMHFGEEC_SLAB_GEEC_PRIME;
+	spl.dst_slabid = XMHFGEEC_SLAB_UAPI_SLABMEMPGTBL;
+	spl.cpuid = 0; //XXX: fixme, need to plug in BSP cpuid
 
 	for(gpa=0; gpa < ADDR_4GB; gpa += PAGE_SIZE_4K){
 		u32 memorytype = _geec_prime_vmx_getmemorytypeforphysicalpage((u64)gpa);
-        spatype = _geec_prime_slab_getspatype(slabid, (u32)gpa);
-        flags = _geec_prime_slab_getptflagsforspa_ept(slabid, (u32)gpa, spatype);
+		spatype = _geec_prime_slab_getspatype(slabid, (u32)gpa);
+		flags = _geec_prime_slab_getptflagsforspa_ept(slabid, (u32)gpa, spatype);
 
-        if(memorytype == 0)
-            p_table_value = (u64) (gpa)  | ((u64)memorytype << 3) |  flags ;	//present, UC
-        else
-            p_table_value = (u64) (gpa)  | ((u64)6 << 3) | flags ;	//present, WB, track host MTRR
+		if(memorytype == 0)
+		    p_table_value = (u64) (gpa)  | ((u64)memorytype << 3) |  flags ;	//present, UC
+		else
+		    p_table_value = (u64) (gpa)  | ((u64)6 << 3) | flags ;	//present, WB, track host MTRR
 
-        spl.dst_uapifn = XMHFGEEC_UAPI_SLABMEMPGTBL_SETENTRYFORPADDR;
-        setentryforpaddrp->dst_slabid = slabid;
-        setentryforpaddrp->gpa = gpa;
-        setentryforpaddrp->entry = p_table_value;
-        XMHF_SLAB_CALLNEW(&spl);
-
+		spl.dst_uapifn = XMHFGEEC_UAPI_SLABMEMPGTBL_SETENTRYFORPADDR;
+		setentryforpaddrp->dst_slabid = slabid;
+		setentryforpaddrp->gpa = gpa;
+		setentryforpaddrp->entry = p_table_value;
+		XMHF_SLAB_CALLNEW(&spl);
 	}
-
-/*#if defined (__DEBUG_SERIAL__)
-	for(gpa=ADDR_LIBXMHFDEBUGDATA_START; gpa < ADDR_LIBXMHFDEBUGDATA_END; gpa += PAGE_SIZE_4K){
-        spl.dst_uapifn = XMHFGEEC_UAPI_SLABMEMPGTBL_SETENTRYFORPADDR;
-        setentryforpaddrp->dst_slabid = slabid;
-        setentryforpaddrp->gpa = gpa;
-        p_table_value = (u64) (gpa)  | ((u64)6 << 3) | 0x7 ;	//present, WB, track host MTRR
-        setentryforpaddrp->entry = p_table_value;
-        XMHF_SLAB_CALLNEW(&spl);
-	}
-#endif
-*/
-
 }
+
+
 
 //pae4k
 static void _geec_prime_populate_slab_pagetables_pae4k(u32 slabid){
