@@ -147,7 +147,7 @@ while( $i <= $#array) {
 
 $g_totalslabs = $i;
 
-#print "g_totalslabs:", $g_totalslabs, "\n";
+print "g_totalslabs:", $g_totalslabs, "\n";
 
 # now iterate through all the slab id's and populate callmask and
 # uapimasks
@@ -174,6 +174,7 @@ while($i < $g_totalslabs){
 
 
 
+print "Proceeding to compute memory map...\n";
 
 
 ######
@@ -201,6 +202,8 @@ while($i < $g_totalslabs){
 
     $i=$i+1;
 }
+
+print "Computed memory map\n";
 
 
 #$i =0;
@@ -269,6 +272,7 @@ if($g_memoffsets eq "MEMOFFSETS"){
 
 }
 
+print "Configured slabs\n";
 
 
 
@@ -310,6 +314,8 @@ print $fh "\n__attribute__(( section(\".data\") )) __attribute__((aligned(4096))
 
 $i = 0;
 while( $i < $g_totalslabs ){
+	#print "Writing up for $i...\n";
+
 	print $fh "\n";
     print $fh "\n	//$slab_idtoname{$i}";
     print $fh "\n	{";
@@ -351,7 +357,7 @@ while( $i < $g_totalslabs ){
     }elsif($slab_idtotype{$i} eq "uVU_SLAB" && $slab_idtosubtype{$i} eq "XRICHGUEST"){
         print $fh "\n	        XMHFGEEC_SLABTYPE_uVU_PROG_RICHGUEST,";
     }else{
-        print $fh "\nError: Unknown slab type!";
+        print "\nError: Unknown slab type!";
         exit 1;
     }
 
@@ -359,34 +365,30 @@ while( $i < $g_totalslabs ){
     #bases and for all other slabs point to PRIME slab memory page tables
     if ($slab_idtotype{$i} eq "VfT_SLAB"){
         if($slab_idtosubtype{$i} eq "SENTINEL"){
-            #printf "\n	        &_slab_uapi_slabmempgtbl_data_start[%u],", (0 * 4096);
-            #printf "\n	        &_slab_uapi_slabiotbl_data_start[%u],", (0 * (3*4096));
             print $fh "\n        ".$slab_idtodata_addrstart{$slab_nametoid{"uapi_slabmempgtbl"}}." + (0 * 4096),";
             print $fh "\n        ".$slab_idtodata_addrstart{$slab_nametoid{"uapi_slabiotbl"}}." + (0 * (3*4096)),";
         }else{
-            #printf "\n	        &_slab_uapi_slabmempgtbl_data_start[%u],", (1 * 4096);
-            #printf "\n	        &_slab_uapi_slabiotbl_data_start[%u],", (1 * (3*4096));
             print $fh "\n        ".$slab_idtodata_addrstart{$slab_nametoid{"uapi_slabmempgtbl"}}." + (1 * 4096),";
             print $fh "\n        ".$slab_idtodata_addrstart{$slab_nametoid{"uapi_slabiotbl"}}." + (1 * (3*4096)),";
         }
     }else{
         if($g_uvslabcounter >=  $g_totaluvslabmempgtblsets){
-            print $fh "\nError: Too many unverified slabs (max=$g_totaluvslabmempgtblsets)!";
+            print "\nError: Too many unverified slabs (max=$g_totaluvslabmempgtblsets)!";
             exit 1;
         }else{
             $g_uvslabcounter = $g_uvslabcounter + 1;
         }
 
-        if( $i < $g_totalslabmempgtblsets){
-          #printf "\n	        &_slab_uapi_slabmempgtbl_data_start[%u],", ($i * 4096);
-          #printf "\n	        &_slab_uapi_slabiotbl_data_start[%u],", ($i * (3*4096));
+        #if( $i < $g_totalslabmempgtblsets){
           print $fh "\n        ".$slab_idtodata_addrstart{$slab_nametoid{"uapi_slabmempgtbl"}}." + ($i * 4096),";
           print $fh "\n        ".$slab_idtodata_addrstart{$slab_nametoid{"uapi_slabiotbl"}}." + ($i * (3*4096)),";
-        }else{
-            print $fh "\nError: Illegal unverified slab id ($i)!";
-            exit 1;
-        }
+        #}else{
+        #    print "\nError: Illegal unverified slab id ($i)!";
+        #    exit 1;
+        #}
     }
+
+	#print "Done-1 for $i...\n";
 
 
     #slab_tos
@@ -497,6 +499,9 @@ while( $i < $g_totalslabs ){
 
     print $fh "\n	},";
 	print $fh "\n";
+
+	#print "FULL Done for $i...\n";
+
 
 	$i++;
 }
