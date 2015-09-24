@@ -211,11 +211,17 @@ extern __attribute__((section(".data"))) __attribute__(( aligned(8) )) u32 __xmh
 extern __attribute__(( section(".stack") )) __attribute__(( aligned(4096) )) u8 _init_bsp_cpustack[MAX_PLATFORM_CPUSTACK_SIZE];
 
 
-//extern __attribute__((section(".data"))) __attribute__((aligned(4096))) u64 gp_vhslabmempgtbl_lvl4t[PAE_MAXPTRS_PER_PML4T];
+//////
+// verified hypervisor slab memory page-tables
 extern __attribute__((section(".data"))) __attribute__((aligned(4096))) u64 gp_vhslabmempgtbl_lvl3t[PAE_MAXPTRS_PER_PDPT];
 extern __attribute__((section(".data"))) __attribute__((aligned(4096))) u64 gp_vhslabmempgtbl_lvl2t[PAE_PTRS_PER_PDPT][PAE_PTRS_PER_PDT];
 extern __attribute__((section(".data"))) __attribute__((aligned(4096)))  u64 gp_vhslabmempgtbl_lvl1t[PAE_PTRS_PER_PDPT][PAE_PTRS_PER_PDT][PAE_PTRS_PER_PT];
 
+//////
+// unverified hypervisor slab memory page-tables
+extern __attribute__((section(".data"))) __attribute__((aligned(4096))) u64 gp_uhslabmempgtbl_lvl3t[XMHFGEEC_TOTAL_UHSLABS][PAE_MAXPTRS_PER_PDPT];
+extern __attribute__((section(".data"))) __attribute__((aligned(4096))) u64 gp_uhslabmempgtbl_lvl2t[XMHFGEEC_TOTAL_UHSLABS][PAE_PTRS_PER_PDPT][PAE_PTRS_PER_PDT];
+extern __attribute__((section(".data"))) __attribute__((aligned(4096)))  u64 gp_uhslabmempgtbl_lvl1t[XMHFGEEC_TOTAL_UHSLABS][PAE_PTRS_PER_PDPT][PAE_PTRS_PER_PDT][PAE_PTRS_PER_PT];
 
 
 
