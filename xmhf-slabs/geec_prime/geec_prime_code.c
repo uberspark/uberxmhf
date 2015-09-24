@@ -1284,7 +1284,7 @@ static bool _geec_prime_smt_slab_getspatype_isiotbl(u32 slabid, u32 spa){
 
     for(i=0; i < MAX_PLATFORM_CPUS; i++){
       if (spa >= (u32)&__xmhfhic_x86vmx_tss[i].tss_iobitmap &&
-          spa < ((u32)&__xmhfhic_x86vmx_tss[i].tss_iobitmap + sizeof((u32)&__xmhfhic_x86vmx_tss[i].tss_iobitmap)) )
+          spa < ((u32)&__xmhfhic_x86vmx_tss[i].tss_iobitmap + sizeof((u32)__xmhfhic_x86vmx_tss[i].tss_iobitmap)) )
             return true;
     }
 
@@ -1476,7 +1476,7 @@ static u64 _geec_prime_slab_getptflagsforspa_ept(u32 slabid, u32 spa, u32 spatyp
         case XMHFGEEC_SLABTYPE_uVU_PROG_RICHGUEST:{
             //code,data,stack,dmadata,mmio=rwx;
             //other slabs = no mapping; other region = no mapping
-            if(spa_sameslab)
+            if(spa_sameslab && spa_slabregion != _SLAB_SPATYPE_GEEC_PRIME_IOTBL)
                 flags = 0x7;
             else
                 flags = 0;
@@ -2084,9 +2084,9 @@ void xmhfhic_arch_setup_slab_mem_page_tables(void){
 static void __xmhfhic_x86vmx_setIOPL3(u64 cpuid){
     u32 eflags;
     eflags = CASM_FUNCCALL(read_eflags,CASM_NOPARAM);
-    //eflags |= EFLAGS_IOPL;
     eflags &= ~(EFLAGS_IOPL); //clear out IOPL bits
     //eflags |= 0x00000000; //set IOPL to 0
+    //eflags |= EFLAGS_IOPL;
 
  CASM_FUNCCALL(write_eflags,eflags);
 }
