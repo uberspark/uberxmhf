@@ -109,8 +109,6 @@ typedef struct _midtab {
 //XMHF_BOOTINFO
 typedef struct {
 	u32 magic;
-	//u32 xmhf_base;
-	//u32 xmhf_size;
 	u32 richguest_bootmodule_base;
 	u32 richguest_bootmodule_size;
 	u32 memmapinfo_numentries;
@@ -119,6 +117,7 @@ typedef struct {
 	PCPU cpuinfo_buffer[MAX_PCPU_ENTRIES];
 	u8 debugcontrol_buffer[16];
 	u8 cmdline_buffer[MAX_CMDLINE_BUFFER_SIZE];
+	u8 filler[2652];
 } __attribute__((packed)) XMHF_BOOTINFO;
 
 __attribute__(( section(".sharedro_xcbootinfoptr") )) extern XMHF_BOOTINFO *xcbootinfo;

@@ -183,6 +183,14 @@ typedef struct {
 } __attribute__((packed)) xc_cpuarchdata_x86vmx_t;
 
 
+typedef struct {
+	XMHF_BOOTINFO xcbootinfo_store;
+	u64 gp_vhslabmempgtbl_lvl4t[PAE_MAXPTRS_PER_PML4T];
+} gp_rwdatahdr_t;
+
+
+extern __attribute__(( section(".rwdatahdr") )) gp_rwdatahdr_t gp_rwdatahdr;
+
 extern __attribute__((section(".data"))) __attribute__(( aligned(16) )) idtentry_t __xmhfhic_x86vmx_idt_start[EMHF_XCPHANDLER_MAXEXCEPTIONS]; //ro
 extern __attribute__((section(".data"))) __attribute__(( aligned(16) )) u64 __xmhfhic_x86vmx_gdt_start[];     //ro
 extern __attribute__((section(".data"))) __attribute__(( aligned(16) )) arch_x86_gdtdesc_t __xmhfhic_x86vmx_gdt;  //ro
@@ -202,7 +210,7 @@ extern __attribute__((section(".data"))) __attribute__(( aligned(8) )) u32 __xmh
 extern __attribute__(( section(".stack") )) __attribute__(( aligned(4096) )) u8 _init_bsp_cpustack[MAX_PLATFORM_CPUSTACK_SIZE];
 
 
-extern __attribute__((section(".data"))) __attribute__((aligned(4096))) u64 gp_vhslabmempgtbl_lvl4t[PAE_MAXPTRS_PER_PML4T];
+//extern __attribute__((section(".data"))) __attribute__((aligned(4096))) u64 gp_vhslabmempgtbl_lvl4t[PAE_MAXPTRS_PER_PML4T];
 extern __attribute__((section(".data"))) __attribute__((aligned(4096))) u64 gp_vhslabmempgtbl_lvl3t[PAE_MAXPTRS_PER_PDPT];
 extern __attribute__((section(".data"))) __attribute__((aligned(4096))) u64 gp_vhslabmempgtbl_lvl2t[PAE_PTRS_PER_PDPT][PAE_PTRS_PER_PDT];
 extern __attribute__((section(".data"))) __attribute__((aligned(4096)))  u64 gp_vhslabmempgtbl_lvl1t[PAE_PTRS_PER_PDPT][PAE_PTRS_PER_PDT][PAE_PTRS_PER_PT];

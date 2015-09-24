@@ -195,7 +195,7 @@ void _geec_prime_main(slab_params_t *sp){
     //switch to prime page tables
     _XDPRINTF_("Proceeding to switch to GEEC_PRIME pagetables...\n");
     //CASM_FUNCCALL(write_cr3,(u32)xmhfgeec_slab_info_table[XMHFGEEC_SLAB_GEEC_PRIME].mempgtbl_cr3);
-    CASM_FUNCCALL(write_cr3,(u32)&gp_vhslabmempgtbl_lvl4t);
+    CASM_FUNCCALL(write_cr3,(u32)&gp_rwdatahdr.gp_vhslabmempgtbl_lvl4t);
     _XDPRINTF_("Switched to GEEC_PRIME pagetables...\n");
 
 /*    //transfer control to geec_primesmp
@@ -1925,9 +1925,9 @@ static void gp_setup_vhslab_mempgtbl(void){
 
 
 	//pdpt
-	memset(&gp_vhslabmempgtbl_lvl4t, 0, PAGE_SIZE_4K);
+	memset(&gp_rwdatahdr.gp_vhslabmempgtbl_lvl4t, 0, PAGE_SIZE_4K);
 	for(i=0; i < PAE_PTRS_PER_PDPT; i++){
-	gp_vhslabmempgtbl_lvl4t[i] =
+	gp_rwdatahdr.gp_vhslabmempgtbl_lvl4t[i] =
 	    pae_make_pdpe(&gp_vhslabmempgtbl_lvl2t[i], default_flags);
 	}
 
