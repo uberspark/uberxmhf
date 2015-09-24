@@ -139,14 +139,17 @@ static inline u32 _slabmempgtbl_sanitycheckhalt_slabid(u32 slabid){
 
 static void _slabmempgtbl_initmempgtbl(u32 slabid){
     u32 slabtype;
+    u32 uslabid;
 
     slabtype = xmhfgeec_slab_info_table[slabid].slabtype;
+	uslabid  = _slabmempgtbl_sanitycheckhalt_slabid(slabid);
+
 
     switch(slabtype){
         case XMHFGEEC_SLABTYPE_VfT_PROG:
         case XMHFGEEC_SLABTYPE_uVT_PROG:
         case XMHFGEEC_SLABTYPE_uVU_PROG:{
-            _slabmempgtbl_initmempgtbl_pae4K(slabid);
+            _slabmempgtbl_initmempgtbl_pae4K(uslabid);
             _XDPRINTF_("%s: setup slab %u with pae4K\n", __func__, slabid);
         }
         break;
@@ -154,7 +157,7 @@ static void _slabmempgtbl_initmempgtbl(u32 slabid){
         case XMHFGEEC_SLABTYPE_uVT_PROG_GUEST:
         case XMHFGEEC_SLABTYPE_uVU_PROG_GUEST:
         case XMHFGEEC_SLABTYPE_uVU_PROG_RICHGUEST:{
-            _slabmempgtbl_initmempgtbl_ept4K(slabid);
+            _slabmempgtbl_initmempgtbl_ept4K(uslabid);
             _XDPRINTF_("%s: setup slab %u with ept4K\n", __func__, slabid);
         }
         break;
@@ -174,9 +177,11 @@ static void _slabmempgtbl_setentryforpaddr(u32 slabid, u64 gpa, u64 entry){
     u64 pdt_index = pae_get_pdt_index(gpa);
     u64 pt_index = pae_get_pt_index(gpa);
     u32 slabtype;
+    u32 uslabid;
 
 
     slabtype = xmhfgeec_slab_info_table[slabid].slabtype;
+	uslabid  = _slabmempgtbl_sanitycheckhalt_slabid(slabid);
 
     switch(slabtype){
         case XMHFGEEC_SLABTYPE_VfT_PROG:
@@ -185,7 +190,7 @@ static void _slabmempgtbl_setentryforpaddr(u32 slabid, u64 gpa, u64 entry){
         case XMHFGEEC_SLABTYPE_uVT_PROG_GUEST:
         case XMHFGEEC_SLABTYPE_uVU_PROG_GUEST:
         case XMHFGEEC_SLABTYPE_uVU_PROG_RICHGUEST:{
-            _slabmempgtbl_lvl1t[slabid][pdpt_index][pdt_index][pt_index] =
+            _slabmempgtbl_lvl1t[uslabid][pdpt_index][pdt_index][pt_index] =
                 entry & (~0x80);
         }
         break;
@@ -206,9 +211,11 @@ static u64 _slabmempgtbl_getentryforpaddr(u32 slabid, u64 gpa){
     u64 pdt_index = pae_get_pdt_index(gpa);
     u64 pt_index = pae_get_pt_index(gpa);
     u32 slabtype;
+	u32 uslabid;
 
 
     slabtype = xmhfgeec_slab_info_table[slabid].slabtype;
+	uslabid  = _slabmempgtbl_sanitycheckhalt_slabid(slabid);
 
     switch(slabtype){
 
@@ -218,7 +225,7 @@ static u64 _slabmempgtbl_getentryforpaddr(u32 slabid, u64 gpa){
         case XMHFGEEC_SLABTYPE_uVT_PROG_GUEST:
         case XMHFGEEC_SLABTYPE_uVU_PROG_GUEST:
         case XMHFGEEC_SLABTYPE_uVU_PROG_RICHGUEST:{
-            result_entry = _slabmempgtbl_lvl1t[slabid][pdpt_index][pdt_index][pt_index];
+            result_entry = _slabmempgtbl_lvl1t[uslabid][pdpt_index][pdt_index][pt_index];
         }
         break;
 
@@ -233,9 +240,11 @@ static u64 _slabmempgtbl_getentryforpaddr(u32 slabid, u64 gpa){
 }
 
 
+
+
+
 /////
 void slab_main(slab_params_t *sp){
-	u32 slabid;
 
     switch(sp->dst_uapifn){
 
@@ -243,8 +252,7 @@ void slab_main(slab_params_t *sp){
             xmhfgeec_uapi_slabmempgtbl_initmempgtbl_params_t *initmempgtblp =
                 (xmhfgeec_uapi_slabmempgtbl_initmempgtbl_params_t *)sp->in_out_params;
 
-	    slabid  = _slabmempgtbl_sanitycheckhalt_slabid(initmempgtblp->dst_slabid);
-            _slabmempgtbl_initmempgtbl(slabid);
+            _slabmempgtbl_initmempgtbl(initmempgtblp->dst_slabid);
        }
        break;
 
@@ -253,8 +261,7 @@ void slab_main(slab_params_t *sp){
             xmhfgeec_uapi_slabmempgtbl_setentryforpaddr_params_t *setentryforpaddrp =
                 (xmhfgeec_uapi_slabmempgtbl_setentryforpaddr_params_t *)sp->in_out_params;
 
-	    slabid  = _slabmempgtbl_sanitycheckhalt_slabid(setentryforpaddrp->dst_slabid);
-            _slabmempgtbl_setentryforpaddr(slabid,
+            _slabmempgtbl_setentryforpaddr(setentryforpaddrp->dst_slabid,
                                            setentryforpaddrp->gpa,
                                            setentryforpaddrp->entry);
 
@@ -265,8 +272,7 @@ void slab_main(slab_params_t *sp){
             xmhfgeec_uapi_slabmempgtbl_getentryforpaddr_params_t *getentryforpaddrp =
                 (xmhfgeec_uapi_slabmempgtbl_getentryforpaddr_params_t *)sp->in_out_params;
 
-	    slabid  = _slabmempgtbl_sanitycheckhalt_slabid(getentryforpaddrp->dst_slabid);
-            getentryforpaddrp->result_entry = _slabmempgtbl_getentryforpaddr(slabid,
+            getentryforpaddrp->result_entry = _slabmempgtbl_getentryforpaddr(getentryforpaddrp->dst_slabid,
                                            getentryforpaddrp->gpa);
 
        }
