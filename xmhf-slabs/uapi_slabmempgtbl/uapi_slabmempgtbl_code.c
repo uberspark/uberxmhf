@@ -123,9 +123,14 @@ static void _slabmempgtbl_initmempgtbl_ept4K(u32 slabid){
 
 
 
-static inline void _slabmempgtbl_sanitycheckhalt_slabid(u32 slabid){
-    if(slabid < XMHF_MAX_MEMPGTBL_SETS)
-        return; //memory page tables are only for slab ids 0..XMHF_MAX_MEMPGTBL_SETS-1
+static inline u32 _slabmempgtbl_sanitycheckhalt_slabid(u32 slabid){
+    if(slabid >= XMHFGEEC_UHSLAB_BASE_IDX && slabid <= XMHFGEEC_UHSLAB_MAX_IDX)
+        return (slabid - XMHFGEEC_UHSLAB_BASE_IDX)+2;
+
+
+    if(slabid >= XMHFGEEC_UGSLAB_BASE_IDX && slabid <= XMHFGEEC_UGSLAB_MAX_IDX)
+        return (slabid - XMHFGEEC_UHSLAB_BASE_IDX)+2;
+
 
     _XDPRINTF_("%s: Halting!. Invalid slab index %u \n", __func__, slabid);
     HALT();
@@ -134,8 +139,6 @@ static inline void _slabmempgtbl_sanitycheckhalt_slabid(u32 slabid){
 
 static void _slabmempgtbl_initmempgtbl(u32 slabid){
     u32 slabtype;
-
-    _slabmempgtbl_sanitycheckhalt_slabid(slabid);
 
     slabtype = xmhfgeec_slab_info_table[slabid].slabtype;
 
@@ -172,7 +175,6 @@ static void _slabmempgtbl_setentryforpaddr(u32 slabid, u64 gpa, u64 entry){
     u64 pt_index = pae_get_pt_index(gpa);
     u32 slabtype;
 
-    _slabmempgtbl_sanitycheckhalt_slabid(slabid);
 
     slabtype = xmhfgeec_slab_info_table[slabid].slabtype;
 
@@ -205,7 +207,6 @@ static u64 _slabmempgtbl_getentryforpaddr(u32 slabid, u64 gpa){
     u64 pt_index = pae_get_pt_index(gpa);
     u32 slabtype;
 
-    _slabmempgtbl_sanitycheckhalt_slabid(slabid);
 
     slabtype = xmhfgeec_slab_info_table[slabid].slabtype;
 
@@ -234,7 +235,7 @@ static u64 _slabmempgtbl_getentryforpaddr(u32 slabid, u64 gpa){
 
 /////
 void slab_main(slab_params_t *sp){
-
+	u32 slabid;
 
     switch(sp->dst_uapifn){
 
@@ -242,7 +243,8 @@ void slab_main(slab_params_t *sp){
             xmhfgeec_uapi_slabmempgtbl_initmempgtbl_params_t *initmempgtblp =
                 (xmhfgeec_uapi_slabmempgtbl_initmempgtbl_params_t *)sp->in_out_params;
 
-            _slabmempgtbl_initmempgtbl(initmempgtblp->dst_slabid);
+	    slabid  = _slabmempgtbl_sanitycheckhalt_slabid(initmempgtblp->dst_slabid);
+            _slabmempgtbl_initmempgtbl(slabid);
        }
        break;
 
@@ -251,7 +253,8 @@ void slab_main(slab_params_t *sp){
             xmhfgeec_uapi_slabmempgtbl_setentryforpaddr_params_t *setentryforpaddrp =
                 (xmhfgeec_uapi_slabmempgtbl_setentryforpaddr_params_t *)sp->in_out_params;
 
-            _slabmempgtbl_setentryforpaddr(setentryforpaddrp->dst_slabid,
+	    slabid  = _slabmempgtbl_sanitycheckhalt_slabid(setentryforpaddrp->dst_slabid);
+            _slabmempgtbl_setentryforpaddr(slabid,
                                            setentryforpaddrp->gpa,
                                            setentryforpaddrp->entry);
 
@@ -262,7 +265,8 @@ void slab_main(slab_params_t *sp){
             xmhfgeec_uapi_slabmempgtbl_getentryforpaddr_params_t *getentryforpaddrp =
                 (xmhfgeec_uapi_slabmempgtbl_getentryforpaddr_params_t *)sp->in_out_params;
 
-            getentryforpaddrp->result_entry = _slabmempgtbl_getentryforpaddr(getentryforpaddrp->dst_slabid,
+	    slabid  = _slabmempgtbl_sanitycheckhalt_slabid(getentryforpaddrp->dst_slabid);
+            getentryforpaddrp->result_entry = _slabmempgtbl_getentryforpaddr(slabid,
                                            getentryforpaddrp->gpa);
 
        }
