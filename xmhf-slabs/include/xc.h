@@ -94,7 +94,7 @@ typedef struct {
 #define XC_HYPAPPCB_MASK(x) (1 << x)
 
 static xc_hypapp_info_t _xcihub_hypapp_info_table[] = {
-/*    {
+    {
         XMHFGEEC_SLAB_XH_HYPERDEP,
         (XC_HYPAPPCB_MASK(XC_HYPAPPCB_INITIALIZE) | XC_HYPAPPCB_MASK(XC_HYPAPPCB_HYPERCALL) | XC_HYPAPPCB_MASK(XC_HYPAPPCB_MEMORYFAULT) | XC_HYPAPPCB_MASK(XC_HYPAPPCB_SHUTDOWN) )
     },
@@ -108,7 +108,6 @@ static xc_hypapp_info_t _xcihub_hypapp_info_table[] = {
         XMHFGEEC_SLAB_XH_SSTEPTRACE,
         (XC_HYPAPPCB_MASK(XC_HYPAPPCB_INITIALIZE) | XC_HYPAPPCB_MASK(XC_HYPAPPCB_HYPERCALL) | XC_HYPAPPCB_MASK(XC_HYPAPPCB_TRAP_EXCEPTION) | XC_HYPAPPCB_MASK(XC_HYPAPPCB_SHUTDOWN) )
     },
-*/
 
 
     {
