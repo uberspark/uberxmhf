@@ -391,7 +391,8 @@ void slab_main(slab_params_t *sp){
     memcpy(&sp->in_out_params[0], &gcpustate_gprs->gprs, sizeof(x86regs_t));
 
 
-	_XDPRINTF_("XCIHUB[%u]: Resuming guest\n", (u16)sp->cpuid);
+    _XDPRINTF_("XCIHUB[%u]: Resuming guest, esp=%08x\n", (u16)sp->cpuid, CASM_FUNCCALL(read_esp,CASM_NOPARAM));
+
 
     //resume guest slab
     return;
