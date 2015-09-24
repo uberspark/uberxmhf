@@ -61,12 +61,12 @@
 
 
 //page table data structures for a 4GB system address mapping
-__attribute__((section(".rwdatahdr"))) __attribute__((aligned(4096))) u64 _slabmempgtbl_lvl4t[XMHF_MAX_MEMPGTBL_SETS][PAE_MAXPTRS_PER_PML4T];
-__attribute__((section(".data"))) __attribute__((aligned(4096))) u64 _slabmempgtbl_lvl3t[XMHF_MAX_MEMPGTBL_SETS][PAE_MAXPTRS_PER_PDPT];
-__attribute__((section(".data"))) __attribute__((aligned(4096))) u64 _slabmempgtbl_lvl2t[XMHF_MAX_MEMPGTBL_SETS][PAE_PTRS_PER_PDPT][PAE_PTRS_PER_PDT];
-__attribute__((section(".data"))) __attribute__((aligned(4096)))  u64 _slabmempgtbl_lvl1t[XMHF_MAX_MEMPGTBL_SETS][PAE_PTRS_PER_PDPT][PAE_PTRS_PER_PDT][PAE_PTRS_PER_PT];
+__attribute__((section(".rwdatahdr"))) __attribute__((aligned(4096))) u64 _slabmempgtbl_lvl4t[XMHFGEEC_TOTAL_UGSLABS][PAE_MAXPTRS_PER_PML4T];
+__attribute__((section(".data"))) __attribute__((aligned(4096))) u64 _slabmempgtbl_lvl3t[XMHFGEEC_TOTAL_UGSLABS][PAE_MAXPTRS_PER_PDPT];
+__attribute__((section(".data"))) __attribute__((aligned(4096))) u64 _slabmempgtbl_lvl2t[XMHFGEEC_TOTAL_UGSLABS][PAE_PTRS_PER_PDPT][PAE_PTRS_PER_PDT];
+__attribute__((section(".data"))) __attribute__((aligned(4096)))  u64 _slabmempgtbl_lvl1t[XMHFGEEC_TOTAL_UGSLABS][PAE_PTRS_PER_PDPT][PAE_PTRS_PER_PDT][PAE_PTRS_PER_PT];
 
-
+/*
 static void _slabmempgtbl_initmempgtbl_pae4K(u32 slabid){
     //pdpt = _slabmempgtbl_lvl4t[slabid];
     //pdt = _slabmempgtbl_lvl2t[slabid];
@@ -90,7 +90,7 @@ static void _slabmempgtbl_initmempgtbl_pae4K(u32 slabid){
 		}
 	}
 }
-
+*/
 
 
 static void _slabmempgtbl_initmempgtbl_ept4K(u32 slabid){
@@ -124,12 +124,12 @@ static void _slabmempgtbl_initmempgtbl_ept4K(u32 slabid){
 
 
 static inline u32 _slabmempgtbl_sanitycheckhalt_slabid(u32 slabid){
-    if(slabid >= XMHFGEEC_UHSLAB_BASE_IDX && slabid <= XMHFGEEC_UHSLAB_MAX_IDX)
-        return (slabid - XMHFGEEC_UHSLAB_BASE_IDX)+2;
+    //if(slabid >= XMHFGEEC_UHSLAB_BASE_IDX && slabid <= XMHFGEEC_UHSLAB_MAX_IDX)
+    //    return (slabid - XMHFGEEC_UHSLAB_BASE_IDX)+2;
 
 
     if(slabid >= XMHFGEEC_UGSLAB_BASE_IDX && slabid <= XMHFGEEC_UGSLAB_MAX_IDX)
-        return (slabid - XMHFGEEC_UHSLAB_BASE_IDX)+2;
+        return (slabid - XMHFGEEC_UGSLAB_BASE_IDX);
 
 
     _XDPRINTF_("%s: Halting!. Invalid slab index %u \n", __func__, slabid);
@@ -146,13 +146,14 @@ static void _slabmempgtbl_initmempgtbl(u32 slabid){
 
 
     switch(slabtype){
-        case XMHFGEEC_SLABTYPE_VfT_PROG:
+        /*case XMHFGEEC_SLABTYPE_VfT_PROG:
         case XMHFGEEC_SLABTYPE_uVT_PROG:
         case XMHFGEEC_SLABTYPE_uVU_PROG:{
             _slabmempgtbl_initmempgtbl_pae4K(uslabid);
             _XDPRINTF_("%s: setup slab %u with pae4K\n", __func__, slabid);
         }
         break;
+*/
 
         case XMHFGEEC_SLABTYPE_uVT_PROG_GUEST:
         case XMHFGEEC_SLABTYPE_uVU_PROG_GUEST:
@@ -184,9 +185,9 @@ static void _slabmempgtbl_setentryforpaddr(u32 slabid, u64 gpa, u64 entry){
 	uslabid  = _slabmempgtbl_sanitycheckhalt_slabid(slabid);
 
     switch(slabtype){
-        case XMHFGEEC_SLABTYPE_VfT_PROG:
+        /*case XMHFGEEC_SLABTYPE_VfT_PROG:
         case XMHFGEEC_SLABTYPE_uVT_PROG:
-        case XMHFGEEC_SLABTYPE_uVU_PROG:
+        case XMHFGEEC_SLABTYPE_uVU_PROG:*/
         case XMHFGEEC_SLABTYPE_uVT_PROG_GUEST:
         case XMHFGEEC_SLABTYPE_uVU_PROG_GUEST:
         case XMHFGEEC_SLABTYPE_uVU_PROG_RICHGUEST:{
@@ -219,9 +220,9 @@ static u64 _slabmempgtbl_getentryforpaddr(u32 slabid, u64 gpa){
 
     switch(slabtype){
 
-        case XMHFGEEC_SLABTYPE_VfT_PROG:
+        /*case XMHFGEEC_SLABTYPE_VfT_PROG:
         case XMHFGEEC_SLABTYPE_uVT_PROG:
-        case XMHFGEEC_SLABTYPE_uVU_PROG:
+        case XMHFGEEC_SLABTYPE_uVU_PROG:*/
         case XMHFGEEC_SLABTYPE_uVT_PROG_GUEST:
         case XMHFGEEC_SLABTYPE_uVU_PROG_GUEST:
         case XMHFGEEC_SLABTYPE_uVU_PROG_RICHGUEST:{
