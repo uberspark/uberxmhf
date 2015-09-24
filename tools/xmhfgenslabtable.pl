@@ -369,15 +369,8 @@ while( $i < $g_totalslabs ){
 	#mempgtbl_cr3 for VfT_SLAB points to verified hypervisor slab page table base
 	#iotbl_base for VfT_SLAB is not-used
 
-        #if($slab_idtosubtype{$i} eq "SENTINEL"){
-        #    print $fh "\n        ".$slab_idtodata_addrstart{$slab_nametoid{"uapi_slabmempgtbl"}}." + (0 * 4096),";
-        #    print $fh "\n        ".$slab_idtodata_addrstart{$slab_nametoid{"uapi_slabiotbl"}}." + (0 * (3*4096)),";
-        #}else{
-        #    print $fh "\n        ".$slab_idtodata_addrstart{$slab_nametoid{"uapi_slabmempgtbl"}}." + (1 * 4096),";
-        #    print $fh "\n        ".$slab_idtodata_addrstart{$slab_nametoid{"uapi_slabiotbl"}}." + (1 * (3*4096)),";
-        #}
         print $fh "\n        ".$slab_idtodata_addrstart{$slab_nametoid{"geec_prime"}}." + (2 * 4096),";
-        print $fh "\n        ".$slab_idtodata_addrstart{$slab_nametoid{"uapi_slabiotbl"}}." + (1 * (3*4096)),";
+        print $fh "\n        0x00000000UL,";
 
 
     }elsif ( ($slab_idtotype{$i} eq "uVU_SLAB" && $slab_idtosubtype{$i} eq "XGUEST") ||
@@ -390,7 +383,7 @@ while( $i < $g_totalslabs ){
 		exit 1;
 	}else{
 		print $fh "\n        ".$slab_idtodata_addrstart{$slab_nametoid{"uapi_slabmempgtbl"}}." + ($g_ugslabcounter * 4096),";
-		print $fh "\n        ".$slab_idtodata_addrstart{$slab_nametoid{"uapi_slabiotbl"}}." + ($i * (3*4096)),";
+		print $fh "\n        ".$slab_idtodata_addrstart{$slab_nametoid{"uapi_slabiotbl"}}." + ($g_ugslabcounter * (3*4096)),";
 		$g_ugslabcounter = $g_ugslabcounter + 1;
 	}
 
@@ -401,8 +394,8 @@ while( $i < $g_totalslabs ){
 		print "\nError: Too many unverified hypervisor slabs (max=$g_totaluhslabmempgtblsets)!";
 		exit 1;
         }else{
-		print $fh "\n        ".$slab_idtodata_addrstart{$slab_nametoid{"geec_prime"}}." + ((3+$g_uhslabcounter) * 4096),";
-		print $fh "\n        ".$slab_idtodata_addrstart{$slab_nametoid{"uapi_slabiotbl"}}." + ($i * (3*4096)),";
+		print $fh "\n        ".$slab_idtodata_addrstart{$slab_nametoid{"geec_prime"}}." + (3*4096) + ($g_uhslabcounter * 4096),";
+		print $fh "\n        ".$slab_idtodata_addrstart{$slab_nametoid{"geec_prime"}}." + (6*4096) + ($g_uhslabcounter * (3*4096)),";
 		$g_uhslabcounter = $g_uhslabcounter + 1;
         }
 
