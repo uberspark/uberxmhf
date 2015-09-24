@@ -194,7 +194,8 @@ void _geec_prime_main(slab_params_t *sp){
 
     //switch to prime page tables
     _XDPRINTF_("Proceeding to switch to GEEC_PRIME pagetables...\n");
-    CASM_FUNCCALL(write_cr3,(u32)xmhfgeec_slab_info_table[XMHFGEEC_SLAB_GEEC_PRIME].mempgtbl_cr3);
+    //CASM_FUNCCALL(write_cr3,(u32)xmhfgeec_slab_info_table[XMHFGEEC_SLAB_GEEC_PRIME].mempgtbl_cr3);
+    CASM_FUNCCALL(write_cr3,(u32)&gp_vhslabmempgtbl_lvl4t);
     _XDPRINTF_("Switched to GEEC_PRIME pagetables...\n");
 
 /*    //transfer control to geec_primesmp
@@ -1984,8 +1985,6 @@ void xmhfhic_arch_setup_slab_mem_page_tables(void){
     //_geec_prime_populate_slab_pagetables_pae4k(XMHFGEEC_SLAB_GEEC_PRIME);
     gp_setup_vhslab_mempgtbl();
    	_XDPRINTF_("%s: populated verified slabs' memory page tables\n", __func__);
-	_XDPRINTF_("%s: halting\n", __func__);
-	HALT();
 
 
     //setup unverified slabs's page tables
