@@ -1824,7 +1824,7 @@ static void gp_setup_ugslab_mempgtbl(u32 slabid){
 
 
 //pae4k
-static void _geec_prime_populate_slab_pagetables_pae4k(u32 slabid){
+static void gp_setup_uhslab_mempgtbl(u32 slabid){
 	u64 gpa;
 	u64 flags;
 	u32 spatype;
@@ -1985,7 +1985,7 @@ void xmhfhic_arch_setup_slab_mem_page_tables(void){
                 spl.dst_uapifn = XMHFGEEC_UAPI_SLABMEMPGTBL_INITMEMPGTBL;
                 initmempgtblp->dst_slabid = i;
                 XMHF_SLAB_CALLNEW(&spl);
-                _geec_prime_populate_slab_pagetables_pae4k(i);
+                gp_setup_uhslab_mempgtbl(i);
               	_XDPRINTF_("%s: slab %u --> uV{T,U}_prog page-tables populated\n", __func__, i);
             }
             break;
