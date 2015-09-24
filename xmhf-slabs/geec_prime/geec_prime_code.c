@@ -1835,9 +1835,9 @@ static void gp_setup_uhslab_mempgtbl(u32 slabid){
 	u64 default_flags = (u64)(_PAGE_PRESENT);
 
 	//pdpt
-	memset(&gp_rwdatahdr.uhslabmempgtbl_lvl4t[slabid], 0, PAGE_SIZE_4K);
+	memset(&gp_rwdatahdr.gp_uhslabmempgtbl_lvl4t[slabid], 0, PAGE_SIZE_4K);
 	for(i=0; i < PAE_PTRS_PER_PDPT; i++){
-		gp_rwdatahdr.uhslabmempgtbl_lvl4t[slabid][i] =
+		gp_rwdatahdr.gp_uhslabmempgtbl_lvl4t[slabid][i] =
 		    pae_make_pdpe(&gp_uhslabmempgtbl_lvl2t[slabid][i], default_flags);
 	}
 
@@ -1867,28 +1867,28 @@ static void gp_setup_uhslab_mempgtbl(u32 slabid){
 		if(spa_slabregion == _SLAB_SPATYPE_GEEC_PRIME_IOTBL &&
 		   slabtype != XMHFGEEC_SLABTYPE_VfT_PROG && slabtype != XMHFGEEC_SLABTYPE_VfT_SENTINEL){
 			//map unverified slab iotbl instead (12K)
-			gp_uhslabmempgtbl_lvl1t[uslabid][pdpt_index][pdt_index][pt_index] =
+			gp_uhslabmempgtbl_lvl1t[slabid][pdpt_index][pdt_index][pt_index] =
 				pae_make_pte(xmhfgeec_slab_info_table[slabid].iotbl_base, flags) & (~0x80);
 			//_XDPRINTF_("slab %u: iotbl mapping, orig gpa=%08x, revised entry=%016llx\n", slabid,
 			//           (u32)gpa, setentryforpaddrp->entry);
 
 			gpa += PAGE_SIZE_4K;
 
-			gp_uhslabmempgtbl_lvl1t[uslabid][pdpt_index][pdt_index][pt_index] =
+			gp_uhslabmempgtbl_lvl1t[slabid][pdpt_index][pdt_index][pt_index] =
 				pae_make_pte(xmhfgeec_slab_info_table[slabid].iotbl_base+PAGE_SIZE_4K, flags) & (~0x80);
 			//_XDPRINTF_("slab %u: iotbl mapping, orig gpa=%08x, revised entry=%016llx\n", slabid,
 			//           (u32)gpa, setentryforpaddrp->entry);
 
 			gpa += PAGE_SIZE_4K;
 
-			gp_uhslabmempgtbl_lvl1t[uslabid][pdpt_index][pdt_index][pt_index] =
+			gp_uhslabmempgtbl_lvl1t[slabid][pdpt_index][pdt_index][pt_index] =
 				pae_make_pte(xmhfgeec_slab_info_table[slabid].iotbl_base+(2*PAGE_SIZE_4K), flags) & (~0x80);
 			//_XDPRINTF_("slab %u: iotbl mapping, orig gpa=%08x, revised entry=%016llx\n", slabid,
 			//           (u32)gpa, setentryforpaddrp->entry);
 
 			gpa += PAGE_SIZE_4K;
 		}else{
-			gp_uhslabmempgtbl_lvl1t[uslabid][pdpt_index][pdt_index][pt_index] =
+			gp_uhslabmempgtbl_lvl1t[slabid][pdpt_index][pdt_index][pt_index] =
 				pae_make_pte(gpa, flags) & (~0x80);
 		}
 	}
