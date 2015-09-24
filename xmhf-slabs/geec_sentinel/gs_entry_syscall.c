@@ -73,7 +73,7 @@ void gs_entry_syscall(slab_params_t *sp, void *caller_stack_frame){
 
 
     sp->src_slabid =
-        (CASM_FUNCCALL(read_cr3, CASM_NOPARAM) - xmhfgeec_slab_info_table[XMHFGEEC_SLAB_GEEC_SENTINEL].mempgtbl_cr3)/PAGE_SIZE_4K;
+        (CASM_FUNCCALL(read_cr3, CASM_NOPARAM) - xmhfgeec_slab_info_table[XMHFGEEC_UHSLAB_BASE_IDX].mempgtbl_cr3)/PAGE_SIZE_4K + XMHFGEEC_UHSLAB_BASE_IDX;
 
 
     _XDPRINTF_("%s: sp=%x, cpuid=%u, src=%u, dst=%u, ctype=%x\n", __func__,
