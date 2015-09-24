@@ -1830,23 +1830,30 @@ static void gp_setup_uhslab_mempgtbl(u32 slabid){
 	u32 spatype;
 	u32 spa_slabregion, spa_slabtype;
 	u32 slabtype = xmhfgeec_slab_info_table[slabid].slabtype;
-
+	u32 uhslabmempgtbl_idx;
 	u32 i, j;
 	u64 default_flags = (u64)(_PAGE_PRESENT);
 
+	if(!(slabid >= XMHFGEEC_UHSLAB_BASE_IDX && slabid <= XMHFGEEC_UHSLAB_MAX_IDX)){
+		_XDPRINTF_("%s: slab %u --> Fatal error uV{T,U} slab out of UH slab idx bound!\n", __func__, i);
+		HALT();
+	}
+
+	uhslabmempgtbl_idx = slabid - XMHFGEEC_UHSLAB_BASE_IDX;
+
 	//pdpt
-	memset(&gp_rwdatahdr.gp_uhslabmempgtbl_lvl4t[slabid], 0, PAGE_SIZE_4K);
+	memset(&gp_rwdatahdr.gp_uhslabmempgtbl_lvl4t[uhslabmempgtbl_idx], 0, PAGE_SIZE_4K);
 	for(i=0; i < PAE_PTRS_PER_PDPT; i++){
-		gp_rwdatahdr.gp_uhslabmempgtbl_lvl4t[slabid][i] =
-		    pae_make_pdpe(&gp_uhslabmempgtbl_lvl2t[slabid][i], default_flags);
+		gp_rwdatahdr.gp_uhslabmempgtbl_lvl4t[uhslabmempgtbl_idx][i] =
+		    pae_make_pdpe(&gp_uhslabmempgtbl_lvl2t[uhslabmempgtbl_idx][i], default_flags);
 	}
 
 	//pdt
 	default_flags = (u64)(_PAGE_PRESENT | _PAGE_RW | _PAGE_USER);
 	for(i=0; i < PAE_PTRS_PER_PDPT; i++){
 		for(j=0; j < PAE_PTRS_PER_PDT; j++){
-			gp_uhslabmempgtbl_lvl2t[slabid][i][j] =
-				pae_make_pde(&gp_uhslabmempgtbl_lvl1t[slabid][i][j], default_flags);
+			gp_uhslabmempgtbl_lvl2t[uhslabmempgtbl_idx][i][j] =
+				pae_make_pde(&gp_uhslabmempgtbl_lvl1t[uhslabmempgtbl_idx][i][j], default_flags);
 		}
 	}
 
@@ -1867,28 +1874,28 @@ static void gp_setup_uhslab_mempgtbl(u32 slabid){
 		if(spa_slabregion == _SLAB_SPATYPE_GEEC_PRIME_IOTBL &&
 		   slabtype != XMHFGEEC_SLABTYPE_VfT_PROG && slabtype != XMHFGEEC_SLABTYPE_VfT_SENTINEL){
 			//map unverified slab iotbl instead (12K)
-			gp_uhslabmempgtbl_lvl1t[slabid][pdpt_index][pdt_index][pt_index] =
+			gp_uhslabmempgtbl_lvl1t[uhslabmempgtbl_idx][pdpt_index][pdt_index][pt_index] =
 				pae_make_pte(xmhfgeec_slab_info_table[slabid].iotbl_base, flags) & (~0x80);
 			//_XDPRINTF_("slab %u: iotbl mapping, orig gpa=%08x, revised entry=%016llx\n", slabid,
 			//           (u32)gpa, setentryforpaddrp->entry);
 
 			gpa += PAGE_SIZE_4K;
 
-			gp_uhslabmempgtbl_lvl1t[slabid][pdpt_index][pdt_index][pt_index] =
+			gp_uhslabmempgtbl_lvl1t[uhslabmempgtbl_idx][pdpt_index][pdt_index][pt_index] =
 				pae_make_pte(xmhfgeec_slab_info_table[slabid].iotbl_base+PAGE_SIZE_4K, flags) & (~0x80);
 			//_XDPRINTF_("slab %u: iotbl mapping, orig gpa=%08x, revised entry=%016llx\n", slabid,
 			//           (u32)gpa, setentryforpaddrp->entry);
 
 			gpa += PAGE_SIZE_4K;
 
-			gp_uhslabmempgtbl_lvl1t[slabid][pdpt_index][pdt_index][pt_index] =
+			gp_uhslabmempgtbl_lvl1t[uhslabmempgtbl_idx][pdpt_index][pdt_index][pt_index] =
 				pae_make_pte(xmhfgeec_slab_info_table[slabid].iotbl_base+(2*PAGE_SIZE_4K), flags) & (~0x80);
 			//_XDPRINTF_("slab %u: iotbl mapping, orig gpa=%08x, revised entry=%016llx\n", slabid,
 			//           (u32)gpa, setentryforpaddrp->entry);
 
 			gpa += PAGE_SIZE_4K;
 		}else{
-			gp_uhslabmempgtbl_lvl1t[slabid][pdpt_index][pdt_index][pt_index] =
+			gp_uhslabmempgtbl_lvl1t[uhslabmempgtbl_idx][pdpt_index][pdt_index][pt_index] =
 				pae_make_pte(gpa, flags) & (~0x80);
 		}
 	}
@@ -1977,6 +1984,7 @@ void xmhfhic_arch_setup_slab_mem_page_tables(void){
         switch(slabtype){
             case XMHFGEEC_SLABTYPE_uVT_PROG:
             case XMHFGEEC_SLABTYPE_uVU_PROG:{
+              	_XDPRINTF_("%s: slab %u --> ppopulating uV{T,U} page-tables...\n", __func__, i);
                 gp_setup_uhslab_mempgtbl(i);
               	_XDPRINTF_("%s: slab %u --> uV{T,U}_prog page-tables populated\n", __func__, i);
             }
@@ -1986,6 +1994,7 @@ void xmhfhic_arch_setup_slab_mem_page_tables(void){
             case XMHFGEEC_SLABTYPE_uVT_PROG_GUEST:
             case XMHFGEEC_SLABTYPE_uVU_PROG_GUEST:
             case XMHFGEEC_SLABTYPE_uVU_PROG_RICHGUEST:{
+              	_XDPRINTF_("%s: slab %u --> ppopulating uV{T,U}_prog_guest page-tables...\n", __func__, i);
                 spl.dst_uapifn = XMHFGEEC_UAPI_SLABMEMPGTBL_INITMEMPGTBL;
                 initmempgtblp->dst_slabid = i;
                 XMHF_SLAB_CALLNEW(&spl);

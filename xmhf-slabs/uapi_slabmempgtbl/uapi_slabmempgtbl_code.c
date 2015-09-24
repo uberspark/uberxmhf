@@ -158,6 +158,7 @@ static void _slabmempgtbl_initmempgtbl(u32 slabid){
         case XMHFGEEC_SLABTYPE_uVT_PROG_GUEST:
         case XMHFGEEC_SLABTYPE_uVU_PROG_GUEST:
         case XMHFGEEC_SLABTYPE_uVU_PROG_RICHGUEST:{
+            _XDPRINTF_("%s: proceeding to setup slab %u with ept4K...\n", __func__, slabid);
             _slabmempgtbl_initmempgtbl_ept4K(uslabid);
             _XDPRINTF_("%s: setup slab %u with ept4K\n", __func__, slabid);
         }
