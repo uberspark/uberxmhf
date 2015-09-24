@@ -14,7 +14,7 @@ my $g_outputfile_slabinfotable = $ARGV[1];
 my $g_outputfile_linkerscript = $ARGV[2];
 my $g_loadaddr = $ARGV[3];
 my $g_loadmaxsize = $ARGV[4];
-my $g_maxuvslabs = $ARGV[5];
+my $g_totaluhslabs = $ARGV[5];
 my $g_maxincldevlistentries = $ARGV[6];
 my $g_maxexcldevlistentries = $ARGV[7];
 my $g_maxmemoffsetentries = $ARGV[8];
@@ -25,7 +25,8 @@ my $g_memoffsets = $ARGV[9];
 
 my $g_totalslabmempgtblsets;
 my $g_totalslabiotblsets;
-my $g_uvslabcounter;
+my $g_uhslabcounter;
+my $g_ugslabcounter;
 
 
 my $g_totalslabs;
@@ -93,12 +94,14 @@ my $fh;
 
 $g_rootdir = dirname($g_slabsfile)."/";
 
-$g_totaluvslabmempgtblsets = $g_maxuvslabs;
-$g_totaluvslabiotblsets = $g_maxuvslabs;
-$g_totalslabmempgtblsets = $g_totaluvslabmempgtblsets + 2;
+$g_totaluhslabmempgtblsets = $g_totaluhslabs;
+$g_totaluvslabiotblsets = $g_totaluhslabs;
+$g_totalslabmempgtblsets = $g_totaluhslabmempgtblsets + 2;
 $g_totalslabiotblsets = $g_totaluvslabiotblsets + 2;
 
-$g_uvslabcounter = 0;
+$g_uhslabcounter = 0;
+$g_ugslabcounter = 0;
+
 
 #print "slabsfile:", $g_slabsfile, "\n";
 #print "rootdir:", $g_rootdir, "\n";
@@ -361,31 +364,48 @@ while( $i < $g_totalslabs ){
         exit 1;
     }
 
-    #mempgtbl_cr3 and iotbl_base, for VfT_SLAB type point SENTINEL to the base of the page table
-    #bases and for all other slabs point to PRIME slab memory page tables
+    #mempgtbl_cr3 and iotbl_base
     if ($slab_idtotype{$i} eq "VfT_SLAB"){
-        if($slab_idtosubtype{$i} eq "SENTINEL"){
-            print $fh "\n        ".$slab_idtodata_addrstart{$slab_nametoid{"uapi_slabmempgtbl"}}." + (0 * 4096),";
-            print $fh "\n        ".$slab_idtodata_addrstart{$slab_nametoid{"uapi_slabiotbl"}}." + (0 * (3*4096)),";
-        }else{
-            print $fh "\n        ".$slab_idtodata_addrstart{$slab_nametoid{"uapi_slabmempgtbl"}}." + (1 * 4096),";
-            print $fh "\n        ".$slab_idtodata_addrstart{$slab_nametoid{"uapi_slabiotbl"}}." + (1 * (3*4096)),";
-        }
-    }else{
-        if($g_uvslabcounter >=  $g_totaluvslabmempgtblsets){
-            print "\nError: Too many unverified slabs (max=$g_totaluvslabmempgtblsets)!";
-            exit 1;
-        }else{
-		print $fh "\n        ".$slab_idtodata_addrstart{$slab_nametoid{"uapi_slabmempgtbl"}}." + ((2+$g_uvslabcounter) * 4096),";
+	#mempgtbl_cr3 for VfT_SLAB points to verified hypervisor slab page table base
+	#iotbl_base for VfT_SLAB is not-used
+
+        #if($slab_idtosubtype{$i} eq "SENTINEL"){
+        #    print $fh "\n        ".$slab_idtodata_addrstart{$slab_nametoid{"uapi_slabmempgtbl"}}." + (0 * 4096),";
+        #    print $fh "\n        ".$slab_idtodata_addrstart{$slab_nametoid{"uapi_slabiotbl"}}." + (0 * (3*4096)),";
+        #}else{
+        #    print $fh "\n        ".$slab_idtodata_addrstart{$slab_nametoid{"uapi_slabmempgtbl"}}." + (1 * 4096),";
+        #    print $fh "\n        ".$slab_idtodata_addrstart{$slab_nametoid{"uapi_slabiotbl"}}." + (1 * (3*4096)),";
+        #}
+        print $fh "\n        ".$slab_idtodata_addrstart{$slab_nametoid{"geec_prime"}}." + (2 * 4096),";
+        print $fh "\n        ".$slab_idtodata_addrstart{$slab_nametoid{"uapi_slabiotbl"}}." + (1 * (3*4096)),";
+
+
+    }elsif ( ($slab_idtotype{$i} eq "uVU_SLAB" && $slab_idtosubtype{$i} eq "XGUEST") ||
+		($slab_idtotype{$i} eq "uVT_SLAB" && $slab_idtosubtype{$i} eq "XGUEST") ||
+		($slab_idtotype{$i} eq "uVU_SLAB" && $slab_idtosubtype{$i} eq "XRICHGUEST") ){
+	#mempgtbl_cr3 for unverified guest slabs point to their corresponding page table base within uapi_slabmempgtbl
+	#iotbl_base for unverified guest slabs point to their corresponding io table base within uapi_slabiotbl
+        if($g_ugslabcounter > 1){ # TODO: need to bring this in via a conf. variable when we support multiple guest slabs
+		print "\nError: Too many unverified guest slabs (max=1)!";
+		exit 1;
+	}else{
+		print $fh "\n        ".$slab_idtodata_addrstart{$slab_nametoid{"uapi_slabmempgtbl"}}." + ($g_ugslabcounter * 4096),";
 		print $fh "\n        ".$slab_idtodata_addrstart{$slab_nametoid{"uapi_slabiotbl"}}." + ($i * (3*4096)),";
-		$g_uvslabcounter = $g_uvslabcounter + 1;
+		$g_ugslabcounter = $g_ugslabcounter + 1;
+	}
+
+    }else{
+	#mempgtbl_cr3 for unverified hypervisor slabs point to their corresponding page table base within prime
+	#iotbl_base
+        if($g_uhslabcounter >=  $g_totaluhslabmempgtblsets){
+		print "\nError: Too many unverified hypervisor slabs (max=$g_totaluhslabmempgtblsets)!";
+		exit 1;
+        }else{
+		print $fh "\n        ".$slab_idtodata_addrstart{$slab_nametoid{"geec_prime"}}." + ((3+$g_uhslabcounter) * 4096),";
+		print $fh "\n        ".$slab_idtodata_addrstart{$slab_nametoid{"uapi_slabiotbl"}}." + ($i * (3*4096)),";
+		$g_uhslabcounter = $g_uhslabcounter + 1;
         }
 
-        #if( $i < $g_totalslabmempgtblsets){
-        #}else{
-        #    print "\nError: Illegal unverified slab id ($i)!";
-        #    exit 1;
-        #}
     }
 
 	#print "Done-1 for $i...\n";
