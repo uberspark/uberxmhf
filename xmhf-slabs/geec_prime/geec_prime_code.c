@@ -1154,21 +1154,87 @@ void xmhfhic_arch_setup_slab_device_allocation(void){
 //////
 // setup (unverified) slab iotbl
 /////
+static void gp_setup_uhslab_iotbl(u32 slabid){
+	u32 j, k, portnum;
+
+	slab_params_t spl;
+	xmhfgeec_uapi_slabiotbl_init_params_t *initp =
+	(xmhfgeec_uapi_slabiotbl_init_params_t *)spl.in_out_params;
+	xmhfgeec_uapi_slabiotbl_allowaccesstoport_params_t *allowaccesstoportp =
+	(xmhfgeec_uapi_slabiotbl_allowaccesstoport_params_t *)spl.in_out_params;
+
+	spl.src_slabid = XMHFGEEC_SLAB_GEEC_PRIME;
+	spl.dst_slabid = XMHFGEEC_SLAB_UAPI_SLABIOTBL;
+	spl.cpuid = 0; //XXX: fixme, need to plug in BSP cpuid here
+
+
+	//initialize I/O perm. table for this slab (default = deny all)
+	spl.dst_uapifn = XMHFGEEC_UAPI_SLABIOTBL_INIT;
+	initp->dst_slabid = slabid;
+	XMHF_SLAB_CALLNEW(&spl);
+
+	//scan through the list of devices for this slab and add any
+	//legacy I/O ports to the I/O perm. table
+	for(j=0; j < _sda_slab_devicemap[slabid].device_count; j++){
+	    u32 sysdev_memioregions_index = _sda_slab_devicemap[slabid].sysdev_mmioregions_indices[j];
+	    for(k=0; k < PCI_CONF_MAX_BARS; k++){
+		if(sysdev_memioregions[sysdev_memioregions_index].memioextents[k].extent_type == _MEMIOREGIONS_EXTENTS_TYPE_IO){
+		    for(portnum= sysdev_memioregions[sysdev_memioregions_index].memioextents[k].addr_start;
+			portnum < sysdev_memioregions[sysdev_memioregions_index].memioextents[k].addr_end; portnum++){
+			spl.dst_uapifn = XMHFGEEC_UAPI_SLABIOTBL_ALLOWACCESSTOPORT;
+			allowaccesstoportp->dst_slabid = slabid;
+			allowaccesstoportp->port=portnum;
+			allowaccesstoportp->port_size=1;
+			XMHF_SLAB_CALLNEW(&spl);
+		    }
+		}
+	    }
+	}
+}
+
+
+static void gp_setup_ugslab_iotbl(u32 slabid){
+	u32 j, k, portnum;
+
+	slab_params_t spl;
+	xmhfgeec_uapi_slabiotbl_init_params_t *initp =
+	(xmhfgeec_uapi_slabiotbl_init_params_t *)spl.in_out_params;
+	xmhfgeec_uapi_slabiotbl_allowaccesstoport_params_t *allowaccesstoportp =
+	(xmhfgeec_uapi_slabiotbl_allowaccesstoport_params_t *)spl.in_out_params;
+
+	spl.src_slabid = XMHFGEEC_SLAB_GEEC_PRIME;
+	spl.dst_slabid = XMHFGEEC_SLAB_UAPI_SLABIOTBL;
+	spl.cpuid = 0; //XXX: fixme, need to plug in BSP cpuid here
+
+
+	//initialize I/O perm. table for this slab (default = deny all)
+	spl.dst_uapifn = XMHFGEEC_UAPI_SLABIOTBL_INIT;
+	initp->dst_slabid = slabid;
+	XMHF_SLAB_CALLNEW(&spl);
+
+	//scan through the list of devices for this slab and add any
+	//legacy I/O ports to the I/O perm. table
+	for(j=0; j < _sda_slab_devicemap[slabid].device_count; j++){
+	    u32 sysdev_memioregions_index = _sda_slab_devicemap[slabid].sysdev_mmioregions_indices[j];
+	    for(k=0; k < PCI_CONF_MAX_BARS; k++){
+		if(sysdev_memioregions[sysdev_memioregions_index].memioextents[k].extent_type == _MEMIOREGIONS_EXTENTS_TYPE_IO){
+		    for(portnum= sysdev_memioregions[sysdev_memioregions_index].memioextents[k].addr_start;
+			portnum < sysdev_memioregions[sysdev_memioregions_index].memioextents[k].addr_end; portnum++){
+			spl.dst_uapifn = XMHFGEEC_UAPI_SLABIOTBL_ALLOWACCESSTOPORT;
+			allowaccesstoportp->dst_slabid = slabid;
+			allowaccesstoportp->port=portnum;
+			allowaccesstoportp->port_size=1;
+			XMHF_SLAB_CALLNEW(&spl);
+		    }
+		}
+	    }
+	}
+}
+
+
+
 void geec_prime_setup_slab_iotbl(void){
-    u32 i, j, k, portnum;
-    u32 slabtype;
-    slab_params_t spl;
-    xmhfgeec_uapi_slabiotbl_init_params_t *initp =
-        (xmhfgeec_uapi_slabiotbl_init_params_t *)spl.in_out_params;
-    xmhfgeec_uapi_slabiotbl_allowaccesstoport_params_t *allowaccesstoportp =
-        (xmhfgeec_uapi_slabiotbl_allowaccesstoport_params_t *)spl.in_out_params;
-
-    u32 sysdev_memioregions_index;
-
-    spl.src_slabid = XMHFGEEC_SLAB_GEEC_PRIME;
-    spl.dst_slabid = XMHFGEEC_SLAB_UAPI_SLABIOTBL;
-    spl.cpuid = 0; //XXX: fixme, need to plug in BSP cpuid here
-
+    u32 i, slabtype;
 
 
     for(i=0; i < XMHFGEEC_TOTAL_SLABS; i++){
@@ -1177,33 +1243,15 @@ void geec_prime_setup_slab_iotbl(void){
         switch(slabtype){
             case XMHFGEEC_SLABTYPE_uVT_PROG:
             case XMHFGEEC_SLABTYPE_uVU_PROG:
+		gp_setup_uhslab_iotbl(i);
+		break;
+
+
             case XMHFGEEC_SLABTYPE_uVT_PROG_GUEST:
             case XMHFGEEC_SLABTYPE_uVU_PROG_GUEST:
-            case XMHFGEEC_SLABTYPE_uVU_PROG_RICHGUEST:{
-                //initialize I/O perm. table for this slab (default = deny all)
-                spl.dst_uapifn = XMHFGEEC_UAPI_SLABIOTBL_INIT;
-                initp->dst_slabid = i;
-                XMHF_SLAB_CALLNEW(&spl);
-
-                //scan through the list of devices for this slab and add any
-                //legacy I/O ports to the I/O perm. table
-                for(j=0; j < _sda_slab_devicemap[i].device_count; j++){
-                    u32 sysdev_memioregions_index = _sda_slab_devicemap[i].sysdev_mmioregions_indices[j];
-                    for(k=0; k < PCI_CONF_MAX_BARS; k++){
-                        if(sysdev_memioregions[sysdev_memioregions_index].memioextents[k].extent_type == _MEMIOREGIONS_EXTENTS_TYPE_IO){
-                            for(portnum= sysdev_memioregions[sysdev_memioregions_index].memioextents[k].addr_start;
-                                portnum < sysdev_memioregions[sysdev_memioregions_index].memioextents[k].addr_end; portnum++){
-                                spl.dst_uapifn = XMHFGEEC_UAPI_SLABIOTBL_ALLOWACCESSTOPORT;
-                                allowaccesstoportp->dst_slabid = i;
-                                allowaccesstoportp->port=portnum;
-                                allowaccesstoportp->port_size=1;
-                                XMHF_SLAB_CALLNEW(&spl);
-                            }
-                        }
-                    }
-                }
-            }
-            break;
+            case XMHFGEEC_SLABTYPE_uVU_PROG_RICHGUEST:
+		gp_setup_ugslab_iotbl(i);
+		break;
 
             default:
                 break;
