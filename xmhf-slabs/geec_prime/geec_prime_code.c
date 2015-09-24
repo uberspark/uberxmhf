@@ -1790,7 +1790,7 @@ static u32 _geec_prime_vmx_getmemorytypeforphysicalpage(u64 pagebaseaddr){
 
 
 //ept4k
-static void _geec_prime_populate_slab_pagetables_ept4k(u32 slabid){
+static void gp_setup_ugslab_mempgtbl(u32 slabid){
 	u64 p_table_value;
 	u64 gpa;
 	u64 flags;
@@ -2009,7 +2009,7 @@ void xmhfhic_arch_setup_slab_mem_page_tables(void){
                 spl.dst_uapifn = XMHFGEEC_UAPI_SLABMEMPGTBL_INITMEMPGTBL;
                 initmempgtblp->dst_slabid = i;
                 XMHF_SLAB_CALLNEW(&spl);
-                _geec_prime_populate_slab_pagetables_ept4k(i);
+                gp_setup_ugslab_mempgtbl(i);
               	_XDPRINTF_("%s: slab %u --> uV{T,U}_prog_guest page-tables populated\n", __func__, i);
             }
             break;
