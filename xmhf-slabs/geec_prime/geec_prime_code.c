@@ -1193,7 +1193,7 @@ static void gp_setup_uhslab_iotbl(u32 slabid){
 	//spl.dst_uapifn = XMHFGEEC_UAPI_SLABIOTBL_INIT;
 	//initp->dst_slabid = slabid;
 	//XMHF_SLAB_CALLNEW(&spl);
-        memset(&gp_rwdatahdr.gp_uhslab_iobitmap[uhslabiobitmap_idx], 0xFFFFFFFFUL, sizeof(_slabiotbl_perms[0]));
+        memset(&gp_rwdatahdr.gp_uhslab_iobitmap[uhslabiobitmap_idx], 0xFFFFFFFFUL, sizeof(gp_rwdatahdr.gp_uhslab_iobitmap[0]));
 
 
 	//scan through the list of devices for this slab and add any
