@@ -154,10 +154,13 @@
 
 
 
+//////
+// TODO: automatically generate the constants below based on build conf.
+// for now, manually keep in sync based on the conf. selected
+//////
 
 #define XMHFGEEC_MAX_SLABS                  32
 #define XMHFGEEC_TOTAL_SLABS                17
-
 
 #define XMHFGEEC_SLAB_GEEC_SENTINEL         0
 #define XMHFGEEC_SLAB_GEEC_PRIME            1
@@ -185,7 +188,13 @@
 #define XMHFGEEC_UGSLAB_MAX_IDX			16
 
 
+#define XMHFGEEC_TOTAL_VHSLABS		((XMHFGEEC_VHSLAB_MAX_IDX - XMHFGEEC_VHSLAB_BASE_IDX) + 1)
+#define XMHFGEEC_TOTAL_UHSLABS		((XMHFGEEC_UHSLAB_MAX_IDX - XMHFGEEC_UHSLAB_BASE_IDX) + 1)
+#define XMHFGEEC_TOTAL_UGSLABS		((XMHFGEEC_UGSLAB_MAX_IDX - XMHFGEEC_UGSLAB_BASE_IDX) + 1)
 
+
+
+//////
 
 
 
