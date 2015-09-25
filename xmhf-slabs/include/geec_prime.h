@@ -183,6 +183,16 @@ typedef struct {
 } __attribute__((packed)) xc_cpuarchdata_x86vmx_t;
 
 
+typedef struct {
+	XMHF_BOOTINFO xcbootinfo_store;
+	u64 gp_vhslabmempgtbl_lvl4t[PAE_MAXPTRS_PER_PML4T];
+	u64 gp_uhslabmempgtbl_lvl4t[XMHFGEEC_TOTAL_UHSLABS][PAE_MAXPTRS_PER_PML4T];
+	u8 gp_uhslab_iobitmap[XMHFGEEC_TOTAL_UHSLABS][3*PAGE_SIZE_4K];
+} gp_rwdatahdr_t;
+
+
+extern __attribute__(( section(".rwdatahdr") )) gp_rwdatahdr_t gp_rwdatahdr;
+
 extern __attribute__((section(".data"))) __attribute__(( aligned(16) )) idtentry_t __xmhfhic_x86vmx_idt_start[EMHF_XCPHANDLER_MAXEXCEPTIONS]; //ro
 extern __attribute__((section(".data"))) __attribute__(( aligned(16) )) u64 __xmhfhic_x86vmx_gdt_start[];     //ro
 extern __attribute__((section(".data"))) __attribute__(( aligned(16) )) arch_x86_gdtdesc_t __xmhfhic_x86vmx_gdt;  //ro
@@ -200,6 +210,22 @@ extern __attribute__((section(".data"))) __attribute__(( aligned(8) )) u32 __xmh
 
 // initialization BSP stack
 extern __attribute__(( section(".stack") )) __attribute__(( aligned(4096) )) u8 _init_bsp_cpustack[MAX_PLATFORM_CPUSTACK_SIZE];
+
+
+//////
+// verified hypervisor slab memory page-tables
+extern __attribute__((section(".data"))) __attribute__((aligned(4096))) u64 gp_vhslabmempgtbl_lvl3t[PAE_MAXPTRS_PER_PDPT];
+extern __attribute__((section(".data"))) __attribute__((aligned(4096))) u64 gp_vhslabmempgtbl_lvl2t[PAE_PTRS_PER_PDPT][PAE_PTRS_PER_PDT];
+extern __attribute__((section(".data"))) __attribute__((aligned(4096)))  u64 gp_vhslabmempgtbl_lvl1t[PAE_PTRS_PER_PDPT][PAE_PTRS_PER_PDT][PAE_PTRS_PER_PT];
+
+//////
+// unverified hypervisor slab memory page-tables
+extern __attribute__((section(".data"))) __attribute__((aligned(4096))) u64 gp_uhslabmempgtbl_lvl3t[XMHFGEEC_TOTAL_UHSLABS][PAE_MAXPTRS_PER_PDPT];
+extern __attribute__((section(".data"))) __attribute__((aligned(4096))) u64 gp_uhslabmempgtbl_lvl2t[XMHFGEEC_TOTAL_UHSLABS][PAE_PTRS_PER_PDPT][PAE_PTRS_PER_PDT];
+extern __attribute__((section(".data"))) __attribute__((aligned(4096)))  u64 gp_uhslabmempgtbl_lvl1t[XMHFGEEC_TOTAL_UHSLABS][PAE_PTRS_PER_PDPT][PAE_PTRS_PER_PDT][PAE_PTRS_PER_PT];
+
+
+
 
 void xmhfhic_arch_switch_to_smp(void);
 void xmhfhic_arch_setup_base_cpu_data_structures(void);

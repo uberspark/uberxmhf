@@ -233,7 +233,8 @@ void slab_main(slab_params_t *sp){
         spl.src_slabid = XMHFGEEC_SLAB_XC_INIT;
         spl.dst_slabid = XMHFGEEC_SLAB_XG_RICHGUEST;
 
-        _XDPRINTF_("%s[%u]: Proceeding to call xcguestslab; ESP=%08x\n", __func__, (u16)sp->cpuid, CASM_FUNCCALL(read_esp,CASM_NOPARAM));
+        _XDPRINTF_("%s[%u]: Proceeding to call xcguestslab; ESP=%08x, eflags=%08x\n", __func__, (u16)sp->cpuid, CASM_FUNCCALL(read_esp,CASM_NOPARAM),
+			CASM_FUNCCALL(read_eflags, CASM_NOPARAM));
 
         XMHF_SLAB_CALLNEW(&spl);
     }

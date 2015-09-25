@@ -154,31 +154,47 @@
 
 
 
+//////
+// TODO: automatically generate the constants below based on build conf.
+// for now, manually keep in sync based on the conf. selected
+//////
 
 #define XMHFGEEC_MAX_SLABS                  32
 #define XMHFGEEC_TOTAL_SLABS                17
 
-
 #define XMHFGEEC_SLAB_GEEC_SENTINEL         0
 #define XMHFGEEC_SLAB_GEEC_PRIME            1
-#define XMHFGEEC_SLAB_XG_RICHGUEST          2
-#define XMHFGEEC_SLAB_XC_TESTSLAB           3
-#define XMHFGEEC_SLAB_XC_INIT               4
-#define XMHFGEEC_SLAB_XC_EXHUB              5
-#define XMHFGEEC_SLAB_XC_IHUB               6
-#define XMHFGEEC_SLAB_UAPI_GCPUSTATE        7
-#define XMHFGEEC_SLAB_UAPI_HCPUSTATE        8
-#define XMHFGEEC_SLAB_UAPI_SLABMEMACC       9
-#define XMHFGEEC_SLAB_UAPI_SLABMEMPGTBL     10
-#define XMHFGEEC_SLAB_UAPI_SLABDEVPGTBL     11
-#define XMHFGEEC_SLAB_UAPI_SLABIOTBL        12
-#define XMHFGEEC_SLAB_XH_HYPERDEP           13
+#define XMHFGEEC_SLAB_XC_INIT               2
+#define XMHFGEEC_SLAB_XC_EXHUB              3
+#define XMHFGEEC_SLAB_XC_IHUB               4
+#define XMHFGEEC_SLAB_UAPI_GCPUSTATE        5
+#define XMHFGEEC_SLAB_UAPI_HCPUSTATE        6
+#define XMHFGEEC_SLAB_UAPI_SLABMEMACC       7
+#define XMHFGEEC_SLAB_UAPI_SLABMEMPGTBL     8
+#define XMHFGEEC_SLAB_UAPI_SLABDEVPGTBL     9
+#define XMHFGEEC_SLAB_UAPI_SLABIOTBL        10
+#define XMHFGEEC_SLAB_XH_SYSCALLLOG         11
+#define XMHFGEEC_SLAB_XH_HYPERDEP           12
+#define XMHFGEEC_SLAB_XC_TESTSLAB           13
 #define XMHFGEEC_SLAB_XH_APPROVEXEC         14
-#define XMHFGEEC_SLAB_XH_SYSCALLLOG         15
-#define XMHFGEEC_SLAB_XH_SSTEPTRACE         16
+#define XMHFGEEC_SLAB_XH_SSTEPTRACE         15
+#define XMHFGEEC_SLAB_XG_RICHGUEST          16
+
+#define XMHFGEEC_VHSLAB_BASE_IDX		0
+#define XMHFGEEC_VHSLAB_MAX_IDX			12
+#define XMHFGEEC_UHSLAB_BASE_IDX		13
+#define XMHFGEEC_UHSLAB_MAX_IDX			15
+#define XMHFGEEC_UGSLAB_BASE_IDX		16
+#define XMHFGEEC_UGSLAB_MAX_IDX			16
+
+
+#define XMHFGEEC_TOTAL_VHSLABS		((XMHFGEEC_VHSLAB_MAX_IDX - XMHFGEEC_VHSLAB_BASE_IDX) + 1)
+#define XMHFGEEC_TOTAL_UHSLABS		((XMHFGEEC_UHSLAB_MAX_IDX - XMHFGEEC_UHSLAB_BASE_IDX) + 1)
+#define XMHFGEEC_TOTAL_UGSLABS		((XMHFGEEC_UGSLAB_MAX_IDX - XMHFGEEC_UGSLAB_BASE_IDX) + 1)
 
 
 
+//////
 
 
 
