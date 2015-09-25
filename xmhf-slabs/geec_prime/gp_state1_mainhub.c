@@ -138,6 +138,10 @@ void gp_state1_mainhub(void){
 	}
 
 
+	//sanity check hardware requirements
+	gp_state1_mainchkreq();
+
+
 	_geec_prime_main();
 }
 
