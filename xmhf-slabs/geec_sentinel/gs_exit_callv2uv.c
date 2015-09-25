@@ -113,8 +113,9 @@ void gs_exit_callv2uv(slab_params_t *sp, void *caller_stack_frame){
 
 
 
-    _XDPRINTF_("%s[%u]: entry=%x, dst_sp=%x, proceeding to xfer...\n", __func__,
-               (u16)sp->cpuid, xmhfgeec_slab_info_table[sp->dst_slabid].entrystub, (u32)dst_sp);
+    _XDPRINTF_("%s[%u]: entry=%x, dst_sp=%x, eflags=%08x, proceeding to xfer...\n", __func__,
+               (u16)sp->cpuid, xmhfgeec_slab_info_table[sp->dst_slabid].entrystub, (u32)dst_sp,
+		CASM_FUNCCALL(read_eflags, CASM_NOPARAM));
 
 
     CASM_FUNCCALL(gs_exit_callv2uvstub,

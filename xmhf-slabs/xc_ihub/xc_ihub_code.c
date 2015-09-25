@@ -79,8 +79,9 @@ void slab_main(slab_params_t *sp){
     xmhf_uapi_hcpustate_msr_params_t *hcpustate_msrp =
         (xmhf_uapi_hcpustate_msr_params_t *)spl.in_out_params;
 
-	_XDPRINTF_("XCIHUB[%u]: Got control: src=%u, dst=%u, esp=%08x\n",
-                (u16)sp->cpuid, sp->src_slabid, sp->dst_slabid, CASM_FUNCCALL(read_esp,CASM_NOPARAM));
+	_XDPRINTF_("XCIHUB[%u]: Got control: src=%u, dst=%u, esp=%08x, eflags=%08x\n",
+                (u16)sp->cpuid, sp->src_slabid, sp->dst_slabid, CASM_FUNCCALL(read_esp,CASM_NOPARAM),
+			CASM_FUNCCALL(read_eflags, CASM_NOPARAM));
 
     spl.cpuid = sp->cpuid;
     spl.src_slabid = XMHFGEEC_SLAB_XC_IHUB;
@@ -390,7 +391,8 @@ void slab_main(slab_params_t *sp){
     memcpy(&sp->in_out_params[0], &gcpustate_gprs->gprs, sizeof(x86regs_t));
 
 
-	_XDPRINTF_("XCIHUB[%u]: Resuming guest\n", (u16)sp->cpuid);
+    _XDPRINTF_("XCIHUB[%u]: Resuming guest, esp=%08x\n", (u16)sp->cpuid, CASM_FUNCCALL(read_esp,CASM_NOPARAM));
+
 
     //resume guest slab
     return;

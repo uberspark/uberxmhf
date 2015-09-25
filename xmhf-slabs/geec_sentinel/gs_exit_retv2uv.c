@@ -90,7 +90,7 @@ void gs_exit_retv2uv(slab_params_t *sp, void *caller_stack_frame){
 
 
     //marshall parameters
-    CASM_FUNCCALL(xmhfhw_sysmemaccess_copy, (elem.sp)->in_out_params, sp->in_out_params, sizeof(slab_params_t));
+    CASM_FUNCCALL(xmhfhw_sysmemaccess_copy, (elem.sp)->in_out_params, sp->in_out_params, sizeof(sp->in_out_params));
 
 
     //return back to VfT_PROG slab
