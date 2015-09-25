@@ -139,16 +139,6 @@ typedef struct {
 } __attribute__((packed)) geec_prime_tss_t;
 
 
-extern __attribute__(( section(".data") )) XMHF_BOOTINFO *xcbootinfo;
-
-
-void xmhfhic_arch_setup_slab_info(void);
-void xmhfhic_arch_sanity_check_requirements(void);
-void xmhfhic_arch_setup_slab_device_allocation(void);
-void xmhfhic_arch_setup_slab_mem_page_tables(void);
-
-
-CASM_FUNCDECL(void xmhfhic_arch_relinquish_control_to_init_slab(u64 cpuid, u64 entrystub, u64 mempgtbl_cr3, u64 slabtos));
 
 
 
@@ -191,6 +181,9 @@ typedef struct {
 } gp_rwdatahdr_t;
 
 
+
+extern __attribute__(( section(".data") )) XMHF_BOOTINFO *xcbootinfo;
+
 extern __attribute__(( section(".rwdatahdr") )) gp_rwdatahdr_t gp_rwdatahdr;
 
 extern __attribute__((section(".data"))) __attribute__(( aligned(16) )) idtentry_t __xmhfhic_x86vmx_idt_start[EMHF_XCPHANDLER_MAXEXCEPTIONS]; //ro
@@ -224,7 +217,26 @@ extern __attribute__((section(".data"))) __attribute__((aligned(4096))) u64 gp_u
 extern __attribute__((section(".data"))) __attribute__((aligned(4096))) u64 gp_uhslabmempgtbl_lvl2t[XMHFGEEC_TOTAL_UHSLABS][PAE_PTRS_PER_PDPT][PAE_PTRS_PER_PDT];
 extern __attribute__((section(".data"))) __attribute__((aligned(4096)))  u64 gp_uhslabmempgtbl_lvl1t[XMHFGEEC_TOTAL_UHSLABS][PAE_PTRS_PER_PDPT][PAE_PTRS_PER_PDT][PAE_PTRS_PER_PT];
 
+//////
+// bootstrap unity mapped page-tables
+extern __attribute__((section(".data"))) __attribute__((aligned(4096))) u64 _xcprimeon_init_pdt[PAE_PTRS_PER_PDPT][PAE_PTRS_PER_PDT];
+extern __attribute__((section(".data"))) __attribute__((aligned(4096))) u64 _xcprimeon_init_pdpt[PAE_MAXPTRS_PER_PDPT];
 
+
+
+void gp_state1_main(slab_params_t *sp);
+void gp_state1_mainhub(void);
+
+
+void xmhfhic_arch_setup_slab_info(void);
+void xmhfhic_arch_sanity_check_requirements(void);
+void xmhfhic_arch_setup_slab_device_allocation(void);
+void xmhfhic_arch_setup_slab_mem_page_tables(void);
+
+
+CASM_FUNCDECL(void xmhfhic_arch_relinquish_control_to_init_slab(u64 cpuid, u64 entrystub, u64 mempgtbl_cr3, u64 slabtos));
+
+void _geec_prime_main(void);
 
 
 void xmhfhic_arch_switch_to_smp(void);

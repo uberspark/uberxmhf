@@ -54,21 +54,6 @@
 // author: amit vasudevan (amitvasudevan@acm.org)
 
 
-CASM_FUNCDEF(void, slab_main,
-{
-    xmhfhwm_cpu_insn_movw_ds_ax();
-    xmhfhwm_cpu_insn_movw_ax_es();
-    xmhfhwm_cpu_insn_movw_ax_fs();
-    xmhfhwm_cpu_insn_movw_ax_gs();
-    xmhfhwm_cpu_insn_movw_ax_ss();
-    xmhfhwm_cpu_insn_movl_imm_eax(_init_bsp_cpustack);
-    xmhfhwm_cpu_insn_addl_imm_eax(MAX_PLATFORM_CPUSTACK_SIZE);
-    xmhfhwm_cpu_insn_movl_eax_esp();
-    xmhfhwm_cpu_insn_call(_geec_prime_main);
-    xmhfhwm_cpu_insn_hlt();
-},
-slab_params_t *sp)
-
 
 
 //////
