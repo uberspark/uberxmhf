@@ -226,6 +226,7 @@ extern __attribute__((section(".data"))) __attribute__((aligned(4096))) u64 _xcp
 
 void gp_state1_main(slab_params_t *sp);
 void gp_state1_mainhub(void);
+void gp_state1_mainchkreq(void);
 
 
 void xmhfhic_arch_setup_slab_info(void);

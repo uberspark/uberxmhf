@@ -79,8 +79,6 @@ void _geec_prime_main(void){
     u64 pgtblbase;
 
 
-    //sanity check HIC (hardware) requirements
-    xmhfhic_arch_sanity_check_requirements();
 
 
 #if !defined (__XMHF_VERIFICATION__)
@@ -126,51 +124,6 @@ void _geec_prime_main(void){
 
 
 
-
-
-
-///////////////////////////////////////////////////////////////
-// sanity check HIC (hardware) requirements
-void xmhfhic_arch_sanity_check_requirements(void){
-	u32 cpu_vendor;
-
-	//grab CPU vendor
-	cpu_vendor = xmhf_baseplatform_arch_getcpuvendor();
-	if (cpu_vendor != CPU_VENDOR_INTEL){
-		_XDPRINTF_("%s: not an Intel CPU but running VMX backend. Halting!\n", __func__);
-		HALT();
-	}
-
-	//check VMX support
-	{
-		u32	cpu_features;
-		u32 res0,res1,res2;
-
- CASM_FUNCCALL(xmhfhw_cpu_cpuid,0x1, &res0, &res1, &cpu_features, &res2);
-
-		if ( ( cpu_features & (1<<5) ) == 0 ){
-			_XDPRINTF_("No VMX support. Halting!\n");
-			HALT();
-		}
-	}
-
-	//we require unrestricted guest and EPT support, bail out if we don't have it
-    {
-        u64 msr_procctls2 = CASM_FUNCCALL(rdmsr64,IA32_VMX_PROCBASED_CTLS2_MSR);
-        if( !( (msr_procctls2 >> 32) & 0x80 ) ){
-            _XDPRINTF_("%s: need unrestricted guest support but did not find any!\n", __func__);
-            HALT();
-        }
-
-        if( !( (msr_procctls2 >> 32) & 0x2) ){
-            _XDPRINTF_("%s: need EPTt support but did not find any!\n", __func__);
-            HALT();
-        }
-
-    }
-
-
-}
 
 
 
