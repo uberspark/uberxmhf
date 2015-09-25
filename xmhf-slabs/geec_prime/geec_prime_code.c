@@ -56,8 +56,6 @@
 #include <uapi_slabiotbl.h>
 #include <xc_init.h>
 
-__attribute__((aligned(4096))) static u64 _xcprimeon_init_pdt[PAE_PTRS_PER_PDPT][PAE_PTRS_PER_PDT];
-__attribute__((aligned(4096))) static u64 _xcprimeon_init_pdpt[PAE_MAXPTRS_PER_PDPT];
 static u64 _xcsmp_ap_entry_lock = 1;
 static mtrr_state_t _mtrrs;
 static u64 _ap_cr3=0;
@@ -67,57 +65,6 @@ void _geec_prime_setup_cpustate(void);
 
 
 
-static void xmhfhic_setupinitpgtables(void){
-    u32 paddr=0;
-    u32 i, j;
-    u64 pdpe_flags = (_PAGE_PRESENT);
-    u64 pdte_flags = (_PAGE_RW | _PAGE_PSE | _PAGE_PRESENT);
-
-    memset(&_xcprimeon_init_pdpt, 0, sizeof(_xcprimeon_init_pdpt));
-
-    /*_XDPRINTF_("_xcprimeon_init_pdt size=%u\n", sizeof(_xcprimeon_init_pdt));
-    _XDPRINTF_("_xcprimeon_init_pdpt size=%u\n", sizeof(_xcprimeon_init_pdpt));
-*/
-
-    for(i=0; i < PAE_PTRS_PER_PDPT; i++){
-        u64 entry_addr = (u64)&_xcprimeon_init_pdt[i][0];
-        _xcprimeon_init_pdpt[i] = pae_make_pdpe(entry_addr, pdpe_flags);
-
-        for(j=0; j < PAE_PTRS_PER_PDT; j++){
-            if(paddr == 0xfee00000 || paddr == 0xfec00000)
-                _xcprimeon_init_pdt[i][j] = pae_make_pde_big(paddr, (pdte_flags | _PAGE_PCD));
-            else
-                _xcprimeon_init_pdt[i][j] = pae_make_pde_big(paddr, pdte_flags);
-
-            paddr += PAGE_SIZE_2M;
-        }
-    }
-
-    //debug
-    /*_XDPRINTF_("page-table dump:\n");
-
-    for(i=0; i < PAE_PTRS_PER_PDPT; i++){
-        _XDPRINTF_("pdpd[%u]=%016llx\n\n", i, _xcprimeon_init_pdpt[i]);
-
-        for(j=0; j < PAE_PTRS_PER_PDT; j++)
-            _XDPRINTF_("pdt[%u][%u]=%016llx\n", i, j, _xcprimeon_init_pdt[i][j]);
-    }*/
-
-    {
-        u64 msr_efer;
-        msr_efer = (CASM_FUNCCALL(rdmsr64, MSR_EFER) | (0x800));
-        _XDPRINTF_("fn:%s, line:%u\n", __func__, __LINE__);
- CASM_FUNCCALL(wrmsr64,MSR_EFER, (u32)msr_efer, (u32)((u64)msr_efer >> 32) );
-        _XDPRINTF_("EFER=%016llx\n", CASM_FUNCCALL(rdmsr64,MSR_EFER));
- CASM_FUNCCALL(write_cr4,read_cr4(CASM_NOPARAM) | (0x30) );
-        _XDPRINTF_("CR4=%08x\n", CASM_FUNCCALL(read_cr4,CASM_NOPARAM));
- CASM_FUNCCALL(write_cr3,(u32)&_xcprimeon_init_pdpt);
-        _XDPRINTF_("CR3=%08x\n", CASM_FUNCCALL(read_cr3,CASM_NOPARAM));
- CASM_FUNCCALL(write_cr0,0x80000015);
-        _XDPRINTF_("fn:%s, line:%u\n", __func__, __LINE__);
-    }
-
-}
 
 
 
@@ -128,52 +75,9 @@ static void xmhfhic_setupinitpgtables(void){
 
 
 
-
-void _geec_prime_main(slab_params_t *sp){
+void _geec_prime_main(void){
     u64 pgtblbase;
 
-#if !defined(__XMHF_VERIFICATION__)
-	//initialize debugging early on
-	//xmhfhw_platform_serial_init((char *)&xcbootinfo->debugcontrol_buffer);
-	xmhf_debug_init((char *)&xcbootinfo->debugcontrol_buffer);
-
-
-	//[debug] print relevant startup info.
-	_XDPRINTF_("%s: alive and starting...\n", __func__);
-
-	_XDPRINTF_("    xcbootinfo at = 0x%08x\n", (u32)xcbootinfo);
-	_XDPRINTF_("	numE820Entries=%u\n", xcbootinfo->memmapinfo_numentries);
-	_XDPRINTF_("	system memory map buffer at 0x%08x\n", (u32)&xcbootinfo->memmapinfo_buffer);
-	_XDPRINTF_("	numCPUEntries=%u\n", xcbootinfo->cpuinfo_numentries);
-	_XDPRINTF_("	cpuinfo buffer at 0x%08x\n", (u32)&xcbootinfo->cpuinfo_buffer);
-	_XDPRINTF_("	XMHF size= %u bytes\n", __TARGET_SIZE_XMHF);
-	_XDPRINTF_("	OS bootmodule at 0x%08x, size=%u bytes\n",
-		xcbootinfo->richguest_bootmodule_base, xcbootinfo->richguest_bootmodule_size);
-    _XDPRINTF_("\tcmdline = \"%s\"\n", xcbootinfo->cmdline_buffer);
-	_XDPRINTF_("SL: runtime at 0x%08x; size=0x%08x bytes\n", __TARGET_BASE_XMHF, __TARGET_SIZE_XMHF);
-	_XDPRINTF_("SL: XMHF_BOOTINFO at 0x%08x, magic=0x%08x\n", (u32)xcbootinfo, xcbootinfo->magic);
-	HALT_ON_ERRORCOND(xcbootinfo->magic == RUNTIME_PARAMETER_BLOCK_MAGIC);
- 	_XDPRINTF_("\nNumber of E820 entries = %u", xcbootinfo->memmapinfo_numentries);
-	{
-		u32 i;
-		for(i=0; i < (u32)xcbootinfo->memmapinfo_numentries; i++){
-			_XDPRINTF_("\n0x%08x%08x, size=0x%08x%08x (%u)",
-			  xcbootinfo->memmapinfo_buffer[i].baseaddr_high, xcbootinfo->memmapinfo_buffer[i].baseaddr_low,
-			  xcbootinfo->memmapinfo_buffer[i].length_high, xcbootinfo->memmapinfo_buffer[i].length_low,
-			  xcbootinfo->memmapinfo_buffer[i].type);
-		}
-  	}
-#endif
-
-    //HALT();
-
-    _XDPRINTF_("Proceeding to setup init pagetables...\n");
-    xmhfhic_setupinitpgtables();
-    _XDPRINTF_("Init page table setup.\n");
-
-
-    //initialize slab info table based on setup data
-    xmhfhic_arch_setup_slab_info();
 
     //sanity check HIC (hardware) requirements
     xmhfhic_arch_sanity_check_requirements();
@@ -217,129 +121,6 @@ void _geec_prime_main(slab_params_t *sp){
 }
 
 
-
-
-////////////////////////////////////////////////////////////
-// setup slab info
-
-void xmhfhic_arch_setup_slab_info(void){
-
-    //initialize slab info table
-    {
-        u32 i;
-
-        for(i=0; i < XMHFGEEC_TOTAL_SLABS; i++){
-
-/*            xmhfgeec_slab_info_table[i].slab_inuse = true;
-            xmhfgeec_slab_info_table[i].slab_privilegemask =
-                _xmhfhic_init_setupdata_slab_caps[i].slab_privilegemask;
-            xmhfgeec_slab_info_table[i].slab_callcaps =
-                _xmhfhic_init_setupdata_slab_caps[i].slab_callcaps;
-            xmhfgeec_slab_info_table[i].slab_uapicaps =
-                _xmhfhic_init_setupdata_slab_caps[i].slab_uapicaps;
-
-
-            #if !defined(__XMHF_VERIFICATION__)
-            memcpy(&xmhfgeec_slab_info_table[i].slab_devices,
-                   &_xmhfhic_init_setupdata_slab_caps[i].slab_devices,
-                   sizeof(xmhfgeec_slab_info_table[0].slab_devices));
-
-            memcpy(xmhfgeec_slab_info_table[i].slab_physmem_extents,
-                   _xmhfhic_init_setupdata_slab_physmem_extents[i],
-                   sizeof(xmhfgeec_slab_info_table[0].slab_physmem_extents));
-            #endif
-
-            xmhfgeec_slab_info_table[i].entrystub = xmhfgeec_slab_info_table[i].slab_physmem_extents[0].addr_start;
-
-            //arch. specific
-            xmhfgeec_slab_info_table[i].slabtype =
-                _xmhfhic_init_setupdata_slab_caps[i].slab_archparams;
-
-            xmhfgeec_slab_info_table[i].mempgtbl_initialized=false;
-            xmhfgeec_slab_info_table[i].devpgtbl_initialized=false;
-*/
-/*            #if !defined(__XMHF_VERIFICATION__)
-            {
-                u32 j;
-                //u64 *slab_stackhdr = (u64 *)xmhfgeec_slab_info_table[i].slab_physmem_extents[3].addr_start;
-                u32 *slab_stackhdr = (u32 *)xmhfgeec_slab_info_table[i].slab_physmem_extents[3].addr_start;
-
-                if(slab_stackhdr){
-                    for(j=0; j < MAX_PLATFORM_CPUS; j++)
-                        xmhfgeec_slab_info_table[i].slabtos[j]=slab_stackhdr[j];
-                }
-            }
-            #endif
-*/
-        }
-    }
-
-
-    //#if !defined (__XMHF_VERIFICATION__)
-    ////initialize HIC physical memory extents
-    //memcpy(_xmhfhic_common_hic_physmem_extents,
-    //       _xmhfhic_init_setupdata_hic_physmem_extents,
-    //       sizeof(_xmhfhic_common_hic_physmem_extents));
-    //#endif
-
-    #if !defined (__XMHF_VERIFICATION__)
-	////print out HIC section information
-    //{
-	//	_XDPRINTF_("xmhfhic section info:\n");
-	//	_XDPRINTF_("  xmhfhic sharedro(%08x-%08x)\n", _xmhfhic_common_hic_physmem_extents[0].addr_start, _xmhfhic_common_hic_physmem_extents[0].addr_end);
-	//	_XDPRINTF_("  xmhfhic code(%08x-%08x)\n", _xmhfhic_common_hic_physmem_extents[1].addr_start, _xmhfhic_common_hic_physmem_extents[1].addr_end);
-	//	_XDPRINTF_("  xmhfhic rwdata(%08x-%08x)\n", _xmhfhic_common_hic_physmem_extents[2].addr_start, _xmhfhic_common_hic_physmem_extents[2].addr_end);
-	//	_XDPRINTF_("  xmhfhic rodata(%08x-%08x)\n", _xmhfhic_common_hic_physmem_extents[3].addr_start, _xmhfhic_common_hic_physmem_extents[3].addr_end);
-	//	_XDPRINTF_("  xmhfhic stack(%08x-%08x)\n", _xmhfhic_common_hic_physmem_extents[4].addr_start, _xmhfhic_common_hic_physmem_extents[4].addr_end);
-    //
-    //}
-
-	//print out slab table
-	{
-			u32 i, j;
-
-			for(i=0; i < XMHFGEEC_TOTAL_SLABS; i++){
-				_XDPRINTF_("slab %u: dumping slab header\n", i);
-				_XDPRINTF_("	slabtype=%08x\n", xmhfgeec_slab_info_table[i].slabtype);
-				_XDPRINTF_("	slab_inuse=%s\n", ( xmhfgeec_slab_info_table[i].slab_inuse ? "true" : "false") );
-				_XDPRINTF_("	slab_callcaps=%08x\n", xmhfgeec_slab_info_table[i].slab_callcaps);
-				//_XDPRINTF_("	slab_devices=%s\n", ( xmhfgeec_slab_info_table[i].slab_devices.desc_valid ? "true" : "false") );
-				_XDPRINTF_("	incl_devices_count=%u\n", xmhfgeec_slab_info_table[i].incl_devices_count );
-                for(j=0; j < xmhfgeec_slab_info_table[i].incl_devices_count; j++)
-                        _XDPRINTF_("        vendor_id=%x, device_id=%x\n",
-                                   xmhfgeec_slab_info_table[i].incl_devices[j].vendor_id,
-                                   xmhfgeec_slab_info_table[i].incl_devices[j].device_id);
-				_XDPRINTF_("	excl_devices_count=%u\n", xmhfgeec_slab_info_table[i].excl_devices_count );
-                for(j=0; j < xmhfgeec_slab_info_table[i].excl_devices_count; j++)
-                        _XDPRINTF_("        vendor_id=%x, device_id=%x\n",
-                                   xmhfgeec_slab_info_table[i].excl_devices[j].vendor_id,
-                                   xmhfgeec_slab_info_table[i].excl_devices[j].device_id);
-
-				_XDPRINTF_("	slab_pgtblbase=%x\n", ( xmhfgeec_slab_info_table[i].mempgtbl_cr3) );
-				_XDPRINTF_("	slab_iotblbase=%x\n", ( xmhfgeec_slab_info_table[i].iotbl_base) );
-				_XDPRINTF_("  slab_code(%08x-%08x)\n", xmhfgeec_slab_info_table[i].slab_physmem_extents[0].addr_start, xmhfgeec_slab_info_table[i].slab_physmem_extents[0].addr_end);
-				_XDPRINTF_("  slab_data(%08x-%08x)\n", xmhfgeec_slab_info_table[i].slab_physmem_extents[1].addr_start, xmhfgeec_slab_info_table[i].slab_physmem_extents[1].addr_end);
-				_XDPRINTF_("  slab_stack(%08x-%08x)\n", xmhfgeec_slab_info_table[i].slab_physmem_extents[2].addr_start, xmhfgeec_slab_info_table[i].slab_physmem_extents[2].addr_end);
-				_XDPRINTF_("  slab_dmadata(%08x-%08x)\n", xmhfgeec_slab_info_table[i].slab_physmem_extents[3].addr_start, xmhfgeec_slab_info_table[i].slab_physmem_extents[3].addr_end);
-				_XDPRINTF_("  slab_entrystub=%08x\n", xmhfgeec_slab_info_table[i].entrystub);
-
-                /*{
-                    u32 j;
-
-                    for(j=0; j < MAX_PLATFORM_CPUS; j++)
-                        //_XDPRINTF_("     CPU %u: stack TOS=%016llx\n", j,
-                        //       xmhfgeec_slab_info_table[i].slabtos[j]);
-                        _XDPRINTF_("     CPU %u: stack TOS=%08x\n", j,
-                               xmhfgeec_slab_info_table[i].slabtos[j]);
-                }*/
-
-		}
-	}
-    #endif
-
-
-
-}
 
 
 

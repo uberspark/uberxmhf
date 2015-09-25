@@ -232,3 +232,9 @@ __attribute__((section(".data"))) __attribute__((aligned(4096))) u64 gp_uhslabme
 __attribute__((section(".data"))) __attribute__((aligned(4096)))  u64 gp_uhslabmempgtbl_lvl1t[XMHFGEEC_TOTAL_UHSLABS][PAE_PTRS_PER_PDPT][PAE_PTRS_PER_PDT][PAE_PTRS_PER_PT];
 
 
+//////
+// bootstrap unity mapped page-tables
+__attribute__((section(".data"))) __attribute__((aligned(4096))) u64 _xcprimeon_init_pdt[PAE_PTRS_PER_PDPT][PAE_PTRS_PER_PDT];
+__attribute__((section(".data"))) __attribute__((aligned(4096))) u64 _xcprimeon_init_pdpt[PAE_MAXPTRS_PER_PDPT];
+
+
