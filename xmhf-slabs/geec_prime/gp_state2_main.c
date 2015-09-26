@@ -1376,12 +1376,37 @@ static bool __xmhfhic_smp_arch_smpinitialize(void){
 //note: this is specific to the x86 architecture backend
 void __xmhfhic_smp_cpu_x86_smpinitialize_commonstart(void){
 	u32 cpuid;
-	#if !defined(__XMHF_VERIFICATION__)
-	//cpuid  = __xmhfhic_x86vmx_cpuidtable[xmhf_baseplatform_arch_x86_getcpulapicid()];
-    cpuid  = xmhf_baseplatform_arch_x86_getcpulapicid();
-    #endif
+	bool isbsp;
 
-    xmhfhic_smp_entry(cpuid);
+	cpuid  = xmhf_baseplatform_arch_x86_getcpulapicid();
+	isbsp = xmhfhw_lapic_isbsp();
+
+
+
+	_XDPRINTF_("%s[%u,%u]: esp=%08x. Starting...\n",
+	    __func__, cpuid, isbsp, CASM_FUNCCALL(read_esp,CASM_NOPARAM));
+
+	xmhf_hic_arch_setup_cpu_state((u16)cpuid);
+
+
+    //relinquish HIC initialization and move on to the first slab
+    _XDPRINTF_("%s[%u]: proceeding to call init slab at %x\n", __func__, (u16)cpuid,
+                xmhfgeec_slab_info_table[XMHFGEEC_SLAB_XC_INIT].entrystub);
+
+    {
+        slab_params_t sp;
+
+        memset(&sp, 0, sizeof(sp));
+        sp.cpuid = cpuid;
+        sp.src_slabid = XMHFGEEC_SLAB_GEEC_PRIME;
+        sp.dst_slabid = XMHFGEEC_SLAB_XC_INIT;
+        XMHF_SLAB_CALLNEW(&sp);
+    }
+
+
+    _XDPRINTF_("%s[%u,%u]: Should never be here. Halting!\n", __func__, (u16)cpuid, isbsp);
+    HALT();
+
 }
 
 
@@ -1411,7 +1436,7 @@ void xmhfhic_arch_switch_to_smp(void){
 }
 #endif
 
-
+#if 0
 void xmhfhic_smp_entry(u32 cpuid){
     //bool isbsp = (cpuid & 0x80000000UL) ? true : false;
     bool isbsp = xmhfhw_lapic_isbsp();
@@ -1461,7 +1486,7 @@ void xmhfhic_smp_entry(u32 cpuid){
     HALT();
 
 }
-
+#endif // 0
 
 
 //////////////////////////////////////////////////////////////////////////////
