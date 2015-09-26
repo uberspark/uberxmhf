@@ -229,6 +229,10 @@ extern __attribute__((section(".data"))) sysdev_memioregions_t sysdev_memioregio
 extern __attribute__((section(".data"))) u32 numentries_sysdev_memioregions;
 
 
+extern __attribute__((section(".data"))) struct _memorytype _vmx_ept_memorytypes[MAX_MEMORYTYPE_ENTRIES]; //EPT memory types array
+
+
+
 
 void gp_state1_main(slab_params_t *sp);
 void gp_state1_mainhub(void);
