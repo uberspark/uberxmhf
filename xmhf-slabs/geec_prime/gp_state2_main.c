@@ -65,7 +65,8 @@ void _geec_prime_setup_cpustate(void);
 
 
 static void __xmhfhic_vmx_gathermemorytypes(void);
-
+static void __xmhfhic_smp_cpu_x86_wakeupAPs(void);
+static void __xmhfhic_smp_container_vmx_wakeupAPs(void);
 
 
 
@@ -102,12 +103,29 @@ void gp_state2_main(void){
 	_XDPRINTF_("Switched to GEEC_PRIME pagetables...\n");
 
 
-	//setup (SMP) CPU state
-	_geec_prime_setup_cpustate();
+	//setup base CPU data structures
+	xmhfhic_arch_setup_base_cpu_data_structures();
+
+	//save cpu MTRR state which we will later replicate on all APs
+	xmhfhw_cpu_x86_save_mtrrs(&_mtrrs);
+
+	//save page table base which we will later replicate on all APs
+	_ap_cr3 = CASM_FUNCCALL(read_cr3,CASM_NOPARAM);
+
+	//wake up APS
+	if(xcbootinfo->cpuinfo_numentries > 1){
+	  __xmhfhic_smp_container_vmx_wakeupAPs();
+	}
+
+	//fall through to common code
+	_XDPRINTF_("%s: Relinquishing BSP thread and moving to common...\n", __func__);
+	__xmhfhic_smp_cpu_x86_smpinitialize_commonstart();
 
 	//we should never get here
-	_XDPRINTF_("Should never be here. Halting!\n");
+	_XDPRINTF_("%s:%u: Must never get here. Halting\n", __func__, __LINE__);
 	HALT();
+
+
 }
 
 
@@ -1175,10 +1193,11 @@ static void __xmhfhic_x86vmx_setIOPL3(u64 cpuid){
 
 
 
-
+#if 0
 static void __xmhfhic_smp_cpu_x86_savecpumtrrstate(void){
 	xmhfhw_cpu_x86_save_mtrrs(&_mtrrs);
 }
+#endif // 0
 
 static void __xmhfhic_smp_cpu_x86_restorecpumtrrstate(void){
 	xmhfhw_cpu_x86_restore_mtrrs(&_mtrrs);
@@ -1321,6 +1340,9 @@ static void __xmhfhic_smp_container_vmx_wakeupAPs(void){
 
 }
 
+
+
+#if 0
 //initialize SMP
 static bool __xmhfhic_smp_arch_smpinitialize(void){
 	u32 i;
@@ -1346,6 +1368,7 @@ static bool __xmhfhic_smp_arch_smpinitialize(void){
 	HALT();
 
 }
+#endif
 
 
 
@@ -1362,6 +1385,7 @@ void __xmhfhic_smp_cpu_x86_smpinitialize_commonstart(void){
 }
 
 
+#if 0
 void xmhfhic_arch_switch_to_smp(void){
 /*	//initialize cpu table and total platform CPUs
 	{
@@ -1385,6 +1409,7 @@ void xmhfhic_arch_switch_to_smp(void){
     __xmhfhic_smp_arch_smpinitialize();
 
 }
+#endif
 
 
 void xmhfhic_smp_entry(u32 cpuid){
@@ -2145,21 +2170,16 @@ void xmhf_hic_arch_setup_cpu_state(u64 cpuid){
 
 
 
+//
+///////
+//void _geec_prime_setup_cpustate(void){
 
-/////
-void _geec_prime_setup_cpustate(void){
 
-    //setup base CPU data structures
-    xmhfhic_arch_setup_base_cpu_data_structures();
-
-    //setup SMP and move on to xmhfhic_smp_entry
-    xmhfhic_arch_switch_to_smp();
-
-    //we should never get here
-    _XDPRINTF_("Should never be here. Halting!\n");
-    HALT();
-
-}
+//    //we should never get here
+//    _XDPRINTF_("Should never be here. Halting!\n");
+//    HALT();
+//
+//}
 
 
 
