@@ -82,7 +82,7 @@ void gp_state2_main(void){
 
 
 	//setup (unverified) slab iotbl
-	geec_prime_setup_slab_iotbl();
+	gp_state2_mainsetupiotbl();
 
 
 	//setup slab memory page tables
@@ -135,8 +135,6 @@ void gp_state2_main(void){
 
 //////////////////////////////////////////////////////////////////////////////
 //setup slab device allocation (sda)
-static sysdev_memioregions_t sysdev_memioregions[MAX_PLATFORM_DEVICES];
-static u32 numentries_sysdev_memioregions=0;
 
 
 
@@ -149,7 +147,6 @@ static vtd_drhd_handle_t vtd_drhd_maxhandle=0;
 static u32 vtd_dmar_table_physical_address=0;
 
 
-static slab_devicemap_t _sda_slab_devicemap[XMHFGEEC_TOTAL_SLABS];
 
 
 //returns true if a given device vendor_id:device_id is in the slab device exclusion
@@ -835,123 +832,6 @@ void xmhfhic_arch_setup_slab_device_allocation(void){
 
 
 
-
-//////
-// setup (unverified) slab iotbl
-/////
-static void _gp_setup_uhslab_iotbl_allowaccesstoport(u32 uhslabiobitmap_idx, u16 port, u16 port_size){
-    u32 i;
-
-    for(i=0; i < port_size; i++){
-        u32 idx = (port+i)/8;
-        u8 bit = ((port+i) % 8);
-        u8 bitmask = ~((u8)1 << bit);
-        gp_rwdatahdr.gp_uhslab_iobitmap[uhslabiobitmap_idx][idx] &= bitmask;
-    }
-}
-
-
-static void gp_setup_uhslab_iotbl(u32 slabid){
-	u32 j, k, portnum;
-	u32 uhslabiobitmap_idx;
-
-	if( !(slabid >= XMHFGEEC_UHSLAB_BASE_IDX && slabid <= XMHFGEEC_UHSLAB_MAX_IDX) ){
-		_XDPRINTF_("%s: Fatal error, uh slab id out of bounds!\n", __func__);
-		HALT();
-	}
-
-	uhslabiobitmap_idx = slabid - XMHFGEEC_UHSLAB_BASE_IDX;
-
-        memset(&gp_rwdatahdr.gp_uhslab_iobitmap[uhslabiobitmap_idx], 0xFFFFFFFFUL, sizeof(gp_rwdatahdr.gp_uhslab_iobitmap[0]));
-
-
-	//scan through the list of devices for this slab and add any
-	//legacy I/O ports to the I/O perm. table
-	for(j=0; j < _sda_slab_devicemap[slabid].device_count; j++){
-	    u32 sysdev_memioregions_index = _sda_slab_devicemap[slabid].sysdev_mmioregions_indices[j];
-	    for(k=0; k < PCI_CONF_MAX_BARS; k++){
-		if(sysdev_memioregions[sysdev_memioregions_index].memioextents[k].extent_type == _MEMIOREGIONS_EXTENTS_TYPE_IO){
-		    for(portnum= sysdev_memioregions[sysdev_memioregions_index].memioextents[k].addr_start;
-			portnum < sysdev_memioregions[sysdev_memioregions_index].memioextents[k].addr_end; portnum++){
-
-			_gp_setup_uhslab_iotbl_allowaccesstoport(uhslabiobitmap_idx, portnum, 1);
-
-		    }
-		}
-	    }
-	}
-}
-
-
-static void gp_setup_ugslab_iotbl(u32 slabid){
-	u32 j, k, portnum;
-
-	slab_params_t spl;
-	xmhfgeec_uapi_slabiotbl_init_params_t *initp =
-	(xmhfgeec_uapi_slabiotbl_init_params_t *)spl.in_out_params;
-	xmhfgeec_uapi_slabiotbl_allowaccesstoport_params_t *allowaccesstoportp =
-	(xmhfgeec_uapi_slabiotbl_allowaccesstoport_params_t *)spl.in_out_params;
-
-	spl.src_slabid = XMHFGEEC_SLAB_GEEC_PRIME;
-	spl.dst_slabid = XMHFGEEC_SLAB_UAPI_SLABIOTBL;
-	spl.cpuid = 0; //XXX: fixme, need to plug in BSP cpuid here
-
-
-	//initialize I/O perm. table for this slab (default = deny all)
-	spl.dst_uapifn = XMHFGEEC_UAPI_SLABIOTBL_INIT;
-	initp->dst_slabid = slabid;
-	XMHF_SLAB_CALLNEW(&spl);
-
-	//scan through the list of devices for this slab and add any
-	//legacy I/O ports to the I/O perm. table
-	for(j=0; j < _sda_slab_devicemap[slabid].device_count; j++){
-	    u32 sysdev_memioregions_index = _sda_slab_devicemap[slabid].sysdev_mmioregions_indices[j];
-	    for(k=0; k < PCI_CONF_MAX_BARS; k++){
-		if(sysdev_memioregions[sysdev_memioregions_index].memioextents[k].extent_type == _MEMIOREGIONS_EXTENTS_TYPE_IO){
-		    for(portnum= sysdev_memioregions[sysdev_memioregions_index].memioextents[k].addr_start;
-			portnum < sysdev_memioregions[sysdev_memioregions_index].memioextents[k].addr_end; portnum++){
-			spl.dst_uapifn = XMHFGEEC_UAPI_SLABIOTBL_ALLOWACCESSTOPORT;
-			allowaccesstoportp->dst_slabid = slabid;
-			allowaccesstoportp->port=portnum;
-			allowaccesstoportp->port_size=1;
-			XMHF_SLAB_CALLNEW(&spl);
-		    }
-		}
-	    }
-	}
-}
-
-
-
-void geec_prime_setup_slab_iotbl(void){
-    u32 i, slabtype;
-
-
-    for(i=0; i < XMHFGEEC_TOTAL_SLABS; i++){
-        slabtype = xmhfgeec_slab_info_table[i].slabtype;
-
-        switch(slabtype){
-            case XMHFGEEC_SLABTYPE_uVT_PROG:
-            case XMHFGEEC_SLABTYPE_uVU_PROG:
-		gp_setup_uhslab_iotbl(i);
-		break;
-
-
-            case XMHFGEEC_SLABTYPE_uVT_PROG_GUEST:
-            case XMHFGEEC_SLABTYPE_uVU_PROG_GUEST:
-            case XMHFGEEC_SLABTYPE_uVU_PROG_RICHGUEST:
-		gp_setup_ugslab_iotbl(i);
-		break;
-
-            default:
-                break;
-        }
-    }
-
-
-	_XDPRINTF_("%s: setup unverified slab legacy I/O permission tables\n", __func__);
-
-}
 
 
 

@@ -223,6 +223,12 @@ extern __attribute__((section(".data"))) __attribute__((aligned(4096))) u64 _xcp
 extern __attribute__((section(".data"))) __attribute__((aligned(4096))) u64 _xcprimeon_init_pdpt[PAE_MAXPTRS_PER_PDPT];
 
 
+extern __attribute__((section(".data"))) slab_devicemap_t _sda_slab_devicemap[XMHFGEEC_TOTAL_SLABS];
+
+extern __attribute__((section(".data"))) sysdev_memioregions_t sysdev_memioregions[MAX_PLATFORM_DEVICES];
+extern __attribute__((section(".data"))) u32 numentries_sysdev_memioregions;
+
+
 
 void gp_state1_main(slab_params_t *sp);
 void gp_state1_mainhub(void);
@@ -230,6 +236,7 @@ void gp_state1_mainchkreq(void);
 void gp_state1_mainpostdrt(void);
 
 void gp_state2_main(void);
+void gp_state2_mainsetupiotbl(void);
 
 
 void xmhfhic_arch_setup_slab_info(void);
