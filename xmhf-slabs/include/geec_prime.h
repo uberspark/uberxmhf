@@ -237,6 +237,7 @@ void gp_state1_mainpostdrt(void);
 
 void gp_state2_main(void);
 void gp_state2_mainsetupiotbl(void);
+void gp_state2_mainsetupmempgtbl(void);
 
 
 void xmhfhic_arch_setup_slab_info(void);
