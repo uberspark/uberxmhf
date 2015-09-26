@@ -732,26 +732,6 @@ static u32 _geec_prime_vtd_initialize(u32 vtd_ret_addr){
 }
 
 
-static void __xmhfhic_x86vmxx86pc_postdrt(void){
-	txt_heap_t *txt_heap;
-	os_mle_data_t os_mle_data;
-
-	txt_heap = get_txt_heap();
-	_XDPRINTF_("SL: txt_heap = 0x%08x\n", (u32)txt_heap);
-	xmhfhw_sysmemaccess_copy(&os_mle_data, get_os_mle_data_start((txt_heap_t*)((u32)txt_heap), (uint32_t)read_pub_config_reg(TXTCR_HEAP_SIZE)),
-					sizeof(os_mle_data_t));
-	_XDPRINTF_("SL: os_mle_data = 0x%08x\n", (u32)&os_mle_data);
-
-	// restore pre-SENTER MTRRs that were overwritten for SINIT launch
-	if(!validate_mtrrs(&(os_mle_data.saved_mtrr_state))) {
-		_XDPRINTF_("SECURITY FAILURE: validate_mtrrs() failed.\n");
-		HALT();
-	}
-	_XDPRINTF_("SL: Validated MTRRs\n");
-
-	xmhfhw_cpu_x86_restore_mtrrs(&(os_mle_data.saved_mtrr_state));
-    _XDPRINTF_("SL: Restored MTRRs\n");
-}
 
 
 //returns 0xFFFFFFFF on error
@@ -793,22 +773,7 @@ void xmhfhic_arch_setup_slab_device_allocation(void){
     spl.cpuid = 0; //XXX: fixme, needs to be BSP id
 
 
-#if defined (__DRT__)
-    //post DRT cleanup first
-    __xmhfhic_x86vmxx86pc_postdrt();
-#endif	//__DRT__
 
-	//initialize platform bus
-	xmhfhw_platform_bus_init();
-
-	//check ACPI subsystem
-	{
-		ACPI_RSDP rsdp;
-		if(!xmhfhw_platform_x86pc_acpi_getRSDP(&rsdp)){
-			_XDPRINTF_("%s: ACPI RSDP not found, Halting!\n", __func__);
-			HALT();
-		}
-	}
 
     //enumerate system devices
     _sda_enumerate_system_devices();

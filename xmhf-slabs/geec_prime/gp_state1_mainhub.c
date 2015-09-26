@@ -141,6 +141,24 @@ void gp_state1_mainhub(void){
 	//sanity check hardware requirements
 	gp_state1_mainchkreq();
 
+#if defined (__DRT__)
+	//post DRT cleanup first
+	gp_state1_mainpostdrt();
+#endif	//__DRT__
+
+
+	//initialize platform bus
+	xmhfhw_platform_bus_init();
+
+	//check ACPI subsystem
+	{
+		ACPI_RSDP rsdp;
+		if(!xmhfhw_platform_x86pc_acpi_getRSDP(&rsdp)){
+			_XDPRINTF_("%s: ACPI RSDP not found, Halting!\n", __func__);
+			HALT();
+		}
+	}
+
 
 	_geec_prime_main();
 }
