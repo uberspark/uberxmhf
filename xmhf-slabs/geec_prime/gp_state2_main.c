@@ -64,7 +64,8 @@ void __xmhfhic_smp_cpu_x86_smpinitialize_commonstart(void);
 void _geec_prime_setup_cpustate(void);
 
 
-
+static struct _memorytype _vmx_ept_memorytypes[MAX_MEMORYTYPE_ENTRIES]; //EPT memory types array
+static void __xmhfhic_vmx_gathermemorytypes(void);
 
 
 
@@ -81,12 +82,18 @@ void gp_state2_main(void){
 	xmhfhic_arch_setup_slab_device_allocation();
 
 
+	//gather memory types for EPT (for guest slabs)
+	__xmhfhic_vmx_gathermemorytypes();
+	_XDPRINTF_("%s: gathered EPT memory types\n", __func__);
+
+
 	//setup (unverified) slab iotbl
 	gp_state2_mainsetupiotbl();
 
 
 	//setup slab memory page tables
-	xmhfhic_arch_setup_slab_mem_page_tables();
+	//xmhfhic_arch_setup_slab_mem_page_tables();
+	gp_state2_mainsetupmempgtbl();
 
 
 	//switch to prime page tables
@@ -1112,7 +1119,6 @@ static u64 _geec_prime_slab_getptflagsforspa_ept(u32 slabid, u32 spa, u32 spatyp
 }
 
 
-static struct _memorytype _vmx_ept_memorytypes[MAX_MEMORYTYPE_ENTRIES]; //EPT memory types array
 
 
 //---gather memory types for system physical memory------------------------------
@@ -1569,7 +1575,7 @@ static void gp_setup_vhslab_mempgtbl(void){
 
 
 
-void xmhfhic_arch_setup_slab_mem_page_tables(void){
+void gp_state2_mainsetupmempgtbl(void){
     slab_params_t spl;
     xmhfgeec_uapi_slabmempgtbl_initmempgtbl_params_t *initmempgtblp =
         (xmhfgeec_uapi_slabmempgtbl_initmempgtbl_params_t *)spl.in_out_params;
@@ -1581,9 +1587,6 @@ void xmhfhic_arch_setup_slab_mem_page_tables(void){
     spl.dst_slabid = XMHFGEEC_SLAB_UAPI_SLABMEMPGTBL;
     spl.cpuid = 0; //XXX: fixme, need to plug in BSP cpuid here
 
-    //gather memory types for EPT (for guest slabs)
-    __xmhfhic_vmx_gathermemorytypes();
-    _XDPRINTF_("%s: gathered EPT memory types\n", __func__);
 
 
     //setup verified slabs' page tables, uses slab index for GEEC_PRIME
