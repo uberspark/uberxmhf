@@ -242,3 +242,6 @@ __attribute__((section(".data"))) slab_devicemap_t _sda_slab_devicemap[XMHFGEEC_
 
 __attribute__((section(".data"))) sysdev_memioregions_t sysdev_memioregions[MAX_PLATFORM_DEVICES];
 __attribute__((section(".data"))) u32 numentries_sysdev_memioregions=0;
+
+
+__attribute__((section(".data"))) struct _memorytype _vmx_ept_memorytypes[MAX_MEMORYTYPE_ENTRIES]; //EPT memory types array
