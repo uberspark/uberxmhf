@@ -160,6 +160,6 @@ void gp_state1_mainhub(void){
 	}
 
 
-	_geec_prime_main();
+	gp_state2_main();
 }
 

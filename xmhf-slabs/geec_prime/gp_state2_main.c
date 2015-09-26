@@ -75,7 +75,7 @@ void _geec_prime_setup_cpustate(void);
 
 
 
-void _geec_prime_main(void){
+void gp_state2_main(void){
     u64 pgtblbase;
 
 

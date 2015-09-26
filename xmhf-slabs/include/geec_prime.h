@@ -229,6 +229,8 @@ void gp_state1_mainhub(void);
 void gp_state1_mainchkreq(void);
 void gp_state1_mainpostdrt(void);
 
+void gp_state2_main(void);
+
 
 void xmhfhic_arch_setup_slab_info(void);
 void xmhfhic_arch_sanity_check_requirements(void);
