@@ -244,6 +244,10 @@ void gp_state2_mainsetupiotbl(void);
 void gp_state2_mainsetupmempgtbl(void);
 
 
+CASM_FUNCDECL(void gp_state3_entry(void *noparam));
+CASM_FUNCDECL(bool gp_state3_apstacks(void *noparam));
+
+
 void xmhfhic_arch_setup_slab_info(void);
 void xmhfhic_arch_sanity_check_requirements(void);
 void xmhfhic_arch_setup_slab_device_allocation(void);
@@ -260,8 +264,6 @@ void xmhfhic_arch_setup_base_cpu_data_structures(void);
 void xmhf_hic_arch_setup_cpu_state(u64 cpuid);
 void xmhfhic_smp_entry(u32 cpuid);
 
-CASM_FUNCDECL(void _ap_bootstrap_code(void *noparam));
-CASM_FUNCDECL(bool __xmhfhic_ap_entry(void *noparam));
 CASM_FUNCDECL(void __xmhfhic_x86vmx_reloadCS(u32 cs_sel));
 CASM_FUNCDECL(void __xmhfhic_x86vmx_reloadsegregs(u32 ds_sel));
 
