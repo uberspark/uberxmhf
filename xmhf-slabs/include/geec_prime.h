@@ -231,6 +231,7 @@ extern __attribute__((section(".data"))) u32 numentries_sysdev_memioregions;
 
 extern __attribute__((section(".data"))) struct _memorytype _vmx_ept_memorytypes[MAX_MEMORYTYPE_ENTRIES]; //EPT memory types array
 
+extern __attribute__((section(".data"))) mtrr_state_t _mtrrs;
 
 
 
@@ -246,6 +247,9 @@ void gp_state2_mainsetupmempgtbl(void);
 
 CASM_FUNCDECL(void gp_state3_entry(void *noparam));
 CASM_FUNCDECL(bool gp_state3_apstacks(void *noparam));
+
+
+void gp_state4_entry(void);
 
 
 void xmhfhic_arch_setup_slab_info(void);
