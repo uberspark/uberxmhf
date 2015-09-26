@@ -76,46 +76,32 @@ void _geec_prime_setup_cpustate(void);
 
 
 void gp_state2_main(void){
-    u64 pgtblbase;
+
+	//setup slab system device allocation and device page tables
+	xmhfhic_arch_setup_slab_device_allocation();
 
 
+	//setup (unverified) slab iotbl
+	geec_prime_setup_slab_iotbl();
 
 
-#if !defined (__XMHF_VERIFICATION__)
-    //setup slab system device allocation and device page tables
-        xmhfhic_arch_setup_slab_device_allocation();
+	//setup slab memory page tables
+	xmhfhic_arch_setup_slab_mem_page_tables();
 
 
-    //setup (unverified) slab iotbl
-    geec_prime_setup_slab_iotbl();
+	//switch to prime page tables
+	_XDPRINTF_("Proceeding to switch to GEEC_PRIME pagetables...\n");
+	//CASM_FUNCCALL(write_cr3,(u32)xmhfgeec_slab_info_table[XMHFGEEC_SLAB_GEEC_PRIME].mempgtbl_cr3);
+	CASM_FUNCCALL(write_cr3,(u32)&gp_rwdatahdr.gp_vhslabmempgtbl_lvl4t);
+	_XDPRINTF_("Switched to GEEC_PRIME pagetables...\n");
 
 
-    //setup slab memory page tables
-    xmhfhic_arch_setup_slab_mem_page_tables();
-#endif //__XMHF_VERIFICATION__
+	//setup (SMP) CPU state
+	_geec_prime_setup_cpustate();
 
-    //switch to prime page tables
-    _XDPRINTF_("Proceeding to switch to GEEC_PRIME pagetables...\n");
-    //CASM_FUNCCALL(write_cr3,(u32)xmhfgeec_slab_info_table[XMHFGEEC_SLAB_GEEC_PRIME].mempgtbl_cr3);
-    CASM_FUNCCALL(write_cr3,(u32)&gp_rwdatahdr.gp_vhslabmempgtbl_lvl4t);
-    _XDPRINTF_("Switched to GEEC_PRIME pagetables...\n");
-
-/*    //transfer control to geec_primesmp
-    {
-        slab_params_t spl;
-        spl.src_slabid = XMHFGEEC_SLAB_GEEC_PRIME;
-        spl.dst_slabid = XMHFGEEC_SLAB_GEEC_PRIMESMP;
-        spl.dst_uapifn = 0;
-        spl.cpuid = 0;
-        XMHF_SLAB_CALLNEW(&spl);
-    }*/
-
-    //setup (SMP) CPU state
-    _geec_prime_setup_cpustate();
-
-    //we should never get here
-    _XDPRINTF_("Should never be here. Halting!\n");
-    HALT();
+	//we should never get here
+	_XDPRINTF_("Should never be here. Halting!\n");
+	HALT();
 }
 
 
