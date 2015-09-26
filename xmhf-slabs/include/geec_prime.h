@@ -240,7 +240,7 @@ void xmhfhic_arch_setup_slab_mem_page_tables(void);
 
 CASM_FUNCDECL(void xmhfhic_arch_relinquish_control_to_init_slab(u64 cpuid, u64 entrystub, u64 mempgtbl_cr3, u64 slabtos));
 
-void _geec_prime_main(void);
+//void _geec_prime_main(void);
 
 
 void xmhfhic_arch_switch_to_smp(void);
