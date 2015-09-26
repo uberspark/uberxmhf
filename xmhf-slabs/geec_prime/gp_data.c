@@ -238,3 +238,7 @@ __attribute__((section(".data"))) __attribute__((aligned(4096))) u64 _xcprimeon_
 __attribute__((section(".data"))) __attribute__((aligned(4096))) u64 _xcprimeon_init_pdpt[PAE_MAXPTRS_PER_PDPT];
 
 
+__attribute__((section(".data"))) slab_devicemap_t _sda_slab_devicemap[XMHFGEEC_TOTAL_SLABS];
+
+__attribute__((section(".data"))) sysdev_memioregions_t sysdev_memioregions[MAX_PLATFORM_DEVICES];
+__attribute__((section(".data"))) u32 numentries_sysdev_memioregions=0;
