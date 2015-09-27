@@ -255,6 +255,9 @@ CASM_FUNCDECL(bool gp_state3_apstacks(void *noparam));
 void gp_state4_entry(void);
 
 
+void gp_state5_entry(u32 cpuid, bool isbsp);
+
+
 void xmhfhic_arch_setup_slab_info(void);
 void xmhfhic_arch_sanity_check_requirements(void);
 void xmhfhic_arch_setup_slab_device_allocation(void);
