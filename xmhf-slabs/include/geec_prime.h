@@ -139,16 +139,6 @@ typedef struct {
 } __attribute__((packed)) geec_prime_tss_t;
 
 
-extern __attribute__(( section(".data") )) XMHF_BOOTINFO *xcbootinfo;
-
-
-void xmhfhic_arch_setup_slab_info(void);
-void xmhfhic_arch_sanity_check_requirements(void);
-void xmhfhic_arch_setup_slab_device_allocation(void);
-void xmhfhic_arch_setup_slab_mem_page_tables(void);
-
-
-CASM_FUNCDECL(void xmhfhic_arch_relinquish_control_to_init_slab(u64 cpuid, u64 entrystub, u64 mempgtbl_cr3, u64 slabtos));
 
 
 
@@ -191,6 +181,9 @@ typedef struct {
 } gp_rwdatahdr_t;
 
 
+
+extern __attribute__(( section(".data") )) XMHF_BOOTINFO *xcbootinfo;
+
 extern __attribute__(( section(".rwdatahdr") )) gp_rwdatahdr_t gp_rwdatahdr;
 
 extern __attribute__((section(".data"))) __attribute__(( aligned(16) )) idtentry_t __xmhfhic_x86vmx_idt_start[EMHF_XCPHANDLER_MAXEXCEPTIONS]; //ro
@@ -224,7 +217,56 @@ extern __attribute__((section(".data"))) __attribute__((aligned(4096))) u64 gp_u
 extern __attribute__((section(".data"))) __attribute__((aligned(4096))) u64 gp_uhslabmempgtbl_lvl2t[XMHFGEEC_TOTAL_UHSLABS][PAE_PTRS_PER_PDPT][PAE_PTRS_PER_PDT];
 extern __attribute__((section(".data"))) __attribute__((aligned(4096)))  u64 gp_uhslabmempgtbl_lvl1t[XMHFGEEC_TOTAL_UHSLABS][PAE_PTRS_PER_PDPT][PAE_PTRS_PER_PDT][PAE_PTRS_PER_PT];
 
+//////
+// bootstrap unity mapped page-tables
+extern __attribute__((section(".data"))) __attribute__((aligned(4096))) u64 _xcprimeon_init_pdt[PAE_PTRS_PER_PDPT][PAE_PTRS_PER_PDT];
+extern __attribute__((section(".data"))) __attribute__((aligned(4096))) u64 _xcprimeon_init_pdpt[PAE_MAXPTRS_PER_PDPT];
 
+
+extern __attribute__((section(".data"))) slab_devicemap_t _sda_slab_devicemap[XMHFGEEC_TOTAL_SLABS];
+
+extern __attribute__((section(".data"))) sysdev_memioregions_t sysdev_memioregions[MAX_PLATFORM_DEVICES];
+extern __attribute__((section(".data"))) u32 numentries_sysdev_memioregions;
+
+
+extern __attribute__((section(".data"))) struct _memorytype _vmx_ept_memorytypes[MAX_MEMORYTYPE_ENTRIES]; //EPT memory types array
+
+extern __attribute__((section(".data"))) mtrr_state_t _mtrrs;
+
+extern __attribute__((section(".data"))) u32 gp_state4_smplock;
+
+
+
+
+void gp_s1_bspstack(slab_params_t *sp);
+void gp_s1_hub(void);
+void gp_s1_chkreq(void);
+void gp_s1_postdrt(void);
+
+void gp_s2_entry(void);
+void gp_s2_setupiotbl(void);
+void gp_s2_setupmempgtbl(void);
+
+
+CASM_FUNCDECL(void gp_s3_entry(void *noparam));
+CASM_FUNCDECL(bool gp_s3_apstacks(void *noparam));
+
+
+void gp_s4_s6_entry(void);
+
+
+void gp_s5_entry(u32 cpuid, bool isbsp);
+
+
+void xmhfhic_arch_setup_slab_info(void);
+void xmhfhic_arch_sanity_check_requirements(void);
+void xmhfhic_arch_setup_slab_device_allocation(void);
+void xmhfhic_arch_setup_slab_mem_page_tables(void);
+
+
+CASM_FUNCDECL(void xmhfhic_arch_relinquish_control_to_init_slab(u64 cpuid, u64 entrystub, u64 mempgtbl_cr3, u64 slabtos));
+
+//void _geec_prime_main(void);
 
 
 void xmhfhic_arch_switch_to_smp(void);
@@ -232,8 +274,6 @@ void xmhfhic_arch_setup_base_cpu_data_structures(void);
 void xmhf_hic_arch_setup_cpu_state(u64 cpuid);
 void xmhfhic_smp_entry(u32 cpuid);
 
-CASM_FUNCDECL(void _ap_bootstrap_code(void *noparam));
-CASM_FUNCDECL(bool __xmhfhic_ap_entry(void *noparam));
 CASM_FUNCDECL(void __xmhfhic_x86vmx_reloadCS(u32 cs_sel));
 CASM_FUNCDECL(void __xmhfhic_x86vmx_reloadsegregs(u32 ds_sel));
 
