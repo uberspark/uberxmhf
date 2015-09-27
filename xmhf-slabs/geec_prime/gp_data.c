@@ -232,3 +232,20 @@ __attribute__((section(".data"))) __attribute__((aligned(4096))) u64 gp_uhslabme
 __attribute__((section(".data"))) __attribute__((aligned(4096)))  u64 gp_uhslabmempgtbl_lvl1t[XMHFGEEC_TOTAL_UHSLABS][PAE_PTRS_PER_PDPT][PAE_PTRS_PER_PDT][PAE_PTRS_PER_PT];
 
 
+//////
+// bootstrap unity mapped page-tables
+__attribute__((section(".data"))) __attribute__((aligned(4096))) u64 _xcprimeon_init_pdt[PAE_PTRS_PER_PDPT][PAE_PTRS_PER_PDT];
+__attribute__((section(".data"))) __attribute__((aligned(4096))) u64 _xcprimeon_init_pdpt[PAE_MAXPTRS_PER_PDPT];
+
+
+__attribute__((section(".data"))) slab_devicemap_t _sda_slab_devicemap[XMHFGEEC_TOTAL_SLABS];
+
+__attribute__((section(".data"))) sysdev_memioregions_t sysdev_memioregions[MAX_PLATFORM_DEVICES];
+__attribute__((section(".data"))) u32 numentries_sysdev_memioregions=0;
+
+
+__attribute__((section(".data"))) struct _memorytype _vmx_ept_memorytypes[MAX_MEMORYTYPE_ENTRIES]; //EPT memory types array
+
+__attribute__((section(".data"))) mtrr_state_t _mtrrs;
+
+__attribute__((section(".data"))) u32 gp_state4_smplock = 1;
