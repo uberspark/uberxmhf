@@ -410,18 +410,6 @@ void drv_path_callv2uvg(void){
 
 
 
-#if defined (DRV_PATH_EXCEPTION)
-x86vmx_exception_frame_t drv_path_exception_excpframe;
-
-void drv_path_exception(void){
-	xmhfhwm_cpu_gprs_esp -= sizeof(x86vmx_exception_frame_t);
-
-	//invoke sentinel exception stub
-	//CASM_FUNCCALL(__xmhf_exception_handler_0, CASM_NOPARAM);
-	CASM_FUNCCALL(__xmhf_exception_handler_8, CASM_NOPARAM);
-	//@assert false;
-}
-#endif // defined
 
 
 
@@ -441,7 +429,7 @@ void drv_path_callicpt(void){
 #endif // defined
 
 
-
+#if defined (DRV_PATH_RETICPT)
 slab_params_t drv_path_reticpt_sp;
 
 void xmhfhwm_vdriver_slabep(void){
@@ -459,7 +447,44 @@ void drv_path_reticpt(void){
 	CASM_FUNCCALL(_slab_entrystub, &drv_path_reticpt_sp);
 	//@assert false;
 }
+#endif // defined
 
+
+#if defined (DRV_PATH_CALLEXCP)
+x86vmx_exception_frame_t drv_path_callexcp_excpframe;
+
+void xmhfhwm_vdriver_slabep(void){
+	//@assert false;
+}
+
+void drv_path_callexcp(void){
+	xmhfhwm_cpu_gprs_esp -= sizeof(x86vmx_exception_frame_t);
+
+	//invoke sentinel exception stub
+	//CASM_FUNCCALL(__xmhf_exception_handler_0, CASM_NOPARAM);
+	CASM_FUNCCALL(__xmhf_exception_handler_8, CASM_NOPARAM);
+	//@assert false;
+}
+#endif // defined
+
+
+
+slab_params_t drv_path_retexcp_sp;
+
+void xmhfhwm_vdriver_slabep(void){
+	//@assert false;
+}
+
+void drv_path_retexcp(void){
+	drv_path_retexcp_sp.slab_ctype = XMHFGEEC_SENTINEL_RET_EXCEPTION;
+        drv_path_retexcp_sp.src_slabid = XMHFGEEC_SLAB_XC_EXHUB;
+        drv_path_retexcp_sp.dst_slabid = XMHFGEEC_SLAB_GEEC_SENTINEL; //XXX: TODO: plug in normal slab id after adding support to sentinel
+        drv_path_retexcp_sp.dst_uapifn = 0;
+	drv_path_retexcp_sp.cpuid = 0;
+
+	CASM_FUNCCALL(_slab_entrystub, &drv_path_retexcp_sp);
+	//@assert false;
+}
 
 
 
@@ -499,17 +524,22 @@ void main(void){
 	drv_path_callv2uvg();
 #endif // defined
 
-#if defined (DRV_PATH_EXCEPTION)
-	drv_path_exception();
-#endif // defined
 
 #if defined (DRV_PATH_CALLICPT)
 	drv_path_callicpt();
 #endif // defined
 
-
+#if defined (DRV_PATH_RETICPT)
 	drv_path_reticpt();
+#endif // defined
 
+
+#if defined (DRV_PATH_CALLEXCP)
+	drv_path_callexcp();
+#endif // defined
+
+
+	drv_path_retexcp();
 
 	//{
 	//	unsigned char *p = (unsigned char *)(0x06c00000+ (1*XMHF_SLAB_STACKSIZE));

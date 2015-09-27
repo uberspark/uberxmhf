@@ -55,7 +55,7 @@
 #include <xmhfgeec.h>
 #include <geec_sentinel.h>
 
-CASM_FUNCDEF(void, _geec_sentinel_xfer_ret_from_exception,
+CASM_FUNCDEF(void, gs_exit_retexcp,
 {
     xmhfhwm_cpu_insn_movl_mesp_eax(0x4);    //eax = exception frame
     xmhfhwm_cpu_insn_movl_meax_edi(0x0);
