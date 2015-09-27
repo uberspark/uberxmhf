@@ -2405,6 +2405,9 @@ extern void _impl_xmhfhwm_cpu_insn_movl_meax_eax(int index);
 extern void _impl_xmhfhwm_cpu_insn_movl_meax_esp(int index);
 extern void  _impl_xmhfhwm_cpu_insn_vmresume(void);
 
+extern void _impl_xmhfhwm_cpu_insn_movl_meax_esi(int index);
+extern void _impl_xmhfhwm_cpu_insn_iretl(void);
+
 
 //////
 // CASM C to ASM call macros
@@ -2728,7 +2731,10 @@ extern void  _impl_xmhfhwm_cpu_insn_vmresume(void);
 	_impl_xmhfhwm_cpu_insn_movl_meax_edi(x); \
 
 
-#define xmhfhwm_cpu_insn_movl_meax_esi(x) __builtin_annot("movl "#x"(%eax), %esi ");
+#define xmhfhwm_cpu_insn_movl_meax_esi(x) \
+	__builtin_annot("movl "#x"(%eax), %esi "); \
+	_impl_xmhfhwm_cpu_insn_movl_meax_esi(x); \
+
 
 #define xmhfhwm_cpu_insn_movl_meax_ebp(x) \
 	__builtin_annot("movl "#x"(%eax), %ebp "); \
@@ -3189,7 +3195,10 @@ extern void  _impl_xmhfhwm_cpu_insn_vmresume(void);
 	__builtin_annot("xgetbv "); \
 	_impl_xmhfhwm_cpu_insn_xgetbv(); \
 
-#define xmhfhwm_cpu_insn_iretl() __builtin_annot("iretl ");
+#define xmhfhwm_cpu_insn_iretl() \
+	__builtin_annot("iretl "); \
+	_impl_xmhfhwm_cpu_insn_iretl();
+
 #define xmhfhwm_cpu_insn_sysexit() \
 	__builtin_annot("sysexit "); \
 	xmhfhwm_cpu_gprs_eip = xmhfhwm_cpu_gprs_edx; \
