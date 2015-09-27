@@ -247,3 +247,5 @@ __attribute__((section(".data"))) u32 numentries_sysdev_memioregions=0;
 __attribute__((section(".data"))) struct _memorytype _vmx_ept_memorytypes[MAX_MEMORYTYPE_ENTRIES]; //EPT memory types array
 
 __attribute__((section(".data"))) mtrr_state_t _mtrrs;
+
+__attribute__((section(".data"))) u32 gp_state4_smplock = 1;
