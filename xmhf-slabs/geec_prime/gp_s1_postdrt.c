@@ -48,26 +48,31 @@
 #include <xmhf-debug.h>
 
 #include <xmhfgeec.h>
+
 #include <geec_prime.h>
+#include <geec_sentinel.h>
+#include <uapi_slabmempgtbl.h>
+#include <uapi_slabdevpgtbl.h>
+#include <uapi_slabiotbl.h>
+#include <xc_init.h>
 
-//////
-// XMHF/GEEC prime state-1 entry
-// author: amit vasudevan (amitvasudevan@acm.org)
+void gp_s1_postdrt(void){
+	txt_heap_t *txt_heap;
+	os_mle_data_t os_mle_data;
 
+	txt_heap = get_txt_heap();
+	_XDPRINTF_("SL: txt_heap = 0x%08x\n", (u32)txt_heap);
+	xmhfhw_sysmemaccess_copy(&os_mle_data, get_os_mle_data_start((txt_heap_t*)((u32)txt_heap), (uint32_t)read_pub_config_reg(TXTCR_HEAP_SIZE)),
+					sizeof(os_mle_data_t));
+	_XDPRINTF_("SL: os_mle_data = 0x%08x\n", (u32)&os_mle_data);
 
-CASM_FUNCDEF(void, slab_main,
-{
-    xmhfhwm_cpu_insn_movw_ds_ax();
-    xmhfhwm_cpu_insn_movw_ax_es();
-    xmhfhwm_cpu_insn_movw_ax_fs();
-    xmhfhwm_cpu_insn_movw_ax_gs();
-    xmhfhwm_cpu_insn_movw_ax_ss();
-    xmhfhwm_cpu_insn_movl_imm_eax(_init_bsp_cpustack);
-    xmhfhwm_cpu_insn_addl_imm_eax(MAX_PLATFORM_CPUSTACK_SIZE);
-    xmhfhwm_cpu_insn_movl_eax_esp();
-    xmhfhwm_cpu_insn_call(gp_state1_main);
-    xmhfhwm_cpu_insn_hlt();
-},
-slab_params_t *sp)
+	// restore pre-SENTER MTRRs that were overwritten for SINIT launch
+	if(!validate_mtrrs(&(os_mle_data.saved_mtrr_state))) {
+		_XDPRINTF_("SECURITY FAILURE: validate_mtrrs() failed.\n");
+		HALT();
+	}
+	_XDPRINTF_("SL: Validated MTRRs\n");
 
-
+	xmhfhw_cpu_x86_restore_mtrrs(&(os_mle_data.saved_mtrr_state));
+    _XDPRINTF_("SL: Restored MTRRs\n");
+}

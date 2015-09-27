@@ -238,24 +238,24 @@ extern __attribute__((section(".data"))) u32 gp_state4_smplock;
 
 
 
-void gp_state1_main(slab_params_t *sp);
-void gp_state1_mainhub(void);
-void gp_state1_mainchkreq(void);
-void gp_state1_mainpostdrt(void);
+void gp_s1_bspstack(slab_params_t *sp);
+void gp_s1_hub(void);
+void gp_s1_chkreq(void);
+void gp_s1_postdrt(void);
 
-void gp_state2_main(void);
-void gp_state2_mainsetupiotbl(void);
-void gp_state2_mainsetupmempgtbl(void);
-
-
-CASM_FUNCDECL(void gp_state3_entry(void *noparam));
-CASM_FUNCDECL(bool gp_state3_apstacks(void *noparam));
+void gp_s2_entry(void);
+void gp_s2_setupiotbl(void);
+void gp_s2_setupmempgtbl(void);
 
 
-void gp_state4_entry(void);
+CASM_FUNCDECL(void gp_s3_entry(void *noparam));
+CASM_FUNCDECL(bool gp_s3_apstacks(void *noparam));
 
 
-void gp_state5_entry(u32 cpuid, bool isbsp);
+void gp_s4_s6_entry(void);
+
+
+void gp_s5_entry(u32 cpuid, bool isbsp);
 
 
 void xmhfhic_arch_setup_slab_info(void);

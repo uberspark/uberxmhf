@@ -75,7 +75,7 @@ static void __xmhfhic_smp_container_vmx_wakeupAPs(void);
 
 
 
-void gp_state2_main(void){
+void gp_s2_entry(void){
 
 	//setup slab system device allocation and device page tables
 	xmhfhic_arch_setup_slab_device_allocation();
@@ -87,12 +87,12 @@ void gp_state2_main(void){
 
 
 	//setup (unverified) slab iotbl
-	gp_state2_mainsetupiotbl();
+	gp_s2_setupiotbl();
 
 
 	//setup slab memory page tables
 	//xmhfhic_arch_setup_slab_mem_page_tables();
-	gp_state2_mainsetupmempgtbl();
+	gp_s2_setupmempgtbl();
 
 
 	//switch to prime page tables
@@ -118,7 +118,7 @@ void gp_state2_main(void){
 
 	//fall through to common code
 	_XDPRINTF_("%s: Relinquishing BSP thread and moving to common...\n", __func__);
-	gp_state4_entry();
+	gp_s4_s6_entry();
 
 	//we should never get here
 	_XDPRINTF_("%s:%u: Must never get here. Halting\n", __func__, __LINE__);
@@ -1252,7 +1252,7 @@ static void __xmhfhic_smp_container_vmx_wakeupAPs(void){
 
     apdata.ap_cr3 = CASM_FUNCCALL(read_cr3,CASM_NOPARAM);
     apdata.ap_cr4 = CASM_FUNCCALL(read_cr4,CASM_NOPARAM);
-    apdata.ap_entrypoint = (u32)&gp_state3_apstacks;
+    apdata.ap_entrypoint = (u32)&gp_s3_apstacks;
     apdata.ap_gdtdesc_limit = sizeof(apdata.ap_gdt) - 1;
     //apdata.ap_gdtdesc_base = (X86SMP_APBOOTSTRAP_DATASEG << 4) + offsetof(x86smp_apbootstrapdata_t, ap_gdt);
     apdata.ap_gdtdesc_base = (X86SMP_APBOOTSTRAP_DATASEG << 4) + 48;
@@ -1269,7 +1269,7 @@ static void __xmhfhic_smp_container_vmx_wakeupAPs(void){
 
     memcpy((void *)(X86SMP_APBOOTSTRAP_DATASEG << 4), (void *)&apdata, sizeof(apdata));
 
-    memcpy((void *)(X86SMP_APBOOTSTRAP_CODESEG << 4), (void *)&gp_state3_entry, PAGE_SIZE_4K);
+    memcpy((void *)(X86SMP_APBOOTSTRAP_CODESEG << 4), (void *)&gp_s3_entry, PAGE_SIZE_4K);
 
 #if defined (__DRT__)
     {

@@ -56,41 +56,48 @@
 #include <uapi_slabiotbl.h>
 #include <xc_init.h>
 
+///////////////////////////////////////////////////////////////
+// sanity check HIC (hardware) requirements
+void gp_s1_chkreq(void){
+	u32 cpu_vendor;
 
+	//grab CPU vendor
+	cpu_vendor = xmhf_baseplatform_arch_getcpuvendor();
+	if (cpu_vendor != CPU_VENDOR_INTEL){
+		_XDPRINTF_("%s: not an Intel CPU but running VMX backend. Halting!\n", __func__);
+		HALT();
+	}
 
+	//check VMX support
+	{
+		u32	cpu_features;
+		u32 res0,res1,res2;
 
+ CASM_FUNCCALL(xmhfhw_cpu_cpuid,0x1, &res0, &res1, &cpu_features, &res2);
 
-//common function which is entered by all CPUs upon SMP initialization
-//note: this is specific to the x86 architecture backend
-void gp_state4_entry(void){
-	u32 cpuid;
-	bool isbsp;
+		if ( ( cpu_features & (1<<5) ) == 0 ){
+			_XDPRINTF_("No VMX support. Halting!\n");
+			HALT();
+		}
+	}
 
-	isbsp = xmhfhw_lapic_isbsp();
-	cpuid  = xmhf_baseplatform_arch_x86_getcpulapicid();
-
-        CASM_FUNCCALL(spin_lock,&gp_state4_smplock);
-
-	gp_state5_entry(cpuid, isbsp);
-
-        CASM_FUNCCALL(spin_unlock,&gp_state4_smplock);
-
-    //relinquish HIC initialization and move on to the first slab
-    _XDPRINTF_("%s[%u]: proceeding to call init slab at %x\n", __func__, (u16)cpuid,
-                xmhfgeec_slab_info_table[XMHFGEEC_SLAB_XC_INIT].entrystub);
-
+	//we require unrestricted guest and EPT support, bail out if we don't have it
     {
-        slab_params_t sp;
+        u64 msr_procctls2 = CASM_FUNCCALL(rdmsr64,IA32_VMX_PROCBASED_CTLS2_MSR);
+        if( !( (msr_procctls2 >> 32) & 0x80 ) ){
+            _XDPRINTF_("%s: need unrestricted guest support but did not find any!\n", __func__);
+            HALT();
+        }
 
-        memset(&sp, 0, sizeof(sp));
-        sp.cpuid = cpuid;
-        sp.src_slabid = XMHFGEEC_SLAB_GEEC_PRIME;
-        sp.dst_slabid = XMHFGEEC_SLAB_XC_INIT;
-        XMHF_SLAB_CALLNEW(&sp);
+        if( !( (msr_procctls2 >> 32) & 0x2) ){
+            _XDPRINTF_("%s: need EPTt support but did not find any!\n", __func__);
+            HALT();
+        }
+
     }
 
 
-    _XDPRINTF_("%s[%u,%u]: Should never be here. Halting!\n", __func__, (u16)cpuid, isbsp);
-    HALT();
-
 }
+
+
+

@@ -48,64 +48,57 @@
 #include <xmhf-debug.h>
 
 #include <xmhfgeec.h>
+
 #include <geec_prime.h>
+#include <geec_sentinel.h>
+#include <uapi_slabmempgtbl.h>
+#include <uapi_slabdevpgtbl.h>
+#include <uapi_slabiotbl.h>
+#include <xc_init.h>
 
 
-// GEEC prime SMP assembly language code blobs
-// author: amit vasudevan (amitvasudevan@acm.org)
 
 
-CASM_FUNCDEF(bool, gp_state3_apstacks,
-{
-    xmhfhwm_cpu_insn_movw_ds_ax();
-    xmhfhwm_cpu_insn_movw_ax_es();
-    xmhfhwm_cpu_insn_movw_ax_fs();
-    xmhfhwm_cpu_insn_movw_ax_gs();
-    xmhfhwm_cpu_insn_movw_ax_ss();
+void gp_s1_bspstack(slab_params_t *sp){
+	u32 paddr=0;
+	u32 i, j;
+	u64 pdpe_flags = (_PAGE_PRESENT);
+	u64 pdte_flags = (_PAGE_RW | _PAGE_PSE | _PAGE_PRESENT);
 
-    xmhfhwm_cpu_insn_movl_cr4_eax();
-    xmhfhwm_cpu_insn_orl_imm_eax(0x00000030);
-    xmhfhwm_cpu_insn_movl_eax_cr4();
 
-    xmhfhwm_cpu_insn_movl_ebx_cr3();
 
-    xmhfhwm_cpu_insn_movl_imm_ecx(0xc0000080);
-    xmhfhwm_cpu_insn_rdmsr();
-    xmhfhwm_cpu_insn_orl_imm_eax(0x00000800);
-    xmhfhwm_cpu_insn_wrmsr();
 
-    xmhfhwm_cpu_insn_movl_cr0_eax();
-    xmhfhwm_cpu_insn_orl_imm_eax(0x80000015);
-    xmhfhwm_cpu_insn_movl_eax_cr0();
 
-    //TODO: for non-TXT wakeup we need to reload GDT
-    //"movl %1, %esi \r\n");
-    //"lgdt (%esi) \r\n");
+    memset(&_xcprimeon_init_pdpt, 0, sizeof(_xcprimeon_init_pdpt));
 
-    xmhfhwm_cpu_insn_movl_imm_ecx(0x0000001B);
-    xmhfhwm_cpu_insn_rdmsr();
-    xmhfhwm_cpu_insn_andl_imm_ecx(0x00000FFF);
-    xmhfhwm_cpu_insn_orl_imm_eax(0xFEE00000);
-    xmhfhwm_cpu_insn_wrmsr();
+    for(i=0; i < PAE_PTRS_PER_PDPT; i++){
+        u64 entry_addr = (u64)&_xcprimeon_init_pdt[i][0];
+        _xcprimeon_init_pdpt[i] = pae_make_pdpe(entry_addr, pdpe_flags);
 
-    xmhfhwm_cpu_insn_xorl_eax_eax();
-    xmhfhwm_cpu_insn_movl_imm_eax(0xFEE00020);
-    xmhfhwm_cpu_insn_movl_meax_eax(0x0);
-    xmhfhwm_cpu_insn_shr_imm_eax(24);           //eax = lapic id (0-255)
+        for(j=0; j < PAE_PTRS_PER_PDT; j++){
+            if(paddr == 0xfee00000 || paddr == 0xfec00000)
+                _xcprimeon_init_pdt[i][j] = pae_make_pde_big(paddr, (pdte_flags | _PAGE_PCD));
+            else
+                _xcprimeon_init_pdt[i][j] = pae_make_pde_big(paddr, pdte_flags);
 
-    //xmhfhwm_cpu_insn_xorl_ebx_ebx();
-    //xmhfhwm_cpu_insn_movl_edi_ebx();
+            paddr += PAGE_SIZE_2M;
+        }
+    }
 
-    //xmhfhwm_cpu_insn_movl_mebxeax_eax(4);
 
-    xmhfhwm_cpu_insn_movl_imm_ecx(16384);
-    xmhfhwm_cpu_insn_mull_ecx();
-    xmhfhwm_cpu_insn_addl_ecx_eax();
-    xmhfhwm_cpu_insn_addl_imm_eax(_init_cpustacks);
-    xmhfhwm_cpu_insn_movl_eax_esp();
+    {
+	u64 msr_efer;
+	msr_efer = (CASM_FUNCCALL(rdmsr64, MSR_EFER) | (0x800));
+	CASM_FUNCCALL(wrmsr64,MSR_EFER, (u32)msr_efer, (u32)((u64)msr_efer >> 32) );
+        _XDPRINTF_("EFER=%016llx\n", CASM_FUNCCALL(rdmsr64,MSR_EFER));
+	CASM_FUNCCALL(write_cr4,read_cr4(CASM_NOPARAM) | (0x30) );
+        _XDPRINTF_("CR4=%08x\n", CASM_FUNCCALL(read_cr4,CASM_NOPARAM));
+	CASM_FUNCCALL(write_cr3,(u32)&_xcprimeon_init_pdpt);
+        _XDPRINTF_("CR3=%08x\n", CASM_FUNCCALL(read_cr3,CASM_NOPARAM));
+	CASM_FUNCCALL(write_cr0,0x80000015);
+    }
 
-    xmhfhwm_cpu_insn_jmp(gp_state4_entry);
-},
-void *noparam)
 
+	gp_s1_hub();
+}
 

@@ -143,7 +143,7 @@ static void gp_setup_ugslab_iotbl(u32 slabid){
 
 
 
-void gp_state2_mainsetupiotbl(void){
+void gp_s2_setupiotbl(void){
     u32 i, slabtype;
 
 
