@@ -410,18 +410,6 @@ void drv_path_callv2uvg(void){
 
 
 
-#if defined (DRV_PATH_EXCEPTION)
-x86vmx_exception_frame_t drv_path_exception_excpframe;
-
-void drv_path_exception(void){
-	xmhfhwm_cpu_gprs_esp -= sizeof(x86vmx_exception_frame_t);
-
-	//invoke sentinel exception stub
-	//CASM_FUNCCALL(__xmhf_exception_handler_0, CASM_NOPARAM);
-	CASM_FUNCCALL(__xmhf_exception_handler_8, CASM_NOPARAM);
-	//@assert false;
-}
-#endif // defined
 
 
 
@@ -463,6 +451,22 @@ void drv_path_reticpt(void){
 
 
 
+x86vmx_exception_frame_t drv_path_callexcp_excpframe;
+
+void xmhfhwm_vdriver_slabep(void){
+	//@assert false;
+}
+
+void drv_path_callexcp(void){
+	xmhfhwm_cpu_gprs_esp -= sizeof(x86vmx_exception_frame_t);
+
+	//invoke sentinel exception stub
+	//CASM_FUNCCALL(__xmhf_exception_handler_0, CASM_NOPARAM);
+	CASM_FUNCCALL(__xmhf_exception_handler_8, CASM_NOPARAM);
+	//@assert false;
+}
+
+
 
 void main(void){
 	//populate hardware model stack and program counter
@@ -500,9 +504,6 @@ void main(void){
 	drv_path_callv2uvg();
 #endif // defined
 
-#if defined (DRV_PATH_EXCEPTION)
-	drv_path_exception();
-#endif // defined
 
 #if defined (DRV_PATH_CALLICPT)
 	drv_path_callicpt();
@@ -511,6 +512,10 @@ void main(void){
 #if defined (DRV_PATH_RETICPT)
 	drv_path_reticpt();
 #endif // defined
+
+
+
+	drv_path_callexcp();
 
 
 	//{

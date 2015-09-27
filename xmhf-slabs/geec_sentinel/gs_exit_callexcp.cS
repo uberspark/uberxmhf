@@ -61,11 +61,11 @@ CASM_FUNCDEF(void, gs_exit_callexcp,
 {
     xmhfhwm_cpu_insn_movl_mesp_eax(0x4);
     xmhfhwm_cpu_insn_movl_mesp_edx(0x8);
-    xmhfhwm_cpu_insn_movl_edx_esp();
-    xmhfhwm_cpu_insn_pushl_esp();
+    //xmhfhwm_cpu_insn_movl_edx_esp();
+    //xmhfhwm_cpu_insn_pushl_esp();
+    xmhfhwm_cpu_insn_pushl_edx();
     xmhfhwm_cpu_insn_pushl_imm(0x0);
-    xmhfhwm_cpu_insn_jmpl_eax();
-    xmhfhwm_cpu_insn_hlt();
+	xmhfhwm_cpu_insn_jmpslabep();
 },
 u32 entry_point, void *caller_stack_frame)
 
