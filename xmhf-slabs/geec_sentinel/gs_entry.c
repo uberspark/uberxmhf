@@ -245,6 +245,47 @@ void geec_sentinel_main(slab_params_t *sp, void *caller_stack_frame){
 
 
 
+        case XMHFGEEC_SENTINEL_CALL_EXCEPTION:{
+            if(!(xmhfgeec_slab_info_table[sp->dst_slabid].slabtype == XMHFGEEC_SLABTYPE_VfT_PROG)){
+                _XDPRINTF_("GEEC_SENTINEL(ln:%u): exception target slab not VfT_PROG. Halting!\n", __LINE__);
+                HALT();
+            }
+
+            CASM_FUNCCALL(gs_exit_callexcp,
+              xmhfgeec_slab_info_table[sp->dst_slabid].entrystub,
+              caller_stack_frame);
+            _XDPRINTF_("GEEC_SENTINEL[ln:%u]: halting. should never be here!\n",
+                       __LINE__);
+            HALT();
+
+        }
+        break;
+
+
+
+
+
+
+        case XMHFGEEC_SENTINEL_RET_EXCEPTION:{
+            if(!
+               (xmhfgeec_slab_info_table[sp->src_slabid].slabtype == XMHFGEEC_SLABTYPE_VfT_PROG &&
+                sp->dst_slabid == XMHFGEEC_SLAB_GEEC_SENTINEL)){
+                _XDPRINTF_("GEEC_SENTINEL(ln:%u): exception ret source slab not VfT_PROG_EXCEPTION. Halting!\n", __LINE__);
+                HALT();
+            }
+
+            CASM_FUNCCALL(gs_exit_retexcp,
+                sp->in_out_params);
+            _XDPRINTF_("GEEC_SENTINEL[ln:%u]: halting. should never be here!\n",
+                       __LINE__);
+            HALT();
+
+        }
+        break;
+
+
+
+
 
 
 

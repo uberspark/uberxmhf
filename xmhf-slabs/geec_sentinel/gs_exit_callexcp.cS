@@ -57,7 +57,7 @@
 
 
 
-CASM_FUNCDEF(void, _geec_sentinel_xfer_exception_to_vft_prog,
+CASM_FUNCDEF(void, gs_exit_callexcp,
 {
     xmhfhwm_cpu_insn_movl_mesp_eax(0x4);
     xmhfhwm_cpu_insn_movl_mesp_edx(0x8);
