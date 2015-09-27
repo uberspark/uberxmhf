@@ -441,7 +441,7 @@ void drv_path_callicpt(void){
 #endif // defined
 
 
-
+#if defined (DRV_PATH_RETICPT)
 slab_params_t drv_path_reticpt_sp;
 
 void xmhfhwm_vdriver_slabep(void){
@@ -459,6 +459,7 @@ void drv_path_reticpt(void){
 	CASM_FUNCCALL(_slab_entrystub, &drv_path_reticpt_sp);
 	//@assert false;
 }
+#endif // defined
 
 
 
@@ -507,8 +508,9 @@ void main(void){
 	drv_path_callicpt();
 #endif // defined
 
-
+#if defined (DRV_PATH_RETICPT)
 	drv_path_reticpt();
+#endif // defined
 
 
 	//{
