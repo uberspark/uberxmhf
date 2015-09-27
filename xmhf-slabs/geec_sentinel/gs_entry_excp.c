@@ -73,35 +73,18 @@
 ////// exceptions
 
 void gs_entry_excp(x86vmx_exception_frame_t *exframe){
-    //dump relevant info
-    _XDPRINTF_("exception %x\n", exframe->vector);
-    _XDPRINTF_("state dump:\n\n");
-    _XDPRINTF_("errorcode=0x%08x\n", exframe->error_code);
-    _XDPRINTF_("CS:EIP:EFLAGS = 0x%08x:0x%08x:0x%08x\n", exframe->orig_cs, exframe->orig_rip, exframe->orig_rflags);
-    _XDPRINTF_("SS:ESP = 0x%08x:0x%08x\n", exframe->orig_ss, exframe->orig_rsp);
-    _XDPRINTF_("CR0=0x%08x, CR2=0x%08x\n", CASM_FUNCCALL(read_cr0,CASM_NOPARAM), CASM_FUNCCALL(read_cr2,CASM_NOPARAM));
-    _XDPRINTF_("CR3=0x%08x, CR4=0x%08x\n", CASM_FUNCCALL(read_cr3,CASM_NOPARAM), CASM_FUNCCALL(read_cr4,CASM_NOPARAM));
-    _XDPRINTF_("CS=0x%04x, DS=0x%04x, ES=0x%04x, SS=0x%04x\n",
-               (u16)read_segreg_cs(CASM_NOPARAM), (u16)read_segreg_ds(CASM_NOPARAM),
-               (u16)read_segreg_es(CASM_NOPARAM), (u16)read_segreg_ss(CASM_NOPARAM));
-    _XDPRINTF_("FS=0x%04x, GS=0x%04x\n", (u16)read_segreg_fs(CASM_NOPARAM), (u16)read_segreg_gs(CASM_NOPARAM));
-    _XDPRINTF_("TR=0x%04x\n", (u16)read_tr_sel(CASM_NOPARAM));
-    _XDPRINTF_("EAX=0x%08x, EBX=0x%08x\n", exframe->eax, exframe->ebx);
-    _XDPRINTF_("ECX=0x%08x, EDX=0x%08x\n", exframe->ecx, exframe->edx);
-    _XDPRINTF_("ESI=0x%08x, EDI=0x%08x\n", exframe->esi, exframe->edi);
-    _XDPRINTF_("EBP=0x%08x, ESP=0x%08x\n", exframe->ebp, exframe->esp);
+    slab_params_t spl;
 
-    ////do a stack dump in the hopes of getting more info.
-    //{
-    //    u64 i;
-    //    u64 stack_start = exframe->orig_rsp;
-    //    _XDPRINTF_("\n-----stack dump (8 entries)-----\n");
-    //    for(i=stack_start; i < stack_start+(8*sizeof(u64)); i+=sizeof(u64)){
-    //        _XDPRINTF_("Stack(0x%016llx) -> 0x%016llx\n", i, *(u64 *)i);
-    //    }
-    //    _XDPRINTF_("\n-----stack dump end-------------\n");
-    //}
+    memset(&spl, 0, sizeof(spl));
 
-	HALT();
+
+    spl.slab_ctype = XMHFGEEC_SENTINEL_CALL_EXCEPTION;
+    spl.src_slabid = XMHFGEEC_SLAB_GEEC_SENTINEL; //XXX: TODO: grab src_slabid based on exframe->orig_rip
+    spl.dst_slabid = XMHFGEEC_SLAB_XC_EXHUB;
+    spl.cpuid = xmhf_baseplatform_arch_x86_getcpulapicid();
+    memcpy(&spl.in_out_params[0], exframe,
+           sizeof(x86vmx_exception_frame_t));
+
+    geec_sentinel_main(&spl, &spl);
 }
 
