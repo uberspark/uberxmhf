@@ -450,7 +450,7 @@ void drv_path_reticpt(void){
 #endif // defined
 
 
-
+#if defined (DRV_PATH_CALLEXCP)
 x86vmx_exception_frame_t drv_path_callexcp_excpframe;
 
 void xmhfhwm_vdriver_slabep(void){
@@ -463,6 +463,27 @@ void drv_path_callexcp(void){
 	//invoke sentinel exception stub
 	//CASM_FUNCCALL(__xmhf_exception_handler_0, CASM_NOPARAM);
 	CASM_FUNCCALL(__xmhf_exception_handler_8, CASM_NOPARAM);
+	//@assert false;
+}
+#endif // defined
+
+
+
+slab_params_t drv_path_retexcp_sp;
+
+void xmhfhwm_vdriver_slabep(void){
+	//@assert false;
+}
+
+void drv_path_retexcp(void){
+	drv_path_retexcp_sp.slab_ctype = XMHFGEEC_SENTINEL_RET_EXCEPTION;
+        drv_path_retexcp_sp.src_slabid = XMHFGEEC_SLAB_XC_EXHUB;
+        drv_path_retexcp_sp.dst_slabid = XMHFGEEC_SLAB_XC_IHUB;
+        drv_path_retexcp_sp.dst_uapifn = 0;
+	drv_path_retexcp_sp.cpuid = 0;
+
+
+	CASM_FUNCCALL(_slab_entrystub, &drv_path_retexcp_sp);
 	//@assert false;
 }
 
@@ -514,9 +535,12 @@ void main(void){
 #endif // defined
 
 
-
+#if defined (DRV_PATH_CALLEXCP)
 	drv_path_callexcp();
+#endif // defined
 
+
+	drv_path_retexcp();
 
 	//{
 	//	unsigned char *p = (unsigned char *)(0x06c00000+ (1*XMHF_SLAB_STACKSIZE));
