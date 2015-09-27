@@ -173,6 +173,13 @@ void _impl_xmhfhwm_cpu_insn_movl_meax_edi(int index){
 	xmhfhwm_cpu_gprs_edi = value_meax;
 }
 
+void _impl_xmhfhwm_cpu_insn_movl_meax_esi(int index){
+	uint32_t value_meax;
+	value_meax = *((uint32_t *)((uint32_t)((int32_t)xmhfhwm_cpu_gprs_eax + (int32_t)index)));
+	xmhfhwm_cpu_gprs_esi = value_meax;
+}
+
+
 void _impl_xmhfhwm_cpu_insn_movl_meax_ebp(int index){
 	uint32_t value_meax;
 	value_meax = *((uint32_t *)((uint32_t)((int32_t)xmhfhwm_cpu_gprs_eax + (int32_t)index)));
@@ -804,6 +811,12 @@ void  _impl_xmhfhwm_cpu_insn_movw_ax_ds(void){
 
 void  _impl_xmhfhwm_cpu_insn_movw_ax_es(void){
 	xmhfhwm_cpu_es_selector = xmhfhwm_cpu_gprs_eax & 0x0000FFFFUL;
+}
+
+
+void _impl_xmhfhwm_cpu_insn_iretl(void){
+	//XXX: TODO IRETL logic
+	xmhfhwm_vdriver_slabep();
 }
 
 

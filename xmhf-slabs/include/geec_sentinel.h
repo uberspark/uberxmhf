@@ -173,6 +173,9 @@ void geec_sentinel_main(slab_params_t *sp, void *caller_stack_frame);
 
 
 void gs_entry_excp(x86vmx_exception_frame_t *exframe);
+CASM_FUNCDECL(void gs_exit_callexcp(u32 entry_point, void *caller_stack_frame));
+CASM_FUNCDECL(void gs_exit_retexcp(x86vmx_exception_frame_t *exframe));
+
 
 CASM_FUNCDECL(void gs_syscallstub(void *noparam));
 void gs_entry_syscall(slab_params_t *sp, void *caller_stack_frame);
@@ -245,8 +248,6 @@ CASM_FUNCDECL(void __xmhf_exception_handler_31(void *noparam));
 
 
 
-CASM_FUNCDECL(void _geec_sentinel_xfer_exception_to_vft_prog(u32 entry_point, void *caller_stack_frame));
-CASM_FUNCDECL(void _geec_sentinel_xfer_ret_from_exception(x86vmx_exception_frame_t *exframe));
 
 
 #endif // __ASSEMBLY__
