@@ -656,7 +656,7 @@ void xmhf_hic_arch_setup_cpu_state(u64 cpuid){
 
 
 
-void gp_state5_entry(u32 cpuid, bool isbsp){
+void gp_s5_entry(u32 cpuid, bool isbsp){
 
 	_XDPRINTF_("%s[%u,%u]: esp=%08x. Starting...\n",
 	    __func__, cpuid, isbsp, CASM_FUNCCALL(read_esp,CASM_NOPARAM));

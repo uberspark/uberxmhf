@@ -48,57 +48,26 @@
 #include <xmhf-debug.h>
 
 #include <xmhfgeec.h>
-
 #include <geec_prime.h>
-#include <geec_sentinel.h>
-#include <uapi_slabmempgtbl.h>
-#include <uapi_slabdevpgtbl.h>
-#include <uapi_slabiotbl.h>
-#include <xc_init.h>
 
 
+// GEEC prime SMP assembly language code blobs
+// author: amit vasudevan (amitvasudevan@acm.org)
 
+CASM_FUNCDEF(void, gp_s3_entry,
+{
+    xmhfhwm_cpu_insn_movw_imm_ax(__DS_CPL0);
+    xmhfhwm_cpu_insn_movw_ax_ds();
+    xmhfhwm_cpu_insn_movl_imm_eax(((X86SMP_APBOOTSTRAP_DATASEG << 4) + 8));
+    xmhfhwm_cpu_insn_movl_meax_eax(0x0);
+    xmhfhwm_cpu_insn_movl_imm_ebx(((X86SMP_APBOOTSTRAP_DATASEG << 4) + 0));
+    xmhfhwm_cpu_insn_movl_mebx_ebx(0x0);
+    xmhfhwm_cpu_insn_movl_imm_edi(((X86SMP_APBOOTSTRAP_DATASEG << 4) + 32))
+    xmhfhwm_cpu_insn_movl_medi_edi(0x0);
+    xmhfhwm_cpu_insn_jmpl_eax();
+    xmhfhwm_cpu_insn_hlt();
+    CASM_BALIGN(4096);
+},
+void *noparam)
 
-void gp_state1_main(slab_params_t *sp){
-	u32 paddr=0;
-	u32 i, j;
-	u64 pdpe_flags = (_PAGE_PRESENT);
-	u64 pdte_flags = (_PAGE_RW | _PAGE_PSE | _PAGE_PRESENT);
-
-
-
-
-
-    memset(&_xcprimeon_init_pdpt, 0, sizeof(_xcprimeon_init_pdpt));
-
-    for(i=0; i < PAE_PTRS_PER_PDPT; i++){
-        u64 entry_addr = (u64)&_xcprimeon_init_pdt[i][0];
-        _xcprimeon_init_pdpt[i] = pae_make_pdpe(entry_addr, pdpe_flags);
-
-        for(j=0; j < PAE_PTRS_PER_PDT; j++){
-            if(paddr == 0xfee00000 || paddr == 0xfec00000)
-                _xcprimeon_init_pdt[i][j] = pae_make_pde_big(paddr, (pdte_flags | _PAGE_PCD));
-            else
-                _xcprimeon_init_pdt[i][j] = pae_make_pde_big(paddr, pdte_flags);
-
-            paddr += PAGE_SIZE_2M;
-        }
-    }
-
-
-    {
-	u64 msr_efer;
-	msr_efer = (CASM_FUNCCALL(rdmsr64, MSR_EFER) | (0x800));
-	CASM_FUNCCALL(wrmsr64,MSR_EFER, (u32)msr_efer, (u32)((u64)msr_efer >> 32) );
-        _XDPRINTF_("EFER=%016llx\n", CASM_FUNCCALL(rdmsr64,MSR_EFER));
-	CASM_FUNCCALL(write_cr4,read_cr4(CASM_NOPARAM) | (0x30) );
-        _XDPRINTF_("CR4=%08x\n", CASM_FUNCCALL(read_cr4,CASM_NOPARAM));
-	CASM_FUNCCALL(write_cr3,(u32)&_xcprimeon_init_pdpt);
-        _XDPRINTF_("CR3=%08x\n", CASM_FUNCCALL(read_cr3,CASM_NOPARAM));
-	CASM_FUNCCALL(write_cr0,0x80000015);
-    }
-
-
-	gp_state1_mainhub();
-}
 

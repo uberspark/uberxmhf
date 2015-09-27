@@ -72,7 +72,7 @@ void xmhfhic_arch_setup_slab_info(void){
 
 
 
-void gp_state1_mainhub(void){
+void gp_s1_hub(void){
 
 
 	//initialize debugging early on
@@ -139,11 +139,11 @@ void gp_state1_mainhub(void){
 
 
 	//sanity check hardware requirements
-	gp_state1_mainchkreq();
+	gp_s1_chkreq();
 
 #if defined (__DRT__)
 	//post DRT cleanup first
-	gp_state1_mainpostdrt();
+	gp_s1_postdrt();
 #endif	//__DRT__
 
 
@@ -160,6 +160,6 @@ void gp_state1_mainhub(void){
 	}
 
 
-	gp_state2_main();
+	gp_s2_entry();
 }
 

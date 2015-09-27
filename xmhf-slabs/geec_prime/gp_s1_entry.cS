@@ -48,56 +48,26 @@
 #include <xmhf-debug.h>
 
 #include <xmhfgeec.h>
-
 #include <geec_prime.h>
-#include <geec_sentinel.h>
-#include <uapi_slabmempgtbl.h>
-#include <uapi_slabdevpgtbl.h>
-#include <uapi_slabiotbl.h>
-#include <xc_init.h>
 
-///////////////////////////////////////////////////////////////
-// sanity check HIC (hardware) requirements
-void gp_state1_mainchkreq(void){
-	u32 cpu_vendor;
-
-	//grab CPU vendor
-	cpu_vendor = xmhf_baseplatform_arch_getcpuvendor();
-	if (cpu_vendor != CPU_VENDOR_INTEL){
-		_XDPRINTF_("%s: not an Intel CPU but running VMX backend. Halting!\n", __func__);
-		HALT();
-	}
-
-	//check VMX support
-	{
-		u32	cpu_features;
-		u32 res0,res1,res2;
-
- CASM_FUNCCALL(xmhfhw_cpu_cpuid,0x1, &res0, &res1, &cpu_features, &res2);
-
-		if ( ( cpu_features & (1<<5) ) == 0 ){
-			_XDPRINTF_("No VMX support. Halting!\n");
-			HALT();
-		}
-	}
-
-	//we require unrestricted guest and EPT support, bail out if we don't have it
-    {
-        u64 msr_procctls2 = CASM_FUNCCALL(rdmsr64,IA32_VMX_PROCBASED_CTLS2_MSR);
-        if( !( (msr_procctls2 >> 32) & 0x80 ) ){
-            _XDPRINTF_("%s: need unrestricted guest support but did not find any!\n", __func__);
-            HALT();
-        }
-
-        if( !( (msr_procctls2 >> 32) & 0x2) ){
-            _XDPRINTF_("%s: need EPTt support but did not find any!\n", __func__);
-            HALT();
-        }
-
-    }
+//////
+// XMHF/GEEC prime state-1 entry
+// author: amit vasudevan (amitvasudevan@acm.org)
 
 
-}
-
+CASM_FUNCDEF(void, slab_main,
+{
+    xmhfhwm_cpu_insn_movw_ds_ax();
+    xmhfhwm_cpu_insn_movw_ax_es();
+    xmhfhwm_cpu_insn_movw_ax_fs();
+    xmhfhwm_cpu_insn_movw_ax_gs();
+    xmhfhwm_cpu_insn_movw_ax_ss();
+    xmhfhwm_cpu_insn_movl_imm_eax(_init_bsp_cpustack);
+    xmhfhwm_cpu_insn_addl_imm_eax(MAX_PLATFORM_CPUSTACK_SIZE);
+    xmhfhwm_cpu_insn_movl_eax_esp();
+    xmhfhwm_cpu_insn_call(gp_s1_bspstack);
+    xmhfhwm_cpu_insn_hlt();
+},
+slab_params_t *sp)
 
 

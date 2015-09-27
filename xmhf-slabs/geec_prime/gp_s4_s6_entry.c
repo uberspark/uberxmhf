@@ -56,23 +56,41 @@
 #include <uapi_slabiotbl.h>
 #include <xc_init.h>
 
-void gp_state1_mainpostdrt(void){
-	txt_heap_t *txt_heap;
-	os_mle_data_t os_mle_data;
 
-	txt_heap = get_txt_heap();
-	_XDPRINTF_("SL: txt_heap = 0x%08x\n", (u32)txt_heap);
-	xmhfhw_sysmemaccess_copy(&os_mle_data, get_os_mle_data_start((txt_heap_t*)((u32)txt_heap), (uint32_t)read_pub_config_reg(TXTCR_HEAP_SIZE)),
-					sizeof(os_mle_data_t));
-	_XDPRINTF_("SL: os_mle_data = 0x%08x\n", (u32)&os_mle_data);
 
-	// restore pre-SENTER MTRRs that were overwritten for SINIT launch
-	if(!validate_mtrrs(&(os_mle_data.saved_mtrr_state))) {
-		_XDPRINTF_("SECURITY FAILURE: validate_mtrrs() failed.\n");
-		HALT();
-	}
-	_XDPRINTF_("SL: Validated MTRRs\n");
 
-	xmhfhw_cpu_x86_restore_mtrrs(&(os_mle_data.saved_mtrr_state));
-    _XDPRINTF_("SL: Restored MTRRs\n");
+
+//common function which is entered by all CPUs upon SMP initialization
+//note: this is specific to the x86 architecture backend
+void gp_s4_s6_entry(void){
+	u32 cpuid;
+	bool isbsp;
+
+	isbsp = xmhfhw_lapic_isbsp();
+	cpuid  = xmhf_baseplatform_arch_x86_getcpulapicid();
+
+        CASM_FUNCCALL(spin_lock,&gp_state4_smplock);
+
+	gp_s5_entry(cpuid, isbsp);
+
+        CASM_FUNCCALL(spin_unlock,&gp_state4_smplock);
+
+    //relinquish HIC initialization and move on to the first slab
+    _XDPRINTF_("%s[%u]: proceeding to call init slab at %x\n", __func__, (u16)cpuid,
+                xmhfgeec_slab_info_table[XMHFGEEC_SLAB_XC_INIT].entrystub);
+
+    {
+        slab_params_t sp;
+
+        memset(&sp, 0, sizeof(sp));
+        sp.cpuid = cpuid;
+        sp.src_slabid = XMHFGEEC_SLAB_GEEC_PRIME;
+        sp.dst_slabid = XMHFGEEC_SLAB_XC_INIT;
+        XMHF_SLAB_CALLNEW(&sp);
+    }
+
+
+    _XDPRINTF_("%s[%u,%u]: Should never be here. Halting!\n", __func__, (u16)cpuid, isbsp);
+    HALT();
+
 }

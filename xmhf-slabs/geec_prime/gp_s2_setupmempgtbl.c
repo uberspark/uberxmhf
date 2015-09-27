@@ -530,7 +530,7 @@ static void gp_setup_vhslab_mempgtbl(void){
 
 
 
-void gp_state2_mainsetupmempgtbl(void){
+void gp_s2_setupmempgtbl(void){
     slab_params_t spl;
     xmhfgeec_uapi_slabmempgtbl_initmempgtbl_params_t *initmempgtblp =
         (xmhfgeec_uapi_slabmempgtbl_initmempgtbl_params_t *)spl.in_out_params;
