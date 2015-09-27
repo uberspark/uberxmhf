@@ -478,10 +478,9 @@ void xmhfhwm_vdriver_slabep(void){
 void drv_path_retexcp(void){
 	drv_path_retexcp_sp.slab_ctype = XMHFGEEC_SENTINEL_RET_EXCEPTION;
         drv_path_retexcp_sp.src_slabid = XMHFGEEC_SLAB_XC_EXHUB;
-        drv_path_retexcp_sp.dst_slabid = XMHFGEEC_SLAB_XC_IHUB;
+        drv_path_retexcp_sp.dst_slabid = XMHFGEEC_SLAB_GEEC_SENTINEL; //XXX: TODO: plug in normal slab id after adding support to sentinel
         drv_path_retexcp_sp.dst_uapifn = 0;
 	drv_path_retexcp_sp.cpuid = 0;
-
 
 	CASM_FUNCCALL(_slab_entrystub, &drv_path_retexcp_sp);
 	//@assert false;
