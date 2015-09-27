@@ -654,11 +654,17 @@ void xmhf_hic_arch_setup_cpu_state(u64 cpuid){
 
 }
 
+
+
+
 //common function which is entered by all CPUs upon SMP initialization
 //note: this is specific to the x86 architecture backend
 void gp_state4_entry(void){
 	u32 cpuid;
 	bool isbsp;
+
+        CASM_FUNCCALL(spin_lock,&gp_state4_smplock);
+
 
 	cpuid  = xmhf_baseplatform_arch_x86_getcpulapicid();
 	isbsp = xmhfhw_lapic_isbsp();
@@ -670,6 +676,8 @@ void gp_state4_entry(void){
 
 	xmhf_hic_arch_setup_cpu_state((u16)cpuid);
 
+
+        CASM_FUNCCALL(spin_unlock,&gp_state4_smplock);
 
     //relinquish HIC initialization and move on to the first slab
     _XDPRINTF_("%s[%u]: proceeding to call init slab at %x\n", __func__, (u16)cpuid,

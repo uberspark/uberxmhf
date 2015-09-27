@@ -233,6 +233,9 @@ extern __attribute__((section(".data"))) struct _memorytype _vmx_ept_memorytypes
 
 extern __attribute__((section(".data"))) mtrr_state_t _mtrrs;
 
+extern __attribute__((section(".data"))) u32 gp_state4_smplock;
+
+
 
 
 void gp_state1_main(slab_params_t *sp);
