@@ -107,7 +107,10 @@ static bool _geec_prime_smt_slab_getspatype_isiotbl(u32 slabid, u32 spa){
     return false;
 }
 
-
+//TODO: we need to account for memgrant caps here
+//memgrant is read-only or read-write
+//for now we will return _SLAB_SPATYPE_SLAB_DATA for such
+//shared mappings
 static u32 _geec_prime_slab_getspatype(u32 slab_index, u32 spa){
 	u32 i;
 
@@ -117,8 +120,12 @@ static u32 _geec_prime_slab_getspatype(u32 slab_index, u32 spa){
 	//slab memory regions
 	for(i=0; i < XMHFGEEC_TOTAL_SLABS; i++){
 		u32 mask = xmhfgeec_slab_info_table[i].slabtype;
+		bool slab_rwcaps =
+			(xmhfgeec_slab_info_table[i].slab_memgrantreadcaps & XMHFGEEC_SLAB_MEMGRANTREADCAP_MASK(slab_index)) ||
+			(xmhfgeec_slab_info_table[i].slab_memgrantwritecaps & XMHFGEEC_SLAB_MEMGRANTWRITECAP_MASK(slab_index));
 
-        if( i == slab_index)
+
+        if( i == slab_index || slab_rwcaps)
             mask |= _SLAB_SPATYPE_MASK_SAMESLAB;
 
         if(_geec_prime_smt_slab_getspatype_isiotbl(slab_index, spa))
