@@ -53,7 +53,7 @@
 
 #include <xc.h>
 #include <uapi_gcpustate.h>
-#include <uapi_slabmemacc.h>
+//#include <uapi_slabmemacc.h>
 #include <xh_ssteptrace.h>
 
 
@@ -248,7 +248,7 @@ static void _hcb_trap_exception(u32 cpuindex, u32 guest_slab_index){
         (xmhf_uapi_gcpustate_vmrw_params_t *)spl.in_out_params;
 
     //xmhf_hic_uapi_physmem_desc_t *pdesc = (xmhf_hic_uapi_physmem_desc_t *)&spl.in_out_params[2];
-    xmhf_uapi_slabmemacc_params_t *smemaccp = (xmhf_uapi_slabmemacc_params_t *)spl.in_out_params;
+    //xmhf_uapi_slabmemacc_params_t *smemaccp = (xmhf_uapi_slabmemacc_params_t *)spl.in_out_params;
 
     spl.src_slabid = XMHFGEEC_SLAB_XH_SSTEPTRACE;
     spl.dst_slabid = XMHFGEEC_SLAB_UAPI_GCPUSTATE;
@@ -276,14 +276,15 @@ static void _hcb_trap_exception(u32 cpuindex, u32 guest_slab_index){
                    __func__, (u16)cpuindex, guest_rip);
 
         //copy 256 bytes from the current guest RIP for trace inference
-        spl.dst_slabid = XMHFGEEC_SLAB_UAPI_SLABMEMACC;
-        smemaccp->dst_slabid = guest_slab_index;
-        smemaccp->addr_to = &_st_tracebuffer;
-        smemaccp->addr_from = guest_rip;
-        smemaccp->numbytes = sizeof(_st_tracebuffer);
-        //spl.in_out_params[0] = XMHF_HIC_UAPI_PHYSMEM;
-         spl.dst_uapifn = XMHF_HIC_UAPI_PHYSMEM_PEEK;
-        XMHF_SLAB_CALLNEW(&spl);
+        //spl.dst_slabid = XMHFGEEC_SLAB_UAPI_SLABMEMACC;
+        //smemaccp->dst_slabid = guest_slab_index;
+        //smemaccp->addr_to = &_st_tracebuffer;
+        //smemaccp->addr_from = guest_rip;
+        //smemaccp->numbytes = sizeof(_st_tracebuffer);
+        ////spl.in_out_params[0] = XMHF_HIC_UAPI_PHYSMEM;
+        // spl.dst_uapifn = XMHF_HIC_UAPI_PHYSMEM_PEEK;
+        //XMHF_SLAB_CALLNEW(&spl);
+        CASM_FUNCCALL(xmhfhw_sysmemaccess_copy, &_st_tracebuffer, guest_rip, sizeof(_st_tracebuffer));
 
         //try to see if we found a match in our trace database
         st_scanforsignature(&_st_tracebuffer, sizeof(_st_tracebuffer));
