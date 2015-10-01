@@ -1,7 +1,6 @@
 //slab manifest
 #include <geec_sentinel.h>
 #include <uapi_gcpustate.h>
-#include <uapi_slabmemacc.h>
 #include <xg_richguest.h>
 #include <xc_testslab.h>
 #include <xh_hyperdep.h>
@@ -19,7 +18,6 @@ MS:DMADATA:0x200000:void:void
 
 S:geec_sentinel:void:void:void
 S:uapi_gcpustate:void:void:void
-S:uapi_slabmemacc:void:void:void
 S:xg_richguest:void:void:void
 S:xc_testslab:void:void:void
 S:xh_hyperdep:void:void:void
@@ -28,8 +26,6 @@ S:xh_ssteptrace:void:void:void
 S:xh_approvexec:void:void:void
 
 
-U:uapi_slabmemacc:XMHF_HIC_UAPI_PHYSMEM_PEEK:void:void
-U:uapi_slabmemacc:XMHF_HIC_UAPI_PHYSMEM_POKE:void:void
 U:uapi_gcpustate:XMHF_HIC_UAPI_CPUSTATE_VMWRITE:void:void
 
 
