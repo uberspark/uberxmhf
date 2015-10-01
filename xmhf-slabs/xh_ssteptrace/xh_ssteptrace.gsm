@@ -1,6 +1,5 @@
 //slab manifest
 #include <uapi_gcpustate.h>
-#include <uapi_slabmemacc.h>
 #include <xh_ssteptrace.h>
 
 //slab memory sections

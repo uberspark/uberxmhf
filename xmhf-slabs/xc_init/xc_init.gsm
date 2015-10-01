@@ -1,7 +1,6 @@
 //slab manifest
 #include <geec_sentinel.h>
 #include <uapi_gcpustate.h>
-#include <uapi_slabmemacc.h>
 #include <xg_richguest.h>
 #include <xc_testslab.h>
 #include <xh_hyperdep.h>
