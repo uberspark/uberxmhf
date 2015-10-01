@@ -12,11 +12,9 @@ MS:DMADATA:0x200000:void:void
 
 
 S:uapi_gcpustate:void:void:void
-S:uapi_slabmemacc:void:void:void
 S:uapi_slabmempgtbl:void:void:void
 
 
-U:uapi_slabmemacc:XMHF_HIC_UAPI_PHYSMEM_PEEK:void:void
 U:uapi_slabmempgtbl:XMHFGEEC_UAPI_SLABMEMPGTBL_GETENTRYFORPADDR:void:void
 U:uapi_slabmempgtbl:XMHFGEEC_UAPI_SLABMEMPGTBL_SETENTRYFORPADDR:void:void
 U:uapi_gcpustate:XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSREAD:void:void
