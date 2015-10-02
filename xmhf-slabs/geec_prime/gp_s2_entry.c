@@ -53,7 +53,6 @@
 #include <geec_sentinel.h>
 #include <uapi_slabmempgtbl.h>
 #include <uapi_slabdevpgtbl.h>
-#include <uapi_slabiotbl.h>
 #include <xc_init.h>
 
 static u64 _xcsmp_ap_entry_lock = 1;

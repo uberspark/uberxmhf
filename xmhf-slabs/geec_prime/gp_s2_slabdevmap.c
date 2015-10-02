@@ -53,7 +53,6 @@
 #include <geec_sentinel.h>
 #include <uapi_slabmempgtbl.h>
 #include <uapi_slabdevpgtbl.h>
-#include <uapi_slabiotbl.h>
 #include <xc_init.h>
 
 //returns true if a given device vendor_id:device_id is in the slab device exclusion
