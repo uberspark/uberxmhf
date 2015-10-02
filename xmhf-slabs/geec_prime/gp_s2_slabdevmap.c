@@ -540,3 +540,14 @@ static void _sda_enumerate_system_devices(void){
     }
 
 }
+
+void gp_s2_setupslabdevmap(void){
+
+    //enumerate system devices
+    _sda_enumerate_system_devices();
+
+    //initialize slab device mappings
+    _geec_prime_sda_populate_slabdevicemap();
+
+
+}

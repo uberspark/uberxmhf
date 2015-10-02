@@ -249,3 +249,13 @@ __attribute__((section(".data"))) struct _memorytype _vmx_ept_memorytypes[MAX_ME
 __attribute__((section(".data"))) mtrr_state_t _mtrrs;
 
 __attribute__((section(".data"))) u32 gp_state4_smplock = 1;
+
+
+//DMA Remapping Hardware Unit Definitions
+__attribute__((section(".data"))) VTD_DRHD vtd_drhd[VTD_MAX_DRHD];
+__attribute__((section(".data"))) u32 vtd_num_drhd=0;	//total number of DMAR h/w units
+__attribute__((section(".data"))) bool vtd_drhd_scanned=false;	//set to true once DRHD units have been scanned in the system
+
+__attribute__((section(".data"))) vtd_drhd_handle_t vtd_drhd_maxhandle=0;
+__attribute__((section(".data"))) u32 vtd_dmar_table_physical_address=0;
+
