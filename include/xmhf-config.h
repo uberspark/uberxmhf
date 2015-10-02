@@ -51,8 +51,12 @@
 #define __XMHF_CONFIG_H__
 
 
-//max. unverified slabs
+//total unverified hypervisor slabs
 #define XMHFGEEC_TOTAL_UHSLABS __XMHFGEEC_TOTAL_UHSLABS__
+
+//total unverified guest slabs
+#define XMHFGEEC_TOTAL_UGSLABS __XMHFGEEC_TOTAL_UGSLABS__
+
 
 
 //max. include device list entries
@@ -173,11 +177,15 @@
 
 #define XMHFGEEC_TOTAL_VHSLABS		((XMHFGEEC_VHSLAB_MAX_IDX - XMHFGEEC_VHSLAB_BASE_IDX) + 1)
 #define __XMHFGEEC_TOTAL_UHSLABS	((XMHFGEEC_UHSLAB_MAX_IDX - XMHFGEEC_UHSLAB_BASE_IDX) + 1)
-#define XMHFGEEC_TOTAL_UGSLABS		((XMHFGEEC_UGSLAB_MAX_IDX - XMHFGEEC_UGSLAB_BASE_IDX) + 1)
+#define __XMHFGEEC_TOTAL_UGSLABS		((XMHFGEEC_UGSLAB_MAX_IDX - XMHFGEEC_UGSLAB_BASE_IDX) + 1)
 
 
 #if (XMHFGEEC_TOTAL_UHSLABS != __XMHFGEEC_TOTAL_UHSLABS)
-	#error FATAL: Mistmatch in XMHFGEEC_TOTAL_UHSLAB (common.mk.in) and __XMHFGEEC_TOTAL_UHSLABS (xmhf-config.h)
+	#error FATAL: Mistmatch in XMHFGEEC_TOTAL_UHSLABS (common.mk.in) and __XMHFGEEC_TOTAL_UHSLABS (xmhf-config.h)
+#endif
+
+#if (XMHFGEEC_TOTAL_UGSLABS != __XMHFGEEC_TOTAL_UGSLABS)
+	#error FATAL: Mistmatch in XMHFGEEC_TOTAL_UGSLABS (common.mk.in) and __XMHFGEEC_TOTAL_UGSLABS (xmhf-config.h)
 #endif
 
 //////
