@@ -383,7 +383,8 @@ while( $i < $g_totalslabs ){
 		exit 1;
 	}else{
 		print $fh "\n        ".$slab_idtodata_addrstart{$slab_nametoid{"uapi_slabmempgtbl"}}." + ($g_ugslabcounter * 4096),";
-		print $fh "\n        ".$slab_idtodata_addrstart{$slab_nametoid{"uapi_slabiotbl"}}." + ($g_ugslabcounter * (3*4096)),";
+		#print $fh "\n        ".$slab_idtodata_addrstart{$slab_nametoid{"uapi_slabiotbl"}}." + ($g_ugslabcounter * (3*4096)),";
+		print $fh "\n        ".$slab_idtodata_addrstart{$slab_nametoid{"geec_prime"}}." + (6*4096) +  (3*(3*4096)) + ($g_ugslabcounter * (3*4096)),";
 		$g_ugslabcounter = $g_ugslabcounter + 1;
 	}
 
