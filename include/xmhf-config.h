@@ -54,22 +54,6 @@
 //max. unverified slabs
 #define XMHF_CONFIG_MAX_UVSLABS __XMHF_CONFIG_MAX_UVSLABS__
 
-//unverified slab memory page table sets
-#define XMHF_CONFIG_MAX_UVMEMPGTBL_SETS XMHF_CONFIG_MAX_UVSLABS
-
-//max memory page table sets is two added to the above:
-//geec_sentinel: currently unused
-//geec_prime: used for verified slabs
-#define XMHF_MAX_MEMPGTBL_SETS (XMHF_CONFIG_MAX_UVMEMPGTBL_SETS+2)
-
-//unverified slab I/O perm table sets
-#define XMHF_CONFIG_MAX_UVIOTBL_SETS XMHF_CONFIG_MAX_UVSLABS
-
-//max I/O perm table sets is two added to the above:
-//geec_sentinel: currently unused
-//geec_prime: currently unused
-#define XMHF_MAX_IOTBL_SETS (XMHF_CONFIG_MAX_UVIOTBL_SETS+2)
-
 
 //max. include device list entries
 #define XMHF_CONFIG_MAX_INCLDEVLIST_ENTRIES __XMHF_CONFIG_MAX_INCLDEVLIST_ENTRIES__
@@ -190,7 +174,6 @@
 #define XMHFGEEC_TOTAL_VHSLABS		((XMHFGEEC_VHSLAB_MAX_IDX - XMHFGEEC_VHSLAB_BASE_IDX) + 1)
 #define XMHFGEEC_TOTAL_UHSLABS		((XMHFGEEC_UHSLAB_MAX_IDX - XMHFGEEC_UHSLAB_BASE_IDX) + 1)
 #define XMHFGEEC_TOTAL_UGSLABS		((XMHFGEEC_UGSLAB_MAX_IDX - XMHFGEEC_UGSLAB_BASE_IDX) + 1)
-
 
 
 //////
