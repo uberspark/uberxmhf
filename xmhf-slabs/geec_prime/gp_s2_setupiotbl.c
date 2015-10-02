@@ -103,6 +103,52 @@ static void gp_setup_uhslab_iotbl(u32 slabid){
 }
 
 
+
+static void _gp_setup_ugslab_iotbl_allowaccesstoport(u32 ugslabiobitmap_idx, u16 port, u16 port_size){
+    u32 i;
+
+    for(i=0; i < port_size; i++){
+        u32 idx = (port+i)/8;
+        u8 bit = ((port+i) % 8);
+        u8 bitmask = ~((u8)1 << bit);
+        gp_rwdatahdr.gp_ugslab_iobitmap[ugslabiobitmap_idx][idx] &= bitmask;
+    }
+}
+
+
+static void gp_setup_ugslab_iotbl(u32 slabid){
+	u32 j, k, portnum;
+	u32 ugslabiobitmap_idx;
+
+	if( !(slabid >= XMHFGEEC_UGSLAB_BASE_IDX && slabid <= XMHFGEEC_UGSLAB_MAX_IDX) ){
+		_XDPRINTF_("%s: Fatal error, uh slab id out of bounds!\n", __func__);
+		HALT();
+	}
+
+	ugslabiobitmap_idx = slabid - XMHFGEEC_UGSLAB_BASE_IDX;
+
+        memset(&gp_rwdatahdr.gp_ugslab_iobitmap[ugslabiobitmap_idx], 0xFFFFFFFFUL, sizeof(gp_rwdatahdr.gp_ugslab_iobitmap[0]));
+
+
+	//scan through the list of devices for this slab and add any
+	//legacy I/O ports to the I/O perm. table
+	for(j=0; j < _sda_slab_devicemap[slabid].device_count; j++){
+	    u32 sysdev_memioregions_index = _sda_slab_devicemap[slabid].sysdev_mmioregions_indices[j];
+	    for(k=0; k < PCI_CONF_MAX_BARS; k++){
+		if(sysdev_memioregions[sysdev_memioregions_index].memioextents[k].extent_type == _MEMIOREGIONS_EXTENTS_TYPE_IO){
+		    for(portnum= sysdev_memioregions[sysdev_memioregions_index].memioextents[k].addr_start;
+			portnum < sysdev_memioregions[sysdev_memioregions_index].memioextents[k].addr_end; portnum++){
+
+			_gp_setup_ugslab_iotbl_allowaccesstoport(ugslabiobitmap_idx, portnum, 1);
+
+		    }
+		}
+	    }
+	}
+}
+
+
+/*
 static void gp_setup_ugslab_iotbl(u32 slabid){
 	u32 j, k, portnum;
 
@@ -140,6 +186,8 @@ static void gp_setup_ugslab_iotbl(u32 slabid){
 	    }
 	}
 }
+*/
+
 
 
 
