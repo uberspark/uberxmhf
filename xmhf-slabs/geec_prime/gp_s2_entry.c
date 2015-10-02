@@ -77,6 +77,9 @@ static void __xmhfhic_smp_container_vmx_wakeupAPs(void);
 
 void gp_s2_entry(void){
 
+	gp_s2_setupslabdevmap();
+
+
 	//setup slab system device allocation and device page tables
 	xmhfhic_arch_setup_slab_device_allocation();
 
@@ -160,14 +163,6 @@ void gp_s2_entry(void){
 //setup slab device allocation (sda)
 
 
-
-//DMA Remapping Hardware Unit Definitions
-static VTD_DRHD vtd_drhd[VTD_MAX_DRHD];
-static u32 vtd_num_drhd=0;	//total number of DMAR h/w units
-static bool vtd_drhd_scanned=false;	//set to true once DRHD units have been scanned in the system
-
-static vtd_drhd_handle_t vtd_drhd_maxhandle=0;
-static u32 vtd_dmar_table_physical_address=0;
 
 
 
@@ -297,11 +292,6 @@ void xmhfhic_arch_setup_slab_device_allocation(void){
 
 
 
-    //enumerate system devices
-    _sda_enumerate_system_devices();
-
-    //initialize slab device mappings
-    _geec_prime_sda_populate_slabdevicemap();
 
     //slabdevpgtbl:init
     spl.dst_uapifn = XMHFGEEC_UAPI_SDEVPGTBL_INIT;
