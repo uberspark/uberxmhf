@@ -319,68 +319,27 @@ static void _slabdevpgtbl_binddevice(u32 slabid, u32 pagewalk_lvl,  u32 bus, u32
 
 
 void xmhfhic_arch_setup_slab_device_allocation(void){
-    u32 i, vtd_pagewalk_level;
-
-    //slab_platformdevices_t ddescs;
-    /*slab_params_t spl;
-    xmhfgeec_uapi_slabdevpgtbl_initretcet_params_t *initretcetp =
-        (xmhfgeec_uapi_slabdevpgtbl_initretcet_params_t *)spl.in_out_params;
-    xmhfgeec_uapi_slabdevpgtbl_initdevpgtbl_params_t *initdevpgtblp =
-        (xmhfgeec_uapi_slabdevpgtbl_initdevpgtbl_params_t *)spl.in_out_params;
-    xmhfgeec_uapi_slabdevpgtbl_binddevice_params_t *binddevicep =
-        (xmhfgeec_uapi_slabdevpgtbl_binddevice_params_t *)spl.in_out_params;
-
-
-    spl.src_slabid = XMHFGEEC_SLAB_GEEC_PRIME;
-    spl.dst_slabid = XMHFGEEC_SLAB_UAPI_SLABDEVPGTBL;
-    spl.cpuid = 0; //XXX: fixme, needs to be BSP id
-*/
-
-
+	u32 i, vtd_pagewalk_level;
 	u32 retpaddr;
 
 
-    //slabdevpgtbl:init
-    //spl.dst_uapifn = XMHFGEEC_UAPI_SDEVPGTBL_INIT;
-    //XMHF_SLAB_CALLNEW(&spl);
-	//if(!_slabdevpgtbl_init_done){
 	_slabdevpgtbl_init();
-	//_slabdevpgtbl_init_done=true;
-//	}
 
-
-
-    //slabdevpgtbl:initretcet
-    //spl.dst_uapifn = XMHFGEEC_UAPI_SDEVPGTBL_INITRETCET;
-    //XMHF_SLAB_CALLNEW(&spl);
-	//if(_slabdevpgtbl_init_done){
-	//if(!_slabdevpgtbl_initretcet_done){
-	    _slabdevpgtbl_initretcet();
-	//    _slabdevpgtbl_initretcet_done = true;
-	//}
+	_slabdevpgtbl_initretcet();
 
 	retpaddr = (u32)&_slabdevpgtbl_vtd_ret;
-	//}else{
-	//retpaddr = 0;
-	//}
 
 
+	//initialize all slab device page tables
+	for(i=0; i < XMHFGEEC_TOTAL_SLABS; i++){
+		_slabdevpgtbl_initdevpgtbl(i);
 
-    //use slabdevpgtbl:initdevpgtbl to initialize all slab device page tables
-    for(i=0; i < XMHFGEEC_TOTAL_SLABS; i++){
-        //spl.dst_uapifn = XMHFGEEC_UAPI_SDEVPGTBL_INITDEVPGTBL;
-        //initdevpgtblp->dst_slabid = i;
-        //XMHF_SLAB_CALLNEW(&spl);
+	}
+	_XDPRINTF_("%s: initialized slab device page tables\n", __func__);
 
-            //if(_slabdevpgtbl_init_done)
-                _slabdevpgtbl_initdevpgtbl(i);
-
-    }
-    _XDPRINTF_("%s: initialized slab device page tables\n", __func__);
-
-    //intialize VT-d subsystem and obtain
-    vtd_pagewalk_level = _geec_prime_vtd_initialize(retpaddr);
-    _XDPRINTF_("%s: setup vt-d, page-walk level=%u\n", __func__, vtd_pagewalk_level);
+	//intialize VT-d subsystem and obtain
+	vtd_pagewalk_level = _geec_prime_vtd_initialize(retpaddr);
+	_XDPRINTF_("%s: setup vt-d, page-walk level=%u\n", __func__, vtd_pagewalk_level);
 
 
     //allocate system devices to slabs for direct DMA
@@ -392,20 +351,12 @@ void xmhfhic_arch_setup_slab_device_allocation(void){
                sysdev_memioregions[i].dtype == SYSDEV_MEMIOREGIONS_DTYPE_BRIDGE ||
                sysdev_memioregions[i].dtype == SYSDEV_MEMIOREGIONS_DTYPE_UNKNOWN){
 
-                //spl.dst_uapifn = XMHFGEEC_UAPI_SDEVPGTBL_BINDDEVICE;
-                //binddevicep->dst_slabid = _geec_prime_getslabfordevice(sysdev_memioregions[i].b, sysdev_memioregions[i].d, sysdev_memioregions[i].f);
 		dst_slabid = _geec_prime_getslabfordevice(sysdev_memioregions[i].b, sysdev_memioregions[i].d, sysdev_memioregions[i].f);
                 if(dst_slabid == 0xFFFFFFFFUL){
                     _XDPRINTF_("Could not find slab for device %x:%x:%x (vid:did=%x:%x, type=%x), skipping...\n", sysdev_memioregions[i].b,
                                sysdev_memioregions[i].d, sysdev_memioregions[i].f, sysdev_memioregions[i].vendor_id,
                                sysdev_memioregions[i].device_id, sysdev_memioregions[i].dtype);
                 }else{
-                    //binddevicep->bus = sysdev_memioregions[i].b;
-                    //binddevicep->dev = sysdev_memioregions[i].d;
-                    //binddevicep->func = sysdev_memioregions[i].f;
-                    //binddevicep->pagewalk_level = vtd_pagewalk_level;
-                    //XMHF_SLAB_CALLNEW(&spl);
-		    //if(_slabdevpgtbl_init_done)
 			_slabdevpgtbl_binddevice(dst_slabid, vtd_pagewalk_level,
 						sysdev_memioregions[i].b, sysdev_memioregions[i].d, sysdev_memioregions[i].f);
 
