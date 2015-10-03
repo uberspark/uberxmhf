@@ -2,7 +2,6 @@
 #include <geec_prime.h>
 #include <geec_sentinel.h>
 #include <uapi_slabmempgtbl.h>
-#include <uapi_slabdevpgtbl.h>
 #include <xc_init.h>
 
 //slab memory sections
@@ -14,13 +13,8 @@ MS:DMADATA:0x200000:void:void
 
 S:geec_sentinel:void:void:void
 S:uapi_slabmempgtbl:void:void:void
-S:uapi_slabdevpgtbl:void:void:void
 S:xc_init:void:void:void
 
-U:uapi_slabdevpgtbl:XMHFGEEC_UAPI_SDEVPGTBL_INIT:void:void
-U:uapi_slabdevpgtbl:XMHFGEEC_UAPI_SDEVPGTBL_INITRETCET:void:void
-U:uapi_slabdevpgtbl:XMHFGEEC_UAPI_SDEVPGTBL_INITDEVPGTBL:void:void
-U:uapi_slabdevpgtbl:XMHFGEEC_UAPI_SDEVPGTBL_BINDDEVICE:void:void
 U:uapi_slabmempgtbl:XMHFGEEC_UAPI_SLABMEMPGTBL_SETENTRYFORPADDR:void:void
 U:uapi_slabmempgtbl:XMHFGEEC_UAPI_SLABMEMPGTBL_INITMEMPGTBL:void:void
 

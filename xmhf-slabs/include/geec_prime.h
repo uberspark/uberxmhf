@@ -182,6 +182,11 @@ typedef struct {
 } gp_rwdatahdr_t;
 
 
+typedef struct {
+    bool devpgtbl_initialized;
+}__attribute__((packed)) _slabdevpgtbl_infotable_t;
+
+
 
 extern __attribute__(( section(".data") )) XMHF_BOOTINFO *xcbootinfo;
 
