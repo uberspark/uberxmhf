@@ -170,8 +170,8 @@ static u32 _geec_prime_getslabfordevice(u32 bus, u32 dev, u32 func){
 __attribute__((section(".data"))) __attribute__((aligned(4096))) static vtd_ret_entry_t _slabdevpgtbl_vtd_ret[VTD_RET_MAXPTRS];
 __attribute__((section(".data"))) __attribute__((aligned(4096))) static vtd_cet_entry_t _slabdevpgtbl_vtd_cet[VTD_RET_MAXPTRS][VTD_CET_MAXPTRS];
 
-__attribute__((section(".data"))) static bool _slabdevpgtbl_init_done = false;
-__attribute__((section(".data"))) static bool _slabdevpgtbl_initretcet_done = false;
+//__attribute__((section(".data"))) static bool _slabdevpgtbl_init_done = false;
+//__attribute__((section(".data"))) static bool _slabdevpgtbl_initretcet_done = false;
 //__attribute__((section(".data"))) static u32 _slabdevpgtbl_vtd_pagewalk_level = VTD_PAGEWALK_NONE;
 
 
@@ -343,26 +343,26 @@ void xmhfhic_arch_setup_slab_device_allocation(void){
     //slabdevpgtbl:init
     //spl.dst_uapifn = XMHFGEEC_UAPI_SDEVPGTBL_INIT;
     //XMHF_SLAB_CALLNEW(&spl);
-	if(!_slabdevpgtbl_init_done){
+	//if(!_slabdevpgtbl_init_done){
 	_slabdevpgtbl_init();
-	_slabdevpgtbl_init_done=true;
-	}
+	//_slabdevpgtbl_init_done=true;
+//	}
 
 
 
     //slabdevpgtbl:initretcet
     //spl.dst_uapifn = XMHFGEEC_UAPI_SDEVPGTBL_INITRETCET;
     //XMHF_SLAB_CALLNEW(&spl);
-	if(_slabdevpgtbl_init_done){
-	if(!_slabdevpgtbl_initretcet_done){
+	//if(_slabdevpgtbl_init_done){
+	//if(!_slabdevpgtbl_initretcet_done){
 	    _slabdevpgtbl_initretcet();
-	    _slabdevpgtbl_initretcet_done = true;
-	}
+	//    _slabdevpgtbl_initretcet_done = true;
+	//}
 
 	retpaddr = (u32)&_slabdevpgtbl_vtd_ret;
-	}else{
-	retpaddr = 0;
-	}
+	//}else{
+	//retpaddr = 0;
+	//}
 
 
 
@@ -372,7 +372,7 @@ void xmhfhic_arch_setup_slab_device_allocation(void){
         //initdevpgtblp->dst_slabid = i;
         //XMHF_SLAB_CALLNEW(&spl);
 
-            if(_slabdevpgtbl_init_done)
+            //if(_slabdevpgtbl_init_done)
                 _slabdevpgtbl_initdevpgtbl(i);
 
     }
@@ -405,7 +405,7 @@ void xmhfhic_arch_setup_slab_device_allocation(void){
                     //binddevicep->func = sysdev_memioregions[i].f;
                     //binddevicep->pagewalk_level = vtd_pagewalk_level;
                     //XMHF_SLAB_CALLNEW(&spl);
-		    if(_slabdevpgtbl_init_done)
+		    //if(_slabdevpgtbl_init_done)
 			_slabdevpgtbl_binddevice(dst_slabid, vtd_pagewalk_level,
 						sysdev_memioregions[i].b, sysdev_memioregions[i].d, sysdev_memioregions[i].f);
 
