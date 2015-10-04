@@ -61,6 +61,29 @@
 #define ROPDET_COLLECTBRANCHES			0x1E1
 #define ROPDET_CHECK         			0x1E2
 
+bool valid_ropdet_trace_id = false;
+u32 g_ropdet_trace_id = 0;
+
+
+static void rd_register(u32 cpuindex, u32 guest_slab_index, u32 ropdet_trace_id,
+				u32 ropdet_trace_baseaddr){
+
+	if(ropdet_trace_id > ROPDET_MAX_TRACE_IDS){
+		_XDPRINTF_("%s.%u: ropdet_trace_id > ROPDET_MAX_TRACE_IDS, \
+			ignoring registration call\n", __func__, __LINE__);
+		return;
+	}
+
+	g_ropdet_trace_id = ropdet_trace_id;
+	valid_ropdet_trace_id = true;
+}
+
+
+
+
+
+
+
 /*
 static u8 _st_tracebuffer[256];
 
