@@ -55,11 +55,15 @@
 #ifndef __XH_ROPDET_H__
 #define __XH_ROPDET_H__
 
+#define ROPDET_MAX_TRACE_IDS	2
 
 #ifndef __ASSEMBLY__
 
 
 static bool ropdet_on;
+
+extern u32 ropdet_trace_ids[ROPDET_MAX_TRACE_IDS][16];
+
 #endif	//__ASSEMBLY__
 
 #endif //__XH_ROPDET_H__
