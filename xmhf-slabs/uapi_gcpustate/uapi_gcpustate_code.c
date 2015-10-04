@@ -60,7 +60,7 @@
 
 static x86regs_t guestgprs[MAX_PLATFORM_CPUS];
 
-
+static u64 guestmsrs[GCPUSTATE_MSR_MAXCOUNT];
 
 /*
 static bool _uapicheck_encoding_used_by_hic(u64 encoding){
@@ -122,6 +122,46 @@ void slab_main(slab_params_t *sp){
                 (xmhf_uapi_gcpustate_gprs_params_t *)sp->in_out_params;
 
             memcpy(&guestgprs[(u16)sp->cpuid], &gprs->gprs, sizeof(x86regs_t));
+
+        }
+        break;
+
+
+        case XMHFGEEC_UAPI_CPUSTATE_GUESTMSRREAD:{
+            xmhf_uapi_gcpustate_msrrw_params_t *msrrwp =
+                (xmhf_uapi_gcpustate_msrrw_params_t *)sp->in_out_params;
+
+		if(msrrwp->msr < GCPUSTATE_MSR_TOTAL){
+			msrrwp->value = guestmsrs[msrrwp->msr];
+
+			 //TODO: make core specific guestmsrs load
+			 CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_CONTROL_VM_ENTRY_MSR_LOAD_ADDRESS_FULL, guestmsrs);
+			 CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_CONTROL_VM_ENTRY_MSR_LOAD_ADDRESS_HIGH, 0);
+			 CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_CONTROL_VM_ENTRY_MSR_LOAD_COUNT, GCPUSTATE_MSR_TOTAL);
+			 CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_CONTROL_VM_EXIT_MSR_STORE_ADDRESS_FULL, guestmsrs);
+			 CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_CONTROL_VM_EXIT_MSR_STORE_ADDRESS_HIGH, 0);
+			 CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_CONTROL_VM_EXIT_MSR_STORE_COUNT, GCPUSTATE_MSR_TOTAL);
+		}
+
+        }
+        break;
+
+        case XMHFGEEC_UAPI_CPUSTATE_GUESTMSRWRITE:{
+            xmhf_uapi_gcpustate_msrrw_params_t *msrrwp =
+                (xmhf_uapi_gcpustate_msrrw_params_t *)sp->in_out_params;
+
+		if(msrrwp->msr < GCPUSTATE_MSR_TOTAL){
+			guestmsrs[msrrwp->msr] = msrrwp->value;
+
+			 //TODO: make core specific guestmsrs load
+			 CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_CONTROL_VM_ENTRY_MSR_LOAD_ADDRESS_FULL, guestmsrs);
+			 CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_CONTROL_VM_ENTRY_MSR_LOAD_ADDRESS_HIGH, 0);
+			 CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_CONTROL_VM_ENTRY_MSR_LOAD_COUNT, GCPUSTATE_MSR_TOTAL);
+			 CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_CONTROL_VM_EXIT_MSR_STORE_ADDRESS_FULL, guestmsrs);
+			 CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_CONTROL_VM_EXIT_MSR_STORE_ADDRESS_HIGH, 0);
+			 CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_CONTROL_VM_EXIT_MSR_STORE_COUNT, GCPUSTATE_MSR_TOTAL);
+
+		}
 
         }
         break;

@@ -94,7 +94,7 @@ export CCERT_LIB := /usr/local/lib/compcert/
 # configuration definitions
 ######
 
-export XMHFGEEC_TOTAL_UHSLABS := 3
+export XMHFGEEC_TOTAL_UHSLABS := 4
 export XMHFGEEC_TOTAL_UGSLABS := 1
 
 
