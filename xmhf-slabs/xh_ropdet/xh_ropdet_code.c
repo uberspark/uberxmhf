@@ -79,6 +79,30 @@ static void rd_register(u32 cpuindex, u32 guest_slab_index, u32 ropdet_trace_id,
 }
 
 
+static void rd_collectbranches(u32 cpuindex, u32 guest_slab_index){
+    slab_params_t spl;
+    xmhf_uapi_gcpustate_msrrw_params_t *gcpustate_msrrwp =
+        (xmhf_uapi_gcpustate_msrrw_params_t *)spl.in_out_params;
+
+
+
+
+	if(valid_ropdet_trace_id){
+
+		spl.src_slabid = XMHFGEEC_SLAB_XH_ROPDET;
+		spl.dst_slabid = XMHFGEEC_SLAB_UAPI_GCPUSTATE;
+		spl.cpuid = cpuindex;
+		spl.dst_uapifn = XMHFGEEC_UAPI_CPUSTATE_GUESTMSRREAD;
+		gcpustate_msrrwp->msr = GCPUSTATE_MSR_IA32_DEBUGCTL;
+		XMHF_SLAB_CALLNEW(&spl);
+		gcpustate_msrrwp->value |= (1UL << 8);
+		spl.dst_uapifn = XMHFGEEC_UAPI_CPUSTATE_GUESTMSRWRITE;
+		XMHF_SLAB_CALLNEW(&spl);
+
+	}
+
+
+}
 
 
 
