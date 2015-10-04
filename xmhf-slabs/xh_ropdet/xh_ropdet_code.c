@@ -292,7 +292,7 @@ static void _hcb_trap_exception(u32 cpuindex, u32 guest_slab_index){
     }
 
 }
-
+*/
 
 // shutdown
 static void _hcb_shutdown(u32 cpuindex, u32 guest_slab_index){
@@ -302,11 +302,6 @@ static void _hcb_shutdown(u32 cpuindex, u32 guest_slab_index){
 
 
 
-
-
-
-
-*/
 
 
 
@@ -339,10 +334,10 @@ void slab_main(slab_params_t *sp){
         //}
         //break;
 
-        //case XC_HYPAPPCB_SHUTDOWN:{
-        //    _hcb_shutdown(sp->cpuid, hcbp->guest_slab_index);
-        //}
-        //break;
+        case XC_HYPAPPCB_SHUTDOWN:{
+            _hcb_shutdown(sp->cpuid, hcbp->guest_slab_index);
+        }
+        break;
 
         //case XC_HYPAPPCB_TRAP_IO:{
         //
