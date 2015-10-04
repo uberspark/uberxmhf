@@ -63,6 +63,7 @@
 
 bool valid_ropdet_trace_id = false;
 u32 g_ropdet_trace_id = 0;
+bool ropdet_collectbranches_on = false;
 
 
 static void rd_register(u32 cpuindex, u32 guest_slab_index, u32 ropdet_trace_id,
@@ -99,6 +100,7 @@ static void rd_collectbranches(u32 cpuindex, u32 guest_slab_index){
 		spl.dst_uapifn = XMHFGEEC_UAPI_CPUSTATE_GUESTMSRWRITE;
 		XMHF_SLAB_CALLNEW(&spl);
 
+		ropdet_collectbranches_on = true;
 	}
 
 
@@ -357,6 +359,87 @@ static void _hcb_shutdown(u32 cpuindex, u32 guest_slab_index){
 
 
 
+// instruction trap
+static u32 _hcb_trap_instruction(u32 cpuindex, u32 guest_slab_index, u32 insntype){
+    slab_params_t spl;
+    //xmhf_uapi_gcpustate_vmrw_params_t *gcpustate_vmrwp =
+    //    (xmhf_uapi_gcpustate_vmrw_params_t *)spl.in_out_params;
+    xmhf_uapi_gcpustate_gprs_params_t *gcpustate_gprs =
+        (xmhf_uapi_gcpustate_gprs_params_t *)spl.in_out_params;
+    u32 status=XC_HYPAPPCB_CHAIN;
+    u32 guest_rip, msrvalue;
+    u32 info_vmexit_instruction_length;
+    x86regs_t *r = (x86regs_t *)&gcpustate_gprs->gprs;
+
+    if(ropdet_collectbranches_on == false)
+        return status;
+
+    spl.src_slabid = XMHFGEEC_SLAB_XH_ROPDET;
+    spl.dst_slabid = XMHFGEEC_SLAB_UAPI_GCPUSTATE;
+    spl.cpuid = cpuindex;
+
+    if (insntype == XC_HYPAPPCB_TRAP_INSTRUCTION_WRMSR){
+
+        spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSREAD;
+        XMHF_SLAB_CALLNEW(&spl);
+        msrvalue = r->ecx;
+
+        switch(msrvalue){
+
+		case MSR_LBR_SELECT:
+		case MSR_LASTBRANCH_TOS:
+		case MSR_IA32_DEBUGCTL:
+		case MSR_LASTBRANCH_0_FROM_IP:
+		case MSR_LASTBRANCH_1_FROM_IP:
+		case MSR_LASTBRANCH_2_FROM_IP:
+		case MSR_LASTBRANCH_3_FROM_IP:
+		case MSR_LASTBRANCH_4_FROM_IP:
+		case MSR_LASTBRANCH_5_FROM_IP:
+		case MSR_LASTBRANCH_6_FROM_IP:
+		case MSR_LASTBRANCH_7_FROM_IP:
+		case MSR_LASTBRANCH_8_FROM_IP:
+		case MSR_LASTBRANCH_9_FROM_IP:
+		case MSR_LASTBRANCH_10_FROM_IP:
+		case MSR_LASTBRANCH_11_FROM_IP:
+		case MSR_LASTBRANCH_12_FROM_IP:
+		case MSR_LASTBRANCH_13_FROM_IP:
+		case MSR_LASTBRANCH_14_FROM_IP:
+		case MSR_LASTBRANCH_15_FROM_IP:
+		case MSR_LASTBRANCH_0_TO_IP:
+		case MSR_LASTBRANCH_1_TO_IP:
+		case MSR_LASTBRANCH_2_TO_IP:
+		case MSR_LASTBRANCH_3_TO_IP:
+		case MSR_LASTBRANCH_4_TO_IP:
+		case MSR_LASTBRANCH_5_TO_IP:
+		case MSR_LASTBRANCH_6_TO_IP:
+		case MSR_LASTBRANCH_7_TO_IP:
+		case MSR_LASTBRANCH_8_TO_IP:
+		case MSR_LASTBRANCH_9_TO_IP:
+		case MSR_LASTBRANCH_10_TO_IP:
+		case MSR_LASTBRANCH_11_TO_IP:
+		case MSR_LASTBRANCH_12_TO_IP:
+		case MSR_LASTBRANCH_13_TO_IP:
+		case MSR_LASTBRANCH_14_TO_IP:
+		case MSR_LASTBRANCH_15_TO_IP:
+		{
+
+              	_XDPRINTF_("%s[%u]: ALERT: writes to LBR/debug MSRs. Halting\n",
+				__func__, (u16)cpuindex);
+		HALT();
+		}
+            break;
+
+            default:
+                break;
+        }
+    }
+
+
+    return status;
+}
+
+
+
 
 
 ///////
@@ -399,11 +482,10 @@ void slab_main(slab_params_t *sp){
         //}
         //break;
 
-        //case XC_HYPAPPCB_TRAP_INSTRUCTION:{
-        //
-        //
-        //}
-        //break;
+        case XC_HYPAPPCB_TRAP_INSTRUCTION:{
+            hcbp->cbresult = _hcb_trap_instruction(sp->cpuid, hcbp->guest_slab_index, hcbp->cbqual);
+        }
+        break;
 
         //case XC_HYPAPPCB_TRAP_EXCEPTION:{
         //    _hcb_trap_exception(sp->cpuid, hcbp->guest_slab_index);
