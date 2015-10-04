@@ -52,8 +52,6 @@
 #include <geec_prime.h>
 #include <geec_sentinel.h>
 #include <uapi_slabmempgtbl.h>
-#include <uapi_slabdevpgtbl.h>
-#include <uapi_slabiotbl.h>
 #include <xc_init.h>
 
 //////
@@ -103,24 +101,32 @@ static void gp_setup_uhslab_iotbl(u32 slabid){
 }
 
 
+
+static void _gp_setup_ugslab_iotbl_allowaccesstoport(u32 ugslabiobitmap_idx, u16 port, u16 port_size){
+    u32 i;
+
+    for(i=0; i < port_size; i++){
+        u32 idx = (port+i)/8;
+        u8 bit = ((port+i) % 8);
+        u8 bitmask = ~((u8)1 << bit);
+        gp_rwdatahdr.gp_ugslab_iobitmap[ugslabiobitmap_idx][idx] &= bitmask;
+    }
+}
+
+
 static void gp_setup_ugslab_iotbl(u32 slabid){
 	u32 j, k, portnum;
+	u32 ugslabiobitmap_idx;
 
-	slab_params_t spl;
-	xmhfgeec_uapi_slabiotbl_init_params_t *initp =
-	(xmhfgeec_uapi_slabiotbl_init_params_t *)spl.in_out_params;
-	xmhfgeec_uapi_slabiotbl_allowaccesstoport_params_t *allowaccesstoportp =
-	(xmhfgeec_uapi_slabiotbl_allowaccesstoport_params_t *)spl.in_out_params;
+	if( !(slabid >= XMHFGEEC_UGSLAB_BASE_IDX && slabid <= XMHFGEEC_UGSLAB_MAX_IDX) ){
+		_XDPRINTF_("%s: Fatal error, uh slab id out of bounds!\n", __func__);
+		HALT();
+	}
 
-	spl.src_slabid = XMHFGEEC_SLAB_GEEC_PRIME;
-	spl.dst_slabid = XMHFGEEC_SLAB_UAPI_SLABIOTBL;
-	spl.cpuid = 0; //XXX: fixme, need to plug in BSP cpuid here
+	ugslabiobitmap_idx = slabid - XMHFGEEC_UGSLAB_BASE_IDX;
 
+        memset(&gp_rwdatahdr.gp_ugslab_iobitmap[ugslabiobitmap_idx], 0xFFFFFFFFUL, sizeof(gp_rwdatahdr.gp_ugslab_iobitmap[0]));
 
-	//initialize I/O perm. table for this slab (default = deny all)
-	spl.dst_uapifn = XMHFGEEC_UAPI_SLABIOTBL_INIT;
-	initp->dst_slabid = slabid;
-	XMHF_SLAB_CALLNEW(&spl);
 
 	//scan through the list of devices for this slab and add any
 	//legacy I/O ports to the I/O perm. table
@@ -130,16 +136,16 @@ static void gp_setup_ugslab_iotbl(u32 slabid){
 		if(sysdev_memioregions[sysdev_memioregions_index].memioextents[k].extent_type == _MEMIOREGIONS_EXTENTS_TYPE_IO){
 		    for(portnum= sysdev_memioregions[sysdev_memioregions_index].memioextents[k].addr_start;
 			portnum < sysdev_memioregions[sysdev_memioregions_index].memioextents[k].addr_end; portnum++){
-			spl.dst_uapifn = XMHFGEEC_UAPI_SLABIOTBL_ALLOWACCESSTOPORT;
-			allowaccesstoportp->dst_slabid = slabid;
-			allowaccesstoportp->port=portnum;
-			allowaccesstoportp->port_size=1;
-			XMHF_SLAB_CALLNEW(&spl);
+
+			_gp_setup_ugslab_iotbl_allowaccesstoport(ugslabiobitmap_idx, portnum, 1);
+
 		    }
 		}
 	    }
 	}
 }
+
+
 
 
 
