@@ -10,5 +10,6 @@ xmhf-slabs/xh_syscalllog , VfT_SLAB, XHYPAPP
 xmhf-slabs/xh_hyperdep , VfT_SLAB, XHYPAPP
 xmhf-slabs/xc_testslab , uVT_SLAB, XCORE
 xmhf-slabs/xh_approvexec , uVT_SLAB, XHYPAPP
+xmhf-slabs/xh_ropdet , uVT_SLAB, XHYPAPP
 xmhf-slabs/xh_ssteptrace , uVU_SLAB, XHYPAPP
 xmhf-slabs/xg_richguest , uVU_SLAB, XRICHGUEST
