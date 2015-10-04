@@ -106,7 +106,47 @@ static void rd_collectbranches(u32 cpuindex, u32 guest_slab_index){
 
 }
 
+void rd_check(u32 cpuindex, u32 guest_slab_index){
+	u32 i;
+	u32 l_branchbuffer[16];
 
+	if(ropdet_collectbranches_on == false)
+		return;
+
+	//stop branch collection
+	spl.src_slabid = XMHFGEEC_SLAB_XH_ROPDET;
+	spl.dst_slabid = XMHFGEEC_SLAB_UAPI_GCPUSTATE;
+	spl.cpuid = cpuindex;
+	spl.dst_uapifn = XMHFGEEC_UAPI_CPUSTATE_GUESTMSRREAD;
+	gcpustate_msrrwp->msr = GCPUSTATE_MSR_IA32_DEBUGCTL;
+	XMHF_SLAB_CALLNEW(&spl);
+	gcpustate_msrrwp->value &= ~(1UL << 8);
+	spl.dst_uapifn = XMHFGEEC_UAPI_CPUSTATE_GUESTMSRWRITE;
+	XMHF_SLAB_CALLNEW(&spl);
+
+	ropdet_collectbranches_on = false;
+
+	//consolidate all LBR to MSR values into local buffer
+	for(i = 0; i < 16; i++){
+		gcpustate_msrrwp->msr = GCPUSTATE_MSR_LASTBRANCH_0_TO_IP + i;
+		XMHF_SLAB_CALLNEW(&spl);
+		l_branchbuffer[i] = (u32)gcpustate_msrrwp->value;
+	}
+
+
+	if(valid_ropdet_trace_id == false)
+		return;
+
+        //compare branch offsets for trace and halt if there is mismatch
+        for(i = 0; i < 16; i++){
+		if(l_branchbuffer[i] != ropdet_trace_ids[ropdet_trace_id][i]){
+			_XDPRINTF_("%s.%u: ALERT: Branch trace mismatch. Possible ROP. Halting!\n",
+				__func__, __LINE__);
+			HALT();
+		}
+        }
+
+}
 
 
 
