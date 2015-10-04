@@ -51,24 +51,12 @@
 #define __XMHF_CONFIG_H__
 
 
-//max. unverified slabs
-#define XMHF_CONFIG_MAX_UVSLABS __XMHF_CONFIG_MAX_UVSLABS__
+//total unverified hypervisor slabs
+#define XMHFGEEC_TOTAL_UHSLABS __XMHFGEEC_TOTAL_UHSLABS__
 
-//unverified slab memory page table sets
-#define XMHF_CONFIG_MAX_UVMEMPGTBL_SETS XMHF_CONFIG_MAX_UVSLABS
+//total unverified guest slabs
+#define XMHFGEEC_TOTAL_UGSLABS __XMHFGEEC_TOTAL_UGSLABS__
 
-//max memory page table sets is two added to the above:
-//geec_sentinel: currently unused
-//geec_prime: used for verified slabs
-#define XMHF_MAX_MEMPGTBL_SETS (XMHF_CONFIG_MAX_UVMEMPGTBL_SETS+2)
-
-//unverified slab I/O perm table sets
-#define XMHF_CONFIG_MAX_UVIOTBL_SETS XMHF_CONFIG_MAX_UVSLABS
-
-//max I/O perm table sets is two added to the above:
-//geec_sentinel: currently unused
-//geec_prime: currently unused
-#define XMHF_MAX_IOTBL_SETS (XMHF_CONFIG_MAX_UVIOTBL_SETS+2)
 
 
 //max. include device list entries
@@ -160,7 +148,7 @@
 //////
 
 #define XMHFGEEC_MAX_SLABS                  32
-#define XMHFGEEC_TOTAL_SLABS                16
+#define XMHFGEEC_TOTAL_SLABS                14
 
 #define XMHFGEEC_SLAB_GEEC_SENTINEL         0
 #define XMHFGEEC_SLAB_GEEC_PRIME            1
@@ -170,28 +158,33 @@
 #define XMHFGEEC_SLAB_UAPI_GCPUSTATE        5
 #define XMHFGEEC_SLAB_UAPI_HCPUSTATE        6
 #define XMHFGEEC_SLAB_UAPI_SLABMEMPGTBL     7
-#define XMHFGEEC_SLAB_UAPI_SLABDEVPGTBL     8
-#define XMHFGEEC_SLAB_UAPI_SLABIOTBL        9
-#define XMHFGEEC_SLAB_XH_SYSCALLLOG         10
-#define XMHFGEEC_SLAB_XH_HYPERDEP           11
-#define XMHFGEEC_SLAB_XC_TESTSLAB           12
-#define XMHFGEEC_SLAB_XH_APPROVEXEC         13
-#define XMHFGEEC_SLAB_XH_SSTEPTRACE         14
-#define XMHFGEEC_SLAB_XG_RICHGUEST          15
+#define XMHFGEEC_SLAB_XH_SYSCALLLOG         8
+#define XMHFGEEC_SLAB_XH_HYPERDEP           9
+#define XMHFGEEC_SLAB_XC_TESTSLAB           10
+#define XMHFGEEC_SLAB_XH_APPROVEXEC         11
+#define XMHFGEEC_SLAB_XH_SSTEPTRACE         12
+#define XMHFGEEC_SLAB_XG_RICHGUEST          13
 
 #define XMHFGEEC_VHSLAB_BASE_IDX		0
-#define XMHFGEEC_VHSLAB_MAX_IDX			11
-#define XMHFGEEC_UHSLAB_BASE_IDX		12
-#define XMHFGEEC_UHSLAB_MAX_IDX			14
-#define XMHFGEEC_UGSLAB_BASE_IDX		15
-#define XMHFGEEC_UGSLAB_MAX_IDX			15
+#define XMHFGEEC_VHSLAB_MAX_IDX			9
+#define XMHFGEEC_UHSLAB_BASE_IDX		10
+#define XMHFGEEC_UHSLAB_MAX_IDX			12
+#define XMHFGEEC_UGSLAB_BASE_IDX		13
+#define XMHFGEEC_UGSLAB_MAX_IDX			13
 
 
 #define XMHFGEEC_TOTAL_VHSLABS		((XMHFGEEC_VHSLAB_MAX_IDX - XMHFGEEC_VHSLAB_BASE_IDX) + 1)
-#define XMHFGEEC_TOTAL_UHSLABS		((XMHFGEEC_UHSLAB_MAX_IDX - XMHFGEEC_UHSLAB_BASE_IDX) + 1)
-#define XMHFGEEC_TOTAL_UGSLABS		((XMHFGEEC_UGSLAB_MAX_IDX - XMHFGEEC_UGSLAB_BASE_IDX) + 1)
+#define __XMHFGEEC_TOTAL_UHSLABS	((XMHFGEEC_UHSLAB_MAX_IDX - XMHFGEEC_UHSLAB_BASE_IDX) + 1)
+#define __XMHFGEEC_TOTAL_UGSLABS		((XMHFGEEC_UGSLAB_MAX_IDX - XMHFGEEC_UGSLAB_BASE_IDX) + 1)
 
 
+#if (XMHFGEEC_TOTAL_UHSLABS != __XMHFGEEC_TOTAL_UHSLABS)
+	#error FATAL: Mistmatch in XMHFGEEC_TOTAL_UHSLABS (common.mk.in) and __XMHFGEEC_TOTAL_UHSLABS (xmhf-config.h)
+#endif
+
+#if (XMHFGEEC_TOTAL_UGSLABS != __XMHFGEEC_TOTAL_UGSLABS)
+	#error FATAL: Mistmatch in XMHFGEEC_TOTAL_UGSLABS (common.mk.in) and __XMHFGEEC_TOTAL_UGSLABS (xmhf-config.h)
+#endif
 
 //////
 

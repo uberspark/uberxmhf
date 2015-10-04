@@ -178,7 +178,13 @@ typedef struct {
 	u64 gp_vhslabmempgtbl_lvl4t[PAE_MAXPTRS_PER_PML4T];
 	u64 gp_uhslabmempgtbl_lvl4t[XMHFGEEC_TOTAL_UHSLABS][PAE_MAXPTRS_PER_PML4T];
 	u8 gp_uhslab_iobitmap[XMHFGEEC_TOTAL_UHSLABS][3*PAGE_SIZE_4K];
+	u8 gp_ugslab_iobitmap[XMHFGEEC_TOTAL_UGSLABS][3*PAGE_SIZE_4K];
 } gp_rwdatahdr_t;
+
+
+typedef struct {
+    bool devpgtbl_initialized;
+}__attribute__((packed)) _slabdevpgtbl_infotable_t;
 
 
 
@@ -236,6 +242,16 @@ extern __attribute__((section(".data"))) mtrr_state_t _mtrrs;
 extern __attribute__((section(".data"))) u32 gp_state4_smplock;
 
 
+//DMA Remapping Hardware Unit Definitions
+extern __attribute__((section(".data"))) VTD_DRHD vtd_drhd[VTD_MAX_DRHD];
+extern __attribute__((section(".data"))) u32 vtd_num_drhd;	//total number of DMAR h/w units
+extern __attribute__((section(".data"))) bool vtd_drhd_scanned;	//set to true once DRHD units have been scanned in the system
+
+extern __attribute__((section(".data"))) vtd_drhd_handle_t vtd_drhd_maxhandle;
+extern __attribute__((section(".data"))) u32 vtd_dmar_table_physical_address;
+
+
+
 
 
 void gp_s1_bspstack(slab_params_t *sp);
@@ -244,6 +260,7 @@ void gp_s1_chkreq(void);
 void gp_s1_postdrt(void);
 
 void gp_s2_entry(void);
+void gp_s2_setupslabdevmap(void);
 void gp_s2_setupiotbl(void);
 void gp_s2_setupmempgtbl(void);
 
