@@ -1,6 +1,6 @@
 //slab manifest
 #include <uapi_gcpustate.h>
-#include <xh_ssteptrace.h>
+#include <xh_ropdet.h>
 
 //slab memory sections
 MS:CODE:0x200000:void:void

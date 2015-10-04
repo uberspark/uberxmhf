@@ -44,7 +44,7 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-// hyperdep hypapp main module
+// ropdet hypapp main module
 // author: amit vasudevan (amitvasudevan@acm.org)
 
 #include <xmhf.h>
@@ -53,12 +53,9 @@
 
 #include <xc.h>
 #include <uapi_gcpustate.h>
-//#include <uapi_slabmemacc.h>
-#include <xh_ssteptrace.h>
+#include <xh_ropdet.h>
 
-
-//////
-//XMHF_SLABNEW(xhssteptrace)
+/*
 
 #define SSTEPTRACE_REGISTER    			0xE0
 #define SSTEPTRACE_ON          			0xE1
@@ -374,3 +371,4 @@ void slab_main(slab_params_t *sp){
     }
 
 }
+*/

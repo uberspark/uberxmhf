@@ -44,7 +44,7 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-// ssteptrace hypapp -- verification manifest
+// ropdet hypapp data
 // author: amit vasudevan (amitvasudevan@acm.org)
 
 #include <xmhf.h>
@@ -52,22 +52,11 @@
 #include <xmhf-debug.h>
 
 #include <xc.h>
-#include <xh_ssteptrace.h>
+#include <xh_ropdet.h>
 
 
 #if defined (__XMHF_VERIFICATION__)
-static bool ssteptrace_on= nondet_bool();
+static bool ropdet_on= nondet_bool();
 #else
-static bool ssteptrace_on = false;
+static bool ropdet_on = false;
 #endif
-
-/*
-void xhssteptrace_inv_xmhf_hic_uapi_cpustate_vmwrite(u64 encoding, u64 value){
-    if(!ssteptrace_on){
-        if(encoding == VMCS_CONTROL_EXCEPTION_BITMAP)
-            assert( value & (1 << 1) );
-
-        if(encoding == VMCS_GUEST_RFLAGS)
-            assert (value & EFLAGS_TF);
-    }
-}*/
