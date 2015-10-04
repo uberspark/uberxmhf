@@ -174,7 +174,7 @@ static bool st_scanforsignature(u8 *buffer, u32 buffer_size){
     //no match
     return false;
 }
-
+*/
 
 
 //////
@@ -184,12 +184,13 @@ static bool st_scanforsignature(u8 *buffer, u32 buffer_size){
 // initialization
 static void _hcb_initialize(u32 cpuindex){
 
-	_XDPRINTF_("%s[%u]: xhssteptrace initializing...\n", __func__,
+	_XDPRINTF_("%s[%u]: xh_ropdet initializing...\n", __func__,
             (u16)cpuindex);
 
 }
 
 
+/*
 // hypercall
 static void _hcb_hypercall(u32 cpuindex, u32 guest_slab_index){
     slab_params_t spl;
@@ -322,10 +323,10 @@ void slab_main(slab_params_t *sp){
 
 
     switch(hcbp->cbtype){
-        //case XC_HYPAPPCB_INITIALIZE:{
-        //    _hcb_initialize(sp->cpuid);
-       // }
-        //break;
+        case XC_HYPAPPCB_INITIALIZE:{
+            _hcb_initialize(sp->cpuid);
+        }
+        break;
 
         //case XC_HYPAPPCB_HYPERCALL:{
         //    _hcb_hypercall(sp->cpuid, hcbp->guest_slab_index);
