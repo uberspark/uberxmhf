@@ -150,121 +150,6 @@ void rd_check(u32 cpuindex, u32 guest_slab_index){
 
 
 
-/*
-static u8 _st_tracebuffer[256];
-
-// trace (single-step) on
-static void st_on(u32 cpuindex, u32 guest_slab_index){
-    u32 guest_rflags;
-    u32 exception_bitmap;
-    slab_params_t spl;
-    xmhf_uapi_gcpustate_vmrw_params_t *gcpustate_vmrwp =
-        (xmhf_uapi_gcpustate_vmrw_params_t *)spl.in_out_params;
-
-    spl.src_slabid = XMHFGEEC_SLAB_XH_SSTEPTRACE;
-    spl.dst_slabid = XMHFGEEC_SLAB_UAPI_GCPUSTATE;
-    spl.cpuid = cpuindex;
-    //spl.in_out_params[0] = XMHF_HIC_UAPI_CPUSTATE;
-
-if(!ssteptrace_on){
-     spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_VMREAD;
-    gcpustate_vmrwp->encoding = VMCS_GUEST_RFLAGS;
-    XMHF_SLAB_CALLNEW(&spl);
-    guest_rflags = gcpustate_vmrwp->value;
-
-    gcpustate_vmrwp->encoding = VMCS_CONTROL_EXCEPTION_BITMAP;
-    XMHF_SLAB_CALLNEW(&spl);
-    exception_bitmap = gcpustate_vmrwp->value;
-
-    guest_rflags |= EFLAGS_TF;
-    exception_bitmap |= (1 << 1);
-
-     spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_VMWRITE;
-    gcpustate_vmrwp->encoding = VMCS_CONTROL_EXCEPTION_BITMAP;
-    gcpustate_vmrwp->value = exception_bitmap;
-    XMHF_SLAB_CALLNEW(&spl);
-
-    gcpustate_vmrwp->encoding = VMCS_GUEST_RFLAGS;
-    gcpustate_vmrwp->value = guest_rflags;
-    XMHF_SLAB_CALLNEW(&spl);
-
-    ssteptrace_on=true;
-}
-}
-
-// trace (single-step) off
-static void st_off(u32 cpuindex, u32 guest_slab_index){
-    u32 guest_rflags;
-    u32 exception_bitmap;
-    slab_params_t spl;
-    xmhf_uapi_gcpustate_vmrw_params_t *gcpustate_vmrwp =
-        (xmhf_uapi_gcpustate_vmrw_params_t *)spl.in_out_params;
-
-    spl.src_slabid = XMHFGEEC_SLAB_XH_SSTEPTRACE;
-    spl.dst_slabid = XMHFGEEC_SLAB_UAPI_GCPUSTATE;
-    spl.cpuid = cpuindex;
-    //spl.in_out_params[0] = XMHF_HIC_UAPI_CPUSTATE;
-
-
-if(ssteptrace_on){
-     spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_VMREAD;
-    gcpustate_vmrwp->encoding = VMCS_GUEST_RFLAGS;
-    XMHF_SLAB_CALLNEW(&spl);
-    guest_rflags = gcpustate_vmrwp->value;
-
-    gcpustate_vmrwp->encoding = VMCS_CONTROL_EXCEPTION_BITMAP;
-    XMHF_SLAB_CALLNEW(&spl);
-    exception_bitmap = gcpustate_vmrwp->value;
-
-
-    guest_rflags &= ~(EFLAGS_TF);
-    exception_bitmap &= ~(1 << 1);
-
-     spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_VMWRITE;
-    gcpustate_vmrwp->encoding = VMCS_CONTROL_EXCEPTION_BITMAP;
-    gcpustate_vmrwp->value = exception_bitmap;
-    XMHF_SLAB_CALLNEW(&spl);
-
-    gcpustate_vmrwp->encoding = VMCS_GUEST_RFLAGS;
-    gcpustate_vmrwp->value = guest_rflags;
-    XMHF_SLAB_CALLNEW(&spl);
-
-    ssteptrace_on=false;
-}
-}
-
-
-
-static u8 _st_sigdatabase[][SHA_DIGEST_LENGTH] = {
-  {0xd1, 0x4e, 0x30, 0x25,  0x8e,  0x16, 0x85, 0x9b, 0x21, 0x81, 0x74, 0x78, 0xbb, 0x1b, 0x5d, 0x99, 0xb5, 0x48, 0x60, 0xca},
-  {0xa1, 0x4e, 0x30, 0x25,  0x8e,  0x16, 0x85, 0x9b, 0x21, 0x71, 0x74, 0x78, 0xbb, 0x1b, 0x5d, 0x99, 0xb5, 0x48, 0x60, 0xca},
-  {0xf1, 0x4e, 0x30, 0x25,  0x8e,  0x16, 0x85, 0x9b, 0x21, 0x81, 0x54, 0x78, 0xbb, 0x1b, 0x5d, 0x99, 0xb5, 0x48, 0x60, 0xca},
-  {0xe1, 0x4e, 0x30, 0x25,  0x9e,  0x16, 0x85, 0x9b, 0x21, 0x81, 0x74, 0x78, 0x6b, 0x1b, 0x5d, 0x99, 0xb5, 0x48, 0x60, 0xca},
-};
-
-#define NUMENTRIES_ST_SIGDATABASE  (sizeof(_st_sigdatabase)/sizeof(_st_sigdatabase[0]))
-
-
-// scan for a trace match with incoming trace in buffer
-static bool st_scanforsignature(u8 *buffer, u32 buffer_size){
-    u8 digest[SHA_DIGEST_LENGTH];
-    u64 i;
-
-    //compute SHA-1 of the buffer
-    sha1(buffer, buffer_size, digest);
-
-    //compare computed SHA-1 to the signature database
-    for(i=0; i < NUMENTRIES_ST_SIGDATABASE; i++){
-        if(!memcmp(&digest, &_st_sigdatabase[i], SHA_DIGEST_LENGTH)){
-            return true;
-        }
-    }
-
-    //no match
-    return false;
-}
-*/
-
 
 //////
 // hypapp callbacks
@@ -332,63 +217,6 @@ static void _hcb_hypercall(u32 cpuindex, u32 guest_slab_index){
 
 }
 
-/*
-// trap exception
-static void _hcb_trap_exception(u32 cpuindex, u32 guest_slab_index){
-    u32 info_vmexit_interruption_information;
-    u32 guest_rip;
-    slab_params_t spl;
-    xmhf_uapi_gcpustate_vmrw_params_t *gcpustate_vmrwp =
-        (xmhf_uapi_gcpustate_vmrw_params_t *)spl.in_out_params;
-
-    //xmhf_hic_uapi_physmem_desc_t *pdesc = (xmhf_hic_uapi_physmem_desc_t *)&spl.in_out_params[2];
-    //xmhf_uapi_slabmemacc_params_t *smemaccp = (xmhf_uapi_slabmemacc_params_t *)spl.in_out_params;
-
-    spl.src_slabid = XMHFGEEC_SLAB_XH_SSTEPTRACE;
-    spl.dst_slabid = XMHFGEEC_SLAB_UAPI_GCPUSTATE;
-    spl.cpuid = cpuindex;
-
-    if(ssteptrace_on){
-        //spl.in_out_params[0] = XMHF_HIC_UAPI_CPUSTATE;
-         spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_VMREAD;
-        gcpustate_vmrwp->encoding = VMCS_INFO_VMEXIT_INTERRUPT_INFORMATION;
-        XMHF_SLAB_CALLNEW(&spl);
-        info_vmexit_interruption_information = gcpustate_vmrwp->value;
-
-        _XDPRINTF_("%s[%u]: guest slab %u exception %u...\n",
-                   __func__, (u16)cpuindex, guest_slab_index,
-                   (u8)info_vmexit_interruption_information);
-
-        if((u8)info_vmexit_interruption_information != 0x1)
-            return;
-
-        gcpustate_vmrwp->encoding = VMCS_GUEST_RIP;
-        XMHF_SLAB_CALLNEW(&spl);
-        guest_rip = gcpustate_vmrwp->value;
-
-        _XDPRINTF_("%s[%u]: guest slab RIP=%x\n",
-                   __func__, (u16)cpuindex, guest_rip);
-
-        //copy 256 bytes from the current guest RIP for trace inference
-        //spl.dst_slabid = XMHFGEEC_SLAB_UAPI_SLABMEMACC;
-        //smemaccp->dst_slabid = guest_slab_index;
-        //smemaccp->addr_to = &_st_tracebuffer;
-        //smemaccp->addr_from = guest_rip;
-        //smemaccp->numbytes = sizeof(_st_tracebuffer);
-        ////spl.in_out_params[0] = XMHF_HIC_UAPI_PHYSMEM;
-        // spl.dst_uapifn = XMHF_HIC_UAPI_PHYSMEM_PEEK;
-        //XMHF_SLAB_CALLNEW(&spl);
-        CASM_FUNCCALL(xmhfhw_sysmemaccess_copy, &_st_tracebuffer, guest_rip, sizeof(_st_tracebuffer));
-
-        //try to see if we found a match in our trace database
-        st_scanforsignature(&_st_tracebuffer, sizeof(_st_tracebuffer));
-        _XDPRINTF_("%s[%u]: scan complete\n",
-                   __func__, (u16)cpuindex);
-
-    }
-
-}
-*/
 
 // shutdown
 static void _hcb_shutdown(u32 cpuindex, u32 guest_slab_index){
@@ -402,8 +230,6 @@ static void _hcb_shutdown(u32 cpuindex, u32 guest_slab_index){
 // instruction trap
 static u32 _hcb_trap_instruction(u32 cpuindex, u32 guest_slab_index, u32 insntype){
     slab_params_t spl;
-    //xmhf_uapi_gcpustate_vmrw_params_t *gcpustate_vmrwp =
-    //    (xmhf_uapi_gcpustate_vmrw_params_t *)spl.in_out_params;
     xmhf_uapi_gcpustate_gprs_params_t *gcpustate_gprs =
         (xmhf_uapi_gcpustate_gprs_params_t *)spl.in_out_params;
     u32 status=XC_HYPAPPCB_CHAIN;
