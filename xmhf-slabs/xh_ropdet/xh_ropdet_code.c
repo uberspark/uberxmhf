@@ -109,6 +109,10 @@ static void rd_collectbranches(u32 cpuindex, u32 guest_slab_index){
 void rd_check(u32 cpuindex, u32 guest_slab_index){
 	u32 i;
 	u32 l_branchbuffer[16];
+    slab_params_t spl;
+    xmhf_uapi_gcpustate_msrrw_params_t *gcpustate_msrrwp =
+        (xmhf_uapi_gcpustate_msrrw_params_t *)spl.in_out_params;
+
 
 	if(ropdet_collectbranches_on == false)
 		return;
@@ -139,7 +143,7 @@ void rd_check(u32 cpuindex, u32 guest_slab_index){
 
         //compare branch offsets for trace and halt if there is mismatch
         for(i = 0; i < 16; i++){
-		if(l_branchbuffer[i] != ropdet_trace_ids[ropdet_trace_id][i]){
+		if(l_branchbuffer[i] != ropdet_trace_ids[g_ropdet_trace_id][i]){
 			_XDPRINTF_("%s.%u: ALERT: Branch trace mismatch. Possible ROP. Halting!\n",
 				__func__, __LINE__);
 			HALT();
