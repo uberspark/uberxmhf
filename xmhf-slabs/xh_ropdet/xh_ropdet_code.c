@@ -55,13 +55,13 @@
 #include <uapi_gcpustate.h>
 #include <xh_ropdet.h>
 
+
+
+#define ROPDET_REGISTER    			0x1E0
+#define ROPDET_COLLECTBRANCHES			0x1E1
+#define ROPDET_CHECK         			0x1E2
+
 /*
-
-#define SSTEPTRACE_REGISTER    			0xE0
-#define SSTEPTRACE_ON          			0xE1
-#define SSTEPTRACE_OFF         			0xE2
-
-
 static u8 _st_tracebuffer[256];
 
 // trace (single-step) on
@@ -190,7 +190,7 @@ static void _hcb_initialize(u32 cpuindex){
 }
 
 
-/*
+
 // hypercall
 static void _hcb_hypercall(u32 cpuindex, u32 guest_slab_index){
     slab_params_t spl;
@@ -198,45 +198,52 @@ static void _hcb_hypercall(u32 cpuindex, u32 guest_slab_index){
         (xmhf_uapi_gcpustate_gprs_params_t *)spl.in_out_params;
     x86regs_t *gprs = (x86regs_t *)&gcpustate_gprs->gprs;
 	u32 call_id;
-	//u64 gpa;
+	u32 ropdet_trace_id, ropdet_trace_baseaddr;
 
-    spl.src_slabid = XMHFGEEC_SLAB_XH_SSTEPTRACE;
+    spl.src_slabid = XMHFGEEC_SLAB_XH_ROPDET;
     spl.dst_slabid = XMHFGEEC_SLAB_UAPI_GCPUSTATE;
     spl.cpuid = cpuindex;
-    //spl.in_out_params[0] = XMHF_HIC_UAPI_CPUSTATE;
 
      spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSREAD;
     XMHF_SLAB_CALLNEW(&spl);
 
     call_id = gprs->eax;
-    //gpa = ((u64)gprs->edx << 32) | gprs->ebx;
+    ropdet_trace_id  = gprs->ebx;
+	ropdet_trace_baseaddr = gprs->edx;
 
-	//_XDPRINTF_("%s[%u]: call_id=%x, gpa=%016llx\n", __func__, (u16)cpuindex, call_id, gpa);
     _XDPRINTF_("%s[%u]: call_id=%x\n", __func__, (u16)cpuindex, call_id);
 
 	switch(call_id){
 
-		case SSTEPTRACE_ON:{
-			st_on(cpuindex, guest_slab_index);
+		case ROPDET_REGISTER:{
+			rd_register(cpuindex, guest_slab_index, ropdet_trace_id,
+				ropdet_trace_baseaddr);
 		}
 		break;
 
-		case SSTEPTRACE_OFF:{
-			st_off(cpuindex, guest_slab_index);
+		case ROPDET_COLLECTBRANCHES:{
+			rd_collectbranches(cpuindex, guest_slab_index);
 		}
 		break;
+
+
+		case ROPDET_CHECK:{
+			rd_check(cpuindex, guest_slab_index);
+		}
+		break;
+
 
 		default:
-            _XDPRINTF_("%s[%u]: unsupported hypercall %x. Ignoring\n",
-                       __func__, (u16)cpuindex, call_id);
-			break;
+		    _XDPRINTF_("%s[%u]: unsupported hypercall %x. Ignoring\n",
+			       __func__, (u16)cpuindex, call_id);
+				break;
 	}
 
 
 
 }
 
-
+/*
 // trap exception
 static void _hcb_trap_exception(u32 cpuindex, u32 guest_slab_index){
     u32 info_vmexit_interruption_information;
@@ -323,10 +330,10 @@ void slab_main(slab_params_t *sp){
         }
         break;
 
-        //case XC_HYPAPPCB_HYPERCALL:{
-        //    _hcb_hypercall(sp->cpuid, hcbp->guest_slab_index);
-        //}
-        //break;
+        case XC_HYPAPPCB_HYPERCALL:{
+            _hcb_hypercall(sp->cpuid, hcbp->guest_slab_index);
+        }
+        break;
 
         //case XC_HYPAPPCB_MEMORYFAULT:{
         //
