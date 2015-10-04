@@ -305,35 +305,32 @@ static void _hcb_shutdown(u32 cpuindex, u32 guest_slab_index){
 
 
 
-
+*/
 
 
 
 ///////
 // slab interface
 
-//void slab_interface(slab_input_params_t *iparams, u64 iparams_size, slab_output_params_t *oparams, u64 oparams_size, u64 src_slabid, u64 cpuindex){
 void slab_main(slab_params_t *sp){
-    //xc_hypappcb_inputparams_t *hcb_iparams = (xc_hypappcb_inputparams_t *)iparams;
-    //xc_hypappcb_outputparams_t *hcb_oparams = (xc_hypappcb_outputparams_t *)oparams;
     xc_hypappcb_params_t *hcbp = (xc_hypappcb_params_t *)&sp->in_out_params[0];
     hcbp->cbresult=XC_HYPAPPCB_CHAIN;
 
 
-	_XDPRINTF_("XHSSTEPTRACE[%u]: Got control, cbtype=%x: ESP=%08x\n",
-                (u16)sp->cpuid, hcbp->cbtype, CASM_FUNCCALL(read_esp,CASM_NOPARAM));
+	_XDPRINTF_("XHROPDET[%u]: Got control, cbtype=%x: ESP=%08x\n",
+		(u16)sp->cpuid, hcbp->cbtype, CASM_FUNCCALL(read_esp,CASM_NOPARAM));
 
 
     switch(hcbp->cbtype){
-        case XC_HYPAPPCB_INITIALIZE:{
-            _hcb_initialize(sp->cpuid);
-        }
-        break;
+        //case XC_HYPAPPCB_INITIALIZE:{
+        //    _hcb_initialize(sp->cpuid);
+       // }
+        //break;
 
-        case XC_HYPAPPCB_HYPERCALL:{
-            _hcb_hypercall(sp->cpuid, hcbp->guest_slab_index);
-        }
-        break;
+        //case XC_HYPAPPCB_HYPERCALL:{
+        //    _hcb_hypercall(sp->cpuid, hcbp->guest_slab_index);
+        //}
+        //break;
 
         //case XC_HYPAPPCB_MEMORYFAULT:{
         //
@@ -341,10 +338,10 @@ void slab_main(slab_params_t *sp){
         //}
         //break;
 
-        case XC_HYPAPPCB_SHUTDOWN:{
-            _hcb_shutdown(sp->cpuid, hcbp->guest_slab_index);
-        }
-        break;
+        //case XC_HYPAPPCB_SHUTDOWN:{
+        //    _hcb_shutdown(sp->cpuid, hcbp->guest_slab_index);
+        //}
+        //break;
 
         //case XC_HYPAPPCB_TRAP_IO:{
         //
@@ -358,10 +355,10 @@ void slab_main(slab_params_t *sp){
         //}
         //break;
 
-        case XC_HYPAPPCB_TRAP_EXCEPTION:{
-            _hcb_trap_exception(sp->cpuid, hcbp->guest_slab_index);
-        }
-        break;
+        //case XC_HYPAPPCB_TRAP_EXCEPTION:{
+        //    _hcb_trap_exception(sp->cpuid, hcbp->guest_slab_index);
+       // }
+       // break;
 
 
         default:{
@@ -371,4 +368,4 @@ void slab_main(slab_params_t *sp){
     }
 
 }
-*/
+
