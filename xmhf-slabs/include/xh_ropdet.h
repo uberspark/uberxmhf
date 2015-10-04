@@ -47,21 +47,19 @@
 
 /*
  *
- *  hyperdep hypapp slab decls.
+ *  ropdet hypapp slab decls.
  *
  *  author: amit vasudevan (amitvasudevan@acm.org)
  */
 
-#ifndef __XH_SSTEPTRACE_H__
-#define __XH_SSTEPTRACE_H__
+#ifndef __XH_ROPDET_H__
+#define __XH_ROPDET_H__
 
 
 #ifndef __ASSEMBLY__
 
 
-//VFM
-static bool ssteptrace_on;
-//void xhssteptrace_inv_xmhf_hic_uapi_cpustate_vmwrite(u64 encoding, u64 value);
+static bool ropdet_on;
 #endif	//__ASSEMBLY__
 
-#endif //__XH_SSTEPTRACE_H__
+#endif //__XH_ROPDET_H__
