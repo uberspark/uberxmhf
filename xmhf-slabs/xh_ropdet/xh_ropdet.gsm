@@ -15,5 +15,6 @@ S:uapi_gcpustate:void:void:void
 U:uapi_gcpustate:XMHF_HIC_UAPI_CPUSTATE_VMREAD:void:void
 U:uapi_gcpustate:XMHF_HIC_UAPI_CPUSTATE_VMWRITE:void:void
 U:uapi_gcpustate:XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSREAD:void:void
-
+U:uapi_gcpustate:XMHFGEEC_UAPI_CPUSTATE_GUESTMSRREAD:void:void
+U:uapi_gcpustate:XMHFGEEC_UAPI_CPUSTATE_GUESTMSRWRITE:void:void
 
