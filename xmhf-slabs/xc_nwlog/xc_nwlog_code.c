@@ -2163,10 +2163,10 @@ u32 e1000_init_module(void)
 
 
 
-bool xcnwlog_ls_push(xcnwlog_ls_element_t ls_elem)
+bool xcnwlog_ls_push(xcnwlog_ls_element_t *ls_elem)
 {
     if(xcnwlog_ls_index >=0 && xcnwlog_ls_index < 64) {
-        memcpy(&xcnwlog_ls[xcnwlog_ls_index].logbuf, &ls_elem,
+        memcpy(&xcnwlog_ls[xcnwlog_ls_index].logbuf, ls_elem,
 		sizeof(xcnwlog_ls_element_t));
         xcnwlog_ls_index++;
         return true;
@@ -2205,6 +2205,14 @@ void slab_main(slab_params_t *sp){
         break;
 
         case XMHFGEEC_SLAB_XC_NWLOG_LOGDATA:{
+
+                if(!xcnwlog_ls_push((xcnwlog_ls_element_t *)&sp->in_out_params)){
+			e1000_xmit(0);
+			e1000_wait4xmit();
+			xcnwlog_ls_reset();
+			xcnwlog_ls_push((xcnwlog_ls_element_t *)&sp->in_out_params);
+                }
+
 
         }
         break;
