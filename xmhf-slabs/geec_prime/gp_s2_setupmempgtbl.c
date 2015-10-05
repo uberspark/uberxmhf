@@ -75,7 +75,7 @@
 
 
 
-#if 0
+#if 1
 
 static bool _geec_prime_smt_slab_getspatype_isdevicemmio(u32 slabid, u32 spa){
     u32 i, j;
@@ -523,7 +523,7 @@ static void gp_setup_vhslab_mempgtbl(void){
 		// //@assert ( (u64)gp_rwdatahdr.gp_vhslabmempgtbl_lvl4t[i] ) == ( ((u64)(&gp_vhslabmempgtbl_lvl2t[i]) & 0x7FFFFFFFFFFFF000ULL ) | (u64)(default_flags));
 	}
 
-/*
+#if 1
 	//pdt
 	default_flags = (u64)(_PAGE_PRESENT | _PAGE_RW | _PAGE_USER);
 	for(i=0; i < PAE_PTRS_PER_PDPT; i++){
@@ -552,12 +552,13 @@ static void gp_setup_vhslab_mempgtbl(void){
 			pae_make_pte(gpa, flags) & (~0x80);
 
 	}
-*/
+#endif
+
 
 }
 
 
-#if 0
+#if 1
 
 void gp_s2_setupmempgtbl(void){
     slab_params_t spl;
