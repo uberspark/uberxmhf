@@ -75,7 +75,7 @@
 
 
 
-#if 1
+#if 0
 
 static bool _geec_prime_smt_slab_getspatype_isdevicemmio(u32 slabid, u32 spa){
     u32 i, j;
@@ -512,7 +512,7 @@ static void gp_setup_vhslab_mempgtbl(void){
 
     	/*@
 		loop invariant a1: 0 <= i <= PAE_PTRS_PER_PDPT;
-		loop invariant a2: \forall integer x; 0 <= x < i ==> ( (u64)gp_rwdatahdr.gp_vhslabmempgtbl_lvl4t[x] ) == ( ((u64)(&gp_vhslabmempgtbl_lvl2t[x]) & 0x7FFFFFFFFFFFF000ULL ) | ((u64)(_PAGE_PRESENT)));
+		loop invariant a2: \forall integer x; 0 <= x < i ==> ( (u64)gp_rwdatahdr.gp_vhslabmempgtbl_lvl4t[x] ) == ( ((u64)(&gp_vhslabmempgtbl_lvl2t[x * PAE_PTRS_PER_PDT]) & 0x7FFFFFFFFFFFF000ULL ) | ((u64)(_PAGE_PRESENT)));
 		loop assigns gp_rwdatahdr.gp_vhslabmempgtbl_lvl4t[0..(PAE_PTRS_PER_PDPT-1)], i;
 		loop variant PAE_PTRS_PER_PDPT - i;
 	@*/
@@ -523,29 +523,24 @@ static void gp_setup_vhslab_mempgtbl(void){
 		// //@assert ( (u64)gp_rwdatahdr.gp_vhslabmempgtbl_lvl4t[i] ) == ( ((u64)(&gp_vhslabmempgtbl_lvl2t[i]) & 0x7FFFFFFFFFFFF000ULL ) | (u64)(default_flags));
 	}
 
+
 	//pdt
 	default_flags = (u64)(_PAGE_PRESENT | _PAGE_RW | _PAGE_USER);
     	/*@
-		loop invariant a3: 0 <= i <= PAE_PTRS_PER_PDPT;
-		loop assigns a4: i, j;
-		loop variant PAE_PTRS_PER_PDPT - i;
+		loop invariant a3: 0 <= i <= (PAE_PTRS_PER_PDPT * PAE_PTRS_PER_PDT);
+		loop invariant a4: \forall integer x; 0 <= x < i ==> (( (u64)gp_vhslabmempgtbl_lvl2t[x] ) == ( ((u64)(&gp_vhslabmempgtbl_lvl1t[(x * PAE_PTRS_PER_PT)]) & 0x7FFFFFFFFFFFF000ULL ) | ((u64)(_PAGE_PRESENT | _PAGE_RW | _PAGE_USER))));
+		loop assigns i, gp_vhslabmempgtbl_lvl2t[0..(PAE_PTRS_PER_PDPT * PAE_PTRS_PER_PDT)];
+		loop variant (PAE_PTRS_PER_PDPT * PAE_PTRS_PER_PDT) - i;
 	@*/
 	for(i=0; i < PAE_PTRS_PER_PDPT * PAE_PTRS_PER_PDT; i++){
-	    	/*@
-			loop invariant a5: 0 <= j <= PAE_PTRS_PER_PDT;
-			loop assigns a6: gp_vhslabmempgtbl_lvl2t[i][0..(PAE_PTRS_PER_PDT-1)], j;
-			loop variant PAE_PTRS_PER_PDT - j;
-		@*/
-		//for(j=0; j < PAE_PTRS_PER_PDT; j++){
 			gp_vhslabmempgtbl_lvl2t[i] =
 				pae_make_pde(&gp_vhslabmempgtbl_lvl1t[(i * PAE_PTRS_PER_PT)], default_flags);
 
-			//@assert ( (u64)gp_vhslabmempgtbl_lvl2t[i][j] ) == ( ((u64)(&gp_vhslabmempgtbl_lvl1t[(i * PAE_PTRS_PER_PDT * PAE_PTRS_PER_PT) + (j * PAE_PTRS_PER_PT)]) & 0x7FFFFFFFFFFFF000ULL ) | (u64)(default_flags));
-
-		//}
+			// //@assert ( (u64)gp_vhslabmempgtbl_lvl2t[i] ) == ( ((u64)(&gp_vhslabmempgtbl_lvl1t[(i * PAE_PTRS_PER_PT)]) & 0x7FFFFFFFFFFFF000ULL ) | (u64)(default_flags));
 	}
 
-#if 1
+
+#if 0
 
 	//pts
 	for(gpa=0; gpa < ADDR_4GB; gpa += PAGE_SIZE_4K){
@@ -571,7 +566,7 @@ static void gp_setup_vhslab_mempgtbl(void){
 }
 
 
-#if 1
+#if 0
 
 void gp_s2_setupmempgtbl(void){
     slab_params_t spl;
