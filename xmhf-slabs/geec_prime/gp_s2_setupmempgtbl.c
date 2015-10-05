@@ -98,7 +98,7 @@ static bool _geec_prime_smt_slab_getspatype_isiotbl(u32 slabid, u32 spa){
 
     for(i=0; i < MAX_PLATFORM_CPUS; i++){
       if (spa >= (u32)&__xmhfhic_x86vmx_tss[i].tss_iobitmap &&
-          spa < ((u32)&__xmhfhic_x86vmx_tss[i].tss_iobitmap + sizeof((u32)__xmhfhic_x86vmx_tss[i].tss_iobitmap)) )
+          spa < ((u32)&__xmhfhic_x86vmx_tss[i].tss_iobitmap[3*PAGE_SIZE_4K]) )
             return true;
     }
 
