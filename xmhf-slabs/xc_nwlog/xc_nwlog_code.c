@@ -57,8 +57,6 @@
  * author: amit vasudevan (amitvasudevan@acm.org)
  */
 
-//TODO: plug it within dmadata region
-static u8 e1000_packet[PAGE_SIZE_4K];
 
 //////
 // e1000e hardware related support functions
@@ -1889,8 +1887,8 @@ static int e1000_setup_tx_resources(struct e1000_tx_ring *tx_ring)
 #if 1
 	/* FIXME */
 	//tx_ring->desc = dma_alloc_coherent(NULL, tx_ring->size_desc, &tx_ring->dma_desc, GFP_ATOMIC);
-	tx_ring->desc=&e1000_packet;
-	tx_ring->dma_desc=&e1000_packet;
+	tx_ring->desc=&xcnwlog_ls;
+	tx_ring->dma_desc=&xcnwlog_ls;
 
 	if (!tx_ring->desc) {
 		DEBUGQ(tx_ring->size_desc);
@@ -1906,8 +1904,8 @@ static int e1000_setup_tx_resources(struct e1000_tx_ring *tx_ring)
 #if 1
 	/* FIXME */
 	//tx_ring->buf_header = dma_alloc_coherent(NULL, tx_ring->size_header, &tx_ring->dma_header, GFP_ATOMIC);
-	tx_ring->buf_header=&e1000_packet;
-	tx_ring->dma_header=&e1000_packet;
+	tx_ring->buf_header=&xcnwlog_ls;
+	tx_ring->dma_header=&xcnwlog_ls;
 
 	if (!tx_ring->buf_header) {
 		DEBUGQ(tx_ring->size_header);
@@ -1923,8 +1921,8 @@ static int e1000_setup_tx_resources(struct e1000_tx_ring *tx_ring)
 #if 1
 	/* FIXME */
 //	tx_ring->buf_body = dma_alloc_coherent(NULL, tx_ring->size_body, &tx_ring->dma_body, GFP_ATOMIC);
-	tx_ring->buf_body = (void *)&e1000_packet;
-	tx_ring->dma_body = (dma_addr_t)&e1000_packet;
+	tx_ring->buf_body = (void *)&xcnwlog_ls;
+	tx_ring->dma_body = (dma_addr_t)&xcnwlog_ls;
 	if (!tx_ring->buf_body) {
 		DEBUGQ(tx_ring->size_body);
 		//return -ENOMEM;
