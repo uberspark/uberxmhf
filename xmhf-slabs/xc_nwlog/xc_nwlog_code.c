@@ -1602,6 +1602,27 @@ e1000_check_phy_reset_block(struct e1000_hw *hw)
 }
 
 
+static void e1000_pci_set_master(pci_config_reg_addr_t *dev)
+{
+        u16 cmd;
+
+                                dev->fields.offset=PCI_COMMAND;
+        cmd = read_pci_config_word(dev);
+        cmd |= PCI_COMMAND_MASTER;
+        dev->fields.offset=PCI_COMMAND;
+        write_pci_config_word(dev, cmd);
+}
+
+static void e1000_pci_disable_master(pci_config_reg_addr_t *dev)
+{
+        u16 cmd;
+
+                                dev->fields.offset=PCI_COMMAND;
+        cmd = read_pci_config_word(dev);
+        cmd &= ~PCI_COMMAND_MASTER;
+        dev->fields.offset=PCI_COMMAND;
+        write_pci_config_word(dev, cmd);
+}
 
 
 
