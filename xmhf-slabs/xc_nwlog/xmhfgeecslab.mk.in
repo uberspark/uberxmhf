@@ -1,0 +1,12 @@
+########################################################################
+#
+# options that each slab will customize
+# author: amit vasudevan (amitvasudevan@acm.org)
+#
+########################################################################
+
+export XMHF_SLAB_NAME := xc_nwlog
+export XMHF_SLAB_SOURCES := $(wildcard $(srcdir)/*.c)
+
+
+########################################################################
