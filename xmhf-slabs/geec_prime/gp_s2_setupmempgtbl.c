@@ -75,7 +75,7 @@
 
 
 
-#if 1
+#if 0
 
 static bool _geec_prime_smt_slab_getspatype_isdevicemmio(u32 slabid, u32 spa){
     u32 i, j;
@@ -542,26 +542,38 @@ static void gp_setup_vhslab_mempgtbl(void){
 
 
 	//pts
-	for(gpa=0; gpa < ADDR_4GB; gpa += PAGE_SIZE_4K){
-		//u64 pdpt_index = pae_get_pdpt_index(gpa);
-		//u64 pdt_index = pae_get_pdt_index(gpa);
-		//u64 pt_index = pae_get_pt_index(gpa);
+    	/*@
+		loop invariant a5: 0 <= i <= (PAE_PTRS_PER_PDPT * PAE_PTRS_PER_PDT * PAE_PTRS_PER_PT);
+		// loop invariant a6: \forall integer x; 1 <= x < gpa ==> (( (u64)gp_vhslabmempgtbl_lvl1t[x] ) == ( ((u64)(&gp_vhslabmempgtbl_lvl1t[(x * PAE_PTRS_PER_PT)]) & 0x7FFFFFFFFFFFF000ULL ) | ((u64)(_PAGE_PRESENT | _PAGE_RW | _PAGE_USER))));
+		loop assigns spatype, flags, i, gp_vhslabmempgtbl_lvl1t[0..(PAE_PTRS_PER_PDPT * PAE_PTRS_PER_PDT * PAE_PTRS_PER_PT)];
+		loop variant (PAE_PTRS_PER_PDPT * PAE_PTRS_PER_PDT * PAE_PTRS_PER_PT) - i;
+	@*/
+	for(i=0; i < (PAE_PTRS_PER_PDPT * PAE_PTRS_PER_PDT * PAE_PTRS_PER_PT); i++){
+		spatype =  _geec_prime_slab_getspatype(slabid, (u32)(i * PAGE_SIZE_4K));
+		flags = _geec_prime_slab_getptflagsforspa_pae(slabid, (u32)(i * PAGE_SIZE_4K), spatype);
 
+
+		gp_vhslabmempgtbl_lvl1t[i] = pae_make_pte( (i*PAGE_SIZE_4K), flags) & (~0x80);
+
+	}
+
+#if 0
+	for(gpa=0; gpa < ADDR_4GB; gpa += PAGE_SIZE_4K){
 		spatype =  _geec_prime_slab_getspatype(slabid, (u32)gpa);
-		//spa_slabregion = spatype & 0x0000000FUL;
-		//spa_slabtype =spatype & 0x000000F0UL;
 		flags = _geec_prime_slab_getptflagsforspa_pae(slabid, (u32)gpa, spatype);
 
+
+		//@assert (gpa/PAGE_SIZE_4K) < (PAE_PTRS_PER_PDPT * PAE_PTRS_PER_PDT * PAE_PTRS_PER_PT);
 		gp_vhslabmempgtbl_lvl1t[ (gpa/PAGE_SIZE_4K) ] =
 			pae_make_pte(gpa, flags) & (~0x80);
 
 	}
-
+#endif // 0
 
 }
 
 
-#if 1
+#if 0
 
 void gp_s2_setupmempgtbl(void){
     slab_params_t spl;
