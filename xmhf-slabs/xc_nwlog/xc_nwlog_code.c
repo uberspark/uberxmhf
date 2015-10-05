@@ -2110,8 +2110,6 @@ u32 e1000_init_module(void)
 {
 	int ret = 0;
 	u32 i;
-	//printf("\n%s - version %s",
-	//       e1000_driver_string, e1000_driver_version);
 
 
 	//TODO: probe PCI bus to figure out b,d,f
@@ -2121,7 +2119,7 @@ u32 e1000_init_module(void)
 	e1000_dev.dev = 0;
 	e1000_dev.func = 0;
 
-	printf("\nProbing for ethernet card...");
+	_XDPRINTF_("Probing for ethernet card...\n");
 
 	DEBUGQ(0);
 	ret = e1000_probe();
@@ -2129,16 +2127,16 @@ u32 e1000_init_module(void)
 	if (ret)
 		return ret;
 
-	printf("\nOpening interface...");
+	_XDPRINTF_("Opening interface...\n");
 	ret = e1000_open();
 	if (ret)
 		return ret;
 	//PRINT_STATUS();
-	printf("\nWaiting for router...");
+	_XDPRINTF_("Waiting for router...\n");
 
 	e1000_mdelay1(40 * 1000);
 
-	printf("\nDone.");
+	_XDPRINTF_("Done.\n");
 	//PRINT_STATUS();
 	/*printf("\nTransmitting...");
 	e1000_xmit(E1000_DESC_COUNT / 2);
@@ -2183,6 +2181,8 @@ void slab_main(slab_params_t *sp){
 	_XDPRINTF_("XCNWLOG[%u]: Got control: src=%u, dst=%u, esp=%08x, eflags=%08x\n",
                 (u16)sp->cpuid, sp->src_slabid, sp->dst_slabid, CASM_FUNCCALL(read_esp,CASM_NOPARAM),
 			CASM_FUNCCALL(read_eflags, CASM_NOPARAM));
+
+	e1000_init_module();
 
 	HALT();
 }
