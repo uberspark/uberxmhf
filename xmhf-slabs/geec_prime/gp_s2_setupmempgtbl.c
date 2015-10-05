@@ -510,7 +510,7 @@ static void gp_setup_vhslab_mempgtbl(void){
 	for(i=0; i < PAE_PTRS_PER_PDPT; i++){
 		for(j=0; j < PAE_PTRS_PER_PDT; j++){
 			gp_vhslabmempgtbl_lvl2t[i][j] =
-				pae_make_pde(&gp_vhslabmempgtbl_lvl1t[i][j], default_flags);
+				pae_make_pde(&gp_vhslabmempgtbl_lvl1t[(i * PAE_PTRS_PER_PDT * PAE_PTRS_PER_PT) + (j * PAE_PTRS_PER_PT)], default_flags);
 		}
 	}
 
@@ -527,8 +527,11 @@ static void gp_setup_vhslab_mempgtbl(void){
 		flags = _geec_prime_slab_getptflagsforspa_pae(slabid, (u32)gpa, spatype);
 		//_XDPRINTF_("gpa=%08x, flags=%016llx\n", (u32)gpa, flags);
 
-		gp_vhslabmempgtbl_lvl1t[pdpt_index][pdt_index][pt_index] =
+		//gp_vhslabmempgtbl_lvl1t[pdpt_index][pdt_index][pt_index] =
+		//	pae_make_pte(gpa, flags) & (~0x80);
+		gp_vhslabmempgtbl_lvl1t[ (gpa/PAGE_SIZE_4K) ] =
 			pae_make_pte(gpa, flags) & (~0x80);
+
 	}
 
 }
