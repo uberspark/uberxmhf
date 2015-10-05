@@ -75,7 +75,7 @@
 
 
 
-#if 0
+#if 1
 
 static bool _geec_prime_smt_slab_getspatype_isdevicemmio(u32 slabid, u32 spa){
     u32 i, j;
@@ -540,33 +540,28 @@ static void gp_setup_vhslab_mempgtbl(void){
 	}
 
 
-#if 0
 
 	//pts
 	for(gpa=0; gpa < ADDR_4GB; gpa += PAGE_SIZE_4K){
-		u64 pdpt_index = pae_get_pdpt_index(gpa);
-		u64 pdt_index = pae_get_pdt_index(gpa);
-		u64 pt_index = pae_get_pt_index(gpa);
+		//u64 pdpt_index = pae_get_pdpt_index(gpa);
+		//u64 pdt_index = pae_get_pdt_index(gpa);
+		//u64 pt_index = pae_get_pt_index(gpa);
 
 		spatype =  _geec_prime_slab_getspatype(slabid, (u32)gpa);
-		spa_slabregion = spatype & 0x0000000FUL;
-		spa_slabtype =spatype & 0x000000F0UL;
+		//spa_slabregion = spatype & 0x0000000FUL;
+		//spa_slabtype =spatype & 0x000000F0UL;
 		flags = _geec_prime_slab_getptflagsforspa_pae(slabid, (u32)gpa, spatype);
-		//_XDPRINTF_("gpa=%08x, flags=%016llx\n", (u32)gpa, flags);
 
-		//gp_vhslabmempgtbl_lvl1t[pdpt_index][pdt_index][pt_index] =
-		//	pae_make_pte(gpa, flags) & (~0x80);
 		gp_vhslabmempgtbl_lvl1t[ (gpa/PAGE_SIZE_4K) ] =
 			pae_make_pte(gpa, flags) & (~0x80);
 
 	}
-#endif
 
 
 }
 
 
-#if 0
+#if 1
 
 void gp_s2_setupmempgtbl(void){
     slab_params_t spl;
