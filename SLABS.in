@@ -3,6 +3,7 @@ xmhf-slabs/geec_prime , VfT_SLAB, PRIME
 xmhf-slabs/xc_init , VfT_SLAB, INIT
 xmhf-slabs/xc_exhub , VfT_SLAB, EXCEPTION
 xmhf-slabs/xc_ihub , VfT_SLAB, INTERCEPT
+xmhf-slabs/xc_nwlog , VfT_SLAB, XCORE
 xmhf-slabs/uapi_gcpustate , VfT_SLAB, UAPI
 xmhf-slabs/uapi_hcpustate , VfT_SLAB, UAPI
 xmhf-slabs/uapi_slabmempgtbl , VfT_SLAB, UAPI
