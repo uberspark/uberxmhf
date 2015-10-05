@@ -492,7 +492,7 @@ static void gp_setup_uhslab_mempgtbl(u32 slabid){
 
 /*@
   //requires n >= 0;
-  assigns \nothing;
+	assigns gp_rwdatahdr.gp_vhslabmempgtbl_lvl4t[0..(PAGE_SIZE_4K-1)];
 @*/
 static void gp_setup_vhslab_mempgtbl(void){
 	u32 i, j;
@@ -505,14 +505,25 @@ static void gp_setup_vhslab_mempgtbl(void){
 	u32 slabid = XMHFGEEC_SLAB_GEEC_PRIME;
 	u32 slabtype = xmhfgeec_slab_info_table[slabid].slabtype;
 
-/*
+
+	//@assert (0x123FFA546ULL & 0xFFFFF000ULL) == 0x23FFA000ULL;
 	//pdpt
 	memset(&gp_rwdatahdr.gp_vhslabmempgtbl_lvl4t, 0, PAGE_SIZE_4K);
+
+    	/*@
+		loop invariant a1: 0 <= i <= PAE_PTRS_PER_PDPT;
+		loop invariant a2: \forall integer x; 0 <= x < i ==> ( (u64)gp_rwdatahdr.gp_vhslabmempgtbl_lvl4t[x] ) == ( ((u64)(&gp_vhslabmempgtbl_lvl2t[x]) & 0x7FFFFFFFFFFFF000ULL ) | (u64)(default_flags));
+		loop assigns gp_rwdatahdr.gp_vhslabmempgtbl_lvl4t[0..(PAE_PTRS_PER_PDPT-1)], i;
+		loop variant PAE_PTRS_PER_PDPT - i;
+	@*/
 	for(i=0; i < PAE_PTRS_PER_PDPT; i++){
-	gp_rwdatahdr.gp_vhslabmempgtbl_lvl4t[i] =
-	    pae_make_pdpe(&gp_vhslabmempgtbl_lvl2t[i], default_flags);
+		gp_rwdatahdr.gp_vhslabmempgtbl_lvl4t[i] =
+			pae_make_pdpe(&gp_vhslabmempgtbl_lvl2t[i], default_flags);
+
+		// //@assert ( (u64)gp_rwdatahdr.gp_vhslabmempgtbl_lvl4t[i] ) == ( ((u64)(&gp_vhslabmempgtbl_lvl2t[i]) & 0x7FFFFFFFFFFFF000ULL ) | (u64)(default_flags));
 	}
 
+/*
 	//pdt
 	default_flags = (u64)(_PAGE_PRESENT | _PAGE_RW | _PAGE_USER);
 	for(i=0; i < PAE_PTRS_PER_PDPT; i++){
