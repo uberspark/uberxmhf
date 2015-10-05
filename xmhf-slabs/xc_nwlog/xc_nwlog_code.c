@@ -1602,26 +1602,43 @@ e1000_check_phy_reset_block(struct e1000_hw *hw)
 }
 
 
-static void e1000_pci_set_master(pci_config_reg_addr_t *dev)
+static void e1000_pci_set_master(pci_device_t *nwdevice)
 {
         u16 cmd;
 
-                                dev->fields.offset=PCI_COMMAND;
-        cmd = read_pci_config_word(dev);
+        xmhf_baseplatform_arch_x86_pci_type1_read(nwdevice->bus,
+						nwdevice->dev,
+						nwdevice->func,
+						PCI_CONF_HDR_IDX_COMMAND,
+						sizeof(u16),
+						&cmd);
         cmd |= PCI_COMMAND_MASTER;
-        dev->fields.offset=PCI_COMMAND;
-        write_pci_config_word(dev, cmd);
+        xmhf_baseplatform_arch_x86_pci_type1_write(nwdevice->bus,
+						nwdevice->dev,
+						nwdevice->func,
+						PCI_CONF_HDR_IDX_COMMAND,
+						sizeof(u16),
+						cmd);
 }
 
-static void e1000_pci_disable_master(pci_config_reg_addr_t *dev)
+static void e1000_pci_disable_master(pci_device_t *nwdevice)
 {
         u16 cmd;
 
-                                dev->fields.offset=PCI_COMMAND;
-        cmd = read_pci_config_word(dev);
+        xmhf_baseplatform_arch_x86_pci_type1_read(nwdevice->bus,
+						nwdevice->dev,
+						nwdevice->func,
+						PCI_CONF_HDR_IDX_COMMAND,
+						sizeof(u16),
+						&cmd);
         cmd &= ~PCI_COMMAND_MASTER;
-        dev->fields.offset=PCI_COMMAND;
-        write_pci_config_word(dev, cmd);
+        xmhf_baseplatform_arch_x86_pci_type1_write(nwdevice->bus,
+						nwdevice->dev,
+						nwdevice->func,
+						PCI_CONF_HDR_IDX_COMMAND,
+						sizeof(u16),
+						cmd);
+
 }
 
 
@@ -1657,7 +1674,7 @@ void e1000_wait4xmit(void);
 static void e1000_irq_disable(void);
 
 
-pci_config_reg_addr_t e1000_dev;
+pci_device_t e1000_dev;
 struct e1000_adapter *e1000_adapt=NULL;
 unsigned int e1000_irq = 18;
 

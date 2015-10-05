@@ -125,7 +125,13 @@
         | (PCI_DEVICE_FN(device, function) << 8) | (index & 0xFC))
 
 
-
+typedef struct {
+	u32 vendor_id;
+	u32 device_id;
+	u32 bus;
+	u32 dev;
+	u32 func;
+} __attribute__((packed)) pci_device_t;
 
 #endif /* __ASSEMBLY__ */
 #endif /* __XMHFHWM_PCI_H___ */
