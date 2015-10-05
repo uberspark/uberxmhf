@@ -3034,6 +3034,11 @@ struct e1000_adapter {
 //////
 // general types
 /////
+#define XMHFGEEC_SLAB_XC_NWLOG_INITIALIZE 0
+#define XMHFGEEC_SLAB_XC_NWLOG_LOGDATA	  1
+
+
+
 
 typedef struct {
     u32 logbuf[16];

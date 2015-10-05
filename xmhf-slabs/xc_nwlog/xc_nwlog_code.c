@@ -2198,9 +2198,34 @@ void slab_main(slab_params_t *sp){
                 (u16)sp->cpuid, sp->src_slabid, sp->dst_slabid, CASM_FUNCCALL(read_esp,CASM_NOPARAM),
 			CASM_FUNCCALL(read_eflags, CASM_NOPARAM));
 
+    switch(sp->dst_uapifn){
+
+        case XMHFGEEC_SLAB_XC_NWLOG_INITIALIZE:{
+        }
+        break;
+
+        case XMHFGEEC_SLAB_XC_NWLOG_LOGDATA:{
+
+        }
+        break;
+
+
+        default:
+            _XDPRINTF_("XCNWLOG[%u]: Unknown sub-function %x. Halting!\n",
+                    (u16)sp->cpuid, sp->dst_uapifn);
+            HALT();
+            return;
+    }
+
+
+
+
+/*
 	e1000_init_module();
 
 	HALT();
+*/
+
 }
 
 
