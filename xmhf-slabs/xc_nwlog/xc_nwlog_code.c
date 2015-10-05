@@ -57,6 +57,8 @@
  * author: amit vasudevan (amitvasudevan@acm.org)
  */
 
+//TODO: plug it within dmadata region
+static u8 e1000_packet[PAGE_SIZE_4K];
 
 //////
 // e1000e hardware related support functions
@@ -388,7 +390,7 @@ e1000_copper_link_igp_setup(struct e1000_hw *hw)
     /* Wait 15ms for MAC to configure PHY from eeprom settings */
     e1000_msleep(15);
     /* disable lplu d0 during driver init */
-    ret_val = e1000_set_d0_lplu_state(hw, FALSE);
+    ret_val = e1000_set_d0_lplu_state(hw, false);
     if (ret_val) {
         DEBUGOUT("Error Disabling LPLU D0\n");
         return ret_val;
@@ -1666,7 +1668,7 @@ char e1000_driver_version[] = "based on 7.3.20-k2";
 
 void e1000_reset(void);
 static int e1000_setup_tx_resources(struct e1000_tx_ring *tx_ring);
-static int e1000_probe(void);
+static int e1000_probe(pci_device_t *nwdevice);
 static int e1000_open(void);
 static void e1000_configure_tx(void);
 void e1000_xmit(unsigned short tail);
@@ -1674,18 +1676,18 @@ void e1000_wait4xmit(void);
 static void e1000_irq_disable(void);
 
 
-pci_device_t e1000_dev;
-struct e1000_adapter *e1000_adapt=NULL;
-unsigned int e1000_irq = 18;
+static pci_device_t e1000_dev;
+static struct e1000_adapter *e1000_adapt=NULL;
+static unsigned int e1000_irq = 18;
 
 //------------------------------------------------------------------------------
 //[CONFIGURATION:START]
 //this changes according to deployment platform
-unsigned char e1000_dst_macaddr[] = __X_LOGSTORE_MAC;
+static unsigned char e1000_dst_macaddr[] = "";
 //[CONFIGURATION:END]
 //------------------------------------------------------------------------------
 
-unsigned char e1000_pkt_type[] = {0x80, 0x86};
+static unsigned char e1000_pkt_type[] = {0x80, 0x86};
 //unsigned int lo_before, hi_before, lo_after, hi_after;
 
 #define E1000_TIMEOUT_1MS	((0x40000000ULL * 2) / 1000)
@@ -1752,7 +1754,7 @@ void e1000_reset(void)
  * and a hardware reset occur.
  **/
 
-static int e1000_probe(void)
+static int e1000_probe(pci_device_t *nwdevice)
 {
 	unsigned long mmio_start, mmio_len;
 
@@ -1768,7 +1770,8 @@ static int e1000_probe(void)
 	memset(e1000_adapt, 0, sizeof(struct e1000_adapter));
 	e1000_adapt->msg_enable = 1;
 
-	e1000_adapt->hw.hw_addr = _x_NIC_baseaddress0;
+	//TODO: probe base address of this adapter via config space
+	e1000_adapt->hw.hw_addr = 0;
 
 
 	/* setup the private structure */
@@ -1785,7 +1788,7 @@ static int e1000_probe(void)
 
 	/* copy the MAC address out of the EEPROM */
 	if (e1000_read_mac_addr(&e1000_adapt->hw)){
-		printf("\nNIC EEPROM Read Error");
+		//printf("\nNIC EEPROM Read Error");
 		HALT();
 	}
 
@@ -1797,7 +1800,7 @@ static int e1000_probe(void)
 	e1000_read_eeprom(&e1000_adapt->hw,
 		EEPROM_INIT_CONTROL3_PORT_A, 1, &eeprom_data);
 
-	printf("\nMAC address:");
+	//printf("\nMAC address:");
 	//e1000_adapt->hw.mac_addr[0]=e1000_adapt->hw.perm_mac_addr[0]=0x00;
 	//e1000_adapt->hw.mac_addr[1]=e1000_adapt->hw.perm_mac_addr[1]=0x1B;
 	//e1000_adapt->hw.mac_addr[2]=e1000_adapt->hw.perm_mac_addr[2]=0x21;
@@ -1805,8 +1808,8 @@ static int e1000_probe(void)
 	//e1000_adapt->hw.mac_addr[4]=e1000_adapt->hw.perm_mac_addr[4]=0x09;
 	//e1000_adapt->hw.mac_addr[5]=e1000_adapt->hw.perm_mac_addr[5]=0x34;
 
-	for (i = 0; i < 6; i++)
-		printf("%02x ", e1000_adapt->hw.mac_addr[i]);
+	//for (i = 0; i < 6; i++)
+	//	printf("%02x ", e1000_adapt->hw.mac_addr[i]);
 
 	/* reset the hardware with the new settings */
 	e1000_reset();
@@ -1886,8 +1889,8 @@ static int e1000_setup_tx_resources(struct e1000_tx_ring *tx_ring)
 #if 1
 	/* FIXME */
 	//tx_ring->desc = dma_alloc_coherent(NULL, tx_ring->size_desc, &tx_ring->dma_desc, GFP_ATOMIC);
-	tx_ring->desc=__X_DESC_BASE;
-	tx_ring->dma_desc=__X_DESC_BASE;
+	tx_ring->desc=&e1000_packet;
+	tx_ring->dma_desc=&e1000_packet;
 
 	if (!tx_ring->desc) {
 		DEBUGQ(tx_ring->size_desc);
@@ -1903,8 +1906,8 @@ static int e1000_setup_tx_resources(struct e1000_tx_ring *tx_ring)
 #if 1
 	/* FIXME */
 	//tx_ring->buf_header = dma_alloc_coherent(NULL, tx_ring->size_header, &tx_ring->dma_header, GFP_ATOMIC);
-	tx_ring->buf_header=__X_HEADER_BASE;
-	tx_ring->dma_header=__X_HEADER_BASE;
+	tx_ring->buf_header=&e1000_packet;
+	tx_ring->dma_header=&e1000_packet;
 
 	if (!tx_ring->buf_header) {
 		DEBUGQ(tx_ring->size_header);
@@ -1920,8 +1923,8 @@ static int e1000_setup_tx_resources(struct e1000_tx_ring *tx_ring)
 #if 1
 	/* FIXME */
 //	tx_ring->buf_body = dma_alloc_coherent(NULL, tx_ring->size_body, &tx_ring->dma_body, GFP_ATOMIC);
-	tx_ring->buf_body = (void *)__X_TBUFFER_BASE;
-	tx_ring->dma_body = (dma_addr_t)__X_TBUFFER_BASE;
+	tx_ring->buf_body = (void *)&e1000_packet;
+	tx_ring->dma_body = (dma_addr_t)&e1000_packet;
 	if (!tx_ring->buf_body) {
 		DEBUGQ(tx_ring->size_body);
 		//return -ENOMEM;
@@ -2115,7 +2118,7 @@ u32 e1000_init_module(void)
 	_XDPRINTF_("Probing for ethernet card...\n");
 
 	DEBUGQ(0);
-	ret = e1000_probe();
+	ret = e1000_probe(&e1000_dev);
 
 	if (ret)
 		return ret;

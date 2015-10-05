@@ -65,7 +65,7 @@ typedef void* 	hva_t; 			//hypervisor virtual address
 typedef u64 	spa_t; 			//system physical address
 typedef u32 	gva_t; 			//guest virtual address. we only support 32-bit guests
 typedef u64 	gpa_t; 			//guest physical address. can be 64-bit with PAE
-
+typedef void*   dma_addr_t;
 
 //"golden" digest values injected using CFLAGS during build process
 //NOTE: NO WAY TO SELF-CHECK slbelow64K; JUST A SANITY-CHECK
