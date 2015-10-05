@@ -863,8 +863,12 @@ typedef u32 *npt_t;
 
 
 /* make a page table entry from individual fields */
+//#define pae_make_pte(paddr, flags) \
+//  ((u64)(paddr) & (~(((u64)PAGE_SIZE_4K - 1) | _PAGE_NX))) | (u64)(flags)
+
 #define pae_make_pte(paddr, flags) \
-  ((u64)(paddr) & (~(((u64)PAGE_SIZE_4K - 1) | _PAGE_NX))) | (u64)(flags)
+  ((u64)(paddr) & (0x7FFFFFFFFFFFF000ULL)) | (u64)(flags)
+
 
 /* get address field from 32-bit cr3 (page directory pointer) in PAE mode */
 #define pae_get_addr_from_32bit_cr3(entry) \
