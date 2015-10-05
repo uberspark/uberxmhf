@@ -527,18 +527,21 @@ static void gp_setup_vhslab_mempgtbl(void){
 	default_flags = (u64)(_PAGE_PRESENT | _PAGE_RW | _PAGE_USER);
     	/*@
 		loop invariant a3: 0 <= i <= PAE_PTRS_PER_PDPT;
-		loop assigns i,j;
+		loop assigns a4: i, j;
 		loop variant PAE_PTRS_PER_PDPT - i;
 	@*/
 	for(i=0; i < PAE_PTRS_PER_PDPT; i++){
 	    	/*@
-			loop invariant a4: 0 <= j <= PAE_PTRS_PER_PDT;
-			loop assigns j;
+			loop invariant a5: 0 <= j <= PAE_PTRS_PER_PDT;
+			loop assigns a6: gp_vhslabmempgtbl_lvl2t[i][0..(PAE_PTRS_PER_PDT-1)], j;
 			loop variant PAE_PTRS_PER_PDT - j;
 		@*/
 		for(j=0; j < PAE_PTRS_PER_PDT; j++){
-			//gp_vhslabmempgtbl_lvl2t[i][j] =
-			//	pae_make_pde(&gp_vhslabmempgtbl_lvl1t[(i * PAE_PTRS_PER_PDT * PAE_PTRS_PER_PT) + (j * PAE_PTRS_PER_PT)], default_flags);
+			gp_vhslabmempgtbl_lvl2t[i][j] =
+				pae_make_pde(&gp_vhslabmempgtbl_lvl1t[(i * PAE_PTRS_PER_PDT * PAE_PTRS_PER_PT) + (j * PAE_PTRS_PER_PT)], default_flags);
+
+			//@assert ( (u64)gp_vhslabmempgtbl_lvl2t[i][j] ) == ( ((u64)(&gp_vhslabmempgtbl_lvl1t[(i * PAE_PTRS_PER_PDT * PAE_PTRS_PER_PT) + (j * PAE_PTRS_PER_PT)]) & 0x7FFFFFFFFFFFF000ULL ) | (u64)(default_flags));
+
 		}
 	}
 

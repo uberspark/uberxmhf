@@ -847,12 +847,20 @@ typedef u32 *npt_t;
 
 
 /* make a page directory entry for a 2MB page from individual fields */
+//#define pae_make_pde_big(paddr, flags) \
+//  ((u64)(paddr) & (~(((u64)PAGE_SIZE_2M - 1) | _PAGE_NX))) | (u64)(flags)
+
 #define pae_make_pde_big(paddr, flags) \
-  ((u64)(paddr) & (~(((u64)PAGE_SIZE_2M - 1) | _PAGE_NX))) | (u64)(flags)
+  ((u64)(paddr) & (0x7FFFFFFFFFE00000ULL)) | (u64)(flags)
+
 
 /* make a page directory entry for a 4KB page from individual fields */
+//#define pae_make_pde(paddr, flags) \
+//  ((u64)(paddr) & (~(((u64)PAGE_SIZE_4K - 1) | _PAGE_NX))) | (u64)(flags)
+
 #define pae_make_pde(paddr, flags) \
-  ((u64)(paddr) & (~(((u64)PAGE_SIZE_4K - 1) | _PAGE_NX))) | (u64)(flags)
+  ((u64)(paddr) & (0x7FFFFFFFFFFFF000ULL)) | (u64)(flags)
+
 
 /* make a page table entry from individual fields */
 #define pae_make_pte(paddr, flags) \
