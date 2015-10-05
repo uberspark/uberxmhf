@@ -1686,7 +1686,7 @@ unsigned char e1000_dst_macaddr[] = __X_LOGSTORE_MAC;
 //------------------------------------------------------------------------------
 
 unsigned char e1000_pkt_type[] = {0x80, 0x86};
-unsigned int lo_before, hi_before, lo_after, hi_after;
+//unsigned int lo_before, hi_before, lo_after, hi_after;
 
 #define E1000_TIMEOUT_1MS	((0x40000000ULL * 2) / 1000)
 
@@ -1696,14 +1696,14 @@ void e1000_mdelay1(unsigned int msec)
  * second is seconds to wait
  * the third one depends how fast your CPU is
  */
-	unsigned long long cycles = E1000_TIMEOUT_1MS * msec;
-	unsigned long long diff;
-
-	__asm__ __volatile__ ("rdtsc" : "=a" (lo_before), "=d"(hi_before));
+	u64 cycles = E1000_TIMEOUT_1MS * msec;
+	u64 diff;
+	u64 tscbefore, tscafter;
+	tscbefore = CASM_FUNCCALL(rdtsc64, CASM_NOPARAM);
 	do
 	{
-		__asm__ __volatile__ ("rdtsc" : "=a" (lo_after), "=d"(hi_after));
-		diff = (((unsigned long long)hi_after << 32) | lo_after) - (((unsigned long long)hi_before << 32) | lo_before);
+		tscafter = CASM_FUNCCALL(rdtsc64, CASM_NOPARAM);
+		diff = tscafter - tscbefore;
 	} while (diff < cycles);
 }
 
@@ -2053,7 +2053,6 @@ void e1000_xmit(unsigned short tail)
 	tctl |= E1000_TCTL_EN;
 	E1000_WRITE_REG(&e1000_adapt->hw, TCTL, tctl);
 
-	__asm__ __volatile__ ("rdtsc" : "=a" (lo_before), "=d"(hi_before));
 	e1000_writel(tail, e1000_adapt->hw.hw_addr + e1000_adapt->tx_ring.tdt);
 }
 
@@ -2082,13 +2081,7 @@ void e1000_wait4xmit(void)
 	do {
 		head = e1000_readl(e1000_adapt->hw.hw_addr + e1000_adapt->tx_ring.tdh);
 	} while (head != tail);
-	{
-		unsigned long long diff;
-		__asm__ __volatile__ ("rdtsc" : "=a" (lo_after), "=d"(hi_after));
-		diff = (((unsigned long long)hi_after << 32) | lo_after) - (((unsigned long long)hi_before << 32) | lo_before);
-		//printk(KERN_ALERT "Timing:before 0x%08X%08X after 0x%08X%08X\n", hi_before, lo_before, hi_after, lo_after);
-		//printk(KERN_ALERT "%s:%d: before %x.%x, after %x.%x, diff %#llx, %lld\n", __FUNCTION__, __LINE__, hi_before, lo_before, hi_after, lo_after, diff, diff);
-	}
+
 }
 
 
