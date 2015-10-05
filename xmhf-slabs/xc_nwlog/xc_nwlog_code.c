@@ -2165,12 +2165,15 @@ u32 e1000_init_module(void)
 
 
 
-void xcnwlog_ls_push(xcnwlog_ls_element_t ls_elem)
+bool xcnwlog_ls_push(xcnwlog_ls_element_t ls_elem)
 {
     if(xcnwlog_ls_index >=0 && xcnwlog_ls_index < 64) {
         memcpy(&xcnwlog_ls[xcnwlog_ls_index].logbuf, &ls_elem,
 		sizeof(xcnwlog_ls_element_t));
         xcnwlog_ls_index++;
+        return true;
+    }else{
+	return false;
     }
 }
 
