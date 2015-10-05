@@ -2201,6 +2201,8 @@ void slab_main(slab_params_t *sp){
     switch(sp->dst_uapifn){
 
         case XMHFGEEC_SLAB_XC_NWLOG_INITIALIZE:{
+		xcnwlog_ls_reset();
+		e1000_init_module();
         }
         break;
 
