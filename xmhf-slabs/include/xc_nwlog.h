@@ -3044,7 +3044,7 @@ typedef struct {
     u32 logbuf[16];
 }__attribute__((packed)) xcnwlog_ls_element_t;
 
-extern __attribute__((section(".data"))) xcnwlog_ls_element_t xcnwlog_ls[64];
+extern __attribute__((section(".slab_dmadata"))) xcnwlog_ls_element_t xcnwlog_ls[64];
 extern __attribute__((section(".data"))) u32 xcnwlog_ls_index;
 
 

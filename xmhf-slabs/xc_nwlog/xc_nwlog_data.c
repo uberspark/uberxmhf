@@ -51,5 +51,5 @@
 #include <xc.h>
 #include <xc_nwlog.h>
 
-__attribute__((section(".data"))) xcnwlog_ls_element_t xcnwlog_ls[64];
+__attribute__((section(".slab_dmadata"))) xcnwlog_ls_element_t xcnwlog_ls[64];
 __attribute__((section(".data"))) u32 xcnwlog_ls_index=0;
