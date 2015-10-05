@@ -2114,11 +2114,12 @@ u32 e1000_init_module(void)
 	//       e1000_driver_string, e1000_driver_version);
 
 
-	e1000_dev.bytes = 0;
-	e1000_dev.fields.enabled = 1;
-	e1000_dev.fields.bus = __X_NIC_BUS;
-	e1000_dev.fields.device = __X_NIC_DEV;
-	e1000_dev.fields.function = __X_NIC_FUN;
+	//TODO: probe PCI bus to figure out b,d,f
+	e1000_dev.vendor_id = 0x8086;
+	e1000_dev.device_id = 0x10b9;
+	e1000_dev.bus = 4;
+	e1000_dev.dev = 0;
+	e1000_dev.func = 0;
 
 	printf("\nProbing for ethernet card...");
 
