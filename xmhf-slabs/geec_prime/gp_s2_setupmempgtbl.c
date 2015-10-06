@@ -101,6 +101,8 @@ static bool _geec_prime_smt_slab_getspatype_isdevicemmio(u32 slabid, u32 spa){
     return false;
 }
 
+#endif // 0
+
 
 static bool _geec_prime_smt_slab_getspatype_isiotbl(u32 slabid, u32 spa){
     u32 i;
@@ -113,6 +115,9 @@ static bool _geec_prime_smt_slab_getspatype_isiotbl(u32 slabid, u32 spa){
 
     return false;
 }
+
+
+#if 0
 
 //TODO: we need to account for memgrant caps here
 //memgrant is read-only or read-write
@@ -497,6 +502,10 @@ static void gp_setup_uhslab_mempgtbl(u32 slabid){
 
 #endif // 0
 
+
+
+
+#if 0
 /*@
 	assigns gp_rwdatahdr.gp_vhslabmempgtbl_lvl4t[0..(PAGE_SIZE_4K-1)];
 
@@ -570,7 +579,6 @@ static void gp_setup_vhslab_mempgtbl(void){
 }
 
 
-#if 0
 
 void gp_s2_setupmempgtbl(void){
     slab_params_t spl;
