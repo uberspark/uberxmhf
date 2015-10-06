@@ -104,8 +104,16 @@ static bool _geec_prime_smt_slab_getspatype_isdevicemmio(u32 slabid, u32 spa){
 #endif // 0
 
 
+
 /*@
+	requires 0 <= slabid < XMHFGEEC_TOTAL_SLABS ;
 	assigns \nothing;
+	//behavior spa_iotbl:
+
+	//behavior spa_notiotbl:
+
+	//complete behaviours;
+	//disjoint behaviors;
 @*/
 static bool _geec_prime_smt_slab_getspatype_isiotbl(u32 slabid, u32 spa){
     u32 i;
