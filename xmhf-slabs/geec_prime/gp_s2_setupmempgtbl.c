@@ -73,6 +73,13 @@
 
 #define _SLAB_SPATYPE_OTHER	    				(0x6)
 
+/*@
+  //requires n >= 0;
+	assigns \nothing;
+	ensures 0 <= \result < PAGE_SIZE_4K;
+@*/
+static u64 _geec_prime_slab_getptflagsforspa_pae(u32 slabid, u32 spa, u32 spatype);
+
 
 
 #if 1
@@ -552,8 +559,9 @@ static void gp_setup_vhslab_mempgtbl(void){
 		spatype =  _geec_prime_slab_getspatype(slabid, (u32)(i * PAGE_SIZE_4K));
 		flags = _geec_prime_slab_getptflagsforspa_pae(slabid, (u32)(i * PAGE_SIZE_4K), spatype);
 
-		gp_vhslabmempgtbl_lvl1t[i] = pae_make_pte( (i*PAGE_SIZE_4K), flags) & (~0x80);
-		//@assert (u64)gp_vhslabmempgtbl_lvl1t[i] == ( ((u64)(i * PAGE_SIZE_4K) & 0x7FFFFFFFFFFFF000ULL ) | (u64)(flags) & (~0x80) );
+		//@assert 0 <= flags < PAGE_SIZE_4K;
+		gp_vhslabmempgtbl_lvl1t[i] = pae_make_pte( (i*PAGE_SIZE_4K), flags);
+		//@assert (u64)gp_vhslabmempgtbl_lvl1t[i] == ( ((u64)(i * PAGE_SIZE_4K) & 0x7FFFFFFFFFFFF000ULL ) | (u64)(flags) );
 
 	}
 
