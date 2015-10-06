@@ -82,7 +82,7 @@ static u64 _geec_prime_slab_getptflagsforspa_pae(u32 slabid, u32 spa, u32 spatyp
 
 
 
-#if 1
+#if 0
 
 static bool _geec_prime_smt_slab_getspatype_isdevicemmio(u32 slabid, u32 spa){
     u32 i, j;
@@ -498,15 +498,15 @@ static void gp_setup_uhslab_mempgtbl(u32 slabid){
 #endif // 0
 
 /*@
-  //requires n >= 0;
 	assigns gp_rwdatahdr.gp_vhslabmempgtbl_lvl4t[0..(PAGE_SIZE_4K-1)];
+
 @*/
 static void gp_setup_vhslab_mempgtbl(void){
 	u32 i, j;
 	u64 default_flags = (u64)(_PAGE_PRESENT);
 
 	u64 gpa;
-	u64 flags;
+	u64 flags=0;
 	u32 spatype;
 	u32 spa_slabregion, spa_slabtype;
 	u32 slabid = XMHFGEEC_SLAB_GEEC_PRIME;
@@ -549,10 +549,9 @@ static void gp_setup_vhslab_mempgtbl(void){
 
 
 	//pts
-    	/*@
-		loop invariant a5: 0 <= i <= (PAE_PTRS_PER_PDPT * PAE_PTRS_PER_PDT * PAE_PTRS_PER_PT);
-		//loop invariant a6: \forall integer x; 1 <= x < i ==> (( (u64)gp_vhslabmempgtbl_lvl1t[x] ) == ( ((u64)(&gp_vhslabmempgtbl_lvl1t[(x * PAE_PTRS_PER_PT)]) & 0x7FFFFFFFFFFFF000ULL ) | ((u64)(_PAGE_PRESENT | _PAGE_RW | _PAGE_USER))));
+    	/*@	loop invariant a5: 0 <= i <= (PAE_PTRS_PER_PDPT * PAE_PTRS_PER_PDT * PAE_PTRS_PER_PT);
 		loop assigns spatype, flags, i, gp_vhslabmempgtbl_lvl1t[0..(PAE_PTRS_PER_PDPT * PAE_PTRS_PER_PDT * PAE_PTRS_PER_PT)];
+		// loop invariant a6: \forall integer x; 0 <= x < i ==> ( (u64)gp_vhslabmempgtbl_lvl1t[i] == ( ((u64)(x * PAGE_SIZE_4K) & 0x7FFFFFFFFFFFF000ULL ) | (u64)(\at(flags, LoopCurrent)) ) );
 		loop variant (PAE_PTRS_PER_PDPT * PAE_PTRS_PER_PDT * PAE_PTRS_PER_PT) - i;
 	@*/
 	for(i=0; i < (PAE_PTRS_PER_PDPT * PAE_PTRS_PER_PDT * PAE_PTRS_PER_PT); i++){
@@ -562,14 +561,13 @@ static void gp_setup_vhslab_mempgtbl(void){
 		//@assert 0 <= flags < PAGE_SIZE_4K;
 		gp_vhslabmempgtbl_lvl1t[i] = pae_make_pte( (i*PAGE_SIZE_4K), flags);
 		//@assert (u64)gp_vhslabmempgtbl_lvl1t[i] == ( ((u64)(i * PAGE_SIZE_4K) & 0x7FFFFFFFFFFFF000ULL ) | (u64)(flags) );
-
 	}
 
 
 }
 
 
-#if 1
+#if 0
 
 void gp_s2_setupmempgtbl(void){
     slab_params_t spl;
