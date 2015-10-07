@@ -82,7 +82,7 @@ static u64 _geec_prime_slab_getptflagsforspa_pae(u32 slabid, u32 spa, u32 spatyp
 
 
 
-#if 0
+#if 1
 
 static bool _geec_prime_smt_slab_getspatype_isdevicemmio(u32 slabid, u32 spa){
     u32 i, j;
@@ -143,7 +143,7 @@ static bool _geec_prime_smt_slab_getspatype_isiotbl(u32 slabid, u32 spa){
 
 
 
-#if 0
+#if 1
 
 //TODO: we need to account for memgrant caps here
 //memgrant is read-only or read-write
@@ -531,7 +531,7 @@ static void gp_setup_uhslab_mempgtbl(u32 slabid){
 
 
 
-#if 0
+#if 1
 /*@
 	assigns gp_rwdatahdr.gp_vhslabmempgtbl_lvl4t[0..(PAGE_SIZE_4K-1)];
 
