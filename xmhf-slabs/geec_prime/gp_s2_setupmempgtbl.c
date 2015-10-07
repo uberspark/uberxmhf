@@ -225,6 +225,7 @@ static u32 gp_slab_getspatype_for_slab(u32 slab_index, u32 spa){
 /*@
 	requires 0 <= slab_index < XMHFGEEC_TOTAL_SLABS ;
 	assigns gretval;
+	ensures (\forall u32 x; 0 <= x < XMHFGEEC_TOTAL_SLABS ==> (gretval == _SLAB_SPATYPE_OTHER)) ==> (\result == _SLAB_SPATYPE_OTHER);
 @*/
 static u32 _geec_prime_slab_getspatype(u32 slab_index, u32 spa){
 	u32 i;
