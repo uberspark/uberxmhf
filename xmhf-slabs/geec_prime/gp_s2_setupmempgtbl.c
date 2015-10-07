@@ -88,7 +88,10 @@ static u64 _geec_prime_slab_getptflagsforspa_pae(u32 slabid, u32 spa, u32 spatyp
 	requires 0 <= _sda_slab_devicemap[slabid].device_count < MAX_PLATFORM_DEVICES;
 	assigns \nothing;
 	ensures (\result == true) || (\result == false) ;
-	//ensures (\forall u32 x; 0 <= x < MAX_PLATFORM_CPUS ==> ) ==> 	(\result == false);
+	ensures (\forall u32 x, u32 y; ( (0 <= x < _sda_slab_devicemap[slabid].device_count) &&
+					   (0 <= y < PCI_CONF_MAX_BARS) ) ==> !(sysdev_memioregions[_sda_slab_devicemap[slabid].sysdev_mmioregions_indices[x]].memioextents[y].extent_type == _MEMIOREGIONS_EXTENTS_TYPE_MEM &&
+			(spa >= sysdev_memioregions[_sda_slab_devicemap[slabid].sysdev_mmioregions_indices[x]].memioextents[y].addr_start &&
+			    spa < sysdev_memioregions[_sda_slab_devicemap[slabid].sysdev_mmioregions_indices[x]].memioextents[y].addr_end) )) ==> 	(\result == false);
 
 @*/
 static bool _geec_prime_smt_slab_getspatype_isdevicemmio(u32 slabid, u32 spa){
