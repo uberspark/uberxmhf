@@ -102,6 +102,9 @@ static bool _geec_prime_smt_slab_getspatype_isdevicemmio(u32 slabid, u32 spa){
 
 		/*@
 			loop invariant c2: 0 <= j <= PCI_CONF_MAX_BARS;
+			loop invariant c3: \forall integer x; 0 <= x < j ==> (!(sysdev_memioregions[sysdev_memioregions_index].memioextents[x].extent_type == _MEMIOREGIONS_EXTENTS_TYPE_MEM &&
+			(spa >= sysdev_memioregions[sysdev_memioregions_index].memioextents[x].addr_start &&
+			    spa < sysdev_memioregions[sysdev_memioregions_index].memioextents[x].addr_end) ));
 			loop assigns j;
 			loop variant PCI_CONF_MAX_BARS - j;
 		@*/
