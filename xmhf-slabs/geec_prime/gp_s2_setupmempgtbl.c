@@ -81,7 +81,7 @@
 static u64 _geec_prime_slab_getptflagsforspa_pae(u32 slabid, u32 spa, u32 spatype);
 
 
-#if 1
+#if 0
 /*@
 	requires 0 <= slabid < XMHFGEEC_TOTAL_SLABS ;
 	requires \forall u32 x; 0 <= x < MAX_PLATFORM_CPUS ==> (_sda_slab_devicemap[slabid].sysdev_mmioregions_indices[x] < MAX_PLATFORM_DEVICES);
@@ -126,7 +126,7 @@ static bool _geec_prime_smt_slab_getspatype_isdevicemmio(u32 slabid, u32 spa){
 
 
 
-#if 1
+#if 0
 //done
 
 /*@
@@ -183,7 +183,21 @@ static bool _geec_prime_smt_slab_getspatype_isiotbl(u32 slabid, u32 spa){
 //shared mappings
 
 
+/*@
+	requires 0 <= slab_index < XMHFGEEC_TOTAL_SLABS ;
+	assigns \nothing;
+	ensures ( (\result == _SLAB_SPATYPE_GEEC_PRIME_IOTBL) ||
+		(\result == _SLAB_SPATYPE_SLAB_CODE) ||
+		(\result == _SLAB_SPATYPE_SLAB_DATA) ||
+		(\result == _SLAB_SPATYPE_SLAB_STACK) ||
+		(\result == _SLAB_SPATYPE_SLAB_DMADATA) ||
+		(\result == _SLAB_SPATYPE_SLAB_DEVICEMMIO) ||
+		(\result == _SLAB_SPATYPE_OTHER) );
+@*/
+static u32 gp_slab_getspatype_for_slab(u32 slab_index, u32 spa);
 
+
+#if 0
 static u32 gp_slab_getspatype_for_slab(u32 slab_index, u32 spa){
 
 		if(_geec_prime_smt_slab_getspatype_isiotbl(slab_index, spa))
@@ -201,6 +215,10 @@ static u32 gp_slab_getspatype_for_slab(u32 slab_index, u32 spa){
 
 		return _SLAB_SPATYPE_OTHER;
 }
+#endif // 0
+
+
+
 
 
 
@@ -211,19 +229,19 @@ static u32 gp_slab_getspatype_for_slab(u32 slab_index, u32 spa){
 static u32 _geec_prime_slab_getspatype(u32 slab_index, u32 spa){
 	u32 i;
 	u32 retval;
-
+	u32 mask, slab_rwcaps;
 
 
 	//slab memory regions
 
 	/*@
 		loop invariant b1: 0 <= i <= XMHFGEEC_TOTAL_SLABS;
-		loop assigns i;
+		loop assigns i, mask, slab_rwcaps, retval;
 		loop variant XMHFGEEC_TOTAL_SLABS - i;
 	@*/
 	for(i=0; i < XMHFGEEC_TOTAL_SLABS; i++){
-		u32 mask = xmhfgeec_slab_info_table[i].slabtype;
-		bool slab_rwcaps =
+		mask = xmhfgeec_slab_info_table[i].slabtype;
+		slab_rwcaps =
 			(xmhfgeec_slab_info_table[i].slab_memgrantreadcaps & XMHFGEEC_SLAB_MEMGRANTREADCAP_MASK(slab_index)) ||
 			(xmhfgeec_slab_info_table[i].slab_memgrantwritecaps & XMHFGEEC_SLAB_MEMGRANTWRITECAP_MASK(slab_index));
 
@@ -243,7 +261,7 @@ static u32 _geec_prime_slab_getspatype(u32 slab_index, u32 spa){
 
 
 
-#if 1
+#if 0
 
 
 // for VfT_PROG, uVT_PROG and uVU_PROG
@@ -591,7 +609,7 @@ static void gp_setup_uhslab_mempgtbl(u32 slabid){
 
 
 
-#if 1
+#if 0
 /*@
 	assigns gp_rwdatahdr.gp_vhslabmempgtbl_lvl4t[0..(PAGE_SIZE_4K-1)];
 
