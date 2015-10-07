@@ -81,7 +81,7 @@
 static u64 _geec_prime_slab_getptflagsforspa_pae(u32 slabid, u32 spa, u32 spatype);
 
 
-#if 0
+#if 1
 /*@
 	requires 0 <= slabid < XMHFGEEC_TOTAL_SLABS ;
 	requires \forall u32 x; 0 <= x < MAX_PLATFORM_CPUS ==> (_sda_slab_devicemap[slabid].sysdev_mmioregions_indices[x] < MAX_PLATFORM_DEVICES);
@@ -126,7 +126,7 @@ static bool _geec_prime_smt_slab_getspatype_isdevicemmio(u32 slabid, u32 spa){
 
 
 
-#if 0
+#if 1
 //done
 
 /*@
@@ -197,7 +197,7 @@ static bool _geec_prime_smt_slab_getspatype_isiotbl(u32 slabid, u32 spa){
 static u32 gp_slab_getspatype_for_slab(u32 slab_index, u32 spa);
 
 
-#if 0
+#if 1
 static u32 gp_slab_getspatype_for_slab(u32 slab_index, u32 spa){
 
 		if(_geec_prime_smt_slab_getspatype_isiotbl(slab_index, spa))
@@ -267,7 +267,7 @@ static u32 _geec_prime_slab_getspatype(u32 slab_index, u32 spa){
 
 
 
-#if 0
+#if 1
 
 
 // for VfT_PROG, uVT_PROG and uVU_PROG
@@ -615,7 +615,7 @@ static void gp_setup_uhslab_mempgtbl(u32 slabid){
 
 
 
-#if 0
+#if 1
 /*@
 	assigns gp_rwdatahdr.gp_vhslabmempgtbl_lvl4t[0..(PAGE_SIZE_4K-1)];
 
