@@ -81,6 +81,22 @@
 static u64 _geec_prime_slab_getptflagsforspa_pae(u32 slabid, u32 spa, u32 spatype);
 
 
+
+/*@
+	requires 0 <= slabid < XMHFGEEC_TOTAL_SLABS ;
+	requires \forall u32 x; 0 <= x < MAX_PLATFORM_CPUS ==> (_sda_slab_devicemap[slabid].sysdev_mmioregions_indices[x] < MAX_PLATFORM_DEVICES);
+	requires 0 <= _sda_slab_devicemap[slabid].device_count < MAX_PLATFORM_DEVICES;
+	assigns \nothing;
+	ensures (\result == true) || (\result == false) ;
+	ensures (\forall u32 x, u32 y; ( (0 <= x < _sda_slab_devicemap[slabid].device_count) &&
+					   (0 <= y < PCI_CONF_MAX_BARS) ) ==> !(sysdev_memioregions[_sda_slab_devicemap[slabid].sysdev_mmioregions_indices[x]].memioextents[y].extent_type == _MEMIOREGIONS_EXTENTS_TYPE_MEM &&
+			(spa >= sysdev_memioregions[_sda_slab_devicemap[slabid].sysdev_mmioregions_indices[x]].memioextents[y].addr_start &&
+			    spa < sysdev_memioregions[_sda_slab_devicemap[slabid].sysdev_mmioregions_indices[x]].memioextents[y].addr_end) )) ==> 	(\result == false);
+
+@*/
+static bool _geec_prime_smt_slab_getspatype_isdevicemmio(u32 slabid, u32 spa);
+
+//done
 #if 0
 /*@
 	requires 0 <= slabid < XMHFGEEC_TOTAL_SLABS ;
@@ -126,9 +142,29 @@ static bool _geec_prime_smt_slab_getspatype_isdevicemmio(u32 slabid, u32 spa){
 
 
 
-#if 0
 //done
+/*@
+	requires 0 <= slabid < XMHFGEEC_TOTAL_SLABS ;
+	assigns \nothing;
+	behavior isiotbl:
+		assumes (\forall u32 x; 0 <= x < MAX_PLATFORM_CPUS ==> (!(spa >= (u32)&__xmhfhic_x86vmx_tss[x].tss_iobitmap &&
+			spa < ((u32)&__xmhfhic_x86vmx_tss[x].tss_iobitmap[3*PAGE_SIZE_4K]) )) );
+		ensures	(\result == false);
+	behavior isnotiotbl:
+		assumes !(\forall u32 x; 0 <= x < MAX_PLATFORM_CPUS ==> (!(spa >= (u32)&__xmhfhic_x86vmx_tss[x].tss_iobitmap &&
+			spa < ((u32)&__xmhfhic_x86vmx_tss[x].tss_iobitmap[3*PAGE_SIZE_4K]) )) );
+		ensures	(\result == true);
+	complete  behaviors;
+	disjoint behaviors;
+	//ensures (\result == true) || (\result == false);
+	//ensures (\forall u32 x; 0 <= x < MAX_PLATFORM_CPUS ==> (!(spa >= (u32)&__xmhfhic_x86vmx_tss[x].tss_iobitmap &&
+	//  spa < ((u32)&__xmhfhic_x86vmx_tss[x].tss_iobitmap[3*PAGE_SIZE_4K]) )) ) ==> 	(\result == false);
+	//ensures !(\forall u32 x; 0 <= x < MAX_PLATFORM_CPUS ==> (!(spa >= (u32)&__xmhfhic_x86vmx_tss[x].tss_iobitmap &&
+	//  spa < ((u32)&__xmhfhic_x86vmx_tss[x].tss_iobitmap[3*PAGE_SIZE_4K]) )) ) ==> 	(\result == true);
+@*/
+static bool _geec_prime_smt_slab_getspatype_isiotbl(u32 slabid, u32 spa);
 
+#if 0
 /*@
 	requires 0 <= slabid < XMHFGEEC_TOTAL_SLABS ;
 	assigns \nothing;
@@ -199,6 +235,12 @@ static u32 gp_slab_getspatype_for_slab(u32 slab_index, u32 spa);
 #endif // 0
 
 
+/*@
+	requires 0 <= slab_index < XMHFGEEC_TOTAL_SLABS ;
+	requires \forall u32 x; 0 <= x < MAX_PLATFORM_CPUS ==> (_sda_slab_devicemap[slab_index].sysdev_mmioregions_indices[x] < MAX_PLATFORM_DEVICES);
+	requires 0 <= _sda_slab_devicemap[slab_index].device_count < MAX_PLATFORM_DEVICES;
+	assigns \nothing;
+@*/
 static u32 gp_slab_getspatype_for_slab(u32 slab_index, u32 spa){
 
 		if(_geec_prime_smt_slab_getspatype_isiotbl(slab_index, spa))
