@@ -181,6 +181,11 @@ static bool _geec_prime_smt_slab_getspatype_isiotbl(u32 slabid, u32 spa){
 //memgrant is read-only or read-write
 //for now we will return _SLAB_SPATYPE_SLAB_DATA for such
 //shared mappings
+
+/*@
+	requires 0 <= slab_index < XMHFGEEC_TOTAL_SLABS ;
+	assigns \nothing;
+@*/
 static u32 _geec_prime_slab_getspatype(u32 slab_index, u32 spa){
 	u32 i;
 
@@ -188,6 +193,12 @@ static u32 _geec_prime_slab_getspatype(u32 slab_index, u32 spa){
 
 
 	//slab memory regions
+
+	/*@
+		loop invariant b1: 0 <= i <= XMHFGEEC_TOTAL_SLABS;
+		loop assigns i;
+		loop variant XMHFGEEC_TOTAL_SLABS - i;
+	@*/
 	for(i=0; i < XMHFGEEC_TOTAL_SLABS; i++){
 		u32 mask = xmhfgeec_slab_info_table[i].slabtype;
 		bool slab_rwcaps =
@@ -195,21 +206,21 @@ static u32 _geec_prime_slab_getspatype(u32 slab_index, u32 spa){
 			(xmhfgeec_slab_info_table[i].slab_memgrantwritecaps & XMHFGEEC_SLAB_MEMGRANTWRITECAP_MASK(slab_index));
 
 
-        if( i == slab_index || slab_rwcaps)
-            mask |= _SLAB_SPATYPE_MASK_SAMESLAB;
+		if( i == slab_index || slab_rwcaps)
+		    mask |= _SLAB_SPATYPE_MASK_SAMESLAB;
 
-        if(_geec_prime_smt_slab_getspatype_isiotbl(slab_index, spa))
-            return _SLAB_SPATYPE_GEEC_PRIME_IOTBL | mask;
-        if(spa >= xmhfgeec_slab_info_table[i].slab_physmem_extents[0].addr_start && spa < xmhfgeec_slab_info_table[i].slab_physmem_extents[0].addr_end)
-            return _SLAB_SPATYPE_SLAB_CODE | mask;
-        if(spa >= xmhfgeec_slab_info_table[i].slab_physmem_extents[1].addr_start && spa < xmhfgeec_slab_info_table[i].slab_physmem_extents[1].addr_end)
-            return _SLAB_SPATYPE_SLAB_DATA | mask;
-        if(spa >= xmhfgeec_slab_info_table[i].slab_physmem_extents[2].addr_start && spa < xmhfgeec_slab_info_table[i].slab_physmem_extents[2].addr_end)
-            return _SLAB_SPATYPE_SLAB_STACK | mask;
-        if(spa >= xmhfgeec_slab_info_table[i].slab_physmem_extents[3].addr_start && spa < xmhfgeec_slab_info_table[i].slab_physmem_extents[3].addr_end)
-            return _SLAB_SPATYPE_SLAB_DMADATA | mask;
-        if(_geec_prime_smt_slab_getspatype_isdevicemmio(slab_index, spa))
-            return _SLAB_SPATYPE_SLAB_DEVICEMMIO | mask;
+		//if(_geec_prime_smt_slab_getspatype_isiotbl(slab_index, spa))
+		//    return _SLAB_SPATYPE_GEEC_PRIME_IOTBL | mask;
+		if(spa >= xmhfgeec_slab_info_table[i].slab_physmem_extents[0].addr_start && spa < xmhfgeec_slab_info_table[i].slab_physmem_extents[0].addr_end)
+		    return _SLAB_SPATYPE_SLAB_CODE | mask;
+		if(spa >= xmhfgeec_slab_info_table[i].slab_physmem_extents[1].addr_start && spa < xmhfgeec_slab_info_table[i].slab_physmem_extents[1].addr_end)
+		    return _SLAB_SPATYPE_SLAB_DATA | mask;
+		if(spa >= xmhfgeec_slab_info_table[i].slab_physmem_extents[2].addr_start && spa < xmhfgeec_slab_info_table[i].slab_physmem_extents[2].addr_end)
+		    return _SLAB_SPATYPE_SLAB_STACK | mask;
+		if(spa >= xmhfgeec_slab_info_table[i].slab_physmem_extents[3].addr_start && spa < xmhfgeec_slab_info_table[i].slab_physmem_extents[3].addr_end)
+		    return _SLAB_SPATYPE_SLAB_DMADATA | mask;
+		//if(_geec_prime_smt_slab_getspatype_isdevicemmio(slab_index, spa))
+		//    return _SLAB_SPATYPE_SLAB_DEVICEMMIO | mask;
 
 	}
 
