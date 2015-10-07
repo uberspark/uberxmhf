@@ -242,8 +242,12 @@ static u32 gp_slab_getspatype_for_slab(u32 slab_index, u32 spa);
 	assigns \nothing;
 @*/
 static u32 gp_slab_getspatype_for_slab(u32 slab_index, u32 spa){
+		bool isiotbl, isdevicemmio;
 
-		if(_geec_prime_smt_slab_getspatype_isiotbl(slab_index, spa))
+		isiotbl = _geec_prime_smt_slab_getspatype_isiotbl(slab_index, spa);
+		isdevicemmio = _geec_prime_smt_slab_getspatype_isdevicemmio(slab_index, spa);
+
+		if(isiotbl)
 		    return _SLAB_SPATYPE_GEEC_PRIME_IOTBL;
 		if(spa >= xmhfgeec_slab_info_table[slab_index].slab_physmem_extents[0].addr_start && spa < xmhfgeec_slab_info_table[slab_index].slab_physmem_extents[0].addr_end)
 		    return _SLAB_SPATYPE_SLAB_CODE;
@@ -253,7 +257,7 @@ static u32 gp_slab_getspatype_for_slab(u32 slab_index, u32 spa){
 		    return _SLAB_SPATYPE_SLAB_STACK;
 		if(spa >= xmhfgeec_slab_info_table[slab_index].slab_physmem_extents[3].addr_start && spa < xmhfgeec_slab_info_table[slab_index].slab_physmem_extents[3].addr_end)
 		    return _SLAB_SPATYPE_SLAB_DMADATA;
-		if(_geec_prime_smt_slab_getspatype_isdevicemmio(slab_index, spa))
+		if(isdevicemmio)
 		    return _SLAB_SPATYPE_SLAB_DEVICEMMIO;
 
 		return _SLAB_SPATYPE_OTHER;
