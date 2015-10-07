@@ -81,7 +81,7 @@
 static u64 _geec_prime_slab_getptflagsforspa_pae(u32 slabid, u32 spa, u32 spatype);
 
 
-#if 0
+#if 1
 /*@
 	requires 0 <= slabid < XMHFGEEC_TOTAL_SLABS ;
 	requires \forall u32 x; 0 <= x < MAX_PLATFORM_CPUS ==> (_sda_slab_devicemap[slabid].sysdev_mmioregions_indices[x] < MAX_PLATFORM_DEVICES);
@@ -126,7 +126,7 @@ static bool _geec_prime_smt_slab_getspatype_isdevicemmio(u32 slabid, u32 spa){
 
 
 
-#if 0
+#if 1
 //done
 
 /*@
@@ -182,13 +182,35 @@ static bool _geec_prime_smt_slab_getspatype_isiotbl(u32 slabid, u32 spa){
 //for now we will return _SLAB_SPATYPE_SLAB_DATA for such
 //shared mappings
 
+
+
+static u32 gp_slab_getspatype_for_slab(u32 slab_index, u32 spa){
+
+		if(_geec_prime_smt_slab_getspatype_isiotbl(slab_index, spa))
+		    return _SLAB_SPATYPE_GEEC_PRIME_IOTBL;
+		if(spa >= xmhfgeec_slab_info_table[slab_index].slab_physmem_extents[0].addr_start && spa < xmhfgeec_slab_info_table[slab_index].slab_physmem_extents[0].addr_end)
+		    return _SLAB_SPATYPE_SLAB_CODE;
+		if(spa >= xmhfgeec_slab_info_table[slab_index].slab_physmem_extents[1].addr_start && spa < xmhfgeec_slab_info_table[slab_index].slab_physmem_extents[1].addr_end)
+		    return _SLAB_SPATYPE_SLAB_DATA;
+		if(spa >= xmhfgeec_slab_info_table[slab_index].slab_physmem_extents[2].addr_start && spa < xmhfgeec_slab_info_table[slab_index].slab_physmem_extents[2].addr_end)
+		    return _SLAB_SPATYPE_SLAB_STACK;
+		if(spa >= xmhfgeec_slab_info_table[slab_index].slab_physmem_extents[3].addr_start && spa < xmhfgeec_slab_info_table[slab_index].slab_physmem_extents[3].addr_end)
+		    return _SLAB_SPATYPE_SLAB_DMADATA;
+		if(_geec_prime_smt_slab_getspatype_isdevicemmio(slab_index, spa))
+		    return _SLAB_SPATYPE_SLAB_DEVICEMMIO;
+
+		return _SLAB_SPATYPE_OTHER;
+}
+
+
+
 /*@
 	requires 0 <= slab_index < XMHFGEEC_TOTAL_SLABS ;
 	assigns \nothing;
 @*/
 static u32 _geec_prime_slab_getspatype(u32 slab_index, u32 spa){
 	u32 i;
-
+	u32 retval;
 
 
 
@@ -209,19 +231,11 @@ static u32 _geec_prime_slab_getspatype(u32 slab_index, u32 spa){
 		if( i == slab_index || slab_rwcaps)
 		    mask |= _SLAB_SPATYPE_MASK_SAMESLAB;
 
-		//if(_geec_prime_smt_slab_getspatype_isiotbl(slab_index, spa))
-		//    return _SLAB_SPATYPE_GEEC_PRIME_IOTBL | mask;
-		if(spa >= xmhfgeec_slab_info_table[i].slab_physmem_extents[0].addr_start && spa < xmhfgeec_slab_info_table[i].slab_physmem_extents[0].addr_end)
-		    return _SLAB_SPATYPE_SLAB_CODE | mask;
-		if(spa >= xmhfgeec_slab_info_table[i].slab_physmem_extents[1].addr_start && spa < xmhfgeec_slab_info_table[i].slab_physmem_extents[1].addr_end)
-		    return _SLAB_SPATYPE_SLAB_DATA | mask;
-		if(spa >= xmhfgeec_slab_info_table[i].slab_physmem_extents[2].addr_start && spa < xmhfgeec_slab_info_table[i].slab_physmem_extents[2].addr_end)
-		    return _SLAB_SPATYPE_SLAB_STACK | mask;
-		if(spa >= xmhfgeec_slab_info_table[i].slab_physmem_extents[3].addr_start && spa < xmhfgeec_slab_info_table[i].slab_physmem_extents[3].addr_end)
-		    return _SLAB_SPATYPE_SLAB_DMADATA | mask;
-		//if(_geec_prime_smt_slab_getspatype_isdevicemmio(slab_index, spa))
-		//    return _SLAB_SPATYPE_SLAB_DEVICEMMIO | mask;
 
+		retval = gp_slab_getspatype_for_slab(i, spa);
+
+		if(retval != _SLAB_SPATYPE_OTHER)
+			return retval | mask;
 	}
 
 	return _SLAB_SPATYPE_OTHER;
@@ -229,7 +243,7 @@ static u32 _geec_prime_slab_getspatype(u32 slab_index, u32 spa){
 
 
 
-#if 0
+#if 1
 
 
 // for VfT_PROG, uVT_PROG and uVU_PROG
@@ -577,7 +591,7 @@ static void gp_setup_uhslab_mempgtbl(u32 slabid){
 
 
 
-#if 0
+#if 1
 /*@
 	assigns gp_rwdatahdr.gp_vhslabmempgtbl_lvl4t[0..(PAGE_SIZE_4K-1)];
 
