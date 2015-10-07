@@ -143,29 +143,79 @@ static bool gp_mempgtbl_isiotbl_for_core(u32 core_id, u32 spa){
 
 
 
+#if 0
+//@ ghost bool res_iotbl_for_core=false;
+/*@
+	requires 0 <= slabid < XMHFGEEC_TOTAL_SLABS ;
+	assigns res_iotbl_for_core;
+     ensures ! ((res_iotbl_for_core == true) && (res_iotbl_for_core == false));
+     behavior isiotbl:
+     ensures (res_iotbl_for_core == true) ==> (\result == true);
+     behavior isnotiotbl:
+      ensures (res_iotbl_for_core == false) ==> (\result == false);
+     complete behaviors;
+@*/
+static bool _geec_prime_smt_slab_getspatype_isiotbl(u32 slabid, u32 spa){
+    //u32 i;
+    bool retval;
+
+	// /*@
+	//	loop invariant b1: 0 <= i <= MAX_PLATFORM_CPUS;
+	//	// loop invariant b2: \forall integer x; 0 <= x < i ==> (result == false);
+	//	loop assigns i, retval, res_iotbl_for_core;
+	//	loop variant MAX_PLATFORM_CPUS - i;
+	// @*/
+    // for(i=0; i < MAX_PLATFORM_CPUS; i++){
+      retval = gp_mempgtbl_isiotbl_for_core(0, spa);
+      //@ghost res_iotbl_for_core = retval;
+      //@assert (res_iotbl_for_core == true) || (res_iotbl_for_core == false);
+      //if(retval){
+//	//@assert res_iotbl_for_core == true;
+//	return true;
+  //    }
+   // }
+
+    // //@assert retval == false;
+
+    return retval;
+}
+#endif // 0
+
+
 
 /*@
 	requires 0 <= slabid < XMHFGEEC_TOTAL_SLABS ;
 	assigns \nothing;
+     //ensures ! ((res_iotbl_for_core == true) && (res_iotbl_for_core == false));
+     //behavior isiotbl:
+     //ensures (res_iotbl_for_core == true) ==> (\result == true);
+     //behavior isnotiotbl:
+     // ensures (res_iotbl_for_core == false) ==> (\result == false);
+     //complete behaviors;
 @*/
 static bool _geec_prime_smt_slab_getspatype_isiotbl(u32 slabid, u32 spa){
-    u32 i;
-    bool result = false;
+	u32 i;
 
 	/*@
 		loop invariant b1: 0 <= i <= MAX_PLATFORM_CPUS;
-		loop assigns i, result;
+		// loop invariant b2: \forall integer x; 0 <= x < i ==> (result == false);
+		loop assigns i;
 		loop variant MAX_PLATFORM_CPUS - i;
 	@*/
-    for(i=0; i < MAX_PLATFORM_CPUS; i++){
-      result = gp_mempgtbl_isiotbl_for_core(i, spa);
-      if(result == true){
-	break;
-      }
-    }
+	for(i=0; i < MAX_PLATFORM_CPUS; i++){
+		if (spa >= (u32)&__xmhfhic_x86vmx_tss[i].tss_iobitmap &&
+		  spa < ((u32)&__xmhfhic_x86vmx_tss[i].tss_iobitmap[3*PAGE_SIZE_4K]) ){
+		    return true;
+		}
+	}
 
-    return result;
+	return false;
+
 }
+
+
+
+
 
 
 
