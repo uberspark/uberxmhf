@@ -88,6 +88,8 @@ static u64 _geec_prime_slab_getptflagsforspa_pae(u32 slabid, u32 spa, u32 spatyp
 	requires 0 <= _sda_slab_devicemap[slabid].device_count < MAX_PLATFORM_DEVICES;
 	assigns \nothing;
 	ensures (\result == true) || (\result == false) ;
+	//ensures (\forall u32 x; 0 <= x < MAX_PLATFORM_CPUS ==> ) ==> 	(\result == false);
+
 @*/
 static bool _geec_prime_smt_slab_getspatype_isdevicemmio(u32 slabid, u32 spa){
     u32 i, j;
@@ -98,20 +100,19 @@ static bool _geec_prime_smt_slab_getspatype_isdevicemmio(u32 slabid, u32 spa){
 		loop variant _sda_slab_devicemap[slabid].device_count - i;
 	@*/
 	for(i=0; i < _sda_slab_devicemap[slabid].device_count; i++){
-		u32 sysdev_memioregions_index = _sda_slab_devicemap[slabid].sysdev_mmioregions_indices[i];
 
 		/*@
 			loop invariant c2: 0 <= j <= PCI_CONF_MAX_BARS;
-			loop invariant c3: \forall integer x; 0 <= x < j ==> (!(sysdev_memioregions[sysdev_memioregions_index].memioextents[x].extent_type == _MEMIOREGIONS_EXTENTS_TYPE_MEM &&
-			(spa >= sysdev_memioregions[sysdev_memioregions_index].memioextents[x].addr_start &&
-			    spa < sysdev_memioregions[sysdev_memioregions_index].memioextents[x].addr_end) ));
+			loop invariant c3: \forall integer x; 0 <= x < j ==> (!(sysdev_memioregions[_sda_slab_devicemap[slabid].sysdev_mmioregions_indices[i]].memioextents[x].extent_type == _MEMIOREGIONS_EXTENTS_TYPE_MEM &&
+			(spa >= sysdev_memioregions[_sda_slab_devicemap[slabid].sysdev_mmioregions_indices[i]].memioextents[x].addr_start &&
+			    spa < sysdev_memioregions[_sda_slab_devicemap[slabid].sysdev_mmioregions_indices[i]].memioextents[x].addr_end) ));
 			loop assigns j;
 			loop variant PCI_CONF_MAX_BARS - j;
 		@*/
 		for(j=0; j < PCI_CONF_MAX_BARS; j++){
-		    if(sysdev_memioregions[sysdev_memioregions_index].memioextents[j].extent_type == _MEMIOREGIONS_EXTENTS_TYPE_MEM &&
-			(spa >= sysdev_memioregions[sysdev_memioregions_index].memioextents[j].addr_start &&
-			    spa < sysdev_memioregions[sysdev_memioregions_index].memioextents[j].addr_end) )
+		    if(sysdev_memioregions[_sda_slab_devicemap[slabid].sysdev_mmioregions_indices[i]].memioextents[j].extent_type == _MEMIOREGIONS_EXTENTS_TYPE_MEM &&
+			(spa >= sysdev_memioregions[_sda_slab_devicemap[slabid].sysdev_mmioregions_indices[i]].memioextents[j].addr_start &&
+			    spa < sysdev_memioregions[_sda_slab_devicemap[slabid].sysdev_mmioregions_indices[i]].memioextents[j].addr_end) )
 			    return true;
 		}
 	}
