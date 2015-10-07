@@ -235,6 +235,7 @@ static u32 _geec_prime_slab_getspatype(u32 slab_index, u32 spa){
 
 	/*@
 		loop invariant b1: 0 <= i <= XMHFGEEC_TOTAL_SLABS;
+		loop invariant b2: \forall u32 x; 0 <= x < i ==> (gretval == _SLAB_SPATYPE_OTHER);
 		loop assigns i, retval, gretval;
 		loop variant XMHFGEEC_TOTAL_SLABS - i;
 	@*/
