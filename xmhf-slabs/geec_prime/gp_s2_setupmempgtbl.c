@@ -226,6 +226,10 @@ static u32 gp_slab_getspatype_for_slab(u32 slab_index, u32 spa){
 	requires 0 <= slab_index < XMHFGEEC_TOTAL_SLABS ;
 	assigns gretval;
 	ensures (\forall u32 x; 0 <= x < XMHFGEEC_TOTAL_SLABS ==> (gretval == _SLAB_SPATYPE_OTHER)) ==> (\result == _SLAB_SPATYPE_OTHER);
+	ensures (\exists u32 x; 0 <= x < XMHFGEEC_TOTAL_SLABS ==> ( !(gretval == _SLAB_SPATYPE_OTHER) &&
+		(( (x == slab_index) || ((xmhfgeec_slab_info_table[x].slab_memgrantreadcaps & XMHFGEEC_SLAB_MEMGRANTREADCAP_MASK(slab_index)) ||
+			(xmhfgeec_slab_info_table[x].slab_memgrantwritecaps & XMHFGEEC_SLAB_MEMGRANTWRITECAP_MASK(slab_index))) )) )
+		==> (\result == (gretval | xmhfgeec_slab_info_table[x].slabtype | _SLAB_SPATYPE_MASK_SAMESLAB)) );
 @*/
 static u32 _geec_prime_slab_getspatype(u32 slab_index, u32 spa){
 	u32 i;
