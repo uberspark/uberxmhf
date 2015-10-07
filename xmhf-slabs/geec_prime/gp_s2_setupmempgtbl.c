@@ -81,7 +81,7 @@
 static u64 _geec_prime_slab_getptflagsforspa_pae(u32 slabid, u32 spa, u32 spatype);
 
 
-
+#if 0
 /*@
 	requires 0 <= slabid < XMHFGEEC_TOTAL_SLABS ;
 	requires \forall u32 x; 0 <= x < MAX_PLATFORM_CPUS ==> (_sda_slab_devicemap[slabid].sysdev_mmioregions_indices[x] < MAX_PLATFORM_DEVICES);
@@ -122,7 +122,7 @@ static bool _geec_prime_smt_slab_getspatype_isdevicemmio(u32 slabid, u32 spa){
 
     return false;
 }
-
+#endif // 0
 
 
 
@@ -176,7 +176,6 @@ static bool _geec_prime_smt_slab_getspatype_isiotbl(u32 slabid, u32 spa){
 
 
 
-#if 0
 
 //TODO: we need to account for memgrant caps here
 //memgrant is read-only or read-write
@@ -217,6 +216,9 @@ static u32 _geec_prime_slab_getspatype(u32 slab_index, u32 spa){
 	return _SLAB_SPATYPE_OTHER;
 }
 
+
+
+#if 0
 
 
 // for VfT_PROG, uVT_PROG and uVU_PROG
