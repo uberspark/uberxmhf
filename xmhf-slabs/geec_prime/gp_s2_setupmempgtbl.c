@@ -105,6 +105,51 @@ static bool _geec_prime_smt_slab_getspatype_isdevicemmio(u32 slabid, u32 spa){
 
 
 
+
+
+
+/*@
+	requires 0 <= core_id < MAX_PLATFORM_CPUS ;
+	assigns \nothing;
+	ensures ! ( (( spa >= (u32)&__xmhfhic_x86vmx_tss[core_id].tss_iobitmap && spa < ((u32)&__xmhfhic_x86vmx_tss[core_id].tss_iobitmap[3*PAGE_SIZE_4K]))) && ( !( spa >= (u32)&__xmhfhic_x86vmx_tss[core_id].tss_iobitmap && spa < ((u32)&__xmhfhic_x86vmx_tss[core_id].tss_iobitmap[3*PAGE_SIZE_4K])) ));
+	  behavior spaiotbl:
+	 	ensures ( ( spa >= (u32)&__xmhfhic_x86vmx_tss[core_id].tss_iobitmap && spa < ((u32)&__xmhfhic_x86vmx_tss[core_id].tss_iobitmap[3*PAGE_SIZE_4K]))) ==> \result == true;
+	  behavior spanotiotbl:
+	 	ensures ( !( spa >= (u32)&__xmhfhic_x86vmx_tss[core_id].tss_iobitmap && spa < ((u32)&__xmhfhic_x86vmx_tss[core_id].tss_iobitmap[3*PAGE_SIZE_4K])) ) ==>  \result == false;
+	 complete behaviors;
+@*/
+static bool gp_mempgtbl_isiotbl_for_core(u32 core_id, u32 spa){
+
+      if (spa >= (u32)&__xmhfhic_x86vmx_tss[core_id].tss_iobitmap &&
+          spa < ((u32)&__xmhfhic_x86vmx_tss[core_id].tss_iobitmap[3*PAGE_SIZE_4K]) ){
+            return true;
+          }else{
+		return false;
+          }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#if 0
+
 /*@
 	requires 0 <= slabid < XMHFGEEC_TOTAL_SLABS ;
 	assigns \nothing;
@@ -134,6 +179,8 @@ static bool _geec_prime_smt_slab_getspatype_isiotbl(u32 slabid, u32 spa){
 
     return false;
 }
+#endif // 0
+
 
 
 #if 0
