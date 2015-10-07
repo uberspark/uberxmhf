@@ -82,7 +82,6 @@ static u64 _geec_prime_slab_getptflagsforspa_pae(u32 slabid, u32 spa, u32 spatyp
 
 
 
-#if 0
 
 static bool _geec_prime_smt_slab_getspatype_isdevicemmio(u32 slabid, u32 spa){
     u32 i, j;
@@ -101,11 +100,11 @@ static bool _geec_prime_smt_slab_getspatype_isdevicemmio(u32 slabid, u32 spa){
     return false;
 }
 
-#endif // 0
 
 
 
-
+#if 0
+//done
 
 /*@
 	requires 0 <= slabid < XMHFGEEC_TOTAL_SLABS ;
@@ -147,6 +146,7 @@ static bool _geec_prime_smt_slab_getspatype_isiotbl(u32 slabid, u32 spa){
 
 }
 
+#endif // 0
 
 
 
