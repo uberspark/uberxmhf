@@ -375,7 +375,10 @@ static u32 _geec_prime_slab_getspatype(u32 slab_index, u32 spa){
 
 
 
-// for VfT_PROG, uVT_PROG and uVU_PROG
+/*@
+	requires 0 <= slabid < XMHFGEEC_TOTAL_SLABS;
+	assigns \nothing;
+@*/
 static u64 _geec_prime_slab_getptflagsforspa_pae(u32 slabid, u32 spa, u32 spatype){
 	u64 flags=0;
     u8 spa_slabtype, spa_slabregion;
