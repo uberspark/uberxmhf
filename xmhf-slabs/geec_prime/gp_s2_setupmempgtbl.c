@@ -235,17 +235,53 @@ static u32 gp_slab_getspatype_for_slab(u32 slab_index, u32 spa);
 #endif // 0
 
 
+//@ghost bool gisiotbl, gisdevicemmio;
 /*@
 	requires 0 <= slab_index < XMHFGEEC_TOTAL_SLABS ;
 	requires \forall u32 x; 0 <= x < MAX_PLATFORM_CPUS ==> (_sda_slab_devicemap[slab_index].sysdev_mmioregions_indices[x] < MAX_PLATFORM_DEVICES);
 	requires 0 <= _sda_slab_devicemap[slab_index].device_count < MAX_PLATFORM_DEVICES;
-	assigns \nothing;
+	assigns gisiotbl, gisdevicemmio;
+	ensures ( (\result == _SLAB_SPATYPE_GEEC_PRIME_IOTBL) ||
+		(\result == _SLAB_SPATYPE_SLAB_CODE) ||
+		(\result == _SLAB_SPATYPE_SLAB_DATA) ||
+		(\result == _SLAB_SPATYPE_SLAB_STACK) ||
+		(\result == _SLAB_SPATYPE_SLAB_DMADATA) ||
+		(\result == _SLAB_SPATYPE_SLAB_DEVICEMMIO) ||
+		(\result == _SLAB_SPATYPE_OTHER) );
+	ensures ( (gisiotbl == true) ) ==> (\result == _SLAB_SPATYPE_GEEC_PRIME_IOTBL);
+	ensures ( (gisiotbl == false) &&  (spa >= xmhfgeec_slab_info_table[slab_index].slab_physmem_extents[0].addr_start && spa < xmhfgeec_slab_info_table[slab_index].slab_physmem_extents[0].addr_end)) ==> (\result == _SLAB_SPATYPE_SLAB_CODE);
+	ensures ( (gisiotbl == false) &&
+		  !(spa >= xmhfgeec_slab_info_table[slab_index].slab_physmem_extents[0].addr_start && spa < xmhfgeec_slab_info_table[slab_index].slab_physmem_extents[0].addr_end) &&
+		  (spa >= xmhfgeec_slab_info_table[slab_index].slab_physmem_extents[1].addr_start && spa < xmhfgeec_slab_info_table[slab_index].slab_physmem_extents[1].addr_end)
+		) ==> (\result == _SLAB_SPATYPE_SLAB_DATA);
+	ensures ( (gisiotbl == false) &&
+		  !(spa >= xmhfgeec_slab_info_table[slab_index].slab_physmem_extents[0].addr_start && spa < xmhfgeec_slab_info_table[slab_index].slab_physmem_extents[0].addr_end) &&
+		  !(spa >= xmhfgeec_slab_info_table[slab_index].slab_physmem_extents[1].addr_start && spa < xmhfgeec_slab_info_table[slab_index].slab_physmem_extents[1].addr_end) &&
+		  (spa >= xmhfgeec_slab_info_table[slab_index].slab_physmem_extents[2].addr_start && spa < xmhfgeec_slab_info_table[slab_index].slab_physmem_extents[2].addr_end)
+		) ==> (\result == _SLAB_SPATYPE_SLAB_STACK);
+	ensures ( (gisiotbl == false) &&
+		  !(spa >= xmhfgeec_slab_info_table[slab_index].slab_physmem_extents[0].addr_start && spa < xmhfgeec_slab_info_table[slab_index].slab_physmem_extents[0].addr_end) &&
+		  !(spa >= xmhfgeec_slab_info_table[slab_index].slab_physmem_extents[1].addr_start && spa < xmhfgeec_slab_info_table[slab_index].slab_physmem_extents[1].addr_end) &&
+		  !(spa >= xmhfgeec_slab_info_table[slab_index].slab_physmem_extents[2].addr_start && spa < xmhfgeec_slab_info_table[slab_index].slab_physmem_extents[2].addr_end) &&
+		  (spa >= xmhfgeec_slab_info_table[slab_index].slab_physmem_extents[3].addr_start && spa < xmhfgeec_slab_info_table[slab_index].slab_physmem_extents[3].addr_end)
+		) ==> (\result == _SLAB_SPATYPE_SLAB_DMADATA);
+	ensures ( (gisiotbl == false) &&
+		  !(spa >= xmhfgeec_slab_info_table[slab_index].slab_physmem_extents[0].addr_start && spa < xmhfgeec_slab_info_table[slab_index].slab_physmem_extents[0].addr_end) &&
+		  !(spa >= xmhfgeec_slab_info_table[slab_index].slab_physmem_extents[1].addr_start && spa < xmhfgeec_slab_info_table[slab_index].slab_physmem_extents[1].addr_end) &&
+		  !(spa >= xmhfgeec_slab_info_table[slab_index].slab_physmem_extents[2].addr_start && spa < xmhfgeec_slab_info_table[slab_index].slab_physmem_extents[2].addr_end) &&
+		  !(spa >= xmhfgeec_slab_info_table[slab_index].slab_physmem_extents[3].addr_start && spa < xmhfgeec_slab_info_table[slab_index].slab_physmem_extents[3].addr_end) &&
+		  (gisdevicemmio == true)
+		) ==> (\result == _SLAB_SPATYPE_SLAB_DEVICEMMIO);
+
+
 @*/
 static u32 gp_slab_getspatype_for_slab(u32 slab_index, u32 spa){
 		bool isiotbl, isdevicemmio;
 
 		isiotbl = _geec_prime_smt_slab_getspatype_isiotbl(slab_index, spa);
+		//@ghost gisiotbl = isiotbl;
 		isdevicemmio = _geec_prime_smt_slab_getspatype_isdevicemmio(slab_index, spa);
+		//@ghost gisdevicemmio = isdevicemmio;
 
 		if(isiotbl)
 		    return _SLAB_SPATYPE_GEEC_PRIME_IOTBL;
