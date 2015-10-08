@@ -73,7 +73,7 @@
 
 #define _SLAB_SPATYPE_OTHER	    				(0x6)
 
-#if 1
+#if 0
 // /*@
 //   //requires n >= 0;
 // 	assigns \nothing;
@@ -116,7 +116,7 @@ static u32 _geec_prime_slab_getspatype(u32 slab_index, u32 spa);
 static bool _geec_prime_smt_slab_getspatype_isdevicemmio(u32 slabid, u32 spa);
 
 //done
-#if 1
+#if 0
 /*@
 	requires 0 <= slabid < XMHFGEEC_TOTAL_SLABS ;
 	requires \forall u32 x; 0 <= x < MAX_PLATFORM_CPUS ==> (_sda_slab_devicemap[slabid].sysdev_mmioregions_indices[x] < MAX_PLATFORM_DEVICES);
@@ -183,7 +183,7 @@ static bool _geec_prime_smt_slab_getspatype_isdevicemmio(u32 slabid, u32 spa){
 @*/
 static bool _geec_prime_smt_slab_getspatype_isiotbl(u32 slabid, u32 spa);
 
-#if 1
+#if 0
 /*@
 	requires 0 <= slabid < XMHFGEEC_TOTAL_SLABS ;
 	assigns \nothing;
@@ -238,7 +238,7 @@ static bool _geec_prime_smt_slab_getspatype_isiotbl(u32 slabid, u32 spa){
 //shared mappings
 
 
-#if 1
+#if 0
 /*@
 	requires 0 <= slab_index < XMHFGEEC_TOTAL_SLABS ;
 	assigns \nothing;
@@ -257,7 +257,7 @@ static u32 gp_slab_getspatype_for_slab(u32 slab_index, u32 spa);
 
 
 //[DONE]
-#if 1
+#if 0
 //@ghost bool gisiotbl, gisdevicemmio;
 /*@
 	requires 0 <= slab_index < XMHFGEEC_TOTAL_SLABS ;
@@ -325,7 +325,7 @@ static u32 gp_slab_getspatype_for_slab(u32 slab_index, u32 spa){
 
 
 
-#if 1
+#if 0
 //done
 
 //@ ghost u32 gretval;
@@ -374,7 +374,7 @@ static u32 _geec_prime_slab_getspatype(u32 slab_index, u32 spa){
 #endif // 0
 
 
-#if 1
+#if 0
 static u64 gp_uhslab_mempgtbl_getptflagsforspa_pae(u32 slabid, u32 spa, u32 spatype){
 	u64 flags=0;
 	u8 spa_slabtype, spa_slabregion;
@@ -442,9 +442,11 @@ static u64 gp_uhslab_mempgtbl_getptflagsforspa_pae(u32 slabid, u32 spa, u32 spat
 #endif // 0
 
 
+#if 0
 /*@
 	requires 0 <= slabid < XMHFGEEC_TOTAL_SLABS;
 	assigns \nothing;
+
 
 	ensures ( ( (xmhfgeec_slab_info_table[slabid].slabtype == XMHFGEEC_SLABTYPE_VfT_PROG) &&
 		    ((spatype & 0x0000000FUL) == _SLAB_SPATYPE_OTHER)
@@ -505,16 +507,112 @@ static u64 gp_uhslab_mempgtbl_getptflagsforspa_pae(u32 slabid, u32 spa, u32 spat
 	);
 
 @*/
+#endif
+
+
+
+/*@
+	requires 0 <= slabid < XMHFGEEC_TOTAL_SLABS;
+	assigns \nothing;
+	behavior memsys:
+                assumes ( (xmhfgeec_slab_info_table[slabid].slabtype == XMHFGEEC_SLABTYPE_VfT_PROG) &&
+		    ((spatype & 0x0000000FUL) == _SLAB_SPATYPE_OTHER)
+		  );
+		ensures (\result == (u64)(_PAGE_PRESENT | _PAGE_RW) );
+
+	behavior memcode:
+		assumes ( (xmhfgeec_slab_info_table[slabid].slabtype == XMHFGEEC_SLABTYPE_VfT_PROG) &&
+		    !((spatype & 0x0000000FUL) == _SLAB_SPATYPE_OTHER) &&
+		    ( (spatype & _SLAB_SPATYPE_MASK_SAMESLAB) || ((spatype & 0x000000F0UL) == XMHFGEEC_SLABTYPE_VfT_PROG) ||
+			((spatype & 0x000000F0UL) == XMHFGEEC_SLABTYPE_VfT_SENTINEL) ) &&
+		    ( (spatype & 0x0000000FUL) == _SLAB_SPATYPE_SLAB_CODE )
+		  );
+		ensures (\result == (u64)(_PAGE_PRESENT) );
+
+	behavior memdatastackdmadataiotbl:
+		assumes ( (xmhfgeec_slab_info_table[slabid].slabtype == XMHFGEEC_SLABTYPE_VfT_PROG) &&
+		    !((spatype & 0x0000000FUL) == _SLAB_SPATYPE_OTHER) &&
+		    ( (spatype & _SLAB_SPATYPE_MASK_SAMESLAB) || ((spatype & 0x000000F0UL) == XMHFGEEC_SLABTYPE_VfT_PROG) ||
+			((spatype & 0x000000F0UL) == XMHFGEEC_SLABTYPE_VfT_SENTINEL) ) &&
+		    !( (spatype & 0x0000000FUL) == _SLAB_SPATYPE_SLAB_CODE ) &&
+		    ( ((spatype & 0x0000000FUL) == _SLAB_SPATYPE_SLAB_DATA) ||
+		      ((spatype & 0x0000000FUL) == _SLAB_SPATYPE_SLAB_STACK) ||
+		      ((spatype & 0x0000000FUL) == _SLAB_SPATYPE_SLAB_DMADATA) ||
+		      ((spatype & 0x0000000FUL) == _SLAB_SPATYPE_GEEC_PRIME_IOTBL)
+  	            )
+		  );
+                ensures (\result == (u64)(_PAGE_PRESENT | _PAGE_RW | _PAGE_NX) );
+
+	behavior memdevice:
+                assumes ( (xmhfgeec_slab_info_table[slabid].slabtype == XMHFGEEC_SLABTYPE_VfT_PROG) &&
+		    !((spatype & 0x0000000FUL) == _SLAB_SPATYPE_OTHER) &&
+		    ( (spatype & _SLAB_SPATYPE_MASK_SAMESLAB) || ((spatype & 0x000000F0UL) == XMHFGEEC_SLABTYPE_VfT_PROG) ||
+			((spatype & 0x000000F0UL) == XMHFGEEC_SLABTYPE_VfT_SENTINEL) ) &&
+		    !( (spatype & 0x0000000FUL) == _SLAB_SPATYPE_SLAB_CODE ) &&
+		    !( ((spatype & 0x0000000FUL) == _SLAB_SPATYPE_SLAB_DATA) ||
+		      ((spatype & 0x0000000FUL) == _SLAB_SPATYPE_SLAB_STACK) ||
+		      ((spatype & 0x0000000FUL) == _SLAB_SPATYPE_SLAB_DMADATA) ||
+		      ((spatype & 0x0000000FUL) == _SLAB_SPATYPE_GEEC_PRIME_IOTBL)
+  	            ) &&
+		    ( ((spatype & 0x0000000FUL) == _SLAB_SPATYPE_SLAB_DEVICEMMIO) )
+		  );
+		ensures (\result == (u64)(_PAGE_PRESENT | _PAGE_RW | _PAGE_NX | _PAGE_PCD) );
+
+	behavior memotheruvslab:
+		assumes ( (xmhfgeec_slab_info_table[slabid].slabtype == XMHFGEEC_SLABTYPE_VfT_PROG) &&
+		    !((spatype & 0x0000000FUL) == _SLAB_SPATYPE_OTHER) &&
+		    !( (spatype & _SLAB_SPATYPE_MASK_SAMESLAB) || ((spatype & 0x000000F0UL) == XMHFGEEC_SLABTYPE_VfT_PROG) ||
+			((spatype & 0x000000F0UL) == XMHFGEEC_SLABTYPE_VfT_SENTINEL) )
+		  );
+		ensures (\result == (u64)(_PAGE_PRESENT | _PAGE_RW | _PAGE_NX) );
+
+	behavior error:
+		assumes !( (xmhfgeec_slab_info_table[slabid].slabtype == XMHFGEEC_SLABTYPE_VfT_PROG) &&
+		    ((spatype & 0x0000000FUL) == _SLAB_SPATYPE_OTHER)
+		  );
+		assumes !( (xmhfgeec_slab_info_table[slabid].slabtype == XMHFGEEC_SLABTYPE_VfT_PROG) &&
+		    !((spatype & 0x0000000FUL) == _SLAB_SPATYPE_OTHER) &&
+		    ( (spatype & _SLAB_SPATYPE_MASK_SAMESLAB) || ((spatype & 0x000000F0UL) == XMHFGEEC_SLABTYPE_VfT_PROG) ||
+			((spatype & 0x000000F0UL) == XMHFGEEC_SLABTYPE_VfT_SENTINEL) ) &&
+		    ( (spatype & 0x0000000FUL) == _SLAB_SPATYPE_SLAB_CODE )
+		  );
+		assumes !( (xmhfgeec_slab_info_table[slabid].slabtype == XMHFGEEC_SLABTYPE_VfT_PROG) &&
+		    !((spatype & 0x0000000FUL) == _SLAB_SPATYPE_OTHER) &&
+		    ( (spatype & _SLAB_SPATYPE_MASK_SAMESLAB) || ((spatype & 0x000000F0UL) == XMHFGEEC_SLABTYPE_VfT_PROG) ||
+			((spatype & 0x000000F0UL) == XMHFGEEC_SLABTYPE_VfT_SENTINEL) ) &&
+		    !( (spatype & 0x0000000FUL) == _SLAB_SPATYPE_SLAB_CODE ) &&
+		    ( ((spatype & 0x0000000FUL) == _SLAB_SPATYPE_SLAB_DATA) ||
+		      ((spatype & 0x0000000FUL) == _SLAB_SPATYPE_SLAB_STACK) ||
+		      ((spatype & 0x0000000FUL) == _SLAB_SPATYPE_SLAB_DMADATA) ||
+		      ((spatype & 0x0000000FUL) == _SLAB_SPATYPE_GEEC_PRIME_IOTBL)
+  	            )
+		  );
+                assumes !( (xmhfgeec_slab_info_table[slabid].slabtype == XMHFGEEC_SLABTYPE_VfT_PROG) &&
+		    !((spatype & 0x0000000FUL) == _SLAB_SPATYPE_OTHER) &&
+		    ( (spatype & _SLAB_SPATYPE_MASK_SAMESLAB) || ((spatype & 0x000000F0UL) == XMHFGEEC_SLABTYPE_VfT_PROG) ||
+			((spatype & 0x000000F0UL) == XMHFGEEC_SLABTYPE_VfT_SENTINEL) ) &&
+		    !( (spatype & 0x0000000FUL) == _SLAB_SPATYPE_SLAB_CODE ) &&
+		    !( ((spatype & 0x0000000FUL) == _SLAB_SPATYPE_SLAB_DATA) ||
+		      ((spatype & 0x0000000FUL) == _SLAB_SPATYPE_SLAB_STACK) ||
+		      ((spatype & 0x0000000FUL) == _SLAB_SPATYPE_SLAB_DMADATA) ||
+		      ((spatype & 0x0000000FUL) == _SLAB_SPATYPE_GEEC_PRIME_IOTBL)
+  	            ) &&
+		    ( ((spatype & 0x0000000FUL) == _SLAB_SPATYPE_SLAB_DEVICEMMIO) )
+		  );
+		assumes !( (xmhfgeec_slab_info_table[slabid].slabtype == XMHFGEEC_SLABTYPE_VfT_PROG) &&
+		    !((spatype & 0x0000000FUL) == _SLAB_SPATYPE_OTHER) &&
+		    !( (spatype & _SLAB_SPATYPE_MASK_SAMESLAB) || ((spatype & 0x000000F0UL) == XMHFGEEC_SLABTYPE_VfT_PROG) ||
+			((spatype & 0x000000F0UL) == XMHFGEEC_SLABTYPE_VfT_SENTINEL) )
+		  );
+		ensures (\result == 0);
+
+	complete behaviors;
+	disjoint behaviors;
+
+
+@*/
 static u64 gp_vhslab_mempgtl_getptflagsforspa_pae(u32 slabid, u32 spa, u32 spatype){
 	u64 flags=0;
-	//u8 spa_slabtype, spa_slabregion;
-	//bool spa_sameslab=false;
-	//u32 slabtype = xmhfgeec_slab_info_table[slabid].slabtype;
-
-	//spa_slabregion = spatype & 0x0000000FUL;
-	//spa_slabtype =spatype & 0x000000F0UL;
-	//if(spatype & _SLAB_SPATYPE_MASK_SAMESLAB)
-	//spa_sameslab = true;
 
 
      if( xmhfgeec_slab_info_table[slabid].slabtype == XMHFGEEC_SLABTYPE_VfT_PROG){
@@ -537,9 +635,6 @@ static u64 gp_vhslab_mempgtl_getptflagsforspa_pae(u32 slabid, u32 spa, u32 spaty
                             flags = (_PAGE_PRESENT | _PAGE_RW | _PAGE_NX);
 		    else if ( (spatype & 0x0000000FUL) == _SLAB_SPATYPE_SLAB_DEVICEMMIO)
                             flags = (_PAGE_PRESENT | _PAGE_RW | _PAGE_NX | _PAGE_PCD);
-		    //else
-		    //	flags = 0;
-
                 }else{
                     flags = (_PAGE_PRESENT | _PAGE_RW | _PAGE_NX);
                 }
@@ -547,18 +642,13 @@ static u64 gp_vhslab_mempgtl_getptflagsforspa_pae(u32 slabid, u32 spa, u32 spaty
             }
 
      }
-     //else{
-     //       //_XDPRINTF_("%s: invalid slab type=%x. Halting!\n", __func__, slabtype);
-     //       //HALT();
-     //       flags = 0;
-     //}
 
     return flags;
 }
 
 
 
-#if 1
+#if 0
 
 
 // only for uVU_PROG_GUEST, uVU_PROG_RICHGUEST and uVT_PROG_GUEST
@@ -797,7 +887,7 @@ static void gp_setup_uhslab_mempgtbl(u32 slabid){
 #endif // 0
 
 
-#if 1
+#if 0
 //@ghost u64 gflags[PAE_PTRS_PER_PDPT * PAE_PTRS_PER_PDT * PAE_PTRS_PER_PT];
 /*@
 	assigns gp_rwdatahdr.gp_vhslabmempgtbl_lvl4t[0..(PAGE_SIZE_4K-1)];
@@ -867,7 +957,7 @@ static void gp_setup_vhslab_mempgtbl(void){
 #endif // 0
 
 
-#if 1
+#if 0
 
 void gp_s2_setupmempgtbl(void){
     slab_params_t spl;
