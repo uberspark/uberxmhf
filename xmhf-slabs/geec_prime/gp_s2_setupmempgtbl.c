@@ -554,7 +554,7 @@ static u64 gp_uhslab_mempgtbl_getptflagsforspa_pae(u32 slabid, u32 spa, u32 spat
 
 
 
-
+#if 0
 //[DONE]
 static u64 gp_vhslab_mempgtl_getptflagsforspa_pae(u32 slabid, u32 spa, u32 spatype){
 	u64 flags=0;
@@ -590,7 +590,7 @@ static u64 gp_vhslab_mempgtl_getptflagsforspa_pae(u32 slabid, u32 spa, u32 spaty
 
     return flags;
 }
-
+#endif // 0
 
 
 #if 0
@@ -832,7 +832,6 @@ static void gp_setup_uhslab_mempgtbl(u32 slabid){
 #endif // 0
 
 
-#if 0
 //@ghost u64 gflags[PAE_PTRS_PER_PDPT * PAE_PTRS_PER_PDT * PAE_PTRS_PER_PT];
 /*@
 	assigns gp_rwdatahdr.gp_vhslabmempgtbl_lvl4t[0..(PAGE_SIZE_4K-1)];
@@ -899,7 +898,6 @@ static void gp_setup_vhslab_mempgtbl(void){
 
 
 }
-#endif // 0
 
 
 #if 0
