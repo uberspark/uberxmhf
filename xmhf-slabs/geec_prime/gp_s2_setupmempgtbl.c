@@ -738,15 +738,10 @@ static void gp_setup_uhslab_mempgtbl(u32 slabid){
 		);
 @*/
 static void gp_setup_vhslab_mempgtbl(void){
-	u32 i, j;
-	u64 default_flags = (u64)(_PAGE_PRESENT);
-
-	u64 gpa;
-	u64 flags=0;
+	u32 i;
+	u64 flags;
 	u32 spatype;
-	u32 spa_slabregion, spa_slabtype;
 	u32 slabid = XMHFGEEC_SLAB_GEEC_PRIME;
-	u32 slabtype = xmhfgeec_slab_info_table[slabid].slabtype;
 
 
 	//pdpt setup
@@ -760,12 +755,11 @@ static void gp_setup_vhslab_mempgtbl(void){
 	@*/
 	for(i=0; i < PAE_PTRS_PER_PDPT; i++){
 		gp_rwdatahdr.gp_vhslabmempgtbl_lvl4t[i] =
-			pae_make_pdpe(&gp_vhslabmempgtbl_lvl2t[i * PAE_PTRS_PER_PDT], default_flags);
+			pae_make_pdpe(&gp_vhslabmempgtbl_lvl2t[i * PAE_PTRS_PER_PDT], (u64)(_PAGE_PRESENT));
 	}
 
 
 	//pdt setup
-	default_flags = (u64)(_PAGE_PRESENT | _PAGE_RW | _PAGE_USER);
     	/*@
 		loop invariant a3: 0 <= i <= (PAE_PTRS_PER_PDPT * PAE_PTRS_PER_PDT);
 		loop invariant a4: \forall integer x; 0 <= x < i ==> (( (u64)gp_vhslabmempgtbl_lvl2t[x] ) == ( ((u64)(&gp_vhslabmempgtbl_lvl1t[(x * PAE_PTRS_PER_PT)]) & 0x7FFFFFFFFFFFF000ULL ) | ((u64)(_PAGE_PRESENT | _PAGE_RW | _PAGE_USER))));
@@ -774,7 +768,7 @@ static void gp_setup_vhslab_mempgtbl(void){
 	@*/
 	for(i=0; i < PAE_PTRS_PER_PDPT * PAE_PTRS_PER_PDT; i++){
 			gp_vhslabmempgtbl_lvl2t[i] =
-				pae_make_pde(&gp_vhslabmempgtbl_lvl1t[(i * PAE_PTRS_PER_PT)], default_flags);
+				pae_make_pde(&gp_vhslabmempgtbl_lvl1t[(i * PAE_PTRS_PER_PT)], (u64)(_PAGE_PRESENT | _PAGE_RW | _PAGE_USER));
 	}
 
 
