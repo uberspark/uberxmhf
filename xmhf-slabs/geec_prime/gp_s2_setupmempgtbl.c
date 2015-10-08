@@ -749,8 +749,7 @@ static void gp_setup_vhslab_mempgtbl(void){
 	u32 slabtype = xmhfgeec_slab_info_table[slabid].slabtype;
 
 
-	//@assert (0x123FFA546ULL & 0xFFFFF000ULL) == 0x23FFA000ULL;
-	//pdpt
+	//pdpt setup
 	memset(&gp_rwdatahdr.gp_vhslabmempgtbl_lvl4t, 0, PAGE_SIZE_4K);
 
     	/*@
@@ -762,12 +761,10 @@ static void gp_setup_vhslab_mempgtbl(void){
 	for(i=0; i < PAE_PTRS_PER_PDPT; i++){
 		gp_rwdatahdr.gp_vhslabmempgtbl_lvl4t[i] =
 			pae_make_pdpe(&gp_vhslabmempgtbl_lvl2t[i * PAE_PTRS_PER_PDT], default_flags);
-
-		// //@assert ( (u64)gp_rwdatahdr.gp_vhslabmempgtbl_lvl4t[i] ) == ( ((u64)(&gp_vhslabmempgtbl_lvl2t[i]) & 0x7FFFFFFFFFFFF000ULL ) | (u64)(default_flags));
 	}
 
 
-	//pdt
+	//pdt setup
 	default_flags = (u64)(_PAGE_PRESENT | _PAGE_RW | _PAGE_USER);
     	/*@
 		loop invariant a3: 0 <= i <= (PAE_PTRS_PER_PDPT * PAE_PTRS_PER_PDT);
@@ -778,13 +775,10 @@ static void gp_setup_vhslab_mempgtbl(void){
 	for(i=0; i < PAE_PTRS_PER_PDPT * PAE_PTRS_PER_PDT; i++){
 			gp_vhslabmempgtbl_lvl2t[i] =
 				pae_make_pde(&gp_vhslabmempgtbl_lvl1t[(i * PAE_PTRS_PER_PT)], default_flags);
-
-			// //@assert ( (u64)gp_vhslabmempgtbl_lvl2t[i] ) == ( ((u64)(&gp_vhslabmempgtbl_lvl1t[(i * PAE_PTRS_PER_PT)]) & 0x7FFFFFFFFFFFF000ULL ) | (u64)(default_flags));
 	}
 
 
-
-	//pts
+	//pt setup
     	/*@	loop invariant a5: 0 <= i <= (PAE_PTRS_PER_PDPT * PAE_PTRS_PER_PDT * PAE_PTRS_PER_PT);
 		loop assigns gflags[0..(PAE_PTRS_PER_PDPT * PAE_PTRS_PER_PDT * PAE_PTRS_PER_PT)], spatype, flags, i, gp_vhslabmempgtbl_lvl1t[0..(PAE_PTRS_PER_PDPT * PAE_PTRS_PER_PDT * PAE_PTRS_PER_PT)];
 		loop invariant a6: \forall integer x; 0 <= x < i ==> ( (u64)gp_vhslabmempgtbl_lvl1t[x]) == ( ((u64)(x * PAGE_SIZE_4K) & 0x7FFFFFFFFFFFF000ULL ) | (u64)(gflags[x]) );
@@ -797,8 +791,6 @@ static void gp_setup_vhslab_mempgtbl(void){
 		//@ghost gflags[i] = flags;
 
 		gp_vhslabmempgtbl_lvl1t[i] = pae_make_pte( (i*PAGE_SIZE_4K), flags);
-
-		//@assert (u64)gp_vhslabmempgtbl_lvl1t[i] == ( ((u64)(i * PAGE_SIZE_4K) & 0x7FFFFFFFFFFFF000ULL ) | (u64)(flags) );
 	}
 
 
