@@ -127,6 +127,24 @@ void _slabmempgtbl_initmempgtbl_ept4K(u32 slabid){
 		_slabmempgtbl_lvl3t[slabid][i] = ((u64)&_slabmempgtbl_lvl2t[slabid][i] | 0x7 );
 	}
 
+	//pt setup
+	/*@
+		loop invariant z1: 0 <= i <= PAE_PTRS_PER_PDPT;
+		loop assigns i;
+		loop assigns j;
+		loop variant PAE_PTRS_PER_PDPT - i;
+	@*/
+	for(i=0; i < PAE_PTRS_PER_PDPT; i++){
+		/*@
+		loop invariant z2: 0 <= j <= PAE_PTRS_PER_PDT;
+		loop assigns j;
+		loop variant PAE_PTRS_PER_PDT - j;
+		@*/
+		for(j=0; j < PAE_PTRS_PER_PDT; j++){
+			//_slabmempgtbl_lvl2t[slabid][i][j] = ((u64)&_slabmempgtbl_lvl1t[slabid][i][j] | 0x7 );
+		}
+	}
+
 
 #if 0
 
