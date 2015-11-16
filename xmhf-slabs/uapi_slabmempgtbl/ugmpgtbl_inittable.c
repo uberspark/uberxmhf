@@ -201,7 +201,7 @@ void _slabmempgtbl_initmempgtbl(xmhfgeec_uapi_slabmempgtbl_initmempgtbl_params_t
             _slabmempgtbl_initmempgtbl_ept4K((initmempgtblp->dst_slabid - XMHFGEEC_UGSLAB_BASE_IDX));
 		//@ghost inittable_invokeept4K = true;
 
-            _XDPRINTF_("%s: setup slab %u with ept4K\n", __func__, slabid);
+            _XDPRINTF_("%s: setup slab %u with ept4K\n", __func__, initmempgtblp->dst_slabid);
 
 	}else{
 		//_XDPRINTF_("%s: Halting. Unknown slab type %u\n", __func__, slabtype);
