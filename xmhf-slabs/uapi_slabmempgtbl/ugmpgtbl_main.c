@@ -63,45 +63,28 @@
 /////
 void slab_main(slab_params_t *sp){
 
-    switch(sp->dst_uapifn){
+	if(sp->dst_uapifn == XMHFGEEC_UAPI_SLABMEMPGTBL_INITMEMPGTBL){
+	    xmhfgeec_uapi_slabmempgtbl_initmempgtbl_params_t *initmempgtblp =
+		(xmhfgeec_uapi_slabmempgtbl_initmempgtbl_params_t *)sp->in_out_params;
 
-       case XMHFGEEC_UAPI_SLABMEMPGTBL_INITMEMPGTBL:{
-            xmhfgeec_uapi_slabmempgtbl_initmempgtbl_params_t *initmempgtblp =
-                (xmhfgeec_uapi_slabmempgtbl_initmempgtbl_params_t *)sp->in_out_params;
+	    _slabmempgtbl_initmempgtbl(initmempgtblp->dst_slabid);
 
-            _slabmempgtbl_initmempgtbl(initmempgtblp->dst_slabid);
-       }
-       break;
-
-
-       case XMHFGEEC_UAPI_SLABMEMPGTBL_SETENTRYFORPADDR:{
+	}else if (sp->dst_uapifn == XMHFGEEC_UAPI_SLABMEMPGTBL_SETENTRYFORPADDR){
             xmhfgeec_uapi_slabmempgtbl_setentryforpaddr_params_t *setentryforpaddrp =
                 (xmhfgeec_uapi_slabmempgtbl_setentryforpaddr_params_t *)sp->in_out_params;
 
             _slabmempgtbl_setentryforpaddr(setentryforpaddrp->dst_slabid,
                                            setentryforpaddrp->gpa,
                                            setentryforpaddrp->entry);
-
-       }
-        break;
-
-       case XMHFGEEC_UAPI_SLABMEMPGTBL_GETENTRYFORPADDR:{
+	}else if (sp->dst_uapifn == XMHFGEEC_UAPI_SLABMEMPGTBL_GETENTRYFORPADDR){
             xmhfgeec_uapi_slabmempgtbl_getentryforpaddr_params_t *getentryforpaddrp =
                 (xmhfgeec_uapi_slabmempgtbl_getentryforpaddr_params_t *)sp->in_out_params;
 
             getentryforpaddrp->result_entry = _slabmempgtbl_getentryforpaddr(getentryforpaddrp->dst_slabid,
                                            getentryforpaddrp->gpa);
-
-       }
-        break;
-
-
-        default:
-            _XDPRINTF_("UAPI_SLABMEMPGTBL[%u]: Unknown uAPI function %x. Halting!\n",
-                    (u16)sp->cpuid, sp->dst_uapifn);
-            HALT();
-            return;
-    }
-
+	}else{
+            //_XDPRINTF_("UAPI_SLABMEMPGTBL[%u]: Unknown uAPI function %x. Halting!\n",
+            //        (u16)sp->cpuid, sp->dst_uapifn);
+	}
 
 }
