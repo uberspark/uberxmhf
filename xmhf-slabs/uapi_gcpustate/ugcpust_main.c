@@ -55,7 +55,6 @@
 
 #include <xmhfgeec.h>
 
-#include <xc.h>
 #include <uapi_gcpustate.h>
 
 
