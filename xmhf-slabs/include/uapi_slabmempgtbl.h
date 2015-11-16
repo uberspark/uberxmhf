@@ -96,7 +96,8 @@ void _slabmempgtbl_setentryforpaddr(xmhfgeec_uapi_slabmempgtbl_setentryforpaddr_
 
 
 /*@
-  assigns \nothing;
+	requires \valid(getentryforpaddrp);
+	assigns getentryforpaddrp->result_entry;
 @*/
 //u64 _slabmempgtbl_getentryforpaddr(u32 slabid, u64 gpa);
 void _slabmempgtbl_getentryforpaddr(xmhfgeec_uapi_slabmempgtbl_getentryforpaddr_params_t *getentryforpaddrp);

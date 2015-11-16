@@ -63,7 +63,7 @@
 /////
 /*@
 	requires \valid(sp);
-	assigns \nothing;
+	assigns sp->in_out_params[0..15];
 @*/
 void slab_main(slab_params_t *sp){
 
@@ -74,8 +74,8 @@ void slab_main(slab_params_t *sp){
 	    _slabmempgtbl_initmempgtbl(initmempgtblp);
 
 	}else if (sp->dst_uapifn == XMHFGEEC_UAPI_SLABMEMPGTBL_SETENTRYFORPADDR){
-            xmhfgeec_uapi_slabmempgtbl_setentryforpaddr_params_t *setentryforpaddrp =
-                (xmhfgeec_uapi_slabmempgtbl_setentryforpaddr_params_t *)sp->in_out_params;
+          xmhfgeec_uapi_slabmempgtbl_setentryforpaddr_params_t *setentryforpaddrp =
+            (xmhfgeec_uapi_slabmempgtbl_setentryforpaddr_params_t *)sp->in_out_params;
 
             _slabmempgtbl_setentryforpaddr(setentryforpaddrp);
 
@@ -88,5 +88,4 @@ void slab_main(slab_params_t *sp){
             //_XDPRINTF_("UAPI_SLABMEMPGTBL[%u]: Unknown uAPI function %x. Halting!\n",
             //        (u16)sp->cpuid, sp->dst_uapifn);
 	}
-
 }
