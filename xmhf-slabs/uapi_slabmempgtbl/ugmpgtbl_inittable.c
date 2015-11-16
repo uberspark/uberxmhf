@@ -140,6 +140,7 @@ void _slabmempgtbl_initmempgtbl_ept4K(u32 slabid){
 		/*@
 		loop invariant z2: 0 <= j <= PAE_PTRS_PER_PDT;
 		loop assigns j;
+		loop invariant o2: \forall integer x; 0 <= x < j ==> ( (u64)_slabmempgtbl_lvl2t[slabid][i][x] == ((u64)&_slabmempgtbl_lvl1t[slabid][i][x] | 0x7 ) );
 		loop assigns _slabmempgtbl_lvl2t[slabid][i][0..(PAE_PTRS_PER_PDT-1)];
 		loop variant PAE_PTRS_PER_PDT - j;
 		@*/
