@@ -61,9 +61,20 @@
 
 
 /////
+//@ ghost bool ugmpgtbl_methodcall_inittable = false;
+//@ ghost bool ugmpgtbl_methodcall_setentry = false;
+//@ ghost bool ugmpgtbl_methodcall_getentry = false;
+//@ ghost bool ugmpgtbl_methodcall_invalid = false;
 /*@
 	requires \valid(sp);
 	assigns sp->in_out_params[0..15];
+	assigns ugmpgtbl_methodcall_inittable, ugmpgtbl_methodcall_setentry, ugmpgtbl_methodcall_getentry, ugmpgtbl_methodcall_invalid;
+	ensures (sp->dst_uapifn == XMHFGEEC_UAPI_SLABMEMPGTBL_INITMEMPGTBL) ==> (ugmpgtbl_methodcall_inittable == true);
+	ensures (sp->dst_uapifn == XMHFGEEC_UAPI_SLABMEMPGTBL_SETENTRYFORPADDR) ==> (ugmpgtbl_methodcall_setentry == true);
+	ensures (sp->dst_uapifn == XMHFGEEC_UAPI_SLABMEMPGTBL_GETENTRYFORPADDR) ==> (ugmpgtbl_methodcall_getentry == true);
+	ensures !( sp->dst_uapifn == XMHFGEEC_UAPI_SLABMEMPGTBL_INITMEMPGTBL ||
+		   sp->dst_uapifn == XMHFGEEC_UAPI_SLABMEMPGTBL_SETENTRYFORPADDR ||
+		   sp->dst_uapifn == XMHFGEEC_UAPI_SLABMEMPGTBL_GETENTRYFORPADDR) ==> (ugmpgtbl_methodcall_invalid == true);
 @*/
 void slab_main(slab_params_t *sp){
 
@@ -71,20 +82,27 @@ void slab_main(slab_params_t *sp){
 	    xmhfgeec_uapi_slabmempgtbl_initmempgtbl_params_t *initmempgtblp =
 		(xmhfgeec_uapi_slabmempgtbl_initmempgtbl_params_t *)sp->in_out_params;
 
+            //@ ghost ugmpgtbl_methodcall_inittable = true;
 	    _slabmempgtbl_initmempgtbl(initmempgtblp);
 
 	}else if (sp->dst_uapifn == XMHFGEEC_UAPI_SLABMEMPGTBL_SETENTRYFORPADDR){
           xmhfgeec_uapi_slabmempgtbl_setentryforpaddr_params_t *setentryforpaddrp =
             (xmhfgeec_uapi_slabmempgtbl_setentryforpaddr_params_t *)sp->in_out_params;
 
+            //@ ghost ugmpgtbl_methodcall_setentry = true;
             _slabmempgtbl_setentryforpaddr(setentryforpaddrp);
 
 	}else if (sp->dst_uapifn == XMHFGEEC_UAPI_SLABMEMPGTBL_GETENTRYFORPADDR){
             xmhfgeec_uapi_slabmempgtbl_getentryforpaddr_params_t *getentryforpaddrp =
                 (xmhfgeec_uapi_slabmempgtbl_getentryforpaddr_params_t *)sp->in_out_params;
 
+
+            //@ ghost ugmpgtbl_methodcall_getentry = true;
             _slabmempgtbl_getentryforpaddr(getentryforpaddrp);
+
 	}else{
+
+            //@ ghost ugmpgtbl_methodcall_invalid = true;
             //_XDPRINTF_("UAPI_SLABMEMPGTBL[%u]: Unknown uAPI function %x. Halting!\n",
             //        (u16)sp->cpuid, sp->dst_uapifn);
 	}
