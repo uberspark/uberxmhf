@@ -79,7 +79,10 @@ static inline u32 _slabmempgtbl_sanitycheckhalt_slabid(u32 slabid){
 
 
 
-u64 _slabmempgtbl_getentryforpaddr(u32 slabid, u64 gpa){
+//u64 _slabmempgtbl_getentryforpaddr(u32 slabid, u64 gpa){
+void _slabmempgtbl_getentryforpaddr(xmhfgeec_uapi_slabmempgtbl_getentryforpaddr_params_t *getentryforpaddrp){
+    u32 slabid =getentryforpaddrp->dst_slabid;
+    u64 gpa = getentryforpaddrp->gpa;
     u64 result_entry=0;
     u64 pdpt_index = pae_get_pdpt_index(gpa);
     u64 pdt_index = pae_get_pdt_index(gpa);
@@ -110,7 +113,7 @@ u64 _slabmempgtbl_getentryforpaddr(u32 slabid, u64 gpa){
 
     }
 
-    return result_entry;
+	getentryforpaddrp->result_entry = result_entry;
 }
 
 

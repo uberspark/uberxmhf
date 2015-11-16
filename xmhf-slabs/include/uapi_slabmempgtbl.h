@@ -90,19 +90,25 @@ typedef struct {
 /*@
   assigns \nothing;
 @*/
-void _slabmempgtbl_setentryforpaddr(u32 slabid, u64 gpa, u64 entry);
+//void _slabmempgtbl_setentryforpaddr(u32 slabid, u64 gpa, u64 entry);
+void _slabmempgtbl_setentryforpaddr(xmhfgeec_uapi_slabmempgtbl_setentryforpaddr_params_t *setentryforpaddrp);
 
-
-/*@
-  assigns \nothing;
-@*/
-u64 _slabmempgtbl_getentryforpaddr(u32 slabid, u64 gpa);
 
 
 /*@
   assigns \nothing;
 @*/
-void _slabmempgtbl_initmempgtbl(u32 slabid);
+//u64 _slabmempgtbl_getentryforpaddr(u32 slabid, u64 gpa);
+void _slabmempgtbl_getentryforpaddr(xmhfgeec_uapi_slabmempgtbl_getentryforpaddr_params_t *getentryforpaddrp);
+
+
+
+/*@
+  assigns \nothing;
+@*/
+//void _slabmempgtbl_initmempgtbl(u32 slabid);
+void _slabmempgtbl_initmempgtbl(xmhfgeec_uapi_slabmempgtbl_initmempgtbl_params_t *initmempgtblp);
+
 
 
 
