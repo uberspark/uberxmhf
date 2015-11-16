@@ -63,9 +63,7 @@
 /////
 /*@
 	requires \valid(sp);
-	//assigns \nothing;
-	assigns sp->in_out_params[4];
-	assigns sp->in_out_params[5];
+	assigns \nothing;
 @*/
 void slab_main(slab_params_t *sp){
 
@@ -73,21 +71,19 @@ void slab_main(slab_params_t *sp){
 	    xmhfgeec_uapi_slabmempgtbl_initmempgtbl_params_t *initmempgtblp =
 		(xmhfgeec_uapi_slabmempgtbl_initmempgtbl_params_t *)sp->in_out_params;
 
-	    _slabmempgtbl_initmempgtbl(initmempgtblp->dst_slabid);
+	    _slabmempgtbl_initmempgtbl(initmempgtblp);
 
 	}else if (sp->dst_uapifn == XMHFGEEC_UAPI_SLABMEMPGTBL_SETENTRYFORPADDR){
             xmhfgeec_uapi_slabmempgtbl_setentryforpaddr_params_t *setentryforpaddrp =
                 (xmhfgeec_uapi_slabmempgtbl_setentryforpaddr_params_t *)sp->in_out_params;
 
-            _slabmempgtbl_setentryforpaddr(setentryforpaddrp->dst_slabid,
-                                           setentryforpaddrp->gpa,
-                                           setentryforpaddrp->entry);
+            _slabmempgtbl_setentryforpaddr(setentryforpaddrp);
+
 	}else if (sp->dst_uapifn == XMHFGEEC_UAPI_SLABMEMPGTBL_GETENTRYFORPADDR){
             xmhfgeec_uapi_slabmempgtbl_getentryforpaddr_params_t *getentryforpaddrp =
                 (xmhfgeec_uapi_slabmempgtbl_getentryforpaddr_params_t *)sp->in_out_params;
 
-            getentryforpaddrp->result_entry = _slabmempgtbl_getentryforpaddr(getentryforpaddrp->dst_slabid,
-                                           getentryforpaddrp->gpa);
+            _slabmempgtbl_getentryforpaddr(getentryforpaddrp);
 	}else{
             //_XDPRINTF_("UAPI_SLABMEMPGTBL[%u]: Unknown uAPI function %x. Halting!\n",
             //        (u16)sp->cpuid, sp->dst_uapifn);

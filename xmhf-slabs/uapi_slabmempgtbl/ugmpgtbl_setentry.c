@@ -76,7 +76,12 @@ static inline u32 _slabmempgtbl_sanitycheckhalt_slabid(u32 slabid){
 
 
 
-void _slabmempgtbl_setentryforpaddr(u32 slabid, u64 gpa, u64 entry){
+//void _slabmempgtbl_setentryforpaddr(u32 slabid, u64 gpa, u64 entry){
+void _slabmempgtbl_setentryforpaddr(xmhfgeec_uapi_slabmempgtbl_setentryforpaddr_params_t *setentryforpaddrp){
+    u32 slabid = setentryforpaddrp->dst_slabid;
+    u64 gpa = setentryforpaddrp->gpa;
+    u64 entry = setentryforpaddrp->entry;
+
 
     u64 pdpt_index = pae_get_pdpt_index(gpa);
     u64 pdt_index = pae_get_pdt_index(gpa);

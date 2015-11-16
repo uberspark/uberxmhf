@@ -105,9 +105,11 @@ static inline u32 _slabmempgtbl_sanitycheckhalt_slabid(u32 slabid){
 }
 
 
-void _slabmempgtbl_initmempgtbl(u32 slabid){
+//void _slabmempgtbl_initmempgtbl(u32 slabid){
+void _slabmempgtbl_initmempgtbl(xmhfgeec_uapi_slabmempgtbl_initmempgtbl_params_t *initmempgtblp){
     u32 slabtype;
     u32 uslabid;
+    u32 slabid =initmempgtblp->dst_slabid;
 
     slabtype = xmhfgeec_slab_info_table[slabid].slabtype;
 	uslabid  = _slabmempgtbl_sanitycheckhalt_slabid(slabid);
