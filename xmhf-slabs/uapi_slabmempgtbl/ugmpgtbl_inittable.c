@@ -95,19 +95,31 @@ static void _slabmempgtbl_initmempgtbl_ept4K(u32 slabid){
 //@ghost bool inittable_invokeept4K=false;
 /*@
 	requires \valid(initmempgtblp);
-	assigns inittable_invokeept4K;
-	ensures (
-		 (initmempgtblp->dst_slabid < XMHFGEEC_TOTAL_SLABS) &&
-		(xmhfgeec_slab_info_table[initmempgtblp->dst_slabid].slabtype == XMHFGEEC_SLABTYPE_uVT_PROG_GUEST ||
-		 xmhfgeec_slab_info_table[initmempgtblp->dst_slabid].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG_GUEST ||
-		 xmhfgeec_slab_info_table[initmempgtblp->dst_slabid].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG_RICHGUEST)
-		) ==> (inittable_invokeept4K == true);
-	ensures !(
-		 (initmempgtblp->dst_slabid < XMHFGEEC_TOTAL_SLABS) &&
-		(xmhfgeec_slab_info_table[initmempgtblp->dst_slabid].slabtype == XMHFGEEC_SLABTYPE_uVT_PROG_GUEST ||
-		 xmhfgeec_slab_info_table[initmempgtblp->dst_slabid].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG_GUEST ||
-		 xmhfgeec_slab_info_table[initmempgtblp->dst_slabid].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG_RICHGUEST)
-		) ==> (inittable_invokeept4K == false);
+
+	behavior inittable_do:
+		assumes (
+			 (initmempgtblp->dst_slabid < XMHFGEEC_TOTAL_SLABS) &&
+			(xmhfgeec_slab_info_table[initmempgtblp->dst_slabid].slabtype == XMHFGEEC_SLABTYPE_uVT_PROG_GUEST ||
+			 xmhfgeec_slab_info_table[initmempgtblp->dst_slabid].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG_GUEST ||
+			 xmhfgeec_slab_info_table[initmempgtblp->dst_slabid].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG_RICHGUEST)
+			);
+		assigns inittable_invokeept4K;
+		ensures (inittable_invokeept4K == true);
+
+	behavior inittable_invalid:
+		assumes !(
+			 (initmempgtblp->dst_slabid < XMHFGEEC_TOTAL_SLABS) &&
+			(xmhfgeec_slab_info_table[initmempgtblp->dst_slabid].slabtype == XMHFGEEC_SLABTYPE_uVT_PROG_GUEST ||
+			 xmhfgeec_slab_info_table[initmempgtblp->dst_slabid].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG_GUEST ||
+			 xmhfgeec_slab_info_table[initmempgtblp->dst_slabid].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG_RICHGUEST)
+			);
+
+		assigns inittable_invokeept4K;
+		ensures (inittable_invokeept4K == false);
+
+	complete behaviors;
+	disjoint behaviors;
+
 @*/
 void _slabmempgtbl_initmempgtbl(xmhfgeec_uapi_slabmempgtbl_initmempgtbl_params_t *initmempgtblp){
 
