@@ -55,62 +55,8 @@
 
 #include <xmhfgeec.h>
 
-//#include <xc.h>
-//#include <geec_sentinel.h>
 #include <uapi_slabmempgtbl.h>
 
-/*
-
-static inline u32 _slabmempgtbl_sanitycheckhalt_slabid(u32 slabid){
-    //if(slabid >= XMHFGEEC_UHSLAB_BASE_IDX && slabid <= XMHFGEEC_UHSLAB_MAX_IDX)
-    //    return (slabid - XMHFGEEC_UHSLAB_BASE_IDX)+2;
-
-
-    if(slabid >= XMHFGEEC_UGSLAB_BASE_IDX && slabid <= XMHFGEEC_UGSLAB_MAX_IDX)
-        return (slabid - XMHFGEEC_UGSLAB_BASE_IDX);
-
-
-    _XDPRINTF_("%s: Halting!. Invalid slab index %u \n", __func__, slabid);
-    HALT();
-}
-*/
-
-/*
-//void _slabmempgtbl_setentryforpaddr(u32 slabid, u64 gpa, u64 entry){
-void _slabmempgtbl_setentryforpaddr(xmhfgeec_uapi_slabmempgtbl_setentryforpaddr_params_t *setentryforpaddrp){
-    u32 slabid = setentryforpaddrp->dst_slabid;
-    u64 gpa = setentryforpaddrp->gpa;
-    u64 entry = setentryforpaddrp->entry;
-
-
-    u64 pdpt_index = pae_get_pdpt_index(gpa);
-    u64 pdt_index = pae_get_pdt_index(gpa);
-    u64 pt_index = pae_get_pt_index(gpa);
-    u32 slabtype;
-    u32 uslabid;
-
-
-    slabtype = xmhfgeec_slab_info_table[slabid].slabtype;
-	uslabid  = _slabmempgtbl_sanitycheckhalt_slabid(slabid);
-
-    switch(slabtype){
-        case XMHFGEEC_SLABTYPE_uVT_PROG_GUEST:
-        case XMHFGEEC_SLABTYPE_uVU_PROG_GUEST:
-        case XMHFGEEC_SLABTYPE_uVU_PROG_RICHGUEST:{
-            _slabmempgtbl_lvl1t[uslabid][pdpt_index][pdt_index][pt_index] =
-                entry & (~0x80);
-        }
-        break;
-
-        default:
-            _XDPRINTF_("%s: Halting!. unknown slab type %u\n", __func__, slabtype);
-            HALT();
-            break;
-
-    }
-
-}
-*/
 
 //@ghost u64 setentry_fullentry=0;
 /*@
