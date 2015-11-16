@@ -61,6 +61,12 @@
 
 
 /////
+/*@
+	requires \valid(sp);
+	//assigns \nothing;
+	assigns sp->in_out_params[4];
+	assigns sp->in_out_params[5];
+@*/
 void slab_main(slab_params_t *sp){
 
 	if(sp->dst_uapifn == XMHFGEEC_UAPI_SLABMEMPGTBL_INITMEMPGTBL){

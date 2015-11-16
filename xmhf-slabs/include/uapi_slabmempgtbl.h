@@ -87,8 +87,21 @@ typedef struct {
 }__attribute__((packed)) xmhfgeec_uapi_slabmempgtbl_getentryforpaddr_params_t;
 
 
+/*@
+  assigns \nothing;
+@*/
 void _slabmempgtbl_setentryforpaddr(u32 slabid, u64 gpa, u64 entry);
+
+
+/*@
+  assigns \nothing;
+@*/
 u64 _slabmempgtbl_getentryforpaddr(u32 slabid, u64 gpa);
+
+
+/*@
+  assigns \nothing;
+@*/
 void _slabmempgtbl_initmempgtbl(u32 slabid);
 
 
