@@ -131,6 +131,7 @@ void _slabmempgtbl_initmempgtbl_ept4K(u32 slabid){
 	//pt setup
 	/*@
 		loop invariant z1: 0 <= i <= PAE_PTRS_PER_PDPT;
+		loop invariant o1: \forall integer x,y; 0 <= x < i && 0 <= y < (PAE_PTRS_PER_PDT-1) ==> ( (u64)_slabmempgtbl_lvl2t[slabid][x][y] == ((u64)&_slabmempgtbl_lvl1t[slabid][x][y] | 0x7 ) );
 		loop assigns i;
 		loop assigns j;
 		loop assigns _slabmempgtbl_lvl2t[slabid][0..(PAE_MAXPTRS_PER_PDPT-1)][0..(PAE_PTRS_PER_PDT-1)];
