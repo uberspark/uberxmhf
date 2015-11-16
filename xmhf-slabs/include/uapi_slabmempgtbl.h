@@ -63,6 +63,13 @@
 
 #ifndef __ASSEMBLY__
 
+extern __attribute__((section(".rwdatahdr"))) __attribute__((aligned(4096))) u64 _slabmempgtbl_lvl4t[XMHFGEEC_TOTAL_UGSLABS][PAE_MAXPTRS_PER_PML4T];
+extern __attribute__((section(".data"))) __attribute__((aligned(4096))) u64 _slabmempgtbl_lvl3t[XMHFGEEC_TOTAL_UGSLABS][PAE_MAXPTRS_PER_PDPT];
+extern __attribute__((section(".data"))) __attribute__((aligned(4096))) u64 _slabmempgtbl_lvl2t[XMHFGEEC_TOTAL_UGSLABS][PAE_PTRS_PER_PDPT][PAE_PTRS_PER_PDT];
+extern __attribute__((section(".data"))) __attribute__((aligned(4096)))  u64 _slabmempgtbl_lvl1t[XMHFGEEC_TOTAL_UGSLABS][PAE_PTRS_PER_PDPT][PAE_PTRS_PER_PDT][PAE_PTRS_PER_PT];
+
+
+
 typedef struct {
     u32 dst_slabid;
 }__attribute__((packed)) xmhfgeec_uapi_slabmempgtbl_initmempgtbl_params_t;
@@ -78,6 +85,30 @@ typedef struct {
     u64 gpa;
     u64 result_entry;
 }__attribute__((packed)) xmhfgeec_uapi_slabmempgtbl_getentryforpaddr_params_t;
+
+
+/*@
+  requires \valid(setentryforpaddrp);
+@*/
+void _slabmempgtbl_setentryforpaddr(xmhfgeec_uapi_slabmempgtbl_setentryforpaddr_params_t *setentryforpaddrp);
+
+
+
+/*@
+	requires \valid(getentryforpaddrp);
+@*/
+void _slabmempgtbl_getentryforpaddr(xmhfgeec_uapi_slabmempgtbl_getentryforpaddr_params_t *getentryforpaddrp);
+
+
+
+/*@
+	requires \valid(initmempgtblp);
+@*/
+void _slabmempgtbl_initmempgtbl(xmhfgeec_uapi_slabmempgtbl_initmempgtbl_params_t *initmempgtblp);
+
+
+
+
 
 
 #endif	//__ASSEMBLY__
