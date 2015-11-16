@@ -55,8 +55,8 @@
 
 #include <xmhfgeec.h>
 
-#include <xc.h>
-#include <geec_sentinel.h>
+//#include <xc.h>
+//#include <geec_sentinel.h>
 #include <uapi_slabmempgtbl.h>
 
 
