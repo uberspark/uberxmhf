@@ -130,6 +130,20 @@ typedef struct {
 }__attribute__((packed)) xmhf_uapi_gcpustate_gprs_params_t;
 
 
+extern __attribute__((section(".data"))) x86regs_t guestgprs[MAX_PLATFORM_CPUS];
+extern __attribute__((section(".data"))) u64 guestmsrs[GCPUSTATE_MSR_MAXCOUNT];
+
+
+
+void ugcpust_vmread(xmhf_uapi_gcpustate_vmrw_params_t *vmrwp);
+void ugcpust_vmwrite(xmhf_uapi_gcpustate_vmrw_params_t *vmrwp);
+void ugcpust_gprsread(u32 cpuid, xmhf_uapi_gcpustate_gprs_params_t *gprs);
+void ugcpust_gprswrite(u32 cpuid, xmhf_uapi_gcpustate_gprs_params_t *gprs);
+void ugcpust_msrread(xmhf_uapi_gcpustate_msrrw_params_t *msrrwp);
+void ugcpust_msrwrite(xmhf_uapi_gcpustate_msrrw_params_t *msrrwp);
+
+
+
 #endif	//__ASSEMBLY__
 
 #endif //__UAPI_GCPUSTATE_H__
