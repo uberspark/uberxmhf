@@ -87,22 +87,20 @@ void _slabmempgtbl_getentryforpaddr(xmhfgeec_uapi_slabmempgtbl_getentryforpaddr_
     //u32 pdt_index = pae_get_pdt_index(gpa);
     //u32 pt_index = pae_get_pt_index(gpa);
 
-    if (getentryforpaddrp->dst_slabid < XMHFGEEC_TOTAL_SLABS){
-    if(pae_get_pdpt_index(getentryforpaddrp->gpa) < PAE_PTRS_PER_PDPT && pae_get_pdt_index(getentryforpaddrp->gpa) < PAE_PTRS_PER_PDT && pae_get_pt_index(getentryforpaddrp->gpa) < PAE_PTRS_PER_PT){
+    if( (getentryforpaddrp->dst_slabid < XMHFGEEC_TOTAL_SLABS)){
+	if(pae_get_pdpt_index(getentryforpaddrp->gpa) < PAE_PTRS_PER_PDPT && pae_get_pdt_index(getentryforpaddrp->gpa) < PAE_PTRS_PER_PDT && pae_get_pt_index(getentryforpaddrp->gpa) < PAE_PTRS_PER_PT){
 
-    if( (getentryforpaddrp->dst_slabid >= XMHFGEEC_UGSLAB_BASE_IDX && getentryforpaddrp->dst_slabid <= XMHFGEEC_UGSLAB_MAX_IDX) &&
-    	(xmhfgeec_slab_info_table[getentryforpaddrp->dst_slabid].slabtype == XMHFGEEC_SLABTYPE_uVT_PROG_GUEST ||
-	 xmhfgeec_slab_info_table[getentryforpaddrp->dst_slabid].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG_GUEST ||
-	 xmhfgeec_slab_info_table[getentryforpaddrp->dst_slabid].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG_RICHGUEST)
-	){
+	    if( (getentryforpaddrp->dst_slabid >= XMHFGEEC_UGSLAB_BASE_IDX && getentryforpaddrp->dst_slabid <= XMHFGEEC_UGSLAB_MAX_IDX) &&
+		(xmhfgeec_slab_info_table[getentryforpaddrp->dst_slabid].slabtype == XMHFGEEC_SLABTYPE_uVT_PROG_GUEST ||
+		 xmhfgeec_slab_info_table[getentryforpaddrp->dst_slabid].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG_GUEST ||
+		 xmhfgeec_slab_info_table[getentryforpaddrp->dst_slabid].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG_RICHGUEST)
+		){
 
-	getentryforpaddrp->result_entry = _slabmempgtbl_lvl1t[(getentryforpaddrp->dst_slabid - XMHFGEEC_UGSLAB_BASE_IDX)][pae_get_pdpt_index(getentryforpaddrp->gpa)][pae_get_pdt_index(getentryforpaddrp->gpa)][pae_get_pt_index(getentryforpaddrp->gpa)];
-
+		getentryforpaddrp->result_entry = _slabmempgtbl_lvl1t[(getentryforpaddrp->dst_slabid - XMHFGEEC_UGSLAB_BASE_IDX)][pae_get_pdpt_index(getentryforpaddrp->gpa)][pae_get_pdt_index(getentryforpaddrp->gpa)][pae_get_pt_index(getentryforpaddrp->gpa)];
+	    }
+	}
     }else{
 	getentryforpaddrp->result_entry = 0;
-    }
-
-    }
     }
 }
 

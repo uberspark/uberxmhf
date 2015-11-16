@@ -98,6 +98,16 @@ void _slabmempgtbl_setentryforpaddr(xmhfgeec_uapi_slabmempgtbl_setentryforpaddr_
 /*@
 	requires \valid(getentryforpaddrp);
 	assigns getentryforpaddrp->result_entry;
+	ensures ( (getentryforpaddrp->dst_slabid < XMHFGEEC_TOTAL_SLABS) &&
+		  (pae_get_pdpt_index(getentryforpaddrp->gpa) < PAE_PTRS_PER_PDPT && pae_get_pdt_index(getentryforpaddrp->gpa) < PAE_PTRS_PER_PDT && pae_get_pt_index(getentryforpaddrp->gpa) < PAE_PTRS_PER_PT) &&
+		( (getentryforpaddrp->dst_slabid >= XMHFGEEC_UGSLAB_BASE_IDX && getentryforpaddrp->dst_slabid <= XMHFGEEC_UGSLAB_MAX_IDX) &&
+			(xmhfgeec_slab_info_table[getentryforpaddrp->dst_slabid].slabtype == XMHFGEEC_SLABTYPE_uVT_PROG_GUEST ||
+			 xmhfgeec_slab_info_table[getentryforpaddrp->dst_slabid].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG_GUEST ||
+			 xmhfgeec_slab_info_table[getentryforpaddrp->dst_slabid].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG_RICHGUEST)
+			)
+		) ==> (getentryforpaddrp->result_entry == _slabmempgtbl_lvl1t[(getentryforpaddrp->dst_slabid - XMHFGEEC_UGSLAB_BASE_IDX)][pae_get_pdpt_index(getentryforpaddrp->gpa)][pae_get_pdt_index(getentryforpaddrp->gpa)][pae_get_pt_index(getentryforpaddrp->gpa)]);
+	ensures !( (getentryforpaddrp->dst_slabid < XMHFGEEC_TOTAL_SLABS))
+		 ==> (getentryforpaddrp->result_entry == 0);
 @*/
 //u64 _slabmempgtbl_getentryforpaddr(u32 slabid, u64 gpa);
 void _slabmempgtbl_getentryforpaddr(xmhfgeec_uapi_slabmempgtbl_getentryforpaddr_params_t *getentryforpaddrp);
