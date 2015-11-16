@@ -98,7 +98,8 @@ typedef struct {
 				(xmhfgeec_slab_info_table[setentryforpaddrp->dst_slabid].slabtype == XMHFGEEC_SLABTYPE_uVT_PROG_GUEST ||
 				 xmhfgeec_slab_info_table[setentryforpaddrp->dst_slabid].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG_GUEST ||
 				 xmhfgeec_slab_info_table[setentryforpaddrp->dst_slabid].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG_RICHGUEST)
-				)
+				) &&
+				    !(setentryforpaddrp->gpa >= __TARGET_BASE_XMHF && setentryforpaddrp->gpa <  0x15a00000)
 			);
 		assigns _slabmempgtbl_lvl1t[(setentryforpaddrp->dst_slabid - XMHFGEEC_UGSLAB_BASE_IDX)][pae_get_pdpt_index(setentryforpaddrp->gpa)][pae_get_pdt_index(setentryforpaddrp->gpa)][pae_get_pt_index(setentryforpaddrp->gpa)];
 		assigns setentry_fullentry;
@@ -111,7 +112,8 @@ typedef struct {
 				(xmhfgeec_slab_info_table[setentryforpaddrp->dst_slabid].slabtype == XMHFGEEC_SLABTYPE_uVT_PROG_GUEST ||
 				 xmhfgeec_slab_info_table[setentryforpaddrp->dst_slabid].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG_GUEST ||
 				 xmhfgeec_slab_info_table[setentryforpaddrp->dst_slabid].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG_RICHGUEST)
-				)
+				) &&
+			    !(setentryforpaddrp->gpa >= __TARGET_BASE_XMHF && setentryforpaddrp->gpa <  0x15a00000)
 			);
 		assigns \nothing;
 
