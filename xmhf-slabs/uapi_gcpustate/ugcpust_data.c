@@ -49,7 +49,6 @@
 
 #include <xmhfgeec.h>
 
-#include <xc.h>
 #include <uapi_gcpustate.h>
 
 __attribute__((section(".data"))) x86regs_t guestgprs[MAX_PLATFORM_CPUS];
