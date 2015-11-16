@@ -55,14 +55,14 @@
 
 #include <xmhfgeec.h>
 
-#include <xc.h>
-#include <geec_sentinel.h>
+//#include <xc.h>
+//#include <geec_sentinel.h>
 #include <uapi_slabmempgtbl.h>
 
 
 
 
-
+/*
 static inline u32 _slabmempgtbl_sanitycheckhalt_slabid(u32 slabid){
     //if(slabid >= XMHFGEEC_UHSLAB_BASE_IDX && slabid <= XMHFGEEC_UHSLAB_MAX_IDX)
     //    return (slabid - XMHFGEEC_UHSLAB_BASE_IDX)+2;
@@ -75,7 +75,7 @@ static inline u32 _slabmempgtbl_sanitycheckhalt_slabid(u32 slabid){
     _XDPRINTF_("%s: Halting!. Invalid slab index %u \n", __func__, slabid);
     HALT();
 }
-
+*/
 
 
 
@@ -83,39 +83,24 @@ static inline u32 _slabmempgtbl_sanitycheckhalt_slabid(u32 slabid){
 void _slabmempgtbl_getentryforpaddr(xmhfgeec_uapi_slabmempgtbl_getentryforpaddr_params_t *getentryforpaddrp){
     u32 slabid =getentryforpaddrp->dst_slabid;
     u64 gpa = getentryforpaddrp->gpa;
-    u64 result_entry=0;
     u64 pdpt_index = pae_get_pdpt_index(gpa);
     u64 pdt_index = pae_get_pdt_index(gpa);
     u64 pt_index = pae_get_pt_index(gpa);
-    u32 slabtype;
-	u32 uslabid;
+
+    //if( (slabid >= XMHFGEEC_UGSLAB_BASE_IDX && slabid <= XMHFGEEC_UGSLAB_MAX_IDX) &&
+    //	(xmhfgeec_slab_info_table[slabid].slabtype == XMHFGEEC_SLABTYPE_uVT_PROG_GUEST ||
+//	 xmhfgeec_slab_info_table[slabid].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG_GUEST ||
+//	 xmhfgeec_slab_info_table[slabid].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG_RICHGUEST)
+//	){
+
+//	getentryforpaddrp->result_entry = _slabmempgtbl_lvl1t[(slabid - XMHFGEEC_UGSLAB_BASE_IDX)][pdpt_index][pdt_index][pt_index];
+
+  //  }else{
+	getentryforpaddrp->result_entry = 0;
+    //}
 
 
-    slabtype = xmhfgeec_slab_info_table[slabid].slabtype;
-	uslabid  = _slabmempgtbl_sanitycheckhalt_slabid(slabid);
-
-    switch(slabtype){
-
-        /*case XMHFGEEC_SLABTYPE_VfT_PROG:
-        case XMHFGEEC_SLABTYPE_uVT_PROG:
-        case XMHFGEEC_SLABTYPE_uVU_PROG:*/
-        case XMHFGEEC_SLABTYPE_uVT_PROG_GUEST:
-        case XMHFGEEC_SLABTYPE_uVU_PROG_GUEST:
-        case XMHFGEEC_SLABTYPE_uVU_PROG_RICHGUEST:{
-            result_entry = _slabmempgtbl_lvl1t[uslabid][pdpt_index][pdt_index][pt_index];
-        }
-        break;
-
-        default:
-            _XDPRINTF_("%s: Halting!. unknown slab type %u\n", __func__, slabtype);
-            HALT();
-            break;
-
-    }
-
-	getentryforpaddrp->result_entry = result_entry;
 }
-
 
 
 
