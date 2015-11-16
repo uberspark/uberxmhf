@@ -64,6 +64,7 @@
 /*@
 	requires 0 <= slabid < XMHFGEEC_TOTAL_UGSLABS;
 	assigns _slabmempgtbl_lvl4t[slabid][0..(PAE_MAXPTRS_PER_PML4T-1)];
+	assigns _slabmempgtbl_lvl3t[slabid][0..(PAE_MAXPTRS_PER_PDPT-1)];
 	//ensures (\forall u32 x; 0 <= x < PAE_PTRS_PER_PML4T ==>
 	//	 ( (u64)_slabmempgtbl_lvl4t[slabid][x] ) == ( ((u64)&_slabmempgtbl_lvl3t[slabid] | 0x7) )
 	//	);
@@ -84,17 +85,29 @@ void _slabmempgtbl_initmempgtbl_ept4K(u32 slabid){
 	}
 	//memset(&_slabmempgtbl_lvl4t[slabid], 0, PAGE_SIZE_4K);
 
+	//pdpt zero out
+	//memset(&_slabmempgtbl_lvl3t[slabid], 0, PAGE_SIZE_4K);
+	/*@
+		loop invariant a1: 0 <= i <= PAE_MAXPTRS_PER_PDPT;
+		loop invariant a2: \forall integer x; 0 <= x < i ==> ( (u64)_slabmempgtbl_lvl3t[slabid][x] == 0 );
+		loop assigns _slabmempgtbl_lvl3t[slabid][0..(PAE_MAXPTRS_PER_PDPT-1)];
+		loop assigns i;
+		loop variant PAE_MAXPTRS_PER_PDPT - i;
+	@*/
+	for(i=0; i < PAE_MAXPTRS_PER_PDPT; i++){
+		_slabmempgtbl_lvl3t[slabid][i] = 0;
+	}
+
 
 #if 0
     for(i=0; i < PAE_PTRS_PER_PML4T; i++)
         _slabmempgtbl_lvl4t[slabid][i] =
             ((u64)&_slabmempgtbl_lvl3t[slabid] | 0x7);
 
-    //pdpt
-    memset(&_slabmempgtbl_lvl3t[slabid], 0, PAGE_SIZE_4K);
-    for(i=0; i < PAE_PTRS_PER_PDPT; i++)
-		_slabmempgtbl_lvl3t[slabid][i] =
-            ((u64)&_slabmempgtbl_lvl2t[slabid][i] | 0x7 );
+	for(i=0; i < PAE_PTRS_PER_PDPT; i++){
+		_slabmempgtbl_lvl3t[slabid][i] = ((u64)&_slabmempgtbl_lvl2t[slabid][i] | 0x7 );
+	}
+
 
     //pdt
 	for(i=0; i < PAE_PTRS_PER_PDPT; i++){
