@@ -106,6 +106,9 @@ static void _slabmempgtbl_initmempgtbl_ept4K(u32 slabid){
 			);
 		assigns inittable_invokeept4K;
 		assigns _slabmempgtbl_lvl4t[(initmempgtblp->dst_slabid - XMHFGEEC_UGSLAB_BASE_IDX)][0..(PAGE_SIZE_4K-1)];
+		ensures (\forall u32 x; 0 <= x < PAE_PTRS_PER_PML4T ==>
+			 ( (u64)_slabmempgtbl_lvl4t[(initmempgtblp->dst_slabid - XMHFGEEC_UGSLAB_BASE_IDX)][x] ) == ( ((u64)&_slabmempgtbl_lvl3t[(initmempgtblp->dst_slabid - XMHFGEEC_UGSLAB_BASE_IDX)] | 0x7) )
+			);
 		ensures (inittable_invokeept4K == true);
 
 	behavior inittable_invalid:
@@ -146,6 +149,17 @@ void _slabmempgtbl_initmempgtbl(xmhfgeec_uapi_slabmempgtbl_initmempgtbl_params_t
 		for(i=0; i < PAE_MAXPTRS_PER_PML4T; i++){
 			_slabmempgtbl_lvl4t[(initmempgtblp->dst_slabid - XMHFGEEC_UGSLAB_BASE_IDX)][i] = 0;
 		}
+
+
+		/*@
+			loop invariant a3: 0 <= i <= PAE_PTRS_PER_PML4T;
+			loop invariant a4: \forall integer x; 0 <= x < i ==> ( (u64)_slabmempgtbl_lvl4t[(initmempgtblp->dst_slabid - XMHFGEEC_UGSLAB_BASE_IDX)][x] ) == ( ((u64)&_slabmempgtbl_lvl3t[(initmempgtblp->dst_slabid - XMHFGEEC_UGSLAB_BASE_IDX)] | 0x7) );
+			loop assigns _slabmempgtbl_lvl4t[(initmempgtblp->dst_slabid - XMHFGEEC_UGSLAB_BASE_IDX)][0..(PAE_PTRS_PER_PML4T-1)];
+			loop assigns i;
+			loop variant PAE_PTRS_PER_PML4T - i;
+		@*/
+		for(i=0; i < PAE_PTRS_PER_PML4T; i++)
+			_slabmempgtbl_lvl4t[(initmempgtblp->dst_slabid - XMHFGEEC_UGSLAB_BASE_IDX)][i] = ((u64)&_slabmempgtbl_lvl3t[(initmempgtblp->dst_slabid - XMHFGEEC_UGSLAB_BASE_IDX)] | 0x7);
 
 
 
