@@ -81,26 +81,28 @@ static inline u32 _slabmempgtbl_sanitycheckhalt_slabid(u32 slabid){
 
 //u64 _slabmempgtbl_getentryforpaddr(u32 slabid, u64 gpa){
 void _slabmempgtbl_getentryforpaddr(xmhfgeec_uapi_slabmempgtbl_getentryforpaddr_params_t *getentryforpaddrp){
-    u32 slabid =getentryforpaddrp->dst_slabid;
-    u64 gpa = getentryforpaddrp->gpa;
-    u32 pdpt_index = pae_get_pdpt_index(gpa);
-    u32 pdt_index = pae_get_pdt_index(gpa);
-    u32 pt_index = pae_get_pt_index(gpa);
+    //u32 slabid =getentryforpaddrp->dst_slabid;
+    //u64 gpa = getentryforpaddrp->gpa;
+    //u32 pdpt_index = pae_get_pdpt_index(gpa);
+    //u32 pdt_index = pae_get_pdt_index(gpa);
+    //u32 pt_index = pae_get_pt_index(gpa);
 
-    if(pdpt_index < PAE_PTRS_PER_PDPT && pdt_index < PAE_PTRS_PER_PDT && pt_index < PAE_PTRS_PER_PT){
+    if (getentryforpaddrp->dst_slabid < XMHFGEEC_TOTAL_SLABS){
+    if(pae_get_pdpt_index(getentryforpaddrp->gpa) < PAE_PTRS_PER_PDPT && pae_get_pdt_index(getentryforpaddrp->gpa) < PAE_PTRS_PER_PDT && pae_get_pt_index(getentryforpaddrp->gpa) < PAE_PTRS_PER_PT){
 
-    if( (slabid >= XMHFGEEC_UGSLAB_BASE_IDX && slabid <= XMHFGEEC_UGSLAB_MAX_IDX) &&
-    	(xmhfgeec_slab_info_table[slabid].slabtype == XMHFGEEC_SLABTYPE_uVT_PROG_GUEST ||
-	 xmhfgeec_slab_info_table[slabid].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG_GUEST ||
-	 xmhfgeec_slab_info_table[slabid].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG_RICHGUEST)
+    if( (getentryforpaddrp->dst_slabid >= XMHFGEEC_UGSLAB_BASE_IDX && getentryforpaddrp->dst_slabid <= XMHFGEEC_UGSLAB_MAX_IDX) &&
+    	(xmhfgeec_slab_info_table[getentryforpaddrp->dst_slabid].slabtype == XMHFGEEC_SLABTYPE_uVT_PROG_GUEST ||
+	 xmhfgeec_slab_info_table[getentryforpaddrp->dst_slabid].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG_GUEST ||
+	 xmhfgeec_slab_info_table[getentryforpaddrp->dst_slabid].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG_RICHGUEST)
 	){
 
-	getentryforpaddrp->result_entry = _slabmempgtbl_lvl1t[(slabid - XMHFGEEC_UGSLAB_BASE_IDX)][pdpt_index][pdt_index][pt_index];
+	getentryforpaddrp->result_entry = _slabmempgtbl_lvl1t[(getentryforpaddrp->dst_slabid - XMHFGEEC_UGSLAB_BASE_IDX)][pae_get_pdpt_index(getentryforpaddrp->gpa)][pae_get_pdt_index(getentryforpaddrp->gpa)][pae_get_pt_index(getentryforpaddrp->gpa)];
 
     }else{
 	getentryforpaddrp->result_entry = 0;
     }
 
+    }
     }
 }
 
