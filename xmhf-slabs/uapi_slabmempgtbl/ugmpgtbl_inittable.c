@@ -55,11 +55,11 @@
 
 #include <xmhfgeec.h>
 
-#include <xc.h>
-#include <geec_sentinel.h>
+//#include <xc.h>
+//#include <geec_sentinel.h>
 #include <uapi_slabmempgtbl.h>
 
-
+#if 0
 
 static void _slabmempgtbl_initmempgtbl_ept4K(u32 slabid){
     //pml4t = _slabmempgtbl_lvl4t[slabid];
@@ -89,57 +89,42 @@ static void _slabmempgtbl_initmempgtbl_ept4K(u32 slabid){
 	}
 }
 
+#endif // 0
 
 
-static inline u32 _slabmempgtbl_sanitycheckhalt_slabid(u32 slabid){
-    //if(slabid >= XMHFGEEC_UHSLAB_BASE_IDX && slabid <= XMHFGEEC_UHSLAB_MAX_IDX)
-    //    return (slabid - XMHFGEEC_UHSLAB_BASE_IDX)+2;
-
-
-    if(slabid >= XMHFGEEC_UGSLAB_BASE_IDX && slabid <= XMHFGEEC_UGSLAB_MAX_IDX)
-        return (slabid - XMHFGEEC_UGSLAB_BASE_IDX);
-
-
-    _XDPRINTF_("%s: Halting!. Invalid slab index %u \n", __func__, slabid);
-    HALT();
-}
-
-
-//void _slabmempgtbl_initmempgtbl(u32 slabid){
+//@ghost bool inittable_invokeept4K=false;
+/*@
+	requires \valid(initmempgtblp);
+	assigns inittable_invokeept4K;
+	ensures (
+		 (initmempgtblp->dst_slabid < XMHFGEEC_TOTAL_SLABS) &&
+		(xmhfgeec_slab_info_table[initmempgtblp->dst_slabid].slabtype == XMHFGEEC_SLABTYPE_uVT_PROG_GUEST ||
+		 xmhfgeec_slab_info_table[initmempgtblp->dst_slabid].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG_GUEST ||
+		 xmhfgeec_slab_info_table[initmempgtblp->dst_slabid].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG_RICHGUEST)
+		) ==> (inittable_invokeept4K == true);
+	ensures !(
+		 (initmempgtblp->dst_slabid < XMHFGEEC_TOTAL_SLABS) &&
+		(xmhfgeec_slab_info_table[initmempgtblp->dst_slabid].slabtype == XMHFGEEC_SLABTYPE_uVT_PROG_GUEST ||
+		 xmhfgeec_slab_info_table[initmempgtblp->dst_slabid].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG_GUEST ||
+		 xmhfgeec_slab_info_table[initmempgtblp->dst_slabid].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG_RICHGUEST)
+		) ==> (inittable_invokeept4K == false);
+@*/
 void _slabmempgtbl_initmempgtbl(xmhfgeec_uapi_slabmempgtbl_initmempgtbl_params_t *initmempgtblp){
-    u32 slabtype;
-    u32 uslabid;
-    u32 slabid =initmempgtblp->dst_slabid;
 
-    slabtype = xmhfgeec_slab_info_table[slabid].slabtype;
-	uslabid  = _slabmempgtbl_sanitycheckhalt_slabid(slabid);
+    if( (initmempgtblp->dst_slabid < XMHFGEEC_TOTAL_SLABS) &&
+	(xmhfgeec_slab_info_table[initmempgtblp->dst_slabid].slabtype == XMHFGEEC_SLABTYPE_uVT_PROG_GUEST ||
+	 xmhfgeec_slab_info_table[initmempgtblp->dst_slabid].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG_GUEST ||
+	 xmhfgeec_slab_info_table[initmempgtblp->dst_slabid].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG_RICHGUEST)
+      ){
 
-
-    switch(slabtype){
-        /*case XMHFGEEC_SLABTYPE_VfT_PROG:
-        case XMHFGEEC_SLABTYPE_uVT_PROG:
-        case XMHFGEEC_SLABTYPE_uVU_PROG:{
-            _slabmempgtbl_initmempgtbl_pae4K(uslabid);
-            _XDPRINTF_("%s: setup slab %u with pae4K\n", __func__, slabid);
-        }
-        break;
-*/
-
-        case XMHFGEEC_SLABTYPE_uVT_PROG_GUEST:
-        case XMHFGEEC_SLABTYPE_uVU_PROG_GUEST:
-        case XMHFGEEC_SLABTYPE_uVU_PROG_RICHGUEST:{
-            _XDPRINTF_("%s: proceeding to setup slab %u with ept4K...\n", __func__, slabid);
-            _slabmempgtbl_initmempgtbl_ept4K(uslabid);
+            //_slabmempgtbl_initmempgtbl_ept4K((initmempgtblp->dst_slabid - XMHFGEEC_UGSLAB_BASE_IDX));
+		//@ghost inittable_invokeept4K = true;
             _XDPRINTF_("%s: setup slab %u with ept4K\n", __func__, slabid);
-        }
-        break;
 
-        default:
-            _XDPRINTF_("%s: Halting. Unknown slab type %u\n", __func__, slabtype);
-            HALT();
-            break;
-    }
-
+	}else{
+		//_XDPRINTF_("%s: Halting. Unknown slab type %u\n", __func__, slabtype);
+		//@ghost inittable_invokeept4K = false;
+	}
 }
 
 
