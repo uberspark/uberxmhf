@@ -99,16 +99,19 @@ static void _slabmempgtbl_initmempgtbl_ept4K(u32 slabid){
 	behavior inittable_do:
 		assumes (
 			 (initmempgtblp->dst_slabid < XMHFGEEC_TOTAL_SLABS) &&
+			(initmempgtblp->dst_slabid >= XMHFGEEC_UGSLAB_BASE_IDX && initmempgtblp->dst_slabid <= XMHFGEEC_UGSLAB_MAX_IDX) &&
 			(xmhfgeec_slab_info_table[initmempgtblp->dst_slabid].slabtype == XMHFGEEC_SLABTYPE_uVT_PROG_GUEST ||
 			 xmhfgeec_slab_info_table[initmempgtblp->dst_slabid].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG_GUEST ||
 			 xmhfgeec_slab_info_table[initmempgtblp->dst_slabid].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG_RICHGUEST)
 			);
 		assigns inittable_invokeept4K;
+		assigns _slabmempgtbl_lvl4t[(initmempgtblp->dst_slabid - XMHFGEEC_UGSLAB_BASE_IDX)][0..(PAGE_SIZE_4K-1)];
 		ensures (inittable_invokeept4K == true);
 
 	behavior inittable_invalid:
 		assumes !(
 			 (initmempgtblp->dst_slabid < XMHFGEEC_TOTAL_SLABS) &&
+			(initmempgtblp->dst_slabid >= XMHFGEEC_UGSLAB_BASE_IDX && initmempgtblp->dst_slabid <= XMHFGEEC_UGSLAB_MAX_IDX) &&
 			(xmhfgeec_slab_info_table[initmempgtblp->dst_slabid].slabtype == XMHFGEEC_SLABTYPE_uVT_PROG_GUEST ||
 			 xmhfgeec_slab_info_table[initmempgtblp->dst_slabid].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG_GUEST ||
 			 xmhfgeec_slab_info_table[initmempgtblp->dst_slabid].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG_RICHGUEST)
@@ -124,13 +127,30 @@ static void _slabmempgtbl_initmempgtbl_ept4K(u32 slabid){
 void _slabmempgtbl_initmempgtbl(xmhfgeec_uapi_slabmempgtbl_initmempgtbl_params_t *initmempgtblp){
 
     if( (initmempgtblp->dst_slabid < XMHFGEEC_TOTAL_SLABS) &&
+	(initmempgtblp->dst_slabid >= XMHFGEEC_UGSLAB_BASE_IDX && initmempgtblp->dst_slabid <= XMHFGEEC_UGSLAB_MAX_IDX) &&
 	(xmhfgeec_slab_info_table[initmempgtblp->dst_slabid].slabtype == XMHFGEEC_SLABTYPE_uVT_PROG_GUEST ||
 	 xmhfgeec_slab_info_table[initmempgtblp->dst_slabid].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG_GUEST ||
 	 xmhfgeec_slab_info_table[initmempgtblp->dst_slabid].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG_RICHGUEST)
       ){
 
             //_slabmempgtbl_initmempgtbl_ept4K((initmempgtblp->dst_slabid - XMHFGEEC_UGSLAB_BASE_IDX));
+	    u32 i, j;
+		//@assert (initmempgtblp->dst_slabid - XMHFGEEC_UGSLAB_BASE_IDX) < XMHFGEEC_TOTAL_UGSLABS;
+		/*@
+			loop invariant a1: 0 <= i <= PAE_MAXPTRS_PER_PML4T;
+			loop invariant a2: \forall integer x; 0 <= x < i ==> ( (u64)_slabmempgtbl_lvl4t[(initmempgtblp->dst_slabid - XMHFGEEC_UGSLAB_BASE_IDX)][x] == 0 );
+			loop assigns _slabmempgtbl_lvl4t[(initmempgtblp->dst_slabid - XMHFGEEC_UGSLAB_BASE_IDX)][0..(PAE_MAXPTRS_PER_PML4T-1)];
+			loop assigns i;
+			loop variant PAE_MAXPTRS_PER_PML4T - i;
+		@*/
+		for(i=0; i < PAE_MAXPTRS_PER_PML4T; i++){
+			_slabmempgtbl_lvl4t[(initmempgtblp->dst_slabid - XMHFGEEC_UGSLAB_BASE_IDX)][i] = 0;
+		}
+
+
+
 		//@ghost inittable_invokeept4K = true;
+
             _XDPRINTF_("%s: setup slab %u with ept4K\n", __func__, slabid);
 
 	}else{
