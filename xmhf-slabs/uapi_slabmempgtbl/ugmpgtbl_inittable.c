@@ -59,36 +59,37 @@
 //#include <geec_sentinel.h>
 #include <uapi_slabmempgtbl.h>
 
+
+
+/*@
+	requires 0 <= slabid < XMHFGEEC_TOTAL_UGSLABS;
+	assigns _slabmempgtbl_lvl4t[slabid][0..(PAE_MAXPTRS_PER_PML4T-1)];
+	//ensures (\forall u32 x; 0 <= x < PAE_PTRS_PER_PML4T ==>
+	//	 ( (u64)_slabmempgtbl_lvl4t[slabid][x] ) == ( ((u64)&_slabmempgtbl_lvl3t[slabid] | 0x7) )
+	//	);
+@*/
+void _slabmempgtbl_initmempgtbl_ept4K(u32 slabid){
+	u32 i, j;
+
+	//pml4t zero out
+	/*@
+		loop invariant a1: 0 <= i <= PAE_MAXPTRS_PER_PML4T;
+		loop invariant a2: \forall integer x; 0 <= x < i ==> ( (u64)_slabmempgtbl_lvl4t[slabid][x] == 0 );
+		loop assigns _slabmempgtbl_lvl4t[slabid][0..(PAE_MAXPTRS_PER_PML4T-1)];
+		loop assigns i;
+		loop variant PAE_MAXPTRS_PER_PML4T - i;
+	@*/
+	for(i=0; i < PAE_MAXPTRS_PER_PML4T; i++){
+		_slabmempgtbl_lvl4t[slabid][i] = 0;
+	}
+	//memset(&_slabmempgtbl_lvl4t[slabid], 0, PAGE_SIZE_4K);
+
+
 #if 0
-
-		assigns _slabmempgtbl_lvl4t[(initmempgtblp->dst_slabid - XMHFGEEC_UGSLAB_BASE_IDX)][0..(PAE_MAXPTRS_PER_PML4T-1)];
-		//assigns _slabmempgtbl_lvl3t[(initmempgtblp->dst_slabid - XMHFGEEC_UGSLAB_BASE_IDX)][0..(PAE_MAXPTRS_PER_PDPT-1)];
-		ensures (\forall u32 x; 0 <= x < PAE_PTRS_PER_PML4T ==>
-			 ( (u64)_slabmempgtbl_lvl4t[(initmempgtblp->dst_slabid - XMHFGEEC_UGSLAB_BASE_IDX)][x] ) == ( ((u64)&_slabmempgtbl_lvl3t[(initmempgtblp->dst_slabid - XMHFGEEC_UGSLAB_BASE_IDX)] | 0x7) )
-			);
-
-static void _slabmempgtbl_initmempgtbl_ept4K(u32 slabid){
-    u32 i, j;
-
-    //pml4t zero out
-		/*@
-			loop invariant a1: 0 <= i <= PAE_MAXPTRS_PER_PML4T;
-			loop invariant a2: \forall integer x; 0 <= x < i ==> ( (u64)_slabmempgtbl_lvl4t[(initmempgtblp->dst_slabid - XMHFGEEC_UGSLAB_BASE_IDX)][x] == 0 );
-			loop assigns _slabmempgtbl_lvl4t[(initmempgtblp->dst_slabid - XMHFGEEC_UGSLAB_BASE_IDX)][0..(PAE_MAXPTRS_PER_PML4T-1)];
-			loop assigns i;
-			loop variant PAE_MAXPTRS_PER_PML4T - i;
-		@*/
-		for(i=0; i < PAE_MAXPTRS_PER_PML4T; i++){
-			_slabmempgtbl_lvl4t[(initmempgtblp->dst_slabid - XMHFGEEC_UGSLAB_BASE_IDX)][i] = 0;
-		}
-
-    //memset(&_slabmempgtbl_lvl4t[slabid], 0, PAGE_SIZE_4K);
-
     for(i=0; i < PAE_PTRS_PER_PML4T; i++)
         _slabmempgtbl_lvl4t[slabid][i] =
             ((u64)&_slabmempgtbl_lvl3t[slabid] | 0x7);
 
-#if 0
     //pdpt
     memset(&_slabmempgtbl_lvl3t[slabid], 0, PAGE_SIZE_4K);
     for(i=0; i < PAE_PTRS_PER_PDPT; i++)
@@ -105,9 +106,9 @@ static void _slabmempgtbl_initmempgtbl_ept4K(u32 slabid){
 #endif
 }
 
-#endif // 0
 
 
+#if 0
 //@ghost bool inittable_invokeept4K=false;
 /*@
 	requires \valid(initmempgtblp);
@@ -158,5 +159,5 @@ void _slabmempgtbl_initmempgtbl(xmhfgeec_uapi_slabmempgtbl_initmempgtbl_params_t
 		//@ghost inittable_invokeept4K = false;
 	}
 }
-
+#endif // 0
 
