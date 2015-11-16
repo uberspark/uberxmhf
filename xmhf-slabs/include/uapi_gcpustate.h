@@ -136,7 +136,7 @@ extern __attribute__((section(".data"))) u64 guestmsrs[GCPUSTATE_MSR_MAXCOUNT];
 
 
 void ugcpust_vmread(xmhf_uapi_gcpustate_vmrw_params_t *vmrwp);
-void ugcpust_vmwrite(xmhf_uapi_gcpustate_vmrw_params_t *vmrwp);
+void ugcpust_vmwrite(u32 srcslabid, xmhf_uapi_gcpustate_vmrw_params_t *vmrwp);
 void ugcpust_gprsread(u32 cpuid, xmhf_uapi_gcpustate_gprs_params_t *gprs);
 void ugcpust_gprswrite(u32 cpuid, xmhf_uapi_gcpustate_gprs_params_t *gprs);
 void ugcpust_msrread(xmhf_uapi_gcpustate_msrrw_params_t *msrrwp);
