@@ -77,7 +77,7 @@
 	         ( (u64)_slabmempgtbl_lvl2t[slabid][x][y] == ((u64)&_slabmempgtbl_lvl1t[slabid][x][y] | 0x7 ) )
 		);
 @*/
-void _slabmempgtbl_initmempgtbl_ept4K(u32 slabid){
+static void _slabmempgtbl_initmempgtbl_ept4K(u32 slabid){
 	u32 i, j;
 
 	//pml4t zero out
@@ -158,7 +158,6 @@ void _slabmempgtbl_initmempgtbl_ept4K(u32 slabid){
 
 
 
-#if 0
 //@ghost bool inittable_invokeept4K=false;
 /*@
 	requires \valid(initmempgtblp);
@@ -199,8 +198,8 @@ void _slabmempgtbl_initmempgtbl(xmhfgeec_uapi_slabmempgtbl_initmempgtbl_params_t
 	 xmhfgeec_slab_info_table[initmempgtblp->dst_slabid].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG_RICHGUEST)
       ){
 
-            //_slabmempgtbl_initmempgtbl_ept4K((initmempgtblp->dst_slabid - XMHFGEEC_UGSLAB_BASE_IDX));
-	//@ghost inittable_invokeept4K = true;
+            _slabmempgtbl_initmempgtbl_ept4K((initmempgtblp->dst_slabid - XMHFGEEC_UGSLAB_BASE_IDX));
+		//@ghost inittable_invokeept4K = true;
 
             _XDPRINTF_("%s: setup slab %u with ept4K\n", __func__, slabid);
 
@@ -209,5 +208,4 @@ void _slabmempgtbl_initmempgtbl(xmhfgeec_uapi_slabmempgtbl_initmempgtbl_params_t
 		//@ghost inittable_invokeept4K = false;
 	}
 }
-#endif // 0
 
