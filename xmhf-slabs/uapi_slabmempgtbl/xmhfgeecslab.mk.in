@@ -12,3 +12,14 @@ export XMHF_SLAB_SOURCES := $(wildcard $(srcdir)/*.c)
 #export XMHF_SLAB_GLOBAL_SYMS := --globalize-symbol _dbuf_devpgtbl --globalize-symbol _dbuf_mempgtbl_pml4t --globalize-symbol _dbuf_mempgtbl_pdpt --globalize-symbol _dbuf_mempgtbl_pdt --globalize-symbol _dbuf_mempgtbl_pt
 
 ########################################################################
+
+.PHONY: verify
+verify: verifybase
+	@echo Proceeding to verify $(XMHF_SLAB_NAME)...
+	cd $(XMHF_SLAB_VERIFICATION_DIR) && frama-c -main slab_main -lib-entry -wp -wp-rte -wp-model +cint+cast  -wp-prover alt-ergo,cvc3,z3 -cpp-extra-args=-nostdinc $(VFLAGS) ugmpgtbl_data.c.v.c ugmpgtbl_main.c.v.c
+	#cd $(XMHF_SLAB_VERIFICATION_DIR) && frama-c -main _geec_prime_smt_slab_getspatype_isiotbl -lib-entry -wp -wp-rte -wp-model +cint+cast  -wp-prover alt-ergo,cvc3,z3 -cpp-extra-args=-nostdinc $(VFLAGS) gp_data.c.v.c gp_s2_setupmempgtbl.c.v.c
+	#cd $(XMHF_SLAB_VERIFICATION_DIR) && frama-c -main _geec_prime_smt_slab_getspatype_isdevicemmio -lib-entry -wp -wp-rte -wp-model +cint+cast  -wp-prover alt-ergo,cvc3,z3 -cpp-extra-args=-nostdinc $(VFLAGS) gp_data.c.v.c gp_s2_setupmempgtbl.c.v.c
+	#cd $(XMHF_SLAB_VERIFICATION_DIR) && frama-c -main _geec_prime_slab_getspatype -lib-entry -wp -wp-rte -wp-model +cint+cast  -wp-prover alt-ergo,cvc3,z3 -cpp-extra-args=-nostdinc $(VFLAGS) gp_data.c.v.c gp_s2_setupmempgtbl.c.v.c
+	#cd $(XMHF_SLAB_VERIFICATION_DIR) && frama-c -main gp_slab_getspatype_for_slab -lib-entry -wp -wp-rte -wp-model +cint+cast  -wp-prover alt-ergo,cvc3,z3 -cpp-extra-args=-nostdinc $(VFLAGS) gp_data.c.v.c gp_s2_setupmempgtbl.c.v.c
+	#cd $(XMHF_SLAB_VERIFICATION_DIR) && frama-c -main gp_vhslab_mempgtl_getptflagsforspa_pae -lib-entry -wp -wp-rte -wp-model +cint+cast  -wp-prover alt-ergo,cvc3,z3 -cpp-extra-args=-nostdinc $(VFLAGS) gp_data.c.v.c gp_s2_setupmempgtbl.c.v.c
+	##cd $(XMHF_SLAB_VERIFICATION_DIR) && frama-c -val -cpp-extra-args=-nostdinc $(VFLAGS) ../verify/gs_vdriver.c *.c libxmhfhw/*.v.c $(V_XMHFHWM_MODULES)
