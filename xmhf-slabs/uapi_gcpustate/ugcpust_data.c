@@ -43,3 +43,15 @@
  *
  * @XMHF_LICENSE_HEADER_END@
  */
+
+#include <xmhf.h>
+#include <xmhf-debug.h>
+
+#include <xmhfgeec.h>
+
+#include <xc.h>
+#include <uapi_gcpustate.h>
+
+__attribute__((section(".data"))) x86regs_t guestgprs[MAX_PLATFORM_CPUS];
+
+__attribute__((section(".data"))) u64 guestmsrs[GCPUSTATE_MSR_MAXCOUNT];
