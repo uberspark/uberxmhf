@@ -149,18 +149,6 @@ void _slabmempgtbl_initmempgtbl_ept4K(u32 slabid){
 	}
 
 
-#if 0
-
-
-
-    //pdt
-	for(i=0; i < PAE_PTRS_PER_PDPT; i++){
-		for(j=0; j < PAE_PTRS_PER_PDT; j++){
-			_slabmempgtbl_lvl2t[slabid][i][j] =
-                ((u64)&_slabmempgtbl_lvl1t[slabid][i][j] | 0x7 );
-		}
-	}
-#endif
 }
 
 
