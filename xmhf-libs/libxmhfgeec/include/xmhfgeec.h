@@ -211,6 +211,7 @@ extern __attribute__ ((section(".stack"))) __attribute__ ((aligned(4096))) u8 _s
 extern __attribute__ ((section(".stackhdr"))) u32 _slab_tos[MAX_PLATFORM_CPUS];
 
 
+extern __attribute__((section(".data"))) __attribute__((aligned(4096))) xmhfgeec_slab_info_t xmhfgeec_slab_info_table[XMHFGEEC_TOTAL_SLABS];
 
 #endif //__ASSEMBLY__
 
