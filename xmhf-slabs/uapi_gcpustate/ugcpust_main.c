@@ -76,7 +76,7 @@ void slab_main(slab_params_t *sp){
         break;
 
         case XMHF_HIC_UAPI_CPUSTATE_VMWRITE:{
-            ugcpust_vmwrite((xmhf_uapi_gcpustate_vmrw_params_t *)sp->in_out_params);
+            ugcpust_vmwrite(sp->src_slabid, (xmhf_uapi_gcpustate_vmrw_params_t *)sp->in_out_params);
         }
         break;
 

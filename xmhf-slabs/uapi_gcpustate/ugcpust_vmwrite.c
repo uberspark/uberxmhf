@@ -59,26 +59,26 @@
 #include <uapi_gcpustate.h>
 
 
-/*
-static bool _uapicheck_encoding_used_by_hic(u64 encoding){
-    if( (u32)encoding & 0xFFFF0000 )
-        return false;
-
-    if( (u16)encoding == 0x0000 || (u16)encoding == 0x4000 || (u16)encoding == 0x4002 || (u16)encoding == 0x401E )
-        return true;
-
-    if( ((u16)encoding & 0xFF00) == 0x20 ||
-       ((u16)encoding & 0xFF00) == 0x6C ||
-       ((u16)encoding & 0xFF00) == 0x4C ||
-       ((u16)encoding & 0xFF00) == 0x2C ||
-       ((u16)encoding & 0xFF00) == 0x0C)
-        return true;
-
-    return false;
-}*/
 
 
-
-void ugcpust_vmwrite(xmhf_uapi_gcpustate_vmrw_params_t *vmrwp){
-	CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite, vmrwp->encoding, vmrwp->value);
+void ugcpust_vmwrite(u32 srcslabid, xmhf_uapi_gcpustate_vmrw_params_t *vmrwp){
+	if(srcslabid == XMHFGEEC_SLAB_GEEC_PRIME){
+		CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite, vmrwp->encoding, vmrwp->value);
+	}else{
+		if( 	!((u16)vmrwp->encoding == 0x0000 ||
+			 (u16)vmrwp->encoding == 0x4000 ||
+			 (u16)vmrwp->encoding == 0x4002 ||
+			 (u16)vmrwp->encoding == 0x401E ||
+			 ((u16)vmrwp->encoding & 0xFF00) == 0x20 ||
+			 ((u16)vmrwp->encoding & 0xFF00) == 0x6C ||
+			 ((u16)vmrwp->encoding & 0xFF00) == 0x4C ||
+			 ((u16)vmrwp->encoding & 0xFF00) == 0x2C ||
+			 ((u16)vmrwp->encoding & 0xFF00) == 0x0C
+			)
+		){
+			CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite, vmrwp->encoding, vmrwp->value);
+		}else{
+			//disallowed, do nothing
+		}
+	}
 }
