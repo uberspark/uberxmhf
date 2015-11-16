@@ -115,20 +115,20 @@ void _slabmempgtbl_setentryforpaddr(xmhfgeec_uapi_slabmempgtbl_setentryforpaddr_
 
 void _slabmempgtbl_setentryforpaddr(xmhfgeec_uapi_slabmempgtbl_setentryforpaddr_params_t *setentryforpaddrp){
 
-    if( (setentryforpaddrp->dst_slabid < XMHFGEEC_TOTAL_SLABS)){
-	if(pae_get_pdpt_index(setentryforpaddrp->gpa) < PAE_PTRS_PER_PDPT && pae_get_pdt_index(setentryforpaddrp->gpa) < PAE_PTRS_PER_PDT && pae_get_pt_index(setentryforpaddrp->gpa) < PAE_PTRS_PER_PT){
-
-	    if( (setentryforpaddrp->dst_slabid >= XMHFGEEC_UGSLAB_BASE_IDX && setentryforpaddrp->dst_slabid <= XMHFGEEC_UGSLAB_MAX_IDX) &&
+    if( (setentryforpaddrp->dst_slabid < XMHFGEEC_TOTAL_SLABS) &&
+	(pae_get_pdpt_index(setentryforpaddrp->gpa) < PAE_PTRS_PER_PDPT && pae_get_pdt_index(setentryforpaddrp->gpa) < PAE_PTRS_PER_PDT && pae_get_pt_index(setentryforpaddrp->gpa) < PAE_PTRS_PER_PT) &&
+	    ( (setentryforpaddrp->dst_slabid >= XMHFGEEC_UGSLAB_BASE_IDX && setentryforpaddrp->dst_slabid <= XMHFGEEC_UGSLAB_MAX_IDX) &&
 		(xmhfgeec_slab_info_table[setentryforpaddrp->dst_slabid].slabtype == XMHFGEEC_SLABTYPE_uVT_PROG_GUEST ||
 		 xmhfgeec_slab_info_table[setentryforpaddrp->dst_slabid].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG_GUEST ||
 		 xmhfgeec_slab_info_table[setentryforpaddrp->dst_slabid].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG_RICHGUEST)
-		){
+		)
+      ) {
+			//@ghost setentry_fullentry = (setentryforpaddrp->entry & (~0x80ULL));
 			_slabmempgtbl_lvl1t[(setentryforpaddrp->dst_slabid - XMHFGEEC_UGSLAB_BASE_IDX)][pae_get_pdpt_index(setentryforpaddrp->gpa)][pae_get_pdt_index(setentryforpaddrp->gpa)][pae_get_pt_index(setentryforpaddrp->gpa)] =
-				setentryforpaddrp->entry & (~0x80);
+				(setentryforpaddrp->entry & (~0x80ULL));
+				//setentryforpaddrp->entry;
 
 
-	    }
-	}
     }else{
 	//nothing
     }
