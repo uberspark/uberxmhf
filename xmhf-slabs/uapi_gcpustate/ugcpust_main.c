@@ -59,53 +59,25 @@
 
 
 /////
+/*@
+	requires \valid(sp);
+	//assigns sp->in_out_params[0..15];
+@*/
 void slab_main(slab_params_t *sp){
-    //xmhf_uapi_params_hdr_t *uapiphdr = (xmhf_uapi_params_hdr_t *)sp->in_out_params;
 
-#if 0
-    _XDPRINTF_("UAPI_GCPUSTATE: esp=%x, src=%u, dst=%u\n",
-               CASM_FUNCCALL(read_esp, CASM_NOPARAM), sp->src_slabid, sp->dst_slabid);
-    HALT();
-#endif // 0
-
-    switch(sp->dst_uapifn){
-        case XMHF_HIC_UAPI_CPUSTATE_VMREAD:{
+	if( sp->dst_uapifn == XMHF_HIC_UAPI_CPUSTATE_VMREAD){
             ugcpust_vmread((xmhf_uapi_gcpustate_vmrw_params_t *)sp->in_out_params);
-        }
-        break;
-
-        case XMHF_HIC_UAPI_CPUSTATE_VMWRITE:{
+	}else if( sp->dst_uapifn == XMHF_HIC_UAPI_CPUSTATE_VMWRITE && (u16)sp->src_slabid < XMHFGEEC_TOTAL_SLABS ){
             ugcpust_vmwrite(sp->src_slabid, (xmhf_uapi_gcpustate_vmrw_params_t *)sp->in_out_params);
-        }
-        break;
-
-        case XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSREAD:{
+        }else if( sp->dst_uapifn == XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSREAD){
             ugcpust_gprsread((u16)sp->cpuid, (xmhf_uapi_gcpustate_gprs_params_t *)sp->in_out_params);
-        }
-        break;
-
-        case XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSWRITE:{
+        }else if( sp->dst_uapifn == XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSWRITE){
             ugcpust_gprswrite((u16)sp->cpuid, (xmhf_uapi_gcpustate_gprs_params_t *)sp->in_out_params);
-        }
-        break;
-
-        case XMHFGEEC_UAPI_CPUSTATE_GUESTMSRREAD:{
+        }else if( sp->dst_uapifn == XMHFGEEC_UAPI_CPUSTATE_GUESTMSRREAD){
             ugcpust_msrread((xmhf_uapi_gcpustate_msrrw_params_t *)sp->in_out_params);
-        }
-        break;
-
-        case XMHFGEEC_UAPI_CPUSTATE_GUESTMSRWRITE:{
+        }else if (sp->dst_uapifn == XMHFGEEC_UAPI_CPUSTATE_GUESTMSRWRITE){
             ugcpust_msrwrite((xmhf_uapi_gcpustate_msrrw_params_t *)sp->in_out_params);
-        }
-        break;
-
-
-        default:
-            _XDPRINTF_("UAPI_GCPUSTATE[%u]: Unknown uAPI function %x. Halting!\n",
-                    (u16)sp->cpuid, sp->dst_uapifn);
-            HALT();
-            return;
-    }
-
-
+        }else{
+            //_XDPRINTF_("UAPI_GCPUSTATE[%u]: Unknown uAPI function %x. Halting!\n", (u16)sp->cpuid, sp->dst_uapifn);
+	}
 }
