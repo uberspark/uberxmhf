@@ -102,9 +102,8 @@ void _slabmempgtbl_getentryforpaddr(xmhfgeec_uapi_slabmempgtbl_getentryforpaddr_
 
 
 /*@
-  assigns \nothing;
+	requires \valid(initmempgtblp);
 @*/
-//void _slabmempgtbl_initmempgtbl(u32 slabid);
 void _slabmempgtbl_initmempgtbl(xmhfgeec_uapi_slabmempgtbl_initmempgtbl_params_t *initmempgtblp);
 
 
