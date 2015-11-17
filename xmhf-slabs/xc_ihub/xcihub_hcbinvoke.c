@@ -50,12 +50,6 @@
 
 #include <xc.h>
 #include <xc_ihub.h>
-//#include <uapi_gcpustate.h>
-//#include <uapi_hcpustate.h>
-//#include <xh_hyperdep.h>
-//#include <xh_syscalllog.h>
-//#include <xh_ssteptrace.h>
-//#include <xh_approvexec.h>
 
 /*
  * slab code
@@ -64,27 +58,26 @@
  */
 
 
-//#if 0
 /*@
 	requires 0 <= hcbentry < HYPAPP_INFO_TABLE_NUMENTRIES;
         requires 0 <= cbtype <= XC_HYPAPPCB_MAXMASK;
 
 	assigns \nothing;
-	//behavior yes_hypapp_cb:
-	ensures (_xcihub_hypapp_info_table[hcbentry].cbmask & XC_HYPAPPCB_MASK(cbtype)) ==>
-		(\result == XC_HYPAPPCB_CHAIN || \result == XC_HYPAPPCB_NOCHAIN);
 
-	//behavior no_hypapp_cb:
-	ensures !(_xcihub_hypapp_info_table[hcbentry].cbmask & XC_HYPAPPCB_MASK(cbtype)) ==>
-		(\result == XC_HYPAPPCB_CHAIN);
+	behavior yes_hypapp_cb:
+		assumes (_xcihub_hypapp_info_table[hcbentry].cbmask & XC_HYPAPPCB_MASK(cbtype));
+		ensures (\result == XC_HYPAPPCB_CHAIN || \result == XC_HYPAPPCB_NOCHAIN);
 
-	//complete behaviors;
-	//disjoint behaviors;
+	behavior no_hypapp_cb:
+		assumes !(_xcihub_hypapp_info_table[hcbentry].cbmask & XC_HYPAPPCB_MASK(cbtype));
+		ensures (\result == XC_HYPAPPCB_CHAIN);
+
+	complete behaviors;
+	disjoint behaviors;
 @*/
 static u32 xc_hcbinvoke_helper(u32 hcbentry, u32 cbtype, u32 src_slabid, u32 cpuid, u32 guest_slab_index, u32 cbqual){
 	u32 status = XC_HYPAPPCB_CHAIN;
 	slab_params_t spl;
-	//xc_hypappcb_params_t *hcbp = (xc_hypappcb_params_t *)&spl.in_out_params[0];
 
 	spl.src_slabid = src_slabid;
 	spl.cpuid = cpuid;
@@ -99,37 +92,42 @@ static u32 xc_hcbinvoke_helper(u32 hcbentry, u32 cbtype, u32 src_slabid, u32 cpu
             if(spl.in_out_params[3] == XC_HYPAPPCB_NOCHAIN){
 		status = XC_HYPAPPCB_NOCHAIN;
             }
-	    ////@assert status == XC_HYPAPPCB_CHAIN || status == XC_HYPAPPCB_NOCHAIN;
 	    return status;
         }else{
-	    ////@assert status == XC_HYPAPPCB_CHAIN;
             return status;
         }
-
 }
-//#endif
 
 
 
 /*@
 	requires 0 <= cbtype <= XC_HYPAPPCB_MAXMASK;
+	assigns \nothing;
+	ensures \result == XC_HYPAPPCB_CHAIN || \result == XC_HYPAPPCB_NOCHAIN;
 @*/
 u32 xc_hcbinvoke(u32 src_slabid, u32 cpuid, u32 cbtype, u32 cbqual, u32 guest_slab_index){
     u32 status = XC_HYPAPPCB_CHAIN;
+    bool nochain = false;
     u32 i;
 	/*@
 		loop invariant a1: 0 <= i <= HYPAPP_INFO_TABLE_NUMENTRIES;
 		loop assigns i;
 		loop assigns status;
+		loop assigns nochain;
 		loop variant HYPAPP_INFO_TABLE_NUMENTRIES - i;
 	@*/
     for(i=0; i < HYPAPP_INFO_TABLE_NUMENTRIES; i++){
         status = xc_hcbinvoke_helper(i, cbtype, src_slabid, cpuid, guest_slab_index, cbqual);
-	if(status == XC_HYPAPPCB_NOCHAIN)
+	if(status == XC_HYPAPPCB_NOCHAIN){
+		nochain = true;
 		break;
+	}
     }
 
-    return status;
+	if(nochain)
+		return XC_HYPAPPCB_NOCHAIN;
+	else
+		return XC_HYPAPPCB_CHAIN;
 }
 
 
