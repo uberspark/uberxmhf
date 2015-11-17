@@ -63,6 +63,12 @@
  * author: amit vasudevan (amitvasudevan@acm.org)
  */
 
+
+/*@
+	requires 0 <= src_slabid < XMHFGEEC_TOTAL_UGSLABS;
+	ensures \result == XC_HYPAPPCB_CHAIN;
+@*/
+
 u32 xc_hcbinvoke(u32 src_slabid, u32 cpuid, u32 cbtype, u32 cbqual, u32 guest_slab_index){
     u32 status = XC_HYPAPPCB_CHAIN;
     u32 i;
@@ -76,7 +82,7 @@ u32 xc_hcbinvoke(u32 src_slabid, u32 cpuid, u32 cbtype, u32 cbqual, u32 guest_sl
     hcbp->cbqual=cbqual;
     hcbp->guest_slab_index=guest_slab_index;
 
-    for(i=0; i < HYPAPP_INFO_TABLE_NUMENTRIES; i++){
+/*    for(i=0; i < HYPAPP_INFO_TABLE_NUMENTRIES; i++){
         if(_xcihub_hypapp_info_table[i].cbmask & XC_HYPAPPCB_MASK(cbtype)){
             spl.dst_slabid = _xcihub_hypapp_info_table[i].xmhfhic_slab_index;
             XMHF_SLAB_CALLNEW(&spl);
@@ -86,6 +92,7 @@ u32 xc_hcbinvoke(u32 src_slabid, u32 cpuid, u32 cbtype, u32 cbqual, u32 guest_sl
             }
         }
     }
+*/
 
     return status;
 }
