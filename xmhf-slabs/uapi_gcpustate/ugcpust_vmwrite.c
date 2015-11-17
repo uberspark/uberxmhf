@@ -58,11 +58,52 @@
 #include <uapi_gcpustate.h>
 
 
+//@ghost bool ugcpust_vmwrite_callvmwrite = false;
+/*@
+	requires \valid(vmrwp);
+	requires 0 <= srcslabid < XMHFGEEC_TOTAL_SLABS;
+
+	behavior fromprime:
+		assumes (srcslabid == XMHFGEEC_SLAB_GEEC_PRIME);
+		ensures (ugcpust_vmwrite_callvmwrite == true);
 
 
+	behavior notfromprime_valid:
+		assumes !(srcslabid == XMHFGEEC_SLAB_GEEC_PRIME);
+		assumes !((u16)vmrwp->encoding == 0x0000 ||
+			 (u16)vmrwp->encoding == 0x4000 ||
+			 (u16)vmrwp->encoding == 0x4002 ||
+			 (u16)vmrwp->encoding == 0x401E ||
+			 ((u16)vmrwp->encoding & 0xFF00) == 0x20 ||
+			 ((u16)vmrwp->encoding & 0xFF00) == 0x6C ||
+			 ((u16)vmrwp->encoding & 0xFF00) == 0x4C ||
+			 ((u16)vmrwp->encoding & 0xFF00) == 0x2C ||
+			 ((u16)vmrwp->encoding & 0xFF00) == 0x0C
+			);
+		ensures (ugcpust_vmwrite_callvmwrite == true);
+
+	behavior notfromprime_invalid:
+		assumes !(srcslabid == XMHFGEEC_SLAB_GEEC_PRIME);
+		assumes ((u16)vmrwp->encoding == 0x0000 ||
+			 (u16)vmrwp->encoding == 0x4000 ||
+			 (u16)vmrwp->encoding == 0x4002 ||
+			 (u16)vmrwp->encoding == 0x401E ||
+			 ((u16)vmrwp->encoding & 0xFF00) == 0x20 ||
+			 ((u16)vmrwp->encoding & 0xFF00) == 0x6C ||
+			 ((u16)vmrwp->encoding & 0xFF00) == 0x4C ||
+			 ((u16)vmrwp->encoding & 0xFF00) == 0x2C ||
+			 ((u16)vmrwp->encoding & 0xFF00) == 0x0C
+			);
+		ensures (ugcpust_vmwrite_callvmwrite == false);
+
+	complete behaviors;
+	disjoint behaviors;
+@*/
 void ugcpust_vmwrite(u32 srcslabid, xmhf_uapi_gcpustate_vmrw_params_t *vmrwp){
 	if(srcslabid == XMHFGEEC_SLAB_GEEC_PRIME){
 		CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite, vmrwp->encoding, vmrwp->value);
+		//@ghost ugcpust_vmwrite_callvmwrite = true;
+
 	}else{
 		if( 	!((u16)vmrwp->encoding == 0x0000 ||
 			 (u16)vmrwp->encoding == 0x4000 ||
@@ -76,8 +117,11 @@ void ugcpust_vmwrite(u32 srcslabid, xmhf_uapi_gcpustate_vmrw_params_t *vmrwp){
 			)
 		){
 			CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite, vmrwp->encoding, vmrwp->value);
+			//@ghost ugcpust_vmwrite_callvmwrite = true;
+
 		}else{
 			//disallowed, do nothing
+			//@ghost ugcpust_vmwrite_callvmwrite = false;
 		}
 	}
 }
