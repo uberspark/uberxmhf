@@ -66,11 +66,12 @@
 
 /*@
 	requires 0 <= src_slabid < XMHFGEEC_TOTAL_UGSLABS;
-	ensures \result == XC_HYPAPPCB_CHAIN;
+	//ensures \result == XC_HYPAPPCB_CHAIN || \result == XC_HYPAPPCB_NOCHAIN;
 @*/
 
 u32 xc_hcbinvoke(u32 src_slabid, u32 cpuid, u32 cbtype, u32 cbqual, u32 guest_slab_index){
     u32 status = XC_HYPAPPCB_CHAIN;
+    bool nochain = false;
     u32 i;
     slab_params_t spl;
     xc_hypappcb_params_t *hcbp = (xc_hypappcb_params_t *)&spl.in_out_params[0];
@@ -82,17 +83,26 @@ u32 xc_hcbinvoke(u32 src_slabid, u32 cpuid, u32 cbtype, u32 cbqual, u32 guest_sl
     hcbp->cbqual=cbqual;
     hcbp->guest_slab_index=guest_slab_index;
 
-/*    for(i=0; i < HYPAPP_INFO_TABLE_NUMENTRIES; i++){
-        if(_xcihub_hypapp_info_table[i].cbmask & XC_HYPAPPCB_MASK(cbtype)){
+
+	/*@
+		loop invariant a1: 0 <= i <= HYPAPP_INFO_TABLE_NUMENTRIES;
+		loop assigns i;
+		loop assigns status;
+		loop assigns spl.dst_slabid;
+		loop assigns nochain;
+		loop variant HYPAPP_INFO_TABLE_NUMENTRIES - i;
+	@*/
+    for(i=0; i < HYPAPP_INFO_TABLE_NUMENTRIES; i++){
+        if(_xcihub_hypapp_info_table[i].cbmask & XC_HYPAPPCB_MASK(cbtype) && !nochain){
             spl.dst_slabid = _xcihub_hypapp_info_table[i].xmhfhic_slab_index;
             XMHF_SLAB_CALLNEW(&spl);
             if(hcbp->cbresult == XC_HYPAPPCB_NOCHAIN){
-                status = XC_HYPAPPCB_NOCHAIN;
-                break;
+		status = XC_HYPAPPCB_NOCHAIN;
+		nochain = true;
             }
         }
     }
-*/
+
 
     return status;
 }
