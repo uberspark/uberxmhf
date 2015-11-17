@@ -68,7 +68,14 @@ typedef struct {
 }__attribute__((packed)) xmhf_uapi_hcpustate_msr_params_t;
 
 
+/*@
+	requires \valid(msrp);
+@*/
 void uhcpust_rdmsr(xmhf_uapi_hcpustate_msr_params_t *msrp);
+
+/*@
+	requires \valid(msrp);
+@*/
 void uhcpust_wrmsr(xmhf_uapi_hcpustate_msr_params_t *msrp);
 
 

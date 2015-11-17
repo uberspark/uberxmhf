@@ -59,16 +59,32 @@
 
 
 /////
+//@ ghost bool uhcpust_methodcall_rdmsr = false;
+//@ ghost bool uhcpust_methodcall_wrmsr = false;
+//@ ghost bool uhcpust_methodcall_invalid = false;
+/*@
+	requires \valid(sp);
+	ensures ( sp->dst_uapifn == XMHF_HIC_UAPI_CPUSTATE_WRMSR) ==> (uhcpust_methodcall_wrmsr == true);
+	ensures ( sp->dst_uapifn == XMHF_HIC_UAPI_CPUSTATE_RDMSR ) ==> (uhcpust_methodcall_rdmsr == true);
+	ensures !(
+		( sp->dst_uapifn == XMHF_HIC_UAPI_CPUSTATE_WRMSR) ||
+		( sp->dst_uapifn == XMHF_HIC_UAPI_CPUSTATE_RDMSR)
+	) ==> (uhcpust_methodcall_invalid == true);
+@*/
+
 void slab_main(slab_params_t *sp){
 
 	if(sp->dst_uapifn == XMHF_HIC_UAPI_CPUSTATE_WRMSR){
-	    uhcpust_wrmsr((xmhf_uapi_hcpustate_msr_params_t *)sp->in_out_params);
+		uhcpust_wrmsr((xmhf_uapi_hcpustate_msr_params_t *)sp->in_out_params);
+		//@ghost uhcpust_methodcall_wrmsr = true;
 
 	}else if(sp->dst_uapifn == XMHF_HIC_UAPI_CPUSTATE_RDMSR){
-            uhcpust_rdmsr((xmhf_uapi_hcpustate_msr_params_t *)sp->in_out_params);
+		uhcpust_rdmsr((xmhf_uapi_hcpustate_msr_params_t *)sp->in_out_params);
+		//@ghost uhcpust_methodcall_rdmsr = true;
 
-        }else {
-            //_XDPRINTF_("UAPI_HCPUSTATE[%u]: Unknown uAPI function %x. Halting!\n",(u16)sp->cpuid, sp->dst_uapifn);
+	}else {
+		//_XDPRINTF_("UAPI_HCPUSTATE[%u]: Unknown uAPI function %x. Halting!\n",(u16)sp->cpuid, sp->dst_uapifn);
+		//@ghost uhcpust_methodcall_invalid = true;
 
-        }
+	}
 }
