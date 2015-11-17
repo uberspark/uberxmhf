@@ -58,6 +58,8 @@ u32 xc_hcbinvoke(u32 src_slabid, u32 cpuid, u32 cbtype, u32 cbqual, u32 guest_sl
 void xcihub_icptvmcall(u32 cpuid);
 void xcihub_icptcpuid(u32 cpuid);
 void xcihub_icptwrmsr(u32 cpuid);
+void xcihub_icptrdmsr(u32 cpuid);
+
 
 
 
