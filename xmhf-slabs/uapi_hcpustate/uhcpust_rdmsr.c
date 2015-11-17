@@ -44,42 +44,27 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-
 /*
+ * host CPU state uAPI
  *
- *  host cpu state uAPI
- *
- *  author: amit vasudevan (amitvasudevan@acm.org)
+ * author: amit vasudevan (amitvasudevan@acm.org)
  */
 
-#ifndef __UAPI_HCPUSTATE_H__
-#define __UAPI_HCPUSTATE_H__
+#include <xmhf.h>
+#include <xmhf-debug.h>
 
-#define XMHF_HIC_UAPI_CPUSTATE_WRMSR            0
-#define XMHF_HIC_UAPI_CPUSTATE_RDMSR            1
+#include <xmhfgeec.h>
 
+#include <uapi_hcpustate.h>
 
-#ifndef __ASSEMBLY__
-
-
-typedef struct {
-    u32 msr;
-    u64 value;
-}__attribute__((packed)) xmhf_uapi_hcpustate_msr_params_t;
-
-
+//@ghost u64 rdmsr_val;
 /*@
 	requires \valid(msrp);
+	assigns msrp->value;
+	assigns rdmsr_val;
+	ensures (msrp->value == rdmsr_val);
 @*/
-void uhcpust_rdmsr(xmhf_uapi_hcpustate_msr_params_t *msrp);
-
-/*@
-	requires \valid(msrp);
-	requires 0 <= srcslabid < XMHFGEEC_TOTAL_SLABS;
-@*/
-void uhcpust_wrmsr(u32 srcslabid, xmhf_uapi_hcpustate_msr_params_t *msrp);
-
-
-#endif	//__ASSEMBLY__
-
-#endif //__UAPI_HCPUSTATE_H__
+void uhcpust_rdmsr(xmhf_uapi_hcpustate_msr_params_t *msrp){
+	//@ghost rdmsr_val = CASM_FUNCCALL(rdmsr64, msrp->msr);
+	msrp->value = CASM_FUNCCALL(rdmsr64, msrp->msr);
+}
