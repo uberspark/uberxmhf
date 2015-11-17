@@ -85,6 +85,7 @@
 
 @*/
 void slab_main(slab_params_t *sp){
+	CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite, 0x4000, 0);
 
 	if( sp->dst_uapifn == XMHF_HIC_UAPI_CPUSTATE_VMREAD){
 		ugcpust_vmread((xmhf_uapi_gcpustate_vmrw_params_t *)sp->in_out_params);

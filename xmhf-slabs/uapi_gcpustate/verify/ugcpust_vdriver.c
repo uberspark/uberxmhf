@@ -92,8 +92,7 @@ slab_params_t test_sp;
 
 
 void hwm_vdriver_cpu_vmwrite(u32 encoding, u32 value){
-	//@assert 1;
-
+	//@assert !(test_sp.src_slabid == XMHFGEEC_SLAB_GEEC_PRIME) && !((u16)encoding == 0x4000);
 }
 
 
@@ -103,7 +102,7 @@ void main(void){
 	xmhfhwm_cpu_gprs_eip = check_eip;
 	check_esp = xmhfhwm_cpu_gprs_esp; // pointing to top-of-stack
 
-	test_sp.src_slabid = framac_nondetu32interval(0, XMHFGEEC_TOTAL_SLABS);
+	test_sp.src_slabid = framac_nondetu32interval(0, XMHFGEEC_TOTAL_SLABS-1);
 	test_sp.dst_uapifn = framac_nondetu32();
 	//execute harness: TODO
 	slab_main(&test_sp);
