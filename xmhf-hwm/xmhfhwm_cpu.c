@@ -622,6 +622,7 @@ void _impl_xmhfhwm_cpu_insn_vmxon_mesp(int index){
 
 void _impl_xmhfhwm_cpu_insn_vmwrite_eax_ecx(void){
 	//TODO: vmwrite emulation
+        hwm_vdriver_cpu_vmwrite(xmhfhwm_cpu_gprs_ecx, xmhfhwm_cpu_gprs_eax);
 }
 
 void _impl_xmhfhwm_cpu_insn_vmread_ecx_eax(void){
