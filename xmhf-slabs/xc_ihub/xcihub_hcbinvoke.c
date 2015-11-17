@@ -65,19 +65,20 @@
 
 
 
-//returns returns CHAIN or NOCHAIN
-//behavior
-//if(_xcihub_hypapp_info_table[i].cbmask & XC_HYPAPPCB_MASK(cbtype))
-//ensures called
-//ensures result == CHAIN or NOCHAIN
-//if !(_xcihub_hypapp_info_table[i].cbmask & XC_HYPAPPCB_MASK(cbtype))
-//ensures not-called
-//ensures result == CHAIN
-
 /*@
 	requires 0 <= hcbentry < HYPAPP_INFO_TABLE_NUMENTRIES;
         requires 0 <= cbtype <= XC_HYPAPPCB_MAXMASK;
 
+	behavior yes_hypapp_cb:
+		assumes (_xcihub_hypapp_info_table[hcbentry].cbmask & XC_HYPAPPCB_MASK(cbtype));
+		ensures \result == XC_HYPAPPCB_CHAIN || \result == XC_HYPAPPCB_NOCHAIN;
+
+	behavior no_hypapp_cb:
+		assumes !(_xcihub_hypapp_info_table[hcbentry].cbmask & XC_HYPAPPCB_MASK(cbtype));
+		ensures \result == XC_HYPAPPCB_CHAIN;
+
+	complete behaviors;
+	disjoint behaviors;
 @*/
 static u32 xc_hcbinvoke_helper(u32 hcbentry, u32 cbtype, u32 src_slabid, u32 cpuid, u32 guest_slab_index, u32 cbqual){
 	u32 status = XC_HYPAPPCB_CHAIN;
