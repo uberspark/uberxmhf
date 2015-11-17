@@ -2290,7 +2290,7 @@ extern void xmhfhwm_vdriver_sentinel(void);
 extern void xmhfhwm_vdriver_slabep(void);
 extern void xmhfhwm_vdriver_vhslabretaddr(void);
 extern void xmhfhwm_vdriver_uhslabretaddr(void);
-
+extern void hwm_vdriver_cpu_vmwrite(u32 encoding, u32 value);
 
 //////
 // cpu model variables and instruction implementations

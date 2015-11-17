@@ -91,14 +91,22 @@ u32 check_esp, check_eip = CASM_RET_EIP;
 slab_params_t test_sp;
 
 
+void hwm_vdriver_cpu_vmwrite(u32 encoding, u32 value){
+	//@assert 1;
+
+}
+
+
 void main(void){
 	//populate hardware model stack and program counter
 	xmhfhwm_cpu_gprs_esp = _slab_tos[cpuid];
 	xmhfhwm_cpu_gprs_eip = check_eip;
 	check_esp = xmhfhwm_cpu_gprs_esp; // pointing to top-of-stack
 
+	test_sp.src_slabid = framac_nondetu32interval(0, XMHFGEEC_TOTAL_SLABS);
+	test_sp.dst_uapifn = framac_nondetu32();
 	//execute harness: TODO
-
+	slab_main(&test_sp);
 
 
 	//@assert xmhfhwm_cpu_gprs_esp == check_esp;
