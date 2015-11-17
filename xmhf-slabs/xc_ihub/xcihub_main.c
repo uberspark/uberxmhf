@@ -71,6 +71,7 @@
 
 void slab_main(slab_params_t *sp){
 	u32 info_vmexit_reason;
+	u32 hcb_status;
 	slab_params_t spl;
 	xmhf_uapi_gcpustate_vmrw_params_t *gcpustate_vmrwp = (xmhf_uapi_gcpustate_vmrw_params_t *)spl.in_out_params;
 	xmhf_uapi_gcpustate_gprs_params_t *gcpustate_gprs = (xmhf_uapi_gcpustate_gprs_params_t *)spl.in_out_params;
@@ -97,97 +98,64 @@ void slab_main(slab_params_t *sp){
 	XMHF_SLAB_CALLNEW(&spl);
 	info_vmexit_reason = gcpustate_vmrwp->value;
 
-	switch(info_vmexit_reason){
-
-		//hypercall
-		case VMX_VMEXIT_VMCALL:{
-		    if(xc_hcbinvoke(XMHFGEEC_SLAB_XC_IHUB, sp->cpuid, XC_HYPAPPCB_HYPERCALL, 0, sp->src_slabid) == XC_HYPAPPCB_CHAIN){
-			xcihub_icptvmcall((u16)sp->cpuid);
-			}
-		}
-		break;
+	if(info_vmexit_reason == VMX_VMEXIT_VMCALL){
+		hcb_status = xc_hcbinvoke(XMHFGEEC_SLAB_XC_IHUB, sp->cpuid, XC_HYPAPPCB_HYPERCALL, 0, sp->src_slabid);
+		if(hcb_status == XC_HYPAPPCB_CHAIN)	xcihub_icptvmcall((u16)sp->cpuid);
 
 
-		//memory fault
-		case VMX_VMEXIT_EPT_VIOLATION:{
-		    xc_hcbinvoke(XMHFGEEC_SLAB_XC_IHUB, sp->cpuid, XC_HYPAPPCB_MEMORYFAULT, 0, sp->src_slabid);
-		}
-		break;
+	}else if (info_vmexit_reason == VMX_VMEXIT_EPT_VIOLATION){
+		hcb_status = xc_hcbinvoke(XMHFGEEC_SLAB_XC_IHUB, sp->cpuid, XC_HYPAPPCB_MEMORYFAULT, 0, sp->src_slabid);
+		//if(hcb_status == XC_HYPAPPCB_CHAIN)	xcihub_halt((u16)sp->cpuid, info_vmexit_reason);
 
 
-		//shutdown
-		case VMX_VMEXIT_INIT:
-		case VMX_VMEXIT_TASKSWITCH:
-		    xc_hcbinvoke(XMHFGEEC_SLAB_XC_IHUB, sp->cpuid, XC_HYPAPPCB_SHUTDOWN, 0, sp->src_slabid);
-		break;
+	}else if (info_vmexit_reason == VMX_VMEXIT_INIT || info_vmexit_reason == VMX_VMEXIT_TASKSWITCH){
+		hcb_status = xc_hcbinvoke(XMHFGEEC_SLAB_XC_IHUB, sp->cpuid, XC_HYPAPPCB_SHUTDOWN, 0, sp->src_slabid);
+		//if(hcb_status == XC_HYPAPPCB_CHAIN)	xcihub_halt((u16)sp->cpuid, info_vmexit_reason);
+
+	//}else if (info_vmexit_reason == VMX_VMEXIT_IOIO){
 
 
-
-		////io traps
-		//case VMX_VMEXIT_IOIO:{
-		//}
-		//break;
-
-
-		//instruction traps
-		case VMX_VMEXIT_CPUID:{
-			if(xc_hcbinvoke(XMHFGEEC_SLAB_XC_IHUB, sp->cpuid, XC_HYPAPPCB_TRAP_INSTRUCTION,
-				    XC_HYPAPPCB_TRAP_INSTRUCTION_CPUID, sp->src_slabid) == XC_HYPAPPCB_CHAIN){
-				xcihub_icptcpuid((u16)sp->cpuid);
-			}
-		}
-		break;
+	}else if (info_vmexit_reason == VMX_VMEXIT_CPUID){
+		hcb_status = xc_hcbinvoke(XMHFGEEC_SLAB_XC_IHUB, sp->cpuid, XC_HYPAPPCB_TRAP_INSTRUCTION,
+			    XC_HYPAPPCB_TRAP_INSTRUCTION_CPUID, sp->src_slabid);
+		if(hcb_status == XC_HYPAPPCB_CHAIN) xcihub_icptcpuid((u16)sp->cpuid);
 
 
-		case VMX_VMEXIT_WRMSR:{
-		    if(xc_hcbinvoke(XMHFGEEC_SLAB_XC_IHUB, sp->cpuid,
-				    XC_HYPAPPCB_TRAP_INSTRUCTION, XC_HYPAPPCB_TRAP_INSTRUCTION_WRMSR, sp->src_slabid) == XC_HYPAPPCB_CHAIN)
-		    {
-				xcihub_icptwrmsr((u16)sp->cpuid);
-		    }
-		}
-		break;
+	}else if (info_vmexit_reason == VMX_VMEXIT_WRMSR){
+		hcb_status =  xc_hcbinvoke(XMHFGEEC_SLAB_XC_IHUB, sp->cpuid,
+			    XC_HYPAPPCB_TRAP_INSTRUCTION, XC_HYPAPPCB_TRAP_INSTRUCTION_WRMSR, sp->src_slabid);
+		if(hcb_status == XC_HYPAPPCB_CHAIN)	xcihub_icptwrmsr((u16)sp->cpuid);
 
 
-		case VMX_VMEXIT_RDMSR:{
-		    if(xc_hcbinvoke(XMHFGEEC_SLAB_XC_IHUB, sp->cpuid, XC_HYPAPPCB_TRAP_INSTRUCTION,
-				    XC_HYPAPPCB_TRAP_INSTRUCTION_RDMSR, sp->src_slabid) == XC_HYPAPPCB_CHAIN)
-		    {
-				xcihub_icptrdmsr((u16)sp->cpuid);
-		    }
-
-		}
-		break;
+	}else if (info_vmexit_reason == VMX_VMEXIT_RDMSR){
+		hcb_status = xc_hcbinvoke(XMHFGEEC_SLAB_XC_IHUB, sp->cpuid, XC_HYPAPPCB_TRAP_INSTRUCTION,
+			    XC_HYPAPPCB_TRAP_INSTRUCTION_RDMSR, sp->src_slabid);
+		if(hcb_status == XC_HYPAPPCB_CHAIN) xcihub_icptrdmsr((u16)sp->cpuid);
 
 
-		//exception traps
-		case VMX_VMEXIT_EXCEPTION:{
-		    xc_hcbinvoke(XMHFGEEC_SLAB_XC_IHUB, sp->cpuid, XC_HYPAPPCB_TRAP_EXCEPTION, 0, sp->src_slabid);
-		}
-		break;
+	}else if (info_vmexit_reason == VMX_VMEXIT_EXCEPTION){
+		hcb_status = xc_hcbinvoke(XMHFGEEC_SLAB_XC_IHUB, sp->cpuid, XC_HYPAPPCB_TRAP_EXCEPTION, 0, sp->src_slabid);
+		//if(hcb_status == XC_HYPAPPCB_CHAIN)	xcihub_halt((u16)sp->cpuid, info_vmexit_reason);
 
 
-		default:
-		    _XDPRINTF_("%s[%u]: unhandled intercept %x. Halting!\n",
-			    __func__, (u16)sp->cpuid, info_vmexit_reason);
+	}else {
+		  xcihub_halt((u16)sp->cpuid, info_vmexit_reason);
 
-		    HALT();
-    }
+	}
 
 
-
-    //load GPRs
-    spl.dst_slabid = XMHFGEEC_SLAB_UAPI_GCPUSTATE;
-    spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSREAD;
-    XMHF_SLAB_CALLNEW(&spl);
-    memcpy(&sp->in_out_params[0], &gcpustate_gprs->gprs, sizeof(x86regs_t));
-
-
-    _XDPRINTF_("XCIHUB[%u]: Resuming guest, esp=%08x\n", (u16)sp->cpuid, CASM_FUNCCALL(read_esp,CASM_NOPARAM));
+	//load GPRs
+	spl.dst_slabid = XMHFGEEC_SLAB_UAPI_GCPUSTATE;
+	spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSREAD;
+	XMHF_SLAB_CALLNEW(&spl);
+	memcpy(&sp->in_out_params[0], &gcpustate_gprs->gprs, sizeof(x86regs_t));
 
 
-    //resume guest slab
-    return;
+	_XDPRINTF_("XCIHUB[%u]: Resuming guest, esp=%08x\n", (u16)sp->cpuid, CASM_FUNCCALL(read_esp,CASM_NOPARAM));
+
+
+	//resume guest slab
+	return;
 }
 
 
