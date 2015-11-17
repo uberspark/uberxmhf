@@ -75,8 +75,9 @@ void uhcpust_rdmsr(xmhf_uapi_hcpustate_msr_params_t *msrp);
 
 /*@
 	requires \valid(msrp);
+	requires 0 <= srcslabid < XMHFGEEC_TOTAL_SLABS;
 @*/
-void uhcpust_wrmsr(xmhf_uapi_hcpustate_msr_params_t *msrp);
+void uhcpust_wrmsr(u32 srcslabid, xmhf_uapi_hcpustate_msr_params_t *msrp);
 
 
 #endif	//__ASSEMBLY__
