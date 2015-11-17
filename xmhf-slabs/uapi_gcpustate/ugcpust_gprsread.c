@@ -60,8 +60,6 @@
 
 
 void ugcpust_gprsread(u32 cpuid, xmhf_uapi_gcpustate_gprs_params_t *gprs){
-	CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite, VMCS_HOST_TR_SELECTOR, 0);
-
 	memcpy(&gprs->gprs, &guestgprs[cpuid], sizeof(x86regs_t));
 }
 
