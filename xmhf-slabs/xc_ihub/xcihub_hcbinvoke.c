@@ -64,6 +64,37 @@
  */
 
 
+
+//returns returns CHAIN or NOCHAIN
+//behavior
+//if(_xcihub_hypapp_info_table[i].cbmask & XC_HYPAPPCB_MASK(cbtype))
+//ensures called
+//ensures result == CHAIN or NOCHAIN
+//if !(_xcihub_hypapp_info_table[i].cbmask & XC_HYPAPPCB_MASK(cbtype))
+//ensures not-called
+//ensures result == CHAIN
+
+/*@
+	requires 0 <= hcbentry < HYPAPP_INFO_TABLE_NUMENTRIES;
+        requires 0 <= cbtype <= XC_HYPAPPCB_MAXMASK;
+
+@*/
+static u32 xc_hcbinvoke_helper(u32 hcbentry, u32 cbtype){
+	u32 status = XC_HYPAPPCB_CHAIN;
+
+        if(_xcihub_hypapp_info_table[hcbentry].cbmask & XC_HYPAPPCB_MASK(cbtype)){
+            /*spl.dst_slabid = _xcihub_hypapp_info_table[i].xmhfhic_slab_index;
+            XMHF_SLAB_CALLNEW(&spl);
+            if(hcbp->cbresult == XC_HYPAPPCB_NOCHAIN){
+		status = XC_HYPAPPCB_NOCHAIN;
+		nochain = true;
+            }*/
+        }
+
+        return status;
+}
+
+#if 0
 /*@
 	requires 0 <= src_slabid < XMHFGEEC_TOTAL_UGSLABS;
 	//ensures \result == XC_HYPAPPCB_CHAIN || \result == XC_HYPAPPCB_NOCHAIN;
@@ -106,4 +137,7 @@ u32 xc_hcbinvoke(u32 src_slabid, u32 cpuid, u32 cbtype, u32 cbqual, u32 guest_sl
 
     return status;
 }
+
+
+#endif
 
