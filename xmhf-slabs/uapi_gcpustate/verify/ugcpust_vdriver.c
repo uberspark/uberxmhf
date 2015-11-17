@@ -125,7 +125,35 @@ void hwm_vdriver_cpu_vmwrite(u32 encoding, u32 value){
 */
 
 	if(test_sp.src_slabid != XMHFGEEC_SLAB_GEEC_PRIME){
-		if(encoding == VMCS_HOST_TR_SELECTOR){
+		if(	( encoding == VMCS_CONTROL_VMX_SECCPU_BASED	||
+			 encoding == VMCS_CONTROL_IO_BITMAPA_ADDRESS_FULL	||
+			 encoding == VMCS_CONTROL_IO_BITMAPA_ADDRESS_HIGH	||
+			 encoding == VMCS_CONTROL_IO_BITMAPB_ADDRESS_FULL	||
+			 encoding == VMCS_CONTROL_IO_BITMAPB_ADDRESS_HIGH	||
+			 encoding == VMCS_CONTROL_EPT_POINTER_FULL	||
+			 encoding == VMCS_CONTROL_EPT_POINTER_HIGH	||
+			 encoding == VMCS_HOST_CR0			||
+			 encoding == VMCS_HOST_CR3			||
+			 encoding == VMCS_HOST_CR4			||
+			 encoding == VMCS_HOST_FS_BASE			||
+			 encoding == VMCS_HOST_GS_BASE			||
+			 encoding == VMCS_HOST_TR_BASE			||
+			 encoding == VMCS_HOST_GDTR_BASE			||
+			 encoding == VMCS_HOST_IDTR_BASE			||
+			 encoding == VMCS_HOST_SYSENTER_ESP		||
+			 encoding == VMCS_HOST_SYSENTER_EIP		||
+			 encoding == VMCS_HOST_RSP			||
+			 encoding == VMCS_HOST_RIP			||
+			 encoding == VMCS_HOST_SYSENTER_CS		||
+			 encoding == VMCS_HOST_IA32_EFER_FULL		||
+			 encoding == VMCS_HOST_ES_SELECTOR		||
+			 encoding == VMCS_HOST_CS_SELECTOR		||
+			 encoding == VMCS_HOST_SS_SELECTOR		||
+			 encoding == VMCS_HOST_DS_SELECTOR		||
+			 encoding == VMCS_HOST_FS_SELECTOR		||
+			 encoding == VMCS_HOST_GS_SELECTOR		||
+			 encoding == VMCS_HOST_TR_SELECTOR)
+		){
 			//@assert 0;
 		}
 	}
