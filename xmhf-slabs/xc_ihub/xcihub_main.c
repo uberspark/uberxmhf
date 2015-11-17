@@ -139,76 +139,14 @@ void slab_main(slab_params_t *sp){
 		break;
 
 
-        case VMX_VMEXIT_WRMSR:{
-
-            if(xc_hcbinvoke(XMHFGEEC_SLAB_XC_IHUB, sp->cpuid,
-                            XC_HYPAPPCB_TRAP_INSTRUCTION, XC_HYPAPPCB_TRAP_INSTRUCTION_WRMSR, sp->src_slabid) == XC_HYPAPPCB_CHAIN)
-            {
-
-                u32 guest_rip;
-                u32 info_vmexit_instruction_length;
-                x86regs_t r;
-
-                _XDPRINTF_("%s[%u]: VMX_VMEXIT_WRMSR\n", __func__, (u16)sp->cpuid);
-
-                spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSREAD;
-                XMHF_SLAB_CALLNEW(&spl);
-                memcpy(&r, &gcpustate_gprs->gprs, sizeof(x86regs_t));
-
-                switch((u32)r.ecx){
-                    case IA32_SYSENTER_CS_MSR:
-                        spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_VMWRITE;
-                        gcpustate_vmrwp->encoding = VMCS_GUEST_SYSENTER_CS;
-                        gcpustate_vmrwp->value = r.eax;
-                        XMHF_SLAB_CALLNEW(&spl);
-                        break;
-                    case IA32_SYSENTER_EIP_MSR:
-                        spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_VMWRITE;
-                        gcpustate_vmrwp->encoding = VMCS_GUEST_SYSENTER_EIP;
-                        gcpustate_vmrwp->value = r.eax;
-                        XMHF_SLAB_CALLNEW(&spl);
-                        break;
-                    case IA32_SYSENTER_ESP_MSR:
-                        spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_VMWRITE;
-                        gcpustate_vmrwp->encoding = VMCS_GUEST_SYSENTER_ESP;
-                        gcpustate_vmrwp->value = r.eax;
-                        XMHF_SLAB_CALLNEW(&spl);
-                        break;
-                    default:
-                        spl.dst_slabid = XMHFGEEC_SLAB_UAPI_HCPUSTATE;
-                        spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_WRMSR;
-                        hcpustate_msrp->msr = r.ecx;
-                        hcpustate_msrp->value = ((u64)r.edx << 32) | (u64)r.eax;
-                        XMHF_SLAB_CALLNEW(&spl);
-                        break;
-                }
-
-                {
-                    spl.dst_slabid = XMHFGEEC_SLAB_UAPI_GCPUSTATE;
-                    spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_VMREAD;
-                    gcpustate_vmrwp->encoding = VMCS_INFO_VMEXIT_INSTRUCTION_LENGTH;
-                    XMHF_SLAB_CALLNEW(&spl);
-                    info_vmexit_instruction_length = gcpustate_vmrwp->value;
-                }
-
-                {
-                    gcpustate_vmrwp->encoding = VMCS_GUEST_RIP;
-                    XMHF_SLAB_CALLNEW(&spl);
-                    guest_rip = gcpustate_vmrwp->value;
-                    guest_rip+=info_vmexit_instruction_length;
-                }
-
-                spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_VMWRITE;
-                gcpustate_vmrwp->encoding = VMCS_GUEST_RIP;
-                gcpustate_vmrwp->value = guest_rip;
-                XMHF_SLAB_CALLNEW(&spl);
-
-                _XDPRINTF_("%s[%u]: adjusted guest_rip=%08x\n",
-                    __func__, (u16)sp->cpuid, guest_rip);
-
-            }
-        }
-        break;
+		case VMX_VMEXIT_WRMSR:{
+		    if(xc_hcbinvoke(XMHFGEEC_SLAB_XC_IHUB, sp->cpuid,
+				    XC_HYPAPPCB_TRAP_INSTRUCTION, XC_HYPAPPCB_TRAP_INSTRUCTION_WRMSR, sp->src_slabid) == XC_HYPAPPCB_CHAIN)
+		    {
+				xcihub_icptwrmsr((u16)sp->cpuid);
+		    }
+		}
+		break;
 
 
         case VMX_VMEXIT_RDMSR:{
