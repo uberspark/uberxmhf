@@ -58,6 +58,42 @@
 #include <uapi_hcpustate.h>
 
 
-void uhcpust_wrmsr(xmhf_uapi_hcpustate_msr_params_t *msrp){
-	CASM_FUNCCALL(wrmsr64, msrp->msr, (u32)msrp->value, (u32)((u64)msrp->value >> 32) );
+//@ghost bool uhcpust_wrmsr_callwrmsr = false;
+/*@
+	requires \valid(msrp);
+	requires 0 <= srcslabid < XMHFGEEC_TOTAL_SLABS;
+
+	behavior fromprime:
+		assumes (srcslabid == XMHFGEEC_SLAB_GEEC_PRIME);
+		ensures (uhcpust_wrmsr_callwrmsr == true);
+
+	behavior notfromprime_valid:
+		assumes !(srcslabid == XMHFGEEC_SLAB_GEEC_PRIME);
+		assumes (msrp->msr != MSR_EFER);
+		ensures (uhcpust_wrmsr_callwrmsr == true);
+
+	behavior notfromprime_invalid:
+		assumes !(srcslabid == XMHFGEEC_SLAB_GEEC_PRIME);
+		assumes (msrp->msr == MSR_EFER);
+		ensures (uhcpust_wrmsr_callwrmsr == false);
+
+	complete behaviors;
+	disjoint behaviors;
+@*/
+void uhcpust_wrmsr(u32 srcslabid, xmhf_uapi_hcpustate_msr_params_t *msrp){
+	if(srcslabid == XMHFGEEC_SLAB_GEEC_PRIME){
+		CASM_FUNCCALL(wrmsr64, msrp->msr, (u32)msrp->value, (u32)((u64)msrp->value >> 32) );
+		//@ghost uhcpust_wrmsr_callwrmsr = true;
+
+	}else{
+		if(msrp->msr != MSR_EFER){
+			CASM_FUNCCALL(wrmsr64, msrp->msr, (u32)msrp->value, (u32)((u64)msrp->value >> 32) );
+			//@ghost uhcpust_wrmsr_callwrmsr = true;
+
+		}else{
+			//invalid write
+			//@ghost uhcpust_wrmsr_callwrmsr = false;
+
+		}
+	}
 }
