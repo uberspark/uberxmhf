@@ -70,30 +70,66 @@
 
 	behavior notfromprime_valid:
 		assumes !(srcslabid == XMHFGEEC_SLAB_GEEC_PRIME);
-		assumes !((u16)vmrwp->encoding == 0x0000 ||
-			 (u16)vmrwp->encoding == 0x4000 ||
-			 (u16)vmrwp->encoding == 0x4002 ||
-			 (u16)vmrwp->encoding == 0x401E ||
-			 ((u16)vmrwp->encoding & 0xFF00) == 0x20 ||
-			 ((u16)vmrwp->encoding & 0xFF00) == 0x6C ||
-			 ((u16)vmrwp->encoding & 0xFF00) == 0x4C ||
-			 ((u16)vmrwp->encoding & 0xFF00) == 0x2C ||
-			 ((u16)vmrwp->encoding & 0xFF00) == 0x0C
-			);
+		assumes !(vmrwp->encoding == VMCS_CONTROL_VMX_SECCPU_BASED	||
+			vmrwp->encoding == VMCS_CONTROL_IO_BITMAPA_ADDRESS_FULL	||
+			vmrwp->encoding == VMCS_CONTROL_IO_BITMAPA_ADDRESS_HIGH	||
+			vmrwp->encoding == VMCS_CONTROL_IO_BITMAPB_ADDRESS_FULL	||
+			vmrwp->encoding == VMCS_CONTROL_IO_BITMAPB_ADDRESS_HIGH	||
+			vmrwp->encoding == VMCS_CONTROL_EPT_POINTER_FULL	||
+			vmrwp->encoding == VMCS_CONTROL_EPT_POINTER_HIGH	||
+			vmrwp->encoding == VMCS_HOST_CR0			||
+			vmrwp->encoding == VMCS_HOST_CR3			||
+			vmrwp->encoding == VMCS_HOST_CR4			||
+			vmrwp->encoding == VMCS_HOST_FS_BASE			||
+			vmrwp->encoding == VMCS_HOST_GS_BASE			||
+			vmrwp->encoding == VMCS_HOST_TR_BASE			||
+			vmrwp->encoding == VMCS_HOST_GDTR_BASE			||
+			vmrwp->encoding == VMCS_HOST_IDTR_BASE			||
+			vmrwp->encoding == VMCS_HOST_SYSENTER_ESP		||
+			vmrwp->encoding == VMCS_HOST_SYSENTER_EIP		||
+			vmrwp->encoding == VMCS_HOST_RSP			||
+			vmrwp->encoding == VMCS_HOST_RIP			||
+			vmrwp->encoding == VMCS_HOST_SYSENTER_CS		||
+			vmrwp->encoding == VMCS_HOST_IA32_EFER_FULL		||
+			vmrwp->encoding == VMCS_HOST_ES_SELECTOR		||
+			vmrwp->encoding == VMCS_HOST_CS_SELECTOR		||
+			vmrwp->encoding == VMCS_HOST_SS_SELECTOR		||
+			vmrwp->encoding == VMCS_HOST_DS_SELECTOR		||
+			vmrwp->encoding == VMCS_HOST_FS_SELECTOR		||
+			vmrwp->encoding == VMCS_HOST_GS_SELECTOR		||
+			vmrwp->encoding == VMCS_HOST_TR_SELECTOR);
 		ensures (ugcpust_vmwrite_callvmwrite == true);
 
 	behavior notfromprime_invalid:
 		assumes !(srcslabid == XMHFGEEC_SLAB_GEEC_PRIME);
-		assumes ((u16)vmrwp->encoding == 0x0000 ||
-			 (u16)vmrwp->encoding == 0x4000 ||
-			 (u16)vmrwp->encoding == 0x4002 ||
-			 (u16)vmrwp->encoding == 0x401E ||
-			 ((u16)vmrwp->encoding & 0xFF00) == 0x20 ||
-			 ((u16)vmrwp->encoding & 0xFF00) == 0x6C ||
-			 ((u16)vmrwp->encoding & 0xFF00) == 0x4C ||
-			 ((u16)vmrwp->encoding & 0xFF00) == 0x2C ||
-			 ((u16)vmrwp->encoding & 0xFF00) == 0x0C
-			);
+		assumes (vmrwp->encoding == VMCS_CONTROL_VMX_SECCPU_BASED	||
+			vmrwp->encoding == VMCS_CONTROL_IO_BITMAPA_ADDRESS_FULL	||
+			vmrwp->encoding == VMCS_CONTROL_IO_BITMAPA_ADDRESS_HIGH	||
+			vmrwp->encoding == VMCS_CONTROL_IO_BITMAPB_ADDRESS_FULL	||
+			vmrwp->encoding == VMCS_CONTROL_IO_BITMAPB_ADDRESS_HIGH	||
+			vmrwp->encoding == VMCS_CONTROL_EPT_POINTER_FULL	||
+			vmrwp->encoding == VMCS_CONTROL_EPT_POINTER_HIGH	||
+			vmrwp->encoding == VMCS_HOST_CR0			||
+			vmrwp->encoding == VMCS_HOST_CR3			||
+			vmrwp->encoding == VMCS_HOST_CR4			||
+			vmrwp->encoding == VMCS_HOST_FS_BASE			||
+			vmrwp->encoding == VMCS_HOST_GS_BASE			||
+			vmrwp->encoding == VMCS_HOST_TR_BASE			||
+			vmrwp->encoding == VMCS_HOST_GDTR_BASE			||
+			vmrwp->encoding == VMCS_HOST_IDTR_BASE			||
+			vmrwp->encoding == VMCS_HOST_SYSENTER_ESP		||
+			vmrwp->encoding == VMCS_HOST_SYSENTER_EIP		||
+			vmrwp->encoding == VMCS_HOST_RSP			||
+			vmrwp->encoding == VMCS_HOST_RIP			||
+			vmrwp->encoding == VMCS_HOST_SYSENTER_CS		||
+			vmrwp->encoding == VMCS_HOST_IA32_EFER_FULL		||
+			vmrwp->encoding == VMCS_HOST_ES_SELECTOR		||
+			vmrwp->encoding == VMCS_HOST_CS_SELECTOR		||
+			vmrwp->encoding == VMCS_HOST_SS_SELECTOR		||
+			vmrwp->encoding == VMCS_HOST_DS_SELECTOR		||
+			vmrwp->encoding == VMCS_HOST_FS_SELECTOR		||
+			vmrwp->encoding == VMCS_HOST_GS_SELECTOR		||
+			vmrwp->encoding == VMCS_HOST_TR_SELECTOR);
 		ensures (ugcpust_vmwrite_callvmwrite == false);
 
 	complete behaviors;
