@@ -85,6 +85,7 @@
 
 @*/
 void slab_main(slab_params_t *sp){
+	CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite, VMCS_GUEST_CR0, 0);
 	//CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite, VMCS_HOST_TR_SELECTOR, 0);
 
 	if( sp->dst_uapifn == XMHF_HIC_UAPI_CPUSTATE_VMREAD){
