@@ -53,6 +53,9 @@
 
 #ifndef __ASSEMBLY__
 
+/*@
+	requires 0 <= cbtype <= XC_HYPAPPCB_MAXMASK;
+@*/
 u32 xc_hcbinvoke(u32 src_slabid, u32 cpuid, u32 cbtype, u32 cbqual, u32 guest_slab_index);
 
 void xcihub_icptvmcall(u32 cpuid);

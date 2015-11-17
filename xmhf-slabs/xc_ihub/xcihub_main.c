@@ -51,11 +51,6 @@
 #include <xc.h>
 #include <xc_ihub.h>
 #include <uapi_gcpustate.h>
-//#include <uapi_hcpustate.h>
-//#include <xh_hyperdep.h>
-//#include <xh_syscalllog.h>
-//#include <xh_ssteptrace.h>
-//#include <xh_approvexec.h>
 
 /*
  * slab code
@@ -63,11 +58,9 @@
  * author: amit vasudevan (amitvasudevan@acm.org)
  */
 
-//////
-//XMHF_SLAB_INTERCEPT(xcihub)
-
-
-
+/*@
+	requires \valid(sp);
+@*/
 
 void slab_main(slab_params_t *sp){
 	u32 info_vmexit_reason;
