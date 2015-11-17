@@ -184,7 +184,10 @@ typedef struct {
 */
 
 
-
+/*@
+	requires \valid(sp);
+	assigns \nothing;
+@*/
 void __slab_callsentinel(slab_params_t *sp);
 
 

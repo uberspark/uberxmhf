@@ -44,31 +44,23 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-// XMHF slab import library decls./defns.
-// author: amit vasudevan (amitvasudevan@acm.org)
+#include <xmhf.h>
+#include <xmhfgeec.h>
+#include <xmhf-debug.h>
 
-#ifndef __XC_IHUB_H__
-#define __XC_IHUB_H__
+#include <xc.h>
+#include <xc_ihub.h>
 
+/*
+ * slab code
+ *
+ * author: amit vasudevan (amitvasudevan@acm.org)
+ */
 
-#ifndef __ASSEMBLY__
-
-/*@
-	requires 0 <= cbtype <= XC_HYPAPPCB_MAXMASK;
-@*/
-u32 xc_hcbinvoke(u32 src_slabid, u32 cpuid, u32 cbtype, u32 cbqual, u32 guest_slab_index);
-
-void xcihub_icptvmcall(u32 cpuid);
-void xcihub_icptcpuid(u32 cpuid);
-void xcihub_icptwrmsr(u32 cpuid);
-void xcihub_icptrdmsr(u32 cpuid);
-void xcihub_halt(u32 cpuid, u32 info_vmexit_reason);
+void xcihub_halt(u32 cpuid, u32 info_vmexit_reason){
+	_XDPRINTF_("%s[%u]: unhandled intercept %x. Halting!\n", __func__, cpuid, info_vmexit_reason);
+	HALT();
+}
 
 
 
-
-
-#endif //__ASSEMBLY__
-
-
-#endif //__XC_IHUB_H__

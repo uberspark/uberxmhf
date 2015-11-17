@@ -68,6 +68,7 @@
 #define XC_HYPAPPCB_TRAP_INSTRUCTION            (5)
 #define XC_HYPAPPCB_TRAP_EXCEPTION              (6)
 
+#define XC_HYPAPPCB_MAXMASK			(6)
 
 #define XC_HYPAPPCB_TRAP_INSTRUCTION_CPUID      (0x60)
 #define XC_HYPAPPCB_TRAP_INSTRUCTION_WRMSR      (0x61)
@@ -126,32 +127,6 @@ static xc_hypapp_info_t _xcihub_hypapp_info_table[] = {
 
 #define HYPAPP_INFO_TABLE_NUMENTRIES (sizeof(_xcihub_hypapp_info_table)/sizeof(_xcihub_hypapp_info_table[0]))
 
-static inline u32 xc_hcbinvoke(u32 src_slabid, u32 cpuid, u32 cbtype, u32 cbqual, u32 guest_slab_index){
-    u32 status = XC_HYPAPPCB_CHAIN;
-    u32 i;
-    slab_params_t spl;
-    xc_hypappcb_params_t *hcbp = (xc_hypappcb_params_t *)&spl.in_out_params[0];
-
-    spl.src_slabid = src_slabid;
-    spl.cpuid = cpuid;
-    spl.dst_uapifn = 0;
-    hcbp->cbtype=cbtype;
-    hcbp->cbqual=cbqual;
-    hcbp->guest_slab_index=guest_slab_index;
-
-    for(i=0; i < HYPAPP_INFO_TABLE_NUMENTRIES; i++){
-        if(_xcihub_hypapp_info_table[i].cbmask & XC_HYPAPPCB_MASK(cbtype)){
-            spl.dst_slabid = _xcihub_hypapp_info_table[i].xmhfhic_slab_index;
-            XMHF_SLAB_CALLNEW(&spl);
-            if(hcbp->cbresult == XC_HYPAPPCB_NOCHAIN){
-                status = XC_HYPAPPCB_NOCHAIN;
-                break;
-            }
-        }
-    }
-
-    return status;
-}
 
 #endif //__ASSEMBLY__
 
