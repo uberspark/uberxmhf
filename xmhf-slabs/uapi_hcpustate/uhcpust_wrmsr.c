@@ -58,17 +58,6 @@
 #include <uapi_hcpustate.h>
 
 
-/////
-void slab_main(slab_params_t *sp){
-
-	if(sp->dst_uapifn == XMHF_HIC_UAPI_CPUSTATE_WRMSR){
-	    uhcpust_wrmsr((xmhf_uapi_hcpustate_msr_params_t *)sp->in_out_params);
-
-	}else if(sp->dst_uapifn == XMHF_HIC_UAPI_CPUSTATE_RDMSR){
-            uhcpust_rdmsr((xmhf_uapi_hcpustate_msr_params_t *)sp->in_out_params);
-
-        }else {
-            //_XDPRINTF_("UAPI_HCPUSTATE[%u]: Unknown uAPI function %x. Halting!\n",(u16)sp->cpuid, sp->dst_uapifn);
-
-        }
+void uhcpust_wrmsr(xmhf_uapi_hcpustate_msr_params_t *msrp){
+	CASM_FUNCCALL(wrmsr64, msrp->msr, (u32)msrp->value, (u32)((u64)msrp->value >> 32) );
 }
