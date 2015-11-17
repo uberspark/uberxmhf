@@ -92,7 +92,44 @@ slab_params_t test_sp;
 
 
 void hwm_vdriver_cpu_vmwrite(u32 encoding, u32 value){
-	//@assert !(test_sp.src_slabid == XMHFGEEC_SLAB_GEEC_PRIME) && !((u16)encoding == 0x4000);
+/*	if(test_sp.src_slabid != XMHFGEEC_SLAB_GEEC_PRIME){
+		//@assert !(test_sp.src_slabid == XMHFGEEC_SLAB_GEEC_PRIME) && !(encoding == VMCS_CONTROL_VMX_SECCPU_BASED	);
+		//@assert !(test_sp.src_slabid == XMHFGEEC_SLAB_GEEC_PRIME) && !(encoding == VMCS_CONTROL_IO_BITMAPA_ADDRESS_FULL	);
+		//@assert !(test_sp.src_slabid == XMHFGEEC_SLAB_GEEC_PRIME) && !(encoding == VMCS_CONTROL_IO_BITMAPA_ADDRESS_HIGH	);
+		//@assert !(test_sp.src_slabid == XMHFGEEC_SLAB_GEEC_PRIME) && !(encoding == VMCS_CONTROL_IO_BITMAPB_ADDRESS_FULL	);
+		//@assert !(test_sp.src_slabid == XMHFGEEC_SLAB_GEEC_PRIME) && !(encoding == VMCS_CONTROL_IO_BITMAPB_ADDRESS_HIGH	);
+		//@assert !(test_sp.src_slabid == XMHFGEEC_SLAB_GEEC_PRIME) && !(encoding == VMCS_CONTROL_EPT_POINTER_FULL	);
+		//@assert !(test_sp.src_slabid == XMHFGEEC_SLAB_GEEC_PRIME) && !(encoding == VMCS_CONTROL_EPT_POINTER_HIGH	);
+		//@assert !(test_sp.src_slabid == XMHFGEEC_SLAB_GEEC_PRIME) && !(encoding == VMCS_HOST_CR0			);
+		//@assert !(test_sp.src_slabid == XMHFGEEC_SLAB_GEEC_PRIME) && !(encoding == VMCS_HOST_CR3			);
+		//@assert !(test_sp.src_slabid == XMHFGEEC_SLAB_GEEC_PRIME) && !(encoding == VMCS_HOST_CR4			);
+		//@assert !(test_sp.src_slabid == XMHFGEEC_SLAB_GEEC_PRIME) && !(encoding == VMCS_HOST_FS_BASE			);
+		//@assert !(test_sp.src_slabid == XMHFGEEC_SLAB_GEEC_PRIME) && !(encoding == VMCS_HOST_GS_BASE			);
+		//@assert !(test_sp.src_slabid == XMHFGEEC_SLAB_GEEC_PRIME) && !(encoding == VMCS_HOST_TR_BASE			);
+		//@assert !(test_sp.src_slabid == XMHFGEEC_SLAB_GEEC_PRIME) && !(encoding == VMCS_HOST_GDTR_BASE			);
+		//@assert !(test_sp.src_slabid == XMHFGEEC_SLAB_GEEC_PRIME) && !(encoding == VMCS_HOST_IDTR_BASE			);
+		//@assert !(test_sp.src_slabid == XMHFGEEC_SLAB_GEEC_PRIME) && !(encoding == VMCS_HOST_SYSENTER_ESP		);
+		//@assert !(test_sp.src_slabid == XMHFGEEC_SLAB_GEEC_PRIME) && !(encoding == VMCS_HOST_SYSENTER_EIP		);
+		//@assert !(test_sp.src_slabid == XMHFGEEC_SLAB_GEEC_PRIME) && !(encoding == VMCS_HOST_RSP			);
+		//@assert !(test_sp.src_slabid == XMHFGEEC_SLAB_GEEC_PRIME) && !(encoding == VMCS_HOST_RIP			);
+		//@assert !(test_sp.src_slabid == XMHFGEEC_SLAB_GEEC_PRIME) && !(encoding == VMCS_HOST_SYSENTER_CS		);
+		//@assert !(test_sp.src_slabid == XMHFGEEC_SLAB_GEEC_PRIME) && !(encoding == VMCS_HOST_IA32_EFER_FULL		);
+		//@assert !(test_sp.src_slabid == XMHFGEEC_SLAB_GEEC_PRIME) && !(encoding == VMCS_HOST_ES_SELECTOR		);
+		//@assert !(test_sp.src_slabid == XMHFGEEC_SLAB_GEEC_PRIME) && !(encoding == VMCS_HOST_CS_SELECTOR		);
+		//@assert !(test_sp.src_slabid == XMHFGEEC_SLAB_GEEC_PRIME) && !(encoding == VMCS_HOST_SS_SELECTOR		);
+		//@assert !(test_sp.src_slabid == XMHFGEEC_SLAB_GEEC_PRIME) && !(encoding == VMCS_HOST_DS_SELECTOR		);
+		//@assert !(test_sp.src_slabid == XMHFGEEC_SLAB_GEEC_PRIME) && !(encoding == VMCS_HOST_FS_SELECTOR		);
+		//@assert !(test_sp.src_slabid == XMHFGEEC_SLAB_GEEC_PRIME) && !(encoding == VMCS_HOST_GS_SELECTOR		);
+		//@assert !(test_sp.src_slabid == XMHFGEEC_SLAB_GEEC_PRIME) && !(encoding == VMCS_HOST_TR_SELECTOR		);
+	}
+*/
+
+	if(test_sp.src_slabid != XMHFGEEC_SLAB_GEEC_PRIME){
+		if(encoding == VMCS_HOST_TR_SELECTOR){
+			//@assert 0;
+		}
+	}
+
 }
 
 
@@ -104,6 +141,15 @@ void main(void){
 
 	test_sp.src_slabid = framac_nondetu32interval(0, XMHFGEEC_TOTAL_SLABS-1);
 	test_sp.dst_uapifn = framac_nondetu32();
+	test_sp.in_out_params[0] = 0; 	test_sp.in_out_params[1] = 0;
+	test_sp.in_out_params[2] = 0; 	test_sp.in_out_params[3] = 0;
+	test_sp.in_out_params[4] = 0; 	test_sp.in_out_params[5] = 0;
+	test_sp.in_out_params[6] = 0; 	test_sp.in_out_params[7] = 0;
+	test_sp.in_out_params[8] = 0; 	test_sp.in_out_params[9] = 0;
+	test_sp.in_out_params[10] = 0; 	test_sp.in_out_params[11] = 0;
+	test_sp.in_out_params[12] = 0; 	test_sp.in_out_params[13] = 0;
+	test_sp.in_out_params[14] = 0; 	test_sp.in_out_params[15] = 0;
+
 	//execute harness: TODO
 	slab_main(&test_sp);
 
