@@ -66,8 +66,8 @@ void slab_main(slab_params_t *sp){
 	u32 info_vmexit_reason;
 	u32 hcb_status;
 	slab_params_t spl;
-	xmhf_uapi_gcpustate_vmrw_params_t *gcpustate_vmrwp = (xmhf_uapi_gcpustate_vmrw_params_t *)spl.in_out_params;
-	xmhf_uapi_gcpustate_gprs_params_t *gcpustate_gprs = (xmhf_uapi_gcpustate_gprs_params_t *)spl.in_out_params;
+	xmhf_uapi_gcpustate_vmrw_params_t *gcpustate_vmrwp = (xmhf_uapi_gcpustate_vmrw_params_t *)&spl.in_out_params[0];
+	xmhf_uapi_gcpustate_gprs_params_t *gcpustate_gprs = (xmhf_uapi_gcpustate_gprs_params_t *)&spl.in_out_params[0];
 	//xmhf_uapi_hcpustate_msr_params_t *hcpustate_msrp = (xmhf_uapi_hcpustate_msr_params_t *)spl.in_out_params;
 
 	_XDPRINTF_("XCIHUB[%u]: Got control: src=%u, dst=%u, esp=%08x, eflags=%08x\n",
@@ -81,7 +81,15 @@ void slab_main(slab_params_t *sp){
 	//store GPRs
 	spl.dst_slabid = XMHFGEEC_SLAB_UAPI_GCPUSTATE;
 	spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSWRITE;
-	memcpy(&gcpustate_gprs->gprs, &sp->in_out_params[0], sizeof(x86regs_t));
+	//memcpy(&gcpustate_gprs->gprs, &sp->in_out_params[0], sizeof(x86regs_t));
+	spl.in_out_params[0] = sp->in_out_params[0];
+	spl.in_out_params[1] = sp->in_out_params[1];
+	spl.in_out_params[2] = sp->in_out_params[2];
+	spl.in_out_params[3] = sp->in_out_params[3];
+	spl.in_out_params[4] = sp->in_out_params[4];
+	spl.in_out_params[5] = sp->in_out_params[5];
+	spl.in_out_params[6] = sp->in_out_params[6];
+	spl.in_out_params[7] = sp->in_out_params[7];
 	XMHF_SLAB_CALLNEW(&spl);
 
 	//grab exit reason
@@ -141,7 +149,15 @@ void slab_main(slab_params_t *sp){
 	spl.dst_slabid = XMHFGEEC_SLAB_UAPI_GCPUSTATE;
 	spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSREAD;
 	XMHF_SLAB_CALLNEW(&spl);
-	memcpy(&sp->in_out_params[0], &gcpustate_gprs->gprs, sizeof(x86regs_t));
+	//memcpy(&sp->in_out_params[0], &gcpustate_gprs->gprs, sizeof(x86regs_t));
+	sp->in_out_params[0] = spl.in_out_params[0];
+	sp->in_out_params[1] = spl.in_out_params[1];
+	sp->in_out_params[2] = spl.in_out_params[2];
+	sp->in_out_params[3] = spl.in_out_params[3];
+	sp->in_out_params[4] = spl.in_out_params[4];
+	sp->in_out_params[5] = spl.in_out_params[5];
+	sp->in_out_params[6] = spl.in_out_params[6];
+	sp->in_out_params[7] = spl.in_out_params[7];
 
 
 	_XDPRINTF_("XCIHUB[%u]: Resuming guest, esp=%08x\n", (u16)sp->cpuid, CASM_FUNCCALL(read_esp,CASM_NOPARAM));
