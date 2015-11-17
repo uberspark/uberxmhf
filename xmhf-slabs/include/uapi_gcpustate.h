@@ -134,12 +134,34 @@ extern __attribute__((section(".data"))) x86regs_t guestgprs[MAX_PLATFORM_CPUS];
 extern __attribute__((section(".data"))) u64 guestmsrs[GCPUSTATE_MSR_MAXCOUNT];
 
 
-
+/*@
+	requires \valid(vmrwp);
+@*/
 void ugcpust_vmread(xmhf_uapi_gcpustate_vmrw_params_t *vmrwp);
+
+/*@
+	requires \valid(vmrwp);
+@*/
 void ugcpust_vmwrite(u32 srcslabid, xmhf_uapi_gcpustate_vmrw_params_t *vmrwp);
+
+/*@
+	requires \valid(gprs);
+@*/
 void ugcpust_gprsread(u32 cpuid, xmhf_uapi_gcpustate_gprs_params_t *gprs);
+
+/*@
+	requires \valid(gprs);
+@*/
 void ugcpust_gprswrite(u32 cpuid, xmhf_uapi_gcpustate_gprs_params_t *gprs);
+
+/*@
+	requires \valid(msrrwp);
+@*/
 void ugcpust_msrread(xmhf_uapi_gcpustate_msrrw_params_t *msrrwp);
+
+/*@
+	requires \valid(msrrwp);
+@*/
 void ugcpust_msrwrite(xmhf_uapi_gcpustate_msrrw_params_t *msrrwp);
 
 
