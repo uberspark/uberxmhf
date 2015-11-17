@@ -79,19 +79,31 @@
         requires 0 <= cbtype <= XC_HYPAPPCB_MAXMASK;
 
 @*/
-static u32 xc_hcbinvoke_helper(u32 hcbentry, u32 cbtype){
+static u32 xc_hcbinvoke_helper(u32 hcbentry, u32 cbtype, u32 src_slabid, u32 cpuid, u32 guest_slab_index, u32 cbqual){
 	u32 status = XC_HYPAPPCB_CHAIN;
+	slab_params_t spl;
+	xc_hypappcb_params_t *hcbp = (xc_hypappcb_params_t *)&spl.in_out_params[0];
+
+	spl.src_slabid = src_slabid;
+	spl.cpuid = cpuid;
+	spl.dst_uapifn = 0;
+	hcbp->cbtype=cbtype;
+	hcbp->cbqual=cbqual;
+	hcbp->guest_slab_index=guest_slab_index;
 
         if(_xcihub_hypapp_info_table[hcbentry].cbmask & XC_HYPAPPCB_MASK(cbtype)){
-            /*spl.dst_slabid = _xcihub_hypapp_info_table[i].xmhfhic_slab_index;
+            spl.dst_slabid = _xcihub_hypapp_info_table[hcbentry].xmhfhic_slab_index;
             XMHF_SLAB_CALLNEW(&spl);
             if(hcbp->cbresult == XC_HYPAPPCB_NOCHAIN){
 		status = XC_HYPAPPCB_NOCHAIN;
-		nochain = true;
-            }*/
+            }
+	    //@assert status == XC_HYPAPPCB_CHAIN || status == XC_HYPAPPCB_NOCHAIN;
+	    return status;
+        }else{
+	    //@assert status == XC_HYPAPPCB_CHAIN;
+            return status;
         }
 
-        return status;
 }
 
 #if 0
