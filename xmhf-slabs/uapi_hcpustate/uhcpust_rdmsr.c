@@ -57,7 +57,14 @@
 
 #include <uapi_hcpustate.h>
 
-
+//@ghost u64 rdmsr_val;
+/*@
+	requires \valid(msrp);
+	assigns msrp->value;
+	assigns rdmsr_val;
+	ensures (msrp->value == rdmsr_val);
+@*/
 void uhcpust_rdmsr(xmhf_uapi_hcpustate_msr_params_t *msrp){
+	//@ghost rdmsr_val = CASM_FUNCCALL(rdmsr64, msrp->msr);
 	msrp->value = CASM_FUNCCALL(rdmsr64, msrp->msr);
 }
