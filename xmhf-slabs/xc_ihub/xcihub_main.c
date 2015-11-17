@@ -67,103 +67,45 @@
 //XMHF_SLAB_INTERCEPT(xcihub)
 
 
-static u32 xc_hcbinvoke(u32 src_slabid, u32 cpuid, u32 cbtype, u32 cbqual, u32 guest_slab_index){
-    u32 status = XC_HYPAPPCB_CHAIN;
-    u32 i;
-    slab_params_t spl;
-    xc_hypappcb_params_t *hcbp = (xc_hypappcb_params_t *)&spl.in_out_params[0];
-
-    spl.src_slabid = src_slabid;
-    spl.cpuid = cpuid;
-    spl.dst_uapifn = 0;
-    hcbp->cbtype=cbtype;
-    hcbp->cbqual=cbqual;
-    hcbp->guest_slab_index=guest_slab_index;
-
-    for(i=0; i < HYPAPP_INFO_TABLE_NUMENTRIES; i++){
-        if(_xcihub_hypapp_info_table[i].cbmask & XC_HYPAPPCB_MASK(cbtype)){
-            spl.dst_slabid = _xcihub_hypapp_info_table[i].xmhfhic_slab_index;
-            XMHF_SLAB_CALLNEW(&spl);
-            if(hcbp->cbresult == XC_HYPAPPCB_NOCHAIN){
-                status = XC_HYPAPPCB_NOCHAIN;
-                break;
-            }
-        }
-    }
-
-    return status;
-}
-
-
 
 
 void slab_main(slab_params_t *sp){
-    u32 info_vmexit_reason;
-    slab_params_t spl;
-    xmhf_uapi_gcpustate_vmrw_params_t *gcpustate_vmrwp =
-        (xmhf_uapi_gcpustate_vmrw_params_t *)spl.in_out_params;
-    xmhf_uapi_gcpustate_gprs_params_t *gcpustate_gprs =
-        (xmhf_uapi_gcpustate_gprs_params_t *)spl.in_out_params;
-    xmhf_uapi_hcpustate_msr_params_t *hcpustate_msrp =
-        (xmhf_uapi_hcpustate_msr_params_t *)spl.in_out_params;
+	u32 info_vmexit_reason;
+	slab_params_t spl;
+	xmhf_uapi_gcpustate_vmrw_params_t *gcpustate_vmrwp = (xmhf_uapi_gcpustate_vmrw_params_t *)spl.in_out_params;
+	xmhf_uapi_gcpustate_gprs_params_t *gcpustate_gprs = (xmhf_uapi_gcpustate_gprs_params_t *)spl.in_out_params;
+	xmhf_uapi_hcpustate_msr_params_t *hcpustate_msrp = (xmhf_uapi_hcpustate_msr_params_t *)spl.in_out_params;
 
 	_XDPRINTF_("XCIHUB[%u]: Got control: src=%u, dst=%u, esp=%08x, eflags=%08x\n",
-                (u16)sp->cpuid, sp->src_slabid, sp->dst_slabid, CASM_FUNCCALL(read_esp,CASM_NOPARAM),
+		(u16)sp->cpuid, sp->src_slabid, sp->dst_slabid, CASM_FUNCCALL(read_esp,CASM_NOPARAM),
 			CASM_FUNCCALL(read_eflags, CASM_NOPARAM));
 
-    spl.cpuid = sp->cpuid;
-    spl.src_slabid = XMHFGEEC_SLAB_XC_IHUB;
-    //spl.in_out_params[0] = XMHF_HIC_UAPI_CPUSTATE;
+	spl.cpuid = sp->cpuid;
+	spl.src_slabid = XMHFGEEC_SLAB_XC_IHUB;
 
 
-    //store GPRs
-    spl.dst_slabid = XMHFGEEC_SLAB_UAPI_GCPUSTATE;
-    spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSWRITE;
-    memcpy(&gcpustate_gprs->gprs, &sp->in_out_params[0], sizeof(x86regs_t));
-    XMHF_SLAB_CALLNEW(&spl);
+	//store GPRs
+	spl.dst_slabid = XMHFGEEC_SLAB_UAPI_GCPUSTATE;
+	spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSWRITE;
+	memcpy(&gcpustate_gprs->gprs, &sp->in_out_params[0], sizeof(x86regs_t));
+	XMHF_SLAB_CALLNEW(&spl);
 
+	//grab exit reason
+	spl.dst_slabid = XMHFGEEC_SLAB_UAPI_GCPUSTATE;
+	spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_VMREAD;
+	gcpustate_vmrwp->encoding = VMCS_INFO_VMEXIT_REASON;
+	XMHF_SLAB_CALLNEW(&spl);
+	info_vmexit_reason = gcpustate_vmrwp->value;
 
-    {
+	switch(info_vmexit_reason){
 
-        spl.dst_slabid = XMHFGEEC_SLAB_UAPI_GCPUSTATE;
-        spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_VMREAD;
-        gcpustate_vmrwp->encoding = VMCS_INFO_VMEXIT_REASON;
-        XMHF_SLAB_CALLNEW(&spl);
-        info_vmexit_reason = gcpustate_vmrwp->value;
-    }
-
-    switch(info_vmexit_reason){
-
-        //hypercall
-        case VMX_VMEXIT_VMCALL:{
-            if(xc_hcbinvoke(XMHFGEEC_SLAB_XC_IHUB, sp->cpuid, XC_HYPAPPCB_HYPERCALL, 0, sp->src_slabid) == XC_HYPAPPCB_CHAIN){
-                u32 guest_rip;
-                u32 info_vmexit_instruction_length;
-
-                _XDPRINTF_("%s[%u]: VMX_VMEXIT_VMCALL\n", __func__, (u16)sp->cpuid);
-
-                {
-                    gcpustate_vmrwp->encoding = VMCS_INFO_VMEXIT_INSTRUCTION_LENGTH;
-                    XMHF_SLAB_CALLNEW(&spl);
-                    info_vmexit_instruction_length = gcpustate_vmrwp->value;
-                }
-
-                {
-                    gcpustate_vmrwp->encoding = VMCS_GUEST_RIP;
-                    XMHF_SLAB_CALLNEW(&spl);
-                    guest_rip = gcpustate_vmrwp->value;
-                    guest_rip+=info_vmexit_instruction_length;
-                }
-
-                spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_VMWRITE;
-                gcpustate_vmrwp->encoding = VMCS_GUEST_RIP;
-                gcpustate_vmrwp->value = guest_rip;
-                XMHF_SLAB_CALLNEW(&spl);
-
-                _XDPRINTF_("%s[%u]: adjusted guest_rip=%08x\n", __func__, (u16)sp->cpuid, guest_rip);
-            }
-        }
-        break;
+		//hypercall
+		case VMX_VMEXIT_VMCALL:{
+		    if(xc_hcbinvoke(XMHFGEEC_SLAB_XC_IHUB, sp->cpuid, XC_HYPAPPCB_HYPERCALL, 0, sp->src_slabid) == XC_HYPAPPCB_CHAIN){
+			xcihub_icptvmcall((u16)sp->cpuid);
+			}
+		}
+		break;
 
 
         //memory fault

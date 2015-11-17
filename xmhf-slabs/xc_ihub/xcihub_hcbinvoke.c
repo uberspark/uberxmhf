@@ -44,23 +44,49 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-// XMHF slab import library decls./defns.
-// author: amit vasudevan (amitvasudevan@acm.org)
+#include <xmhf.h>
+#include <xmhfgeec.h>
+#include <xmhf-debug.h>
 
-#ifndef __XC_IHUB_H__
-#define __XC_IHUB_H__
+#include <xc.h>
+#include <xc_ihub.h>
+//#include <uapi_gcpustate.h>
+//#include <uapi_hcpustate.h>
+//#include <xh_hyperdep.h>
+//#include <xh_syscalllog.h>
+//#include <xh_ssteptrace.h>
+//#include <xh_approvexec.h>
 
+/*
+ * slab code
+ *
+ * author: amit vasudevan (amitvasudevan@acm.org)
+ */
 
-#ifndef __ASSEMBLY__
+u32 xc_hcbinvoke(u32 src_slabid, u32 cpuid, u32 cbtype, u32 cbqual, u32 guest_slab_index){
+    u32 status = XC_HYPAPPCB_CHAIN;
+    u32 i;
+    slab_params_t spl;
+    xc_hypappcb_params_t *hcbp = (xc_hypappcb_params_t *)&spl.in_out_params[0];
 
-u32 xc_hcbinvoke(u32 src_slabid, u32 cpuid, u32 cbtype, u32 cbqual, u32 guest_slab_index);
+    spl.src_slabid = src_slabid;
+    spl.cpuid = cpuid;
+    spl.dst_uapifn = 0;
+    hcbp->cbtype=cbtype;
+    hcbp->cbqual=cbqual;
+    hcbp->guest_slab_index=guest_slab_index;
 
-void xcihub_icptvmcall(u32 cpuid);
+    for(i=0; i < HYPAPP_INFO_TABLE_NUMENTRIES; i++){
+        if(_xcihub_hypapp_info_table[i].cbmask & XC_HYPAPPCB_MASK(cbtype)){
+            spl.dst_slabid = _xcihub_hypapp_info_table[i].xmhfhic_slab_index;
+            XMHF_SLAB_CALLNEW(&spl);
+            if(hcbp->cbresult == XC_HYPAPPCB_NOCHAIN){
+                status = XC_HYPAPPCB_NOCHAIN;
+                break;
+            }
+        }
+    }
 
+    return status;
+}
 
-
-
-#endif //__ASSEMBLY__
-
-
-#endif //__XC_IHUB_H__
