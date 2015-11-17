@@ -70,15 +70,15 @@
 	requires \valid(sp);
 	ensures ( sp->dst_uapifn == XMHF_HIC_UAPI_CPUSTATE_VMREAD) ==> (ugcpust_methodcall_vmread == true);
 	ensures ( sp->dst_uapifn == XMHF_HIC_UAPI_CPUSTATE_VMWRITE && (u16)sp->src_slabid < XMHFGEEC_TOTAL_SLABS ) ==> (ugcpust_methodcall_vmwrite == true);
-	ensures ( sp->dst_uapifn == XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSREAD) ==> (ugcpust_methodcall_gprsread == true);
-	ensures ( sp->dst_uapifn == XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSWRITE) ==> (ugcpust_methodcall_gprswrite == true);
+	ensures ( sp->dst_uapifn == XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSREAD && (u16)sp->cpuid < MAX_PLATFORM_CPUS) ==> (ugcpust_methodcall_gprsread == true);
+	ensures ( sp->dst_uapifn == XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSWRITE && (u16)sp->cpuid < MAX_PLATFORM_CPUS) ==> (ugcpust_methodcall_gprswrite == true);
 	ensures ( sp->dst_uapifn == XMHFGEEC_UAPI_CPUSTATE_GUESTMSRREAD) ==> (ugcpust_methodcall_msrread == true);
 	ensures ( sp->dst_uapifn == XMHFGEEC_UAPI_CPUSTATE_GUESTMSRWRITE) ==> (ugcpust_methodcall_msrwrite == true);
 	ensures !(
 		( sp->dst_uapifn == XMHF_HIC_UAPI_CPUSTATE_VMREAD) ||
 		( sp->dst_uapifn == XMHF_HIC_UAPI_CPUSTATE_VMWRITE && (u16)sp->src_slabid < XMHFGEEC_TOTAL_SLABS ) ||
-		( sp->dst_uapifn == XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSREAD) ||
-		( sp->dst_uapifn == XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSWRITE) ||
+		( sp->dst_uapifn == XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSREAD && (u16)sp->cpuid < MAX_PLATFORM_CPUS) ||
+		( sp->dst_uapifn == XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSWRITE && (u16)sp->cpuid < MAX_PLATFORM_CPUS) ||
 		( sp->dst_uapifn == XMHFGEEC_UAPI_CPUSTATE_GUESTMSRREAD) ||
 		( sp->dst_uapifn == XMHFGEEC_UAPI_CPUSTATE_GUESTMSRWRITE)
 	) ==> (ugcpust_methodcall_invalid == true);
@@ -94,11 +94,11 @@ void slab_main(slab_params_t *sp){
 		ugcpust_vmwrite(sp->src_slabid, (xmhf_uapi_gcpustate_vmrw_params_t *)sp->in_out_params);
 		//@ghost ugcpust_methodcall_vmwrite = true;
 
-        }else if( sp->dst_uapifn == XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSREAD){
+        }else if( sp->dst_uapifn == XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSREAD && (u16)sp->cpuid < MAX_PLATFORM_CPUS){
 		ugcpust_gprsread((u16)sp->cpuid, (xmhf_uapi_gcpustate_gprs_params_t *)sp->in_out_params);
 		//@ghost ugcpust_methodcall_gprsread = true;
 
-        }else if( sp->dst_uapifn == XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSWRITE){
+        }else if( sp->dst_uapifn == XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSWRITE && (u16)sp->cpuid < MAX_PLATFORM_CPUS){
 		ugcpust_gprswrite((u16)sp->cpuid, (xmhf_uapi_gcpustate_gprs_params_t *)sp->in_out_params);
 		//@ghost ugcpust_methodcall_gprswrite = true;
 

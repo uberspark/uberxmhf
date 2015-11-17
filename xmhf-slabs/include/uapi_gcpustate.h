@@ -146,11 +146,13 @@ void ugcpust_vmwrite(u32 srcslabid, xmhf_uapi_gcpustate_vmrw_params_t *vmrwp);
 
 /*@
 	requires \valid(gprs);
+	requires 0 <= cpuid < MAX_PLATFORM_CPUS;
 @*/
 void ugcpust_gprsread(u32 cpuid, xmhf_uapi_gcpustate_gprs_params_t *gprs);
 
 /*@
 	requires \valid(gprs);
+	requires 0 <= cpuid < MAX_PLATFORM_CPUS;
 @*/
 void ugcpust_gprswrite(u32 cpuid, xmhf_uapi_gcpustate_gprs_params_t *gprs);
 
