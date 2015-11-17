@@ -99,10 +99,10 @@ static u32 xc_hcbinvoke_helper(u32 hcbentry, u32 cbtype, u32 src_slabid, u32 cpu
 }
 
 
-
+//@ghost bool invoke_helper[HYPAPP_INFO_TABLE_NUMENTRIES];
 /*@
 	requires 0 <= cbtype <= XC_HYPAPPCB_MAXMASK;
-	assigns \nothing;
+	assigns invoke_helper[0..(HYPAPP_INFO_TABLE_NUMENTRIES-1)];
 	ensures \result == XC_HYPAPPCB_CHAIN || \result == XC_HYPAPPCB_NOCHAIN;
 @*/
 u32 xc_hcbinvoke(u32 src_slabid, u32 cpuid, u32 cbtype, u32 cbqual, u32 guest_slab_index){
@@ -111,13 +111,16 @@ u32 xc_hcbinvoke(u32 src_slabid, u32 cpuid, u32 cbtype, u32 cbqual, u32 guest_sl
     u32 i;
 	/*@
 		loop invariant a1: 0 <= i <= HYPAPP_INFO_TABLE_NUMENTRIES;
+		loop invariant a2: \forall integer x; 0 <= x < i ==> ( invoke_helper[x] == true );
 		loop assigns i;
 		loop assigns status;
 		loop assigns nochain;
+		loop assigns invoke_helper[0..(HYPAPP_INFO_TABLE_NUMENTRIES-1)];
 		loop variant HYPAPP_INFO_TABLE_NUMENTRIES - i;
 	@*/
     for(i=0; i < HYPAPP_INFO_TABLE_NUMENTRIES; i++){
         status = xc_hcbinvoke_helper(i, cbtype, src_slabid, cpuid, guest_slab_index, cbqual);
+	//@ghost invoke_helper[i] = true;
 	if(status == XC_HYPAPPCB_NOCHAIN){
 		nochain = true;
 		break;
