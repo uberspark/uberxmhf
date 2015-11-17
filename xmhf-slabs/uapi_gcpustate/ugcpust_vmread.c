@@ -43,3 +43,21 @@
  *
  * @XMHF_LICENSE_HEADER_END@
  */
+
+/*
+ * guest CPU state uAPI
+ *
+ * author: amit vasudevan (amitvasudevan@acm.org)
+ */
+
+#include <xmhf.h>
+#include <xmhf-debug.h>
+
+#include <xmhfgeec.h>
+
+#include <xc.h>
+#include <uapi_gcpustate.h>
+
+void ugcpust_vmread(xmhf_uapi_gcpustate_vmrw_params_t *vmrwp){
+	vmrwp->value = CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmread,vmrwp->encoding);
+}
