@@ -68,6 +68,10 @@ typedef struct {
 }__attribute__((packed)) xmhf_uapi_hcpustate_msr_params_t;
 
 
+void uhcpust_rdmsr(xmhf_uapi_hcpustate_msr_params_t *msrp);
+void uhcpust_wrmsr(xmhf_uapi_hcpustate_msr_params_t *msrp);
+
+
 #endif	//__ASSEMBLY__
 
 #endif //__UAPI_HCPUSTATE_H__
