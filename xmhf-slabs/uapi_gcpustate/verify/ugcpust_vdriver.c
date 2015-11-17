@@ -92,72 +92,7 @@ slab_params_t test_sp;
 
 
 void hwm_vdriver_cpu_vmwrite(u32 encoding, u32 value){
-/*	if(test_sp.src_slabid != XMHFGEEC_SLAB_GEEC_PRIME){
-		//@assert !(test_sp.src_slabid == XMHFGEEC_SLAB_GEEC_PRIME) && !(encoding == VMCS_CONTROL_VMX_SECCPU_BASED	);
-		//@assert !(test_sp.src_slabid == XMHFGEEC_SLAB_GEEC_PRIME) && !(encoding == VMCS_CONTROL_IO_BITMAPA_ADDRESS_FULL	);
-		//@assert !(test_sp.src_slabid == XMHFGEEC_SLAB_GEEC_PRIME) && !(encoding == VMCS_CONTROL_IO_BITMAPA_ADDRESS_HIGH	);
-		//@assert !(test_sp.src_slabid == XMHFGEEC_SLAB_GEEC_PRIME) && !(encoding == VMCS_CONTROL_IO_BITMAPB_ADDRESS_FULL	);
-		//@assert !(test_sp.src_slabid == XMHFGEEC_SLAB_GEEC_PRIME) && !(encoding == VMCS_CONTROL_IO_BITMAPB_ADDRESS_HIGH	);
-		//@assert !(test_sp.src_slabid == XMHFGEEC_SLAB_GEEC_PRIME) && !(encoding == VMCS_CONTROL_EPT_POINTER_FULL	);
-		//@assert !(test_sp.src_slabid == XMHFGEEC_SLAB_GEEC_PRIME) && !(encoding == VMCS_CONTROL_EPT_POINTER_HIGH	);
-		//@assert !(test_sp.src_slabid == XMHFGEEC_SLAB_GEEC_PRIME) && !(encoding == VMCS_HOST_CR0			);
-		//@assert !(test_sp.src_slabid == XMHFGEEC_SLAB_GEEC_PRIME) && !(encoding == VMCS_HOST_CR3			);
-		//@assert !(test_sp.src_slabid == XMHFGEEC_SLAB_GEEC_PRIME) && !(encoding == VMCS_HOST_CR4			);
-		//@assert !(test_sp.src_slabid == XMHFGEEC_SLAB_GEEC_PRIME) && !(encoding == VMCS_HOST_FS_BASE			);
-		//@assert !(test_sp.src_slabid == XMHFGEEC_SLAB_GEEC_PRIME) && !(encoding == VMCS_HOST_GS_BASE			);
-		//@assert !(test_sp.src_slabid == XMHFGEEC_SLAB_GEEC_PRIME) && !(encoding == VMCS_HOST_TR_BASE			);
-		//@assert !(test_sp.src_slabid == XMHFGEEC_SLAB_GEEC_PRIME) && !(encoding == VMCS_HOST_GDTR_BASE			);
-		//@assert !(test_sp.src_slabid == XMHFGEEC_SLAB_GEEC_PRIME) && !(encoding == VMCS_HOST_IDTR_BASE			);
-		//@assert !(test_sp.src_slabid == XMHFGEEC_SLAB_GEEC_PRIME) && !(encoding == VMCS_HOST_SYSENTER_ESP		);
-		//@assert !(test_sp.src_slabid == XMHFGEEC_SLAB_GEEC_PRIME) && !(encoding == VMCS_HOST_SYSENTER_EIP		);
-		//@assert !(test_sp.src_slabid == XMHFGEEC_SLAB_GEEC_PRIME) && !(encoding == VMCS_HOST_RSP			);
-		//@assert !(test_sp.src_slabid == XMHFGEEC_SLAB_GEEC_PRIME) && !(encoding == VMCS_HOST_RIP			);
-		//@assert !(test_sp.src_slabid == XMHFGEEC_SLAB_GEEC_PRIME) && !(encoding == VMCS_HOST_SYSENTER_CS		);
-		//@assert !(test_sp.src_slabid == XMHFGEEC_SLAB_GEEC_PRIME) && !(encoding == VMCS_HOST_IA32_EFER_FULL		);
-		//@assert !(test_sp.src_slabid == XMHFGEEC_SLAB_GEEC_PRIME) && !(encoding == VMCS_HOST_ES_SELECTOR		);
-		//@assert !(test_sp.src_slabid == XMHFGEEC_SLAB_GEEC_PRIME) && !(encoding == VMCS_HOST_CS_SELECTOR		);
-		//@assert !(test_sp.src_slabid == XMHFGEEC_SLAB_GEEC_PRIME) && !(encoding == VMCS_HOST_SS_SELECTOR		);
-		//@assert !(test_sp.src_slabid == XMHFGEEC_SLAB_GEEC_PRIME) && !(encoding == VMCS_HOST_DS_SELECTOR		);
-		//@assert !(test_sp.src_slabid == XMHFGEEC_SLAB_GEEC_PRIME) && !(encoding == VMCS_HOST_FS_SELECTOR		);
-		//@assert !(test_sp.src_slabid == XMHFGEEC_SLAB_GEEC_PRIME) && !(encoding == VMCS_HOST_GS_SELECTOR		);
-		//@assert !(test_sp.src_slabid == XMHFGEEC_SLAB_GEEC_PRIME) && !(encoding == VMCS_HOST_TR_SELECTOR		);
-	}
-*/
-
-	if(test_sp.src_slabid != XMHFGEEC_SLAB_GEEC_PRIME){
-		if(	( encoding == VMCS_CONTROL_VMX_SECCPU_BASED	||
-			 encoding == VMCS_CONTROL_IO_BITMAPA_ADDRESS_FULL	||
-			 encoding == VMCS_CONTROL_IO_BITMAPA_ADDRESS_HIGH	||
-			 encoding == VMCS_CONTROL_IO_BITMAPB_ADDRESS_FULL	||
-			 encoding == VMCS_CONTROL_IO_BITMAPB_ADDRESS_HIGH	||
-			 encoding == VMCS_CONTROL_EPT_POINTER_FULL	||
-			 encoding == VMCS_CONTROL_EPT_POINTER_HIGH	||
-			 encoding == VMCS_HOST_CR0			||
-			 encoding == VMCS_HOST_CR3			||
-			 encoding == VMCS_HOST_CR4			||
-			 encoding == VMCS_HOST_FS_BASE			||
-			 encoding == VMCS_HOST_GS_BASE			||
-			 encoding == VMCS_HOST_TR_BASE			||
-			 encoding == VMCS_HOST_GDTR_BASE			||
-			 encoding == VMCS_HOST_IDTR_BASE			||
-			 encoding == VMCS_HOST_SYSENTER_ESP		||
-			 encoding == VMCS_HOST_SYSENTER_EIP		||
-			 encoding == VMCS_HOST_RSP			||
-			 encoding == VMCS_HOST_RIP			||
-			 encoding == VMCS_HOST_SYSENTER_CS		||
-			 encoding == VMCS_HOST_IA32_EFER_FULL		||
-			 encoding == VMCS_HOST_ES_SELECTOR		||
-			 encoding == VMCS_HOST_CS_SELECTOR		||
-			 encoding == VMCS_HOST_SS_SELECTOR		||
-			 encoding == VMCS_HOST_DS_SELECTOR		||
-			 encoding == VMCS_HOST_FS_SELECTOR		||
-			 encoding == VMCS_HOST_GS_SELECTOR		||
-			 encoding == VMCS_HOST_TR_SELECTOR)
-		){
-			//@assert 0;
-		}
-	}
-
+	//@assert 0;
 }
 
 
@@ -168,18 +103,28 @@ void main(void){
 	check_esp = xmhfhwm_cpu_gprs_esp; // pointing to top-of-stack
 
 	test_sp.src_slabid = framac_nondetu32interval(0, XMHFGEEC_TOTAL_SLABS-1);
-	test_sp.dst_uapifn = framac_nondetu32();
-	test_sp.in_out_params[0] = 0; 	test_sp.in_out_params[1] = 0;
-	test_sp.in_out_params[2] = 0; 	test_sp.in_out_params[3] = 0;
-	test_sp.in_out_params[4] = 0; 	test_sp.in_out_params[5] = 0;
-	test_sp.in_out_params[6] = 0; 	test_sp.in_out_params[7] = 0;
-	test_sp.in_out_params[8] = 0; 	test_sp.in_out_params[9] = 0;
-	test_sp.in_out_params[10] = 0; 	test_sp.in_out_params[11] = 0;
-	test_sp.in_out_params[12] = 0; 	test_sp.in_out_params[13] = 0;
-	test_sp.in_out_params[14] = 0; 	test_sp.in_out_params[15] = 0;
+	test_sp.in_out_params[0] =  framac_nondetu32(); 	test_sp.in_out_params[1] = framac_nondetu32();
+	test_sp.in_out_params[2] = framac_nondetu32(); 	test_sp.in_out_params[3] = framac_nondetu32();
+	test_sp.in_out_params[4] = framac_nondetu32(); 	test_sp.in_out_params[5] = framac_nondetu32();
+	test_sp.in_out_params[6] = framac_nondetu32(); 	test_sp.in_out_params[7] = framac_nondetu32();
+	test_sp.in_out_params[8] = framac_nondetu32(); 	test_sp.in_out_params[9] = framac_nondetu32();
+	test_sp.in_out_params[10] = framac_nondetu32(); 	test_sp.in_out_params[11] = framac_nondetu32();
+	test_sp.in_out_params[12] = framac_nondetu32(); 	test_sp.in_out_params[13] = framac_nondetu32();
+	test_sp.in_out_params[14] = framac_nondetu32(); 	test_sp.in_out_params[15] = framac_nondetu32();
 
-	//execute harness: TODO
-	slab_main(&test_sp);
+	//execute harness
+	//slab_main(&test_sp);
+	test_sp.cpuid = 0;
+	test_sp.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_VMREAD;
+	ugcpust_vmread((xmhf_uapi_gcpustate_vmrw_params_t *)test_sp.in_out_params);
+        test_sp.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSREAD;
+	ugcpust_gprsread((u16)test_sp.cpuid, (xmhf_uapi_gcpustate_gprs_params_t *)test_sp.in_out_params);
+        test_sp.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSWRITE;
+        ugcpust_gprswrite((u16)test_sp.cpuid, (xmhf_uapi_gcpustate_gprs_params_t *)test_sp.in_out_params);
+        test_sp.dst_uapifn = XMHFGEEC_UAPI_CPUSTATE_GUESTMSRREAD;
+	ugcpust_msrread((xmhf_uapi_gcpustate_msrrw_params_t *)test_sp.in_out_params);
+        test_sp.dst_uapifn = XMHFGEEC_UAPI_CPUSTATE_GUESTMSRWRITE;
+	ugcpust_msrwrite((xmhf_uapi_gcpustate_msrrw_params_t *)test_sp.in_out_params);
 
 
 	//@assert xmhfhwm_cpu_gprs_esp == check_esp;
