@@ -18,5 +18,5 @@ export XMHF_SLAB_SOURCES := $(wildcard $(srcdir)/*.c)
 verify: verifybase
 	@echo Proceeding to verify $(XMHF_SLAB_NAME)...
 	#cd $(XMHF_SLAB_VERIFICATION_DIR) && frama-c -main slab_main -lib-entry -wp -wp-rte -wp-model +cint+cast  -wp-prover alt-ergo,cvc3,z3 -cpp-extra-args=-nostdinc $(VFLAGS) ugcpust_data.c.v.c ugcpust_main.c.v.c
-	cd $(XMHF_SLAB_VERIFICATION_DIR) && frama-c -main ugcpust_vmwrite -lib-entry -wp -wp-rte -wp-model +cint+cast  -wp-prover alt-ergo,cvc3,z3 -cpp-extra-args=-nostdinc $(VFLAGS) ugcpust_data.c.v.c ugcpust_vmwrite.c.v.c
-	##cd $(XMHF_SLAB_VERIFICATION_DIR) && frama-c -val -cpp-extra-args=-nostdinc $(VFLAGS) ../verify/gs_vdriver.c *.c libxmhfhw/*.v.c $(V_XMHFHWM_MODULES)
+	#cd $(XMHF_SLAB_VERIFICATION_DIR) && frama-c -main ugcpust_vmwrite -lib-entry -wp -wp-rte -wp-model +cint+cast  -wp-prover alt-ergo,cvc3,z3 -cpp-extra-args=-nostdinc $(VFLAGS) ugcpust_data.c.v.c ugcpust_vmwrite.c.v.c
+	cd $(XMHF_SLAB_VERIFICATION_DIR) && frama-c -val -cpp-extra-args=-nostdinc $(VFLAGS) ../verify/ugcpust_vdriver.c *.c libxmhfhw/*.v.c $(V_XMHFHWM_MODULES)
