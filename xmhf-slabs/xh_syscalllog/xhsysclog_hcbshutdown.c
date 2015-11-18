@@ -44,48 +44,26 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
+// syscalllog hypapp main module
+// author: amit vasudevan (amitvasudevan@acm.org)
 
-/*
- *
- *  syscalllog hypapp slab decls.
- *
- *  author: amit vasudevan (amitvasudevan@acm.org)
- */
+#include <xmhf.h>
+#include <xmhfgeec.h>
+#include <xmhf-debug.h>
 
-#ifndef __XH_SYSCALLLOG_H__
-#define __XH_SYSCALLLOG_H__
+#include <xc.h>
+#include <uapi_gcpustate.h>
+//#include <uapi_slabmemacc.h>
+#include <uapi_slabmempgtbl.h>
 
-#define SYSCALLLOG_REGISTER     			0xF0
-
-
-#ifndef __ASSEMBLY__
-
-
-extern __attribute__((section(".data"))) bool sl_activated;
-extern __attribute__((section(".data"))) bool _sl_registered;
-
-extern __attribute__((section(".data"))) u8 _sl_pagebuffer[PAGE_SIZE_4K];
-extern __attribute__((section(".data"))) u8 _sl_syscalldigest[SHA_DIGEST_LENGTH];
-extern __attribute__((section(".data"))) u64 shadow_sysenter_rip;
+#include <xh_syscalllog.h>
 
 
 
-void sysclog_hcbhypercall(u32 cpuindex, u32 guest_slab_index);
-void sysclog_hcbinit(u32 cpuindex);
-u32 sysclog_hcbinsntrap(u32 cpuindex, u32 guest_slab_index, u32 insntype);
-void sysclog_hcbmemfault(u32 cpuindex, u32 guest_slab_index);
-void sysclog_hcbshutdown(u32 cpuindex, u32 guest_slab_index);
-
-void sysclog_register(u32 cpuindex, u32 guest_slab_index, u64 gpa);
-void sysclog_loginfo(u32 cpuindex, u32 guest_slab_index, u64 gpa, u64 gva, u64 errorcode);
+// shutdown
+void sysclog_hcbshutdown(u32 cpuindex, u32 guest_slab_index){
+	_XDPRINTF_("%s[%u]: guest slab %u shutdown...\n",
+            __func__, (u16)cpuindex, guest_slab_index);
+}
 
 
-
-
-
-
-
-
-#endif	//__ASSEMBLY__
-
-#endif //__XH_SYSCALLLOG_H__

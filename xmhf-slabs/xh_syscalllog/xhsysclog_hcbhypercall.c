@@ -44,48 +44,56 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
+// syscalllog hypapp main module
+// author: amit vasudevan (amitvasudevan@acm.org)
 
-/*
- *
- *  syscalllog hypapp slab decls.
- *
- *  author: amit vasudevan (amitvasudevan@acm.org)
- */
+#include <xmhf.h>
+#include <xmhfgeec.h>
+#include <xmhf-debug.h>
 
-#ifndef __XH_SYSCALLLOG_H__
-#define __XH_SYSCALLLOG_H__
+#include <xc.h>
+#include <uapi_gcpustate.h>
+#include <uapi_slabmempgtbl.h>
 
-#define SYSCALLLOG_REGISTER     			0xF0
-
-
-#ifndef __ASSEMBLY__
+#include <xh_syscalllog.h>
 
 
-extern __attribute__((section(".data"))) bool sl_activated;
-extern __attribute__((section(".data"))) bool _sl_registered;
+// hypercall
+void sysclog_hcbhypercall(u32 cpuindex, u32 guest_slab_index){
+    slab_params_t spl;
+    xmhf_uapi_gcpustate_gprs_params_t *gcpustate_gprs =
+        (xmhf_uapi_gcpustate_gprs_params_t *)spl.in_out_params;
+    x86regs_t *gprs = (x86regs_t *)&gcpustate_gprs->gprs;
+	u32 call_id;
+	u64 gpa;
 
-extern __attribute__((section(".data"))) u8 _sl_pagebuffer[PAGE_SIZE_4K];
-extern __attribute__((section(".data"))) u8 _sl_syscalldigest[SHA_DIGEST_LENGTH];
-extern __attribute__((section(".data"))) u64 shadow_sysenter_rip;
+    spl.src_slabid = XMHFGEEC_SLAB_XH_SYSCALLLOG;
+    spl.dst_slabid = XMHFGEEC_SLAB_UAPI_GCPUSTATE;
+    spl.cpuid = cpuindex;
+    //spl.in_out_params[0] = XMHF_HIC_UAPI_CPUSTATE;
 
+     spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSREAD;
+    XMHF_SLAB_CALLNEW(&spl);
 
+    call_id = gprs->eax;
+    gpa = ((u64)gprs->ebx << 32) | gprs->edx;
 
-void sysclog_hcbhypercall(u32 cpuindex, u32 guest_slab_index);
-void sysclog_hcbinit(u32 cpuindex);
-u32 sysclog_hcbinsntrap(u32 cpuindex, u32 guest_slab_index, u32 insntype);
-void sysclog_hcbmemfault(u32 cpuindex, u32 guest_slab_index);
-void sysclog_hcbshutdown(u32 cpuindex, u32 guest_slab_index);
-
-void sysclog_register(u32 cpuindex, u32 guest_slab_index, u64 gpa);
-void sysclog_loginfo(u32 cpuindex, u32 guest_slab_index, u64 gpa, u64 gva, u64 errorcode);
-
-
-
-
-
-
+	_XDPRINTF_("%s[%u]: call_id=%x, gpa=%016llx\n", __func__, (u16)cpuindex, call_id, gpa);
 
 
-#endif	//__ASSEMBLY__
+	switch(call_id){
 
-#endif //__XH_SYSCALLLOG_H__
+		case SYSCALLLOG_REGISTER:{
+			sysclog_register(cpuindex, guest_slab_index, gpa);
+		}
+		break;
+
+		default:
+            _XDPRINTF_("%s[%u]: unsupported hypercall %x. Ignoring\n",
+                       __func__, (u16)cpuindex, call_id);
+			break;
+	}
+
+}
+
+

@@ -44,7 +44,7 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-// syscalllog hypapp -- verification manifest
+// syscalllog hypapp main module
 // author: amit vasudevan (amitvasudevan@acm.org)
 
 #include <xmhf.h>
@@ -52,22 +52,16 @@
 #include <xmhf-debug.h>
 
 #include <xc.h>
+#include <uapi_gcpustate.h>
+//#include <uapi_slabmemacc.h>
+#include <uapi_slabmempgtbl.h>
+
 #include <xh_syscalllog.h>
 
 
-#if defined (__XMHF_VERIFICATION__)
-bool sl_activated= nondet_bool();
-bool _sl_registered= nondet_bool();
-#else
-bool sl_activated=false;
-bool _sl_registered=false;
-#endif // defined
 
-/*
-void xhsyscalllog_inv_xmhf_hic_uapi_mempgtbl_setentry(xmhf_hic_uapi_mempgtbl_desc_t *imdesc){
-    if(!sl_activated){
-        if(imdesc->gpa == 0)
-            assert( !(imdesc->entry & 0x4) );
-    }
+// initialization
+void sysclog_hcbinit(u32 cpuindex){
+	_XDPRINTF_("%s[%u]: syscalllog initializing...\n", __func__, (u16)cpuindex);
 }
-*/
+
