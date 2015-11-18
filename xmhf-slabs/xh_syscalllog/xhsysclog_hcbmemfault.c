@@ -62,11 +62,14 @@
 
 
 
-// memory fault
+//@ghost bool sysclog_hcbmemfault_invokelogger=false;
+/*@
+	ensures (sysclog_hcbmemfault_invokelogger == true);
+@*/
 void sysclog_hcbmemfault(u32 cpuindex, u32 guest_slab_index){
-    slab_params_t spl;
-    xmhf_uapi_gcpustate_vmrw_params_t *gcpustate_vmrwp =
-        (xmhf_uapi_gcpustate_vmrw_params_t *)spl.in_out_params;
+	slab_params_t spl;
+	xmhf_uapi_gcpustate_vmrw_params_t *gcpustate_vmrwp =
+		(xmhf_uapi_gcpustate_vmrw_params_t *)spl.in_out_params;
 	u64 errorcode;
 	u64 gpa;
 	u64 gva;
@@ -90,6 +93,6 @@ void sysclog_hcbmemfault(u32 cpuindex, u32 guest_slab_index){
 
 
 	sysclog_loginfo(cpuindex, guest_slab_index, gpa, gva, errorcode);
-
+	//@ghost sysclog_hcbmemfault_invokelogger = true;
 }
 
