@@ -82,32 +82,8 @@ void slab_main(slab_params_t *sp){
         break;
 
         case XC_HYPAPPCB_MEMORYFAULT:{
-         	u64 errorcode;
-         	u64 gpa;
-         	u64 gva;
-         	slab_params_t spl;
-       	    xmhf_uapi_gcpustate_vmrw_params_t *gcpustate_vmrwp =
-                (xmhf_uapi_gcpustate_vmrw_params_t *)spl.in_out_params;
 
-         	spl.src_slabid = XMHFGEEC_SLAB_XH_SYSCALLLOG;
-         	spl.dst_slabid = XMHFGEEC_SLAB_UAPI_GCPUSTATE;
-         	spl.cpuid = sp->cpuid;
-            //spl.in_out_params[0] = XMHF_HIC_UAPI_CPUSTATE;
-             spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_VMREAD;
-
-            gcpustate_vmrwp->encoding = VMCS_INFO_EXIT_QUALIFICATION;
-            XMHF_SLAB_CALLNEW(&spl);
-            errorcode = gcpustate_vmrwp->value;
-
-            gcpustate_vmrwp->encoding = VMCS_INFO_GUEST_PADDR_FULL;
-            XMHF_SLAB_CALLNEW(&spl);
-            gpa = gcpustate_vmrwp->value;
-
-            gcpustate_vmrwp->encoding = VMCS_INFO_GUEST_LINEAR_ADDRESS;
-            XMHF_SLAB_CALLNEW(&spl);
-            gva = gcpustate_vmrwp->value;
-
-            sysclog_hcbmemfault(sp->cpuid, hcbp->guest_slab_index, gpa, gva, errorcode);
+            sysclog_hcbmemfault(sp->cpuid, hcbp->guest_slab_index);
         }
         break;
 
