@@ -65,7 +65,7 @@
 extern bool hd_activated;
 
 void hyperdep_hcbshutdown(u32 cpuindex, u32 guest_slab_index);
-void hyperdep_hcbmemfault(u32 cpuindex, u32 guest_slab_index, u64 gpa, u64 gva, u64 errorcode);
+void hyperdep_hcbmemfault(u32 cpuindex, u32 guest_slab_index);
 void hyperdep_hcbinit(u32 cpuindex);
 void hyperdep_hcbhypercall(u32 cpuindex, u32 guest_slab_index);
 
