@@ -63,7 +63,6 @@
 //VFM
 extern bool hd_activated;
 
-//void xhhyperdep_inv_xmhf_hic_uapi_mempgtbl_setentry(xmhf_hic_uapi_mempgtbl_desc_t *imdesc);
 
 #endif	//__ASSEMBLY__
 
