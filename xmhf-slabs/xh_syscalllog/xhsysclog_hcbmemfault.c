@@ -80,14 +80,17 @@ void sysclog_hcbmemfault(u32 cpuindex, u32 guest_slab_index){
 	spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_VMREAD;
 
 	gcpustate_vmrwp->encoding = VMCS_INFO_EXIT_QUALIFICATION;
+	//@assert spl.dst_slabid != XMHFGEEC_SLAB_XC_NWLOG;
 	XMHF_SLAB_CALLNEW(&spl);
 	errorcode = gcpustate_vmrwp->value;
 
 	gcpustate_vmrwp->encoding = VMCS_INFO_GUEST_PADDR_FULL;
+	//@assert spl.dst_slabid != XMHFGEEC_SLAB_XC_NWLOG;
 	XMHF_SLAB_CALLNEW(&spl);
 	gpa = gcpustate_vmrwp->value;
 
 	gcpustate_vmrwp->encoding = VMCS_INFO_GUEST_LINEAR_ADDRESS;
+	//@assert spl.dst_slabid != XMHFGEEC_SLAB_XC_NWLOG;
 	XMHF_SLAB_CALLNEW(&spl);
 	gva = gcpustate_vmrwp->value;
 
