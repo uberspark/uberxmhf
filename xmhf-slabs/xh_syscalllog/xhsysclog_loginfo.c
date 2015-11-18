@@ -60,8 +60,20 @@
 #include <xh_syscalllog.h>
 
 
+//@ghost bool sysclog_loginfo_nwlogged=false;
+/*@
 
-// memory fault
+	behavior yes_log:
+		assumes (_sl_registered && gpa == 0);
+		ensures sysclog_loginfo_nwlogged == true;
+
+	behavior no_log:
+		assumes !(_sl_registered && gpa == 0);
+		ensures sysclog_loginfo_nwlogged == false;
+
+	complete behaviors;
+	disjoint behaviors;
+@*/
 void sysclog_loginfo(u32 cpuindex, u32 guest_slab_index, u64 gpa, u64 gva, u64 errorcode){
 	slab_params_t spl;
 	xmhf_uapi_gcpustate_vmrw_params_t *gcpustate_vmrwp =
@@ -76,7 +88,6 @@ void sysclog_loginfo(u32 cpuindex, u32 guest_slab_index, u64 gpa, u64 gva, u64 e
 		spl.src_slabid = XMHFGEEC_SLAB_XH_SYSCALLLOG;
 		spl.dst_slabid = XMHFGEEC_SLAB_UAPI_GCPUSTATE;
 		spl.cpuid = cpuindex;
-
 
 		//read GPR state
 		spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSREAD;
@@ -93,6 +104,11 @@ void sysclog_loginfo(u32 cpuindex, u32 guest_slab_index, u64 gpa, u64 gva, u64 e
 		gcpustate_vmrwp->encoding = VMCS_GUEST_RIP;
 		gcpustate_vmrwp->value = shadow_sysenter_rip;
 		XMHF_SLAB_CALLNEW(&spl);
+
+		//@ghost sysclog_loginfo_nwlogged = true;
+	}else{
+		//do nothing
+		//@ghost sysclog_loginfo_nwlogged = false;
 	}
 
 }
