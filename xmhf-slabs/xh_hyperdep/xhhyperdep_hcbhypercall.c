@@ -89,8 +89,10 @@ static inline void hyperdep_hcbhypercall_helper(u32 cpuindex, u32 call_id, u32 g
 	}
 }
 
-#if 0
-// hypercall
+//@ghost bool hyperdep_hcbhypercall_invokehelper=false;
+/*@
+	ensures hyperdep_hcbhypercall_invokehelper == true;
+@*/
 void hyperdep_hcbhypercall(u32 cpuindex, u32 guest_slab_index){
 	slab_params_t spl;
 	xmhf_uapi_gcpustate_gprs_params_t *gcpustate_gprs =
@@ -109,6 +111,5 @@ void hyperdep_hcbhypercall(u32 cpuindex, u32 guest_slab_index){
 	gpa = ((u64)gprs->ebx << 32) | gprs->edx;
 
 	hyperdep_hcbhypercall_helper(cpuindex, call_id, guest_slab_index, gpa);
-
+	//@ghost hyperdep_hcbhypercall_invokehelper = true;
 }
-#endif
