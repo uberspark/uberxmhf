@@ -44,36 +44,23 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
+// hyperdep hypapp main module
+// author: amit vasudevan (amitvasudevan@acm.org)
 
-/*
- *
- *  hyperdep hypapp slab decls.
- *
- *  author: amit vasudevan (amitvasudevan@acm.org)
- */
+#include <xmhf.h>
+#include <xmhfgeec.h>
+#include <xmhf-debug.h>
 
-#ifndef __XH_HYPERDEP_H__
-#define __XH_HYPERDEP_H__
+#include <xc.h>
+//#include <uapi_gcpustate.h>
+//#include <uapi_slabmempgtbl.h>
 
-#define HYPERDEP_ACTIVATEDEP			0xC0
-#define HYPERDEP_DEACTIVATEDEP			0xC1
-
-#ifndef __ASSEMBLY__
+#include <xh_hyperdep.h>
 
 
-
-extern bool hd_activated;
-
-void hyperdep_hcbshutdown(u32 cpuindex, u32 guest_slab_index);
-void hyperdep_hcbmemfault(u32 cpuindex, u32 guest_slab_index);
-void hyperdep_hcbinit(u32 cpuindex);
-void hyperdep_hcbhypercall(u32 cpuindex, u32 guest_slab_index);
-
-void hyperdep_deactivatedep(u32 cpuindex, u32 guest_slab_index, u64 gpa);
-void hyperdep_activatedep(u32 cpuindex, u32 guest_slab_index, u64 gpa);
+// initialization
+void hyperdep_hcbinit(u32 cpuindex){
+	_XDPRINTF_("%s[%u]: hyperDEP initializing...\n", __func__, (u16)cpuindex);
+}
 
 
-
-#endif	//__ASSEMBLY__
-
-#endif //__XH_HYPERDEP_H__

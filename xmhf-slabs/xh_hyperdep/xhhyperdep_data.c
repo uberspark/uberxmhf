@@ -55,16 +55,4 @@
 #include <xh_hyperdep.h>
 
 
-#if defined (__XMHF_VERIFICATION__)
-bool hd_activated=nondet_bool();
-#else
 bool hd_activated=false;
-#endif
-
-/*
-void xhhyperdep_inv_xmhf_hic_uapi_mempgtbl_setentry(xmhf_hic_uapi_mempgtbl_desc_t *imdesc){
-    if(!hd_activated){
-        assert(!(imdesc->entry & 0x4));
-    }
-}
-*/
