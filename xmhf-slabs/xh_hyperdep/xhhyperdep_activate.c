@@ -62,21 +62,17 @@
 //activate DEP for a given page (at gpa)
 void hyperdep_activatedep(u32 cpuindex, u32 guest_slab_index, u64 gpa){
 	slab_params_t spl;
-	//xmhf_hic_uapi_mempgtbl_desc_t *mdesc = (xmhf_hic_uapi_mempgtbl_desc_t *)&spl.in_out_params[2];
-        //xmhf_uapi_slabmempgtbl_entry_params_t *smpgtblep =
-        //    (xmhf_uapi_slabmempgtbl_entry_params_t *)spl.in_out_params;
-    xmhfgeec_uapi_slabmempgtbl_getentryforpaddr_params_t *getentryforpaddrp =
-        (xmhfgeec_uapi_slabmempgtbl_getentryforpaddr_params_t *)spl.in_out_params;
-    xmhfgeec_uapi_slabmempgtbl_setentryforpaddr_params_t *setentryforpaddrp =
-        (xmhfgeec_uapi_slabmempgtbl_setentryforpaddr_params_t *)spl.in_out_params;
+	xmhfgeec_uapi_slabmempgtbl_getentryforpaddr_params_t *getentryforpaddrp =
+		(xmhfgeec_uapi_slabmempgtbl_getentryforpaddr_params_t *)spl.in_out_params;
+	xmhfgeec_uapi_slabmempgtbl_setentryforpaddr_params_t *setentryforpaddrp =
+		(xmhfgeec_uapi_slabmempgtbl_setentryforpaddr_params_t *)spl.in_out_params;
 
 
 	spl.src_slabid = XMHFGEEC_SLAB_XH_HYPERDEP;
-    spl.dst_slabid = XMHFGEEC_SLAB_UAPI_SLABMEMPGTBL;
+	spl.dst_slabid = XMHFGEEC_SLAB_UAPI_SLABMEMPGTBL;
 	spl.cpuid = cpuindex;
-	//spl.in_out_params[0] = XMHF_HIC_UAPI_MEMPGTBL;
 
-    if(!hd_activated){
+	if(!hd_activated){
 
         if(gpa != 0){
             spl.dst_uapifn = XMHFGEEC_UAPI_SLABMEMPGTBL_GETENTRYFORPADDR;
@@ -97,5 +93,5 @@ void hyperdep_activatedep(u32 cpuindex, u32 guest_slab_index, u64 gpa){
 
             hd_activated=true;
         }
-    }
+	}
 }
