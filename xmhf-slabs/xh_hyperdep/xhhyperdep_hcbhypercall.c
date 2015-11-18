@@ -58,47 +58,41 @@
 #include <xh_hyperdep.h>
 
 
+static inline void hyperdep_hcbhypercall_helper(u32 cpuindex, u32 call_id, u32 guest_slab_index, u64 gpa){
+	_XDPRINTF_("%s[%u]: call_id=%x, gpa=%016llx\n", __func__, (u16)cpuindex, call_id, gpa);
+
+	if(call_id == HYPERDEP_ACTIVATEDEP){
+		hyperdep_activatedep(cpuindex, guest_slab_index, gpa);
+
+	}else if (call_id == HYPERDEP_DEACTIVATEDEP){
+		hyperdep_deactivatedep(cpuindex, guest_slab_index, gpa);
+
+	}else{
+		_XDPRINTF_("%s[%u]: unsupported hypercall %x. Ignoring\n",__func__, (u16)cpuindex, call_id);
+
+	}
+}
+
 
 // hypercall
 void hyperdep_hcbhypercall(u32 cpuindex, u32 guest_slab_index){
-    slab_params_t spl;
-    xmhf_uapi_gcpustate_gprs_params_t *gcpustate_gprs =
-        (xmhf_uapi_gcpustate_gprs_params_t *)spl.in_out_params;
-    x86regs_t *gprs = (x86regs_t *)&gcpustate_gprs->gprs;
+	slab_params_t spl;
+	xmhf_uapi_gcpustate_gprs_params_t *gcpustate_gprs =
+		(xmhf_uapi_gcpustate_gprs_params_t *)spl.in_out_params;
+	x86regs_t *gprs = (x86regs_t *)&gcpustate_gprs->gprs;
 	u32 call_id;
 	u64 gpa;
 
-    spl.src_slabid = XMHFGEEC_SLAB_XH_HYPERDEP;
-    spl.dst_slabid = XMHFGEEC_SLAB_UAPI_GCPUSTATE;
-    spl.cpuid = cpuindex;
-    //spl.in_out_params[0] = XMHF_HIC_UAPI_CPUSTATE;
+	spl.src_slabid = XMHFGEEC_SLAB_XH_HYPERDEP;
+	spl.dst_slabid = XMHFGEEC_SLAB_UAPI_GCPUSTATE;
+	spl.cpuid = cpuindex;
+	spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSREAD;
+	XMHF_SLAB_CALLNEW(&spl);
 
-     spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSREAD;
-    XMHF_SLAB_CALLNEW(&spl);
+	call_id = gprs->eax;
+	gpa = ((u64)gprs->ebx << 32) | gprs->edx;
 
-    call_id = gprs->eax;
-    gpa = ((u64)gprs->ebx << 32) | gprs->edx;
-
-	_XDPRINTF_("%s[%u]: call_id=%x, gpa=%016llx\n", __func__, (u16)cpuindex, call_id, gpa);
-
-
-	switch(call_id){
-
-		case HYPERDEP_ACTIVATEDEP:{
-			hyperdep_activatedep(cpuindex, guest_slab_index, gpa);
-		}
-		break;
-
-		case HYPERDEP_DEACTIVATEDEP:{
-			hyperdep_deactivatedep(cpuindex, guest_slab_index, gpa);
-		}
-		break;
-
-		default:
-            _XDPRINTF_("%s[%u]: unsupported hypercall %x. Ignoring\n",
-                       __func__, (u16)cpuindex, call_id);
-			break;
-	}
+	hyperdep_hcbhypercall_helper(cpuindex, call_id, guest_slab_index, gpa);
 
 }
 
