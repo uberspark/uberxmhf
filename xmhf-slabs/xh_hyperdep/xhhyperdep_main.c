@@ -58,14 +58,31 @@
 #include <xh_hyperdep.h>
 
 
+//@ ghost bool hyperdep_methodcall_hcbinit = false;
+//@ ghost bool hyperdep_methodcall_hcbhypercall = false;
+//@ ghost bool hyperdep_methodcall_hcbmemfault = false;
+//@ ghost bool hyperdep_methodcall_hcbshutdown = false;
+//@ ghost bool hyperdep_methodcall_invalid = false;
 /*@
 	requires \valid(sp);
 	ensures (sp->in_out_params[3] == XC_HYPAPPCB_CHAIN);
+	ensures (sp->in_out_params[0] == XC_HYPAPPCB_INITIALIZE) ==>
+		(hyperdep_methodcall_hcbinit == true);
+	ensures (sp->in_out_params[0] == XC_HYPAPPCB_HYPERCALL) ==>
+		(hyperdep_methodcall_hcbhypercall == true);
+	ensures (sp->in_out_params[0] == XC_HYPAPPCB_MEMORYFAULT) ==>
+		(hyperdep_methodcall_hcbmemfault == true);
+	ensures (sp->in_out_params[0] == XC_HYPAPPCB_SHUTDOWN) ==>
+		(hyperdep_methodcall_hcbshutdown == true);
+
+	ensures !(
+		(sp->in_out_params[0] == XC_HYPAPPCB_INITIALIZE) ||
+		(sp->in_out_params[0] == XC_HYPAPPCB_HYPERCALL) ||
+		(sp->in_out_params[0] == XC_HYPAPPCB_MEMORYFAULT) ||
+		(sp->in_out_params[0] == XC_HYPAPPCB_SHUTDOWN)
+		) ==> (hyperdep_methodcall_invalid == true);
 @*/
 void slab_main(slab_params_t *sp){
-	//xc_hypappcb_params_t *hcbp = (xc_hypappcb_params_t *)&sp->in_out_params[0];
-	//hcbp->cbresult=XC_HYPAPPCB_CHAIN;
-
 
 	_XDPRINTF_("XHHYPERDEP[%u]: Got control, cbtype=%x: ESP=%08x\n",
 		(u16)sp->cpuid, sp->in_out_params[0], CASM_FUNCCALL(read_esp,CASM_NOPARAM));
@@ -73,15 +90,19 @@ void slab_main(slab_params_t *sp){
 
 	if(sp->in_out_params[0] == XC_HYPAPPCB_INITIALIZE){
 		hyperdep_hcbinit(sp->cpuid);
+		//@ghost hyperdep_methodcall_hcbinit = true;
 
 	}else if (sp->in_out_params[0] == XC_HYPAPPCB_HYPERCALL){
 		hyperdep_hcbhypercall(sp->cpuid, sp->in_out_params[2]);
+		//@ghost hyperdep_methodcall_hcbhypercall = true;
 
         }else if (sp->in_out_params[0] == XC_HYPAPPCB_MEMORYFAULT){
 		hyperdep_hcbmemfault(sp->cpuid, sp->in_out_params[2]);
+		//@ghost hyperdep_methodcall_hcbmemfault = true;
 
         }else if (sp->in_out_params[0] == XC_HYPAPPCB_SHUTDOWN){
 		hyperdep_hcbshutdown(sp->cpuid, sp->in_out_params[2]);
+		//@ghost hyperdep_methodcall_hcbshutdown = true;
 
         //}else if (sp->in_out_params[0] == XC_HYPAPPCB_TRAP_IO){
 		//
@@ -90,7 +111,8 @@ void slab_main(slab_params_t *sp){
         //}else if (sp->in_out_params[0] == XC_HYPAPPCB_TRAP_EXCEPTION){
 		//
         }else{
-            _XDPRINTF_("%s[%u]: Unknown cbtype. Ignoring!\n", __func__, (u16)sp->cpuid);
+		_XDPRINTF_("%s[%u]: Unknown cbtype. Ignoring!\n", __func__, (u16)sp->cpuid);
+		//@ghost hyperdep_methodcall_invalid = true;
 
         }
 
