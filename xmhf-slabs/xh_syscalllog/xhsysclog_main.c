@@ -55,6 +55,35 @@
 #include <xh_syscalllog.h>
 
 
+//@ ghost bool sysclog_methodcall_hcbinit = false;
+//@ ghost bool sysclog_methodcall_hcbhypercall = false;
+//@ ghost bool sysclog_methodcall_hcbmemfault = false;
+//@ ghost bool sysclog_methodcall_hcbshutdown = false;
+//@ ghost bool sysclog_methodcall_hcbinsntrap = false;
+//@ ghost bool sysclog_methodcall_invalid = false;
+/*@
+	requires \valid(sp);
+
+	ensures (sp->in_out_params[0] == XC_HYPAPPCB_INITIALIZE) ==>
+		 (sysclog_methodcall_hcbinit == true && (sp->in_out_params[3] == XC_HYPAPPCB_CHAIN));
+	ensures (sp->in_out_params[0] == XC_HYPAPPCB_HYPERCALL) ==>
+		(sysclog_methodcall_hcbhypercall == true && (sp->in_out_params[3] == XC_HYPAPPCB_CHAIN));
+	ensures (sp->in_out_params[0] == XC_HYPAPPCB_MEMORYFAULT) ==>
+		(sysclog_methodcall_hcbmemfault == true && (sp->in_out_params[3] == XC_HYPAPPCB_CHAIN));
+	ensures (sp->in_out_params[0] == XC_HYPAPPCB_SHUTDOWN) ==>
+		(sysclog_methodcall_hcbshutdown == true && (sp->in_out_params[3] == XC_HYPAPPCB_CHAIN));
+	ensures (sp->in_out_params[0] == XC_HYPAPPCB_TRAP_INSTRUCTION) ==>
+		(sysclog_methodcall_hcbinsntrap == true && (sp->in_out_params[3] == XC_HYPAPPCB_CHAIN || sp->in_out_params[3] == XC_HYPAPPCB_NOCHAIN));
+
+	ensures !(
+		(sp->in_out_params[0] == XC_HYPAPPCB_INITIALIZE) ||
+		(sp->in_out_params[0] == XC_HYPAPPCB_HYPERCALL) ||
+		(sp->in_out_params[0] == XC_HYPAPPCB_MEMORYFAULT) ||
+		(sp->in_out_params[0] == XC_HYPAPPCB_SHUTDOWN) ||
+		(sp->in_out_params[0] == XC_HYPAPPCB_TRAP_INSTRUCTION)
+		) ==> (sysclog_methodcall_invalid == true);
+@*/
+
 void slab_main(slab_params_t *sp){
 
 	_XDPRINTF_("XHSYSCALLLOG[%u]: Got control, cbtype=%x: ESP=%08x\n",
@@ -62,31 +91,43 @@ void slab_main(slab_params_t *sp){
 
 	if( sp->in_out_params[0] == XC_HYPAPPCB_INITIALIZE){
 		sysclog_hcbinit(sp->cpuid);
+		//@ghost sysclog_methodcall_hcbinit = true;
 		sp->in_out_params[3]= XC_HYPAPPCB_CHAIN;
+
 
         }else if (sp->in_out_params[0] == XC_HYPAPPCB_HYPERCALL){
 		sysclog_hcbhypercall(sp->cpuid, sp->in_out_params[2]);
+		//@ghost sysclog_methodcall_hcbhypercall = true;
 		sp->in_out_params[3]= XC_HYPAPPCB_CHAIN;
 
         }else if (sp->in_out_params[0] == XC_HYPAPPCB_MEMORYFAULT){
 		sysclog_hcbmemfault(sp->cpuid, sp->in_out_params[2]);
+		//@ghost sysclog_methodcall_hcbmemfault = true;
 		sp->in_out_params[3]= XC_HYPAPPCB_CHAIN;
 
         }else if (sp->in_out_params[0] == XC_HYPAPPCB_SHUTDOWN){
 		sysclog_hcbshutdown(sp->cpuid, sp->in_out_params[2]);
+		//@ghost sysclog_methodcall_hcbshutdown = true;
 		sp->in_out_params[3]= XC_HYPAPPCB_CHAIN;
 
         //}else if (sp->in_out_params[0] == XC_HYPAPPCB_TRAP_IO){
 		//
 
         }else if (sp->in_out_params[0] == XC_HYPAPPCB_TRAP_INSTRUCTION){
-		sp->in_out_params[3] = sysclog_hcbinsntrap(sp->cpuid, sp->in_out_params[2], sp->in_out_params[1]);
+		if(sysclog_hcbinsntrap(sp->cpuid, sp->in_out_params[2], sp->in_out_params[1]) == XC_HYPAPPCB_CHAIN)
+			sp->in_out_params[3] = XC_HYPAPPCB_CHAIN;
+		else
+			sp->in_out_params[3] = XC_HYPAPPCB_NOCHAIN;
+		//@ghost sysclog_methodcall_hcbinsntrap = true;
+
 
         //}else if (sp->in_out_params[0] == XC_HYPAPPCB_TRAP_EXCEPTION){
 		//
 
         }else{
 		_XDPRINTF_("%s[%u]: Unknown cbtype. Ignoring!\n",__func__, (u16)sp->cpuid);
+		sp->in_out_params[3]= XC_HYPAPPCB_CHAIN;
+		//@ghost sysclog_methodcall_invalid = true;
 
         }
 }
