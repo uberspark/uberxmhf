@@ -57,23 +57,39 @@
 
 #include <xh_hyperdep.h>
 
+//@ ghost bool hyperdep_methodcall_hcbhypercall_activatedep = false;
+//@ ghost bool hyperdep_methodcall_hcbhypercall_deactivatedep = false;
+//@ ghost bool hyperdep_methodcall_hcbhypercall_invalid = false;
+/*@
+	ensures (call_id == HYPERDEP_ACTIVATEDEP) ==>
+		(hyperdep_methodcall_hcbhypercall_activatedep == true);
+	ensures (call_id == HYPERDEP_DEACTIVATEDEP) ==>
+		(hyperdep_methodcall_hcbhypercall_deactivatedep == true);
+	ensures !(
+			(call_id == HYPERDEP_ACTIVATEDEP) ||
+			(call_id == HYPERDEP_DEACTIVATEDEP)
+		) ==> 	(hyperdep_methodcall_hcbhypercall_invalid == true);
+@*/
 
 static inline void hyperdep_hcbhypercall_helper(u32 cpuindex, u32 call_id, u32 guest_slab_index, u64 gpa){
 	_XDPRINTF_("%s[%u]: call_id=%x, gpa=%016llx\n", __func__, (u16)cpuindex, call_id, gpa);
 
 	if(call_id == HYPERDEP_ACTIVATEDEP){
 		hyperdep_activatedep(cpuindex, guest_slab_index, gpa);
+		//@ghost hyperdep_methodcall_hcbhypercall_activatedep = true;
 
 	}else if (call_id == HYPERDEP_DEACTIVATEDEP){
 		hyperdep_deactivatedep(cpuindex, guest_slab_index, gpa);
+		//@ghost hyperdep_methodcall_hcbhypercall_deactivatedep = true;
 
 	}else{
 		_XDPRINTF_("%s[%u]: unsupported hypercall %x. Ignoring\n",__func__, (u16)cpuindex, call_id);
+		//@ghost hyperdep_methodcall_hcbhypercall_invalid = true;
 
 	}
 }
 
-
+#if 0
 // hypercall
 void hyperdep_hcbhypercall(u32 cpuindex, u32 guest_slab_index){
 	slab_params_t spl;
@@ -95,4 +111,4 @@ void hyperdep_hcbhypercall(u32 cpuindex, u32 guest_slab_index){
 	hyperdep_hcbhypercall_helper(cpuindex, call_id, guest_slab_index, gpa);
 
 }
-
+#endif
