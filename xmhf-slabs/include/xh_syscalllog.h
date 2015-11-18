@@ -84,7 +84,7 @@ extern __attribute__((section(".data"))) u64 sl_log_index;
 void sysclog_hcbhypercall(u32 cpuindex, u32 guest_slab_index);
 void sysclog_hcbinit(u32 cpuindex);
 u32 sysclog_hcbinsntrap(u32 cpuindex, u32 guest_slab_index, u32 insntype);
-void sysclog_hcbmemfault(u32 cpuindex, u32 guest_slab_index, u64 gpa, u64 gva, u64 errorcode);
+void sysclog_hcbmemfault(u32 cpuindex, u32 guest_slab_index);
 void sysclog_hcbshutdown(u32 cpuindex, u32 guest_slab_index);
 void sysclog_register(u32 cpuindex, u32 guest_slab_index, u64 gpa);
 
