@@ -56,16 +56,9 @@
 #define __XH_SYSCALLLOG_H__
 
 #define SYSCALLLOG_REGISTER     			0xF0
-#define MAX_SL_LOG_SIZE 128
 
 
 #ifndef __ASSEMBLY__
-
-typedef struct {
-    bool syscallmodified;
-    u8 syscalldigest[SHA_DIGEST_LENGTH];
-    x86regs_t r;
-} sl_log_type_t;
 
 
 extern __attribute__((section(".data"))) bool sl_activated;
@@ -74,10 +67,6 @@ extern __attribute__((section(".data"))) bool _sl_registered;
 extern __attribute__((section(".data"))) u8 _sl_pagebuffer[PAGE_SIZE_4K];
 extern __attribute__((section(".data"))) u8 _sl_syscalldigest[SHA_DIGEST_LENGTH];
 extern __attribute__((section(".data"))) u64 shadow_sysenter_rip;
-
-extern __attribute__((section(".data"))) sl_log_type_t sl_log[MAX_SL_LOG_SIZE];
-
-extern __attribute__((section(".data"))) u64 sl_log_index;
 
 
 

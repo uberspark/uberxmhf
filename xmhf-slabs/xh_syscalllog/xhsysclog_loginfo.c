@@ -60,24 +60,12 @@
 #include <xh_syscalllog.h>
 
 
-// logs given info into memory buffer sl_log
-static void sl_loginfo(x86regs_t *r){
-    if(sl_log_index < MAX_SL_LOG_SIZE){
-        memcpy(&sl_log[sl_log_index].r, r, sizeof(x86regs_t));
-        sl_log_index++;
-    }
-}
-
-
 
 // memory fault
 void sysclog_loginfo(u32 cpuindex, u32 guest_slab_index, u64 gpa, u64 gva, u64 errorcode){
 	slab_params_t spl;
 	xmhf_uapi_gcpustate_vmrw_params_t *gcpustate_vmrwp =
 		(xmhf_uapi_gcpustate_vmrw_params_t *)spl.in_out_params;
-	//xmhf_uapi_gcpustate_gprs_params_t *gcpustate_gprs =
-	//	(xmhf_uapi_gcpustate_gprs_params_t *)spl.in_out_params;
-	//x86regs_t r;
 
 	if(_sl_registered && gpa == 0){
 
@@ -93,14 +81,11 @@ void sysclog_loginfo(u32 cpuindex, u32 guest_slab_index, u64 gpa, u64 gva, u64 e
 		//read GPR state
 		spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSREAD;
 		XMHF_SLAB_CALLNEW(&spl);
-		//memcpy(&r, &gcpustate_gprs->gprs, sizeof(x86regs_t));
-
 
 		//log GPR state for syscall
 		spl.dst_slabid = XMHFGEEC_SLAB_XC_NWLOG;
 		spl.dst_uapifn = XMHFGEEC_SLAB_XC_NWLOG_LOGDATA;
 		XMHF_SLAB_CALLNEW(&spl);
-		//sl_loginfo(&r);
 
 		//set guest RIP to shadow_sysenter_rip to continue execution
 		spl.dst_slabid = XMHFGEEC_SLAB_UAPI_GCPUSTATE;
