@@ -55,13 +55,23 @@
 #ifndef __XH_HYPERDEP_H__
 #define __XH_HYPERDEP_H__
 
+#define HYPERDEP_ACTIVATEDEP			0xC0
+#define HYPERDEP_DEACTIVATEDEP			0xC1
 
 #ifndef __ASSEMBLY__
 
 
 
-//VFM
 extern bool hd_activated;
+
+void hyperdep_hcbshutdown(u32 cpuindex, u32 guest_slab_index);
+void hyperdep_hcbmemfault(u32 cpuindex, u32 guest_slab_index, u64 gpa, u64 gva, u64 errorcode);
+void hyperdep_hcbinit(u32 cpuindex);
+void hyperdep_hcbhypercall(u32 cpuindex, u32 guest_slab_index);
+
+void hyperdep_deactivatedep(u32 cpuindex, u32 guest_slab_index, u64 gpa);
+void hyperdep_activatedep(u32 cpuindex, u32 guest_slab_index, u64 gpa);
+
 
 
 #endif	//__ASSEMBLY__
