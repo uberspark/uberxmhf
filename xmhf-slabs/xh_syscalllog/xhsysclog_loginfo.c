@@ -59,37 +59,71 @@
 #include <xh_syscalllog.h>
 
 
+// logs given info into memory buffer sl_log
+static void sl_loginfo(bool syscallmodified, u8 *digest, x86regs_t *r){
+    if(sl_log_index < MAX_SL_LOG_SIZE){
+        sl_log[sl_log_index].syscallmodified = syscallmodified;
+        memcpy(&sl_log[sl_log_index].syscalldigest, digest, SHA_DIGEST_LENGTH);
+        memcpy(&sl_log[sl_log_index].r, r, sizeof(x86regs_t));
+        sl_log_index++;
+    }
+}
 
 
 
 // memory fault
-void sysclog_hcbmemfault(u32 cpuindex, u32 guest_slab_index){
+void sysclog_loginfo(u32 cpuindex, u32 guest_slab_index, u64 gpa, u64 gva, u64 errorcode){
     slab_params_t spl;
     xmhf_uapi_gcpustate_vmrw_params_t *gcpustate_vmrwp =
         (xmhf_uapi_gcpustate_vmrw_params_t *)spl.in_out_params;
-	u64 errorcode;
-	u64 gpa;
-	u64 gva;
+    xmhf_uapi_gcpustate_gprs_params_t *gcpustate_gprs =
+        (xmhf_uapi_gcpustate_gprs_params_t *)spl.in_out_params;
+    u8 syscalldigest[SHA_DIGEST_LENGTH];
+    bool syscallhandler_modified=false;
+    x86regs_t r;
 
-	spl.src_slabid = XMHFGEEC_SLAB_XH_SYSCALLLOG;
-	spl.dst_slabid = XMHFGEEC_SLAB_UAPI_GCPUSTATE;
-	spl.cpuid = cpuindex;
-	spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_VMREAD;
-
-	gcpustate_vmrwp->encoding = VMCS_INFO_EXIT_QUALIFICATION;
-	XMHF_SLAB_CALLNEW(&spl);
-	errorcode = gcpustate_vmrwp->value;
-
-	gcpustate_vmrwp->encoding = VMCS_INFO_GUEST_PADDR_FULL;
-	XMHF_SLAB_CALLNEW(&spl);
-	gpa = gcpustate_vmrwp->value;
-
-	gcpustate_vmrwp->encoding = VMCS_INFO_GUEST_LINEAR_ADDRESS;
-	XMHF_SLAB_CALLNEW(&spl);
-	gva = gcpustate_vmrwp->value;
+    if(!_sl_registered)
+        return;
 
 
-	sysclog_loginfo(cpuindex, guest_slab_index, gpa, gva, errorcode);
+_XDPRINTF_("%s[%u]: memory fault in guest slab %u; gpa=%016llx, gva=%016llx, errorcode=%016llx, sysenter execution?\n",
+    __func__, (u16)cpuindex, guest_slab_index, gpa, gva, errorcode);
+
+
+    spl.src_slabid = XMHFGEEC_SLAB_XH_SYSCALLLOG;
+    spl.dst_slabid = XMHFGEEC_SLAB_UAPI_GCPUSTATE;
+    spl.cpuid = cpuindex;
+
+
+    //read GPR state
+     spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSREAD;
+    XMHF_SLAB_CALLNEW(&spl);
+    memcpy(&r, &gcpustate_gprs->gprs, sizeof(x86regs_t));
+
+    //copy code page at SYSENTER (referenced by shadow_sysenter_rip)
+    CASM_FUNCCALL(xmhfhw_sysmemaccess_copy, &_sl_pagebuffer,
+		shadow_sysenter_rip, sizeof(_sl_pagebuffer));
+
+    //compute SHA-1 of the syscall page
+    sha1(&_sl_pagebuffer, sizeof(_sl_pagebuffer), syscalldigest);
+
+    //check to see if syscall handler has been modified
+    if(memcmp(&_sl_syscalldigest, &syscalldigest, SHA_DIGEST_LENGTH))
+        syscallhandler_modified=true;
+
+	_XDPRINTF_("%s[%u]: syscall modified = %s\n",
+	    __func__, (u16)cpuindex, (syscallhandler_modified ? "true" : "false"));
+
+
+    //log GPR state, syscall modified status and digest
+    sl_loginfo(syscallhandler_modified, &syscalldigest, &r);
+
+    //set guest RIP to shadow_sysenter_rip to continue execution
+    spl.dst_slabid = XMHFGEEC_SLAB_UAPI_GCPUSTATE;
+     spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_VMWRITE;
+    gcpustate_vmrwp->encoding = VMCS_GUEST_RIP;
+    gcpustate_vmrwp->value = shadow_sysenter_rip;
+    XMHF_SLAB_CALLNEW(&spl);
 
 }
 
