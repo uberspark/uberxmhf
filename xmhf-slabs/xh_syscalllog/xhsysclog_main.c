@@ -52,68 +52,41 @@
 #include <xmhf-debug.h>
 
 #include <xc.h>
-#include <uapi_gcpustate.h>
-//#include <uapi_slabmemacc.h>
-#include <uapi_slabmempgtbl.h>
-
 #include <xh_syscalllog.h>
 
 
 void slab_main(slab_params_t *sp){
-    //xc_hypappcb_inputparams_t *hcb_iparams = (xc_hypappcb_inputparams_t *)iparams;
-    //xc_hypappcb_outputparams_t *hcb_oparams = (xc_hypappcb_outputparams_t *)oparams;
-    //xc_hypappcb_params_t *hcbp = (xc_hypappcb_params_t *)&sp->in_out_params[0];
-    //hcbp->cbresult=XC_HYPAPPCB_CHAIN;
-	sp->in_out_params[3]= XC_HYPAPPCB_CHAIN;
 
 	_XDPRINTF_("XHSYSCALLLOG[%u]: Got control, cbtype=%x: ESP=%08x\n",
-                (u16)sp->cpuid, sp->in_out_params[0], CASM_FUNCCALL(read_esp,CASM_NOPARAM));
+		(u16)sp->cpuid, sp->in_out_params[0], CASM_FUNCCALL(read_esp,CASM_NOPARAM));
 
+	if( sp->in_out_params[0] == XC_HYPAPPCB_INITIALIZE){
+		sysclog_hcbinit(sp->cpuid);
+		sp->in_out_params[3]= XC_HYPAPPCB_CHAIN;
 
-    switch(sp->in_out_params[0]){
-        case XC_HYPAPPCB_INITIALIZE:{
-            sysclog_hcbinit(sp->cpuid);
+        }else if (sp->in_out_params[0] == XC_HYPAPPCB_HYPERCALL){
+		sysclog_hcbhypercall(sp->cpuid, sp->in_out_params[2]);
+		sp->in_out_params[3]= XC_HYPAPPCB_CHAIN;
+
+        }else if (sp->in_out_params[0] == XC_HYPAPPCB_MEMORYFAULT){
+		sysclog_hcbmemfault(sp->cpuid, sp->in_out_params[2]);
+		sp->in_out_params[3]= XC_HYPAPPCB_CHAIN;
+
+        }else if (sp->in_out_params[0] == XC_HYPAPPCB_SHUTDOWN){
+		sysclog_hcbshutdown(sp->cpuid, sp->in_out_params[2]);
+		sp->in_out_params[3]= XC_HYPAPPCB_CHAIN;
+
+        //}else if (sp->in_out_params[0] == XC_HYPAPPCB_TRAP_IO){
+		//
+
+        }else if (sp->in_out_params[0] == XC_HYPAPPCB_TRAP_INSTRUCTION){
+		sp->in_out_params[3] = sysclog_hcbinsntrap(sp->cpuid, sp->in_out_params[2], sp->in_out_params[1]);
+
+        //}else if (sp->in_out_params[0] == XC_HYPAPPCB_TRAP_EXCEPTION){
+		//
+
+        }else{
+		_XDPRINTF_("%s[%u]: Unknown cbtype. Ignoring!\n",__func__, (u16)sp->cpuid);
+
         }
-        break;
-
-        case XC_HYPAPPCB_HYPERCALL:{
-            sysclog_hcbhypercall(sp->cpuid, sp->in_out_params[2]);
-        }
-        break;
-
-        case XC_HYPAPPCB_MEMORYFAULT:{
-
-            sysclog_hcbmemfault(sp->cpuid, sp->in_out_params[2]);
-        }
-        break;
-
-        case XC_HYPAPPCB_SHUTDOWN:{
-            sysclog_hcbshutdown(sp->cpuid, sp->in_out_params[2]);
-        }
-        break;
-
-        //case XC_HYPAPPCB_TRAP_IO:{
-        //
-        //
-        //}
-        //break;
-
-        case XC_HYPAPPCB_TRAP_INSTRUCTION:{
-            sp->in_out_params[3] = sysclog_hcbinsntrap(sp->cpuid, sp->in_out_params[2], sp->in_out_params[1]);
-        }
-        break;
-
-        //case XC_HYPAPPCB_TRAP_EXCEPTION:{
-        //
-        //
-        //}
-        //break;
-
-
-        default:{
-            _XDPRINTF_("%s[%u]: Unknown cbtype. Ignoring!\n",
-                __func__, (u16)sp->cpuid);
-        }
-    }
-
 }
