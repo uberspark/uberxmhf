@@ -62,33 +62,33 @@
 void slab_main(slab_params_t *sp){
     //xc_hypappcb_inputparams_t *hcb_iparams = (xc_hypappcb_inputparams_t *)iparams;
     //xc_hypappcb_outputparams_t *hcb_oparams = (xc_hypappcb_outputparams_t *)oparams;
-    xc_hypappcb_params_t *hcbp = (xc_hypappcb_params_t *)&sp->in_out_params[0];
-    hcbp->cbresult=XC_HYPAPPCB_CHAIN;
-
+    //xc_hypappcb_params_t *hcbp = (xc_hypappcb_params_t *)&sp->in_out_params[0];
+    //hcbp->cbresult=XC_HYPAPPCB_CHAIN;
+	sp->in_out_params[3]= XC_HYPAPPCB_CHAIN;
 
 	_XDPRINTF_("XHSYSCALLLOG[%u]: Got control, cbtype=%x: ESP=%08x\n",
-                (u16)sp->cpuid, hcbp->cbtype, CASM_FUNCCALL(read_esp,CASM_NOPARAM));
+                (u16)sp->cpuid, sp->in_out_params[0], CASM_FUNCCALL(read_esp,CASM_NOPARAM));
 
 
-    switch(hcbp->cbtype){
+    switch(sp->in_out_params[0]){
         case XC_HYPAPPCB_INITIALIZE:{
             sysclog_hcbinit(sp->cpuid);
         }
         break;
 
         case XC_HYPAPPCB_HYPERCALL:{
-            sysclog_hcbhypercall(sp->cpuid, hcbp->guest_slab_index);
+            sysclog_hcbhypercall(sp->cpuid, sp->in_out_params[2]);
         }
         break;
 
         case XC_HYPAPPCB_MEMORYFAULT:{
 
-            sysclog_hcbmemfault(sp->cpuid, hcbp->guest_slab_index);
+            sysclog_hcbmemfault(sp->cpuid, sp->in_out_params[2]);
         }
         break;
 
         case XC_HYPAPPCB_SHUTDOWN:{
-            sysclog_hcbshutdown(sp->cpuid, hcbp->guest_slab_index);
+            sysclog_hcbshutdown(sp->cpuid, sp->in_out_params[2]);
         }
         break;
 
@@ -99,7 +99,7 @@ void slab_main(slab_params_t *sp){
         //break;
 
         case XC_HYPAPPCB_TRAP_INSTRUCTION:{
-            hcbp->cbresult = sysclog_hcbinsntrap(sp->cpuid, hcbp->guest_slab_index, hcbp->cbqual);
+            sp->in_out_params[3] = sysclog_hcbinsntrap(sp->cpuid, sp->in_out_params[2], sp->in_out_params[1]);
         }
         break;
 
