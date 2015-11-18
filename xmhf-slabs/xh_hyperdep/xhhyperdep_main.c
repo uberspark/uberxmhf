@@ -57,62 +57,43 @@
 
 #include <xh_hyperdep.h>
 
+
+/*@
+	requires \valid(sp);
+	ensures (sp->in_out_params[3] == XC_HYPAPPCB_CHAIN);
+@*/
 void slab_main(slab_params_t *sp){
-    //xc_hypappcb_inputparams_t *hcb_iparams = (xc_hypappcb_inputparams_t *)iparams;
-    //xc_hypappcb_outputparams_t *hcb_oparams = (xc_hypappcb_outputparams_t *)oparams;
-    xc_hypappcb_params_t *hcbp = (xc_hypappcb_params_t *)&sp->in_out_params[0];
-    hcbp->cbresult=XC_HYPAPPCB_CHAIN;
+	//xc_hypappcb_params_t *hcbp = (xc_hypappcb_params_t *)&sp->in_out_params[0];
+	//hcbp->cbresult=XC_HYPAPPCB_CHAIN;
 
 
 	_XDPRINTF_("XHHYPERDEP[%u]: Got control, cbtype=%x: ESP=%08x\n",
-                (u16)sp->cpuid, hcbp->cbtype, CASM_FUNCCALL(read_esp,CASM_NOPARAM));
+		(u16)sp->cpuid, sp->in_out_params[0], CASM_FUNCCALL(read_esp,CASM_NOPARAM));
 
 
-    switch(hcbp->cbtype){
-        case XC_HYPAPPCB_INITIALIZE:{
-            hyperdep_hcbinit(sp->cpuid);
+	if(sp->in_out_params[0] == XC_HYPAPPCB_INITIALIZE){
+		hyperdep_hcbinit(sp->cpuid);
+
+	}else if (sp->in_out_params[0] == XC_HYPAPPCB_HYPERCALL){
+		hyperdep_hcbhypercall(sp->cpuid, sp->in_out_params[2]);
+
+        }else if (sp->in_out_params[0] == XC_HYPAPPCB_MEMORYFAULT){
+		hyperdep_hcbmemfault(sp->cpuid, sp->in_out_params[2]);
+
+        }else if (sp->in_out_params[0] == XC_HYPAPPCB_SHUTDOWN){
+		hyperdep_hcbshutdown(sp->cpuid, sp->in_out_params[2]);
+
+        //}else if (sp->in_out_params[0] == XC_HYPAPPCB_TRAP_IO){
+		//
+        //}else if (sp->in_out_params[0] == XC_HYPAPPCB_TRAP_INSTRUCTION){
+		//
+        //}else if (sp->in_out_params[0] == XC_HYPAPPCB_TRAP_EXCEPTION){
+		//
+        }else{
+            _XDPRINTF_("%s[%u]: Unknown cbtype. Ignoring!\n", __func__, (u16)sp->cpuid);
+
         }
-        break;
-
-        case XC_HYPAPPCB_HYPERCALL:{
-            hyperdep_hcbhypercall(sp->cpuid, hcbp->guest_slab_index);
-
-        }
-        break;
-
-        case XC_HYPAPPCB_MEMORYFAULT:{
-            hyperdep_hcbmemfault(sp->cpuid, hcbp->guest_slab_index);
-        }
-        break;
-
-        case XC_HYPAPPCB_SHUTDOWN:{
-            hyperdep_hcbshutdown(sp->cpuid, hcbp->guest_slab_index);
-        }
-        break;
-
-        //case XC_HYPAPPCB_TRAP_IO:{
-        //
-        //
-        //}
-        //break;
-
-        //case XC_HYPAPPCB_TRAP_INSTRUCTION:{
-        //
-        //
-        //}
-        //break;
-
-        //case XC_HYPAPPCB_TRAP_EXCEPTION:{
-        //
-        //
-        //}
-        //break;
 
 
-        default:{
-            _XDPRINTF_("%s[%u]: Unknown cbtype. Ignoring!\n",
-                __func__, (u16)sp->cpuid);
-        }
-    }
-
+	sp->in_out_params[3]=XC_HYPAPPCB_CHAIN;
 }
