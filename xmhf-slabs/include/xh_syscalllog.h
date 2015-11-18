@@ -55,15 +55,44 @@
 #ifndef __XH_SYSCALLLOG_H__
 #define __XH_SYSCALLLOG_H__
 
+#define SYSCALLLOG_REGISTER     			0xF0
+#define MAX_SL_LOG_SIZE 128
+
 
 #ifndef __ASSEMBLY__
 
+typedef struct {
+    bool syscallmodified;
+    u8 syscalldigest[SHA_DIGEST_LENGTH];
+    x86regs_t r;
+} sl_log_type_t;
 
 
-//VFM
-extern bool sl_activated;
-extern bool _sl_registered;
-//void xhsyscalllog_inv_xmhf_hic_uapi_mempgtbl_setentry(xmhf_hic_uapi_mempgtbl_desc_t *imdesc);
+extern __attribute__((section(".data"))) bool sl_activated;
+extern __attribute__((section(".data"))) bool _sl_registered;
+
+extern __attribute__((section(".data"))) u8 _sl_pagebuffer[PAGE_SIZE_4K];
+extern __attribute__((section(".data"))) u8 _sl_syscalldigest[SHA_DIGEST_LENGTH];
+extern __attribute__((section(".data"))) u64 shadow_sysenter_rip;
+
+extern __attribute__((section(".data"))) sl_log_type_t sl_log[MAX_SL_LOG_SIZE];
+
+extern __attribute__((section(".data"))) u64 sl_log_index;
+
+
+
+void sysclog_hcbhypercall(u32 cpuindex, u32 guest_slab_index);
+void sysclog_hcbinit(u32 cpuindex);
+u32 sysclog_hcbinsntrap(u32 cpuindex, u32 guest_slab_index, u32 insntype);
+void sysclog_hcbmemfault(u32 cpuindex, u32 guest_slab_index, u64 gpa, u64 gva, u64 errorcode);
+void sysclog_hcbshutdown(u32 cpuindex, u32 guest_slab_index);
+void sysclog_register(u32 cpuindex, u32 guest_slab_index, u64 gpa);
+
+
+
+
+
+
 
 
 #endif	//__ASSEMBLY__

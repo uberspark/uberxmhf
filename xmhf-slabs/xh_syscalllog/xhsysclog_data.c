@@ -55,19 +55,14 @@
 #include <xh_syscalllog.h>
 
 
-#if defined (__XMHF_VERIFICATION__)
-bool sl_activated= nondet_bool();
-bool _sl_registered= nondet_bool();
-#else
-bool sl_activated=false;
-bool _sl_registered=false;
-#endif // defined
+__attribute__((section(".data"))) bool sl_activated=false;
+__attribute__((section(".data"))) bool _sl_registered=false;
 
-/*
-void xhsyscalllog_inv_xmhf_hic_uapi_mempgtbl_setentry(xmhf_hic_uapi_mempgtbl_desc_t *imdesc){
-    if(!sl_activated){
-        if(imdesc->gpa == 0)
-            assert( !(imdesc->entry & 0x4) );
-    }
-}
-*/
+__attribute__((section(".data"))) u8 _sl_pagebuffer[PAGE_SIZE_4K];
+__attribute__((section(".data"))) u8 _sl_syscalldigest[SHA_DIGEST_LENGTH];
+__attribute__((section(".data"))) u64 shadow_sysenter_rip=0;
+
+__attribute__((section(".data"))) sl_log_type_t sl_log[128];
+
+__attribute__((section(".data"))) u64 sl_log_index=0;
+
