@@ -59,7 +59,9 @@
 
 
 
-//activate DEP for a given page (at gpa)
+/*@
+	ensures (!hd_activated && gpa != 0) ==> (hd_activated == true);
+@*/
 void hyperdep_activatedep(u32 cpuindex, u32 guest_slab_index, u64 gpa){
 	slab_params_t spl;
 	xmhfgeec_uapi_slabmempgtbl_getentryforpaddr_params_t *getentryforpaddrp =
@@ -73,24 +75,27 @@ void hyperdep_activatedep(u32 cpuindex, u32 guest_slab_index, u64 gpa){
 	spl.cpuid = cpuindex;
 
 	if(!hd_activated && gpa != 0){
-            spl.dst_uapifn = XMHFGEEC_UAPI_SLABMEMPGTBL_GETENTRYFORPADDR;
-            getentryforpaddrp->dst_slabid = guest_slab_index;
-            getentryforpaddrp->gpa = gpa;
-            XMHF_SLAB_CALLNEW(&spl);
+		spl.dst_uapifn = XMHFGEEC_UAPI_SLABMEMPGTBL_GETENTRYFORPADDR;
+		getentryforpaddrp->dst_slabid = guest_slab_index;
+		getentryforpaddrp->gpa = gpa;
+		//@assert getentryforpaddrp->gpa == gpa;
+		XMHF_SLAB_CALLNEW(&spl);
 
-            _XDPRINTF_("%s[%u]: original entry for gpa=%016llx is %016llx\n", __func__, (u16)cpuindex,
-                       gpa, getentryforpaddrp->result_entry);
+		_XDPRINTF_("%s[%u]: original entry for gpa=%016llx is %016llx\n", __func__, (u16)cpuindex,
+		       gpa, getentryforpaddrp->result_entry);
 
-             spl.dst_uapifn = XMHFGEEC_UAPI_SLABMEMPGTBL_SETENTRYFORPADDR;
-            setentryforpaddrp->dst_slabid = guest_slab_index;
-            setentryforpaddrp->gpa = gpa;
-            setentryforpaddrp->entry = getentryforpaddrp->result_entry & ~(0x4); //execute-disable
-            XMHF_SLAB_CALLNEW(&spl);
+		spl.dst_uapifn = XMHFGEEC_UAPI_SLABMEMPGTBL_SETENTRYFORPADDR;
+		setentryforpaddrp->dst_slabid = guest_slab_index;
+		setentryforpaddrp->gpa = gpa;
+		setentryforpaddrp->entry = getentryforpaddrp->result_entry & ~(0x4); //execute-disable
+		//@assert setentryforpaddrp->gpa == gpa;
+		//@assert !(setentryforpaddrp->entry & 0x4);
+		XMHF_SLAB_CALLNEW(&spl);
 
-            _XDPRINTF_("%s[%u]: activated DEP for page at gpa %016llx\n", __func__, (u16)cpuindex, gpa);
+		_XDPRINTF_("%s[%u]: activated DEP for page at gpa %016llx\n", __func__, (u16)cpuindex, gpa);
 
-            hd_activated=true;
-        }else{
+		hd_activated=true;
+	}else{
 	    //do nothing
 	}
 }
