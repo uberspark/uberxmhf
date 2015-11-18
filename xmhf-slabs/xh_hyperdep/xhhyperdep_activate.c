@@ -43,3 +43,59 @@
  *
  * @XMHF_LICENSE_HEADER_END@
  */
+
+// hyperdep hypapp main module
+// author: amit vasudevan (amitvasudevan@acm.org)
+
+#include <xmhf.h>
+#include <xmhfgeec.h>
+#include <xmhf-debug.h>
+
+#include <xc.h>
+#include <uapi_gcpustate.h>
+#include <uapi_slabmempgtbl.h>
+
+#include <xh_hyperdep.h>
+
+
+
+/*@
+	ensures (!hd_activated && gpa != 0) ==> (hd_activated == true);
+@*/
+void hyperdep_activatedep(u32 cpuindex, u32 guest_slab_index, u64 gpa){
+	slab_params_t spl;
+	xmhfgeec_uapi_slabmempgtbl_getentryforpaddr_params_t *getentryforpaddrp =
+		(xmhfgeec_uapi_slabmempgtbl_getentryforpaddr_params_t *)spl.in_out_params;
+	xmhfgeec_uapi_slabmempgtbl_setentryforpaddr_params_t *setentryforpaddrp =
+		(xmhfgeec_uapi_slabmempgtbl_setentryforpaddr_params_t *)spl.in_out_params;
+
+
+	spl.src_slabid = XMHFGEEC_SLAB_XH_HYPERDEP;
+	spl.dst_slabid = XMHFGEEC_SLAB_UAPI_SLABMEMPGTBL;
+	spl.cpuid = cpuindex;
+
+	if(!hd_activated && gpa != 0){
+		spl.dst_uapifn = XMHFGEEC_UAPI_SLABMEMPGTBL_GETENTRYFORPADDR;
+		getentryforpaddrp->dst_slabid = guest_slab_index;
+		getentryforpaddrp->gpa = gpa;
+		//@assert getentryforpaddrp->gpa == gpa;
+		XMHF_SLAB_CALLNEW(&spl);
+
+		_XDPRINTF_("%s[%u]: original entry for gpa=%016llx is %016llx\n", __func__, (u16)cpuindex,
+		       gpa, getentryforpaddrp->result_entry);
+
+		spl.dst_uapifn = XMHFGEEC_UAPI_SLABMEMPGTBL_SETENTRYFORPADDR;
+		setentryforpaddrp->dst_slabid = guest_slab_index;
+		setentryforpaddrp->gpa = gpa;
+		setentryforpaddrp->entry = getentryforpaddrp->result_entry & ~(0x4); //execute-disable
+		//@assert setentryforpaddrp->gpa == gpa;
+		//@assert !(setentryforpaddrp->entry & 0x4);
+		XMHF_SLAB_CALLNEW(&spl);
+
+		_XDPRINTF_("%s[%u]: activated DEP for page at gpa %016llx\n", __func__, (u16)cpuindex, gpa);
+
+		hd_activated=true;
+	}else{
+	    //do nothing
+	}
+}

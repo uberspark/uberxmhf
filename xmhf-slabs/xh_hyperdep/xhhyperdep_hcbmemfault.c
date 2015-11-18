@@ -44,36 +44,61 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
+// hyperdep hypapp main module
+// author: amit vasudevan (amitvasudevan@acm.org)
 
-/*
- *
- *  hyperdep hypapp slab decls.
- *
- *  author: amit vasudevan (amitvasudevan@acm.org)
- */
+#include <xmhf.h>
+#include <xmhfgeec.h>
+#include <xmhf-debug.h>
 
-#ifndef __XH_HYPERDEP_H__
-#define __XH_HYPERDEP_H__
+#include <xc.h>
+#include <uapi_gcpustate.h>
+//#include <uapi_slabmempgtbl.h>
 
-#define HYPERDEP_ACTIVATEDEP			0xC0
-#define HYPERDEP_DEACTIVATEDEP			0xC1
-
-#ifndef __ASSEMBLY__
+#include <xh_hyperdep.h>
 
 
 
-extern bool hd_activated;
-
-void hyperdep_hcbshutdown(u32 cpuindex, u32 guest_slab_index);
-void hyperdep_hcbmemfault(u32 cpuindex, u32 guest_slab_index);
-void hyperdep_hcbinit(u32 cpuindex);
-void hyperdep_hcbhypercall(u32 cpuindex, u32 guest_slab_index);
-
-void hyperdep_deactivatedep(u32 cpuindex, u32 guest_slab_index, u64 gpa);
-void hyperdep_activatedep(u32 cpuindex, u32 guest_slab_index, u64 gpa);
-
+//memory fault
+void hyperdep_hcbmemfault(u32 cpuindex, u32 guest_slab_index){
+         	u64 errorcode;
+         	u64 gpa;
+         	u64 gva;
+         	slab_params_t spl;
+       	    xmhf_uapi_gcpustate_vmrw_params_t *gcpustate_vmrwp =
+                (xmhf_uapi_gcpustate_vmrw_params_t *)spl.in_out_params;
 
 
-#endif	//__ASSEMBLY__
+         	spl.src_slabid = XMHFGEEC_SLAB_XH_HYPERDEP;
+         	spl.dst_slabid = XMHFGEEC_SLAB_UAPI_GCPUSTATE;
+         	spl.cpuid = cpuindex;
+            //spl.in_out_params[0] = XMHF_HIC_UAPI_CPUSTATE;
+             spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_VMREAD;
 
-#endif //__XH_HYPERDEP_H__
+            gcpustate_vmrwp->encoding = VMCS_INFO_EXIT_QUALIFICATION;
+            XMHF_SLAB_CALLNEW(&spl);
+            errorcode = gcpustate_vmrwp->value;
+
+            gcpustate_vmrwp->encoding = VMCS_INFO_GUEST_PADDR_FULL;
+            XMHF_SLAB_CALLNEW(&spl);
+            gpa = gcpustate_vmrwp->value;
+
+            gcpustate_vmrwp->encoding = VMCS_INFO_GUEST_LINEAR_ADDRESS;
+            XMHF_SLAB_CALLNEW(&spl);
+            gva = gcpustate_vmrwp->value;
+
+
+	_XDPRINTF_("%s[%u]: memory fault in guest slab %u; gpa=%016llx, gva=%016llx, errorcode=%016llx, data page execution?\n",
+            __func__, (u16)cpuindex, guest_slab_index, gpa, gva, errorcode);
+    //HALT();
+}
+
+
+
+
+
+
+
+
+
+
