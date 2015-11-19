@@ -887,9 +887,9 @@ static u64 _impl_xmhfhwm_cpu_sysmemread(u32 sysmemaddr, sysmem_read_t readsize){
 	bool hwmdevstatus=false;
 	u64 read_result=0;
 
-	//hwmdevstatus = _impl_xmhfhwm_e1000_read(sysmemaddr, readsize, &read_result);
-        //if(hwmdevstatus)
-	//	return read_result;
+	hwmdevstatus = _impl_xmhfhwm_e1000_read(sysmemaddr, readsize, &read_result);
+        if(hwmdevstatus)
+		return read_result;
 
 	//@assert 0;
 	return read_result;
@@ -899,9 +899,9 @@ static u64 _impl_xmhfhwm_cpu_sysmemread(u32 sysmemaddr, sysmem_read_t readsize){
 static void _impl_xmhfhwm_cpu_sysmemwrite(u32 sysmemaddr, sysmem_write_t writesize, u64 write_value){
 	bool hwmdevstatus=false;
 
-	//hwmdevstatus = _impl_xmhfhwm_e1000_write(sysmemaddr, writesize, write_value);
-        //if(hwmdevstatus)
-	//	return;
+	hwmdevstatus = _impl_xmhfhwm_e1000_write(sysmemaddr, writesize, write_value);
+        if(hwmdevstatus)
+		return;
 
 	//@assert 0;
 	return;
