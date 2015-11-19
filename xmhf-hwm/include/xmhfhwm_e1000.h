@@ -70,12 +70,12 @@
 //#define e1000_readb(addr)		*(volatile unsigned char *)(addr)
 //#define e1000_writeb(value, addr)	*(volatile unsigned char *)(addr) = (u8)(value)
 
-#define e1000_readl(addr)		xmhfhw_sysmemaccess_readu32(addr)
-#define e1000_writel(value, addr)	xmhfhw_sysmemaccess_writeu32(addr, value)
-#define e1000_readw(addr)		xmhfhw_sysmemaccess_readu16(addr)
-#define e1000_writew(value, addr)	xmhfhw_sysmemaccess_writeu16(addr, (u16)value)
-#define e1000_readb(addr)		xmhfhw_sysmemaccess_readu8(addr)
-#define e1000_writeb(value, addr)	xmhfhw_sysmemaccess_writeu8(addr, (u8)value)
+#define e1000_readl(addr)		CASM_FUNCCALL(xmhfhw_sysmemaccess_readu32, addr)
+#define e1000_writel(value, addr)	CASM_FUNCCALL(xmhfhw_sysmemaccess_writeu32, addr, value)
+#define e1000_readw(addr)		CASM_FUNCCALL(xmhfhw_sysmemaccess_readu16, addr)
+#define e1000_writew(value, addr)	CASM_FUNCCALL(xmhfhw_sysmemaccess_writeu16, addr, (u16)value)
+#define e1000_readb(addr)		CASM_FUNCCALL(xmhfhw_sysmemaccess_readu8, addr)
+#define e1000_writeb(value, addr)	CASM_FUNCCALL(xmhfhw_sysmemaccess_writeu8, addr, (u8)value)
 
 /* 128M configuration, two descriptors describe one 8K packet */
 #define E1000_DESC_COUNT	0x1	/* MUST be a multiple of 8, and (64K - 8) at most */
