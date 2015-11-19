@@ -3044,16 +3044,64 @@ typedef struct {
     u32 logbuf[16];
 }__attribute__((packed)) xcnwlog_ls_element_t;
 
-extern __attribute__((section(".slab_dmadata"))) xcnwlog_ls_element_t xcnwlog_lsdma[XC_NWLOG_BUF_MAXELEM];
+
+
+
+
+
+extern __attribute__((section(".slab_dmadata"))) xcnwlog_ls_element_t xcnwlog_lsdma[XC_NWLOG_BUF_MAXIDX][XC_NWLOG_BUF_MAXELEM];
 
 extern __attribute__((section(".data"))) xcnwlog_ls_element_t xcnwlog_ls[XC_NWLOG_BUF_MAXIDX][XC_NWLOG_BUF_MAXELEM];
 extern __attribute__((section(".data"))) u32 xcnwlog_ls_index[XC_NWLOG_BUF_MAXIDX];
 
 
+
+//@	logic u32 nwlogCapacity{L}(u32 nwlog_id) = (u32)16;
+
+//@	logic u32 nwlogSize{L}(u32 nwlog_id) = xcnwlog_ls_index[nwlog_id];
+
+//@	logic xcnwlog_ls_element_t * nwlogStorage{L}(u32 nwlog_id) = &xcnwlog_ls[nwlog_id][0];
+
+/*@
+ predicate nwlogTop{L}(xcnwlog_ls_element_t * elem, integer index, xcnwlog_ls_element_t input) =
+		(elem[index].logbuf[0] == input.logbuf[0] &&
+		elem[index].logbuf[1] == input.logbuf[1] &&
+		elem[index].logbuf[2] == input.logbuf[2] &&
+		elem[index].logbuf[3] == input.logbuf[3] &&
+		elem[index].logbuf[4] == input.logbuf[4]
+		);
+*/
+
+//@	predicate nwlogEmpty{L}(u32 nwlog_id) = (nwlogSize(nwlog_id) == 0);
+
+//@	predicate nwlogFull{L}(u32 nwlog_id) = (nwlogSize(nwlog_id) == nwlogCapacity(nwlog_id));
+
+/*@
+	predicate
+	nwlogUnchanged {A,B } ( xcnwlog_ls_element_t * a, integer first, integer last ) =
+	\forall integer i; first <= i < last
+	==> ( (\at (a[i].logbuf[0] , A) == \at( a[i].logbuf[0] , B)) &&
+		(\at (a[i].logbuf[1] , A) == \at( a[i].logbuf[1] , B)) &&
+		(\at (a[i].logbuf[2] , A) == \at( a[i].logbuf[2] , B)) &&
+		(\at (a[i].logbuf[3] , A) == \at( a[i].logbuf[3] , B)) &&
+		(\at (a[i].logbuf[4] , A) == \at( a[i].logbuf[4] , B))
+	);
+*/
+
+/*@
+	predicate nwlogValid{L}(u32 nwlog_id) =
+		(nwlog_id < XC_NWLOG_BUF_MAXIDX &&
+		0 < nwlogCapacity( nwlog_id) &&
+		0 <= nwlogSize (nwlog_id) <= nwlogCapacity ( nwlog_id) &&
+		\valid (nwlogStorage (nwlog_id) + (0 .. nwlogCapacity (nwlog_id) - 1))
+		);
+@*/
+
+
 u32 e1000_init_module(void);
 void e1000_xmitack(void);
 
-void xcnwlog_ls_push(u32 logidx, xcnwlog_ls_element_t *ls_elem);
+void xcnwlog_ls_push(u32 nwlog_id, xcnwlog_ls_element_t elem);
 void xcnwlog_init(void);
 void xcnwlog_logdata(xcnwlog_ls_element_t *elem);
 

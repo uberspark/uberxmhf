@@ -78,7 +78,9 @@ void slab_main(slab_params_t *sp){
         break;
 
         case XMHFGEEC_SLAB_XC_NWLOG_LOGDATA:{
-		xcnwlog_logdata((xcnwlog_ls_element_t *)sp->in_out_params);
+		xcnwlog_ls_element_t elem;
+		memcpy(&elem, (xcnwlog_ls_element_t *)sp->in_out_params, sizeof(elem));
+		xcnwlog_logdata(elem);
         }
         break;
 
