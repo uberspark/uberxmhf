@@ -56,6 +56,9 @@
 u32 xmhfhwm_e1000_tctl=0; 	//transmit control register, E1000_TCTL
 u32 xmhfhwm_e1000_tdt=0; 	//transmit descriptor tail, E1000_TDT
 u32 xmhfhwm_e1000_tdh=0; 	//transmit descriptor head, E1000_TDH
+u32 xmhfhwm_e1000_tdbah;		//E1000_TDBAH, high-32bits of transmit descriptor base address
+u32 xmhfhwm_e1000_tdbal;		//E1000_TDBAL, low-32bits of transmit descriptor base address
+u32 xmhfhwm_e1000_tdlen;		//E1000_TDLEN, descroptor length
 
 
 bool xmhfhwm_e1000_status_transmitting = false; // true if transmitting, false if not
@@ -84,6 +87,24 @@ bool _impl_xmhfhwm_e1000_read(u32 sysmemaddr, sysmem_read_t readsize, u64 *read_
 				*read_result = (u64)xmhfhwm_e1000_tdh;
 				return true;
 			}
+
+			case E1000_TDBAH:{
+				*read_result = (u64)xmhfhwm_e1000_tdbah;
+				return true;
+			}
+
+			case E1000_TDBAL:{
+				*read_result = (u64)xmhfhwm_e1000_tdbal;
+				return true;
+			}
+
+
+			case E1000_TDLEN:{
+				*read_result = (u64)xmhfhwm_e1000_tdlen;
+				return true;
+			}
+
+
 
 			default:
 				return true;
@@ -115,6 +136,25 @@ bool _impl_xmhfhwm_e1000_write(u32 sysmemaddr, sysmem_write_t writesize, u64 wri
 				xmhfhwm_e1000_tdh = (u32)write_value;
 				return true;
 			}
+
+			case E1000_TDBAH:{
+				//cbhwm_e1000_write_tdbah(xmhfhwm_e1000_tdbah, (u32)write_value);
+				xmhfhwm_e1000_tdbah = (u32)write_value;
+				return true;
+			}
+
+			case E1000_TDBAL:{
+				//cbhwm_e1000_write_tdbal(xmhfhwm_e1000_tdbal, (u32)write_value);
+				xmhfhwm_e1000_tdbal = (u32)write_value;
+				return true;
+			}
+
+			case E1000_TDLEN:{
+				//cbhwm_e1000_write_tdlen(xmhfhwm_e1000_tdlen, (u32)write_value);
+				xmhfhwm_e1000_tdlen = (u32)write_value;
+				return true;
+			}
+
 
 			default:
 				return true;
