@@ -3045,6 +3045,10 @@ extern u32 xmhfhwm_e1000_tctl; 	//transmit control register, E1000_TCTL
 extern u32 xmhfhwm_e1000_tdt; 	//transmit descriptor tail, E1000_TDT
 extern u32 xmhfhwm_e1000_tdh; 	//transmit descriptor head, E1000_TDH
 
+extern u32 xmhfhwm_e1000_tdbah;		//E1000_TDBAH, high-32bits of transmit descriptor base address
+extern u32 xmhfhwm_e1000_tdbal;		//E1000_TDBAL, low-32bits of transmit descriptor base address
+extern u32 xmhfhwm_e1000_tdlen;		//E1000_TDLEN, descroptor length
+
 
 extern bool xmhfhwm_e1000_status_transmitting; // true if transmitting, false if not
 
