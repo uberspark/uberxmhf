@@ -50,6 +50,8 @@
 #ifndef __XC_NWLOG_H__
 #define __XC_NWLOG_H__
 
+#define E1000_TIMEOUT_1MS	((0x40000000ULL * 2) / 1000)
+
 
 #ifndef __ASSEMBLY__
 
@@ -78,6 +80,22 @@ extern __attribute__((section(".slab_dmadata"))) xcnwlog_ls_element_t xcnwlog_ls
 
 extern __attribute__((section(".data"))) xcnwlog_ls_element_t xcnwlog_ls[XC_NWLOG_BUF_MAXIDX][XC_NWLOG_BUF_MAXELEM];
 extern __attribute__((section(".data"))) u32 xcnwlog_ls_index[XC_NWLOG_BUF_MAXIDX];
+
+
+extern __attribute__((section(".data"))) char e1000_driver_name[];
+extern __attribute__((section(".data"))) char e1000_driver_string[];
+extern __attribute__((section(".data"))) char e1000_driver_version[];
+
+
+extern __attribute__((section(".data"))) pci_device_t e1000_dev;
+extern __attribute__((section(".data"))) struct e1000_adapter e1000_adapt;
+extern __attribute__((section(".data"))) unsigned int e1000_irq;
+
+//------------------------------------------------------------------------------
+//[CONFIGURATION:START]
+//this changes according to deployment platform
+extern __attribute__((section(".data"))) unsigned char e1000_dst_macaddr[];
+extern __attribute__((section(".data"))) unsigned char e1000_pkt_type[];
 
 
 
