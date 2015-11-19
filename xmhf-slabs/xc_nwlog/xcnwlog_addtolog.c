@@ -58,31 +58,64 @@
  */
 
 
+/*@
+	requires nwlogValid (nwlog_id);
 
+	assigns xcnwlog_ls_index[nwlog_id];
+	assigns xcnwlog_ls[nwlog_id][xcnwlog_ls_index[nwlog_id]];
 
-void xcnwlog_ls_push(u32 logidx, xcnwlog_ls_element_t *ls_elem)
+	behavior not_full:
+		assumes !nwlogFull(nwlog_id);
+
+		assigns xcnwlog_ls_index[nwlog_id];
+		assigns xcnwlog_ls[nwlog_id][xcnwlog_ls_index[nwlog_id]];
+
+		ensures H:nwlogValid (nwlog_id);
+		ensures I:nwlogSize (nwlog_id) == nwlogSize {Old}(nwlog_id) + 1;
+		ensures K:nwlogUnchanged {Pre ,Here }(nwlogStorage (nwlog_id), 0, nwlogSize{Pre}(nwlog_id));
+		ensures J:nwlogTop( nwlogStorage (nwlog_id), nwlogSize{Pre}(nwlog_id), elem);
+		ensures !nwlogEmpty (nwlog_id);
+		ensures nwlogStorage (nwlog_id) == nwlogStorage {Old }( nwlog_id) ;
+		ensures nwlogCapacity ( nwlog_id) == nwlogCapacity { Old }(nwlog_id) ;
+
+	behavior full :
+		assumes nwlogFull ( nwlog_id);
+
+		assigns \nothing;
+
+		ensures nwlogValid (nwlog_id);
+		ensures nwlogFull ( nwlog_id);
+		ensures nwlogUnchanged {Pre ,Here }(nwlogStorage (nwlog_id ), 0, nwlogSize(nwlog_id));
+		ensures nwlogSize ( nwlog_id ) == nwlogSize { Old }(nwlog_id) ;
+		ensures nwlogStorage (nwlog_id ) == nwlogStorage {Old }( nwlog_id) ;
+		ensures nwlogCapacity ( nwlog_id ) == nwlogCapacity { Old }(nwlog_id) ;
+
+	complete behaviors ;
+	disjoint behaviors ;
+*/
+void xcnwlog_ls_push(u32 nwlog_id, xcnwlog_ls_element_t elem)
 {
-    u32 log_index =  xcnwlog_ls_index[logidx];
-    if(xcnwlog_ls_index >=0 && xcnwlog_ls_index < XC_NWLOG_BUF_MAXELEM) {
-        xcnwlog_ls[logidx][log_index].logbuf[0] = ls_elem->logbuf[0];
-        xcnwlog_ls[logidx][log_index].logbuf[1] = ls_elem->logbuf[1];
-        xcnwlog_ls[logidx][log_index].logbuf[2] = ls_elem->logbuf[2];
-        xcnwlog_ls[logidx][log_index].logbuf[3] = ls_elem->logbuf[3];
-        xcnwlog_ls[logidx][log_index].logbuf[4] = ls_elem->logbuf[4];
-        xcnwlog_ls[logidx][log_index].logbuf[5] = ls_elem->logbuf[5];
-        xcnwlog_ls[logidx][log_index].logbuf[6] = ls_elem->logbuf[6];
-        xcnwlog_ls[logidx][log_index].logbuf[7] = ls_elem->logbuf[7];
-        xcnwlog_ls[logidx][log_index].logbuf[8] = ls_elem->logbuf[8];
-        xcnwlog_ls[logidx][log_index].logbuf[9] = ls_elem->logbuf[9];
-        xcnwlog_ls[logidx][log_index].logbuf[10] = ls_elem->logbuf[10];
-        xcnwlog_ls[logidx][log_index].logbuf[11] = ls_elem->logbuf[11];
-        xcnwlog_ls[logidx][log_index].logbuf[12] = ls_elem->logbuf[12];
-        xcnwlog_ls[logidx][log_index].logbuf[13] = ls_elem->logbuf[13];
-        xcnwlog_ls[logidx][log_index].logbuf[14] = ls_elem->logbuf[14];
-        xcnwlog_ls[logidx][log_index].logbuf[15] = ls_elem->logbuf[15];
+    u32 log_index =  xcnwlog_ls_index[nwlog_id];
+    if(log_index >=0 && log_index < XC_NWLOG_BUF_MAXELEM) {
+        xcnwlog_ls[nwlog_id][log_index].logbuf[0] = elem.logbuf[0];
+        xcnwlog_ls[nwlog_id][log_index].logbuf[1] = elem.logbuf[1];
+        xcnwlog_ls[nwlog_id][log_index].logbuf[2] = elem.logbuf[2];
+        xcnwlog_ls[nwlog_id][log_index].logbuf[3] = elem.logbuf[3];
+        xcnwlog_ls[nwlog_id][log_index].logbuf[4] = elem.logbuf[4];
+        xcnwlog_ls[nwlog_id][log_index].logbuf[5] = elem.logbuf[5];
+        xcnwlog_ls[nwlog_id][log_index].logbuf[6] = elem.logbuf[6];
+        xcnwlog_ls[nwlog_id][log_index].logbuf[7] = elem.logbuf[7];
+        xcnwlog_ls[nwlog_id][log_index].logbuf[8] = elem.logbuf[8];
+        xcnwlog_ls[nwlog_id][log_index].logbuf[9] = elem.logbuf[9];
+        xcnwlog_ls[nwlog_id][log_index].logbuf[10] = elem.logbuf[10];
+        xcnwlog_ls[nwlog_id][log_index].logbuf[11] = elem.logbuf[11];
+        xcnwlog_ls[nwlog_id][log_index].logbuf[12] = elem.logbuf[12];
+        xcnwlog_ls[nwlog_id][log_index].logbuf[13] = elem.logbuf[13];
+        xcnwlog_ls[nwlog_id][log_index].logbuf[14] = elem.logbuf[14];
+        xcnwlog_ls[nwlog_id][log_index].logbuf[15] = elem.logbuf[15];
 
         log_index++;
-        xcnwlog_ls_index[logidx] = log_index;
+        xcnwlog_ls_index[nwlog_id] = log_index;
     }
 }
 
