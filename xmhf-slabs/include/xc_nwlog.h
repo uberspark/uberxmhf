@@ -3037,14 +3037,14 @@ struct e1000_adapter {
 #define XMHFGEEC_SLAB_XC_NWLOG_INITIALIZE 0
 #define XMHFGEEC_SLAB_XC_NWLOG_LOGDATA	  1
 
-
+#define XC_NWLOG_BUF_MAXELEM	16
 
 
 typedef struct {
     u32 logbuf[16];
 }__attribute__((packed)) xcnwlog_ls_element_t;
 
-extern __attribute__((section(".slab_dmadata"))) xcnwlog_ls_element_t xcnwlog_ls[64];
+extern __attribute__((section(".slab_dmadata"))) xcnwlog_ls_element_t xcnwlog_ls[XC_NWLOG_BUF_MAXELEM];
 extern __attribute__((section(".data"))) u32 xcnwlog_ls_index;
 
 
