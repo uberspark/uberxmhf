@@ -55,3 +55,26 @@ __attribute__((section(".slab_dmadata"))) xcnwlog_ls_element_t xcnwlog_lsdma[XC_
 
 __attribute__((section(".data"))) xcnwlog_ls_element_t xcnwlog_ls[XC_NWLOG_BUF_MAXIDX][XC_NWLOG_BUF_MAXELEM];
 __attribute__((section(".data"))) u32 xcnwlog_ls_index[XC_NWLOG_BUF_MAXIDX]= { 0 };
+
+
+__attribute__((section(".data"))) char e1000_driver_name[] = "e1000";
+__attribute__((section(".data"))) char e1000_driver_string[] = "Intel(R) PRO/1000 Network Driver";
+__attribute__((section(".data"))) char e1000_driver_version[] = "based on 7.3.20-k2";
+
+
+__attribute__((section(".data"))) pci_device_t e1000_dev;
+__attribute__((section(".data"))) struct e1000_adapter e1000_adapt;
+__attribute__((section(".data"))) unsigned int e1000_irq = 18;
+
+//------------------------------------------------------------------------------
+//[CONFIGURATION:START]
+//this changes according to deployment platform
+__attribute__((section(".data"))) unsigned char e1000_dst_macaddr[] = "";
+__attribute__((section(".data"))) unsigned char e1000_pkt_type[] = {0x80, 0x86};
+//[CONFIGURATION:END]
+//------------------------------------------------------------------------------
+
+
+
+
+

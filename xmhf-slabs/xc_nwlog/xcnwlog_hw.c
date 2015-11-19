@@ -1661,9 +1661,6 @@ static void e1000_pci_disable_master(pci_device_t *nwdevice)
 
 
 
-char e1000_driver_name[] = "e1000";
-char e1000_driver_string[] = "Intel(R) PRO/1000 Network Driver";
-char e1000_driver_version[] = "based on 7.3.20-k2";
 
 void e1000_reset(void);
 static int e1000_setup_tx_resources(struct e1000_tx_ring *tx_ring);
@@ -1674,23 +1671,6 @@ void e1000_xmit(unsigned short tail);
 void e1000_wait4xmit(void);
 static void e1000_irq_disable(void);
 
-
-static pci_device_t e1000_dev;
-//static struct e1000_adapter *e1000_adapt=NULL;
-static struct e1000_adapter e1000_adapt;
-static unsigned int e1000_irq = 18;
-
-//------------------------------------------------------------------------------
-//[CONFIGURATION:START]
-//this changes according to deployment platform
-static unsigned char e1000_dst_macaddr[] = "";
-//[CONFIGURATION:END]
-//------------------------------------------------------------------------------
-
-static unsigned char e1000_pkt_type[] = {0x80, 0x86};
-//unsigned int lo_before, hi_before, lo_after, hi_after;
-
-#define E1000_TIMEOUT_1MS	((0x40000000ULL * 2) / 1000)
 
 void e1000_mdelay1(unsigned int msec)
 {
