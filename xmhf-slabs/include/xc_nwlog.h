@@ -3038,21 +3038,22 @@ struct e1000_adapter {
 #define XMHFGEEC_SLAB_XC_NWLOG_LOGDATA	  1
 
 #define XC_NWLOG_BUF_MAXELEM	16
-
+#define XC_NWLOG_BUF_MAXIDX	1
 
 typedef struct {
     u32 logbuf[16];
 }__attribute__((packed)) xcnwlog_ls_element_t;
 
 extern __attribute__((section(".slab_dmadata"))) xcnwlog_ls_element_t xcnwlog_lsdma[XC_NWLOG_BUF_MAXELEM];
-extern __attribute__((section(".data"))) u32 xcnwlog_ls_index;
-extern __attribute__((section(".data"))) xcnwlog_ls_element_t xcnwlog_ls[XC_NWLOG_BUF_MAXELEM];
+
+extern __attribute__((section(".data"))) xcnwlog_ls_element_t xcnwlog_ls[XC_NWLOG_BUF_MAXIDX][XC_NWLOG_BUF_MAXELEM];
+extern __attribute__((section(".data"))) u32 xcnwlog_ls_index[XC_NWLOG_BUF_MAXIDX];
 
 
 u32 e1000_init_module(void);
 void e1000_xmitack(void);
 
-void xcnwlog_ls_push(xcnwlog_ls_element_t *ls_elem);
+void xcnwlog_ls_push(u32 logidx, xcnwlog_ls_element_t *ls_elem);
 void xcnwlog_init(void);
 void xcnwlog_logdata(xcnwlog_ls_element_t *elem);
 
