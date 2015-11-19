@@ -43,3 +43,32 @@
  *
  * @XMHF_LICENSE_HEADER_END@
  */
+
+#include <xmhf.h>
+#include <xmhfgeec.h>
+#include <xmhf-debug.h>
+
+#include <xc.h>
+#include <xc_nwlog.h>
+
+/*
+ * slab code
+ *
+ * author: amit vasudevan (amitvasudevan@acm.org)
+ */
+
+
+
+
+bool xcnwlog_ls_push(xcnwlog_ls_element_t *ls_elem)
+{
+    if(xcnwlog_ls_index >=0 && xcnwlog_ls_index < 64) {
+        memcpy(&xcnwlog_ls[xcnwlog_ls_index].logbuf, ls_elem,
+		sizeof(xcnwlog_ls_element_t));
+        xcnwlog_ls_index++;
+        return true;
+    }else{
+	return false;
+    }
+}
+
