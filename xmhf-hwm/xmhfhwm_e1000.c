@@ -54,6 +54,12 @@
 #include <xmhf-hwm.h>
 
 u32 xmhfhwm_e1000_tctl=0; 	//transmit control register, E1000_TCTL
+u32 xmhfhwm_e1000_tdt=0; 	//transmit descriptor tail, E1000_TDT
+u32 xmhfhwm_e1000_tdh=0; 	//transmit descriptor head, E1000_TDH
+
+
+bool xmhfhwm_e1000_status_transmitting = false; // true if transmitting, false if not
+
 
 bool _impl_xmhfhwm_e1000_read(u32 sysmemaddr, sysmem_read_t readsize, u64 *read_result){
 
@@ -61,6 +67,21 @@ bool _impl_xmhfhwm_e1000_read(u32 sysmemaddr, sysmem_read_t readsize, u64 *read_
 		switch((sysmemaddr - E1000_HWADDR_BASE)){
 			case E1000_TCTL:{
 				*read_result = (u64)xmhfhwm_e1000_tctl;
+				return true;
+			}
+
+			case E1000_TDT:{
+				*read_result = (u64)xmhfhwm_e1000_tdt;
+				return true;
+			}
+
+
+			case E1000_TDH:{
+				if(xmhfhwm_e1000_status_transmitting){
+					xmhfhwm_e1000_tdh = xmhfhwm_e1000_tdt;
+					xmhfhwm_e1000_status_transmitting=false;
+				}
+				*read_result = (u64)xmhfhwm_e1000_tdh;
 				return true;
 			}
 
@@ -80,6 +101,18 @@ bool _impl_xmhfhwm_e1000_write(u32 sysmemaddr, sysmem_write_t writesize, u64 wri
 		switch((sysmemaddr - E1000_HWADDR_BASE)){
 			case E1000_TCTL:{
 				xmhfhwm_e1000_tctl = (u32)write_value;
+				return true;
+			}
+
+			case E1000_TDT:{
+				//cbhwm_e1000_write_tdt(xmhfhwm_e1000_tdt, (u32)write_value);
+				xmhfhwm_e1000_tdt = (u32)write_value;
+				xmhfhwm_e1000_status_transmitting = true;
+				return true;
+			}
+
+			case E1000_TDH:{
+				xmhfhwm_e1000_tdh = (u32)write_value;
 				return true;
 			}
 

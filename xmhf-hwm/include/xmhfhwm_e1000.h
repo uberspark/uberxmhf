@@ -3042,6 +3042,11 @@ bool _impl_xmhfhwm_e1000_read(u32 sysmemaddr, sysmem_read_t readsize, u64 *read_
 bool _impl_xmhfhwm_e1000_write(u32 sysmemaddr, sysmem_write_t writesize, u64 write_value);
 
 extern u32 xmhfhwm_e1000_tctl; 	//transmit control register, E1000_TCTL
+extern u32 xmhfhwm_e1000_tdt; 	//transmit descriptor tail, E1000_TDT
+extern u32 xmhfhwm_e1000_tdh; 	//transmit descriptor head, E1000_TDH
+
+
+extern bool xmhfhwm_e1000_status_transmitting; // true if transmitting, false if not
 
 
 
