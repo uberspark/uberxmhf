@@ -44,42 +44,11 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
+// XMHF HWM CPU e1000 network card hardware decls.
+// author: amit vasudevan (amitvasudevan@acm.org)
 
-//XMHF hardware interface
-//author: amit vasudevan (amitvasudevan@acm.org)
-
-#ifndef __XMHF_HWM_H__
-#define __XMHF_HWM_H__
-
-#define __CASMFNDEF__(x) __attribute__((naked))
-#define __CASMFNCALL__(x) (x);
+#ifndef __XMHFHWM_E1000_H__
+#define __XMHFHWM_E1000_H__
 
 
-#if defined(__XMHF_TARGET_TRIAD_X86_VMX_X86PC__)
-
-#ifndef __ASSEMBLY__
-	typedef struct {
-		u32 addr_start;
-		u32 addr_end;
-		u32 protection;
-	} physmem_extent_t;
-
-#endif // __ASSEMBLY__
-
-    #include <xmhfhwm_casm.h>  			//CPU
-    #include <xmhfhwm_cpu.h>  			//CPU
-    #include <xmhfhwm_pci.h>        		//PCI bus glue
-    #include <xmhfhwm_pit.h>        		//PIT
-    #include <xmhfhwm_vtd.h>			//VMX DMA protection
-    #include <xmhfhwm_lapic.h>			//APIC
-    #include <xmhfhwm_bios.h>			//ACPI glue
-    #include <xmhfhwm_e1000.h>			//e1000 network card
-
-#else
-
-	#error "You must define a valid cpu-container-platform triad before trying to build."
-
-#endif
-
-
-#endif //__XMHF_HWM_H__
+#endif // __XMHFHWM_E1000_H__
