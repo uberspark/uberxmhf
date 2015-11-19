@@ -62,7 +62,7 @@
 
 bool xcnwlog_ls_push(xcnwlog_ls_element_t *ls_elem)
 {
-    if(xcnwlog_ls_index >=0 && xcnwlog_ls_index < 64) {
+    if(xcnwlog_ls_index >=0 && xcnwlog_ls_index < XC_NWLOG_BUF_MAXELEM) {
         memcpy(&xcnwlog_ls[xcnwlog_ls_index].logbuf, ls_elem,
 		sizeof(xcnwlog_ls_element_t));
         xcnwlog_ls_index++;
