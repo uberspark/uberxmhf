@@ -3041,6 +3041,7 @@ struct e1000_adapter {
 bool _impl_xmhfhwm_e1000_read(u32 sysmemaddr, sysmem_read_t readsize, u64 *read_result);
 bool _impl_xmhfhwm_e1000_write(u32 sysmemaddr, sysmem_write_t writesize, u64 write_value);
 
+extern u32 xmhfhwm_e1000_tctl; 	//transmit control register, E1000_TCTL
 
 
 
