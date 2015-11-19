@@ -55,15 +55,27 @@
 
 bool _impl_xmhfhwm_e1000_read(u32 sysmemaddr, sysmem_read_t readsize, u64 *read_result){
 
-	//@assert 1;
-	return false;
+	if(sysmemaddr >= E1000_HWADDR_BASE && sysmemaddr < (E1000_HWADDR_BASE + E1000_HWADDR_SIZE)){
+
+		*read_result = 0;
+		//@assert 1;
+		return true;
+	}else{
+		return false;
+	}
 }
 
 
 bool _impl_xmhfhwm_e1000_write(u32 sysmemaddr, sysmem_write_t writesize, u64 write_value){
 
-	//@assert 1;
-	return false;
+	if(sysmemaddr >= E1000_HWADDR_BASE && sysmemaddr < (E1000_HWADDR_BASE + E1000_HWADDR_SIZE)){
+
+		//@assert 1;
+		return true;
+	}else{
+		return false;
+	}
+
 }
 
 
