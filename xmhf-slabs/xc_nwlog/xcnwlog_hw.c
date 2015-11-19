@@ -45,6 +45,7 @@
  */
 
 #include <xmhf.h>
+#include <xmhf-hwm.h>
 #include <xmhfgeec.h>
 #include <xmhf-debug.h>
 
