@@ -59,12 +59,12 @@
 
 void xcnwlog_logdata(xcnwlog_ls_element_t *elem){
 	if(xcnwlog_ls_index >= XC_NWLOG_BUF_MAXELEM){
-		memcpy(&xcnwlog_lsdma, &xcnwlog_ls, sizeof(xcnwlog_ls_element_t)*XC_NWLOG_BUF_MAXELEM);
+		memcpy(&xcnwlog_lsdma[0], &xcnwlog_ls[0], sizeof(xcnwlog_ls_element_t)*XC_NWLOG_BUF_MAXELEM);
 		e1000_xmitack();
-		memset(&xcnwlog_ls, 0, sizeof(xcnwlog_ls));
-		xcnwlog_ls_index=0;
+		memset(&xcnwlog_ls[0], 0, sizeof(xcnwlog_ls[0]));
+		xcnwlog_ls_index[0]=0;
 	}else{
-		xcnwlog_ls_push(elem);
+		xcnwlog_ls_push(0, elem);
 	}
 }
 
