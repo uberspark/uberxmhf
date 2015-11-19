@@ -115,7 +115,7 @@ void main(void){
 
 	e1000_xmitack();
 
-
+	//@assert xmhfhwm_e1000_tctl & E1000_TCTL_EN;
 	//@assert xmhfhwm_cpu_gprs_esp == check_esp;
 	//@assert xmhfhwm_cpu_gprs_eip == check_eip;
 }

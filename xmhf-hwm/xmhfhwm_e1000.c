@@ -53,13 +53,20 @@
 #include <xmhf.h>
 #include <xmhf-hwm.h>
 
+u32 xmhfhwm_e1000_tctl=0; 	//transmit control register, E1000_TCTL
+
 bool _impl_xmhfhwm_e1000_read(u32 sysmemaddr, sysmem_read_t readsize, u64 *read_result){
 
 	if(sysmemaddr >= E1000_HWADDR_BASE && sysmemaddr < (E1000_HWADDR_BASE + E1000_HWADDR_SIZE)){
+		switch((sysmemaddr - E1000_HWADDR_BASE)){
+			case E1000_TCTL:{
+				*read_result = (u64)xmhfhwm_e1000_tctl;
+				return true;
+			}
 
-		*read_result = 0;
-		//@assert 1;
-		return true;
+			default:
+				return true;
+		}
 	}else{
 		//@assert 0;
 		return false;
@@ -70,9 +77,16 @@ bool _impl_xmhfhwm_e1000_read(u32 sysmemaddr, sysmem_read_t readsize, u64 *read_
 bool _impl_xmhfhwm_e1000_write(u32 sysmemaddr, sysmem_write_t writesize, u64 write_value){
 
 	if(sysmemaddr >= E1000_HWADDR_BASE && sysmemaddr < (E1000_HWADDR_BASE + E1000_HWADDR_SIZE)){
+		switch((sysmemaddr - E1000_HWADDR_BASE)){
+			case E1000_TCTL:{
+				xmhfhwm_e1000_tctl = (u32)write_value;
+				return true;
+			}
 
-		//@assert 1;
-		return true;
+			default:
+				return true;
+		}
+
 	}else{
 		return false;
 	}
