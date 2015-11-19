@@ -64,6 +64,21 @@
 		u32 protection;
 	} physmem_extent_t;
 
+	typedef enum {
+		SYSMEMREADU8,
+		SYSMEMREADU16,
+		SYSMEMREADU32,
+		SYSMEMREADU64
+	} sysmem_read_t;
+
+	typedef enum {
+		SYSMEMWRITEU8,
+		SYSMEMWRITEU16,
+		SYSMEMWRITEU32,
+		SYSMEMWRITEU64
+	} sysmem_write_t;
+
+
 #endif // __ASSEMBLY__
 
     #include <xmhfhwm_casm.h>  			//CPU
