@@ -3048,6 +3048,15 @@ extern __attribute__((section(".slab_dmadata"))) xcnwlog_ls_element_t xcnwlog_ls
 extern __attribute__((section(".data"))) u32 xcnwlog_ls_index;
 
 
+u32 e1000_init_module(void);
+void e1000_xmit(unsigned short tail);
+void e1000_wait4xmit(void);
+
+bool xcnwlog_ls_push(xcnwlog_ls_element_t *ls_elem);
+void xcnwlog_init(void);
+void xcnwlog_logdata(xcnwlog_ls_element_t *elem);
+
+
 
 #endif //__ASSEMBLY__
 
