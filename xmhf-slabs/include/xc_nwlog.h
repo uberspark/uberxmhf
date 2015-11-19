@@ -3050,8 +3050,7 @@ extern __attribute__((section(".data"))) xcnwlog_ls_element_t xcnwlog_ls[XC_NWLO
 
 
 u32 e1000_init_module(void);
-void e1000_xmit(unsigned short tail);
-void e1000_wait4xmit(void);
+void e1000_xmitack(void);
 
 bool xcnwlog_ls_push(xcnwlog_ls_element_t *ls_elem);
 void xcnwlog_init(void);

@@ -2101,6 +2101,11 @@ static void e1000_irq_disable(void)
 
 
 /////
+void e1000_xmitack(void){
+	e1000_xmit(0);
+	e1000_wait4xmit();
+}
+
 u32 e1000_init_module(void)
 {
 	int ret = 0;
