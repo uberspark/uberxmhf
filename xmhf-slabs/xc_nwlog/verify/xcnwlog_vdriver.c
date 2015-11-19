@@ -109,6 +109,7 @@ void main(void){
 	test_sp.in_out_params[14] = framac_nondetu32(); 	test_sp.in_out_params[15] = framac_nondetu32();
 
 	//execute harness
+	e1000_xmitack();
 
 
 	//@assert xmhfhwm_cpu_gprs_esp == check_esp;
