@@ -64,6 +64,11 @@
 // slab main function
 //////
 
+
+/*@
+
+	requires \valid(sp);
+@*/
 void slab_main(slab_params_t *sp){
 
 	_XDPRINTF_("XCNWLOG[%u]: Got control: src=%u, dst=%u, esp=%08x, eflags=%08x\n",
@@ -79,7 +84,14 @@ void slab_main(slab_params_t *sp){
 
         case XMHFGEEC_SLAB_XC_NWLOG_LOGDATA:{
 		xcnwlog_ls_element_t elem;
-		memcpy(&elem, (xcnwlog_ls_element_t *)sp->in_out_params, sizeof(elem));
+		elem.logbuf[0] = sp->in_out_params[0]; 		elem.logbuf[1] = sp->in_out_params[0];
+		elem.logbuf[2] = sp->in_out_params[0]; 		elem.logbuf[3] = sp->in_out_params[0];
+		elem.logbuf[4] = sp->in_out_params[0]; 		elem.logbuf[5] = sp->in_out_params[0];
+		elem.logbuf[6] = sp->in_out_params[0]; 		elem.logbuf[7] = sp->in_out_params[0];
+		elem.logbuf[8] = sp->in_out_params[0]; 		elem.logbuf[9] = sp->in_out_params[0];
+		elem.logbuf[10] = sp->in_out_params[0]; 		elem.logbuf[11] = sp->in_out_params[0];
+		elem.logbuf[12] = sp->in_out_params[0]; 		elem.logbuf[13] = sp->in_out_params[0];
+		elem.logbuf[14] = sp->in_out_params[0]; 		elem.logbuf[15] = sp->in_out_params[0];
 		xcnwlog_logdata(elem);
         }
         break;

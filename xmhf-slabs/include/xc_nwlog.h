@@ -3103,7 +3103,7 @@ void e1000_xmitack(void);
 
 void xcnwlog_ls_push(u32 nwlog_id, xcnwlog_ls_element_t elem);
 void xcnwlog_init(void);
-void xcnwlog_logdata(xcnwlog_ls_element_t *elem);
+void xcnwlog_logdata(xcnwlog_ls_element_t elem);
 
 
 
