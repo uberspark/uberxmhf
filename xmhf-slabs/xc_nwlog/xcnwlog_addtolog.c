@@ -60,15 +60,27 @@
 
 
 
-bool xcnwlog_ls_push(xcnwlog_ls_element_t *ls_elem)
+void xcnwlog_ls_push(xcnwlog_ls_element_t *ls_elem)
 {
     if(xcnwlog_ls_index >=0 && xcnwlog_ls_index < XC_NWLOG_BUF_MAXELEM) {
-        memcpy(&xcnwlog_ls[xcnwlog_ls_index].logbuf, ls_elem,
-		sizeof(xcnwlog_ls_element_t));
+        xcnwlog_ls[xcnwlog_ls_index].logbuf[0] = ls_elem->logbuf[0];
+        xcnwlog_ls[xcnwlog_ls_index].logbuf[1] = ls_elem->logbuf[1];
+        xcnwlog_ls[xcnwlog_ls_index].logbuf[2] = ls_elem->logbuf[2];
+        xcnwlog_ls[xcnwlog_ls_index].logbuf[3] = ls_elem->logbuf[3];
+        xcnwlog_ls[xcnwlog_ls_index].logbuf[4] = ls_elem->logbuf[4];
+        xcnwlog_ls[xcnwlog_ls_index].logbuf[5] = ls_elem->logbuf[5];
+        xcnwlog_ls[xcnwlog_ls_index].logbuf[6] = ls_elem->logbuf[6];
+        xcnwlog_ls[xcnwlog_ls_index].logbuf[7] = ls_elem->logbuf[7];
+        xcnwlog_ls[xcnwlog_ls_index].logbuf[8] = ls_elem->logbuf[8];
+        xcnwlog_ls[xcnwlog_ls_index].logbuf[9] = ls_elem->logbuf[9];
+        xcnwlog_ls[xcnwlog_ls_index].logbuf[10] = ls_elem->logbuf[10];
+        xcnwlog_ls[xcnwlog_ls_index].logbuf[11] = ls_elem->logbuf[11];
+        xcnwlog_ls[xcnwlog_ls_index].logbuf[12] = ls_elem->logbuf[12];
+        xcnwlog_ls[xcnwlog_ls_index].logbuf[13] = ls_elem->logbuf[13];
+        xcnwlog_ls[xcnwlog_ls_index].logbuf[14] = ls_elem->logbuf[14];
+        xcnwlog_ls[xcnwlog_ls_index].logbuf[15] = ls_elem->logbuf[15];
+
         xcnwlog_ls_index++;
-        return true;
-    }else{
-	return false;
     }
 }
 
