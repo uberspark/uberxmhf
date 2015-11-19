@@ -887,7 +887,8 @@ static u32 _impl_xmhfhwm_gethwmaddrforsysmem(u32 sysmemaddr){
 	if(sysmemaddr >= MMIO_APIC_BASE && sysmemaddr <
 		(MMIO_APIC_BASE+ PAGE_SIZE_4K)){
 		return (u32)&_impl_xmhfhwm_lapic_mmiospace;
-	}
+	}else
+		return 0;
 }
 
 void _impl_xmhfhwm_cpu_insn_movl_mesi_eax(int index){
