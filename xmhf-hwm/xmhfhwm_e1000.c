@@ -53,3 +53,18 @@
 #include <xmhf.h>
 #include <xmhf-hwm.h>
 
+bool _impl_xmhfhwm_e1000_read(u32 sysmemaddr, sysmem_read_t readsize, u64 *read_result){
+
+	//@assert 1;
+	return false;
+}
+
+
+bool _impl_xmhfhwm_e1000_write(u32 sysmemaddr, sysmem_write_t writesize, u64 write_value){
+
+	//@assert 1;
+	return false;
+}
+
+
+
