@@ -65,24 +65,29 @@
 //////
 
 
+//@ ghost bool xcnwlog_methodcall_init = false;
+//@ ghost bool xcnwlog_methodcall_logdata = false;
+//@ ghost bool xcnwlog_methodcall_invalid = false;
 /*@
-
 	requires \valid(sp);
+	ensures ( sp->dst_uapifn == XMHFGEEC_SLAB_XC_NWLOG_INITIALIZE) ==> (xcnwlog_methodcall_init == true);
+	ensures ( sp->dst_uapifn == XMHFGEEC_SLAB_XC_NWLOG_LOGDATA ) ==> (xcnwlog_methodcall_logdata == true);
+	ensures !(
+		( sp->dst_uapifn == XMHFGEEC_SLAB_XC_NWLOG_INITIALIZE) ||
+		( sp->dst_uapifn == XMHFGEEC_SLAB_XC_NWLOG_LOGDATA )
+	) ==> (xcnwlog_methodcall_invalid == true);
 @*/
 void slab_main(slab_params_t *sp){
 
 	_XDPRINTF_("XCNWLOG[%u]: Got control: src=%u, dst=%u, esp=%08x, eflags=%08x\n",
-                (u16)sp->cpuid, sp->src_slabid, sp->dst_slabid, CASM_FUNCCALL(read_esp,CASM_NOPARAM),
+		(u16)sp->cpuid, sp->src_slabid, sp->dst_slabid, CASM_FUNCCALL(read_esp,CASM_NOPARAM),
 			CASM_FUNCCALL(read_eflags, CASM_NOPARAM));
 
-    switch(sp->dst_uapifn){
-
-        case XMHFGEEC_SLAB_XC_NWLOG_INITIALIZE:{
+	if(sp->dst_uapifn == XMHFGEEC_SLAB_XC_NWLOG_INITIALIZE){
 		xcnwlog_init();
-	}
-        break;
+		//@ghost xcnwlog_methodcall_init = true;
 
-        case XMHFGEEC_SLAB_XC_NWLOG_LOGDATA:{
+	}else if (sp->dst_uapifn == XMHFGEEC_SLAB_XC_NWLOG_LOGDATA){
 		xcnwlog_ls_element_t elem;
 		elem.logbuf[0] = sp->in_out_params[0]; 		elem.logbuf[1] = sp->in_out_params[0];
 		elem.logbuf[2] = sp->in_out_params[0]; 		elem.logbuf[3] = sp->in_out_params[0];
@@ -93,16 +98,15 @@ void slab_main(slab_params_t *sp){
 		elem.logbuf[12] = sp->in_out_params[0]; 		elem.logbuf[13] = sp->in_out_params[0];
 		elem.logbuf[14] = sp->in_out_params[0]; 		elem.logbuf[15] = sp->in_out_params[0];
 		xcnwlog_logdata(elem);
+		//@ghost xcnwlog_methodcall_logdata = true;
+
+        }else {
+		_XDPRINTF_("XCNWLOG[%u]: Unknown sub-function %x. Halting!\n",
+		    (u16)sp->cpuid, sp->dst_uapifn);
+		//@ghost xcnwlog_methodcall_invalid = true;
+
+
         }
-        break;
-
-
-        default:
-            _XDPRINTF_("XCNWLOG[%u]: Unknown sub-function %x. Halting!\n",
-                    (u16)sp->cpuid, sp->dst_uapifn);
-            HALT();
-            return;
-    }
 
 }
 
