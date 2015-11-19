@@ -109,6 +109,10 @@ void main(void){
 	test_sp.in_out_params[14] = framac_nondetu32(); 	test_sp.in_out_params[15] = framac_nondetu32();
 
 	//execute harness
+	e1000_adapt.hw.hw_addr = E1000_HWADDR_BASE;
+	e1000_adapt.tx_ring.tdt =(E1000_TDT);
+	e1000_adapt.tx_ring.tdh =(E1000_TDH);
+
 	e1000_xmitack();
 
 
