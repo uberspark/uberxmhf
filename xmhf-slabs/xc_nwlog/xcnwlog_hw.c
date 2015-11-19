@@ -1771,7 +1771,7 @@ static int e1000_probe(pci_device_t *nwdevice)
 	e1000_adapt.msg_enable = 1;
 
 	//TODO: probe base address of this adapter via config space
-	e1000_adapt.hw.hw_addr = 0;
+	e1000_adapt.hw.hw_addr = E1000_HWADDR_BASE;
 
 
 	/* setup the private structure */

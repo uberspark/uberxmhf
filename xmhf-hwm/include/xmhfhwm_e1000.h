@@ -60,6 +60,8 @@
 #define BAR_0		0
 #define BAR_1		1
 #define BAR_5		5
+#define E1000_HWADDR_BASE		0xEF000000UL	//TODO: remove hard-coding
+#define E1000_HWADDR_SIZE		0x9000UL
 
 //#define e1000_readl(addr)		*(volatile unsigned int *)(addr)
 //#define e1000_writel(value, addr)	*(volatile unsigned int *)(addr) = (u32)(value)
