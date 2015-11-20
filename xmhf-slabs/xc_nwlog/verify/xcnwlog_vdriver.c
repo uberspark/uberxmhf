@@ -122,16 +122,61 @@ void cbhwm_e1000_write_tdt(u32 origval, u32 newval){
 
 void cbhwm_e1000_write_tdbah(u32 origval, u32 newval){
 
+	switch(xcnwlog_verif){
+		case XCNWLOG_VERIF_INIT:
+			//@assert 0;
+			break;
+
+		case XCNWLOG_VERIF_LOGDATA:{
+			//@assert 0;
+			break;
+		}
+
+		default:
+			//@assert 0;
+			break;
+	}
 
 
 }
 
 void cbhwm_e1000_write_tdbal(u32 origval, u32 newval){
 
+	switch(xcnwlog_verif){
+		case XCNWLOG_VERIF_INIT:
+			//@assert 0;
+			break;
+
+		case XCNWLOG_VERIF_LOGDATA:{
+			//@assert 0;
+			break;
+		}
+
+		default:
+			//@assert 0;
+			break;
+	}
+
 }
 
 
 void cbhwm_e1000_write_tdlen(u32 origval, u32 newval){
+
+	switch(xcnwlog_verif){
+		case XCNWLOG_VERIF_INIT:
+			//@assert 0;
+			break;
+
+		case XCNWLOG_VERIF_LOGDATA:{
+			//@assert 0;
+			break;
+		}
+
+		default:
+			//@assert 0;
+			break;
+	}
+
 
 }
 
