@@ -1006,10 +1006,13 @@ e1000_acquire_eeprom(struct e1000_hw *hw)
 
     DEBUGFUNC("e1000_acquire_eeprom");
 
+    //@assert 1;
+
     if (e1000_get_hw_eeprom_semaphore(hw))
         return -E1000_ERR_SWFW_SYNC;
     eecd = E1000_READ_REG(hw, EECD);
 
+    //@assert 1;
     {
         /* Request EEPROM Access */
         {
@@ -1031,6 +1034,8 @@ e1000_acquire_eeprom(struct e1000_hw *hw)
             }
         }
     }
+
+    //@assert 1;
 
     /* Setup EEPROM for Read/Write */
 
@@ -1171,6 +1176,7 @@ e1000_read_eeprom(struct e1000_hw *hw,
         return -E1000_ERR_EEPROM;
     }
 
+	//@assert 1;
     /* EEPROM's that don't use EERD to read require us to bit-bang the SPI
      * directly. In this case, we need to acquire the EEPROM so that
      * FW or other port software does not interrupt.
@@ -1180,6 +1186,8 @@ e1000_read_eeprom(struct e1000_hw *hw,
         if (e1000_acquire_eeprom(hw) != E1000_SUCCESS)
             return -E1000_ERR_EEPROM;
     }
+
+	//@assert 1;
 
     /* Set up the SPI or Microwire EEPROM for bit-bang reading.  We have
      * acquired the EEPROM at this point, so any returns should relase it */
@@ -1191,6 +1199,8 @@ e1000_read_eeprom(struct e1000_hw *hw,
             e1000_release_eeprom(hw);
             return -E1000_ERR_EEPROM;
         }
+
+	//@assert 1;
 
         e1000_standby_eeprom(hw);
 
@@ -1766,11 +1776,14 @@ static int e1000_probe(pci_device_t *nwdevice)
 
 	e1000_reset_hw(&e1000_adapt.hw);
 
+	//@assert 1;
 	/* copy the MAC address out of the EEPROM */
 	if (e1000_read_mac_addr(&e1000_adapt.hw)){
 		//printf("\nNIC EEPROM Read Error");
 		return -1;
 	}
+
+	//@assert 1;
 
 	DEBUGQ(0);
 	/* Transmit Descriptor Count */
@@ -1824,6 +1837,7 @@ static int e1000_open(void)
 	DEBUGQ(0);
 
 	/* allocate transmit descriptors */
+	//@assert 1;
 	err = e1000_setup_tx_resources(&e1000_adapt.tx_ring);
 	if (err) {
 		DPRINTK(PROBE, ERR,
@@ -1831,6 +1845,8 @@ static int e1000_open(void)
 		goto err_setup_tx;
 	}
 
+
+	//@assert 1;
 	/* Just clear the power down bit to wake the phy back up */
 	/* according to the manual, the phy will retain its
 	 * settings across a power-down/up cycle */
@@ -1843,6 +1859,7 @@ static int e1000_open(void)
 	 * as soon as we call pci_request_irq, so we have to setup our
 	 * clean_rx handler before we do so.  */
 	e1000_configure_tx();
+	//@assert 1;
 
 	return E1000_SUCCESS;
 
@@ -1940,6 +1957,7 @@ e1000_configure_tx(void)
 
 	/* Setup the HW Tx Head and Tail descriptor pointers */
 	tdba = e1000_adapt.tx_ring.dma_desc;
+	//@assert tdba == (u32)&xcnwlog_lsdma;
 	tdlen = e1000_adapt.tx_ring.count * sizeof(struct e1000_tx_desc);
 	E1000_WRITE_REG(hw, TDLEN, tdlen);
 	E1000_WRITE_REG(hw, TDBAH, (tdba >> 32));
@@ -2079,21 +2097,27 @@ u32 e1000_init_module(void)
 	_XDPRINTF_("Probing for ethernet card...\n");
 
 	DEBUGQ(0);
+	//@assert 1;
 	ret = e1000_probe(&e1000_dev);
 
-	if (ret)
-		return ret;
+	if (ret < 0)
+	   return 0;
 
+	//@assert 1;
 	_XDPRINTF_("Opening interface...\n");
 	ret = e1000_open();
-	if (ret)
-		return ret;
+
+	if (ret < 0)
+	   return 0;
+
+	//@assert 1;
 	//PRINT_STATUS();
 	_XDPRINTF_("Waiting for router...\n");
-
-	e1000_mdelay1(40 * 1000);
+	//e1000_mdelay1(40 * 1000);
 
 	_XDPRINTF_("Done.\n");
+	//@assert 1;
+
 	//PRINT_STATUS();
 	/*printf("\nTransmitting...");
 	e1000_xmit(E1000_DESC_COUNT / 2);

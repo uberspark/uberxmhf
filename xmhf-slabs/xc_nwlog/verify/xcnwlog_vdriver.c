@@ -200,7 +200,7 @@ void main(void){
 	test_sp.in_out_params[14] = framac_nondetu32(); 	test_sp.in_out_params[15] = framac_nondetu32();
 
 	//execute harness
-	/* e1000_adapt.hw.hw_addr = E1000_HWADDR_BASE;
+	/*e1000_adapt.hw.hw_addr = E1000_HWADDR_BASE;
 	e1000_adapt.tx_ring.tdt =(E1000_TDT);
 	e1000_adapt.tx_ring.tdh =(E1000_TDH);
 	xmhfhwm_e1000_tdbah = 0;
@@ -213,6 +213,12 @@ void main(void){
 
 	xcnwlog_verif = XCNWLOG_VERIF_INIT;
 	e1000_init_module();
+	//@assert (e1000_adapt.hw.hw_addr == (uint8_t *)E1000_HWADDR_BASE);
+	//@assert (e1000_adapt.tx_ring.tdt == (uint16_t)(E1000_TDT));
+	//@assert (e1000_adapt.tx_ring.tdh == (uint16_t)(E1000_TDH));
+        //@assert xmhfhwm_e1000_tdbah == 0;
+	//@assert xmhfhwm_e1000_tdbal == (u32)&xcnwlog_lsdma;
+	//@assert xmhfhwm_e1000_tdlen == (E1000_DESC_COUNT * sizeof(struct e1000_tx_desc));
 
 
 

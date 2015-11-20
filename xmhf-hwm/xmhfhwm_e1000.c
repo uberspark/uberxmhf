@@ -59,7 +59,8 @@ u32 xmhfhwm_e1000_tdh=0; 	//transmit descriptor head, E1000_TDH
 u32 xmhfhwm_e1000_tdbah;		//E1000_TDBAH, high-32bits of transmit descriptor base address
 u32 xmhfhwm_e1000_tdbal;		//E1000_TDBAL, low-32bits of transmit descriptor base address
 u32 xmhfhwm_e1000_tdlen;		//E1000_TDLEN, descroptor length
-
+u32 xmhfhwm_e1000_swsm;		//E1000_SWSM, sw semaphore
+u32 xmhfhwm_e1000_eecd;		//E1000_EECD, eeprom/flash control
 
 bool xmhfhwm_e1000_status_transmitting = false; // true if transmitting, false if not
 
@@ -104,6 +105,15 @@ bool _impl_xmhfhwm_e1000_read(u32 sysmemaddr, sysmem_read_t readsize, u64 *read_
 				return true;
 			}
 
+			case E1000_SWSM:{
+				*read_result = (u64)xmhfhwm_e1000_swsm;
+				return true;
+			}
+
+			case E1000_EECD:{
+				*read_result = (u64)xmhfhwm_e1000_eecd;
+				return true;
+			}
 
 
 			default:
@@ -155,6 +165,20 @@ bool _impl_xmhfhwm_e1000_write(u32 sysmemaddr, sysmem_write_t writesize, u64 wri
 				return true;
 			}
 
+
+			case E1000_SWSM:{
+				xmhfhwm_e1000_swsm = (u32)write_value;
+				return true;
+			}
+
+
+			case E1000_EECD:{
+				xmhfhwm_e1000_eecd = (u32)write_value;
+				if(xmhfhwm_e1000_eecd & E1000_EECD_REQ)
+					xmhfhwm_e1000_eecd |= E1000_EECD_GNT;
+
+				return true;
+			}
 
 			default:
 				return true;

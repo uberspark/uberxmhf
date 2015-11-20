@@ -3053,6 +3053,8 @@ extern u32 xmhfhwm_e1000_tdh; 	//transmit descriptor head, E1000_TDH
 extern u32 xmhfhwm_e1000_tdbah;		//E1000_TDBAH, high-32bits of transmit descriptor base address
 extern u32 xmhfhwm_e1000_tdbal;		//E1000_TDBAL, low-32bits of transmit descriptor base address
 extern u32 xmhfhwm_e1000_tdlen;		//E1000_TDLEN, descroptor length
+extern u32 xmhfhwm_e1000_swsm;		//E1000_SWSM, sw semaphore
+extern u32 xmhfhwm_e1000_eecd;		//E1000_EECD, eeprom/flash control
 
 
 extern bool xmhfhwm_e1000_status_transmitting; // true if transmitting, false if not
