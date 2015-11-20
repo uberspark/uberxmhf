@@ -2083,7 +2083,6 @@ static void e1000_irq_disable(void)
 
 /////
 void e1000_xmitack(void){
-	E1000_WRITE_REG(&e1000_adapt.hw, TDLEN, 200);
 	e1000_xmit(0);
 	e1000_wait4xmit();
 }
