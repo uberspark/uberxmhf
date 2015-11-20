@@ -138,7 +138,8 @@ bool _impl_xmhfhwm_e1000_write(u32 sysmemaddr, sysmem_write_t writesize, u64 wri
 			case E1000_TDT:{
 				cbhwm_e1000_write_tdt(xmhfhwm_e1000_tdt, (u32)write_value);
 				xmhfhwm_e1000_tdt = (u32)write_value;
-				xmhfhwm_e1000_status_transmitting = true;
+				if(xmhfhwm_e1000_tctl & E1000_TCTL_EN)
+					xmhfhwm_e1000_status_transmitting = true;
 				return true;
 			}
 
