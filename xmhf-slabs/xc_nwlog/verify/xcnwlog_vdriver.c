@@ -94,7 +94,7 @@ typedef enum {
 } xcnwlog_verif_t;
 
 xcnwlog_verif_t xcnwlog_verif = XCNWLOG_VERIF_INIT;
-
+bool xcnwlog_logdata_startedxmit = false;
 
 
 void cbhwm_e1000_write_tdt(u32 origval, u32 newval){
@@ -104,8 +104,13 @@ void cbhwm_e1000_write_tdt(u32 origval, u32 newval){
 			break;
 
 		case XCNWLOG_VERIF_LOGDATA:{
-			//if TE bit set in TCTL { newval == 0, tdbah=0, tdbal=xcnwlog_lsdma, transmitting=false}
-			//@assert 1;
+			if(xmhfhwm_e1000_tctl & E1000_TCTL_EN){
+				//@assert newval == 0;
+				//@assert xmhfhwm_e1000_tdbah == 0;
+				//@assert xmhfhwm_e1000_tdbal == (u32)&xcnwlog_lsdma;
+				//@assert xmhfhwm_e1000_status_transmitting == false;
+				xcnwlog_logdata_startedxmit = true;
+			}
 			break;
 		}
 
@@ -158,8 +163,11 @@ void main(void){
 	xmhfhwm_e1000_tdlen = E1000_DESC_COUNT * sizeof(struct e1000_tx_desc);
 	xcnwlog_verif = XCNWLOG_VERIF_LOGDATA;
 	e1000_xmitack();
+	//@assert xcnwlog_logdata_startedxmit == true && xmhfhwm_e1000_status_transmitting == false;
 
-	//@assert xmhfhwm_e1000_status_transmitting == false;
+
+
+
 	//@assert xmhfhwm_cpu_gprs_esp == check_esp;
 	//@assert xmhfhwm_cpu_gprs_eip == check_eip;
 }
