@@ -1866,8 +1866,7 @@ static int e1000_setup_tx_resources(struct e1000_tx_ring *tx_ring)
 	/* round up to nearest 4K */
 	tx_ring->size_desc = tx_ring->count * sizeof(struct e1000_tx_desc);
 	tx_ring->size_desc = PAGE_ALIGN_UP4K(tx_ring->size_desc);
-#if 1
-	/* FIXME */
+
 	//tx_ring->desc = dma_alloc_coherent(NULL, tx_ring->size_desc, &tx_ring->dma_desc, GFP_ATOMIC);
 	tx_ring->desc=&xcnwlog_lsdma;
 	tx_ring->dma_desc=&xcnwlog_lsdma;
@@ -1877,14 +1876,11 @@ static int e1000_setup_tx_resources(struct e1000_tx_ring *tx_ring)
 		//return -ENOMEM;
 		return -1;
 	}
-#endif
-	memset(tx_ring->desc, 0, tx_ring->size_desc);
 
 	/* round up to nearest 4K */
 	tx_ring->size_header = (tx_ring->count / 2) * E1000_HEADER_SIZE;
 	tx_ring->size_header = PAGE_ALIGN_UP4K(tx_ring->size_header);
-#if 1
-	/* FIXME */
+
 	//tx_ring->buf_header = dma_alloc_coherent(NULL, tx_ring->size_header, &tx_ring->dma_header, GFP_ATOMIC);
 	tx_ring->buf_header=&xcnwlog_lsdma;
 	tx_ring->dma_header=&xcnwlog_lsdma;
@@ -1894,15 +1890,12 @@ static int e1000_setup_tx_resources(struct e1000_tx_ring *tx_ring)
 		//return -ENOMEM;
 		return -1;
 	}
-#endif
-	memset(tx_ring->buf_header, 0, tx_ring->size_header);
 
 	/* round up to nearest 4K */
 	tx_ring->size_body = (tx_ring->count / 2) * E1000_BODY_SIZE;
 	tx_ring->size_body = PAGE_ALIGN_UP4K(tx_ring->size_body);
-#if 1
-	/* FIXME */
-//	tx_ring->buf_body = dma_alloc_coherent(NULL, tx_ring->size_body, &tx_ring->dma_body, GFP_ATOMIC);
+
+	//tx_ring->buf_body = dma_alloc_coherent(NULL, tx_ring->size_body, &tx_ring->dma_body, GFP_ATOMIC);
 	tx_ring->buf_body = (void *)&xcnwlog_lsdma;
 	tx_ring->dma_body = (dma_addr_t)&xcnwlog_lsdma;
 	if (!tx_ring->buf_body) {
@@ -1910,34 +1903,17 @@ static int e1000_setup_tx_resources(struct e1000_tx_ring *tx_ring)
 		//return -ENOMEM;
 		return -1;
 	}
-#endif
 
 	for (i = 0; i < tx_ring->count; i ++)
 	{
 		tx_desc = E1000_TX_DESC(*tx_ring, i);
-		if ((i % 2) == 0)
-		{
-			tx_desc->buffer_addr = e1000_cpu_to_le64((unsigned int)tx_ring->dma_header + E1000_HEADER_SIZE *  (i / 2));
-			tx_desc->lower.data = e1000_cpu_to_le32(E1000_TXD_CMD_IFCS | E1000_HEADER_SIZE);
-			tx_desc->upper.data = e1000_cpu_to_le32(0);
+		tx_desc->buffer_addr = e1000_cpu_to_le64((unsigned int)tx_ring->dma_body + (E1000_BODY_SIZE *  i));
+		tx_desc->lower.data = e1000_cpu_to_le32(E1000_TXD_CMD_IFCS | E1000_TXD_CMD_EOP | E1000_BODY_SIZE);
+		tx_desc->upper.data = e1000_cpu_to_le32(0);
 
-			buffer = (unsigned char *)tx_ring->buf_header + E1000_HEADER_SIZE *  (i / 2);
-			memcpy(buffer, e1000_dst_macaddr, 6);
-			memcpy(buffer + 6, e1000_adapt.hw.mac_addr, 6);
-			memcpy(buffer + 12, e1000_pkt_type, 2);
-			memcpy(buffer + 14, (unsigned int *)&i, 4);
-		} else
-		{
-			tx_desc->buffer_addr = e1000_cpu_to_le64((unsigned int)tx_ring->dma_body + E1000_BODY_SIZE *  (i / 2));
-//			tx_desc->lower.data = e1000_cpu_to_le32(E1000_TXD_CMD_IFCS | E1000_TXD_CMD_EOP | E1000_BODY_SIZE | E1000_TXD_CMD_RS);
-			tx_desc->lower.data = e1000_cpu_to_le32(E1000_TXD_CMD_IFCS | E1000_TXD_CMD_EOP | E1000_BODY_SIZE);
-			tx_desc->upper.data = e1000_cpu_to_le32(0);
-
-//			buffer = (unsigned char *)tx_ring->buf_body + E1000_BODY_SIZE *  (i / 2);
-//			memset(buffer, (unsigned char)i, E1000_BODY_SIZE);
-		}
 	}
 	DEBUGQ(tx_ring->size_desc);
+
 	/*for (i = 0; i < tx_ring->count * sizeof(struct e1000_tx_desc); i ++)
 	{
 		printk("%02x ", *(unsigned char *)((unsigned int)tx_ring->desc + i));
