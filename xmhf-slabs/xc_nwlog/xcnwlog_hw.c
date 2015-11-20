@@ -1960,8 +1960,10 @@ e1000_configure_tx(void)
 	//@assert tdba == (u32)&xcnwlog_lsdma;
 	tdlen = e1000_adapt.tx_ring.count * sizeof(struct e1000_tx_desc);
 	E1000_WRITE_REG(hw, TDLEN, tdlen);
-	E1000_WRITE_REG(hw, TDBAH, (tdba >> 32));
-	E1000_WRITE_REG(hw, TDBAL, (tdba & 0x00000000ffffffffULL));
+	//E1000_WRITE_REG(hw, TDBAH, (tdba >> 32));
+	//E1000_WRITE_REG(hw, TDBAL, (tdba & 0x00000000ffffffffULL));
+	E1000_WRITE_REG(hw, TDBAH, 0);
+	E1000_WRITE_REG(hw, TDBAL, (u32)e1000_adapt.tx_ring.dma_desc);
 	E1000_WRITE_REG(hw, TDT, 0);
 	E1000_WRITE_REG(hw, TDH, 0);
 	e1000_adapt.tx_ring.tdh = (E1000_TDH);
