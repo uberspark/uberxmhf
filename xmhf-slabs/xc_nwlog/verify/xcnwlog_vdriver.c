@@ -90,6 +90,24 @@ u32 check_esp, check_eip = CASM_RET_EIP;
 slab_params_t test_sp;
 
 
+void cbhwm_e1000_write_tdt(u32 origval, u32 newval){
+	//@assert 1;
+}
+
+void cbhwm_e1000_write_tdbah(u32 origval, u32 newval){
+
+}
+
+void cbhwm_e1000_write_tdbal(u32 origval, u32 newval){
+
+}
+
+
+void cbhwm_e1000_write_tdlen(u32 origval, u32 newval){
+
+}
+
+
 
 
 void main(void){

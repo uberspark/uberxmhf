@@ -126,7 +126,7 @@ bool _impl_xmhfhwm_e1000_write(u32 sysmemaddr, sysmem_write_t writesize, u64 wri
 			}
 
 			case E1000_TDT:{
-				//cbhwm_e1000_write_tdt(xmhfhwm_e1000_tdt, (u32)write_value);
+				cbhwm_e1000_write_tdt(xmhfhwm_e1000_tdt, (u32)write_value);
 				xmhfhwm_e1000_tdt = (u32)write_value;
 				xmhfhwm_e1000_status_transmitting = true;
 				return true;
@@ -138,19 +138,19 @@ bool _impl_xmhfhwm_e1000_write(u32 sysmemaddr, sysmem_write_t writesize, u64 wri
 			}
 
 			case E1000_TDBAH:{
-				//cbhwm_e1000_write_tdbah(xmhfhwm_e1000_tdbah, (u32)write_value);
+				cbhwm_e1000_write_tdbah(xmhfhwm_e1000_tdbah, (u32)write_value);
 				xmhfhwm_e1000_tdbah = (u32)write_value;
 				return true;
 			}
 
 			case E1000_TDBAL:{
-				//cbhwm_e1000_write_tdbal(xmhfhwm_e1000_tdbal, (u32)write_value);
+				cbhwm_e1000_write_tdbal(xmhfhwm_e1000_tdbal, (u32)write_value);
 				xmhfhwm_e1000_tdbal = (u32)write_value;
 				return true;
 			}
 
 			case E1000_TDLEN:{
-				//cbhwm_e1000_write_tdlen(xmhfhwm_e1000_tdlen, (u32)write_value);
+				cbhwm_e1000_write_tdlen(xmhfhwm_e1000_tdlen, (u32)write_value);
 				xmhfhwm_e1000_tdlen = (u32)write_value;
 				return true;
 			}
