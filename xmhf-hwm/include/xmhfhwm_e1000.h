@@ -3037,6 +3037,11 @@ struct e1000_adapter {
 
 
 
+extern void cbhwm_e1000_write_tdt(u32 origval, u32 newval);
+extern void cbhwm_e1000_write_tdbah(u32 origval, u32 newval);
+extern void cbhwm_e1000_write_tdbal(u32 origval, u32 newval);
+extern void cbhwm_e1000_write_tdlen(u32 origval, u32 newval);
+
 
 bool _impl_xmhfhwm_e1000_read(u32 sysmemaddr, sysmem_read_t readsize, u64 *read_result);
 bool _impl_xmhfhwm_e1000_write(u32 sysmemaddr, sysmem_write_t writesize, u64 write_value);
