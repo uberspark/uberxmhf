@@ -1605,7 +1605,7 @@ e1000_check_phy_reset_block(struct e1000_hw *hw)
 
 static void e1000_pci_set_master(pci_device_t *nwdevice)
 {
-        u16 cmd;
+        u32 cmd;
 
         xmhf_baseplatform_arch_x86_pci_type1_read(nwdevice->bus,
 						nwdevice->dev,
@@ -1769,7 +1769,7 @@ static int e1000_probe(pci_device_t *nwdevice)
 	/* copy the MAC address out of the EEPROM */
 	if (e1000_read_mac_addr(&e1000_adapt.hw)){
 		//printf("\nNIC EEPROM Read Error");
-		HALT();
+		return -1;
 	}
 
 	DEBUGQ(0);

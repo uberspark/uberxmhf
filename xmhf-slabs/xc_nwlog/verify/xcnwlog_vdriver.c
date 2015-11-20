@@ -211,7 +211,7 @@ void main(void){
 	//@assert xcnwlog_logdata_startedxmit == true && xmhfhwm_e1000_status_transmitting == false;
 	*/
 
-	xcnwlog_verif = XCNWLOG_VERIF_LOGDATA;
+	xcnwlog_verif = XCNWLOG_VERIF_INIT;
 	e1000_init_module();
 
 
