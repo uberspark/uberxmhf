@@ -100,7 +100,7 @@ bool xcnwlog_logdata_startedxmit = false;
 void cbhwm_e1000_write_tdt(u32 origval, u32 newval){
 	switch(xcnwlog_verif){
 		case XCNWLOG_VERIF_INIT:
-			//@assert 0;
+			//@assert 1;
 			break;
 
 		case XCNWLOG_VERIF_LOGDATA:{
@@ -124,7 +124,7 @@ void cbhwm_e1000_write_tdbah(u32 origval, u32 newval){
 
 	switch(xcnwlog_verif){
 		case XCNWLOG_VERIF_INIT:
-			//@assert 0;
+			//@assert 1;
 			break;
 
 		case XCNWLOG_VERIF_LOGDATA:{
@@ -144,7 +144,7 @@ void cbhwm_e1000_write_tdbal(u32 origval, u32 newval){
 
 	switch(xcnwlog_verif){
 		case XCNWLOG_VERIF_INIT:
-			//@assert 0;
+			//@assert 1;
 			break;
 
 		case XCNWLOG_VERIF_LOGDATA:{
@@ -164,7 +164,7 @@ void cbhwm_e1000_write_tdlen(u32 origval, u32 newval){
 
 	switch(xcnwlog_verif){
 		case XCNWLOG_VERIF_INIT:
-			//@assert 0;
+			//@assert 1;
 			break;
 
 		case XCNWLOG_VERIF_LOGDATA:{
@@ -200,7 +200,7 @@ void main(void){
 	test_sp.in_out_params[14] = framac_nondetu32(); 	test_sp.in_out_params[15] = framac_nondetu32();
 
 	//execute harness
-	e1000_adapt.hw.hw_addr = E1000_HWADDR_BASE;
+	/* e1000_adapt.hw.hw_addr = E1000_HWADDR_BASE;
 	e1000_adapt.tx_ring.tdt =(E1000_TDT);
 	e1000_adapt.tx_ring.tdh =(E1000_TDH);
 	xmhfhwm_e1000_tdbah = 0;
@@ -209,7 +209,10 @@ void main(void){
 	xcnwlog_verif = XCNWLOG_VERIF_LOGDATA;
 	e1000_xmitack();
 	//@assert xcnwlog_logdata_startedxmit == true && xmhfhwm_e1000_status_transmitting == false;
+	*/
 
+	xcnwlog_verif = XCNWLOG_VERIF_LOGDATA;
+	e1000_init_module();
 
 
 
