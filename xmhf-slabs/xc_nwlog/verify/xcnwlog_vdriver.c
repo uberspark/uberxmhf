@@ -88,13 +88,36 @@ u32 framac_nondetu32interval(u32 min, u32 max)
 //////
 u32 check_esp, check_eip = CASM_RET_EIP;
 slab_params_t test_sp;
+typedef enum {
+	XCNWLOG_VERIF_INIT,
+	XCNWLOG_VERIF_LOGDATA
+} xcnwlog_verif_t;
+
+xcnwlog_verif_t xcnwlog_verif = XCNWLOG_VERIF_INIT;
+
 
 
 void cbhwm_e1000_write_tdt(u32 origval, u32 newval){
-	//@assert 1;
+	switch(xcnwlog_verif){
+		case XCNWLOG_VERIF_INIT:
+			//@assert 0;
+			break;
+
+		case XCNWLOG_VERIF_LOGDATA:{
+			//if TE bit set in TCTL { newval == 0, tdbah=0, tdbal=xcnwlog_lsdma, transmitting=false}
+			//@assert 1;
+			break;
+		}
+
+		default:
+			//@assert 0;
+			break;
+	}
 }
 
 void cbhwm_e1000_write_tdbah(u32 origval, u32 newval){
+
+
 
 }
 
@@ -130,7 +153,10 @@ void main(void){
 	e1000_adapt.hw.hw_addr = E1000_HWADDR_BASE;
 	e1000_adapt.tx_ring.tdt =(E1000_TDT);
 	e1000_adapt.tx_ring.tdh =(E1000_TDH);
-
+	xmhfhwm_e1000_tdbah = 0;
+	xmhfhwm_e1000_tdbal = (u32)&xcnwlog_lsdma;
+	xmhfhwm_e1000_tdlen = E1000_DESC_COUNT * sizeof(struct e1000_tx_desc);
+	xcnwlog_verif = XCNWLOG_VERIF_LOGDATA;
 	e1000_xmitack();
 
 	//@assert xmhfhwm_e1000_status_transmitting == false;
