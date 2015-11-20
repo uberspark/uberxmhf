@@ -1869,8 +1869,8 @@ static int e1000_setup_tx_resources(struct e1000_tx_ring *tx_ring)
 #if 1
 	/* FIXME */
 	//tx_ring->desc = dma_alloc_coherent(NULL, tx_ring->size_desc, &tx_ring->dma_desc, GFP_ATOMIC);
-	tx_ring->desc=&xcnwlog_ls;
-	tx_ring->dma_desc=&xcnwlog_ls;
+	tx_ring->desc=&xcnwlog_lsdma;
+	tx_ring->dma_desc=&xcnwlog_lsdma;
 
 	if (!tx_ring->desc) {
 		DEBUGQ(tx_ring->size_desc);
@@ -1886,8 +1886,8 @@ static int e1000_setup_tx_resources(struct e1000_tx_ring *tx_ring)
 #if 1
 	/* FIXME */
 	//tx_ring->buf_header = dma_alloc_coherent(NULL, tx_ring->size_header, &tx_ring->dma_header, GFP_ATOMIC);
-	tx_ring->buf_header=&xcnwlog_ls;
-	tx_ring->dma_header=&xcnwlog_ls;
+	tx_ring->buf_header=&xcnwlog_lsdma;
+	tx_ring->dma_header=&xcnwlog_lsdma;
 
 	if (!tx_ring->buf_header) {
 		DEBUGQ(tx_ring->size_header);
@@ -1903,8 +1903,8 @@ static int e1000_setup_tx_resources(struct e1000_tx_ring *tx_ring)
 #if 1
 	/* FIXME */
 //	tx_ring->buf_body = dma_alloc_coherent(NULL, tx_ring->size_body, &tx_ring->dma_body, GFP_ATOMIC);
-	tx_ring->buf_body = (void *)&xcnwlog_ls;
-	tx_ring->dma_body = (dma_addr_t)&xcnwlog_ls;
+	tx_ring->buf_body = (void *)&xcnwlog_lsdma;
+	tx_ring->dma_body = (dma_addr_t)&xcnwlog_lsdma;
 	if (!tx_ring->buf_body) {
 		DEBUGQ(tx_ring->size_body);
 		//return -ENOMEM;
