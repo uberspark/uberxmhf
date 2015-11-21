@@ -211,19 +211,10 @@ void main(void){
 
 
 
-	/*e1000_adapt.hw.hw_addr = E1000_HWADDR_BASE;
-	e1000_adapt.tx_ring.tdt =(E1000_TDT);
-	e1000_adapt.tx_ring.tdh =(E1000_TDH);
-	xmhfhwm_e1000_tdbah = 0;
-	xmhfhwm_e1000_tdbal = (u32)&xcnwlog_lsdma;
-	xmhfhwm_e1000_tdlen = E1000_DESC_COUNT * sizeof(struct e1000_tx_desc);
-	*/
 	//@assert xmhfhwm_e1000_status_transmitting == false;
 	xcnwlog_verif = XCNWLOG_VERIF_LOGDATA;
 	e1000_xmitack();
 	//@assert xcnwlog_logdata_startedxmit == true && xmhfhwm_e1000_status_transmitting == false;
-
-
 
 
 
