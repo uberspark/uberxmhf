@@ -88,6 +88,44 @@ u32 xmhfhwm_cpu_ss_selector = 0;
 u64 xmhfhwm_cpu_xcr0 = 0;
 xmhfhwm_cpu_state_t xmhfhwm_cpu_state = CPU_STATE_RUNNING;
 
+
+
+//////
+// move to ESP related instructions
+//////
+
+void _impl_xmhfhwm_cpu_insn_addl_imm_esp(u32 value){
+	xmhfhwm_vdriver_writeesp(xmhfhwm_cpu_gprs_esp, (xmhfhwm_cpu_gprs_esp+value));
+	xmhfhwm_cpu_gprs_esp += value;
+}
+
+void _impl_xmhfhwm_cpu_insn_movl_meax_esp(int index){
+	uint32_t value_meax;
+	value_meax = *((uint32_t *)((uint32_t)((int32_t)xmhfhwm_cpu_gprs_eax + (int32_t)index)));
+	xmhfhwm_vdriver_writeesp(xmhfhwm_cpu_gprs_esp, value_meax);
+	xmhfhwm_cpu_gprs_esp = value_meax;
+}
+
+void _impl_xmhfhwm_cpu_insn_subl_imm_esp(u32 value){
+	xmhfhwm_vdriver_writeesp(xmhfhwm_cpu_gprs_esp, (xmhfhwm_cpu_gprs_esp-value));
+	xmhfhwm_cpu_gprs_esp -= value;
+}
+
+void _impl_xmhfhwm_cpu_insn_movl_edx_esp(void){
+	xmhfhwm_vdriver_writeesp(xmhfhwm_cpu_gprs_esp, xmhfhwm_cpu_gprs_edx);
+	xmhfhwm_cpu_gprs_esp = xmhfhwm_cpu_gprs_edx;
+}
+
+void _impl_xmhfhwm_cpu_insn_movl_eax_esp(void){
+	xmhfhwm_vdriver_writeesp(xmhfhwm_cpu_gprs_esp, xmhfhwm_cpu_gprs_eax);
+	xmhfhwm_cpu_gprs_esp = xmhfhwm_cpu_gprs_eax;
+}
+
+
+
+
+
+
 void _impl_xmhfhwm_cpu_insn_hlt(void){
 	// //@assert 0;
 	// while(1);
@@ -115,9 +153,6 @@ u32 _impl_xmhfhwm_cpu_insn_popl_mem(void){
 	return value;
 }
 
-void _impl_xmhfhwm_cpu_insn_addl_imm_esp(u32 value){
-	xmhfhwm_cpu_gprs_esp += value;
-}
 
 
 void _impl_xmhfhwm_cpu_insn_movl_mesp_eax(u32 index){
@@ -187,11 +222,6 @@ void _impl_xmhfhwm_cpu_insn_movl_meax_ebp(int index){
 	xmhfhwm_cpu_gprs_ebp = value_meax;
 }
 
-void _impl_xmhfhwm_cpu_insn_movl_meax_esp(int index){
-	uint32_t value_meax;
-	value_meax = *((uint32_t *)((uint32_t)((int32_t)xmhfhwm_cpu_gprs_eax + (int32_t)index)));
-	xmhfhwm_cpu_gprs_esp = value_meax;
-}
 
 void _impl_xmhfhwm_cpu_insn_movl_meax_ebx(int index){
 	uint32_t value_meax;
@@ -326,9 +356,6 @@ void _impl_xmhfhwm_cpu_insn_sti(void){
 	xmhfhwm_cpu_eflags |= (EFLAGS_IF);
 }
 
-void _impl_xmhfhwm_cpu_insn_subl_imm_esp(u32 value){
-	xmhfhwm_cpu_gprs_esp -= value;
-}
 
 void _impl_xmhfhwm_cpu_insn_sgdt_mesp(int index){
 	u32 *tmem_gdtbase;
@@ -764,9 +791,6 @@ void _impl_xmhfhwm_cpu_insn_pushl_ecx(void){
 }
 
 
-void _impl_xmhfhwm_cpu_insn_movl_edx_esp(void){
-	xmhfhwm_cpu_gprs_esp = xmhfhwm_cpu_gprs_edx;
-}
 
 void _impl_xmhfhwm_cpu_insn_popl_ebp(void){
 	u32 value = *((u32 *)xmhfhwm_cpu_gprs_esp);
@@ -775,9 +799,6 @@ void _impl_xmhfhwm_cpu_insn_popl_ebp(void){
 }
 
 
-void _impl_xmhfhwm_cpu_insn_movl_eax_esp(void){
-	xmhfhwm_cpu_gprs_esp = xmhfhwm_cpu_gprs_eax;
-}
 
 
 

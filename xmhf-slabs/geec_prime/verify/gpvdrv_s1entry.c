@@ -89,6 +89,11 @@ u32 framac_nondetu32interval(u32 min, u32 max)
 //////
 bool gp_s1_bspstack_called = false;
 
+void xmhfhwm_vdriver_writeesp(u32 oldval, u32 newval){
+	//@assert (newval >= ((u32)&_init_bsp_cpustack + 4)) && (newval <= ((u32)&_init_bsp_cpustack + MAX_PLATFORM_CPUSTACK_SIZE)) ;
+}
+
+
 void gp_s1_bspstack(void){
 	//@assert xmhfhwm_cpu_gprs_esp == (u32)&_init_bsp_cpustack + MAX_PLATFORM_CPUSTACK_SIZE - 4;
 	//@assert xmhfhwm_cpu_es_selector == xmhfhwm_cpu_ds_selector;
@@ -96,12 +101,16 @@ void gp_s1_bspstack(void){
 	//@assert xmhfhwm_cpu_gs_selector == xmhfhwm_cpu_ds_selector;
 	//@assert xmhfhwm_cpu_ss_selector == xmhfhwm_cpu_ds_selector;
 	//@assert xmhfhwm_cpu_state == CPU_STATE_RUNNING;
+
+	//indicate bspstack was invoked from entry
 	gp_s1_bspstack_called = true;
+	//setup stack back to normal so value can return from the initial call to slab_main
+	xmhfhwm_cpu_gprs_esp = (u32)&_init_bsp_cpustack + MAX_PLATFORM_CPUSTACK_SIZE - 8;
 }
 
 void main(void){
 	//populate hardware model stack and program counter
-	xmhfhwm_cpu_gprs_esp = _slab_tos[cpuid];
+	xmhfhwm_cpu_gprs_esp = (u32)&_init_bsp_cpustack + MAX_PLATFORM_CPUSTACK_SIZE;
 
 	//execute harness
         xmhfhwm_cpu_ds_selector = 0x8;
