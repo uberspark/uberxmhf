@@ -95,6 +95,10 @@ void gp_s1_chkreq(void){
     }
 
 
+	//initialize platform bus
+	xmhfhw_platform_bus_init();
+
+
 }
 
 
