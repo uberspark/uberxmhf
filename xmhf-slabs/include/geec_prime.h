@@ -265,7 +265,7 @@ extern __attribute__((section(".data"))) _slabdevpgtbl_infotable_t _slabdevpgtbl
 extern __attribute__((section(".data"))) u32 vtd_pagewalk_level;
 
 
-void gp_s1_bspstack(slab_params_t *sp);
+void gp_s1_bspstack(void);
 void gp_s1_bspstkactivate(void);
 void gp_s1_hub(void);
 void gp_s1_chkreq(void);
