@@ -59,20 +59,6 @@
 
 
 
-static void _slabdevpgtbl_initretcet(void){
-    u32 i, j;
-
-    for(i=0; i< VTD_RET_MAXPTRS; i++){
-        _slabdevpgtbl_vtd_ret[i].qwords[0] =
-            vtd_make_rete((u64)&_slabdevpgtbl_vtd_cet[i], VTD_RET_PRESENT);
-        _slabdevpgtbl_vtd_ret[i].qwords[1] = 0ULL;
-
-        for(j=0; j < VTD_CET_MAXPTRS; j++){
-            _slabdevpgtbl_vtd_cet[i][j].qwords[0] =
-                _slabdevpgtbl_vtd_cet[i][j].qwords[1] = 0ULL;
-        }
-    }
-}
 
 
 //initialize vtd hardware and return vt-d pagewalk level
@@ -239,7 +225,7 @@ void gp_s1_hub(void){
 
 
 	// (zero) initialize RET and CET
-	_slabdevpgtbl_initretcet();
+	gp_s1_iommuinittbl();
 
 
 	//intialize VT-d subsystem and obtain page-walk level
