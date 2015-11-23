@@ -825,8 +825,12 @@ void _impl_xmhfhwm_cpu_insn_iretl(void){
 
 
 
-//////
-// sysmem hardware model
+//////////////////////////////////////////////////////////////////////////////
+//
+// System memory/MMIO interfaces
+//
+//////////////////////////////////////////////////////////////////////////////
+
 
 physmem_extent_t xmhfhwm_sysmemaccess_physmem_extents[32];
 u32 xmhfhwm_sysmemaccess_physmem_extents_total=0;
@@ -878,6 +882,33 @@ void _impl_xmhfhwm_cpu_insn_rep_movsb(void){
 }
 
 
+
+static u64 _impl_xmhfhwm_cpu_sysmemread(u32 sysmemaddr, sysmem_read_t readsize){
+	bool hwmdevstatus=false;
+	u64 read_result=0;
+
+	hwmdevstatus = _impl_xmhfhwm_e1000_read(sysmemaddr, readsize, &read_result);
+        if(hwmdevstatus)
+		return read_result;
+
+	//@assert 0;
+	return read_result;
+}
+
+
+static void _impl_xmhfhwm_cpu_sysmemwrite(u32 sysmemaddr, sysmem_write_t writesize, u64 write_value){
+	bool hwmdevstatus=false;
+
+	hwmdevstatus = _impl_xmhfhwm_e1000_write(sysmemaddr, writesize, write_value);
+        if(hwmdevstatus)
+		return;
+
+	//@assert 0;
+	return;
+}
+
+
+/*
 // TODO: parts of the following eventually
 // needs to move to the appropriate hardware
 // model backend
@@ -887,41 +918,54 @@ static u32 _impl_xmhfhwm_gethwmaddrforsysmem(u32 sysmemaddr){
 	if(sysmemaddr >= MMIO_APIC_BASE && sysmemaddr <
 		(MMIO_APIC_BASE+ PAGE_SIZE_4K)){
 		return (u32)&_impl_xmhfhwm_lapic_mmiospace;
-	}
-}
+	}else
+		return 0;
+}*/
 
 void _impl_xmhfhwm_cpu_insn_movl_mesi_eax(int index){
-	u32 *value_mesi;
-	value_mesi = (u32 *)_impl_xmhfhwm_gethwmaddrforsysmem(((u32)((int)xmhfhwm_cpu_gprs_esi + (int)index)));
-	xmhfhwm_cpu_gprs_eax = *value_mesi;
+	//u32 *value_mesi;
+	//value_mesi = (u32 *)_impl_xmhfhwm_gethwmaddrforsysmem(((u32)((int)xmhfhwm_cpu_gprs_esi + (int)index)));
+	u32 sysmemaddr = ((u32)((int)xmhfhwm_cpu_gprs_esi + (int)index));
+	//xmhfhwm_cpu_gprs_eax = *value_mesi;
+	xmhfhwm_cpu_gprs_eax = _impl_xmhfhwm_cpu_sysmemread(sysmemaddr, SYSMEMREADU32);
 }
 
 void _impl_xmhfhwm_cpu_insn_movl_mesi_edx(int index){
-	u32 *value_mesi;
-	value_mesi = (u32 *)((u32)((int)xmhfhwm_cpu_gprs_esi + (int)index));
-	xmhfhwm_cpu_gprs_edx = *value_mesi;
+	//u32 *value_mesi;
+	//value_mesi = (u32 *)((u32)((int)xmhfhwm_cpu_gprs_esi + (int)index));
+	u32 sysmemaddr = (u32)((int)xmhfhwm_cpu_gprs_esi + (int)index);
+	//xmhfhwm_cpu_gprs_edx = *value_mesi;
+	xmhfhwm_cpu_gprs_edx = _impl_xmhfhwm_cpu_sysmemread(sysmemaddr, SYSMEMREADU32);
 }
 
 void _impl_xmhfhwm_cpu_insn_movl_eax_mesi(int index){
-	u32 *value;
-	value = (u32 *)((u32)((int)xmhfhwm_cpu_gprs_esi + (int)index));
-	*value = xmhfhwm_cpu_gprs_eax;
+	//u32 *value;
+	//value = (u32 *)((u32)((int)xmhfhwm_cpu_gprs_esi + (int)index));
+	u32 sysmemaddr = ((u32)((int)xmhfhwm_cpu_gprs_esi + (int)index));
+	// *value = xmhfhwm_cpu_gprs_eax;
+	_impl_xmhfhwm_cpu_sysmemwrite(sysmemaddr, SYSMEMWRITEU32, xmhfhwm_cpu_gprs_eax);
 }
 
 void _impl_xmhfhwm_cpu_insn_movl_edx_mesi(int index){
-	u32 *value;
-	value = (u32 *)((u32)((int)xmhfhwm_cpu_gprs_esi + (int)index));
-	*value = xmhfhwm_cpu_gprs_edx;
+	//u32 *value;
+	//value = (u32 *)((u32)((int)xmhfhwm_cpu_gprs_esi + (int)index));
+	u32 sysmemaddr = ((u32)((int)xmhfhwm_cpu_gprs_esi + (int)index));
+	// *value = xmhfhwm_cpu_gprs_edx;
+	_impl_xmhfhwm_cpu_sysmemwrite(sysmemaddr, SYSMEMWRITEU32, xmhfhwm_cpu_gprs_edx);
 }
 
 void _impl_xmhfhwm_cpu_insn_movb_al_mesi(int index){
-	u32 *value_mesi;
-	value_mesi = (u32 *)((u32)((int)xmhfhwm_cpu_gprs_esi + (int)index));
-	*value_mesi |= (xmhfhwm_cpu_gprs_eax & 0x000000FFUL);
+	//u32 *value_mesi;
+	//value_mesi = (u32 *)((u32)((int)xmhfhwm_cpu_gprs_esi + (int)index));
+	u32 sysmemaddr = ((u32)((int)xmhfhwm_cpu_gprs_esi + (int)index));
+	// *value_mesi |= (xmhfhwm_cpu_gprs_eax & 0x000000FFUL);
+	_impl_xmhfhwm_cpu_sysmemwrite(sysmemaddr, SYSMEMWRITEU8, (xmhfhwm_cpu_gprs_eax & 0x000000FFUL));
 }
 
 void _impl_xmhfhwm_cpu_insn_movw_ax_mesi(int index){
-	u32 *value_mesi;
-	value_mesi = (u32 *)((u32)((int)xmhfhwm_cpu_gprs_esi + (int)index));
-	*value_mesi |= (xmhfhwm_cpu_gprs_eax & 0x0000FFFFUL);
+	//u32 *value_mesi;
+	//value_mesi = (u32 *)((u32)((int)xmhfhwm_cpu_gprs_esi + (int)index));
+	u32 sysmemaddr = ((u32)((int)xmhfhwm_cpu_gprs_esi + (int)index));
+	// *value_mesi |= (xmhfhwm_cpu_gprs_eax & 0x0000FFFFUL);
+	_impl_xmhfhwm_cpu_sysmemwrite(sysmemaddr, SYSMEMWRITEU16, (xmhfhwm_cpu_gprs_eax & 0x0000FFFFUL));
 }

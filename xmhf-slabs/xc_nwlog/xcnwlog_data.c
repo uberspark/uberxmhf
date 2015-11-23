@@ -44,57 +44,37 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
+#include <xmhf.h>
+#include <xmhfgeec.h>
+#include <xmhf-debug.h>
 
-//XMHF hardware interface
-//author: amit vasudevan (amitvasudevan@acm.org)
+#include <xc.h>
+#include <xc_nwlog.h>
 
-#ifndef __XMHF_HWM_H__
-#define __XMHF_HWM_H__
+__attribute__((section(".slab_dmadata"))) xcnwlog_ls_element_t xcnwlog_lsdma[XC_NWLOG_BUF_MAXIDX][XC_NWLOG_BUF_MAXELEM];
 
-#define __CASMFNDEF__(x) __attribute__((naked))
-#define __CASMFNCALL__(x) (x);
-
-
-#if defined(__XMHF_TARGET_TRIAD_X86_VMX_X86PC__)
-
-#ifndef __ASSEMBLY__
-	typedef struct {
-		u32 addr_start;
-		u32 addr_end;
-		u32 protection;
-	} physmem_extent_t;
-
-	typedef enum {
-		SYSMEMREADU8,
-		SYSMEMREADU16,
-		SYSMEMREADU32,
-		SYSMEMREADU64
-	} sysmem_read_t;
-
-	typedef enum {
-		SYSMEMWRITEU8,
-		SYSMEMWRITEU16,
-		SYSMEMWRITEU32,
-		SYSMEMWRITEU64
-	} sysmem_write_t;
+__attribute__((section(".data"))) xcnwlog_ls_element_t xcnwlog_ls[XC_NWLOG_BUF_MAXIDX][XC_NWLOG_BUF_MAXELEM];
+__attribute__((section(".data"))) u32 xcnwlog_ls_index[XC_NWLOG_BUF_MAXIDX]= { 0 };
 
 
-#endif // __ASSEMBLY__
-
-    #include <xmhfhwm_casm.h>  			//CPU
-    #include <xmhfhwm_e1000.h>			//e1000 network card
-    #include <xmhfhwm_cpu.h>  			//CPU
-    #include <xmhfhwm_pci.h>        		//PCI bus glue
-    #include <xmhfhwm_pit.h>        		//PIT
-    #include <xmhfhwm_vtd.h>			//VMX DMA protection
-    #include <xmhfhwm_lapic.h>			//APIC
-    #include <xmhfhwm_bios.h>			//ACPI glue
-
-#else
-
-	#error "You must define a valid cpu-container-platform triad before trying to build."
-
-#endif
+__attribute__((section(".data"))) char e1000_driver_name[] = "e1000";
+__attribute__((section(".data"))) char e1000_driver_string[] = "Intel(R) PRO/1000 Network Driver";
+__attribute__((section(".data"))) char e1000_driver_version[] = "based on 7.3.20-k2";
 
 
-#endif //__XMHF_HWM_H__
+__attribute__((section(".data"))) pci_device_t e1000_dev;
+__attribute__((section(".data"))) struct e1000_adapter e1000_adapt;
+__attribute__((section(".data"))) unsigned int e1000_irq = 18;
+
+//------------------------------------------------------------------------------
+//[CONFIGURATION:START]
+//this changes according to deployment platform
+__attribute__((section(".data"))) unsigned char e1000_dst_macaddr[] = "";
+__attribute__((section(".data"))) unsigned char e1000_pkt_type[] = {0x80, 0x86};
+//[CONFIGURATION:END]
+//------------------------------------------------------------------------------
+
+
+
+
+

@@ -45,6 +45,7 @@
  */
 
 #include <xmhf.h>
+#include <xmhf-hwm.h>
 #include <xmhfgeec.h>
 #include <xmhf-debug.h>
 
@@ -1005,6 +1006,7 @@ e1000_acquire_eeprom(struct e1000_hw *hw)
 
     DEBUGFUNC("e1000_acquire_eeprom");
 
+
     if (e1000_get_hw_eeprom_semaphore(hw))
         return -E1000_ERR_SWFW_SYNC;
     eecd = E1000_READ_REG(hw, EECD);
@@ -1030,6 +1032,7 @@ e1000_acquire_eeprom(struct e1000_hw *hw)
             }
         }
     }
+
 
     /* Setup EEPROM for Read/Write */
 
@@ -1180,6 +1183,7 @@ e1000_read_eeprom(struct e1000_hw *hw,
             return -E1000_ERR_EEPROM;
     }
 
+
     /* Set up the SPI or Microwire EEPROM for bit-bang reading.  We have
      * acquired the EEPROM at this point, so any returns should relase it */
     {
@@ -1190,6 +1194,7 @@ e1000_read_eeprom(struct e1000_hw *hw,
             e1000_release_eeprom(hw);
             return -E1000_ERR_EEPROM;
         }
+
 
         e1000_standby_eeprom(hw);
 
@@ -1604,7 +1609,7 @@ e1000_check_phy_reset_block(struct e1000_hw *hw)
 
 static void e1000_pci_set_master(pci_device_t *nwdevice)
 {
-        u16 cmd;
+        u32 cmd;
 
         xmhf_baseplatform_arch_x86_pci_type1_read(nwdevice->bus,
 						nwdevice->dev,
@@ -1660,9 +1665,6 @@ static void e1000_pci_disable_master(pci_device_t *nwdevice)
 
 
 
-char e1000_driver_name[] = "e1000";
-char e1000_driver_string[] = "Intel(R) PRO/1000 Network Driver";
-char e1000_driver_version[] = "based on 7.3.20-k2";
 
 void e1000_reset(void);
 static int e1000_setup_tx_resources(struct e1000_tx_ring *tx_ring);
@@ -1673,22 +1675,6 @@ void e1000_xmit(unsigned short tail);
 void e1000_wait4xmit(void);
 static void e1000_irq_disable(void);
 
-
-static pci_device_t e1000_dev;
-static struct e1000_adapter *e1000_adapt=NULL;
-static unsigned int e1000_irq = 18;
-
-//------------------------------------------------------------------------------
-//[CONFIGURATION:START]
-//this changes according to deployment platform
-static unsigned char e1000_dst_macaddr[] = "";
-//[CONFIGURATION:END]
-//------------------------------------------------------------------------------
-
-static unsigned char e1000_pkt_type[] = {0x80, 0x86};
-//unsigned int lo_before, hi_before, lo_after, hi_after;
-
-#define E1000_TIMEOUT_1MS	((0x40000000ULL * 2) / 1000)
 
 void e1000_mdelay1(unsigned int msec)
 {
@@ -1720,24 +1706,24 @@ void e1000_reset(void)
 
 	pba = E1000_PBA_38K;
 
-	E1000_WRITE_REG(&e1000_adapt->hw, PBA, pba);
+	E1000_WRITE_REG(&e1000_adapt.hw, PBA, pba);
 
-	e1000_adapt->hw.fc_pause_time = E1000_FC_PAUSE_TIME;
+	e1000_adapt.hw.fc_pause_time = E1000_FC_PAUSE_TIME;
 
 	/* Allow time for pending master requests to run */
-	e1000_reset_hw(&e1000_adapt->hw);
-	E1000_WRITE_REG(&e1000_adapt->hw, WUC, 0);
+	e1000_reset_hw(&e1000_adapt.hw);
+	E1000_WRITE_REG(&e1000_adapt.hw, WUC, 0);
 
-	if (e1000_init_hw(&e1000_adapt->hw))
+	if (e1000_init_hw(&e1000_adapt.hw))
 		DPRINTK(PROBE, ERR, "Hardware Error\n");
 
 	/* speed up time to link by disabling smart power down, ignore
 	 * the return value of this function because there is nothing
 	 * different we would do if it failed */
-	e1000_read_phy_reg(&e1000_adapt->hw, IGP02E1000_PHY_POWER_MGMT,
+	e1000_read_phy_reg(&e1000_adapt.hw, IGP02E1000_PHY_POWER_MGMT,
 	                   &phy_data);
 	phy_data &= ~IGP02E1000_PM_SPD;
-	e1000_write_phy_reg(&e1000_adapt->hw, IGP02E1000_PHY_POWER_MGMT,
+	e1000_write_phy_reg(&e1000_adapt.hw, IGP02E1000_PHY_POWER_MGMT,
 	                    phy_data);
 }
 
@@ -1765,11 +1751,11 @@ static int e1000_probe(pci_device_t *nwdevice)
 
 	//err = -ENOMEM;
 
-	memset(e1000_adapt, 0, sizeof(struct e1000_adapter));
-	e1000_adapt->msg_enable = 1;
+	memset(&e1000_adapt, 0, sizeof(struct e1000_adapter));
+	e1000_adapt.msg_enable = 1;
 
 	//TODO: probe base address of this adapter via config space
-	e1000_adapt->hw.hw_addr = 0;
+	e1000_adapt.hw.hw_addr = E1000_HWADDR_BASE;
 
 
 	/* setup the private structure */
@@ -1777,44 +1763,45 @@ static int e1000_probe(pci_device_t *nwdevice)
 
 	//err = -EIO;
 
-	e1000_check_phy_reset_block(&e1000_adapt->hw);
+	e1000_check_phy_reset_block(&e1000_adapt.hw);
 
 	/* before reading the EEPROM, reset the controller to
 	 * put the device in a known good starting state */
 
-	e1000_reset_hw(&e1000_adapt->hw);
+	e1000_reset_hw(&e1000_adapt.hw);
 
 	/* copy the MAC address out of the EEPROM */
-	if (e1000_read_mac_addr(&e1000_adapt->hw)){
+	if (e1000_read_mac_addr(&e1000_adapt.hw)){
 		//printf("\nNIC EEPROM Read Error");
-		HALT();
+		return -1;
 	}
+
 
 	DEBUGQ(0);
 	/* Transmit Descriptor Count */
-	//e1000_adapt->tx_ring.count = ALIGN(E1000_DESC_COUNT, 2);
-	e1000_adapt->tx_ring.count = E1000_DESC_COUNT;
+	//e1000_adapt.tx_ring.count = ALIGN(E1000_DESC_COUNT, 2);
+	e1000_adapt.tx_ring.count = E1000_DESC_COUNT;
 
-	e1000_read_eeprom(&e1000_adapt->hw,
+	e1000_read_eeprom(&e1000_adapt.hw,
 		EEPROM_INIT_CONTROL3_PORT_A, 1, &eeprom_data);
 
 	//printf("\nMAC address:");
-	//e1000_adapt->hw.mac_addr[0]=e1000_adapt->hw.perm_mac_addr[0]=0x00;
-	//e1000_adapt->hw.mac_addr[1]=e1000_adapt->hw.perm_mac_addr[1]=0x1B;
-	//e1000_adapt->hw.mac_addr[2]=e1000_adapt->hw.perm_mac_addr[2]=0x21;
-	//e1000_adapt->hw.mac_addr[3]=e1000_adapt->hw.perm_mac_addr[3]=0x48;
-	//e1000_adapt->hw.mac_addr[4]=e1000_adapt->hw.perm_mac_addr[4]=0x09;
-	//e1000_adapt->hw.mac_addr[5]=e1000_adapt->hw.perm_mac_addr[5]=0x34;
+	//e1000_adapt.hw.mac_addr[0]=e1000_adapt.hw.perm_mac_addr[0]=0x00;
+	//e1000_adapt.hw.mac_addr[1]=e1000_adapt.hw.perm_mac_addr[1]=0x1B;
+	//e1000_adapt.hw.mac_addr[2]=e1000_adapt.hw.perm_mac_addr[2]=0x21;
+	//e1000_adapt.hw.mac_addr[3]=e1000_adapt.hw.perm_mac_addr[3]=0x48;
+	//e1000_adapt.hw.mac_addr[4]=e1000_adapt.hw.perm_mac_addr[4]=0x09;
+	//e1000_adapt.hw.mac_addr[5]=e1000_adapt.hw.perm_mac_addr[5]=0x34;
 
 	//for (i = 0; i < 6; i++)
-	//	printf("%02x ", e1000_adapt->hw.mac_addr[i]);
+	//	printf("%02x ", e1000_adapt.hw.mac_addr[i]);
 
 	/* reset the hardware with the new settings */
 	e1000_reset();
 
 	/* Let firmware know the driver has taken over */
-	ctrl_ext = E1000_READ_REG(&e1000_adapt->hw, CTRL_EXT);
-	E1000_WRITE_REG(&e1000_adapt->hw, CTRL_EXT,
+	ctrl_ext = E1000_READ_REG(&e1000_adapt.hw, CTRL_EXT);
+	E1000_WRITE_REG(&e1000_adapt.hw, CTRL_EXT,
 			ctrl_ext | E1000_CTRL_EXT_DRV_LOAD);
 
 	DPRINTK(PROBE, INFO, "DEBUG : Intel(R) PRO/1000 Network Connection\n");
@@ -1842,19 +1829,20 @@ static int e1000_open(void)
 	DEBUGQ(0);
 
 	/* allocate transmit descriptors */
-	err = e1000_setup_tx_resources(&e1000_adapt->tx_ring);
+	err = e1000_setup_tx_resources(&e1000_adapt.tx_ring);
 	if (err) {
 		DPRINTK(PROBE, ERR,
 			"Allocation for Tx Queue %u failed\n", 0);
 		goto err_setup_tx;
 	}
 
+
 	/* Just clear the power down bit to wake the phy back up */
 	/* according to the manual, the phy will retain its
 	 * settings across a power-down/up cycle */
-	e1000_read_phy_reg(&e1000_adapt->hw, PHY_CTRL, &mii_reg);
+	e1000_read_phy_reg(&e1000_adapt.hw, PHY_CTRL, &mii_reg);
 	mii_reg &= ~MII_CR_POWER_DOWN;
-	e1000_write_phy_reg(&e1000_adapt->hw, PHY_CTRL, mii_reg);
+	e1000_write_phy_reg(&e1000_adapt.hw, PHY_CTRL, mii_reg);
 
 	/* before we allocate an interrupt, we must be ready to handle it.
 	 * Setting DEBUG_SHIRQ in the kernel makes it fire an interrupt
@@ -1884,78 +1872,54 @@ static int e1000_setup_tx_resources(struct e1000_tx_ring *tx_ring)
 	/* round up to nearest 4K */
 	tx_ring->size_desc = tx_ring->count * sizeof(struct e1000_tx_desc);
 	tx_ring->size_desc = PAGE_ALIGN_UP4K(tx_ring->size_desc);
-#if 1
-	/* FIXME */
+
 	//tx_ring->desc = dma_alloc_coherent(NULL, tx_ring->size_desc, &tx_ring->dma_desc, GFP_ATOMIC);
-	tx_ring->desc=&xcnwlog_ls;
-	tx_ring->dma_desc=&xcnwlog_ls;
+	tx_ring->desc=&xcnwlog_lsdma;
+	tx_ring->dma_desc=&xcnwlog_lsdma;
 
 	if (!tx_ring->desc) {
 		DEBUGQ(tx_ring->size_desc);
 		//return -ENOMEM;
 		return -1;
 	}
-#endif
-	memset(tx_ring->desc, 0, tx_ring->size_desc);
 
 	/* round up to nearest 4K */
 	tx_ring->size_header = (tx_ring->count / 2) * E1000_HEADER_SIZE;
 	tx_ring->size_header = PAGE_ALIGN_UP4K(tx_ring->size_header);
-#if 1
-	/* FIXME */
+
 	//tx_ring->buf_header = dma_alloc_coherent(NULL, tx_ring->size_header, &tx_ring->dma_header, GFP_ATOMIC);
-	tx_ring->buf_header=&xcnwlog_ls;
-	tx_ring->dma_header=&xcnwlog_ls;
+	tx_ring->buf_header=&xcnwlog_lsdma;
+	tx_ring->dma_header=&xcnwlog_lsdma;
 
 	if (!tx_ring->buf_header) {
 		DEBUGQ(tx_ring->size_header);
 		//return -ENOMEM;
 		return -1;
 	}
-#endif
-	memset(tx_ring->buf_header, 0, tx_ring->size_header);
 
 	/* round up to nearest 4K */
 	tx_ring->size_body = (tx_ring->count / 2) * E1000_BODY_SIZE;
 	tx_ring->size_body = PAGE_ALIGN_UP4K(tx_ring->size_body);
-#if 1
-	/* FIXME */
-//	tx_ring->buf_body = dma_alloc_coherent(NULL, tx_ring->size_body, &tx_ring->dma_body, GFP_ATOMIC);
-	tx_ring->buf_body = (void *)&xcnwlog_ls;
-	tx_ring->dma_body = (dma_addr_t)&xcnwlog_ls;
+
+	//tx_ring->buf_body = dma_alloc_coherent(NULL, tx_ring->size_body, &tx_ring->dma_body, GFP_ATOMIC);
+	tx_ring->buf_body = (void *)&xcnwlog_lsdma;
+	tx_ring->dma_body = (dma_addr_t)&xcnwlog_lsdma;
 	if (!tx_ring->buf_body) {
 		DEBUGQ(tx_ring->size_body);
 		//return -ENOMEM;
 		return -1;
 	}
-#endif
 
 	for (i = 0; i < tx_ring->count; i ++)
 	{
 		tx_desc = E1000_TX_DESC(*tx_ring, i);
-		if ((i % 2) == 0)
-		{
-			tx_desc->buffer_addr = e1000_cpu_to_le64((unsigned int)tx_ring->dma_header + E1000_HEADER_SIZE *  (i / 2));
-			tx_desc->lower.data = e1000_cpu_to_le32(E1000_TXD_CMD_IFCS | E1000_HEADER_SIZE);
-			tx_desc->upper.data = e1000_cpu_to_le32(0);
+		tx_desc->buffer_addr = e1000_cpu_to_le64((unsigned int)tx_ring->dma_body + (E1000_BODY_SIZE *  i));
+		tx_desc->lower.data = e1000_cpu_to_le32(E1000_TXD_CMD_IFCS | E1000_TXD_CMD_EOP | E1000_BODY_SIZE);
+		tx_desc->upper.data = e1000_cpu_to_le32(0);
 
-			buffer = (unsigned char *)tx_ring->buf_header + E1000_HEADER_SIZE *  (i / 2);
-			memcpy(buffer, e1000_dst_macaddr, 6);
-			memcpy(buffer + 6, e1000_adapt->hw.mac_addr, 6);
-			memcpy(buffer + 12, e1000_pkt_type, 2);
-			memcpy(buffer + 14, (unsigned int *)&i, 4);
-		} else
-		{
-			tx_desc->buffer_addr = e1000_cpu_to_le64((unsigned int)tx_ring->dma_body + E1000_BODY_SIZE *  (i / 2));
-//			tx_desc->lower.data = e1000_cpu_to_le32(E1000_TXD_CMD_IFCS | E1000_TXD_CMD_EOP | E1000_BODY_SIZE | E1000_TXD_CMD_RS);
-			tx_desc->lower.data = e1000_cpu_to_le32(E1000_TXD_CMD_IFCS | E1000_TXD_CMD_EOP | E1000_BODY_SIZE);
-			tx_desc->upper.data = e1000_cpu_to_le32(0);
-
-//			buffer = (unsigned char *)tx_ring->buf_body + E1000_BODY_SIZE *  (i / 2);
-//			memset(buffer, (unsigned char)i, E1000_BODY_SIZE);
-		}
 	}
 	DEBUGQ(tx_ring->size_desc);
+
 	/*for (i = 0; i < tx_ring->count * sizeof(struct e1000_tx_desc); i ++)
 	{
 		printk("%02x ", *(unsigned char *)((unsigned int)tx_ring->desc + i));
@@ -1977,19 +1941,21 @@ static void
 e1000_configure_tx(void)
 {
 	uint64_t tdba;
-	struct e1000_hw *hw = &e1000_adapt->hw;
+	struct e1000_hw *hw = &e1000_adapt.hw;
 	uint32_t tdlen, tctl, tipg, tarc;
 
 	/* Setup the HW Tx Head and Tail descriptor pointers */
-	tdba = e1000_adapt->tx_ring.dma_desc;
-	tdlen = e1000_adapt->tx_ring.count * sizeof(struct e1000_tx_desc);
+	tdba = e1000_adapt.tx_ring.dma_desc;
+	tdlen = e1000_adapt.tx_ring.count * sizeof(struct e1000_tx_desc);
 	E1000_WRITE_REG(hw, TDLEN, tdlen);
-	E1000_WRITE_REG(hw, TDBAH, (tdba >> 32));
-	E1000_WRITE_REG(hw, TDBAL, (tdba & 0x00000000ffffffffULL));
+	//E1000_WRITE_REG(hw, TDBAH, (tdba >> 32));
+	//E1000_WRITE_REG(hw, TDBAL, (tdba & 0x00000000ffffffffULL));
+	E1000_WRITE_REG(hw, TDBAH, 0);
+	E1000_WRITE_REG(hw, TDBAL, (u32)e1000_adapt.tx_ring.dma_desc);
 	E1000_WRITE_REG(hw, TDT, 0);
 	E1000_WRITE_REG(hw, TDH, 0);
-	e1000_adapt->tx_ring.tdh = (E1000_TDH);
-	e1000_adapt->tx_ring.tdt = (E1000_TDT);
+	e1000_adapt.tx_ring.tdh = (E1000_TDH);
+	e1000_adapt.tx_ring.tdt = (E1000_TDT);
 
 	tipg = DEFAULT_82543_TIPG_IPGT_COPPER;
 	tipg |= DEFAULT_82543_TIPG_IPGR1 << E1000_TIPG_IPGR1_SHIFT;
@@ -1998,8 +1964,8 @@ e1000_configure_tx(void)
 	E1000_WRITE_REG(hw, TIPG, tipg);
 
 	/* Set the Tx Interrupt Delay register */
-	E1000_WRITE_REG(hw, TIDV, e1000_adapt->tx_int_delay);
-	E1000_WRITE_REG(hw, TADV, e1000_adapt->tx_abs_int_delay);
+	E1000_WRITE_REG(hw, TIDV, e1000_adapt.tx_int_delay);
+	E1000_WRITE_REG(hw, TADV, e1000_adapt.tx_abs_int_delay);
 
 	/* Program the Transmit Control Register */
 	tctl = E1000_READ_REG(hw, TCTL);
@@ -2013,7 +1979,7 @@ e1000_configure_tx(void)
 	E1000_WRITE_REG(hw, TARC0, tarc);
 
 	/* Setup Transmit Descriptor Settings for eop descriptor */
-	e1000_adapt->txd_cmd = E1000_TXD_CMD_EOP | E1000_TXD_CMD_IFCS | E1000_TXD_CMD_RS;
+	e1000_adapt.txd_cmd = E1000_TXD_CMD_EOP | E1000_TXD_CMD_IFCS | E1000_TXD_CMD_RS;
 	E1000_WRITE_REG(hw, TCTL, tctl);
 }
 
@@ -2033,14 +1999,14 @@ void e1000_xmit(unsigned short tail)
 			unsigned char *buffer;
 			struct e1000_tx_desc *tx_desc = NULL;
 
-			for (i = 0; i < e1000_adapt->tx_ring.count; i ++)
+			for (i = 0; i < e1000_adapt.tx_ring.count; i ++)
 			{
-				tx_desc = E1000_TX_DESC(e1000_adapt->tx_ring, i);
+				tx_desc = E1000_TX_DESC(e1000_adapt.tx_ring, i);
 				if ((i % 2) == 0)
 				{
-					buffer = (unsigned char *)e1000_adapt->tx_ring.buf_header + E1000_HEADER_SIZE *  (i / 2);
+					buffer = (unsigned char *)e1000_adapt.tx_ring.buf_header + E1000_HEADER_SIZE *  (i / 2);
 					idx = *(unsigned int *)(buffer + 14);
-					idx += e1000_adapt->tx_ring.count;
+					idx += e1000_adapt.tx_ring.count;
 					*(unsigned int *)(buffer + 14) = idx;
 				}
 			}
@@ -2050,11 +2016,11 @@ void e1000_xmit(unsigned short tail)
 #endif
 	/* enable transmits in the hardware, need to do this
 	 * after setting TARC0 */
-	tctl = E1000_READ_REG(&e1000_adapt->hw, TCTL);
+	tctl = E1000_READ_REG(&e1000_adapt.hw, TCTL);
 	tctl |= E1000_TCTL_EN;
-	E1000_WRITE_REG(&e1000_adapt->hw, TCTL, tctl);
+	E1000_WRITE_REG(&e1000_adapt.hw, TCTL, tctl);
 
-	e1000_writel(tail, e1000_adapt->hw.hw_addr + e1000_adapt->tx_ring.tdt);
+	e1000_writel(tail, e1000_adapt.hw.hw_addr + e1000_adapt.tx_ring.tdt);
 }
 
 
@@ -2062,8 +2028,8 @@ u32 e1000_check4xmit(void)
 {
 	unsigned short tail, head;
 
-	tail = e1000_readl(e1000_adapt->hw.hw_addr + e1000_adapt->tx_ring.tdt);
-	head = e1000_readl(e1000_adapt->hw.hw_addr + e1000_adapt->tx_ring.tdh);
+	tail = e1000_readl(e1000_adapt.hw.hw_addr + e1000_adapt.tx_ring.tdt);
+	head = e1000_readl(e1000_adapt.hw.hw_addr + e1000_adapt.tx_ring.tdh);
 
 	if(tail != head)
 		return 0;
@@ -2076,11 +2042,11 @@ void e1000_wait4xmit(void)
 {
 	unsigned short tail, head;
 
-	tail = e1000_readl(e1000_adapt->hw.hw_addr + e1000_adapt->tx_ring.tdt);
+	tail = e1000_readl(e1000_adapt.hw.hw_addr + e1000_adapt.tx_ring.tdt);
 	DEBUGQ(tail);
 
 	do {
-		head = e1000_readl(e1000_adapt->hw.hw_addr + e1000_adapt->tx_ring.tdh);
+		head = e1000_readl(e1000_adapt.hw.hw_addr + e1000_adapt.tx_ring.tdh);
 	} while (head != tail);
 
 }
@@ -2094,12 +2060,17 @@ void e1000_wait4xmit(void)
 
 static void e1000_irq_disable(void)
 {
-	E1000_WRITE_REG(&e1000_adapt->hw, IMC, ~0);
-	E1000_WRITE_FLUSH(&e1000_adapt->hw);
+	E1000_WRITE_REG(&e1000_adapt.hw, IMC, ~0);
+	E1000_WRITE_FLUSH(&e1000_adapt.hw);
 }
 
 
 /////
+void e1000_xmitack(void){
+	e1000_xmit(0);
+	e1000_wait4xmit();
+}
+
 u32 e1000_init_module(void)
 {
 	int ret = 0;
@@ -2118,19 +2089,21 @@ u32 e1000_init_module(void)
 	DEBUGQ(0);
 	ret = e1000_probe(&e1000_dev);
 
-	if (ret)
-		return ret;
+	if (ret < 0)
+	   return 0;
 
 	_XDPRINTF_("Opening interface...\n");
 	ret = e1000_open();
-	if (ret)
-		return ret;
+
+	if (ret < 0)
+	   return 0;
+
 	//PRINT_STATUS();
 	_XDPRINTF_("Waiting for router...\n");
-
-	e1000_mdelay1(40 * 1000);
+	//e1000_mdelay1(40 * 1000);
 
 	_XDPRINTF_("Done.\n");
+
 	//PRINT_STATUS();
 	/*printf("\nTransmitting...");
 	e1000_xmit(E1000_DESC_COUNT / 2);
@@ -2146,12 +2119,12 @@ u32 e1000_init_module(void)
 	/*printf("\n");
 	{
 	int i;
-	for (i = 0; i < e1000_adapt->tx_ring.count * sizeof(struct e1000_tx_desc); i ++)
+	for (i = 0; i < e1000_adapt.tx_ring.count * sizeof(struct e1000_tx_desc); i ++)
 	{
-		if ((i >= 32) && (i < e1000_adapt->tx_ring.count * sizeof(struct e1000_tx_desc) - 32))
+		if ((i >= 32) && (i < e1000_adapt.tx_ring.count * sizeof(struct e1000_tx_desc) - 32))
 			continue;
 
-		printf("%02x ", *(unsigned char *)((unsigned int)e1000_adapt->tx_ring.desc + i));
+		printf("%02x ", *(unsigned char *)((unsigned int)e1000_adapt.tx_ring.desc + i));
 		if ((i % 16) == 15)
 				printf("\n");
 	}
@@ -2159,86 +2132,6 @@ u32 e1000_init_module(void)
 
 	return ret;
 }
-
-
-
-
-bool xcnwlog_ls_push(xcnwlog_ls_element_t *ls_elem)
-{
-    if(xcnwlog_ls_index >=0 && xcnwlog_ls_index < 64) {
-        memcpy(&xcnwlog_ls[xcnwlog_ls_index].logbuf, ls_elem,
-		sizeof(xcnwlog_ls_element_t));
-        xcnwlog_ls_index++;
-        return true;
-    }else{
-	return false;
-    }
-}
-
-void xcnwlog_ls_reset(void)
-{
-    memset(&xcnwlog_ls, 0, sizeof(xcnwlog_ls));
-    xcnwlog_ls_index=0;
-}
-
-
-
-
-
-
-//////
-// slab main function
-//////
-
-void slab_main(slab_params_t *sp){
-
-	_XDPRINTF_("XCNWLOG[%u]: Got control: src=%u, dst=%u, esp=%08x, eflags=%08x\n",
-                (u16)sp->cpuid, sp->src_slabid, sp->dst_slabid, CASM_FUNCCALL(read_esp,CASM_NOPARAM),
-			CASM_FUNCCALL(read_eflags, CASM_NOPARAM));
-
-    switch(sp->dst_uapifn){
-
-        case XMHFGEEC_SLAB_XC_NWLOG_INITIALIZE:{
-		xcnwlog_ls_reset();
-		e1000_init_module();
-        }
-        break;
-
-        case XMHFGEEC_SLAB_XC_NWLOG_LOGDATA:{
-
-                if(!xcnwlog_ls_push((xcnwlog_ls_element_t *)&sp->in_out_params)){
-			e1000_xmit(0);
-			e1000_wait4xmit();
-			xcnwlog_ls_reset();
-			xcnwlog_ls_push((xcnwlog_ls_element_t *)&sp->in_out_params);
-                }
-
-
-        }
-        break;
-
-
-        default:
-            _XDPRINTF_("XCNWLOG[%u]: Unknown sub-function %x. Halting!\n",
-                    (u16)sp->cpuid, sp->dst_uapifn);
-            HALT();
-            return;
-    }
-
-
-
-
-/*
-	e1000_init_module();
-
-	HALT();
-*/
-
-}
-
-
-
-
 
 
 
