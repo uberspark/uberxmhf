@@ -272,6 +272,8 @@ void gp_s1_chkreq(void);
 void gp_s1_postdrt(void);
 void gp_s1_scaniommu(void);
 void gp_s1_iommuinittbl(void);
+void gp_s1_iommuinit(void);
+
 
 void gp_s2_entry(void);
 void gp_s2_setupslabdevmap(void);
