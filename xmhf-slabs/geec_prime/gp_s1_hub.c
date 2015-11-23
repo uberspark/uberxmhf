@@ -195,6 +195,23 @@ static bool xmhfhw_platform_x86pc_vtd_scanfor_drhd_units(void){
 }
 
 
+
+static void _slabdevpgtbl_initretcet(void){
+    u32 i, j;
+
+    for(i=0; i< VTD_RET_MAXPTRS; i++){
+        _slabdevpgtbl_vtd_ret[i].qwords[0] =
+            vtd_make_rete((u64)&_slabdevpgtbl_vtd_cet[i], VTD_RET_PRESENT);
+        _slabdevpgtbl_vtd_ret[i].qwords[1] = 0ULL;
+
+        for(j=0; j < VTD_CET_MAXPTRS; j++){
+            _slabdevpgtbl_vtd_cet[i][j].qwords[0] =
+                _slabdevpgtbl_vtd_cet[i][j].qwords[1] = 0ULL;
+        }
+    }
+}
+
+
 ////////////////////////////////////////////////////////////
 // setup slab info
 
@@ -307,6 +324,9 @@ void gp_s1_hub(void){
 	_XDPRINTF_("%s: Vt-d: maxhandle = %u, dmar table addr=0x%08x\n", __func__,
 		(u32)vtd_drhd_maxhandle, (u32)vtd_dmar_table_physical_address);
 
+
+
+	_slabdevpgtbl_initretcet();
 
 
 	gp_s2_entry();

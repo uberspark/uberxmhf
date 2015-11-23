@@ -176,20 +176,6 @@ static void _slabdevpgtbl_init(void){
 }
 
 
-static void _slabdevpgtbl_initretcet(void){
-    u32 i, j;
-
-    for(i=0; i< VTD_RET_MAXPTRS; i++){
-        _slabdevpgtbl_vtd_ret[i].qwords[0] =
-            vtd_make_rete((u64)&_slabdevpgtbl_vtd_cet[i], VTD_RET_PRESENT);
-        _slabdevpgtbl_vtd_ret[i].qwords[1] = 0ULL;
-
-        for(j=0; j < VTD_CET_MAXPTRS; j++){
-            _slabdevpgtbl_vtd_cet[i][j].qwords[0] =
-                _slabdevpgtbl_vtd_cet[i][j].qwords[1] = 0ULL;
-        }
-    }
-}
 
 
 static void _slabdevpgtbl_initdevpgtbl(u32 slabid){
@@ -309,7 +295,6 @@ void xmhfhic_arch_setup_slab_device_allocation(void){
 
 	_slabdevpgtbl_init();
 
-	_slabdevpgtbl_initretcet();
 
 	retpaddr = (u32)&_slabdevpgtbl_vtd_ret;
 
