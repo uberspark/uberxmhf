@@ -2314,12 +2314,31 @@ extern u32 xmhfhwm_cpu_gprs_edi;
 
 extern u32 xmhfhwm_cpu_eflags;
 
+extern u16 xmhfhwm_cpu_gdtr_limit;
+extern u32 xmhfhwm_cpu_gdtr_base;
+extern u16 xmhfhwm_cpu_idtr_limit;
+extern u32 xmhfhwm_cpu_idtr_base;
+
+extern u16 xmhfhwm_cpu_tr_selector;
+
+extern u32 xmhfhwm_cpu_cr0;
+extern u32 xmhfhwm_cpu_cr2;
 extern u32 xmhfhwm_cpu_cr3;
+extern u32 xmhfhwm_cpu_cr4;
+
+extern u32 xmhfhwm_cpu_cs_selector;
+extern u32 xmhfhwm_cpu_ds_selector;
+extern u32 xmhfhwm_cpu_es_selector;
+extern u32 xmhfhwm_cpu_fs_selector;
+extern u32 xmhfhwm_cpu_gs_selector;
+extern u32 xmhfhwm_cpu_ss_selector;
+
+extern u64 xmhfhwm_cpu_xcr0;
+extern xmhfhwm_cpu_state_t xmhfhwm_cpu_state;
 
 extern physmem_extent_t xmhfhwm_sysmemaccess_physmem_extents[32];
 extern u32 xmhfhwm_sysmemaccess_physmem_extents_total;
 
-extern xmhfhwm_cpu_state_t xmhfhwm_cpu_state;
 
 
 

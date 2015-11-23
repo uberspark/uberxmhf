@@ -87,36 +87,26 @@ u32 framac_nondetu32interval(u32 min, u32 max)
 
 
 //////
-u32 check_esp, check_eip = CASM_RET_EIP;
-slab_params_t test_sp;
-
+bool gp_s1_bspstack_called = false;
 
 void gp_s1_bspstack(void){
-	//@assert 1;
+	//@assert xmhfhwm_cpu_gprs_esp == (u32)&_init_bsp_cpustack + MAX_PLATFORM_CPUSTACK_SIZE - 4;
+	//@assert xmhfhwm_cpu_es_selector == xmhfhwm_cpu_ds_selector;
+	//@assert xmhfhwm_cpu_fs_selector == xmhfhwm_cpu_ds_selector;
+	//@assert xmhfhwm_cpu_gs_selector == xmhfhwm_cpu_ds_selector;
+	//@assert xmhfhwm_cpu_ss_selector == xmhfhwm_cpu_ds_selector;
+	//@assert xmhfhwm_cpu_state == CPU_STATE_RUNNING;
+	gp_s1_bspstack_called = true;
 }
 
 void main(void){
 	//populate hardware model stack and program counter
 	xmhfhwm_cpu_gprs_esp = _slab_tos[cpuid];
-	xmhfhwm_cpu_gprs_eip = check_eip;
-	check_esp = xmhfhwm_cpu_gprs_esp; // pointing to top-of-stack
-
-	/*test_sp.src_slabid = framac_nondetu32interval(0, XMHFGEEC_TOTAL_SLABS-1);
-	test_sp.in_out_params[0] =  framac_nondetu32(); 	test_sp.in_out_params[1] = framac_nondetu32();
-	test_sp.in_out_params[2] = framac_nondetu32(); 	test_sp.in_out_params[3] = framac_nondetu32();
-	test_sp.in_out_params[4] = framac_nondetu32(); 	test_sp.in_out_params[5] = framac_nondetu32();
-	test_sp.in_out_params[6] = framac_nondetu32(); 	test_sp.in_out_params[7] = framac_nondetu32();
-	test_sp.in_out_params[8] = framac_nondetu32(); 	test_sp.in_out_params[9] = framac_nondetu32();
-	test_sp.in_out_params[10] = framac_nondetu32(); 	test_sp.in_out_params[11] = framac_nondetu32();
-	test_sp.in_out_params[12] = framac_nondetu32(); 	test_sp.in_out_params[13] = framac_nondetu32();
-	test_sp.in_out_params[14] = framac_nondetu32(); 	test_sp.in_out_params[15] = framac_nondetu32();
-	*/
 
 	//execute harness
+        xmhfhwm_cpu_ds_selector = 0x8;
 	CASM_FUNCCALL(slab_main, CASM_NOPARAM);
-
-	//@assert xmhfhwm_cpu_gprs_esp == check_esp;
-	//@assert xmhfhwm_cpu_gprs_eip == check_eip;
+	//@assert gp_s1_bspstack_called == true;
 }
 
 
