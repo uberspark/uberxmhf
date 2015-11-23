@@ -96,7 +96,10 @@ void gp_s1_chkreq(void){
 
 
 	//initialize platform bus
-	xmhfhw_platform_bus_init();
+	if(!xmhfhw_platform_bus_init()){
+            _XDPRINTF_("%s: need PCI type-1 access but did not find any!\n", __func__);
+            HALT();
+	}
 
 
 }
