@@ -162,8 +162,9 @@
 /*@
 	assigns \nothing;
 @*/
-void xmhfhw_platform_bus_init(void){
+bool xmhfhw_platform_bus_init(void){
 	u32 tmp;
+	bool result=true;
 
 	//save value at PCI_CONFIG_ADDR_PORT
 	tmp = CASM_FUNCCALL(inl,PCI_CONFIG_ADDR_PORT);
@@ -174,9 +175,11 @@ void xmhfhw_platform_bus_init(void){
 	//reading PCI_CONFIG_ADDR_PORT should return with bit 31 set
 	//if system supports type-1 access
 	if (inl(PCI_CONFIG_ADDR_PORT) != 0x80000000)
-		return;
+		result=false;
 
 	//restore previous value at PCI_CONFIG_ADDR_PORT
 	CASM_FUNCCALL(outl,tmp, PCI_CONFIG_ADDR_PORT);
+
+	return result;
 }
 

@@ -326,7 +326,7 @@ bool xmhfhw_lapic_isbsp(void);
 /*@
 	assigns \nothing;
 @*/
-void xmhfhw_platform_bus_init(void);
+bool xmhfhw_platform_bus_init(void);
 
 
 /*@
