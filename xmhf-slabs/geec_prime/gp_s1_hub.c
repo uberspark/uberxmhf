@@ -291,23 +291,13 @@ static u32 _geec_prime_vtd_initialize(u32 vtd_ret_addr){
 }
 
 
-////////////////////////////////////////////////////////////
-// setup slab info
-
-void xmhfhic_arch_setup_slab_info(void){
-
-
-
-
-
-}
-
-
 
 
 
 void gp_s1_hub(void){
 
+
+#if defined (__DEBUG_SERIAL__)
 
 	//initialize debugging early on
 	xmhf_debug_init((char *)&xcbootinfo->debugcontrol_buffer);
@@ -371,27 +361,14 @@ void gp_s1_hub(void){
 		}
 	}
 
+#endif // __DEBUG_SERIAL__
+
 
 	//sanity check hardware requirements
 	gp_s1_chkreq();
 
-#if defined (__DRT__)
 	//post DRT cleanup first
 	gp_s1_postdrt();
-#endif	//__DRT__
-
-
-	//initialize platform bus
-	xmhfhw_platform_bus_init();
-
-	//check ACPI subsystem
-	{
-		ACPI_RSDP rsdp;
-		if(!xmhfhw_platform_x86pc_acpi_getRSDP(&rsdp)){
-			_XDPRINTF_("%s: ACPI RSDP not found, Halting!\n", __func__);
-			HALT();
-		}
-	}
 
 
 	//scan for IOMMU and halt if not present
@@ -405,6 +382,7 @@ void gp_s1_hub(void){
 
 
 
+	// (zero) initialize RET and CET
 	_slabdevpgtbl_initretcet();
 
 
@@ -413,7 +391,7 @@ void gp_s1_hub(void){
 	_XDPRINTF_("%s: setup vt-d, page-walk level=%u\n", __func__, vtd_pagewalk_level);
 
 
-
+	//move on to phase-2
 	gp_s2_entry();
 }
 
