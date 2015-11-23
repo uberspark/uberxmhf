@@ -43,3 +43,58 @@
  *
  * @XMHF_LICENSE_HEADER_END@
  */
+
+#include <xmhf.h>
+#include <xmhfgeec.h>
+#include <xmhf-debug.h>
+
+#include <xc.h>
+#include <xc_nwlog.h>
+
+/*
+ * slab code
+ *
+ * author: amit vasudevan (amitvasudevan@acm.org)
+ */
+
+//@ghost bool xcnwlog_logdata_invokepush = false;
+//@ghost bool xcnwlog_logdata_copytodmaregion = false;
+//@ghost bool xcnwlog_logdata_xmit = false;
+//@ghost bool xcnwlog_logdata_resetbuffer = false;
+/*@
+	behavior logdata_xmitandresetbuffer:
+		assumes (xcnwlog_ls_index[0] >= XC_NWLOG_BUF_MAXELEM);
+		ensures (xcnwlog_logdata_invokepush == \at(xcnwlog_logdata_invokepush, Pre));
+		ensures (xcnwlog_logdata_copytodmaregion == true);
+		ensures (xcnwlog_logdata_xmit == true);
+		ensures (xcnwlog_logdata_resetbuffer == true);
+		ensures (xcnwlog_ls_index[0] == 0);
+
+	behavior logdata_onlylog:
+		assumes (xcnwlog_ls_index[0] < XC_NWLOG_BUF_MAXELEM);
+		ensures (xcnwlog_logdata_invokepush == true);
+		ensures (xcnwlog_logdata_copytodmaregion == \at(xcnwlog_logdata_copytodmaregion, Pre));
+		ensures (xcnwlog_logdata_xmit == \at(xcnwlog_logdata_xmit, Pre));
+		ensures (xcnwlog_logdata_resetbuffer == \at(xcnwlog_logdata_resetbuffer, Pre));
+		ensures (xcnwlog_ls_index[0] == \at(xcnwlog_ls_index[0], Pre));
+
+	complete behaviors;
+	disjoint behaviors;
+
+@*/
+
+void xcnwlog_logdata(xcnwlog_ls_element_t elem){
+	if(xcnwlog_ls_index[0] >= XC_NWLOG_BUF_MAXELEM){
+		memcpy(&xcnwlog_lsdma[0], &xcnwlog_ls[0], sizeof(xcnwlog_ls_element_t)*XC_NWLOG_BUF_MAXELEM);
+		//@ghost xcnwlog_logdata_copytodmaregion = true;
+		e1000_xmitack();
+		//@ghost xcnwlog_logdata_xmit = true;
+		memset(&xcnwlog_ls[0], 0, sizeof(xcnwlog_ls[0]));
+		//@ghost xcnwlog_logdata_resetbuffer = true;
+		xcnwlog_ls_index[0]=0;
+	}else{
+		xcnwlog_ls_push(0, elem);
+		//@ghost xcnwlog_logdata_invokepush = true;
+	}
+}
+

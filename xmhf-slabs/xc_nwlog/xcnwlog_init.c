@@ -51,5 +51,15 @@
 #include <xc.h>
 #include <xc_nwlog.h>
 
-__attribute__((section(".slab_dmadata"))) xcnwlog_ls_element_t xcnwlog_ls[64];
-__attribute__((section(".data"))) u32 xcnwlog_ls_index=0;
+/*
+ * slab code
+ *
+ * author: amit vasudevan (amitvasudevan@acm.org)
+ */
+
+
+void xcnwlog_init(void){
+	memset(&xcnwlog_ls[0], 0, sizeof(xcnwlog_ls[0]));
+	xcnwlog_ls_index[0]=0;
+	e1000_init_module();
+}
