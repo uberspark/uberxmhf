@@ -56,34 +56,16 @@
 
 
 
+void gp_s1_bspstkactivate(void){
+	u64 msr_efer;
+	msr_efer = (CASM_FUNCCALL(rdmsr64, MSR_EFER) | (0x800));
+	CASM_FUNCCALL(wrmsr64,MSR_EFER, (u32)msr_efer, (u32)((u64)msr_efer >> 32) );
+        _XDPRINTF_("EFER=%016llx\n", CASM_FUNCCALL(rdmsr64,MSR_EFER));
+	CASM_FUNCCALL(write_cr4,read_cr4(CASM_NOPARAM) | (0x30) );
+        _XDPRINTF_("CR4=%08x\n", CASM_FUNCCALL(read_cr4,CASM_NOPARAM));
+	CASM_FUNCCALL(write_cr3,(u32)&_xcprimeon_init_pdpt);
+        _XDPRINTF_("CR3=%08x\n", CASM_FUNCCALL(read_cr3,CASM_NOPARAM));
+	CASM_FUNCCALL(write_cr0,0x80000015);
 
-void gp_s1_bspstack(slab_params_t *sp){
-	u32 paddr=0;
-	u32 i, j;
-	u64 pdpe_flags = (_PAGE_PRESENT);
-	u64 pdte_flags = (_PAGE_RW | _PAGE_PSE | _PAGE_PRESENT);
-
-
-
-
-
-    memset(&_xcprimeon_init_pdpt, 0, sizeof(_xcprimeon_init_pdpt));
-
-    for(i=0; i < PAE_PTRS_PER_PDPT; i++){
-        u64 entry_addr = (u64)&_xcprimeon_init_pdt[i][0];
-        _xcprimeon_init_pdpt[i] = pae_make_pdpe(entry_addr, pdpe_flags);
-
-        for(j=0; j < PAE_PTRS_PER_PDT; j++){
-            if(paddr == 0xfee00000 || paddr == 0xfec00000)
-                _xcprimeon_init_pdt[i][j] = pae_make_pde_big(paddr, (pdte_flags | _PAGE_PCD));
-            else
-                _xcprimeon_init_pdt[i][j] = pae_make_pde_big(paddr, pdte_flags);
-
-            paddr += PAGE_SIZE_2M;
-        }
-    }
-
-
-	gp_s1_bspstkactivate();
+	gp_s1_hub();
 }
-
