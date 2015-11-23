@@ -262,7 +262,7 @@ extern __attribute__((section(".data"))) __attribute__((aligned(4096))) vtd_pdpt
 extern __attribute__((section(".data"))) __attribute__((aligned(4096))) vtd_pdte_t _slabdevpgtbl_pdt[XMHFGEEC_TOTAL_SLABS][PAE_PTRS_PER_PDPT][PAE_PTRS_PER_PDT];
 extern __attribute__((section(".data"))) __attribute__((aligned(4096))) vtd_pte_t _slabdevpgtbl_pt[XMHFGEEC_TOTAL_SLABS][MAX_SLAB_DMADATA_PDT_ENTRIES][PAE_PTRS_PER_PT];
 extern __attribute__((section(".data"))) _slabdevpgtbl_infotable_t _slabdevpgtbl_infotable[XMHFGEEC_TOTAL_SLABS];
-
+extern __attribute__((section(".data"))) u32 vtd_pagewalk_level;
 
 
 void gp_s1_bspstack(slab_params_t *sp);
