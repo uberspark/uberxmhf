@@ -2282,6 +2282,12 @@ struct _vmx_vmcsrwfields_encodings	{
 
 #ifndef __ASSEMBLY__
 
+typedef enum {
+	CPU_STATE_HALT,
+	CPU_STATE_RUNNING,
+} xmhfhwm_cpu_state_t;
+
+
 
 //////
 // external verification hooks for verification drivers
@@ -2312,6 +2318,8 @@ extern u32 xmhfhwm_cpu_cr3;
 
 extern physmem_extent_t xmhfhwm_sysmemaccess_physmem_extents[32];
 extern u32 xmhfhwm_sysmemaccess_physmem_extents_total;
+
+extern xmhfhwm_cpu_state_t xmhfhwm_cpu_state;
 
 
 
@@ -2457,6 +2465,9 @@ extern void _impl_xmhfhwm_cpu_insn_pushal(void);
 extern void _impl_xmhfhwm_cpu_insn_movw_imm_ax(u16 value);
 extern void  _impl_xmhfhwm_cpu_insn_movw_ax_ds(void);
 extern void  _impl_xmhfhwm_cpu_insn_movw_ax_es(void);
+extern void  _impl_xmhfhwm_cpu_insn_movw_ax_fs(void);
+extern void  _impl_xmhfhwm_cpu_insn_movw_ax_gs(void);
+extern void  _impl_xmhfhwm_cpu_insn_movw_ax_ss(void);
 
 
 extern void _impl_xmhfhwm_cpu_insn_movl_meax_edi(int index);
@@ -2468,6 +2479,8 @@ extern void  _impl_xmhfhwm_cpu_insn_vmresume(void);
 
 extern void _impl_xmhfhwm_cpu_insn_movl_meax_esi(int index);
 extern void _impl_xmhfhwm_cpu_insn_iretl(void);
+extern void  _impl_xmhfhwm_cpu_insn_movw_ds_ax(void);
+extern void _impl_xmhfhwm_cpu_insn_addl_imm_eax(u32 value);
 
 
 //////
@@ -2557,6 +2570,12 @@ extern void _impl_xmhfhwm_cpu_insn_iretl(void);
 #define xmhfhwm_cpu_insn_int(x) __builtin_annot("int $"#x" ");
 
 #define xmhfhwm_cpu_insn_call(x) __builtin_annot("call "#x" ");
+
+#define xmhfhwm_cpu_insn_call_c(fn_name) \
+	__builtin_annot("call "#fn_name" "); \
+	_impl_xmhfhwm_cpu_insn_pushl_mem(CASM_RET_EIP); \
+	fn_name(); \
+
 
 #define xmhfhwm_cpu_insn_call_c_1p(fn_name, fn_p1_type) \
 	__builtin_annot("call "#fn_name" "); \
@@ -2993,7 +3012,10 @@ extern void _impl_xmhfhwm_cpu_insn_iretl(void);
 	_impl_xmhfhwm_cpu_insn_addl_imm_ecx(x); \
 
 
-#define _xmhfhwm_cpu_insn_addl_imm_eax(x) __builtin_annot("addl $"#x", %eax ");
+#define _xmhfhwm_cpu_insn_addl_imm_eax(x) \
+	__builtin_annot("addl $"#x", %eax "); \
+        _impl_xmhfhwm_cpu_insn_addl_imm_eax(x); \
+
 #define xmhfhwm_cpu_insn_addl_imm_eax(x) _xmhfhwm_cpu_insn_addl_imm_eax(x)
 
 #define xmhfhwm_cpu_insn_andl_imm_edx(x) \
@@ -3078,7 +3100,11 @@ extern void _impl_xmhfhwm_cpu_insn_iretl(void);
 	__builtin_annot("movl %ss, %eax "); \
 	_impl_xmhfhwm_cpu_insn_movl_ss_eax(); \
 
-#define xmhfhwm_cpu_insn_movw_ds_ax() __builtin_annot("movw %ds, %ax ");
+#define xmhfhwm_cpu_insn_movw_ds_ax() \
+	__builtin_annot("movw %ds, %ax "); \
+        _impl_xmhfhwm_cpu_insn_movw_ds_ax(); \
+
+
 #define xmhfhwm_cpu_insn_movw_ax_ds() \
 	__builtin_annot("movw %ax, %ds "); \
         _impl_xmhfhwm_cpu_insn_movw_ax_ds(); \
@@ -3087,9 +3113,18 @@ extern void _impl_xmhfhwm_cpu_insn_iretl(void);
 	__builtin_annot("movw %ax, %es "); \
         _impl_xmhfhwm_cpu_insn_movw_ax_es(); \
 
-#define xmhfhwm_cpu_insn_movw_ax_fs() __builtin_annot("movw %ax, %fs ");
-#define xmhfhwm_cpu_insn_movw_ax_gs() __builtin_annot("movw %ax, %gs ");
-#define xmhfhwm_cpu_insn_movw_ax_ss() __builtin_annot("movw %ax, %ss ");
+#define xmhfhwm_cpu_insn_movw_ax_fs() \
+	__builtin_annot("movw %ax, %fs "); \
+        _impl_xmhfhwm_cpu_insn_movw_ax_fs(); \
+
+#define xmhfhwm_cpu_insn_movw_ax_gs() \
+	__builtin_annot("movw %ax, %gs "); \
+        _impl_xmhfhwm_cpu_insn_movw_ax_gs(); \
+
+#define xmhfhwm_cpu_insn_movw_ax_ss() \
+	__builtin_annot("movw %ax, %ss "); \
+        _impl_xmhfhwm_cpu_insn_movw_ax_ss(); \
+
 
 //control registers
 #define xmhfhwm_cpu_insn_movl_cr0_eax() \
