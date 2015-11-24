@@ -94,7 +94,6 @@ void gp_s1_chkreq(void){
 	}
 
 
-#if 0
 
 	//initialize platform bus
 	if(!xmhfhw_platform_bus_init()){
@@ -102,7 +101,6 @@ void gp_s1_chkreq(void){
 		CASM_FUNCCALL(xmhfhw_cpu_hlt, CASM_NOPARAM);
 	}
 
-#endif // 0
 }
 
 

@@ -92,6 +92,10 @@ u64 xmhfhwm_cpu_msr_efer = 0;
 u64 xmhfhwm_cpu_msr_vmx_procbased_ctls2_msr = 0x0000008200000000ULL;
 
 
+u32 xmhfhwm_pci_config_addr_port = 0x0UL;
+
+
+
 //////
 // move to ESP related instructions
 //////
@@ -471,8 +475,13 @@ void _impl_xmhfhwm_cpu_insn_inb_dx_al(void){
 }
 
 void _impl_xmhfhwm_cpu_insn_inl_dx_eax(void){
-	xmhfhwm_cpu_gprs_eax = 0UL;
-        //XXX:TODO nondetu32
+	u16 port = (u16)xmhfhwm_cpu_gprs_edx;
+        if(port == PCI_CONFIG_ADDR_PORT){
+		xmhfhwm_cpu_gprs_eax = xmhfhwm_pci_config_addr_port;
+        }else{
+		xmhfhwm_cpu_gprs_eax = 0UL;
+		//XXX:TODO nondetu32
+        }
 }
 
 void _impl_xmhfhwm_cpu_insn_movl_eax_mesp(int index){
@@ -545,7 +554,13 @@ void _impl_xmhfhwm_cpu_insn_outb_al_dx(void){
 }
 
 void _impl_xmhfhwm_cpu_insn_outl_eax_dx(void){
-	//TODO: output eax to dx
+	u16 port = (u16)xmhfhwm_cpu_gprs_edx;
+
+	if(port == PCI_CONFIG_ADDR_PORT){
+                xmhfhwm_pci_config_addr_port = xmhfhwm_cpu_gprs_eax;
+	}else{
+		//TODO: output eax to dx
+	}
 }
 
 void _impl_xmhfhwm_cpu_insn_outw_ax_dx(void){

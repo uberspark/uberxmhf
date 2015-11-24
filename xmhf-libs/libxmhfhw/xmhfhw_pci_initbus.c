@@ -174,7 +174,7 @@ bool xmhfhw_platform_bus_init(void){
 
 	//reading PCI_CONFIG_ADDR_PORT should return with bit 31 set
 	//if system supports type-1 access
-	if (inl(PCI_CONFIG_ADDR_PORT) != 0x80000000)
+	if (CASM_FUNCCALL(inl, PCI_CONFIG_ADDR_PORT) != 0x80000000)
 		result=false;
 
 	//restore previous value at PCI_CONFIG_ADDR_PORT
