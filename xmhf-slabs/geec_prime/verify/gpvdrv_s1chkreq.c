@@ -44,63 +44,68 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-#include <xmhf.h>
-#include <xmhf-debug.h>
+/*
+ * prime s1_chkreq verification driver
+ * author: amit vasudevan (amitvasudevan@acm.org)
+*/
 
+
+#include <xmhf.h>
+#include <xmhf-hwm.h>
 #include <xmhfgeec.h>
+//#include <xmhf-debug.h>
 
 #include <geec_prime.h>
-#include <geec_sentinel.h>
-#include <uapi_slabmempgtbl.h>
-#include <xc_init.h>
 
-///////////////////////////////////////////////////////////////
-// sanity check HIC (hardware) requirements
-void gp_s1_chkreq(void){
-	u32 cpu_vendor;
+u32 cpuid = 0;	//BSP cpu
 
-	//grab CPU vendor
-	cpu_vendor = xmhf_baseplatform_arch_getcpuvendor();
-	if (cpu_vendor != CPU_VENDOR_INTEL){
-		_XDPRINTF_("%s: not an Intel CPU but running VMX backend. Halting!\n", __func__);
-		HALT();
-	}
+//////
+// frama-c non-determinism functions
+//////
 
-	//check VMX support
-	{
-		u32	cpu_features;
-		u32 res0,res1,res2;
+u32 Frama_C_entropy_source;
 
-		CASM_FUNCCALL(xmhfhw_cpu_cpuid,0x1, &res0, &res1, &cpu_features, &res2);
+//@ assigns Frama_C_entropy_source \from Frama_C_entropy_source;
+void Frama_C_update_entropy(void);
 
-		if ( ( cpu_features & (1<<5) ) == 0 ){
-			_XDPRINTF_("No VMX support. Halting!\n");
-			HALT();
-		}
-	}
-
-	//we require unrestricted guest and EPT support, bail out if we don't have it
-	{
-		u64 msr_procctls2 = CASM_FUNCCALL(rdmsr64,IA32_VMX_PROCBASED_CTLS2_MSR);
-		if( !( (msr_procctls2 >> 32) & 0x80 ) ){
-			_XDPRINTF_("%s: need unrestricted guest support but did not find any!\n", __func__);
-			HALT();
-		}
-
-		if( !( (msr_procctls2 >> 32) & 0x2) ){
-			_XDPRINTF_("%s: need EPTt support but did not find any!\n", __func__);
-			HALT();
-		}
-	}
-
-
-	//initialize platform bus
-	if(!xmhfhw_platform_bus_init()){
-		_XDPRINTF_("%s: need PCI type-1 access but did not find any!\n", __func__);
-		HALT();
-	}
-
+u32 framac_nondetu32(void){
+  Frama_C_update_entropy();
+  return (u32)Frama_C_entropy_source;
 }
 
+u32 framac_nondetu32interval(u32 min, u32 max)
+{
+  u32 r,aux;
+  Frama_C_update_entropy();
+  aux = Frama_C_entropy_source;
+  if ((aux>=min) && (aux <=max))
+    r = aux;
+  else
+    r = min;
+  return r;
+}
+
+
+//////
+u32 check_esp, check_eip = CASM_RET_EIP;
+
+
+void xmhfhwm_vdriver_writeesp(u32 oldval, u32 newval){
+	//@assert (newval >= ((u32)&_init_bsp_cpustack + 4)) && (newval <= ((u32)&_init_bsp_cpustack + MAX_PLATFORM_CPUSTACK_SIZE)) ;
+}
+
+
+void main(void){
+	//populate hardware model stack and program counter
+	xmhfhwm_cpu_gprs_esp = (u32)&_init_bsp_cpustack + MAX_PLATFORM_CPUSTACK_SIZE;
+	xmhfhwm_cpu_gprs_eip = check_eip;
+	check_esp = xmhfhwm_cpu_gprs_esp; // pointing to top-of-stack
+
+	//execute harness
+	gp_s1_chkreq();
+
+	//@assert xmhfhwm_cpu_gprs_esp == check_esp;
+	//@assert xmhfhwm_cpu_gprs_eip == check_eip;
+}
 
 
