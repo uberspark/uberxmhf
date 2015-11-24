@@ -62,7 +62,7 @@ static u64 _gp_s1_bspstack_getflagsforspa(u32 paddr){
 		return (_PAGE_RW | _PAGE_PSE | _PAGE_PRESENT);
 }
 
-
+#if 0
 void gp_s1_bspstack(void){
 	u32 i, j;
 	u64 flags;
@@ -83,4 +83,5 @@ void gp_s1_bspstack(void){
 
 	gp_s1_bspstkactivate();
 }
+#endif // 0
 
