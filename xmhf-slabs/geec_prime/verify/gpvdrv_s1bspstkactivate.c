@@ -44,39 +44,78 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-#include <xmhf.h>
-#include <xmhf-debug.h>
+/*
+ * prime s1_bspstkactivate verification driver
+ * author: amit vasudevan (amitvasudevan@acm.org)
+*/
 
+
+#include <xmhf.h>
+#include <xmhf-hwm.h>
 #include <xmhfgeec.h>
+//#include <xmhf-debug.h>
 
 #include <geec_prime.h>
-#include <geec_sentinel.h>
-#include <uapi_slabmempgtbl.h>
-#include <xc_init.h>
 
+u32 cpuid = 0;	//BSP cpu
 
+//////
+// frama-c non-determinism functions
+//////
 
-void gp_s1_bspstkactivate(void){
-	u64 _msrefer;
-	u32 _cr4;
+u32 Frama_C_entropy_source;
 
-	_msrefer = CASM_FUNCCALL(rdmsr64, MSR_EFER);
-	_msrefer |= (0x800);
-	CASM_FUNCCALL(wrmsr64, MSR_EFER, (u32)_msrefer, (u32)((u64)_msrefer >> 32) );
+//@ assigns Frama_C_entropy_source \from Frama_C_entropy_source;
+void Frama_C_update_entropy(void);
 
-        _XDPRINTF_("EFER=%016llx\n", CASM_FUNCCALL(rdmsr64,MSR_EFER));
-
-	_cr4 = CASM_FUNCCALL(read_cr4, CASM_NOPARAM);
-        _cr4 |= 0x30;
-	CASM_FUNCCALL(write_cr4, _cr4);
-
-        _XDPRINTF_("CR4=%08x\n", CASM_FUNCCALL(read_cr4,CASM_NOPARAM));
-
-	CASM_FUNCCALL(write_cr3,(u32)&_xcprimeon_init_pdpt);
-
-        _XDPRINTF_("CR3=%08x\n", CASM_FUNCCALL(read_cr3,CASM_NOPARAM));
-
-	CASM_FUNCCALL(write_cr0,0x80000015);
-
-	gp_s1_hub();
+u32 framac_nondetu32(void){
+  Frama_C_update_entropy();
+  return (u32)Frama_C_entropy_source;
 }
+
+u32 framac_nondetu32interval(u32 min, u32 max)
+{
+  u32 r,aux;
+  Frama_C_update_entropy();
+  aux = Frama_C_entropy_source;
+  if ((aux>=min) && (aux <=max))
+    r = aux;
+  else
+    r = min;
+  return r;
+}
+
+
+//////
+bool gp_s1_hub_called = false;
+u32 check_esp, check_eip = CASM_RET_EIP;
+slab_params_t test_sp;
+
+
+void xmhfhwm_vdriver_writeesp(u32 oldval, u32 newval){
+	//@assert (newval >= ((u32)&_init_bsp_cpustack + 4)) && (newval <= ((u32)&_init_bsp_cpustack + MAX_PLATFORM_CPUSTACK_SIZE)) ;
+}
+
+
+void gp_s1_hub(void){
+	//@assert xmhfhwm_cpu_state == CPU_STATE_RUNNING;
+
+	//indicate s1_hub was invoked from bspstkactivate
+	gp_s1_hub_called = true;
+}
+
+void main(void){
+	//populate hardware model stack and program counter
+	xmhfhwm_cpu_gprs_esp = (u32)&_init_bsp_cpustack + MAX_PLATFORM_CPUSTACK_SIZE;
+	xmhfhwm_cpu_gprs_eip = check_eip;
+	check_esp = xmhfhwm_cpu_gprs_esp; // pointing to top-of-stack
+
+	//execute harness
+	gp_s1_bspstkactivate();
+
+	//@assert gp_s1_hub_called == true;
+	//@assert xmhfhwm_cpu_gprs_esp == check_esp;
+	//@assert xmhfhwm_cpu_gprs_eip == check_eip;
+}
+
+
