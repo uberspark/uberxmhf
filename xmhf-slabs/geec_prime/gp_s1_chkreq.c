@@ -66,6 +66,7 @@ void gp_s1_chkreq(void){
 		CASM_FUNCCALL(xmhfhw_cpu_hlt, CASM_NOPARAM);
 	}
 
+#if 0
 	//check VMX support
 	{
 		u32	cpu_features;
@@ -100,6 +101,7 @@ void gp_s1_chkreq(void){
 		CASM_FUNCCALL(xmhfhw_cpu_hlt, CASM_NOPARAM);
 	}
 
+#endif // 0
 }
 
 

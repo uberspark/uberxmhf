@@ -104,6 +104,7 @@ void main(void){
 	//execute harness
 	gp_s1_chkreq();
 
+	//@assert xmhfhwm_cpu_state == CPU_STATE_RUNNING;
 	//@assert xmhfhwm_cpu_gprs_esp == check_esp;
 	//@assert xmhfhwm_cpu_gprs_eip == check_eip;
 }
