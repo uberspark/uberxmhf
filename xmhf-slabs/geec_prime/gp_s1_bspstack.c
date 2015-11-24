@@ -54,6 +54,7 @@
 #include <uapi_slabmempgtbl.h>
 #include <xc_init.h>
 
+#if 0
 /*@
 	behavior txttpm:
 		assumes (paddr == 0xfee00000 || paddr == 0xfec00000);
@@ -72,27 +73,46 @@ static u64 _gp_s1_bspstack_getflagsforspa(u32 paddr){
 	else
 		return (_PAGE_RW | _PAGE_PSE | _PAGE_PRESENT);
 }
+#endif // 0
 
-#if 0
+
+/*@
+	assigns _xcprimeon_init_pdpt[0..(PAE_MAXPTRS_PER_PDPT-1)];
+@*/
 void gp_s1_bspstack(void){
 	u32 i, j;
 	u64 flags;
 
 	//clear PDPT
-	memset(&_xcprimeon_init_pdpt, 0, sizeof(_xcprimeon_init_pdpt));
+    	/*@
+		loop invariant a1: 0 <= i <= PAE_MAXPTRS_PER_PDPT;
+		loop invariant a2: \forall integer x; 0 <= x < i ==> ( _xcprimeon_init_pdpt[x] == 0);
+		loop assigns _xcprimeon_init_pdpt[0..(PAE_MAXPTRS_PER_PDPT-1)];
+		loop assigns i;
+		loop variant PAE_MAXPTRS_PER_PDPT - i;
+	@*/
+	for(i=0; i < PAE_MAXPTRS_PER_PDPT; i++)
+		_xcprimeon_init_pdpt[i] = 0;
 
+    	/*@
+		loop invariant a3: 0 <= i <= PAE_PTRS_PER_PDPT;
+		loop invariant a4: \forall integer x; 0 <= x < i ==> ( _xcprimeon_init_pdpt[x] == (pae_make_pdpe((u32)&_xcprimeon_init_pdt[x][0], (_PAGE_PRESENT))) );
+		loop assigns _xcprimeon_init_pdpt[0..(PAE_PTRS_PER_PDPT-1)];
+		loop assigns i;
+		loop variant PAE_PTRS_PER_PDPT - i;
+	@*/
 	for(i=0; i < PAE_PTRS_PER_PDPT; i++){
-		_xcprimeon_init_pdpt[i] = pae_make_pdpe(&_xcprimeon_init_pdt[i][0], (_PAGE_PRESENT));
+		_xcprimeon_init_pdpt[i] = pae_make_pdpe((u32)&_xcprimeon_init_pdt[i][0], (_PAGE_PRESENT));
 
-		for(j=0; j < PAE_PTRS_PER_PDT; j++){
-		    flags = _gp_s1_bspstack_getflagsforspa((i*(PAGE_SIZE_2M * PAE_PTRS_PER_PDT)) + (PAGE_SIZE_2M * j));
-
-		    _xcprimeon_init_pdt[i][j] = pae_make_pde_big(((i*(PAGE_SIZE_2M * PAE_PTRS_PER_PDT)) + (PAGE_SIZE_2M * j)), flags);
-		}
+		//for(j=0; j < PAE_PTRS_PER_PDT; j++){
+		//    flags = _gp_s1_bspstack_getflagsforspa((i*(PAGE_SIZE_2M * PAE_PTRS_PER_PDT)) + (PAGE_SIZE_2M * j));
+		//
+		//    _xcprimeon_init_pdt[i][j] = pae_make_pde_big(((i*(PAGE_SIZE_2M * PAE_PTRS_PER_PDT)) + (PAGE_SIZE_2M * j)), flags);
+		//}
 	}
 
-
+#if 0
 	gp_s1_bspstkactivate();
-}
 #endif // 0
+}
 
