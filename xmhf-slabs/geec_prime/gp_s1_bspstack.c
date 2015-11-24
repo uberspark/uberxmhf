@@ -84,6 +84,7 @@ static u64 _gp_s1_bspstack_getflagsforspa(u32 paddr){
 	assigns gflags[0..(PAE_PTRS_PER_PDPT-1)][0..(PAE_PTRS_PER_PDT-1)];
 	assigns gp_s1_bspstack_invoke_bspstkactivate;
 	ensures gp_s1_bspstack_invoke_bspstkactivate == true;
+	ensures \forall integer x, y; 0 <= x < PAE_PTRS_PER_PDPT && 0 <= y < PAE_PTRS_PER_PDT ==> ( _xcprimeon_init_pdt[x][y] == (pae_make_pde_big((u32)((x*(PAGE_SIZE_2M * PAE_PTRS_PER_PDT)) + (PAGE_SIZE_2M * y)), gflags[x][y])) );
 @*/
 void gp_s1_bspstack(void){
 	u32 i, j;
