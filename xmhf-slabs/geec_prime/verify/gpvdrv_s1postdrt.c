@@ -44,37 +44,69 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-#include <xmhf.h>
-#include <xmhf-debug.h>
+/*
+ * prime s1_chkreq verification driver
+ * author: amit vasudevan (amitvasudevan@acm.org)
+*/
 
+
+#include <xmhf.h>
+#include <xmhf-hwm.h>
 #include <xmhfgeec.h>
+//#include <xmhf-debug.h>
 
 #include <geec_prime.h>
-#include <geec_sentinel.h>
-#include <uapi_slabmempgtbl.h>
-#include <xc_init.h>
 
-void gp_s1_postdrt(void){
-	txt_heap_t *txt_heap;
-	os_mle_data_t os_mle_data;
+u32 cpuid = 0;	//BSP cpu
 
-	txt_heap = get_txt_heap();
-	_XDPRINTF_("SL: txt_heap = 0x%08x\n", (u32)txt_heap);
+//////
+// frama-c non-determinism functions
+//////
 
-	xmhfhw_sysmemaccess_copy(&os_mle_data, get_os_mle_data_start((txt_heap_t*)((u32)txt_heap), (uint32_t)read_pub_config_reg(TXTCR_HEAP_SIZE)),
-					sizeof(os_mle_data_t));
+u32 Frama_C_entropy_source;
 
-	_XDPRINTF_("SL: os_mle_data = 0x%08x\n", (u32)&os_mle_data);
+//@ assigns Frama_C_entropy_source \from Frama_C_entropy_source;
+void Frama_C_update_entropy(void);
 
-	// restore pre-SENTER MTRRs that were overwritten for SINIT launch
-	if(!validate_mtrrs(&(os_mle_data.saved_mtrr_state))) {
-		_XDPRINTF_("SECURITY FAILURE: validate_mtrrs() failed.\n");
-		HALT();
-	}
-
-	_XDPRINTF_("SL: Validated MTRRs\n");
-
-	xmhfhw_cpu_x86_restore_mtrrs(&(os_mle_data.saved_mtrr_state));
-
-	_XDPRINTF_("SL: Restored MTRRs\n");
+u32 framac_nondetu32(void){
+  Frama_C_update_entropy();
+  return (u32)Frama_C_entropy_source;
 }
+
+u32 framac_nondetu32interval(u32 min, u32 max)
+{
+  u32 r,aux;
+  Frama_C_update_entropy();
+  aux = Frama_C_entropy_source;
+  if ((aux>=min) && (aux <=max))
+    r = aux;
+  else
+    r = min;
+  return r;
+}
+
+
+//////
+u32 check_esp, check_eip = CASM_RET_EIP;
+
+
+void xmhfhwm_vdriver_writeesp(u32 oldval, u32 newval){
+	//@assert (newval >= ((u32)&_init_bsp_cpustack + 4)) && (newval <= ((u32)&_init_bsp_cpustack + MAX_PLATFORM_CPUSTACK_SIZE)) ;
+}
+
+
+void main(void){
+	//populate hardware model stack and program counter
+	xmhfhwm_cpu_gprs_esp = (u32)&_init_bsp_cpustack + MAX_PLATFORM_CPUSTACK_SIZE;
+	xmhfhwm_cpu_gprs_eip = check_eip;
+	check_esp = xmhfhwm_cpu_gprs_esp; // pointing to top-of-stack
+
+	//execute harness
+	gp_s1_postdrt();
+
+	//@assert xmhfhwm_cpu_state == CPU_STATE_RUNNING;
+	//@assert xmhfhwm_cpu_gprs_esp == check_esp;
+	//@assert xmhfhwm_cpu_gprs_eip == check_eip;
+}
+
+
