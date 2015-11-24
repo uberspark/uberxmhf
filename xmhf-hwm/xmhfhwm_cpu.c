@@ -299,9 +299,17 @@ void _impl_xmhfhwm_cpu_insn_movl_medx_edx(int index){
 
 
 void _impl_xmhfhwm_cpu_insn_cpuid(void){
-	//XXX: TODO
-	xmhfhwm_cpu_gprs_ebx = 0;
-	xmhfhwm_cpu_gprs_edx = 0;
+
+	if(xmhfhwm_cpu_gprs_eax == 0x0){
+		xmhfhwm_cpu_gprs_ebx = INTEL_STRING_DWORD1;
+		xmhfhwm_cpu_gprs_ecx = INTEL_STRING_DWORD3;
+		xmhfhwm_cpu_gprs_edx = INTEL_STRING_DWORD2;
+	}else{
+		//XXX: TODO
+		xmhfhwm_cpu_gprs_ebx = 0;
+		xmhfhwm_cpu_gprs_edx = 0;
+	}
+
 }
 
 void _impl_xmhfhwm_cpu_insn_movl_mesp_esi(int index){
@@ -424,6 +432,10 @@ void _impl_xmhfhwm_cpu_insn_addl_imm_eax(u32 value){
 
 void _impl_xmhfhwm_cpu_insn_movl_edx_ecx(void){
 	xmhfhwm_cpu_gprs_ecx = xmhfhwm_cpu_gprs_edx;
+}
+
+void _impl_xmhfhwm_cpu_insn_movl_eax_ecx(void){
+	xmhfhwm_cpu_gprs_ecx = xmhfhwm_cpu_gprs_eax;
 }
 
 void _impl_xmhfhwm_cpu_insn_andl_imm_edx(u32 value){

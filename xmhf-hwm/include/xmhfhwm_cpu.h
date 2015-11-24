@@ -2391,6 +2391,7 @@ extern void _impl_xmhfhwm_cpu_insn_movl_mecx_eax(int index);
 extern void _impl_xmhfhwm_cpu_insn_movl_mecx_edx(int index);
 extern void _impl_xmhfhwm_cpu_insn_addl_imm_ecx(u32 value);
 extern void _impl_xmhfhwm_cpu_insn_movl_edx_ecx(void);
+extern void _impl_xmhfhwm_cpu_insn_movl_eax_ecx(void);
 extern void _impl_xmhfhwm_cpu_insn_andl_imm_edx(u32 value);
 extern void _impl_xmhfhwm_cpu_insn_andl_imm_ecx(u32 value);
 extern void _impl_xmhfhwm_cpu_insn_shl_imm_ecx(u32 value);
@@ -2888,6 +2889,10 @@ extern void _impl_xmhfhwm_cpu_insn_addl_imm_eax(u32 value);
 #define xmhfhwm_cpu_insn_movl_edx_ecx() \
 	__builtin_annot("movl %edx, %ecx "); \
 	_impl_xmhfhwm_cpu_insn_movl_edx_ecx(); \
+
+#define xmhfhwm_cpu_insn_movl_eax_ecx() \
+	__builtin_annot("movl %eax, %ecx "); \
+	_impl_xmhfhwm_cpu_insn_movl_eax_ecx(); \
 
 
 #define xmhfhwm_cpu_insn_movl_edi_ebx() __builtin_annot("movl %edi, %ebx ");
