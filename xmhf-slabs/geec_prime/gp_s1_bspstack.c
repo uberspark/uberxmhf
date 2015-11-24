@@ -116,7 +116,7 @@ void gp_s1_bspstack(void){
 
 		/*@
 			loop invariant a5: 0 <= j <= PAE_PTRS_PER_PDT;
-			//loop invariant a6: \forall integer x; 0 <= x < i ==> ( _xcprimeon_init_pdpt[x] == (pae_make_pdpe((u32)&_xcprimeon_init_pdt[x][0], (_PAGE_PRESENT))) );
+			loop invariant a6: \forall integer y; 0 <= y < j ==> ( _xcprimeon_init_pdt[i][y] == (pae_make_pde_big((u32)((i*(PAGE_SIZE_2M * PAE_PTRS_PER_PDT)) + (PAGE_SIZE_2M * y)), gflags[i][y])) );
 			loop assigns _xcprimeon_init_pdt[i][0..(PAE_PTRS_PER_PDT-1)];
 			loop assigns gflags[i][0..(PAE_PTRS_PER_PDT-1)];
 			loop assigns j;
