@@ -76,9 +76,12 @@ static u64 _gp_s1_bspstack_getflagsforspa(u32 paddr){
 #endif // 0
 
 
+//@ghost bool gp_s1_bspstack_invoke_bspstkactivate = false;
 /*@
 	assigns _xcprimeon_init_pdpt[0..(PAE_MAXPTRS_PER_PDPT-1)];
 	assigns _xcprimeon_init_pdt[0..(PAE_PTRS_PER_PDPT-1)][0..(PAE_PTRS_PER_PDT-1)];
+	assigns gp_s1_bspstack_invoke_bspstkactivate;
+	ensures gp_s1_bspstack_invoke_bspstkactivate == true;
 @*/
 void gp_s1_bspstack(void){
 	u32 i, j;
@@ -123,8 +126,7 @@ void gp_s1_bspstack(void){
 		}
 	}
 
-#if 0
 	gp_s1_bspstkactivate();
-#endif // 0
+	//@ghost gp_s1_bspstack_invoke_bspstkactivate = true;
 }
 
