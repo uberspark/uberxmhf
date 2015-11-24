@@ -99,6 +99,11 @@ void xmhfhwm_vdriver_writeesp(u32 oldval, u32 newval){
 
 void gp_s1_hub(void){
 	//@assert xmhfhwm_cpu_state == CPU_STATE_RUNNING;
+	//@assert (xmhfhwm_cpu_msr_efer & (1ULL << EFER_NXE));
+	//@assert (xmhfhwm_cpu_cr4 & CR4_PSE);
+	//@assert (xmhfhwm_cpu_cr4 & CR4_PAE);
+	//@assert (xmhfhwm_cpu_cr3 == (u32)&_xcprimeon_init_pdpt);
+	//@assert (xmhfhwm_cpu_cr0 == (CR0_PE | CR0_PG | CR0_ET | CR0_EM));
 
 	//indicate s1_hub was invoked from bspstkactivate
 	gp_s1_hub_called = true;
