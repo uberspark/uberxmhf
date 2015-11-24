@@ -44,19 +44,22 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-//author: amit vasudevan (amitvasudevan@acm.org)
+// XMHF HWM TXT hardware decls.
+// author: amit vasudevan (amitvasudevan@acm.org)
 
-#include <xmhf.h>
-#include <xmhf-hwm.h>
-#include <xmhfhw.h>
-#include <xmhf-debug.h>
+#ifndef __XMHFHWM_TXT_H__
+#define __XMHFHWM_TXT_H__
 
-/*@
-	assigns \nothing;
-@*/
-uint64_t read_pub_config_reg(uint32_t reg)
-{
-    //return CASM_FUNCCALL(read_config_reg,TXT_PUB_CONFIG_REGS_BASE, reg);
-    return CASM_FUNCCALL(xmhfhw_sysmemaccess_readu64, ( TXT_PUB_CONFIG_REGS_BASE + reg ));
-}
 
+#ifndef __ASSEMBLY__
+
+
+
+bool _impl_xmhfhwm_txt_read(u32 sysmemaddr, sysmem_read_t readsize, u64 *read_result);
+bool _impl_xmhfhwm_txt_write(u32 sysmemaddr, sysmem_write_t writesize, u64 write_value);
+
+
+#endif // __ASSEMBLY__
+
+
+#endif // __XMHFHWM_TXT_H__

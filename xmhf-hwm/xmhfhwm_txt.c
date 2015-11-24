@@ -44,19 +44,41 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-//author: amit vasudevan (amitvasudevan@acm.org)
+/*
+ * x86 cpu txt implementation
+ * author: amit vasudevan (amitvasudevan@acm.org)
+*/
+
 
 #include <xmhf.h>
 #include <xmhf-hwm.h>
-#include <xmhfhw.h>
-#include <xmhf-debug.h>
 
-/*@
-	assigns \nothing;
-@*/
-uint64_t read_pub_config_reg(uint32_t reg)
-{
-    //return CASM_FUNCCALL(read_config_reg,TXT_PUB_CONFIG_REGS_BASE, reg);
-    return CASM_FUNCCALL(xmhfhw_sysmemaccess_readu64, ( TXT_PUB_CONFIG_REGS_BASE + reg ));
+
+u32 xmhfhwm_txt_heap_base_hi=0;
+u32 xmhfhwm_txt_heap_base_lo=0;
+
+bool _impl_xmhfhwm_txt_read(u32 sysmemaddr, sysmem_read_t readsize, u64 *read_result){
+	bool retval = true;
+
+	switch(sysmemaddr){
+		case (TXT_PUB_CONFIG_REGS_BASE+TXTCR_HEAP_BASE):{
+			//@assert (readsize == SYSMEMREADU32);
+			*read_result = (u64)xmhfhwm_txt_heap_base_lo;
+		}
+		break;
+
+		case (TXT_PUB_CONFIG_REGS_BASE+TXTCR_HEAP_BASE+0x4):{
+			//@assert (readsize == SYSMEMREADU32);
+			*read_result = (u64)xmhfhwm_txt_heap_base_hi;
+		}
+		break;
+
+
+		default:
+			retval= false;
+			break;
+	}
+
+
+	return retval;
 }
-
