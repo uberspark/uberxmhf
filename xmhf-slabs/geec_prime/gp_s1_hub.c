@@ -55,6 +55,26 @@
 #include <xc_init.h>
 
 
+//@ghost bool gp_s1_hub_called_chkreq = false;
+//@ghost bool gp_s1_hub_called_postdrt = false;
+//@ghost bool gp_s1_hub_called_scaniommu = false;
+//@ghost bool gp_s1_hub_called_iommuinittbl = false;
+//@ghost bool gp_s1_hub_called_iommuinit = false;
+//@ghost bool gp_s1_hub_called_s2entry = false;
+/*@
+	assigns gp_s1_hub_called_chkreq;
+	assigns gp_s1_hub_called_postdrt;
+	assigns gp_s1_hub_called_scaniommu;
+	assigns gp_s1_hub_called_iommuinittbl;
+	assigns gp_s1_hub_called_iommuinit;
+	assigns gp_s1_hub_called_s2entry;
+	ensures (gp_s1_hub_called_chkreq == true);
+	ensures (gp_s1_hub_called_postdrt == true);
+	ensures (gp_s1_hub_called_scaniommu == true);
+	ensures (gp_s1_hub_called_iommuinittbl == true);
+	ensures (gp_s1_hub_called_iommuinit == true);
+	ensures (gp_s1_hub_called_s2entry == true);
+@*/
 
 void gp_s1_hub(void){
 
@@ -128,23 +148,31 @@ void gp_s1_hub(void){
 
 	//sanity check hardware requirements
 	gp_s1_chkreq();
+	//@ghost gp_s1_hub_called_chkreq = true;
 
 	//post DRT cleanup first
 	gp_s1_postdrt();
+	//@ghost gp_s1_hub_called_postdrt = true;
 
 
 	//scan for IOMMU and halt if one is not present
         gp_s1_scaniommu();
+	//@ghost gp_s1_hub_called_scaniommu = true;
 
 
 	// (zero) initialize RET and CET
 	gp_s1_iommuinittbl();
+	//@ghost gp_s1_hub_called_iommuinittbl = true;
 
 
 	//initialize IOMMU
 	gp_s1_iommuinit();
+	//@ghost gp_s1_hub_called_iommuinit = true;
+
 
 	//move on to phase-2
 	gp_s2_entry();
+	//@ghost gp_s1_hub_called_s2entry = true;
+
 }
 
