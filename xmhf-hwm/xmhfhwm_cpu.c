@@ -304,6 +304,8 @@ void _impl_xmhfhwm_cpu_insn_cpuid(void){
 		xmhfhwm_cpu_gprs_ebx = INTEL_STRING_DWORD1;
 		xmhfhwm_cpu_gprs_ecx = INTEL_STRING_DWORD3;
 		xmhfhwm_cpu_gprs_edx = INTEL_STRING_DWORD2;
+	}else if (xmhfhwm_cpu_gprs_eax == 0x1){
+		xmhfhwm_cpu_gprs_ecx = (1 << 5); //VMX support
 	}else{
 		//XXX: TODO
 		xmhfhwm_cpu_gprs_ebx = 0;
