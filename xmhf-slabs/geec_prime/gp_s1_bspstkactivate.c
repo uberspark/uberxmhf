@@ -59,15 +59,16 @@
 void gp_s1_bspstkactivate(void){
 	u64 _msrefer;
 	u32 _cr4;
+	u32 _cr0 = (CR0_PE | CR0_PG | CR0_ET | CR0_EM);
 
 	_msrefer = CASM_FUNCCALL(rdmsr64, MSR_EFER);
-	_msrefer |= (0x800);
+	_msrefer |= (1ULL << EFER_NXE);
 	CASM_FUNCCALL(wrmsr64, MSR_EFER, (u32)_msrefer, (u32)((u64)_msrefer >> 32) );
 
         _XDPRINTF_("EFER=%016llx\n", CASM_FUNCCALL(rdmsr64,MSR_EFER));
 
 	_cr4 = CASM_FUNCCALL(read_cr4, CASM_NOPARAM);
-        _cr4 |= 0x30;
+        _cr4 |= (CR4_PSE | CR4_PAE);
 	CASM_FUNCCALL(write_cr4, _cr4);
 
         _XDPRINTF_("CR4=%08x\n", CASM_FUNCCALL(read_cr4,CASM_NOPARAM));
@@ -76,7 +77,7 @@ void gp_s1_bspstkactivate(void){
 
         _XDPRINTF_("CR3=%08x\n", CASM_FUNCCALL(read_cr3,CASM_NOPARAM));
 
-	CASM_FUNCCALL(write_cr0,0x80000015);
+	CASM_FUNCCALL(write_cr0, _cr0);
 
 	gp_s1_hub();
 }

@@ -88,6 +88,7 @@ u32 xmhfhwm_cpu_ss_selector = 0;
 u64 xmhfhwm_cpu_xcr0 = 0;
 xmhfhwm_cpu_state_t xmhfhwm_cpu_state = CPU_STATE_RUNNING;
 
+u64 xmhfhwm_cpu_msr_efer = 0;
 
 
 //////
@@ -540,11 +541,24 @@ void _impl_xmhfhwm_cpu_insn_pause(void){
 
 }
 
+
+void _impl_xmhfhwm_cpu_insn_wrmsr(void){
+	if(xmhfhwm_cpu_gprs_ecx == MSR_EFER){
+                xmhfhwm_cpu_msr_efer = (u64)xmhfhwm_cpu_gprs_edx << 32 |  (u64)xmhfhwm_cpu_gprs_eax;
+	}
+	//XXX: wrmsr logic
+}
+
 void _impl_xmhfhwm_cpu_insn_rdmsr(void){
 	//TODO: rdmsr emulation
 	if(xmhfhwm_cpu_gprs_ecx == MSR_APIC_BASE){
 		xmhfhwm_cpu_gprs_edx = 0;
 		xmhfhwm_cpu_gprs_eax = MMIO_APIC_BASE;
+	}else if (xmhfhwm_cpu_gprs_ecx == MSR_EFER){
+		xmhfhwm_cpu_gprs_edx = (u32) ((u64)xmhfhwm_cpu_msr_efer >> 32);
+		xmhfhwm_cpu_gprs_eax = (u32)xmhfhwm_cpu_msr_efer;
+	}else{
+
 	}
 
 }
@@ -698,9 +712,6 @@ void _impl_xmhfhwm_cpu_insn_popfl(void){
 	xmhfhwm_cpu_eflags = value;
 }
 
-void _impl_xmhfhwm_cpu_insn_wrmsr(void){
-	//XXX: wrmsr logic
-}
 
 void _impl_xmhfhwm_cpu_insn_xgetbv(void){
 	if(xmhfhwm_cpu_gprs_ecx == 1){
