@@ -78,6 +78,7 @@ static u64 _gp_s1_bspstack_getflagsforspa(u32 paddr){
 
 /*@
 	assigns _xcprimeon_init_pdpt[0..(PAE_MAXPTRS_PER_PDPT-1)];
+	assigns _xcprimeon_init_pdt[0..(PAE_PTRS_PER_PDPT-1)][0..(PAE_PTRS_PER_PDT-1)];
 @*/
 void gp_s1_bspstack(void){
 	u32 i, j;
@@ -98,17 +99,28 @@ void gp_s1_bspstack(void){
 		loop invariant a3: 0 <= i <= PAE_PTRS_PER_PDPT;
 		loop invariant a4: \forall integer x; 0 <= x < i ==> ( _xcprimeon_init_pdpt[x] == (pae_make_pdpe((u32)&_xcprimeon_init_pdt[x][0], (_PAGE_PRESENT))) );
 		loop assigns _xcprimeon_init_pdpt[0..(PAE_PTRS_PER_PDPT-1)];
+		loop assigns _xcprimeon_init_pdt[0..(PAE_PTRS_PER_PDPT-1)][0..(PAE_PTRS_PER_PDT-1)];
 		loop assigns i;
+		loop assigns j;
+		loop assigns flags;
 		loop variant PAE_PTRS_PER_PDPT - i;
 	@*/
 	for(i=0; i < PAE_PTRS_PER_PDPT; i++){
 		_xcprimeon_init_pdpt[i] = pae_make_pdpe((u32)&_xcprimeon_init_pdt[i][0], (_PAGE_PRESENT));
 
-		//for(j=0; j < PAE_PTRS_PER_PDT; j++){
-		//    flags = _gp_s1_bspstack_getflagsforspa((i*(PAGE_SIZE_2M * PAE_PTRS_PER_PDT)) + (PAGE_SIZE_2M * j));
-		//
-		//    _xcprimeon_init_pdt[i][j] = pae_make_pde_big(((i*(PAGE_SIZE_2M * PAE_PTRS_PER_PDT)) + (PAGE_SIZE_2M * j)), flags);
-		//}
+		/*@
+			loop invariant a5: 0 <= j <= PAE_PTRS_PER_PDT;
+			//loop invariant a6: \forall integer x; 0 <= x < i ==> ( _xcprimeon_init_pdpt[x] == (pae_make_pdpe((u32)&_xcprimeon_init_pdt[x][0], (_PAGE_PRESENT))) );
+			loop assigns _xcprimeon_init_pdt[i][0..(PAE_PTRS_PER_PDT-1)];
+			loop assigns j;
+			loop assigns flags;
+			loop variant PAE_PTRS_PER_PDT - j;
+		@*/
+		for(j=0; j < PAE_PTRS_PER_PDT; j++){
+			flags = _gp_s1_bspstack_getflagsforspa((i*(PAGE_SIZE_2M * PAE_PTRS_PER_PDT)) + (PAGE_SIZE_2M * j));
+
+			_xcprimeon_init_pdt[i][j] = pae_make_pde_big(((i*(PAGE_SIZE_2M * PAE_PTRS_PER_PDT)) + (PAGE_SIZE_2M * j)), flags);
+		}
 	}
 
 #if 0
