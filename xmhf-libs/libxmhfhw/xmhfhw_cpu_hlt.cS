@@ -44,63 +44,18 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
+//xmhfhw_cpu_legio: CPU Legacy IO functions
+// author: amit vasudevan (amitvasudevan@acm.org)
+
 #include <xmhf.h>
+#include <xmhf-hwm.h>
+#include <xmhfhw.h>
 #include <xmhf-debug.h>
 
-#include <xmhfgeec.h>
-
-#include <geec_prime.h>
-#include <geec_sentinel.h>
-#include <uapi_slabmempgtbl.h>
-#include <xc_init.h>
-
-///////////////////////////////////////////////////////////////
-// sanity check HIC (hardware) requirements
-void gp_s1_chkreq(void){
-	u32 cpu_vendor;
-
-	//grab CPU vendor
-	cpu_vendor = xmhf_baseplatform_arch_getcpuvendor();
-	if (cpu_vendor != CPU_VENDOR_INTEL){
-		_XDPRINTF_("%s: not an Intel CPU but running VMX backend. Halting!\n", __func__);
-		CASM_FUNCCALL(xmhfhw_cpu_hlt, CASM_NOPARAM);
-	}
-
-	//check VMX support
-	{
-		u32	cpu_features;
-		u32 res0,res1,res2;
-
-		CASM_FUNCCALL(xmhfhw_cpu_cpuid,0x1, &res0, &res1, &cpu_features, &res2);
-
-		if ( ( cpu_features & (1<<5) ) == 0 ){
-			_XDPRINTF_("No VMX support. Halting!\n");
-			CASM_FUNCCALL(xmhfhw_cpu_hlt, CASM_NOPARAM);
-		}
-	}
-
-	//we require unrestricted guest and EPT support, bail out if we don't have it
-	{
-		u64 msr_procctls2 = CASM_FUNCCALL(rdmsr64,IA32_VMX_PROCBASED_CTLS2_MSR);
-		if( !( (msr_procctls2 >> 32) & 0x80 ) ){
-			_XDPRINTF_("%s: need unrestricted guest support but did not find any!\n", __func__);
-			CASM_FUNCCALL(xmhfhw_cpu_hlt, CASM_NOPARAM);
-		}
-
-		if( !( (msr_procctls2 >> 32) & 0x2) ){
-			_XDPRINTF_("%s: need EPTt support but did not find any!\n", __func__);
-			CASM_FUNCCALL(xmhfhw_cpu_hlt, CASM_NOPARAM);
-		}
-	}
-
-
-	//initialize platform bus
-	if(!xmhfhw_platform_bus_init()){
-		_XDPRINTF_("%s: need PCI type-1 access but did not find any!\n", __func__);
-		CASM_FUNCCALL(xmhfhw_cpu_hlt, CASM_NOPARAM);
-	}
-
-}
-
-
+CASM_FUNCDEF(void, xmhfhw_cpu_hlt,
+{
+    xmhfhwm_cpu_insn_hlt();
+    xmhfhwm_cpu_insn_ret();
+},
+void *noparam)
 
