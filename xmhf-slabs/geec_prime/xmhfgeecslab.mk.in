@@ -27,7 +27,8 @@ export XMHF_SLAB_GLOBAL_SYMS :=
 verify: verifybase
 	@echo Proceeding to verify $(XMHF_SLAB_NAME)...
 	#cd $(XMHF_SLAB_VERIFICATION_DIR) && frama-c -val -no-val-show-progress -slevel 2048 -cpp-extra-args=-nostdinc $(VFLAGS) ../verify/gpvdrv_s1entry.c gp_data.c.v.c gp_s1_entry.cS.v.c xmhfgeec_slabinfotable.c xmhfgeec_slabmapdef.c libxmhfhw/*.v.c $(V_XMHFHWM_MODULES)
-	cd $(XMHF_SLAB_VERIFICATION_DIR) && frama-c -main _gp_s1_bspstack_getflagsforspa -lib-entry -wp -wp-rte -wp-model +cint+cast  -wp-prover alt-ergo,cvc3,z3 -cpp-extra-args=-nostdinc $(VFLAGS) gp_data.c.v.c gp_s1_bspstack.c.v.c
+	#cd $(XMHF_SLAB_VERIFICATION_DIR) && frama-c -main _gp_s1_bspstack_getflagsforspa -lib-entry -wp -wp-rte -wp-model +cint+cast  -wp-prover alt-ergo,cvc3,z3 -cpp-extra-args=-nostdinc $(VFLAGS) gp_data.c.v.c gp_s1_bspstack.c.v.c
+	cd $(XMHF_SLAB_VERIFICATION_DIR) && frama-c -main gp_s1_bspstack -lib-entry -wp -wp-rte -wp-model +cint+cast  -wp-prover alt-ergo,cvc3,z3 -cpp-extra-args=-nostdinc $(VFLAGS) gp_data.c.v.c gp_s1_bspstack.c.v.c
 
 
 
