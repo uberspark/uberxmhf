@@ -57,6 +57,9 @@
 u32 xmhfhwm_txt_heap_base_hi=0;
 u32 xmhfhwm_txt_heap_base_lo=0;
 
+u32 xmhfhwm_txt_heap_size_hi=0;
+u32 xmhfhwm_txt_heap_size_lo=0;
+
 bool _impl_xmhfhwm_txt_read(u32 sysmemaddr, sysmem_read_t readsize, u64 *read_result){
 	bool retval = true;
 
@@ -70,6 +73,18 @@ bool _impl_xmhfhwm_txt_read(u32 sysmemaddr, sysmem_read_t readsize, u64 *read_re
 		case (TXT_PUB_CONFIG_REGS_BASE+TXTCR_HEAP_BASE+0x4):{
 			//@assert (readsize == SYSMEMREADU32);
 			*read_result = (u64)xmhfhwm_txt_heap_base_hi;
+		}
+		break;
+
+		case (TXT_PUB_CONFIG_REGS_BASE+TXTCR_HEAP_SIZE):{
+			//@assert (readsize == SYSMEMREADU32);
+			*read_result = (u64)xmhfhwm_txt_heap_size_lo;
+		}
+		break;
+
+		case (TXT_PUB_CONFIG_REGS_BASE+TXTCR_HEAP_SIZE+0x4):{
+			//@assert (readsize == SYSMEMREADU32);
+			*read_result = (u64)xmhfhwm_txt_heap_size_hi;
 		}
 		break;
 
