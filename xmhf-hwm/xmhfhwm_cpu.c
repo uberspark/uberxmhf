@@ -981,6 +981,11 @@ static u64 _impl_xmhfhwm_cpu_sysmemread(u32 sysmemaddr, sysmem_read_t readsize){
         if(hwmdevstatus)
 		return read_result;
 
+	hwmdevstatus = _impl_xmhfhwm_txt_read(sysmemaddr, readsize, &read_result);
+        if(hwmdevstatus)
+		return read_result;
+
+
 	//@assert 0;
 	return read_result;
 }

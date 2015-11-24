@@ -3382,6 +3382,15 @@ extern void _impl_xmhfhwm_cpu_insn_addl_imm_eax(u32 value);
 
 
 
+
+
+
+
+
+
+
+
+
 #endif /* __XMHFHWM_CPU_H__ */
 
 
