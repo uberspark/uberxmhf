@@ -54,7 +54,18 @@
 #include <uapi_slabmempgtbl.h>
 #include <xc_init.h>
 
+/*@
+	behavior txttpm:
+		assumes (paddr == 0xfee00000 || paddr == 0xfec00000);
+		ensures (\result == (_PAGE_RW | _PAGE_PSE | _PAGE_PRESENT | _PAGE_PCD));
 
+	behavior other:
+		assumes !(paddr == 0xfee00000 || paddr == 0xfec00000);
+		ensures (\result == (_PAGE_RW | _PAGE_PSE | _PAGE_PRESENT));
+
+	complete behaviors;
+	disjoint behaviors;
+@*/
 static u64 _gp_s1_bspstack_getflagsforspa(u32 paddr){
 	if(paddr == 0xfee00000 || paddr == 0xfec00000)
                 return (_PAGE_RW | _PAGE_PSE | _PAGE_PRESENT | _PAGE_PCD);
