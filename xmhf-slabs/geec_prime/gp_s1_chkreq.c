@@ -79,7 +79,6 @@ void gp_s1_chkreq(void){
 		}
 	}
 
-#if 0
 	//we require unrestricted guest and EPT support, bail out if we don't have it
 	{
 		u64 msr_procctls2 = CASM_FUNCCALL(rdmsr64,IA32_VMX_PROCBASED_CTLS2_MSR);
@@ -94,6 +93,8 @@ void gp_s1_chkreq(void){
 		}
 	}
 
+
+#if 0
 
 	//initialize platform bus
 	if(!xmhfhw_platform_bus_init()){
