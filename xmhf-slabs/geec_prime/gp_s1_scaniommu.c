@@ -55,18 +55,13 @@
 #include <xc_init.h>
 
 
-//scan for available DRHD units on the platform and populate the
+//scan for IOMMU and halt if not present
 //global variables set:
 //vtd_drhd[] (struct representing a DRHD unit)
 //vtd_num_drhd (number of DRHD units detected)
 //vtd_dmar_table_physical_address (physical address of the DMAR table)
-//returns: true if all is fine else false; dmar_phys_addr_var contains
-//max. value of DRHD unit handle (0 through maxhandle-1 are valid handles
-//that can subsequently be passed to any of the other vtd drhd functions)
-//physical address of the DMAR table in the system
-//static bool xmhfhw_platform_x86pc_vtd_scanfor_drhd_units(vtd_drhd_handle_t *maxhandle, u32 *dmar_phys_addr_var){
-static bool xmhfhw_platform_x86pc_vtd_scanfor_drhd_units(void){
 
+void gp_s1_scaniommu(void){
 	ACPI_RSDP rsdp;
 	ACPI_RSDT rsdt;
 	u32 num_rsdtentries;
@@ -75,11 +70,6 @@ static bool xmhfhw_platform_x86pc_vtd_scanfor_drhd_units(void){
 	VTD_DMAR dmar;
 	u32 i, dmarfound;
 	u32 remappingstructuresaddrphys;
-	//u32 vtd_dmar_table_physical_address;
-
-	//zero out rsdp and rsdt structures
-	//memset(&rsdp, 0, sizeof(ACPI_RSDP));
-	//memset(&rsdt, 0, sizeof(ACPI_RSDT));
 
 	//set maxhandle to 0 to start with. if we have any errors before
 	//we finalize maxhandle we can just bail out
@@ -87,27 +77,28 @@ static bool xmhfhw_platform_x86pc_vtd_scanfor_drhd_units(void){
 
 	//get ACPI RSDP
 	status=xmhfhw_platform_x86pc_acpi_getRSDP(&rsdp);
-	if(status == 0)
-		return false;
-
-	//_XDPRINTF_("\n%s: RSDP at %08x", __func__, status);
+	if(status == 0){
+		_XDPRINTF_("%s:%u unable to get ACPI RSDP. Halting!\n", __func__, __LINE__);
+                CASM_FUNCCALL(xmhfhw_cpu_hlt, CASM_NOPARAM);
+	}
 
 	//grab ACPI RSDT
 	xmhfhw_sysmemaccess_copy((u8 *)&rsdt, (u8 *)rsdp.rsdtaddress, sizeof(ACPI_RSDT));
-	//_XDPRINTF_("\n%s: RSDT at %08x, len=%u bytes, hdrlen=%u bytes",
-	//	__func__, rsdp.rsdtaddress, rsdt.length, sizeof(ACPI_RSDT));
+	_XDPRINTF_("%s:%u RSDT at %08x, len=%u bytes, hdrlen=%u bytes\n",
+		__func__, __LINE__, rsdp.rsdtaddress, rsdt.length, sizeof(ACPI_RSDT));
 
 	//get the RSDT entry list
 	num_rsdtentries = (rsdt.length - sizeof(ACPI_RSDT))/ sizeof(u32);
 	if(num_rsdtentries >= ACPI_MAX_RSDT_ENTRIES){
-			//_XDPRINTF_("\n%s: Error num_rsdtentries(%u) > ACPI_MAX_RSDT_ENTRIES (%u)", __func__, num_rsdtentries, ACPI_MAX_RSDT_ENTRIES);
-			return false;
+		_XDPRINTF_("%s:%u num_rsdtentries(%u) > ACPI_MAX_RSDT_ENTRIES (%u). Halting!\n",
+			__func__, __LINE__, num_rsdtentries, ACPI_MAX_RSDT_ENTRIES);
+                CASM_FUNCCALL(xmhfhw_cpu_hlt, CASM_NOPARAM);
 	}
 
 	xmhfhw_sysmemaccess_copy((u8 *)&rsdtentries, (u8 *)(rsdp.rsdtaddress + sizeof(ACPI_RSDT)),
 			sizeof(u32)*num_rsdtentries);
-	//_XDPRINTF_("\n%s: RSDT entry list at %08x, len=%u", __func__,
-	//	(rsdp.rsdtaddress + sizeof(ACPI_RSDT)), num_rsdtentries);
+	_XDPRINTF_("%s:%u RSDT entry list at %08x, len=%u", __func__, __LINE__,
+		(rsdp.rsdtaddress + sizeof(ACPI_RSDT)), num_rsdtentries);
 
 	//find the VT-d DMAR table in the list (if any)
 	for(i=0; i< num_rsdtentries; i++){
@@ -120,18 +111,16 @@ static bool xmhfhw_platform_x86pc_vtd_scanfor_drhd_units(void){
 
 	//if no DMAR table, bail out
 	if(!dmarfound){
-		//_XDPRINTF_("\n%s: Error No DMAR table", __func__);
-		return false;
+		_XDPRINTF_("%s:%u Error No DMAR table. Halting!", __func__, __LINE__);
+                CASM_FUNCCALL(xmhfhw_cpu_hlt, CASM_NOPARAM);
 	}
 
 	vtd_dmar_table_physical_address = rsdtentries[i]; //DMAR table physical memory address;
-	//*dmar_phys_addr_var = vtd_dmar_table_physical_address; //store it in supplied argument
-	//_XDPRINTF_("\n%s: DMAR at %08x", __func__, vtd_dmar_table_physical_address);
+	_XDPRINTF_("%s:%u DMAR at %08x", __func__, __LINE__, vtd_dmar_table_physical_address);
 
 	//detect DRHDs in the DMAR table
 	i=0;
 	remappingstructuresaddrphys=vtd_dmar_table_physical_address+sizeof(VTD_DMAR);
-	//_XDPRINTF_("\n%s: remapping structures at %08x", __func__, remappingstructuresaddrphys);
 
 	while(i < (dmar.length-sizeof(VTD_DMAR))){
 		u16 type, length;
@@ -140,10 +129,10 @@ static bool xmhfhw_platform_x86pc_vtd_scanfor_drhd_units(void){
 
 		switch(type){
 			case  0:  //DRHD
-				//_XDPRINTF_("\nDRHD at %08x, len=%u bytes", (u32)(remappingstructuresaddrphys+i), length);
 				if(vtd_num_drhd >= VTD_MAX_DRHD){
-						//_XDPRINTF_("\n%s: Error vtd_num_drhd (%u) > VTD_MAX_DRHD (%u)", __func__, vtd_num_drhd, VTD_MAX_DRHD);
-						return false;
+					_XDPRINTF_("%s:%u vtd_num_drhd (%u) > VTD_MAX_DRHD (%u). Halting!", __func__,
+						__LINE__, vtd_num_drhd, VTD_MAX_DRHD);
+					CASM_FUNCCALL(xmhfhw_cpu_hlt, CASM_NOPARAM);
 				}
 				xmhfhw_sysmemaccess_copy((u8 *)&vtd_drhd[vtd_num_drhd], (u8 *)(remappingstructuresaddrphys+i), length);
 				vtd_num_drhd++;
@@ -155,23 +144,22 @@ static bool xmhfhw_platform_x86pc_vtd_scanfor_drhd_units(void){
 				break;
 		}
 	}
-    _XDPRINTF_("%s: total DRHDs detected= %u units\n", __func__, vtd_num_drhd);
+    _XDPRINTF_("%s:%u total DRHDs detected= %u units\n", __func__, __LINE__, vtd_num_drhd);
 
     //populate IVA and IOTLB register addresses within all the DRHD unit
     //structures
     for(i=0; i < vtd_num_drhd; i++){
         VTD_ECAP_REG ecap;
 
-        //ecap.value = _vtd_reg_read(&vtd_drhd[i], VTD_ECAP_REG_OFF);
         unpack_VTD_ECAP_REG(&ecap, _vtd_reg_read(&vtd_drhd[i], VTD_ECAP_REG_OFF));
         vtd_drhd[i].iotlb_regaddr= vtd_drhd[i].regbaseaddr+(ecap.iro*16)+0x8;
         vtd_drhd[i].iva_regaddr= vtd_drhd[i].regbaseaddr+(ecap.iro*16);
-	}
+    }
 
 
-
+#if defined (__DEBUG_SERIAL__)
 	//[DEBUG]: be a little verbose about what we found
-	//_XDPRINTF_("\n%s: DMAR Devices:", __func__);
+	_XDPRINTF_("%s: DMAR Devices:\n", __func__);
 	for(i=0; i < vtd_num_drhd; i++){
 		VTD_CAP_REG cap;
 		VTD_ECAP_REG ecap;
@@ -186,20 +174,10 @@ static bool xmhfhw_platform_x86pc_vtd_scanfor_drhd_units(void){
 					vtd_drhd[i].iotlb_regaddr, vtd_drhd[i].iva_regaddr);
 
 	}
+#endif // __DEBUG_SERIAL__
 
 	vtd_drhd_maxhandle = vtd_num_drhd;
 	vtd_drhd_scanned = true;
-
-	return true;
-}
-
-
-void gp_s1_scaniommu(void){
-	//scan for IOMMU and halt if not present
-	if(!xmhfhw_platform_x86pc_vtd_scanfor_drhd_units()){
-		_XDPRINTF_("%s: unable to scan for DRHD units. halting!\n", __func__);
-		HALT();
-	}
 
 	_XDPRINTF_("%s: Vt-d: maxhandle = %u, dmar table addr=0x%08x\n", __func__,
 		(u32)vtd_drhd_maxhandle, (u32)vtd_dmar_table_physical_address);
