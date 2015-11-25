@@ -57,13 +57,19 @@
 void gp_s1_postdrt(void){
 	txt_heap_t *txt_heap;
 	os_mle_data_t os_mle_data;
+	u32 txt_heap_size;
+	u32 os_mle_data_paddr;
 
 	txt_heap = get_txt_heap();
 	_XDPRINTF_("SL: txt_heap = 0x%08x\n", (u32)txt_heap);
 
+	txt_heap_size =  (uint32_t)read_pub_config_reg(TXTCR_HEAP_SIZE);
+	os_mle_data_paddr = get_os_mle_data_start((txt_heap_t*)((u32)txt_heap), txt_heap_size);
+
 #if 0
-	xmhfhw_sysmemaccess_copy(&os_mle_data, get_os_mle_data_start((txt_heap_t*)((u32)txt_heap), (uint32_t)read_pub_config_reg(TXTCR_HEAP_SIZE)),
-					sizeof(os_mle_data_t));
+	//xmhfhw_sysmemaccess_copy(&os_mle_data, get_os_mle_data_start((txt_heap_t*)((u32)txt_heap), (uint32_t)read_pub_config_reg(TXTCR_HEAP_SIZE)),
+	//				sizeof(os_mle_data_t));
+	xmhfhw_sysmemaccess_copy(&os_mle_data, os_mle_data_paddr, sizeof(os_mle_data_t));
 
 	_XDPRINTF_("SL: os_mle_data = 0x%08x\n", (u32)&os_mle_data);
 
