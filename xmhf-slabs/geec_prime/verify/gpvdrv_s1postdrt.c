@@ -101,10 +101,10 @@ void main(void){
 	xmhfhwm_cpu_gprs_eip = check_eip;
 	check_esp = xmhfhwm_cpu_gprs_esp; // pointing to top-of-stack
 
-	//@assert (xmhfhwm_txt_heap.biosdatasize == sizeof(bios_data_t));
-	//@assert (xmhfhwm_txt_heap.osmledatasize == PAGE_SIZE_4K);
-	//@assert (xmhfhwm_txt_heap.ossinitdatasize == sizeof(os_sinit_data_t));
-	//@assert (xmhfhwm_txt_heap.sinitmledatasize == sizeof(sinit_mle_data_t));
+	// //@assert (xmhfhwm_txt_heap.biosdatasize == sizeof(bios_data_t));
+	// //@assert (xmhfhwm_txt_heap.osmledatasize == PAGE_SIZE_4K);
+	// //@assert (xmhfhwm_txt_heap.ossinitdatasize == sizeof(os_sinit_data_t));
+	// //@assert (xmhfhwm_txt_heap.sinitmledatasize == sizeof(sinit_mle_data_t));
 
 	//execute harness
 	gp_s1_postdrt();
