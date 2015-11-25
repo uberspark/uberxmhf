@@ -70,6 +70,8 @@ extern xmhfhwm_txt_heap_t xmhfhwm_txt_heap;
 
 bool _impl_xmhfhwm_txt_read(u32 sysmemaddr, sysmem_read_t readsize, u64 *read_result);
 bool _impl_xmhfhwm_txt_write(u32 sysmemaddr, sysmem_write_t writesize, u64 write_value);
+bool _impl_xmhfhwm_txt_sysmemcopy(sysmem_copy_t sysmemcopy_type,
+				u32 dstaddr, u32 srcaddr, u32 size);
 
 
 #endif // __ASSEMBLY__
