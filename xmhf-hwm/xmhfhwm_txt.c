@@ -60,6 +60,13 @@ u32 xmhfhwm_txt_heap_base_lo=0;
 u32 xmhfhwm_txt_heap_size_hi=0;
 u32 xmhfhwm_txt_heap_size_lo=0;
 
+xmhfhwm_txt_heap_t xmhfhwm_txt_heap = {
+        .biosdatasize = sizeof(bios_data_t),
+	.osmledatasize = PAGE_SIZE_4K,
+	.ossinitdatasize = sizeof(os_sinit_data_t),
+        .sinitmledatasize = sizeof(sinit_mle_data_t),
+};
+
 bool _impl_xmhfhwm_txt_read(u32 sysmemaddr, sysmem_read_t readsize, u64 *read_result){
 	bool retval = true;
 
