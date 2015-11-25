@@ -1002,6 +1002,19 @@ static void _impl_xmhfhwm_cpu_sysmemwrite(u32 sysmemaddr, sysmem_write_t writesi
 	return;
 }
 
+static void _impl_xmhfhwm_cpu_sysmemcopy(sysmem_copy_t sysmemcopy_type,
+		u32 dstaddr, u32 srcaddr, u32 size){
+	bool hwmdevstatus=false;
+
+	hwmdevstatus = _impl_xmhfhwm_txt_sysmemcopy(sysmemcopy_type,
+			dstaddr, srcaddr, size);
+        if(hwmdevstatus)
+		return;
+
+	//@assert 0;
+	return;
+}
+
 
 /*
 // TODO: parts of the following eventually
@@ -1019,7 +1032,19 @@ static u32 _impl_xmhfhwm_gethwmaddrforsysmem(u32 sysmemaddr){
 
 
 void _impl_xmhfhwm_cpu_insn_rep_movsb_sysmem(sysmem_copy_t sysmemcopy_type){
-	//@assert 0;
+	if(xmhfhwm_cpu_eflags & EFLAGS_DF){
+		//reverse, TODO
+		//@assert 0;
+	}else{
+		//increment
+		_impl_xmhfhwm_cpu_sysmemcopy(sysmemcopy_type,
+					xmhfhwm_cpu_gprs_edi,
+					xmhfhwm_cpu_gprs_esi,
+					xmhfhwm_cpu_gprs_ecx);
+
+                xmhfhwm_cpu_gprs_edi += xmhfhwm_cpu_gprs_ecx;
+                xmhfhwm_cpu_gprs_esi += xmhfhwm_cpu_gprs_ecx;
+	}
 }
 
 

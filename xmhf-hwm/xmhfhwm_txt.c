@@ -95,3 +95,27 @@ bool _impl_xmhfhwm_txt_read(u32 sysmemaddr, sysmem_read_t readsize, u64 *read_re
 
 	return retval;
 }
+
+
+bool _impl_xmhfhwm_txt_sysmemcopy(sysmem_copy_t sysmemcopy_type,
+				u32 dstaddr, u32 srcaddr, u32 size){
+	bool retval = true;
+
+	if(sysmemcopy_type == SYSMEMCOPYSYS2OBJ){
+		//dstaddr = obj address space
+		//srcaddr = TXT address space
+		if(srcaddr >= XMHFHWM_TXT_SYSMEM_HEAPBASE &&
+			(srcaddr+size) < (XMHFHWM_TXT_SYSMEM_HEAPBASE+sizeof(xmhfhwm_txt_heap))){
+			//@assert \valid((unsigned char *)dstaddr + (0..(size-1)));
+			//TODO: implement copy
+		}else{
+			retval = false;
+		}
+
+	}else{
+		retval = false;
+	}
+
+	return retval;
+}
+
