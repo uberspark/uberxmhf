@@ -45,6 +45,7 @@
  */
 
 #include <xmhf.h>
+#include <xmhf-hwm.h>
 #include <xmhf-debug.h>
 
 #include <xmhfgeec.h>
@@ -65,7 +66,7 @@ void gp_s1_postdrt(void){
 
 	txt_heap_size =  (uint32_t)read_pub_config_reg(TXTCR_HEAP_SIZE);
 	os_mle_data_paddr = get_os_mle_data_start((txt_heap_t*)((u32)txt_heap), txt_heap_size);
-
+	//@assert (os_mle_data_paddr == (XMHFHWM_TXT_SYSMEM_HEAPBASE+0x8+sizeof(bios_data_t)+0x8));
 #if 0
 	//xmhfhw_sysmemaccess_copy(&os_mle_data, get_os_mle_data_start((txt_heap_t*)((u32)txt_heap), (uint32_t)read_pub_config_reg(TXTCR_HEAP_SIZE)),
 	//				sizeof(os_mle_data_t));

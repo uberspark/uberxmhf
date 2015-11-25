@@ -54,51 +54,42 @@
 #include <xmhf-hwm.h>
 
 
-u32 xmhfhwm_txt_heap_base_hi=0;
-u32 xmhfhwm_txt_heap_base_lo=0;
-
-u32 xmhfhwm_txt_heap_size_hi=0;
-u32 xmhfhwm_txt_heap_size_lo=0;
 
 xmhfhwm_txt_heap_t xmhfhwm_txt_heap = {
-        .biosdatasize = sizeof(bios_data_t),
-	.osmledatasize = PAGE_SIZE_4K,
-	.ossinitdatasize = sizeof(os_sinit_data_t),
-        .sinitmledatasize = sizeof(sinit_mle_data_t),
+        .biosdatasize = (sizeof(bios_data_t)+0x8),
+	.osmledatasize = (PAGE_SIZE_4K+0x8),
+	.ossinitdatasize = (sizeof(os_sinit_data_t)+0x8),
+        .sinitmledatasize = (sizeof(sinit_mle_data_t)+0x8),
 };
+
+u32 xmhfhwm_txt_heap_base_hi=0;
+u32 xmhfhwm_txt_heap_base_lo=XMHFHWM_TXT_SYSMEM_HEAPBASE;
+
+u32 xmhfhwm_txt_heap_size_hi=0;
+u32 xmhfhwm_txt_heap_size_lo=sizeof(xmhfhwm_txt_heap);
+
 
 bool _impl_xmhfhwm_txt_read(u32 sysmemaddr, sysmem_read_t readsize, u64 *read_result){
 	bool retval = true;
 
-	switch(sysmemaddr){
-		case (TXT_PUB_CONFIG_REGS_BASE+TXTCR_HEAP_BASE):{
-			//@assert (readsize == SYSMEMREADU32);
-			*read_result = (u64)xmhfhwm_txt_heap_base_lo;
-		}
-		break;
-
-		case (TXT_PUB_CONFIG_REGS_BASE+TXTCR_HEAP_BASE+0x4):{
-			//@assert (readsize == SYSMEMREADU32);
-			*read_result = (u64)xmhfhwm_txt_heap_base_hi;
-		}
-		break;
-
-		case (TXT_PUB_CONFIG_REGS_BASE+TXTCR_HEAP_SIZE):{
-			//@assert (readsize == SYSMEMREADU32);
-			*read_result = (u64)xmhfhwm_txt_heap_size_lo;
-		}
-		break;
-
-		case (TXT_PUB_CONFIG_REGS_BASE+TXTCR_HEAP_SIZE+0x4):{
-			//@assert (readsize == SYSMEMREADU32);
-			*read_result = (u64)xmhfhwm_txt_heap_size_hi;
-		}
-		break;
-
-
-		default:
-			retval= false;
-			break;
+	if(sysmemaddr == (TXT_PUB_CONFIG_REGS_BASE+TXTCR_HEAP_BASE)){
+		//@assert (readsize == SYSMEMREADU32);
+		*read_result = (u64)xmhfhwm_txt_heap_base_lo;
+	}else if(sysmemaddr == (TXT_PUB_CONFIG_REGS_BASE+TXTCR_HEAP_BASE+0x4)){
+		//@assert (readsize == SYSMEMREADU32);
+		*read_result = (u64)xmhfhwm_txt_heap_base_hi;
+	}else if(sysmemaddr == (TXT_PUB_CONFIG_REGS_BASE+TXTCR_HEAP_SIZE)){
+		//@assert (readsize == SYSMEMREADU32);
+		*read_result = (u64)xmhfhwm_txt_heap_size_lo;
+	}else if(sysmemaddr == (TXT_PUB_CONFIG_REGS_BASE+TXTCR_HEAP_SIZE+0x4)){
+		//@assert (readsize == SYSMEMREADU32);
+		*read_result = (u64)xmhfhwm_txt_heap_size_hi;
+	}else if(sysmemaddr >= XMHFHWM_TXT_SYSMEM_HEAPBASE &&
+		sysmemaddr < (XMHFHWM_TXT_SYSMEM_HEAPBASE+sizeof(xmhfhwm_txt_heap))){
+		//@assert (readsize == SYSMEMREADU32);
+                *read_result = (u64) *((u32 *)((u32)&xmhfhwm_txt_heap + (sysmemaddr - XMHFHWM_TXT_SYSMEM_HEAPBASE)));
+	}else{
+		retval= false;
 	}
 
 
