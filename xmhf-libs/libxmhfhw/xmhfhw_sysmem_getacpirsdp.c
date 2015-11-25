@@ -113,7 +113,7 @@ u32 xmhfhw_platform_x86pc_acpi_getRSDP(ACPI_RSDP *rsdp){
 	@*/
 
   for(i=0; i < (1024-8); i+=16){
-    xmhfhw_sysmemaccess_copy((u8 *)rsdp, (u8 *)(ebdaphys+i), sizeof(ACPI_RSDP));
+    xmhfhw_sysmem_copy_sys2obj((u8 *)rsdp, (u8 *)(ebdaphys+i), sizeof(ACPI_RSDP));
     if(rsdp->signature == ACPI_RSDP_SIGNATURE){
       if(!_acpi_computetablechecksum((char *)rsdp, 20)){
         found=1;
@@ -135,7 +135,7 @@ u32 xmhfhw_platform_x86pc_acpi_getRSDP(ACPI_RSDP *rsdp){
 		loop variant (0xFFFFF-8) - i;
 	@*/
   for(i=0xE0000; i < (0xFFFFF-8); i+=16){
-    xmhfhw_sysmemaccess_copy((u8 *)rsdp, (u8 *)i, sizeof(ACPI_RSDP));
+    xmhfhw_sysmem_copy_sys2obj((u8 *)rsdp, (u8 *)i, sizeof(ACPI_RSDP));
     if(rsdp->signature == ACPI_RSDP_SIGNATURE){
       if(!_acpi_computetablechecksum((char *)rsdp, 20)){
         found=1;
