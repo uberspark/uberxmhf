@@ -2503,6 +2503,7 @@ extern void _impl_xmhfhwm_cpu_insn_movl_meax_esi(int index);
 extern void _impl_xmhfhwm_cpu_insn_iretl(void);
 extern void  _impl_xmhfhwm_cpu_insn_movw_ds_ax(void);
 extern void _impl_xmhfhwm_cpu_insn_addl_imm_eax(u32 value);
+extern void _impl_xmhfhwm_cpu_insn_rep_movsb_sysmem(sysmem_copy_t sysmemcopy_type);
 
 
 //////
@@ -2676,6 +2677,10 @@ extern void _impl_xmhfhwm_cpu_insn_addl_imm_eax(u32 value);
 #define xmhfhwm_cpu_insn_rep_movsb() \
 	__builtin_annot("rep movsb"); \
 	_impl_xmhfhwm_cpu_insn_rep_movsb(); \
+
+#define xmhfhwm_cpu_insn_rep_movsb_sys2obj() \
+	__builtin_annot("rep movsb"); \
+	_impl_xmhfhwm_cpu_insn_rep_movsb_sysmem(SYSMEMCOPYSYS2OBJ); \
 
 
 #define _xmhfhwm_cpu_insn_movl_imm_eax(x) \

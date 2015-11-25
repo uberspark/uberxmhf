@@ -517,6 +517,13 @@ CASM_FUNCDECL(void xmhfhw_sysmemaccess_copy(u8 *dest, u8 *src, u32 size));
 /*@
   assigns \nothing;
 @*/
+CASM_FUNCDECL(void xmhfhw_sysmem_copy_sys2obj(u8 *objdst, u8 *syssrc, u32 size));
+
+
+
+/*@
+  assigns \nothing;
+@*/
 CASM_FUNCDECL(uint64_t read_config_reg(uint32_t config_regs_base, uint32_t reg));
 
 /*@

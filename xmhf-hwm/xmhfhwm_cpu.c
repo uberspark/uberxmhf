@@ -1017,6 +1017,12 @@ static u32 _impl_xmhfhwm_gethwmaddrforsysmem(u32 sysmemaddr){
 		return 0;
 }*/
 
+
+void _impl_xmhfhwm_cpu_insn_rep_movsb_sysmem(sysmem_copy_t sysmemcopy_type){
+	//@assert 0;
+}
+
+
 void _impl_xmhfhwm_cpu_insn_movl_mesi_eax(int index){
 	//u32 *value_mesi;
 	//value_mesi = (u32 *)_impl_xmhfhwm_gethwmaddrforsysmem(((u32)((int)xmhfhwm_cpu_gprs_esi + (int)index)));
