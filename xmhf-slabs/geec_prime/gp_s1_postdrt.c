@@ -61,6 +61,8 @@ void gp_s1_postdrt(void){
 	u32 txt_heap_size;
 	u32 os_mle_data_paddr;
 
+	os_mle_data.saved_mtrr_state.num_var_mtrrs=0;
+
 	txt_heap = get_txt_heap();
 	_XDPRINTF_("SL: txt_heap = 0x%08x\n", (u32)txt_heap);
 
@@ -76,11 +78,9 @@ void gp_s1_postdrt(void){
 	_XDPRINTF_("SL: os_mle_data = 0x%08x, size=%u bytes\n", (u32)&os_mle_data,
 			sizeof(os_mle_data));
 
-#if 1
-
 	if(os_mle_data.saved_mtrr_state.num_var_mtrrs < MAX_VARIABLE_MTRRS){
 		// restore pre-SENTER MTRRs that were overwritten for SINIT launch
-		if(!validate_mtrrs(&(os_mle_data.saved_mtrr_state))) {
+		if(!validate_mtrrs(&os_mle_data.saved_mtrr_state)) {
 			_XDPRINTF_("SECURITY FAILURE: validate_mtrrs() failed.\n");
 			CASM_FUNCCALL(xmhfhw_cpu_hlt, CASM_NOPARAM);
 		}
@@ -98,5 +98,4 @@ void gp_s1_postdrt(void){
 	}
 
 
-#endif
 }

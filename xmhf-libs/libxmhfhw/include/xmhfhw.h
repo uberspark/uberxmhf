@@ -218,7 +218,7 @@ bool set_mem_type(u32 base, uint32_t size, uint32_t mem_type);
 	requires 0 <= saved_state->num_var_mtrrs < MAX_VARIABLE_MTRRS;
 	assigns \nothing;
 @*/
-bool validate_mtrrs(const mtrr_state_t *saved_state);
+bool validate_mtrrs(mtrr_state_t *saved_state);
 
 
 
