@@ -76,18 +76,27 @@ void gp_s1_postdrt(void){
 	_XDPRINTF_("SL: os_mle_data = 0x%08x, size=%u bytes\n", (u32)&os_mle_data,
 			sizeof(os_mle_data));
 
-#if 0
+#if 1
 
-	// restore pre-SENTER MTRRs that were overwritten for SINIT launch
-	if(!validate_mtrrs(&(os_mle_data.saved_mtrr_state))) {
-		_XDPRINTF_("SECURITY FAILURE: validate_mtrrs() failed.\n");
-		HALT();
+	if(os_mle_data.saved_mtrr_state.num_var_mtrrs < MAX_VARIABLE_MTRRS){
+		// restore pre-SENTER MTRRs that were overwritten for SINIT launch
+		if(!validate_mtrrs(&(os_mle_data.saved_mtrr_state))) {
+			_XDPRINTF_("SECURITY FAILURE: validate_mtrrs() failed.\n");
+			CASM_FUNCCALL(xmhfhw_cpu_hlt, CASM_NOPARAM);
+		}
+
+		_XDPRINTF_("SL: Validated MTRRs\n");
+
+		xmhfhw_cpu_x86_restore_mtrrs(&(os_mle_data.saved_mtrr_state));
+
+		_XDPRINTF_("SL: Restored MTRRs\n");
+
+	}else{
+		_XDPRINTF_("%s:%u num_var_mtrrs >= MAX_VARIABLE_MTRRS\n",
+			__func__, __LINE__);
+		CASM_FUNCCALL(xmhfhw_cpu_hlt, CASM_NOPARAM);
 	}
 
-	_XDPRINTF_("SL: Validated MTRRs\n");
 
-	xmhfhw_cpu_x86_restore_mtrrs(&(os_mle_data.saved_mtrr_state));
-
-	_XDPRINTF_("SL: Restored MTRRs\n");
 #endif
 }
