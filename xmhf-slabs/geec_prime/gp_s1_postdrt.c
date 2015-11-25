@@ -71,7 +71,8 @@ void gp_s1_postdrt(void){
 	//				sizeof(os_mle_data_t));
 	xmhfhw_sysmemaccess_copy(&os_mle_data, os_mle_data_paddr, sizeof(os_mle_data_t));
 
-	_XDPRINTF_("SL: os_mle_data = 0x%08x\n", (u32)&os_mle_data);
+	_XDPRINTF_("SL: os_mle_data = 0x%08x, size=%u bytes\n", (u32)&os_mle_data,
+			sizeof(os_mle_data));
 
 	// restore pre-SENTER MTRRs that were overwritten for SINIT launch
 	if(!validate_mtrrs(&(os_mle_data.saved_mtrr_state))) {

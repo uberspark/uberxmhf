@@ -53,7 +53,18 @@
 
 #ifndef __ASSEMBLY__
 
+typedef struct {
+	u64 biosdatasize;
+        bios_data_t biosdata;
+	u64 osmledatasize;
+	u8 osmledata[PAGE_SIZE_4K];
+	u64 ossinitdatasize;
+        os_sinit_data_t ossinitdata;
+	u64 sinitmledatasize;
+        sinit_mle_data_t sinitmledata;
+} __attribute__((packed)) xmhfhwm_txt_heap_t;
 
+extern xmhfhwm_txt_heap_t xmhfhwm_txt_heap;
 
 bool _impl_xmhfhwm_txt_read(u32 sysmemaddr, sysmem_read_t readsize, u64 *read_result);
 bool _impl_xmhfhwm_txt_write(u32 sysmemaddr, sysmem_write_t writesize, u64 write_value);
