@@ -78,6 +78,11 @@
 		SYSMEMWRITEU64
 	} sysmem_write_t;
 
+	typedef enum {
+		SYSMEMCOPYSYS2OBJ,
+	} sysmem_copy_t;
+
+
 
 #endif // __ASSEMBLY__
 

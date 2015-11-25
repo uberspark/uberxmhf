@@ -44,50 +44,38 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
+//functions to read/write memory from "system physical address"
+//all reads and writes to non-framework memory areas (e.g., BIOS
+//data areas, MMIO, rich guest memory etc.) should finally end up
+//here
+
+//author: amit vasudevan (amitvasudevan@acm.org)
+
 #include <xmhf.h>
 #include <xmhf-hwm.h>
+#include <xmhfhw.h>
 #include <xmhf-debug.h>
 
-#include <xmhfgeec.h>
 
-#include <geec_prime.h>
-#include <geec_sentinel.h>
-#include <uapi_slabmempgtbl.h>
-#include <xc_init.h>
 
-void gp_s1_postdrt(void){
-	txt_heap_t *txt_heap;
-	os_mle_data_t os_mle_data;
-	u32 txt_heap_size;
-	u32 os_mle_data_paddr;
+CASM_FUNCDEF(void, xmhfhw_sysmem_copy_sys2obj,
+{
+	xmhfhwm_cpu_insn_pushl_esi();	//save esi
+	xmhfhwm_cpu_insn_pushl_edi();	//save edi
 
-	txt_heap = get_txt_heap();
-	_XDPRINTF_("SL: txt_heap = 0x%08x\n", (u32)txt_heap);
+	xmhfhwm_cpu_insn_movl_mesp_edi(0xC); //edi = dest
+	xmhfhwm_cpu_insn_movl_mesp_esi(0x10); //esi = src
+        xmhfhwm_cpu_insn_movl_mesp_ecx(0x14); //ecx = size
+        xmhfhwm_cpu_insn_cld(); //clear direction flag, copy forward
+        xmhfhwm_cpu_insn_rep_movsb_sys2obj(); //copy
 
-	txt_heap_size =  (uint32_t)read_pub_config_reg(TXTCR_HEAP_SIZE);
-	os_mle_data_paddr = get_os_mle_data_start((txt_heap_t*)((u32)txt_heap), txt_heap_size);
-	//@assert (os_mle_data_paddr == (XMHFHWM_TXT_SYSMEM_HEAPBASE+0x8+sizeof(bios_data_t)+0x8));
+	xmhfhwm_cpu_insn_popl_edi();	//restore edi
+	xmhfhwm_cpu_insn_popl_esi();	//restore esi
+	xmhfhwm_cpu_insn_ret();		//return
+},
+u8 *objdst,
+u8 *syssrc,
+u32 size)
 
-	//xmhfhw_sysmemaccess_copy(&os_mle_data, get_os_mle_data_start((txt_heap_t*)((u32)txt_heap), (uint32_t)read_pub_config_reg(TXTCR_HEAP_SIZE)),
-	//				sizeof(os_mle_data_t));
-	CASM_FUNCCALL(xmhfhw_sysmem_copy_sys2obj, (u32)&os_mle_data,
-		os_mle_data_paddr, sizeof(os_mle_data_t));
 
-	_XDPRINTF_("SL: os_mle_data = 0x%08x, size=%u bytes\n", (u32)&os_mle_data,
-			sizeof(os_mle_data));
 
-#if 0
-
-	// restore pre-SENTER MTRRs that were overwritten for SINIT launch
-	if(!validate_mtrrs(&(os_mle_data.saved_mtrr_state))) {
-		_XDPRINTF_("SECURITY FAILURE: validate_mtrrs() failed.\n");
-		HALT();
-	}
-
-	_XDPRINTF_("SL: Validated MTRRs\n");
-
-	xmhfhw_cpu_x86_restore_mtrrs(&(os_mle_data.saved_mtrr_state));
-
-	_XDPRINTF_("SL: Restored MTRRs\n");
-#endif
-}
