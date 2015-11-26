@@ -68,7 +68,7 @@
 #define ACPI_GAS_ACCESS_QWORD			0x4
 
 //maximum number of RSDT entries we support
-#define	ACPI_MAX_RSDT_ENTRIES		(256)
+#define	ACPI_MAX_RSDT_ENTRIES		(64)
 
 
 #define XMHFHWM_BIOS_BDA_BASE			0x400
@@ -133,6 +133,23 @@ typedef struct {
 	u32 creatorid;
 	u32 creatorrevision;
 } __attribute__ ((packed)) ACPI_RSDT;
+
+
+//ACPI RSDT structure for hwm
+typedef struct {
+	u32 signature;
+	u32 length;
+	u8 revision;
+	u8 checksum;
+	u8 oemid[6];
+	u64 oemtableid;
+	u32 oemrevision;
+	u32 creatorid;
+	u32 creatorrevision;
+	u32 entries[ACPI_MAX_RSDT_ENTRIES];
+} __attribute__ ((packed)) ACPI_RSDT_HWM;
+
+
 
 
 //ACPI MADT structure
