@@ -54,13 +54,24 @@
 #include <xmhf-hwm.h>
 
 u16 xmhfhwm_bios_ebdaseg = (XMHFHWM_BIOS_EBDA_BASE >> 4);
+ACPI_RSDP xmhfhwm_bios_acpi_rsdp = {
+	0x2052545020445352ULL,
+	0x10,
+	{0x44, 0x45, 0x4c, 0x4c, 0x20, 0x20},
+	0x02,
+	0xd87ef028UL,
+        0x24,
+        0x00000000d87ef028ULL,
+	0x6,
+	{0x44, 0x45, 0x4c},
+};
 
 
 bool _impl_xmhfhwm_bios_read(u32 sysmemaddr, sysmem_read_t readsize, u64 *read_result){
 	bool retval = true;
 
 	if(sysmemaddr == (XMHFHWM_BIOS_BDA_BASE+0xE)){
-		//@assert (readsize == SYSMEMREADU16);
+		//@assert (readsize == SYSMEMREADU32);
 		*read_result = (u64)xmhfhwm_bios_ebdaseg;
 	}else{
 		retval= false;
@@ -77,7 +88,37 @@ bool _impl_xmhfhwm_bios_sysmemcopy(sysmem_copy_t sysmemcopy_type,
 	if(sysmemcopy_type == SYSMEMCOPYSYS2OBJ){
 		//dstaddr = obj address space
 		//srcaddr = BIOS address space
-		retval = false;
+		if(srcaddr >= XMHFHWM_BIOS_EBDA_BASE &&
+			(srcaddr + size) < (XMHFHWM_BIOS_EBDA_BASE+XMHFHWM_BIOS_EBDA_SIZE)){
+			//@assert \valid((unsigned char *)dstaddr + (0..(size-1)));
+
+		}else if(srcaddr >= XMHFHWM_BIOS_ROMBASE &&
+			(srcaddr + size) < (XMHFHWM_BIOS_ROMBASE+XMHFHWM_BIOS_ROMSIZE)){
+			//@assert \valid((unsigned char *)dstaddr + (0..(size-1)));
+			if(srcaddr == XMHFHWM_BIOS_ACPIRSDPBASE){
+				ACPI_RSDP *rsdp = (ACPI_RSDP *)dstaddr;
+                                rsdp->signature = xmhfhwm_bios_acpi_rsdp.signature;
+				rsdp->checksum = xmhfhwm_bios_acpi_rsdp.checksum;
+				rsdp->oemid[0] = xmhfhwm_bios_acpi_rsdp.oemid[0];
+				rsdp->oemid[1] = xmhfhwm_bios_acpi_rsdp.oemid[1];
+				rsdp->oemid[2] = xmhfhwm_bios_acpi_rsdp.oemid[2];
+				rsdp->oemid[3] = xmhfhwm_bios_acpi_rsdp.oemid[3];
+				rsdp->oemid[4] = xmhfhwm_bios_acpi_rsdp.oemid[4];
+				rsdp->oemid[5] = xmhfhwm_bios_acpi_rsdp.oemid[5];
+				rsdp->revision = xmhfhwm_bios_acpi_rsdp.revision;
+				rsdp->rsdtaddress = xmhfhwm_bios_acpi_rsdp.rsdtaddress;
+				rsdp->length = xmhfhwm_bios_acpi_rsdp.length;
+				rsdp->xsdtaddress = xmhfhwm_bios_acpi_rsdp.xsdtaddress;
+				rsdp->xchecksum = xmhfhwm_bios_acpi_rsdp.xchecksum;
+                                rsdp->rsvd0[0] = xmhfhwm_bios_acpi_rsdp.rsvd0[0];
+                                rsdp->rsvd0[1] = xmhfhwm_bios_acpi_rsdp.rsvd0[1];
+                                rsdp->rsvd0[2] = xmhfhwm_bios_acpi_rsdp.rsvd0[2];
+			}
+
+
+		}else{
+			retval = false;
+		}
 
 	}else{
 		retval = false;

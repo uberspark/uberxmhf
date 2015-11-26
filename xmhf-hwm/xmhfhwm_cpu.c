@@ -1014,6 +1014,12 @@ static void _impl_xmhfhwm_cpu_sysmemcopy(sysmem_copy_t sysmemcopy_type,
         if(hwmdevstatus)
 		return;
 
+	hwmdevstatus = _impl_xmhfhwm_bios_sysmemcopy(sysmemcopy_type,
+			dstaddr, srcaddr, size);
+        if(hwmdevstatus)
+		return;
+
+
 	//@assert 0;
 	return;
 }
