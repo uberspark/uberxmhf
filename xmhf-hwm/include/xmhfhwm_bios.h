@@ -67,6 +67,9 @@
 #define ACPI_GAS_ACCESS_DWORD			0x3
 #define ACPI_GAS_ACCESS_QWORD			0x4
 
+//maximum number of RSDT entries we support
+#define	ACPI_MAX_RSDT_ENTRIES		(256)
+
 
 #define XMHFHWM_BIOS_BDA_BASE			0x400
 #define XMHFHWM_BIOS_BDA_SIZE			256
