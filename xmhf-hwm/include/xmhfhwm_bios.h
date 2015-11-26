@@ -71,6 +71,8 @@
 #define XMHFHWM_BIOS_BDA_BASE			0x400
 #define XMHFHWM_BIOS_BDA_SIZE			256
 
+#define XMHFHWM_BIOS_EBDA_BASE			0x9ec00
+#define XMHFHWM_BIOS_EBDA_SIZE			1024
 
 #ifndef __ASSEMBLY__
 
@@ -266,7 +268,7 @@ typedef struct {
 } __attribute__ ((packed)) MPENTRYCPU;
 
 
-
+bool _impl_xmhfhwm_bios_read(u32 sysmemaddr, sysmem_read_t readsize, u64 *read_result);
 bool _impl_xmhfhwm_bios_sysmemcopy(sysmem_copy_t sysmemcopy_type,
 				u32 dstaddr, u32 srcaddr, u32 size);
 
