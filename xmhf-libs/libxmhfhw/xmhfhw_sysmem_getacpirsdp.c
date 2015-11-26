@@ -99,11 +99,12 @@ u32 xmhfhw_platform_x86pc_acpi_getRSDP(ACPI_RSDP *rsdp){
 
   //get EBDA segment from 040E:0000h in BIOS data area
   //xmhfhw_sysmemaccess_copy((u8 *)&ebdaseg, (u8 *)0x0000040E, sizeof(u16));
-  ebdaseg = xmhfhw_sysmemaccess_readu16(0x0000040EUL);
+  ebdaseg = CASM_FUNCCALL(xmhfhw_sysmemaccess_readu16, 0x0000040EUL);
 
   //convert it to its 32-bit physical address
   ebdaphys=(u32)(ebdaseg * 16);
-
+  _XDPRINTF_("%s:%u ebdaseg=%x, ebdaphys=%x\n", __func__, __LINE__,
+	(u32)ebdaseg, ebdaphys);
 
   //search first 1KB of ebda for rsdp signature (8 bytes long)
 	/*@
@@ -113,7 +114,7 @@ u32 xmhfhw_platform_x86pc_acpi_getRSDP(ACPI_RSDP *rsdp){
 	@*/
 
   for(i=0; i < (1024-8); i+=16){
-    xmhfhw_sysmem_copy_sys2obj((u8 *)rsdp, (u8 *)(ebdaphys+i), sizeof(ACPI_RSDP));
+    CASM_FUNCCALL(xmhfhw_sysmem_copy_sys2obj, (u8 *)rsdp, (u8 *)(ebdaphys+i), sizeof(ACPI_RSDP));
     if(rsdp->signature == ACPI_RSDP_SIGNATURE){
       if(!_acpi_computetablechecksum((char *)rsdp, 20)){
         found=1;
@@ -135,7 +136,7 @@ u32 xmhfhw_platform_x86pc_acpi_getRSDP(ACPI_RSDP *rsdp){
 		loop variant (0xFFFFF-8) - i;
 	@*/
   for(i=0xE0000; i < (0xFFFFF-8); i+=16){
-    xmhfhw_sysmem_copy_sys2obj((u8 *)rsdp, (u8 *)i, sizeof(ACPI_RSDP));
+    CASM_FUNCCALL(xmhfhw_sysmem_copy_sys2obj, (u8 *)rsdp, (u8 *)i, sizeof(ACPI_RSDP));
     if(rsdp->signature == ACPI_RSDP_SIGNATURE){
       if(!_acpi_computetablechecksum((char *)rsdp, 20)){
         found=1;

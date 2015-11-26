@@ -67,6 +67,11 @@
 #define ACPI_GAS_ACCESS_DWORD			0x3
 #define ACPI_GAS_ACCESS_QWORD			0x4
 
+
+#define XMHFHWM_BIOS_BDA_BASE			0x400
+#define XMHFHWM_BIOS_BDA_SIZE			256
+
+
 #ifndef __ASSEMBLY__
 
 //ACPI GAS, Generic Address Structure
@@ -259,6 +264,11 @@ typedef struct {
   u32 res0;
   u32 res1;
 } __attribute__ ((packed)) MPENTRYCPU;
+
+
+
+bool _impl_xmhfhwm_bios_sysmemcopy(sysmem_copy_t sysmemcopy_type,
+				u32 dstaddr, u32 srcaddr, u32 size);
 
 
 
