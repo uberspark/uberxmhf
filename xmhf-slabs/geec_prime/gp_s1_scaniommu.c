@@ -99,11 +99,27 @@ void gp_s1_scaniommu(void){
 #endif //__DEBUG_SERIAL__
 
 	//@assert (rsdp.rsdtaddress == 0xd87ef028UL);
-#if 0
+#if 1
 	//grab ACPI RSDT
 	CASM_FUNCCALL(xmhfhw_sysmem_copy_sys2obj, (u8 *)&rsdt, (u8 *)rsdp.rsdtaddress, sizeof(ACPI_RSDT));
 	_XDPRINTF_("%s:%u RSDT at %08x, len=%u bytes, hdrlen=%u bytes\n",
 		__func__, __LINE__, rsdp.rsdtaddress, rsdt.length, sizeof(ACPI_RSDT));
+
+
+	#if defined (__DEBUG_SERIAL__)
+	_XDPRINTF_("rsdt.signature=%016llx\n", rsdt.signature);
+	_XDPRINTF_("rsdt.length=%08x\n", rsdt.length);
+	_XDPRINTF_("rsdt.revision=%02x\n", rsdt.revision);
+	_XDPRINTF_("rsdt.checksum=%02x\n", rsdt.checksum);
+	_XDPRINTF_("rsdt.oemid=%02x %02x %02x %02x %02x %02x\n",
+		rsdt.oemid[0], rsdt.oemid[1], rsdt.oemid[2],
+		rsdt.oemid[3], rsdt.oemid[4], rsdt.oemid[5]);
+	_XDPRINTF_("rsdt.oemtableid=%016llx\n", rsdt.oemtableid);
+	_XDPRINTF_("rsdt.oemrevision=%08x\n", rsdt.oemrevision);
+	_XDPRINTF_("rsdt.creatorid=%08x\n", rsdt.creatorid);
+	_XDPRINTF_("rsdt.creatorrevision=%08x\n", rsdt.creatorrevision);
+	#endif //__DEBUG_SERIAL__
+
 
 	//get the RSDT entry list
 	num_rsdtentries = (rsdt.length - sizeof(ACPI_RSDT))/ sizeof(u32);
@@ -113,16 +129,38 @@ void gp_s1_scaniommu(void){
                 CASM_FUNCCALL(xmhfhw_cpu_hlt, CASM_NOPARAM);
 	}
 
-	CASM_FUNCCALL(xmhfhw_sysmem_copy_sys2obj, (u8 *)&rsdtentries, (u8 *)(rsdp.rsdtaddress + sizeof(ACPI_RSDT)),
-			sizeof(u32)*num_rsdtentries);
 	_XDPRINTF_("%s:%u RSDT entry list at %08x, len=%u", __func__, __LINE__,
 		(rsdp.rsdtaddress + sizeof(ACPI_RSDT)), num_rsdtentries);
+
+	CASM_FUNCCALL(xmhfhw_sysmem_copy_sys2obj, (u8 *)&rsdtentries, (u8 *)(rsdp.rsdtaddress + sizeof(ACPI_RSDT)),
+			sizeof(u32)*num_rsdtentries);
 
 	//find the VT-d DMAR table in the list (if any)
 	for(i=0; i< num_rsdtentries; i++){
 		CASM_FUNCCALL(xmhfhw_sysmem_copy_sys2obj, (u8 *)&dmar, (u8 *)rsdtentries[i], sizeof(VTD_DMAR));
 		if(dmar.signature == VTD_DMAR_SIGNATURE){
 		  dmarfound=1;
+			#if defined (__DEBUG_SERIAL__)
+			_XDPRINTF_("dmar.signature=%016llx\n", dmar.signature);
+			_XDPRINTF_("dmar.length=%08x\n", dmar.length);
+			_XDPRINTF_("dmar.revision=%02x\n", dmar.revision);
+			_XDPRINTF_("dmar.checksum=%02x\n", dmar.checksum);
+			_XDPRINTF_("dmar.oemid=%02x %02x %02x %02x %02x %02x\n",
+				dmar.oemid[0], dmar.oemid[1], dmar.oemid[2],
+				dmar.oemid[3], dmar.oemid[4], dmar.oemid[5]);
+			_XDPRINTF_("dmar.oemtableid=%016llx\n", dmar.oemtableid);
+			_XDPRINTF_("dmar.oemrevision=%08x\n", dmar.oemrevision);
+			_XDPRINTF_("dmar.creatorid=%08x\n", dmar.creatorid);
+			_XDPRINTF_("dmar.creatorrevision=%08x\n", dmar.creatorrevision);
+			_XDPRINTF_("dmar.hostaddresswidth=%02x\n", dmar.hostaddresswidth);
+			_XDPRINTF_("dmar.flags=%02x\n", dmar.flags);
+			_XDPRINTF_("dmar.rsvd0=%02x %02x %02x %02x %02x %02x %02x %02x %02x %02x\n",
+				dmar.oemid[0], dmar.oemid[1], dmar.oemid[2],
+				dmar.oemid[3], dmar.oemid[4], dmar.oemid[5],
+				dmar.oemid[6], dmar.oemid[7], dmar.oemid[8],
+				dmar.oemid[9]);
+			#endif //__DEBUG_SERIAL__
+
 		  break;
 		}
 	}
@@ -181,6 +219,8 @@ void gp_s1_scaniommu(void){
 	for(i=0; i < vtd_num_drhd; i++){
 		VTD_CAP_REG cap;
 		VTD_ECAP_REG ecap;
+		_XDPRINTF_("	Device %u type=%04x, length=%04x, flags=%02x, rsvdz0=%02x\n", i,
+					vtd_drhd[i].type, vtd_drhd[i].length, vtd_drhd[i].flags, vtd_drhd[i].rsvdz0);
 		_XDPRINTF_("	Device %u on PCI seg %04x; base=0x%016llx\n", i,
 					vtd_drhd[i].pcisegment, vtd_drhd[i].regbaseaddr);
 		unpack_VTD_CAP_REG(&cap, _vtd_reg_read(&vtd_drhd[i], VTD_CAP_REG_OFF));
