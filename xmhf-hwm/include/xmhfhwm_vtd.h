@@ -606,8 +606,6 @@ typedef struct {
 
 
 
-//maximum number of RSDT entries we support
-#define	ACPI_MAX_RSDT_ENTRIES		(256)
 
 
 #endif //__ASSEMBLY__
