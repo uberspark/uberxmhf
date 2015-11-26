@@ -62,7 +62,7 @@
 //vtd_dmar_table_physical_address (physical address of the DMAR table)
 
 void gp_s1_scaniommu(void){
-	ACPI_RSDP rsdp;
+	ACPI_RSDP rsdp = {0};
 	ACPI_RSDT rsdt;
 	u32 num_rsdtentries;
 	u32 rsdtentries[ACPI_MAX_RSDT_ENTRIES];
@@ -83,7 +83,7 @@ void gp_s1_scaniommu(void){
 	}
 
 	//grab ACPI RSDT
-	xmhfhw_sysmem_copy_sys2obj((u8 *)&rsdt, (u8 *)rsdp.rsdtaddress, sizeof(ACPI_RSDT));
+	CASM_FUNCCALL(xmhfhw_sysmem_copy_sys2obj, (u8 *)&rsdt, (u8 *)rsdp.rsdtaddress, sizeof(ACPI_RSDT));
 	_XDPRINTF_("%s:%u RSDT at %08x, len=%u bytes, hdrlen=%u bytes\n",
 		__func__, __LINE__, rsdp.rsdtaddress, rsdt.length, sizeof(ACPI_RSDT));
 
@@ -95,14 +95,14 @@ void gp_s1_scaniommu(void){
                 CASM_FUNCCALL(xmhfhw_cpu_hlt, CASM_NOPARAM);
 	}
 
-	xmhfhw_sysmem_copy_sys2obj((u8 *)&rsdtentries, (u8 *)(rsdp.rsdtaddress + sizeof(ACPI_RSDT)),
+	CASM_FUNCCALL(xmhfhw_sysmem_copy_sys2obj, (u8 *)&rsdtentries, (u8 *)(rsdp.rsdtaddress + sizeof(ACPI_RSDT)),
 			sizeof(u32)*num_rsdtentries);
 	_XDPRINTF_("%s:%u RSDT entry list at %08x, len=%u", __func__, __LINE__,
 		(rsdp.rsdtaddress + sizeof(ACPI_RSDT)), num_rsdtentries);
 
 	//find the VT-d DMAR table in the list (if any)
 	for(i=0; i< num_rsdtentries; i++){
-		xmhfhw_sysmem_copy_sys2obj((u8 *)&dmar, (u8 *)rsdtentries[i], sizeof(VTD_DMAR));
+		CASM_FUNCCALL(xmhfhw_sysmem_copy_sys2obj, (u8 *)&dmar, (u8 *)rsdtentries[i], sizeof(VTD_DMAR));
 		if(dmar.signature == VTD_DMAR_SIGNATURE){
 		  dmarfound=1;
 		  break;
@@ -124,8 +124,8 @@ void gp_s1_scaniommu(void){
 
 	while(i < (dmar.length-sizeof(VTD_DMAR))){
 		u16 type, length;
-		xmhfhw_sysmem_copy_sys2obj((u8 *)&type, (u8 *)(remappingstructuresaddrphys+i), sizeof(u16));
-		xmhfhw_sysmem_copy_sys2obj((u8 *)&length, (u8 *)(remappingstructuresaddrphys+i+sizeof(u16)), sizeof(u16));
+		CASM_FUNCCALL(xmhfhw_sysmem_copy_sys2obj,(u8 *)&type, (u8 *)(remappingstructuresaddrphys+i), sizeof(u16));
+		CASM_FUNCCALL(xmhfhw_sysmem_copy_sys2obj,(u8 *)&length, (u8 *)(remappingstructuresaddrphys+i+sizeof(u16)), sizeof(u16));
 
 		switch(type){
 			case  0:  //DRHD
@@ -134,7 +134,7 @@ void gp_s1_scaniommu(void){
 						__LINE__, vtd_num_drhd, VTD_MAX_DRHD);
 					CASM_FUNCCALL(xmhfhw_cpu_hlt, CASM_NOPARAM);
 				}
-				xmhfhw_sysmem_copy_sys2obj((u8 *)&vtd_drhd[vtd_num_drhd], (u8 *)(remappingstructuresaddrphys+i), length);
+				CASM_FUNCCALL(xmhfhw_sysmem_copy_sys2obj, (u8 *)&vtd_drhd[vtd_num_drhd], (u8 *)(remappingstructuresaddrphys+i), length);
 				vtd_num_drhd++;
 				i+=(u32)length;
 				break;
