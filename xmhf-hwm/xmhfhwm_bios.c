@@ -53,6 +53,21 @@
 #include <xmhf.h>
 #include <xmhf-hwm.h>
 
+u16 xmhfhwm_bios_ebdaseg = (XMHFHWM_BIOS_EBDA_BASE >> 4);
+
+
+bool _impl_xmhfhwm_bios_read(u32 sysmemaddr, sysmem_read_t readsize, u64 *read_result){
+	bool retval = true;
+
+	if(sysmemaddr == (XMHFHWM_BIOS_BDA_BASE+0xE)){
+		//@assert (readsize == SYSMEMREADU16);
+		*read_result = (u64)xmhfhwm_bios_ebdaseg;
+	}else{
+		retval= false;
+	}
+
+	return retval;
+}
 
 
 bool _impl_xmhfhwm_bios_sysmemcopy(sysmem_copy_t sysmemcopy_type,
