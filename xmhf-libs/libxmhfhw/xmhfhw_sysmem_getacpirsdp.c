@@ -88,7 +88,7 @@ static u32 _acpi_computetablechecksum(char *table, u32 size){
 //return 0 in case of error (ACPI RSDP not found) else the absolute physical
 //memory address of the RSDP
 /*@
-	requires \valid((unsigned char *)rsdp+(0..sizeof(ACPI_RSDP)));
+	requires \valid(rsdp);
 	assigns \nothing;
 @*/
 u32 xmhfhw_platform_x86pc_acpi_getRSDP(ACPI_RSDP *rsdp){
@@ -105,6 +105,8 @@ u32 xmhfhw_platform_x86pc_acpi_getRSDP(ACPI_RSDP *rsdp){
   ebdaphys=(u32)(ebdaseg * 16);
   _XDPRINTF_("%s:%u ebdaseg=%x, ebdaphys=%x\n", __func__, __LINE__,
 	(u32)ebdaseg, ebdaphys);
+
+  //@assert 1;
 
   //search first 1KB of ebda for rsdp signature (8 bytes long)
 	/*@
@@ -124,9 +126,12 @@ u32 xmhfhw_platform_x86pc_acpi_getRSDP(ACPI_RSDP *rsdp){
   }
 
 
+  //@assert 1;
 	//found RSDP?
   if(found)
     return (u32)(ebdaphys+i);
+
+  //@assert 1;
 
 
   //nope, search within BIOS areas 0xE0000 to 0xFFFFF
@@ -138,6 +143,7 @@ u32 xmhfhw_platform_x86pc_acpi_getRSDP(ACPI_RSDP *rsdp){
   for(i=0xE0000; i < (0xFFFFF-8); i+=16){
     CASM_FUNCCALL(xmhfhw_sysmem_copy_sys2obj, (u8 *)rsdp, (u8 *)i, sizeof(ACPI_RSDP));
     if(rsdp->signature == ACPI_RSDP_SIGNATURE){
+      //@assert 1;
       if(!_acpi_computetablechecksum((char *)rsdp, 20)){
         found=1;
         break;
@@ -149,6 +155,8 @@ u32 xmhfhw_platform_x86pc_acpi_getRSDP(ACPI_RSDP *rsdp){
   //found RSDP?
   if(found)
     return i;
+
+  //@assert 1;
 
   //no RSDP, system is not ACPI compliant!
   return 0;

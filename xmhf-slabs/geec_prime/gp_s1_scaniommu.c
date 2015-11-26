@@ -82,6 +82,24 @@ void gp_s1_scaniommu(void){
                 CASM_FUNCCALL(xmhfhw_cpu_hlt, CASM_NOPARAM);
 	}
 
+
+#if defined (__DEBUG_SERIAL__)
+	_XDPRINTF_("rdsp.signature=%016llx\n", rsdp.signature);
+	_XDPRINTF_("rdsp.checksum=%02x\n", rsdp.checksum);
+	_XDPRINTF_("rdsp.oemid=%02x %02x %02x %02x %02x %02x\n",
+		rsdp.oemid[0], rsdp.oemid[1], rsdp.oemid[2],
+		rsdp.oemid[3], rsdp.oemid[4], rsdp.oemid[5]);
+	_XDPRINTF_("rdsp.revision=%02x\n", rsdp.revision);
+	_XDPRINTF_("rdsp.rsdtaddress=%08x\n", rsdp.rsdtaddress);
+	_XDPRINTF_("rdsp.length=%08x\n", rsdp.length);
+	_XDPRINTF_("rdsp.xsdtaddress=%016llx\n", rsdp.xsdtaddress);
+	_XDPRINTF_("rdsp.xchecksum=%02x\n", rsdp.xchecksum);
+	_XDPRINTF_("rdsp.rsvd0=%02x %02x %02x\n",
+		rsdp.oemid[0], rsdp.oemid[1], rsdp.oemid[2]);
+#endif //__DEBUG_SERIAL__
+
+	//@assert (rsdp.rsdtaddress == 0xd87ef028UL);
+#if 0
 	//grab ACPI RSDT
 	CASM_FUNCCALL(xmhfhw_sysmem_copy_sys2obj, (u8 *)&rsdt, (u8 *)rsdp.rsdtaddress, sizeof(ACPI_RSDT));
 	_XDPRINTF_("%s:%u RSDT at %08x, len=%u bytes, hdrlen=%u bytes\n",
@@ -181,4 +199,6 @@ void gp_s1_scaniommu(void){
 
 	_XDPRINTF_("%s: Vt-d: maxhandle = %u, dmar table addr=0x%08x\n", __func__,
 		(u32)vtd_drhd_maxhandle, (u32)vtd_dmar_table_physical_address);
+#endif // 0
+
 }
