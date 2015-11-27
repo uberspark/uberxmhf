@@ -45,6 +45,7 @@
  */
 
 #include <xmhf.h>
+#include <xmhf-hwm.h>
 #include <xmhf-debug.h>
 
 #include <xmhfgeec.h>
@@ -63,8 +64,8 @@
 
 void gp_s1_scaniommu(void){
 	ACPI_RSDP rsdp = {0};
-	ACPI_RSDT rsdt;
-	u32 num_rsdtentries;
+	ACPI_RSDT rsdt = {0};
+	u32 num_rsdtentries=0;
 	u32 rsdtentries[ACPI_MAX_RSDT_ENTRIES];
 	u32 status;
 	VTD_DMAR dmar;
@@ -137,10 +138,12 @@ void gp_s1_scaniommu(void){
 
 
 	//@assert num_rsdtentries == 1;
-#if 0
 
 	CASM_FUNCCALL(xmhfhw_sysmem_copy_sys2obj, (u8 *)&rsdtentries, (u8 *)(rsdp.rsdtaddress + sizeof(ACPI_RSDT)),
 			sizeof(u32)*num_rsdtentries);
+
+	//@assert (rsdtentries[0] == XMHFHWM_BIOS_VTDDMARTABLEBASE);
+#if 0
 
 	//find the VT-d DMAR table in the list (if any)
 	for(i=0; i< num_rsdtentries; i++){
