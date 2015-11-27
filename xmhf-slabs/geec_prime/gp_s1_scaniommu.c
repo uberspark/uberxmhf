@@ -190,7 +190,6 @@ void gp_s1_scaniommu(void){
 
 	//@assert vtd_dmar_table_physical_address == XMHFHWM_BIOS_VTDDMARTABLEBASE;
 
-#if 0
 
 	//detect DRHDs in the DMAR table
 	i=0;
@@ -219,6 +218,13 @@ void gp_s1_scaniommu(void){
 		}
 	}
     _XDPRINTF_("%s:%u total DRHDs detected= %u units\n", __func__, __LINE__, vtd_num_drhd);
+
+	//@assert 1;
+	//@assert vtd_num_drhd == 2;
+	//@assert vtd_drhd[0].regbaseaddr ==0x00000000fed90000ULL;
+	//@assert vtd_drhd[1].regbaseaddr ==0x00000000fed91000ULL;
+
+#if 0
 
     //populate IVA and IOTLB register addresses within all the DRHD unit
     //structures

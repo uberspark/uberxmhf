@@ -120,6 +120,7 @@
 #ifndef __ASSEMBLY__
 
 //Vt-d DMAR structure
+//sizeof(VTD_DMAR) = 48 bytes
 typedef struct{
   u32 signature;
   u32 length;
@@ -134,6 +135,20 @@ typedef struct{
   u8 flags;
   u8 rsvdz[10];
 }__attribute__ ((packed)) VTD_DMAR;
+
+
+
+//VT-d DMAR table DRHD structure
+//sizeof(VTD_DMAR_DRHD) = 16 bytes
+typedef struct{
+  u16 type;
+  u16 length;
+  u8 flags;
+  u8 rsvdz0;
+  u16 pcisegment;
+  u64 regbaseaddr;
+}__attribute__ ((packed)) VTD_DMAR_DRHD;
+
 
 //VT-d DRHD structure
 typedef struct{
