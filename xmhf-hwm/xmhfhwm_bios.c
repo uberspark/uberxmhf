@@ -87,7 +87,7 @@ u32 xmhfhwm_bios_acpi_rsdtentries[] ={
 
 VTD_DMAR xmhfhwm_bios_vtd_dmar = {
 	0x0000003052414d44ULL,
-	0x000000b8UL,
+	(48 + (2*16)),
 	0x01,
 	0x8d,
 	{0x49, 0x4e, 0x54, 0x45, 0x4c, 0x20},
@@ -100,9 +100,34 @@ VTD_DMAR xmhfhwm_bios_vtd_dmar = {
 	{0x49, 0x4e, 0x54, 0x45, 0x4c, 0x20, 0x48, 0x53, 0x57, 0x20},
 };
 
+  u16 type;
+  u16 length;
+  u8 flags;
+  u8 rsvdz0;
+  u16 pcisegment;
+  u64 regbaseaddr;
 
 
+VTD_DMAR_DRHD xmhfhwm_bios_vtd_dmar_drhd[] = {
+	{
+		0x0,
+		16,
+		0x0,
+		0x0,
+		0x0,
+		0x00000000fed90000ULL,
+	},
 
+	{
+		0x0,
+		16,
+		0x0,
+		0x0,
+		0x0,
+		0x00000000fed91000ULL,
+	},
+
+};
 
 
 
@@ -194,6 +219,12 @@ bool _impl_xmhfhwm_bios_sysmemcopy(sysmem_copy_t sysmemcopy_type,
 			//@assert \valid((unsigned char *)dstaddr + (0..(size-1)));
 			xmhfhwm_bios_memcpy((unsigned char *)dstaddr,
 					((u32)&xmhfhwm_bios_vtd_dmar+(srcaddr - XMHFHWM_BIOS_VTDDMARTABLEBASE)), size);
+
+		}else if(srcaddr >= XMHFHWM_BIOS_VTDDMARTABLEREMAPPINGSTRUCTBASE &&
+			(srcaddr+size-1) < (XMHFHWM_BIOS_VTDDMARTABLEREMAPPINGSTRUCTBASE+sizeof(xmhfhwm_bios_vtd_dmar_drhd))){
+			//@assert \valid((unsigned char *)dstaddr + (0..(size-1)));
+			xmhfhwm_bios_memcpy((unsigned char *)dstaddr,
+					((u32)&xmhfhwm_bios_vtd_dmar_drhd+(srcaddr - XMHFHWM_BIOS_VTDDMARTABLEREMAPPINGSTRUCTBASE)), size);
 
 		}else{
 			retval = false;
