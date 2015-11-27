@@ -620,6 +620,34 @@ typedef struct {
 } __attribute__ ((packed)) VTD_PHMLIMIT_REG;
 
 
+typedef enum {
+	XMHFHWM_VTD_REG_ECAP,
+	XMHFHWM_VTD_REG_UNKNOWN,
+} xmhfhwm_vtd_regtype_t;
+
+typedef struct {
+	u32 reg_ver;
+	u32 reg_gcmd;
+	u32 reg_gsts;
+	u32 reg_fsts;
+	u32 reg_fectl;
+	u32 reg_pmen;
+	u32 reg_plmbase;
+	u32 reg_plmlimit;
+
+	u64 reg_cap;
+	u64 reg_ecap;
+	u64 reg_rtaddr;
+	u64 reg_ccmd;
+	u64 reg_phmbase;
+	u64 reg_phmlimit;
+	u64 reg_iotlb;
+	u64 reg_iva;
+
+	u64 regbaseaddr;
+} xmhfhwm_vtd_drhd_state_t;
+
+bool _impl_xmhfhwm_vtd_read(u32 sysmemaddr, sysmem_read_t readsize, u64 *read_result);
 
 
 
