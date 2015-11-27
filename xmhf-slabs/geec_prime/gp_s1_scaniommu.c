@@ -68,7 +68,7 @@ void gp_s1_scaniommu(void){
 	u32 num_rsdtentries=0;
 	u32 rsdtentries[ACPI_MAX_RSDT_ENTRIES];
 	u32 status;
-	VTD_DMAR dmar;
+	VTD_DMAR dmar = {0};
 	u32 i, dmarfound;
 	u32 remappingstructuresaddrphys;
 
@@ -143,7 +143,6 @@ void gp_s1_scaniommu(void){
 			sizeof(u32)*num_rsdtentries);
 
 	//@assert (rsdtentries[0] == XMHFHWM_BIOS_VTDDMARTABLEBASE);
-#if 0
 
 	//find the VT-d DMAR table in the list (if any)
 	for(i=0; i< num_rsdtentries; i++){
@@ -175,6 +174,10 @@ void gp_s1_scaniommu(void){
 		}
 	}
 
+
+	//@assert 1;
+
+
 	//if no DMAR table, bail out
 	if(!dmarfound){
 		_XDPRINTF_("%s:%u Error No DMAR table. Halting!", __func__, __LINE__);
@@ -183,6 +186,11 @@ void gp_s1_scaniommu(void){
 
 	vtd_dmar_table_physical_address = rsdtentries[i]; //DMAR table physical memory address;
 	_XDPRINTF_("%s:%u DMAR at %08x", __func__, __LINE__, vtd_dmar_table_physical_address);
+
+
+	//@assert vtd_dmar_table_physical_address == XMHFHWM_BIOS_VTDDMARTABLEBASE;
+
+#if 0
 
 	//detect DRHDs in the DMAR table
 	i=0;
