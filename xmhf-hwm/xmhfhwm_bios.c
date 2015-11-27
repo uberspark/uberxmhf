@@ -79,6 +79,9 @@ ACPI_RSDT xmhfhwm_bios_acpi_rsdt = {
 	0x00010013UL,
 };
 
+u32 xmhfhwm_bios_acpi_rsdtentries[] ={
+	XMHFHWM_BIOS_VTDDMARTABLEBASE
+};
 
 static unsigned char *xmhfhwm_bios_memcpy(unsigned char *dst, const unsigned char *src, size_t n)
 {
@@ -147,6 +150,12 @@ bool _impl_xmhfhwm_bios_sysmemcopy(sysmem_copy_t sysmemcopy_type,
 			//@assert (size <= sizeof(ACPI_RSDT));
 			xmhfhwm_bios_memcpy((unsigned char *)dstaddr,
 					&xmhfhwm_bios_acpi_rsdt, size);
+
+		}else if(srcaddr >= XMHFHWM_BIOS_ACPIRSDTENTRIESBASE &&
+			(srcaddr+size-1) < (XMHFHWM_BIOS_ACPIRSDTENTRIESBASE+sizeof(xmhfhwm_bios_acpi_rsdtentries))){
+			//@assert \valid((unsigned char *)dstaddr + (0..(size-1)));
+			xmhfhwm_bios_memcpy((unsigned char *)dstaddr,
+					((u32)&xmhfhwm_bios_acpi_rsdtentries+(srcaddr - XMHFHWM_BIOS_ACPIRSDTENTRIESBASE)), size);
 
 		}else{
 			retval = false;
