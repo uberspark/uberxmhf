@@ -275,6 +275,12 @@ void gp_s1_chkreq(void);
 void gp_s1_postdrt(void);
 void gp_s1_scaniommu(void);
 void gp_s1_iommuinittbl(void);
+
+/*@
+	requires 0 <= retindex < VTD_RET_MAXPTRS;
+@*/
+void gp_s1_iommuinittbl_clearcet(u32 retindex);
+
 void gp_s1_iommuinit(void);
 
 
