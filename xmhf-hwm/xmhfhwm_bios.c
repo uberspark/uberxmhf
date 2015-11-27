@@ -59,12 +59,39 @@ ACPI_RSDP xmhfhwm_bios_acpi_rsdp = {
 	0x10,
 	{0x44, 0x45, 0x4c, 0x4c, 0x20, 0x20},
 	0x02,
-	0xd87ef028UL,
+	XMHFHWM_BIOS_ACPIRSDTBASE,
         0x24,
         0x00000000d87ef028ULL,
 	0x6,
 	{0x44, 0x45, 0x4c},
 };
+
+
+ACPI_RSDT xmhfhwm_bios_acpi_rsdt = {
+	0x0000006a54445352ULL,
+	0x28,
+	0x1,
+	0xc3,
+	{0x44, 0x45, 0x4c, 0x4c, 0x20, 0x20},
+	0x0020202033584243ULL,
+	0x01072009UL,
+	0x5446534dUL,
+	0x00010013UL,
+};
+
+
+static unsigned char *xmhfhwm_bios_memcpy(unsigned char *dst, const unsigned char *src, size_t n)
+{
+	const unsigned char *p = src;
+	unsigned char *q = dst;
+
+	while (n) {
+		*q++ = *p++;
+		n--;
+	}
+
+	return dst;
+}
 
 
 bool _impl_xmhfhwm_bios_read(u32 sysmemaddr, sysmem_read_t readsize, u64 *read_result){
@@ -115,6 +142,11 @@ bool _impl_xmhfhwm_bios_sysmemcopy(sysmem_copy_t sysmemcopy_type,
                                 rsdp->rsvd0[2] = xmhfhwm_bios_acpi_rsdp.rsvd0[2];
 			}
 
+		}else if(srcaddr == XMHFHWM_BIOS_ACPIRSDTBASE){
+			//@assert \valid((unsigned char *)dstaddr + (0..(size-1)));
+			//@assert (size <= sizeof(ACPI_RSDT));
+			xmhfhwm_bios_memcpy((unsigned char *)dstaddr,
+					&xmhfhwm_bios_acpi_rsdt, size);
 
 		}else{
 			retval = false;
