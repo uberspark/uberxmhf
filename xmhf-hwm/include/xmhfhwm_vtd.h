@@ -168,8 +168,11 @@ typedef struct {
     u64 qwords[2];
 } __attribute__((packed)) vtd_ret_entry_t;
 
+//#define vtd_make_rete(paddr, flags) \
+//  ((u64)(paddr) & (~(((u64)PAGE_SIZE_4K - 1)))) | (u64)(flags)
+
 #define vtd_make_rete(paddr, flags) \
-  ((u64)(paddr) & (~(((u64)PAGE_SIZE_4K - 1)))) | (u64)(flags)
+  ((u64)(paddr) & (0xFFFFFFFFFFFFF000ULL)) | (u64)(flags)
 
 typedef struct {
     u64 qwords[2];
