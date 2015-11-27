@@ -2463,7 +2463,7 @@ extern void _impl_xmhfhwm_cpu_insn_popl_edi(void);
 extern void _impl_xmhfhwm_cpu_insn_andl_imm_eax(u32 value);
 
 extern void _impl_xmhfhwm_cpu_insn_movl_mesi_eax(int index);
-extern void _impl_xmhfhwm_cpu_insn_movl_mesi_edx(int index);
+extern void _impl_xmhfhwm_cpu_insn_movl_mesi_edx(u32 index);
 extern void _impl_xmhfhwm_cpu_insn_movb_al_mesi(int index);
 extern void _impl_xmhfhwm_cpu_insn_movw_ax_mesi(int index);
 

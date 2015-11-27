@@ -1069,10 +1069,10 @@ void _impl_xmhfhwm_cpu_insn_movl_mesi_eax(int index){
 	xmhfhwm_cpu_gprs_eax = _impl_xmhfhwm_cpu_sysmemread(sysmemaddr, SYSMEMREADU32);
 }
 
-void _impl_xmhfhwm_cpu_insn_movl_mesi_edx(int index){
+void _impl_xmhfhwm_cpu_insn_movl_mesi_edx(u32 index){
 	//u32 *value_mesi;
 	//value_mesi = (u32 *)((u32)((int)xmhfhwm_cpu_gprs_esi + (int)index));
-	u32 sysmemaddr = (u32)((int)xmhfhwm_cpu_gprs_esi + (int)index);
+	u32 sysmemaddr = (u32)(xmhfhwm_cpu_gprs_esi + index);
 	//xmhfhwm_cpu_gprs_edx = *value_mesi;
 	xmhfhwm_cpu_gprs_edx = _impl_xmhfhwm_cpu_sysmemread(sysmemaddr, SYSMEMREADU32);
 }

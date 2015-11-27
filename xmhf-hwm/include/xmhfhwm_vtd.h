@@ -635,16 +635,26 @@ typedef struct {
 	u32 reg_plmbase;
 	u32 reg_plmlimit;
 
-	u64 reg_cap;
-	u64 reg_ecap;
-	u64 reg_rtaddr;
-	u64 reg_ccmd;
-	u64 reg_phmbase;
-	u64 reg_phmlimit;
-	u64 reg_iotlb;
-	u64 reg_iva;
+	u32 reg_cap_lo;
+	u32 reg_cap_hi;
+	u32 reg_ecap_lo;
+	u32 reg_ecap_hi;
+	u32 reg_rtaddr_lo;
+	u32 reg_rtaddr_hi;
+	u32 reg_ccmd_lo;
+	u32 reg_ccmd_hi;
+	u32 reg_phmbase_lo;
+	u32 reg_phmbase_hi;
+	u32 reg_phmlimit_lo;
+	u32 reg_phmlimit_hi;
+	u32 reg_iotlb_lo;
+	u32 reg_iotlb_hi;
+	u32 reg_iva_lo;
+	u32 reg_iva_hi;
 
 	u64 regbaseaddr;
+	u64 iotlbaddr;
+	u64 ivaaddr;
 } xmhfhwm_vtd_drhd_state_t;
 
 bool _impl_xmhfhwm_vtd_read(u32 sysmemaddr, sysmem_read_t readsize, u64 *read_result);
