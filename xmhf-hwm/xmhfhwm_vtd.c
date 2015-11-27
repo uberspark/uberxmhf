@@ -126,7 +126,6 @@ bool _impl_xmhfhwm_vtd_read(u32 sysmemaddr, sysmem_read_t readsize, u64 *read_re
 	bool retval = false;
 	u32 i;
 
-	retval = true;
 	for(i=0; i < xmhfhwm_vtd_total_drhdunits; i++){
 
 		if(sysmemaddr == (u32)xmhfhwm_vtd_drhd_state[i].regbaseaddr +   VTD_VER_REG_OFF){
