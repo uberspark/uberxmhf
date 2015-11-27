@@ -104,6 +104,15 @@ void main(void){
 	//execute harness
 	gp_s1_scaniommu();
 
+	//@assert (vtd_drhd_maxhandle == 2);
+	//@assert (vtd_drhd_scanned == true);
+	//@assert (vtd_drhd[0].regbaseaddr ==0x00000000fed90000ULL);
+	//@assert (vtd_drhd[0].iotlb_regaddr == 0x00000000fed90108ULL);
+	//@assert (vtd_drhd[0].iva_regaddr == 0x00000000fed90100ULL);
+	//@assert (vtd_drhd[1].regbaseaddr ==0x00000000fed91000ULL);
+	//@assert (vtd_drhd[1].iotlb_regaddr == 0x00000000fed91108ULL);
+	//@assert (vtd_drhd[1].iva_regaddr == 0x00000000fed91100ULL);
+
 	//@assert xmhfhwm_cpu_gprs_esp == check_esp;
 	//@assert xmhfhwm_cpu_gprs_eip == check_eip;
 }
