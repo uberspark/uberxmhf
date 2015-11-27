@@ -54,18 +54,34 @@
 #include <uapi_slabmempgtbl.h>
 #include <xc_init.h>
 
+/*@
+	assigns _slabdevpgtbl_vtd_ret[0..(VTD_RET_MAXPTRS-1)].qwords[0];
+	assigns _slabdevpgtbl_vtd_ret[0..(VTD_RET_MAXPTRS-1)].qwords[1];
+	ensures \forall integer x; 0 <= x < VTD_RET_MAXPTRS ==> ( _slabdevpgtbl_vtd_ret[x].qwords[0] == (vtd_make_rete((u64)&_slabdevpgtbl_vtd_cet[x], VTD_RET_PRESENT)) );
+	ensures \forall integer x; 0 <= x < VTD_RET_MAXPTRS ==> ( _slabdevpgtbl_vtd_ret[x].qwords[1] == 0 );
+@*/
 void gp_s1_iommuinittbl(void){
     u32 i, j;
 
+	/*@
+		loop invariant a1: 0 <= i <= VTD_RET_MAXPTRS;
+		loop invariant a2: \forall integer x; 0 <= x < i ==> ( _slabdevpgtbl_vtd_ret[x].qwords[0] == (vtd_make_rete((u64)&_slabdevpgtbl_vtd_cet[x], VTD_RET_PRESENT)) );
+		loop invariant a3: \forall integer x; 0 <= x < i ==> ( _slabdevpgtbl_vtd_ret[x].qwords[1] == 0 );
+		loop assigns _slabdevpgtbl_vtd_ret[0..(VTD_RET_MAXPTRS-1)].qwords[0];
+		loop assigns _slabdevpgtbl_vtd_ret[0..(VTD_RET_MAXPTRS-1)].qwords[1];
+		loop assigns i;
+		loop variant VTD_RET_MAXPTRS - i;
+	@*/
     for(i=0; i< VTD_RET_MAXPTRS; i++){
         _slabdevpgtbl_vtd_ret[i].qwords[0] =
             vtd_make_rete((u64)&_slabdevpgtbl_vtd_cet[i], VTD_RET_PRESENT);
         _slabdevpgtbl_vtd_ret[i].qwords[1] = 0ULL;
 
+	/*
         for(j=0; j < VTD_CET_MAXPTRS; j++){
             _slabdevpgtbl_vtd_cet[i][j].qwords[0] =
                 _slabdevpgtbl_vtd_cet[i][j].qwords[1] = 0ULL;
-        }
+        }*/
     }
 }
 
