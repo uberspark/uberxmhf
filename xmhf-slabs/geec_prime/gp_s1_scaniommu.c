@@ -45,7 +45,6 @@
  */
 
 #include <xmhf.h>
-#include <xmhf-hwm.h>
 #include <xmhf-debug.h>
 
 #include <xmhfgeec.h>
@@ -99,7 +98,6 @@ void gp_s1_scaniommu(void){
 		rsdp.oemid[0], rsdp.oemid[1], rsdp.oemid[2]);
 #endif //__DEBUG_SERIAL__
 
-	//@assert (rsdp.rsdtaddress == 0xd87ef028UL);
 
 	//grab ACPI RSDT
 	CASM_FUNCCALL(xmhfhw_sysmem_copy_sys2obj, (u8 *)&rsdt, (u8 *)rsdp.rsdtaddress, sizeof(ACPI_RSDT));
@@ -121,7 +119,6 @@ void gp_s1_scaniommu(void){
 	_XDPRINTF_("rsdt.creatorrevision=%08x\n", rsdt.creatorrevision);
 	#endif //__DEBUG_SERIAL__
 
-	//@assert (rsdt.creatorrevision == 0x00010013UL);
 
 
 
@@ -137,12 +134,10 @@ void gp_s1_scaniommu(void){
 		(rsdp.rsdtaddress + sizeof(ACPI_RSDT)), num_rsdtentries);
 
 
-	//@assert num_rsdtentries == 1;
 
 	CASM_FUNCCALL(xmhfhw_sysmem_copy_sys2obj, (u8 *)&rsdtentries, (u8 *)(rsdp.rsdtaddress + sizeof(ACPI_RSDT)),
 			sizeof(u32)*num_rsdtentries);
 
-	//@assert (rsdtentries[0] == XMHFHWM_BIOS_VTDDMARTABLEBASE);
 
 	//find the VT-d DMAR table in the list (if any)
 	for(i=0; i< num_rsdtentries; i++){
@@ -175,7 +170,6 @@ void gp_s1_scaniommu(void){
 	}
 
 
-	//@assert 1;
 
 
 	//if no DMAR table, bail out
@@ -188,7 +182,6 @@ void gp_s1_scaniommu(void){
 	_XDPRINTF_("%s:%u DMAR at %08x", __func__, __LINE__, vtd_dmar_table_physical_address);
 
 
-	//@assert vtd_dmar_table_physical_address == XMHFHWM_BIOS_VTDDMARTABLEBASE;
 
 
 	//detect DRHDs in the DMAR table
@@ -219,10 +212,6 @@ void gp_s1_scaniommu(void){
 	}
     _XDPRINTF_("%s:%u total DRHDs detected= %u units\n", __func__, __LINE__, vtd_num_drhd);
 
-	//@assert 1;
-	//@assert vtd_num_drhd == 2;
-	//@assert vtd_drhd[0].regbaseaddr ==0x00000000fed90000ULL;
-	//@assert vtd_drhd[1].regbaseaddr ==0x00000000fed91000ULL;
 
 
     //populate IVA and IOTLB register addresses within all the DRHD unit
