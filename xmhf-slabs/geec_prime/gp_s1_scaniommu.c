@@ -99,7 +99,7 @@ void gp_s1_scaniommu(void){
 #endif //__DEBUG_SERIAL__
 
 	//@assert (rsdp.rsdtaddress == 0xd87ef028UL);
-#if 1
+
 	//grab ACPI RSDT
 	CASM_FUNCCALL(xmhfhw_sysmem_copy_sys2obj, (u8 *)&rsdt, (u8 *)rsdp.rsdtaddress, sizeof(ACPI_RSDT));
 	_XDPRINTF_("%s:%u RSDT at %08x, len=%u bytes, hdrlen=%u bytes\n",
@@ -120,6 +120,9 @@ void gp_s1_scaniommu(void){
 	_XDPRINTF_("rsdt.creatorrevision=%08x\n", rsdt.creatorrevision);
 	#endif //__DEBUG_SERIAL__
 
+	//@assert (rsdt.creatorrevision == 0x00010013UL);
+
+
 
 	//get the RSDT entry list
 	num_rsdtentries = (rsdt.length - sizeof(ACPI_RSDT))/ sizeof(u32);
@@ -131,6 +134,10 @@ void gp_s1_scaniommu(void){
 
 	_XDPRINTF_("%s:%u RSDT entry list at %08x, len=%u", __func__, __LINE__,
 		(rsdp.rsdtaddress + sizeof(ACPI_RSDT)), num_rsdtentries);
+
+
+	//@assert num_rsdtentries == 1;
+#if 0
 
 	CASM_FUNCCALL(xmhfhw_sysmem_copy_sys2obj, (u8 *)&rsdtentries, (u8 *)(rsdp.rsdtaddress + sizeof(ACPI_RSDT)),
 			sizeof(u32)*num_rsdtentries);

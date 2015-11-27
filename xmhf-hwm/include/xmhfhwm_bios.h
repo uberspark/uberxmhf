@@ -82,6 +82,7 @@
 
 #define XMHFHWM_BIOS_ACPIRSDPBASE		0xE0000
 
+#define XMHFHWM_BIOS_ACPIRSDTBASE		0xd87ef028UL
 #ifndef __ASSEMBLY__
 
 //ACPI GAS, Generic Address Structure
@@ -135,6 +136,7 @@ typedef struct {
 } __attribute__ ((packed)) ACPI_RSDT;
 
 
+/*
 //ACPI RSDT structure for hwm
 typedef struct {
 	u32 signature;
@@ -148,7 +150,7 @@ typedef struct {
 	u32 creatorrevision;
 	u32 entries[ACPI_MAX_RSDT_ENTRIES];
 } __attribute__ ((packed)) ACPI_RSDT_HWM;
-
+*/
 
 
 
