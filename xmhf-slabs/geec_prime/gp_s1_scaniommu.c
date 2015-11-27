@@ -224,7 +224,6 @@ void gp_s1_scaniommu(void){
 	//@assert vtd_drhd[0].regbaseaddr ==0x00000000fed90000ULL;
 	//@assert vtd_drhd[1].regbaseaddr ==0x00000000fed91000ULL;
 
-#if 0
 
     //populate IVA and IOTLB register addresses within all the DRHD unit
     //structures
@@ -263,6 +262,5 @@ void gp_s1_scaniommu(void){
 
 	_XDPRINTF_("%s: Vt-d: maxhandle = %u, dmar table addr=0x%08x\n", __func__,
 		(u32)vtd_drhd_maxhandle, (u32)vtd_dmar_table_physical_address);
-#endif // 0
 
 }
