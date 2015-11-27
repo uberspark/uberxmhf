@@ -83,6 +83,38 @@ u32 xmhfhwm_bios_acpi_rsdtentries[] ={
 	XMHFHWM_BIOS_VTDDMARTABLEBASE
 };
 
+
+
+VTD_DMAR xmhfhwm_bios_vtd_dmar = {
+	0x0000003052414d44ULL,
+	0x000000b8UL,
+	0x01,
+	0x8d,
+	{0x49, 0x4e, 0x54, 0x45, 0x4c, 0x20},
+	0x0000000020575348ULL,
+	0x00000001UL,
+	0x4c544e49UL,
+	0x00000001UL,
+	0x26,
+	0x01,
+	{0x49, 0x4e, 0x54, 0x45, 0x4c, 0x20, 0x48, 0x53, 0x57, 0x20},
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 static unsigned char *xmhfhwm_bios_memcpy(unsigned char *dst, const unsigned char *src, size_t n)
 {
 	const unsigned char *p = src;
@@ -156,6 +188,12 @@ bool _impl_xmhfhwm_bios_sysmemcopy(sysmem_copy_t sysmemcopy_type,
 			//@assert \valid((unsigned char *)dstaddr + (0..(size-1)));
 			xmhfhwm_bios_memcpy((unsigned char *)dstaddr,
 					((u32)&xmhfhwm_bios_acpi_rsdtentries+(srcaddr - XMHFHWM_BIOS_ACPIRSDTENTRIESBASE)), size);
+
+		}else if(srcaddr >= XMHFHWM_BIOS_VTDDMARTABLEBASE &&
+			(srcaddr+size-1) < (XMHFHWM_BIOS_VTDDMARTABLEBASE+sizeof(xmhfhwm_bios_vtd_dmar))){
+			//@assert \valid((unsigned char *)dstaddr + (0..(size-1)));
+			xmhfhwm_bios_memcpy((unsigned char *)dstaddr,
+					((u32)&xmhfhwm_bios_vtd_dmar+(srcaddr - XMHFHWM_BIOS_VTDDMARTABLEBASE)), size);
 
 		}else{
 			retval = false;
