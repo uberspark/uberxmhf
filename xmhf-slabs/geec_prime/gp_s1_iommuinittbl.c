@@ -54,6 +54,34 @@
 #include <uapi_slabmempgtbl.h>
 #include <xc_init.h>
 
+
+/*@
+	requires 0 <= retindex < VTD_RET_MAXPTRS;
+	assigns _slabdevpgtbl_vtd_cet[retindex][0..(VTD_CET_MAXPTRS-1)].qwords[0];
+	assigns _slabdevpgtbl_vtd_cet[retindex][0..(VTD_CET_MAXPTRS-1)].qwords[1];
+	ensures \forall integer y; 0 <= y < VTD_CET_MAXPTRS ==> ( _slabdevpgtbl_vtd_cet[retindex][y].qwords[0] == 0 );
+	ensures \forall integer y; 0 <= y < VTD_CET_MAXPTRS ==> ( _slabdevpgtbl_vtd_cet[retindex][y].qwords[1] == 0 );
+
+@*/
+static inline void gp_s1_iommuinittbl_clearcet(u32 retindex){
+	u32 j;
+
+	/*@
+		loop invariant b1: 0 <= j <= VTD_CET_MAXPTRS;
+		loop invariant b2: \forall integer y; 0 <= y < j ==> ( _slabdevpgtbl_vtd_cet[retindex][y].qwords[0] == 0 );
+		loop invariant b3: \forall integer y; 0 <= y < j ==> ( _slabdevpgtbl_vtd_cet[retindex][y].qwords[1] == 0 );
+		loop assigns _slabdevpgtbl_vtd_cet[retindex][0..(VTD_CET_MAXPTRS-1)].qwords[0];
+		loop assigns _slabdevpgtbl_vtd_cet[retindex][0..(VTD_CET_MAXPTRS-1)].qwords[1];
+		loop assigns j;
+		loop variant VTD_CET_MAXPTRS - j;
+	@*/
+        for(j=0; j < VTD_CET_MAXPTRS; j++){
+            _slabdevpgtbl_vtd_cet[retindex][j].qwords[0] = 0ULL;
+            _slabdevpgtbl_vtd_cet[retindex][j].qwords[1] = 0ULL;
+        }
+}
+
+#if 0
 /*@
 	assigns _slabdevpgtbl_vtd_ret[0..(VTD_RET_MAXPTRS-1)].qwords[0];
 	assigns _slabdevpgtbl_vtd_ret[0..(VTD_RET_MAXPTRS-1)].qwords[1];
@@ -98,3 +126,4 @@ void gp_s1_iommuinittbl(void){
     }
 }
 
+#endif
