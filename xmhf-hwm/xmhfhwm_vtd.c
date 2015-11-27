@@ -284,6 +284,161 @@ bool _impl_xmhfhwm_vtd_read(u32 sysmemaddr, sysmem_read_t readsize, u64 *read_re
 
 bool _impl_xmhfhwm_vtd_write(u32 sysmemaddr, sysmem_write_t writesize, u64 write_value){
 	bool retval = false;
+	u32 i;
+
+	for(i=0; i < xmhfhwm_vtd_total_drhdunits; i++){
+
+		if(sysmemaddr == (u32)xmhfhwm_vtd_drhd_state[i].regbaseaddr +   VTD_VER_REG_OFF){
+			//@assert writesize == SYSMEMWRITEU32;
+			xmhfhwm_vtd_drhd_state[i].reg_ver = (u32)write_value;
+			retval = true;
+			break;
+
+		} else if(sysmemaddr == (u32)xmhfhwm_vtd_drhd_state[i].regbaseaddr +   VTD_GCMD_REG_OFF){
+			//@assert writesize == SYSMEMWRITEU32;
+			xmhfhwm_vtd_drhd_state[i].reg_gcmd = (u32)write_value;
+			retval = true;
+			break;
+
+		} else if(sysmemaddr == (u32)xmhfhwm_vtd_drhd_state[i].regbaseaddr +   VTD_GSTS_REG_OFF){
+			//@assert writesize == SYSMEMWRITEU32;
+			xmhfhwm_vtd_drhd_state[i].reg_gsts = (u32)write_value;
+			retval = true;
+			break;
+
+		} else if(sysmemaddr == (u32)xmhfhwm_vtd_drhd_state[i].regbaseaddr +   VTD_FSTS_REG_OFF){
+			//@assert writesize == SYSMEMWRITEU32;
+			xmhfhwm_vtd_drhd_state[i].reg_fsts = (u32)write_value;
+			retval = true;
+			break;
+
+		} else if(sysmemaddr == (u32)xmhfhwm_vtd_drhd_state[i].regbaseaddr +   VTD_FECTL_REG_OFF){
+			//@assert writesize == SYSMEMWRITEU32;
+			xmhfhwm_vtd_drhd_state[i].reg_fectl = (u32)write_value;
+			retval = true;
+			break;
+
+		} else if(sysmemaddr == (u32)xmhfhwm_vtd_drhd_state[i].regbaseaddr +   VTD_PMEN_REG_OFF){
+			//@assert writesize == SYSMEMWRITEU32;
+			xmhfhwm_vtd_drhd_state[i].reg_pmen = (u32)write_value;
+			retval = true;
+			break;
+
+		} else if(sysmemaddr == (u32)xmhfhwm_vtd_drhd_state[i].regbaseaddr +   VTD_PLMBASE_REG_OFF){
+			//@assert writesize == SYSMEMWRITEU32;
+			xmhfhwm_vtd_drhd_state[i].reg_plmbase = (u32)write_value;
+			retval = true;
+			break;
+
+		} else if(sysmemaddr == (u32)xmhfhwm_vtd_drhd_state[i].regbaseaddr +   VTD_PLMLIMIT_REG_OFF){
+			//@assert writesize == SYSMEMWRITEU32;
+			xmhfhwm_vtd_drhd_state[i].reg_plmlimit = (u32)write_value;
+			retval = true;
+			break;
+
+
+		} else if(sysmemaddr == (u32)xmhfhwm_vtd_drhd_state[i].regbaseaddr +   VTD_CAP_REG_OFF){
+			//@assert writesize == SYSMEMWRITEU32;
+			xmhfhwm_vtd_drhd_state[i].reg_cap_lo = (u32)write_value;
+			retval = true;
+			break;
+
+		} else if(sysmemaddr == (u32)xmhfhwm_vtd_drhd_state[i].regbaseaddr +   VTD_CAP_REG_OFF + 0x4){
+			//@assert writesize == SYSMEMWRITEU32;
+			xmhfhwm_vtd_drhd_state[i].reg_cap_hi = (u32)write_value;
+			retval = true;
+			break;
+
+		} else if(sysmemaddr == (u32)xmhfhwm_vtd_drhd_state[i].regbaseaddr +   VTD_ECAP_REG_OFF){
+			//@assert writesize == SYSMEMWRITEU32;
+			xmhfhwm_vtd_drhd_state[i].reg_ecap_lo = (u32)write_value;
+			retval = true;
+			break;
+
+		} else if(sysmemaddr == (u32)xmhfhwm_vtd_drhd_state[i].regbaseaddr +   VTD_ECAP_REG_OFF + 0x4){
+			//@assert writesize == SYSMEMWRITEU32;
+			xmhfhwm_vtd_drhd_state[i].reg_ecap_hi = (u32)write_value;
+			retval = true;
+			break;
+
+		} else if(sysmemaddr == (u32)xmhfhwm_vtd_drhd_state[i].regbaseaddr +   VTD_RTADDR_REG_OFF){
+			//@assert writesize == SYSMEMWRITEU32;
+			xmhfhwm_vtd_drhd_state[i].reg_rtaddr_lo = (u32)write_value;
+			retval = true;
+			break;
+
+		} else if(sysmemaddr == (u32)xmhfhwm_vtd_drhd_state[i].regbaseaddr +   VTD_RTADDR_REG_OFF + 0x4){
+			//@assert writesize == SYSMEMWRITEU32;
+			xmhfhwm_vtd_drhd_state[i].reg_rtaddr_hi = (u32)write_value;
+			retval = true;
+			break;
+
+		} else if(sysmemaddr == (u32)xmhfhwm_vtd_drhd_state[i].regbaseaddr +   VTD_CCMD_REG_OFF){
+			//@assert writesize == SYSMEMWRITEU32;
+			xmhfhwm_vtd_drhd_state[i].reg_ccmd_lo = (u32)write_value;
+			retval = true;
+			break;
+
+		} else if(sysmemaddr == (u32)xmhfhwm_vtd_drhd_state[i].regbaseaddr +   VTD_CCMD_REG_OFF + 0x4){
+			//@assert writesize == SYSMEMWRITEU32;
+			xmhfhwm_vtd_drhd_state[i].reg_ccmd_hi = (u32)write_value;
+			retval = true;
+			break;
+
+		} else if(sysmemaddr == (u32)xmhfhwm_vtd_drhd_state[i].regbaseaddr +   VTD_PHMBASE_REG_OFF){
+			//@assert writesize == SYSMEMWRITEU32;
+			xmhfhwm_vtd_drhd_state[i].reg_phmbase_lo = (u32)write_value;
+			retval = true;
+			break;
+
+		} else if(sysmemaddr == (u32)xmhfhwm_vtd_drhd_state[i].regbaseaddr +   VTD_PHMBASE_REG_OFF + 0x4){
+			//@assert writesize == SYSMEMWRITEU32;
+			xmhfhwm_vtd_drhd_state[i].reg_phmbase_hi = (u32)write_value;
+			retval = true;
+			break;
+
+		} else if(sysmemaddr == (u32)xmhfhwm_vtd_drhd_state[i].regbaseaddr +   VTD_PHMLIMIT_REG_OFF){
+			//@assert writesize == SYSMEMWRITEU32;
+			xmhfhwm_vtd_drhd_state[i].reg_phmlimit_lo = (u32)write_value;
+			retval = true;
+			break;
+
+		} else if(sysmemaddr == (u32)xmhfhwm_vtd_drhd_state[i].regbaseaddr +   VTD_PHMLIMIT_REG_OFF + 0x4){
+			//@assert writesize == SYSMEMWRITEU32;
+			xmhfhwm_vtd_drhd_state[i].reg_phmlimit_hi = (u32)write_value;
+			retval = true;
+			break;
+
+		} else if(sysmemaddr == (u32)xmhfhwm_vtd_drhd_state[i].iotlbaddr){
+			//@assert writesize == SYSMEMWRITEU32;
+			xmhfhwm_vtd_drhd_state[i].reg_iotlb_lo = (u32)write_value;
+			retval = true;
+			break;
+
+		} else if(sysmemaddr == (u32)xmhfhwm_vtd_drhd_state[i].iotlbaddr + 0x4){
+			//@assert writesize == SYSMEMWRITEU32;
+			xmhfhwm_vtd_drhd_state[i].reg_iotlb_hi = (u32)write_value;
+			retval = true;
+			break;
+
+		} else if(sysmemaddr == (u32)xmhfhwm_vtd_drhd_state[i].ivaaddr){
+			//@assert writesize == SYSMEMWRITEU32;
+			xmhfhwm_vtd_drhd_state[i].reg_iva_lo = (u32)write_value;
+			retval = true;
+			break;
+
+		} else if(sysmemaddr == (u32)xmhfhwm_vtd_drhd_state[i].ivaaddr + 0x4){
+			//@assert writesize == SYSMEMWRITEU32;
+			xmhfhwm_vtd_drhd_state[i].reg_iva_hi = (u32)write_value;
+			retval = true;
+			break;
+
+		} else {
+
+		}
+	}
+
+
 
 	return retval;
 }
