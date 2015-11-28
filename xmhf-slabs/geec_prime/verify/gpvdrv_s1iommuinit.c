@@ -106,6 +106,7 @@ void main(void){
 	vtd_drhd_maxhandle = 2;
 	vtd_drhd_scanned = true;
 	vtd_dmar_table_physical_address =XMHFHWM_BIOS_VTDDMARTABLEBASE;
+	vtd_ret_address = 0xDEADB000;
 	vtd_drhd[0].regbaseaddr =0x00000000fed90000ULL;
 	vtd_drhd[0].iotlb_regaddr = 0x00000000fed90108ULL;
 	vtd_drhd[0].iva_regaddr = 0x00000000fed90100ULL;
@@ -113,6 +114,10 @@ void main(void){
 	vtd_drhd[1].iotlb_regaddr = 0x00000000fed91108ULL;
 	vtd_drhd[1].iva_regaddr = 0x00000000fed91100ULL;
 	gp_s1_iommuinit();
+	//@assert xmhfhwm_vtd_drhd_state[0].reg_rtaddr_lo == vtd_ret_address;
+	//@assert xmhfhwm_vtd_drhd_state[0].reg_rtaddr_hi == 0;
+	//@assert xmhfhwm_vtd_drhd_state[1].reg_rtaddr_lo == vtd_ret_address;
+	//@assert xmhfhwm_vtd_drhd_state[1].reg_rtaddr_hi == 0;
 
 
 	//@assert xmhfhwm_cpu_gprs_esp == check_esp;

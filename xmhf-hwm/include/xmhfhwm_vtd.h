@@ -663,6 +663,7 @@ typedef struct {
 bool _impl_xmhfhwm_vtd_read(u32 sysmemaddr, sysmem_read_t readsize, u64 *read_result);
 bool _impl_xmhfhwm_vtd_write(u32 sysmemaddr, sysmem_write_t writesize, u64 write_value);
 
+extern xmhfhwm_vtd_drhd_state_t xmhfhwm_vtd_drhd_state[];
 
 
 #endif //__ASSEMBLY__
