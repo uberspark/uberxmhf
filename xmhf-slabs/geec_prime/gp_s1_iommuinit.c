@@ -116,13 +116,16 @@ void gp_s1_iommuinit(void){
 
 		//@assert 1;
 
-		#if 0
 
 		//invalidate caches
 		if(!xmhfhw_platform_x86pc_vtd_drhd_invalidatecaches(&vtd_drhd[drhd_handle])){
 			_XDPRINTF_("%s: Halting: error in invalidating caches\n", __func__);
 			CASM_FUNCCALL(xmhfhw_cpu_hlt, CASM_NOPARAM);
 		}
+
+		//@assert 1;
+
+		#if 0
 
 		//enable VT-d translation
 		xmhfhw_platform_x86pc_vtd_drhd_enable_translation(&vtd_drhd[drhd_handle]);

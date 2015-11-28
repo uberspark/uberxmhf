@@ -382,6 +382,26 @@ bool _impl_xmhfhwm_vtd_write(u32 sysmemaddr, sysmem_write_t writesize, u64 write
 		} else if(sysmemaddr == (u32)xmhfhwm_vtd_drhd_state[i].regbaseaddr +   VTD_CCMD_REG_OFF + 0x4){
 			//@assert writesize == SYSMEMWRITEU32;
 			xmhfhwm_vtd_drhd_state[i].reg_ccmd_hi = (u32)write_value;
+			if(xmhfhwm_vtd_drhd_state[i].reg_ccmd_hi & (0x80000000UL)){
+				//icc is set (bit 31)
+				//so..set caig (28, 27) to cirg (30, 29)
+				//and clear icc
+                                //cirg bit 30 mask = 0x40000000UL
+                                //cirg bit 29 mask = 0x20000000UL
+                                //caig bit 28 mas = 0x10000000UL
+                                //caig bit 27 mask = 0x08000000UL
+				if(xmhfhwm_vtd_drhd_state[i].reg_ccmd_hi & 0x40000000UL)
+					xmhfhwm_vtd_drhd_state[i].reg_ccmd_hi |= 0x10000000UL;
+				else
+					xmhfhwm_vtd_drhd_state[i].reg_ccmd_hi &= ~(0x10000000UL);
+
+				if(xmhfhwm_vtd_drhd_state[i].reg_ccmd_hi & 0x20000000UL)
+					xmhfhwm_vtd_drhd_state[i].reg_ccmd_hi |= 0x08000000UL;
+				else
+					xmhfhwm_vtd_drhd_state[i].reg_ccmd_hi &= ~(0x08000000UL);
+
+                                xmhfhwm_vtd_drhd_state[i].reg_ccmd_hi &= ~(0x80000000UL);
+			}
 			retval = true;
 			break;
 
@@ -418,6 +438,28 @@ bool _impl_xmhfhwm_vtd_write(u32 sysmemaddr, sysmem_write_t writesize, u64 write
 		} else if(sysmemaddr == (u32)xmhfhwm_vtd_drhd_state[i].iotlbaddr + 0x4){
 			//@assert writesize == SYSMEMWRITEU32;
 			xmhfhwm_vtd_drhd_state[i].reg_iotlb_hi = (u32)write_value;
+			if(xmhfhwm_vtd_drhd_state[i].reg_iotlb_hi & (0x80000000UL)){
+				//ivt is set (bit 31)
+				//so..set iaig (26, 25) to iirg (29, 28)
+				//and clear ivt
+                                //iirg bit 29 mask = 0x20000000UL
+                                //iirg bit 28 mask = 0x10000000UL
+                                //iaig bit 26 mask = 0x04000000UL
+                                //iaig bit 25 mask = 0x02000000UL
+				if(xmhfhwm_vtd_drhd_state[i].reg_iotlb_hi & 0x20000000UL)
+					xmhfhwm_vtd_drhd_state[i].reg_iotlb_hi |= 0x04000000UL;
+				else
+					xmhfhwm_vtd_drhd_state[i].reg_iotlb_hi &= ~(0x04000000UL);
+
+				if(xmhfhwm_vtd_drhd_state[i].reg_iotlb_hi & 0x10000000UL)
+					xmhfhwm_vtd_drhd_state[i].reg_iotlb_hi |= 0x02000000UL;
+				else
+					xmhfhwm_vtd_drhd_state[i].reg_iotlb_hi &= ~(0x02000000UL);
+
+                                xmhfhwm_vtd_drhd_state[i].reg_iotlb_hi &= ~(0x80000000UL);
+			}
+
+
 			retval = true;
 			break;
 
