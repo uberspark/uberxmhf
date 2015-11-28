@@ -300,6 +300,7 @@ typedef struct {
 
 
 bool _impl_xmhfhwm_bios_read(u32 sysmemaddr, sysmem_read_t readsize, u64 *read_result);
+bool _impl_xmhfhwm_bios_write(u32 sysmemaddr, sysmem_write_t writesize, u64 write_value);
 bool _impl_xmhfhwm_bios_sysmemcopy(sysmem_copy_t sysmemcopy_type,
 				u32 dstaddr, u32 srcaddr, u32 size);
 

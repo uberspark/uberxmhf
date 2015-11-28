@@ -70,6 +70,8 @@ void gp_s1_iommuinit(void){
 
 		_XDPRINTF_("%s: Setting up DRHD unit %u...\n", __func__, drhd_handle);
 
+		#if 0
+
 		if(!xmhfhw_platform_x86pc_vtd_drhd_initialize(&vtd_drhd[drhd_handle]) ){
 			_XDPRINTF_("%s: error setting up DRHD unit %u. halting!\n", __func__, drhd_handle);
 			CASM_FUNCCALL(xmhfhw_cpu_hlt, CASM_NOPARAM);
@@ -117,6 +119,7 @@ void gp_s1_iommuinit(void){
 
 		//disable PMRs now (since DMA protection is active via translation)
 		xmhfhw_platform_x86pc_vtd_drhd_disable_pmr(&vtd_drhd[drhd_handle]);
+		#endif // 0
 
 		_XDPRINTF_("%s: Successfully setup DRHD unit %u\n", __func__, drhd_handle);
 	}
