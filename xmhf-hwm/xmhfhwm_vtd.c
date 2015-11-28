@@ -297,6 +297,11 @@ bool _impl_xmhfhwm_vtd_write(u32 sysmemaddr, sysmem_write_t writesize, u64 write
 		} else if(sysmemaddr == (u32)xmhfhwm_vtd_drhd_state[i].regbaseaddr +   VTD_GCMD_REG_OFF){
 			//@assert writesize == SYSMEMWRITEU32;
 			xmhfhwm_vtd_drhd_state[i].reg_gcmd = (u32)write_value;
+			if(xmhfhwm_vtd_drhd_state[i].reg_gcmd & 0x80000000UL){
+				//te enabled
+				//so..set gsts bit 31 to 1
+				xmhfhwm_vtd_drhd_state[i].reg_gsts |= 0x80000000UL;
+			}
 			retval = true;
 			break;
 
