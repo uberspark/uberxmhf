@@ -77,7 +77,6 @@ void gp_s1_iommuinit(void){
 		}
 
 		//@assert 1;
-		#if 0
 
 		//read and store DRHD supported page-walk length
 		unpack_VTD_CAP_REG(&cap, _vtd_reg_read(&vtd_drhd[drhd_handle], VTD_CAP_REG_OFF));
@@ -92,6 +91,9 @@ void gp_s1_iommuinit(void){
 		    }
 		}
 
+		//@assert 1;
+
+
 		if(cap.sagaw & 0x4){
 		    if(vtd_pagewalk_level == VTD_PAGEWALK_NONE || vtd_pagewalk_level == VTD_PAGEWALK_4LEVEL){
 			vtd_pagewalk_level = VTD_PAGEWALK_4LEVEL;
@@ -103,6 +105,9 @@ void gp_s1_iommuinit(void){
 		    }
 		}
 
+		//@assert 1;
+
+		#if 0
 
 		//set DRHD root entry table
 		if(!xmhfhw_platform_x86pc_vtd_drhd_set_root_entry_table(&vtd_drhd[drhd_handle], (u32)&_slabdevpgtbl_vtd_ret)){
