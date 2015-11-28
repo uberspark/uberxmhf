@@ -167,6 +167,18 @@ bool _impl_xmhfhwm_bios_read(u32 sysmemaddr, sysmem_read_t readsize, u64 *read_r
 	return retval;
 }
 
+bool _impl_xmhfhwm_bios_write(u32 sysmemaddr, sysmem_write_t writesize, u64 write_value){
+	bool retval = false;
+
+	if(sysmemaddr == XMHFHWM_BIOS_VTDDMARTABLEBASE){
+		//@assert writesize == SYSMEMWRITEU32;
+		//TODO: emulate ZAPping of DMAR table
+		retval = true;
+	}
+
+	return retval;
+}
+
 
 bool _impl_xmhfhwm_bios_sysmemcopy(sysmem_copy_t sysmemcopy_type,
 				u32 dstaddr, u32 srcaddr, u32 size){

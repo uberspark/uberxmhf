@@ -105,6 +105,7 @@ void main(void){
 	//execute harness
 	vtd_drhd_maxhandle = 2;
 	vtd_drhd_scanned = true;
+	vtd_dmar_table_physical_address =XMHFHWM_BIOS_VTDDMARTABLEBASE;
 	vtd_drhd[0].regbaseaddr =0x00000000fed90000ULL;
 	vtd_drhd[0].iotlb_regaddr = 0x00000000fed90108ULL;
 	vtd_drhd[0].iva_regaddr = 0x00000000fed90100ULL;

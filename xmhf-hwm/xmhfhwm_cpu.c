@@ -1005,6 +1005,10 @@ static void _impl_xmhfhwm_cpu_sysmemwrite(u32 sysmemaddr, sysmem_write_t writesi
         if(hwmdevstatus)
 		return;
 
+	hwmdevstatus = _impl_xmhfhwm_bios_write(sysmemaddr, writesize, write_value);
+        if(hwmdevstatus)
+		return;
+
 	//@assert 0;
 	return;
 }
