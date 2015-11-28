@@ -70,12 +70,14 @@ void gp_s1_iommuinit(void){
 
 		_XDPRINTF_("%s: Setting up DRHD unit %u...\n", __func__, drhd_handle);
 
-		#if 0
 
 		if(!xmhfhw_platform_x86pc_vtd_drhd_initialize(&vtd_drhd[drhd_handle]) ){
 			_XDPRINTF_("%s: error setting up DRHD unit %u. halting!\n", __func__, drhd_handle);
 			CASM_FUNCCALL(xmhfhw_cpu_hlt, CASM_NOPARAM);
 		}
+
+		//@assert 1;
+		#if 0
 
 		//read and store DRHD supported page-walk length
 		unpack_VTD_CAP_REG(&cap, _vtd_reg_read(&vtd_drhd[drhd_handle], VTD_CAP_REG_OFF));
