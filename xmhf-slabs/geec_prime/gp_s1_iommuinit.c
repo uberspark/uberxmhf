@@ -107,13 +107,16 @@ void gp_s1_iommuinit(void){
 
 		//@assert 1;
 
-		#if 0
 
 		//set DRHD root entry table
 		if(!xmhfhw_platform_x86pc_vtd_drhd_set_root_entry_table(&vtd_drhd[drhd_handle], (u32)&_slabdevpgtbl_vtd_ret)){
 			_XDPRINTF_("%s: Halting: error in setting DRHD RET\n", __func__);
 			CASM_FUNCCALL(xmhfhw_cpu_hlt, CASM_NOPARAM);
 		}
+
+		//@assert 1;
+
+		#if 0
 
 		//invalidate caches
 		if(!xmhfhw_platform_x86pc_vtd_drhd_invalidatecaches(&vtd_drhd[drhd_handle])){
