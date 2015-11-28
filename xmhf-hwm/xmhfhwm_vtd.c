@@ -326,6 +326,12 @@ bool _impl_xmhfhwm_vtd_write(u32 sysmemaddr, sysmem_write_t writesize, u64 write
 		} else if(sysmemaddr == (u32)xmhfhwm_vtd_drhd_state[i].regbaseaddr +   VTD_PMEN_REG_OFF){
 			//@assert writesize == SYSMEMWRITEU32;
 			xmhfhwm_vtd_drhd_state[i].reg_pmen = (u32)write_value;
+			if(!(xmhfhwm_vtd_drhd_state[i].reg_pmen & 0x80000000UL))
+				xmhfhwm_vtd_drhd_state[i].reg_pmen &= ~(0x00000001UL);
+
+			if(xmhfhwm_vtd_drhd_state[i].reg_pmen & 0x80000000UL)
+				xmhfhwm_vtd_drhd_state[i].reg_pmen |= 0x00000001UL;
+
 			retval = true;
 			break;
 

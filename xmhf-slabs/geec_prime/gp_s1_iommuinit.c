@@ -131,11 +131,11 @@ void gp_s1_iommuinit(void){
 
 		//@assert 1;
 
-		#if 0
 
 		//disable PMRs now (since DMA protection is active via translation)
 		xmhfhw_platform_x86pc_vtd_drhd_disable_pmr(&vtd_drhd[drhd_handle]);
-		#endif // 0
+
+		//@assert 1;
 
 		_XDPRINTF_("%s: Successfully setup DRHD unit %u\n", __func__, drhd_handle);
 	}
