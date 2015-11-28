@@ -251,6 +251,7 @@ extern __attribute__((section(".data"))) bool vtd_drhd_scanned;	//set to true on
 
 extern __attribute__((section(".data"))) vtd_drhd_handle_t vtd_drhd_maxhandle;
 extern __attribute__((section(".data"))) u32 vtd_dmar_table_physical_address;
+extern __attribute__((section(".data"))) u32 vtd_ret_address;
 
 
 //DMA page tables

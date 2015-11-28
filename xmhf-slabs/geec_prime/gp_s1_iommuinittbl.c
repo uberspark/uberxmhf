@@ -60,9 +60,11 @@
 	assigns _slabdevpgtbl_vtd_ret[0..(VTD_RET_MAXPTRS-1)].qwords[0];
 	assigns _slabdevpgtbl_vtd_ret[0..(VTD_RET_MAXPTRS-1)].qwords[1];
 	assigns invoked_clearcet[0..(VTD_RET_MAXPTRS-1)];
+	assigns vtd_ret_address;
 	ensures \forall integer x; 0 <= x < VTD_RET_MAXPTRS ==> ( _slabdevpgtbl_vtd_ret[x].qwords[0] == (vtd_make_rete((u64)&_slabdevpgtbl_vtd_cet[x], VTD_RET_PRESENT)) );
 	ensures \forall integer x; 0 <= x < VTD_RET_MAXPTRS ==> ( _slabdevpgtbl_vtd_ret[x].qwords[1] == 0 );
 	ensures \forall integer x; 0 <= x < VTD_RET_MAXPTRS ==> ( invoked_clearcet[x] == true );
+	ensures vtd_ret_address == (u32)&_slabdevpgtbl_vtd_ret;
 @*/
 void gp_s1_iommuinittbl(void){
     u32 i, j;
@@ -86,5 +88,7 @@ void gp_s1_iommuinittbl(void){
 	gp_s1_iommuinittbl_clearcet(i);
 	//@ghost invoked_clearcet[i] = true;
     }
+
+    vtd_ret_address = (u32)&_slabdevpgtbl_vtd_ret;
 }
 

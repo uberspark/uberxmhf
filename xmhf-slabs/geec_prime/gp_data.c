@@ -260,6 +260,7 @@ __attribute__((section(".data"))) bool vtd_drhd_scanned=false;	//set to true onc
 
 __attribute__((section(".data"))) vtd_drhd_handle_t vtd_drhd_maxhandle=0;
 __attribute__((section(".data"))) u32 vtd_dmar_table_physical_address=0;
+__attribute__((section(".data"))) u32 vtd_ret_address=0;
 
 
 //DMA page tables
