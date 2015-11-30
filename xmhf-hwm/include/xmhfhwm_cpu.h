@@ -2298,6 +2298,7 @@ extern void xmhfhwm_vdriver_vhslabretaddr(void);
 extern void xmhfhwm_vdriver_uhslabretaddr(void);
 extern void hwm_vdriver_cpu_vmwrite(u32 encoding, u32 value);
 extern void xmhfhwm_vdriver_writeesp(u32 oldval, u32 newval);
+extern void xmhfhwm_vdriver_cpu_writecr3(u32 oldval, u32 newval);
 
 //////
 // cpu model variables and instruction implementations
