@@ -55,85 +55,10 @@
 #include <xc_init.h>
 
 
-
-//wake up application processors (cores) in the system
-static void __xmhfhic_smp_container_vmx_wakeupAPs(void){
-        txt_heap_t *txt_heap;
-        mle_join_t *mle_join;
-        sinit_mle_data_t sinit_mle_data;
-        os_sinit_data_t os_sinit_data;
-
-	//populate apdata structure
-	apdata.ap_cr3 = CASM_FUNCCALL(read_cr3,CASM_NOPARAM);
-	apdata.ap_cr4 = CASM_FUNCCALL(read_cr4,CASM_NOPARAM);
-	apdata.ap_entrypoint = (u32)&gp_s4_apstacks;
-	apdata.ap_gdtdesc_limit = sizeof(apdata.ap_gdt) - 1;
-	apdata.ap_gdtdesc_base = (X86SMP_APBOOTSTRAP_DATASEG << 4) + 48;
-	apdata.ap_cs_selector = __CS_CPL0;
-	apdata.ap_eip = (X86SMP_APBOOTSTRAP_CODESEG << 4);
-	apdata.ap_gdt[0] = 0x0000000000000000ULL;
-	apdata.ap_gdt[1] = 0x00cf9a000000ffffULL;
-	apdata.ap_gdt[2] = 0x00cf92000000ffffULL;
-
-	//_XDPRINTF_("%s: sizeof(apdata)=%u bytes\n", __func__, sizeof(apdata));
-	//_XDPRINTF_("  apdata.ap_gdtdesc_limit at %08x\n", &apdata.ap_gdtdesc_limit);
-	//_XDPRINTF_("  apdata.ap_gdt at %08x\n", &apdata.ap_gdt);
-
-	//copy apdata to X86SMP_APBOOTSTRAP_DATASEG
-	memcpy((void *)(X86SMP_APBOOTSTRAP_DATASEG << 4), (void *)&apdata, sizeof(apdata));
-
-	//copy AP entry code to X86SMP_APBOOTSTRAP_CODESEG
-	memcpy((void *)(X86SMP_APBOOTSTRAP_CODESEG << 4), (void *)&gp_s4_entry, PAGE_SIZE_4K);
-
-
-	//grab sinit2mle and os2sinit data structures from TXT heap
-        txt_heap = get_txt_heap();
-        xmhfhw_sysmemaccess_copy(&sinit_mle_data,
-		get_sinit_mle_data_start(txt_heap, (uint32_t)read_pub_config_reg(TXTCR_HEAP_SIZE)),
-		sizeof(sinit_mle_data_t));
-        xmhfhw_sysmemaccess_copy(&os_sinit_data,
-		get_os_sinit_data_start(txt_heap, (uint32_t)read_pub_config_reg(TXTCR_HEAP_SIZE)),
-		sizeof(os_sinit_data_t));
-
-        // enable SMIs on BSP before waking APs (which will enable them on APs)
-        // because some SMM may take immediate SMI and hang if AP gets in first
-        //_XDPRINTF_("Enabling SMIs on BSP\n");
-        //__getsec_smctrl();
-
-	//get a pointer to the mle_join data structure within apdata
-        mle_join = (mle_join_t *)((u32)(X86SMP_APBOOTSTRAP_DATASEG << 4) + 16);
-
-        _XDPRINTF_("\nBSP: mle_join.gdt_limit = %x", mle_join->gdt_limit);
-        _XDPRINTF_("\nBSP: mle_join.gdt_base = %x", mle_join->gdt_base);
-        _XDPRINTF_("\nBSP: mle_join.seg_sel = %x", mle_join->seg_sel);
-        _XDPRINTF_("\nBSP: mle_join.entry_point = %x", mle_join->entry_point);
-
-        //populate TXT MLE_JOIN register
-        write_priv_config_reg(TXTCR_MLE_JOIN, (uint64_t)(unsigned long)mle_join);
-
-	//wakeup APs
-        if (os_sinit_data.capabilities & TXT_CAPS_T_RLP_WAKE_MONITOR) {
-            _XDPRINTF_("BSP: joining RLPs to MLE with MONITOR wakeup\n");
-            _XDPRINTF_("BSP: rlp_wakeup_addr=0x%08x\n", sinit_mle_data.rlp_wakeup_addr);
-	    CASM_FUNCCALL(xmhfhw_sysmemaccess_writeu32, sinit_mle_data.rlp_wakeup_addr, 0x01);
-        }else {
-            _XDPRINTF_("BSP: joining RLPs to MLE with GETSEC[WAKEUP]\n");
-            __getsec_wakeup();
-            _XDPRINTF_("BSP: GETSEC[WAKEUP] completed\n");
-        }
-
-}
-
-
-
 void gp_s3_entry(void){
 
-	//switch to prime page tables
-	_XDPRINTF_("Proceeding to switch to GEEC_PRIME pagetables...\n");
-	//CASM_FUNCCALL(write_cr3,(u32)xmhfgeec_slab_info_table[XMHFGEEC_SLAB_GEEC_PRIME].mempgtbl_cr3);
+	//switch to verified object page tables
 	CASM_FUNCCALL(write_cr3,(u32)&gp_rwdatahdr.gp_vhslabmempgtbl_lvl4t);
-	_XDPRINTF_("Switched to GEEC_PRIME pagetables...\n");
-
 
 	//save cpu MTRR state which we will later replicate on all APs
 	xmhfhw_cpu_x86_save_mtrrs(&_mtrrs);
@@ -141,23 +66,15 @@ void gp_s3_entry(void){
 	//restore SINIT to MLE MTRR mappings
 	xmhfhw_cpu_x86_restore_mtrrs(&sinit2mle_mtrrs);
 
-	//save page table base which we will later replicate on all APs
-	//_ap_cr3 = CASM_FUNCCALL(read_cr3,CASM_NOPARAM);
+	//start all cores
+	gp_s3_startcores();
 
-	//wake up APS
-	if(xcbootinfo->cpuinfo_numentries > 1){
-	  __xmhfhic_smp_container_vmx_wakeupAPs();
-	}
-
-	//fall through to common code
-	_XDPRINTF_("%s: Relinquishing BSP thread and moving to common...\n", __func__);
+	//move on to state-5
 	gp_s5_entry();
 
 	//we should never get here
 	_XDPRINTF_("%s:%u: Must never get here. Halting\n", __func__, __LINE__);
-	HALT();
-
-
+	CASM_FUNCCALL(xmhfhw_cpu_hlt, CASM_NOPARAM);
 }
 
 
