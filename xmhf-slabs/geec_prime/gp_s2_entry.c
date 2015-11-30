@@ -94,13 +94,6 @@ void gp_s2_entry(void){
 	gp_s2_setupmempgtbl();
 
 
-	//switch to prime page tables
-	_XDPRINTF_("Proceeding to switch to GEEC_PRIME pagetables...\n");
-	//CASM_FUNCCALL(write_cr3,(u32)xmhfgeec_slab_info_table[XMHFGEEC_SLAB_GEEC_PRIME].mempgtbl_cr3);
-	CASM_FUNCCALL(write_cr3,(u32)&gp_rwdatahdr.gp_vhslabmempgtbl_lvl4t);
-	_XDPRINTF_("Switched to GEEC_PRIME pagetables...\n");
-
-
 	//setup base CPU data structures
 	//xmhfhic_arch_setup_base_cpu_data_structures();
 	//initialize GDT
@@ -111,6 +104,14 @@ void gp_s2_entry(void){
 
 	//initialize TSS
 	gp_s2_setuptss();
+
+
+
+	//switch to prime page tables
+	_XDPRINTF_("Proceeding to switch to GEEC_PRIME pagetables...\n");
+	//CASM_FUNCCALL(write_cr3,(u32)xmhfgeec_slab_info_table[XMHFGEEC_SLAB_GEEC_PRIME].mempgtbl_cr3);
+	CASM_FUNCCALL(write_cr3,(u32)&gp_rwdatahdr.gp_vhslabmempgtbl_lvl4t);
+	_XDPRINTF_("Switched to GEEC_PRIME pagetables...\n");
 
 
 	//save cpu MTRR state which we will later replicate on all APs
