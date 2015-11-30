@@ -2683,6 +2683,9 @@ extern void _impl_xmhfhwm_cpu_insn_rep_movsb_sysmem(sysmem_copy_t sysmemcopy_typ
 	__builtin_annot("rep movsb"); \
 	_impl_xmhfhwm_cpu_insn_rep_movsb_sysmem(SYSMEMCOPYSYS2OBJ); \
 
+#define xmhfhwm_cpu_insn_rep_movsb_obj2sys() \
+	__builtin_annot("rep movsb"); \
+	_impl_xmhfhwm_cpu_insn_rep_movsb_sysmem(SYSMEMCOPYOBJ2SYS); \
 
 #define _xmhfhwm_cpu_insn_movl_imm_eax(x) \
 	__builtin_annot("movl $"#x", %eax"); \

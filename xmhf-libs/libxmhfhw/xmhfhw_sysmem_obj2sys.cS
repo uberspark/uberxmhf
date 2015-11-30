@@ -44,64 +44,38 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
+//functions to read/write memory from "system physical address"
+//all reads and writes to non-framework memory areas (e.g., BIOS
+//data areas, MMIO, rich guest memory etc.) should finally end up
+//here
 
-//XMHF hardware interface
 //author: amit vasudevan (amitvasudevan@acm.org)
 
-#ifndef __XMHF_HWM_H__
-#define __XMHF_HWM_H__
-
-#define __CASMFNDEF__(x) __attribute__((naked))
-#define __CASMFNCALL__(x) (x);
-
-
-#if defined(__XMHF_TARGET_TRIAD_X86_VMX_X86PC__)
-
-#ifndef __ASSEMBLY__
-	typedef struct {
-		u32 addr_start;
-		u32 addr_end;
-		u32 protection;
-	} physmem_extent_t;
-
-	typedef enum {
-		SYSMEMREADU8,
-		SYSMEMREADU16,
-		SYSMEMREADU32,
-		SYSMEMREADU64
-	} sysmem_read_t;
-
-	typedef enum {
-		SYSMEMWRITEU8,
-		SYSMEMWRITEU16,
-		SYSMEMWRITEU32,
-		SYSMEMWRITEU64
-	} sysmem_write_t;
-
-	typedef enum {
-		SYSMEMCOPYSYS2OBJ,
-		SYSMEMCOPYOBJ2SYS,
-	} sysmem_copy_t;
+#include <xmhf.h>
+#include <xmhf-hwm.h>
+#include <xmhfhw.h>
+#include <xmhf-debug.h>
 
 
 
-#endif // __ASSEMBLY__
+CASM_FUNCDEF(void, xmhfhw_sysmem_copy_obj2sys,
+{
+	xmhfhwm_cpu_insn_pushl_esi();	//save esi
+	xmhfhwm_cpu_insn_pushl_edi();	//save edi
 
-    #include <xmhfhwm_casm.h>  			//CPU
-    #include <xmhfhwm_e1000.h>			//e1000 network card
-    #include <xmhfhwm_cpu.h>  			//CPU
-    #include <xmhfhwm_txt.h>			//TXT
-    #include <xmhfhwm_pci.h>        		//PCI bus glue
-    #include <xmhfhwm_pit.h>        		//PIT
-    #include <xmhfhwm_vtd.h>			//VMX DMA protection
-    #include <xmhfhwm_lapic.h>			//APIC
-    #include <xmhfhwm_bios.h>			//ACPI glue
+	xmhfhwm_cpu_insn_movl_mesp_edi(0xC); //edi = dest
+	xmhfhwm_cpu_insn_movl_mesp_esi(0x10); //esi = src
+        xmhfhwm_cpu_insn_movl_mesp_ecx(0x14); //ecx = size
+        xmhfhwm_cpu_insn_cld(); //clear direction flag, copy forward
+        xmhfhwm_cpu_insn_rep_movsb_obj2sys(); //copy
 
-#else
-
-	#error "You must define a valid cpu-container-platform triad before trying to build."
-
-#endif
+	xmhfhwm_cpu_insn_popl_edi();	//restore edi
+	xmhfhwm_cpu_insn_popl_esi();	//restore esi
+	xmhfhwm_cpu_insn_ret();		//return
+},
+u8 *sysdst,
+u8 *objsrc,
+u32 size)
 
 
-#endif //__XMHF_HWM_H__
+
