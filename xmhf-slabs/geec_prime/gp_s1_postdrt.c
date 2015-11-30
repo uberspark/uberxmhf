@@ -61,6 +61,9 @@ void gp_s1_postdrt(void){
 	u32 txt_heap_size;
 	u32 os_mle_data_paddr;
 
+	//save SINIT to MLE MTRR mappings
+	xmhfhw_cpu_x86_save_mtrrs(&sinit2mle_mtrrs);
+
 	os_mle_data.saved_mtrr_state.num_var_mtrrs=0;
 
 	txt_heap = get_txt_heap();
