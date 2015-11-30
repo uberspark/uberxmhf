@@ -71,8 +71,6 @@ static void __xmhfhic_smp_container_vmx_wakeupAPs(void);
 
 
 
-
-
 void gp_s2_entry(void){
 
 	gp_s2_setupslabdevmap();
@@ -104,7 +102,16 @@ void gp_s2_entry(void){
 
 
 	//setup base CPU data structures
-	xmhfhic_arch_setup_base_cpu_data_structures();
+	//xmhfhic_arch_setup_base_cpu_data_structures();
+	//initialize GDT
+	gp_s2_setupgdt();
+
+	//initialize IDT
+	gp_s2_setupidt();
+
+	//initialize TSS
+	gp_s2_setuptss();
+
 
 	//save cpu MTRR state which we will later replicate on all APs
 	xmhfhw_cpu_x86_save_mtrrs(&_mtrrs);
@@ -766,73 +773,8 @@ void xmhfhic_smp_entry(u32 cpuid){
 
 
 
-/////////////////////////////////////////////////////////////////////
-// setup base CPU data structures
 
-//initialize GDT
-static void __xmhfhic_x86vmx_initializeGDT(void){
-		u32 i;
-
-		for(i=0; i < xcbootinfo->cpuinfo_numentries; i++){
-            TSSENTRY *t;
-            u32 tss_idx = xcbootinfo->cpuinfo_buffer[i].lapic_id;
-            u32 tss_base=(u32)&__xmhfhic_x86vmx_tss[tss_idx].tss_mainblock;
-
-            //TSS descriptor
-            t= (TSSENTRY *)&__xmhfhic_x86vmx_gdt_start[(__TRSEL/8)+(i*2)];
-            t->attributes1= 0xE9;
-            t->limit16_19attributes2= 0x0;
-            t->baseAddr0_15= (u16)(tss_base & 0x0000FFFF);
-            t->baseAddr16_23= (u8)((tss_base & 0x00FF0000) >> 16);
-            t->baseAddr24_31= (u8)((tss_base & 0xFF000000) >> 24);
-            //t->limit0_15=0x67;
-            //t->limit0_15=sizeof(tss_t)-1;
-            t->limit0_15=(4*PAGE_SIZE_4K)-1;
-
-            _XDPRINTF_("%s: setup TSS CPU idx=%u with base address=%x, iobitmap=%x\n, size=%u bytes", __func__,
-                       tss_idx, tss_base, (u32)&__xmhfhic_x86vmx_tss[tss_idx].tss_iobitmap, t->limit0_15);
-
-		}
-
-}
-
-//initialize IDT
-static void __xmhfhic_x86vmx_initializeIDT(void){
-	u32 i;
-
-	for(i=0; i < EMHF_XCPHANDLER_MAXEXCEPTIONS; i++){
-		__xmhfhic_x86vmx_idt_start[i].isrLow= (u16)xmhfgeec_slab_info_table[XMHFGEEC_SLAB_GEEC_SENTINEL].slab_memoffset_entries[GEEC_SENTINEL_MEMOFFSETS_EXCEPTIONHANDLERS_IDX+i];
-		__xmhfhic_x86vmx_idt_start[i].isrHigh= (u16) ( xmhfgeec_slab_info_table[XMHFGEEC_SLAB_GEEC_SENTINEL].slab_memoffset_entries[GEEC_SENTINEL_MEMOFFSETS_EXCEPTIONHANDLERS_IDX+i] >> 16 );
-		__xmhfhic_x86vmx_idt_start[i].isrSelector = __CS_CPL0;
-		__xmhfhic_x86vmx_idt_start[i].count=0x0;
-		__xmhfhic_x86vmx_idt_start[i].type=0xEE;	//32-bit interrupt gate
-                                //present=1, DPL=11b, system=0, type=1110b
-        //__xmhfhic_x86vmx_idt_start[i].offset3263=0;
-        //__xmhfhic_x86vmx_idt_start[i].reserved=0;
-	}
-
-}
-
-
-//initialize TSS
-static void __xmhfhic_x86vmx_initializeTSS(void){
-		u32 i;
-
-		//initialize TSS descriptors for all CPUs
-		for(i=0; i < xcbootinfo->cpuinfo_numentries; i++){
-            u32 tss_idx = xcbootinfo->cpuinfo_buffer[i].lapic_id;
-
-            memset(&__xmhfhic_x86vmx_tss[tss_idx], 0, sizeof(__xmhfhic_x86vmx_tss[tss_idx]));
-            tss_t *tss= (tss_t *)__xmhfhic_x86vmx_tss[tss_idx].tss_mainblock;
-            tss->esp0 = (u32) ( &__xmhfhic_x86vmx_tss_stack[tss_idx] + sizeof(__xmhfhic_x86vmx_tss_stack[0]) );
-            tss->ss0 = __DS_CPL0;
-            tss->iotbl_addr = (u32)&__xmhfhic_x86vmx_tss[tss_idx].tss_iobitmap - (u32)&__xmhfhic_x86vmx_tss[tss_idx].tss_mainblock;
-            _XDPRINTF_("%s: tss_idx=%u, iotbl_addr=%x\n", __func__, tss_idx,
-                       tss->iotbl_addr);
-		}
-}
-
-
+#if 0
 void xmhfhic_arch_setup_base_cpu_data_structures(void){
 
     //initialize GDT
@@ -847,6 +789,7 @@ void xmhfhic_arch_setup_base_cpu_data_structures(void){
     __xmhfhic_x86vmx_initializeTSS();
 
 }
+#endif // 0
 
 
 

@@ -289,6 +289,9 @@ void gp_s2_entry(void);
 void gp_s2_setupslabdevmap(void);
 void gp_s2_setupiotbl(void);
 void gp_s2_setupmempgtbl(void);
+void gp_s2_setupgdt(void);
+void gp_s2_setupidt(void);
+void gp_s2_setuptss(void);
 
 
 CASM_FUNCDECL(void gp_s3_entry(void *noparam));
