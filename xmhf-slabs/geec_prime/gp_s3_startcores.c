@@ -77,10 +77,12 @@ void gp_s3_startcores(void){
 	//_XDPRINTF_("  apdata.ap_gdt at %08x\n", &apdata.ap_gdt);
 
 	//copy apdata to X86SMP_APBOOTSTRAP_DATASEG
-	memcpy((void *)(X86SMP_APBOOTSTRAP_DATASEG << 4), (void *)&apdata, sizeof(apdata));
+	CASM_FUNCCALL(xmhfhw_sysmem_copy_obj2sys, (u32)(X86SMP_APBOOTSTRAP_DATASEG << 4),
+						(void *)&apdata, sizeof(apdata));
 
 	//copy AP entry code to X86SMP_APBOOTSTRAP_CODESEG
-	memcpy((void *)(X86SMP_APBOOTSTRAP_CODESEG << 4), (void *)&gp_s4_entry, PAGE_SIZE_4K);
+	CASM_FUNCCALL(xmhfhw_sysmem_copy_obj2sys, (u32)(X86SMP_APBOOTSTRAP_CODESEG << 4),
+		(void *)&gp_s4_entry, PAGE_SIZE_4K);
 
 
 	//grab sinit2mle and os2sinit data structures from TXT heap

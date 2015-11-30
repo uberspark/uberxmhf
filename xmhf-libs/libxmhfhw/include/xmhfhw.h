@@ -520,6 +520,11 @@ CASM_FUNCDECL(void xmhfhw_sysmemaccess_copy(u8 *dest, u8 *src, u32 size));
 CASM_FUNCDECL(void xmhfhw_sysmem_copy_sys2obj(u8 *objdst, u8 *syssrc, u32 size));
 
 
+/*@
+  assigns \nothing;
+@*/
+CASM_FUNCDECL(void xmhfhw_sysmem_copy_obj2sys(u8 *sysdst, u8 *objsrc, u32 size));
+
 
 /*@
   assigns \nothing;
