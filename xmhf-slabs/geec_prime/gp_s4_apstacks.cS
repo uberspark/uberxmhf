@@ -104,7 +104,7 @@ CASM_FUNCDEF(bool, gp_s4_apstacks,
     xmhfhwm_cpu_insn_addl_imm_eax(_init_cpustacks);
     xmhfhwm_cpu_insn_movl_eax_esp();
 
-    xmhfhwm_cpu_insn_jmp(gp_s4_s6_entry);
+    xmhfhwm_cpu_insn_jmp(gp_s5_entry);
 },
 void *noparam)
 
