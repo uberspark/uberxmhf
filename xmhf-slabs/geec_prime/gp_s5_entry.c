@@ -55,11 +55,7 @@
 #include <xc_init.h>
 
 
-
-
-
-//common function which is entered by all CPUs upon SMP initialization
-//note: this is specific to the x86 architecture backend
+//we enter here with SMP enabled
 void gp_s5_entry(void){
 	u32 cpuid;
 	bool isbsp;
@@ -67,28 +63,32 @@ void gp_s5_entry(void){
 	isbsp = xmhfhw_lapic_isbsp();
 	cpuid  = xmhf_baseplatform_arch_x86_getcpulapicid();
 
+	//_XDPRINTF_("%s[%u] got control, BSP=%u...\n", __func__, (u16)cpuid,
+	//	isbsp);
+
         CASM_FUNCCALL(spin_lock,&gp_state4_smplock);
 
 	gp_s5_setupcpustate(cpuid, isbsp);
 
         CASM_FUNCCALL(spin_unlock,&gp_state4_smplock);
 
-    //relinquish HIC initialization and move on to the first slab
-    _XDPRINTF_("%s[%u]: proceeding to call init slab at %x\n", __func__, (u16)cpuid,
-                xmhfgeec_slab_info_table[XMHFGEEC_SLAB_XC_INIT].entrystub);
 
-    {
-        slab_params_t sp;
+	//invoke startup slab
+	//_XDPRINTF_("%s[%u]: proceeding to call init slab at %x\n", __func__, (u16)cpuid,
+	//	xmhfgeec_slab_info_table[XMHFGEEC_SLAB_XC_INIT].entrystub);
 
-        memset(&sp, 0, sizeof(sp));
-        sp.cpuid = cpuid;
-        sp.src_slabid = XMHFGEEC_SLAB_GEEC_PRIME;
-        sp.dst_slabid = XMHFGEEC_SLAB_XC_INIT;
-        XMHF_SLAB_CALLNEW(&sp);
-    }
+	{
+	slab_params_t sp;
+
+	memset(&sp, 0, sizeof(sp));
+	sp.cpuid = cpuid;
+	sp.src_slabid = XMHFGEEC_SLAB_GEEC_PRIME;
+	sp.dst_slabid = XMHFGEEC_SLAB_XC_INIT;
+	XMHF_SLAB_CALLNEW(&sp);
+	}
 
 
-    _XDPRINTF_("%s[%u,%u]: Should never be here. Halting!\n", __func__, (u16)cpuid, isbsp);
-    HALT();
+	_XDPRINTF_("%s[%u,%u]: Should never be here. Halting!\n", __func__, (u16)cpuid, isbsp);
+	HALT();
 
 }

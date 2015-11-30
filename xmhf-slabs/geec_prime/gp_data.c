@@ -249,6 +249,7 @@ __attribute__((section(".data"))) u32 numentries_sysdev_memioregions=0;
 __attribute__((section(".data"))) struct _memorytype _vmx_ept_memorytypes[MAX_MEMORYTYPE_ENTRIES]; //EPT memory types array
 
 __attribute__((section(".data"))) mtrr_state_t _mtrrs;
+__attribute__((section(".data"))) mtrr_state_t sinit2mle_mtrrs;
 
 __attribute__((section(".data"))) u32 gp_state4_smplock = 1;
 
@@ -273,3 +274,7 @@ __attribute__((section(".data"))) __attribute__((aligned(4096))) vtd_pdte_t _sla
 __attribute__((section(".data"))) __attribute__((aligned(4096))) vtd_pte_t _slabdevpgtbl_pt[XMHFGEEC_TOTAL_SLABS][MAX_SLAB_DMADATA_PDT_ENTRIES][PAE_PTRS_PER_PT];
 __attribute__((section(".data"))) _slabdevpgtbl_infotable_t _slabdevpgtbl_infotable[XMHFGEEC_TOTAL_SLABS];
 __attribute__((section(".data"))) u32 vtd_pagewalk_level;
+
+
+//SMP
+__attribute__((section(".data"))) x86smp_apbootstrapdata_t apdata;
