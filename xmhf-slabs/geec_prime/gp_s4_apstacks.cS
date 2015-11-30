@@ -55,7 +55,7 @@
 // author: amit vasudevan (amitvasudevan@acm.org)
 
 
-CASM_FUNCDEF(bool, gp_s3_apstacks,
+CASM_FUNCDEF(bool, gp_s4_apstacks,
 {
     xmhfhwm_cpu_insn_movw_ds_ax();
     xmhfhwm_cpu_insn_movw_ax_es();

@@ -294,11 +294,11 @@ void gp_s2_setupidt(void);
 void gp_s2_setuptss(void);
 
 
-CASM_FUNCDECL(void gp_s3_entry(void *noparam));
-CASM_FUNCDECL(bool gp_s3_apstacks(void *noparam));
-
-
 void gp_s3_entry(void);
+
+
+CASM_FUNCDECL(void gp_s4_entry(void *noparam));
+CASM_FUNCDECL(bool gp_s4_apstacks(void *noparam));
 
 
 void gp_s4_s6_entry(void);
