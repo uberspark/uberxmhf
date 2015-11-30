@@ -54,7 +54,7 @@
 // GEEC prime SMP assembly language code blobs
 // author: amit vasudevan (amitvasudevan@acm.org)
 
-CASM_FUNCDEF(void, gp_s3_entry,
+CASM_FUNCDEF(void, gp_s4_entry,
 {
     xmhfhwm_cpu_insn_movw_imm_ax(__DS_CPL0);
     xmhfhwm_cpu_insn_movw_ax_ds();

@@ -577,7 +577,7 @@ static void __xmhfhic_smp_container_vmx_wakeupAPs(void){
 
     apdata.ap_cr3 = CASM_FUNCCALL(read_cr3,CASM_NOPARAM);
     apdata.ap_cr4 = CASM_FUNCCALL(read_cr4,CASM_NOPARAM);
-    apdata.ap_entrypoint = (u32)&gp_s3_apstacks;
+    apdata.ap_entrypoint = (u32)&gp_s4_apstacks;
     apdata.ap_gdtdesc_limit = sizeof(apdata.ap_gdt) - 1;
     //apdata.ap_gdtdesc_base = (X86SMP_APBOOTSTRAP_DATASEG << 4) + offsetof(x86smp_apbootstrapdata_t, ap_gdt);
     apdata.ap_gdtdesc_base = (X86SMP_APBOOTSTRAP_DATASEG << 4) + 48;
@@ -594,7 +594,7 @@ static void __xmhfhic_smp_container_vmx_wakeupAPs(void){
 
     memcpy((void *)(X86SMP_APBOOTSTRAP_DATASEG << 4), (void *)&apdata, sizeof(apdata));
 
-    memcpy((void *)(X86SMP_APBOOTSTRAP_CODESEG << 4), (void *)&gp_s3_entry, PAGE_SIZE_4K);
+    memcpy((void *)(X86SMP_APBOOTSTRAP_CODESEG << 4), (void *)&gp_s4_entry, PAGE_SIZE_4K);
 
 #if defined (__DRT__)
     {
