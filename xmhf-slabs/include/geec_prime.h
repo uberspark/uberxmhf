@@ -298,6 +298,9 @@ CASM_FUNCDECL(void gp_s3_entry(void *noparam));
 CASM_FUNCDECL(bool gp_s3_apstacks(void *noparam));
 
 
+void gp_s3_entry(void);
+
+
 void gp_s4_s6_entry(void);
 
 
