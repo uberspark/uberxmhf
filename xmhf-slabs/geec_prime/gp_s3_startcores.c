@@ -85,10 +85,10 @@ void gp_s3_startcores(void){
 
 	//grab sinit2mle and os2sinit data structures from TXT heap
         txt_heap = get_txt_heap();
-        xmhfhw_sysmemaccess_copy(&sinit_mle_data,
+        CASM_FUNCCALL(xmhfhw_sysmem_copy_sys2obj, &sinit_mle_data,
 		get_sinit_mle_data_start(txt_heap, (uint32_t)read_pub_config_reg(TXTCR_HEAP_SIZE)),
 		sizeof(sinit_mle_data_t));
-        xmhfhw_sysmemaccess_copy(&os_sinit_data,
+        CASM_FUNCCALL(xmhfhw_sysmem_copy_sys2obj, &os_sinit_data,
 		get_os_sinit_data_start(txt_heap, (uint32_t)read_pub_config_reg(TXTCR_HEAP_SIZE)),
 		sizeof(os_sinit_data_t));
 
