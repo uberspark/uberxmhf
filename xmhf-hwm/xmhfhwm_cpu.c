@@ -731,6 +731,7 @@ void _impl_xmhfhwm_cpu_insn_movl_eax_cr0(void){
 }
 
 void _impl_xmhfhwm_cpu_insn_movl_eax_cr3(void){
+	xmhfhwm_vdriver_cpu_writecr3(xmhfhwm_cpu_cr3, xmhfhwm_cpu_gprs_eax);
 	xmhfhwm_cpu_cr3 = xmhfhwm_cpu_gprs_eax;
 }
 
