@@ -301,10 +301,12 @@ CASM_FUNCDECL(void gp_s4_entry(void *noparam));
 CASM_FUNCDECL(bool gp_s4_apstacks(void *noparam));
 
 
-void gp_s4_s6_entry(void);
+//void gp_s4_s6_entry(void);
 
 
-void gp_s5_entry(u32 cpuid, bool isbsp);
+void gp_s5_entry(void);
+void gp_s5_setupcpustate(u32 cpuid, bool isbsp);
+
 
 
 void xmhfhic_arch_setup_slab_info(void);

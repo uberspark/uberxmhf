@@ -220,7 +220,7 @@ void gp_s3_entry(void){
 
 	//fall through to common code
 	_XDPRINTF_("%s: Relinquishing BSP thread and moving to common...\n", __func__);
-	gp_s4_s6_entry();
+	gp_s5_entry();
 
 	//we should never get here
 	_XDPRINTF_("%s:%u: Must never get here. Halting\n", __func__, __LINE__);
