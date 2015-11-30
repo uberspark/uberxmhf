@@ -54,67 +54,6 @@
 #include <uapi_slabmempgtbl.h>
 #include <xc_init.h>
 
-#if 0
-static void __xmhfhic_smp_cpu_x86_wakeupAPs(void);
-#endif // 0
-
-static void __xmhfhic_smp_container_vmx_wakeupAPs(void);
-//static u64 _xcsmp_ap_entry_lock = 1;
-//static u64 _ap_cr3=0;
-
-
-#if 0
-//wake up APs using the LAPIC by sending the INIT-SIPI-SIPI IPI sequence
-static void __xmhfhic_smp_cpu_x86_wakeupAPs(void){
-	u32 eax, edx;
-	volatile u32 *icr;
-	u64 msr_value;
-
-	//read LAPIC base address from MSR
-       	msr_value = CASM_FUNCCALL(rdmsr64, MSR_APIC_BASE);
-	eax = (u32)msr_value;
-	edx = (u32)(msr_value >> 32);
-
-	HALT_ON_ERRORCOND( edx == 0 ); //APIC is below 4G
-
-	//construct the command register address (offset 0x300)
-	icr = (u32 *) (((u32)eax & 0xFFFFF000UL) + 0x300);
-
-	//our AP boot-strap code is at physical memory location 0x10000.
-	//so use 0x10 as the vector (0x10000/0x1000 = 0x10)
-
-	//send INIT
-	*icr = 0x000c4500UL;
-
-	xmhf_baseplatform_arch_x86_udelay(10000);
-
-	//wait for command completion
-	{
-		u32 val;
-		do{
-		  val = *icr;
-		}while( (val & 0x1000) );
-	}
-
-	//send SIPI (twice as per the MP protocol)
-	{
-		int i;
-		for(i=0; i < 2; i++){
-			*icr = 0x000c4610UL;
-			xmhf_baseplatform_arch_x86_udelay(200);
-			//wait for command completion
-			{
-			  u32 val;
-			  do{
-				val = *icr;
-			  }while( (val & 0x1000) );
-			}
-		}
-	}
-
-}
-#endif // 0
-
 
 
 //wake up application processors (cores) in the system
