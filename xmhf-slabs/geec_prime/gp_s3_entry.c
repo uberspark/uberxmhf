@@ -51,23 +51,40 @@
 
 #include <geec_prime.h>
 
-
+//@ghost bool gp_s3_entry_invoked_writecr3 = false;
+//@ghost bool gp_s3_entry_invoked_savemtrrs = false;
+//@ghost bool gp_s3_entry_invoked_restoremtrrs = false;
+//@ghost bool gp_s3_entry_invoked_startcores = false;
+//@ghost bool gp_s3_entry_invoked_gp_s5_entry = false;
+/*@
+	requires 0 <= sinit2mle_mtrrs.num_var_mtrrs < MAX_VARIABLE_MTRRS;
+	ensures gp_s3_entry_invoked_writecr3 == true;
+	ensures gp_s3_entry_invoked_savemtrrs == true;
+	ensures gp_s3_entry_invoked_restoremtrrs == true;
+	ensures gp_s3_entry_invoked_startcores == true;
+	ensures gp_s3_entry_invoked_gp_s5_entry == true;
+@*/
 void gp_s3_entry(void){
 
 	//switch to verified object page tables
 	CASM_FUNCCALL(write_cr3,(u32)&gp_rwdatahdr.gp_vhslabmempgtbl_lvl4t);
+	//@ghost gp_s3_entry_invoked_writecr3 = true;
 
 	//save cpu MTRR state which we will later replicate on all APs
 	xmhfhw_cpu_x86_save_mtrrs(&_mtrrs);
+	//@ghost gp_s3_entry_invoked_savemtrrs = true;
 
 	//restore SINIT to MLE MTRR mappings
 	xmhfhw_cpu_x86_restore_mtrrs(&sinit2mle_mtrrs);
+	//@ghost gp_s3_entry_invoked_restoremtrrs = true;
 
 	//start all cores
 	gp_s3_startcores();
+	//@ghost gp_s3_entry_invoked_startcores = true;
 
 	//move on to state-5
 	gp_s5_entry();
+	//@ghost gp_s3_entry_invoked_gp_s5_entry = true;
 
 	//we should never get here
 	_XDPRINTF_("%s:%u: Must never get here. Halting\n", __func__, __LINE__);
