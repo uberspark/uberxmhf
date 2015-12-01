@@ -85,6 +85,7 @@ void gp_s3_startcores(void){
 		(void *)&gp_s4_entry, PAGE_SIZE_4K);
 
 
+#if 0
 	//grab sinit2mle and os2sinit data structures from TXT heap
         txt_heap = get_txt_heap();
         CASM_FUNCCALL(xmhfhw_sysmem_copy_sys2obj, &sinit_mle_data,
@@ -120,6 +121,7 @@ void gp_s3_startcores(void){
             __getsec_wakeup();
             _XDPRINTF_("BSP: GETSEC[WAKEUP] completed\n");
         }
+#endif // 0
 
 }
 
