@@ -114,19 +114,20 @@ void gp_s3_startcores(void){
         write_priv_config_reg(TXTCR_MLE_JOIN, (uint64_t)(unsigned long)mle_join);
 
 	//@assert sinit_mle_data.rlp_wakeup_addr == XMHFHWM_TXT_SYSMEM_RLPWAKEUPADDR;
-#if 0
 
 	//wakeup APs
         if (os_sinit_data.capabilities & TXT_CAPS_T_RLP_WAKE_MONITOR) {
             _XDPRINTF_("BSP: joining RLPs to MLE with MONITOR wakeup\n");
             _XDPRINTF_("BSP: rlp_wakeup_addr=0x%08x\n", sinit_mle_data.rlp_wakeup_addr);
+	    //@assert 1;
+	    #if 0
 	    CASM_FUNCCALL(xmhfhw_sysmemaccess_writeu32, sinit_mle_data.rlp_wakeup_addr, 0x01);
+	    #endif
         }else {
             _XDPRINTF_("BSP: joining RLPs to MLE with GETSEC[WAKEUP]\n");
             __getsec_wakeup();
             _XDPRINTF_("BSP: GETSEC[WAKEUP] completed\n");
         }
-#endif // 0
 
 }
 
