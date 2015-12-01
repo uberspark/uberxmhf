@@ -45,7 +45,6 @@
  */
 
 #include <xmhf.h>
-#include <xmhf-hwm.h>
 #include <xmhf-debug.h>
 
 #include <xmhfgeec.h>
@@ -113,13 +112,11 @@ void gp_s3_startcores(void){
         //populate TXT MLE_JOIN register
         write_priv_config_reg(TXTCR_MLE_JOIN, (uint64_t)(unsigned long)mle_join);
 
-	//@assert sinit_mle_data.rlp_wakeup_addr == XMHFHWM_TXT_SYSMEM_RLPWAKEUPADDR;
 
 	//wakeup APs
         if (os_sinit_data.capabilities & TXT_CAPS_T_RLP_WAKE_MONITOR) {
             _XDPRINTF_("BSP: joining RLPs to MLE with MONITOR wakeup\n");
             _XDPRINTF_("BSP: rlp_wakeup_addr=0x%08x\n", sinit_mle_data.rlp_wakeup_addr);
-	    //@assert 1;
 	    CASM_FUNCCALL(xmhfhw_sysmemaccess_writeu32, sinit_mle_data.rlp_wakeup_addr, 0x01);
         }else {
             _XDPRINTF_("BSP: joining RLPs to MLE with GETSEC[WAKEUP]\n");
@@ -127,7 +124,6 @@ void gp_s3_startcores(void){
             _XDPRINTF_("BSP: GETSEC[WAKEUP] completed\n");
         }
 
-	//@assert xmhfhwm_txt_rlp_wakeup_addr == 0x1;
 }
 
 
