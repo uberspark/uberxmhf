@@ -106,6 +106,11 @@ void xmhfhwm_vdriver_txt_write_rlp_wakeup_addr(u32 oldval, u32 newval){
 	}
 }
 
+void xmhfhwm_vdriver_mem_copy_to_apbootstrap_codeseg(u32 sourceaddr){
+	//@assert (sourceaddr == (u32)&gp_s4_entry);
+}
+
+
 
 void main(void){
 	//populate hardware model stack and program counter
