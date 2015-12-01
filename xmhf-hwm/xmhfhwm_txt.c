@@ -105,14 +105,16 @@ bool _impl_xmhfhwm_txt_sysmemcopy(sysmem_copy_t sysmemcopy_type,
 		//dstaddr = obj address space
 		//srcaddr = TXT address space
 		if(srcaddr >= XMHFHWM_TXT_SYSMEM_HEAPBASE &&
-			(srcaddr+size) < (XMHFHWM_TXT_SYSMEM_HEAPBASE+sizeof(xmhfhwm_txt_heap))){
+			(srcaddr+size-1) < (XMHFHWM_TXT_SYSMEM_HEAPBASE+sizeof(xmhfhwm_txt_heap))){
 			//@assert \valid((unsigned char *)dstaddr + (0..(size-1)));
 			//TODO: implement copy
 		}else{
+			//@assert 1;
 			retval = false;
 		}
 
 	}else{
+		//@assert 1;
 		retval = false;
 	}
 

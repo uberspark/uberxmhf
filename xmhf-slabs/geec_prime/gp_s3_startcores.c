@@ -85,15 +85,17 @@ void gp_s3_startcores(void){
 		(void *)&gp_s4_entry, PAGE_SIZE_4K);
 
 
-#if 0
 	//grab sinit2mle and os2sinit data structures from TXT heap
         txt_heap = get_txt_heap();
         CASM_FUNCCALL(xmhfhw_sysmem_copy_sys2obj, &sinit_mle_data,
 		get_sinit_mle_data_start(txt_heap, (uint32_t)read_pub_config_reg(TXTCR_HEAP_SIZE)),
 		sizeof(sinit_mle_data_t));
+
         CASM_FUNCCALL(xmhfhw_sysmem_copy_sys2obj, &os_sinit_data,
 		get_os_sinit_data_start(txt_heap, (uint32_t)read_pub_config_reg(TXTCR_HEAP_SIZE)),
 		sizeof(os_sinit_data_t));
+
+#if 0
 
         // enable SMIs on BSP before waking APs (which will enable them on APs)
         // because some SMM may take immediate SMI and hang if AP gets in first
