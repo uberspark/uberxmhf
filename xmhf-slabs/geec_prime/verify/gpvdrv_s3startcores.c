@@ -97,9 +97,12 @@ void xmhfhwm_vdriver_cpu_writecr3(u32 oldval, u32 newval){
 }
 
 void xmhfhwm_vdriver_txt_write_rlp_wakeup_addr(u32 oldval, u32 newval){
+	x86smp_apbootstrapdata_t *apdata = (x86smp_apbootstrapdata_t *)&xmhfhwm_mem_region_apbootstrap_dataseg;
+
 	if(newval != 0){
 		//@assert (xmhfhwm_txt_mle_join_hi == 0);
 		//@assert (xmhfhwm_txt_mle_join_lo == ((u32)(X86SMP_APBOOTSTRAP_DATASEG << 4) + 16));
+		//@assert (apdata->ap_eip == (X86SMP_APBOOTSTRAP_CODESEG << 4));
 	}
 }
 

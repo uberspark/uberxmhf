@@ -53,6 +53,7 @@
 #include <xmhf.h>
 #include <xmhf-hwm.h>
 
+u8 xmhfhwm_mem_region_apbootstrap_dataseg[XMHFHWM_MEM_X86SMP_APBOOTSTRAP_DATASEG_SIZE];
 
 static unsigned char *xmhfhwm_mem_memcpy(unsigned char *dst, const unsigned char *src, size_t n)
 {
@@ -103,6 +104,8 @@ bool _impl_xmhfhwm_mem_sysmemcopy(sysmem_copy_t sysmemcopy_type,
 			(dstaddr+size-1) < (XMHFHWM_MEM_X86SMP_APBOOTSTRAP_DATASEG_BASE + XMHFHWM_MEM_X86SMP_APBOOTSTRAP_DATASEG_SIZE)){
 			//TODO: add emulation of bootstrap data segment writes
                         //@assert \valid((u8 *)srcaddr + (0..(size-1)) );
+                        xmhfhwm_mem_memcpy( ((u32)&xmhfhwm_mem_region_apbootstrap_dataseg+(dstaddr - XMHFHWM_MEM_X86SMP_APBOOTSTRAP_DATASEG_BASE)),
+					srcaddr, size);
                         retval = true;
 
 		}else if(dstaddr >= XMHFHWM_MEM_X86SMP_APBOOTSTRAP_CODESEG_BASE &&
