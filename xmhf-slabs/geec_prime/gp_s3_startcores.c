@@ -45,6 +45,7 @@
  */
 
 #include <xmhf.h>
+#include <xmhf-hwm.h>
 #include <xmhf-debug.h>
 
 #include <xmhfgeec.h>
@@ -112,6 +113,7 @@ void gp_s3_startcores(void){
         //populate TXT MLE_JOIN register
         write_priv_config_reg(TXTCR_MLE_JOIN, (uint64_t)(unsigned long)mle_join);
 
+	//@assert sinit_mle_data.rlp_wakeup_addr == XMHFHWM_TXT_SYSMEM_RLPWAKEUPADDR;
 #if 0
 
 	//wakeup APs

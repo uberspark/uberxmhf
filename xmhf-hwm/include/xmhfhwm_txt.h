@@ -51,7 +51,7 @@
 #define __XMHFHWM_TXT_H__
 
 #define XMHFHWM_TXT_SYSMEM_HEAPBASE	0xEE000000UL	//TODO: remove hard-coding
-
+#define XMHFHWM_TXT_SYSMEM_RLPWAKEUPADDR	0xdbf01b10UL
 
 #ifndef __ASSEMBLY__
 
