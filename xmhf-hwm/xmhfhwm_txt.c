@@ -68,6 +68,9 @@ u32 xmhfhwm_txt_heap_base_lo=XMHFHWM_TXT_SYSMEM_HEAPBASE;
 u32 xmhfhwm_txt_heap_size_hi=0;
 u32 xmhfhwm_txt_heap_size_lo=sizeof(xmhfhwm_txt_heap);
 
+u32 xmhfhwm_txt_mle_join_hi=0;
+u32 xmhfhwm_txt_mle_join_lo=0;
+
 
 bool _impl_xmhfhwm_txt_read(u32 sysmemaddr, sysmem_read_t readsize, u64 *read_result){
 	bool retval = true;
@@ -75,15 +78,27 @@ bool _impl_xmhfhwm_txt_read(u32 sysmemaddr, sysmem_read_t readsize, u64 *read_re
 	if(sysmemaddr == (TXT_PUB_CONFIG_REGS_BASE+TXTCR_HEAP_BASE)){
 		//@assert (readsize == SYSMEMREADU32);
 		*read_result = (u64)xmhfhwm_txt_heap_base_lo;
+
 	}else if(sysmemaddr == (TXT_PUB_CONFIG_REGS_BASE+TXTCR_HEAP_BASE+0x4)){
 		//@assert (readsize == SYSMEMREADU32);
 		*read_result = (u64)xmhfhwm_txt_heap_base_hi;
+
 	}else if(sysmemaddr == (TXT_PUB_CONFIG_REGS_BASE+TXTCR_HEAP_SIZE)){
 		//@assert (readsize == SYSMEMREADU32);
 		*read_result = (u64)xmhfhwm_txt_heap_size_lo;
+
 	}else if(sysmemaddr == (TXT_PUB_CONFIG_REGS_BASE+TXTCR_HEAP_SIZE+0x4)){
 		//@assert (readsize == SYSMEMREADU32);
 		*read_result = (u64)xmhfhwm_txt_heap_size_hi;
+
+	}else if(sysmemaddr == (TXT_PRIV_CONFIG_REGS_BASE+TXTCR_MLE_JOIN)){
+		//@assert (readsize == SYSMEMREADU32);
+		*read_result = (u64)xmhfhwm_txt_mle_join_lo;
+
+	}else if(sysmemaddr == (TXT_PRIV_CONFIG_REGS_BASE+TXTCR_MLE_JOIN+0x4)){
+		//@assert (readsize == SYSMEMREADU32);
+		*read_result = (u64)xmhfhwm_txt_mle_join_hi;
+
 	}else if(sysmemaddr >= XMHFHWM_TXT_SYSMEM_HEAPBASE &&
 		sysmemaddr < (XMHFHWM_TXT_SYSMEM_HEAPBASE+sizeof(xmhfhwm_txt_heap))){
 		//@assert (readsize == SYSMEMREADU32);
@@ -95,6 +110,24 @@ bool _impl_xmhfhwm_txt_read(u32 sysmemaddr, sysmem_read_t readsize, u64 *read_re
 
 	return retval;
 }
+
+
+bool _impl_xmhfhwm_txt_write(u32 sysmemaddr, sysmem_write_t writesize, u64 write_value){
+	bool retval = false;
+
+	if(sysmemaddr == (TXT_PRIV_CONFIG_REGS_BASE+TXTCR_MLE_JOIN)){
+		//@assert writesize == SYSMEMWRITEU32;
+		xmhfhwm_txt_mle_join_lo = (u32)write_value;
+		retval = true;
+	}else if(sysmemaddr == (TXT_PRIV_CONFIG_REGS_BASE+TXTCR_MLE_JOIN+0x4)){
+		//@assert writesize == SYSMEMWRITEU32;
+		xmhfhwm_txt_mle_join_hi = (u32)write_value;
+		retval = true;
+	}
+
+	return retval;
+}
+
 
 
 bool _impl_xmhfhwm_txt_sysmemcopy(sysmem_copy_t sysmemcopy_type,
