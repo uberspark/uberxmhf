@@ -72,6 +72,20 @@ u32 xmhfhwm_txt_mle_join_hi=0;
 u32 xmhfhwm_txt_mle_join_lo=0;
 
 
+static unsigned char *xmhfhwm_txt_memcpy(unsigned char *dst, const unsigned char *src, size_t n)
+{
+	const unsigned char *p = src;
+	unsigned char *q = dst;
+
+	while (n) {
+		*q++ = *p++;
+		n--;
+	}
+
+	return dst;
+}
+
+
 bool _impl_xmhfhwm_txt_read(u32 sysmemaddr, sysmem_read_t readsize, u64 *read_result){
 	bool retval = true;
 
@@ -140,7 +154,7 @@ bool _impl_xmhfhwm_txt_sysmemcopy(sysmem_copy_t sysmemcopy_type,
 		if(srcaddr >= XMHFHWM_TXT_SYSMEM_HEAPBASE &&
 			(srcaddr+size-1) < (XMHFHWM_TXT_SYSMEM_HEAPBASE+sizeof(xmhfhwm_txt_heap))){
 			//@assert \valid((unsigned char *)dstaddr + (0..(size-1)));
-			//TODO: implement copy
+			xmhfhwm_txt_memcpy(dstaddr, ((u32)&xmhfhwm_txt_heap+(srcaddr-XMHFHWM_TXT_SYSMEM_HEAPBASE)), size);
 		}else{
 			//@assert 1;
 			retval = false;
