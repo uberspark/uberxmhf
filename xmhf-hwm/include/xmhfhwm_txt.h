@@ -68,6 +68,17 @@ typedef struct {
 
 extern xmhfhwm_txt_heap_t xmhfhwm_txt_heap;
 
+extern u32 xmhfhwm_txt_heap_base_hi;
+extern u32 xmhfhwm_txt_heap_base_lo;
+
+extern u32 xmhfhwm_txt_heap_size_hi;
+extern u32 xmhfhwm_txt_heap_size_lo;
+
+extern u32 xmhfhwm_txt_mle_join_hi;
+extern u32 xmhfhwm_txt_mle_join_lo;
+
+
+
 bool _impl_xmhfhwm_txt_read(u32 sysmemaddr, sysmem_read_t readsize, u64 *read_result);
 bool _impl_xmhfhwm_txt_write(u32 sysmemaddr, sysmem_write_t writesize, u64 write_value);
 bool _impl_xmhfhwm_txt_sysmemcopy(sysmem_copy_t sysmemcopy_type,

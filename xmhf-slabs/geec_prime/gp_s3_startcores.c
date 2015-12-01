@@ -95,7 +95,6 @@ void gp_s3_startcores(void){
 		get_os_sinit_data_start(txt_heap, (uint32_t)read_pub_config_reg(TXTCR_HEAP_SIZE)),
 		sizeof(os_sinit_data_t));
 
-#if 0
 
         // enable SMIs on BSP before waking APs (which will enable them on APs)
         // because some SMM may take immediate SMI and hang if AP gets in first
@@ -112,6 +111,8 @@ void gp_s3_startcores(void){
 
         //populate TXT MLE_JOIN register
         write_priv_config_reg(TXTCR_MLE_JOIN, (uint64_t)(unsigned long)mle_join);
+
+#if 0
 
 	//wakeup APs
         if (os_sinit_data.capabilities & TXT_CAPS_T_RLP_WAKE_MONITOR) {
