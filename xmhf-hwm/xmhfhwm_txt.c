@@ -73,6 +73,7 @@ u32 xmhfhwm_txt_heap_size_lo=sizeof(xmhfhwm_txt_heap);
 u32 xmhfhwm_txt_mle_join_hi=0;
 u32 xmhfhwm_txt_mle_join_lo=0;
 
+u32 xmhfhwm_txt_rlp_wakeup_addr=0;
 
 static unsigned char *xmhfhwm_txt_memcpy(unsigned char *dst, const unsigned char *src, size_t n)
 {
@@ -139,7 +140,14 @@ bool _impl_xmhfhwm_txt_write(u32 sysmemaddr, sysmem_write_t writesize, u64 write
 		//@assert writesize == SYSMEMWRITEU32;
 		xmhfhwm_txt_mle_join_hi = (u32)write_value;
 		retval = true;
+	}else if(sysmemaddr == XMHFHWM_TXT_SYSMEM_RLPWAKEUPADDR){
+		//@assert writesize == SYSMEMWRITEU32;
+		xmhfhwm_txt_rlp_wakeup_addr = (u32)write_value;
+		retval = true;
+	}else{
+
 	}
+
 
 	return retval;
 }

@@ -77,6 +77,7 @@ extern u32 xmhfhwm_txt_heap_size_lo;
 extern u32 xmhfhwm_txt_mle_join_hi;
 extern u32 xmhfhwm_txt_mle_join_lo;
 
+extern u32 xmhfhwm_txt_rlp_wakeup_addr;
 
 
 bool _impl_xmhfhwm_txt_read(u32 sysmemaddr, sysmem_read_t readsize, u64 *read_result);
