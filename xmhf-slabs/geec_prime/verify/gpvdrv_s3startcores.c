@@ -96,6 +96,13 @@ void xmhfhwm_vdriver_cpu_writecr3(u32 oldval, u32 newval){
 	//@assert 0;
 }
 
+void xmhfhwm_vdriver_txt_write_rlp_wakeup_addr(u32 oldval, u32 newval){
+	if(newval != 0){
+		//@assert (xmhfhwm_txt_mle_join_hi == 0);
+		//@assert (xmhfhwm_txt_mle_join_lo == ((u32)(X86SMP_APBOOTSTRAP_DATASEG << 4) + 16));
+	}
+}
+
 
 void main(void){
 	//populate hardware model stack and program counter

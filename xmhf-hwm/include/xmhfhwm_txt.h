@@ -80,6 +80,10 @@ extern u32 xmhfhwm_txt_mle_join_lo;
 extern u32 xmhfhwm_txt_rlp_wakeup_addr;
 
 
+extern void xmhfhwm_vdriver_txt_write_rlp_wakeup_addr(u32 oldval, u32 newval);
+
+
+
 bool _impl_xmhfhwm_txt_read(u32 sysmemaddr, sysmem_read_t readsize, u64 *read_result);
 bool _impl_xmhfhwm_txt_write(u32 sysmemaddr, sysmem_write_t writesize, u64 write_value);
 bool _impl_xmhfhwm_txt_sysmemcopy(sysmem_copy_t sysmemcopy_type,

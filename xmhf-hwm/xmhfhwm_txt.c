@@ -142,6 +142,7 @@ bool _impl_xmhfhwm_txt_write(u32 sysmemaddr, sysmem_write_t writesize, u64 write
 		retval = true;
 	}else if(sysmemaddr == XMHFHWM_TXT_SYSMEM_RLPWAKEUPADDR){
 		//@assert writesize == SYSMEMWRITEU32;
+		xmhfhwm_vdriver_txt_write_rlp_wakeup_addr(xmhfhwm_txt_rlp_wakeup_addr, (u32)write_value);
 		xmhfhwm_txt_rlp_wakeup_addr = (u32)write_value;
 		retval = true;
 	}else{
