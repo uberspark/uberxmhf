@@ -102,7 +102,6 @@ bool _impl_xmhfhwm_mem_sysmemcopy(sysmem_copy_t sysmemcopy_type,
 		//srcaddr = object address space
                 if(dstaddr >= XMHFHWM_MEM_X86SMP_APBOOTSTRAP_DATASEG_BASE &&
 			(dstaddr+size-1) < (XMHFHWM_MEM_X86SMP_APBOOTSTRAP_DATASEG_BASE + XMHFHWM_MEM_X86SMP_APBOOTSTRAP_DATASEG_SIZE)){
-			//TODO: add emulation of bootstrap data segment writes
                         //@assert \valid((u8 *)srcaddr + (0..(size-1)) );
                         xmhfhwm_mem_memcpy( ((u32)&xmhfhwm_mem_region_apbootstrap_dataseg+(dstaddr - XMHFHWM_MEM_X86SMP_APBOOTSTRAP_DATASEG_BASE)),
 					srcaddr, size);
@@ -110,7 +109,7 @@ bool _impl_xmhfhwm_mem_sysmemcopy(sysmem_copy_t sysmemcopy_type,
 
 		}else if(dstaddr >= XMHFHWM_MEM_X86SMP_APBOOTSTRAP_CODESEG_BASE &&
 			(dstaddr+size-1) < (XMHFHWM_MEM_X86SMP_APBOOTSTRAP_CODESEG_BASE + XMHFHWM_MEM_X86SMP_APBOOTSTRAP_CODESEG_SIZE)){
-			//TODO: add emulation of bootstrap code segment writes
+			xmhfhwm_vdriver_mem_copy_to_apbootstrap_codeseg(srcaddr);
                         retval = true;
 
 		}else{
