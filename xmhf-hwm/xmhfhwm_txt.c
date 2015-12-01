@@ -60,6 +60,7 @@ xmhfhwm_txt_heap_t xmhfhwm_txt_heap = {
 	.osmledatasize = (PAGE_SIZE_4K+0x8),
 	.ossinitdatasize = (sizeof(os_sinit_data_t)+0x8),
         .sinitmledatasize = (sizeof(sinit_mle_data_t)+0x8),
+	.sinitmledata.rlp_wakeup_addr = XMHFHWM_TXT_SYSMEM_RLPWAKEUPADDR,
 };
 
 u32 xmhfhwm_txt_heap_base_hi=0;
