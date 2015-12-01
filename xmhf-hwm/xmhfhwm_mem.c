@@ -44,66 +44,77 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-
-//XMHF hardware interface
-//author: amit vasudevan (amitvasudevan@acm.org)
-
-#ifndef __XMHF_HWM_H__
-#define __XMHF_HWM_H__
-
-#define __CASMFNDEF__(x) __attribute__((naked))
-#define __CASMFNCALL__(x) (x);
+/*
+ * x86 memory regions implementation
+ * author: amit vasudevan (amitvasudevan@acm.org)
+*/
 
 
-#if defined(__XMHF_TARGET_TRIAD_X86_VMX_X86PC__)
-
-#ifndef __ASSEMBLY__
-	typedef struct {
-		u32 addr_start;
-		u32 addr_end;
-		u32 protection;
-	} physmem_extent_t;
-
-	typedef enum {
-		SYSMEMREADU8,
-		SYSMEMREADU16,
-		SYSMEMREADU32,
-		SYSMEMREADU64
-	} sysmem_read_t;
-
-	typedef enum {
-		SYSMEMWRITEU8,
-		SYSMEMWRITEU16,
-		SYSMEMWRITEU32,
-		SYSMEMWRITEU64
-	} sysmem_write_t;
-
-	typedef enum {
-		SYSMEMCOPYSYS2OBJ,
-		SYSMEMCOPYOBJ2SYS,
-	} sysmem_copy_t;
+#include <xmhf.h>
+#include <xmhf-hwm.h>
 
 
+static unsigned char *xmhfhwm_mem_memcpy(unsigned char *dst, const unsigned char *src, size_t n)
+{
+	const unsigned char *p = src;
+	unsigned char *q = dst;
 
-#endif // __ASSEMBLY__
+	while (n) {
+		*q++ = *p++;
+		n--;
+	}
 
-    #include <xmhfhwm_casm.h>  			//CPU
-    #include <xmhfhwm_e1000.h>			//e1000 network card
-    #include <xmhfhwm_cpu.h>  			//CPU
-    #include <xmhfhwm_txt.h>			//TXT
-    #include <xmhfhwm_pci.h>        		//PCI bus glue
-    #include <xmhfhwm_pit.h>        		//PIT
-    #include <xmhfhwm_vtd.h>			//VMX DMA protection
-    #include <xmhfhwm_lapic.h>			//APIC
-    #include <xmhfhwm_bios.h>			//ACPI glue
-    #include <xmhfhwm_mem.h>			//Memory regions
-
-
-#else
-
-	#error "You must define a valid cpu-container-platform triad before trying to build."
-
-#endif
+	return dst;
+}
 
 
-#endif //__XMHF_HWM_H__
+bool _impl_xmhfhwm_mem_read(u32 sysmemaddr, sysmem_read_t readsize, u64 *read_result){
+	bool retval = false;
+
+	//if(sysmemaddr == ){
+	//	//@assert (readsize == SYSMEMREADU32);
+	//	*read_result = ;
+	//	retval = true;
+	//}
+
+	return retval;
+}
+
+bool _impl_xmhfhwm_mem_write(u32 sysmemaddr, sysmem_write_t writesize, u64 write_value){
+	bool retval = false;
+
+	//if(sysmemaddr == ){
+	//	//@assert writesize == SYSMEMWRITEU32;
+	//	retval = true;
+	//}
+
+	return retval;
+}
+
+
+bool _impl_xmhfhwm_mem_sysmemcopy(sysmem_copy_t sysmemcopy_type,
+				u32 dstaddr, u32 srcaddr, u32 size){
+	bool retval = false;
+
+	if(sysmemcopy_type == SYSMEMCOPYOBJ2SYS){
+		//dstaddr = sysmem address space
+		//srcaddr = object address space
+                if(dstaddr >= XMHFHWM_MEM_X86SMP_APBOOTSTRAP_DATASEG_BASE &&
+			(dstaddr+size-1) < (XMHFHWM_MEM_X86SMP_APBOOTSTRAP_DATASEG_BASE + XMHFHWM_MEM_X86SMP_APBOOTSTRAP_DATASEG_SIZE)){
+			//TODO: add emulation of bootstrap data segment writes
+                        //@assert \valid((u8 *)srcaddr + (0..(size-1)) );
+                        retval = true;
+
+		}else if(dstaddr >= XMHFHWM_MEM_X86SMP_APBOOTSTRAP_CODESEG_BASE &&
+			(dstaddr+size-1) < (XMHFHWM_MEM_X86SMP_APBOOTSTRAP_CODESEG_BASE + XMHFHWM_MEM_X86SMP_APBOOTSTRAP_CODESEG_SIZE)){
+			//TODO: add emulation of bootstrap code segment writes
+                        retval = true;
+
+		}else{
+			//we don't know about this region, so just return
+		}
+	}
+
+	return retval;
+}
+
