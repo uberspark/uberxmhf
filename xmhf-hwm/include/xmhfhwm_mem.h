@@ -58,6 +58,9 @@
 #define XMHFHWM_MEM_X86SMP_APBOOTSTRAP_CODESEG_SIZE	PAGE_SIZE_4K
 
 
+extern u8 xmhfhwm_mem_region_apbootstrap_dataseg[XMHFHWM_MEM_X86SMP_APBOOTSTRAP_DATASEG_SIZE];
+
+
 bool _impl_xmhfhwm_mem_read(u32 sysmemaddr, sysmem_read_t readsize, u64 *read_result);
 bool _impl_xmhfhwm_mem_write(u32 sysmemaddr, sysmem_write_t writesize, u64 write_value);
 bool _impl_xmhfhwm_mem_sysmemcopy(sysmem_copy_t sysmemcopy_type,
