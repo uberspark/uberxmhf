@@ -72,11 +72,24 @@ static unsigned char *xmhfhwm_mem_memcpy(unsigned char *dst, const unsigned char
 bool _impl_xmhfhwm_mem_read(u32 sysmemaddr, sysmem_read_t readsize, u64 *read_result){
 	bool retval = false;
 
-	//if(sysmemaddr == ){
-	//	//@assert (readsize == SYSMEMREADU32);
-	//	*read_result = ;
-	//	retval = true;
-	//}
+	if(sysmemaddr == (XMHFHWM_MEM_X86SMP_APBOOTSTRAP_DATASEG_BASE + 0)){
+		//@assert (readsize == SYSMEMREADU32);
+		*read_result = *((u32 *)((u32)&xmhfhwm_mem_region_apbootstrap_dataseg + 0));
+		retval = true;
+
+	} else if(sysmemaddr == (XMHFHWM_MEM_X86SMP_APBOOTSTRAP_DATASEG_BASE + 8)){
+		//@assert (readsize == SYSMEMREADU32);
+		*read_result = *((u32 *)((u32)&xmhfhwm_mem_region_apbootstrap_dataseg + 8));
+		retval = true;
+
+	} else if(sysmemaddr == (XMHFHWM_MEM_X86SMP_APBOOTSTRAP_DATASEG_BASE + 32)){
+		//@assert (readsize == SYSMEMREADU32);
+		*read_result = *((u32 *)((u32)&xmhfhwm_mem_region_apbootstrap_dataseg + 32));
+		retval = true;
+
+	} else {
+
+	}
 
 	return retval;
 }

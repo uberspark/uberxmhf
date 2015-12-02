@@ -96,6 +96,10 @@ void xmhfhwm_vdriver_cpu_writecr3(u32 oldval, u32 newval){
 	//@assert (newval ==(u32)&gp_rwdatahdr.gp_vhslabmempgtbl_lvl4t);
 }
 
+void xmhfhwm_vdriver_apentry(void){
+	//@assert 1;
+}
+
 
 void main(void){
 	//populate hardware model stack and program counter
@@ -104,7 +108,7 @@ void main(void){
 	check_esp = xmhfhwm_cpu_gprs_esp; // pointing to top-of-stack
 
 	//execute harness
-	gp_s4_entry();
+	CASM_FUNCCALL(gp_s4_entry, CASM_NOPARAM);
 
 	//@assert xmhfhwm_cpu_gprs_esp == check_esp;
 	//@assert xmhfhwm_cpu_gprs_eip == check_eip;

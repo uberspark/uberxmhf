@@ -72,7 +72,7 @@ CASM_FUNCDEF(void, gp_s4_entry,
 
     xmhfhwm_cpu_insn_jmpapentry();
 
-    xmhfhwm_cpu_insn_hlt();
+    xmhfhwm_cpu_insn_ret();
     CASM_BALIGN(4096);
 },
 void *noparam)
