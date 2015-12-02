@@ -2292,6 +2292,7 @@ typedef enum {
 //////
 // external verification hooks for verification drivers
 //////
+extern void xmhfhwm_vdriver_apentry(void);
 extern void xmhfhwm_vdriver_sentinel(void);
 extern void xmhfhwm_vdriver_slabep(void);
 extern void xmhfhwm_vdriver_vhslabretaddr(void);
@@ -2364,6 +2365,8 @@ extern void _impl_xmhfhwm_cpu_insn_pushl_ebx(void);
 extern void _impl_xmhfhwm_cpu_insn_pushl_esi(void);
 extern void _impl_xmhfhwm_cpu_insn_movl_mesp_ecx(int index);
 extern void _impl_xmhfhwm_cpu_insn_movl_mesp_edx(int index);
+extern void _impl_xmhfhwm_cpu_insn_movl_eax_ebx(void);
+extern void _impl_xmhfhwm_cpu_insn_movl_eax_edi(void);
 
 extern void _impl_xmhfhwm_cpu_insn_movl_mebx_ebx(int index);
 extern void _impl_xmhfhwm_cpu_insn_movl_mecx_ecx(int index);
@@ -2406,6 +2409,7 @@ extern void _impl_xmhfhwm_cpu_insn_movl_imm_mesp(u32 value, int index);
 extern void _impl_xmhfhwm_cpu_insn_invept_mesp_edx(int index);
 extern void _impl_xmhfhwm_cpu_insn_movw_mesp_ax(int index);
 extern void _impl_xmhfhwm_cpu_insn_movl_imm_eax(u32 value);
+extern void _impl_xmhfhwm_cpu_insn_movl_imm_esi(u32 value);
 extern void _impl_xmhfhwm_cpu_insn_invvpid_mesp_ecx(int index);
 extern void _impl_xmhfhwm_cpu_insn_inw_dx_ax(void);
 extern void _impl_xmhfhwm_cpu_insn_lgdt_mecx(int index);
@@ -2635,6 +2639,13 @@ extern void _impl_xmhfhwm_cpu_insn_rep_movsb_sysmem(sysmem_copy_t sysmemcopy_typ
 #define xmhfhwm_cpu_insn_lret() __builtin_annot("lret ");
 
 
+#define xmhfhwm_cpu_insn_jmpapentry() \
+	__builtin_annot("jmpl *%eax "); \
+	__builtin_annot("hlt "); \
+	xmhfhwm_vdriver_apentry(); \
+	_impl_xmhfhwm_cpu_insn_hlt(); \
+
+
 #define xmhfhwm_cpu_insn_jmpsentinel() \
 	__builtin_annot("movl $0x02400000, %eax"); \
 	__builtin_annot("jmpl *%eax "); \
@@ -2692,6 +2703,12 @@ extern void _impl_xmhfhwm_cpu_insn_rep_movsb_sysmem(sysmem_copy_t sysmemcopy_typ
 	_impl_xmhfhwm_cpu_insn_movl_imm_eax(x); \
 
 #define xmhfhwm_cpu_insn_movl_imm_eax(x) _xmhfhwm_cpu_insn_movl_imm_eax(x)
+
+#define _xmhfhwm_cpu_insn_movl_imm_esi(x) \
+	__builtin_annot("movl $"#x", %esi"); \
+	_impl_xmhfhwm_cpu_insn_movl_imm_esi(x); \
+
+#define xmhfhwm_cpu_insn_movl_imm_esi(x) _xmhfhwm_cpu_insn_movl_imm_esi(x)
 
 #define _xmhfhwm_cpu_insn_movl_imm_ebx(x) __builtin_annot("movl $"#x", %ebx");
 #define xmhfhwm_cpu_insn_movl_imm_ebx(x) _xmhfhwm_cpu_insn_movl_imm_ebx(x)
@@ -2776,6 +2793,14 @@ extern void _impl_xmhfhwm_cpu_insn_rep_movsb_sysmem(sysmem_copy_t sysmemcopy_typ
 #define xmhfhwm_cpu_insn_movl_mesp_edx(x) \
 	__builtin_annot("movl "#x"(%esp), %edx "); \
 	_impl_xmhfhwm_cpu_insn_movl_mesp_edx(x); \
+
+#define xmhfhwm_cpu_insn_movl_eax_ebx() \
+	__builtin_annot("movl %eax, %ebx "); \
+	_impl_xmhfhwm_cpu_insn_movl_eax_ebx(); \
+
+#define xmhfhwm_cpu_insn_movl_eax_edi() \
+	__builtin_annot("movl %eax, %edi "); \
+	_impl_xmhfhwm_cpu_insn_movl_eax_edi(); \
 
 
 #define xmhfhwm_cpu_insn_movl_mesp_esi(x) \
