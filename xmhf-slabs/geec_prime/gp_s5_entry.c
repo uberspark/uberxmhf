@@ -63,10 +63,11 @@ void gp_s5_entry(void){
 	isbsp = xmhfhw_lapic_isbsp();
 	cpuid  = xmhf_baseplatform_arch_x86_getcpulapicid();
 
-	//_XDPRINTF_("%s[%u] got control, BSP=%u...\n", __func__, (u16)cpuid,
-	//	isbsp);
 
         CASM_FUNCCALL(spin_lock,&gp_state4_smplock);
+
+	_XDPRINTF_("%s[%u] proceeding to setup CPU state, BSP=%u, ESP=%08x...\n", __func__, (u16)cpuid,
+		isbsp, CASM_FUNCCALL(read_esp, CASM_NOPARAM));
 
 	gp_s5_setupcpustate(cpuid, isbsp);
 
