@@ -58,13 +58,20 @@ CASM_FUNCDEF(void, gp_s4_entry,
 {
     xmhfhwm_cpu_insn_movw_imm_ax(__DS_CPL0);
     xmhfhwm_cpu_insn_movw_ax_ds();
-    xmhfhwm_cpu_insn_movl_imm_eax(((X86SMP_APBOOTSTRAP_DATASEG << 4) + 8));
-    xmhfhwm_cpu_insn_movl_meax_eax(0x0);
-    xmhfhwm_cpu_insn_movl_imm_ebx(((X86SMP_APBOOTSTRAP_DATASEG << 4) + 0));
-    xmhfhwm_cpu_insn_movl_mebx_ebx(0x0);
-    xmhfhwm_cpu_insn_movl_imm_edi(((X86SMP_APBOOTSTRAP_DATASEG << 4) + 32))
-    xmhfhwm_cpu_insn_movl_medi_edi(0x0);
-    xmhfhwm_cpu_insn_jmpl_eax();
+
+    xmhfhwm_cpu_insn_movl_imm_esi(((X86SMP_APBOOTSTRAP_DATASEG << 4) + 32))
+    xmhfhwm_cpu_insn_movl_mesi_eax(0x0);
+    xmhfhwm_cpu_insn_movl_eax_edi();
+
+    xmhfhwm_cpu_insn_movl_imm_esi(((X86SMP_APBOOTSTRAP_DATASEG << 4) + 0));
+    xmhfhwm_cpu_insn_movl_mesi_eax(0x0);
+    xmhfhwm_cpu_insn_movl_eax_ebx();
+
+    xmhfhwm_cpu_insn_movl_imm_esi(((X86SMP_APBOOTSTRAP_DATASEG << 4) + 8));
+    xmhfhwm_cpu_insn_movl_mesi_eax(0x0);
+
+    xmhfhwm_cpu_insn_jmpapentry();
+
     xmhfhwm_cpu_insn_hlt();
     CASM_BALIGN(4096);
 },
