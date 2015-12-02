@@ -87,6 +87,7 @@ u32 framac_nondetu32interval(u32 min, u32 max)
 
 //////
 u32 check_esp, check_eip = CASM_RET_EIP;
+x86smp_apbootstrapdata_t *apdptr = (x86smp_apbootstrapdata_t *)&xmhfhwm_mem_region_apbootstrap_dataseg;
 
 void xmhfhwm_vdriver_writeesp(u32 oldval, u32 newval){
 	//@assert (newval >= ((u32)&_init_bsp_cpustack + 4)) && (newval <= ((u32)&_init_bsp_cpustack + MAX_PLATFORM_CPUSTACK_SIZE)) ;
@@ -97,7 +98,9 @@ void xmhfhwm_vdriver_cpu_writecr3(u32 oldval, u32 newval){
 }
 
 void xmhfhwm_vdriver_apentry(void){
-	//@assert 1;
+	//@assert (xmhfhwm_cpu_gprs_eax == (u32)&gp_s4_apstacks);
+	//@assert (xmhfhwm_cpu_gprs_ebx == 0xDEADBEEF);
+	//@assert (xmhfhwm_cpu_gprs_edi == 0);
 }
 
 
@@ -107,7 +110,12 @@ void main(void){
 	xmhfhwm_cpu_gprs_eip = check_eip;
 	check_esp = xmhfhwm_cpu_gprs_esp; // pointing to top-of-stack
 
+
 	//execute harness
+	apdptr->ap_cr3 = 0xDEADBEEF;
+        apdptr->ap_entrypoint = (u32)&gp_s4_apstacks;
+        apdptr->cpuidtable = 0;
+
 	CASM_FUNCCALL(gp_s4_entry, CASM_NOPARAM);
 
 	//@assert xmhfhwm_cpu_gprs_esp == check_esp;
