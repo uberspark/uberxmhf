@@ -2293,6 +2293,7 @@ typedef enum {
 // external verification hooks for verification drivers
 //////
 extern void xmhfhwm_vdriver_apentry(void);
+extern void xmhfhwm_vdriver_smpcommon(void);
 extern void xmhfhwm_vdriver_sentinel(void);
 extern void xmhfhwm_vdriver_slabep(void);
 extern void xmhfhwm_vdriver_vhslabretaddr(void);

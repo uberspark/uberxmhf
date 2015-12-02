@@ -55,7 +55,7 @@
 // author: amit vasudevan (amitvasudevan@acm.org)
 
 
-CASM_FUNCDEF(bool, gp_s4_apstacks,
+CASM_FUNCDEF(void, gp_s4_apstacks,
 {
     xmhfhwm_cpu_insn_movw_ds_ax();
     xmhfhwm_cpu_insn_movw_ax_es();
@@ -63,7 +63,7 @@ CASM_FUNCDEF(bool, gp_s4_apstacks,
     xmhfhwm_cpu_insn_movw_ax_gs();
     xmhfhwm_cpu_insn_movw_ax_ss();
 
-    xmhfhwm_cpu_insn_movl_cr4_eax();
+/*    xmhfhwm_cpu_insn_movl_cr4_eax();
     xmhfhwm_cpu_insn_orl_imm_eax(0x00000030);
     xmhfhwm_cpu_insn_movl_eax_cr4();
 
@@ -99,7 +99,7 @@ CASM_FUNCDEF(bool, gp_s4_apstacks,
     xmhfhwm_cpu_insn_addl_ecx_eax();
     xmhfhwm_cpu_insn_movl_imm_esp(_init_cpustacks);
     xmhfhwm_cpu_insn_addl_eax_esp();
-
+*/
     xmhfhwm_cpu_insn_jmpsmpcommon();
     xmhfhwm_cpu_insn_ret();
 },
