@@ -423,6 +423,10 @@ void _impl_xmhfhwm_cpu_insn_addl_eax_ecx(void){
 	xmhfhwm_cpu_gprs_ecx += xmhfhwm_cpu_gprs_eax;
 }
 
+void _impl_xmhfhwm_cpu_insn_addl_eax_esp(void){
+	xmhfhwm_cpu_gprs_esp += xmhfhwm_cpu_gprs_eax;
+}
+
 void _impl_xmhfhwm_cpu_insn_movl_mecx_eax(int index){
 	u32 *value_mecx;
 	value_mecx = (u32 *)((u32)((int)xmhfhwm_cpu_gprs_ecx + (int)index));
@@ -529,6 +533,10 @@ void _impl_xmhfhwm_cpu_insn_invvpid_mesp_ecx(int index){
 
 void _impl_xmhfhwm_cpu_insn_movl_imm_eax(u32 value){
 	xmhfhwm_cpu_gprs_eax = value;
+}
+
+void _impl_xmhfhwm_cpu_insn_movl_imm_esp(u32 value){
+	xmhfhwm_cpu_gprs_esp = value;
 }
 
 void _impl_xmhfhwm_cpu_insn_movl_imm_esi(u32 value){

@@ -2391,6 +2391,8 @@ extern void _impl_xmhfhwm_cpu_insn_sidt_mesp(int index);
 extern void _impl_xmhfhwm_cpu_insn_getsec(void);
 extern void _impl_xmhfhwm_cpu_insn_str_ax(void);
 extern void _impl_xmhfhwm_cpu_insn_addl_eax_ecx(void);
+extern void _impl_xmhfhwm_cpu_insn_addl_eax_esp(void);
+
 extern void _impl_xmhfhwm_cpu_insn_movl_mecx_eax(int index);
 extern void _impl_xmhfhwm_cpu_insn_movl_mecx_edx(int index);
 extern void _impl_xmhfhwm_cpu_insn_addl_imm_ecx(u32 value);
@@ -2409,6 +2411,7 @@ extern void _impl_xmhfhwm_cpu_insn_movl_imm_mesp(u32 value, int index);
 extern void _impl_xmhfhwm_cpu_insn_invept_mesp_edx(int index);
 extern void _impl_xmhfhwm_cpu_insn_movw_mesp_ax(int index);
 extern void _impl_xmhfhwm_cpu_insn_movl_imm_eax(u32 value);
+extern void _impl_xmhfhwm_cpu_insn_movl_imm_esp(u32 value);
 extern void _impl_xmhfhwm_cpu_insn_movl_imm_esi(u32 value);
 extern void _impl_xmhfhwm_cpu_insn_invvpid_mesp_ecx(int index);
 extern void _impl_xmhfhwm_cpu_insn_inw_dx_ax(void);
@@ -2645,6 +2648,12 @@ extern void _impl_xmhfhwm_cpu_insn_rep_movsb_sysmem(sysmem_copy_t sysmemcopy_typ
 	xmhfhwm_vdriver_apentry(); \
 	_impl_xmhfhwm_cpu_insn_hlt(); \
 
+#define xmhfhwm_cpu_insn_jmpsmpcommon() \
+	__builtin_annot("jmp gp_s5_entry "); \
+	__builtin_annot("hlt "); \
+	xmhfhwm_vdriver_smpcommon(); \
+	_impl_xmhfhwm_cpu_insn_hlt(); \
+
 
 #define xmhfhwm_cpu_insn_jmpsentinel() \
 	__builtin_annot("movl $0x02400000, %eax"); \
@@ -2703,6 +2712,13 @@ extern void _impl_xmhfhwm_cpu_insn_rep_movsb_sysmem(sysmem_copy_t sysmemcopy_typ
 	_impl_xmhfhwm_cpu_insn_movl_imm_eax(x); \
 
 #define xmhfhwm_cpu_insn_movl_imm_eax(x) _xmhfhwm_cpu_insn_movl_imm_eax(x)
+
+#define _xmhfhwm_cpu_insn_movl_imm_esp(x) \
+	__builtin_annot("movl $"#x", %esp"); \
+	_impl_xmhfhwm_cpu_insn_movl_imm_esp(x); \
+
+#define xmhfhwm_cpu_insn_movl_imm_esp(x) _xmhfhwm_cpu_insn_movl_imm_esp(x)
+
 
 #define _xmhfhwm_cpu_insn_movl_imm_esi(x) \
 	__builtin_annot("movl $"#x", %esi"); \
@@ -3064,6 +3080,10 @@ extern void _impl_xmhfhwm_cpu_insn_rep_movsb_sysmem(sysmem_copy_t sysmemcopy_typ
 #define xmhfhwm_cpu_insn_addl_eax_ecx() \
 	__builtin_annot("addl %eax, %ecx"); \
 	_impl_xmhfhwm_cpu_insn_addl_eax_ecx(); \
+
+#define xmhfhwm_cpu_insn_addl_eax_esp() \
+	__builtin_annot("addl %eax, %esp"); \
+	_impl_xmhfhwm_cpu_insn_addl_eax_esp(); \
 
 #define xmhfhwm_cpu_insn_addl_ecx_eax() __builtin_annot("addl %ecx, %eax");
 
