@@ -101,12 +101,13 @@ CASM_FUNCDEF(bool, gp_s4_apstacks,
     //xmhfhwm_cpu_insn_movl_mebxeax_eax(4);
 
     xmhfhwm_cpu_insn_movl_imm_ecx(16384);
+    xmhfhwm_cpu_insn_xorl_edx_edx();
     xmhfhwm_cpu_insn_mull_ecx();
     xmhfhwm_cpu_insn_addl_ecx_eax();
-    xmhfhwm_cpu_insn_addl_imm_eax(_init_cpustacks);
-    xmhfhwm_cpu_insn_movl_eax_esp();
-    //xmhfhwm_cpu_insn_movl_imm_esp(_init_cpustacks);
-    //xmhfhwm_cpu_insn_addl_eax_esp();
+    //xmhfhwm_cpu_insn_addl_imm_eax(_init_cpustacks);
+    //xmhfhwm_cpu_insn_movl_eax_esp();
+    xmhfhwm_cpu_insn_movl_imm_esp(_init_cpustacks);
+    xmhfhwm_cpu_insn_addl_eax_esp();
 
     xmhfhwm_cpu_insn_jmp(gp_s5_entry);
     //xmhfhwm_cpu_insn_jmpsmpcommon();
