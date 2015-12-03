@@ -322,9 +322,147 @@ void slab_main(slab_params_t *sp){
 		gcpustate_vmrwp->value = 0x10000;
 		XMHF_SLAB_CALLNEW(&spl);
 
+		//guest CR3
+		gcpustate_vmrwp->encoding = VMCS_GUEST_CR3;
+		gcpustate_vmrwp->value = 0;
+		XMHF_SLAB_CALLNEW(&spl);
 
-        }
+		//TR
+		gcpustate_vmrwp->encoding = VMCS_GUEST_TR_BASE ;
+		gcpustate_vmrwp->value = 0;
+		XMHF_SLAB_CALLNEW(&spl);
 
+		gcpustate_vmrwp->encoding = VMCS_GUEST_TR_LIMIT;
+		gcpustate_vmrwp->value = 0;
+		XMHF_SLAB_CALLNEW(&spl);
+
+		gcpustate_vmrwp->encoding = VMCS_GUEST_TR_SELECTOR;
+		gcpustate_vmrwp->value = 0;
+		XMHF_SLAB_CALLNEW(&spl);
+
+		gcpustate_vmrwp->encoding = VMCS_GUEST_TR_ACCESS_RIGHTS;
+		gcpustate_vmrwp->value = 0x8B;
+		XMHF_SLAB_CALLNEW(&spl);
+
+		//CS segment
+		gcpustate_vmrwp->encoding = VMCS_GUEST_CS_SELECTOR;
+		gcpustate_vmrwp->value = 0x8;
+		XMHF_SLAB_CALLNEW(&spl);
+
+		gcpustate_vmrwp->encoding = VMCS_GUEST_CS_BASE;
+		gcpustate_vmrwp->value = 0;
+		XMHF_SLAB_CALLNEW(&spl);
+
+		gcpustate_vmrwp->encoding = VMCS_GUEST_CS_LIMIT;
+		gcpustate_vmrwp->value = 0xFFFFFFFFUL;
+		XMHF_SLAB_CALLNEW(&spl);
+
+		gcpustate_vmrwp->encoding = VMCS_GUEST_CS_ACCESS_RIGHTS;
+		gcpustate_vmrwp->value = 0xc09b;
+		XMHF_SLAB_CALLNEW(&spl);
+
+		//DS segment
+		gcpustate_vmrwp->encoding = VMCS_GUEST_DS_SELECTOR;
+		gcpustate_vmrwp->value = 0x10;
+		XMHF_SLAB_CALLNEW(&spl);
+
+		gcpustate_vmrwp->encoding = VMCS_GUEST_DS_BASE;
+		gcpustate_vmrwp->value = 0;
+		XMHF_SLAB_CALLNEW(&spl);
+
+		gcpustate_vmrwp->encoding = VMCS_GUEST_DS_LIMIT;
+		gcpustate_vmrwp->value = 0xFFFFFFFFUL;
+		XMHF_SLAB_CALLNEW(&spl);
+
+		gcpustate_vmrwp->encoding = VMCS_GUEST_DS_ACCESS_RIGHTS;
+		gcpustate_vmrwp->value = 0xc093;
+		XMHF_SLAB_CALLNEW(&spl);
+
+		//ES segment
+		gcpustate_vmrwp->encoding = VMCS_GUEST_ES_SELECTOR;
+		gcpustate_vmrwp->value = 0x10 ;
+		XMHF_SLAB_CALLNEW(&spl);
+
+		gcpustate_vmrwp->encoding = VMCS_GUEST_ES_BASE;
+		gcpustate_vmrwp->value = 0;
+		XMHF_SLAB_CALLNEW(&spl);
+
+		gcpustate_vmrwp->encoding = VMCS_GUEST_ES_LIMIT;
+		gcpustate_vmrwp->value = 0xFFFFFFFFUL;
+		XMHF_SLAB_CALLNEW(&spl);
+
+		gcpustate_vmrwp->encoding = VMCS_GUEST_ES_ACCESS_RIGHTS;
+		gcpustate_vmrwp->value = 0xc093;
+		XMHF_SLAB_CALLNEW(&spl);
+
+		//FS segment
+		gcpustate_vmrwp->encoding = VMCS_GUEST_FS_SELECTOR;
+		gcpustate_vmrwp->value = 0x10 ;
+		XMHF_SLAB_CALLNEW(&spl);
+
+		gcpustate_vmrwp->encoding = VMCS_GUEST_FS_BASE;
+		gcpustate_vmrwp->value = 0;
+		XMHF_SLAB_CALLNEW(&spl);
+
+		gcpustate_vmrwp->encoding = VMCS_GUEST_FS_LIMIT;
+		gcpustate_vmrwp->value = 0xFFFFFFFFUL;
+		XMHF_SLAB_CALLNEW(&spl);
+
+		gcpustate_vmrwp->encoding = VMCS_GUEST_FS_ACCESS_RIGHTS;
+		gcpustate_vmrwp->value = 0xc093;
+		XMHF_SLAB_CALLNEW(&spl);
+
+		//GS segment
+		gcpustate_vmrwp->encoding = VMCS_GUEST_GS_SELECTOR;
+		gcpustate_vmrwp->value = 0x10 ;
+		XMHF_SLAB_CALLNEW(&spl);
+
+		gcpustate_vmrwp->encoding = VMCS_GUEST_GS_BASE;
+		gcpustate_vmrwp->value = 0;
+		XMHF_SLAB_CALLNEW(&spl);
+
+		gcpustate_vmrwp->encoding = VMCS_GUEST_GS_LIMIT;
+		gcpustate_vmrwp->value = 0xFFFFFFFFUL;
+		XMHF_SLAB_CALLNEW(&spl);
+
+		gcpustate_vmrwp->encoding = VMCS_GUEST_GS_ACCESS_RIGHTS;
+		gcpustate_vmrwp->value = 0xc093;
+		XMHF_SLAB_CALLNEW(&spl);
+
+		//SS segment
+		gcpustate_vmrwp->encoding = VMCS_GUEST_SS_SELECTOR;
+		gcpustate_vmrwp->value = 0x10 ;
+		XMHF_SLAB_CALLNEW(&spl);
+
+		gcpustate_vmrwp->encoding = VMCS_GUEST_SS_BASE;
+		gcpustate_vmrwp->value = 0;
+		XMHF_SLAB_CALLNEW(&spl);
+
+		gcpustate_vmrwp->encoding = VMCS_GUEST_SS_LIMIT;
+		gcpustate_vmrwp->value = 0xFFFFFFFFUL;
+		XMHF_SLAB_CALLNEW(&spl);
+
+		gcpustate_vmrwp->encoding = VMCS_GUEST_SS_ACCESS_RIGHTS;
+		gcpustate_vmrwp->value = 0xc093;
+		XMHF_SLAB_CALLNEW(&spl);
+
+
+		spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_VMREAD;
+		gcpustate_vmrwp->encoding = VMCS_GUEST_CR0;
+		XMHF_SLAB_CALLNEW(&spl);
+		spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_VMWRITE;
+		gcpustate_vmrwp->encoding = VMCS_GUEST_CR0;
+		gcpustate_vmrwp->value &= ~(CR0_PG);
+		XMHF_SLAB_CALLNEW(&spl);
+
+		spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_VMREAD;
+		gcpustate_vmrwp->encoding = VMCS_GUEST_CR0;
+		XMHF_SLAB_CALLNEW(&spl);
+		spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_VMWRITE;
+		gcpustate_vmrwp->encoding = VMCS_CONTROL_CR0_SHADOW;
+		XMHF_SLAB_CALLNEW(&spl);
+
+	}
 
     }
 
@@ -370,6 +508,32 @@ void slab_main(slab_params_t *sp){
 
 
 #if 0
+
+
+	/*_XDPRINTF_("%s: vmcs pinbased=%016llx\n", __func__, CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmread,VMCS_CONTROL_VMX_PIN_BASED));
+	_XDPRINTF_("%s: pinbase MSR=%016llx\n", __func__, _cpustate_archdatavmx[context_desc.cpu_desc.cpu_index].vmx_msrs[INDEX_IA32_VMX_PINBASED_CTLS_MSR]);
+	_XDPRINTF_("%s: cpu_based vmcs=%016llx\n", __func__, CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmread,VMCS_CONTROL_VMX_CPU_BASED));
+	_XDPRINTF_("%s: cpu_based MSR=%016llx\n", __func__, _cpustate_archdatavmx[context_desc.cpu_desc.cpu_index].vmx_msrs[INDEX_IA32_VMX_PROCBASED_CTLS_MSR]);
+	_XDPRINTF_("%s: seccpu_based vmcs=%016llx\n", __func__, CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmread,VMCS_CONTROL_VMX_SECCPU_BASED));
+	_XDPRINTF_("%s: seccpu_based MSR=%016llx\n", __func__, _cpustate_archdatavmx[context_desc.cpu_desc.cpu_index].vmx_msrs[INDEX_IA32_VMX_PROCBASED_CTLS2_MSR]);
+	_XDPRINTF_("%s: entrycontrols vmcs=%016llx\n", __func__, CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmread,VMCS_CONTROL_VM_ENTRY_CONTROLS));
+	_XDPRINTF_("%s: entrycontrols MSR=%016llx\n", __func__, _cpustate_archdatavmx[context_desc.cpu_desc.cpu_index].vmx_msrs[INDEX_IA32_VMX_ENTRY_CTLS_MSR]);
+	_XDPRINTF_("%s: exitcontrols vmcs=%016llx\n", __func__, CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmread,VMCS_CONTROL_VM_EXIT_CONTROLS));
+	_XDPRINTF_("%s: exitcontrols MSR=%016llx\n", __func__, _cpustate_archdatavmx[context_desc.cpu_desc.cpu_index].vmx_msrs[INDEX_IA32_VMX_EXIT_CTLS_MSR]);
+	_XDPRINTF_("%s: iobitmapa vmcs=%016llx\n", __func__, CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmread,VMCS_CONTROL_IO_BITMAPA_ADDRESS_FULL));
+	_XDPRINTF_("%s: iobitmapb vmcs=%016llx\n", __func__, CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmread,VMCS_CONTROL_IO_BITMAPB_ADDRESS_FULL));
+	_XDPRINTF_("%s: msrbitmap load vmcs=%016llx\n", __func__, CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmread,VMCS_CONTROL_VM_ENTRY_MSR_LOAD_ADDRESS_FULL));
+	_XDPRINTF_("%s: msrbitmap store vmcs=%016llx\n", __func__, CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmread,VMCS_CONTROL_VM_EXIT_MSR_STORE_ADDRESS_FULL));
+	_XDPRINTF_("%s: msrbitmap exit load vmcs=%016llx\n", __func__, CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmread,VMCS_CONTROL_VM_EXIT_MSR_LOAD_ADDRESS_FULL));
+	_XDPRINTF_("%s: ept pointer vmcs=%016llx\n", __func__, CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmread,VMCS_CONTROL_EPT_POINTER_FULL));
+
+	_XDPRINTF_("%s: CR0 vmcs=%08x\n", __func__, CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmread,VMCS_GUEST_CR0));
+	_XDPRINTF_("%s: CR4 vmcs=%08x\n", __func__, CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmread,VMCS_GUEST_CR4));
+	_XDPRINTF_("%s: CR0 mask vmcs=%08x\n", __func__, CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmread,VMCS_CONTROL_CR0_MASK));
+	_XDPRINTF_("%s: CR4 mask vmcs=%08x\n", __func__, CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmread,VMCS_CONTROL_CR4_MASK));
+	_XDPRINTF_("%s: CR0 shadow vmcs=%08x\n", __func__, CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmread,VMCS_CONTROL_CR0_SHADOW));
+	_XDPRINTF_("%s: CR4 shadow vmcs=%08x\n", __func__, CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmread,VMCS_CONTROL_CR4_SHADOW));
+	*/
 
 
 	//MSR bitmap support
