@@ -44,70 +44,42 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-#include <xmhf.h>
-#include <xmhf-debug.h>
-
-#include <xmhfgeec.h>
-#include <geec_prime.h>
-
-
-// GEEC prime SMP assembly language code blobs
-// author: amit vasudevan (amitvasudevan@acm.org)
-
-
-CASM_FUNCDEF(void, gp_s4_apstacks,
-{
-    xmhfhwm_cpu_insn_movw_ds_ax();
-    xmhfhwm_cpu_insn_movw_ax_es();
-    xmhfhwm_cpu_insn_movw_ax_fs();
-    xmhfhwm_cpu_insn_movw_ax_gs();
-    xmhfhwm_cpu_insn_movw_ax_ss();
-
-    xmhfhwm_cpu_insn_movl_cr4_eax();
-    xmhfhwm_cpu_insn_orl_imm_eax(0x00000030);
-    xmhfhwm_cpu_insn_movl_eax_cr4();
-
-
-    xmhfhwm_cpu_insn_movl_ebx_cr3();
-
-
-    xmhfhwm_cpu_insn_movl_imm_ecx(0xc0000080);
-    xmhfhwm_cpu_insn_rdmsr();
-    xmhfhwm_cpu_insn_orl_imm_eax(0x00000800);
-    xmhfhwm_cpu_insn_wrmsr();
-
-
-    xmhfhwm_cpu_insn_movl_cr0_eax();
-    xmhfhwm_cpu_insn_orl_imm_eax(0x80000015);
-    xmhfhwm_cpu_insn_movl_eax_cr0();
-
-    //TODO: for non-TXT wakeup we need to reload GDT
-    //"movl %1, %esi \r\n");
-    //"lgdt (%esi) \r\n");
-
-    xmhfhwm_cpu_insn_movl_imm_ecx(0x0000001B);
-    xmhfhwm_cpu_insn_rdmsr();
-    xmhfhwm_cpu_insn_andl_imm_eax(0x00000FFF);
-    xmhfhwm_cpu_insn_orl_imm_eax(0xFEE00000);
-    xmhfhwm_cpu_insn_wrmsr();
-
-
-    xmhfhwm_cpu_insn_xorl_eax_eax();
-    xmhfhwm_cpu_insn_movl_imm_esi(0xFEE00020);
-    xmhfhwm_cpu_insn_movl_mesi_eax(0x0);
-    xmhfhwm_cpu_insn_shr_imm_eax(24);           //eax = lapic id (0-255)
-
 /*
-    xmhfhwm_cpu_insn_movl_imm_ecx(16384);
-    xmhfhwm_cpu_insn_xorl_edx_edx();
-    xmhfhwm_cpu_insn_mull_ecx();
-    xmhfhwm_cpu_insn_addl_ecx_eax();
-    xmhfhwm_cpu_insn_movl_imm_esp(_init_cpustacks);
-    xmhfhwm_cpu_insn_addl_eax_esp();
+ * x86 lapic implementation
+ * author: amit vasudevan (amitvasudevan@acm.org)
 */
-    xmhfhwm_cpu_insn_jmpsmpcommon();
-    xmhfhwm_cpu_insn_ret();
-},
-void *noparam)
+
+
+#include <xmhf.h>
+#include <xmhf-hwm.h>
+
+u32 xmhfhwm_lapic_reg_id=0;
+
+
+bool _impl_xmhfhwm_lapic_read(u32 sysmemaddr, sysmem_read_t readsize, u64 *read_result){
+	bool retval = false;
+
+	if(sysmemaddr == XMHFHWM_LAPIC_REG_ID){
+		//@assert (readsize == SYSMEMREADU32);
+		*read_result = xmhfhwm_lapic_reg_id;
+		retval = true;
+
+	} else {
+
+	}
+
+	return retval;
+}
+
+bool _impl_xmhfhwm_lapic_write(u32 sysmemaddr, sysmem_write_t writesize, u64 write_value){
+	bool retval = false;
+
+	//if(sysmemaddr == ){
+	//	//@assert writesize == SYSMEMWRITEU32;
+	//	retval = true;
+	//}
+
+	return retval;
+}
 
 
