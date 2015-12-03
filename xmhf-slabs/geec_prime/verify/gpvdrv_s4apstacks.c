@@ -104,6 +104,7 @@ void xmhfhwm_vdriver_smpcommon(void){
 	//@assert (xmhfhwm_cpu_fs_selector == 0x8);
 	//@assert (xmhfhwm_cpu_gs_selector == 0x8);
 	//@assert (xmhfhwm_cpu_ss_selector == 0x8);
+	//@assert (xmhfhwm_cpu_cr4 == 0x30);
 
 }
 
@@ -117,6 +118,7 @@ void main(void){
 
 	//execute harness
 	xmhfhwm_cpu_ds_selector = 0x8;
+	xmhfhwm_cpu_cr4 = 0;
 	CASM_FUNCCALL(gp_s4_apstacks, CASM_NOPARAM);
 	//@assert (invoked_gp_s5_entry == true);
 
