@@ -2646,7 +2646,14 @@ extern void _impl_xmhfhwm_cpu_insn_addl_ecx_eax(void);
 
 
 
-#define xmhfhwm_cpu_insn_lret() __builtin_annot("lret ");
+#define xmhfhwm_cpu_insn_lret() \
+	__builtin_annot("lret "); \
+        xmhfhwm_cpu_gprs_eip = *(u32 *)xmhfhwm_cpu_gprs_esp; \
+	xmhfhwm_cpu_gprs_esp += sizeof(u32); \
+        xmhfhwm_cpu_cs_selector = *(u32 *)xmhfhwm_cpu_gprs_esp; \
+	xmhfhwm_cpu_gprs_esp += sizeof(u32); \
+	return; \
+
 
 
 #define xmhfhwm_cpu_insn_jmpapentry() \

@@ -276,13 +276,17 @@ void gp_s5_setupcpustate(u32 cpuid, bool isbsp){
 	CASM_FUNCCALL(xmhfhw_cpu_loadGDT,&__xmhfhic_x86vmx_gdt);
 	_XDPRINTF_("%s[%u]: GDT loaded\n", __func__, (u32)cpuid);
 
+
 	//reload CS
 	CASM_FUNCCALL(__xmhfhic_x86vmx_reloadCS,__CS_CPL0);
 	_XDPRINTF_("%s[%u]: Reloaded CS\n", __func__, (u32)cpuid);
 
+
 	//reload DS, FS, GS and SS
 	CASM_FUNCCALL(__xmhfhic_x86vmx_reloadsegregs,__DS_CPL0);
 	_XDPRINTF_("%s[%u]: Reloaded segment registers\n", __func__, (u32)cpuid);
+
+#if 0
 
 	//load TR
 	CASM_FUNCCALL(xmhfhw_cpu_loadTR, (__TRSEL + ((u32)cpuid * 16) ) );
@@ -347,6 +351,7 @@ void gp_s5_setupcpustate(u32 cpuid, bool isbsp){
 	HALT();
 	}
 	_XDPRINTF_("%s[%u]: Setup VMX state\n", __func__, (u32)cpuid);
+#endif
 
 }
 
