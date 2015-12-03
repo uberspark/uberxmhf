@@ -240,6 +240,10 @@ void slab_main(slab_params_t *sp){
 
             XMHF_SLAB_CALLNEW(&spl);
 
+		gcpustate_vmrwp->encoding = VMCS_GUEST_GDTR_LIMIT;
+		gcpustate_vmrwp->value =  (sizeof(_xcguestslab_init_gdt)-1);
+		XMHF_SLAB_CALLNEW(&spl);
+
 
 
 
