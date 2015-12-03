@@ -240,13 +240,87 @@ void slab_main(slab_params_t *sp){
 
             XMHF_SLAB_CALLNEW(&spl);
 
-		gcpustate_vmrwp->encoding = VMCS_GUEST_GDTR_LIMIT;
-		gcpustate_vmrwp->value =  (sizeof(_xcguestslab_init_gdt)-1);
+
+		/*
+		gcpustate_vmrwp->encoding = ;
+		gcpustate_vmrwp->value = ;
+		XMHF_SLAB_CALLNEW(&spl);
+		*/
+
+		//more guest-specific state setup
+		gcpustate_vmrwp->encoding = VMCS_CONTROL_CR4_SHADOW;
+		gcpustate_vmrwp->value =(u64)CR4_VMXE;
 		XMHF_SLAB_CALLNEW(&spl);
 
+		gcpustate_vmrwp->encoding = VMCS_CONTROL_PAGEFAULT_ERRORCODE_MASK;
+		gcpustate_vmrwp->value = 0x00000000;
+		XMHF_SLAB_CALLNEW(&spl);
 
+		gcpustate_vmrwp->encoding = VMCS_CONTROL_PAGEFAULT_ERRORCODE_MATCH;
+		gcpustate_vmrwp->value = 0x00000000;
+		XMHF_SLAB_CALLNEW(&spl);
 
+		gcpustate_vmrwp->encoding = VMCS_CONTROL_EXCEPTION_BITMAP;
+		gcpustate_vmrwp->value = 0;
+		XMHF_SLAB_CALLNEW(&spl);
 
+		gcpustate_vmrwp->encoding = VMCS_CONTROL_CR3_TARGET_COUNT;
+		gcpustate_vmrwp->value = 0;
+		XMHF_SLAB_CALLNEW(&spl);
+
+		gcpustate_vmrwp->encoding = VMCS_CONTROL_VM_ENTRY_EXCEPTION_ERRORCODE;
+		gcpustate_vmrwp->value = 0;
+		XMHF_SLAB_CALLNEW(&spl);
+
+		gcpustate_vmrwp->encoding = VMCS_CONTROL_VM_ENTRY_INTERRUPTION_INFORMATION;
+		gcpustate_vmrwp->value = 0;
+		XMHF_SLAB_CALLNEW(&spl);
+
+		gcpustate_vmrwp->encoding = VMCS_GUEST_RSP;
+		gcpustate_vmrwp->value = 0;
+		XMHF_SLAB_CALLNEW(&spl);
+
+		gcpustate_vmrwp->encoding = VMCS_GUEST_RIP;
+		gcpustate_vmrwp->value = 0;
+		XMHF_SLAB_CALLNEW(&spl);
+
+		gcpustate_vmrwp->encoding = VMCS_GUEST_ACTIVITY_STATE;
+		gcpustate_vmrwp->value = 0;
+		XMHF_SLAB_CALLNEW(&spl);
+
+		gcpustate_vmrwp->encoding = VMCS_GUEST_RFLAGS;
+		gcpustate_vmrwp->value = (1 <<1) | (EFLAGS_IOPL);
+		XMHF_SLAB_CALLNEW(&spl);
+
+		gcpustate_vmrwp->encoding = VMCS_GUEST_INTERRUPTIBILITY;
+		gcpustate_vmrwp->value = 0;
+		XMHF_SLAB_CALLNEW(&spl);
+
+		//IDTR
+		gcpustate_vmrwp->encoding = VMCS_GUEST_IDTR_BASE;
+		gcpustate_vmrwp->value = 0;
+		XMHF_SLAB_CALLNEW(&spl);
+
+		gcpustate_vmrwp->encoding = VMCS_GUEST_IDTR_LIMIT;
+		gcpustate_vmrwp->value = 0;
+		XMHF_SLAB_CALLNEW(&spl);
+
+		//LDTR, unusable
+		gcpustate_vmrwp->encoding = VMCS_GUEST_LDTR_BASE;
+		gcpustate_vmrwp->value = 0;
+		XMHF_SLAB_CALLNEW(&spl);
+
+		gcpustate_vmrwp->encoding = VMCS_GUEST_LDTR_LIMIT;
+		gcpustate_vmrwp->value = 0;
+		XMHF_SLAB_CALLNEW(&spl);
+
+		gcpustate_vmrwp->encoding = VMCS_GUEST_LDTR_SELECTOR;
+		gcpustate_vmrwp->value = 0 ;
+		XMHF_SLAB_CALLNEW(&spl);
+
+		gcpustate_vmrwp->encoding = VMCS_GUEST_LDTR_ACCESS_RIGHTS;
+		gcpustate_vmrwp->value = 0x10000;
+		XMHF_SLAB_CALLNEW(&spl);
 
 
         }
