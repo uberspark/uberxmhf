@@ -113,20 +113,25 @@ void xmhfhwm_vdriver_smpcommon(void){
 
 
 void main(void){
+	u32 i;
 	//populate hardware model stack and program counter
-	xmhfhwm_cpu_gprs_esp = (u32)&_init_bsp_cpustack + MAX_PLATFORM_CPUSTACK_SIZE;
+	//xmhfhwm_cpu_gprs_esp = (u32)&_init_bsp_cpustack + MAX_PLATFORM_CPUSTACK_SIZE;
 	//xmhfhwm_cpu_gprs_eip = check_eip;
 	//check_esp = xmhfhwm_cpu_gprs_esp; // pointing to top-of-stack
 
 
 	//execute harness
-	xmhfhwm_cpu_ds_selector = 0x8;
-	xmhfhwm_cpu_cr4 = 0;
-	xmhfhwm_cpu_gprs_ebx = (u32)&gp_rwdatahdr.gp_vhslabmempgtbl_lvl4t;
-	xmhfhwm_lapic_reg_id = 1UL << 24;
-	CASM_FUNCCALL(gp_s4_apstacks, CASM_NOPARAM);
-	//@assert (invoked_gp_s5_entry == true);
-	//@assert (xmhfhwm_cpu_gprs_esp == ((u32)&_init_cpustacks[(xmhfhwm_lapic_reg_id >> 24)+1][8]));
+	for(i=0; i < 255; i++){
+		xmhfhwm_cpu_gprs_esp = (u32)&_init_bsp_cpustack + MAX_PLATFORM_CPUSTACK_SIZE;
+		xmhfhwm_cpu_ds_selector = 0x8;
+		xmhfhwm_cpu_cr4 = 0;
+		xmhfhwm_cpu_gprs_ebx = (u32)&gp_rwdatahdr.gp_vhslabmempgtbl_lvl4t;
+		xmhfhwm_lapic_reg_id = i << 24;
+		CASM_FUNCCALL(gp_s4_apstacks, CASM_NOPARAM);
+		//@assert (invoked_gp_s5_entry == true);
+		//@assert (xmhfhwm_cpu_gprs_esp == ((u32)&_init_cpustacks[i+1][8]));
+	}
+
 
 	////@assert xmhfhwm_cpu_gprs_esp == check_esp;
 	////@assert xmhfhwm_cpu_gprs_eip == check_eip;
