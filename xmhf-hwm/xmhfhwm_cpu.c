@@ -1036,6 +1036,10 @@ static u64 _impl_xmhfhwm_cpu_sysmemread(u32 sysmemaddr, sysmem_read_t readsize){
         if(hwmdevstatus)
 		return read_result;
 
+	hwmdevstatus = _impl_xmhfhwm_lapic_read(sysmemaddr, readsize, &read_result);
+        if(hwmdevstatus)
+		return read_result;
+
 	//@assert 0;
 	return read_result;
 }
@@ -1057,6 +1061,10 @@ static void _impl_xmhfhwm_cpu_sysmemwrite(u32 sysmemaddr, sysmem_write_t writesi
 		return;
 
 	hwmdevstatus = _impl_xmhfhwm_vtd_write(sysmemaddr, writesize, write_value);
+        if(hwmdevstatus)
+		return;
+
+	hwmdevstatus = _impl_xmhfhwm_lapic_write(sysmemaddr, writesize, write_value);
         if(hwmdevstatus)
 		return;
 
