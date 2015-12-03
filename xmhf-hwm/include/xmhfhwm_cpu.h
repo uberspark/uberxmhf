@@ -2344,6 +2344,7 @@ extern physmem_extent_t xmhfhwm_sysmemaccess_physmem_extents[32];
 extern u32 xmhfhwm_sysmemaccess_physmem_extents_total;
 
 extern u64 xmhfhwm_cpu_msr_efer;
+extern u64 xmhfhwm_cpu_msr_apic_base;
 
 
 
