@@ -90,7 +90,7 @@
     #include <xmhfhwm_casm.h>  			//CPU
     #include <xmhfhwm_e1000.h>			//e1000 network card
     #include <xmhfhwm_cpu.h>  			//CPU
-=    #include <xmhfhwm_txt.h>			//TXT
+    #include <xmhfhwm_txt.h>			//TXT
     #include <xmhfhwm_pci.h>        		//PCI bus glue
     #include <xmhfhwm_pit.h>        		//PIT
     #include <xmhfhwm_vtd.h>			//VMX DMA protection

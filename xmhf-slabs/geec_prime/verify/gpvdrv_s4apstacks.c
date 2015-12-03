@@ -86,12 +86,12 @@ u32 framac_nondetu32interval(u32 min, u32 max)
 
 
 //////
-u32 check_esp, check_eip = CASM_RET_EIP;
+//u32 check_esp, check_eip = CASM_RET_EIP;
 x86smp_apbootstrapdata_t *apdptr = (x86smp_apbootstrapdata_t *)&xmhfhwm_mem_region_apbootstrap_dataseg;
 bool invoked_gp_s5_entry = false;
 
 void xmhfhwm_vdriver_writeesp(u32 oldval, u32 newval){
-	//@assert (newval >= ((u32)&_init_bsp_cpustack + 4)) && (newval <= ((u32)&_init_bsp_cpustack + MAX_PLATFORM_CPUSTACK_SIZE)) ;
+	////@assert (newval >= ((u32)&_init_bsp_cpustack + 4)) && (newval <= ((u32)&_init_bsp_cpustack + MAX_PLATFORM_CPUSTACK_SIZE)) ;
 }
 
 void xmhfhwm_vdriver_cpu_writecr3(u32 oldval, u32 newval){
@@ -115,8 +115,8 @@ void xmhfhwm_vdriver_smpcommon(void){
 void main(void){
 	//populate hardware model stack and program counter
 	xmhfhwm_cpu_gprs_esp = (u32)&_init_bsp_cpustack + MAX_PLATFORM_CPUSTACK_SIZE;
-	xmhfhwm_cpu_gprs_eip = check_eip;
-	check_esp = xmhfhwm_cpu_gprs_esp; // pointing to top-of-stack
+	//xmhfhwm_cpu_gprs_eip = check_eip;
+	//check_esp = xmhfhwm_cpu_gprs_esp; // pointing to top-of-stack
 
 
 	//execute harness
@@ -127,8 +127,8 @@ void main(void){
 	CASM_FUNCCALL(gp_s4_apstacks, CASM_NOPARAM);
 	//@assert (invoked_gp_s5_entry == true);
 
-	//@assert xmhfhwm_cpu_gprs_esp == check_esp;
-	//@assert xmhfhwm_cpu_gprs_eip == check_eip;
+	////@assert xmhfhwm_cpu_gprs_esp == check_esp;
+	////@assert xmhfhwm_cpu_gprs_eip == check_eip;
 }
 
 
