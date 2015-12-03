@@ -70,11 +70,12 @@ CASM_FUNCDEF(void, gp_s4_apstacks,
 
     xmhfhwm_cpu_insn_movl_ebx_cr3();
 
-/*
+
     xmhfhwm_cpu_insn_movl_imm_ecx(0xc0000080);
     xmhfhwm_cpu_insn_rdmsr();
     xmhfhwm_cpu_insn_orl_imm_eax(0x00000800);
     xmhfhwm_cpu_insn_wrmsr();
+
 
     xmhfhwm_cpu_insn_movl_cr0_eax();
     xmhfhwm_cpu_insn_orl_imm_eax(0x80000015);
@@ -83,7 +84,7 @@ CASM_FUNCDEF(void, gp_s4_apstacks,
     //TODO: for non-TXT wakeup we need to reload GDT
     //"movl %1, %esi \r\n");
     //"lgdt (%esi) \r\n");
-
+/*
     xmhfhwm_cpu_insn_movl_imm_ecx(0x0000001B);
     xmhfhwm_cpu_insn_rdmsr();
     xmhfhwm_cpu_insn_andl_imm_eax(0x00000FFF);

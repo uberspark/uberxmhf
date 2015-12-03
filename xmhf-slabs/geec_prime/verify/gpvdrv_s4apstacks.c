@@ -106,6 +106,8 @@ void xmhfhwm_vdriver_smpcommon(void){
 	//@assert (xmhfhwm_cpu_ss_selector == 0x8);
 	//@assert (xmhfhwm_cpu_cr4 == 0x30);
 	//@assert (xmhfhwm_cpu_cr3 ==(u32)&gp_rwdatahdr.gp_vhslabmempgtbl_lvl4t);
+	//@assert (xmhfhwm_cpu_msr_efer & 0x800);
+	//@assert (xmhfhwm_cpu_cr0 == 0x80000015);
 }
 
 

@@ -2415,6 +2415,7 @@ extern void _impl_xmhfhwm_cpu_insn_movw_mesp_ax(int index);
 extern void _impl_xmhfhwm_cpu_insn_movl_imm_eax(u32 value);
 extern void _impl_xmhfhwm_cpu_insn_movl_imm_esp(u32 value);
 extern void _impl_xmhfhwm_cpu_insn_movl_imm_esi(u32 value);
+extern void _impl_xmhfhwm_cpu_insn_movl_imm_ecx(u32 value);
 extern void _impl_xmhfhwm_cpu_insn_invvpid_mesp_ecx(int index);
 extern void _impl_xmhfhwm_cpu_insn_inw_dx_ax(void);
 extern void _impl_xmhfhwm_cpu_insn_lgdt_mecx(int index);
@@ -2732,7 +2733,11 @@ extern void _impl_xmhfhwm_cpu_insn_rep_movsb_sysmem(sysmem_copy_t sysmemcopy_typ
 #define _xmhfhwm_cpu_insn_movl_imm_ebx(x) __builtin_annot("movl $"#x", %ebx");
 #define xmhfhwm_cpu_insn_movl_imm_ebx(x) _xmhfhwm_cpu_insn_movl_imm_ebx(x)
 
-#define _xmhfhwm_cpu_insn_movl_imm_ecx(x) __builtin_annot("movl $"#x", %ecx");
+#define _xmhfhwm_cpu_insn_movl_imm_ecx(x) \
+	__builtin_annot("movl $"#x", %ecx"); \
+	_impl_xmhfhwm_cpu_insn_movl_imm_ecx(x); \
+
+
 #define xmhfhwm_cpu_insn_movl_imm_ecx(x) _xmhfhwm_cpu_insn_movl_imm_ecx(x)
 
 #define _xmhfhwm_cpu_insn_movl_imm_edi(x) __builtin_annot("movl $"#x", %edi");
