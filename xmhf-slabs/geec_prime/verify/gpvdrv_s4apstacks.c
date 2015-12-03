@@ -108,6 +108,7 @@ void xmhfhwm_vdriver_smpcommon(void){
 	//@assert (xmhfhwm_cpu_cr3 ==(u32)&gp_rwdatahdr.gp_vhslabmempgtbl_lvl4t);
 	//@assert (xmhfhwm_cpu_msr_efer & 0x800);
 	//@assert (xmhfhwm_cpu_cr0 == 0x80000015);
+	//@assert (xmhfhwm_cpu_msr_apic_base == MMIO_APIC_BASE);
 }
 
 
