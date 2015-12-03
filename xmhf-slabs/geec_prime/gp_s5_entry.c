@@ -85,7 +85,7 @@ void gp_s5_entry(void){
         CASM_FUNCCALL(spin_lock,&gp_state4_smplock);
 	//@ghost gp_s5_entry_invokedspinlock = true;
 
-	gp_s5_setupcpustate(cpuid, isbsp);
+	gp_s5_setupcpustate((u16)cpuid, isbsp);
 	//@ghost gp_s5_entry_invokedsetupcpustate = true;
 	//@ghost gp_s5_entry_invokedisbsp = true;
 
