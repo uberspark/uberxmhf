@@ -56,23 +56,47 @@
 
 
 //we enter here with SMP enabled
+//@ghost bool gp_s5_entry_invokedisbsp = false;
+//@ghost bool gp_s5_entry_invokedgetcpulapicid = false;
+//@ghost bool gp_s5_entry_invokedspinlock = false;
+//@ghost bool gp_s5_entry_invokedsetupcpustate = false;
+//@ghost bool gp_s5_entry_invokedspinunlock = false;
+//@ghost bool gp_s5_entry_invokedstrt = false;
+//@ghost bool gp_s5_entry_invokedhlt = false;
+/*@
+	ensures (gp_s5_entry_invokedisbsp == true);
+	ensures (gp_s5_entry_invokedgetcpulapicid == true);
+	ensures (gp_s5_entry_invokedspinlock == true);
+	ensures (gp_s5_entry_invokedsetupcpustate == true);
+	ensures (gp_s5_entry_invokedspinunlock == true);
+	ensures (gp_s5_entry_invokedstrt == true);
+	ensures (gp_s5_entry_invokedhlt == true);
+@*/
 void gp_s5_entry(void){
 	u32 cpuid;
 	bool isbsp;
 
 	isbsp = xmhfhw_lapic_isbsp();
+	//@ghost gp_s5_entry_invokedisbsp = true;
 
 	cpuid  = xmhf_baseplatform_arch_x86_getcpulapicid();
+	//@ghost gp_s5_entry_invokedgetcpulapicid = true;
 
         CASM_FUNCCALL(spin_lock,&gp_state4_smplock);
+	//@ghost gp_s5_entry_invokedspinlock = true;
 
 	gp_s5_setupcpustate(cpuid, isbsp);
+	//@ghost gp_s5_entry_invokedsetupcpustate = true;
+	//@ghost gp_s5_entry_invokedisbsp = true;
 
         CASM_FUNCCALL(spin_unlock,&gp_state4_smplock);
+	//@ghost gp_s5_entry_invokedspinunlock = true;
 
 	gp_s5_invokestrt(cpuid);
+	//@ghost gp_s5_entry_invokedstrt = true;
 
 	_XDPRINTF_("%s[%u]: Should never be here. Halting!\n",
 		__func__, (u16)cpuid);
 	CASM_FUNCCALL(xmhfhw_cpu_hlt, CASM_NOPARAM);
+	//@ghost gp_s5_entry_invokedhlt = true;
 }
