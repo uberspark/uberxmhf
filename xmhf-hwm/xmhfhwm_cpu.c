@@ -950,6 +950,14 @@ void _impl_xmhfhwm_cpu_insn_iretl(void){
 }
 
 
+void _impl_xmhfhwm_cpu_insn_mull_ecx(void){
+        xmhfhwm_cpu_gprs_eax = xmhfhwm_cpu_gprs_eax * xmhfhwm_cpu_gprs_ecx;
+}
+
+void _impl_xmhfhwm_cpu_insn_addl_ecx_eax(void){
+	xmhfhwm_cpu_gprs_eax += xmhfhwm_cpu_gprs_ecx;
+}
+
 
 
 

@@ -2517,6 +2517,8 @@ extern void _impl_xmhfhwm_cpu_insn_iretl(void);
 extern void  _impl_xmhfhwm_cpu_insn_movw_ds_ax(void);
 extern void _impl_xmhfhwm_cpu_insn_addl_imm_eax(u32 value);
 extern void _impl_xmhfhwm_cpu_insn_rep_movsb_sysmem(sysmem_copy_t sysmemcopy_type);
+extern void _impl_xmhfhwm_cpu_insn_mull_ecx(void);
+extern void _impl_xmhfhwm_cpu_insn_addl_ecx_eax(void);
 
 
 //////
@@ -3094,7 +3096,9 @@ extern void _impl_xmhfhwm_cpu_insn_rep_movsb_sysmem(sysmem_copy_t sysmemcopy_typ
 	__builtin_annot("addl %eax, %esp"); \
 	_impl_xmhfhwm_cpu_insn_addl_eax_esp(); \
 
-#define xmhfhwm_cpu_insn_addl_ecx_eax() __builtin_annot("addl %ecx, %eax");
+#define xmhfhwm_cpu_insn_addl_ecx_eax() \
+	__builtin_annot("addl %ecx, %eax"); \
+	_impl_xmhfhwm_cpu_insn_addl_ecx_eax(); \
 
 #define xmhfhwm_cpu_insn_addl_imm_ecx(x) \
 	__builtin_annot("addl $"#x", %ecx "); \
@@ -3164,7 +3168,9 @@ extern void _impl_xmhfhwm_cpu_insn_rep_movsb_sysmem(sysmem_copy_t sysmemcopy_typ
 	_impl_xmhfhwm_cpu_insn_bsrl_mesp_eax(x); \
 
 
-#define xmhfhwm_cpu_insn_mull_ecx() __builtin_annot("mull %ecx ");
+#define xmhfhwm_cpu_insn_mull_ecx() \
+	__builtin_annot("mull %ecx "); \
+	_impl_xmhfhwm_cpu_insn_mull_ecx(); \
 
 
 //segment registers

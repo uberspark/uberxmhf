@@ -54,6 +54,9 @@
 
 #define XMHFHWM_LAPIC_REG_ID	(MMIO_APIC_BASE+0x20)
 
+extern u32 xmhfhwm_lapic_reg_id;
+
+
 bool _impl_xmhfhwm_lapic_read(u32 sysmemaddr, sysmem_read_t readsize, u64 *read_result);
 bool _impl_xmhfhwm_lapic_write(u32 sysmemaddr, sysmem_write_t writesize, u64 write_value);
 

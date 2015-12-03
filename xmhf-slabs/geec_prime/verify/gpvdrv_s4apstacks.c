@@ -123,6 +123,7 @@ void main(void){
 	xmhfhwm_cpu_ds_selector = 0x8;
 	xmhfhwm_cpu_cr4 = 0;
 	xmhfhwm_cpu_gprs_ebx = (u32)&gp_rwdatahdr.gp_vhslabmempgtbl_lvl4t;
+	xmhfhwm_lapic_reg_id = 0;
 	CASM_FUNCCALL(gp_s4_apstacks, CASM_NOPARAM);
 	//@assert (invoked_gp_s5_entry == true);
 
