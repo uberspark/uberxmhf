@@ -312,6 +312,7 @@ CASM_FUNCDECL(void gp_s4_apstacks(void *noparam));
 
 void gp_s5_entry(void);
 void gp_s5_setupcpustate(u32 cpuid, bool isbsp);
+void gp_s5_invokestrt(u32 cpuid);
 
 
 
