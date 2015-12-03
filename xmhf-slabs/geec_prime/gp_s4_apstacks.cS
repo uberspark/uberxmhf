@@ -67,9 +67,10 @@ CASM_FUNCDEF(void, gp_s4_apstacks,
     xmhfhwm_cpu_insn_orl_imm_eax(0x00000030);
     xmhfhwm_cpu_insn_movl_eax_cr4();
 
-/*
+
     xmhfhwm_cpu_insn_movl_ebx_cr3();
 
+/*
     xmhfhwm_cpu_insn_movl_imm_ecx(0xc0000080);
     xmhfhwm_cpu_insn_rdmsr();
     xmhfhwm_cpu_insn_orl_imm_eax(0x00000800);
