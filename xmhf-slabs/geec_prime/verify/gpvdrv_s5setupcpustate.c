@@ -99,8 +99,11 @@ void xmhfhwm_vdriver_cpu_writecr3(u32 oldval, u32 newval){
 
 
 void main(void){
-	u32 cpuid = framac_nondetu32interval(0, (MAX_PLATFORM_CPUS-1));
-	bool isbsp = framac_nondetu32interval(0, 1);
+	//u32 cpuid = framac_nondetu32interval(0, (MAX_PLATFORM_CPUS-1));
+	//bool isbsp = framac_nondetu32interval(0, 1);
+	u32 cpuid = 0;
+	bool isbsp = true;
+
 
 	//populate hardware model stack and program counter
 	xmhfhwm_cpu_gprs_esp = (u32)&_init_bsp_cpustack + MAX_PLATFORM_CPUSTACK_SIZE;
@@ -109,6 +112,14 @@ void main(void){
 
 	//execute harness
 	gp_s5_setupcpustate(cpuid, isbsp);
+
+	//@assert (xmhfhwm_cpu_gdtr_base == (u32)&__xmhfhic_x86vmx_gdt_start);
+	//@assert (xmhfhwm_cpu_cs_selector == __CS_CPL0);
+	//@assert (xmhfhwm_cpu_ds_selector == __DS_CPL0);
+	//@assert (xmhfhwm_cpu_es_selector == __DS_CPL0);
+	//@assert (xmhfhwm_cpu_fs_selector == __DS_CPL0);
+	//@assert (xmhfhwm_cpu_gs_selector == __DS_CPL0);
+	//@assert (xmhfhwm_cpu_ss_selector == __DS_CPL0);
 
 	//@assert xmhfhwm_cpu_gprs_esp == check_esp;
 	//@assert xmhfhwm_cpu_gprs_eip == check_eip;
