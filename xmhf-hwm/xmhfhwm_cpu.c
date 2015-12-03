@@ -760,6 +760,12 @@ void _impl_xmhfhwm_cpu_insn_movl_eax_cr3(void){
 	xmhfhwm_cpu_cr3 = xmhfhwm_cpu_gprs_eax;
 }
 
+void _impl_xmhfhwm_cpu_insn_movl_ebx_cr3(void){
+	xmhfhwm_vdriver_cpu_writecr3(xmhfhwm_cpu_cr3, xmhfhwm_cpu_gprs_ebx);
+	xmhfhwm_cpu_cr3 = xmhfhwm_cpu_gprs_ebx;
+}
+
+
 void _impl_xmhfhwm_cpu_insn_movl_eax_cr4(void){
 	xmhfhwm_cpu_cr4 = xmhfhwm_cpu_gprs_eax;
 }

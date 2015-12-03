@@ -2456,6 +2456,7 @@ extern void _impl_xmhfhwm_cpu_insn_vmptrld_mesp(int index);
 extern void _impl_xmhfhwm_cpu_insn_wbinvd(void);
 extern void _impl_xmhfhwm_cpu_insn_movl_eax_cr0(void);
 extern void _impl_xmhfhwm_cpu_insn_movl_eax_cr3(void);
+extern void _impl_xmhfhwm_cpu_insn_movl_ebx_cr3(void);
 extern void _impl_xmhfhwm_cpu_insn_movl_eax_cr4(void);
 extern void _impl_xmhfhwm_cpu_insn_popfl(void);
 extern void _impl_xmhfhwm_cpu_insn_wrmsr(void);
@@ -3235,7 +3236,10 @@ extern void _impl_xmhfhwm_cpu_insn_rep_movsb_sysmem(sysmem_copy_t sysmemcopy_typ
 	__builtin_annot("movl %eax, %cr3 "); \
 	_impl_xmhfhwm_cpu_insn_movl_eax_cr3(); \
 
-#define xmhfhwm_cpu_insn_movl_ebx_cr3() __builtin_annot("movl %ebx, %cr3 ");
+#define xmhfhwm_cpu_insn_movl_ebx_cr3() \
+	__builtin_annot("movl %ebx, %cr3 "); \
+	_impl_xmhfhwm_cpu_insn_movl_ebx_cr3(); \
+
 
 #define xmhfhwm_cpu_insn_movl_cr4_eax() \
 	__builtin_annot("movl %cr4, %eax "); \
