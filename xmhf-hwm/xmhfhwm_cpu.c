@@ -470,6 +470,10 @@ void _impl_xmhfhwm_cpu_insn_shl_imm_ecx(u32 value){
 	xmhfhwm_cpu_gprs_ecx = xmhfhwm_cpu_gprs_ecx << value;
 }
 
+void _impl_xmhfhwm_cpu_insn_orl_imm_eax(u32 value){
+	xmhfhwm_cpu_gprs_eax |= value;
+}
+
 void _impl_xmhfhwm_cpu_insn_shr_imm_eax(u32 value){
 	xmhfhwm_cpu_gprs_eax = xmhfhwm_cpu_gprs_eax >> value;
 }

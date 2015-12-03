@@ -2403,6 +2403,7 @@ extern void _impl_xmhfhwm_cpu_insn_andl_imm_edx(u32 value);
 extern void _impl_xmhfhwm_cpu_insn_andl_imm_ecx(u32 value);
 extern void _impl_xmhfhwm_cpu_insn_shl_imm_ecx(u32 value);
 extern void _impl_xmhfhwm_cpu_insn_shr_imm_eax(u32 value);
+extern void _impl_xmhfhwm_cpu_insn_orl_imm_eax(u32 value);
 extern void _impl_xmhfhwm_cpu_insn_orl_ecx_eax(void);
 extern void _impl_xmhfhwm_cpu_insn_orl_edx_eax(void);
 extern void _impl_xmhfhwm_cpu_insn_inb_dx_al(void);
@@ -3131,7 +3132,10 @@ extern void _impl_xmhfhwm_cpu_insn_rep_movsb_sysmem(sysmem_copy_t sysmemcopy_typ
 	__builtin_annot("orl %edx, %eax "); \
 	_impl_xmhfhwm_cpu_insn_orl_edx_eax(); \
 
-#define xmhfhwm_cpu_insn_orl_imm_eax(x) __builtin_annot("orl $"#x", %eax ");
+#define xmhfhwm_cpu_insn_orl_imm_eax(x) \
+	__builtin_annot("orl $"#x", %eax "); \
+	_impl_xmhfhwm_cpu_insn_orl_imm_eax(x); \
+
 #define xmhfhwm_cpu_insn_orl_imm_ecx(x) __builtin_annot("orl $"#x", %ecx ");
 
 
