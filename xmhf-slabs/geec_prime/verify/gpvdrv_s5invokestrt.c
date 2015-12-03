@@ -44,27 +44,72 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-#include <xmhf.h>
-#include <xmhf-debug.h>
+/*
+ * prime s3_entry verification driver
+ * author: amit vasudevan (amitvasudevan@acm.org)
+*/
 
+
+#include <xmhf.h>
+#include <xmhf-hwm.h>
 #include <xmhfgeec.h>
 
 #include <geec_prime.h>
-//#include <geec_sentinel.h>
-//#include <uapi_slabmempgtbl.h>
-#include <xc_init.h>
 
+u32 cpuid = 0;	//BSP cpu
 
-void gp_s5_invokestrt(u32 cpuid){
-	slab_params_t sp;
+//////
+// frama-c non-determinism functions
+//////
 
-	memset(&sp, 0, sizeof(sp));
-	sp.cpuid = cpuid;
-	sp.src_slabid = XMHFGEEC_SLAB_GEEC_PRIME;
-	sp.dst_slabid = XMHFGEEC_SLAB_XC_INIT;
-	XMHF_SLAB_CALLNEW(&sp);
+u32 Frama_C_entropy_source;
 
-	_XDPRINTF_("%s[%u]: Should never be here. Halting!\n",
-		__func__, (u16)cpuid);
-	CASM_FUNCCALL(xmhfhw_cpu_hlt, CASM_NOPARAM);
+//@ assigns Frama_C_entropy_source \from Frama_C_entropy_source;
+void Frama_C_update_entropy(void);
+
+u32 framac_nondetu32(void){
+  Frama_C_update_entropy();
+  return (u32)Frama_C_entropy_source;
 }
+
+u32 framac_nondetu32interval(u32 min, u32 max)
+{
+  u32 r,aux;
+  Frama_C_update_entropy();
+  aux = Frama_C_entropy_source;
+  if ((aux>=min) && (aux <=max))
+    r = aux;
+  else
+    r = min;
+  return r;
+}
+
+
+//////
+u32 check_esp, check_eip = CASM_RET_EIP;
+bool gp_s5_entry_invoked = false;
+
+void xmhfhwm_vdriver_writeesp(u32 oldval, u32 newval){
+	//@assert (newval >= ((u32)&_init_bsp_cpustack + 4)) && (newval <= ((u32)&_init_bsp_cpustack + MAX_PLATFORM_CPUSTACK_SIZE)) ;
+}
+
+void xmhfhwm_vdriver_cpu_writecr3(u32 oldval, u32 newval){
+	//@assert (newval ==(u32)&gp_rwdatahdr.gp_vhslabmempgtbl_lvl4t);
+}
+
+
+
+void main(void){
+	//populate hardware model stack and program counter
+	xmhfhwm_cpu_gprs_esp = (u32)&_init_bsp_cpustack + MAX_PLATFORM_CPUSTACK_SIZE;
+	xmhfhwm_cpu_gprs_eip = check_eip;
+	check_esp = xmhfhwm_cpu_gprs_esp; // pointing to top-of-stack
+
+	//execute harness
+	gp_s5_invokestrt(0);
+
+	//@assert xmhfhwm_cpu_gprs_esp == check_esp;
+	//@assert xmhfhwm_cpu_gprs_eip == check_eip;
+}
+
+
