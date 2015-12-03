@@ -55,22 +55,14 @@
 #include <xc_init.h>
 
 
-//we enter here with SMP enabled
-void gp_s5_entry(void){
-	u32 cpuid;
-	bool isbsp;
+void gp_s5_invokestrt(u32 cpuid){
+	slab_params_t sp;
 
-	isbsp = xmhfhw_lapic_isbsp();
-
-	cpuid  = xmhf_baseplatform_arch_x86_getcpulapicid();
-
-        CASM_FUNCCALL(spin_lock,&gp_state4_smplock);
-
-	gp_s5_setupcpustate(cpuid, isbsp);
-
-        CASM_FUNCCALL(spin_unlock,&gp_state4_smplock);
-
-	gp_s5_invokestrt(cpuid);
+	memset(&sp, 0, sizeof(sp));
+	sp.cpuid = cpuid;
+	sp.src_slabid = XMHFGEEC_SLAB_GEEC_PRIME;
+	sp.dst_slabid = XMHFGEEC_SLAB_XC_INIT;
+	XMHF_SLAB_CALLNEW(&sp);
 
 	_XDPRINTF_("%s[%u]: Should never be here. Halting!\n",
 		__func__, (u16)cpuid);
