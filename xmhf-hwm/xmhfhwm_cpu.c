@@ -91,6 +91,10 @@ xmhfhwm_cpu_state_t xmhfhwm_cpu_state = CPU_STATE_RUNNING;
 u64 xmhfhwm_cpu_msr_efer = 0;
 u64 xmhfhwm_cpu_msr_vmx_procbased_ctls2_msr = 0x0000008200000000ULL;
 u64 xmhfhwm_cpu_msr_apic_base =  MMIO_APIC_BASE;
+u64 xmhfhwm_cpu_msr_sysenter_cs = 0;
+u64 xmhfhwm_cpu_msr_sysenter_eip = 0;
+u32 xmhfhwm_cpu_msr_sysenter_esp_hi = 0;
+u32 xmhfhwm_cpu_msr_sysenter_esp_lo = 0;
 
 u32 xmhfhwm_pci_config_addr_port = 0x0UL;
 
@@ -319,6 +323,7 @@ void _impl_xmhfhwm_cpu_insn_cpuid(void){
 		xmhfhwm_cpu_gprs_edx = INTEL_STRING_DWORD2;
 	}else if (xmhfhwm_cpu_gprs_eax == 0x1){
 		xmhfhwm_cpu_gprs_ecx = (1 << 5); //VMX support
+		xmhfhwm_cpu_gprs_ecx |= (1UL << 26); //XSAVE support
 	}else{
 		//XXX: TODO
 		xmhfhwm_cpu_gprs_ebx = 0;
@@ -607,6 +612,17 @@ void _impl_xmhfhwm_cpu_insn_wrmsr(void){
                 xmhfhwm_cpu_msr_efer = (u64)xmhfhwm_cpu_gprs_edx << 32 |  (u64)xmhfhwm_cpu_gprs_eax;
 	}else if (xmhfhwm_cpu_gprs_ecx == MSR_APIC_BASE){
                 xmhfhwm_cpu_msr_apic_base = (u64)xmhfhwm_cpu_gprs_edx << 32 |  (u64)xmhfhwm_cpu_gprs_eax;
+
+	}else if (xmhfhwm_cpu_gprs_ecx == IA32_SYSENTER_CS_MSR){
+                xmhfhwm_cpu_msr_sysenter_cs = (u64)xmhfhwm_cpu_gprs_edx << 32 |  (u64)xmhfhwm_cpu_gprs_eax;
+
+	}else if (xmhfhwm_cpu_gprs_ecx == IA32_SYSENTER_EIP_MSR){
+                xmhfhwm_cpu_msr_sysenter_eip = (u64)xmhfhwm_cpu_gprs_edx << 32 |  (u64)xmhfhwm_cpu_gprs_eax;
+
+	}else if (xmhfhwm_cpu_gprs_ecx == IA32_SYSENTER_ESP_MSR){
+                xmhfhwm_cpu_msr_sysenter_esp_hi = xmhfhwm_cpu_gprs_edx;
+                xmhfhwm_cpu_msr_sysenter_esp_lo = xmhfhwm_cpu_gprs_eax;
+
 	}
 	//XXX: wrmsr logic
 }
@@ -622,6 +638,19 @@ void _impl_xmhfhwm_cpu_insn_rdmsr(void){
 	}else if (xmhfhwm_cpu_gprs_ecx == IA32_VMX_PROCBASED_CTLS2_MSR){
 		xmhfhwm_cpu_gprs_edx = (u32) ((u64)xmhfhwm_cpu_msr_vmx_procbased_ctls2_msr >> 32);
 		xmhfhwm_cpu_gprs_eax = (u32)xmhfhwm_cpu_msr_vmx_procbased_ctls2_msr;
+
+	}else if (xmhfhwm_cpu_gprs_ecx == IA32_SYSENTER_CS_MSR){
+		xmhfhwm_cpu_gprs_edx = (u32) ((u64)xmhfhwm_cpu_msr_sysenter_cs >> 32);
+		xmhfhwm_cpu_gprs_eax = (u32)xmhfhwm_cpu_msr_sysenter_cs;
+
+	}else if (xmhfhwm_cpu_gprs_ecx == IA32_SYSENTER_EIP_MSR){
+		xmhfhwm_cpu_gprs_edx = (u32) ((u64)xmhfhwm_cpu_msr_sysenter_eip >> 32);
+		xmhfhwm_cpu_gprs_eax = (u32)xmhfhwm_cpu_msr_sysenter_eip;
+
+	}else if (xmhfhwm_cpu_gprs_ecx == IA32_SYSENTER_ESP_MSR){
+		xmhfhwm_cpu_gprs_edx = xmhfhwm_cpu_msr_sysenter_esp_hi;
+		xmhfhwm_cpu_gprs_eax = xmhfhwm_cpu_msr_sysenter_esp_lo;
+
 	}else{
 
 	}

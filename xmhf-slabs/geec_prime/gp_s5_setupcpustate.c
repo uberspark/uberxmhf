@@ -286,15 +286,16 @@ void gp_s5_setupcpustate(u32 cpuid, bool isbsp){
 	CASM_FUNCCALL(__xmhfhic_x86vmx_reloadsegregs,__DS_CPL0);
 	_XDPRINTF_("%s[%u]: Reloaded segment registers\n", __func__, (u32)cpuid);
 
-#if 0
 
 	//load TR
 	CASM_FUNCCALL(xmhfhw_cpu_loadTR, (__TRSEL + ((u32)cpuid * 16) ) );
 	_XDPRINTF_("%s[%u]: TR loaded\n", __func__, (u32)cpuid);
 
+
 	//load IDT
 	CASM_FUNCCALL(xmhfhw_cpu_loadIDT,&__xmhfhic_x86vmx_idt);
 	_XDPRINTF_("%s[%u]: IDT loaded\n", __func__, (u32)cpuid);
+
 
 	////turn on CR0.WP bit for supervisor mode write protection
 	//write_cr0(read_cr0() | CR0_WP);
@@ -304,6 +305,7 @@ void gp_s5_setupcpustate(u32 cpuid, bool isbsp){
 	__xmhfhic_x86vmx_setIOPL3(cpuid);
 	_XDPRINTF_("%s[%u]: set IOPL to CPL-3\n", __func__, (u32)cpuid);
 
+
 	//set LAPIC base address to preferred address
 	{
 		u64 msrapic = CASM_FUNCCALL(rdmsr64,MSR_APIC_BASE);
@@ -311,6 +313,7 @@ void gp_s5_setupcpustate(u32 cpuid, bool isbsp){
 		CASM_FUNCCALL(wrmsr64,MSR_APIC_BASE, (u32)msrapic_val, (u32)((u64)msrapic_val >> 32) );
 	}
 	_XDPRINTF_("%s[%u]: set LAPIC base address to %016llx\n", __func__, (u32)cpuid, CASM_FUNCCALL(rdmsr64,MSR_APIC_BASE));
+
 
 	//turn on NX protections
 	{
@@ -321,23 +324,25 @@ void gp_s5_setupcpustate(u32 cpuid, bool isbsp){
 	}
 
 
+
 	//set OSXSAVE bit in CR4 to enable us to pass-thru XSETBV intercepts
 	//when the CPU supports XSAVE feature
 	if(xmhf_baseplatform_arch_x86_cpuhasxsavefeature()){
-		CASM_FUNCCALL(write_cr4,read_cr4(CASM_NOPARAM) | CR4_OSXSAVE);
+		CASM_FUNCCALL(write_cr4, (CASM_FUNCCALL(read_cr4, CASM_NOPARAM) | CR4_OSXSAVE) );
 		_XDPRINTF_("%s[%u]: XSETBV passthrough enabled\n", __func__, (u32)cpuid);
 	}
 
+
 	//set bit 5 (EM) of CR0 to be VMX compatible in case of Intel cores
-	CASM_FUNCCALL(write_cr0,read_cr0(CASM_NOPARAM) | 0x20);
+	CASM_FUNCCALL(write_cr0, (CASM_FUNCCALL(read_cr0, CASM_NOPARAM) | 0x20));
 	_XDPRINTF_("%s[%u]: Set CR0.EM to be VMX compatible\n", __func__, (u32)cpuid);
 
 
 	//setup SYSENTER/SYSEXIT mechanism
 	{
-	wrmsr64(IA32_SYSENTER_CS_MSR, (u32)__CS_CPL0, 0);
-	wrmsr64(IA32_SYSENTER_EIP_MSR, (u32)xmhfgeec_slab_info_table[XMHFGEEC_SLAB_GEEC_SENTINEL].slab_memoffset_entries[GEEC_SENTINEL_MEMOFFSETS_SYSENTERHANDLER_IDX], 0);
-	wrmsr64(IA32_SYSENTER_ESP_MSR, (u32)((u32)_geec_primesmp_sysenter_stack[(u32)cpuid] + MAX_PLATFORM_CPUSTACK_SIZE), 0);
+	CASM_FUNCCALL(wrmsr64, IA32_SYSENTER_CS_MSR, (u32)__CS_CPL0, 0);
+	CASM_FUNCCALL(wrmsr64, IA32_SYSENTER_EIP_MSR, (u32)xmhfgeec_slab_info_table[XMHFGEEC_SLAB_GEEC_SENTINEL].slab_memoffset_entries[GEEC_SENTINEL_MEMOFFSETS_SYSENTERHANDLER_IDX], 0);
+	CASM_FUNCCALL(wrmsr64, IA32_SYSENTER_ESP_MSR, (u32)((u32)_geec_primesmp_sysenter_stack[(u32)cpuid] + MAX_PLATFORM_CPUSTACK_SIZE), 0);
 	}
 	_XDPRINTF_("%s: setup SYSENTER/SYSEXIT mechanism\n", __func__);
 	_XDPRINTF_("SYSENTER CS=%016llx\n", CASM_FUNCCALL(rdmsr64,IA32_SYSENTER_CS_MSR));
@@ -345,6 +350,7 @@ void gp_s5_setupcpustate(u32 cpuid, bool isbsp){
 	_XDPRINTF_("SYSENTER RSP=%016llx\n", CASM_FUNCCALL(rdmsr64,IA32_SYSENTER_ESP_MSR));
 
 
+#if 0
 	//setup VMX state
 	if(!__xmhfhic_x86vmx_setupvmxstate(cpuid)){
 	_XDPRINTF_("%s[%u]: Unable to set VMX state. Halting!\n", __func__, (u32)cpuid);

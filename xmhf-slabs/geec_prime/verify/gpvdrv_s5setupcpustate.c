@@ -55,6 +55,7 @@
 #include <xmhfgeec.h>
 
 #include <geec_prime.h>
+#include <geec_sentinel.h>
 
 u32 cpuid = 0;	//BSP cpu
 
@@ -111,6 +112,9 @@ void main(void){
 	check_esp = xmhfhwm_cpu_gprs_esp; // pointing to top-of-stack
 
 	//execute harness
+	xmhfhwm_cpu_cr4 = 0x00000030;
+	xmhfhwm_cpu_cr0 = 0x80000015;
+
 	gp_s5_setupcpustate(cpuid, isbsp);
 
 	//@assert (xmhfhwm_cpu_gdtr_base == (u32)&__xmhfhic_x86vmx_gdt_start);
@@ -120,6 +124,17 @@ void main(void){
 	//@assert (xmhfhwm_cpu_fs_selector == __DS_CPL0);
 	//@assert (xmhfhwm_cpu_gs_selector == __DS_CPL0);
 	//@assert (xmhfhwm_cpu_ss_selector == __DS_CPL0);
+	//@assert (xmhfhwm_cpu_tr_selector ==(__TRSEL + ((u32)cpuid * 16) ));
+	//@assert (xmhfhwm_cpu_idtr_base == (u32)&__xmhfhic_x86vmx_idt_start);
+	//@assert (xmhfhwm_cpu_eflags & EFLAGS_IOPL);
+	//@assert (xmhfhwm_cpu_msr_apic_base == MMIO_APIC_BASE);
+	//@assert (xmhfhwm_cpu_msr_efer & ((1 << EFER_NXE)));
+	//@assert (xmhfhwm_cpu_cr4 & CR4_OSXSAVE);
+	//@assert (xmhfhwm_cpu_cr0 & 0x20);
+	//@assert (xmhfhwm_cpu_msr_sysenter_cs == __CS_CPL0);
+        //@assert (xmhfhwm_cpu_msr_sysenter_eip == xmhfgeec_slab_info_table[XMHFGEEC_SLAB_GEEC_SENTINEL].slab_memoffset_entries[GEEC_SENTINEL_MEMOFFSETS_SYSENTERHANDLER_IDX]);
+	//@assert (xmhfhwm_cpu_msr_sysenter_esp_lo == (u32)((u32)&_geec_primesmp_sysenter_stack[(u32)cpuid+1]));
+	//@assert (xmhfhwm_cpu_msr_sysenter_esp_hi == 0);
 
 	//@assert xmhfhwm_cpu_gprs_esp == check_esp;
 	//@assert xmhfhwm_cpu_gprs_eip == check_eip;
