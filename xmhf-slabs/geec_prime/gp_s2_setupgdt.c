@@ -64,30 +64,67 @@ void gp_s2_setupgdt(void){
 
     	/*@
 		loop invariant a1: 0 <= i <= xcbootinfo->cpuinfo_numentries;
+		//loop invariant a2: \forall integer x; 0 <= x < i ==> ( (xcbootinfo->cpuinfo_buffer[x].lapic_id < MAX_PLATFORM_CPUS)
+		//			==> (__xmhfhic_x86vmx_gdt_start[(__TRSEL/8)+(x)] == (u64)(
+		//					  (((u64)((((u32)(&__xmhfhic_x86vmx_tss[xcbootinfo->cpuinfo_buffer[x].lapic_id].tss_mainblock) & 0xFF000000) >> 24)) << 56) & 0xFF00000000000000ULL)
+		//					| (((u64)(0) << 48) & 0x00FF000000000000ULL)
+		//					| (((u64)(0xE9) << 40) & 0x0000FF0000000000ULL)
+		//					| (((u64)(((u32)(&__xmhfhic_x86vmx_tss[xcbootinfo->cpuinfo_buffer[x].lapic_id].tss_mainblock) & 0x00FF0000UL) >> 16) << 32) & 0x000000FF00000000ULL)
+		//					| (((u64)((u32)(&__xmhfhic_x86vmx_tss[xcbootinfo->cpuinfo_buffer[x].lapic_id].tss_mainblock) & 0x0000FFFFUL) << 16) & 0x00000000FFFF0000ULL)
+		//					| ((u64)((4*PAGE_SIZE_4K)-1) & 0x000000000000FFFFULL) )
+		//			    )
+		//			);
+		loop invariant a2: \forall integer x; 0 <= x < i ==> ( (xcbootinfo->cpuinfo_buffer[x].lapic_id < MAX_PLATFORM_CPUS)
+					==> (__xmhfhic_x86vmx_gdt_start[(__TRSEL/8)+(x)] == (u64)(
+							  (((u64)((((u32)(&__xmhfhic_x86vmx_tss[xcbootinfo->cpuinfo_buffer[x].lapic_id].tss_mainblock) & 0xFF000000) >> 24)) << 56) & 0xFF00000000000000ULL)
+						)
+					    )
+					);
+		loop assigns __xmhfhic_x86vmx_gdt_start[((__TRSEL/8)+(0))..((__TRSEL/8)+(xcbootinfo->cpuinfo_numentries-1))];
 		loop assigns i;
 		loop variant xcbootinfo->cpuinfo_numentries - i;
 	@*/
 	for(i=0; i < xcbootinfo->cpuinfo_numentries; i++){
-		#if 0
-		TSSENTRY *t;
-		u32 tss_idx = xcbootinfo->cpuinfo_buffer[i].lapic_id;
-		u32 tss_base=(u32)&__xmhfhic_x86vmx_tss[tss_idx].tss_mainblock;
+		#if 1
+		//TSSENTRY *t;
+		//u32 tss_idx = xcbootinfo->cpuinfo_buffer[i].lapic_id;
+		//u32 tss_base=(u32)&__xmhfhic_x86vmx_tss[tss_idx].tss_mainblock;
 
-		//TSS descriptor
+		/*//TSS descriptor
 		t= (TSSENTRY *)&__xmhfhic_x86vmx_gdt_start[(__TRSEL/8)+(i)];
 		t->attributes1= 0xE9;
 		t->limit16_19attributes2= 0x0;
 		t->baseAddr0_15= (u16)(tss_base & 0x0000FFFF);
 		t->baseAddr16_23= (u8)((tss_base & 0x00FF0000) >> 16);
 		t->baseAddr24_31= (u8)((tss_base & 0xFF000000) >> 24);
-		//t->limit0_15=0x67;
-		//t->limit0_15=sizeof(tss_t)-1;
 		t->limit0_15=(4*PAGE_SIZE_4K)-1;
+		*/
+
+		if(xcbootinfo->cpuinfo_buffer[i].lapic_id < MAX_PLATFORM_CPUS){
+			/*__xmhfhic_x86vmx_gdt_start[(__TRSEL/8)+(i)] = (u64)(
+							  (((u64)((((u32)(&__xmhfhic_x86vmx_tss[xcbootinfo->cpuinfo_buffer[i].lapic_id].tss_mainblock) & 0xFF000000) >> 24)) << 56) & 0xFF00000000000000ULL)
+							| (((u64)(0) << 48) & 0x00FF000000000000ULL)
+							| (((u64)(0xE9) << 40) & 0x0000FF0000000000ULL)
+							| (((u64)(((u32)(&__xmhfhic_x86vmx_tss[xcbootinfo->cpuinfo_buffer[i].lapic_id].tss_mainblock) & 0x00FF0000UL) >> 16) << 32) & 0x000000FF00000000ULL)
+							| (((u64)((u32)(&__xmhfhic_x86vmx_tss[xcbootinfo->cpuinfo_buffer[i].lapic_id].tss_mainblock) & 0x0000FFFFUL) << 16) & 0x00000000FFFF0000ULL)
+							| ((u64)((4*PAGE_SIZE_4K)-1) & 0x000000000000FFFFULL)
+			*/
+			__xmhfhic_x86vmx_gdt_start[(__TRSEL/8)+(i)] = (u64)(
+							  (((u64)((((u32)(&__xmhfhic_x86vmx_tss[xcbootinfo->cpuinfo_buffer[i].lapic_id].tss_mainblock) & 0xFF000000) >> 24)) << 56) & 0xFF00000000000000ULL)
+					);
+
+			//__xmhfhic_x86vmx_gdt_start[(__TRSEL/8)+(i)] = 0;
+
+			_XDPRINTF_("%s: setup TSS CPU idx=%u with base address=%x, iobitmap=%x\n, size=%u bytes", __func__,
+			       xcbootinfo->cpuinfo_buffer[i].lapic_id,
+			       (u32)(&__xmhfhic_x86vmx_tss[xcbootinfo->cpuinfo_buffer[i].lapic_id].tss_mainblock),
+				(u32)&__xmhfhic_x86vmx_tss[xcbootinfo->cpuinfo_buffer[i].lapic_id].tss_iobitmap,
+				((4*PAGE_SIZE_4K)-1) );
+
+		}
 		#endif
 
 
-		_XDPRINTF_("%s: setup TSS CPU idx=%u with base address=%x, iobitmap=%x\n, size=%u bytes", __func__,
-		       tss_idx, tss_base, (u32)&__xmhfhic_x86vmx_tss[tss_idx].tss_iobitmap, t->limit0_15);
 	}
 
 }
