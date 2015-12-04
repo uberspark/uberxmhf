@@ -77,7 +77,6 @@ static bool __xmhfhic_x86vmx_setupvmxstate(u64 cpuid){
 	u64 msr_value;
 	u64 vmcs_phys_addr = __xmhfhic_x86vmx_archdata[cpuindex].vmx_vmcs_region;
 
-
 	//save contents of VMX MSRs as well as MSR EFER and EFCR
 	{
 		u32 i;
@@ -103,7 +102,10 @@ static bool __xmhfhic_x86vmx_setupvmxstate(u64 cpuid){
 		__xmhfhic_x86vmx_archdata[cpuindex].vmx_msr_efcr = (u64)edx << 32 | (u64) eax;
   	}
 
+
+
 	CASM_FUNCCALL(write_cr4, CASM_FUNCCALL(read_cr4,CASM_NOPARAM) |  CR4_VMXE);
+
 
 	//enter VMX root operation using VMXON
 	{
@@ -112,22 +114,30 @@ static bool __xmhfhic_x86vmx_setupvmxstate(u64 cpuid){
 		//set VMCS rev id
 		*((u32 *)__xmhfhic_x86vmx_archdata[cpuindex].vmx_vmxon_region) = (u32)__xmhfhic_x86vmx_archdata[cpuindex].vmx_msrs[INDEX_IA32_VMX_BASIC_MSR];
 
-		if(!__vmx_vmxon(vmxonregion_paddr)){
-				_XDPRINTF_("%s(%u): unable to enter VMX root operation\n", __func__, (u32)cpuid);
-				return false;
+		if(!CASM_FUNCCALL(__vmx_vmxon,vmxonregion_paddr)){
+			_XDPRINTF_("%s(%u): unable to enter VMX root operation\n", __func__, (u32)cpuid);
+			return false;
 		}
 	}
 
+	//@assert 1;
+
 	//clear VMCS
-	if(!__vmx_vmclear((u64)vmcs_phys_addr))
+	if(!CASM_FUNCCALL(__vmx_vmclear, (u64)vmcs_phys_addr))
 		return false;
+
+	//@assert 1;
+
 
 	//set VMCS revision id
 	*((u32 *)__xmhfhic_x86vmx_archdata[cpuindex].vmx_vmcs_region) = (u32)__xmhfhic_x86vmx_archdata[cpuindex].vmx_msrs[INDEX_IA32_VMX_BASIC_MSR];
 
 	//load VMPTR
-	if(!__vmx_vmptrld((u64)vmcs_phys_addr))
+	if(!CASM_FUNCCALL(__vmx_vmptrld,(u64)vmcs_phys_addr))
 		return false;
+
+	//@assert 1;
+
 
 	//setup host state
 	CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_HOST_CR0, CASM_FUNCCALL(read_cr0,CASM_NOPARAM));
@@ -147,6 +157,7 @@ static bool __xmhfhic_x86vmx_setupvmxstate(u64 cpuid){
 	CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_HOST_TR_BASE, CASM_FUNCCALL(xmhf_baseplatform_arch_x86_gettssbase,CASM_NOPARAM));
 	CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_HOST_RIP, xmhfgeec_slab_info_table[XMHFGEEC_SLAB_GEEC_SENTINEL].slab_memoffset_entries[GEEC_SENTINEL_MEMOFFSETS_INTERCEPTHANDLER_IDX]);
 	CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_HOST_RSP, CASM_FUNCCALL(read_rsp,CASM_NOPARAM));
+
 
 	msr_value = CASM_FUNCCALL(rdmsr64, IA32_SYSENTER_CS_MSR);
 	lodword = (u32)msr_value;
@@ -178,6 +189,10 @@ static bool __xmhfhic_x86vmx_setupvmxstate(u64 cpuid){
 	CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_CONTROL_VMX_CPU_BASED, (u32)__xmhfhic_x86vmx_archdata[cpuindex].vmx_msrs[INDEX_IA32_VMX_PROCBASED_CTLS_MSR]);
 	CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_CONTROL_VM_EXIT_CONTROLS, (u32)__xmhfhic_x86vmx_archdata[cpuindex].vmx_msrs[INDEX_IA32_VMX_EXIT_CTLS_MSR]);
 	CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_CONTROL_VM_ENTRY_CONTROLS, (u32)__xmhfhic_x86vmx_archdata[cpuindex].vmx_msrs[INDEX_IA32_VMX_ENTRY_CTLS_MSR]);
+
+	//@assert 1;
+
+#if 0
 
 	//IO bitmap support
 	CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_CONTROL_VMX_CPU_BASED, (xmhfhw_cpu_x86vmx_vmread(VMCS_CONTROL_VMX_CPU_BASED) | (u64)(1 << 25)) );
@@ -262,6 +277,7 @@ static bool __xmhfhic_x86vmx_setupvmxstate(u64 cpuid){
 	CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_GUEST_CR0, (u32)__xmhfhic_x86vmx_archdata[cpuindex].vmx_msrs[INDEX_IA32_VMX_CR0_FIXED0_MSR]);
 
 	CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_GUEST_CR4, (u32)__xmhfhic_x86vmx_archdata[cpuindex].vmx_msrs[INDEX_IA32_VMX_CR4_FIXED0_MSR]);
+#endif // 0
 
 	return true;
 }
@@ -350,14 +366,13 @@ void gp_s5_setupcpustate(u32 cpuid, bool isbsp){
 	_XDPRINTF_("SYSENTER RSP=%016llx\n", CASM_FUNCCALL(rdmsr64,IA32_SYSENTER_ESP_MSR));
 
 
-#if 0
 	//setup VMX state
 	if(!__xmhfhic_x86vmx_setupvmxstate(cpuid)){
-	_XDPRINTF_("%s[%u]: Unable to set VMX state. Halting!\n", __func__, (u32)cpuid);
-	HALT();
+		_XDPRINTF_("%s[%u]: Unable to set VMX state. Halting!\n", __func__, (u32)cpuid);
+		CASM_FUNCCALL(xmhfhw_cpu_hlt, CASM_NOPARAM);
 	}
+
 	_XDPRINTF_("%s[%u]: Setup VMX state\n", __func__, (u32)cpuid);
-#endif
 
 }
 
