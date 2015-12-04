@@ -295,7 +295,20 @@ void gp_s2_entry(void);
 void gp_s2_setupslabdevmap(void);
 void gp_s2_setupiotbl(void);
 void gp_s2_setupmempgtbl(void);
+
+
+/*@
+	requires \valid(xcbootinfo);
+	requires (xcbootinfo->cpuinfo_numentries < MAX_PLATFORM_CPUS);
+@*/
 void gp_s2_setupgdt(void);
+
+/*@
+	requires (__TRSEL/8) <= gdtindex <= (XMHFGEEC_MAX_GDT_CODEDATA_DESCRIPTORS + MAX_PLATFORM_CPUS);
+	requires 0 <= tssidx < MAX_PLATFORM_CPUS;
+@*/
+void gp_s2_setupgdt_setgdttssentry(u32 gdtindex, u32 tssidx);
+
 void gp_s2_setupidt(void);
 void gp_s2_setuptss(void);
 
