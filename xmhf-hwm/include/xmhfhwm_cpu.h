@@ -2350,6 +2350,10 @@ extern u64 xmhfhwm_cpu_msr_sysenter_eip;
 extern u32 xmhfhwm_cpu_msr_sysenter_esp_hi;
 extern u32 xmhfhwm_cpu_msr_sysenter_esp_lo;
 
+extern u32 xmhfhwm_cpu_vmcs_host_rip;
+extern u32 xmhfhwm_cpu_vmcs_host_rsp;
+extern u32 xmhfhwm_cpu_vmcs_host_cr3;
+
 
 
 extern void _impl_xmhfhwm_cpu_insn_hlt(void);
@@ -2549,9 +2553,22 @@ extern void _impl_xmhfhwm_cpu_insn_addl_ecx_eax(void);
 	    (u64)(((u64)xmhfhwm_cpu_gprs_edx << 32) | xmhfhwm_cpu_gprs_eax) \
 	    )\
 
+	#define CASM_FUNCCALL32(fn_name, ...)   (\
+	    PP_FOREACH(CASM_FUNCCALL_PARAMSETUP, (PP_REVERSEARGS(__VA_ARGS__))) \
+	    (_impl_xmhfhwm_cpu_insn_pushl_mem((u32)CASM_RET_EIP)), \
+	    fn_name(__VA_ARGS__), \
+	    PP_FOREACH(CASM_FUNCCALL_PARAMTEARDOWN, (PP_REVERSEARGS(__VA_ARGS__))) \
+	    (u32)(xmhfhwm_cpu_gprs_eax) \
+	    )\
+
+
 #else
 
 	#define CASM_FUNCCALL(fn_name, ...)   (\
+	    fn_name(__VA_ARGS__) \
+	    )\
+
+	#define CASM_FUNCCALL32(fn_name, ...)   (\
 	    fn_name(__VA_ARGS__) \
 	    )\
 

@@ -96,6 +96,10 @@ u64 xmhfhwm_cpu_msr_sysenter_eip = 0;
 u32 xmhfhwm_cpu_msr_sysenter_esp_hi = 0;
 u32 xmhfhwm_cpu_msr_sysenter_esp_lo = 0;
 
+u32 xmhfhwm_cpu_vmcs_host_rip = 0;
+u32 xmhfhwm_cpu_vmcs_host_rsp = 0;
+u32 xmhfhwm_cpu_vmcs_host_cr3 = 0;
+
 u32 xmhfhwm_pci_config_addr_port = 0x0UL;
 
 
@@ -762,12 +766,34 @@ void _impl_xmhfhwm_cpu_insn_vmxon_mesp(int index){
 }
 
 void _impl_xmhfhwm_cpu_insn_vmwrite_eax_ecx(void){
-	//TODO: vmwrite emulation
         hwm_vdriver_cpu_vmwrite(xmhfhwm_cpu_gprs_ecx, xmhfhwm_cpu_gprs_eax);
+	//ecx=encoding, eax=value
+	if(xmhfhwm_cpu_gprs_ecx == VMCS_HOST_RIP){
+                xmhfhwm_cpu_vmcs_host_rip = xmhfhwm_cpu_gprs_eax;
+	}else if(xmhfhwm_cpu_gprs_ecx == VMCS_HOST_RSP){
+                //@assert 1;
+                xmhfhwm_cpu_vmcs_host_rsp = xmhfhwm_cpu_gprs_eax;
+	}else if(xmhfhwm_cpu_gprs_ecx == VMCS_HOST_CR3){
+                //@assert 1;
+                xmhfhwm_cpu_vmcs_host_cr3 = xmhfhwm_cpu_gprs_eax;
+
+	}else{
+
+	}
 }
 
 void _impl_xmhfhwm_cpu_insn_vmread_ecx_eax(void){
-	//TODO: vmread emulation
+	//ecx=encoding, eax=value
+	if(xmhfhwm_cpu_gprs_ecx == VMCS_HOST_RIP){
+                xmhfhwm_cpu_gprs_eax = xmhfhwm_cpu_vmcs_host_rip;
+	}else if(xmhfhwm_cpu_gprs_ecx == VMCS_HOST_RSP){
+                xmhfhwm_cpu_gprs_eax = xmhfhwm_cpu_vmcs_host_rsp;
+	}else if(xmhfhwm_cpu_gprs_ecx == VMCS_HOST_CR3){
+                xmhfhwm_cpu_gprs_eax = xmhfhwm_cpu_vmcs_host_cr3;
+
+	}else{
+
+	}
 
 }
 
