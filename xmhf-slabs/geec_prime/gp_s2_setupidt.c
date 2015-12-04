@@ -57,7 +57,12 @@
 
 //initialize IDT
 /*@
-	assigns \nothing;
+	assigns __xmhfhic_x86vmx_idt_start[0..(EMHF_XCPHANDLER_MAXEXCEPTIONS-1)].isrLow;
+	assigns __xmhfhic_x86vmx_idt_start[0..(EMHF_XCPHANDLER_MAXEXCEPTIONS-1)].isrHigh;
+	assigns __xmhfhic_x86vmx_idt_start[0..(EMHF_XCPHANDLER_MAXEXCEPTIONS-1)].isrSelector;
+	assigns __xmhfhic_x86vmx_idt_start[0..(EMHF_XCPHANDLER_MAXEXCEPTIONS-1)].count;
+	assigns __xmhfhic_x86vmx_idt_start[0..(EMHF_XCPHANDLER_MAXEXCEPTIONS-1)].type;
+	ensures \forall integer x; 0 <= x < (EMHF_XCPHANDLER_MAXEXCEPTIONS-1) ==> (__xmhfhic_x86vmx_idt_start[x].type == 0xEE);
 @*/
 void gp_s2_setupidt(void){
 	u32 i;
@@ -65,20 +70,23 @@ void gp_s2_setupidt(void){
 
     	/*@
 		loop invariant a1: 0 <= i <= EMHF_XCPHANDLER_MAXEXCEPTIONS;
-		//loop invariant a2: \forall integer x; 0 <= x < i ==> (
-		//
-		//				);
+		loop invariant a2: \forall integer x; 0 <= x < i ==> (__xmhfhic_x86vmx_idt_start[x].type == 0xEE);
+		loop assigns __xmhfhic_x86vmx_idt_start[0..(EMHF_XCPHANDLER_MAXEXCEPTIONS-1)].isrLow;
+		loop assigns __xmhfhic_x86vmx_idt_start[0..(EMHF_XCPHANDLER_MAXEXCEPTIONS-1)].isrHigh;
+		loop assigns __xmhfhic_x86vmx_idt_start[0..(EMHF_XCPHANDLER_MAXEXCEPTIONS-1)].isrSelector;
+		loop assigns __xmhfhic_x86vmx_idt_start[0..(EMHF_XCPHANDLER_MAXEXCEPTIONS-1)].count;
+		loop assigns __xmhfhic_x86vmx_idt_start[0..(EMHF_XCPHANDLER_MAXEXCEPTIONS-1)].type;
 		loop assigns i;
 		loop variant EMHF_XCPHANDLER_MAXEXCEPTIONS - i;
 	@*/
 	for(i=0; i < EMHF_XCPHANDLER_MAXEXCEPTIONS; i++){
-		/*__xmhfhic_x86vmx_idt_start[i].isrLow= (u16)xmhfgeec_slab_info_table[XMHFGEEC_SLAB_GEEC_SENTINEL].slab_memoffset_entries[GEEC_SENTINEL_MEMOFFSETS_EXCEPTIONHANDLERS_IDX+i];
+		__xmhfhic_x86vmx_idt_start[i].isrLow= (u16)xmhfgeec_slab_info_table[XMHFGEEC_SLAB_GEEC_SENTINEL].slab_memoffset_entries[GEEC_SENTINEL_MEMOFFSETS_EXCEPTIONHANDLERS_IDX+i];
 		__xmhfhic_x86vmx_idt_start[i].isrHigh= (u16) ( xmhfgeec_slab_info_table[XMHFGEEC_SLAB_GEEC_SENTINEL].slab_memoffset_entries[GEEC_SENTINEL_MEMOFFSETS_EXCEPTIONHANDLERS_IDX+i] >> 16 );
 		__xmhfhic_x86vmx_idt_start[i].isrSelector = __CS_CPL0;
 		__xmhfhic_x86vmx_idt_start[i].count=0x0;
 		__xmhfhic_x86vmx_idt_start[i].type=0xEE;	//32-bit interrupt gate
 					//present=1, DPL=11b, system=0, type=1110b
-		*/
+
 	}
 }
 
