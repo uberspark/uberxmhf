@@ -577,8 +577,8 @@ CASM_FUNCDECL(u8 inb (u32 port));
 
 CASM_FUNCDECL(void xmhfhw_cpu_disable_intr(void *noparam));
 CASM_FUNCDECL(void enable_intr(void *noparam));
-CASM_FUNCDECL(u64 xmhf_baseplatform_arch_x86_getgdtbase(void *noparam));
-CASM_FUNCDECL(u64 xmhf_baseplatform_arch_x86_getidtbase(void *noparam));
+CASM_FUNCDECL(u32 xmhf_baseplatform_arch_x86_getgdtbase(void *noparam));
+CASM_FUNCDECL(u32 xmhf_baseplatform_arch_x86_getidtbase(void *noparam));
 CASM_FUNCDECL(u64  xmhf_baseplatform_arch_x86_gettssbase(void *noparam));
 
 
