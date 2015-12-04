@@ -125,7 +125,7 @@ void main(void){
 	//@assert (xmhfhwm_cpu_fs_selector == __DS_CPL0);
 	//@assert (xmhfhwm_cpu_gs_selector == __DS_CPL0);
 	//@assert (xmhfhwm_cpu_ss_selector == __DS_CPL0);
-	//@assert (xmhfhwm_cpu_tr_selector ==(__TRSEL + ((u32)cpuid * 16) ));
+	//@assert (xmhfhwm_cpu_tr_selector ==(__TRSEL + ((u32)cpuid * 8) ));
 	//@assert (xmhfhwm_cpu_idtr_base == (u32)&__xmhfhic_x86vmx_idt_start);
 	//@assert (xmhfhwm_cpu_eflags & EFLAGS_IOPL);
 	//@assert (xmhfhwm_cpu_msr_apic_base == MMIO_APIC_BASE);

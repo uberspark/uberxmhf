@@ -301,7 +301,7 @@ void gp_s5_setupcpustate(u32 cpuid, bool isbsp){
 
 
 	//load TR
-	CASM_FUNCCALL(xmhfhw_cpu_loadTR, (__TRSEL + ((u32)cpuid * 16) ) );
+	CASM_FUNCCALL(xmhfhw_cpu_loadTR, (__TRSEL + ((u32)cpuid * 8) ) );
 	_XDPRINTF_("%s[%u]: TR loaded\n", __func__, (u32)cpuid);
 
 
