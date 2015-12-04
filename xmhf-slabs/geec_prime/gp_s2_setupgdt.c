@@ -50,34 +50,45 @@
 #include <xmhfgeec.h>
 
 #include <geec_prime.h>
-#include <geec_sentinel.h>
-#include <uapi_slabmempgtbl.h>
-#include <xc_init.h>
+//#include <geec_sentinel.h>
+//#include <uapi_slabmempgtbl.h>
+//#include <xc_init.h>
 
 //initialize GDT
+/*@
+	requires \valid(xcbootinfo);
+	requires (xcbootinfo->cpuinfo_numentries < MAX_PLATFORM_CPUS);
+@*/
 void gp_s2_setupgdt(void){
-		u32 i;
+	u32 i;
 
-		for(i=0; i < xcbootinfo->cpuinfo_numentries; i++){
-            TSSENTRY *t;
-            u32 tss_idx = xcbootinfo->cpuinfo_buffer[i].lapic_id;
-            u32 tss_base=(u32)&__xmhfhic_x86vmx_tss[tss_idx].tss_mainblock;
+    	/*@
+		loop invariant a1: 0 <= i <= xcbootinfo->cpuinfo_numentries;
+		loop assigns i;
+		loop variant xcbootinfo->cpuinfo_numentries - i;
+	@*/
+	for(i=0; i < xcbootinfo->cpuinfo_numentries; i++){
+		#if 0
+		TSSENTRY *t;
+		u32 tss_idx = xcbootinfo->cpuinfo_buffer[i].lapic_id;
+		u32 tss_base=(u32)&__xmhfhic_x86vmx_tss[tss_idx].tss_mainblock;
 
-            //TSS descriptor
-            t= (TSSENTRY *)&__xmhfhic_x86vmx_gdt_start[(__TRSEL/8)+(i)];
-            t->attributes1= 0xE9;
-            t->limit16_19attributes2= 0x0;
-            t->baseAddr0_15= (u16)(tss_base & 0x0000FFFF);
-            t->baseAddr16_23= (u8)((tss_base & 0x00FF0000) >> 16);
-            t->baseAddr24_31= (u8)((tss_base & 0xFF000000) >> 24);
-            //t->limit0_15=0x67;
-            //t->limit0_15=sizeof(tss_t)-1;
-            t->limit0_15=(4*PAGE_SIZE_4K)-1;
+		//TSS descriptor
+		t= (TSSENTRY *)&__xmhfhic_x86vmx_gdt_start[(__TRSEL/8)+(i)];
+		t->attributes1= 0xE9;
+		t->limit16_19attributes2= 0x0;
+		t->baseAddr0_15= (u16)(tss_base & 0x0000FFFF);
+		t->baseAddr16_23= (u8)((tss_base & 0x00FF0000) >> 16);
+		t->baseAddr24_31= (u8)((tss_base & 0xFF000000) >> 24);
+		//t->limit0_15=0x67;
+		//t->limit0_15=sizeof(tss_t)-1;
+		t->limit0_15=(4*PAGE_SIZE_4K)-1;
+		#endif
 
-            _XDPRINTF_("%s: setup TSS CPU idx=%u with base address=%x, iobitmap=%x\n, size=%u bytes", __func__,
-                       tss_idx, tss_base, (u32)&__xmhfhic_x86vmx_tss[tss_idx].tss_iobitmap, t->limit0_15);
 
-		}
+		_XDPRINTF_("%s: setup TSS CPU idx=%u with base address=%x, iobitmap=%x\n, size=%u bytes", __func__,
+		       tss_idx, tss_base, (u32)&__xmhfhic_x86vmx_tss[tss_idx].tss_iobitmap, t->limit0_15);
+	}
 
 }
 
