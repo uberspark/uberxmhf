@@ -97,16 +97,19 @@ static inline u64 gp_s2_setupgdt_computegdttssentry(u32 tssidx, u32 tssbase){
 
 
 /*@
-	requires \valid(t);
-	ensures (t->baseAddr0_15 == ((u16)(tss_base & 0x0000FFFF)));
-	ensures (t->baseAddr16_23 == ((u8)((tss_base & 0x00FF0000) >> 16)));
-	ensures (t->baseAddr24_31 == ((u8)((tss_base & 0xFF000000) >> 24)) );
-	ensures (t->attributes1 == 0xE9);
-	ensures (t->limit16_19attributes2 == 0x0);
-	ensures (t->limit0_15 == ((4*PAGE_SIZE_4K)-1) );
+	//requires \valid(t);
+	requires (__TRSEL/8) <= gdtindex <= (XMHFGEEC_MAX_GDT_CODEDATA_DESCRIPTORS + MAX_PLATFORM_CPUS);
+	ensures (((TSSENTRY *)&__xmhfhic_x86vmx_gdt_start[gdtindex])->baseAddr0_15 == ((u16)(tss_base & 0x0000FFFF)));
+	ensures (((TSSENTRY *)&__xmhfhic_x86vmx_gdt_start[gdtindex])->baseAddr16_23 == ((u8)((tss_base & 0x00FF0000) >> 16)));
+	ensures (((TSSENTRY *)&__xmhfhic_x86vmx_gdt_start[gdtindex])->baseAddr24_31 == ((u8)((tss_base & 0xFF000000) >> 24)) );
+	ensures (((TSSENTRY *)&__xmhfhic_x86vmx_gdt_start[gdtindex])->attributes1 == 0xE9);
+	ensures (((TSSENTRY *)&__xmhfhic_x86vmx_gdt_start[gdtindex])->limit16_19attributes2 == 0x0);
+	ensures (((TSSENTRY *)&__xmhfhic_x86vmx_gdt_start[gdtindex])->limit0_15 == ((4*PAGE_SIZE_4K)-1) );
 
 @*/
-static void gp_s2_setupgdt_setgdttssentry(TSSENTRY *t, u32 tss_base){
+static void gp_s2_setupgdt_setgdttssentry(u32 gdtindex, u32 tss_base){
+	TSSENTRY *t = (TSSENTRY *)&__xmhfhic_x86vmx_gdt_start[gdtindex];
+
 	t->baseAddr0_15= (u16)(tss_base & 0x0000FFFF);
 	t->baseAddr16_23= (u8)((tss_base & 0x00FF0000) >> 16);
 	t->baseAddr24_31= (u8)((tss_base & 0xFF000000) >> 24);
