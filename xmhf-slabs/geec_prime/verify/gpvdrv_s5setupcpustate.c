@@ -114,6 +114,7 @@ void main(void){
 	//execute harness
 	xmhfhwm_cpu_cr4 = 0x00000030;
 	xmhfhwm_cpu_cr0 = 0x80000015;
+	xmhfhwm_cpu_cr3 =(u32)&gp_rwdatahdr.gp_vhslabmempgtbl_lvl4t;
 
 	gp_s5_setupcpustate(cpuid, isbsp);
 
@@ -135,6 +136,10 @@ void main(void){
         //@assert (xmhfhwm_cpu_msr_sysenter_eip == xmhfgeec_slab_info_table[XMHFGEEC_SLAB_GEEC_SENTINEL].slab_memoffset_entries[GEEC_SENTINEL_MEMOFFSETS_SYSENTERHANDLER_IDX]);
 	//@assert (xmhfhwm_cpu_msr_sysenter_esp_lo == (u32)((u32)&_geec_primesmp_sysenter_stack[(u32)cpuid+1]));
 	//@assert (xmhfhwm_cpu_msr_sysenter_esp_hi == 0);
+	//@assert (xmhfhwm_cpu_vmcs_host_rip == xmhfgeec_slab_info_table[XMHFGEEC_SLAB_GEEC_SENTINEL].slab_memoffset_entries[GEEC_SENTINEL_MEMOFFSETS_INTERCEPTHANDLER_IDX]);
+	//@assert (xmhfhwm_cpu_vmcs_host_rsp >= ((u32)&_init_bsp_cpustack + 4)) && (xmhfhwm_cpu_vmcs_host_rsp <= ((u32)&_init_bsp_cpustack + MAX_PLATFORM_CPUSTACK_SIZE)) ;
+	//@assert (xmhfhwm_cpu_vmcs_host_cr3 == (u32)&gp_rwdatahdr.gp_vhslabmempgtbl_lvl4t);
+
 
 	//@assert xmhfhwm_cpu_gprs_esp == check_esp;
 	//@assert xmhfhwm_cpu_gprs_eip == check_eip;
