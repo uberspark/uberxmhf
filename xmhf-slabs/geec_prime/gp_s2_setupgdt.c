@@ -64,7 +64,7 @@ void gp_s2_setupgdt(void){
             u32 tss_base=(u32)&__xmhfhic_x86vmx_tss[tss_idx].tss_mainblock;
 
             //TSS descriptor
-            t= (TSSENTRY *)&__xmhfhic_x86vmx_gdt_start[(__TRSEL/8)+(i*2)];
+            t= (TSSENTRY *)&__xmhfhic_x86vmx_gdt_start[(__TRSEL/8)+(i)];
             t->attributes1= 0xE9;
             t->limit16_19attributes2= 0x0;
             t->baseAddr0_15= (u16)(tss_base & 0x0000FFFF);
