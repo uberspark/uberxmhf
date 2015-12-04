@@ -99,16 +99,18 @@ static inline u64 gp_s2_setupgdt_computegdttssentry(u32 tssidx, u32 tssbase){
 /*@
 	//requires \valid(t);
 	requires (__TRSEL/8) <= gdtindex <= (XMHFGEEC_MAX_GDT_CODEDATA_DESCRIPTORS + MAX_PLATFORM_CPUS);
-	ensures (((TSSENTRY *)&__xmhfhic_x86vmx_gdt_start[gdtindex])->baseAddr0_15 == ((u16)(tss_base & 0x0000FFFF)));
-	ensures (((TSSENTRY *)&__xmhfhic_x86vmx_gdt_start[gdtindex])->baseAddr16_23 == ((u8)((tss_base & 0x00FF0000) >> 16)));
-	ensures (((TSSENTRY *)&__xmhfhic_x86vmx_gdt_start[gdtindex])->baseAddr24_31 == ((u8)((tss_base & 0xFF000000) >> 24)) );
+	requires 0 <= tssidx < MAX_PLATFORM_CPUS;
+	ensures (((TSSENTRY *)&__xmhfhic_x86vmx_gdt_start[gdtindex])->baseAddr0_15 == ((u16)((u32)&__xmhfhic_x86vmx_tss[tssidx].tss_mainblock & 0x0000FFFF)));
+	ensures (((TSSENTRY *)&__xmhfhic_x86vmx_gdt_start[gdtindex])->baseAddr16_23 == ((u8)(((u32)&__xmhfhic_x86vmx_tss[tssidx].tss_mainblock & 0x00FF0000) >> 16)));
+	ensures (((TSSENTRY *)&__xmhfhic_x86vmx_gdt_start[gdtindex])->baseAddr24_31 == ((u8)(((u32)&__xmhfhic_x86vmx_tss[tssidx].tss_mainblock & 0xFF000000) >> 24)) );
 	ensures (((TSSENTRY *)&__xmhfhic_x86vmx_gdt_start[gdtindex])->attributes1 == 0xE9);
 	ensures (((TSSENTRY *)&__xmhfhic_x86vmx_gdt_start[gdtindex])->limit16_19attributes2 == 0x0);
 	ensures (((TSSENTRY *)&__xmhfhic_x86vmx_gdt_start[gdtindex])->limit0_15 == ((4*PAGE_SIZE_4K)-1) );
 
 @*/
-static void gp_s2_setupgdt_setgdttssentry(u32 gdtindex, u32 tss_base){
+static void gp_s2_setupgdt_setgdttssentry(u32 gdtindex, u32 tssidx){
 	TSSENTRY *t = (TSSENTRY *)&__xmhfhic_x86vmx_gdt_start[gdtindex];
+	u32 tss_base = (u32)&__xmhfhic_x86vmx_tss[tssidx].tss_mainblock;
 
 	t->baseAddr0_15= (u16)(tss_base & 0x0000FFFF);
 	t->baseAddr16_23= (u8)((tss_base & 0x00FF0000) >> 16);
@@ -163,9 +165,7 @@ void gp_s2_setupgdt(void){
 			//__xmhfhic_x86vmx_gdt_start[(__TRSEL/8)+(i)] = (u64)(
 			//				  (((u64)((((u32)(&__xmhfhic_x86vmx_tss[xcbootinfo->cpuinfo_buffer[i].lapic_id].tss_mainblock) & 0xFF000000) >> 24)) << 56) & 0xFF00000000000000ULL)
 			//		);
-			gp_s2_setupgdt_setgdttssentry((TSSENTRY *)&__xmhfhic_x86vmx_gdt_start[(__TRSEL/8)+(i)],
-							(u32)(&__xmhfhic_x86vmx_tss[xcbootinfo->cpuinfo_buffer[i].lapic_id].tss_mainblock)
-							);
+			gp_s2_setupgdt_setgdttssentry( ((__TRSEL/8)+(i)) , xcbootinfo->cpuinfo_buffer[i].lapic_id);
 
 			//__xmhfhic_x86vmx_gdt_start[(__TRSEL/8)+(i)] = 0;
 
