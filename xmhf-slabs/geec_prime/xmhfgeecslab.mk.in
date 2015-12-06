@@ -48,6 +48,6 @@ verify: verifybase
 	#cd $(XMHF_SLAB_VERIFICATION_DIR) && frama-c -main gp_s2_setupgdt -lib-entry -wp -wp-rte -wp-model +cint+cast  -wp-prover alt-ergo,cvc3,z3 -cpp-extra-args=-nostdinc $(VFLAGS) gp_data.c.v.c gp_s2_setupgdt.c.v.c
 	#cd $(XMHF_SLAB_VERIFICATION_DIR) && frama-c -main gp_s2_setupgdt_setgdttssentry -lib-entry -wp -wp-rte -wp-model +cint+cast  -wp-prover alt-ergo,cvc3,z3 -cpp-extra-args=-nostdinc $(VFLAGS) gp_data.c.v.c gp_s2_setupgdt.c.v.c
 	#cd $(XMHF_SLAB_VERIFICATION_DIR) && frama-c -main gp_s2_setupidt -lib-entry -wp -wp-rte -wp-model +cint+cast  -wp-prover alt-ergo,cvc3,z3 -cpp-extra-args=-nostdinc $(VFLAGS) gp_data.c.v.c gp_s2_setupidt.c.v.c
-	#cd $(XMHF_SLAB_VERIFICATION_DIR) && frama-c -main gp_s2_setuptss -lib-entry -wp -wp-rte -wp-model +cint+cast  -wp-prover alt-ergo,cvc3,z3 -cpp-extra-args=-nostdinc $(VFLAGS) gp_data.c.v.c gp_s2_setuptss.c.v.c
+	cd $(XMHF_SLAB_VERIFICATION_DIR) && frama-c -main gp_s2_setuptss -lib-entry -wp -wp-rte -wp-model +cint+cast  -wp-prover alt-ergo,cvc3,z3 -cpp-extra-args=-nostdinc $(VFLAGS) gp_data.c.v.c gp_s2_setuptss.c.v.c
 	cd $(XMHF_SLAB_VERIFICATION_DIR) && frama-c -main gp_s2_setuptss_inittss -lib-entry -wp -wp-rte -wp-model +cint+cast  -wp-prover alt-ergo,cvc3,z3 -cpp-extra-args=-nostdinc $(VFLAGS) gp_data.c.v.c gp_s2_setuptssinittss.c.v.c
 
