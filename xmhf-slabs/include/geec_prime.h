@@ -315,7 +315,7 @@ void gp_s2_setupidt(void);
 /*@
 	requires 0 <= tssidx < MAX_PLATFORM_CPUS;
 @*/
-void gp_s2_setuptss_settss(u32 tssidx);
+void gp_s2_setuptss_inittss(u32 tssidx);
 
 
 void gp_s2_setuptss(void);

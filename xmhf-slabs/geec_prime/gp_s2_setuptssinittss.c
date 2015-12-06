@@ -56,45 +56,18 @@
 
 
 
-//initialize TSS
-//@ghost bool gp_s2_setuptss_invokehelper[MAX_PLATFORM_CPUS];
 /*@
-	requires \valid(xcbootinfo);
-	requires (xcbootinfo->cpuinfo_numentries < MAX_PLATFORM_CPUS);
-	ensures \forall integer x; 0 <= x < xcbootinfo->cpuinfo_numentries ==> (
-				(xcbootinfo->cpuinfo_buffer[x].lapic_id < MAX_PLATFORM_CPUS) ==>
-				(gp_s2_setuptss_invokehelper[x] == true) );
+	requires 0 <= tssidx < MAX_PLATFORM_CPUS;
 @*/
-void gp_s2_setuptss(void){
-	u32 i;
+void gp_s2_setuptss_inittss(u32 tssidx){
+	tss_t *tss= (tss_t *)__xmhfhic_x86vmx_tss[tssidx].tss_mainblock;
 
-	//initialize TSS descriptors for all CPUs
-    	/*@
-		loop invariant a1: 0 <= i <= xcbootinfo->cpuinfo_numentries;
-		loop invariant a2: \forall integer x; 0 <= x < i ==> (
-				(xcbootinfo->cpuinfo_buffer[x].lapic_id < MAX_PLATFORM_CPUS) ==>
-				(gp_s2_setuptss_invokehelper[x] == true)
-						);
-		loop assigns gp_s2_setuptss_invokehelper[0..(xcbootinfo->cpuinfo_numentries-1)];
-		loop assigns i;
-		loop variant xcbootinfo->cpuinfo_numentries - i;
-	@*/
-	for(i=0; i < xcbootinfo->cpuinfo_numentries; i++){
+	memset(&__xmhfhic_x86vmx_tss[tssidx], 0, sizeof(__xmhfhic_x86vmx_tss[tssidx]));
 
-		if(xcbootinfo->cpuinfo_buffer[i].lapic_id < MAX_PLATFORM_CPUS){
-			gp_s2_setuptss_inittss(xcbootinfo->cpuinfo_buffer[i].lapic_id);
-			//@ghost gp_s2_setuptss_invokehelper[i] = true;
-		}
+	tss->esp0 = (u32) ( &__xmhfhic_x86vmx_tss_stack[tssidx] + sizeof(__xmhfhic_x86vmx_tss_stack[0]) );
+	tss->ss0 = __DS_CPL0;
+	tss->iotbl_addr = (u32)&__xmhfhic_x86vmx_tss[tssidx].tss_iobitmap - (u32)&__xmhfhic_x86vmx_tss[tssidx].tss_mainblock;
 
-		/*u32 tss_idx = xcbootinfo->cpuinfo_buffer[i].lapic_id;
-
-		memset(&__xmhfhic_x86vmx_tss[tss_idx], 0, sizeof(__xmhfhic_x86vmx_tss[tss_idx]));
-		tss_t *tss= (tss_t *)__xmhfhic_x86vmx_tss[tss_idx].tss_mainblock;
-		tss->esp0 = (u32) ( &__xmhfhic_x86vmx_tss_stack[tss_idx] + sizeof(__xmhfhic_x86vmx_tss_stack[0]) );
-		tss->ss0 = __DS_CPL0;
-		tss->iotbl_addr = (u32)&__xmhfhic_x86vmx_tss[tss_idx].tss_iobitmap - (u32)&__xmhfhic_x86vmx_tss[tss_idx].tss_mainblock;
-		_XDPRINTF_("%s: tss_idx=%u, iotbl_addr=%x\n", __func__, tss_idx,
-		       tss->iotbl_addr);
-		*/
-	}
+	_XDPRINTF_("%s: tss_idx=%u, iotbl_addr=%x\n", __func__, tssidx,
+	       tss->iotbl_addr);
 }
