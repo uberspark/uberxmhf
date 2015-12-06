@@ -50,24 +50,28 @@
 #include <xmhfgeec.h>
 
 #include <geec_prime.h>
-//#include <geec_sentinel.h>
-//#include <uapi_slabmempgtbl.h>
-//#include <xc_init.h>
-
 
 
 /*@
 	requires 0 <= tssidx < MAX_PLATFORM_CPUS;
+	assigns __xmhfhic_x86vmx_tss[tssidx].tss_mainblock[0..(PAGE_SIZE_4K-1)];
+	assigns __xmhfhic_x86vmx_tss[tssidx].tss_iobitmap[0..((3*PAGE_SIZE_4K)-1)];
+	ensures (((tss_t *)__xmhfhic_x86vmx_tss[tssidx].tss_mainblock)->esp0 ==
+		(u32) ( &__xmhfhic_x86vmx_tss_stack[tssidx] + sizeof(__xmhfhic_x86vmx_tss_stack[0]) )
+		);
+	ensures (((tss_t *)__xmhfhic_x86vmx_tss[tssidx].tss_mainblock)->ss0 == __DS_CPL0);
+	ensures (((tss_t *)__xmhfhic_x86vmx_tss[tssidx].tss_mainblock)->iotbl_addr == PAGE_SIZE_4K);
 @*/
 void gp_s2_setuptss_inittss(u32 tssidx){
 	tss_t *tss= (tss_t *)__xmhfhic_x86vmx_tss[tssidx].tss_mainblock;
 
-	memset(&__xmhfhic_x86vmx_tss[tssidx], 0, sizeof(__xmhfhic_x86vmx_tss[tssidx]));
+	memset(&__xmhfhic_x86vmx_tss[tssidx].tss_mainblock, 0, PAGE_SIZE_4K);
+	memset(&__xmhfhic_x86vmx_tss[tssidx].tss_iobitmap, 0, (3*PAGE_SIZE_4K));
 
 	tss->esp0 = (u32) ( &__xmhfhic_x86vmx_tss_stack[tssidx] + sizeof(__xmhfhic_x86vmx_tss_stack[0]) );
 	tss->ss0 = __DS_CPL0;
-	tss->iotbl_addr = (u32)&__xmhfhic_x86vmx_tss[tssidx].tss_iobitmap - (u32)&__xmhfhic_x86vmx_tss[tssidx].tss_mainblock;
+	tss->iotbl_addr = PAGE_SIZE_4K;
 
-	_XDPRINTF_("%s: tss_idx=%u, iotbl_addr=%x\n", __func__, tssidx,
+	_XDPRINTF_("%s: tssidx=%u, iotbl_addr=%x\n", __func__, tssidx,
 	       tss->iotbl_addr);
 }
