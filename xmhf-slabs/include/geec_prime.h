@@ -310,6 +310,14 @@ void gp_s2_setupgdt(void);
 void gp_s2_setupgdt_setgdttssentry(u32 gdtindex, u32 tssidx);
 
 void gp_s2_setupidt(void);
+
+
+/*@
+	requires 0 <= tssidx < MAX_PLATFORM_CPUS;
+@*/
+void gp_s2_setuptss_settss(u32 tssidx);
+
+
 void gp_s2_setuptss(void);
 
 
