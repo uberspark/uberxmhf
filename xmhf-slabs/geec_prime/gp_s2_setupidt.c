@@ -51,9 +51,6 @@
 
 #include <geec_prime.h>
 #include <geec_sentinel.h>
-#include <uapi_slabmempgtbl.h>
-#include <xc_init.h>
-
 
 //initialize IDT
 /*@
@@ -63,6 +60,10 @@
 	assigns __xmhfhic_x86vmx_idt_start[0..(EMHF_XCPHANDLER_MAXEXCEPTIONS-1)].count;
 	assigns __xmhfhic_x86vmx_idt_start[0..(EMHF_XCPHANDLER_MAXEXCEPTIONS-1)].type;
 	ensures \forall integer x; 0 <= x < (EMHF_XCPHANDLER_MAXEXCEPTIONS-1) ==> (__xmhfhic_x86vmx_idt_start[x].type == 0xEE);
+	ensures \forall integer x; 0 <= x < (EMHF_XCPHANDLER_MAXEXCEPTIONS-1) ==> (__xmhfhic_x86vmx_idt_start[x].count == 0x0);
+	ensures \forall integer x; 0 <= x < (EMHF_XCPHANDLER_MAXEXCEPTIONS-1) ==> (__xmhfhic_x86vmx_idt_start[x].isrSelector == __CS_CPL0);
+	ensures \forall integer x; 0 <= x < (EMHF_XCPHANDLER_MAXEXCEPTIONS-1) ==> (__xmhfhic_x86vmx_idt_start[x].isrHigh == (u16) ( xmhfgeec_slab_info_table[XMHFGEEC_SLAB_GEEC_SENTINEL].slab_memoffset_entries[GEEC_SENTINEL_MEMOFFSETS_EXCEPTIONHANDLERS_IDX+x] >> 16 ));
+	ensures \forall integer x; 0 <= x < (EMHF_XCPHANDLER_MAXEXCEPTIONS-1) ==> (__xmhfhic_x86vmx_idt_start[x].isrLow == (u16)xmhfgeec_slab_info_table[XMHFGEEC_SLAB_GEEC_SENTINEL].slab_memoffset_entries[GEEC_SENTINEL_MEMOFFSETS_EXCEPTIONHANDLERS_IDX+x]);
 @*/
 void gp_s2_setupidt(void){
 	u32 i;
@@ -71,6 +72,10 @@ void gp_s2_setupidt(void){
     	/*@
 		loop invariant a1: 0 <= i <= EMHF_XCPHANDLER_MAXEXCEPTIONS;
 		loop invariant a2: \forall integer x; 0 <= x < i ==> (__xmhfhic_x86vmx_idt_start[x].type == 0xEE);
+		loop invariant a3: \forall integer x; 0 <= x < i ==> (__xmhfhic_x86vmx_idt_start[x].count == 0x0);
+		loop invariant a4: \forall integer x; 0 <= x < i ==> (__xmhfhic_x86vmx_idt_start[x].isrSelector == __CS_CPL0);
+		loop invariant a5: \forall integer x; 0 <= x < i ==> (__xmhfhic_x86vmx_idt_start[x].isrHigh == (u16) ( xmhfgeec_slab_info_table[XMHFGEEC_SLAB_GEEC_SENTINEL].slab_memoffset_entries[GEEC_SENTINEL_MEMOFFSETS_EXCEPTIONHANDLERS_IDX+x] >> 16 ));
+		loop invariant a6: \forall integer x; 0 <= x < i ==> (__xmhfhic_x86vmx_idt_start[x].isrLow == (u16)xmhfgeec_slab_info_table[XMHFGEEC_SLAB_GEEC_SENTINEL].slab_memoffset_entries[GEEC_SENTINEL_MEMOFFSETS_EXCEPTIONHANDLERS_IDX+x]);
 		loop assigns __xmhfhic_x86vmx_idt_start[0..(EMHF_XCPHANDLER_MAXEXCEPTIONS-1)].isrLow;
 		loop assigns __xmhfhic_x86vmx_idt_start[0..(EMHF_XCPHANDLER_MAXEXCEPTIONS-1)].isrHigh;
 		loop assigns __xmhfhic_x86vmx_idt_start[0..(EMHF_XCPHANDLER_MAXEXCEPTIONS-1)].isrSelector;
