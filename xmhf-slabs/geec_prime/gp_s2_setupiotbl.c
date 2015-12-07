@@ -141,7 +141,7 @@ void gp_s2_setupiotbl(void){
 		    (xmhfgeec_slab_info_table[i].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG)) &&
 		    ((i >= XMHFGEEC_UHSLAB_BASE_IDX && i <= XMHFGEEC_UHSLAB_MAX_IDX))
 		 ){
-			gp_setup_uhslab_iotbl(i);
+			gp_s2_setupiotbluh(i);
 			//@ghost gp_s2_setupiotbl_invokeduhslabiotbl[i] = true;
 		}
 		else if ( ((xmhfgeec_slab_info_table[i].slabtype == XMHFGEEC_SLABTYPE_uVT_PROG_GUEST) ||

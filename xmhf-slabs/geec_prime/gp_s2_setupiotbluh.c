@@ -63,7 +63,7 @@ static void _gp_setup_uhslab_iotbl_allowaccesstoport(u32 uhslabiobitmap_idx, u16
 }
 
 
-void gp_setup_uhslab_iotbl(u32 slabid){
+void gp_s2_setupiotbluh(u32 slabid){
 	u32 j, k, portnum;
 
         memset(&gp_rwdatahdr.gp_uhslab_iobitmap[(slabid - XMHFGEEC_UHSLAB_BASE_IDX)], 0xFFFFFFFFUL, sizeof(gp_rwdatahdr.gp_uhslab_iobitmap[0]));
