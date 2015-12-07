@@ -51,8 +51,13 @@
 
 #include <geec_prime.h>
 
-#if 0
-static void _gp_setup_uhslab_iotbl_allowaccesstoport(u32 uhslabiobitmap_idx, u16 port, u16 port_size){
+/*@
+	requires 0 <= uhslabiobitmap_idx < XMHFGEEC_TOTAL_UHSLABS;
+	requires 0 <= port_size <= 4;
+	assigns \nothing;
+@*/
+static inline void gp_s2_setupiotbluh_helper_allowaccesstoport(u32 uhslabiobitmap_idx, u16 port, u16 port_size){
+    #if 0
     u32 i;
 
     for(i=0; i < port_size; i++){
@@ -61,8 +66,8 @@ static void _gp_setup_uhslab_iotbl_allowaccesstoport(u32 uhslabiobitmap_idx, u16
         u8 bitmask = ~((u8)1 << bit);
         gp_rwdatahdr.gp_uhslab_iobitmap[uhslabiobitmap_idx][idx] &= bitmask;
     }
+    #endif
 }
-#endif // 0
 
 
 //@ghost bool gp_s2_setupiotbluh_helper_invokedportaccess[PCI_CONF_MAX_BARS];
@@ -103,7 +108,7 @@ static inline void gp_s2_setupiotbluh_helper(u32 slabid, u32 sysdev_memioregions
 			for(portnum= sysdev_memioregions[sysdev_memioregions_index].memioextents[k].addr_start;
 				portnum < sysdev_memioregions[sysdev_memioregions_index].memioextents[k].addr_end; portnum++){
 
-				//_gp_setup_uhslab_iotbl_allowaccesstoport((slabid - XMHFGEEC_UHSLAB_BASE_IDX), portnum, 1);
+				gp_s2_setupiotbluh_helper_allowaccesstoport((slabid - XMHFGEEC_UHSLAB_BASE_IDX), portnum, 1);
 
 			}
 
