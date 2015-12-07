@@ -50,10 +50,11 @@
 #include <xmhfgeec.h>
 
 #include <geec_prime.h>
-#include <geec_sentinel.h>
-#include <uapi_slabmempgtbl.h>
-#include <xc_init.h>
+//#include <geec_sentinel.h>
+//#include <uapi_slabmempgtbl.h>
+//#include <xc_init.h>
 
+#if 0
 //////
 // setup (unverified) slab iotbl
 /////
@@ -129,19 +130,31 @@ static void gp_setup_ugslab_iotbl(u32 slabid){
 }
 
 
+#endif // 0
 
 
-
+/*@
+	assigns \nothing;
+@*/
 void gp_s2_setupiotbl(void){
 	u32 i, slabtype;
 
 
+
+    	/*@
+		loop invariant a1: 0 <= i <= XMHFGEEC_TOTAL_SLABS;
+		//loop invariant a2: \forall integer x; 0 <= x < i ==> (
+		//		(xcbootinfo->cpuinfo_buffer[x].lapic_id < MAX_PLATFORM_CPUS) ==>
+		//		(gp_s2_setupgdt_invokehelper[x] == true)
+		loop assigns i;
+		loop variant XMHFGEEC_TOTAL_SLABS - i;
+	@*/
 	for(i=0; i < XMHFGEEC_TOTAL_SLABS; i++){
 		if( ((xmhfgeec_slab_info_table[i].slabtype == XMHFGEEC_SLABTYPE_uVT_PROG) ||
 		    (xmhfgeec_slab_info_table[i].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG)) &&
 		    ((i >= XMHFGEEC_UHSLAB_BASE_IDX && i <= XMHFGEEC_UHSLAB_MAX_IDX))
 		 ){
-			gp_setup_uhslab_iotbl(i);
+			//gp_setup_uhslab_iotbl(i);
 
 
 		}else if ( ((xmhfgeec_slab_info_table[i].slabtype == XMHFGEEC_SLABTYPE_uVT_PROG_GUEST) ||
@@ -149,7 +162,7 @@ void gp_s2_setupiotbl(void){
 			   (xmhfgeec_slab_info_table[i].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG_RICHGUEST)) &&
 			   ((i >= XMHFGEEC_UGSLAB_BASE_IDX && i <= XMHFGEEC_UGSLAB_MAX_IDX))
 			 ){
-			gp_setup_ugslab_iotbl(i);
+			//gp_setup_ugslab_iotbl(i);
 
 		}else if ( ((xmhfgeec_slab_info_table[i].slabtype == XMHFGEEC_SLABTYPE_VfT_SENTINEL) ||
 		   (xmhfgeec_slab_info_table[i].slabtype == XMHFGEEC_SLABTYPE_VfT_PROG)) ){
@@ -159,7 +172,7 @@ void gp_s2_setupiotbl(void){
 			//we have no idea what type of slab this is, halt!
 			_XDPRINTF_("%s:%u no idea of slab %u of type %u. Halting!\n",
 				__func__, __LINE__, i, xmhfgeec_slab_info_table[i].slabtype);
-			CASM_FUNCCALL(xmhfhw_cpu_hlt, CASM_NOPARAM);
+			//CASM_FUNCCALL(xmhfhw_cpu_hlt, CASM_NOPARAM);
 		}
 
 	}
