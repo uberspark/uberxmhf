@@ -57,6 +57,10 @@
 //@ghost bool gp_s2_setupiotbl_handlevfobjs[XMHFGEEC_TOTAL_SLABS];
 //@ghost bool gp_s2_setupiotbl_handleinvalidobjs[XMHFGEEC_TOTAL_SLABS];
 /*@
+	requires \forall integer x, y; 0 <= x < XMHFGEEC_TOTAL_SLABS &&  0 <= y < MAX_PLATFORM_DEVICES ==>
+		(_sda_slab_devicemap[x].device_count < MAX_PLATFORM_DEVICES &&
+		_sda_slab_devicemap[x].sysdev_mmioregions_indices[y] < MAX_PLATFORM_DEVICES
+		);
 	assigns gp_s2_setupiotbl_invokeduhslabiotbl[0..(XMHFGEEC_TOTAL_SLABS-1)];
 	assigns gp_s2_setupiotbl_invokedugslabiotbl[0..(XMHFGEEC_TOTAL_SLABS-1)];
 	assigns gp_s2_setupiotbl_handlevfobjs[0..(XMHFGEEC_TOTAL_SLABS-1)];
