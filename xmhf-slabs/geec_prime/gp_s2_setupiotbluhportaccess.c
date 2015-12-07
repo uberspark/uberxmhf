@@ -70,6 +70,6 @@ void gp_s2_setupiotbluh_allowaccesstoport(u32 uhslabiobitmap_idx, u16 port, u16 
 		loop variant port_size - i;
 	@*/
 	for(i=0; i < port_size; i++){
-		gp_rwdatahdr.gp_uhslab_iobitmap[uhslabiobitmap_idx][((port+i)/8)] &= ~((u8)1 << ((port+i) % 8));
+		//gp_rwdatahdr.gp_uhslab_iobitmap[uhslabiobitmap_idx][((port+i)/8)] &= ~((u8)1 << ((port+i) % 8));
 	}
 }
