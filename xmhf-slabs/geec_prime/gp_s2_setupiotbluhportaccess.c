@@ -53,8 +53,9 @@
 
 /*@
 	requires 0 <= uhslabiobitmap_idx < XMHFGEEC_TOTAL_UHSLABS;
+	requires 0 <= port < 65536;
 	requires 0 <= port_size <= 4;
-	assigns \nothing;
+	assigns gp_rwdatahdr.gp_uhslab_iobitmap[uhslabiobitmap_idx][((port+0)/8)..((port+(port_size-1))/8)];
 @*/
 void gp_s2_setupiotbluh_allowaccesstoport(u32 uhslabiobitmap_idx, u16 port, u16 port_size){
 	u32 i;
@@ -66,10 +67,11 @@ void gp_s2_setupiotbluh_allowaccesstoport(u32 uhslabiobitmap_idx, u16 port, u16 
 		//		(sysdev_memioregions[sysdev_memioregions_index].memioextents[x].addr_start <= sysdev_memioregions[sysdev_memioregions_index].memioextents[x].addr_end))) ==>
 		//		(gp_s2_setupiotbluh_helper_invokedportaccess[x] == true)
 		//				);
+		loop assigns gp_rwdatahdr.gp_uhslab_iobitmap[uhslabiobitmap_idx][((port+0)/8)..((port+(port_size-1))/8)];
 		loop assigns i;
 		loop variant port_size - i;
 	@*/
 	for(i=0; i < port_size; i++){
-		//gp_rwdatahdr.gp_uhslab_iobitmap[uhslabiobitmap_idx][((port+i)/8)] &= ~((u8)1 << ((port+i) % 8));
+		gp_rwdatahdr.gp_uhslab_iobitmap[uhslabiobitmap_idx][((port+i)/8)] &= ~((u8)1 << ((port+i) % 8));
 	}
 }
