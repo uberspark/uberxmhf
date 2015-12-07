@@ -134,9 +134,13 @@ static void gp_setup_ugslab_iotbl(u32 slabid){
 
 //@ghost bool gp_s2_setupiotbl_invokeduhslabiotbl[XMHFGEEC_TOTAL_SLABS];
 //@ghost bool gp_s2_setupiotbl_invokedugslabiotbl[XMHFGEEC_TOTAL_SLABS];
+//@ghost bool gp_s2_setupiotbl_handlevfobjs[XMHFGEEC_TOTAL_SLABS];
+//@ghost bool gp_s2_setupiotbl_handleinvalidobjs[XMHFGEEC_TOTAL_SLABS];
 /*@
 	assigns gp_s2_setupiotbl_invokeduhslabiotbl[0..(XMHFGEEC_TOTAL_SLABS-1)];
 	assigns gp_s2_setupiotbl_invokedugslabiotbl[0..(XMHFGEEC_TOTAL_SLABS-1)];
+	assigns gp_s2_setupiotbl_handlevfobjs[0..(XMHFGEEC_TOTAL_SLABS-1)];
+	assigns gp_s2_setupiotbl_handleinvalidobjs[0..(XMHFGEEC_TOTAL_SLABS-1)];
 	ensures \forall integer x; 0 <= x < (XMHFGEEC_TOTAL_SLABS-1) ==> (
 		( ((xmhfgeec_slab_info_table[x].slabtype == XMHFGEEC_SLABTYPE_uVT_PROG) ||
 		  (xmhfgeec_slab_info_table[x].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG)) &&
@@ -148,6 +152,10 @@ static void gp_setup_ugslab_iotbl(u32 slabid){
 		  (xmhfgeec_slab_info_table[x].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG_RICHGUEST)) &&
 		  ((x >= XMHFGEEC_UGSLAB_BASE_IDX && x <= XMHFGEEC_UGSLAB_MAX_IDX))
 		) ==> (gp_s2_setupiotbl_invokedugslabiotbl[x] == true) );
+	ensures \forall integer x; 0 <= x < (XMHFGEEC_TOTAL_SLABS-1) ==> (
+		( ((xmhfgeec_slab_info_table[x].slabtype == XMHFGEEC_SLABTYPE_VfT_SENTINEL) ||
+		   (xmhfgeec_slab_info_table[x].slabtype == XMHFGEEC_SLABTYPE_VfT_PROG))
+		) ==> (gp_s2_setupiotbl_handlevfobjs[x] == true) );
 @*/
 void gp_s2_setupiotbl(void){
 	u32 i, slabtype;
@@ -167,9 +175,15 @@ void gp_s2_setupiotbl(void){
 			   (xmhfgeec_slab_info_table[x].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG_RICHGUEST)) &&
 			   ((x >= XMHFGEEC_UGSLAB_BASE_IDX && x <= XMHFGEEC_UGSLAB_MAX_IDX))
 			 ) ==> (gp_s2_setupiotbl_invokedugslabiotbl[x] == true) );
+		loop invariant a4: \forall integer x; 0 <= x < i ==> (
+			( ((xmhfgeec_slab_info_table[x].slabtype == XMHFGEEC_SLABTYPE_VfT_SENTINEL) ||
+			   (xmhfgeec_slab_info_table[x].slabtype == XMHFGEEC_SLABTYPE_VfT_PROG))
+			) ==> (gp_s2_setupiotbl_handlevfobjs[x] == true) );
 		loop assigns i;
 		loop assigns gp_s2_setupiotbl_invokeduhslabiotbl[0..(XMHFGEEC_TOTAL_SLABS-1)];
 		loop assigns gp_s2_setupiotbl_invokedugslabiotbl[0..(XMHFGEEC_TOTAL_SLABS-1)];
+		loop assigns gp_s2_setupiotbl_handlevfobjs[0..(XMHFGEEC_TOTAL_SLABS-1)];
+		loop assigns gp_s2_setupiotbl_handleinvalidobjs[0..(XMHFGEEC_TOTAL_SLABS-1)];
 		loop variant XMHFGEEC_TOTAL_SLABS - i;
 	@*/
 	for(i=0; i < XMHFGEEC_TOTAL_SLABS; i++){
@@ -188,23 +202,19 @@ void gp_s2_setupiotbl(void){
 			//gp_setup_ugslab_iotbl(i);
 			//@ghost gp_s2_setupiotbl_invokedugslabiotbl[i] = true;
 
-		}else{
-
-
-		}
-		#if 0
-
 		}else if ( ((xmhfgeec_slab_info_table[i].slabtype == XMHFGEEC_SLABTYPE_VfT_SENTINEL) ||
-		   (xmhfgeec_slab_info_table[i].slabtype == XMHFGEEC_SLABTYPE_VfT_PROG)) ){
+			   (xmhfgeec_slab_info_table[i].slabtype == XMHFGEEC_SLABTYPE_VfT_PROG))
+			){
 			//do nothing for verified slabs
+			//@ghost gp_s2_setupiotbl_handlevfobjs[i] = true;
 
 		}else{
 			//we have no idea what type of slab this is, halt!
 			_XDPRINTF_("%s:%u no idea of slab %u of type %u. Halting!\n",
 				__func__, __LINE__, i, xmhfgeec_slab_info_table[i].slabtype);
-			//CASM_FUNCCALL(xmhfhw_cpu_hlt, CASM_NOPARAM);
+			CASM_FUNCCALL(xmhfhw_cpu_hlt, CASM_NOPARAM);
+			//@ghost gp_s2_setupiotbl_handleinvalidobjs[i] = true;
 		}
-		#endif // 0
 
 	}
 
