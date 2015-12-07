@@ -297,6 +297,12 @@ void gp_s2_setupslabdevmap(void);
 
 /*@
 	requires (slabid >= XMHFGEEC_UHSLAB_BASE_IDX && slabid <= XMHFGEEC_UHSLAB_MAX_IDX);
+	requires sysdev_memioregions_index < MAX_PLATFORM_DEVICES;
+@*/
+void gp_s2_setupiotbluh_helper(u32 slabid, u32 sysdev_memioregions_index);
+
+/*@
+	requires (slabid >= XMHFGEEC_UHSLAB_BASE_IDX && slabid <= XMHFGEEC_UHSLAB_MAX_IDX);
 @*/
 void gp_s2_setupiotbluh(u32 slabid);
 
