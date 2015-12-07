@@ -150,30 +150,23 @@ static void gp_setup_ugslab_iotbl(u32 slabid){
 
 
 void gp_s2_setupiotbl(void){
-    u32 i, slabtype;
+	u32 i, slabtype;
 
 
-    for(i=0; i < XMHFGEEC_TOTAL_SLABS; i++){
-        slabtype = xmhfgeec_slab_info_table[i].slabtype;
+	for(i=0; i < XMHFGEEC_TOTAL_SLABS; i++){
+		if( ((xmhfgeec_slab_info_table[i].slabtype == XMHFGEEC_SLABTYPE_uVT_PROG) ||
+		    (xmhfgeec_slab_info_table[i].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG)) ){
+			gp_setup_uhslab_iotbl(i);
 
-        switch(slabtype){
-            case XMHFGEEC_SLABTYPE_uVT_PROG:
-            case XMHFGEEC_SLABTYPE_uVU_PROG:
-		gp_setup_uhslab_iotbl(i);
-		break;
+		}else if ( ((xmhfgeec_slab_info_table[i].slabtype == XMHFGEEC_SLABTYPE_uVT_PROG_GUEST) ||
+			   (xmhfgeec_slab_info_table[i].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG_GUEST) ||
+			   (xmhfgeec_slab_info_table[i].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG_RICHGUEST)) ){
+			gp_setup_ugslab_iotbl(i);
 
-
-            case XMHFGEEC_SLABTYPE_uVT_PROG_GUEST:
-            case XMHFGEEC_SLABTYPE_uVU_PROG_GUEST:
-            case XMHFGEEC_SLABTYPE_uVU_PROG_RICHGUEST:
-		gp_setup_ugslab_iotbl(i);
-		break;
-
-            default:
-                break;
-        }
-    }
-
+		}else{
+			//ignore, do nothing
+		}
+	}
 
 	_XDPRINTF_("%s: setup unverified slab legacy I/O permission tables\n", __func__);
 
