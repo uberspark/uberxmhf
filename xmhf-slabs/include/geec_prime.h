@@ -297,6 +297,13 @@ void gp_s2_setupslabdevmap(void);
 
 
 /*@
+	requires 0 <= uhslabiobitmap_idx < XMHFGEEC_TOTAL_UHSLABS;
+	requires 0 <= port_size <= 4;
+@*/
+void gp_s2_setupiotbluh_allowaccesstoport(u32 uhslabiobitmap_idx, u16 port, u16 port_size);
+
+
+/*@
 	requires (slabid >= XMHFGEEC_UHSLAB_BASE_IDX && slabid <= XMHFGEEC_UHSLAB_MAX_IDX);
 	requires _sda_slab_devicemap[slabid].device_count < MAX_PLATFORM_DEVICES;
 	requires  \forall integer x; 0 <= x < MAX_PLATFORM_DEVICES ==> (_sda_slab_devicemap[slabid].sysdev_mmioregions_indices[x] < MAX_PLATFORM_DEVICES);
