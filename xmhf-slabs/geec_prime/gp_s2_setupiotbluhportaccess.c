@@ -54,14 +54,11 @@
 /*@
 	requires 0 <= objidx < XMHFGEEC_TOTAL_UHSLABS;
 	requires 0 <= bitmapidx < (3*PAGE_SIZE_4K);
-	requires 0 <= port < 65536;
-	assigns \nothing;
+	assigns gp_rwdatahdr.gp_uhslab_iobitmap[objidx][bitmapidx];
+	ensures (gp_rwdatahdr.gp_uhslab_iobitmap[objidx][bitmapidx] == (gp_rwdatahdr.gp_uhslab_iobitmap[objidx][bitmapidx] & mask));
 @*/
-static void gp_s2_setupiotbluh_allowaccesstoport_setmask(u32 objidx, u32 bitmapidx, u16 port){
-	//gp_rwdatahdr.gp_uhslab_iobitmap[objidx][bitmapidx] = gp_rwdatahdr.gp_uhslab_iobitmap[objidx][bitmapidx] & mask;
-	//return ~((u8)1 << ((port) % 8));
-	//	loop assigns gp_rwdatahdr.gp_uhslab_iobitmap[uhslabiobitmap_idx][((port+0)/8)..((port+(port_size-1))/8)];
-
+static inline void gp_s2_setupiotbluh_allowaccesstoport_setmask(u32 objidx, u32 bitmapidx, u8 mask){
+	gp_rwdatahdr.gp_uhslab_iobitmap[objidx][bitmapidx] = gp_rwdatahdr.gp_uhslab_iobitmap[objidx][bitmapidx] & mask;
 }
 
 
@@ -70,7 +67,7 @@ static void gp_s2_setupiotbluh_allowaccesstoport_setmask(u32 objidx, u32 bitmapi
 	requires 0 <= uhslabiobitmap_idx < XMHFGEEC_TOTAL_UHSLABS;
 	requires 0 <= port < 65536;
 	requires 0 <= port_size <= 4;
-	//assigns gp_rwdatahdr.gp_uhslab_iobitmap[uhslabiobitmap_idx][((port+0)/8)..((port+(port_size-1))/8)];
+	assigns gp_rwdatahdr.gp_uhslab_iobitmap[uhslabiobitmap_idx][((port+0)/8)..((port+(port_size-1))/8)];
 	assigns gp_s2_setupiotbluh_allowaccesstoport_invokedsetmask[0..(port_size-1)];
 @*/
 void gp_s2_setupiotbluh_allowaccesstoport(u32 uhslabiobitmap_idx, u16 port, u16 port_size){
@@ -81,10 +78,11 @@ void gp_s2_setupiotbluh_allowaccesstoport(u32 uhslabiobitmap_idx, u16 port, u16 
 		loop invariant d2: \forall integer x; 0 <= x < i ==> (gp_s2_setupiotbluh_allowaccesstoport_invokedsetmask[x] == true);
 		loop assigns gp_s2_setupiotbluh_allowaccesstoport_invokedsetmask[0..(port_size-1)];
 		loop assigns i;
+		loop assigns gp_rwdatahdr.gp_uhslab_iobitmap[uhslabiobitmap_idx][((port+0)/8)..((port+(port_size-1))/8)];
 		loop variant port_size - i;
 	@*/
 	for(i=0; i < port_size; i++){
-		gp_s2_setupiotbluh_allowaccesstoport_setmask(uhslabiobitmap_idx, ((port+i)/8), (port+i));
+		gp_s2_setupiotbluh_allowaccesstoport_setmask(uhslabiobitmap_idx, ((port+i)/8), ~((u8)1 << ((port+i) % 8)));
 		//@ghost gp_s2_setupiotbluh_allowaccesstoport_invokedsetmask[i] = true;
 	}
 }
