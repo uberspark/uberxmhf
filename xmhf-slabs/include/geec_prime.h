@@ -293,7 +293,14 @@ void gp_s1_iommuinit(void);
 
 void gp_s2_entry(void);
 void gp_s2_setupslabdevmap(void);
+
+
+void gp_setup_uhslab_iotbl(u32 slabid);
+void gp_setup_ugslab_iotbl(u32 slabid);
+
 void gp_s2_setupiotbl(void);
+
+
 void gp_s2_setupmempgtbl(void);
 
 
