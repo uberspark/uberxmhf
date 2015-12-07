@@ -68,6 +68,7 @@ static void _gp_setup_uhslab_iotbl_allowaccesstoport(u32 uhslabiobitmap_idx, u16
 /*@
 	requires (slabid >= XMHFGEEC_UHSLAB_BASE_IDX && slabid <= XMHFGEEC_UHSLAB_MAX_IDX);
 	requires _sda_slab_devicemap[slabid].device_count < MAX_PLATFORM_DEVICES;
+	requires  \forall integer x; 0 <= x < MAX_PLATFORM_DEVICES ==> (_sda_slab_devicemap[slabid].sysdev_mmioregions_indices[x] < MAX_PLATFORM_DEVICES);
 @*/
 void gp_s2_setupiotbluh(u32 slabid){
 	u32 j, k, portnum;
@@ -81,29 +82,35 @@ void gp_s2_setupiotbluh(u32 slabid){
 		loop invariant a1: 0 <= j <= _sda_slab_devicemap[slabid].device_count;
 		loop assigns j;
 		loop assigns k;
+		loop assigns portnum;
 		loop assigns sysdev_memioregions_index;
 		loop variant _sda_slab_devicemap[slabid].device_count - j;
 	@*/
 	for(j=0; j < _sda_slab_devicemap[slabid].device_count; j++){
 		sysdev_memioregions_index = _sda_slab_devicemap[slabid].sysdev_mmioregions_indices[j];
-		//sysdev_memioregions_index is required to be less than MAX_PLATFORM_DEVICES
 
 		/*@
 			loop invariant b1: 0 <= k <= PCI_CONF_MAX_BARS;
 			loop assigns k;
+			loop assigns portnum;
 			loop variant PCI_CONF_MAX_BARS - k;
 		@*/
 		for(k=0; k < PCI_CONF_MAX_BARS; k++){
-			#if 0
-			if(sysdev_memioregions[sysdev_memioregions_index].memioextents[k].extent_type == _MEMIOREGIONS_EXTENTS_TYPE_IO){
-			    for(portnum= sysdev_memioregions[sysdev_memioregions_index].memioextents[k].addr_start;
-				portnum < sysdev_memioregions[sysdev_memioregions_index].memioextents[k].addr_end; portnum++){
+			if(sysdev_memioregions[sysdev_memioregions_index].memioextents[k].extent_type == _MEMIOREGIONS_EXTENTS_TYPE_IO &&
+				(sysdev_memioregions[sysdev_memioregions_index].memioextents[k].addr_start <= sysdev_memioregions[sysdev_memioregions_index].memioextents[k].addr_end)){
 
-				_gp_setup_uhslab_iotbl_allowaccesstoport((slabid - XMHFGEEC_UHSLAB_BASE_IDX), portnum, 1);
+				/*@
+					loop invariant c1: sysdev_memioregions[sysdev_memioregions_index].memioextents[k].addr_start <= portnum <= sysdev_memioregions[sysdev_memioregions_index].memioextents[k].addr_end;
+					loop assigns portnum;
+					loop variant sysdev_memioregions[sysdev_memioregions_index].memioextents[k].addr_end - portnum;
+				@*/
+				for(portnum= sysdev_memioregions[sysdev_memioregions_index].memioextents[k].addr_start;
+					portnum < sysdev_memioregions[sysdev_memioregions_index].memioextents[k].addr_end; portnum++){
 
-			    }
+					//_gp_setup_uhslab_iotbl_allowaccesstoport((slabid - XMHFGEEC_UHSLAB_BASE_IDX), portnum, 1);
+
+				}
 			}
-			#endif
 		}
 	}
 
