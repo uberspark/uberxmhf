@@ -298,7 +298,7 @@ void gp_s2_setupslabdevmap(void);
 /*@
 	requires (slabid >= XMHFGEEC_UHSLAB_BASE_IDX && slabid <= XMHFGEEC_UHSLAB_MAX_IDX);
 @*/
-void gp_setup_uhslab_iotbl(u32 slabid);
+void gp_s2_setupiotbluh(u32 slabid);
 
 /*@
 	requires (slabid >= XMHFGEEC_UGSLAB_BASE_IDX && slabid <= XMHFGEEC_UGSLAB_MAX_IDX);
