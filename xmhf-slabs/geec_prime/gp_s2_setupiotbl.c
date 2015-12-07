@@ -71,17 +71,8 @@ static void _gp_setup_uhslab_iotbl_allowaccesstoport(u32 uhslabiobitmap_idx, u16
 
 static void gp_setup_uhslab_iotbl(u32 slabid){
 	u32 j, k, portnum;
-	u32 uhslabiobitmap_idx;
 
-	if( !(slabid >= XMHFGEEC_UHSLAB_BASE_IDX && slabid <= XMHFGEEC_UHSLAB_MAX_IDX) ){
-		_XDPRINTF_("%s: Fatal error, uh slab id out of bounds!\n", __func__);
-		HALT();
-	}
-
-	uhslabiobitmap_idx = slabid - XMHFGEEC_UHSLAB_BASE_IDX;
-
-        memset(&gp_rwdatahdr.gp_uhslab_iobitmap[uhslabiobitmap_idx], 0xFFFFFFFFUL, sizeof(gp_rwdatahdr.gp_uhslab_iobitmap[0]));
-
+        memset(&gp_rwdatahdr.gp_uhslab_iobitmap[(slabid - XMHFGEEC_UHSLAB_BASE_IDX)], 0xFFFFFFFFUL, sizeof(gp_rwdatahdr.gp_uhslab_iobitmap[0]));
 
 	//scan through the list of devices for this slab and add any
 	//legacy I/O ports to the I/O perm. table
@@ -92,7 +83,7 @@ static void gp_setup_uhslab_iotbl(u32 slabid){
 		    for(portnum= sysdev_memioregions[sysdev_memioregions_index].memioextents[k].addr_start;
 			portnum < sysdev_memioregions[sysdev_memioregions_index].memioextents[k].addr_end; portnum++){
 
-			_gp_setup_uhslab_iotbl_allowaccesstoport(uhslabiobitmap_idx, portnum, 1);
+			_gp_setup_uhslab_iotbl_allowaccesstoport((slabid - XMHFGEEC_UHSLAB_BASE_IDX), portnum, 1);
 
 		    }
 		}
@@ -116,16 +107,8 @@ static void _gp_setup_ugslab_iotbl_allowaccesstoport(u32 ugslabiobitmap_idx, u16
 
 static void gp_setup_ugslab_iotbl(u32 slabid){
 	u32 j, k, portnum;
-	u32 ugslabiobitmap_idx;
 
-	if( !(slabid >= XMHFGEEC_UGSLAB_BASE_IDX && slabid <= XMHFGEEC_UGSLAB_MAX_IDX) ){
-		_XDPRINTF_("%s: Fatal error, uh slab id out of bounds!\n", __func__);
-		HALT();
-	}
-
-	ugslabiobitmap_idx = slabid - XMHFGEEC_UGSLAB_BASE_IDX;
-
-        memset(&gp_rwdatahdr.gp_ugslab_iobitmap[ugslabiobitmap_idx], 0xFFFFFFFFUL, sizeof(gp_rwdatahdr.gp_ugslab_iobitmap[0]));
+        memset(&gp_rwdatahdr.gp_ugslab_iobitmap[(slabid - XMHFGEEC_UGSLAB_BASE_IDX)], 0xFFFFFFFFUL, sizeof(gp_rwdatahdr.gp_ugslab_iobitmap[0]));
 
 
 	//scan through the list of devices for this slab and add any
@@ -137,7 +120,7 @@ static void gp_setup_ugslab_iotbl(u32 slabid){
 		    for(portnum= sysdev_memioregions[sysdev_memioregions_index].memioextents[k].addr_start;
 			portnum < sysdev_memioregions[sysdev_memioregions_index].memioextents[k].addr_end; portnum++){
 
-			_gp_setup_ugslab_iotbl_allowaccesstoport(ugslabiobitmap_idx, portnum, 1);
+			_gp_setup_ugslab_iotbl_allowaccesstoport((slabid - XMHFGEEC_UGSLAB_BASE_IDX), portnum, 1);
 
 		    }
 		}
@@ -155,17 +138,30 @@ void gp_s2_setupiotbl(void){
 
 	for(i=0; i < XMHFGEEC_TOTAL_SLABS; i++){
 		if( ((xmhfgeec_slab_info_table[i].slabtype == XMHFGEEC_SLABTYPE_uVT_PROG) ||
-		    (xmhfgeec_slab_info_table[i].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG)) ){
+		    (xmhfgeec_slab_info_table[i].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG)) &&
+		    ((i >= XMHFGEEC_UHSLAB_BASE_IDX && i <= XMHFGEEC_UHSLAB_MAX_IDX))
+		 ){
 			gp_setup_uhslab_iotbl(i);
+
 
 		}else if ( ((xmhfgeec_slab_info_table[i].slabtype == XMHFGEEC_SLABTYPE_uVT_PROG_GUEST) ||
 			   (xmhfgeec_slab_info_table[i].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG_GUEST) ||
-			   (xmhfgeec_slab_info_table[i].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG_RICHGUEST)) ){
+			   (xmhfgeec_slab_info_table[i].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG_RICHGUEST)) &&
+			   ((i >= XMHFGEEC_UGSLAB_BASE_IDX && i <= XMHFGEEC_UGSLAB_MAX_IDX))
+			 ){
 			gp_setup_ugslab_iotbl(i);
 
+		}else if ( ((xmhfgeec_slab_info_table[i].slabtype == XMHFGEEC_SLABTYPE_VfT_SENTINEL) ||
+		   (xmhfgeec_slab_info_table[i].slabtype == XMHFGEEC_SLABTYPE_VfT_PROG)) ){
+			//do nothing for verified slabs
+
 		}else{
-			//ignore, do nothing
+			//we have no idea what type of slab this is, halt!
+			_XDPRINTF_("%s:%u no idea of slab %u of type %u. Halting!\n",
+				__func__, __LINE__, i, xmhfgeec_slab_info_table[i].slabtype);
+			CASM_FUNCCALL(xmhfhw_cpu_hlt, CASM_NOPARAM);
 		}
+
 	}
 
 	_XDPRINTF_("%s: setup unverified slab legacy I/O permission tables\n", __func__);
