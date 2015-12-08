@@ -55,7 +55,7 @@
 	requires 0 <= objidx < XMHFGEEC_TOTAL_UHSLABS;
 	requires 0 <= bitmapidx < (3*PAGE_SIZE_4K);
 	assigns gp_rwdatahdr.gp_uhslab_iobitmap[objidx][bitmapidx];
-	ensures (gp_rwdatahdr.gp_uhslab_iobitmap[objidx][bitmapidx] == (gp_rwdatahdr.gp_uhslab_iobitmap[objidx][bitmapidx] & mask));
+	ensures (gp_rwdatahdr.gp_uhslab_iobitmap[objidx][bitmapidx] == (\at(gp_rwdatahdr.gp_uhslab_iobitmap[objidx][bitmapidx], Pre) & mask));
 @*/
 static inline void gp_s2_setupiotbluh_allowaccesstoport_setmask(u32 objidx, u32 bitmapidx, u8 mask){
 	gp_rwdatahdr.gp_uhslab_iobitmap[objidx][bitmapidx] = gp_rwdatahdr.gp_uhslab_iobitmap[objidx][bitmapidx] & mask;
