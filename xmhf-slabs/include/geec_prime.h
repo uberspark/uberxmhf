@@ -331,6 +331,10 @@ void gp_s2_setupiotblug(u32 slabid);
 void gp_s2_setupiotbl(void);
 
 
+
+void gp_s2_gathersysmemtypes(void);
+
+
 void gp_s2_setupmempgtbl(void);
 
 
