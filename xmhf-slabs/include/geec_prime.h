@@ -333,6 +333,7 @@ void gp_s2_setupiotbl(void);
 
 
 void gp_s2_gathersysmemtypes(void);
+u32 gp_s2_setupmpgtblug_getmtype(u64 pagebaseaddr);
 
 
 void gp_s2_setupmempgtbl(void);

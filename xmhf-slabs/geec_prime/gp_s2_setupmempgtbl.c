@@ -657,62 +657,6 @@ static u64 _geec_prime_slab_getptflagsforspa_ept(u32 slabid, u32 spa, u32 spatyp
 
 }
 
-//---get memory type for a given physical page address--------------------------
-//
-//11.11.4.1 MTRR Precedences
-//  0. if MTRRs are not enabled --> MTRR_TYPE_UC
-//  if enabled then
-     //if physaddr < 1MB use fixed MTRR ranges return type
-     //else if within a valid variable range MTRR then
-        //if a single match, return type
-        //if two or more and one is UC, return UC
-        //if two or more and WB and WT, return WT
-        //else invalid combination
-     //else
-       // return default memory type
-//
-static u32 _geec_prime_vmx_getmemorytypeforphysicalpage(u64 pagebaseaddr){
- int i;
- u32 prev_type= MTRR_TYPE_RESV;
-
-  //check if page base address under 1M, if so used FIXED MTRRs
-  if(pagebaseaddr < (1024*1024)){
-    for(i=0; i < MAX_FIXED_MEMORYTYPE_ENTRIES; i++){
-      if( pagebaseaddr >= _vmx_ept_memorytypes[i].startaddr && (pagebaseaddr+PAGE_SIZE_4K-1) <= _vmx_ept_memorytypes[i].endaddr )
-        return _vmx_ept_memorytypes[i].type;
-    }
-
-    _XDPRINTF_("\n%s: endaddr < 1M and unmatched fixed MTRR. Halt!", __func__);
-    HALT();
-  }
-
-  //page base address is above 1M, use VARIABLE MTRRs
-  for(i= MAX_FIXED_MEMORYTYPE_ENTRIES; i < MAX_MEMORYTYPE_ENTRIES; i++){
-    if( pagebaseaddr >= _vmx_ept_memorytypes[i].startaddr && (pagebaseaddr+PAGE_SIZE_4K-1) <= _vmx_ept_memorytypes[i].endaddr &&
-          (!_vmx_ept_memorytypes[i].invalid) ){
-       if(_vmx_ept_memorytypes[i].type == MTRR_TYPE_UC){
-        prev_type = MTRR_TYPE_UC;
-       }else if(_vmx_ept_memorytypes[i].type == MTRR_TYPE_WT && prev_type != MTRR_TYPE_UC){
-        prev_type = MTRR_TYPE_WT;
-       }else{
-        if(prev_type != MTRR_TYPE_UC && prev_type != MTRR_TYPE_WT){
-          if(prev_type == MTRR_TYPE_RESV){
-            prev_type = _vmx_ept_memorytypes[i].type;
-          }else{
-            _XDPRINTF_("\nprev_type=%u, _vmx_ept_memorytypes=%u", prev_type, _vmx_ept_memorytypes[i].type);
-            HALT_ON_ERRORCOND ( prev_type == _vmx_ept_memorytypes[i].type);
-          }
-        }
-       }
-    }
-  }
-
-  if(prev_type == MTRR_TYPE_RESV)
-    prev_type = MTRR_TYPE_WB; //todo: need to dynamically get the default MTRR (usually WB)
-
-  return prev_type;
-}
-
 
 
 
@@ -731,7 +675,7 @@ static void gp_setup_ugslab_mempgtbl(u32 slabid){
 	spl.cpuid = 0; //XXX: fixme, need to plug in BSP cpuid
 
 	for(gpa=0; gpa < ADDR_4GB; gpa += PAGE_SIZE_4K){
-		u32 memorytype = _geec_prime_vmx_getmemorytypeforphysicalpage((u64)gpa);
+		u32 memorytype = gp_s2_setupmpgtblug_getmtype((u64)gpa);
 		spatype = _geec_prime_slab_getspatype(slabid, (u32)gpa);
 		flags = _geec_prime_slab_getptflagsforspa_ept(slabid, (u32)gpa, spatype);
 
