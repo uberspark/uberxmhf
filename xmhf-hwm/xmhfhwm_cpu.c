@@ -328,6 +328,7 @@ void _impl_xmhfhwm_cpu_insn_cpuid(void){
 	}else if (xmhfhwm_cpu_gprs_eax == 0x1){
 		xmhfhwm_cpu_gprs_ecx = (1 << 5); //VMX support
 		xmhfhwm_cpu_gprs_ecx |= (1UL << 26); //XSAVE support
+		xmhfhwm_cpu_gprs_edx = ((u32)(1 << 12)); //MTRR support
 	}else{
 		//XXX: TODO
 		xmhfhwm_cpu_gprs_ebx = 0;
