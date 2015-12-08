@@ -272,6 +272,26 @@ extern __attribute__((section(".data"))) x86smp_apbootstrapdata_t apdata;
 
 
 
+
+
+//////////////////////////////////////////////////////////////////////////////
+// setup slab memory page tables (smt)
+
+#define _SLAB_SPATYPE_MASK_SAMESLAB             (0x100)
+
+#define	_SLAB_SPATYPE_SLAB_CODE					(0x0)
+#define	_SLAB_SPATYPE_SLAB_DATA	    			(0x1)
+#define _SLAB_SPATYPE_SLAB_STACK				(0x2)
+#define _SLAB_SPATYPE_SLAB_DMADATA				(0x3)
+#define _SLAB_SPATYPE_SLAB_DEVICEMMIO           (0x4)
+#define _SLAB_SPATYPE_GEEC_PRIME_IOTBL          (0x5)
+
+#define _SLAB_SPATYPE_OTHER	    				(0x6)
+
+
+
+
+
 void gp_s1_bspstack(void);
 
 u64 _gp_s1_bspstack_getflagsforspa(u32 paddr);
@@ -334,6 +354,7 @@ void gp_s2_setupiotbl(void);
 
 void gp_s2_gathersysmemtypes(void);
 u32 gp_s2_setupmpgtblug_getmtype(u64 pagebaseaddr);
+u64 gp_s2_setupmpgtblug_getflags(u32 slabid, u32 spa, u32 spatype);
 
 
 void gp_s2_setupmempgtbl(void);
