@@ -70,15 +70,14 @@ void gp_s2_gathersysmemtypes(void){
   		CASM_FUNCCALL(xmhfhw_cpu_hlt, CASM_NOPARAM);
   	}
 
-#if 0
   	//check MTRR caps
 	msr_value = CASM_FUNCCALL(rdmsr64, IA32_MTRRCAP);
 	eax = (u32)msr_value;
 	edx = (u32)(msr_value >> 32);
 
 	num_vmtrrs = (u8)eax;
-  	_XDPRINTF_("\nIA32_MTRRCAP: VCNT=%u, FIX=%u, WC=%u, SMRR=%u",
-  		num_vmtrrs, ((eax & (1 << 8)) >> 8),  ((eax & (1 << 10)) >> 10),
+  	_XDPRINTF_("\nIA32_MTRRCAP: %08x%08x VCNT=%u, FIX=%u, WC=%u, SMRR=%u",
+  		edx, eax, num_vmtrrs, ((eax & (1 << 8)) >> 8),  ((eax & (1 << 10)) >> 10),
   			((eax & (1 << 11)) >> 11));
 
 	//sanity check that fixed MTRRs are supported
@@ -94,6 +93,7 @@ void gp_s2_gathersysmemtypes(void){
 			__func__, __LINE__);
   		CASM_FUNCCALL(xmhfhw_cpu_hlt, CASM_NOPARAM);
   	}
+
 
 	//1. clear memorytypes array
 	memset((void *)&_vmx_ept_memorytypes, 0, sizeof(struct _memorytype) * MAX_MEMORYTYPE_ENTRIES);
@@ -288,9 +288,7 @@ void gp_s2_gathersysmemtypes(void){
 
 	_XDPRINTF_("\n%s: gathered MTRR details, number of entries=%u", __func__, index);
 
-
-#endif // 0
-
+	//@assert 1;
 	//[debug: dump the contents of _vmx_ept_memorytypes]
 	//{
 	//  int i;

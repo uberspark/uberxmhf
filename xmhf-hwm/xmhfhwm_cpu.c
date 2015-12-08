@@ -90,6 +90,7 @@ xmhfhwm_cpu_state_t xmhfhwm_cpu_state = CPU_STATE_RUNNING;
 
 u64 xmhfhwm_cpu_msr_efer = 0;
 u64 xmhfhwm_cpu_msr_vmx_procbased_ctls2_msr = 0x0000008200000000ULL;
+u64 xmhfhwm_cpu_msr_mtrrcap = 0x0000000000000d0aULL;
 u64 xmhfhwm_cpu_msr_apic_base =  MMIO_APIC_BASE;
 u64 xmhfhwm_cpu_msr_sysenter_cs = 0;
 u64 xmhfhwm_cpu_msr_sysenter_eip = 0;
@@ -643,6 +644,11 @@ void _impl_xmhfhwm_cpu_insn_rdmsr(void){
 	}else if (xmhfhwm_cpu_gprs_ecx == IA32_VMX_PROCBASED_CTLS2_MSR){
 		xmhfhwm_cpu_gprs_edx = (u32) ((u64)xmhfhwm_cpu_msr_vmx_procbased_ctls2_msr >> 32);
 		xmhfhwm_cpu_gprs_eax = (u32)xmhfhwm_cpu_msr_vmx_procbased_ctls2_msr;
+
+	}else if(xmhfhwm_cpu_gprs_ecx == IA32_MTRRCAP){
+		xmhfhwm_cpu_gprs_edx = (u32) ((u64)xmhfhwm_cpu_msr_mtrrcap >> 32);
+		xmhfhwm_cpu_gprs_eax = (u32)xmhfhwm_cpu_msr_mtrrcap;
+
 
 	}else if (xmhfhwm_cpu_gprs_ecx == IA32_SYSENTER_CS_MSR){
 		xmhfhwm_cpu_gprs_edx = (u32) ((u64)xmhfhwm_cpu_msr_sysenter_cs >> 32);
