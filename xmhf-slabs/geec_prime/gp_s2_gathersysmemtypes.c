@@ -70,6 +70,7 @@ void gp_s2_gathersysmemtypes(void){
   		CASM_FUNCCALL(xmhfhw_cpu_hlt, CASM_NOPARAM);
   	}
 
+#if 0
   	//check MTRR caps
 	msr_value = CASM_FUNCCALL(rdmsr64, IA32_MTRRCAP);
 	eax = (u32)msr_value;
@@ -286,6 +287,9 @@ void gp_s2_gathersysmemtypes(void){
 	}
 
 	_XDPRINTF_("\n%s: gathered MTRR details, number of entries=%u", __func__, index);
+
+
+#endif // 0
 
 	//[debug: dump the contents of _vmx_ept_memorytypes]
 	//{
