@@ -298,6 +298,7 @@ void gp_s2_setupslabdevmap(void);
 
 /*@
 	requires 0 <= uhslabiobitmap_idx < XMHFGEEC_TOTAL_UHSLABS;
+	requires 0 <= port < 65536;
 	requires 0 <= port_size <= 4;
 @*/
 void gp_s2_setupiotbluh_allowaccesstoport(u32 uhslabiobitmap_idx, u16 port, u16 port_size);
