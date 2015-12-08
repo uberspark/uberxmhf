@@ -51,6 +51,68 @@
 
 #include <geec_prime.h>
 
+
+/*@
+	requires 0 <= slabid < XMHFGEEC_TOTAL_SLABS;
+
+	behavior code:
+		assumes ( (xmhfgeec_slab_info_table[slabid].slabtype == XMHFGEEC_SLABTYPE_uVT_PROG_GUEST ||
+			  xmhfgeec_slab_info_table[slabid].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG_GUEST) &&
+			  ((spatype & _SLAB_SPATYPE_MASK_SAMESLAB) && (spatype & 0x0000000FUL) != _SLAB_SPATYPE_OTHER) &&
+			  ((spatype & 0x0000000FUL) == _SLAB_SPATYPE_SLAB_CODE)
+			);
+		ensures (\result == 0x5);
+
+	behavior datammio:
+		assumes ( (xmhfgeec_slab_info_table[slabid].slabtype == XMHFGEEC_SLABTYPE_uVT_PROG_GUEST ||
+			  xmhfgeec_slab_info_table[slabid].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG_GUEST) &&
+			  ((spatype & _SLAB_SPATYPE_MASK_SAMESLAB) && (spatype & 0x0000000FUL) != _SLAB_SPATYPE_OTHER) &&
+			  ((spatype & 0x0000000FUL) == _SLAB_SPATYPE_SLAB_DATA ||
+				(spatype & 0x0000000FUL) == _SLAB_SPATYPE_SLAB_STACK ||
+				(spatype & 0x0000000FUL) == _SLAB_SPATYPE_SLAB_DMADATA ||
+				(spatype & 0x0000000FUL) == _SLAB_SPATYPE_SLAB_DEVICEMMIO)
+			);
+		ensures (\result == 0x3);
+
+	behavior richguest:
+		assumes ( (xmhfgeec_slab_info_table[slabid].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG_RICHGUEST) &&
+			((spatype & _SLAB_SPATYPE_MASK_SAMESLAB) && (spatype & 0x0000000FUL) != _SLAB_SPATYPE_GEEC_PRIME_IOTBL)
+			);
+		ensures (\result == 0x7);
+
+	behavior invalid:
+		assumes (
+			(
+			 !(xmhfgeec_slab_info_table[slabid].slabtype == XMHFGEEC_SLABTYPE_uVT_PROG_GUEST ||
+			  xmhfgeec_slab_info_table[slabid].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG_GUEST) &&
+			 !(xmhfgeec_slab_info_table[slabid].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG_RICHGUEST)
+			) ||
+			(
+			 (xmhfgeec_slab_info_table[slabid].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG_RICHGUEST) &&
+			  !((spatype & _SLAB_SPATYPE_MASK_SAMESLAB) && (spatype & 0x0000000FUL) != _SLAB_SPATYPE_GEEC_PRIME_IOTBL)
+			) ||
+                        (
+			 (xmhfgeec_slab_info_table[slabid].slabtype == XMHFGEEC_SLABTYPE_uVT_PROG_GUEST ||
+		          xmhfgeec_slab_info_table[slabid].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG_GUEST) &&
+			 !((spatype & _SLAB_SPATYPE_MASK_SAMESLAB) && (spatype & 0x0000000FUL) != _SLAB_SPATYPE_OTHER)
+			) ||
+                        (
+			  (xmhfgeec_slab_info_table[slabid].slabtype == XMHFGEEC_SLABTYPE_uVT_PROG_GUEST ||
+		          xmhfgeec_slab_info_table[slabid].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG_GUEST) &&
+			  ((spatype & _SLAB_SPATYPE_MASK_SAMESLAB) && (spatype & 0x0000000FUL) != _SLAB_SPATYPE_OTHER) &&
+			  !((spatype & 0x0000000FUL) == _SLAB_SPATYPE_SLAB_CODE) &&
+			  !((spatype & 0x0000000FUL) == _SLAB_SPATYPE_SLAB_DATA ||
+				(spatype & 0x0000000FUL) == _SLAB_SPATYPE_SLAB_STACK ||
+				(spatype & 0x0000000FUL) == _SLAB_SPATYPE_SLAB_DMADATA ||
+				(spatype & 0x0000000FUL) == _SLAB_SPATYPE_SLAB_DEVICEMMIO)
+			)
+		);
+		ensures (\result == 0x0);
+
+	complete behaviors;
+	disjoint behaviors;
+@*/
+
 u64 gp_s2_setupmpgtblug_getflags(u32 slabid, u32 spa, u32 spatype){
 	u64 flags=0;
 
