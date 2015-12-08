@@ -321,8 +321,12 @@ void gp_s2_setupiotblug_allowaccesstoport(u32 ugslabiobitmap_idx, u16 port, u16 
 
 /*@
 	requires (slabid >= XMHFGEEC_UGSLAB_BASE_IDX && slabid <= XMHFGEEC_UGSLAB_MAX_IDX);
+	requires _sda_slab_devicemap[slabid].device_count < MAX_PLATFORM_DEVICES;
+	requires  \forall integer x; 0 <= x < MAX_PLATFORM_DEVICES ==> (_sda_slab_devicemap[slabid].sysdev_mmioregions_indices[x] < MAX_PLATFORM_DEVICES);
 @*/
-void gp_setup_ugslab_iotbl(u32 slabid);
+void gp_s2_setupiotblug(u32 slabid);
+
+
 
 void gp_s2_setupiotbl(void);
 
