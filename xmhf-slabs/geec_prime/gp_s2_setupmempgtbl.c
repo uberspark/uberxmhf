@@ -59,19 +59,6 @@
 
 
 
-//////////////////////////////////////////////////////////////////////////////
-// setup slab memory page tables (smt)
-
-#define _SLAB_SPATYPE_MASK_SAMESLAB             (0x100)
-
-#define	_SLAB_SPATYPE_SLAB_CODE					(0x0)
-#define	_SLAB_SPATYPE_SLAB_DATA	    			(0x1)
-#define _SLAB_SPATYPE_SLAB_STACK				(0x2)
-#define _SLAB_SPATYPE_SLAB_DMADATA				(0x3)
-#define _SLAB_SPATYPE_SLAB_DEVICEMMIO           (0x4)
-#define _SLAB_SPATYPE_GEEC_PRIME_IOTBL          (0x5)
-
-#define _SLAB_SPATYPE_OTHER	    				(0x6)
 
 #if 1
 // /*@
@@ -596,69 +583,6 @@ static u64 gp_vhslab_mempgtl_getptflagsforspa_pae(u32 slabid, u32 spa, u32 spaty
 #if 1
 
 
-// only for uVU_PROG_GUEST, uVU_PROG_RICHGUEST and uVT_PROG_GUEST
-static u64 _geec_prime_slab_getptflagsforspa_ept(u32 slabid, u32 spa, u32 spatype){
-	u64 flags=0;
-    u8 spa_slabtype, spa_slabregion;
-    bool spa_sameslab=false;
-	//_XDPRINTF_("\n%s: slab_index=%u, spa=%08x, spatype = %x\n", __func__, slab_index, spa, spatype);
-    u32 slabtype = xmhfgeec_slab_info_table[slabid].slabtype;
-
-    spa_slabregion = spatype & 0x0000000FUL;
-    spa_slabtype =spatype & 0x000000F0UL;
-    if(spatype & _SLAB_SPATYPE_MASK_SAMESLAB)
-        spa_sameslab = true;
-
-
-    switch(slabtype){
-
-        case XMHFGEEC_SLABTYPE_uVT_PROG_GUEST:
-        case XMHFGEEC_SLABTYPE_uVU_PROG_GUEST:{
-            //code=rx, data,stack,dmadata,mmio=rw;
-            //other slabs = no mapping; other region = no mapping
-            if(spa_sameslab && spa_slabregion != _SLAB_SPATYPE_OTHER){
-                switch(spa_slabregion){
-                    case _SLAB_SPATYPE_SLAB_CODE:
-                        flags = 0x5;
-                        break;
-                    case _SLAB_SPATYPE_SLAB_DATA:
-                    case _SLAB_SPATYPE_SLAB_STACK:
-                    case _SLAB_SPATYPE_SLAB_DMADATA:
-                    case _SLAB_SPATYPE_SLAB_DEVICEMMIO:
-                        flags = 0x3;
-                        break;
-                    default:
-                        flags = 0;
-                        break;
-                }
-            }else{
-                flags=0;
-            }
-        }
-        break;
-
-        case XMHFGEEC_SLABTYPE_uVU_PROG_RICHGUEST:{
-            //code,data,stack,dmadata,mmio=rwx;
-            //other slabs = no mapping; other region = no mapping
-            if(spa_sameslab && spa_slabregion != _SLAB_SPATYPE_GEEC_PRIME_IOTBL)
-                flags = 0x7;
-            else
-                flags = 0;
-        }
-        break;
-
-        default:
-            _XDPRINTF_("%s: invalid slab type=%x. Halting!\n", __func__,
-                       slabtype);
-            HALT();
-    }
-
-    return flags;
-
-}
-
-
-
 
 //setup unverified guest (ug) slab memory page tables
 static void gp_setup_ugslab_mempgtbl(u32 slabid){
@@ -677,7 +601,7 @@ static void gp_setup_ugslab_mempgtbl(u32 slabid){
 	for(gpa=0; gpa < ADDR_4GB; gpa += PAGE_SIZE_4K){
 		u32 memorytype = gp_s2_setupmpgtblug_getmtype((u64)gpa);
 		spatype = _geec_prime_slab_getspatype(slabid, (u32)gpa);
-		flags = _geec_prime_slab_getptflagsforspa_ept(slabid, (u32)gpa, spatype);
+		flags = gp_s2_setupmpgtblug_getflags(slabid, (u32)gpa, spatype);
 
 		if(memorytype == 0)
 		    p_table_value = (u64) (gpa)  | ((u64)memorytype << 3) |  flags ;	//present, UC
