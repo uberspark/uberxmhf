@@ -53,61 +53,46 @@
 
 u64 gp_s2_setupmpgtblug_getflags(u32 slabid, u32 spa, u32 spatype){
 	u64 flags=0;
-    u8 spa_slabtype, spa_slabregion;
-    bool spa_sameslab=false;
-	//_XDPRINTF_("\n%s: slab_index=%u, spa=%08x, spatype = %x\n", __func__, slab_index, spa, spatype);
-    u32 slabtype = xmhfgeec_slab_info_table[slabid].slabtype;
+	//u8 spa_slabtype;
+	//, spa_slabregion;
+	//bool spa_sameslab=false;
+	//u32 slabtype = xmhfgeec_slab_info_table[slabid].slabtype;
 
-    spa_slabregion = spatype & 0x0000000FUL;
-    spa_slabtype =spatype & 0x000000F0UL;
-    if(spatype & _SLAB_SPATYPE_MASK_SAMESLAB)
-        spa_sameslab = true;
+	//spa_slabregion = (spatype & 0x0000000FUL);
+	//spa_slabtype = (spatype & 0x000000F0UL);
+	//if(spatype & _SLAB_SPATYPE_MASK_SAMESLAB)
+	//spa_sameslab = true;
 
-
-    switch(slabtype){
-
-        case XMHFGEEC_SLABTYPE_uVT_PROG_GUEST:
-        case XMHFGEEC_SLABTYPE_uVU_PROG_GUEST:{
-            //code=rx, data,stack,dmadata,mmio=rw;
-            //other slabs = no mapping; other region = no mapping
-            if(spa_sameslab && spa_slabregion != _SLAB_SPATYPE_OTHER){
-                switch(spa_slabregion){
-                    case _SLAB_SPATYPE_SLAB_CODE:
-                        flags = 0x5;
-                        break;
-                    case _SLAB_SPATYPE_SLAB_DATA:
-                    case _SLAB_SPATYPE_SLAB_STACK:
-                    case _SLAB_SPATYPE_SLAB_DMADATA:
-                    case _SLAB_SPATYPE_SLAB_DEVICEMMIO:
-                        flags = 0x3;
-                        break;
-                    default:
-                        flags = 0;
-                        break;
-                }
-            }else{
-                flags=0;
-            }
+	if(xmhfgeec_slab_info_table[slabid].slabtype == XMHFGEEC_SLABTYPE_uVT_PROG_GUEST ||
+		xmhfgeec_slab_info_table[slabid].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG_GUEST){
+		//code=rx, data,stack,dmadata,mmio=rw;
+		//other slabs = no mapping; other region = no mapping
+		if((spatype & _SLAB_SPATYPE_MASK_SAMESLAB) && (spatype & 0x0000000FUL) != _SLAB_SPATYPE_OTHER){
+			if((spatype & 0x0000000FUL) == _SLAB_SPATYPE_SLAB_CODE){
+				flags = 0x5;
+			}else if ((spatype & 0x0000000FUL) == _SLAB_SPATYPE_SLAB_DATA ||
+				(spatype & 0x0000000FUL) == _SLAB_SPATYPE_SLAB_STACK ||
+				(spatype & 0x0000000FUL) == _SLAB_SPATYPE_SLAB_DMADATA ||
+				(spatype & 0x0000000FUL) == _SLAB_SPATYPE_SLAB_DEVICEMMIO){
+				flags = 0x3;
+			}else{
+				flags = 0;
+			}
+		}else{
+			flags=0;
+		}
+        }else if (xmhfgeec_slab_info_table[slabid].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG_RICHGUEST){
+		//code,data,stack,dmadata,mmio=rwx;
+		//other slabs = no mapping; other region = no mapping
+		if((spatype & _SLAB_SPATYPE_MASK_SAMESLAB) && (spatype & 0x0000000FUL) != _SLAB_SPATYPE_GEEC_PRIME_IOTBL)
+			flags = 0x7;
+		else
+			flags = 0;
+        }else{
+		flags = 0;
         }
-        break;
 
-        case XMHFGEEC_SLABTYPE_uVU_PROG_RICHGUEST:{
-            //code,data,stack,dmadata,mmio=rwx;
-            //other slabs = no mapping; other region = no mapping
-            if(spa_sameslab && spa_slabregion != _SLAB_SPATYPE_GEEC_PRIME_IOTBL)
-                flags = 0x7;
-            else
-                flags = 0;
-        }
-        break;
-
-        default:
-            _XDPRINTF_("%s: invalid slab type=%x. Halting!\n", __func__,
-                       slabtype);
-            HALT();
-    }
-
-    return flags;
+	return flags;
 
 }
 
