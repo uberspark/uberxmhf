@@ -53,15 +53,6 @@
 
 u64 gp_s2_setupmpgtblug_getflags(u32 slabid, u32 spa, u32 spatype){
 	u64 flags=0;
-	//u8 spa_slabtype;
-	//, spa_slabregion;
-	//bool spa_sameslab=false;
-	//u32 slabtype = xmhfgeec_slab_info_table[slabid].slabtype;
-
-	//spa_slabregion = (spatype & 0x0000000FUL);
-	//spa_slabtype = (spatype & 0x000000F0UL);
-	//if(spatype & _SLAB_SPATYPE_MASK_SAMESLAB)
-	//spa_sameslab = true;
 
 	if(xmhfgeec_slab_info_table[slabid].slabtype == XMHFGEEC_SLABTYPE_uVT_PROG_GUEST ||
 		xmhfgeec_slab_info_table[slabid].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG_GUEST){
