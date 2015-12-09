@@ -622,7 +622,7 @@ static void gp_setup_uhslab_mempgtbl(u32 slabid){
 		 ( (u64)gp_vhslabmempgtbl_lvl1t[x] == ( ((u64)(x * PAGE_SIZE_4K) & 0x7FFFFFFFFFFFF000ULL ) | (u64)(gflags[x]) )   )
 		);
 @*/
-static void gp_setup_vhslab_mempgtbl(void){
+void gp_s2_setupmpgtblv(void){
 	u32 i;
 	u64 flags=0;
 	u32 spatype=0;
@@ -682,7 +682,7 @@ static void gp_setup_vhslab_mempgtbl(void){
 
 #if 1
 
-void gp_s2_setupmempgtbl(void){
+void gp_s2_setupmpgtblu(void){
     slab_params_t spl;
     xmhfgeec_uapi_slabmempgtbl_initmempgtbl_params_t *initmempgtblp =
         (xmhfgeec_uapi_slabmempgtbl_initmempgtbl_params_t *)spl.in_out_params;
@@ -701,8 +701,6 @@ void gp_s2_setupmempgtbl(void){
     //initmempgtblp->dst_slabid = XMHFGEEC_SLAB_GEEC_PRIME;
     //XMHF_SLAB_CALLNEW(&spl);
     //_geec_prime_populate_slab_pagetables_pae4k(XMHFGEEC_SLAB_GEEC_PRIME);
-    gp_setup_vhslab_mempgtbl();
-   	_XDPRINTF_("%s: populated verified slabs' memory page tables\n", __func__);
 
     //setup unverified slabs's page tables
     for(i=0; i < XMHFGEEC_TOTAL_SLABS; i++){
