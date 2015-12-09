@@ -356,6 +356,7 @@ void gp_s2_gathersysmemtypes(void);
 
 /*@
 	assigns \nothing;
+	ensures 0 <= \result <= 7;
 @*/
 u32 gp_s2_setupmpgtblug_getmtype(u64 pagebaseaddr);
 
