@@ -79,7 +79,7 @@ u32 gp_s2_setupmpgtbl_getspatype(u32 slab_index, u32 spa){
 		loop variant XMHFGEEC_TOTAL_SLABS - i;
 	@*/
 	for(i=0; i < XMHFGEEC_TOTAL_SLABS; i++){
-		retval = gp_slab_getspatype_for_slab(i, spa);
+		retval = gp_s2_setupmpgtbl_getspatypeuobj(i, spa);
 		//@ghost gretval = retval;
 
 		if(retval != _SLAB_SPATYPE_OTHER){

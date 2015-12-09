@@ -98,7 +98,7 @@
 
 
 @*/
-u32 gp_slab_getspatype_for_slab(u32 slab_index, u32 spa){
+u32 gp_s2_setupmpgtbl_getspatypeuobj(u32 slab_index, u32 spa){
 		bool isiotbl, isdevicemmio;
 
 		isiotbl = gp_s2_setupmpgtbl_getspatypeuobj_isiotbl(slab_index, spa);
