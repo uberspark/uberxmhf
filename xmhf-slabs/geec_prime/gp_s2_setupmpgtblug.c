@@ -61,18 +61,16 @@
 @*/
 void gp_s2_setupmpgtblug(u32 slabid){
 	u64 p_table_value;
-	//u64 gpa;
 	u64 flags;
 	u32 spatype;
 	u32 memorytype;
 	u32 i;
 	slab_params_t spl;
-	xmhfgeec_uapi_slabmempgtbl_setentryforpaddr_params_t *setentryforpaddrp =
-		(xmhfgeec_uapi_slabmempgtbl_setentryforpaddr_params_t *)spl.in_out_params;
 
 	spl.src_slabid = XMHFGEEC_SLAB_GEEC_PRIME;
 	spl.dst_slabid = XMHFGEEC_SLAB_UAPI_SLABMEMPGTBL;
 	spl.cpuid = 0; //XXX: fixme, need to plug in BSP cpuid
+	spl.dst_uapifn = XMHFGEEC_UAPI_SLABMEMPGTBL_SETENTRYFORPADDR;
 
 	//@ghost test=true;
 
@@ -84,6 +82,7 @@ void gp_s2_setupmpgtblug(u32 slabid){
 		loop assigns spatype;
 		loop assigns flags;
 		loop assigns p_table_value;
+		loop assigns spl.in_out_params[0..4];
 		loop variant (1024*1024) - i;
 	@*/
 	for(i=0; i < (1024*1024); i++){
@@ -91,19 +90,14 @@ void gp_s2_setupmpgtblug(u32 slabid){
 		spatype = gp_s2_setupmpgtbl_getspatype(slabid, (u32)(i*PAGE_SIZE_4K));
 		flags = gp_s2_setupmpgtblug_getflags(slabid, (u32)(i*PAGE_SIZE_4K), spatype);
 
-		//if(memorytype == 0)
-		    p_table_value = (u64) ((i*PAGE_SIZE_4K))  | ((u64)memorytype << 3) |  flags ;	//present, UC
-		//else
-		//    p_table_value = (u64) ((i*PAGE_SIZE_4K))  | ((u64)6 << 3) | flags ;	//present, WB, track host MTRR
+		p_table_value = (u64) ((i*PAGE_SIZE_4K))  | ((u64)memorytype << 3) |  flags ;	//present, UC
 
-		#if 1
-
-		spl.dst_uapifn = XMHFGEEC_UAPI_SLABMEMPGTBL_SETENTRYFORPADDR;
-		setentryforpaddrp->dst_slabid = slabid;
-		setentryforpaddrp->gpa = (i*PAGE_SIZE_4K);
-		setentryforpaddrp->entry = p_table_value;
+		spl.in_out_params[0] = slabid;
+		spl.in_out_params[1] = (i*PAGE_SIZE_4K);
+		spl.in_out_params[2] = 0;
+                spl.in_out_params[3] = p_table_value;
+                spl.in_out_params[4] = 0;
 		XMHF_SLAB_CALLNEW(&spl);
-		#endif
 	}
 }
 
