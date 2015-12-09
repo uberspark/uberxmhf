@@ -69,22 +69,6 @@
 //static u64 _geec_prime_slab_getptflagsforspa_pae(u32 slabid, u32 spa, u32 spatype);
 #endif // 0
 
-//@ ghost u32 gretval;
-/*@
-	requires 0 <= slab_index < XMHFGEEC_TOTAL_SLABS ;
-	//assigns gretval;
-	ensures (\forall u32 x; 0 <= x < XMHFGEEC_TOTAL_SLABS ==> (gretval == _SLAB_SPATYPE_OTHER)) ==> (\result == _SLAB_SPATYPE_OTHER);
-	ensures (\exists u32 x; 0 <= x < XMHFGEEC_TOTAL_SLABS ==> ( !(gretval == _SLAB_SPATYPE_OTHER) &&
-		(( (x == slab_index) || ((xmhfgeec_slab_info_table[x].slab_memgrantreadcaps & XMHFGEEC_SLAB_MEMGRANTREADCAP_MASK(slab_index)) ||
-			(xmhfgeec_slab_info_table[x].slab_memgrantwritecaps & XMHFGEEC_SLAB_MEMGRANTWRITECAP_MASK(slab_index))) )) )
-		==> (\result == (gretval | xmhfgeec_slab_info_table[x].slabtype | _SLAB_SPATYPE_MASK_SAMESLAB)) );
-	ensures (\exists u32 x; 0 <= x < XMHFGEEC_TOTAL_SLABS ==> ( !(gretval == _SLAB_SPATYPE_OTHER) &&
-		!(( (x == slab_index) || ((xmhfgeec_slab_info_table[x].slab_memgrantreadcaps & XMHFGEEC_SLAB_MEMGRANTREADCAP_MASK(slab_index)) ||
-			(xmhfgeec_slab_info_table[x].slab_memgrantwritecaps & XMHFGEEC_SLAB_MEMGRANTWRITECAP_MASK(slab_index))) )) )
-		==> (\result == (gretval | xmhfgeec_slab_info_table[x].slabtype) ) );
-@*/
-static u32 _geec_prime_slab_getspatype(u32 slab_index, u32 spa);
-
 
 
 
@@ -347,7 +331,7 @@ static bool _geec_prime_smt_slab_getspatype_isiotbl(u32 slabid, u32 spa){
 		(\result == _SLAB_SPATYPE_SLAB_DEVICEMMIO) ||
 		(\result == _SLAB_SPATYPE_OTHER) );
 @*/
-static u32 gp_slab_getspatype_for_slab(u32 slab_index, u32 spa);
+u32 gp_slab_getspatype_for_slab(u32 slab_index, u32 spa);
 #endif // 0
 
 
@@ -395,7 +379,7 @@ static u32 gp_slab_getspatype_for_slab(u32 slab_index, u32 spa);
 
 
 @*/
-static u32 gp_slab_getspatype_for_slab(u32 slab_index, u32 spa){
+u32 gp_slab_getspatype_for_slab(u32 slab_index, u32 spa){
 		bool isiotbl, isdevicemmio;
 
 		isiotbl = _geec_prime_smt_slab_getspatype_isiotbl(slab_index, spa);
@@ -422,53 +406,6 @@ static u32 gp_slab_getspatype_for_slab(u32 slab_index, u32 spa){
 
 
 
-#if 1
-//done
-
-//@ ghost u32 gretval;
-/*@
-	requires 0 <= slab_index < XMHFGEEC_TOTAL_SLABS ;
-	assigns gretval;
-	ensures (\forall u32 x; 0 <= x < XMHFGEEC_TOTAL_SLABS ==> (gretval == _SLAB_SPATYPE_OTHER)) ==> (\result == _SLAB_SPATYPE_OTHER);
-	ensures (\exists u32 x; 0 <= x < XMHFGEEC_TOTAL_SLABS ==> ( !(gretval == _SLAB_SPATYPE_OTHER) &&
-		(( (x == slab_index) || ((xmhfgeec_slab_info_table[x].slab_memgrantreadcaps & XMHFGEEC_SLAB_MEMGRANTREADCAP_MASK(slab_index)) ||
-			(xmhfgeec_slab_info_table[x].slab_memgrantwritecaps & XMHFGEEC_SLAB_MEMGRANTWRITECAP_MASK(slab_index))) )) )
-		==> (\result == (gretval | xmhfgeec_slab_info_table[x].slabtype | _SLAB_SPATYPE_MASK_SAMESLAB)) );
-	ensures (\exists u32 x; 0 <= x < XMHFGEEC_TOTAL_SLABS ==> ( !(gretval == _SLAB_SPATYPE_OTHER) &&
-		!(( (x == slab_index) || ((xmhfgeec_slab_info_table[x].slab_memgrantreadcaps & XMHFGEEC_SLAB_MEMGRANTREADCAP_MASK(slab_index)) ||
-			(xmhfgeec_slab_info_table[x].slab_memgrantwritecaps & XMHFGEEC_SLAB_MEMGRANTWRITECAP_MASK(slab_index))) )) )
-		==> (\result == (gretval | xmhfgeec_slab_info_table[x].slabtype) ) );
-@*/
-static u32 _geec_prime_slab_getspatype(u32 slab_index, u32 spa){
-	u32 i;
-	u32 retval;
-
-
-	//slab memory regions
-
-	/*@
-		loop invariant b1: 0 <= i <= XMHFGEEC_TOTAL_SLABS;
-		loop invariant b2: \forall u32 x; 0 <= x < i ==> (gretval == _SLAB_SPATYPE_OTHER);
-		loop assigns i, retval, gretval;
-		loop variant XMHFGEEC_TOTAL_SLABS - i;
-	@*/
-	for(i=0; i < XMHFGEEC_TOTAL_SLABS; i++){
-		retval = gp_slab_getspatype_for_slab(i, spa);
-		//@ghost gretval = retval;
-
-		if(retval != _SLAB_SPATYPE_OTHER){
-                        if ( (i == slab_index) || ((xmhfgeec_slab_info_table[i].slab_memgrantreadcaps & XMHFGEEC_SLAB_MEMGRANTREADCAP_MASK(slab_index)) ||
-			(xmhfgeec_slab_info_table[i].slab_memgrantwritecaps & XMHFGEEC_SLAB_MEMGRANTWRITECAP_MASK(slab_index))) )
-				return retval | xmhfgeec_slab_info_table[i].slabtype | _SLAB_SPATYPE_MASK_SAMESLAB;
-			else
-				return retval | xmhfgeec_slab_info_table[i].slabtype;
-		}
-
-	}
-
-	return _SLAB_SPATYPE_OTHER;
-}
-#endif // 0
 
 
 #if 1
@@ -600,7 +537,7 @@ static void gp_setup_ugslab_mempgtbl(u32 slabid){
 
 	for(gpa=0; gpa < ADDR_4GB; gpa += PAGE_SIZE_4K){
 		u32 memorytype = gp_s2_setupmpgtblug_getmtype((u64)gpa);
-		spatype = _geec_prime_slab_getspatype(slabid, (u32)gpa);
+		spatype = gp_s2_setupmpgtbl_getspatype(slabid, (u32)gpa);
 		flags = gp_s2_setupmpgtblug_getflags(slabid, (u32)gpa, spatype);
 
 		if(memorytype == 0)
@@ -659,7 +596,7 @@ static void gp_setup_uhslab_mempgtbl(u32 slabid){
 		u64 pdt_index = pae_get_pdt_index(gpa);
 		u64 pt_index = pae_get_pt_index(gpa);
 
-		spatype =  _geec_prime_slab_getspatype(slabid, (u32)gpa);
+		spatype =  gp_s2_setupmpgtbl_getspatype(slabid, (u32)gpa);
 		spa_slabregion = spatype & 0x0000000FUL;
 		spa_slabtype =spatype & 0x000000F0UL;
 		flags = gp_uhslab_mempgtbl_getptflagsforspa_pae(slabid, (u32)gpa, spatype);
@@ -761,7 +698,7 @@ static void gp_setup_vhslab_mempgtbl(void){
 		loop variant (PAE_PTRS_PER_PDPT * PAE_PTRS_PER_PDT * PAE_PTRS_PER_PT) - i;
 	@*/
 	for(i=0; i < (PAE_PTRS_PER_PDPT * PAE_PTRS_PER_PDT * PAE_PTRS_PER_PT); ++i){
-		spatype =  _geec_prime_slab_getspatype(slabid, (u32)(i * PAGE_SIZE_4K));
+		spatype =  gp_s2_setupmpgtbl_getspatype(slabid, (u32)(i * PAGE_SIZE_4K));
 
 		flags = gp_vhslab_mempgtl_getptflagsforspa_pae(slabid, (u32)(i * PAGE_SIZE_4K), spatype);
 		//@ghost gflags[i] = flags;
