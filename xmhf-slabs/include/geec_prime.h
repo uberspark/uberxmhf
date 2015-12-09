@@ -353,7 +353,15 @@ void gp_s2_setupiotbl(void);
 
 
 void gp_s2_gathersysmemtypes(void);
+
+/*@
+	assigns \nothing;
+@*/
 u32 gp_s2_setupmpgtblug_getmtype(u64 pagebaseaddr);
+
+/*@
+	requires 0 <= slabid < XMHFGEEC_TOTAL_SLABS;
+@*/
 u64 gp_s2_setupmpgtblug_getflags(u32 slabid, u32 spa, u32 spatype);
 
 
@@ -362,6 +370,9 @@ u64 gp_s2_setupmpgtblug_getflags(u32 slabid, u32 spa, u32 spatype);
 @*/
 u32 gp_slab_getspatype_for_slab(u32 slab_index, u32 spa);
 
+/*@
+	requires 0 <= slab_index < XMHFGEEC_TOTAL_SLABS ;
+@*/
 u32 gp_s2_setupmpgtbl_getspatype(u32 slab_index, u32 spa);
 
 void gp_s2_setupmpgtblug(u32 slabid);
