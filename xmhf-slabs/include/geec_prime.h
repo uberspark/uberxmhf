@@ -378,6 +378,12 @@ u32 gp_s2_setupmpgtbl_getspatype(u32 slab_index, u32 spa);
 
 void gp_s2_setupmpgtblug(u32 slabid);
 
+
+/*@
+	requires 0 <= slabid < XMHFGEEC_TOTAL_SLABS;
+@*/
+u64 gp_s2_setupmpgtblv_getflags(u32 slabid, u32 spa, u32 spatype);
+
 void gp_s2_setupmpgtblv(void);
 
 void gp_s2_setupmpgtblu(void);
