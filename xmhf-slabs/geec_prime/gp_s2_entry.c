@@ -70,9 +70,12 @@ void gp_s2_entry(void){
 	gp_s2_setupiotbl();
 
 
-	//setup slab memory page tables
-	//xmhfhic_arch_setup_slab_mem_page_tables();
-	gp_s2_setupmempgtbl();
+	//setup verified uobj memory page tables
+	gp_s2_setupmpgtblv();
+   	_XDPRINTF_("%s: populated verified slabs' memory page tables\n", __func__);
+
+	//setup unverified uobj memory page tables
+	gp_s2_setupmpgtblu();
 
 
 	//setup base CPU data structures
