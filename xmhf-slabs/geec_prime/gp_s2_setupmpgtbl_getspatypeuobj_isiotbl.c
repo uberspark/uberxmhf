@@ -71,7 +71,7 @@
 	//ensures !(\forall u32 x; 0 <= x < MAX_PLATFORM_CPUS ==> (!(spa >= (u32)&__xmhfhic_x86vmx_tss[x].tss_iobitmap &&
 	//  spa < ((u32)&__xmhfhic_x86vmx_tss[x].tss_iobitmap[3*PAGE_SIZE_4K]) )) ) ==> 	(\result == true);
 @*/
-bool _geec_prime_smt_slab_getspatype_isiotbl(u32 slabid, u32 spa){
+bool gp_s2_setupmpgtbl_getspatypeuobj_isiotbl(u32 slabid, u32 spa){
 	u32 i;
 
 	/*@
