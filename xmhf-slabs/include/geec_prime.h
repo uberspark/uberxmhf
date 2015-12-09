@@ -382,7 +382,8 @@ bool gp_s2_setupmpgtbl_getspatypeuobj_ismmio(u32 slabid, u32 spa);
 /*@
 	requires 0 <= slab_index < XMHFGEEC_TOTAL_SLABS ;
 @*/
-u32 gp_slab_getspatype_for_slab(u32 slab_index, u32 spa);
+u32 gp_s2_setupmpgtbl_getspatypeuobj(u32 slab_index, u32 spa);
+//u32 gp_slab_getspatype_for_slab(u32 slab_index, u32 spa);
 
 /*@
 	requires 0 <= slab_index < XMHFGEEC_TOTAL_SLABS ;
