@@ -108,6 +108,9 @@ u32 gp_s2_setupmpgtblug_getmtype(u64 pagebaseaddr){
 	if(prev_type == MTRR_TYPE_RESV)
 		prev_type = MTRR_TYPE_WB; //todo: need to dynamically get the default MTRR (usually WB)
 
+	if(prev_type != MTRR_TYPE_UC)
+		prev_type = MTRR_TYPE_WB;
+
 	return prev_type;
 }
 

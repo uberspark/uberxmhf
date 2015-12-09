@@ -54,41 +54,57 @@
 
 
 //setup unverified guest (ug) slab memory page tables
+//@ghost bool test=false;
 /*@
 	requires 0 <= slabid < XMHFGEEC_TOTAL_SLABS;
-	assigns \nothing;
+	assigns test;
 @*/
 void gp_s2_setupmpgtblug(u32 slabid){
 	u64 p_table_value;
-	u64 gpa;
+	//u64 gpa;
 	u64 flags;
 	u32 spatype;
+	u32 memorytype;
+	u32 i;
 	slab_params_t spl;
 	xmhfgeec_uapi_slabmempgtbl_setentryforpaddr_params_t *setentryforpaddrp =
-	(xmhfgeec_uapi_slabmempgtbl_setentryforpaddr_params_t *)spl.in_out_params;
+		(xmhfgeec_uapi_slabmempgtbl_setentryforpaddr_params_t *)spl.in_out_params;
 
 	spl.src_slabid = XMHFGEEC_SLAB_GEEC_PRIME;
 	spl.dst_slabid = XMHFGEEC_SLAB_UAPI_SLABMEMPGTBL;
 	spl.cpuid = 0; //XXX: fixme, need to plug in BSP cpuid
 
-#if 0
-	for(gpa=0; gpa < ADDR_4GB; gpa += PAGE_SIZE_4K){
-		u32 memorytype = gp_s2_setupmpgtblug_getmtype((u64)gpa);
-		spatype = gp_s2_setupmpgtbl_getspatype(slabid, (u32)gpa);
-		flags = gp_s2_setupmpgtblug_getflags(slabid, (u32)gpa, spatype);
+	//@ghost test=true;
 
-		if(memorytype == 0)
-		    p_table_value = (u64) (gpa)  | ((u64)memorytype << 3) |  flags ;	//present, UC
-		else
-		    p_table_value = (u64) (gpa)  | ((u64)6 << 3) | flags ;	//present, WB, track host MTRR
+	/*@
+		loop invariant d1: 0 <= i <= (1024*1024);
+		//loop invariant d2: \forall integer x; 0 <= x < i ==> ();
+		loop assigns i;
+		loop assigns memorytype;
+		loop assigns spatype;
+		loop assigns flags;
+		loop assigns p_table_value;
+		loop variant (1024*1024) - i;
+	@*/
+	for(i=0; i < (1024*1024); i++){
+		memorytype = gp_s2_setupmpgtblug_getmtype((u64)(i*PAGE_SIZE_4K));
+		spatype = gp_s2_setupmpgtbl_getspatype(slabid, (u32)(i*PAGE_SIZE_4K));
+		flags = gp_s2_setupmpgtblug_getflags(slabid, (u32)(i*PAGE_SIZE_4K), spatype);
+
+		//if(memorytype == 0)
+		    p_table_value = (u64) ((i*PAGE_SIZE_4K))  | ((u64)memorytype << 3) |  flags ;	//present, UC
+		//else
+		//    p_table_value = (u64) ((i*PAGE_SIZE_4K))  | ((u64)6 << 3) | flags ;	//present, WB, track host MTRR
+
+		#if 1
 
 		spl.dst_uapifn = XMHFGEEC_UAPI_SLABMEMPGTBL_SETENTRYFORPADDR;
 		setentryforpaddrp->dst_slabid = slabid;
-		setentryforpaddrp->gpa = gpa;
+		setentryforpaddrp->gpa = (i*PAGE_SIZE_4K);
 		setentryforpaddrp->entry = p_table_value;
 		XMHF_SLAB_CALLNEW(&spl);
+		#endif
 	}
-#endif
 }
 
 
