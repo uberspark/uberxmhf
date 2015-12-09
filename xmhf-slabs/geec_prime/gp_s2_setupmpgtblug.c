@@ -60,6 +60,8 @@
 /*@
 	requires 0 <= slabid < XMHFGEEC_TOTAL_SLABS;
 	assigns gp_s2_setupmpgtblug_flags[0..((1024*1024)-1)];
+	assigns gp_s2_setupmpgtblug_memorytype[0..((1024*1024)-1)];
+	assigns gp_s2_setupmpgtblug_p_table_value[0..((1024*1024)-1)];
 @*/
 void gp_s2_setupmpgtblug(u32 slabid){
 	u64 p_table_value;
@@ -82,18 +84,23 @@ void gp_s2_setupmpgtblug(u32 slabid){
 		loop assigns spatype;
 		loop assigns flags;
 		loop assigns gp_s2_setupmpgtblug_flags[0..((1024*1024)-1)];
+		loop assigns gp_s2_setupmpgtblug_memorytype[0..((1024*1024)-1)];
+		loop assigns gp_s2_setupmpgtblug_p_table_value[0..((1024*1024)-1)];
 		loop assigns p_table_value;
 		loop assigns spl.in_out_params[0..4];
 		loop variant (1024*1024) - i;
 	@*/
 	for(i=0; i < (1024*1024); i++){
 		memorytype = gp_s2_setupmpgtblug_getmtype((u64)(i*PAGE_SIZE_4K));
+		//@ghost gp_s2_setupmpgtblug_memorytype[i] = memorytype;
+
 		spatype = gp_s2_setupmpgtbl_getspatype(slabid, (u32)(i*PAGE_SIZE_4K));
+
 		flags = gp_s2_setupmpgtblug_getflags(slabid, (u32)(i*PAGE_SIZE_4K), spatype);
 		//@ghost gp_s2_setupmpgtblug_flags[i] = flags;
 
-
 		p_table_value = (u64) ((i*PAGE_SIZE_4K))  | ((u64)memorytype << 3) |  flags ;	//present, UC
+		//@ghost gp_s2_setupmpgtblug_p_table_value[i] = (u64) ((i*PAGE_SIZE_4K))  | ((u64)memorytype << 3) |  flags ;
 
 		spl.in_out_params[0] = slabid;
 		spl.in_out_params[1] = (i*PAGE_SIZE_4K);
