@@ -54,6 +54,10 @@
 
 
 //setup unverified guest (ug) slab memory page tables
+/*@
+	requires 0 <= slabid < XMHFGEEC_TOTAL_SLABS;
+	assigns \nothing;
+@*/
 void gp_s2_setupmpgtblug(u32 slabid){
 	u64 p_table_value;
 	u64 gpa;
@@ -67,6 +71,7 @@ void gp_s2_setupmpgtblug(u32 slabid){
 	spl.dst_slabid = XMHFGEEC_SLAB_UAPI_SLABMEMPGTBL;
 	spl.cpuid = 0; //XXX: fixme, need to plug in BSP cpuid
 
+#if 0
 	for(gpa=0; gpa < ADDR_4GB; gpa += PAGE_SIZE_4K){
 		u32 memorytype = gp_s2_setupmpgtblug_getmtype((u64)gpa);
 		spatype = gp_s2_setupmpgtbl_getspatype(slabid, (u32)gpa);
@@ -83,6 +88,7 @@ void gp_s2_setupmpgtblug(u32 slabid){
 		setentryforpaddrp->entry = p_table_value;
 		XMHF_SLAB_CALLNEW(&spl);
 	}
+#endif
 }
 
 
