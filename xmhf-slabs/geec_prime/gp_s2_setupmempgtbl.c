@@ -521,37 +521,6 @@ static u64 gp_vhslab_mempgtl_getptflagsforspa_pae(u32 slabid, u32 spa, u32 spaty
 
 
 
-//setup unverified guest (ug) slab memory page tables
-static void gp_setup_ugslab_mempgtbl(u32 slabid){
-	u64 p_table_value;
-	u64 gpa;
-	u64 flags;
-	u32 spatype;
-	slab_params_t spl;
-	xmhfgeec_uapi_slabmempgtbl_setentryforpaddr_params_t *setentryforpaddrp =
-	(xmhfgeec_uapi_slabmempgtbl_setentryforpaddr_params_t *)spl.in_out_params;
-
-	spl.src_slabid = XMHFGEEC_SLAB_GEEC_PRIME;
-	spl.dst_slabid = XMHFGEEC_SLAB_UAPI_SLABMEMPGTBL;
-	spl.cpuid = 0; //XXX: fixme, need to plug in BSP cpuid
-
-	for(gpa=0; gpa < ADDR_4GB; gpa += PAGE_SIZE_4K){
-		u32 memorytype = gp_s2_setupmpgtblug_getmtype((u64)gpa);
-		spatype = gp_s2_setupmpgtbl_getspatype(slabid, (u32)gpa);
-		flags = gp_s2_setupmpgtblug_getflags(slabid, (u32)gpa, spatype);
-
-		if(memorytype == 0)
-		    p_table_value = (u64) (gpa)  | ((u64)memorytype << 3) |  flags ;	//present, UC
-		else
-		    p_table_value = (u64) (gpa)  | ((u64)6 << 3) | flags ;	//present, WB, track host MTRR
-
-		spl.dst_uapifn = XMHFGEEC_UAPI_SLABMEMPGTBL_SETENTRYFORPADDR;
-		setentryforpaddrp->dst_slabid = slabid;
-		setentryforpaddrp->gpa = gpa;
-		setentryforpaddrp->entry = p_table_value;
-		XMHF_SLAB_CALLNEW(&spl);
-	}
-}
 
 
 
@@ -756,7 +725,7 @@ void gp_s2_setupmempgtbl(void){
                 spl.dst_uapifn = XMHFGEEC_UAPI_SLABMEMPGTBL_INITMEMPGTBL;
                 initmempgtblp->dst_slabid = i;
                 XMHF_SLAB_CALLNEW(&spl);
-                gp_setup_ugslab_mempgtbl(i);
+                gp_s2_setupmpgtblug(i);
               	_XDPRINTF_("%s: slab %u --> uV{T,U}_prog_guest page-tables populated\n", __func__, i);
             }
             break;

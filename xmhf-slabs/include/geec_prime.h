@@ -364,6 +364,7 @@ u32 gp_slab_getspatype_for_slab(u32 slab_index, u32 spa);
 
 u32 gp_s2_setupmpgtbl_getspatype(u32 slab_index, u32 spa);
 
+void gp_s2_setupmpgtblug(u32 slabid);
 
 void gp_s2_setupmempgtbl(void);
 
