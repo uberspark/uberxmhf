@@ -54,17 +54,14 @@
 
 
 //setup unverified guest (ug) slab memory page tables
-//@ghost u64 gp_s2_setupmpgtblug_flags[1024*1024];
-//@ghost u32 gp_s2_setupmpgtblug_memorytype[1024*1024];
-//@ghost u64 gp_s2_setupmpgtblug_p_table_value[1024*1024];
+//@ghost bool gp_s2_setupmpgtblug_invokedmemorytype[1024*1024];
+//@ghost u64 gp_s2_setupmpgtblug_invokedflags[1024*1024];
 /*@
 	requires 0 <= slabid < XMHFGEEC_TOTAL_SLABS;
-	assigns gp_s2_setupmpgtblug_flags[0..((1024*1024)-1)];
-	assigns gp_s2_setupmpgtblug_memorytype[0..((1024*1024)-1)];
-	assigns gp_s2_setupmpgtblug_p_table_value[0..((1024*1024)-1)];
+	assigns gp_s2_setupmpgtblug_invokedmemorytype[0..((1024*1024)-1)];
+	assigns gp_s2_setupmpgtblug_invokedflags[0..((1024*1024)-1)];
 @*/
 void gp_s2_setupmpgtblug(u32 slabid){
-	u64 p_table_value;
 	u64 flags;
 	u32 spatype;
 	u32 memorytype;
@@ -78,35 +75,37 @@ void gp_s2_setupmpgtblug(u32 slabid){
 
 	/*@
 		loop invariant d1: 0 <= i <= (1024*1024);
-		//loop invariant d2: \forall integer x; 0 <= x < i ==> ();
+		loop invariant d2: \forall integer x; 0 <= x < i ==> (gp_s2_setupmpgtblug_invokedmemorytype[x] == true);
+		loop invariant d3: \forall integer x; 0 <= x < i ==> (gp_s2_setupmpgtblug_invokedflags[x] == true);
 		loop assigns i;
 		loop assigns memorytype;
 		loop assigns spatype;
 		loop assigns flags;
-		loop assigns gp_s2_setupmpgtblug_flags[0..((1024*1024)-1)];
-		loop assigns gp_s2_setupmpgtblug_memorytype[0..((1024*1024)-1)];
-		loop assigns gp_s2_setupmpgtblug_p_table_value[0..((1024*1024)-1)];
-		loop assigns p_table_value;
+		loop assigns gp_s2_setupmpgtblug_invokedmemorytype[0..((1024*1024)-1)];
+		loop assigns gp_s2_setupmpgtblug_invokedflags[0..((1024*1024)-1)];
 		loop assigns spl.in_out_params[0..4];
+		//loop assigns memorytype_mask;
 		loop variant (1024*1024) - i;
 	@*/
 	for(i=0; i < (1024*1024); i++){
 		memorytype = gp_s2_setupmpgtblug_getmtype((u64)(i*PAGE_SIZE_4K));
-		//@ghost gp_s2_setupmpgtblug_memorytype[i] = memorytype;
+		//@ghost gp_s2_setupmpgtblug_invokedmemorytype[i] = true;
 
 		spatype = gp_s2_setupmpgtbl_getspatype(slabid, (u32)(i*PAGE_SIZE_4K));
 
 		flags = gp_s2_setupmpgtblug_getflags(slabid, (u32)(i*PAGE_SIZE_4K), spatype);
-		//@ghost gp_s2_setupmpgtblug_flags[i] = flags;
-
-		p_table_value = (u64) ((i*PAGE_SIZE_4K))  | ((u64)memorytype << 3) |  flags ;	//present, UC
-		//@ghost gp_s2_setupmpgtblug_p_table_value[i] = (u64) ((i*PAGE_SIZE_4K))  | ((u64)memorytype << 3) |  flags ;
+		//@ghost gp_s2_setupmpgtblug_invokedflags[i] = true;
 
 		spl.in_out_params[0] = slabid;
 		spl.in_out_params[1] = (i*PAGE_SIZE_4K);
 		spl.in_out_params[2] = 0;
-                spl.in_out_params[3] = p_table_value;
+		spl.in_out_params[3] = (u32) ((i*PAGE_SIZE_4K))  | ((u32)memorytype * 8) |  (u32)flags ;	//present, UC
                 spl.in_out_params[4] = 0;
+		//@assert (spl.in_out_params[0] == slabid);
+		//@assert (spl.in_out_params[1] == (i*PAGE_SIZE_4K));
+		//@assert (spl.in_out_params[2] == 0);
+		//@assert (spl.in_out_params[3] == ((u32) ((i*PAGE_SIZE_4K))  | ((u32)memorytype * 8) |  (u32)flags)) ;
+		//@assert (spl.in_out_params[4] == 0);
 		XMHF_SLAB_CALLNEW(&spl);
 	}
 }
