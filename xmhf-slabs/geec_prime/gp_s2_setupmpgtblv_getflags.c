@@ -153,7 +153,7 @@
 
 
 @*/
-u64 gp_vhslab_mempgtl_getptflagsforspa_pae(u32 slabid, u32 spa, u32 spatype){
+u64 gp_s2_setupmpgtblv_getflags(u32 slabid, u32 spa, u32 spatype){
 	u64 flags=0;
 
 

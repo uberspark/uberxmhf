@@ -115,7 +115,7 @@ void gp_s2_setupmpgtblv(void){
 	for(i=0; i < (PAE_PTRS_PER_PDPT * PAE_PTRS_PER_PDT * PAE_PTRS_PER_PT); ++i){
 		spatype =  gp_s2_setupmpgtbl_getspatype(slabid, (u32)(i * PAGE_SIZE_4K));
 
-		flags = gp_vhslab_mempgtl_getptflagsforspa_pae(slabid, (u32)(i * PAGE_SIZE_4K), spatype);
+		flags = gp_s2_setupmpgtblv_getflags(slabid, (u32)(i * PAGE_SIZE_4K), spatype);
 		//@ghost gflags[i] = flags;
 
 		gp_vhslabmempgtbl_lvl1t[i] = pae_make_pte( (i*PAGE_SIZE_4K), flags);
