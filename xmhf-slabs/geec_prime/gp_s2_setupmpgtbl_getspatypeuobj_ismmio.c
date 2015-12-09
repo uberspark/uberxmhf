@@ -65,7 +65,7 @@
 			    spa < sysdev_memioregions[_sda_slab_devicemap[slabid].sysdev_mmioregions_indices[x]].memioextents[y].addr_end) )) ==> 	(\result == false);
 
 @*/
-bool _geec_prime_smt_slab_getspatype_isdevicemmio(u32 slabid, u32 spa){
+bool gp_s2_setupmpgtbl_getspatypeuobj_ismmio(u32 slabid, u32 spa){
     u32 i, j;
 
 	/*@
