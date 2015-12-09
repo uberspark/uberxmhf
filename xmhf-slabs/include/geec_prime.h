@@ -366,6 +366,14 @@ u32 gp_s2_setupmpgtblug_getmtype(u64 pagebaseaddr);
 u64 gp_s2_setupmpgtblug_getflags(u32 slabid, u32 spa, u32 spatype);
 
 
+
+/*@
+	requires 0 <= slabid < XMHFGEEC_TOTAL_SLABS ;
+	requires \forall u32 x; 0 <= x < MAX_PLATFORM_CPUS ==> (_sda_slab_devicemap[slabid].sysdev_mmioregions_indices[x] < MAX_PLATFORM_DEVICES);
+	requires 0 <= _sda_slab_devicemap[slabid].device_count < MAX_PLATFORM_DEVICES;
+@*/
+bool gp_s2_setupmpgtbl_getspatypeuobj_ismmio(u32 slabid, u32 spa);
+
 /*@
 	requires 0 <= slab_index < XMHFGEEC_TOTAL_SLABS ;
 @*/
