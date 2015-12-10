@@ -56,11 +56,8 @@
 void gp_s2_setupmpgtbluh(u32 slabid){
 	u64 flags;
 	u32 spatype;
-	u32 spa_slabregion, spa_slabtype;
-	u32 slabtype = xmhfgeec_slab_info_table[slabid].slabtype;
 	u32 uhslabmempgtbl_idx;
 	u32 i, j;
-	u64 default_flags = (u64)(_PAGE_PRESENT);
 
 
 	uhslabmempgtbl_idx = slabid - XMHFGEEC_UHSLAB_BASE_IDX;
@@ -69,15 +66,14 @@ void gp_s2_setupmpgtbluh(u32 slabid){
 	memset(&gp_rwdatahdr.gp_uhslabmempgtbl_lvl4t[uhslabmempgtbl_idx], 0, PAGE_SIZE_4K);
 	for(i=0; i < PAE_PTRS_PER_PDPT; i++){
 		gp_rwdatahdr.gp_uhslabmempgtbl_lvl4t[uhslabmempgtbl_idx][i] =
-		    pae_make_pdpe(&gp_uhslabmempgtbl_lvl2t[uhslabmempgtbl_idx][i], default_flags);
+		    pae_make_pdpe(&gp_uhslabmempgtbl_lvl2t[uhslabmempgtbl_idx][i], (u64)(_PAGE_PRESENT));
 	}
 
 	//pdt
-	default_flags = (u64)(_PAGE_PRESENT | _PAGE_RW | _PAGE_USER);
 	for(i=0; i < PAE_PTRS_PER_PDPT; i++){
 		for(j=0; j < PAE_PTRS_PER_PDT; j++){
 			gp_uhslabmempgtbl_lvl2t[uhslabmempgtbl_idx][i][j] =
-				pae_make_pde(&gp_uhslabmempgtbl_lvl1t[uhslabmempgtbl_idx][(i*PAE_PTRS_PER_PDT*PAE_PTRS_PER_PT)+(j*PAE_PTRS_PER_PT)], default_flags);
+				pae_make_pde(&gp_uhslabmempgtbl_lvl1t[uhslabmempgtbl_idx][(i*PAE_PTRS_PER_PDT*PAE_PTRS_PER_PT)+(j*PAE_PTRS_PER_PT)], (u64)(_PAGE_PRESENT | _PAGE_RW | _PAGE_USER));
 		}
 	}
 
@@ -85,12 +81,11 @@ void gp_s2_setupmpgtbluh(u32 slabid){
 	//pts
 	for(i=0; i < (PAE_PTRS_PER_PDPT * PAE_PTRS_PER_PDT * PAE_PTRS_PER_PT); i++){
 		spatype =  gp_s2_setupmpgtbl_getspatype(slabid, (u32)(i*PAGE_SIZE_4K));
-		spa_slabregion = spatype & 0x0000000FUL;
-		spa_slabtype =spatype & 0x000000F0UL;
 		flags = gp_s2_setupmpgtbluh_getflags(slabid, (u32)(i*PAGE_SIZE_4K), spatype);
 
-		if(spa_slabregion == _SLAB_SPATYPE_GEEC_PRIME_IOTBL &&
-		   slabtype != XMHFGEEC_SLABTYPE_VfT_PROG && slabtype != XMHFGEEC_SLABTYPE_VfT_SENTINEL){
+		if((spatype & 0x0000000FUL) == _SLAB_SPATYPE_GEEC_PRIME_IOTBL &&
+		   xmhfgeec_slab_info_table[slabid].slabtype != XMHFGEEC_SLABTYPE_VfT_PROG &&
+		   xmhfgeec_slab_info_table[slabid].slabtype != XMHFGEEC_SLABTYPE_VfT_SENTINEL){
 			//map unverified slab iotbl instead (12K)
 			gp_uhslabmempgtbl_lvl1t[uhslabmempgtbl_idx][i] =
 				pae_make_pte(xmhfgeec_slab_info_table[slabid].iotbl_base, flags) & (~0x80);
