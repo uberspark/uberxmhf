@@ -207,7 +207,7 @@ static void gp_setup_uhslab_mempgtbl(u32 slabid){
 			//           (u32)gpa, setentryforpaddrp->entry);
 
 			//gpa += PAGE_SIZE_4K;
-			i++;
+			//i++;
 		}else{
 			gp_uhslabmempgtbl_lvl1t[uhslabmempgtbl_idx][i] =
 				pae_make_pte((i*PAGE_SIZE_4K), flags) & (~0x80);
