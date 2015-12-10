@@ -135,7 +135,7 @@ static u64 gp_uhslab_mempgtbl_getptflagsforspa_pae(u32 slabid, u32 spa, u32 spat
 
 //setup unverified hypervisor (uh) slab memory page tables
 static void gp_setup_uhslab_mempgtbl(u32 slabid){
-	u64 gpa;
+	//u64 gpa;
 	u64 flags;
 	u32 spatype;
 	u32 spa_slabregion, spa_slabtype;
@@ -169,45 +169,48 @@ static void gp_setup_uhslab_mempgtbl(u32 slabid){
 
 
 	//pts
-	for(gpa=0; gpa < ADDR_4GB; gpa += PAGE_SIZE_4K){
+	for(i=0; i < (PAE_PTRS_PER_PDPT * PAE_PTRS_PER_PDT * PAE_PTRS_PER_PT); i++){
 		//u64 pdpt_index = pae_get_pdpt_index(gpa);
 		//u64 pdt_index = pae_get_pdt_index(gpa);
 		//u64 pt_index = pae_get_pt_index(gpa);
-		u32 pt_index = (gpa/PAGE_SIZE_4K);
+		//u32 pt_index = (gpa/PAGE_SIZE_4K);
 
-		spatype =  gp_s2_setupmpgtbl_getspatype(slabid, (u32)gpa);
+		spatype =  gp_s2_setupmpgtbl_getspatype(slabid, (u32)(i*PAGE_SIZE_4K));
 		spa_slabregion = spatype & 0x0000000FUL;
 		spa_slabtype =spatype & 0x000000F0UL;
-		flags = gp_uhslab_mempgtbl_getptflagsforspa_pae(slabid, (u32)gpa, spatype);
+		flags = gp_uhslab_mempgtbl_getptflagsforspa_pae(slabid, (u32)(i*PAGE_SIZE_4K), spatype);
 
 		//_XDPRINTF_("gpa=%08x, flags=%016llx\n", (u32)gpa, flags);
 
 		if(spa_slabregion == _SLAB_SPATYPE_GEEC_PRIME_IOTBL &&
 		   slabtype != XMHFGEEC_SLABTYPE_VfT_PROG && slabtype != XMHFGEEC_SLABTYPE_VfT_SENTINEL){
 			//map unverified slab iotbl instead (12K)
-			gp_uhslabmempgtbl_lvl1t[uhslabmempgtbl_idx][pt_index] =
+			gp_uhslabmempgtbl_lvl1t[uhslabmempgtbl_idx][i] =
 				pae_make_pte(xmhfgeec_slab_info_table[slabid].iotbl_base, flags) & (~0x80);
 			//_XDPRINTF_("slab %u: iotbl mapping, orig gpa=%08x, revised entry=%016llx\n", slabid,
 			//           (u32)gpa, setentryforpaddrp->entry);
 
-			gpa += PAGE_SIZE_4K;
+			//gpa += PAGE_SIZE_4K;
+			i++;
 
-			gp_uhslabmempgtbl_lvl1t[uhslabmempgtbl_idx][pt_index] =
+			gp_uhslabmempgtbl_lvl1t[uhslabmempgtbl_idx][i] =
 				pae_make_pte(xmhfgeec_slab_info_table[slabid].iotbl_base+PAGE_SIZE_4K, flags) & (~0x80);
 			//_XDPRINTF_("slab %u: iotbl mapping, orig gpa=%08x, revised entry=%016llx\n", slabid,
 			//           (u32)gpa, setentryforpaddrp->entry);
 
-			gpa += PAGE_SIZE_4K;
+			//gpa += PAGE_SIZE_4K;
+			i++;
 
-			gp_uhslabmempgtbl_lvl1t[uhslabmempgtbl_idx][pt_index] =
+			gp_uhslabmempgtbl_lvl1t[uhslabmempgtbl_idx][i] =
 				pae_make_pte(xmhfgeec_slab_info_table[slabid].iotbl_base+(2*PAGE_SIZE_4K), flags) & (~0x80);
 			//_XDPRINTF_("slab %u: iotbl mapping, orig gpa=%08x, revised entry=%016llx\n", slabid,
 			//           (u32)gpa, setentryforpaddrp->entry);
 
-			gpa += PAGE_SIZE_4K;
+			//gpa += PAGE_SIZE_4K;
+			i++;
 		}else{
-			gp_uhslabmempgtbl_lvl1t[uhslabmempgtbl_idx][pt_index] =
-				pae_make_pte(gpa, flags) & (~0x80);
+			gp_uhslabmempgtbl_lvl1t[uhslabmempgtbl_idx][i] =
+				pae_make_pte((i*PAGE_SIZE_4K), flags) & (~0x80);
 		}
 	}
 
