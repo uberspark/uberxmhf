@@ -97,7 +97,7 @@ void gp_s2_setupmpgtbluh(u32 slabid){
 		spatype =  gp_s2_setupmpgtbl_getspatype(slabid, (u32)(i*PAGE_SIZE_4K));
 		spa_slabregion = spatype & 0x0000000FUL;
 		spa_slabtype =spatype & 0x000000F0UL;
-		flags = gp_uhslab_mempgtbl_getptflagsforspa_pae(slabid, (u32)(i*PAGE_SIZE_4K), spatype);
+		flags = gp_s2_setupmpgtbluh_getflags(slabid, (u32)(i*PAGE_SIZE_4K), spatype);
 
 		//_XDPRINTF_("gpa=%08x, flags=%016llx\n", (u32)gpa, flags);
 
