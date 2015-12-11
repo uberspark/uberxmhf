@@ -51,38 +51,27 @@
 
 #include <geec_prime.h>
 
+//returns true if entry was mapped unchanged
+//returns false if entry belonged to iotbl and was mapped with uobj specific iotbl
+bool gp_s2_setupmpgtbluh_setentry(u32 slabid, u32 uhslabmempgtbl_idx, u32 spatype, u32 ptindex, u64 flags){
 
-//setup unverified hypervisor (uh) slab memory page tables
-void gp_s2_setupmpgtbluh(u32 slabid){
-	u64 flags;
-	u32 spatype;
-	u32 uhslabmempgtbl_idx;
-	u32 i, j;
+	if((spatype & 0x0000000FUL) == _SLAB_SPATYPE_GEEC_PRIME_IOTBL &&
+	   xmhfgeec_slab_info_table[slabid].slabtype != XMHFGEEC_SLABTYPE_VfT_PROG &&
+	   xmhfgeec_slab_info_table[slabid].slabtype != XMHFGEEC_SLABTYPE_VfT_SENTINEL){
+		//map unverified slab iotbl instead (12K)
+		gp_uhslabmempgtbl_lvl1t[uhslabmempgtbl_idx][ptindex] =
+			pae_make_pte(xmhfgeec_slab_info_table[slabid].iotbl_base, flags) & (~0x80);
+		ptindex++;
 
-	uhslabmempgtbl_idx = slabid - XMHFGEEC_UHSLAB_BASE_IDX;
+		gp_uhslabmempgtbl_lvl1t[uhslabmempgtbl_idx][ptindex] =
+			pae_make_pte(xmhfgeec_slab_info_table[slabid].iotbl_base+PAGE_SIZE_4K, flags) & (~0x80);
+		ptindex++;
 
-	//pdpt
-	memset(&gp_rwdatahdr.gp_uhslabmempgtbl_lvl4t[uhslabmempgtbl_idx], 0, PAGE_SIZE_4K);
-	for(i=0; i < PAE_PTRS_PER_PDPT; i++){
-		gp_rwdatahdr.gp_uhslabmempgtbl_lvl4t[uhslabmempgtbl_idx][i] =
-		    pae_make_pdpe(&gp_uhslabmempgtbl_lvl2t[uhslabmempgtbl_idx][i], (u64)(_PAGE_PRESENT));
-	}
-
-	//pdt
-	for(i=0; i < PAE_PTRS_PER_PDPT; i++){
-		for(j=0; j < PAE_PTRS_PER_PDT; j++){
-			gp_uhslabmempgtbl_lvl2t[uhslabmempgtbl_idx][i][j] =
-				pae_make_pde(&gp_uhslabmempgtbl_lvl1t[uhslabmempgtbl_idx][(i*PAE_PTRS_PER_PDT*PAE_PTRS_PER_PT)+(j*PAE_PTRS_PER_PT)], (u64)(_PAGE_PRESENT | _PAGE_RW | _PAGE_USER));
-		}
-	}
-
-
-	//pts
-	for(i=0; i < (PAE_PTRS_PER_PDPT * PAE_PTRS_PER_PDT * PAE_PTRS_PER_PT); i++){
-		spatype =  gp_s2_setupmpgtbl_getspatype(slabid, (u32)(i*PAGE_SIZE_4K));
-		flags = gp_s2_setupmpgtbluh_getflags(slabid, (u32)(i*PAGE_SIZE_4K), spatype);
-
-		if(!gp_s2_setupmpgtbluh_setentry(slabid, uhslabmempgtbl_idx, spatype, i, flags))
-			i+=2;
+		gp_uhslabmempgtbl_lvl1t[uhslabmempgtbl_idx][ptindex] =
+			pae_make_pte(xmhfgeec_slab_info_table[slabid].iotbl_base+(2*PAGE_SIZE_4K), flags) & (~0x80);
+	}else{
+		gp_uhslabmempgtbl_lvl1t[uhslabmempgtbl_idx][ptindex] =
+			pae_make_pte((ptindex*PAGE_SIZE_4K), flags) & (~0x80);
 	}
 }
+

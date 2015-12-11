@@ -392,6 +392,8 @@ u32 gp_s2_setupmpgtbl_getspatype(u32 slab_index, u32 spa);
 
 void gp_s2_setupmpgtblug(u32 slabid);
 
+bool gp_s2_setupmpgtbluh_setentry(u32 slabid, u32 uhslabmempgtbl_idx, u32 spatype, u32 ptindex, u64 flags);
+
 u64 gp_s2_setupmpgtbluh_getflags(u32 slabid, u32 spa, u32 spatype);
 
 void gp_s2_setupmpgtbluh(u32 slabid);
