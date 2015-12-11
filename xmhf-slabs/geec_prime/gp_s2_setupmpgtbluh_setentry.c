@@ -58,17 +58,20 @@ bool gp_s2_setupmpgtbluh_setentry(u32 slabid, u32 uhslabmempgtbl_idx, u32 spatyp
 	if((spatype & 0x0000000FUL) == _SLAB_SPATYPE_GEEC_PRIME_IOTBL &&
 	   xmhfgeec_slab_info_table[slabid].slabtype != XMHFGEEC_SLABTYPE_VfT_PROG &&
 	   xmhfgeec_slab_info_table[slabid].slabtype != XMHFGEEC_SLABTYPE_VfT_SENTINEL){
-		//map unverified slab iotbl instead (12K)
-		gp_uhslabmempgtbl_lvl1t[uhslabmempgtbl_idx][ptindex] =
-			pae_make_pte(xmhfgeec_slab_info_table[slabid].iotbl_base, flags) & (~0x80);
-		ptindex++;
+		if(ptindex < ((1024*1024)-3)){
+			//map unverified slab iotbl instead (12K)
+			gp_uhslabmempgtbl_lvl1t[uhslabmempgtbl_idx][ptindex] =
+				pae_make_pte(xmhfgeec_slab_info_table[slabid].iotbl_base, flags) & (~0x80);
 
-		gp_uhslabmempgtbl_lvl1t[uhslabmempgtbl_idx][ptindex] =
-			pae_make_pte(xmhfgeec_slab_info_table[slabid].iotbl_base+PAGE_SIZE_4K, flags) & (~0x80);
-		ptindex++;
+			gp_uhslabmempgtbl_lvl1t[uhslabmempgtbl_idx][ptindex+1] =
+				pae_make_pte(xmhfgeec_slab_info_table[slabid].iotbl_base+PAGE_SIZE_4K, flags) & (~0x80);
 
-		gp_uhslabmempgtbl_lvl1t[uhslabmempgtbl_idx][ptindex] =
-			pae_make_pte(xmhfgeec_slab_info_table[slabid].iotbl_base+(2*PAGE_SIZE_4K), flags) & (~0x80);
+			gp_uhslabmempgtbl_lvl1t[uhslabmempgtbl_idx][ptindex+2] =
+				pae_make_pte(xmhfgeec_slab_info_table[slabid].iotbl_base+(2*PAGE_SIZE_4K), flags) & (~0x80);
+		}else{
+			_XDPRINTF_("%s:%u Invalid IOTBL mapping index. Halting!\n", __func__, __LINE__);
+			CASM_FUNCCALL(xmhfhw_cpu_hlt, CASM_NOPARAM);
+		}
 	}else{
 		gp_uhslabmempgtbl_lvl1t[uhslabmempgtbl_idx][ptindex] =
 			pae_make_pte((ptindex*PAGE_SIZE_4K), flags) & (~0x80);
