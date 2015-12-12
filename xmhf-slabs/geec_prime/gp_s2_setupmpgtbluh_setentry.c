@@ -53,6 +53,7 @@
 
 //returns true if entry was mapped unchanged
 //returns false if entry belonged to iotbl and was mapped with uobj specific iotbl
+//@ghost bool gp_s2_setupmpgtbluh_setentry_halted = false;
 /*@
 	requires 0 <= slabid < XMHFGEEC_TOTAL_SLABS;
 	requires 0 <= uhslabmempgtbl_idx < XMHFGEEC_TOTAL_UHSLABS;
@@ -65,6 +66,7 @@
  	                 ) &&
 		        (ptindex < ((1024*1024)-3))
 			);
+		ensures (gp_s2_setupmpgtbluh_setentry_halted == false);
 		ensures (\result == false);
 
 	behavior mapentry:
@@ -74,6 +76,7 @@
  	                  xmhfgeec_slab_info_table[slabid].slabtype != XMHFGEEC_SLABTYPE_VfT_SENTINEL
  	                 )
 			);
+		ensures (gp_s2_setupmpgtbluh_setentry_halted == false);
 		ensures (\result == true);
 
 	behavior invalid:
@@ -84,6 +87,7 @@
  	                 ) &&
 		        !(ptindex < ((1024*1024)-3))
 			);
+		ensures (gp_s2_setupmpgtbluh_setentry_halted == true);
 		ensures (\result == false);
 
 	complete behaviors;
@@ -106,17 +110,19 @@ bool gp_s2_setupmpgtbluh_setentry(u32 slabid, u32 uhslabmempgtbl_idx, u32 spatyp
 			gp_uhslabmempgtbl_lvl1t[uhslabmempgtbl_idx][ptindex+2] =
 				pae_make_pte(xmhfgeec_slab_info_table[slabid].iotbl_base+(2*PAGE_SIZE_4K), flags) & (~0x80);
 			*/
+			//@ghost gp_s2_setupmpgtbluh_setentry_halted = false;
 			return false;
 		}else{
-			/*_XDPRINTF_("%s:%u Invalid IOTBL mapping index. Halting!\n", __func__, __LINE__);
+			_XDPRINTF_("%s:%u Invalid IOTBL mapping index. Halting!\n", __func__, __LINE__);
 			CASM_FUNCCALL(xmhfhw_cpu_hlt, CASM_NOPARAM);
-			*/
+			//@ghost gp_s2_setupmpgtbluh_setentry_halted = true;
 			return false;
 		}
 	}else{
 		/*gp_uhslabmempgtbl_lvl1t[uhslabmempgtbl_idx][ptindex] =
 			pae_make_pte((ptindex*PAGE_SIZE_4K), flags) & (~0x80);
 		*/
+		//@ghost gp_s2_setupmpgtbluh_setentry_halted = false;
 		return true;
 	}
 }
