@@ -56,63 +56,44 @@
 
 void gp_s2_setupmpgtblu(void){
     slab_params_t spl;
-    xmhfgeec_uapi_slabmempgtbl_initmempgtbl_params_t *initmempgtblp =
-        (xmhfgeec_uapi_slabmempgtbl_initmempgtbl_params_t *)spl.in_out_params;
-    u32 i, slabtype;
+    u32 i;
 
-    _XDPRINTF_("%s: starting...\n", __func__);
-
-    spl.src_slabid = XMHFGEEC_SLAB_GEEC_PRIME;
-    spl.dst_slabid = XMHFGEEC_SLAB_UAPI_SLABMEMPGTBL;
-    spl.cpuid = 0; //XXX: fixme, need to plug in BSP cpuid here
-
-
-
-    //setup verified slabs' page tables, uses slab index for GEEC_PRIME
-    //spl.dst_uapifn = XMHFGEEC_UAPI_SLABMEMPGTBL_INITMEMPGTBL;
-    //initmempgtblp->dst_slabid = XMHFGEEC_SLAB_GEEC_PRIME;
-    //XMHF_SLAB_CALLNEW(&spl);
-    //_geec_prime_populate_slab_pagetables_pae4k(XMHFGEEC_SLAB_GEEC_PRIME);
-
-    //setup unverified slabs's page tables
     for(i=0; i < XMHFGEEC_TOTAL_SLABS; i++){
-        slabtype = xmhfgeec_slab_info_table[i].slabtype;
 
-        switch(slabtype){
-            case XMHFGEEC_SLABTYPE_uVT_PROG:
-            case XMHFGEEC_SLABTYPE_uVU_PROG:{
-      		if(!(i >= XMHFGEEC_UHSLAB_BASE_IDX && i <= XMHFGEEC_UHSLAB_MAX_IDX)){
-			_XDPRINTF_("%s: slab %u --> Fatal error uV{T,U} slab out of UH slab idx bound!\n", __func__, i);
-			HALT();
-		}
+        if( (xmhfgeec_slab_info_table[i].slabtype == XMHFGEEC_SLABTYPE_uVT_PROG ||
+		xmhfgeec_slab_info_table[i].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG) &&
+      		(i >= XMHFGEEC_UHSLAB_BASE_IDX && i <= XMHFGEEC_UHSLAB_MAX_IDX)){
 
               	_XDPRINTF_("%s: slab %u --> ppopulating uV{T,U} page-tables...\n", __func__, i);
                 gp_s2_setupmpgtbluh(i);
               	_XDPRINTF_("%s: slab %u --> uV{T,U}_prog page-tables populated\n", __func__, i);
-            }
-            break;
 
+        }else if (xmhfgeec_slab_info_table[i].slabtype == XMHFGEEC_SLABTYPE_uVT_PROG_GUEST ||
+		xmhfgeec_slab_info_table[i].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG_GUEST ||
+		xmhfgeec_slab_info_table[i].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG_RICHGUEST){
 
-            case XMHFGEEC_SLABTYPE_uVT_PROG_GUEST:
-            case XMHFGEEC_SLABTYPE_uVU_PROG_GUEST:
-            case XMHFGEEC_SLABTYPE_uVU_PROG_RICHGUEST:{
               	_XDPRINTF_("%s: slab %u --> ppopulating uV{T,U}_prog_guest page-tables...\n", __func__, i);
+		spl.src_slabid = XMHFGEEC_SLAB_GEEC_PRIME;
+		spl.dst_slabid = XMHFGEEC_SLAB_UAPI_SLABMEMPGTBL;
+		spl.cpuid = 0; //XXX: fixme, need to plug in BSP cpuid here
                 spl.dst_uapifn = XMHFGEEC_UAPI_SLABMEMPGTBL_INITMEMPGTBL;
-                initmempgtblp->dst_slabid = i;
+                spl.in_out_params[0] = i;
                 XMHF_SLAB_CALLNEW(&spl);
                 gp_s2_setupmpgtblug(i);
               	_XDPRINTF_("%s: slab %u --> uV{T,U}_prog_guest page-tables populated\n", __func__, i);
-            }
-            break;
 
-            default:
-                break;
-        }
+	}else if ( ((xmhfgeec_slab_info_table[i].slabtype == XMHFGEEC_SLABTYPE_VfT_SENTINEL) ||
+		   (xmhfgeec_slab_info_table[i].slabtype == XMHFGEEC_SLABTYPE_VfT_PROG))
+		){
+		//do nothing for verified slabs
+
+	}else{
+		//we have no idea what type of slab this is, halt!
+		_XDPRINTF_("%s:%u no idea of slab %u of type %u. Halting!\n",
+			__func__, __LINE__, i, xmhfgeec_slab_info_table[i].slabtype);
+		CASM_FUNCCALL(xmhfhw_cpu_hlt, CASM_NOPARAM);
+	}
     }
 
-
-	_XDPRINTF_("%s: setup slab memory page tables\n", __func__);
-    //_XDPRINTF_("%s: wip. halting!\n");
-    //HALT();
 }
 
