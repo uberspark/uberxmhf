@@ -58,6 +58,7 @@
 	requires 0 <= slabid < XMHFGEEC_TOTAL_SLABS;
 	requires 0 <= uhslabmempgtbl_idx < XMHFGEEC_TOTAL_UHSLABS;
 	requires 0 <= ptindex < (1024*1024);
+	requires 0 <= xmhfgeec_slab_info_table[slabid].iotbl_base < (0xFFFFFFFFUL - (3*PAGE_SIZE_4K));
 
 	behavior mapiotbl:
 		assumes (
@@ -67,6 +68,12 @@
  	                 ) &&
 		        (ptindex < ((1024*1024)-3))
 			);
+		ensures (gp_uhslabmempgtbl_lvl1t[uhslabmempgtbl_idx][ptindex] ==
+			(pae_make_pte(xmhfgeec_slab_info_table[slabid].iotbl_base, flags)));
+		ensures (gp_uhslabmempgtbl_lvl1t[uhslabmempgtbl_idx][ptindex+1] ==
+			(pae_make_pte(xmhfgeec_slab_info_table[slabid].iotbl_base+PAGE_SIZE_4K, flags)));
+		ensures (gp_uhslabmempgtbl_lvl1t[uhslabmempgtbl_idx][ptindex+2] ==
+			(pae_make_pte(xmhfgeec_slab_info_table[slabid].iotbl_base+(2*PAGE_SIZE_4K), flags)));
 		ensures (gp_s2_setupmpgtbluh_setentry_halted == false);
 		ensures (\result == false);
 
@@ -103,16 +110,16 @@ bool gp_s2_setupmpgtbluh_setentry(u32 slabid, u32 uhslabmempgtbl_idx, u32 spatyp
 	   xmhfgeec_slab_info_table[slabid].slabtype != XMHFGEEC_SLABTYPE_VfT_PROG &&
 	   xmhfgeec_slab_info_table[slabid].slabtype != XMHFGEEC_SLABTYPE_VfT_SENTINEL){
 		if(ptindex < ((1024*1024)-3)){
-			/*//map unverified slab iotbl instead (12K)
+			//map unverified slab iotbl instead (12K)
 			gp_uhslabmempgtbl_lvl1t[uhslabmempgtbl_idx][ptindex] =
-				pae_make_pte(xmhfgeec_slab_info_table[slabid].iotbl_base, flags) & (~0x80);
+				pae_make_pte(xmhfgeec_slab_info_table[slabid].iotbl_base, flags);
 
 			gp_uhslabmempgtbl_lvl1t[uhslabmempgtbl_idx][ptindex+1] =
-				pae_make_pte(xmhfgeec_slab_info_table[slabid].iotbl_base+PAGE_SIZE_4K, flags) & (~0x80);
+				pae_make_pte(xmhfgeec_slab_info_table[slabid].iotbl_base+PAGE_SIZE_4K, flags);
 
 			gp_uhslabmempgtbl_lvl1t[uhslabmempgtbl_idx][ptindex+2] =
-				pae_make_pte(xmhfgeec_slab_info_table[slabid].iotbl_base+(2*PAGE_SIZE_4K), flags) & (~0x80);
-			*/
+				pae_make_pte(xmhfgeec_slab_info_table[slabid].iotbl_base+(2*PAGE_SIZE_4K), flags);
+
 			//@ghost gp_s2_setupmpgtbluh_setentry_halted = false;
 			return false;
 		}else{
