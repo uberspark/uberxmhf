@@ -57,6 +57,7 @@
 /*@
 	requires 0 <= slabid < XMHFGEEC_TOTAL_SLABS;
 	requires 0 <= uhslabmempgtbl_idx < XMHFGEEC_TOTAL_UHSLABS;
+	requires 0 <= ptindex < (1024*1024);
 
 	behavior mapiotbl:
 		assumes (
@@ -76,6 +77,8 @@
  	                  xmhfgeec_slab_info_table[slabid].slabtype != XMHFGEEC_SLABTYPE_VfT_SENTINEL
  	                 )
 			);
+		ensures ( gp_uhslabmempgtbl_lvl1t[uhslabmempgtbl_idx][ptindex] ==
+			(pae_make_pte((ptindex*PAGE_SIZE_4K), flags)) );
 		ensures (gp_s2_setupmpgtbluh_setentry_halted == false);
 		ensures (\result == true);
 
@@ -119,9 +122,9 @@ bool gp_s2_setupmpgtbluh_setentry(u32 slabid, u32 uhslabmempgtbl_idx, u32 spatyp
 			return false;
 		}
 	}else{
-		/*gp_uhslabmempgtbl_lvl1t[uhslabmempgtbl_idx][ptindex] =
-			pae_make_pte((ptindex*PAGE_SIZE_4K), flags) & (~0x80);
-		*/
+		gp_uhslabmempgtbl_lvl1t[uhslabmempgtbl_idx][ptindex] =
+			pae_make_pte((ptindex*PAGE_SIZE_4K), flags);
+
 		//@ghost gp_s2_setupmpgtbluh_setentry_halted = false;
 		return true;
 	}
