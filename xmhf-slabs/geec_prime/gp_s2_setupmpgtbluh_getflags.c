@@ -51,7 +51,9 @@
 
 #include <geec_prime.h>
 
-
+/*@
+	requires 0 <= slabid < XMHFGEEC_TOTAL_SLABS;
+@*/
 u64 gp_s2_setupmpgtbluh_getflags(u32 slabid, u32 spa, u32 spatype){
 	u64 flags=0;
 
