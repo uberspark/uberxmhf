@@ -53,6 +53,25 @@
 
 /*@
 	requires 0 <= slabid < XMHFGEEC_TOTAL_SLABS;
+
+	behavior othermem:
+
+	behavior vobjcode:
+
+	behavior vobjdata:
+
+	behavior vobjmmio:
+
+	behavior objcode:
+
+	behavior objdata:
+
+	behavior objmmio:
+
+        behavior invalid:
+
+        complete behaviors;
+        disjoint behaviors;
 @*/
 u64 gp_s2_setupmpgtbluh_getflags(u32 slabid, u32 spa, u32 spatype){
 	u64 flags=0;
@@ -66,8 +85,8 @@ u64 gp_s2_setupmpgtbluh_getflags(u32 slabid, u32 spa, u32 spatype){
 		if((spatype & 0x0000000FUL) == _SLAB_SPATYPE_OTHER){
 			flags = (u64)(_PAGE_PRESENT | _PAGE_RW);
 		}else{
-			if((spatype & _SLAB_SPATYPE_MASK_SAMESLAB) || (spatype & 0x000000F0UL) == XMHFGEEC_SLABTYPE_VfT_PROG ||
-			    (spatype & 0x000000F0UL) == XMHFGEEC_SLABTYPE_VfT_SENTINEL){
+			if((spatype & 0x000000F0UL) == XMHFGEEC_SLABTYPE_VfT_PROG){
+				//verified obj
 				if((spatype & 0x0000000FUL) == _SLAB_SPATYPE_SLAB_CODE){
 					flags = (_PAGE_PRESENT);
 				}else if((spatype & 0x0000000FUL) == _SLAB_SPATYPE_SLAB_DATA ||
@@ -81,8 +100,20 @@ u64 gp_s2_setupmpgtbluh_getflags(u32 slabid, u32 spa, u32 spatype){
 				    flags = 0;
 				}
 
-				if((spatype & _SLAB_SPATYPE_MASK_SAMESLAB) || (spatype & 0x000000F0UL) == XMHFGEEC_SLABTYPE_VfT_SENTINEL)
-					flags |= (_PAGE_USER);
+			}else if((spatype & _SLAB_SPATYPE_MASK_SAMESLAB) || (spatype & 0x000000F0UL) == XMHFGEEC_SLABTYPE_VfT_SENTINEL){
+                                //same object or sentinel
+				if((spatype & 0x0000000FUL) == _SLAB_SPATYPE_SLAB_CODE){
+					flags = (_PAGE_PRESENT | _PAGE_USER);
+				}else if((spatype & 0x0000000FUL) == _SLAB_SPATYPE_SLAB_DATA ||
+					(spatype & 0x0000000FUL) == _SLAB_SPATYPE_SLAB_STACK ||
+					(spatype & 0x0000000FUL) == _SLAB_SPATYPE_SLAB_DMADATA ||
+					(spatype & 0x0000000FUL) == _SLAB_SPATYPE_GEEC_PRIME_IOTBL){
+				    flags = (_PAGE_PRESENT | _PAGE_RW | _PAGE_NX | _PAGE_USER);
+				}else if((spatype & 0x0000000FUL) == _SLAB_SPATYPE_SLAB_DEVICEMMIO){
+				    flags = (_PAGE_PRESENT | _PAGE_RW | _PAGE_NX | _PAGE_PCD | _PAGE_USER);
+				}else{
+				    flags = 0;
+				}
 
 			}else{
 			    flags = (_PAGE_PRESENT | _PAGE_RW | _PAGE_NX);
