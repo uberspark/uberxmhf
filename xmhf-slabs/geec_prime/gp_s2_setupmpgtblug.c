@@ -71,7 +71,17 @@ void gp_s2_setupmpgtblug(u32 slabid){
 	spl.src_slabid = XMHFGEEC_SLAB_GEEC_PRIME;
 	spl.dst_slabid = XMHFGEEC_SLAB_UAPI_SLABMEMPGTBL;
 	spl.cpuid = 0; //XXX: fixme, need to plug in BSP cpuid
-	spl.dst_uapifn = XMHFGEEC_UAPI_SLABMEMPGTBL_SETENTRYFORPADDR;
+	spl.dst_uapifn = XMHFGEEC_UAPI_SLABMEMPGTBL_INITMEMPGTBL;
+	spl.in_out_params[0] = slabid;
+
+	//@assert (spl.src_slabid == XMHFGEEC_SLAB_GEEC_PRIME);
+	//@assert (spl.dst_slabid == XMHFGEEC_SLAB_UAPI_SLABMEMPGTBL);
+	//@assert (spl.dst_uapifn == XMHFGEEC_UAPI_SLABMEMPGTBL_INITMEMPGTBL);
+	//@assert (spl.in_out_params[0] == slabid);
+        XMHF_SLAB_CALLNEW(&spl);
+
+
+
 
 	/*@
 		loop invariant d1: 0 <= i <= (1024*1024);
@@ -84,6 +94,7 @@ void gp_s2_setupmpgtblug(u32 slabid){
 		loop assigns gp_s2_setupmpgtblug_invokedmemorytype[0..((1024*1024)-1)];
 		loop assigns gp_s2_setupmpgtblug_invokedflags[0..((1024*1024)-1)];
 		loop assigns spl.in_out_params[0..4];
+		loop assigns spl.dst_uapifn;
 		//loop assigns memorytype_mask;
 		loop variant (1024*1024) - i;
 	@*/
@@ -96,11 +107,17 @@ void gp_s2_setupmpgtblug(u32 slabid){
 		flags = gp_s2_setupmpgtblug_getflags(slabid, (u32)(i*PAGE_SIZE_4K), spatype);
 		//@ghost gp_s2_setupmpgtblug_invokedflags[i] = true;
 
+
+		spl.dst_uapifn = XMHFGEEC_UAPI_SLABMEMPGTBL_SETENTRYFORPADDR;
 		spl.in_out_params[0] = slabid;
 		spl.in_out_params[1] = (i*PAGE_SIZE_4K);
 		spl.in_out_params[2] = 0;
 		spl.in_out_params[3] = (u32) ((i*PAGE_SIZE_4K))  | ((u32)memorytype * 8) |  (u32)flags ;	//present, UC
                 spl.in_out_params[4] = 0;
+
+		//@assert (spl.src_slabid == XMHFGEEC_SLAB_GEEC_PRIME);
+		//@assert (spl.dst_slabid == XMHFGEEC_SLAB_UAPI_SLABMEMPGTBL);
+		//@assert (spl.dst_uapifn == XMHFGEEC_UAPI_SLABMEMPGTBL_SETENTRYFORPADDR);
 		//@assert (spl.in_out_params[0] == slabid);
 		//@assert (spl.in_out_params[1] == (i*PAGE_SIZE_4K));
 		//@assert (spl.in_out_params[2] == 0);

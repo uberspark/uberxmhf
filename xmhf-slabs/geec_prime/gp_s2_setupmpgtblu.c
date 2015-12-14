@@ -55,7 +55,6 @@
 
 
 void gp_s2_setupmpgtblu(void){
-    slab_params_t spl;
     u32 i;
 
     for(i=0; i < XMHFGEEC_TOTAL_SLABS; i++){
@@ -73,12 +72,6 @@ void gp_s2_setupmpgtblu(void){
 		xmhfgeec_slab_info_table[i].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG_RICHGUEST){
 
               	_XDPRINTF_("%s: slab %u --> ppopulating uV{T,U}_prog_guest page-tables...\n", __func__, i);
-		spl.src_slabid = XMHFGEEC_SLAB_GEEC_PRIME;
-		spl.dst_slabid = XMHFGEEC_SLAB_UAPI_SLABMEMPGTBL;
-		spl.cpuid = 0; //XXX: fixme, need to plug in BSP cpuid here
-                spl.dst_uapifn = XMHFGEEC_UAPI_SLABMEMPGTBL_INITMEMPGTBL;
-                spl.in_out_params[0] = i;
-                XMHF_SLAB_CALLNEW(&spl);
                 gp_s2_setupmpgtblug(i);
               	_XDPRINTF_("%s: slab %u --> uV{T,U}_prog_guest page-tables populated\n", __func__, i);
 
