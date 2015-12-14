@@ -222,7 +222,7 @@ extern __attribute__((section(".data"))) __attribute__((aligned(4096)))  u64 gp_
 //////
 // unverified hypervisor slab memory page-tables
 extern __attribute__((section(".data"))) __attribute__((aligned(4096))) u64 gp_uhslabmempgtbl_lvl3t[XMHFGEEC_TOTAL_UHSLABS][PAE_MAXPTRS_PER_PDPT];
-extern __attribute__((section(".data"))) __attribute__((aligned(4096))) u64 gp_uhslabmempgtbl_lvl2t[XMHFGEEC_TOTAL_UHSLABS][PAE_PTRS_PER_PDPT][PAE_PTRS_PER_PDT];
+extern __attribute__((section(".data"))) __attribute__((aligned(4096))) u64 gp_uhslabmempgtbl_lvl2t[XMHFGEEC_TOTAL_UHSLABS][PAE_PTRS_PER_PDPT * PAE_PTRS_PER_PDT];
 extern __attribute__((section(".data"))) __attribute__((aligned(4096)))  u64 gp_uhslabmempgtbl_lvl1t[XMHFGEEC_TOTAL_UHSLABS][PAE_PTRS_PER_PDPT * PAE_PTRS_PER_PDT * PAE_PTRS_PER_PT];
 
 //////
