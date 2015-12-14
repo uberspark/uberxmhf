@@ -55,6 +55,7 @@
 //setup unverified hypervisor (uh) slab memory page tables
 /*@
 	requires XMHFGEEC_UHSLAB_BASE_IDX <= slabid <= XMHFGEEC_UHSLAB_MAX_IDX;
+	requires 0 <= xmhfgeec_slab_info_table[slabid].iotbl_base < (0xFFFFFFFFUL - (3*PAGE_SIZE_4K));
 	assigns gp_rwdatahdr.gp_uhslabmempgtbl_lvl4t[(slabid - XMHFGEEC_UHSLAB_BASE_IDX)][0..(PAE_MAXPTRS_PER_PDPT-1)];
 	assigns gp_uhslabmempgtbl_lvl2t[(slabid - XMHFGEEC_UHSLAB_BASE_IDX)][0..((PAE_PTRS_PER_PDPT * PAE_PTRS_PER_PDT)-1)];
 	ensures \forall integer x; 0 <= x < PAE_PTRS_PER_PDPT ==> (
@@ -119,14 +120,17 @@ void gp_s2_setupmpgtbluh(u32 slabid){
 
 
 
-#if 0
 	//pts
+    	/*@
+		loop invariant a6: 0 <= i <= ((PAE_PTRS_PER_PDPT * PAE_PTRS_PER_PDT * PAE_PTRS_PER_PT)+0x2);
+		loop assigns i;
+		loop variant ((PAE_PTRS_PER_PDPT * PAE_PTRS_PER_PDT * PAE_PTRS_PER_PT)+0x2) - i;
+	@*/
 	for(i=0; i < (PAE_PTRS_PER_PDPT * PAE_PTRS_PER_PDT * PAE_PTRS_PER_PT); i++){
-		spatype =  gp_s2_setupmpgtbl_getspatype(slabid, (u32)(i*PAGE_SIZE_4K));
-		flags = gp_s2_setupmpgtbluh_getflags(slabid, (u32)(i*PAGE_SIZE_4K), spatype);
+		//spatype =  gp_s2_setupmpgtbl_getspatype(slabid, (u32)(i*PAGE_SIZE_4K));
+		//flags = gp_s2_setupmpgtbluh_getflags(slabid, (u32)(i*PAGE_SIZE_4K), spatype);
 
 		if(!gp_s2_setupmpgtbluh_setentry(slabid, (slabid - XMHFGEEC_UHSLAB_BASE_IDX), spatype, i, flags))
 			i+=2;
 	}
-#endif
 }
