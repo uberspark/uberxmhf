@@ -53,40 +53,50 @@
 #include <uapi_slabmempgtbl.h>
 
 
-
+/*@
+	requires \forall integer x; 0 <= x < XMHFGEEC_TOTAL_SLABS ==>
+		(0 <= xmhfgeec_slab_info_table[x].iotbl_base < (0xFFFFFFFFUL - (3*PAGE_SIZE_4K)));
+@*/
 void gp_s2_setupmpgtblu(void){
     u32 i;
 
-    for(i=0; i < XMHFGEEC_TOTAL_SLABS; i++){
 
-        if( (xmhfgeec_slab_info_table[i].slabtype == XMHFGEEC_SLABTYPE_uVT_PROG ||
-		xmhfgeec_slab_info_table[i].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG) &&
-      		(i >= XMHFGEEC_UHSLAB_BASE_IDX && i <= XMHFGEEC_UHSLAB_MAX_IDX)){
+    	/*@
+		loop invariant a1: 0 <= i <= XMHFGEEC_TOTAL_SLABS;
+		loop assigns i;
+		loop variant XMHFGEEC_TOTAL_SLABS - i;
+	@*/
+	for(i=0; i < XMHFGEEC_TOTAL_SLABS; i++){
 
-              	_XDPRINTF_("%s: slab %u --> ppopulating uV{T,U} page-tables...\n", __func__, i);
-                gp_s2_setupmpgtbluh(i);
-              	_XDPRINTF_("%s: slab %u --> uV{T,U}_prog page-tables populated\n", __func__, i);
+		#if 0
+		if( (xmhfgeec_slab_info_table[i].slabtype == XMHFGEEC_SLABTYPE_uVT_PROG ||
+			xmhfgeec_slab_info_table[i].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG) &&
+			(i >= XMHFGEEC_UHSLAB_BASE_IDX && i <= XMHFGEEC_UHSLAB_MAX_IDX)){
 
-        }else if (xmhfgeec_slab_info_table[i].slabtype == XMHFGEEC_SLABTYPE_uVT_PROG_GUEST ||
-		xmhfgeec_slab_info_table[i].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG_GUEST ||
-		xmhfgeec_slab_info_table[i].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG_RICHGUEST){
+			_XDPRINTF_("%s: slab %u --> ppopulating uV{T,U} page-tables...\n", __func__, i);
+			gp_s2_setupmpgtbluh(i);
+			_XDPRINTF_("%s: slab %u --> uV{T,U}_prog page-tables populated\n", __func__, i);
 
-              	_XDPRINTF_("%s: slab %u --> ppopulating uV{T,U}_prog_guest page-tables...\n", __func__, i);
-                gp_s2_setupmpgtblug(i);
-              	_XDPRINTF_("%s: slab %u --> uV{T,U}_prog_guest page-tables populated\n", __func__, i);
+		}else if (xmhfgeec_slab_info_table[i].slabtype == XMHFGEEC_SLABTYPE_uVT_PROG_GUEST ||
+			xmhfgeec_slab_info_table[i].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG_GUEST ||
+			xmhfgeec_slab_info_table[i].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG_RICHGUEST){
 
-	}else if ( ((xmhfgeec_slab_info_table[i].slabtype == XMHFGEEC_SLABTYPE_VfT_SENTINEL) ||
-		   (xmhfgeec_slab_info_table[i].slabtype == XMHFGEEC_SLABTYPE_VfT_PROG))
-		){
-		//do nothing for verified slabs
+			_XDPRINTF_("%s: slab %u --> ppopulating uV{T,U}_prog_guest page-tables...\n", __func__, i);
+			gp_s2_setupmpgtblug(i);
+			_XDPRINTF_("%s: slab %u --> uV{T,U}_prog_guest page-tables populated\n", __func__, i);
 
-	}else{
-		//we have no idea what type of slab this is, halt!
-		_XDPRINTF_("%s:%u no idea of slab %u of type %u. Halting!\n",
-			__func__, __LINE__, i, xmhfgeec_slab_info_table[i].slabtype);
-		CASM_FUNCCALL(xmhfhw_cpu_hlt, CASM_NOPARAM);
+		}else if ( ((xmhfgeec_slab_info_table[i].slabtype == XMHFGEEC_SLABTYPE_VfT_SENTINEL) ||
+			   (xmhfgeec_slab_info_table[i].slabtype == XMHFGEEC_SLABTYPE_VfT_PROG))
+			){
+			//do nothing for verified slabs
+
+		}else{
+			//we have no idea what type of slab this is, halt!
+			_XDPRINTF_("%s:%u no idea of slab %u of type %u. Halting!\n",
+				__func__, __LINE__, i, xmhfgeec_slab_info_table[i].slabtype);
+			CASM_FUNCCALL(xmhfhw_cpu_hlt, CASM_NOPARAM);
+		}
+		#endif
 	}
-    }
-
 }
 
