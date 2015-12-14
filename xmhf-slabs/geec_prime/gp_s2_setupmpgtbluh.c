@@ -61,6 +61,10 @@
 			gp_rwdatahdr.gp_uhslabmempgtbl_lvl4t[(slabid - XMHFGEEC_UHSLAB_BASE_IDX)][x] ==
 			(pae_make_pdpe(&gp_uhslabmempgtbl_lvl2t[(slabid - XMHFGEEC_UHSLAB_BASE_IDX)][x], (u64)(_PAGE_PRESENT)))
 			);
+	ensures \forall integer x; 0 <= x < PAE_PTRS_PER_PDT ==> (
+			gp_uhslabmempgtbl_lvl2t[(slabid - XMHFGEEC_UHSLAB_BASE_IDX)][x] ==
+			(pae_make_pde(&gp_uhslabmempgtbl_lvl1t[(slabid - XMHFGEEC_UHSLAB_BASE_IDX)][(x * PAE_PTRS_PER_PT)], (u64)(_PAGE_PRESENT | _PAGE_RW | _PAGE_USER)))
+			);
 @*/
 void gp_s2_setupmpgtbluh(u32 slabid){
 	u64 flags;
@@ -99,7 +103,10 @@ void gp_s2_setupmpgtbluh(u32 slabid){
 
     	/*@
 		loop invariant a4: 0 <= i <= (PAE_PTRS_PER_PDPT * PAE_PTRS_PER_PDT);
-		//loop invariant a4: \forall integer x; 0 <= x < i ==> (( (u64)gp_vhslabmempgtbl_lvl2t[x] ) == ( ((u64)(&gp_vhslabmempgtbl_lvl1t[(x * PAE_PTRS_PER_PT)]) & 0x7FFFFFFFFFFFF000ULL ) | ((u64)(_PAGE_PRESENT | _PAGE_RW | _PAGE_USER))));
+		loop invariant a5: \forall integer x; 0 <= x < i ==> (
+			gp_uhslabmempgtbl_lvl2t[(slabid - XMHFGEEC_UHSLAB_BASE_IDX)][x] ==
+			(pae_make_pde(&gp_uhslabmempgtbl_lvl1t[(slabid - XMHFGEEC_UHSLAB_BASE_IDX)][(x * PAE_PTRS_PER_PT)], (u64)(_PAGE_PRESENT | _PAGE_RW | _PAGE_USER)))
+			);
 		loop assigns i;
 		loop assigns gp_uhslabmempgtbl_lvl2t[(slabid - XMHFGEEC_UHSLAB_BASE_IDX)][0..(PAE_PTRS_PER_PDPT * PAE_PTRS_PER_PDT)-1];
 		loop variant (PAE_PTRS_PER_PDPT * PAE_PTRS_PER_PDT) - i;
