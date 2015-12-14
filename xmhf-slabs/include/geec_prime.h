@@ -392,6 +392,14 @@ u32 gp_s2_setupmpgtbl_getspatype(u32 slab_index, u32 spa);
 
 void gp_s2_setupmpgtblug(u32 slabid);
 
+
+/*@
+	requires 0 <= slabid < XMHFGEEC_TOTAL_SLABS;
+	requires 0 <= uhslabmempgtbl_idx < XMHFGEEC_TOTAL_UHSLABS;
+	requires 0 <= ptindex < (1024*1024);
+	requires 0 <= xmhfgeec_slab_info_table[slabid].iotbl_base < (0xFFFFFFFFUL - (3*PAGE_SIZE_4K));
+	ensures (\result == true) || (\result == false);
+@*/
 bool gp_s2_setupmpgtbluh_setentry(u32 slabid, u32 uhslabmempgtbl_idx, u32 spatype, u32 ptindex, u64 flags);
 
 u64 gp_s2_setupmpgtbluh_getflags(u32 slabid, u32 spa, u32 spatype);
