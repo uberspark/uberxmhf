@@ -53,9 +53,19 @@
 #include <uapi_slabmempgtbl.h>
 
 
+
+//@ghost bool gp_s2_setupmpgtblu_invokeduh[XMHFGEEC_TOTAL_SLABS];
+//@ghost bool gp_s2_setupmpgtblu_invokedinvalidobjs[XMHFGEEC_TOTAL_SLABS];
 /*@
 	requires \forall integer x; 0 <= x < XMHFGEEC_TOTAL_SLABS ==>
 		(0 <= xmhfgeec_slab_info_table[x].iotbl_base < (0xFFFFFFFFUL - (3*PAGE_SIZE_4K)));
+	assigns gp_s2_setupmpgtblu_invokeduh[0..(XMHFGEEC_TOTAL_SLABS-1)];
+	assigns gp_s2_setupmpgtblu_invokedinvalidobjs[0..(XMHFGEEC_TOTAL_SLABS-1)];
+	ensures \forall integer x; 0 <= x < XMHFGEEC_TOTAL_SLABS ==> (
+		( (xmhfgeec_slab_info_table[x].slabtype == XMHFGEEC_SLABTYPE_uVT_PROG ||
+		xmhfgeec_slab_info_table[x].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG) &&
+		(x >= XMHFGEEC_UHSLAB_BASE_IDX && x <= XMHFGEEC_UHSLAB_MAX_IDX)) ==>
+		(gp_s2_setupmpgtblu_invokeduh[x] == true) );
 @*/
 void gp_s2_setupmpgtblu(void){
     u32 i;
@@ -63,20 +73,36 @@ void gp_s2_setupmpgtblu(void){
 
     	/*@
 		loop invariant a1: 0 <= i <= XMHFGEEC_TOTAL_SLABS;
+		loop invariant a2: \forall integer x; 0 <= x < i ==> (
+			( (xmhfgeec_slab_info_table[x].slabtype == XMHFGEEC_SLABTYPE_uVT_PROG ||
+			xmhfgeec_slab_info_table[x].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG) &&
+			(x >= XMHFGEEC_UHSLAB_BASE_IDX && x <= XMHFGEEC_UHSLAB_MAX_IDX)) ==>
+			(gp_s2_setupmpgtblu_invokeduh[x] == true) );
+		loop invariant a5: \forall integer x; 0 <= x < i ==> (
+			(
+			 !( (xmhfgeec_slab_info_table[x].slabtype == XMHFGEEC_SLABTYPE_uVT_PROG ||
+			    xmhfgeec_slab_info_table[x].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG) &&
+			    (x >= XMHFGEEC_UHSLAB_BASE_IDX && x <= XMHFGEEC_UHSLAB_MAX_IDX)
+			  )
+			) ==> (gp_s2_setupmpgtblu_invokedinvalidobjs[x] == true) );
 		loop assigns i;
+		loop assigns gp_s2_setupmpgtblu_invokeduh[0..(XMHFGEEC_TOTAL_SLABS-1)];
+		loop assigns gp_s2_setupmpgtblu_invokedinvalidobjs[0..(XMHFGEEC_TOTAL_SLABS-1)];
 		loop variant XMHFGEEC_TOTAL_SLABS - i;
 	@*/
 	for(i=0; i < XMHFGEEC_TOTAL_SLABS; i++){
 
-		#if 0
 		if( (xmhfgeec_slab_info_table[i].slabtype == XMHFGEEC_SLABTYPE_uVT_PROG ||
 			xmhfgeec_slab_info_table[i].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG) &&
 			(i >= XMHFGEEC_UHSLAB_BASE_IDX && i <= XMHFGEEC_UHSLAB_MAX_IDX)){
 
 			_XDPRINTF_("%s: slab %u --> ppopulating uV{T,U} page-tables...\n", __func__, i);
 			gp_s2_setupmpgtbluh(i);
+			//@ghost gp_s2_setupmpgtblu_invokeduh[i] = true;
 			_XDPRINTF_("%s: slab %u --> uV{T,U}_prog page-tables populated\n", __func__, i);
 
+
+		#if 0
 		}else if (xmhfgeec_slab_info_table[i].slabtype == XMHFGEEC_SLABTYPE_uVT_PROG_GUEST ||
 			xmhfgeec_slab_info_table[i].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG_GUEST ||
 			xmhfgeec_slab_info_table[i].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG_RICHGUEST){
@@ -89,14 +115,15 @@ void gp_s2_setupmpgtblu(void){
 			   (xmhfgeec_slab_info_table[i].slabtype == XMHFGEEC_SLABTYPE_VfT_PROG))
 			){
 			//do nothing for verified slabs
-
+		#endif
 		}else{
 			//we have no idea what type of slab this is, halt!
 			_XDPRINTF_("%s:%u no idea of slab %u of type %u. Halting!\n",
 				__func__, __LINE__, i, xmhfgeec_slab_info_table[i].slabtype);
 			CASM_FUNCCALL(xmhfhw_cpu_hlt, CASM_NOPARAM);
+			//@ghost gp_s2_setupmpgtblu_invokedinvalidobjs[i] = true;
+
 		}
-		#endif
 	}
 }
 
