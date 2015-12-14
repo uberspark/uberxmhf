@@ -53,13 +53,30 @@
 
 
 //setup unverified hypervisor (uh) slab memory page tables
+/*@
+	requires XMHFGEEC_UHSLAB_BASE_IDX <= slabid <= XMHFGEEC_UHSLAB_MAX_IDX;
+	//assigns gp_rwdatahdr.gp_uhslabmempgtbl_lvl4t[(slabid - XMHFGEEC_UHSLAB_BASE_IDX)][];
+@*/
 void gp_s2_setupmpgtbluh(u32 slabid){
 	u64 flags;
 	u32 spatype;
 	u32 i, j;
 
-	//pdpt
-	memset(&gp_rwdatahdr.gp_uhslabmempgtbl_lvl4t[(slabid - XMHFGEEC_UHSLAB_BASE_IDX)], 0, PAGE_SIZE_4K);
+	//zero out pdpt
+	//memset(&gp_rwdatahdr.gp_uhslabmempgtbl_lvl4t[(slabid - XMHFGEEC_UHSLAB_BASE_IDX)], 0, PAGE_SIZE_4K);
+    	/*@
+		loop invariant a1: 0 <= i <= PAE_MAXPTRS_PER_PDPT;
+		loop assigns gp_rwdatahdr.gp_uhslabmempgtbl_lvl4t[(slabid - XMHFGEEC_UHSLAB_BASE_IDX)][0..(PAE_MAXPTRS_PER_PDPT-1)];
+		loop assigns i;
+		loop variant PAE_MAXPTRS_PER_PDPT - i;
+	@*/
+	for(i=0; i < PAE_MAXPTRS_PER_PDPT; i++){
+		gp_rwdatahdr.gp_uhslabmempgtbl_lvl4t[(slabid - XMHFGEEC_UHSLAB_BASE_IDX)][i] = 0;
+	}
+
+
+
+#if 0
 	for(i=0; i < PAE_PTRS_PER_PDPT; i++){
 		gp_rwdatahdr.gp_uhslabmempgtbl_lvl4t[(slabid - XMHFGEEC_UHSLAB_BASE_IDX)][i] =
 		    pae_make_pdpe(&gp_uhslabmempgtbl_lvl2t[(slabid - XMHFGEEC_UHSLAB_BASE_IDX)][i], (u64)(_PAGE_PRESENT));
@@ -81,4 +98,5 @@ void gp_s2_setupmpgtbluh(u32 slabid){
 		if(!gp_s2_setupmpgtbluh_setentry(slabid, (slabid - XMHFGEEC_UHSLAB_BASE_IDX), spatype, i, flags))
 			i+=2;
 	}
+#endif
 }
