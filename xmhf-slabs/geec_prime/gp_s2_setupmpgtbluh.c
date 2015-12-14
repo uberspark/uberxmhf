@@ -55,7 +55,7 @@
 //setup unverified hypervisor (uh) slab memory page tables
 /*@
 	requires XMHFGEEC_UHSLAB_BASE_IDX <= slabid <= XMHFGEEC_UHSLAB_MAX_IDX;
-	//assigns gp_rwdatahdr.gp_uhslabmempgtbl_lvl4t[(slabid - XMHFGEEC_UHSLAB_BASE_IDX)][];
+	assigns gp_rwdatahdr.gp_uhslabmempgtbl_lvl4t[(slabid - XMHFGEEC_UHSLAB_BASE_IDX)][0..(PAE_MAXPTRS_PER_PDPT-1)];
 @*/
 void gp_s2_setupmpgtbluh(u32 slabid){
 	u64 flags;
@@ -63,7 +63,6 @@ void gp_s2_setupmpgtbluh(u32 slabid){
 	u32 i, j;
 
 	//zero out pdpt
-	//memset(&gp_rwdatahdr.gp_uhslabmempgtbl_lvl4t[(slabid - XMHFGEEC_UHSLAB_BASE_IDX)], 0, PAGE_SIZE_4K);
     	/*@
 		loop invariant a1: 0 <= i <= PAE_MAXPTRS_PER_PDPT;
 		loop assigns gp_rwdatahdr.gp_uhslabmempgtbl_lvl4t[(slabid - XMHFGEEC_UHSLAB_BASE_IDX)][0..(PAE_MAXPTRS_PER_PDPT-1)];
