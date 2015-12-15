@@ -59,7 +59,7 @@ void gp_s2_entry(void){
 
 
 	//setup slab system device allocation and device page tables
-	xmhfhic_arch_setup_slab_device_allocation();
+	gp_s2_sda();
 
 
 	//gather memory types for EPT (for guest slabs)
