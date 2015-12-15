@@ -90,13 +90,13 @@ static u32 _geec_prime_getslabfordevice(u32 bus, u32 dev, u32 func){
 
 
 
-static void _slabdevpgtbl_init(void){
+/*static void _slabdevpgtbl_init(void){
     u32 i;
 
     for(i=0; i < XMHFGEEC_TOTAL_SLABS; i++){
         _slabdevpgtbl_infotable[i].devpgtbl_initialized=false;
     }
-}
+}*/
 
 
 
@@ -211,31 +211,12 @@ static void _slabdevpgtbl_binddevice(u32 slabid, u32 pagewalk_lvl,  u32 bus, u32
 }
 
 
-void xmhfhic_arch_setup_slab_device_allocation(void){
-	//u32 i, vtd_pagewalk_level;
+
+
+void gp_s2_sdadoalloc(void){
 	u32 i;
-	//u32 retpaddr;
+	u32 dst_slabid;
 
-
-	_slabdevpgtbl_init();
-
-
-	//retpaddr = (u32)&_slabdevpgtbl_vtd_ret;
-
-
-	//initialize all slab device page tables
-	for(i=0; i < XMHFGEEC_TOTAL_SLABS; i++){
-		_slabdevpgtbl_initdevpgtbl(i);
-
-	}
-	_XDPRINTF_("%s: initialized slab device page tables\n", __func__);
-
-
-
-    //allocate system devices to slabs for direct DMA
-    {
-        u32 i;
-        u32 dst_slabid;
         for(i=0; i <numentries_sysdev_memioregions; i++){
             if(sysdev_memioregions[i].dtype == SYSDEV_MEMIOREGIONS_DTYPE_GENERAL ||
                sysdev_memioregions[i].dtype == SYSDEV_MEMIOREGIONS_DTYPE_BRIDGE ||
@@ -256,9 +237,27 @@ void xmhfhic_arch_setup_slab_device_allocation(void){
                 }
             }
         }
-    }
+}
 
 
+
+
+void gp_s2_sda(void){
+	u32 i;
+
+	for(i=0; i < XMHFGEEC_TOTAL_SLABS; i++){
+		_slabdevpgtbl_infotable[i].devpgtbl_initialized=false;
+	}
+
+	//initialize all slab device page tables
+	for(i=0; i < XMHFGEEC_TOTAL_SLABS; i++){
+		_slabdevpgtbl_initdevpgtbl(i);
+
+	}
+
+	_XDPRINTF_("%s: initialized slab device page tables\n", __func__);
+
+	gp_s2_sdadoalloc();
 }
 
 

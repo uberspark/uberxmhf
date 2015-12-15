@@ -452,6 +452,13 @@ void gp_s2_setuptss_inittss(u32 tssidx);
 void gp_s2_setuptss(void);
 
 
+
+void gp_s2_sdadoalloc(void);
+void gp_s2_sda(void);
+
+
+
+
 void gp_s3_entry(void);
 void gp_s3_startcores(void);
 
