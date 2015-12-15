@@ -55,6 +55,18 @@
 #include <xc_init.h>
 
 
+//setup PT entries for a 2M range
+void gp_s2_sdasetupdevpgtbl_setptentries(u32 slabid, u32 pt_index, u32 startpaddr){
+	u32 pt_paddr = startpaddr;
+	u32 i;
+
+	for(i=0; i < VTD_PTRS_PER_PT; i++){
+	    _slabdevpgtbl_pt[slabid][pt_index][i] =
+		vtd_make_pte(pt_paddr, (VTD_PAGE_READ | VTD_PAGE_WRITE));
+	    pt_paddr += PAGE_SIZE_4K;
+	}
+}
+
 void gp_s2_sdasetupdevpgtbl(u32 slabid){
 	u32 i;
 	u64 default_flags = (VTD_PAGE_READ | VTD_PAGE_WRITE);
@@ -93,7 +105,23 @@ void gp_s2_sdasetupdevpgtbl(u32 slabid){
 	}
 
 
-    paddr = paddr_dmadata_start;
+
+	for(paddr = paddr_dmadata_start; paddr < paddr_dmadata_end; paddr+= PAGE_SIZE_2M){
+		//grab index of pdpt, pdt this paddr
+		u32 pdpt_index = pae_get_pdpt_index(paddr);
+		u32 pdt_index = pae_get_pdt_index(paddr);
+
+		//stick a pt for the pdt entry
+		_slabdevpgtbl_pdt[slabid][pdpt_index][pdt_index] =
+		    vtd_make_pdte((u64)_slabdevpgtbl_pt[slabid][pt_index], default_flags);
+
+		//populate pt entries for this 2M range
+		gp_s2_sdasetupdevpgtbl_setptentries(slabid, pt_index, paddr);
+
+		pt_index++;
+	}
+
+/*    paddr = paddr_dmadata_start;
 
     do {
         //grab index of pdpt, pdt this paddr
@@ -115,7 +143,7 @@ void gp_s2_sdasetupdevpgtbl(u32 slabid){
         pt_index++;
         paddr += PAGE_SIZE_2M;
     } while (paddr < paddr_dmadata_end);
-
+*/
 
     _slabdevpgtbl_infotable[slabid].devpgtbl_initialized = true;
 }

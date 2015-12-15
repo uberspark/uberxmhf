@@ -452,6 +452,7 @@ void gp_s2_setuptss_inittss(u32 tssidx);
 void gp_s2_setuptss(void);
 
 
+void gp_s2_sdasetupdevpgtbl_setptentries(u32 slabid, u32 pt_index, u32 startpaddr);
 void gp_s2_sdasetupdevpgtbl(u32 slabid);
 void gp_s2_sdabinddevice(u32 slabid, u32 pagewalk_lvl,  u32 bus, u32 dev, u32 func);
 u32 gp_s2_sdadoalloc_getuobjfordev(u32 bus, u32 dev, u32 func);
