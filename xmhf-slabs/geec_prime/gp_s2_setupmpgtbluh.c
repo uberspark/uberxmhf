@@ -60,7 +60,7 @@
 	assigns gp_uhslabmempgtbl_lvl2t[(slabid - XMHFGEEC_UHSLAB_BASE_IDX)][0..((PAE_PTRS_PER_PDPT * PAE_PTRS_PER_PDT)-1)];
 	ensures \forall integer x; 0 <= x < PAE_PTRS_PER_PDPT ==> (
 			gp_rwdatahdr.gp_uhslabmempgtbl_lvl4t[(slabid - XMHFGEEC_UHSLAB_BASE_IDX)][x] ==
-			(pae_make_pdpe(&gp_uhslabmempgtbl_lvl2t[(slabid - XMHFGEEC_UHSLAB_BASE_IDX)][x], (u64)(_PAGE_PRESENT)))
+			(pae_make_pdpe(&gp_uhslabmempgtbl_lvl2t[(slabid - XMHFGEEC_UHSLAB_BASE_IDX)][x * PAE_PTRS_PER_PDT], (u64)(_PAGE_PRESENT)))
 			);
 	ensures \forall integer x; 0 <= x < PAE_PTRS_PER_PDT ==> (
 			gp_uhslabmempgtbl_lvl2t[(slabid - XMHFGEEC_UHSLAB_BASE_IDX)][x] ==
@@ -88,7 +88,7 @@ void gp_s2_setupmpgtbluh(u32 slabid){
 		loop invariant a2: 0 <= i <= PAE_PTRS_PER_PDPT;
 		loop invariant a3: \forall integer x; 0 <= x < i ==> (
 			gp_rwdatahdr.gp_uhslabmempgtbl_lvl4t[(slabid - XMHFGEEC_UHSLAB_BASE_IDX)][x] ==
-			(pae_make_pdpe(&gp_uhslabmempgtbl_lvl2t[(slabid - XMHFGEEC_UHSLAB_BASE_IDX)][x], (u64)(_PAGE_PRESENT)))
+			(pae_make_pdpe(&gp_uhslabmempgtbl_lvl2t[(slabid - XMHFGEEC_UHSLAB_BASE_IDX)][x * PAE_PTRS_PER_PDT], (u64)(_PAGE_PRESENT)))
 			);
 		loop assigns gp_rwdatahdr.gp_uhslabmempgtbl_lvl4t[(slabid - XMHFGEEC_UHSLAB_BASE_IDX)][0..(PAE_PTRS_PER_PDPT-1)];
 		loop assigns i;
@@ -97,7 +97,7 @@ void gp_s2_setupmpgtbluh(u32 slabid){
 	//assign 4GB pdpt entries
 	for(i=0; i < PAE_PTRS_PER_PDPT; i++){
 		gp_rwdatahdr.gp_uhslabmempgtbl_lvl4t[(slabid - XMHFGEEC_UHSLAB_BASE_IDX)][i] =
-		    pae_make_pdpe(&gp_uhslabmempgtbl_lvl2t[(slabid - XMHFGEEC_UHSLAB_BASE_IDX)][i], (u64)(_PAGE_PRESENT));
+		    pae_make_pdpe(&gp_uhslabmempgtbl_lvl2t[(slabid - XMHFGEEC_UHSLAB_BASE_IDX)][i * PAE_PTRS_PER_PDT], (u64)(_PAGE_PRESENT));
 	}
 
 
