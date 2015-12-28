@@ -178,8 +178,11 @@ typedef struct {
     u64 qwords[2];
 } __attribute__((packed)) vtd_cet_entry_t;
 
+//#define vtd_make_cete(paddr, flags) \
+//  ((u64)(paddr) & (~(((u64)PAGE_SIZE_4K - 1)))) | (u64)(flags)
+
 #define vtd_make_cete(paddr, flags) \
-  ((u64)(paddr) & (~(((u64)PAGE_SIZE_4K - 1)))) | (u64)(flags)
+  ((u64)(paddr) & (0x7FFFFFFFFFFFF000ULL)) | (u64)(flags)
 
 #define vtd_make_cetehigh(address_width, domain_id) \
   (((u64)domain_id & 0x000000000000FFFFULL) << 7) | ((u64)(address_width) & 0x0000000000000007ULL)
