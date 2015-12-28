@@ -51,17 +51,26 @@
 
 #include <geec_prime.h>
 
-
+/*@
+	requires 0 <= numentries_sysdev_memioregions < MAX_PLATFORM_DEVICES;
+	assigns \nothing;
+@*/
 void gp_s2_sdadoalloc(void){
 	u32 i;
 	u32 dst_slabid;
 
+
+    	/*@
+		loop invariant a1: 0 <= i <= numentries_sysdev_memioregions;
+		loop assigns i;
+		loop variant numentries_sysdev_memioregions - i;
+	@*/
         for(i=0; i <numentries_sysdev_memioregions; i++){
             if(sysdev_memioregions[i].dtype == SYSDEV_MEMIOREGIONS_DTYPE_GENERAL ||
                sysdev_memioregions[i].dtype == SYSDEV_MEMIOREGIONS_DTYPE_BRIDGE ||
                sysdev_memioregions[i].dtype == SYSDEV_MEMIOREGIONS_DTYPE_UNKNOWN){
 
-		dst_slabid = gp_s2_sdadoalloc_getuobjfordev(sysdev_memioregions[i].b,
+		/*dst_slabid = gp_s2_sdadoalloc_getuobjfordev(sysdev_memioregions[i].b,
 							sysdev_memioregions[i].d,
 							sysdev_memioregions[i].f);
                 if(dst_slabid == 0xFFFFFFFFUL){
@@ -75,7 +84,7 @@ void gp_s2_sdadoalloc(void){
                     _XDPRINTF_("Allocated device %x:%x:%x (vid:did=%x:%x, type=%x) to slab %u...\n", sysdev_memioregions[i].b,
                                sysdev_memioregions[i].d, sysdev_memioregions[i].f, sysdev_memioregions[i].vendor_id,
                                sysdev_memioregions[i].device_id, sysdev_memioregions[i].dtype, dst_slabid);
-                }
+                }*/
             }
         }
 }
