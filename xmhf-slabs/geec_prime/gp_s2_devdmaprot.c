@@ -152,10 +152,10 @@ void gp_s2_sdasetupdevpgtbl(u32 slabid){
 
 void gp_s2_sdabinddevice(u32 slabid, u32 pagewalk_lvl,  u32 bus, u32 dev, u32 func){
 	//sanity checks
-	if(slabid > XMHFGEEC_TOTAL_SLABS){
+	/*if(slabid > XMHFGEEC_TOTAL_SLABS){
 		_XDPRINTF_("%s: Error: slabid (%u) > XMHFGEEC_TOTAL_SLABS(%u). bailing out!\n", __func__, slabid, XMHFGEEC_TOTAL_SLABS);
 		return;
-	}
+	}*/
 
 	if(!_slabdevpgtbl_infotable[slabid].devpgtbl_initialized){
 		_XDPRINTF_("%s: Error: slabid (%u) devpgtbl not initialized\n",
