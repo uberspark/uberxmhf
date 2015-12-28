@@ -65,6 +65,23 @@
 				sysdev_memioregions[x].dtype == SYSDEV_MEMIOREGIONS_DTYPE_BRIDGE ||
 				sysdev_memioregions[x].dtype == SYSDEV_MEMIOREGIONS_DTYPE_UNKNOWN)
 			)==> (invokedgetuobjfordev[x] == true) );
+	ensures \forall integer x; 0 <= x < numentries_sysdev_memioregions ==> (
+			(
+				(sysdev_memioregions[x].dtype == SYSDEV_MEMIOREGIONS_DTYPE_GENERAL ||
+				sysdev_memioregions[x].dtype == SYSDEV_MEMIOREGIONS_DTYPE_BRIDGE ||
+				sysdev_memioregions[x].dtype == SYSDEV_MEMIOREGIONS_DTYPE_UNKNOWN)
+				&&
+				(uobjfordev[x] == 0xFFFFFFFFUL || (uobjfordev[x] >= XMHFGEEC_TOTAL_SLABS))
+			)==> (invokedsdabinddevice[x] == false) );
+	ensures \forall integer x; 0 <= x < numentries_sysdev_memioregions ==> (
+			(
+				(sysdev_memioregions[x].dtype == SYSDEV_MEMIOREGIONS_DTYPE_GENERAL ||
+				sysdev_memioregions[x].dtype == SYSDEV_MEMIOREGIONS_DTYPE_BRIDGE ||
+				sysdev_memioregions[x].dtype == SYSDEV_MEMIOREGIONS_DTYPE_UNKNOWN)
+				&&
+				!(uobjfordev[x] == 0xFFFFFFFFUL || (uobjfordev[x] >= XMHFGEEC_TOTAL_SLABS))
+			)==> (invokedsdabinddevice[x] == true) );
+
 @*/
 void gp_s2_sdadoalloc(void){
 	u32 i;
