@@ -324,6 +324,9 @@ void gp_s2_sda(void);
 @*/
 bool gp_s2_sdabinddevice(u32 slabid, u32 pagewalk_lvl,  u32 bus, u32 dev, u32 func);
 
+/*@
+	requires 0 <= numentries_sysdev_memioregions < MAX_PLATFORM_DEVICES;
+@*/
 void gp_s2_sdadoalloc(void);
 
 /*@
