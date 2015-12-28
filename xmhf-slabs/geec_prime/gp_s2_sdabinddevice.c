@@ -54,16 +54,54 @@
 /*@
 	requires 0 <= slabid < XMHFGEEC_TOTAL_SLABS;
 
-	behavior setcet:
-		assumes !(	(!_slabdevpgtbl_infotable[slabid].devpgtbl_initialized)  ||
-				( !(bus < PCI_BUS_MAX && dev < PCI_DEVICE_MAX && func < PCI_FUNCTION_MAX) )
-		);
+	behavior setcet4lvl:
+		assumes (
+				(
+				!(	(!_slabdevpgtbl_infotable[slabid].devpgtbl_initialized)  ||
+					( !(bus < PCI_BUS_MAX && dev < PCI_DEVICE_MAX && func < PCI_FUNCTION_MAX) )
+				) && (pagewalk_lvl == VTD_PAGEWALK_4LEVEL)
+				)
+			);
+		ensures ( _slabdevpgtbl_vtd_cet[bus][((dev*PCI_FUNCTION_MAX) + func)].qwords[0] ==
+			    (vtd_make_cete((u64)&_slabdevpgtbl_pml4t[slabid], VTD_CET_PRESENT))
+			);
+		ensures ( _slabdevpgtbl_vtd_cet[bus][((dev*PCI_FUNCTION_MAX) + func)].qwords[1] ==
+			    (vtd_make_cetehigh(2, (slabid+1)))
+			);
 		ensures (\result == true);
 
+
+	behavior setcet3lvl:
+		assumes (
+				(
+				!(	(!_slabdevpgtbl_infotable[slabid].devpgtbl_initialized)  ||
+					( !(bus < PCI_BUS_MAX && dev < PCI_DEVICE_MAX && func < PCI_FUNCTION_MAX) )
+				) && (pagewalk_lvl == VTD_PAGEWALK_3LEVEL)
+				)
+			);
+		ensures ( _slabdevpgtbl_vtd_cet[bus][((dev*PCI_FUNCTION_MAX) + func)].qwords[0] ==
+			    (vtd_make_cete((u64)&_slabdevpgtbl_pdpt[slabid], VTD_CET_PRESENT))
+			);
+		ensures ( _slabdevpgtbl_vtd_cet[bus][((dev*PCI_FUNCTION_MAX) + func)].qwords[1] ==
+			    (vtd_make_cetehigh(1, (slabid+1)))
+			);
+		ensures (\result == true);
+
+
 	behavior invalid:
-		assumes (	(!_slabdevpgtbl_infotable[slabid].devpgtbl_initialized)  ||
-				( !(bus < PCI_BUS_MAX && dev < PCI_DEVICE_MAX && func < PCI_FUNCTION_MAX) )
-		);
+		assumes (
+				(	(!_slabdevpgtbl_infotable[slabid].devpgtbl_initialized)  ||
+					( !(bus < PCI_BUS_MAX && dev < PCI_DEVICE_MAX && func < PCI_FUNCTION_MAX) )
+				) ||
+
+				(
+				!(	(!_slabdevpgtbl_infotable[slabid].devpgtbl_initialized)  ||
+					( !(bus < PCI_BUS_MAX && dev < PCI_DEVICE_MAX && func < PCI_FUNCTION_MAX) )
+				) && !(pagewalk_lvl == VTD_PAGEWALK_4LEVEL) &&
+					!(pagewalk_lvl == VTD_PAGEWALK_3LEVEL)
+				)
+
+			);
 		ensures (\result == false);
 
 	complete behaviors;
@@ -82,7 +120,6 @@ bool gp_s2_sdabinddevice(u32 slabid, u32 pagewalk_lvl,  u32 bus, u32 dev, u32 fu
 		retstatus = false;
 	}else{
 
-		#if 0
 		//b is our index into ret
 		// (d* PCI_FUNCTION_MAX) + f = index into the cet
 		if(pagewalk_lvl == VTD_PAGEWALK_4LEVEL){
@@ -101,9 +138,7 @@ bool gp_s2_sdabinddevice(u32 slabid, u32 pagewalk_lvl,  u32 bus, u32 dev, u32 fu
 			//_XDPRINTF_("%s: Error: slabid (%u) unknown pagewalk\n",  __func__, slabid);
 			retstatus = false;
 		}
-		#endif
 
-		retstatus = true;
 	}
 
 	return retstatus;
