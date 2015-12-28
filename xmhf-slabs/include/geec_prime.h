@@ -319,8 +319,14 @@ void gp_s2_setupslabdevmap(void);
 
 void gp_s2_sda(void);
 bool gp_s2_sdabinddevice(u32 slabid, u32 pagewalk_lvl,  u32 bus, u32 dev, u32 func);
+
 void gp_s2_sdadoalloc(void);
+
+/*@
+	assigns \nothing;
+@*/
 u32 gp_s2_sdadoalloc_getuobjfordev(u32 bus, u32 dev, u32 func);
+
 void gp_s2_sdasetupdevpgtbl(u32 slabid);
 void gp_s2_sdasetupdevpgtbl_setptentries(u32 slabid, u32 pt_index, u32 startpaddr);
 

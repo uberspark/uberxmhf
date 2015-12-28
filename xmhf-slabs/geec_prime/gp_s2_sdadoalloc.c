@@ -51,9 +51,18 @@
 
 #include <geec_prime.h>
 
+//@ghost u32 uobjfordev[MAX_PLATFORM_DEVICES];
+//@ghost bool invokedgetuobjfordev[MAX_PLATFORM_DEVICES];
 /*@
 	requires 0 <= numentries_sysdev_memioregions < MAX_PLATFORM_DEVICES;
-	assigns \nothing;
+	assigns uobjfordev[0..(numentries_sysdev_memioregions-1)];
+	assigns invokedgetuobjfordev[0..(numentries_sysdev_memioregions-1)];
+	ensures \forall integer x; 0 <= x < numentries_sysdev_memioregions ==> (
+			(
+				(sysdev_memioregions[x].dtype == SYSDEV_MEMIOREGIONS_DTYPE_GENERAL ||
+				sysdev_memioregions[x].dtype == SYSDEV_MEMIOREGIONS_DTYPE_BRIDGE ||
+				sysdev_memioregions[x].dtype == SYSDEV_MEMIOREGIONS_DTYPE_UNKNOWN)
+			)==> (invokedgetuobjfordev[x] == true) );
 @*/
 void gp_s2_sdadoalloc(void){
 	u32 i;
@@ -62,7 +71,16 @@ void gp_s2_sdadoalloc(void){
 
     	/*@
 		loop invariant a1: 0 <= i <= numentries_sysdev_memioregions;
+		loop invariant a2: \forall integer x; 0 <= x < i ==> (
+			(
+				(sysdev_memioregions[x].dtype == SYSDEV_MEMIOREGIONS_DTYPE_GENERAL ||
+				sysdev_memioregions[x].dtype == SYSDEV_MEMIOREGIONS_DTYPE_BRIDGE ||
+				sysdev_memioregions[x].dtype == SYSDEV_MEMIOREGIONS_DTYPE_UNKNOWN)
+			)==> (invokedgetuobjfordev[x] == true) );
 		loop assigns i;
+		loop assigns dst_slabid;
+		loop assigns uobjfordev[0..(numentries_sysdev_memioregions-1)];
+		loop assigns invokedgetuobjfordev[0..(numentries_sysdev_memioregions-1)];
 		loop variant numentries_sysdev_memioregions - i;
 	@*/
         for(i=0; i <numentries_sysdev_memioregions; i++){
@@ -70,10 +88,13 @@ void gp_s2_sdadoalloc(void){
                sysdev_memioregions[i].dtype == SYSDEV_MEMIOREGIONS_DTYPE_BRIDGE ||
                sysdev_memioregions[i].dtype == SYSDEV_MEMIOREGIONS_DTYPE_UNKNOWN){
 
-		/*dst_slabid = gp_s2_sdadoalloc_getuobjfordev(sysdev_memioregions[i].b,
+		dst_slabid = gp_s2_sdadoalloc_getuobjfordev(sysdev_memioregions[i].b,
 							sysdev_memioregions[i].d,
 							sysdev_memioregions[i].f);
-                if(dst_slabid == 0xFFFFFFFFUL){
+		//@ghost invokedgetuobjfordev[i] = true;
+		//@ghost uobjfordev[i] = dst_slabid;
+
+                /*if(dst_slabid == 0xFFFFFFFFUL){
                     _XDPRINTF_("Could not find slab for device %x:%x:%x (vid:did=%x:%x, type=%x), skipping...\n", sysdev_memioregions[i].b,
                                sysdev_memioregions[i].d, sysdev_memioregions[i].f, sysdev_memioregions[i].vendor_id,
                                sysdev_memioregions[i].device_id, sysdev_memioregions[i].dtype);
