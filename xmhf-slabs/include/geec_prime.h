@@ -327,6 +327,7 @@ bool gp_s2_sdabinddevice(u32 slabid, u32 pagewalk_lvl,  u32 bus, u32 dev, u32 fu
 void gp_s2_sdadoalloc(void);
 
 /*@
+	ensures \result == XMHFGEEC_SLAB_XG_RICHGUEST;
 	assigns \nothing;
 @*/
 u32 gp_s2_sdadoalloc_getuobjfordev(u32 bus, u32 dev, u32 func);

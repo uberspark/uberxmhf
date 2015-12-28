@@ -52,7 +52,10 @@
 #include <geec_prime.h>
 
 
-//returns 0xFFFFFFFF on error
+/*@
+	ensures \result == XMHFGEEC_SLAB_XG_RICHGUEST;
+	assigns \nothing;
+@*/
 u32 gp_s2_sdadoalloc_getuobjfordev(u32 bus, u32 dev, u32 func){
     u32 i;
 
