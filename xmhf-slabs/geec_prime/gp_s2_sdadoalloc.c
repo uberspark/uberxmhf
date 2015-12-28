@@ -120,8 +120,8 @@ void gp_s2_sdadoalloc(void){
 
 			//@ghost invokedsdabinddevice[i] = false;
                 }else{
-			//gp_s2_sdabinddevice(dst_slabid, vtd_pagewalk_level,
-			//			sysdev_memioregions[i].b, sysdev_memioregions[i].d, sysdev_memioregions[i].f);
+			gp_s2_sdabinddevice(dst_slabid, vtd_pagewalk_level,
+						sysdev_memioregions[i].b, sysdev_memioregions[i].d, sysdev_memioregions[i].f);
 
                     _XDPRINTF_("Allocated device %x:%x:%x (vid:did=%x:%x, type=%x) to slab %u...\n", sysdev_memioregions[i].b,
                                sysdev_memioregions[i].d, sysdev_memioregions[i].f, sysdev_memioregions[i].vendor_id,

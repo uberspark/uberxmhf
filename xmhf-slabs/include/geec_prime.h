@@ -318,6 +318,10 @@ void gp_s2_setupslabdevmap(void);
 
 
 void gp_s2_sda(void);
+
+/*@
+	requires 0 <= slabid < XMHFGEEC_TOTAL_SLABS;
+@*/
 bool gp_s2_sdabinddevice(u32 slabid, u32 pagewalk_lvl,  u32 bus, u32 dev, u32 func);
 
 void gp_s2_sdadoalloc(void);
