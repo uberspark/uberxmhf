@@ -56,8 +56,8 @@
 
 /*@
 	requires 0 <= slabid < XMHFGEEC_TOTAL_SLABS;
-	requires 0 <= pd_index < VTD_PTRS_PER_PDT;
-	assigns _slabdevpgtbl_pdt[slabid][pae_get_pdpt_index(startpaddr)][pae_get_pdt_index(startpaddr)];
+	requires 0 <= pd_index < MAX_SLAB_DMADATA_PDT_ENTRIES;
+	assigns _slabdevpgtbl_pdt[slabid][(startpaddr/PAGE_SIZE_2M)];
 @*/
 void gp_s2_sdasetupdevpgtbl_setptentries(u32 slabid, u32 pd_index, u32 startpaddr){
 	u32 i;
@@ -66,10 +66,11 @@ void gp_s2_sdasetupdevpgtbl_setptentries(u32 slabid, u32 pd_index, u32 startpadd
 	_slabdevpgtbl_pdt[slabid][(startpaddr/PAGE_SIZE_2M)] =
 	    vtd_make_pdte((u64)_slabdevpgtbl_pt[slabid][pd_index], (VTD_PAGE_READ | VTD_PAGE_WRITE));
 
-
+	#if 0
 	for(i=0; i < VTD_PTRS_PER_PT; i++){
 	    _slabdevpgtbl_pt[slabid][(pd_index * VTD_PTRS_PER_PT)+i] =
 		vtd_make_pte((startpaddr+(i * PAGE_SIZE_4K)), (VTD_PAGE_READ | VTD_PAGE_WRITE));
 	}
+	#endif
 }
 
