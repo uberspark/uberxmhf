@@ -337,6 +337,9 @@ void gp_s2_sdadoalloc(void);
 @*/
 u32 gp_s2_sdadoalloc_getuobjfordev(u32 bus, u32 dev, u32 func);
 
+/*@
+	requires 0 <= slabid < XMHFGEEC_TOTAL_SLABS;
+@*/
 void gp_s2_sdasetupdevpgtbl(u32 slabid);
 
 /*@

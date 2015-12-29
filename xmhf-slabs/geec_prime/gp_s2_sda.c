@@ -51,10 +51,13 @@
 
 #include <geec_prime.h>
 
-
+/*@
+	requires 0 <= numentries_sysdev_memioregions < MAX_PLATFORM_DEVICES;
+@*/
 void gp_s2_sda(void){
 	u32 i;
 
+	#if 0
 	for(i=0; i < XMHFGEEC_TOTAL_SLABS; i++){
 		_slabdevpgtbl_infotable[i].devpgtbl_initialized=false;
 	}
@@ -64,6 +67,7 @@ void gp_s2_sda(void){
 		gp_s2_sdasetupdevpgtbl(i);
 
 	}
+	#endif // 0
 
 	_XDPRINTF_("%s: initialized slab device page tables\n", __func__);
 
