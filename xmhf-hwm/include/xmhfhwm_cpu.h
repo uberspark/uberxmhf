@@ -971,9 +971,12 @@ typedef u32 *npt_t;
 #define pae_get_pdpt_index(paddr)\
     (((paddr) & PAE_PDPT_MASK) >> PAE_PDPT_SHIFT)
 
+
 /* get index field of a paddr in a pd level */
 #define pae_get_pdt_index(paddr)\
     (((paddr) & PAE_PDT_MASK) >> PAE_PDT_SHIFT)
+
+
 
 /* get index field of a paddr in a pt level */
 #define pae_get_pt_index(paddr)\
