@@ -54,9 +54,25 @@
 /*@
 	requires 0 <= slabid < XMHFGEEC_TOTAL_SLABS;
 	behavior initpgtbl:
-
+		assumes (
+			(xmhfgeec_slab_info_table[slabid].slab_physmem_extents[3].addr_end >= xmhfgeec_slab_info_table[slabid].slab_physmem_extents[3].addr_start)
+			&&
+			(xmhfgeec_slab_info_table[slabid].slab_physmem_extents[3].addr_end < (0xFFFFFFFFUL - PAGE_SIZE_2M))
+			&&
+			((xmhfgeec_slab_info_table[slabid].slab_physmem_extents[3].addr_end - xmhfgeec_slab_info_table[slabid].slab_physmem_extents[3].addr_start) <= MAX_SLAB_DMADATA_SIZE)
+		);
+		ensures (_slabdevpgtbl_infotable[slabid].devpgtbl_initialized == true);
 
 	behavior invalid:
+		assumes !(
+			(xmhfgeec_slab_info_table[slabid].slab_physmem_extents[3].addr_end >= xmhfgeec_slab_info_table[slabid].slab_physmem_extents[3].addr_start)
+			&&
+			(xmhfgeec_slab_info_table[slabid].slab_physmem_extents[3].addr_end < (0xFFFFFFFFUL - PAGE_SIZE_2M))
+			&&
+			((xmhfgeec_slab_info_table[slabid].slab_physmem_extents[3].addr_end - xmhfgeec_slab_info_table[slabid].slab_physmem_extents[3].addr_start) <= MAX_SLAB_DMADATA_SIZE)
+		);
+		ensures (_slabdevpgtbl_infotable[slabid].devpgtbl_initialized == false);
+
 
 	complete behaviors;
 	disjoint behaviors;
@@ -72,6 +88,7 @@ void gp_s2_sdasetupdevpgtbl(u32 slabid){
 		&&
 		((xmhfgeec_slab_info_table[slabid].slab_physmem_extents[3].addr_end - xmhfgeec_slab_info_table[slabid].slab_physmem_extents[3].addr_start) <= MAX_SLAB_DMADATA_SIZE)
 	){
+		#if 0
 		//initialize lvl1 page table (pml4t)
 		//memset(&_slabdevpgtbl_pml4t[slabid], 0, sizeof(_slabdevpgtbl_pml4t[0]));
 		for(i=0; i < VTD_MAXPTRS_PER_PML4T; i++)
@@ -93,6 +110,8 @@ void gp_s2_sdasetupdevpgtbl(u32 slabid){
 
 		gp_s2_sdasetupdevpgtbl_splintpdt(slabid, xmhfgeec_slab_info_table[slabid].slab_physmem_extents[3].addr_start,
 						xmhfgeec_slab_info_table[slabid].slab_physmem_extents[3].addr_end);
+		#endif // 0
+
 		_slabdevpgtbl_infotable[slabid].devpgtbl_initialized = true;
 
 	}else{
