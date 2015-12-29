@@ -51,53 +51,18 @@
 
 #include <geec_prime.h>
 
-void gp_s2_sdasetupdevpgtbl(u32 slabid){
-	u32 i;
-	u64 default_flags = (VTD_PAGE_READ | VTD_PAGE_WRITE);
-	u32 paddr=0, pt_paddr;
+static void gp_s2_sdasetupdevpgtbl_splintpdt(u32 slabid, u32 paddr_start, u32 paddr_end){
+	u32 paddr;
 	u32 pt_index=0;
-	u32 paddr_dmadata_start, paddr_dmadata_end;
 
-	paddr_dmadata_start =
-		xmhfgeec_slab_info_table[slabid].slab_physmem_extents[3].addr_start;
-	paddr_dmadata_end =
-		xmhfgeec_slab_info_table[slabid].slab_physmem_extents[3].addr_end;
-
-	//sanity checks
-	if(slabid > XMHFGEEC_TOTAL_SLABS){
-		_XDPRINTF_("%s: Error: slabid (%u) > XMHFGEEC_TOTAL_SLABS(%u). bailing out!\n", __func__, slabid, XMHFGEEC_TOTAL_SLABS);
-		return;
-	}
-
-	if( (paddr_dmadata_end - paddr_dmadata_start) >
-	MAX_SLAB_DMADATA_SIZE ){
-		_XDPRINTF_("%s: Error: slab %u dmadata section over limit. bailing out!\n",
-			   __func__, slabid);
-		return;
-	}
-
-	//initialize lvl1 page table (pml4t)
-	memset(&_slabdevpgtbl_pml4t[slabid], 0, sizeof(_slabdevpgtbl_pml4t[0]));
-	_slabdevpgtbl_pml4t[slabid][0] =
-	vtd_make_pml4te((u64)_slabdevpgtbl_pdpt[slabid], default_flags);
-
-	//initialize lvl2 page table (pdpt)
-	memset(&_slabdevpgtbl_pdpt[slabid], 0, sizeof(_slabdevpgtbl_pdpt[0]));
-	for(i=0; i < VTD_PTRS_PER_PDPT; i++){
-	_slabdevpgtbl_pdpt[slabid][i] =
-	    vtd_make_pdpte((u64)_slabdevpgtbl_pdt[slabid][i], default_flags);
-	}
-
-
-
-	for(paddr = paddr_dmadata_start; paddr < paddr_dmadata_end; paddr+= PAGE_SIZE_2M){
+	for(paddr = paddr_start; paddr < paddr_end; paddr+= PAGE_SIZE_2M){
 		//grab index of pdpt, pdt this paddr
 		u32 pdpt_index = pae_get_pdpt_index(paddr);
 		u32 pdt_index = pae_get_pdt_index(paddr);
 
 		//stick a pt for the pdt entry
 		_slabdevpgtbl_pdt[slabid][pdpt_index][pdt_index] =
-		    vtd_make_pdte((u64)_slabdevpgtbl_pt[slabid][pt_index], default_flags);
+		    vtd_make_pdte((u64)_slabdevpgtbl_pt[slabid][pt_index], (VTD_PAGE_READ | VTD_PAGE_WRITE));
 
 		//populate pt entries for this 2M range
 		gp_s2_sdasetupdevpgtbl_setptentries(slabid, pt_index, paddr);
@@ -105,30 +70,37 @@ void gp_s2_sdasetupdevpgtbl(u32 slabid){
 		pt_index++;
 	}
 
-/*    paddr = paddr_dmadata_start;
 
-    do {
-        //grab index of pdpt, pdt this paddr
-        u32 pdpt_index = pae_get_pdpt_index(paddr);
-        u32 pdt_index = pae_get_pdt_index(paddr);
+}
 
-        //stick a pt for the pdt entry
-        _slabdevpgtbl_pdt[slabid][pdpt_index][pdt_index] =
-            vtd_make_pdte((u64)_slabdevpgtbl_pt[slabid][pt_index], default_flags);
+void gp_s2_sdasetupdevpgtbl(u32 slabid){
+	u32 i;
 
-        //populate pt entries
-        pt_paddr = paddr;
-        for(i=0; i < VTD_PTRS_PER_PT; i++){
-            _slabdevpgtbl_pt[slabid][pt_index][i] =
-                vtd_make_pte(pt_paddr, default_flags);
-            pt_paddr += PAGE_SIZE_4K;
-        }
+	if( (xmhfgeec_slab_info_table[slabid].slab_physmem_extents[3].addr_end - xmhfgeec_slab_info_table[slabid].slab_physmem_extents[3].addr_start) >
+		MAX_SLAB_DMADATA_SIZE ){
+		_XDPRINTF_("%s: Error: slab %u dmadata section over limit. bailing out!\n",
+			   __func__, slabid);
+		_slabdevpgtbl_infotable[slabid].devpgtbl_initialized = false;
+		CASM_FUNCCALL(xmhfhw_cpu_hlt, CASM_NOPARAM);
+	}else{
 
-        pt_index++;
-        paddr += PAGE_SIZE_2M;
-    } while (paddr < paddr_dmadata_end);
-*/
+		//initialize lvl1 page table (pml4t)
+		memset(&_slabdevpgtbl_pml4t[slabid], 0, sizeof(_slabdevpgtbl_pml4t[0]));
+		_slabdevpgtbl_pml4t[slabid][0] =
+		vtd_make_pml4te((u64)_slabdevpgtbl_pdpt[slabid], (VTD_PAGE_READ | VTD_PAGE_WRITE));
 
-    _slabdevpgtbl_infotable[slabid].devpgtbl_initialized = true;
+		//initialize lvl2 page table (pdpt)
+		memset(&_slabdevpgtbl_pdpt[slabid], 0, sizeof(_slabdevpgtbl_pdpt[0]));
+		for(i=0; i < VTD_PTRS_PER_PDPT; i++){
+		_slabdevpgtbl_pdpt[slabid][i] =
+		    vtd_make_pdpte((u64)_slabdevpgtbl_pdt[slabid][i], (VTD_PAGE_READ | VTD_PAGE_WRITE));
+		}
+
+
+		gp_s2_sdasetupdevpgtbl_splintpdt(slabid, xmhfgeec_slab_info_table[slabid].slab_physmem_extents[3].addr_start,
+						xmhfgeec_slab_info_table[slabid].slab_physmem_extents[3].addr_end);
+		_slabdevpgtbl_infotable[slabid].devpgtbl_initialized = true;
+	}
+
 }
 
