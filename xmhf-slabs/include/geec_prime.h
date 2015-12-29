@@ -336,9 +336,15 @@ void gp_s2_sdadoalloc(void);
 u32 gp_s2_sdadoalloc_getuobjfordev(u32 bus, u32 dev, u32 func);
 
 void gp_s2_sdasetupdevpgtbl(u32 slabid);
-void gp_s2_sdasetupdevpgtbl_setptentries(u32 slabid, u32 pt_index, u32 startpaddr);
+
+/*@
+	requires 0 <= slabid < XMHFGEEC_TOTAL_SLABS;
+	requires 0 <= pd_index < VTD_PTRS_PER_PDT;
+@*/
+void gp_s2_sdasetupdevpgtbl_setptentries(u32 slabid, u32 pd_index, u32 startpaddr);
 
 
+void gp_s2_sdasetupdevpgtbl_splintpdt(u32 slabid, u32 paddr_start, u32 paddr_end);
 
 
 
