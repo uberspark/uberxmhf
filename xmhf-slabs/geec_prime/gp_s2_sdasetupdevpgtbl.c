@@ -71,7 +71,7 @@ void gp_s2_sdasetupdevpgtbl(u32 slabid){
 		memset(&_slabdevpgtbl_pdpt[slabid], 0, sizeof(_slabdevpgtbl_pdpt[0]));
 		for(i=0; i < VTD_PTRS_PER_PDPT; i++){
 		_slabdevpgtbl_pdpt[slabid][i] =
-		    vtd_make_pdpte((u64)_slabdevpgtbl_pdt[slabid][i], (VTD_PAGE_READ | VTD_PAGE_WRITE));
+		    vtd_make_pdpte((u64)&_slabdevpgtbl_pdt[slabid][i*VTD_PTRS_PER_PDT], (VTD_PAGE_READ | VTD_PAGE_WRITE));
 		}
 
 
