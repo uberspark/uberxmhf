@@ -52,6 +52,7 @@
 #include <geec_prime.h>
 
 //@ghost bool invokedhalt = false;
+//@ghost bool invokedsplintpdt = false;
 /*@
 	requires 0 <= slabid < XMHFGEEC_TOTAL_SLABS;
 	behavior initpgtbl:
@@ -65,7 +66,9 @@
 		assigns _slabdevpgtbl_pml4t[slabid][0..(VTD_MAXPTRS_PER_PML4T-1)];
 		assigns _slabdevpgtbl_pdpt[slabid][0..(VTD_MAXPTRS_PER_PDPT-1)];
 		assigns _slabdevpgtbl_infotable[slabid].devpgtbl_initialized;
+		assigns invokedsplintpdt;
 		ensures (_slabdevpgtbl_infotable[slabid].devpgtbl_initialized == true);
+		ensures (invokedsplintpdt == true);
 		ensures (  _slabdevpgtbl_pml4t[slabid][0] ==
 			  (vtd_make_pml4te((u64)&_slabdevpgtbl_pdpt[slabid], (VTD_PAGE_READ | VTD_PAGE_WRITE)))
 			);
@@ -143,11 +146,10 @@ void gp_s2_sdasetupdevpgtbl(u32 slabid){
 				vtd_make_pdpte((u64)&_slabdevpgtbl_pdt[slabid][i*VTD_PTRS_PER_PDT], (VTD_PAGE_READ | VTD_PAGE_WRITE));
 		}
 
-		#if 0
 
 		gp_s2_sdasetupdevpgtbl_splintpdt(slabid, xmhfgeec_slab_info_table[slabid].slab_physmem_extents[3].addr_start,
 						xmhfgeec_slab_info_table[slabid].slab_physmem_extents[3].addr_end);
-		#endif // 0
+		//@ghost invokedsplintpdt = true;
 
 		_slabdevpgtbl_infotable[slabid].devpgtbl_initialized = true;
 
