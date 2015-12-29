@@ -58,6 +58,10 @@
 	requires 0 <= slabid < XMHFGEEC_TOTAL_SLABS;
 	requires 0 <= pd_index < MAX_SLAB_DMADATA_PDT_ENTRIES;
 	assigns _slabdevpgtbl_pdt[slabid][(startpaddr/PAGE_SIZE_2M)];
+	ensures ( _slabdevpgtbl_pdt[slabid][(startpaddr/PAGE_SIZE_2M)] ==
+	    (vtd_make_pdte((u64)_slabdevpgtbl_pt[slabid][pd_index], (VTD_PAGE_READ | VTD_PAGE_WRITE)))
+		);
+
 @*/
 void gp_s2_sdasetupdevpgtbl_setptentries(u32 slabid, u32 pd_index, u32 startpaddr){
 	u32 i;
