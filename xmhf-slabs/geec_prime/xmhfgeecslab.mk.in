@@ -65,6 +65,7 @@ verify: verifybase
 	#cd $(XMHF_SLAB_VERIFICATION_DIR) && frama-c -main gp_s2_sdabinddevice -lib-entry -wp -wp-rte -wp-model +cint+cast  -wp-prover alt-ergo,cvc3,z3 -cpp-extra-args=-nostdinc $(VFLAGS) gp_data.c.v.c gp_s2_sdabinddevice.c.v.c
 	#cd $(XMHF_SLAB_VERIFICATION_DIR) && frama-c -main gp_s2_sdadoalloc -lib-entry -wp -wp-rte -wp-model +cint+cast  -wp-prover alt-ergo,cvc3,z3 -cpp-extra-args=-nostdinc $(VFLAGS) gp_data.c.v.c gp_s2_sdadoalloc.c.v.c
 	#cd $(XMHF_SLAB_VERIFICATION_DIR) && frama-c -main gp_s2_sdadoalloc_getuobjfordev -lib-entry -wp -wp-rte -wp-model +cint+cast  -wp-prover alt-ergo,cvc3,z3 -cpp-extra-args=-nostdinc $(VFLAGS) gp_data.c.v.c gp_s2_sdadoalloc_getuobjfordev.c.v.c
-	cd $(XMHF_SLAB_VERIFICATION_DIR) && frama-c -main gp_s2_sdasetupdevpgtbl_splintpdt -lib-entry -wp -wp-rte -wp-model +cint+cast  -wp-prover alt-ergo,cvc3,z3 -cpp-extra-args=-nostdinc $(VFLAGS) gp_data.c.v.c gp_s2_sdasetupdevpgtbl_splintpdt.c.v.c
+	#cd $(XMHF_SLAB_VERIFICATION_DIR) && frama-c -main gp_s2_sdasetupdevpgtbl_splintpdt -lib-entry -wp -wp-rte -wp-model +cint+cast  -wp-prover alt-ergo,cvc3,z3 -cpp-extra-args=-nostdinc $(VFLAGS) gp_data.c.v.c gp_s2_sdasetupdevpgtbl_splintpdt.c.v.c
 	#cd $(XMHF_SLAB_VERIFICATION_DIR) && frama-c -main gp_s2_sdasetupdevpgtbl_setptentries -lib-entry -wp -wp-rte -wp-model +cint+cast  -wp-prover alt-ergo,cvc3,z3 -cpp-extra-args=-nostdinc $(VFLAGS) gp_data.c.v.c gp_s2_sdasetupdevpgtbl_setptentries.c.v.c
+	cd $(XMHF_SLAB_VERIFICATION_DIR) && frama-c -main gp_s2_sdasetupdevpgtbl -lib-entry -wp -wp-rte -wp-model +cint+cast  -wp-prover alt-ergo,cvc3,z3 -cpp-extra-args=-nostdinc $(VFLAGS) gp_data.c.v.c gp_s2_sdasetupdevpgtbl.c.v.c
 

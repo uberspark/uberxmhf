@@ -51,6 +51,16 @@
 
 #include <geec_prime.h>
 
+/*@
+	requires 0 <= slabid < XMHFGEEC_TOTAL_SLABS;
+	behavior initpgtbl:
+
+
+	behavior invalid:
+
+	complete behaviors;
+	disjoint behaviors;
+@*/
 void gp_s2_sdasetupdevpgtbl(u32 slabid){
 	u32 i;
 
@@ -62,6 +72,7 @@ void gp_s2_sdasetupdevpgtbl(u32 slabid){
 		CASM_FUNCCALL(xmhfhw_cpu_hlt, CASM_NOPARAM);
 	}else{
 
+		#if 0
 		//initialize lvl1 page table (pml4t)
 		memset(&_slabdevpgtbl_pml4t[slabid], 0, sizeof(_slabdevpgtbl_pml4t[0]));
 		_slabdevpgtbl_pml4t[slabid][0] =
@@ -78,6 +89,7 @@ void gp_s2_sdasetupdevpgtbl(u32 slabid){
 		gp_s2_sdasetupdevpgtbl_splintpdt(slabid, xmhfgeec_slab_info_table[slabid].slab_physmem_extents[3].addr_start,
 						xmhfgeec_slab_info_table[slabid].slab_physmem_extents[3].addr_end);
 		_slabdevpgtbl_infotable[slabid].devpgtbl_initialized = true;
+		#endif
 	}
 
 }
