@@ -63,12 +63,12 @@ void gp_s2_sdasetupdevpgtbl_setptentries(u32 slabid, u32 pd_index, u32 startpadd
 	u32 i;
 
 	//stick a pt for the pdt entry
-	_slabdevpgtbl_pdt[slabid][pae_get_pdpt_index(startpaddr)][pae_get_pdt_index(startpaddr)] =
+	_slabdevpgtbl_pdt[slabid][(startpaddr/PAGE_SIZE_2M)] =
 	    vtd_make_pdte((u64)_slabdevpgtbl_pt[slabid][pd_index], (VTD_PAGE_READ | VTD_PAGE_WRITE));
 
 
 	for(i=0; i < VTD_PTRS_PER_PT; i++){
-	    _slabdevpgtbl_pt[slabid][pd_index][i] =
+	    _slabdevpgtbl_pt[slabid][(pd_index * VTD_PTRS_PER_PT)+i] =
 		vtd_make_pte((startpaddr+(i * PAGE_SIZE_4K)), (VTD_PAGE_READ | VTD_PAGE_WRITE));
 	}
 }
