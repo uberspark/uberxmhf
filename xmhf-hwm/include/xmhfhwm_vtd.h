@@ -214,8 +214,11 @@ typedef u64 vtd_pte_t;
 
 
 /* make a page table entry from individual fields */
+//#define vtd_make_pte(paddr, flags) \
+//  ((u64)(paddr) & (~(((u64)PAGE_SIZE_4K - 1)))) | (u64)(flags)
+
 #define vtd_make_pte(paddr, flags) \
-  ((u64)(paddr) & (~(((u64)PAGE_SIZE_4K - 1)))) | (u64)(flags)
+  ((u64)(paddr) & (0x7FFFFFFFFFFFF000ULL)) | (u64)(flags)
 
 
 
