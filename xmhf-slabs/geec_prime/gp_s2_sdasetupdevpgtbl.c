@@ -64,32 +64,42 @@
 void gp_s2_sdasetupdevpgtbl(u32 slabid){
 	u32 i;
 
-	if( (xmhfgeec_slab_info_table[slabid].slab_physmem_extents[3].addr_end - xmhfgeec_slab_info_table[slabid].slab_physmem_extents[3].addr_start) >
-		MAX_SLAB_DMADATA_SIZE ){
-		_XDPRINTF_("%s: Error: slab %u dmadata section over limit. bailing out!\n",
-			   __func__, slabid);
-		_slabdevpgtbl_infotable[slabid].devpgtbl_initialized = false;
-		CASM_FUNCCALL(xmhfhw_cpu_hlt, CASM_NOPARAM);
-	}else{
 
-		#if 0
+	if(
+		(xmhfgeec_slab_info_table[slabid].slab_physmem_extents[3].addr_end >= xmhfgeec_slab_info_table[slabid].slab_physmem_extents[3].addr_start)
+		&&
+		(xmhfgeec_slab_info_table[slabid].slab_physmem_extents[3].addr_end < (0xFFFFFFFFUL - PAGE_SIZE_2M))
+		&&
+		((xmhfgeec_slab_info_table[slabid].slab_physmem_extents[3].addr_end - xmhfgeec_slab_info_table[slabid].slab_physmem_extents[3].addr_start) <= MAX_SLAB_DMADATA_SIZE)
+	){
 		//initialize lvl1 page table (pml4t)
-		memset(&_slabdevpgtbl_pml4t[slabid], 0, sizeof(_slabdevpgtbl_pml4t[0]));
+		//memset(&_slabdevpgtbl_pml4t[slabid], 0, sizeof(_slabdevpgtbl_pml4t[0]));
+		for(i=0; i < VTD_MAXPTRS_PER_PML4T; i++)
+			_slabdevpgtbl_pml4t[slabid][i] = 0;
+
 		_slabdevpgtbl_pml4t[slabid][0] =
-		vtd_make_pml4te((u64)_slabdevpgtbl_pdpt[slabid], (VTD_PAGE_READ | VTD_PAGE_WRITE));
+			vtd_make_pml4te((u64)_slabdevpgtbl_pdpt[slabid], (VTD_PAGE_READ | VTD_PAGE_WRITE));
 
 		//initialize lvl2 page table (pdpt)
-		memset(&_slabdevpgtbl_pdpt[slabid], 0, sizeof(_slabdevpgtbl_pdpt[0]));
+		//memset(&_slabdevpgtbl_pdpt[slabid], 0, sizeof(_slabdevpgtbl_pdpt[0]));
+		for(i=0; i < VTD_MAXPTRS_PER_PDPT; i++)
+			_slabdevpgtbl_pdpt[slabid][i] = 0;
+
 		for(i=0; i < VTD_PTRS_PER_PDPT; i++){
-		_slabdevpgtbl_pdpt[slabid][i] =
-		    vtd_make_pdpte((u64)&_slabdevpgtbl_pdt[slabid][i*VTD_PTRS_PER_PDT], (VTD_PAGE_READ | VTD_PAGE_WRITE));
+			_slabdevpgtbl_pdpt[slabid][i] =
+				vtd_make_pdpte((u64)&_slabdevpgtbl_pdt[slabid][i*VTD_PTRS_PER_PDT], (VTD_PAGE_READ | VTD_PAGE_WRITE));
 		}
 
 
 		gp_s2_sdasetupdevpgtbl_splintpdt(slabid, xmhfgeec_slab_info_table[slabid].slab_physmem_extents[3].addr_start,
 						xmhfgeec_slab_info_table[slabid].slab_physmem_extents[3].addr_end);
 		_slabdevpgtbl_infotable[slabid].devpgtbl_initialized = true;
-		#endif
+
+	}else{
+		_XDPRINTF_("%s: Error: slab %u dmadata section over limit. bailing out!\n",
+			   __func__, slabid);
+		_slabdevpgtbl_infotable[slabid].devpgtbl_initialized = false;
+		CASM_FUNCCALL(xmhfhw_cpu_hlt, CASM_NOPARAM);
 	}
 
 }
