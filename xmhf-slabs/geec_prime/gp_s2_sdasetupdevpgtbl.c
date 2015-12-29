@@ -51,48 +51,6 @@
 
 #include <geec_prime.h>
 
-/*@
-	requires 0 <= slabid < XMHFGEEC_TOTAL_SLABS;
-	requires (paddr_end >= paddr_start);
-	requires (paddr_end < (0xFFFFFFFFUL - PAGE_SIZE_2M));
-	requires (paddr_end - paddr_start) <= MAX_SLAB_DMADATA_SIZE;
-
-@*/
-static void gp_s2_sdasetupdevpgtbl_splintpdt(u32 slabid, u32 paddr_start, u32 paddr_end){
-	u32 paddr;
-	u32 pd_index=0;
-
-
-    	/*@
-		loop invariant a1: paddr_start <= paddr <= (paddr_end+PAGE_SIZE_2M);
-		loop assigns paddr;
-		loop assigns pd_index;
-		loop variant (paddr_end+PAGE_SIZE_2M)-paddr;
-	@*/
-	for(paddr = paddr_start; paddr < paddr_end; paddr+= PAGE_SIZE_2M){
-		if(pd_index >= VTD_PTRS_PER_PDT){
-			CASM_FUNCCALL(xmhfhw_cpu_hlt, CASM_NOPARAM);
-		}else{
-			/*//grab index of pdpt, pdt this paddr
-			u32 pdpt_index = pae_get_pdpt_index(paddr);
-			u32 pdt_index = pae_get_pdt_index(paddr);
-
-			//stick a pt for the pdt entry
-			_slabdevpgtbl_pdt[slabid][pdpt_index][pdt_index] =
-			    vtd_make_pdte((u64)_slabdevpgtbl_pt[slabid][pd_index], (VTD_PAGE_READ | VTD_PAGE_WRITE));
-
-			//populate pt entries for this 2M range
-			gp_s2_sdasetupdevpgtbl_setptentries(slabid, pd_index, paddr);
-			*/
-
-			pd_index++;
-		}
-	}
-
-
-}
-
-#if 0
 void gp_s2_sdasetupdevpgtbl(u32 slabid){
 	u32 i;
 
@@ -123,4 +81,3 @@ void gp_s2_sdasetupdevpgtbl(u32 slabid){
 	}
 
 }
-#endif
