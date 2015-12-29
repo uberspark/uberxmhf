@@ -54,21 +54,16 @@
 
 //setup PT entries for a 2M range
 void gp_s2_sdasetupdevpgtbl_setptentries(u32 slabid, u32 pd_index, u32 startpaddr){
-	u32 pt_paddr = startpaddr;
 	u32 i;
-	//grab index of pdpt, pdt this paddr
-	u32 pdpt_index = pae_get_pdpt_index(startpaddr);
-	u32 pdt_index = pae_get_pdt_index(startpaddr);
 
 	//stick a pt for the pdt entry
-	_slabdevpgtbl_pdt[slabid][pdpt_index][pdt_index] =
+	_slabdevpgtbl_pdt[slabid][pae_get_pdpt_index(startpaddr)][pae_get_pdt_index(startpaddr)] =
 	    vtd_make_pdte((u64)_slabdevpgtbl_pt[slabid][pd_index], (VTD_PAGE_READ | VTD_PAGE_WRITE));
 
 
 	for(i=0; i < VTD_PTRS_PER_PT; i++){
 	    _slabdevpgtbl_pt[slabid][pd_index][i] =
-		vtd_make_pte(pt_paddr, (VTD_PAGE_READ | VTD_PAGE_WRITE));
-	    pt_paddr += PAGE_SIZE_4K;
+		vtd_make_pte((startpaddr+(i * PAGE_SIZE_4K)), (VTD_PAGE_READ | VTD_PAGE_WRITE));
 	}
 }
 
