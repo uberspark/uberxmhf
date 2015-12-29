@@ -51,6 +51,7 @@
 
 #include <geec_prime.h>
 
+//@ghost bool invokedhalt = false;
 /*@
 	requires 0 <= slabid < XMHFGEEC_TOTAL_SLABS;
 	behavior initpgtbl:
@@ -61,7 +62,13 @@
 			&&
 			((xmhfgeec_slab_info_table[slabid].slab_physmem_extents[3].addr_end - xmhfgeec_slab_info_table[slabid].slab_physmem_extents[3].addr_start) <= MAX_SLAB_DMADATA_SIZE)
 		);
+		assigns _slabdevpgtbl_pml4t[slabid][0..(VTD_MAXPTRS_PER_PML4T-1)];
+		assigns _slabdevpgtbl_infotable[slabid].devpgtbl_initialized;
 		ensures (_slabdevpgtbl_infotable[slabid].devpgtbl_initialized == true);
+		ensures (  _slabdevpgtbl_pml4t[slabid][0] ==
+			  (vtd_make_pml4te((u64)&_slabdevpgtbl_pdpt[slabid], (VTD_PAGE_READ | VTD_PAGE_WRITE)))
+			);
+
 
 	behavior invalid:
 		assumes !(
@@ -72,7 +79,7 @@
 			((xmhfgeec_slab_info_table[slabid].slab_physmem_extents[3].addr_end - xmhfgeec_slab_info_table[slabid].slab_physmem_extents[3].addr_start) <= MAX_SLAB_DMADATA_SIZE)
 		);
 		ensures (_slabdevpgtbl_infotable[slabid].devpgtbl_initialized == false);
-
+		ensures (invokedhalt == true);
 
 	complete behaviors;
 	disjoint behaviors;
@@ -88,14 +95,24 @@ void gp_s2_sdasetupdevpgtbl(u32 slabid){
 		&&
 		((xmhfgeec_slab_info_table[slabid].slab_physmem_extents[3].addr_end - xmhfgeec_slab_info_table[slabid].slab_physmem_extents[3].addr_start) <= MAX_SLAB_DMADATA_SIZE)
 	){
-		#if 0
 		//initialize lvl1 page table (pml4t)
-		//memset(&_slabdevpgtbl_pml4t[slabid], 0, sizeof(_slabdevpgtbl_pml4t[0]));
+		/*@
+			loop invariant a1: 0 <= i <= VTD_MAXPTRS_PER_PML4T;
+			loop invariant a2: \forall integer x; 0 <= x < i ==> (
+				(_slabdevpgtbl_pml4t[slabid][x] == 0)
+				);
+			loop assigns i;
+			loop assigns _slabdevpgtbl_pml4t[slabid][0..(VTD_MAXPTRS_PER_PML4T-1)];
+			loop variant VTD_MAXPTRS_PER_PML4T - i;
+		@*/
 		for(i=0; i < VTD_MAXPTRS_PER_PML4T; i++)
 			_slabdevpgtbl_pml4t[slabid][i] = 0;
 
+
 		_slabdevpgtbl_pml4t[slabid][0] =
-			vtd_make_pml4te((u64)_slabdevpgtbl_pdpt[slabid], (VTD_PAGE_READ | VTD_PAGE_WRITE));
+			vtd_make_pml4te((u64)&_slabdevpgtbl_pdpt[slabid], (VTD_PAGE_READ | VTD_PAGE_WRITE));
+
+		#if 0
 
 		//initialize lvl2 page table (pdpt)
 		//memset(&_slabdevpgtbl_pdpt[slabid], 0, sizeof(_slabdevpgtbl_pdpt[0]));
@@ -119,6 +136,7 @@ void gp_s2_sdasetupdevpgtbl(u32 slabid){
 			   __func__, slabid);
 		_slabdevpgtbl_infotable[slabid].devpgtbl_initialized = false;
 		CASM_FUNCCALL(xmhfhw_cpu_hlt, CASM_NOPARAM);
+		//@ghost invokedhalt = true;
 	}
 
 }
