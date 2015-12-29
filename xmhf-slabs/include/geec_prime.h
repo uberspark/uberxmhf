@@ -341,7 +341,7 @@ void gp_s2_sdasetupdevpgtbl(u32 slabid);
 
 /*@
 	requires 0 <= slabid < XMHFGEEC_TOTAL_SLABS;
-	requires 0 <= pd_index < VTD_PTRS_PER_PDT;
+	requires 0 <= pd_index < MAX_SLAB_DMADATA_PDT_ENTRIES;
 @*/
 void gp_s2_sdasetupdevpgtbl_setptentries(u32 slabid, u32 pd_index, u32 startpaddr);
 
