@@ -51,12 +51,13 @@
 
 #include <geec_prime.h>
 
+//@ghost bool invokedsetptentries[VTD_PTRS_PER_PDT];
 /*@
 	requires 0 <= slabid < XMHFGEEC_TOTAL_SLABS;
 	requires (paddr_end >= paddr_start);
 	requires (paddr_end < (0xFFFFFFFFUL - PAGE_SIZE_2M));
 	requires (paddr_end - paddr_start) <= MAX_SLAB_DMADATA_SIZE;
-
+	assigns invokedsetptentries[0..(VTD_PTRS_PER_PDT-1)];
 @*/
 void gp_s2_sdasetupdevpgtbl_splintpdt(u32 slabid, u32 paddr_start, u32 paddr_end){
 	u32 paddr;
@@ -66,8 +67,12 @@ void gp_s2_sdasetupdevpgtbl_splintpdt(u32 slabid, u32 paddr_start, u32 paddr_end
     	/*@
 		loop invariant a1: paddr_start <= paddr <= (paddr_end+PAGE_SIZE_2M);
 		loop invariant a2: pd_index <= VTD_PTRS_PER_PDT;
+		loop invariant a3: \forall integer x; 0 <= x < pd_index ==> (
+			(x < VTD_PTRS_PER_PDT) ==> ( invokedsetptentries[x] == true)
+			);
 		loop assigns paddr;
 		loop assigns pd_index;
+		loop assigns invokedsetptentries[0..(VTD_PTRS_PER_PDT-1)];
 		loop variant (paddr_end+PAGE_SIZE_2M)-paddr;
 	@*/
 	for(paddr = paddr_start; paddr < paddr_end; paddr+= PAGE_SIZE_2M){
@@ -76,6 +81,7 @@ void gp_s2_sdasetupdevpgtbl_splintpdt(u32 slabid, u32 paddr_start, u32 paddr_end
 		}else{
 			//populate pt entries for this 2M range
 			gp_s2_sdasetupdevpgtbl_setptentries(slabid, pd_index, paddr);
+			//@ghost invokedsetptentries[pd_index] = true;
 			pd_index++;
 		}
 	}
