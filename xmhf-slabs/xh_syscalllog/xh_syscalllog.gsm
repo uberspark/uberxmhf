@@ -2,6 +2,7 @@
 #include <uapi_gcpustate.h>
 #include <uapi_slabmempgtbl.h>
 #include <xh_syscalllog.h>
+#include <xc_nwlog.h>
 
 //slab memory sections
 MS:CODE:0x200000:void:void
