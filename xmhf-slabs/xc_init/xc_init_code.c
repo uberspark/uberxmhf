@@ -121,10 +121,10 @@ void slab_main(slab_params_t *sp){
     //static u64 cpucount=0;
     static u32 __xcinit_smplock = 1;
 
-	_XDPRINTF_("%s[%u]: Got control: ESP=%08x\n", __func__, (u16)sp->cpuid, CASM_FUNCCALL(read_esp,CASM_NOPARAM));
+    //_XDPRINTF_("XC_INIT[%u]: got control: ESP=%08x\n", __func__, (u16)sp->cpuid, CASM_FUNCCALL(read_esp,CASM_NOPARAM));
 
     if(!isbsp){
-        _XDPRINTF_("%s[%u]: AP Halting!\n", __func__, (u16)sp->cpuid);
+        //_XDPRINTF_("XC_INIT[%u]: AP Halting!\n", __func__, (u16)sp->cpuid);
 
         //CASM_FUNCCALL(spin_lock,&__xcinit_smplock);
         //cpucount++;
@@ -138,10 +138,11 @@ void slab_main(slab_params_t *sp){
 
         //while(cpucount < (xcbootinfo->cpuinfo_numentries-1));
 
-        _XDPRINTF_("%s[%u]: BSP, APs halted. Proceeding...\n",
-                __func__, (u16)sp->cpuid);
+        //_XDPRINTF_("XC_INIT[%u]: BSP proceeding...\n",
+        //        __func__, (u16)sp->cpuid);
     }
 
+    _XDPRINTF_("XC_INIT[%u]: got control: ESP=%08x\n", (u16)sp->cpuid, CASM_FUNCCALL(read_esp,CASM_NOPARAM));
 
 
     // call test slab
@@ -239,8 +240,229 @@ void slab_main(slab_params_t *sp){
 
             XMHF_SLAB_CALLNEW(&spl);
 
-        }
 
+		/*
+		gcpustate_vmrwp->encoding = ;
+		gcpustate_vmrwp->value = ;
+		XMHF_SLAB_CALLNEW(&spl);
+		*/
+
+		//more guest-specific state setup
+		gcpustate_vmrwp->encoding = VMCS_CONTROL_CR4_SHADOW;
+		gcpustate_vmrwp->value =(u64)CR4_VMXE;
+		XMHF_SLAB_CALLNEW(&spl);
+
+		gcpustate_vmrwp->encoding = VMCS_CONTROL_PAGEFAULT_ERRORCODE_MASK;
+		gcpustate_vmrwp->value = 0x00000000;
+		XMHF_SLAB_CALLNEW(&spl);
+
+		gcpustate_vmrwp->encoding = VMCS_CONTROL_PAGEFAULT_ERRORCODE_MATCH;
+		gcpustate_vmrwp->value = 0x00000000;
+		XMHF_SLAB_CALLNEW(&spl);
+
+		gcpustate_vmrwp->encoding = VMCS_CONTROL_EXCEPTION_BITMAP;
+		gcpustate_vmrwp->value = 0;
+		XMHF_SLAB_CALLNEW(&spl);
+
+		gcpustate_vmrwp->encoding = VMCS_CONTROL_CR3_TARGET_COUNT;
+		gcpustate_vmrwp->value = 0;
+		XMHF_SLAB_CALLNEW(&spl);
+
+		gcpustate_vmrwp->encoding = VMCS_CONTROL_VM_ENTRY_EXCEPTION_ERRORCODE;
+		gcpustate_vmrwp->value = 0;
+		XMHF_SLAB_CALLNEW(&spl);
+
+		gcpustate_vmrwp->encoding = VMCS_CONTROL_VM_ENTRY_INTERRUPTION_INFORMATION;
+		gcpustate_vmrwp->value = 0;
+		XMHF_SLAB_CALLNEW(&spl);
+
+		gcpustate_vmrwp->encoding = VMCS_GUEST_RSP;
+		gcpustate_vmrwp->value = 0;
+		XMHF_SLAB_CALLNEW(&spl);
+
+		gcpustate_vmrwp->encoding = VMCS_GUEST_RIP;
+		gcpustate_vmrwp->value = 0;
+		XMHF_SLAB_CALLNEW(&spl);
+
+		gcpustate_vmrwp->encoding = VMCS_GUEST_ACTIVITY_STATE;
+		gcpustate_vmrwp->value = 0;
+		XMHF_SLAB_CALLNEW(&spl);
+
+		gcpustate_vmrwp->encoding = VMCS_GUEST_RFLAGS;
+		gcpustate_vmrwp->value = (1 <<1) | (EFLAGS_IOPL);
+		XMHF_SLAB_CALLNEW(&spl);
+
+		gcpustate_vmrwp->encoding = VMCS_GUEST_INTERRUPTIBILITY;
+		gcpustate_vmrwp->value = 0;
+		XMHF_SLAB_CALLNEW(&spl);
+
+		//IDTR
+		gcpustate_vmrwp->encoding = VMCS_GUEST_IDTR_BASE;
+		gcpustate_vmrwp->value = 0;
+		XMHF_SLAB_CALLNEW(&spl);
+
+		gcpustate_vmrwp->encoding = VMCS_GUEST_IDTR_LIMIT;
+		gcpustate_vmrwp->value = 0;
+		XMHF_SLAB_CALLNEW(&spl);
+
+		//LDTR, unusable
+		gcpustate_vmrwp->encoding = VMCS_GUEST_LDTR_BASE;
+		gcpustate_vmrwp->value = 0;
+		XMHF_SLAB_CALLNEW(&spl);
+
+		gcpustate_vmrwp->encoding = VMCS_GUEST_LDTR_LIMIT;
+		gcpustate_vmrwp->value = 0;
+		XMHF_SLAB_CALLNEW(&spl);
+
+		gcpustate_vmrwp->encoding = VMCS_GUEST_LDTR_SELECTOR;
+		gcpustate_vmrwp->value = 0 ;
+		XMHF_SLAB_CALLNEW(&spl);
+
+		gcpustate_vmrwp->encoding = VMCS_GUEST_LDTR_ACCESS_RIGHTS;
+		gcpustate_vmrwp->value = 0x10000;
+		XMHF_SLAB_CALLNEW(&spl);
+
+		//guest CR3
+		gcpustate_vmrwp->encoding = VMCS_GUEST_CR3;
+		gcpustate_vmrwp->value = 0;
+		XMHF_SLAB_CALLNEW(&spl);
+
+		//TR
+		gcpustate_vmrwp->encoding = VMCS_GUEST_TR_BASE ;
+		gcpustate_vmrwp->value = 0;
+		XMHF_SLAB_CALLNEW(&spl);
+
+		gcpustate_vmrwp->encoding = VMCS_GUEST_TR_LIMIT;
+		gcpustate_vmrwp->value = 0;
+		XMHF_SLAB_CALLNEW(&spl);
+
+		gcpustate_vmrwp->encoding = VMCS_GUEST_TR_SELECTOR;
+		gcpustate_vmrwp->value = 0;
+		XMHF_SLAB_CALLNEW(&spl);
+
+		gcpustate_vmrwp->encoding = VMCS_GUEST_TR_ACCESS_RIGHTS;
+		gcpustate_vmrwp->value = 0x8B;
+		XMHF_SLAB_CALLNEW(&spl);
+
+		//CS segment
+		gcpustate_vmrwp->encoding = VMCS_GUEST_CS_SELECTOR;
+		gcpustate_vmrwp->value = 0x8;
+		XMHF_SLAB_CALLNEW(&spl);
+
+		gcpustate_vmrwp->encoding = VMCS_GUEST_CS_BASE;
+		gcpustate_vmrwp->value = 0;
+		XMHF_SLAB_CALLNEW(&spl);
+
+		gcpustate_vmrwp->encoding = VMCS_GUEST_CS_LIMIT;
+		gcpustate_vmrwp->value = 0xFFFFFFFFUL;
+		XMHF_SLAB_CALLNEW(&spl);
+
+		gcpustate_vmrwp->encoding = VMCS_GUEST_CS_ACCESS_RIGHTS;
+		gcpustate_vmrwp->value = 0xc09b;
+		XMHF_SLAB_CALLNEW(&spl);
+
+		//DS segment
+		gcpustate_vmrwp->encoding = VMCS_GUEST_DS_SELECTOR;
+		gcpustate_vmrwp->value = 0x10;
+		XMHF_SLAB_CALLNEW(&spl);
+
+		gcpustate_vmrwp->encoding = VMCS_GUEST_DS_BASE;
+		gcpustate_vmrwp->value = 0;
+		XMHF_SLAB_CALLNEW(&spl);
+
+		gcpustate_vmrwp->encoding = VMCS_GUEST_DS_LIMIT;
+		gcpustate_vmrwp->value = 0xFFFFFFFFUL;
+		XMHF_SLAB_CALLNEW(&spl);
+
+		gcpustate_vmrwp->encoding = VMCS_GUEST_DS_ACCESS_RIGHTS;
+		gcpustate_vmrwp->value = 0xc093;
+		XMHF_SLAB_CALLNEW(&spl);
+
+		//ES segment
+		gcpustate_vmrwp->encoding = VMCS_GUEST_ES_SELECTOR;
+		gcpustate_vmrwp->value = 0x10 ;
+		XMHF_SLAB_CALLNEW(&spl);
+
+		gcpustate_vmrwp->encoding = VMCS_GUEST_ES_BASE;
+		gcpustate_vmrwp->value = 0;
+		XMHF_SLAB_CALLNEW(&spl);
+
+		gcpustate_vmrwp->encoding = VMCS_GUEST_ES_LIMIT;
+		gcpustate_vmrwp->value = 0xFFFFFFFFUL;
+		XMHF_SLAB_CALLNEW(&spl);
+
+		gcpustate_vmrwp->encoding = VMCS_GUEST_ES_ACCESS_RIGHTS;
+		gcpustate_vmrwp->value = 0xc093;
+		XMHF_SLAB_CALLNEW(&spl);
+
+		//FS segment
+		gcpustate_vmrwp->encoding = VMCS_GUEST_FS_SELECTOR;
+		gcpustate_vmrwp->value = 0x10 ;
+		XMHF_SLAB_CALLNEW(&spl);
+
+		gcpustate_vmrwp->encoding = VMCS_GUEST_FS_BASE;
+		gcpustate_vmrwp->value = 0;
+		XMHF_SLAB_CALLNEW(&spl);
+
+		gcpustate_vmrwp->encoding = VMCS_GUEST_FS_LIMIT;
+		gcpustate_vmrwp->value = 0xFFFFFFFFUL;
+		XMHF_SLAB_CALLNEW(&spl);
+
+		gcpustate_vmrwp->encoding = VMCS_GUEST_FS_ACCESS_RIGHTS;
+		gcpustate_vmrwp->value = 0xc093;
+		XMHF_SLAB_CALLNEW(&spl);
+
+		//GS segment
+		gcpustate_vmrwp->encoding = VMCS_GUEST_GS_SELECTOR;
+		gcpustate_vmrwp->value = 0x10 ;
+		XMHF_SLAB_CALLNEW(&spl);
+
+		gcpustate_vmrwp->encoding = VMCS_GUEST_GS_BASE;
+		gcpustate_vmrwp->value = 0;
+		XMHF_SLAB_CALLNEW(&spl);
+
+		gcpustate_vmrwp->encoding = VMCS_GUEST_GS_LIMIT;
+		gcpustate_vmrwp->value = 0xFFFFFFFFUL;
+		XMHF_SLAB_CALLNEW(&spl);
+
+		gcpustate_vmrwp->encoding = VMCS_GUEST_GS_ACCESS_RIGHTS;
+		gcpustate_vmrwp->value = 0xc093;
+		XMHF_SLAB_CALLNEW(&spl);
+
+		//SS segment
+		gcpustate_vmrwp->encoding = VMCS_GUEST_SS_SELECTOR;
+		gcpustate_vmrwp->value = 0x10 ;
+		XMHF_SLAB_CALLNEW(&spl);
+
+		gcpustate_vmrwp->encoding = VMCS_GUEST_SS_BASE;
+		gcpustate_vmrwp->value = 0;
+		XMHF_SLAB_CALLNEW(&spl);
+
+		gcpustate_vmrwp->encoding = VMCS_GUEST_SS_LIMIT;
+		gcpustate_vmrwp->value = 0xFFFFFFFFUL;
+		XMHF_SLAB_CALLNEW(&spl);
+
+		gcpustate_vmrwp->encoding = VMCS_GUEST_SS_ACCESS_RIGHTS;
+		gcpustate_vmrwp->value = 0xc093;
+		XMHF_SLAB_CALLNEW(&spl);
+
+
+		spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_VMREAD;
+		gcpustate_vmrwp->encoding = VMCS_GUEST_CR0;
+		XMHF_SLAB_CALLNEW(&spl);
+		spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_VMWRITE;
+		gcpustate_vmrwp->encoding = VMCS_GUEST_CR0;
+		gcpustate_vmrwp->value &= ~(CR0_PG);
+		XMHF_SLAB_CALLNEW(&spl);
+
+		spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_VMREAD;
+		gcpustate_vmrwp->encoding = VMCS_GUEST_CR0;
+		XMHF_SLAB_CALLNEW(&spl);
+		spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_VMWRITE;
+		gcpustate_vmrwp->encoding = VMCS_CONTROL_CR0_SHADOW;
+		XMHF_SLAB_CALLNEW(&spl);
+
+	}
 
     }
 
@@ -286,6 +508,177 @@ void slab_main(slab_params_t *sp){
 
 
 #if 0
+
+
+	/*_XDPRINTF_("%s: vmcs pinbased=%016llx\n", __func__, CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmread,VMCS_CONTROL_VMX_PIN_BASED));
+	_XDPRINTF_("%s: pinbase MSR=%016llx\n", __func__, _cpustate_archdatavmx[context_desc.cpu_desc.cpu_index].vmx_msrs[INDEX_IA32_VMX_PINBASED_CTLS_MSR]);
+	_XDPRINTF_("%s: cpu_based vmcs=%016llx\n", __func__, CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmread,VMCS_CONTROL_VMX_CPU_BASED));
+	_XDPRINTF_("%s: cpu_based MSR=%016llx\n", __func__, _cpustate_archdatavmx[context_desc.cpu_desc.cpu_index].vmx_msrs[INDEX_IA32_VMX_PROCBASED_CTLS_MSR]);
+	_XDPRINTF_("%s: seccpu_based vmcs=%016llx\n", __func__, CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmread,VMCS_CONTROL_VMX_SECCPU_BASED));
+	_XDPRINTF_("%s: seccpu_based MSR=%016llx\n", __func__, _cpustate_archdatavmx[context_desc.cpu_desc.cpu_index].vmx_msrs[INDEX_IA32_VMX_PROCBASED_CTLS2_MSR]);
+	_XDPRINTF_("%s: entrycontrols vmcs=%016llx\n", __func__, CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmread,VMCS_CONTROL_VM_ENTRY_CONTROLS));
+	_XDPRINTF_("%s: entrycontrols MSR=%016llx\n", __func__, _cpustate_archdatavmx[context_desc.cpu_desc.cpu_index].vmx_msrs[INDEX_IA32_VMX_ENTRY_CTLS_MSR]);
+	_XDPRINTF_("%s: exitcontrols vmcs=%016llx\n", __func__, CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmread,VMCS_CONTROL_VM_EXIT_CONTROLS));
+	_XDPRINTF_("%s: exitcontrols MSR=%016llx\n", __func__, _cpustate_archdatavmx[context_desc.cpu_desc.cpu_index].vmx_msrs[INDEX_IA32_VMX_EXIT_CTLS_MSR]);
+	_XDPRINTF_("%s: iobitmapa vmcs=%016llx\n", __func__, CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmread,VMCS_CONTROL_IO_BITMAPA_ADDRESS_FULL));
+	_XDPRINTF_("%s: iobitmapb vmcs=%016llx\n", __func__, CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmread,VMCS_CONTROL_IO_BITMAPB_ADDRESS_FULL));
+	_XDPRINTF_("%s: msrbitmap load vmcs=%016llx\n", __func__, CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmread,VMCS_CONTROL_VM_ENTRY_MSR_LOAD_ADDRESS_FULL));
+	_XDPRINTF_("%s: msrbitmap store vmcs=%016llx\n", __func__, CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmread,VMCS_CONTROL_VM_EXIT_MSR_STORE_ADDRESS_FULL));
+	_XDPRINTF_("%s: msrbitmap exit load vmcs=%016llx\n", __func__, CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmread,VMCS_CONTROL_VM_EXIT_MSR_LOAD_ADDRESS_FULL));
+	_XDPRINTF_("%s: ept pointer vmcs=%016llx\n", __func__, CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmread,VMCS_CONTROL_EPT_POINTER_FULL));
+
+	_XDPRINTF_("%s: CR0 vmcs=%08x\n", __func__, CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmread,VMCS_GUEST_CR0));
+	_XDPRINTF_("%s: CR4 vmcs=%08x\n", __func__, CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmread,VMCS_GUEST_CR4));
+	_XDPRINTF_("%s: CR0 mask vmcs=%08x\n", __func__, CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmread,VMCS_CONTROL_CR0_MASK));
+	_XDPRINTF_("%s: CR4 mask vmcs=%08x\n", __func__, CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmread,VMCS_CONTROL_CR4_MASK));
+	_XDPRINTF_("%s: CR0 shadow vmcs=%08x\n", __func__, CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmread,VMCS_CONTROL_CR0_SHADOW));
+	_XDPRINTF_("%s: CR4 shadow vmcs=%08x\n", __func__, CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmread,VMCS_CONTROL_CR4_SHADOW));
+	*/
+
+
+	//MSR bitmap support
+	//xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_MSR_BITMAPS_ADDRESS_FULL, __xmhfhic_x86vmx_archdata[cpuindex].vmx_msrbitmaps_region );
+	//xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VMX_CPU_BASED, (xmhfhw_cpu_x86vmx_vmread(VMCS_CONTROL_VMX_CPU_BASED) | (u64)(1 << 28)) );
+
+	//setup NMI intercept for core-quiescing
+	//XXX: needs to go in xcinit/richguest slab
+	//xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VMX_PIN_BASED, (u32)(xmhfhw_cpu_x86vmx_vmread(VMCS_CONTROL_VMX_PIN_BASED) | (u64)(1 << 3) ) );
+
+
+        //xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_CR4, (xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_CR4) | CR4_PAE | CR4_PSE) );
+
+        //xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VM_ENTRY_CONTROLS, (xmhfhw_cpu_x86vmx_vmread(VMCS_CONTROL_VM_ENTRY_CONTROLS) | (1 << 9)) );
+        //xmhfhw_cpu_x86vmx_vmwrite(VMCS_CONTROL_VM_ENTRY_CONTROLS, (xmhfhw_cpu_x86vmx_vmread(VMCS_CONTROL_VM_ENTRY_CONTROLS) | (1 << 15)) );
+
+        //xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_PDPTE0_FULL, _guestslab1_init_pdpt[0] );
+        //xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_PDPTE1_FULL, _guestslab1_init_pdpt[1] );
+        //xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_PDPTE2_FULL, _guestslab1_init_pdpt[2] );
+        //xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_PDPTE3_FULL, _guestslab1_init_pdpt[3] );
+
+
+        //xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_CR3, &_guestslab1_init_pml4t );
+
+
+
+    /*
+    x86_64
+    //64-bit host
+ CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_CONTROL_VM_EXIT_CONTROLS, (u32)(xmhfhw_cpu_x86vmx_vmread(VMCS_CONTROL_VM_EXIT_CONTROLS) | (1 << 9)) );
+    */
+
+/*
+    //64-bit specific guest slab setup
+    {
+
+        //Critical MSR load/store
+        {
+            u32 i;
+            msr_entry_t *hmsr = (msr_entry_t *)__xmhfhic_x86vmx_archdata[cpuindex].vmx_msr_area_host_region;
+            msr_entry_t *gmsr = (msr_entry_t *)__xmhfhic_x86vmx_archdata[cpuindex].vmx_msr_area_guest_region;
+
+            //store host and guest initial values of the critical MSRs
+            for(i=0; i < vmx_msr_area_msrs_count; i++){
+                u32 msr, eax, edx;
+                msr = vmx_msr_area_msrs[i];
+                rdmsr(msr, &eax, &edx);
+
+                //host MSR values will be what we get from RDMSR
+                hmsr[i].index = msr;
+                hmsr[i].data = ((u64)edx << 32) | (u64)eax;
+
+                //adjust and populate guest MSR values according to the MSR
+                gmsr[i].index = msr;
+                gmsr[i].data = ((u64)edx << 32) | (u64)eax;
+                switch(msr){
+                    case MSR_EFER:{
+                        //gmsr[i].data = gmsr[i].data & (u64)~(1ULL << EFER_LME);
+                        //gmsr[i].data = gmsr[i].data & (u64)~(1ULL << EFER_LMA);
+                        //gmsr[i].data = gmsr[i].data & (u64)~(1ULL << EFER_SCE);
+                        //gmsr[i].data = gmsr[i].data & (u64)~(1ULL << EFER_NXE);
+ CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_GUEST_IA32_EFER_FULL, gmsr[i].data);
+
+                    }
+                    break;
+
+                    default:
+                        break;
+                }
+
+            }
+
+            //host MSR load on exit, we store it ourselves before entry
+ CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_CONTROL_VM_EXIT_MSR_LOAD_ADDRESS_FULL, (void*)__xmhfhic_x86vmx_archdata[cpuindex].vmx_msr_area_host_region);
+ CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_CONTROL_VM_EXIT_MSR_LOAD_COUNT, vmx_msr_area_msrs_count);
+
+            //guest MSR load on entry, store on exit
+ CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_CONTROL_VM_ENTRY_MSR_LOAD_ADDRESS_FULL, (void*)__xmhfhic_x86vmx_archdata[cpuindex].vmx_msr_area_guest_region);
+ CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_CONTROL_VM_ENTRY_MSR_LOAD_COUNT, vmx_msr_area_msrs_count);
+ CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_CONTROL_VM_EXIT_MSR_STORE_ADDRESS_FULL, (void*)__xmhfhic_x86vmx_archdata[cpuindex].vmx_msr_area_guest_region);
+ CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_CONTROL_VM_EXIT_MSR_STORE_COUNT, vmx_msr_area_msrs_count);
+
+        }
+
+
+ CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_GUEST_CR4, (xmhfhw_cpu_x86vmx_vmread(VMCS_GUEST_CR4) | CR4_PAE | CR4_PSE) );
+
+ CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_CONTROL_VM_ENTRY_CONTROLS, (xmhfhw_cpu_x86vmx_vmread(VMCS_CONTROL_VM_ENTRY_CONTROLS) | (1 << 9)) );
+ CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_CONTROL_VM_ENTRY_CONTROLS, (xmhfhw_cpu_x86vmx_vmread(VMCS_CONTROL_VM_ENTRY_CONTROLS) | (1 << 15)) );
+
+        //xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_PDPTE0_FULL, _guestslab1_init_pdpt[0] );
+        //xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_PDPTE1_FULL, _guestslab1_init_pdpt[1] );
+        //xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_PDPTE2_FULL, _guestslab1_init_pdpt[2] );
+        //xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_PDPTE3_FULL, _guestslab1_init_pdpt[3] );
+
+
+        //xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_CR3, &_guestslab1_init_pml4t );
+
+
+        //TR, should be usable for VMX to work, but not used by guest
+ CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_GUEST_TR_BASE, 0);
+ CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_GUEST_TR_LIMIT, 0);
+ CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_GUEST_TR_SELECTOR, 0);
+ CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_GUEST_TR_ACCESS_RIGHTS, 0x8B);
+
+        //CS, DS, ES, FS, GS and SS segments
+ CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_GUEST_CS_SELECTOR, 0x8);
+ CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_GUEST_CS_BASE, 0);
+ CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_GUEST_CS_LIMIT, 0xFFFFFFFFUL);
+ CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_GUEST_CS_ACCESS_RIGHTS, 0xa09b);
+
+ CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_GUEST_DS_SELECTOR, 0x10);
+ CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_GUEST_DS_BASE, 0);
+ CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_GUEST_DS_LIMIT, 0xFFFFFFFFUL);
+ CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_GUEST_DS_ACCESS_RIGHTS, 0xa093);
+
+ CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_GUEST_ES_SELECTOR, 0x10);
+ CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_GUEST_ES_BASE, 0);
+ CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_GUEST_ES_LIMIT, 0xFFFFFFFFUL);
+ CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_GUEST_ES_ACCESS_RIGHTS, 0xa093);
+
+ CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_GUEST_FS_SELECTOR, 0x10);
+ CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_GUEST_FS_BASE, 0);
+ CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_GUEST_FS_LIMIT, 0xFFFFFFFFUL);
+ CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_GUEST_FS_ACCESS_RIGHTS, 0xa093);
+
+ CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_GUEST_GS_SELECTOR, 0x10);
+ CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_GUEST_GS_BASE, 0);
+ CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_GUEST_GS_LIMIT, 0xFFFFFFFFUL);
+ CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_GUEST_GS_ACCESS_RIGHTS, 0xa093);
+
+ CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_GUEST_SS_SELECTOR, 0x10);
+ CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_GUEST_SS_BASE, 0);
+ CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_GUEST_SS_LIMIT, 0xFFFFFFFFUL);
+ CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_GUEST_SS_ACCESS_RIGHTS, 0xa093);
+
+
+        //GDTR
+        //xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_GDTR_BASE, &_guestslab1_init_gdt_start);
+        //xmhfhw_cpu_x86vmx_vmwrite(VMCS_GUEST_GDTR_LIMIT, (sizeof(_guestslab1_init_gdt_start)-1) );
+
+
+    }
+*/
+
 
 
     _xcinit_dotests(cpuid);

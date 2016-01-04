@@ -63,14 +63,16 @@ CASM_FUNCDEF(void, xmhfhw_cpu_cpuid,
 
     xmhfhwm_cpu_insn_cpuid();
 
-    xmhfhwm_cpu_insn_movl_mesp_esi(0x10);
-    xmhfhwm_cpu_insn_movl_eax_mesi(0x0);
     xmhfhwm_cpu_insn_movl_mesp_esi(0x14);
     xmhfhwm_cpu_insn_movl_ebx_mesi(0x0);
     xmhfhwm_cpu_insn_movl_mesp_esi(0x18);
     xmhfhwm_cpu_insn_movl_ecx_mesi(0x0);
+    xmhfhwm_cpu_insn_movl_eax_ecx();
+    xmhfhwm_cpu_insn_movl_mesp_esi(0x10);
+    xmhfhwm_cpu_insn_movl_ecx_mesi(0x0);
+    xmhfhwm_cpu_insn_movl_edx_ecx();
     xmhfhwm_cpu_insn_movl_mesp_esi(0x1c);
-    xmhfhwm_cpu_insn_movl_edx_mesi(0x0);
+    xmhfhwm_cpu_insn_movl_ecx_mesi(0x0);
 
     xmhfhwm_cpu_insn_popl_ebx();
     xmhfhwm_cpu_insn_popl_esi();

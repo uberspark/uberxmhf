@@ -50,130 +50,129 @@
 #include <xmhfgeec.h>
 
 #include <geec_prime.h>
-#include <geec_sentinel.h>
-#include <uapi_slabmempgtbl.h>
-#include <xc_init.h>
-
-//////
-// setup (unverified) slab iotbl
-/////
-static void _gp_setup_uhslab_iotbl_allowaccesstoport(u32 uhslabiobitmap_idx, u16 port, u16 port_size){
-    u32 i;
-
-    for(i=0; i < port_size; i++){
-        u32 idx = (port+i)/8;
-        u8 bit = ((port+i) % 8);
-        u8 bitmask = ~((u8)1 << bit);
-        gp_rwdatahdr.gp_uhslab_iobitmap[uhslabiobitmap_idx][idx] &= bitmask;
-    }
-}
 
 
-static void gp_setup_uhslab_iotbl(u32 slabid){
-	u32 j, k, portnum;
-	u32 uhslabiobitmap_idx;
-
-	if( !(slabid >= XMHFGEEC_UHSLAB_BASE_IDX && slabid <= XMHFGEEC_UHSLAB_MAX_IDX) ){
-		_XDPRINTF_("%s: Fatal error, uh slab id out of bounds!\n", __func__);
-		HALT();
-	}
-
-	uhslabiobitmap_idx = slabid - XMHFGEEC_UHSLAB_BASE_IDX;
-
-        memset(&gp_rwdatahdr.gp_uhslab_iobitmap[uhslabiobitmap_idx], 0xFFFFFFFFUL, sizeof(gp_rwdatahdr.gp_uhslab_iobitmap[0]));
-
-
-	//scan through the list of devices for this slab and add any
-	//legacy I/O ports to the I/O perm. table
-	for(j=0; j < _sda_slab_devicemap[slabid].device_count; j++){
-	    u32 sysdev_memioregions_index = _sda_slab_devicemap[slabid].sysdev_mmioregions_indices[j];
-	    for(k=0; k < PCI_CONF_MAX_BARS; k++){
-		if(sysdev_memioregions[sysdev_memioregions_index].memioextents[k].extent_type == _MEMIOREGIONS_EXTENTS_TYPE_IO){
-		    for(portnum= sysdev_memioregions[sysdev_memioregions_index].memioextents[k].addr_start;
-			portnum < sysdev_memioregions[sysdev_memioregions_index].memioextents[k].addr_end; portnum++){
-
-			_gp_setup_uhslab_iotbl_allowaccesstoport(uhslabiobitmap_idx, portnum, 1);
-
-		    }
-		}
-	    }
-	}
-}
-
-
-
-static void _gp_setup_ugslab_iotbl_allowaccesstoport(u32 ugslabiobitmap_idx, u16 port, u16 port_size){
-    u32 i;
-
-    for(i=0; i < port_size; i++){
-        u32 idx = (port+i)/8;
-        u8 bit = ((port+i) % 8);
-        u8 bitmask = ~((u8)1 << bit);
-        gp_rwdatahdr.gp_ugslab_iobitmap[ugslabiobitmap_idx][idx] &= bitmask;
-    }
-}
-
-
-static void gp_setup_ugslab_iotbl(u32 slabid){
-	u32 j, k, portnum;
-	u32 ugslabiobitmap_idx;
-
-	if( !(slabid >= XMHFGEEC_UGSLAB_BASE_IDX && slabid <= XMHFGEEC_UGSLAB_MAX_IDX) ){
-		_XDPRINTF_("%s: Fatal error, uh slab id out of bounds!\n", __func__);
-		HALT();
-	}
-
-	ugslabiobitmap_idx = slabid - XMHFGEEC_UGSLAB_BASE_IDX;
-
-        memset(&gp_rwdatahdr.gp_ugslab_iobitmap[ugslabiobitmap_idx], 0xFFFFFFFFUL, sizeof(gp_rwdatahdr.gp_ugslab_iobitmap[0]));
-
-
-	//scan through the list of devices for this slab and add any
-	//legacy I/O ports to the I/O perm. table
-	for(j=0; j < _sda_slab_devicemap[slabid].device_count; j++){
-	    u32 sysdev_memioregions_index = _sda_slab_devicemap[slabid].sysdev_mmioregions_indices[j];
-	    for(k=0; k < PCI_CONF_MAX_BARS; k++){
-		if(sysdev_memioregions[sysdev_memioregions_index].memioextents[k].extent_type == _MEMIOREGIONS_EXTENTS_TYPE_IO){
-		    for(portnum= sysdev_memioregions[sysdev_memioregions_index].memioextents[k].addr_start;
-			portnum < sysdev_memioregions[sysdev_memioregions_index].memioextents[k].addr_end; portnum++){
-
-			_gp_setup_ugslab_iotbl_allowaccesstoport(ugslabiobitmap_idx, portnum, 1);
-
-		    }
-		}
-	    }
-	}
-}
-
-
-
-
-
+//@ghost bool gp_s2_setupiotbl_invokeduhslabiotbl[XMHFGEEC_TOTAL_SLABS];
+//@ghost bool gp_s2_setupiotbl_invokedugslabiotbl[XMHFGEEC_TOTAL_SLABS];
+//@ghost bool gp_s2_setupiotbl_handlevfobjs[XMHFGEEC_TOTAL_SLABS];
+//@ghost bool gp_s2_setupiotbl_handleinvalidobjs[XMHFGEEC_TOTAL_SLABS];
+/*@
+	requires \forall integer x; 0 <= x < XMHFGEEC_TOTAL_SLABS ==>
+		(_sda_slab_devicemap[x].device_count < MAX_PLATFORM_DEVICES);
+	requires \forall integer x, y; 0 <= x < XMHFGEEC_TOTAL_SLABS &&  0 <= y < MAX_PLATFORM_DEVICES ==>
+		(_sda_slab_devicemap[x].device_count < MAX_PLATFORM_DEVICES &&
+		_sda_slab_devicemap[x].sysdev_mmioregions_indices[y] < MAX_PLATFORM_DEVICES
+		);
+	assigns gp_s2_setupiotbl_invokeduhslabiotbl[0..(XMHFGEEC_TOTAL_SLABS-1)];
+	assigns gp_s2_setupiotbl_invokedugslabiotbl[0..(XMHFGEEC_TOTAL_SLABS-1)];
+	assigns gp_s2_setupiotbl_handlevfobjs[0..(XMHFGEEC_TOTAL_SLABS-1)];
+	assigns gp_s2_setupiotbl_handleinvalidobjs[0..(XMHFGEEC_TOTAL_SLABS-1)];
+	ensures \forall integer x; 0 <= x < (XMHFGEEC_TOTAL_SLABS-1) ==> (
+		( ((xmhfgeec_slab_info_table[x].slabtype == XMHFGEEC_SLABTYPE_uVT_PROG) ||
+		  (xmhfgeec_slab_info_table[x].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG)) &&
+		  ((x >= XMHFGEEC_UHSLAB_BASE_IDX && x <= XMHFGEEC_UHSLAB_MAX_IDX))
+		) ==> (gp_s2_setupiotbl_invokeduhslabiotbl[x] == true) );
+	ensures \forall integer x; 0 <= x < (XMHFGEEC_TOTAL_SLABS-1) ==> (
+		( ((xmhfgeec_slab_info_table[x].slabtype == XMHFGEEC_SLABTYPE_uVT_PROG_GUEST) ||
+		  (xmhfgeec_slab_info_table[x].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG_GUEST) ||
+		  (xmhfgeec_slab_info_table[x].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG_RICHGUEST)) &&
+		  ((x >= XMHFGEEC_UGSLAB_BASE_IDX && x <= XMHFGEEC_UGSLAB_MAX_IDX))
+		) ==> (gp_s2_setupiotbl_invokedugslabiotbl[x] == true) );
+	ensures \forall integer x; 0 <= x < (XMHFGEEC_TOTAL_SLABS-1) ==> (
+		( ((xmhfgeec_slab_info_table[x].slabtype == XMHFGEEC_SLABTYPE_VfT_SENTINEL) ||
+		   (xmhfgeec_slab_info_table[x].slabtype == XMHFGEEC_SLABTYPE_VfT_PROG))
+		) ==> (gp_s2_setupiotbl_handlevfobjs[x] == true) );
+	ensures \forall integer x; 0 <= x < (XMHFGEEC_TOTAL_SLABS-1) ==> (
+		(
+			!( ((xmhfgeec_slab_info_table[x].slabtype == XMHFGEEC_SLABTYPE_uVT_PROG) ||
+			  (xmhfgeec_slab_info_table[x].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG)) &&
+			  ((x >= XMHFGEEC_UHSLAB_BASE_IDX && x <= XMHFGEEC_UHSLAB_MAX_IDX))
+			) &&
+			!( ((xmhfgeec_slab_info_table[x].slabtype == XMHFGEEC_SLABTYPE_uVT_PROG_GUEST) ||
+			   (xmhfgeec_slab_info_table[x].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG_GUEST) ||
+			   (xmhfgeec_slab_info_table[x].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG_RICHGUEST)) &&
+			   ((x >= XMHFGEEC_UGSLAB_BASE_IDX && x <= XMHFGEEC_UGSLAB_MAX_IDX))
+			) &&
+			!( ((xmhfgeec_slab_info_table[x].slabtype == XMHFGEEC_SLABTYPE_VfT_SENTINEL) ||
+			   (xmhfgeec_slab_info_table[x].slabtype == XMHFGEEC_SLABTYPE_VfT_PROG))
+			)
+		) ==> (gp_s2_setupiotbl_handleinvalidobjs[x] == true) );
+@*/
 void gp_s2_setupiotbl(void){
-    u32 i, slabtype;
+	u32 i, slabtype;
 
 
-    for(i=0; i < XMHFGEEC_TOTAL_SLABS; i++){
-        slabtype = xmhfgeec_slab_info_table[i].slabtype;
 
-        switch(slabtype){
-            case XMHFGEEC_SLABTYPE_uVT_PROG:
-            case XMHFGEEC_SLABTYPE_uVU_PROG:
-		gp_setup_uhslab_iotbl(i);
-		break;
+    	/*@
+		loop invariant a1: 0 <= i <= XMHFGEEC_TOTAL_SLABS;
+		loop invariant a2: \forall integer x; 0 <= x < i ==> (
+			( ((xmhfgeec_slab_info_table[x].slabtype == XMHFGEEC_SLABTYPE_uVT_PROG) ||
+			  (xmhfgeec_slab_info_table[x].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG)) &&
+			  ((x >= XMHFGEEC_UHSLAB_BASE_IDX && x <= XMHFGEEC_UHSLAB_MAX_IDX))
+			) ==> (gp_s2_setupiotbl_invokeduhslabiotbl[x] == true) );
+		loop invariant a3: \forall integer x; 0 <= x < i ==> (
+			( ((xmhfgeec_slab_info_table[x].slabtype == XMHFGEEC_SLABTYPE_uVT_PROG_GUEST) ||
+			   (xmhfgeec_slab_info_table[x].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG_GUEST) ||
+			   (xmhfgeec_slab_info_table[x].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG_RICHGUEST)) &&
+			   ((x >= XMHFGEEC_UGSLAB_BASE_IDX && x <= XMHFGEEC_UGSLAB_MAX_IDX))
+			 ) ==> (gp_s2_setupiotbl_invokedugslabiotbl[x] == true) );
+		loop invariant a4: \forall integer x; 0 <= x < i ==> (
+			( ((xmhfgeec_slab_info_table[x].slabtype == XMHFGEEC_SLABTYPE_VfT_SENTINEL) ||
+			   (xmhfgeec_slab_info_table[x].slabtype == XMHFGEEC_SLABTYPE_VfT_PROG))
+			) ==> (gp_s2_setupiotbl_handlevfobjs[x] == true) );
+		loop invariant a5: \forall integer x; 0 <= x < i ==> (
+			(
+				!( ((xmhfgeec_slab_info_table[x].slabtype == XMHFGEEC_SLABTYPE_uVT_PROG) ||
+				  (xmhfgeec_slab_info_table[x].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG)) &&
+				  ((x >= XMHFGEEC_UHSLAB_BASE_IDX && x <= XMHFGEEC_UHSLAB_MAX_IDX))
+				) &&
+				!( ((xmhfgeec_slab_info_table[x].slabtype == XMHFGEEC_SLABTYPE_uVT_PROG_GUEST) ||
+				   (xmhfgeec_slab_info_table[x].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG_GUEST) ||
+				   (xmhfgeec_slab_info_table[x].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG_RICHGUEST)) &&
+				   ((x >= XMHFGEEC_UGSLAB_BASE_IDX && x <= XMHFGEEC_UGSLAB_MAX_IDX))
+				) &&
+				!( ((xmhfgeec_slab_info_table[x].slabtype == XMHFGEEC_SLABTYPE_VfT_SENTINEL) ||
+				   (xmhfgeec_slab_info_table[x].slabtype == XMHFGEEC_SLABTYPE_VfT_PROG))
+				)
+			)==> (gp_s2_setupiotbl_handleinvalidobjs[x] == true) );
+		loop assigns i;
+		loop assigns gp_s2_setupiotbl_invokeduhslabiotbl[0..(XMHFGEEC_TOTAL_SLABS-1)];
+		loop assigns gp_s2_setupiotbl_invokedugslabiotbl[0..(XMHFGEEC_TOTAL_SLABS-1)];
+		loop assigns gp_s2_setupiotbl_handlevfobjs[0..(XMHFGEEC_TOTAL_SLABS-1)];
+		loop assigns gp_s2_setupiotbl_handleinvalidobjs[0..(XMHFGEEC_TOTAL_SLABS-1)];
+		loop variant XMHFGEEC_TOTAL_SLABS - i;
+	@*/
+	for(i=0; i < XMHFGEEC_TOTAL_SLABS; i++){
+		if( ((xmhfgeec_slab_info_table[i].slabtype == XMHFGEEC_SLABTYPE_uVT_PROG) ||
+		    (xmhfgeec_slab_info_table[i].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG)) &&
+		    ((i >= XMHFGEEC_UHSLAB_BASE_IDX && i <= XMHFGEEC_UHSLAB_MAX_IDX))
+		 ){
+			gp_s2_setupiotbluh(i);
+			//@ghost gp_s2_setupiotbl_invokeduhslabiotbl[i] = true;
+		}
+		else if ( ((xmhfgeec_slab_info_table[i].slabtype == XMHFGEEC_SLABTYPE_uVT_PROG_GUEST) ||
+			   (xmhfgeec_slab_info_table[i].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG_GUEST) ||
+			   (xmhfgeec_slab_info_table[i].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG_RICHGUEST)) &&
+			   ((i >= XMHFGEEC_UGSLAB_BASE_IDX && i <= XMHFGEEC_UGSLAB_MAX_IDX))
+			 ){
+			gp_s2_setupiotblug(i);
+			//@ghost gp_s2_setupiotbl_invokedugslabiotbl[i] = true;
 
+		}else if ( ((xmhfgeec_slab_info_table[i].slabtype == XMHFGEEC_SLABTYPE_VfT_SENTINEL) ||
+			   (xmhfgeec_slab_info_table[i].slabtype == XMHFGEEC_SLABTYPE_VfT_PROG))
+			){
+			//do nothing for verified slabs
+			//@ghost gp_s2_setupiotbl_handlevfobjs[i] = true;
 
-            case XMHFGEEC_SLABTYPE_uVT_PROG_GUEST:
-            case XMHFGEEC_SLABTYPE_uVU_PROG_GUEST:
-            case XMHFGEEC_SLABTYPE_uVU_PROG_RICHGUEST:
-		gp_setup_ugslab_iotbl(i);
-		break;
+		}else{
+			//we have no idea what type of slab this is, halt!
+			_XDPRINTF_("%s:%u no idea of slab %u of type %u. Halting!\n",
+				__func__, __LINE__, i, xmhfgeec_slab_info_table[i].slabtype);
+			CASM_FUNCCALL(xmhfhw_cpu_hlt, CASM_NOPARAM);
+			//@ghost gp_s2_setupiotbl_handleinvalidobjs[i] = true;
+		}
 
-            default:
-                break;
-        }
-    }
-
+	}
 
 	_XDPRINTF_("%s: setup unverified slab legacy I/O permission tables\n", __func__);
 

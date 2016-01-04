@@ -50,45 +50,53 @@
 #include <xmhfgeec.h>
 
 #include <geec_prime.h>
-#include <geec_sentinel.h>
-#include <uapi_slabmempgtbl.h>
-#include <xc_init.h>
 
+//@ghost bool gp_s3_entry_invoked_writecr3 = false;
+//@ghost bool gp_s3_entry_invoked_savemtrrs = false;
+//@ghost bool gp_s3_entry_invoked_restoremtrrs = false;
+//@ghost bool gp_s3_entry_invoked_startcores = false;
+//@ghost bool gp_s3_entry_invoked_gp_s5_entry = false;
+/*@
+	requires 0 <= sinit2mle_mtrrs.num_var_mtrrs < MAX_VARIABLE_MTRRS;
+	ensures gp_s3_entry_invoked_writecr3 == true;
+	ensures gp_s3_entry_invoked_savemtrrs == true;
+	ensures gp_s3_entry_invoked_restoremtrrs == true;
+	ensures gp_s3_entry_invoked_startcores == true;
+	ensures gp_s3_entry_invoked_gp_s5_entry == true;
+@*/
+void gp_s3_entry(void){
 
+	//switch to verified object page tables
+	CASM_FUNCCALL(write_cr3,(u32)&gp_rwdatahdr.gp_vhslabmempgtbl_lvl4t);
+	//@ghost gp_s3_entry_invoked_writecr3 = true;
 
+	//save cpu MTRR state which we will later replicate on all APs
+	xmhfhw_cpu_x86_save_mtrrs(&_mtrrs);
+	//@ghost gp_s3_entry_invoked_savemtrrs = true;
 
+	//restore SINIT to MLE MTRR mappings
+	xmhfhw_cpu_x86_restore_mtrrs(&sinit2mle_mtrrs);
+	//@ghost gp_s3_entry_invoked_restoremtrrs = true;
 
-//common function which is entered by all CPUs upon SMP initialization
-//note: this is specific to the x86 architecture backend
-void gp_s4_s6_entry(void){
-	u32 cpuid;
-	bool isbsp;
+	//start all cores
+	gp_s3_startcores();
+	//@ghost gp_s3_entry_invoked_startcores = true;
 
-	isbsp = xmhfhw_lapic_isbsp();
-	cpuid  = xmhf_baseplatform_arch_x86_getcpulapicid();
+	//move on to state-5
+	gp_s5_entry();
+	//@ghost gp_s3_entry_invoked_gp_s5_entry = true;
 
-        CASM_FUNCCALL(spin_lock,&gp_state4_smplock);
-
-	gp_s5_entry(cpuid, isbsp);
-
-        CASM_FUNCCALL(spin_unlock,&gp_state4_smplock);
-
-    //relinquish HIC initialization and move on to the first slab
-    _XDPRINTF_("%s[%u]: proceeding to call init slab at %x\n", __func__, (u16)cpuid,
-                xmhfgeec_slab_info_table[XMHFGEEC_SLAB_XC_INIT].entrystub);
-
-    {
-        slab_params_t sp;
-
-        memset(&sp, 0, sizeof(sp));
-        sp.cpuid = cpuid;
-        sp.src_slabid = XMHFGEEC_SLAB_GEEC_PRIME;
-        sp.dst_slabid = XMHFGEEC_SLAB_XC_INIT;
-        XMHF_SLAB_CALLNEW(&sp);
-    }
-
-
-    _XDPRINTF_("%s[%u,%u]: Should never be here. Halting!\n", __func__, (u16)cpuid, isbsp);
-    HALT();
-
+	//we should never get here
+	_XDPRINTF_("%s:%u: Must never get here. Halting\n", __func__, __LINE__);
+	CASM_FUNCCALL(xmhfhw_cpu_hlt, CASM_NOPARAM);
 }
+
+
+
+
+
+
+
+
+
+

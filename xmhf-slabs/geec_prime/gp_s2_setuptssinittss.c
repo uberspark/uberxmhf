@@ -48,64 +48,30 @@
 #include <xmhf-debug.h>
 
 #include <xmhfgeec.h>
+
 #include <geec_prime.h>
 
 
-// GEEC prime SMP assembly language code blobs
-// author: amit vasudevan (amitvasudevan@acm.org)
+/*@
+	requires 0 <= tssidx < MAX_PLATFORM_CPUS;
+	assigns __xmhfhic_x86vmx_tss[tssidx].tss_mainblock[0..(PAGE_SIZE_4K-1)];
+	assigns __xmhfhic_x86vmx_tss[tssidx].tss_iobitmap[0..((3*PAGE_SIZE_4K)-1)];
+	ensures (((tss_t *)__xmhfhic_x86vmx_tss[tssidx].tss_mainblock)->esp0 ==
+		(u32) ( &__xmhfhic_x86vmx_tss_stack[tssidx] + sizeof(__xmhfhic_x86vmx_tss_stack[0]) )
+		);
+	ensures (((tss_t *)__xmhfhic_x86vmx_tss[tssidx].tss_mainblock)->ss0 == __DS_CPL0);
+	ensures (((tss_t *)__xmhfhic_x86vmx_tss[tssidx].tss_mainblock)->iotbl_addr == PAGE_SIZE_4K);
+@*/
+void gp_s2_setuptss_inittss(u32 tssidx){
+	tss_t *tss= (tss_t *)__xmhfhic_x86vmx_tss[tssidx].tss_mainblock;
 
+	memset(&__xmhfhic_x86vmx_tss[tssidx].tss_mainblock, 0, PAGE_SIZE_4K);
+	memset(&__xmhfhic_x86vmx_tss[tssidx].tss_iobitmap, 0, (3*PAGE_SIZE_4K));
 
-CASM_FUNCDEF(bool, gp_s3_apstacks,
-{
-    xmhfhwm_cpu_insn_movw_ds_ax();
-    xmhfhwm_cpu_insn_movw_ax_es();
-    xmhfhwm_cpu_insn_movw_ax_fs();
-    xmhfhwm_cpu_insn_movw_ax_gs();
-    xmhfhwm_cpu_insn_movw_ax_ss();
+	tss->esp0 = (u32) ( &__xmhfhic_x86vmx_tss_stack[tssidx] + sizeof(__xmhfhic_x86vmx_tss_stack[0]) );
+	tss->ss0 = __DS_CPL0;
+	tss->iotbl_addr = PAGE_SIZE_4K;
 
-    xmhfhwm_cpu_insn_movl_cr4_eax();
-    xmhfhwm_cpu_insn_orl_imm_eax(0x00000030);
-    xmhfhwm_cpu_insn_movl_eax_cr4();
-
-    xmhfhwm_cpu_insn_movl_ebx_cr3();
-
-    xmhfhwm_cpu_insn_movl_imm_ecx(0xc0000080);
-    xmhfhwm_cpu_insn_rdmsr();
-    xmhfhwm_cpu_insn_orl_imm_eax(0x00000800);
-    xmhfhwm_cpu_insn_wrmsr();
-
-    xmhfhwm_cpu_insn_movl_cr0_eax();
-    xmhfhwm_cpu_insn_orl_imm_eax(0x80000015);
-    xmhfhwm_cpu_insn_movl_eax_cr0();
-
-    //TODO: for non-TXT wakeup we need to reload GDT
-    //"movl %1, %esi \r\n");
-    //"lgdt (%esi) \r\n");
-
-    xmhfhwm_cpu_insn_movl_imm_ecx(0x0000001B);
-    xmhfhwm_cpu_insn_rdmsr();
-    xmhfhwm_cpu_insn_andl_imm_ecx(0x00000FFF);
-    xmhfhwm_cpu_insn_orl_imm_eax(0xFEE00000);
-    xmhfhwm_cpu_insn_wrmsr();
-
-    xmhfhwm_cpu_insn_xorl_eax_eax();
-    xmhfhwm_cpu_insn_movl_imm_eax(0xFEE00020);
-    xmhfhwm_cpu_insn_movl_meax_eax(0x0);
-    xmhfhwm_cpu_insn_shr_imm_eax(24);           //eax = lapic id (0-255)
-
-    //xmhfhwm_cpu_insn_xorl_ebx_ebx();
-    //xmhfhwm_cpu_insn_movl_edi_ebx();
-
-    //xmhfhwm_cpu_insn_movl_mebxeax_eax(4);
-
-    xmhfhwm_cpu_insn_movl_imm_ecx(16384);
-    xmhfhwm_cpu_insn_mull_ecx();
-    xmhfhwm_cpu_insn_addl_ecx_eax();
-    xmhfhwm_cpu_insn_addl_imm_eax(_init_cpustacks);
-    xmhfhwm_cpu_insn_movl_eax_esp();
-
-    xmhfhwm_cpu_insn_jmp(gp_s4_s6_entry);
-},
-void *noparam)
-
-
+	_XDPRINTF_("%s: tssidx=%u, iotbl_addr=%x\n", __func__, tssidx,
+	       tss->iotbl_addr);
+}

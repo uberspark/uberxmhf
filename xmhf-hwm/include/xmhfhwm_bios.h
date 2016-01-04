@@ -67,6 +67,26 @@
 #define ACPI_GAS_ACCESS_DWORD			0x3
 #define ACPI_GAS_ACCESS_QWORD			0x4
 
+//maximum number of RSDT entries we support
+#define	ACPI_MAX_RSDT_ENTRIES		(64)
+
+
+#define XMHFHWM_BIOS_BDA_BASE			0x400
+#define XMHFHWM_BIOS_BDA_SIZE			256
+
+#define XMHFHWM_BIOS_EBDA_BASE			0x9ec00
+#define XMHFHWM_BIOS_EBDA_SIZE			1100
+
+#define XMHFHWM_BIOS_ROMBASE			0xE0000
+#define XMHFHWM_BIOS_ROMSIZE                    0x20020
+
+#define XMHFHWM_BIOS_ACPIRSDPBASE		0xE0000
+
+#define XMHFHWM_BIOS_ACPIRSDTBASE		0xd87ef028UL
+#define XMHFHWM_BIOS_ACPIRSDTENTRIESBASE	(XMHFHWM_BIOS_ACPIRSDTBASE + 0x24)
+#define XMHFHWM_BIOS_VTDDMARTABLEBASE		0xd87feea8UL
+#define XMHFHWM_BIOS_VTDDMARTABLEREMAPPINGSTRUCTBASE		(XMHFHWM_BIOS_VTDDMARTABLEBASE+48)
+
 #ifndef __ASSEMBLY__
 
 //ACPI GAS, Generic Address Structure
@@ -118,6 +138,24 @@ typedef struct {
 	u32 creatorid;
 	u32 creatorrevision;
 } __attribute__ ((packed)) ACPI_RSDT;
+
+
+/*
+//ACPI RSDT structure for hwm
+typedef struct {
+	u32 signature;
+	u32 length;
+	u8 revision;
+	u8 checksum;
+	u8 oemid[6];
+	u64 oemtableid;
+	u32 oemrevision;
+	u32 creatorid;
+	u32 creatorrevision;
+	u32 entries[ACPI_MAX_RSDT_ENTRIES];
+} __attribute__ ((packed)) ACPI_RSDT_HWM;
+*/
+
 
 
 //ACPI MADT structure
@@ -259,6 +297,12 @@ typedef struct {
   u32 res0;
   u32 res1;
 } __attribute__ ((packed)) MPENTRYCPU;
+
+
+bool _impl_xmhfhwm_bios_read(u32 sysmemaddr, sysmem_read_t readsize, u64 *read_result);
+bool _impl_xmhfhwm_bios_write(u32 sysmemaddr, sysmem_write_t writesize, u64 write_value);
+bool _impl_xmhfhwm_bios_sysmemcopy(sysmem_copy_t sysmemcopy_type,
+				u32 dstaddr, u32 srcaddr, u32 size);
 
 
 

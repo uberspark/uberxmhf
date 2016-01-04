@@ -222,8 +222,8 @@ extern __attribute__((section(".data"))) __attribute__((aligned(4096)))  u64 gp_
 //////
 // unverified hypervisor slab memory page-tables
 extern __attribute__((section(".data"))) __attribute__((aligned(4096))) u64 gp_uhslabmempgtbl_lvl3t[XMHFGEEC_TOTAL_UHSLABS][PAE_MAXPTRS_PER_PDPT];
-extern __attribute__((section(".data"))) __attribute__((aligned(4096))) u64 gp_uhslabmempgtbl_lvl2t[XMHFGEEC_TOTAL_UHSLABS][PAE_PTRS_PER_PDPT][PAE_PTRS_PER_PDT];
-extern __attribute__((section(".data"))) __attribute__((aligned(4096)))  u64 gp_uhslabmempgtbl_lvl1t[XMHFGEEC_TOTAL_UHSLABS][PAE_PTRS_PER_PDPT][PAE_PTRS_PER_PDT][PAE_PTRS_PER_PT];
+extern __attribute__((section(".data"))) __attribute__((aligned(4096))) u64 gp_uhslabmempgtbl_lvl2t[XMHFGEEC_TOTAL_UHSLABS][PAE_PTRS_PER_PDPT * PAE_PTRS_PER_PDT];
+extern __attribute__((section(".data"))) __attribute__((aligned(4096)))  u64 gp_uhslabmempgtbl_lvl1t[XMHFGEEC_TOTAL_UHSLABS][PAE_PTRS_PER_PDPT * PAE_PTRS_PER_PDT * PAE_PTRS_PER_PT];
 
 //////
 // bootstrap unity mapped page-tables
@@ -240,6 +240,7 @@ extern __attribute__((section(".data"))) u32 numentries_sysdev_memioregions;
 extern __attribute__((section(".data"))) struct _memorytype _vmx_ept_memorytypes[MAX_MEMORYTYPE_ENTRIES]; //EPT memory types array
 
 extern __attribute__((section(".data"))) mtrr_state_t _mtrrs;
+extern __attribute__((section(".data"))) mtrr_state_t sinit2mle_mtrrs;
 
 extern __attribute__((section(".data"))) u32 gp_state4_smplock;
 
@@ -251,30 +252,267 @@ extern __attribute__((section(".data"))) bool vtd_drhd_scanned;	//set to true on
 
 extern __attribute__((section(".data"))) vtd_drhd_handle_t vtd_drhd_maxhandle;
 extern __attribute__((section(".data"))) u32 vtd_dmar_table_physical_address;
+extern __attribute__((section(".data"))) u32 vtd_ret_address;
+
+
+//DMA page tables
+extern __attribute__((section(".data"))) __attribute__((aligned(4096))) vtd_ret_entry_t _slabdevpgtbl_vtd_ret[VTD_RET_MAXPTRS];
+extern __attribute__((section(".data"))) __attribute__((aligned(4096))) vtd_cet_entry_t _slabdevpgtbl_vtd_cet[VTD_RET_MAXPTRS][VTD_CET_MAXPTRS];
+
+extern __attribute__((section(".data"))) __attribute__((aligned(4096))) vtd_pml4te_t _slabdevpgtbl_pml4t[XMHFGEEC_TOTAL_SLABS][PAE_MAXPTRS_PER_PML4T];
+extern __attribute__((section(".data"))) __attribute__((aligned(4096))) vtd_pdpte_t _slabdevpgtbl_pdpt[XMHFGEEC_TOTAL_SLABS][PAE_MAXPTRS_PER_PDPT];
+extern __attribute__((section(".data"))) __attribute__((aligned(4096))) vtd_pdte_t _slabdevpgtbl_pdt[XMHFGEEC_TOTAL_SLABS][PAE_PTRS_PER_PDPT * PAE_PTRS_PER_PDT];
+extern __attribute__((section(".data"))) __attribute__((aligned(4096))) vtd_pte_t _slabdevpgtbl_pt[XMHFGEEC_TOTAL_SLABS][MAX_SLAB_DMADATA_PDT_ENTRIES][PAE_PTRS_PER_PT];
+
+
+extern __attribute__((section(".data"))) _slabdevpgtbl_infotable_t _slabdevpgtbl_infotable[XMHFGEEC_TOTAL_SLABS];
+extern __attribute__((section(".data"))) u32 vtd_pagewalk_level;
+
+
+//SMP
+extern __attribute__((section(".data"))) x86smp_apbootstrapdata_t apdata;
 
 
 
 
 
-void gp_s1_bspstack(slab_params_t *sp);
+//////////////////////////////////////////////////////////////////////////////
+// setup slab memory page tables (smt)
+
+#define _SLAB_SPATYPE_MASK_SAMESLAB             (0x100)
+
+#define	_SLAB_SPATYPE_SLAB_CODE					(0x0)
+#define	_SLAB_SPATYPE_SLAB_DATA	    			(0x1)
+#define _SLAB_SPATYPE_SLAB_STACK				(0x2)
+#define _SLAB_SPATYPE_SLAB_DMADATA				(0x3)
+#define _SLAB_SPATYPE_SLAB_DEVICEMMIO           (0x4)
+#define _SLAB_SPATYPE_GEEC_PRIME_IOTBL          (0x5)
+
+#define _SLAB_SPATYPE_OTHER	    				(0x6)
+
+
+
+
+
+void gp_s1_bspstack(void);
+
+u64 _gp_s1_bspstack_getflagsforspa(u32 paddr);
+
+void gp_s1_bspstkactivate(void);
 void gp_s1_hub(void);
 void gp_s1_chkreq(void);
 void gp_s1_postdrt(void);
+void gp_s1_scaniommu(void);
+void gp_s1_iommuinittbl(void);
+
+/*@
+	requires 0 <= retindex < VTD_RET_MAXPTRS;
+@*/
+void gp_s1_iommuinittbl_clearcet(u32 retindex);
+
+void gp_s1_iommuinit(void);
+
 
 void gp_s2_entry(void);
 void gp_s2_setupslabdevmap(void);
+
+
+
+
+void gp_s2_sda(void);
+
+/*@
+	requires 0 <= slabid < XMHFGEEC_TOTAL_SLABS;
+@*/
+bool gp_s2_sdabinddevice(u32 slabid, u32 pagewalk_lvl,  u32 bus, u32 dev, u32 func);
+
+/*@
+	requires 0 <= numentries_sysdev_memioregions < MAX_PLATFORM_DEVICES;
+@*/
+void gp_s2_sdadoalloc(void);
+
+/*@
+	ensures \result == XMHFGEEC_SLAB_XG_RICHGUEST;
+	assigns \nothing;
+@*/
+u32 gp_s2_sdadoalloc_getuobjfordev(u32 bus, u32 dev, u32 func);
+
+/*@
+	requires 0 <= slabid < XMHFGEEC_TOTAL_SLABS;
+@*/
+void gp_s2_sdasetupdevpgtbl(u32 slabid);
+
+/*@
+	requires 0 <= slabid < XMHFGEEC_TOTAL_SLABS;
+	requires 0 <= pd_index < MAX_SLAB_DMADATA_PDT_ENTRIES;
+	requires (startpaddr < (0xFFFFFFFFUL - PAGE_SIZE_2M));
+@*/
+void gp_s2_sdasetupdevpgtbl_setptentries(u32 slabid, u32 pd_index, u32 startpaddr);
+
+
+/*@
+	requires 0 <= slabid < XMHFGEEC_TOTAL_SLABS;
+	requires (paddr_end >= paddr_start);
+	requires (paddr_end < (0xFFFFFFFFUL - PAGE_SIZE_2M));
+	requires (paddr_end - paddr_start) <= MAX_SLAB_DMADATA_SIZE;
+@*/
+void gp_s2_sdasetupdevpgtbl_splintpdt(u32 slabid, u32 paddr_start, u32 paddr_end);
+
+
+
+
+
+/*@
+	requires 0 <= uhslabiobitmap_idx < XMHFGEEC_TOTAL_UHSLABS;
+	requires 0 <= port < 65536;
+	requires 0 <= port_size <= 4;
+@*/
+void gp_s2_setupiotbluh_allowaccesstoport(u32 uhslabiobitmap_idx, u16 port, u16 port_size);
+
+
+/*@
+	requires (slabid >= XMHFGEEC_UHSLAB_BASE_IDX && slabid <= XMHFGEEC_UHSLAB_MAX_IDX);
+	requires _sda_slab_devicemap[slabid].device_count < MAX_PLATFORM_DEVICES;
+	requires  \forall integer x; 0 <= x < MAX_PLATFORM_DEVICES ==> (_sda_slab_devicemap[slabid].sysdev_mmioregions_indices[x] < MAX_PLATFORM_DEVICES);
+@*/
+void gp_s2_setupiotbluh(u32 slabid);
+
+
+/*@
+	requires 0 <= ugslabiobitmap_idx < XMHFGEEC_TOTAL_UGSLABS;
+	requires 0 <= port < 65536;
+	requires 0 <= port_size <= 4;
+@*/
+void gp_s2_setupiotblug_allowaccesstoport(u32 ugslabiobitmap_idx, u16 port, u16 port_size);
+
+/*@
+	requires (slabid >= XMHFGEEC_UGSLAB_BASE_IDX && slabid <= XMHFGEEC_UGSLAB_MAX_IDX);
+	requires _sda_slab_devicemap[slabid].device_count < MAX_PLATFORM_DEVICES;
+	requires  \forall integer x; 0 <= x < MAX_PLATFORM_DEVICES ==> (_sda_slab_devicemap[slabid].sysdev_mmioregions_indices[x] < MAX_PLATFORM_DEVICES);
+@*/
+void gp_s2_setupiotblug(u32 slabid);
+
+
+
 void gp_s2_setupiotbl(void);
-void gp_s2_setupmempgtbl(void);
 
 
-CASM_FUNCDECL(void gp_s3_entry(void *noparam));
-CASM_FUNCDECL(bool gp_s3_apstacks(void *noparam));
+
+void gp_s2_gathersysmemtypes(void);
+
+/*@
+	assigns \nothing;
+	ensures 0 <= \result <= 7;
+@*/
+u32 gp_s2_setupmpgtblug_getmtype(u64 pagebaseaddr);
+
+/*@
+	requires 0 <= slabid < XMHFGEEC_TOTAL_SLABS;
+@*/
+u64 gp_s2_setupmpgtblug_getflags(u32 slabid, u32 spa, u32 spatype);
 
 
-void gp_s4_s6_entry(void);
+
+/*@
+	requires 0 <= slabid < XMHFGEEC_TOTAL_SLABS ;
+@*/
+bool gp_s2_setupmpgtbl_getspatypeuobj_isiotbl(u32 slabid, u32 spa);
+
+/*@
+	requires 0 <= slabid < XMHFGEEC_TOTAL_SLABS ;
+	requires \forall u32 x; 0 <= x < MAX_PLATFORM_CPUS ==> (_sda_slab_devicemap[slabid].sysdev_mmioregions_indices[x] < MAX_PLATFORM_DEVICES);
+	requires 0 <= _sda_slab_devicemap[slabid].device_count < MAX_PLATFORM_DEVICES;
+@*/
+bool gp_s2_setupmpgtbl_getspatypeuobj_ismmio(u32 slabid, u32 spa);
+
+/*@
+	requires 0 <= slab_index < XMHFGEEC_TOTAL_SLABS ;
+@*/
+u32 gp_s2_setupmpgtbl_getspatypeuobj(u32 slab_index, u32 spa);
+//u32 gp_slab_getspatype_for_slab(u32 slab_index, u32 spa);
+
+/*@
+	requires 0 <= slab_index < XMHFGEEC_TOTAL_SLABS ;
+@*/
+u32 gp_s2_setupmpgtbl_getspatype(u32 slab_index, u32 spa);
 
 
-void gp_s5_entry(u32 cpuid, bool isbsp);
+/*@
+	requires 0 <= slabid < XMHFGEEC_TOTAL_SLABS;
+@*/
+void gp_s2_setupmpgtblug(u32 slabid);
+
+
+/*@
+	requires 0 <= slabid < XMHFGEEC_TOTAL_SLABS;
+	requires 0 <= uhslabmempgtbl_idx < XMHFGEEC_TOTAL_UHSLABS;
+	requires 0 <= ptindex < (1024*1024);
+	requires 0 <= xmhfgeec_slab_info_table[slabid].iotbl_base < (0xFFFFFFFFUL - (3*PAGE_SIZE_4K));
+	ensures (\result == true) || (\result == false);
+@*/
+bool gp_s2_setupmpgtbluh_setentry(u32 slabid, u32 uhslabmempgtbl_idx, u32 spatype, u32 ptindex, u64 flags);
+
+/*@
+	requires 0 <= slabid < XMHFGEEC_TOTAL_SLABS;
+@*/
+u64 gp_s2_setupmpgtbluh_getflags(u32 slabid, u32 spa, u32 spatype);
+
+
+/*@
+	requires XMHFGEEC_UHSLAB_BASE_IDX <= slabid <= XMHFGEEC_UHSLAB_MAX_IDX;
+	requires 0 <= xmhfgeec_slab_info_table[slabid].iotbl_base < (0xFFFFFFFFUL - (3*PAGE_SIZE_4K));
+@*/
+void gp_s2_setupmpgtbluh(u32 slabid);
+
+/*@
+	requires 0 <= slabid < XMHFGEEC_TOTAL_SLABS;
+@*/
+u64 gp_s2_setupmpgtblv_getflags(u32 slabid, u32 spa, u32 spatype);
+
+void gp_s2_setupmpgtblv(void);
+
+void gp_s2_setupmpgtblu(void);
+
+
+/*@
+	requires \valid(xcbootinfo);
+	requires (xcbootinfo->cpuinfo_numentries < MAX_PLATFORM_CPUS);
+@*/
+void gp_s2_setupgdt(void);
+
+/*@
+	requires (__TRSEL/8) <= gdtindex <= (XMHFGEEC_MAX_GDT_CODEDATA_DESCRIPTORS + MAX_PLATFORM_CPUS);
+	requires 0 <= tssidx < MAX_PLATFORM_CPUS;
+@*/
+void gp_s2_setupgdt_setgdttssentry(u32 gdtindex, u32 tssidx);
+
+void gp_s2_setupidt(void);
+
+
+/*@
+	requires 0 <= tssidx < MAX_PLATFORM_CPUS;
+@*/
+void gp_s2_setuptss_inittss(u32 tssidx);
+
+
+void gp_s2_setuptss(void);
+
+
+
+void gp_s3_entry(void);
+void gp_s3_startcores(void);
+
+CASM_FUNCDECL(void gp_s4_entry(void *noparam));
+CASM_FUNCDECL(void gp_s4_apstacks(void *noparam));
+
+
+//void gp_s4_s6_entry(void);
+
+
+void gp_s5_entry(void);
+void gp_s5_setupcpustate(u32 cpuid, bool isbsp);
+void gp_s5_invokestrt(u32 cpuid);
+
 
 
 void xmhfhic_arch_setup_slab_info(void);

@@ -52,14 +52,14 @@
 #include <xmhf-debug.h>
 
 
-CASM_FUNCDEF(u64, xmhf_baseplatform_arch_x86_getidtbase,
+CASM_FUNCDEF(u32, xmhf_baseplatform_arch_x86_getidtbase,
 {
 		xmhfhwm_cpu_insn_subl_imm_esp(0x8);
 		xmhfhwm_cpu_insn_sidt_mesp(0x0);
 		xmhfhwm_cpu_insn_movl_mesp_eax(0x2);
-		xmhfhwm_cpu_insn_xorl_edx_edx();
+		//xmhfhwm_cpu_insn_xorl_edx_edx();
         xmhfhwm_cpu_insn_addl_imm_esp(0x8);
-        xmhfhwm_cpu_insn_retu64();
+        xmhfhwm_cpu_insn_retu32();
 },
 void *noparam)
 

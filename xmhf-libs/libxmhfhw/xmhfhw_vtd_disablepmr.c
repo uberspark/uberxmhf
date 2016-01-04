@@ -65,6 +65,8 @@ void xmhfhw_platform_x86pc_vtd_drhd_disable_pmr(VTD_DRHD *drhd){
 		return;
 
 	pmen.epm=0;	//disable PMR
+	pmen.rsvdp = 0;
+	pmen.prs=0;
 	_vtd_reg_write(drhd, VTD_PMEN_REG_OFF, pack_VTD_PMEN_REG(&pmen));
 
 	//wait for PMR disabled...

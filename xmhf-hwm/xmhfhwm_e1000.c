@@ -120,7 +120,6 @@ bool _impl_xmhfhwm_e1000_read(u32 sysmemaddr, sysmem_read_t readsize, u64 *read_
 				return true;
 		}
 	}else{
-		//@assert 0;
 		return false;
 	}
 }

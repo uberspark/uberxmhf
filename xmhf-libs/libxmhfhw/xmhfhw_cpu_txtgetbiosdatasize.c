@@ -56,7 +56,7 @@
 @*/
 uint64_t get_bios_data_size(u32 heap_memaddr, uint32_t heap_size)
 {
-	return xmhfhw_sysmemaccess_readu64( heap_memaddr );
+	return CASM_FUNCCALL(xmhfhw_sysmemaccess_readu64, heap_memaddr);
 }
 
 
