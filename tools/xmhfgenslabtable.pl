@@ -71,7 +71,6 @@ my %slab_idtodmadata_addrstart;
 my %slab_idtodmadata_addrend;
 
 
-my %slab_idtomemoffsets;
 my %slab_idtomemoffsetstring;
 
 my %slab_nametoid;
@@ -825,36 +824,5 @@ sub parse_gsm {
 
 
 
-######
-# TODO: move into module
-# parses a mmap file and populates relevant global structures
-######
-sub parse_mmap {
-    my($filename, $slabid, $totalslabs) = @_;
-    my $i = 0;
-
-    chomp($filename);
-    #print "filename:$filename\n";
-    tie my @array, 'Tie::File', $filename or die $!;
-
-    #print "parse_mmap: $filename, $slabid...\n";
-
-    while( $i <= $#array) {
-        my $line = $array[$i];
-        chomp($line);
-        $line =~ s/^\s+|\s+$//g ;     # remove both leading and trailing whitespace
-
-        my @lineentry = split(/:/, $line);
-
-        $lineentry[0] =~ s/^\s+|\s+$//g ;     # remove both leading and trailing whitespace
-        $lineentry[1] =~ s/^\s+|\s+$//g ;     # remove both leading and trailing whitespace
-
-        $slab_idtomemoffsets{$slabid}{$lineentry[0]} = $lineentry[1];
-
-        $i = $i +1;
-    }
-
-    return;
-}
 
 
