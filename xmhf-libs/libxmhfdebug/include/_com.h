@@ -346,6 +346,9 @@ static inline void dbg_x86_uart_putc_bare(char ch){
   //write the character
   outb((u8)ch, g_uart_config.port);
 
+  //wait for xmit hold register to be empty and line is idle
+  while ( ! (inb(g_uart_config.port+0x5) & 0x40) );
+
   return;
 }
 

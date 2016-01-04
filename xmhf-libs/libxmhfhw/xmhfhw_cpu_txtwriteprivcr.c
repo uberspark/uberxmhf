@@ -57,6 +57,6 @@
 void write_priv_config_reg(uint32_t reg, uint64_t val)
 {
  //CASM_FUNCCALL(write_config_reg,TXT_PRIV_CONFIG_REGS_BASE, reg, val);
- xmhfhw_sysmemaccess_writeu64( (TXT_PRIV_CONFIG_REGS_BASE + reg), (u32)val, (u32)((u64)val >> 32) );
+ CASM_FUNCCALL(xmhfhw_sysmemaccess_writeu64, (TXT_PRIV_CONFIG_REGS_BASE + reg), (u32)val, (u32)((u64)val >> 32) );
 }
 

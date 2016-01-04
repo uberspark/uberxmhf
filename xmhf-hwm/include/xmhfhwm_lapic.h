@@ -44,12 +44,13 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-// XMHF HWM CPU LAPIC decls.
+// XMHF memory emulation
 // author: amit vasudevan (amitvasudevan@acm.org)
 
 #ifndef __XMHFHWM_LAPIC_H__
 #define __XMHFHWM_LAPIC_H__
 
+#ifndef __ASSEMBLY__
 #define LAPIC_ICR_LOW   (0x300)
 #define LAPIC_ICR_HIGH  (0x310)
 #define LAPIC_ID        (0x20)
@@ -59,5 +60,17 @@
 #define LAPIC_OP_READ   (2)
 #define LAPIC_OP_WRITE  (1)
 
+#define XMHFHWM_LAPIC_REG_ID	(MMIO_APIC_BASE+LAPIC_ID)
 
-#endif // __XMHFHWM_LAPIC_H__
+extern u32 xmhfhwm_lapic_reg_id;
+
+
+bool _impl_xmhfhwm_lapic_read(u32 sysmemaddr, sysmem_read_t readsize, u64 *read_result);
+bool _impl_xmhfhwm_lapic_write(u32 sysmemaddr, sysmem_write_t writesize, u64 write_value);
+
+
+#endif	//__ASSEMBLY__
+
+
+
+#endif //__XMHFHWM_LAPIC_H__

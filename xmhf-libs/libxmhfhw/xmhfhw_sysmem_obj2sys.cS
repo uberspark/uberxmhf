@@ -44,30 +44,38 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
+//functions to read/write memory from "system physical address"
+//all reads and writes to non-framework memory areas (e.g., BIOS
+//data areas, MMIO, rich guest memory etc.) should finally end up
+//here
+
+//author: amit vasudevan (amitvasudevan@acm.org)
+
 #include <xmhf.h>
+#include <xmhf-hwm.h>
+#include <xmhfhw.h>
 #include <xmhf-debug.h>
 
-#include <xmhfgeec.h>
-#include <geec_prime.h>
 
 
-// GEEC prime SMP assembly language code blobs
-// author: amit vasudevan (amitvasudevan@acm.org)
-
-CASM_FUNCDEF(void, gp_s3_entry,
+CASM_FUNCDEF(void, xmhfhw_sysmem_copy_obj2sys,
 {
-    xmhfhwm_cpu_insn_movw_imm_ax(__DS_CPL0);
-    xmhfhwm_cpu_insn_movw_ax_ds();
-    xmhfhwm_cpu_insn_movl_imm_eax(((X86SMP_APBOOTSTRAP_DATASEG << 4) + 8));
-    xmhfhwm_cpu_insn_movl_meax_eax(0x0);
-    xmhfhwm_cpu_insn_movl_imm_ebx(((X86SMP_APBOOTSTRAP_DATASEG << 4) + 0));
-    xmhfhwm_cpu_insn_movl_mebx_ebx(0x0);
-    xmhfhwm_cpu_insn_movl_imm_edi(((X86SMP_APBOOTSTRAP_DATASEG << 4) + 32))
-    xmhfhwm_cpu_insn_movl_medi_edi(0x0);
-    xmhfhwm_cpu_insn_jmpl_eax();
-    xmhfhwm_cpu_insn_hlt();
-    CASM_BALIGN(4096);
+	xmhfhwm_cpu_insn_pushl_esi();	//save esi
+	xmhfhwm_cpu_insn_pushl_edi();	//save edi
+
+	xmhfhwm_cpu_insn_movl_mesp_edi(0xC); //edi = dest
+	xmhfhwm_cpu_insn_movl_mesp_esi(0x10); //esi = src
+        xmhfhwm_cpu_insn_movl_mesp_ecx(0x14); //ecx = size
+        xmhfhwm_cpu_insn_cld(); //clear direction flag, copy forward
+        xmhfhwm_cpu_insn_rep_movsb_obj2sys(); //copy
+
+	xmhfhwm_cpu_insn_popl_edi();	//restore edi
+	xmhfhwm_cpu_insn_popl_esi();	//restore esi
+	xmhfhwm_cpu_insn_ret();		//return
 },
-void *noparam)
+u8 *sysdst,
+u8 *objsrc,
+u32 size)
+
 
 

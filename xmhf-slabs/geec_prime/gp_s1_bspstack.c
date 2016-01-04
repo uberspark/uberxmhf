@@ -55,48 +55,66 @@
 #include <xc_init.h>
 
 
-
-
-void gp_s1_bspstack(slab_params_t *sp){
-	u32 paddr=0;
+//@ghost bool gp_s1_bspstack_invoke_bspstkactivate = false;
+//@ghost u64 gflags[PAE_PTRS_PER_PDPT][PAE_PTRS_PER_PDT];
+/*@
+	assigns _xcprimeon_init_pdpt[0..(PAE_MAXPTRS_PER_PDPT-1)];
+	assigns _xcprimeon_init_pdt[0..(PAE_PTRS_PER_PDPT-1)][0..(PAE_PTRS_PER_PDT-1)];
+	assigns gflags[0..(PAE_PTRS_PER_PDPT-1)][0..(PAE_PTRS_PER_PDT-1)];
+	assigns gp_s1_bspstack_invoke_bspstkactivate;
+	ensures gp_s1_bspstack_invoke_bspstkactivate == true;
+	ensures \forall integer x; 0 <= x < PAE_PTRS_PER_PDPT ==> ( _xcprimeon_init_pdpt[x] == (pae_make_pdpe((u32)&_xcprimeon_init_pdt[x][0], (_PAGE_PRESENT))) );
+	ensures \forall integer x; PAE_PTRS_PER_PDPT <= x < PAE_MAXPTRS_PER_PDPT ==> ( _xcprimeon_init_pdpt[x] == 0 );
+	ensures \forall integer x, y; 0 <= x < PAE_PTRS_PER_PDPT && 0 <= y < PAE_PTRS_PER_PDT ==> ( _xcprimeon_init_pdt[x][y] == (pae_make_pde_big((u32)((x*(PAGE_SIZE_2M * PAE_PTRS_PER_PDT)) + (PAGE_SIZE_2M * y)), gflags[x][y])) );
+@*/
+void gp_s1_bspstack(void){
 	u32 i, j;
-	u64 pdpe_flags = (_PAGE_PRESENT);
-	u64 pdte_flags = (_PAGE_RW | _PAGE_PSE | _PAGE_PRESENT);
+	u64 flags;
 
+	//clear PDPT
+    	/*@
+		loop invariant a1: 0 <= i <= PAE_MAXPTRS_PER_PDPT;
+		loop invariant a2: \forall integer x; 0 <= x < i ==> ( _xcprimeon_init_pdpt[x] == 0);
+		loop assigns _xcprimeon_init_pdpt[0..(PAE_MAXPTRS_PER_PDPT-1)];
+		loop assigns i;
+		loop variant PAE_MAXPTRS_PER_PDPT - i;
+	@*/
+	for(i=0; i < PAE_MAXPTRS_PER_PDPT; i++)
+		_xcprimeon_init_pdpt[i] = 0;
 
+    	/*@
+		loop invariant a3: 0 <= i <= PAE_PTRS_PER_PDPT;
+		loop invariant a4: \forall integer x; 0 <= x < i ==> ( _xcprimeon_init_pdpt[x] == (pae_make_pdpe((u32)&_xcprimeon_init_pdt[x][0], (_PAGE_PRESENT))) );
+		loop invariant a41: \forall integer x, y; 0 <= x < i && 0 <= y < PAE_PTRS_PER_PDT ==> ( _xcprimeon_init_pdt[x][y] == (pae_make_pde_big((u32)((x*(PAGE_SIZE_2M * PAE_PTRS_PER_PDT)) + (PAGE_SIZE_2M * y)), gflags[x][y])) );
+		loop assigns _xcprimeon_init_pdpt[0..(PAE_PTRS_PER_PDPT-1)];
+		loop assigns _xcprimeon_init_pdt[0..(PAE_PTRS_PER_PDPT-1)][0..(PAE_PTRS_PER_PDT-1)];
+		loop assigns gflags[0..(PAE_PTRS_PER_PDPT-1)][0..(PAE_PTRS_PER_PDT-1)];
+		loop assigns i;
+		loop assigns j;
+		loop assigns flags;
+		loop variant PAE_PTRS_PER_PDPT - i;
+	@*/
+	for(i=0; i < PAE_PTRS_PER_PDPT; i++){
+		_xcprimeon_init_pdpt[i] = pae_make_pdpe((u32)&_xcprimeon_init_pdt[i][0], (_PAGE_PRESENT));
 
+		/*@
+			loop invariant a5: 0 <= j <= PAE_PTRS_PER_PDT;
+			loop invariant a6: \forall integer y; 0 <= y < j ==> ( _xcprimeon_init_pdt[i][y] == (pae_make_pde_big((u32)((i*(PAGE_SIZE_2M * PAE_PTRS_PER_PDT)) + (PAGE_SIZE_2M * y)), gflags[i][y])) );
+			loop assigns _xcprimeon_init_pdt[i][0..(PAE_PTRS_PER_PDT-1)];
+			loop assigns gflags[i][0..(PAE_PTRS_PER_PDT-1)];
+			loop assigns j;
+			loop assigns flags;
+			loop variant PAE_PTRS_PER_PDT - j;
+		@*/
+		for(j=0; j < PAE_PTRS_PER_PDT; j++){
+			flags = _gp_s1_bspstack_getflagsforspa((i*(PAGE_SIZE_2M * PAE_PTRS_PER_PDT)) + (PAGE_SIZE_2M * j));
+			//@ghost gflags[i][j] = flags;
 
+			_xcprimeon_init_pdt[i][j] = pae_make_pde_big(((i*(PAGE_SIZE_2M * PAE_PTRS_PER_PDT)) + (PAGE_SIZE_2M * j)), flags);
+		}
+	}
 
-    memset(&_xcprimeon_init_pdpt, 0, sizeof(_xcprimeon_init_pdpt));
-
-    for(i=0; i < PAE_PTRS_PER_PDPT; i++){
-        u64 entry_addr = (u64)&_xcprimeon_init_pdt[i][0];
-        _xcprimeon_init_pdpt[i] = pae_make_pdpe(entry_addr, pdpe_flags);
-
-        for(j=0; j < PAE_PTRS_PER_PDT; j++){
-            if(paddr == 0xfee00000 || paddr == 0xfec00000)
-                _xcprimeon_init_pdt[i][j] = pae_make_pde_big(paddr, (pdte_flags | _PAGE_PCD));
-            else
-                _xcprimeon_init_pdt[i][j] = pae_make_pde_big(paddr, pdte_flags);
-
-            paddr += PAGE_SIZE_2M;
-        }
-    }
-
-
-    {
-	u64 msr_efer;
-	msr_efer = (CASM_FUNCCALL(rdmsr64, MSR_EFER) | (0x800));
-	CASM_FUNCCALL(wrmsr64,MSR_EFER, (u32)msr_efer, (u32)((u64)msr_efer >> 32) );
-        _XDPRINTF_("EFER=%016llx\n", CASM_FUNCCALL(rdmsr64,MSR_EFER));
-	CASM_FUNCCALL(write_cr4,read_cr4(CASM_NOPARAM) | (0x30) );
-        _XDPRINTF_("CR4=%08x\n", CASM_FUNCCALL(read_cr4,CASM_NOPARAM));
-	CASM_FUNCCALL(write_cr3,(u32)&_xcprimeon_init_pdpt);
-        _XDPRINTF_("CR3=%08x\n", CASM_FUNCCALL(read_cr3,CASM_NOPARAM));
-	CASM_FUNCCALL(write_cr0,0x80000015);
-    }
-
-
-	gp_s1_hub();
+	gp_s1_bspstkactivate();
+	//@ghost gp_s1_bspstack_invoke_bspstkactivate = true;
 }
 

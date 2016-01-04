@@ -218,7 +218,7 @@ bool set_mem_type(u32 base, uint32_t size, uint32_t mem_type);
 	requires 0 <= saved_state->num_var_mtrrs < MAX_VARIABLE_MTRRS;
 	assigns \nothing;
 @*/
-bool validate_mtrrs(const mtrr_state_t *saved_state);
+bool validate_mtrrs(mtrr_state_t *saved_state);
 
 
 
@@ -326,7 +326,7 @@ bool xmhfhw_lapic_isbsp(void);
 /*@
 	assigns \nothing;
 @*/
-void xmhfhw_platform_bus_init(void);
+bool xmhfhw_platform_bus_init(void);
 
 
 /*@
@@ -348,7 +348,7 @@ void xmhf_baseplatform_arch_x86_udelay(u32 usecs);
 
 
 /*@
-	requires \valid((unsigned char *)rsdp+(0..sizeof(ACPI_RSDP)));
+	requires \valid(rsdp);
 	assigns \nothing;
 @*/
 u32 xmhfhw_platform_x86pc_acpi_getRSDP(ACPI_RSDP *rsdp);
@@ -517,6 +517,18 @@ CASM_FUNCDECL(void xmhfhw_sysmemaccess_copy(u8 *dest, u8 *src, u32 size));
 /*@
   assigns \nothing;
 @*/
+CASM_FUNCDECL(void xmhfhw_sysmem_copy_sys2obj(u8 *objdst, u8 *syssrc, u32 size));
+
+
+/*@
+  assigns \nothing;
+@*/
+CASM_FUNCDECL(void xmhfhw_sysmem_copy_obj2sys(u8 *sysdst, u8 *objsrc, u32 size));
+
+
+/*@
+  assigns \nothing;
+@*/
 CASM_FUNCDECL(uint64_t read_config_reg(uint32_t config_regs_base, uint32_t reg));
 
 /*@
@@ -565,10 +577,15 @@ CASM_FUNCDECL(u8 inb (u32 port));
 
 CASM_FUNCDECL(void xmhfhw_cpu_disable_intr(void *noparam));
 CASM_FUNCDECL(void enable_intr(void *noparam));
-CASM_FUNCDECL(u64 xmhf_baseplatform_arch_x86_getgdtbase(void *noparam));
-CASM_FUNCDECL(u64 xmhf_baseplatform_arch_x86_getidtbase(void *noparam));
+CASM_FUNCDECL(u32 xmhf_baseplatform_arch_x86_getgdtbase(void *noparam));
+CASM_FUNCDECL(u32 xmhf_baseplatform_arch_x86_getidtbase(void *noparam));
 CASM_FUNCDECL(u64  xmhf_baseplatform_arch_x86_gettssbase(void *noparam));
 
+
+/*@
+  assigns \nothing;
+@*/
+CASM_FUNCDECL(void xmhfhw_cpu_hlt(void *noparam));
 
 
 

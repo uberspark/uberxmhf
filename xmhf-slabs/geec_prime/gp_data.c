@@ -230,8 +230,8 @@ __attribute__((section(".data"))) __attribute__((aligned(4096)))  u64 gp_vhslabm
 //////
 // unverified hypervisor slab memory page-tables
 __attribute__((section(".data"))) __attribute__((aligned(4096))) u64 gp_uhslabmempgtbl_lvl3t[XMHFGEEC_TOTAL_UHSLABS][PAE_MAXPTRS_PER_PDPT];
-__attribute__((section(".data"))) __attribute__((aligned(4096))) u64 gp_uhslabmempgtbl_lvl2t[XMHFGEEC_TOTAL_UHSLABS][PAE_PTRS_PER_PDPT][PAE_PTRS_PER_PDT];
-__attribute__((section(".data"))) __attribute__((aligned(4096)))  u64 gp_uhslabmempgtbl_lvl1t[XMHFGEEC_TOTAL_UHSLABS][PAE_PTRS_PER_PDPT][PAE_PTRS_PER_PDT][PAE_PTRS_PER_PT];
+__attribute__((section(".data"))) __attribute__((aligned(4096))) u64 gp_uhslabmempgtbl_lvl2t[XMHFGEEC_TOTAL_UHSLABS][PAE_PTRS_PER_PDPT * PAE_PTRS_PER_PDT];
+__attribute__((section(".data"))) __attribute__((aligned(4096)))  u64 gp_uhslabmempgtbl_lvl1t[XMHFGEEC_TOTAL_UHSLABS][PAE_PTRS_PER_PDPT * PAE_PTRS_PER_PDT * PAE_PTRS_PER_PT];
 
 
 //////
@@ -249,6 +249,7 @@ __attribute__((section(".data"))) u32 numentries_sysdev_memioregions=0;
 __attribute__((section(".data"))) struct _memorytype _vmx_ept_memorytypes[MAX_MEMORYTYPE_ENTRIES]; //EPT memory types array
 
 __attribute__((section(".data"))) mtrr_state_t _mtrrs;
+__attribute__((section(".data"))) mtrr_state_t sinit2mle_mtrrs;
 
 __attribute__((section(".data"))) u32 gp_state4_smplock = 1;
 
@@ -260,4 +261,21 @@ __attribute__((section(".data"))) bool vtd_drhd_scanned=false;	//set to true onc
 
 __attribute__((section(".data"))) vtd_drhd_handle_t vtd_drhd_maxhandle=0;
 __attribute__((section(".data"))) u32 vtd_dmar_table_physical_address=0;
+__attribute__((section(".data"))) u32 vtd_ret_address=0;
 
+
+//DMA page tables
+__attribute__((section(".data"))) __attribute__((aligned(4096))) vtd_ret_entry_t _slabdevpgtbl_vtd_ret[VTD_RET_MAXPTRS];
+__attribute__((section(".data"))) __attribute__((aligned(4096))) vtd_cet_entry_t _slabdevpgtbl_vtd_cet[VTD_RET_MAXPTRS][VTD_CET_MAXPTRS];
+
+__attribute__((section(".data"))) __attribute__((aligned(4096))) vtd_pml4te_t _slabdevpgtbl_pml4t[XMHFGEEC_TOTAL_SLABS][PAE_MAXPTRS_PER_PML4T];
+__attribute__((section(".data"))) __attribute__((aligned(4096))) vtd_pdpte_t _slabdevpgtbl_pdpt[XMHFGEEC_TOTAL_SLABS][PAE_MAXPTRS_PER_PDPT];
+__attribute__((section(".data"))) __attribute__((aligned(4096))) vtd_pdte_t _slabdevpgtbl_pdt[XMHFGEEC_TOTAL_SLABS][PAE_PTRS_PER_PDPT * PAE_PTRS_PER_PDT];
+__attribute__((section(".data"))) __attribute__((aligned(4096))) vtd_pte_t _slabdevpgtbl_pt[XMHFGEEC_TOTAL_SLABS][MAX_SLAB_DMADATA_PDT_ENTRIES][PAE_PTRS_PER_PT];
+
+__attribute__((section(".data"))) _slabdevpgtbl_infotable_t _slabdevpgtbl_infotable[XMHFGEEC_TOTAL_SLABS];
+__attribute__((section(".data"))) u32 vtd_pagewalk_level;
+
+
+//SMP
+__attribute__((section(".data"))) x86smp_apbootstrapdata_t apdata;

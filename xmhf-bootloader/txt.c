@@ -407,9 +407,9 @@ static txt_heap_t *init_txt_heap(void *ptab_base, acm_hdr_t *sinit,
 	os_sinit_data.capabilities = MLE_HDR_CAPS & ~caps_mask;
 	if ( sinit_caps & TXT_CAPS_T_RLP_WAKE_MONITOR )
 		os_sinit_data.capabilities |= TXT_CAPS_T_RLP_WAKE_MONITOR;
-	else if ( sinit_caps & TXT_CAPS_T_RLP_WAKE_GETSEC )
+	else if ( sinit_caps & TXT_CAPS_T_RLP_WAKE_GETSEC ){
 		os_sinit_data.capabilities |= TXT_CAPS_T_RLP_WAKE_GETSEC;
-	else {     /* should have been detected in verify_acmod() */
+	}else {     /* should have been detected in verify_acmod() */
 		_XDPRINTF_("SINIT capabilities are icompatible (0x%x)\n", sinit_caps);
 		return NULL;
 	}

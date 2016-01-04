@@ -107,11 +107,11 @@ u64 _vtd_reg_read(VTD_DRHD *dmardevice, u32 reg){
   //perform the actual read or write request
 	switch(regtype){
     case VTD_REG_32BITS:	//32-bit read
-      retval = xmhfhw_sysmemaccess_readu32(regaddr);
+      retval = CASM_FUNCCALL(xmhfhw_sysmemaccess_readu32, regaddr);
       break;
 
     case VTD_REG_64BITS:	//64-bit read
-      retval = xmhfhw_sysmemaccess_readu64(regaddr);
+      retval = CASM_FUNCCALL(xmhfhw_sysmemaccess_readu64, regaddr);
       break;
 
     default:

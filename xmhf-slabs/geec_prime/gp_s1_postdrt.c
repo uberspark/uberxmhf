@@ -45,6 +45,7 @@
  */
 
 #include <xmhf.h>
+#include <xmhf-hwm.h>
 #include <xmhf-debug.h>
 
 #include <xmhfgeec.h>
@@ -57,20 +58,47 @@
 void gp_s1_postdrt(void){
 	txt_heap_t *txt_heap;
 	os_mle_data_t os_mle_data;
+	u32 txt_heap_size;
+	u32 os_mle_data_paddr;
+
+	//save SINIT to MLE MTRR mappings
+	xmhfhw_cpu_x86_save_mtrrs(&sinit2mle_mtrrs);
+
+	os_mle_data.saved_mtrr_state.num_var_mtrrs=0;
 
 	txt_heap = get_txt_heap();
 	_XDPRINTF_("SL: txt_heap = 0x%08x\n", (u32)txt_heap);
-	xmhfhw_sysmemaccess_copy(&os_mle_data, get_os_mle_data_start((txt_heap_t*)((u32)txt_heap), (uint32_t)read_pub_config_reg(TXTCR_HEAP_SIZE)),
-					sizeof(os_mle_data_t));
-	_XDPRINTF_("SL: os_mle_data = 0x%08x\n", (u32)&os_mle_data);
 
-	// restore pre-SENTER MTRRs that were overwritten for SINIT launch
-	if(!validate_mtrrs(&(os_mle_data.saved_mtrr_state))) {
-		_XDPRINTF_("SECURITY FAILURE: validate_mtrrs() failed.\n");
-		HALT();
+	txt_heap_size =  (uint32_t)read_pub_config_reg(TXTCR_HEAP_SIZE);
+	os_mle_data_paddr = get_os_mle_data_start((txt_heap_t*)((u32)txt_heap), txt_heap_size);
+	//@assert (os_mle_data_paddr == (XMHFHWM_TXT_SYSMEM_HEAPBASE+0x8+sizeof(bios_data_t)+0x8));
+
+	//xmhfhw_sysmemaccess_copy(&os_mle_data, get_os_mle_data_start((txt_heap_t*)((u32)txt_heap), (uint32_t)read_pub_config_reg(TXTCR_HEAP_SIZE)),
+	//				sizeof(os_mle_data_t));
+	CASM_FUNCCALL(xmhfhw_sysmem_copy_sys2obj, (u32)&os_mle_data,
+		os_mle_data_paddr, sizeof(os_mle_data_t));
+
+	_XDPRINTF_("SL: os_mle_data = 0x%08x, size=%u bytes\n", (u32)&os_mle_data,
+			sizeof(os_mle_data));
+
+	if(os_mle_data.saved_mtrr_state.num_var_mtrrs < MAX_VARIABLE_MTRRS){
+		// restore pre-SENTER MTRRs that were overwritten for SINIT launch
+		if(!validate_mtrrs(&os_mle_data.saved_mtrr_state)) {
+			_XDPRINTF_("SECURITY FAILURE: validate_mtrrs() failed.\n");
+			CASM_FUNCCALL(xmhfhw_cpu_hlt, CASM_NOPARAM);
+		}
+
+		_XDPRINTF_("SL: Validated MTRRs\n");
+
+		xmhfhw_cpu_x86_restore_mtrrs(&(os_mle_data.saved_mtrr_state));
+
+		_XDPRINTF_("SL: Restored MTRRs\n");
+
+	}else{
+		_XDPRINTF_("%s:%u num_var_mtrrs >= MAX_VARIABLE_MTRRS\n",
+			__func__, __LINE__);
+		CASM_FUNCCALL(xmhfhw_cpu_hlt, CASM_NOPARAM);
 	}
-	_XDPRINTF_("SL: Validated MTRRs\n");
 
-	xmhfhw_cpu_x86_restore_mtrrs(&(os_mle_data.saved_mtrr_state));
-    _XDPRINTF_("SL: Restored MTRRs\n");
+
 }

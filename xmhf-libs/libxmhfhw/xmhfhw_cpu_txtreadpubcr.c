@@ -57,6 +57,6 @@
 uint64_t read_pub_config_reg(uint32_t reg)
 {
     //return CASM_FUNCCALL(read_config_reg,TXT_PUB_CONFIG_REGS_BASE, reg);
-    return xmhfhw_sysmemaccess_readu64( TXT_PUB_CONFIG_REGS_BASE + reg );
+    return CASM_FUNCCALL(xmhfhw_sysmemaccess_readu64, ( TXT_PUB_CONFIG_REGS_BASE + reg ));
 }
 

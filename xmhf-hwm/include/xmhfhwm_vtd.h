@@ -120,6 +120,7 @@
 #ifndef __ASSEMBLY__
 
 //Vt-d DMAR structure
+//sizeof(VTD_DMAR) = 48 bytes
 typedef struct{
   u32 signature;
   u32 length;
@@ -134,6 +135,20 @@ typedef struct{
   u8 flags;
   u8 rsvdz[10];
 }__attribute__ ((packed)) VTD_DMAR;
+
+
+
+//VT-d DMAR table DRHD structure
+//sizeof(VTD_DMAR_DRHD) = 16 bytes
+typedef struct{
+  u16 type;
+  u16 length;
+  u8 flags;
+  u8 rsvdz0;
+  u16 pcisegment;
+  u64 regbaseaddr;
+}__attribute__ ((packed)) VTD_DMAR_DRHD;
+
 
 //VT-d DRHD structure
 typedef struct{
@@ -153,18 +168,27 @@ typedef struct {
     u64 qwords[2];
 } __attribute__((packed)) vtd_ret_entry_t;
 
+//#define vtd_make_rete(paddr, flags) \
+//  ((u64)(paddr) & (~(((u64)PAGE_SIZE_4K - 1)))) | (u64)(flags)
+
 #define vtd_make_rete(paddr, flags) \
-  ((u64)(paddr) & (~(((u64)PAGE_SIZE_4K - 1)))) | (u64)(flags)
+  ((u64)(paddr) & (0xFFFFFFFFFFFFF000ULL)) | (u64)(flags)
 
 typedef struct {
     u64 qwords[2];
 } __attribute__((packed)) vtd_cet_entry_t;
 
+//#define vtd_make_cete(paddr, flags) \
+//  ((u64)(paddr) & (~(((u64)PAGE_SIZE_4K - 1)))) | (u64)(flags)
+
 #define vtd_make_cete(paddr, flags) \
-  ((u64)(paddr) & (~(((u64)PAGE_SIZE_4K - 1)))) | (u64)(flags)
+  ((u64)(paddr) & (0x7FFFFFFFFFFFF000ULL)) | (u64)(flags)
+
+//#define vtd_make_cetehigh(address_width, domain_id) \
+//  (((u64)domain_id & 0x000000000000FFFFULL) << 7) | ((u64)(address_width) & 0x0000000000000007ULL)
 
 #define vtd_make_cetehigh(address_width, domain_id) \
-  (((u64)domain_id & 0x000000000000FFFFULL) << 7) | ((u64)(address_width) & 0x0000000000000007ULL)
+  (((u64)domain_id) * 128) | ((u64)(address_width) & 0x0000000000000007ULL)
 
 
 typedef u64 vtd_pml4te_t;
@@ -174,20 +198,33 @@ typedef u64 vtd_pte_t;
 
 
 /* make a pml4 entry from individual fields */
+//#define vtd_make_pml4te(paddr, flags) \
+//  ((u64)(paddr) & (~(((u64)PAGE_SIZE_4K - 1)))) | (u64)(flags)
+
 #define vtd_make_pml4te(paddr, flags) \
-  ((u64)(paddr) & (~(((u64)PAGE_SIZE_4K - 1)))) | (u64)(flags)
+  ((u64)(paddr) & (0x7FFFFFFFFFFFF000ULL)) | (u64)(flags)
 
 /* make a page directory pointer entry from individual fields */
+//#define vtd_make_pdpte(paddr, flags) \
+//  ((u64)(paddr) & (~(((u64)PAGE_SIZE_4K - 1)))) | (u64)(flags)
+
 #define vtd_make_pdpte(paddr, flags) \
-  ((u64)(paddr) & (~(((u64)PAGE_SIZE_4K - 1)))) | (u64)(flags)
+  ((u64)(paddr) & (0x7FFFFFFFFFFFF000ULL)) | (u64)(flags)
 
 /* make a page directory entry for a 4KB page from individual fields */
+//#define vtd_make_pdte(paddr, flags) \
+//  ((u64)(paddr) & (~(((u64)PAGE_SIZE_4K - 1)))) | (u64)(flags)
+
 #define vtd_make_pdte(paddr, flags) \
-  ((u64)(paddr) & (~(((u64)PAGE_SIZE_4K - 1)))) | (u64)(flags)
+  ((u64)(paddr) & (0x7FFFFFFFFFFFF000ULL)) | (u64)(flags)
+
 
 /* make a page table entry from individual fields */
+//#define vtd_make_pte(paddr, flags) \
+//  ((u64)(paddr) & (~(((u64)PAGE_SIZE_4K - 1)))) | (u64)(flags)
+
 #define vtd_make_pte(paddr, flags) \
-  ((u64)(paddr) & (~(((u64)PAGE_SIZE_4K - 1)))) | (u64)(flags)
+  ((u64)(paddr) & (0x7FFFFFFFFFFFF000ULL)) | (u64)(flags)
 
 
 
@@ -605,9 +642,47 @@ typedef struct {
 } __attribute__ ((packed)) VTD_PHMLIMIT_REG;
 
 
+typedef enum {
+	XMHFHWM_VTD_REG_ECAP,
+	XMHFHWM_VTD_REG_UNKNOWN,
+} xmhfhwm_vtd_regtype_t;
 
-//maximum number of RSDT entries we support
-#define	ACPI_MAX_RSDT_ENTRIES		(256)
+typedef struct {
+	u32 reg_ver;
+	u32 reg_gcmd;
+	u32 reg_gsts;
+	u32 reg_fsts;
+	u32 reg_fectl;
+	u32 reg_pmen;
+	u32 reg_plmbase;
+	u32 reg_plmlimit;
+
+	u32 reg_cap_lo;
+	u32 reg_cap_hi;
+	u32 reg_ecap_lo;
+	u32 reg_ecap_hi;
+	u32 reg_rtaddr_lo;
+	u32 reg_rtaddr_hi;
+	u32 reg_ccmd_lo;
+	u32 reg_ccmd_hi;
+	u32 reg_phmbase_lo;
+	u32 reg_phmbase_hi;
+	u32 reg_phmlimit_lo;
+	u32 reg_phmlimit_hi;
+	u32 reg_iotlb_lo;
+	u32 reg_iotlb_hi;
+	u32 reg_iva_lo;
+	u32 reg_iva_hi;
+
+	u64 regbaseaddr;
+	u64 iotlbaddr;
+	u64 ivaaddr;
+} xmhfhwm_vtd_drhd_state_t;
+
+bool _impl_xmhfhwm_vtd_read(u32 sysmemaddr, sysmem_read_t readsize, u64 *read_result);
+bool _impl_xmhfhwm_vtd_write(u32 sysmemaddr, sysmem_write_t writesize, u64 write_value);
+
+extern xmhfhwm_vtd_drhd_state_t xmhfhwm_vtd_drhd_state[];
 
 
 #endif //__ASSEMBLY__
