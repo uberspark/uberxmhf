@@ -107,6 +107,8 @@ $g_ugslabcounter = 0;
 #print "rootdir:", $g_rootdir, "\n";
 
 
+# TODO: move into module [START]
+
 # iterate through all the entries within SLABS file and
 # compute total number of slabs while populating global
 # slab_idto{gsm,name,type} hashes
@@ -171,6 +173,7 @@ while($i < $g_totalslabs){
 
 ######
 
+# TODO: move into module [END]
 
 
 
@@ -633,6 +636,7 @@ exit 0;
 
 
 ######
+# TODO: move into module
 # parses a gsm file and populates relevant global structures
 ######
 sub parse_gsm {
@@ -818,6 +822,7 @@ sub parse_gsm {
 
 
 ######
+# TODO: move into module
 # parses a mmap file and populates relevant global structures
 ######
 sub parse_mmap {
