@@ -7,6 +7,10 @@ use Tie::File;
 use File::Basename;
 use Data::Dumper;
 
+use lib dirname (__FILE__);
+use upmf;	#load up the manifest parsing module
+
+
 # command line inputs
 
 my $g_slabsfile = $ARGV[0];
