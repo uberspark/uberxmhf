@@ -33,15 +33,8 @@ my $g_uhslabcounter;
 my $g_ugslabcounter;
 
 
-my $g_totalslabs;
 my $g_rootdir;
 
-my %slab_idtogsm;
-my %slab_idtommapfile;
-my %slab_idtodir;
-my %slab_idtotype;
-my %slab_idtosubtype;
-my %slab_idtouapifnmask;
 
 
 
@@ -61,12 +54,6 @@ my %slab_idtodmadata_addrend;
 
 
 my $i = 0;
-my $slabdir;
-my $slabname;
-my $slabgsmfile;
-my $slabtype;
-my $slabsubtype;
-my $slabmmapfile;
 
 my $g_memmapaddr=0;
 
@@ -94,75 +81,7 @@ $g_ugslabcounter = 0;
 #print "slabsfile:", $g_slabsfile, "\n";
 #print "rootdir:", $g_rootdir, "\n";
 
-
-# TODO: move into module [START]
-
-# iterate through all the entries within SLABS file and
-# compute total number of slabs while populating global
-# slab_idto{gsm,name,type} hashes
-
-tie my @array, 'Tie::File', $g_slabsfile or die $!;
-
-while( $i <= $#array) {
-
-    my $line = $array[$i];
-    chomp($line);
-
-    my $trimline = $line;
-    $trimline =~ s/^\s+|\s+$//g ;     # remove both leading and trailing whitespace
-
-    # split the line using the comma delimiter
-    my @slabinfo = split(/,/, $trimline);
-
-    $slabdir = $g_rootdir.$slabinfo[0];
-    $slabdir =~ s/^\s+|\s+$//g ;     # remove both leading and trailing whitespace
-    $slabname = basename($slabinfo[0]);
-    $slabname =~ s/^\s+|\s+$//g ;     # remove both leading and trailing whitespace
-    $slabtype = $slabinfo[1];
-    $slabtype =~ s/^\s+|\s+$//g ;     # remove both leading and trailing whitespace
-    $slabsubtype = $slabinfo[2];
-    $slabsubtype =~ s/^\s+|\s+$//g ;     # remove both leading and trailing whitespace
-    $slabgsm = $slabdir."/".$slabname.".gsm.pp";
-    $slabmmapfile = $g_rootdir."_objects/_objs_slab_".$slabname."/".$slabname.".mmap";
-
-    #print "Slab name: $slabname, mmap:$slabmmapfile ...\n";
-    $slab_idtodir{$i} = $slabdir;
-    $slab_idtogsm{$i} = $slabgsm;
-    $slab_idtommapfile{$i} = $slabmmapfile;
-    $slab_idtoname{$i} = $slabname;
-    $slab_idtotype{$i} = $slabtype;
-    $slab_idtosubtype{$i} = $slabsubtype;
-    $slab_nametoid{$slabname} = $i;
-
-    # move on to the next line
-    $i = $i + 1;
-}
-
-$g_totalslabs = $i;
-
-print "g_totalslabs:", $g_totalslabs, "\n";
-
-# now iterate through all the slab id's and populate callmask and
-# uapimasks
-
-$i =0;
-while($i < $g_totalslabs){
-    #print "slabname: $slab_idtoname{$i}, slabgsm: $slab_idtogsm{$i}, slabtype: $slab_idtotype{$i}, slabcallmask: $slab_idtocallmask{$i} \n";
-    if($g_memoffsets eq "MEMOFFSETS"){
-        parse_mmap($slab_idtommapfile{$i}, $i, $g_totalslabs);
-        $slab_idtouapifnmask{$i} = parse_gsm($slab_idtogsm{$i}, $i, $g_totalslabs, 1);
-    }else{
-        $slab_idtouapifnmask{$i} = parse_gsm($slab_idtogsm{$i}, $i, $g_totalslabs, 0);
-    }
-    #print "uapifnmask:\n";
-    #print $slab_idtouapifnmask{$i};
-    $i=$i+1;
-}
-
-######
-
-# TODO: move into module [END]
-
+upmf_init($g_slabsfile, $g_memoffsets, $g_rootdir);
 
 
 

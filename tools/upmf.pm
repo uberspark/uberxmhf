@@ -5,11 +5,42 @@ package upmf;
 use strict;
 #use warnings;
 use Exporter;
+use Tie::File;
+use File::Basename;
 
 our @ISA= qw( Exporter );
 
 # these are exported by default.
-our @EXPORT = qw( export_me export_me_too parse_gsm parse_mmap %slab_idtomemoffsets %slab_idtomemoffsetstring %slab_idtocallmask %slab_nametoid %slab_idtoname $g_maxincldevlistentries $g_maxexcldevlistentries %slab_idtomemgrantreadcaps %slab_idtomemgrantwritecaps %slab_idtodatasize %slab_idtocodesize %slab_idtostacksize %slab_idtodmadatasize $g_maxmemoffsetentries %slab_idtordinclentries %slab_idtordinclcount %slab_idtordexclentries %slab_idtordexclcount);
+our @EXPORT = qw( 	export_me
+			export_me_too
+			upmf_init parse_gsm
+			parse_mmap
+			%slab_idtomemoffsets
+			%slab_idtomemoffsetstring
+			%slab_idtocallmask
+			%slab_nametoid
+			%slab_idtoname
+			$g_maxincldevlistentries
+			$g_maxexcldevlistentries
+			%slab_idtomemgrantreadcaps
+			%slab_idtomemgrantwritecaps
+			%slab_idtodatasize
+			%slab_idtocodesize
+			%slab_idtostacksize
+			%slab_idtodmadatasize
+			$g_maxmemoffsetentries
+			%slab_idtordinclentries
+			%slab_idtordinclcount
+			%slab_idtordexclentries
+			%slab_idtordexclcount
+			$g_totalslabs
+			%slab_idtodir
+			%slab_idtogsm
+			%slab_idtommapfile
+			%slab_idtotype
+			%slab_idtosubtype
+			%slab_idtouapifnmask
+		);
 
 
 our %slab_idtomemoffsets;
@@ -28,11 +59,20 @@ our %slab_idtordinclcount;
 our %slab_idtordexclentries;
 our %slab_idtordexclcount;
 
+our %slab_idtodir;
+our %slab_idtogsm;
+our %slab_idtommapfile;
+our %slab_idtotype;
+our %slab_idtosubtype;
+our %slab_idtouapifnmask;
+
+
 
 
 our $g_maxincldevlistentries;
 our $g_maxexcldevlistentries;
 our $g_maxmemoffsetentries;
+our $g_totalslabs;
 
 
 sub export_me {
@@ -42,6 +82,89 @@ sub export_me {
 sub export_me_too {
     # stuff
 }
+
+
+
+
+sub upmf_init {
+	my($g_slabsfile, $g_memoffsets, $g_rootdir) = @_;
+	my $i=0;
+	my $slabdir;
+	my $slabname;
+	my $slabtype;
+	my $slabsubtype;
+	my $slabgsmfile;
+	my $slabmmapfile;
+
+	#print "upmf_init: ", $g_slabsfile,",", $g_memoffsets, ",", $g_rootdir, "\n";
+
+	# iterate through all the entries within SLABS file and
+	# compute total number of slabs while populating global
+	# slab_idto{gsm,name,type} hashes
+
+	tie my @array, 'Tie::File', $g_slabsfile or die $!;
+
+	while( $i <= $#array) {
+
+	    my $line = $array[$i];
+	    chomp($line);
+
+	    my $trimline = $line;
+	    $trimline =~ s/^\s+|\s+$//g ;     # remove both leading and trailing whitespace
+
+	    # split the line using the comma delimiter
+	    my @slabinfo = split(/,/, $trimline);
+
+	    $slabdir = $g_rootdir.$slabinfo[0];
+	    $slabdir =~ s/^\s+|\s+$//g ;     # remove both leading and trailing whitespace
+	    $slabname = basename($slabinfo[0]);
+	    $slabname =~ s/^\s+|\s+$//g ;     # remove both leading and trailing whitespace
+	    $slabtype = $slabinfo[1];
+	    $slabtype =~ s/^\s+|\s+$//g ;     # remove both leading and trailing whitespace
+	    $slabsubtype = $slabinfo[2];
+	    $slabsubtype =~ s/^\s+|\s+$//g ;     # remove both leading and trailing whitespace
+	    $slabgsmfile = $slabdir."/".$slabname.".gsm.pp";
+	    $slabmmapfile = $g_rootdir."_objects/_objs_slab_".$slabname."/".$slabname.".mmap";
+
+	    #print "Slab name: $slabname, mmap:$slabmmapfile, gsm:$slabgsmfile ...\n";
+	    $slab_idtodir{$i} = $slabdir;
+	    $slab_idtogsm{$i} = $slabgsmfile;
+	    $slab_idtommapfile{$i} = $slabmmapfile;
+	    $slab_idtoname{$i} = $slabname;
+	    $slab_idtotype{$i} = $slabtype;
+	    $slab_idtosubtype{$i} = $slabsubtype;
+	    $slab_nametoid{$slabname} = $i;
+
+	    # move on to the next line
+	    $i = $i + 1;
+	}
+
+	$g_totalslabs = $i;
+
+	print "g_totalslabs:", $g_totalslabs, "\n";
+
+	# now iterate through all the slab id's and populate callmask and
+	# uapimasks
+
+	$i =0;
+	while($i < $g_totalslabs){
+	    #print "slabname: $slab_idtoname{$i}, slabgsm: $slab_idtogsm{$i}, slabtype: $slab_idtotype{$i}, slabcallmask: $slab_idtocallmask{$i} \n";
+	    if($g_memoffsets eq "MEMOFFSETS"){
+		parse_mmap($slab_idtommapfile{$i}, $i, $g_totalslabs);
+		$slab_idtouapifnmask{$i} = parse_gsm($slab_idtogsm{$i}, $i, $g_totalslabs, 1);
+	    }else{
+		$slab_idtouapifnmask{$i} = parse_gsm($slab_idtogsm{$i}, $i, $g_totalslabs, 0);
+	    }
+	    #print "uapifnmask:\n";
+	    #print $slab_idtouapifnmask{$i};
+	    $i=$i+1;
+	}
+
+
+}
+
+
+
 
 
 
@@ -62,10 +185,11 @@ sub parse_gsm {
     my $slab_memoffsetsstring = "";
     my $slab_memoffsetcount=0;
 
+
     chomp($filename);
+    #print "parse_gsm: $filename, $slabid, $is_memoffsets...\n";
     tie my @array, 'Tie::File', $filename or die $!;
 
-    #print "parse_gsm: $filename, $slabid, $is_memoffsets...\n";
 
     $slab_rdinclentriesstring = $slab_rdinclentriesstring."{ \n";
     $slab_rdexclentriesstring = $slab_rdexclentriesstring."{ \n";
