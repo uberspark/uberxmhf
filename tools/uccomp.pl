@@ -36,6 +36,13 @@ upmf_init($g_slabsfile, $g_memoffsets, $g_rootdir);
 
 
 
+my $i = 0;
+
+while($i < $g_totalslabs){
+    print "slabname: $slab_idtoname{$i}, $slab_idtosubtype{$i} \n";
+
+    $i=$i+1;
+}
 
 
 
