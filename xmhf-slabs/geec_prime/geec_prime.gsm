@@ -15,8 +15,8 @@ S:geec_sentinel:void:void:void
 S:uapi_slabmempgtbl:void:void:void
 S:xc_init:void:void:void
 
-U:uapi_slabmempgtbl:XMHFGEEC_UAPI_SLABMEMPGTBL_SETENTRYFORPADDR:void:void
-U:uapi_slabmempgtbl:XMHFGEEC_UAPI_SLABMEMPGTBL_INITMEMPGTBL:void:void
+U:uapi_slabmempgtbl:XMHFGEEC_UAPI_SLABMEMPGTBL_SETENTRYFORPADDR:(void)0;:(1)
+U:uapi_slabmempgtbl:XMHFGEEC_UAPI_SLABMEMPGTBL_INITMEMPGTBL:(void)0;:(1)
 
 
 RD:INCL:PCI_VENDOR_ID_XMHFGEEC:PCI_DEVICE_ID_XMHFGEEC_LAPIC:void
