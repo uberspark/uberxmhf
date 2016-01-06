@@ -324,7 +324,11 @@ sub parse_gsm {
 			#make key
 			$uapi_key = $slab_idtoname{$slabid}."_".$lineentry[1];
 			print "uapi key = $uapi_key \n";
+			print "uapi fndef = $lineentry[2] \n";
+			print "uapi fndrvcode = $lineentry[3] \n";
 
+                        $uapi_fndef{$uapi_key} = $lineentry[2]; # store uapi function definition indexed by uapi_key
+                        $uapi_fndrvcode{$uapi_key} = $lineentry[3]; #store uapi function driver code by uapi_key
 
 		}else{
 			print "\nError: Illegal UFN tag; slab is not a uapi slab!";
