@@ -235,9 +235,9 @@ sub parse_gsm {
 		$uapi_key = $lineentry[1]."_".$lineentry[2];
 		print "uapi key = $uapi_key \n";
 		if( exists $uapi_fnccomppre{$uapi_key}){
-			$uapi_fnccomppre{$uapi_key} = $uapi_fnccomppre{$uapi_key}.$lineentry[3]."\r\n";
+			$uapi_fnccomppre{$uapi_key} = $uapi_fnccomppre{$uapi_key}."/* $slab_idtoname{$slabid}:*/\r\n".$lineentry[3]."\r\n";
 		}else{
-			$uapi_fnccomppre{$uapi_key} = $lineentry[3]."\r\n";
+			$uapi_fnccomppre{$uapi_key} = "/* $slab_idtoname{$slabid}:*/\r\n".$lineentry[3]."\r\n";
 		}
 
 		if( exists $uapi_fnccompasserts{$uapi_key}){
