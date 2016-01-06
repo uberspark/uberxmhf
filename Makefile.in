@@ -140,7 +140,7 @@ slabs_verify: slabs_prebuild _slabs_generateslabinfoexports _slabs_verify
 slabs: slabs_prebuild slabs_verify slabs_realbuild
 
 .PHONY: verif_ccomp
-verif_ccomp:
+verif_ccomp: _slabs_preprocessmanifests
 	@echo Proceeding to generate composition check files...
 	mkdir -p $(XMHF_OBJDIR)/_verif_ccomp
 	cd $(XMHF_DIR) && $(XMHF_DIR)/tools/uccomp.pl SLABS NOMEMOFFSETS $(XMHF_OBJDIR)/_verif_ccomp/ccompdriverfile.c.v.c $(XMHF_OBJDIR)/_verif_ccomp/ccompcheckfile.c.v.c $(XMHF_CONFIG_MAX_INCLDEVLIST_ENTRIES) $(XMHF_CONFIG_MAX_EXCLDEVLIST_ENTRIES) $(XMHF_CONFIG_MAX_MEMOFFSET_ENTRIES)
