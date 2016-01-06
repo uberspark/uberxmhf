@@ -10,3 +10,5 @@ MS:DMADATA:0x200000:void:void
 
 S:geec_sentinel:void:void:void
 
+UFN:XMHFGEEC_UAPI_SLABMEMPGTBL_INITMEMPGTBL:void _slabmempgtbl_initmempgtbl(xmhfgeec_uapi_slabmempgtbl_initmempgtbl_params_t *initmempgtblp):{xmhfgeec_uapi_slabmempgtbl_initmempgtbl_params_t initmempgtblp; initmempgtblp.dst_slabid = framac_nondetu32(); _slabmempgtbl_initmempgtbl(&initmempgtblp);}
+

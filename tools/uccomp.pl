@@ -32,7 +32,9 @@ $g_rootdir = dirname($g_slabsfile)."/";
 #print "slabsfile:", $g_slabsfile, "\n";
 #print "rootdir:", $g_rootdir, "\n";
 
+print "parsing slab manifests...\n";
 upmf_init($g_slabsfile, $g_memoffsets, $g_rootdir);
+print "slab manifests parsed\n";
 
 
 
