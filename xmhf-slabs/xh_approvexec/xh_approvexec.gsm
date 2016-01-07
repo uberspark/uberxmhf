@@ -15,7 +15,7 @@ S:uapi_slabmempgtbl:void:void:void
 
 
 U:uapi_slabmempgtbl:XMHFGEEC_UAPI_SLABMEMPGTBL_GETENTRYFORPADDR:(void)0;:(1)
-U:uapi_slabmempgtbl:XMHFGEEC_UAPI_SLABMEMPGTBL_SETENTRYFORPADDR:(void)0;:(1)
+U:uapi_slabmempgtbl:XMHFGEEC_UAPI_SLABMEMPGTBL_SETENTRYFORPADDR:{ setentryforpaddrp->entry=setentryforpaddrp->entry & 7; setentryforpaddrp->entry &= ~0x2; setentryforpaddrp->entry |= 0x1; setentryforpaddrp->entry |= 0x4;}:(!(setentryforpaddrp->entry & 0x2) && (setentryforpaddrp->entry & 0x1) && (setentryforpaddrp->entry & 0x4))
 U:uapi_gcpustate:XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSREAD:(void)0;:(1)
 U:uapi_gcpustate:XMHF_HIC_UAPI_CPUSTATE_VMREAD:(void)0;:(1)
 
