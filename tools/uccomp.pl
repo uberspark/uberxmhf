@@ -63,6 +63,7 @@ sub uccomp_outputccompdriverfile {
 	print $fh_ccompdriverfile "\n\n";
 
 
+	print $fh_ccompdriverfile "#include <xc.h>\r\n";
 	#plug in header files
 	while($i < $g_totalslabs){
 	    print $fh_ccompdriverfile "#include <".$slab_idtoname{$i}.".h>\r\n";
@@ -79,7 +80,7 @@ sub uccomp_outputccompdriverfile {
 	print $fh_ccompdriverfile "\r\n";
 	print $fh_ccompdriverfile "\r\nu32 Frama_C_entropy_source;";
 	print $fh_ccompdriverfile "\r\n";
-	print $fh_ccompdriverfile "\r\n//@ assigns Frama_C_entropy_source \from Frama_C_entropy_source;";
+	print $fh_ccompdriverfile "\r\n//@ assigns Frama_C_entropy_source \\from Frama_C_entropy_source;";
 	print $fh_ccompdriverfile "\r\nvoid Frama_C_update_entropy(void);";
 	print $fh_ccompdriverfile "\r\n";
 	print $fh_ccompdriverfile "\r\nu32 framac_nondetu32(void){";
@@ -144,6 +145,7 @@ sub uccomp_outputccompcheckfile {
 	print $fh_ccompcheckfile "\n\n";
 
 
+	print $fh_ccompcheckfile "#include <xc.h>\r\n";
 	#plug in header files
 	while($i < $g_totalslabs){
 	    print $fh_ccompcheckfile "#include <".$slab_idtoname{$i}.".h>\r\n";
