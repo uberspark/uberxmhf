@@ -145,6 +145,7 @@ verif_ccomp: _slabs_preprocessmanifests
 	mkdir -p $(XMHF_OBJDIR)/_verif_ccomp
 	cd $(XMHF_DIR) && $(XMHF_DIR)/tools/uccomp.pl SLABS NOMEMOFFSETS $(XMHF_OBJDIR)/_verif_ccomp/ccompdriverfile.c.v.c $(XMHF_OBJDIR)/_verif_ccomp/ccompcheckfile.c.v.c $(XMHF_CONFIG_MAX_INCLDEVLIST_ENTRIES) $(XMHF_CONFIG_MAX_EXCLDEVLIST_ENTRIES) $(XMHF_CONFIG_MAX_MEMOFFSET_ENTRIES)
 	@echo composition check files generated
+	cd $(XMHF_OBJDIR)/_verif_ccomp && frama-c -val -no-val-show-progress -slevel 2048 -cpp-extra-args=-nostdinc $(VFLAGS) ccompdriverfile.c.v.c ccompcheckfile.c.v.c
 
 
 
