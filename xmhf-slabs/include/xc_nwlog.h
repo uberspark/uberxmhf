@@ -50,6 +50,9 @@
 #ifndef __XC_NWLOG_H__
 #define __XC_NWLOG_H__
 
+#define XMHFGEEC_SLAB_XC_NWLOG_INITIALIZE 0
+#define XMHFGEEC_SLAB_XC_NWLOG_LOGDATA	  1
+
 #define E1000_TIMEOUT_1MS	((0x40000000ULL * 2) / 1000)
 
 
@@ -61,8 +64,6 @@
 //////
 // general types
 /////
-#define XMHFGEEC_SLAB_XC_NWLOG_INITIALIZE 0
-#define XMHFGEEC_SLAB_XC_NWLOG_LOGDATA	  1
 
 #define XC_NWLOG_BUF_MAXELEM	16
 #define XC_NWLOG_BUF_MAXIDX	1

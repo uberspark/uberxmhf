@@ -40,6 +40,10 @@ our @EXPORT = qw( 	export_me
 			%slab_idtotype
 			%slab_idtosubtype
 			%slab_idtouapifnmask
+			%uapi_fndef
+			%uapi_fndrvcode
+			%uapi_fnccomppre
+			%uapi_fnccompasserts
 		);
 
 
@@ -67,7 +71,10 @@ our %slab_idtosubtype;
 our %slab_idtouapifnmask;
 
 
-
+our %uapi_fndef;
+our %uapi_fndrvcode;
+our %uapi_fnccomppre;
+our %uapi_fnccompasserts;
 
 our $g_maxincldevlistentries;
 our $g_maxexcldevlistentries;
@@ -184,10 +191,10 @@ sub parse_gsm {
     my $slab_uapifnmaskstring = "";
     my $slab_memoffsetsstring = "";
     my $slab_memoffsetcount=0;
-
+    my $uapi_key= "";
 
     chomp($filename);
-    #print "parse_gsm: $filename, $slabid, $is_memoffsets...\n";
+    print "parse_gsm: $filename, $slabid, $is_memoffsets...\n";
     tie my @array, 'Tie::File', $filename or die $!;
 
 
@@ -211,13 +218,35 @@ sub parse_gsm {
             }
 
         }elsif( $lineentry[0] eq "U"){
-            #print $lineentry[0], $lineentry[1], $lineentry[2], $lineentry[3], $lineentry[4], "\n";
-            #lineentry[1] = destination slab name, lineentry[2] = uapifn
-            if (exists $slab_idtouapifnmask{$slab_nametoid{$lineentry[1]}}){
-                $slab_idtouapifnmask{$slab_nametoid{$lineentry[1]}} |= (1 << $lineentry[2]);
-            }else{
-                $slab_idtouapifnmask{$slab_nametoid{$lineentry[1]}} = (1 << $lineentry[2]);
-            }
+		print "slab $slab_idtoname{$slabid}, found U tag \n";
+		#print $lineentry[0], $lineentry[1], $lineentry[2], $lineentry[3], $lineentry[4], "\n";
+		#lineentry[1] = destination slab name, lineentry[2] = uapifn
+		#lineentry[3] = uapi fn composition pre-condition setup
+		#lineentry[4] = uapi fn composition check assertion
+
+		if (exists $slab_idtouapifnmask{$slab_nametoid{$lineentry[1]}}){
+			$slab_idtouapifnmask{$slab_nametoid{$lineentry[1]}} |= (1 << $lineentry[2]);
+		}else{
+			$slab_idtouapifnmask{$slab_nametoid{$lineentry[1]}} = (1 << $lineentry[2]);
+		}
+
+		#make key
+		$lineentry[1] =~ s/^\s+|\s+$//g ;     # remove both leading and trailing whitespace
+		$uapi_key = $lineentry[1]."_".$lineentry[2];
+		print "uapi key = $uapi_key \n";
+		if( exists $uapi_fnccomppre{$uapi_key}){
+			$uapi_fnccomppre{$uapi_key} = $uapi_fnccomppre{$uapi_key}."/* $slab_idtoname{$slabid}:*/\r\n".$lineentry[3]."\r\n";
+		}else{
+			$uapi_fnccomppre{$uapi_key} = "/* $slab_idtoname{$slabid}:*/\r\n".$lineentry[3]."\r\n";
+		}
+
+		if( exists $uapi_fnccompasserts{$uapi_key}){
+			$uapi_fnccompasserts{$uapi_key} = $uapi_fnccompasserts{$uapi_key}."/*\@assert $slab_idtoname{$slabid}: ".$lineentry[4].";*/\r\n";
+		}else{
+			$uapi_fnccompasserts{$uapi_key} = "/*\@assert $slab_idtoname{$slabid}: ".$lineentry[4].";*/\r\n";
+		}
+
+		print "uapi fnccompasserts = $uapi_fnccompasserts{$uapi_key}";
 
         }elsif( $lineentry[0] eq "RD"){
             #print $lineentry[0], $lineentry[1], $lineentry[2], $lineentry[3], $lineentry[4], "\n";
@@ -306,6 +335,31 @@ sub parse_gsm {
                     exit 1;
                 }
             }
+
+
+	}elsif( $lineentry[0] eq "UFN" ){
+		#uapi function definition tag, should only appear in uapi slabs
+		if( $slab_idtosubtype{$slabid} eq "UAPI" ){
+			print "slab $slab_idtoname{$slabid}, found UFN tag \n";
+			#$lineentry[1]=uapi function id (numeric)
+			#$lineentry[2]=uapi function definition (string)
+			#$lineentry[3]=uapi function driver code (string)
+			$lineentry[2] =~ s/^\s+|\s+$//g ;     # remove both leading and trailing whitespace
+			$lineentry[3] =~ s/^\s+|\s+$//g ;     # remove both leading and trailing whitespace
+
+			#make key
+			$uapi_key = $slab_idtoname{$slabid}."_".$lineentry[1];
+			print "uapi key = $uapi_key \n";
+			print "uapi fndef = $lineentry[2] \n";
+			print "uapi fndrvcode = $lineentry[3] \n";
+
+                        $uapi_fndef{$uapi_key} = $lineentry[2]; # store uapi function definition indexed by uapi_key
+                        $uapi_fndrvcode{$uapi_key} = $lineentry[3]; #store uapi function driver code by uapi_key
+
+		}else{
+			print "\nError: Illegal UFN tag; slab is not a uapi slab!";
+                        exit 1;
+		}
 
 
         }else{
