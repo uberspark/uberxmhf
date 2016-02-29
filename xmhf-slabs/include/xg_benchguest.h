@@ -47,8 +47,8 @@
 // XMHF slab import library decls./defns.
 // author: amit vasudevan (amitvasudevan@acm.org)
 
-#ifndef __XG_RICHGUEST_H__
-#define __XG_RICHGUEST_H__
+#ifndef __XG_BENCHGUEST_H__
+#define __XG_BENCHGUEST_H__
 
 #define 	__CS_CPL0 	    0x0008 	//guest slab CPL-0 code segment selector
 #define 	__DS_CPL0 	    0x0010 	//guest slab CPL-0 data segment selector
@@ -77,4 +77,4 @@ extern void xcguestslab_do_testxhsyscalllog(void);
 #endif //__ASSEMBLY__
 
 
-#endif //__XC_RICHGUEST_H__
+#endif //__XC_BENCHGUEST_H__
