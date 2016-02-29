@@ -49,7 +49,7 @@
 #include <xmhf-debug.h>
 
 #include <xc.h>
-#include <xg_richguest.h>
+#include <xg_benchguest.h>
 
 //////
 //XMHF_SLAB_GUEST(xcguestslab)

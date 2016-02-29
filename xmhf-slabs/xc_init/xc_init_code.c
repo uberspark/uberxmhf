@@ -53,7 +53,7 @@
 #include <xc.h>
 #include <uapi_gcpustate.h>
 //#include <uapi_slabmemacc.h>
-#include <xg_richguest.h>
+#include <xg_benchguest.h>
 #include <xc_testslab.h>
 #include <xh_hyperdep.h>
 #include <xh_syscalllog.h>
