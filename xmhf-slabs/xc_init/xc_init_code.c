@@ -164,7 +164,7 @@ void slab_main(slab_params_t *sp){
 
 
     {
-        u32 guest_slab_header_paddr = xmhfgeec_slab_info_table[XMHFGEEC_SLAB_XG_RICHGUEST].slab_physmem_extents[1].addr_start;
+        u32 guest_slab_header_paddr = xmhfgeec_slab_info_table[XMHFGEEC_SLAB_XG_BENCHGUEST].slab_physmem_extents[1].addr_start;
         u32 guest_slab_gdt_paddr = guest_slab_header_paddr + offsetof(guest_slab_header_t, gdt);
         u32 guest_slab_magic_paddr = guest_slab_header_paddr + offsetof(guest_slab_header_t, magic);
         u32 guest_slab_magic;
@@ -177,7 +177,7 @@ void slab_main(slab_params_t *sp){
             //xmhf_uapi_slabmemacc_params_t *smemaccp = (xmhf_uapi_slabmemacc_params_t *)spl.in_out_params;
 
 
-            //smemaccp->dst_slabid = XMHFGEEC_SLAB_XG_RICHGUEST;
+            //smemaccp->dst_slabid = XMHFGEEC_SLAB_XG_BENCHGUEST;
             //smemaccp->addr_to = &guest_slab_magic;
             //smemaccp->addr_from = guest_slab_magic_paddr;
             //smemaccp->numbytes = sizeof(guest_slab_magic);
@@ -202,7 +202,7 @@ void slab_main(slab_params_t *sp){
             //xmhf_hic_uapi_physmem_desc_t *pdesc = (xmhf_hic_uapi_physmem_desc_t *)&spl.in_out_params[2];
             //xmhf_uapi_slabmemacc_params_t *smemaccp = (xmhf_uapi_slabmemacc_params_t *)spl.in_out_params;
 
-            /*smemaccp->dst_slabid = XMHFGEEC_SLAB_XG_RICHGUEST;
+            /*smemaccp->dst_slabid = XMHFGEEC_SLAB_XG_BENCHGUEST;
             smemaccp->addr_to = guest_slab_gdt_paddr;
             smemaccp->addr_from = &_xcguestslab_init_gdt;
             smemaccp->numbytes = sizeof(_xcguestslab_init_gdt);
@@ -475,7 +475,7 @@ void slab_main(slab_params_t *sp){
 
     //invoke hypapp initialization callbacks
     xc_hcbinvoke(XMHFGEEC_SLAB_XC_INIT,
-                 sp->cpuid, XC_HYPAPPCB_INITIALIZE, 0, XMHFGEEC_SLAB_XG_RICHGUEST);
+                 sp->cpuid, XC_HYPAPPCB_INITIALIZE, 0, XMHFGEEC_SLAB_XG_BENCHGUEST);
 
 
     //call guestslab
@@ -485,7 +485,7 @@ void slab_main(slab_params_t *sp){
         memset(&spl, 0, sizeof(spl));
         spl.cpuid = sp->cpuid;
         spl.src_slabid = XMHFGEEC_SLAB_XC_INIT;
-        spl.dst_slabid = XMHFGEEC_SLAB_XG_RICHGUEST;
+        spl.dst_slabid = XMHFGEEC_SLAB_XG_BENCHGUEST;
 
         _XDPRINTF_("%s[%u]: Proceeding to call xcguestslab; ESP=%08x, eflags=%08x\n", __func__, (u16)sp->cpuid, CASM_FUNCCALL(read_esp,CASM_NOPARAM),
 			CASM_FUNCCALL(read_eflags, CASM_NOPARAM));
