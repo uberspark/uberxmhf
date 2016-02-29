@@ -60,7 +60,7 @@ u32 gp_s2_sdadoalloc_getuobjfordev(u32 bus, u32 dev, u32 func){
     u32 i;
 
     //allocate all devices to rich guest slab for now
-    return XMHFGEEC_SLAB_XG_RICHGUEST;
+    return XMHFGEEC_SLAB_XG_BENCHGUEST;
 }
 
 
