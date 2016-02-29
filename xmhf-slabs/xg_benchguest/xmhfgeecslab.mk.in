@@ -5,7 +5,7 @@
 #
 ########################################################################
 
-export XMHF_SLAB_NAME := xg_richguest
+export XMHF_SLAB_NAME := xg_benchguest
 export XMHF_SLAB_SOURCES := $(wildcard $(srcdir)/*.c)
 XMHF_SLAB_SOURCES += $(wildcard $(srcdir)/*.cS)
 XMHF_SLAB_SOURCES += $(wildcard $(srcdir)/*.S)
