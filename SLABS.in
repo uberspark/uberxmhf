@@ -13,4 +13,4 @@ xmhf-slabs/xc_testslab , uVT_SLAB, XCORE
 xmhf-slabs/xh_approvexec , uVT_SLAB, XHYPAPP
 xmhf-slabs/xh_ropdet , uVT_SLAB, XHYPAPP
 xmhf-slabs/xh_ssteptrace , uVU_SLAB, XHYPAPP
-xmhf-slabs/xg_benchguest , uVU_SLAB, XRICHGUEST
+xmhf-slabs/xg_benchguest , uVU_SLAB, XGUEST
