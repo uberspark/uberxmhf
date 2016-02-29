@@ -69,7 +69,7 @@ else ifeq ($(XMHF_SLAB_TYPE), uVU_SLAB)
     else ifeq ($(XMHF_SLAB_SUBTYPE), XGUEST)
         XMHF_SLAB_STUBOBJECTS := $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_slabmapdef.o $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_slabinfotable.o $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_slabstubs_uvug.o
     else ifeq ($(XMHF_SLAB_SUBTYPE), XRICHGUEST)
-        XMHF_SLAB_STUBOBJECTS := $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_slabmapdef.o $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_slabinfotable.o $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_slabstubs_uvug.o
+        XMHF_SLAB_STUBOBJECTS := 
     else
         #unsupported slab sub-type
         XMHF_SLAB_STUBOBJECTS :=
