@@ -1,7 +1,7 @@
 //slab manifest
 #include <xmhf.h>
 #include <xmhfgeec.h>
-#include <xg_richguest.h>
+#include <xg_benchguest.h>
 
 //slab memory sections
 MS:CODE:0xa00000:void:void
