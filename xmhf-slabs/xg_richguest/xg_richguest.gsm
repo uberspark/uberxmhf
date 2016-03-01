@@ -4,10 +4,10 @@
 #include <xg_richguest.h>
 
 //slab memory sections
-MS:CODE:0x0:void:void
-MS:DATA:0x0:void:void
-MS:STACK:0x0:void:void
-MS:DMADATA:0x0:void:void
+MS:CODE:0:void:void
+MS:DATA:__TARGET_BASE_XMHF:void:void
+MS:STACK:__TARGET_MAX_XMHF:void:void
+MS:DMADATA:__TARGET_MAX_SYS:void:void
 
 RD:INCL:0xffff:0xffff:void
 RD:EXCL:PCI_VENDOR_ID_XMHFGEEC:PCI_DEVICE_ID_XMHFGEEC_TXT:void

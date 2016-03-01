@@ -97,21 +97,41 @@ $i =0;
 $g_memmapaddr = hex $g_loadaddr;
 while($i < $g_totalslabs){
     #print "slabname: $slab_idtoname{$i}, code: $slab_idtocodesize{$i}, data: $slab_idtodatasize{$i}, stack: $slab_idtostacksize{$i}, dmadata: $slab_idtodmadatasize{$i} \n";
-    $slab_idtocode_addrstart{$i} = sprintf("0x%08x", $g_memmapaddr);
-    $g_memmapaddr += hex $slab_idtocodesize{$i};
-    $slab_idtocode_addrend{$i} = sprintf("0x%08x", $g_memmapaddr);
 
-    $slab_idtodata_addrstart{$i} = sprintf("0x%08x", $g_memmapaddr);
-    $g_memmapaddr += hex $slab_idtodatasize{$i};
-    $slab_idtodata_addrend{$i} = sprintf("0x%08x", $g_memmapaddr);
+    if($slab_idtosubtype{$i} ne "XRICHGUEST"){
 
-    $slab_idtostack_addrstart{$i} = sprintf("0x%08x", $g_memmapaddr);
-    $g_memmapaddr += hex $slab_idtostacksize{$i};
-    $slab_idtostack_addrend{$i} = sprintf("0x%08x", $g_memmapaddr);
+	    $slab_idtocode_addrstart{$i} = sprintf("0x%08x", $g_memmapaddr);
+	    $g_memmapaddr += hex $slab_idtocodesize{$i};
+	    $slab_idtocode_addrend{$i} = sprintf("0x%08x", $g_memmapaddr);
+	
+	    $slab_idtodata_addrstart{$i} = sprintf("0x%08x", $g_memmapaddr);
+	    $g_memmapaddr += hex $slab_idtodatasize{$i};
+	    $slab_idtodata_addrend{$i} = sprintf("0x%08x", $g_memmapaddr);
+	
+	    $slab_idtostack_addrstart{$i} = sprintf("0x%08x", $g_memmapaddr);
+	    $g_memmapaddr += hex $slab_idtostacksize{$i};
+	    $slab_idtostack_addrend{$i} = sprintf("0x%08x", $g_memmapaddr);
+	
+	    $slab_idtodmadata_addrstart{$i} = sprintf("0x%08x", $g_memmapaddr);
+	    $g_memmapaddr += hex $slab_idtodmadatasize{$i};
+	    $slab_idtodmadata_addrend{$i} = sprintf("0x%08x", $g_memmapaddr);
+    }else{
 
-    $slab_idtodmadata_addrstart{$i} = sprintf("0x%08x", $g_memmapaddr);
-    $g_memmapaddr += hex $slab_idtodmadatasize{$i};
-    $slab_idtodmadata_addrend{$i} = sprintf("0x%08x", $g_memmapaddr);
+
+	    $slab_idtocode_addrstart{$i} = sprintf("0x%08x", hex $slab_idtocodesize{$i});
+	    $slab_idtocode_addrend{$i} = sprintf("0x%08x", hex $slab_idtodatasize{$i});
+	
+	    $slab_idtodata_addrstart{$i} = sprintf("0x%08x", hex $slab_idtostacksize{$i});
+	    $slab_idtodata_addrend{$i} = sprintf("0x%08x", hex $slab_idtodmadatasize{$i});
+	
+	    $slab_idtostack_addrstart{$i} = sprintf("0x%08x", 0);
+	    $slab_idtostack_addrend{$i} = sprintf("0x%08x", 0);
+	
+	    $slab_idtodmadata_addrstart{$i} = sprintf("0x%08x", 0);
+	    $slab_idtodmadata_addrend{$i} = sprintf("0x%08x", 0);
+    	
+    	
+    }
 
     $i=$i+1;
 }
