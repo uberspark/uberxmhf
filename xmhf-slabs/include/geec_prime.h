@@ -451,6 +451,12 @@ void gp_s2_setupmpgtblug(u32 slabid);
 
 /*@
 	requires 0 <= slabid < XMHFGEEC_TOTAL_SLABS;
+@*/
+void gp_s2_setupmpgtblug_rg(u32 slabid);
+
+
+/*@
+	requires 0 <= slabid < XMHFGEEC_TOTAL_SLABS;
 	requires 0 <= uhslabmempgtbl_idx < XMHFGEEC_TOTAL_UHSLABS;
 	requires 0 <= ptindex < (1024*1024);
 	requires 0 <= xmhfgeec_slab_info_table[slabid].iotbl_base < (0xFFFFFFFFUL - (3*PAGE_SIZE_4K));
