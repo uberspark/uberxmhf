@@ -203,6 +203,9 @@
 	//physical memory extents of the XMHF framework
 	#define __TARGET_BASE_XMHF				__XMHF_CONFIG_LOADADDR__
 	#define __TARGET_SIZE_XMHF				__XMHF_CONFIG_LOADMAXSIZE__
+	#define __TARGET_MAX_XMHF				__XMHF_CONFIG_LOADMAXADDR__
+	#define __TARGET_MAX_SYS				__XMHF_CONFIG_MAXSYSADDR__
+
 
 	//physical address where the XMHF boot-loader is loaded (e.g., via GRUB)
 	#define __TARGET_BASE_BOOTLOADER		0x01E00000		//30MB
