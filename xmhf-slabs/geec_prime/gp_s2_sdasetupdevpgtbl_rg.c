@@ -51,57 +51,9 @@
 
 #include <geec_prime.h>
 
-//@ghost bool invokedsdasetupdevpgtbl[XMHFGEEC_TOTAL_SLABS];
 /*@
-	requires 0 <= numentries_sysdev_memioregions < MAX_PLATFORM_DEVICES;
-	assigns invokedsdasetupdevpgtbl[0..(XMHFGEEC_TOTAL_SLABS-1)];
-	assigns _slabdevpgtbl_infotable[0..(XMHFGEEC_TOTAL_SLABS-1)].devpgtbl_initialized;
-	ensures \forall integer x; 0 <= x < XMHFGEEC_TOTAL_SLABS ==> (
-			(invokedsdasetupdevpgtbl[x] == true)
-			);
-	ensures \forall integer x; 0 <= x < XMHFGEEC_TOTAL_SLABS ==> (
-			(_slabdevpgtbl_infotable[x].devpgtbl_initialized == false)
-			);
+	requires 0 <= slabid < XMHFGEEC_TOTAL_SLABS;
 @*/
-void gp_s2_sda(void){
-	u32 i;
+void gp_s2_sdasetupdevpgtbl_rg(u32 slabid){
 
-	/*@
-		loop invariant a1: 0 <= i <= XMHFGEEC_TOTAL_SLABS;
-		loop invariant a2: \forall integer x; 0 <= x < i ==> (
-			(_slabdevpgtbl_infotable[x].devpgtbl_initialized == false)
-			);
-		loop assigns i;
-		loop assigns _slabdevpgtbl_infotable[0..(XMHFGEEC_TOTAL_SLABS-1)].devpgtbl_initialized;
-		loop variant XMHFGEEC_TOTAL_SLABS - i;
-	@*/
-	for(i=0; i < XMHFGEEC_TOTAL_SLABS; i++){
-		_slabdevpgtbl_infotable[i].devpgtbl_initialized=false;
-	}
-
-
-	//initialize all slab device page tables
-	/*@
-		loop invariant a3: 0 <= i <= XMHFGEEC_TOTAL_SLABS;
-		loop invariant a4: \forall integer x; 0 <= x < i ==> (
-			(invokedsdasetupdevpgtbl[x] == true)
-			);
-		loop assigns i;
-		loop assigns invokedsdasetupdevpgtbl[0..(XMHFGEEC_TOTAL_SLABS-1)];
-		loop variant XMHFGEEC_TOTAL_SLABS - i;
-	@*/
-	for(i=0; i < XMHFGEEC_TOTAL_SLABS; i++){
-		if (xmhfgeec_slab_info_table[i].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG_RICHGUEST){
-			gp_s2_sdasetupdevpgtbl_rg(i);
-		}else{
-			gp_s2_sdasetupdevpgtbl(i);
-		}
-		//@ghost invokedsdasetupdevpgtbl[i] = true;
-	}
-
-	_XDPRINTF_("%s: initialized slab device page tables\n", __func__);
-
-	gp_s2_sdadoalloc();
 }
-
-
