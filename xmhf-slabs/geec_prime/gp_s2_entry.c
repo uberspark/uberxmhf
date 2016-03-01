@@ -58,6 +58,11 @@ void gp_s2_entry(void){
 	gp_s2_setupslabdevmap();
 
 
+	//[debug]
+	_XDPRINTF_("%s: XMHF Tester Finished!\n", __func__);
+	CASM_FUNCCALL(xmhfhw_cpu_hlt, CASM_NOPARAM);
+
+
 	//setup slab system device allocation and device page tables
 	gp_s2_sda();
 
