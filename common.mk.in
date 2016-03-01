@@ -95,7 +95,7 @@ export CCERT_LIB := /usr/local/lib/compcert/
 ######
 
 export XMHFGEEC_TOTAL_UHSLABS := 4
-export XMHFGEEC_TOTAL_UGSLABS := 1
+export XMHFGEEC_TOTAL_UGSLABS := 2
 
 
 #load base, at 36M
