@@ -410,7 +410,7 @@ while( $i < $g_totalslabs ){
     #    print $fh "\n	    0x00000000UL,";
     #    $j=$j+1;
     #}
-    if($g_memoffsets eq "MEMOFFSETS"){
+    if($g_memoffsets eq "MEMOFFSETS" && $slab_idtosubtype{$i} ne "XRICHGUEST"){
         print $fh $slab_idtomemoffsetstring{$i};
     }else{
         print $fh "0";
@@ -481,18 +481,23 @@ print $fh "\n";
 
 $i =0;
 while($i < $g_totalslabs){
-    print $fh "\n	.slab_$slab_idtoname{$i} : {";
-    print $fh "\n		. = ALIGN(1);";
-    print $fh "\n		_objs_slab_$slab_idtoname{$i}/$slab_idtoname{$i}.slo(.slabcode)";
-    print $fh "\n		. = ALIGN(1);";
-    print $fh "\n		_objs_slab_$slab_idtoname{$i}/$slab_idtoname{$i}.slo(.slabdata)";
-    print $fh "\n		. = ALIGN(1);";
-    print $fh "\n		_objs_slab_$slab_idtoname{$i}/$slab_idtoname{$i}.slo(.slabstack)";
-    print $fh "\n		. = ALIGN(1);";
-    print $fh "\n		_objs_slab_$slab_idtoname{$i}/$slab_idtoname{$i}.slo(.slabdmadata)";
-    print $fh "\n		. = ALIGN(1);";
-    print $fh "\n	} >all=0x0000";
-    print $fh "\n";
+
+    if($slab_idtosubtype{$i} ne "XRICHGUEST"){
+
+	    print $fh "\n	.slab_$slab_idtoname{$i} : {";
+	    print $fh "\n		. = ALIGN(1);";
+	    print $fh "\n		_objs_slab_$slab_idtoname{$i}/$slab_idtoname{$i}.slo(.slabcode)";
+	    print $fh "\n		. = ALIGN(1);";
+	    print $fh "\n		_objs_slab_$slab_idtoname{$i}/$slab_idtoname{$i}.slo(.slabdata)";
+	    print $fh "\n		. = ALIGN(1);";
+	    print $fh "\n		_objs_slab_$slab_idtoname{$i}/$slab_idtoname{$i}.slo(.slabstack)";
+	    print $fh "\n		. = ALIGN(1);";
+	    print $fh "\n		_objs_slab_$slab_idtoname{$i}/$slab_idtoname{$i}.slo(.slabdmadata)";
+	    print $fh "\n		. = ALIGN(1);";
+	    print $fh "\n	} >all=0x0000";
+	    print $fh "\n";
+    
+    }
 
     $i=$i+1;
 }

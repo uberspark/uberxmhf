@@ -158,11 +158,11 @@ sub upmf_init {
 	$i =0;
 	while($i < $g_totalslabs){
 	    #print "slabname: $slab_idtoname{$i}, slabgsm: $slab_idtogsm{$i}, slabtype: $slab_idtotype{$i}, slabcallmask: $slab_idtocallmask{$i} \n";
-	    if($g_memoffsets eq "MEMOFFSETS"){
-		parse_mmap($slab_idtommapfile{$i}, $i, $g_totalslabs);
-		$slab_idtouapifnmask{$i} = parse_gsm($slab_idtogsm{$i}, $i, $g_totalslabs, 1);
+	    if($g_memoffsets eq "MEMOFFSETS" && $slab_idtosubtype{$i} ne "XRICHGUEST"){
+			parse_mmap($slab_idtommapfile{$i}, $i, $g_totalslabs);
+			$slab_idtouapifnmask{$i} = parse_gsm($slab_idtogsm{$i}, $i, $g_totalslabs, 1);
 	    }else{
-		$slab_idtouapifnmask{$i} = parse_gsm($slab_idtogsm{$i}, $i, $g_totalslabs, 0);
+			$slab_idtouapifnmask{$i} = parse_gsm($slab_idtogsm{$i}, $i, $g_totalslabs, 0);
 	    }
 	    #print "uapifnmask:\n";
 	    #print $slab_idtouapifnmask{$i};
