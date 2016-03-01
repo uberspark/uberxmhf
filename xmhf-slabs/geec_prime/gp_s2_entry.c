@@ -77,10 +77,6 @@ void gp_s2_entry(void){
 	//setup unverified uobj memory page tables
 	gp_s2_setupmpgtblu();
 
-	//[debug]
-	_XDPRINTF_("%s: XMHF Tester Finished!\n", __func__);
-	CASM_FUNCCALL(xmhfhw_cpu_hlt, CASM_NOPARAM);
-
 
 	//setup base CPU data structures
 	//xmhfhic_arch_setup_base_cpu_data_structures();
@@ -105,6 +101,11 @@ void gp_s2_entry(void){
 }
 
 
+
+
+////[debug]
+//_XDPRINTF_("%s: XMHF Tester Finished!\n", __func__);
+//CASM_FUNCCALL(xmhfhw_cpu_hlt, CASM_NOPARAM);
 
 
 
