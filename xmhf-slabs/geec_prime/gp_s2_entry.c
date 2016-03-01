@@ -74,12 +74,12 @@ void gp_s2_entry(void){
 	gp_s2_setupmpgtblv();
    	_XDPRINTF_("%s: populated verified slabs' memory page tables\n", __func__);
 
+	//setup unverified uobj memory page tables
+	gp_s2_setupmpgtblu();
+
 	//[debug]
 	_XDPRINTF_("%s: XMHF Tester Finished!\n", __func__);
 	CASM_FUNCCALL(xmhfhw_cpu_hlt, CASM_NOPARAM);
-
-	//setup unverified uobj memory page tables
-	gp_s2_setupmpgtblu();
 
 
 	//setup base CPU data structures
