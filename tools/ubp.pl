@@ -71,7 +71,8 @@ sub ubp_outputsentinelstubforslab {
 	my $assertstring;
 
 
-	$assertstring = "1";
+	#compute assert string 
+	$assertstring = "(sp->src_slabid == ".$slabid." && ( 0x".$slab_idtocallmask{$slabid}."UL & sp->dst_slabid))";
 	
 	print "output sentinel stub: slabname: $slabname, slabid: $slabid \n";
 	$sstubfilename = $sentinelstubsdir.$slabname."_sstub.ag.v.c";
