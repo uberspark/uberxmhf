@@ -46,11 +46,32 @@ exit 0;
 ######
 sub ubp_outputsentinelstubs {
 	my($sentinelstubsdir) = @_;
+	my $i=0;
 	print "sentinel stubs dir:", $sentinelstubsdir, "\n";
 	
+	
+	while($i < $g_totalslabs){
+		if($slab_idtotype{$i} eq "VfT_SLAB"){
+			ubp_outputsentinelstubforslab($slab_idtoname{$i}, $i);
+		}
+	    $i=$i+1;
+	}
+
 }
 ######
 
+
+######
+# output sentinel stub for a given slab
+######
+sub ubp_outputsentinelstubforslab {
+	my($slabname, $slabid) = @_;
+	print "output sentinel stub: slabname: $slabname, slabid: $slabid \n";
+	
+
+	
+}
+######
 
 
 
