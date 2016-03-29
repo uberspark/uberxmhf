@@ -13,12 +13,11 @@ use upmf;	#load up the manifest parsing module
 # command line inputs
 my $g_slabsfile = $ARGV[0];
 my $g_memoffsets = $ARGV[1];
-#my $g_ccompdriverfile = $ARGV[2];
-#my $g_ccompcheckfile = $ARGV[3];
+my $g_ubpsentinelstubsdir = $ARGV[2];
 
-$g_maxincldevlistentries = $ARGV[2];
-$g_maxexcldevlistentries = $ARGV[3];
-$g_maxmemoffsetentries = $ARGV[4];
+$g_maxincldevlistentries = $ARGV[3];
+$g_maxexcldevlistentries = $ARGV[4];
+$g_maxmemoffsetentries = $ARGV[5];
 
 
 my $g_rootdir;
@@ -36,7 +35,7 @@ print "parsing slab manifests...\n";
 upmf_init($g_slabsfile, $g_memoffsets, $g_rootdir);
 print "slab manifests parsed\n";
 
-ubp_outputsentinelstubs();
+ubp_outputsentinelstubs($g_ubpsentinelstubsdir);
 
 exit 0;
 
@@ -46,6 +45,9 @@ exit 0;
 # output sentinel stubs
 ######
 sub ubp_outputsentinelstubs {
+	my($sentinelstubsdir) = @_;
+	print "sentinel stubs dir:", $sentinelstubsdir, "\n";
+	
 }
 ######
 

@@ -152,7 +152,7 @@ verif_ccomp: _slabs_preprocessmanifests
 verif_bp: _slabs_preprocessmanifests
 	@echo Proceeding to generate sentinel stubs for blueprint conformance...
 	mkdir -p $(XMHF_OBJDIR)/_verif_bp
-	cd $(XMHF_DIR) && $(XMHF_DIR)/tools/ubp.pl SLABS NOMEMOFFSETS $(XMHF_CONFIG_MAX_INCLDEVLIST_ENTRIES) $(XMHF_CONFIG_MAX_EXCLDEVLIST_ENTRIES) $(XMHF_CONFIG_MAX_MEMOFFSET_ENTRIES)
+	cd $(XMHF_DIR) && $(XMHF_DIR)/tools/ubp.pl SLABS NOMEMOFFSETS $(XMHF_OBJDIR)/_verif_bp/ $(XMHF_CONFIG_MAX_INCLDEVLIST_ENTRIES) $(XMHF_CONFIG_MAX_EXCLDEVLIST_ENTRIES) $(XMHF_CONFIG_MAX_MEMOFFSET_ENTRIES)
 	@echo sentinel stubs generated
 
 
