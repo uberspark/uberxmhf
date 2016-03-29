@@ -88,8 +88,6 @@ u32 framac_nondetu32interval(u32 min, u32 max)
 
 //////
 u32 check_esp, check_eip = CASM_RET_EIP;
-slab_params_t test_sp;
-
 
 
 void main(void){
@@ -98,6 +96,7 @@ void main(void){
 	xmhfhwm_cpu_gprs_eip = check_eip;
 	check_esp = xmhfhwm_cpu_gprs_esp; // pointing to top-of-stack
 
+	hyperdep_activatedep(cpuid, framac_nondetu32(), framac_nondetu32());
 
 	//@assert xmhfhwm_cpu_gprs_esp == check_esp;
 	//@assert xmhfhwm_cpu_gprs_eip == check_eip;
