@@ -44,10 +44,6 @@ let main () =
         	Format.printf "  %a:\n    fonction definition %a@."
             	Printer.pp_location (Kernel_function.get_location f)
             	Kernel_function.pretty f
-		else
-        	Format.printf "  %a:\n    fonction declaration %a@."
-            	Printer.pp_location (Kernel_function.get_location f)
-            	Kernel_function.pretty f
 
 		in Globals.Functions.iter do_function
 
