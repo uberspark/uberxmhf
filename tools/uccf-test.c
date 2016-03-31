@@ -13,7 +13,9 @@ void myfunc(int a, int b);
 
 
 int myfunc_ptrfunc(int a){
-	return a + 7;
+	int b=0;
+	b = a + 7;
+	return b;
 }
 
 static void myfunc_static(void){
