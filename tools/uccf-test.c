@@ -5,7 +5,7 @@
 extern unsigned int ext_var1;
 int myfunc_ptrfunc(int a);
 
-
+unsigned char buf[512];
 int glob_a=5, glob_b;
 int (*ptr_myfunc_ptrfunc)(int a) = myfunc_ptrfunc;
 
@@ -21,6 +21,7 @@ static void myfunc_static(void){
 }
 
 void myfunc(int a, int b){
+	buf[a+b] = 'A';
 	a = a+b;
 	b = b-a;
 	if(a > b)

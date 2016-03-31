@@ -169,12 +169,14 @@ class shared = object (self)
       | Var _ -> false
       | Mem _ -> true
 
-(*    method private print_offset o = match o with
+    method private print_offset o = match o with
       | NoOffset -> "nooffset"
       | Field _ -> "field"
       | Index _ -> "index"
-*)
+
+    (*
     method private print_offset _  = ""
+	*)
 
     method private print_lval lv = let (lh, off) = lv in  "lval:[" ^ (self#print_lhost lh) ^ " " ^ (self#print_offset off) ^ "]"
 
@@ -272,26 +274,31 @@ let print_ast () =
 	  method vglob_aux s =
 	    match s with
 	    | GFun(f,_) ->
+	        (*
 	        Format.printf "@[<hov 2>subgraph cluster_%a {@ \
 	                           @[<hv 2>graph@ [label=\"%a\"];@]@ "
 	          Printer.pp_varinfo f.svar
 	          Printer.pp_varinfo f.svar;
-	        Cil.DoChildrenPost(fun s -> Format.printf "}@]@ "; s)
+	        *)
+	        Format.printf "\n function %a {"
+	          Printer.pp_varinfo f.svar;
+	        
+	        Cil.DoChildrenPost(fun s -> Format.printf "\n }@ "; s)
 	    | _ -> Cil.SkipChildren
 
       
       method vstmt_aux s = match s.skind with
-      | Instr i -> Format.printf "instr %s" (self#print_instr i); Cil.DoChildren
-      | Return (eo, _) -> Format.printf "return %s" (self#print_opt_exp eo); Cil.DoChildren
-      | Goto _ -> Format.printf "goto"; Cil.DoChildren
-      | Break _ -> Format.printf "break"; Cil.DoChildren
-      | Continue _ -> Format.printf "%s" "continue"; Cil.DoChildren
-      | If (e, b1, b2, l) -> Format.printf "%s" (self#print_if (e, b1, b2, l)); Cil.DoChildren
-      | Switch _ -> Format.printf "%s" "switch"; Cil.DoChildren
-      | Loop _ -> Format.printf "loop"; Cil.DoChildren
-      | Block _ -> Format.printf "block"; Cil.DoChildren
-      | UnspecifiedSequence _ -> Format.printf "unspecified sequence"; Cil.DoChildren
-      | _ -> Format.printf "other stmt"; Cil.DoChildren
+      | Instr i -> Format.printf "\n instr %s" (self#print_instr i); Cil.DoChildren
+      | Return (eo, _) -> Format.printf "\n return %s" (self#print_opt_exp eo); Cil.DoChildren
+      | Goto _ -> Format.printf "\n goto"; Cil.DoChildren
+      | Break _ -> Format.printf "\n break"; Cil.DoChildren
+      | Continue _ -> Format.printf "\n %s" "continue"; Cil.DoChildren
+      | If (e, b1, b2, l) -> Format.printf "\n %s" (self#print_if (e, b1, b2, l)); Cil.DoChildren
+      | Switch _ -> Format.printf "\n %s" "switch"; Cil.DoChildren
+      | Loop _ -> Format.printf "\n loop"; Cil.DoChildren
+      | Block _ -> Format.printf "\n block"; Cil.DoChildren
+      | UnspecifiedSequence _ -> Format.printf "\n unspecified sequence"; Cil.DoChildren
+      | _ -> Format.printf "\n other stmt"; Cil.DoChildren
     end
     in Visitor.visitFramacFile print_visitor (Ast.get ()) ;
     ()
