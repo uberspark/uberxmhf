@@ -275,21 +275,18 @@ let print_ast () =
       inherit Visitor.frama_c_inplace
 
 		method private dump_varinfo (v:Cil_types.varinfo) =
-			Format.printf "\n <localvar> %s" (self#print_varinfo v);
+			Format.printf "\n   %s" (self#print_varinfo v);
 			()
 
 	  method vglob_aux s =
 	    match s with
 	    | GFun(f,_) ->
-	        (*
-	        Format.printf "@[<hov 2>subgraph cluster_%a {@ \
-	                           @[<hv 2>graph@ [label=\"%a\"];@]@ "
-	          Printer.pp_varinfo f.svar
-	          Printer.pp_varinfo f.svar;
-	        *)
 	        Format.printf "\n function %a {"
 	          Printer.pp_varinfo f.svar;
 
+			Format.printf "\n  formals:";
+		    List.iter self#dump_varinfo f.sformals;
+			Format.printf "\n  local vars:";
 		    List.iter self#dump_varinfo f.slocals;
 
 	        
