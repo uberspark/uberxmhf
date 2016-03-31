@@ -41,9 +41,16 @@ let () = Db.Main.extend main
 let main () =
 	let do_function f =
         if (Kernel_function.is_definition f) then
-        	Format.printf "  %a:\n    fonction definition %a@."
+        	let fundec = Kernel_function.get_definition f in
+  				let loc = Cil_datatype.Location.unknown in
+  					let global = Cil_types.GFun (fundec, loc) in
+  						Format.printf "%a" Printer.pp_global global
+        	
+        	(*
+        		Format.printf "  %a:\n    fonction definition %a@."
             	Printer.pp_location (Kernel_function.get_location f)
             	Kernel_function.pretty f
+			*)
 
 		in Globals.Functions.iter do_function
 
