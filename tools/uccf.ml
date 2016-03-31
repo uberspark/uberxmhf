@@ -23,6 +23,7 @@ let () = Db.Main.extend (fun () -> Globals.Vars.iter do_var)
 
 
 (* parse all functions and categorize into defined vs declared *)
+(*
 let main () =
 	let do_function f =
         Format.printf "  %a:\n    fonction %a (%s)@."
@@ -32,3 +33,28 @@ let main () =
 		in Globals.Functions.iter do_function
 
 let () = Db.Main.extend main
+*)
+
+
+(* parse only defined functions *)
+
+let main () =
+	let do_function f =
+        if (Kernel_function.is_definition f) then
+        	Format.printf "  %a:\n    fonction definition %a@."
+            	Printer.pp_location (Kernel_function.get_location f)
+            	Kernel_function.pretty f
+		else
+        	Format.printf "  %a:\n    fonction declaration %a@."
+            	Printer.pp_location (Kernel_function.get_location f)
+            	Kernel_function.pretty f
+
+		in Globals.Functions.iter do_function
+
+let () = Db.Main.extend main
+
+
+
+
+
+
