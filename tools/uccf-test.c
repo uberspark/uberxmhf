@@ -13,6 +13,12 @@ static void myfunc_static(void){
 }
 
 void myfunc(int a, int b){
-	printf("a=%u, b=%u\n", a, b);
+	a = a+b;
+	b = b-a;
+	if(a > b)
+		printf("a=%u, b=%u\n", a, b);
+	else
+		printf("b=%u, a=%u\n", b, a);
+
 }
 
