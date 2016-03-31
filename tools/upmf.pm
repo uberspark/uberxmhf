@@ -18,6 +18,7 @@ our @EXPORT = qw( 	export_me
 			%slab_idtomemoffsets
 			%slab_idtomemoffsetstring
 			%slab_idtocallmask
+			%slab_idtocalleemask
 			%slab_nametoid
 			%slab_idtoname
 			$g_maxincldevlistentries
@@ -50,6 +51,7 @@ our @EXPORT = qw( 	export_me
 our %slab_idtomemoffsets;
 our %slab_idtomemoffsetstring;
 our %slab_idtocallmask;
+our %slab_idtocalleemask;
 our %slab_nametoid;
 our %slab_idtoname;
 our %slab_idtomemgrantreadcaps;
@@ -216,6 +218,14 @@ sub parse_gsm {
             }else {
                 $slab_idtocallmask{$slab_nametoid{$lineentry[1]}} = (1 << $slabid);
             }
+
+            if (exists $slab_idtocalleemask{$slabid}){
+                $slab_idtocalleemask{$slabid} |= (1 << $slab_nametoid{$lineentry[1]});
+            }else {
+                $slab_idtocalleemask{$slabid} = (1 << $slab_nametoid{$lineentry[1]});
+            }
+
+
 
         }elsif( $lineentry[0] eq "U"){
 		print "slab $slab_idtoname{$slabid}, found U tag \n";
