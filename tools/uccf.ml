@@ -263,13 +263,20 @@ class shared = object (self)
 end
 
 
+let dump_varinfo (v:Cil_types.varinfo) =
+	Format.printf "\n local variable";
+	()
+
+
 let print_ast () =
     let print_visitor = object (self)
     (* visit the AST in place by inheritance *)
       inherit shared 
       inherit Visitor.frama_c_inplace
 
-
+		method private dump_varinfo (v:Cil_types.varinfo) =
+			Format.printf "\n <localvar> %s" (self#print_varinfo v);
+			()
 
 	  method vglob_aux s =
 	    match s with
@@ -282,6 +289,9 @@ let print_ast () =
 	        *)
 	        Format.printf "\n function %a {"
 	          Printer.pp_varinfo f.svar;
+
+		    List.iter self#dump_varinfo f.slocals;
+
 	        
 	        Cil.DoChildrenPost(fun s -> Format.printf "\n }@ "; s)
 	    | _ -> Cil.SkipChildren
