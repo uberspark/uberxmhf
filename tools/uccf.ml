@@ -172,7 +172,7 @@ class shared = object (self)
     method private print_offset o = match o with
       | NoOffset -> "nooffset"
       | Field _ -> "field"
-      | Index _ -> "index"
+      | Index (e,o) -> "index ("^ (self#print_expr e) ^ ")"
 
     (*
     method private print_offset _  = ""
