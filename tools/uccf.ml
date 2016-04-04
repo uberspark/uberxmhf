@@ -347,16 +347,17 @@ let print_ast () =
 	  method vglob_aux s =
 	    match s with
 	    | GFun(f,_) ->
-	        Format.printf "\n function %a {"
-	          Printer.pp_varinfo f.svar;
-
-			Format.printf "\n  formals:";
-		    List.iter self#dump_varinfo f.sformals;
-			Format.printf "\n  local vars:";
-		    List.iter self#dump_varinfo f.slocals;
-
-	        
-	        Cil.DoChildrenPost(fun s -> Format.printf "\n }@ "; s)
+	    	(
+		        Format.printf "\n function [%s] {"  (self#print_varinfo f.svar);	          
+	
+				Format.printf "\n  formals:";
+			    List.iter self#dump_varinfo f.sformals;
+				Format.printf "\n  local vars:";
+			    List.iter self#dump_varinfo f.slocals;
+	
+		        
+		        Cil.DoChildrenPost(fun s -> Format.printf "\n }@ "; s)
+	    	)
 	    | _ -> Cil.SkipChildren
 
       
