@@ -289,7 +289,35 @@ let print_ast () =
 
 		method private process_call lv e el l = 
 			let is_funcptr = ref false in 
-				
+			let is_expr_enode_lval = ref false in
+
+		
+				match e.enode with
+			      | Lval lvv	->	(
+			      		      			let (lvv_lh, lvv_off) = lvv in  
+			      		      				match lvv_lh with
+      											| Var lvv_lh_vi	->	(
+      																	"ocall [" ^ (self#print_opt_lval lv) ^ "] [" ^ (self#print_expr e) ^ "] [" ^ (self#print_expr_list el) ^ "] [" ^ (self#print_location l) ^ "]" ;
+      																)
+      											|_ 				-> 	(
+																		is_funcptr := true;
+																		Format.printf "\nError: Function pointer invocation detected\n";
+																		ignore(exit 1);
+			      														"";
+      																)
+			      		      				;
+			    					)
+			      |_ 			-> 	(
+										is_funcptr := true;
+										Format.printf "\nError: Function pointer invocation detected\n";
+										ignore(exit 1);
+			      						"";
+			      					)
+      			;
+
+				(*
+				Format.printf "\n after match \n";
+      			
 				if (self#is_expr_enode_lval e) then 
 					begin
 						Format.printf "\n expr enode is lval \n";
@@ -300,7 +328,7 @@ let print_ast () =
 						Format.printf "\n call is funcptr \n";
 					end
 				;
-				
+				*)
      
 				(*
 				if !is_e_enode_lval then begin
@@ -308,8 +336,9 @@ let print_ast () =
 				end;
 				*)
 				
+				(*
 				"ocall [" ^ (self#print_opt_lval lv) ^ "] [" ^ (self#print_expr e) ^ "] [" ^ (self#print_expr_list el) ^ "] [" ^ (self#print_location l) ^ "]" ; 
-	
+				*)
 			
 		method private dump_varinfo (v:Cil_types.varinfo) =
 			Format.printf "\n   %s" (self#print_varinfo v);
