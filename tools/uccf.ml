@@ -246,9 +246,16 @@ class shared = object (self)
         | h::t -> print_expr_list_aux t (accu ^ (if first then "" else ",") ^ (self#print_expr h)) false
       in print_expr_list_aux exprl "[" true
 
+	method private process_call lv e el l = 
+		"call [" ^ (self#print_opt_lval lv) ^ "] [" ^ (self#print_expr e) ^ "] [" ^ (self#print_expr_list el) ^ "] [" ^ (self#print_location l) ^ "]"
+
+
    method private print_instr instr = match instr with 
       | Set (lv, e, loc) -> "set[" ^ (self#print_lval lv) ^ "," ^ (self#print_expr e) ^ (self#print_location loc) ^ "]"
+      (*
       | Call (lv, e, el, l) -> "call [" ^ (self#print_opt_lval lv) ^ "] [" ^ (self#print_expr e) ^ "] [" ^ (self#print_expr_list el) ^ "] [" ^ (self#print_location l) ^ "]"
+      *)
+      | Call (lv, e, el, l) -> self#process_call lv e el l
       | Asm _ -> "asm"
       | Skip l -> "skip " ^ (self#print_location l)
       | Code_annot _ -> "code annot"
@@ -273,6 +280,7 @@ let print_ast () =
     (* visit the AST in place by inheritance *)
       inherit shared 
       inherit Visitor.frama_c_inplace
+
 
 		method private dump_varinfo (v:Cil_types.varinfo) =
 			Format.printf "\n   %s" (self#print_varinfo v);
