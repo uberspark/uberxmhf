@@ -162,8 +162,8 @@ class shared = object (self)
     method private print_glob_fun (f, _) = (self#print_fundec f)
 
     method private print_lhost lh = match lh with
-      | Var vi -> self#print_varinfo vi
-      | Mem e -> self#print_expr e
+      | Var vi -> "var:[" ^ self#print_varinfo vi ^ "]"
+      | Mem e -> "mem:[" ^ self#print_expr e ^ "]"
 
     method private is_lval_ptr (lh, _) = match lh with
       | Var _ -> false
