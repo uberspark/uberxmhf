@@ -376,7 +376,17 @@ let print_ast () =
     end
     in Visitor.visitFramacFile print_visitor (Ast.get ()) ;
     ()
-    
+
+
+let help_msg = "UberSpark coding conformance check plugin"
+
+module Self = Plugin.Register
+	(struct
+		let name = "US Coding Conformance"
+		let shortname = "uccf"
+		let help = help_msg
+	end)
+
     		
 let run () =
 	Format.printf "AST dump follows:\n\n";
