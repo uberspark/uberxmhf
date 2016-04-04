@@ -219,6 +219,12 @@ class shared = object (self)
 
     method private print_caste (t, e) = "[cast (" ^ (self#print_type t) ^ ") ( " ^ (self#print_expr e) ^ ")]"
 
+
+    method private is_expr_enode_lval expr = match expr.enode with
+      | Lval lv -> true
+      |_ -> false
+      
+
     method private print_expr_aux expr = match expr.enode with
       | Const _ -> "const"
       | Lval lv -> (self#print_lval lv)
@@ -282,9 +288,29 @@ let print_ast () =
       inherit Visitor.frama_c_inplace
 
 		method private process_call lv e el l = 
-			"ocall [" ^ (self#print_opt_lval lv) ^ "] [" ^ (self#print_expr e) ^ "] [" ^ (self#print_expr_list el) ^ "] [" ^ (self#print_location l) ^ "]"
-
+			let is_funcptr = ref false in 
+				
+				if (self#is_expr_enode_lval e) then 
+					begin
+						Format.printf "\n expr enode is lval \n";
+					end 
+				else 
+					begin
+						is_funcptr := true;
+						Format.printf "\n call is funcptr \n";
+					end
+				;
+				
+     
+				(*
+				if !is_e_enode_lval then begin
+					Format.printf "\n is_e_enode_lval is true \n";
+				end;
+				*)
+				
+				"ocall [" ^ (self#print_opt_lval lv) ^ "] [" ^ (self#print_expr e) ^ "] [" ^ (self#print_expr_list el) ^ "] [" ^ (self#print_location l) ^ "]" ; 
 	
+			
 		method private dump_varinfo (v:Cil_types.varinfo) =
 			Format.printf "\n   %s" (self#print_varinfo v);
 			()
