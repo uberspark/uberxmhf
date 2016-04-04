@@ -4,13 +4,12 @@
 
 open Cil_types
 
-let help_msg = "UberSpark coding conformance check plugin"
 
 module Self = Plugin.Register
 	(struct
 		let name = "US Coding Conformance"
 		let shortname = "uccf"
-		let help = help_msg
+		let help = "UberSpark coding conformance check plugin"
 	end)
 
 
