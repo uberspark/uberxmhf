@@ -31,7 +31,7 @@ void myfunc(int a, int b){
 	else
 		printf("b=%u, a=%u\n", b, a);
 
-	//a = myfunc_ptrfunc(b);
-	a = ptr_myfunc_ptrfunc(b);
+	a = myfunc_ptrfunc(b);
+	//a = ptr_myfunc_ptrfunc(b);
 }
 
