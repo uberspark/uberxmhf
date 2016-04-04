@@ -281,7 +281,10 @@ let print_ast () =
       inherit shared 
       inherit Visitor.frama_c_inplace
 
+		method private process_call lv e el l = 
+			"ocall [" ^ (self#print_opt_lval lv) ^ "] [" ^ (self#print_expr e) ^ "] [" ^ (self#print_expr_list el) ^ "] [" ^ (self#print_location l) ^ "]"
 
+	
 		method private dump_varinfo (v:Cil_types.varinfo) =
 			Format.printf "\n   %s" (self#print_varinfo v);
 			()
