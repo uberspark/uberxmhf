@@ -4,6 +4,15 @@
 
 open Cil_types
 
+let help_msg = "UberSpark coding conformance check plugin"
+
+module Self = Plugin.Register
+	(struct
+		let name = "US Coding Conformance"
+		let shortname = "uccf"
+		let help = help_msg
+	end)
+
 
 (* ------------------------------------------------------------------------ *)
 (* hello world output to a file *)
@@ -20,7 +29,7 @@ let () = Db.Main.extend run
 (* parse all global variables and categorize into defined vs declared *)
 (*
 let do_var v _init =
-      Format.printf "Global variable %a (%s)@." Cil_datatype.Varinfo.pretty v
+      Self.result "Global variable %a (%s)@." Cil_datatype.Varinfo.pretty v
         (if v.Cil_types.vdefined then "defined" else "declared")
 
 let () = Db.Main.extend (fun () -> Globals.Vars.iter do_var)
@@ -32,7 +41,7 @@ let () = Db.Main.extend (fun () -> Globals.Vars.iter do_var)
 (*
 let main () =
 	let do_function f =
-        Format.printf "  %a:\n    fonction %a (%s)@."
+        Self.result "  %a:\n    fonction %a (%s)@."
             Printer.pp_location (Kernel_function.get_location f)
             Kernel_function.pretty f
             (if (Kernel_function.is_definition f) then "defined" else "declared")
@@ -52,10 +61,10 @@ let main () =
         	let fundec = Kernel_function.get_definition f in
   				let loc = Cil_datatype.Location.unknown in
   					let global = Cil_types.GFun (fundec, loc) in
-  						Format.printf "%a" Printer.pp_global global
+  						Self.result "%a" Printer.pp_global global
         	
         	(*
-        		Format.printf "  %a:\n    fonction definition %a@."
+        		Self.result "  %a:\n    fonction definition %a@."
             	Printer.pp_location (Kernel_function.get_location f)
             	Kernel_function.pretty f
 			*)
@@ -277,7 +286,7 @@ end
 
 
 let dump_varinfo (v:Cil_types.varinfo) =
-	Format.printf "\n local variable";
+	Self.result "\n local variable";
 	()
 
 
@@ -301,7 +310,7 @@ let print_ast () =
       																)
       											|_ 				-> 	(
 																		is_funcptr := true;
-																		Format.printf "\nError: Function pointer invocation detected\n";
+																		Self.result "\nError: Function pointer invocation detected\n";
 																		ignore(exit 1);
 			      														"";
       																)
@@ -309,30 +318,30 @@ let print_ast () =
 			    					)
 			      |_ 			-> 	(
 										is_funcptr := true;
-										Format.printf "\nError: Function pointer invocation detected\n";
+										Self.result "\nError: Function pointer invocation detected\n";
 										ignore(exit 1);
 			      						"";
 			      					)
       			;
 
 				(*
-				Format.printf "\n after match \n";
+				Self.result "\n after match \n";
       			
 				if (self#is_expr_enode_lval e) then 
 					begin
-						Format.printf "\n expr enode is lval \n";
+						Self.result "\n expr enode is lval \n";
 					end 
 				else 
 					begin
 						is_funcptr := true;
-						Format.printf "\n call is funcptr \n";
+						Self.result "\n call is funcptr \n";
 					end
 				;
 				*)
      
 				(*
 				if !is_e_enode_lval then begin
-					Format.printf "\n is_e_enode_lval is true \n";
+					Self.result "\n is_e_enode_lval is true \n";
 				end;
 				*)
 				
@@ -341,55 +350,47 @@ let print_ast () =
 				*)
 			
 		method private dump_varinfo (v:Cil_types.varinfo) =
-			Format.printf "\n   %s" (self#print_varinfo v);
+			Self.result "\n   %s" (self#print_varinfo v);
 			()
 
 	  method vglob_aux s =
 	    match s with
 	    | GFun(f,_) ->
 	    	(
-		        Format.printf "\n function [%s] {"  (self#print_varinfo f.svar);	          
+		        Self.result "\n function [%s] {"  (self#print_varinfo f.svar);	          
 	
-				Format.printf "\n  formals:";
+				Self.result "\n  formals:";
 			    List.iter self#dump_varinfo f.sformals;
-				Format.printf "\n  local vars:";
+				Self.result "\n  local vars:";
 			    List.iter self#dump_varinfo f.slocals;
 	
 		        
-		        Cil.DoChildrenPost(fun s -> Format.printf "\n }@ "; s)
+		        Cil.DoChildrenPost(fun s -> Self.result "\n }@ "; s)
 	    	)
 	    | _ -> Cil.SkipChildren
 
       
       method vstmt_aux s = match s.skind with
-      | Instr i -> Format.printf "\n instr %s" (self#print_instr i); Cil.DoChildren
-      | Return (eo, _) -> Format.printf "\n return %s" (self#print_opt_exp eo); Cil.DoChildren
-      | Goto _ -> Format.printf "\n goto"; Cil.DoChildren
-      | Break _ -> Format.printf "\n break"; Cil.DoChildren
-      | Continue _ -> Format.printf "\n %s" "continue"; Cil.DoChildren
-      | If (e, b1, b2, l) -> Format.printf "\n %s" (self#print_if (e, b1, b2, l)); Cil.DoChildren
-      | Switch _ -> Format.printf "\n %s" "switch"; Cil.DoChildren
-      | Loop _ -> Format.printf "\n loop"; Cil.DoChildren
-      | Block _ -> Format.printf "\n block"; Cil.DoChildren
-      | UnspecifiedSequence _ -> Format.printf "\n unspecified sequence"; Cil.DoChildren
-      | _ -> Format.printf "\n other stmt"; Cil.DoChildren
+      | Instr i -> Self.result "\n instr %s" (self#print_instr i); Cil.DoChildren
+      | Return (eo, _) -> Self.result "\n return %s" (self#print_opt_exp eo); Cil.DoChildren
+      | Goto _ -> Self.result "\n goto"; Cil.DoChildren
+      | Break _ -> Self.result "\n break"; Cil.DoChildren
+      | Continue _ -> Self.result "\n %s" "continue"; Cil.DoChildren
+      | If (e, b1, b2, l) -> Self.result "\n %s" (self#print_if (e, b1, b2, l)); Cil.DoChildren
+      | Switch _ -> Self.result "\n %s" "switch"; Cil.DoChildren
+      | Loop _ -> Self.result "\n loop"; Cil.DoChildren
+      | Block _ -> Self.result "\n block"; Cil.DoChildren
+      | UnspecifiedSequence _ -> Self.result "\n unspecified sequence"; Cil.DoChildren
+      | _ -> Self.result "\n other stmt"; Cil.DoChildren
     end
     in Visitor.visitFramacFile print_visitor (Ast.get ()) ;
     ()
 
 
-let help_msg = "UberSpark coding conformance check plugin"
-
-module Self = Plugin.Register
-	(struct
-		let name = "US Coding Conformance"
-		let shortname = "uccf"
-		let help = help_msg
-	end)
 
     		
 let run () =
-	Format.printf "AST dump follows:\n\n";
+	Self.result "AST dump follows:\n\n";
 	print_ast ();
 	()
 
