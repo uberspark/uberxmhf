@@ -291,10 +291,6 @@ class shared = object (self)
 end
 
 
-let dump_varinfo (v:Cil_types.varinfo) =
-	Self.result "\n local variable";
-	()
-
 
 let print_ast () =
     let print_visitor = object (self)
