@@ -145,6 +145,16 @@ let () = Db.Main.extend run
 (* les methodes de cette classe sont utilisées pour faire du debug *)
 class shared = object (self)
 
+	method private process_call lv e el l = 
+		"call [" ^ (self#print_opt_lval lv) ^ "] [" ^ (self#print_expr e) ^ "] [" ^ (self#print_expr_list el) ^ "] [" ^ (self#print_location l) ^ "]"
+
+    method private process_varinfo v = 
+    	v.vname ^ " " ^ (self#print_type v.vtype)
+
+
+
+
+
     method private print_position pos = "(" ^ pos.Lexing.pos_fname ^ " " ^ (string_of_int pos.Lexing.pos_lnum) ^ " " ^ (string_of_int pos.Lexing.pos_bol) ^ " " ^ (string_of_int pos.Lexing.pos_cnum) ^ ")"
 
 (*
@@ -164,7 +174,7 @@ class shared = object (self)
       | TEnum _ -> "enum"
       | TBuiltin_va_list _ -> "buildin_va_list"
 
-    method private print_varinfo v = v.vname ^ " " ^ (self#print_type v.vtype)
+    method private print_varinfo v = (self#process_varinfo v)
 
     method private print_varinfo_list vl = 
       let rec print_varinfo_list_aux vlaux accu first = match vlaux with
@@ -267,8 +277,6 @@ class shared = object (self)
         | h::t -> print_expr_list_aux t (accu ^ (if first then "" else ",") ^ (self#print_expr h)) false
       in print_expr_list_aux exprl "[" true
 
-	method private process_call lv e el l = 
-		"call [" ^ (self#print_opt_lval lv) ^ "] [" ^ (self#print_expr e) ^ "] [" ^ (self#print_expr_list el) ^ "] [" ^ (self#print_location l) ^ "]"
 
 
    method private print_instr instr = match instr with 
