@@ -346,30 +346,8 @@ let print_ast () =
 			      					)
       			;
 
-				(*
-				Self.result "\n after match \n";
-      			
-				if (self#is_expr_enode_lval e) then 
-					begin
-						Self.result "\n expr enode is lval \n";
-					end 
-				else 
-					begin
-						is_funcptr := true;
-						Self.result "\n call is funcptr \n";
-					end
-				;
-				*)
      
-				(*
-				if !is_e_enode_lval then begin
-					Self.result "\n is_e_enode_lval is true \n";
-				end;
-				*)
 				
-				(*
-				"ocall [" ^ (self#print_opt_lval lv) ^ "] [" ^ (self#print_expr e) ^ "] [" ^ (self#print_expr_list el) ^ "] [" ^ (self#print_location l) ^ "]" ; 
-				*)
 			
 		method private dump_varinfo (v:Cil_types.varinfo) =
 			Self.result "\n   %s" (self#print_varinfo v);
@@ -389,6 +367,14 @@ let print_ast () =
 		        
 		        Cil.DoChildrenPost(fun s -> Self.result "\n }@ "; s)
 	    	)
+	    
+	    | GVar (v, inito, l) ->
+	    	(
+	    		Self.result "\n global var def [%s]"  (self#print_varinfo v);
+
+		        Cil.DoChildrenPost(fun s -> Self.result "\n @ "; s)
+	    	)
+	    		    	
 	    | _ -> Cil.SkipChildren
 
       
