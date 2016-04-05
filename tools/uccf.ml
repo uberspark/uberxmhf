@@ -12,7 +12,7 @@ module Self = Plugin.Register
 		let help = "UberSpark coding conformance check plugin"
 	end)
 
-module Disallowfp = Self.False
+module CmdoptDisallowFp = Self.False
 	(struct
 		let option_name = "-uccf-disallowfp"
 		let default = false
@@ -315,18 +315,34 @@ let print_ast () =
       																	"ocall [" ^ (self#print_opt_lval lv) ^ "] [" ^ (self#print_expr e) ^ "] [" ^ (self#print_expr_list el) ^ "] [" ^ (self#print_location l) ^ "]" ;
       																)
       											|_ 				-> 	(
-																		is_funcptr := true;
-																		Self.result "\nError: Function pointer invocation detected\n";
-																		ignore(exit 1);
-			      														"";
+																		if CmdoptDisallowFp.get() then 
+																			begin
+																				is_funcptr := true;
+																				Self.result "\nError: Function pointer invocation detected\n";
+																				ignore(exit 1);
+			      															"";
+			      															end
+			      														else
+			      															begin
+																				"ocall [" ^ (self#print_opt_lval lv) ^ "] [" ^ (self#print_expr e) ^ "] [" ^ (self#print_expr_list el) ^ "] [" ^ (self#print_location l) ^ "]" ;			      															
+			      															end
+			      														;
       																)
 			      		      				;
 			    					)
 			      |_ 			-> 	(
-										is_funcptr := true;
-										Self.result "\nError: Function pointer invocation detected\n";
-										ignore(exit 1);
-			      						"";
+										if CmdoptDisallowFp.get() then 
+											begin
+												is_funcptr := true;
+												Self.result "\nError: Function pointer invocation detected\n";
+												ignore(exit 1);
+											"";
+											end
+										else
+											begin
+												"ocall [" ^ (self#print_opt_lval lv) ^ "] [" ^ (self#print_expr e) ^ "] [" ^ (self#print_expr_list el) ^ "] [" ^ (self#print_location l) ^ "]" ;			      															
+											end
+										;
 			      					)
       			;
 
@@ -396,17 +412,9 @@ let print_ast () =
 
     		
 let run () =
-	if Disallowfp.get() then 
-		begin
-			Self.result "AST dump follows:\n\n";
-			print_ast ();
-		end
-	else
-		begin
-			Self.result "No options specified\n\n";
-		end
-	;
-	
+	Self.result "Parsing source file AST...\n";
+	print_ast ();
+	Self.result "Done.\n";
 	()
 
 let () = Db.Main.extend run
