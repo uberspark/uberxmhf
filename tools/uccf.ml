@@ -12,6 +12,13 @@ module Self = Plugin.Register
 		let help = "UberSpark coding conformance check plugin"
 	end)
 
+module Disallowfp = Self.False
+	(struct
+		let option_name = "-uccf-disallowfp"
+		let default = false
+		let help = "when on (off by default), disallow function pointer invocations"
+	end)
+
 
 (* ------------------------------------------------------------------------ *)
 (* hello world output to a file *)
@@ -389,8 +396,17 @@ let print_ast () =
 
     		
 let run () =
-	Self.result "AST dump follows:\n\n";
-	print_ast ();
+	if Disallowfp.get() then 
+		begin
+			Self.result "AST dump follows:\n\n";
+			print_ast ();
+		end
+	else
+		begin
+			Self.result "No options specified\n\n";
+		end
+	;
+	
 	()
 
 let () = Db.Main.extend run
