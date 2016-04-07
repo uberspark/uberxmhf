@@ -312,7 +312,9 @@ let print_ast () =
     			is_hwmvar := (Str.string_match varname_regexp v.vname 0); 
     			if !is_hwmvar then
     				begin
-		    			"HWM name->" ^ v.vname ^ ", type->" ^ (self#print_type v.vtype);
+						Self.result "\nError: variable name definition is non-conforming with HWM\n";
+						ignore(exit 1);
+	    				"";
     				end
     			else
     				begin
