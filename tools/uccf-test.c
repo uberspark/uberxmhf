@@ -5,6 +5,7 @@
 extern unsigned int ext_var1;
 int myfunc_ptrfunc(int a);
 
+unsigned char xmhfhwm_buf[512];
 unsigned char buf[512];
 int glob_a=5, glob_b;
 int (*ptr_myfunc_ptrfunc)(int a) = myfunc_ptrfunc;
