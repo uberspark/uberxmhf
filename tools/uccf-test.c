@@ -5,13 +5,23 @@
 extern unsigned int ext_var1;
 int myfunc_ptrfunc(int a);
 
-unsigned char xmhfhwm_buf[512];
+//unsigned char xmhfhwm_buf[512];
 unsigned char buf[512];
 int glob_a=5, glob_b;
 int (*ptr_myfunc_ptrfunc)(int a) = myfunc_ptrfunc;
 
 void myfunc(int a, int b);
 
+
+/*
+
+int xmhfhwm_myfunc_notused(int a, int b, int c){
+	int d=0;
+	d = a + b - c;
+	d += b;
+	return d;
+}
+*/
 
 int myfunc_ptrfunc(int a){
 	int b=0;
