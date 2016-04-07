@@ -31,6 +31,17 @@ module CmdoptCheckHwmNsCollision = Self.False
 	end)
 
 
+(* 
+	option to check that HWM source files adhere to HVM variable namespace
+*)
+module CmdoptCheckHwmNsAdherence = Self.False
+	(struct
+		let option_name = "-uccf-checkhwmnsadherence"
+		let default = false
+		let help = "when on (off by default), check that variable usage conforms to HWM variable namespace"
+	end)
+
+
 
 (* ------------------------------------------------------------------------ *)
 (* hello world output to a file *)
