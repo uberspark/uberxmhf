@@ -333,9 +333,17 @@ let print_ast () =
     		let varname_regexp = Str.regexp "xmhfhwm_" in
     		let is_hwmvarns = ref false in
     			is_hwmvarns := (Str.string_match varname_regexp v.vname 0); 
+				
     			if CmdoptCheckHwmNsCollision.get() && !is_hwmvarns then
     				begin
 						Self.result "\nError: variable name definition colides with HWM variable namespace\n";
+						ignore(exit 1);
+	    				"";
+    				end
+    
+    			else if CmdoptCheckHwmNsAdherence.get() && (not !is_hwmvarns) && v.vglob then
+    				begin
+						Self.result "\nError: variable name definition does not adhere to HWM variable namespace\n";
 						ignore(exit 1);
 	    				"";
     				end
