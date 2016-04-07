@@ -306,6 +306,22 @@ let print_ast () =
       inherit shared 
       inherit Visitor.frama_c_inplace
 
+	    method private process_varinfo v = 
+    		let varname_regexp = Str.regexp "xmhfhwm_" in
+    		let is_hwmvar = ref false in
+    			is_hwmvar := (Str.string_match varname_regexp v.vname 0); 
+    			if !is_hwmvar then
+    				begin
+		    			"HWM name->" ^ v.vname ^ ", type->" ^ (self#print_type v.vtype);
+    				end
+    			else
+    				begin
+    					"name->" ^ v.vname ^ ", type->" ^ (self#print_type v.vtype);
+    				end
+    			; 
+
+
+
 		method private process_call lv e el l = 
 			let is_funcptr = ref false in 
 			let is_expr_enode_lval = ref false in
