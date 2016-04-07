@@ -19,6 +19,18 @@ module CmdoptDisallowFp = Self.False
 		let help = "when on (off by default), disallow function pointer invocations"
 	end)
 
+(* 
+	option to check that non-HWM source files variable usage does not collide with
+   	HWM variable namespace 
+*)
+module CmdoptCheckHwmNsCollision = Self.False
+	(struct
+		let option_name = "-uccf-checkhwmnscollision"
+		let default = false
+		let help = "when on (off by default), check that variable usage does not collide with HWM variable namespace"
+	end)
+
+
 
 (* ------------------------------------------------------------------------ *)
 (* hello world output to a file *)
@@ -308,11 +320,11 @@ let print_ast () =
 
 	    method private process_varinfo v = 
     		let varname_regexp = Str.regexp "xmhfhwm_" in
-    		let is_hwmvar = ref false in
-    			is_hwmvar := (Str.string_match varname_regexp v.vname 0); 
-    			if !is_hwmvar then
+    		let is_hwmvarns = ref false in
+    			is_hwmvarns := (Str.string_match varname_regexp v.vname 0); 
+    			if CmdoptCheckHwmNsCollision.get() && !is_hwmvarns then
     				begin
-						Self.result "\nError: variable name definition is non-conforming with HWM\n";
+						Self.result "\nError: variable name definition colides with HWM variable namespace\n";
 						ignore(exit 1);
 	    				"";
     				end
