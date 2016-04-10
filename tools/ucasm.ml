@@ -48,11 +48,20 @@ let ucasm_process () =
     let ic = open_in ucasm_file_in in
     let oc = open_out ucasm_file_out in
     let tline = ref "" in	
-    	
+    let annotline_regexp = Str.regexp "annot " in
+    		    	
 		try
     		while true do
       			tline := trim (input_line ic);
-      			Printf.printf " %s\n" !tline;
+      			if (Str.string_match annotline_regexp !tline 0) then
+      				begin
+		      			Printf.printf " %s\n" !tline;
+      				end
+      			else
+      				begin
+      				end
+      			;
+      			
 		    done;
 		with End_of_file -> 
     			close_in ic;
