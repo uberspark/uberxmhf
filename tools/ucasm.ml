@@ -21,10 +21,12 @@ let ucasm_file_in = "ucasm.in";;
 let ucasm_process () =
     let ic = open_in ucasm_file_in in
     let oc = open_out ucasm_file_out in
+    let tline = ref "" in	
     	
 		try
     		while true do
-      			Printf.printf " %s\n" (input_line ic);
+      			tline := (input_line ic);
+      			Printf.printf " %s\n" !tline;
 		    done;
 		with End_of_file -> 
     			close_in ic;
