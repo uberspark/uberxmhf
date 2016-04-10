@@ -14,8 +14,23 @@ module Self = Plugin.Register
 		let help = "UberSpark CASM instruction substitution plugin"
 	end)
 
+
+let ucasm_file_out = "ucasm.out";;
+let ucasm_file_in = "ucasm.in";;
     		
 let ucasm_process () =
+    let ic = open_in ucasm_file_in in
+    let oc = open_out ucasm_file_out in
+    	
+		try
+    		while true do
+      			Printf.printf " %s\n" (input_line ic);
+		    done;
+		with End_of_file -> 
+    			close_in ic;
+    	;		
+    
+    	close_out oc;
     ()
     		
     		
