@@ -47,7 +47,8 @@ let trim s =
 let ucasm_process () =
     let ic = open_in ucasm_file_in in
     let oc = open_out ucasm_file_out in
-    let tline = ref "" in	
+    let tline = ref "" in
+    let outline = ref "" in	
     let annotline_regexp = Str.regexp "annot " in
     		    	
 		try
@@ -55,7 +56,9 @@ let ucasm_process () =
       			tline := trim (input_line ic);
       			if (Str.string_match annotline_regexp !tline 0) then
       				begin
+		      			outline := (Str.string_after !tline 6);
 		      			Printf.printf " %s\n" !tline;
+		      			Printf.printf " %s\n" !outline;
       				end
       			else
       				begin
