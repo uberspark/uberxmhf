@@ -57,8 +57,9 @@ let ucasm_process () =
       			if (Str.string_match annotline_regexp !tline 0) then
       				begin
 		      			outline := (Str.string_after !tline 6);
-		      			Printf.printf " %s\n" !tline;
-		      			Printf.printf " %s\n" !outline;
+		      			(* Printf.printf " %s\n" !tline; *)
+		      			(* Printf.printf " %s\n" !outline; *)
+		      			Printf.fprintf oc "%s\n" !outline; 
       				end
       			else
       				begin
