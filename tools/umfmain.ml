@@ -2,11 +2,11 @@
 	frama-c plugin for manifest parsing (main module)
 	author: amit vasudevan (amitvasudevan@acm.org)
 *)
-open umfcommon
+open Umfcommon
 
 let run () =
 	Format.printf "proceeding to invoke function within another module...\n";
-	umfcommon.subrun();
+	Umfcommon.subrun();
 	Hashtbl.add m_hash "h" "hello";
 	Format.printf "back into this module.\n";
 	()
