@@ -152,7 +152,7 @@ $(THE_ARCHIVE): $(OBJECTS)
 	@echo Building "$@" from "$<"
 	cp -f $< $(LIBXMHFHW_OBJECTS_DIR)/$(@F).c
 	cd $(LIBXMHFHW_OBJECTS_DIR) && $(CCERT) -c -dmach $(CCERT_FLAGS) -O0 $(@F).c
-	cd $(LIBXMHFHW_OBJECTS_DIR) && $(XMHF_DIR)/tools/extractasm.pl $(@F).mach > $(@F).S
+	cd $(LIBXMHFHW_OBJECTS_DIR) && frama-c -load-script $(XMHF_DIR)/tools/ucasm.ml -ucasm-infile $(@F).mach -ucasm-outfile $(@F).S
 	cd $(LIBXMHFHW_OBJECTS_DIR) && gcc -c $(ASFLAGS) -o $@ $(@F).S
 	#cd $(LIBXMHFHW_OBJECTS_DIR) && mv $(@F).o $@
 
