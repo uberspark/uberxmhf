@@ -32,12 +32,6 @@ module CmdoptOutputFile = Self.String
 	end)
 
 
-
-(*
-let ucasm_file_out = "ucasm.out";;
-let ucasm_file_in = "ucasm.in";;
-*)
-
 let left_pos s len =
   let rec aux i =
     if i >= len then None
@@ -80,8 +74,6 @@ let ucasm_process () =
       				begin
 		      			outline := (Str.string_after !tline 7);
 		      			outline := Str.string_before !outline ((String.length !outline) - 3);
-		      			(* Printf.printf " %s\n" !tline; *)
-		      			(* Printf.printf " %s\n" !outline; *)
 		      			Printf.fprintf oc "%s\n" !outline; 
       				end
       			else
@@ -100,14 +92,8 @@ let ucasm_process () =
     		
     		
 let run () =
-	(*
-	let infile = CmdoptInputFile.get() in
-	let outfile = CmdoptOutputFile.get() in
-	*)
 		Self.result "Starting CASM extraction...\n";
 		ucasm_process ();
-		(*Self.result "infile: %s\n" infile;*)
-		(*Self.result "outfile: %s\n" outfile;*)
 		Self.result "Done.\n";
 		()
 
