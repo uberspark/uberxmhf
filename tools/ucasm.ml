@@ -15,9 +15,28 @@ module Self = Plugin.Register
 	end)
 
 
+module CmdoptInputFile = Self.String
+	(struct
+		let option_name = "-ucasm-infile"
+		let default = "ucasm.in"
+		let arg_name = "input-file"
+		let help = "CASM input file"
+	end)
+
+module CmdoptOutputFile = Self.String
+	(struct
+		let option_name = "-ucasm-outfile"
+		let default = "ucasm.out"
+		let arg_name = "output-file"
+		let help = "CASM Assembly output file"
+	end)
+
+
+
+(*
 let ucasm_file_out = "ucasm.out";;
 let ucasm_file_in = "ucasm.in";;
-
+*)
 
 let left_pos s len =
   let rec aux i =
@@ -43,10 +62,13 @@ let trim s =
   | Some i, Some j -> String.sub s i (j - i + 1)
   | None, None -> ""
   | _ -> assert false
-    		
+  
+  		
 let ucasm_process () =
-    let ic = open_in ucasm_file_in in
-    let oc = open_out ucasm_file_out in
+	let infile = CmdoptInputFile.get() in
+	let outfile = CmdoptOutputFile.get() in
+    let ic = open_in infile in
+    let oc = open_out outfile in
     let tline = ref "" in
     let outline = ref "" in	
     let annotline_regexp = Str.regexp "annot " in
@@ -77,10 +99,16 @@ let ucasm_process () =
     		
     		
 let run () =
-	Self.result "Starting CASM extraction...\n";
-	ucasm_process ();
-	Self.result "Done.\n";
-	()
+	(*
+	let infile = CmdoptInputFile.get() in
+	let outfile = CmdoptOutputFile.get() in
+	*)
+		Self.result "Starting CASM extraction...\n";
+		ucasm_process ();
+		(*Self.result "infile: %s\n" infile;*)
+		(*Self.result "outfile: %s\n" outfile;*)
+		Self.result "Done.\n";
+		()
 
 let () = Db.Main.extend run
 
