@@ -78,7 +78,8 @@ let ucasm_process () =
       			tline := trim (input_line ic);
       			if (Str.string_match annotline_regexp !tline 0) then
       				begin
-		      			outline := (Str.string_after !tline 6);
+		      			outline := (Str.string_after !tline 7);
+		      			outline := Str.string_before !outline ((String.length !outline) - 3);
 		      			(* Printf.printf " %s\n" !tline; *)
 		      			(* Printf.printf " %s\n" !outline; *)
 		      			Printf.fprintf oc "%s\n" !outline; 
