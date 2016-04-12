@@ -90,13 +90,15 @@ let umfcommon_init g_slabsfile g_memoffsets g_rootdir =
 
 					
 					Format.printf "%s\n" !trimline;      			
+					(*
 					Format.printf "  slabdir=%s\n" !slabdir;      			
 					Format.printf "  slabname=%s\n" !slabname;      			
 					Format.printf "  slabtype=%s\n" !slabtype;      			
 					Format.printf "  slabsubtype=%s\n" !slabsubtype;      			
 					Format.printf "  slabgsmfile=%s\n" !slabgsmfile;      			
 					Format.printf "  slabmmapfile=%s\n" !slabmmapfile;      			
-
+					*)
+					
 					i := !i + 1;
 		    done;
 		with End_of_file -> 
@@ -105,6 +107,39 @@ let umfcommon_init g_slabsfile g_memoffsets g_rootdir =
 
 		g_totalslabs := !i;
 		Format.printf "total slabs=%d\n" !g_totalslabs;      			
+
+		(* now iterate through all the slab id's and populate callmask and uapimasks *)
+		i := 0;
+		while (!i < !g_totalslabs) do
+	    	begin
+				Format.printf "  slabdir=%s\n" (Hashtbl.find slab_idtodir !i);      			
+				Format.printf "  slabname=%s\n" (Hashtbl.find slab_idtoname !i);      			
+				Format.printf "  slabtype=%s\n" (Hashtbl.find slab_idtotype !i);      			
+				Format.printf "  slabsubtype=%s\n" (Hashtbl.find slab_idtosubtype !i);      			
+				Format.printf "  slabgsmfile=%s\n" (Hashtbl.find slab_idtogsm !i);      			
+				Format.printf "  slabmmapfile=%s\n" (Hashtbl.find slab_idtommapfile !i);      			
+			
+				if g_memoffsets then
+					begin
+						(* 
+						parse_mmap($slab_idtommapfile{$i}, $i, $g_totalslabs);
+						$slab_idtouapifnmask{$i} = parse_gsm($slab_idtogsm{$i}, $i, $g_totalslabs, 1);
+						*)
+					end
+				else
+					begin
+						(*
+						$slab_idtouapifnmask{$i} = parse_gsm($slab_idtogsm{$i}, $i, $g_totalslabs, 0);
+						*)
+					end
+				;				    	
+
+	    		i := !i + 1;
+			end
+		done;
+
+
+
 		
 	()
 
