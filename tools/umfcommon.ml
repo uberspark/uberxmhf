@@ -19,7 +19,7 @@ let slab_idtoname = ((Hashtbl.create 32) : ((int,string)  Hashtbl.t));;
 let slab_idtotype = ((Hashtbl.create 32) : ((int,string)  Hashtbl.t));;
 let slab_idtosubtype = ((Hashtbl.create 32) : ((int,string)  Hashtbl.t));;
 let slab_nametoid = ((Hashtbl.create 32) : ((string,int)  Hashtbl.t));;
-let slab_idtouapifnmask = ((Hashtbl.create 32) : ((int,int)  Hashtbl.t));;
+let slab_idtouapifnmask = ((Hashtbl.create 32) : ((int,string)  Hashtbl.t));;
 let slab_idtomemoffsets = ((Hashtbl.create 32) : ((string,string)  Hashtbl.t));;
 
 
@@ -92,7 +92,7 @@ let umfcommon_parse_gsm filename slabid totalslabs is_memoffsets =
 	Format.printf "slabid:%d\n" slabid;
 	Format.printf "totalslabs:%d\n" totalslabs;
 	Format.printf "is_memoffsets:%b\n" is_memoffsets;
-	0
+	""
 
 
 let umfcommon_init g_slabsfile g_memoffsets g_rootdir = 
