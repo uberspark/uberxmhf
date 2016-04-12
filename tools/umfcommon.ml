@@ -12,6 +12,16 @@
 let g_totalslabs = ref 0;;
 
 
+let slab_idtodir = ((Hashtbl.create 32) : ((int,string)  Hashtbl.t));;
+let slab_idtogsm = ((Hashtbl.create 32) : ((int,string)  Hashtbl.t));;
+let slab_idtommapfile = ((Hashtbl.create 32) : ((int,string)  Hashtbl.t));;
+let slab_idtoname = ((Hashtbl.create 32) : ((int,string)  Hashtbl.t));;
+let slab_idtotype = ((Hashtbl.create 32) : ((int,string)  Hashtbl.t));;
+let slab_idtosubtype = ((Hashtbl.create 32) : ((int,string)  Hashtbl.t));;
+let slab_nametoid = ((Hashtbl.create 32) : ((string,int)  Hashtbl.t));;
+
+
+
 (*
 	**************************************************************************
 	global interfaces
@@ -69,6 +79,15 @@ let umfcommon_init g_slabsfile g_memoffsets g_rootdir =
 					slabsubtype := trim (List.nth slabinfo 2);
 				    slabgsmfile := !slabdir ^ "/" ^ !slabname ^ ".gsm.pp";
 	    			slabmmapfile := g_rootdir ^ "_objects/_objs_slab_" ^ !slabname ^ "/" ^ !slabname ^ ".mmap";
+
+	    			Hashtbl.add slab_idtodir !i !slabdir;
+	    			Hashtbl.add slab_idtoname !i !slabname;
+	    			Hashtbl.add slab_idtotype !i !slabtype;
+	    			Hashtbl.add slab_idtosubtype !i !slabsubtype;
+	    			Hashtbl.add slab_idtogsm !i !slabgsmfile;
+	    			Hashtbl.add slab_idtommapfile !i !slabmmapfile;
+	    			Hashtbl.add slab_nametoid !slabname !i;
+
 					
 					Format.printf "%s\n" !trimline;      			
 					Format.printf "  slabdir=%s\n" !slabdir;      			
@@ -88,6 +107,12 @@ let umfcommon_init g_slabsfile g_memoffsets g_rootdir =
 		Format.printf "total slabs=%d\n" !g_totalslabs;      			
 		
 	()
+
+
+
+
+
+
 
 (*
 sub upmf_init {
