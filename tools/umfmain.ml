@@ -123,6 +123,16 @@ let g_totaluhslabmempgtblsets = ref 0;;
 let g_totaluvslabiotblsets = ref 0;;
 
 
+(* global hash table variables *)
+let slab_idtodata_addrstart = ((Hashtbl.create 32) : ((int,int)  Hashtbl.t));;
+let slab_idtodata_addrend = ((Hashtbl.create 32) : ((int,int)  Hashtbl.t));;
+let slab_idtocode_addrstart = ((Hashtbl.create 32) : ((int,int)  Hashtbl.t));;
+let slab_idtocode_addrend = ((Hashtbl.create 32) : ((int,int)  Hashtbl.t));;
+let slab_idtostack_addrstart = ((Hashtbl.create 32) : ((int,int)  Hashtbl.t));;
+let slab_idtostack_addrend = ((Hashtbl.create 32) : ((int,int)  Hashtbl.t));;
+let slab_idtodmadata_addrstart = ((Hashtbl.create 32) : ((int,int)  Hashtbl.t));;
+let slab_idtodmadata_addrend = ((Hashtbl.create 32) : ((int,int)  Hashtbl.t));;
+
 
 
 let umf_process_cmdline () =
