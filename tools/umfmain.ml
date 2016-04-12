@@ -110,6 +110,20 @@ let g_maxexcldevlistentries = ref 0;; (* argv 7 *)
 let g_maxmemoffsetentries = ref 0;; (* argv 8 *)
 let g_memoffsets = ref false;; (*argv 9 *)
 
+(* other global variables *)
+let g_totalslabmempgtblsets = ref 0;;
+let g_totalslabiotblsets = ref 0;;
+let g_uhslabcounter = ref 0;;
+let g_ugslabcounter = ref 0;;
+let g_rootdir = ref "";;
+let i = ref 0;;
+let g_memmapaddr = ref 0x0;;
+(* let fh : in_channel;; *)
+let g_totaluhslabmempgtblsets = ref 0;;
+let g_totaluvslabiotblsets = ref 0;;
+
+
+
 
 let umf_process_cmdline () =
 	g_slabsfile := Cmdopt_slabsfile.get();
@@ -139,6 +153,17 @@ let umf_process_cmdline () =
 let run () =
 	Self.result "Parsing manifest...\n";
 	umf_process_cmdline ();
+
+	g_rootdir := (Filename.dirname !g_slabsfile) ^ "/";
+	Self.result "g_rootdir=%s\n" !g_rootdir;
+
+	g_totaluhslabmempgtblsets := !g_totaluhslabs;
+	g_totaluvslabiotblsets := !g_totaluhslabs;
+	g_totalslabmempgtblsets := !g_totaluhslabmempgtblsets + 2;
+	g_totalslabiotblsets := !g_totaluvslabiotblsets + 2;
+	g_uhslabcounter := 0;
+	g_ugslabcounter := 0;
+
 	Self.result "Done.\n";
 	()
 
