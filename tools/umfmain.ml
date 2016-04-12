@@ -174,6 +174,8 @@ let run () =
 	g_uhslabcounter := 0;
 	g_ugslabcounter := 0;
 
+	umfcommon_init !g_slabsfile !g_memoffsets !g_rootdir;
+
 	Self.result "Done.\n";
 	()
 
