@@ -20,6 +20,7 @@ let slab_idtotype = ((Hashtbl.create 32) : ((int,string)  Hashtbl.t));;
 let slab_idtosubtype = ((Hashtbl.create 32) : ((int,string)  Hashtbl.t));;
 let slab_nametoid = ((Hashtbl.create 32) : ((string,int)  Hashtbl.t));;
 let slab_idtouapifnmask = ((Hashtbl.create 32) : ((int,int)  Hashtbl.t));;
+let slab_idtomemoffsets = ((Hashtbl.create 32) : ((string,string)  Hashtbl.t));;
 
 
 (*
@@ -55,10 +56,36 @@ let trim s =
 
 
 let umfcommon_parse_mmap filename slabid totalslabs =
-	Format.printf "filename:%s\n" filename;
-	Format.printf "slabid:%d\n" slabid;
-	Format.printf "totalslabs:%d\n" totalslabs;
+	let i = ref 0 in
+	let trimfilename = trim filename in
+	let trimline = ref "" in
+	let sfh = open_in trimfilename in
+	let varname = ref "" in
+	let varaddr = ref "" in
+	
+		Format.printf "slabid:%d\n" slabid;
+		Format.printf "totalslabs:%d\n" totalslabs;
+		Format.printf "filename:%s\n" trimfilename;
+
+		try
+    		while true do
+      			trimline := trim (input_line sfh);
+				let lineentry = Str.split (Str.regexp ":") !trimline in
+					varname := (trim (List.nth lineentry 0));
+					varaddr := (trim (List.nth lineentry 1));
+					
+					(* Format.printf "    varname=%s\n" !varname; *)      			
+					(* Format.printf "    varaddr=%s\n" !varaddr; *)      			
+			        Hashtbl.add slab_idtomemoffsets ((string_of_int slabid) ^ "_" ^ !varname) !varaddr;
+
+					i := !i + 1;
+		    done;
+		with End_of_file -> 
+    			close_in sfh;
+    	;		
+
 	()
+	
 	
 let umfcommon_parse_gsm filename slabid totalslabs is_memoffsets = 
 	Format.printf "filename:%s\n" filename;
