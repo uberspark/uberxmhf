@@ -12,12 +12,11 @@
 let g_totalslabs = ref 0;;
 
 
-let m_hash = ((Hashtbl.create 32) : ((string,string)  Hashtbl.t));;
-      
-let subrun () =
-	Format.printf "hello world from sub module\n";
-	Format.printf "returning back to main module\n";
-	()
+(*
+	**************************************************************************
+	global interfaces
+	**************************************************************************
+*)
 
 let left_pos s len =
   let rec aux i =
