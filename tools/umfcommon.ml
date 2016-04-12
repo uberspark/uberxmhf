@@ -19,7 +19,7 @@ let slab_idtoname = ((Hashtbl.create 32) : ((int,string)  Hashtbl.t));;
 let slab_idtotype = ((Hashtbl.create 32) : ((int,string)  Hashtbl.t));;
 let slab_idtosubtype = ((Hashtbl.create 32) : ((int,string)  Hashtbl.t));;
 let slab_nametoid = ((Hashtbl.create 32) : ((string,int)  Hashtbl.t));;
-
+let slab_idtouapifnmask = ((Hashtbl.create 32) : ((int,int)  Hashtbl.t));;
 
 
 (*
@@ -52,6 +52,20 @@ let trim s =
   | Some i, Some j -> String.sub s i (j - i + 1)
   | None, None -> ""
   | _ -> assert false
+
+
+let umfcommon_parse_mmap filename slabid totalslabs =
+	Format.printf "filename:%s\n" filename;
+	Format.printf "slabid:%d\n" slabid;
+	Format.printf "totalslabs:%d\n" totalslabs;
+	()
+	
+let umfcommon_parse_gsm filename slabid totalslabs is_memoffsets = 
+	Format.printf "filename:%s\n" filename;
+	Format.printf "slabid:%d\n" slabid;
+	Format.printf "totalslabs:%d\n" totalslabs;
+	Format.printf "is_memoffsets:%b\n" is_memoffsets;
+	0
 
 
 let umfcommon_init g_slabsfile g_memoffsets g_rootdir = 
@@ -121,16 +135,12 @@ let umfcommon_init g_slabsfile g_memoffsets g_rootdir =
 			
 				if g_memoffsets then
 					begin
-						(* 
-						parse_mmap($slab_idtommapfile{$i}, $i, $g_totalslabs);
-						$slab_idtouapifnmask{$i} = parse_gsm($slab_idtogsm{$i}, $i, $g_totalslabs, 1);
-						*)
+						umfcommon_parse_mmap (Hashtbl.find slab_idtommapfile !i) !i !g_totalslabs;
+						Hashtbl.add slab_idtouapifnmask !i (umfcommon_parse_gsm (Hashtbl.find slab_idtogsm !i) !i !g_totalslabs true);
 					end
 				else
 					begin
-						(*
-						$slab_idtouapifnmask{$i} = parse_gsm($slab_idtogsm{$i}, $i, $g_totalslabs, 0);
-						*)
+						Hashtbl.add slab_idtouapifnmask !i (umfcommon_parse_gsm (Hashtbl.find slab_idtogsm !i) !i !g_totalslabs false);
 					end
 				;				    	
 
@@ -146,85 +156,4 @@ let umfcommon_init g_slabsfile g_memoffsets g_rootdir =
 
 
 
-
-
-
-(*
-sub upmf_init {
-	my($g_slabsfile, $g_memoffsets, $g_rootdir) = @_;
-	my $i=0;
-	my $slabdir;
-	my $slabname;
-	my $slabtype;
-	my $slabsubtype;
-	my $slabgsmfile;
-	my $slabmmapfile;
-
-	#print "upmf_init: ", $g_slabsfile,",", $g_memoffsets, ",", $g_rootdir, "\n";
-
-	# iterate through all the entries within SLABS file and
-	# compute total number of slabs while populating global
-	# slab_idto{gsm,name,type} hashes
-
-	tie my @array, 'Tie::File', $g_slabsfile or die $!;
-
-	while( $i <= $#array) {
-
-	    my $line = $array[$i];
-	    chomp($line);
-
-	    my $trimline = $line;
-	    $trimline =~ s/^\s+|\s+$//g ;     # remove both leading and trailing whitespace
-
-	    # split the line using the comma delimiter
-	    my @slabinfo = split(/,/, $trimline);
-
-	    $slabdir = $g_rootdir.$slabinfo[0];
-	    $slabdir =~ s/^\s+|\s+$//g ;     # remove both leading and trailing whitespace
-	    $slabname = basename($slabinfo[0]);
-	    $slabname =~ s/^\s+|\s+$//g ;     # remove both leading and trailing whitespace
-	    $slabtype = $slabinfo[1];
-	    $slabtype =~ s/^\s+|\s+$//g ;     # remove both leading and trailing whitespace
-	    $slabsubtype = $slabinfo[2];
-	    $slabsubtype =~ s/^\s+|\s+$//g ;     # remove both leading and trailing whitespace
-	    $slabgsmfile = $slabdir."/".$slabname.".gsm.pp";
-	    $slabmmapfile = $g_rootdir."_objects/_objs_slab_".$slabname."/".$slabname.".mmap";
-
-	    #print "Slab name: $slabname, mmap:$slabmmapfile, gsm:$slabgsmfile ...\n";
-	    $slab_idtodir{$i} = $slabdir;
-	    $slab_idtogsm{$i} = $slabgsmfile;
-	    $slab_idtommapfile{$i} = $slabmmapfile;
-	    $slab_idtoname{$i} = $slabname;
-	    $slab_idtotype{$i} = $slabtype;
-	    $slab_idtosubtype{$i} = $slabsubtype;
-	    $slab_nametoid{$slabname} = $i;
-
-	    # move on to the next line
-	    $i = $i + 1;
-	}
-
-	$g_totalslabs = $i;
-
-	print "g_totalslabs:", $g_totalslabs, "\n";
-
-	# now iterate through all the slab id's and populate callmask and
-	# uapimasks
-
-	$i =0;
-	while($i < $g_totalslabs){
-	    #print "slabname: $slab_idtoname{$i}, slabgsm: $slab_idtogsm{$i}, slabtype: $slab_idtotype{$i}, slabcallmask: $slab_idtocallmask{$i} \n";
-	    if($g_memoffsets eq "MEMOFFSETS"){
-		parse_mmap($slab_idtommapfile{$i}, $i, $g_totalslabs);
-		$slab_idtouapifnmask{$i} = parse_gsm($slab_idtogsm{$i}, $i, $g_totalslabs, 1);
-	    }else{
-		$slab_idtouapifnmask{$i} = parse_gsm($slab_idtogsm{$i}, $i, $g_totalslabs, 0);
-	    }
-	    #print "uapifnmask:\n";
-	    #print $slab_idtouapifnmask{$i};
-	    $i=$i+1;
-	}
-
-
-}
-*)
 
