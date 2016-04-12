@@ -27,6 +27,8 @@ let slab_idtordexclentries = ((Hashtbl.create 32) : ((int,string)  Hashtbl.t));;
 let slab_idtordinclcount = ((Hashtbl.create 32) : ((int,int)  Hashtbl.t));;
 let slab_idtordexclcount = ((Hashtbl.create 32) : ((int,int)  Hashtbl.t));;
 let slab_idtomemoffsetstring = ((Hashtbl.create 32) : ((int,string)  Hashtbl.t));;
+let slab_idtocallmask = ((Hashtbl.create 32) : ((int,int)  Hashtbl.t));;
+let slab_idtocalleemask = ((Hashtbl.create 32) : ((int,int)  Hashtbl.t));;
 
 (*
 	**************************************************************************
@@ -125,9 +127,40 @@ let umfcommon_parse_gsm filename slabid totalslabs is_memoffsets =
 					if (List.length lineentry) > 0 then
 						begin
 							mftag := (trim (List.nth lineentry 0));
+							
 							if (compare "S" !mftag) = 0 then
 								begin
-									Format.printf " mftag=%s\n" !mftag;
+						            (* lineentry[1] = name of destination slab that this slab calls *)
+						            Format.printf " mftag=%s\n" !mftag;
+						            let tag_s_destslabname = (trim (List.nth lineentry 1)) in
+						            let tag_s_mask = ref 0 in
+						            	
+						            	if (Hashtbl.mem slab_idtocallmask (Hashtbl.find slab_nametoid tag_s_destslabname)) then
+						            		begin
+						            			tag_s_mask := Hashtbl.find slab_idtocallmask (Hashtbl.find slab_nametoid tag_s_destslabname);
+						            			tag_s_mask := !tag_s_mask lor (1 lsl slabid);
+						            			Hashtbl.add slab_idtocallmask (Hashtbl.find slab_nametoid tag_s_destslabname) !tag_s_mask;
+						            		end
+						            	else
+						            		begin
+						            			tag_s_mask := (1 lsl slabid);
+						            			Hashtbl.add slab_idtocallmask (Hashtbl.find slab_nametoid tag_s_destslabname) !tag_s_mask;
+						            		end
+						            	;
+						            
+						            	if (Hashtbl.mem slab_idtocalleemask slabid) then
+						            		begin
+						            			tag_s_mask := Hashtbl.find slab_idtocalleemask slabid;
+						            			tag_s_mask := !tag_s_mask lor (1 lsl (Hashtbl.find slab_nametoid tag_s_destslabname));
+						            			Hashtbl.add slab_idtocalleemask slabid !tag_s_mask;
+						            		end
+						            	else
+						            		begin
+						            			tag_s_mask := (1 lsl (Hashtbl.find slab_nametoid tag_s_destslabname));
+						            			Hashtbl.add slab_idtocalleemask slabid !tag_s_mask;
+						            		end
+						            	;
+	
 								end
 
 							else if (compare "U" !mftag) = 0 then
