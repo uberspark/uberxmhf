@@ -22,6 +22,9 @@ let slab_nametoid = ((Hashtbl.create 32) : ((string,int)  Hashtbl.t));;
 let slab_idtouapifnmask = ((Hashtbl.create 32) : ((int,string)  Hashtbl.t));;
 let slab_idtomemoffsets = ((Hashtbl.create 32) : ((string,string)  Hashtbl.t));;
 
+let uapi_fnccomppre = ((Hashtbl.create 32) : ((string,string)  Hashtbl.t));;
+let uapi_fnccompasserts = ((Hashtbl.create 32) : ((string,string)  Hashtbl.t));;
+
 let slab_idtordinclentries = ((Hashtbl.create 32) : ((int,string)  Hashtbl.t));;
 let slab_idtordexclentries = ((Hashtbl.create 32) : ((int,string)  Hashtbl.t));;
 let slab_idtordinclcount = ((Hashtbl.create 32) : ((int,int)  Hashtbl.t));;
@@ -166,6 +169,60 @@ let umfcommon_parse_gsm filename slabid totalslabs is_memoffsets =
 							else if (compare "U" !mftag) = 0 then
 								begin
 									Format.printf " mftag=%s\n" !mftag;
+									(* lineentry[1] = destination slab name, lineentry[2] = uapifn *)
+									(* lineentry[3] = uapi fn composition pre-condition setup *)
+									(* lineentry[4] = uapi fn composition check assertion *)
+									let tag_u_destslabname = (trim (List.nth lineentry 1)) in
+									let tag_u_destslabid = (Hashtbl.find slab_nametoid tag_u_destslabname) in
+									let tag_u_uapifn = int_of_string (trim (List.nth lineentry 2)) in
+									let tag_u_uapifnpre = (trim (List.nth lineentry 3)) in
+									let tag_u_uapifncheckassert = (trim (List.nth lineentry 4)) in
+									let tag_u_mask = ref 0 in
+									let tag_u_uapikey = ref "" in
+									let tag_u_tempstr = ref "" in
+																		
+										if (Hashtbl.mem slab_idtouapifnmask tag_u_destslabid) then
+											begin
+											tag_u_mask := Hashtbl.find slab_idtouapifnmask tag_u_destslabid; 
+											tag_u_mask := !tag_u_mask lor (1 lsl tag_u_uapifn);
+											Hashtbl.add slab_idtouapifnmask tag_u_destslabid !tag_u_mask;
+											end
+										else
+											begin
+											tag_u_mask := (1 lsl tag_u_uapifn);
+											Hashtbl.add slab_idtouapifnmask tag_u_destslabid !tag_u_mask;
+											end
+										;
+
+										(* make key *)
+										tag_u_uapikey := tag_u_destslabname ^ "_" ^ (trim (List.nth lineentry 2));
+										Format.printf "uapi key = %s\n" !tag_u_uapikey;
+										if (Hashtbl.mem uapi_fnccomppre !tag_u_uapikey) then
+											begin
+											tag_u_tempstr := (Hashtbl.find uapi_fnccomppre !tag_u_uapikey);
+											Hashtbl.add uapi_fnccomppre !tag_u_uapikey (!tag_u_tempstr ^ (Printf.sprintf "/* %s:*/\r\n" (Hashtbl.find slab_idtoname slabid)) ^ tag_u_uapifnpre ^ "\r\n");
+											end
+										else
+											begin
+											Hashtbl.add uapi_fnccomppre !tag_u_uapikey ( (Printf.sprintf "/* %s:*/\r\n" (Hashtbl.find slab_idtoname slabid)) ^ tag_u_uapifnpre ^ "\r\n");
+											end
+										;
+
+										Format.printf "uapi fnccomppre =%s\n" (Hashtbl.find uapi_fnccomppre !tag_u_uapikey);
+
+										if (Hashtbl.mem uapi_fnccompasserts !tag_u_uapikey) then
+											begin
+											tag_u_tempstr := (Hashtbl.find uapi_fnccompasserts !tag_u_uapikey);
+											Hashtbl.add uapi_fnccompasserts !tag_u_uapikey (!tag_u_tempstr ^ (Printf.sprintf "/*@assert %s: " (Hashtbl.find slab_idtoname slabid)) ^ tag_u_uapifncheckassert ^ ";*/\r\n");
+											end
+										else
+											begin
+											Hashtbl.add uapi_fnccompasserts !tag_u_uapikey ((Printf.sprintf "/*@assert %s: " (Hashtbl.find slab_idtoname slabid)) ^ tag_u_uapifncheckassert ^ ";*/\r\n");
+											end
+										;
+
+										Format.printf "uapi fnccompasserts =%s\n" (Hashtbl.find uapi_fnccompasserts !tag_u_uapikey);
+
 								end
 
 							else if (compare "RD" !mftag) = 0 then
@@ -198,12 +255,15 @@ let umfcommon_parse_gsm filename slabid totalslabs is_memoffsets =
 									Format.printf " mftag=%s\n" !mftag;
 								end
 
+
+
 							else
 								begin
 								end
 							;
 							      			
 						end
+
 					else
 						begin
 						end
@@ -298,7 +358,6 @@ sub parse_gsm {
     $slab_rdinclentriesstring = $slab_rdinclentriesstring."{ \n";
     $slab_rdexclentriesstring = $slab_rdexclentriesstring."{ \n";
 
-##done
 
     while( $i <= $#array) {
         my $line = $array[$i];
@@ -323,6 +382,7 @@ sub parse_gsm {
             }
 
 
+##done
 
         }elsif( $lineentry[0] eq "U"){
 		print "slab $slab_idtoname{$slabid}, found U tag \n";
@@ -468,6 +528,8 @@ sub parse_gsm {
                         exit 1;
 		}
 
+
+##done below
 
         }else{
             #we don't know/care about this line, so just skip it
