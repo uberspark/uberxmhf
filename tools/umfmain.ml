@@ -107,7 +107,7 @@ let g_loadmaxsize = ref 0x0;; (* argv 4 *)
 let g_totaluhslabs = ref 0;; (* argv 5 *)
 (* let g_maxincldevlistentries = ref 0;; *) (* argv 6 *)
 (* let g_maxexcldevlistentries = ref 0;; *) (* argv 7 *)
-let g_maxmemoffsetentries = ref 0;; (* argv 8 *)
+(* let g_maxmemoffsetentries = ref 0;; *) (* argv 8 *)
 let g_memoffsets = ref false;; (*argv 9 *)
 
 (* other global variables *)

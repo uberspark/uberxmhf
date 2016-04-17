@@ -12,6 +12,7 @@
 let g_totalslabs = ref 0;;
 let g_maxincldevlistentries = ref 0;; 
 let g_maxexcldevlistentries = ref 0;; 
+let g_maxmemoffsetentries = ref 0;;
 
 
 let slab_idtodir = ((Hashtbl.create 32) : ((int,string)  Hashtbl.t));;
@@ -369,6 +370,36 @@ let umfcommon_parse_gsm filename slabid totalslabs is_memoffsets =
 							else if (compare "EX" !mftag) = 0 then
 								begin
 									Format.printf " mftag=%s\n" !mftag;
+            						(* lineentry[1]=export variable name *)
+            						let tag_ex_varname =  (trim (List.nth lineentry 1)) in
+						            
+							            (* if we are processing memoffsets, then lookup this variable address *)
+							            if (is_memoffsets) then 
+							            	begin
+							                    if (Hashtbl.mem slab_idtomemoffsets ((string_of_int slabid) ^ "_" ^ tag_ex_varname) ) then
+								                	begin
+									                    if (!slab_memoffsetcount < !g_maxmemoffsetentries) then
+									                    	begin
+									                        	slab_memoffsetsstring := !slab_memoffsetsstring ^ "\t0x" ^ (Hashtbl.find slab_idtomemoffsets ((string_of_int slabid) ^ "_" ^ tag_ex_varname)) ^ ",\n";
+									                        	slab_memoffsetcount := !slab_memoffsetcount + 1;
+									                        end
+									                    else
+									                    	begin
+									                        	Format.printf "Error: Max. EX entries exceeded!\n";
+									                        	ignore(exit 1);
+									                        end
+									                    ;
+									                    
+								                	end
+								                else
+								                	begin
+								                    	Format.printf "Error: No entry found for slab: %s, EX entry: %s!" (Hashtbl.find slab_idtoname slabid) tag_ex_varname;
+								                    	ignore (exit 1);
+								                	end
+								                ;
+							            	end
+							            ;
+						
 								end
 
 							else if (compare "UFN" !mftag) = 0 then
