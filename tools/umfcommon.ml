@@ -24,6 +24,9 @@ let slab_nametoid = ((Hashtbl.create 32) : ((string,int)  Hashtbl.t));;
 let slab_idtouapifnmask = ((Hashtbl.create 32) : ((int,string)  Hashtbl.t));;
 let slab_idtomemoffsets = ((Hashtbl.create 32) : ((string,string)  Hashtbl.t));;
 
+let slab_idtomemgrantreadcaps =  ((Hashtbl.create 32) : ((int,int)  Hashtbl.t));;
+let slab_idtomemgrantwritecaps =  ((Hashtbl.create 32) : ((int,int)  Hashtbl.t));;
+
 let uapi_fnccomppre = ((Hashtbl.create 32) : ((string,string)  Hashtbl.t));;
 let uapi_fnccompasserts = ((Hashtbl.create 32) : ((string,string)  Hashtbl.t));;
 
@@ -276,6 +279,49 @@ let umfcommon_parse_gsm filename slabid totalslabs is_memoffsets =
 							else if (compare "RM" !mftag) = 0 then
 								begin
 									Format.printf " mftag=%s\n" !mftag;
+						            (* lineentry[1]=READ or WRITE, lineentry[2] = slabname *)
+						            let tag_rm_qual =  (trim (List.nth lineentry 1)) in
+						            let tag_rm_slabname =  (trim (List.nth lineentry 2)) in
+            						let tag_rm_mask = ref 0 in
+            
+            						if (compare tag_rm_qual "READ") = 0 then 
+            							begin
+							                if (Hashtbl.mem slab_idtomemgrantreadcaps slabid) then
+							                	begin
+								                    tag_rm_mask := Hashtbl.find slab_idtomemgrantreadcaps slabid; 
+								                    tag_rm_mask := !tag_rm_mask lor (1 lsl (Hashtbl.find slab_nametoid tag_rm_slabname));
+								                    Hashtbl.add slab_idtomemgrantreadcaps slabid !tag_rm_mask;
+							                	end
+							                else
+							                	begin
+								                    tag_rm_mask := (1 lsl (Hashtbl.find slab_nametoid tag_rm_slabname));
+								                    Hashtbl.add slab_idtomemgrantreadcaps slabid !tag_rm_mask;
+							                	end
+							                ;
+            							end
+            						else if (compare tag_rm_qual "WRITE") = 0 then
+            							begin
+							                if (Hashtbl.mem slab_idtomemgrantwritecaps slabid) then
+							                	begin
+								                    tag_rm_mask := Hashtbl.find slab_idtomemgrantwritecaps slabid; 
+								                    tag_rm_mask := !tag_rm_mask lor (1 lsl (Hashtbl.find slab_nametoid tag_rm_slabname));
+								                    Hashtbl.add slab_idtomemgrantwritecaps slabid !tag_rm_mask;
+							                	end
+							                else
+							                	begin
+								                    tag_rm_mask := (1 lsl (Hashtbl.find slab_nametoid tag_rm_slabname));
+								                    Hashtbl.add slab_idtomemgrantwritecaps slabid !tag_rm_mask;
+							                	end
+							                ;
+            							end
+            						else 
+	           							begin
+    						            	Format.printf "Error: Illegal RM entry qualifier: %s\n" tag_rm_qual;
+							                ignore(exit 1);
+            							end
+            						;
+            						
+
 								end
 
 							else if (compare "RC" !mftag) = 0 then
@@ -457,7 +503,6 @@ sub parse_gsm {
 
 		print "uapi fnccompasserts = $uapi_fnccompasserts{$uapi_key}";
 
-##done
 
         }elsif( $lineentry[0] eq "RD"){
             #print $lineentry[0], $lineentry[1], $lineentry[2], $lineentry[3], $lineentry[4], "\n";
@@ -480,6 +525,8 @@ sub parse_gsm {
                 print "\nError: Illegal RD entry qualifier ($lineentry[1])!";
                 exit 1;
             }
+
+##done
 
         }elsif( $lineentry[0] eq "RM"){
             #print $lineentry[0], $lineentry[1], $lineentry[2], $lineentry[3], $lineentry[4], "\n";
