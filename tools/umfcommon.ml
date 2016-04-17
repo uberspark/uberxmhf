@@ -27,6 +27,12 @@ let slab_idtomemoffsets = ((Hashtbl.create 32) : ((string,string)  Hashtbl.t));;
 let slab_idtomemgrantreadcaps =  ((Hashtbl.create 32) : ((int,int)  Hashtbl.t));;
 let slab_idtomemgrantwritecaps =  ((Hashtbl.create 32) : ((int,int)  Hashtbl.t));;
 
+let slab_idtodatasize =  ((Hashtbl.create 32) : ((int,int)  Hashtbl.t));;
+let slab_idtocodesize =  ((Hashtbl.create 32) : ((int,int)  Hashtbl.t));;
+let slab_idtostacksize =  ((Hashtbl.create 32) : ((int,int)  Hashtbl.t));;
+let slab_idtodmadatasize =  ((Hashtbl.create 32) : ((int,int)  Hashtbl.t));;
+
+
 let uapi_fnccomppre = ((Hashtbl.create 32) : ((string,string)  Hashtbl.t));;
 let uapi_fnccompasserts = ((Hashtbl.create 32) : ((string,string)  Hashtbl.t));;
 
@@ -332,6 +338,32 @@ let umfcommon_parse_gsm filename slabid totalslabs is_memoffsets =
 							else if (compare "MS" !mftag) = 0 then
 								begin
 									Format.printf " mftag=%s\n" !mftag;
+						            (* $lineentry[1]=DATA,CODE,STACK,DMADATA, $lineentry[2] = size in bytes *)
+						            let tag_ms_qual =  (trim (List.nth lineentry 1)) in
+						            let tag_ms_size =  int_of_string (trim (List.nth lineentry 2)) in
+            
+            						if (compare tag_ms_qual "DATA") = 0 then 
+            							begin
+							                Hashtbl.add slab_idtodatasize slabid tag_ms_size;
+            							end
+            						else if (compare tag_ms_qual "CODE") = 0 then
+            							begin
+	                						Hashtbl.add slab_idtocodesize slabid tag_ms_size;
+            							end
+            						else if (compare tag_ms_qual "STACK") = 0 then
+            							begin
+                							Hashtbl.add slab_idtostacksize slabid tag_ms_size;
+            							end
+            						else if (compare tag_ms_qual "DMADATA") = 0 then
+            							begin
+                							Hashtbl.add slab_idtodmadatasize slabid tag_ms_size;
+            							end
+            						else
+            							begin
+							                Format.printf "Error: Illegal MS entry qualifier: %s\n" tag_ms_qual;
+							                ignore(exit 1);
+            							end
+            						;
 								end
 
 							else if (compare "EX" !mftag) = 0 then
@@ -526,7 +558,6 @@ sub parse_gsm {
                 exit 1;
             }
 
-##done
 
         }elsif( $lineentry[0] eq "RM"){
             #print $lineentry[0], $lineentry[1], $lineentry[2], $lineentry[3], $lineentry[4], "\n";
@@ -558,6 +589,7 @@ sub parse_gsm {
 
             #print $lineentry[0], $lineentry[1], $lineentry[2], $lineentry[3], $lineentry[4], "\n";
 
+
         }elsif( $lineentry[0] eq "MS"){
             #$lineentry[1]=DATA,CODE,STACK,DMADATA, $lineentry[2] = size in bytes
             if ( $lineentry[1] eq "DATA"){
@@ -573,6 +605,7 @@ sub parse_gsm {
                 exit 1;
             }
 
+##done
 
         }elsif( $lineentry[0] eq "EX"){
             #$lineentry[1]=export variable name
