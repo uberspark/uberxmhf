@@ -10,6 +10,8 @@
 	**************************************************************************
 *)
 let g_totalslabs = ref 0;;
+let g_maxincldevlistentries = ref 0;; 
+let g_maxexcldevlistentries = ref 0;; 
 
 
 let slab_idtodir = ((Hashtbl.create 32) : ((int,string)  Hashtbl.t));;
@@ -228,6 +230,47 @@ let umfcommon_parse_gsm filename slabid totalslabs is_memoffsets =
 							else if (compare "RD" !mftag) = 0 then
 								begin
 									Format.printf " mftag=%s\n" !mftag;
+						            (* lineentry[1]=INCL or EXCL, lineentry[2] = vendor_id, *) 
+						            (* lineentry[3] = device_id *)
+						            let tag_rd_qual =  (trim (List.nth lineentry 1)) in
+						            let tag_rd_vid =  (trim (List.nth lineentry 2)) in
+						            let tag_rd_did =  (trim (List.nth lineentry 3)) in 
+            
+            						if (compare tag_rd_qual "INCL") = 0 then 
+            							begin
+
+							                if (!slab_rdinclcount >= !g_maxincldevlistentries) then 
+							                	begin
+							                		Format.printf "Error: Too many RD INCL entries (max=%d)\n" !g_maxincldevlistentries;
+								                    ignore(exit 1);
+							                	end
+							                ;
+							                
+							                slab_rdinclentriesstring := !slab_rdinclentriesstring ^ "\t{ .vendor_id= " ^ tag_rd_vid ^ ", .device_id= " ^ tag_rd_did ^ " },\n";
+							                slab_rdinclcount := !slab_rdinclcount + 1;
+											            							
+            							end
+            						else if (compare tag_rd_qual "EXCL") = 0  then
+            							begin
+
+							                if (!slab_rdexclcount >= !g_maxexcldevlistentries) then
+							                	begin
+							                    	Format.printf "Error: Too many RD EXCL entries (max=%d)\n" !g_maxexcldevlistentries;
+							                    	ignore (exit 1);
+							                    end
+							                ;
+
+							                slab_rdexclentriesstring := !slab_rdexclentriesstring ^ "\t{ .vendor_id= " ^ tag_rd_vid ^ ", .device_id= " ^ tag_rd_did ^ " },\n";
+							                slab_rdexclcount := !slab_rdexclcount + 1;
+											            							
+            							end
+            						else
+            							begin
+            								Format.printf "Error: Illegal RD entry qualifier: %s\n" tag_rd_qual;
+            								ignore(exit 1);
+            							end
+            						;
+            							
 								end
 
 							else if (compare "RM" !mftag) = 0 then
@@ -382,7 +425,6 @@ sub parse_gsm {
             }
 
 
-##done
 
         }elsif( $lineentry[0] eq "U"){
 		print "slab $slab_idtoname{$slabid}, found U tag \n";
@@ -414,6 +456,8 @@ sub parse_gsm {
 		}
 
 		print "uapi fnccompasserts = $uapi_fnccompasserts{$uapi_key}";
+
+##done
 
         }elsif( $lineentry[0] eq "RD"){
             #print $lineentry[0], $lineentry[1], $lineentry[2], $lineentry[3], $lineentry[4], "\n";
