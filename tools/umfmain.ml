@@ -163,6 +163,8 @@ let umf_process_cmdline () =
 let umf_compute_memory_map () =
 	i := 0;
 	g_memmapaddr := !g_loadaddr;
+
+	Self.result "Proceeding to compute memory map...\n";
 	
 	while (!i < !g_totalslabs) do
 	    Hashtbl.add slab_idtocode_addrstart !i  (Printf.sprintf "0x%08x" !g_memmapaddr);
@@ -176,41 +178,25 @@ let umf_compute_memory_map () =
 	    Hashtbl.add slab_idtostack_addrstart !i (Printf.sprintf "0x%08x" !g_memmapaddr);
     	g_memmapaddr := !g_memmapaddr + (Hashtbl.find slab_idtostacksize !i);
     	Hashtbl.add slab_idtostack_addrend !i (Printf.sprintf "0x%08x" !g_memmapaddr);
-	
+
+    	Hashtbl.add slab_idtodmadata_addrstart !i (Printf.sprintf "0x%08x" !g_memmapaddr);
+    	g_memmapaddr := !g_memmapaddr + (Hashtbl.find slab_idtodmadatasize !i);
+    	Hashtbl.add slab_idtodmadata_addrend !i (Printf.sprintf "0x%08x" !g_memmapaddr);	
+
+    	i := !i + 1;
 	done;
 
-(*
-######
-# compute memory map
-######
-$i =0;
-$g_memmapaddr = hex $g_loadaddr;
-while($i < $g_totalslabs){
-    #print "slabname: $slab_idtoname{$i}, code: $slab_idtocodesize{$i}, data: $slab_idtodatasize{$i}, stack: $slab_idtostacksize{$i}, dmadata: $slab_idtodmadatasize{$i} \n";
-    $slab_idtocode_addrstart{$i} = sprintf("0x%08x", $g_memmapaddr);
-    $g_memmapaddr += hex $slab_idtocodesize{$i};
-    $slab_idtocode_addrend{$i} = sprintf("0x%08x", $g_memmapaddr);
+	Self.result "Computed memory map\n";
 
-
-    $slab_idtodata_addrstart{$i} = sprintf("0x%08x", $g_memmapaddr);
-    $g_memmapaddr += hex $slab_idtodatasize{$i};
-    $slab_idtodata_addrend{$i} = sprintf("0x%08x", $g_memmapaddr);
-
-##done
-
-    $slab_idtostack_addrstart{$i} = sprintf("0x%08x", $g_memmapaddr);
-    $g_memmapaddr += hex $slab_idtostacksize{$i};
-    $slab_idtostack_addrend{$i} = sprintf("0x%08x", $g_memmapaddr);
-
-    $slab_idtodmadata_addrstart{$i} = sprintf("0x%08x", $g_memmapaddr);
-    $g_memmapaddr += hex $slab_idtodmadatasize{$i};
-    $slab_idtodmadata_addrend{$i} = sprintf("0x%08x", $g_memmapaddr);
-
-    $i=$i+1;
-}
-
-print "Computed memory map\n";
-*)
+	i := 0;
+	while (!i < !g_totalslabs) do
+	    Self.result "slabname: %s \n" (Hashtbl.find slab_idtoname !i);
+	    Self.result "code    - addrstart= %s, addrend=%s \n" (Hashtbl.find slab_idtocode_addrstart !i) (Hashtbl.find slab_idtocode_addrend !i);
+	    Self.result "data    - addrstart= %s, addrend=%s \n" (Hashtbl.find slab_idtodata_addrstart !i) (Hashtbl.find slab_idtodata_addrend !i);
+	    Self.result "stack   - addrstart= %s, addrend=%s \n" (Hashtbl.find slab_idtostack_addrstart !i) (Hashtbl.find slab_idtostack_addrend !i);
+	    Self.result "dmadata - addrstart= %s, addrend=%s \n" (Hashtbl.find slab_idtodmadata_addrstart !i) (Hashtbl.find slab_idtodmadata_addrend !i);
+		i := !i + 1;
+	done;
 
 
 	()
@@ -230,7 +216,9 @@ let run () =
 	g_ugslabcounter := 0;
 
 	umfcommon_init !g_slabsfile !g_memoffsets !g_rootdir;
-	umf_compute_memory_map;
+	Self.result "g_totalslabs=%d \n" !g_totalslabs;
+	
+	umf_compute_memory_map ();
 
 	Self.result "Done.\n";
 	()
