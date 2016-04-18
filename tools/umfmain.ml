@@ -87,7 +87,7 @@ module Cmdopt_maxmemoffsetentries = Self.String
 module Cmdopt_memoffsets = Self.False
 	(struct
 		let option_name = "-umf-memoffsets"
-		let default = false
+		(* let default = false *)
 		let help = "when on (off by default), include absolute memory offsets in MEMOFFSETS list"
 	end)
 
@@ -265,13 +265,6 @@ let run () =
 	Self.result "Done.\n";
 	()
 
-(*
-	Format.printf "Parsing manifest...\n";
-	Umfcommon.subrun();
-	Hashtbl.add m_hash "h" "hello";
-	Format.printf "back into this module.\n";
-	()
-*)
 
 let () = Db.Main.extend run
 
