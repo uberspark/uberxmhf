@@ -36,6 +36,10 @@ let slab_idtodmadatasize =  ((Hashtbl.create 32) : ((int,int)  Hashtbl.t));;
 
 let uapi_fnccomppre = ((Hashtbl.create 32) : ((string,string)  Hashtbl.t));;
 let uapi_fnccompasserts = ((Hashtbl.create 32) : ((string,string)  Hashtbl.t));;
+let uapi_fndef  = ((Hashtbl.create 32) : ((string,string)  Hashtbl.t));;
+let uapi_fndrvcode  = ((Hashtbl.create 32) : ((string,string)  Hashtbl.t));;
+
+
 
 let slab_idtordinclentries = ((Hashtbl.create 32) : ((int,string)  Hashtbl.t));;
 let slab_idtordexclentries = ((Hashtbl.create 32) : ((int,string)  Hashtbl.t));;
@@ -405,6 +409,36 @@ let umfcommon_parse_gsm filename slabid totalslabs is_memoffsets =
 							else if (compare "UFN" !mftag) = 0 then
 								begin
 									Format.printf " mftag=%s\n" !mftag;
+									(* lineentry[1]=uapi function id (numeric) *)
+									(* lineentry[2]=uapi function definition (string) *)
+									(* lineentry[3]=uapi function driver code (string) *)
+									let tag_ufn_uapifnid =  (trim (List.nth lineentry 1)) in
+									let tag_ufn_uapifndef =  (trim (List.nth lineentry 2)) in
+									let tag_ufn_uapifndrvcode =  (trim (List.nth lineentry 3)) in
+									let tag_ufn_uapikey = ref "" in
+									
+										(* uapi function definition tag, should only appear in uapi slabs *)
+										if (compare (Hashtbl.find slab_idtosubtype slabid) "UAPI") = 0 then
+											begin
+												
+												Format.printf "slab %s, found UFN tag \n" (Hashtbl.find slab_idtoname slabid);
+												(* make key *)
+												tag_ufn_uapikey := (Hashtbl.find slab_idtoname slabid) ^ "_" ^ tag_ufn_uapifnid;
+												Format.printf "uapi key = %s \n" !tag_ufn_uapikey;
+												Format.printf "uapi fndef = %s \n" tag_ufn_uapifndef;
+												Format.printf "uapi fndrvcode = %s \n" tag_ufn_uapifndrvcode;
+									
+									            Hashtbl.add uapi_fndef !tag_ufn_uapikey tag_ufn_uapifndef; (* store uapi function definition indexed by uapi_key *)
+									            Hashtbl.add uapi_fndrvcode !tag_ufn_uapikey tag_ufn_uapifndrvcode; (* store uapi function driver code by uapi_key *)
+
+											end
+										else
+											begin
+												Format.printf "Error: Illegal UFN tag; slab is not a uapi slab!\n";
+                        						ignore(exit 1);
+											end
+										;
+									
 								end
 
 
@@ -636,7 +670,6 @@ sub parse_gsm {
                 exit 1;
             }
 
-##done
 
         }elsif( $lineentry[0] eq "EX"){
             #$lineentry[1]=export variable name
@@ -658,6 +691,8 @@ sub parse_gsm {
                 }
             }
 
+
+##done
 
 	}elsif( $lineentry[0] eq "UFN" ){
 		#uapi function definition tag, should only appear in uapi slabs
