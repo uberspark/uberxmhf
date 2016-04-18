@@ -200,6 +200,46 @@ let umf_compute_memory_map () =
 
 
 	()
+
+
+
+let umf_configure_slabs () =
+	let l_cmdline = ref "" in
+	
+	Self.result "Proceeding to configure slabs...\n";
+
+	if (!g_memoffsets) then
+		begin
+			(* no configuration needed when doing real build *)
+		end
+	else
+		begin
+		    i := 0;
+		    while (!i < !g_totalslabs) do
+		        Self.result "Configuring slab: %s with type: %s:%s ...\n" (Hashtbl.find slab_idtodir !i) (Hashtbl.find slab_idtotype !i) (Hashtbl.find slab_idtosubtype !i);
+		        l_cmdline := 	(Printf.sprintf "cd %s%s && ../../configure_slab " !g_rootdir (Hashtbl.find slab_idtodir !i)) ^
+		                	 	(Printf.sprintf " --with-slabtype=%s" (Hashtbl.find slab_idtotype !i)) ^
+		                		(Printf.sprintf " --with-slabsubtype=%s" (Hashtbl.find slab_idtosubtype !i)) ^
+		                		(Printf.sprintf " --with-slabcodestart=%s" (Hashtbl.find slab_idtocode_addrstart !i)) ^
+		                		(Printf.sprintf " --with-slabcodeend=%s" (Hashtbl.find slab_idtocode_addrend !i)) ^
+		                		(Printf.sprintf " --with-slabdatastart=%s" (Hashtbl.find slab_idtodata_addrstart !i)) ^
+		                		(Printf.sprintf " --with-slabdataend=%s" (Hashtbl.find slab_idtodata_addrend !i)) ^
+		                		(Printf.sprintf " --with-slabstackstart=%s" (Hashtbl.find slab_idtostack_addrstart !i)) ^
+		                		(Printf.sprintf " --with-slabstackend=%s" (Hashtbl.find slab_idtostack_addrend !i)) ^
+		                		(Printf.sprintf " --with-slabdmadatastart=%s" (Hashtbl.find slab_idtodmadata_addrstart !i)) ^
+		                		(Printf.sprintf " --with-slabdmadataend=%s" (Hashtbl.find slab_idtodmadata_addrend !i)) ^
+		                		(Printf.sprintf " >/dev/null 2>&1");
+		        ignore(Sys.command !l_cmdline);
+		        i := !i + 1;
+		    done;
+
+		end
+	;
+
+	Self.result "Slabs configured.\n";
+	()
+	
+
 	
 let run () =
 	Self.result "Parsing manifest...\n";
@@ -219,6 +259,8 @@ let run () =
 	Self.result "g_totalslabs=%d \n" !g_totalslabs;
 	
 	umf_compute_memory_map ();
+
+	umf_configure_slabs ();
 
 	Self.result "Done.\n";
 	()
