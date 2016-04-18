@@ -150,9 +150,10 @@ let umfcommon_parse_gsm filename slabid totalslabs is_memoffsets =
 							if (compare "S" !mftag) = 0 then
 								begin
 						            (* lineentry[1] = name of destination slab that this slab calls *)
-						            Format.printf " mftag=%s\n" !mftag;
 						            let tag_s_destslabname = (trim (List.nth lineentry 1)) in
 						            let tag_s_mask = ref 0 in
+
+							            Format.printf " mftag=%s, destslabname=%s, id=%d\n" !mftag tag_s_destslabname (Hashtbl.find slab_nametoid tag_s_destslabname);
 						            	
 						            	if (Hashtbl.mem slab_idtocallmask (Hashtbl.find slab_nametoid tag_s_destslabname)) then
 						            		begin

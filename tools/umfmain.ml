@@ -253,6 +253,7 @@ let umf_output_infotable () =
 	i := 0;
 	while (!i < !g_totalslabs ) do
 		(* slab name *)
+		(* Self.result "Looping for slab %d..." !i; *)
 		Printf.fprintf oc "\n";
 	    Printf.fprintf oc "\n	//%s" (Hashtbl.find slab_idtoname !i);
 	    Printf.fprintf oc "\n	{";
@@ -315,10 +316,151 @@ let umf_output_infotable () =
 	        	ignore(exit 1);
 	    	end
 	    ;
+
+
+	    (* mempgtbl_cr3 and iotbl_base *)
+    	if ( (compare (Hashtbl.find slab_idtotype !i) "VfT_SLAB") = 0) then
+    		begin
+				(* mempgtbl_cr3 for VfT_SLAB points to verified hypervisor slab page table base *)
+				(* iotbl_base for VfT_SLAB is not-used *)
+		        Printf.fprintf oc "\n        %s  + (2 * 4096)," (Hashtbl.find slab_idtodata_addrstart (Hashtbl.find slab_nametoid "geec_prime") );
+	    	    Printf.fprintf oc "\n        0x00000000UL,";
+			end
+		
+	    else if ( ((compare (Hashtbl.find slab_idtotype !i) "uVU_SLAB") = 0 && (compare (Hashtbl.find slab_idtosubtype !i) "XGUEST") = 0) ||
+				  ((compare (Hashtbl.find slab_idtotype !i) "uVT_SLAB") = 0 && (compare (Hashtbl.find slab_idtosubtype !i) "XGUEST") = 0) ||
+				  ((compare (Hashtbl.find slab_idtotype !i) "uVU_SLAB") = 0 && (compare (Hashtbl.find slab_idtosubtype !i) "XRICHGUEST") = 0) ) then
+			begin
+				(* mempgtbl_cr3 for unverified guest slabs point to their corresponding page table base within uapi_slabmempgtbl *)
+				(* iotbl_base for unverified guest slabs point to their corresponding io table base within uapi_slabiotbl *)
+		        if (!g_ugslabcounter > 1) then
+		        	begin 
+		        		(* TODO: need to bring this in via a conf. variable when we support multiple guest slabs *)
+						Self.result "Error: Too many unverified guest slabs (max=1)!\n";
+						ignore(exit 1);
+					end
+				else
+					begin
+						Printf.fprintf oc "\n        %s  + (%d * 4096)," (Hashtbl.find slab_idtodata_addrstart (Hashtbl.find slab_nametoid "uapi_slabmempgtbl"))  !g_ugslabcounter;
+						Printf.fprintf oc "\n        %s  + (3*4096) + (%d * 4096) + (%d *(3*4096)) + (%d * (3*4096))," (Hashtbl.find slab_idtodata_addrstart (Hashtbl.find slab_nametoid "geec_prime")) !g_totaluhslabs !g_totaluhslabs !g_ugslabcounter;
+						g_ugslabcounter := !g_ugslabcounter + 1;
+					end
+				;
+			end
+			
+	    else
+			begin
+				(* mempgtbl_cr3 for unverified hypervisor slabs point to their corresponding page table base within prime *)
+				(* iotbl_base *)
+		        if(!g_uhslabcounter >=  !g_totaluhslabmempgtblsets) then
+		        	begin
+						Self.result "Error: Too many unverified hypervisor slabs (max=%d)!\n" !g_totaluhslabmempgtblsets;
+						ignore(exit 1);
+					end
+		        else
+		        	begin
+						Printf.fprintf oc "\n        %s + (3*4096) + (%d * 4096)," (Hashtbl.find slab_idtodata_addrstart (Hashtbl.find slab_nametoid "geec_prime")) !g_uhslabcounter;
+						Printf.fprintf oc "\n        %s + (3*4096) + (%d *4096) + (%d * (3*4096)), " (Hashtbl.find slab_idtodata_addrstart (Hashtbl.find slab_nametoid "geec_prime")) !g_totaluhslabs !g_uhslabcounter;
+						g_uhslabcounter := !g_uhslabcounter + 1;
+		        	end
+		        ;
+			end
+	    ;
+
+
+	    (* slab_tos *)
+	    Printf.fprintf oc "\n	        {";
+	    Printf.fprintf oc "\n	            %s + (1*XMHF_SLAB_STACKSIZE)," (Hashtbl.find slab_idtostack_addrstart !i);
+	    Printf.fprintf oc "\n	            %s + (2*XMHF_SLAB_STACKSIZE)," (Hashtbl.find slab_idtostack_addrstart !i);
+	    Printf.fprintf oc "\n	            %s + (3*XMHF_SLAB_STACKSIZE)," (Hashtbl.find slab_idtostack_addrstart !i);
+	    Printf.fprintf oc "\n	            %s + (4*XMHF_SLAB_STACKSIZE)," (Hashtbl.find slab_idtostack_addrstart !i);
+	    Printf.fprintf oc "\n	            %s + (5*XMHF_SLAB_STACKSIZE)," (Hashtbl.find slab_idtostack_addrstart !i);
+	    Printf.fprintf oc "\n	            %s + (6*XMHF_SLAB_STACKSIZE)," (Hashtbl.find slab_idtostack_addrstart !i);
+	    Printf.fprintf oc "\n	            %s + (7*XMHF_SLAB_STACKSIZE)," (Hashtbl.find slab_idtostack_addrstart !i);
+	    Printf.fprintf oc "\n	            %s + (8*XMHF_SLAB_STACKSIZE)," (Hashtbl.find slab_idtostack_addrstart !i);
+	    Printf.fprintf oc "\n	        },";
+
+	    (* slab_callcaps *)
+	    if (Hashtbl.mem slab_idtocallmask !i) then
+	    	begin
+	    	    Printf.fprintf oc "\n\t0x%08xUL, " (Hashtbl.find slab_idtocallmask !i);
+	    	end
+	    else
+	    	begin
+	    		Self.result "No callcaps for slab id %d, using 0\n" !i;
+	    		Printf.fprintf oc "\n\t0x00000000UL, ";
+	    	end
+	    ;
+	
+	    (* slab_uapisupported *)
+	    if( (compare (Hashtbl.find slab_idtotype !i) "VfT_SLAB") = 0 && 
+	        (compare (Hashtbl.find slab_idtosubtype !i) "UAPI") = 0) then
+	        Printf.fprintf oc "\n       true,"
+	    else
+	        Printf.fprintf oc "\n       false,"
+	    ;
+	
+	    (* slab_uapicaps *)
+	    Printf.fprintf oc "\n       {\n";
+	    Printf.fprintf oc "%s" (Hashtbl.find slab_idtouapifnmask !i);
+	    Printf.fprintf oc "\n       },";
+
+	    (* slab_memgrantreadcaps *)
+	    if(Hashtbl.mem slab_idtomemgrantreadcaps !i) then
+	        Printf.fprintf oc "\n       0x%08x," (Hashtbl.find slab_idtomemgrantreadcaps !i)
+	    else
+	        Printf.fprintf oc "\n       0x00000000UL,"
+	    ;
+
+	    (* slab_memgrantwritecaps *)
+	    if(Hashtbl.mem slab_idtomemgrantwritecaps !i) then
+	        Printf.fprintf oc "\n       0x%08x," (Hashtbl.find slab_idtomemgrantreadcaps !i)
+	    else
+	        Printf.fprintf oc "\n       0x00000000UL,"
+	    ;
+
+    	(* incl_devices *)
+    	Printf.fprintf oc "\n\n%s" (Hashtbl.find slab_idtordinclentries !i);
+
+    	(* incl_devices_count *)
+    	Printf.fprintf oc "\n0x%08x," (Hashtbl.find slab_idtordinclcount !i);
+
+    	(* excl_devices *)
+    	Printf.fprintf oc "\n\n%s" (Hashtbl.find slab_idtordexclentries !i);
+
+    	(* excl_devices_count *)
+    	Printf.fprintf oc "\n0x%08x," (Hashtbl.find slab_idtordexclcount !i);
+
+	    (* slab_physmem_extents *)
+	    Printf.fprintf oc "\n	    {";
+	    Printf.fprintf oc "\n	        {.addr_start = %s, .addr_end = %s, .protection = 0}," (Hashtbl.find slab_idtocode_addrstart !i) (Hashtbl.find slab_idtocode_addrend !i);
+	    Printf.fprintf oc "\n	        {.addr_start = %s, .addr_end = %s, .protection = 0}," (Hashtbl.find slab_idtodata_addrstart !i) (Hashtbl.find slab_idtodata_addrend !i);
+	    Printf.fprintf oc "\n	        {.addr_start = %s, .addr_end = %s, .protection = 0}," (Hashtbl.find slab_idtostack_addrstart !i) (Hashtbl.find slab_idtostack_addrend !i);
+	    Printf.fprintf oc "\n	        {.addr_start = %s, .addr_end = %s, .protection = 0}," (Hashtbl.find slab_idtodmadata_addrstart !i) (Hashtbl.find slab_idtodmadata_addrend !i);
+	    Printf.fprintf oc "\n	    },";
+
+	    (* slab memoffset entries *)
+	    Printf.fprintf oc "\n	    {";
+	    if(!g_memoffsets) then
+	        Printf.fprintf oc "%s" (Hashtbl.find slab_idtomemoffsetstring !i)
+	    else
+	        Printf.fprintf oc "0"
+	    ;
+	    Printf.fprintf oc "\n	    },";
+
+
+	    (* slab_entrystub *)
+	    Printf.fprintf oc "\n	    %s" (Hashtbl.find slab_idtocode_addrstart !i);
+
+	    Printf.fprintf oc "\n	},";
+		Printf.fprintf oc "\n";
+
 	
 		i := !i + 1;
 	done;
 	
+
+	Printf.fprintf oc "\n};";
 
 	close_out oc;
 	()
@@ -384,7 +526,6 @@ while( $i < $g_totalslabs ){
         exit 1;
     }
 
-##done
 
     #mempgtbl_cr3 and iotbl_base
     if ($slab_idtotype{$i} eq "VfT_SLAB"){
@@ -454,6 +595,7 @@ while( $i < $g_totalslabs ){
     print $fh $slab_idtouapifnmask{$i};
     print $fh "\n       },";
 
+
     #slab_memgrantreadcaps
     if(exists $slab_idtomemgrantreadcaps{$i}){
         printf $fh "\n       0x%08x,", $slab_idtomemgrantreadcaps{$i};
@@ -469,6 +611,7 @@ while( $i < $g_totalslabs ){
     }
 
 
+
     #incl_devices
     print $fh "\n\n".$slab_idtordinclentries{$i};
 
@@ -480,6 +623,7 @@ while( $i < $g_totalslabs ){
 
     #excl_devices_count
     printf $fh "\n0x%08x,", $slab_idtordexclcount{$i};
+
 
 
     #slab_physmem_extents
@@ -507,6 +651,7 @@ while( $i < $g_totalslabs ){
     print $fh "\n	},";
 	print $fh "\n";
 
+##done
 
 	$i++;
 }
