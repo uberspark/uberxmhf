@@ -589,7 +589,7 @@ let umfcommon_init g_slabsfile g_memoffsets g_rootdir =
 				Format.printf "  slabgsmfile=%s\n" (Hashtbl.find slab_idtogsm !i);      			
 				Format.printf "  slabmmapfile=%s\n" (Hashtbl.find slab_idtommapfile !i);      			
 			
-				if g_memoffsets then
+				if (g_memoffsets && ((compare (Hashtbl.find slab_idtosubtype !i) "XRICHGUEST") <> 0) ) then
 					begin
 						umfcommon_parse_mmap (Hashtbl.find slab_idtommapfile !i) !i !g_totalslabs;
 						Hashtbl.add slab_idtouapifnmask !i (umfcommon_parse_gsm (Hashtbl.find slab_idtogsm !i) !i !g_totalslabs true);
