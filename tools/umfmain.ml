@@ -167,21 +167,40 @@ let umf_compute_memory_map () =
 	Self.result "Proceeding to compute memory map...\n";
 	
 	while (!i < !g_totalslabs) do
-	    Hashtbl.add slab_idtocode_addrstart !i  (Printf.sprintf "0x%08x" !g_memmapaddr);
-    	g_memmapaddr := !g_memmapaddr + (Hashtbl.find slab_idtocodesize !i);
-    	Hashtbl.add slab_idtocode_addrend !i (Printf.sprintf "0x%08x" !g_memmapaddr);
-
-	    Hashtbl.add slab_idtodata_addrstart !i (Printf.sprintf "0x%08x" !g_memmapaddr);
-    	g_memmapaddr := !g_memmapaddr + (Hashtbl.find slab_idtodatasize !i);
-    	Hashtbl.add slab_idtodata_addrend !i (Printf.sprintf "0x%08x" !g_memmapaddr);
-
-	    Hashtbl.add slab_idtostack_addrstart !i (Printf.sprintf "0x%08x" !g_memmapaddr);
-    	g_memmapaddr := !g_memmapaddr + (Hashtbl.find slab_idtostacksize !i);
-    	Hashtbl.add slab_idtostack_addrend !i (Printf.sprintf "0x%08x" !g_memmapaddr);
-
-    	Hashtbl.add slab_idtodmadata_addrstart !i (Printf.sprintf "0x%08x" !g_memmapaddr);
-    	g_memmapaddr := !g_memmapaddr + (Hashtbl.find slab_idtodmadatasize !i);
-    	Hashtbl.add slab_idtodmadata_addrend !i (Printf.sprintf "0x%08x" !g_memmapaddr);	
+	    if ((compare (Hashtbl.find slab_idtosubtype !i) "XRICHGUEST") <> 0) then
+	    	begin
+			    Hashtbl.add slab_idtocode_addrstart !i  (Printf.sprintf "0x%08x" !g_memmapaddr);
+		    	g_memmapaddr := !g_memmapaddr + (Hashtbl.find slab_idtocodesize !i);
+		    	Hashtbl.add slab_idtocode_addrend !i (Printf.sprintf "0x%08x" !g_memmapaddr);
+		
+			    Hashtbl.add slab_idtodata_addrstart !i (Printf.sprintf "0x%08x" !g_memmapaddr);
+		    	g_memmapaddr := !g_memmapaddr + (Hashtbl.find slab_idtodatasize !i);
+		    	Hashtbl.add slab_idtodata_addrend !i (Printf.sprintf "0x%08x" !g_memmapaddr);
+		
+			    Hashtbl.add slab_idtostack_addrstart !i (Printf.sprintf "0x%08x" !g_memmapaddr);
+		    	g_memmapaddr := !g_memmapaddr + (Hashtbl.find slab_idtostacksize !i);
+		    	Hashtbl.add slab_idtostack_addrend !i (Printf.sprintf "0x%08x" !g_memmapaddr);
+		
+		    	Hashtbl.add slab_idtodmadata_addrstart !i (Printf.sprintf "0x%08x" !g_memmapaddr);
+		    	g_memmapaddr := !g_memmapaddr + (Hashtbl.find slab_idtodmadatasize !i);
+		    	Hashtbl.add slab_idtodmadata_addrend !i (Printf.sprintf "0x%08x" !g_memmapaddr);	
+			end	
+	    else
+	    	begin
+			    Hashtbl.add slab_idtocode_addrstart !i (Printf.sprintf "0x%08x" (Hashtbl.find slab_idtocodesize !i));
+			    Hashtbl.add slab_idtocode_addrend !i (Printf.sprintf "0x%08x" (Hashtbl.find slab_idtodatasize !i));
+			
+			    Hashtbl.add slab_idtodata_addrstart !i (Printf.sprintf "0x%08x" (Hashtbl.find slab_idtostacksize !i));
+			    Hashtbl.add slab_idtodata_addrend !i (Printf.sprintf "0x%08x" (Hashtbl.find slab_idtodmadatasize !i));
+			
+			    Hashtbl.add slab_idtostack_addrstart !i (Printf.sprintf "0x%08x" 0);
+			    Hashtbl.add slab_idtostack_addrend !i (Printf.sprintf "0x%08x" 0);
+			
+			    Hashtbl.add slab_idtodmadata_addrstart !i (Printf.sprintf "0x%08x" 0);
+			    Hashtbl.add slab_idtodmadata_addrend !i (Printf.sprintf "0x%08x" 0);
+			end	    	
+	    ;
+		
 
     	i := !i + 1;
 	done;
