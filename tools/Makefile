@@ -2,7 +2,7 @@
 # author: amit vasudevan (amitvasudevan@acm.org)
 
 .PHONY: all
-all: umf ubp
+all: umf ubp uccomp
 
 .PHONY: umf
 umf:
@@ -24,4 +24,13 @@ ubp:
 	$(RM) -f umfcommon.cmx
 	$(RM) -f umfcommon.o
 	$(MAKE) -f ubp.mk -w all
-	
+
+.PHONY: uccomp
+uccomp:
+	$(RM) -f umfcommon.annot
+	$(RM) -f umfcommon.cmi
+	$(RM) -f umfcommon.cmo
+	$(RM) -f umfcommon.cmt
+	$(RM) -f umfcommon.cmx
+	$(RM) -f umfcommon.o
+	$(MAKE) -f uccomp.mk -w all
