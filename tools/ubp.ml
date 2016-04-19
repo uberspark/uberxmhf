@@ -100,6 +100,18 @@ let ubp_process_cmdline () =
 
 
 
+let ubp_outputsentinelstubs () =
+	let i = ref 0 in
+	
+	while (!i < !g_totalslabs) do
+		if (compare (Hashtbl.find slab_idtotype !i) "VfT_SLAB") = 0 then
+			(* ubp_outputsentinelstubforslab !g_outputdir_sentinelstubs (Hashtbl.find slab_idtoname !i) !i *)
+		;
+	    i := !i + 1;
+	done;
+	()
+
+
 	
 let run () =
 	Self.result "Generating blueprint conformance sentinel stubs...\n";
@@ -111,6 +123,7 @@ let run () =
 	umfcommon_init !g_slabsfile !g_memoffsets !g_rootdir;
 	Self.result "g_totalslabs=%d \n" !g_totalslabs;
 	
+	ubp_outputsentinelstubs ();
 	
 	Self.result "Done.\n";
 	()
