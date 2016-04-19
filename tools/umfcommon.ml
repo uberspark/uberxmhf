@@ -493,6 +493,10 @@ let umfcommon_parse_gsm filename slabid totalslabs is_memoffsets =
         			begin
         				slab_uapifnmaskstring := !slab_uapifnmaskstring ^ (Printf.sprintf "\t0x%08x,\n" (Hashtbl.find slab_idtouapifnmask !j));
         			end
+        		else
+        			begin
+						slab_uapifnmaskstring := "0x00000000";        			
+        			end
         		;
         		j := !j + 1;
     		end
