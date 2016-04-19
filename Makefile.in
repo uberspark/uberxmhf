@@ -28,7 +28,15 @@ export LIBXMHFHW_SRC := $(realpath xmhf-libs/libxmhfhw)
 
 
 .PHONY: all
-all: slabs xmhfbin bootloader finalbin
+all: tools slabs xmhfbin bootloader finalbin
+
+
+.PHONY: tools
+tools: 
+	@echo building tools...
+	cd $(XMHF_DIR)/tools &&	$(MAKE) -f Makefile -w all
+	@echo tools built sucessfully.
+	
 
 
 .PHONY: _libxmhfc
