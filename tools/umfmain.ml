@@ -460,7 +460,7 @@ let umf_output_infotable () =
 
 	    (* slab memoffset entries *)
 	    Printf.fprintf oc "\n	    {";
-	    if(!g_memoffsets) then
+	    if (!g_memoffsets && ((compare (Hashtbl.find slab_idtosubtype !i) "XRICHGUEST") <> 0) ) then
 	        Printf.fprintf oc "%s" (Hashtbl.find slab_idtomemoffsetstring !i)
 	    else
 	        Printf.fprintf oc "0"
