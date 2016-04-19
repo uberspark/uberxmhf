@@ -509,19 +509,24 @@ let umf_output_linkerscript () =
 
 	i := 0;
 	while (!i < !g_totalslabs) do
-	    Printf.fprintf oc "\n	.slab_%s : {" (Hashtbl.find slab_idtoname !i);
-	    Printf.fprintf oc "\n		. = ALIGN(1);";
-	    Printf.fprintf oc "\n		_objs_slab_%s/%s.slo(.slabcode)" (Hashtbl.find slab_idtoname !i) (Hashtbl.find slab_idtoname !i);
-	    Printf.fprintf oc "\n		. = ALIGN(1);";
-	    Printf.fprintf oc "\n		_objs_slab_%s/%s.slo(.slabdata)" (Hashtbl.find slab_idtoname !i) (Hashtbl.find slab_idtoname !i);
-	    Printf.fprintf oc "\n		. = ALIGN(1);";
-	    Printf.fprintf oc "\n		_objs_slab_%s/%s.slo(.slabstack)" (Hashtbl.find slab_idtoname !i) (Hashtbl.find slab_idtoname !i);
-	    Printf.fprintf oc "\n		. = ALIGN(1);";
-	    Printf.fprintf oc "\n		_objs_slab_%s/%s.slo(.slabdmadata)" (Hashtbl.find slab_idtoname !i) (Hashtbl.find slab_idtoname !i);
-	    Printf.fprintf oc "\n		. = ALIGN(1);";
-	    Printf.fprintf oc "\n	} >all=0x0000";
-	    Printf.fprintf oc "\n";
-	
+
+	    if ( (compare (Hashtbl.find slab_idtosubtype !i) "XRICHGUEST") <> 0 ) then
+	    	begin
+			    Printf.fprintf oc "\n	.slab_%s : {" (Hashtbl.find slab_idtoname !i);
+			    Printf.fprintf oc "\n		. = ALIGN(1);";
+			    Printf.fprintf oc "\n		_objs_slab_%s/%s.slo(.slabcode)" (Hashtbl.find slab_idtoname !i) (Hashtbl.find slab_idtoname !i);
+			    Printf.fprintf oc "\n		. = ALIGN(1);";
+			    Printf.fprintf oc "\n		_objs_slab_%s/%s.slo(.slabdata)" (Hashtbl.find slab_idtoname !i) (Hashtbl.find slab_idtoname !i);
+			    Printf.fprintf oc "\n		. = ALIGN(1);";
+			    Printf.fprintf oc "\n		_objs_slab_%s/%s.slo(.slabstack)" (Hashtbl.find slab_idtoname !i) (Hashtbl.find slab_idtoname !i);
+			    Printf.fprintf oc "\n		. = ALIGN(1);";
+			    Printf.fprintf oc "\n		_objs_slab_%s/%s.slo(.slabdmadata)" (Hashtbl.find slab_idtoname !i) (Hashtbl.find slab_idtoname !i);
+			    Printf.fprintf oc "\n		. = ALIGN(1);";
+			    Printf.fprintf oc "\n	} >all=0x0000";
+			    Printf.fprintf oc "\n";
+			end
+		;		
+		
 	    i := !i + 1;
 	done;
 
