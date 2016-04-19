@@ -170,15 +170,14 @@ let uccomp_outputccompdriverfile () =
 	Printf.fprintf oc "void main(void){\r\n";
 
 	(* iterate over the uapi_fndef hashtable *)
-	(*
-	while ( ($uapi_key, $uapi_fndef) = each %uapi_fndef )
-	{
-		# fore each uapi_key we find, write function driver
-		Printf.fprintf oc "/* $uapi_key */\r\n";
-		Printf.fprintf oc "$uapi_fndrvcode{$uapi_key} \r\n\r\n";
-	}
-	*)
-	
+	Hashtbl.iter
+  		(fun key value ->
+    		Printf.fprintf oc "/* %s */\r\n" key;
+    		Printf.fprintf oc "%s \r\n\r\n" (Hashtbl.find uapi_fndrvcode key);
+  		)
+  	uapi_fndef
+	;
+
 	Printf.fprintf oc "}\r\n";
 
 
