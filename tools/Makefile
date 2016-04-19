@@ -6,4 +6,5 @@ all: umf
 
 .PHONY: umf
 umf:
+	$(MAKE) -f umf.mk -w clean
 	$(MAKE) -f umf.mk -w all
