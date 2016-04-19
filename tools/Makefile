@@ -2,9 +2,26 @@
 # author: amit vasudevan (amitvasudevan@acm.org)
 
 .PHONY: all
-all: umf
+all: umf ubp
 
 .PHONY: umf
 umf:
-	$(MAKE) -f umf.mk -w clean
+	$(RM) -f umfcommon.annot
+	$(RM) -f umfcommon.cmi
+	$(RM) -f umfcommon.cmo
+	$(RM) -f umfcommon.cmt
+	$(RM) -f umfcommon.cmx
+	$(RM) -f umfcommon.o
 	$(MAKE) -f umf.mk -w all
+
+	
+.PHONY: ubp
+ubp:
+	$(RM) -f umfcommon.annot
+	$(RM) -f umfcommon.cmi
+	$(RM) -f umfcommon.cmo
+	$(RM) -f umfcommon.cmt
+	$(RM) -f umfcommon.cmx
+	$(RM) -f umfcommon.o
+	$(MAKE) -f ubp.mk -w all
+	
