@@ -124,7 +124,7 @@ void geec_sentinel_main(slab_params_t *sp, void *caller_stack_frame){
                 case XMHFGEEC_SLABTYPE_uVU_PROG_RICHGUEST:{
                     u32 errorcode;
                     _geec_sentinel_checkandhalt_callcaps(sp->src_slabid, sp->dst_slabid, sp->dst_uapifn);
-                    _XDPRINTF_("GEEC_SENTINEL: launching guest %u...\n", sp->dst_slabid);
+                    //_XDPRINTF_("GEEC_SENTINEL: launching guest %u...\n", sp->dst_slabid);
                     sp->slab_ctype = XMHFGEEC_SENTINEL_CALL_VfT_PROG_TO_uVT_uVU_PROG_GUEST;
                     CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_CONTROL_VPID, sp->dst_slabid );
                     CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_CONTROL_EPT_POINTER_FULL, (xmhfgeec_slab_info_table[sp->dst_slabid].mempgtbl_cr3  | 0x1E) );
@@ -234,7 +234,7 @@ void geec_sentinel_main(slab_params_t *sp, void *caller_stack_frame){
                 HALT();
             }
 
-            _XDPRINTF_("GEEC_SENTINEL: resuming guest %u...\n", sp->dst_slabid);
+            //_XDPRINTF_("GEEC_SENTINEL: resuming guest %u...\n", sp->dst_slabid);
             CASM_FUNCCALL(gs_exit_reticpt, sp->in_out_params);
             _XDPRINTF_("GEEC_SENTINEL[ln:%u]: halting. should never be here!\n",
                        __LINE__);

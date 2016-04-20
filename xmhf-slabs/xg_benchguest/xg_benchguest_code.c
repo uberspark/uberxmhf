@@ -379,8 +379,8 @@ void xcguestslab_do_testxhsyscalllog(void){
 
     _XDPRINTF_("%s: Came back from SYSENTER\n", __func__);
 
-    _XDPRINTF_("%s: Guest Slab Halting\n", __func__);
-    HALT();
+    //_XDPRINTF_("%s: Guest Slab Halting\n", __func__);
+    //HALT();
 }
 
 
@@ -390,11 +390,42 @@ void xcguestslab_do_testxhsyscalllog(void){
 
 
 void slab_main(slab_params_t *sp){
-    bool isbsp = xmhfhw_lapic_isbsp();
+	bool isbsp;
+	static u32 xgbenchguest_smplock = 1;
+
+    #if defined (__DEBUG_SERIAL__)
+	static volatile u32 cpucount=0;
+	#endif //__DEBUG_SERIAL__
+
+
+    //grab lock
+    CASM_FUNCCALL(spin_lock,&xgbenchguest_smplock);
+
+	isbsp = xmhfhw_lapic_isbsp();
 
     if(isbsp){
-		_XDPRINTF_("%s: Hello world from Guest slab! ESP=%08x, flags=%08x\n", __func__, read_esp(CASM_NOPARAM),
-			read_eflags(CASM_NOPARAM));
+    	_XDPRINTF_("%s: Guest got control in BSP. Proceeding...\n", __func__);
+    }else{
+    	_XDPRINTF_("%s: Guest got control in AP. Halting!\n", __func__);
+	}
+
+	#if defined (__DEBUG_SERIAL__)
+	cpucount++;
+	#endif //__DEBUG_SERIAL__
+
+    //release lock
+    CASM_FUNCCALL(spin_unlock,&xgbenchguest_smplock);
+
+
+	#if defined (__DEBUG_SERIAL__)
+	while(cpucount < __XMHF_CONFIG_DEBUG_SERIAL_MAXCPUS__);
+	#endif //__DEBUG_SERIAL__
+
+
+
+    if(isbsp){
+		_XDPRINTF_("%s[BSP]: ESP=%08x, flags=%08x\n", __func__,
+					read_esp(CASM_NOPARAM),	read_eflags(CASM_NOPARAM));
 
 		//xcguestslab_do_vmcall();
 
@@ -410,7 +441,8 @@ void slab_main(slab_params_t *sp){
 
 		xcguestslab_do_testxhsyscalllog();
 
-		_XDPRINTF_("%s: Guest Slab Halting\n", __func__);
+
+		_XDPRINTF_("%s[BSP]: Guest Slab Done. Halting\n", __func__);
     }
 
     HALT();

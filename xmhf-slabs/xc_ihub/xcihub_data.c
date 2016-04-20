@@ -43,3 +43,11 @@
  *
  * @XMHF_LICENSE_HEADER_END@
  */
+#include <xmhf.h>
+#include <xmhfgeec.h>
+#include <xmhf-debug.h>
+
+#include <xc.h>
+#include <xc_ihub.h>
+
+__attribute__(( section(".data") )) volatile u32 xcihub_smplock = 1;
