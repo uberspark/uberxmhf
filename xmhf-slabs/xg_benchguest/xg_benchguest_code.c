@@ -390,23 +390,28 @@ void xcguestslab_do_testxhsyscalllog(void){
 
 
 void slab_main(slab_params_t *sp){
-    _XDPRINTF_("%s: Hello world from Guest slab! ESP=%08x, flags=%08x\n", __func__, read_esp(CASM_NOPARAM),
-		read_eflags(CASM_NOPARAM));
+    bool isbsp = xmhfhw_lapic_isbsp();
 
-    //xcguestslab_do_vmcall();
+    if(isbsp){
+		_XDPRINTF_("%s: Hello world from Guest slab! ESP=%08x, flags=%08x\n", __func__, read_esp(CASM_NOPARAM),
+			read_eflags(CASM_NOPARAM));
 
-    //xcguestslab_do_xmhfhw_cpu_cpuid();
+		//xcguestslab_do_vmcall();
 
-    //xcguestslab_do_msrtest();
+		//xcguestslab_do_xmhfhw_cpu_cpuid();
 
-    xcguestslab_do_testxhhyperdep();
+		//xcguestslab_do_msrtest();
 
-    xcguestslab_do_testxhapprovexec();
+		xcguestslab_do_testxhhyperdep();
 
-    xcguestslab_do_testxhssteptrace();
+		xcguestslab_do_testxhapprovexec();
 
-    xcguestslab_do_testxhsyscalllog();
+		xcguestslab_do_testxhssteptrace();
 
-    _XDPRINTF_("%s: Guest Slab Halting\n", __func__);
+		xcguestslab_do_testxhsyscalllog();
+
+		_XDPRINTF_("%s: Guest Slab Halting\n", __func__);
+    }
+
     HALT();
 }
