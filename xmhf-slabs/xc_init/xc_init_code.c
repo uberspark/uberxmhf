@@ -114,36 +114,19 @@ static u32 xc_hcbinvoke(u32 src_slabid, u32 cpuid, u32 cbtype, u32 cbqual, u32 g
 
 
 void slab_main(slab_params_t *sp){
-
-    //bool isbsp = (sp->cpuid & 0x80000000UL) ? true : false;
     bool isbsp = xmhfhw_lapic_isbsp();
     u64 inputval, outputval;
-    //static u64 cpucount=0;
     static u32 __xcinit_smplock = 1;
 
-    //_XDPRINTF_("XC_INIT[%u]: got control: ESP=%08x\n", __func__, (u16)sp->cpuid, CASM_FUNCCALL(read_esp,CASM_NOPARAM));
+    u32 guest_slab_header_paddr = xmhfgeec_slab_info_table[XMHFGEEC_SLAB_XG_BENCHGUEST].slab_physmem_extents[1].addr_start;
+    u32 guest_slab_gdt_paddr = guest_slab_header_paddr + offsetof(guest_slab_header_t, gdt);
+    u32 guest_slab_magic_paddr = guest_slab_header_paddr + offsetof(guest_slab_header_t, magic);
+    u32 guest_slab_magic;
 
-    if(!isbsp){
-        //_XDPRINTF_("XC_INIT[%u]: AP Halting!\n", __func__, (u16)sp->cpuid);
+    //grab lock
+    CASM_FUNCCALL(spin_lock,&__xcinit_smplock);
 
-        //CASM_FUNCCALL(spin_lock,&__xcinit_smplock);
-        //cpucount++;
-        //CASM_FUNCCALL(spin_unlock,&__xcinit_smplock);
-
-        HALT();
-    }else{
-        //BSP
-        //_XDPRINTF_("%s[%u]: BSP waiting to rally APs...\n",
-        //        __func__, (u16)sp->cpuid);
-
-        //while(cpucount < (xcbootinfo->cpuinfo_numentries-1));
-
-        //_XDPRINTF_("XC_INIT[%u]: BSP proceeding...\n",
-        //        __func__, (u16)sp->cpuid);
-    }
-
-    _XDPRINTF_("XC_INIT[%u]: got control: ESP=%08x\n", (u16)sp->cpuid, CASM_FUNCCALL(read_esp,CASM_NOPARAM));
-
+    _XDPRINTF_("XC_INIT[%u]: got control: ESP=%08x\n", __func__, (u16)sp->cpuid, CASM_FUNCCALL(read_esp,CASM_NOPARAM));
 
     // call test slab
     {
@@ -158,94 +141,45 @@ void slab_main(slab_params_t *sp){
         _XDPRINTF_("XC_INIT[%u]: came back from test slab, esp=%x\n", (u16)sp->cpuid, CASM_FUNCCALL(read_esp,CASM_NOPARAM));
         _XDPRINTF_("XC_INIT[%u]: called test slab, return value=%x\n",
                    (u16)sp->cpuid, spl.in_out_params[1]);
-        //HALT();
     }
 
 
-
-    {
-        u32 guest_slab_header_paddr = xmhfgeec_slab_info_table[XMHFGEEC_SLAB_XG_BENCHGUEST].slab_physmem_extents[1].addr_start;
-        u32 guest_slab_gdt_paddr = guest_slab_header_paddr + offsetof(guest_slab_header_t, gdt);
-        u32 guest_slab_magic_paddr = guest_slab_header_paddr + offsetof(guest_slab_header_t, magic);
-        u32 guest_slab_magic;
-
-
-        //get and dump slab header magic
-        {
-            //slab_params_t spl;
-            //xmhf_hic_uapi_physmem_desc_t *pdesc = (xmhf_hic_uapi_physmem_desc_t *)&spl.in_out_params[2];
-            //xmhf_uapi_slabmemacc_params_t *smemaccp = (xmhf_uapi_slabmemacc_params_t *)spl.in_out_params;
+	//get and dump slab header magic
+	{
+		CASM_FUNCCALL(xmhfhw_sysmemaccess_copy, &guest_slab_magic,
+		guest_slab_magic_paddr, sizeof(guest_slab_magic));
+		_XDPRINTF_("%s[%u]: guest slab header at=%x\n", __func__, (u16)sp->cpuid, guest_slab_header_paddr);
+		_XDPRINTF_("%s[%u]: guest slab header magic=%x\n", __func__, (u16)sp->cpuid, guest_slab_magic);
+	}
 
 
-            //smemaccp->dst_slabid = XMHFGEEC_SLAB_XG_BENCHGUEST;
-            //smemaccp->addr_to = &guest_slab_magic;
-            //smemaccp->addr_from = guest_slab_magic_paddr;
-            //smemaccp->numbytes = sizeof(guest_slab_magic);
+	//initialize guest slab gdt
+	{
+		CASM_FUNCCALL(xmhfhw_sysmemaccess_copy, guest_slab_gdt_paddr,
+		&_xcguestslab_init_gdt, sizeof(_xcguestslab_init_gdt));
+	}
 
-            //spl.in_out_params[0] = XMHF_HIC_UAPI_PHYSMEM;
-            //spl.dst_uapifn = XMHF_HIC_UAPI_PHYSMEM_PEEK;
-            //spl.cpuid = sp->cpuid;
-            //spl.src_slabid = XMHFGEEC_SLAB_XC_INIT;
-            //spl.dst_slabid = XMHFGEEC_SLAB_UAPI_SLABMEMACC;
+	//setup guest slab VMCS state
+	{
+		slab_params_t spl;
+		xmhf_uapi_gcpustate_vmrw_params_t *gcpustate_vmrwp =
+			(xmhf_uapi_gcpustate_vmrw_params_t *)spl.in_out_params;
 
-            //XMHF_SLAB_CALLNEW(&spl);
-            CASM_FUNCCALL(xmhfhw_sysmemaccess_copy, &guest_slab_magic,
-			guest_slab_magic_paddr, sizeof(guest_slab_magic));
-            _XDPRINTF_("%s[%u]: guest slab header at=%x\n", __func__, (u16)sp->cpuid, guest_slab_header_paddr);
-            _XDPRINTF_("%s[%u]: guest slab header magic=%x\n", __func__, (u16)sp->cpuid, guest_slab_magic);
-        }
+		spl.cpuid = sp->cpuid;
+		spl.src_slabid = XMHFGEEC_SLAB_XC_INIT;
+		spl.dst_slabid = XMHFGEEC_SLAB_UAPI_GCPUSTATE;
 
+		spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_VMWRITE;
+		gcpustate_vmrwp->encoding = VMCS_GUEST_GDTR_BASE;
+		gcpustate_vmrwp->value = guest_slab_gdt_paddr;
 
-        //initialize guest slab gdt
-        {
-            //slab_params_t spl;
-            //xmhf_hic_uapi_physmem_desc_t *pdesc = (xmhf_hic_uapi_physmem_desc_t *)&spl.in_out_params[2];
-            //xmhf_uapi_slabmemacc_params_t *smemaccp = (xmhf_uapi_slabmemacc_params_t *)spl.in_out_params;
-
-            /*smemaccp->dst_slabid = XMHFGEEC_SLAB_XG_BENCHGUEST;
-            smemaccp->addr_to = guest_slab_gdt_paddr;
-            smemaccp->addr_from = &_xcguestslab_init_gdt;
-            smemaccp->numbytes = sizeof(_xcguestslab_init_gdt);
-
-            //spl.in_out_params[0] = XMHF_HIC_UAPI_PHYSMEM;
-            spl.dst_uapifn = XMHF_HIC_UAPI_PHYSMEM_POKE;
-            spl.cpuid = sp->cpuid;
-            spl.src_slabid = XMHFGEEC_SLAB_XC_INIT;
-            spl.dst_slabid = XMHFGEEC_SLAB_UAPI_SLABMEMACC;
-
-            XMHF_SLAB_CALLNEW(&spl);*/
-            CASM_FUNCCALL(xmhfhw_sysmemaccess_copy, guest_slab_gdt_paddr,
-			&_xcguestslab_init_gdt, sizeof(_xcguestslab_init_gdt));
-        }
-
-        //setup guest slab VMCS GDT base and limit
-        {
-            slab_params_t spl;
-            xmhf_uapi_gcpustate_vmrw_params_t *gcpustate_vmrwp =
-                (xmhf_uapi_gcpustate_vmrw_params_t *)spl.in_out_params;
-
-            spl.cpuid = sp->cpuid;
-            spl.src_slabid = XMHFGEEC_SLAB_XC_INIT;
-            spl.dst_slabid = XMHFGEEC_SLAB_UAPI_GCPUSTATE;
-
-            //spl.in_out_params[0] = XMHF_HIC_UAPI_CPUSTATE;
-            spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_VMWRITE;
-            gcpustate_vmrwp->encoding = VMCS_GUEST_GDTR_BASE;
-            gcpustate_vmrwp->value = guest_slab_gdt_paddr;
-
-            XMHF_SLAB_CALLNEW(&spl);
-
-            gcpustate_vmrwp->encoding = VMCS_GUEST_GDTR_LIMIT;
-            gcpustate_vmrwp->value =  (sizeof(_xcguestslab_init_gdt)-1);
-
-            XMHF_SLAB_CALLNEW(&spl);
-
-
-		/*
-		gcpustate_vmrwp->encoding = ;
-		gcpustate_vmrwp->value = ;
 		XMHF_SLAB_CALLNEW(&spl);
-		*/
+
+		gcpustate_vmrwp->encoding = VMCS_GUEST_GDTR_LIMIT;
+		gcpustate_vmrwp->value =  (sizeof(_xcguestslab_init_gdt)-1);
+
+		XMHF_SLAB_CALLNEW(&spl);
+
 
 		//more guest-specific state setup
 		gcpustate_vmrwp->encoding = VMCS_CONTROL_CR4_SHADOW;
@@ -464,18 +398,17 @@ void slab_main(slab_params_t *sp){
 
 	}
 
-    }
-
-
-/*    //debug
-    _XDPRINTF_("Halting!\n");
-    _XDPRINTF_("XMHF Tester Finished!\n");
-    HALT();
-*/
 
     //invoke hypapp initialization callbacks
     xc_hcbinvoke(XMHFGEEC_SLAB_XC_INIT,
                  sp->cpuid, XC_HYPAPPCB_INITIALIZE, 0, XMHFGEEC_SLAB_XG_BENCHGUEST);
+
+
+    _XDPRINTF_("%s[%u]: Proceeding to call xcguestslab; ESP=%08x, eflags=%08x\n", __func__, (u16)sp->cpuid, CASM_FUNCCALL(read_esp,CASM_NOPARAM),
+		CASM_FUNCCALL(read_eflags, CASM_NOPARAM));
+
+    //release lock
+    CASM_FUNCCALL(spin_unlock,&__xcinit_smplock);
 
 
     //call guestslab
@@ -486,10 +419,6 @@ void slab_main(slab_params_t *sp){
         spl.cpuid = sp->cpuid;
         spl.src_slabid = XMHFGEEC_SLAB_XC_INIT;
         spl.dst_slabid = XMHFGEEC_SLAB_XG_BENCHGUEST;
-
-        _XDPRINTF_("%s[%u]: Proceeding to call xcguestslab; ESP=%08x, eflags=%08x\n", __func__, (u16)sp->cpuid, CASM_FUNCCALL(read_esp,CASM_NOPARAM),
-			CASM_FUNCCALL(read_eflags, CASM_NOPARAM));
-
         XMHF_SLAB_CALLNEW(&spl);
     }
 
@@ -501,6 +430,12 @@ void slab_main(slab_params_t *sp){
 }
 
 
+
+/*    //debug
+    _XDPRINTF_("Halting!\n");
+    _XDPRINTF_("XMHF Tester Finished!\n");
+    HALT();
+*/
 
 
 
