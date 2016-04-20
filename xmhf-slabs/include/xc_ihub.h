@@ -64,6 +64,7 @@ void xcihub_icptwrmsr(u32 cpuid);
 void xcihub_icptrdmsr(u32 cpuid);
 void xcihub_halt(u32 cpuid, u32 info_vmexit_reason);
 
+extern __attribute__(( section(".data") )) volatile u32 xcihub_smplock;
 
 
 

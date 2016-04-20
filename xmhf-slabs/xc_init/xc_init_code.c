@@ -112,28 +112,35 @@ static u32 xc_hcbinvoke(u32 src_slabid, u32 cpuid, u32 cbtype, u32 cbqual, u32 g
 }
 
 
+__attribute__(( section(".data") )) u32 __xcinit_smplock = 1;
+
 
 void slab_main(slab_params_t *sp){
     bool isbsp = xmhfhw_lapic_isbsp();
     u64 inputval, outputval;
-    static u32 __xcinit_smplock = 1;
+
+    #if defined (__DEBUG_SERIAL__)
+	static volatile u32 cpucount=0;
+	#endif //__DEBUG_SERIAL__
+
 
     u32 guest_slab_header_paddr = xmhfgeec_slab_info_table[XMHFGEEC_SLAB_XG_BENCHGUEST].slab_physmem_extents[1].addr_start;
     u32 guest_slab_gdt_paddr = guest_slab_header_paddr + offsetof(guest_slab_header_t, gdt);
     u32 guest_slab_magic_paddr = guest_slab_header_paddr + offsetof(guest_slab_header_t, magic);
     u32 guest_slab_magic;
 
+
     //grab lock
     CASM_FUNCCALL(spin_lock,&__xcinit_smplock);
 
-    _XDPRINTF_("XC_INIT[%u]: got control: ESP=%08x\n", __func__, (u16)sp->cpuid, CASM_FUNCCALL(read_esp,CASM_NOPARAM));
+    _XDPRINTF_("XC_INIT[%u]: got control: ESP=%08x\n", (u16)sp->cpuid, CASM_FUNCCALL(read_esp,CASM_NOPARAM));
 
     // call test slab
     {
         slab_params_t spl;
         spl.src_slabid = XMHFGEEC_SLAB_XC_INIT;
         spl.dst_slabid = XMHFGEEC_SLAB_XC_TESTSLAB;
-        spl.cpuid = 0;
+        spl.cpuid = sp->cpuid;
         spl.dst_uapifn = 0;
         spl.in_out_params[0] = 0xF00DDEAD;
         _XDPRINTF_("XC_INIT[%u]: proceeding to call test slab, esp=%x\n", (u16)sp->cpuid, CASM_FUNCCALL(read_esp,CASM_NOPARAM));
@@ -404,11 +411,21 @@ void slab_main(slab_params_t *sp){
                  sp->cpuid, XC_HYPAPPCB_INITIALIZE, 0, XMHFGEEC_SLAB_XG_BENCHGUEST);
 
 
-    _XDPRINTF_("%s[%u]: Proceeding to call xcguestslab; ESP=%08x, eflags=%08x\n", __func__, (u16)sp->cpuid, CASM_FUNCCALL(read_esp,CASM_NOPARAM),
+    _XDPRINTF_("XC_INIT[%u]: Proceeding to call xcguestslab; ESP=%08x, eflags=%08x\n", (u16)sp->cpuid, CASM_FUNCCALL(read_esp,CASM_NOPARAM),
 		CASM_FUNCCALL(read_eflags, CASM_NOPARAM));
+
+
+	#if defined (__DEBUG_SERIAL__)
+	cpucount++;
+	#endif //__DEBUG_SERIAL__
 
     //release lock
     CASM_FUNCCALL(spin_unlock,&__xcinit_smplock);
+
+
+    #if defined (__DEBUG_SERIAL__)
+    while(cpucount < __XMHF_CONFIG_DEBUG_SERIAL_MAXCPUS__);
+    #endif //__DEBUG_SERIAL__
 
 
     //call guestslab
@@ -422,8 +439,7 @@ void slab_main(slab_params_t *sp){
         XMHF_SLAB_CALLNEW(&spl);
     }
 
-
-    _XDPRINTF_("%s[%u]: Should  never get here.Halting!\n", __func__, (u16)sp->cpuid);
+    //_XDPRINTF_("%s[%u]: Should  never get here.Halting!\n", __func__, (u16)sp->cpuid);
     HALT();
 
     return;
