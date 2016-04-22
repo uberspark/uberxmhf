@@ -376,8 +376,9 @@ static void xcinit_setup_guest(slab_params_t *sp, bool isbsp){
 
 
 
-
-
+//////
+// invoke hypapp initialization callbacks
+//////
 static u32 xc_hcbinvoke(u32 src_slabid, u32 cpuid, u32 cbtype, u32 cbqual, u32 guest_slab_index){
     u32 status = XC_HYPAPPCB_CHAIN;
     u32 i;
@@ -410,13 +411,10 @@ static u32 xc_hcbinvoke(u32 src_slabid, u32 cpuid, u32 cbtype, u32 cbqual, u32 g
 
 void slab_main(slab_params_t *sp){
     bool isbsp = xmhfhw_lapic_isbsp();
-    //u64 inputval, outputval;
 
     #if defined (__DEBUG_SERIAL__)
 	static volatile u32 cpucount=0;
 	#endif //__DEBUG_SERIAL__
-
-
 
 
     //grab lock
