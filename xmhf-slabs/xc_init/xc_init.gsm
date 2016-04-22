@@ -19,6 +19,7 @@ MS:DMADATA:0x200000:void:void
 S:geec_sentinel:void:void:void
 S:uapi_gcpustate:void:void:void
 S:xg_benchguest:void:void:void
+S:xg_richguest:void:void:void
 S:xc_testslab:void:void:void
 S:xh_hyperdep:void:void:void
 S:xh_syscalllog:void:void:void
