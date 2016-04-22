@@ -88,6 +88,7 @@ static void xcinit_do_test(slab_params_t *sp){
 }
 
 
+/*
 //////
 // call guest uobj
 //////
@@ -100,9 +101,48 @@ static void xcinit_do_callguest(slab_params_t *sp){
 	spl.dst_slabid = XMHFGEEC_SLAB_XG_BENCHGUEST;
 	XMHF_SLAB_CALLNEW(&spl);
 }
+*/
+
+
+//////
+// call guest uobj
+//////
+static void xcinit_do_callguest(slab_params_t *sp){
+	//debug
+	_XDPRINTF_("%s[%u]: Halting!\n", __func__, (u16)sp->cpuid);
+	//_XDPRINTF_("XMHF Tester Finished!\n");
+	HALT();
+}
 
 
 
+
+//////
+// setup guest uobj
+//////
+static void xcinit_setup_guest(slab_params_t *sp, bool isbsp){
+	u8 rg_bootcode[]  = {
+		0xEB, 0xFE,	//JMP EIP
+		0x90,		//NOP
+		0x90,		//NOP
+	};
+	u8 rg_bootcode_verif[4];
+
+	//write boot code to guest boot area, if we are the BSP
+	if(isbsp){
+		_XDPRINTF_("%s[%u]: BSP: writing boot-code...\n", __func__, (u16)sp->cpuid);
+		CASM_FUNCCALL(xmhfhw_sysmem_copy_obj2sys, (u8 *)0x00007C00, &rg_bootcode, sizeof(rg_bootcode));
+		_XDPRINTF_("%s[%u]: BSP: boot-code written successfully\n", __func__, (u16)sp->cpuid);
+		_XDPRINTF_("%s[%u]: BSP: reading boot-code...\n", __func__, (u16)sp->cpuid);
+		CASM_FUNCCALL(xmhfhw_sysmem_copy_sys2obj, &rg_bootcode_verif, (u8 *)0x00007C00, sizeof(rg_bootcode_verif));
+		_XDPRINTF_("%s[%u]: BSP: boot-code: %02x %02x %02x %02x...\n", __func__, (u16)sp->cpuid,
+				rg_bootcode_verif[0], rg_bootcode_verif[1], rg_bootcode_verif[2], rg_bootcode_verif[3]);
+	}
+
+
+}
+
+/*
 //////
 // setup guest uobj
 //////
@@ -373,7 +413,7 @@ static void xcinit_setup_guest(slab_params_t *sp, bool isbsp){
 	}
 
 }
-
+*/
 
 
 //////
