@@ -112,7 +112,6 @@ static u32 xc_hcbinvoke(u32 src_slabid, u32 cpuid, u32 cbtype, u32 cbqual, u32 g
 }
 
 
-__attribute__(( section(".data") )) u32 __xcinit_smplock = 1;
 
 
 void slab_main(slab_params_t *sp){
