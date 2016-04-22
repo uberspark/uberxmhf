@@ -108,10 +108,14 @@ static void xcinit_do_callguest(slab_params_t *sp){
 // call guest uobj
 //////
 static void xcinit_do_callguest(slab_params_t *sp){
-	//debug
-	_XDPRINTF_("%s[%u]: Halting!\n", __func__, (u16)sp->cpuid);
-	//_XDPRINTF_("XMHF Tester Finished!\n");
-	HALT();
+	slab_params_t spl;
+
+	memset(&spl, 0, sizeof(spl));
+	spl.cpuid = sp->cpuid;
+	spl.src_slabid = XMHFGEEC_SLAB_XC_INIT;
+	spl.dst_slabid = XMHFGEEC_SLAB_XG_RICHGUEST;
+	XMHF_SLAB_CALLNEW(&spl);
+
 }
 
 
