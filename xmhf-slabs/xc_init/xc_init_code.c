@@ -102,68 +102,21 @@ static void xcinit_do_callguest(slab_params_t *sp){
 }
 
 
-__attribute__(( aligned(16) )) static u64 _xcguestslab_init_gdt[]  = {
-	0x0000000000000000ULL,	//NULL descriptor
-	0x00cf9b000000ffffULL,	//CPL-0 32-bit code descriptor (CS32)
-	0x00cf93000000ffffULL,	//CPL-0 32-bit data descriptor (DS/SS/ES/FS/GS)
-	0x0000000000000000ULL,	//NULL descriptor
-};
 
-
-
-static u32 xc_hcbinvoke(u32 src_slabid, u32 cpuid, u32 cbtype, u32 cbqual, u32 guest_slab_index){
-    u32 status = XC_HYPAPPCB_CHAIN;
-    u32 i;
-    slab_params_t spl;
-    xc_hypappcb_params_t *hcbp = (xc_hypappcb_params_t *)&spl.in_out_params[0];
-
-    spl.src_slabid = src_slabid;
-    spl.cpuid = cpuid;
-    spl.dst_uapifn = 0;
-    hcbp->cbtype=cbtype;
-    hcbp->cbqual=cbqual;
-    hcbp->guest_slab_index=guest_slab_index;
-
-    for(i=0; i < HYPAPP_INFO_TABLE_NUMENTRIES; i++){
-        if(_xcihub_hypapp_info_table[i].cbmask & XC_HYPAPPCB_MASK(cbtype)){
-            spl.dst_slabid = _xcihub_hypapp_info_table[i].xmhfhic_slab_index;
-            XMHF_SLAB_CALLNEW(&spl);
-            if(hcbp->cbresult == XC_HYPAPPCB_NOCHAIN){
-                status = XC_HYPAPPCB_NOCHAIN;
-                break;
-            }
-        }
-    }
-
-    return status;
-}
-
-
-
-
-void slab_main(slab_params_t *sp){
-    bool isbsp = xmhfhw_lapic_isbsp();
-    u64 inputval, outputval;
-
-    #if defined (__DEBUG_SERIAL__)
-	static volatile u32 cpucount=0;
-	#endif //__DEBUG_SERIAL__
-
-
+//////
+// setup guest uobj
+//////
+static void xcinit_setup_guest(slab_params_t *sp){
+	__attribute__(( aligned(16) )) static u64 _xcguestslab_init_gdt[]  = {
+		0x0000000000000000ULL,	//NULL descriptor
+		0x00cf9b000000ffffULL,	//CPL-0 32-bit code descriptor (CS32)
+		0x00cf93000000ffffULL,	//CPL-0 32-bit data descriptor (DS/SS/ES/FS/GS)
+		0x0000000000000000ULL,	//NULL descriptor
+	};
     u32 guest_slab_header_paddr = xmhfgeec_slab_info_table[XMHFGEEC_SLAB_XG_BENCHGUEST].slab_physmem_extents[1].addr_start;
     u32 guest_slab_gdt_paddr = guest_slab_header_paddr + offsetof(guest_slab_header_t, gdt);
     u32 guest_slab_magic_paddr = guest_slab_header_paddr + offsetof(guest_slab_header_t, magic);
     u32 guest_slab_magic;
-
-
-    //grab lock
-    CASM_FUNCCALL(spin_lock,&__xcinit_smplock);
-
-    _XDPRINTF_("XC_INIT[%u]: got control: ESP=%08x\n", (u16)sp->cpuid, CASM_FUNCCALL(read_esp,CASM_NOPARAM));
-
-    //test uboj invocation
-    xcinit_do_test(sp);
-
 
 	//get and dump slab header magic
 	{
@@ -419,15 +372,71 @@ void slab_main(slab_params_t *sp){
 
 	}
 
+}
+
+
+
+
+
+static u32 xc_hcbinvoke(u32 src_slabid, u32 cpuid, u32 cbtype, u32 cbqual, u32 guest_slab_index){
+    u32 status = XC_HYPAPPCB_CHAIN;
+    u32 i;
+    slab_params_t spl;
+    xc_hypappcb_params_t *hcbp = (xc_hypappcb_params_t *)&spl.in_out_params[0];
+
+    spl.src_slabid = src_slabid;
+    spl.cpuid = cpuid;
+    spl.dst_uapifn = 0;
+    hcbp->cbtype=cbtype;
+    hcbp->cbqual=cbqual;
+    hcbp->guest_slab_index=guest_slab_index;
+
+    for(i=0; i < HYPAPP_INFO_TABLE_NUMENTRIES; i++){
+        if(_xcihub_hypapp_info_table[i].cbmask & XC_HYPAPPCB_MASK(cbtype)){
+            spl.dst_slabid = _xcihub_hypapp_info_table[i].xmhfhic_slab_index;
+            XMHF_SLAB_CALLNEW(&spl);
+            if(hcbp->cbresult == XC_HYPAPPCB_NOCHAIN){
+                status = XC_HYPAPPCB_NOCHAIN;
+                break;
+            }
+        }
+    }
+
+    return status;
+}
+
+
+
+
+void slab_main(slab_params_t *sp){
+    bool isbsp = xmhfhw_lapic_isbsp();
+    //u64 inputval, outputval;
+
+    #if defined (__DEBUG_SERIAL__)
+	static volatile u32 cpucount=0;
+	#endif //__DEBUG_SERIAL__
+
+
+
+
+    //grab lock
+    CASM_FUNCCALL(spin_lock,&__xcinit_smplock);
+
+    _XDPRINTF_("XC_INIT[%u]: got control: ESP=%08x\n", (u16)sp->cpuid, CASM_FUNCCALL(read_esp,CASM_NOPARAM));
+
+    //test uboj invocation
+    xcinit_do_test(sp);
+
+
+    //setup guest uobj state
+    xcinit_setup_guest(sp);
 
     //invoke hypapp initialization callbacks
-    xc_hcbinvoke(XMHFGEEC_SLAB_XC_INIT,
-                 sp->cpuid, XC_HYPAPPCB_INITIALIZE, 0, XMHFGEEC_SLAB_XG_BENCHGUEST);
+    xc_hcbinvoke(XMHFGEEC_SLAB_XC_INIT, sp->cpuid, XC_HYPAPPCB_INITIALIZE, 0, XMHFGEEC_SLAB_XG_BENCHGUEST);
 
 
-    _XDPRINTF_("XC_INIT[%u]: Proceeding to call xcguestslab; ESP=%08x, eflags=%08x\n", (u16)sp->cpuid, CASM_FUNCCALL(read_esp,CASM_NOPARAM),
-		CASM_FUNCCALL(read_eflags, CASM_NOPARAM));
-
+    _XDPRINTF_("XC_INIT[%u]: Proceeding to call guest: ESP=%08x, eflags=%08x\n", (u16)sp->cpuid,
+    		CASM_FUNCCALL(read_esp,CASM_NOPARAM), CASM_FUNCCALL(read_eflags, CASM_NOPARAM));
 
 	#if defined (__DEBUG_SERIAL__)
 	cpucount++;
@@ -440,7 +449,6 @@ void slab_main(slab_params_t *sp){
     #if defined (__DEBUG_SERIAL__)
     while(cpucount < __XMHF_CONFIG_DEBUG_SERIAL_MAXCPUS__);
     #endif //__DEBUG_SERIAL__
-
 
     //call guest
     xcinit_do_callguest(sp);
