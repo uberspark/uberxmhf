@@ -399,6 +399,8 @@ void gp_s2_setupiotblug_allowaccesstoport(u32 ugslabiobitmap_idx, u16 port, u16 
 void gp_s2_setupiotblug(u32 slabid);
 
 
+void gp_s2_setupiotblug_rg(u32 slabid);
+
 
 void gp_s2_setupiotbl(void);
 

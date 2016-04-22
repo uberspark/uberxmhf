@@ -74,8 +74,7 @@
 		) ==> (gp_s2_setupiotbl_invokeduhslabiotbl[x] == true) );
 	ensures \forall integer x; 0 <= x < (XMHFGEEC_TOTAL_SLABS-1) ==> (
 		( ((xmhfgeec_slab_info_table[x].slabtype == XMHFGEEC_SLABTYPE_uVT_PROG_GUEST) ||
-		  (xmhfgeec_slab_info_table[x].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG_GUEST) ||
-		  (xmhfgeec_slab_info_table[x].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG_RICHGUEST)) &&
+		  (xmhfgeec_slab_info_table[x].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG_GUEST) ) &&
 		  ((x >= XMHFGEEC_UGSLAB_BASE_IDX && x <= XMHFGEEC_UGSLAB_MAX_IDX))
 		) ==> (gp_s2_setupiotbl_invokedugslabiotbl[x] == true) );
 	ensures \forall integer x; 0 <= x < (XMHFGEEC_TOTAL_SLABS-1) ==> (
@@ -89,8 +88,7 @@
 			  ((x >= XMHFGEEC_UHSLAB_BASE_IDX && x <= XMHFGEEC_UHSLAB_MAX_IDX))
 			) &&
 			!( ((xmhfgeec_slab_info_table[x].slabtype == XMHFGEEC_SLABTYPE_uVT_PROG_GUEST) ||
-			   (xmhfgeec_slab_info_table[x].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG_GUEST) ||
-			   (xmhfgeec_slab_info_table[x].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG_RICHGUEST)) &&
+			   (xmhfgeec_slab_info_table[x].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG_GUEST))  &&
 			   ((x >= XMHFGEEC_UGSLAB_BASE_IDX && x <= XMHFGEEC_UGSLAB_MAX_IDX))
 			) &&
 			!( ((xmhfgeec_slab_info_table[x].slabtype == XMHFGEEC_SLABTYPE_VfT_SENTINEL) ||
@@ -112,8 +110,7 @@ void gp_s2_setupiotbl(void){
 			) ==> (gp_s2_setupiotbl_invokeduhslabiotbl[x] == true) );
 		loop invariant a3: \forall integer x; 0 <= x < i ==> (
 			( ((xmhfgeec_slab_info_table[x].slabtype == XMHFGEEC_SLABTYPE_uVT_PROG_GUEST) ||
-			   (xmhfgeec_slab_info_table[x].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG_GUEST) ||
-			   (xmhfgeec_slab_info_table[x].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG_RICHGUEST)) &&
+			   (xmhfgeec_slab_info_table[x].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG_GUEST) )  &&
 			   ((x >= XMHFGEEC_UGSLAB_BASE_IDX && x <= XMHFGEEC_UGSLAB_MAX_IDX))
 			 ) ==> (gp_s2_setupiotbl_invokedugslabiotbl[x] == true) );
 		loop invariant a4: \forall integer x; 0 <= x < i ==> (
@@ -127,8 +124,7 @@ void gp_s2_setupiotbl(void){
 				  ((x >= XMHFGEEC_UHSLAB_BASE_IDX && x <= XMHFGEEC_UHSLAB_MAX_IDX))
 				) &&
 				!( ((xmhfgeec_slab_info_table[x].slabtype == XMHFGEEC_SLABTYPE_uVT_PROG_GUEST) ||
-				   (xmhfgeec_slab_info_table[x].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG_GUEST) ||
-				   (xmhfgeec_slab_info_table[x].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG_RICHGUEST)) &&
+				   (xmhfgeec_slab_info_table[x].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG_GUEST) )  &&
 				   ((x >= XMHFGEEC_UGSLAB_BASE_IDX && x <= XMHFGEEC_UGSLAB_MAX_IDX))
 				) &&
 				!( ((xmhfgeec_slab_info_table[x].slabtype == XMHFGEEC_SLABTYPE_VfT_SENTINEL) ||
@@ -151,12 +147,20 @@ void gp_s2_setupiotbl(void){
 			//@ghost gp_s2_setupiotbl_invokeduhslabiotbl[i] = true;
 		}
 		else if ( ((xmhfgeec_slab_info_table[i].slabtype == XMHFGEEC_SLABTYPE_uVT_PROG_GUEST) ||
-			   (xmhfgeec_slab_info_table[i].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG_GUEST) ||
-			   (xmhfgeec_slab_info_table[i].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG_RICHGUEST)) &&
+			   (xmhfgeec_slab_info_table[i].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG_GUEST) )&&
 			   ((i >= XMHFGEEC_UGSLAB_BASE_IDX && i <= XMHFGEEC_UGSLAB_MAX_IDX))
 			 ){
 			gp_s2_setupiotblug(i);
 			//@ghost gp_s2_setupiotbl_invokedugslabiotbl[i] = true;
+
+		/*}else if ( ((xmhfgeec_slab_info_table[i].slabtype == XMHFGEEC_SLABTYPE_uVT_PROG_GUEST) ||
+			   (xmhfgeec_slab_info_table[i].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG_GUEST) ||
+			   (xmhfgeec_slab_info_table[i].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG_RICHGUEST)) &&
+			   ((i >= XMHFGEEC_UGSLAB_BASE_IDX && i <= XMHFGEEC_UGSLAB_MAX_IDX))
+			 ){
+			gp_s2_setupiotblug_rg(i);
+			//@ghost gp_s2_setupiotbl_invokedugslabiotbl[i] = true;
+		*/
 
 		}else if ( ((xmhfgeec_slab_info_table[i].slabtype == XMHFGEEC_SLABTYPE_VfT_SENTINEL) ||
 			   (xmhfgeec_slab_info_table[i].slabtype == XMHFGEEC_SLABTYPE_VfT_PROG))
