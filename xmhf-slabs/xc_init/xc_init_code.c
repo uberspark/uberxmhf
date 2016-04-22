@@ -44,6 +44,13 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
+
+/*
+ * XMHF core initialization slab code
+ *
+ * author: amit vasudevan (amitvasudevan@acm.org)
+ */
+
 #include <xmhf.h>
 #include <xmhf-debug.h>
 
@@ -64,13 +71,21 @@
 
 
 //////
-//XMHF_SLABNEW(xcinit)
-
-/*
- * slab code
- *
- * author: amit vasudevan (amitvasudevan@acm.org)
- */
+// test slab invocation fragment
+//////
+static void xcinit_do_test(slab_params_t *sp){
+	slab_params_t spl;
+	spl.src_slabid = XMHFGEEC_SLAB_XC_INIT;
+	spl.dst_slabid = XMHFGEEC_SLAB_XC_TESTSLAB;
+	spl.cpuid = sp->cpuid;
+	spl.dst_uapifn = 0;
+	spl.in_out_params[0] = 0xF00DDEAD;
+	_XDPRINTF_("XC_INIT[%u]: proceeding to call test slab, esp=%x\n", (u16)sp->cpuid, CASM_FUNCCALL(read_esp,CASM_NOPARAM));
+	XMHF_SLAB_CALLNEW(&spl);
+	_XDPRINTF_("XC_INIT[%u]: came back from test slab, esp=%x\n", (u16)sp->cpuid, CASM_FUNCCALL(read_esp,CASM_NOPARAM));
+	_XDPRINTF_("XC_INIT[%u]: called test slab, return value=%x\n",
+			   (u16)sp->cpuid, spl.in_out_params[1]);
+}
 
 
 __attribute__(( aligned(16) )) static u64 _xcguestslab_init_gdt[]  = {
@@ -132,20 +147,8 @@ void slab_main(slab_params_t *sp){
 
     _XDPRINTF_("XC_INIT[%u]: got control: ESP=%08x\n", (u16)sp->cpuid, CASM_FUNCCALL(read_esp,CASM_NOPARAM));
 
-    // call test slab
-    {
-        slab_params_t spl;
-        spl.src_slabid = XMHFGEEC_SLAB_XC_INIT;
-        spl.dst_slabid = XMHFGEEC_SLAB_XC_TESTSLAB;
-        spl.cpuid = sp->cpuid;
-        spl.dst_uapifn = 0;
-        spl.in_out_params[0] = 0xF00DDEAD;
-        _XDPRINTF_("XC_INIT[%u]: proceeding to call test slab, esp=%x\n", (u16)sp->cpuid, CASM_FUNCCALL(read_esp,CASM_NOPARAM));
-        XMHF_SLAB_CALLNEW(&spl);
-        _XDPRINTF_("XC_INIT[%u]: came back from test slab, esp=%x\n", (u16)sp->cpuid, CASM_FUNCCALL(read_esp,CASM_NOPARAM));
-        _XDPRINTF_("XC_INIT[%u]: called test slab, return value=%x\n",
-                   (u16)sp->cpuid, spl.in_out_params[1]);
-    }
+    //test uboj invocation
+    xcinit_do_test(sp);
 
 
 	//get and dump slab header magic
