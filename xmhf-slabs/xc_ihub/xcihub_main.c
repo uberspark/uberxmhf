@@ -105,8 +105,8 @@
 static void slab_main_helper(u32 vmexit_reason, u32 src_slabid, u32 cpuid){
 	u32 hcb_status;
 
-	//_XDPRINTF_("XCIHUB[%u]: vmexit_reason = 0x%08x\n", (u16)cpuid, vmexit_reason);
-	//HALT();
+	_XDPRINTF_("XCIHUB[%u]: vmexit_reason = 0x%08x\n", (u16)cpuid, vmexit_reason);
+	HALT();
 
 	if(vmexit_reason == VMX_VMEXIT_VMCALL){
 		hcb_status = xc_hcbinvoke(XMHFGEEC_SLAB_XC_IHUB, cpuid, XC_HYPAPPCB_HYPERCALL, 0, src_slabid);
