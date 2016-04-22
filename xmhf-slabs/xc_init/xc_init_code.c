@@ -140,6 +140,268 @@ static void xcinit_setup_guest(slab_params_t *sp, bool isbsp){
 	}
 
 
+	//setup guest slab VMCS state
+	{
+		slab_params_t spl;
+		xmhf_uapi_gcpustate_vmrw_params_t *gcpustate_vmrwp =
+			(xmhf_uapi_gcpustate_vmrw_params_t *)spl.in_out_params;
+
+		spl.cpuid = sp->cpuid;
+		spl.src_slabid = XMHFGEEC_SLAB_XC_INIT;
+		spl.dst_slabid = XMHFGEEC_SLAB_UAPI_GCPUSTATE;
+		spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_VMWRITE;
+
+		//generic guest VMCS setup
+		gcpustate_vmrwp->encoding = VMCS_CONTROL_CR4_SHADOW;
+		gcpustate_vmrwp->value =(u64)CR4_VMXE;
+		XMHF_SLAB_CALLNEW(&spl);
+
+		gcpustate_vmrwp->encoding = VMCS_CONTROL_PAGEFAULT_ERRORCODE_MASK;
+		gcpustate_vmrwp->value = 0x00000000;
+		XMHF_SLAB_CALLNEW(&spl);
+
+		gcpustate_vmrwp->encoding = VMCS_CONTROL_PAGEFAULT_ERRORCODE_MATCH;
+		gcpustate_vmrwp->value = 0x00000000;
+		XMHF_SLAB_CALLNEW(&spl);
+
+		gcpustate_vmrwp->encoding = VMCS_CONTROL_EXCEPTION_BITMAP;
+		gcpustate_vmrwp->value = 0;
+		XMHF_SLAB_CALLNEW(&spl);
+
+		gcpustate_vmrwp->encoding = VMCS_CONTROL_CR3_TARGET_COUNT;
+		gcpustate_vmrwp->value = 0;
+		XMHF_SLAB_CALLNEW(&spl);
+
+		gcpustate_vmrwp->encoding = VMCS_CONTROL_VM_ENTRY_EXCEPTION_ERRORCODE;
+		gcpustate_vmrwp->value = 0;
+		XMHF_SLAB_CALLNEW(&spl);
+
+		gcpustate_vmrwp->encoding = VMCS_CONTROL_VM_ENTRY_INTERRUPTION_INFORMATION;
+		gcpustate_vmrwp->value = 0;
+		XMHF_SLAB_CALLNEW(&spl);
+
+		//GDTR
+		gcpustate_vmrwp->encoding = VMCS_GUEST_GDTR_BASE;
+		gcpustate_vmrwp->value = 0;
+		XMHF_SLAB_CALLNEW(&spl);
+
+		gcpustate_vmrwp->encoding = VMCS_GUEST_GDTR_LIMIT;
+		gcpustate_vmrwp->value = 0;
+		XMHF_SLAB_CALLNEW(&spl);
+
+		//IDTR
+		gcpustate_vmrwp->encoding = VMCS_GUEST_IDTR_BASE;
+		gcpustate_vmrwp->value = 0;
+		XMHF_SLAB_CALLNEW(&spl);
+
+		gcpustate_vmrwp->encoding = VMCS_GUEST_IDTR_LIMIT;
+		gcpustate_vmrwp->value = 0x3ff;
+		XMHF_SLAB_CALLNEW(&spl);
+
+		//LDTR, unusable
+		gcpustate_vmrwp->encoding = VMCS_GUEST_LDTR_BASE;
+		gcpustate_vmrwp->value = 0;
+		XMHF_SLAB_CALLNEW(&spl);
+
+		gcpustate_vmrwp->encoding = VMCS_GUEST_LDTR_LIMIT;
+		gcpustate_vmrwp->value = 0;
+		XMHF_SLAB_CALLNEW(&spl);
+
+		gcpustate_vmrwp->encoding = VMCS_GUEST_LDTR_SELECTOR;
+		gcpustate_vmrwp->value = 0 ;
+		XMHF_SLAB_CALLNEW(&spl);
+
+		gcpustate_vmrwp->encoding = VMCS_GUEST_LDTR_ACCESS_RIGHTS;
+		gcpustate_vmrwp->value = 0x10000;
+		XMHF_SLAB_CALLNEW(&spl);
+
+		//TR
+		gcpustate_vmrwp->encoding = VMCS_GUEST_TR_BASE ;
+		gcpustate_vmrwp->value = 0;
+		XMHF_SLAB_CALLNEW(&spl);
+
+		gcpustate_vmrwp->encoding = VMCS_GUEST_TR_LIMIT;
+		gcpustate_vmrwp->value = 0;
+		XMHF_SLAB_CALLNEW(&spl);
+
+		gcpustate_vmrwp->encoding = VMCS_GUEST_TR_SELECTOR;
+		gcpustate_vmrwp->value = 0;
+		XMHF_SLAB_CALLNEW(&spl);
+
+		gcpustate_vmrwp->encoding = VMCS_GUEST_TR_ACCESS_RIGHTS;
+		gcpustate_vmrwp->value = 0x83;
+		XMHF_SLAB_CALLNEW(&spl);
+
+		//CS segment
+		gcpustate_vmrwp->encoding = VMCS_GUEST_CS_SELECTOR;
+		gcpustate_vmrwp->value = 0x0;
+		XMHF_SLAB_CALLNEW(&spl);
+
+		gcpustate_vmrwp->encoding = VMCS_GUEST_CS_BASE;
+		gcpustate_vmrwp->value = 0;
+		XMHF_SLAB_CALLNEW(&spl);
+
+		gcpustate_vmrwp->encoding = VMCS_GUEST_CS_LIMIT;
+		gcpustate_vmrwp->value = 0x0000FFFFUL;
+		XMHF_SLAB_CALLNEW(&spl);
+
+		gcpustate_vmrwp->encoding = VMCS_GUEST_CS_ACCESS_RIGHTS;
+		gcpustate_vmrwp->value = 0x0093;
+		XMHF_SLAB_CALLNEW(&spl);
+
+		//DS segment
+		gcpustate_vmrwp->encoding = VMCS_GUEST_DS_SELECTOR;
+		gcpustate_vmrwp->value = 0x0;
+		XMHF_SLAB_CALLNEW(&spl);
+
+		gcpustate_vmrwp->encoding = VMCS_GUEST_DS_BASE;
+		gcpustate_vmrwp->value = 0;
+		XMHF_SLAB_CALLNEW(&spl);
+
+		gcpustate_vmrwp->encoding = VMCS_GUEST_DS_LIMIT;
+		gcpustate_vmrwp->value = 0x0000FFFFUL;
+		XMHF_SLAB_CALLNEW(&spl);
+
+		gcpustate_vmrwp->encoding = VMCS_GUEST_DS_ACCESS_RIGHTS;
+		gcpustate_vmrwp->value = 0x0093;
+		XMHF_SLAB_CALLNEW(&spl);
+
+		//ES segment
+		gcpustate_vmrwp->encoding = VMCS_GUEST_ES_SELECTOR;
+		gcpustate_vmrwp->value = 0x0 ;
+		XMHF_SLAB_CALLNEW(&spl);
+
+		gcpustate_vmrwp->encoding = VMCS_GUEST_ES_BASE;
+		gcpustate_vmrwp->value = 0;
+		XMHF_SLAB_CALLNEW(&spl);
+
+		gcpustate_vmrwp->encoding = VMCS_GUEST_ES_LIMIT;
+		gcpustate_vmrwp->value = 0x0000FFFFUL;
+		XMHF_SLAB_CALLNEW(&spl);
+
+		gcpustate_vmrwp->encoding = VMCS_GUEST_ES_ACCESS_RIGHTS;
+		gcpustate_vmrwp->value = 0x0093;
+		XMHF_SLAB_CALLNEW(&spl);
+
+		//FS segment
+		gcpustate_vmrwp->encoding = VMCS_GUEST_FS_SELECTOR;
+		gcpustate_vmrwp->value = 0x0 ;
+		XMHF_SLAB_CALLNEW(&spl);
+
+		gcpustate_vmrwp->encoding = VMCS_GUEST_FS_BASE;
+		gcpustate_vmrwp->value = 0;
+		XMHF_SLAB_CALLNEW(&spl);
+
+		gcpustate_vmrwp->encoding = VMCS_GUEST_FS_LIMIT;
+		gcpustate_vmrwp->value = 0x0000FFFFUL;
+		XMHF_SLAB_CALLNEW(&spl);
+
+		gcpustate_vmrwp->encoding = VMCS_GUEST_FS_ACCESS_RIGHTS;
+		gcpustate_vmrwp->value = 0x0093;
+		XMHF_SLAB_CALLNEW(&spl);
+
+		//GS segment
+		gcpustate_vmrwp->encoding = VMCS_GUEST_GS_SELECTOR;
+		gcpustate_vmrwp->value = 0x0 ;
+		XMHF_SLAB_CALLNEW(&spl);
+
+		gcpustate_vmrwp->encoding = VMCS_GUEST_GS_BASE;
+		gcpustate_vmrwp->value = 0;
+		XMHF_SLAB_CALLNEW(&spl);
+
+		gcpustate_vmrwp->encoding = VMCS_GUEST_GS_LIMIT;
+		gcpustate_vmrwp->value = 0x0000FFFFUL;
+		XMHF_SLAB_CALLNEW(&spl);
+
+		gcpustate_vmrwp->encoding = VMCS_GUEST_GS_ACCESS_RIGHTS;
+		gcpustate_vmrwp->value = 0x0093;
+		XMHF_SLAB_CALLNEW(&spl);
+
+		//SS segment
+		gcpustate_vmrwp->encoding = VMCS_GUEST_SS_SELECTOR;
+		gcpustate_vmrwp->value = 0x0 ;
+		XMHF_SLAB_CALLNEW(&spl);
+
+		gcpustate_vmrwp->encoding = VMCS_GUEST_SS_BASE;
+		gcpustate_vmrwp->value = 0;
+		XMHF_SLAB_CALLNEW(&spl);
+
+		gcpustate_vmrwp->encoding = VMCS_GUEST_SS_LIMIT;
+		gcpustate_vmrwp->value = 0x0000FFFFUL;
+		XMHF_SLAB_CALLNEW(&spl);
+
+		gcpustate_vmrwp->encoding = VMCS_GUEST_SS_ACCESS_RIGHTS;
+		gcpustate_vmrwp->value = 0x0093;
+		XMHF_SLAB_CALLNEW(&spl);
+
+		//guest EIP and activity state
+		if(isbsp){
+			gcpustate_vmrwp->encoding = VMCS_GUEST_RIP;
+			gcpustate_vmrwp->value = 0x00007C00;
+			XMHF_SLAB_CALLNEW(&spl);
+
+			gcpustate_vmrwp->encoding = VMCS_GUEST_ACTIVITY_STATE;
+			gcpustate_vmrwp->value = 0;
+			XMHF_SLAB_CALLNEW(&spl);
+		}else{
+			gcpustate_vmrwp->encoding = VMCS_GUEST_RIP;
+			gcpustate_vmrwp->value = 0x00000000;
+			XMHF_SLAB_CALLNEW(&spl);
+
+			gcpustate_vmrwp->encoding = VMCS_GUEST_ACTIVITY_STATE;
+			gcpustate_vmrwp->value = 3;	//wait-for-SIPI
+			XMHF_SLAB_CALLNEW(&spl);
+		}
+
+		//interruptibility
+		gcpustate_vmrwp->encoding = VMCS_GUEST_INTERRUPTIBILITY;
+		gcpustate_vmrwp->value = 0;
+		XMHF_SLAB_CALLNEW(&spl);
+
+		//guest ESP
+		gcpustate_vmrwp->encoding = VMCS_GUEST_RSP;
+		gcpustate_vmrwp->value = 0;
+		XMHF_SLAB_CALLNEW(&spl);
+
+		//guest RFLAGS
+		gcpustate_vmrwp->encoding = VMCS_GUEST_RFLAGS;
+		gcpustate_vmrwp->value = ((((0 & ~((1<<3)|(1<<5)|(1<<15)) ) | (1 <<1)) | (1<<9)) & ~(1<<14));
+		XMHF_SLAB_CALLNEW(&spl);
+
+		//other guest GPRS (EAX, EBX, ECX, EDX, ESI, EDI, EBP)
+		spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSWRITE;
+		spl.in_out_params[0] = 0;	//EDI
+		spl.in_out_params[1] = 0;	//ESI
+		spl.in_out_params[2] = 0;	//EBP
+		spl.in_out_params[3] = 0;	//Reserved (ESP)
+		spl.in_out_params[4] = 0;	//EBX
+		spl.in_out_params[5] = 0;	//EDX
+		spl.in_out_params[6] = 0;	//ECX
+		spl.in_out_params[7] = 0;	//EAX
+		XMHF_SLAB_CALLNEW(&spl);
+
+		//guest control registers (CR0, CR3 and CR0_SHADOW)
+		spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_VMREAD;
+		gcpustate_vmrwp->encoding = VMCS_GUEST_CR0;
+		XMHF_SLAB_CALLNEW(&spl);
+		spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_VMWRITE;
+		gcpustate_vmrwp->encoding = VMCS_GUEST_CR0;
+		gcpustate_vmrwp->value = gcpustate_vmrwp->value & ~(CR0_PE) & ~(CR0_PG);
+		XMHF_SLAB_CALLNEW(&spl);
+		gcpustate_vmrwp->encoding = VMCS_GUEST_CR3;
+		gcpustate_vmrwp->value = 0;
+		XMHF_SLAB_CALLNEW(&spl);
+		spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_VMREAD;
+		gcpustate_vmrwp->encoding = VMCS_GUEST_CR0;
+		XMHF_SLAB_CALLNEW(&spl);
+		spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_VMWRITE;
+		gcpustate_vmrwp->encoding = VMCS_CONTROL_CR0_SHADOW;
+		XMHF_SLAB_CALLNEW(&spl);
+
+	}
+
+
+
 }
 
 /*

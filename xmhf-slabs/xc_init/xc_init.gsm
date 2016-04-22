@@ -28,7 +28,7 @@ S:xh_approvexec:void:void:void
 
 U:uapi_gcpustate:XMHF_HIC_UAPI_CPUSTATE_VMWRITE:void:void
 U:uapi_gcpustate:XMHF_HIC_UAPI_CPUSTATE_VMREAD:void:void
-
+U:uapi_gcpustate:XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSWRITE:void:void
 
 
 
