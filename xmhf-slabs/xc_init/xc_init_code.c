@@ -126,11 +126,12 @@ static void xcinit_do_callguest(slab_params_t *sp){
 //////
 static void xcinit_setup_guest(slab_params_t *sp, bool isbsp){
 	u8 rg_bootcode[]  = {
+		0x0F, 0x01, 0xC1, //VMCALL
 		0xEB, 0xFE,	//JMP EIP
 		0x90,		//NOP
 		0x90,		//NOP
 	};
-	u8 rg_bootcode_verif[4];
+	u8 rg_bootcode_verif[7];
 
 	//write boot code to guest boot area, if we are the BSP
 	if(isbsp){
@@ -340,6 +341,7 @@ static void xcinit_setup_guest(slab_params_t *sp, bool isbsp){
 
 		//guest EIP and activity state
 		if(isbsp){
+			_XDPRINTF_("%s[%u]: BSP: setting RIP and activity state for boot\n", __func__, (u16)sp->cpuid);
 			gcpustate_vmrwp->encoding = VMCS_GUEST_RIP;
 			gcpustate_vmrwp->value = 0x00007C00;
 			XMHF_SLAB_CALLNEW(&spl);
