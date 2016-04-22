@@ -52,7 +52,6 @@
 #include <geec_sentinel.h>
 #include <xc.h>
 #include <uapi_gcpustate.h>
-//#include <uapi_slabmemacc.h>
 #include <xg_benchguest.h>
 #include <xc_testslab.h>
 #include <xh_hyperdep.h>
@@ -62,7 +61,6 @@
 
 #include <xc_init.h>
 
-//extern x_slab_info_t _xxmhfgeec_slab_info_table[XMHFGEEC_TOTAL_SLABS];
 
 
 //////
