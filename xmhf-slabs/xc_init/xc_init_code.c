@@ -106,7 +106,7 @@ static void xcinit_do_callguest(slab_params_t *sp){
 //////
 // setup guest uobj
 //////
-static void xcinit_setup_guest(slab_params_t *sp){
+static void xcinit_setup_guest(slab_params_t *sp, bool isbsp){
 	__attribute__(( aligned(16) )) static u64 _xcguestslab_init_gdt[]  = {
 		0x0000000000000000ULL,	//NULL descriptor
 		0x00cf9b000000ffffULL,	//CPL-0 32-bit code descriptor (CS32)
@@ -429,7 +429,7 @@ void slab_main(slab_params_t *sp){
 
 
     //setup guest uobj state
-    xcinit_setup_guest(sp);
+    xcinit_setup_guest(sp, isbsp);
 
     //invoke hypapp initialization callbacks
     xc_hcbinvoke(XMHFGEEC_SLAB_XC_INIT, sp->cpuid, XC_HYPAPPCB_INITIALIZE, 0, XMHFGEEC_SLAB_XG_BENCHGUEST);
