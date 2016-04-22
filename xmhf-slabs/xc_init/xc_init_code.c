@@ -88,6 +88,20 @@ static void xcinit_do_test(slab_params_t *sp){
 }
 
 
+//////
+// call guest uobj
+//////
+static void xcinit_do_callguest(slab_params_t *sp){
+	slab_params_t spl;
+
+	memset(&spl, 0, sizeof(spl));
+	spl.cpuid = sp->cpuid;
+	spl.src_slabid = XMHFGEEC_SLAB_XC_INIT;
+	spl.dst_slabid = XMHFGEEC_SLAB_XG_BENCHGUEST;
+	XMHF_SLAB_CALLNEW(&spl);
+}
+
+
 __attribute__(( aligned(16) )) static u64 _xcguestslab_init_gdt[]  = {
 	0x0000000000000000ULL,	//NULL descriptor
 	0x00cf9b000000ffffULL,	//CPL-0 32-bit code descriptor (CS32)
@@ -428,16 +442,9 @@ void slab_main(slab_params_t *sp){
     #endif //__DEBUG_SERIAL__
 
 
-    //call guestslab
-    {
-        slab_params_t spl;
+    //call guest
+    xcinit_do_callguest(sp);
 
-        memset(&spl, 0, sizeof(spl));
-        spl.cpuid = sp->cpuid;
-        spl.src_slabid = XMHFGEEC_SLAB_XC_INIT;
-        spl.dst_slabid = XMHFGEEC_SLAB_XG_BENCHGUEST;
-        XMHF_SLAB_CALLNEW(&spl);
-    }
 
     //_XDPRINTF_("%s[%u]: Should  never get here.Halting!\n", __func__, (u16)sp->cpuid);
     HALT();
