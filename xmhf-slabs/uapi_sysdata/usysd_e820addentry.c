@@ -61,6 +61,16 @@
 
 void usysd_e820addentry(uxmhf_uapi_sysdata_e820addentry_t *e820entryp){
 
+		if(usysd_memmapinfo_maxindex < MAX_E820_ENTRIES){
+			usysd_memmapinfo[usysd_memmapinfo_maxindex].baseaddr_high = e820entryp->baseaddr_high;
+			usysd_memmapinfo[usysd_memmapinfo_maxindex].baseaddr_low = e820entryp->baseaddr_low;
+			usysd_memmapinfo[usysd_memmapinfo_maxindex].length_high = e820entryp->length_high;
+			usysd_memmapinfo[usysd_memmapinfo_maxindex].length_low = e820entryp->length_low;
+			usysd_memmapinfo[usysd_memmapinfo_maxindex].type = e820entryp->type;
+			usysd_memmapinfo_maxindex++;
+		}else{
+			//we have reached the max. permissible entries; no more additions
+		}
 
 }
 

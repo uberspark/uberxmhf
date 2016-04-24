@@ -57,5 +57,8 @@
  * author: amit vasudevan (amitvasudevan@acm.org)
  */
 
-//__attribute__((section(".data")))
 
+
+__attribute__((section(".data"))) GRUBE820 usysd_memmapinfo[MAX_E820_ENTRIES];
+
+__attribute__((section(".data"))) u32 usysd_memmapinfo_maxindex=0;
