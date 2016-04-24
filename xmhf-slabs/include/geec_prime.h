@@ -314,6 +314,9 @@ void gp_s1_iommuinit(void);
 
 
 void gp_s2_entry(void);
+
+void gp_s2_initsysmemmap(void);
+
 void gp_s2_setupslabdevmap(void);
 
 
