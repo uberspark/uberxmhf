@@ -49,8 +49,13 @@
 
 #include <xmhfgeec.h>
 
-#include <uapi_gcpustate.h>
+#include <uapi_sysdata.h>
 
-__attribute__((section(".data"))) x86regs_t guestgprs[MAX_PLATFORM_CPUS];
+/*
+ * sysdata (E820) state uAPI
+ *
+ * author: amit vasudevan (amitvasudevan@acm.org)
+ */
 
-__attribute__((section(".data"))) u64 guestmsrs[GCPUSTATE_MSR_MAXCOUNT];
+//__attribute__((section(".data")))
+

@@ -45,7 +45,7 @@
  */
 
 /*
- * guest CPU state uAPI
+ * sysdata (E820) state uAPI
  *
  * author: amit vasudevan (amitvasudevan@acm.org)
  */
@@ -56,22 +56,11 @@
 #include <xmhfgeec.h>
 
 #include <xc.h>
-#include <uapi_gcpustate.h>
+#include <uapi_sysdata.h>
 
 
-void ugcpust_msrwrite(xmhf_uapi_gcpustate_msrrw_params_t *msrrwp){
-	if(msrrwp->msr < GCPUSTATE_MSR_TOTAL){
-		guestmsrs[msrrwp->msr] = msrrwp->value;
+void usysd_e820getmaxindex(uxmhf_uapi_sysdata_e820getmaxindex_t *indexp){
 
-		 //TODO: make core specific guestmsrs load
-		 CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_CONTROL_VM_ENTRY_MSR_LOAD_ADDRESS_FULL, guestmsrs);
-		 CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_CONTROL_VM_ENTRY_MSR_LOAD_ADDRESS_HIGH, 0);
-		 CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_CONTROL_VM_ENTRY_MSR_LOAD_COUNT, GCPUSTATE_MSR_TOTAL);
-		 CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_CONTROL_VM_EXIT_MSR_STORE_ADDRESS_FULL, guestmsrs);
-		 CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_CONTROL_VM_EXIT_MSR_STORE_ADDRESS_HIGH, 0);
-		 CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_CONTROL_VM_EXIT_MSR_STORE_COUNT, GCPUSTATE_MSR_TOTAL);
-
-	}
 }
 
 
