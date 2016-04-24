@@ -61,6 +61,15 @@
 
 void usysd_e820getentryforindex(uxmhf_uapi_sysdata_e820getentryforindex_t *gentryp){
 
+	if(gentryp->index < usysd_memmapinfo_maxindex){
+		gentryp->baseaddr_high = usysd_memmapinfo[gentryp->index].baseaddr_high;
+		gentryp->baseaddr_low = usysd_memmapinfo[gentryp->index].baseaddr_low;
+		gentryp->length_high = usysd_memmapinfo[gentryp->index].length_high;
+		gentryp->length_low = usysd_memmapinfo[gentryp->index].length_low;
+		gentryp->type = usysd_memmapinfo[gentryp->index].type;
+	}else{
+		//invalid index, so return nothing
+	}
 
 }
 
