@@ -715,6 +715,28 @@ static u32 xc_hcbinvoke(u32 src_slabid, u32 cpuid, u32 cbtype, u32 cbqual, u32 g
 }
 
 
+//////
+// setup E820 hook for guest uobj
+//////
+static void	xcinit_e820initializehooks(void){
+		u16 orig_int15h_ip, orig_int15h_cs;
+
+		//implant VMCALL followed by IRET at 0040:04AC
+		CASM_FUNCCALL(xmhfhw_sysmemaccess_writeu8, 0x4ac, 0x0f); //VMCALL
+		CASM_FUNCCALL(xmhfhw_sysmemaccess_writeu8, 0x4ad, 0x01);
+		CASM_FUNCCALL(xmhfhw_sysmemaccess_writeu8, 0x4ae, 0xc1);
+		CASM_FUNCCALL(xmhfhw_sysmemaccess_writeu8, 0x4af, 0xcf); //IRET
+
+		//store original INT 15h handler CS:IP following VMCALL and IRET
+		orig_int15h_ip = CASM_FUNCCALL(xmhfhw_sysmemaccess_readu16, 0x54);
+		orig_int15h_cs = CASM_FUNCCALL(xmhfhw_sysmemaccess_readu16, 0x56);
+		CASM_FUNCCALL(xmhfhw_sysmemaccess_writeu16, 0x4b0, orig_int15h_ip); //original INT 15h IP
+		CASM_FUNCCALL(xmhfhw_sysmemaccess_writeu16, 0x4b2, orig_int15h_cs); //original INT 15h CS
+
+		//point IVT INT15 handler to the VMCALL instruction
+		CASM_FUNCCALL(xmhfhw_sysmemaccess_writeu16, 0x54, 0x00ac);
+		CASM_FUNCCALL(xmhfhw_sysmemaccess_writeu16, 0x56, 0x0040);
+}
 
 
 void slab_main(slab_params_t *sp){
@@ -733,6 +755,12 @@ void slab_main(slab_params_t *sp){
     //test uboj invocation
     xcinit_do_test(sp);
 
+    //plant int 15h redirection code for E820 reporting
+    if(isbsp){
+        _XDPRINTF_("XC_INIT[%u]: BSP: Proceeding to install E820 redirection...\n", (u16)sp->cpuid);
+    	xcinit_e820initializehooks();
+        _XDPRINTF_("XC_INIT[%u]: BSP: E820 redirection enabled\n", (u16)sp->cpuid);
+    }
 
     //setup guest uobj state
     xcinit_setup_guest(sp, isbsp);
