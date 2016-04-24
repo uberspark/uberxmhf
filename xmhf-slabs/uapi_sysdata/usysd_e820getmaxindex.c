@@ -60,7 +60,7 @@
 
 
 void usysd_e820getmaxindex(uxmhf_uapi_sysdata_e820getmaxindex_t *indexp){
-
+	indexp->index = usysd_memmapinfo_maxindex;
 }
 
 
