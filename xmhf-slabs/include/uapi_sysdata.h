@@ -47,127 +47,45 @@
 
 /*
  *
- *  guest cpu state uAPI
+ *  sysdata (E820) state uAPI
  *
  *  author: amit vasudevan (amitvasudevan@acm.org)
  */
 
-#ifndef __UAPI_GCPUSTATE_H__
-#define __UAPI_GCPUSTATE_H__
+#ifndef __UAPI_SYSDATA_H__
+#define __UAPI_SYSDATA_H__
 
 
-#define XMHF_HIC_UAPI_CPUSTATE_VMREAD           0
-#define XMHF_HIC_UAPI_CPUSTATE_VMWRITE          1
-#define XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSREAD    2
-#define XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSWRITE   3
-#define XMHFGEEC_UAPI_CPUSTATE_GUESTMSRREAD	4
-#define XMHFGEEC_UAPI_CPUSTATE_GUESTMSRWRITE	5
+#define UXMHF_UAPI_SYSDATA_E820ADDENTRY			1
+#define UXMHF_UAPI_SYSDATA_E820GETMAXINDEX		2
+#define UXMHF_UAPI_SYSDATA_E820GETENTRYFORINDEX	3
 
-
-
-
-#define GCPUSTATE_MSR_LBR_SELECT		0
-
-#define GCPUSTATE_MSR_LASTBRANCH_TOS		1
-
-#define GCPUSTATE_MSR_IA32_DEBUGCTL		2
-
-#define GCPUSTATE_MSR_LASTBRANCH_0_FROM_IP	3
-#define GCPUSTATE_MSR_LASTBRANCH_1_FROM_IP	4
-#define GCPUSTATE_MSR_LASTBRANCH_2_FROM_IP	5
-#define GCPUSTATE_MSR_LASTBRANCH_3_FROM_IP	6
-#define GCPUSTATE_MSR_LASTBRANCH_4_FROM_IP	7
-#define GCPUSTATE_MSR_LASTBRANCH_5_FROM_IP	8
-#define GCPUSTATE_MSR_LASTBRANCH_6_FROM_IP	9
-#define GCPUSTATE_MSR_LASTBRANCH_7_FROM_IP	10
-#define GCPUSTATE_MSR_LASTBRANCH_8_FROM_IP	11
-#define GCPUSTATE_MSR_LASTBRANCH_9_FROM_IP	12
-#define GCPUSTATE_MSR_LASTBRANCH_10_FROM_IP	13
-#define GCPUSTATE_MSR_LASTBRANCH_11_FROM_IP	14
-#define GCPUSTATE_MSR_LASTBRANCH_12_FROM_IP	15
-#define GCPUSTATE_MSR_LASTBRANCH_13_FROM_IP	16
-#define GCPUSTATE_MSR_LASTBRANCH_14_FROM_IP	17
-#define GCPUSTATE_MSR_LASTBRANCH_15_FROM_IP	18
-
-
-#define GCPUSTATE_MSR_LASTBRANCH_0_TO_IP	19
-#define GCPUSTATE_MSR_LASTBRANCH_1_TO_IP	20
-#define GCPUSTATE_MSR_LASTBRANCH_2_TO_IP	21
-#define GCPUSTATE_MSR_LASTBRANCH_3_TO_IP	22
-#define GCPUSTATE_MSR_LASTBRANCH_4_TO_IP	23
-#define GCPUSTATE_MSR_LASTBRANCH_5_TO_IP	24
-#define GCPUSTATE_MSR_LASTBRANCH_6_TO_IP	25
-#define GCPUSTATE_MSR_LASTBRANCH_7_TO_IP	26
-#define GCPUSTATE_MSR_LASTBRANCH_8_TO_IP	27
-#define GCPUSTATE_MSR_LASTBRANCH_9_TO_IP	28
-#define GCPUSTATE_MSR_LASTBRANCH_10_TO_IP	29
-#define GCPUSTATE_MSR_LASTBRANCH_11_TO_IP	30
-#define GCPUSTATE_MSR_LASTBRANCH_12_TO_IP	31
-#define GCPUSTATE_MSR_LASTBRANCH_13_TO_IP	32
-#define GCPUSTATE_MSR_LASTBRANCH_14_TO_IP	33
-#define GCPUSTATE_MSR_LASTBRANCH_15_TO_IP	34
-
-#define GCPUSTATE_MSR_TOTAL			35
-
-#define GCPUSTATE_MSR_MAXCOUNT			128
 
 #ifndef __ASSEMBLY__
 
-
 typedef struct {
-    u64 encoding;
-    u64 value;
-}__attribute__((packed)) xmhf_uapi_gcpustate_vmrw_params_t;
-
-typedef struct {
-    u32 msr;
-    u64 value;
-}__attribute__((packed)) xmhf_uapi_gcpustate_msrrw_params_t;
+	u32 baseaddr_high;
+	u32 baseaddr_low;
+	u32 length_high;
+	u32 length_low;
+	u32 type;
+}__attribute__((packed)) uxmhf_uapi_sysdata_e820addentry_t;
 
 
 typedef struct {
-    x86regs_t gprs;
-}__attribute__((packed)) xmhf_uapi_gcpustate_gprs_params_t;
+	u32 index;
+}__attribute__((packed)) uxmhf_uapi_sysdata_e820getmaxindex_t;
 
-
-extern __attribute__((section(".data"))) x86regs_t guestgprs[MAX_PLATFORM_CPUS];
-extern __attribute__((section(".data"))) u64 guestmsrs[GCPUSTATE_MSR_MAXCOUNT];
-
-
-/*@
-	requires \valid(vmrwp);
-@*/
-void ugcpust_vmread(xmhf_uapi_gcpustate_vmrw_params_t *vmrwp);
-
-/*@
-	requires \valid(vmrwp);
-@*/
-void ugcpust_vmwrite(u32 srcslabid, xmhf_uapi_gcpustate_vmrw_params_t *vmrwp);
-
-/*@
-	requires \valid(gprs);
-	requires 0 <= cpuid < MAX_PLATFORM_CPUS;
-@*/
-void ugcpust_gprsread(u32 cpuid, xmhf_uapi_gcpustate_gprs_params_t *gprs);
-
-/*@
-	requires \valid(gprs);
-	requires 0 <= cpuid < MAX_PLATFORM_CPUS;
-@*/
-void ugcpust_gprswrite(u32 cpuid, xmhf_uapi_gcpustate_gprs_params_t *gprs);
-
-/*@
-	requires \valid(msrrwp);
-@*/
-void ugcpust_msrread(xmhf_uapi_gcpustate_msrrw_params_t *msrrwp);
-
-/*@
-	requires \valid(msrrwp);
-@*/
-void ugcpust_msrwrite(xmhf_uapi_gcpustate_msrrw_params_t *msrrwp);
-
+typedef struct {
+	u32 index;
+	u32 baseaddr_high;
+	u32 baseaddr_low;
+	u32 length_high;
+	u32 length_low;
+	u32 type;
+}__attribute__((packed)) uxmhf_uapi_sysdata_e820getentryforindex_t;
 
 
 #endif	//__ASSEMBLY__
 
-#endif //__UAPI_GCPUSTATE_H__
+#endif //__UAPI_SYSDATA_H__

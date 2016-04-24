@@ -45,7 +45,7 @@
  */
 
 /*
- * guest CPU state uAPI
+ * sysdata (E820) state uAPI
  *
  * author: amit vasudevan (amitvasudevan@acm.org)
  */
@@ -55,63 +55,23 @@
 
 #include <xmhfgeec.h>
 
-#include <uapi_gcpustate.h>
+#include <uapi_sysdata.h>
 
 
-/////
-//@ ghost bool ugcpust_methodcall_vmread = false;
-//@ ghost bool ugcpust_methodcall_vmwrite = false;
-//@ ghost bool ugcpust_methodcall_gprsread = false;
-//@ ghost bool ugcpust_methodcall_gprswrite = false;
-//@ ghost bool ugcpust_methodcall_msrread = false;
-//@ ghost bool ugcpust_methodcall_msrwrite = false;
-//@ ghost bool ugcpust_methodcall_invalid = false;
-/*@
-	requires \valid(sp);
-	ensures ( sp->dst_uapifn == XMHF_HIC_UAPI_CPUSTATE_VMREAD) ==> (ugcpust_methodcall_vmread == true);
-	ensures ( sp->dst_uapifn == XMHF_HIC_UAPI_CPUSTATE_VMWRITE && (u16)sp->src_slabid < XMHFGEEC_TOTAL_SLABS ) ==> (ugcpust_methodcall_vmwrite == true);
-	ensures ( sp->dst_uapifn == XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSREAD && (u16)sp->cpuid < MAX_PLATFORM_CPUS) ==> (ugcpust_methodcall_gprsread == true);
-	ensures ( sp->dst_uapifn == XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSWRITE && (u16)sp->cpuid < MAX_PLATFORM_CPUS) ==> (ugcpust_methodcall_gprswrite == true);
-	ensures ( sp->dst_uapifn == XMHFGEEC_UAPI_CPUSTATE_GUESTMSRREAD) ==> (ugcpust_methodcall_msrread == true);
-	ensures ( sp->dst_uapifn == XMHFGEEC_UAPI_CPUSTATE_GUESTMSRWRITE) ==> (ugcpust_methodcall_msrwrite == true);
-	ensures !(
-		( sp->dst_uapifn == XMHF_HIC_UAPI_CPUSTATE_VMREAD) ||
-		( sp->dst_uapifn == XMHF_HIC_UAPI_CPUSTATE_VMWRITE && (u16)sp->src_slabid < XMHFGEEC_TOTAL_SLABS ) ||
-		( sp->dst_uapifn == XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSREAD && (u16)sp->cpuid < MAX_PLATFORM_CPUS) ||
-		( sp->dst_uapifn == XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSWRITE && (u16)sp->cpuid < MAX_PLATFORM_CPUS) ||
-		( sp->dst_uapifn == XMHFGEEC_UAPI_CPUSTATE_GUESTMSRREAD) ||
-		( sp->dst_uapifn == XMHFGEEC_UAPI_CPUSTATE_GUESTMSRWRITE)
-	) ==> (ugcpust_methodcall_invalid == true);
 
-@*/
 void slab_main(slab_params_t *sp){
 
-	if( sp->dst_uapifn == XMHF_HIC_UAPI_CPUSTATE_VMREAD){
-		ugcpust_vmread((xmhf_uapi_gcpustate_vmrw_params_t *)sp->in_out_params);
-		//@ghost ugcpust_methodcall_vmread = true;
+	if( sp->dst_uapifn == UXMHF_UAPI_SYSDATA_E820ADDENTRY){
+		usysd_e820addentry((uxmhf_uapi_sysdata_e820addentry_t *)sp->in_out_params);
 
-	}else if( sp->dst_uapifn == XMHF_HIC_UAPI_CPUSTATE_VMWRITE && (u16)sp->src_slabid < XMHFGEEC_TOTAL_SLABS ){
-		ugcpust_vmwrite(sp->src_slabid, (xmhf_uapi_gcpustate_vmrw_params_t *)sp->in_out_params);
-		//@ghost ugcpust_methodcall_vmwrite = true;
+	}else if( sp->dst_uapifn == UXMHF_UAPI_SYSDATA_E820GETMAXINDEX ){
+		usysd_e820getmaxindex((uxmhf_uapi_sysdata_e820getmaxindex_t *)sp->in_out_params);
 
-        }else if( sp->dst_uapifn == XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSREAD && (u16)sp->cpuid < MAX_PLATFORM_CPUS){
-		ugcpust_gprsread((u16)sp->cpuid, (xmhf_uapi_gcpustate_gprs_params_t *)sp->in_out_params);
-		//@ghost ugcpust_methodcall_gprsread = true;
+	}else if( sp->dst_uapifn == UXMHF_UAPI_SYSDATA_E820GETENTRYFORINDEX){
+		ugcpust_e820getentryforindex((uxmhf_uapi_sysdata_e820getentryforindex_t *)sp->in_out_params);
 
-        }else if( sp->dst_uapifn == XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSWRITE && (u16)sp->cpuid < MAX_PLATFORM_CPUS){
-		ugcpust_gprswrite((u16)sp->cpuid, (xmhf_uapi_gcpustate_gprs_params_t *)sp->in_out_params);
-		//@ghost ugcpust_methodcall_gprswrite = true;
-
-        }else if( sp->dst_uapifn == XMHFGEEC_UAPI_CPUSTATE_GUESTMSRREAD){
-		ugcpust_msrread((xmhf_uapi_gcpustate_msrrw_params_t *)sp->in_out_params);
-		//@ghost ugcpust_methodcall_msrread = true;
-
-        }else if (sp->dst_uapifn == XMHFGEEC_UAPI_CPUSTATE_GUESTMSRWRITE){
-		ugcpust_msrwrite((xmhf_uapi_gcpustate_msrrw_params_t *)sp->in_out_params);
-		//@ghost ugcpust_methodcall_msrwrite = true;
-
-        }else{
-		//_XDPRINTF_("UAPI_GCPUSTATE[%u]: Unknown uAPI function %x. Halting!\n", (u16)sp->cpuid, sp->dst_uapifn);
-		//@ghost ugcpust_methodcall_invalid = true;
+	}else{
+		//_XDPRINTF_("UAPI_SYSDATA[%u]: Unknown uAPI function %x. Halting!\n", (u16)sp->cpuid, sp->dst_uapifn);
 	}
+
 }
