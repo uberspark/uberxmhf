@@ -86,6 +86,13 @@ typedef struct {
 }__attribute__((packed)) uxmhf_uapi_sysdata_e820getentryforindex_t;
 
 
+void usysd_e820addentry(uxmhf_uapi_sysdata_e820addentry_t *e820entryp);
+void usysd_e820getentryforindex(uxmhf_uapi_sysdata_e820getentryforindex_t *gentryp);
+void usysd_e820getmaxindex(uxmhf_uapi_sysdata_e820getmaxindex_t *indexp);
+
+
+
+
 #endif	//__ASSEMBLY__
 
 #endif //__UAPI_SYSDATA_H__
