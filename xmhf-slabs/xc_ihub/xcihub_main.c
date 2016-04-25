@@ -116,6 +116,12 @@ static void slab_main_helper(u32 vmexit_reason, u32 src_slabid, u32 cpuid){
 	}else if(vmexit_reason == VMX_VMEXIT_VMCALL){
 		xcihub_icptvmcall((u16)cpuid, src_slabid);
 
+	}else if (vmexit_reason == VMX_VMEXIT_CPUID){
+		hcb_status = xc_hcbinvoke(XMHFGEEC_SLAB_XC_IHUB, cpuid, XC_HYPAPPCB_TRAP_INSTRUCTION,
+			    XC_HYPAPPCB_TRAP_INSTRUCTION_CPUID, src_slabid);
+		//@ghost xcihub_callhcbinvoke=true;
+		if(hcb_status == XC_HYPAPPCB_CHAIN) xcihub_icptcpuid((u16)cpuid);
+
 /*
 	}else if (vmexit_reason == VMX_VMEXIT_EPT_VIOLATION){
 		hcb_status = xc_hcbinvoke(XMHFGEEC_SLAB_XC_IHUB, cpuid, XC_HYPAPPCB_MEMORYFAULT, 0, src_slabid);
@@ -131,11 +137,6 @@ static void slab_main_helper(u32 vmexit_reason, u32 src_slabid, u32 cpuid){
 	//}else if (vmexit_reason == VMX_VMEXIT_IOIO){
 
 
-	}else if (vmexit_reason == VMX_VMEXIT_CPUID){
-		hcb_status = xc_hcbinvoke(XMHFGEEC_SLAB_XC_IHUB, cpuid, XC_HYPAPPCB_TRAP_INSTRUCTION,
-			    XC_HYPAPPCB_TRAP_INSTRUCTION_CPUID, src_slabid);
-		//@ghost xcihub_callhcbinvoke=true;
-		if(hcb_status == XC_HYPAPPCB_CHAIN) xcihub_icptcpuid((u16)cpuid);
 
 
 	}else if (vmexit_reason == VMX_VMEXIT_WRMSR){
