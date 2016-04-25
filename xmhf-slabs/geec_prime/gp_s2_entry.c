@@ -54,7 +54,10 @@
 
 
 void gp_s2_entry(void){
+	//intialize system memory map
+	gp_s2_initsysmemmap();
 
+	//initialize slab device mapping
 	gp_s2_setupslabdevmap();
 
 

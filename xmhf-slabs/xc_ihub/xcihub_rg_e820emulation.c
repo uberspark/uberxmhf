@@ -120,11 +120,6 @@ bool xcihub_rg_e820emulation(u32 cpuid, u32 src_slabid){
 	XMHF_SLAB_CALLNEW(&spl);
 	memcpy(&r, &gcpustate_gprs->gprs, sizeof(x86regs_t));
 
-	//read maximum E820 index
-	splusysd.dst_uapifn = UXMHF_UAPI_SYSDATA_E820GETMAXINDEX;
-	XMHF_SLAB_CALLNEW(&splusysd);
-	e820_maxindex = usysd_getmaxindex->index;
-
 	//if E820 service then...
 	if((u16)r.eax == 0xE820){
 		//AX=0xE820, EBX=continuation value, 0 for first call
@@ -136,6 +131,12 @@ bool xcihub_rg_e820emulation(u32 cpuid, u32 src_slabid){
 					(u16)r.eax, (u32)r.edx, (u32)r.ebx);
 		_XDPRINTF_("%s[%u]:   ECX=0x%08x, ES(base)=0x%08x, DI=0x%04x\n", __func__, cpuid,
 				(u32)r.ecx, g_es_base, (u16)r.edi);
+
+		//read maximum E820 index
+		splusysd.dst_uapifn = UXMHF_UAPI_SYSDATA_E820GETMAXINDEX;
+		XMHF_SLAB_CALLNEW(&splusysd);
+		e820_maxindex = usysd_getmaxindex->index;
+
 
 		if( (r.edx == 0x534D4150UL) && (r.ebx < e820_maxindex) ){
 

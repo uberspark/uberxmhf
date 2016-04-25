@@ -60,6 +60,7 @@
 
 
 void usysd_e820getmaxindex(uxmhf_uapi_sysdata_e820getmaxindex_t *indexp){
+	//_XDPRINTF_("%s: came in, usysd_memmapinfo_maxindex=%u\n", __func__, usysd_memmapinfo_maxindex);
 	indexp->index = usysd_memmapinfo_maxindex;
 }
 
