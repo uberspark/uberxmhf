@@ -59,8 +59,35 @@
  */
 
 bool xcihub_rg_e820emulation(u32 cpuid, u32 src_slabid){
+	slab_params_t spl;
+	xmhf_uapi_gcpustate_vmrw_params_t *gcpustate_vmrwp = (xmhf_uapi_gcpustate_vmrw_params_t *)spl.in_out_params;
+	u32 g_cs_base, g_eip;
 
-	return false;
+	//read CS base and RIP
+	spl.cpuid = cpuid;
+	spl.src_slabid = XMHFGEEC_SLAB_XC_IHUB;
+	spl.dst_slabid = XMHFGEEC_SLAB_UAPI_GCPUSTATE;
+	spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_VMREAD;
+
+	gcpustate_vmrwp->encoding = VMCS_GUEST_CS_BASE;
+	XMHF_SLAB_CALLNEW(&spl);
+	g_cs_base= gcpustate_vmrwp->value;
+
+	gcpustate_vmrwp->encoding = VMCS_GUEST_RIP;
+	XMHF_SLAB_CALLNEW(&spl);
+	g_eip = gcpustate_vmrwp->value;
+
+
+	//check if this is a E820 emulation VMCALL
+	if ( !( (g_cs_base == (VMX_UG_E820HOOK_CS << 4)) && (g_eip == VMX_UG_E820HOOK_IP) ) )
+		return false;
+
+	_XDPRINTF_("%s[%u]: E820 emulation: WIP. Halting!\n", __func__, cpuid);
+	HALT();
+
+
+	//we handled a VMCALL which was E820 emulation
+	return true;
 }
 
 
