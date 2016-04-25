@@ -78,7 +78,7 @@ static u32 _xcihub_icptcrx_getregval(u32 gpr, x86regs_t r){
 
 
 
-void xcihub_icptcrx(u32 cpuid){
+void xcihub_icptcrx(u32 cpuid, u32 src_slabid){
 	slab_params_t spl;
 	xmhf_uapi_gcpustate_vmrw_params_t *gcpustate_vmrwp = (xmhf_uapi_gcpustate_vmrw_params_t *)spl.in_out_params;
 	xmhf_uapi_gcpustate_gprs_params_t *gcpustate_gprs = (xmhf_uapi_gcpustate_gprs_params_t *)spl.in_out_params;
@@ -89,7 +89,7 @@ void xcihub_icptcrx(u32 cpuid){
 	u32 tofrom, gpr, crx;
 	x86regs_t r;
 
-	_XDPRINTF_("%s[%u]: CRX access\n", __func__, cpuid);
+	//_XDPRINTF_("%s[%u]: CRX access\n", __func__, cpuid);
 
 	spl.cpuid = cpuid;
 	spl.src_slabid = XMHFGEEC_SLAB_XC_IHUB;
@@ -132,7 +132,7 @@ void xcihub_icptcrx(u32 cpuid){
 	    XMHF_SLAB_CALLNEW(&spl);
 
 		//we need to flush logical processor VPID mappings as we emulated CR0 load above
-		//__vmx_invvpid(VMX_INVVPID_SINGLECONTEXT, 1, 0);
+		CASM_FUNCCALL(xmhfhw_cpu_invvpid, VMX_INVVPID_SINGLECONTEXT, src_slabid, 0, 0);
 
 	}else if(crx == 0x4 && tofrom == VMX_CRX_ACCESS_TO){
 		//CR4 access
