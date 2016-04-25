@@ -63,6 +63,7 @@ void xcihub_icptcpuid(u32 cpuid);
 void xcihub_icptwrmsr(u32 cpuid);
 void xcihub_icptrdmsr(u32 cpuid);
 void xcihub_icptcrx(u32 cpuid, u32 src_slabid);
+void xcihub_icptxsetbv(u32 cpuid);
 void xcihub_halt(u32 cpuid, u32 info_vmexit_reason);
 
 bool xcihub_rg_e820emulation(u32 cpuid, u32 src_slabid);
