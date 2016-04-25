@@ -69,7 +69,7 @@ void xcihub_icptrdmsr(u32 cpuid){
 	u32 info_vmexit_instruction_length;
 	x86regs_t r;
 
-	_XDPRINTF_("%s[%u]: VMX_VMEXIT_RDMSR\n", __func__, cpuid);
+	//_XDPRINTF_("%s[%u]: VMX_VMEXIT_RDMSR\n", __func__, cpuid);
 	spl.cpuid = cpuid;
 	spl.src_slabid = XMHFGEEC_SLAB_XC_IHUB;
 	spl.dst_slabid = XMHFGEEC_SLAB_UAPI_GCPUSTATE;
@@ -134,8 +134,7 @@ void xcihub_icptrdmsr(u32 cpuid){
 	gcpustate_vmrwp->value = guest_rip;
 	XMHF_SLAB_CALLNEW(&spl);
 
-	_XDPRINTF_("%s[%u]: adjusted guest_rip=%08x\n",
-	    __func__, cpuid, guest_rip);
+	//_XDPRINTF_("%s[%u]: adjusted guest_rip=%08x\n",   __func__, cpuid, guest_rip);
 
 }
 

@@ -64,7 +64,7 @@ void xcihub_icptvmcall(u32 cpuid, u32 src_slabid){
 	u32 guest_rip;
 	u32 info_vmexit_instruction_length;
 
-	_XDPRINTF_("%s[%u]: VMX_VMEXIT_VMCALL\n", __func__, cpuid);
+	//_XDPRINTF_("%s[%u]: VMX_VMEXIT_VMCALL\n", __func__, cpuid);
 
 	//check to see if we need to handle rich guest E820 emulation, if so handle
 	//emulation, else rotate through hypapp callbacks
@@ -101,7 +101,7 @@ void xcihub_icptvmcall(u32 cpuid, u32 src_slabid){
 		gcpustate_vmrwp->value = 0;
 		XMHF_SLAB_CALLNEW(&spl);
 
-		_XDPRINTF_("%s[%u]: no-E820 adjusted guest_rip=%08x\n", __func__, cpuid, guest_rip);
+		//_XDPRINTF_("%s[%u]: no-E820 adjusted guest_rip=%08x\n", __func__, cpuid, guest_rip);
 
 	}
 
