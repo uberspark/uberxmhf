@@ -64,18 +64,50 @@ void xcihub_icptcrx(u32 cpuid){
 	xmhf_uapi_gcpustate_vmrw_params_t *gcpustate_vmrwp = (xmhf_uapi_gcpustate_vmrw_params_t *)spl.in_out_params;
 	u32 guest_rip;
 	u32 info_vmexit_instruction_length;
+	u32 info_exit_qualification;
+	u32 tofrom, gpr, crx;
 
 	_XDPRINTF_("%s[%u]: CRX access\n", __func__, cpuid);
 
 	spl.cpuid = cpuid;
 	spl.src_slabid = XMHFGEEC_SLAB_XC_IHUB;
 	spl.dst_slabid = XMHFGEEC_SLAB_UAPI_GCPUSTATE;
+    spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_VMREAD;
+
+	//read exit qualification
+	gcpustate_vmrwp->encoding = VMCS_INFO_EXIT_QUALIFICATION;
+    XMHF_SLAB_CALLNEW(&spl);
+    info_exit_qualification = gcpustate_vmrwp->value;
+
+	crx=(u32) ((u32)info_exit_qualification & 0x0000000FUL);
+	gpr=(u32) (((u32)info_exit_qualification & 0x00000F00UL) >> (u32)8);
+	tofrom = (u32) (((u32)info_exit_qualification & 0x00000030UL) >> (u32)4);
+
+	if ( gpr >=0 && gpr <= 7 ){
+		switch(crx){
+			case 0x0: //CR0 access
+				//vmx_handle_intercept_cr0access_ug(context_desc, x86gprs, gpr, tofrom);
+				_XDPRINTF_("%s[%u]: CR0 access, gpr=%u, tofrom=%u\n", __func__, cpuid, gpr, tofrom);
+				break;
+
+			case 0x4: //CR4 access
+				//vmx_handle_intercept_cr4access_ug(context_desc, x86gprs, gpr, tofrom);
+				_XDPRINTF_("%s[%u]: CR4 access, gpr=%u, tofrom=%u\n", __func__, cpuid, gpr, tofrom);
+				break;
+
+			default:
+				_XDPRINTF_("%s[%u]: Unhandled CRx access, crx=0x%08x, gpr=%u, tofrom=%u\n", __func__, cpuid, crx, gpr, tofrom);
+				HALT();
+		}
+	}else{
+		_XDPRINTF_("%s[%u]: invalid GPR value, gpr=%u\n", __func__, cpuid, gpr);
+		HALT();
+	}
 
 
 
 	//skip over CRx instruction by adjusting RIP
 	{
-	    spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_VMREAD;
 	    gcpustate_vmrwp->encoding = VMCS_INFO_VMEXIT_INSTRUCTION_LENGTH;
 	    XMHF_SLAB_CALLNEW(&spl);
 	    info_vmexit_instruction_length = gcpustate_vmrwp->value;
@@ -95,7 +127,16 @@ void xcihub_icptcrx(u32 cpuid){
 		XMHF_SLAB_CALLNEW(&spl);
 	}
 
+	//write interruptibility = 0
+	gcpustate_vmrwp->encoding = VMCS_GUEST_INTERRUPTIBILITY;
+	gcpustate_vmrwp->value = 0;
+	XMHF_SLAB_CALLNEW(&spl);
+
 	_XDPRINTF_("%s[%u]: adjusted guest_rip=%08x\n",  __func__, cpuid, guest_rip);
+
+
+	_XDPRINTF_("%s[%u]: CRx WIP. Halting!\n", __func__, cpuid);
+	HALT();
 
 }
 
