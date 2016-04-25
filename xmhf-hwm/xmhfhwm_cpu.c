@@ -530,6 +530,13 @@ void _impl_xmhfhwm_cpu_insn_invept_mesp_edx(int index){
         //XXX: TODO invept logic
 }
 
+void _impl_xmhfhwm_cpu_insn_invvpid_mesp_edx(int index){
+	u32 *value_mesp;
+	value_mesp = (u32 *)((u32)((int)xmhfhwm_cpu_gprs_esp + (int)index));
+        //XXX: TODO invvpid logic
+}
+
+
 void _impl_xmhfhwm_cpu_insn_movw_mesp_ax(int index){
 	u16 *value_mesp;
 	value_mesp = (u16 *)((u32)((int)xmhfhwm_cpu_gprs_esp + (int)index));
