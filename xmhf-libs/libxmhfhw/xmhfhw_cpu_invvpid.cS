@@ -53,39 +53,29 @@
 #include <xmhf-debug.h>
 
 
+//////
 // VMX instruction INVVPID
-//		Invalidate Translations Based on VPID
-// INVVPID r32, m128
-//returns 1 on success, 0 on failure
-//__attribute__((naked)) u32 __vmx_invvpid(int invalidation_type, //0x14
-//                  u32 vpid,              //0x18
-//                  u32 linearaddress){    //0x1C
-CASM_FUNCDEF(u32, __vmx_invvpid,
+//////
+
+/*
+//		Invalidate Translations Derived from EPT
+//__attribute__((naked)) void __vmx_invept(u64 invalidation_type, u64 eptp)
+CASM_FUNCDEF(void, __vmx_invept,
 {
     xmhfhwm_cpu_insn_subl_imm_esp(0x10);
-
-    xmhfhwm_cpu_insn_xorl_eax_eax();
-    xmhfhwm_cpu_insn_movw_mesp_ax(0x18);
-    xmhfhwm_cpu_insn_movl_eax_mesp(0x0);
-    xmhfhwm_cpu_insn_movl_imm_mesp(0x0,0x4);
+    xmhfhwm_cpu_insn_movl_mesp_edx(0x14);
     xmhfhwm_cpu_insn_movl_mesp_eax(0x1C);
-    xmhfhwm_cpu_insn_movl_eax_mesp(0x8);
-    xmhfhwm_cpu_insn_movl_imm_mesp(0x0, 0xC);
-
-    xmhfhwm_cpu_insn_movl_mesp_ecx(0x14);
-
-    xmhfhwm_cpu_insn_invvpid_mesp_ecx(0x0);
-
-    xmhfhwm_cpu_insn_movl_imm_eax(0x1);
-    xmhfhwm_cpu_insn_ja(vinvpid_success);
-    xmhfhwm_cpu_insn_movl_imm_eax(0x0);
-    CASM_LABEL(vinvpid_success);
-
+    xmhfhwm_cpu_insn_movl_eax_mesp(0x0);
+    xmhfhwm_cpu_insn_movl_mesp_eax(0x20);
+    xmhfhwm_cpu_insn_movl_eax_mesp(0x4);
+    xmhfhwm_cpu_insn_movl_imm_mesp(0x0,0x8);
+    xmhfhwm_cpu_insn_movl_imm_mesp(0x0,0xC);
+    xmhfhwm_cpu_insn_invept_mesp_edx(0x0);
     xmhfhwm_cpu_insn_addl_imm_esp(0x10);
-    xmhfhwm_cpu_insn_retu32();
+    xmhfhwm_cpu_insn_ret();
 },
-int invalidation_type,
-u32 vpid,
-u32 linearaddress)
-
-
+u32 invalidation_type_lo,
+u32 invalidation_type_hi,
+u32 eptp_lo,
+u32 eptp_hi)
+*/
