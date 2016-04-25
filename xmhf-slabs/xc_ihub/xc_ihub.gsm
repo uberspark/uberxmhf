@@ -2,6 +2,7 @@
 #include <xc_ihub.h>
 #include <uapi_gcpustate.h>
 #include <uapi_hcpustate.h>
+#include <uapi_sysdata.h>
 #include <xh_hyperdep.h>
 #include <xh_syscalllog.h>
 #include <xh_ssteptrace.h>
@@ -15,6 +16,7 @@ MS:DMADATA:0x200000:void:void
 
 S:uapi_gcpustate:void:void:void
 S:uapi_hcpustate:void:void:void
+S:uapi_sysdata:void:void:void
 S:xh_hyperdep:void:void:void
 S:xh_syscalllog:void:void:void
 S:xh_ssteptrace:void:void:void
@@ -27,5 +29,8 @@ U:uapi_gcpustate:XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSREAD:void:void
 U:uapi_gcpustate:XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSWRITE:void:void
 U:uapi_hcpustate:XMHF_HIC_UAPI_CPUSTATE_WRMSR:void:void
 U:uapi_hcpustate:XMHF_HIC_UAPI_CPUSTATE_RDMSR:void:void
+U:uapi_sysdata:UXMHF_UAPI_SYSDATA_E820GETMAXINDEX:void:void
+U:uapi_sysdata:UXMHF_UAPI_SYSDATA_E820GETENTRYFORINDEX:void:void
+
 
 
