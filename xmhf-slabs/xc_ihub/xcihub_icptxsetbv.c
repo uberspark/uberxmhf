@@ -68,9 +68,9 @@ void xcihub_icptxsetbv(u32 cpuid){
 
 	u32 guest_rip;
 	u32 info_vmexit_instruction_length;
-	u32 info_exit_qualification;
-	u32 tofrom, gpr, crx;
+	//u32 info_exit_qualification;
 	x86regs_t r;
+	u64 xcr_value;
 
 	//_XDPRINTF_("%s[%u]: CRX access\n", __func__, cpuid);
 
@@ -85,14 +85,26 @@ void xcihub_icptxsetbv(u32 cpuid){
 
 
 	//read exit qualification
-	spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_VMREAD;
-	gcpustate_vmrwp->encoding = VMCS_INFO_EXIT_QUALIFICATION;
-    XMHF_SLAB_CALLNEW(&spl);
-    info_exit_qualification = gcpustate_vmrwp->value;
+	//spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_VMREAD;
+	//gcpustate_vmrwp->encoding = VMCS_INFO_EXIT_QUALIFICATION;
+    //XMHF_SLAB_CALLNEW(&spl);
+    //info_exit_qualification = gcpustate_vmrwp->value;
+
+   	xcr_value = ((u64)r.edx << 32) + (u64)r.eax;
+
+   	if(r.ecx != XCR_XFEATURE_ENABLED_MASK){
+   		_XDPRINTF_("%s[%u]: unhandled XCR register %u", __FUNCTION__, __func__, cpuid, r.ecx);
+    	HALT();
+    }
+
+	//XXX: TODO: check for invalid states and inject GP accordingly
+	_XDPRINTF_("%s[%u]: xcr_value=%llx", __func__, cpuid, xcr_value);
+
+    //set XCR with supplied value
+    //xsetbv(XCR_XFEATURE_ENABLED_MASK, xcr_value);
 
 
-
-	//skip over CRx instruction by adjusting RIP
+	//skip over XSETBV instruction by adjusting RIP
 	{
 		spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_VMREAD;
 		gcpustate_vmrwp->encoding = VMCS_INFO_VMEXIT_INSTRUCTION_LENGTH;
