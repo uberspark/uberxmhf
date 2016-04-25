@@ -61,7 +61,10 @@
 bool xcihub_rg_e820emulation(u32 cpuid, u32 src_slabid){
 	slab_params_t spl;
 	xmhf_uapi_gcpustate_vmrw_params_t *gcpustate_vmrwp = (xmhf_uapi_gcpustate_vmrw_params_t *)spl.in_out_params;
+	xmhf_uapi_gcpustate_gprs_params_t *gcpustate_gprs = (xmhf_uapi_gcpustate_gprs_params_t *)spl.in_out_params;
 	u32 g_cs_base, g_eip;
+	u32 g_es_base;
+	x86regs_t r;
 
 	//read CS base and RIP
 	spl.cpuid = cpuid;
@@ -78,9 +81,32 @@ bool xcihub_rg_e820emulation(u32 cpuid, u32 src_slabid){
 	g_eip = gcpustate_vmrwp->value;
 
 
-	//check if this is a E820 emulation VMCALL
+	//check if this is a E820 emulation VMCALL, if not return false
 	if ( !( (g_cs_base == (VMX_UG_E820HOOK_CS << 4)) && (g_eip == VMX_UG_E820HOOK_IP) ) )
 		return false;
+
+	//read ES.base
+	gcpustate_vmrwp->encoding = VMCS_GUEST_ES_BASE;
+	XMHF_SLAB_CALLNEW(&spl);
+	g_es_base= gcpustate_vmrwp->value;
+
+	//read GPRs
+	spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSREAD;
+	XMHF_SLAB_CALLNEW(&spl);
+	memcpy(&r, &gcpustate_gprs->gprs, sizeof(x86regs_t));
+
+	//if memmap
+	//	write gprs
+	//	write rip
+	//else
+	//	write cs
+	//	write rip
+
+	//write interruptibility = 0
+	spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_VMWRITE;
+	gcpustate_vmrwp->encoding = VMCS_GUEST_INTERRUPTIBILITY;
+	gcpustate_vmrwp->value = 0;
+	XMHF_SLAB_CALLNEW(&spl);
 
 	_XDPRINTF_("%s[%u]: E820 emulation: WIP. Halting!\n", __func__, cpuid);
 	HALT();
