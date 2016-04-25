@@ -125,6 +125,7 @@ static void xcinit_do_callguest(slab_params_t *sp){
 // setup guest uobj
 //////
 static void xcinit_setup_guest(slab_params_t *sp, bool isbsp){
+/*
 	u8 rg_bootcode[]  = {
 		0x0F, 0x01, 0xC1, //VMCALL
 		0xEB, 0xFE,	//JMP EIP
@@ -143,7 +144,7 @@ static void xcinit_setup_guest(slab_params_t *sp, bool isbsp){
 		_XDPRINTF_("%s[%u]: BSP: boot-code: %02x %02x %02x %02x...\n", __func__, (u16)sp->cpuid,
 				rg_bootcode_verif[0], rg_bootcode_verif[1], rg_bootcode_verif[2], rg_bootcode_verif[3]);
 	}
-
+*/
 
 	//setup guest slab VMCS state
 	{
