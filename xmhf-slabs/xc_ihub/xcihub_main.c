@@ -127,6 +127,8 @@ static void slab_main_helper(u32 vmexit_reason, u32 src_slabid, u32 cpuid){
 		//@ghost xcihub_callhcbinvoke=true;
 		if(hcb_status == XC_HYPAPPCB_CHAIN)	xcihub_icptwrmsr((u16)cpuid);
 
+	}else if (vmexit_reason == VMX_VMEXIT_CRX_ACCESS){
+		xcihub_icptcrx((u16)cpuid);
 
 /*
 	}else if (vmexit_reason == VMX_VMEXIT_EPT_VIOLATION){
