@@ -739,6 +739,15 @@ static void	xcinit_e820initializehooks(void){
 }
 
 
+//////
+// copy guest boot module into appropriate location
+//////
+static void	xcinit_copyguestbootmodule(u32 g_bm_base, u32 g_bm_size){
+	_XDPRINTF_("%s: boot-module at 0x%08x, size=0x%08x (%u) bytes\n", __func__, g_bm_base, g_bm_size, g_bm_size);
+	CASM_FUNCCALL(xmhfhw_sysmemaccess_copy, 0x00007C00, g_bm_base, g_bm_size);
+}
+
+
 void slab_main(slab_params_t *sp){
     bool isbsp = xmhfhw_lapic_isbsp();
 
@@ -755,11 +764,14 @@ void slab_main(slab_params_t *sp){
     //test uboj invocation
     xcinit_do_test(sp);
 
-    //plant int 15h redirection code for E820 reporting
+    //plant int 15h redirection code for E820 reporting and copy boot-module
     if(isbsp){
         _XDPRINTF_("XC_INIT[%u]: BSP: Proceeding to install E820 redirection...\n", (u16)sp->cpuid);
     	xcinit_e820initializehooks();
         _XDPRINTF_("XC_INIT[%u]: BSP: E820 redirection enabled\n", (u16)sp->cpuid);
+        _XDPRINTF_("XC_INIT[%u]: BSP: Proceeding to copy guest boot-module...\n", (u16)sp->cpuid);
+    	xcinit_copyguestbootmodule(sp->in_out_params[0], sp->in_out_params[1]);
+        _XDPRINTF_("XC_INIT[%u]: BSP: guest boot-module copied\n", (u16)sp->cpuid);
     }
 
     //setup guest uobj state
