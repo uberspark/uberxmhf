@@ -136,7 +136,7 @@ static void slab_main_helper(u32 vmexit_reason, u32 src_slabid, u32 cpuid){
 
 	}else if (vmexit_reason == VMX_VMEXIT_SIPI){
 		xcihub_icptsipi((u16)cpuid);
-)
+
 
 /*
 	}else if (vmexit_reason == VMX_VMEXIT_EPT_VIOLATION){
