@@ -44,37 +44,80 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-// XMHF slab import library decls./defns.
-// author: amit vasudevan (amitvasudevan@acm.org)
+#include <xmhf.h>
+#include <xmhfgeec.h>
+#include <xmhf-debug.h>
 
-#ifndef __XC_IHUB_H__
-#define __XC_IHUB_H__
+#include <xc.h>
+#include <xc_ihub.h>
+#include <uapi_gcpustate.h>
+#include <uapi_hcpustate.h>
 
-
-#ifndef __ASSEMBLY__
-
-/*@
-	requires 0 <= cbtype <= XC_HYPAPPCB_MAXMASK;
-@*/
-u32 xc_hcbinvoke(u32 src_slabid, u32 cpuid, u32 cbtype, u32 cbqual, u32 guest_slab_index);
-
-void xcihub_icptvmcall(u32 cpuid, u32 src_slabid);
-void xcihub_icptcpuid(u32 cpuid);
-void xcihub_icptwrmsr(u32 cpuid);
-void xcihub_icptrdmsr(u32 cpuid);
-void xcihub_icptcrx(u32 cpuid, u32 src_slabid);
-void xcihub_icptxsetbv(u32 cpuid);
-void xcihub_icptsipi(u32 cpuid);
-void xcihub_halt(u32 cpuid, u32 info_vmexit_reason);
-
-bool xcihub_rg_e820emulation(u32 cpuid, u32 src_slabid);
-
-extern __attribute__(( section(".data") )) volatile u32 xcihub_smplock;
+/*
+ * slab code
+ *
+ * author: amit vasudevan (amitvasudevan@acm.org)
+ */
 
 
 
+void xcihub_icptsipi(u32 cpuid){
+	slab_params_t spl;
+	xmhf_uapi_gcpustate_vmrw_params_t *gcpustate_vmrwp = (xmhf_uapi_gcpustate_vmrw_params_t *)spl.in_out_params;
+	xmhf_uapi_gcpustate_gprs_params_t *gcpustate_gprs = (xmhf_uapi_gcpustate_gprs_params_t *)spl.in_out_params;
 
-#endif //__ASSEMBLY__
+	u32 guest_rip;
+	u32 info_vmexit_instruction_length;
+	//u32 info_exit_qualification;
+	x86regs_t r;
 
 
-#endif //__XC_IHUB_H__
+	spl.cpuid = cpuid;
+	spl.src_slabid = XMHFGEEC_SLAB_XC_IHUB;
+	spl.dst_slabid = XMHFGEEC_SLAB_UAPI_GCPUSTATE;
+
+	//read GPRs
+	spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSREAD;
+	XMHF_SLAB_CALLNEW(&spl);
+	memcpy(&r, &gcpustate_gprs->gprs, sizeof(x86regs_t));
+
+
+	//read exit qualification
+	//spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_VMREAD;
+	//gcpustate_vmrwp->encoding = VMCS_INFO_EXIT_QUALIFICATION;
+    //XMHF_SLAB_CALLNEW(&spl);
+    //info_exit_qualification = gcpustate_vmrwp->value;
+
+
+	//skip over instruction by adjusting RIP
+	{
+		spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_VMREAD;
+		gcpustate_vmrwp->encoding = VMCS_INFO_VMEXIT_INSTRUCTION_LENGTH;
+	    XMHF_SLAB_CALLNEW(&spl);
+	    info_vmexit_instruction_length = gcpustate_vmrwp->value;
+	}
+
+	{
+	    gcpustate_vmrwp->encoding = VMCS_GUEST_RIP;
+	    XMHF_SLAB_CALLNEW(&spl);
+	    guest_rip = gcpustate_vmrwp->value;
+	    guest_rip+=info_vmexit_instruction_length;
+	}
+
+	{
+		spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_VMWRITE;
+		gcpustate_vmrwp->encoding = VMCS_GUEST_RIP;
+		gcpustate_vmrwp->value = guest_rip;
+		XMHF_SLAB_CALLNEW(&spl);
+	}
+
+	//write interruptibility = 0
+	gcpustate_vmrwp->encoding = VMCS_GUEST_INTERRUPTIBILITY;
+	gcpustate_vmrwp->value = 0;
+	XMHF_SLAB_CALLNEW(&spl);
+
+
+}
+
+
+
