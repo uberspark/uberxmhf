@@ -93,7 +93,7 @@ void xcihub_icptxsetbv(u32 cpuid){
    	xcr_value = ((u64)r.edx << 32) + (u64)r.eax;
 
    	if(r.ecx != XCR_XFEATURE_ENABLED_MASK){
-   		_XDPRINTF_("%s[%u]: unhandled XCR register %u", __FUNCTION__, __func__, cpuid, r.ecx);
+   		_XDPRINTF_("%s[%u]: unhandled XCR register %u", __func__, cpuid, r.ecx);
     	HALT();
     }
 
@@ -101,8 +101,7 @@ void xcihub_icptxsetbv(u32 cpuid){
 	_XDPRINTF_("%s[%u]: xcr_value=%llx", __func__, cpuid, xcr_value);
 
     //set XCR with supplied value
-    //xsetbv(XCR_XFEATURE_ENABLED_MASK, xcr_value);
-
+	CASM_FUNCCALL(xsetbv, XCR_XFEATURE_ENABLED_MASK, r.eax, r.edx);
 
 	//skip over XSETBV instruction by adjusting RIP
 	{
