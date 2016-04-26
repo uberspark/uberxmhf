@@ -64,54 +64,48 @@
 void xcihub_icptsipi(u32 cpuid){
 	slab_params_t spl;
 	xmhf_uapi_gcpustate_vmrw_params_t *gcpustate_vmrwp = (xmhf_uapi_gcpustate_vmrw_params_t *)spl.in_out_params;
-	xmhf_uapi_gcpustate_gprs_params_t *gcpustate_gprs = (xmhf_uapi_gcpustate_gprs_params_t *)spl.in_out_params;
 
-	u32 guest_rip;
 	u32 info_vmexit_instruction_length;
-	//u32 info_exit_qualification;
-	x86regs_t r;
-
+	u32 info_exit_qualification;
+	u32 sipivector;
 
 	spl.cpuid = cpuid;
 	spl.src_slabid = XMHFGEEC_SLAB_XC_IHUB;
 	spl.dst_slabid = XMHFGEEC_SLAB_UAPI_GCPUSTATE;
 
-	//read GPRs
-	spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSREAD;
-	XMHF_SLAB_CALLNEW(&spl);
-	memcpy(&r, &gcpustate_gprs->gprs, sizeof(x86regs_t));
-
-
 	//read exit qualification
-	//spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_VMREAD;
-	//gcpustate_vmrwp->encoding = VMCS_INFO_EXIT_QUALIFICATION;
-    //XMHF_SLAB_CALLNEW(&spl);
-    //info_exit_qualification = gcpustate_vmrwp->value;
+	spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_VMREAD;
+	gcpustate_vmrwp->encoding = VMCS_INFO_EXIT_QUALIFICATION;
+    XMHF_SLAB_CALLNEW(&spl);
+    info_exit_qualification = gcpustate_vmrwp->value;
 
+    //compute SIPI vector
+	sipivector = (u8)info_exit_qualification;
+	_XDPRINTF_("%s[%u]: SIPI intercept, vector=0x%08x\n", __func__, cpuid, sipivector);
 
-	//skip over instruction by adjusting RIP
-	{
-		spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_VMREAD;
-		gcpustate_vmrwp->encoding = VMCS_INFO_VMEXIT_INSTRUCTION_LENGTH;
-	    XMHF_SLAB_CALLNEW(&spl);
-	    info_vmexit_instruction_length = gcpustate_vmrwp->value;
-	}
+	spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_VMWRITE;
 
-	{
-	    gcpustate_vmrwp->encoding = VMCS_GUEST_RIP;
-	    XMHF_SLAB_CALLNEW(&spl);
-	    guest_rip = gcpustate_vmrwp->value;
-	    guest_rip+=info_vmexit_instruction_length;
-	}
+	//sipi_desc.cs.selector = ((sipivector * PAGE_SIZE_4K) >> 4);
+	gcpustate_vmrwp->encoding = VMCS_GUEST_CS_SELECTOR;
+	gcpustate_vmrwp->value = ((sipivector * PAGE_SIZE_4K) >> 4);
+	XMHF_SLAB_CALLNEW(&spl);
 
-	{
-		spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_VMWRITE;
-		gcpustate_vmrwp->encoding = VMCS_GUEST_RIP;
-		gcpustate_vmrwp->value = guest_rip;
-		XMHF_SLAB_CALLNEW(&spl);
-	}
+	//sipi_desc.cs.base = (sipivector * PAGE_SIZE_4K);
+	gcpustate_vmrwp->encoding = VMCS_GUEST_CS_BASE;
+	gcpustate_vmrwp->value = (sipivector * PAGE_SIZE_4K);
+	XMHF_SLAB_CALLNEW(&spl);
 
-	//write interruptibility = 0
+	//sipi_activity.rip = 0;
+	gcpustate_vmrwp->encoding = VMCS_GUEST_RIP;
+	gcpustate_vmrwp->value = 0;
+	XMHF_SLAB_CALLNEW(&spl);
+
+	//sipi_activity.activity_state = 0; //active
+	gcpustate_vmrwp->encoding = VMCS_GUEST_ACTIVITY_STATE;
+	gcpustate_vmrwp->value = 0;
+	XMHF_SLAB_CALLNEW(&spl);
+
+	//sipi_activity.interruptibility=0;
 	gcpustate_vmrwp->encoding = VMCS_GUEST_INTERRUPTIBILITY;
 	gcpustate_vmrwp->value = 0;
 	XMHF_SLAB_CALLNEW(&spl);
