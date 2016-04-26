@@ -130,6 +130,10 @@ static void slab_main_helper(u32 vmexit_reason, u32 src_slabid, u32 cpuid){
 	}else if (vmexit_reason == VMX_VMEXIT_CRX_ACCESS){
 		xcihub_icptcrx((u16)cpuid, src_slabid);
 
+	}else if (vmexit_reason == VMX_VMEXIT_XSETBV){
+		xcihub_icptxsetbv((u16)cpuid);
+
+
 /*
 	}else if (vmexit_reason == VMX_VMEXIT_EPT_VIOLATION){
 		hcb_status = xc_hcbinvoke(XMHFGEEC_SLAB_XC_IHUB, cpuid, XC_HYPAPPCB_MEMORYFAULT, 0, src_slabid);
