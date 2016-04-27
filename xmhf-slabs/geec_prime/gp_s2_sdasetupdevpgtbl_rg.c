@@ -107,7 +107,7 @@ void gp_s2_sdasetupdevpgtbl_rg(u32 slabid){
 	//setup PDTs
 	for(i=0; i < (VTD_PTRS_PER_PDPT * VTD_PTRS_PER_PDT); i++){
 			_slabdevpgtbl_pdt[slabid][i] =
-				vtd_make_pdte((u64)&_slabdevpgtbl_pt_rg[i], (VTD_PAGE_READ | VTD_PAGE_WRITE));
+				vtd_make_pdte((u64)&_slabdevpgtbl_pt_rg[i*VTD_PTRS_PER_PT], (VTD_PAGE_READ | VTD_PAGE_WRITE));
 	}
 
 
@@ -124,4 +124,6 @@ void gp_s2_sdasetupdevpgtbl_rg(u32 slabid){
 		    _slabdevpgtbl_pt_rg[i] = 0;
 		}
 	}
+
+	_slabdevpgtbl_infotable[slabid].devpgtbl_initialized = true;
 }
