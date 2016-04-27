@@ -100,12 +100,10 @@ void gp_s2_setupmpgtblug_rg(u32 slabid){
 		memorytype = gp_s2_setupmpgtblug_getmtype((u64)(i*PAGE_SIZE_4K));
 		//@ghost gp_s2_setupmpgtblug_rg_invokedmemorytype[i] = true;
 
-		//spatype = gp_s2_setupmpgtbl_getspatype(slabid, (u32)(i*PAGE_SIZE_4K));
+		spatype = gp_s2_setupmpgtbl_getspatype(slabid, (u32)(i*PAGE_SIZE_4K));
 
-		//flags = gp_s2_setupmpgtblug_getflags(slabid, (u32)(i*PAGE_SIZE_4K), spatype);
-		flags = 0x7;
+		flags = gp_s2_setupmpgtblug_getflags(slabid, (u32)(i*PAGE_SIZE_4K), spatype);
 		//@ghost gp_s2_setupmpgtblug_rg_invokedflags[i] = true;
-
 
 		spl.dst_uapifn = XMHFGEEC_UAPI_SLABMEMPGTBL_SETENTRYFORPADDR;
 		spl.in_out_params[0] = slabid;
@@ -126,6 +124,5 @@ void gp_s2_setupmpgtblug_rg(u32 slabid){
 	}
 
 }
-
 
 
