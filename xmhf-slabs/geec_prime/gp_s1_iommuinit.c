@@ -123,7 +123,7 @@ void gp_s1_iommuinit(void){
 
 		//enable VT-d translation
 		//[XXX: temporarily disable DMA protection via IOMMU]
-		//xmhfhw_platform_x86pc_vtd_drhd_enable_translation(&vtd_drhd[drhd_handle]);
+		xmhfhw_platform_x86pc_vtd_drhd_enable_translation(&vtd_drhd[drhd_handle]);
 
 
 
