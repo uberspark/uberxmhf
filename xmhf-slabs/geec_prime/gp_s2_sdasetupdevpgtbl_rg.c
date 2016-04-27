@@ -110,4 +110,18 @@ void gp_s2_sdasetupdevpgtbl_rg(u32 slabid){
 				vtd_make_pdte((u64)&_slabdevpgtbl_pt_rg[i], (VTD_PAGE_READ | VTD_PAGE_WRITE));
 	}
 
+
+
+	//setup DMA access for rich-guest address space
+	for(i=0; i < (1024*1024); i++){
+		if( ( ((i*PAGE_SIZE_4K) >= xmhfgeec_slab_info_table[slabid].slab_physmem_extents[0].addr_start) &&
+			  ((i*PAGE_SIZE_4K) < xmhfgeec_slab_info_table[slabid].slab_physmem_extents[0].addr_end) ) ||
+			( ((i*PAGE_SIZE_4K) >= xmhfgeec_slab_info_table[slabid].slab_physmem_extents[1].addr_start) &&
+			  ((i*PAGE_SIZE_4K) < xmhfgeec_slab_info_table[slabid].slab_physmem_extents[1].addr_end) )
+		){
+		    _slabdevpgtbl_pt_rg[i] = vtd_make_pte((i * PAGE_SIZE_4K), (VTD_PAGE_READ | VTD_PAGE_WRITE));
+		}else{
+		    _slabdevpgtbl_pt_rg[i] = 0;
+		}
+	}
 }
