@@ -101,8 +101,10 @@ void gp_s2_sda(void){
 	@*/
 	for(i=0; i < XMHFGEEC_TOTAL_SLABS; i++){
 		if (xmhfgeec_slab_info_table[i].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG_RICHGUEST){
+			_XDPRINTF_("%s: proceeding to setup rich-guest DMA tables...\n", __func__);
 			gp_s2_sdasetupdevpgtbl_rg(i);
 			//@ghost invokedsdasetupdevpgtbl_rg[i] = true;
+			_XDPRINTF_("%s: rich-guest DMA tables setup\n", __func__);
 		}else{
 			gp_s2_sdasetupdevpgtbl(i);
 			//@ghost invokedsdasetupdevpgtbl[i] = true;

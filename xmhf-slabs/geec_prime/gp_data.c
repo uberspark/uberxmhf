@@ -274,7 +274,7 @@ __attribute__((section(".data"))) __attribute__((aligned(4096))) vtd_pdte_t _sla
 __attribute__((section(".data"))) __attribute__((aligned(4096))) vtd_pte_t _slabdevpgtbl_pt[XMHFGEEC_TOTAL_SLABS][MAX_SLAB_DMADATA_PDT_ENTRIES][PAE_PTRS_PER_PT];
 
 //rich-guest DMA page-tables
-__attribute__((section(".data"))) __attribute__((aligned(4096))) vtd_pte_t _slabdevpgtbl_pt_rg[VTD_PTRS_PER_PDT][VTD_PTRS_PER_PT];
+__attribute__((section(".data"))) __attribute__((aligned(4096))) vtd_pte_t _slabdevpgtbl_pt_rg[VTD_PTRS_PER_PDPT * VTD_PTRS_PER_PDT][VTD_PTRS_PER_PT];
 
 
 

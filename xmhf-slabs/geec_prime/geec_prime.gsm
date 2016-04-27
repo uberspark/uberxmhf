@@ -7,7 +7,7 @@
 
 //slab memory sections
 MS:CODE:0x200000:void:void
-MS:DATA:0x3C00000:void:void
+MS:DATA:0x4200000:void:void
 MS:STACK:0xe00000:void:void
 MS:DMADATA:0x200000:void:void
 
