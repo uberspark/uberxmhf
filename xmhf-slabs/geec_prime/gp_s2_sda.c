@@ -52,12 +52,17 @@
 #include <geec_prime.h>
 
 //@ghost bool invokedsdasetupdevpgtbl[XMHFGEEC_TOTAL_SLABS];
+//@ghost bool invokedsdasetupdevpgtbl_rg[XMHFGEEC_TOTAL_SLABS];
 /*@
 	requires 0 <= numentries_sysdev_memioregions < MAX_PLATFORM_DEVICES;
 	assigns invokedsdasetupdevpgtbl[0..(XMHFGEEC_TOTAL_SLABS-1)];
+	assigns invokedsdasetupdevpgtbl_rg[0..(XMHFGEEC_TOTAL_SLABS-1)];
 	assigns _slabdevpgtbl_infotable[0..(XMHFGEEC_TOTAL_SLABS-1)].devpgtbl_initialized;
 	ensures \forall integer x; 0 <= x < XMHFGEEC_TOTAL_SLABS ==> (
-			(invokedsdasetupdevpgtbl[x] == true)
+			(xmhfgeec_slab_info_table[x].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG_RICHGUEST) ==> (invokedsdasetupdevpgtbl_rg[x] == true)
+			);
+	ensures \forall integer x; 0 <= x < XMHFGEEC_TOTAL_SLABS ==> (
+			!(xmhfgeec_slab_info_table[x].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG_RICHGUEST) ==> (invokedsdasetupdevpgtbl[x] == true)
 			);
 	ensures \forall integer x; 0 <= x < XMHFGEEC_TOTAL_SLABS ==> (
 			(_slabdevpgtbl_infotable[x].devpgtbl_initialized == false)
@@ -84,15 +89,27 @@ void gp_s2_sda(void){
 	/*@
 		loop invariant a3: 0 <= i <= XMHFGEEC_TOTAL_SLABS;
 		loop invariant a4: \forall integer x; 0 <= x < i ==> (
-			(invokedsdasetupdevpgtbl[x] == true)
+			(xmhfgeec_slab_info_table[x].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG_RICHGUEST) ==> (invokedsdasetupdevpgtbl_rg[x] == true)
+			);
+		loop invariant a5: \forall integer x; 0 <= x < i ==> (
+			!(xmhfgeec_slab_info_table[x].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG_RICHGUEST) ==> (invokedsdasetupdevpgtbl[x] == true)
 			);
 		loop assigns i;
 		loop assigns invokedsdasetupdevpgtbl[0..(XMHFGEEC_TOTAL_SLABS-1)];
+		loop assigns invokedsdasetupdevpgtbl_rg[0..(XMHFGEEC_TOTAL_SLABS-1)];
 		loop variant XMHFGEEC_TOTAL_SLABS - i;
 	@*/
 	for(i=0; i < XMHFGEEC_TOTAL_SLABS; i++){
-		gp_s2_sdasetupdevpgtbl(i);
-		//@ghost invokedsdasetupdevpgtbl[i] = true;
+		if (xmhfgeec_slab_info_table[i].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG_RICHGUEST){
+			_XDPRINTF_("%s: proceeding to setup rich-guest DMA tables...\n", __func__);
+			gp_s2_sdasetupdevpgtbl_rg(i);
+			//@ghost invokedsdasetupdevpgtbl_rg[i] = true;
+			_XDPRINTF_("%s: rich-guest DMA tables setup\n", __func__);
+		}else{
+			gp_s2_sdasetupdevpgtbl(i);
+			//@ghost invokedsdasetupdevpgtbl[i] = true;
+		}
+
 	}
 
 	_XDPRINTF_("%s: initialized slab device page tables\n", __func__);

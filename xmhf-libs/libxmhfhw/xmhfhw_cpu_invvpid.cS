@@ -53,39 +53,27 @@
 #include <xmhf-debug.h>
 
 
+//////
 // VMX instruction INVVPID
-//		Invalidate Translations Based on VPID
-// INVVPID r32, m128
-//returns 1 on success, 0 on failure
-//__attribute__((naked)) u32 __vmx_invvpid(int invalidation_type, //0x14
-//                  u32 vpid,              //0x18
-//                  u32 linearaddress){    //0x1C
-CASM_FUNCDEF(u32, __vmx_invvpid,
+//////
+CASM_FUNCDEF(void, xmhfhw_cpu_invvpid,
 {
-    xmhfhwm_cpu_insn_subl_imm_esp(0x10);
-
-    xmhfhwm_cpu_insn_xorl_eax_eax();
-    xmhfhwm_cpu_insn_movw_mesp_ax(0x18);
-    xmhfhwm_cpu_insn_movl_eax_mesp(0x0);
-    xmhfhwm_cpu_insn_movl_imm_mesp(0x0,0x4);
-    xmhfhwm_cpu_insn_movl_mesp_eax(0x1C);
-    xmhfhwm_cpu_insn_movl_eax_mesp(0x8);
-    xmhfhwm_cpu_insn_movl_imm_mesp(0x0, 0xC);
-
-    xmhfhwm_cpu_insn_movl_mesp_ecx(0x14);
-
-    xmhfhwm_cpu_insn_invvpid_mesp_ecx(0x0);
-
-    xmhfhwm_cpu_insn_movl_imm_eax(0x1);
-    xmhfhwm_cpu_insn_ja(vinvpid_success);
-    xmhfhwm_cpu_insn_movl_imm_eax(0x0);
-    CASM_LABEL(vinvpid_success);
-
-    xmhfhwm_cpu_insn_addl_imm_esp(0x10);
-    xmhfhwm_cpu_insn_retu32();
+    xmhfhwm_cpu_insn_subl_imm_esp(0x10);		//make space for 128-bits (4 32-bit dwords)
+    xmhfhwm_cpu_insn_movl_mesp_edx(0x14);		//edx = invalidation_type
+    xmhfhwm_cpu_insn_movl_mesp_eax(0x18);		//eax = vpid
+    xmhfhwm_cpu_insn_movl_eax_mesp(0x0);		//(esp+0x0) = vpid
+    xmhfhwm_cpu_insn_movl_imm_mesp(0x0,0x4);	//(esp+0x4) = 0 (reserved)
+    xmhfhwm_cpu_insn_movl_mesp_eax(0x1C);		//eax = linear_addr_lo
+    xmhfhwm_cpu_insn_movl_eax_mesp(0x8);		//(esp+0x8) = linear_addr_lo
+    xmhfhwm_cpu_insn_movl_mesp_eax(0x20);		//eax = linear_addr_hi
+    xmhfhwm_cpu_insn_movl_eax_mesp(0xC);		//(esp+0xC) = linear_addr_hi
+    xmhfhwm_cpu_insn_invvpid_mesp_edx(0x0);		//invvpid (esp+0), edx
+    xmhfhwm_cpu_insn_addl_imm_esp(0x10);		//remove 128-bits and reset esp to incoming frame
+    xmhfhwm_cpu_insn_ret();						//return
 },
-int invalidation_type,
+u32 invalidation_type,
 u32 vpid,
-u32 linearaddress)
+u32 linear_addr_lo,
+u32 linear_addr_hi)
 
 

@@ -47,34 +47,16 @@
 // XMHF slab import library decls./defns.
 // author: amit vasudevan (amitvasudevan@acm.org)
 
+
 #ifndef __XG_RICHGUEST_H__
 #define __XG_RICHGUEST_H__
 
-#define 	__CS_CPL0 	    0x0008 	//guest slab CPL-0 code segment selector
-#define 	__DS_CPL0 	    0x0010 	//guest slab CPL-0 data segment selector
 
-#define GUEST_SLAB_HEADER_MAGIC     (0x76543210)
 
 #ifndef __ASSEMBLY__
 
-//guest slab header data type
-typedef struct {
-    u64 lvl2mempgtbl_pml4t[PAE_MAXPTRS_PER_PDPT];
-    u64 lvl2mempgtbl_pdpt[PAE_MAXPTRS_PER_PDPT];
-    u64 lvl2mempgtbl_pdts[PAE_PTRS_PER_PDPT][PAE_PTRS_PER_PDT];
-    u32 magic;
-    u64 gdt[16];
-    u8 _filler0[3964]; //page-align the whole struct
-} __attribute__((packed)) guest_slab_header_t;
-
-
-extern void xcguestslab_do_vmcall(void);
-extern void xcguestslab_do_testxhhyperdep(void);
-extern void xcguestslab_do_testxhapprovexec(void);
-extern __attribute__((aligned(4096))) void _xcguestslab_do_testxhssteptrace_func(void);
-extern void xcguestslab_do_testxhsyscalllog(void);
 
 #endif //__ASSEMBLY__
 
 
-#endif //__XC_RICHGUEST_H__
+#endif //__XG_RICHGUEST_H__

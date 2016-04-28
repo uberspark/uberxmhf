@@ -44,20 +44,34 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-// XMHF slab import library decls./defns.
-// author: amit vasudevan (amitvasudevan@acm.org)
+/*
+ * sysdata (E820) state uAPI
+ *
+ * author: amit vasudevan (amitvasudevan@acm.org)
+ */
 
-#ifndef __XC_INIT_H__
-#define __XC_INIT_H__
+#include <xmhf.h>
+#include <xmhf-debug.h>
+
+#include <xmhfgeec.h>
+
+#include <xc.h>
+#include <uapi_sysdata.h>
 
 
-#ifndef __ASSEMBLY__
+void usysd_e820addentry(uxmhf_uapi_sysdata_e820addentry_t *e820entryp){
+
+		if(usysd_memmapinfo_maxindex < MAX_E820_ENTRIES){
+			usysd_memmapinfo[usysd_memmapinfo_maxindex].baseaddr_high = e820entryp->baseaddr_high;
+			usysd_memmapinfo[usysd_memmapinfo_maxindex].baseaddr_low = e820entryp->baseaddr_low;
+			usysd_memmapinfo[usysd_memmapinfo_maxindex].length_high = e820entryp->length_high;
+			usysd_memmapinfo[usysd_memmapinfo_maxindex].length_low = e820entryp->length_low;
+			usysd_memmapinfo[usysd_memmapinfo_maxindex].type = e820entryp->type;
+			usysd_memmapinfo_maxindex++;
+		}else{
+			//we have reached the max. permissible entries; no more additions
+		}
+
+}
 
 
-extern __attribute__(( section(".data") )) u32 __xcinit_smplock;
-
-
-#endif //__ASSEMBLY__
-
-
-#endif //__XC_INIT_H__

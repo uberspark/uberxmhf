@@ -5,7 +5,15 @@
 #
 ########################################################################
 
-export XMHF_SLAB_NAME := xg_richguest
-export XMHF_SLAB_SOURCES := 
+
+export XMHF_SLAB_NAME := uapi_sysdata
+export XMHF_SLAB_SOURCES := $(wildcard $(srcdir)/*.c)
+#XMHF_SLAB_SOURCES += $(wildcard $(srcdir)/*.cS)
+
+#export XMHF_SLAB_GLOBAL_SYMS :=
 
 ########################################################################
+
+.PHONY: verify
+verify: verifybase
+	@echo Proceeding to verify $(XMHF_SLAB_NAME)...

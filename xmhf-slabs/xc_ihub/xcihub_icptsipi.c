@@ -44,20 +44,74 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-// XMHF slab import library decls./defns.
-// author: amit vasudevan (amitvasudevan@acm.org)
+#include <xmhf.h>
+#include <xmhfgeec.h>
+#include <xmhf-debug.h>
 
-#ifndef __XC_INIT_H__
-#define __XC_INIT_H__
+#include <xc.h>
+#include <xc_ihub.h>
+#include <uapi_gcpustate.h>
+#include <uapi_hcpustate.h>
+
+/*
+ * slab code
+ *
+ * author: amit vasudevan (amitvasudevan@acm.org)
+ */
 
 
-#ifndef __ASSEMBLY__
+
+void xcihub_icptsipi(u32 cpuid){
+	slab_params_t spl;
+	xmhf_uapi_gcpustate_vmrw_params_t *gcpustate_vmrwp = (xmhf_uapi_gcpustate_vmrw_params_t *)spl.in_out_params;
+
+	u32 info_vmexit_instruction_length;
+	u32 info_exit_qualification;
+	u32 sipivector;
+
+	spl.cpuid = cpuid;
+	spl.src_slabid = XMHFGEEC_SLAB_XC_IHUB;
+	spl.dst_slabid = XMHFGEEC_SLAB_UAPI_GCPUSTATE;
+
+	//read exit qualification
+	spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_VMREAD;
+	gcpustate_vmrwp->encoding = VMCS_INFO_EXIT_QUALIFICATION;
+    XMHF_SLAB_CALLNEW(&spl);
+    info_exit_qualification = gcpustate_vmrwp->value;
+
+    //compute SIPI vector
+	sipivector = (u8)info_exit_qualification;
+	_XDPRINTF_("%s[%u]: SIPI intercept, vector=0x%08x\n", __func__, cpuid, sipivector);
+
+	spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_VMWRITE;
+
+	//sipi_desc.cs.selector = ((sipivector * PAGE_SIZE_4K) >> 4);
+	gcpustate_vmrwp->encoding = VMCS_GUEST_CS_SELECTOR;
+	gcpustate_vmrwp->value = ((sipivector * PAGE_SIZE_4K) >> 4);
+	XMHF_SLAB_CALLNEW(&spl);
+
+	//sipi_desc.cs.base = (sipivector * PAGE_SIZE_4K);
+	gcpustate_vmrwp->encoding = VMCS_GUEST_CS_BASE;
+	gcpustate_vmrwp->value = (sipivector * PAGE_SIZE_4K);
+	XMHF_SLAB_CALLNEW(&spl);
+
+	//sipi_activity.rip = 0;
+	gcpustate_vmrwp->encoding = VMCS_GUEST_RIP;
+	gcpustate_vmrwp->value = 0;
+	XMHF_SLAB_CALLNEW(&spl);
+
+	//sipi_activity.activity_state = 0; //active
+	gcpustate_vmrwp->encoding = VMCS_GUEST_ACTIVITY_STATE;
+	gcpustate_vmrwp->value = 0;
+	XMHF_SLAB_CALLNEW(&spl);
+
+	//sipi_activity.interruptibility=0;
+	gcpustate_vmrwp->encoding = VMCS_GUEST_INTERRUPTIBILITY;
+	gcpustate_vmrwp->value = 0;
+	XMHF_SLAB_CALLNEW(&spl);
 
 
-extern __attribute__(( section(".data") )) u32 __xcinit_smplock;
+}
 
 
-#endif //__ASSEMBLY__
 
-
-#endif //__XC_INIT_H__

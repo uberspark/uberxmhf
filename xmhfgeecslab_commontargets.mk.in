@@ -36,8 +36,19 @@ export LDFLAGS := --oformat elf32-i386
 
 
 # targets
+ifeq ($(XMHF_SLAB_SUBTYPE), XRICHGUEST)
+
+.PHONY: all
+all: 
+	@echo Nothing to compile for rich guest object
+
+else
+
 .PHONY: all
 all: buildslabbin
+
+endif
+
 
 
 .PHONY: verifybase
@@ -68,6 +79,15 @@ verifybase:
 #	mkdir -p $(XMHF_SLAB_OBJECTS_DIR)
 #	cd $(XMHF_SLAB_OBJECTS_DIR) && $(CP) -f $(XMHF_DIR)/xmhf-slabs/$(XMHF_SLAB_NAME)/$(XMHF_SLAB_NAME).gsm $(XMHF_SLAB_NAME).gsm.c
 #	cd $(XMHF_SLAB_OBJECTS_DIR) && $(CCERT) -E -D__ASSEMBLY__ $(CCERT_FLAGS) $(XMHF_SLAB_NAME).gsm.c >$(XMHF_DIR)/xmhf-slabs/$(XMHF_SLAB_NAME)/$(XMHF_SLAB_NAME).gsm.pp
+
+ifeq ($(XMHF_SLAB_SUBTYPE), XRICHGUEST)
+
+.PHONY: linkslabbin
+linkslabbin:
+	@echo Nothing to link for rich guest object
+
+else
+
 .PHONY: linkslabbin
 linkslabbin:
 	cd $(XMHF_SLAB_OBJECTS_DIR) && cp -f $(LINKER_SCRIPT_INPUT) $(XMHF_SLAB_NAME).lscript.c
@@ -77,6 +97,8 @@ linkslabbin:
 	cd $(XMHF_SLAB_OBJECTS_DIR) && $(OBJCOPY) --localize-symbols=$(XMHF_SLAB_NAME).slo.syms $(XMHF_SLAB_NAME).slo $(XMHF_SLAB_NAME).slo
 	#cd $(XMHF_SLAB_OBJECTS_DIR) && $(OBJCOPY) $(XMHF_SLAB_GLOBAL_SYMS) $(XMHF_SLAB_NAME).slo $(XMHF_SLAB_NAME).slo
 	cd $(XMHF_SLAB_OBJECTS_DIR) && nm $(XMHF_SLAB_NAME).slo | awk '{ print $$3,":",$$1 }' | awk NF >$(XMHF_SLAB_NAME).mmap
+
+endif
 
 
 buildslabbin: $(XMHF_SLAB_OBJECTS) linkslabbin

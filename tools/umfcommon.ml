@@ -203,11 +203,13 @@ let umfcommon_parse_gsm filename slabid totalslabs is_memoffsets =
 											tag_u_mask := Hashtbl.find slab_idtouapifnmask tag_u_destslabid; 
 											tag_u_mask := !tag_u_mask lor (1 lsl tag_u_uapifn);
 											Hashtbl.add slab_idtouapifnmask tag_u_destslabid !tag_u_mask;
+											(* Format.printf "U-tag: sid=%d did=%d adding to existing 0x%08x" slabid tag_u_destslabid !tag_u_mask; *)
 											end
 										else
 											begin
 											tag_u_mask := (1 lsl tag_u_uapifn);
 											Hashtbl.add slab_idtouapifnmask tag_u_destslabid !tag_u_mask;
+											(* Format.printf "U-tag: sid=%d did=%d adding new 0x%08x" slabid tag_u_destslabid !tag_u_mask; *)
 											end
 										;
 
@@ -487,6 +489,8 @@ let umfcommon_parse_gsm filename slabid totalslabs is_memoffsets =
     	Hashtbl.add slab_idtordinclcount slabid !slab_rdinclcount;
     	Hashtbl.add slab_idtordexclcount slabid !slab_rdexclcount;
 
+		j := 0;
+    	(* Format.printf "totalslabs=%d\n" totalslabs; *)
     	while !j < totalslabs do
     		begin
         		if (Hashtbl.mem slab_idtouapifnmask !j) then
@@ -495,7 +499,7 @@ let umfcommon_parse_gsm filename slabid totalslabs is_memoffsets =
         			end
         		else
         			begin
-						slab_uapifnmaskstring := "0x00000000";        			
+						slab_uapifnmaskstring := !slab_uapifnmaskstring ^ "\t0x00000000,\n";
         			end
         		;
         		j := !j + 1;
@@ -519,6 +523,7 @@ let umfcommon_parse_gsm filename slabid totalslabs is_memoffsets =
     	;
 
 	(*return value*)
+	(* Format.printf "uapifnmaskstring = %s\n" !slab_uapifnmaskstring; *)
 	!slab_uapifnmaskstring
 
 
@@ -589,7 +594,7 @@ let umfcommon_init g_slabsfile g_memoffsets g_rootdir =
 				Format.printf "  slabgsmfile=%s\n" (Hashtbl.find slab_idtogsm !i);      			
 				Format.printf "  slabmmapfile=%s\n" (Hashtbl.find slab_idtommapfile !i);      			
 			
-				if g_memoffsets then
+				if (g_memoffsets && ((compare (Hashtbl.find slab_idtosubtype !i) "XRICHGUEST") <> 0) ) then
 					begin
 						umfcommon_parse_mmap (Hashtbl.find slab_idtommapfile !i) !i !g_totalslabs;
 						Hashtbl.add slab_idtouapifnmask !i (umfcommon_parse_gsm (Hashtbl.find slab_idtogsm !i) !i !g_totalslabs true);

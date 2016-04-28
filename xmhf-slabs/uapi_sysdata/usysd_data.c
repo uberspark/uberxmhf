@@ -44,20 +44,21 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-// XMHF slab import library decls./defns.
-// author: amit vasudevan (amitvasudevan@acm.org)
+#include <xmhf.h>
+#include <xmhf-debug.h>
 
-#ifndef __XC_INIT_H__
-#define __XC_INIT_H__
+#include <xmhfgeec.h>
 
+#include <uapi_sysdata.h>
 
-#ifndef __ASSEMBLY__
-
-
-extern __attribute__(( section(".data") )) u32 __xcinit_smplock;
-
-
-#endif //__ASSEMBLY__
+/*
+ * sysdata (E820) state uAPI
+ *
+ * author: amit vasudevan (amitvasudevan@acm.org)
+ */
 
 
-#endif //__XC_INIT_H__
+
+__attribute__((section(".data"))) GRUBE820 usysd_memmapinfo[MAX_E820_ENTRIES];
+
+__attribute__((section(".data"))) u32 usysd_memmapinfo_maxindex=0;

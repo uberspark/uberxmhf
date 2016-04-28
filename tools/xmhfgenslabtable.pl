@@ -97,21 +97,41 @@ $i =0;
 $g_memmapaddr = hex $g_loadaddr;
 while($i < $g_totalslabs){
     #print "slabname: $slab_idtoname{$i}, code: $slab_idtocodesize{$i}, data: $slab_idtodatasize{$i}, stack: $slab_idtostacksize{$i}, dmadata: $slab_idtodmadatasize{$i} \n";
-    $slab_idtocode_addrstart{$i} = sprintf("0x%08x", $g_memmapaddr);
-    $g_memmapaddr += hex $slab_idtocodesize{$i};
-    $slab_idtocode_addrend{$i} = sprintf("0x%08x", $g_memmapaddr);
 
-    $slab_idtodata_addrstart{$i} = sprintf("0x%08x", $g_memmapaddr);
-    $g_memmapaddr += hex $slab_idtodatasize{$i};
-    $slab_idtodata_addrend{$i} = sprintf("0x%08x", $g_memmapaddr);
+    if($slab_idtosubtype{$i} ne "XRICHGUEST"){
 
-    $slab_idtostack_addrstart{$i} = sprintf("0x%08x", $g_memmapaddr);
-    $g_memmapaddr += hex $slab_idtostacksize{$i};
-    $slab_idtostack_addrend{$i} = sprintf("0x%08x", $g_memmapaddr);
+	    $slab_idtocode_addrstart{$i} = sprintf("0x%08x", $g_memmapaddr);
+	    $g_memmapaddr += hex $slab_idtocodesize{$i};
+	    $slab_idtocode_addrend{$i} = sprintf("0x%08x", $g_memmapaddr);
+	
+	    $slab_idtodata_addrstart{$i} = sprintf("0x%08x", $g_memmapaddr);
+	    $g_memmapaddr += hex $slab_idtodatasize{$i};
+	    $slab_idtodata_addrend{$i} = sprintf("0x%08x", $g_memmapaddr);
+	
+	    $slab_idtostack_addrstart{$i} = sprintf("0x%08x", $g_memmapaddr);
+	    $g_memmapaddr += hex $slab_idtostacksize{$i};
+	    $slab_idtostack_addrend{$i} = sprintf("0x%08x", $g_memmapaddr);
+	
+	    $slab_idtodmadata_addrstart{$i} = sprintf("0x%08x", $g_memmapaddr);
+	    $g_memmapaddr += hex $slab_idtodmadatasize{$i};
+	    $slab_idtodmadata_addrend{$i} = sprintf("0x%08x", $g_memmapaddr);
+    }else{
 
-    $slab_idtodmadata_addrstart{$i} = sprintf("0x%08x", $g_memmapaddr);
-    $g_memmapaddr += hex $slab_idtodmadatasize{$i};
-    $slab_idtodmadata_addrend{$i} = sprintf("0x%08x", $g_memmapaddr);
+
+	    $slab_idtocode_addrstart{$i} = sprintf("0x%08x", hex $slab_idtocodesize{$i});
+	    $slab_idtocode_addrend{$i} = sprintf("0x%08x", hex $slab_idtodatasize{$i});
+	
+	    $slab_idtodata_addrstart{$i} = sprintf("0x%08x", hex $slab_idtostacksize{$i});
+	    $slab_idtodata_addrend{$i} = sprintf("0x%08x", hex $slab_idtodmadatasize{$i});
+	
+	    $slab_idtostack_addrstart{$i} = sprintf("0x%08x", 0);
+	    $slab_idtostack_addrend{$i} = sprintf("0x%08x", 0);
+	
+	    $slab_idtodmadata_addrstart{$i} = sprintf("0x%08x", 0);
+	    $slab_idtodmadata_addrend{$i} = sprintf("0x%08x", 0);
+    	
+    	
+    }
 
     $i=$i+1;
 }
@@ -410,7 +430,7 @@ while( $i < $g_totalslabs ){
     #    print $fh "\n	    0x00000000UL,";
     #    $j=$j+1;
     #}
-    if($g_memoffsets eq "MEMOFFSETS"){
+    if($g_memoffsets eq "MEMOFFSETS" && $slab_idtosubtype{$i} ne "XRICHGUEST"){
         print $fh $slab_idtomemoffsetstring{$i};
     }else{
         print $fh "0";
@@ -481,18 +501,23 @@ print $fh "\n";
 
 $i =0;
 while($i < $g_totalslabs){
-    print $fh "\n	.slab_$slab_idtoname{$i} : {";
-    print $fh "\n		. = ALIGN(1);";
-    print $fh "\n		_objs_slab_$slab_idtoname{$i}/$slab_idtoname{$i}.slo(.slabcode)";
-    print $fh "\n		. = ALIGN(1);";
-    print $fh "\n		_objs_slab_$slab_idtoname{$i}/$slab_idtoname{$i}.slo(.slabdata)";
-    print $fh "\n		. = ALIGN(1);";
-    print $fh "\n		_objs_slab_$slab_idtoname{$i}/$slab_idtoname{$i}.slo(.slabstack)";
-    print $fh "\n		. = ALIGN(1);";
-    print $fh "\n		_objs_slab_$slab_idtoname{$i}/$slab_idtoname{$i}.slo(.slabdmadata)";
-    print $fh "\n		. = ALIGN(1);";
-    print $fh "\n	} >all=0x0000";
-    print $fh "\n";
+
+    if($slab_idtosubtype{$i} ne "XRICHGUEST"){
+
+	    print $fh "\n	.slab_$slab_idtoname{$i} : {";
+	    print $fh "\n		. = ALIGN(1);";
+	    print $fh "\n		_objs_slab_$slab_idtoname{$i}/$slab_idtoname{$i}.slo(.slabcode)";
+	    print $fh "\n		. = ALIGN(1);";
+	    print $fh "\n		_objs_slab_$slab_idtoname{$i}/$slab_idtoname{$i}.slo(.slabdata)";
+	    print $fh "\n		. = ALIGN(1);";
+	    print $fh "\n		_objs_slab_$slab_idtoname{$i}/$slab_idtoname{$i}.slo(.slabstack)";
+	    print $fh "\n		. = ALIGN(1);";
+	    print $fh "\n		_objs_slab_$slab_idtoname{$i}/$slab_idtoname{$i}.slo(.slabdmadata)";
+	    print $fh "\n		. = ALIGN(1);";
+	    print $fh "\n	} >all=0x0000";
+	    print $fh "\n";
+    
+    }
 
     $i=$i+1;
 }

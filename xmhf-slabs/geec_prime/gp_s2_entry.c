@@ -54,7 +54,10 @@
 
 
 void gp_s2_entry(void){
+	//intialize system memory map
+	gp_s2_initsysmemmap();
 
+	//initialize slab device mapping
 	gp_s2_setupslabdevmap();
 
 
@@ -101,6 +104,11 @@ void gp_s2_entry(void){
 }
 
 
+
+
+////[debug]
+//_XDPRINTF_("%s: XMHF Tester Finished!\n", __func__);
+//CASM_FUNCCALL(xmhfhw_cpu_hlt, CASM_NOPARAM);
 
 
 

@@ -58,12 +58,18 @@
 @*/
 u32 xc_hcbinvoke(u32 src_slabid, u32 cpuid, u32 cbtype, u32 cbqual, u32 guest_slab_index);
 
-void xcihub_icptvmcall(u32 cpuid);
+void xcihub_icptvmcall(u32 cpuid, u32 src_slabid);
 void xcihub_icptcpuid(u32 cpuid);
 void xcihub_icptwrmsr(u32 cpuid);
 void xcihub_icptrdmsr(u32 cpuid);
+void xcihub_icptcrx(u32 cpuid, u32 src_slabid);
+void xcihub_icptxsetbv(u32 cpuid);
+void xcihub_icptsipi(u32 cpuid);
 void xcihub_halt(u32 cpuid, u32 info_vmexit_reason);
 
+bool xcihub_rg_e820emulation(u32 cpuid, u32 src_slabid);
+
+extern __attribute__(( section(".data") )) volatile u32 xcihub_smplock;
 
 
 
