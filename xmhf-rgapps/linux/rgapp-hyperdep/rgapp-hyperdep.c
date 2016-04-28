@@ -23,6 +23,19 @@ __attribute__((aligned(4096))) static u8 testxhhyperdep_page[4096];
 
 typedef void (*DEPFN)(void);
 
+static void __vmcall(u32 eax, u32 ebx, u32 edx){
+	asm volatile (
+			"movl %0, %%eax \r\n"
+			"movl %1, %%ebx \r\n"
+			"movl %2, %%edx \r\n"
+			"vmcall \r\n"
+			: /*no output*/
+			: "g" (eax), "g" (edx), "g" (ebx)
+			: "%eax", "%ebx", "%edx"
+	);
+}
+
+
 void do_testxhhyperdep(void){
     u32 gpa = &testxhhyperdep_page;
     DEPFN fn = (DEPFN)gpa;
@@ -32,7 +45,7 @@ void do_testxhhyperdep(void){
     printf("\n%s: Going to activate DEP on page %x", __FUNCTION__, gpa);
 
 
-    //vmcall(HYPERDEP_ACTIVATEDEP,  0, gpa);
+    __vmcall(HYPERDEP_ACTIVATEDEP,  0, gpa);
 
     printf("\n%s: Activated DEP", __FUNCTION__);
 
@@ -40,7 +53,7 @@ void do_testxhhyperdep(void){
 
     printf("\n%s: Going to de-activate DEP on page %x", __FUNCTION__, gpa);
 
-    //vmcall(HYPERDEP_DEACTIVATEDEP,  0, gpa);
+    __vmcall(HYPERDEP_DEACTIVATEDEP,  0, gpa);
 
     printf("\n%s: Deactivated DEP", __FUNCTION__);
 
