@@ -44,6 +44,13 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
+
+/*
+ * XMHF core initialization slab code
+ *
+ * author: amit vasudevan (amitvasudevan@acm.org)
+ */
+
 #include <xmhf.h>
 #include <xmhf-debug.h>
 
@@ -52,8 +59,7 @@
 #include <geec_sentinel.h>
 #include <xc.h>
 #include <uapi_gcpustate.h>
-//#include <uapi_slabmemacc.h>
-#include <xg_richguest.h>
+#include <xg_benchguest.h>
 #include <xc_testslab.h>
 #include <xh_hyperdep.h>
 #include <xh_syscalllog.h>
@@ -62,190 +68,401 @@
 
 #include <xc_init.h>
 
-//extern x_slab_info_t _xxmhfgeec_slab_info_table[XMHFGEEC_TOTAL_SLABS];
 
 
 //////
-//XMHF_SLABNEW(xcinit)
+// test slab invocation fragment
+//////
+static void xcinit_do_test(slab_params_t *sp){
+	slab_params_t spl;
+	spl.src_slabid = XMHFGEEC_SLAB_XC_INIT;
+	spl.dst_slabid = XMHFGEEC_SLAB_XC_TESTSLAB;
+	spl.cpuid = sp->cpuid;
+	spl.dst_uapifn = 0;
+	spl.in_out_params[0] = 0xF00DDEAD;
+	_XDPRINTF_("XC_INIT[%u]: proceeding to call test slab, esp=%x\n", (u16)sp->cpuid, CASM_FUNCCALL(read_esp,CASM_NOPARAM));
+	XMHF_SLAB_CALLNEW(&spl);
+	_XDPRINTF_("XC_INIT[%u]: came back from test slab, esp=%x\n", (u16)sp->cpuid, CASM_FUNCCALL(read_esp,CASM_NOPARAM));
+	_XDPRINTF_("XC_INIT[%u]: called test slab, return value=%x\n",
+			   (u16)sp->cpuid, spl.in_out_params[1]);
+}
+
 
 /*
- * slab code
- *
- * author: amit vasudevan (amitvasudevan@acm.org)
- */
+//////
+// call guest uobj
+//////
+static void xcinit_do_callguest(slab_params_t *sp){
+	slab_params_t spl;
+
+	memset(&spl, 0, sizeof(spl));
+	spl.cpuid = sp->cpuid;
+	spl.src_slabid = XMHFGEEC_SLAB_XC_INIT;
+	spl.dst_slabid = XMHFGEEC_SLAB_XG_BENCHGUEST;
+	XMHF_SLAB_CALLNEW(&spl);
+}
+*/
 
 
-__attribute__(( aligned(16) )) static u64 _xcguestslab_init_gdt[]  = {
-	0x0000000000000000ULL,	//NULL descriptor
-	0x00cf9b000000ffffULL,	//CPL-0 32-bit code descriptor (CS32)
-	0x00cf93000000ffffULL,	//CPL-0 32-bit data descriptor (DS/SS/ES/FS/GS)
-	0x0000000000000000ULL,	//NULL descriptor
-};
+//////
+// call guest uobj
+//////
+static void xcinit_do_callguest(slab_params_t *sp){
+	slab_params_t spl;
 
+	memset(&spl, 0, sizeof(spl));
+	spl.cpuid = sp->cpuid;
+	spl.src_slabid = XMHFGEEC_SLAB_XC_INIT;
+	spl.dst_slabid = XMHFGEEC_SLAB_XG_RICHGUEST;
+	XMHF_SLAB_CALLNEW(&spl);
 
-
-static u32 xc_hcbinvoke(u32 src_slabid, u32 cpuid, u32 cbtype, u32 cbqual, u32 guest_slab_index){
-    u32 status = XC_HYPAPPCB_CHAIN;
-    u32 i;
-    slab_params_t spl;
-    xc_hypappcb_params_t *hcbp = (xc_hypappcb_params_t *)&spl.in_out_params[0];
-
-    spl.src_slabid = src_slabid;
-    spl.cpuid = cpuid;
-    spl.dst_uapifn = 0;
-    hcbp->cbtype=cbtype;
-    hcbp->cbqual=cbqual;
-    hcbp->guest_slab_index=guest_slab_index;
-
-    for(i=0; i < HYPAPP_INFO_TABLE_NUMENTRIES; i++){
-        if(_xcihub_hypapp_info_table[i].cbmask & XC_HYPAPPCB_MASK(cbtype)){
-            spl.dst_slabid = _xcihub_hypapp_info_table[i].xmhfhic_slab_index;
-            XMHF_SLAB_CALLNEW(&spl);
-            if(hcbp->cbresult == XC_HYPAPPCB_NOCHAIN){
-                status = XC_HYPAPPCB_NOCHAIN;
-                break;
-            }
-        }
-    }
-
-    return status;
 }
 
 
 
-void slab_main(slab_params_t *sp){
 
-    //bool isbsp = (sp->cpuid & 0x80000000UL) ? true : false;
-    bool isbsp = xmhfhw_lapic_isbsp();
-    u64 inputval, outputval;
-    //static u64 cpucount=0;
-    static u32 __xcinit_smplock = 1;
+//////
+// setup guest uobj
+//////
+static void xcinit_setup_guest(slab_params_t *sp, bool isbsp){
+/*
+	u8 rg_bootcode[]  = {
+		0x0F, 0x01, 0xC1, //VMCALL
+		0xEB, 0xFE,	//JMP EIP
+		0x90,		//NOP
+		0x90,		//NOP
+	};
+	u8 rg_bootcode_verif[7];
 
-    //_XDPRINTF_("XC_INIT[%u]: got control: ESP=%08x\n", __func__, (u16)sp->cpuid, CASM_FUNCCALL(read_esp,CASM_NOPARAM));
+	//write boot code to guest boot area, if we are the BSP
+	if(isbsp){
+		_XDPRINTF_("%s[%u]: BSP: writing boot-code...\n", __func__, (u16)sp->cpuid);
+		CASM_FUNCCALL(xmhfhw_sysmem_copy_obj2sys, (u8 *)0x00007C00, &rg_bootcode, sizeof(rg_bootcode));
+		_XDPRINTF_("%s[%u]: BSP: boot-code written successfully\n", __func__, (u16)sp->cpuid);
+		_XDPRINTF_("%s[%u]: BSP: reading boot-code...\n", __func__, (u16)sp->cpuid);
+		CASM_FUNCCALL(xmhfhw_sysmem_copy_sys2obj, &rg_bootcode_verif, (u8 *)0x00007C00, sizeof(rg_bootcode_verif));
+		_XDPRINTF_("%s[%u]: BSP: boot-code: %02x %02x %02x %02x...\n", __func__, (u16)sp->cpuid,
+				rg_bootcode_verif[0], rg_bootcode_verif[1], rg_bootcode_verif[2], rg_bootcode_verif[3]);
+	}
+*/
 
-    if(!isbsp){
-        //_XDPRINTF_("XC_INIT[%u]: AP Halting!\n", __func__, (u16)sp->cpuid);
+	//setup guest slab VMCS state
+	{
+		slab_params_t spl;
+		xmhf_uapi_gcpustate_vmrw_params_t *gcpustate_vmrwp =
+			(xmhf_uapi_gcpustate_vmrw_params_t *)spl.in_out_params;
 
-        //CASM_FUNCCALL(spin_lock,&__xcinit_smplock);
-        //cpucount++;
-        //CASM_FUNCCALL(spin_unlock,&__xcinit_smplock);
+		spl.cpuid = sp->cpuid;
+		spl.src_slabid = XMHFGEEC_SLAB_XC_INIT;
+		spl.dst_slabid = XMHFGEEC_SLAB_UAPI_GCPUSTATE;
+		spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_VMWRITE;
 
-        HALT();
-    }else{
-        //BSP
-        //_XDPRINTF_("%s[%u]: BSP waiting to rally APs...\n",
-        //        __func__, (u16)sp->cpuid);
-
-        //while(cpucount < (xcbootinfo->cpuinfo_numentries-1));
-
-        //_XDPRINTF_("XC_INIT[%u]: BSP proceeding...\n",
-        //        __func__, (u16)sp->cpuid);
-    }
-
-    _XDPRINTF_("XC_INIT[%u]: got control: ESP=%08x\n", (u16)sp->cpuid, CASM_FUNCCALL(read_esp,CASM_NOPARAM));
-
-
-    // call test slab
-    {
-        slab_params_t spl;
-        spl.src_slabid = XMHFGEEC_SLAB_XC_INIT;
-        spl.dst_slabid = XMHFGEEC_SLAB_XC_TESTSLAB;
-        spl.cpuid = 0;
-        spl.dst_uapifn = 0;
-        spl.in_out_params[0] = 0xF00DDEAD;
-        _XDPRINTF_("XC_INIT[%u]: proceeding to call test slab, esp=%x\n", (u16)sp->cpuid, CASM_FUNCCALL(read_esp,CASM_NOPARAM));
-        XMHF_SLAB_CALLNEW(&spl);
-        _XDPRINTF_("XC_INIT[%u]: came back from test slab, esp=%x\n", (u16)sp->cpuid, CASM_FUNCCALL(read_esp,CASM_NOPARAM));
-        _XDPRINTF_("XC_INIT[%u]: called test slab, return value=%x\n",
-                   (u16)sp->cpuid, spl.in_out_params[1]);
-        //HALT();
-    }
-
-
-
-    {
-        u32 guest_slab_header_paddr = xmhfgeec_slab_info_table[XMHFGEEC_SLAB_XG_RICHGUEST].slab_physmem_extents[1].addr_start;
-        u32 guest_slab_gdt_paddr = guest_slab_header_paddr + offsetof(guest_slab_header_t, gdt);
-        u32 guest_slab_magic_paddr = guest_slab_header_paddr + offsetof(guest_slab_header_t, magic);
-        u32 guest_slab_magic;
-
-
-        //get and dump slab header magic
-        {
-            //slab_params_t spl;
-            //xmhf_hic_uapi_physmem_desc_t *pdesc = (xmhf_hic_uapi_physmem_desc_t *)&spl.in_out_params[2];
-            //xmhf_uapi_slabmemacc_params_t *smemaccp = (xmhf_uapi_slabmemacc_params_t *)spl.in_out_params;
-
-
-            //smemaccp->dst_slabid = XMHFGEEC_SLAB_XG_RICHGUEST;
-            //smemaccp->addr_to = &guest_slab_magic;
-            //smemaccp->addr_from = guest_slab_magic_paddr;
-            //smemaccp->numbytes = sizeof(guest_slab_magic);
-
-            //spl.in_out_params[0] = XMHF_HIC_UAPI_PHYSMEM;
-            //spl.dst_uapifn = XMHF_HIC_UAPI_PHYSMEM_PEEK;
-            //spl.cpuid = sp->cpuid;
-            //spl.src_slabid = XMHFGEEC_SLAB_XC_INIT;
-            //spl.dst_slabid = XMHFGEEC_SLAB_UAPI_SLABMEMACC;
-
-            //XMHF_SLAB_CALLNEW(&spl);
-            CASM_FUNCCALL(xmhfhw_sysmemaccess_copy, &guest_slab_magic,
-			guest_slab_magic_paddr, sizeof(guest_slab_magic));
-            _XDPRINTF_("%s[%u]: guest slab header at=%x\n", __func__, (u16)sp->cpuid, guest_slab_header_paddr);
-            _XDPRINTF_("%s[%u]: guest slab header magic=%x\n", __func__, (u16)sp->cpuid, guest_slab_magic);
-        }
-
-
-        //initialize guest slab gdt
-        {
-            //slab_params_t spl;
-            //xmhf_hic_uapi_physmem_desc_t *pdesc = (xmhf_hic_uapi_physmem_desc_t *)&spl.in_out_params[2];
-            //xmhf_uapi_slabmemacc_params_t *smemaccp = (xmhf_uapi_slabmemacc_params_t *)spl.in_out_params;
-
-            /*smemaccp->dst_slabid = XMHFGEEC_SLAB_XG_RICHGUEST;
-            smemaccp->addr_to = guest_slab_gdt_paddr;
-            smemaccp->addr_from = &_xcguestslab_init_gdt;
-            smemaccp->numbytes = sizeof(_xcguestslab_init_gdt);
-
-            //spl.in_out_params[0] = XMHF_HIC_UAPI_PHYSMEM;
-            spl.dst_uapifn = XMHF_HIC_UAPI_PHYSMEM_POKE;
-            spl.cpuid = sp->cpuid;
-            spl.src_slabid = XMHFGEEC_SLAB_XC_INIT;
-            spl.dst_slabid = XMHFGEEC_SLAB_UAPI_SLABMEMACC;
-
-            XMHF_SLAB_CALLNEW(&spl);*/
-            CASM_FUNCCALL(xmhfhw_sysmemaccess_copy, guest_slab_gdt_paddr,
-			&_xcguestslab_init_gdt, sizeof(_xcguestslab_init_gdt));
-        }
-
-        //setup guest slab VMCS GDT base and limit
-        {
-            slab_params_t spl;
-            xmhf_uapi_gcpustate_vmrw_params_t *gcpustate_vmrwp =
-                (xmhf_uapi_gcpustate_vmrw_params_t *)spl.in_out_params;
-
-            spl.cpuid = sp->cpuid;
-            spl.src_slabid = XMHFGEEC_SLAB_XC_INIT;
-            spl.dst_slabid = XMHFGEEC_SLAB_UAPI_GCPUSTATE;
-
-            //spl.in_out_params[0] = XMHF_HIC_UAPI_CPUSTATE;
-            spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_VMWRITE;
-            gcpustate_vmrwp->encoding = VMCS_GUEST_GDTR_BASE;
-            gcpustate_vmrwp->value = guest_slab_gdt_paddr;
-
-            XMHF_SLAB_CALLNEW(&spl);
-
-            gcpustate_vmrwp->encoding = VMCS_GUEST_GDTR_LIMIT;
-            gcpustate_vmrwp->value =  (sizeof(_xcguestslab_init_gdt)-1);
-
-            XMHF_SLAB_CALLNEW(&spl);
-
-
-		/*
-		gcpustate_vmrwp->encoding = ;
-		gcpustate_vmrwp->value = ;
+		//generic guest VMCS setup
+		gcpustate_vmrwp->encoding = VMCS_CONTROL_CR4_SHADOW;
+		gcpustate_vmrwp->value =(u64)CR4_VMXE;
 		XMHF_SLAB_CALLNEW(&spl);
-		*/
+
+		gcpustate_vmrwp->encoding = VMCS_CONTROL_PAGEFAULT_ERRORCODE_MASK;
+		gcpustate_vmrwp->value = 0x00000000;
+		XMHF_SLAB_CALLNEW(&spl);
+
+		gcpustate_vmrwp->encoding = VMCS_CONTROL_PAGEFAULT_ERRORCODE_MATCH;
+		gcpustate_vmrwp->value = 0x00000000;
+		XMHF_SLAB_CALLNEW(&spl);
+
+		gcpustate_vmrwp->encoding = VMCS_CONTROL_EXCEPTION_BITMAP;
+		gcpustate_vmrwp->value = 0;
+		XMHF_SLAB_CALLNEW(&spl);
+
+		gcpustate_vmrwp->encoding = VMCS_CONTROL_CR3_TARGET_COUNT;
+		gcpustate_vmrwp->value = 0;
+		XMHF_SLAB_CALLNEW(&spl);
+
+		gcpustate_vmrwp->encoding = VMCS_CONTROL_VM_ENTRY_EXCEPTION_ERRORCODE;
+		gcpustate_vmrwp->value = 0;
+		XMHF_SLAB_CALLNEW(&spl);
+
+		gcpustate_vmrwp->encoding = VMCS_CONTROL_VM_ENTRY_INTERRUPTION_INFORMATION;
+		gcpustate_vmrwp->value = 0;
+		XMHF_SLAB_CALLNEW(&spl);
+
+		//GDTR
+		gcpustate_vmrwp->encoding = VMCS_GUEST_GDTR_BASE;
+		gcpustate_vmrwp->value = 0;
+		XMHF_SLAB_CALLNEW(&spl);
+
+		gcpustate_vmrwp->encoding = VMCS_GUEST_GDTR_LIMIT;
+		gcpustate_vmrwp->value = 0;
+		XMHF_SLAB_CALLNEW(&spl);
+
+		//IDTR
+		gcpustate_vmrwp->encoding = VMCS_GUEST_IDTR_BASE;
+		gcpustate_vmrwp->value = 0;
+		XMHF_SLAB_CALLNEW(&spl);
+
+		gcpustate_vmrwp->encoding = VMCS_GUEST_IDTR_LIMIT;
+		gcpustate_vmrwp->value = 0x3ff;
+		XMHF_SLAB_CALLNEW(&spl);
+
+		//LDTR, unusable
+		gcpustate_vmrwp->encoding = VMCS_GUEST_LDTR_BASE;
+		gcpustate_vmrwp->value = 0;
+		XMHF_SLAB_CALLNEW(&spl);
+
+		gcpustate_vmrwp->encoding = VMCS_GUEST_LDTR_LIMIT;
+		gcpustate_vmrwp->value = 0;
+		XMHF_SLAB_CALLNEW(&spl);
+
+		gcpustate_vmrwp->encoding = VMCS_GUEST_LDTR_SELECTOR;
+		gcpustate_vmrwp->value = 0 ;
+		XMHF_SLAB_CALLNEW(&spl);
+
+		gcpustate_vmrwp->encoding = VMCS_GUEST_LDTR_ACCESS_RIGHTS;
+		gcpustate_vmrwp->value = 0x10000;
+		XMHF_SLAB_CALLNEW(&spl);
+
+		//TR
+		gcpustate_vmrwp->encoding = VMCS_GUEST_TR_BASE ;
+		gcpustate_vmrwp->value = 0;
+		XMHF_SLAB_CALLNEW(&spl);
+
+		gcpustate_vmrwp->encoding = VMCS_GUEST_TR_LIMIT;
+		gcpustate_vmrwp->value = 0;
+		XMHF_SLAB_CALLNEW(&spl);
+
+		gcpustate_vmrwp->encoding = VMCS_GUEST_TR_SELECTOR;
+		gcpustate_vmrwp->value = 0;
+		XMHF_SLAB_CALLNEW(&spl);
+
+		gcpustate_vmrwp->encoding = VMCS_GUEST_TR_ACCESS_RIGHTS;
+		gcpustate_vmrwp->value = 0x83;
+		XMHF_SLAB_CALLNEW(&spl);
+
+		//CS segment
+		gcpustate_vmrwp->encoding = VMCS_GUEST_CS_SELECTOR;
+		gcpustate_vmrwp->value = 0x0;
+		XMHF_SLAB_CALLNEW(&spl);
+
+		gcpustate_vmrwp->encoding = VMCS_GUEST_CS_BASE;
+		gcpustate_vmrwp->value = 0;
+		XMHF_SLAB_CALLNEW(&spl);
+
+		gcpustate_vmrwp->encoding = VMCS_GUEST_CS_LIMIT;
+		gcpustate_vmrwp->value = 0x0000FFFFUL;
+		XMHF_SLAB_CALLNEW(&spl);
+
+		gcpustate_vmrwp->encoding = VMCS_GUEST_CS_ACCESS_RIGHTS;
+		gcpustate_vmrwp->value = 0x0093;
+		XMHF_SLAB_CALLNEW(&spl);
+
+		//DS segment
+		gcpustate_vmrwp->encoding = VMCS_GUEST_DS_SELECTOR;
+		gcpustate_vmrwp->value = 0x0;
+		XMHF_SLAB_CALLNEW(&spl);
+
+		gcpustate_vmrwp->encoding = VMCS_GUEST_DS_BASE;
+		gcpustate_vmrwp->value = 0;
+		XMHF_SLAB_CALLNEW(&spl);
+
+		gcpustate_vmrwp->encoding = VMCS_GUEST_DS_LIMIT;
+		gcpustate_vmrwp->value = 0x0000FFFFUL;
+		XMHF_SLAB_CALLNEW(&spl);
+
+		gcpustate_vmrwp->encoding = VMCS_GUEST_DS_ACCESS_RIGHTS;
+		gcpustate_vmrwp->value = 0x0093;
+		XMHF_SLAB_CALLNEW(&spl);
+
+		//ES segment
+		gcpustate_vmrwp->encoding = VMCS_GUEST_ES_SELECTOR;
+		gcpustate_vmrwp->value = 0x0 ;
+		XMHF_SLAB_CALLNEW(&spl);
+
+		gcpustate_vmrwp->encoding = VMCS_GUEST_ES_BASE;
+		gcpustate_vmrwp->value = 0;
+		XMHF_SLAB_CALLNEW(&spl);
+
+		gcpustate_vmrwp->encoding = VMCS_GUEST_ES_LIMIT;
+		gcpustate_vmrwp->value = 0x0000FFFFUL;
+		XMHF_SLAB_CALLNEW(&spl);
+
+		gcpustate_vmrwp->encoding = VMCS_GUEST_ES_ACCESS_RIGHTS;
+		gcpustate_vmrwp->value = 0x0093;
+		XMHF_SLAB_CALLNEW(&spl);
+
+		//FS segment
+		gcpustate_vmrwp->encoding = VMCS_GUEST_FS_SELECTOR;
+		gcpustate_vmrwp->value = 0x0 ;
+		XMHF_SLAB_CALLNEW(&spl);
+
+		gcpustate_vmrwp->encoding = VMCS_GUEST_FS_BASE;
+		gcpustate_vmrwp->value = 0;
+		XMHF_SLAB_CALLNEW(&spl);
+
+		gcpustate_vmrwp->encoding = VMCS_GUEST_FS_LIMIT;
+		gcpustate_vmrwp->value = 0x0000FFFFUL;
+		XMHF_SLAB_CALLNEW(&spl);
+
+		gcpustate_vmrwp->encoding = VMCS_GUEST_FS_ACCESS_RIGHTS;
+		gcpustate_vmrwp->value = 0x0093;
+		XMHF_SLAB_CALLNEW(&spl);
+
+		//GS segment
+		gcpustate_vmrwp->encoding = VMCS_GUEST_GS_SELECTOR;
+		gcpustate_vmrwp->value = 0x0 ;
+		XMHF_SLAB_CALLNEW(&spl);
+
+		gcpustate_vmrwp->encoding = VMCS_GUEST_GS_BASE;
+		gcpustate_vmrwp->value = 0;
+		XMHF_SLAB_CALLNEW(&spl);
+
+		gcpustate_vmrwp->encoding = VMCS_GUEST_GS_LIMIT;
+		gcpustate_vmrwp->value = 0x0000FFFFUL;
+		XMHF_SLAB_CALLNEW(&spl);
+
+		gcpustate_vmrwp->encoding = VMCS_GUEST_GS_ACCESS_RIGHTS;
+		gcpustate_vmrwp->value = 0x0093;
+		XMHF_SLAB_CALLNEW(&spl);
+
+		//SS segment
+		gcpustate_vmrwp->encoding = VMCS_GUEST_SS_SELECTOR;
+		gcpustate_vmrwp->value = 0x0 ;
+		XMHF_SLAB_CALLNEW(&spl);
+
+		gcpustate_vmrwp->encoding = VMCS_GUEST_SS_BASE;
+		gcpustate_vmrwp->value = 0;
+		XMHF_SLAB_CALLNEW(&spl);
+
+		gcpustate_vmrwp->encoding = VMCS_GUEST_SS_LIMIT;
+		gcpustate_vmrwp->value = 0x0000FFFFUL;
+		XMHF_SLAB_CALLNEW(&spl);
+
+		gcpustate_vmrwp->encoding = VMCS_GUEST_SS_ACCESS_RIGHTS;
+		gcpustate_vmrwp->value = 0x0093;
+		XMHF_SLAB_CALLNEW(&spl);
+
+		//guest EIP and activity state
+		if(isbsp){
+			_XDPRINTF_("%s[%u]: BSP: setting RIP and activity state for boot\n", __func__, (u16)sp->cpuid);
+			gcpustate_vmrwp->encoding = VMCS_GUEST_RIP;
+			gcpustate_vmrwp->value = 0x00007C00;
+			XMHF_SLAB_CALLNEW(&spl);
+
+			gcpustate_vmrwp->encoding = VMCS_GUEST_ACTIVITY_STATE;
+			gcpustate_vmrwp->value = 0;
+			XMHF_SLAB_CALLNEW(&spl);
+		}else{
+			gcpustate_vmrwp->encoding = VMCS_GUEST_RIP;
+			gcpustate_vmrwp->value = 0x00000000;
+			XMHF_SLAB_CALLNEW(&spl);
+
+			gcpustate_vmrwp->encoding = VMCS_GUEST_ACTIVITY_STATE;
+			gcpustate_vmrwp->value = 3;	//wait-for-SIPI
+			XMHF_SLAB_CALLNEW(&spl);
+		}
+
+		//interruptibility
+		gcpustate_vmrwp->encoding = VMCS_GUEST_INTERRUPTIBILITY;
+		gcpustate_vmrwp->value = 0;
+		XMHF_SLAB_CALLNEW(&spl);
+
+		//guest ESP
+		gcpustate_vmrwp->encoding = VMCS_GUEST_RSP;
+		gcpustate_vmrwp->value = 0;
+		XMHF_SLAB_CALLNEW(&spl);
+
+		//guest RFLAGS
+		gcpustate_vmrwp->encoding = VMCS_GUEST_RFLAGS;
+		gcpustate_vmrwp->value = ((((0 & ~((1<<3)|(1<<5)|(1<<15)) ) | (1 <<1)) | (1<<9)) & ~(1<<14));
+		XMHF_SLAB_CALLNEW(&spl);
+
+		//other guest GPRS (EAX, EBX, ECX, EDX, ESI, EDI, EBP)
+		spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSWRITE;
+		spl.in_out_params[0] = 0;	//EDI
+		spl.in_out_params[1] = 0;	//ESI
+		spl.in_out_params[2] = 0;	//EBP
+		spl.in_out_params[3] = 0;	//Reserved (ESP)
+		spl.in_out_params[4] = 0;	//EBX
+		spl.in_out_params[5] = 0;	//EDX
+		spl.in_out_params[6] = 0;	//ECX
+		spl.in_out_params[7] = 0;	//EAX
+		XMHF_SLAB_CALLNEW(&spl);
+
+		//guest control registers (CR0, CR3 and CR0_SHADOW)
+		spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_VMREAD;
+		gcpustate_vmrwp->encoding = VMCS_GUEST_CR0;
+		XMHF_SLAB_CALLNEW(&spl);
+		spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_VMWRITE;
+		gcpustate_vmrwp->encoding = VMCS_GUEST_CR0;
+		gcpustate_vmrwp->value = gcpustate_vmrwp->value & ~(CR0_PE) & ~(CR0_PG);
+		XMHF_SLAB_CALLNEW(&spl);
+		gcpustate_vmrwp->encoding = VMCS_GUEST_CR3;
+		gcpustate_vmrwp->value = 0;
+		XMHF_SLAB_CALLNEW(&spl);
+		spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_VMREAD;
+		gcpustate_vmrwp->encoding = VMCS_GUEST_CR0;
+		XMHF_SLAB_CALLNEW(&spl);
+		spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_VMWRITE;
+		gcpustate_vmrwp->encoding = VMCS_CONTROL_CR0_SHADOW;
+		XMHF_SLAB_CALLNEW(&spl);
+
+	}
+
+
+
+}
+
+/*
+//////
+// setup guest uobj
+//////
+static void xcinit_setup_guest(slab_params_t *sp, bool isbsp){
+	__attribute__(( aligned(16) )) static u64 _xcguestslab_init_gdt[]  = {
+		0x0000000000000000ULL,	//NULL descriptor
+		0x00cf9b000000ffffULL,	//CPL-0 32-bit code descriptor (CS32)
+		0x00cf93000000ffffULL,	//CPL-0 32-bit data descriptor (DS/SS/ES/FS/GS)
+		0x0000000000000000ULL,	//NULL descriptor
+	};
+    u32 guest_slab_header_paddr = xmhfgeec_slab_info_table[XMHFGEEC_SLAB_XG_BENCHGUEST].slab_physmem_extents[1].addr_start;
+    u32 guest_slab_gdt_paddr = guest_slab_header_paddr + offsetof(guest_slab_header_t, gdt);
+    u32 guest_slab_magic_paddr = guest_slab_header_paddr + offsetof(guest_slab_header_t, magic);
+    u32 guest_slab_magic;
+
+	//get and dump slab header magic
+	{
+		CASM_FUNCCALL(xmhfhw_sysmemaccess_copy, &guest_slab_magic,
+		guest_slab_magic_paddr, sizeof(guest_slab_magic));
+		_XDPRINTF_("%s[%u]: guest slab header at=%x\n", __func__, (u16)sp->cpuid, guest_slab_header_paddr);
+		_XDPRINTF_("%s[%u]: guest slab header magic=%x\n", __func__, (u16)sp->cpuid, guest_slab_magic);
+	}
+
+
+	//initialize guest slab gdt
+	{
+		CASM_FUNCCALL(xmhfhw_sysmemaccess_copy, guest_slab_gdt_paddr,
+		&_xcguestslab_init_gdt, sizeof(_xcguestslab_init_gdt));
+	}
+
+	//setup guest slab VMCS state
+	{
+		slab_params_t spl;
+		xmhf_uapi_gcpustate_vmrw_params_t *gcpustate_vmrwp =
+			(xmhf_uapi_gcpustate_vmrw_params_t *)spl.in_out_params;
+
+		spl.cpuid = sp->cpuid;
+		spl.src_slabid = XMHFGEEC_SLAB_XC_INIT;
+		spl.dst_slabid = XMHFGEEC_SLAB_UAPI_GCPUSTATE;
+
+		spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_VMWRITE;
+		gcpustate_vmrwp->encoding = VMCS_GUEST_GDTR_BASE;
+		gcpustate_vmrwp->value = guest_slab_gdt_paddr;
+
+		XMHF_SLAB_CALLNEW(&spl);
+
+		gcpustate_vmrwp->encoding = VMCS_GUEST_GDTR_LIMIT;
+		gcpustate_vmrwp->value =  (sizeof(_xcguestslab_init_gdt)-1);
+
+		XMHF_SLAB_CALLNEW(&spl);
+
 
 		//more guest-specific state setup
 		gcpustate_vmrwp->encoding = VMCS_CONTROL_CR4_SHADOW;
@@ -464,7 +681,132 @@ void slab_main(slab_params_t *sp){
 
 	}
 
+}
+*/
+
+
+//////
+// invoke hypapp initialization callbacks
+//////
+static u32 xc_hcbinvoke(u32 src_slabid, u32 cpuid, u32 cbtype, u32 cbqual, u32 guest_slab_index){
+    u32 status = XC_HYPAPPCB_CHAIN;
+    u32 i;
+    slab_params_t spl;
+    xc_hypappcb_params_t *hcbp = (xc_hypappcb_params_t *)&spl.in_out_params[0];
+
+    spl.src_slabid = src_slabid;
+    spl.cpuid = cpuid;
+    spl.dst_uapifn = 0;
+    hcbp->cbtype=cbtype;
+    hcbp->cbqual=cbqual;
+    hcbp->guest_slab_index=guest_slab_index;
+
+    for(i=0; i < HYPAPP_INFO_TABLE_NUMENTRIES; i++){
+        if(_xcihub_hypapp_info_table[i].cbmask & XC_HYPAPPCB_MASK(cbtype)){
+            spl.dst_slabid = _xcihub_hypapp_info_table[i].xmhfhic_slab_index;
+            XMHF_SLAB_CALLNEW(&spl);
+            if(hcbp->cbresult == XC_HYPAPPCB_NOCHAIN){
+                status = XC_HYPAPPCB_NOCHAIN;
+                break;
+            }
+        }
     }
+
+    return status;
+}
+
+
+//////
+// setup E820 hook for guest uobj
+//////
+static void	xcinit_e820initializehooks(void){
+		u16 orig_int15h_ip, orig_int15h_cs;
+
+		//implant VMCALL followed by IRET at 0040:04AC
+		CASM_FUNCCALL(xmhfhw_sysmemaccess_writeu8, 0x4ac, 0x0f); //VMCALL
+		CASM_FUNCCALL(xmhfhw_sysmemaccess_writeu8, 0x4ad, 0x01);
+		CASM_FUNCCALL(xmhfhw_sysmemaccess_writeu8, 0x4ae, 0xc1);
+		CASM_FUNCCALL(xmhfhw_sysmemaccess_writeu8, 0x4af, 0xcf); //IRET
+
+		//store original INT 15h handler CS:IP following VMCALL and IRET
+		orig_int15h_ip = CASM_FUNCCALL(xmhfhw_sysmemaccess_readu16, 0x54);
+		orig_int15h_cs = CASM_FUNCCALL(xmhfhw_sysmemaccess_readu16, 0x56);
+		CASM_FUNCCALL(xmhfhw_sysmemaccess_writeu16, 0x4b0, orig_int15h_ip); //original INT 15h IP
+		CASM_FUNCCALL(xmhfhw_sysmemaccess_writeu16, 0x4b2, orig_int15h_cs); //original INT 15h CS
+
+		//point IVT INT15 handler to the VMCALL instruction
+		CASM_FUNCCALL(xmhfhw_sysmemaccess_writeu16, 0x54, 0x00ac);
+		CASM_FUNCCALL(xmhfhw_sysmemaccess_writeu16, 0x56, 0x0040);
+}
+
+
+//////
+// copy guest boot module into appropriate location
+//////
+static void	xcinit_copyguestbootmodule(u32 g_bm_base, u32 g_bm_size){
+	_XDPRINTF_("%s: boot-module at 0x%08x, size=0x%08x (%u) bytes\n", __func__, g_bm_base, g_bm_size, g_bm_size);
+	CASM_FUNCCALL(xmhfhw_sysmemaccess_copy, 0x00007C00, g_bm_base, g_bm_size);
+}
+
+
+void slab_main(slab_params_t *sp){
+    bool isbsp = xmhfhw_lapic_isbsp();
+
+    #if defined (__DEBUG_SERIAL__)
+	static volatile u32 cpucount=0;
+	#endif //__DEBUG_SERIAL__
+
+
+    //grab lock
+    CASM_FUNCCALL(spin_lock,&__xcinit_smplock);
+
+    _XDPRINTF_("XC_INIT[%u]: got control: ESP=%08x\n", (u16)sp->cpuid, CASM_FUNCCALL(read_esp,CASM_NOPARAM));
+
+    //test uboj invocation
+    xcinit_do_test(sp);
+
+    //plant int 15h redirection code for E820 reporting and copy boot-module
+    if(isbsp){
+        _XDPRINTF_("XC_INIT[%u]: BSP: Proceeding to install E820 redirection...\n", (u16)sp->cpuid);
+    	xcinit_e820initializehooks();
+        _XDPRINTF_("XC_INIT[%u]: BSP: E820 redirection enabled\n", (u16)sp->cpuid);
+        _XDPRINTF_("XC_INIT[%u]: BSP: Proceeding to copy guest boot-module...\n", (u16)sp->cpuid);
+    	xcinit_copyguestbootmodule(sp->in_out_params[0], sp->in_out_params[1]);
+        _XDPRINTF_("XC_INIT[%u]: BSP: guest boot-module copied\n", (u16)sp->cpuid);
+    }
+
+    //setup guest uobj state
+    xcinit_setup_guest(sp, isbsp);
+
+    //invoke hypapp initialization callbacks
+    xc_hcbinvoke(XMHFGEEC_SLAB_XC_INIT, sp->cpuid, XC_HYPAPPCB_INITIALIZE, 0, XMHFGEEC_SLAB_XG_BENCHGUEST);
+
+
+    _XDPRINTF_("XC_INIT[%u]: Proceeding to call guest: ESP=%08x, eflags=%08x\n", (u16)sp->cpuid,
+    		CASM_FUNCCALL(read_esp,CASM_NOPARAM), CASM_FUNCCALL(read_eflags, CASM_NOPARAM));
+
+	#if defined (__DEBUG_SERIAL__)
+	cpucount++;
+	#endif //__DEBUG_SERIAL__
+
+    //release lock
+    CASM_FUNCCALL(spin_unlock,&__xcinit_smplock);
+
+
+    #if defined (__DEBUG_SERIAL__)
+    while(cpucount < __XMHF_CONFIG_DEBUG_SERIAL_MAXCPUS__);
+    #endif //__DEBUG_SERIAL__
+
+    //call guest
+    xcinit_do_callguest(sp);
+
+
+    //_XDPRINTF_("%s[%u]: Should  never get here.Halting!\n", __func__, (u16)sp->cpuid);
+    HALT();
+
+    return;
+}
+
 
 
 /*    //debug
@@ -472,35 +814,6 @@ void slab_main(slab_params_t *sp){
     _XDPRINTF_("XMHF Tester Finished!\n");
     HALT();
 */
-
-    //invoke hypapp initialization callbacks
-    xc_hcbinvoke(XMHFGEEC_SLAB_XC_INIT,
-                 sp->cpuid, XC_HYPAPPCB_INITIALIZE, 0, XMHFGEEC_SLAB_XG_RICHGUEST);
-
-
-    //call guestslab
-    {
-        slab_params_t spl;
-
-        memset(&spl, 0, sizeof(spl));
-        spl.cpuid = sp->cpuid;
-        spl.src_slabid = XMHFGEEC_SLAB_XC_INIT;
-        spl.dst_slabid = XMHFGEEC_SLAB_XG_RICHGUEST;
-
-        _XDPRINTF_("%s[%u]: Proceeding to call xcguestslab; ESP=%08x, eflags=%08x\n", __func__, (u16)sp->cpuid, CASM_FUNCCALL(read_esp,CASM_NOPARAM),
-			CASM_FUNCCALL(read_eflags, CASM_NOPARAM));
-
-        XMHF_SLAB_CALLNEW(&spl);
-    }
-
-
-    _XDPRINTF_("%s[%u]: Should  never get here.Halting!\n", __func__, (u16)sp->cpuid);
-    HALT();
-
-    return;
-}
-
-
 
 
 

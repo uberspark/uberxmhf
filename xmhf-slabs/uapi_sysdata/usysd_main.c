@@ -44,20 +44,34 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-// XMHF slab import library decls./defns.
-// author: amit vasudevan (amitvasudevan@acm.org)
+/*
+ * sysdata (E820) state uAPI
+ *
+ * author: amit vasudevan (amitvasudevan@acm.org)
+ */
 
-#ifndef __XC_INIT_H__
-#define __XC_INIT_H__
+#include <xmhf.h>
+#include <xmhf-debug.h>
 
+#include <xmhfgeec.h>
 
-#ifndef __ASSEMBLY__
-
-
-extern __attribute__(( section(".data") )) u32 __xcinit_smplock;
-
-
-#endif //__ASSEMBLY__
+#include <uapi_sysdata.h>
 
 
-#endif //__XC_INIT_H__
+
+void slab_main(slab_params_t *sp){
+
+	if( sp->dst_uapifn == UXMHF_UAPI_SYSDATA_E820ADDENTRY){
+		usysd_e820addentry((uxmhf_uapi_sysdata_e820addentry_t *)sp->in_out_params);
+
+	}else if( sp->dst_uapifn == UXMHF_UAPI_SYSDATA_E820GETMAXINDEX ){
+		usysd_e820getmaxindex((uxmhf_uapi_sysdata_e820getmaxindex_t *)sp->in_out_params);
+
+	}else if( sp->dst_uapifn == UXMHF_UAPI_SYSDATA_E820GETENTRYFORINDEX){
+		usysd_e820getentryforindex((uxmhf_uapi_sysdata_e820getentryforindex_t *)sp->in_out_params);
+
+	}else{
+		//_XDPRINTF_("UAPI_SYSDATA[%u]: Unknown uAPI function %x. Halting!\n", (u16)sp->cpuid, sp->dst_uapifn);
+	}
+
+}

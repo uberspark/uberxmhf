@@ -44,20 +44,58 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-// XMHF slab import library decls./defns.
-// author: amit vasudevan (amitvasudevan@acm.org)
 
-#ifndef __XC_INIT_H__
-#define __XC_INIT_H__
+/*
+ *
+ *  sysdata (E820) state uAPI
+ *
+ *  author: amit vasudevan (amitvasudevan@acm.org)
+ */
+
+#ifndef __UAPI_SYSDATA_H__
+#define __UAPI_SYSDATA_H__
+
+
+#define UXMHF_UAPI_SYSDATA_E820ADDENTRY			1
+#define UXMHF_UAPI_SYSDATA_E820GETMAXINDEX		2
+#define UXMHF_UAPI_SYSDATA_E820GETENTRYFORINDEX	3
 
 
 #ifndef __ASSEMBLY__
 
+typedef struct {
+	u32 baseaddr_high;
+	u32 baseaddr_low;
+	u32 length_high;
+	u32 length_low;
+	u32 type;
+}__attribute__((packed)) uxmhf_uapi_sysdata_e820addentry_t;
 
-extern __attribute__(( section(".data") )) u32 __xcinit_smplock;
+
+typedef struct {
+	u32 index;
+}__attribute__((packed)) uxmhf_uapi_sysdata_e820getmaxindex_t;
+
+typedef struct {
+	u32 index;
+	u32 baseaddr_high;
+	u32 baseaddr_low;
+	u32 length_high;
+	u32 length_low;
+	u32 type;
+}__attribute__((packed)) uxmhf_uapi_sysdata_e820getentryforindex_t;
 
 
-#endif //__ASSEMBLY__
+void usysd_e820addentry(uxmhf_uapi_sysdata_e820addentry_t *e820entryp);
+void usysd_e820getentryforindex(uxmhf_uapi_sysdata_e820getentryforindex_t *gentryp);
+void usysd_e820getmaxindex(uxmhf_uapi_sysdata_e820getmaxindex_t *indexp);
+
+extern __attribute__((section(".data"))) GRUBE820 usysd_memmapinfo[MAX_E820_ENTRIES];
+
+extern __attribute__((section(".data"))) u32 usysd_memmapinfo_maxindex;
 
 
-#endif //__XC_INIT_H__
+
+#endif	//__ASSEMBLY__
+
+#endif //__UAPI_SYSDATA_H__

@@ -264,6 +264,9 @@ extern __attribute__((section(".data"))) __attribute__((aligned(4096))) vtd_pdpt
 extern __attribute__((section(".data"))) __attribute__((aligned(4096))) vtd_pdte_t _slabdevpgtbl_pdt[XMHFGEEC_TOTAL_SLABS][PAE_PTRS_PER_PDPT * PAE_PTRS_PER_PDT];
 extern __attribute__((section(".data"))) __attribute__((aligned(4096))) vtd_pte_t _slabdevpgtbl_pt[XMHFGEEC_TOTAL_SLABS][MAX_SLAB_DMADATA_PDT_ENTRIES][PAE_PTRS_PER_PT];
 
+//rich-guest DMA page-tables
+extern __attribute__((section(".data"))) __attribute__((aligned(4096))) vtd_pte_t _slabdevpgtbl_pt_rg[VTD_PTRS_PER_PDPT * VTD_PTRS_PER_PDT * VTD_PTRS_PER_PT];
+
 
 extern __attribute__((section(".data"))) _slabdevpgtbl_infotable_t _slabdevpgtbl_infotable[XMHFGEEC_TOTAL_SLABS];
 extern __attribute__((section(".data"))) u32 vtd_pagewalk_level;
@@ -314,6 +317,9 @@ void gp_s1_iommuinit(void);
 
 
 void gp_s2_entry(void);
+
+void gp_s2_initsysmemmap(void);
+
 void gp_s2_setupslabdevmap(void);
 
 
@@ -332,10 +338,16 @@ bool gp_s2_sdabinddevice(u32 slabid, u32 pagewalk_lvl,  u32 bus, u32 dev, u32 fu
 void gp_s2_sdadoalloc(void);
 
 /*@
-	ensures \result == XMHFGEEC_SLAB_XG_RICHGUEST;
+	ensures \result == XMHFGEEC_SLAB_XG_BENCHGUEST;
 	assigns \nothing;
 @*/
 u32 gp_s2_sdadoalloc_getuobjfordev(u32 bus, u32 dev, u32 func);
+
+
+/*@
+	requires 0 <= slabid < XMHFGEEC_TOTAL_SLABS;
+@*/
+void gp_s2_sdasetupdevpgtbl_rg(u32 slabid);
 
 /*@
 	requires 0 <= slabid < XMHFGEEC_TOTAL_SLABS;
@@ -393,6 +405,8 @@ void gp_s2_setupiotblug_allowaccesstoport(u32 ugslabiobitmap_idx, u16 port, u16 
 void gp_s2_setupiotblug(u32 slabid);
 
 
+void gp_s2_setupiotblug_rg(u32 slabid);
+
 
 void gp_s2_setupiotbl(void);
 
@@ -441,6 +455,12 @@ u32 gp_s2_setupmpgtbl_getspatype(u32 slab_index, u32 spa);
 	requires 0 <= slabid < XMHFGEEC_TOTAL_SLABS;
 @*/
 void gp_s2_setupmpgtblug(u32 slabid);
+
+
+/*@
+	requires 0 <= slabid < XMHFGEEC_TOTAL_SLABS;
+@*/
+void gp_s2_setupmpgtblug_rg(u32 slabid);
 
 
 /*@

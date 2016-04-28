@@ -44,20 +44,34 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-// XMHF slab import library decls./defns.
-// author: amit vasudevan (amitvasudevan@acm.org)
+#include <xmhf.h>
+#include <xmhf-debug.h>
 
-#ifndef __XC_INIT_H__
-#define __XC_INIT_H__
+#include <xmhfgeec.h>
 
-
-#ifndef __ASSEMBLY__
-
-
-extern __attribute__(( section(".data") )) u32 __xcinit_smplock;
+#include <geec_prime.h>
+#include <uapi_sysdata.h>
 
 
-#endif //__ASSEMBLY__
+void gp_s2_initsysmemmap(void){
+	slab_params_t sp;
+	uxmhf_uapi_sysdata_e820addentry_t *e820entry = (uxmhf_uapi_sysdata_e820addentry_t *)sp.in_out_params;
+	u32 i;
 
+	memset(&sp, 0, sizeof(sp));
+	sp.cpuid = 0; //XXX: fixme need to plugin BSP cpu id
+	sp.src_slabid = XMHFGEEC_SLAB_GEEC_PRIME;
+	sp.dst_slabid = XMHFGEEC_SLAB_UAPI_SYSDATA;
+	sp.dst_uapifn =  UXMHF_UAPI_SYSDATA_E820ADDENTRY;
 
-#endif //__XC_INIT_H__
+	for(i=0; i < (u32)xcbootinfo->memmapinfo_numentries; i++){
+		e820entry->baseaddr_high = xcbootinfo->memmapinfo_buffer[i].baseaddr_high;
+		e820entry->baseaddr_low = xcbootinfo->memmapinfo_buffer[i].baseaddr_low;
+		e820entry->length_high = xcbootinfo->memmapinfo_buffer[i].length_high;
+		e820entry->length_low = xcbootinfo->memmapinfo_buffer[i].length_low;
+		e820entry->type = xcbootinfo->memmapinfo_buffer[i].type;
+		XMHF_SLAB_CALLNEW(&sp);
+	}
+
+}
+

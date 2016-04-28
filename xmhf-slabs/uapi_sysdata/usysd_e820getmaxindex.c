@@ -44,20 +44,24 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-// XMHF slab import library decls./defns.
-// author: amit vasudevan (amitvasudevan@acm.org)
+/*
+ * sysdata (E820) state uAPI
+ *
+ * author: amit vasudevan (amitvasudevan@acm.org)
+ */
 
-#ifndef __XC_INIT_H__
-#define __XC_INIT_H__
+#include <xmhf.h>
+#include <xmhf-debug.h>
+
+#include <xmhfgeec.h>
+
+#include <xc.h>
+#include <uapi_sysdata.h>
 
 
-#ifndef __ASSEMBLY__
+void usysd_e820getmaxindex(uxmhf_uapi_sysdata_e820getmaxindex_t *indexp){
+	//_XDPRINTF_("%s: came in, usysd_memmapinfo_maxindex=%u\n", __func__, usysd_memmapinfo_maxindex);
+	indexp->index = usysd_memmapinfo_maxindex;
+}
 
 
-extern __attribute__(( section(".data") )) u32 __xcinit_smplock;
-
-
-#endif //__ASSEMBLY__
-
-
-#endif //__XC_INIT_H__

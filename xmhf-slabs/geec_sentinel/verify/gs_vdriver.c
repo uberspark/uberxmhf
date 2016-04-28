@@ -395,7 +395,7 @@ void xmhfhwm_vdriver_slabep(void){
 void drv_path_callv2uvg(void){
 	drv_path_callv2uvg_sp.slab_ctype =XMHFGEEC_SENTINEL_CALL_FROM_VfT_PROG;
         drv_path_callv2uvg_sp.src_slabid = XMHFGEEC_SLAB_XC_INIT;
-        drv_path_callv2uvg_sp.dst_slabid = XMHFGEEC_SLAB_XG_RICHGUEST;
+        drv_path_callv2uvg_sp.dst_slabid = XMHFGEEC_SLAB_XG_BENCHGUEST;
         drv_path_callv2uvg_sp.dst_uapifn = 0;
 	drv_path_callv2uvg_sp.cpuid = 0;
 
@@ -439,7 +439,7 @@ void xmhfhwm_vdriver_slabep(void){
 void drv_path_reticpt(void){
 	drv_path_reticpt_sp.slab_ctype = XMHFGEEC_SENTINEL_RET_INTERCEPT;
         drv_path_reticpt_sp.src_slabid = XMHFGEEC_SLAB_XC_IHUB;
-        drv_path_reticpt_sp.dst_slabid = XMHFGEEC_SLAB_XG_RICHGUEST;
+        drv_path_reticpt_sp.dst_slabid = XMHFGEEC_SLAB_XG_BENCHGUEST;
         drv_path_reticpt_sp.dst_uapifn = 0;
 	drv_path_reticpt_sp.cpuid = 0;
 

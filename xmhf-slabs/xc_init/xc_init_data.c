@@ -43,3 +43,13 @@
  *
  * @XMHF_LICENSE_HEADER_END@
  */
+
+#include <xmhf.h>
+#include <xmhf-debug.h>
+
+#include <xmhfgeec.h>
+
+#include <xc_init.h>
+
+__attribute__(( section(".data") )) u32 __xcinit_smplock = 1;
+

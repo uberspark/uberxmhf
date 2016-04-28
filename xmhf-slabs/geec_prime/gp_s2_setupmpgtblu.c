@@ -56,6 +56,7 @@
 
 //@ghost bool gp_s2_setupmpgtblu_invokeduh[XMHFGEEC_TOTAL_SLABS];
 //@ghost bool gp_s2_setupmpgtblu_invokedug[XMHFGEEC_TOTAL_SLABS];
+//@ghost bool gp_s2_setupmpgtblu_invokedug_rg[XMHFGEEC_TOTAL_SLABS];
 //@ghost bool gp_s2_setupmpgtblu_handlevfobjs[XMHFGEEC_TOTAL_SLABS];
 //@ghost bool gp_s2_setupmpgtblu_invokedinvalidobjs[XMHFGEEC_TOTAL_SLABS];
 /*@
@@ -63,6 +64,7 @@
 		(0 <= xmhfgeec_slab_info_table[x].iotbl_base < (0xFFFFFFFFUL - (3*PAGE_SIZE_4K)));
 	assigns gp_s2_setupmpgtblu_invokeduh[0..(XMHFGEEC_TOTAL_SLABS-1)];
 	assigns gp_s2_setupmpgtblu_invokedug[0..(XMHFGEEC_TOTAL_SLABS-1)];
+	assigns gp_s2_setupmpgtblu_invokedug_rg[0..(XMHFGEEC_TOTAL_SLABS-1)];
 	assigns gp_s2_setupmpgtblu_handlevfobjs[0..(XMHFGEEC_TOTAL_SLABS-1)];
 	assigns gp_s2_setupmpgtblu_invokedinvalidobjs[0..(XMHFGEEC_TOTAL_SLABS-1)];
 	ensures \forall integer x; 0 <= x < XMHFGEEC_TOTAL_SLABS ==> (
@@ -72,9 +74,11 @@
 		(gp_s2_setupmpgtblu_invokeduh[x] == true) );
 	ensures \forall integer x; 0 <= x < XMHFGEEC_TOTAL_SLABS ==> (
 			(xmhfgeec_slab_info_table[x].slabtype == XMHFGEEC_SLABTYPE_uVT_PROG_GUEST ||
-			xmhfgeec_slab_info_table[x].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG_GUEST ||
-			xmhfgeec_slab_info_table[x].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG_RICHGUEST) ==>
+			xmhfgeec_slab_info_table[x].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG_GUEST) ==>
 			(gp_s2_setupmpgtblu_invokedug[x] == true) );
+	ensures \forall integer x; 0 <= x < XMHFGEEC_TOTAL_SLABS ==> (
+			(xmhfgeec_slab_info_table[x].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG_RICHGUEST) ==>
+			(gp_s2_setupmpgtblu_invokedug_rg[x] == true) );
 	ensures \forall integer x; 0 <= x < XMHFGEEC_TOTAL_SLABS ==> (
 			 ( ((xmhfgeec_slab_info_table[x].slabtype == XMHFGEEC_SLABTYPE_VfT_SENTINEL) ||
 			   (xmhfgeec_slab_info_table[x].slabtype == XMHFGEEC_SLABTYPE_VfT_PROG))
@@ -86,8 +90,9 @@
 			    (x >= XMHFGEEC_UHSLAB_BASE_IDX && x <= XMHFGEEC_UHSLAB_MAX_IDX)
 			  ) &&
 			  !(xmhfgeec_slab_info_table[x].slabtype == XMHFGEEC_SLABTYPE_uVT_PROG_GUEST ||
-			   xmhfgeec_slab_info_table[x].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG_GUEST ||
-			   xmhfgeec_slab_info_table[x].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG_RICHGUEST
+			   xmhfgeec_slab_info_table[x].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG_GUEST
+			  ) &&
+			  !(xmhfgeec_slab_info_table[x].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG_RICHGUEST
 			  ) &&
 			   !( ((xmhfgeec_slab_info_table[x].slabtype == XMHFGEEC_SLABTYPE_VfT_SENTINEL) ||
 			   (xmhfgeec_slab_info_table[x].slabtype == XMHFGEEC_SLABTYPE_VfT_PROG))
@@ -107,9 +112,11 @@ void gp_s2_setupmpgtblu(void){
 			(gp_s2_setupmpgtblu_invokeduh[x] == true) );
 		loop invariant a3: \forall integer x; 0 <= x < i ==> (
 			(xmhfgeec_slab_info_table[x].slabtype == XMHFGEEC_SLABTYPE_uVT_PROG_GUEST ||
-			xmhfgeec_slab_info_table[x].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG_GUEST ||
-			xmhfgeec_slab_info_table[x].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG_RICHGUEST) ==>
+			xmhfgeec_slab_info_table[x].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG_GUEST) ==>
 			(gp_s2_setupmpgtblu_invokedug[x] == true) );
+		loop invariant a31: \forall integer x; 0 <= x < i ==> (
+			(xmhfgeec_slab_info_table[x].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG_RICHGUEST) ==>
+			(gp_s2_setupmpgtblu_invokedug_rg[x] == true) );
 		loop invariant a4: \forall integer x; 0 <= x < i ==> (
 			 ( ((xmhfgeec_slab_info_table[x].slabtype == XMHFGEEC_SLABTYPE_VfT_SENTINEL) ||
 			   (xmhfgeec_slab_info_table[x].slabtype == XMHFGEEC_SLABTYPE_VfT_PROG))
@@ -121,8 +128,9 @@ void gp_s2_setupmpgtblu(void){
 			    (x >= XMHFGEEC_UHSLAB_BASE_IDX && x <= XMHFGEEC_UHSLAB_MAX_IDX)
 			  ) &&
 			  !(xmhfgeec_slab_info_table[x].slabtype == XMHFGEEC_SLABTYPE_uVT_PROG_GUEST ||
-			   xmhfgeec_slab_info_table[x].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG_GUEST ||
-			   xmhfgeec_slab_info_table[x].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG_RICHGUEST
+			   xmhfgeec_slab_info_table[x].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG_GUEST
+			  ) &&
+			  !(xmhfgeec_slab_info_table[x].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG_RICHGUEST
 			  ) &&
 			   !( ((xmhfgeec_slab_info_table[x].slabtype == XMHFGEEC_SLABTYPE_VfT_SENTINEL) ||
 			   (xmhfgeec_slab_info_table[x].slabtype == XMHFGEEC_SLABTYPE_VfT_PROG))
@@ -131,6 +139,7 @@ void gp_s2_setupmpgtblu(void){
 		loop assigns i;
 		loop assigns gp_s2_setupmpgtblu_invokeduh[0..(XMHFGEEC_TOTAL_SLABS-1)];
 		loop assigns gp_s2_setupmpgtblu_invokedug[0..(XMHFGEEC_TOTAL_SLABS-1)];
+		loop assigns gp_s2_setupmpgtblu_invokedug_rg[0..(XMHFGEEC_TOTAL_SLABS-1)];
 		loop assigns gp_s2_setupmpgtblu_handlevfobjs[0..(XMHFGEEC_TOTAL_SLABS-1)];
 		loop assigns gp_s2_setupmpgtblu_invokedinvalidobjs[0..(XMHFGEEC_TOTAL_SLABS-1)];
 		loop variant XMHFGEEC_TOTAL_SLABS - i;
@@ -148,13 +157,20 @@ void gp_s2_setupmpgtblu(void){
 
 
 		}else if (xmhfgeec_slab_info_table[i].slabtype == XMHFGEEC_SLABTYPE_uVT_PROG_GUEST ||
-			xmhfgeec_slab_info_table[i].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG_GUEST ||
-			xmhfgeec_slab_info_table[i].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG_RICHGUEST){
+			xmhfgeec_slab_info_table[i].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG_GUEST){
 
 			_XDPRINTF_("%s: slab %u --> ppopulating uV{T,U}_prog_guest page-tables...\n", __func__, i);
 			gp_s2_setupmpgtblug(i);
 			//@ghost gp_s2_setupmpgtblu_invokedug[i] = true;
 			_XDPRINTF_("%s: slab %u --> uV{T,U}_prog_guest page-tables populated\n", __func__, i);
+
+		}else if (xmhfgeec_slab_info_table[i].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG_RICHGUEST){
+
+			_XDPRINTF_("%s: slab %u --> ppopulating rich-guest page-tables...\n", __func__, i);
+			gp_s2_setupmpgtblug_rg(i);
+			//@ghost gp_s2_setupmpgtblu_invokedug_rg[i] = true;
+			_XDPRINTF_("%s: slab %u --> rich-guest page-tables populated\n", __func__, i);
+
 
 		}else if ( ((xmhfgeec_slab_info_table[i].slabtype == XMHFGEEC_SLABTYPE_VfT_SENTINEL) ||
 			   (xmhfgeec_slab_info_table[i].slabtype == XMHFGEEC_SLABTYPE_VfT_PROG))

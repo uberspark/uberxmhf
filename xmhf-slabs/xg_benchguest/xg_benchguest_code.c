@@ -49,7 +49,7 @@
 #include <xmhf-debug.h>
 
 #include <xc.h>
-#include <xg_richguest.h>
+#include <xg_benchguest.h>
 
 //////
 //XMHF_SLAB_GUEST(xcguestslab)
@@ -379,8 +379,8 @@ void xcguestslab_do_testxhsyscalllog(void){
 
     _XDPRINTF_("%s: Came back from SYSENTER\n", __func__);
 
-    _XDPRINTF_("%s: Guest Slab Halting\n", __func__);
-    HALT();
+    //_XDPRINTF_("%s: Guest Slab Halting\n", __func__);
+    //HALT();
 }
 
 
@@ -390,23 +390,60 @@ void xcguestslab_do_testxhsyscalllog(void){
 
 
 void slab_main(slab_params_t *sp){
-    _XDPRINTF_("%s: Hello world from Guest slab! ESP=%08x, flags=%08x\n", __func__, read_esp(CASM_NOPARAM),
-		read_eflags(CASM_NOPARAM));
+	bool isbsp;
+	static u32 xgbenchguest_smplock = 1;
 
-    //xcguestslab_do_vmcall();
+    #if defined (__DEBUG_SERIAL__)
+	static volatile u32 cpucount=0;
+	#endif //__DEBUG_SERIAL__
 
-    //xcguestslab_do_xmhfhw_cpu_cpuid();
 
-    //xcguestslab_do_msrtest();
+    //grab lock
+    CASM_FUNCCALL(spin_lock,&xgbenchguest_smplock);
 
-    xcguestslab_do_testxhhyperdep();
+	isbsp = xmhfhw_lapic_isbsp();
 
-    xcguestslab_do_testxhapprovexec();
+    if(isbsp){
+    	_XDPRINTF_("%s: Guest got control in BSP. Proceeding...\n", __func__);
+    }else{
+    	_XDPRINTF_("%s: Guest got control in AP. Halting!\n", __func__);
+	}
 
-    xcguestslab_do_testxhssteptrace();
+	#if defined (__DEBUG_SERIAL__)
+	cpucount++;
+	#endif //__DEBUG_SERIAL__
 
-    xcguestslab_do_testxhsyscalllog();
+    //release lock
+    CASM_FUNCCALL(spin_unlock,&xgbenchguest_smplock);
 
-    _XDPRINTF_("%s: Guest Slab Halting\n", __func__);
+
+	#if defined (__DEBUG_SERIAL__)
+	while(cpucount < __XMHF_CONFIG_DEBUG_SERIAL_MAXCPUS__);
+	#endif //__DEBUG_SERIAL__
+
+
+
+    if(isbsp){
+		_XDPRINTF_("%s[BSP]: ESP=%08x, flags=%08x\n", __func__,
+					read_esp(CASM_NOPARAM),	read_eflags(CASM_NOPARAM));
+
+		//xcguestslab_do_vmcall();
+
+		//xcguestslab_do_xmhfhw_cpu_cpuid();
+
+		//xcguestslab_do_msrtest();
+
+		xcguestslab_do_testxhhyperdep();
+
+		xcguestslab_do_testxhapprovexec();
+
+		xcguestslab_do_testxhssteptrace();
+
+		xcguestslab_do_testxhsyscalllog();
+
+
+		_XDPRINTF_("%s[BSP]: Guest Slab Done. Halting\n", __func__);
+    }
+
     HALT();
 }

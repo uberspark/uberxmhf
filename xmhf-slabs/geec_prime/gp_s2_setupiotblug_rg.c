@@ -44,20 +44,18 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-// XMHF slab import library decls./defns.
-// author: amit vasudevan (amitvasudevan@acm.org)
+#include <xmhf.h>
+#include <xmhf-debug.h>
 
-#ifndef __XC_INIT_H__
-#define __XC_INIT_H__
+#include <xmhfgeec.h>
 
-
-#ifndef __ASSEMBLY__
+#include <geec_prime.h>
 
 
-extern __attribute__(( section(".data") )) u32 __xcinit_smplock;
+void gp_s2_setupiotblug_rg(u32 slabid){
+
+	memset(&gp_rwdatahdr.gp_ugslab_iobitmap[(slabid - XMHFGEEC_UGSLAB_BASE_IDX)], 0UL, sizeof(gp_rwdatahdr.gp_ugslab_iobitmap[0]));
+
+}
 
 
-#endif //__ASSEMBLY__
-
-
-#endif //__XC_INIT_H__
