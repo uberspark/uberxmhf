@@ -4,6 +4,8 @@
  */
 
 #include <stdio.h>
+#include <sys/mman.h>
+#include <errno.h>
 
 typedef unsigned char u8;
 typedef unsigned int u32;
@@ -49,7 +51,28 @@ void do_testxhhyperdep(void){
 void main(void){
     printf("\n%s: DEP buffer at 0x%08x", __FUNCTION__, &testxhhyperdep_page);
 
+    printf("\n%s: proceeding to lock DEP page...", __FUNCTION__);
+
+    //lock the DEP page in memory so we have it pinned down
+	if(mlock(&testxhhyperdep_page, sizeof(testxhhyperdep_page)) == -1) {
+		  printf("\nFailed to lock page in memory: %s\n", strerror(errno));
+		  exit(1);
+	}
+
+    printf("\n%s: DEP page locked", __FUNCTION__);
+
 	do_testxhhyperdep();
+
+    printf("\n%s: proceeding to unlock DEP page...", __FUNCTION__);
+
+    //unlock the DEP page
+	if(munlock(&testxhhyperdep_page, sizeof(testxhhyperdep_page)) == -1) {
+		  printf("\nFailed to unlock page in memory: %s\n", strerror(errno));
+		  exit(1);
+	}
+
+    printf("\n%s: DEP page unlocked", __FUNCTION__);
+
 
     printf("\n\n");
 }
