@@ -63,6 +63,8 @@
 
 
 extern bool hd_activated;
+extern u32 hd_pageaddr;
+
 
 void hyperdep_hcbshutdown(u32 cpuindex, u32 guest_slab_index);
 void hyperdep_hcbmemfault(u32 cpuindex, u32 guest_slab_index);

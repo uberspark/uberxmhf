@@ -56,3 +56,4 @@
 
 
 bool hd_activated=false;
+u32 hd_pageaddr=0;

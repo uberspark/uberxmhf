@@ -105,6 +105,7 @@ void hyperdep_activatedep(u32 cpuindex, u32 guest_slab_index, u64 gpa){
 		_XDPRINTF_("%s[%u]: activated DEP for page at gpa %016llx\n", __func__, (u16)cpuindex, gpa);
 
 		hd_activated=true;
+		hd_pageaddr = (u32)gpa;
 	}else{
 	    //do nothing
 	}
