@@ -238,30 +238,32 @@ static void _hcb_hypercall(u64 cpuindex, u64 guest_slab_index){
      spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSREAD;
     XMHF_SLAB_CALLNEW(&spl);
 
-    _XDPRINTF_("%s[%u]: call_id=%x, eax=%08x,ebx=%08x,edx=%08x\n",
-               __func__, (u16)cpuindex, call_id, gprs->eax, gprs->ebx, gprs->edx);
 
     call_id = gprs->eax;
     gpa = ((u64)gprs->ebx << 32) | gprs->edx;
 
-	_XDPRINTF_("%s[%u]: call_id=%x, gpa=%016llx\n", __func__, (u16)cpuindex, call_id, gpa);
 
 
 	switch(call_id){
 
 		case APRVEXEC_LOCK:{
-			ae_lock(cpuindex, guest_slab_index, gpa);
+		    _XDPRINTF_("%s[%u]: call_id=%x(LOCK), eax=%08x,ebx=%08x,edx=%08x\n",
+		               __func__, (u16)cpuindex, call_id, gprs->eax, gprs->ebx, gprs->edx);
+			_XDPRINTF_("%s[%u]: call_id=%x(LOCK), gpa=%016llx\n", __func__, (u16)cpuindex, call_id, gpa);
+		    ae_lock(cpuindex, guest_slab_index, gpa);
 		}
 		break;
 
 		case APRVEXEC_UNLOCK:{
+		    _XDPRINTF_("%s[%u]: call_id=%x(UNLOCK), eax=%08x,ebx=%08x,edx=%08x\n",
+		               __func__, (u16)cpuindex, call_id, gprs->eax, gprs->ebx, gprs->edx);
+			_XDPRINTF_("%s[%u]: call_id=%x(UNLOCK), gpa=%016llx\n", __func__, (u16)cpuindex, call_id, gpa);
 			ae_unlock(cpuindex, guest_slab_index, gpa);
 		}
 		break;
 
 		default:
-            _XDPRINTF_("%s[%u]: unsupported hypercall %x. Ignoring\n",
-                       __func__, (u16)cpuindex, call_id);
+            //_XDPRINTF_("%s[%u]: unsupported hypercall %x. Ignoring\n", __func__, (u16)cpuindex, call_id);
 			break;
 	}
 
@@ -299,8 +301,8 @@ void slab_main(slab_params_t *sp){
     xc_hypappcb_params_t *hcbp = (xc_hypappcb_params_t *)&sp->in_out_params[0];
     hcbp->cbresult=XC_HYPAPPCB_CHAIN;
 
-	_XDPRINTF_("XHAPRVEXEC[%u]: Got control, cbtype=%x: ESP=%08x\n",
-                 (u16)sp->cpuid, hcbp->cbtype, CASM_FUNCCALL(read_esp,CASM_NOPARAM));
+	//_XDPRINTF_("XHAPRVEXEC[%u]: Got control, cbtype=%x: ESP=%08x\n",
+    //             (u16)sp->cpuid, hcbp->cbtype, CASM_FUNCCALL(read_esp,CASM_NOPARAM));
 
 
     switch(hcbp->cbtype){
