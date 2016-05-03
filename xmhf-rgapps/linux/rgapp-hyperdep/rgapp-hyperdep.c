@@ -74,7 +74,7 @@ static u64 va_to_pa(void *vaddr) {
 
 
 void do_testxhhyperdep(u32 gpa){
-    DEPFN fn = (DEPFN)gpa;
+    DEPFN fn = (DEPFN)&testxhhyperdep_page;
 
     testxhhyperdep_page[0] = 0xC3; //ret instruction
 
@@ -84,7 +84,18 @@ void do_testxhhyperdep(u32 gpa){
 
     printf("\n%s: Activated DEP", __FUNCTION__);
 
-    //fn();
+    //////
+    //test attack
+    //////
+    {
+	    printf("\n%s: Proceeding with DEP attack...\n", __FUNCTION__);
+    	if(mprotect(&testxhhyperdep_page, sizeof(testxhhyperdep_page), (PROT_READ | PROT_WRITE | PROT_EXEC)) != 0){
+    	    printf("\n%s: Could not change page protections: %s\n", __FUNCTION__, strerror(errno));
+    	    exit(1);
+    	}
+	    fn();
+    	printf("\n%s: DEP attack worked\n", __FUNCTION__);
+    }
 
     printf("\n%s: Going to de-activate DEP on page %x", __FUNCTION__, gpa);
 
@@ -110,6 +121,8 @@ void main(void){
     printf("\n%s: DEP page locked", __FUNCTION__);
 
     printf("\n%s: DEP buffer at paddr=%08x", __FUNCTION__, va_to_pa(&testxhhyperdep_page));
+
+
 
 	do_testxhhyperdep(va_to_pa(&testxhhyperdep_page));
 
