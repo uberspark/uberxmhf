@@ -1,12 +1,12 @@
-#top-level Makefile for rich guest app, hyperdep (rgapp-hyperdep)
+#top-level Makefile for rich guest app, aprvexec (rgapp-aprvexec)
 # author: amit vasudevan (amitvasudevan@acm.org)
 
 .PHONY: all
 all: 
-	gcc -m32 rgapp-hyperdep.c -o rgapp-hyperdep
+	gcc -m32 rgapp-aprvexec.c -o rgapp-aprvexec
 
 .PHONY: clean
 clean:
-	rm -f rgapp-hyperdep
+	rm -f rgapp-aprvexec
 	rm -f *.o
 	
