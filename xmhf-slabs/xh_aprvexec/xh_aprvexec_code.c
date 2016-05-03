@@ -44,7 +44,7 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-// approvexec hypapp main module
+// aprvexec hypapp main module
 // author: amit vasudevan (amitvasudevan@acm.org)
 
 #include <xmhf.h>
@@ -56,15 +56,12 @@
 //#include <uapi_slabmemacc.h>
 #include <uapi_slabmempgtbl.h>
 
-#include <xh_approvexec.h>
+#include <xh_aprvexec.h>
 
 
-//////
-//XMHF_SLABNEW(xhapprovexec)
 
-
-#define APPROVEXEC_LOCK     			0xD0
-#define APPROVEXEC_UNLOCK   			0xD1
+#define APRVEXEC_LOCK     			0xD0
+#define APRVEXEC_UNLOCK   			0xD1
 
 static u8 _ae_page_buffer[PAGE_SIZE_4K];
 
@@ -90,7 +87,7 @@ static void ae_lock(u32 cpuindex, u32 guest_slab_index, u64 gpa){
     u32 i;
 
     _XDPRINTF_("%s[%u]: starting...\n", __func__, (u16)cpuindex);
-    spl.src_slabid = XMHFGEEC_SLAB_XH_APPROVEXEC;
+    spl.src_slabid = XMHFGEEC_SLAB_XH_APRVEXEC;
     //spl.dst_slabid = XMHFGEEC_SLAB_UAPI_SLABMEMACC;
     spl.cpuid = cpuindex;
 
@@ -182,7 +179,7 @@ static void ae_unlock(u32 cpuindex, u32 guest_slab_index, u64 gpa){
         (xmhfgeec_uapi_slabmempgtbl_setentryforpaddr_params_t *)spl.in_out_params;
 
 
-     spl.src_slabid = XMHFGEEC_SLAB_XH_APPROVEXEC;
+     spl.src_slabid = XMHFGEEC_SLAB_XH_APRVEXEC;
      spl.dst_slabid = XMHFGEEC_SLAB_UAPI_SLABMEMPGTBL;
      spl.cpuid = cpuindex;
      //spl.in_out_params[0] = XMHF_HIC_UAPI_MEMPGTBL;
@@ -221,7 +218,7 @@ static void ae_unlock(u32 cpuindex, u32 guest_slab_index, u64 gpa){
 
 //initialization
 static void _hcb_initialize(u32 cpuindex){
-	_XDPRINTF_("%s[%u]: approvexec initializing...\n", __func__, (u16)cpuindex);
+	_XDPRINTF_("%s[%u]: aprvexec initializing...\n", __func__, (u16)cpuindex);
 }
 
 //hypercall
@@ -233,7 +230,7 @@ static void _hcb_hypercall(u64 cpuindex, u64 guest_slab_index){
 	u32 call_id;
 	u64 gpa;
 
-    spl.src_slabid = XMHFGEEC_SLAB_XH_APPROVEXEC;
+    spl.src_slabid = XMHFGEEC_SLAB_XH_APRVEXEC;
     spl.dst_slabid = XMHFGEEC_SLAB_UAPI_GCPUSTATE;
     spl.cpuid = cpuindex;
     //spl.in_out_params[0] = XMHF_HIC_UAPI_CPUSTATE;
@@ -252,12 +249,12 @@ static void _hcb_hypercall(u64 cpuindex, u64 guest_slab_index){
 
 	switch(call_id){
 
-		case APPROVEXEC_LOCK:{
+		case APRVEXEC_LOCK:{
 			ae_lock(cpuindex, guest_slab_index, gpa);
 		}
 		break;
 
-		case APPROVEXEC_UNLOCK:{
+		case APRVEXEC_UNLOCK:{
 			ae_unlock(cpuindex, guest_slab_index, gpa);
 		}
 		break;
@@ -302,7 +299,7 @@ void slab_main(slab_params_t *sp){
     xc_hypappcb_params_t *hcbp = (xc_hypappcb_params_t *)&sp->in_out_params[0];
     hcbp->cbresult=XC_HYPAPPCB_CHAIN;
 
-	_XDPRINTF_("XHAPPROVEXEC[%u]: Got control, cbtype=%x: ESP=%08x\n",
+	_XDPRINTF_("XHAPRVEXEC[%u]: Got control, cbtype=%x: ESP=%08x\n",
                  (u16)sp->cpuid, hcbp->cbtype, CASM_FUNCCALL(read_esp,CASM_NOPARAM));
 
 
@@ -326,7 +323,7 @@ void slab_main(slab_params_t *sp){
                 (xmhf_uapi_gcpustate_vmrw_params_t *)spl.in_out_params;
 
 
-         	spl.src_slabid = XMHFGEEC_SLAB_XH_APPROVEXEC;
+         	spl.src_slabid = XMHFGEEC_SLAB_XH_APRVEXEC;
          	spl.dst_slabid = XMHFGEEC_SLAB_UAPI_GCPUSTATE;
          	spl.cpuid = sp->cpuid;
             //spl.in_out_params[0] = XMHF_HIC_UAPI_CPUSTATE;

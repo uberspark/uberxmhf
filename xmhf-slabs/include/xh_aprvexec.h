@@ -52,8 +52,8 @@
  *  author: amit vasudevan (amitvasudevan@acm.org)
  */
 
-#ifndef __XH_APPROVEXEC_H__
-#define __XH_APPROVEXEC_H__
+#ifndef __XH_APRVEXEC_H__
+#define __XH_APRVEXEC_H__
 
 
 #ifndef __ASSEMBLY__
@@ -66,4 +66,4 @@ extern bool ae_activated;
 
 #endif	//__ASSEMBLY__
 
-#endif //__XH_APPROVEXEC_H__
+#endif //__XH_APRVEXEC_H__

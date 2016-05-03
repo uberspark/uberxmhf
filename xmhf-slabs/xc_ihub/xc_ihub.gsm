@@ -6,7 +6,7 @@
 #include <xh_hyperdep.h>
 #include <xh_syscalllog.h>
 #include <xh_ssteptrace.h>
-#include <xh_approvexec.h>
+#include <xh_aprvexec.h>
 
 //slab memory sections
 MS:CODE:0x200000:void:void
@@ -20,7 +20,7 @@ S:uapi_sysdata:void:void:void
 S:xh_hyperdep:void:void:void
 S:xh_syscalllog:void:void:void
 S:xh_ssteptrace:void:void:void
-S:xh_approvexec:void:void:void
+S:xh_aprvexec:void:void:void
 
 
 U:uapi_gcpustate:XMHF_HIC_UAPI_CPUSTATE_VMREAD:void:void
