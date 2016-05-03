@@ -75,6 +75,7 @@ void hyperdep_activatedep(u32 cpuindex, u32 guest_slab_index, u64 gpa){
 	spl.cpuid = cpuindex;
 
 	if(!hd_activated && gpa != 0){
+
 		spl.dst_uapifn = XMHFGEEC_UAPI_SLABMEMPGTBL_GETENTRYFORPADDR;
 		getentryforpaddrp->dst_slabid = guest_slab_index;
 		getentryforpaddrp->gpa = gpa;
@@ -95,6 +96,7 @@ void hyperdep_activatedep(u32 cpuindex, u32 guest_slab_index, u64 gpa){
 		_XDPRINTF_("%s[%u]: activated DEP for page at gpa %016llx\n", __func__, (u16)cpuindex, gpa);
 
 		hd_activated=true;
+		hd_pageaddr = (u32)gpa;
 	}else{
 	    //do nothing
 	}
