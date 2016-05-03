@@ -75,6 +75,7 @@ static u64 va_to_pa(void *vaddr) {
 
 void do_testxhhyperdep(u32 gpa){
     DEPFN fn = (DEPFN)&testxhhyperdep_page;
+    u32 i;
 
     testxhhyperdep_page[0] = 0xC3; //ret instruction
 
@@ -84,7 +85,7 @@ void do_testxhhyperdep(u32 gpa){
 
     printf("\n%s: Activated DEP", __FUNCTION__);
 
-    //////
+    /*//////
     //test attack
     //////
     {
@@ -95,7 +96,14 @@ void do_testxhhyperdep(u32 gpa){
     	}
 	    fn();
     	printf("\n%s: DEP attack worked\n", __FUNCTION__);
-    }
+    }*/
+
+    //write some stuff to the data page
+    printf("\n%s: Writing data to buffer...", __FUNCTION__);
+    for(i=0; i < 255; i++)
+    	testxhhyperdep_page[i]=(u8)i;
+    printf("\n%s: data written successfully", __FUNCTION__);
+
 
     printf("\n%s: Going to de-activate DEP on page %x", __FUNCTION__, gpa);
 

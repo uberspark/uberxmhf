@@ -76,15 +76,6 @@ void hyperdep_activatedep(u32 cpuindex, u32 guest_slab_index, u64 gpa){
 
 	if(!hd_activated && gpa != 0){
 
-		/*{
-			u8 *buf, ch;
-			_XDPRINTF_("%s[%u]: gpa=%016llx\n", __func__, (u16)cpuindex, gpa);
-			buf = (u8 *)gpa;
-			_XDPRINTF_("%s[%u]: buf[0]=0x%02x\n", __func__, (u16)cpuindex, buf[0]);
-			HALT();
-		}*/
-
-
 		spl.dst_uapifn = XMHFGEEC_UAPI_SLABMEMPGTBL_GETENTRYFORPADDR;
 		getentryforpaddrp->dst_slabid = guest_slab_index;
 		getentryforpaddrp->gpa = gpa;
