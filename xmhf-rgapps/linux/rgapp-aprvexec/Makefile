@@ -3,7 +3,7 @@
 
 .PHONY: all
 all: 
-	gcc -m32 rgapp-aprvexec.c -o rgapp-aprvexec
+	gcc -m32 rgapp-aprvexec.c rgapp-aprvexecsup.S -o rgapp-aprvexec
 
 .PHONY: clean
 clean:
