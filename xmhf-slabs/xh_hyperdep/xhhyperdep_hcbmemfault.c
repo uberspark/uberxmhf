@@ -90,7 +90,7 @@ void hyperdep_hcbmemfault(u32 cpuindex, u32 guest_slab_index){
 
 	_XDPRINTF_("%s[%u]: memory fault in guest slab %u; gpa=%016llx, gva=%016llx, errorcode=%016llx, data page execution?\n",
             __func__, (u16)cpuindex, guest_slab_index, gpa, gva, errorcode);
-    //HALT();
+    HALT();
 }
 
 

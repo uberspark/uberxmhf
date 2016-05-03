@@ -138,13 +138,13 @@ static void slab_main_helper(u32 vmexit_reason, u32 src_slabid, u32 cpuid){
 		xcihub_icptsipi((u16)cpuid);
 
 
-/*
+
 	}else if (vmexit_reason == VMX_VMEXIT_EPT_VIOLATION){
 		hcb_status = xc_hcbinvoke(XMHFGEEC_SLAB_XC_IHUB, cpuid, XC_HYPAPPCB_MEMORYFAULT, 0, src_slabid);
 		//@ghost xcihub_callhcbinvoke=true;
 		//if(hcb_status == XC_HYPAPPCB_CHAIN)	xcihub_halt((u16)cpuid, vmexit_reason);
 
-
+/*
 	}else if (vmexit_reason == VMX_VMEXIT_INIT || vmexit_reason == VMX_VMEXIT_TASKSWITCH){
 		hcb_status = xc_hcbinvoke(XMHFGEEC_SLAB_XC_IHUB, cpuid, XC_HYPAPPCB_SHUTDOWN, 0, src_slabid);
 		//@ghost xcihub_callhcbinvoke=true;
