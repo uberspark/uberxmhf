@@ -36,7 +36,7 @@ static void __vmcall(u32 eax, u32 ebx, u32 edx){
 			"movl %2, %%edx \r\n"
 			"vmcall \r\n"
 			: /*no output*/
-			: "g" (eax), "g" (edx), "g" (ebx)
+			: "g" (eax), "g" (ebx), "g" (edx)
 			: "%eax", "%ebx", "%edx"
 	);
 }
@@ -73,8 +73,7 @@ static u64 va_to_pa(void *vaddr) {
 
 
 
-void do_testxhhyperdep(void){
-    u32 gpa = &testxhhyperdep_page;
+void do_testxhhyperdep(u32 gpa){
     DEPFN fn = (DEPFN)gpa;
 
     testxhhyperdep_page[0] = 0xC3; //ret instruction
@@ -112,7 +111,7 @@ void main(void){
 
     printf("\n%s: DEP buffer at paddr=%08x", __FUNCTION__, va_to_pa(&testxhhyperdep_page));
 
-	do_testxhhyperdep();
+	do_testxhhyperdep(va_to_pa(&testxhhyperdep_page));
 
     printf("\n%s: proceeding to unlock DEP page...", __FUNCTION__);
 
