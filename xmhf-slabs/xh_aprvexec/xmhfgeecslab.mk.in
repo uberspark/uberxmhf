@@ -5,7 +5,7 @@
 #
 ########################################################################
 
-export XMHF_SLAB_NAME := xh_approvexec
+export XMHF_SLAB_NAME := xh_aprvexec
 export XMHF_SLAB_SOURCES := $(wildcard $(srcdir)/*.c)
 
 

@@ -19,7 +19,7 @@ RM:READ:xc_init:void:void
 RM:READ:xc_ihub:void:void
 RM:WRITE:xc_init:void:void
 RM:WRITE:xc_ihub:void:void
-RM:READ:xh_approvexec:void:void
+RM:READ:xh_aprvexec:void:void
 RM:READ:xh_syscalllog:void:void
 RM:READ:xh_ssteptrace:void:void
 

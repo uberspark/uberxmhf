@@ -52,7 +52,7 @@
 #include <xmhf-debug.h>
 
 #include <xc.h>
-#include <xh_approvexec.h>
+#include <xh_aprvexec.h>
 
 
 #if defined (__XMHF_VERIFICATION__)
