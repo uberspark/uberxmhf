@@ -1,11 +1,15 @@
 /*
- * XMHF rich guest app for hyperdep hypapp
+ * XMHF rich guest app for aprvexec hypapp
  * author: amit vasudevan (amitvasudevan@acm.org)
  */
 
 #include <stdio.h>
 #include <sys/mman.h>
 #include <errno.h>
+
+
+//////////////////////////////////////////////////////////////////////////////
+// base types
 
 typedef unsigned char u8;
 typedef unsigned int u32;
@@ -17,18 +21,8 @@ typedef unsigned long long int u64;
 
 
 //////
-// hyperdep test harness
-
-//////////////////////////////////////////////////////////////////////////////
-// xhhyperdep test
-
-__attribute__((aligned(4096))) static u8 testxhhyperdep_page[4096];
-
-#define HYPERDEP_ACTIVATEDEP			0xC0
-#define HYPERDEP_DEACTIVATEDEP			0xC1
-
-typedef void (*DEPFN)(void);
-
+// vmcall interface
+//////
 static void __vmcall(u32 eax, u32 ebx, u32 edx){
 	asm volatile (
 			"movl %0, %%eax \r\n"
@@ -42,6 +36,9 @@ static void __vmcall(u32 eax, u32 ebx, u32 edx){
 }
 
 
+//////
+// va_to_pa: virtual to physical address mapping
+//////
 static u64 va_to_pa(void *vaddr) {
 	FILE *pagemap;
 	unsigned long offset;
@@ -73,77 +70,43 @@ static u64 va_to_pa(void *vaddr) {
 
 
 
-void do_testxhhyperdep(u32 gpa){
-    DEPFN fn = (DEPFN)&testxhhyperdep_page;
-    u32 i;
 
-    testxhhyperdep_page[0] = 0xC3; //ret instruction
+//////
+// aprvexec test harness
+//////
 
-    printf("\n%s: Going to activate DEP on page %x", __FUNCTION__, gpa);
-
-    __vmcall(HYPERDEP_ACTIVATEDEP,  0, gpa);
-
-    printf("\n%s: Activated DEP", __FUNCTION__);
-
-    /*//////
-    //test attack
-    //////
-    {
-	    printf("\n%s: Proceeding with DEP attack...\n", __FUNCTION__);
-    	if(mprotect(&testxhhyperdep_page, sizeof(testxhhyperdep_page), (PROT_READ | PROT_WRITE | PROT_EXEC)) != 0){
-    	    printf("\n%s: Could not change page protections: %s\n", __FUNCTION__, strerror(errno));
-    	    exit(1);
-    	}
-	    fn();
-    	printf("\n%s: DEP attack worked\n", __FUNCTION__);
-    }*/
-
-    //write some stuff to the data page
-    printf("\n%s: Writing data to buffer...", __FUNCTION__);
-    for(i=0; i < 255; i++)
-    	testxhhyperdep_page[i]=(u8)i;
-    printf("\n%s: data written successfully", __FUNCTION__);
-
-
-    printf("\n%s: Going to de-activate DEP on page %x", __FUNCTION__, gpa);
-
-    __vmcall(HYPERDEP_DEACTIVATEDEP,  0, gpa);
-
-    printf("\n%s: Deactivated DEP", __FUNCTION__);
-
-}
 
 
 
 void main(void){
-    printf("\n%s: DEP buffer at 0x%08x", __FUNCTION__, &testxhhyperdep_page);
-
-    printf("\n%s: proceeding to lock DEP page...", __FUNCTION__);
-
-    //lock the DEP page in memory so we have it pinned down
-	if(mlock(&testxhhyperdep_page, sizeof(testxhhyperdep_page)) == -1) {
-		  printf("\nFailed to lock page in memory: %s\n", strerror(errno));
-		  exit(1);
-	}
-
-    printf("\n%s: DEP page locked", __FUNCTION__);
-
-    printf("\n%s: DEP buffer at paddr=%08x", __FUNCTION__, va_to_pa(&testxhhyperdep_page));
+    printf("\n%s: Proceeding with aprvexec test...", __FUNCTION__);
 
 
-
-	do_testxhhyperdep(va_to_pa(&testxhhyperdep_page));
-
-    printf("\n%s: proceeding to unlock DEP page...", __FUNCTION__);
-
-    //unlock the DEP page
-	if(munlock(&testxhhyperdep_page, sizeof(testxhhyperdep_page)) == -1) {
-		  printf("\nFailed to unlock page in memory: %s\n", strerror(errno));
-		  exit(1);
-	}
-
-    printf("\n%s: DEP page unlocked", __FUNCTION__);
-
-
+    printf("\n%s: aprvexec test done", __FUNCTION__);
     printf("\n\n");
 }
+
+//////
+// building pieces
+//////
+
+//__attribute__((aligned(4096))) static u8 testxhhyperdep_page[4096];
+
+
+//printf("\n%s: DEP page unlocked", __FUNCTION__);
+
+//if(munlock(&testxhhyperdep_page, sizeof(testxhhyperdep_page)) == -1) {
+//	  printf("\nFailed to unlock page in memory: %s\n", strerror(errno));
+//	  exit(1);
+//}
+
+//if(mlock(&testxhhyperdep_page, sizeof(testxhhyperdep_page)) == -1) {
+//	  printf("\nFailed to lock page in memory: %s\n", strerror(errno));
+//	  exit(1);
+//}
+
+//	if(mprotect(&testxhhyperdep_page, sizeof(testxhhyperdep_page), (PROT_READ | PROT_WRITE | PROT_EXEC)) != 0){
+//	    printf("\n%s: Could not change page protections: %s\n", __FUNCTION__, strerror(errno));
+//	    exit(1);
+//	}
+
