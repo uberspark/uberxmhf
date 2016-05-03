@@ -75,36 +75,58 @@ static u64 va_to_pa(void *vaddr) {
 // aprvexec test harness
 //////
 
-/*
-extern void _xcguestslab_do_testxhapprovexec_functoprotect(void);
+
+extern void do_testxhapprovexec_functoprotect(void);
 
 
 
-#define APPROVEXEC_LOCK     			0xD0
-#define APPROVEXEC_UNLOCK   			0xD1
+#define APRVEXEC_LOCK     			0xD0
+#define APRVEXEC_UNLOCK   			0xD1
 
-void xcguestslab_do_testxhapprovexec(void){
-    u32 gpa = &_xcguestslab_do_testxhapprovexec_functoprotect;
+void do_testxhapprovexec(void){
+    u32 fva = &do_testxhapprovexec_functoprotect;
+	u32 fpa = va_to_pa(&do_testxhapprovexec_functoprotect);
 
-    _XDPRINTF_("%s: Going to approve and lock function at %x\n", __func__, gpa);
+    printf("\n%s: Target function virtual-address=0x%08x\n", __FUNCTION__, fva);
+    printf("\n%s: Target function physical-address=0x%08x\n", __FUNCTION__, fpa);
 
-    _xcguestslab_vmcall(APPROVEXEC_LOCK, 0, gpa);
+    printf("\n%s: Proceeding to lock function in memory...", __FUNCTION__);
 
-    _XDPRINTF_("%s: Locked function\n", __func__);
+    if(mlock(fva, 4096) == -1) {
+    	  printf("\nFailed to lock page in memory: %s\n", strerror(errno));
+    	  exit(1);
+    }
+
+    printf("\n%s: Locked function in memory", __FUNCTION__);
+
+    printf("\n%s: proceeding to approve function...", __FUNCTION__);
+
+    __vmcall(APRVEXEC_LOCK, 0, fpa);
+
+    printf("\n%s: Approved function\n", __FUNCTION__);
 
     //{
     //    u8 *pokefun = (u8 *)&_xcguestslab_do_testxhapprovexec_functoprotect;
     //    pokefun[0] = 0xAB;
     //}
 
-    _XDPRINTF_("%s: Going to unlock function on page %x\n", __func__, gpa);
+    printf("\n%s: Going to release approved execution at fn va=%08x, pa=%08x\n", __FUNCTION__, fva, fpa);
 
-    _xcguestslab_vmcall(APPROVEXEC_UNLOCK, 0, gpa );
+    __vmcall(APRVEXEC_UNLOCK, 0, fpa );
 
-    _XDPRINTF_("%s: unlocked function\n", __func__);
+    printf("\n%s: Released approved execution", __FUNCTION__);
+
+    printf("\n%s: Proceeding to unlock function in memory...", __FUNCTION__);
+
+    if(munlock(fva, 4096) == -1) {
+    	  printf("\nFailed to unlock page in memory: %s\n", strerror(errno));
+    	  exit(1);
+    }
+
+    printf("\n%s: unlocked function in memory", __FUNCTION__);
+
 
 }
-*/
 
 
 
@@ -113,6 +135,7 @@ void xcguestslab_do_testxhapprovexec(void){
 void main(void){
     printf("\n%s: Proceeding with aprvexec test...", __FUNCTION__);
 
+    do_testxhapprovexec();
 
     printf("\n%s: aprvexec test done", __FUNCTION__);
     printf("\n\n");

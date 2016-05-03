@@ -8,8 +8,8 @@
 // xhapprovexec test
 
 .align 2097152
-.global _xcguestslab_do_testxhapprovexec_functoprotect
-_xcguestslab_do_testxhapprovexec_functoprotect:
+.global do_testxhapprovexec_functoprotect
+do_testxhapprovexec_functoprotect:
 	ret
 .balign 2097152, 0x90
 
