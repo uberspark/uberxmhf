@@ -112,8 +112,7 @@ void main(void){
 
     printf("\n%s: DEP buffer at paddr=%08x", __FUNCTION__, va_to_pa(&testxhhyperdep_page));
 
-
-	//do_testxhhyperdep();
+	do_testxhhyperdep();
 
     printf("\n%s: proceeding to unlock DEP page...", __FUNCTION__);
 
