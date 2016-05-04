@@ -57,8 +57,10 @@
 
 #if defined (__XMHF_VERIFICATION__)
 bool ae_activated=nondet_bool();
+u32 ae_paddr=nondet_u32();
 #else
 bool ae_activated=false;
+u32 ae_paddr=0;
 #endif // defined
 
 /*

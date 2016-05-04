@@ -158,7 +158,7 @@ if(!ae_activated){
         XMHF_SLAB_CALLNEW(&spl);
 
         ae_activated = true;
-
+        ae_paddr = (u32)gpa;
         _XDPRINTF_("%s[%u]: approved and locked page at gpa %x\n",
                    __func__, (u16)cpuindex, gpa);
     }
@@ -204,7 +204,7 @@ static void ae_unlock(u32 cpuindex, u32 guest_slab_index, u64 gpa){
         XMHF_SLAB_CALLNEW(&spl);
 
         ae_activated=false;
-
+        ae_paddr=0;
         _XDPRINTF_("%s[%u]: restored permissions for page at %016llx\n",
                    __func__, (u16)cpuindex, gpa);
     }
@@ -273,8 +273,11 @@ static void _hcb_hypercall(u64 cpuindex, u64 guest_slab_index){
 //memory fault
 static void _hcb_memoryfault(u32 cpuindex, u32 guest_slab_index, u64 gpa, u64 gva, u64 errorcode){
 
-	_XDPRINTF_("%s[%u]: memory fault in guest slab %u; gpa=%016llx, gva=%016llx, errorcode=%016llx, write error to approved code?\n",
+    if(ae_activated && ae_paddr == (u32)gpa){
+    	_XDPRINTF_("%s[%u]: memory fault in guest slab %u; gpa=%016llx, gva=%016llx, errorcode=%016llx, write error to approved code. Halting!\n",
             __func__, (u16)cpuindex, guest_slab_index, gpa, gva, errorcode);
+    	HALT();
+    }
 
 }
 
