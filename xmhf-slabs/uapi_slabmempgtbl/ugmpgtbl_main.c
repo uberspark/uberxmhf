@@ -62,17 +62,20 @@
 //@ ghost bool ugmpgtbl_methodcall_inittable = false;
 //@ ghost bool ugmpgtbl_methodcall_setentry = false;
 //@ ghost bool ugmpgtbl_methodcall_getentry = false;
+//@ ghost bool ugmpgtbl_methodcall_flushtlb = false;
 //@ ghost bool ugmpgtbl_methodcall_invalid = false;
 /*@
 	requires \valid(sp);
 	assigns sp->in_out_params[0..15];
-	assigns ugmpgtbl_methodcall_inittable, ugmpgtbl_methodcall_setentry, ugmpgtbl_methodcall_getentry, ugmpgtbl_methodcall_invalid;
+	assigns ugmpgtbl_methodcall_inittable, ugmpgtbl_methodcall_setentry, ugmpgtbl_methodcall_getentry, ugmpgtbl_methodcall_flushtlb, ugmpgtbl_methodcall_invalid;
 	ensures (sp->dst_uapifn == XMHFGEEC_UAPI_SLABMEMPGTBL_INITMEMPGTBL) ==> (ugmpgtbl_methodcall_inittable == true);
 	ensures (sp->dst_uapifn == XMHFGEEC_UAPI_SLABMEMPGTBL_SETENTRYFORPADDR) ==> (ugmpgtbl_methodcall_setentry == true);
 	ensures (sp->dst_uapifn == XMHFGEEC_UAPI_SLABMEMPGTBL_GETENTRYFORPADDR) ==> (ugmpgtbl_methodcall_getentry == true);
+	ensures (sp->dst_uapifn == XMHFGEEC_UAPI_SLABMEMPGTBL_FLUSHTLB) ==> (ugmpgtbl_methodcall_flushtlb == true);
 	ensures !( sp->dst_uapifn == XMHFGEEC_UAPI_SLABMEMPGTBL_INITMEMPGTBL ||
 		   sp->dst_uapifn == XMHFGEEC_UAPI_SLABMEMPGTBL_SETENTRYFORPADDR ||
-		   sp->dst_uapifn == XMHFGEEC_UAPI_SLABMEMPGTBL_GETENTRYFORPADDR) ==> (ugmpgtbl_methodcall_invalid == true);
+		   sp->dst_uapifn == XMHFGEEC_UAPI_SLABMEMPGTBL_GETENTRYFORPADDR ||
+		   sp->dst_uapifn == XMHFGEEC_UAPI_SLABMEMPGTBL_FLUSHTLB) ==> (ugmpgtbl_methodcall_invalid == true);
 @*/
 void slab_main(slab_params_t *sp){
 
@@ -97,6 +100,16 @@ void slab_main(slab_params_t *sp){
 
             //@ ghost ugmpgtbl_methodcall_getentry = true;
             _slabmempgtbl_getentryforpaddr(getentryforpaddrp);
+
+
+	}else if (sp->dst_uapifn == XMHFGEEC_UAPI_SLABMEMPGTBL_FLUSHTLB){
+		xmhfgeec_uapi_slabmempgtbl_flushtlb_params_t *flushtlbp =
+                (xmhfgeec_uapi_slabmempgtbl_flushtlb_params_t *)sp->in_out_params;
+
+            //@ ghost ugmpgtbl_methodcall_flushtlb = true;
+            _slabmempgtbl_flushtlb(flushtlbp);
+
+
 
 	}else{
 
