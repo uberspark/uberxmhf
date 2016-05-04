@@ -85,10 +85,9 @@ extern void do_testxhapprovexec_functoprotect(void);
 
 void do_testxhapprovexec(void){
     u32 fva = &do_testxhapprovexec_functoprotect;
-	u32 fpa = va_to_pa(&do_testxhapprovexec_functoprotect);
+	u32 fpa;
 
     printf("\n%s: Target function virtual-address=0x%08x\n", __FUNCTION__, fva);
-    printf("\n%s: Target function physical-address=0x%08x\n", __FUNCTION__, fpa);
 
     printf("\n%s: Proceeding to lock function in memory...", __FUNCTION__);
 
@@ -99,16 +98,39 @@ void do_testxhapprovexec(void){
 
     printf("\n%s: Locked function in memory", __FUNCTION__);
 
+    fpa=	va_to_pa(&do_testxhapprovexec_functoprotect);
+
+    printf("\n%s: Target function physical-address=0x%08x\n", __FUNCTION__, fpa);
+
+
     printf("\n%s: proceeding to approve function...", __FUNCTION__);
 
     __vmcall(APRVEXEC_LOCK, 0, fpa);
 
     printf("\n%s: Approved function\n", __FUNCTION__);
 
-    //{
-    //    u8 *pokefun = (u8 *)&_xcguestslab_do_testxhapprovexec_functoprotect;
-    //    pokefun[0] = 0xAB;
-    //}
+    printf("\n%s: Calling function..\n", __FUNCTION__);
+    do_testxhapprovexec_functoprotect();
+    printf("\n%s: returned back\n", __FUNCTION__);
+
+    //////
+    //code modification test attack
+    //////
+    printf("\n%s: Preparing to execute code modification attack...\n", __FUNCTION__);
+    if(mprotect(fva, 4096, (PROT_READ | PROT_WRITE | PROT_EXEC)) != 0){
+        printf("\n%s: Could not change page protections: %s\n", __FUNCTION__, strerror(errno));
+        exit(1);
+    }
+
+    {
+    	u8 *pokefun = (u8 *)fva;
+        pokefun[0] = 0xAB;
+    }
+    printf("\n%s: Code modification attack successful\n", __FUNCTION__);
+
+    //////
+
+
 
     printf("\n%s: Going to release approved execution at fn va=%08x, pa=%08x\n", __FUNCTION__, fva, fpa);
 

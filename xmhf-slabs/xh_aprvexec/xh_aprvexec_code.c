@@ -153,9 +153,21 @@ if(!ae_activated){
          spl.dst_uapifn = XMHFGEEC_UAPI_SLABMEMPGTBL_SETENTRYFORPADDR;
         setentryforpaddrp->dst_slabid = guest_slab_index;
         setentryforpaddrp->gpa = gpa;
-        setentryforpaddrp->entry = getentryforpaddrp->result_entry & ~(0x7);
-        setentryforpaddrp->entry |= 0x5; // execute, read-only
+        setentryforpaddrp->entry = (getentryforpaddrp->result_entry & ~(0x7)) | 0x5;
+        //setentryforpaddrp->entry |= 0x5; // execute, read-only
         XMHF_SLAB_CALLNEW(&spl);
+
+        //////
+        //debug
+        //////
+        spl.dst_uapifn = XMHFGEEC_UAPI_SLABMEMPGTBL_GETENTRYFORPADDR;
+        getentryforpaddrp->dst_slabid = guest_slab_index;
+        getentryforpaddrp->gpa = gpa;
+        XMHF_SLAB_CALLNEW(&spl);
+       _XDPRINTF_("%s[%u]: new entry for gpa=%016llx is %016llx\n",
+                  __func__, (u16)cpuindex, gpa, getentryforpaddrp->result_entry);
+
+        //////
 
         ae_activated = true;
         ae_paddr = (u32)gpa;
