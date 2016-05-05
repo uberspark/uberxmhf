@@ -106,6 +106,10 @@ if(!ae_activated){
     _XDPRINTF_("%s[%u]: grabbed page contents at gpa=%016x\n",
                 __func__, (u16)cpuindex, gpa);
 
+    _XDPRINTF_("%s[%u]: %02x, %02x, %02x, %02x, %02x ...\n",
+                __func__, (u16)cpuindex, _ae_page_buffer[0], _ae_page_buffer[1],
+				_ae_page_buffer[2], _ae_page_buffer[3], _ae_page_buffer[4]);
+
     //compute SHA-1 of the local page buffer
     sha1(&_ae_page_buffer, PAGE_SIZE_4K, digest);
 
@@ -139,6 +143,8 @@ if(!ae_activated){
         (xmhfgeec_uapi_slabmempgtbl_getentryforpaddr_params_t *)spl.in_out_params;
     xmhfgeec_uapi_slabmempgtbl_setentryforpaddr_params_t *setentryforpaddrp =
         (xmhfgeec_uapi_slabmempgtbl_setentryforpaddr_params_t *)spl.in_out_params;
+    xmhfgeec_uapi_slabmempgtbl_flushtlb_params_t *flushtlbp =
+        (xmhfgeec_uapi_slabmempgtbl_flushtlb_params_t *)spl.in_out_params;
 
 
         spl.dst_slabid = XMHFGEEC_SLAB_UAPI_SLABMEMPGTBL;
@@ -153,10 +159,18 @@ if(!ae_activated){
          spl.dst_uapifn = XMHFGEEC_UAPI_SLABMEMPGTBL_SETENTRYFORPADDR;
         setentryforpaddrp->dst_slabid = guest_slab_index;
         setentryforpaddrp->gpa = gpa;
-        setentryforpaddrp->entry = (getentryforpaddrp->result_entry & ~(0x7)) | 0x5;
-        //setentryforpaddrp->entry |= 0x5; // execute, read-only
+        setentryforpaddrp->entry = (getentryforpaddrp->result_entry & ~(0x7));
+        setentryforpaddrp->entry |= 0x5; // execute, read-only
         XMHF_SLAB_CALLNEW(&spl);
 
+
+        //flush EPT TLB for permission changes to take effect
+		spl.dst_uapifn = XMHFGEEC_UAPI_SLABMEMPGTBL_FLUSHTLB;
+		flushtlbp->dst_slabid = guest_slab_index;
+		XMHF_SLAB_CALLNEW(&spl);
+
+
+		/*
         //////
         //debug
         //////
@@ -168,6 +182,7 @@ if(!ae_activated){
                   __func__, (u16)cpuindex, gpa, getentryforpaddrp->result_entry);
 
         //////
+*/
 
         ae_activated = true;
         ae_paddr = (u32)gpa;
