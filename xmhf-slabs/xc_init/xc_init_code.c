@@ -64,7 +64,7 @@
 #include <xh_hyperdep.h>
 #include <xh_syscalllog.h>
 #include <xh_ssteptrace.h>
-#include <xh_approvexec.h>
+#include <xh_aprvexec.h>
 
 #include <xc_init.h>
 

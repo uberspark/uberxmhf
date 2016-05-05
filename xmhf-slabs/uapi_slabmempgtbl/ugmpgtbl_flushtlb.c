@@ -44,44 +44,38 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-//xmhfhw_cpu_vmx: CPU VMX functions
-//author: amit vasudevan (amitvasudevan@acm.org)
+/*
+ * slab memory pagetable uAPI
+ *
+ * author: amit vasudevan (amitvasudevan@acm.org)
+ */
 
 #include <xmhf.h>
-#include <xmhf-hwm.h>
-#include <xmhfhw.h>
 #include <xmhf-debug.h>
 
+#include <xmhfgeec.h>
+
+#include <uapi_slabmempgtbl.h>
 
 
-// VMX instruction INVEPT
-//		Invalidate Translations Derived from EPT
-//__attribute__((naked)) void __vmx_invept(u64 invalidation_type, u64 eptp)
-CASM_FUNCDEF(u32, __vmx_invept,
-{
-    xmhfhwm_cpu_insn_subl_imm_esp(0x10);
-    xmhfhwm_cpu_insn_movl_mesp_edx(0x14);	//edx = invalidation_type_lo
-    xmhfhwm_cpu_insn_movl_mesp_eax(0x1C);	//eax = eptp_lo
-    xmhfhwm_cpu_insn_movl_eax_mesp(0x0);	//invept desc[0..31bits] = eptp_lo
-    xmhfhwm_cpu_insn_movl_mesp_eax(0x20);	//eax = eptp_hi
-    xmhfhwm_cpu_insn_movl_eax_mesp(0x4);	//invept desc[32..64bits] = eptp_hi
-    xmhfhwm_cpu_insn_movl_imm_mesp(0x0,0x8);	//invept desc [64-127bits] = 0
-    xmhfhwm_cpu_insn_movl_imm_mesp(0x0,0xC);
-    xmhfhwm_cpu_insn_invept_mesp_edx(0x0);
-    xmhfhwm_cpu_insn_jc(__insnfail);
-    xmhfhwm_cpu_insn_jz(__insnfail);
-    xmhfhwm_cpu_insn_xorl_eax_eax();		//return 0 as we succeeded
-    xmhfhwm_cpu_insn_jmplabel(__epilogue);
+/*@
+	requires \valid(flushtlbp);
+@*/
+void _slabmempgtbl_flushtlb(xmhfgeec_uapi_slabmempgtbl_flushtlb_params_t *flushtlbp){
+	u32 status;
 
-CASM_LABEL(__insnfail);
-    xmhfhwm_cpu_insn_movl_imm_eax(0x1);		//return 1 for failure
+	if( (flushtlbp->dst_slabid < XMHFGEEC_TOTAL_SLABS) &&
+		    ( (flushtlbp->dst_slabid >= XMHFGEEC_UGSLAB_BASE_IDX && flushtlbp->dst_slabid <= XMHFGEEC_UGSLAB_MAX_IDX) &&
+			(xmhfgeec_slab_info_table[flushtlbp->dst_slabid].slabtype == XMHFGEEC_SLABTYPE_uVT_PROG_GUEST ||
+			 xmhfgeec_slab_info_table[flushtlbp->dst_slabid].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG_GUEST ||
+			 xmhfgeec_slab_info_table[flushtlbp->dst_slabid].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG_RICHGUEST)
+			)
+	      ) {
+		//_XDPRINTF_("%s: flushing EPT TLB for uobj id=%u\n", __func__, flushtlbp->dst_slabid);
+		status = CASM_FUNCCALL(__vmx_invept, VMX_INVEPT_SINGLECONTEXT, 0, (xmhfgeec_slab_info_table[flushtlbp->dst_slabid].mempgtbl_cr3 | 0x1E), 0);
+		//_XDPRINTF_("%s: flushed EPT, status=%u\n", __func__, status);
 
-CASM_LABEL(__epilogue);
-    xmhfhwm_cpu_insn_addl_imm_esp(0x10);
-    xmhfhwm_cpu_insn_retu32();
-},
-u32 invalidation_type_lo,
-u32 invalidation_type_hi,
-u32 eptp_lo,
-u32 eptp_hi)
-
+	}else{
+		//nothing
+	}
+}

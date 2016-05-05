@@ -58,6 +58,8 @@
 #define XMHFGEEC_UAPI_SLABMEMPGTBL_INITMEMPGTBL     0
 #define XMHFGEEC_UAPI_SLABMEMPGTBL_SETENTRYFORPADDR 1
 #define XMHFGEEC_UAPI_SLABMEMPGTBL_GETENTRYFORPADDR 2
+#define XMHFGEEC_UAPI_SLABMEMPGTBL_FLUSHTLB			3
+
 
 
 
@@ -85,6 +87,17 @@ typedef struct {
     u64 gpa;
     u64 result_entry;
 }__attribute__((packed)) xmhfgeec_uapi_slabmempgtbl_getentryforpaddr_params_t;
+
+typedef struct {
+    u32 dst_slabid;
+}__attribute__((packed)) xmhfgeec_uapi_slabmempgtbl_flushtlb_params_t;
+
+
+
+/*@
+  requires \valid(flushtlbp);
+@*/
+void _slabmempgtbl_flushtlb(xmhfgeec_uapi_slabmempgtbl_flushtlb_params_t *flushtlbp);
 
 
 /*@
