@@ -95,6 +95,10 @@ void do_testxhapprovexec(void){
     	  printf("\nFailed to lock page in memory: %s\n", strerror(errno));
     	  exit(1);
     }
+    if(mprotect(fva, 4096, (PROT_READ | PROT_WRITE | PROT_EXEC)) != 0){
+        printf("\n%s: Could not change page protections: %s\n", __FUNCTION__, strerror(errno));
+        exit(1);
+    }
 
     printf("\n%s: Locked function in memory", __FUNCTION__);
 
@@ -116,17 +120,12 @@ void do_testxhapprovexec(void){
     //////
     //code modification test attack
     //////
-    printf("\n%s: Preparing to execute code modification attack...\n", __FUNCTION__);
-    if(mprotect(fva, 4096, (PROT_READ | PROT_WRITE | PROT_EXEC)) != 0){
-        printf("\n%s: Could not change page protections: %s\n", __FUNCTION__, strerror(errno));
-        exit(1);
-    }
-
-    {
-    	u8 *pokefun = (u8 *)fva;
-        pokefun[0] = 0xAB;
-    }
-    printf("\n%s: Code modification attack successful\n", __FUNCTION__);
+    //printf("\n%s: Preparing to execute code modification attack...\n", __FUNCTION__);
+    //
+    //{
+    //	*((u8 *)&do_testxhapprovexec_functoprotect) = 0xAB;
+    //}
+    //printf("\n%s: Code modification attack successful\n", __FUNCTION__);
 
     //////
 

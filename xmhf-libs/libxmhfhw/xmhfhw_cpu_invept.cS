@@ -57,19 +57,28 @@
 // VMX instruction INVEPT
 //		Invalidate Translations Derived from EPT
 //__attribute__((naked)) void __vmx_invept(u64 invalidation_type, u64 eptp)
-CASM_FUNCDEF(void, __vmx_invept,
+CASM_FUNCDEF(u32, __vmx_invept,
 {
     xmhfhwm_cpu_insn_subl_imm_esp(0x10);
-    xmhfhwm_cpu_insn_movl_mesp_edx(0x14);
-    xmhfhwm_cpu_insn_movl_mesp_eax(0x1C);
-    xmhfhwm_cpu_insn_movl_eax_mesp(0x0);
-    xmhfhwm_cpu_insn_movl_mesp_eax(0x20);
-    xmhfhwm_cpu_insn_movl_eax_mesp(0x4);
-    xmhfhwm_cpu_insn_movl_imm_mesp(0x0,0x8);
+    xmhfhwm_cpu_insn_movl_mesp_edx(0x14);	//edx = invalidation_type_lo
+    xmhfhwm_cpu_insn_movl_mesp_eax(0x1C);	//eax = eptp_lo
+    xmhfhwm_cpu_insn_movl_eax_mesp(0x0);	//invept desc[0..31bits] = eptp_lo
+    xmhfhwm_cpu_insn_movl_mesp_eax(0x20);	//eax = eptp_hi
+    xmhfhwm_cpu_insn_movl_eax_mesp(0x4);	//invept desc[32..64bits] = eptp_hi
+    xmhfhwm_cpu_insn_movl_imm_mesp(0x0,0x8);	//invept desc [64-127bits] = 0
     xmhfhwm_cpu_insn_movl_imm_mesp(0x0,0xC);
     xmhfhwm_cpu_insn_invept_mesp_edx(0x0);
+    xmhfhwm_cpu_insn_jc(__insnfail);
+    xmhfhwm_cpu_insn_jz(__insnfail);
+    xmhfhwm_cpu_insn_xorl_eax_eax();		//return 0 as we succeeded
+    xmhfhwm_cpu_insn_jmplabel(__epilogue);
+
+CASM_LABEL(__insnfail);
+    xmhfhwm_cpu_insn_movl_imm_eax(0x1);		//return 1 for failure
+
+CASM_LABEL(__epilogue);
     xmhfhwm_cpu_insn_addl_imm_esp(0x10);
-    xmhfhwm_cpu_insn_ret();
+    xmhfhwm_cpu_insn_retu32();
 },
 u32 invalidation_type_lo,
 u32 invalidation_type_hi,

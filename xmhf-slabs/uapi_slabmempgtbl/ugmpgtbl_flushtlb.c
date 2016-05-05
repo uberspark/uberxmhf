@@ -62,6 +62,7 @@
 	requires \valid(flushtlbp);
 @*/
 void _slabmempgtbl_flushtlb(xmhfgeec_uapi_slabmempgtbl_flushtlb_params_t *flushtlbp){
+	u32 status;
 
 	if( (flushtlbp->dst_slabid < XMHFGEEC_TOTAL_SLABS) &&
 		    ( (flushtlbp->dst_slabid >= XMHFGEEC_UGSLAB_BASE_IDX && flushtlbp->dst_slabid <= XMHFGEEC_UGSLAB_MAX_IDX) &&
@@ -70,7 +71,9 @@ void _slabmempgtbl_flushtlb(xmhfgeec_uapi_slabmempgtbl_flushtlb_params_t *flusht
 			 xmhfgeec_slab_info_table[flushtlbp->dst_slabid].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG_RICHGUEST)
 			)
 	      ) {
-		CASM_FUNCCALL(__vmx_invept, VMX_INVEPT_SINGLECONTEXT, 0, xmhfgeec_slab_info_table[flushtlbp->dst_slabid].mempgtbl_cr3, 0);
+		//_XDPRINTF_("%s: flushing EPT TLB for uobj id=%u\n", __func__, flushtlbp->dst_slabid);
+		status = CASM_FUNCCALL(__vmx_invept, VMX_INVEPT_SINGLECONTEXT, 0, (xmhfgeec_slab_info_table[flushtlbp->dst_slabid].mempgtbl_cr3 | 0x1E), 0);
+		//_XDPRINTF_("%s: flushed EPT, status=%u\n", __func__, status);
 
 	}else{
 		//nothing
