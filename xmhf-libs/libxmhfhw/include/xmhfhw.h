@@ -672,7 +672,7 @@ CASM_FUNCDECL(u32 xmhfhw_cpu_x86vmx_vmread(u32 encoding));
 CASM_FUNCDECL(u32 __vmx_vmclear(u64 vmcs));
 CASM_FUNCDECL(u32 __vmx_vmptrld(u64 vmcs));
 CASM_FUNCDECL(u32 __vmx_invvpid(int invalidation_type, u32 vpid, u32 linearaddress));
-CASM_FUNCDECL(void __vmx_invept(u32 invalidation_type_lo, u32 invalidation_type_hi, u32 eptp_lo, u32 eptp_hi));
+CASM_FUNCDECL(u32 __vmx_invept(u32 invalidation_type_lo, u32 invalidation_type_hi, u32 eptp_lo, u32 eptp_hi));
 
 #endif //__ASSEMBLY__
 

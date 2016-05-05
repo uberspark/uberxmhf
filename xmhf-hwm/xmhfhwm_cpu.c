@@ -569,6 +569,10 @@ void _impl_xmhfhwm_cpu_insn_movl_imm_ecx(u32 value){
 	xmhfhwm_cpu_gprs_ecx = value;
 }
 
+void _impl_xmhfhwm_cpu_insn_movl_imm_edx(u32 value){
+	xmhfhwm_cpu_gprs_edx = value;
+}
+
 
 void _impl_xmhfhwm_cpu_insn_inw_dx_ax(void){
 	xmhfhwm_cpu_gprs_eax &= 0xFFFF0000UL;

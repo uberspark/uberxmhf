@@ -104,8 +104,8 @@ void _slabmempgtbl_setentryforpaddr(xmhfgeec_uapi_slabmempgtbl_setentryforpaddr_
       ) {
 			//@ghost setentry_fullentry = (setentryforpaddrp->entry & (~0x80ULL));
 			_slabmempgtbl_lvl1t[(setentryforpaddrp->dst_slabid - XMHFGEEC_UGSLAB_BASE_IDX)][pae_get_pdpt_index(setentryforpaddrp->gpa)][pae_get_pdt_index(setentryforpaddrp->gpa)][pae_get_pt_index(setentryforpaddrp->gpa)] =
-				(setentryforpaddrp->entry & (~0x80ULL));
-				//setentryforpaddrp->entry;
+				//(setentryforpaddrp->entry & (~0x80ULL));
+				setentryforpaddrp->entry;
 
 
     }else{

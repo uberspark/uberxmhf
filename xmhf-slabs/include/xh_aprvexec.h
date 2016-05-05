@@ -52,8 +52,8 @@
  *  author: amit vasudevan (amitvasudevan@acm.org)
  */
 
-#ifndef __XH_APPROVEXEC_H__
-#define __XH_APPROVEXEC_H__
+#ifndef __XH_APRVEXEC_H__
+#define __XH_APRVEXEC_H__
 
 
 #ifndef __ASSEMBLY__
@@ -61,9 +61,11 @@
 
 //VFM
 extern bool ae_activated;
+extern u32 ae_paddr;
+
 //void xhapprovexec_inv_xmhf_hic_uapi_mempgtbl_setentry(xmhf_hic_uapi_mempgtbl_desc_t *imdesc);
 
 
 #endif	//__ASSEMBLY__
 
-#endif //__XH_APPROVEXEC_H__
+#endif //__XH_APRVEXEC_H__
