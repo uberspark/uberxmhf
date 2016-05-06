@@ -215,6 +215,12 @@ static void _hcb_hypercall(u32 cpuindex, u32 guest_slab_index){
 
 	switch(call_id){
 
+		case SSTEPTRACE_REGISTER:{
+			ssteptrace_codepaddr = gprs->edx;
+			_XDPRINTF_("%s[%u]: call_id=%x(REGISTER) at paddr=0x%08x\n", __func__, (u16)cpuindex, call_id, ssteptrace_codepaddr);
+		}
+		break;
+
 		case SSTEPTRACE_ON:{
 		    _XDPRINTF_("%s[%u]: call_id=%x(TRACE_ON)\n", __func__, (u16)cpuindex, call_id);
 			st_on(cpuindex, guest_slab_index);
