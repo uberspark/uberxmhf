@@ -55,12 +55,18 @@
 #ifndef __XH_SSTEPTRACE_H__
 #define __XH_SSTEPTRACE_H__
 
+#define SSTEPTRACE_REGISTER    			0xE0
+#define SSTEPTRACE_ON          			0xE1
+#define SSTEPTRACE_OFF         			0xE2
+
 
 #ifndef __ASSEMBLY__
 
 
 //VFM
-static bool ssteptrace_on;
+extern bool ssteptrace_on;
+extern u32 ssteptrace_codepaddr;
+
 //void xhssteptrace_inv_xmhf_hic_uapi_cpustate_vmwrite(u64 encoding, u64 value);
 #endif	//__ASSEMBLY__
 
