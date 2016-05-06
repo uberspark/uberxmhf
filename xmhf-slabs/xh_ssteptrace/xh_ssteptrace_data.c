@@ -56,9 +56,12 @@
 
 
 #if defined (__XMHF_VERIFICATION__)
-static bool ssteptrace_on= nondet_bool();
+bool ssteptrace_on= nondet_bool();
+u32 ssteptrace_codepaddr = nondet_u32();
+
 #else
-static bool ssteptrace_on = false;
+bool ssteptrace_on = false;
+u32 ssteptrace_codepaddr = 0;
 #endif
 
 /*
