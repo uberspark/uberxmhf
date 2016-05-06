@@ -23,7 +23,7 @@ typedef unsigned long long int u64;
 //////
 // vmcall interface
 //////
-static void __vmcall(u32 eax, u32 ebx, u32 edx){
+__attribute__ ((always_inline)) static inline void __vmcall(u32 eax, u32 ebx, u32 edx){
 	asm volatile (
 			"movl %0, %%eax \r\n"
 			"movl %1, %%ebx \r\n"
@@ -78,7 +78,24 @@ static u64 va_to_pa(void *vaddr) {
 #define SSTEPTRACE_ON          			0xE1
 #define SSTEPTRACE_OFF         			0xE2
 
- __attribute__((aligned(4096))) void do_testssteptrace(void){
+__attribute__((aligned(4096))) void do_testssteptrace(void){
+	u32 fva = &do_testssteptrace;
+	u32 fpa;
+
+	printf("\n%s: Proceeding to lock test function at va=0x%08x...", __FUNCTION__, fva);
+
+	if(mlock(fva, 4096) == -1) {
+		printf("\nFailed to lock page in memory: %s\n", strerror(errno));
+		exit(1);
+	}
+
+	fpa = va_to_pa(fva);
+
+	printf("\n%s: Locked test function at va=0x%08x ==> pa=0x%08x", __FUNCTION__, fva, fpa);
+
+	printf("\n%s: Registering test function...", __FUNCTION__);
+	__vmcall(SSTEPTRACE_REGISTER, 0, fpa);
+	printf("\n%s: test function registered", __FUNCTION__);
 
 	printf("\n%s: Turning on tracing...\n", __FUNCTION__);
 
@@ -109,6 +126,15 @@ static u64 va_to_pa(void *vaddr) {
 	        :
 	        :
 	    );
+
+	printf("\n%s: Proceeding to unlock test function at va=0x%08x...", __FUNCTION__, fva);
+
+	if(munlock(fva, 4096) == -1) {
+		  printf("\nFailed to unlock page in memory: %s\n", strerror(errno));
+		  exit(1);
+	}
+
+	printf("\n%s: unlocked test function", __FUNCTION__);
 
 }
 
