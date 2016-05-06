@@ -214,23 +214,23 @@ static void _hcb_hypercall(u32 cpuindex, u32 guest_slab_index){
     //gpa = ((u64)gprs->edx << 32) | gprs->ebx;
 
 	//_XDPRINTF_("%s[%u]: call_id=%x, gpa=%016llx\n", __func__, (u16)cpuindex, call_id, gpa);
-    _XDPRINTF_("%s[%u]: call_id=%x\n", __func__, (u16)cpuindex, call_id);
 
 	switch(call_id){
 
 		case SSTEPTRACE_ON:{
+		    _XDPRINTF_("%s[%u]: call_id=%x(TRACE_ON)\n", __func__, (u16)cpuindex, call_id);
 			st_on(cpuindex, guest_slab_index);
 		}
 		break;
 
 		case SSTEPTRACE_OFF:{
+		    _XDPRINTF_("%s[%u]: call_id=%x(TRACE_OFF)\n", __func__, (u16)cpuindex, call_id);
 			st_off(cpuindex, guest_slab_index);
 		}
 		break;
 
 		default:
-            _XDPRINTF_("%s[%u]: unsupported hypercall %x. Ignoring\n",
-                       __func__, (u16)cpuindex, call_id);
+            //_XDPRINTF_("%s[%u]: unsupported hypercall %x. Ignoring\n", __func__, (u16)cpuindex, call_id);
 			break;
 	}
 
@@ -323,8 +323,8 @@ void slab_main(slab_params_t *sp){
     hcbp->cbresult=XC_HYPAPPCB_CHAIN;
 
 
-	_XDPRINTF_("XHSSTEPTRACE[%u]: Got control, cbtype=%x: ESP=%08x\n",
-                (u16)sp->cpuid, hcbp->cbtype, CASM_FUNCCALL(read_esp,CASM_NOPARAM));
+	//_XDPRINTF_("XHSSTEPTRACE[%u]: Got control, cbtype=%x: ESP=%08x\n",
+    //            (u16)sp->cpuid, hcbp->cbtype, CASM_FUNCCALL(read_esp,CASM_NOPARAM));
 
 
     switch(hcbp->cbtype){
