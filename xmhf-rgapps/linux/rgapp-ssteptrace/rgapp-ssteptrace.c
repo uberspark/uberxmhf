@@ -99,9 +99,9 @@ __attribute__((aligned(4096))) void do_testssteptrace(void){
 
 	printf("\n%s: Turning on tracing...\n", __FUNCTION__);
 
-	__vmcall(SSTEPTRACE_ON, 0, 0);
+	//__vmcall(SSTEPTRACE_ON, 0, 0);
 
-	__vmcall(SSTEPTRACE_OFF, 0 , 0);
+	//__vmcall(SSTEPTRACE_OFF, 0 , 0);
 
 	printf("\n%s: Tracing off\n", __FUNCTION__);
 
