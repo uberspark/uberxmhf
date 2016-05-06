@@ -246,7 +246,7 @@ static void _hcb_hypercall(u32 cpuindex, u32 guest_slab_index){
 // trap exception
 static void _hcb_trap_exception(u32 cpuindex, u32 guest_slab_index){
     u32 info_vmexit_interruption_information;
-    u32 guest_rip;
+    u32 guest_rip, guest_rip_paddr;
     slab_params_t spl;
     xmhf_uapi_gcpustate_vmrw_params_t *gcpustate_vmrwp =
         (xmhf_uapi_gcpustate_vmrw_params_t *)spl.in_out_params;
@@ -276,9 +276,6 @@ static void _hcb_trap_exception(u32 cpuindex, u32 guest_slab_index){
         XMHF_SLAB_CALLNEW(&spl);
         guest_rip = gcpustate_vmrwp->value;
 
-        _XDPRINTF_("%s[%u]: guest slab RIP=%x\n",
-                   __func__, (u16)cpuindex, guest_rip);
-
         //copy 256 bytes from the current guest RIP for trace inference
         //spl.dst_slabid = XMHFGEEC_SLAB_UAPI_SLABMEMACC;
         //smemaccp->dst_slabid = guest_slab_index;
@@ -288,7 +285,12 @@ static void _hcb_trap_exception(u32 cpuindex, u32 guest_slab_index){
         ////spl.in_out_params[0] = XMHF_HIC_UAPI_PHYSMEM;
         // spl.dst_uapifn = XMHF_HIC_UAPI_PHYSMEM_PEEK;
         //XMHF_SLAB_CALLNEW(&spl);
-        CASM_FUNCCALL(xmhfhw_sysmemaccess_copy, &_st_tracebuffer, guest_rip, sizeof(_st_tracebuffer));
+
+        guest_rip_paddr = ssteptrace_codepaddr | (guest_rip & 0x00000FFFUL);
+        _XDPRINTF_("%s[%u]: guest slab RIP=%x, RIP paddr=0x%08x\n",
+                   __func__, (u16)cpuindex, guest_rip, guest_rip_paddr);
+
+        CASM_FUNCCALL(xmhfhw_sysmemaccess_copy, &_st_tracebuffer, guest_rip_paddr, sizeof(_st_tracebuffer));
 
         //try to see if we found a match in our trace database
         st_scanforsignature(&_st_tracebuffer, sizeof(_st_tracebuffer));
