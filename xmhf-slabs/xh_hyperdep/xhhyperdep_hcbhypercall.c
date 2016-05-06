@@ -83,7 +83,7 @@ static inline void hyperdep_hcbhypercall_helper(u32 cpuindex, u32 call_id, u32 g
 		//@ghost hyperdep_methodcall_hcbhypercall_deactivatedep = true;
 
 	}else{
-		_XDPRINTF_("%s[%u]: unsupported hypercall %x. Ignoring\n",__func__, (u16)cpuindex, call_id);
+		//_XDPRINTF_("%s[%u]: unsupported hypercall %x. Ignoring\n",__func__, (u16)cpuindex, call_id);
 		//@ghost hyperdep_methodcall_hcbhypercall_invalid = true;
 
 	}

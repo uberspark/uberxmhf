@@ -111,7 +111,7 @@ void slab_main(slab_params_t *sp){
 	//}else if (sp->in_out_params[0] == XC_HYPAPPCB_TRAP_EXCEPTION){
 	//
 	}else{
-	_XDPRINTF_("%s[%u]: Unknown cbtype. Ignoring!\n", __func__, (u16)sp->cpuid);
+	//_XDPRINTF_("%s[%u]: Unknown cbtype. Ignoring!\n", __func__, (u16)sp->cpuid);
 	//@ghost hyperdep_methodcall_invalid = true;
 
 	}
