@@ -60,9 +60,6 @@
 //////
 //XMHF_SLABNEW(xhssteptrace)
 
-#define SSTEPTRACE_REGISTER    			0xE0
-#define SSTEPTRACE_ON          			0xE1
-#define SSTEPTRACE_OFF         			0xE2
 
 
 static u8 _st_tracebuffer[256];
