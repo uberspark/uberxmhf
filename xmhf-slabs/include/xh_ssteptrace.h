@@ -55,6 +55,10 @@
 #ifndef __XH_SSTEPTRACE_H__
 #define __XH_SSTEPTRACE_H__
 
+#define SSTEPTRACE_REGISTER    			0xE0
+#define SSTEPTRACE_ON          			0xE1
+#define SSTEPTRACE_OFF         			0xE2
+
 
 #ifndef __ASSEMBLY__
 
