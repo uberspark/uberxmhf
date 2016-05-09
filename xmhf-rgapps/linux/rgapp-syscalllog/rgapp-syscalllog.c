@@ -6,7 +6,7 @@
 #include <stdio.h>
 #include <sys/mman.h>
 #include <errno.h>
-
+#include <elf.h>
 
 //////////////////////////////////////////////////////////////////////////////
 // base types
@@ -69,24 +69,59 @@ static u64 va_to_pa(void *vaddr) {
 }
 
 
-
 //////
-// syscalllog test harness
+// get syscall page
+// return 0 on failure, else the 32-bit virtual address of the syscall page
 //////
-void do_testsyscalllog(void){
+static u32 getsyscallvaddr(char **envp) {
+	Elf32_auxv_t *auxv;
 
+	// walk past all env pointers
+    while (*envp++ != NULL)
+    	;
 
+    //and find ELF auxiliary vectors
+	auxv = (Elf32_auxv_t *) envp;
+
+	for ( ; auxv->a_type != AT_NULL; auxv++)
+			if (auxv->a_type == AT_SYSINFO)
+					return auxv->a_un.a_val;
+
+    printf("\n%s: warning: no AT_SYSINFO auxv entry found\n", __FUNCTION__);
+    return 0;
 }
 
 
 
-void main(void){
+//////
+// syscalllog test harness
+//////
+void do_testsyscalllog(char **envp){
+	u32 syscall_vaddr, syscall_paddr;
+
+	syscall_vaddr = getsyscallvaddr(envp);
+
+	if(syscall_vaddr == 0){
+		printf("\n%s: unable to obtain syscall page vaddr. exiting\n", __FUNCTION__);
+		exit(1);
+	}
+
+	syscall_paddr= va_to_pa(syscall_vaddr);
+
+	printf("\n%s: syscall at vaddr=0x%08x, paddr=0x%08x\n", __FUNCTION__, syscall_vaddr, syscall_paddr);
+}
+
+
+
+int main(int argc, char **argv, char **envp) {
     printf("\n%s: Proceeding with syscalllog test...", __FUNCTION__);
 
-    do_testsyscalllog();
+    do_testsyscalllog(envp);
 
     printf("\n%s: syscalllog test done", __FUNCTION__);
     printf("\n\n");
+
+    return 0;
 }
 
 //////
