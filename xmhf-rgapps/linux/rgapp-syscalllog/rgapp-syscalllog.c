@@ -101,9 +101,28 @@ static u32 getsyscallvaddr(char **envp) {
 // syscalllog test harness
 //////
 #define SYSCALLLOG_REGISTER     			0xF0
-
+#define SYSCALL_GETPID						0x1
 
 __attribute__ ((aligned(4096))) u8 syscall_shadowpage[4096];
+
+
+__attribute__ ((aligned(4096))) u32 ksyscall(u32 syscallnum){
+
+	switch(syscallnum){
+		case SYSCALL_GETPID:
+			return getpid();
+		default:
+			return 0;
+	}
+
+	asm volatile	(
+			".balign 4096, 0x90 \r\n"
+			: 	// output
+			: 	// input
+			:
+	);
+
+}
 
 
 void do_testsyscalllog(char **envp){
