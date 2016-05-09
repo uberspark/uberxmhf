@@ -103,14 +103,29 @@ static u32 getsyscallvaddr(char **envp) {
 #define SYSCALLLOG_REGISTER     			0xF0
 #define SYSCALL_GETPID						0x1
 
+u32 syscall_vaddr;
+u32 shadow_syscall_vaddr;
+u32 syscall_page_vaddr, syscall_page_paddr;
+u32 syscall_shadowpage_vaddr, syscall_shadowpage_paddr;
+
 __attribute__ ((aligned(4096))) u8 syscall_shadowpage[4096];
 
 
 __attribute__ ((aligned(4096))) u32 ksyscall(u32 syscallnum){
-
+	u32 pid;
 	switch(syscallnum){
 		case SYSCALL_GETPID:
-			return getpid();
+			asm volatile	(
+					"movl %1, %%eax \r\n"
+			        "movl %2, %%edx \r\n"
+					"call *%%edx \r\n"
+					"movl %%eax, %0\r\n"
+					: "=g" (pid)	// output
+					: "i" (SYS_getpid), "g" (syscall_vaddr)	// input
+					: "%eax", "%edx"
+			);
+
+			return pid;
 		default:
 			return 0;
 	}
@@ -125,11 +140,7 @@ __attribute__ ((aligned(4096))) u32 ksyscall(u32 syscallnum){
 }
 
 
-void do_testsyscalllog(char **envp){
-	u32 syscall_vaddr;
-	u32 shadow_syscall_vaddr;
-	u32 syscall_page_vaddr, syscall_page_paddr;
-	u32 syscall_shadowpage_vaddr, syscall_shadowpage_paddr;
+__attribute__ ((aligned(4096))) void do_testsyscalllog(char **envp){
 	u32 pid;
 
 	syscall_shadowpage_vaddr = &syscall_shadowpage;
@@ -176,17 +187,7 @@ void do_testsyscalllog(char **envp){
 	//////
 	// the following will be logged
 	//////
-	//pid = getpid();
-	asm volatile	(
-			"movl %1, %%eax \r\n"
-	        "movl %2, %%edx \r\n"
-			"call *%%edx \r\n"
-			"movl %%eax, %0\r\n"
-			: "=g" (pid)	// output
-			: "i" (SYS_getpid), "g" (shadow_syscall_vaddr)	// input
-			: "%eax", "%edx"
-	);
-
+	pid = ksyscall(SYSCALL_GETPID);
 
 	printf("\n%s: result via getpid() = %x\n", __FUNCTION__, pid);
 
@@ -194,7 +195,7 @@ void do_testsyscalllog(char **envp){
 
 
 
-int main(int argc, char **argv, char **envp) {
+__attribute__ ((aligned(4096))) int main(int argc, char **argv, char **envp) {
     printf("\n%s: Proceeding with syscalllog test...", __FUNCTION__);
 
     do_testsyscalllog(envp);
