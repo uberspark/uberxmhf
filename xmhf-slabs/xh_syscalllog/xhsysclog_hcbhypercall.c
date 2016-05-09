@@ -78,19 +78,19 @@ void sysclog_hcbhypercall(u32 cpuindex, u32 guest_slab_index){
     call_id = gprs->eax;
     gpa = ((u64)gprs->ebx << 32) | gprs->edx;
 
-	_XDPRINTF_("%s[%u]: call_id=%x, gpa=%016llx\n", __func__, (u16)cpuindex, call_id, gpa);
 
 
 	switch(call_id){
 
 		case SYSCALLLOG_REGISTER:{
+			_XDPRINTF_("%s[%u]: call_id=%x, gpa=%016llx\n", __func__, (u16)cpuindex, call_id, gpa);
 			sysclog_register(cpuindex, guest_slab_index, gpa);
 		}
 		break;
 
 		default:
-            _XDPRINTF_("%s[%u]: unsupported hypercall %x. Ignoring\n",
-                       __func__, (u16)cpuindex, call_id);
+            //_XDPRINTF_("%s[%u]: unsupported hypercall %x. Ignoring\n",
+            //           __func__, (u16)cpuindex, call_id);
 			break;
 	}
 
