@@ -53,11 +53,9 @@
 
 #include <xc.h>
 #include <uapi_gcpustate.h>
-//#include <uapi_slabmemacc.h>
 #include <uapi_slabmempgtbl.h>
 
 #include <xh_syscalllog.h>
-
 
 
 // initialization

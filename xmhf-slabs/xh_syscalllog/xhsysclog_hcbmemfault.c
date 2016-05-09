@@ -53,12 +53,9 @@
 
 #include <xc.h>
 #include <uapi_gcpustate.h>
-//#include <uapi_slabmemacc.h>
 #include <uapi_slabmempgtbl.h>
 
 #include <xh_syscalllog.h>
-
-
 
 
 
@@ -103,37 +100,3 @@ bool sysclog_hcbmemfault(u32 cpuindex, u32 guest_slab_index){
 }
 
 
-/*
-void sysclog_hcbmemfault(u32 cpuindex, u32 guest_slab_index){
-	u64 errorcode;
-	u64 gpa;
-	u64 gva;
-	slab_params_t spl;
-	xmhf_uapi_gcpustate_vmrw_params_t *gcpustate_vmrwp =
-		(xmhf_uapi_gcpustate_vmrw_params_t *)spl.in_out_params;
-
-
-	spl.src_slabid = XMHFGEEC_SLAB_XH_SYSCALLLOG;
-	spl.dst_slabid = XMHFGEEC_SLAB_UAPI_GCPUSTATE;
-	spl.cpuid = cpuindex;
-	spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_VMREAD;
-
-	gcpustate_vmrwp->encoding = VMCS_INFO_EXIT_QUALIFICATION;
-	XMHF_SLAB_CALLNEW(&spl);
-	errorcode = gcpustate_vmrwp->value;
-
-	gcpustate_vmrwp->encoding = VMCS_INFO_GUEST_PADDR_FULL;
-	XMHF_SLAB_CALLNEW(&spl);
-	gpa = gcpustate_vmrwp->value;
-
-	gcpustate_vmrwp->encoding = VMCS_INFO_GUEST_LINEAR_ADDRESS;
-	XMHF_SLAB_CALLNEW(&spl);
-	gva = gcpustate_vmrwp->value;
-
-	if(sl_activated && (((u32)gpa & 0xFFFFF000UL) == sl_syscall_page_paddr) ){
-		_XDPRINTF_("%s[%u]: EPT fault at syscall invocation, offset=%x. halting!\n", __func__, (u16)cpuindex,
-				(((u32)gpa & 0x00000FFFUL)) );
-		HALT();
-	}
-
-}*/
