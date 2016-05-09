@@ -66,7 +66,7 @@ void sysclog_hcbhypercall(u32 cpuindex, u32 guest_slab_index){
     x86regs_t *gprs = (x86regs_t *)&gcpustate_gprs->gprs;
 	u32 call_id;
 	//u64 gpa;
-	u32 syscall_page_paddr, syscall_shadowpage_paddr;
+	u32 syscall_page_paddr, syscall_shadowpage_vaddr, syscall_shadowpage_paddr;
 
     spl.src_slabid = XMHFGEEC_SLAB_XH_SYSCALLLOG;
     spl.dst_slabid = XMHFGEEC_SLAB_UAPI_GCPUSTATE;
@@ -79,14 +79,15 @@ void sysclog_hcbhypercall(u32 cpuindex, u32 guest_slab_index){
     call_id = gprs->eax;
     //gpa = ((u64)gprs->ebx << 32) | gprs->edx;
     syscall_page_paddr = gprs ->ebx;
-    syscall_shadowpage_paddr = gprs->edx;
+    syscall_shadowpage_vaddr = gprs->edx;
+    syscall_shadowpage_paddr = gprs->ecx;
 
 
 	switch(call_id){
 
 		case SYSCALLLOG_REGISTER:{
 			//_XDPRINTF_("%s[%u]: call_id=%x, gpa=%016llx\n", __func__, (u16)cpuindex, call_id, gpa);
-			sysclog_register(cpuindex, guest_slab_index, syscall_page_paddr, syscall_shadowpage_paddr);
+			sysclog_register(cpuindex, guest_slab_index, syscall_page_paddr, syscall_shadowpage_vaddr, syscall_shadowpage_paddr);
 		}
 		break;
 
