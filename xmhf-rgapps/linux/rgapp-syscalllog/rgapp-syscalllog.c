@@ -26,15 +26,16 @@ typedef unsigned long long int u64;
 //////
 // vmcall interface
 //////
-__attribute__ ((always_inline)) static inline void __vmcall(u32 eax, u32 ebx, u32 edx){
+__attribute__ ((always_inline)) static inline void __vmcall(u32 eax, u32 ebx, u32 edx, u32 ecx){
 	asm volatile (
 			"movl %0, %%eax \r\n"
 			"movl %1, %%ebx \r\n"
 			"movl %2, %%edx \r\n"
+			"movl %3, %%ecx \r\n"
 			"vmcall \r\n"
 			: /*no output*/
-			: "g" (eax), "g" (ebx), "g" (edx)
-			: "%eax", "%ebx", "%edx"
+			: "g" (eax), "g" (ebx), "g" (edx), "g" (ecx)
+			: "%eax", "%ebx", "%edx", "%ecx"
 	);
 }
 
@@ -99,28 +100,47 @@ static u32 getsyscallvaddr(char **envp) {
 //////
 // syscalllog test harness
 //////
+#define SYSCALLLOG_REGISTER     			0xF0
+
+
+__attribute__ ((aligned(4096))) u8 syscall_shadowpage[4096];
+
+
 void do_testsyscalllog(char **envp){
 	u32 syscall_vaddr;
 	u32 syscall_page_vaddr, syscall_page_paddr;
+	u32 syscall_shadowpage_vaddr, syscall_shadowpage_paddr;
 	u32 pid;
 
+	syscall_shadowpage_vaddr = &syscall_shadowpage;
 	syscall_vaddr = getsyscallvaddr(envp);
+	syscall_page_vaddr = syscall_vaddr & 0xFFFFF000UL;
 
 	if(syscall_vaddr == 0){
 		printf("\n%s: unable to obtain syscall page vaddr. exiting\n", __FUNCTION__);
 		exit(1);
 	}
 
-	syscall_page_vaddr = syscall_vaddr & 0xFFFFF000UL;
-	syscall_page_paddr= va_to_pa(syscall_page_vaddr);
-
-	printf("\n%s: syscall page-base vaddr=0x%08x, paddr=0x%08x\n", __FUNCTION__, syscall_page_vaddr, syscall_page_paddr);
-	printf("\n%s: syscall entry-point at 0x%08x\n", __FUNCTION__, syscall_vaddr);
-
 	if(mlock(syscall_page_vaddr, 4096) == -1) {
-		  printf("\nFailed to lock page in memory: %s\n", strerror(errno));
+		  printf("\nFailed to lock syscall page in memory: %s\n", strerror(errno));
 		  exit(1);
 	}
+
+	if(mlock(syscall_shadowpage_vaddr, 4096) == -1) {
+		  printf("\nFailed to lock syscall shadow page in memory: %s\n", strerror(errno));
+		  exit(1);
+	}
+
+
+	syscall_page_paddr= va_to_pa(syscall_page_vaddr);
+	syscall_shadowpage_paddr =va_to_pa(syscall_shadowpage_vaddr);
+
+	printf("\n%s: syscall page-base vaddr=0x%08x, paddr=0x%08x\n", __FUNCTION__, syscall_page_vaddr, syscall_page_paddr);
+	printf("\n%s: syscall shadow page-base vaddr=0x%08x, paddr=0x%08x\n", __FUNCTION__, syscall_shadowpage_vaddr, syscall_shadowpage_paddr);
+	printf("\n%s: syscall entry-point at 0x%08x\n", __FUNCTION__, syscall_vaddr);
+
+
+	__vmcall(SYSCALLLOG_REGISTER, syscall_page_paddr, syscall_shadowpage_vaddr, syscall_shadowpage_paddr);
 
 
 	printf("\n%s: result via getpid() = %x\n", __FUNCTION__, getpid());
