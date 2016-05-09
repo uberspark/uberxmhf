@@ -94,14 +94,14 @@ bool sysclog_loginfo(u32 cpuindex, u32 guest_slab_index, u64 gpa, u64 gva, u64 e
 		//@assert spl.dst_slabid == XMHFGEEC_SLAB_UAPI_GCPUSTATE && spl.dst_uapifn == XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSREAD;
 		XMHF_SLAB_CALLNEW(&spl);
 
-		////log GPR state for syscall
-		//spl.dst_slabid = XMHFGEEC_SLAB_XC_NWLOG;
-		//spl.dst_uapifn = XMHFGEEC_SLAB_XC_NWLOG_LOGDATA;
-		////@assert spl.dst_slabid == XMHFGEEC_SLAB_XC_NWLOG && spl.dst_uapifn == XMHFGEEC_SLAB_XC_NWLOG_LOGDATA;
-		//XMHF_SLAB_CALLNEW(&spl);
-		////@ghost sysclog_loginfo_nwlogged = true;
+		//log GPR state for syscall
+		spl.dst_slabid = XMHFGEEC_SLAB_XC_NWLOG;
+		spl.dst_uapifn = XMHFGEEC_SLAB_XC_NWLOG_LOGDATA;
+		//@assert spl.dst_slabid == XMHFGEEC_SLAB_XC_NWLOG && spl.dst_uapifn == XMHFGEEC_SLAB_XC_NWLOG_LOGDATA;
+		XMHF_SLAB_CALLNEW(&spl);
+		//@ghost sysclog_loginfo_nwlogged = true;
 
-		//set guest RIP to shadow_sysenter_rip to continue execution
+		//set guest RIP to shadow syscall page to continue execution
 		spl.dst_slabid = XMHFGEEC_SLAB_UAPI_GCPUSTATE;
 		spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_VMWRITE;
 		gcpustate_vmrwp->encoding = VMCS_GUEST_RIP;
