@@ -107,10 +107,10 @@ void slab_main(slab_params_t *sp){
         		sp->in_out_params[3] = XC_HYPAPPCB_CHAIN;
 		//@ghost sysclog_methodcall_hcbmemfault = true;
 
-        }else if (sp->in_out_params[0] == XC_HYPAPPCB_SHUTDOWN){
-		sysclog_hcbshutdown(sp->cpuid, sp->in_out_params[2]);
-		//@ghost sysclog_methodcall_hcbshutdown = true;
-		sp->in_out_params[3]= XC_HYPAPPCB_CHAIN;
+        //}else if (sp->in_out_params[0] == XC_HYPAPPCB_SHUTDOWN){
+		//sysclog_hcbshutdown(sp->cpuid, sp->in_out_params[2]);
+		////@ghost sysclog_methodcall_hcbshutdown = true;
+		//sp->in_out_params[3]= XC_HYPAPPCB_CHAIN;
 
         //}else if (sp->in_out_params[0] == XC_HYPAPPCB_TRAP_IO){
 		//
