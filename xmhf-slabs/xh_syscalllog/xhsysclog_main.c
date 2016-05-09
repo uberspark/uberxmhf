@@ -125,8 +125,8 @@ void slab_main(slab_params_t *sp){
 		//
 
         }else{
-		_XDPRINTF_("%s[%u]: Unknown cbtype. Ignoring!\n",__func__, (u16)sp->cpuid);
-		sp->in_out_params[3]= XC_HYPAPPCB_CHAIN;
+        	//_XDPRINTF_("%s[%u]: Unknown cbtype. Ignoring!\n",__func__, (u16)sp->cpuid);
+        	sp->in_out_params[3]= XC_HYPAPPCB_CHAIN;
 		//@ghost sysclog_methodcall_invalid = true;
 
         }
