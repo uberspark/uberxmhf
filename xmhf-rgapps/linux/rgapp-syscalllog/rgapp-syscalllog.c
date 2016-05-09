@@ -126,9 +126,15 @@ void do_testsyscalllog(char **envp){
 		  exit(1);
 	}
 
+
 	if(mlock(syscall_shadowpage_vaddr, 4096) == -1) {
 		  printf("\nFailed to lock syscall shadow page in memory: %s\n", strerror(errno));
 		  exit(1);
+	}
+
+	if(mprotect(syscall_shadowpage_vaddr, 4096, (PROT_READ | PROT_EXEC)) != 0){
+	    printf("\n%s: Could not change syscall shadow page protections: %s\n", __FUNCTION__, strerror(errno));
+	    exit(1);
 	}
 
 
