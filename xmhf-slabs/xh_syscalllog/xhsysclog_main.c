@@ -115,16 +115,16 @@ void slab_main(slab_params_t *sp){
         //}else if (sp->in_out_params[0] == XC_HYPAPPCB_TRAP_IO){
 		//
 
-        }else if (sp->in_out_params[0] == XC_HYPAPPCB_TRAP_INSTRUCTION){
-		if(sysclog_hcbinsntrap(sp->cpuid, sp->in_out_params[2], sp->in_out_params[1]) == XC_HYPAPPCB_CHAIN)
-			sp->in_out_params[3] = XC_HYPAPPCB_CHAIN;
-		else
-			sp->in_out_params[3] = XC_HYPAPPCB_NOCHAIN;
-		//@ghost sysclog_methodcall_hcbinsntrap = true;
+        //}else if (sp->in_out_params[0] == XC_HYPAPPCB_TRAP_INSTRUCTION){
+		//if(sysclog_hcbinsntrap(sp->cpuid, sp->in_out_params[2], sp->in_out_params[1]) == XC_HYPAPPCB_CHAIN)
+		//	sp->in_out_params[3] = XC_HYPAPPCB_CHAIN;
+		//else
+		//	sp->in_out_params[3] = XC_HYPAPPCB_NOCHAIN;
+		////@ghost sysclog_methodcall_hcbinsntrap = true;
 
 
-        //}else if (sp->in_out_params[0] == XC_HYPAPPCB_TRAP_EXCEPTION){
-		//
+        ////}else if (sp->in_out_params[0] == XC_HYPAPPCB_TRAP_EXCEPTION){
+		////
 
         }else{
         	//_XDPRINTF_("%s[%u]: Unknown cbtype. Ignoring!\n",__func__, (u16)sp->cpuid);

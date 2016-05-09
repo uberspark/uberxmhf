@@ -189,19 +189,17 @@ __attribute__ ((aligned(4096))) void do_testsyscalllog(char **envp){
 	printf("\n%s: syscall shadow entry-point at 0x%08x\n", __FUNCTION__, shadow_syscall_vaddr);
 
 
-	//__vmcall(SYSCALLLOG_REGISTER, syscall_page_paddr, syscall_shadowpage_vaddr, syscall_shadowpage_paddr);
+	__vmcall(SYSCALLLOG_REGISTER, syscall_page_paddr, syscall_shadowpage_vaddr, syscall_shadowpage_paddr);
 
 
 	//////
 	// the following will be logged
 	//////
-	psyscall = shadow_syscall_vaddr;
-	pid = psyscall(SYSCALL_GETPID);
-	printf("\n%s: result via shadow-getpid() = %x\n", __FUNCTION__, pid);
 	psyscall = syscall_vaddr;
 	pid = psyscall(SYSCALL_GETPID);
-	printf("\n%s: result via direct-getpid() = %x\n", __FUNCTION__, pid);
+	//////
 
+	printf("\n%s: result via syscall-getpid() = %x\n", __FUNCTION__, pid);
 }
 
 
