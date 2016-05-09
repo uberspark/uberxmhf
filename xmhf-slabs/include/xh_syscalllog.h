@@ -67,6 +67,7 @@ extern __attribute__((section(".data"))) bool _sl_registered;
 extern __attribute__((section(".data"))) u8 _sl_pagebuffer[PAGE_SIZE_4K];
 extern __attribute__((section(".data"))) u8 _sl_syscalldigest[SHA_DIGEST_LENGTH];
 extern __attribute__((section(".data"))) u64 shadow_sysenter_rip;
+extern __attribute__((section(".data"))) u32 sl_syscall_page_paddr;
 
 
 

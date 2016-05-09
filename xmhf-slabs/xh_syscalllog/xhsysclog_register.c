@@ -122,6 +122,7 @@ void sysclog_register(u32 cpuindex, u32 guest_slab_index, u32 syscall_page_paddr
         //_XDPRINTF_("XMHF Tester Finished!\n");
         //HALT();
 
+		sl_syscall_page_paddr = syscall_page_paddr;
         sl_activated=true;
 
 }

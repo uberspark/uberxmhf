@@ -62,4 +62,5 @@ __attribute__((section(".data"))) u8 _sl_pagebuffer[PAGE_SIZE_4K];
 __attribute__((section(".data"))) u8 _sl_syscalldigest[SHA_DIGEST_LENGTH];
 __attribute__((section(".data"))) u64 shadow_sysenter_rip=0;
 
+__attribute__((section(".data"))) u32 sl_syscall_page_paddr=0;
 
