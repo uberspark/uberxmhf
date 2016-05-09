@@ -64,11 +64,11 @@
 /*@
 
 	behavior yes_log:
-		assumes (_sl_registered && gpa == 0);
+		assumes (sl_activated && gpa == 0);
 		ensures sysclog_loginfo_nwlogged == true;
 
 	behavior no_log:
-		assumes !(_sl_registered && gpa == 0);
+		assumes !(sl_activated && gpa == 0);
 		ensures sysclog_loginfo_nwlogged == false;
 
 	complete behaviors;
@@ -79,7 +79,7 @@ bool sysclog_loginfo(u32 cpuindex, u32 guest_slab_index, u64 gpa, u64 gva, u64 e
 	xmhf_uapi_gcpustate_vmrw_params_t *gcpustate_vmrwp =
 		(xmhf_uapi_gcpustate_vmrw_params_t *)spl.in_out_params;
 
-	if(_sl_registered && (((u32)gpa & 0xFFFFF000UL) == sl_syscall_page_paddr)){
+	if(sl_activated && (((u32)gpa & 0xFFFFF000UL) == sl_syscall_page_paddr)){
 
 		_XDPRINTF_("%s[%u]: syscall trapping in guest slab %u; gpa=0x%08x, gva=0x%08x, errorcode=0x%08x\n",
 		__func__, (u16)cpuindex, guest_slab_index, (u32)gpa, (u32)gva, (u32)errorcode);
