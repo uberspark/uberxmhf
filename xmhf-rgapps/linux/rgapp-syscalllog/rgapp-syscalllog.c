@@ -102,6 +102,7 @@ static u32 getsyscallvaddr(char **envp) {
 void do_testsyscalllog(char **envp){
 	u32 syscall_vaddr;
 	u32 syscall_page_vaddr, syscall_page_paddr;
+	u32 pid;
 
 	syscall_vaddr = getsyscallvaddr(envp);
 
@@ -116,6 +117,28 @@ void do_testsyscalllog(char **envp){
 	printf("\n%s: syscall page-base vaddr=0x%08x, paddr=0x%08x\n", __FUNCTION__, syscall_page_vaddr, syscall_page_paddr);
 	printf("\n%s: syscall entry-point at 0x%08x\n", __FUNCTION__, syscall_vaddr);
 
+	/*if(mlock(syscall_page_vaddr, 4096) == -1) {
+		  printf("\nFailed to lock page in memory: %s\n", strerror(errno));
+		  exit(1);
+	}
+
+	if(mprotect(syscall_page_vaddr, 4096, (PROT_READ | PROT_WRITE)) != 0){
+	    printf("\n%s: Could not change page protections: %s\n", __FUNCTION__, strerror(errno));
+	    exit(1);
+	}*/
+
+
+	asm volatile	(
+			"movl %1, %%eax \r\n"
+	        "movl %2, %%edx \r\n"
+			"call *%%edx \r\n"
+			"movl %%eax, %0\r\n"
+			: "=g" (pid)	/* output */
+			: "i" (SYS_getpid), "g" (syscall_vaddr)	/* input */
+			: "%eax", "%edx"
+	);
+
+	printf("\n%s: result via vsyscall-getpid() = %x\n", __FUNCTION__, pid);
 	printf("\n%s: result via getpid() = %x\n", __FUNCTION__, getpid());
 	printf("\n%s: result via syscall_getpid() = %x\n", __FUNCTION__, syscall(SYS_getpid));
 
