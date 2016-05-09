@@ -97,7 +97,8 @@ static u32 getsyscallvaddr(char **envp) {
 // syscalllog test harness
 //////
 void do_testsyscalllog(char **envp){
-	u32 syscall_vaddr, syscall_paddr;
+	u32 syscall_vaddr;
+	u32 syscall_page_vaddr, syscall_page_paddr;
 
 	syscall_vaddr = getsyscallvaddr(envp);
 
@@ -106,9 +107,11 @@ void do_testsyscalllog(char **envp){
 		exit(1);
 	}
 
-	syscall_paddr= va_to_pa(syscall_vaddr);
+	syscall_page_vaddr = syscall_vaddr & 0xFFFFF000UL;
+	syscall_page_paddr= va_to_pa(syscall_page_vaddr);
 
-	printf("\n%s: syscall at vaddr=0x%08x, paddr=0x%08x\n", __FUNCTION__, syscall_vaddr, syscall_paddr);
+	printf("\n%s: syscall page-base vaddr=0x%08x, paddr=0x%08x\n", __FUNCTION__, syscall_page_vaddr, syscall_page_paddr);
+	printf("\n%s: syscall entry-point at 0x%08x\n", __FUNCTION__, syscall_vaddr);
 }
 
 
