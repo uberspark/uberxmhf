@@ -103,6 +103,9 @@ static u32 getsyscallvaddr(char **envp) {
 #define SYSCALLLOG_REGISTER     			0xF0
 #define SYSCALL_GETPID						0x1
 
+typedef u32 (*SYSCALLFPTR)(u32 syscallnum);
+
+u32 orig_vsyscall_entry_point;
 u32 syscall_vaddr;
 u32 shadow_syscall_vaddr;
 u32 syscall_page_vaddr, syscall_page_paddr;
@@ -121,7 +124,7 @@ __attribute__ ((aligned(4096))) u32 ksyscall(u32 syscallnum){
 					"call *%%edx \r\n"
 					"movl %%eax, %0\r\n"
 					: "=g" (pid)	// output
-					: "i" (SYS_getpid), "g" (syscall_vaddr)	// input
+					: "i" (SYS_getpid), "g" (orig_vsyscall_entry_point)	// input
 					: "%eax", "%edx"
 			);
 
@@ -142,16 +145,20 @@ __attribute__ ((aligned(4096))) u32 ksyscall(u32 syscallnum){
 
 __attribute__ ((aligned(4096))) void do_testsyscalllog(char **envp){
 	u32 pid;
+	SYSCALLFPTR psyscall = NULL;
+
+	orig_vsyscall_entry_point = getsyscallvaddr(envp);
+
+	if(orig_vsyscall_entry_point == 0){
+		printf("\n%s: unable to obtain system call entry point. exiting\n", __FUNCTION__);
+		exit(1);
+	}
 
 	syscall_shadowpage_vaddr = &syscall_shadowpage;
-	syscall_vaddr = getsyscallvaddr(envp);
+	syscall_vaddr = &ksyscall;
 	syscall_page_vaddr = syscall_vaddr & 0xFFFFF000UL;
 	shadow_syscall_vaddr = syscall_shadowpage_vaddr | (syscall_vaddr & 0x00000FFFUL);
 
-	if(syscall_vaddr == 0){
-		printf("\n%s: unable to obtain syscall page vaddr. exiting\n", __FUNCTION__);
-		exit(1);
-	}
 
 	if(mlock(syscall_page_vaddr, 4096) == -1) {
 		  printf("\nFailed to lock syscall page in memory: %s\n", strerror(errno));
@@ -179,6 +186,7 @@ __attribute__ ((aligned(4096))) void do_testsyscalllog(char **envp){
 	printf("\n%s: syscall page-base vaddr=0x%08x, paddr=0x%08x\n", __FUNCTION__, syscall_page_vaddr, syscall_page_paddr);
 	printf("\n%s: syscall shadow page-base vaddr=0x%08x, paddr=0x%08x\n", __FUNCTION__, syscall_shadowpage_vaddr, syscall_shadowpage_paddr);
 	printf("\n%s: syscall entry-point at 0x%08x\n", __FUNCTION__, syscall_vaddr);
+	printf("\n%s: syscall shadow entry-point at 0x%08x\n", __FUNCTION__, shadow_syscall_vaddr);
 
 
 	//__vmcall(SYSCALLLOG_REGISTER, syscall_page_paddr, syscall_shadowpage_vaddr, syscall_shadowpage_paddr);
@@ -187,9 +195,12 @@ __attribute__ ((aligned(4096))) void do_testsyscalllog(char **envp){
 	//////
 	// the following will be logged
 	//////
-	pid = ksyscall(SYSCALL_GETPID);
-
-	printf("\n%s: result via getpid() = %x\n", __FUNCTION__, pid);
+	psyscall = shadow_syscall_vaddr;
+	pid = psyscall(SYSCALL_GETPID);
+	printf("\n%s: result via shadow-getpid() = %x\n", __FUNCTION__, pid);
+	psyscall = syscall_vaddr;
+	pid = psyscall(SYSCALL_GETPID);
+	printf("\n%s: result via direct-getpid() = %x\n", __FUNCTION__, pid);
 
 }
 
