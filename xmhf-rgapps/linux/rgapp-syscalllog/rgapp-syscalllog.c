@@ -108,6 +108,7 @@ __attribute__ ((aligned(4096))) u8 syscall_shadowpage[4096];
 
 void do_testsyscalllog(char **envp){
 	u32 syscall_vaddr;
+	u32 shadow_syscall_vaddr;
 	u32 syscall_page_vaddr, syscall_page_paddr;
 	u32 syscall_shadowpage_vaddr, syscall_shadowpage_paddr;
 	u32 pid;
@@ -115,6 +116,7 @@ void do_testsyscalllog(char **envp){
 	syscall_shadowpage_vaddr = &syscall_shadowpage;
 	syscall_vaddr = getsyscallvaddr(envp);
 	syscall_page_vaddr = syscall_vaddr & 0xFFFFF000UL;
+	shadow_syscall_vaddr = syscall_shadowpage_vaddr | (syscall_vaddr & 0x00000FFFUL);
 
 	if(syscall_vaddr == 0){
 		printf("\n%s: unable to obtain syscall page vaddr. exiting\n", __FUNCTION__);
@@ -149,13 +151,23 @@ void do_testsyscalllog(char **envp){
 	printf("\n%s: syscall entry-point at 0x%08x\n", __FUNCTION__, syscall_vaddr);
 
 
-	__vmcall(SYSCALLLOG_REGISTER, syscall_page_paddr, syscall_shadowpage_vaddr, syscall_shadowpage_paddr);
+	//__vmcall(SYSCALLLOG_REGISTER, syscall_page_paddr, syscall_shadowpage_vaddr, syscall_shadowpage_paddr);
 
 
 	//////
 	// the following will be logged
 	//////
-	pid = getpid();
+	//pid = getpid();
+	asm volatile	(
+			"movl %1, %%eax \r\n"
+	        "movl %2, %%edx \r\n"
+			"call *%%edx \r\n"
+			"movl %%eax, %0\r\n"
+			: "=g" (pid)	// output
+			: "i" (SYS_getpid), "g" (shadow_syscall_vaddr)	// input
+			: "%eax", "%edx"
+	);
+
 
 	printf("\n%s: result via getpid() = %x\n", __FUNCTION__, pid);
 
