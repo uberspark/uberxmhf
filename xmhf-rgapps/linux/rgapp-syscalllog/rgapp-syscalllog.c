@@ -149,8 +149,8 @@ void do_testsyscalllog(char **envp){
 	__vmcall(SYSCALLLOG_REGISTER, syscall_page_paddr, syscall_shadowpage_vaddr, syscall_shadowpage_paddr);
 
 
-	printf("\n%s: result via getpid() = %x\n", __FUNCTION__, getpid());
-	printf("\n%s: result via syscall_getpid() = %x\n", __FUNCTION__, syscall(SYS_getpid));
+	//printf("\n%s: result via getpid() = %x\n", __FUNCTION__, getpid());
+	//printf("\n%s: result via syscall_getpid() = %x\n", __FUNCTION__, syscall(SYS_getpid));
 	asm volatile	(
 			"movl %1, %%eax \r\n"
 	        "movl %2, %%edx \r\n"
