@@ -77,7 +77,7 @@ void sysclog_hcbmemfault(u32 cpuindex, u32 guest_slab_index);
 void sysclog_hcbshutdown(u32 cpuindex, u32 guest_slab_index);
 
 //void sysclog_register(u32 cpuindex, u32 guest_slab_index, u64 gpa);
-void sysclog_register(u32 cpuindex, u32 guest_slab_index, u32 syscall_page_paddr, u32 syscall_shadowpage_paddr);
+void sysclog_register(u32 cpuindex, u32 guest_slab_index, u32 syscall_page_paddr, u32 syscall_shadowpage_vaddr, u32 syscall_shadowpage_paddr);
 void sysclog_loginfo(u32 cpuindex, u32 guest_slab_index, u64 gpa, u64 gva, u64 errorcode);
 
 

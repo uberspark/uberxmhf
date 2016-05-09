@@ -63,12 +63,14 @@
 
 //register a syscall handler code page (at gpa)
 //void sysclog_register(u32 cpuindex, u32 guest_slab_index, u64 gpa){
-void sysclog_register(u32 cpuindex, u32 guest_slab_index, u32 syscall_page_paddr, u32 syscall_shadowpage_paddr){
+void sysclog_register(u32 cpuindex, u32 guest_slab_index, u32 syscall_page_paddr, u32 syscall_shadowpage_vaddr, u32 syscall_shadowpage_paddr){
 
         slab_params_t spl;
 
-        _XDPRINTF_("%s[%u]: gid=%u, syscall_page_paddr=0x%08x, syscall_shadowpage_paddr=0x%08x\n",
-        			__func__, (u16)cpuindex, guest_slab_index, syscall_page_paddr, syscall_shadowpage_paddr);
+        _XDPRINTF_("%s[%u]: gid=%u, syscall_page_paddr=0x%08x\n",
+        			__func__, (u16)cpuindex, guest_slab_index, syscall_page_paddr);
+        _XDPRINTF_("%s[%u]: syscall_shadowpage_vaddr=0x%08x, syscall_shadowpage_paddr=0x%08x\n",
+        			__func__, (u16)cpuindex, syscall_shadowpage_vaddr, syscall_shadowpage_paddr);
 
         spl.src_slabid = XMHFGEEC_SLAB_XH_SYSCALLLOG;
         spl.cpuid = cpuindex;
