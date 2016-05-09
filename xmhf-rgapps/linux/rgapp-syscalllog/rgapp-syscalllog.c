@@ -7,6 +7,9 @@
 #include <sys/mman.h>
 #include <errno.h>
 #include <elf.h>
+#include <sys/syscall.h>
+#include <sys/types.h>
+#include <unistd.h>
 
 //////////////////////////////////////////////////////////////////////////////
 // base types
@@ -112,6 +115,10 @@ void do_testsyscalllog(char **envp){
 
 	printf("\n%s: syscall page-base vaddr=0x%08x, paddr=0x%08x\n", __FUNCTION__, syscall_page_vaddr, syscall_page_paddr);
 	printf("\n%s: syscall entry-point at 0x%08x\n", __FUNCTION__, syscall_vaddr);
+
+	printf("\n%s: result via getpid() = %x\n", __FUNCTION__, getpid());
+	printf("\n%s: result via syscall_getpid() = %x\n", __FUNCTION__, syscall(SYS_getpid));
+
 }
 
 
