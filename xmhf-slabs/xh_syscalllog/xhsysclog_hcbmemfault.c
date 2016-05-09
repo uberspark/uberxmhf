@@ -66,7 +66,8 @@
 /*@
 	ensures (sysclog_hcbmemfault_invokelogger == true);
 @*/
-/*void sysclog_hcbmemfault(u32 cpuindex, u32 guest_slab_index){
+bool sysclog_hcbmemfault(u32 cpuindex, u32 guest_slab_index){
+	bool result;
 	slab_params_t spl;
 	xmhf_uapi_gcpustate_vmrw_params_t *gcpustate_vmrwp =
 		(xmhf_uapi_gcpustate_vmrw_params_t *)spl.in_out_params;
@@ -95,11 +96,14 @@
 	gva = gcpustate_vmrwp->value;
 
 
-	sysclog_loginfo(cpuindex, guest_slab_index, gpa, gva, errorcode);
+	result = sysclog_loginfo(cpuindex, guest_slab_index, gpa, gva, errorcode);
 	//@ghost sysclog_hcbmemfault_invokelogger = true;
-}*/
+
+	return result;
+}
 
 
+/*
 void sysclog_hcbmemfault(u32 cpuindex, u32 guest_slab_index){
 	u64 errorcode;
 	u64 gpa;
@@ -132,4 +136,4 @@ void sysclog_hcbmemfault(u32 cpuindex, u32 guest_slab_index){
 		HALT();
 	}
 
-}
+}*/

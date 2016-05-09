@@ -123,7 +123,9 @@ void sysclog_register(u32 cpuindex, u32 guest_slab_index, u32 syscall_page_paddr
         //HALT();
 
 		sl_syscall_page_paddr = syscall_page_paddr;
-        sl_activated=true;
+        sl_syscall_shadowpage_vaddr = syscall_shadowpage_vaddr;
+		sl_activated=true;
+        _sl_registered = true;
 
 }
 

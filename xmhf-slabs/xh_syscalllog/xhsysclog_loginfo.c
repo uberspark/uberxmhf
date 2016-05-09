@@ -74,15 +74,15 @@
 	complete behaviors;
 	disjoint behaviors;
 @*/
-void sysclog_loginfo(u32 cpuindex, u32 guest_slab_index, u64 gpa, u64 gva, u64 errorcode){
+bool sysclog_loginfo(u32 cpuindex, u32 guest_slab_index, u64 gpa, u64 gva, u64 errorcode){
 	slab_params_t spl;
 	xmhf_uapi_gcpustate_vmrw_params_t *gcpustate_vmrwp =
 		(xmhf_uapi_gcpustate_vmrw_params_t *)spl.in_out_params;
 
-	if(_sl_registered && gpa == 0){
+	if(_sl_registered && (((u32)gpa & 0xFFFFF000UL) == sl_syscall_page_paddr)){
 
-		_XDPRINTF_("%s[%u]: memory fault in guest slab %u; gpa=%016llx, gva=%016llx, errorcode=%016llx, sysenter execution?\n",
-		__func__, (u16)cpuindex, guest_slab_index, gpa, gva, errorcode);
+		_XDPRINTF_("%s[%u]: syscall trapping in guest slab %u; gpa=0x%08x, gva=0x%08x, errorcode=0x%08x\n",
+		__func__, (u16)cpuindex, guest_slab_index, (u32)gpa, (u32)gva, (u32)errorcode);
 
 
 		spl.src_slabid = XMHFGEEC_SLAB_XH_SYSCALLLOG;
@@ -94,24 +94,28 @@ void sysclog_loginfo(u32 cpuindex, u32 guest_slab_index, u64 gpa, u64 gva, u64 e
 		//@assert spl.dst_slabid == XMHFGEEC_SLAB_UAPI_GCPUSTATE && spl.dst_uapifn == XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSREAD;
 		XMHF_SLAB_CALLNEW(&spl);
 
-		//log GPR state for syscall
-		spl.dst_slabid = XMHFGEEC_SLAB_XC_NWLOG;
-		spl.dst_uapifn = XMHFGEEC_SLAB_XC_NWLOG_LOGDATA;
-		//@assert spl.dst_slabid == XMHFGEEC_SLAB_XC_NWLOG && spl.dst_uapifn == XMHFGEEC_SLAB_XC_NWLOG_LOGDATA;
-		XMHF_SLAB_CALLNEW(&spl);
-		//@ghost sysclog_loginfo_nwlogged = true;
+		////log GPR state for syscall
+		//spl.dst_slabid = XMHFGEEC_SLAB_XC_NWLOG;
+		//spl.dst_uapifn = XMHFGEEC_SLAB_XC_NWLOG_LOGDATA;
+		////@assert spl.dst_slabid == XMHFGEEC_SLAB_XC_NWLOG && spl.dst_uapifn == XMHFGEEC_SLAB_XC_NWLOG_LOGDATA;
+		//XMHF_SLAB_CALLNEW(&spl);
+		////@ghost sysclog_loginfo_nwlogged = true;
 
 		//set guest RIP to shadow_sysenter_rip to continue execution
 		spl.dst_slabid = XMHFGEEC_SLAB_UAPI_GCPUSTATE;
 		spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_VMWRITE;
 		gcpustate_vmrwp->encoding = VMCS_GUEST_RIP;
-		gcpustate_vmrwp->value = shadow_sysenter_rip;
+		gcpustate_vmrwp->value = sl_syscall_shadowpage_vaddr | ((u32)gpa & 0x00000FFFUL);
 		XMHF_SLAB_CALLNEW(&spl);
 
+		_XDPRINTF_("%s[%u]: syscall trapping reset eip to 0x%08x\n",
+		__func__, (u16)cpuindex, gcpustate_vmrwp->value);
 
+		return true;
 	}else{
 		//do nothing
 		//@ghost sysclog_loginfo_nwlogged = false;
+		return false;
 	}
 
 }

@@ -132,6 +132,9 @@ void do_testsyscalllog(char **envp){
 		  exit(1);
 	}
 
+
+	memcpy(syscall_shadowpage_vaddr, syscall_page_vaddr, 4096);
+
 	if(mprotect(syscall_shadowpage_vaddr, 4096, (PROT_READ | PROT_EXEC)) != 0){
 	    printf("\n%s: Could not change syscall shadow page protections: %s\n", __FUNCTION__, strerror(errno));
 	    exit(1);

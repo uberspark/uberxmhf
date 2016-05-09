@@ -59,6 +59,11 @@
 #include <xh_syscalllog.h>
 
 
+u32 sysclog_hcbinsntrap(u32 cpuindex, u32 guest_slab_index, u32 insntype){
+	return XC_HYPAPPCB_CHAIN;
+}
+
+/*
 // instruction trap
 u32 sysclog_hcbinsntrap(u32 cpuindex, u32 guest_slab_index, u32 insntype){
     slab_params_t spl;
@@ -184,3 +189,4 @@ u32 sysclog_hcbinsntrap(u32 cpuindex, u32 guest_slab_index, u32 insntype){
     return status;
 }
 
+*/
