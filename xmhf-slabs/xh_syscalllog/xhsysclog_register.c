@@ -62,26 +62,19 @@
 
 
 //register a syscall handler code page (at gpa)
-void sysclog_register(u32 cpuindex, u32 guest_slab_index, u64 gpa){
+//void sysclog_register(u32 cpuindex, u32 guest_slab_index, u64 gpa){
+void sysclog_register(u32 cpuindex, u32 guest_slab_index, u32 syscall_page_paddr, u32 syscall_shadowpage_paddr){
+
         slab_params_t spl;
-        //xmhf_hic_uapi_physmem_desc_t *pdesc = (xmhf_hic_uapi_physmem_desc_t *)&spl.in_out_params[2];
-        //xmhf_uapi_slabmemacc_params_t *smemaccp = (xmhf_uapi_slabmemacc_params_t *)spl.in_out_params;
 
-        _XDPRINTF_("%s[%u]: starting...\n", __func__, (u16)cpuindex);
+        _XDPRINTF_("%s[%u]: gid=%u, syscall_page_paddr=0x%08x, syscall_shadowpage_paddr=0x%08x\n",
+        			__func__, (u16)cpuindex, guest_slab_index, syscall_page_paddr, syscall_shadowpage_paddr);
+
         spl.src_slabid = XMHFGEEC_SLAB_XH_SYSCALLLOG;
-        //spl.dst_slabid = XMHFGEEC_SLAB_UAPI_SLABMEMACC;
         spl.cpuid = cpuindex;
-        //spl.in_out_params[0] = XMHF_HIC_UAPI_PHYSMEM;
 
-        //copy code page at gpa
-        //smemaccp->dst_slabid = guest_slab_index;
-        //smemaccp->addr_to = &_sl_pagebuffer;
-        //smemaccp->addr_from = gpa;
-        //smemaccp->numbytes = sizeof(_sl_pagebuffer);
-        // spl.dst_uapifn = XMHF_HIC_UAPI_PHYSMEM_PEEK;
-        //XMHF_SLAB_CALLNEW(&spl);
-	CASM_FUNCCALL(xmhfhw_sysmemaccess_copy, &_sl_pagebuffer,
-		gpa, sizeof(_sl_pagebuffer));
+/*
+        CASM_FUNCCALL(xmhfhw_sysmemaccess_copy, &_sl_pagebuffer, gpa, sizeof(_sl_pagebuffer));
 
         _XDPRINTF_("%s[%u]: grabbed page contents at gpa=%016llx\n",
                __func__, (u16)cpuindex, gpa);
@@ -92,6 +85,11 @@ void sysclog_register(u32 cpuindex, u32 guest_slab_index, u64 gpa){
 
         _XDPRINTF_("%s[%u]: computed SHA-1: %*D\n",
                __func__, (u16)cpuindex, SHA_DIGEST_LENGTH, _sl_syscalldigest, " ");
+*/
+
+        _XDPRINTF_("%s[%u]: halting wip!\n", __func__, (u16)cpuindex);
+        _XDPRINTF_("XMHF Tester Finished!\n");
+        HALT();
 
         _sl_registered=true;
 }
