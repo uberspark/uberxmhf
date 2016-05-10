@@ -2068,15 +2068,12 @@ u32 e1000_init_module(void)
 
 	_XDPRINTF_("%s: interface opened successfully\n", __func__);
 
-/*
-	_XDPRINTF_("Waiting for router...\n");
 
-	//PRINT_STATUS();
-	_XDPRINTF_("Waiting for router...\n");
-	//e1000_mdelay1(40 * 1000);
+	_XDPRINTF_("%s: waiting for switch...\n", __func__);
+	e1000_mdelay1(15 * 1000);
+	_XDPRINTF_("%s: ready to xmit...\n", __func__);
 
-	_XDPRINTF_("Done.\n");
-*/
+
 	//PRINT_STATUS();
 	/*printf("\nTransmitting...");
 	e1000_xmit(E1000_DESC_COUNT / 2);
