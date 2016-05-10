@@ -2086,6 +2086,7 @@ u32 e1000_init_module(void)
 
 	_XDPRINTF_("Probing for ethernet card...\n");
 
+	/*
 	DEBUGQ(0);
 	ret = e1000_probe(&e1000_dev);
 
@@ -2103,7 +2104,7 @@ u32 e1000_init_module(void)
 	//e1000_mdelay1(40 * 1000);
 
 	_XDPRINTF_("Done.\n");
-
+*/
 	//PRINT_STATUS();
 	/*printf("\nTransmitting...");
 	e1000_xmit(E1000_DESC_COUNT / 2);
