@@ -87,8 +87,8 @@ typedef struct {
 extern __attribute__((section(".slab_dmadata"))) xcnwlog_ls_element_t xcnwlog_lsdma[XC_NWLOG_BUF_MAXIDX][XC_NWLOG_BUF_MAXELEM];
 
 extern __attribute__((section(".slab_dmadata"))) __attribute__((aligned(4096))) u8 xcnwlog_desc[PAGE_SIZE_4K];
-//extern __attribute__((section(".slab_dmadata"))) __attribute__((aligned(4096))) xcnwlog_packet_t xcnwlog_packet;
-extern __attribute__((section(".data"))) __attribute__((aligned(4096))) xcnwlog_packet_t xcnwlog_packet;
+
+extern __attribute__((section(".slab_dmadata"))) __attribute__((aligned(4096))) xcnwlog_packet_t xcnwlog_packet;
 
 
 extern __attribute__((section(".data"))) xcnwlog_ls_element_t xcnwlog_ls[XC_NWLOG_BUF_MAXIDX][XC_NWLOG_BUF_MAXELEM];
