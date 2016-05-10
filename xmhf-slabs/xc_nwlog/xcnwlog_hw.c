@@ -2084,20 +2084,27 @@ u32 e1000_init_module(void)
 	e1000_dev.dev = 0;
 	e1000_dev.func = 0;
 
-	_XDPRINTF_("Probing for ethernet card...\n");
+	_XDPRINTF_("%s: probing for ethernet card...\n", __func__);
 
-	/*
 	DEBUGQ(0);
 	ret = e1000_probe(&e1000_dev);
 
 	if (ret < 0)
 	   return 0;
 
+	_XDPRINTF_("%s: card found, MAC address=", __func__);
+	for (i = 0; i < 6; i++)
+		_XDPRINTF_("%02x ", e1000_adapt.hw.mac_addr[i]);
+	_XDPRINTF_("\n");
+
+/*
 	_XDPRINTF_("Opening interface...\n");
 	ret = e1000_open();
 
 	if (ret < 0)
 	   return 0;
+
+	_XDPRINTF_("Waiting for router...\n");
 
 	//PRINT_STATUS();
 	_XDPRINTF_("Waiting for router...\n");
