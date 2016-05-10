@@ -53,47 +53,57 @@
 
 #include <xc.h>
 #include <uapi_gcpustate.h>
-//#include <uapi_slabmemacc.h>
 #include <uapi_slabmempgtbl.h>
 
 #include <xh_syscalllog.h>
 
 
 
-
 //register a syscall handler code page (at gpa)
-void sysclog_register(u32 cpuindex, u32 guest_slab_index, u64 gpa){
-        slab_params_t spl;
-        //xmhf_hic_uapi_physmem_desc_t *pdesc = (xmhf_hic_uapi_physmem_desc_t *)&spl.in_out_params[2];
-        //xmhf_uapi_slabmemacc_params_t *smemaccp = (xmhf_uapi_slabmemacc_params_t *)spl.in_out_params;
+void sysclog_register(u32 cpuindex, u32 guest_slab_index, u32 syscall_page_paddr, u32 syscall_shadowpage_vaddr, u32 syscall_shadowpage_paddr){
 
-        _XDPRINTF_("%s[%u]: starting...\n", __func__, (u16)cpuindex);
-        spl.src_slabid = XMHFGEEC_SLAB_XH_SYSCALLLOG;
-        //spl.dst_slabid = XMHFGEEC_SLAB_UAPI_SLABMEMACC;
-        spl.cpuid = cpuindex;
-        //spl.in_out_params[0] = XMHF_HIC_UAPI_PHYSMEM;
-
-        //copy code page at gpa
-        //smemaccp->dst_slabid = guest_slab_index;
-        //smemaccp->addr_to = &_sl_pagebuffer;
-        //smemaccp->addr_from = gpa;
-        //smemaccp->numbytes = sizeof(_sl_pagebuffer);
-        // spl.dst_uapifn = XMHF_HIC_UAPI_PHYSMEM_PEEK;
-        //XMHF_SLAB_CALLNEW(&spl);
-	CASM_FUNCCALL(xmhfhw_sysmemaccess_copy, &_sl_pagebuffer,
-		gpa, sizeof(_sl_pagebuffer));
-
-        _XDPRINTF_("%s[%u]: grabbed page contents at gpa=%016llx\n",
-               __func__, (u16)cpuindex, gpa);
-
-        //compute SHA-1 of the syscall page
-        sha1(&_sl_pagebuffer, sizeof(_sl_pagebuffer), _sl_syscalldigest);
+	slab_params_t spl;
+	xmhfgeec_uapi_slabmempgtbl_getentryforpaddr_params_t *getentryforpaddrp =
+	(xmhfgeec_uapi_slabmempgtbl_getentryforpaddr_params_t *)spl.in_out_params;
+	xmhfgeec_uapi_slabmempgtbl_setentryforpaddr_params_t *setentryforpaddrp =
+	(xmhfgeec_uapi_slabmempgtbl_setentryforpaddr_params_t *)spl.in_out_params;
+	xmhfgeec_uapi_slabmempgtbl_flushtlb_params_t *flushtlbp =
+		(xmhfgeec_uapi_slabmempgtbl_flushtlb_params_t *)spl.in_out_params;
 
 
-        _XDPRINTF_("%s[%u]: computed SHA-1: %*D\n",
-               __func__, (u16)cpuindex, SHA_DIGEST_LENGTH, _sl_syscalldigest, " ");
+	_XDPRINTF_("%s[%u]: gid=%u, syscall_page_paddr=0x%08x\n",
+				__func__, (u16)cpuindex, guest_slab_index, syscall_page_paddr);
+	_XDPRINTF_("%s[%u]: syscall_shadowpage_vaddr=0x%08x, syscall_shadowpage_paddr=0x%08x\n",
+				__func__, (u16)cpuindex, syscall_shadowpage_vaddr, syscall_shadowpage_paddr);
 
-        _sl_registered=true;
+	spl.src_slabid = XMHFGEEC_SLAB_XH_SYSCALLLOG;
+	spl.cpuid = cpuindex;
+	spl.dst_slabid = XMHFGEEC_SLAB_UAPI_SLABMEMPGTBL;
+
+	spl.dst_uapifn = XMHFGEEC_UAPI_SLABMEMPGTBL_GETENTRYFORPADDR;
+	getentryforpaddrp->dst_slabid = guest_slab_index;
+	getentryforpaddrp->gpa = syscall_page_paddr;
+	XMHF_SLAB_CALLNEW(&spl);
+	_XDPRINTF_("%s[%u]: syscall_page existing entry = 0x%08x\n",
+				__func__, (u16)cpuindex, (u32)getentryforpaddrp->result_entry);
+
+	 spl.dst_uapifn = XMHFGEEC_UAPI_SLABMEMPGTBL_SETENTRYFORPADDR;
+	setentryforpaddrp->dst_slabid = guest_slab_index;
+	setentryforpaddrp->gpa = syscall_page_paddr;
+	setentryforpaddrp->entry = getentryforpaddrp->result_entry & ~(0x4);
+	XMHF_SLAB_CALLNEW(&spl);
+	_XDPRINTF_("%s[%u]: syscall_page new entry = 0x%08x\n",
+				__func__, (u16)cpuindex, (u32)setentryforpaddrp->entry);
+
+	//flush EPT TLB for permission changes to take effect
+	spl.dst_uapifn = XMHFGEEC_UAPI_SLABMEMPGTBL_FLUSHTLB;
+	flushtlbp->dst_slabid = guest_slab_index;
+	XMHF_SLAB_CALLNEW(&spl);
+
+
+	sl_syscall_page_paddr = syscall_page_paddr;
+	sl_syscall_shadowpage_vaddr = syscall_shadowpage_vaddr;
+	sl_activated=true;
 }
 
 

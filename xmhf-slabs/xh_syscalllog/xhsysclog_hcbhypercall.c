@@ -65,32 +65,30 @@ void sysclog_hcbhypercall(u32 cpuindex, u32 guest_slab_index){
         (xmhf_uapi_gcpustate_gprs_params_t *)spl.in_out_params;
     x86regs_t *gprs = (x86regs_t *)&gcpustate_gprs->gprs;
 	u32 call_id;
-	u64 gpa;
+	u32 syscall_page_paddr, syscall_shadowpage_vaddr, syscall_shadowpage_paddr;
 
     spl.src_slabid = XMHFGEEC_SLAB_XH_SYSCALLLOG;
     spl.dst_slabid = XMHFGEEC_SLAB_UAPI_GCPUSTATE;
     spl.cpuid = cpuindex;
-    //spl.in_out_params[0] = XMHF_HIC_UAPI_CPUSTATE;
-
-     spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSREAD;
+    spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSREAD;
     XMHF_SLAB_CALLNEW(&spl);
 
     call_id = gprs->eax;
-    gpa = ((u64)gprs->ebx << 32) | gprs->edx;
-
-	_XDPRINTF_("%s[%u]: call_id=%x, gpa=%016llx\n", __func__, (u16)cpuindex, call_id, gpa);
+    syscall_page_paddr = gprs ->ebx;
+    syscall_shadowpage_vaddr = gprs->edx;
+    syscall_shadowpage_paddr = gprs->ecx;
 
 
 	switch(call_id){
 
 		case SYSCALLLOG_REGISTER:{
-			sysclog_register(cpuindex, guest_slab_index, gpa);
+			//_XDPRINTF_("%s[%u]: call_id=%x, gpa=%016llx\n", __func__, (u16)cpuindex, call_id, gpa);
+			sysclog_register(cpuindex, guest_slab_index, syscall_page_paddr, syscall_shadowpage_vaddr, syscall_shadowpage_paddr);
 		}
 		break;
 
 		default:
-            _XDPRINTF_("%s[%u]: unsupported hypercall %x. Ignoring\n",
-                       __func__, (u16)cpuindex, call_id);
+            //_XDPRINTF_("%s[%u]: unsupported hypercall %x. Ignoring\n",  __func__, (u16)cpuindex, call_id);
 			break;
 	}
 
