@@ -2097,13 +2097,16 @@ u32 e1000_init_module(void)
 		_XDPRINTF_("%02x ", e1000_adapt.hw.mac_addr[i]);
 	_XDPRINTF_("\n");
 
-/*
-	_XDPRINTF_("Opening interface...\n");
+
+	_XDPRINTF_("%s: opening interface...\n", __func__);
 	ret = e1000_open();
 
 	if (ret < 0)
 	   return 0;
 
+	_XDPRINTF_("%s: interface opened successfully\n", __func__);
+
+/*
 	_XDPRINTF_("Waiting for router...\n");
 
 	//PRINT_STATUS();
