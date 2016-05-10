@@ -78,7 +78,7 @@ typedef struct {
     u8 src_mac[6];
     u8 type[2];
     u8 reserved[2];
-	u32 logbuf[124];
+	u32 logbuf[48];
 }__attribute__((packed)) xcnwlog_packet_t;
 
 
