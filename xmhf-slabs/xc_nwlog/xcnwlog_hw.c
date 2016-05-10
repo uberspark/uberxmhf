@@ -1869,56 +1869,18 @@ static int e1000_setup_tx_resources(struct e1000_tx_ring *tx_ring)
 	struct e1000_tx_desc *tx_desc = NULL;
 	unsigned char *buffer;
 
-	/* round up to nearest 4K */
+	//setup descriptor table size
 	tx_ring->size_desc = tx_ring->count * sizeof(struct e1000_tx_desc);
 	tx_ring->size_desc = PAGE_ALIGN_UP4K(tx_ring->size_desc);
+	//setup descriptor table base
+	tx_ring->desc=&xcnwlog_desc;
+	tx_ring->dma_desc=&xcnwlog_desc;
 
-	//tx_ring->desc = dma_alloc_coherent(NULL, tx_ring->size_desc, &tx_ring->dma_desc, GFP_ATOMIC);
-	tx_ring->desc=&xcnwlog_lsdma;
-	tx_ring->dma_desc=&xcnwlog_lsdma;
+	tx_desc = E1000_TX_DESC(*tx_ring, 0);
+	tx_desc->buffer_addr = e1000_cpu_to_le64((unsigned int)&xcnwlog_packet);
+	tx_desc->lower.data = e1000_cpu_to_le32(E1000_TXD_CMD_IFCS | E1000_TXD_CMD_EOP | (sizeof(xcnwlog_packet)));
+	tx_desc->upper.data = e1000_cpu_to_le32(0);
 
-	if (!tx_ring->desc) {
-		DEBUGQ(tx_ring->size_desc);
-		//return -ENOMEM;
-		return -1;
-	}
-
-	/* round up to nearest 4K */
-	tx_ring->size_header = (tx_ring->count / 2) * E1000_HEADER_SIZE;
-	tx_ring->size_header = PAGE_ALIGN_UP4K(tx_ring->size_header);
-
-	//tx_ring->buf_header = dma_alloc_coherent(NULL, tx_ring->size_header, &tx_ring->dma_header, GFP_ATOMIC);
-	tx_ring->buf_header=&xcnwlog_lsdma;
-	tx_ring->dma_header=&xcnwlog_lsdma;
-
-	if (!tx_ring->buf_header) {
-		DEBUGQ(tx_ring->size_header);
-		//return -ENOMEM;
-		return -1;
-	}
-
-	/* round up to nearest 4K */
-	tx_ring->size_body = (tx_ring->count / 2) * E1000_BODY_SIZE;
-	tx_ring->size_body = PAGE_ALIGN_UP4K(tx_ring->size_body);
-
-	//tx_ring->buf_body = dma_alloc_coherent(NULL, tx_ring->size_body, &tx_ring->dma_body, GFP_ATOMIC);
-	tx_ring->buf_body = (void *)&xcnwlog_lsdma;
-	tx_ring->dma_body = (dma_addr_t)&xcnwlog_lsdma;
-	if (!tx_ring->buf_body) {
-		DEBUGQ(tx_ring->size_body);
-		//return -ENOMEM;
-		return -1;
-	}
-
-	for (i = 0; i < tx_ring->count; i ++)
-	{
-		tx_desc = E1000_TX_DESC(*tx_ring, i);
-		tx_desc->buffer_addr = e1000_cpu_to_le64((unsigned int)tx_ring->dma_body + (E1000_BODY_SIZE *  i));
-		tx_desc->lower.data = e1000_cpu_to_le32(E1000_TXD_CMD_IFCS | E1000_TXD_CMD_EOP | E1000_BODY_SIZE);
-		tx_desc->upper.data = e1000_cpu_to_le32(0);
-
-	}
-	DEBUGQ(tx_ring->size_desc);
 
 	/*for (i = 0; i < tx_ring->count * sizeof(struct e1000_tx_desc); i ++)
 	{

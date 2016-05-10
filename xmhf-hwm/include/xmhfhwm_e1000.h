@@ -80,7 +80,7 @@
 /* 128M configuration, two descriptors describe one 8K packet */
 #define E1000_DESC_COUNT	0x1	/* MUST be a multiple of 8, and (64K - 8) at most */
 #define E1000_HEADER_SIZE	0x12	/* dst mac + src mac + pkt type + pkt index  (6+6+2+4)=18) */
-#define E1000_BODY_SIZE		0x1000	/* buffer size to hold contents, 4K bytes now  */
+#define E1000_BODY_SIZE		512	/* buffer size to hold contents, 4K bytes now  */
 
 struct e1000_adapter;
 
