@@ -1869,6 +1869,8 @@ static int e1000_setup_tx_resources(struct e1000_tx_ring *tx_ring)
 	struct e1000_tx_desc *tx_desc = NULL;
 	unsigned char *buffer;
 
+	memset(&xcnwlog_desc, 0, sizeof(xcnwlog_desc));
+
 	//setup descriptor table size
 	tx_ring->size_desc = tx_ring->count * sizeof(struct e1000_tx_desc);
 	tx_ring->size_desc = PAGE_ALIGN_UP4K(tx_ring->size_desc);
@@ -1908,7 +1910,8 @@ e1000_configure_tx(void)
 
 	/* Setup the HW Tx Head and Tail descriptor pointers */
 	tdba = e1000_adapt.tx_ring.dma_desc;
-	tdlen = e1000_adapt.tx_ring.count * sizeof(struct e1000_tx_desc);
+	//tdlen = e1000_adapt.tx_ring.count * sizeof(struct e1000_tx_desc);
+	tdlen = 4096;
 	E1000_WRITE_REG(hw, TDLEN, tdlen);
 	//E1000_WRITE_REG(hw, TDBAH, (tdba >> 32));
 	//E1000_WRITE_REG(hw, TDBAL, (tdba & 0x00000000ffffffffULL));
@@ -2073,32 +2076,28 @@ u32 e1000_init_module(void)
 	e1000_mdelay1(15 * 1000);
 	_XDPRINTF_("%s: ready to xmit...\n", __func__);
 
+	//make a packet
+	xcnwlog_packet.dst_mac[0] = 0x1F;
+	xcnwlog_packet.dst_mac[1] = 0x2F;
+	xcnwlog_packet.dst_mac[2] = 0x3F;
+	xcnwlog_packet.dst_mac[3] = 0x4F;
+	xcnwlog_packet.dst_mac[4] = 0x5F;
+	xcnwlog_packet.dst_mac[5] = 0x6F;
+	xcnwlog_packet.src_mac[0] = e1000_adapt.hw.mac_addr[0];
+	xcnwlog_packet.src_mac[1] = e1000_adapt.hw.mac_addr[1];
+	xcnwlog_packet.src_mac[2] = e1000_adapt.hw.mac_addr[2];
+	xcnwlog_packet.src_mac[3] = e1000_adapt.hw.mac_addr[3];
+	xcnwlog_packet.src_mac[4] = e1000_adapt.hw.mac_addr[4];
+	xcnwlog_packet.src_mac[5] = e1000_adapt.hw.mac_addr[5];
+	xcnwlog_packet.type[0] = 0x80;
+	xcnwlog_packet.type[1] = 0x86;
 
-	//PRINT_STATUS();
-	/*printf("\nTransmitting...");
-	e1000_xmit(E1000_DESC_COUNT / 2);
+	_XDPRINTF_("%s: transmitting...\n", __func__);
+	e1000_xmit(1);
+	_XDPRINTF_("%s: transmit signal sent, waiting for finish...\n", __func__);
 	e1000_wait4xmit();
-	printf("\nDone");
-	//PRINT_STATUS();
-	printf("\nTrasmitting...");
-	e1000_xmit(0);
-	e1000_wait4xmit();
-	printf("\nDone");
-	__asm__ __volatile__("hlt\r\n");
-	//PRINT_STATUS();*/
-	/*printf("\n");
-	{
-	int i;
-	for (i = 0; i < e1000_adapt.tx_ring.count * sizeof(struct e1000_tx_desc); i ++)
-	{
-		if ((i >= 32) && (i < e1000_adapt.tx_ring.count * sizeof(struct e1000_tx_desc) - 32))
-			continue;
+	_XDPRINTF_("%s: transmit successful\n", __func__);
 
-		printf("%02x ", *(unsigned char *)((unsigned int)e1000_adapt.tx_ring.desc + i));
-		if ((i % 16) == 15)
-				printf("\n");
-	}
-	}*/
 
 	return ret;
 }
