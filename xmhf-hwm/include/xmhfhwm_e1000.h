@@ -57,6 +57,9 @@
 //////
 // e1000e framework glue and configuration
 
+#define PCI_DEVICE_ID_LOGNIC 0x10b9
+#define PCI_VENDOR_ID_LOGNIC 0x8086
+
 #define BAR_0		0
 #define BAR_1		1
 #define BAR_5		5

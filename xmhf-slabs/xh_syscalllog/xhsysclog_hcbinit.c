@@ -65,7 +65,7 @@ void sysclog_hcbinit(u32 cpuindex){
 
 	_XDPRINTF_("%s[%u]: syscalllog initializing...\n", __func__, (u16)cpuindex);
 
-	spl.src_slabid = XMHFGEEC_SLAB_XH_SYSCALLLOG;
+/*	spl.src_slabid = XMHFGEEC_SLAB_XH_SYSCALLLOG;
 	spl.dst_slabid = XMHFGEEC_SLAB_XC_NWLOG;
 	spl.cpuid = cpuindex;
 	spl.dst_uapifn = XMHFGEEC_SLAB_XC_NWLOG_INITIALIZE;
@@ -74,6 +74,6 @@ void sysclog_hcbinit(u32 cpuindex){
 	//////debug halt
 	_XDPRINTF_("%s[%u]: XMHF Tester Finished!\n", __func__, (u16)cpuindex);
 	HALT();
-
+*/
 }
 
