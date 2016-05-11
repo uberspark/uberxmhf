@@ -2076,7 +2076,7 @@ u32 e1000_init_module(void)
 	e1000_mdelay1(15 * 1000);
 	_XDPRINTF_("%s: ready to xmit...\n", __func__);
 
-	//make a packet
+	//setup packet header
 	xcnwlog_packet.dst_mac[0] = 0xFF;
 	xcnwlog_packet.dst_mac[1] = 0xFF;
 	xcnwlog_packet.dst_mac[2] = 0xFF;
@@ -2092,12 +2092,12 @@ u32 e1000_init_module(void)
 	xcnwlog_packet.type[0] = 0x80;
 	xcnwlog_packet.type[1] = 0x86;
 
-	_XDPRINTF_("%s: transmitting...\n", __func__);
+/*	_XDPRINTF_("%s: transmitting...\n", __func__);
 	e1000_xmit(1);
 	_XDPRINTF_("%s: transmit signal sent, waiting for finish...\n", __func__);
 	e1000_wait4xmit();
 	_XDPRINTF_("%s: transmit successful\n", __func__);
-
+*/
 
 	return ret;
 }
