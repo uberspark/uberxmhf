@@ -2077,12 +2077,12 @@ u32 e1000_init_module(void)
 	_XDPRINTF_("%s: ready to xmit...\n", __func__);
 
 	//make a packet
-	xcnwlog_packet.dst_mac[0] = 0x1F;
-	xcnwlog_packet.dst_mac[1] = 0x2F;
-	xcnwlog_packet.dst_mac[2] = 0x3F;
-	xcnwlog_packet.dst_mac[3] = 0x4F;
-	xcnwlog_packet.dst_mac[4] = 0x5F;
-	xcnwlog_packet.dst_mac[5] = 0x6F;
+	xcnwlog_packet.dst_mac[0] = 0xFF;
+	xcnwlog_packet.dst_mac[1] = 0xFF;
+	xcnwlog_packet.dst_mac[2] = 0xFF;
+	xcnwlog_packet.dst_mac[3] = 0xFF;
+	xcnwlog_packet.dst_mac[4] = 0xFF;
+	xcnwlog_packet.dst_mac[5] = 0xFF;
 	xcnwlog_packet.src_mac[0] = e1000_adapt.hw.mac_addr[0];
 	xcnwlog_packet.src_mac[1] = e1000_adapt.hw.mac_addr[1];
 	xcnwlog_packet.src_mac[2] = e1000_adapt.hw.mac_addr[2];
