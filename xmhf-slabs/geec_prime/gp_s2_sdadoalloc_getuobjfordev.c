@@ -57,13 +57,21 @@
 	ensures \result == XMHFGEEC_SLAB_XG_RICHGUEST;
 	assigns \nothing;
 @*/
+// returns 0xFFFFFFFFUL on failure
 u32 gp_s2_sdadoalloc_getuobjfordev(u32 bus, u32 dev, u32 func){
     u32 i;
+    u32 j;
 
-    if(bus == 0x4 && dev == 0 && func ==0)
-    	return XMHFGEEC_SLAB_XC_NWLOG;
-    else
-    	return XMHFGEEC_SLAB_XG_RICHGUEST;
+    for(i=0; i < XMHFGEEC_TOTAL_SLABS; i++){
+    	for (j=0; j < _sda_slab_devicemap[i].device_count; j++){
+    		if ( sysdev_memioregions[ (_sda_slab_devicemap[i].sysdev_mmioregions_indices[j]) ].b == bus &&
+    				sysdev_memioregions[ (_sda_slab_devicemap[i].sysdev_mmioregions_indices[j]) ].d == dev &&
+					sysdev_memioregions[ (_sda_slab_devicemap[i].sysdev_mmioregions_indices[j]) ].f == func)
+    			return i;
+    	}
+    }
+
+    return 0xFFFFFFFFUL;
 }
 
 
