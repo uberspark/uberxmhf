@@ -51,7 +51,7 @@
 #include <xc.h>
 #include <xc_nwlog.h>
 
-__attribute__((section(".slab_dmadata"))) xcnwlog_ls_element_t xcnwlog_lsdma[XC_NWLOG_BUF_MAXIDX][XC_NWLOG_BUF_MAXELEM];
+//__attribute__((section(".slab_dmadata"))) xcnwlog_ls_element_t xcnwlog_lsdma[XC_NWLOG_BUF_MAXIDX][XC_NWLOG_BUF_MAXELEM];
 
 __attribute__((section(".slab_dmadata"))) __attribute__((aligned(4096))) u8 xcnwlog_desc[PAGE_SIZE_4K];
 

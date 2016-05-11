@@ -2032,8 +2032,11 @@ static void e1000_irq_disable(void)
 
 /////
 void e1000_xmitack(void){
-	e1000_xmit(0);
+	_XDPRINTF_("%s: transmitting...\n", __func__);
+	e1000_xmit(1);
+	_XDPRINTF_("%s: transmit signal sent, waiting for finish...\n", __func__);
 	e1000_wait4xmit();
+	_XDPRINTF_("%s: transmit successful\n", __func__);
 }
 
 u32 e1000_init_module(void)
