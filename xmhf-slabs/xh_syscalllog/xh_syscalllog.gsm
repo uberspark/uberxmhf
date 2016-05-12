@@ -21,6 +21,8 @@ U:uapi_gcpustate:XMHF_HIC_UAPI_CPUSTATE_VMWRITE:(void)0;:(1)
 U:uapi_slabmempgtbl:XMHFGEEC_UAPI_SLABMEMPGTBL_GETENTRYFORPADDR:(void)0;:(1)
 U:uapi_slabmempgtbl:XMHFGEEC_UAPI_SLABMEMPGTBL_SETENTRYFORPADDR:if (setentryforpaddrp->gpa == 0){setentryforpaddrp->entry = setentryforpaddrp->entry & 7; setentryforpaddrp->entry &= ~(0x4); setentryforpaddrp->entry |=0x1; setentryforpaddrp->entry |= 0x2;}:((setentryforpaddrp->gpa != 0) || (setentryforpaddrp->gpa==0 && !(setentryforpaddrp->entry & 0x4) && (setentryforpaddrp->entry & 0x1) && (setentryforpaddrp->entry & 0x2)))
 U:uapi_slabmempgtbl:XMHFGEEC_UAPI_SLABMEMPGTBL_FLUSHTLB:(void)0;:(1)
+U:xc_nwlog:XMHFGEEC_SLAB_XC_NWLOG_INITIALIZE:(void)0;:(1)
 U:xc_nwlog:XMHFGEEC_SLAB_XC_NWLOG_LOGDATA:(void)0;:(1)
+
 
 

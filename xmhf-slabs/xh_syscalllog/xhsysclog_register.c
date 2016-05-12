@@ -52,6 +52,7 @@
 #include <xmhf-debug.h>
 
 #include <xc.h>
+#include <xc_nwlog.h>
 #include <uapi_gcpustate.h>
 #include <uapi_slabmempgtbl.h>
 
@@ -98,6 +99,14 @@ void sysclog_register(u32 cpuindex, u32 guest_slab_index, u32 syscall_page_paddr
 	//flush EPT TLB for permission changes to take effect
 	spl.dst_uapifn = XMHFGEEC_UAPI_SLABMEMPGTBL_FLUSHTLB;
 	flushtlbp->dst_slabid = guest_slab_index;
+	XMHF_SLAB_CALLNEW(&spl);
+
+
+	//initialize network comms
+	spl.src_slabid = XMHFGEEC_SLAB_XH_SYSCALLLOG;
+	spl.dst_slabid = XMHFGEEC_SLAB_XC_NWLOG;
+	spl.cpuid = cpuindex;
+	spl.dst_uapifn = XMHFGEEC_SLAB_XC_NWLOG_INITIALIZE;
 	XMHF_SLAB_CALLNEW(&spl);
 
 
