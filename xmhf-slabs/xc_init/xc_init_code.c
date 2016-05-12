@@ -761,6 +761,7 @@ void slab_main(slab_params_t *sp){
     CASM_FUNCCALL(spin_lock,&__xcinit_smplock);
 
     _XDPRINTF_("XC_INIT[%u]: got control: ESP=%08x\n", (u16)sp->cpuid, CASM_FUNCCALL(read_esp,CASM_NOPARAM));
+    _XDPRINTF_("XC_INIT[%u]: HYPAPP_INFO_TABLE_NUMENTRIES=%u\n", (u16)sp->cpuid, HYPAPP_INFO_TABLE_NUMENTRIES);
 
     //test uboj invocation
     //xcinit_do_test(sp);
