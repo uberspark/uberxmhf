@@ -103,6 +103,8 @@ void gp_s1_iommuinit(void){
 		    }
 		}
 
+		_XDPRINTF_("%s: DRHD unit %u - ND capability = %x\n", __func__, drhd_handle, cap.nd);
+
 
 
 		//set DRHD root entry table
