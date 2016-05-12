@@ -57,6 +57,8 @@
 void gp_s2_sdasetupdevpgtbl_rg(u32 slabid){
 	u32 i,j;
 
+	_XDPRINTF_("%s: _slabdevpgtbl_pml4t[%u] at 0x%08x\n", __func__, slabid, &_slabdevpgtbl_pml4t[slabid]);
+
 	//initialize lvl1 page table (pml4t)
 	/*@
 		loop invariant a1: 0 <= i <= VTD_MAXPTRS_PER_PML4T;
