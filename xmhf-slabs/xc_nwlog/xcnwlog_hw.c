@@ -1869,56 +1869,20 @@ static int e1000_setup_tx_resources(struct e1000_tx_ring *tx_ring)
 	struct e1000_tx_desc *tx_desc = NULL;
 	unsigned char *buffer;
 
-	/* round up to nearest 4K */
+	memset(&xcnwlog_desc, 0, sizeof(xcnwlog_desc));
+
+	//setup descriptor table size
 	tx_ring->size_desc = tx_ring->count * sizeof(struct e1000_tx_desc);
 	tx_ring->size_desc = PAGE_ALIGN_UP4K(tx_ring->size_desc);
+	//setup descriptor table base
+	tx_ring->desc=&xcnwlog_desc;
+	tx_ring->dma_desc=&xcnwlog_desc;
 
-	//tx_ring->desc = dma_alloc_coherent(NULL, tx_ring->size_desc, &tx_ring->dma_desc, GFP_ATOMIC);
-	tx_ring->desc=&xcnwlog_lsdma;
-	tx_ring->dma_desc=&xcnwlog_lsdma;
+	tx_desc = E1000_TX_DESC(*tx_ring, 0);
+	tx_desc->buffer_addr = e1000_cpu_to_le64((unsigned int)&xcnwlog_packet);
+	tx_desc->lower.data = e1000_cpu_to_le32(E1000_TXD_CMD_IFCS | E1000_TXD_CMD_EOP | (sizeof(xcnwlog_packet)));
+	tx_desc->upper.data = e1000_cpu_to_le32(0);
 
-	if (!tx_ring->desc) {
-		DEBUGQ(tx_ring->size_desc);
-		//return -ENOMEM;
-		return -1;
-	}
-
-	/* round up to nearest 4K */
-	tx_ring->size_header = (tx_ring->count / 2) * E1000_HEADER_SIZE;
-	tx_ring->size_header = PAGE_ALIGN_UP4K(tx_ring->size_header);
-
-	//tx_ring->buf_header = dma_alloc_coherent(NULL, tx_ring->size_header, &tx_ring->dma_header, GFP_ATOMIC);
-	tx_ring->buf_header=&xcnwlog_lsdma;
-	tx_ring->dma_header=&xcnwlog_lsdma;
-
-	if (!tx_ring->buf_header) {
-		DEBUGQ(tx_ring->size_header);
-		//return -ENOMEM;
-		return -1;
-	}
-
-	/* round up to nearest 4K */
-	tx_ring->size_body = (tx_ring->count / 2) * E1000_BODY_SIZE;
-	tx_ring->size_body = PAGE_ALIGN_UP4K(tx_ring->size_body);
-
-	//tx_ring->buf_body = dma_alloc_coherent(NULL, tx_ring->size_body, &tx_ring->dma_body, GFP_ATOMIC);
-	tx_ring->buf_body = (void *)&xcnwlog_lsdma;
-	tx_ring->dma_body = (dma_addr_t)&xcnwlog_lsdma;
-	if (!tx_ring->buf_body) {
-		DEBUGQ(tx_ring->size_body);
-		//return -ENOMEM;
-		return -1;
-	}
-
-	for (i = 0; i < tx_ring->count; i ++)
-	{
-		tx_desc = E1000_TX_DESC(*tx_ring, i);
-		tx_desc->buffer_addr = e1000_cpu_to_le64((unsigned int)tx_ring->dma_body + (E1000_BODY_SIZE *  i));
-		tx_desc->lower.data = e1000_cpu_to_le32(E1000_TXD_CMD_IFCS | E1000_TXD_CMD_EOP | E1000_BODY_SIZE);
-		tx_desc->upper.data = e1000_cpu_to_le32(0);
-
-	}
-	DEBUGQ(tx_ring->size_desc);
 
 	/*for (i = 0; i < tx_ring->count * sizeof(struct e1000_tx_desc); i ++)
 	{
@@ -1946,7 +1910,8 @@ e1000_configure_tx(void)
 
 	/* Setup the HW Tx Head and Tail descriptor pointers */
 	tdba = e1000_adapt.tx_ring.dma_desc;
-	tdlen = e1000_adapt.tx_ring.count * sizeof(struct e1000_tx_desc);
+	//tdlen = e1000_adapt.tx_ring.count * sizeof(struct e1000_tx_desc);
+	tdlen = 4096;
 	E1000_WRITE_REG(hw, TDLEN, tdlen);
 	//E1000_WRITE_REG(hw, TDBAH, (tdba >> 32));
 	//E1000_WRITE_REG(hw, TDBAL, (tdba & 0x00000000ffffffffULL));
@@ -2067,8 +2032,11 @@ static void e1000_irq_disable(void)
 
 /////
 void e1000_xmitack(void){
-	e1000_xmit(0);
+	_XDPRINTF_("%s: transmitting...\n", __func__);
+	e1000_xmit(1);
+	_XDPRINTF_("%s: transmit signal sent, waiting for finish...\n", __func__);
 	e1000_wait4xmit();
+	_XDPRINTF_("%s: transmit successful\n", __func__);
 }
 
 u32 e1000_init_module(void)
@@ -2084,7 +2052,7 @@ u32 e1000_init_module(void)
 	e1000_dev.dev = 0;
 	e1000_dev.func = 0;
 
-	_XDPRINTF_("Probing for ethernet card...\n");
+	_XDPRINTF_("%s: probing for ethernet card...\n", __func__);
 
 	DEBUGQ(0);
 	ret = e1000_probe(&e1000_dev);
@@ -2092,43 +2060,47 @@ u32 e1000_init_module(void)
 	if (ret < 0)
 	   return 0;
 
-	_XDPRINTF_("Opening interface...\n");
+	_XDPRINTF_("%s: card found, MAC address=", __func__);
+	for (i = 0; i < 6; i++)
+		_XDPRINTF_("%02x ", e1000_adapt.hw.mac_addr[i]);
+	_XDPRINTF_("\n");
+
+
+	_XDPRINTF_("%s: opening interface...\n", __func__);
 	ret = e1000_open();
 
 	if (ret < 0)
 	   return 0;
 
-	//PRINT_STATUS();
-	_XDPRINTF_("Waiting for router...\n");
-	//e1000_mdelay1(40 * 1000);
+	_XDPRINTF_("%s: interface opened successfully\n", __func__);
 
-	_XDPRINTF_("Done.\n");
 
-	//PRINT_STATUS();
-	/*printf("\nTransmitting...");
-	e1000_xmit(E1000_DESC_COUNT / 2);
+	_XDPRINTF_("%s: waiting for switch...\n", __func__);
+	e1000_mdelay1(15 * 1000);
+	_XDPRINTF_("%s: ready to xmit...\n", __func__);
+
+	//setup packet header
+	xcnwlog_packet.dst_mac[0] = 0xFF;
+	xcnwlog_packet.dst_mac[1] = 0xFF;
+	xcnwlog_packet.dst_mac[2] = 0xFF;
+	xcnwlog_packet.dst_mac[3] = 0xFF;
+	xcnwlog_packet.dst_mac[4] = 0xFF;
+	xcnwlog_packet.dst_mac[5] = 0xFF;
+	xcnwlog_packet.src_mac[0] = e1000_adapt.hw.mac_addr[0];
+	xcnwlog_packet.src_mac[1] = e1000_adapt.hw.mac_addr[1];
+	xcnwlog_packet.src_mac[2] = e1000_adapt.hw.mac_addr[2];
+	xcnwlog_packet.src_mac[3] = e1000_adapt.hw.mac_addr[3];
+	xcnwlog_packet.src_mac[4] = e1000_adapt.hw.mac_addr[4];
+	xcnwlog_packet.src_mac[5] = e1000_adapt.hw.mac_addr[5];
+	xcnwlog_packet.type[0] = 0x80;
+	xcnwlog_packet.type[1] = 0x86;
+
+/*	_XDPRINTF_("%s: transmitting...\n", __func__);
+	e1000_xmit(1);
+	_XDPRINTF_("%s: transmit signal sent, waiting for finish...\n", __func__);
 	e1000_wait4xmit();
-	printf("\nDone");
-	//PRINT_STATUS();
-	printf("\nTrasmitting...");
-	e1000_xmit(0);
-	e1000_wait4xmit();
-	printf("\nDone");
-	__asm__ __volatile__("hlt\r\n");
-	//PRINT_STATUS();*/
-	/*printf("\n");
-	{
-	int i;
-	for (i = 0; i < e1000_adapt.tx_ring.count * sizeof(struct e1000_tx_desc); i ++)
-	{
-		if ((i >= 32) && (i < e1000_adapt.tx_ring.count * sizeof(struct e1000_tx_desc) - 32))
-			continue;
-
-		printf("%02x ", *(unsigned char *)((unsigned int)e1000_adapt.tx_ring.desc + i));
-		if ((i % 16) == 15)
-				printf("\n");
-	}
-	}*/
+	_XDPRINTF_("%s: transmit successful\n", __func__);
+*/
 
 	return ret;
 }

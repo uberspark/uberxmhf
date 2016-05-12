@@ -61,5 +61,6 @@
 // initialization
 void sysclog_hcbinit(u32 cpuindex){
 	_XDPRINTF_("%s[%u]: syscalllog initializing...\n", __func__, (u16)cpuindex);
+
 }
 

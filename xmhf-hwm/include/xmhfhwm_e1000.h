@@ -57,10 +57,13 @@
 //////
 // e1000e framework glue and configuration
 
+#define PCI_DEVICE_ID_LOGNIC 0x10b9
+#define PCI_VENDOR_ID_LOGNIC 0x8086
+
 #define BAR_0		0
 #define BAR_1		1
 #define BAR_5		5
-#define E1000_HWADDR_BASE		0xEF000000UL	//TODO: remove hard-coding
+#define E1000_HWADDR_BASE		0xF7C40000UL	//TODO: remove hard-coding
 #define E1000_HWADDR_SIZE		0x9000UL
 
 //#define e1000_readl(addr)		*(volatile unsigned int *)(addr)
@@ -78,9 +81,9 @@
 #define e1000_writeb(value, addr)	CASM_FUNCCALL(xmhfhw_sysmemaccess_writeu8, addr, (u8)value)
 
 /* 128M configuration, two descriptors describe one 8K packet */
-#define E1000_DESC_COUNT	0x1	/* MUST be a multiple of 8, and (64K - 8) at most */
-#define E1000_HEADER_SIZE	0x12	/* dst mac + src mac + pkt type + pkt index  (6+6+2+4)=18) */
-#define E1000_BODY_SIZE		0x1000	/* buffer size to hold contents, 4K bytes now  */
+#define E1000_DESC_COUNT	0x1		// no. of descriptors
+#define E1000_HEADER_SIZE	0x12	// dst mac + src mac + pkt type + pkt index  (6+6+2+4)=18)
+#define E1000_BODY_SIZE		64		// packet size
 
 struct e1000_adapter;
 

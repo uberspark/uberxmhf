@@ -130,7 +130,7 @@ void gp_s2_sdadoalloc(void){
 		//@ghost invokedgetuobjfordev[i] = true;
 		//@ghost uobjfordev[i] = dst_slabid;
 
-                if(dst_slabid == 0xFFFFFFFFUL || (dst_slabid >= XMHFGEEC_TOTAL_SLABS)){
+                if(dst_slabid == 0xFFFFFFFFUL){
                     _XDPRINTF_("Could not find slab for device %x:%x:%x (vid:did=%x:%x, type=%x), skipping...\n", sysdev_memioregions[i].b,
                                sysdev_memioregions[i].d, sysdev_memioregions[i].f, sysdev_memioregions[i].vendor_id,
                                sysdev_memioregions[i].device_id, sysdev_memioregions[i].dtype);

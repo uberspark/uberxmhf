@@ -197,9 +197,16 @@ __attribute__ ((aligned(4096))) void do_testsyscalllog(char **envp){
 	//////
 	psyscall = syscall_vaddr;
 	pid = psyscall(SYSCALL_GETPID);
+	printf("\n%s: result via syscall-getpid() = %x\n", __FUNCTION__, pid);
+	pid = psyscall(SYSCALL_GETPID);
+	printf("\n%s: result via syscall-getpid() = %x\n", __FUNCTION__, pid);
+	pid = psyscall(SYSCALL_GETPID);
+	printf("\n%s: result via syscall-getpid() = %x\n", __FUNCTION__, pid);
+	pid = psyscall(SYSCALL_GETPID);
+	printf("\n%s: result via syscall-getpid() = %x\n", __FUNCTION__, pid);
+
 	//////
 
-	printf("\n%s: result via syscall-getpid() = %x\n", __FUNCTION__, pid);
 }
 
 
