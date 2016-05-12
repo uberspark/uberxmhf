@@ -127,12 +127,24 @@ bool gp_s2_sdabinddevice(u32 slabid, u32 pagewalk_lvl,  u32 bus, u32 dev, u32 fu
 			    vtd_make_cete((u64)&_slabdevpgtbl_pml4t[slabid], VTD_CET_PRESENT);
 			_slabdevpgtbl_vtd_cet[bus][((dev*PCI_FUNCTION_MAX) + func)].qwords[1] =
 			    vtd_make_cetehigh(2, (slabid+1));
+			_XDPRINTF_("%s: CET, 4-lvl[%u][%u]: h=0x%016llx, l=0x%016llx\n",  __func__,
+					bus,
+					((dev*PCI_FUNCTION_MAX) + func),
+					_slabdevpgtbl_vtd_cet[bus][((dev*PCI_FUNCTION_MAX) + func)].qwords[1],
+					_slabdevpgtbl_vtd_cet[bus][((dev*PCI_FUNCTION_MAX) + func)].qwords[0]);
+
 			retstatus = true;
 		}else if (pagewalk_lvl == VTD_PAGEWALK_3LEVEL){
 			_slabdevpgtbl_vtd_cet[bus][((dev*PCI_FUNCTION_MAX) + func)].qwords[0] =
 			    vtd_make_cete((u64)&_slabdevpgtbl_pdpt[slabid], VTD_CET_PRESENT);
 			_slabdevpgtbl_vtd_cet[bus][((dev*PCI_FUNCTION_MAX) + func)].qwords[1] =
 			    vtd_make_cetehigh(1, (slabid+1));
+			_XDPRINTF_("%s: CET, 3-lvl[%u][%u]: h=0x%016llx, l=0x%016llx\n",  __func__,
+					bus,
+					((dev*PCI_FUNCTION_MAX) + func),
+					_slabdevpgtbl_vtd_cet[bus][((dev*PCI_FUNCTION_MAX) + func)].qwords[1],
+					_slabdevpgtbl_vtd_cet[bus][((dev*PCI_FUNCTION_MAX) + func)].qwords[0]);
+
 			retstatus = true;
 		}else{ //unknown page walk length, fail
 			_XDPRINTF_("%s: Error: slabid (%u) unknown pagewalk\n",  __func__, slabid);
