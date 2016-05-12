@@ -60,7 +60,7 @@
 #include <xc.h>
 #include <uapi_gcpustate.h>
 #include <xg_benchguest.h>
-#include <xc_testslab.h>
+//#include <xc_testslab.h>
 #include <xh_hyperdep.h>
 #include <xh_syscalllog.h>
 #include <xh_ssteptrace.h>
@@ -69,7 +69,7 @@
 #include <xc_init.h>
 
 
-
+/*
 //////
 // test slab invocation fragment
 //////
@@ -86,7 +86,7 @@ static void xcinit_do_test(slab_params_t *sp){
 	_XDPRINTF_("XC_INIT[%u]: called test slab, return value=%x\n",
 			   (u16)sp->cpuid, spl.in_out_params[1]);
 }
-
+*/
 
 /*
 //////
@@ -763,7 +763,7 @@ void slab_main(slab_params_t *sp){
     _XDPRINTF_("XC_INIT[%u]: got control: ESP=%08x\n", (u16)sp->cpuid, CASM_FUNCCALL(read_esp,CASM_NOPARAM));
 
     //test uboj invocation
-    xcinit_do_test(sp);
+    //xcinit_do_test(sp);
 
     //plant int 15h redirection code for E820 reporting and copy boot-module
     if(isbsp){

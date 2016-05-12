@@ -114,7 +114,7 @@ bool gp_s2_sdabinddevice(u32 slabid, u32 pagewalk_lvl,  u32 bus, u32 dev, u32 fu
 	if(	(!_slabdevpgtbl_infotable[slabid].devpgtbl_initialized)  ||
 		( !(bus < PCI_BUS_MAX && dev < PCI_DEVICE_MAX && func < PCI_FUNCTION_MAX) )
  	){
-		//_XDPRINTF_("%s: Error: slabid (%u) devpgtbl not initialized\n",  __func__, slabid);
+		_XDPRINTF_("%s: Error: slabid (%u) devpgtbl not initialized or b:d:f out of limits\n",  __func__, slabid);
 		//_XDPRINTF_("%s: Error: slabid (%u) b:d:f out of limits\n",   __func__, slabid);
 
 		retstatus = false;
@@ -135,7 +135,7 @@ bool gp_s2_sdabinddevice(u32 slabid, u32 pagewalk_lvl,  u32 bus, u32 dev, u32 fu
 			    vtd_make_cetehigh(1, (slabid+1));
 			retstatus = true;
 		}else{ //unknown page walk length, fail
-			//_XDPRINTF_("%s: Error: slabid (%u) unknown pagewalk\n",  __func__, slabid);
+			_XDPRINTF_("%s: Error: slabid (%u) unknown pagewalk\n",  __func__, slabid);
 			retstatus = false;
 		}
 
