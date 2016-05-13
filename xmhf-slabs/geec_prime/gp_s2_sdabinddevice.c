@@ -111,10 +111,11 @@
 bool gp_s2_sdabinddevice(u32 slabid, u32 pagewalk_lvl,  u32 bus, u32 dev, u32 func){
 	bool retstatus=false;
 
-	if(	(!_slabdevpgtbl_infotable[slabid].devpgtbl_initialized)  ||
+	if(	(slabid == 0) ||
+		(!_slabdevpgtbl_infotable[slabid].devpgtbl_initialized)  ||
 		( !(bus < PCI_BUS_MAX && dev < PCI_DEVICE_MAX && func < PCI_FUNCTION_MAX) )
  	){
-		_XDPRINTF_("%s: Error: slabid (%u) devpgtbl not initialized or b:d:f out of limits\n",  __func__, slabid);
+		_XDPRINTF_("%s: Error: slabid (%u) is sentinel, devpgtbl not initialized or b:d:f out of limits\n",  __func__, slabid);
 		//_XDPRINTF_("%s: Error: slabid (%u) b:d:f out of limits\n",   __func__, slabid);
 
 		retstatus = false;
@@ -126,7 +127,7 @@ bool gp_s2_sdabinddevice(u32 slabid, u32 pagewalk_lvl,  u32 bus, u32 dev, u32 fu
 			_slabdevpgtbl_vtd_cet[bus][((dev*PCI_FUNCTION_MAX) + func)].qwords[0] =
 			    vtd_make_cete((u64)&_slabdevpgtbl_pml4t[slabid], VTD_CET_PRESENT);
 			_slabdevpgtbl_vtd_cet[bus][((dev*PCI_FUNCTION_MAX) + func)].qwords[1] =
-			    vtd_make_cetehigh(2, (slabid+1));
+			    vtd_make_cetehigh(2, (slabid));
 			_XDPRINTF_("%s: CET, 4-lvl[%u][%u]: h=0x%016llx, l=0x%016llx\n",  __func__,
 					bus,
 					((dev*PCI_FUNCTION_MAX) + func),
@@ -138,7 +139,7 @@ bool gp_s2_sdabinddevice(u32 slabid, u32 pagewalk_lvl,  u32 bus, u32 dev, u32 fu
 			_slabdevpgtbl_vtd_cet[bus][((dev*PCI_FUNCTION_MAX) + func)].qwords[0] =
 			    vtd_make_cete((u64)&_slabdevpgtbl_pdpt[slabid], VTD_CET_PRESENT);
 			_slabdevpgtbl_vtd_cet[bus][((dev*PCI_FUNCTION_MAX) + func)].qwords[1] =
-			    vtd_make_cetehigh(1, (slabid+1));
+			    vtd_make_cetehigh(1, (slabid));
 			_XDPRINTF_("%s: CET, 3-lvl[%u][%u]: h=0x%016llx, l=0x%016llx\n",  __func__,
 					bus,
 					((dev*PCI_FUNCTION_MAX) + func),
