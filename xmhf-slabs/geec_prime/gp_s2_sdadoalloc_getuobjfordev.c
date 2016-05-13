@@ -62,7 +62,7 @@ u32 gp_s2_sdadoalloc_getuobjfordev(u32 bus, u32 dev, u32 func){
     u32 i;
     u32 j;
 
-    for(i=0; i < XMHFGEEC_TOTAL_SLABS; i++){
+/*    for(i=0; i < XMHFGEEC_TOTAL_SLABS; i++){
     	for (j=0; j < _sda_slab_devicemap[i].device_count; j++){
     		if ( sysdev_memioregions[ (_sda_slab_devicemap[i].sysdev_mmioregions_indices[j]) ].b == bus &&
     				sysdev_memioregions[ (_sda_slab_devicemap[i].sysdev_mmioregions_indices[j]) ].d == dev &&
@@ -71,7 +71,9 @@ u32 gp_s2_sdadoalloc_getuobjfordev(u32 bus, u32 dev, u32 func){
     	}
     }
 
-    return 0xFFFFFFFFUL;
+    return 0xFFFFFFFFUL;*/
+
+    return XMHFGEEC_SLAB_XG_RICHGUEST;
 
 }
 

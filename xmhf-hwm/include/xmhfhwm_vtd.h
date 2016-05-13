@@ -187,9 +187,11 @@ typedef struct {
 //#define vtd_make_cetehigh(address_width, domain_id) \
 //  (((u64)domain_id & 0x000000000000FFFFULL) << 7) | ((u64)(address_width) & 0x0000000000000007ULL)
 
-#define vtd_make_cetehigh(address_width, domain_id) \
-  (((u64)domain_id) * 256) | ((u64)(address_width) & 0x0000000000000007ULL)
+//#define vtd_make_cetehigh(address_width, domain_id) \
+//  (((u64)domain_id) * 256) | ((u64)(address_width) & 0x0000000000000007ULL)
 
+#define vtd_make_cetehigh(address_width, domain_id) \
+  (((u64)1) * 256) | ((u64)(address_width) & 0x0000000000000007ULL)
 
 typedef u64 vtd_pml4te_t;
 typedef u64 vtd_pdpte_t;
