@@ -62,10 +62,6 @@ void gs_entry_icpt(x86regs_t *r){
     slab_params_t spl;
     u32 eflags;
 
-    _XDPRINTF_("%s: came here!!!\n", __func__);
-    _XDPRINTF_("XMHF Tester Finished!\n");
-    HALT();
-
     eflags = CASM_FUNCCALL(read_eflags,CASM_NOPARAM);
     eflags &= ~(EFLAGS_IOPL); //clear out IOPL bits
     eflags |= EFLAGS_IOPL;

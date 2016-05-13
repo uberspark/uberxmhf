@@ -106,7 +106,7 @@ void gp_s2_sda(void){
 			//@ghost invokedsdasetupdevpgtbl_rg[i] = true;
 			_XDPRINTF_("%s: rich-guest DMA tables setup for uobj %u\n", __func__, i);
 		}else{
-			//gp_s2_sdasetupdevpgtbl(i);
+			gp_s2_sdasetupdevpgtbl(i);
 			//@ghost invokedsdasetupdevpgtbl[i] = true;
 		}
 
