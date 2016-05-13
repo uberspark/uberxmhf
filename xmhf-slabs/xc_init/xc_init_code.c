@@ -125,26 +125,8 @@ static void xcinit_do_callguest(slab_params_t *sp){
 // setup guest uobj
 //////
 static void xcinit_setup_guest(slab_params_t *sp, bool isbsp){
-/*
-	u8 rg_bootcode[]  = {
-		0x0F, 0x01, 0xC1, //VMCALL
-		0xEB, 0xFE,	//JMP EIP
-		0x90,		//NOP
-		0x90,		//NOP
-	};
-	u8 rg_bootcode_verif[7];
 
-	//write boot code to guest boot area, if we are the BSP
-	if(isbsp){
-		_XDPRINTF_("%s[%u]: BSP: writing boot-code...\n", __func__, (u16)sp->cpuid);
-		CASM_FUNCCALL(xmhfhw_sysmem_copy_obj2sys, (u8 *)0x00007C00, &rg_bootcode, sizeof(rg_bootcode));
-		_XDPRINTF_("%s[%u]: BSP: boot-code written successfully\n", __func__, (u16)sp->cpuid);
-		_XDPRINTF_("%s[%u]: BSP: reading boot-code...\n", __func__, (u16)sp->cpuid);
-		CASM_FUNCCALL(xmhfhw_sysmem_copy_sys2obj, &rg_bootcode_verif, (u8 *)0x00007C00, sizeof(rg_bootcode_verif));
-		_XDPRINTF_("%s[%u]: BSP: boot-code: %02x %02x %02x %02x...\n", __func__, (u16)sp->cpuid,
-				rg_bootcode_verif[0], rg_bootcode_verif[1], rg_bootcode_verif[2], rg_bootcode_verif[3]);
-	}
-*/
+
 
 	//setup guest slab VMCS state
 	{
@@ -744,8 +726,28 @@ static void	xcinit_e820initializehooks(void){
 // copy guest boot module into appropriate location
 //////
 static void	xcinit_copyguestbootmodule(u32 g_bm_base, u32 g_bm_size){
+	u8 rg_bootcode[]  = {
+		0x0F, 0x01, 0xC1, //VMCALL
+		0xEB, 0xFE,	//JMP EIP
+		0x90,		//NOP
+		0x90,		//NOP
+	};
+	u8 rg_bootcode_verif[7];
+
+	//write boot code to guest boot area
+	_XDPRINTF_("%s: BSP: writing boot-code...\n", __func__);
+	CASM_FUNCCALL(xmhfhw_sysmem_copy_obj2sys, (u8 *)0x00007C00, &rg_bootcode, sizeof(rg_bootcode));
+	_XDPRINTF_("%s: BSP: boot-code written successfully\n", __func__);
+	_XDPRINTF_("%s: BSP: reading boot-code...\n", __func__);
+	CASM_FUNCCALL(xmhfhw_sysmem_copy_sys2obj, &rg_bootcode_verif, (u8 *)0x00007C00, sizeof(rg_bootcode_verif));
+	_XDPRINTF_("%s: BSP: boot-code: %02x %02x %02x %02x...\n", __func__,
+			rg_bootcode_verif[0], rg_bootcode_verif[1], rg_bootcode_verif[2], rg_bootcode_verif[3]);
+
+
+/*
 	_XDPRINTF_("%s: boot-module at 0x%08x, size=0x%08x (%u) bytes\n", __func__, g_bm_base, g_bm_size, g_bm_size);
 	CASM_FUNCCALL(xmhfhw_sysmemaccess_copy, 0x00007C00, g_bm_base, g_bm_size);
+*/
 }
 
 
