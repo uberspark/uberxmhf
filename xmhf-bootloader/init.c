@@ -1071,6 +1071,7 @@ void cstartup(multiboot_info_t *mbi){
         xslbootinfo->richguest_bootmodule_base = mod_array[0].mod_start;
         xslbootinfo->richguest_bootmodule_size = (mod_array[0].mod_end - mod_array[0].mod_start);
 
+
 		#if defined (__DEBUG_SERIAL__)
         memcpy(&xslbootinfo->debugcontrol_buffer, &g_uart_config, sizeof(uart_config_t));
 		#endif

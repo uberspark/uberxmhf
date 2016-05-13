@@ -162,6 +162,7 @@ void gp_s2_setupiotbl(void){
 		 ){
 			gp_s2_setupiotbluh(i);
 			//@ghost gp_s2_setupiotbl_invokeduhslabiotbl[i] = true;
+			_XDPRINTF_("%s: set up iotbl for uV{U,T}_PROG slab with id %u\n", __func__, i);
 		}
 		else if ( ((xmhfgeec_slab_info_table[i].slabtype == XMHFGEEC_SLABTYPE_uVT_PROG_GUEST) ||
 			   (xmhfgeec_slab_info_table[i].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG_GUEST) )&&
@@ -169,12 +170,14 @@ void gp_s2_setupiotbl(void){
 			 ){
 			gp_s2_setupiotblug(i);
 			//@ghost gp_s2_setupiotbl_invokedugslabiotbl[i] = true;
+			_XDPRINTF_("%s: set up iotbl for uV{U,T}_PROG guest-slab with id %u\n", __func__, i);
 
 		}else if ( (xmhfgeec_slab_info_table[i].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG_RICHGUEST) &&
 			   ((i >= XMHFGEEC_UGSLAB_BASE_IDX && i <= XMHFGEEC_UGSLAB_MAX_IDX))
 			 ){
 			gp_s2_setupiotblug_rg(i);
 			//@ghost gp_s2_setupiotbl_invokedug_rg_slabiotbl[i] = true;
+			_XDPRINTF_("%s: set up iotbl for rich-guest with id %u\n", __func__, i);
 
 		}else if ( ((xmhfgeec_slab_info_table[i].slabtype == XMHFGEEC_SLABTYPE_VfT_SENTINEL) ||
 			   (xmhfgeec_slab_info_table[i].slabtype == XMHFGEEC_SLABTYPE_VfT_PROG))
