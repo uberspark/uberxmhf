@@ -189,10 +189,9 @@ void slab_main(slab_params_t *sp){
     //grab lock
     CASM_FUNCCALL(spin_lock,&xcihub_smplock);
 
-	_XDPRINTF_("XCIHUB[%u]: Got control: src=%u, dst=%u, esp=%08x, eflags=%08x\n",
-		(u16)sp->cpuid, sp->src_slabid, sp->dst_slabid, CASM_FUNCCALL(read_esp,CASM_NOPARAM),
-			CASM_FUNCCALL(read_eflags, CASM_NOPARAM));
-	HALT();
+	//_XDPRINTF_("XCIHUB[%u]: Got control: src=%u, dst=%u, esp=%08x, eflags=%08x\n",
+	//	(u16)sp->cpuid, sp->src_slabid, sp->dst_slabid, CASM_FUNCCALL(read_esp,CASM_NOPARAM),
+	//		CASM_FUNCCALL(read_eflags, CASM_NOPARAM));
 
 	spl.cpuid = sp->cpuid;
 	spl.src_slabid = XMHFGEEC_SLAB_XC_IHUB;
