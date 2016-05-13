@@ -61,6 +61,7 @@
 //corresponding error code
 CASM_FUNCDEF(u32, gs_exit_callv2uvg,
 {
+	xmhfhwm_cpu_insn_movl_imm_edx(0x80);
     xmhfhwm_cpu_insn_vmlaunch();
     xmhfhwm_cpu_insn_jc(__vmx_start_hvm_failinvalid);
     xmhfhwm_cpu_insn_jnz(__vmx_start_hvm_undefinedimplementation);
