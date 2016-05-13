@@ -726,7 +726,7 @@ static void	xcinit_e820initializehooks(void){
 // copy guest boot module into appropriate location
 //////
 static void	xcinit_copyguestbootmodule(u32 g_bm_base, u32 g_bm_size){
-	u8 rg_bootcode[]  = {
+/*	u8 rg_bootcode[]  = {
 		0x0F, 0x01, 0xC1, //VMCALL
 		0xEB, 0xFE,	//JMP EIP
 		0x90,		//NOP
@@ -742,12 +742,12 @@ static void	xcinit_copyguestbootmodule(u32 g_bm_base, u32 g_bm_size){
 	CASM_FUNCCALL(xmhfhw_sysmem_copy_sys2obj, &rg_bootcode_verif, (u8 *)0x00007C00, sizeof(rg_bootcode_verif));
 	_XDPRINTF_("%s: BSP: boot-code: %02x %02x %02x %02x...\n", __func__,
 			rg_bootcode_verif[0], rg_bootcode_verif[1], rg_bootcode_verif[2], rg_bootcode_verif[3]);
+*/
 
-
-/*
 	_XDPRINTF_("%s: boot-module at 0x%08x, size=0x%08x (%u) bytes\n", __func__, g_bm_base, g_bm_size, g_bm_size);
 	CASM_FUNCCALL(xmhfhw_sysmemaccess_copy, 0x00007C00, g_bm_base, g_bm_size);
-*/
+
+
 }
 
 
@@ -782,7 +782,7 @@ void slab_main(slab_params_t *sp){
     xcinit_setup_guest(sp, isbsp);
 
     //invoke hypapp initialization callbacks
-    xc_hcbinvoke(XMHFGEEC_SLAB_XC_INIT, sp->cpuid, XC_HYPAPPCB_INITIALIZE, 0, XMHFGEEC_SLAB_XG_BENCHGUEST);
+    xc_hcbinvoke(XMHFGEEC_SLAB_XC_INIT, sp->cpuid, XC_HYPAPPCB_INITIALIZE, 0, XMHFGEEC_SLAB_XG_RICHGUEST);
 
 
     _XDPRINTF_("XC_INIT[%u]: Proceeding to call guest: ESP=%08x, eflags=%08x\n", (u16)sp->cpuid,
