@@ -59,8 +59,6 @@
 #include <geec_sentinel.h>
 #include <xc.h>
 #include <uapi_gcpustate.h>
-#include <xg_benchguest.h>
-//#include <xc_testslab.h>
 #include <xh_hyperdep.h>
 #include <xh_syscalllog.h>
 #include <xh_ssteptrace.h>
