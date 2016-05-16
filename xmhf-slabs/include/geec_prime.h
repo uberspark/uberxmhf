@@ -179,7 +179,7 @@ typedef struct {
 	u64 gp_uhslabmempgtbl_lvl4t[XMHFGEEC_TOTAL_UHSLABS][PAE_MAXPTRS_PER_PML4T];
 	u8 gp_uhslab_iobitmap[XMHFGEEC_TOTAL_UHSLABS][3*PAGE_SIZE_4K];
 	u8 gp_ugslab_iobitmap[XMHFGEEC_TOTAL_UGSLABS][3*PAGE_SIZE_4K];
-} gp_rwdatahdr_t;
+} __attribute__((packed)) gp_rwdatahdr_t;
 
 
 typedef struct {
