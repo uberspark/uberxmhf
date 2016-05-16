@@ -72,6 +72,9 @@ u32 gp_s2_sdadoalloc_getuobjfordev(u32 bus, u32 dev, u32 func){
     }
 
     return 0xFFFFFFFFUL;
+
+    //return XMHFGEEC_SLAB_XG_RICHGUEST;
+
 }
 
 
