@@ -21,17 +21,17 @@ export XMHF_SLAB_GLOBAL_SYMS :=
 
 
 .PHONY: verify
-verify: verifybase verif_p1
+verify: verifybase verif_s1
 
-.PHONY: verif_p1
-verif_p1: 
-	@echo Verifying phase-1...
-	cd $(XMHF_SLAB_VERIFICATION_DIR) && frama-c -val -no-val-show-progress -slevel 2048 -cpp-extra-args=-nostdinc $(VFLAGS) ../verify/gpvdrv_s1entry.c gp_data.c.v.c gp_s1_entry.cS.v.c xmhfgeec_slabinfotable.c xmhfgeec_slabmapdef.c libxmhfhw/*.v.c $(V_XMHFHWM_MODULES)
+.PHONY: verif_s1
+verif_s1: 
+	@echo Verifying state-1...
+	#cd $(XMHF_SLAB_VERIFICATION_DIR) && frama-c -val -no-val-show-progress -slevel 2048 -cpp-extra-args=-nostdinc $(VFLAGS) ../verify/gpvdrv_s1entry.c gp_data.c.v.c gp_s1_entry.cS.v.c xmhfgeec_slabinfotable.c xmhfgeec_slabmapdef.c libxmhfhw/*.v.c $(V_XMHFHWM_MODULES)
+	cd $(XMHF_SLAB_VERIFICATION_DIR) && frama-c -main _gp_s1_bspstack_getflagsforspa -lib-entry -wp -wp-rte -wp-model +cint+cast  -wp-prover alt-ergo,cvc3,z3 -cpp-extra-args=-nostdinc $(VFLAGS) gp_data.c.v.c gp_s1_bspstackgetflags.c.v.c
 	
 
 
 
-#cd $(XMHF_SLAB_VERIFICATION_DIR) && frama-c -main _gp_s1_bspstack_getflagsforspa -lib-entry -wp -wp-rte -wp-model +cint+cast  -wp-prover alt-ergo,cvc3,z3 -cpp-extra-args=-nostdinc $(VFLAGS) gp_data.c.v.c gp_s1_bspstackgetflags.c.v.c
 #cd $(XMHF_SLAB_VERIFICATION_DIR) && frama-c -main gp_s1_bspstack -lib-entry -wp -wp-rte -wp-model +cint+cast  -wp-prover alt-ergo,cvc3,z3 -cpp-extra-args=-nostdinc $(VFLAGS) gp_data.c.v.c gp_s1_bspstack.c.v.c
 #cd $(XMHF_SLAB_VERIFICATION_DIR) && frama-c -val -no-val-show-progress -slevel 2048 -cpp-extra-args=-nostdinc $(VFLAGS) ../verify/gpvdrv_s1bspstkactivate.c gp_data.c.v.c gp_s1_bspstkactivate.c.v.c xmhfgeec_slabinfotable.c xmhfgeec_slabmapdef.c libxmhfhw/*.v.c $(V_XMHFHWM_MODULES)
 #cd $(XMHF_SLAB_VERIFICATION_DIR) && frama-c -main gp_s1_hub -lib-entry -wp -wp-rte -wp-model +cint+cast  -wp-prover alt-ergo,cvc3,z3 -cpp-extra-args=-nostdinc $(VFLAGS) gp_data.c.v.c gp_s1_hub.c.v.c
