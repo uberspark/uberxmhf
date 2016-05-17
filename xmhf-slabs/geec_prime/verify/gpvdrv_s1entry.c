@@ -53,7 +53,6 @@
 #include <xmhf.h>
 #include <xmhf-hwm.h>
 #include <xmhfgeec.h>
-//#include <xmhf-debug.h>
 
 #include <geec_prime.h>
 
@@ -113,7 +112,7 @@ void main(void){
 	xmhfhwm_cpu_gprs_esp = (u32)&_init_bsp_cpustack + MAX_PLATFORM_CPUSTACK_SIZE;
 
 	//execute harness
-        xmhfhwm_cpu_ds_selector = 0x8;
+	xmhfhwm_cpu_ds_selector = 0x8;
 	CASM_FUNCCALL(slab_main, CASM_NOPARAM);
 	//@assert gp_s1_bspstack_called == true;
 }
