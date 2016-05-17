@@ -46,13 +46,12 @@
 
 #include <xmhf.h>
 #include <xmhf-debug.h>
-
 #include <xmhfgeec.h>
 
 #include <geec_prime.h>
-#include <geec_sentinel.h>
-#include <uapi_slabmempgtbl.h>
-#include <xc_init.h>
+//#include <geec_sentinel.h>
+//#include <uapi_slabmempgtbl.h>
+//#include <xc_init.h>
 
 
 //@ghost bool gp_s1_bspstack_invoke_bspstkactivate = false;
@@ -72,7 +71,7 @@ void gp_s1_bspstack(void){
 	u64 flags;
 
 	//clear PDPT
-    	/*@
+	/*@
 		loop invariant a1: 0 <= i <= PAE_MAXPTRS_PER_PDPT;
 		loop invariant a2: \forall integer x; 0 <= x < i ==> ( _xcprimeon_init_pdpt[x] == 0);
 		loop assigns _xcprimeon_init_pdpt[0..(PAE_MAXPTRS_PER_PDPT-1)];
