@@ -296,11 +296,8 @@ extern __attribute__((section(".data"))) x86smp_apbootstrapdata_t apdata;
 
 
 
-
 void gp_s1_bspstack(void);
-
 u64 _gp_s1_bspstack_getflagsforspa(u32 paddr);
-
 void gp_s1_bspstkactivate(void);
 void gp_s1_hub(void);
 void gp_s1_chkreq(void);
