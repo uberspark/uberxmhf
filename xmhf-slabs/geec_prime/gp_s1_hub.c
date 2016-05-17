@@ -46,13 +46,9 @@
 
 #include <xmhf.h>
 #include <xmhf-debug.h>
-
 #include <xmhfgeec.h>
 
 #include <geec_prime.h>
-#include <geec_sentinel.h>
-#include <uapi_slabmempgtbl.h>
-#include <xc_init.h>
 
 
 //@ghost bool gp_s1_hub_called_chkreq = false;
@@ -156,7 +152,7 @@ void gp_s1_hub(void){
 
 
 	//scan for IOMMU and halt if one is not present
-        gp_s1_scaniommu();
+    gp_s1_scaniommu();
 	//@ghost gp_s1_hub_called_scaniommu = true;
 
 
