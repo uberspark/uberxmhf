@@ -50,9 +50,9 @@
 #include <xmhfgeec.h>
 
 #include <geec_prime.h>
-#include <geec_sentinel.h>
-#include <uapi_slabmempgtbl.h>
-#include <xc_init.h>
+//#include <geec_sentinel.h>
+//#include <uapi_slabmempgtbl.h>
+//#include <xc_init.h>
 
 
 
@@ -65,17 +65,17 @@ void gp_s1_bspstkactivate(void){
 	_msrefer |= (1ULL << EFER_NXE);
 	CASM_FUNCCALL(wrmsr64, MSR_EFER, (u32)_msrefer, (u32)((u64)_msrefer >> 32) );
 
-        _XDPRINTF_("EFER=%016llx\n", CASM_FUNCCALL(rdmsr64,MSR_EFER));
+	_XDPRINTF_("EFER=%016llx\n", CASM_FUNCCALL(rdmsr64,MSR_EFER));
 
 	_cr4 = CASM_FUNCCALL(read_cr4, CASM_NOPARAM);
         _cr4 |= (CR4_PSE | CR4_PAE);
 	CASM_FUNCCALL(write_cr4, _cr4);
 
-        _XDPRINTF_("CR4=%08x\n", CASM_FUNCCALL(read_cr4,CASM_NOPARAM));
+	_XDPRINTF_("CR4=%08x\n", CASM_FUNCCALL(read_cr4,CASM_NOPARAM));
 
 	CASM_FUNCCALL(write_cr3,(u32)&_xcprimeon_init_pdpt);
 
-        _XDPRINTF_("CR3=%08x\n", CASM_FUNCCALL(read_cr3,CASM_NOPARAM));
+	_XDPRINTF_("CR3=%08x\n", CASM_FUNCCALL(read_cr3,CASM_NOPARAM));
 
 	CASM_FUNCCALL(write_cr0, _cr0);
 
