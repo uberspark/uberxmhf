@@ -47,13 +47,9 @@
 #include <xmhf.h>
 #include <xmhf-hwm.h>
 #include <xmhf-debug.h>
-
 #include <xmhfgeec.h>
 
 #include <geec_prime.h>
-#include <geec_sentinel.h>
-#include <uapi_slabmempgtbl.h>
-#include <xc_init.h>
 
 void gp_s1_postdrt(void){
 	txt_heap_t *txt_heap;
@@ -73,8 +69,6 @@ void gp_s1_postdrt(void){
 	os_mle_data_paddr = get_os_mle_data_start((txt_heap_t*)((u32)txt_heap), txt_heap_size);
 	//@assert (os_mle_data_paddr == (XMHFHWM_TXT_SYSMEM_HEAPBASE+0x8+sizeof(bios_data_t)+0x8));
 
-	//xmhfhw_sysmemaccess_copy(&os_mle_data, get_os_mle_data_start((txt_heap_t*)((u32)txt_heap), (uint32_t)read_pub_config_reg(TXTCR_HEAP_SIZE)),
-	//				sizeof(os_mle_data_t));
 	CASM_FUNCCALL(xmhfhw_sysmem_copy_sys2obj, (u32)&os_mle_data,
 		os_mle_data_paddr, sizeof(os_mle_data_t));
 
@@ -84,7 +78,7 @@ void gp_s1_postdrt(void){
 	if(os_mle_data.saved_mtrr_state.num_var_mtrrs < MAX_VARIABLE_MTRRS){
 		// restore pre-SENTER MTRRs that were overwritten for SINIT launch
 		if(!validate_mtrrs(&os_mle_data.saved_mtrr_state)) {
-			_XDPRINTF_("SECURITY FAILURE: validate_mtrrs() failed.\n");
+			_XDPRINTF_("Error: validate_mtrrs() failed.\n");
 			CASM_FUNCCALL(xmhfhw_cpu_hlt, CASM_NOPARAM);
 		}
 
