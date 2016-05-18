@@ -295,7 +295,9 @@ extern __attribute__((section(".data"))) x86smp_apbootstrapdata_t apdata;
 
 
 
-
+//////
+// stage-1
+//////
 void gp_s1_bspstack(void);
 u64 _gp_s1_bspstack_getflagsforspa(u32 paddr);
 void gp_s1_bspstkactivate(void);
@@ -304,6 +306,15 @@ void gp_s1_chkreq(void);
 void gp_s1_postdrt(void);
 void gp_s1_scaniommu(void);
 void gp_s1_iommuinittbl(void);
+
+
+
+//////
+// stage-2
+//////
+void gp_s2_gathersysmemtypes(void);
+
+
 
 /*@
 	requires 0 <= retindex < VTD_RET_MAXPTRS;
@@ -408,7 +419,6 @@ void gp_s2_setupiotbl(void);
 
 
 
-void gp_s2_gathersysmemtypes(void);
 
 /*@
 	assigns \nothing;
