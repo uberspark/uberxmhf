@@ -51,7 +51,6 @@
 
 #include <geec_prime.h>
 
-
 //---gather memory types for system physical memory------------------------------
 void gp_s2_gathersysmemtypes(void){
  	u32 eax, ebx, ecx, edx;
