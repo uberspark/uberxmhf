@@ -52,6 +52,9 @@
 #include <geec_prime.h>
 #include <uapi_sysdata.h>
 
+/*@
+	requires (gp_rwdatahdr.xcbootinfo_store.memmapinfo_numentries < MAX_E820_ENTRIES);
+@*/
 void gp_s2_initsysmemmap(void){
 	slab_params_t sp;
 	uxmhf_uapi_sysdata_e820addentry_t *e820entry = (uxmhf_uapi_sysdata_e820addentry_t *)sp.in_out_params;

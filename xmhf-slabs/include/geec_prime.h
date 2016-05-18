@@ -307,15 +307,6 @@ void gp_s1_postdrt(void);
 void gp_s1_scaniommu(void);
 void gp_s1_iommuinittbl(void);
 
-
-
-//////
-// stage-2
-//////
-void gp_s2_gathersysmemtypes(void);
-
-
-
 /*@
 	requires 0 <= retindex < VTD_RET_MAXPTRS;
 @*/
@@ -324,9 +315,20 @@ void gp_s1_iommuinittbl_clearcet(u32 retindex);
 void gp_s1_iommuinit(void);
 
 
+
+//////
+// stage-2
+//////
+void gp_s2_gathersysmemtypes(void);
+
+/*@
+	requires (gp_rwdatahdr.xcbootinfo_store.memmapinfo_numentries < MAX_E820_ENTRIES);
+@*/
+void gp_s2_initsysmemmap(void);
+
+
 void gp_s2_entry(void);
 
-void gp_s2_initsysmemmap(void);
 
 void gp_s2_setupslabdevmap(void);
 
