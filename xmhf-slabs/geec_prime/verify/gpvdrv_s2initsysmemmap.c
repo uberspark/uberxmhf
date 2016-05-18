@@ -101,7 +101,7 @@ void main(void){
 	check_esp = xmhfhwm_cpu_gprs_esp; // pointing to top-of-stack
 
 	//execute harness
-	gp_rwdatahdr.xcbootinfo_store.memmapinfo_numentries = MAX_E820_ENTRIES-1;
+	gp_rwdatahdr.xcbootinfo_store.memmapinfo_numentries = framac_nondetu32interval(0, (MAX_E820_ENTRIES-1));
 	gp_s2_initsysmemmap();
 
 	//@assert xmhfhwm_cpu_gprs_esp == check_esp;
