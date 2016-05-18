@@ -44,33 +44,68 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-#include <xmhf.h>
-#include <xmhf-debug.h>
+/*
+ * prime s2_initsysmemmap verification driver
+ * author: amit vasudevan (amitvasudevan@acm.org)
+*/
 
+
+#include <xmhf.h>
+#include <xmhf-hwm.h>
 #include <xmhfgeec.h>
 
 #include <geec_prime.h>
-#include <uapi_sysdata.h>
 
-void gp_s2_initsysmemmap(void){
-	slab_params_t sp;
-	uxmhf_uapi_sysdata_e820addentry_t *e820entry = (uxmhf_uapi_sysdata_e820addentry_t *)sp.in_out_params;
-	u32 i;
+u32 cpuid = 0;	//BSP cpu
 
-	memset(&sp, 0, sizeof(sp));
-	sp.cpuid = 0; //XXX: fixme need to plugin BSP cpu id
-	sp.src_slabid = XMHFGEEC_SLAB_GEEC_PRIME;
-	sp.dst_slabid = XMHFGEEC_SLAB_UAPI_SYSDATA;
-	sp.dst_uapifn =  UXMHF_UAPI_SYSDATA_E820ADDENTRY;
+//////
+// frama-c non-determinism functions
+//////
 
-	for(i=0; i < (u32)gp_rwdatahdr.xcbootinfo_store.memmapinfo_numentries; i++){
-		e820entry->baseaddr_high = gp_rwdatahdr.xcbootinfo_store.memmapinfo_buffer[i].baseaddr_high;
-		e820entry->baseaddr_low = gp_rwdatahdr.xcbootinfo_store.memmapinfo_buffer[i].baseaddr_low;
-		e820entry->length_high = gp_rwdatahdr.xcbootinfo_store.memmapinfo_buffer[i].length_high;
-		e820entry->length_low = gp_rwdatahdr.xcbootinfo_store.memmapinfo_buffer[i].length_low;
-		e820entry->type = gp_rwdatahdr.xcbootinfo_store.memmapinfo_buffer[i].type;
-		XMHF_SLAB_CALLNEW(&sp);
-	}
+u32 Frama_C_entropy_source;
 
+//@ assigns Frama_C_entropy_source \from Frama_C_entropy_source;
+void Frama_C_update_entropy(void);
+
+u32 framac_nondetu32(void){
+  Frama_C_update_entropy();
+  return (u32)Frama_C_entropy_source;
 }
+
+u32 framac_nondetu32interval(u32 min, u32 max)
+{
+  u32 r,aux;
+  Frama_C_update_entropy();
+  aux = Frama_C_entropy_source;
+  if ((aux>=min) && (aux <=max))
+    r = aux;
+  else
+    r = min;
+  return r;
+}
+
+
+//////
+u32 check_esp, check_eip = CASM_RET_EIP;
+
+
+void xmhfhwm_vdriver_writeesp(u32 oldval, u32 newval){
+	//@assert (newval >= ((u32)&_init_bsp_cpustack + 4)) && (newval <= ((u32)&_init_bsp_cpustack + MAX_PLATFORM_CPUSTACK_SIZE)) ;
+}
+
+
+void main(void){
+	//populate hardware model stack and program counter
+	xmhfhwm_cpu_gprs_esp = (u32)&_init_bsp_cpustack + MAX_PLATFORM_CPUSTACK_SIZE;
+	xmhfhwm_cpu_gprs_eip = check_eip;
+	check_esp = xmhfhwm_cpu_gprs_esp; // pointing to top-of-stack
+
+	//execute harness
+	gp_rwdatahdr.xcbootinfo_store.memmapinfo_numentries = MAX_E820_ENTRIES-1;
+	gp_s2_initsysmemmap();
+
+	//@assert xmhfhwm_cpu_gprs_esp == check_esp;
+	//@assert xmhfhwm_cpu_gprs_eip == check_eip;
+}
+
 
