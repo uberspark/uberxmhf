@@ -122,6 +122,7 @@ void gp_s2_setupmpgtblv(void){
 	}
 
 
+   	_XDPRINTF_("%s: populated verified slabs' memory page tables\n", __func__);
 
 }
 

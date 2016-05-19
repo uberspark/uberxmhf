@@ -319,6 +319,12 @@ void gp_s1_iommuinit(void);
 //////
 // stage-2
 //////
+
+/*@
+	requires (gp_rwdatahdr.xcbootinfo_store.memmapinfo_numentries < MAX_E820_ENTRIES);
+@*/
+void gp_s2_entry(void);
+
 void gp_s2_gathersysmemtypes(void);
 
 /*@
@@ -327,7 +333,7 @@ void gp_s2_gathersysmemtypes(void);
 void gp_s2_initsysmemmap(void);
 
 
-void gp_s2_entry(void);
+void gp_s2_sda(void);
 
 
 void gp_s2_setupslabdevmap(void);
@@ -335,7 +341,7 @@ void gp_s2_setupslabdevmap(void);
 
 
 
-void gp_s2_sda(void);
+
 
 /*@
 	requires 0 <= slabid < XMHFGEEC_TOTAL_SLABS;
@@ -415,6 +421,7 @@ void gp_s2_setupiotblug(u32 slabid);
 
 
 void gp_s2_setupiotblug_rg(u32 slabid);
+
 
 
 void gp_s2_setupiotbl(void);
@@ -502,10 +509,6 @@ void gp_s2_setupmpgtblv(void);
 void gp_s2_setupmpgtblu(void);
 
 
-/*@
-	requires \valid(xcbootinfo);
-	requires (xcbootinfo->cpuinfo_numentries < MAX_PLATFORM_CPUS);
-@*/
 void gp_s2_setupgdt(void);
 
 /*@
