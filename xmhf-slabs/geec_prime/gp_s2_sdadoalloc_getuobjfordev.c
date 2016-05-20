@@ -55,31 +55,24 @@
 	requires ( \forall integer i, integer j; (0 <= i < XMHFGEEC_TOTAL_SLABS) ==> (_sda_slab_devicemap[i].device_count < MAX_PLATFORM_DEVICES) );
 	requires ( \forall integer i, integer j; (0 <= i < XMHFGEEC_TOTAL_SLABS) && (0 <= j < _sda_slab_devicemap[i].device_count) ==> (0 <= _sda_slab_devicemap[i].sysdev_mmioregions_indices[j] < MAX_PLATFORM_DEVICES) );
 
-	behavior validuobj:
-		assumes foundbdf: ( \forall integer i, integer j; (0 <= i < XMHFGEEC_TOTAL_SLABS) && (0 <= j < _sda_slab_devicemap[i].device_count)
+	assigns \nothing;
+
+	ensures foundbdf: ( \forall integer i, integer j; (0 <= i < XMHFGEEC_TOTAL_SLABS) && (0 <= j < _sda_slab_devicemap[i].device_count)
 		&& (
 				sysdev_memioregions[ (_sda_slab_devicemap[i].sysdev_mmioregions_indices[j]) ].b == bus &&
 				sysdev_memioregions[ (_sda_slab_devicemap[i].sysdev_mmioregions_indices[j]) ].d == dev &&
 				sysdev_memioregions[ (_sda_slab_devicemap[i].sysdev_mmioregions_indices[j]) ].f == func
 			)
-		);
-		assigns \nothing;
-		ensures (0 <= \result < XMHFGEEC_TOTAL_SLABS );
+		) ==> (0 <= \result < XMHFGEEC_TOTAL_SLABS );
 
-	behavior invalid:
-		assumes notfoundbdf: ( \forall integer i, integer j; (0 <= i < XMHFGEEC_TOTAL_SLABS) && (0 <= j < _sda_slab_devicemap[i].device_count)
+	ensures notfoundbdf: ( \forall integer i, integer j; (0 <= i < XMHFGEEC_TOTAL_SLABS) && (0 <= j < _sda_slab_devicemap[i].device_count)
 		&& !(
 				sysdev_memioregions[ (_sda_slab_devicemap[i].sysdev_mmioregions_indices[j]) ].b == bus &&
 				sysdev_memioregions[ (_sda_slab_devicemap[i].sysdev_mmioregions_indices[j]) ].d == dev &&
 				sysdev_memioregions[ (_sda_slab_devicemap[i].sysdev_mmioregions_indices[j]) ].f == func
 			)
-		);
-		assigns \nothing;
-		ensures (\result == 0xFFFFFFFFUL);
+		) ==> (\result == 0xFFFFFFFFUL );
 
-
-	complete behaviors;
-	disjoint behaviors;
 @*/
 u32 gp_s2_sdadoalloc_getuobjfordev(u32 bus, u32 dev, u32 func){
     u32 i;
@@ -117,7 +110,7 @@ u32 gp_s2_sdadoalloc_getuobjfordev(u32 bus, u32 dev, u32 func){
     }
 
 
-	/*@assert maina: ( \forall integer i, integer j; (0 <= i < XMHFGEEC_TOTAL_SLABS) && (0 <= j < _sda_slab_devicemap[i].device_count) ==>
+	/*@assert ( \forall integer i, integer j; (0 <= i < XMHFGEEC_TOTAL_SLABS) && (0 <= j < _sda_slab_devicemap[i].device_count) ==>
 			!(
 				sysdev_memioregions[ (_sda_slab_devicemap[i].sysdev_mmioregions_indices[j]) ].b == bus &&
 				sysdev_memioregions[ (_sda_slab_devicemap[i].sysdev_mmioregions_indices[j]) ].d == dev &&
@@ -125,7 +118,6 @@ u32 gp_s2_sdadoalloc_getuobjfordev(u32 bus, u32 dev, u32 func){
 			)
 	);
 	@*/
-
     return 0xFFFFFFFFUL;
 }
 
