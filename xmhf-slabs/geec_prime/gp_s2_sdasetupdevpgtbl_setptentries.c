@@ -46,20 +46,20 @@
 
 #include <xmhf.h>
 #include <xmhf-debug.h>
-
 #include <xmhfgeec.h>
 
 #include <geec_prime.h>
 
 
 //setup PT entries for a 2M range
-
 /*@
 	requires 0 <= slabid < XMHFGEEC_TOTAL_SLABS;
 	requires 0 <= pd_index < MAX_SLAB_DMADATA_PDT_ENTRIES;
 	requires (startpaddr < (0xFFFFFFFFUL - PAGE_SIZE_2M));
+
 	assigns _slabdevpgtbl_pdt[slabid][(startpaddr/PAGE_SIZE_2M)];
 	assigns _slabdevpgtbl_pt[slabid][pd_index][0..(VTD_PTRS_PER_PT-1)];
+
 	ensures ( _slabdevpgtbl_pdt[slabid][(startpaddr/PAGE_SIZE_2M)] ==
 	    (vtd_make_pdte((u64)&_slabdevpgtbl_pt[slabid][pd_index], (VTD_PAGE_READ | VTD_PAGE_WRITE)))
 		);
