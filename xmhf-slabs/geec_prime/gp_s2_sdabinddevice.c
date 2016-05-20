@@ -46,7 +46,6 @@
 
 #include <xmhf.h>
 #include <xmhf-debug.h>
-
 #include <xmhfgeec.h>
 
 #include <geec_prime.h>
@@ -57,7 +56,8 @@
 	behavior setcet4lvl:
 		assumes (
 				(
-				!(	(!_slabdevpgtbl_infotable[slabid].devpgtbl_initialized)  ||
+				!(	(slabid == 0) ||
+					(!_slabdevpgtbl_infotable[slabid].devpgtbl_initialized)  ||
 					( !(bus < PCI_BUS_MAX && dev < PCI_DEVICE_MAX && func < PCI_FUNCTION_MAX) )
 				) && (pagewalk_lvl == VTD_PAGEWALK_4LEVEL)
 				)
@@ -66,7 +66,7 @@
 			    (vtd_make_cete((u64)&_slabdevpgtbl_pml4t[slabid], VTD_CET_PRESENT))
 			);
 		ensures ( _slabdevpgtbl_vtd_cet[bus][((dev*PCI_FUNCTION_MAX) + func)].qwords[1] ==
-			    (vtd_make_cetehigh(2, (slabid+1)))
+			    (vtd_make_cetehigh(2, (slabid)))
 			);
 		ensures (\result == true);
 
@@ -74,7 +74,8 @@
 	behavior setcet3lvl:
 		assumes (
 				(
-				!(	(!_slabdevpgtbl_infotable[slabid].devpgtbl_initialized)  ||
+				!(	(slabid == 0) ||
+					(!_slabdevpgtbl_infotable[slabid].devpgtbl_initialized)  ||
 					( !(bus < PCI_BUS_MAX && dev < PCI_DEVICE_MAX && func < PCI_FUNCTION_MAX) )
 				) && (pagewalk_lvl == VTD_PAGEWALK_3LEVEL)
 				)
@@ -83,19 +84,21 @@
 			    (vtd_make_cete((u64)&_slabdevpgtbl_pdpt[slabid], VTD_CET_PRESENT))
 			);
 		ensures ( _slabdevpgtbl_vtd_cet[bus][((dev*PCI_FUNCTION_MAX) + func)].qwords[1] ==
-			    (vtd_make_cetehigh(1, (slabid+1)))
+			    (vtd_make_cetehigh(1, (slabid)))
 			);
 		ensures (\result == true);
 
 
 	behavior invalid:
 		assumes (
-				(	(!_slabdevpgtbl_infotable[slabid].devpgtbl_initialized)  ||
+				(	(slabid == 0) ||
+					(!_slabdevpgtbl_infotable[slabid].devpgtbl_initialized)  ||
 					( !(bus < PCI_BUS_MAX && dev < PCI_DEVICE_MAX && func < PCI_FUNCTION_MAX) )
 				) ||
 
 				(
-				!(	(!_slabdevpgtbl_infotable[slabid].devpgtbl_initialized)  ||
+				!(	(slabid == 0) ||
+					(!_slabdevpgtbl_infotable[slabid].devpgtbl_initialized)  ||
 					( !(bus < PCI_BUS_MAX && dev < PCI_DEVICE_MAX && func < PCI_FUNCTION_MAX) )
 				) && !(pagewalk_lvl == VTD_PAGEWALK_4LEVEL) &&
 					!(pagewalk_lvl == VTD_PAGEWALK_3LEVEL)
@@ -116,8 +119,6 @@ bool gp_s2_sdabinddevice(u32 slabid, u32 pagewalk_lvl,  u32 bus, u32 dev, u32 fu
 		( !(bus < PCI_BUS_MAX && dev < PCI_DEVICE_MAX && func < PCI_FUNCTION_MAX) )
  	){
 		_XDPRINTF_("%s: Error: slabid (%u) is sentinel, devpgtbl not initialized or b:d:f out of limits\n",  __func__, slabid);
-		//_XDPRINTF_("%s: Error: slabid (%u) b:d:f out of limits\n",   __func__, slabid);
-
 		retstatus = false;
 	}else{
 
