@@ -53,6 +53,16 @@
 
 /*@
 	requires 0 <= slabid < XMHFGEEC_TOTAL_SLABS;
+
+	assigns _slabdevpgtbl_pml4t[slabid][0..(VTD_MAXPTRS_PER_PML4T-1)];
+
+	ensures (_slabdevpgtbl_pml4t[slabid][0] ==
+		(vtd_make_pml4te((u64)&_slabdevpgtbl_pdpt[slabid], (VTD_PAGE_READ | VTD_PAGE_WRITE))) );
+
+	ensures \forall integer x; 1 <= x < VTD_MAXPTRS_PER_PML4T ==> (
+		(_slabdevpgtbl_pml4t[slabid][x] == 0)
+	);
+
 @*/
 void gp_s2_sdasetupdevpgtbl_rg(u32 slabid){
 	u32 i,j;
@@ -72,9 +82,10 @@ void gp_s2_sdasetupdevpgtbl_rg(u32 slabid){
 	for(i=0; i < VTD_MAXPTRS_PER_PML4T; i++)
 		_slabdevpgtbl_pml4t[slabid][i] = 0;
 
-
 	_slabdevpgtbl_pml4t[slabid][0] =
 		vtd_make_pml4te((u64)&_slabdevpgtbl_pdpt[slabid], (VTD_PAGE_READ | VTD_PAGE_WRITE));
+
+#if 0
 
 	//initialize lvl2 page table (pdpt)
 	/*@
@@ -128,4 +139,5 @@ void gp_s2_sdasetupdevpgtbl_rg(u32 slabid){
 	}
 
 	_slabdevpgtbl_infotable[slabid].devpgtbl_initialized = true;
+#endif
 }
