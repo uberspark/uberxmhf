@@ -46,35 +46,41 @@
 
 #include <xmhf.h>
 #include <xmhf-debug.h>
-
 #include <xmhfgeec.h>
 
 #include <geec_prime.h>
 
 
-
 /*@
-	ensures \result == XMHFGEEC_SLAB_XG_RICHGUEST;
-	assigns \nothing;
+	requires ( \forall integer i, integer j; (0 <= i < XMHFGEEC_TOTAL_SLABS) ==> (_sda_slab_devicemap[i].device_count < MAX_PLATFORM_DEVICES) );
+	requires ( \forall integer i, integer j; (0 <= i < XMHFGEEC_TOTAL_SLABS) && (0 <= j < _sda_slab_devicemap[i].device_count) ==> (0 <= _sda_slab_devicemap[i].sysdev_mmioregions_indices[j] < MAX_PLATFORM_DEVICES) );
 @*/
-// returns 0xFFFFFFFFUL on failure
 u32 gp_s2_sdadoalloc_getuobjfordev(u32 bus, u32 dev, u32 func){
     u32 i;
     u32 j;
 
+	/*@
+		loop invariant a1: 0 <= i <= XMHFGEEC_TOTAL_SLABS;
+		loop assigns i;
+		loop assigns j;
+		loop variant XMHFGEEC_TOTAL_SLABS - i;
+	@*/
     for(i=0; i < XMHFGEEC_TOTAL_SLABS; i++){
+    	/*@
+    		loop invariant a2: 0 <= j <= _sda_slab_devicemap[i].device_count;
+    		loop assigns j;
+    		loop variant (_sda_slab_devicemap[i].device_count) - j;
+    	@*/
     	for (j=0; j < _sda_slab_devicemap[i].device_count; j++){
+
     		if ( sysdev_memioregions[ (_sda_slab_devicemap[i].sysdev_mmioregions_indices[j]) ].b == bus &&
     				sysdev_memioregions[ (_sda_slab_devicemap[i].sysdev_mmioregions_indices[j]) ].d == dev &&
 					sysdev_memioregions[ (_sda_slab_devicemap[i].sysdev_mmioregions_indices[j]) ].f == func)
     			return i;
-    	}
+       	}
     }
 
     return 0xFFFFFFFFUL;
-
-    //return XMHFGEEC_SLAB_XG_RICHGUEST;
-
 }
 
 
