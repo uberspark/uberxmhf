@@ -355,6 +355,7 @@ void gp_s2_sdadoalloc(void);
 
 /*@
 	assigns \nothing;
+	ensures (\result == 0xFFFFFFFFUL || (0 <= \result < XMHFGEEC_TOTAL_SLABS));
 @*/
 u32 gp_s2_sdadoalloc_getuobjfordev(u32 bus, u32 dev, u32 func);
 
