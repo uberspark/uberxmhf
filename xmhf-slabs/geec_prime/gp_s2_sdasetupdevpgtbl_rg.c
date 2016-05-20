@@ -56,6 +56,7 @@
 
 	assigns _slabdevpgtbl_pml4t[slabid][0..(VTD_MAXPTRS_PER_PML4T-1)];
 	assigns _slabdevpgtbl_pdpt[slabid][0..(VTD_MAXPTRS_PER_PDPT-1)];
+	assigns _slabdevpgtbl_pdt[slabid][0..((VTD_PTRS_PER_PDPT * VTD_PTRS_PER_PDT)-1)];
 
 	ensures (_slabdevpgtbl_pml4t[slabid][0] ==
 		(vtd_make_pml4te((u64)&_slabdevpgtbl_pdpt[slabid], (VTD_PAGE_READ | VTD_PAGE_WRITE))) );
@@ -72,6 +73,12 @@
 	ensures \forall integer x; VTD_PTRS_PER_PDPT <= x < VTD_MAXPTRS_PER_PDPT ==> (
 		(_slabdevpgtbl_pdpt[slabid][x] == 0)
 	);
+
+	ensures \forall integer x; 0 <= x < (VTD_PTRS_PER_PDPT * VTD_PTRS_PER_PDT) ==> (
+			_slabdevpgtbl_pdt[slabid][x] ==
+			 (vtd_make_pdte((u64)&_slabdevpgtbl_pt_rg[x*VTD_PTRS_PER_PT], (VTD_PAGE_READ | VTD_PAGE_WRITE)))
+			);
+
 
 @*/
 void gp_s2_sdasetupdevpgtbl_rg(u32 slabid){
@@ -126,17 +133,26 @@ void gp_s2_sdasetupdevpgtbl_rg(u32 slabid){
 	}
 
 
-#if 0
 
 
 	//setup PDTs
+	/*@
+		loop invariant a7: 0 <= i <= (VTD_PTRS_PER_PDPT * VTD_PTRS_PER_PDT);
+		loop invariant a8: \forall integer x; 0 <= x < i ==> (
+			_slabdevpgtbl_pdt[slabid][x] ==
+			 (vtd_make_pdte((u64)&_slabdevpgtbl_pt_rg[x*VTD_PTRS_PER_PT], (VTD_PAGE_READ | VTD_PAGE_WRITE)))
+			);
+		loop assigns i;
+		loop assigns _slabdevpgtbl_pdt[slabid][0..((VTD_PTRS_PER_PDPT * VTD_PTRS_PER_PDT)-1)];
+		loop variant (VTD_PTRS_PER_PDPT * VTD_PTRS_PER_PDT) - i;
+	@*/
 	for(i=0; i < (VTD_PTRS_PER_PDPT * VTD_PTRS_PER_PDT); i++){
 			_slabdevpgtbl_pdt[slabid][i] =
 				vtd_make_pdte((u64)&_slabdevpgtbl_pt_rg[i*VTD_PTRS_PER_PT], (VTD_PAGE_READ | VTD_PAGE_WRITE));
 	}
 
 
-
+/*
 	//setup DMA access for rich-guest address space
 	for(i=0; i < (1024*1024); i++){
 		if( ( ((i*PAGE_SIZE_4K) >= xmhfgeec_slab_info_table[slabid].slab_physmem_extents[0].addr_start) &&
@@ -151,5 +167,5 @@ void gp_s2_sdasetupdevpgtbl_rg(u32 slabid){
 	}
 
 	_slabdevpgtbl_infotable[slabid].devpgtbl_initialized = true;
-#endif
+*/
 }
