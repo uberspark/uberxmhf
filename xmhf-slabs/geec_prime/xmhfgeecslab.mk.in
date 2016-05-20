@@ -45,9 +45,10 @@ verif_s1:
 .PHONY: verif_s2
 verif_s2: 
 	@echo Verifying stage-2...
-	cd $(XMHF_SLAB_VERIFICATION_DIR) && frama-c -main gp_s2_entry -lib-entry -wp -wp-rte -wp-model +cint+cast  -wp-prover alt-ergo,cvc3,z3 -cpp-extra-args=-nostdinc $(VFLAGS) gp_s2_entry.c.v.c
+	#cd $(XMHF_SLAB_VERIFICATION_DIR) && frama-c -main gp_s2_entry -lib-entry -wp -wp-rte -wp-model +cint+cast  -wp-prover alt-ergo,cvc3,z3 -cpp-extra-args=-nostdinc $(VFLAGS) gp_s2_entry.c.v.c
 	#cd $(XMHF_SLAB_VERIFICATION_DIR) && frama-c -val -no-val-show-progress -slevel 2048 -cpp-extra-args=-nostdinc $(VFLAGS) ../verify/gpvdrv_s2gathersysmemtypes.c gp_data.c.v.c gp_s2_gathersysmemtypes.c.v.c xmhfgeec_slabinfotable.c xmhfgeec_slabmapdef.c libxmhfhw/*.cS.v.c $(V_XMHFHWM_MODULES)
 	#cd $(XMHF_SLAB_VERIFICATION_DIR) && frama-c -val -no-val-show-progress -slevel 2048 -cpp-extra-args=-nostdinc $(VFLAGS) ../verify/gpvdrv_s2initsysmemmap.c gp_data.c.v.c gp_s2_initsysmemmap.c.v.c xmhfgeec_slabinfotable.c xmhfgeec_slabmapdef.c libxmhfhw/*.cS.v.c $(V_XMHFHWM_MODULES)
+	cd $(XMHF_SLAB_VERIFICATION_DIR) && frama-c -main gp_s2_sda -lib-entry -wp -wp-rte -wp-model +cint+cast  -wp-prover alt-ergo,cvc3,z3 -cpp-extra-args=-nostdinc $(VFLAGS) gp_data.c.v.c gp_s2_sda.c.v.c
 
 
 
@@ -88,7 +89,6 @@ verif_s2:
 #cd $(XMHF_SLAB_VERIFICATION_DIR) && frama-c -main gp_s2_sdasetupdevpgtbl_splintpdt -lib-entry -wp -wp-rte -wp-model +cint+cast  -wp-prover alt-ergo,cvc3,z3 -cpp-extra-args=-nostdinc $(VFLAGS) gp_data.c.v.c gp_s2_sdasetupdevpgtbl_splintpdt.c.v.c
 #cd $(XMHF_SLAB_VERIFICATION_DIR) && frama-c -main gp_s2_sdasetupdevpgtbl_setptentries -lib-entry -wp -wp-rte -wp-model +cint+cast  -wp-prover alt-ergo,cvc3,z3 -cpp-extra-args=-nostdinc $(VFLAGS) gp_data.c.v.c gp_s2_sdasetupdevpgtbl_setptentries.c.v.c
 #cd $(XMHF_SLAB_VERIFICATION_DIR) && frama-c -main gp_s2_sdasetupdevpgtbl -lib-entry -wp -wp-rte -wp-model +cint+cast  -wp-prover alt-ergo,cvc3,z3 -cpp-extra-args=-nostdinc $(VFLAGS) gp_data.c.v.c gp_s2_sdasetupdevpgtbl.c.v.c
-#cd $(XMHF_SLAB_VERIFICATION_DIR) && frama-c -main gp_s2_sda -lib-entry -wp -wp-rte -wp-model +cint+cast  -wp-prover alt-ergo,cvc3,z3 -cpp-extra-args=-nostdinc $(VFLAGS) gp_data.c.v.c gp_s2_sda.c.v.c
 
 
 
