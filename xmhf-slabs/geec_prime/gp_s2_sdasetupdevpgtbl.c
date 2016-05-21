@@ -67,11 +67,24 @@
 		assigns _slabdevpgtbl_pdpt[slabid][0..(VTD_MAXPTRS_PER_PDPT-1)];
 		assigns _slabdevpgtbl_infotable[slabid].devpgtbl_initialized;
 		assigns invokedsplintpdt;
+
 		ensures (_slabdevpgtbl_infotable[slabid].devpgtbl_initialized == true);
 		ensures (invokedsplintpdt == true);
 		ensures (  _slabdevpgtbl_pml4t[slabid][0] ==
 			  (vtd_make_pml4te((u64)&_slabdevpgtbl_pdpt[slabid], (VTD_PAGE_READ | VTD_PAGE_WRITE)))
 			);
+		ensures \forall integer x; 1 <= x < VTD_MAXPTRS_PER_PML4T ==> (
+				(_slabdevpgtbl_pml4t[slabid][x] == 0)
+				);
+
+		ensures \forall integer x; 0 <= x < VTD_PTRS_PER_PDPT ==> (
+				_slabdevpgtbl_pdpt[slabid][x] ==
+				 (vtd_make_pdpte((u64)&_slabdevpgtbl_pdt[slabid][x*VTD_PTRS_PER_PDT], (VTD_PAGE_READ | VTD_PAGE_WRITE)))
+				);
+
+		ensures \forall integer x; VTD_PTRS_PER_PDPT <= x < VTD_MAXPTRS_PER_PDPT ==> (
+				(_slabdevpgtbl_pdpt[slabid][x] == 0)
+				);
 
 
 	behavior invalid:
