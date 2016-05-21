@@ -46,7 +46,6 @@
 
 #include <xmhf.h>
 #include <xmhf-debug.h>
-
 #include <xmhfgeec.h>
 
 #include <geec_prime.h>
@@ -58,6 +57,12 @@
 	assigns gp_vhslabmempgtbl_lvl2t[0..(PAE_PTRS_PER_PDPT * PAE_PTRS_PER_PDT)-1];
 	assigns gp_vhslabmempgtbl_lvl1t[0..(PAE_PTRS_PER_PDPT * PAE_PTRS_PER_PDT * PAE_PTRS_PER_PT)-1];
 	assigns gflags[0..(PAE_PTRS_PER_PDPT * PAE_PTRS_PER_PDT * PAE_PTRS_PER_PT)-1];
+
+
+	ensures (\forall u32 x; PAE_PTRS_PER_PDPT <= x < PAE_MAXPTRS_PER_PDPT ==>
+		 ( ((u64)gp_rwdatahdr.gp_vhslabmempgtbl_lvl4t[x] ) == 0 )
+		);
+
 	ensures (\forall u32 x; 0 <= x < PAE_PTRS_PER_PDPT ==>
 		 ( ((u64)gp_rwdatahdr.gp_vhslabmempgtbl_lvl4t[x] ) == ( ((u64)(&gp_vhslabmempgtbl_lvl2t[x * PAE_PTRS_PER_PDT]) & 0x7FFFFFFFFFFFF000ULL ) | (u64)(_PAGE_PRESENT)) )
 		);
@@ -75,11 +80,22 @@ void gp_s2_setupmpgtblv(void){
 	u32 slabid = XMHFGEEC_SLAB_GEEC_PRIME;
 
 
-	//pdpt setup
-	memset(&gp_rwdatahdr.gp_vhslabmempgtbl_lvl4t, 0, PAGE_SIZE_4K);
+	//zero out pdpt
+	/*@
+		loop invariant a0: 0 <= i <= PAE_MAXPTRS_PER_PDPT;
+		loop invariant a01: \forall integer x; 0 <= x < i ==> (
+			gp_rwdatahdr.gp_vhslabmempgtbl_lvl4t[x] == 0
+			);
+		loop assigns gp_rwdatahdr.gp_vhslabmempgtbl_lvl4t[0..(PAE_MAXPTRS_PER_PDPT-1)];
+		loop assigns i;
+		loop variant PAE_MAXPTRS_PER_PDPT - i;
+	@*/
+	for(i=0; i < PAE_MAXPTRS_PER_PDPT; i++){
+		gp_rwdatahdr.gp_vhslabmempgtbl_lvl4t[i] = 0;
+	}
 
 
-    	/*@
+	/*@
 		loop invariant a1: 0 <= i <= PAE_PTRS_PER_PDPT;
 		loop invariant a2: \forall integer x; 0 <= x < i ==> ( (u64)gp_rwdatahdr.gp_vhslabmempgtbl_lvl4t[x] ) == ( ((u64)(&gp_vhslabmempgtbl_lvl2t[x * PAE_PTRS_PER_PDT]) & 0x7FFFFFFFFFFFF000ULL ) | ((u64)(_PAGE_PRESENT)));
 		loop assigns gp_rwdatahdr.gp_vhslabmempgtbl_lvl4t[0..(PAE_PTRS_PER_PDPT-1)], i;
@@ -107,7 +123,7 @@ void gp_s2_setupmpgtblv(void){
 
 
 	//pt setup
-    	/*@	loop invariant a5: 0 <= i <= (PAE_PTRS_PER_PDPT * PAE_PTRS_PER_PDT * PAE_PTRS_PER_PT);
+	/*@	loop invariant a5: 0 <= i <= (PAE_PTRS_PER_PDPT * PAE_PTRS_PER_PDT * PAE_PTRS_PER_PT);
 		loop assigns gflags[0..(PAE_PTRS_PER_PDPT * PAE_PTRS_PER_PDT * PAE_PTRS_PER_PT)], spatype, flags, i, gp_vhslabmempgtbl_lvl1t[0..(PAE_PTRS_PER_PDPT * PAE_PTRS_PER_PDT * PAE_PTRS_PER_PT)];
 		loop invariant a6: \forall integer x; 0 <= x < i ==> ( (u64)gp_vhslabmempgtbl_lvl1t[x]) == ( ((u64)(x * PAGE_SIZE_4K) & 0x7FFFFFFFFFFFF000ULL ) | (u64)(gflags[x]) );
 		loop variant (PAE_PTRS_PER_PDPT * PAE_PTRS_PER_PDT * PAE_PTRS_PER_PT) - i;
