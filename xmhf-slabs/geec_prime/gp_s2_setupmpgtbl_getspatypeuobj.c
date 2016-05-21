@@ -46,16 +46,9 @@
 
 #include <xmhf.h>
 #include <xmhf-debug.h>
-
 #include <xmhfgeec.h>
 
 #include <geec_prime.h>
-
-
-//TODO: we need to account for memgrant caps here
-//memgrant is read-only or read-write
-//for now we will return _SLAB_SPATYPE_SLAB_DATA for such
-//shared mappings
 
 
 //@ghost bool gisiotbl, gisdevicemmio;
