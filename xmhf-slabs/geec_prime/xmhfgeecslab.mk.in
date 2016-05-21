@@ -65,7 +65,8 @@ verif_s2:
 	#cd $(XMHF_SLAB_VERIFICATION_DIR) && frama-c -main gp_s2_setupiotblug_allowaccesstoport -lib-entry -wp -wp-rte -wp-model +cint+cast  -wp-prover alt-ergo,cvc3,z3 -cpp-extra-args=-nostdinc $(VFLAGS) gp_data.c.v.c gp_s2_setupiotblugportaccess.c.v.c
 	#cd $(XMHF_SLAB_VERIFICATION_DIR) && frama-c -main gp_s2_setupiotbluh -lib-entry -wp -wp-rte -wp-model +cint+cast  -wp-prover alt-ergo,cvc3,z3 -cpp-extra-args=-nostdinc $(VFLAGS) gp_data.c.v.c gp_s2_setupiotbluh.c.v.c
 	#cd $(XMHF_SLAB_VERIFICATION_DIR) && frama-c -main gp_s2_setupiotbluh_allowaccesstoport -lib-entry -wp -wp-rte -wp-model +cint+cast  -wp-prover alt-ergo,cvc3,z3 -cpp-extra-args=-nostdinc $(VFLAGS) gp_data.c.v.c gp_s2_setupiotbluhportaccess.c.v.c
-	cd $(XMHF_SLAB_VERIFICATION_DIR) && frama-c -main gp_s2_setupmpgtbl_getspatype -lib-entry -wp -wp-rte -wp-model +cint+cast  -wp-prover alt-ergo,cvc3,z3 -cpp-extra-args=-nostdinc $(VFLAGS) gp_data.c.v.c gp_s2_setupmpgtbl_getspatype.c.v.c
+	#cd $(XMHF_SLAB_VERIFICATION_DIR) && frama-c -main gp_s2_setupmpgtbl_getspatype -lib-entry -wp -wp-rte -wp-model +cint+cast  -wp-prover alt-ergo,cvc3,z3 -cpp-extra-args=-nostdinc $(VFLAGS) gp_data.c.v.c gp_s2_setupmpgtbl_getspatype.c.v.c
+	cd $(XMHF_SLAB_VERIFICATION_DIR) && frama-c -main gp_s2_setupmpgtbl_getspatypeuobj_isiotbl -lib-entry -wp -wp-rte -wp-model +cint+cast  -wp-prover alt-ergo,cvc3,z3 -cpp-extra-args=-nostdinc $(VFLAGS) gp_data.c.v.c gp_s2_setupmpgtbl_getspatypeuobj_isiotbl.c.v.c
 
 
 
@@ -85,7 +86,6 @@ verif_s2:
 #cd $(XMHF_SLAB_VERIFICATION_DIR) && frama-c -main gp_s2_setupmpgtblv_getflags -lib-entry -wp -wp-rte -wp-model +cint+cast  -wp-prover alt-ergo,cvc3,z3 -cpp-extra-args=-nostdinc $(VFLAGS) gp_data.c.v.c gp_s2_setupmpgtblv_getflags.c.v.c
 #cd $(XMHF_SLAB_VERIFICATION_DIR) && frama-c -main gp_s2_setupmpgtblv -lib-entry -wp -wp-rte -wp-model +cint+cast  -wp-prover alt-ergo,cvc3,z3 -cpp-extra-args=-nostdinc $(VFLAGS) gp_data.c.v.c gp_s2_setupmpgtblv.c.v.c
 #cd $(XMHF_SLAB_VERIFICATION_DIR) && frama-c -main gp_s2_setupmpgtbl_getspatypeuobj_ismmio -lib-entry -wp -wp-rte -wp-model +cint+cast  -wp-prover alt-ergo,cvc3,z3 -cpp-extra-args=-nostdinc $(VFLAGS) gp_data.c.v.c gp_s2_setupmpgtbl_getspatypeuobj_ismmio.c.v.c
-#cd $(XMHF_SLAB_VERIFICATION_DIR) && frama-c -main gp_s2_setupmpgtbl_getspatypeuobj_isiotbl -lib-entry -wp -wp-rte -wp-model +cint+cast  -wp-prover alt-ergo,cvc3,z3 -cpp-extra-args=-nostdinc $(VFLAGS) gp_data.c.v.c gp_s2_setupmpgtbl_getspatypeuobj_isiotbl.c.v.c
 #cd $(XMHF_SLAB_VERIFICATION_DIR) && frama-c -main gp_s2_setupmpgtbl_getspatypeuobj -lib-entry -wp -wp-rte -wp-model +cint+cast  -wp-prover alt-ergo,cvc3,z3 -cpp-extra-args=-nostdinc $(VFLAGS) gp_data.c.v.c gp_s2_setupmpgtbl_getspatypeuobj.c.v.c
 #cd $(XMHF_SLAB_VERIFICATION_DIR) && frama-c -main gp_s2_setupmpgtbluh_getflags -lib-entry -wp -wp-rte -wp-model +cint+cast  -wp-prover alt-ergo,cvc3,z3 -cpp-extra-args=-nostdinc $(VFLAGS) gp_data.c.v.c gp_s2_setupmpgtbluh_getflags.c.v.c
 #cd $(XMHF_SLAB_VERIFICATION_DIR) && frama-c -main gp_s2_setupmpgtbluh_setentry -lib-entry -wp -wp-rte -wp-model +cint+cast  -wp-prover alt-ergo,cvc3,z3 -cpp-extra-args=-nostdinc $(VFLAGS) gp_data.c.v.c gp_s2_setupmpgtbluh_setentry.c.v.c
