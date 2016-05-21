@@ -68,7 +68,8 @@ verif_s2:
 	#cd $(XMHF_SLAB_VERIFICATION_DIR) && frama-c -main gp_s2_setupmpgtbl_getspatype -lib-entry -wp -wp-rte -wp-model +cint+cast  -wp-prover alt-ergo,cvc3,z3 -cpp-extra-args=-nostdinc $(VFLAGS) gp_data.c.v.c gp_s2_setupmpgtbl_getspatype.c.v.c
 	#cd $(XMHF_SLAB_VERIFICATION_DIR) && frama-c -main gp_s2_setupmpgtbl_getspatypeuobj_isiotbl -lib-entry -wp -wp-rte -wp-model +cint+cast  -wp-prover alt-ergo,cvc3,z3 -cpp-extra-args=-nostdinc $(VFLAGS) gp_data.c.v.c gp_s2_setupmpgtbl_getspatypeuobj_isiotbl.c.v.c
 	#cd $(XMHF_SLAB_VERIFICATION_DIR) && frama-c -main gp_s2_setupmpgtbl_getspatypeuobj_ismmio -lib-entry -wp -wp-rte -wp-model +cint+cast  -wp-prover alt-ergo,cvc3,z3 -cpp-extra-args=-nostdinc $(VFLAGS) gp_data.c.v.c gp_s2_setupmpgtbl_getspatypeuobj_ismmio.c.v.c
-	cd $(XMHF_SLAB_VERIFICATION_DIR) && frama-c -main gp_s2_setupmpgtbl_getspatypeuobj -lib-entry -wp -wp-rte -wp-model +cint+cast  -wp-prover alt-ergo,cvc3,z3 -cpp-extra-args=-nostdinc $(VFLAGS) gp_data.c.v.c gp_s2_setupmpgtbl_getspatypeuobj.c.v.c
+	#cd $(XMHF_SLAB_VERIFICATION_DIR) && frama-c -main gp_s2_setupmpgtbl_getspatypeuobj -lib-entry -wp -wp-rte -wp-model +cint+cast  -wp-prover alt-ergo,cvc3,z3 -cpp-extra-args=-nostdinc $(VFLAGS) gp_data.c.v.c gp_s2_setupmpgtbl_getspatypeuobj.c.v.c
+	cd $(XMHF_SLAB_VERIFICATION_DIR) && frama-c -main gp_s2_setupmpgtblu -lib-entry -wp -wp-rte -wp-model +cint+cast  -wp-prover alt-ergo,cvc3,z3 -cpp-extra-args=-nostdinc $(VFLAGS) gp_data.c.v.c gp_s2_setupmpgtblu.c.v.c
 
 
 
@@ -90,7 +91,6 @@ verif_s2:
 #cd $(XMHF_SLAB_VERIFICATION_DIR) && frama-c -main gp_s2_setupmpgtbluh_getflags -lib-entry -wp -wp-rte -wp-model +cint+cast  -wp-prover alt-ergo,cvc3,z3 -cpp-extra-args=-nostdinc $(VFLAGS) gp_data.c.v.c gp_s2_setupmpgtbluh_getflags.c.v.c
 #cd $(XMHF_SLAB_VERIFICATION_DIR) && frama-c -main gp_s2_setupmpgtbluh_setentry -lib-entry -wp -wp-rte -wp-model +cint+cast  -wp-prover alt-ergo,cvc3,z3 -cpp-extra-args=-nostdinc $(VFLAGS) gp_data.c.v.c gp_s2_setupmpgtbluh_setentry.c.v.c
 #cd $(XMHF_SLAB_VERIFICATION_DIR) && frama-c -main gp_s2_setupmpgtbluh -lib-entry -wp -wp-rte -wp-model +cint+cast  -wp-prover alt-ergo,cvc3,z3 -cpp-extra-args=-nostdinc $(VFLAGS) gp_data.c.v.c gp_s2_setupmpgtbluh.c.v.c
-#cd $(XMHF_SLAB_VERIFICATION_DIR) && frama-c -main gp_s2_setupmpgtblu -lib-entry -wp -wp-rte -wp-model +cint+cast  -wp-prover alt-ergo,cvc3,z3 -cpp-extra-args=-nostdinc $(VFLAGS) gp_data.c.v.c gp_s2_setupmpgtblu.c.v.c
 
 
 
