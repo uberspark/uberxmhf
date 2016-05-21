@@ -46,11 +46,9 @@
 
 #include <xmhf.h>
 #include <xmhf-debug.h>
-
 #include <xmhfgeec.h>
 
 #include <geec_prime.h>
-
 
 
 //@ghost bool gp_s2_setupiotbluh_helper_invokedportaccess[PCI_CONF_MAX_BARS];
