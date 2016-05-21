@@ -46,7 +46,6 @@
 
 #include <xmhf.h>
 #include <xmhf-debug.h>
-
 #include <xmhfgeec.h>
 
 #include <geec_prime.h>
@@ -74,11 +73,18 @@
 			);
 		ensures (\result == 0x3);
 
-	behavior richguest:
+	behavior richguestrwx:
 		assumes ( (xmhfgeec_slab_info_table[slabid].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG_RICHGUEST) &&
 			((spatype & _SLAB_SPATYPE_MASK_SAMESLAB) && (spatype & 0x0000000FUL) != _SLAB_SPATYPE_GEEC_PRIME_IOTBL)
 			);
 		ensures (\result == 0x7);
+
+	behavior richguestrwmmio:
+		assumes ( (xmhfgeec_slab_info_table[slabid].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG_RICHGUEST) &&
+					!((spatype & _SLAB_SPATYPE_MASK_SAMESLAB) && (spatype & 0x0000000FUL) != _SLAB_SPATYPE_GEEC_PRIME_IOTBL) &&
+					(spatype & _SLAB_SPATYPE_SLAB_DEVICEMMIO)
+			);
+		ensures (\result == 0x3);
 
 	behavior invalid:
 		assumes (
@@ -88,10 +94,11 @@
 			 !(xmhfgeec_slab_info_table[slabid].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG_RICHGUEST)
 			) ||
 			(
-			 (xmhfgeec_slab_info_table[slabid].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG_RICHGUEST) &&
-			  !((spatype & _SLAB_SPATYPE_MASK_SAMESLAB) && (spatype & 0x0000000FUL) != _SLAB_SPATYPE_GEEC_PRIME_IOTBL)
+			 	 (xmhfgeec_slab_info_table[slabid].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG_RICHGUEST) &&
+			  !((spatype & _SLAB_SPATYPE_MASK_SAMESLAB) && (spatype & 0x0000000FUL) != _SLAB_SPATYPE_GEEC_PRIME_IOTBL) &&
+				!(spatype & _SLAB_SPATYPE_SLAB_DEVICEMMIO)
 			) ||
-                        (
+            (
 			 (xmhfgeec_slab_info_table[slabid].slabtype == XMHFGEEC_SLABTYPE_uVT_PROG_GUEST ||
 		          xmhfgeec_slab_info_table[slabid].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG_GUEST) &&
 			 !((spatype & _SLAB_SPATYPE_MASK_SAMESLAB) && (spatype & 0x0000000FUL) != _SLAB_SPATYPE_OTHER)
@@ -121,6 +128,7 @@ u64 gp_s2_setupmpgtblug_getflags(u32 slabid, u32 spa, u32 spatype){
 		//code=rx, data,stack,dmadata,mmio=rw;
 		//other slabs = no mapping; other region = no mapping
 		if((spatype & _SLAB_SPATYPE_MASK_SAMESLAB) && (spatype & 0x0000000FUL) != _SLAB_SPATYPE_OTHER){
+
 			if((spatype & 0x0000000FUL) == _SLAB_SPATYPE_SLAB_CODE){
 				flags = 0x5;
 			}else if ((spatype & 0x0000000FUL) == _SLAB_SPATYPE_SLAB_DATA ||
@@ -131,21 +139,24 @@ u64 gp_s2_setupmpgtblug_getflags(u32 slabid, u32 spa, u32 spatype){
 			}else{
 				flags = 0;
 			}
+
 		}else{
 			flags=0;
 		}
-        }else if (xmhfgeec_slab_info_table[slabid].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG_RICHGUEST){
+
+	}else if (xmhfgeec_slab_info_table[slabid].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG_RICHGUEST){
 		//code,data,stack,dmadata,mmio=rwx;
 		//other slabs = no mapping; other region = no mapping
-        	if((spatype & _SLAB_SPATYPE_MASK_SAMESLAB) && (spatype & 0x0000000FUL) != _SLAB_SPATYPE_GEEC_PRIME_IOTBL)
-        		flags = 0x7;
-        	else if ((spatype & _SLAB_SPATYPE_SLAB_DEVICEMMIO))
-        		flags = 0x3;
-        	else
-        		flags = 0;
-        }else{
+		if((spatype & _SLAB_SPATYPE_MASK_SAMESLAB) && (spatype & 0x0000000FUL) != _SLAB_SPATYPE_GEEC_PRIME_IOTBL)
+			flags = 0x7;
+		else if ((spatype & _SLAB_SPATYPE_SLAB_DEVICEMMIO))
+			flags = 0x3;
+		else
+			flags = 0;
+
+	}else{
 		flags = 0;
-        }
+	}
 
 	return flags;
 
