@@ -46,12 +46,9 @@
 
 #include <xmhf.h>
 #include <xmhf-debug.h>
-
 #include <xmhfgeec.h>
 
 #include <geec_prime.h>
-
-
 
 /*@
 	requires 0 <= slabid < XMHFGEEC_TOTAL_SLABS;
