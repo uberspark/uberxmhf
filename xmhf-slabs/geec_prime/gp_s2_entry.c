@@ -54,6 +54,7 @@
 
 
 //@ghost bool cor_gp_s2_initsysmemmap = false;
+//@ghost bool cor_gp_s2_sdmenumsysdevices = false;
 //@ghost bool cor_gp_s2_setupslabdevmap = false;
 //@ghost bool cor_gp_s2_sda = false;
 //@ghost bool cor_gp_s2_gathersysmemtypes = false;
@@ -66,7 +67,9 @@
 //@ghost bool cor_gp_s3_entry = false;
 /*@
 	requires (gp_rwdatahdr.xcbootinfo_store.memmapinfo_numentries < MAX_E820_ENTRIES);
+
 	assigns cor_gp_s2_initsysmemmap;
+	assigns cor_gp_s2_sdmenumsysdevices;
 	assigns cor_gp_s2_setupslabdevmap;
 	assigns cor_gp_s2_sda;
 	assigns cor_gp_s2_gathersysmemtypes;
@@ -77,7 +80,9 @@
 	assigns cor_gp_s2_setupidt;
 	assigns cor_gp_s2_setuptss;
 	assigns cor_gp_s3_entry;
+
 	ensures (cor_gp_s2_initsysmemmap == true);
+	ensures (cor_gp_s2_sdmenumsysdevices == true);
 	ensures (cor_gp_s2_setupslabdevmap == true);
 	ensures (cor_gp_s2_sda == true);
 	ensures (cor_gp_s2_gathersysmemtypes == true);
@@ -96,20 +101,29 @@ void gp_s2_entry(void){
 	//@ghost cor_gp_s2_initsysmemmap = true;
 
 
+	//enumerate system devices
+	//@assert cor_gp_s2_initsysmemmap == true;
+	gp_s2_sdmenumsysdevices();
+	//@ghost cor_gp_s2_sdmenumsysdevices = true;
+
+
 	//initialize slab device mapping
 	//@assert cor_gp_s2_initsysmemmap == true;
+	//@assert cor_gp_s2_sdmenumsysdevices == true;
 	gp_s2_setupslabdevmap();
 	//@ghost cor_gp_s2_setupslabdevmap = true;
 
 
 	//setup slab system device allocation and device page tables
 	//@assert (cor_gp_s2_initsysmemmap == true);
+	//@assert cor_gp_s2_sdmenumsysdevices == true;
 	//@assert (cor_gp_s2_setupslabdevmap == true);
 	gp_s2_sda();
 	//@ghost cor_gp_s2_sda = true;
 
 	//gather memory types for EPT (for guest slabs)
 	//@assert (cor_gp_s2_initsysmemmap == true);
+	//@assert cor_gp_s2_sdmenumsysdevices == true;
 	//@assert (cor_gp_s2_setupslabdevmap == true);
 	//@assert (cor_gp_s2_sda == true);
 	gp_s2_gathersysmemtypes();
@@ -117,6 +131,7 @@ void gp_s2_entry(void){
 
 	//setup (unverified) slab iotbl
 	//@assert (cor_gp_s2_initsysmemmap == true);
+	//@assert cor_gp_s2_sdmenumsysdevices == true;
 	//@assert (cor_gp_s2_setupslabdevmap == true);
 	//@assert (cor_gp_s2_sda == true);
 	//@assert (cor_gp_s2_gathersysmemtypes == true);
@@ -125,6 +140,7 @@ void gp_s2_entry(void){
 
 	//setup verified uobj memory page tables
 	//@assert (cor_gp_s2_initsysmemmap == true);
+	//@assert cor_gp_s2_sdmenumsysdevices == true;
 	//@assert (cor_gp_s2_setupslabdevmap == true);
 	//@assert (cor_gp_s2_sda == true);
 	//@assert (cor_gp_s2_gathersysmemtypes == true);
@@ -135,6 +151,7 @@ void gp_s2_entry(void){
 
 	//setup unverified uobj memory page tables
 	//@assert (cor_gp_s2_initsysmemmap == true);
+	//@assert cor_gp_s2_sdmenumsysdevices == true;
 	//@assert (cor_gp_s2_setupslabdevmap == true);
 	//@assert (cor_gp_s2_sda == true);
 	//@assert (cor_gp_s2_gathersysmemtypes == true);
@@ -145,6 +162,7 @@ void gp_s2_entry(void){
 
 	//initialize GDT
 	//@assert (cor_gp_s2_initsysmemmap == true);
+	//@assert cor_gp_s2_sdmenumsysdevices == true;
 	//@assert (cor_gp_s2_setupslabdevmap == true);
 	//@assert (cor_gp_s2_sda == true);
 	//@assert (cor_gp_s2_gathersysmemtypes == true);
@@ -157,6 +175,7 @@ void gp_s2_entry(void){
 
 	//initialize IDT
 	//@assert (cor_gp_s2_initsysmemmap == true);
+	//@assert cor_gp_s2_sdmenumsysdevices == true;
 	//@assert (cor_gp_s2_setupslabdevmap == true);
 	//@assert (cor_gp_s2_sda == true);
 	//@assert (cor_gp_s2_gathersysmemtypes == true);
@@ -170,6 +189,7 @@ void gp_s2_entry(void){
 
 	//initialize TSS
 	//@assert (cor_gp_s2_initsysmemmap == true);
+	//@assert cor_gp_s2_sdmenumsysdevices == true;
 	//@assert (cor_gp_s2_setupslabdevmap == true);
 	//@assert (cor_gp_s2_sda == true);
 	//@assert (cor_gp_s2_gathersysmemtypes == true);
@@ -184,6 +204,7 @@ void gp_s2_entry(void){
 
 	//move on to stage-3
 	//@assert (cor_gp_s2_initsysmemmap == true);
+	//@assert cor_gp_s2_sdmenumsysdevices == true;
 	//@assert (cor_gp_s2_setupslabdevmap == true);
 	//@assert (cor_gp_s2_sda == true);
 	//@assert (cor_gp_s2_gathersysmemtypes == true);
