@@ -336,8 +336,6 @@ void gp_s2_initsysmemmap(void);
 void gp_s2_sda(void);
 
 
-void gp_s2_setupslabdevmap(void);
-
 
 
 
@@ -390,6 +388,8 @@ void gp_s2_sdasetupdevpgtbl_splintpdt(u32 slabid, u32 paddr_start, u32 paddr_end
 
 
 void gp_s2_sdmenumsysdevices(void);
+
+void gp_s2_sdminitdevmap(void);
 
 
 /*@
