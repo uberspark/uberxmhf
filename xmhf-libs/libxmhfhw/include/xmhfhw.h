@@ -332,6 +332,7 @@ bool xmhfhw_platform_bus_init(void);
 /*@
 	requires \valid(value);
 	assigns *value;
+	ensures 0 <= (*value) <= 0xFFFFFFFFUL;
 @*/
 void xmhf_baseplatform_arch_x86_pci_type1_read(u32 bus, u32 device, u32 function, u32 index, u32 len, u32 *value);
 
