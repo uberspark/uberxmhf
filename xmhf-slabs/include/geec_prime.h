@@ -389,6 +389,8 @@ void gp_s2_sdasetupdevpgtbl_splintpdt(u32 slabid, u32 paddr_start, u32 paddr_end
 
 void gp_s2_sdmenumsysdevices(void);
 
+void gp_s2_sdmenumsysdevices_memioextents(u32 sysdev_memioregions_index, u32 b, u32 d, u32 f, u32 vendor_id, u32 device_id);
+
 void gp_s2_sdminitdevmap(void);
 
 
