@@ -389,6 +389,8 @@ void gp_s2_sdasetupdevpgtbl_splintpdt(u32 slabid, u32 paddr_start, u32 paddr_end
 
 
 
+void gp_s2_sdmenumsysdevices(void);
+
 
 /*@
 	requires 0 <= uhslabiobitmap_idx < XMHFGEEC_TOTAL_UHSLABS;
