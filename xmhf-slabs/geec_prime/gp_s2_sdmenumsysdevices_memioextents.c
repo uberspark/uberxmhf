@@ -51,11 +51,34 @@
 #include <geec_prime.h>
 
 
+//@ghost bool gp_s2_sdmenumsysdevices_memioextents_syshalt = false;
+/*@
+
+	behavior addentry:
+		assumes (numentries_sysdev_memioregions < MAX_PLATFORM_DEVICES);
+
+		assigns numentries_sysdev_memioregions;
+		assigns gp_s2_sdmenumsysdevices_memioextents_syshalt;
+
+		ensures (numentries_sysdev_memioregions == (\at(numentries_sysdev_memioregions, Pre) + 1));
+		ensures (0 <= numentries_sysdev_memioregions <= MAX_PLATFORM_DEVICES);
+		ensures (gp_s2_sdmenumsysdevices_memioextents_syshalt == false);
+
+	behavior invalidhalt:
+		assumes (numentries_sysdev_memioregions >= MAX_PLATFORM_DEVICES);
+
+		assigns gp_s2_sdmenumsysdevices_memioextents_syshalt;
+
+		ensures (gp_s2_sdmenumsysdevices_memioextents_syshalt == true);
+
+	complete behaviors;
+	disjoint behaviors;
+@*/
 void gp_s2_sdmenumsysdevices_memioextents(u32 b, u32 d, u32 f, u32 vendor_id, u32 device_id){
 	u32 i;
 
     if( numentries_sysdev_memioregions < MAX_PLATFORM_DEVICES){
-
+    	/*
 		sysdev_memioregions[numentries_sysdev_memioregions].b=b;
 		sysdev_memioregions[numentries_sysdev_memioregions].d=d;
 		sysdev_memioregions[numentries_sysdev_memioregions].f=f;
@@ -201,13 +224,17 @@ void gp_s2_sdmenumsysdevices_memioextents(u32 b, u32 d, u32 f, u32 vendor_id, u3
 
 			//restore command register
 			xmhf_baseplatform_arch_x86_pci_type1_write(b, d, f, PCI_CONF_HDR_IDX_COMMAND, sizeof(u16), command);
-		}
+		}*/
 
 		numentries_sysdev_memioregions++;
-	}else{
-    	_XDPRINTF_("%s: Halting!. numentries_sysdev_memioregions >= MAX_PLATFORM_DEVICES(%u)\n",
+        //@ghost gp_s2_sdmenumsysdevices_memioextents_syshalt = false;
+
+    }else{
+
+		_XDPRINTF_("%s: Halting!. numentries_sysdev_memioregions >= MAX_PLATFORM_DEVICES(%u)\n",
                    __func__, MAX_PLATFORM_DEVICES);
         CASM_FUNCCALL(xmhfhw_cpu_hlt, CASM_NOPARAM);
+        //@ghost gp_s2_sdmenumsysdevices_memioextents_syshalt = true;
 
 	}
 }
