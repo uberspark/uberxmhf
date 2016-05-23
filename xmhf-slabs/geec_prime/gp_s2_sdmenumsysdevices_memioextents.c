@@ -59,6 +59,7 @@
 
 		assigns numentries_sysdev_memioregions;
 		assigns gp_s2_sdmenumsysdevices_memioextents_syshalt;
+		assigns sysdev_memioregions[\at(numentries_sysdev_memioregions, Pre)];
 
 		ensures (numentries_sysdev_memioregions == (\at(numentries_sysdev_memioregions, Pre) + 1));
 		ensures (0 <= numentries_sysdev_memioregions <= MAX_PLATFORM_DEVICES);
@@ -76,31 +77,49 @@
 @*/
 void gp_s2_sdmenumsysdevices_memioextents(u32 b, u32 d, u32 f, u32 vendor_id, u32 device_id){
 	u32 i;
+	u32 bar_value;
+	u32 hdr_type;
+	u32 command;
+	u32 bar_size;
 
     if( numentries_sysdev_memioregions < MAX_PLATFORM_DEVICES){
-    	/*
+
 		sysdev_memioregions[numentries_sysdev_memioregions].b=b;
 		sysdev_memioregions[numentries_sysdev_memioregions].d=d;
 		sysdev_memioregions[numentries_sysdev_memioregions].f=f;
 		sysdev_memioregions[numentries_sysdev_memioregions].vendor_id=vendor_id;
 		sysdev_memioregions[numentries_sysdev_memioregions].device_id=device_id;
 
+
 		if(vendor_id == PCI_VENDOR_ID_XMHFGEEC && device_id == PCI_DEVICE_ID_XMHFGEEC_LAPIC){
 			sysdev_memioregions[numentries_sysdev_memioregions].dtype = SYSDEV_MEMIOREGIONS_DTYPE_LAPIC;
 			sysdev_memioregions[numentries_sysdev_memioregions].memioextents[0].extent_type=_MEMIOREGIONS_EXTENTS_TYPE_MEM;
 			sysdev_memioregions[numentries_sysdev_memioregions].memioextents[0].addr_start=X86SMP_LAPIC_MEMORYADDRESS;
 			sysdev_memioregions[numentries_sysdev_memioregions].memioextents[0].addr_end=X86SMP_LAPIC_MEMORYADDRESS + PAGE_SIZE_4K;
+			/*@
+				loop invariant a1: 1 <= i <= PCI_CONF_MAX_BARS;
+				loop assigns i;
+				loop assigns sysdev_memioregions[numentries_sysdev_memioregions].memioextents[1..(PCI_CONF_MAX_BARS-1)];
+				loop variant PCI_CONF_MAX_BARS - i;
+			@*/
 			for(i=1; i < PCI_CONF_MAX_BARS; i++){
 				sysdev_memioregions[numentries_sysdev_memioregions].memioextents[i].extent_type=_MEMIOREGIONS_EXTENTS_TYPE_NONE;
 				sysdev_memioregions[numentries_sysdev_memioregions].memioextents[i].addr_start=0;
 				sysdev_memioregions[numentries_sysdev_memioregions].memioextents[i].addr_end=0;
 			}
 
+
 		}else if(vendor_id == PCI_VENDOR_ID_XMHFGEEC && device_id == PCI_DEVICE_ID_XMHFGEEC_TPM){
 			sysdev_memioregions[numentries_sysdev_memioregions].dtype = SYSDEV_MEMIOREGIONS_DTYPE_TPM;
 			sysdev_memioregions[numentries_sysdev_memioregions].memioextents[0].extent_type=_MEMIOREGIONS_EXTENTS_TYPE_MEM;
 			sysdev_memioregions[numentries_sysdev_memioregions].memioextents[0].addr_start=TPM_LOCALITY_BASE;
 			sysdev_memioregions[numentries_sysdev_memioregions].memioextents[0].addr_end=TPM_LOCALITY_BASE + PAGE_SIZE_4K;
+			/*@
+				loop invariant a2: 1 <= i <= PCI_CONF_MAX_BARS;
+				loop assigns i;
+				loop assigns sysdev_memioregions[numentries_sysdev_memioregions].memioextents[1..(PCI_CONF_MAX_BARS-1)];
+				loop variant PCI_CONF_MAX_BARS - i;
+			@*/
 			for(i=1; i < PCI_CONF_MAX_BARS; i++){
 				sysdev_memioregions[numentries_sysdev_memioregions].memioextents[i].extent_type=_MEMIOREGIONS_EXTENTS_TYPE_NONE;
 				sysdev_memioregions[numentries_sysdev_memioregions].memioextents[i].addr_start=0;
@@ -116,6 +135,12 @@ void gp_s2_sdmenumsysdevices_memioextents(u32 b, u32 d, u32 f, u32 vendor_id, u3
 			sysdev_memioregions[numentries_sysdev_memioregions].memioextents[1].extent_type=_MEMIOREGIONS_EXTENTS_TYPE_MEM;
 			sysdev_memioregions[numentries_sysdev_memioregions].memioextents[1].addr_start=TXT_PUB_CONFIG_REGS_BASE;
 			sysdev_memioregions[numentries_sysdev_memioregions].memioextents[1].addr_end=TXT_PUB_CONFIG_REGS_BASE + PAGE_SIZE_4K;
+			/*@
+				loop invariant a3: 2 <= i <= PCI_CONF_MAX_BARS;
+				loop assigns i;
+				loop assigns sysdev_memioregions[numentries_sysdev_memioregions].memioextents[2..(PCI_CONF_MAX_BARS-1)];
+				loop variant PCI_CONF_MAX_BARS - i;
+			@*/
 			for(i=2; i < PCI_CONF_MAX_BARS; i++){
 				sysdev_memioregions[numentries_sysdev_memioregions].memioextents[i].extent_type=_MEMIOREGIONS_EXTENTS_TYPE_NONE;
 				sysdev_memioregions[numentries_sysdev_memioregions].memioextents[i].addr_start=0;
@@ -142,6 +167,12 @@ void gp_s2_sdmenumsysdevices_memioextents(u32 b, u32 d, u32 f, u32 vendor_id, u3
 			sysdev_memioregions[numentries_sysdev_memioregions].memioextents[0].extent_type=_MEMIOREGIONS_EXTENTS_TYPE_MEM;
 			sysdev_memioregions[numentries_sysdev_memioregions].memioextents[0].addr_start=vtd_drhd[f].regbaseaddr;
 			sysdev_memioregions[numentries_sysdev_memioregions].memioextents[0].addr_end=vtd_drhd[f].regbaseaddr + PAGE_SIZE_4K;
+			/*@
+				loop invariant a4: 1 <= i <= PCI_CONF_MAX_BARS;
+				loop assigns i;
+				loop assigns sysdev_memioregions[numentries_sysdev_memioregions].memioextents[1..(PCI_CONF_MAX_BARS-1)];
+				loop variant PCI_CONF_MAX_BARS - i;
+			@*/
 			for(i=1; i < PCI_CONF_MAX_BARS; i++){
 				sysdev_memioregions[numentries_sysdev_memioregions].memioextents[i].extent_type=_MEMIOREGIONS_EXTENTS_TYPE_NONE;
 				sysdev_memioregions[numentries_sysdev_memioregions].memioextents[i].addr_start=0;
@@ -150,9 +181,6 @@ void gp_s2_sdmenumsysdevices_memioextents(u32 b, u32 d, u32 f, u32 vendor_id, u3
 
 
 		}else{
-			u32 bar_value;
-			u8 hdr_type;
-			u16 command;
 
 			xmhf_baseplatform_arch_x86_pci_type1_read(b, d, f, PCI_CONF_HDR_IDX_HEADER_TYPE, sizeof(u8), &hdr_type);
 			xmhf_baseplatform_arch_x86_pci_type1_read(b, d, f, PCI_CONF_HDR_IDX_COMMAND, sizeof(u16), &command);
@@ -172,6 +200,14 @@ void gp_s2_sdmenumsysdevices_memioextents(u32 b, u32 d, u32 f, u32 vendor_id, u3
 
 
 			//size BARs
+			/*@
+				loop invariant a5: 0 <= i <= PCI_CONF_MAX_BARS;
+				loop assigns i;
+				loop assigns bar_size;
+				loop assigns bar_value;
+				loop assigns sysdev_memioregions[numentries_sysdev_memioregions].memioextents[0..(PCI_CONF_MAX_BARS-1)];
+				loop variant PCI_CONF_MAX_BARS - i;
+			@*/
 			for(i=0; i < PCI_CONF_MAX_BARS; i++){
 				if(i >= 2 && (hdr_type == 0x81 || hdr_type == 0x1)){
 					//for PCI-to-PCI bridge devices only BAR0 and BAR1 are valid BARs
@@ -180,7 +216,6 @@ void gp_s2_sdmenumsysdevices_memioextents(u32 b, u32 d, u32 f, u32 vendor_id, u3
 					sysdev_memioregions[numentries_sysdev_memioregions].memioextents[i].addr_end=0;
 				}else{
 					//for general devices BAR0-BAR5 are valid BARs
-					u32 bar_size;
 					xmhf_baseplatform_arch_x86_pci_type1_read(b, d, f, PCI_CONF_HDR_IDX_BAR0+(i*4), sizeof(u32), &bar_value);
 					if(bar_value){
 						if(bar_value & 0x1){ //I/O
@@ -224,7 +259,7 @@ void gp_s2_sdmenumsysdevices_memioextents(u32 b, u32 d, u32 f, u32 vendor_id, u3
 
 			//restore command register
 			xmhf_baseplatform_arch_x86_pci_type1_write(b, d, f, PCI_CONF_HDR_IDX_COMMAND, sizeof(u16), command);
-		}*/
+		}
 
 		numentries_sysdev_memioregions++;
         //@ghost gp_s2_sdmenumsysdevices_memioextents_syshalt = false;
