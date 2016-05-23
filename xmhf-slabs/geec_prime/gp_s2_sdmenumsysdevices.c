@@ -50,14 +50,14 @@
 
 #include <geec_prime.h>
 
-
+/*@
+	requires 0 <= vtd_drhd_maxhandle <= VTD_MAX_DRHD;
+	ensures 0 <= numentries_sysdev_memioregions <= MAX_PLATFORM_DEVICES;
+@*/
 void gp_s2_sdmenumsysdevices(void){
     u32 b, d, f, i;
 	vtd_drhd_handle_t drhd_handle;
-
-
-	//zero-initialize numentries_sysdev_memioregions to begin
-	numentries_sysdev_memioregions = 0;
+	u32 vendor_id, device_id;
 
     //as a first step, add several non-PCI system devices to the
     //sysdev list using XMHF/GEEC psuedo-PCI vendor and device IDs
@@ -68,69 +68,67 @@ void gp_s2_sdmenumsysdevices(void){
     //SERIAL0 (used for debugging only) at DEBUG_PORT
     //IOMMU as described by vtd_drhd[]
 
+	//add LAPIC device
+	gp_s2_sdmenumsysdevices_memioextents(PCI_BUS_XMHFGEEC, PCI_DEVICE_XMHFGEEC, 0, PCI_VENDOR_ID_XMHFGEEC, PCI_DEVICE_ID_XMHFGEEC_LAPIC);
 
-#if defined (__DEBUG_SERIAL__)
-	//sanity check available sysdev entries for the above devices
-    if( (numentries_sysdev_memioregions+vtd_drhd_maxhandle+1+1+1+1) >= MAX_PLATFORM_DEVICES){
-        _XDPRINTF_("%s: Halting!. numentries_sysdev_memioregions >= MAX_PLATFORM_DEVICES(%u)\n",
-                   __func__, MAX_PLATFORM_DEVICES);
-        CASM_FUNCCALL(xmhfhw_cpu_hlt, CASM_NOPARAM);
-    }
-#else
-	//sanity check available sysdev entries for the above devices
-    if( (numentries_sysdev_memioregions+vtd_drhd_maxhandle+1+1+1) >= MAX_PLATFORM_DEVICES){
-        _XDPRINTF_("%s: Halting!. numentries_sysdev_memioregions >= MAX_PLATFORM_DEVICES(%u)\n",
-                   __func__, MAX_PLATFORM_DEVICES);
-        CASM_FUNCCALL(xmhfhw_cpu_hlt, CASM_NOPARAM);
-    }
-#endif
+	//add TPM
+	gp_s2_sdmenumsysdevices_memioextents(PCI_BUS_XMHFGEEC, PCI_DEVICE_XMHFGEEC, 0, PCI_VENDOR_ID_XMHFGEEC, PCI_DEVICE_ID_XMHFGEEC_TPM);
 
+	//add TXT
+	gp_s2_sdmenumsysdevices_memioextents(PCI_BUS_XMHFGEEC, PCI_DEVICE_XMHFGEEC, 0, PCI_VENDOR_ID_XMHFGEEC, PCI_DEVICE_ID_XMHFGEEC_TXT);
 
-    //add LAPIC device
-  	gp_s2_sdmenumsysdevices_memioextents(numentries_sysdev_memioregions, PCI_BUS_XMHFGEEC, PCI_DEVICE_XMHFGEEC, 0, PCI_VENDOR_ID_XMHFGEEC, PCI_DEVICE_ID_XMHFGEEC_LAPIC);
-    numentries_sysdev_memioregions++;
+	#if defined (__DEBUG_SERIAL__)
+		//add SERIAL0
+	gp_s2_sdmenumsysdevices_memioextents(PCI_BUS_XMHFGEEC, PCI_DEVICE_XMHFGEEC, 0, PCI_VENDOR_ID_XMHFGEEC, PCI_DEVICE_ID_XMHFGEEC_SERIAL0);
+	#endif
 
-    //add TPM
-  	gp_s2_sdmenumsysdevices_memioextents(numentries_sysdev_memioregions, PCI_BUS_XMHFGEEC, PCI_DEVICE_XMHFGEEC, 0, PCI_VENDOR_ID_XMHFGEEC, PCI_DEVICE_ID_XMHFGEEC_TPM);
-    numentries_sysdev_memioregions++;
-
-    //add TXT
-  	gp_s2_sdmenumsysdevices_memioextents(numentries_sysdev_memioregions, PCI_BUS_XMHFGEEC, PCI_DEVICE_XMHFGEEC, 0, PCI_VENDOR_ID_XMHFGEEC, PCI_DEVICE_ID_XMHFGEEC_TXT);
-    numentries_sysdev_memioregions++;
-
-
-#if defined (__DEBUG_SERIAL__)
-    //add SERIAL0
-  	gp_s2_sdmenumsysdevices_memioextents(numentries_sysdev_memioregions, PCI_BUS_XMHFGEEC, PCI_DEVICE_XMHFGEEC, 0, PCI_VENDOR_ID_XMHFGEEC, PCI_DEVICE_ID_XMHFGEEC_SERIAL0);
-    numentries_sysdev_memioregions++;
-#endif
-
-    //add IOMMU
-    for(drhd_handle =0; drhd_handle < vtd_drhd_maxhandle; drhd_handle++){
-    	gp_s2_sdmenumsysdevices_memioextents(numentries_sysdev_memioregions, PCI_BUS_XMHFGEEC, PCI_DEVICE_XMHFGEEC, drhd_handle, PCI_VENDOR_ID_XMHFGEEC, PCI_DEVICE_ID_XMHFGEEC_IOMMU);
-        numentries_sysdev_memioregions++;
-    }
+	//add IOMMU
+	/*@
+		loop invariant a1: 0 <= drhd_handle <= vtd_drhd_maxhandle;
+		loop assigns drhd_handle;
+		loop variant vtd_drhd_maxhandle - drhd_handle;
+	@*/
+	for(drhd_handle =0; drhd_handle < vtd_drhd_maxhandle; drhd_handle++){
+		gp_s2_sdmenumsysdevices_memioextents(PCI_BUS_XMHFGEEC, PCI_DEVICE_XMHFGEEC, drhd_handle, PCI_VENDOR_ID_XMHFGEEC, PCI_DEVICE_ID_XMHFGEEC_IOMMU);
+	}
 
 
     //enumerate and add rest of the system devices on the PCI bus
+	/*@
+		loop invariant b1: 0 <= b <= PCI_BUS_MAX;
+		loop assigns b;
+		loop assigns d;
+		loop assigns f;
+		loop assigns vendor_id;
+		loop assigns device_id;
+		loop variant PCI_BUS_MAX - b;
+	@*/
 	for(b=0; b < PCI_BUS_MAX; b++){
-		for(d=0; d < PCI_DEVICE_MAX; d++){
-			for(f=0; f < PCI_FUNCTION_MAX; f++){
-				u32 vendor_id, device_id;
 
+		/*@
+			loop invariant b2: 0 <= d <= PCI_DEVICE_MAX;
+			loop assigns d;
+			loop assigns f;
+			loop assigns vendor_id;
+			loop assigns device_id;
+			loop variant PCI_DEVICE_MAX - d;
+		@*/
+		for(d=0; d < PCI_DEVICE_MAX; d++){
+
+			/*@
+				loop invariant b3: 0 <= f <= PCI_FUNCTION_MAX;
+				loop assigns f;
+				loop assigns vendor_id;
+				loop assigns device_id;
+				loop variant PCI_FUNCTION_MAX - f;
+			@*/
+			for(f=0; f < PCI_FUNCTION_MAX; f++){
 				//read device and vendor ids, if no device then both will be 0xFFFF
 				xmhf_baseplatform_arch_x86_pci_type1_read(b, d, f, PCI_CONF_HDR_IDX_VENDOR_ID, sizeof(u16), &vendor_id);
 				xmhf_baseplatform_arch_x86_pci_type1_read(b, d, f, PCI_CONF_HDR_IDX_DEVICE_ID, sizeof(u16), &device_id);
 
-                if(numentries_sysdev_memioregions >= MAX_PLATFORM_DEVICES){
-                    _XDPRINTF_("%s: Halting!. numentries_sysdev_memioregions >= MAX_PLATFORM_DEVICES(%u)\n",
-                               __func__, MAX_PLATFORM_DEVICES);
-                    CASM_FUNCCALL(xmhfhw_cpu_hlt, CASM_NOPARAM);
-                }
-
 				if( !(vendor_id == 0xFFFF && device_id == 0xFFFF) ){
-	                gp_s2_sdmenumsysdevices_memioextents(numentries_sysdev_memioregions, b, d, f, vendor_id, device_id);
-	                numentries_sysdev_memioregions++;
+	                gp_s2_sdmenumsysdevices_memioextents(b, d, f, vendor_id, device_id);
 				}
             }
 		}
