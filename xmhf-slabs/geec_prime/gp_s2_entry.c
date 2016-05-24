@@ -67,6 +67,7 @@
 //@ghost bool cor_gp_s3_entry = false;
 /*@
 	requires (gp_rwdatahdr.xcbootinfo_store.memmapinfo_numentries < MAX_E820_ENTRIES);
+	requires 0 <= vtd_drhd_maxhandle <= VTD_MAX_DRHD;
 
 	assigns cor_gp_s2_initsysmemmap;
 	assigns cor_gp_s2_sdmenumsysdevices;
