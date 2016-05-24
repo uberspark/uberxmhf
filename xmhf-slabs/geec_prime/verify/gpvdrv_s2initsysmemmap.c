@@ -44,33 +44,68 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
+/*
+ * prime s2_initsysmemmap verification driver
+ * author: amit vasudevan (amitvasudevan@acm.org)
+*/
+
+
 #include <xmhf.h>
-#include <xmhf-debug.h>
+#include <xmhf-hwm.h>
 #include <xmhfgeec.h>
 
 #include <geec_prime.h>
 
+u32 cpuid = 0;	//BSP cpu
 
-/*@
-	requires 0 <= tssidx < MAX_PLATFORM_CPUS;
-	assigns __xmhfhic_x86vmx_tss[tssidx].tss_mainblock[0..(PAGE_SIZE_4K-1)];
-	assigns __xmhfhic_x86vmx_tss[tssidx].tss_iobitmap[0..((3*PAGE_SIZE_4K)-1)];
-	ensures (((tss_t *)__xmhfhic_x86vmx_tss[tssidx].tss_mainblock)->esp0 ==
-		(u32) ( &__xmhfhic_x86vmx_tss_stack[tssidx] + sizeof(__xmhfhic_x86vmx_tss_stack[0]) )
-		);
-	ensures (((tss_t *)__xmhfhic_x86vmx_tss[tssidx].tss_mainblock)->ss0 == __DS_CPL0);
-	ensures (((tss_t *)__xmhfhic_x86vmx_tss[tssidx].tss_mainblock)->iotbl_addr == PAGE_SIZE_4K);
-@*/
-void gp_s2_setuptss_inittss(u32 tssidx){
-	tss_t *tss= (tss_t *)__xmhfhic_x86vmx_tss[tssidx].tss_mainblock;
+//////
+// frama-c non-determinism functions
+//////
 
-	memset(&__xmhfhic_x86vmx_tss[tssidx].tss_mainblock, 0, PAGE_SIZE_4K);
-	memset(&__xmhfhic_x86vmx_tss[tssidx].tss_iobitmap, 0, (3*PAGE_SIZE_4K));
+u32 Frama_C_entropy_source;
 
-	tss->esp0 = (u32) ( &__xmhfhic_x86vmx_tss_stack[tssidx] + sizeof(__xmhfhic_x86vmx_tss_stack[0]) );
-	tss->ss0 = __DS_CPL0;
-	tss->iotbl_addr = PAGE_SIZE_4K;
+//@ assigns Frama_C_entropy_source \from Frama_C_entropy_source;
+void Frama_C_update_entropy(void);
 
-	_XDPRINTF_("%s: tssidx=%u, iotbl_addr=%x\n", __func__, tssidx,
-	       tss->iotbl_addr);
+u32 framac_nondetu32(void){
+  Frama_C_update_entropy();
+  return (u32)Frama_C_entropy_source;
 }
+
+u32 framac_nondetu32interval(u32 min, u32 max)
+{
+  u32 r,aux;
+  Frama_C_update_entropy();
+  aux = Frama_C_entropy_source;
+  if ((aux>=min) && (aux <=max))
+    r = aux;
+  else
+    r = min;
+  return r;
+}
+
+
+//////
+u32 check_esp, check_eip = CASM_RET_EIP;
+
+
+void xmhfhwm_vdriver_writeesp(u32 oldval, u32 newval){
+	//@assert (newval >= ((u32)&_init_bsp_cpustack + 4)) && (newval <= ((u32)&_init_bsp_cpustack + MAX_PLATFORM_CPUSTACK_SIZE)) ;
+}
+
+
+void main(void){
+	//populate hardware model stack and program counter
+	xmhfhwm_cpu_gprs_esp = (u32)&_init_bsp_cpustack + MAX_PLATFORM_CPUSTACK_SIZE;
+	xmhfhwm_cpu_gprs_eip = check_eip;
+	check_esp = xmhfhwm_cpu_gprs_esp; // pointing to top-of-stack
+
+	//execute harness
+	gp_rwdatahdr.xcbootinfo_store.memmapinfo_numentries = framac_nondetu32interval(0, (MAX_E820_ENTRIES-1));
+	gp_s2_initsysmemmap();
+
+	//@assert xmhfhwm_cpu_gprs_esp == check_esp;
+	//@assert xmhfhwm_cpu_gprs_eip == check_eip;
+}
+
+

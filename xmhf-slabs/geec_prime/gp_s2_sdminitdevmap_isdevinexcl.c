@@ -50,27 +50,46 @@
 
 #include <geec_prime.h>
 
-
+//returns true if a given device vendor_id:device_id is in the slab device exclusion
+//list
 /*@
-	requires 0 <= tssidx < MAX_PLATFORM_CPUS;
-	assigns __xmhfhic_x86vmx_tss[tssidx].tss_mainblock[0..(PAGE_SIZE_4K-1)];
-	assigns __xmhfhic_x86vmx_tss[tssidx].tss_iobitmap[0..((3*PAGE_SIZE_4K)-1)];
-	ensures (((tss_t *)__xmhfhic_x86vmx_tss[tssidx].tss_mainblock)->esp0 ==
-		(u32) ( &__xmhfhic_x86vmx_tss_stack[tssidx] + sizeof(__xmhfhic_x86vmx_tss_stack[0]) )
-		);
-	ensures (((tss_t *)__xmhfhic_x86vmx_tss[tssidx].tss_mainblock)->ss0 == __DS_CPL0);
-	ensures (((tss_t *)__xmhfhic_x86vmx_tss[tssidx].tss_mainblock)->iotbl_addr == PAGE_SIZE_4K);
+	requires 0 <= slabid < XMHFGEEC_TOTAL_SLABS;
+	requires 0 <= xmhfgeec_slab_info_table[slabid].excl_devices_count <= XMHF_CONFIG_MAX_EXCLDEVLIST_ENTRIES;
+
+	assigns \nothing;
+
+	ensures isinexclres: \exists integer x; 0 <= x < xmhfgeec_slab_info_table[slabid].excl_devices_count &&
+			(xmhfgeec_slab_info_table[slabid].excl_devices[x].vendor_id == vendor_id &&
+           xmhfgeec_slab_info_table[slabid].excl_devices[x].device_id == device_id) ==>
+			(\result == true);
+
+	ensures isnotinexclres: !(\exists integer x; 0 <= x < xmhfgeec_slab_info_table[slabid].excl_devices_count &&
+			(xmhfgeec_slab_info_table[slabid].excl_devices[x].vendor_id == vendor_id &&
+           xmhfgeec_slab_info_table[slabid].excl_devices[x].device_id == device_id)) ==>
+			(\result == false);
+	ensures (\result == true) || (\result == false);
 @*/
-void gp_s2_setuptss_inittss(u32 tssidx){
-	tss_t *tss= (tss_t *)__xmhfhic_x86vmx_tss[tssidx].tss_mainblock;
+bool gp_s2_sdminitdevmap_isdevinexcl(u32 slabid, u32 vendor_id, u32 device_id){
+    u32 i;
 
-	memset(&__xmhfhic_x86vmx_tss[tssidx].tss_mainblock, 0, PAGE_SIZE_4K);
-	memset(&__xmhfhic_x86vmx_tss[tssidx].tss_iobitmap, 0, (3*PAGE_SIZE_4K));
+	/*@
+		loop invariant a1: 0 <= i <= xmhfgeec_slab_info_table[slabid].excl_devices_count;
+		loop invariant a2: \forall integer x; 0 <= x < i ==>
+			!(xmhfgeec_slab_info_table[slabid].excl_devices[x].vendor_id == vendor_id &&
+           xmhfgeec_slab_info_table[slabid].excl_devices[x].device_id == device_id);
+		loop assigns i;
+		loop variant xmhfgeec_slab_info_table[slabid].excl_devices_count - i;
+	@*/
+    for(i=0; i < xmhfgeec_slab_info_table[slabid].excl_devices_count; i++){
+        if(xmhfgeec_slab_info_table[slabid].excl_devices[i].vendor_id == vendor_id &&
+           xmhfgeec_slab_info_table[slabid].excl_devices[i].device_id == device_id)
+            return true;
+    }
 
-	tss->esp0 = (u32) ( &__xmhfhic_x86vmx_tss_stack[tssidx] + sizeof(__xmhfhic_x86vmx_tss_stack[0]) );
-	tss->ss0 = __DS_CPL0;
-	tss->iotbl_addr = PAGE_SIZE_4K;
-
-	_XDPRINTF_("%s: tssidx=%u, iotbl_addr=%x\n", __func__, tssidx,
-	       tss->iotbl_addr);
+    /*@assert a3: \forall integer x; 0 <= x < xmhfgeec_slab_info_table[slabid].excl_devices_count ==>
+		!(xmhfgeec_slab_info_table[slabid].excl_devices[x].vendor_id == vendor_id &&
+   	   xmhfgeec_slab_info_table[slabid].excl_devices[x].device_id == device_id);
+   	@*/
+    return false;
 }
+

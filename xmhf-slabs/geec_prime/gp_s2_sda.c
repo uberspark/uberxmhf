@@ -53,11 +53,13 @@
 
 //@ghost bool invokedsdasetupdevpgtbl[XMHFGEEC_TOTAL_SLABS];
 //@ghost bool invokedsdasetupdevpgtbl_rg[XMHFGEEC_TOTAL_SLABS];
+//@ghost bool invokedsdadoalloc = true;
 /*@
 	requires 0 <= numentries_sysdev_memioregions < MAX_PLATFORM_DEVICES;
 	assigns invokedsdasetupdevpgtbl[0..(XMHFGEEC_TOTAL_SLABS-1)];
 	assigns invokedsdasetupdevpgtbl_rg[0..(XMHFGEEC_TOTAL_SLABS-1)];
 	assigns _slabdevpgtbl_infotable[0..(XMHFGEEC_TOTAL_SLABS-1)].devpgtbl_initialized;
+	assigns invokedsdadoalloc;
 	ensures \forall integer x; 0 <= x < XMHFGEEC_TOTAL_SLABS ==> (
 			(xmhfgeec_slab_info_table[x].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG_RICHGUEST) ==> (invokedsdasetupdevpgtbl_rg[x] == true)
 			);
@@ -67,6 +69,7 @@
 	ensures \forall integer x; 0 <= x < XMHFGEEC_TOTAL_SLABS ==> (
 			(_slabdevpgtbl_infotable[x].devpgtbl_initialized == false)
 			);
+	ensures (invokedsdadoalloc == true);
 @*/
 void gp_s2_sda(void){
 	u32 i;
@@ -115,6 +118,8 @@ void gp_s2_sda(void){
 	_XDPRINTF_("%s: initialized slab device page tables\n", __func__);
 
 	gp_s2_sdadoalloc();
+	//@ghost invokedsdadoalloc = true;
+
 }
 
 

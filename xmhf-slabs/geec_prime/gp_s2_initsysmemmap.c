@@ -52,7 +52,9 @@
 #include <geec_prime.h>
 #include <uapi_sysdata.h>
 
-
+/*@
+	requires (gp_rwdatahdr.xcbootinfo_store.memmapinfo_numentries < MAX_E820_ENTRIES);
+@*/
 void gp_s2_initsysmemmap(void){
 	slab_params_t sp;
 	uxmhf_uapi_sysdata_e820addentry_t *e820entry = (uxmhf_uapi_sysdata_e820addentry_t *)sp.in_out_params;
@@ -64,12 +66,12 @@ void gp_s2_initsysmemmap(void){
 	sp.dst_slabid = XMHFGEEC_SLAB_UAPI_SYSDATA;
 	sp.dst_uapifn =  UXMHF_UAPI_SYSDATA_E820ADDENTRY;
 
-	for(i=0; i < (u32)xcbootinfo->memmapinfo_numentries; i++){
-		e820entry->baseaddr_high = xcbootinfo->memmapinfo_buffer[i].baseaddr_high;
-		e820entry->baseaddr_low = xcbootinfo->memmapinfo_buffer[i].baseaddr_low;
-		e820entry->length_high = xcbootinfo->memmapinfo_buffer[i].length_high;
-		e820entry->length_low = xcbootinfo->memmapinfo_buffer[i].length_low;
-		e820entry->type = xcbootinfo->memmapinfo_buffer[i].type;
+	for(i=0; i < (u32)gp_rwdatahdr.xcbootinfo_store.memmapinfo_numentries; i++){
+		e820entry->baseaddr_high = gp_rwdatahdr.xcbootinfo_store.memmapinfo_buffer[i].baseaddr_high;
+		e820entry->baseaddr_low = gp_rwdatahdr.xcbootinfo_store.memmapinfo_buffer[i].baseaddr_low;
+		e820entry->length_high = gp_rwdatahdr.xcbootinfo_store.memmapinfo_buffer[i].length_high;
+		e820entry->length_low = gp_rwdatahdr.xcbootinfo_store.memmapinfo_buffer[i].length_low;
+		e820entry->type = gp_rwdatahdr.xcbootinfo_store.memmapinfo_buffer[i].type;
 		XMHF_SLAB_CALLNEW(&sp);
 	}
 

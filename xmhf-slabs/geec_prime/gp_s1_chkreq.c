@@ -97,6 +97,13 @@ void gp_s1_chkreq(void){
 		CASM_FUNCCALL(xmhfhw_cpu_hlt, CASM_NOPARAM);
 	}
 
+	//ensure bootinfo structure sanity
+	if(!(gp_rwdatahdr.xcbootinfo_store.memmapinfo_numentries < MAX_E820_ENTRIES)){
+		_XDPRINTF_("%s: xcbootinfo_store.memmapinfo_numentries (%u) out-of-bounds!\n", __func__, gp_rwdatahdr.xcbootinfo_store.memmapinfo_numentries);
+		CASM_FUNCCALL(xmhfhw_cpu_hlt, CASM_NOPARAM);
+	}
+
+	//@assert (gp_rwdatahdr.xcbootinfo_store.memmapinfo_numentries < MAX_E820_ENTRIES);
 }
 
 
