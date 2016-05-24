@@ -52,19 +52,50 @@
 
 //returns true if a given device vendor_id:device_id is in the slab device exclusion
 //list
-static bool _geec_prime_sda_populate_slabdevicemap_isdevinexcl(u32 slabid, u32 vendor_id, u32 device_id){
+/*@
+	requires 0 <= slabid < XMHFGEEC_TOTAL_SLABS;
+	requires 0 <= xmhfgeec_slab_info_table[slabid].excl_devices_count <= XMHF_CONFIG_MAX_EXCLDEVLIST_ENTRIES;
+
+	assigns \nothing;
+
+	ensures isinexclres: \exists integer x; 0 <= x < xmhfgeec_slab_info_table[slabid].excl_devices_count &&
+			(xmhfgeec_slab_info_table[slabid].excl_devices[x].vendor_id == vendor_id &&
+           xmhfgeec_slab_info_table[slabid].excl_devices[x].device_id == device_id) ==>
+			(\result == true);
+
+	ensures isnotinexclres: !(\exists integer x; 0 <= x < xmhfgeec_slab_info_table[slabid].excl_devices_count &&
+			(xmhfgeec_slab_info_table[slabid].excl_devices[x].vendor_id == vendor_id &&
+           xmhfgeec_slab_info_table[slabid].excl_devices[x].device_id == device_id)) ==>
+			(\result == false);
+
+@*/
+static bool gp_s2_sdminitdevmap_isdevinexcl(u32 slabid, u32 vendor_id, u32 device_id){
     u32 i;
 
+	/*@
+		loop invariant a1: 0 <= i <= xmhfgeec_slab_info_table[slabid].excl_devices_count;
+		loop invariant a2: \forall integer x; 0 <= x < i ==>
+			!(xmhfgeec_slab_info_table[slabid].excl_devices[x].vendor_id == vendor_id &&
+           xmhfgeec_slab_info_table[slabid].excl_devices[x].device_id == device_id);
+		loop assigns i;
+		loop variant xmhfgeec_slab_info_table[slabid].excl_devices_count - i;
+	@*/
     for(i=0; i < xmhfgeec_slab_info_table[slabid].excl_devices_count; i++){
         if(xmhfgeec_slab_info_table[slabid].excl_devices[i].vendor_id == vendor_id &&
            xmhfgeec_slab_info_table[slabid].excl_devices[i].device_id == device_id)
             return true;
     }
 
+    /*@assert a3: \forall integer x; 0 <= x < xmhfgeec_slab_info_table[slabid].excl_devices_count ==>
+		!(xmhfgeec_slab_info_table[slabid].excl_devices[x].vendor_id == vendor_id &&
+   	   xmhfgeec_slab_info_table[slabid].excl_devices[x].device_id == device_id);
+   	@*/
     return false;
 }
 
 
+
+#if 0
 void gp_s2_sdminitdevmap(void){
     u32 i, j, k;
 
@@ -125,7 +156,7 @@ void gp_s2_sdminitdevmap(void){
 
     }
 
-
+	#if defined (__DEBUG_SERIAL__)
     //debug dump
     {
         u32 i, j;
@@ -136,10 +167,11 @@ void gp_s2_sdminitdevmap(void){
             }
         }
     }
+	#endif // defined
 
 
 }
 
-
+#endif
 
 
