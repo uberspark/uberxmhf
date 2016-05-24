@@ -61,6 +61,12 @@
 	assigns gp_s2_sdminitdevmap_addalldevstouobj_isdevinexcl[0..(numentries_sysdev_memioregions-1)];
 	assigns gp_s2_sdminitdevmap_addalldevstouobj_coradddeventry[0..(numentries_sysdev_memioregions-1)];
 
+	ensures e2: \forall integer x; 0 <= x < numentries_sysdev_memioregions &&
+			(gp_s2_sdminitdevmap_addalldevstouobj_isdevinexcl[x] == false) ==>
+			(gp_s2_sdminitdevmap_addalldevstouobj_coradddeventry[x] == true);
+	ensures e3: \forall integer x; 0 <= x < numentries_sysdev_memioregions &&
+			(gp_s2_sdminitdevmap_addalldevstouobj_isdevinexcl[x] == true) ==>
+			(gp_s2_sdminitdevmap_addalldevstouobj_coradddeventry[x] == false);
 @*/
 void gp_s2_sdminitdevmap_addalldevstouobj(u32 slabid){
 	u32 k;
@@ -68,6 +74,12 @@ void gp_s2_sdminitdevmap_addalldevstouobj(u32 slabid){
 
 	/*@
 		loop invariant k1: 0 <= k <= numentries_sysdev_memioregions;
+		loop invariant k2: \forall integer x; 0 <= x < k &&
+			(gp_s2_sdminitdevmap_addalldevstouobj_isdevinexcl[x] == false) ==>
+			(gp_s2_sdminitdevmap_addalldevstouobj_coradddeventry[x] == true);
+		loop invariant k3: \forall integer x; 0 <= x < k &&
+			(gp_s2_sdminitdevmap_addalldevstouobj_isdevinexcl[x] == true) ==>
+			(gp_s2_sdminitdevmap_addalldevstouobj_coradddeventry[x] == false);
 		loop assigns k;
 		loop assigns isdevinexcl;
 		loop assigns gp_s2_sdminitdevmap_addalldevstouobj_isdevinexcl[0..(numentries_sysdev_memioregions-1)];
