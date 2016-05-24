@@ -94,18 +94,42 @@ static bool gp_s2_sdminitdevmap_isdevinexcl(u32 slabid, u32 vendor_id, u32 devic
 }
 
 
+
+/*@
+	ghost bool gp_s2_sdminitdevmap_adddeventry_syshalt = false;
+@*/
+/*@
+	requires 0 <= slabid < XMHFGEEC_TOTAL_SLABS;
+
+	behavior addentry:
+		assumes (0 <= _sda_slab_devicemap[slabid].device_count < MAX_PLATFORM_DEVICES);
+		assigns gp_s2_sdminitdevmap_adddeventry_syshalt;
+		assigns _sda_slab_devicemap[slabid].sysdev_mmioregions_indices[_sda_slab_devicemap[slabid].device_count];
+		assigns _sda_slab_devicemap[slabid].device_count;
+		ensures gp_s2_sdminitdevmap_adddeventry_syshalt == false;
+		ensures _sda_slab_devicemap[slabid].sysdev_mmioregions_indices[\at(_sda_slab_devicemap[slabid].device_count, Pre)] == sysdev_mmioregions_index;
+		ensures (_sda_slab_devicemap[slabid].device_count == (\at(_sda_slab_devicemap[slabid].device_count, Pre) + 1));
+
+	behavior invalidhalt:
+		assumes ( _sda_slab_devicemap[slabid].device_count >= MAX_PLATFORM_DEVICES);
+		assigns gp_s2_sdminitdevmap_adddeventry_syshalt;
+		ensures gp_s2_sdminitdevmap_adddeventry_syshalt == true;
+
+	complete behaviors;
+	disjoint behaviors;
+@*/
 static void gp_s2_sdminitdevmap_adddeventry(u32 slabid, u32 sysdev_mmioregions_index){
 
 	if( _sda_slab_devicemap[slabid].device_count >= MAX_PLATFORM_DEVICES){
 	    _XDPRINTF_("%s: Halting! device_count >= MAX_PLATFORM_DEVICES\n", __func__);
 	    CASM_FUNCCALL(xmhfhw_cpu_hlt, CASM_NOPARAM);
+		//@ghost gp_s2_sdminitdevmap_adddeventry_syshalt = true;
 	}else{
+		//@ghost gp_s2_sdminitdevmap_adddeventry_syshalt = false;
 		_sda_slab_devicemap[slabid].sysdev_mmioregions_indices[_sda_slab_devicemap[slabid].device_count]=sysdev_mmioregions_index;
 		_sda_slab_devicemap[slabid].device_count++;
 	}
-
 }
-
 
 
 static void gp_s2_sdminitdevmap_addalldevstouobj(u32 slabid){
