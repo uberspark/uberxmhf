@@ -46,13 +46,9 @@
 
 #include <xmhf.h>
 #include <xmhf-debug.h>
-
 #include <xmhfgeec.h>
 
 #include <geec_prime.h>
-#include <uapi_slabmempgtbl.h>
-
-
 
 //@ghost bool gp_s2_setupmpgtblu_invokeduh[XMHFGEEC_TOTAL_SLABS];
 //@ghost bool gp_s2_setupmpgtblu_invokedug[XMHFGEEC_TOTAL_SLABS];

@@ -46,7 +46,6 @@
 
 #include <xmhf.h>
 #include <xmhf-debug.h>
-
 #include <xmhfgeec.h>
 
 #include <geec_prime.h>
@@ -88,7 +87,7 @@ void gp_s2_sdadoalloc(void){
 	u32 dst_slabid;
 
 
-    	/*@
+		/*@
 		loop invariant a1: 0 <= i <= numentries_sysdev_memioregions;
 		loop invariant a2: \forall integer x; 0 <= x < i ==> (
 			(
@@ -119,35 +118,33 @@ void gp_s2_sdadoalloc(void){
 		loop assigns invokedsdabinddevice[0..(numentries_sysdev_memioregions-1)];
 		loop variant numentries_sysdev_memioregions - i;
 	@*/
-        for(i=0; i <numentries_sysdev_memioregions; i++){
-            if(sysdev_memioregions[i].dtype == SYSDEV_MEMIOREGIONS_DTYPE_GENERAL ||
-               sysdev_memioregions[i].dtype == SYSDEV_MEMIOREGIONS_DTYPE_BRIDGE ||
-               sysdev_memioregions[i].dtype == SYSDEV_MEMIOREGIONS_DTYPE_UNKNOWN){
+	for(i=0; i <numentries_sysdev_memioregions; i++){
+		if(sysdev_memioregions[i].dtype == SYSDEV_MEMIOREGIONS_DTYPE_GENERAL ||
+		   sysdev_memioregions[i].dtype == SYSDEV_MEMIOREGIONS_DTYPE_BRIDGE ||
+		   sysdev_memioregions[i].dtype == SYSDEV_MEMIOREGIONS_DTYPE_UNKNOWN){
 
-		dst_slabid = gp_s2_sdadoalloc_getuobjfordev(sysdev_memioregions[i].b,
-							sysdev_memioregions[i].d,
-							sysdev_memioregions[i].f);
-		//@ghost invokedgetuobjfordev[i] = true;
-		//@ghost uobjfordev[i] = dst_slabid;
+			dst_slabid = gp_s2_sdadoalloc_getuobjfordev(sysdev_memioregions[i].b,
+								sysdev_memioregions[i].d,
+								sysdev_memioregions[i].f);
+			//@ghost invokedgetuobjfordev[i] = true;
+			//@ghost uobjfordev[i] = dst_slabid;
 
-                if(dst_slabid == 0xFFFFFFFFUL){
-                    _XDPRINTF_("Could not find slab for device %x:%x:%x (vid:did=%x:%x, type=%x), skipping...\n", sysdev_memioregions[i].b,
-                               sysdev_memioregions[i].d, sysdev_memioregions[i].f, sysdev_memioregions[i].vendor_id,
-                               sysdev_memioregions[i].device_id, sysdev_memioregions[i].dtype);
+			if(dst_slabid == 0xFFFFFFFFUL){
+				_XDPRINTF_("Could not find slab for device %x:%x:%x (vid:did=%x:%x, type=%x), skipping...\n", sysdev_memioregions[i].b,
+						   sysdev_memioregions[i].d, sysdev_memioregions[i].f, sysdev_memioregions[i].vendor_id,
+						   sysdev_memioregions[i].device_id, sysdev_memioregions[i].dtype);
 
-			//@ghost invokedsdabinddevice[i] = false;
-                }else{
-			gp_s2_sdabinddevice(dst_slabid, vtd_pagewalk_level,
+				//@ghost invokedsdabinddevice[i] = false;
+			}else{
+				gp_s2_sdabinddevice(dst_slabid, vtd_pagewalk_level,
 						sysdev_memioregions[i].b, sysdev_memioregions[i].d, sysdev_memioregions[i].f);
 
-                    _XDPRINTF_("Allocated device %x:%x:%x (vid:did=%x:%x, type=%x) to slab %u...\n", sysdev_memioregions[i].b,
-                               sysdev_memioregions[i].d, sysdev_memioregions[i].f, sysdev_memioregions[i].vendor_id,
-                               sysdev_memioregions[i].device_id, sysdev_memioregions[i].dtype, dst_slabid);
-			//@ghost invokedsdabinddevice[i] = true;
-
-
-                }
-            }
-        }
+				_XDPRINTF_("Allocated device %x:%x:%x (vid:did=%x:%x, type=%x) to slab %u...\n", sysdev_memioregions[i].b,
+						   sysdev_memioregions[i].d, sysdev_memioregions[i].f, sysdev_memioregions[i].vendor_id,
+						   sysdev_memioregions[i].device_id, sysdev_memioregions[i].dtype, dst_slabid);
+				//@ghost invokedsdabinddevice[i] = true;
+			}
+		}
+	}
 }
 

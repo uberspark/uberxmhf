@@ -295,7 +295,9 @@ extern __attribute__((section(".data"))) x86smp_apbootstrapdata_t apdata;
 
 
 
-
+//////
+// stage-1
+//////
 void gp_s1_bspstack(void);
 u64 _gp_s1_bspstack_getflagsforspa(u32 paddr);
 void gp_s1_bspstkactivate(void);
@@ -313,16 +315,31 @@ void gp_s1_iommuinittbl_clearcet(u32 retindex);
 void gp_s1_iommuinit(void);
 
 
+
+//////
+// stage-2
+//////
+
+/*@
+	requires (gp_rwdatahdr.xcbootinfo_store.memmapinfo_numentries < MAX_E820_ENTRIES);
+@*/
 void gp_s2_entry(void);
 
+void gp_s2_gathersysmemtypes(void);
+
+/*@
+	requires (gp_rwdatahdr.xcbootinfo_store.memmapinfo_numentries < MAX_E820_ENTRIES);
+@*/
 void gp_s2_initsysmemmap(void);
-
-void gp_s2_setupslabdevmap(void);
-
-
 
 
 void gp_s2_sda(void);
+
+
+
+
+
+
 
 /*@
 	requires 0 <= slabid < XMHFGEEC_TOTAL_SLABS;
@@ -336,6 +353,7 @@ void gp_s2_sdadoalloc(void);
 
 /*@
 	assigns \nothing;
+	ensures (\result == 0xFFFFFFFFUL || (0 <= \result < XMHFGEEC_TOTAL_SLABS));
 @*/
 u32 gp_s2_sdadoalloc_getuobjfordev(u32 bus, u32 dev, u32 func);
 
@@ -368,6 +386,63 @@ void gp_s2_sdasetupdevpgtbl_splintpdt(u32 slabid, u32 paddr_start, u32 paddr_end
 
 
 
+/*@
+	requires 0 <= vtd_drhd_maxhandle <= VTD_MAX_DRHD;
+	ensures 0 <= numentries_sysdev_memioregions <= MAX_PLATFORM_DEVICES;
+@*/
+void gp_s2_sdmenumsysdevices(void);
+
+/*@
+	behavior addentry:
+		ensures 0 <= numentries_sysdev_memioregions <= MAX_PLATFORM_DEVICES;
+@*/
+void gp_s2_sdmenumsysdevices_memioextents(u32 b, u32 d, u32 f, u32 vendor_id, u32 device_id);
+
+
+/*@
+	requires 0 <= slabid < XMHFGEEC_TOTAL_SLABS;
+	requires 0 <= numentries_sysdev_memioregions <= MAX_PLATFORM_DEVICES;
+	requires 0 <= xmhfgeec_slab_info_table[slabid].excl_devices_count <= XMHF_CONFIG_MAX_EXCLDEVLIST_ENTRIES;
+@*/
+void gp_s2_sdminitdevmap_addalldevstouobj(u32 slabid);
+
+/*@
+	requires 0 <= slabid < XMHFGEEC_TOTAL_SLABS;
+
+	behavior addentry:
+		ensures _sda_slab_devicemap[slabid].sysdev_mmioregions_indices[\at(_sda_slab_devicemap[slabid].device_count, Pre)] == sysdev_mmioregions_index;
+		ensures (_sda_slab_devicemap[slabid].device_count == (\at(_sda_slab_devicemap[slabid].device_count, Pre) + 1));
+		ensures (_sda_slab_devicemap[slabid].device_count <= MAX_PLATFORM_DEVICES);
+@*/
+void gp_s2_sdminitdevmap_adddeventry(u32 slabid, u32 sysdev_mmioregions_index);
+
+
+/*@
+	requires 0 <= slabid < XMHFGEEC_TOTAL_SLABS;
+	requires 0 <= numentries_sysdev_memioregions <= MAX_PLATFORM_DEVICES;
+	requires 0 <= xmhfgeec_slab_info_table[slabid].excl_devices_count <= XMHF_CONFIG_MAX_EXCLDEVLIST_ENTRIES;
+@*/
+void gp_s2_sdminitdevmap_adddevtouobj(u32 slabid, u32 vendor_id, u32 device_id);
+
+
+/*@
+	requires 0 <= slabid < XMHFGEEC_TOTAL_SLABS;
+	requires 0 <= xmhfgeec_slab_info_table[slabid].excl_devices_count <= XMHF_CONFIG_MAX_EXCLDEVLIST_ENTRIES;
+
+	assigns \nothing;
+
+	ensures (\result == true) || (\result == false);
+@*/
+bool gp_s2_sdminitdevmap_isdevinexcl(u32 slabid, u32 vendor_id, u32 device_id);
+
+/*@
+	requires \forall integer x; 0 <= x < XMHFGEEC_TOTAL_SLABS ==>
+		(0 <= xmhfgeec_slab_info_table[x].incl_devices_count <= XMHF_CONFIG_MAX_INCLDEVLIST_ENTRIES);
+	requires \forall integer x; 0 <= x < XMHFGEEC_TOTAL_SLABS ==>
+		(0 <= xmhfgeec_slab_info_table[x].excl_devices_count <= XMHF_CONFIG_MAX_EXCLDEVLIST_ENTRIES);
+	requires 0 <= numentries_sysdev_memioregions <= MAX_PLATFORM_DEVICES;
+@*/
+void gp_s2_sdminitdevmap(void);
 
 
 /*@
@@ -404,11 +479,11 @@ void gp_s2_setupiotblug(u32 slabid);
 void gp_s2_setupiotblug_rg(u32 slabid);
 
 
+
 void gp_s2_setupiotbl(void);
 
 
 
-void gp_s2_gathersysmemtypes(void);
 
 /*@
 	assigns \nothing;
@@ -490,10 +565,6 @@ void gp_s2_setupmpgtblv(void);
 void gp_s2_setupmpgtblu(void);
 
 
-/*@
-	requires \valid(xcbootinfo);
-	requires (xcbootinfo->cpuinfo_numentries < MAX_PLATFORM_CPUS);
-@*/
 void gp_s2_setupgdt(void);
 
 /*@

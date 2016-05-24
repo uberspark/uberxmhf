@@ -57,35 +57,29 @@
 	requires (paddr_end >= paddr_start);
 	requires (paddr_end < (0xFFFFFFFFUL - PAGE_SIZE_2M));
 	requires (paddr_end - paddr_start) <= MAX_SLAB_DMADATA_SIZE;
-	assigns invokedsetptentries[0..(MAX_SLAB_DMADATA_PDT_ENTRIES-1)];
+
+	assigns invokedsetptentries[0..(((paddr_end - paddr_start)/PAGE_SIZE_2M)-1)];
+
+	ensures \forall integer x; 0 <= x < ((paddr_end - paddr_start)/PAGE_SIZE_2M) ==> (
+		 ( invokedsetptentries[x] == true)
+		);
 @*/
 void gp_s2_sdasetupdevpgtbl_splintpdt(u32 slabid, u32 paddr_start, u32 paddr_end){
-	u32 paddr;
 	u32 pd_index=0;
 
-
-    	/*@
-		loop invariant a1: paddr_start <= paddr <= (paddr_end+PAGE_SIZE_2M);
-		loop invariant a2: pd_index <= VTD_PTRS_PER_PDT;
-		loop invariant a3: \forall integer x; 0 <= x < pd_index ==> (
-			(x < MAX_SLAB_DMADATA_PDT_ENTRIES) ==> ( invokedsetptentries[x] == true)
+	/*@
+		loop invariant a1: 0 <= pd_index <= ((paddr_end - paddr_start)/PAGE_SIZE_2M);
+		loop invariant a2: \forall integer x; 0 <= x < pd_index ==> (
+		 	 ( invokedsetptentries[x] == true)
 			);
-		loop assigns paddr;
 		loop assigns pd_index;
-		loop assigns invokedsetptentries[0..(MAX_SLAB_DMADATA_PDT_ENTRIES-1)];
-		loop variant (paddr_end+PAGE_SIZE_2M)-paddr;
+		loop assigns invokedsetptentries[0..(((paddr_end - paddr_start)/PAGE_SIZE_2M)-1)];
+		loop variant ((paddr_end - paddr_start)/PAGE_SIZE_2M)-pd_index;
 	@*/
-	for(paddr = paddr_start; paddr < paddr_end; paddr+= PAGE_SIZE_2M){
-		if(pd_index >= MAX_SLAB_DMADATA_PDT_ENTRIES){
-			CASM_FUNCCALL(xmhfhw_cpu_hlt, CASM_NOPARAM);
-		}else{
+	for(pd_index=0; pd_index < ((paddr_end - paddr_start)/PAGE_SIZE_2M); pd_index++){
 			//populate pt entries for this 2M range
-			gp_s2_sdasetupdevpgtbl_setptentries(slabid, pd_index, paddr);
+			gp_s2_sdasetupdevpgtbl_setptentries(slabid, pd_index, (paddr_start + (pd_index * PAGE_SIZE_2M)) );
 			//@ghost invokedsetptentries[pd_index] = true;
-			pd_index++;
-		}
 	}
-
-
 }
 

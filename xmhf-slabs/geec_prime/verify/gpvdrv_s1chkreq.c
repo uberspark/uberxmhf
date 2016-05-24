@@ -103,9 +103,7 @@ void main(void){
 	//execute harness
 	gp_s1_chkreq();
 
-	//@assert xmhfhwm_cpu_state == CPU_STATE_RUNNING;
-	//@assert xmhfhwm_cpu_gprs_esp == check_esp;
-	//@assert xmhfhwm_cpu_gprs_eip == check_eip;
+	//@assert ((xmhfhwm_cpu_state == CPU_STATE_HALT) ||  ( (xmhfhwm_cpu_state == CPU_STATE_RUNNING) && (xmhfhwm_cpu_gprs_esp == check_esp) && (xmhfhwm_cpu_gprs_eip == check_eip) && (gp_rwdatahdr.xcbootinfo_store.memmapinfo_numentries < MAX_E820_ENTRIES))  );
 }
 
 

@@ -52,25 +52,40 @@
 
 
 /*@
-	requires 0 <= tssidx < MAX_PLATFORM_CPUS;
-	assigns __xmhfhic_x86vmx_tss[tssidx].tss_mainblock[0..(PAGE_SIZE_4K-1)];
-	assigns __xmhfhic_x86vmx_tss[tssidx].tss_iobitmap[0..((3*PAGE_SIZE_4K)-1)];
-	ensures (((tss_t *)__xmhfhic_x86vmx_tss[tssidx].tss_mainblock)->esp0 ==
-		(u32) ( &__xmhfhic_x86vmx_tss_stack[tssidx] + sizeof(__xmhfhic_x86vmx_tss_stack[0]) )
-		);
-	ensures (((tss_t *)__xmhfhic_x86vmx_tss[tssidx].tss_mainblock)->ss0 == __DS_CPL0);
-	ensures (((tss_t *)__xmhfhic_x86vmx_tss[tssidx].tss_mainblock)->iotbl_addr == PAGE_SIZE_4K);
+	ghost bool gp_s2_sdminitdevmap_adddeventry_syshalt = false;
 @*/
-void gp_s2_setuptss_inittss(u32 tssidx){
-	tss_t *tss= (tss_t *)__xmhfhic_x86vmx_tss[tssidx].tss_mainblock;
+/*@
+	requires 0 <= slabid < XMHFGEEC_TOTAL_SLABS;
 
-	memset(&__xmhfhic_x86vmx_tss[tssidx].tss_mainblock, 0, PAGE_SIZE_4K);
-	memset(&__xmhfhic_x86vmx_tss[tssidx].tss_iobitmap, 0, (3*PAGE_SIZE_4K));
+	behavior addentry:
+		assumes (0 <= _sda_slab_devicemap[slabid].device_count < MAX_PLATFORM_DEVICES);
+		assigns gp_s2_sdminitdevmap_adddeventry_syshalt;
+		assigns _sda_slab_devicemap[slabid].sysdev_mmioregions_indices[_sda_slab_devicemap[slabid].device_count];
+		assigns _sda_slab_devicemap[slabid].device_count;
+		ensures gp_s2_sdminitdevmap_adddeventry_syshalt == false;
+		ensures _sda_slab_devicemap[slabid].sysdev_mmioregions_indices[\at(_sda_slab_devicemap[slabid].device_count, Pre)] == sysdev_mmioregions_index;
+		ensures (_sda_slab_devicemap[slabid].device_count == (\at(_sda_slab_devicemap[slabid].device_count, Pre) + 1));
+		ensures (_sda_slab_devicemap[slabid].device_count <= MAX_PLATFORM_DEVICES);
 
-	tss->esp0 = (u32) ( &__xmhfhic_x86vmx_tss_stack[tssidx] + sizeof(__xmhfhic_x86vmx_tss_stack[0]) );
-	tss->ss0 = __DS_CPL0;
-	tss->iotbl_addr = PAGE_SIZE_4K;
+	behavior invalidhalt:
+		assumes ( _sda_slab_devicemap[slabid].device_count >= MAX_PLATFORM_DEVICES);
+		assigns gp_s2_sdminitdevmap_adddeventry_syshalt;
+		ensures gp_s2_sdminitdevmap_adddeventry_syshalt == true;
 
-	_XDPRINTF_("%s: tssidx=%u, iotbl_addr=%x\n", __func__, tssidx,
-	       tss->iotbl_addr);
+	complete behaviors;
+	disjoint behaviors;
+@*/
+void gp_s2_sdminitdevmap_adddeventry(u32 slabid, u32 sysdev_mmioregions_index){
+
+	if( _sda_slab_devicemap[slabid].device_count >= MAX_PLATFORM_DEVICES){
+	    _XDPRINTF_("%s: Halting! device_count >= MAX_PLATFORM_DEVICES\n", __func__);
+	    CASM_FUNCCALL(xmhfhw_cpu_hlt, CASM_NOPARAM);
+		//@ghost gp_s2_sdminitdevmap_adddeventry_syshalt = true;
+	}else{
+		//@ghost gp_s2_sdminitdevmap_adddeventry_syshalt = false;
+		_sda_slab_devicemap[slabid].sysdev_mmioregions_indices[_sda_slab_devicemap[slabid].device_count]=sysdev_mmioregions_index;
+		_sda_slab_devicemap[slabid].device_count++;
+	}
 }
+
+
