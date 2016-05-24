@@ -68,6 +68,10 @@
 /*@
 	requires (gp_rwdatahdr.xcbootinfo_store.memmapinfo_numentries < MAX_E820_ENTRIES);
 	requires 0 <= vtd_drhd_maxhandle <= VTD_MAX_DRHD;
+	requires \forall integer x; 0 <= x < XMHFGEEC_TOTAL_SLABS ==>
+		(0 <= xmhfgeec_slab_info_table[x].incl_devices_count <= XMHF_CONFIG_MAX_INCLDEVLIST_ENTRIES);
+	requires \forall integer x; 0 <= x < XMHFGEEC_TOTAL_SLABS ==>
+		(0 <= xmhfgeec_slab_info_table[x].excl_devices_count <= XMHF_CONFIG_MAX_EXCLDEVLIST_ENTRIES);
 
 	assigns cor_gp_s2_initsysmemmap;
 	assigns cor_gp_s2_sdmenumsysdevices;
