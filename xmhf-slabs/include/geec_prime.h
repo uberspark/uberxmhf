@@ -435,6 +435,13 @@ void gp_s2_sdminitdevmap_adddevtouobj(u32 slabid, u32 vendor_id, u32 device_id);
 @*/
 bool gp_s2_sdminitdevmap_isdevinexcl(u32 slabid, u32 vendor_id, u32 device_id);
 
+/*@
+	requires \forall integer x; 0 <= x < XMHFGEEC_TOTAL_SLABS ==>
+		(0 <= xmhfgeec_slab_info_table[x].incl_devices_count <= XMHF_CONFIG_MAX_INCLDEVLIST_ENTRIES);
+	requires \forall integer x; 0 <= x < XMHFGEEC_TOTAL_SLABS ==>
+		(0 <= xmhfgeec_slab_info_table[x].excl_devices_count <= XMHF_CONFIG_MAX_EXCLDEVLIST_ENTRIES);
+	requires 0 <= numentries_sysdev_memioregions <= MAX_PLATFORM_DEVICES;
+@*/
 void gp_s2_sdminitdevmap(void);
 
 
