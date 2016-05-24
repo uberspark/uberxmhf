@@ -67,7 +67,7 @@
 			(xmhfgeec_slab_info_table[slabid].excl_devices[x].vendor_id == vendor_id &&
            xmhfgeec_slab_info_table[slabid].excl_devices[x].device_id == device_id)) ==>
 			(\result == false);
-
+	ensures (\result == true) || (\result == false);
 @*/
 static bool gp_s2_sdminitdevmap_isdevinexcl(u32 slabid, u32 vendor_id, u32 device_id){
     u32 i;
@@ -132,17 +132,40 @@ static void gp_s2_sdminitdevmap_adddeventry(u32 slabid, u32 sysdev_mmioregions_i
 }
 
 
+
+
+//@ghost bool gp_s2_sdminitdevmap_addalldevstouobj_coradddeventry[MAX_PLATFORM_DEVICES];
+//@ghost bool gp_s2_sdminitdevmap_addalldevstouobj_isdevinexcl[MAX_PLATFORM_DEVICES];
+
+/*@
+	requires 0 <= slabid < XMHFGEEC_TOTAL_SLABS;
+	requires 0 <= numentries_sysdev_memioregions <= MAX_PLATFORM_DEVICES;
+	requires 0 <= xmhfgeec_slab_info_table[slabid].excl_devices_count <= XMHF_CONFIG_MAX_EXCLDEVLIST_ENTRIES;
+
+@*/
 static void gp_s2_sdminitdevmap_addalldevstouobj(u32 slabid){
 	u32 k;
+	bool isdevinexcl;
 
+	/*@
+		loop invariant k1: 0 <= k <= numentries_sysdev_memioregions;
+		loop assigns k;
+		loop assigns isdevinexcl;
+		loop assigns gp_s2_sdminitdevmap_addalldevstouobj_isdevinexcl[0..(numentries_sysdev_memioregions-1)];
+		loop variant numentries_sysdev_memioregions - k;
+	@*/
     for(k=0; k < numentries_sysdev_memioregions; k++){
-        if(!gp_s2_sdminitdevmap_isdevinexcl(slabid, sysdev_memioregions[k].vendor_id, sysdev_memioregions[k].device_id)){
-        	gp_s2_sdminitdevmap_adddeventry(slabid, k);
-        }
-    }
+        isdevinexcl = gp_s2_sdminitdevmap_isdevinexcl(slabid, sysdev_memioregions[k].vendor_id, sysdev_memioregions[k].device_id);
+    	//@ghost gp_s2_sdminitdevmap_addalldevstouobj_isdevinexcl[k] = isdevinexcl;
+        //@assert (gp_s2_sdminitdevmap_addalldevstouobj_isdevinexcl[k] == true) || (gp_s2_sdminitdevmap_addalldevstouobj_isdevinexcl[k] == false);
 
+        /*if(!isdevinexcl){
+        	gp_s2_sdminitdevmap_adddeventry(slabid, k);
+        }*/
+    }
 }
 
+#if 0
 static void gp_s2_sdminitdevmap_adddevstouobj(u32 slabid, u32 vendor_id, u32 device_id){
 	u32 k;
 
@@ -202,3 +225,4 @@ void gp_s2_sdminitdevmap(void){
 
 
 
+#endif
