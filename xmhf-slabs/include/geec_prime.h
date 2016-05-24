@@ -412,6 +412,10 @@ void gp_s2_sdminitdevmap_addalldevstouobj(u32 slabid);
 @*/
 void gp_s2_sdminitdevmap_adddeventry(u32 slabid, u32 sysdev_mmioregions_index);
 
+
+void gp_s2_sdminitdevmap_adddevtouobj(u32 slabid, u32 vendor_id, u32 device_id);
+
+
 /*@
 	requires 0 <= slabid < XMHFGEEC_TOTAL_SLABS;
 	requires 0 <= xmhfgeec_slab_info_table[slabid].excl_devices_count <= XMHF_CONFIG_MAX_EXCLDEVLIST_ENTRIES;
