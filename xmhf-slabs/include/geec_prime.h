@@ -386,7 +386,10 @@ void gp_s2_sdasetupdevpgtbl_splintpdt(u32 slabid, u32 paddr_start, u32 paddr_end
 
 
 
-
+/*@
+	requires 0 <= vtd_drhd_maxhandle <= VTD_MAX_DRHD;
+	ensures 0 <= numentries_sysdev_memioregions <= MAX_PLATFORM_DEVICES;
+@*/
 void gp_s2_sdmenumsysdevices(void);
 
 /*@
