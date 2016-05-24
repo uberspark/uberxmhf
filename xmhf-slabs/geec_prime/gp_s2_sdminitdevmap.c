@@ -50,22 +50,91 @@
 
 #include <geec_prime.h>
 
+//@ghost bool gp_s2_sdminitdevmap_coraddalldevstouobj[XMHFGEEC_TOTAL_SLABS];
+//@ghost bool gp_s2_sdminitdevmap_coradddevtouobj[XMHFGEEC_TOTAL_SLABS];
+/*@
+	requires \forall integer x; 0 <= x < XMHFGEEC_TOTAL_SLABS ==>
+		(0 <= xmhfgeec_slab_info_table[x].incl_devices_count <= XMHF_CONFIG_MAX_INCLDEVLIST_ENTRIES);
+	requires \forall integer x; 0 <= x < XMHFGEEC_TOTAL_SLABS ==>
+		(0 <= xmhfgeec_slab_info_table[x].excl_devices_count <= XMHF_CONFIG_MAX_EXCLDEVLIST_ENTRIES);
+	requires 0 <= numentries_sysdev_memioregions <= MAX_PLATFORM_DEVICES;
 
+	assigns _sda_slab_devicemap[0..(XMHFGEEC_TOTAL_SLABS-1)].device_count;
+    assigns t1: gp_s2_sdminitdevmap_coraddalldevstouobj[0..(XMHFGEEC_TOTAL_SLABS-1)];
+    assigns t2: gp_s2_sdminitdevmap_coradddevtouobj[0..(XMHFGEEC_TOTAL_SLABS-1)];
+
+	ensures \forall integer x; 0 <= x < XMHFGEEC_TOTAL_SLABS ==>
+		(_sda_slab_devicemap[x].device_count <= MAX_PLATFORM_DEVICES);
+
+   	ensures \exists integer x, integer y; 0 <= x < XMHFGEEC_TOTAL_SLABS && 0 <= y < xmhfgeec_slab_info_table[x].incl_devices_count &&
+    			( xmhfgeec_slab_info_table[x].incl_devices[y].vendor_id == 0xFFFF &&
+               xmhfgeec_slab_info_table[x].incl_devices[y].device_id == 0xFFFF) ==>
+                (gp_s2_sdminitdevmap_coraddalldevstouobj[x] == true &&
+            	 gp_s2_sdminitdevmap_coradddevtouobj[x] == false);
+   	ensures \exists integer x, integer y; 0 <= x < XMHFGEEC_TOTAL_SLABS && 0 <= y < xmhfgeec_slab_info_table[x].incl_devices_count &&
+    			!( xmhfgeec_slab_info_table[x].incl_devices[y].vendor_id == 0xFFFF &&
+               xmhfgeec_slab_info_table[x].incl_devices[y].device_id == 0xFFFF) ==>
+                (gp_s2_sdminitdevmap_coraddalldevstouobj[x] == false &&
+            	 gp_s2_sdminitdevmap_coradddevtouobj[x] == true);
+
+@*/
 void gp_s2_sdminitdevmap(void){
     u32 i, j, k;
 
     _XDPRINTF_("%s: numentries_sysdev_mmioregions=%u\n", __func__, numentries_sysdev_memioregions);
 
+	/*@
+		loop invariant i1: 0 <= i <= XMHFGEEC_TOTAL_SLABS;
+		loop invariant i2: \forall integer x; 0 <= x < i ==>
+		 	 (_sda_slab_devicemap[x].device_count <= MAX_PLATFORM_DEVICES);
+   		loop invariant i5: \exists integer x, integer y; 0 <= x < i && 0 <= y < xmhfgeec_slab_info_table[x].incl_devices_count &&
+    			( xmhfgeec_slab_info_table[x].incl_devices[y].vendor_id == 0xFFFF &&
+               xmhfgeec_slab_info_table[x].incl_devices[y].device_id == 0xFFFF) ==>
+                (gp_s2_sdminitdevmap_coraddalldevstouobj[x] == true &&
+            	 gp_s2_sdminitdevmap_coradddevtouobj[x] == false);
+   		loop invariant i6: \exists integer x, integer y; 0 <= x < i && 0 <= y < xmhfgeec_slab_info_table[x].incl_devices_count &&
+    			!( xmhfgeec_slab_info_table[x].incl_devices[y].vendor_id == 0xFFFF &&
+               xmhfgeec_slab_info_table[x].incl_devices[y].device_id == 0xFFFF) ==>
+                (gp_s2_sdminitdevmap_coraddalldevstouobj[x] == false &&
+            	 gp_s2_sdminitdevmap_coradddevtouobj[x] == true);
+		loop assigns i;
+		loop assigns j;
+		loop assigns _sda_slab_devicemap[0..(XMHFGEEC_TOTAL_SLABS-1)].device_count;
+    	loop assigns i3: gp_s2_sdminitdevmap_coraddalldevstouobj[0..(XMHFGEEC_TOTAL_SLABS-1)];
+    	loop assigns i4: gp_s2_sdminitdevmap_coradddevtouobj[0..(XMHFGEEC_TOTAL_SLABS-1)];
+		loop variant XMHFGEEC_TOTAL_SLABS - i;
+	@*/
     for(i=0; i < XMHFGEEC_TOTAL_SLABS; i++){
         _sda_slab_devicemap[i].device_count = 0;
 
+    	/*@
+    		loop invariant j1: 0 <= j <= xmhfgeec_slab_info_table[i].incl_devices_count;
+    		loop invariant j4: \exists integer x; 0 <= x < j &&
+    			( xmhfgeec_slab_info_table[i].incl_devices[x].vendor_id == 0xFFFF &&
+               xmhfgeec_slab_info_table[i].incl_devices[x].device_id == 0xFFFF) ==>
+                (gp_s2_sdminitdevmap_coraddalldevstouobj[i] == true &&
+            	 gp_s2_sdminitdevmap_coradddevtouobj[i] == false);
+    		loop invariant j5: \exists integer x; 0 <= x < j &&
+    			!( xmhfgeec_slab_info_table[i].incl_devices[x].vendor_id == 0xFFFF &&
+               xmhfgeec_slab_info_table[i].incl_devices[x].device_id == 0xFFFF) ==>
+                (gp_s2_sdminitdevmap_coraddalldevstouobj[i] == false &&
+            	 gp_s2_sdminitdevmap_coradddevtouobj[i] == true);
+    		loop assigns j;
+    		loop assigns j2: gp_s2_sdminitdevmap_coraddalldevstouobj[i];
+    		loop assigns j3: gp_s2_sdminitdevmap_coradddevtouobj[i];
+    		loop variant xmhfgeec_slab_info_table[i].incl_devices_count - j;
+    	@*/
         for(j=0; j < xmhfgeec_slab_info_table[i].incl_devices_count; j++){
             if( xmhfgeec_slab_info_table[i].incl_devices[j].vendor_id == 0xFFFF &&
                xmhfgeec_slab_info_table[i].incl_devices[j].device_id == 0xFFFF){
             	gp_s2_sdminitdevmap_addalldevstouobj(i);
+            	//@ghost gp_s2_sdminitdevmap_coraddalldevstouobj[i] = true;
+            	//@ghost gp_s2_sdminitdevmap_coradddevtouobj[i] = false;
             }else{
             	gp_s2_sdminitdevmap_adddevtouobj(i, xmhfgeec_slab_info_table[i].incl_devices[j].vendor_id,
             			xmhfgeec_slab_info_table[i].incl_devices[j].device_id);
+            	//@ghost gp_s2_sdminitdevmap_coraddalldevstouobj[i] = false;
+            	//@ghost gp_s2_sdminitdevmap_coradddevtouobj[i] = true;
             }
         }
 
@@ -75,6 +144,8 @@ void gp_s2_sdminitdevmap(void){
         #endif // defined
 
     }
+
+
 
 	#if defined (__DEBUG_SERIAL__)
     //debug dump
