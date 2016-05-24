@@ -398,6 +398,21 @@ void gp_s2_sdmenumsysdevices(void);
 @*/
 void gp_s2_sdmenumsysdevices_memioextents(u32 b, u32 d, u32 f, u32 vendor_id, u32 device_id);
 
+
+
+void gp_s2_sdminitdevmap_addalldevstouobj(u32 slabid);
+
+/*@
+	requires 0 <= slabid < XMHFGEEC_TOTAL_SLABS;
+
+	behavior addentry:
+		ensures _sda_slab_devicemap[slabid].sysdev_mmioregions_indices[\at(_sda_slab_devicemap[slabid].device_count, Pre)] == sysdev_mmioregions_index;
+		ensures (_sda_slab_devicemap[slabid].device_count == (\at(_sda_slab_devicemap[slabid].device_count, Pre) + 1));
+@*/
+void gp_s2_sdminitdevmap_adddeventry(u32 slabid, u32 sysdev_mmioregions_index);
+
+bool gp_s2_sdminitdevmap_isdevinexcl(u32 slabid, u32 vendor_id, u32 device_id);
+
 void gp_s2_sdminitdevmap(void);
 
 
