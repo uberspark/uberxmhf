@@ -408,6 +408,7 @@ void gp_s2_sdminitdevmap_addalldevstouobj(u32 slabid);
 	behavior addentry:
 		ensures _sda_slab_devicemap[slabid].sysdev_mmioregions_indices[\at(_sda_slab_devicemap[slabid].device_count, Pre)] == sysdev_mmioregions_index;
 		ensures (_sda_slab_devicemap[slabid].device_count == (\at(_sda_slab_devicemap[slabid].device_count, Pre) + 1));
+		ensures (_sda_slab_devicemap[slabid].device_count <= MAX_PLATFORM_DEVICES);
 @*/
 void gp_s2_sdminitdevmap_adddeventry(u32 slabid, u32 sysdev_mmioregions_index);
 

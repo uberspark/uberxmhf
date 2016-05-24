@@ -65,6 +65,7 @@
 		ensures gp_s2_sdminitdevmap_adddeventry_syshalt == false;
 		ensures _sda_slab_devicemap[slabid].sysdev_mmioregions_indices[\at(_sda_slab_devicemap[slabid].device_count, Pre)] == sysdev_mmioregions_index;
 		ensures (_sda_slab_devicemap[slabid].device_count == (\at(_sda_slab_devicemap[slabid].device_count, Pre) + 1));
+		ensures (_sda_slab_devicemap[slabid].device_count <= MAX_PLATFORM_DEVICES);
 
 	behavior invalidhalt:
 		assumes ( _sda_slab_devicemap[slabid].device_count >= MAX_PLATFORM_DEVICES);
