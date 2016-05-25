@@ -51,7 +51,7 @@
 #include <geec_prime.h>
 
 
-#if defined (__XMHF_VERIFICATION__)
+#if defined (__XMHF_VERIFICATION__) && defined (__USPARK_FRAMAC_VA__)
 	u32 check_esp, check_eip = CASM_RET_EIP;
 
 	void xmhfhwm_vdriver_writeesp(u32 oldval, u32 newval){
