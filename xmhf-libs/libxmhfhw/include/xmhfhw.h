@@ -640,6 +640,8 @@ CASM_FUNCDECL(void xmhfhw_cpu_loadIDT(arch_x86_idtdesc_t *idt_addr));
 u32 xmhf_baseplatform_arch_getcpuvendor(void);
 
 
+CASM_FUNCDECL(void xmhfhw_cpu_reloadcs(u32 cs_sel));
+CASM_FUNCDECL(void xmhfhw_cpu_reloaddsregs(u32 ds_sel));
 
 
 

@@ -46,13 +46,9 @@
 
 #include <xmhf.h>
 #include <xmhf-debug.h>
-
 #include <xmhfgeec.h>
 
 #include <geec_prime.h>
-#include <geec_sentinel.h>
-#include <uapi_slabmempgtbl.h>
-#include <xc_init.h>
 
 
 //we enter here with SMP enabled
@@ -62,7 +58,6 @@
 //@ghost bool gp_s5_entry_invokedsetupcpustate = false;
 //@ghost bool gp_s5_entry_invokedspinunlock = false;
 //@ghost bool gp_s5_entry_invokedstrt = false;
-//@ghost bool gp_s5_entry_invokedhlt = false;
 /*@
 	ensures (gp_s5_entry_invokedisbsp == true);
 	ensures (gp_s5_entry_invokedgetcpulapicid == true);
@@ -70,7 +65,6 @@
 	ensures (gp_s5_entry_invokedsetupcpustate == true);
 	ensures (gp_s5_entry_invokedspinunlock == true);
 	ensures (gp_s5_entry_invokedstrt == true);
-	ensures (gp_s5_entry_invokedhlt == true);
 @*/
 void gp_s5_entry(void){
 	u32 cpuid;
@@ -82,23 +76,31 @@ void gp_s5_entry(void){
 	isbsp = xmhfhw_lapic_isbsp();
 	//@ghost gp_s5_entry_invokedisbsp = true;
 
+	//@assert gp_s5_entry_invokedisbsp == true;
 	cpuid  = xmhf_baseplatform_arch_x86_getcpulapicid();
 	//@ghost gp_s5_entry_invokedgetcpulapicid = true;
 
+	//@assert gp_s5_entry_invokedisbsp == true;
+	//@assert gp_s5_entry_invokedgetcpulapicid == true;
     CASM_FUNCCALL(spin_lock,&gp_state4_smplock);
 	//@ghost gp_s5_entry_invokedspinlock = true;
 
     _XDPRINTF_("%s[%u]: ESP=%08x\n", __func__, (u16)cpuid, CASM_FUNCCALL(read_esp,CASM_NOPARAM));
 
-	gp_s5_setupcpustate((u16)cpuid, isbsp);
+	//@assert gp_s5_entry_invokedisbsp == true;
+	//@assert gp_s5_entry_invokedgetcpulapicid == true;
+	//@assert gp_s5_entry_invokedspinlock == true;
+    gp_s5_setupcpustate((u16)cpuid, isbsp);
 	//@ghost gp_s5_entry_invokedsetupcpustate = true;
-	//@ghost gp_s5_entry_invokedisbsp = true;
 
 	#if defined (__DEBUG_SERIAL__)
 	cpucount++;
 	#endif //__DEBUG_SERIAL__
 
-
+	//@assert gp_s5_entry_invokedisbsp == true;
+	//@assert gp_s5_entry_invokedgetcpulapicid == true;
+	//@assert gp_s5_entry_invokedspinlock == true;
+	//@assert gp_s5_entry_invokedsetupcpustate == true;
     CASM_FUNCCALL(spin_unlock,&gp_state4_smplock);
 	//@ghost gp_s5_entry_invokedspinunlock = true;
 
@@ -106,11 +108,12 @@ void gp_s5_entry(void){
     while(cpucount < __XMHF_CONFIG_DEBUG_SERIAL_MAXCPUS__);
     #endif //__DEBUG_SERIAL__
 
-	gp_s5_invokestrt(cpuid);
+	//@assert gp_s5_entry_invokedisbsp == true;
+	//@assert gp_s5_entry_invokedgetcpulapicid == true;
+	//@assert gp_s5_entry_invokedspinlock == true;
+	//@assert gp_s5_entry_invokedsetupcpustate == true;
+	//@assert gp_s5_entry_invokedspinunlock == true;
+    gp_s5_invokestrt(cpuid);
 	//@ghost gp_s5_entry_invokedstrt = true;
 
-	_XDPRINTF_("%s[%u]: Should never be here. Halting!\n",
-		__func__, (u16)cpuid);
-	CASM_FUNCCALL(xmhfhw_cpu_hlt, CASM_NOPARAM);
-	//@ghost gp_s5_entry_invokedhlt = true;
 }

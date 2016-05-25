@@ -46,13 +46,12 @@
 
 #include <xmhf.h>
 #include <xmhf-debug.h>
-
 #include <xmhfgeec.h>
 
 #include <geec_prime.h>
 #include <geec_sentinel.h>
-#include <uapi_slabmempgtbl.h>
-#include <xc_init.h>
+//#include <uapi_slabmempgtbl.h>
+//#include <xc_init.h>
 
 
 
@@ -280,6 +279,64 @@ static bool __xmhfhic_x86vmx_setupvmxstate(u64 cpuid){
 }
 
 
+
+#if defined (__XMHF_VERIFICATION__) && defined (__USPARK_FRAMAC_VA__)
+	u32 check_esp, check_eip = CASM_RET_EIP;
+	bool gp_s5_entry_invoked = false;
+
+	void xmhfhwm_vdriver_writeesp(u32 oldval, u32 newval){
+		//@assert (newval >= ((u32)&_init_bsp_cpustack + 4)) && (newval <= ((u32)&_init_bsp_cpustack + MAX_PLATFORM_CPUSTACK_SIZE)) ;
+	}
+
+	void xmhfhwm_vdriver_cpu_writecr3(u32 oldval, u32 newval){
+		//@assert (newval ==(u32)&gp_rwdatahdr.gp_vhslabmempgtbl_lvl4t);
+	}
+
+
+	void main(void){
+		u32 cpuid = 0;
+		bool isbsp = true;
+
+		//populate hardware model stack and program counter
+		xmhfhwm_cpu_gprs_esp = (u32)&_init_bsp_cpustack + MAX_PLATFORM_CPUSTACK_SIZE;
+		xmhfhwm_cpu_gprs_eip = check_eip;
+		check_esp = xmhfhwm_cpu_gprs_esp; // pointing to top-of-stack
+
+		//execute harness
+		xmhfhwm_cpu_cr4 = 0x00000030;
+		xmhfhwm_cpu_cr0 = 0x80000015;
+		xmhfhwm_cpu_cr3 =(u32)&gp_rwdatahdr.gp_vhslabmempgtbl_lvl4t;
+
+		gp_s5_setupcpustate(cpuid, isbsp);
+
+		//@assert (xmhfhwm_cpu_gdtr_base == (u32)&__xmhfhic_x86vmx_gdt_start);
+		//@assert (xmhfhwm_cpu_cs_selector == __CS_CPL0);
+		//@assert (xmhfhwm_cpu_ds_selector == __DS_CPL0);
+		//@assert (xmhfhwm_cpu_es_selector == __DS_CPL0);
+		//@assert (xmhfhwm_cpu_fs_selector == __DS_CPL0);
+		//@assert (xmhfhwm_cpu_gs_selector == __DS_CPL0);
+		//@assert (xmhfhwm_cpu_ss_selector == __DS_CPL0);
+		//@assert (xmhfhwm_cpu_tr_selector ==(__TRSEL + ((u32)cpuid * 8) ));
+		//@assert (xmhfhwm_cpu_idtr_base == (u32)&__xmhfhic_x86vmx_idt_start);
+		//@assert (xmhfhwm_cpu_eflags & EFLAGS_IOPL);
+		//@assert (xmhfhwm_cpu_msr_apic_base == MMIO_APIC_BASE);
+		//@assert (xmhfhwm_cpu_msr_efer & ((1 << EFER_NXE)));
+		//@assert (xmhfhwm_cpu_cr4 & CR4_OSXSAVE);
+		//@assert (xmhfhwm_cpu_cr0 & 0x20);
+		//@assert (xmhfhwm_cpu_msr_sysenter_cs == __CS_CPL0);
+		//@assert (xmhfhwm_cpu_msr_sysenter_eip == xmhfgeec_slab_info_table[XMHFGEEC_SLAB_GEEC_SENTINEL].slab_memoffset_entries[GEEC_SENTINEL_MEMOFFSETS_SYSENTERHANDLER_IDX]);
+		//@assert (xmhfhwm_cpu_msr_sysenter_esp_lo == (u32)((u32)&_geec_primesmp_sysenter_stack[(u32)cpuid+1]));
+		//@assert (xmhfhwm_cpu_msr_sysenter_esp_hi == 0);
+		//@assert (xmhfhwm_cpu_vmcs_host_rip == xmhfgeec_slab_info_table[XMHFGEEC_SLAB_GEEC_SENTINEL].slab_memoffset_entries[GEEC_SENTINEL_MEMOFFSETS_INTERCEPTHANDLER_IDX]);
+		//@assert (xmhfhwm_cpu_vmcs_host_rsp >= ((u32)&_init_bsp_cpustack + 4)) && (xmhfhwm_cpu_vmcs_host_rsp <= ((u32)&_init_bsp_cpustack + MAX_PLATFORM_CPUSTACK_SIZE)) ;
+		//@assert (xmhfhwm_cpu_vmcs_host_cr3 == (u32)&gp_rwdatahdr.gp_vhslabmempgtbl_lvl4t);
+
+		//@assert xmhfhwm_cpu_gprs_esp == check_esp;
+		//@assert xmhfhwm_cpu_gprs_eip == check_eip;
+	}
+#endif
+
+
 void gp_s5_setupcpustate(u32 cpuid, bool isbsp){
 
 	//replicate common MTRR state on this CPU
@@ -291,12 +348,12 @@ void gp_s5_setupcpustate(u32 cpuid, bool isbsp){
 
 
 	//reload CS
-	CASM_FUNCCALL(__xmhfhic_x86vmx_reloadCS,__CS_CPL0);
+	CASM_FUNCCALL(xmhfhw_cpu_reloadcs,__CS_CPL0);
 	_XDPRINTF_("%s[%u]: Reloaded CS\n", __func__, (u32)cpuid);
 
 
 	//reload DS, FS, GS and SS
-	CASM_FUNCCALL(__xmhfhic_x86vmx_reloadsegregs,__DS_CPL0);
+	CASM_FUNCCALL(xmhfhw_cpu_reloaddsregs,__DS_CPL0);
 	_XDPRINTF_("%s[%u]: Reloaded segment registers\n", __func__, (u32)cpuid);
 
 
