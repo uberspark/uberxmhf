@@ -21,10 +21,10 @@ export XMHF_SLAB_GLOBAL_SYMS :=
 
 
 #.PHONY: verify
-#verify: verifybase verif_s1 verif_s2 verif_s3 verif_s4
+#verify: verifybase verif_s1 verif_s2 verif_s3 verif_s4 verif_s5
 
 .PHONY: verify
-verify: verifybase verif_s5
+verify: verifybase verif_test
 
 .PHONY: verif_s1
 verif_s1: 
@@ -109,4 +109,7 @@ verif_s5:
 	cd $(XMHF_SLAB_VERIFICATION_DIR) && frama-c -val -no-val-show-progress -slevel 2048 -cpp-extra-args=-nostdinc -cpp-extra-args=-D__USPARK_FRAMAC_VA__ $(VFLAGS) gp_data.c.v.c gp_s5_setupcpustate.c.v.c xmhfgeec_slabinfotable.c xmhfgeec_slabmapdef.c libxmhfhw/*.c.v.c libxmhfhw/*.cS.v.c $(V_XMHFHWM_MODULES)
 
 
+.PHONY: verif_test
+verif_test: 
+	cd $(XMHF_SLAB_VERIFICATION_DIR) && frama-c -val -no-val-show-progress -slevel 2048 -cpp-extra-args=-nostdinc -cpp-extra-args=-D__USPARK_FRAMAC_VA__ $(VFLAGS) gp_data.c.v.c gp_s1_bspstkactivate.c.v.c xmhfgeec_slabinfotable.c xmhfgeec_slabmapdef.c libxmhfhw/*.v.c $(V_XMHFHWM_MODULES)
 

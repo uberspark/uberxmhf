@@ -50,7 +50,41 @@
 
 #include <geec_prime.h>
 
+#if defined (__XMHF_VERIFICATION__) && defined (__USPARK_FRAMAC_VA__)
+bool gp_s1_hub_called = false;
+u32 check_esp, check_eip = CASM_RET_EIP;
+slab_params_t test_sp;
 
+void xmhfhwm_vdriver_writeesp(u32 oldval, u32 newval){
+	//@assert (newval >= ((u32)&_init_bsp_cpustack + 4)) && (newval <= ((u32)&_init_bsp_cpustack + MAX_PLATFORM_CPUSTACK_SIZE)) ;
+}
+
+void gp_s1_hub(void){
+	//@assert xmhfhwm_cpu_state == CPU_STATE_RUNNING;
+	//@assert (xmhfhwm_cpu_msr_efer & (1ULL << EFER_NXE));
+	//@assert (xmhfhwm_cpu_cr4 & CR4_PSE);
+	//@assert (xmhfhwm_cpu_cr4 & CR4_PAE);
+	//@assert (xmhfhwm_cpu_cr3 == (u32)&_xcprimeon_init_pdpt);
+	//@assert (xmhfhwm_cpu_cr0 == (CR0_PE | CR0_PG | CR0_ET | CR0_EM));
+
+	//indicate s1_hub was invoked from bspstkactivate
+	gp_s1_hub_called = true;
+}
+
+void main(void){
+	//populate hardware model stack and program counter
+	xmhfhwm_cpu_gprs_esp = (u32)&_init_bsp_cpustack + MAX_PLATFORM_CPUSTACK_SIZE;
+	xmhfhwm_cpu_gprs_eip = check_eip;
+	check_esp = xmhfhwm_cpu_gprs_esp; // pointing to top-of-stack
+
+	//execute harness
+	gp_s1_bspstkactivate();
+
+	//@assert gp_s1_hub_called == true;
+	//@assert xmhfhwm_cpu_gprs_esp == check_esp;
+	//@assert xmhfhwm_cpu_gprs_eip == check_eip;
+}
+#endif
 
 void gp_s1_bspstkactivate(void){
 	u64 _msrefer;
