@@ -44,20 +44,13 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-/*
- * prime s3_entry verification driver
- * author: amit vasudevan (amitvasudevan@acm.org)
-*/
+//author: amit vasudevan (amitvasudevan@acm.org)
+
+#ifndef __XMHF_USPARK_H_
+#define __XMHF_USPARK_H_
 
 
-#include <xmhf.h>
-#include <xmhf-hwm.h>
-#include <xmhfgeec.h>
-
-#include <geec_prime.h>
-
-u32 cpuid = 0;	//BSP cpu
-
+#if defined (__XMHF_VERIFICATION__) && defined (__USPARK_FRAMAC_VA__)
 //////
 // frama-c non-determinism functions
 //////
@@ -84,45 +77,6 @@ u32 framac_nondetu32interval(u32 min, u32 max)
   return r;
 }
 
+#endif //
 
-//////
-u32 check_esp, check_eip = CASM_RET_EIP;
-
-void xmhfhwm_vdriver_writeesp(u32 oldval, u32 newval){
-	//@assert (newval >= ((u32)&_init_bsp_cpustack + 4)) && (newval <= ((u32)&_init_bsp_cpustack + MAX_PLATFORM_CPUSTACK_SIZE)) ;
-}
-
-void xmhfhwm_vdriver_cpu_writecr3(u32 oldval, u32 newval){
-	//@assert 0;
-}
-
-void xmhfhwm_vdriver_txt_write_rlp_wakeup_addr(u32 oldval, u32 newval){
-	x86smp_apbootstrapdata_t *apdata = (x86smp_apbootstrapdata_t *)&xmhfhwm_mem_region_apbootstrap_dataseg;
-
-	if(newval != 0){
-		//@assert (xmhfhwm_txt_mle_join_hi == 0);
-		//@assert (xmhfhwm_txt_mle_join_lo == ((u32)(X86SMP_APBOOTSTRAP_DATASEG << 4) + 16));
-		//@assert (apdata->ap_eip == (X86SMP_APBOOTSTRAP_CODESEG << 4));
-	}
-}
-
-void xmhfhwm_vdriver_mem_copy_to_apbootstrap_codeseg(u32 sourceaddr){
-	//@assert (sourceaddr == (u32)&gp_s4_entry);
-}
-
-
-
-void main(void){
-	//populate hardware model stack and program counter
-	xmhfhwm_cpu_gprs_esp = (u32)&_init_bsp_cpustack + MAX_PLATFORM_CPUSTACK_SIZE;
-	xmhfhwm_cpu_gprs_eip = check_eip;
-	check_esp = xmhfhwm_cpu_gprs_esp; // pointing to top-of-stack
-
-	//execute harness
-	gp_s3_startcores();
-
-	//@assert xmhfhwm_cpu_gprs_esp == check_esp;
-	//@assert xmhfhwm_cpu_gprs_eip == check_eip;
-}
-
-
+#endif /* _XMHF_USPARK_H */
