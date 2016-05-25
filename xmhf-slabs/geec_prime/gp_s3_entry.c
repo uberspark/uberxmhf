@@ -71,24 +71,31 @@ void gp_s3_entry(void){
 	//@ghost gp_s3_entry_invoked_writecr3 = true;
 
 	//save cpu MTRR state which we will later replicate on all APs
+	//@assert gp_s3_entry_invoked_writecr3 == true;
 	xmhfhw_cpu_x86_save_mtrrs(&_mtrrs);
 	//@ghost gp_s3_entry_invoked_savemtrrs = true;
 
 	//restore SINIT to MLE MTRR mappings
+	//@assert gp_s3_entry_invoked_writecr3 == true;
+	//@assert gp_s3_entry_invoked_savemtrrs == true;
 	xmhfhw_cpu_x86_restore_mtrrs(&sinit2mle_mtrrs);
 	//@ghost gp_s3_entry_invoked_restoremtrrs = true;
 
 	//start all cores
+	//@assert gp_s3_entry_invoked_writecr3 == true;
+	//@assert gp_s3_entry_invoked_savemtrrs == true;
+	//@assert gp_s3_entry_invoked_restoremtrrs == true;
 	gp_s3_startcores();
 	//@ghost gp_s3_entry_invoked_startcores = true;
 
 	//move on to state-5
+	//@assert gp_s3_entry_invoked_writecr3 == true;
+	//@assert gp_s3_entry_invoked_savemtrrs == true;
+	//@assert gp_s3_entry_invoked_restoremtrrs == true;
+	//@assert gp_s3_entry_invoked_startcores == true;
 	gp_s5_entry();
 	//@ghost gp_s3_entry_invoked_gp_s5_entry = true;
 
-	//we should never get here
-	_XDPRINTF_("%s:%u: Must never get here. Halting\n", __func__, __LINE__);
-	CASM_FUNCCALL(xmhfhw_cpu_hlt, CASM_NOPARAM);
 }
 
 
