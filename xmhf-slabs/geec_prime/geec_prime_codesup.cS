@@ -50,78 +50,7 @@
 #include <xmhfgeec.h>
 #include <geec_prime.h>
 
-// XMHF HIC prime assembly language code blobs
 // author: amit vasudevan (amitvasudevan@acm.org)
-
-
-
-
-//////
-
-/////////////////////////////////////////////////////////////////////////////
-// relinquish HIC initialization and move on to the first slab
-
-//void xmhfhic_arch_relinquish_control_to_init_slab(u64 cpuid, u64 entrystub, u64 mempgtbl_cr3, u64 slabtos){
-CASM_FUNCDEF(void, xmhfhic_arch_relinquish_control_to_init_slab,
-{
-
-/*
-    //TODO: x86_64 --> x86
-    //switch page tables to init slab pagetables
-    asm volatile(
-         "movq %0, %%rax \r\n"
-         "movq %%rax, %%cr3 \r\n"
-        :
-        : "m" (mempgtbl_cr3)
-        : "rax"
-    );
-
-
-
-    //RDI = iparams
-    //RSI = iparams_size
-    //RDX = slab entrystub; used for SYSEXIT
-    //RCX = slab entrystub stack TOS for the CPU; used for SYSEXIT
-    //R8 = oparams
-    //R9 = oparams_size
-    //R10 = src_slabid
-    //R11 = cpuid
-
-
-    asm volatile(
-         "movq %0, %%rdi \r\n"
-         "movq %1, %%rsi \r\n"
-         "movq %2, %%rdx \r\n"
-         "movq %3, %%rcx \r\n"
-         "movq %4, %%r8 \r\n"
-         "movq %5, %%r9 \r\n"
-         "movq %6, %%r10 \r\n"
-         "movq %7, %%r11 \r\n"
-
-         "sysexitq \r\n"
-         //"int $0x03 \r\n"
-        :
-        : "i" (NULL),
-          "i" (0),
-          "m" (entrystub),
-          "m" (slabtos),
-          "i" (NULL),
-          "i" (0),
-          "i" (0xFFFFFFFFFFFFFFFFULL),
-          "m" (cpuid)
-
-
-        : "rdi", "rsi", "rdx", "rcx", "r8", "r9", "r10", "r11"
-    );
-*/
-},
-u64 cpuid,
-u64 entrystub,
-u64 mempgtbl_cr3,
-u64 slabtos)
-
-
-
 
 
 
