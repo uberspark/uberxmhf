@@ -92,11 +92,11 @@ verif_s2:
 .PHONY: verif_s3
 verif_s3: 
 	@echo Verifying stage-3...
-	cd $(XMHF_SLAB_VERIFICATION_DIR) && frama-c -main gp_s3_entry -lib-entry -wp -wp-rte -wp-model +cint+cast  -wp-prover alt-ergo,cvc3,z3 -cpp-extra-args=-nostdinc $(VFLAGS) gp_data.c.v.c gp_s3_entry.c.v.c
+	#cd $(XMHF_SLAB_VERIFICATION_DIR) && frama-c -main gp_s3_entry -lib-entry -wp -wp-rte -wp-model +cint+cast  -wp-prover alt-ergo,cvc3,z3 -cpp-extra-args=-nostdinc $(VFLAGS) gp_data.c.v.c gp_s3_entry.c.v.c
+	cd $(XMHF_SLAB_VERIFICATION_DIR) && frama-c -pp-annot -val -no-val-show-progress -slevel 2048 -cpp-extra-args=-nostdinc $(VFLAGS) gp_data.c.v.c gp_s3_startcores.c.v.c xmhfgeec_slabinfotable.c xmhfgeec_slabmapdef.c libxmhfhw/xmhfhw_cpu_txt*.c.v.c libxmhfhw/*.cS.v.c $(V_XMHFHWM_MODULES)
 
 
 #cd $(XMHF_SLAB_VERIFICATION_DIR) && frama-c -val -no-val-show-progress -slevel 2048 -cpp-extra-args=-nostdinc $(VFLAGS) ../verify/gpvdrv_s3entry.c gp_data.c.v.c gp_s3_entry.c.v.c xmhfgeec_slabinfotable.c xmhfgeec_slabmapdef.c libxmhfhw/*.cS.v.c $(V_XMHFHWM_MODULES)
-#cd $(XMHF_SLAB_VERIFICATION_DIR) && frama-c -val -no-val-show-progress -slevel 2048 -cpp-extra-args=-nostdinc $(VFLAGS) ../verify/gpvdrv_s3startcores.c gp_data.c.v.c gp_s3_startcores.c.v.c xmhfgeec_slabinfotable.c xmhfgeec_slabmapdef.c libxmhfhw/xmhfhw_cpu_txt*.c.v.c libxmhfhw/*.cS.v.c $(V_XMHFHWM_MODULES)
 #cd $(XMHF_SLAB_VERIFICATION_DIR) && frama-c -val -no-val-show-progress -slevel 2048 -cpp-extra-args=-nostdinc $(VFLAGS) ../verify/gpvdrv_s4entry.c gp_data.c.v.c gp_s4_entry.cS.v.c xmhfgeec_slabinfotable.c xmhfgeec_slabmapdef.c libxmhfhw/*.cS.v.c $(V_XMHFHWM_MODULES)
 #cd $(XMHF_SLAB_VERIFICATION_DIR) && frama-c -val -no-val-show-progress -slevel 2048 -cpp-extra-args=-nostdinc $(VFLAGS) ../verify/gpvdrv_s4apstacks.c gp_data.c.v.c gp_s4_apstacks.cS.v.c xmhfgeec_slabinfotable.c xmhfgeec_slabmapdef.c libxmhfhw/*.cS.v.c $(V_XMHFHWM_MODULES)
 #cd $(XMHF_SLAB_VERIFICATION_DIR) && frama-c -main gp_s5_entry -lib-entry -wp -wp-rte -wp-model +cint+cast  -wp-prover alt-ergo,cvc3,z3 -cpp-extra-args=-nostdinc $(VFLAGS) gp_data.c.v.c gp_s5_entry.c.v.c
