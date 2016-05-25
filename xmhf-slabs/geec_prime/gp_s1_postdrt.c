@@ -51,6 +51,33 @@
 
 #include <geec_prime.h>
 
+#if defined (__XMHF_VERIFICATION__) && defined (__USPARK_FRAMAC_VA__)
+u32 check_esp, check_eip = CASM_RET_EIP;
+
+void xmhfhwm_vdriver_writeesp(u32 oldval, u32 newval){
+	//@assert (newval >= ((u32)&_init_bsp_cpustack + 4)) && (newval <= ((u32)&_init_bsp_cpustack + MAX_PLATFORM_CPUSTACK_SIZE)) ;
+}
+
+void main(void){
+	//populate hardware model stack and program counter
+	xmhfhwm_cpu_gprs_esp = (u32)&_init_bsp_cpustack + MAX_PLATFORM_CPUSTACK_SIZE;
+	xmhfhwm_cpu_gprs_eip = check_eip;
+	check_esp = xmhfhwm_cpu_gprs_esp; // pointing to top-of-stack
+
+	// //@assert (xmhfhwm_txt_heap.biosdatasize == sizeof(bios_data_t));
+	// //@assert (xmhfhwm_txt_heap.osmledatasize == PAGE_SIZE_4K);
+	// //@assert (xmhfhwm_txt_heap.ossinitdatasize == sizeof(os_sinit_data_t));
+	// //@assert (xmhfhwm_txt_heap.sinitmledatasize == sizeof(sinit_mle_data_t));
+
+	//execute harness
+	gp_s1_postdrt();
+
+	//@assert xmhfhwm_cpu_state == CPU_STATE_RUNNING || xmhfhwm_cpu_state == CPU_STATE_HALT;
+	//@assert xmhfhwm_cpu_gprs_esp == check_esp;
+	//@assert xmhfhwm_cpu_gprs_eip == check_eip;
+}
+#endif
+
 void gp_s1_postdrt(void){
 	txt_heap_t *txt_heap;
 	os_mle_data_t os_mle_data;
