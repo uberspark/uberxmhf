@@ -44,33 +44,39 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-// xmhf.h - main XMHF header file
-// author: amit vasudevan (amitvasudevan@acm.org)
+//author: amit vasudevan (amitvasudevan@acm.org)
 
-#ifndef __XMHF_H_
-#define __XMHF_H_
-
-#ifndef __ASSEMBLY__
-
-//pull in required libxmhfc C includes
-#include <stdint.h>
-#include <stdbool.h>
-#include <stddef.h>
-#include <stdarg.h>
-#include <string.h>
-#include <ctype.h>
-#include <assert.h>
-
-#endif // __ASSEMBLY__
+#ifndef __XMHF_USPARK_H_
+#define __XMHF_USPARK_H_
 
 
-#include <xmhf-config.h>		//XMHF platform/arch config, TODO: this needs to be platform/arch independent push arch dependent stuff into arch/
-#include <xmhf-types.h>			//XMHF specific base types
-#include <xmhf-error.h>
-#include <xmhf-uspark.h>
-//#include <xmhf-hwm.h>            //XMHF hardware interfaces
-//#include <xmhfhw.h>
-//#include <xmhf-hic.h>
-//#include <xmhf-casm.h>
+#if defined (__XMHF_VERIFICATION__) && defined (__USPARK_FRAMAC_VA__)
+//////
+// frama-c non-determinism functions
+//////
 
-#endif /* __XMHF_H_ */
+u32 Frama_C_entropy_source;
+
+//@ assigns Frama_C_entropy_source \from Frama_C_entropy_source;
+void Frama_C_update_entropy(void);
+
+u32 framac_nondetu32(void){
+  Frama_C_update_entropy();
+  return (u32)Frama_C_entropy_source;
+}
+
+u32 framac_nondetu32interval(u32 min, u32 max)
+{
+  u32 r,aux;
+  Frama_C_update_entropy();
+  aux = Frama_C_entropy_source;
+  if ((aux>=min) && (aux <=max))
+    r = aux;
+  else
+    r = min;
+  return r;
+}
+
+#endif //
+
+#endif /* _XMHF_USPARK_H */
