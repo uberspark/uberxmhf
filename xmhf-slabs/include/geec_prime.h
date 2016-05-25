@@ -598,8 +598,6 @@ CASM_FUNCDECL(void gp_s4_apstacks(void *noparam));
 void gp_s5_entry(void);
 void gp_s5_setupcpustate(u32 cpuid, bool isbsp);
 void gp_s5_invokestrt(u32 cpuid);
-CASM_FUNCDECL(void __xmhfhic_x86vmx_reloadCS(u32 cs_sel));
-CASM_FUNCDECL(void __xmhfhic_x86vmx_reloadsegregs(u32 ds_sel));
 
 
 #endif // __ASSEMBLY__
