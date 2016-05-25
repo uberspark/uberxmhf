@@ -46,12 +46,45 @@
 
 #include <xmhf.h>
 #include <xmhf-debug.h>
-
 #include <xmhfgeec.h>
 
 #include <geec_prime.h>
 #include <xc_init.h>
 
+#if defined (__XMHF_VERIFICATION__) && defined (__USPARK_FRAMAC_VA__)
+	u32 check_esp, check_eip = CASM_RET_EIP;
+	bool gp_s5_entry_invoked = false;
+
+	void xmhfhwm_vdriver_writeesp(u32 oldval, u32 newval){
+		//@assert (newval >= ((u32)&_init_bsp_cpustack + 4)) && (newval <= ((u32)&_init_bsp_cpustack + MAX_PLATFORM_CPUSTACK_SIZE)) ;
+	}
+
+	void xmhfhwm_vdriver_cpu_writecr3(u32 oldval, u32 newval){
+		//@assert (newval ==(u32)&gp_rwdatahdr.gp_vhslabmempgtbl_lvl4t);
+	}
+
+	void __slab_callsentinel(slab_params_t *sp){
+		//@assert (sp->src_slabid == XMHFGEEC_SLAB_GEEC_PRIME);
+		//@assert (sp->dst_slabid == XMHFGEEC_SLAB_XC_INIT);
+		//@assert (sp->cpuid >=0 && sp->cpuid <= 255);
+		//@assert (xmhfhwm_cpu_state == CPU_STATE_RUNNING);
+	}
+
+	void main(void){
+		u32 cpuid = framac_nondetu32interval(0, 255);
+		//populate hardware model stack and program counter
+		xmhfhwm_cpu_gprs_esp = (u32)&_init_bsp_cpustack + MAX_PLATFORM_CPUSTACK_SIZE;
+		xmhfhwm_cpu_gprs_eip = check_eip;
+		check_esp = xmhfhwm_cpu_gprs_esp; // pointing to top-of-stack
+
+		//execute harness
+		gp_s5_invokestrt(cpuid);
+
+		//@assert xmhfhwm_cpu_gprs_esp == check_esp;
+		//@assert xmhfhwm_cpu_gprs_eip == check_eip;
+	}
+
+#endif
 
 void gp_s5_invokestrt(u32 cpuid){
 	slab_params_t sp;
