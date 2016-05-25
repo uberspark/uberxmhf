@@ -111,5 +111,6 @@ verif_s5:
 
 .PHONY: verif_test
 verif_test: 
-	cd $(XMHF_SLAB_VERIFICATION_DIR) && frama-c -val -no-val-show-progress -slevel 2048 -cpp-extra-args=-nostdinc -cpp-extra-args=-D__USPARK_FRAMAC_VA__ $(VFLAGS) gp_data.c.v.c gp_s1_bspstkactivate.c.v.c xmhfgeec_slabinfotable.c xmhfgeec_slabmapdef.c libxmhfhw/*.v.c $(V_XMHFHWM_MODULES)
+	#cd $(XMHF_SLAB_VERIFICATION_DIR) && frama-c -val -no-val-show-progress -slevel 2048 -cpp-extra-args=-nostdinc -cpp-extra-args=-D__USPARK_FRAMAC_VA__ $(VFLAGS) gp_data.c.v.c gp_s1_bspstkactivate.c.v.c xmhfgeec_slabinfotable.c xmhfgeec_slabmapdef.c libxmhfhw/*.v.c $(V_XMHFHWM_MODULES)
+	cd $(XMHF_SLAB_VERIFICATION_DIR) && frama-c -val -no-val-show-progress -slevel 2048 -cpp-extra-args=-nostdinc -cpp-extra-args=-D__USPARK_FRAMAC_VA__ $(VFLAGS)  gp_data.c.v.c gp_s1_chkreq.c.v.c xmhfgeec_slabinfotable.c xmhfgeec_slabmapdef.c libxmhfhw/*.v.c $(V_XMHFHWM_MODULES)
 
