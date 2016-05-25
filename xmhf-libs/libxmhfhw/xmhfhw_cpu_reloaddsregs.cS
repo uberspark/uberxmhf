@@ -44,31 +44,15 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
+//xmhfhw_cpu_vmx: CPU VMX functions
+//author: amit vasudevan (amitvasudevan@acm.org)
+
 #include <xmhf.h>
+#include <xmhf-hwm.h>
+#include <xmhfhw.h>
 #include <xmhf-debug.h>
 
-#include <xmhfgeec.h>
-#include <geec_prime.h>
-
-// author: amit vasudevan (amitvasudevan@acm.org)
-
-
-
-//////////////////////////////////////////////////////////////////////////////
-// setup cpu state for hic
-
-//__attribute__((naked)) void __xmhfhic_x86vmx_reloadCS(u32 cs_sel)
-CASM_FUNCDEF(void, __xmhfhic_x86vmx_reloadCS,
-{
-    xmhfhwm_cpu_insn_popl_eax();
-    xmhfhwm_cpu_insn_pushl_mesp(0x0);
-    xmhfhwm_cpu_insn_pushl_eax();
-    xmhfhwm_cpu_insn_lret();
-},
-u32 cs_sel)
-
-//__attribute__((naked)) void __xmhfhic_x86vmx_reloadsegregs(u32 ds_sel){
-CASM_FUNCDEF(void, __xmhfhic_x86vmx_reloadsegregs,
+CASM_FUNCDEF(void, xmhfhw_cpu_reloaddsregs,
 {
     xmhfhwm_cpu_insn_movl_mesp_eax(0x4);
     xmhfhwm_cpu_insn_movw_ax_ds();
@@ -79,18 +63,3 @@ CASM_FUNCDEF(void, __xmhfhic_x86vmx_reloadsegregs,
     xmhfhwm_cpu_insn_ret();
 },
 u32 ds_sel)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

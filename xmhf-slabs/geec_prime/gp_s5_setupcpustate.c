@@ -348,12 +348,12 @@ void gp_s5_setupcpustate(u32 cpuid, bool isbsp){
 
 
 	//reload CS
-	CASM_FUNCCALL(__xmhfhic_x86vmx_reloadCS,__CS_CPL0);
+	CASM_FUNCCALL(xmhfhw_cpu_reloadcs,__CS_CPL0);
 	_XDPRINTF_("%s[%u]: Reloaded CS\n", __func__, (u32)cpuid);
 
 
 	//reload DS, FS, GS and SS
-	CASM_FUNCCALL(__xmhfhic_x86vmx_reloadsegregs,__DS_CPL0);
+	CASM_FUNCCALL(xmhfhw_cpu_reloaddsregs,__DS_CPL0);
 	_XDPRINTF_("%s[%u]: Reloaded segment registers\n", __func__, (u32)cpuid);
 
 
