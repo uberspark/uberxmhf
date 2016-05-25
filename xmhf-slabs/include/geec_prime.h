@@ -589,35 +589,15 @@ void gp_s2_setuptss(void);
 void gp_s3_entry(void);
 void gp_s3_startcores(void);
 
+
+
 CASM_FUNCDECL(void gp_s4_entry(void *noparam));
 CASM_FUNCDECL(void gp_s4_apstacks(void *noparam));
-
-
-//void gp_s4_s6_entry(void);
 
 
 void gp_s5_entry(void);
 void gp_s5_setupcpustate(u32 cpuid, bool isbsp);
 void gp_s5_invokestrt(u32 cpuid);
-
-
-
-void xmhfhic_arch_setup_slab_info(void);
-void xmhfhic_arch_sanity_check_requirements(void);
-void xmhfhic_arch_setup_slab_device_allocation(void);
-void xmhfhic_arch_setup_slab_mem_page_tables(void);
-
-
-CASM_FUNCDECL(void xmhfhic_arch_relinquish_control_to_init_slab(u64 cpuid, u64 entrystub, u64 mempgtbl_cr3, u64 slabtos));
-
-//void _geec_prime_main(void);
-
-
-void xmhfhic_arch_switch_to_smp(void);
-void xmhfhic_arch_setup_base_cpu_data_structures(void);
-void xmhf_hic_arch_setup_cpu_state(u64 cpuid);
-void xmhfhic_smp_entry(u32 cpuid);
-
 CASM_FUNCDECL(void __xmhfhic_x86vmx_reloadCS(u32 cs_sel));
 CASM_FUNCDECL(void __xmhfhic_x86vmx_reloadsegregs(u32 ds_sel));
 
