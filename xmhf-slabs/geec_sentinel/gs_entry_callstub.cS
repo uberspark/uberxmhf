@@ -45,7 +45,7 @@
  */
 
 /*
- GEEC sentinel low-level support routines
+ sentinel v2x call entry-point
  author: amit vasudevan (amitvasudevan@acm.org)
 */
 
@@ -53,6 +53,7 @@
 #include <xmhf-hwm.h>
 #include <xmhf-debug.h>
 #include <xmhfgeec.h>
+
 #include <geec_sentinel.h>
 
 //////
@@ -65,6 +66,96 @@
 //	[esp+4] = slab_params_t *sp (pointer to slab_params_t within caller
 //					memory area)
 
+
+#if defined (__XMHF_VERIFICATION__) && defined (__USPARK_FRAMAC_VA__)
+u32 saved_cpu_gprs_ebx=0;
+u32 saved_cpu_gprs_esi=0;
+u32 saved_cpu_gprs_edi=0;
+u32 saved_cpu_gprs_ebp=0;
+u32 cpuid = 0;	//cpu
+
+void cabi_establish(void){
+	xmhfhwm_cpu_gprs_ebx = 5UL;
+	xmhfhwm_cpu_gprs_esi = 6UL;
+	xmhfhwm_cpu_gprs_edi = 7UL;
+	saved_cpu_gprs_ebx = xmhfhwm_cpu_gprs_ebx;
+	saved_cpu_gprs_esi = xmhfhwm_cpu_gprs_esi;
+	saved_cpu_gprs_edi = xmhfhwm_cpu_gprs_edi;
+}
+
+void cabi_check(void){
+	//@ assert saved_cpu_gprs_ebx == xmhfhwm_cpu_gprs_ebx;
+	//@ assert saved_cpu_gprs_esi == xmhfhwm_cpu_gprs_esi;
+	//@ assert saved_cpu_gprs_edi == xmhfhwm_cpu_gprs_edi;
+}
+
+u32 check_esp, check_eip = CASM_RET_EIP;
+
+	#if defined (DRV_SLAB_ENTRYSTUB)
+	slab_params_t drv_slab_entrystub_sp;
+	
+	void geec_sentinel_main(slab_params_t *sp,
+		void *caller_stack_frame){
+		//Pre:
+		//	[esp] = CASM_RET_EIP
+		//  	[esp+4] = slab_params_t *sp
+		//	[esp+8] = &[esp+8]
+		//	[esp+12] = ebx
+		//	[esp+16] = esi
+		//	[esp+20] = edi
+		//	[esp+24] = ebp
+		//	[esp+28] = return address to resume the (verified,privileged) caller
+		//	[esp+32] = slab_params_t *sp
+		//@assert sp->src_slabid == 6UL;
+		//@assert xmhfhwm_cpu_gprs_esp == (check_esp - (9 * sizeof(u32)));
+		//@assert *((u32 *)xmhfhwm_cpu_gprs_esp) == CASM_RET_EIP;
+		//@assert *((u32 *)((u32)xmhfhwm_cpu_gprs_esp+4)) == (unsigned int)&drv_slab_entrystub_sp;
+		//@assert *((u32 *)((u32)xmhfhwm_cpu_gprs_esp+8)) == (u32)xmhfhwm_cpu_gprs_esp+12;
+		//@assert *((u32 *)((u32)xmhfhwm_cpu_gprs_esp+12)) == saved_cpu_gprs_ebx;
+		//@assert *((u32 *)((u32)xmhfhwm_cpu_gprs_esp+16)) == saved_cpu_gprs_esi;
+		//@assert *((u32 *)((u32)xmhfhwm_cpu_gprs_esp+20)) == saved_cpu_gprs_edi;
+		//@assert *((u32 *)((u32)xmhfhwm_cpu_gprs_esp+24)) == saved_cpu_gprs_ebp;
+		//@assert *((u32 *)((u32)xmhfhwm_cpu_gprs_esp+28)) == CASM_RET_EIP;
+		//@assert *((u32 *)((u32)xmhfhwm_cpu_gprs_esp+32)) == (unsigned int)&drv_slab_entrystub_sp;
+	
+		//@assert false;
+	}
+	
+	void drv_slab_entrystub(void){
+		xmhfhwm_cpu_gprs_ebx = 5UL;
+		xmhfhwm_cpu_gprs_esi = 6UL;
+		xmhfhwm_cpu_gprs_edi = 7UL;
+		xmhfhwm_cpu_gprs_ebp = 8UL;
+		saved_cpu_gprs_ebx = xmhfhwm_cpu_gprs_ebx;
+		saved_cpu_gprs_esi = xmhfhwm_cpu_gprs_esi;
+		saved_cpu_gprs_edi = xmhfhwm_cpu_gprs_edi;
+		saved_cpu_gprs_ebp = xmhfhwm_cpu_gprs_ebp;
+	
+	
+		drv_slab_entrystub_sp.cpuid = 0;
+		drv_slab_entrystub_sp.src_slabid = 6UL;
+	
+		CASM_FUNCCALL(_slab_entrystub, &drv_slab_entrystub_sp);
+		//@assert false;
+	}
+	#endif // DRV_SLAB_ENTRYSTUB
+
+
+
+void main(void){
+	//populate hardware model stack and program counter
+	xmhfhwm_cpu_gprs_esp = _slab_tos[cpuid];
+	xmhfhwm_cpu_gprs_eip = check_eip;
+	check_esp = xmhfhwm_cpu_gprs_esp; // pointing to top-of-stack
+
+	#if defined (DRV_SLAB_ENTRYSTUB)
+	drv_slab_entrystub();
+	#endif //DRV_SLAB_ENTRYSTUB
+
+	//@assert xmhfhwm_cpu_gprs_esp == check_esp;
+	//@assert xmhfhwm_cpu_gprs_eip == check_eip;
+}
+#endif
 CASM_FUNCDEF_FULL(.slab_entrystub, 1, void, _slab_entrystub,
 {
 	xmhfhwm_cpu_insn_movl_mesp_eax(0x4);
@@ -75,8 +166,8 @@ CASM_FUNCDEF_FULL(.slab_entrystub, 1, void, _slab_entrystub,
 	xmhfhwm_cpu_insn_movl_esp_edx();
 	xmhfhwm_cpu_insn_pushl_edx();
 	xmhfhwm_cpu_insn_pushl_eax();
-	// Post:
-	//  	[esp] = slab_params_t *sp
+	// stack frame at this point:
+	// 	[esp] = slab_params_t *sp
 	//	[esp+4] = &[esp+8]
 	//	[esp+8] = ebx
 	//	[esp+12] = esi
@@ -86,11 +177,8 @@ CASM_FUNCDEF_FULL(.slab_entrystub, 1, void, _slab_entrystub,
 	//	[esp+28] = slab_params_t *sp
 	xmhfhwm_cpu_insn_call_c_2p(geec_sentinel_main, slab_params_t *, void *);
 
-	// Pre: false; should never get here when verifying this CASM
-	// function. if we do end up here the following hlt will trigger
-	// verification error
+	// halt if we ever return back (should never happen)
 	xmhfhwm_cpu_insn_hlt();
-	// Post: false; should never get here
 },
 slab_params_t *sp)
 
