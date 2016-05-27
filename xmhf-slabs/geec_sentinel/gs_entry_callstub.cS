@@ -149,6 +149,26 @@ u32 check_esp, check_eip = CASM_RET_EIP;
 	#endif // defined
 
 
+	#if defined (DRV_PATHV2UG)
+	slab_params_t drv_path_callv2ug_sp;
+	
+	void xmhfhwm_vdriver_slabep(void){
+		//@assert false;
+	}
+	
+	void drv_path_callv2ug(void){
+		drv_path_callv2ug_sp.slab_ctype = XMHFGEEC_SENTINEL_CALL_FROM_VfT_PROG;
+        drv_path_callv2ug_sp.src_slabid = XMHFGEEC_SLAB_XC_INIT;
+        drv_path_callv2ug_sp.dst_slabid = XMHFGEEC_SLAB_XG_RICHGUEST;
+        drv_path_callv2ug_sp.dst_uapifn = 0;
+		drv_path_callv2ug_sp.cpuid = 0;
+		
+		CASM_FUNCCALL(_slab_entrystub, &drv_path_callv2ug_sp);
+		//@assert false;
+	}
+	#endif // defined
+
+
 void main(void){
 	//populate hardware model stack and program counter
 	xmhfhwm_cpu_gprs_esp = _slab_tos[cpuid];
@@ -162,6 +182,10 @@ void main(void){
 	#if defined (DRV_PATHV2UV)
 	drv_pathv2uv();
 	#endif
+	
+	#if defined (DRV_PATHV2UG)
+	drv_path_callv2ug();
+	#endif // defined
 	
 }
 #endif
