@@ -45,7 +45,7 @@
  */
 
 /*
- GEEC sentinel low-level support routines
+ sentinel exception entry point
  author: amit vasudevan (amitvasudevan@acm.org)
 */
 
@@ -53,9 +53,66 @@
 #include <xmhf-hwm.h>
 #include <xmhf-debug.h>
 #include <xmhfgeec.h>
+
 #include <geec_sentinel.h>
 
+#if defined (__XMHF_VERIFICATION__) && defined (__USPARK_FRAMAC_VA__)
+#include <xc_exhub.h>
 
+u32 saved_cpu_gprs_ebx=0;
+u32 saved_cpu_gprs_esi=0;
+u32 saved_cpu_gprs_edi=0;
+u32 saved_cpu_gprs_ebp=0;
+u32 cpuid = 0;	//cpu
+
+void cabi_establish(void){
+	xmhfhwm_cpu_gprs_ebx = 5UL;
+	xmhfhwm_cpu_gprs_esi = 6UL;
+	xmhfhwm_cpu_gprs_edi = 7UL;
+	saved_cpu_gprs_ebx = xmhfhwm_cpu_gprs_ebx;
+	saved_cpu_gprs_esi = xmhfhwm_cpu_gprs_esi;
+	saved_cpu_gprs_edi = xmhfhwm_cpu_gprs_edi;
+}
+
+void cabi_check(void){
+	//@ assert saved_cpu_gprs_ebx == xmhfhwm_cpu_gprs_ebx;
+	//@ assert saved_cpu_gprs_esi == xmhfhwm_cpu_gprs_esi;
+	//@ assert saved_cpu_gprs_edi == xmhfhwm_cpu_gprs_edi;
+}
+
+u32 check_esp, check_eip = CASM_RET_EIP;
+
+	#if defined (DRV_PATH_CALLEXCP)
+	x86vmx_exception_frame_t drv_path_callexcp_excpframe;
+	
+	void xmhfhwm_vdriver_slabep(void){
+		//@assert xmhfhwm_cpu_gprs_eip == (u32)xmhfgeec_slab_info_table[XMHFGEEC_SLAB_XC_EXHUB].entrystub;
+		//@assert false;
+	}
+	
+	void drv_path_callexcp(void){
+		xmhfhwm_cpu_gprs_esp -= sizeof(x86vmx_exception_frame_t);
+	
+		//invoke sentinel exception stub
+		CASM_FUNCCALL(__xmhf_exception_handler_8, CASM_NOPARAM);
+		//@assert false;
+	}
+	#endif // defined
+
+
+void main(void){
+	//populate hardware model stack and program counter
+	xmhfhwm_cpu_gprs_esp = _slab_tos[cpuid];
+	xmhfhwm_cpu_gprs_eip = check_eip;
+	check_esp = xmhfhwm_cpu_gprs_esp; // pointing to top-of-stack
+
+	#if defined (DRV_PATH_CALLEXCP)
+	drv_path_callexcp();
+	#endif // DRV_PATH_CALLEXCP
+	
+}
+
+#endif
 ////// exceptions entry stubs
 
 #define XMHF_EXCEPTION_HANDLER_DEFINE(vector) 												\
