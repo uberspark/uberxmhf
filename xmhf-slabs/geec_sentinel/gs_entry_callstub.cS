@@ -70,6 +70,7 @@
 #if defined (__XMHF_VERIFICATION__) && defined (__USPARK_FRAMAC_VA__)
 #include <xc_init.h>
 #include <uapi_gcpustate.h>
+#include <xh_aprvexec.h>
 
 u32 saved_cpu_gprs_ebx=0;
 u32 saved_cpu_gprs_esi=0;
@@ -119,6 +120,34 @@ u32 check_esp, check_eip = CASM_RET_EIP;
 	}
 	#endif // DRV_PATHV2V
 
+	#if defined (DRV_PATHV2UV)
+	slab_params_t drv_pathv2uv_sp;
+	
+	void xmhfhwm_vdriver_slabep(void){
+		cabi_check();
+		//@assert xmhfhwm_cpu_gprs_eip == (u32)xmhfgeec_slab_info_table[XMHFGEEC_SLAB_XH_APRVEXEC].entrystub;
+		//@assert false;
+	}
+	
+	void drv_pathv2uv(void){
+		drv_pathv2uv_sp.slab_ctype =XMHFGEEC_SENTINEL_CALL_FROM_VfT_PROG;
+        drv_pathv2uv_sp.src_slabid = XMHFGEEC_SLAB_XC_INIT;
+        drv_pathv2uv_sp.dst_slabid = XMHFGEEC_SLAB_XH_APRVEXEC;
+        drv_pathv2uv_sp.dst_uapifn = 0;
+		drv_pathv2uv_sp.cpuid = 0;
+	
+		xmhfhwm_sysmemaccess_physmem_extents[xmhfhwm_sysmemaccess_physmem_extents_total].addr_start =
+			xmhfgeec_slab_info_table[XMHFGEEC_SLAB_XH_APRVEXEC].slab_physmem_extents[2].addr_start;
+		xmhfhwm_sysmemaccess_physmem_extents[xmhfhwm_sysmemaccess_physmem_extents_total].addr_end =
+			xmhfgeec_slab_info_table[XMHFGEEC_SLAB_XH_APRVEXEC].slab_physmem_extents[2].addr_end;
+		xmhfhwm_sysmemaccess_physmem_extents_total++;
+	
+		cabi_establish();
+		CASM_FUNCCALL(_slab_entrystub, &drv_pathv2uv_sp);
+		//@assert false;
+	}
+	#endif // defined
+
 
 void main(void){
 	//populate hardware model stack and program counter
@@ -129,6 +158,11 @@ void main(void){
 	#if defined (DRV_PATHV2V)
 	drv_pathv2v();
 	#endif // DRV_PATHV2V
+	
+	#if defined (DRV_PATHV2UV)
+	drv_pathv2uv();
+	#endif
+	
 }
 #endif
 
