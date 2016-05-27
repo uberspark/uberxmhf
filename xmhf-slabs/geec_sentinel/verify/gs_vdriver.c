@@ -226,50 +226,6 @@ void drv_path_calluv2v(void){
 
 
 
-#if defined (DRV_PATH_RETUV2V)
-
-slab_params_t drv_path_retuv2v_calleesp;
-u32 drv_path_retuv2v_callerstackframe[6];
-gs_siss_element_t siss_elem;
-
-void xmhfhwm_vdriver_uhslabretaddr(void){
-	// //@assert xmhfhwm_cpu_gprs_eip == CASM_RET_EIP;
-	// //@assert xmhfhwm_cpu_gprs_esp == _slab_tos[cpuid];
-	//@assert false;
-}
-
-
-void drv_path_retuv2v(void){
-	drv_path_retuv2v_calleesp.slab_ctype = XMHFGEEC_SENTINEL_RET_uVT_uVU_PROG_TO_VfT_PROG;
-        drv_path_retuv2v_calleesp.src_slabid = XMHFGEEC_SLAB_UAPI_GCPUSTATE;
-        drv_path_retuv2v_calleesp.dst_slabid = XMHFGEEC_SLAB_XC_TESTSLAB;
-        drv_path_retuv2v_calleesp.dst_uapifn = 0;
-	drv_path_retuv2v_calleesp.cpuid = 0;
-
-
-	//inform hardware model to treat slab stack region as valid memory
-	xmhfhwm_sysmemaccess_physmem_extents[xmhfhwm_sysmemaccess_physmem_extents_total].addr_start =
-		xmhfgeec_slab_info_table[XMHFGEEC_SLAB_XC_TESTSLAB].slab_physmem_extents[2].addr_start;
-	xmhfhwm_sysmemaccess_physmem_extents[xmhfhwm_sysmemaccess_physmem_extents_total].addr_end =
-		xmhfgeec_slab_info_table[XMHFGEEC_SLAB_XC_TESTSLAB].slab_physmem_extents[2].addr_end;
-	xmhfhwm_sysmemaccess_physmem_extents_total++;
-
-
-	//plug in an entry in the SISS corresponding to this RET
-	siss_elem.src_slabid = XMHFGEEC_SLAB_XC_TESTSLAB;
-	siss_elem.dst_slabid = XMHFGEEC_SLAB_UAPI_GCPUSTATE;
-	siss_elem.slab_ctype = XMHFGEEC_SENTINEL_CALL_uVT_uVU_PROG_TO_VfT_PROG;
-	siss_elem.caller_stack_frame = &drv_path_retuv2v_callerstackframe[0];
-	siss_elem.sp = xmhfgeec_slab_info_table[XMHFGEEC_SLAB_XC_TESTSLAB].slabtos[cpuid];
-
-	gs_siss_push(cpuid, siss_elem);
-
-	//invoke sentinel
-	CASM_FUNCCALL(_slab_entrystub, &drv_path_retuv2v_calleesp);
-	//@assert false;
-}
-
-#endif // defined
 
 
 
@@ -293,9 +249,6 @@ void main(void){
 	drv_path_calluv2v();
 #endif // defined
 
-#if defined (DRV_PATH_RETUV2V)
-	drv_path_retuv2v();
-#endif // defined
 
 
 
