@@ -27,7 +27,8 @@ verify: verifybase
 	#cd $(XMHF_SLAB_VERIFICATION_DIR) && frama-c -val -cpp-extra-args=-nostdinc -cpp-extra-args=-D__USPARK_FRAMAC_VA__ -cpp-extra-args=-DDRV_PATH_RETEXCP $(VFLAGS) xmhfgeec_slabinfotable.c xmhfgeec_slabmapdef.c gs_entry_callstub*.c gs_data.c.v.c gs_entry.c.v.c gs_exit_*.c gs_siss*.c libxmhfhw/*.v.c $(V_XMHFHWM_MODULES)
 	#cd $(XMHF_SLAB_VERIFICATION_DIR) && frama-c -val -cpp-extra-args=-nostdinc -cpp-extra-args=-D__USPARK_FRAMAC_VA__ -cpp-extra-args=-DDRV_PATH_RETICPT $(VFLAGS) xmhfgeec_slabinfotable.c xmhfgeec_slabmapdef.c gs_entry_callstub*.c gs_data.c.v.c gs_entry.c.v.c gs_exit_*.c gs_siss*.c libxmhfhw/*.v.c $(V_XMHFHWM_MODULES)
 	#cd $(XMHF_SLAB_VERIFICATION_DIR) && frama-c -val -cpp-extra-args=-nostdinc -cpp-extra-args=-D__USPARK_FRAMAC_VA__ -cpp-extra-args=-DDRV_PATH_CALLEXCP $(VFLAGS) xmhfgeec_slabinfotable.c xmhfgeec_slabmapdef.c gs_entry_excp*.c gs_data.c.v.c gs_entry.c.v.c gs_exit_*.c gs_siss*.c libxmhfhw/*.v.c $(V_XMHFHWM_MODULES)
-	cd $(XMHF_SLAB_VERIFICATION_DIR) && frama-c -val -cpp-extra-args=-nostdinc -cpp-extra-args=-D__USPARK_FRAMAC_VA__ -cpp-extra-args=-DDRV_PATH_CALLICPT $(VFLAGS) xmhfgeec_slabinfotable.c xmhfgeec_slabmapdef.c gs_entry_icpt*.c gs_data.c.v.c gs_entry.c.v.c gs_exit_*.c gs_siss*.c libxmhfhw/*.v.c $(V_XMHFHWM_MODULES)
+	#cd $(XMHF_SLAB_VERIFICATION_DIR) && frama-c -val -cpp-extra-args=-nostdinc -cpp-extra-args=-D__USPARK_FRAMAC_VA__ -cpp-extra-args=-DDRV_PATH_CALLICPT $(VFLAGS) xmhfgeec_slabinfotable.c xmhfgeec_slabmapdef.c gs_entry_icpt*.c gs_data.c.v.c gs_entry.c.v.c gs_exit_*.c gs_siss*.c libxmhfhw/*.v.c $(V_XMHFHWM_MODULES)
+	cd $(XMHF_SLAB_VERIFICATION_DIR) && frama-c -val -cpp-extra-args=-nostdinc -cpp-extra-args=-D__USPARK_FRAMAC_VA__ -cpp-extra-args=-DDRV_PATH_CALLICPT $(VFLAGS) xmhfgeec_slabinfotable.c xmhfgeec_slabmapdef.c gs_entry_syscall*.c gs_data.c.v.c gs_entry.c.v.c gs_exit_*.c gs_siss*.c libxmhfhw/*.v.c $(V_XMHFHWM_MODULES)
 
 
 
