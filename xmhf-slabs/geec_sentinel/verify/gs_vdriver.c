@@ -183,45 +183,6 @@ void drv_pathretv2uv(void){
 
 
 
-#if defined (DRV_PATH_CALLUV2V)
-slab_params_t drv_path_calluv2v_callersp;
-
-void xmhfhwm_vdriver_slabep(void){
-	// //@assert xmhfhwm_cpu_gprs_eip == CASM_RET_EIP;
-	// //@assert xmhfhwm_cpu_gprs_esp == _slab_tos[cpuid];
-	//@assert false;
-}
-
-void drv_path_calluv2v(void){
-	drv_path_calluv2v_callersp.slab_ctype = XMHFGEEC_SENTINEL_CALL_uVT_uVU_PROG_TO_VfT_PROG;
-        drv_path_calluv2v_callersp.src_slabid = XMHFGEEC_SLAB_XC_TESTSLAB;
-        drv_path_calluv2v_callersp.dst_slabid = XMHFGEEC_SLAB_UAPI_GCPUSTATE;
-        drv_path_calluv2v_callersp.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_VMREAD;
-	drv_path_calluv2v_callersp.cpuid = 0;
-
-
-	//inform hardware model to treat slab stack region as valid memory
-	xmhfhwm_sysmemaccess_physmem_extents[xmhfhwm_sysmemaccess_physmem_extents_total].addr_start =
-		xmhfgeec_slab_info_table[XMHFGEEC_SLAB_XC_TESTSLAB].slab_physmem_extents[2].addr_start;
-	xmhfhwm_sysmemaccess_physmem_extents[xmhfhwm_sysmemaccess_physmem_extents_total].addr_end =
-		xmhfgeec_slab_info_table[XMHFGEEC_SLAB_XC_TESTSLAB].slab_physmem_extents[2].addr_end;
-	xmhfhwm_sysmemaccess_physmem_extents_total++;
-
-	//load cr3 for xc_testslab
-	xmhfhwm_cpu_cr3 = xmhfgeec_slab_info_table[XMHFGEEC_SLAB_XC_TESTSLAB].mempgtbl_cr3;
-
-	//setup verified slab stack parameters for parameter marshalling
-	xmhfhwm_cpu_gprs_esp -= sizeof(slab_params_t);
-	xmhfgeec_slab_info_table[XMHFGEEC_SLAB_UAPI_GCPUSTATE].slabtos[cpuid] = xmhfhwm_cpu_gprs_esp;
-
-
-	//invoke syscall sentinel stub
-	xmhfhwm_cpu_gprs_edx = 0;
-	xmhfhwm_cpu_gprs_ecx = &drv_path_calluv2v_callersp;
-	CASM_FUNCCALL(gs_syscallstub, CASM_NOPARAM);
-	//@assert false;
-}
-#endif // defined
 
 
 
@@ -245,9 +206,6 @@ void main(void){
 	drv_pathretv2uv();
 #endif // DRV_PATH_RETV2UV
 
-#if defined (DRV_PATH_CALLUV2V)
-	drv_path_calluv2v();
-#endif // defined
 
 
 
