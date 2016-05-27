@@ -53,13 +53,69 @@
 #include <xmhf-hwm.h>
 #include <xmhf-debug.h>
 #include <xmhfgeec.h>
+
 #include <geec_sentinel.h>
 
+#if defined (__XMHF_VERIFICATION__) && defined (__USPARK_FRAMAC_VA__)
+#include <xc.h>
+#include <uapi_gcpustate.h>
+#include <xh_aprvexec.h>
 
+u32 cpuid = 0;	//cpu
+u32 check_esp, check_eip = CASM_RET_EIP;
 
-////// sysenter
+	#if defined (DRV_PATH_CALLUH2VH)
+	slab_params_t drv_path_calluh2vh_callersp;
+	
+	void xmhfhwm_vdriver_slabep(void){
+		//@assert xmhfhwm_cpu_gprs_eip == (u32)xmhfgeec_slab_info_table[XMHFGEEC_SLAB_UAPI_GCPUSTATE].entrystub;
+		//@assert false;
+	}
+	
+	void drv_path_calluh2vh(void){
+		drv_path_calluh2vh_callersp.slab_ctype = XMHFGEEC_SENTINEL_CALL_uVT_uVU_PROG_TO_VfT_PROG;
+        drv_path_calluh2vh_callersp.src_slabid = XMHFGEEC_SLAB_XH_APRVEXEC;
+        drv_path_calluh2vh_callersp.dst_slabid = XMHFGEEC_SLAB_UAPI_GCPUSTATE;
+        drv_path_calluh2vh_callersp.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_VMREAD;
+		drv_path_calluh2vh_callersp.cpuid = 0;
+	
+		//inform hardware model to treat slab stack region as valid memory
+		xmhfhwm_sysmemaccess_physmem_extents[xmhfhwm_sysmemaccess_physmem_extents_total].addr_start =
+			xmhfgeec_slab_info_table[XMHFGEEC_SLAB_XH_APRVEXEC].slab_physmem_extents[2].addr_start;
+		xmhfhwm_sysmemaccess_physmem_extents[xmhfhwm_sysmemaccess_physmem_extents_total].addr_end =
+			xmhfgeec_slab_info_table[XMHFGEEC_SLAB_XH_APRVEXEC].slab_physmem_extents[2].addr_end;
+		xmhfhwm_sysmemaccess_physmem_extents_total++;
+	
+		//load cr3 for xc_testslab
+		xmhfhwm_cpu_cr3 = xmhfgeec_slab_info_table[XMHFGEEC_SLAB_XH_APRVEXEC].mempgtbl_cr3;
+	
+		//setup verified slab stack parameters for parameter marshalling
+		xmhfhwm_cpu_gprs_esp -= sizeof(slab_params_t);
+		xmhfgeec_slab_info_table[XMHFGEEC_SLAB_UAPI_GCPUSTATE].slabtos[cpuid] = xmhfhwm_cpu_gprs_esp;
+	
+		//invoke syscall sentinel stub
+		xmhfhwm_cpu_gprs_edx = 0;
+		xmhfhwm_cpu_gprs_ecx = &drv_path_calluh2vh_callersp;
+		CASM_FUNCCALL(gs_syscallstub, CASM_NOPARAM);
+		//@assert false;
+	}
+	#endif // defined
 
+void main(void){
+	//populate hardware model stack and program counter
+	xmhfhwm_cpu_gprs_esp = _slab_tos[cpuid];
+	xmhfhwm_cpu_gprs_eip = check_eip;
+	check_esp = xmhfhwm_cpu_gprs_esp; // pointing to top-of-stack
 
+	#if defined (DRV_PATH_CALLUH2VH)
+	drv_path_calluh2vh();
+	#endif // DRV_PATH_CALLUH2VH
+
+}
+
+#endif
+
+////// syscall entry point
 CASM_FUNCDEF(void, gs_syscallstub,
 {
     xmhfhwm_cpu_insn_pushl_edx();   //original caller_stack_frame
