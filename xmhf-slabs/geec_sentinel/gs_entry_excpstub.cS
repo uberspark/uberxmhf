@@ -109,7 +109,7 @@ void main(void){
 	#if defined (DRV_PATH_CALLEXCP)
 	drv_path_callexcp();
 	#endif // DRV_PATH_CALLEXCP
-	
+
 }
 
 #endif

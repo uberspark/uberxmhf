@@ -168,6 +168,25 @@ u32 check_esp, check_eip = CASM_RET_EIP;
 	}
 	#endif // defined
 
+	#if defined (DRV_PATH_RETEXCP)
+	slab_params_t drv_path_retexcp_sp;
+
+	void xmhfhwm_vdriver_slabep(void){
+		//@assert false;
+	}
+
+	void drv_path_retexcp(void){
+		drv_path_retexcp_sp.slab_ctype = XMHFGEEC_SENTINEL_RET_EXCEPTION;
+        drv_path_retexcp_sp.src_slabid = XMHFGEEC_SLAB_XC_EXHUB;
+        drv_path_retexcp_sp.dst_slabid = XMHFGEEC_SLAB_GEEC_SENTINEL;
+        drv_path_retexcp_sp.dst_uapifn = 0;
+		drv_path_retexcp_sp.cpuid = 0;
+
+		CASM_FUNCCALL(_slab_entrystub, &drv_path_retexcp_sp);
+		//@assert false;
+	}
+	#endif //defined
+
 
 void main(void){
 	//populate hardware model stack and program counter
@@ -186,6 +205,10 @@ void main(void){
 	#if defined (DRV_PATHV2UG)
 	drv_path_callv2ug();
 	#endif // defined
+
+	#if defined (DRV_PATH_RETEXCP)
+	drv_path_retexcp();
+	#endif // DRV_PATH_RETEXCP
 	
 }
 #endif
