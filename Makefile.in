@@ -164,13 +164,16 @@ verif_ccomp: tools _slabs_preprocessmanifests
 
 	
 
+.PHONY: verif_gensentinelstubs
+verif_gensentinelstubs: 
+		@echo Proceeding to generate sentinel stubs for blueprint conformance...
+		mkdir -p $(XMHF_OBJDIR)/_verif_bp
+		#cd $(XMHF_DIR) && $(XMHF_DIR)/tools/ubp.pl SLABS NOMEMOFFSETS $(XMHF_OBJDIR)/_verif_bp/ $(XMHF_CONFIG_MAX_INCLDEVLIST_ENTRIES) $(XMHF_CONFIG_MAX_EXCLDEVLIST_ENTRIES) $(XMHF_CONFIG_MAX_MEMOFFSET_ENTRIES)
+		cd $(XMHF_DIR) && frama-c -load-module $(XMHF_DIR)/tools/Ubp.o -umf-uobjlist $(XMHF_DIR)/SLABS -umf-outdirsentinelstubs $(XMHF_OBJDIR)/_verif_bp/  -umf-maxincldevlistentries $(XMHF_CONFIG_MAX_INCLDEVLIST_ENTRIES) -umf-maxexcldevlistentries $(XMHF_CONFIG_MAX_EXCLDEVLIST_ENTRIES) -umf-maxmemoffsetentries $(XMHF_CONFIG_MAX_MEMOFFSET_ENTRIES)
+		@echo sentinel stubs generated
+
 .PHONY: prepverif
-prepverif: tools _slabs_configureandgenerateslabinfonoexports
-	@echo Proceeding to generate sentinel stubs for blueprint conformance...
-	mkdir -p $(XMHF_OBJDIR)/_verif_bp
-	#cd $(XMHF_DIR) && $(XMHF_DIR)/tools/ubp.pl SLABS NOMEMOFFSETS $(XMHF_OBJDIR)/_verif_bp/ $(XMHF_CONFIG_MAX_INCLDEVLIST_ENTRIES) $(XMHF_CONFIG_MAX_EXCLDEVLIST_ENTRIES) $(XMHF_CONFIG_MAX_MEMOFFSET_ENTRIES)
-	cd $(XMHF_DIR) && frama-c -load-module $(XMHF_DIR)/tools/Ubp.o -umf-uobjlist $(XMHF_DIR)/SLABS -umf-outdirsentinelstubs $(XMHF_OBJDIR)/_verif_bp/  -umf-maxincldevlistentries $(XMHF_CONFIG_MAX_INCLDEVLIST_ENTRIES) -umf-maxexcldevlistentries $(XMHF_CONFIG_MAX_EXCLDEVLIST_ENTRIES) -umf-maxmemoffsetentries $(XMHF_CONFIG_MAX_MEMOFFSET_ENTRIES)
-	@echo sentinel stubs generated
+prepverif: tools _slabs_configureandgenerateslabinfonoexports verif_gensentinelstubs
 
 
 
