@@ -52,11 +52,64 @@
 
 #include <xmhf.h>
 #include <xmhf-debug.h>
-
 #include <xmhfgeec.h>
 
 #include <uapi_gcpustate.h>
 
+#if defined (__XMHF_VERIFICATION__) && defined (__USPARK_FRAMAC_VA__)
+u32 check_esp, check_eip = CASM_RET_EIP;
+slab_params_t test_sp;
+u32 cpuid = 0;	//cpu id
+
+void hwm_vdriver_cpu_vmwrite(u32 encoding, u32 value){
+	/*@assert ( (encoding == VMCS_CONTROL_VM_ENTRY_MSR_LOAD_ADDRESS_FULL) ||
+	 	 (encoding == VMCS_CONTROL_VM_ENTRY_MSR_LOAD_ADDRESS_HIGH) ||
+	 	 (encoding == VMCS_CONTROL_VM_ENTRY_MSR_LOAD_COUNT) ||
+	 	 (encoding == VMCS_CONTROL_VM_EXIT_MSR_STORE_ADDRESS_FULL) ||
+	 	 (encoding == VMCS_CONTROL_VM_EXIT_MSR_STORE_ADDRESS_HIGH) ||
+	 	 (encoding == VMCS_CONTROL_VM_EXIT_MSR_STORE_COUNT));
+	 @*/
+}
+
+void main(void){
+	//populate hardware model stack and program counter
+	xmhfhwm_cpu_gprs_esp = _slab_tos[cpuid];
+	xmhfhwm_cpu_gprs_eip = check_eip;
+	check_esp = xmhfhwm_cpu_gprs_esp; // pointing to top-of-stack
+
+	test_sp.src_slabid = framac_nondetu32interval(0, XMHFGEEC_TOTAL_SLABS-1);
+	test_sp.in_out_params[0] =  framac_nondetu32(); 	test_sp.in_out_params[1] = framac_nondetu32();
+	test_sp.in_out_params[2] = framac_nondetu32(); 	test_sp.in_out_params[3] = framac_nondetu32();
+	test_sp.in_out_params[4] = framac_nondetu32(); 	test_sp.in_out_params[5] = framac_nondetu32();
+	test_sp.in_out_params[6] = framac_nondetu32(); 	test_sp.in_out_params[7] = framac_nondetu32();
+	test_sp.in_out_params[8] = framac_nondetu32(); 	test_sp.in_out_params[9] = framac_nondetu32();
+	test_sp.in_out_params[10] = framac_nondetu32(); 	test_sp.in_out_params[11] = framac_nondetu32();
+	test_sp.in_out_params[12] = framac_nondetu32(); 	test_sp.in_out_params[13] = framac_nondetu32();
+	test_sp.in_out_params[14] = framac_nondetu32(); 	test_sp.in_out_params[15] = framac_nondetu32();
+
+	//execute harness
+	test_sp.cpuid = 0;
+
+	test_sp.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_VMREAD;
+	ugcpust_vmread((xmhf_uapi_gcpustate_vmrw_params_t *)test_sp.in_out_params);
+
+	test_sp.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSREAD;
+	ugcpust_gprsread((u16)test_sp.cpuid, (xmhf_uapi_gcpustate_gprs_params_t *)test_sp.in_out_params);
+
+	test_sp.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSWRITE;
+    ugcpust_gprswrite((u16)test_sp.cpuid, (xmhf_uapi_gcpustate_gprs_params_t *)test_sp.in_out_params);
+
+	test_sp.dst_uapifn = XMHFGEEC_UAPI_CPUSTATE_GUESTMSRREAD;
+	ugcpust_msrread((xmhf_uapi_gcpustate_msrrw_params_t *)test_sp.in_out_params);
+
+	test_sp.dst_uapifn = XMHFGEEC_UAPI_CPUSTATE_GUESTMSRWRITE;
+	ugcpust_msrwrite((xmhf_uapi_gcpustate_msrrw_params_t *)test_sp.in_out_params);
+
+
+	//@assert xmhfhwm_cpu_gprs_esp == check_esp;
+	//@assert xmhfhwm_cpu_gprs_eip == check_eip;
+}
+#endif
 
 /////
 //@ ghost bool ugcpust_methodcall_vmread = false;
@@ -94,23 +147,23 @@ void slab_main(slab_params_t *sp){
 		ugcpust_vmwrite(sp->src_slabid, (xmhf_uapi_gcpustate_vmrw_params_t *)sp->in_out_params);
 		//@ghost ugcpust_methodcall_vmwrite = true;
 
-        }else if( sp->dst_uapifn == XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSREAD && (u16)sp->cpuid < MAX_PLATFORM_CPUS){
+	}else if( sp->dst_uapifn == XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSREAD && (u16)sp->cpuid < MAX_PLATFORM_CPUS){
 		ugcpust_gprsread((u16)sp->cpuid, (xmhf_uapi_gcpustate_gprs_params_t *)sp->in_out_params);
 		//@ghost ugcpust_methodcall_gprsread = true;
 
-        }else if( sp->dst_uapifn == XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSWRITE && (u16)sp->cpuid < MAX_PLATFORM_CPUS){
+	}else if( sp->dst_uapifn == XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSWRITE && (u16)sp->cpuid < MAX_PLATFORM_CPUS){
 		ugcpust_gprswrite((u16)sp->cpuid, (xmhf_uapi_gcpustate_gprs_params_t *)sp->in_out_params);
 		//@ghost ugcpust_methodcall_gprswrite = true;
 
-        }else if( sp->dst_uapifn == XMHFGEEC_UAPI_CPUSTATE_GUESTMSRREAD){
+	}else if( sp->dst_uapifn == XMHFGEEC_UAPI_CPUSTATE_GUESTMSRREAD){
 		ugcpust_msrread((xmhf_uapi_gcpustate_msrrw_params_t *)sp->in_out_params);
 		//@ghost ugcpust_methodcall_msrread = true;
 
-        }else if (sp->dst_uapifn == XMHFGEEC_UAPI_CPUSTATE_GUESTMSRWRITE){
+	}else if (sp->dst_uapifn == XMHFGEEC_UAPI_CPUSTATE_GUESTMSRWRITE){
 		ugcpust_msrwrite((xmhf_uapi_gcpustate_msrrw_params_t *)sp->in_out_params);
 		//@ghost ugcpust_methodcall_msrwrite = true;
 
-        }else{
+	}else{
 		//_XDPRINTF_("UAPI_GCPUSTATE[%u]: Unknown uAPI function %x. Halting!\n", (u16)sp->cpuid, sp->dst_uapifn);
 		//@ghost ugcpust_methodcall_invalid = true;
 	}
