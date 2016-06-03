@@ -94,23 +94,23 @@ void slab_main(slab_params_t *sp){
 		ugcpust_vmwrite(sp->src_slabid, (xmhf_uapi_gcpustate_vmrw_params_t *)sp->in_out_params);
 		//@ghost ugcpust_methodcall_vmwrite = true;
 
-        }else if( sp->dst_uapifn == XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSREAD && (u16)sp->cpuid < MAX_PLATFORM_CPUS){
+	}else if( sp->dst_uapifn == XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSREAD && (u16)sp->cpuid < MAX_PLATFORM_CPUS){
 		ugcpust_gprsread((u16)sp->cpuid, (xmhf_uapi_gcpustate_gprs_params_t *)sp->in_out_params);
 		//@ghost ugcpust_methodcall_gprsread = true;
 
-        }else if( sp->dst_uapifn == XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSWRITE && (u16)sp->cpuid < MAX_PLATFORM_CPUS){
+	}else if( sp->dst_uapifn == XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSWRITE && (u16)sp->cpuid < MAX_PLATFORM_CPUS){
 		ugcpust_gprswrite((u16)sp->cpuid, (xmhf_uapi_gcpustate_gprs_params_t *)sp->in_out_params);
 		//@ghost ugcpust_methodcall_gprswrite = true;
 
-        }else if( sp->dst_uapifn == XMHFGEEC_UAPI_CPUSTATE_GUESTMSRREAD){
+	}else if( sp->dst_uapifn == XMHFGEEC_UAPI_CPUSTATE_GUESTMSRREAD){
 		ugcpust_msrread((xmhf_uapi_gcpustate_msrrw_params_t *)sp->in_out_params);
 		//@ghost ugcpust_methodcall_msrread = true;
 
-        }else if (sp->dst_uapifn == XMHFGEEC_UAPI_CPUSTATE_GUESTMSRWRITE){
+	}else if (sp->dst_uapifn == XMHFGEEC_UAPI_CPUSTATE_GUESTMSRWRITE){
 		ugcpust_msrwrite((xmhf_uapi_gcpustate_msrrw_params_t *)sp->in_out_params);
 		//@ghost ugcpust_methodcall_msrwrite = true;
 
-        }else{
+	}else{
 		//_XDPRINTF_("UAPI_GCPUSTATE[%u]: Unknown uAPI function %x. Halting!\n", (u16)sp->cpuid, sp->dst_uapifn);
 		//@ghost ugcpust_methodcall_invalid = true;
 	}
