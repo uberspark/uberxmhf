@@ -52,13 +52,25 @@
 
 #include <xmhf.h>
 #include <xmhf-debug.h>
-
 #include <xmhfgeec.h>
 
 #include <xc.h>
 #include <uapi_sysdata.h>
 
+/*@
+	requires \valid(e820entryp);
 
+	behavior addentry:
+		assumes (usysd_memmapinfo_maxindex < MAX_E820_ENTRIES);
+		assigns	usysd_memmapinfo[usysd_memmapinfo_maxindex];
+		assigns usysd_memmapinfo_maxindex;
+		ensures (usysd_memmapinfo_maxindex <= MAX_E820_ENTRIES);
+
+	behavior invalid:
+		assumes (usysd_memmapinfo_maxindex == MAX_E820_ENTRIES);
+		assigns \nothing;
+		ensures (usysd_memmapinfo_maxindex == MAX_E820_ENTRIES);
+@*/
 void usysd_e820addentry(uxmhf_uapi_sysdata_e820addentry_t *e820entryp){
 
 		if(usysd_memmapinfo_maxindex < MAX_E820_ENTRIES){
