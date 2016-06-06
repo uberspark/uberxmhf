@@ -52,13 +52,29 @@
 
 #include <xmhf.h>
 #include <xmhf-debug.h>
-
 #include <xmhfgeec.h>
 
 #include <xc.h>
 #include <uapi_sysdata.h>
 
 
+/*@
+	requires \valid(gentryp);
+	requires (usysd_memmapinfo_maxindex <= MAX_E820_ENTRIES);
+
+	behavior returnentry:
+		assumes (gentryp->index < usysd_memmapinfo_maxindex);
+		assigns	gentryp->baseaddr_high;
+		assigns	gentryp->baseaddr_low;
+		assigns gentryp->length_high;
+		assigns gentryp->length_low;
+		assigns gentryp->type;
+
+	behavior invalid:
+		assumes (usysd_memmapinfo_maxindex > MAX_E820_ENTRIES);
+		assumes (gentryp->index >= usysd_memmapinfo_maxindex);
+		assigns \nothing;
+@*/
 void usysd_e820getentryforindex(uxmhf_uapi_sysdata_e820getentryforindex_t *gentryp){
 
 	if(gentryp->index < usysd_memmapinfo_maxindex){
