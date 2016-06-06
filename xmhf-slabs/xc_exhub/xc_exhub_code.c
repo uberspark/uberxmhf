@@ -44,23 +44,18 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
+
+/*
+ * uXMHF core exception handling uobj
+ * author: amit vasudevan (amitvasudevan@acm.org)
+ */
+
 #include <xmhf.h>
 #include <xmhfgeec.h>
 #include <xmhf-debug.h>
 
 #include <xc.h>
 #include <xc_exhub.h>
-
-//////
-//XMHF_SLAB_EXCEPTION(xcexhub)
-
-
-
-/*
- * slab code
- *
- * author: amit vasudevan (amitvasudevan@acm.org)
- */
 
 
 static void _xcexhub_unhandled(x86vmx_exception_frame_t *exframe){
@@ -96,25 +91,54 @@ static void _xcexhub_unhandled(x86vmx_exception_frame_t *exframe){
 }
 
 
-//void slab_interface(slab_input_params_t *iparams, u64 iparams_size, slab_output_params_t *oparams, u64 oparams_size, u64 src_slabid, u64 cpuid){
+
+
+#if defined (__XMHF_VERIFICATION__) && defined (__USPARK_FRAMAC_VA__)
+u32 check_esp, check_eip = CASM_RET_EIP;
+slab_params_t test_sp;
+u32 cpuid = 0;	//cpu id
+
+void main(void){
+	//populate hardware model stack and program counter
+	xmhfhwm_cpu_gprs_esp = _slab_tos[cpuid];
+	xmhfhwm_cpu_gprs_eip = check_eip;
+	check_esp = xmhfhwm_cpu_gprs_esp; // pointing to top-of-stack
+
+    test_sp.slab_ctype = framac_nondetu32();
+    test_sp.src_slabid = framac_nondetu32();
+    test_sp.dst_slabid = framac_nondetu32();
+    test_sp.dst_uapifn = framac_nondetu32();
+    test_sp.cpuid = framac_nondetu32();
+	test_sp.in_out_params[0] =  framac_nondetu32(); 	test_sp.in_out_params[1] = framac_nondetu32();
+	test_sp.in_out_params[2] = framac_nondetu32(); 	test_sp.in_out_params[3] = framac_nondetu32();
+	test_sp.in_out_params[4] = framac_nondetu32(); 	test_sp.in_out_params[5] = framac_nondetu32();
+	test_sp.in_out_params[6] = framac_nondetu32(); 	test_sp.in_out_params[7] = framac_nondetu32();
+	test_sp.in_out_params[8] = framac_nondetu32(); 	test_sp.in_out_params[9] = framac_nondetu32();
+	test_sp.in_out_params[10] = framac_nondetu32(); 	test_sp.in_out_params[11] = framac_nondetu32();
+	test_sp.in_out_params[12] = framac_nondetu32(); 	test_sp.in_out_params[13] = framac_nondetu32();
+	test_sp.in_out_params[14] = framac_nondetu32(); 	test_sp.in_out_params[15] = framac_nondetu32();
+
+	slab_main(&test_sp);
+
+	/*@assert ((xmhfhwm_cpu_state == CPU_STATE_RUNNING && xmhfhwm_cpu_gprs_esp == check_esp && xmhfhwm_cpu_gprs_eip == check_eip) ||
+		(xmhfhwm_cpu_state == CPU_STATE_HALT));
+	@*/
+}
+#endif
+
 void slab_main(slab_params_t *sp){
     x86vmx_exception_frame_t *exframe = (x86vmx_exception_frame_t *)&sp->in_out_params[0];
 
 	_XDPRINTF_("XC_EXHUB[%u]: Got control: ESP=%08x, src_slabid=%u, dst_slabid=%u\n",
                 (u16)sp->cpuid, CASM_FUNCCALL(read_esp,CASM_NOPARAM), sp->src_slabid, sp->dst_slabid);
 
-   	switch(exframe->vector){
-			case 0x3:{
-                _xcexhub_unhandled(exframe);
-				_XDPRINTF_("%s: exception 3, returning\n", __func__);
-			}
-			break;
-
-			default:{
-				_xcexhub_unhandled(exframe);
-				_XDPRINTF_("\nHalting System!\n");
-				HALT();
-			}
+	if(exframe->vector == 0x3){
+		_xcexhub_unhandled(exframe);
+		_XDPRINTF_("%s: exception 3, returning\n", __func__);
+	}else{
+		_xcexhub_unhandled(exframe);
+		_XDPRINTF_("\nHalting System!\n");
+		CASM_FUNCCALL(xmhfhw_cpu_hlt, CASM_NOPARAM);
 	}
 
     return;
