@@ -86,8 +86,19 @@ typedef struct {
 }__attribute__((packed)) uxmhf_uapi_sysdata_e820getentryforindex_t;
 
 
+/*@
+	requires \valid(e820entryp);
+@*/
 void usysd_e820addentry(uxmhf_uapi_sysdata_e820addentry_t *e820entryp);
+
+/*@
+	requires \valid(gentryp);
+@*/
 void usysd_e820getentryforindex(uxmhf_uapi_sysdata_e820getentryforindex_t *gentryp);
+
+/*@
+	requires \valid(indexp);
+@*/
 void usysd_e820getmaxindex(uxmhf_uapi_sysdata_e820getmaxindex_t *indexp);
 
 extern __attribute__((section(".data"))) GRUBE820 usysd_memmapinfo[MAX_E820_ENTRIES];
