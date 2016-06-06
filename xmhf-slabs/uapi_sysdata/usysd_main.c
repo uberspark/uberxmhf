@@ -52,26 +52,44 @@
 
 #include <xmhf.h>
 #include <xmhf-debug.h>
-
 #include <xmhfgeec.h>
 
 #include <uapi_sysdata.h>
 
 
 
+//@ ghost bool usysd_methodcall_e820addentry = false;
+//@ ghost bool usysd_methodcall_e820getmaxindex = false;
+//@ ghost bool usysd_methodcall_e820getentryforindex = false;
+//@ ghost bool usysd_methodcall_invalid = false;
+/*@
+	requires \valid(sp);
+	assigns sp->in_out_params[0..15];
+	assigns usysd_methodcall_e820addentry;
+	assigns usysd_methodcall_e820getmaxindex;
+	assigns usysd_methodcall_e820getentryforindex;
+	assigns usysd_methodcall_invalid;
+	ensures (sp->dst_uapifn == UXMHF_UAPI_SYSDATA_E820ADDENTRY) ==> (usysd_methodcall_e820addentry == true);
+	ensures (sp->dst_uapifn == UXMHF_UAPI_SYSDATA_E820GETMAXINDEX) ==> (usysd_methodcall_e820getmaxindex == true);
+	ensures (sp->dst_uapifn == UXMHF_UAPI_SYSDATA_E820GETENTRYFORINDEX) ==> (usysd_methodcall_e820getentryforindex == true);
+	ensures !( sp->dst_uapifn == UXMHF_UAPI_SYSDATA_E820ADDENTRY ||
+		   sp->dst_uapifn == UXMHF_UAPI_SYSDATA_E820GETMAXINDEX ||
+		   sp->dst_uapifn == UXMHF_UAPI_SYSDATA_E820GETENTRYFORINDEX) ==> (usysd_methodcall_invalid == true);
+@*/
 void slab_main(slab_params_t *sp){
 
 	if( sp->dst_uapifn == UXMHF_UAPI_SYSDATA_E820ADDENTRY){
 		usysd_e820addentry((uxmhf_uapi_sysdata_e820addentry_t *)sp->in_out_params);
-
+		//@ghost usysd_methodcall_e820addentry = true;
 	}else if( sp->dst_uapifn == UXMHF_UAPI_SYSDATA_E820GETMAXINDEX ){
 		usysd_e820getmaxindex((uxmhf_uapi_sysdata_e820getmaxindex_t *)sp->in_out_params);
-
+		//@ghost usysd_methodcall_e820getmaxindex = true;
 	}else if( sp->dst_uapifn == UXMHF_UAPI_SYSDATA_E820GETENTRYFORINDEX){
 		usysd_e820getentryforindex((uxmhf_uapi_sysdata_e820getentryforindex_t *)sp->in_out_params);
-
+		//@ghost usysd_methodcall_e820getentryforindex = true;
 	}else{
 		//_XDPRINTF_("UAPI_SYSDATA[%u]: Unknown uAPI function %x. Halting!\n", (u16)sp->cpuid, sp->dst_uapifn);
+		//@ghost usysd_methodcall_invalid = true;
 	}
 
 }
