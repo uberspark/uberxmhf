@@ -75,8 +75,8 @@ typedef struct {
 }__attribute__((packed)) gs_siss_element_t;
 
 
-__attribute__((section(".data"))) u32 gs_siss_indices[MAX_PLATFORM_CPUS];
-__attribute__((section(".data"))) gs_siss_element_t gs_siss[MAX_PLATFORM_CPUS][512];
+extern __attribute__((section(".data"))) u32 gs_siss_indices[MAX_PLATFORM_CPUS];
+extern __attribute__((section(".data"))) gs_siss_element_t gs_siss[MAX_PLATFORM_CPUS][512];
 
 
 //@	logic u32 sissCapacity{L}(u32 siss_id) = (u32)512;
