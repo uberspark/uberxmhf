@@ -44,23 +44,18 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
+
+/*
+ * uXMHF core exception handling uobj
+ * author: amit vasudevan (amitvasudevan@acm.org)
+ */
+
 #include <xmhf.h>
 #include <xmhfgeec.h>
 #include <xmhf-debug.h>
 
 #include <xc.h>
 #include <xc_exhub.h>
-
-//////
-//XMHF_SLAB_EXCEPTION(xcexhub)
-
-
-
-/*
- * slab code
- *
- * author: amit vasudevan (amitvasudevan@acm.org)
- */
 
 
 static void _xcexhub_unhandled(x86vmx_exception_frame_t *exframe){
@@ -96,7 +91,6 @@ static void _xcexhub_unhandled(x86vmx_exception_frame_t *exframe){
 }
 
 
-//void slab_interface(slab_input_params_t *iparams, u64 iparams_size, slab_output_params_t *oparams, u64 oparams_size, u64 src_slabid, u64 cpuid){
 void slab_main(slab_params_t *sp){
     x86vmx_exception_frame_t *exframe = (x86vmx_exception_frame_t *)&sp->in_out_params[0];
 
@@ -113,7 +107,7 @@ void slab_main(slab_params_t *sp){
 			default:{
 				_xcexhub_unhandled(exframe);
 				_XDPRINTF_("\nHalting System!\n");
-				HALT();
+				CASM_FUNCCALL(xmhfhw_cpu_hlt, CASM_NOPARAM);
 			}
 	}
 
