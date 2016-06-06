@@ -52,7 +52,6 @@
 
 #include <xmhf.h>
 #include <xmhf-debug.h>
-
 #include <xmhfgeec.h>
 
 #include <uapi_slabmempgtbl.h>
