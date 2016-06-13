@@ -52,8 +52,7 @@
 #include <xc_ihub.h>
 
 /*
- * slab code
- *
+ * xc_ihub hypapp callback invocation
  * author: amit vasudevan (amitvasudevan@acm.org)
  */
 
@@ -86,16 +85,16 @@ static u32 xc_hcbinvoke_helper(u32 hcbentry, u32 cbtype, u32 src_slabid, u32 cpu
 	spl.in_out_params[1]=cbqual; //hcbp->cbqual=cbqual;
 	spl.in_out_params[2]=guest_slab_index; //hcbp->guest_slab_index=guest_slab_index;
 
-        if(_xcihub_hypapp_info_table[hcbentry].cbmask & XC_HYPAPPCB_MASK(cbtype)){
-            spl.dst_slabid = _xcihub_hypapp_info_table[hcbentry].xmhfhic_slab_index;
-            XMHF_SLAB_CALLNEW(&spl);
-            if(spl.in_out_params[3] == XC_HYPAPPCB_NOCHAIN){
-		status = XC_HYPAPPCB_NOCHAIN;
-            }
-	    return status;
-        }else{
+	if(_xcihub_hypapp_info_table[hcbentry].cbmask & XC_HYPAPPCB_MASK(cbtype)){
+		spl.dst_slabid = _xcihub_hypapp_info_table[hcbentry].xmhfhic_slab_index;
+		XMHF_SLAB_CALLNEW(&spl);
+		if(spl.in_out_params[3] == XC_HYPAPPCB_NOCHAIN){
+			status = XC_HYPAPPCB_NOCHAIN;
+		}
+		return status;
+	}else{
             return status;
-        }
+	}
 }
 
 
@@ -120,11 +119,11 @@ u32 xc_hcbinvoke(u32 src_slabid, u32 cpuid, u32 cbtype, u32 cbqual, u32 guest_sl
 	@*/
     for(i=0; i < HYPAPP_INFO_TABLE_NUMENTRIES; i++){
         status = xc_hcbinvoke_helper(i, cbtype, src_slabid, cpuid, guest_slab_index, cbqual);
-	//@ghost invoke_helper[i] = true;
-	if(status == XC_HYPAPPCB_NOCHAIN){
-		nochain = true;
-		break;
-	}
+		//@ghost invoke_helper[i] = true;
+		if(status == XC_HYPAPPCB_NOCHAIN){
+			nochain = true;
+			break;
+		}
     }
 
 	if(nochain)
