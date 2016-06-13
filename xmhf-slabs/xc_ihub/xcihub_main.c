@@ -53,128 +53,129 @@
 #include <uapi_gcpustate.h>
 
 /*
- * slab code
- *
+ * xc_ihub main module
  * author: amit vasudevan (amitvasudevan@acm.org)
  */
 
 
-
 //@ ghost bool xcihub_callhcbinvoke=false;
+//@ ghost bool xcihub_callicptvmcall=false;
+//@ ghost bool xcihub_callhalt=false;
+
 /*@
 	assigns xcihub_callhcbinvoke;
+	assigns xcihub_callicptvmcall;
+	assigns xcihub_callhalt;
+
+	ensures   ( vmexit_reason == VMX_VMEXIT_RDMSR) ==> (xcihub_callhcbinvoke == true
+		&& xcihub_callicptvmcall == false && xcihub_callhalt == false);
+	ensures ( vmexit_reason == VMX_VMEXIT_VMCALL) ==> (xcihub_callhcbinvoke == false
+		&& xcihub_callicptvmcall == true && xcihub_callhalt == false);
+	ensures ( vmexit_reason == VMX_VMEXIT_CPUID) ==> (xcihub_callhcbinvoke == true
+		&& xcihub_callicptvmcall == false && xcihub_callhalt == false);
+	ensures ( vmexit_reason == VMX_VMEXIT_WRMSR) ==> (xcihub_callhcbinvoke == true
+		&& xcihub_callicptvmcall == false && xcihub_callhalt == false);
+	ensures ( vmexit_reason == VMX_VMEXIT_CRX_ACCESS) ==> (xcihub_callhcbinvoke == false
+			&& xcihub_callicptvmcall == false && xcihub_callhalt == false);
+	ensures ( vmexit_reason == VMX_VMEXIT_XSETBV) ==> (xcihub_callhcbinvoke == false
+			&& xcihub_callicptvmcall == false && xcihub_callhalt == false);
+	ensures ( vmexit_reason == VMX_VMEXIT_SIPI) ==> (xcihub_callhcbinvoke == false
+			&& xcihub_callicptvmcall == false && xcihub_callhalt == false);
+	ensures ( vmexit_reason == VMX_VMEXIT_EPT_VIOLATION) ==> (xcihub_callhcbinvoke == true
+			&& xcihub_callicptvmcall == false && xcihub_callhalt == false);
+	ensures ( vmexit_reason == VMX_VMEXIT_EXCEPTION) ==> (xcihub_callhcbinvoke == true
+			&& xcihub_callicptvmcall == false && xcihub_callhalt == false);
 
 	ensures !(
-		( vmexit_reason == VMX_VMEXIT_VMCALL) ||
-		( vmexit_reason == VMX_VMEXIT_EPT_VIOLATION) ||
-		( vmexit_reason == VMX_VMEXIT_INIT || vmexit_reason == VMX_VMEXIT_TASKSWITCH) ||
-		( vmexit_reason == VMX_VMEXIT_CPUID) ||
-		( vmexit_reason == VMX_VMEXIT_WRMSR) ||
-		( vmexit_reason == VMX_VMEXIT_RDMSR) ||
-		( vmexit_reason == VMX_VMEXIT_EXCEPTION)
-	) ||
-	(
-		( vmexit_reason == VMX_VMEXIT_VMCALL) ||
-		( vmexit_reason == VMX_VMEXIT_EPT_VIOLATION) ||
-		( vmexit_reason == VMX_VMEXIT_INIT || vmexit_reason == VMX_VMEXIT_TASKSWITCH) ||
-		( vmexit_reason == VMX_VMEXIT_CPUID) ||
-		( vmexit_reason == VMX_VMEXIT_WRMSR) ||
-		( vmexit_reason == VMX_VMEXIT_RDMSR) ||
-		( vmexit_reason == VMX_VMEXIT_EXCEPTION)
-	);
+		( vmexit_reason == VMX_VMEXIT_RDMSR) 			||
+		( vmexit_reason == VMX_VMEXIT_VMCALL) 			||
+		( vmexit_reason == VMX_VMEXIT_CPUID) 			||
+		( vmexit_reason == VMX_VMEXIT_WRMSR) 			||
+		( vmexit_reason == VMX_VMEXIT_CRX_ACCESS)   	||
+		( vmexit_reason == VMX_VMEXIT_XSETBV)       	||
+		( vmexit_reason == VMX_VMEXIT_SIPI)	        	||
+		( vmexit_reason == VMX_VMEXIT_EPT_VIOLATION)	||
+        ( vmexit_reason == VMX_VMEXIT_EXCEPTION)
+	) ==> (xcihub_callhcbinvoke == false
+				&& xcihub_callicptvmcall == false && xcihub_callhalt == true);
 
-	ensures ( vmexit_reason == VMX_VMEXIT_VMCALL) ==> (xcihub_callhcbinvoke == true);
-	ensures ( vmexit_reason == VMX_VMEXIT_EPT_VIOLATION) ==> (xcihub_callhcbinvoke == true);
-	ensures ( vmexit_reason == VMX_VMEXIT_INIT || vmexit_reason == VMX_VMEXIT_TASKSWITCH) ==> (xcihub_callhcbinvoke == true);
-	ensures ( vmexit_reason == VMX_VMEXIT_CPUID) ==> (xcihub_callhcbinvoke == true);
-	ensures ( vmexit_reason == VMX_VMEXIT_WRMSR) ==> (xcihub_callhcbinvoke == true);
-	ensures ( vmexit_reason == VMX_VMEXIT_RDMSR) ==> (xcihub_callhcbinvoke == true);
-	ensures ( vmexit_reason == VMX_VMEXIT_EXCEPTION) ==> (xcihub_callhcbinvoke == true);
-
-	ensures !(
-		( vmexit_reason == VMX_VMEXIT_VMCALL) ||
-		( vmexit_reason == VMX_VMEXIT_EPT_VIOLATION) ||
-		( vmexit_reason == VMX_VMEXIT_INIT || vmexit_reason == VMX_VMEXIT_TASKSWITCH) ||
-		( vmexit_reason == VMX_VMEXIT_CPUID) ||
-		( vmexit_reason == VMX_VMEXIT_WRMSR) ||
-		( vmexit_reason == VMX_VMEXIT_RDMSR) ||
-		( vmexit_reason == VMX_VMEXIT_EXCEPTION)
-	) ==> (xcihub_callhcbinvoke == false);
 
 @*/
 static void slab_main_helper(u32 vmexit_reason, u32 src_slabid, u32 cpuid){
 	u32 hcb_status;
 
-
 	if (vmexit_reason == VMX_VMEXIT_RDMSR){
 		hcb_status = xc_hcbinvoke(XMHFGEEC_SLAB_XC_IHUB, cpuid, XC_HYPAPPCB_TRAP_INSTRUCTION,
 			    XC_HYPAPPCB_TRAP_INSTRUCTION_RDMSR, src_slabid);
 		//@ghost xcihub_callhcbinvoke=true;
+		//@ghost xcihub_callicptvmcall=false;
+		//@ghost xcihub_callhalt=false;
 		if(hcb_status == XC_HYPAPPCB_CHAIN) xcihub_icptrdmsr((u16)cpuid);
 
 	}else if(vmexit_reason == VMX_VMEXIT_VMCALL){
 		xcihub_icptvmcall((u16)cpuid, src_slabid);
+		//@ghost xcihub_callicptvmcall=true;
+		//@ghost xcihub_callhcbinvoke=false;
+		//@ghost xcihub_callhalt=false;
 
 	}else if (vmexit_reason == VMX_VMEXIT_CPUID){
 		hcb_status = xc_hcbinvoke(XMHFGEEC_SLAB_XC_IHUB, cpuid, XC_HYPAPPCB_TRAP_INSTRUCTION,
 			    XC_HYPAPPCB_TRAP_INSTRUCTION_CPUID, src_slabid);
 		//@ghost xcihub_callhcbinvoke=true;
+		//@ghost xcihub_callicptvmcall=false;
+		//@ghost xcihub_callhalt=false;
 		if(hcb_status == XC_HYPAPPCB_CHAIN) xcihub_icptcpuid((u16)cpuid);
 
 	}else if (vmexit_reason == VMX_VMEXIT_WRMSR){
 		hcb_status =  xc_hcbinvoke(XMHFGEEC_SLAB_XC_IHUB, cpuid,
 			    XC_HYPAPPCB_TRAP_INSTRUCTION, XC_HYPAPPCB_TRAP_INSTRUCTION_WRMSR, src_slabid);
 		//@ghost xcihub_callhcbinvoke=true;
+		//@ghost xcihub_callicptvmcall=false;
+		//@ghost xcihub_callhalt=false;
 		if(hcb_status == XC_HYPAPPCB_CHAIN)	xcihub_icptwrmsr((u16)cpuid);
 
 	}else if (vmexit_reason == VMX_VMEXIT_CRX_ACCESS){
 		xcihub_icptcrx((u16)cpuid, src_slabid);
+		//@ghost xcihub_callhcbinvoke=false;
+		//@ghost xcihub_callicptvmcall=false;
+		//@ghost xcihub_callhalt=false;
 
 	}else if (vmexit_reason == VMX_VMEXIT_XSETBV){
 		xcihub_icptxsetbv((u16)cpuid);
-
+		//@ghost xcihub_callhcbinvoke=false;
+		//@ghost xcihub_callicptvmcall=false;
+		//@ghost xcihub_callhalt=false;
 
 	}else if (vmexit_reason == VMX_VMEXIT_SIPI){
 		xcihub_icptsipi((u16)cpuid);
-
-
+		//@ghost xcihub_callhcbinvoke=false;
+		//@ghost xcihub_callicptvmcall=false;
+		//@ghost xcihub_callhalt=false;
 
 	}else if (vmexit_reason == VMX_VMEXIT_EPT_VIOLATION){
 		hcb_status = xc_hcbinvoke(XMHFGEEC_SLAB_XC_IHUB, cpuid, XC_HYPAPPCB_MEMORYFAULT, 0, src_slabid);
 		//@ghost xcihub_callhcbinvoke=true;
+		//@ghost xcihub_callicptvmcall=false;
+		//@ghost xcihub_callhalt=false;
 		if(hcb_status == XC_HYPAPPCB_CHAIN)	xcihub_halt((u16)cpuid, vmexit_reason);
-
-/*
-	}else if (vmexit_reason == VMX_VMEXIT_INIT || vmexit_reason == VMX_VMEXIT_TASKSWITCH){
-		hcb_status = xc_hcbinvoke(XMHFGEEC_SLAB_XC_IHUB, cpuid, XC_HYPAPPCB_SHUTDOWN, 0, src_slabid);
-		//@ghost xcihub_callhcbinvoke=true;
-		//if(hcb_status == XC_HYPAPPCB_CHAIN)	xcihub_halt((u16)cpuid, vmexit_reason);
-
-	//}else if (vmexit_reason == VMX_VMEXIT_IOIO){
-
-
-
-
-*/
-
-
 
 	}else if (vmexit_reason == VMX_VMEXIT_EXCEPTION){
 		hcb_status = xc_hcbinvoke(XMHFGEEC_SLAB_XC_IHUB, cpuid, XC_HYPAPPCB_TRAP_EXCEPTION, 0, src_slabid);
 		//@ghost xcihub_callhcbinvoke=true;
-		//if(hcb_status == XC_HYPAPPCB_CHAIN)	xcihub_halt((u16)cpuid, vmexit_reason);
-
+		//@ghost xcihub_callicptvmcall=false;
+		//@ghost xcihub_callhalt=false;
 
 	}else {
-		  xcihub_halt((u16)cpuid, vmexit_reason);
+		xcihub_halt((u16)cpuid, vmexit_reason);
 		//@ghost xcihub_callhcbinvoke=false;
-
+		//@ghost xcihub_callicptvmcall=false;
+		//@ghost xcihub_callhalt=true;
 	}
-
-
 
 }
 
+
+#if 0
 
 /*@
 	requires \valid(sp);
@@ -245,7 +246,7 @@ void slab_main(slab_params_t *sp){
 	return;
 }
 
-
+#endif
 
 
 
