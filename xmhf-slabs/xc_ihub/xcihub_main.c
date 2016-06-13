@@ -175,17 +175,27 @@ static void slab_main_helper(u32 vmexit_reason, u32 src_slabid, u32 cpuid){
 }
 
 
-#if 0
 
 /*@
 	requires \valid(sp);
+	assigns sp->in_out_params[0];
+	assigns sp->in_out_params[1];
+	assigns sp->in_out_params[2];
+	assigns sp->in_out_params[3];
+	assigns sp->in_out_params[4];
+	assigns sp->in_out_params[5];
+	assigns sp->in_out_params[6];
+	assigns sp->in_out_params[7];
+	assigns xcihub_smplock;
+
+	assigns xcihub_callhcbinvoke;
+	assigns xcihub_callicptvmcall;
+	assigns xcihub_callhalt;
 @*/
 void slab_main(slab_params_t *sp){
 	u32 info_vmexit_reason;
 	slab_params_t spl;
 	xmhf_uapi_gcpustate_vmrw_params_t *gcpustate_vmrwp = (xmhf_uapi_gcpustate_vmrw_params_t *)&spl.in_out_params[0];
-	xmhf_uapi_gcpustate_gprs_params_t *gcpustate_gprs = (xmhf_uapi_gcpustate_gprs_params_t *)&spl.in_out_params[0];
-	//xmhf_uapi_hcpustate_msr_params_t *hcpustate_msrp = (xmhf_uapi_hcpustate_msr_params_t *)spl.in_out_params;
 
     //grab lock
     CASM_FUNCCALL(spin_lock,&xcihub_smplock);
@@ -193,15 +203,12 @@ void slab_main(slab_params_t *sp){
 	//_XDPRINTF_("XCIHUB[%u]: Got control: src=%u, dst=%u, esp=%08x, eflags=%08x\n",
 	//	(u16)sp->cpuid, sp->src_slabid, sp->dst_slabid, CASM_FUNCCALL(read_esp,CASM_NOPARAM),
 	//		CASM_FUNCCALL(read_eflags, CASM_NOPARAM));
-
 	spl.cpuid = sp->cpuid;
 	spl.src_slabid = XMHFGEEC_SLAB_XC_IHUB;
-
 
 	//store GPRs
 	spl.dst_slabid = XMHFGEEC_SLAB_UAPI_GCPUSTATE;
 	spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSWRITE;
-	//memcpy(&gcpustate_gprs->gprs, &sp->in_out_params[0], sizeof(x86regs_t));
 	spl.in_out_params[0] = sp->in_out_params[0];
 	spl.in_out_params[1] = sp->in_out_params[1];
 	spl.in_out_params[2] = sp->in_out_params[2];
@@ -215,10 +222,10 @@ void slab_main(slab_params_t *sp){
 	//grab exit reason
 	spl.dst_slabid = XMHFGEEC_SLAB_UAPI_GCPUSTATE;
 	spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_VMREAD;
-	gcpustate_vmrwp->encoding = VMCS_INFO_VMEXIT_REASON;
+	spl.in_out_params[0] = VMCS_INFO_VMEXIT_REASON;
+	spl.in_out_params[1] = 0;
 	XMHF_SLAB_CALLNEW(&spl);
 	info_vmexit_reason = gcpustate_vmrwp->value;
-
 
 	slab_main_helper(info_vmexit_reason, sp->src_slabid, (u16)sp->cpuid);
 
@@ -226,7 +233,6 @@ void slab_main(slab_params_t *sp){
 	spl.dst_slabid = XMHFGEEC_SLAB_UAPI_GCPUSTATE;
 	spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSREAD;
 	XMHF_SLAB_CALLNEW(&spl);
-	//memcpy(&sp->in_out_params[0], &gcpustate_gprs->gprs, sizeof(x86regs_t));
 	sp->in_out_params[0] = spl.in_out_params[0];
 	sp->in_out_params[1] = spl.in_out_params[1];
 	sp->in_out_params[2] = spl.in_out_params[2];
@@ -235,7 +241,6 @@ void slab_main(slab_params_t *sp){
 	sp->in_out_params[5] = spl.in_out_params[5];
 	sp->in_out_params[6] = spl.in_out_params[6];
 	sp->in_out_params[7] = spl.in_out_params[7];
-
 
 	//_XDPRINTF_("XCIHUB[%u]: Resuming guest, esp=%08x\n", (u16)sp->cpuid, CASM_FUNCCALL(read_esp,CASM_NOPARAM));
 
@@ -246,7 +251,6 @@ void slab_main(slab_params_t *sp){
 	return;
 }
 
-#endif
 
 
 
