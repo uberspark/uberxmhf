@@ -629,8 +629,19 @@ CASM_FUNCDECL(void wbinvd(void *noparam));
 CASM_FUNCDECL(u64 xgetbv(u32 xcr_reg));
 CASM_FUNCDECL(void xsetbv(u32 xcr_reg, u32 value_lo, u32 value_hi));
 //void sysexitq(u64 rip, u64 rsp));
+
+/*@
+  requires \valid(lock);
+  assigns *lock;
+@*/
 CASM_FUNCDECL(void spin_lock(volatile u32 *lock));
+
+/*@
+  requires \valid(lock);
+  assigns *lock;
+@*/
 CASM_FUNCDECL(void spin_unlock(volatile u32 *lock));
+
 CASM_FUNCDECL(void xmhfhw_cpu_loadGDT(arch_x86_gdtdesc_t *gdt_addr));
 CASM_FUNCDECL(void xmhfhw_cpu_loadTR(u32 tr_selector));
 CASM_FUNCDECL(void xmhfhw_cpu_loadIDT(arch_x86_idtdesc_t *idt_addr));
