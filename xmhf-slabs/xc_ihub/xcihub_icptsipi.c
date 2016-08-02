@@ -54,17 +54,13 @@
 #include <uapi_hcpustate.h>
 
 /*
- * slab code
+ * xcihub_icptsipi -- rich guest SMP bootup handling
  *
  * author: amit vasudevan (amitvasudevan@acm.org)
  */
-
-
-
 void xcihub_icptsipi(u32 cpuid){
 	slab_params_t spl;
 	xmhf_uapi_gcpustate_vmrw_params_t *gcpustate_vmrwp = (xmhf_uapi_gcpustate_vmrw_params_t *)spl.in_out_params;
-
 	u32 info_vmexit_instruction_length;
 	u32 info_exit_qualification;
 	u32 sipivector;
@@ -76,41 +72,37 @@ void xcihub_icptsipi(u32 cpuid){
 	//read exit qualification
 	spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_VMREAD;
 	gcpustate_vmrwp->encoding = VMCS_INFO_EXIT_QUALIFICATION;
-    XMHF_SLAB_CALLNEW(&spl);
-    info_exit_qualification = gcpustate_vmrwp->value;
+	XMHF_SLAB_CALLNEW(&spl);
+	info_exit_qualification = gcpustate_vmrwp->value;
 
-    //compute SIPI vector
+	//compute SIPI vector
 	sipivector = (u8)info_exit_qualification;
 	_XDPRINTF_("%s[%u]: SIPI intercept, vector=0x%08x\n", __func__, cpuid, sipivector);
 
 	spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_VMWRITE;
 
-	//sipi_desc.cs.selector = ((sipivector * PAGE_SIZE_4K) >> 4);
+	//set guest CS:RIP to value specified by the SIPI vector
 	gcpustate_vmrwp->encoding = VMCS_GUEST_CS_SELECTOR;
 	gcpustate_vmrwp->value = ((sipivector * PAGE_SIZE_4K) >> 4);
 	XMHF_SLAB_CALLNEW(&spl);
 
-	//sipi_desc.cs.base = (sipivector * PAGE_SIZE_4K);
 	gcpustate_vmrwp->encoding = VMCS_GUEST_CS_BASE;
 	gcpustate_vmrwp->value = (sipivector * PAGE_SIZE_4K);
 	XMHF_SLAB_CALLNEW(&spl);
 
-	//sipi_activity.rip = 0;
 	gcpustate_vmrwp->encoding = VMCS_GUEST_RIP;
 	gcpustate_vmrwp->value = 0;
 	XMHF_SLAB_CALLNEW(&spl);
 
-	//sipi_activity.activity_state = 0; //active
+	//set CPU activity state to active
 	gcpustate_vmrwp->encoding = VMCS_GUEST_ACTIVITY_STATE;
 	gcpustate_vmrwp->value = 0;
 	XMHF_SLAB_CALLNEW(&spl);
 
-	//sipi_activity.interruptibility=0;
+	//clear interruptibility
 	gcpustate_vmrwp->encoding = VMCS_GUEST_INTERRUPTIBILITY;
 	gcpustate_vmrwp->value = 0;
 	XMHF_SLAB_CALLNEW(&spl);
-
-
 }
 
 
