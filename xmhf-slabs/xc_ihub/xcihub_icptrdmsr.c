@@ -54,7 +54,7 @@
 #include <uapi_hcpustate.h>
 
 /*
- * slab code
+ * xcihub_icptrdmsr -- rich guest RDMSR instruction emulation
  *
  * author: amit vasudevan (amitvasudevan@acm.org)
  */
@@ -74,21 +74,17 @@ void xcihub_icptrdmsr(u32 cpuid){
 	spl.src_slabid = XMHFGEEC_SLAB_XC_IHUB;
 	spl.dst_slabid = XMHFGEEC_SLAB_UAPI_GCPUSTATE;
 
-
 	spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSREAD;
 	XMHF_SLAB_CALLNEW(&spl);
 	memcpy(&r, &gcpustate_gprs->gprs, sizeof(x86regs_t));
 
-
 	switch((u32)r.ecx){
 	    case IA32_SYSENTER_CS_MSR:
-		{
-		    spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_VMREAD;
-		    gcpustate_vmrwp->encoding = VMCS_GUEST_SYSENTER_CS;
-		    XMHF_SLAB_CALLNEW(&spl);
-		    r.edx = 0;
-		    r.eax = gcpustate_vmrwp->value;
-		}
+		spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_VMREAD;
+		gcpustate_vmrwp->encoding = VMCS_GUEST_SYSENTER_CS;
+		XMHF_SLAB_CALLNEW(&spl);
+		r.edx = 0;
+		r.eax = gcpustate_vmrwp->value;
 		break;
 	    case IA32_SYSENTER_EIP_MSR:
 		spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_VMREAD;
@@ -135,7 +131,6 @@ void xcihub_icptrdmsr(u32 cpuid){
 	XMHF_SLAB_CALLNEW(&spl);
 
 	//_XDPRINTF_("%s[%u]: adjusted guest_rip=%08x\n",   __func__, cpuid, guest_rip);
-
 }
 
 
