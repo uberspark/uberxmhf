@@ -53,11 +53,10 @@
 #include <uapi_gcpustate.h>
 
 /*
- * slab code
+ * xcihub_icptvmcall -- rich guest VMCALL interfacing
  *
  * author: amit vasudevan (amitvasudevan@acm.org)
  */
-
 void xcihub_icptvmcall(u32 cpuid, u32 src_slabid){
 	slab_params_t spl;
 	xmhf_uapi_gcpustate_vmrw_params_t *gcpustate_vmrwp = (xmhf_uapi_gcpustate_vmrw_params_t *)spl.in_out_params;
@@ -78,18 +77,14 @@ void xcihub_icptvmcall(u32 cpuid, u32 src_slabid){
 		spl.dst_slabid = XMHFGEEC_SLAB_UAPI_GCPUSTATE;
 		spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_VMREAD;
 
-		{
-		    gcpustate_vmrwp->encoding = VMCS_INFO_VMEXIT_INSTRUCTION_LENGTH;
-		    XMHF_SLAB_CALLNEW(&spl);
-		    info_vmexit_instruction_length = gcpustate_vmrwp->value;
-		}
+		gcpustate_vmrwp->encoding = VMCS_INFO_VMEXIT_INSTRUCTION_LENGTH;
+		XMHF_SLAB_CALLNEW(&spl);
+		info_vmexit_instruction_length = gcpustate_vmrwp->value;
 
-		{
-		    gcpustate_vmrwp->encoding = VMCS_GUEST_RIP;
-		    XMHF_SLAB_CALLNEW(&spl);
-		    guest_rip = gcpustate_vmrwp->value;
-		    guest_rip+=info_vmexit_instruction_length;
-		}
+		gcpustate_vmrwp->encoding = VMCS_GUEST_RIP;
+		XMHF_SLAB_CALLNEW(&spl);
+		guest_rip = gcpustate_vmrwp->value;
+		guest_rip+=info_vmexit_instruction_length;
 
 		spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_VMWRITE;
 		gcpustate_vmrwp->encoding = VMCS_GUEST_RIP;
@@ -102,9 +97,7 @@ void xcihub_icptvmcall(u32 cpuid, u32 src_slabid){
 		XMHF_SLAB_CALLNEW(&spl);
 
 		//_XDPRINTF_("%s[%u]: no-E820 adjusted guest_rip=%08x\n", __func__, cpuid, guest_rip);
-
 	}
-
 }
 
 
