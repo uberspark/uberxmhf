@@ -43,7 +43,6 @@
  *
  * @XMHF_LICENSE_HEADER_END@
  */
-
 #include <xmhf.h>
 #include <xmhfgeec.h>
 #include <xmhf-debug.h>
@@ -54,20 +53,17 @@
 #include <uapi_sysdata.h>
 
 /*
- * slab code
+ * xcihub_rg_e820emulation -- rich guest E820 memory-map emulation
  *
  * author: amit vasudevan (amitvasudevan@acm.org)
  */
-
 bool xcihub_rg_e820emulation(u32 cpuid, u32 src_slabid){
 	slab_params_t spl;
 	xmhf_uapi_gcpustate_vmrw_params_t *gcpustate_vmrwp = (xmhf_uapi_gcpustate_vmrw_params_t *)spl.in_out_params;
 	xmhf_uapi_gcpustate_gprs_params_t *gcpustate_gprs = (xmhf_uapi_gcpustate_gprs_params_t *)spl.in_out_params;
-
 	slab_params_t splusysd;
 	uxmhf_uapi_sysdata_e820getmaxindex_t *usysd_getmaxindex = (uxmhf_uapi_sysdata_e820getmaxindex_t *)splusysd.in_out_params;
 	uxmhf_uapi_sysdata_e820getentryforindex_t *usysd_getentryforindex = (uxmhf_uapi_sysdata_e820getentryforindex_t *)splusysd.in_out_params;
-
 	u32 g_cs_base, g_eip;
 	u32 g_es_base, g_ss_base;
 	u32 g_esp;
@@ -76,7 +72,6 @@ bool xcihub_rg_e820emulation(u32 cpuid, u32 src_slabid){
 	u16 orig_int15h_ip, orig_int15h_cs;
 	x86regs_t r;
 
-
 	//setup uobj params
 	spl.cpuid = cpuid;
 	spl.src_slabid = XMHFGEEC_SLAB_XC_IHUB;
@@ -84,7 +79,6 @@ bool xcihub_rg_e820emulation(u32 cpuid, u32 src_slabid){
 	splusysd.cpuid = cpuid;
 	splusysd.src_slabid = XMHFGEEC_SLAB_XC_IHUB;
 	splusysd.dst_slabid = XMHFGEEC_SLAB_UAPI_SYSDATA;
-
 
 	//read CS base and RIP
 	spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_VMREAD;
@@ -95,7 +89,6 @@ bool xcihub_rg_e820emulation(u32 cpuid, u32 src_slabid){
 	gcpustate_vmrwp->encoding = VMCS_GUEST_RIP;
 	XMHF_SLAB_CALLNEW(&spl);
 	g_eip = gcpustate_vmrwp->value;
-
 
 	//check if this is a E820 emulation VMCALL, if not return false
 	if ( !( (g_cs_base == (VMX_UG_E820HOOK_CS << 4)) && (g_eip == VMX_UG_E820HOOK_IP) ) )
@@ -113,7 +106,6 @@ bool xcihub_rg_e820emulation(u32 cpuid, u32 src_slabid){
 	gcpustate_vmrwp->encoding = VMCS_GUEST_RSP;
 	XMHF_SLAB_CALLNEW(&spl);
 	g_esp = gcpustate_vmrwp->value;
-
 
 	//read GPRs
 	spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSREAD;
@@ -137,13 +129,13 @@ bool xcihub_rg_e820emulation(u32 cpuid, u32 src_slabid){
 		XMHF_SLAB_CALLNEW(&splusysd);
 		e820_maxindex = usysd_getmaxindex->index;
 
-
 		if( (r.edx == 0x534D4150UL) && (r.ebx < e820_maxindex) ){
 
 			splusysd.dst_uapifn = UXMHF_UAPI_SYSDATA_E820GETENTRYFORINDEX;
 			usysd_getentryforindex->index = r.ebx;
 			XMHF_SLAB_CALLNEW(&splusysd);
 			CASM_FUNCCALL(xmhfhw_sysmem_copy_obj2sys, (u32)(g_es_base+(u16)r.edi), &(usysd_getentryforindex->baseaddr_high), 20);
+
 			_XDPRINTF_("%s[%u]:   base: 0x%08x%08x  len=0x%08x%08x, t=0x%08x\n", __func__, cpuid,
 					usysd_getentryforindex->baseaddr_high, usysd_getentryforindex->baseaddr_low,
 					usysd_getentryforindex->length_high, usysd_getentryforindex->length_low,
@@ -183,8 +175,8 @@ bool xcihub_rg_e820emulation(u32 cpuid, u32 src_slabid){
 			CASM_FUNCCALL(xmhfhw_sysmemaccess_writeu16, ((u32)g_ss_base + (u16)g_esp + 0x4), g_flags);
 
 		}else{	//invalid state specified during INT 15 E820, halt
-				_XDPRINTF_("%s[%u]: INT15 (E820), invalid state specified by guest. Halting!\n", __func__, cpuid);
-				HALT();
+			_XDPRINTF_("%s[%u]: INT15 (E820), invalid state specified by guest. Halting!\n", __func__, cpuid);
+			CASM_FUNCCALL(xmhfhw_cpu_hlt, CASM_NOPARAM);
 		}
 
 		//update GPRs
@@ -228,9 +220,6 @@ bool xcihub_rg_e820emulation(u32 cpuid, u32 src_slabid){
 	gcpustate_vmrwp->encoding = VMCS_GUEST_INTERRUPTIBILITY;
 	gcpustate_vmrwp->value = 0;
 	XMHF_SLAB_CALLNEW(&spl);
-
-	//_XDPRINTF_("%s[%u]: E820 emulation: WIP. Halting!\n", __func__, cpuid);
-	//HALT();
 
 	//we handled a VMCALL which was E820 emulation
 	return true;
