@@ -52,7 +52,7 @@
 #include <xc_ihub.h>
 
 /*
- * slab code
+ * xcihub_halt -- halt on unhandled rich guest intercepts
  *
  * author: amit vasudevan (amitvasudevan@acm.org)
  */
