@@ -55,6 +55,7 @@
 #include <xmhf-debug.h>
 
 #include <xmhfgeec.h>
+#include <xmhfhw.h>
 
 #include <xc.h>
 #include <uapi_gcpustate.h>
@@ -475,7 +476,7 @@ void slab_main(slab_params_t *sp){
 
 
     //_XDPRINTF_("%s[%u]: Should  never get here.Halting!\n", __func__, (u16)sp->cpuid);
-    HALT();
+    CASM_FUNCCALL(xmhfhw_cpu_hlt, CASM_NOPARAM);
 
     return;
 }
