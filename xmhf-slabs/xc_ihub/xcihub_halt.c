@@ -52,14 +52,14 @@
 #include <xc_ihub.h>
 
 /*
- * slab code
+ * xcihub_halt -- halt on unhandled rich guest intercepts
  *
  * author: amit vasudevan (amitvasudevan@acm.org)
  */
 
 void xcihub_halt(u32 cpuid, u32 info_vmexit_reason){
 	_XDPRINTF_("%s[%u]: unhandled intercept %x. Halting!\n", __func__, cpuid, info_vmexit_reason);
-	HALT();
+	CASM_FUNCCALL(xmhfhw_cpu_hlt, CASM_NOPARAM);
 }
 
 

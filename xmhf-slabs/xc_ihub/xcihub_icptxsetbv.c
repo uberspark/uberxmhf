@@ -54,21 +54,16 @@
 #include <uapi_hcpustate.h>
 
 /*
- * slab code
+ * xcihub_icptxsetbv -- rich guest XSETBV instruction emulation
  *
  * author: amit vasudevan (amitvasudevan@acm.org)
  */
-
-
-
 void xcihub_icptxsetbv(u32 cpuid){
 	slab_params_t spl;
 	xmhf_uapi_gcpustate_vmrw_params_t *gcpustate_vmrwp = (xmhf_uapi_gcpustate_vmrw_params_t *)spl.in_out_params;
 	xmhf_uapi_gcpustate_gprs_params_t *gcpustate_gprs = (xmhf_uapi_gcpustate_gprs_params_t *)spl.in_out_params;
-
 	u32 guest_rip;
 	u32 info_vmexit_instruction_length;
-	//u32 info_exit_qualification;
 	x86regs_t r;
 	u64 xcr_value;
 
@@ -83,47 +78,34 @@ void xcihub_icptxsetbv(u32 cpuid){
 	XMHF_SLAB_CALLNEW(&spl);
 	memcpy(&r, &gcpustate_gprs->gprs, sizeof(x86regs_t));
 
-
-	//read exit qualification
-	//spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_VMREAD;
-	//gcpustate_vmrwp->encoding = VMCS_INFO_EXIT_QUALIFICATION;
-    //XMHF_SLAB_CALLNEW(&spl);
-    //info_exit_qualification = gcpustate_vmrwp->value;
-
    	xcr_value = ((u64)r.edx << 32) + (u64)r.eax;
 
    	if(r.ecx != XCR_XFEATURE_ENABLED_MASK){
    		_XDPRINTF_("%s[%u]: unhandled XCR register %u", __func__, cpuid, r.ecx);
-    	HALT();
-    }
+		CASM_FUNCCALL(xmhfhw_cpu_hlt, CASM_NOPARAM);
+	}
 
 	//XXX: TODO: check for invalid states and inject GP accordingly
 	_XDPRINTF_("%s[%u]: xcr_value=%llx", __func__, cpuid, xcr_value);
 
-    //set XCR with supplied value
+	//set XCR with supplied value
 	CASM_FUNCCALL(xsetbv, XCR_XFEATURE_ENABLED_MASK, r.eax, r.edx);
 
 	//skip over XSETBV instruction by adjusting RIP
-	{
-		spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_VMREAD;
-		gcpustate_vmrwp->encoding = VMCS_INFO_VMEXIT_INSTRUCTION_LENGTH;
-	    XMHF_SLAB_CALLNEW(&spl);
-	    info_vmexit_instruction_length = gcpustate_vmrwp->value;
-	}
+	spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_VMREAD;
+	gcpustate_vmrwp->encoding = VMCS_INFO_VMEXIT_INSTRUCTION_LENGTH;
+	XMHF_SLAB_CALLNEW(&spl);
+	info_vmexit_instruction_length = gcpustate_vmrwp->value;
 
-	{
-	    gcpustate_vmrwp->encoding = VMCS_GUEST_RIP;
-	    XMHF_SLAB_CALLNEW(&spl);
-	    guest_rip = gcpustate_vmrwp->value;
-	    guest_rip+=info_vmexit_instruction_length;
-	}
+	gcpustate_vmrwp->encoding = VMCS_GUEST_RIP;
+	XMHF_SLAB_CALLNEW(&spl);
+	guest_rip = gcpustate_vmrwp->value;
+	guest_rip+=info_vmexit_instruction_length;
 
-	{
-		spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_VMWRITE;
-		gcpustate_vmrwp->encoding = VMCS_GUEST_RIP;
-		gcpustate_vmrwp->value = guest_rip;
-		XMHF_SLAB_CALLNEW(&spl);
-	}
+	spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_VMWRITE;
+	gcpustate_vmrwp->encoding = VMCS_GUEST_RIP;
+	gcpustate_vmrwp->value = guest_rip;
+	XMHF_SLAB_CALLNEW(&spl);
 
 	//write interruptibility = 0
 	gcpustate_vmrwp->encoding = VMCS_GUEST_INTERRUPTIBILITY;
@@ -131,11 +113,6 @@ void xcihub_icptxsetbv(u32 cpuid){
 	XMHF_SLAB_CALLNEW(&spl);
 
 	//_XDPRINTF_("%s[%u]: adjusted guest_rip=%08x\n",  __func__, cpuid, guest_rip);
-
-
-	//_XDPRINTF_("%s[%u]: CRx WIP. Halting!\n", __func__, cpuid);
-	//HALT();
-
 }
 
 

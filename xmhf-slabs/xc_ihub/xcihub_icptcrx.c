@@ -54,11 +54,10 @@
 #include <uapi_hcpustate.h>
 
 /*
- * slab code
+ * xcihub_icptcrx -- rich guest control register access emulation
  *
  * author: amit vasudevan (amitvasudevan@acm.org)
  */
-
 
 static u32 _xcihub_icptcrx_getregval(u32 gpr, x86regs_t r){
 	  switch(gpr){
@@ -75,8 +74,6 @@ static u32 _xcihub_icptcrx_getregval(u32 gpr, x86regs_t r){
 			return 0;
 	}
 }
-
-
 
 void xcihub_icptcrx(u32 cpuid, u32 src_slabid){
 	slab_params_t spl;
@@ -100,12 +97,11 @@ void xcihub_icptcrx(u32 cpuid, u32 src_slabid){
 	XMHF_SLAB_CALLNEW(&spl);
 	memcpy(&r, &gcpustate_gprs->gprs, sizeof(x86regs_t));
 
-
 	//read exit qualification
 	spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_VMREAD;
 	gcpustate_vmrwp->encoding = VMCS_INFO_EXIT_QUALIFICATION;
-    XMHF_SLAB_CALLNEW(&spl);
-    info_exit_qualification = gcpustate_vmrwp->value;
+	XMHF_SLAB_CALLNEW(&spl);
+	info_exit_qualification = gcpustate_vmrwp->value;
 
 	crx=(u32) ((u32)info_exit_qualification & 0x0000000FUL);
 	gpr=(u32) (((u32)info_exit_qualification & 0x00000F00UL) >> (u32)8);
@@ -113,7 +109,7 @@ void xcihub_icptcrx(u32 cpuid, u32 src_slabid){
 
 	if ( !(gpr >=0 && gpr <= 7) ){
 		_XDPRINTF_("%s[%u]: invalid GPR value, gpr=%u\n", __func__, cpuid, gpr);
-		HALT();
+		CASM_FUNCCALL(xmhfhw_cpu_hlt, CASM_NOPARAM);
 	}
 
 	if (crx == 0x0 && tofrom == VMX_CRX_ACCESS_TO){
@@ -129,7 +125,7 @@ void xcihub_icptcrx(u32 cpuid, u32 src_slabid){
 
 		gcpustate_vmrwp->encoding = VMCS_CONTROL_CR0_SHADOW;
 		gcpustate_vmrwp->value = (cr0_value & ~(CR0_CD | CR0_NW));
-	    XMHF_SLAB_CALLNEW(&spl);
+		XMHF_SLAB_CALLNEW(&spl);
 
 		//we need to flush logical processor VPID mappings as we emulated CR0 load above
 		CASM_FUNCCALL(xmhfhw_cpu_invvpid, VMX_INVVPID_SINGLECONTEXT, src_slabid, 0, 0);
@@ -137,35 +133,28 @@ void xcihub_icptcrx(u32 cpuid, u32 src_slabid){
 	}else if(crx == 0x4 && tofrom == VMX_CRX_ACCESS_TO){
 		//CR4 access
 		_XDPRINTF_("%s[%u]: CR4 access, gpr=%u, tofrom=%u, WIP!\n", __func__, cpuid, gpr, tofrom);
-		HALT();
+		CASM_FUNCCALL(xmhfhw_cpu_hlt, CASM_NOPARAM);
 
 	}else{
 		_XDPRINTF_("%s[%u]: Unhandled CRx access, crx=0x%08x, gpr=%u, tofrom=%u\n", __func__, cpuid, crx, gpr, tofrom);
-		HALT();
+		CASM_FUNCCALL(xmhfhw_cpu_hlt, CASM_NOPARAM);
 	}
-
 
 	//skip over CRx instruction by adjusting RIP
-	{
-		spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_VMREAD;
-		gcpustate_vmrwp->encoding = VMCS_INFO_VMEXIT_INSTRUCTION_LENGTH;
-	    XMHF_SLAB_CALLNEW(&spl);
-	    info_vmexit_instruction_length = gcpustate_vmrwp->value;
-	}
+	spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_VMREAD;
+	gcpustate_vmrwp->encoding = VMCS_INFO_VMEXIT_INSTRUCTION_LENGTH;
+	XMHF_SLAB_CALLNEW(&spl);
+	info_vmexit_instruction_length = gcpustate_vmrwp->value;
 
-	{
-	    gcpustate_vmrwp->encoding = VMCS_GUEST_RIP;
-	    XMHF_SLAB_CALLNEW(&spl);
-	    guest_rip = gcpustate_vmrwp->value;
-	    guest_rip+=info_vmexit_instruction_length;
-	}
+	gcpustate_vmrwp->encoding = VMCS_GUEST_RIP;
+	XMHF_SLAB_CALLNEW(&spl);
+	guest_rip = gcpustate_vmrwp->value;
+	guest_rip+=info_vmexit_instruction_length;
 
-	{
-		spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_VMWRITE;
-		gcpustate_vmrwp->encoding = VMCS_GUEST_RIP;
-		gcpustate_vmrwp->value = guest_rip;
-		XMHF_SLAB_CALLNEW(&spl);
-	}
+	spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_VMWRITE;
+	gcpustate_vmrwp->encoding = VMCS_GUEST_RIP;
+	gcpustate_vmrwp->value = guest_rip;
+	XMHF_SLAB_CALLNEW(&spl);
 
 	//write interruptibility = 0
 	gcpustate_vmrwp->encoding = VMCS_GUEST_INTERRUPTIBILITY;
@@ -173,11 +162,6 @@ void xcihub_icptcrx(u32 cpuid, u32 src_slabid){
 	XMHF_SLAB_CALLNEW(&spl);
 
 	//_XDPRINTF_("%s[%u]: adjusted guest_rip=%08x\n",  __func__, cpuid, guest_rip);
-
-
-	//_XDPRINTF_("%s[%u]: CRx WIP. Halting!\n", __func__, cpuid);
-	//HALT();
-
 }
 
 
