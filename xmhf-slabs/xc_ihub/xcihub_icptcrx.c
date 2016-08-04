@@ -89,6 +89,7 @@ void xcihub_icptcrx(u32 cpuid, u32 src_slabid){
 	x86regs_t r;
 
 	//_XDPRINTF_("%s[%u]: CRX access\n", __func__, cpuid);
+	memset(&spl, 0, sizeof(spl));
 
 	spl.cpuid = cpuid;
 	spl.src_slabid = XMHFGEEC_SLAB_XC_IHUB;
