@@ -69,6 +69,7 @@ void xcihub_icptxsetbv(u32 cpuid){
 
 	//_XDPRINTF_("%s[%u]: CRX access\n", __func__, cpuid);
 
+	memset(&spl, 0, sizeof(spl));
 	spl.cpuid = cpuid;
 	spl.src_slabid = XMHFGEEC_SLAB_XC_IHUB;
 	spl.dst_slabid = XMHFGEEC_SLAB_UAPI_GCPUSTATE;
