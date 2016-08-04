@@ -48,6 +48,8 @@
 #include <xmhfgeec.h>
 #include <xmhf-debug.h>
 
+#include <xmhfhw.h>
+
 #include <xc.h>
 #include <xc_ihub.h>
 #include <uapi_gcpustate.h>
