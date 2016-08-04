@@ -84,6 +84,7 @@ static u32 xc_hcbinvoke_helper(u32 hcbentry, u32 cbtype, u32 src_slabid, u32 cpu
 	spl.in_out_params[0]=cbtype; //hcbp->cbtype=cbtype;
 	spl.in_out_params[1]=cbqual; //hcbp->cbqual=cbqual;
 	spl.in_out_params[2]=guest_slab_index; //hcbp->guest_slab_index=guest_slab_index;
+	spl.in_out_params[3]=0;
 
 	if(_xcihub_hypapp_info_table[hcbentry].cbmask & XC_HYPAPPCB_MASK(cbtype)){
 		spl.dst_slabid = _xcihub_hypapp_info_table[hcbentry].xmhfhic_slab_index;
