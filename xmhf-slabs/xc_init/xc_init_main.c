@@ -56,7 +56,6 @@
 
 #include <xmhfgeec.h>
 
-//#include <geec_sentinel.h>
 #include <xc.h>
 #include <uapi_gcpustate.h>
 #include <xh_hyperdep.h>
@@ -372,6 +371,7 @@ static u32 xc_hcbinvoke(u32 src_slabid, u32 cpuid, u32 cbtype, u32 cbqual, u32 g
     hcbp->cbtype=cbtype;
     hcbp->cbqual=cbqual;
     hcbp->guest_slab_index=guest_slab_index;
+    hcbp->cbresult = 0;
 
     for(i=0; i < HYPAPP_INFO_TABLE_NUMENTRIES; i++){
         if(_xcihub_hypapp_info_table[i].cbmask & XC_HYPAPPCB_MASK(cbtype)){
