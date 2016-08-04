@@ -685,7 +685,9 @@ CASM_FUNCDECL(void xmhfhw_cpu_x86vmx_vmwrite(u32 encoding, u32 value));
 CASM_FUNCDECL(u32 xmhfhw_cpu_x86vmx_vmread(u32 encoding));
 CASM_FUNCDECL(u32 __vmx_vmclear(u64 vmcs));
 CASM_FUNCDECL(u32 __vmx_vmptrld(u64 vmcs));
-CASM_FUNCDECL(u32 __vmx_invvpid(int invalidation_type, u32 vpid, u32 linearaddress));
+
+
+CASM_FUNCDECL(void xmhfhw_cpu_invvpid(u32 invalidation_type, u32 vpid, u32 linear_addr_lo, u32 linear_addr_hi));
 
 /*@
 	assigns \nothing;

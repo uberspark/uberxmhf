@@ -58,25 +58,6 @@
  */
 
 
-#if defined (__XMHF_VERIFICATION__) && defined (__USPARK_FRAMAC_VA__)
-u32 check_esp, check_eip = CASM_RET_EIP;
-u32 cpuid = 0;	//cpu id
-
-void main(void){
-	//populate hardware model stack and program counter
-	xmhfhwm_cpu_gprs_esp = _slab_tos[cpuid];
-	xmhfhwm_cpu_gprs_eip = check_eip;
-	check_esp = xmhfhwm_cpu_gprs_esp; // pointing to top-of-stack
-
-	//setup main loop input parameters to non-det values
-	slab_main_helper(framac_nondetu32(), framac_nondetu32(), cpuid);
-
-	/*@assert ((xmhfhwm_cpu_state == CPU_STATE_RUNNING && xmhfhwm_cpu_gprs_esp == check_esp && xmhfhwm_cpu_gprs_eip == check_eip) ||
-		(xmhfhwm_cpu_state == CPU_STATE_HALT));
-	@*/
-}
-#endif
-
 
 
 //@ ghost bool xcihub_callhcbinvoke=false;
@@ -147,6 +128,7 @@ static void slab_main_helper(u32 vmexit_reason, u32 src_slabid, u32 cpuid){
 		//@ghost xcihub_callhalt=false;
 		if(hcb_status == XC_HYPAPPCB_CHAIN) xcihub_icptcpuid((u16)cpuid);
 
+
 	}else if (vmexit_reason == VMX_VMEXIT_WRMSR){
 		hcb_status =  xc_hcbinvoke(XMHFGEEC_SLAB_XC_IHUB, cpuid,
 			    XC_HYPAPPCB_TRAP_INSTRUCTION, XC_HYPAPPCB_TRAP_INSTRUCTION_WRMSR, src_slabid);
@@ -194,6 +176,26 @@ static void slab_main_helper(u32 vmexit_reason, u32 src_slabid, u32 cpuid){
 	}
 
 }
+
+
+#if defined (__XMHF_VERIFICATION__) && defined (__USPARK_FRAMAC_VA__)
+u32 check_esp, check_eip = CASM_RET_EIP;
+u32 cpuid = 0;	//cpu id
+
+void main(void){
+	//populate hardware model stack and program counter
+	xmhfhwm_cpu_gprs_esp = _slab_tos[cpuid];
+	xmhfhwm_cpu_gprs_eip = check_eip;
+	check_esp = xmhfhwm_cpu_gprs_esp; // pointing to top-of-stack
+
+	//setup main loop input parameters to non-det values
+	slab_main_helper(framac_nondetu32(), framac_nondetu32(), cpuid);
+
+	/*@assert ((xmhfhwm_cpu_state == CPU_STATE_RUNNING && xmhfhwm_cpu_gprs_esp == check_esp && xmhfhwm_cpu_gprs_eip == check_eip) ||
+		(xmhfhwm_cpu_state == CPU_STATE_HALT));
+	@*/
+}
+#endif
 
 
 

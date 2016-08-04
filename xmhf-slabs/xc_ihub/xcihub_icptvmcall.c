@@ -78,10 +78,12 @@ void xcihub_icptvmcall(u32 cpuid, u32 src_slabid){
 		spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_VMREAD;
 
 		gcpustate_vmrwp->encoding = VMCS_INFO_VMEXIT_INSTRUCTION_LENGTH;
+		gcpustate_vmrwp->value=0;
 		XMHF_SLAB_CALLNEW(&spl);
 		info_vmexit_instruction_length = gcpustate_vmrwp->value;
 
 		gcpustate_vmrwp->encoding = VMCS_GUEST_RIP;
+		gcpustate_vmrwp->value=0;
 		XMHF_SLAB_CALLNEW(&spl);
 		guest_rip = gcpustate_vmrwp->value;
 		guest_rip+=info_vmexit_instruction_length;

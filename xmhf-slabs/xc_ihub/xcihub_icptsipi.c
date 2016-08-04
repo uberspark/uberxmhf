@@ -65,6 +65,7 @@ void xcihub_icptsipi(u32 cpuid){
 	u32 info_exit_qualification;
 	u32 sipivector;
 
+	memset(&spl, 0, sizeof(spl));
 	spl.cpuid = cpuid;
 	spl.src_slabid = XMHFGEEC_SLAB_XC_IHUB;
 	spl.dst_slabid = XMHFGEEC_SLAB_UAPI_GCPUSTATE;
