@@ -113,7 +113,7 @@ static void slab_main_helper(u32 vmexit_reason, u32 src_slabid, u32 cpuid){
 		//@ghost xcihub_callicptvmcall=false;
 		//@ghost xcihub_callhalt=false;
 		if(hcb_status == XC_HYPAPPCB_CHAIN) xcihub_icptrdmsr((u16)cpuid);
-/*
+
 	}else if(vmexit_reason == VMX_VMEXIT_VMCALL){
 		xcihub_icptvmcall((u16)cpuid, src_slabid);
 		//@ghost xcihub_callicptvmcall=true;
@@ -128,6 +128,7 @@ static void slab_main_helper(u32 vmexit_reason, u32 src_slabid, u32 cpuid){
 		//@ghost xcihub_callhalt=false;
 		if(hcb_status == XC_HYPAPPCB_CHAIN) xcihub_icptcpuid((u16)cpuid);
 
+/*
 	}else if (vmexit_reason == VMX_VMEXIT_WRMSR){
 		hcb_status =  xc_hcbinvoke(XMHFGEEC_SLAB_XC_IHUB, cpuid,
 			    XC_HYPAPPCB_TRAP_INSTRUCTION, XC_HYPAPPCB_TRAP_INSTRUCTION_WRMSR, src_slabid);

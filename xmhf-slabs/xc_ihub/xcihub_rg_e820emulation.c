@@ -72,6 +72,10 @@ bool xcihub_rg_e820emulation(u32 cpuid, u32 src_slabid){
 	u16 orig_int15h_ip, orig_int15h_cs;
 	x86regs_t r;
 
+	//clear out slab_params
+	memset(&spl, 0, sizeof(spl));
+	memset(&splusysd, 0, sizeof(splusysd));
+
 	//setup uobj params
 	spl.cpuid = cpuid;
 	spl.src_slabid = XMHFGEEC_SLAB_XC_IHUB;
@@ -111,6 +115,7 @@ bool xcihub_rg_e820emulation(u32 cpuid, u32 src_slabid){
 	spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSREAD;
 	XMHF_SLAB_CALLNEW(&spl);
 	memcpy(&r, &gcpustate_gprs->gprs, sizeof(x86regs_t));
+
 
 	//if E820 service then...
 	if((u16)r.eax == 0xE820){
