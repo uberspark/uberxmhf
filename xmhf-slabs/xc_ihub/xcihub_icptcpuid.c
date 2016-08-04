@@ -53,7 +53,7 @@
 #include <uapi_gcpustate.h>
 
 /*
- * slab code
+ * xcihub_icptcpuid -- rich guest CPUID instruction emulation
  *
  * author: amit vasudevan (amitvasudevan@acm.org)
  */
@@ -64,11 +64,9 @@ void xcihub_icptcpuid(u32 cpuid){
 	xmhf_uapi_gcpustate_gprs_params_t *gcpustate_gprs = (xmhf_uapi_gcpustate_gprs_params_t *)spl.in_out_params;
 	u32 guest_rip;
 	u32 info_vmexit_instruction_length;
-	//bool clearsyscallretbit=false; //x86_64
 	x86regs_t r;
 
 	//_XDPRINTF_("%s[%u]: VMX_VMEXIT_CPUID\n",   __func__, cpuid);
-
 
 	spl.cpuid = cpuid;
 	spl.src_slabid = XMHFGEEC_SLAB_XC_IHUB;
@@ -78,33 +76,23 @@ void xcihub_icptcpuid(u32 cpuid){
 	XMHF_SLAB_CALLNEW(&spl);
 	memcpy(&r, &gcpustate_gprs->gprs, sizeof(x86regs_t));
 
-	//x86_64
-	//if((u32)r.eax == 0x80000001)
-	//    clearsyscallretbit = true;
-
+	//invoke actual CPUID instruction
 	CASM_FUNCCALL(xmhfhw_cpu_cpuid,(u32)r.eax, (u32 *)&r.eax, (u32 *)&r.ebx, (u32 *)&r.ecx, (u32 *)&r.edx);
-
-	//x86_64
-	//if(clearsyscallretbit)
-	//    r.edx = r.edx & (u64)~(1ULL << 11);
 
 	spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSWRITE;
 	memcpy(&gcpustate_gprs->gprs, &r, sizeof(x86regs_t));
 	XMHF_SLAB_CALLNEW(&spl);
 
-	{
-	    spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_VMREAD;
-	    gcpustate_vmrwp->encoding = VMCS_INFO_VMEXIT_INSTRUCTION_LENGTH;
-	    XMHF_SLAB_CALLNEW(&spl);
-	    info_vmexit_instruction_length = gcpustate_vmrwp->value;
-	}
+	//set guest RIP to next instruction and resume
+	spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_VMREAD;
+	gcpustate_vmrwp->encoding = VMCS_INFO_VMEXIT_INSTRUCTION_LENGTH;
+	XMHF_SLAB_CALLNEW(&spl);
+	info_vmexit_instruction_length = gcpustate_vmrwp->value;
 
-	{
-	    gcpustate_vmrwp->encoding = VMCS_GUEST_RIP;
-	    XMHF_SLAB_CALLNEW(&spl);
-	    guest_rip = gcpustate_vmrwp->value;
-	    guest_rip+=info_vmexit_instruction_length;
-	}
+	gcpustate_vmrwp->encoding = VMCS_GUEST_RIP;
+	XMHF_SLAB_CALLNEW(&spl);
+	guest_rip = gcpustate_vmrwp->value;
+	guest_rip+=info_vmexit_instruction_length;
 
 	spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_VMWRITE;
 	gcpustate_vmrwp->encoding = VMCS_GUEST_RIP;
@@ -112,7 +100,6 @@ void xcihub_icptcpuid(u32 cpuid){
 	XMHF_SLAB_CALLNEW(&spl);
 
 	//_XDPRINTF_("%s[%u]: adjusted guest_rip=%08x\n",   __func__, cpuid, guest_rip);
-
 }
 
 
