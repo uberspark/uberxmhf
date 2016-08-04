@@ -422,6 +422,40 @@ static void	xcinit_copyguestbootmodule(u32 g_bm_base, u32 g_bm_size){
 }
 
 
+
+#if defined (__XMHF_VERIFICATION__) && defined (__USPARK_FRAMAC_VA__)
+u32 check_esp, check_eip = CASM_RET_EIP;
+slab_params_t test_sp;
+u32 cpuid = 0;	//cpu id
+
+void main(void){
+	//populate hardware model stack and program counter
+	xmhfhwm_cpu_gprs_esp = _slab_tos[cpuid];
+	xmhfhwm_cpu_gprs_eip = check_eip;
+	check_esp = xmhfhwm_cpu_gprs_esp; // pointing to top-of-stack
+
+    test_sp.slab_ctype = framac_nondetu32();
+    test_sp.src_slabid = framac_nondetu32();
+    test_sp.dst_slabid = framac_nondetu32();
+    test_sp.dst_uapifn = framac_nondetu32();
+    test_sp.cpuid = framac_nondetu32();
+	test_sp.in_out_params[0] =  framac_nondetu32(); 	test_sp.in_out_params[1] = framac_nondetu32();
+	test_sp.in_out_params[2] = framac_nondetu32(); 	test_sp.in_out_params[3] = framac_nondetu32();
+	test_sp.in_out_params[4] = framac_nondetu32(); 	test_sp.in_out_params[5] = framac_nondetu32();
+	test_sp.in_out_params[6] = framac_nondetu32(); 	test_sp.in_out_params[7] = framac_nondetu32();
+	test_sp.in_out_params[8] = framac_nondetu32(); 	test_sp.in_out_params[9] = framac_nondetu32();
+	test_sp.in_out_params[10] = framac_nondetu32(); 	test_sp.in_out_params[11] = framac_nondetu32();
+	test_sp.in_out_params[12] = framac_nondetu32(); 	test_sp.in_out_params[13] = framac_nondetu32();
+	test_sp.in_out_params[14] = framac_nondetu32(); 	test_sp.in_out_params[15] = framac_nondetu32();
+
+	slab_main(&test_sp);
+
+	/*@assert ((xmhfhwm_cpu_state == CPU_STATE_RUNNING && xmhfhwm_cpu_gprs_esp == check_esp && xmhfhwm_cpu_gprs_eip == check_eip) ||
+		(xmhfhwm_cpu_state == CPU_STATE_HALT));
+	@*/
+}
+#endif
+
 void slab_main(slab_params_t *sp){
     bool isbsp = xmhfhw_lapic_isbsp();
 
@@ -438,7 +472,7 @@ void slab_main(slab_params_t *sp){
 
     //test uboj invocation
     //xcinit_do_test(sp);
-
+/*
     //plant int 15h redirection code for E820 reporting and copy boot-module
     if(isbsp){
         _XDPRINTF_("XC_INIT[%u]: BSP: Proceeding to install E820 redirection...\n", (u16)sp->cpuid);
@@ -477,7 +511,7 @@ void slab_main(slab_params_t *sp){
 
     //_XDPRINTF_("%s[%u]: Should  never get here.Halting!\n", __func__, (u16)sp->cpuid);
     CASM_FUNCCALL(xmhfhw_cpu_hlt, CASM_NOPARAM);
-
+*/
     return;
 }
 
