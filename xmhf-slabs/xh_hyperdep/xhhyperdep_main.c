@@ -84,8 +84,10 @@ void main(void){
 
 	slab_main(&test_sp);
 
-	//@assert xmhfhwm_cpu_gprs_esp == check_esp;
-	//@assert xmhfhwm_cpu_gprs_eip == check_eip;
+	/*@assert ((xmhfhwm_cpu_state == CPU_STATE_RUNNING && xmhfhwm_cpu_gprs_esp == check_esp && xmhfhwm_cpu_gprs_eip == check_eip) ||
+		(xmhfhwm_cpu_state == CPU_STATE_HALT));
+	@*/
+
 }
 #endif
 
@@ -128,11 +130,11 @@ void slab_main(slab_params_t *sp){
 		//@ghost hyperdep_methodcall_hcbhypercall = true;
 
 	}else if (sp->in_out_params[0] == XC_HYPAPPCB_MEMORYFAULT){
-		//hyperdep_hcbmemfault(sp->cpuid, sp->in_out_params[2]);
+		hyperdep_hcbmemfault(sp->cpuid, sp->in_out_params[2]);
 		//@ghost hyperdep_methodcall_hcbmemfault = true;
 
 	}else if (sp->in_out_params[0] == XC_HYPAPPCB_SHUTDOWN){
-		//hyperdep_hcbshutdown(sp->cpuid, sp->in_out_params[2]);
+		hyperdep_hcbshutdown(sp->cpuid, sp->in_out_params[2]);
 		//@ghost hyperdep_methodcall_hcbshutdown = true;
 
 	}else{
