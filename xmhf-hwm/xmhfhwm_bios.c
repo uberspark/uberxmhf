@@ -174,6 +174,20 @@ bool _impl_xmhfhwm_bios_write(u32 sysmemaddr, sysmem_write_t writesize, u64 writ
 		//@assert writesize == SYSMEMWRITEU32;
 		//TODO: emulate ZAPping of DMAR table
 		retval = true;
+	}else if (sysmemaddr >= XMHFHWM_BIOS_BDA_BASE && sysmemaddr < (XMHFHWM_BIOS_BDA_BASE+XMHFHWM_BIOS_BDA_SIZE)){
+		/*@assert ( (writesize == SYSMEMWRITEU8) &&
+		 	 	    (sysmemaddr >= XMHFHWM_BIOS_BDA_BASE) &&
+		 	 	    (sysmemaddr < (XMHFHWM_BIOS_BDA_BASE+XMHFHWM_BIOS_BDA_SIZE)) )
+		 	 	    ||
+				  ( (writesize == SYSMEMWRITEU16) &&
+		 	 	    (sysmemaddr >= XMHFHWM_BIOS_BDA_BASE) &&
+		 	 	    (sysmemaddr < (XMHFHWM_BIOS_BDA_BASE+XMHFHWM_BIOS_BDA_SIZE-sizeof(u16))) )
+		 	 	    ;
+		 */
+		retval = true;
+	}else{
+
+
 	}
 
 	return retval;
