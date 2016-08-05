@@ -648,7 +648,7 @@ void _impl_xmhfhwm_cpu_insn_rdmsr(void){
 	//TODO: rdmsr emulation
 	if(xmhfhwm_cpu_gprs_ecx == MSR_APIC_BASE){
 		xmhfhwm_cpu_gprs_edx = (u32) ((u64)xmhfhwm_cpu_msr_apic_base >> 32);
-		xmhfhwm_cpu_gprs_eax = (u32)xmhfhwm_cpu_msr_apic_base;
+		xmhfhwm_cpu_gprs_eax = (u32)xmhfhwm_cpu_msr_apic_base | 0x100;
 	}else if (xmhfhwm_cpu_gprs_ecx == MSR_EFER){
 		xmhfhwm_cpu_gprs_edx = (u32) ((u64)xmhfhwm_cpu_msr_efer >> 32);
 		xmhfhwm_cpu_gprs_eax = (u32)xmhfhwm_cpu_msr_efer;
