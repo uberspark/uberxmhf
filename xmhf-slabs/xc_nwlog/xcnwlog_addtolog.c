@@ -52,7 +52,7 @@
 #include <xc_nwlog.h>
 
 /*
- * slab code
+ * xcnwlog_addtolog: add data to network log
  *
  * author: amit vasudevan (amitvasudevan@acm.org)
  */
