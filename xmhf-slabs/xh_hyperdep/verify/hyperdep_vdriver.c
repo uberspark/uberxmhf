@@ -87,6 +87,7 @@ u32 framac_nondetu32interval(u32 min, u32 max)
 
 
 //////
+u32 cpuid = 0;	//BSP cpu
 u32 check_esp, check_eip = CASM_RET_EIP;
 
 
