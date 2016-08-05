@@ -58,7 +58,6 @@
 #include <xh_hyperdep.h>
 
 
-
 /*@
 	ensures (!hd_activated && gpa != 0) ==> (hd_activated == true);
 @*/
@@ -68,7 +67,6 @@ void hyperdep_activatedep(u32 cpuindex, u32 guest_slab_index, u64 gpa){
 		(xmhfgeec_uapi_slabmempgtbl_getentryforpaddr_params_t *)spl.in_out_params;
 	xmhfgeec_uapi_slabmempgtbl_setentryforpaddr_params_t *setentryforpaddrp =
 		(xmhfgeec_uapi_slabmempgtbl_setentryforpaddr_params_t *)spl.in_out_params;
-
 
 	spl.src_slabid = XMHFGEEC_SLAB_XH_HYPERDEP;
 	spl.dst_slabid = XMHFGEEC_SLAB_UAPI_SLABMEMPGTBL;
