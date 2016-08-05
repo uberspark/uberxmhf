@@ -52,7 +52,7 @@
 #include <xc_nwlog.h>
 
 /*
- * slab code
+ * xcnwlog_logdata: log network log buffer to the network
  *
  * author: amit vasudevan (amitvasudevan@acm.org)
  */
