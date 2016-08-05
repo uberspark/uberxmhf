@@ -87,6 +87,11 @@ bool _impl_xmhfhwm_mem_read(u32 sysmemaddr, sysmem_read_t readsize, u64 *read_re
 		*read_result = *((u32 *)((u32)&xmhfhwm_mem_region_apbootstrap_dataseg + 32));
 		retval = true;
 
+	} else if(sysmemaddr >= 0x0 && sysmemaddr < (1024-sizeof(u32))){ //guest IVT
+		//@assert (readsize == SYSMEMREADU32);
+		*read_result = 0; //TODO: nondet
+		retval = true;
+
 	} else {
 
 	}
@@ -97,10 +102,13 @@ bool _impl_xmhfhwm_mem_read(u32 sysmemaddr, sysmem_read_t readsize, u64 *read_re
 bool _impl_xmhfhwm_mem_write(u32 sysmemaddr, sysmem_write_t writesize, u64 write_value){
 	bool retval = false;
 
-	//if(sysmemaddr == ){
-	//	//@assert writesize == SYSMEMWRITEU32;
-	//	retval = true;
-	//}
+	if(sysmemaddr >= 0x0 && sysmemaddr < (1024-sizeof(u32))){ //guest IVT
+		//@assert (writesize == SYSMEMWRITEU16);
+		retval = true;
+
+	} else {
+
+	}
 
 	return retval;
 }
