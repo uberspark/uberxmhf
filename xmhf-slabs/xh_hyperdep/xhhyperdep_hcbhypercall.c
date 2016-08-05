@@ -44,7 +44,7 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-// hyperdep hypapp main module
+// hyperdep hypapp hypercall handler
 // author: amit vasudevan (amitvasudevan@acm.org)
 
 #include <xmhf.h>
@@ -53,8 +53,6 @@
 
 #include <xc.h>
 #include <uapi_gcpustate.h>
-//#include <uapi_slabmempgtbl.h>
-
 #include <xh_hyperdep.h>
 
 //@ ghost bool hyperdep_methodcall_hcbhypercall_activatedep = false;
