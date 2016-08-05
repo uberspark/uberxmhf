@@ -441,6 +441,19 @@ void main(void){
 	xmhfhwm_cpu_gprs_eip = check_eip;
 	check_esp = xmhfhwm_cpu_gprs_esp; // pointing to top-of-stack
 
+	//inform hardware model to treat rich guest memory region as valid memory
+	xmhfhwm_sysmemaccess_physmem_extents[xmhfhwm_sysmemaccess_physmem_extents_total].addr_start =
+		xmhfgeec_slab_info_table[XMHFGEEC_SLAB_XG_RICHGUEST].slab_physmem_extents[0].addr_start;
+	xmhfhwm_sysmemaccess_physmem_extents[xmhfhwm_sysmemaccess_physmem_extents_total].addr_end =
+		xmhfgeec_slab_info_table[XMHFGEEC_SLAB_XG_RICHGUEST].slab_physmem_extents[0].addr_end;
+	xmhfhwm_sysmemaccess_physmem_extents_total++;
+	xmhfhwm_sysmemaccess_physmem_extents[xmhfhwm_sysmemaccess_physmem_extents_total].addr_start =
+		xmhfgeec_slab_info_table[XMHFGEEC_SLAB_XG_RICHGUEST].slab_physmem_extents[1].addr_start;
+	xmhfhwm_sysmemaccess_physmem_extents[xmhfhwm_sysmemaccess_physmem_extents_total].addr_end =
+		xmhfgeec_slab_info_table[XMHFGEEC_SLAB_XG_RICHGUEST].slab_physmem_extents[1].addr_end;
+	xmhfhwm_sysmemaccess_physmem_extents_total++;
+
+
     test_sp.slab_ctype = framac_nondetu32();
     test_sp.src_slabid = framac_nondetu32();
     test_sp.dst_slabid = framac_nondetu32();
@@ -487,7 +500,7 @@ void slab_main(slab_params_t *sp){
         _XDPRINTF_("XC_INIT[%u]: BSP: guest boot-module copied\n", (u16)sp->cpuid);
     }
 
-
+/*
     //setup guest uobj state
     xcinit_setup_guest(sp, isbsp);
 
@@ -516,7 +529,7 @@ void slab_main(slab_params_t *sp){
 
     //_XDPRINTF_("%s[%u]: Should  never get here.Halting!\n", __func__, (u16)sp->cpuid);
     CASM_FUNCCALL(xmhfhw_cpu_hlt, CASM_NOPARAM);
-
+*/
     return;
 }
 
