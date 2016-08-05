@@ -63,6 +63,130 @@
 //////
 
 
+#if defined (__XMHF_VERIFICATION__) && defined (__USPARK_FRAMAC_VA__)
+u32 cpuid = 0;	//BSP cpu
+u32 check_esp, check_eip = CASM_RET_EIP;
+slab_params_t test_sp;
+typedef enum {
+	XCNWLOG_VERIF_INIT,
+	XCNWLOG_VERIF_LOGDATA
+} xcnwlog_verif_t;
+
+xcnwlog_verif_t xcnwlog_verif = XCNWLOG_VERIF_INIT;
+bool xcnwlog_logdata_startedxmit = false;
+
+void cbhwm_e1000_write_tdt(u32 origval, u32 newval){
+	switch(xcnwlog_verif){
+		case XCNWLOG_VERIF_INIT:
+			//@assert 1;
+			break;
+
+		case XCNWLOG_VERIF_LOGDATA:{
+			if(xmhfhwm_e1000_tctl & E1000_TCTL_EN){
+				//@assert newval == 0;
+				//@assert xmhfhwm_e1000_tdbah == 0;
+				//@assert xmhfhwm_e1000_tdbal == (u32)&xcnwlog_lsdma;
+				//@assert xmhfhwm_e1000_status_transmitting == false;
+				xcnwlog_logdata_startedxmit = true;
+			}
+			break;
+		}
+
+		default:
+			//@assert 0;
+			break;
+	}
+}
+
+void cbhwm_e1000_write_tdbah(u32 origval, u32 newval){
+	switch(xcnwlog_verif){
+		case XCNWLOG_VERIF_INIT:
+			//@assert 1;
+			break;
+
+		case XCNWLOG_VERIF_LOGDATA:{
+			//@assert 0;
+			break;
+		}
+
+		default:
+			//@assert 0;
+			break;
+	}
+}
+
+void cbhwm_e1000_write_tdbal(u32 origval, u32 newval){
+	switch(xcnwlog_verif){
+		case XCNWLOG_VERIF_INIT:
+			//@assert 1;
+			break;
+
+		case XCNWLOG_VERIF_LOGDATA:{
+			//@assert 0;
+			break;
+		}
+
+		default:
+			//@assert 0;
+			break;
+	}
+}
+
+void cbhwm_e1000_write_tdlen(u32 origval, u32 newval){
+	switch(xcnwlog_verif){
+		case XCNWLOG_VERIF_INIT:
+			//@assert 1;
+			break;
+
+		case XCNWLOG_VERIF_LOGDATA:{
+			//@assert 0;
+			break;
+		}
+
+		default:
+			//@assert 0;
+			break;
+	}
+}
+
+void main(void){
+	//populate hardware model stack and program counter
+	xmhfhwm_cpu_gprs_esp = _slab_tos[cpuid];
+	xmhfhwm_cpu_gprs_eip = check_eip;
+	check_esp = xmhfhwm_cpu_gprs_esp; // pointing to top-of-stack
+
+	test_sp.src_slabid = framac_nondetu32interval(0, XMHFGEEC_TOTAL_SLABS-1);
+	test_sp.in_out_params[0] =  framac_nondetu32(); 	test_sp.in_out_params[1] = framac_nondetu32();
+	test_sp.in_out_params[2] = framac_nondetu32(); 	test_sp.in_out_params[3] = framac_nondetu32();
+	test_sp.in_out_params[4] = framac_nondetu32(); 	test_sp.in_out_params[5] = framac_nondetu32();
+	test_sp.in_out_params[6] = framac_nondetu32(); 	test_sp.in_out_params[7] = framac_nondetu32();
+	test_sp.in_out_params[8] = framac_nondetu32(); 	test_sp.in_out_params[9] = framac_nondetu32();
+	test_sp.in_out_params[10] = framac_nondetu32(); 	test_sp.in_out_params[11] = framac_nondetu32();
+	test_sp.in_out_params[12] = framac_nondetu32(); 	test_sp.in_out_params[13] = framac_nondetu32();
+	test_sp.in_out_params[14] = framac_nondetu32(); 	test_sp.in_out_params[15] = framac_nondetu32();
+
+	//execute harness
+	xcnwlog_verif = XCNWLOG_VERIF_INIT;
+	e1000_init_module();
+	//@assert (e1000_adapt.hw.hw_addr == (uint8_t *)E1000_HWADDR_BASE);
+	//@assert (e1000_adapt.tx_ring.tdt == (uint16_t)(E1000_TDT));
+	//@assert (e1000_adapt.tx_ring.tdh == (uint16_t)(E1000_TDH));
+        //@assert xmhfhwm_e1000_tdbah == 0;
+	//@assert xmhfhwm_e1000_tdbal == (u32)&xcnwlog_lsdma;
+	//@assert xmhfhwm_e1000_tdlen == (E1000_DESC_COUNT * sizeof(struct e1000_tx_desc));
+
+	//@assert xmhfhwm_e1000_status_transmitting == false;
+	xcnwlog_verif = XCNWLOG_VERIF_LOGDATA;
+	e1000_xmitack();
+	//@assert xcnwlog_logdata_startedxmit == true && xmhfhwm_e1000_status_transmitting == false;
+
+	//@assert xmhfhwm_cpu_gprs_esp == check_esp;
+	//@assert xmhfhwm_cpu_gprs_eip == check_eip;
+}
+#endif
+
+
+
 //@ ghost bool xcnwlog_methodcall_init = false;
 //@ ghost bool xcnwlog_methodcall_logdata = false;
 //@ ghost bool xcnwlog_methodcall_invalid = false;
