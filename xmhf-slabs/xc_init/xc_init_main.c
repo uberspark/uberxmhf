@@ -410,6 +410,7 @@ static void	xcinit_e820initializehooks(void){
 		//point IVT INT15 handler to the VMCALL instruction
 		CASM_FUNCCALL(xmhfhw_sysmemaccess_writeu16, 0x54, 0x00ac);
 		CASM_FUNCCALL(xmhfhw_sysmemaccess_writeu16, 0x56, 0x0040);
+
 }
 
 
@@ -473,7 +474,7 @@ void slab_main(slab_params_t *sp){
     //plant int 15h redirection code for E820 reporting and copy boot-module
     if(isbsp){
         _XDPRINTF_("XC_INIT[%u]: BSP: Proceeding to install E820 redirection...\n", (u16)sp->cpuid);
-    	//xcinit_e820initializehooks();
+    	xcinit_e820initializehooks();
         _XDPRINTF_("XC_INIT[%u]: BSP: E820 redirection enabled\n", (u16)sp->cpuid);
         _XDPRINTF_("XC_INIT[%u]: BSP: Proceeding to copy guest boot-module...\n", (u16)sp->cpuid);
     	//xcinit_copyguestbootmodule(sp->in_out_params[0], sp->in_out_params[1]);
