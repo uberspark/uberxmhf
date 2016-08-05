@@ -96,6 +96,7 @@ u64 xmhfhwm_cpu_msr_sysenter_cs = 0;
 u64 xmhfhwm_cpu_msr_sysenter_eip = 0;
 u32 xmhfhwm_cpu_msr_sysenter_esp_hi = 0;
 u32 xmhfhwm_cpu_msr_sysenter_esp_lo = 0;
+u64 xmhfhwm_cpu_msr_rdtsc = 0;
 
 u32 xmhfhwm_cpu_vmcs_host_rip = 0;
 u32 xmhfhwm_cpu_vmcs_host_rsp = 0;
@@ -680,7 +681,9 @@ void _impl_xmhfhwm_cpu_insn_rdmsr(void){
 }
 
 void _impl_xmhfhwm_cpu_insn_rdtsc(void){
-	//TODO: rdtsc emulation
+	xmhfhwm_cpu_gprs_edx = (u32) ((u64)xmhfhwm_cpu_msr_rdtsc >> 32);
+	xmhfhwm_cpu_gprs_eax = (u32)xmhfhwm_cpu_msr_rdtsc;
+	xmhfhwm_cpu_msr_rdtsc++;
 }
 
 void _impl_xmhfhwm_cpu_insn_movl_cr0_eax(void){

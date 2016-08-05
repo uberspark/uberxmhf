@@ -64,6 +64,8 @@
 
 
 #if defined (__XMHF_VERIFICATION__) && defined (__USPARK_FRAMAC_VA__)
+#include <xmhf-hwm.h>
+
 u32 cpuid = 0;	//BSP cpu
 u32 check_esp, check_eip = CASM_RET_EIP;
 slab_params_t test_sp;
@@ -83,9 +85,9 @@ void cbhwm_e1000_write_tdt(u32 origval, u32 newval){
 
 		case XCNWLOG_VERIF_LOGDATA:{
 			if(xmhfhwm_e1000_tctl & E1000_TCTL_EN){
-				//@assert newval == 0;
+				//@assert newval == 1;
 				//@assert xmhfhwm_e1000_tdbah == 0;
-				//@assert xmhfhwm_e1000_tdbal == (u32)&xcnwlog_lsdma;
+				//@assert xmhfhwm_e1000_tdbal == (u32)&xcnwlog_desc;
 				//@assert xmhfhwm_e1000_status_transmitting == false;
 				xcnwlog_logdata_startedxmit = true;
 			}
@@ -172,13 +174,13 @@ void main(void){
 	//@assert (e1000_adapt.tx_ring.tdt == (uint16_t)(E1000_TDT));
 	//@assert (e1000_adapt.tx_ring.tdh == (uint16_t)(E1000_TDH));
         //@assert xmhfhwm_e1000_tdbah == 0;
-	//@assert xmhfhwm_e1000_tdbal == (u32)&xcnwlog_lsdma;
-	//@assert xmhfhwm_e1000_tdlen == (E1000_DESC_COUNT * sizeof(struct e1000_tx_desc));
+	//@assert xmhfhwm_e1000_tdbal == (u32)&xcnwlog_desc;
+	//@assert xmhfhwm_e1000_tdlen == 4096;
 
 	//@assert xmhfhwm_e1000_status_transmitting == false;
 	xcnwlog_verif = XCNWLOG_VERIF_LOGDATA;
 	e1000_xmitack();
-	//@assert xcnwlog_logdata_startedxmit == true && xmhfhwm_e1000_status_transmitting == false;
+	//@assert xmhfhwm_e1000_status_transmitting == false;
 
 	//@assert xmhfhwm_cpu_gprs_esp == check_esp;
 	//@assert xmhfhwm_cpu_gprs_eip == check_eip;
