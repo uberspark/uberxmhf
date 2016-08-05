@@ -58,6 +58,37 @@
 #include <xh_hyperdep.h>
 
 
+#if defined (__XMHF_VERIFICATION__) && defined (__USPARK_FRAMAC_VA__)
+slab_params_t test_sp;
+u32 cpuid = 0;	//BSP cpu
+u32 check_esp, check_eip = CASM_RET_EIP;
+
+void main(void){
+	//populate hardware model stack and program counter
+	xmhfhwm_cpu_gprs_esp = _slab_tos[cpuid];
+	xmhfhwm_cpu_gprs_eip = check_eip;
+	check_esp = xmhfhwm_cpu_gprs_esp; // pointing to top-of-stack
+
+	test_sp.src_slabid = framac_nondetu32interval(0, XMHFGEEC_TOTAL_SLABS-1);
+	test_sp.dst_slabid = XMHFGEEC_SLAB_XH_HYPERDEP;
+	test_sp.dst_uapifn = framac_nondetu32();
+	test_sp.cpuid = cpuid;
+	test_sp.in_out_params[0] =  framac_nondetu32(); 	test_sp.in_out_params[1] = framac_nondetu32();
+	test_sp.in_out_params[2] = framac_nondetu32(); 	test_sp.in_out_params[3] = framac_nondetu32();
+	test_sp.in_out_params[4] = framac_nondetu32(); 	test_sp.in_out_params[5] = framac_nondetu32();
+	test_sp.in_out_params[6] = framac_nondetu32(); 	test_sp.in_out_params[7] = framac_nondetu32();
+	test_sp.in_out_params[8] = framac_nondetu32(); 	test_sp.in_out_params[9] = framac_nondetu32();
+	test_sp.in_out_params[10] = framac_nondetu32(); 	test_sp.in_out_params[11] = framac_nondetu32();
+	test_sp.in_out_params[12] = framac_nondetu32(); 	test_sp.in_out_params[13] = framac_nondetu32();
+	test_sp.in_out_params[14] = framac_nondetu32(); 	test_sp.in_out_params[15] = framac_nondetu32();
+
+	slab_main(&test_sp);
+
+	//@assert xmhfhwm_cpu_gprs_esp == check_esp;
+	//@assert xmhfhwm_cpu_gprs_eip == check_eip;
+}
+#endif
+
 //@ ghost bool hyperdep_methodcall_hcbinit = false;
 //@ ghost bool hyperdep_methodcall_hcbhypercall = false;
 //@ ghost bool hyperdep_methodcall_hcbmemfault = false;
@@ -93,15 +124,15 @@ void slab_main(slab_params_t *sp){
 		//@ghost hyperdep_methodcall_hcbinit = true;
 
 	}else if (sp->in_out_params[0] == XC_HYPAPPCB_HYPERCALL){
-		hyperdep_hcbhypercall(sp->cpuid, sp->in_out_params[2]);
+		//hyperdep_hcbhypercall(sp->cpuid, sp->in_out_params[2]);
 		//@ghost hyperdep_methodcall_hcbhypercall = true;
 
 	}else if (sp->in_out_params[0] == XC_HYPAPPCB_MEMORYFAULT){
-		hyperdep_hcbmemfault(sp->cpuid, sp->in_out_params[2]);
+		//hyperdep_hcbmemfault(sp->cpuid, sp->in_out_params[2]);
 		//@ghost hyperdep_methodcall_hcbmemfault = true;
 
 	}else if (sp->in_out_params[0] == XC_HYPAPPCB_SHUTDOWN){
-		hyperdep_hcbshutdown(sp->cpuid, sp->in_out_params[2]);
+		//hyperdep_hcbshutdown(sp->cpuid, sp->in_out_params[2]);
 		//@ghost hyperdep_methodcall_hcbshutdown = true;
 
 	}else{
