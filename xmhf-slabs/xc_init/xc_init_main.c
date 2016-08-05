@@ -419,8 +419,7 @@ static void	xcinit_e820initializehooks(void){
 //////
 static void	xcinit_copyguestbootmodule(u32 g_bm_base, u32 g_bm_size){
 	_XDPRINTF_("%s: boot-module at 0x%08x, size=0x%08x (%u) bytes\n", __func__, g_bm_base, g_bm_size, g_bm_size);
-	if( (g_bm_base < __TARGET_BASE_XMHF || g_bm_base >= __TARGET_MAX_XMHF) &&
-			(g_bm_size == 512) ){
+	if( (g_bm_size == 512) ){
 		CASM_FUNCCALL(xmhfhw_sysmemaccess_copy, 0x00007C00, g_bm_base, g_bm_size);
 	}else{
 		_XDPRINTF_("%s: invalid boot-module at 0x%08x, size=0x%08x (%u) bytes, Halting!\n", __func__, g_bm_base, g_bm_size, g_bm_size);
@@ -500,9 +499,10 @@ void slab_main(slab_params_t *sp){
         _XDPRINTF_("XC_INIT[%u]: BSP: guest boot-module copied\n", (u16)sp->cpuid);
     }
 
-/*
+
     //setup guest uobj state
     xcinit_setup_guest(sp, isbsp);
+
 
     //invoke hypapp initialization callbacks
     xc_hcbinvoke(XMHFGEEC_SLAB_XC_INIT, sp->cpuid, XC_HYPAPPCB_INITIALIZE, 0, XMHFGEEC_SLAB_XG_RICHGUEST);
@@ -529,7 +529,7 @@ void slab_main(slab_params_t *sp){
 
     //_XDPRINTF_("%s[%u]: Should  never get here.Halting!\n", __func__, (u16)sp->cpuid);
     CASM_FUNCCALL(xmhfhw_cpu_hlt, CASM_NOPARAM);
-*/
+
     return;
 }
 
