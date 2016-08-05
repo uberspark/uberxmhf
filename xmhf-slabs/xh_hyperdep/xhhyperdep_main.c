@@ -126,7 +126,7 @@ void slab_main(slab_params_t *sp){
 		//@ghost hyperdep_methodcall_hcbinit = true;
 
 	}else if (sp->in_out_params[0] == XC_HYPAPPCB_HYPERCALL){
-		//hyperdep_hcbhypercall(sp->cpuid, sp->in_out_params[2]);
+		hyperdep_hcbhypercall(sp->cpuid, sp->in_out_params[2]);
 		//@ghost hyperdep_methodcall_hcbhypercall = true;
 
 	}else if (sp->in_out_params[0] == XC_HYPAPPCB_MEMORYFAULT){
