@@ -470,19 +470,17 @@ void slab_main(slab_params_t *sp){
     _XDPRINTF_("XC_INIT[%u]: got control: ESP=%08x\n", (u16)sp->cpuid, CASM_FUNCCALL(read_esp,CASM_NOPARAM));
     _XDPRINTF_("XC_INIT[%u]: HYPAPP_INFO_TABLE_NUMENTRIES=%u\n", (u16)sp->cpuid, HYPAPP_INFO_TABLE_NUMENTRIES);
 
-    //test uboj invocation
-    //xcinit_do_test(sp);
-/*
     //plant int 15h redirection code for E820 reporting and copy boot-module
     if(isbsp){
         _XDPRINTF_("XC_INIT[%u]: BSP: Proceeding to install E820 redirection...\n", (u16)sp->cpuid);
-    	xcinit_e820initializehooks();
+    	//xcinit_e820initializehooks();
         _XDPRINTF_("XC_INIT[%u]: BSP: E820 redirection enabled\n", (u16)sp->cpuid);
         _XDPRINTF_("XC_INIT[%u]: BSP: Proceeding to copy guest boot-module...\n", (u16)sp->cpuid);
-    	xcinit_copyguestbootmodule(sp->in_out_params[0], sp->in_out_params[1]);
+    	//xcinit_copyguestbootmodule(sp->in_out_params[0], sp->in_out_params[1]);
         _XDPRINTF_("XC_INIT[%u]: BSP: guest boot-module copied\n", (u16)sp->cpuid);
     }
 
+/*
     //setup guest uobj state
     xcinit_setup_guest(sp, isbsp);
 
