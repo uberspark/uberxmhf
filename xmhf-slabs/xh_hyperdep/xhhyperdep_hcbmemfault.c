@@ -44,7 +44,7 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-// hyperdep hypapp main module
+// hyperdep hypapp
 // author: amit vasudevan (amitvasudevan@acm.org)
 
 #include <xmhf.h>
@@ -53,13 +53,10 @@
 
 #include <xc.h>
 #include <uapi_gcpustate.h>
-//#include <uapi_slabmempgtbl.h>
 
 #include <xh_hyperdep.h>
 
-
-
-//memory fault
+//memory fault handler
 void hyperdep_hcbmemfault(u32 cpuindex, u32 guest_slab_index){
 	u64 errorcode;
 	u64 gpa;
@@ -72,29 +69,28 @@ void hyperdep_hcbmemfault(u32 cpuindex, u32 guest_slab_index){
 	spl.src_slabid = XMHFGEEC_SLAB_XH_HYPERDEP;
 	spl.dst_slabid = XMHFGEEC_SLAB_UAPI_GCPUSTATE;
 	spl.cpuid = cpuindex;
-	//spl.in_out_params[0] = XMHF_HIC_UAPI_CPUSTATE;
-	 spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_VMREAD;
+	spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_VMREAD;
 
 	gcpustate_vmrwp->encoding = VMCS_INFO_EXIT_QUALIFICATION;
+	gcpustate_vmrwp->value=0;
 	XMHF_SLAB_CALLNEW(&spl);
 	errorcode = gcpustate_vmrwp->value;
 
 	gcpustate_vmrwp->encoding = VMCS_INFO_GUEST_PADDR_FULL;
+	gcpustate_vmrwp->value=0;
 	XMHF_SLAB_CALLNEW(&spl);
 	gpa = gcpustate_vmrwp->value;
 
 	gcpustate_vmrwp->encoding = VMCS_INFO_GUEST_LINEAR_ADDRESS;
+	gcpustate_vmrwp->value=0;
 	XMHF_SLAB_CALLNEW(&spl);
 	gva = gcpustate_vmrwp->value;
-
 
 	if(hd_activated && hd_pageaddr == (u32)gpa){
 		_XDPRINTF_("%s[%u]: memory fault in guest slab %u; gpa=%016llx, gva=%016llx, errorcode=%016llx, data page execution. Halting!\n",
 				__func__, (u16)cpuindex, guest_slab_index, gpa, gva, errorcode);
-		HALT();
+		CASM_FUNCCALL(xmhfhw_cpu_hlt, CASM_NOPARAM);
 	}
-
-
 }
 
 

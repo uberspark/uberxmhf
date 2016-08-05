@@ -44,7 +44,7 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-// hyperdep hypapp main module
+// hyperdep hypapp
 // author: amit vasudevan (amitvasudevan@acm.org)
 
 #include <xmhf.h>
@@ -52,13 +52,9 @@
 #include <xmhf-debug.h>
 
 #include <xc.h>
-//#include <uapi_gcpustate.h>
-//#include <uapi_slabmempgtbl.h>
-
 #include <xh_hyperdep.h>
 
-
-// initialization
+// initialization handler
 void hyperdep_hcbinit(u32 cpuindex){
 	_XDPRINTF_("%s[%u]: hyperDEP initializing...\n", __func__, (u16)cpuindex);
 }
