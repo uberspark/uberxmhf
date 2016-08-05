@@ -56,7 +56,6 @@
 
 #include <xc_nwlog.h>
 
-u32 cpuid = 0;	//BSP cpu
 
 //////
 // frama-c non-determinism functions
@@ -86,6 +85,7 @@ u32 framac_nondetu32interval(u32 min, u32 max)
 
 
 //////
+u32 cpuid = 0;	//BSP cpu
 u32 check_esp, check_eip = CASM_RET_EIP;
 slab_params_t test_sp;
 typedef enum {
