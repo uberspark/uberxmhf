@@ -52,16 +52,14 @@
 #include <xc_nwlog.h>
 
 /*
- * slab code
+ * xcnwlog_main: main uobj code
  *
  * author: amit vasudevan (amitvasudevan@acm.org)
  */
 
 
-
-
 //////
-// slab main function
+// entry function
 //////
 
 
