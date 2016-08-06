@@ -132,10 +132,10 @@ void slab_main(slab_params_t *sp){
 		sp->in_out_params[3]= XC_HYPAPPCB_CHAIN;
 
 	}else if (sp->in_out_params[0] == XC_HYPAPPCB_MEMORYFAULT){
-		/*if(sysclog_hcbmemfault(sp->cpuid, sp->in_out_params[2]))
+		if(sysclog_hcbmemfault(sp->cpuid, sp->in_out_params[2]))
 			sp->in_out_params[3] = XC_HYPAPPCB_NOCHAIN;
 		else
-			sp->in_out_params[3] = XC_HYPAPPCB_CHAIN;*/
+			sp->in_out_params[3] = XC_HYPAPPCB_CHAIN;
 		//@ghost sysclog_methodcall_hcbmemfault = true;
 
 	}else{
