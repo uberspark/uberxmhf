@@ -57,8 +57,6 @@
 
 #include <xh_syscalllog.h>
 
-
-
 //@ghost bool sysclog_hcbmemfault_invokelogger=false;
 /*@
 	ensures (sysclog_hcbmemfault_invokelogger == true);
@@ -91,7 +89,6 @@ bool sysclog_hcbmemfault(u32 cpuindex, u32 guest_slab_index){
 	//@assert spl.dst_slabid != XMHFGEEC_SLAB_XC_NWLOG;
 	XMHF_SLAB_CALLNEW(&spl);
 	gva = gcpustate_vmrwp->value;
-
 
 	result = sysclog_loginfo(cpuindex, guest_slab_index, gpa, gva, errorcode);
 	//@ghost sysclog_hcbmemfault_invokelogger = true;
