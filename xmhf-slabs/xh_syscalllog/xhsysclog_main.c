@@ -85,6 +85,12 @@ void main(void){
 		(xmhfhwm_cpu_state == CPU_STATE_HALT));
 	@*/
 
+	sysclog_register(framac_nondetu32(), framac_nondetu32(), framac_nondetu32(), framac_nondetu32(), framac_nondetu32());
+
+	/*@assert ((xmhfhwm_cpu_state == CPU_STATE_RUNNING && xmhfhwm_cpu_gprs_esp == check_esp && xmhfhwm_cpu_gprs_eip == check_eip) ||
+		(xmhfhwm_cpu_state == CPU_STATE_HALT));
+	@*/
+
 }
 #endif
 

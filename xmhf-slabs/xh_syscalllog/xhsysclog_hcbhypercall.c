@@ -85,7 +85,7 @@ void sysclog_hcbhypercall(u32 cpuindex, u32 guest_slab_index){
 
 		case SYSCALLLOG_REGISTER:{
 			//_XDPRINTF_("%s[%u]: call_id=%x, gpa=%016llx\n", __func__, (u16)cpuindex, call_id, gpa);
-			//sysclog_register(cpuindex, guest_slab_index, syscall_page_paddr, syscall_shadowpage_vaddr, syscall_shadowpage_paddr);
+			sysclog_register(cpuindex, guest_slab_index, syscall_page_paddr, syscall_shadowpage_vaddr, syscall_shadowpage_paddr);
 		}
 		break;
 
