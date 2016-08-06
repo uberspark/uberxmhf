@@ -44,7 +44,7 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-// syscalllog hypapp main module
+// syscalllog hypapp
 // author: amit vasudevan (amitvasudevan@acm.org)
 
 #include <xmhf.h>
@@ -58,7 +58,7 @@
 #include <xh_syscalllog.h>
 
 
-// hypercall
+// hypercall handler
 void sysclog_hcbhypercall(u32 cpuindex, u32 guest_slab_index){
     slab_params_t spl;
     xmhf_uapi_gcpustate_gprs_params_t *gcpustate_gprs =
@@ -67,7 +67,9 @@ void sysclog_hcbhypercall(u32 cpuindex, u32 guest_slab_index){
 	u32 call_id;
 	u32 syscall_page_paddr, syscall_shadowpage_vaddr, syscall_shadowpage_paddr;
 
-    spl.src_slabid = XMHFGEEC_SLAB_XH_SYSCALLLOG;
+	spl.in_out_params[0] = spl.in_out_params[1] = spl.in_out_params[2] = spl.in_out_params[3]=0;
+	spl.in_out_params[4] = spl.in_out_params[5] = spl.in_out_params[6] = spl.in_out_params[7]=0;
+	spl.src_slabid = XMHFGEEC_SLAB_XH_SYSCALLLOG;
     spl.dst_slabid = XMHFGEEC_SLAB_UAPI_GCPUSTATE;
     spl.cpuid = cpuindex;
     spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSREAD;

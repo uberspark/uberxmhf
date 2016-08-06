@@ -44,7 +44,7 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-// syscalllog hypapp main module
+// syscalllog hypapp
 // author: amit vasudevan (amitvasudevan@acm.org)
 
 #include <xmhf.h>
@@ -58,16 +58,15 @@
 #include <xc_nwlog.h>
 #include <xh_syscalllog.h>
 
-
 //@ghost bool sysclog_loginfo_nwlogged=false;
 /*@
 
 	behavior yes_log:
-		assumes (sl_activated && gpa == 0);
+		assumes (sl_activated && (((u32)gpa & 0xFFFFF000UL) == sl_syscall_page_paddr));
 		ensures sysclog_loginfo_nwlogged == true;
 
 	behavior no_log:
-		assumes !(sl_activated && gpa == 0);
+		assumes !(sl_activated && (((u32)gpa & 0xFFFFF000UL) == sl_syscall_page_paddr));
 		ensures sysclog_loginfo_nwlogged == false;
 
 	complete behaviors;
