@@ -44,7 +44,7 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-// hyperdep hypapp main module
+// hyperdep hypapp hypercall handler
 // author: amit vasudevan (amitvasudevan@acm.org)
 
 #include <xmhf.h>
@@ -53,8 +53,6 @@
 
 #include <xc.h>
 #include <uapi_gcpustate.h>
-//#include <uapi_slabmempgtbl.h>
-
 #include <xh_hyperdep.h>
 
 //@ ghost bool hyperdep_methodcall_hcbhypercall_activatedep = false;
@@ -101,6 +99,8 @@ void hyperdep_hcbhypercall(u32 cpuindex, u32 guest_slab_index){
 	u32 call_id;
 	u64 gpa;
 
+	spl.in_out_params[0] = spl.in_out_params[1] = spl.in_out_params[2] = spl.in_out_params[3] = 0;
+	spl.in_out_params[4] = spl.in_out_params[5] = spl.in_out_params[6] = spl.in_out_params[7] = 0;
 	spl.src_slabid = XMHFGEEC_SLAB_XH_HYPERDEP;
 	spl.dst_slabid = XMHFGEEC_SLAB_UAPI_GCPUSTATE;
 	spl.cpuid = cpuindex;
