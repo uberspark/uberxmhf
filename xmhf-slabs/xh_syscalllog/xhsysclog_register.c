@@ -58,8 +58,6 @@
 
 #include <xh_syscalllog.h>
 
-
-
 //register a syscall handler code page (at gpa)
 void sysclog_register(u32 cpuindex, u32 guest_slab_index, u32 syscall_page_paddr, u32 syscall_shadowpage_vaddr, u32 syscall_shadowpage_paddr){
 
@@ -84,6 +82,7 @@ void sysclog_register(u32 cpuindex, u32 guest_slab_index, u32 syscall_page_paddr
 	spl.dst_uapifn = XMHFGEEC_UAPI_SLABMEMPGTBL_GETENTRYFORPADDR;
 	getentryforpaddrp->dst_slabid = guest_slab_index;
 	getentryforpaddrp->gpa = syscall_page_paddr;
+	getentryforpaddrp->result_entry = 0;
 	XMHF_SLAB_CALLNEW(&spl);
 	_XDPRINTF_("%s[%u]: syscall_page existing entry = 0x%08x\n",
 				__func__, (u16)cpuindex, (u32)getentryforpaddrp->result_entry);
@@ -101,14 +100,12 @@ void sysclog_register(u32 cpuindex, u32 guest_slab_index, u32 syscall_page_paddr
 	flushtlbp->dst_slabid = guest_slab_index;
 	XMHF_SLAB_CALLNEW(&spl);
 
-
 	//initialize network comms
 	spl.src_slabid = XMHFGEEC_SLAB_XH_SYSCALLLOG;
 	spl.dst_slabid = XMHFGEEC_SLAB_XC_NWLOG;
 	spl.cpuid = cpuindex;
 	spl.dst_uapifn = XMHFGEEC_SLAB_XC_NWLOG_INITIALIZE;
 	XMHF_SLAB_CALLNEW(&spl);
-
 
 	sl_syscall_page_paddr = syscall_page_paddr;
 	sl_syscall_shadowpage_vaddr = syscall_shadowpage_vaddr;
