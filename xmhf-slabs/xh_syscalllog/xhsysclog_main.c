@@ -54,12 +54,9 @@
 #include <xc.h>
 #include <xh_syscalllog.h>
 
-
 //@ ghost bool sysclog_methodcall_hcbinit = false;
 //@ ghost bool sysclog_methodcall_hcbhypercall = false;
 //@ ghost bool sysclog_methodcall_hcbmemfault = false;
-//@ ghost bool sysclog_methodcall_hcbshutdown = false;
-//@ ghost bool sysclog_methodcall_hcbinsntrap = false;
 //@ ghost bool sysclog_methodcall_invalid = false;
 /*@
 	requires \valid(sp);
@@ -69,18 +66,12 @@
 	ensures (sp->in_out_params[0] == XC_HYPAPPCB_HYPERCALL) ==>
 		(sysclog_methodcall_hcbhypercall == true && (sp->in_out_params[3] == XC_HYPAPPCB_CHAIN));
 	ensures (sp->in_out_params[0] == XC_HYPAPPCB_MEMORYFAULT) ==>
-		(sysclog_methodcall_hcbmemfault == true && (sp->in_out_params[3] == XC_HYPAPPCB_CHAIN));
-	ensures (sp->in_out_params[0] == XC_HYPAPPCB_SHUTDOWN) ==>
-		(sysclog_methodcall_hcbshutdown == true && (sp->in_out_params[3] == XC_HYPAPPCB_CHAIN));
-	ensures (sp->in_out_params[0] == XC_HYPAPPCB_TRAP_INSTRUCTION) ==>
-		(sysclog_methodcall_hcbinsntrap == true && (sp->in_out_params[3] == XC_HYPAPPCB_CHAIN || sp->in_out_params[3] == XC_HYPAPPCB_NOCHAIN));
+		(sysclog_methodcall_hcbmemfault == true && (sp->in_out_params[3] == XC_HYPAPPCB_CHAIN || sp->in_out_params[3] == XC_HYPAPPCB_NOCHAIN));
 
 	ensures !(
 		(sp->in_out_params[0] == XC_HYPAPPCB_INITIALIZE) ||
 		(sp->in_out_params[0] == XC_HYPAPPCB_HYPERCALL) ||
-		(sp->in_out_params[0] == XC_HYPAPPCB_MEMORYFAULT) ||
-		(sp->in_out_params[0] == XC_HYPAPPCB_SHUTDOWN) ||
-		(sp->in_out_params[0] == XC_HYPAPPCB_TRAP_INSTRUCTION)
+		(sp->in_out_params[0] == XC_HYPAPPCB_MEMORYFAULT)
 		) ==> (sysclog_methodcall_invalid == true);
 @*/
 
