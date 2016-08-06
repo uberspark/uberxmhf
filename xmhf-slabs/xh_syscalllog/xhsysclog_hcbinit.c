@@ -44,7 +44,7 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-// syscalllog hypapp main module
+// syscalllog hypapp
 // author: amit vasudevan (amitvasudevan@acm.org)
 
 #include <xmhf.h>
@@ -57,8 +57,7 @@
 
 #include <xh_syscalllog.h>
 
-
-// initialization
+// initialization handler
 void sysclog_hcbinit(u32 cpuindex){
 	_XDPRINTF_("%s[%u]: syscalllog initializing...\n", __func__, (u16)cpuindex);
 
