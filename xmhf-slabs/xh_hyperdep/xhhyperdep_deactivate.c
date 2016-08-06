@@ -44,7 +44,7 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-// hyperdep hypapp main module
+// hyperdep hypapp
 // author: amit vasudevan (amitvasudevan@acm.org)
 
 #include <xmhf.h>
@@ -58,13 +58,9 @@
 #include <xh_hyperdep.h>
 
 
-
 //deactivate DEP for a given page (at gpa)
 void hyperdep_deactivatedep(u32 cpuindex, u32 guest_slab_index, u64 gpa){
 	slab_params_t spl;
-	//xmhf_hic_uapi_mempgtbl_desc_t *mdesc = (xmhf_hic_uapi_mempgtbl_desc_t *)&spl.in_out_params[2];
-    //    xmhf_uapi_slabmempgtbl_entry_params_t *smpgtblep =
-    //        (xmhf_uapi_slabmempgtbl_entry_params_t *)spl.in_out_params;
     xmhfgeec_uapi_slabmempgtbl_getentryforpaddr_params_t *getentryforpaddrp =
         (xmhfgeec_uapi_slabmempgtbl_getentryforpaddr_params_t *)spl.in_out_params;
     xmhfgeec_uapi_slabmempgtbl_setentryforpaddr_params_t *setentryforpaddrp =

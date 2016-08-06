@@ -73,11 +73,11 @@ static inline void hyperdep_hcbhypercall_helper(u32 cpuindex, u32 call_id, u32 g
 	_XDPRINTF_("%s[%u]: call_id=%x, gpa=%016llx\n", __func__, (u16)cpuindex, call_id, gpa);
 
 	if(call_id == HYPERDEP_ACTIVATEDEP){
-		//hyperdep_activatedep(cpuindex, guest_slab_index, gpa);
+		hyperdep_activatedep(cpuindex, guest_slab_index, gpa);
 		//@ghost hyperdep_methodcall_hcbhypercall_activatedep = true;
 
 	}else if (call_id == HYPERDEP_DEACTIVATEDEP){
-		//hyperdep_deactivatedep(cpuindex, guest_slab_index, gpa);
+		hyperdep_deactivatedep(cpuindex, guest_slab_index, gpa);
 		//@ghost hyperdep_methodcall_hcbhypercall_deactivatedep = true;
 
 	}else{
@@ -99,8 +99,8 @@ void hyperdep_hcbhypercall(u32 cpuindex, u32 guest_slab_index){
 	u32 call_id;
 	u64 gpa;
 
-	memset(&spl, 0, sizeof(spl));
-
+	spl.in_out_params[0] = spl.in_out_params[1] = spl.in_out_params[2] = spl.in_out_params[3] = 0;
+	spl.in_out_params[4] = spl.in_out_params[5] = spl.in_out_params[6] = spl.in_out_params[7] = 0;
 	spl.src_slabid = XMHFGEEC_SLAB_XH_HYPERDEP;
 	spl.dst_slabid = XMHFGEEC_SLAB_UAPI_GCPUSTATE;
 	spl.cpuid = cpuindex;
