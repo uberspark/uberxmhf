@@ -153,7 +153,7 @@ _slabs_generateslabinfoexports: _slabs_preprocessmanifests
 	
 	
 	
-.PHONY: verif_ccomp
+.PHONY: verif_compcheck
 verif_ccomp: tools _slabs_preprocessmanifests
 	@echo Proceeding to generate composition check files...
 	mkdir -p $(XMHF_OBJDIR)/_verif_ccomp
