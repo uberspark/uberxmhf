@@ -129,7 +129,14 @@ let uccomp_outputccompdriverfile () =
 
 	(* plug in header files *)
 	while (!i < !g_totalslabs) do
-	    Printf.fprintf oc "#include <%s.h>\r\n" (Hashtbl.find slab_idtoname !i);
+	    if (compare "geec_sentinel" (Hashtbl.find slab_idtoname !i)) = 0 then
+	    	begin
+	    	end
+	    else
+	    	begin
+	    		Printf.fprintf oc "#include <%s.h>\r\n" (Hashtbl.find slab_idtoname !i);
+	    	end
+	    ;
 	    i := !i + 1;
 	done;
 	Printf.fprintf oc "\n\n";
@@ -202,7 +209,14 @@ let uccomp_outputccompcheckfile () =
 
 	(* plug in header files *)
 	while(!i < !g_totalslabs) do
-	    Printf.fprintf oc "#include <%s.h>\r\n" (Hashtbl.find slab_idtoname !i);
+	    if (compare "geec_sentinel" (Hashtbl.find slab_idtoname !i)) = 0 then
+	    	begin
+	    	end
+	    else
+	    	begin
+	    		Printf.fprintf oc "#include <%s.h>\r\n" (Hashtbl.find slab_idtoname !i);
+	    	end
+	    ;
 	    i := !i + 1;
 	done;
 
