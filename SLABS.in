@@ -10,6 +10,5 @@ xmhf-slabs/uapi_slabmempgtbl , VfT_SLAB, UAPI
 xmhf-slabs/uapi_sysdata , VfT_SLAB, UAPI
 xmhf-slabs/xh_syscalllog , VfT_SLAB, XHYPAPP
 xmhf-slabs/xh_hyperdep , VfT_SLAB, XHYPAPP
-xmhf-slabs/xh_aprvexec , uVT_SLAB, XHYPAPP
 xmhf-slabs/xh_ssteptrace , uVU_SLAB, XHYPAPP
 xmhf-slabs/xg_richguest , uVU_SLAB, XRICHGUEST
