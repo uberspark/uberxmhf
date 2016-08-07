@@ -170,12 +170,12 @@ verif_gensentinelstubs:
 		cd $(XMHF_DIR) && frama-c -load-module $(XMHF_DIR)/tools/Ubp.o -umf-uobjlist $(XMHF_DIR)/SLABS -umf-outdirsentinelstubs $(XMHF_OBJDIR)/_verif_bp/  -umf-maxincldevlistentries $(XMHF_CONFIG_MAX_INCLDEVLIST_ENTRIES) -umf-maxexcldevlistentries $(XMHF_CONFIG_MAX_EXCLDEVLIST_ENTRIES) -umf-maxmemoffsetentries $(XMHF_CONFIG_MAX_MEMOFFSET_ENTRIES)
 		@echo sentinel stubs generated
 
-.PHONY: prepverif
-prepverif: tools _slabs_configureandgenerateslabinfonoexports verif_gensentinelstubs
+.PHONY: verify_prep
+verify_prep: tools _slabs_configureandgenerateslabinfonoexports verif_gensentinelstubs
 
 
 .PHONY: verify_all
-verify_all: prepverif 
+verify_all: verify_prep 
 	@for i in $(XMHF_SLAB_NAMES); \
 	do \
 		(cd $(XMHF_DIR)/xmhf-slabs/$$i && echo "Verifying uobj $$i..." && $(MAKE) -w verify) || exit 1; \
