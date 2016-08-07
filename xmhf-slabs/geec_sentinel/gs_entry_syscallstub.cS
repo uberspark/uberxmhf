@@ -75,20 +75,20 @@ u32 check_esp, check_eip = CASM_RET_EIP;
 	
 	void drv_path_calluh2vh(void){
 		drv_path_calluh2vh_callersp.slab_ctype = XMHFGEEC_SENTINEL_CALL_uVT_uVU_PROG_TO_VfT_PROG;
-        drv_path_calluh2vh_callersp.src_slabid = XMHFGEEC_SLAB_XH_APRVEXEC;
+        drv_path_calluh2vh_callersp.src_slabid = XMHFGEEC_SLAB_XH_SSTEPTRACE;
         drv_path_calluh2vh_callersp.dst_slabid = XMHFGEEC_SLAB_UAPI_GCPUSTATE;
         drv_path_calluh2vh_callersp.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_VMREAD;
 		drv_path_calluh2vh_callersp.cpuid = 0;
 	
 		//inform hardware model to treat slab stack region as valid memory
 		xmhfhwm_sysmemaccess_physmem_extents[xmhfhwm_sysmemaccess_physmem_extents_total].addr_start =
-			xmhfgeec_slab_info_table[XMHFGEEC_SLAB_XH_APRVEXEC].slab_physmem_extents[2].addr_start;
+			xmhfgeec_slab_info_table[XMHFGEEC_SLAB_XH_SSTEPTRACE].slab_physmem_extents[2].addr_start;
 		xmhfhwm_sysmemaccess_physmem_extents[xmhfhwm_sysmemaccess_physmem_extents_total].addr_end =
-			xmhfgeec_slab_info_table[XMHFGEEC_SLAB_XH_APRVEXEC].slab_physmem_extents[2].addr_end;
+			xmhfgeec_slab_info_table[XMHFGEEC_SLAB_XH_SSTEPTRACE].slab_physmem_extents[2].addr_end;
 		xmhfhwm_sysmemaccess_physmem_extents_total++;
 	
 		//load cr3 for xc_testslab
-		xmhfhwm_cpu_cr3 = xmhfgeec_slab_info_table[XMHFGEEC_SLAB_XH_APRVEXEC].mempgtbl_cr3;
+		xmhfhwm_cpu_cr3 = xmhfgeec_slab_info_table[XMHFGEEC_SLAB_XH_SSTEPTRACE].mempgtbl_cr3;
 	
 		//setup verified slab stack parameters for parameter marshalling
 		xmhfhwm_cpu_gprs_esp -= sizeof(slab_params_t);
@@ -115,16 +115,16 @@ u32 check_esp, check_eip = CASM_RET_EIP;
 	
 	void drv_path_retvh2uh(void){
 		drv_pathretvh2uh_sp.slab_ctype = XMHFGEEC_SENTINEL_RET_VfT_PROG_TO_uVT_uVU_PROG;
-		drv_pathretvh2uh_sp.src_slabid = XMHFGEEC_SLAB_XH_APRVEXEC;
+		drv_pathretvh2uh_sp.src_slabid = XMHFGEEC_SLAB_XH_SSTEPTRACE;
         drv_pathretvh2uh_sp.dst_slabid = XMHFGEEC_SLAB_XC_INIT;
         drv_pathretvh2uh_sp.dst_uapifn = 0;
 		drv_pathretvh2uh_sp.cpuid = 0;
 	
 		//inform hardware model to treat slab stack region as valid memory
 		xmhfhwm_sysmemaccess_physmem_extents[xmhfhwm_sysmemaccess_physmem_extents_total].addr_start =
-			xmhfgeec_slab_info_table[XMHFGEEC_SLAB_XH_APRVEXEC].slab_physmem_extents[2].addr_start;
+			xmhfgeec_slab_info_table[XMHFGEEC_SLAB_XH_SSTEPTRACE].slab_physmem_extents[2].addr_start;
 		xmhfhwm_sysmemaccess_physmem_extents[xmhfhwm_sysmemaccess_physmem_extents_total].addr_end =
-			xmhfgeec_slab_info_table[XMHFGEEC_SLAB_XH_APRVEXEC].slab_physmem_extents[2].addr_end;
+			xmhfgeec_slab_info_table[XMHFGEEC_SLAB_XH_SSTEPTRACE].slab_physmem_extents[2].addr_end;
 		xmhfhwm_sysmemaccess_physmem_extents_total++;
 	
 		//setup verified slab stack frame that this slab is returning to
@@ -141,7 +141,7 @@ u32 check_esp, check_eip = CASM_RET_EIP;
 	
 		//plug in an entry in the SISS corresponding to this RET
 		siss_elem.src_slabid = XMHFGEEC_SLAB_XC_INIT;
-		siss_elem.dst_slabid = XMHFGEEC_SLAB_XH_APRVEXEC;
+		siss_elem.dst_slabid = XMHFGEEC_SLAB_XH_SSTEPTRACE;
 		siss_elem.slab_ctype = XMHFGEEC_SENTINEL_CALL_VfT_PROG_TO_uVT_uVU_PROG;
 		siss_elem.caller_stack_frame = xmhfhwm_cpu_gprs_esp;
 		siss_elem.sp = &drv_pathretvh2uh_callersp;
