@@ -134,7 +134,7 @@ _slabs_preprocessmanifests:
 	mkdir -p $(XMHF_OBJDIR)
 	@for i in $(XMHF_SLAB_NAMES); \
 	do \
-		(cd $(XMHF_OBJDIR) && echo "Prepping slab geec manifest for $$i..." && $(CP) -f $(XMHF_DIR)/xmhf-slabs/$$i/$$i.gsm $$i.gsm.c && $(CCERT) -E -D__ASSEMBLY__ $(CCERT_FLAGS) $$i.gsm.c >$(XMHF_DIR)/xmhf-slabs/$$i/$$i.gsm.pp) || exit 1; \
+		(cd $(XMHF_OBJDIR) && echo "Prepping slab geec manifest for $$i..." && $(CP) -f $(XMHF_DIR)/xmhf-uobjs/$$i/$$i.gsm $$i.gsm.c && $(CCERT) -E -D__ASSEMBLY__ $(CCERT_FLAGS) $$i.gsm.c >$(XMHF_DIR)/xmhf-uobjs/$$i/$$i.gsm.pp) || exit 1; \
 	done;
 	@echo Slab geec manifests prepped
 
@@ -178,7 +178,7 @@ verify_prep: tools _slabs_configureandgenerateslabinfonoexports verif_gensentine
 verify_all: verify_prep 
 	@for i in $(XMHF_SLAB_NAMES); \
 	do \
-		(cd $(XMHF_DIR)/xmhf-slabs/$$i && echo "Verifying uobj $$i..." && $(MAKE) -w verify) || exit 1; \
+		(cd $(XMHF_DIR)/xmhf-uobjs/$$i && echo "Verifying uobj $$i..." && $(MAKE) -w verify) || exit 1; \
 	done;
 	@echo All uobjs verified!
 	
@@ -226,7 +226,7 @@ install-bin:
 
 .PHONY: clean distclean
 clean:
-	$(RM) -f $(XMHF_DIR)/xmhf-slabs/geec_sentinel/__geec_sentinel_autogendata_slabinfotable
+	$(RM) -f $(XMHF_DIR)/xmhf-uobjs/geec_sentinel/__geec_sentinel_autogendata_slabinfotable
 	rm -rf *.html
 	rm -rf doc
 	$(RM) -rf $(XMHF_OBJDIR)
