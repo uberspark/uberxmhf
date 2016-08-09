@@ -125,21 +125,21 @@ u32 check_esp, check_eip = CASM_RET_EIP;
 	
 	void xmhfhwm_vdriver_slabep(void){
 		cabi_check();
-		//@assert xmhfhwm_cpu_gprs_eip == (u32)xmhfgeec_slab_info_table[XMHFGEEC_SLAB_XH_APRVEXEC].entrystub;
+		//@assert xmhfhwm_cpu_gprs_eip == (u32)xmhfgeec_slab_info_table[XMHFGEEC_SLAB_XH_SSTEPTRACE].entrystub;
 		//@assert false;
 	}
 	
 	void drv_pathv2uv(void){
 		drv_pathv2uv_sp.slab_ctype =XMHFGEEC_SENTINEL_CALL_FROM_VfT_PROG;
         drv_pathv2uv_sp.src_slabid = XMHFGEEC_SLAB_XC_INIT;
-        drv_pathv2uv_sp.dst_slabid = XMHFGEEC_SLAB_XH_APRVEXEC;
+        drv_pathv2uv_sp.dst_slabid = XMHFGEEC_SLAB_XH_SSTEPTRACE;
         drv_pathv2uv_sp.dst_uapifn = 0;
 		drv_pathv2uv_sp.cpuid = 0;
 	
 		xmhfhwm_sysmemaccess_physmem_extents[xmhfhwm_sysmemaccess_physmem_extents_total].addr_start =
-			xmhfgeec_slab_info_table[XMHFGEEC_SLAB_XH_APRVEXEC].slab_physmem_extents[2].addr_start;
+			xmhfgeec_slab_info_table[XMHFGEEC_SLAB_XH_SSTEPTRACE].slab_physmem_extents[2].addr_start;
 		xmhfhwm_sysmemaccess_physmem_extents[xmhfhwm_sysmemaccess_physmem_extents_total].addr_end =
-			xmhfgeec_slab_info_table[XMHFGEEC_SLAB_XH_APRVEXEC].slab_physmem_extents[2].addr_end;
+			xmhfgeec_slab_info_table[XMHFGEEC_SLAB_XH_SSTEPTRACE].slab_physmem_extents[2].addr_end;
 		xmhfhwm_sysmemaccess_physmem_extents_total++;
 	
 		cabi_establish();
@@ -220,23 +220,23 @@ u32 check_esp, check_eip = CASM_RET_EIP;
 	void drv_path_retuh2vh(void){
 		drv_path_retuh2vh_calleesp.slab_ctype = XMHFGEEC_SENTINEL_RET_uVT_uVU_PROG_TO_VfT_PROG;
         drv_path_retuh2vh_calleesp.src_slabid = XMHFGEEC_SLAB_UAPI_GCPUSTATE;
-        drv_path_retuh2vh_calleesp.dst_slabid = XMHFGEEC_SLAB_XH_APRVEXEC;
+        drv_path_retuh2vh_calleesp.dst_slabid = XMHFGEEC_SLAB_XH_SSTEPTRACE;
         drv_path_retuh2vh_calleesp.dst_uapifn = 0;
 		drv_path_retuh2vh_calleesp.cpuid = 0;
 	
 		//inform hardware model to treat slab stack region as valid memory
 		xmhfhwm_sysmemaccess_physmem_extents[xmhfhwm_sysmemaccess_physmem_extents_total].addr_start =
-			xmhfgeec_slab_info_table[XMHFGEEC_SLAB_XH_APRVEXEC].slab_physmem_extents[2].addr_start;
+			xmhfgeec_slab_info_table[XMHFGEEC_SLAB_XH_SSTEPTRACE].slab_physmem_extents[2].addr_start;
 		xmhfhwm_sysmemaccess_physmem_extents[xmhfhwm_sysmemaccess_physmem_extents_total].addr_end =
-			xmhfgeec_slab_info_table[XMHFGEEC_SLAB_XH_APRVEXEC].slab_physmem_extents[2].addr_end;
+			xmhfgeec_slab_info_table[XMHFGEEC_SLAB_XH_SSTEPTRACE].slab_physmem_extents[2].addr_end;
 		xmhfhwm_sysmemaccess_physmem_extents_total++;
 		
 		//plug in an entry in the SISS corresponding to this RET
-		siss_elem.src_slabid = XMHFGEEC_SLAB_XH_APRVEXEC;
+		siss_elem.src_slabid = XMHFGEEC_SLAB_XH_SSTEPTRACE;
 		siss_elem.dst_slabid = XMHFGEEC_SLAB_UAPI_GCPUSTATE;
 		siss_elem.slab_ctype = XMHFGEEC_SENTINEL_CALL_uVT_uVU_PROG_TO_VfT_PROG;
 		siss_elem.caller_stack_frame = &drv_path_retuh2vh_callerstackframe[0];
-		siss_elem.sp = xmhfgeec_slab_info_table[XMHFGEEC_SLAB_XH_APRVEXEC].slabtos[cpuid];
+		siss_elem.sp = xmhfgeec_slab_info_table[XMHFGEEC_SLAB_XH_SSTEPTRACE].slabtos[cpuid];
 	
 		gs_siss_push(cpuid, siss_elem);
 	
