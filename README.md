@@ -34,7 +34,7 @@ Below you will find our first (academic prototype) release of uSpark and uberXMH
 -- code-named "cliff-jumper" -- as a gzipped-tarball. A github code repository is coming
 soon! 
 
-[UberSpark Release 1.0 ("cliff-jumper") ](http://hypcode.org/uberspark-1.0-(cliff-jumper).tar.gz)
+[UberSpark Release 1.0 ("cliff-jumper") ](http://hypcode.org/uberspark-1.0-cliff-jumper.tar.gz)
 
 ## Contact and Maintainer
 Amit Vasudevan (amitvasudevan@acm.org)
@@ -56,11 +56,11 @@ Amit Vasudevan (amitvasudevan@acm.org)
 
 1. Unzip and untar the release sources within a directory
    
-   `tar -xvzf uberspark-1.0-(cliff-jumper).tar.gz`
+   `tar -xvzf uberspark-1.0-cliff-jumper.tar.gz`
 
 2. Change directory to uberspark-1.0-(cliff-jumper)
    
-   `cd uberspark-1.0-(cliff-jumper)`
+   `cd uberspark-1.0-cliff-jumper`
 
 3. Prepare for verification
    
@@ -68,7 +68,7 @@ Amit Vasudevan (amitvasudevan@acm.org)
    
     `./configure --prefix=/home/<home-dir>/<work-dir> --disable-debug-serial`
       
-    `make verify-prep`
+    `make verify_prep`
 
    replace `<home-dir>` with your home-directory name and `<work-dir>` with any working directory you choose.
 
@@ -82,11 +82,11 @@ Amit Vasudevan (amitvasudevan@acm.org)
 
 5. Performing uberobject composition check
 
-   `make verify-compcheck`
+   `make verify_compcheck`
 
 6. Verifying all the uberobjects
 
-   `make verify-all`
+   `make verify_all`
 
 7. Building the uberobject binaries and the final hypervisor image
 
