@@ -153,15 +153,13 @@ _slabs_generateslabinfoexports: _slabs_preprocessmanifests
 	
 	
 	
-.PHONY: verif_ccomp
-verif_ccomp: tools _slabs_preprocessmanifests
+.PHONY: verify_compcheck
+verify_compcheck: tools _slabs_preprocessmanifests
 	@echo Proceeding to generate composition check files...
 	mkdir -p $(XMHF_OBJDIR)/_verif_ccomp
-	#cd $(XMHF_DIR) && $(XMHF_DIR)/tools/uccomp.pl SLABS NOMEMOFFSETS $(XMHF_OBJDIR)/_verif_ccomp/ccompdriverfile.c.v.c $(XMHF_OBJDIR)/_verif_ccomp/ccompcheckfile.c.v.c $(XMHF_CONFIG_MAX_INCLDEVLIST_ENTRIES) $(XMHF_CONFIG_MAX_EXCLDEVLIST_ENTRIES) $(XMHF_CONFIG_MAX_MEMOFFSET_ENTRIES)
 	cd $(XMHF_DIR) && frama-c -load-module $(XMHF_DIR)/tools/Uccomp.o -umf-uobjlist $(XMHF_DIR)/SLABS -umf-outuobjccompdriver $(XMHF_OBJDIR)/_verif_ccomp/ccompdriverfile.c.v.c -umf-outuobjccompcheck $(XMHF_OBJDIR)/_verif_ccomp/ccompcheckfile.c.v.c  -umf-maxincldevlistentries $(XMHF_CONFIG_MAX_INCLDEVLIST_ENTRIES) -umf-maxexcldevlistentries $(XMHF_CONFIG_MAX_EXCLDEVLIST_ENTRIES) -umf-maxmemoffsetentries $(XMHF_CONFIG_MAX_MEMOFFSET_ENTRIES)
 	@echo composition check files generated
 	cd $(XMHF_OBJDIR)/_verif_ccomp && frama-c -val -no-val-show-progress -slevel 2048 -cpp-extra-args=-nostdinc $(VFLAGS) ccompdriverfile.c.v.c ccompcheckfile.c.v.c
-
 	
 
 .PHONY: verif_gensentinelstubs
@@ -172,10 +170,18 @@ verif_gensentinelstubs:
 		cd $(XMHF_DIR) && frama-c -load-module $(XMHF_DIR)/tools/Ubp.o -umf-uobjlist $(XMHF_DIR)/SLABS -umf-outdirsentinelstubs $(XMHF_OBJDIR)/_verif_bp/  -umf-maxincldevlistentries $(XMHF_CONFIG_MAX_INCLDEVLIST_ENTRIES) -umf-maxexcldevlistentries $(XMHF_CONFIG_MAX_EXCLDEVLIST_ENTRIES) -umf-maxmemoffsetentries $(XMHF_CONFIG_MAX_MEMOFFSET_ENTRIES)
 		@echo sentinel stubs generated
 
-.PHONY: prepverif
-prepverif: tools _slabs_configureandgenerateslabinfonoexports verif_gensentinelstubs
+.PHONY: verify_prep
+verify_prep: tools _slabs_configureandgenerateslabinfonoexports verif_gensentinelstubs
 
 
+.PHONY: verify_all
+verify_all: verify_prep 
+	@for i in $(XMHF_SLAB_NAMES); \
+	do \
+		(cd $(XMHF_DIR)/xmhf-slabs/$$i && echo "Verifying uobj $$i..." && $(MAKE) -w verify) || exit 1; \
+	done;
+	@echo All uobjs verified!
+	
 
 .PHONY: bootloader
 bootloader: xmhflibs _libxmhfgeec_realbuild

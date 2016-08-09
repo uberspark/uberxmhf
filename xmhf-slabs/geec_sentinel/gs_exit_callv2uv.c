@@ -73,7 +73,7 @@ void gs_exit_callv2uv(slab_params_t *sp, void *caller_stack_frame){
     //make space on destination slab stack for slab_params_t and copy parameters
     {
         _XDPRINTF_("%s[%u]: dst tos before=%x\n", __func__, (u16)sp->cpuid, xmhfgeec_slab_info_table[sp->dst_slabid].slabtos[(u16)sp->cpuid]);
-        //@assert sp->dst_slabid ==XMHFGEEC_SLAB_XH_APRVEXEC;
+        //@assert sp->dst_slabid ==XMHFGEEC_SLAB_XH_SSTEPTRACE;
         xmhfgeec_slab_info_table[sp->dst_slabid].slabtos[(u16)sp->cpuid] -= sizeof(slab_params_t);
         _XDPRINTF_("%s[%u]: dst tos after=%x\n", __func__, (u16)sp->cpuid, xmhfgeec_slab_info_table[sp->dst_slabid].slabtos[(u16)sp->cpuid]);
         dst_sp = (slab_params_t *) xmhfgeec_slab_info_table[sp->dst_slabid].slabtos[(u16)sp->cpuid];
