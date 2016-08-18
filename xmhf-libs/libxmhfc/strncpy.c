@@ -77,6 +77,9 @@ char *strncpy(char *dst, const char *src, size_t n)
 	const char *p = src;
 	char ch;
 
+	memset((unsigned char *)dst, 0, n);
+
+#if 0
 	/*@
 		loop invariant 0 <= n <= \at(n,Pre);
 		loop invariant \at(n, Here) != \at(n, Pre) ==> ch != 0;
@@ -96,8 +99,7 @@ char *strncpy(char *dst, const char *src, size_t n)
 		p++;
 		n--;
 	}
-
-	memset(q, 0, n);
+#endif
 
 	return dst;
 }
