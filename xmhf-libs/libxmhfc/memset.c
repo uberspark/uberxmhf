@@ -91,11 +91,24 @@ unsigned char *memset(unsigned char* dst, int c, size_t n)
 	requires n >= 0;
 	requires \valid(((unsigned char*)dst)+(0..n-1));
 	requires -128 <= c <= 127;
-	//assigns ((unsigned char*)dst)[0..n-1];
-	//ensures \forall integer i; 0 <= i < n ==> ((unsigned char*)dst)[i] == c;
+	assigns ((unsigned char*)dst)[0..n-1];
+	ensures \forall integer i; 0 <= i < n ==> (dst[i] == (unsigned char)c);
 	ensures \result == dst;
 @*/
 unsigned char *memset(unsigned char* dst, int c, size_t n)
 {
+	size_t i;
+
+	/*@
+		loop invariant 0 <= i <= n;
+		loop invariant \forall integer x; 0 <= x < i ==> (dst[x] == (unsigned char)c);
+		loop assigns i;
+		loop assigns dst[0..(n-1)];
+		loop variant n-i;
+	@*/
+	for(i=0; i < n; i++){
+		dst[i]=(unsigned char)c;
+	}
+
 	return dst;
 }
