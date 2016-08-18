@@ -56,6 +56,7 @@
   return str;
 }*/
 
+#if 0
 /*@
 	requires n >= 0;
 	requires \valid(((unsigned char*)dst)+(0..n-1));
@@ -80,5 +81,21 @@ unsigned char *memset(unsigned char* dst, int c, size_t n)
 		n--;
 	}
 
+	return dst;
+}
+#endif
+
+
+
+/*@
+	requires n >= 0;
+	requires \valid(((unsigned char*)dst)+(0..n-1));
+	requires -128 <= c <= 127;
+	//assigns ((unsigned char*)dst)[0..n-1];
+	//ensures \forall integer i; 0 <= i < n ==> ((unsigned char*)dst)[i] == c;
+	ensures \result == dst;
+@*/
+unsigned char *memset(unsigned char* dst, int c, size_t n)
+{
 	return dst;
 }
