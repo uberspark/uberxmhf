@@ -50,7 +50,6 @@
 /*@
 	requires n >= 0;
 	requires \valid(((unsigned char*)dst)+(0..n-1));
-	requires -128 <= c <= 127;
 	assigns ((unsigned char*)dst)[0..n-1];
 	ensures \forall integer i; 0 <= i < n ==> (dst[i] == (unsigned char)c);
 	ensures \result == dst;
