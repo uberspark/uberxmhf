@@ -76,10 +76,8 @@ char *strncpy(char *dst, const char *src, size_t n)
 	char *q = dst;
 	const char *p = src;
 	char ch;
+	size_t i;
 
-	memset((unsigned char *)dst, 0, n);
-
-#if 0
 	/*@
 		loop invariant 0 <= n <= \at(n,Pre);
 		loop invariant \at(n, Here) != \at(n, Pre) ==> ch != 0;
@@ -99,7 +97,17 @@ char *strncpy(char *dst, const char *src, size_t n)
 		p++;
 		n--;
 	}
-#endif
+
+	//memset(q, 0, n);
+	/*@
+		loop invariant 0 <= i <= n;
+		loop assigns i;
+		loop assigns q[0..(n-1)];
+		loop variant n-i;
+	@*/
+	for(i=0; i < n; i++){
+		q[i]=(char)0;
+	}
 
 	return dst;
 }
