@@ -1,19 +1,17 @@
 The following license and copyright notice applies to all content in
-this repository where some other license does not take precedence. In
-particular, notices in sub-project directories and individual source
-files take precedence over this file.
+this repository in addition to licenses and notices in sub-directories
+and individual source files.
 
 See COPYING for more information.
 
-eXtensible, Modular Hypervisor Framework (XMHF)
-Copyright (c) 2009-2012 Carnegie Mellon University
-Copyright (c) 2010-2012 VDG Inc.
+UberSpark
+Copyright (c) 2013-2016 Carnegie Mellon University / CyLab
+Copyright (c) 2013-2016 Amit Vasudevan (amitvasudevan@acm.org)
 All Rights Reserved.
 
-Developed by: XMHF Team
+Developed by: UberSpark Team
               Carnegie Mellon University / CyLab
-              VDG Inc
-              http://xmhf.org
+              http://uberspark.org
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions
@@ -27,7 +25,7 @@ notice, this list of conditions and the following disclaimer in
 the documentation and/or other materials provided with the
 distribution.
 
-Neither the names of Carnegie Mellon or VDG Inc, nor the names of 
+Neither the names of Carnegie Mellon or CyLab, nor the names of 
 its contributors may be used to endorse or promote products derived
 from this software without specific prior written permission.
 
