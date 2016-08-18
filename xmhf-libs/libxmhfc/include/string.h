@@ -135,9 +135,9 @@ unsigned char *memset(unsigned char* dst, int c, size_t n);
 	requires n >= 0;
 	requires \valid(((unsigned char*)dst)+(0..n-1));
 	requires -128 <= c <= 127;
-	//assigns ((unsigned char*)dst)[0..n-1];
+	assigns ((unsigned char*)dst)[0..n-1];
 	assigns \result \from dst;
-	//ensures \forall integer i; 0 <= i < n ==> ((unsigned char*)dst)[i] == c;
+	ensures \forall integer i; 0 <= i < n ==> (dst[i] == (unsigned char)c);
 	ensures \result == dst;
 @*/
 unsigned char *memset(unsigned char* dst, int c, size_t n);
