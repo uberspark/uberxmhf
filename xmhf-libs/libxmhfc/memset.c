@@ -47,37 +47,26 @@
 #include <stdint.h>
 #include <string.h>
 
-
-/*void *memset (void *str, int c, size_t len) {
-  register u8 *st = str;
-
-  while (len-- > 0)
-    *st++ = (u8)c;
-  return str;
-}*/
-
 /*@
 	requires n >= 0;
 	requires \valid(((unsigned char*)dst)+(0..n-1));
-	requires -128 <= c <= 127;
 	assigns ((unsigned char*)dst)[0..n-1];
-	ensures \forall integer i; 0 <= i < n ==> ((unsigned char*)dst)[i] == c;
+	ensures \forall integer i; 0 <= i < n ==> (dst[i] == (unsigned char)c);
 	ensures \result == dst;
 @*/
 unsigned char *memset(unsigned char* dst, int c, size_t n)
 {
-	unsigned char *q = dst;
+	size_t i;
 
 	/*@
-		loop invariant 0 <= n <= \at(n,Pre);
-		loop invariant \forall integer i; 0 <= i < (\at(n,Pre) - n) ==> ((unsigned char*)dst)[i] == c;
-		loop invariant q == (unsigned char*)dst+(\at(n,Pre) - n);
-		loop assigns n, q, ((unsigned char*)dst)[0..(\at(n,Pre)-n)-1];
-		loop variant n;
+		loop invariant 0 <= i <= n;
+		loop invariant \forall integer x; 0 <= x < i ==> (dst[x] == (unsigned char)c);
+		loop assigns i;
+		loop assigns dst[0..(n-1)];
+		loop variant n-i;
 	@*/
-	while (n) {
-		*q++ = c;
-		n--;
+	for(i=0; i < n; i++){
+		dst[i]=(unsigned char)c;
 	}
 
 	return dst;

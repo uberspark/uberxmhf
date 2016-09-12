@@ -38,29 +38,6 @@
 
 #include <stdint.h>
 #include <string.h>
-/*
- * Copy src to dst, truncating or null-padding to always copy n bytes.
- * Return dst.
- */
-/*char *strncpy(char * dst, const char * src, size_t n)
-{
-	if (n != 0) {
-		register char *d = dst;
-		register const char *s = src;
-
-		do {
-			if ((*d++ = *s++) == 0) {
-				// NUL pad the remaining n-1 bytes
-				while (--n != 0)
-					*d++ = 0;
-				break;
-			}
-		} while (--n != 0);
-	}
-	return (dst);
-}
-*/
-
 
 /*@
 	requires n >= 0;
@@ -76,6 +53,7 @@ char *strncpy(char *dst, const char *src, size_t n)
 	char *q = dst;
 	const char *p = src;
 	char ch;
+	size_t i;
 
 	/*@
 		loop invariant 0 <= n <= \at(n,Pre);
@@ -97,7 +75,16 @@ char *strncpy(char *dst, const char *src, size_t n)
 		n--;
 	}
 
-	memset(q, 0, n);
+	//memset(q, 0, n);
+	/*@
+		loop invariant 0 <= i <= n;
+		loop assigns i;
+		loop assigns q[0..(n-1)];
+		loop variant n-i;
+	@*/
+	for(i=0; i < n; i++){
+		q[i]=(char)0;
+	}
 
 	return dst;
 }
