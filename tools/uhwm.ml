@@ -1,6 +1,6 @@
-(* frama-c coding conformance plugin *)
+(* frama-c hardware model embedding plugin *)
 (* author: amit vasudevan (amitvasudevan@acm.org) *)
-(* load using frama-c -load-script uccf.ml *)
+(* load using frama-c -load-script uhwm.ml *)
 
 open Cil_types
 
@@ -9,11 +9,10 @@ open Cil_types
 *)
 module Self = Plugin.Register
 	(struct
-		let name = "US Coding Conformance"
+		let name = "US HWM Plugin"
 		let shortname = "uccf"
-		let help = "UberSpark coding conformance check plugin"
+		let help = "UberSpark hardware model embedding plugin"
 	end)
-
 
 (*
 	option to check for function-pointer invocation 
@@ -25,28 +24,6 @@ module CmdoptDisallowFp = Self.False
 		let help = "when on (off by default), disallow function pointer invocations"
 	end)
 
-
-(* 
-	option to check that non-HWM source files variable usage does not collide with
-   	HWM variable namespace 
-*)
-module CmdoptCheckHwmNsCollision = Self.False
-	(struct
-		let option_name = "-uccf-checkhwmnscollision"
-		let default = false
-		let help = "when on (off by default), check that variable usage does not collide with HWM variable namespace"
-	end)
-
-
-(* 
-	option to check that HWM source files adhere to HVM variable namespace
-*)
-module CmdoptCheckHwmNsAdherence = Self.False
-	(struct
-		let option_name = "-uccf-checkhwmnsadherence"
-		let default = false
-		let help = "when on (off by default), check that variable usage conforms to HWM variable namespace"
-	end)
 
 
 
@@ -212,29 +189,10 @@ let print_ast () =
 
 	    method private process_varinfo v = 
     		let varname_regexp = Str.regexp "xmhfhwm_" in
-    		let is_hwmvarns = ref false in
-    			is_hwmvarns := (Str.string_match varname_regexp v.vname 0); 
-				
-    			if CmdoptCheckHwmNsCollision.get() && !is_hwmvarns then
-    				begin
-						Self.result "\nError: variable name definition colides with HWM variable namespace\n";
-						ignore(exit 1);
-	    				"";
-    				end
-    
-    			else if CmdoptCheckHwmNsAdherence.get() && (not !is_hwmvarns) && v.vglob then
-    				begin
-						Self.result "\nError: variable name definition does not adhere to HWM variable namespace\n";
-						ignore(exit 1);
-	    				"";
-    				end
-    			else
-    				begin
-    					"name->" ^ v.vname ^ ", type->" ^ (self#print_type v.vtype);
-    				end
-    			; 
-
-
+    			begin
+	    			Self.result "\nVarinfo found\n";
+	    			"";
+	    		end
 
 		method private process_call lv e el l = 
 			let is_funcptr = ref false in 
@@ -298,6 +256,9 @@ let print_ast () =
 				Self.result "\n  local vars:";
 			    List.iter self#dump_varinfo f.slocals;
 	
+		        let loc = Cil_datatype.Location.unknown in
+  				let global = Cil_types.GFun (f, loc) in
+  					Format.printf "%a" Printer.pp_global global;
 		        
 		        Cil.DoChildrenPost(fun s -> Self.result "\n }@ "; s)
 	    	)
@@ -305,6 +266,9 @@ let print_ast () =
 	    | GVar (v, inito, l) ->
 	    	(
 	    		Self.result "\n global var def [%s]"  (self#print_varinfo v);
+
+				let global = Cil_types.GVar (v, inito, l) in
+					Format.printf "%a" Printer.pp_global global;
 
 		        Cil.DoChildrenPost(fun s -> Self.result "\n @ "; s)
 	    	)
