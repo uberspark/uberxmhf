@@ -191,6 +191,7 @@ let print_ast () =
     		let varname_regexp = Str.regexp "xmhfhwm_" in
     			begin
 	    			Self.result "\nVarinfo found\n";
+		        	Self.result "\n %a" Cil_printer.pp_varinfo v;
 	    			"";
 	    		end
 
@@ -256,9 +257,11 @@ let print_ast () =
 				Self.result "\n  local vars:";
 			    List.iter self#dump_varinfo f.slocals;
 	
-		        let loc = Cil_datatype.Location.unknown in
-  				let global = Cil_types.GFun (f, loc) in
-  					Format.printf "%a" Printer.pp_global global;
+		        (*
+		        	let loc = Cil_datatype.Location.unknown in
+  					let global = Cil_types.GFun (f, loc) in
+  						Format.printf "%a" Printer.pp_global global;
+		        *)
 		        
 		        Cil.DoChildrenPost(fun s -> Self.result "\n }@ "; s)
 	    	)
@@ -288,7 +291,10 @@ let print_ast () =
       | Block _ -> Self.result "\n block"; Cil.DoChildren
       | UnspecifiedSequence _ -> Self.result "\n unspecified sequence"; Cil.DoChildren
       | _ -> Self.result "\n other stmt"; Cil.DoChildren
+    
+    
     end
+    
     in Visitor.visitFramacFile print_visitor (Ast.get ()) ;
     ()
 
