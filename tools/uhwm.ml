@@ -309,45 +309,38 @@ class embed_hwm_visitor = object
 				match s.skind with
 				| Instr (Call(lval, exp, exp_lst, loc)) ->
 				begin
-					(*match exp.enode with
-					| Lval ((Mem(exp2), _)) ->
-					begin*)
-		                match exp.enode with
-		                | Lval(Var(var), _) ->
-		                begin
-		                    (*
-		                    	let ftyp = Cil.unrollTypeDeep (Cil.typeOf_pointed var.vtype) in
-		                    	let fvname = "__fc_mod_with_id_" ^ (string_of_int var.vid) in
-		                    	let fvar = Cil.findOrCreateFunc (Ast.get ()) fvname ftyp in
-		                    	let instr = Cil_types.Call(lval, Cil.evar ~loc:loc fvar, exp_lst, loc) in
-		                    	let new_stmt = Cil.mkStmtOneInstr (instr) in
-        						let newStatement = Cil.mkStmt(Block(Cil.mkBlock([new_stmt]))) in
-								newStatement.labels <- s.labels;
-								s.labels <- [];
-        						newStatement
-							*)
+	                match exp.enode with
+	                | Lval(Var(var), _) ->
+	                begin
+	                    (*
+	                    	let ftyp = Cil.unrollTypeDeep (Cil.typeOf_pointed var.vtype) in
+	                    	let fvname = "__fc_mod_with_id_" ^ (string_of_int var.vid) in
+	                    	let fvar = Cil.findOrCreateFunc (Ast.get ()) fvname ftyp in
+	                    	let instr = Cil_types.Call(lval, Cil.evar ~loc:loc fvar, exp_lst, loc) in
+	                    	let new_stmt = Cil.mkStmtOneInstr (instr) in
+    						let newStatement = Cil.mkStmt(Block(Cil.mkBlock([new_stmt]))) in
+							newStatement.labels <- s.labels;
+							s.labels <- [];
+    						newStatement
+						*)
 
-		                    	let ftyp = (TVoid []) in
-		                    	let fvname = "myownfunction" in
-		                    	let fvar = Cil.findOrCreateFunc (Ast.get ()) fvname ftyp in
-		                    	let instr = Cil_types.Call(lval, Cil.evar ~loc:loc fvar, [(List.nth exp_lst 0)], loc) in
-		                    	let new_stmt = Cil.mkStmtOneInstr (instr) in
-        						let newStatement = Cil.mkStmt(Block(Cil.mkBlock([new_stmt]))) in
-								newStatement.labels <- s.labels;
-								s.labels <- [];
-        						newStatement
+                    	let ftyp = (TVoid []) in
+                    	let fvname = "myownfunction" in
+                    	let fvar = Cil.findOrCreateFunc (Ast.get ()) fvname ftyp in
+                    	let instr = Cil_types.Call(lval, Cil.evar ~loc:loc fvar, [(List.nth exp_lst 0)], loc) in
+                    	let new_stmt = Cil.mkStmtOneInstr (instr) in
+						let newStatement = Cil.mkStmt(Block(Cil.mkBlock([new_stmt]))) in
+						newStatement.labels <- s.labels;
+						s.labels <- [];
+						newStatement
 						        						
-		                end
-		                | _ -> s  (* don't change *)
-		            (*end
-		            | _ -> s  (* don't change *)
-		            *)
-		            end
-				| _ -> s  (* don't change *)
+	                end
+	                | _ -> s  (* don't change *)
+	            end
 
+				| _ -> s  (* don't change *)
  		   	)
 		)
-
 
 end;;
 
