@@ -14,7 +14,8 @@ s2:
 #define RET_EIP 0xabcd0000
 
 extern unsigned int xmhfhwm_cpu_gprs_edx, xmhfhwm_cpu_gprs_eax;
-
+extern void ci_pushl(unsigned int);
+extern void casm_funccall(unsigned int x, unsigned int y);
 
 int main (void)
 {

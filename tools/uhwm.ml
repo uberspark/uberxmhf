@@ -302,7 +302,7 @@ let print_ast () =
 class embed_hwm_visitor = object (self)
 	inherit Visitor.frama_c_inplace
 
-	method private hwm_gen_stack_push_param e loc = 
+	method private hwm_gen_stack_push_param_stmt e loc = 
 		let ftyp = (TVoid []) in
 		let fvname = "ci_pushl" in
 		let fvar = Cil.findOrCreateFunc (Ast.get ()) fvname ftyp in
@@ -310,6 +310,21 @@ class embed_hwm_visitor = object (self)
 		let new_stmt = Cil.mkStmtOneInstr (instr) in
 			new_stmt
 		
+	method private hwm_gen_stack_push_param_stmts_for_casm_function exp_lst loc = 
+		let stmts_list = ref [] in
+		let rev_exp_lst = List.rev exp_lst in
+			begin
+				for i = 0 to ((List.length rev_exp_lst)-1) do
+				(* for i = 0 to 0 do *)
+					begin
+						Self.result "\nfor loop i=%d\n" i;
+						ignore(List.append [(self#hwm_gen_stack_push_param_stmt (List.nth exp_lst i) loc)] !stmts_list);
+					end
+				done;			
+			!stmts_list	
+			end
+			 
+
 
 	method vstmt_aux s =
 		Cil.ChangeDoChildrenPost(
@@ -340,7 +355,8 @@ class embed_hwm_visitor = object (self)
 									Printer.pp_exp (Format.std_formatter) ((List.nth exp_lst 1));
 									newStatement.labels <- s.labels;
 									s.labels <- [];
-									hwm_stmt_list := [new_stmt;(self#hwm_gen_stack_push_param ((List.nth exp_lst 0)) loc)];
+									(* hwm_stmt_list := [new_stmt;(self#hwm_gen_stack_push_param_stmt ((List.nth exp_lst 0)) loc)]; *)
+									hwm_stmt_list := self#hwm_gen_stack_push_param_stmts_for_casm_function exp_lst loc;
 									List.iter (Printer.pp_stmt (Format.std_formatter)) !hwm_stmt_list;
 								newStatement
 							
