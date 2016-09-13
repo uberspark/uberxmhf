@@ -330,7 +330,7 @@ class embed_hwm_visitor = object
 		                    	let ftyp = (TVoid []) in
 		                    	let fvname = "myownfunction" in
 		                    	let fvar = Cil.findOrCreateFunc (Ast.get ()) fvname ftyp in
-		                    	let instr = Cil_types.Call(lval, Cil.evar ~loc:loc fvar, [], loc) in
+		                    	let instr = Cil_types.Call(lval, Cil.evar ~loc:loc fvar, [(List.nth exp_lst 0)], loc) in
 		                    	let new_stmt = Cil.mkStmtOneInstr (instr) in
         						let newStatement = Cil.mkStmt(Block(Cil.mkBlock([new_stmt]))) in
 								newStatement.labels <- s.labels;
