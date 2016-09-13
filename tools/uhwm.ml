@@ -309,10 +309,10 @@ class embed_hwm_visitor = object
 				match s.skind with
 				| Instr (Call(lval, exp, exp_lst, loc)) ->
 				begin
-					match exp.enode with
+					(*match exp.enode with
 					| Lval ((Mem(exp2), _)) ->
-					begin
-		                match exp2.enode with
+					begin*)
+		                match exp.enode with
 		                | Lval(Var(var), _) ->
 		                begin
 		                    (*
@@ -339,8 +339,9 @@ class embed_hwm_visitor = object
 						        						
 		                end
 		                | _ -> s  (* don't change *)
-		            end
+		            (*end
 		            | _ -> s  (* don't change *)
+		            *)
 		            end
 				| _ -> s  (* don't change *)
 
