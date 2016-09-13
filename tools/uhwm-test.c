@@ -20,7 +20,7 @@ int main (void)
 {
 	int result;
 
-/*	result = casm_funccall(5, 6); */
+	casm_funccall(5, 6);
 
 /*	result = (
 			ci_pushl_esp(0),
@@ -31,7 +31,7 @@ int main (void)
 		    ((unsigned long long int)(xmhfhwm_cpu_gprs_edx << 32) | xmhfhwm_cpu_gprs_eax)
 	);*/
 
-	(
+/*	(
 				ci_pushl_esp(0),
 				ci_pushl_esp(0),
 				ci_pushl_esp(RET_EIP),
@@ -39,7 +39,7 @@ int main (void)
 				ci_popl_esp(0x4),
 			    ((unsigned long long int)(xmhfhwm_cpu_gprs_edx << 32) | xmhfhwm_cpu_gprs_eax)
 		);
-
+*/
 
 }
 
