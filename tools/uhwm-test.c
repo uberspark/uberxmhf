@@ -4,7 +4,8 @@ int main (p_func* func, int *arg1, int arg2)
 {
   int result;
 s1:
-  result = (*func)(arg1, arg2);
+  	//@assert 1;
+	result = (*func)(arg1, arg2);
 s2:
   return result;
 }
