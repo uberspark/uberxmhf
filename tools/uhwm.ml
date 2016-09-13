@@ -299,8 +299,17 @@ let print_ast () =
 
 
 (* embedding hwm AST visitor *)
-class embed_hwm_visitor = object
+class embed_hwm_visitor = object (self)
 	inherit Visitor.frama_c_inplace
+
+	method private hwm_gen_stack_push_param e loc = 
+		let ftyp = (TVoid []) in
+		let fvname = "ci_pushl" in
+		let fvar = Cil.findOrCreateFunc (Ast.get ()) fvname ftyp in
+		let instr = Cil_types.Call(None, Cil.evar ~loc:loc fvar, [e], loc) in
+		let new_stmt = Cil.mkStmtOneInstr (instr) in
+			new_stmt
+		
 
 	method vstmt_aux s =
 		Cil.ChangeDoChildrenPost(
@@ -312,6 +321,13 @@ class embed_hwm_visitor = object
 	                match exp.enode with
 	                | Lval(Var(var), _) ->
 	                begin
+						(*
+						let mylistofstmt = List.init (length of exp_lst) (function with length-index)
+						function m index = 
+						  list.nth of exp_lst index and generate a call statement
+						  return mkStmtoneInstr.of the call
+						*)
+						let hwm_stmt_list = ref [] in
 						
 						if (Str.string_match (Str.regexp "casm_") var.vname 0) then
 							begin
@@ -321,8 +337,11 @@ class embed_hwm_visitor = object
 		                    	let instr = Cil_types.Call(lval, Cil.evar ~loc:loc fvar, [(List.nth exp_lst 0)], loc) in
 		                    	let new_stmt = Cil.mkStmtOneInstr (instr) in
 								let newStatement = Cil.mkStmt(Block(Cil.mkBlock([new_stmt]))) in
+									Printer.pp_exp (Format.std_formatter) ((List.nth exp_lst 1));
 									newStatement.labels <- s.labels;
 									s.labels <- [];
+									hwm_stmt_list := [new_stmt;(self#hwm_gen_stack_push_param ((List.nth exp_lst 0)) loc)];
+									List.iter (Printer.pp_stmt (Format.std_formatter)) !hwm_stmt_list;
 								newStatement
 							
 							end
