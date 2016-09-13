@@ -4,9 +4,7 @@
 
 open Cil_types
 
-(*
-	register plugin with frama-c
-*)
+(* register plugin with frama-c *)
 module Self = Plugin.Register
 	(struct
 		let name = "US HWM Plugin"
@@ -300,13 +298,46 @@ let print_ast () =
 
 
 
-    		
+(* embedding hwm AST visitor *)
+class embed_hwm_visitor = object
+	inherit Visitor.frama_c_inplace
+
+	method vstmt_aux stmt =
+		match stmt.skind with
+		| Instr (Call(lval, exp, exp_lst, loc)) ->
+		begin
+			match exp.enode with
+			| Lval ((Mem(exp2), _)) ->
+			begin
+                match exp2.enode with
+                | Lval(Var(var), _) ->
+                begin
+                    let ftyp = Cil.unrollTypeDeep (Cil.typeOf_pointed var.vtype) in
+                    let fvname = "__fc_mod_with_id_" ^ (string_of_int var.vid) in
+                    let fvar = Cil.findOrCreateFunc (Ast.get ()) fvname ftyp in
+                    let instr = Cil_types.Call(lval, Cil.evar ~loc:loc fvar, exp_lst, loc) in
+                    let new_stmt = Cil.mkStmt (Cil_types.Instr instr) in
+                    Cil.ChangeTo new_stmt
+                end
+                | _ -> Cil.DoChildren
+            end
+            | _ -> Cil.DoChildren
+            end
+		| _ -> Cil.DoChildren
+
+end;;
+
+
+(* plugin main function *)    		
 let run () =
-	Self.result "Parsing source file AST...\n";
-	print_ast ();
+	Self.result "Embedding HWM...\n";
+	Self.result "Before embedding:\n%a" Printer.pp_file (Ast.get ());
+	Visitor.visitFramacFile (new embed_hwm_visitor) (Ast.get ()) ;
+	Self.result "After embedding:\n%a" Printer.pp_file (Ast.get ());
 	Self.result "Done.\n";
 	()
 
+(* extend frama-c main interface *)
 let () = Db.Main.extend run
 
 
