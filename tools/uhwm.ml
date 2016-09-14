@@ -331,6 +331,11 @@ class embed_hwm_visitor = object (self)
 		let new_stmt = Cil.mkStmtOneInstr (instr) in
 			new_stmt
 
+	method private hwm_gen_return_result lval loc = 
+		let var_eax = Cil.makeVarinfo true false "xmhfhwm_cpu_gprs_eax" Cil.uintType in
+		let instr = Cil_types.Set(lval, (Cil.integer ~loc 0), loc) in
+		let new_stmt = Cil.mkStmtOneInstr (instr) in
+			new_stmt
 	
 	method private hwm_gen_stack_push_param_stmts_for_casm_function exp_lst loc = 
 		let stmts_list = ref [] in
@@ -359,13 +364,20 @@ class embed_hwm_visitor = object (self)
 	                | Lval(Var(var), _) ->
 	                begin
 						let hwm_stmt_list = ref [] in
-					
+										
 						if (Str.string_match (Str.regexp "casm_") var.vname 0) then
 							begin
 								hwm_stmt_list := self#hwm_gen_stack_push_param_stmts_for_casm_function exp_lst loc;
                 	            hwm_stmt_list := List.append !hwm_stmt_list [self#hwm_gen_push_eip loc];
                 	            hwm_stmt_list := List.append !hwm_stmt_list [self#hwm_gen_call_stmt_for_function var.vname (Cil.unrollTypeDeep var.vtype) exp_lst loc];
 								hwm_stmt_list := List.append !hwm_stmt_list [self#hwm_gen_stack_pop_params_stmt_for_casm_function exp_lst loc];
+								
+								ignore(
+									match lval with
+      									| None -> hwm_stmt_list := !hwm_stmt_list;
+      									| Some lv -> hwm_stmt_list := List.append !hwm_stmt_list [(self#hwm_gen_return_result lv loc)];
+								);
+													
 								(* List.iter (Printer.pp_stmt (Format.std_formatter)) !hwm_stmt_list; *)
 								
 								let newStatement = Cil.mkStmt(Block(Cil.mkBlock(!hwm_stmt_list))) in
