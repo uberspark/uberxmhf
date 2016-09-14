@@ -320,7 +320,11 @@ class embed_hwm_visitor = object (self)
 				(* for i = 0 to 0 do *)
 					begin
 						Self.result "\nfor loop i=%d\n" i;
-						ignore(List.append [(self#hwm_gen_stack_push_param_stmt (List.nth exp_lst i) loc)] !stmts_list);
+						(* Printer.pp_exp (Format.std_formatter) (List.nth rev_exp_lst i); *)
+						
+						stmts_list := List.append !stmts_list [(self#hwm_gen_stack_push_param_stmt (List.nth rev_exp_lst i) loc)] ;
+						(* Printer.pp_stmt (Format.std_formatter) (self#hwm_gen_stack_push_param_stmt (List.nth rev_exp_lst i) loc);*)
+						
 					end
 				done;			
 			!stmts_list	
@@ -360,7 +364,7 @@ class embed_hwm_visitor = object (self)
 											ignore(exit 1);
 										end
 									;*)
-									Printer.pp_exp (Format.std_formatter) ((List.nth exp_lst 1));
+									(* Printer.pp_exp (Format.std_formatter) ((List.nth exp_lst 1)); *)
 									newStatement.labels <- s.labels;
 									s.labels <- [];
 									(* hwm_stmt_list := [new_stmt;(self#hwm_gen_stack_push_param_stmt ((List.nth exp_lst 0)) loc)]; *)
