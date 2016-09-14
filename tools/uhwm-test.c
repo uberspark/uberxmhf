@@ -23,6 +23,7 @@ int main (void)
 
 	casm_funccall(5, 6);
 
+
 /*	result = (
 			ci_pushl_esp(0),
 			ci_pushl_esp(0),
