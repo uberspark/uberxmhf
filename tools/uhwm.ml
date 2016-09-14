@@ -303,6 +303,13 @@ let mkFunTyp (rt : typ) (args : (string * typ) list) : typ =
 class embed_hwm_visitor = object (self)
 	inherit Visitor.frama_c_inplace
 
+	method private hwm_gen_call_stmt_for_function fname ftyp fexp_lst loc = 
+		let fvar = Cil.findOrCreateFunc (Ast.get ()) fname ftyp in
+		let instr = Cil_types.Call(None, Cil.evar ~loc:loc fvar, fexp_lst, loc) in
+		let new_stmt = Cil.mkStmtOneInstr (instr) in
+			new_stmt
+
+
 	method private hwm_gen_stack_push_param_stmt e loc = 
 		let ftyp = mkFunTyp Cil.voidType ["val", Cil.intType] in
 		let fvname = "ci_pushl" in
@@ -310,7 +317,8 @@ class embed_hwm_visitor = object (self)
 		let instr = Cil_types.Call(None, Cil.evar ~loc:loc fvar, [e], loc) in
 		let new_stmt = Cil.mkStmtOneInstr (instr) in
 			new_stmt
-		
+
+	
 	method private hwm_gen_stack_push_param_stmts_for_casm_function exp_lst loc = 
 		let stmts_list = ref [] in
 		let rev_exp_lst = List.rev exp_lst in
