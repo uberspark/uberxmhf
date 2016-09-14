@@ -296,14 +296,16 @@ let print_ast () =
     in Visitor.visitFramacFile print_visitor (Ast.get ()) ;
     ()
 
-
-
+let mkFunTyp (rt : typ) (args : (string * typ) list) : typ =
+  TFun(rt, Some(List.map (fun a -> (fst a, snd a, [])) args), false, [])
+  
 (* embedding hwm AST visitor *)
 class embed_hwm_visitor = object (self)
 	inherit Visitor.frama_c_inplace
 
 	method private hwm_gen_stack_push_param_stmt e loc = 
-		let ftyp = (TVoid []) in
+		(* let ftyp = (TVoid []) in *)
+		let ftyp = mkFunTyp Cil.voidType ["val", Cil.intType] in
 		let fvname = "ci_pushl" in
 		let fvar = Cil.findOrCreateFunc (Ast.get ()) fvname ftyp in
 		let instr = Cil_types.Call(None, Cil.evar ~loc:loc fvar, [e], loc) in
@@ -346,12 +348,18 @@ class embed_hwm_visitor = object (self)
 						
 						if (Str.string_match (Str.regexp "casm_") var.vname 0) then
 							begin
-		                    	let ftyp = (TVoid []) in
+		                    	(* let ftyp = (TVoid []) in *)
+                	            let ftyp = Cil.unrollTypeDeep (var.vtype) in
 		                    	let fvname = "myfunction" in
 		                    	let fvar = Cil.findOrCreateFunc (Ast.get ()) fvname ftyp in
 		                    	let instr = Cil_types.Call(lval, Cil.evar ~loc:loc fvar, [(List.nth exp_lst 0)], loc) in
 		                    	let new_stmt = Cil.mkStmtOneInstr (instr) in
 								let newStatement = Cil.mkStmt(Block(Cil.mkBlock([new_stmt]))) in
+									(* if not (Cil.isFunctionType ftyp) then
+										begin
+											ignore(exit 1);
+										end
+									;*)
 									Printer.pp_exp (Format.std_formatter) ((List.nth exp_lst 1));
 									newStatement.labels <- s.labels;
 									s.labels <- [];
