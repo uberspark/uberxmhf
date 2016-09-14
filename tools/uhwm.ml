@@ -304,7 +304,6 @@ class embed_hwm_visitor = object (self)
 	inherit Visitor.frama_c_inplace
 
 	method private hwm_gen_stack_push_param_stmt e loc = 
-		(* let ftyp = (TVoid []) in *)
 		let ftyp = mkFunTyp Cil.voidType ["val", Cil.intType] in
 		let fvname = "ci_pushl" in
 		let fvar = Cil.findOrCreateFunc (Ast.get ()) fvname ftyp in
@@ -317,21 +316,17 @@ class embed_hwm_visitor = object (self)
 		let rev_exp_lst = List.rev exp_lst in
 			begin
 				for i = 0 to ((List.length rev_exp_lst)-1) do
-				(* for i = 0 to 0 do *)
 					begin
 						Self.result "\nfor loop i=%d\n" i;
 						(* Printer.pp_exp (Format.std_formatter) (List.nth rev_exp_lst i); *)
-						
 						stmts_list := List.append !stmts_list [(self#hwm_gen_stack_push_param_stmt (List.nth rev_exp_lst i) loc)] ;
 						(* Printer.pp_stmt (Format.std_formatter) (self#hwm_gen_stack_push_param_stmt (List.nth rev_exp_lst i) loc);*)
-						
 					end
 				done;			
 			!stmts_list	
 			end
+
 			 
-
-
 	method vstmt_aux s =
 		Cil.ChangeDoChildrenPost(
 			s,fun s -> (
@@ -342,32 +337,18 @@ class embed_hwm_visitor = object (self)
 	                match exp.enode with
 	                | Lval(Var(var), _) ->
 	                begin
-						(*
-						let mylistofstmt = List.init (length of exp_lst) (function with length-index)
-						function m index = 
-						  list.nth of exp_lst index and generate a call statement
-						  return mkStmtoneInstr.of the call
-						*)
 						let hwm_stmt_list = ref [] in
-						
+					
 						if (Str.string_match (Str.regexp "casm_") var.vname 0) then
 							begin
-		                    	(* let ftyp = (TVoid []) in *)
                 	            let ftyp = Cil.unrollTypeDeep (var.vtype) in
 		                    	let fvname = "myfunction" in
 		                    	let fvar = Cil.findOrCreateFunc (Ast.get ()) fvname ftyp in
 		                    	let instr = Cil_types.Call(lval, Cil.evar ~loc:loc fvar, [(List.nth exp_lst 0)], loc) in
 		                    	let new_stmt = Cil.mkStmtOneInstr (instr) in
 								let newStatement = Cil.mkStmt(Block(Cil.mkBlock([new_stmt]))) in
-									(* if not (Cil.isFunctionType ftyp) then
-										begin
-											ignore(exit 1);
-										end
-									;*)
-									(* Printer.pp_exp (Format.std_formatter) ((List.nth exp_lst 1)); *)
 									newStatement.labels <- s.labels;
 									s.labels <- [];
-									(* hwm_stmt_list := [new_stmt;(self#hwm_gen_stack_push_param_stmt ((List.nth exp_lst 0)) loc)]; *)
 									hwm_stmt_list := self#hwm_gen_stack_push_param_stmts_for_casm_function exp_lst loc;
 									List.iter (Printer.pp_stmt (Format.std_formatter)) !hwm_stmt_list;
 								newStatement
