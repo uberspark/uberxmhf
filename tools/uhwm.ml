@@ -349,16 +349,14 @@ class embed_hwm_visitor = object (self)
 					
 						if (Str.string_match (Str.regexp "casm_") var.vname 0) then
 							begin
-                	            let ftyp = Cil.unrollTypeDeep (var.vtype) in
-		                    	let fvname = "myfunction" in
-		                    	let fvar = Cil.findOrCreateFunc (Ast.get ()) fvname ftyp in
-		                    	let instr = Cil_types.Call(lval, Cil.evar ~loc:loc fvar, [(List.nth exp_lst 0)], loc) in
-		                    	let new_stmt = Cil.mkStmtOneInstr (instr) in
-								let newStatement = Cil.mkStmt(Block(Cil.mkBlock([new_stmt]))) in
+								hwm_stmt_list := self#hwm_gen_stack_push_param_stmts_for_casm_function exp_lst loc;
+                	            hwm_stmt_list := List.append !hwm_stmt_list [self#hwm_gen_call_stmt_for_function var.vname (Cil.unrollTypeDeep var.vtype) exp_lst loc];
+							
+								(* List.iter (Printer.pp_stmt (Format.std_formatter)) !hwm_stmt_list; *)
+								
+								let newStatement = Cil.mkStmt(Block(Cil.mkBlock(!hwm_stmt_list))) in
 									newStatement.labels <- s.labels;
 									s.labels <- [];
-									hwm_stmt_list := self#hwm_gen_stack_push_param_stmts_for_casm_function exp_lst loc;
-									List.iter (Printer.pp_stmt (Format.std_formatter)) !hwm_stmt_list;
 								newStatement
 							
 							end
