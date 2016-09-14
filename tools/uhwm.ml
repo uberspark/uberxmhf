@@ -318,6 +318,9 @@ class embed_hwm_visitor = object (self)
 		let new_stmt = Cil.mkStmtOneInstr (instr) in
 			new_stmt
 
+	method private hwm_gen_push_eip loc = 
+		let new_stmt = self#hwm_gen_stack_push_param_stmt (Cil.integer ~loc 3735928559) loc in
+			new_stmt
 	
 	method private hwm_gen_stack_push_param_stmts_for_casm_function exp_lst loc = 
 		let stmts_list = ref [] in
@@ -350,6 +353,7 @@ class embed_hwm_visitor = object (self)
 						if (Str.string_match (Str.regexp "casm_") var.vname 0) then
 							begin
 								hwm_stmt_list := self#hwm_gen_stack_push_param_stmts_for_casm_function exp_lst loc;
+                	            hwm_stmt_list := List.append !hwm_stmt_list [self#hwm_gen_push_eip loc];
                 	            hwm_stmt_list := List.append !hwm_stmt_list [self#hwm_gen_call_stmt_for_function var.vname (Cil.unrollTypeDeep var.vtype) exp_lst loc];
 							
 								(* List.iter (Printer.pp_stmt (Format.std_formatter)) !hwm_stmt_list; *)
