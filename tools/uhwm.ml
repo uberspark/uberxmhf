@@ -331,9 +331,36 @@ class embed_hwm_visitor = object (self)
 		let new_stmt = Cil.mkStmtOneInstr (instr) in
 			new_stmt
 
+
+	(*
+	  instr set[lval:[var:[name->result, type->int] nooffset],expr:[[cast (int) ( expr:[binop([|,expr:[[cast (int) ( expr:[binop([<<,expr:[lval:[var:[name->xmhfhwm_cpu_gprs_edx, type->int] nooffset]],expr:[const]]:int)])]],expr:[[cast (int) ( expr:[lval:[var:[name->xmhfhwm_cpu_gprs_eax, type->int] nooffset]])]]]:int)])]]]
+	  
+	  instr set[lval:[var:[name->result, type->int] nooffset],
+	  expr:[
+	    [cast (int) ( 
+		    expr:[
+		    	[cast (int) ( 
+		    		expr:[
+		      			binop([<<,expr:[lval:[var:[name->xmhfhwm_cpu_gprs_edx, type->int] nooffset]],expr:[const]]:int)
+		    		]
+		    	)
+		    	]
+	    	]
+    	)
+    	]
+       ]
+      
+      ]
+
+	*)
+	
 	method private hwm_gen_return_result lval loc = 
+		let var_edx = Cil.makeVarinfo true false "xmhfhwm_cpu_gprs_edx" Cil.uintType in
 		let var_eax = Cil.makeVarinfo true false "xmhfhwm_cpu_gprs_eax" Cil.uintType in
-		let instr = Cil_types.Set(lval, (Cil.integer ~loc 0), loc) in
+		let exp1 = Cil.new_exp ~loc (BinOp(Shiftlt, (Cil.evar ~loc:loc var_edx), (Cil.integer ~loc 32), (Cil.typeOfLval lval))) in
+		let exp2 = Cil.new_exp ~loc (CastE((Cil.typeOfLval lval), exp1)) in
+		let exp3 = Cil.new_exp ~loc (BinOp(BOr, exp2 ,(Cil.evar ~loc:loc var_eax), (Cil.typeOfLval lval))) in
+		let instr = Cil_types.Set(lval, exp3, loc) in
 		let new_stmt = Cil.mkStmtOneInstr (instr) in
 			new_stmt
 	

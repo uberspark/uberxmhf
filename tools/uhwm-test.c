@@ -15,14 +15,17 @@ s2:
 
 extern unsigned int xmhfhwm_cpu_gprs_edx, xmhfhwm_cpu_gprs_eax;
 extern void ci_pushl(unsigned int);
-extern int casm_funccall(unsigned int x, unsigned int y);
+extern unsigned long long casm_funccall(unsigned int x, unsigned int y);
 
 int main (void)
 {
-	int result;
+	unsigned long long int result;
 
 	result=casm_funccall(5, 6);
 
+/*
+	 result=((unsigned long long int)(xmhfhwm_cpu_gprs_edx << 32));
+*/
 
 /*	result = (
 			ci_pushl_esp(0),
