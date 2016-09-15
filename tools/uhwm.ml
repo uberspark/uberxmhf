@@ -406,6 +406,23 @@ class embed_hwm_visitor = object (self)
  		   	)
 		)
 
+
+	method vglob_aux s =
+	    match s with
+	    | GFun(f,_) ->
+    		begin
+		        Self.result "\n function-start (%s) ---" f.svar.vname;	          
+		        Cil.DoChildrenPost(
+		        	fun s -> 
+		        	Self.result "\n --- function-end (%s)" f.svar.vname; 
+		        	s
+		        )
+    		end
+	    		    	
+	    | _ -> Cil.SkipChildren
+
+
+
 end;;
 
 

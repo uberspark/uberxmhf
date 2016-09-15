@@ -1,3 +1,24 @@
+#define RET_EIP 0xabcd0000
+
+extern unsigned int xmhfhwm_cpu_gprs_edx, xmhfhwm_cpu_gprs_eax;
+extern void ci_pushl(unsigned int);
+extern unsigned long long casm_funccall(unsigned int x, unsigned int y);
+
+
+int subfunc1(void){
+	unsigned long long int res;
+	res = casm_funccall(15, 16);
+}
+
+int main (void)
+{
+	unsigned long long int result;
+	result=casm_funccall(5, 6);
+}
+
+
+
+
 /*typedef int p_func (int *, int);
 
 int main (p_func* func, int *arg1, int arg2)
@@ -11,17 +32,7 @@ s1:
 s2:
   return result;
 }*/
-#define RET_EIP 0xabcd0000
 
-extern unsigned int xmhfhwm_cpu_gprs_edx, xmhfhwm_cpu_gprs_eax;
-extern void ci_pushl(unsigned int);
-extern unsigned long long casm_funccall(unsigned int x, unsigned int y);
-
-int main (void)
-{
-	unsigned long long int result;
-
-	result=casm_funccall(5, 6);
 
 /*
 	 result=((unsigned long long int)(xmhfhwm_cpu_gprs_edx << 32));
@@ -45,6 +56,3 @@ int main (void)
 			    ((unsigned long long int)(xmhfhwm_cpu_gprs_edx << 32) | xmhfhwm_cpu_gprs_eax)
 		);
 */
-
-}
-
