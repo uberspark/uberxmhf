@@ -303,6 +303,7 @@ let mkFunTyp (rt : typ) (args : (string * typ) list) : typ =
 class embed_hwm_visitor = object (self)
 	inherit Visitor.frama_c_inplace
 
+
 	method private hwm_gen_call_stmt_for_function fname ftyp fexp_lst loc = 
 		let fvar = Cil.findOrCreateFunc (Ast.get ()) fname ftyp in
 		let instr = Cil_types.Call(None, Cil.evar ~loc:loc fvar, fexp_lst, loc) in
@@ -318,6 +319,7 @@ class embed_hwm_visitor = object (self)
 		let new_stmt = Cil.mkStmtOneInstr (instr) in
 			new_stmt
 
+
 	method private hwm_gen_push_eip loc = 
 		let new_stmt = self#hwm_gen_stack_push_param_stmt (Cil.integer ~loc 3735928559) loc in
 			new_stmt
@@ -331,28 +333,6 @@ class embed_hwm_visitor = object (self)
 		let new_stmt = Cil.mkStmtOneInstr (instr) in
 			new_stmt
 
-
-	(*
-	  instr set[lval:[var:[name->result, type->int] nooffset],expr:[[cast (int) ( expr:[binop([|,expr:[[cast (int) ( expr:[binop([<<,expr:[lval:[var:[name->xmhfhwm_cpu_gprs_edx, type->int] nooffset]],expr:[const]]:int)])]],expr:[[cast (int) ( expr:[lval:[var:[name->xmhfhwm_cpu_gprs_eax, type->int] nooffset]])]]]:int)])]]]
-	  
-	  instr set[lval:[var:[name->result, type->int] nooffset],
-	  expr:[
-	    [cast (int) ( 
-		    expr:[
-		    	[cast (int) ( 
-		    		expr:[
-		      			binop([<<,expr:[lval:[var:[name->xmhfhwm_cpu_gprs_edx, type->int] nooffset]],expr:[const]]:int)
-		    		]
-		    	)
-		    	]
-	    	]
-    	)
-    	]
-       ]
-      
-      ]
-
-	*)
 	
 	method private hwm_gen_return_result lval loc = 
 		let var_edx = Cil.makeVarinfo true false "xmhfhwm_cpu_gprs_edx" Cil.uintType in
@@ -363,6 +343,7 @@ class embed_hwm_visitor = object (self)
 		let instr = Cil_types.Set(lval, exp3, loc) in
 		let new_stmt = Cil.mkStmtOneInstr (instr) in
 			new_stmt
+
 	
 	method private hwm_gen_stack_push_param_stmts_for_casm_function exp_lst loc = 
 		let stmts_list = ref [] in
@@ -383,7 +364,6 @@ class embed_hwm_visitor = object (self)
 	method vstmt_aux s =
 		Cil.ChangeDoChildrenPost(
 			s,fun s -> (
-
 				match s.skind with
 				| Instr (Call(lval, exp, exp_lst, loc)) ->
 				begin
