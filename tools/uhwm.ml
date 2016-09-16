@@ -361,6 +361,44 @@ class embed_hwm_visitor = object (self)
 			!stmts_list	
 			end
 
+
+	method private hwm_process_call_stmt_for_c_function s lval exp exp_lst loc = 
+	    match exp.enode with
+		    | Lval(Var(var), _) ->
+    			begin
+					let hwm_stmt_list = ref [] in
+									
+					if (Str.string_match (Str.regexp "casm_") var.vname 0) then
+						begin
+							hwm_stmt_list := self#hwm_gen_stack_push_param_stmts_for_casm_function exp_lst loc;
+            	            hwm_stmt_list := List.append !hwm_stmt_list [self#hwm_gen_push_eip loc];
+            	            hwm_stmt_list := List.append !hwm_stmt_list [self#hwm_gen_call_stmt_for_function var.vname (Cil.unrollTypeDeep var.vtype) exp_lst loc];
+							hwm_stmt_list := List.append !hwm_stmt_list [self#hwm_gen_stack_pop_params_stmt_for_casm_function exp_lst loc];
+							
+							ignore(
+								match lval with
+  									| None -> hwm_stmt_list := !hwm_stmt_list;
+  									| Some lv -> hwm_stmt_list := List.append !hwm_stmt_list [(self#hwm_gen_return_result lv loc)];
+							);
+												
+							(* List.iter (Printer.pp_stmt (Format.std_formatter)) !hwm_stmt_list; *)
+							
+							let newStatement = Cil.mkStmt(Block(Cil.mkBlock(!hwm_stmt_list))) in
+								newStatement.labels <- s.labels;
+								s.labels <- [];
+							newStatement
+						
+						end
+					else
+						begin
+							s
+						end
+
+                end
+
+            | _ -> s  (* don't change *)
+	            
+
 			 
 	method vstmt_aux s =
 		Cil.ChangeDoChildrenPost(
@@ -368,40 +406,8 @@ class embed_hwm_visitor = object (self)
 				match s.skind with
 				| Instr (Call(lval, exp, exp_lst, loc)) ->
 				begin
-	                match exp.enode with
-	                | Lval(Var(var), _) ->
-	                begin
-						let hwm_stmt_list = ref [] in
-										
-						if (Str.string_match (Str.regexp "casm_") var.vname 0) then
-							begin
-								hwm_stmt_list := self#hwm_gen_stack_push_param_stmts_for_casm_function exp_lst loc;
-                	            hwm_stmt_list := List.append !hwm_stmt_list [self#hwm_gen_push_eip loc];
-                	            hwm_stmt_list := List.append !hwm_stmt_list [self#hwm_gen_call_stmt_for_function var.vname (Cil.unrollTypeDeep var.vtype) exp_lst loc];
-								hwm_stmt_list := List.append !hwm_stmt_list [self#hwm_gen_stack_pop_params_stmt_for_casm_function exp_lst loc];
-								
-								ignore(
-									match lval with
-      									| None -> hwm_stmt_list := !hwm_stmt_list;
-      									| Some lv -> hwm_stmt_list := List.append !hwm_stmt_list [(self#hwm_gen_return_result lv loc)];
-								);
-													
-								(* List.iter (Printer.pp_stmt (Format.std_formatter)) !hwm_stmt_list; *)
-								
-								let newStatement = Cil.mkStmt(Block(Cil.mkBlock(!hwm_stmt_list))) in
-									newStatement.labels <- s.labels;
-									s.labels <- [];
-								newStatement
-							
-							end
-						else
-							begin
-								s
-							end
-
-	                end
-	                | _ -> s  (* don't change *)
-	            end
+					self#hwm_process_call_stmt_for_c_function s lval exp exp_lst loc
+				end
 
 				| _ -> 
 					begin
