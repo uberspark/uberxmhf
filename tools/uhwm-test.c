@@ -6,7 +6,7 @@ extern unsigned long long casm_funccall(unsigned int x, unsigned int y);
 
 unsigned long long casm_funkyfunc(unsigned int x, unsigned int y){
 	ci_ret(x+y);
-	ci_label("x:");
+	ci_label("x");
 
 }
 
