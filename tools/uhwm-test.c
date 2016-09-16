@@ -4,6 +4,9 @@ extern unsigned int xmhfhwm_cpu_gprs_edx, xmhfhwm_cpu_gprs_eax;
 extern void ci_pushl(unsigned int);
 extern unsigned long long casm_funccall(unsigned int x, unsigned int y);
 
+unsigned long long casm_funkyfunc(unsigned int x, unsigned int y){
+	ci_ret(x+y);
+}
 
 int subfunc1(void){
 	unsigned long long int res;

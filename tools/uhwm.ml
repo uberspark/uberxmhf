@@ -303,6 +303,7 @@ let mkFunTyp (rt : typ) (args : (string * typ) list) : typ =
 class embed_hwm_visitor = object (self)
 	inherit Visitor.frama_c_inplace
 
+	val mutable hwm_is_casm_function: bool = false
 
 	method private hwm_gen_call_stmt_for_function fname ftyp fexp_lst loc = 
 		let fvar = Cil.findOrCreateFunc (Ast.get ()) fname ftyp in
@@ -402,7 +403,20 @@ class embed_hwm_visitor = object (self)
 	                | _ -> s  (* don't change *)
 	            end
 
-				| _ -> s  (* don't change *)
+				| _ -> 
+					begin
+						if (hwm_is_casm_function) then 
+							begin
+								Self.result "\n Ignoring void statement within CASM function.\n";
+								s
+							end
+						else
+							begin
+								s  (* don't change *)
+							end
+							
+					end
+				
  		   	)
 		)
 
@@ -412,6 +426,16 @@ class embed_hwm_visitor = object (self)
 	    | GFun(f,_) ->
     		begin
 		        Self.result "\n function-start (%s) ---" f.svar.vname;	          
+				if (Str.string_match (Str.regexp "casm_") f.svar.vname 0) then
+					begin
+						hwm_is_casm_function <- true;
+					end
+				else
+					begin
+						hwm_is_casm_function <- false;
+					end
+				;					
+		        
 		        Cil.DoChildrenPost(
 		        	fun s -> 
 		        	Self.result "\n --- function-end (%s)" f.svar.vname; 
