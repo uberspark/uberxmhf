@@ -404,8 +404,19 @@ class embed_hwm_visitor = object (self)
 	    match exp.enode with
 		    | Lval(Var(var), _) ->
     			begin
-					Self.result "\n casm insn macro call: %s" var.vname;
-					s
+					let ci_macro_stmt_list = ref [] in
+						Self.result "\n casm insn macro call: %s" var.vname;
+						
+						if (compare "ci_label" var.vname) = 0 then
+							begin
+								Self.result "\n casm insn macro call: ci_label found";
+								s
+							end
+						else
+							begin
+								s
+							end
+						
 				end
 
             | _ -> s  (* don't change *)
