@@ -399,6 +399,17 @@ class embed_hwm_visitor = object (self)
             | _ -> s  (* don't change *)
 	            
 
+
+	method private hwm_process_call_stmt_for_casm_function s lval exp exp_lst loc = 
+	    match exp.enode with
+		    | Lval(Var(var), _) ->
+    			begin
+					Self.result "\n casm insn macro call: %s" var.vname;
+					s
+				end
+
+            | _ -> s  (* don't change *)
+
 			 
 	method vstmt_aux s =
 		Cil.ChangeDoChildrenPost(
@@ -406,7 +417,14 @@ class embed_hwm_visitor = object (self)
 				match s.skind with
 				| Instr (Call(lval, exp, exp_lst, loc)) ->
 				begin
-					self#hwm_process_call_stmt_for_c_function s lval exp exp_lst loc
+					if (hwm_is_casm_function) then
+						begin
+							self#hwm_process_call_stmt_for_casm_function s lval exp exp_lst loc
+						end
+					else
+						begin
+							self#hwm_process_call_stmt_for_c_function s lval exp exp_lst loc
+						end
 				end
 
 				| _ -> 
