@@ -399,18 +399,38 @@ class embed_hwm_visitor = object (self)
             | _ -> s  (* don't change *)
 	            
 
+	method private hwm_casm_function_gen_stmt_for_ci_label s var exp_lst loc = 
+    	let ci_macro_stmt_list = ref [] in
+    	let ci_label_exp = (List.nth exp_lst 0) in 
+	    let ci_label_string = ref "" in 
+	    	ci_macro_stmt_list := List.append !ci_macro_stmt_list [self#hwm_gen_call_stmt_for_function var.vname (Cil.unrollTypeDeep var.vtype) exp_lst loc];
+			match ci_label_exp.enode with
+		    	| Const(CStr(param_string)) -> 
+		    		(
+		    			ci_label_string := param_string;
+		    		);
+		    	| _ -> 
+		    		(
+		    			Self.result "\n Illegal ci_label operand -- not a string constant. Abort!\n";
+		    			ignore(exit 1);
+		    		);
+		    ;	
+			
+			let result_stmt = Cil.mkStmt(Block(Cil.mkBlock(!ci_macro_stmt_list))) in
+				result_stmt.labels <- [Label(!ci_label_string, loc, true)];
+				result_stmt	
+
 
 	method private hwm_process_call_stmt_for_casm_function s lval exp exp_lst loc = 
 	    match exp.enode with
 		    | Lval(Var(var), _) ->
     			begin
-					let ci_macro_stmt_list = ref [] in
 						Self.result "\n casm insn macro call: %s" var.vname;
 						
 						if (compare "ci_label" var.vname) = 0 then
 							begin
 								Self.result "\n casm insn macro call: ci_label found";
-								s
+								self#hwm_casm_function_gen_stmt_for_ci_label s var exp_lst loc
 							end
 						else
 							begin
