@@ -11,6 +11,7 @@ unsigned long long casm_funkyfunc(unsigned int x, unsigned int y){
 }
 
 unsigned long long casm_funkyfunc_2(unsigned int x, unsigned int y){
+	ci_jmp("y");
 	ci_ret(y);
 	ci_label("y");
 
