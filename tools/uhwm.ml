@@ -27,6 +27,16 @@ module CmdoptDisallowFp = Self.False
 
 let mkFunTyp (rt : typ) (args : (string * typ) list) : typ =
   TFun(rt, Some(List.map (fun a -> (fst a, snd a, [])) args), false, [])
+
+
+(*
+	**************************************************************************
+	global variables
+	**************************************************************************
+*)
+let g_uhwm_collectlabels_for_casm_function = ref false;;
+
+
   
 (* embedding hwm AST visitor *)
 class embed_hwm_visitor = object (self)
@@ -156,7 +166,8 @@ class embed_hwm_visitor = object (self)
     			begin
 						Self.result "\n casm insn macro call: %s" var.vname;
 						
-						if (compare "ci_label" var.vname) = 0 then
+						if ((compare "ci_label" var.vname) = 0) && 	(!g_uhwm_collectlabels_for_casm_function = true)
+						 then
 							begin
 								Self.result "\n casm insn macro call: ci_label found";
 								self#hwm_casm_function_gen_stmt_for_ci_label s var exp_lst loc
@@ -242,8 +253,10 @@ end;;
 let run () =
 	Self.result "Before embedding:\n%a" Printer.pp_file (Ast.get ());
 	Self.result "Embedding HWM (Pass-1)...\n";
+	g_uhwm_collectlabels_for_casm_function := true;
 	Visitor.visitFramacFile (new embed_hwm_visitor) (Ast.get ()) ;
 	Self.result "Embedding HWM (Pass-2)...\n";
+	g_uhwm_collectlabels_for_casm_function := false;
 	Visitor.visitFramacFile (new embed_hwm_visitor) (Ast.get ()) ;
 	Self.result "After embedding:\n%a" Printer.pp_file (Ast.get ());
 	Self.result "Done.\n";
