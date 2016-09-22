@@ -35,6 +35,8 @@ let mkFunTyp (rt : typ) (args : (string * typ) list) : typ =
 	**************************************************************************
 *)
 let g_uhwm_collectlabels_for_casm_function = ref false;;
+let g_casmfunc_stmts = ((Hashtbl.create 32) : ((string,Cil_types.stmt) Hashtbl.t));;
+let g_casmfunc_to_stmthtbl = ((Hashtbl.create 32) : ((string,(string,Cil_types.stmt) Hashtbl.t)  Hashtbl.t));;
 
 
   
@@ -43,6 +45,7 @@ class embed_hwm_visitor = object (self)
 	inherit Visitor.frama_c_inplace
 
 	val mutable hwm_is_casm_function: bool = false
+	val mutable hwm_function_name: string = ""
 
 	method private hwm_gen_call_stmt_for_function fname ftyp fexp_lst loc = 
 		let fvar = Cil.findOrCreateFunc (Ast.get ()) fname ftyp in
@@ -138,6 +141,11 @@ class embed_hwm_visitor = object (self)
             | _ -> s  (* don't change *)
 	            
 
+	method private hwm_casm_function_add_ci_label_stmt_to_hash lbl_name lbl_stmt = 
+			Self.result "\nadding label %s for function %s in hash..." lbl_name hwm_function_name;
+			()
+
+
 	method private hwm_casm_function_gen_stmt_for_ci_label s var exp_lst loc = 
     	let ci_macro_stmt_list = ref [] in
     	let ci_label_exp = (List.nth exp_lst 0) in 
@@ -157,6 +165,7 @@ class embed_hwm_visitor = object (self)
 			
 			let result_stmt = Cil.mkStmt(Block(Cil.mkBlock(!ci_macro_stmt_list))) in
 				result_stmt.labels <- [Label(!ci_label_string, loc, true)];
+				self#hwm_casm_function_add_ci_label_stmt_to_hash !ci_label_string result_stmt;
 				result_stmt	
 
 
@@ -222,8 +231,8 @@ class embed_hwm_visitor = object (self)
 	    match s with
 	    | GFun(f,_) ->
     		begin
-		        Self.result "\n function-start (%s) ---" f.svar.vname;	          
-				if (Str.string_match (Str.regexp "casm_") f.svar.vname 0) then
+				hwm_function_name <- f.svar.vname;
+				if (Str.string_match (Str.regexp "casm_") hwm_function_name 0) then
 					begin
 						hwm_is_casm_function <- true;
 					end
@@ -232,6 +241,9 @@ class embed_hwm_visitor = object (self)
 						hwm_is_casm_function <- false;
 					end
 				;
+
+		        Self.result "\n function-start (%s) ---" hwm_function_name;	          
+
 				
 				Cil.DoChildrenPost(
 		        	fun s -> 
