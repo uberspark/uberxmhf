@@ -143,6 +143,7 @@ class embed_hwm_visitor = object (self)
 
 	method private hwm_casm_function_add_ci_label_stmt_to_hash lbl_name lbl_stmt = 
 			Self.result "\nadding label %s for function %s in hash..." lbl_name hwm_function_name;
+			Hashtbl.add g_casmfunc_stmts lbl_name lbl_stmt;
 			()
 
 
@@ -232,24 +233,33 @@ class embed_hwm_visitor = object (self)
 	    | GFun(f,_) ->
     		begin
 				hwm_function_name <- f.svar.vname;
+				Hashtbl.clear g_casmfunc_stmts;
+
+		        Self.result "\n function-start (%s) ---" hwm_function_name;	          
+
 				if (Str.string_match (Str.regexp "casm_") hwm_function_name 0) then
 					begin
 						hwm_is_casm_function <- true;
+						Cil.DoChildrenPost(
+				        	fun s -> 
+				        	Hashtbl.add g_casmfunc_to_stmthtbl hwm_function_name (Hashtbl.copy g_casmfunc_stmts);
+							Hashtbl.clear g_casmfunc_stmts;
+				        	Self.result "\n --- function-end (%s)" hwm_function_name; 
+				        	s
+				        )
 					end
 				else
 					begin
 						hwm_is_casm_function <- false;
+						Cil.DoChildrenPost(
+				        	fun s -> 
+				        	Self.result "\n --- function-end (%s)" hwm_function_name; 
+				        	s
+				        )
 					end
-				;
 
-		        Self.result "\n function-start (%s) ---" hwm_function_name;	          
 
 				
-				Cil.DoChildrenPost(
-		        	fun s -> 
-		        	Self.result "\n --- function-end (%s)" f.svar.vname; 
-		        	s
-		        )
 				
 		        
     		end
@@ -267,6 +277,11 @@ let run () =
 	Self.result "Embedding HWM (Pass-1)...\n";
 	g_uhwm_collectlabels_for_casm_function := true;
 	Visitor.visitFramacFile (new embed_hwm_visitor) (Ast.get ()) ;
+	
+	(* debug *)
+	Printer.pp_stmt (Format.std_formatter) (Hashtbl.find (Hashtbl.find g_casmfunc_to_stmthtbl "casm_funkyfunc") "x"); 
+	Printer.pp_stmt (Format.std_formatter) (Hashtbl.find (Hashtbl.find g_casmfunc_to_stmthtbl "casm_funkyfunc_2") "y"); 
+	
 	Self.result "Embedding HWM (Pass-2)...\n";
 	g_uhwm_collectlabels_for_casm_function := false;
 	Visitor.visitFramacFile (new embed_hwm_visitor) (Ast.get ()) ;
