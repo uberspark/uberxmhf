@@ -170,6 +170,27 @@ class embed_hwm_visitor = object (self)
 				result_stmt	
 
 
+	method private hwm_casm_function_gen_stmt_for_ci_jmp s var exp_lst loc = 
+    	let ci_jmp_exp = (List.nth exp_lst 0) in 
+	    let ci_jmp_string = ref "" in 
+			match ci_jmp_exp.enode with
+		    	| Const(CStr(param_string)) -> 
+		    		(
+		    			ci_jmp_string := param_string;
+		    		);
+		    	| _ -> 
+		    		(
+		    			Self.result "\n Illegal ci_jmp operand -- not a string constant. Abort!\n";
+		    			ignore(exit 1);
+		    		);
+		    ;	
+			let goto_stmt = (Hashtbl.find (Hashtbl.find g_casmfunc_to_stmthtbl hwm_function_name) !ci_jmp_string) in  
+			let instr = Cil_types.Goto(ref goto_stmt, loc) in
+			let new_stmt = Cil.mkStmt (instr) in
+			let result_stmt = Cil.mkStmt(Block(Cil.mkBlock([new_stmt]))) in
+				result_stmt
+
+
 	method private hwm_process_call_stmt_for_casm_function s lval exp exp_lst loc = 
 	    match exp.enode with
 		    | Lval(Var(var), _) ->
@@ -181,6 +202,12 @@ class embed_hwm_visitor = object (self)
 							begin
 								Self.result "\n casm insn macro call: ci_label found";
 								self#hwm_casm_function_gen_stmt_for_ci_label s var exp_lst loc
+							end
+						else if ((compare "ci_jmp" var.vname) = 0) && (!g_uhwm_collectlabels_for_casm_function = false) 
+						 then
+							begin
+								Self.result "\n casm insn macro call: ci_jmp found";
+								self#hwm_casm_function_gen_stmt_for_ci_jmp s var exp_lst loc
 							end
 						else
 							begin
@@ -279,8 +306,9 @@ let run () =
 	Visitor.visitFramacFile (new embed_hwm_visitor) (Ast.get ()) ;
 	
 	(* debug *)
-	Printer.pp_stmt (Format.std_formatter) (Hashtbl.find (Hashtbl.find g_casmfunc_to_stmthtbl "casm_funkyfunc") "x"); 
+	(*Printer.pp_stmt (Format.std_formatter) (Hashtbl.find (Hashtbl.find g_casmfunc_to_stmthtbl "casm_funkyfunc") "x"); 
 	Printer.pp_stmt (Format.std_formatter) (Hashtbl.find (Hashtbl.find g_casmfunc_to_stmthtbl "casm_funkyfunc_2") "y"); 
+	*)
 	
 	Self.result "Embedding HWM (Pass-2)...\n";
 	g_uhwm_collectlabels_for_casm_function := false;
