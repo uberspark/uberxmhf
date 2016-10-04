@@ -45,7 +45,7 @@ let g_casmfunc_to_stmthtbl = ((Hashtbl.create 32) : ((string,(string,Cil_types.s
 	**************************************************************************
 *)
 let eflags_cf = 1;;
-
+let eflags_zf = 0x00000040;;
   
 (* embedding hwm AST visitor *)
 class embed_hwm_visitor = object (self)
@@ -253,6 +253,32 @@ class embed_hwm_visitor = object (self)
 				result_stmt
 
 
+	method private hwm_casm_function_gen_stmt_for_ci_jz s var exp_lst loc = 
+    	let ci_jz_exp = (List.nth exp_lst 0) in 
+	    let ci_jz_string = ref "" in 
+			match ci_jz_exp.enode with
+		    	| Const(CStr(param_string)) -> 
+		    		(
+		    			ci_jz_string := param_string;
+		    		);
+		    	| _ -> 
+		    		(
+		    			Self.result "\n Illegal ci_jz operand -- not a string constant. Abort!\n";
+		    			ignore(exit 1);
+		    		);
+		    ;	
+			let goto_stmt = (Hashtbl.find (Hashtbl.find g_casmfunc_to_stmthtbl hwm_function_name) !ci_jz_string) in  
+			let instr = Cil_types.Goto(ref goto_stmt, loc) in
+			let new_stmt = Cil.mkStmt (instr) in
+			let var_eflags = Cil.makeVarinfo true false "xmhfhwm_cpu_eflags" Cil.uintType in
+			let cond_exp = Cil.new_exp ~loc (BinOp(BAnd, (Cil.evar ~loc:loc var_eflags), (Cil.integer ~loc eflags_zf), (Cil.unrollTypeDeep var_eflags.vtype))) in
+			let if_stmt_instr = Cil_types.If(cond_exp, Cil.mkBlock([new_stmt]), Cil.mkBlock([]), loc) in
+			let if_stmt_stmt = Cil.mkStmt(if_stmt_instr) in
+			let result_stmt = Cil.mkStmt(Block(Cil.mkBlock([if_stmt_stmt]))) in 
+				result_stmt
+
+
+
 	method private hwm_process_call_stmt_for_casm_function s lval exp exp_lst loc = 
 	    match exp.enode with
 		    | Lval(Var(var), _) ->
@@ -282,6 +308,12 @@ class embed_hwm_visitor = object (self)
 							begin
 								Self.result "\n casm insn macro call: ci_jnc found";
 								self#hwm_casm_function_gen_stmt_for_ci_jnc s var exp_lst loc
+							end
+						else if ((compare "ci_jz" var.vname) = 0) && (!g_uhwm_collectlabels_for_casm_function = false) 
+						 then
+							begin
+								Self.result "\n casm insn macro call: ci_jz found";
+								self#hwm_casm_function_gen_stmt_for_ci_jz s var exp_lst loc
 							end
 						else
 							begin
