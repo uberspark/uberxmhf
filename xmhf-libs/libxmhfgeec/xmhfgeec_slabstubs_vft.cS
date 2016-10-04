@@ -109,8 +109,7 @@ CASM_FUNCDEF(void, __slab_callsentinel,
 {
     xmhfhwm_cpu_insn_movl_mesp_eax(0x4);
     xmhfhwm_cpu_insn_movl_imm_meax(XMHFGEEC_SENTINEL_CALL_FROM_VfT_PROG, 0x0);
-    xmhfhwm_cpu_insn_movl_imm_eax(0x02400000);
-    xmhfhwm_cpu_insn_jmpl_eax();
+    xmhfhwm_cpu_insn_jmpsentinel();
 },
 slab_params_t *sp)
 
