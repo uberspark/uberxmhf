@@ -2630,6 +2630,10 @@ extern void _impl_xmhfhwm_cpu_insn_addl_ecx_eax(void);
 	__builtin_annot("jbe "#x" "); \
 	if((xmhfhwm_cpu_eflags & EFLAGS_ZF) && (xmhfhwm_cpu_eflags & EFLAGS_CF)) goto x; \
 
+// conditional jump (on above) to local function label
+#define xmhfhwm_cpu_insn_ja(x) \
+	__builtin_annot("ja "#x" "); \
+	if(!(xmhfhwm_cpu_eflags & EFLAGS_ZF) && !(xmhfhwm_cpu_eflags & EFLAGS_CF)) goto x; \
 
 
 #define xmhfhwm_cpu_insn_jmpl_eax() __builtin_annot("jmpl *%eax ");
@@ -2646,9 +2650,6 @@ extern void _impl_xmhfhwm_cpu_insn_addl_ecx_eax(void);
 
 
 
-#define xmhfhwm_cpu_insn_ja(x) \
-	__builtin_annot("ja "#x" "); \
-	if(!(xmhfhwm_cpu_eflags & EFLAGS_ZF) && !(xmhfhwm_cpu_eflags & EFLAGS_CF)) goto x; \
 
 #define xmhfhwm_cpu_insn_int(x) __builtin_annot("int $"#x" ");
 

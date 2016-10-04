@@ -333,6 +333,39 @@ class embed_hwm_visitor = object (self)
 				result_stmt
 
 
+
+	(* ci_ja CASM instruction *)
+	method private hwm_casm_function_gen_stmt_for_ci_ja s var exp_lst loc = 
+    	let ci_ja_exp = (List.nth exp_lst 0) in 
+	    let ci_ja_string = ref "" in 
+			match ci_ja_exp.enode with
+		    	| Const(CStr(param_string)) -> 
+		    		(
+		    			ci_ja_string := param_string;
+		    		);
+		    	| _ -> 
+		    		(
+		    			Self.result "\n Illegal ci_ja operand -- not a string constant. Abort!\n";
+		    			ignore(exit 1);
+		    		);
+		    ;	
+			let goto_stmt = (Hashtbl.find (Hashtbl.find g_casmfunc_to_stmthtbl hwm_function_name) !ci_ja_string) in  
+			let instr = Cil_types.Goto(ref goto_stmt, loc) in
+			let new_stmt = Cil.mkStmt (instr) in
+			let var_eflags = Cil.makeVarinfo true false "xmhfhwm_cpu_eflags" Cil.uintType in
+			let zf_exp = Cil.new_exp ~loc (BinOp(BAnd, (Cil.evar ~loc:loc var_eflags), (Cil.integer ~loc eflags_zf), (Cil.unrollTypeDeep var_eflags.vtype))) in
+			let cf_exp = Cil.new_exp ~loc (BinOp(BAnd, (Cil.evar ~loc:loc var_eflags), (Cil.integer ~loc eflags_cf), (Cil.unrollTypeDeep var_eflags.vtype))) in
+			let neg_zf_exp = Cil.new_exp ~loc (UnOp(LNot, zf_exp, Cil.intType)) in
+			let neg_cf_exp = Cil.new_exp ~loc (UnOp(LNot, cf_exp, Cil.intType)) in
+			let cond_exp = Cil.new_exp ~loc (BinOp(BAnd, neg_zf_exp, neg_cf_exp, Cil.intType)) in
+			let if_stmt_instr = Cil_types.If(cond_exp, Cil.mkBlock([new_stmt]), Cil.mkBlock([]), loc) in
+			let if_stmt_stmt = Cil.mkStmt(if_stmt_instr) in
+			let result_stmt = Cil.mkStmt(Block(Cil.mkBlock([if_stmt_stmt]))) in 
+				result_stmt
+
+
+
+
 	method private hwm_process_call_stmt_for_casm_function s lval exp exp_lst loc = 
 	    match exp.enode with
 		    | Lval(Var(var), _) ->
@@ -380,6 +413,12 @@ class embed_hwm_visitor = object (self)
 							begin
 								Self.result "\n casm insn macro call: ci_jbe found";
 								self#hwm_casm_function_gen_stmt_for_ci_jbe s var exp_lst loc
+							end
+						else if ((compare "ci_ja" var.vname) = 0) && (!g_uhwm_collectlabels_for_casm_function = false) 
+						 then
+							begin
+								Self.result "\n casm insn macro call: ci_ja found";
+								self#hwm_casm_function_gen_stmt_for_ci_ja s var exp_lst loc
 							end
 						else
 							begin
