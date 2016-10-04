@@ -2593,9 +2593,9 @@ extern void _impl_xmhfhwm_cpu_insn_addl_ecx_eax(void);
 
 
 
-// branch instructions
-#define xmhfhwm_cpu_insn_jmp(x) __builtin_annot("jmp "#x" ");
+////// branch instructions
 
+// direct jump to local function label
 #define xmhfhwm_cpu_insn_jmplabel(x) \
 	__builtin_annot("jmp "#x" "); \
 	if(1) goto x; \

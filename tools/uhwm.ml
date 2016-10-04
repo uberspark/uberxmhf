@@ -170,26 +170,24 @@ class embed_hwm_visitor = object (self)
 				result_stmt	
 
 
-	method private hwm_casm_function_gen_stmt_for_ci_jmp s var exp_lst loc = 
-    	let ci_jmp_exp = (List.nth exp_lst 0) in 
-	    let ci_jmp_string = ref "" in 
-			match ci_jmp_exp.enode with
+	method private hwm_casm_function_gen_stmt_for_ci_jmplabel s var exp_lst loc = 
+    	let ci_jmplabel_exp = (List.nth exp_lst 0) in 
+	    let ci_jmplabel_string = ref "" in 
+			match ci_jmplabel_exp.enode with
 		    	| Const(CStr(param_string)) -> 
 		    		(
-		    			ci_jmp_string := param_string;
+		    			ci_jmplabel_string := param_string;
 		    		);
 		    	| _ -> 
 		    		(
-		    			Self.result "\n Illegal ci_jmp operand -- not a string constant. Abort!\n";
+		    			Self.result "\n Illegal ci_jmplabel operand -- not a string constant. Abort!\n";
 		    			ignore(exit 1);
 		    		);
 		    ;	
-			let goto_stmt = (Hashtbl.find (Hashtbl.find g_casmfunc_to_stmthtbl hwm_function_name) !ci_jmp_string) in  
+			let goto_stmt = (Hashtbl.find (Hashtbl.find g_casmfunc_to_stmthtbl hwm_function_name) !ci_jmplabel_string) in  
 			let instr = Cil_types.Goto(ref goto_stmt, loc) in
 			let new_stmt = Cil.mkStmt (instr) in
 			let cond_exp= Cil.integer ~loc 1 in 
-  			(* If of exp * block * block * location *)
-			(* let result_stmt = Cil.mkStmt(Block(Cil.mkBlock([new_stmt]))) in *) 
 			let if_stmt_instr = Cil_types.If(cond_exp, Cil.mkBlock([new_stmt]), Cil.mkBlock([]), loc) in
 			let if_stmt_stmt = Cil.mkStmt(if_stmt_instr) in
 			let result_stmt = Cil.mkStmt(Block(Cil.mkBlock([if_stmt_stmt]))) in 
@@ -208,11 +206,11 @@ class embed_hwm_visitor = object (self)
 								Self.result "\n casm insn macro call: ci_label found";
 								self#hwm_casm_function_gen_stmt_for_ci_label s var exp_lst loc
 							end
-						else if ((compare "ci_jmp" var.vname) = 0) && (!g_uhwm_collectlabels_for_casm_function = false) 
+						else if ((compare "ci_jmplabel" var.vname) = 0) && (!g_uhwm_collectlabels_for_casm_function = false) 
 						 then
 							begin
-								Self.result "\n casm insn macro call: ci_jmp found";
-								self#hwm_casm_function_gen_stmt_for_ci_jmp s var exp_lst loc
+								Self.result "\n casm insn macro call: ci_jmplabel found";
+								self#hwm_casm_function_gen_stmt_for_ci_jmplabel s var exp_lst loc
 							end
 						else
 							begin
