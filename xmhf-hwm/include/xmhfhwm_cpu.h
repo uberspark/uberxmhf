@@ -2640,19 +2640,6 @@ extern void _impl_xmhfhwm_cpu_insn_addl_ecx_eax(void);
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-#define xmhfhwm_cpu_insn_int(x) __builtin_annot("int $"#x" ");
-
 #define xmhfhwm_cpu_insn_call(x) __builtin_annot("call "#x" ");
 
 #define xmhfhwm_cpu_insn_call_c(fn_name) \
