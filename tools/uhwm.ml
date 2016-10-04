@@ -337,7 +337,7 @@ class embed_hwm_visitor = object (self)
 								Self.result "\n casm insn macro call: ci_jnc found";
 								self#hwm_casm_function_gen_stmt_for_ci_jnc s var exp_lst loc
 							end
-						else if ((compare "ci_jz" var.vname) = 0) && (!g_uhwm_collectlabels_for_casm_function = false) 
+						else if ( (compare "ci_jz" var.vname) = 0 || (compare "ci_je" var.vname) = 0) && (!g_uhwm_collectlabels_for_casm_function = false) 
 						 then
 							begin
 								Self.result "\n casm insn macro call: ci_jz found";
