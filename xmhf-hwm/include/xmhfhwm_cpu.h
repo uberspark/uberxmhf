@@ -2600,12 +2600,15 @@ extern void _impl_xmhfhwm_cpu_insn_addl_ecx_eax(void);
 	__builtin_annot("jmp "#x" "); \
 	if(1) goto x; \
 
-
-#define xmhfhwm_cpu_insn_jmpl_eax() __builtin_annot("jmpl *%eax ");
-
+// conditional jump (on carry) to local function label
 #define xmhfhwm_cpu_insn_jc(x) \
 	__builtin_annot("jc "#x" "); \
 	if(xmhfhwm_cpu_eflags & EFLAGS_CF) goto x; \
+
+
+
+#define xmhfhwm_cpu_insn_jmpl_eax() __builtin_annot("jmpl *%eax ");
+
 
 
 #define xmhfhwm_cpu_insn_je(x) \
