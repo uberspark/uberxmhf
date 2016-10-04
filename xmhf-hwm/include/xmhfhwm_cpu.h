@@ -2620,14 +2620,16 @@ extern void _impl_xmhfhwm_cpu_insn_addl_ecx_eax(void);
 	__builtin_annot("jnz "#x" "); \
 	if(!(xmhfhwm_cpu_eflags & EFLAGS_ZF)) goto x; \
 
+// conditional jump (on equal) to local function label
+#define xmhfhwm_cpu_insn_je(x) \
+	__builtin_annot("je "#x" "); \
+	if(xmhfhwm_cpu_eflags & EFLAGS_ZF) goto x; \
+
 
 #define xmhfhwm_cpu_insn_jmpl_eax() __builtin_annot("jmpl *%eax ");
 
 
 
-#define xmhfhwm_cpu_insn_je(x) \
-	__builtin_annot("je "#x" "); \
-	if(xmhfhwm_cpu_eflags & EFLAGS_ZF) goto x; \
 
 
 
