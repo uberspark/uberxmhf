@@ -15,6 +15,7 @@ unsigned long long casm_funkyfunc_2(unsigned int x, unsigned int y){
 	ci_jc("y");
 	ci_jnc("y");
 	ci_jz("y");
+	ci_jnz("y");
 	ci_ret(y);
 	ci_label("y");
 
