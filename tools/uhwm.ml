@@ -187,7 +187,12 @@ class embed_hwm_visitor = object (self)
 			let goto_stmt = (Hashtbl.find (Hashtbl.find g_casmfunc_to_stmthtbl hwm_function_name) !ci_jmp_string) in  
 			let instr = Cil_types.Goto(ref goto_stmt, loc) in
 			let new_stmt = Cil.mkStmt (instr) in
-			let result_stmt = Cil.mkStmt(Block(Cil.mkBlock([new_stmt]))) in
+			let cond_exp= Cil.integer ~loc 1 in 
+  			(* If of exp * block * block * location *)
+			(* let result_stmt = Cil.mkStmt(Block(Cil.mkBlock([new_stmt]))) in *) 
+			let if_stmt_instr = Cil_types.If(cond_exp, Cil.mkBlock([new_stmt]), Cil.mkBlock([]), loc) in
+			let if_stmt_stmt = Cil.mkStmt(if_stmt_instr) in
+			let result_stmt = Cil.mkStmt(Block(Cil.mkBlock([if_stmt_stmt]))) in 
 				result_stmt
 
 
