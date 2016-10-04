@@ -466,6 +466,12 @@ class embed_hwm_visitor = object (self)
 		)
 
 
+	(*
+		parse gvardecl ==> if type is TFun then enter the sformals into hash
+		parse gfun ==> enter svar.vtype into hash
+	*)
+
+
 	method vglob_aux s =
 	    match s with
 	    | GFun(f,_) ->
@@ -474,6 +480,28 @@ class embed_hwm_visitor = object (self)
 				Hashtbl.clear g_casmfunc_stmts;
 
 		        Self.result "\n function-start (%s) ---" hwm_function_name;	          
+
+				match f.svar.vtype with
+			    	| TFun(rettype, args, isva, a) -> 
+			    		(
+							let argslist = (Cil.argsToList args) in
+								Self.result "\n function type consistent, params=%u" (List.length argslist);	          
+								for index = 0 to ((List.length argslist)-1) do
+									begin
+									let tuple = (List.nth argslist index) in
+									let (n,t,_) = tuple in
+										Self.result "param: %s\n" n;
+										Printer.pp_typ (Format.std_formatter) t;
+									end
+								done
+								; 
+			    		);
+			    	| _ -> 
+			    		(
+							Self.result "\n function type inconsistent";			    			
+							ignore(exit 1);
+			    		);
+			    ;	
 
 				if (Str.string_match (Str.regexp "casm_") hwm_function_name 0) then
 					begin
@@ -501,6 +529,31 @@ class embed_hwm_visitor = object (self)
 				
 		        
     		end
+	    
+	    
+	    | GVarDecl(funspec,var,loc) ->
+	    	begin
+				Self.result "var decl, name=%s\n" var.vname;
+				match var.vtype with
+			    	| TFun(rettype, args, isva, a) -> 
+			    		(
+							let argslist = (Cil.argsToList args) in
+								Self.result "\nvar decl: function type, params=%u" (List.length argslist);	          
+								for index = 0 to ((List.length argslist)-1) do
+									begin
+									let tuple = (List.nth argslist index) in
+									let (n,t,_) = tuple in
+										Self.result "param: %s\n" n;
+										Printer.pp_typ (Format.std_formatter) t;
+									end
+								done
+								; 
+			    			Cil.DoChildrenPost(fun s ->	s)
+			    		)
+			    	| _ ->	Cil.DoChildrenPost(fun s ->	s)
+			    	
+
+	    	end
 	    		    	
 	    | _ -> Cil.SkipChildren
 

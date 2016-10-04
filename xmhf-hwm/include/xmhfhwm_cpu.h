@@ -2643,7 +2643,6 @@ extern void _impl_xmhfhwm_cpu_insn_addl_ecx_eax(void);
 	_impl_xmhfhwm_cpu_insn_pushl_mem(CASM_RET_EIP); \
 	fn_name(); \
 
-
 #define xmhfhwm_cpu_insn_call_c_1p(fn_name, fn_p1_type) \
 	__builtin_annot("call "#fn_name" "); \
 	_impl_xmhfhwm_cpu_insn_pushl_mem(CASM_RET_EIP); \
