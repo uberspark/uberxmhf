@@ -2636,10 +2636,6 @@ extern void _impl_xmhfhwm_cpu_insn_addl_ecx_eax(void);
 	if(!(xmhfhwm_cpu_eflags & EFLAGS_ZF) && !(xmhfhwm_cpu_eflags & EFLAGS_CF)) goto x; \
 
 
-#define xmhfhwm_cpu_insn_jmpl_eax() __builtin_annot("jmpl *%eax ");
-
-
-
 #define xmhfhwm_cpu_insn_call(x) __builtin_annot("call "#x" ");
 
 #define xmhfhwm_cpu_insn_call_c(fn_name) \
