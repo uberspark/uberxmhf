@@ -504,12 +504,7 @@ class embed_hwm_visitor = object (self)
 		)
 
 
-	(*
-		parse gvardecl ==> if type is TFun then enter the sformals into hash
-		parse gfun ==> enter svar.vtype into hash
-	*)
-
-
+	(* top-level AST node processing *)
 	method vglob_aux s =
 	    match s with
 	    | GFun(f,_) ->
@@ -519,29 +514,33 @@ class embed_hwm_visitor = object (self)
 
 		        Self.result "\n function-start (%s) ---" hwm_function_name;	          
 
-				match f.svar.vtype with
-			    	| TFun(rettype, args, isva, a) -> 
-			    		(
-							let argslist = (Cil.argsToList args) in
-								Self.result "\n function type consistent, params=%u" (List.length argslist);	          
-								Hashtbl.add g_func_decls f.svar.vname f.svar;
-								(*for index = 0 to ((List.length argslist)-1) do
-									begin
-									let tuple = (List.nth argslist index) in
-									let (n,t,_) = tuple in
-										Self.result "param: %s\n" n;
-										Printer.pp_typ (Format.std_formatter) t;
-									end
-								done
-								;*) 
-			    		);
-			    	| _ -> 
-			    		(
-							Self.result "\n function type inconsistent";			    			
-							ignore(exit 1);
-			    		);
-			    ;	
-
+				if (!g_uhwm_pass = uhwm_pass_1) then 
+					begin
+						match f.svar.vtype with
+					    	| TFun(rettype, args, isva, a) -> 
+					    		(
+									let argslist = (Cil.argsToList args) in
+										Self.result "\n function type consistent, params=%u" (List.length argslist);	          
+										Hashtbl.add g_func_decls f.svar.vname f.svar;
+										(*for index = 0 to ((List.length argslist)-1) do
+											begin
+											let tuple = (List.nth argslist index) in
+											let (n,t,_) = tuple in
+												Self.result "param: %s\n" n;
+												Printer.pp_typ (Format.std_formatter) t;
+											end
+										done
+										;*) 
+					    		);
+					    	| _ -> 
+					    		(
+									Self.result "\n function type inconsistent";			    			
+									ignore(exit 1);
+					    		);
+					    ;	
+					end
+				;
+				
 				if (Str.string_match (Str.regexp "casm_") hwm_function_name 0) then
 					begin
 						hwm_is_casm_function <- true;
@@ -576,18 +575,23 @@ class embed_hwm_visitor = object (self)
 				match var.vtype with
 			    	| TFun(rettype, args, isva, a) -> 
 			    		(
-							let argslist = (Cil.argsToList args) in
-								Self.result "\nvar decl: function type, params=%u" (List.length argslist);	          
-								Hashtbl.add g_func_decls var.vname var;
-								(*for index = 0 to ((List.length argslist)-1) do
-									begin
-									let tuple = (List.nth argslist index) in
-									let (n,t,_) = tuple in
-										Self.result "param: %s\n" n;
-										Printer.pp_typ (Format.std_formatter) t;
-									end
-								done
-								;*) 
+							if (!g_uhwm_pass = uhwm_pass_1) then
+								begin
+									let argslist = (Cil.argsToList args) in
+										Self.result "\nvar decl: function type, params=%u" (List.length argslist);	          
+										Hashtbl.add g_func_decls var.vname var;
+										(*for index = 0 to ((List.length argslist)-1) do
+											begin
+											let tuple = (List.nth argslist index) in
+											let (n,t,_) = tuple in
+												Self.result "param: %s\n" n;
+												Printer.pp_typ (Format.std_formatter) t;
+											end
+										done
+										;*) 
+								end
+							;
+							
 			    			Cil.DoChildrenPost(fun s ->	s)
 			    		)
 			    	| _ ->	Cil.DoChildrenPost(fun s ->	s)
@@ -605,6 +609,7 @@ end;;
 (* plugin main function *)    		
 let run () =
 	Self.result "Before embedding:\n%a" Printer.pp_file (Ast.get ());
+	
 	Self.result "Embedding HWM (Pass-1)...\n";
 	g_uhwm_pass := uhwm_pass_1;
 	Visitor.visitFramacFile (new embed_hwm_visitor) (Ast.get ()) ;
@@ -617,6 +622,7 @@ let run () =
 	Self.result "Embedding HWM (Pass-2)...\n";
 	g_uhwm_pass := uhwm_pass_2;
 	Visitor.visitFramacFile (new embed_hwm_visitor) (Ast.get ()) ;
+
 	Self.result "After embedding:\n%a" Printer.pp_file (Ast.get ());
 	Self.result "Done.\n";
 	()
