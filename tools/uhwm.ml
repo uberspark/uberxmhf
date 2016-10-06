@@ -34,12 +34,11 @@ let mkFunTyp (rt : typ) (args : (string * typ) list) : typ =
 	global variables
 	**************************************************************************
 *)
-let g_uhwm_collectlabels_for_casm_function = ref false;;
 let g_casmfunc_stmts = ((Hashtbl.create 32) : ((string,Cil_types.stmt) Hashtbl.t));;
 let g_casmfunc_to_stmthtbl = ((Hashtbl.create 32) : ((string,(string,Cil_types.stmt) Hashtbl.t)  Hashtbl.t));;
 (* let g_func_decls = ((Hashtbl.create 32) : ((string,((string * Cil_types.typ * Cil_types.attributes) list))  Hashtbl.t));; *)
 let g_func_decls = ((Hashtbl.create 32) : ((string,Cil_types.varinfo)  Hashtbl.t));;
-
+let g_uhwm_pass = ref 0;;
 
 
 
@@ -51,6 +50,8 @@ let g_func_decls = ((Hashtbl.create 32) : ((string,Cil_types.varinfo)  Hashtbl.t
 	global constants
 	**************************************************************************
 *)
+let uhwm_pass_1 = 1;;
+let uhwm_pass_2 = 2;;
 let eflags_cf = 1;;
 let eflags_zf = 0x00000040;;
 
@@ -403,55 +404,55 @@ class embed_hwm_visitor = object (self)
     			begin
 						Self.result "\n casm insn macro call: %s" var.vname;
 						
-						if ((compare "ci_label" var.vname) = 0) && 	(!g_uhwm_collectlabels_for_casm_function = true)
+						if ((compare "ci_label" var.vname) = 0) && 	(!g_uhwm_pass = uhwm_pass_1)
 						 then
 							begin
 								Self.result "\n casm insn macro call: ci_label found";
 								self#hwm_casm_function_gen_stmt_for_ci_label s var exp_lst loc
 							end
-						else if ((compare "ci_jmplabel" var.vname) = 0) && (!g_uhwm_collectlabels_for_casm_function = false) 
+						else if ((compare "ci_jmplabel" var.vname) = 0) && (!g_uhwm_pass = uhwm_pass_2) 
 						 then
 							begin
 								Self.result "\n casm insn macro call: ci_jmplabel found";
 								self#hwm_casm_function_gen_stmt_for_ci_jmplabel s var exp_lst loc
 							end
-						else if ((compare "ci_jc" var.vname) = 0) && (!g_uhwm_collectlabels_for_casm_function = false) 
+						else if ((compare "ci_jc" var.vname) = 0) && (!g_uhwm_pass = uhwm_pass_2) 
 						 then
 							begin
 								Self.result "\n casm insn macro call: ci_jc found";
 								self#hwm_casm_function_gen_stmt_for_ci_jc s var exp_lst loc
 							end
-						else if ((compare "ci_jnc" var.vname) = 0) && (!g_uhwm_collectlabels_for_casm_function = false) 
+						else if ((compare "ci_jnc" var.vname) = 0) && (!g_uhwm_pass = uhwm_pass_2) 
 						 then
 							begin
 								Self.result "\n casm insn macro call: ci_jnc found";
 								self#hwm_casm_function_gen_stmt_for_ci_jnc s var exp_lst loc
 							end
-						else if ( (compare "ci_jz" var.vname) = 0 || (compare "ci_je" var.vname) = 0) && (!g_uhwm_collectlabels_for_casm_function = false) 
+						else if ( (compare "ci_jz" var.vname) = 0 || (compare "ci_je" var.vname) = 0) && (!g_uhwm_pass = uhwm_pass_2) 
 						 then
 							begin
 								Self.result "\n casm insn macro call: ci_jz found";
 								self#hwm_casm_function_gen_stmt_for_ci_jz s var exp_lst loc
 							end
-						else if ((compare "ci_jnz" var.vname) = 0) && (!g_uhwm_collectlabels_for_casm_function = false) 
+						else if ((compare "ci_jnz" var.vname) = 0) && (!g_uhwm_pass = uhwm_pass_2) 
 						 then
 							begin
 								Self.result "\n casm insn macro call: ci_jnz found";
 								self#hwm_casm_function_gen_stmt_for_ci_jnz s var exp_lst loc
 							end
-						else if ((compare "ci_jbe" var.vname) = 0) && (!g_uhwm_collectlabels_for_casm_function = false) 
+						else if ((compare "ci_jbe" var.vname) = 0) && (!g_uhwm_pass = uhwm_pass_2) 
 						 then
 							begin
 								Self.result "\n casm insn macro call: ci_jbe found";
 								self#hwm_casm_function_gen_stmt_for_ci_jbe s var exp_lst loc
 							end
-						else if ((compare "ci_ja" var.vname) = 0) && (!g_uhwm_collectlabels_for_casm_function = false) 
+						else if ((compare "ci_ja" var.vname) = 0) && (!g_uhwm_pass = uhwm_pass_2) 
 						 then
 							begin
 								Self.result "\n casm insn macro call: ci_ja found";
 								self#hwm_casm_function_gen_stmt_for_ci_ja s var exp_lst loc
 							end
-						else if ((compare "ci_call" var.vname) = 0) && (!g_uhwm_collectlabels_for_casm_function = false) 
+						else if ((compare "ci_call" var.vname) = 0) && (!g_uhwm_pass = uhwm_pass_2) 
 						 then
 							begin
 								Self.result "\n casm insn macro call: ci_call found";
@@ -605,7 +606,7 @@ end;;
 let run () =
 	Self.result "Before embedding:\n%a" Printer.pp_file (Ast.get ());
 	Self.result "Embedding HWM (Pass-1)...\n";
-	g_uhwm_collectlabels_for_casm_function := true;
+	g_uhwm_pass := uhwm_pass_1;
 	Visitor.visitFramacFile (new embed_hwm_visitor) (Ast.get ()) ;
 	
 	(* debug *)
@@ -614,7 +615,7 @@ let run () =
 	*)
 	
 	Self.result "Embedding HWM (Pass-2)...\n";
-	g_uhwm_collectlabels_for_casm_function := false;
+	g_uhwm_pass := uhwm_pass_2;
 	Visitor.visitFramacFile (new embed_hwm_visitor) (Ast.get ()) ;
 	Self.result "After embedding:\n%a" Printer.pp_file (Ast.get ());
 	Self.result "Done.\n";
