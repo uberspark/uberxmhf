@@ -37,6 +37,13 @@ let mkFunTyp (rt : typ) (args : (string * typ) list) : typ =
 let g_uhwm_collectlabels_for_casm_function = ref false;;
 let g_casmfunc_stmts = ((Hashtbl.create 32) : ((string,Cil_types.stmt) Hashtbl.t));;
 let g_casmfunc_to_stmthtbl = ((Hashtbl.create 32) : ((string,(string,Cil_types.stmt) Hashtbl.t)  Hashtbl.t));;
+(* let g_func_decls = ((Hashtbl.create 32) : ((string,((string * Cil_types.typ * Cil_types.attributes) list))  Hashtbl.t));; *)
+let g_func_decls = ((Hashtbl.create 32) : ((string,Cil_types.varinfo)  Hashtbl.t));;
+
+
+
+
+
 
 
 (*
@@ -46,6 +53,9 @@ let g_casmfunc_to_stmthtbl = ((Hashtbl.create 32) : ((string,(string,Cil_types.s
 *)
 let eflags_cf = 1;;
 let eflags_zf = 0x00000040;;
+
+
+
   
 (* embedding hwm AST visitor *)
 class embed_hwm_visitor = object (self)
@@ -365,6 +375,27 @@ class embed_hwm_visitor = object (self)
 
 
 
+	(* ci_call CASM instruction *)
+	method private hwm_casm_function_gen_stmt_for_ci_call s var exp_lst loc = 
+    	let ci_call_exp = (List.nth exp_lst 0) in 
+	    let ci_call_string = ref "" in 
+			match ci_call_exp.enode with
+		    	| Const(CStr(param_string)) -> 
+		    		(
+		    			ci_call_string := param_string;
+		    		);
+		    	| _ -> 
+		    		(
+		    			Self.result "\n Illegal ci_call operand -- not a string constant. Abort!\n";
+		    			ignore(exit 1);
+		    		);
+		    ;	
+			let f_varinfo = Hashtbl.find g_func_decls !ci_call_string in 
+			let result_stmt = Cil.mkStmt(Block(Cil.mkBlock([]))) in 
+				Self.result "ci_call processing: function name is: %s\n" !ci_call_string;
+				result_stmt
+
+
 
 	method private hwm_process_call_stmt_for_casm_function s lval exp exp_lst loc = 
 	    match exp.enode with
@@ -419,6 +450,12 @@ class embed_hwm_visitor = object (self)
 							begin
 								Self.result "\n casm insn macro call: ci_ja found";
 								self#hwm_casm_function_gen_stmt_for_ci_ja s var exp_lst loc
+							end
+						else if ((compare "ci_call" var.vname) = 0) && (!g_uhwm_collectlabels_for_casm_function = false) 
+						 then
+							begin
+								Self.result "\n casm insn macro call: ci_call found";
+								self#hwm_casm_function_gen_stmt_for_ci_call s var exp_lst loc
 							end
 						else
 							begin
@@ -486,7 +523,8 @@ class embed_hwm_visitor = object (self)
 			    		(
 							let argslist = (Cil.argsToList args) in
 								Self.result "\n function type consistent, params=%u" (List.length argslist);	          
-								for index = 0 to ((List.length argslist)-1) do
+								Hashtbl.add g_func_decls f.svar.vname f.svar;
+								(*for index = 0 to ((List.length argslist)-1) do
 									begin
 									let tuple = (List.nth argslist index) in
 									let (n,t,_) = tuple in
@@ -494,7 +532,7 @@ class embed_hwm_visitor = object (self)
 										Printer.pp_typ (Format.std_formatter) t;
 									end
 								done
-								; 
+								;*) 
 			    		);
 			    	| _ -> 
 			    		(
@@ -539,7 +577,8 @@ class embed_hwm_visitor = object (self)
 			    		(
 							let argslist = (Cil.argsToList args) in
 								Self.result "\nvar decl: function type, params=%u" (List.length argslist);	          
-								for index = 0 to ((List.length argslist)-1) do
+								Hashtbl.add g_func_decls var.vname var;
+								(*for index = 0 to ((List.length argslist)-1) do
 									begin
 									let tuple = (List.nth argslist index) in
 									let (n,t,_) = tuple in
@@ -547,7 +586,7 @@ class embed_hwm_visitor = object (self)
 										Printer.pp_typ (Format.std_formatter) t;
 									end
 								done
-								; 
+								;*) 
 			    			Cil.DoChildrenPost(fun s ->	s)
 			    		)
 			    	| _ ->	Cil.DoChildrenPost(fun s ->	s)
