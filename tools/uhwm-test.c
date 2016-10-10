@@ -6,7 +6,7 @@ extern unsigned long long casm_funccall(unsigned int x, unsigned int y);
 extern unsigned long int xmhfhwm_cpu_gprs_esp;
 
 unsigned long long casm_funkyfunc(unsigned int x, unsigned int y){
-	ci_ret(x+y);
+	ci_ret();
 	ci_label("x");
 
 }
@@ -25,9 +25,8 @@ unsigned long long casm_funkyfunc_2(unsigned int x, unsigned int y){
 	ci_call("casm_funccall");
 	ci_call("subfunc1");
 
-	ci_ret(y);
 	ci_label("y");
-
+	ci_ret();
 }
 
 
@@ -42,6 +41,8 @@ int main (void)
 	result=casm_funccall(5, 6);
 }
 
+
+//	xmhfhwm_cpu_gprs_esp = xmhfhwm_cpu_gprs_esp + 4;
 
 //result = *((unsigned long int *)xmhfhwm_cpu_gprs_esp+4);
 

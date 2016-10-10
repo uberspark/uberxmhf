@@ -2654,6 +2654,8 @@ extern void _impl_xmhfhwm_cpu_insn_addl_ecx_eax(void);
 	fn_name( (fn_p1_type) *((u32 *)(xmhfhwm_cpu_gprs_esp+4)) , (fn_p2_type) *((u32 *)(xmhfhwm_cpu_gprs_esp+8)) ); \
 
 
+
+
 #define xmhfhwm_cpu_insn_ret() \
 	__builtin_annot("ret "); \
         xmhfhwm_cpu_gprs_eip = *(u32 *)xmhfhwm_cpu_gprs_esp; \
@@ -2672,8 +2674,6 @@ extern void _impl_xmhfhwm_cpu_insn_addl_ecx_eax(void);
 	xmhfhwm_cpu_gprs_esp += sizeof(u32); \
 	return (u64)(((u64)xmhfhwm_cpu_gprs_edx << 32) | xmhfhwm_cpu_gprs_eax); \
 
-
-
 #define xmhfhwm_cpu_insn_lret() \
 	__builtin_annot("lret "); \
         xmhfhwm_cpu_gprs_eip = *(u32 *)xmhfhwm_cpu_gprs_esp; \
@@ -2681,6 +2681,8 @@ extern void _impl_xmhfhwm_cpu_insn_addl_ecx_eax(void);
         xmhfhwm_cpu_cs_selector = *(u32 *)xmhfhwm_cpu_gprs_esp; \
 	xmhfhwm_cpu_gprs_esp += sizeof(u32); \
 	return; \
+
+
 
 
 
