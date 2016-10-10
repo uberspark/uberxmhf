@@ -22,7 +22,7 @@ unsigned long long casm_funkyfunc_2(unsigned int x, unsigned int y){
 	ci_ja("y");
 
 	ci_call("casm_funkyfunc");
-	//ci_call("casm_funccall");
+	ci_call("casm_funccall");
 	//ci_call("subfunc1");
 
 	ci_ret(y);
