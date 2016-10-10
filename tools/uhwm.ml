@@ -392,10 +392,39 @@ class embed_hwm_visitor = object (self)
 		    		);
 		    ;	
 			let f_varinfo = Hashtbl.find g_func_decls !ci_call_string in 
-			let result_stmt = Cil.mkStmt(Block(Cil.mkBlock([]))) in 
-				Self.result "ci_call processing: function name is: %s\n" !ci_call_string;
-				result_stmt
-
+			let ci_call_exp_lst = ref [] in
+			
+				Self.result "ci_call processing: function name: %s\n" f_varinfo.vname;
+				
+				match f_varinfo.vtype with
+		    		| TFun(rettype, args, isva, a) -> 
+		    			(
+							let argslist = (Cil.argsToList args) in
+								Self.result "\n    params=%u" (List.length argslist);	          
+								for index = 0 to ((List.length argslist)-1) do
+									begin
+									let tuple = (List.nth argslist index) in
+									let (n,t,_) = tuple in
+										Self.result "    param-%u: name=%s\n" (index+1) n;
+										(* Printer.pp_typ (Format.std_formatter) t; *)
+										let var_esp = Cil.makeVarinfo true false "xmhfhwm_cpu_gprs_esp" Cil.uintType in
+										let esp_ptr_exp = Cil.new_exp ~loc (CastE(TPtr(Cil.uintType,[]), (Cil.evar ~loc:loc var_esp))) in
+										let esp_off_exp = Cil.new_exp ~loc (BinOp(Mult, (Cil.integer ~loc 4), (Cil.integer ~loc (index+1)), Cil.uintType)) in 
+										let esp_addr_exp = Cil.new_exp ~loc (BinOp(PlusPI, esp_ptr_exp, esp_off_exp, TPtr(Cil.uintType,[]))) in 
+										let esp_mem_exp = Cil.new_exp ~loc (Lval(Cil.mkMem ~addr:esp_addr_exp ~off:NoOffset)) in 
+										let param_exp = Cil.new_exp ~loc (CastE(t, esp_mem_exp)) in 
+											ci_call_exp_lst := List.append !ci_call_exp_lst [param_exp];
+									end
+								done
+								; 
+			    		);
+					    
+					|_ -> ();
+				;
+				let instr = Cil_types.Call(None, Cil.evar ~loc:loc f_varinfo, !ci_call_exp_lst, loc) in
+				let result_stmt = Cil.mkStmtOneInstr (instr) in
+				(* let result_stmt = Cil.mkStmt(Block(Cil.mkBlock([]))) in *) 
+					result_stmt
 
 
 	method private hwm_process_call_stmt_for_casm_function s lval exp exp_lst loc = 
