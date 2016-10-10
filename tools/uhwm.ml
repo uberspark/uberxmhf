@@ -428,7 +428,7 @@ class embed_hwm_visitor = object (self)
 
 
 
-	(* ci_ret CASM instruction *)
+	(* ci_ret and ci_ret32 CASM instruction *)
 	method private hwm_casm_function_gen_stmt_for_ci_ret s var exp_lst loc = 
 		let var_esp = Cil.makeVarinfo true false "xmhfhwm_cpu_gprs_esp" Cil.uintType in
 		let var_eip = Cil.makeVarinfo true false "xmhfhwm_cpu_gprs_eip" Cil.uintType in
@@ -508,7 +508,7 @@ class embed_hwm_visitor = object (self)
 								Self.result "\n casm insn macro call: ci_call found";
 								self#hwm_casm_function_gen_stmt_for_ci_call s var exp_lst loc
 							end
-						else if ((compare "ci_ret" var.vname) = 0) && (!g_uhwm_pass = uhwm_pass_2) 
+						else if ((compare "ci_ret" var.vname) = 0 || (compare "ci_ret32" var.vname) = 0) && (!g_uhwm_pass = uhwm_pass_2) 
 						 then
 							begin
 								Self.result "\n casm insn macro call: ci_ret found";
