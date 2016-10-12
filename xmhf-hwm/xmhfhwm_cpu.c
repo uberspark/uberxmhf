@@ -566,12 +566,20 @@ void _impl_xmhfhwm_cpu_insn_movl_imm_esi(u32 value){
 	xmhfhwm_cpu_gprs_esi = value;
 }
 
+void _impl_xmhfhwm_cpu_insn_movl_imm_edi(u32 value){
+	xmhfhwm_cpu_gprs_edi = value;
+}
+
 void _impl_xmhfhwm_cpu_insn_movl_imm_ecx(u32 value){
 	xmhfhwm_cpu_gprs_ecx = value;
 }
 
 void _impl_xmhfhwm_cpu_insn_movl_imm_edx(u32 value){
 	xmhfhwm_cpu_gprs_edx = value;
+}
+
+void _impl_xmhfhwm_cpu_insn_movl_imm_ebx(u32 value){
+	xmhfhwm_cpu_gprs_ebx = value;
 }
 
 
