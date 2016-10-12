@@ -513,6 +513,27 @@ class embed_hwm_visitor = object (self)
 			result_stmt
 
 
+
+	(* ci_jmpuobjep CASM instruction *)
+	method private hwm_casm_function_gen_stmt_for_ci_jmpuobjep s var exp_lst loc = 
+		let void_ftyp = mkFunTyp Cil.voidType [] in
+		let vdrv_uobjep_fvname = "xmhfhwm_vdriver_uobjep" in
+		let vdrv_uobjep_fvar = Cil.findOrCreateFunc (Ast.get ()) vdrv_uobjep_fvname void_ftyp in
+		let vdrv_uobjep_instr = Cil_types.Call(None, Cil.evar ~loc:loc vdrv_uobjep_fvar, [], loc) in
+		let vdrv_uobjep_stmt = Cil.mkStmtOneInstr (vdrv_uobjep_instr) in
+		let hlt_fvname = "_impl_xmhfhwm_cpu_insn_hlt" in
+		let hlt_fvar = Cil.findOrCreateFunc (Ast.get ()) hlt_fvname void_ftyp in
+		let hlt_instr = Cil_types.Call(None, Cil.evar ~loc:loc hlt_fvar, [], loc) in
+		let hlt_stmt = Cil.mkStmtOneInstr (hlt_instr) in
+		let var_eax = Cil.makeVarinfo true false "xmhfhwm_cpu_gprs_eax" Cil.uintType in
+		let var_eip = Cil.makeVarinfo true false "xmhfhwm_cpu_gprs_eip" Cil.uintType in
+		let var_eip_lval = (Cil.var var_eip) in
+		let eip_assign_instr = Cil_types.Set(var_eip_lval, (Cil.evar ~loc:loc var_eax), loc) in
+		let eip_assign_stmt = Cil.mkStmtOneInstr (eip_assign_instr) in
+		let result_stmt = Cil.mkStmt(Block(Cil.mkBlock([eip_assign_stmt; vdrv_uobjep_stmt; hlt_stmt]))) in
+			result_stmt
+
+
 	method private hwm_process_call_stmt_for_casm_function s lval exp exp_lst loc = 
 	    match exp.enode with
 		    | Lval(Var(var), _) ->
@@ -608,6 +629,12 @@ class embed_hwm_visitor = object (self)
 							begin
 								Self.result "\n casm insn macro call: ci_jmpsentinel found";
 								self#hwm_casm_function_gen_stmt_for_ci_jmpsentinel s var exp_lst loc
+							end
+						else if ((compare "ci_jmpuobjep" var.vname) = 0) && (!g_uhwm_pass = uhwm_pass_2) 
+						 then
+							begin
+								Self.result "\n casm insn macro call: ci_jmpuobjep found";
+								self#hwm_casm_function_gen_stmt_for_ci_jmpuobjep s var exp_lst loc
 							end
 						else
 							begin
