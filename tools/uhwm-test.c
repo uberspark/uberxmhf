@@ -26,10 +26,14 @@ unsigned long long casm_funkyfunc_2(unsigned int x, unsigned int y){
 	ci_call("subfunc1");
 
 	ci_label("y");
+
+	ci_jmpapentry();
+
+
 	//ci_ret();
 	//ci_ret32();
-	//ci_ret64();
-	ci_lret();
+	//ci_lret();
+	ci_ret64();
 }
 
 
