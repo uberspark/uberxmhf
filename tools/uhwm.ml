@@ -534,6 +534,35 @@ class embed_hwm_visitor = object (self)
 			result_stmt
 
 
+
+	(* ci_jmpvuobretaddr CASM instruction *)
+	method private hwm_casm_function_gen_stmt_for_ci_jmpvuobjretaddr s var exp_lst loc = 
+		let void_ftyp = mkFunTyp Cil.voidType [] in
+		let vdrv_vuobjretaddr_fvname = "xmhfhwm_vdriver_vuobjretaddr" in
+		let vdrv_vuobjretaddr_fvar = Cil.findOrCreateFunc (Ast.get ()) vdrv_vuobjretaddr_fvname void_ftyp in
+		let vdrv_vuobjretaddr_instr = Cil_types.Call(None, Cil.evar ~loc:loc vdrv_vuobjretaddr_fvar, [], loc) in
+		let vdrv_vuobjretaddr_stmt = Cil.mkStmtOneInstr (vdrv_vuobjretaddr_instr) in
+		let hlt_fvname = "_impl_xmhfhwm_cpu_insn_hlt" in
+		let hlt_fvar = Cil.findOrCreateFunc (Ast.get ()) hlt_fvname void_ftyp in
+		let hlt_instr = Cil_types.Call(None, Cil.evar ~loc:loc hlt_fvar, [], loc) in
+		let hlt_stmt = Cil.mkStmtOneInstr (hlt_instr) in
+		let var_esp = Cil.makeVarinfo true false "xmhfhwm_cpu_gprs_esp" Cil.uintType in
+		let var_eip = Cil.makeVarinfo true false "xmhfhwm_cpu_gprs_eip" Cil.uintType in
+		let exp_var_esp = (Cil.evar ~loc:loc var_esp) in 
+		let exp_var_eip = (Cil.evar ~loc:loc var_eip) in 
+		let exp_eip_valueaddr = Cil.new_exp ~loc (CastE(TPtr(Cil.uintType,[]), exp_var_esp)) in
+		let exp_eip_valuemem = Cil.new_exp ~loc (Lval(Cil.mkMem ~addr:exp_eip_valueaddr ~off:NoOffset)) in
+		let var_eip_lval = (Cil.var var_eip) in
+		let eip_assign_instr = Cil_types.Set(var_eip_lval, exp_eip_valuemem, loc) in
+		let eip_assign_stmt = Cil.mkStmtOneInstr (eip_assign_instr) in
+		let var_esp_increxp = Cil.new_exp ~loc (BinOp(PlusPI, exp_var_esp, (Cil.integer ~loc 4), Cil.uintType)) in		
+		let var_esp_lval = (Cil.var var_esp) in
+		let var_esp_incrstmt_instr = Cil_types.Set(var_esp_lval, var_esp_increxp, loc) in
+		let var_esp_incrstmt = Cil.mkStmtOneInstr (var_esp_incrstmt_instr) in
+		let result_stmt = Cil.mkStmt(Block(Cil.mkBlock([eip_assign_stmt; var_esp_incrstmt; vdrv_vuobjretaddr_stmt; hlt_stmt]))) in
+			result_stmt
+
+
 	method private hwm_process_call_stmt_for_casm_function s lval exp exp_lst loc = 
 	    match exp.enode with
 		    | Lval(Var(var), _) ->
@@ -635,6 +664,12 @@ class embed_hwm_visitor = object (self)
 							begin
 								Self.result "\n casm insn macro call: ci_jmpuobjep found";
 								self#hwm_casm_function_gen_stmt_for_ci_jmpuobjep s var exp_lst loc
+							end
+						else if ((compare "ci_jmpvuobjretaddr" var.vname) = 0) && (!g_uhwm_pass = uhwm_pass_2) 
+						 then
+							begin
+								Self.result "\n casm insn macro call: ci_jmpvuobjretaddr found";
+								self#hwm_casm_function_gen_stmt_for_ci_jmpvuobjretaddr s var exp_lst loc
 							end
 						else
 							begin
