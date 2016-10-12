@@ -566,14 +566,15 @@ class embed_hwm_visitor = object (self)
 						begin
 							hwm_stmt_list := self#hwm_gen_stack_push_param_stmts_for_casm_function exp_lst loc;
             	            hwm_stmt_list := List.append !hwm_stmt_list [self#hwm_gen_push_eip loc];
-            	            hwm_stmt_list := List.append !hwm_stmt_list [self#hwm_gen_call_stmt_for_function var.vname (Cil.unrollTypeDeep var.vtype) exp_lst loc];
+            	            (*hwm_stmt_list := List.append !hwm_stmt_list [self#hwm_gen_call_stmt_for_function var.vname (Cil.unrollTypeDeep var.vtype) exp_lst loc];*)
+            	            hwm_stmt_list := List.append !hwm_stmt_list [s];
 							hwm_stmt_list := List.append !hwm_stmt_list [self#hwm_gen_stack_pop_params_stmt_for_casm_function exp_lst loc];
 							
-							ignore(
+							(*ignore(
 								match lval with
   									| None -> hwm_stmt_list := !hwm_stmt_list;
   									| Some lv -> hwm_stmt_list := List.append !hwm_stmt_list [(self#hwm_gen_return_result lv loc)];
-							);
+							);*)
 												
 							(* List.iter (Printer.pp_stmt (Format.std_formatter)) !hwm_stmt_list; *)
 							
