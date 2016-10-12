@@ -448,6 +448,32 @@ class embed_hwm_visitor = object (self)
 			result_stmt
 
 
+
+	(* ci_ret64 CASM instruction *)
+	method private hwm_casm_function_gen_stmt_for_ci_ret64 s var exp_lst loc = 
+		let var_esp = Cil.makeVarinfo true false "xmhfhwm_cpu_gprs_esp" Cil.uintType in
+		let var_eip = Cil.makeVarinfo true false "xmhfhwm_cpu_gprs_eip" Cil.uintType in
+		let exp_var_esp = (Cil.evar ~loc:loc var_esp) in 
+		let exp_var_eip = (Cil.evar ~loc:loc var_eip) in 
+		let exp_eip_valueaddr = Cil.new_exp ~loc (CastE(TPtr(Cil.uintType,[]), exp_var_esp)) in
+		let exp_eip_valuemem = Cil.new_exp ~loc (Lval(Cil.mkMem ~addr:exp_eip_valueaddr ~off:NoOffset)) in
+		let var_eip_lval = (Cil.var var_eip) in
+		let eip_assign_instr = Cil_types.Set(var_eip_lval, exp_eip_valuemem, loc) in
+		let eip_assign_stmt = Cil.mkStmtOneInstr (eip_assign_instr) in
+		let var_esp_increxp = Cil.new_exp ~loc (BinOp(PlusPI, exp_var_esp, (Cil.integer ~loc 4), Cil.uintType)) in		
+		let var_esp_lval = (Cil.var var_esp) in
+		let var_esp_incrstmt_instr = Cil_types.Set(var_esp_lval, var_esp_increxp, loc) in
+		let var_esp_incrstmt = Cil.mkStmtOneInstr (var_esp_incrstmt_instr) in
+		let var_edx = Cil.makeVarinfo true false "xmhfhwm_cpu_gprs_edx" Cil.uintType in
+		let var_eax = Cil.makeVarinfo true false "xmhfhwm_cpu_gprs_eax" Cil.uintType in
+		let exp1 = Cil.new_exp ~loc (BinOp(Shiftlt, (Cil.evar ~loc:loc var_edx), (Cil.integer ~loc 32), (TInt(IULongLong,[])))) in
+		let exp2 = Cil.new_exp ~loc (CastE(TInt(IULongLong,[]), exp1)) in
+		let exp3 = Cil.new_exp ~loc (BinOp(BOr, exp2 ,(Cil.evar ~loc:loc var_eax), (TInt(IULongLong,[])))) in
+		let ret_stmt = Cil.mkStmt(Cil_types.Return((Some exp3), loc)) in
+		let result_stmt = Cil.mkStmt(Block(Cil.mkBlock([eip_assign_stmt; var_esp_incrstmt; ret_stmt]))) in
+			result_stmt
+
+
 	method private hwm_process_call_stmt_for_casm_function s lval exp exp_lst loc = 
 	    match exp.enode with
 		    | Lval(Var(var), _) ->
@@ -513,6 +539,12 @@ class embed_hwm_visitor = object (self)
 							begin
 								Self.result "\n casm insn macro call: ci_ret found";
 								self#hwm_casm_function_gen_stmt_for_ci_ret s var exp_lst loc
+							end
+						else if ((compare "ci_ret64" var.vname) = 0) && (!g_uhwm_pass = uhwm_pass_2) 
+						 then
+							begin
+								Self.result "\n casm insn macro call: ci_ret64 found";
+								self#hwm_casm_function_gen_stmt_for_ci_ret64 s var exp_lst loc
 							end
 						else
 							begin
