@@ -28,7 +28,8 @@ unsigned long long casm_funkyfunc_2(unsigned int x, unsigned int y){
 	ci_label("y");
 	//ci_ret();
 	//ci_ret32();
-	ci_ret64();
+	//ci_ret64();
+	ci_lret();
 }
 
 
