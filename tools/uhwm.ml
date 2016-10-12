@@ -563,6 +563,36 @@ class embed_hwm_visitor = object (self)
 			result_stmt
 
 
+
+	(* ci_jmpuuobjretaddr CASM instruction *)
+	method private hwm_casm_function_gen_stmt_for_ci_jmpuuobjretaddr s var exp_lst loc = 
+		let void_ftyp = mkFunTyp Cil.voidType [] in
+		let vdrv_uuobjretaddr_fvname = "xmhfhwm_vdriver_uuobjretaddr" in
+		let vdrv_uuobjretaddr_fvar = Cil.findOrCreateFunc (Ast.get ()) vdrv_uuobjretaddr_fvname void_ftyp in
+		let vdrv_uuobjretaddr_instr = Cil_types.Call(None, Cil.evar ~loc:loc vdrv_uuobjretaddr_fvar, [], loc) in
+		let vdrv_uuobjretaddr_stmt = Cil.mkStmtOneInstr (vdrv_uuobjretaddr_instr) in
+		let hlt_fvname = "_impl_xmhfhwm_cpu_insn_hlt" in
+		let hlt_fvar = Cil.findOrCreateFunc (Ast.get ()) hlt_fvname void_ftyp in
+		let hlt_instr = Cil_types.Call(None, Cil.evar ~loc:loc hlt_fvar, [], loc) in
+		let hlt_stmt = Cil.mkStmtOneInstr (hlt_instr) in
+		let var_esp = Cil.makeVarinfo true false "xmhfhwm_cpu_gprs_esp" Cil.uintType in
+		let var_eip = Cil.makeVarinfo true false "xmhfhwm_cpu_gprs_eip" Cil.uintType in
+		let var_ecx = Cil.makeVarinfo true false "xmhfhwm_cpu_gprs_ecx" Cil.uintType in
+		let var_edx = Cil.makeVarinfo true false "xmhfhwm_cpu_gprs_edx" Cil.uintType in
+		let exp_var_esp = (Cil.evar ~loc:loc var_esp) in 
+		let exp_var_eip = (Cil.evar ~loc:loc var_eip) in 
+		let exp_var_ecx = (Cil.evar ~loc:loc var_ecx) in 
+		let exp_var_edx = (Cil.evar ~loc:loc var_edx) in 
+		let var_eip_lval = (Cil.var var_eip) in
+		let var_esp_lval = (Cil.var var_esp) in
+		let eip_assign_instr = Cil_types.Set(var_eip_lval, exp_var_edx, loc) in
+		let eip_assign_stmt = Cil.mkStmtOneInstr (eip_assign_instr) in
+		let esp_assign_instr = Cil_types.Set(var_esp_lval, exp_var_ecx, loc) in
+		let esp_assign_stmt = Cil.mkStmtOneInstr (esp_assign_instr) in
+		let result_stmt = Cil.mkStmt(Block(Cil.mkBlock([eip_assign_stmt; esp_assign_stmt; vdrv_uuobjretaddr_stmt; hlt_stmt]))) in
+			result_stmt
+
+
 	method private hwm_process_call_stmt_for_casm_function s lval exp exp_lst loc = 
 	    match exp.enode with
 		    | Lval(Var(var), _) ->
@@ -670,6 +700,12 @@ class embed_hwm_visitor = object (self)
 							begin
 								Self.result "\n casm insn macro call: ci_jmpvuobjretaddr found";
 								self#hwm_casm_function_gen_stmt_for_ci_jmpvuobjretaddr s var exp_lst loc
+							end
+						else if ((compare "ci_jmpuuobjretaddr" var.vname) = 0) && (!g_uhwm_pass = uhwm_pass_2) 
+						 then
+							begin
+								Self.result "\n casm insn macro call: ci_jmpuuobjretaddr found";
+								self#hwm_casm_function_gen_stmt_for_ci_jmpuuobjretaddr s var exp_lst loc
 							end
 						else
 							begin

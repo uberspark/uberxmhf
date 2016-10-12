@@ -31,7 +31,9 @@ unsigned long long casm_funkyfunc_2(unsigned int x, unsigned int y){
 	//ci_jmpsmpcommon();
 	//ci_jmpsentinel();
 	//ci_jmpuobjep();
-	ci_jmpvuobjretaddr();
+	//ci_jmpvuobjretaddr();
+	ci_jmpuuobjretaddr();
+
 
 
 	//ci_ret();
