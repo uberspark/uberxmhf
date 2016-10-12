@@ -2755,36 +2755,39 @@ extern void _impl_xmhfhwm_cpu_insn_addl_ecx_eax(void);
 	__builtin_annot("movl $"#x", %eax"); \
 	_impl_xmhfhwm_cpu_insn_movl_imm_eax(x); \
 
-#define xmhfhwm_cpu_insn_movl_imm_eax(x) _xmhfhwm_cpu_insn_movl_imm_eax(x)
+#define xmhfhwm_cpu_insn_movl_imm_eax(x) \
+	_xmhfhwm_cpu_insn_movl_imm_eax(x)
 
 #define _xmhfhwm_cpu_insn_movl_imm_esp(x) \
 	__builtin_annot("movl $"#x", %esp"); \
 	_impl_xmhfhwm_cpu_insn_movl_imm_esp(x); \
 
-#define xmhfhwm_cpu_insn_movl_imm_esp(x) _xmhfhwm_cpu_insn_movl_imm_esp(x)
-
+#define xmhfhwm_cpu_insn_movl_imm_esp(x) \
+	_xmhfhwm_cpu_insn_movl_imm_esp(x)
 
 #define _xmhfhwm_cpu_insn_movl_imm_esi(x) \
 	__builtin_annot("movl $"#x", %esi"); \
 	_impl_xmhfhwm_cpu_insn_movl_imm_esi(x); \
 
-#define xmhfhwm_cpu_insn_movl_imm_esi(x) _xmhfhwm_cpu_insn_movl_imm_esi(x)
+#define xmhfhwm_cpu_insn_movl_imm_esi(x) \
+	_xmhfhwm_cpu_insn_movl_imm_esi(x)
 
-#define _xmhfhwm_cpu_insn_movl_imm_ebx(x) __builtin_annot("movl $"#x", %ebx");
-#define xmhfhwm_cpu_insn_movl_imm_ebx(x) _xmhfhwm_cpu_insn_movl_imm_ebx(x)
+#define _xmhfhwm_cpu_insn_movl_imm_ebx(x) \
+	__builtin_annot("movl $"#x", %ebx");
+
+#define xmhfhwm_cpu_insn_movl_imm_ebx(x) \
+		_xmhfhwm_cpu_insn_movl_imm_ebx(x)
 
 #define _xmhfhwm_cpu_insn_movl_imm_ecx(x) \
 	__builtin_annot("movl $"#x", %ecx"); \
 	_impl_xmhfhwm_cpu_insn_movl_imm_ecx(x); \
 
-
-#define xmhfhwm_cpu_insn_movl_imm_ecx(x) _xmhfhwm_cpu_insn_movl_imm_ecx(x)
-
+#define xmhfhwm_cpu_insn_movl_imm_ecx(x) \
+	_xmhfhwm_cpu_insn_movl_imm_ecx(x)
 
 #define _xmhfhwm_cpu_insn_movl_imm_edx(x) \
 	__builtin_annot("movl $"#x", %edx"); \
 	_impl_xmhfhwm_cpu_insn_movl_imm_edx(x); \
-
 
 #define xmhfhwm_cpu_insn_movl_imm_edx(x) _xmhfhwm_cpu_insn_movl_imm_edx(x)
 
@@ -3443,12 +3446,12 @@ extern void _impl_xmhfhwm_cpu_insn_addl_ecx_eax(void);
 	__builtin_annot("iretl "); \
 	_impl_xmhfhwm_cpu_insn_iretl();
 
-#define xmhfhwm_cpu_insn_sysexit() \
-	__builtin_annot("sysexit "); \
-	xmhfhwm_cpu_gprs_eip = xmhfhwm_cpu_gprs_edx; \
-	xmhfhwm_cpu_gprs_esp = xmhfhwm_cpu_gprs_ecx; \
-	xmhfhwm_vdriver_slabep(); \
-	_impl_xmhfhwm_cpu_insn_hlt(); \
+//#define xmhfhwm_cpu_insn_sysexit() \
+//	__builtin_annot("sysexit "); \
+//	xmhfhwm_cpu_gprs_eip = xmhfhwm_cpu_gprs_edx; \
+//	xmhfhwm_cpu_gprs_esp = xmhfhwm_cpu_gprs_ecx; \
+//	xmhfhwm_vdriver_slabep(); \
+//	_impl_xmhfhwm_cpu_insn_hlt(); \
 
 #define xmhfhwm_cpu_insn_sysenter() __builtin_annot("sysenter ");
 

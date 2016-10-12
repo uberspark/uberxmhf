@@ -60,8 +60,9 @@ CASM_FUNCDEF(void, gs_exit_callv2uvstub,
 {
     xmhfhwm_cpu_insn_movl_mesp_edx(0x4);    //edx = entry_point
     xmhfhwm_cpu_insn_movl_mesp_ecx(0x8);    //ecx = callee_stack_frame
-    xmhfhwm_cpu_insn_sysexit();             //sysexit to ring-3
-    xmhfhwm_cpu_insn_hlt();
+    xmhfhwm_cpu_insn_jmpuhslabretaddr();
+    //xmhfhwm_cpu_insn_sysexit();             //sysexit to ring-3
+    //xmhfhwm_cpu_insn_hlt();
 
     //xmhfhwm_cpu_insn_movl_mesp_eax(0x4);
     //xmhfhwm_cpu_insn_movl_mesp_edx(0x8);
