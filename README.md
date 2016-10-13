@@ -121,7 +121,7 @@ you choose.
 
 ## Verfying and Building uberXMHF (uXMHF)
 
-Assuming you are in the root-directory of your local git repository (where this README.md resides):
+Assuming you are in the top-level directory of the UberSpark source-tree (where this README.md resides):
 
 1.	Prepare for verification
    
