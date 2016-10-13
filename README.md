@@ -43,6 +43,12 @@ Amit Vasudevan (amitvasudevan@acm.org)
 
 ## Software requirements and dependencies
 
+For the remainder of this section we assume your are working in: `/home/<home-dir>/<work-dir>`
+
+Replace `<home-dir>` with your home-directory name and `<work-dir>` with any working directory 
+you choose.
+
+
 1.	Ubuntu 14.04 LTS 64-bit for development and verification (available [here](http://releases.ubuntu.com/14.04/)).
    	You will need to install the following packages after doing an update:
    	
