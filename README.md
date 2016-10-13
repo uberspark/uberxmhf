@@ -61,7 +61,7 @@ Amit Vasudevan (amitvasudevan@acm.org)
 	`sudo make PREFIX=/usr/local install`
 	`cd ..`
 	
-3. Compcert (version 2.4-master)
+3.	Compcert (version 2.4-master)
 
 	`git clone https://github.com/AbsInt/CompCert.git compcert-git`
 	`cd compcert-git`
@@ -71,8 +71,21 @@ Amit Vasudevan (amitvasudevan@acm.org)
 	`sudo make install`
 	`cd ..`
 
-* Frama-C -- version code-named "Sodium" was used for the release (available [here](http://frama-c.com/download_sodium.html)). You must also install CVC3, Alt-Ergo and Z3 as backend theorem provers. Take a look at the WP manual (available [here](http://frama-c.com/download/wp-manual-Sodium-20150201.pdf)) for more information on installing the theorem provers.
-* gcc and binutils -- do a `sudo apt-get install gcc binutils` to install the latest versions
+4.	Frama-C (version Sodium-20150201)
+
+	`wget http://frama-c.com/download/frama-c-Sodium-20150201.tar.gz`
+	`tar -xvzf frama-c-Sodium-20150201.tar.gz`
+	`cd frama-c-Sodium-20150201`
+	`./configure`
+	`make`
+	`sudo make install`
+	`cd ..`
+	
+ 	You must also install CVC3, Alt-Ergo and Z3 as backend theorem provers. The WP Frama-C plugin manual
+ 	(available [here](http://frama-c.com/download/wp-manual-Sodium-20150201.pdf)) contains a chapter on
+ 	installing the theorem provers.
+
+
 
 ## Verfying and Building uberXMHF (uXMHF)
 
