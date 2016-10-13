@@ -45,7 +45,7 @@ Amit Vasudevan (amitvasudevan@acm.org)
 * UberSpark: Enforcing Verifiable Object Abstractions for Automated Compositional Security Analysis of a Hypervisor. Amit Vasudevan, Sagar Chaki, Petros Maniatis, Limin Jia, Anupam Datta. CMU CyLab Technical Report CMU-CyLab-16-003. June 2016. [[pdf](http://hypcode.org/tr_CMUCyLab16003.pdf)]
 
 
-## Software requirements and dependencies
+## Software Requirements and Dependencies
 
 For the remainder of this section we assume your are working in: `/home/<home-dir>/<work-dir>`
 
