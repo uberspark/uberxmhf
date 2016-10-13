@@ -1,5 +1,7 @@
 # UberSpark: Enforcing Verifiable Object Abstractions for Automated Compositional Security Analysis of a Hypervisor
 
+
+
 ## Introduction
 UberSpark (uSpark) is an innovative architecture for
 compositional verification of security properties of extensible
@@ -30,8 +32,10 @@ and several of its extensions, and demonstrating only minor
 performance overhead with low verification costs.
 
 
+
 ## Contact and Maintainer
 Amit Vasudevan (amitvasudevan@acm.org)
+
 
 
 ## Related Publications
@@ -53,38 +57,60 @@ you choose.
    	You will need to install the following packages after doing an update:
    	
    	`sudo apt-get update`
+
    	`sudo apt-get install git gcc binutils autoconf` 
+
    	`sudo apt-get install lib32z1 lib32ncurses5 lib32bz2-1.0 gcc-multilib`
+
 	`sudo apt-get install ocaml ocaml-native-compilers coq`
    	
 
 2.	Menhir Parser (version 20140422)
 
 	`wget http://gallium.inria.fr/~fpottier/menhir/menhir-20140422.tar.gz`
+
 	`tar -xvzf menhir-20140422.tar.gz`
+
 	`cd menhir-20140422`
+
 	`sudo make PREFIX=/usr/local all`
+
 	`sudo make PREFIX=/usr/local install`
+
 	`cd ..`
 	
+
 3.	Compcert (version 2.4-master)
 
 	`git clone https://github.com/AbsInt/CompCert.git compcert-git`
+
 	`cd compcert-git`
+
 	`git checkout -b compcert 70b3b1cb`
+
 	`./configure ia32-linux`
+
 	`make all`
+
 	`sudo make install`
+
 	`cd ..`
+
 
 4.	Frama-C (version Sodium-20150201)
 
 	`wget http://frama-c.com/download/frama-c-Sodium-20150201.tar.gz`
+
 	`tar -xvzf frama-c-Sodium-20150201.tar.gz`
+
 	`cd frama-c-Sodium-20150201`
+
 	`./configure`
+
 	`make`
+
 	`sudo make install`
+
 	`cd ..`
 	
  	You must also install CVC3, Alt-Ergo and Z3 as backend theorem provers. The WP Frama-C plugin manual
