@@ -184,3 +184,12 @@ Follow the installation instructions for XMHF (available [here](http://xmhf.sour
 ##Debugging uXMHF
 
 Refer to the debugging section in the original XMHF documentation (available [here](http://xmhf.sourceforge.net/doc/xmhf/doc/debugging-xmhf.md.html)).
+
+
+
+## Releases and Changelog
+
+* Version 1.0 ("cliff-jumper")
+	* Initial academic prototype release
+
+
