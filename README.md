@@ -29,15 +29,10 @@ existing open-source commodity x86 micro-hypervisor, XMHF (available [here](http
 and several of its extensions, and demonstrating only minor
 performance overhead with low verification costs.
 
-## Download
-Below you will find our first (academic prototype) release of uSpark and uberXMHF (uXMHF)
--- code-named "cliff-jumper" -- as a gzipped-tarball. A github code repository is coming
-soon! 
-
-[UberSpark Release 1.0 ("cliff-jumper") ](http://hypcode.org/uberspark-1.0-cliff-jumper.tar.gz)
 
 ## Contact and Maintainer
 Amit Vasudevan (amitvasudevan@acm.org)
+
 
 ## Related Publications
 
@@ -47,7 +42,15 @@ Amit Vasudevan (amitvasudevan@acm.org)
 
 
 ## Software requirements and dependencies
-* Ubuntu 14.04 LTS 64-bit for development and verification (available [here](http://releases.ubuntu.com/14.04/))
+1.	Ubuntu 14.04 LTS 64-bit for development and verification (available [here](http://releases.ubuntu.com/14.04/)).
+   	You will need to install the following packages after doing an update:
+   	
+   	`sudo apt-get update`
+   	`sudo apt-get install gcc binutils autoconf` 
+   	`sudo apt-get install lib32z1 lib32ncurses5 lib32bz2-1.0 gcc-multilib`
+	`sudo apt-get install ocaml ocaml-native-compilers coq`
+   	
+
 * Compcert -- version 2.4 was used for the release (available [here](http://compcert.inria.fr/release/compcert-2.4.tgz))
 * Frama-C -- version code-named "Sodium" was used for the release (available [here](http://frama-c.com/download_sodium.html)). You must also install CVC3, Alt-Ergo and Z3 as backend theorem provers. Take a look at the WP manual (available [here](http://frama-c.com/download/wp-manual-Sodium-20150201.pdf)) for more information on installing the theorem provers.
 * gcc and binutils -- do a `sudo apt-get install gcc binutils` to install the latest versions
