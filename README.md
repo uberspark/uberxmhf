@@ -47,7 +47,7 @@ Amit Vasudevan (amitvasudevan@acm.org)
    	You will need to install the following packages after doing an update:
    	
    	`sudo apt-get update`
-   	`sudo apt-get install gcc binutils autoconf` 
+   	`sudo apt-get install git gcc binutils autoconf` 
    	`sudo apt-get install lib32z1 lib32ncurses5 lib32bz2-1.0 gcc-multilib`
 	`sudo apt-get install ocaml ocaml-native-compilers coq`
    	
