@@ -166,7 +166,6 @@ verify_compcheck: tools _slabs_preprocessmanifests
 verif_gensentinelstubs: 
 		@echo Proceeding to generate sentinel stubs for blueprint conformance...
 		mkdir -p $(XMHF_OBJDIR)/_verif_bp
-		#cd $(XMHF_DIR) && $(XMHF_DIR)/tools/ubp.pl SLABS NOMEMOFFSETS $(XMHF_OBJDIR)/_verif_bp/ $(XMHF_CONFIG_MAX_INCLDEVLIST_ENTRIES) $(XMHF_CONFIG_MAX_EXCLDEVLIST_ENTRIES) $(XMHF_CONFIG_MAX_MEMOFFSET_ENTRIES)
 		cd $(XMHF_DIR) && frama-c -load-module $(XMHF_DIR)/tools/Ubp.o -umf-uobjlist $(XMHF_DIR)/SLABS -umf-outdirsentinelstubs $(XMHF_OBJDIR)/_verif_bp/  -umf-maxincldevlistentries $(XMHF_CONFIG_MAX_INCLDEVLIST_ENTRIES) -umf-maxexcldevlistentries $(XMHF_CONFIG_MAX_EXCLDEVLIST_ENTRIES) -umf-maxmemoffsetentries $(XMHF_CONFIG_MAX_MEMOFFSET_ENTRIES)
 		@echo sentinel stubs generated
 
@@ -199,7 +198,7 @@ xmhfbin: $(XMHFLIBS_SRC) $(XMHFCORE_SRC)
 	@echo Linking XMHF binary...
 	cd $(XMHF_OBJDIR) && cp -f xmhf.lscript xmhf.lscript.c
 	cd $(XMHF_OBJDIR) && $(CC) $(CFLAGS) -D__ASSEMBLY__ -P -E xmhf.lscript.c -o xmhf.lds
-	cd $(XMHF_OBJDIR) && $(LD) --oformat elf32-i386 -T xmhf.lds -o xmhf.exe -L$(CCERT_LIB) -L$(CCLIB)/lib/linux -L$(XMHF_LIBS_OBJECTS_DIR) -lxmhfc -lclang_rt.full-i386 -lcompcert
+	cd $(XMHF_OBJDIR) && $(LD) --oformat elf32-i386 -T xmhf.lds -o xmhf.exe -L$(CCERT_LIB) -L$(CCLIB)/lib/linux -L$(XMHF_LIBS_OBJECTS_DIR) -lxmhfc -lcompcert
 	cd $(XMHF_OBJDIR) && $(OBJCOPY) --output-format=binary xmhf.exe xmhf.bin
 	@echo XMHF link SUCCESS
 
