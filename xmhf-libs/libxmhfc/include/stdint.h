@@ -327,8 +327,8 @@ typedef __int64_t       quad_t;
 typedef quad_t *        qaddr_t;
 
 typedef char *          caddr_t;        /* core address */
-typedef __const char *  c_caddr_t;      /* core address, pointer to const */
-typedef __volatile char *v_caddr_t;     /* core address, pointer to volatile */
+typedef const char *  c_caddr_t;      /* core address, pointer to const */
+typedef volatile char *v_caddr_t;     /* core address, pointer to volatile */
 
 
 
