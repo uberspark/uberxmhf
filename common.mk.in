@@ -130,12 +130,15 @@ export XMHF_CONFIG_DEBUG_SERIAL_MAXCPUS	:= 8
 ######
 
 #----- build information (version)
-export XMHF_BUILD_VERSION := $(shell git describe --abbrev=0)
+#export XMHF_BUILD_VERSION := $(shell git describe --abbrev=0)
+export XMHF_BUILD_VERSION := 1.0
 
 #----- build information (revision)
-export XMHF_BUILD_REVISION_BRANCH := $(shell git rev-parse --abbrev-ref HEAD)
-export XMHF_BUILD_REVISION_COMMIT := $(shell git log --pretty=format:'%H' -n 1)
-export XMHF_BUILD_REVISION := $(XMHF_BUILD_REVISION_BRANCH)-$(XMHF_BUILD_REVISION_COMMIT)
+#export XMHF_BUILD_REVISION_BRANCH := $(shell git rev-parse --abbrev-ref HEAD)
+#export XMHF_BUILD_REVISION_COMMIT := $(shell git log --pretty=format:'%H' -n 1)
+#export XMHF_BUILD_REVISION := $(XMHF_BUILD_REVISION_BRANCH)-$(XMHF_BUILD_REVISION_COMMIT)
+export XMHF_BUILD_REVISION := cliff-jumper
+
 
 #-----basic flags for compiling and assembling
 

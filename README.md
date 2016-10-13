@@ -1,5 +1,7 @@
 # UberSpark: Enforcing Verifiable Object Abstractions for Automated Compositional Security Analysis of a Hypervisor
 
+
+
 ## Introduction
 UberSpark (uSpark) is an innovative architecture for
 compositional verification of security properties of extensible
@@ -29,15 +31,12 @@ existing open-source commodity x86 micro-hypervisor, XMHF (available [here](http
 and several of its extensions, and demonstrating only minor
 performance overhead with low verification costs.
 
-## Download
-Below you will find our first (academic prototype) release of uSpark and uberXMHF (uXMHF)
--- code-named "cliff-jumper" -- as a gzipped-tarball. A github code repository is coming
-soon! 
 
-[UberSpark Release 1.0 ("cliff-jumper") ](http://hypcode.org/uberspark-1.0-cliff-jumper.tar.gz)
 
 ## Contact and Maintainer
 Amit Vasudevan (amitvasudevan@acm.org)
+
+
 
 ## Related Publications
 
@@ -46,55 +45,124 @@ Amit Vasudevan (amitvasudevan@acm.org)
 * UberSpark: Enforcing Verifiable Object Abstractions for Automated Compositional Security Analysis of a Hypervisor. Amit Vasudevan, Sagar Chaki, Petros Maniatis, Limin Jia, Anupam Datta. CMU CyLab Technical Report CMU-CyLab-16-003. June 2016. [[pdf](http://hypcode.org/tr_CMUCyLab16003.pdf)]
 
 
-## Software requirements and dependencies
-* Ubuntu 14.04 LTS 64-bit for development and verification (available [here](http://releases.ubuntu.com/14.04/))
-* Compcert -- version 2.4 was used for the release (available [here](http://compcert.inria.fr/release/compcert-2.4.tgz))
-* Frama-C -- version code-named "Sodium" was used for the release (available [here](http://frama-c.com/download_sodium.html)). You must also install CVC3, Alt-Ergo and Z3 as backend theorem provers. Take a look at the WP manual (available [here](http://frama-c.com/download/wp-manual-Sodium-20150201.pdf)) for more information on installing the theorem provers.
-* gcc and binutils -- do a `sudo apt-get install gcc binutils` to install the latest versions
+## Software Requirements and Dependencies
+
+For the remainder of this section we assume your are working in: `/home/<home-dir>/<work-dir>`
+
+Replace `<home-dir>` with your home-directory name and `<work-dir>` with any working directory 
+you choose.
+
+
+1.	Ubuntu 14.04 LTS 64-bit for development and verification (available [here](http://releases.ubuntu.com/14.04/)).
+   	You will need to install the following packages after doing an update:
+   	
+   	`sudo apt-get update`
+
+   	`sudo apt-get install git gcc binutils autoconf` 
+
+   	`sudo apt-get install lib32z1 lib32ncurses5 lib32bz2-1.0 gcc-multilib`
+
+	`sudo apt-get install ocaml ocaml-native-compilers coq`
+   	
+
+2.	Menhir Parser (version 20140422)
+
+	`wget http://gallium.inria.fr/~fpottier/menhir/menhir-20140422.tar.gz`
+
+	`tar -xvzf menhir-20140422.tar.gz`
+
+	`cd menhir-20140422`
+
+	`sudo make PREFIX=/usr/local all`
+
+	`sudo make PREFIX=/usr/local install`
+
+	`cd ..`
+	
+
+3.	Compcert (version 2.4-master)
+
+	`git clone https://github.com/AbsInt/CompCert.git compcert-git`
+
+	`cd compcert-git`
+
+	`git checkout -b compcert 70b3b1cb`
+
+	`./configure ia32-linux`
+
+	`make all`
+
+	`sudo make install`
+
+	`cd ..`
+
+
+4.	Frama-C (version Sodium-20150201)
+
+	`wget http://frama-c.com/download/frama-c-Sodium-20150201.tar.gz`
+
+	`tar -xvzf frama-c-Sodium-20150201.tar.gz`
+
+	`cd frama-c-Sodium-20150201`
+
+	`./configure`
+
+	`make`
+
+	`sudo make install`
+
+	`cd ..`
+	
+ 	You must also install CVC3, Alt-Ergo and Z3 as backend theorem provers. The WP Frama-C plugin manual
+ 	(available [here](http://frama-c.com/download/wp-manual-Sodium-20150201.pdf)) contains a chapter on
+ 	installing the theorem provers.
+
+
 
 ## Verfying and Building uberXMHF (uXMHF)
 
-1. Unzip and untar the release sources within a directory
-   
-   `tar -xvzf uberspark-1.0-cliff-jumper.tar.gz`
+Assuming you are in the top-level directory of the UberSpark source-tree (where this README.md resides):
 
-2. Change directory to uberspark-1.0-(cliff-jumper)
+1.	Prepare for verification
    
-   `cd uberspark-1.0-cliff-jumper`
-
-3. Prepare for verification
+    	`./autogen.sh`
    
-    `autogen.sh`
-   
-    `./configure --prefix=/home/<home-dir>/<work-dir> --disable-debug-serial`
+    	`./configure --prefix=/home/<home-dir>/<work-dir> --disable-debug-serial`
       
-    `make verify_prep`
+    	`make verify_prep`
 
-   replace `<home-dir>` with your home-directory name and `<work-dir>` with any working directory you choose.
+   	replace `<home-dir>` with your home-directory name and `<work-dir>` with any working directory you choose.
 
-4. Verifying individual uberobjects
+
+2.	Verifying individual uberobjects
    
-   `cd xmhf-uobjs\<uobj-name>`
+   	`cd xmhf-uobjs\<uobj-name>`
    
-   `make verify`
+   	`make verify`
 
-   replace `<uobj-name>` with the uberobject directory name (e.g., `xh_hyperdep`)
+   	replace `<uobj-name>` with the uberobject directory name (e.g., `xh_hyperdep`)
 
-5. Performing uberobject composition check
 
-   `make verify_compcheck`
+3.	Performing uberobject composition check
 
-6. Verifying all the uberobjects
+   	`make verify_compcheck`
 
-   `make verify_all`
 
-7. Building the uberobject binaries and the final hypervisor image
+4.	Verifying all the uberobjects
 
-    `./configure --prefix=/home/<home-dir>/<work-dir>`
+ 	`make verify_all`
+
+
+5.	Building the uberobject binaries and the final hypervisor image
+
+ 	`./configure --prefix=/home/<home-dir>/<work-dir>`
       
-    `make`
+    	`make`
 
-   replace `<home-dir>` with your home-directory name and `<work-dir>` with any working directory you choose. If everything goes well then a final hypervisor image `xmhf-x86-vmx-x86pc.bin.gz` will be generated.
+   	replace `<home-dir>` with your home-directory name and `<work-dir>` with any working directory you choose. 
+   	If everything goes well then a final hypervisor image `xmhf-x86-vmx-x86pc.bin.gz` will be generated.
+
+
 
 ## Installing uXMHF
 
@@ -116,3 +184,12 @@ Follow the installation instructions for XMHF (available [here](http://xmhf.sour
 ##Debugging uXMHF
 
 Refer to the debugging section in the original XMHF documentation (available [here](http://xmhf.sourceforge.net/doc/xmhf/doc/debugging-xmhf.md.html)).
+
+
+
+## Releases and Changelog
+
+* Version 1.0 (cliff-jumper)
+	* Initial academic prototype release
+
+
