@@ -61,9 +61,16 @@ Amit Vasudevan (amitvasudevan@acm.org)
 	`sudo make PREFIX=/usr/local install`
 	`cd ..`
 	
+3. Compcert (version 2.4-master)
 
-	
-* Compcert -- version 2.4 was used for the release (available [here](http://compcert.inria.fr/release/compcert-2.4.tgz))
+	`git clone https://github.com/AbsInt/CompCert.git compcert-git`
+	`cd compcert-git`
+	`git checkout -b compcert 70b3b1cb`
+	`./configure ia32-linux`
+	`make all`
+	`sudo make install`
+	`cd ..`
+
 * Frama-C -- version code-named "Sodium" was used for the release (available [here](http://frama-c.com/download_sodium.html)). You must also install CVC3, Alt-Ergo and Z3 as backend theorem provers. Take a look at the WP manual (available [here](http://frama-c.com/download/wp-manual-Sodium-20150201.pdf)) for more information on installing the theorem provers.
 * gcc and binutils -- do a `sudo apt-get install gcc binutils` to install the latest versions
 
