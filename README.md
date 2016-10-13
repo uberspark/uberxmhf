@@ -95,47 +95,48 @@ you choose.
 
 ## Verfying and Building uberXMHF (uXMHF)
 
-1. Unzip and untar the release sources within a directory
-   
-   `tar -xvzf uberspark-1.0-cliff-jumper.tar.gz`
+Assuming you are in the root-directory of your local git repository (where this README.md resides):
 
-2. Change directory to uberspark-1.0-(cliff-jumper)
+1.	Prepare for verification
    
-   `cd uberspark-1.0-cliff-jumper`
-
-3. Prepare for verification
+    	`./autogen.sh`
    
-    `autogen.sh`
-   
-    `./configure --prefix=/home/<home-dir>/<work-dir> --disable-debug-serial`
+    	`./configure --prefix=/home/<home-dir>/<work-dir> --disable-debug-serial`
       
-    `make verify_prep`
+    	`make verify_prep`
 
-   replace `<home-dir>` with your home-directory name and `<work-dir>` with any working directory you choose.
+   	replace `<home-dir>` with your home-directory name and `<work-dir>` with any working directory you choose.
 
-4. Verifying individual uberobjects
+
+2.	Verifying individual uberobjects
    
-   `cd xmhf-uobjs\<uobj-name>`
+   	`cd xmhf-uobjs\<uobj-name>`
    
-   `make verify`
+   	`make verify`
 
-   replace `<uobj-name>` with the uberobject directory name (e.g., `xh_hyperdep`)
+   	replace `<uobj-name>` with the uberobject directory name (e.g., `xh_hyperdep`)
 
-5. Performing uberobject composition check
 
-   `make verify_compcheck`
+3.	Performing uberobject composition check
 
-6. Verifying all the uberobjects
+   	`make verify_compcheck`
 
-   `make verify_all`
 
-7. Building the uberobject binaries and the final hypervisor image
+4.	Verifying all the uberobjects
 
-    `./configure --prefix=/home/<home-dir>/<work-dir>`
+ 	`make verify_all`
+
+
+5.	Building the uberobject binaries and the final hypervisor image
+
+ 	`./configure --prefix=/home/<home-dir>/<work-dir>`
       
-    `make`
+    	`make`
 
-   replace `<home-dir>` with your home-directory name and `<work-dir>` with any working directory you choose. If everything goes well then a final hypervisor image `xmhf-x86-vmx-x86pc.bin.gz` will be generated.
+   	replace `<home-dir>` with your home-directory name and `<work-dir>` with any working directory you choose. 
+   	If everything goes well then a final hypervisor image `xmhf-x86-vmx-x86pc.bin.gz` will be generated.
+
+
 
 ## Installing uXMHF
 
