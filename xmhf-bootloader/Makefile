@@ -71,8 +71,6 @@ xmhflibs32:
 
 $(THE_ARCHIVE): $(OBJECTS)
 	cd $(XMHF_BOOTLOADER_OBJECTS_DIR) && $(LD) --oformat elf32-i386 -T $(srcdir)/init.lds -o $(THE_ARCHIVE).exe $(OBJECTS_ARCHIVE) -L$(CCERT_LIB) -L$(CCLIB)/lib/linux -L$(XMHF_LIBS_OBJECTS_DIR) -lxmhfc -lxmhfdebug -lxmhfcrypto -lxmhfhw -lxmhfc -lcompcert
-	#cd $(XMHF_BOOTLOADER_OBJECTS_DIR) && $(LD) --oformat elf32-i386 -T $(srcdir)/init.lds -o $(THE_ARCHIVE).exe $(OBJECTS_ARCHIVE) -L$(CCERT_LIB) -L$(CCLIB)/lib/linux -L./libs32 -lxmhfdebug -lclang_rt.full-i386 -lcompcert
-	#cd $(XMHF_BOOTLOADER_OBJECTS_DIR) && $(STRIP) -s $(THE_ARCHIVE).exe
 	cd $(XMHF_BOOTLOADER_OBJECTS_DIR) && $(OBJCOPY) --output-format=binary $(THE_ARCHIVE).exe $(THE_ARCHIVE).bin
 
 
