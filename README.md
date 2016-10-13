@@ -42,6 +42,7 @@ Amit Vasudevan (amitvasudevan@acm.org)
 
 
 ## Software requirements and dependencies
+
 1.	Ubuntu 14.04 LTS 64-bit for development and verification (available [here](http://releases.ubuntu.com/14.04/)).
    	You will need to install the following packages after doing an update:
    	
@@ -51,6 +52,17 @@ Amit Vasudevan (amitvasudevan@acm.org)
 	`sudo apt-get install ocaml ocaml-native-compilers coq`
    	
 
+2.	Menhir Parser (version 20140422)
+
+	`wget http://gallium.inria.fr/~fpottier/menhir/menhir-20140422.tar.gz`
+	`tar -xvzf menhir-20140422.tar.gz`
+	`cd menhir-20140422`
+	`sudo make PREFIX=/usr/local all`
+	`sudo make PREFIX=/usr/local install`
+	`cd ..`
+	
+
+	
 * Compcert -- version 2.4 was used for the release (available [here](http://compcert.inria.fr/release/compcert-2.4.tgz))
 * Frama-C -- version code-named "Sodium" was used for the release (available [here](http://frama-c.com/download_sodium.html)). You must also install CVC3, Alt-Ergo and Z3 as backend theorem provers. Take a look at the WP manual (available [here](http://frama-c.com/download/wp-manual-Sodium-20150201.pdf)) for more information on installing the theorem provers.
 * gcc and binutils -- do a `sudo apt-get install gcc binutils` to install the latest versions
