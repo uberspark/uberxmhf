@@ -114,6 +114,6 @@ AC_SUBST([pkgconfigdir], ['${libdir}/pkgconfig'])
 AC_SUBST([pkgincludedir], ['${includedir}/AC_PACKAGE_NAME'])
 
 AC_CONFIG_FILES(
-	[Makefile:../../xmhfgeecslab_commonharness.mk.in:xmhfgeecslab.mk.in:../../xmhfgeecslab_commontargets.mk.in]
-	[xmhfgeecslab.lscript:../../xmhfgeecslab.lscript.in])
+	[Makefile:../../../xmhfgeecslab_commonharness.mk.in:xmhfgeecslab.mk.in:../../../xmhfgeecslab_commontargets.mk.in]
+	[xmhfgeecslab.lscript:../../../xmhfgeecslab.lscript.in])
 AC_OUTPUT

@@ -7,7 +7,7 @@ vpath %.S $(srcdir)
 vpath %.cS $(srcdir)
 vpath %.lscript $(srcdir)
 
-include $(srcdir)/../../common.mk
+include $(srcdir)/../../../common.mk
 
 
 #XMHF_SLAB_STUBOBJECTS := $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_slabmap.o $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_tprogslab.o
