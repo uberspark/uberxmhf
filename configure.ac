@@ -100,7 +100,7 @@ AC_SUBST([XMHFLIBS_SRC])
 AC_ARG_WITH([libbaremetalsrc],
         AS_HELP_STRING([--with-libbaremetalsrc=@<:@path@:>@],
                 [path to libbaremetal source directory]),
-                , [with_libbaremetalsrc=./xmhf-libs])
+                , [with_libbaremetalsrc=./uberspark/libs])
 XMHFLIBS_SRC=$[]with_libbaremetalsrc
 AC_CHECK_FILE([${XMHFLIBS_SRC}/libxmhfc],
         ,

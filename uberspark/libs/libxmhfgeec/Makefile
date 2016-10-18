@@ -3,7 +3,7 @@ vpath %.c $(srcdir)
 vpath %.cS $(srcdir)
 
 
-include $(srcdir)/../../common.mk
+include $(srcdir)/../../../common.mk
 
 
 C_SOURCES:= $(wildcard $(srcdir)/*.c)
