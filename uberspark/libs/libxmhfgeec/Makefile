@@ -3,7 +3,7 @@ vpath %.c $(srcdir)
 vpath %.cS $(srcdir)
 
 
-include $(srcdir)/../../common.mk
+include $(srcdir)/../../../common.mk
 
 
 C_SOURCES:= $(wildcard $(srcdir)/*.c)
@@ -66,7 +66,7 @@ $(THE_ARCHIVE): $(OBJECTS)
 	@echo Building "$@" from "$<"
 	cp -f $< $(LIBXMHFGEEC_OBJECTS_DIR)/$(@F).c
 	cd $(LIBXMHFGEEC_OBJECTS_DIR) && $(CCERT) -c -dmach $(CCERT_FLAGS) -O0 $(@F).c
-	cd $(LIBXMHFGEEC_OBJECTS_DIR) && frama-c -load-script $(XMHF_DIR)/tools/ucasm.ml -ucasm-infile $(@F).mach -ucasm-outfile $(@F).S
+	cd $(LIBXMHFGEEC_OBJECTS_DIR) && frama-c -load-script $(XMHF_DIR)/uberspark/tools/ucasm.ml -ucasm-infile $(@F).mach -ucasm-outfile $(@F).S
 	cd $(LIBXMHFGEEC_OBJECTS_DIR) && gcc -c $(ASFLAGS) -o $@ $(@F).S
 	#cd $(LIBXMHFGEEC_OBJECTS_DIR) && mv $(@F).o $@
 
