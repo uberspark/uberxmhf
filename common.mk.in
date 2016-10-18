@@ -19,10 +19,13 @@ export XMHF_LIBDIRS := $(wildcard $(XMHF_DIR)/uberspark/libs/lib*)
 export XMHF_LIBS_OBJECTS_DIR := $(XMHF_OBJDIR)/_objs_libs
 
 # construct include paths
-export ADDL_INCLUDES := -I$(XMHF_DIR)/uberspark/include -I$(XMHF_DIR)/uxmhf/xmhf-uobjs/include -I$(XMHF_DIR)/uberspark/hwm/include
+export ADDL_INCLUDES := -I$(XMHF_DIR)/uberspark/include 
+ADDL_INCLUDES += -I$(XMHF_DIR)/uberspark/hwm/include
+ADDL_INCLUDES += -I$(XMHF_DIR)/uxmhf/include
+ADDL_INCLUDES += -I$(XMHF_DIR)/uxmhf/xmhf-uobjs/include 
+ADDL_INCLUDES += -I$(XMHF_DIR)/uxmhf/libs/libxmhfdebug/include
 XMHFLIBS_INC = $(foreach dir,$(XMHF_LIBDIRS),-I$(dir)/include)
 ADDL_INCLUDES += $(XMHFLIBS_INC)
-ADDL_INCLUDES += -I$(XMHF_DIR)/uxmhf/libs/libxmhfdebug/include
 
 # construct module list that comprise the hardware model
 export V_XMHFHWM_MODULES := $(realpath $(wildcard $(XMHF_DIR)/uberspark/hwm/*.c))
