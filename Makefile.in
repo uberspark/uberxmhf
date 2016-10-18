@@ -8,7 +8,7 @@ include ./common.mk
 ######
 
 # XMHF bootloader source location
-export XMHF_BOOTLOADER_SRC := $(realpath xmhf-bootloader)
+export XMHF_BOOTLOADER_SRC := $(realpath uxmhf/xmhf-bootloader)
 
 export XMHF_SLAB_DIRS := $(shell awk -F, '{print $$1}' $(XMHF_DIR)/SLABS)
 XMHF_SLAB_NAMES := $(notdir $(XMHF_SLAB_DIRS))
