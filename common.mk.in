@@ -15,8 +15,8 @@ export XMHF_DIR := $(mydir)
 export XMHF_OBJDIR = $(XMHF_DIR)/_objects
 
 # XMHF libs dirs and object locations
-export XMHF_LIBDIRS := $(wildcard $(XMHF_DIR)/xmhf-libs/lib*)
-export XMHF_LIBS_OBJECTS_DIR := $(XMHF_OBJDIR)/_objs_xmhf-libs
+export XMHF_LIBDIRS := $(wildcard $(XMHF_DIR)/uberspark/libs/lib*)
+export XMHF_LIBS_OBJECTS_DIR := $(XMHF_OBJDIR)/_objs_libs
 
 # construct include paths
 export ADDL_INCLUDES := -I$(XMHF_DIR)/uberspark/include -I$(XMHF_DIR)/xmhf-uobjs/include -I$(XMHF_DIR)/xmhf-hwm/include
@@ -27,10 +27,10 @@ ADDL_INCLUDES += $(XMHFLIBS_INC)
 export V_XMHFHWM_MODULES := $(realpath $(wildcard $(XMHF_DIR)/xmhf-hwm/*.c))
 
 # construct module list that comprise libxmhfhw
-V_LIBXMHFHW_MODULES_DIR := $(realpath $(XMHF_DIR)/xmhf-libs/libxmhfhw/)
-V_LIBXMHFHW_MODULES_ABS := $(wildcard $(XMHF_DIR)/xmhf-libs/libxmhfhw/*.c)
-V_LIBXMHFHW_MODULES_ABS += $(wildcard $(XMHF_DIR)/xmhf-libs/libxmhfhw/*.cS)
-V_LIBXMHFHW_MODULES := $(patsubst $(XMHF_DIR)/xmhf-libs/libxmhfhw/%, %, $(V_LIBXMHFHW_MODULES_ABS))
+V_LIBXMHFHW_MODULES_DIR := $(realpath $(XMHF_DIR)/uberspark/libs/libxmhfhw/)
+V_LIBXMHFHW_MODULES_ABS := $(wildcard $(XMHF_DIR)/uberspark/libs/libxmhfhw/*.c)
+V_LIBXMHFHW_MODULES_ABS += $(wildcard $(XMHF_DIR)/uberspark/libs/libxmhfhw/*.cS)
+V_LIBXMHFHW_MODULES := $(patsubst $(XMHF_DIR)/uberspark/libx/libxmhfhw/%, %, $(V_LIBXMHFHW_MODULES_ABS))
 export V_LIBXMHFHW_MODULES_DIR;
 export V_LIBXMHFHW_MODULES;
 
