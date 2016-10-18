@@ -24,7 +24,7 @@ XMHF_SLAB_OBJECTS_DIR := _objs_slab_$(XMHF_SLAB_NAME)
 XMHF_SLAB_VERIFICATION_DIR := _verif_$(XMHF_SLAB_NAME)
 
 
-LINKER_SCRIPT_INPUT := $(XMHF_DIR)/xmhf-uobjs/$(XMHF_SLAB_NAME)/xmhfgeecslab.lscript
+LINKER_SCRIPT_INPUT := $(XMHF_DIR)/uxmhf/xmhf-uobjs/$(XMHF_SLAB_NAME)/xmhfgeecslab.lscript
 LINKER_SCRIPT_OUTPUT := $(XMHF_SLAB_NAME).lds
 
 #ifeq ($(XMHF_SLAB_FULLLINK), y)
@@ -77,8 +77,8 @@ verifybase:
 
 #pp_slab_gsm:
 #	mkdir -p $(XMHF_SLAB_OBJECTS_DIR)
-#	cd $(XMHF_SLAB_OBJECTS_DIR) && $(CP) -f $(XMHF_DIR)/xmhf-uobjs/$(XMHF_SLAB_NAME)/$(XMHF_SLAB_NAME).gsm $(XMHF_SLAB_NAME).gsm.c
-#	cd $(XMHF_SLAB_OBJECTS_DIR) && $(CCERT) -E -D__ASSEMBLY__ $(CCERT_FLAGS) $(XMHF_SLAB_NAME).gsm.c >$(XMHF_DIR)/xmhf-uobjs/$(XMHF_SLAB_NAME)/$(XMHF_SLAB_NAME).gsm.pp
+#	cd $(XMHF_SLAB_OBJECTS_DIR) && $(CP) -f $(XMHF_DIR)/uxmhf/xmhf-uobjs/$(XMHF_SLAB_NAME)/$(XMHF_SLAB_NAME).gsm $(XMHF_SLAB_NAME).gsm.c
+#	cd $(XMHF_SLAB_OBJECTS_DIR) && $(CCERT) -E -D__ASSEMBLY__ $(CCERT_FLAGS) $(XMHF_SLAB_NAME).gsm.c >$(XMHF_DIR)/uxmhf/xmhf-uobjs/$(XMHF_SLAB_NAME)/$(XMHF_SLAB_NAME).gsm.pp
 
 ifeq ($(XMHF_SLAB_SUBTYPE), XRICHGUEST)
 

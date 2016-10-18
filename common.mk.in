@@ -19,7 +19,7 @@ export XMHF_LIBDIRS := $(wildcard $(XMHF_DIR)/uberspark/libs/lib*)
 export XMHF_LIBS_OBJECTS_DIR := $(XMHF_OBJDIR)/_objs_libs
 
 # construct include paths
-export ADDL_INCLUDES := -I$(XMHF_DIR)/uberspark/include -I$(XMHF_DIR)/xmhf-uobjs/include -I$(XMHF_DIR)/uberspark/hwm/include
+export ADDL_INCLUDES := -I$(XMHF_DIR)/uberspark/include -I$(XMHF_DIR)/uxmhf/xmhf-uobjs/include -I$(XMHF_DIR)/uberspark/hwm/include
 XMHFLIBS_INC = $(foreach dir,$(XMHF_LIBDIRS),-I$(dir)/include)
 ADDL_INCLUDES += $(XMHFLIBS_INC)
 
@@ -35,7 +35,7 @@ export V_LIBXMHFHW_MODULES_DIR;
 export V_LIBXMHFHW_MODULES;
 
 # for verification
-export V_ADDL_INCLUDES := -cpp-extra-args=-I$(XMHF_DIR)/uberspark/include -cpp-extra-args=-I$(XMHF_DIR)/xmhf-uobjs/include -cpp-extra-args=-I$(XMHF_DIR)/xmhf-hwm/include
+export V_ADDL_INCLUDES := -cpp-extra-args=-I$(XMHF_DIR)/uberspark/include -cpp-extra-args=-I$(XMHF_DIR)/uxmhf/xmhf-uobjs/include -cpp-extra-args=-I$(XMHF_DIR)/xmhf-hwm/include
 V_XMHFLIBS_INC = $(foreach dir,$(XMHF_LIBDIRS),-cpp-extra-args=-I$(dir)/include)
 V_ADDL_INCLUDES += $(V_XMHFLIBS_INC)
 
