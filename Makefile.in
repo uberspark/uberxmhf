@@ -17,10 +17,10 @@ export XMHF_SLAB_TOTAL := $(shell wc -l < $(XMHF_DIR)/SLABS)
 
 export LIBXMHFC_SRC := $(realpath uberspark/libs/libxmhfc)
 export LIBXMHFCRYPTO_SRC := $(realpath uberspark/libs/libxmhfcrypto)
-export LIBXMHFDEBUG_SRC := $(realpath uberspark/libs/libxmhfdebug)
 export LIBXMHFGEEC_SRC := $(realpath uberspark/libs/libxmhfgeec)
 export LIBXMHFHW_SRC := $(realpath uberspark/libs/libxmhfhw)
 
+export LIBXMHFDEBUG_SRC := $(realpath uxmhf/libs/libxmhfdebug)
 
 
 
