@@ -39,6 +39,7 @@ export V_LIBXMHFHW_MODULES;
 export V_ADDL_INCLUDES := -cpp-extra-args=-I$(XMHF_DIR)/uberspark/include -cpp-extra-args=-I$(XMHF_DIR)/uxmhf/xmhf-uobjs/include -cpp-extra-args=-I$(XMHF_DIR)/uberspark/hwm/include
 V_XMHFLIBS_INC = $(foreach dir,$(XMHF_LIBDIRS),-cpp-extra-args=-I$(dir)/include)
 V_ADDL_INCLUDES += $(V_XMHFLIBS_INC)
+V_ADDL_INCLUDES += -I$(XMHF_DIR)/uxmhf/libs/libxmhfdebug/include
 
 
 
