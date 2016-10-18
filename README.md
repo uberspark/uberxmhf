@@ -136,7 +136,7 @@ Assuming you are in the top-level directory of the UberSpark source-tree (where 
 
 2.	Verifying individual uberobjects
    
-   	`cd xmhf-uobjs\<uobj-name>`
+   	`cd uxmhf/xmhf-uobjs/<uobj-name>`
    
    	`make verify`
 
