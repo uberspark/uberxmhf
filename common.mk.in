@@ -146,21 +146,10 @@ export XMHF_BUILD_REVISION := cliff-jumper
 
 
 #-----basic flags for compiling and assembling
-
-FLAGS = -O0 -fno-builtin -fno-common -fno-strict-aliasing -iwithprefix include
-FLAGS += -fno-stack-protector
-FLAGS += -Wstrict-prototypes -Wdeclaration-after-statement
-FLAGS += -Wno-pointer-arith -Wextra -Wfloat-equal
-FLAGS += -Wsign-compare
-FLAGS += -Wno-bad-function-cast -Wall
-FLAGS += -Waggregate-return
-FLAGS += -Winline
+#-----this is used by gcc/ld for generating object code from assembly and linking
+FLAGS = -O0 
 FLAGS += -m32
-FLAGS += -mno-mmx -mno-sse -mno-sse2 -mno-sse3 -mno-ssse3
-FLAGS += -mno-sse4.1 -mno-sse4.2 -mno-sse4 -mno-avx -mno-aes
-FLAGS += -mno-pclmul -mno-sse4a -mno-3dnow -mno-popcnt
-FLAGS += -nostdinc -pipe
-
+FLAGS += -nostdinc 
 
 CCERT_FLAGS = -O
 CCERT_FLAGS += -fno-fpu
