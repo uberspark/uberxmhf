@@ -71,19 +71,30 @@ export includedir=@includedir@
 export pkgconfigdir=@pkgconfigdir@
 export pkgincludedir=@pkgincludedir@
 
-export CC = @CC@				#
-export CCERT = @CCERT@			#
+#
+export MAKE = @MAKE@
+#
+export CC = @CC@
+#
+export CCERT = @CCERT@
 export AS = @AS@
-export AR = @AR@				#
+#
+export AR = @AR@
+#
 export LD = @LD@
 export OBJDUMP = @OBJDUMP@
-export OBJCOPY = @OBJCOPY@		#
+#
+export OBJCOPY = @OBJCOPY@
 export STRIP = @STRIP@
-export RM = @RM@				#
-export CP = @CP@				#
+#
+export RM = @RM@
+#
+export CP = @CP@				
 export TAR = @TAR@
 export SED = @SED@
-export MKDIR = @MKDIR@			#
+#
+export MKDIR = @MKDIR@
+#
 export CAT = @CAT@
 
 export CCLIB = @CCLIB@
