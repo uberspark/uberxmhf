@@ -9,9 +9,6 @@ vpath %.lscript $(srcdir)
 
 include $(srcdir)/../../../common.mk
 
-
-#XMHF_SLAB_STUBOBJECTS := $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_slabmap.o $(XMHF_LIBS_OBJECTS_DIR)/xmhfgeec_tprogslab.o
-
 export XMHF_SLAB_FULLLINK := y
 export XMHF_SLAB_TYPE := @SLABTYPE@
 export XMHF_SLAB_SUBTYPE := @SLABSUBTYPE@
