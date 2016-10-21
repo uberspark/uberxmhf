@@ -31,7 +31,6 @@ verify:
 all: $(OBJECTS)
 	$(MKDIR) -p $(LIBXMHFGEEC_OBJECTS_DIR)
 	$(CP) $(LIBXMHFGEEC_OBJECTS_DIR)/xmhfgeec_slabmapdef.o .
-	$(CP) $(LIBXMHFGEEC_OBJECTS_DIR)/xmhfgeec_slabinfotable.o .
 	$(CP) $(LIBXMHFGEEC_OBJECTS_DIR)/xmhfgeec_slabstubs_vft.o .
 	$(CP) $(LIBXMHFGEEC_OBJECTS_DIR)/xmhfgeec_slabstubs_uvt.o .
 	$(CP) $(LIBXMHFGEEC_OBJECTS_DIR)/xmhfgeec_slabstubs_uvu.o .
