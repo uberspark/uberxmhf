@@ -100,6 +100,22 @@ _libxmhfgeec_realbuild:
 	@echo libxmhfgeec realbuild built sucessfully.
 
 
+.PHONY: uobjinfotable_prebuild
+uobjinfotable_prebuild:
+	@echo building uobjinfotable prebuild...
+	$(MKDIR) -p $(XMHF_OBJDIR)
+	cd $(XMHF_OBJDIR) && $(CCERT) -c $(CCERT_FLAGS) -o $(XMHF_OBJDIR)/uobjinfotable.o uobjinfotable.c
+	@echo uobjinfotable prebuild built sucessfully.
+
+
+.PHONY: uobjinfotable_realbuild
+uobjinfotable_realbuild:
+	@echo building uobjinfotable realbuild...
+	$(MKDIR) -p $(XMHF_OBJDIR)
+	cd $(XMHF_OBJDIR) && $(CCERT) -c $(CCERT_FLAGS) -o $(XMHF_OBJDIR)/uobjinfotable.o uobjinfotable.c
+	@echo uobjinfotable realbuild built sucessfully.
+	
+	
 
 .PHONY: slabs
 slabs: slabs_prebuild slabs_verify slabs_realbuild
