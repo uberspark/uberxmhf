@@ -121,13 +121,13 @@ uobjinfotable_realbuild:
 slabs: slabs_prebuild slabs_verify slabs_realbuild
 
 .PHONY: slabs_prebuild
-slabs_prebuild: _slabs_configureandgenerateslabinfonoexports xmhflibs _libxmhfgeec_prebuild _slabs_common_prebuild
+slabs_prebuild: _slabs_configureandgenerateslabinfonoexports xmhflibs uobjinfotable_prebuild _slabs_common_prebuild
 
 .PHONY: slabs_verify
 slabs_verify: slabs_prebuild _slabs_generateslabinfoexports _slabs_verify
 
 .PHONY: slabs_realbuild
-slabs_realbuild: slabs_prebuild _slabs_generateslabinfoexports _libxmhfgeec_realbuild  _slabs_common_realbuild
+slabs_realbuild: slabs_prebuild _slabs_generateslabinfoexports uobjinfotable_realbuild  _slabs_common_realbuild
 
 .PHONY: _slabs_verify
 _slabs_verify:
