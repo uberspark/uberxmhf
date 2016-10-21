@@ -92,24 +92,6 @@ _libxmhfdebug:
 	
 	
 	
-#uspark	
-.PHONY: _libxmhfgeec_prebuild
-_libxmhfgeec_prebuild:
-	@echo building libxmhfgeec prebuild...
-	$(MKDIR) -p $(XMHF_LIBS_OBJECTS_DIR)
-	cd $(XMHF_LIBS_OBJECTS_DIR) &&	$(MAKE) -f $(LIBXMHFGEEC_SRC)/Makefile -w all
-	@echo libxmhfgeec prebuild built sucessfully.
-
-#uspark	
-.PHONY: _libxmhfgeec_realbuild
-_libxmhfgeec_realbuild:
-	@echo building libxmhfgeec realbuild...
-	$(MKDIR) -p $(XMHF_LIBS_OBJECTS_DIR)
-	touch $(LIBXMHFGEEC_SRC)/xmhfgeec_slabinfotable.c
-	cd $(XMHF_LIBS_OBJECTS_DIR) &&	$(MAKE) -f $(LIBXMHFGEEC_SRC)/Makefile -w all
-	@echo libxmhfgeec realbuild built sucessfully.
-
-
 .PHONY: uobjinfotable_prebuild
 uobjinfotable_prebuild:
 	@echo building uobjinfotable prebuild...
