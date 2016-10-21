@@ -198,7 +198,7 @@ verify_all: verify_prep
 	
 
 .PHONY: bootloader
-bootloader: xmhflibs _libxmhfgeec_realbuild
+bootloader: xmhflibs 
 	@echo Building XMHF boot loader...
 	cd $(XMHF_OBJDIR) && $(MAKE) -f $(XMHF_BOOTLOADER_SRC)/Makefile -w all
 	@echo XMHF boot loader build SUCCESS
