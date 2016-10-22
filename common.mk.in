@@ -34,15 +34,18 @@ export V_XMHFHWM_MODULES := $(realpath $(wildcard $(XMHF_DIR)/uberspark/hwm/*.c)
 V_LIBXMHFHW_MODULES_DIR := $(realpath $(XMHF_DIR)/uberspark/libs/libxmhfhw/)
 V_LIBXMHFHW_MODULES_ABS := $(wildcard $(XMHF_DIR)/uberspark/libs/libxmhfhw/*.c)
 V_LIBXMHFHW_MODULES_ABS += $(wildcard $(XMHF_DIR)/uberspark/libs/libxmhfhw/*.cS)
-V_LIBXMHFHW_MODULES := $(patsubst $(XMHF_DIR)/uberspark/libx/libxmhfhw/%, %, $(V_LIBXMHFHW_MODULES_ABS))
+V_LIBXMHFHW_MODULES := $(patsubst $(XMHF_DIR)/uberspark/libs/libxmhfhw/%, %, $(V_LIBXMHFHW_MODULES_ABS))
 export V_LIBXMHFHW_MODULES_DIR;
 export V_LIBXMHFHW_MODULES;
 
 # for verification
-export V_ADDL_INCLUDES := -cpp-extra-args=-I$(XMHF_DIR)/uberspark/include -cpp-extra-args=-I$(XMHF_DIR)/uxmhf/xmhf-uobjs/include -cpp-extra-args=-I$(XMHF_DIR)/uberspark/hwm/include
+export V_ADDL_INCLUDES := -cpp-extra-args=-I$(XMHF_DIR)/uberspark/include 
+V_ADDL_INCLUDES += -cpp-extra-args=-I$(XMHF_DIR)/uberspark/hwm/include
+V_ADDL_INCLUDES += -cpp-extra-args=-I$(XMHF_DIR)/uxmhf/include
+V_ADDL_INCLUDES += -cpp-extra-args=-I$(XMHF_DIR)/uxmhf/xmhf-uobjs/include 
+V_ADDL_INCLUDES += -cpp-extra-args=-I$(XMHF_DIR)/uxmhf/libs/libxmhfdebug/include
 V_XMHFLIBS_INC = $(foreach dir,$(XMHF_LIBDIRS),-cpp-extra-args=-I$(dir)/include)
 V_ADDL_INCLUDES += $(V_XMHFLIBS_INC)
-V_ADDL_INCLUDES += -I$(XMHF_DIR)/uxmhf/libs/libxmhfdebug/include
 
 
 
