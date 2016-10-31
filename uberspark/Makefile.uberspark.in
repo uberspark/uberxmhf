@@ -27,6 +27,10 @@ export USPARK_OBJDIR = $(USPARK_DIR)/_objects
 
 ###### targets
 
+.PHONY: build-tools
+build-tools:
+	
+
 .PHONY: all
 all:
 	@echo $(AC_PREFIX)
