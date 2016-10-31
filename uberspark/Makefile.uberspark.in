@@ -29,6 +29,12 @@ export USPARK_OBJDIR = $(USPARK_DIR)/_objects
 
 .PHONY: build-tools
 build-tools:
+	cd $(USPARK_TOOLSDIR) && $(RM) umfcommon.annot umfcommon.cmi umfcommon.cmo umfcommon.cmt umfcommon.cmx umfcommon.o
+	cd $(USPARK_TOOLSDIR) && $(MAKE) -f umf.mk -w all
+	cd $(USPARK_TOOLSDIR) && $(RM) umfcommon.annot umfcommon.cmi umfcommon.cmo umfcommon.cmt umfcommon.cmx umfcommon.o
+	cd $(USPARK_TOOLSDIR) && $(MAKE) -f ubp.mk -w all
+	cd $(USPARK_TOOLSDIR) && $(RM) umfcommon.annot umfcommon.cmi umfcommon.cmo umfcommon.cmt umfcommon.cmx umfcommon.o
+	cd $(USPARK_TOOLSDIR) && $(MAKE) -f uccomp.mk -w all
 	
 
 .PHONY: all
