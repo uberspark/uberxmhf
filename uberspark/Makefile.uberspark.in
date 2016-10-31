@@ -18,10 +18,9 @@ export AC_PKGINCLUDEDIR=@pkgincludedir@
 
 .PHONY: all
 all:
-	echo $(AC_PREFIX)
-	echo $(AC_LIBDIR)
-	echo $(AC_EXEC_PREFIX)
-	
+	@echo $(AC_PREFIX)
+	@echo $(AC_LIBDIR)
+
 .PHONY: clean distclean
 clean:
 
