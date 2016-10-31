@@ -21,7 +21,7 @@ all:
 	@echo $(AC_PREFIX)
 	@echo $(AC_LIBDIR)
 
-.PHONY: clean distclean
+.PHONY: clean
 clean:
 
 # http://www.gnu.org/software/automake/manual/automake.html#Clean
