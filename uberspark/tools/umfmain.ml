@@ -267,6 +267,11 @@ let umf_output_infotable () =
 	Printf.fprintf oc "\n/* author: amit vasudevan (amitvasudevan@acm.org) */";
 	Printf.fprintf oc "\n";
 	Printf.fprintf oc "\n";
+	Printf.fprintf oc "\n#include <xmhf.h>";
+	Printf.fprintf oc "\n#include <xmhfgeec.h>";
+	Printf.fprintf oc "\n#include <xmhf-debug.h>";
+	Printf.fprintf oc "\n";
+	Printf.fprintf oc "\n";
 	Printf.fprintf oc "\n__attribute__(( section(\".data\") )) __attribute__((aligned(4096))) xmhfgeec_slab_info_t xmhfgeec_slab_info_table[] = {";
 
 	i := 0;
