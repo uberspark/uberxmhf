@@ -36,9 +36,9 @@ distclean: clean
 Makefile.uberspark: Makefile.uberspark.in config.status
 	./config.status $@
 
-config.status: configure-uberspark
+config.status: configure.uberspark
 	./config.status --recheck
 
-configure-uberspark: configure-uberspark.ac
-	autoconf --output=configure-uberspark configure-uberspark.ac
+configure.uberspark: configure.uberspark.ac
+	autoconf --output=configure.uberspark configure.uberspark.ac
 
