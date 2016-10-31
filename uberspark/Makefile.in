@@ -9,6 +9,18 @@ include ./common.mk
 
 ###### targets
 
+.PHONY: all
+all: build-tools
+	@echo $(AC_PREFIX)
+	@echo $(AC_LIBDIR)
+	@echo $(USPARK_DIR)
+	@echo $(USPARK_OBJDIR)
+	@echo $(USPARK_HWMDIR)
+	@echo $(USPARK_LIBSDIR)
+	@echo $(USPARK_INCLUDEDIR)
+	@echo $(USPARK_TOOLSDIR)
+
+
 .PHONY: build-tools
 build-tools:
 	cd $(USPARK_TOOLSDIR) && $(RM) umfcommon.annot umfcommon.cmi umfcommon.cmo umfcommon.cmt umfcommon.cmx umfcommon.o
@@ -23,17 +35,6 @@ build-tools:
 	cd $(USPARK_TOOLSDIR) && $(MAKE) -f uhwm.mk -w all
 	
 
-.PHONY: all
-all:
-	@echo $(AC_PREFIX)
-	@echo $(AC_LIBDIR)
-	@echo $(USPARK_DIR)
-	@echo $(USPARK_OBJDIR)
-	@echo $(USPARK_HWMDIR)
-	@echo $(USPARK_LIBSDIR)
-	@echo $(USPARK_INCLUDEDIR)
-	@echo $(USPARK_TOOLSDIR)
-	
 
 .PHONY: clean
 clean:
