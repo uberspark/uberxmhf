@@ -24,7 +24,7 @@ AC_SUBST([pkgconfigdir], ['${libdir}/pkgconfig'])
 AC_SUBST([pkgincludedir], ['${includedir}/AC_PACKAGE_NAME'])
 
 AC_CONFIG_FILES(
-			[Makefile.uberspark]
+			[Makefile]
 			)
 
 AC_OUTPUT
