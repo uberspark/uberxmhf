@@ -60,17 +60,17 @@ clean:
 .PHONY: distclean
 distclean: clean
 	$(RM) config.log config.status
-	$(RM) -rf Makefile.uberspark
+	$(RM) -rf Makefile
 
 
 ###### autoconf rules
 
-Makefile.uberspark: Makefile.uberspark.in config.status
+Makefile: Makefile.in config.status
 	./config.status $@
 
-config.status: configure.uberspark
+config.status: configure
 	./config.status --recheck
 
-configure.uberspark: configure.uberspark.ac
-	autoconf --output=configure.uberspark configure.uberspark.ac
+configure: configure.ac
+	autoconf --output=configure configure.ac
 
