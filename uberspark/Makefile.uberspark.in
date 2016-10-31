@@ -14,12 +14,30 @@ export AC_PKGCONFIGDIR=@pkgconfigdir@
 export AC_PKGINCLUDEDIR=@pkgincludedir@
 
 
+###### paths
+
+export USPARK_DIR := $(realpath $(dir $(lastword $(MAKEFILE_LIST))))
+export USPARK_HWMDIR := $(USPARK_DIR)/hwm
+export USPARK_LIBSDIR := $(USPARK_DIR)/libs
+export USPARK_INCLUDEDIR := $(USPARK_DIR)/include
+export USPARK_TOOLSDIR := $(USPARK_DIR)/tools
+export USPARK_OBJDIR = $(USPARK_DIR)/_objects
+
+
+
 ###### targets
 
 .PHONY: all
 all:
 	@echo $(AC_PREFIX)
 	@echo $(AC_LIBDIR)
+	@echo $(USPARK_DIR)
+	@echo $(USPARK_OBJDIR)
+	@echo $(USPARK_HWMDIR)
+	@echo $(USPARK_LIBSDIR)
+	@echo $(USPARK_INCLUDEDIR)
+	@echo $(USPARK_TOOLSDIR)
+	
 
 .PHONY: clean
 clean:
