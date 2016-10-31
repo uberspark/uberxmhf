@@ -1,0 +1,23 @@
+######
+# common Makefile boilerplate for UberSpark
+# author: amit vasudevan (amitvasudevan@acm.org)
+######
+
+###### autoconf controlled variables
+
+export AC_PREFIX=@prefix@
+export AC_EXEC_PREFIX=@exec_prefix@
+export AC_LIBDIR=@libdir@
+export AC_INCLUDEDIR=@includedir@
+export AC_PKGCONFIGDIR=@pkgconfigdir@
+export AC_PKGINCLUDEDIR=@pkgincludedir@
+
+
+###### paths
+
+export USPARK_DIR := $(realpath $(dir $(lastword $(MAKEFILE_LIST))))
+export USPARK_HWMDIR := $(USPARK_DIR)/hwm
+export USPARK_LIBSDIR := $(USPARK_DIR)/libs
+export USPARK_INCLUDEDIR := $(USPARK_DIR)/include
+export USPARK_TOOLSDIR := $(USPARK_DIR)/tools
+export USPARK_OBJDIR = $(USPARK_DIR)/_objects
