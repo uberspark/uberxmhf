@@ -1,0 +1,243 @@
+# top-level Makefile for XMHF
+# author: amit vasudevan (amitvasudevan@acm.org)
+
+include ./common.mk
+
+######
+# top-level build harness
+######
+
+# XMHF bootloader source location
+export XMHF_BOOTLOADER_SRC := $(realpath uxmhf/xmhf-bootloader)
+
+export XMHF_SLAB_DIRS := $(shell awk -F, '{print $$1}' $(XMHF_DIR)/SLABS)
+XMHF_SLAB_NAMES := $(notdir $(XMHF_SLAB_DIRS))
+export XMHF_SLAB_TOTAL := $(shell wc -l < $(XMHF_DIR)/SLABS)
+
+export LIBXMHFDEBUG_SRC := $(realpath uxmhf/libs/libxmhfdebug)
+
+#uspark
+export LIBXMHFC_SRC := $(realpath uberspark/libs/libxmhfc)
+#uspark
+export LIBXMHFCRYPTO_SRC := $(realpath uberspark/libs/libxmhfcrypto)
+#uspark
+export LIBXMHFGEEC_SRC := $(realpath uberspark/libs/libxmhfgeec)
+#uspark
+export LIBXMHFHW_SRC := $(realpath uberspark/libs/libxmhfhw)
+
+
+######
+# top-level build targets
+######
+
+.PHONY: all
+all: tools slabs xmhfbin bootloader finalbin
+
+
+######
+# supporting build targets
+######
+
+#uspark
+.PHONY: tools
+tools: 
+	@echo building tools...
+	cd $(XMHF_DIR)/uberspark/tools &&	$(MAKE) -f Makefile -w all
+	@echo tools built sucessfully.
+
+
+#uspark	
+.PHONY: xmhflibs
+xmhflibs: _libxmhfc _libxmhfcrypto _libxmhfdebug _libxmhfhw _libxmhfgeec
+
+#uspark	
+.PHONY: _libxmhfc
+_libxmhfc:
+	@echo building libxmhfc...
+	$(MKDIR) -p $(XMHF_LIBS_OBJECTS_DIR)
+	cd $(XMHF_LIBS_OBJECTS_DIR) &&	$(MAKE) -f $(LIBXMHFC_SRC)/Makefile -w all
+	@echo libxmhfc built sucessfully.
+
+#uspark	
+.PHONY: _libxmhfcrypto
+_libxmhfcrypto:
+	@echo building libxmhfcrypto...
+	$(MKDIR) -p $(XMHF_LIBS_OBJECTS_DIR)
+	cd $(XMHF_LIBS_OBJECTS_DIR) &&	$(MAKE) -f $(LIBXMHFCRYPTO_SRC)/Makefile -w all
+	@echo libxmhfcrypto built sucessfully.
+
+#uspark	
+.PHONY: _libxmhfhw
+_libxmhfhw:
+	@echo building libxmhfhw...
+	$(MKDIR) -p $(XMHF_LIBS_OBJECTS_DIR)
+	cd $(XMHF_LIBS_OBJECTS_DIR) &&	$(MAKE) -f $(LIBXMHFHW_SRC)/Makefile -w all
+	@echo libxmhfhw built sucessfully.
+
+#uspark	
+.PHONY: _libxmhfgeec
+_libxmhfgeec:
+	@echo building libxmhfgeec...
+	$(MKDIR) -p $(XMHF_LIBS_OBJECTS_DIR)
+	cd $(XMHF_LIBS_OBJECTS_DIR) &&	$(MAKE) -f $(LIBXMHFGEEC_SRC)/Makefile -w all
+	@echo libxmhfgeec built sucessfully.
+	
+
+.PHONY: _libxmhfdebug
+_libxmhfdebug:
+	@echo building libxmhfdebug...
+	$(MKDIR) -p $(XMHF_LIBS_OBJECTS_DIR)
+	cd $(XMHF_LIBS_OBJECTS_DIR) &&	$(MAKE) -f $(LIBXMHFDEBUG_SRC)/Makefile -w all
+	@echo libxmhfdebug built sucessfully.
+	
+	
+	
+.PHONY: uobjinfotable_prebuild
+uobjinfotable_prebuild:
+	@echo building uobjinfotable prebuild...
+	$(MKDIR) -p $(XMHF_OBJDIR)
+	cd $(XMHF_OBJDIR) && $(CCERT) -c $(CCERT_FLAGS) -o $(XMHF_OBJDIR)/uobjinfotable.o uobjinfotable.c
+	@echo uobjinfotable prebuild built sucessfully.
+
+
+.PHONY: uobjinfotable_realbuild
+uobjinfotable_realbuild:
+	@echo building uobjinfotable realbuild...
+	$(MKDIR) -p $(XMHF_OBJDIR)
+	cd $(XMHF_OBJDIR) && $(CCERT) -c $(CCERT_FLAGS) -o $(XMHF_OBJDIR)/uobjinfotable.o uobjinfotable.c
+	@echo uobjinfotable realbuild built sucessfully.
+	
+	
+
+.PHONY: slabs
+slabs: slabs_prebuild slabs_verify slabs_realbuild
+
+.PHONY: slabs_prebuild
+slabs_prebuild: _slabs_configureandgenerateslabinfonoexports xmhflibs uobjinfotable_prebuild _slabs_common_prebuild
+
+.PHONY: slabs_verify
+slabs_verify: slabs_prebuild _slabs_generateslabinfoexports _slabs_verify
+
+.PHONY: slabs_realbuild
+slabs_realbuild: slabs_prebuild _slabs_generateslabinfoexports uobjinfotable_realbuild  _slabs_common_realbuild
+
+.PHONY: _slabs_verify
+_slabs_verify:
+	@echo WiP
+
+.PHONY: _slabs_common_prebuild
+_slabs_common_prebuild:
+	@echo Building slabs prebuild...
+	@for i in $(XMHF_SLAB_DIRS); \
+	do \
+		(cd $(XMHF_OBJDIR) &&	echo "Making all in $$i..." && $(MAKE) -f $(XMHF_DIR)/$$i/Makefile -w all) || exit 1; \
+	done;
+	@echo Slabs build prebuild SUCCESS
+
+.PHONY: _slabs_common_realbuild
+_slabs_common_realbuild:
+	@echo Building slabs realbuild...
+	@for i in $(XMHF_SLAB_DIRS); \
+	do \
+		(cd $(XMHF_OBJDIR) &&	echo "Making all in $$i..." && $(MAKE) -f $(XMHF_DIR)/$$i/Makefile -w linkslabbin) || exit 1; \
+	done;
+	@echo Slabs build realbuild SUCCESS
+
+.PHONY: _slabs_preprocessmanifests
+_slabs_preprocessmanifests:
+	mkdir -p $(XMHF_OBJDIR)
+	@for i in $(XMHF_SLAB_NAMES); \
+	do \
+		(cd $(XMHF_OBJDIR) && echo "Prepping slab geec manifest for $$i..." && $(CP) -f $(XMHF_DIR)/uxmhf/xmhf-uobjs/$$i/$$i.gsm $$i.gsm.c && $(CCERT) -E -D__ASSEMBLY__ $(CCERT_FLAGS) $$i.gsm.c >$(XMHF_DIR)/uxmhf/xmhf-uobjs/$$i/$$i.gsm.pp) || exit 1; \
+	done;
+	@echo Slab geec manifests prepped
+
+.PHONY: _slabs_configureandgenerateslabinfonoexports
+_slabs_configureandgenerateslabinfonoexports: _slabs_preprocessmanifests
+	cd $(XMHF_DIR) && frama-c -load-module $(XMHF_DIR)/uberspark/tools/Umf.o -umf-uobjlist $(XMHF_DIR)/SLABS -umf-outuobjinfotable $(XMHF_OBJDIR)/uobjinfotable.c -umf-outlinkerscript $(XMHF_OBJDIR)/xmhf.lscript -umf-loadaddr $(XMHF_CONFIG_LOADADDR) -umf-loadmaxsize $(XMHF_CONFIG_LOADMAXSIZE) -umf-totaluhuobjs $(XMHFGEEC_TOTAL_UHSLABS) -umf-maxincldevlistentries $(XMHF_CONFIG_MAX_INCLDEVLIST_ENTRIES) -umf-maxexcldevlistentries $(XMHF_CONFIG_MAX_EXCLDEVLIST_ENTRIES) -umf-maxmemoffsetentries $(XMHF_CONFIG_MAX_MEMOFFSET_ENTRIES)
+
+
+.PHONY: _slabs_generateslabinfoexports
+_slabs_generateslabinfoexports: _slabs_preprocessmanifests
+	@echo generating slab info table with memoffsets...
+	cd $(XMHF_DIR) && frama-c -load-module $(XMHF_DIR)/uberspark/tools/Umf.o -umf-uobjlist $(XMHF_DIR)/SLABS -umf-outuobjinfotable $(XMHF_OBJDIR)/uobjinfotable.c -umf-outlinkerscript $(XMHF_OBJDIR)/xmhf.lscript -umf-loadaddr $(XMHF_CONFIG_LOADADDR) -umf-loadmaxsize $(XMHF_CONFIG_LOADMAXSIZE) -umf-totaluhuobjs $(XMHFGEEC_TOTAL_UHSLABS) -umf-maxincldevlistentries $(XMHF_CONFIG_MAX_INCLDEVLIST_ENTRIES) -umf-maxexcldevlistentries $(XMHF_CONFIG_MAX_EXCLDEVLIST_ENTRIES) -umf-maxmemoffsetentries $(XMHF_CONFIG_MAX_MEMOFFSET_ENTRIES) -umf-memoffsets
+	@echo slab info table with memoffsets ready.
+
+	
+	
+	
+.PHONY: verify_compcheck
+verify_compcheck: tools _slabs_preprocessmanifests
+	@echo Proceeding to generate composition check files...
+	$(MKDIR) -p $(XMHF_OBJDIR)/_verif_ccomp
+	cd $(XMHF_DIR) && frama-c -load-module $(XMHF_DIR)/uberspark/tools/Uccomp.o -umf-uobjlist $(XMHF_DIR)/SLABS -umf-outuobjccompdriver $(XMHF_OBJDIR)/_verif_ccomp/ccompdriverfile.c.v.c -umf-outuobjccompcheck $(XMHF_OBJDIR)/_verif_ccomp/ccompcheckfile.c.v.c  -umf-maxincldevlistentries $(XMHF_CONFIG_MAX_INCLDEVLIST_ENTRIES) -umf-maxexcldevlistentries $(XMHF_CONFIG_MAX_EXCLDEVLIST_ENTRIES) -umf-maxmemoffsetentries $(XMHF_CONFIG_MAX_MEMOFFSET_ENTRIES)
+	@echo composition check files generated
+	cd $(XMHF_OBJDIR)/_verif_ccomp && frama-c -val -no-val-show-progress -slevel 2048 -cpp-extra-args=-nostdinc $(VFLAGS) ccompdriverfile.c.v.c ccompcheckfile.c.v.c
+	
+
+.PHONY: verif_gensentinelstubs
+verif_gensentinelstubs: 
+		@echo Proceeding to generate sentinel stubs for blueprint conformance...
+		$(MKDIR) -p $(XMHF_OBJDIR)/_verif_bp
+		cd $(XMHF_DIR) && frama-c -load-module $(XMHF_DIR)/uberspark/tools/Ubp.o -umf-uobjlist $(XMHF_DIR)/SLABS -umf-outdirsentinelstubs $(XMHF_OBJDIR)/_verif_bp/  -umf-maxincldevlistentries $(XMHF_CONFIG_MAX_INCLDEVLIST_ENTRIES) -umf-maxexcldevlistentries $(XMHF_CONFIG_MAX_EXCLDEVLIST_ENTRIES) -umf-maxmemoffsetentries $(XMHF_CONFIG_MAX_MEMOFFSET_ENTRIES)
+		@echo sentinel stubs generated
+
+.PHONY: verify_prep
+verify_prep: tools _slabs_configureandgenerateslabinfonoexports verif_gensentinelstubs
+
+
+.PHONY: verify_all
+verify_all: verify_prep 
+	@for i in $(XMHF_SLAB_NAMES); \
+	do \
+		(cd $(XMHF_DIR)/uxmhf/xmhf-uobjs/$$i && echo "Verifying uobj $$i..." && $(MAKE) -w verify) || exit 1; \
+	done;
+	@echo All uobjs verified!
+	
+
+.PHONY: bootloader
+bootloader: xmhflibs 
+	@echo Building XMHF boot loader...
+	cd $(XMHF_OBJDIR) && $(MAKE) -f $(XMHF_BOOTLOADER_SRC)/Makefile -w all
+	@echo XMHF boot loader build SUCCESS
+	
+
+.PHONY: xmhfbin
+xmhfbin: $(XMHFLIBS_SRC) $(XMHFCORE_SRC)
+	@echo Linking XMHF binary...
+	cd $(XMHF_OBJDIR) && $(CP) -f xmhf.lscript xmhf.lscript.c
+	cd $(XMHF_OBJDIR) && $(CC) $(CFLAGS) -D__ASSEMBLY__ -P -E xmhf.lscript.c -o xmhf.lds
+	cd $(XMHF_OBJDIR) && $(LD) --oformat elf32-i386 -T xmhf.lds -o xmhf.exe -L$(CCERT_LIB) -L$(CCLIB)/lib/linux -L$(XMHF_LIBS_OBJECTS_DIR) -lxmhfc -lcompcert
+	cd $(XMHF_OBJDIR) && $(OBJCOPY) --output-format=binary xmhf.exe xmhf.bin
+	@echo XMHF link SUCCESS
+
+.PHONY: finalbin
+finalbin: bootloader xmhfbin
+	@echo generating final binaries...
+	cd $(XMHF_OBJDIR) && $(CAT) ./_objs_xmhf-bootloader/xmhf-bootloader.bin ./xmhf.bin > ./xmhf.tmp.img
+	cd $(XMHF_OBJDIR) && gzip -c ./xmhf.tmp.img > ./xmhf-$(XMHF_TARGET_TRIAD).bin.gz
+	cd $(XMHF_OBJDIR) && $(RM) -rf ./xmhf.tmp.img
+	@echo xmhf binary generation SUCCESS
+
+
+.PHONY: clean distclean
+clean:
+	$(RM) -f $(XMHF_DIR)/uxmhf/xmhf-uobjs/geec_sentinel/__geec_sentinel_autogendata_slabinfotable
+	$(RM) -rf $(XMHF_OBJDIR)
+
+# http://www.gnu.org/software/automake/manual/automake.html#Clean
+distclean: clean
+	$(RM) config.log config.status
+	$(RM) -rf Makefile
+
+
+#-----autoconf rules
+Makefile: Makefile.in config.status
+	./config.status $@
+
+config.status: configure
+	./config.status --recheck
+
+configure: configure.ac
+	./autogen.sh
+
