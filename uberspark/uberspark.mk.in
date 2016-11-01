@@ -4,7 +4,7 @@
 ######
 
 
-include ./common.mk
+include ./uberspark-common.mk
 
 
 ###### targets
@@ -50,17 +50,18 @@ clean:
 .PHONY: distclean
 distclean: clean
 	$(RM) config.log config.status
-	$(RM) -rf Makefile
+	$(RM) uberspark.mk
+	$(RM) uberspark-common.mk
 
 
 ###### autoconf rules
 
-Makefile: Makefile.in config.status
+uberspark.mk: uberspark.mk.in config.status
 	./config.status $@
 
-config.status: configure
+config.status: configure-uberspark
 	./config.status --recheck
 
-configure: configure.ac
-	autoconf --output=configure configure.ac
+configure-uberspark: configure-uberspark.ac
+	autoconf --output=configure-uberspark configure-uberspark.ac
 
