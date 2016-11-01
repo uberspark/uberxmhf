@@ -1,1 +1,5 @@
-(* placeholder *)
+(* uberspark config tool: to locate hwm, libraries and headers *)
+(* author: amit vasudevan (amitvasudevan@acm.org) *)
+
+let g_prefix = "@prefix@";;
+ 
