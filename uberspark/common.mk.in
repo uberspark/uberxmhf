@@ -12,6 +12,18 @@ export AC_INCLUDEDIR=@includedir@
 export AC_PKGCONFIGDIR=@pkgconfigdir@
 export AC_PKGINCLUDEDIR=@pkgincludedir@
 
+export MAKE = @MAKE@
+export FRAMAC = @FRAMAC@
+export CCERT = @CCERT@
+export CC = @CC@
+export AS = @AS@
+export AR = @AR@
+export LD = @LD@
+export RM = @RM@
+export CP = @CP@				
+export MKDIR = @MKDIR@
+export CAT = @CAT@
+
 
 ###### paths
 
