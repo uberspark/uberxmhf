@@ -62,6 +62,12 @@ install-tools:
 	$(CP) -f $(USPARK_TOOLSDIR)/Uhwm.o $(AC_PREFIX)$(AC_LIBDIR)/uberspark/tools/.
 
 
+.PHONY: install-hdrs
+install-hdrs:
+	$(MKDIR) -p $(AC_PREFIX)$(AC_LIBDIR)/uberspark/include
+	$(CP) -f $(USPARK_INCLUDEDIR)/* $(AC_PREFIX)$(AC_LIBDIR)/uberspark/include/.
+
+
 .PHONY: clean
 clean:
 	cd $(USPARK_TOOLSDIR) && $(MAKE) -f umf.mk -w clean
