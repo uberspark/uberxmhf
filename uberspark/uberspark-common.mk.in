@@ -8,6 +8,7 @@
 export AC_PREFIX=@prefix@
 export AC_EXEC_PREFIX=@exec_prefix@
 export AC_LIBDIR=@libdir@
+export AC_BINDIR=@bindir@
 export AC_INCLUDEDIR=@includedir@
 export AC_PKGCONFIGDIR=@pkgconfigdir@
 export AC_PKGINCLUDEDIR=@pkgincludedir@
