@@ -21,3 +21,22 @@ export USPARK_LIBSDIR := $(USPARK_DIR)/libs
 export USPARK_INCLUDEDIR := $(USPARK_DIR)/include
 export USPARK_TOOLSDIR := $(USPARK_DIR)/tools
 export USPARK_OBJDIR = $(USPARK_DIR)/_objects
+
+
+###### compute include paths
+USPARK_INCLUDES := -I$(USPARK_DIR)/include 
+USPARK_INCLUDES += -I$(USPARK_DIR)/hwm/include
+USPARK_LIBSINC = $(foreach dir,$(USPARK_LIBDIRS),-I$(dir)/include)
+USPARK_INCLUDES += $(USPARK_LIBSINC)
+export USPARK_INCLUDES
+
+###### compcert compiler flags
+CCERT_FLAGS = -O
+CCERT_FLAGS += -fno-fpu
+CCERT_FLAGS += -fbitfields
+CCERT_FLAGS += -fpacked-structs
+CCERT_FLAGS += -fstruct-return
+CCERT_FLAGS += -fno-inline-asm
+CCERT_FLAGS += $(USPARK_INCLUDES)
+export CCERT_FLAGS
+
