@@ -38,6 +38,13 @@ build-tools:
 
 .PHONY: clean
 clean:
+	cd $(USPARK_TOOLSDIR) && $(MAKE) -f umf.mk -w clean
+	cd $(USPARK_TOOLSDIR) && $(MAKE) -f ubp.mk -w clean
+	cd $(USPARK_TOOLSDIR) && $(MAKE) -f uccomp.mk -w clean
+	cd $(USPARK_TOOLSDIR) && $(MAKE) -f ucasm.mk -w clean
+	cd $(USPARK_TOOLSDIR) && $(MAKE) -f uhwm.mk -w clean
+	cd $(USPARK_TOOLSDIR) && $(RM) *_DEP
+	
 
 # http://www.gnu.org/software/automake/manual/automake.html#Clean
 .PHONY: distclean
