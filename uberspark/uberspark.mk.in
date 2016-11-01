@@ -67,6 +67,12 @@ install-hdrs:
 	$(MKDIR) -p $(AC_PREFIX)$(AC_LIBDIR)/uberspark/include
 	$(CP) -f $(USPARK_INCLUDEDIR)/* $(AC_PREFIX)$(AC_LIBDIR)/uberspark/include/.
 
+.PHONY: install-hwm
+install-hwm:
+	$(MKDIR) -p $(AC_PREFIX)$(AC_LIBDIR)/uberspark/hwm
+	$(CP) -rf $(USPARK_HWMDIR)/* $(AC_PREFIX)$(AC_LIBDIR)/uberspark/hwm/.
+
+
 
 .PHONY: clean
 clean:
