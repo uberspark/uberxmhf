@@ -13,6 +13,8 @@ include ./uberspark-common.mk
 all: build-tools
 	@echo $(AC_PREFIX)
 	@echo $(AC_LIBDIR)
+	@echo $(AC_BINDIR)
+	@echo $(AC_INCLUDEDIR)
 	@echo $(USPARK_DIR)
 	@echo $(USPARK_OBJDIR)
 	@echo $(USPARK_HWMDIR)
