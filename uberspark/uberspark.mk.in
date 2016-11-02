@@ -37,39 +37,40 @@ build-tools:
 
 .PHONY: install-tools
 install-tools:
-	$(MKDIR) -p $(AC_PREFIX)$(AC_LIBDIR)/uberspark/tools
-	$(CP) -f $(USPARK_TOOLSDIR)/ubersparkconfig $(AC_PREFIX)$(AC_BINDIR)/.
-	$(CP) -f $(USPARK_TOOLSDIR)/Umf.cmi $(AC_PREFIX)$(AC_LIBDIR)/uberspark/tools/.
-	$(CP) -f $(USPARK_TOOLSDIR)/Umf.cmx $(AC_PREFIX)$(AC_LIBDIR)/uberspark/tools/.
-	$(CP) -f $(USPARK_TOOLSDIR)/Umf.cmo $(AC_PREFIX)$(AC_LIBDIR)/uberspark/tools/.
-	$(CP) -f $(USPARK_TOOLSDIR)/Umf.o $(AC_PREFIX)$(AC_LIBDIR)/uberspark/tools/.
-	$(CP) -f $(USPARK_TOOLSDIR)/Ubp.cmi $(AC_PREFIX)$(AC_LIBDIR)/uberspark/tools/.
-	$(CP) -f $(USPARK_TOOLSDIR)/Ubp.cmx $(AC_PREFIX)$(AC_LIBDIR)/uberspark/tools/.
-	$(CP) -f $(USPARK_TOOLSDIR)/Ubp.cmo $(AC_PREFIX)$(AC_LIBDIR)/uberspark/tools/.
-	$(CP) -f $(USPARK_TOOLSDIR)/Ubp.o $(AC_PREFIX)$(AC_LIBDIR)/uberspark/tools/.
-	$(CP) -f $(USPARK_TOOLSDIR)/Uccomp.cmi $(AC_PREFIX)$(AC_LIBDIR)/uberspark/tools/.
-	$(CP) -f $(USPARK_TOOLSDIR)/Uccomp.cmx $(AC_PREFIX)$(AC_LIBDIR)/uberspark/tools/.
-	$(CP) -f $(USPARK_TOOLSDIR)/Uccomp.cmo $(AC_PREFIX)$(AC_LIBDIR)/uberspark/tools/.
-	$(CP) -f $(USPARK_TOOLSDIR)/Uccomp.o $(AC_PREFIX)$(AC_LIBDIR)/uberspark/tools/.
-	$(CP) -f $(USPARK_TOOLSDIR)/Ucasm.cmi $(AC_PREFIX)$(AC_LIBDIR)/uberspark/tools/.
-	$(CP) -f $(USPARK_TOOLSDIR)/Ucasm.cmx $(AC_PREFIX)$(AC_LIBDIR)/uberspark/tools/.
-	$(CP) -f $(USPARK_TOOLSDIR)/Ucasm.cmo $(AC_PREFIX)$(AC_LIBDIR)/uberspark/tools/.
-	$(CP) -f $(USPARK_TOOLSDIR)/Ucasm.o $(AC_PREFIX)$(AC_LIBDIR)/uberspark/tools/.
-	$(CP) -f $(USPARK_TOOLSDIR)/Uhwm.cmi $(AC_PREFIX)$(AC_LIBDIR)/uberspark/tools/.
-	$(CP) -f $(USPARK_TOOLSDIR)/Uhwm.cmx $(AC_PREFIX)$(AC_LIBDIR)/uberspark/tools/.
-	$(CP) -f $(USPARK_TOOLSDIR)/Uhwm.cmo $(AC_PREFIX)$(AC_LIBDIR)/uberspark/tools/.
-	$(CP) -f $(USPARK_TOOLSDIR)/Uhwm.o $(AC_PREFIX)$(AC_LIBDIR)/uberspark/tools/.
+	$(MKDIR) -p $(USPARK_INSTALL_TOOLSDIR)
+	$(MKDIR) -p $(USPARK_INSTALL_BINDIR)
+	$(CP) -f $(USPARK_TOOLSDIR)/ubersparkconfig $(USPARK_INSTALL_BINDIR)/.
+	$(CP) -f $(USPARK_TOOLSDIR)/Umf.cmi $(USPARK_INSTALL_TOOLSDIR)/.
+	$(CP) -f $(USPARK_TOOLSDIR)/Umf.cmx $(USPARK_INSTALL_TOOLSDIR)/.
+	$(CP) -f $(USPARK_TOOLSDIR)/Umf.cmo $(USPARK_INSTALL_TOOLSDIR)/.
+	$(CP) -f $(USPARK_TOOLSDIR)/Umf.o $(USPARK_INSTALL_TOOLSDIR)/.
+	$(CP) -f $(USPARK_TOOLSDIR)/Ubp.cmi $(USPARK_INSTALL_TOOLSDIR)/.
+	$(CP) -f $(USPARK_TOOLSDIR)/Ubp.cmx $(USPARK_INSTALL_TOOLSDIR)/.
+	$(CP) -f $(USPARK_TOOLSDIR)/Ubp.cmo $(USPARK_INSTALL_TOOLSDIR)/.
+	$(CP) -f $(USPARK_TOOLSDIR)/Ubp.o $(USPARK_INSTALL_TOOLSDIR)/.
+	$(CP) -f $(USPARK_TOOLSDIR)/Uccomp.cmi $(USPARK_INSTALL_TOOLSDIR)/.
+	$(CP) -f $(USPARK_TOOLSDIR)/Uccomp.cmx $(USPARK_INSTALL_TOOLSDIR)/.
+	$(CP) -f $(USPARK_TOOLSDIR)/Uccomp.cmo $(USPARK_INSTALL_TOOLSDIR)/.
+	$(CP) -f $(USPARK_TOOLSDIR)/Uccomp.o $(USPARK_INSTALL_TOOLSDIR)/.
+	$(CP) -f $(USPARK_TOOLSDIR)/Ucasm.cmi $(USPARK_INSTALL_TOOLSDIR)/.
+	$(CP) -f $(USPARK_TOOLSDIR)/Ucasm.cmx $(USPARK_INSTALL_TOOLSDIR)/.
+	$(CP) -f $(USPARK_TOOLSDIR)/Ucasm.cmo $(USPARK_INSTALL_TOOLSDIR)/.
+	$(CP) -f $(USPARK_TOOLSDIR)/Ucasm.o $(USPARK_INSTALL_TOOLSDIR)/.
+	$(CP) -f $(USPARK_TOOLSDIR)/Uhwm.cmi $(USPARK_INSTALL_TOOLSDIR)/.
+	$(CP) -f $(USPARK_TOOLSDIR)/Uhwm.cmx $(USPARK_INSTALL_TOOLSDIR)/.
+	$(CP) -f $(USPARK_TOOLSDIR)/Uhwm.cmo $(USPARK_INSTALL_TOOLSDIR)/.
+	$(CP) -f $(USPARK_TOOLSDIR)/Uhwm.o $(USPARK_INSTALL_TOOLSDIR)/.
 
 
 .PHONY: install-hdrs
 install-hdrs:
-	$(MKDIR) -p $(AC_PREFIX)$(AC_LIBDIR)/uberspark/include
-	$(CP) -f $(USPARK_INCLUDEDIR)/* $(AC_PREFIX)$(AC_LIBDIR)/uberspark/include/.
+	$(MKDIR) -p $(USPARK_INSTALL_INCLUDEDIR)
+	$(CP) -f $(USPARK_INCLUDEDIR)/* $(USPARK_INSTALL_INCLUDEDIR)/.
 
 .PHONY: install-hwm
 install-hwm:
-	$(MKDIR) -p $(AC_PREFIX)$(AC_LIBDIR)/uberspark/hwm
-	$(CP) -rf $(USPARK_HWMDIR)/* $(AC_PREFIX)$(AC_LIBDIR)/uberspark/hwm/.
+	$(MKDIR) -p $(USPARK_INSTALL_HWMDIR)
+	$(CP) -rf $(USPARK_HWMDIR)/* $(USPARK_INSTALL_HWMDIR)/.
 
 
 
