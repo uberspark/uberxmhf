@@ -11,6 +11,8 @@ include ../uberspark-common.mk
 
 .PHONY: all
 all: 
+	@echo $(CCERT_CFLAGS)
+	@echo $(CCERT_CASMFLAGS)
 	@echo $(USPARK_INSTALL_BINDIR)
 	@echo $(USPARK_INSTALL_INCLUDEDIR)
 	@echo $(USPARK_INSTALL_HWMDIR)
