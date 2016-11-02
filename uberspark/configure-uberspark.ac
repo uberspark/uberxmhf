@@ -24,7 +24,7 @@ AC_SUBST([datarootdir], ['/share'])
 AC_CONFIG_FILES(
 			[uberspark-common.mk]
 			[uberspark.mk]
-			[./tools/uberspark-config.ml]
+			[./tools/ubersparkconfig.ml]
 			)
 
 AC_OUTPUT
