@@ -6,12 +6,6 @@
 ###### autoconf controlled variables
 
 export AC_PREFIX=@prefix@
-export AC_BINDIR=@bindir@
-export AC_LIBDIR=@libdir@
-export AC_INCLUDEDIR=@includedir@
-export AC_DATADIR=@datadir@
-export AC_DATAROOTDIR=@datarootdir@
-
 export AC_UBERSPARK_BINDIR=@ubersparkbindir@
 export AC_UBERSPARK_HOMEDIR=@ubersparkhomedir@
 export AC_UBERSPARK_INCLUDEDIR=@ubersparkincludedir@
@@ -33,6 +27,7 @@ export RM = @RM@
 export CP = @CP@				
 export MKDIR = @MKDIR@
 export CAT = @CAT@
+
 
 ###### install paths
 
