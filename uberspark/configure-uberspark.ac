@@ -15,14 +15,11 @@ AC_CHECK_PROG([CAT], [cat], [cat])
 
 
 AC_SUBST([prefix])
-AC_SUBST([exec_prefix])
-AC_SUBST([datadir])
-AC_SUBST([libdir])
-AC_SUBST([bindir])
-AC_SUBST([includedir])
-AC_SUBST([pkgdatadir], ['${datadir}/AC_PACKAGE_NAME'])
-AC_SUBST([pkgconfigdir], ['${libdir}/pkgconfig'])
-AC_SUBST([pkgincludedir], ['${includedir}/AC_PACKAGE_NAME'])
+AC_SUBST([bindir], ['/bin'])
+AC_SUBST([libdir], ['/lib'])
+AC_SUBST([includedir], ['/include'])
+AC_SUBST([datadir], ['/share'])
+AC_SUBST([datarootdir], ['/share'])
 
 AC_CONFIG_FILES(
 			[uberspark-common.mk]
