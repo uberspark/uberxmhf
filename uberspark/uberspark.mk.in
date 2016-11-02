@@ -7,6 +7,14 @@
 include ./uberspark-common.mk
 
 
+###### paths
+
+export USPARK_DIR := $(realpath $(dir $(lastword $(MAKEFILE_LIST))))
+export USPARK_HWMDIR := $(USPARK_DIR)/hwm
+export USPARK_INCLUDEDIR := $(USPARK_DIR)/include
+export USPARK_TOOLSDIR := $(USPARK_DIR)/tools
+
+
 ###### targets
 
 .PHONY: all
