@@ -91,7 +91,7 @@ distclean: clean
 	$(RM) config.log config.status
 	$(RM) uberspark.mk
 	$(RM) uberspark-common.mk
-
+	$(RM) $(USPARK_TOOLSDIR)/ubersparkconfig.ml
 
 ###### autoconf rules
 
