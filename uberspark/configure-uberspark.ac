@@ -16,12 +16,6 @@ AC_CHECK_PROG([CAT], [cat], [cat])
 
 
 AC_SUBST([prefix])
-AC_SUBST([bindir], ['/bin'])
-AC_SUBST([libdir], ['/lib'])
-AC_SUBST([includedir], ['/include'])
-AC_SUBST([datadir], ['/share'])
-AC_SUBST([datarootdir], ['/share'])
-
 AC_SUBST([ubersparkbindir], ['/bin'])
 AC_SUBST([ubersparkhomedir], ['/AC_PACKAGE_NAME'])
 AC_SUBST([ubersparkincludedir], ['/include'])
