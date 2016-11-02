@@ -2,4 +2,9 @@
 (* author: amit vasudevan (amitvasudevan@acm.org) *)
 
 let g_prefix = "@prefix@";;
+let g_bindir = "@prefix@@bindir@";;
+let g_libdir = "@prefix@@libdir@";;
+let g_includedir = "@prefix@@includedir@";;
+let g_datadir = "@prefix@@datadir@";;
+let g_datarootdir = "@prefix@@datarootdir@";;
  
