@@ -1,0 +1,46 @@
+######
+# top-level Makefile for UberSpark libraries
+# author: amit vasudevan (amitvasudevan@acm.org)
+######
+
+
+include ./uberspark-common.mk
+
+
+###### targets
+
+.PHONY: all
+all: 
+	@echo $(USPARK_INSTALL_BINDIR)
+	@echo $(USPARK_INSTALL_INCLUDEDIR)
+	@echo $(USPARK_INSTALL_HWMDIR)
+	@echo $(USPARK_INSTALL_HWMINCLUDEDIR)
+	@echo $(USPARK_INSTALL_LIBSDIR)
+	@echo $(USPARK_INSTALL_LIBSINCLUDESDIR)
+	@echo $(USPARK_INSTALL_TOOLSDIR)
+
+
+
+
+
+.PHONY: clean
+clean:
+	
+
+# http://www.gnu.org/software/automake/manual/automake.html#Clean
+.PHONY: distclean
+distclean: clean
+	$(RM) config.log config.status
+	$(RM) ubersparklibs.mk
+
+###### autoconf rules
+
+ubersparklibs.mk: ubersparklibs.mk.in config.status
+	./config.status $@
+
+config.status: configure-ubersparklibs
+	./config.status --recheck
+
+configure-ubersparklibs: configure-ubersparklibs.ac
+	autoconf --output=configure-ubersparklibs configure-ubersparklibs.ac
+
