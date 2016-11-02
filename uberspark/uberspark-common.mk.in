@@ -40,16 +40,6 @@ export USPARK_INSTALL_LIBSINCLUDESDIR := $(AC_PREFIX)$(AC_UBERSPARK_HOMEDIR)$(AC
 export USPARK_INSTALL_TOOLSDIR := $(AC_PREFIX)$(AC_UBERSPARK_HOMEDIR)$(AC_UBERSPARK_TOOLSDIR)
 
 
-###### paths
-
-export USPARK_DIR := $(realpath $(dir $(lastword $(MAKEFILE_LIST))))
-export USPARK_HWMDIR := $(USPARK_DIR)/hwm
-export USPARK_LIBSDIR := $(USPARK_DIR)/libs
-export USPARK_INCLUDEDIR := $(USPARK_DIR)/include
-export USPARK_TOOLSDIR := $(USPARK_DIR)/tools
-export USPARK_OBJDIR = $(USPARK_DIR)/_objects
-
-
 ###### compute include paths
 USPARK_INCLUDES := -I$(USPARK_DIR)/include 
 USPARK_INCLUDES += -I$(USPARK_DIR)/hwm/include
