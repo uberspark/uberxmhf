@@ -1,10 +1,10 @@
 ######
-# libxmhfc Makefile
+# libubersparkc Makefile
 # author: amit vasudevan (amitvasudevan@acm.org)
 ######
 
 ###### archive name
-ARCHIVE = libxmhfc.a
+ARCHIVE = libubersparkc.a
 
 ###### compute source directory where this Makefile resides
 srcdir := $(dir $(lastword $(MAKEFILE_LIST)))
