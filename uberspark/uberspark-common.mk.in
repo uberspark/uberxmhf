@@ -13,6 +13,7 @@ export AC_DATADIR=@datadir@
 export AC_DATAROOTDIR=@datarootdir@
 
 export MAKE = @MAKE@
+export OCAMLC = @OCAMLC@
 export FRAMAC = @FRAMAC@
 export CCERT = @CCERT@
 export CC = @CC@
