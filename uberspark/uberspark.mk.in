@@ -26,6 +26,7 @@ all: build-tools
 
 .PHONY: build-tools
 build-tools:
+	cd $(USPARK_TOOLSDIR) && $(OCAMLC) -o ubersparkconfig unix.cma ubersparkconfig.ml
 	cd $(USPARK_TOOLSDIR) && $(RM) umfcommon.annot umfcommon.cmi umfcommon.cmo umfcommon.cmt umfcommon.cmx umfcommon.o
 	cd $(USPARK_TOOLSDIR) && $(MAKE) -f umf.mk -w all
 	cd $(USPARK_TOOLSDIR) && $(RM) umfcommon.annot umfcommon.cmi umfcommon.cmo umfcommon.cmt umfcommon.cmx umfcommon.o
@@ -41,6 +42,7 @@ build-tools:
 .PHONY: install-tools
 install-tools:
 	$(MKDIR) -p $(AC_PREFIX)$(AC_LIBDIR)/uberspark/tools
+	$(CP) -f $(USPARK_TOOLSDIR)/ubersparkconfig $(AC_PREFIX)$(AC_BINDIR)/.
 	$(CP) -f $(USPARK_TOOLSDIR)/Umf.cmi $(AC_PREFIX)$(AC_LIBDIR)/uberspark/tools/.
 	$(CP) -f $(USPARK_TOOLSDIR)/Umf.cmx $(AC_PREFIX)$(AC_LIBDIR)/uberspark/tools/.
 	$(CP) -f $(USPARK_TOOLSDIR)/Umf.cmo $(AC_PREFIX)$(AC_LIBDIR)/uberspark/tools/.
