@@ -82,6 +82,7 @@ clean:
 	cd $(USPARK_TOOLSDIR) && $(MAKE) -f ucasm.mk -w clean
 	cd $(USPARK_TOOLSDIR) && $(MAKE) -f uhwm.mk -w clean
 	cd $(USPARK_TOOLSDIR) && $(RM) *_DEP
+	cd $(USPARK_TOOLSDIR) && $(RM) ubersparkconfig ubersparkconfig.cmi ubersparkconfig.cmo
 	
 
 # http://www.gnu.org/software/automake/manual/automake.html#Clean
