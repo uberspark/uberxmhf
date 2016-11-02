@@ -1,0 +1,75 @@
+(* uberspark config tool: to locate hwm, libraries and headers *)
+(* author: amit vasudevan (amitvasudevan@acm.org) *)
+
+open Sys
+open Unix
+
+let g_install_prefix = "@prefix@";;
+let g_uberspark_install_bindir = "@prefix@@ubersparkbindir@";;
+let g_uberspark_install_homedir = "@prefix@@ubersparkhomedir@";;
+let g_uberspark_install_includedir = "@prefix@@ubersparkhomedir@@ubersparkincludedir@";;
+let g_uberspark_install_hwmdir = "@prefix@@ubersparkhomedir@@ubersparkhwmdir@";;
+let g_uberspark_install_hwmincludedir = "@prefix@@ubersparkhomedir@@ubersparkhwmincludedir@";;
+let g_uberspark_install_libsdir = "@prefix@@ubersparkhomedir@@ubersparklibsdir@";;
+let g_uberspark_install_libsincludesdir = "@prefix@@ubersparkhomedir@@ubersparklibsincludesdir@";;
+let g_uberspark_install_toolsdir = "@prefix@@ubersparkhomedir@@ubersparktoolsdir@";;
+ 
+let main () =
+	let len = Array.length Sys.argv in
+		if len = 2 then
+	    	begin
+	      		if (compare "--print-uberspark-bindir" Sys.argv.(1)) = 0 then
+	      			begin
+						print_string g_uberspark_install_bindir;
+	      				print_newline ();
+	      			end
+	      		else if (compare "--print-uberspark-homedir" Sys.argv.(1)) = 0 then
+	      			begin
+						print_string g_uberspark_install_homedir;
+	      				print_newline ();
+	      			end
+	      		else if (compare "--print-uberspark-includedir" Sys.argv.(1)) = 0 then
+	      			begin
+						print_string g_uberspark_install_includedir;
+	      				print_newline ();
+	      			end
+	      		else if (compare "--print-uberspark-hwmdir" Sys.argv.(1)) = 0 then
+	      			begin
+						print_string g_uberspark_install_hwmdir;
+	      				print_newline ();
+	      			end
+	      		else if (compare "--print-uberspark-hwmincludedir" Sys.argv.(1)) = 0 then
+	      			begin
+						print_string g_uberspark_install_hwmincludedir;
+	      				print_newline ();
+	      			end
+	      		else if (compare "--print-uberspark-libsdir" Sys.argv.(1)) = 0 then
+	      			begin
+						print_string g_uberspark_install_libsdir;
+	      				print_newline ();
+	      			end
+	      		else if (compare "--print-uberspark-libsincludesdir" Sys.argv.(1)) = 0 then
+	      			begin
+						print_string g_uberspark_install_libsincludesdir;
+	      				print_newline ();
+	      			end
+	      		else if (compare "--print-uberspark-toolsdir" Sys.argv.(1)) = 0 then
+	      			begin
+						print_string g_uberspark_install_toolsdir;
+	      				print_newline ();
+	      			end
+	      		else
+	      			begin
+						print_string "Invalid argument!";
+						print_newline ();
+	      			end
+	    	end
+	    else
+	    	begin
+				print_string "Too many arguments!";
+				print_newline ();
+			end
+		;;
+		
+main ();;
+

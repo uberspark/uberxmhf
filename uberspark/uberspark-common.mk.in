@@ -1,0 +1,69 @@
+######
+# common Makefile boilerplate for UberSpark
+# author: amit vasudevan (amitvasudevan@acm.org)
+######
+
+###### autoconf controlled variables
+
+export AC_PREFIX=@prefix@
+export AC_UBERSPARK_BINDIR=@ubersparkbindir@
+export AC_UBERSPARK_HOMEDIR=@ubersparkhomedir@
+export AC_UBERSPARK_INCLUDEDIR=@ubersparkincludedir@
+export AC_UBERSPARK_HWMDIR=@ubersparkhwmdir@
+export AC_UBERSPARK_HWMINCLUDEDIR=@ubersparkhwmincludedir@
+export AC_UBERSPARK_LIBSDIR=@ubersparklibsdir@
+export AC_UBERSPARK_LIBSINCLUDESDIR=@ubersparklibsincludesdir@
+export AC_UBERSPARK_TOOLSDIR=@ubersparktoolsdir@
+
+export MAKE = @MAKE@
+export OCAMLC = @OCAMLC@
+export FRAMAC = @FRAMAC@
+export CCERT = @CCERT@
+export CC = @CC@
+export AS = @AS@
+export AR = @AR@
+export LD = @LD@
+export RM = @RM@
+export CP = @CP@				
+export MKDIR = @MKDIR@
+export CAT = @CAT@
+
+
+###### install paths
+
+export USPARK_INSTALL_BINDIR := $(AC_PREFIX)$(AC_UBERSPARK_BINDIR)
+export USPARK_INSTALL_INCLUDEDIR := $(AC_PREFIX)$(AC_UBERSPARK_HOMEDIR)$(AC_UBERSPARK_INCLUDEDIR)
+export USPARK_INSTALL_HWMDIR := $(AC_PREFIX)$(AC_UBERSPARK_HOMEDIR)$(AC_UBERSPARK_HWMDIR)
+export USPARK_INSTALL_HWMINCLUDEDIR := $(AC_PREFIX)$(AC_UBERSPARK_HOMEDIR)$(AC_UBERSPARK_HWMINCLUDEDIR)
+export USPARK_INSTALL_LIBSDIR := $(AC_PREFIX)$(AC_UBERSPARK_HOMEDIR)$(AC_UBERSPARK_LIBSDIR)
+export USPARK_INSTALL_LIBSINCLUDESDIR := $(AC_PREFIX)$(AC_UBERSPARK_HOMEDIR)$(AC_UBERSPARK_LIBSINCLUDESDIR)
+export USPARK_INSTALL_TOOLSDIR := $(AC_PREFIX)$(AC_UBERSPARK_HOMEDIR)$(AC_UBERSPARK_TOOLSDIR)
+
+
+###### paths
+
+export USPARK_DIR := $(realpath $(dir $(lastword $(MAKEFILE_LIST))))
+export USPARK_HWMDIR := $(USPARK_DIR)/hwm
+export USPARK_LIBSDIR := $(USPARK_DIR)/libs
+export USPARK_INCLUDEDIR := $(USPARK_DIR)/include
+export USPARK_TOOLSDIR := $(USPARK_DIR)/tools
+export USPARK_OBJDIR = $(USPARK_DIR)/_objects
+
+
+###### compute include paths
+USPARK_INCLUDES := -I$(USPARK_DIR)/include 
+USPARK_INCLUDES += -I$(USPARK_DIR)/hwm/include
+USPARK_LIBSINC = $(foreach dir,$(USPARK_LIBDIRS),-I$(dir)/include)
+USPARK_INCLUDES += $(USPARK_LIBSINC)
+export USPARK_INCLUDES
+
+###### compcert compiler flags
+CCERT_FLAGS = -O
+CCERT_FLAGS += -fno-fpu
+CCERT_FLAGS += -fbitfields
+CCERT_FLAGS += -fpacked-structs
+CCERT_FLAGS += -fstruct-return
+CCERT_FLAGS += -fno-inline-asm
+CCERT_FLAGS += $(USPARK_INCLUDES)
+export CCERT_FLAGS
+
