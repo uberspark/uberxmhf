@@ -22,6 +22,15 @@ AC_SUBST([includedir], ['/include'])
 AC_SUBST([datadir], ['/share'])
 AC_SUBST([datarootdir], ['/share'])
 
+AC_SUBST([ubersparkbindir], ['/bin'])
+AC_SUBST([ubersparkhomedir], ['/AC_PACKAGE_NAME'])
+AC_SUBST([ubersparkincludedir], ['/include'])
+AC_SUBST([ubersparkhwmdir], ['/hwm'])
+AC_SUBST([ubersparkhwmincludedir], ['/hwm/include'])
+AC_SUBST([ubersparklibsdir], ['/libs'])
+AC_SUBST([ubersparklibsincludesdir], ['/libs/include'])
+AC_SUBST([ubersparktoolsdir], ['/tools'])
+
 AC_CONFIG_FILES(
 			[uberspark-common.mk]
 			[uberspark.mk]
