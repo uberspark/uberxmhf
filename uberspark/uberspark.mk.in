@@ -11,17 +11,13 @@ include ./uberspark-common.mk
 
 .PHONY: all
 all: build-tools
-	@echo $(AC_PREFIX)
-	@echo $(AC_BINDIR)
-	@echo $(AC_LIBDIR)
-	@echo $(AC_INCLUDEDIR)
-	@echo $(AC_DATADIR)
-	@echo $(USPARK_DIR)
-	@echo $(USPARK_OBJDIR)
-	@echo $(USPARK_HWMDIR)
-	@echo $(USPARK_LIBSDIR)
-	@echo $(USPARK_INCLUDEDIR)
-	@echo $(USPARK_TOOLSDIR)
+	@echo $(USPARK_INSTALL_BINDIR)
+	@echo $(USPARK_INSTALL_INCLUDEDIR)
+	@echo $(USPARK_INSTALL_HWMDIR)
+	@echo $(USPARK_INSTALL_HWMINCLUDEDIR)
+	@echo $(USPARK_INSTALL_LIBSDIR)
+	@echo $(USPARK_INSTALL_LIBSINCLUDESDIR)
+	@echo $(USPARK_INSTALL_TOOLSDIR)
 
 
 .PHONY: build-tools
