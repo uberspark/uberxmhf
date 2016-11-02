@@ -1,6 +1,9 @@
 (* uberspark config tool: to locate hwm, libraries and headers *)
 (* author: amit vasudevan (amitvasudevan@acm.org) *)
 
+open Sys
+open Unix
+
 let g_prefix = "@prefix@";;
 let g_bindir = "@prefix@@bindir@";;
 let g_libdir = "@prefix@@libdir@";;
@@ -8,3 +11,17 @@ let g_includedir = "@prefix@@includedir@";;
 let g_datadir = "@prefix@@datadir@";;
 let g_datarootdir = "@prefix@@datarootdir@";;
  
+let main () =
+	let len = Array.length Sys.argv in
+		if len > 1 then
+    	begin
+      		print_string Sys.argv.(1);
+      		for i = 2 to len - 1 do
+        		print_char ' ';
+        		print_string Sys.argv.(i);
+      		done;
+      		print_newline ();
+    	end;;
+
+main ();;
+
