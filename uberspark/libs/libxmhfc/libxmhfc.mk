@@ -1,23 +1,19 @@
 ######
-# libubersparkc Makefile
+# libxmhfc Makefile
 # author: amit vasudevan (amitvasudevan@acm.org)
 ######
+
+###### archive name
+ARCHIVE = libxmhfc.a
 
 ###### compute source directory where this Makefile resides
 srcdir := $(dir $(lastword $(MAKEFILE_LIST)))
 vpath %.c $(srcdir)
 
-###### include common boilerplate Makefile code
-include $(srcdir)/../../common.mk
-
 ###### populate sources and objects
 C_SOURCES := $(wildcard $(srcdir)/*.c)
 C_SOURCES := $(patsubst $(srcdir)/%, %, $(C_SOURCES))
-
 OBJECTS = $(patsubst %.c, %.o, $(C_SOURCES))
-
-###### archive name
-ARCHIVE = libubersparkc.a
 
 ###### targets
 .PHONY: verify
@@ -41,7 +37,7 @@ $(ARCHIVE): $(OBJECTS)
 
 %.o: %.c
 	@echo Building "$@" from "$<"
-	$(CCERT) -c $(CCERT_FLAGS) -o $@ $<
+	$(CCERT) -c $(CCERT_CFLAGS) -o $@ $<
 
 
 .PHONY: clean
