@@ -17,7 +17,7 @@ include ../uberspark-common.mk
 
 .PHONY: build-libs
 build-libs:
-	cd $(USPARK_LIBSDIR)/libxmhfc && make -f libxmhfc.mk -w build	
+	cd $(USPARK_LIBSDIR)/libxmhfc && make -f libubersparkc.mk -w build	
 
 .PHONY: all
 all: 
@@ -34,7 +34,7 @@ all:
 
 .PHONY: clean
 clean:
-	cd $(USPARK_LIBSDIR)/libxmhfc && make -f libxmhfc.mk -w clean	
+	cd $(USPARK_LIBSDIR)/libxmhfc && make -f libubersparkc.mk -w clean	
 	
 
 # http://www.gnu.org/software/automake/manual/automake.html#Clean
