@@ -16,6 +16,7 @@ O_SOURCES := $(C_SOURCES)
 O_SOURCES := $(patsubst hashes/sha1/%, %, $(O_SOURCES))
 OBJECTS = $(patsubst %.c, %.o, $(O_SOURCES))
 
+
 ###### targets
 .PHONY: verify
 verify:

@@ -47,8 +47,8 @@
 #undef DESC_DEF_ONLY
 #define LTC_SOURCE
 
-
-#include <xmhf.h>
+#include <stdint.h>
+#include <string.h>
 #include <xmhfcrypto.h>
 #include <sha1.h>
 
