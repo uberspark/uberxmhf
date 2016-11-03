@@ -8,9 +8,18 @@
 export USPARK_LIBSDIR := $(realpath $(dir $(lastword $(MAKEFILE_LIST))))
 
 
-###### include biolerplat Makefile code
+###### include biolerplate Makefile code
 
 include ../uberspark-common.mk
+
+###### append additional include paths to CCERT_CFLAGS and CCERT_CASMFLAGS
+USPARK_LIBSINCLUDES := -I$(USPARK_LIBSDIR)/libxmhfc/include
+USPARK_LIBSINCLUDES += -I$(USPARK_LIBSDIR)/libxmhfcrypto/include
+USPARK_LIBSINCLUDES += -I$(USPARK_LIBSDIR)/libxmhfgeec/include
+USPARK_LIBSINCLUDES += -I$(USPARK_LIBSDIR)/libxmhfhw/include
+
+CCERT_CFLAGS += $(USPARK_LIBSINCLUDES)
+CCERT_CASMFLAGS += $(USPARK_LIBSINCLUDES)
 
 
 ###### targets
