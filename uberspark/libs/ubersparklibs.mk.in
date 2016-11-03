@@ -3,11 +3,21 @@
 # author: amit vasudevan (amitvasudevan@acm.org)
 ######
 
+###### compute current path (where this Makefile resides)
+
+export USPARK_LIBSDIR := $(realpath $(dir $(lastword $(MAKEFILE_LIST))))
+
+
+###### include biolerplat Makefile code
 
 include ../uberspark-common.mk
 
 
 ###### targets
+
+.PHONY: build-libs
+build-libs:
+	cd $(USPARK_LIBSDIR)/libxmhfc && make -f libxmhfc.mk -w build	
 
 .PHONY: all
 all: 
@@ -22,11 +32,9 @@ all:
 	@echo $(USPARK_INSTALL_TOOLSDIR)
 
 
-
-
-
 .PHONY: clean
 clean:
+	cd $(USPARK_LIBSDIR)/libxmhfc && make -f libxmhfc.mk -w clean	
 	
 
 # http://www.gnu.org/software/automake/manual/automake.html#Clean
