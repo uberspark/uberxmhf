@@ -20,6 +20,7 @@ CS_SOURCES:= $(patsubst $(srcdir)/%, %, $(CS_SOURCES))
 OBJECTS = $(patsubst %.c, %.o, $(C_SOURCES))
 OBJECTS += $(patsubst %.cS, %.o, $(CS_SOURCES))
 CS_CINTERMEDIATE_SOURCES := $(patsubst %.cS, %.cS.c, $(CS_SOURCES))
+CS_ASMINTERMEDIATE_SOURCES := $(patsubst %.cS, %.cS.S, $(CS_SOURCES))
 
 
 # targets
@@ -144,6 +145,8 @@ $(ARCHIVE): $(OBJECTS)
 .PHONY: clean
 clean:
 	$(RM) $(OBJECTS)
+	$(RM) $(CS_CINTERMEDIATE_SOURCES)
+	$(RM) $(CS_ASMINTERMEDIATE_SOURCES)
 	$(RM) $(ARCHIVE)
 	
 
