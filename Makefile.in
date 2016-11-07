@@ -15,13 +15,12 @@ XMHF_SLAB_NAMES := $(notdir $(XMHF_SLAB_DIRS))
 export XMHF_SLAB_TOTAL := $(shell wc -l < $(XMHF_DIR)/SLABS)
 
 export LIBXMHFDEBUG_SRC := $(realpath uxmhf/libs/libxmhfdebug)
+export LIBXMHFGEEC_SRC := $(realpath uxmhf/libs/libxmhfgeec)
 
 #uspark
 export LIBXMHFC_SRC := $(realpath uberspark/libs/libxmhfc)
 #uspark
 export LIBXMHFCRYPTO_SRC := $(realpath uberspark/libs/libxmhfcrypto)
-#uspark
-export LIBXMHFGEEC_SRC := $(realpath uberspark/libs/libxmhfgeec)
 #uspark
 export LIBXMHFHW_SRC := $(realpath uberspark/libs/libxmhfhw)
 
