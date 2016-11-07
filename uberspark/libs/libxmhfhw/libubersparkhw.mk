@@ -137,7 +137,7 @@ $(ARCHIVE): $(OBJECTS)
 	@echo Building "$@" from "$<"
 	$(CP) -f $< $(@F).c
 	$(CCERT) -c -dmach $(CCERT_FLAGS) -O0 $(@F).c
-	frama-c -load-script $(XMHF_DIR)/uberspark/tools/ucasm.ml -ucasm-infile $(@F).mach -ucasm-outfile $(@F).S
+	$(FRAMAC) -load-module $(USPARK_INSTALL_TOOLSDIR)/Ucasm.o -ucasm-infile $(@F).mach -ucasm-outfile $(@F).S
 	$(CC) -c $(ASFLAGS) -o $@ $(@F).S
 
 
