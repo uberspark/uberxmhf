@@ -25,8 +25,8 @@ CCERT_CASMFLAGS += $(USPARK_LIBSINCLUDES)
 
 .PHONY: build-libs
 build-libs:
-	#cd $(USPARK_LIBSDIR)/libxmhfc && make -f libubersparkc.mk -w build	
-	#cd $(USPARK_LIBSDIR)/libxmhfcrypto && make -f libubersparkcrypto.mk -w build	
+	cd $(USPARK_LIBSDIR)/libxmhfc && make -f libubersparkc.mk -w build	
+	cd $(USPARK_LIBSDIR)/libxmhfcrypto && make -f libubersparkcrypto.mk -w build	
 	cd $(USPARK_LIBSDIR)/libxmhfhw && make -f libubersparkhw.mk -w build	
 
 .PHONY: all
@@ -44,8 +44,8 @@ all:
 
 .PHONY: clean
 clean:
-	#cd $(USPARK_LIBSDIR)/libxmhfc && make -f libubersparkc.mk -w clean	
-	#cd $(USPARK_LIBSDIR)/libxmhfcrypto && make -f libubersparkcrypto.mk -w clean	
+	cd $(USPARK_LIBSDIR)/libxmhfc && make -f libubersparkc.mk -w clean	
+	cd $(USPARK_LIBSDIR)/libxmhfcrypto && make -f libubersparkcrypto.mk -w clean	
 	cd $(USPARK_LIBSDIR)/libxmhfhw && make -f libubersparkhw.mk -w clean	
 	
 
