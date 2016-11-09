@@ -101,8 +101,8 @@ u32 xmhfhw_platform_x86pc_acpi_getRSDP(ACPI_RSDP *rsdp){
 
   //convert it to its 32-bit physical address
   ebdaphys=(u32)(ebdaseg * 16);
-  _XDPRINTF_("%s:%u ebdaseg=%x, ebdaphys=%x\n", __func__, __LINE__,
-	(u32)ebdaseg, ebdaphys);
+  //_XDPRINTF_("%s:%u ebdaseg=%x, ebdaphys=%x\n", __func__, __LINE__,
+	//(u32)ebdaseg, ebdaphys);
 
 
   //search first 1KB of ebda for rsdp signature (8 bytes long)
