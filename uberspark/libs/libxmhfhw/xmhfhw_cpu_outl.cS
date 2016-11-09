@@ -48,10 +48,8 @@
 //xmhfhw_cpu_legio: CPU Legacy IO functions
 // author: amit vasudevan (amitvasudevan@acm.org)
 
-#include <xmhf.h>
-#include <xmhf-hwm.h>
+#include <uberspark.h>
 #include <xmhfhw.h>
-#include <xmhf-debug.h>
 
 
 CASM_FUNCDEF(void, outl,
