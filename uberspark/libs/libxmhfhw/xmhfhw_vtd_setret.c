@@ -47,10 +47,8 @@
 //Intel VT-d declarations/definitions
 //author: amit vasudevan (amitvasudevan@acm.org)
 
-#include <xmhf.h>
-#include <xmhf-hwm.h>
+#include <uberspark.h>
 #include <xmhfhw.h>
-#include <xmhf-debug.h>
 
 
 //VT-d translation has 1 root entry table (RET) of 4kb
