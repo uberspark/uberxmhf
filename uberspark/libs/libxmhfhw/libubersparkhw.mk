@@ -21,6 +21,7 @@ OBJECTS = $(patsubst %.c, %.o, $(C_SOURCES))
 OBJECTS += $(patsubst %.cS, %.o, $(CS_SOURCES))
 CS_CINTERMEDIATE_SOURCES := $(patsubst %.cS, %.o.c, $(CS_SOURCES))
 CS_ASMINTERMEDIATE_SOURCES := $(patsubst %.cS, %.o.S, $(CS_SOURCES))
+CS_MACHINTERMEDIATE_SOURCES := $(patsubst %.cS, %.o.mach, $(CS_SOURCES))
 
 
 # targets
@@ -147,6 +148,7 @@ clean:
 	$(RM) $(OBJECTS)
 	$(RM) $(CS_CINTERMEDIATE_SOURCES)
 	$(RM) $(CS_ASMINTERMEDIATE_SOURCES)
+	$(RM) $(CS_MACHINTERMEDIATE_SOURCES)
 	$(RM) $(ARCHIVE)
 	
 
