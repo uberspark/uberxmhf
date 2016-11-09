@@ -46,10 +46,8 @@
 
 //author: amit vasudevan (amitvasudevan@acm.org)
 
-#include <xmhf.h>
-#include <xmhf-hwm.h>
+#include <uberspark.h>
 #include <xmhfhw.h>
-#include <xmhf-debug.h>
 
 CASM_FUNCDEF(uint64_t, rdtsc64,
 {
