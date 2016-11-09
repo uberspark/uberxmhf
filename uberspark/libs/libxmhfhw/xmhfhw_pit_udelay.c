@@ -47,10 +47,8 @@
 // programmable interval timer (for micro second delay)
 //author: amit vasudevan (amitvasudevan@acm.org)
 
-#include <xmhf.h>
-#include <xmhf-hwm.h>
+#include <uberspark.h>
 #include <xmhfhw.h>
-#include <xmhf-debug.h>
 
 //---microsecond delay----------------------------------------------------------
 /*@

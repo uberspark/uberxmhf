@@ -47,10 +47,8 @@
 //keyboard controller (for platform reset)
 //author: amit vasudevan (amitvasudevan@acm.org)
 
-#include <xmhf.h>
-#include <xmhf-hwm.h>
+#include <uberspark.h>
 #include <xmhfhw.h>
-#include <xmhf-debug.h>
 
 //generic x86 platform reboot
 /*@

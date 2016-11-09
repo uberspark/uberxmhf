@@ -46,10 +46,8 @@
 
 // authors: amit vasudevan (amitvasudevan@acm.org) and jonmccune@cmu.edu
 
-#include <xmhf.h>
-#include <xmhf-hwm.h>
+#include <uberspark.h>
 #include <xmhfhw.h>
-#include <xmhf-debug.h>
 
 /*@
   assigns \nothing;

@@ -24,6 +24,7 @@ ADDL_INCLUDES += -I$(XMHF_DIR)/uberspark/hwm/include
 ADDL_INCLUDES += -I$(XMHF_DIR)/uxmhf/include
 ADDL_INCLUDES += -I$(XMHF_DIR)/uxmhf/xmhf-uobjs/include 
 ADDL_INCLUDES += -I$(XMHF_DIR)/uxmhf/libs/libxmhfdebug/include
+ADDL_INCLUDES += -I$(XMHF_DIR)/uxmhf/libs/libxmhfgeec/include
 XMHFLIBS_INC = $(foreach dir,$(XMHF_LIBDIRS),-I$(dir)/include)
 ADDL_INCLUDES += $(XMHFLIBS_INC)
 
@@ -44,6 +45,7 @@ V_ADDL_INCLUDES += -cpp-extra-args=-I$(XMHF_DIR)/uberspark/hwm/include
 V_ADDL_INCLUDES += -cpp-extra-args=-I$(XMHF_DIR)/uxmhf/include
 V_ADDL_INCLUDES += -cpp-extra-args=-I$(XMHF_DIR)/uxmhf/xmhf-uobjs/include 
 V_ADDL_INCLUDES += -cpp-extra-args=-I$(XMHF_DIR)/uxmhf/libs/libxmhfdebug/include
+V_ADDL_INCLUDES += -cpp-extra-args=-I$(XMHF_DIR)/uxmhf/libs/libxmhfgeec/include
 V_XMHFLIBS_INC = $(foreach dir,$(XMHF_LIBDIRS),-cpp-extra-args=-I$(dir)/include)
 V_ADDL_INCLUDES += $(V_XMHFLIBS_INC)
 
