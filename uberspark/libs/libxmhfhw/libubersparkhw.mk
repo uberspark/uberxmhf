@@ -19,8 +19,8 @@ CS_SOURCES:= $(wildcard $(srcdir)/*.cS)
 CS_SOURCES:= $(patsubst $(srcdir)/%, %, $(CS_SOURCES))
 OBJECTS = $(patsubst %.c, %.o, $(C_SOURCES))
 OBJECTS += $(patsubst %.cS, %.o, $(CS_SOURCES))
-CS_CINTERMEDIATE_SOURCES := $(patsubst %.cS, %.cS.c, $(CS_SOURCES))
-CS_ASMINTERMEDIATE_SOURCES := $(patsubst %.cS, %.cS.S, $(CS_SOURCES))
+CS_CINTERMEDIATE_SOURCES := $(patsubst %.cS, %.o.c, $(CS_SOURCES))
+CS_ASMINTERMEDIATE_SOURCES := $(patsubst %.cS, %.o.S, $(CS_SOURCES))
 
 
 # targets
@@ -136,8 +136,8 @@ $(ARCHIVE): $(OBJECTS)
 %.o: %.cS
 	@echo Building "$@" from "$<"
 	$(CP) -f $< $(@F).c
-	$(CCERT) -c -dmach $(CCERT_FLAGS) -O0 $(@F).c
-	$(FRAMAC) -load-module $(USPARK_INSTALL_TOOLSDIR)/Ucasm.o -ucasm-infile $(@F).mach -ucasm-outfile $(@F).S
+	$(CCERT) -c -dmach $(CCERT_CASMFLAGS) $(@F).c
+	$(FRAMAC) -load-module $(USPARK_INSTALL_TOOLSDIR)/Ucasm -ucasm-infile $(@F).mach -ucasm-outfile $(@F).S
 	$(CC) -c $(ASFLAGS) -o $@ $(@F).S
 
 
