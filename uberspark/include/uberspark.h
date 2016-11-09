@@ -50,6 +50,17 @@
 #define __XMHF_USPARK_H_
 
 
+#ifndef __ASSEMBLY__
+
+#include <stdint.h>
+#include <stdbool.h>
+#include <stddef.h>
+#include <stdarg.h>
+
+
+#include <xmhf-hwm.h>
+#endif //__ASSEMBLY__
+
 #if defined (__XMHF_VERIFICATION__) && defined (__USPARK_FRAMAC_VA__)
 //////
 // frama-c non-determinism functions
