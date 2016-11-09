@@ -29,6 +29,18 @@ build-libs:
 	cd $(USPARK_LIBSDIR)/libxmhfcrypto && make -f libubersparkcrypto.mk -w build	
 	cd $(USPARK_LIBSDIR)/libxmhfhw && make -f libubersparkhw.mk -w build	
 
+.PHONY: install-libs
+install-libs:
+	$(MKDIR) -p $(USPARK_INSTALL_LIBSDIR)
+	$(MKDIR) -p $(USPARK_INSTALL_LIBSINCLUDESDIR)
+	$(CP) -f $(USPARK_LIBSDIR)/libxmhfc/libubersparkc.a $(USPARK_INSTALL_LIBSDIR)/.
+	$(CP) -f $(USPARK_LIBSDIR)/libxmhfc/include/* $(USPARK_INSTALL_LIBSINCLUDESDIR)/.
+	$(CP) -f $(USPARK_LIBSDIR)/libxmhfcrypto/libubersparkcrypto.a $(USPARK_INSTALL_LIBSDIR)/.
+	$(CP) -f $(USPARK_LIBSDIR)/libxmhfcrypto/include/* $(USPARK_INSTALL_LIBSINCLUDESDIR)/.
+	$(CP) -f $(USPARK_LIBSDIR)/libxmhfhw/libubersparkhw.a $(USPARK_INSTALL_LIBSDIR)/.
+	$(CP) -f $(USPARK_LIBSDIR)/libxmhfhw/include/* $(USPARK_INSTALL_LIBSINCLUDESDIR)/.
+
+
 .PHONY: all
 all: 
 
