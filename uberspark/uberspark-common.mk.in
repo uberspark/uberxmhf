@@ -80,6 +80,12 @@ CCERT_FLAGS += -I$(USPARK_INSTALL_INCLUDEDIR)
 CCERT_FLAGS += -I$(USPARK_INSTALL_HWMINCLUDEDIR)
 CCERT_FLAGS += -I$(USPARK_INSTALL_LIBSINCLUDESDIR)
 
+###### verification (frama-c) includes
+export V_FLAGS := 
+V_FLAGS += -cpp-extra-args=-I$(USPARK_INSTALL_INCLUDEDIR)
+V_FLAGS += -cpp-extra-args=-I$(USPARK_INSTALL_HWMINCLUDEDIR)
+V_FLAGS += -cpp-extra-args=-I$(USPARK_INSTALL_LIBSINCLUDESDIR)
+
 ###### compcert C and CASM flag definitions, assembly flag definitions
 export CCERT_CFLAGS = -O $(CCERT_FLAGS) $(USPARK_COMPILER_DEFS) 
 export CCERT_CASMFLAGS = -O0 $(CCERT_FLAGS) $(USPARK_COMPILER_DEFS)

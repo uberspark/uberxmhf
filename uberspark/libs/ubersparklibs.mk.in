@@ -21,6 +21,13 @@ CCERT_CFLAGS += $(USPARK_LIBSINCLUDES)
 CCERT_CASMFLAGS += $(USPARK_LIBSINCLUDES)
 
 
+###### append additional include paths to V_FLAGS
+
+V_FLAGS += -cpp-extra-args=-I$(USPARK_LIBSDIR)/libxmhfc/include
+V_FLAGS += -cpp-extra-args=-I$(USPARK_LIBSDIR)/libxmhfcrypto/include
+V_FLAGS += -cpp-extra-args=-I$(USPARK_LIBSDIR)/libxmhfhw/include
+
+
 ###### targets
 
 .PHONY: build-libs
