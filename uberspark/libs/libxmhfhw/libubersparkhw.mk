@@ -138,7 +138,7 @@ $(ARCHIVE): $(OBJECTS)
 	$(CP) -f $< $(@F).c
 	$(CCERT) -c -dmach $(CCERT_CASMFLAGS) $(@F).c
 	$(FRAMAC) -load-module $(USPARK_INSTALL_TOOLSDIR)/Ucasm -ucasm-infile $(@F).mach -ucasm-outfile $(@F).S
-	$(CC) -c $(ASFLAGS) -o $@ $(@F).S
+	$(CC) -c $(ASMFLAGS) -o $@ $(@F).S
 
 
 
