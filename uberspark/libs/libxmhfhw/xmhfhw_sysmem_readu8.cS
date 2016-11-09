@@ -51,10 +51,8 @@
 
 //author: amit vasudevan (amitvasudevan@acm.org)
 
-#include <xmhf.h>
-#include <xmhf-hwm.h>
+#include <uberspark.h>
 #include <xmhfhw.h>
-#include <xmhf-debug.h>
 
 CASM_FUNCDEF(u8, xmhfhw_sysmemaccess_readu8,
 {
