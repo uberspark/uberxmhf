@@ -50,8 +50,7 @@
 */
 
 
-#include <xmhf.h>
-#include <xmhf-hwm.h>
+#include <uberspark.h>
 
 u8 xmhfhwm_mem_region_apbootstrap_dataseg[XMHFHWM_MEM_X86SMP_APBOOTSTRAP_DATASEG_SIZE];
 

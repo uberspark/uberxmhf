@@ -50,8 +50,7 @@
 */
 
 
-#include <xmhf.h>
-#include <xmhf-hwm.h>
+#include <uberspark.h>
 
 u32 xmhfhwm_lapic_reg_id=0;
 
