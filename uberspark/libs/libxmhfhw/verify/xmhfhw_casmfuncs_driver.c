@@ -50,13 +50,16 @@
 */
 
 
-#include <xmhf.h>
-#include <xmhf-hwm.h>
-#include <xmhfgeec.h>
-#include <xmhf-debug.h>
+//#include <xmhf.h>
+//#include <xmhf-hwm.h>
+//#include <xmhfgeec.h>
+//#include <xmhf-debug.h>
+#include <uberspark.h>
+#include <xmhfhw.h>
 
 u32 cpuid = 0;	//BSP cpu
 
+/*
 //////
 // frama-c non-determinism functions
 //////
@@ -82,7 +85,7 @@ u32 framac_nondetu32interval(u32 min, u32 max)
     r = min;
   return r;
 }
-
+*/
 
 //////
 u32 saved_cpu_gprs_ebx=0;
@@ -526,12 +529,13 @@ void drv_sysmemaccess_writeu64(void){
 	cabi_check();
 }
 
+u8 uobj_stack[4096];
 
 void main(void){
 	u32 check_esp, check_eip = CASM_RET_EIP;
 
 	//populate hardware model stack and program counter
-	xmhfhwm_cpu_gprs_esp = _slab_tos[cpuid];
+	xmhfhwm_cpu_gprs_esp = &uobj_stack[4096];
 	xmhfhwm_cpu_gprs_eip = check_eip;
 	check_esp = xmhfhwm_cpu_gprs_esp; // pointing to top-of-stack
 
@@ -592,10 +596,10 @@ void main(void){
 	//drv_sysmemaccess_readu16();
 	//drv_sysmemaccess_readu32();
 	//drv_sysmemaccess_readu64();
-	drv_sysmemaccess_writeu8();
-	drv_sysmemaccess_writeu16();
-	drv_sysmemaccess_writeu32();
-	drv_sysmemaccess_writeu64();
+	//drv_sysmemaccess_writeu8();
+	//drv_sysmemaccess_writeu16();
+	//drv_sysmemaccess_writeu32();
+	//drv_sysmemaccess_writeu64();
 
 	//@assert xmhfhwm_cpu_gprs_esp == check_esp;
 	//@assert xmhfhwm_cpu_gprs_eip == check_eip;

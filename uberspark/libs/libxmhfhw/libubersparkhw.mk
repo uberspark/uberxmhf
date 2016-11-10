@@ -124,7 +124,7 @@ verify-with-val:
 		($(CP) -f $(srcdir)/$$i $$i.c) || exit 1; \
 	done;
 	@echo Sources prepped.
-	#frama-c -val -cpp-extra-args=-nostdinc -cpp-extra-args=-D__XXX__ $(VFLAGS) $(srcdir)/verify/xmhfhw_casmfuncs_driver.c *.c $(V_XMHFHWM_MODULES)
+	$(FRAMAC) -val -cpp-extra-args=-nostdinc $(V_FLAGS) $(srcdir)/verify/xmhfhw_casmfuncs_driver.c *.cS.c $(USPARK_INSTALL_HWMDIR)/*.c
 
 
 .PHONY: verify
