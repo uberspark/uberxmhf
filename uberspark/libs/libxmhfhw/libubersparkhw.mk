@@ -157,6 +157,10 @@ clean:
 	$(RM) $(CS_ASMINTERMEDIATE_SOURCES)
 	$(RM) $(CS_MACHINTERMEDIATE_SOURCES)
 	$(RM) $(ARCHIVE)
+	@for i in $(CS_SOURCES); \
+	do \
+		($(RM) $$i.c) || exit 1; \
+	done;
 	
 
 
