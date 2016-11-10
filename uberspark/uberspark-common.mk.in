@@ -83,7 +83,7 @@ CCERT_FLAGS += -I$(USPARK_INSTALL_HWMINCLUDEDIR)
 CCERT_FLAGS += -I$(USPARK_INSTALL_LIBSINCLUDESDIR)
 
 ###### verification (frama-c) includes
-export V_FLAGS := 
+export V_FLAGS := -cpp-extra-args=-D__XMHF_VERIFICATION__
 V_FLAGS += -cpp-extra-args=-I$(USPARK_INSTALL_INCLUDEDIR)
 V_FLAGS += -cpp-extra-args=-I$(USPARK_INSTALL_HWMINCLUDEDIR)
 V_FLAGS += -cpp-extra-args=-I$(USPARK_INSTALL_LIBSINCLUDESDIR)
