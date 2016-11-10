@@ -50,8 +50,7 @@
 */
 
 
-#include <xmhf.h>
-#include <xmhf-hwm.h>
+#include <uberspark.h>
 
 u32 xmhfhwm_cpu_gprs_eip = 0;
 u32 xmhfhwm_cpu_gprs_esp = 0;

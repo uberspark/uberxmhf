@@ -50,8 +50,7 @@
 */
 
 
-#include <xmhf.h>
-#include <xmhf-hwm.h>
+#include <uberspark.h>
 
 u16 xmhfhwm_bios_ebdaseg = (XMHFHWM_BIOS_EBDA_BASE >> 4);
 ACPI_RSDP xmhfhwm_bios_acpi_rsdp = {
