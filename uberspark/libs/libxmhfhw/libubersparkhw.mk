@@ -78,47 +78,6 @@ verify-with-wp:
 
 .PHONY: verify-with-val
 verify-with-val:
-	#$(CP) -f $(srcdir)/../libxmhfgeec/xmhfgeec_slabmapdef.c xmhfgeec_slabmapdef.c
-	#$(CP) -f $(srcdir)/xmhfhw_cpu_bsrl.cS xmhfhw_cpu_bsrl.cS.c
-	#frama-c -val -cpp-extra-args=-nostdinc -cpp-extra-args=-D__XXX__ $(VFLAGS) $(srcdir)/verify/xmhfhw_casmfuncs_driver.c xmhfhw_cpu_bsrl.cS.c xmhfgeec_slabmapdef.c $(V_XMHFHWM_MODULES)
-	#$(CP) -f $(srcdir)/xmhfhw_cpu_cpuid.cS xmhfhw_cpu_cpuid.cS.c
-	#frama-c -val -cpp-extra-args=-nostdinc -cpp-extra-args=-D__XXX__ $(VFLAGS) $(srcdir)/verify/xmhfhw_casmfuncs_driver.c xmhfhw_cpu_cpuid.cS.c xmhfgeec_slabmapdef.c $(V_XMHFHWM_MODULES)
-	#$(CP) -f $(srcdir)/xmhfhw_cpu_disableintr.cS xmhfhw_cpu_disableintr.cS.c
-	#frama-c -val -cpp-extra-args=-nostdinc -cpp-extra-args=-D__XXX__ $(VFLAGS) $(srcdir)/verify/xmhfhw_casmfuncs_driver.c xmhfhw_cpu_disableintr.cS.c xmhfgeec_slabmapdef.c $(V_XMHFHWM_MODULES)
-	#$(CP) -f $(srcdir)/xmhfhw_cpu_enableintr.cS xmhfhw_cpu_enableintr.cS.c
-	#frama-c -val -cpp-extra-args=-nostdinc -cpp-extra-args=-D__XXX__ $(VFLAGS) $(srcdir)/verify/xmhfhw_casmfuncs_driver.c xmhfhw_cpu_enableintr.cS.c xmhfgeec_slabmapdef.c $(V_XMHFHWM_MODULES)
-	#$(CP) -f $(srcdir)/xmhfhw_cpu_getgdtbase.cS xmhfhw_cpu_getgdtbase.cS.c
-	#frama-c -val -cpp-extra-args=-nostdinc -cpp-extra-args=-D__XXX__ $(VFLAGS) $(srcdir)/verify/xmhfhw_casmfuncs_driver.c xmhfhw_cpu_getgdtbase.cS.c xmhfgeec_slabmapdef.c $(V_XMHFHWM_MODULES)
-	#$(CP) -f $(srcdir)/xmhfhw_cpu_getidtbase.cS xmhfhw_cpu_getidtbase.cS.c
-	#frama-c -val -cpp-extra-args=-nostdinc -cpp-extra-args=-D__XXX__ $(VFLAGS) $(srcdir)/verify/xmhfhw_casmfuncs_driver.c xmhfhw_cpu_getidtbase.cS.c xmhfgeec_slabmapdef.c $(V_XMHFHWM_MODULES)
-	#$(CP) -f $(srcdir)/xmhfhw_cpu_getsec.cS xmhfhw_cpu_getsec.cS.c
-	#frama-c -val -cpp-extra-args=-nostdinc -cpp-extra-args=-D__XXX__ $(VFLAGS) $(srcdir)/verify/xmhfhw_casmfuncs_driver.c xmhfhw_cpu_getsec.cS.c xmhfgeec_slabmapdef.c $(V_XMHFHWM_MODULES)
-	#$(CP) -f $(srcdir)/xmhfhw_cpu_gettssbase.cS xmhfhw_cpu_gettssbase.cS.c
-	#frama-c -val -cpp-extra-args=-nostdinc -cpp-extra-args=-D__XXX__ $(VFLAGS) $(srcdir)/verify/xmhfhw_casmfuncs_driver.c xmhfhw_cpu_gettssbase.cS.c xmhfgeec_slabmapdef.c $(V_XMHFHWM_MODULES)
-	#$(CP) -f $(srcdir)/xmhfhw_cpu_inb.cS xmhfhw_cpu_inb.cS.c
-	#frama-c -val -cpp-extra-args=-nostdinc -cpp-extra-args=-D__XXX__ $(VFLAGS) $(srcdir)/verify/xmhfhw_casmfuncs_driver.c xmhfhw_cpu_inb.cS.c xmhfgeec_slabmapdef.c $(V_XMHFHWM_MODULES)
-	#$(CP) -f $(srcdir)/xmhfhw_cpu_inl.cS xmhfhw_cpu_inl.cS.c
-	#frama-c -val -cpp-extra-args=-nostdinc -cpp-extra-args=-D__XXX__ $(VFLAGS) $(srcdir)/verify/xmhfhw_casmfuncs_driver.c xmhfhw_cpu_inl.cS.c xmhfgeec_slabmapdef.c $(V_XMHFHWM_MODULES)
-	#$(CP) -f $(srcdir)/xmhfhw_cpu_invept.cS xmhfhw_cpu_invept.cS.c
-	#frama-c -val -cpp-extra-args=-nostdinc -cpp-extra-args=-D__XXX__ $(VFLAGS) $(srcdir)/verify/xmhfhw_casmfuncs_driver.c xmhfhw_cpu_invept.cS.c xmhfgeec_slabmapdef.c $(V_XMHFHWM_MODULES)
-	#$(CP) -f $(srcdir)/xmhfhw_cpu_invvpid.cS xmhfhw_cpu_invvpid.cS.c
-	#frama-c -val -cpp-extra-args=-nostdinc -cpp-extra-args=-D__XXX__ $(VFLAGS) $(srcdir)/verify/xmhfhw_casmfuncs_driver.c xmhfhw_cpu_invvpid.cS.c xmhfgeec_slabmapdef.c $(V_XMHFHWM_MODULES)
-	#$(CP) -f $(srcdir)/xmhfhw_cpu_inw.cS xmhfhw_cpu_inw.cS.c
-	#frama-c -val -cpp-extra-args=-nostdinc -cpp-extra-args=-D__XXX__ $(VFLAGS) $(srcdir)/verify/xmhfhw_casmfuncs_driver.c xmhfhw_cpu_inw.cS.c xmhfgeec_slabmapdef.c $(V_XMHFHWM_MODULES)
-	#$(CP) -f $(srcdir)/xmhfhw_cpu_loadgdt.cS xmhfhw_cpu_loadgdt.cS.c
-	#frama-c -val -cpp-extra-args=-nostdinc -cpp-extra-args=-D__XXX__ $(VFLAGS) $(srcdir)/verify/xmhfhw_casmfuncs_driver.c xmhfhw_cpu_loadgdt.cS.c xmhfgeec_slabmapdef.c $(V_XMHFHWM_MODULES)
-	#$(CP) -f $(srcdir)/xmhfhw_cpu_loadidt.cS xmhfhw_cpu_loadidt.cS.c
-	#frama-c -val -cpp-extra-args=-nostdinc -cpp-extra-args=-D__XXX__ $(VFLAGS) $(srcdir)/verify/xmhfhw_casmfuncs_driver.c xmhfhw_cpu_loadidt.cS.c xmhfgeec_slabmapdef.c $(V_XMHFHWM_MODULES)
-	#$(CP) -f $(srcdir)/xmhfhw_cpu_loadtr.cS xmhfhw_cpu_loadtr.cS.c
-	#$(LIBXMHFHW_VERIF_DIR) && frama-c -val -cpp-extra-args=-nostdinc -cpp-extra-args=-D__XXX__ $(VFLAGS) $(srcdir)/verify/xmhfhw_casmfuncs_driver.c xmhfhw_cpu_loadtr.cS.c xmhfgeec_slabmapdef.c $(V_XMHFHWM_MODULES)
-	#$(CP) -f $(srcdir)/xmhfhw_cpu_outb.cS xmhfhw_cpu_outb.cS.c
-	#frama-c -val -cpp-extra-args=-nostdinc -cpp-extra-args=-D__XXX__ $(VFLAGS) $(srcdir)/verify/xmhfhw_casmfuncs_driver.c xmhfhw_cpu_outb.cS.c xmhfgeec_slabmapdef.c $(V_XMHFHWM_MODULES)
-	#$(CP) -f $(srcdir)/xmhfhw_cpu_outl.cS xmhfhw_cpu_outl.cS.c
-	#frama-c -val -cpp-extra-args=-nostdinc -cpp-extra-args=-D__XXX__ $(VFLAGS) $(srcdir)/verify/xmhfhw_casmfuncs_driver.c xmhfhw_cpu_outl.cS.c xmhfgeec_slabmapdef.c $(V_XMHFHWM_MODULES)
-	#$(CP) -f $(srcdir)/xmhfhw_cpu_outw.cS xmhfhw_cpu_outw.cS.c
-	#frama-c -val -cpp-extra-args=-nostdinc -cpp-extra-args=-D__XXX__ $(VFLAGS) $(srcdir)/verify/xmhfhw_casmfuncs_driver.c xmhfhw_cpu_outw.cS.c xmhfgeec_slabmapdef.c $(V_XMHFHWM_MODULES)
-	#$(CP) -f $(srcdir)/xmhfhw_cpu_pause.cS xmhfhw_cpu_pause.cS.c
-	#frama-c -val -cpp-extra-args=-nostdinc -cpp-extra-args=-D__XXX__ $(VFLAGS) $(srcdir)/verify/xmhfhw_casmfuncs_driver.c xmhfhw_cpu_pause.cS.c xmhfgeec_slabmapdef.c $(V_XMHFHWM_MODULES)
 	@for i in $(CS_SOURCES); \
 	do \
 		($(CP) -f $(srcdir)/$$i $$i.c) || exit 1; \
