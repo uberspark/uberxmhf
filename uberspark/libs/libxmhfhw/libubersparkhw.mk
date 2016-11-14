@@ -125,6 +125,10 @@ verify-with-val:
 	done;
 	@echo Sources prepped.
 	$(FRAMAC) -val -cpp-extra-args=-nostdinc $(V_FLAGS) $(srcdir)/verify/xmhfhw_casmfuncs_driver.c *.cS.c $(USPARK_INSTALL_HWMDIR)/*.c
+	@for i in $(CS_SOURCES); \
+	do \
+		($(RM) $$i.c) || exit 1; \
+	done;
 
 
 .PHONY: verify
