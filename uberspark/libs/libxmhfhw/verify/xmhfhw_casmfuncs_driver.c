@@ -50,38 +50,10 @@
 */
 
 
-#include <xmhf.h>
-#include <xmhf-hwm.h>
-#include <xmhfgeec.h>
-#include <xmhf-debug.h>
+#include <uberspark.h>
+#include <xmhfhw.h>
 
 u32 cpuid = 0;	//BSP cpu
-
-//////
-// frama-c non-determinism functions
-//////
-
-u32 Frama_C_entropy_source;
-
-//@ assigns Frama_C_entropy_source \from Frama_C_entropy_source;
-void Frama_C_update_entropy(void);
-
-u32 framac_nondetu32(void){
-  Frama_C_update_entropy();
-  return (u32)Frama_C_entropy_source;
-}
-
-u32 framac_nondetu32interval(u32 min, u32 max)
-{
-  u32 r,aux;
-  Frama_C_update_entropy();
-  aux = Frama_C_entropy_source;
-  if ((aux>=min) && (aux <=max))
-    r = aux;
-  else
-    r = min;
-  return r;
-}
 
 
 //////
@@ -526,76 +498,78 @@ void drv_sysmemaccess_writeu64(void){
 	cabi_check();
 }
 
+u8 uobj_stack[4096];
 
 void main(void){
 	u32 check_esp, check_eip = CASM_RET_EIP;
 
 	//populate hardware model stack and program counter
-	xmhfhwm_cpu_gprs_esp = _slab_tos[cpuid];
+	xmhfhwm_cpu_gprs_esp = &uobj_stack[4096];
 	xmhfhwm_cpu_gprs_eip = check_eip;
 	check_esp = xmhfhwm_cpu_gprs_esp; // pointing to top-of-stack
 
-	//execute harness: TODO
-	//drv_bsrl();
-	//drv_cpuid();
-	//drv_disableintr();
-	//drv_enableintr();
-	//drv_getgdtbase();
-	//drv_getidtbase();
+	//execute harness
+	drv_bsrl();
+	drv_cpuid();
+	drv_disableintr();
+	drv_enableintr();
+	drv_getgdtbase();
+	drv_getidtbase();
 	//drv_getsec();
 	//drv_gettssbase();
-	//drv_inb();
-	//drv_inl();
-	//drv_invept();
+	drv_inb();
+	drv_inl();
+	drv_invept();
 	//drv_invvpid();
-	//drv_inw();
-	//drv_loadgdt();
-	//drv_loadidt();
-	//drv_loadtr();
-	//drv_outb();
-	//drv_outl();
-	//drv_outw();
-	//drv_pause();
-	//drv_rdmsr();
-	//drv_rdtsc();
-	//drv_readcr0();
-	//drv_readcr2();
-	//drv_readcr3();
-	//drv_readcr4();
-	//drv_readcs();
-	//drv_readds();
-	//drv_reades();
-	//drv_readfs();
-	//drv_readgs();
-	//drv_readss();
-	//drv_readeflags();
-	//drv_readesp();
-	//drv_readrsp();
-	//drv_readtr();
-	//drv_spinlock();
-	//drv_spinunlock();
-	//drv_vmclear();
-	//drv_vmptrld();
-	//drv_vmread();
-	//drv_vmwrite();
-	//drv_vmxon();
-        //drv_wbinvd();
-        //drv_writecr0();
-        //drv_writecr3();
-        //drv_writecr4();
-	//drv_writeeflags();
-	//drv_wrmsr();
-	//drv_xgetbv();
-	//drv_xsetbv();
+	drv_inw();
+	drv_loadgdt();
+	drv_loadidt();
+	drv_loadtr();
+	drv_outb();
+	drv_outl();
+	drv_outw();
+	drv_pause();
+	drv_rdmsr();
+	drv_rdtsc();
+	drv_readcr0();
+	drv_readcr2();
+	drv_readcr3();
+	drv_readcr4();
+	drv_readcs();
+	drv_readds();
+	drv_reades();
+	drv_readfs();
+	drv_readgs();
+	drv_readss();
+	drv_readeflags();
+	drv_readesp();
+	drv_readrsp();
+	drv_readtr();
+	drv_spinlock();
+	drv_spinunlock();
+	drv_vmclear();
+	drv_vmptrld();
+	drv_vmread();
+	drv_vmwrite();
+	drv_vmxon();
+    drv_wbinvd();
+    drv_writecr0();
+    drv_writecr3();
+    drv_writecr4();
+	drv_writeeflags();
+	drv_wrmsr();
+	drv_xgetbv();
+	drv_xsetbv();
 	//drv_sysmemaccess_bcopy();
 	//drv_sysmemaccess_readu8();
 	//drv_sysmemaccess_readu16();
 	//drv_sysmemaccess_readu32();
 	//drv_sysmemaccess_readu64();
-	drv_sysmemaccess_writeu8();
-	drv_sysmemaccess_writeu16();
-	drv_sysmemaccess_writeu32();
-	drv_sysmemaccess_writeu64();
+	//drv_sysmemaccess_writeu8();
+	//drv_sysmemaccess_writeu16();
+	//drv_sysmemaccess_writeu32();
+	//drv_sysmemaccess_writeu64();
+
 
 	//@assert xmhfhwm_cpu_gprs_esp == check_esp;
 	//@assert xmhfhwm_cpu_gprs_eip == check_eip;

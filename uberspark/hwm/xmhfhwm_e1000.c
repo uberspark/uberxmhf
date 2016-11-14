@@ -50,8 +50,7 @@
 */
 
 
-#include <xmhf.h>
-#include <xmhf-hwm.h>
+#include <uberspark.h>
 
 u32 xmhfhwm_e1000_tctl=0; 	//transmit control register, E1000_TCTL
 u32 xmhfhwm_e1000_tdt=0; 	//transmit descriptor tail, E1000_TDT
