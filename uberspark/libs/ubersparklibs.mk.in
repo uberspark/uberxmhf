@@ -32,8 +32,8 @@ V_FLAGS += -cpp-extra-args=-I$(USPARK_LIBSDIR)/libxmhfhw/include
 
 .PHONY: verify-libs
 verify-libs:
-	cd $(USPARK_LIBSDIR)/libxmhfc && make -f libubersparkc.mk -w verify	
-	cd $(USPARK_LIBSDIR)/libxmhfcrypto && make -f libubersparkcrypto.mk -w verify	
+	#cd $(USPARK_LIBSDIR)/libxmhfc && make -f libubersparkc.mk -w verify	
+	#cd $(USPARK_LIBSDIR)/libxmhfcrypto && make -f libubersparkcrypto.mk -w verify	
 	cd $(USPARK_LIBSDIR)/libxmhfhw && make -f libubersparkhw.mk -w verify
 
 .PHONY: build-libs
