@@ -156,6 +156,8 @@ export V_LIBXMHFHW_MODULES;
 # compiler/assembler flags
 ######
 
+# three flags, CCERT_FLAGS, V_FLAGS and ASMFLAGS are brought in by uberspark
+# CFLAGS, VFLAGS, ASFLAGS and CCERT_FLAGS are in use by the current XMHF build process
 
 #-----basic flags for compiling and assembling
 #-----this is used by gcc/ld for generating object code from assembly and linking
