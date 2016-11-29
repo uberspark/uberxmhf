@@ -306,7 +306,6 @@ VFLAGS += -cpp-extra-args=-D__XMHF_CONFIG_MAX_MEMOFFSET_ENTRIES__=$(XMHF_CONFIG_
 
 
 export VFLAGS
-export CCERT_FLAGS
 
 
 
