@@ -72,6 +72,7 @@ install-tools:
 install-hdrs:
 	$(MKDIR) -p $(USPARK_INSTALL_INCLUDEDIR)
 	$(CP) -f $(USPARK_INCLUDEDIR)/* $(USPARK_INSTALL_INCLUDEDIR)/.
+	$(CP) -f $(USPARK_DIR)/uberspark-commmon.mk $(USPARK_INSTALL_HOMEDIR)/.
 
 .PHONY: install-hwm
 install-hwm:
