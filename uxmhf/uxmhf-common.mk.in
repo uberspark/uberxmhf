@@ -47,6 +47,44 @@ export CCERT_LIB := /usr/local/lib/compcert/
 
 
 
+######
+# configuration definitions
+######
+
+export XMHFGEEC_TOTAL_UHSLABS := 1
+export XMHFGEEC_TOTAL_UGSLABS := 1
+
+## load base, at 36M
+export XMHF_CONFIG_LOADADDR := 0x02400000
+## load size, 450M
+export XMHF_CONFIG_LOADMAXSIZE := 0x1C200000
+## load max addr, 486M
+export XMHF_CONFIG_LOADMAXADDR := 0x1E600000
+## system max addr, 4GB
+export XMHF_CONFIG_MAXSYSADDR := 0xFFFFFFFF
+
+export XMHF_CONFIG_MAX_INCLDEVLIST_ENTRIES := 6
+export XMHF_CONFIG_MAX_EXCLDEVLIST_ENTRIES := 6
+
+export XMHF_CONFIG_MAX_MEMOFFSET_ENTRIES := 64
+
+export XMHF_CONFIG_DEBUG_SERIAL_MAXCPUS	:= 8
+
+## build version
+#export XMHF_BUILD_VERSION := $(shell git describe --abbrev=0)
+export XMHF_BUILD_VERSION := 1.0
+
+## build revision
+#export XMHF_BUILD_REVISION_BRANCH := $(shell git rev-parse --abbrev-ref HEAD)
+#export XMHF_BUILD_REVISION_COMMIT := $(shell git log --pretty=format:'%H' -n 1)
+#export XMHF_BUILD_REVISION := $(XMHF_BUILD_REVISION_BRANCH)-$(XMHF_BUILD_REVISION_COMMIT)
+export XMHF_BUILD_REVISION := cliff-jumper
+
+
+
+
+
+
 
 ######
 # common paths
@@ -59,7 +97,7 @@ export XMHF_DIR := $(mydir)
 export XMHF_OBJDIR = $(XMHF_DIR)/_objects
 
 # XMHF libs dirs and object locations
-export XMHF_LIBDIRS := $(wildcard $(XMHF_DIR)/uberspark/libs/lib*)
+export XMHF_LIBDIRS := $(wildcard $(XMHF_DIR)/libs/lib*)
 export XMHF_LIBS_OBJECTS_DIR := $(XMHF_OBJDIR)/_objs_libs
 
 # construct include paths
@@ -104,34 +142,6 @@ V_ADDL_INCLUDES += $(V_XMHFLIBS_INC)
 
 
 
-######
-# configuration definitions
-######
-
-export XMHFGEEC_TOTAL_UHSLABS := 1
-export XMHFGEEC_TOTAL_UGSLABS := 1
-
-
-#load base, at 36M
-export XMHF_CONFIG_LOADADDR := 0x02400000
-#load size, 450M
-export XMHF_CONFIG_LOADMAXSIZE := 0x1C200000
-#load max addr, 486M
-export XMHF_CONFIG_LOADMAXADDR := 0x1E600000
-#system max addr, 4GB
-export XMHF_CONFIG_MAXSYSADDR := 0xFFFFFFFF
-
-
-export XMHF_CONFIG_MAX_INCLDEVLIST_ENTRIES := 6
-export XMHF_CONFIG_MAX_EXCLDEVLIST_ENTRIES := 6
-
-export XMHF_CONFIG_MAX_MEMOFFSET_ENTRIES := 64
-
-export XMHF_CONFIG_DEBUG_SERIAL_MAXCPUS	:= 8
-
-
-
-
 
 
 
@@ -142,16 +152,6 @@ export XMHF_CONFIG_DEBUG_SERIAL_MAXCPUS	:= 8
 ######
 # compiler/assembler flags
 ######
-
-#----- build information (version)
-#export XMHF_BUILD_VERSION := $(shell git describe --abbrev=0)
-export XMHF_BUILD_VERSION := 1.0
-
-#----- build information (revision)
-#export XMHF_BUILD_REVISION_BRANCH := $(shell git rev-parse --abbrev-ref HEAD)
-#export XMHF_BUILD_REVISION_COMMIT := $(shell git log --pretty=format:'%H' -n 1)
-#export XMHF_BUILD_REVISION := $(XMHF_BUILD_REVISION_BRANCH)-$(XMHF_BUILD_REVISION_COMMIT)
-export XMHF_BUILD_REVISION := cliff-jumper
 
 
 #-----basic flags for compiling and assembling
