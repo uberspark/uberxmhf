@@ -6,6 +6,14 @@ mydir := $(realpath $(mydir))
 
 
 ######
+# pull-in base uberspark common makefile
+######
+
+UBERSPARK_HOMEDIR := $(shell $(UBERSPARKCONFIG) --print-uberspark-homedir)
+include $(UBERSPARK_HOMEDIR)/uberspark-common.mk
+
+
+######
 # autoconf controlled variables
 ######
 
