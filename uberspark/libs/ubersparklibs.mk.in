@@ -53,6 +53,12 @@ install-libs:
 	$(CP) -f $(USPARK_LIBSDIR)/libxmhfhw/libubersparkhw.a $(USPARK_INSTALL_LIBSDIR)/.
 	$(CP) -f $(USPARK_LIBSDIR)/libxmhfhw/include/* $(USPARK_INSTALL_LIBSINCLUDESDIR)/.
 
+.PHONY: install-libs-src
+install-libs-src:
+	$(MKDIR) -p $(USPARK_INSTALL_LIBSDIR)/libubersparkhw
+	$(CP) -f $(USPARK_LIBSDIR)/libxmhfhw/*.c $(USPARK_INSTALL_LIBSDIR)/libubersparkhw/.
+	$(CP) -f $(USPARK_LIBSDIR)/libxmhfhw/*.cS $(USPARK_INSTALL_LIBSDIR)/libubersparkhw/.
+	
 
 .PHONY: all
 all: 
