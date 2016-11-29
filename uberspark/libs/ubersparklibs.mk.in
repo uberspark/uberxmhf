@@ -60,6 +60,9 @@ install-libs-src:
 	$(CP) -f $(USPARK_LIBSDIR)/libxmhfhw/*.cS $(USPARK_INSTALL_LIBSDIR)/libubersparkhw/.
 	
 
+.PHONY: install-libs
+install-libs: install-libs-bin clean install-libs-src
+	
 
 .PHONY: all
 all: 
