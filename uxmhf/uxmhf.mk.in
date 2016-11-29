@@ -205,7 +205,7 @@ bootloader: xmhflibs
 xmhfbin: $(XMHFLIBS_SRC) $(XMHFCORE_SRC)
 	@echo Linking XMHF binary...
 	cd $(XMHF_OBJDIR) && $(CP) -f xmhf.lscript xmhf.lscript.c
-	cd $(XMHF_OBJDIR) && $(CC) $(CFLAGS) -D__ASSEMBLY__ -P -E xmhf.lscript.c -o xmhf.lds
+	cd $(XMHF_OBJDIR) && $(CC) $(ASMFLAGS) -P -E xmhf.lscript.c -o xmhf.lds
 	cd $(XMHF_OBJDIR) && $(LD) --oformat elf32-i386 -T xmhf.lds -o xmhf.exe -L$(CCERT_LIB) -L$(CCLIB)/lib/linux -L$(XMHF_LIBS_OBJECTS_DIR) -lxmhfc -lcompcert
 	cd $(XMHF_OBJDIR) && $(OBJCOPY) --output-format=binary xmhf.exe xmhf.bin
 	@echo XMHF link SUCCESS

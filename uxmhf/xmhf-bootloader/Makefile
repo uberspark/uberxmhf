@@ -24,7 +24,6 @@ OBJECTS := $(patsubst %.c, %.o, $(C_SOURCES))
 OBJECTS += $(patsubst %.S, %.o, $(A_SOURCES))
 
 # x86 boot-loader is currently 32-bit
-CFLAGS += -m32
 ASFLAGS += -m32
 
 # folder where objects go
