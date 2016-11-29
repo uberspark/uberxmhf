@@ -176,7 +176,7 @@ CCERT_FLAGS += -fno-inline-asm
 FLAGS += $(XMHF_ADDL_INCLUDES)
 ASMFLAGS += $(XMHF_ADDL_INCLUDES)
 CCERT_FLAGS += $(XMHF_ADDL_INCLUDES)
-V_FLAGS += $(XMHF_V_ADDL_INCLUDES)  -cpp-extra-args=-D__XMHF_VERIFICATION__
+V_FLAGS += $(XMHF_V_ADDL_INCLUDES)
 
 #-----generate compiler/assembler defines from configuration options selected
 FLAGS += -D___XMHF_BUILD_VERSION___=\"$(XMHF_BUILD_VERSION)\"
