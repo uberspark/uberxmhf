@@ -156,22 +156,8 @@ export V_LIBXMHFHW_MODULES;
 # compiler/assembler flags
 ######
 
-# three flags, CCERT_FLAGS, V_FLAGS and ASMFLAGS are brought in by uberspark
-# current XMHF build process expects verification flags in VFLAGS
-
-#-----basic flags for compiling and assembling
-#-----this is used by gcc/ld for generating object code from assembly and linking
-FLAGS = -O0 
-FLAGS += -m32
-FLAGS += -nostdinc 
-
-CCERT_FLAGS = -O
-CCERT_FLAGS += -fno-fpu
-CCERT_FLAGS += -fbitfields
-CCERT_FLAGS += -fpacked-structs
-CCERT_FLAGS += -fstruct-return
-CCERT_FLAGS += -fno-inline-asm
-
+## three flags, CCERT_FLAGS, V_FLAGS and ASMFLAGS are brought in by uberspark
+## current XMHF build process expects verification flags in VFLAGS
 
 FLAGS += $(XMHF_ADDL_INCLUDES)
 ASMFLAGS += $(XMHF_ADDL_INCLUDES)
