@@ -11,11 +11,39 @@ AC_CHECK_PROG([AR], [ar], [ar])
 AC_CHECK_PROG([RM], [rm -f], [rm -f])
 AC_CHECK_PROG([CP], [cp], [cp])
 AC_CHECK_PROG([MKDIR], [mkdir], [mkdir])
+AC_CHECK_PROG([LD], [ld], [ld])
+AC_CHECK_PROG([OBJCOPY], [objcopy], [objcopy])
+AC_CHECK_PROG([CAT], [cat], [cat])
 
 ###### autoconf general options
 AC_SUBST([prefix])
 
 ###### uxmhf specific options
+
+# target cpu
+AC_SUBST([TARGET_CPU])
+AC_ARG_WITH([target_cpu],
+        AS_HELP_STRING([--with-target-cpu=@<:@CPU@:>@],
+                [select target cpu (x86)]),
+                , [with_target_cpu=x86])
+TARGET_CPU=$[]with_target_cpu
+
+# target container
+AC_SUBST([TARGET_CONTAINER])
+AC_ARG_WITH([target_container],
+        AS_HELP_STRING([--with-target-container=@<:@CONTAINER@:>@],
+                [select target container (vmx)]),
+                , [with_target_container=vmx])
+TARGET_CONTAINER=$[]with_target_container
+
+# target platform
+AC_SUBST([TARGET_PLATFORM])
+AC_ARG_WITH([target_platform],
+        AS_HELP_STRING([--with-target-platform=@<:@PLATFORM@:>@],
+                [select target platform (x86pc)]),
+                , [with_target_platform=x86pc])
+TARGET_PLATFORM=$[]with_target_platform
+
 
 #debugging
 AC_SUBST([DEBUG_SERIAL])
