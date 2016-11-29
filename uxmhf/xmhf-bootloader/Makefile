@@ -23,8 +23,6 @@ OBJECTS_ARCHIVE += $(patsubst %.S, %.o, $(A_SOURCES_FILENAMEONLY))
 OBJECTS := $(patsubst %.c, %.o, $(C_SOURCES))
 OBJECTS += $(patsubst %.S, %.o, $(A_SOURCES))
 
-# x86 boot-loader is currently 32-bit
-ASFLAGS += -m32
 
 # folder where objects go
 XMHF_BOOTLOADER_OBJECTS_DIR = _objs_xmhf-bootloader
@@ -43,7 +41,7 @@ $(THE_ARCHIVE): $(OBJECTS)
 %.o: %.S
 	$(MKDIR) -p $(XMHF_BOOTLOADER_OBJECTS_DIR)
 	@echo Building "$(@F)" from "$<"
-	$(CC) -c $(ASFLAGS) -o $(XMHF_BOOTLOADER_OBJECTS_DIR)/$(@F) $<
+	$(CC) -c $(ASMFLAGS) -o $(XMHF_BOOTLOADER_OBJECTS_DIR)/$(@F) $<
 
 %.o: %.c
 	$(MKDIR) -p $(XMHF_BOOTLOADER_OBJECTS_DIR)
