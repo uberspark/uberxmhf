@@ -5,12 +5,6 @@ mydir := $(dir $(lastword $(MAKEFILE_LIST)))
 mydir := $(realpath $(mydir))
 
 
-######
-# pull-in base uberspark common makefile
-######
-
-UBERSPARK_HOMEDIR := $(shell $(UBERSPARKCONFIG) --print-uberspark-homedir)
-include $(UBERSPARK_HOMEDIR)/uberspark-common.mk
 
 
 ######
@@ -43,6 +37,16 @@ export DMAP := @DMAP@
 export XMHF_TARGET_CPU := @TARGET_CPU@
 export XMHF_TARGET_CONTAINER := @TARGET_CONTAINER@
 export XMHF_TARGET_PLATFORM := @TARGET_PLATFORM@
+
+
+
+######
+# pull-in base uberspark common makefile
+######
+
+UBERSPARK_HOMEDIR := $(shell $(UBERSPARKCONFIG) --print-uberspark-homedir)
+include $(UBERSPARK_HOMEDIR)/uberspark-common.mk
+
 
 
 
