@@ -1,28 +1,32 @@
+######
 # top-level Makefile for XMHF
 # author: amit vasudevan (amitvasudevan@acm.org)
-
-include ./common.mk
-
-######
-# top-level build harness
 ######
 
-# XMHF bootloader source location
-export XMHF_BOOTLOADER_SRC := $(realpath uxmhf/xmhf-bootloader)
+include ./uxmhf-common.mk
 
+######
+# uXMHF build variables
+######
+
+## bootloader source path
+export XMHF_BOOTLOADER_SRC := $(realpath $(XMHF_DIR)/xmhf-bootloader)
+
+## uXMHF specific libraries
+export LIBXMHFDEBUG_SRC := $(realpath $(XMHF_DIR)/libs/libxmhfdebug)
+export LIBXMHFGEEC_SRC := $(realpath $(XMHF_DIR)/libs/libxmhfgeec)
+
+## uobj source paths and count
 export XMHF_SLAB_DIRS := $(shell awk -F, '{print $$1}' $(XMHF_DIR)/SLABS)
 XMHF_SLAB_NAMES := $(notdir $(XMHF_SLAB_DIRS))
 export XMHF_SLAB_TOTAL := $(shell wc -l < $(XMHF_DIR)/SLABS)
 
-export LIBXMHFDEBUG_SRC := $(realpath uxmhf/libs/libxmhfdebug)
-export LIBXMHFGEEC_SRC := $(realpath uxmhf/libs/libxmhfgeec)
-
-#uspark
-export LIBXMHFC_SRC := $(realpath uberspark/libs/libxmhfc)
-#uspark
-export LIBXMHFCRYPTO_SRC := $(realpath uberspark/libs/libxmhfcrypto)
-#uspark
-export LIBXMHFHW_SRC := $(realpath uberspark/libs/libxmhfhw)
+##uspark
+#export LIBXMHFC_SRC := $(realpath uberspark/libs/libxmhfc)
+##uspark
+#export LIBXMHFCRYPTO_SRC := $(realpath uberspark/libs/libxmhfcrypto)
+##uspark
+#export LIBXMHFHW_SRC := $(realpath uberspark/libs/libxmhfhw)
 
 
 ######
