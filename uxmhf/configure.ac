@@ -84,6 +84,7 @@ AS_IF([test "x${enable_dmap}" != "xno"],
 AC_CONFIG_FILES(
 			[uxmhf-common.mk]
 			[Makefile]
+			[UOBJLIST]
 	)
 
 AC_OUTPUT
