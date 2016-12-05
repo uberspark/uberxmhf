@@ -19,9 +19,9 @@ export LIBXMHFDEBUG_SRC := $(realpath $(XMHF_DIR)/libs/libxmhfdebug)
 export LIBXMHFGEEC_SRC := $(realpath $(XMHF_DIR)/libs/libxmhfgeec)
 
 ## uobj source paths and count
-export XMHF_SLAB_DIRS := $(shell awk -F, '{print $$1}' $(XMHF_DIR)/SLABS)
+export XMHF_SLAB_DIRS := $(shell awk -F, '{print $$1}' $(XMHF_DIR)/UOBJLIST)
 XMHF_SLAB_NAMES := $(notdir $(XMHF_SLAB_DIRS))
-export XMHF_SLAB_TOTAL := $(shell wc -l < $(XMHF_DIR)/SLABS)
+export XMHF_SLAB_TOTAL := $(shell wc -l < $(XMHF_DIR)/UOBJLIST)
 
 
 
