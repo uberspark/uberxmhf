@@ -115,10 +115,10 @@ export XMHF_LIBS_OBJECTS_DIR := $(XMHF_OBJDIR)/_objs_libs
 # construct XMHF additional include paths for verification and build
 XMHF_ADDL_INCLUDES := 
 XMHF_V_ADDL_INCLUDES :=
-XMHF_ADDL_INCLUDES += -I$(XMHF_DIR)/uxmhf/include
-XMHF_V_ADDL_INCLUDES += -cpp-extra-args=-I$(XMHF_DIR)/uxmhf/include
-XMHF_ADDL_INCLUDES += -I$(XMHF_DIR)/uxmhf/xmhf-uobjs/include 
-XMHF_V_ADDL_INCLUDES += -cpp-extra-args=-I$(XMHF_DIR)/uxmhf/xmhf-uobjs/include 
+XMHF_ADDL_INCLUDES += -I$(XMHF_DIR)/include
+XMHF_V_ADDL_INCLUDES += -cpp-extra-args=-I$(XMHF_DIR)/include
+XMHF_ADDL_INCLUDES += -I$(XMHF_DIR)/xmhf-uobjs/include 
+XMHF_V_ADDL_INCLUDES += -cpp-extra-args=-I$(XMHF_DIR)/xmhf-uobjs/include 
 XMHF_LIBSINC = $(foreach dir,$(XMHF_LIBDIRS),-I$(dir)/include)
 XMHF_V_LIBSINC = $(foreach dir,$(XMHF_LIBDIRS),-cpp-extra-args=-I$(dir)/include)
 XMHF_ADDL_INCLUDES += $(XMHF_LIBSINC)
