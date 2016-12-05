@@ -5,6 +5,8 @@
 
 include ./uxmhf-common.mk
 
+
+
 ######
 # uXMHF build variables
 ######
@@ -21,17 +23,26 @@ export XMHF_SLAB_DIRS := $(shell awk -F, '{print $$1}' $(XMHF_DIR)/SLABS)
 XMHF_SLAB_NAMES := $(notdir $(XMHF_SLAB_DIRS))
 export XMHF_SLAB_TOTAL := $(shell wc -l < $(XMHF_DIR)/SLABS)
 
-##uspark
-#export LIBXMHFC_SRC := $(realpath uberspark/libs/libxmhfc)
-##uspark
-#export LIBXMHFCRYPTO_SRC := $(realpath uberspark/libs/libxmhfcrypto)
-##uspark
-#export LIBXMHFHW_SRC := $(realpath uberspark/libs/libxmhfhw)
+
 
 
 ######
 # top-level build targets
 ######
+
+
+.PHONY: _libxmhfdebug
+_libxmhfdebug:
+	@echo building libxmhfdebug...
+	$(MKDIR) -p $(XMHF_LIBS_OBJECTS_DIR)
+	cd $(XMHF_LIBS_OBJECTS_DIR) &&	$(MAKE) -f $(LIBXMHFDEBUG_SRC)/Makefile -w all
+	@echo libxmhfdebug built sucessfully.
+
+
+
+.PHONY: uxmhf-libs
+uxmhf-libs: _libxmhfdebug
+
 
 
 .PHONY: clean 
