@@ -83,7 +83,7 @@ AS_IF([test "x${enable_dmap}" != "xno"],
 ###### autoconf output files
 AC_CONFIG_FILES(
 			[uxmhf-common.mk]
-			[uxmhf.mk]
+			[Makefile]
 	)
 
 AC_OUTPUT
