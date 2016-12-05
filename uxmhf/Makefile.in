@@ -39,9 +39,18 @@ _libxmhfdebug:
 	@echo libxmhfdebug built sucessfully.
 
 
+.PHONY: _libxmhfgeec
+_libxmhfgeec:
+	@echo building libxmhfgeec...
+	$(MKDIR) -p $(XMHF_LIBS_OBJECTS_DIR)
+	cd $(XMHF_LIBS_OBJECTS_DIR) &&	$(MAKE) -f $(LIBXMHFGEEC_SRC)/Makefile -w all
+	@echo libxmhfgeec built sucessfully.
+	
+	
 
 .PHONY: uxmhf-libs
-uxmhf-libs: _libxmhfdebug
+uxmhf-libs: _libxmhfdebug _libxmhfgeec
+
 
 
 
