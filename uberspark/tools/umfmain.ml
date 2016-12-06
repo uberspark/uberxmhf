@@ -236,7 +236,7 @@ let umf_configure_slabs () =
 		    i := 0;
 		    while (!i < !g_totalslabs) do
 		        Self.result "Configuring slab: %s with type: %s:%s ...\n" (Hashtbl.find slab_idtodir !i) (Hashtbl.find slab_idtotype !i) (Hashtbl.find slab_idtosubtype !i);
-		        l_cmdline := 	(Printf.sprintf "cd %s%s && ../../../configure_slab " !g_rootdir (Hashtbl.find slab_idtodir !i)) ^
+		        l_cmdline := 	(Printf.sprintf "cd %s%s && ~/data/repos/uberspark.git/uxmhf/configure-uxmhfuobj " !g_rootdir (Hashtbl.find slab_idtodir !i)) ^
 		                	 	(Printf.sprintf " --with-slabtype=%s" (Hashtbl.find slab_idtotype !i)) ^
 		                		(Printf.sprintf " --with-slabsubtype=%s" (Hashtbl.find slab_idtosubtype !i)) ^
 		                		(Printf.sprintf " --with-slabcodestart=%s" (Hashtbl.find slab_idtocode_addrstart !i)) ^
