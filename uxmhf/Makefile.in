@@ -97,8 +97,7 @@ uobjinfotable_build:
 # uxmhf uobj build
 	
 .PHONY: uxmhf-uobjsbuild
-#uxmhf-uobjsbuild: uobjs_buildpass1 uobjs_buildpass2
-uxmhf-uobjsbuild: uobjs_buildpass1
+uxmhf-uobjsbuild: uobjs_buildpass1 uobjs_buildpass2
 
 .PHONY: uobjs_buildpass1
 uobjs_buildpass1: _uobjs_configureandgenerateuobjinfonoexports uobjinfotable_build 
@@ -110,7 +109,7 @@ uobjs_buildpass1: _uobjs_configureandgenerateuobjinfonoexports uobjinfotable_bui
 	@echo uobjs build pass1 SUCCESS
 
 .PHONY: uobjs_buildpass2
-uobjs_buildpass2: _uobjs_generateuobjinfoexports uobjinfotable_build  _slabs_common_realbuild
+uobjs_buildpass2: _uobjs_generateuobjinfoexports uobjinfotable_build
 	@echo Building uobjs - pass2...
 	@for i in $(XMHF_SLAB_DIRS); \
 	do \
