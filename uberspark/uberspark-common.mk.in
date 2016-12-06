@@ -77,11 +77,16 @@ CCERT_FLAGS += -fpacked-structs
 CCERT_FLAGS += -fstruct-return
 CCERT_FLAGS += -fno-inline-asm
 
+###### includes
+
+I_FLAGS = -I$(USPARK_INSTALL_INCLUDEDIR)
+I_FLAGS += -I$(USPARK_INSTALL_HWMINCLUDEDIR)
+I_FLAGS += -I$(USPARK_INSTALL_LIBSINCLUDESDIR)
+
+
 ###### compcert compiler includes
 
-CCERT_FLAGS += -I$(USPARK_INSTALL_INCLUDEDIR)
-CCERT_FLAGS += -I$(USPARK_INSTALL_HWMINCLUDEDIR)
-CCERT_FLAGS += -I$(USPARK_INSTALL_LIBSINCLUDESDIR)
+CCERT_FLAGS += $(I_FLAGS)
 
 ###### verification (frama-c) includes
 export V_FLAGS := -cpp-extra-args=-D__XMHF_VERIFICATION__
@@ -93,4 +98,4 @@ V_FLAGS += $(USPARK_VERIFICATION_DEFS)
 ###### compcert C and CASM flag definitions, assembly flag definitions
 export CCERT_CFLAGS = -O $(CCERT_FLAGS) $(USPARK_COMPILER_DEFS) 
 export CCERT_CASMFLAGS = -O0 $(CCERT_FLAGS) $(USPARK_COMPILER_DEFS)
-export ASMFLAGS = $(USPARK_COMPILER_DEFS) -D__ASSEMBLY__
+export ASMFLAGS = $(I_FLAGS) $(USPARK_COMPILER_DEFS) -D__ASSEMBLY__
