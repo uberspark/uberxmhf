@@ -55,6 +55,37 @@ uxmhf-libs: _libxmhfdebug _libxmhfgeec
 
 
 
+######
+# uxmhf uobj manifest/infotable related build harness
+
+
+.PHONY: _uobjs_preprocessmanifests
+_uobjs_preprocessmanifests:
+	mkdir -p $(XMHF_OBJDIR)
+	@for i in $(XMHF_SLAB_NAMES); \
+	do \
+		(cd $(XMHF_OBJDIR) && echo "Prepping uobj manifest for $$i..." && $(CP) -f $(XMHF_DIR)/xmhf-uobjs/$$i/$$i.gsm $$i.gsm.c && $(CCERT) -E $(ASMFLAGS) $$i.gsm.c >$(XMHF_DIR)/xmhf-uobjs/$$i/$$i.gsm.pp) || exit 1; \
+	done;
+	@echo uobj manifests prepped
+
+.PHONY: _uobjs_configureandgenerateuobjinfonoexports
+_uobjs_configureandgenerateuobjinfonoexports: _uobjs_preprocessmanifests
+	cd $(XMHF_DIR) && $(FRAMAC) -load-module $(USPARK_INSTALL_TOOLSDIR)/Umf -umf-uobjlist $(XMHF_DIR)/UOBJLIST -umf-outuobjinfotable $(XMHF_OBJDIR)/uobjinfotable.c -umf-outlinkerscript $(XMHF_OBJDIR)/xmhf.lscript -umf-loadaddr $(XMHF_CONFIG_LOADADDR) -umf-loadmaxsize $(XMHF_CONFIG_LOADMAXSIZE) -umf-totaluhuobjs $(XMHFGEEC_TOTAL_UHSLABS) -umf-maxincldevlistentries $(XMHF_CONFIG_MAX_INCLDEVLIST_ENTRIES) -umf-maxexcldevlistentries $(XMHF_CONFIG_MAX_EXCLDEVLIST_ENTRIES) -umf-maxmemoffsetentries $(XMHF_CONFIG_MAX_MEMOFFSET_ENTRIES)
+
+.PHONY: _uobjs_generateuobjinfoexports
+_uobjs_generateuobjinfoexports: _uobjs_preprocessmanifests
+	@echo generating uobj info table with memoffsets...
+	cd $(XMHF_DIR) && $(FRAMAC) -load-module $(USPARK_INSTALL_TOOLSDIR)/Umf -umf-uobjlist $(XMHF_DIR)/UOBJLIST -umf-outuobjinfotable $(XMHF_OBJDIR)/uobjinfotable.c -umf-outlinkerscript $(XMHF_OBJDIR)/xmhf.lscript -umf-loadaddr $(XMHF_CONFIG_LOADADDR) -umf-loadmaxsize $(XMHF_CONFIG_LOADMAXSIZE) -umf-totaluhuobjs $(XMHFGEEC_TOTAL_UHSLABS) -umf-maxincldevlistentries $(XMHF_CONFIG_MAX_INCLDEVLIST_ENTRIES) -umf-maxexcldevlistentries $(XMHF_CONFIG_MAX_EXCLDEVLIST_ENTRIES) -umf-maxmemoffsetentries $(XMHF_CONFIG_MAX_MEMOFFSET_ENTRIES) -umf-memoffsets
+	@echo uobj info table with memoffsets ready.
+	
+.PHONY: uobjinfotable_build
+uobjinfotable_build:
+	@echo building uobjinfotable build...
+	$(MKDIR) -p $(XMHF_OBJDIR)
+	cd $(XMHF_OBJDIR) && $(CCERT) -c $(CCERT_CFLAGS) -o $(XMHF_OBJDIR)/uobjinfotable.o uobjinfotable.c
+	@echo uobjinfotable built sucessfully.
+
+
 
 .PHONY: clean 
 clean:
