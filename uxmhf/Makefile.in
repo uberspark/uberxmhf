@@ -32,6 +32,12 @@ export XMHF_SLAB_TOTAL := $(shell wc -l < $(XMHF_DIR)/UOBJLIST)
 
 
 ######
+# target all
+.PHONY: all
+all: uxmhf-libs uxmhf-uobjsbuild
+
+
+######
 # uxmhf-libs build
 
 .PHONY: _libxmhfdebug
@@ -90,8 +96,9 @@ uobjinfotable_build:
 ######
 # uxmhf uobj build
 	
-.PHONY: uobjs_build
-uobjs_build: uobjs_buildpass1 uobjs_buildpass2
+.PHONY: uxmhf-uobjsbuild
+#uxmhf-uobjsbuild: uobjs_buildpass1 uobjs_buildpass2
+uxmhf-uobjsbuild: uobjs_buildpass1
 
 .PHONY: uobjs_buildpass1
 uobjs_buildpass1: _uobjs_configureandgenerateuobjinfonoexports uobjinfotable_build 
