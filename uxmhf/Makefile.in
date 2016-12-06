@@ -32,9 +32,11 @@ export XMHF_SLAB_TOTAL := $(shell wc -l < $(XMHF_DIR)/UOBJLIST)
 
 
 ######
-# target all
-.PHONY: all
-all: uxmhf-libs uxmhf-uobjsbuild
+# uxmhf image
+.PHONY: uxmhf-image
+uxmhf-image: uxmhf-libs uxmhf-uobjsbuild uxmhf-bootloader uxmhf-binimage
+
+
 
 
 ######
@@ -138,7 +140,6 @@ uxmhf-binimage:
 	cd $(XMHF_OBJDIR) && $(CP) -f xmhf.lscript xmhf.lscript.c
 	cd $(XMHF_OBJDIR) && $(CC) $(ASMFLAGS) -P -E xmhf.lscript.c -o xmhf.lds
 	cd $(XMHF_OBJDIR) && $(LD) --oformat elf32-i386 -T xmhf.lds -o xmhf.exe 
-	#-L$(CCERT_LIB) -L$(XMHF_LIBS_OBJECTS_DIR) -lxmhfc -lcompcert
 	cd $(XMHF_OBJDIR) && $(OBJCOPY) --output-format=binary xmhf.exe xmhf.bin
 	cd $(XMHF_OBJDIR) && $(CAT) ./_objs_xmhf-bootloader/xmhf-bootloader.bin ./xmhf.bin > ./xmhf.tmp.img
 	cd $(XMHF_OBJDIR) && gzip -c ./xmhf.tmp.img > ./xmhf-$(XMHF_TARGET_TRIAD).bin.gz
