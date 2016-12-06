@@ -119,7 +119,15 @@ uobjs_buildpass2: _uobjs_generateuobjinfoexports uobjinfotable_build
 
 
 
-	
+
+######
+# uxmhf bootloader
+.PHONY: uxmhf-bootloader
+uxmhf-bootloader:  
+	@echo Building XMHF boot loader...
+	cd $(XMHF_OBJDIR) && $(MAKE) -f $(XMHF_BOOTLOADER_SRC)/Makefile -w all
+	@echo XMHF boot loader build SUCCESS
+
 
 
 	
