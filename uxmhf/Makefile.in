@@ -86,13 +86,19 @@ _uobjs_generateuobjinfoexports: _uobjs_preprocessmanifests
 	cd $(XMHF_DIR) && $(FRAMAC) -load-module $(USPARK_INSTALL_TOOLSDIR)/Umf -umf-uobjlist $(XMHF_DIR)/UOBJLIST -umf-outuobjinfotable $(XMHF_OBJDIR)/uobjinfotable.c -umf-outlinkerscript $(XMHF_OBJDIR)/xmhf.lscript -umf-loadaddr $(XMHF_CONFIG_LOADADDR) -umf-loadmaxsize $(XMHF_CONFIG_LOADMAXSIZE) -umf-totaluhuobjs $(XMHFGEEC_TOTAL_UHSLABS) -umf-maxincldevlistentries $(XMHF_CONFIG_MAX_INCLDEVLIST_ENTRIES) -umf-maxexcldevlistentries $(XMHF_CONFIG_MAX_EXCLDEVLIST_ENTRIES) -umf-maxmemoffsetentries $(XMHF_CONFIG_MAX_MEMOFFSET_ENTRIES) -umf-memoffsets
 	@echo uobj info table with memoffsets ready.
 	
-.PHONY: uobjinfotable_build
-uobjinfotable_build:
-	@echo building uobjinfotable build...
+.PHONY: uobjinfotable_buildpass1
+uobjinfotable_buildpass1:
+	@echo building uobjinfotable pass1...
 	$(MKDIR) -p $(XMHF_OBJDIR)
 	cd $(XMHF_OBJDIR) && $(CCERT) -c $(CCERT_CFLAGS) -o $(XMHF_OBJDIR)/uobjinfotable.o uobjinfotable.c
-	@echo uobjinfotable built sucessfully.
+	@echo uobjinfotable pass1 built sucessfully.
 
+.PHONY: uobjinfotable_buildpass2
+uobjinfotable_buildpass2:
+	@echo building uobjinfotable pass2...
+	$(MKDIR) -p $(XMHF_OBJDIR)
+	cd $(XMHF_OBJDIR) && $(CCERT) -c $(CCERT_CFLAGS) -o $(XMHF_OBJDIR)/uobjinfotable.o uobjinfotable.c
+	@echo uobjinfotable pass2 built sucessfully.
 	
 	
 ######
@@ -102,7 +108,7 @@ uobjinfotable_build:
 uxmhf-uobjsbuild: uobjs_buildpass1 uobjs_buildpass2
 
 .PHONY: uobjs_buildpass1
-uobjs_buildpass1: _uobjs_configureandgenerateuobjinfonoexports uobjinfotable_build 
+uobjs_buildpass1: _uobjs_configureandgenerateuobjinfonoexports uobjinfotable_buildpass1 
 	@echo Building uobjs - pass1...
 	@for i in $(XMHF_SLAB_DIRS); \
 	do \
@@ -111,7 +117,7 @@ uobjs_buildpass1: _uobjs_configureandgenerateuobjinfonoexports uobjinfotable_bui
 	@echo uobjs build pass1 SUCCESS
 
 .PHONY: uobjs_buildpass2
-uobjs_buildpass2: _uobjs_generateuobjinfoexports uobjinfotable_build
+uobjs_buildpass2: _uobjs_generateuobjinfoexports uobjinfotable_buildpass2
 	@echo Building uobjs - pass2...
 	@for i in $(XMHF_SLAB_DIRS); \
 	do \
