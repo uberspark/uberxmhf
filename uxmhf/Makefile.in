@@ -130,6 +130,24 @@ uxmhf-bootloader:
 
 
 
+######
+# uxmhf binary image
+.PHONY: uxmhf-binimage
+uxmhf-binimage:
+	@echo Generating uXMHF binary image...
+	cd $(XMHF_OBJDIR) && $(CP) -f xmhf.lscript xmhf.lscript.c
+	cd $(XMHF_OBJDIR) && $(CC) $(ASMFLAGS) -P -E xmhf.lscript.c -o xmhf.lds
+	cd $(XMHF_OBJDIR) && $(LD) --oformat elf32-i386 -T xmhf.lds -o xmhf.exe 
+	#-L$(CCERT_LIB) -L$(XMHF_LIBS_OBJECTS_DIR) -lxmhfc -lcompcert
+	cd $(XMHF_OBJDIR) && $(OBJCOPY) --output-format=binary xmhf.exe xmhf.bin
+	cd $(XMHF_OBJDIR) && $(CAT) ./_objs_xmhf-bootloader/xmhf-bootloader.bin ./xmhf.bin > ./xmhf.tmp.img
+	cd $(XMHF_OBJDIR) && gzip -c ./xmhf.tmp.img > ./xmhf-$(XMHF_TARGET_TRIAD).bin.gz
+	cd $(XMHF_OBJDIR) && $(RM) -rf ./xmhf.tmp.img
+	@echo uXMHF binary image generation SUCCESS
+
+
+
+	
 	
 ######
 # uxmhf cleanup targets
