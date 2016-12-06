@@ -35,7 +35,7 @@ THE_ARCHIVE = xmhf-bootloader
 all: $(THE_ARCHIVE)
 
 $(THE_ARCHIVE): $(OBJECTS)
-	cd $(XMHF_BOOTLOADER_OBJECTS_DIR) && $(LD) --oformat elf32-i386 -T $(srcdir)/init.lds -o $(THE_ARCHIVE).exe $(OBJECTS_ARCHIVE) -L$(CCERT_LIB) -L$(CCLIB)/lib/linux -L$(XMHF_LIBS_OBJECTS_DIR) -lxmhfc -lxmhfdebug -lxmhfcrypto -lxmhfhw -lxmhfc -lcompcert
+	cd $(XMHF_BOOTLOADER_OBJECTS_DIR) && $(LD) --oformat elf32-i386 -T $(srcdir)/init.lds -o $(THE_ARCHIVE).exe $(OBJECTS_ARCHIVE) -L$(CCERT_LIB) -L$(XMHF_LIBS_OBJECTS_DIR) -L$(USPARK_INSTALL_LIBSDIR) -lubersparkc -lxmhfdebug -lubersparkcrypto -lubersparkhw -lubersparkc -lcompcert
 	cd $(XMHF_BOOTLOADER_OBJECTS_DIR) && $(OBJCOPY) --output-format=binary $(THE_ARCHIVE).exe $(THE_ARCHIVE).bin
 
 %.o: %.S
@@ -46,7 +46,7 @@ $(THE_ARCHIVE): $(OBJECTS)
 %.o: %.c
 	$(MKDIR) -p $(XMHF_BOOTLOADER_OBJECTS_DIR)
 	@echo Building "$(@F)" from "$<"
-	$(CCERT) -c $(CCERT_FLAGS) -o $(XMHF_BOOTLOADER_OBJECTS_DIR)/$@ $<
+	$(CCERT) -c $(CCERT_CFLAGS) -o $(XMHF_BOOTLOADER_OBJECTS_DIR)/$@ $<
 
 
 .PHONY: clean
