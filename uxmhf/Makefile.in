@@ -85,6 +85,35 @@ uobjinfotable_build:
 	cd $(XMHF_OBJDIR) && $(CCERT) -c $(CCERT_CFLAGS) -o $(XMHF_OBJDIR)/uobjinfotable.o uobjinfotable.c
 	@echo uobjinfotable built sucessfully.
 
+	
+	
+######
+# uxmhf uobj build
+	
+.PHONY: uobjs_build
+uobjs_build: uobjs_buildpass1 uobjs_buildpass2
+
+.PHONY: uobjs_buildpass1
+uobjs_buildpass1: _uobjs_configureandgenerateuobjinfonoexports uobjinfotable_build 
+	@echo Building uobjs - pass1...
+	@for i in $(XMHF_SLAB_DIRS); \
+	do \
+		(cd $(XMHF_OBJDIR) &&	echo "Making all in $$i..." && $(MAKE) -f $(XMHF_DIR)/$$i/Makefile -w all) || exit 1; \
+	done;
+	@echo uobjs build pass1 SUCCESS
+
+.PHONY: uobjs_buildpass2
+uobjs_buildpass2: _uobjs_generateuobjinfoexports uobjinfotable_build  _slabs_common_realbuild
+	@echo Building uobjs - pass2...
+	@for i in $(XMHF_SLAB_DIRS); \
+	do \
+		(cd $(XMHF_OBJDIR) &&	echo "Making all in $$i..." && $(MAKE) -f $(XMHF_DIR)/$$i/Makefile -w linkslabbin) || exit 1; \
+	done;
+	@echo uobjs build pass2 SUCCESS
+
+
+
+	
 
 
 	
