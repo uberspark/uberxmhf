@@ -1,22 +1,23 @@
-AC_INIT([xmhfgeecslab], [1.0.0])
+AC_INIT([uxmhfuobj], [2.0])
 
-
-# simple configuration of tools. (just looks for matching binary
-# on PATH)
-#AC_CHECK_PROG([CC], [gcc], [gcc])
-AC_CHECK_PROG([CC], [clang], [clang])
+###### simple configuration of tools. (just looks for matching binary on PATH)
+AC_CHECK_PROG([MAKE], [make], [make])
+AC_CHECK_PROG([UBERSPARKCONFIG], [ubersparkconfig], [ubersparkconfig])
+AC_CHECK_PROG([FRAMAC], [frama-c], [frama-c])
 AC_CHECK_PROG([CCERT], [ccomp], [ccomp])
+AC_CHECK_PROG([CC], [gcc -m32], [gcc -m32])
 AC_CHECK_PROG([AS], [as], [as])
-AC_CHECK_PROG([LD], [ld], [ld])
-AC_CHECK_PROG([OBJDUMP], [objdump], [objdump])
-AC_CHECK_PROG([OBJCOPY], [objcopy], [objcopy])
-AC_CHECK_PROG([STRIP], [strip], [strip])
+AC_CHECK_PROG([AR], [ar], [ar])
 AC_CHECK_PROG([RM], [rm -f], [rm -f])
 AC_CHECK_PROG([CP], [cp], [cp])
-AC_CHECK_PROG([TAR], [tar], [tar])
-AC_CHECK_PROG([SED], [sed], [sed])
 AC_CHECK_PROG([MKDIR], [mkdir], [mkdir])
+AC_CHECK_PROG([LD], [ld], [ld])
+AC_CHECK_PROG([OBJCOPY], [objcopy], [objcopy])
 AC_CHECK_PROG([CAT], [cat], [cat])
+
+###### autoconf general options
+AC_SUBST([prefix])
+
 
 # user-defined options
 
@@ -104,16 +105,9 @@ AC_ARG_WITH([slabdmadataend],
 SLABDMADATAEND=$[]with_slabdmadataend
 
 
-AC_SUBST([prefix])
-AC_SUBST([exec_prefix])
-AC_SUBST([datadir])
-AC_SUBST([libdir])
-AC_SUBST([includedir])
-AC_SUBST([pkgdatadir], ['${datadir}/AC_PACKAGE_NAME'])
-AC_SUBST([pkgconfigdir], ['${libdir}/pkgconfig'])
-AC_SUBST([pkgincludedir], ['${includedir}/AC_PACKAGE_NAME'])
+###### output files
 
 AC_CONFIG_FILES(
-	[Makefile:../../../xmhfgeecslab_commonharness.mk.in:xmhfgeecslab.mk.in:../../../xmhfgeecslab_commontargets.mk.in]
-	[xmhfgeecslab.lscript:../../../xmhfgeecslab.lscript.in])
+	[Makefile:../../uxmhf-uobjcommonharness.mk.in:xmhfgeecslab.mk.in:../../uxmhf-uobjcommontargets.mk.in]
+	[xmhfgeecslab.lscript:../../uxmhf-uobjlscript.in])
 AC_OUTPUT

@@ -7,7 +7,7 @@ vpath %.S $(srcdir)
 vpath %.cS $(srcdir)
 vpath %.lscript $(srcdir)
 
-include $(srcdir)/../../../common.mk
+include $(srcdir)/../../uxmhf-common.mk
 
 export XMHF_SLAB_FULLLINK := y
 export XMHF_SLAB_TYPE := @SLABTYPE@
