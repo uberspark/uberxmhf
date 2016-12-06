@@ -70,7 +70,7 @@ _uobjs_preprocessmanifests:
 	mkdir -p $(XMHF_OBJDIR)
 	@for i in $(XMHF_SLAB_NAMES); \
 	do \
-		(cd $(XMHF_OBJDIR) && echo "Prepping uobj manifest for $$i..." && $(CP) -f $(XMHF_DIR)/xmhf-uobjs/$$i/$$i.gsm $$i.gsm.c && $(CCERT) -E $(ASMFLAGS) $$i.gsm.c >$(XMHF_DIR)/xmhf-uobjs/$$i/$$i.gsm.pp) || exit 1; \
+		(cd $(XMHF_OBJDIR) && echo "Prepping uobj manifest for $$i..." && $(CP) -f $(XMHF_DIR)/xmhf-uobjs/$$i/$$i.gsm $$i.gsm.c && $(CCERT) -E $(CCERT_CFLAGS) -D__ASSEMBLY__ $$i.gsm.c >$(XMHF_DIR)/xmhf-uobjs/$$i/$$i.gsm.pp) || exit 1; \
 	done;
 	@echo uobj manifests prepped
 
