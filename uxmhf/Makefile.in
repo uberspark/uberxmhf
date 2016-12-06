@@ -31,6 +31,9 @@ export XMHF_SLAB_TOTAL := $(shell wc -l < $(XMHF_DIR)/UOBJLIST)
 ######
 
 
+######
+# uxmhf-libs build
+
 .PHONY: _libxmhfdebug
 _libxmhfdebug:
 	@echo building libxmhfdebug...
@@ -45,7 +48,6 @@ _libxmhfgeec:
 	$(MKDIR) -p $(XMHF_LIBS_OBJECTS_DIR)
 	cd $(XMHF_LIBS_OBJECTS_DIR) &&	$(MAKE) -f $(LIBXMHFGEEC_SRC)/Makefile -w all
 	@echo libxmhfgeec built sucessfully.
-	
 	
 
 .PHONY: uxmhf-libs
