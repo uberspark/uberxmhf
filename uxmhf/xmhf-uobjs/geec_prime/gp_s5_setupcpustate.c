@@ -319,7 +319,7 @@ static bool __xmhfhic_x86vmx_setupvmxstate(u64 cpuid){
 		//@assert (xmhfhwm_cpu_tr_selector ==(__TRSEL + ((u32)cpuid * 8) ));
 		//@assert (xmhfhwm_cpu_idtr_base == (u32)&__xmhfhic_x86vmx_idt_start);
 		//@assert (xmhfhwm_cpu_eflags & EFLAGS_IOPL);
-		//@assert (xmhfhwm_cpu_msr_apic_base == MMIO_APIC_BASE);
+		// //@assert (xmhfhwm_cpu_msr_apic_base == MMIO_APIC_BASE);
 		//@assert (xmhfhwm_cpu_msr_efer & ((1 << EFER_NXE)));
 		//@assert (xmhfhwm_cpu_cr4 & CR4_OSXSAVE);
 		//@assert (xmhfhwm_cpu_cr0 & 0x20);
