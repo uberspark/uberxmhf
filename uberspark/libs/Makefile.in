@@ -83,12 +83,12 @@ distclean: clean
 
 ###### autoconf rules
 
-ubersparklibs.mk: ubersparklibs.mk.in config.status
+Makefile: Makefile.in config.status
 	./config.status $@
 
-config.status: configure-ubersparklibs
+config.status: configure
 	./config.status --recheck
 
-configure-ubersparklibs: configure-ubersparklibs.ac
-	autoconf --output=configure-ubersparklibs configure-ubersparklibs.ac
+configure: configure.ac
+	./bsconfigure
 
