@@ -19,13 +19,6 @@ export USPARK_TOOLSDIR := $(USPARK_DIR)/tools
 
 .PHONY: all
 all: build-tools
-	@echo $(USPARK_INSTALL_BINDIR)
-	@echo $(USPARK_INSTALL_INCLUDEDIR)
-	@echo $(USPARK_INSTALL_HWMDIR)
-	@echo $(USPARK_INSTALL_HWMINCLUDEDIR)
-	@echo $(USPARK_INSTALL_LIBSDIR)
-	@echo $(USPARK_INSTALL_LIBSINCLUDESDIR)
-	@echo $(USPARK_INSTALL_TOOLSDIR)
 
 
 .PHONY: build-tools
@@ -79,12 +72,15 @@ install-tools:
 install-hdrs:
 	$(MKDIR) -p $(USPARK_INSTALL_INCLUDEDIR)
 	$(CP) -f $(USPARK_INCLUDEDIR)/* $(USPARK_INSTALL_INCLUDEDIR)/.
+	$(CP) -f $(USPARK_DIR)/uberspark-common.mk $(USPARK_INSTALL_HOMEDIR)/.
 
 .PHONY: install-hwm
 install-hwm:
 	$(MKDIR) -p $(USPARK_INSTALL_HWMDIR)
 	$(CP) -rf $(USPARK_HWMDIR)/* $(USPARK_INSTALL_HWMDIR)/.
 
+.PHONY: install
+install: install-tools install-hdrs install-hwm
 
 
 .PHONY: clean

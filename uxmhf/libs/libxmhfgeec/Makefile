@@ -1,8 +1,12 @@
+######
+# Makefile for libxmhfgeec
+# author: amit vasudevan (amitvasudevan@acm.org)
+######
+
 srcdir := $(realpath $(dir $(lastword $(MAKEFILE_LIST))))
 vpath %.c $(srcdir)
 vpath %.cS $(srcdir)
 
-include $(srcdir)/../../../common.mk
 
 C_SOURCES:= $(wildcard $(srcdir)/*.c)
 C_SOURCES:= $(patsubst $(srcdir)/%, %, $(C_SOURCES))
@@ -16,7 +20,7 @@ OBJECTS += $(patsubst %.cS, %.o, $(CS_SOURCES))
 LIBXMHFGEEC_OBJECTS_DIR = _objs_libxmhfgeec
 LIBXMHFGEEC_VERIF_DIR = _verif_libxmhfgeec
 
-# targets
+## targets
 .PHONY: verify
 verify:
 	$(MKDIR) -p $(LIBXMHFGEEC_VERIF_DIR)
@@ -39,15 +43,16 @@ all: $(OBJECTS)
 %.o: %.c
 	$(MKDIR) -p $(LIBXMHFGEEC_OBJECTS_DIR)
 	@echo Building "$@" from "$<"
-	$(CCERT) -c $(CCERT_FLAGS) $< -o $(LIBXMHFGEEC_OBJECTS_DIR)/$@
+	$(CCERT) -c $(CCERT_CFLAGS) $< -o $(LIBXMHFGEEC_OBJECTS_DIR)/$@
 
 %.o: %.cS
 	$(MKDIR) -p $(LIBXMHFGEEC_OBJECTS_DIR)
 	@echo Building "$@" from "$<"
 	$(CP) -f $< $(LIBXMHFGEEC_OBJECTS_DIR)/$(@F).c
-	cd $(LIBXMHFGEEC_OBJECTS_DIR) && $(CCERT) -c -dmach $(CCERT_FLAGS) -O0 $(@F).c
-	cd $(LIBXMHFGEEC_OBJECTS_DIR) && frama-c -load-script $(XMHF_DIR)/uberspark/tools/ucasm.ml -ucasm-infile $(@F).mach -ucasm-outfile $(@F).S
-	cd $(LIBXMHFGEEC_OBJECTS_DIR) && $(CC) -c $(ASFLAGS) -o $@ $(@F).S
+	cd $(LIBXMHFGEEC_OBJECTS_DIR) && $(CCERT) -c -dmach $(CCERT_CASMFLAGS) $(@F).c
+	cd $(LIBXMHFGEEC_OBJECTS_DIR) && $(FRAMAC) -load-module $(USPARK_INSTALL_TOOLSDIR)/Ucasm -ucasm-infile $(@F).mach -ucasm-outfile $(@F).S
+	cd $(LIBXMHFGEEC_OBJECTS_DIR) && $(CC) -c $(ASMFLAGS) -o $@ $(@F).S
+
 
 .PHONY: clean
 clean:
