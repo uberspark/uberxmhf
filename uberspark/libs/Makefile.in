@@ -30,14 +30,18 @@ V_FLAGS += -cpp-extra-args=-I$(USPARK_LIBSDIR)/libxmhfhw/include
 
 ###### targets
 
-.PHONY: verify-libs
-verify-libs:
+.PHONY: all
+all:	verify-ubersparklibs clean build-ubersparklibs
+
+
+.PHONY: verify-ubersparklibs
+verify-ubersparklibs:
 	cd $(USPARK_LIBSDIR)/libxmhfc && make -f libubersparkc.mk -w verify	
 	cd $(USPARK_LIBSDIR)/libxmhfcrypto && make -f libubersparkcrypto.mk -w verify	
 	cd $(USPARK_LIBSDIR)/libxmhfhw && make -f libubersparkhw.mk -w verify
 
-.PHONY: build-libs
-build-libs:
+.PHONY: build-ubersparklibs
+build-ubersparklibs:
 	cd $(USPARK_LIBSDIR)/libxmhfc && make -f libubersparkc.mk -w build	
 	cd $(USPARK_LIBSDIR)/libxmhfcrypto && make -f libubersparkcrypto.mk -w build	
 	cd $(USPARK_LIBSDIR)/libxmhfhw && make -f libubersparkhw.mk -w build	
@@ -60,12 +64,9 @@ install-libs-src:
 	$(CP) -f $(USPARK_LIBSDIR)/libxmhfhw/*.cS $(USPARK_INSTALL_LIBSDIR)/libubersparkhw/.
 	
 
-.PHONY: install-libs
-install-libs: install-libs-bin clean install-libs-src
-	
 
-.PHONY: all
-all: 
+.PHONY: install
+install: install-libs-bin clean install-libs-src
 
 
 .PHONY: clean
@@ -83,12 +84,12 @@ distclean: clean
 
 ###### autoconf rules
 
-ubersparklibs.mk: ubersparklibs.mk.in config.status
+Makefile: Makefile.in config.status
 	./config.status $@
 
-config.status: configure-ubersparklibs
+config.status: configure
 	./config.status --recheck
 
-configure-ubersparklibs: configure-ubersparklibs.ac
-	autoconf --output=configure-ubersparklibs configure-ubersparklibs.ac
+configure: configure.ac
+	./bsconfigure
 

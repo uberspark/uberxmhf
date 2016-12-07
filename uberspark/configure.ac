@@ -53,7 +53,7 @@ AC_SUBST([ubersparktoolsdir], ['/tools'])
 
 AC_CONFIG_FILES(
 			[uberspark-common.mk]
-			[uberspark.mk]
+			[Makefile]
 			[./tools/ubersparkconfig.ml]
 			)
 
