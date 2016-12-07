@@ -44,50 +44,63 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-//author: amit vasudevan (amitvasudevan@acm.org)
+#include <xmhf.h>
 
-#ifndef __XMHF_USPARK_H_
-#define __XMHF_USPARK_H_
+OUTPUT_ARCH("i386")
 
-
-#ifndef __ASSEMBLY__
-
-#include <stdint.h>
-#include <stdbool.h>
-#include <stddef.h>
-#include <stdarg.h>
-#include <string.h>
-
-#include <xmhf-hwm.h>
-#endif //__ASSEMBLY__
-
-#if defined (__XMHF_VERIFICATION__) && defined (__USPARK_FRAMAC_VA__)
-//////
-// frama-c non-determinism functions
-//////
-
-u32 Frama_C_entropy_source;
-
-//@ assigns Frama_C_entropy_source \from Frama_C_entropy_source;
-void Frama_C_update_entropy(void);
-
-u32 framac_nondetu32(void){
-  Frama_C_update_entropy();
-  return (u32)Frama_C_entropy_source;
-}
-
-u32 framac_nondetu32interval(u32 min, u32 max)
+MEMORY
 {
-  u32 r,aux;
-  Frama_C_update_entropy();
-  aux = Frama_C_entropy_source;
-  if ((aux>=min) && (aux <=max))
-    r = aux;
-  else
-    r = min;
-  return r;
+  smem_code (rwxai) : ORIGIN = @SLABCODESTART@, LENGTH = (@SLABCODEEND@ - @SLABCODESTART@)
+  smem_data (rwxai) : ORIGIN = @SLABDATASTART@, LENGTH = (@SLABDATAEND@ - @SLABDATASTART@)
+  smem_stack (rwxai) : ORIGIN = @SLABSTACKSTART@, LENGTH = (@SLABSTACKEND@ - @SLABSTACKSTART@)
+  smem_dmadata (rwxai) : ORIGIN = @SLABDMADATASTART@, LENGTH = (@SLABDMADATAEND@ - @SLABDMADATASTART@)
+  unaccounted (rwxai) : ORIGIN = 0, LENGTH = 0 /* see section .unaccounted at end */
 }
 
-#endif //
+SECTIONS
+{
+	. = @SLABCODESTART@;
 
-#endif /* _XMHF_USPARK_H */
+	.slabcode : {
+        *(.slab_codehdr)
+		*(.slab_entrystub)
+		*(.text)
+		. = (@SLABCODEEND@ - @SLABCODESTART@);
+	} >smem_code =0x9090
+
+	.slabdata : {
+		*(.rwdatahdr)
+		*(.data)
+		*(.bss)
+		*(.rodata)
+		*(.rodata.str1.1)
+		*(.comment)
+		*(.eh_frame)
+		. = (@SLABDATAEND@ - @SLABDATASTART@);
+	} >smem_data =0x0000
+
+	.slabstack : {
+		*(.stackhdr)
+		*(.stack)
+		*(.note.GNU-stack)
+		. = (@SLABSTACKEND@ - @SLABSTACKSTART@);
+	} >smem_stack =0x0000
+
+	.slabdmadata : {
+		*(.slab_dmadata)
+		. = (@SLABDMADATAEND@ - @SLABDMADATASTART@);
+	} >smem_dmadata =0x0000
+
+
+	/* this is to cause the link to fail if there is
+	* anything we didn't explicitly place.
+	* when this does cause link to fail, temporarily comment
+	* this part out to see what sections end up in the output
+	* which are not handled above, and handle them.
+	*/
+	.unaccounted : {
+	*(*)
+	} >unaccounted
+
+
+}
