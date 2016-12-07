@@ -153,6 +153,18 @@ uxmhf-binimage:
 	@echo uXMHF binary image generation SUCCESS
 
 
+	
+######
+# uxmhf verify targets
+
+.PHONY: uxmhf-verif-gensentinelstubs
+uxmhf-verif-gensentinelstubs: _uobjs_configureandgenerateuobjinfonoexports
+		@echo Proceeding to generate sentinel stubs for blueprint conformance...
+		$(MKDIR) -p $(XMHF_OBJDIR)/_verif_bp
+		cd $(XMHF_DIR) && $(FRAMAC) -load-module $(USPARK_INSTALL_TOOLSDIR)/Ubp -umf-uobjlist $(XMHF_DIR)/UOBJLIST -umf-outdirsentinelstubs $(XMHF_OBJDIR)/_verif_bp/  -umf-maxincldevlistentries $(XMHF_CONFIG_MAX_INCLDEVLIST_ENTRIES) -umf-maxexcldevlistentries $(XMHF_CONFIG_MAX_EXCLDEVLIST_ENTRIES) -umf-maxmemoffsetentries $(XMHF_CONFIG_MAX_MEMOFFSET_ENTRIES)
+		@echo sentinel stubs generated
+
+	
 
 	
 	
