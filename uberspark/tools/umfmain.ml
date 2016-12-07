@@ -20,6 +20,16 @@ module Cmdopt_slabsfile = Self.String
 		let help = "uobj list file"
 	end)
 
+module Cmdopt_uobjconfigurescript = Self.String
+	(struct
+		let option_name = "-umf-uobjconfigurescript"
+		let default = ""
+		let arg_name = "uobjconfigurescript"
+		let help = "uobj configuration script"
+	end)
+
+
+
 module Cmdopt_outputfile_slabinfotable = Self.String
 	(struct
 		let option_name = "-umf-outuobjinfotable"
@@ -100,6 +110,7 @@ module Cmdopt_memoffsets = Self.False
 
 (*	command line inputs *)
 let g_slabsfile = ref "";;	(* argv 0 *)
+let g_uobjconfigurescript = ref "";; (* argv 1 *)
 let g_outputfile_slabinfotable = ref "";; (* argv 1 *)
 let g_outputfile_linkerscript = ref "";; (* argv 2 *)
 let g_loadaddr = ref 0x0;; (* argv 3 *)
@@ -137,6 +148,7 @@ let slab_idtodmadata_addrend = ((Hashtbl.create 32) : ((int,string)  Hashtbl.t))
 
 let umf_process_cmdline () =
 	g_slabsfile := Cmdopt_slabsfile.get();
+	g_uobjconfigurescript := Cmdopt_uobjconfigurescript.get();
 	g_outputfile_slabinfotable := Cmdopt_outputfile_slabinfotable.get();
 	g_outputfile_linkerscript := Cmdopt_outputfile_linkerscript.get();
 	g_loadaddr := int_of_string (Cmdopt_loadaddr.get());
@@ -149,6 +161,7 @@ let umf_process_cmdline () =
 
 	
 	Self.result "g_slabsfile=%s\n" !g_slabsfile;
+	Self.result "g_uobjconfigscript=%s\n" !g_uobjconfigurescript;
 	Self.result "g_outputfile_slabinfotable=%s\n" !g_outputfile_slabinfotable;
 	Self.result "g_outputfile_linkerscript=%s\n" !g_outputfile_linkerscript;
 	Self.result "g_loadaddr=0x%x\n" !g_loadaddr;
@@ -236,7 +249,7 @@ let umf_configure_slabs () =
 		    i := 0;
 		    while (!i < !g_totalslabs) do
 		        Self.result "Configuring slab: %s with type: %s:%s ...\n" (Hashtbl.find slab_idtodir !i) (Hashtbl.find slab_idtotype !i) (Hashtbl.find slab_idtosubtype !i);
-		        l_cmdline := 	(Printf.sprintf "cd %s%s && ~/data/repos/uberspark.git/uxmhf/configure-uxmhfuobj " !g_rootdir (Hashtbl.find slab_idtodir !i)) ^
+		        l_cmdline := 	(Printf.sprintf "cd %s%s && %s " !g_rootdir (Hashtbl.find slab_idtodir !i) !g_uobjconfigurescript) ^
 		                	 	(Printf.sprintf " --with-slabtype=%s" (Hashtbl.find slab_idtotype !i)) ^
 		                		(Printf.sprintf " --with-slabsubtype=%s" (Hashtbl.find slab_idtosubtype !i)) ^
 		                		(Printf.sprintf " --with-slabcodestart=%s" (Hashtbl.find slab_idtocode_addrstart !i)) ^

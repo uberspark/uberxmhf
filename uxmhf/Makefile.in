@@ -78,12 +78,12 @@ _uobjs_preprocessmanifests:
 
 .PHONY: _uobjs_configureandgenerateuobjinfonoexports
 _uobjs_configureandgenerateuobjinfonoexports: _uobjs_preprocessmanifests
-	cd $(XMHF_DIR) && $(FRAMAC) -load-module $(USPARK_INSTALL_TOOLSDIR)/Umf -umf-uobjlist $(XMHF_DIR)/UOBJLIST -umf-outuobjinfotable $(XMHF_OBJDIR)/uobjinfotable.c -umf-outlinkerscript $(XMHF_OBJDIR)/xmhf.lscript -umf-loadaddr $(XMHF_CONFIG_LOADADDR) -umf-loadmaxsize $(XMHF_CONFIG_LOADMAXSIZE) -umf-totaluhuobjs $(XMHFGEEC_TOTAL_UHSLABS) -umf-maxincldevlistentries $(XMHF_CONFIG_MAX_INCLDEVLIST_ENTRIES) -umf-maxexcldevlistentries $(XMHF_CONFIG_MAX_EXCLDEVLIST_ENTRIES) -umf-maxmemoffsetentries $(XMHF_CONFIG_MAX_MEMOFFSET_ENTRIES)
+	cd $(XMHF_DIR) && $(FRAMAC) -load-module $(USPARK_INSTALL_TOOLSDIR)/Umf -umf-uobjlist $(XMHF_DIR)/UOBJLIST -umf-uobjconfigurescript $(XMHF_DIR)/configure-uxmhfuobj -umf-outuobjinfotable $(XMHF_OBJDIR)/uobjinfotable.c -umf-outlinkerscript $(XMHF_OBJDIR)/xmhf.lscript -umf-loadaddr $(XMHF_CONFIG_LOADADDR) -umf-loadmaxsize $(XMHF_CONFIG_LOADMAXSIZE) -umf-totaluhuobjs $(XMHFGEEC_TOTAL_UHSLABS) -umf-maxincldevlistentries $(XMHF_CONFIG_MAX_INCLDEVLIST_ENTRIES) -umf-maxexcldevlistentries $(XMHF_CONFIG_MAX_EXCLDEVLIST_ENTRIES) -umf-maxmemoffsetentries $(XMHF_CONFIG_MAX_MEMOFFSET_ENTRIES)
 
 .PHONY: _uobjs_generateuobjinfoexports
 _uobjs_generateuobjinfoexports: _uobjs_preprocessmanifests
 	@echo generating uobj info table with memoffsets...
-	cd $(XMHF_DIR) && $(FRAMAC) -load-module $(USPARK_INSTALL_TOOLSDIR)/Umf -umf-uobjlist $(XMHF_DIR)/UOBJLIST -umf-outuobjinfotable $(XMHF_OBJDIR)/uobjinfotable.c -umf-outlinkerscript $(XMHF_OBJDIR)/xmhf.lscript -umf-loadaddr $(XMHF_CONFIG_LOADADDR) -umf-loadmaxsize $(XMHF_CONFIG_LOADMAXSIZE) -umf-totaluhuobjs $(XMHFGEEC_TOTAL_UHSLABS) -umf-maxincldevlistentries $(XMHF_CONFIG_MAX_INCLDEVLIST_ENTRIES) -umf-maxexcldevlistentries $(XMHF_CONFIG_MAX_EXCLDEVLIST_ENTRIES) -umf-maxmemoffsetentries $(XMHF_CONFIG_MAX_MEMOFFSET_ENTRIES) -umf-memoffsets
+	cd $(XMHF_DIR) && $(FRAMAC) -load-module $(USPARK_INSTALL_TOOLSDIR)/Umf -umf-uobjlist $(XMHF_DIR)/UOBJLIST -umf-uobjconfigurescript $(XMHF_DIR)/configure-uxmhfuobj -umf-outuobjinfotable $(XMHF_OBJDIR)/uobjinfotable.c -umf-outlinkerscript $(XMHF_OBJDIR)/xmhf.lscript -umf-loadaddr $(XMHF_CONFIG_LOADADDR) -umf-loadmaxsize $(XMHF_CONFIG_LOADMAXSIZE) -umf-totaluhuobjs $(XMHFGEEC_TOTAL_UHSLABS) -umf-maxincldevlistentries $(XMHF_CONFIG_MAX_INCLDEVLIST_ENTRIES) -umf-maxexcldevlistentries $(XMHF_CONFIG_MAX_EXCLDEVLIST_ENTRIES) -umf-maxmemoffsetentries $(XMHF_CONFIG_MAX_MEMOFFSET_ENTRIES) -umf-memoffsets
 	@echo uobj info table with memoffsets ready.
 	
 .PHONY: uobjinfotable_buildpass1
