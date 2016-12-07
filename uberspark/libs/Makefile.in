@@ -30,6 +30,10 @@ V_FLAGS += -cpp-extra-args=-I$(USPARK_LIBSDIR)/libxmhfhw/include
 
 ###### targets
 
+.PHONY: all
+all:	verify-ubersparklibs clean build-ubersparklibs
+
+
 .PHONY: verify-ubersparklibs
 verify-ubersparklibs:
 	cd $(USPARK_LIBSDIR)/libxmhfc && make -f libubersparkc.mk -w verify	
@@ -63,10 +67,6 @@ install-libs-src:
 
 .PHONY: install
 install: install-libs-bin clean install-libs-src
-
-
-.PHONY: all
-all: verify-ubersparklibs clean build-ubersparklibs
 
 
 .PHONY: clean
