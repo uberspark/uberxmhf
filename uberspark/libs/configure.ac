@@ -14,7 +14,7 @@ AC_CHECK_PROG([MKDIR], [mkdir], [mkdir])
 
 
 AC_CONFIG_FILES(
-			[ubersparklibs.mk]
+			[Makefile]
 			)
 
 AC_OUTPUT
