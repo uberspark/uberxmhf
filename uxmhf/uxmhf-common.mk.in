@@ -122,7 +122,7 @@ XMHF_V_ADDL_INCLUDES += -cpp-extra-args=-I$(XMHF_DIR)/xmhf-uobjs/include
 XMHF_LIBSINC = $(foreach dir,$(XMHF_LIBDIRS),-I$(dir)/include)
 XMHF_V_LIBSINC = $(foreach dir,$(XMHF_LIBDIRS),-cpp-extra-args=-I$(dir)/include)
 XMHF_ADDL_INCLUDES += $(XMHF_LIBSINC)
-XMHF_V_ADDL_INCLUDES += $(V_XMHFLIBS_INC)
+XMHF_V_ADDL_INCLUDES += $(XMHF_V_LIBSINC)
 
 # construct module list that comprise the hardware model
 UBERSPARK_HWMDIR := $(shell $(UBERSPARKCONFIG) --print-uberspark-hwmdir)
