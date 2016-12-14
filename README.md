@@ -253,7 +253,7 @@ Refer to the debugging section in the original XMHF documentation (available [he
 
 ## Releases and Changelog
 
-* Version 1.0 (cliff-jumper)
+* Version 1.0 (Cliff Jumper)
 	* Initial academic prototype release
 
 
