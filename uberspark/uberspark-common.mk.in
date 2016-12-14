@@ -34,6 +34,12 @@ export MKDIR = @MKDIR@
 export CAT = @CAT@
 
 
+###### release variables
+export USPARK_RELEASE_VERSION_MAJOR	:= 2
+export USPARK_RELEASE_VERSION_MINOR := 0
+export USPARK_RELEASE_CODENAME := Blades
+
+
 ###### install paths
 
 export USPARK_INSTALL_HOMEDIR := $(AC_PREFIX)$(AC_UBERSPARK_HOMEDIR)
