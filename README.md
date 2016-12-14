@@ -120,24 +120,30 @@ you choose.
 
 ## Building and Installing UberSpark
 
-Assuming you are in the top-level directory of the UberSpark 
+Execute the following, in order, while in the top-level 
+directory of the UberSpark 
 source-tree (where this README.md resides):
 
-1.	Prepare for build
+1.	Switch directory to UberSpark sources
    
-    	`./bsconfigure.sh`
+	`cd uberspark`
+
+
+2.	Prepare for build
    
-    	`./configure`
+	`./bsconfigure.sh`
+   
+	`./configure`
       
       
-2.  Build source
+3.  Build UberSpark sources
 
-    	`make`
+	`make`
 
 
-3.  Install binaries
+4.  Install UberSpark binaries
 
-    	`sudo make install`
+	`sudo make install`
 
 
 
