@@ -118,6 +118,29 @@ you choose.
  	installing the theorem provers.
 
 
+## Building and Installing UberSpark
+
+Assuming you are in the top-level directory of the UberSpark 
+source-tree (where this README.md resides):
+
+1.	Prepare for build
+   
+    	`./bsconfigure.sh`
+   
+    	`./configure`
+      
+      
+2.  Build source
+
+    	`make`
+
+
+3.  Install binaries
+
+    	`sudo make install`
+
+
+
 
 ## Verfying and Building uberXMHF (uXMHF)
 
