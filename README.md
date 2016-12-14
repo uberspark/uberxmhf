@@ -118,48 +118,112 @@ you choose.
  	installing the theorem provers.
 
 
+## Building and Installing UberSpark
+
+Execute the following, in order, while in the top-level 
+directory of the UberSpark 
+source-tree (where this README.md resides):
+
+1.	Switch directory to UberSpark sources
+   
+	`cd uberspark`
+
+
+2.	Prepare for build
+   
+	`./bsconfigure.sh`
+   
+	`./configure`
+      
+      
+3.  Build UberSpark sources
+
+	`make`
+
+
+4.  Install UberSpark binaries
+
+	`sudo make install`
+
+
+
+## Verifying, Building and Installing UberSpark Libraries
+
+Execute the following, in order, while in the top-level 
+directory of the UberSpark 
+source-tree (where this README.md resides):
+
+1.	Switch directory to UberSpark libraries sources
+   
+	`cd uberspark/libs`
+
+
+2.	Prepare for build
+   
+	`./bsconfigure.sh`
+   
+	`./configure`
+
+
+3.  Verify and Build UberSpark libraries sources
+
+	`make`
+
+
+4.  Install UberSpark libraries
+
+	`sudo make install`
+
+
+
 
 ## Verfying and Building uberXMHF (uXMHF)
 
-Assuming you are in the top-level directory of the UberSpark source-tree (where this README.md resides):
+Execute the following, in order, while in the top-level 
+directory of the UberSpark 
+source-tree (where this README.md resides):
 
-1.	Prepare for verification
+1.	Switch directory to uXMHF sources
    
-    	`./autogen.sh`
+	`cd uxmhf`
+
+
+2.	Prepare for verification
    
-    	`./configure --prefix=/home/<home-dir>/<work-dir> --disable-debug-serial`
+	`./bsconfigure.sh`
+   
+	`./configure --disable-debug-serial`
       
-    	`make verify_prep`
-
-   	replace `<home-dir>` with your home-directory name and `<work-dir>` with any working directory you choose.
+	`make uxmhf-verifyuobjs-prep`
 
 
-2.	Verifying individual uberobjects
+3.	Verifying individual uberobjects
    
-   	`cd uxmhf/xmhf-uobjs/<uobj-name>`
+   	`cd xmhf-uobjs/<uobj-name>`
    
    	`make verify`
+
+   	`cd ../..`
 
    	replace `<uobj-name>` with the uberobject directory name (e.g., `xh_hyperdep`)
 
 
-3.	Performing uberobject composition check
+4.	Performing uberobject composition check
 
-   	`make verify_compcheck`
-
-
-4.	Verifying all the uberobjects
-
- 	`make verify_all`
+   	`make uxmhf-verifyuobjs-compcheck`
 
 
-5.	Building the uberobject binaries and the final hypervisor image
+5.	Verifying all the uberobjects
 
- 	`./configure --prefix=/home/<home-dir>/<work-dir>`
+ 	`make uxmhf-verifyuobjs-all`
+
+
+6.	Building the uberobject binaries and the final hypervisor image
+
+	`./configure`
       
-    	`make`
+	`make uxmhf-image`
 
-   	replace `<home-dir>` with your home-directory name and `<work-dir>` with any working directory you choose. 
    	If everything goes well then a final hypervisor image `xmhf-x86-vmx-x86pc.bin.gz` will be generated.
 
 
@@ -189,7 +253,13 @@ Refer to the debugging section in the original XMHF documentation (available [he
 
 ## Releases and Changelog
 
-* Version 1.0 (cliff-jumper)
-	* Initial academic prototype release
+* Version 2.0 (Blades)
+	* separate uberspark, uberspark libraries and uxmhf verification/build processes
+	* refine and streamline uberspark and uxmhf verification/build harness
+	* fix minor errors in documentation and updates to reflect release changes
+
+
+* Version 1.0 (Cliff Jumper)
+	* initial academic prototype release
 
 
