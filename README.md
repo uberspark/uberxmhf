@@ -147,6 +147,35 @@ source-tree (where this README.md resides):
 
 
 
+## Verifying, Building and Installing UberSpark Libraries
+
+Execute the following, in order, while in the top-level 
+directory of the UberSpark 
+source-tree (where this README.md resides):
+
+1.	Switch directory to UberSpark libraries sources
+   
+	`cd uberspark/libs`
+
+
+2.	Prepare for build
+   
+	`./bsconfigure.sh`
+   
+	`./configure`
+
+
+3.  Verify and Build UberSpark libraries sources
+
+	`make`
+
+
+4.  Install UberSpark libraries
+
+	`sudo make install`
+
+
+
 
 ## Verfying and Building uberXMHF (uXMHF)
 
