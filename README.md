@@ -253,7 +253,13 @@ Refer to the debugging section in the original XMHF documentation (available [he
 
 ## Releases and Changelog
 
+* Version 2.0 (Blades)
+	* separate uberspark, uberspark libraries and uxmhf verification/build processes
+	* refine and streamline uberspark and uxmhf verification/build harness
+	* fix minor errors in documentation and updates to reflect release changes
+
+
 * Version 1.0 (Cliff Jumper)
-	* Initial academic prototype release
+	* initial academic prototype release
 
 
