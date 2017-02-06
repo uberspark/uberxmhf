@@ -20,6 +20,11 @@ SECTIONS
     	*(.bss*) 
 	} > ram = 0x0000
 
+    .data : { 
+    	*(.data*)
+    	*(.rodata*) 
+	} > ram = 0x0000
+
 	/DISCARD/ : {
 		*(.ARM.attributes)
 		*(.comment)
