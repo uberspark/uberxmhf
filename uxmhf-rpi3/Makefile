@@ -6,7 +6,7 @@
 #
 
 TOOLPREFIX ?= arm-linux-gnueabihf-
-CFLAGS = -c -Wall -nostdlib -nostartfiles -ffreestanding
+CFLAGS = -I. -c -Wall -nostdlib -nostartfiles -ffreestanding
 
 .PHONY: all
 all: uxmhf-rpi3.img
