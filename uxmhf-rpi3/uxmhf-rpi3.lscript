@@ -1,8 +1,8 @@
-#
-# uxmhf-rpi3 image linker script
-#
-# author: amit vasudevan (amitvasudevan@acm.org)
-#
+/*
+	uxmhf-rpi3 image linker script
+
+	author: amit vasudevan (amitvasudevan@acm.org)
+*/
 
 MEMORY
 {
