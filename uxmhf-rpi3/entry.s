@@ -7,6 +7,7 @@
 .globl entry
 entry:
 	mov sp, #0x9000
+	bl main
 
 halt:
 	b halt

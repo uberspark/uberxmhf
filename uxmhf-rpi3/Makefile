@@ -14,8 +14,12 @@ all: uxmhf-rpi3.img
 entry.o : entry.s
 	$(TOOLPREFIX)gcc $(CFLAGS) entry.s -o entry.o
 
-uxmhf-rpi3.img: entry.o
-	$(TOOLPREFIX)ld entry.o -T uxmhf-rpi3.lscript -o uxmhf-rpi3.elf
+main.o : main.c
+	$(TOOLPREFIX)gcc $(CFLAGS) main.c -o main.o
+
+
+uxmhf-rpi3.img: entry.o main.o
+	$(TOOLPREFIX)ld entry.o main.o -T uxmhf-rpi3.lscript -o uxmhf-rpi3.elf
 	#$(TOOLPREFIX)objdump -D uxmhf-rpi3.elf > uxmhf-rpi3.list
 	$(TOOLPREFIX)objcopy uxmhf-rpi3.elf -O binary uxmhf-rpi3.img
 
