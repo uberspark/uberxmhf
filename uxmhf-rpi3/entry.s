@@ -13,13 +13,13 @@ halt:
 	b halt
 
 
-.globl peek32
-peek32:
+.globl mmio_write32
+mmio_write32:
     str r1,[r0]
     bx lr
 
-.globl poke32
-poke32:
+.globl mmio_read32
+mmio_read32:
     ldr r0,[r0]
     bx lr
 
