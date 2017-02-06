@@ -1,8 +1,18 @@
 #enable uart
 enable_uart=1
 
+#setup uart baud rate
+init_uart_baud=115200
+
 #force turbo mode (max freq.)
 force_turbo=1
 
 #disable overscan
 disable_overscan=1
+
+#allocate GPU memory (in megabytes)
+gpu_mem=64
+
+#disable splash screen 
+disable_splash=1
+
