@@ -1,0 +1,8 @@
+#enable uart
+enable_uart=1
+
+#force turbo mode (max freq.)
+force_turbo=1
+
+#disable overscan
+disable_overscan=1
