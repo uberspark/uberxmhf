@@ -28,9 +28,9 @@ void bcm2837_miniuart_init(void){
     mmio_write32(GPFSEL1,gpio_fnsel);
 
     mmio_write32(GPPUD,0);
-    for(i=0; i<150; i++) delay_fn();
+    for(i=0; i<150; i++);
     mmio_write32(GPPUDCLK0,(1<<14)|(1<<15));
-    for(i=0; i<150; i++) delay_fn();
+    for(i=0; i<150; i++);
     mmio_write32(GPPUDCLK0,0);
     mmio_write32(AUX_MU_CNTL_REG,3);
 }
