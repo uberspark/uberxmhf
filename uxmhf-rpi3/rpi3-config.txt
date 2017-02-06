@@ -20,4 +20,4 @@ disable_splash=0
 kernel=uxmhf-rpi3.img
 
 #kernel address
-kernel_address=0x8000
+kernel_address=0x7000
