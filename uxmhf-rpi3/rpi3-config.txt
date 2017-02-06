@@ -5,7 +5,7 @@ enable_uart=1
 init_uart_baud=115200
 
 #force turbo mode (max freq.)
-force_turbo=1
+force_turbo=0
 
 #disable overscan
 disable_overscan=1

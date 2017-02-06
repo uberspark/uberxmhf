@@ -12,7 +12,7 @@ void bcm2837_miniuart_init(void){
     unsigned int gpio_fnsel, i;
 
     mmio_write32(AUX_ENABLES,1);
-    mmio_write32(AUX_MU_IER_REG,0);
+    mmio_write32(AUX_MU_IER_REG,0);		//clear interrupt enable
     mmio_write32(AUX_MU_CNTL_REG,0);
     mmio_write32(AUX_MU_LCR_REG,3);
     mmio_write32(AUX_MU_MCR_REG,0);
