@@ -53,7 +53,6 @@ void bcm2837_miniuart_flush(void){
 
 void main(void){
 	bcm2837_miniuart_init();
-	bcm2837_miniuart_putc('D');
-	bcm2837_miniuart_putc('V');
+	bcm2837_miniuart_puts("uXMHF-rpi3: Hello World!\n");
 	bcm2837_miniuart_flush();
 }
