@@ -23,4 +23,5 @@ uxmhf-rpi3.img: entry.o
 clean:
 	rm -f *.o
 	rm -f *.img 
+	rm -f *.elf
 	
