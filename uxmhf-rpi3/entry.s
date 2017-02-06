@@ -11,3 +11,15 @@ entry:
 
 halt:
 	b halt
+
+
+.globl peek32
+peek32:
+    str r1,[r0]
+    bx lr
+
+.globl poke32
+poke32:
+    ldr r0,[r0]
+    bx lr
+
