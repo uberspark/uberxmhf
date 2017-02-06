@@ -22,6 +22,7 @@ SECTIONS
 
 	/DISCARD/ : {
 		*(.ARM.attributes)
+		*(.comment)
 	}
 
 	/* this is to cause the link to fail if there is
@@ -33,6 +34,6 @@ SECTIONS
 	.unaccounted : {
 	*(*)
 	} >unaccounted
-
+	
 }
 
