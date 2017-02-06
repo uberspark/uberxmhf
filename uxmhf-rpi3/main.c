@@ -25,7 +25,7 @@ void bcm2837_miniuart_init(void){
     gpio_fnsel |= 2<<12;    //GPIO 14 -- Alternate Function 5
     gpio_fnsel &= ~(7<<15); //GPIO 15 (RX)
     gpio_fnsel |= 2<<15;    //GPIO 15 -- Alternate Function 5
-    mmio_write32(GPFSEL1,value);
+    mmio_write32(GPFSEL1,gpio_fnsel);
 
     mmio_write32(GPPUD,0);
     for(i=0; i<150; i++) delay_fn();
