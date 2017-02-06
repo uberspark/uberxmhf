@@ -1,7 +1,7 @@
 #include <bcm2837.h>
 
 typedef unsigned int u32;
-
+typedef unsigned char u8;
 
 extern u32 mmio_read32 (u32 address);
 extern void mmio_write32 (u32 address, u32 value);
@@ -33,6 +33,12 @@ void bcm2837_miniuart_init(void){
     for(i=0; i<150; i++) delay_fn();
     mmio_write32(GPPUDCLK0,0);
     mmio_write32(AUX_MU_CNTL_REG,3);
+}
+
+
+void bcm2837_miniuart_putc(u8 ch){
+    while(! (mmio_read32(AUX_MU_LSR_REG) & 0x20) );
+    mmio_write32(AUX_MU_IO_REG,(u32)ch);
 }
 
 
