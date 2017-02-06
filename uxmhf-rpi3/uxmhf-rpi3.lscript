@@ -20,6 +20,10 @@ SECTIONS
     	*(.bss*) 
 	} > ram = 0x0000
 
+	/DISCARD/ : {
+		*(.ARM.attributes)
+	}
+
 	/* this is to cause the link to fail if there is
 	* anything we didn't explicitly place.
 	* when this does cause link to fail, temporarily comment
