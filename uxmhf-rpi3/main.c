@@ -41,6 +41,10 @@ void bcm2837_miniuart_putc(u8 ch){
     mmio_write32(AUX_MU_IO_REG,(u32)ch);
 }
 
+void bcm2837_miniuart_flush(void){
+    while( (mmio_read32(AUX_MU_LSR_REG) & 0x100) );
+}
+
 
 void main(void){
 
