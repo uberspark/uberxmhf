@@ -13,6 +13,11 @@ disable_overscan=1
 #allocate GPU memory (in megabytes)
 gpu_mem=64
 
-#disable splash screen 
-disable_splash=1
+#disable splash screen if set to 1 
+disable_splash=0
 
+#kernel name
+kernel=uxmhf-rpi3.img
+
+#kernel address
+kernel_address=0x8000
