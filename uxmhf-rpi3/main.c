@@ -5,7 +5,7 @@ typedef unsigned int u32;
 
 extern u32 mmio_read32 (u32 address);
 extern void mmio_write32 (u32 address, u32 value);
-
+extern void delay_fn(void);
 
 /* mini UART functions */
 void bcm2837_miniuart_init(void){
@@ -28,9 +28,9 @@ void bcm2837_miniuart_init(void){
     mmio_write32(GPFSEL1,value);
 
     mmio_write32(GPPUD,0);
-    for(i=0; i<150; i++) ;
+    for(i=0; i<150; i++) delay_fn();
     mmio_write32(GPPUDCLK0,(1<<14)|(1<<15));
-    for(i=0; i<150; i++) ;
+    for(i=0; i<150; i++) delay_fn();
     mmio_write32(GPPUDCLK0,0);
     mmio_write32(AUX_MU_CNTL_REG,3);
 }

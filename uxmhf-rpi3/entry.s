@@ -23,3 +23,7 @@ mmio_read32:
     ldr r0,[r0]
     bx lr
 
+
+.global delay_fn
+delay_fn:
+	bx lr
