@@ -25,45 +25,47 @@
 struct atag_header {
         u32 size; /* length of tag in words including this header */
         u32 tag;  /* tag type */
-};
+}__attribute__((packed));
 
 struct atag_core {
         u32 flags;
         u32 pagesize;
         u32 rootdev;
-};
+}__attribute__((packed));
 
 struct atag_mem {
         u32     size;
         u32     start;
-};
+}__attribute__((packed));
 
 struct atag_ramdisk {
         u32 flags;
         u32 size;
         u32 start;
-};
+}__attribute__((packed));
 
 struct atag_initrd2 {
         u32 start;
         u32 size;
-};
+}__attribute__((packed));
 
 struct atag_serialnr {
         u32 low;
         u32 high;
-};
+}__attribute__((packed));
 
 struct atag_revision {
         u32 rev;
-};
+}__attribute__((packed));
 
 struct atag_cmdline {
         u8    cmdline[1];
-};
+} __attribute__((packed));
 
 struct atag {
-        struct atag_header hdr;
+        //struct atag_header hdr;
+		u32 size;
+		u32 tag;
         union {
                 struct atag_core         core;
                 struct atag_mem          mem;
@@ -73,10 +75,10 @@ struct atag {
                 struct atag_revision     revision;
                 struct atag_cmdline      cmdline;
         } u;
-};
+} __attribute__((packed));
 
 
-#define atag_next(t)     ((struct atag *)((u32 *)(t) + (t)->hdr.size))
+#define atag_next(t)     ((struct atag *)(((u32 *)t) + (t)->size))
 #define atag_size(type)  ((sizeof(struct atag_header) + sizeof(struct type)) >> 2)
 
 #endif // __ASSEMBLY__

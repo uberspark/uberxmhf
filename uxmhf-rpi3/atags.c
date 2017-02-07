@@ -5,11 +5,12 @@
 */
 
 #include <bcm2837.h>
+#include <miniuart.h>
 #include <atags.h>
 
 void atag_dumptags(struct atag *at){
 	bcm2837_miniuart_puts("uXMHF-rpi3: Dumping ATAG list...\n");
-
+/*
 	while(at->hdr.tag != ATAG_NONE){
 		switch(at->hdr.tag){
 			case ATAG_CORE:
@@ -35,7 +36,7 @@ void atag_dumptags(struct atag *at){
 
 		at=atag_next(at);
 	}
-
+*/
 	bcm2837_miniuart_puts("uXMHF-rpi3: Dumped ATAG list.\n");
 
 }
