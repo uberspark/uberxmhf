@@ -6,7 +6,7 @@
 
 .globl entry
 entry:
-	mov sp, #0x7c00
+	ldr sp, =0x00007c00
 	bl main
 
 halt:
@@ -26,5 +26,5 @@ mmio_read32:
 
 .globl chainload_os
 chainload_os:
-	mov r3, #0x8000
+	ldr r3, =0x00008000
 	blx r3
