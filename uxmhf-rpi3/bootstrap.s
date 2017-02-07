@@ -10,7 +10,7 @@
 
 .globl bootstrap_entry
 bootstrap_entry:
-	mov r3, #0x80000000
+	ldr r3, =0x30000000
 	blx r3
 
 halt:
