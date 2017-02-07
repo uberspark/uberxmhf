@@ -6,7 +6,7 @@
 
 .globl entry
 entry:
-	ldr sp, =0x00007c00
+	ldr sp, =0x00007f00
 	bl main
 
 halt:
