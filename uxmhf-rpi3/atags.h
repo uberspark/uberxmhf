@@ -78,7 +78,7 @@ struct atag {
 } __attribute__((packed));
 
 
-#define atag_next(t)     ((struct atag *)(((u32 *)t) + (t)->size))
+#define atag_next(t)     ((struct atag *)(((u32)t) + ((t)->size)*4))
 #define atag_size(type)  ((sizeof(struct atag_header) + sizeof(struct type)) >> 2)
 
 #endif // __ASSEMBLY__
