@@ -21,3 +21,7 @@ kernel=uxmhf-rpi3.img
 
 #kernel address
 kernel_address=0x7000
+
+ramfsfile=uxmhf-rpi3-bare.img
+
+ramfsaddr=0x6000
