@@ -6,10 +6,10 @@
 
 .globl entry
 entry:
-	/*mov sp, #0x9000
-	bl main*/
-	mov r3, #0x8000
-	blx r3
+	mov sp, #0x7c00
+	bl main
+	/*mov r3, #0x8000
+	blx r3*/
 
 halt:
 	b halt
