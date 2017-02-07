@@ -14,12 +14,14 @@ all: uxmhf-rpi3.img uxmhf-rpi3-bootstrap.img
 entry.o : entry.s
 	$(TOOLPREFIX)gcc $(CFLAGS) entry.s -o entry.o
 
+miniuart.o : miniuart.c
+	$(TOOLPREFIX)gcc $(CFLAGS) miniuart.c -o miniuart.o
+
 main.o : main.c
 	$(TOOLPREFIX)gcc $(CFLAGS) main.c -o main.o
 
-
-uxmhf-rpi3.img: entry.o main.o
-	$(TOOLPREFIX)ld entry.o main.o -T uxmhf-rpi3.lscript -o uxmhf-rpi3.elf
+uxmhf-rpi3.img: entry.o miniuart.o main.o
+	$(TOOLPREFIX)ld entry.o miniuart.o main.o -T uxmhf-rpi3.lscript -o uxmhf-rpi3.elf
 	#$(TOOLPREFIX)objdump -D uxmhf-rpi3.elf > uxmhf-rpi3.list
 	$(TOOLPREFIX)objcopy uxmhf-rpi3.elf -O binary uxmhf-rpi3.img
 
