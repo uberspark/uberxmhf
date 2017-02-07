@@ -5,7 +5,6 @@ typedef unsigned char u8;
 
 extern u32 mmio_read32 (u32 address);
 extern void mmio_write32 (u32 address, u32 value);
-extern void delay_fn(void);
 extern void chainload_os(u32 r0, u32 id, const u8 *atag);
 
 
