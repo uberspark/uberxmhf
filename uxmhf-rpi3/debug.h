@@ -9,6 +9,7 @@
 
 #ifndef __ASSEMBLY__
 
+void debug_hexdumpu32(u32 value);
 
 #endif // __ASSEMBLY__
 
