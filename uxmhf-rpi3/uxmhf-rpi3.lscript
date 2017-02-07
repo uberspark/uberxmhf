@@ -12,6 +12,8 @@ MEMORY
 
 SECTIONS
 {
+	. = 0x7000;
+    
     .text : { 
     	*(.text*) 
     } > ram = 0x0000
@@ -23,6 +25,7 @@ SECTIONS
     .data : { 
     	*(.data*)
     	*(.rodata*) 
+		. = ALIGN(0x1000);
 	} > ram = 0x0000
 
 	/DISCARD/ : {
