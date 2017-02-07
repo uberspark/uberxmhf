@@ -8,8 +8,6 @@
 entry:
 	mov sp, #0x7c00
 	bl main
-	/*mov r3, #0x8000
-	blx r3*/
 
 halt:
 	b halt
@@ -25,3 +23,8 @@ mmio_read32:
     ldr r0,[r0]
     bx lr
 
+
+.globl chainload_os
+chainload_os:
+	mov r3, #0x8000
+	blx r3
