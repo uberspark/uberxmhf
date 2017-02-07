@@ -10,7 +10,7 @@
 
 void debug_hexdumpu32(u32 value){
     u32 num_bits;
-    u8 ch;
+    u32 ch;
 
     num_bits = 32;
 
@@ -23,7 +23,7 @@ void debug_hexdumpu32(u32 value){
         else
         	ch += 0x30;
 
-        bcm2837_miniuart_putc(ch);
+        bcm2837_miniuart_putc((u8)ch);
     }
 
     bcm2837_miniuart_putc(' ');

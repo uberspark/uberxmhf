@@ -20,11 +20,11 @@ void main(u32 r0, u32 id, struct atag *at){
 	bcm2837_miniuart_puts("uXMHF-rpi3: ATAGS= ");
 	debug_hexdumpu32(at);
 
-	bcm2837_miniuart_puts("uXMHF-rpi3: ATAGS[0].size= ");
-	debug_hexdumpu32(at->size);
-	bcm2837_miniuart_puts("uXMHF-rpi3: ATAGS[0].tag= ");
-	debug_hexdumpu32(at->tag);
-
+	if(at->size == 0xedfe0dd0)
+		bcm2837_miniuart_puts("uXMHF-rpi3: ATAGS pointer is a FDT blob so no worries\n");
+	else{
+		bcm2837_miniuart_puts("uXMHF-rpi3: Error: require ATAGS to be FDT blob. Halting!\n");
+	}
 
 	/*
 	while(at->tag){
