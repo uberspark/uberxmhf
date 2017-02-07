@@ -17,16 +17,20 @@ entry.o : entry.s
 miniuart.o : miniuart.c
 	$(TOOLPREFIX)gcc $(CFLAGS) miniuart.c -o miniuart.o
 
+debug.o : debug.c
+	$(TOOLPREFIX)gcc $(CFLAGS) debug.c -o debug.o
+
 atags.o : atags.c
 	$(TOOLPREFIX)gcc $(CFLAGS) atags.c -o atags.o
 
 main.o : main.c
 	$(TOOLPREFIX)gcc $(CFLAGS) main.c -o main.o
 
-uxmhf-rpi3.img: entry.o miniuart.o atags.o main.o
-	$(TOOLPREFIX)ld entry.o miniuart.o atags.o main.o -T uxmhf-rpi3.lscript -o uxmhf-rpi3.elf
+uxmhf-rpi3.img: entry.o miniuart.o debug.o atags.o main.o
+	$(TOOLPREFIX)ld entry.o miniuart.o debug.o atags.o main.o -T uxmhf-rpi3.lscript -o uxmhf-rpi3.elf
 	#$(TOOLPREFIX)objdump -D uxmhf-rpi3.elf > uxmhf-rpi3.list
 	$(TOOLPREFIX)objcopy uxmhf-rpi3.elf -O binary uxmhf-rpi3.img
+
 
 
 bootstrap.o : bootstrap.s
