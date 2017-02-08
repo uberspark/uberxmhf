@@ -5,8 +5,24 @@
 #
 #
 
+
+check_defined = \
+    $(strip $(foreach 1,$1, \
+        $(call __check_defined,$1,$(strip $(value 2)))))
+__check_defined = \
+    $(if $(value $1),, \
+        $(error Error: Set $1$(if $2, ($2))$(if $(value @), \
+                to OS kernel image file [required by target `$@'])))
+
+
 TOOLPREFIX ?= arm-linux-gnueabihf-
 CFLAGS = -I. -c -Wall -nostdlib -nostartfiles -ffreestanding
+
+
+.PHONY: checkoskrnlimg
+checkoskrnlimg:
+	@:$(call check_defined, OSKRNLIMG)
+	
 
 .PHONY: all
 all: uxmhf-rpi3.img uxmhf-rpi3-bootstrap.img
@@ -26,7 +42,7 @@ atags.o : atags.c
 main.o : main.c
 	$(TOOLPREFIX)gcc $(CFLAGS) main.c -o main.o
 
-uxmhf-rpi3.img: entry.o miniuart.o debug.o atags.o main.o
+uxmhf-rpi3.img: checkoskrnlimg entry.o miniuart.o debug.o atags.o main.o
 	$(TOOLPREFIX)ld entry.o miniuart.o debug.o atags.o main.o -T uxmhf-rpi3.lscript -o uxmhf-rpi3.elf
 	#$(TOOLPREFIX)objdump -D uxmhf-rpi3.elf > uxmhf-rpi3.list
 	$(TOOLPREFIX)objcopy uxmhf-rpi3.elf -O binary uxmhf-rpi3.img
