@@ -75,3 +75,4 @@ clean:
 	rm -f *.img 
 	rm -f *.elf
 	rm -f *.tmp
+	rm -f *.bin
