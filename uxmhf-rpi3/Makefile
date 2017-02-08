@@ -19,13 +19,15 @@ TOOLPREFIX ?= arm-linux-gnueabihf-
 CFLAGS = -I. -c -Wall -nostdlib -nostartfiles -ffreestanding
 
 
-.PHONY: checkoskrnlimg
-checkoskrnlimg:
-	@:$(call check_defined, OSKRNLIMG)
-	
 
 .PHONY: all
 all: uxmhf-rpi3.img uxmhf-rpi3-bootstrap.img
+
+
+.PHONY: checkoskrnlimg
+checkoskrnlimg:
+	@:$(call check_defined, OSKRNLIMG)
+
 
 entry.o : entry.s
 	$(TOOLPREFIX)gcc $(CFLAGS) entry.s -o entry.o
@@ -43,9 +45,18 @@ main.o : main.c
 	$(TOOLPREFIX)gcc $(CFLAGS) main.c -o main.o
 
 uxmhf-rpi3.img: checkoskrnlimg entry.o miniuart.o debug.o atags.o main.o
+	$(eval OSKRNLIMG_SIZE := $(shell stat -L -c %s $(OSKRNLIMG)))
+	@echo $(OSKRNLIMG_SIZE)
+	$(eval OSKRNLIMG_PADSIZE := $(shell echo "4096 -( $(OSKRNLIMG_SIZE) % 4096)" | bc))
+	@echo $(OSKRNLIMG_PADSIZE)
+	$(eval OSKRNLIMG_FINALSIZE := $(shell echo "$(OSKRNLIMG_SIZE) + $(OSKRNLIMG_PADSIZE) " | bc))
+	@echo $(OSKRNLIMG_FINALSIZE_HEX)
+	cp $(OSKRNLIMG) ./oskrnlimg.tmp
+	truncate --size=$(OSKRNLIMG_FINALSIZE) ./oskrnlimg.tmp 
 	$(TOOLPREFIX)ld entry.o miniuart.o debug.o atags.o main.o -T uxmhf-rpi3.lscript -o uxmhf-rpi3.elf
 	#$(TOOLPREFIX)objdump -D uxmhf-rpi3.elf > uxmhf-rpi3.list
-	$(TOOLPREFIX)objcopy uxmhf-rpi3.elf -O binary uxmhf-rpi3.img
+	$(TOOLPREFIX)objcopy uxmhf-rpi3.elf -O binary uxmhf-rpi3.bin
+	cat ./uxmhf-rpi3.bin ./oskrnlimg.tmp > uxmhf-rpi3.img
 
 
 
@@ -63,4 +74,4 @@ clean:
 	rm -f *.o
 	rm -f *.img 
 	rm -f *.elf
-	
+	rm -f *.tmp
