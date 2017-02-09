@@ -16,7 +16,7 @@ __check_defined = \
 
 
 TOOLPREFIX ?= arm-linux-gnueabihf-
-CFLAGS = -I. -c -Wall -nostdlib -nostartfiles -ffreestanding
+CFLAGS = -I./include -c -Wall -nostdlib -nostartfiles -ffreestanding
 
 
 
