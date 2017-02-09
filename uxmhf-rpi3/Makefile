@@ -18,10 +18,12 @@ __check_defined = \
 TOOLPREFIX ?= arm-linux-gnueabihf-
 CFLAGS = -I./include -c -Wall -nostdlib -nostartfiles -ffreestanding
 
+export TOOLPREFIX
+export CFLAGS
 
 
 .PHONY: all
-all: uxmhf-rpi3.img uxmhf-rpi3-bootstrap.img
+all: uxmhf-rpi3.img bootstrap
 
 
 .PHONY: checkoskrnlimg
@@ -60,17 +62,14 @@ uxmhf-rpi3.img: checkoskrnlimg entry.o miniuart.o debug.o atags.o main.o
 
 
 
-bootstrap.o : bootstrap.s
-	$(TOOLPREFIX)gcc $(CFLAGS) bootstrap.s -o bootstrap.o
-
-uxmhf-rpi3-bootstrap.img: bootstrap.o
-	$(TOOLPREFIX)ld bootstrap.o -T uxmhf-rpi3-bootstrap.lscript -o uxmhf-rpi3-bootstrap.elf
-	#$(TOOLPREFIX)objdump -D uxmhf-rpi3-bootstrap.elf > uxmhf-rpi3-bootstrap.list
-	$(TOOLPREFIX)objcopy uxmhf-rpi3-bootstrap.elf -O binary uxmhf-rpi3-bootstrap.img
+.PHONY: bootstrap
+bootstrap:
+	cd bootstrap && make -w all
 
 
 .PHONY: clean
 clean:
+	cd bootstrap && make -w clean
 	rm -f *.o
 	rm -f *.img 
 	rm -f *.elf
