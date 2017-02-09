@@ -32,7 +32,7 @@ all: checkoskrnlimg core bootstrap
 	@echo $(OSKRNLIMG_FINALSIZE_HEX)
 	cp $(OSKRNLIMG) ./oskrnlimg.tmp
 	truncate --size=$(OSKRNLIMG_FINALSIZE) ./oskrnlimg.tmp 
-	cat ./core/core.bin ./oskrnlimg.tmp > uxmhf-rpi3.img
+	cat ./bootstrap/bootstrap.bin ./oskrnlimg.tmp > uxmhf-rpi3.img
 
 
 .PHONY: checkoskrnlimg

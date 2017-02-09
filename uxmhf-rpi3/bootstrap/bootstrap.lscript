@@ -16,11 +16,21 @@ SECTIONS
     
     .text : { 
     	*(.text*) 
-		. = ALIGN(0x1000);
     } > ram = 0x0000
     
+    .bss : { 
+    	*(.bss*) 
+	} > ram = 0x0000
+
+    .data : { 
+    	*(.data*)
+    	*(.rodata*) 
+		. = ALIGN(0x1000);
+	} > ram = 0x0000
+
 	/DISCARD/ : {
 		*(.ARM.attributes)
+		*(.comment)
 	}
 
 	/* this is to cause the link to fail if there is
