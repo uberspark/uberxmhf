@@ -23,7 +23,8 @@ export CFLAGS
 
 
 .PHONY: all
-all: checkoskrnlimg core bootstrap
+all: checkoskrnlimg 
+	cd core && make -w all
 	$(eval OSKRNLIMG_SIZE := $(shell stat -L -c %s $(OSKRNLIMG)))
 	@echo $(OSKRNLIMG_SIZE)
 	$(eval OSKRNLIMG_PADSIZE := $(shell echo "4096 -( $(OSKRNLIMG_SIZE) % 4096)" | bc))
@@ -32,22 +33,13 @@ all: checkoskrnlimg core bootstrap
 	@echo $(OSKRNLIMG_FINALSIZE_HEX)
 	cp $(OSKRNLIMG) ./oskrnlimg.tmp
 	truncate --size=$(OSKRNLIMG_FINALSIZE) ./oskrnlimg.tmp 
-	cat ./bootstrap/bootstrap.bin ./oskrnlimg.tmp > uxmhf-rpi3.img
+	cd bootstrap && make -w all
+	cat ./bootstrap/bootstrap.bin ./oskrnlimg.tmp ./core/core.bin > uxmhf-rpi3.img
 
 
 .PHONY: checkoskrnlimg
 checkoskrnlimg:
 	@:$(call check_defined, OSKRNLIMG)
-
-
-.PHONY: core
-core:
-	cd core && make -w all
-
-
-.PHONY: bootstrap
-bootstrap:
-	cd bootstrap && make -w all
 
 
 .PHONY: clean
