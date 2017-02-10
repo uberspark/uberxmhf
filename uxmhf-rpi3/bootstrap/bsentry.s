@@ -29,9 +29,9 @@ mmio_read32:
     bx lr
 
 
-.globl chainload_os
-chainload_os:
-	ldr r3, =0x00008000
+.globl call_core
+call_core:
+	ldr r3, =0x00428000
 	blx r3
 
 
