@@ -31,7 +31,7 @@ mmio_read32:
 
 .globl call_core
 call_core:
-	ldr r3, =0x00428000
+	ldr r3, =0x30000000
 	blx r3
 
 
