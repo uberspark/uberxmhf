@@ -11,6 +11,16 @@ extern u32 g_oskrnl_size;
 extern u32 g_core_startaddr;
 extern u32 g_core_size;
 
+
+void memcpy(void *dest, void *src, unsigned int n){
+	u32 i;
+	u8 *bsrc = (u8 *)src;
+	u8 *bdest = (u8 *)dest;
+
+   for (i=0; i<n; i++)
+       bdest[i] = bsrc[i];
+}
+
 void bsmain(u32 r0, u32 id, struct atag *at){
 	bcm2837_miniuart_init();
 
