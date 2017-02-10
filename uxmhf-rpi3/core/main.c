@@ -10,20 +10,20 @@ extern void chainload_os(u32 r0, u32 id, struct atag *at);
 
 void main(u32 r0, u32 id, struct atag *at){
 	//struct atag *pat;
-	bcm2837_miniuart_init();
+	//bcm2837_miniuart_init();
 
-	bcm2837_miniuart_puts("uXMHF-rpi3: Hello World!\n");
-	bcm2837_miniuart_puts("uXMHF-rpi3: r0= ");
+	bcm2837_miniuart_puts("uXMHF-rpi3: core: Hello World!\n");
+	bcm2837_miniuart_puts(" r0= ");
 	debug_hexdumpu32(r0);
-	bcm2837_miniuart_puts("uXMHF-rpi3: id= ");
+	bcm2837_miniuart_puts(" id= ");
 	debug_hexdumpu32(id);
-	bcm2837_miniuart_puts("uXMHF-rpi3: ATAGS= ");
+	bcm2837_miniuart_puts(" ATAGS= ");
 	debug_hexdumpu32(at);
 
 	if(at->size == 0xedfe0dd0)
-		bcm2837_miniuart_puts("uXMHF-rpi3: ATAGS pointer is a FDT blob so no worries\n");
+		bcm2837_miniuart_puts("uXMHF-rpi3: core: ATAGS pointer is a FDT blob so no worries\n");
 	else{
-		bcm2837_miniuart_puts("uXMHF-rpi3: Error: require ATAGS to be FDT blob. Halting!\n");
+		bcm2837_miniuart_puts("uXMHF-rpi3: core: Error: require ATAGS to be FDT blob. Halting!\n");
 	}
 
 	/*
@@ -55,7 +55,7 @@ void main(u32 r0, u32 id, struct atag *at){
 	}*/
 
 
-	bcm2837_miniuart_puts("uXMHF-rpi3: Chainloading OS kernel...\n");
+	bcm2837_miniuart_puts("uXMHF-rpi3: core: Chainloading OS kernel...\n");
 
 	bcm2837_miniuart_flush();
 	chainload_os(r0, id, at);
