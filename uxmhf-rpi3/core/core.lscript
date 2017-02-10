@@ -25,6 +25,10 @@ SECTIONS
     .data : { 
     	*(.data*)
     	*(.rodata*) 
+	} > ram = 0x0000
+
+    .stack : { 
+    	*(.stack*)
 		. = ALIGN(0x1000);
 	} > ram = 0x0000
 

@@ -6,7 +6,7 @@
 
 .globl entry
 entry:
-	ldr sp, =0x00007f00
+	ldr sp, =stack_top
 	bl main
 
 halt:
@@ -28,3 +28,11 @@ mmio_read32:
 chainload_os:
 	ldr r3, =0x00008000
 	blx r3
+
+
+.section ".stack"
+	.balign 8
+	.global stack
+	stack:	.space	256
+	.global stack_top
+	stack_top:
