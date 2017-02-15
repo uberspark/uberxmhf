@@ -43,6 +43,10 @@ sysreg_read_scr:
 	mrc p15, 0, r0, c1, c1, 0
 	bx lr
 
+.globl sysreg_read_cpsr
+sysreg_read_cpsr:
+	mrs r0, cpsr
+	bx lr
 
 
 .section ".stack"

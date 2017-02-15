@@ -8,11 +8,12 @@ extern void mmio_write32 (u32 address, u32 value);
 extern void chainload_os(u32 r0, u32 id, struct atag *at);
 
 extern u32 sysreg_read_scr(void);
+extern u32 sysreg_read_cpsr(void);
 
 void main(u32 r0, u32 id, struct atag *at){
 	//struct atag *pat;
 	//bcm2837_miniuart_init();
-	u32 scr;
+	u32 cpsr;
 
 	bcm2837_miniuart_puts("uXMHF-rpi3: core: Hello World!\n");
 	bcm2837_miniuart_puts(" r0= ");
@@ -29,11 +30,10 @@ void main(u32 r0, u32 id, struct atag *at){
 	}
 
 
-	scr = sysreg_read_scr();
-	if(scr & 0x1)
-		bcm2837_miniuart_puts("uXMHF-rpi3: core: SCR.NS=1; we are in NON-SECURE state\n");
-	else
-		bcm2837_miniuart_puts("uXMHF-rpi3: core: SCR.NS=0; we are in SECURE state\n");
+	cpsr = sysreg_read_cpsr();
+	bcm2837_miniuart_puts(" CPSR[mode]= ");
+	debug_hexdumpu32((cpsr & 0xF));
+
 
 	/*
 	while(at->tag){
