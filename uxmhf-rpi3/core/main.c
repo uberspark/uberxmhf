@@ -3,17 +3,21 @@
 #include <atags.h>
 #include <debug.h>
 
+#define HALT() while(1);
+
 extern u32 mmio_read32 (u32 address);
 extern void mmio_write32 (u32 address, u32 value);
 extern void chainload_os(u32 r0, u32 id, struct atag *at);
 
 extern u32 sysreg_read_scr(void);
 extern u32 sysreg_read_cpsr(void);
+extern u32 sysreg_read_hvbar(void);
 
 void main(u32 r0, u32 id, struct atag *at){
 	//struct atag *pat;
 	//bcm2837_miniuart_init();
 	u32 cpsr;
+	u32 hvbar;
 
 	bcm2837_miniuart_puts("uXMHF-rpi3: core: Hello World!\n");
 	bcm2837_miniuart_puts(" r0= ");
@@ -33,6 +37,15 @@ void main(u32 r0, u32 id, struct atag *at){
 	cpsr = sysreg_read_cpsr();
 	bcm2837_miniuart_puts(" CPSR[mode]= ");
 	debug_hexdumpu32((cpsr & 0xF));
+
+	if(! ((cpsr & 0xF) == 0xA) ){
+		bcm2837_miniuart_puts("uXMHF-rpi3: core: not in HYP mode. Halting!\n");
+		HALT();
+	}
+
+	hvbar = sysreg_read_hvbar();
+	bcm2837_miniuart_puts(" HVBAR= ");
+	debug_hexdumpu32(hvbar);
 
 
 	/*

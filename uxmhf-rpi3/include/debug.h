@@ -9,7 +9,6 @@
 
 #ifndef __ASSEMBLY__
 
-#define HALT() while(1);
 
 void debug_hexdumpu32(u32 value);
 

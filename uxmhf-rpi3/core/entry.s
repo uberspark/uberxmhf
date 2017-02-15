@@ -48,6 +48,12 @@ sysreg_read_cpsr:
 	mrs r0, cpsr
 	bx lr
 
+.global sysreg_read_hvbar
+sysreg_read_hvbar:
+	mrc p15, 4, r0, c12, c0, 0
+	bx lr
+
+
 
 .section ".stack"
 	.balign 8
