@@ -6,6 +6,13 @@
 
 .globl entry
 entry:
+
+	/* turn on unaligned memory access */
+	mrc p15, #0, r4, c1, c0, #0
+	orr r4, #0x400000				/*set U bit (bit-22) */
+	mcr p15, #0, r4, c1, c0, #0
+
+	/* load stack and start C land */
 	ldr sp, =stack_top
 	bl main
 
