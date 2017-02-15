@@ -37,6 +37,14 @@ chainload_os:
 	blx r3
 
 
+
+.globl sysreg_read_scr
+sysreg_read_scr:
+	mrc p15, 0, r0, c1, c1, 0
+	bx lr
+
+
+
 .section ".stack"
 	.balign 8
 	.global stack
