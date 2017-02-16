@@ -62,7 +62,7 @@ sysreg_write_hvbar:
 
 .global hypcall
 hypcall:
-	hvc
+	hvc #0
 	bx lr
 
 
