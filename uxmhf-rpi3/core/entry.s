@@ -54,6 +54,11 @@ sysreg_read_hvbar:
 	bx lr
 
 
+.global sysreg_write_hvbar
+sysreg_write_hvbar:
+	mcr p15, 4, r0, c12, c0, 0
+	bx lr
+
 
 .section ".stack"
 	.balign 8

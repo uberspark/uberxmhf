@@ -12,6 +12,7 @@ extern void chainload_os(u32 r0, u32 id, struct atag *at);
 extern u32 sysreg_read_scr(void);
 extern u32 sysreg_read_cpsr(void);
 extern u32 sysreg_read_hvbar(void);
+extern void sysreg_write_hvbar(u32 value);
 
 extern u32 g_hypvtable[];
 

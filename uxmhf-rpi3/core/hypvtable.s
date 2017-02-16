@@ -7,6 +7,7 @@
 
 .section ".text"
 /*
+	G1.12.1 (Table G1-6 ARMv8)
 	HYP vector table format:
 	offsets:
 		0x0: 	not used
