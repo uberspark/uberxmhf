@@ -48,10 +48,38 @@ hypvtable_reserved_handler:
 	.global	hypvtable_hyphvc_handler
 hypvtable_hyphvc_handler:
 	ldr sp, =hypvtable_stack_top
-	//bl hyphvc_handler
 
-	//push {lr}
-	//pop	{lr}
+	/* G1.9.2 (Figure G1-3)
+	   HYP mode uses LR_usr, i.e, does not have LR banking, so save
+	   since we are going to be using LR for C calling
+	*/
+	push {lr}
+
+
+	/* 5.1.1 AAPCS
+	   callee preserves r4-r8, r10, r11, r13 (SP)
+	   save the rest
+	*/
+	push {r0}
+	push {r1}
+	push {r2}
+	push {r3}
+	push {r9}
+	push {r12}
+
+	/* invoke C handler */
+	bl hyphvc_handler
+
+
+	/* restore all saved registers */
+	pop	{r12}
+	pop	{r9}
+	pop	{r3}
+	pop	{r2}
+	pop	{r1}
+	pop	{r0}
+
+	pop	{lr}
 
 	/*
 		G1.13.1 ARMv8
