@@ -48,7 +48,10 @@ hypvtable_reserved_handler:
 	.global	hypvtable_hyphvc_handler
 hypvtable_hyphvc_handler:
 	ldr sp, =hypvtable_stack_top
-	bl hyphvc_handler
+	//bl hyphvc_handler
+
+	//push {lr}
+	//pop	{lr}
 
 	/*
 		G1.13.1 ARMv8
