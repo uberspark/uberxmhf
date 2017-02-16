@@ -38,3 +38,12 @@ hypvtable_reserved_handler:
 	b hrh_halt
 
 
+
+.section ".stack"
+	.balign 8
+	.global hypvtable_stack
+	stack:	.space	256
+	.global hypvtable_stack_top
+	hypvtable_stack_top:
+
+
