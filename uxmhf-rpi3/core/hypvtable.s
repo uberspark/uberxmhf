@@ -42,7 +42,8 @@ hypvtable_reserved_handler:
 
 /*
 	G1.12.3 ARMv8
-	exception return address is stored in ELR_hyp register
+	exception return address is stored in ELR_hyp register and
+	points to the instruction *after* the HVC instruction (Table G1-9)
 */
 	.global	hypvtable_hyphvc_handler
 hypvtable_hyphvc_handler:

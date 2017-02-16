@@ -18,8 +18,8 @@ extern void hypcall(void);
 extern u32 g_hypvtable[];
 
 void hyphvc_handler(void){
-	bcm2837_miniuart_puts("uXMHF-rpi3: core: hyphvc_handler [IN]. Halting!\n");
-	HALT();
+	bcm2837_miniuart_puts("uXMHF-rpi3: core: hyphvc_handler [IN]\n");
+	bcm2837_miniuart_puts("uXMHF-rpi3: core: hyphvc_handler [OUT]\n");
 }
 
 
@@ -67,6 +67,7 @@ void main(u32 r0, u32 id, struct atag *at){
 
 	bcm2837_miniuart_puts("uxmhf-rpi3: core: proceeding to test hypercall (HVC) in HYP mode...\n");
 	hypcall();
+	bcm2837_miniuart_puts("uxmhf-rpi3: core: successful return after hypercall test.\n");
 
 	/*
 	while(at->tag){
