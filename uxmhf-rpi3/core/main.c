@@ -13,6 +13,7 @@ extern u32 sysreg_read_scr(void);
 extern u32 sysreg_read_cpsr(void);
 extern u32 sysreg_read_hvbar(void);
 extern void sysreg_write_hvbar(u32 value);
+extern void hypcall(void);
 
 extern u32 g_hypvtable[];
 
@@ -64,6 +65,8 @@ void main(u32 r0, u32 id, struct atag *at){
 	//bcm2837_miniuart_puts(" loaded HVBAR with g_hypvtable; HVBAR after= ");
 	//debug_hexdumpu32(hvbar);
 
+	bcm2837_miniuart_puts("uxmhf-rpi3: core: proceeding to test hypercall (HVC) in HYP mode...\n");
+	hypcall();
 
 	/*
 	while(at->tag){
