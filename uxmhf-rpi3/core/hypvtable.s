@@ -5,7 +5,7 @@
 */
 
 
-	.section .text
+.section ".text"
 /*
 	HYP vector table format:
 	offsets:

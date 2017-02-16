@@ -28,7 +28,7 @@ main.o : main.c
 	$(TOOLPREFIX)gcc $(CFLAGS) main.c -o main.o
 
 core.bin: entry.o miniuart.o debug.o atags.o hypvtable.o main.o
-	$(TOOLPREFIX)ld entry.o miniuart.o debug.o atags.o main.o -T core.lscript -o core.elf
+	$(TOOLPREFIX)ld entry.o miniuart.o debug.o atags.o hypvtable.o main.o -T core.lscript -o core.elf
 	#$(TOOLPREFIX)objdump -D core.elf > core.list
 	$(TOOLPREFIX)objcopy core.elf -O binary core.bin
 

@@ -13,6 +13,8 @@ extern u32 sysreg_read_scr(void);
 extern u32 sysreg_read_cpsr(void);
 extern u32 sysreg_read_hvbar(void);
 
+extern u32 g_hypvtable[];
+
 void main(u32 r0, u32 id, struct atag *at){
 	//struct atag *pat;
 	//bcm2837_miniuart_init();
@@ -42,6 +44,9 @@ void main(u32 r0, u32 id, struct atag *at){
 		bcm2837_miniuart_puts("uXMHF-rpi3: core: not in HYP mode. Halting!\n");
 		HALT();
 	}
+
+	bcm2837_miniuart_puts(" g_hypvtable at= ");
+	debug_hexdumpu32((u32)&g_hypvtable);
 
 	hvbar = sysreg_read_hvbar();
 	bcm2837_miniuart_puts(" HVBAR= ");
