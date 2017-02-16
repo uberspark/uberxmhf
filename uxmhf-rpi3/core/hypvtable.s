@@ -26,7 +26,7 @@
 g_hypvtable:
 	b hypvtable_reserved_handler
 	b hypvtable_reserved_handler
-	b hypvtable_reserved_handler
+	b hypvtable_hyphvc_handler
 	b hypvtable_reserved_handler
 	b hypvtable_reserved_handler
 	b hypvtable_reserved_handler
@@ -39,6 +39,13 @@ hypvtable_reserved_handler:
 	hrh_halt:
 	b hrh_halt
 
+	.global	hypvtable_hyphvc_handler
+hypvtable_hyphvc_handler:
+	ldr sp, =hypvtable_stack_top
+	bl hyphvc_handler
+
+	hhh_halt:
+	b hhh_halt
 
 
 .section ".stack"

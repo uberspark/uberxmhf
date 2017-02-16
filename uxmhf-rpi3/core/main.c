@@ -16,6 +16,12 @@ extern void sysreg_write_hvbar(u32 value);
 
 extern u32 g_hypvtable[];
 
+void hyphvc_handler(void){
+	bcm2837_miniuart_puts("uXMHF-rpi3: core: hyphvc_handler [IN]. Halting!\n");
+	HALT();
+}
+
+
 void main(u32 r0, u32 id, struct atag *at){
 	//struct atag *pat;
 	//bcm2837_miniuart_init();
