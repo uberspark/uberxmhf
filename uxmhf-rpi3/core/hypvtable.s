@@ -39,13 +39,23 @@ hypvtable_reserved_handler:
 	hrh_halt:
 	b hrh_halt
 
+
+/*
+	G1.12.3 ARMv8
+	exception return address is stored in ELR_hyp register
+*/
 	.global	hypvtable_hyphvc_handler
 hypvtable_hyphvc_handler:
 	ldr sp, =hypvtable_stack_top
 	bl hyphvc_handler
 
-	hhh_halt:
-	b hhh_halt
+	/*
+		G1.13.1 ARMv8
+		exception returns from HYP mode is made via ERET instruction
+		which basically returns to ELR_hyp and restores appropriate
+		PE (processor execution) state
+	*/
+	eret
 
 
 .section ".stack"
