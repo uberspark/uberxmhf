@@ -16,7 +16,7 @@ __check_defined = \
 
 
 TOOLPREFIX ?= arm-linux-gnueabihf-
-CFLAGS = -I./include -I../include -c -Wall -nostdlib -nostartfiles -ffreestanding
+CFLAGS = -I./include -I../include -c -Wall -nostdlib -nostartfiles -ffreestanding -mcpu=cortex-x53
 
 export TOOLPREFIX
 export CFLAGS
