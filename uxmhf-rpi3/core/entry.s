@@ -60,6 +60,13 @@ sysreg_write_hvbar:
 	bx lr
 
 
+.global hypcall
+hypcall:
+	hvc
+	bx lr
+
+
+
 .section ".stack"
 	.balign 8
 	.global stack
