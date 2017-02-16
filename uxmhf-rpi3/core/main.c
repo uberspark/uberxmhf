@@ -61,13 +61,15 @@ void main(u32 r0, u32 id, struct atag *at){
 	debug_hexdumpu32((u32)&g_hypvtable);
 	sysreg_write_hvbar((u32)&g_hypvtable);
 
-	//hvbar = sysreg_read_hvbar();
-	//bcm2837_miniuart_puts(" loaded HVBAR with g_hypvtable; HVBAR after= ");
-	//debug_hexdumpu32(hvbar);
+	hvbar = sysreg_read_hvbar();
+	bcm2837_miniuart_puts(" loaded HVBAR with g_hypvtable; HVBAR after= ");
+	debug_hexdumpu32(hvbar);
 
 	bcm2837_miniuart_puts("uxmhf-rpi3: core: proceeding to test hypercall (HVC) in HYP mode...\n");
 	hypcall();
 	bcm2837_miniuart_puts("uxmhf-rpi3: core: successful return after hypercall test.\n");
+	bcm2837_miniuart_puts("uxmhf-rpi3: core: Halting!\n");
+	HALT();
 
 	/*
 	while(at->tag){
