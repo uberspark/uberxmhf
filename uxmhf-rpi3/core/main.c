@@ -54,9 +54,9 @@ void main(u32 r0, u32 id, struct atag *at){
 	debug_hexdumpu32((u32)&g_hypvtable);
 	sysreg_write_hvbar((u32)&g_hypvtable);
 
-	hvbar = sysreg_read_hvbar();
-	bcm2837_miniuart_puts(" loaded HVBAR with g_hypvtable; HVBAR after= ");
-	debug_hexdumpu32(hvbar);
+	//hvbar = sysreg_read_hvbar();
+	//bcm2837_miniuart_puts(" loaded HVBAR with g_hypvtable; HVBAR after= ");
+	//debug_hexdumpu32(hvbar);
 
 
 	/*
