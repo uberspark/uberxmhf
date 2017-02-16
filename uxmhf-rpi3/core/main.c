@@ -68,8 +68,8 @@ void main(u32 r0, u32 id, struct atag *at){
 	bcm2837_miniuart_puts("uxmhf-rpi3: core: proceeding to test hypercall (HVC) in HYP mode...\n");
 	hypcall();
 	bcm2837_miniuart_puts("uxmhf-rpi3: core: successful return after hypercall test.\n");
-	bcm2837_miniuart_puts("uxmhf-rpi3: core: Halting!\n");
-	HALT();
+	//bcm2837_miniuart_puts("uxmhf-rpi3: core: Halting!\n");
+	//HALT();
 
 	/*
 	while(at->tag){
