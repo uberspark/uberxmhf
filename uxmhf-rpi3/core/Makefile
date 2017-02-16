@@ -21,10 +21,13 @@ debug.o : ../common/debug.c
 atags.o : ../common/atags.c
 	$(TOOLPREFIX)gcc $(CFLAGS) ../common/atags.c -o atags.o
 
+hypvtable.o : hypvtable.s
+	$(TOOLPREFIX)gcc $(CFLAGS) hypvtable.s -o hypvtable.o
+
 main.o : main.c
 	$(TOOLPREFIX)gcc $(CFLAGS) main.c -o main.o
 
-core.bin: entry.o miniuart.o debug.o atags.o main.o
+core.bin: entry.o miniuart.o debug.o atags.o hypvtable.o main.o
 	$(TOOLPREFIX)ld entry.o miniuart.o debug.o atags.o main.o -T core.lscript -o core.elf
 	#$(TOOLPREFIX)objdump -D core.elf > core.list
 	$(TOOLPREFIX)objcopy core.elf -O binary core.bin
