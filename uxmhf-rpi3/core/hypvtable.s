@@ -19,6 +19,7 @@
 		0x1C:	FIQ
 */
 
+/* need lower 5 bits (0-4) of the table address as 0, so use balign 32 */
 	.balign	32
 	.global g_hypvtable
 g_hypvtable:
