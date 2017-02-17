@@ -23,6 +23,12 @@ extern void entry_svc(void);
 
 extern u32 g_hypvtable[];
 
+
+u32 guestos_boot_r0=0;
+u32 guestos_boot_r1=0;
+u32 guestos_boot_r2=0;
+
+
 void hyphvc_handler(void){
 	bcm2837_miniuart_puts("uXMHF-rpi3: core: hyphvc_handler [IN]\n");
 	bcm2837_miniuart_puts("uXMHF-rpi3: core: Hello world from hypercall\n");
@@ -47,6 +53,12 @@ void main_svc(void){
 	bcm2837_miniuart_puts("uxmhf-rpi3: core: proceeding to test hypercall (HVC) in SVC mode...\n");
 	hypcall();
 	bcm2837_miniuart_puts("uxmhf-rpi3: core: successful return after hypercall test.\n");
+
+	bcm2837_miniuart_puts("uXMHF-rpi3: core: Chainloading OS kernel...\n");
+
+	bcm2837_miniuart_flush();
+	chainload_os(guestos_boot_r0, guestos_boot_r1, guestos_boot_r2);
+
 	bcm2837_miniuart_puts("uxmhf-rpi3: core: Halting!\n");
 	HALT();
 
@@ -72,6 +84,10 @@ void main(u32 r0, u32 id, struct atag *at){
 		bcm2837_miniuart_puts("uXMHF-rpi3: core: Error: require ATAGS to be FDT blob. Halting!\n");
 	}
 
+	//store guest OS boot register values
+	guestos_boot_r0=r0;
+	guestos_boot_r1=id;
+	guestos_boot_r2=at;
 
 	cpsr = sysreg_read_cpsr();
 	bcm2837_miniuart_puts(" CPSR[mode]= ");
@@ -111,15 +127,8 @@ void main(u32 r0, u32 id, struct atag *at){
 	bcm2837_miniuart_puts("uxmhf-rpi3: core: proceeding to switch to SVC mode...\n");
 	cpumodeswitch_hyp2svc(&entry_svc);
 
-	bcm2837_miniuart_puts("uxmhf-rpi3: core: Halting!\n");
+	bcm2837_miniuart_puts("uxmhf-rpi3: core: We were not supposed to be here.Halting!\n");
 	HALT();
-
-
-
-	bcm2837_miniuart_puts("uXMHF-rpi3: core: Chainloading OS kernel...\n");
-
-	bcm2837_miniuart_flush();
-	chainload_os(r0, id, at);
 }
 
 
