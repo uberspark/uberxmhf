@@ -20,6 +20,7 @@ extern u32 g_hypvtable[];
 
 void hyphvc_handler(void){
 	bcm2837_miniuart_puts("uXMHF-rpi3: core: hyphvc_handler [IN]\n");
+	bcm2837_miniuart_puts("uXMHF-rpi3: core: Hello world from hypercall\n");
 	bcm2837_miniuart_puts("uXMHF-rpi3: core: hyphvc_handler [OUT]\n");
 }
 
