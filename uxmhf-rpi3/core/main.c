@@ -36,7 +36,9 @@ void hypsvc_handler(void){
 
 void main_svc(void){
 	bcm2837_miniuart_puts("uXMHF-rpi3: core: now in SVC mode\n");
-
+	bcm2837_miniuart_puts("uxmhf-rpi3: core: proceeding to test hypercall (HVC) in SVC mode...\n");
+	hypcall();
+	bcm2837_miniuart_puts("uxmhf-rpi3: core: successful return after hypercall test.\n");
 	bcm2837_miniuart_puts("uxmhf-rpi3: core: Halting!\n");
 	HALT();
 
