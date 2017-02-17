@@ -66,6 +66,11 @@ hypcall:
 	bx lr
 
 
+.global cpumodeswitch_svc
+cpumodeswitch_svc:
+	cps #0x13
+	bx lr
+
 
 .section ".stack"
 	.balign 8
