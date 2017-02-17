@@ -17,6 +17,7 @@ extern u32 sysreg_read_hcr(void);
 
 extern void hypcall(void);
 extern void cpumodeswitch_hyp2svc(u32 address);
+extern void entry_svc(void);
 
 extern u32 g_hypvtable[];
 
@@ -88,7 +89,7 @@ void main(u32 r0, u32 id, struct atag *at){
 
 
 	bcm2837_miniuart_puts("uxmhf-rpi3: core: proceeding to switch to SVC mode...\n");
-	cpumodeswitch_hyp2svc(&main_svc);
+	cpumodeswitch_hyp2svc(&entry_svc);
 
 	bcm2837_miniuart_puts("uxmhf-rpi3: core: Halting!\n");
 	HALT();
