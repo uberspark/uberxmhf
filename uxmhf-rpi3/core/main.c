@@ -35,7 +35,14 @@ void hypsvc_handler(void){
 
 
 void main_svc(void){
+	u32 cpsr;
+
 	bcm2837_miniuart_puts("uXMHF-rpi3: core: now in SVC mode\n");
+
+	cpsr = sysreg_read_cpsr();
+	bcm2837_miniuart_puts(" CPSR[mode]= ");
+	debug_hexdumpu32((cpsr & 0xF));
+
 	bcm2837_miniuart_puts("uxmhf-rpi3: core: proceeding to test hypercall (HVC) in SVC mode...\n");
 	hypcall();
 	bcm2837_miniuart_puts("uxmhf-rpi3: core: successful return after hypercall test.\n");
