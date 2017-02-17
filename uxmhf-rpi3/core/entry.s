@@ -97,8 +97,12 @@ hypcall:
 .global cpumodeswitch_hyp2svc
 cpumodeswitch_hyp2svc:
 	msr ELR_hyp, r0			//store address to begin execution in SVC mode in ELR_hyp
-	msr	SPSR_hyp, #0x13		//change spsr mode to SVC(ARM_MODE_SVC)
+    mrs r0, cpsr_all
+    and r0, r0, #0xffffffe0
+    orr r0, r0, #0x13
+    msr SPSR_hyp, r0
 	eret					//this will start executing at the address provided in SVC mode
+
 
 .section ".stack"
 	.balign 8
