@@ -70,15 +70,8 @@ void main(u32 r0, u32 id, struct atag *at){
 	hypcall();
 	bcm2837_miniuart_puts("uxmhf-rpi3: core: successful return after hypercall test.\n");
 
-	cpumodeswitch_svc();
-	cpsr = sysreg_read_cpsr();
-	bcm2837_miniuart_puts(" CPSR[mode]= ");
-	debug_hexdumpu32((cpsr & 0xF));
-
-
-
-	bcm2837_miniuart_puts("uxmhf-rpi3: core: Halting!\n");
-	HALT();
+	//	bcm2837_miniuart_puts("uxmhf-rpi3: core: Halting!\n");
+	//HALT();
 
 	/*
 	while(at->tag){
