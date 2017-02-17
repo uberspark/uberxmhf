@@ -14,7 +14,7 @@ extern u32 sysreg_read_cpsr(void);
 extern u32 sysreg_read_hvbar(void);
 extern void sysreg_write_hvbar(u32 value);
 extern void hypcall(void);
-extern void cpumodeswitch_svc(void);
+extern void cpumodeswitch_hyp2svc(void);
 
 extern u32 g_hypvtable[];
 

@@ -66,10 +66,10 @@ hypcall:
 	bx lr
 
 
-.global cpumodeswitch_svc
-cpumodeswitch_svc:
-	cps #0x13
-	bx lr
+.global cpumodeswitch_hyp2svc
+cpumodeswitch_hyp2svc:
+	msr	spsr_cxsf, #0x13	//change spsr mode to SVC(ARM_MODE_SVC) //you cannot switch to HYP mode directly from secure world, doh!
+	subs pc, lr, #0			//this will return back to the caller but in SVC mode
 
 
 .section ".stack"
