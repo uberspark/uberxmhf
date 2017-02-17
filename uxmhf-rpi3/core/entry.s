@@ -68,9 +68,9 @@ hypcall:
 
 .global cpumodeswitch_hyp2svc
 cpumodeswitch_hyp2svc:
+	msr ELR_hyp, r0			//store address to begin execution in SVC mode in ELR_hyp
 	msr	spsr_cxsf, #0x13	//change spsr mode to SVC(ARM_MODE_SVC) //you cannot switch to HYP mode directly from secure world, doh!
-	subs pc, lr, #0			//this will return back to the caller but in SVC mode
-
+	eret					//this will start executing at the address provided in SVC mode
 
 .section ".stack"
 	.balign 8
