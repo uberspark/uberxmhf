@@ -29,7 +29,7 @@ g_hypvtable:
 	b hypvtable_hyphvc_handler
 	b hypvtable_reserved_handler
 	b hypvtable_reserved_handler
-	b hypvtable_reserved_handler
+	b hypvtable_hypsvc_handler
 	b hypvtable_reserved_handler
 	b hypvtable_reserved_handler
 
@@ -90,11 +90,69 @@ hypvtable_hyphvc_handler:
 	eret
 
 
+
+/*
+	G1.12.3 ARMv8
+	exception return address is stored in ELR_hyp register and
+	points to the instruction *after* the HVC instruction (Table G1-9)
+*/
+	.global	hypvtable_hypsvc_handler
+hypvtable_hypsvc_handler:
+	ldr sp, =hypvtable_hypsvc_stack_top
+
+	/* G1.9.2 (Figure G1-3)
+	   HYP mode uses LR_usr, i.e, does not have LR banking, so save
+	   since we are going to be using LR for C calling
+	*/
+	push {lr}
+
+
+	/* 5.1.1 AAPCS
+	   callee preserves r4-r8, r10, r11, r13 (SP)
+	   save the rest
+	*/
+	push {r0}
+	push {r1}
+	push {r2}
+	push {r3}
+	push {r9}
+	push {r12}
+
+	/* invoke C handler */
+	bl hypsvc_handler
+
+
+	/* restore all saved registers */
+	pop	{r12}
+	pop	{r9}
+	pop	{r3}
+	pop	{r2}
+	pop	{r1}
+	pop	{r0}
+
+	pop	{lr}
+
+	/*
+		G1.13.1 ARMv8
+		exception returns from HYP mode is made via ERET instruction
+		which basically returns to ELR_hyp and restores appropriate
+		PE (processor execution) state
+	*/
+	eret
+
+
+
 .section ".stack"
 	.balign 8
 	.global hypvtable_stack
 	stack:	.space	256
 	.global hypvtable_stack_top
 	hypvtable_stack_top:
+
+	.balign 8
+	.global hypvtable_hypsvc_stack
+	hypvtable_hypsvc_stack:	.space	256
+	.global hypvtable_hypsvc_stack_top
+	hypvtable_hypsvc_stack_top:
 
 

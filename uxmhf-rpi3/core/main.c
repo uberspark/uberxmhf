@@ -28,6 +28,11 @@ void hyphvc_handler(void){
 	bcm2837_miniuart_puts("uXMHF-rpi3: core: hyphvc_handler [OUT]\n");
 }
 
+void hypsvc_handler(void){
+	bcm2837_miniuart_puts("uXMHF-rpi3: core: hypSVC_handler [IN]\n");
+	bcm2837_miniuart_puts("uXMHF-rpi3: core: hypSVC_handler [OUT]\n");
+}
+
 
 void main_svc(void){
 	bcm2837_miniuart_puts("uXMHF-rpi3: core: now in SVC mode\n");
