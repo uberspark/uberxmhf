@@ -49,6 +49,11 @@ chainload_os:
 	blx r3
 
 
+.globl sysreg_read_spsr_hyp
+sysreg_read_spsr_hyp:
+	mrs r0, SPSR_hyp
+	bx lr
+
 
 .globl sysreg_read_scr
 sysreg_read_scr:
@@ -92,7 +97,7 @@ hypcall:
 .global cpumodeswitch_hyp2svc
 cpumodeswitch_hyp2svc:
 	msr ELR_hyp, r0			//store address to begin execution in SVC mode in ELR_hyp
-	msr	SPSR_hyp, #0x13	//change spsr mode to SVC(ARM_MODE_SVC) //you cannot switch to HYP mode directly from secure world, doh!
+	msr	SPSR_hyp, #0x13		//change spsr mode to SVC(ARM_MODE_SVC)
 	eret					//this will start executing at the address provided in SVC mode
 
 .section ".stack"
