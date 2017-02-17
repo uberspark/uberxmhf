@@ -114,33 +114,6 @@ void main(u32 r0, u32 id, struct atag *at){
 	bcm2837_miniuart_puts("uxmhf-rpi3: core: Halting!\n");
 	HALT();
 
-	/*
-	while(at->tag){
-		switch(at->tag){
-			case ATAG_CORE:
-				bcm2837_miniuart_puts("  Found ATAG_CORE\n");
-				break;
-
-			case ATAG_MEM:
-				bcm2837_miniuart_puts("  Found ATAG_MEM\n");
-				break;
-
-			case ATAG_INITRD2:
-				bcm2837_miniuart_puts("  Found ATAG_INITRD2\n");
-				break;
-
-			case ATAG_CMDLINE:
-				bcm2837_miniuart_puts("  Found ATAG_CMDLINE\n");
-				break;
-
-			default:
-				bcm2837_miniuart_puts("  Unknown ATAG: ");
-				debug_hexdumpu32(at->tag);
-				break;
-		}
-
-		at=atag_next(at);
-	}*/
 
 
 	bcm2837_miniuart_puts("uXMHF-rpi3: core: Chainloading OS kernel...\n");
@@ -148,3 +121,5 @@ void main(u32 r0, u32 id, struct atag *at){
 	bcm2837_miniuart_flush();
 	chainload_os(r0, id, at);
 }
+
+
