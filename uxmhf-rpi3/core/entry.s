@@ -20,6 +20,18 @@ halt:
 	b halt
 
 
+.globl entry_svc
+entry_svc:
+
+	/* load stack and start C land */
+	ldr sp, =stacksvc_top
+	bl main_svc
+
+hlt_entry_svc:
+	b hlt_entry_svc
+
+
+
 .globl mmio_write32
 mmio_write32:
     str r1,[r0]
@@ -84,3 +96,10 @@ cpumodeswitch_hyp2svc:
 	stack:	.space	256
 	.global stack_top
 	stack_top:
+
+	.balign 8
+	.global stacksvc
+	stacksvc:	.space	256
+	.global stacksvc_top
+	stacksvc_top:
+
