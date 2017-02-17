@@ -60,6 +60,12 @@ sysreg_write_hvbar:
 	bx lr
 
 
+.global sysreg_read_hcr
+sysreg_read_hcr:
+	mrc p15, 4, r0, c1, c1, 0
+	bx lr
+
+
 .global hypcall
 hypcall:
 	hvc #0

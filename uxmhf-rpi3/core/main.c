@@ -13,6 +13,8 @@ extern u32 sysreg_read_scr(void);
 extern u32 sysreg_read_cpsr(void);
 extern u32 sysreg_read_hvbar(void);
 extern void sysreg_write_hvbar(u32 value);
+extern u32 sysreg_read_hcr(void);
+
 extern void hypcall(void);
 extern void cpumodeswitch_hyp2svc(u32 address);
 
@@ -37,7 +39,7 @@ void main(u32 r0, u32 id, struct atag *at){
 	//struct atag *pat;
 	//bcm2837_miniuart_init();
 	u32 cpsr;
-	u32 hvbar;
+	u32 hvbar, hcr;
 
 	bcm2837_miniuart_puts("uXMHF-rpi3: core: Hello World!\n");
 	bcm2837_miniuart_puts(" r0= ");
@@ -79,6 +81,13 @@ void main(u32 r0, u32 id, struct atag *at){
 	hypcall();
 	bcm2837_miniuart_puts("uxmhf-rpi3: core: successful return after hypercall test.\n");
 
+
+	hcr = sysreg_read_hcr();
+	bcm2837_miniuart_puts(" HCR before= ");
+	debug_hexdumpu32(hcr);
+
+
+	bcm2837_miniuart_puts("uxmhf-rpi3: core: proceeding to switch to SVC mode...\n");
 	cpumodeswitch_hyp2svc(&main_svc);
 
 	bcm2837_miniuart_puts("uxmhf-rpi3: core: Halting!\n");
