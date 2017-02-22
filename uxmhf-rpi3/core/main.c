@@ -133,11 +133,11 @@ void main(u32 r0, u32 id, struct atag *at){
 
 	bcm2837_miniuart_flush();
 	chainload_os(guestos_boot_r0, guestos_boot_r1, guestos_boot_r2);
-
+	*/
 
 	bcm2837_miniuart_puts("uxmhf-rpi3: core: We were not supposed to be here.Halting!\n");
 	HALT();
-	*/
+
 }
 
 
