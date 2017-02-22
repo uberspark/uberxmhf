@@ -6,6 +6,7 @@
 
 extern u32 mmio_read32 (u32 address);
 extern void mmio_write32 (u32 address, u32 value);
+extern u32 sysreg_read_cpsr(void);
 
 extern void hypcall(void);
 
@@ -23,6 +24,11 @@ void main(u32 r0, u32 id, struct atag *at){
 	debug_hexdumpu32(id);
 	bcm2837_miniuart_puts(" ATAGS= ");
 	debug_hexdumpu32(at);
+
+	cpsr = sysreg_read_cpsr();
+	bcm2837_miniuart_puts(" CPSR[mode]= ");
+	debug_hexdumpu32((cpsr & 0xF));
+
 
 	bcm2837_miniuart_puts("uXMHF-rpi3: guestos: All done. Halting!\n");
 	HALT();

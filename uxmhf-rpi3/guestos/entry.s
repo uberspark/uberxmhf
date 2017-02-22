@@ -36,6 +36,10 @@ hypcall:
 	bx lr
 
 
+.globl sysreg_read_cpsr
+sysreg_read_cpsr:
+	mrs r0, cpsr
+	bx lr
 
 
 .section ".stack"
