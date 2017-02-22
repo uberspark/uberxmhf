@@ -12,7 +12,7 @@ extern u32 sysreg_read_vbar(void);
 extern void sysreg_write_vbar(u32 value);
 
 extern void hypcall(void);
-
+extern void svccall(void);
 
 void svc_handler(void){
 	bcm2837_miniuart_puts("uXMHF-rpi3: guestos: SVC_handler [IN]\n");

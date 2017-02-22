@@ -35,6 +35,11 @@ hypcall:
 	hvc #0
 	bx lr
 
+.global svccall
+svccall:
+	svc #0
+	bx lr
+
 
 .globl sysreg_read_cpsr
 sysreg_read_cpsr:
