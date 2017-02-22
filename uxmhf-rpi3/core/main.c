@@ -124,9 +124,10 @@ void main(u32 r0, u32 id, struct atag *at){
 	debug_hexdumpu32(spsr_hyp);
 
 
-	//bcm2837_miniuart_puts("uxmhf-rpi3: core: proceeding to switch to SVC mode...\n");
-	//cpumodeswitch_hyp2svc(&entry_svc);
+	bcm2837_miniuart_puts("uxmhf-rpi3: core: proceeding to switch to SVC mode...\n");
+	cpumodeswitch_hyp2svc(&entry_svc);
 
+	/*
 
 	bcm2837_miniuart_puts("uXMHF-rpi3: core: Chainloading OS kernel...\n");
 
@@ -136,6 +137,7 @@ void main(u32 r0, u32 id, struct atag *at){
 
 	bcm2837_miniuart_puts("uxmhf-rpi3: core: We were not supposed to be here.Halting!\n");
 	HALT();
+	*/
 }
 
 
