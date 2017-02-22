@@ -24,7 +24,7 @@ main.o : main.c
 guestos.bin: entry.o miniuart.o debug.o main.o
 	$(TOOLPREFIX)ld entry.o miniuart.o debug.o main.o -T guestos.lscript -o guestos.elf
 	#$(TOOLPREFIX)objdump -D core.elf > core.list
-	$(TOOLPREFIX)objcopy guetos.elf -O binary guestos.bin
+	$(TOOLPREFIX)objcopy guestos.elf -O binary guestos.bin
 
 .PHONY: clean
 clean:
