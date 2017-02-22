@@ -29,6 +29,10 @@ void main(u32 r0, u32 id, struct atag *at){
 	bcm2837_miniuart_puts(" CPSR[mode]= ");
 	debug_hexdumpu32((cpsr & 0xF));
 
+	bcm2837_miniuart_puts("uxmhf-rpi3: guestos: proceeding to test hypercall (HVC) in SVC mode...\n");
+	hypcall();
+	bcm2837_miniuart_puts("uxmhf-rpi3: guestos: successful return after hypercall test.\n");
+
 
 	bcm2837_miniuart_puts("uXMHF-rpi3: guestos: All done. Halting!\n");
 	HALT();
