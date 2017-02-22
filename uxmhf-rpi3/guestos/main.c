@@ -18,7 +18,7 @@ void main(u32 r0, u32 id, struct atag *at){
 	//struct atag *pat;
 	//bcm2837_miniuart_init();
 	u32 cpsr;
-	u32 hvbar, hcr, spsr_hyp;
+	u32 vbar;
 
 	bcm2837_miniuart_puts("uXMHF-rpi3: guestos: Hello World!\n");
 	bcm2837_miniuart_puts(" r0= ");
@@ -31,6 +31,11 @@ void main(u32 r0, u32 id, struct atag *at){
 	cpsr = sysreg_read_cpsr();
 	bcm2837_miniuart_puts(" CPSR[mode]= ");
 	debug_hexdumpu32((cpsr & 0xF));
+
+	vbar = sysreg_read_vbar();
+	bcm2837_miniuart_puts(" VBAR before= ");
+	debug_hexdumpu32(vbar);
+
 
 	bcm2837_miniuart_puts("uxmhf-rpi3: guestos: proceeding to test hypercall (HVC) in SVC mode...\n");
 	hypcall();
