@@ -33,6 +33,7 @@ all: checkoskrnlimg
 	@echo $(OSKRNLIMG_FINALSIZE_HEX)
 	cp $(OSKRNLIMG) ./oskrnlimg.tmp
 	truncate --size=$(OSKRNLIMG_FINALSIZE) ./oskrnlimg.tmp 
+	cd guestos && make -w all
 	cd bootstrap && make -w all
 	cat ./bootstrap/bootstrap.bin ./oskrnlimg.tmp ./core/core.bin > uxmhf-rpi3.img
 
