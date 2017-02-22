@@ -8,6 +8,9 @@ extern u32 mmio_read32 (u32 address);
 extern void mmio_write32 (u32 address, u32 value);
 extern u32 sysreg_read_cpsr(void);
 
+extern u32 sysreg_read_vbar(void);
+extern void sysreg_write_vbar(u32 value);
+
 extern void hypcall(void);
 
 

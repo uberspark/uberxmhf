@@ -41,6 +41,16 @@ sysreg_read_cpsr:
 	mrs r0, cpsr
 	bx lr
 
+.global sysreg_read_vbar
+sysreg_read_vbar:
+	mrc p15, 0, r0, c12, c0, 0
+	bx lr
+
+.global sysreg_write_vbar
+sysreg_write_vbar:
+	mcr p15, 0, r0, c12, c0, 0
+	bx lr
+
 
 .section ".stack"
 
