@@ -45,7 +45,8 @@ mmio_read32:
 
 .globl chainload_os
 chainload_os:
-	ldr r3, =0x00008000
+	//ldr r3, =0x00008000
+	ldr r3, =0x30002000
 	blx r3
 
 
