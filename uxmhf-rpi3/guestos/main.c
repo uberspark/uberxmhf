@@ -52,6 +52,8 @@ void pmu_initperfcounters(u32 reset, u32 enable_divider){
   asm volatile ("MCR p15, 0, %0, c9, c12, 3\t\n" :: "r"(0x8000000f));
 }
 
+u32 pmu_cyclecountoverhead=0;
+
 /**/
 
 
@@ -65,6 +67,8 @@ void svc_handler(void){
 void usr_main(void){
 	u32 cpsr;
 
+
+
 	bcm2837_miniuart_puts("uXMHF-rpi3: guestos: usr_main [IN]\n");
 
 	cpsr = sysreg_read_cpsr();
@@ -72,7 +76,9 @@ void usr_main(void){
 	debug_hexdumpu32((cpsr & 0xF));
 
 	bcm2837_miniuart_puts("uxmhf-rpi3: guestos: proceeding to test supervisor call (SVC) in SVC mode...\n");
+
 	svccall();
+
 	bcm2837_miniuart_puts("uxmhf-rpi3: guestos: successful return after supervisor call test.\n");
 
 
@@ -87,6 +93,16 @@ void main(u32 r0, u32 id, struct atag *at){
 	//bcm2837_miniuart_init();
 	u32 cpsr;
 	u32 vbar;
+	u32 opcycles=0;
+
+	//init performance counter
+	pmu_initperfcounters(1, 0);
+
+	//measure the counting overhead
+	pmu_cyclecountoverhead = pmu_getcyclecount();
+	pmu_cyclecountoverhead = pmu_getcyclecount() - pmu_cyclecountoverhead;
+
+
 
 	bcm2837_miniuart_puts("uXMHF-rpi3: guestos: Hello World!\n");
 	bcm2837_miniuart_puts(" r0= ");
@@ -114,8 +130,15 @@ void main(u32 r0, u32 id, struct atag *at){
 
 
 	bcm2837_miniuart_puts("uxmhf-rpi3: guestos: proceeding to test hypercall (HVC) in SVC mode...\n");
+
+	opcycles=pmu_getcyclecount();
 	hypcall();
+	opcycles=pmu_getcyclecount()-opcycles;
+
 	bcm2837_miniuart_puts("uxmhf-rpi3: guestos: successful return after hypercall test.\n");
+
+	bcm2837_miniuart_puts(" op cycles=0x");
+	debug_hexdumpu32(opcycles-pmu_cyclecountoverhead);
 
 
 	bcm2837_miniuart_puts("uxmhf-rpi3: guestos: proceeding to switch to USR mode...\n");
