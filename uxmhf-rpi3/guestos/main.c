@@ -69,10 +69,10 @@ void svc_handler(void){
 
 
 void usr_main(void){
-	u32 cpsr;
+	u32 cpsr, i;
 	u32 opcycles_start;
 	u32 opcycles_end;
-
+	u32 totalopcycles=0;
 
 	bcm2837_miniuart_puts("uXMHF-rpi3: guestos: usr_main [IN]\n");
 
@@ -82,20 +82,17 @@ void usr_main(void){
 
 	bcm2837_miniuart_puts("uxmhf-rpi3: guestos: proceeding to test supervisor call (SVC) in SVC mode...\n");
 
-	opcycles_start=pmu_getcyclecount();
-	svccall();
-	opcycles_end=pmu_getcyclecount();
+	for(i=0; i < 1024; i++){
+		opcycles_start=pmu_getcyclecount();
+		svccall();
+		opcycles_end=pmu_getcyclecount();
+		totalopcycles += (opcycles_end - opcycles_start);
+	}
 
 	bcm2837_miniuart_puts("uxmhf-rpi3: guestos: successful return after supervisor call test.\n");
 
-	bcm2837_miniuart_puts(" opcycles_start=0x");
-	debug_hexdumpu32(opcycles_start);
-
-	bcm2837_miniuart_puts(" opcycles_end=0x");
-	debug_hexdumpu32(opcycles_end);
-
 	bcm2837_miniuart_puts(" op cycles=0x");
-	debug_hexdumpu32(opcycles_end-opcycles_start);
+	debug_hexdumpu32( totalopcycles/1024 );
 
 
 	bcm2837_miniuart_puts("uXMHF-rpi3: guestos: Halting!\n");
