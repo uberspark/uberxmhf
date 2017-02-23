@@ -63,14 +63,15 @@ u32 pmu_cyclecountoverhead=0;
 
 
 void svc_handler(void){
-	bcm2837_miniuart_puts("uXMHF-rpi3: guestos: SVC_handler [IN]\n");
-	bcm2837_miniuart_puts("uXMHF-rpi3: guestos: SVC_handler [OUT]\n");
+	//bcm2837_miniuart_puts("uXMHF-rpi3: guestos: SVC_handler [IN]\n");
+	//bcm2837_miniuart_puts("uXMHF-rpi3: guestos: SVC_handler [OUT]\n");
 }
 
 
 void usr_main(void){
 	u32 cpsr;
-	u32 opcycles;
+	u32 opcycles_start;
+	u32 opcycles_end;
 
 
 	bcm2837_miniuart_puts("uXMHF-rpi3: guestos: usr_main [IN]\n");
@@ -81,14 +82,20 @@ void usr_main(void){
 
 	bcm2837_miniuart_puts("uxmhf-rpi3: guestos: proceeding to test supervisor call (SVC) in SVC mode...\n");
 
-	opcycles=pmu_getcyclecount();
+	opcycles_start=pmu_getcyclecount();
 	svccall();
-	opcycles=pmu_getcyclecount()-opcycles;
+	opcycles_end=pmu_getcyclecount();
 
 	bcm2837_miniuart_puts("uxmhf-rpi3: guestos: successful return after supervisor call test.\n");
 
+	bcm2837_miniuart_puts(" opcycles_start=0x");
+	debug_hexdumpu32(opcycles_start);
+
+	bcm2837_miniuart_puts(" opcycles_end=0x");
+	debug_hexdumpu32(opcycles_end);
+
 	bcm2837_miniuart_puts(" op cycles=0x");
-	debug_hexdumpu32(opcycles-pmu_cyclecountoverhead);
+	debug_hexdumpu32(opcycles_end-opcycles_start);
 
 
 	bcm2837_miniuart_puts("uXMHF-rpi3: guestos: Halting!\n");
@@ -102,7 +109,7 @@ void main(u32 r0, u32 id, struct atag *at){
 	//bcm2837_miniuart_init();
 	u32 cpsr;
 	u32 vbar;
-	u32 opcycles=0;
+	u32 opcycles_start, opcycles_end;
 
 	//init performance counter
 	pmu_initperfcounters(1, 0);
@@ -140,14 +147,20 @@ void main(u32 r0, u32 id, struct atag *at){
 
 	bcm2837_miniuart_puts("uxmhf-rpi3: guestos: proceeding to test hypercall (HVC) in SVC mode...\n");
 
-	opcycles=pmu_getcyclecount();
+	opcycles_start=pmu_getcyclecount();
 	hypcall();
-	opcycles=pmu_getcyclecount()-opcycles;
+	opcycles_end=pmu_getcyclecount();
 
 	bcm2837_miniuart_puts("uxmhf-rpi3: guestos: successful return after hypercall test.\n");
 
+	bcm2837_miniuart_puts(" opcycles_start=0x");
+	debug_hexdumpu32(opcycles_start);
+
+	bcm2837_miniuart_puts(" opcycles_end=0x");
+	debug_hexdumpu32(opcycles_end);
+
 	bcm2837_miniuart_puts(" op cycles=0x");
-	debug_hexdumpu32(opcycles-pmu_cyclecountoverhead);
+	debug_hexdumpu32(opcycles_end-opcycles_start);
 
 
 	bcm2837_miniuart_puts("uxmhf-rpi3: guestos: proceeding to switch to USR mode...\n");
