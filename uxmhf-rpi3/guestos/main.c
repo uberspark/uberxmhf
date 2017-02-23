@@ -28,6 +28,29 @@ static inline u32 pmu_getcyclecount(void){
   return value;
 }
 
+void pmu_initperfcounters(u32 reset, u32 enable_divider){
+  //in general enable all counters (including cycle counter)
+  u32 value = 1;
+
+  //peform reset if indicated
+  if (reset){
+    value |= 2;     // reset all counters to zero.
+    value |= 4;     // reset cycle counter to zero.
+  }
+
+  //if divider enabled then enable divide by 64
+  if (enable_divider)
+    value |= 8;
+
+  //program the performance-counter control-register
+  asm volatile ("mcr p15, 0, %0, c9, c12, 0\t\n" :: "r"(value));
+
+  //enable all counters
+  asm volatile ("mcr p15, 0, %0, c9, c12, 1\t\n" :: "r"(0x8000000f));
+
+  // clear overflows:
+  asm volatile ("MCR p15, 0, %0, c9, c12, 3\t\n" :: "r"(0x8000000f));
+}
 
 /**/
 
