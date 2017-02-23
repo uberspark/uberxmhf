@@ -25,6 +25,15 @@ void svc_handler(void){
 }
 
 
+void usr_main(void){
+	bcm2837_miniuart_puts("uXMHF-rpi3: guestos: usr_main [IN]\n");
+
+	bcm2837_miniuart_puts("uXMHF-rpi3: guestos: Halting!\n");
+	HALT();
+}
+
+
+
 void main(u32 r0, u32 id, struct atag *at){
 	//struct atag *pat;
 	//bcm2837_miniuart_init();
@@ -60,11 +69,12 @@ void main(u32 r0, u32 id, struct atag *at){
 	hypcall();
 	bcm2837_miniuart_puts("uxmhf-rpi3: guestos: successful return after hypercall test.\n");
 
-	bcm2837_miniuart_puts("uxmhf-rpi3: guestos: proceeding to test supervisor call (SVC) in SVC mode...\n");
-	svccall();
-	bcm2837_miniuart_puts("uxmhf-rpi3: guestos: successful return after supervisor call test.\n");
+	//bcm2837_miniuart_puts("uxmhf-rpi3: guestos: proceeding to test supervisor call (SVC) in SVC mode...\n");
+	//svccall();
+	//bcm2837_miniuart_puts("uxmhf-rpi3: guestos: successful return after supervisor call test.\n");
 
-
+	bcm2837_miniuart_puts("uxmhf-rpi3: guestos: proceeding to switch to USR mode...\n");
+	cpumodeswitch_svc2usr(&usr_main);
 
 	bcm2837_miniuart_puts("uXMHF-rpi3: guestos: All done. Halting!\n");
 	HALT();

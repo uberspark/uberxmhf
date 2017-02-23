@@ -43,7 +43,7 @@ svccall:
 .global cpumodeswitch_svc2usr
 cpumodeswitch_svc2usr:
 	cps	#0x13
-	ldr sp, =usr_stack_top
+	ldr sp, =usrstack_top
 	blx	r0
 
 
