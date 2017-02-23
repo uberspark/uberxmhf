@@ -40,6 +40,12 @@ svccall:
 	svc #0
 	bx lr
 
+.global cpumodeswitch_svc2usr
+cpumodeswitch_svc2usr:
+	cps	#0x13
+	ldr sp, =usr_stack_top
+	blx	r0
+
 
 .globl sysreg_read_cpsr
 sysreg_read_cpsr:
@@ -65,3 +71,8 @@ sysreg_write_vbar:
 	.global stack_top
 	stack_top:
 
+	.balign 8
+	.global usrstack
+	usrstack:	.space	256
+	.global usrstack_top
+	usrstack_top:
