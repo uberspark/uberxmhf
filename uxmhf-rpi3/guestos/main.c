@@ -19,6 +19,20 @@ extern u32 g_svcvtable[];
 extern void cpumodeswitch_svc2usr(u32 address);
 
 
+
+/* performance monitoring stuff */
+static inline u32 pmu_getcyclecount(void){
+  u32 value;
+  // read CCNT register
+  asm volatile ("mrc p15, 0, %0, c9, c13, 0\t\n": "=r"(value));
+  return value;
+}
+
+
+/**/
+
+
+
 void svc_handler(void){
 	bcm2837_miniuart_puts("uXMHF-rpi3: guestos: SVC_handler [IN]\n");
 	bcm2837_miniuart_puts("uXMHF-rpi3: guestos: SVC_handler [OUT]\n");
