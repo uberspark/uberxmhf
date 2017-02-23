@@ -58,6 +58,11 @@ void main(u32 r0, u32 id, struct atag *at){
 	hypcall();
 	bcm2837_miniuart_puts("uxmhf-rpi3: guestos: successful return after hypercall test.\n");
 
+	bcm2837_miniuart_puts("uxmhf-rpi3: guestos: proceeding to test supervisor call (SVC) in SVC mode...\n");
+	svccall();
+	bcm2837_miniuart_puts("uxmhf-rpi3: guestos: successful return after supervisor call test.\n");
+
+
 
 	bcm2837_miniuart_puts("uXMHF-rpi3: guestos: All done. Halting!\n");
 	HALT();
