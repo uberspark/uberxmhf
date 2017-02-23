@@ -83,8 +83,12 @@ void usr_main(void){
 
 	opcycles=pmu_getcyclecount();
 	svccall();
+	opcycles=pmu_getcyclecount()-opcycles;
 
 	bcm2837_miniuart_puts("uxmhf-rpi3: guestos: successful return after supervisor call test.\n");
+
+	bcm2837_miniuart_puts(" op cycles=0x");
+	debug_hexdumpu32(opcycles-pmu_cyclecountoverhead);
 
 
 	bcm2837_miniuart_puts("uXMHF-rpi3: guestos: Halting!\n");
