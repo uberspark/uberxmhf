@@ -66,7 +66,7 @@ void svc_handler(void){
 
 void usr_main(void){
 	u32 cpsr;
-
+	u32 opcycles;
 
 
 	bcm2837_miniuart_puts("uXMHF-rpi3: guestos: usr_main [IN]\n");
@@ -77,6 +77,7 @@ void usr_main(void){
 
 	bcm2837_miniuart_puts("uxmhf-rpi3: guestos: proceeding to test supervisor call (SVC) in SVC mode...\n");
 
+	opcycles=pmu_getcyclecount();
 	svccall();
 
 	bcm2837_miniuart_puts("uxmhf-rpi3: guestos: successful return after supervisor call test.\n");
