@@ -129,6 +129,7 @@ void main(u32 r0, u32 id, struct atag *at){
 	u32 vbar;
 	u32 opcycles_start, opcycles_end, i;
 	u32 totalopcycles=0;
+	u32 sctlr;
 
 	//init performance counter
 	pmu_initperfcounters(1, 0);
@@ -145,6 +146,12 @@ void main(u32 r0, u32 id, struct atag *at){
 	cpsr = sysreg_read_cpsr();
 	bcm2837_miniuart_puts(" CPSR[mode]= ");
 	debug_hexdumpu32((cpsr & 0xF));
+
+	sctlr = sysreg_read_sctlr();
+	bcm2837_miniuart_puts(" SCTLR before= ");
+	debug_hexdumpu32(sctlr);
+
+
 
 	vbar = sysreg_read_vbar();
 	bcm2837_miniuart_puts(" VBAR before= ");
