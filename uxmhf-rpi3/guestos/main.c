@@ -3,7 +3,7 @@
 #include <debug.h>
 
 #define HALT() while(1);
-#define MAXPERFITER		16384
+#define MAXPERFITER		65536
 
 extern u32 mmio_read32 (u32 address);
 extern void mmio_write32 (u32 address, u32 value);
@@ -87,7 +87,7 @@ u32 pmu_getcyclecount_overhead(void){
 void svc_handler(void){
 	//bcm2837_miniuart_puts("uXMHF-rpi3: guestos: SVC_handler [IN]\n");
 	//bcm2837_miniuart_puts("uXMHF-rpi3: guestos: SVC_handler [OUT]\n");
-	hypcall();
+	//hypcall();
 }
 
 
