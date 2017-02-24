@@ -87,6 +87,7 @@ u32 pmu_getcyclecount_overhead(void){
 void svc_handler(void){
 	//bcm2837_miniuart_puts("uXMHF-rpi3: guestos: SVC_handler [IN]\n");
 	//bcm2837_miniuart_puts("uXMHF-rpi3: guestos: SVC_handler [OUT]\n");
+	hypcall();
 }
 
 
