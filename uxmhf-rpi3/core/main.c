@@ -17,6 +17,9 @@ extern u32 sysreg_read_hcr(void);
 extern void sysreg_write_hcr(u32 value);
 extern u32 sysreg_read_spsr_hyp(void);
 
+extern u32 sysreg_read_hsctlr(void);
+extern void sysreg_write_hsctlr(u32 value);
+
 extern void hypcall(void);
 extern void cpumodeswitch_hyp2svc(u32 address);
 extern void entry_svc(void);
