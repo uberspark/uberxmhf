@@ -106,6 +106,15 @@ void main(u32 r0, u32 id, struct atag *at){
 	bcm2837_miniuart_puts(" HSCTLR before= ");
 	debug_hexdumpu32(hsctlr);
 
+	hsctlr |= (1 << 12);	//enable instruction caching
+	hsctlr |= (1 << 2);		//enable data caching
+
+	sysreg_write_hsctlr(hsctlr);
+
+	hsctlr = sysreg_read_hsctlr();
+	bcm2837_miniuart_puts(" HSCTLR after= ");
+	debug_hexdumpu32(hsctlr);
+
 
 	hvbar = sysreg_read_hvbar();
 	bcm2837_miniuart_puts(" HVBAR before= ");
