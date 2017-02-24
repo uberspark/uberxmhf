@@ -3,6 +3,7 @@
 #include <debug.h>
 
 #define HALT() while(1);
+#define MAXPERFITER		16384
 
 extern u32 mmio_read32 (u32 address);
 extern void mmio_write32 (u32 address, u32 value);
@@ -70,7 +71,7 @@ u32 pmu_getcyclecount_overhead(void){
 	u32 opcycles_start, opcycles_end;
 	u32 totalopcycles=0;
 
-	for(i=0; i < 4096; i++){
+	for(i=0; i < MAXPERFITER; i++){
 		opcycles_start = pmu_getcyclecount();
 		opcycles_end = pmu_getcyclecount();
 		totalopcycles += (opcycles_end - opcycles_start);
@@ -79,7 +80,7 @@ u32 pmu_getcyclecount_overhead(void){
 	//bcm2837_miniuart_puts(" pmu_getcyclecount_overhead=0x");
 	//debug_hexdumpu32( totalopcycles/4096 );
 
-	return (totalopcycles/4096);
+	return (totalopcycles/MAXPERFITER);
 }
 
 
@@ -103,7 +104,7 @@ void usr_main(void){
 
 	bcm2837_miniuart_puts("uxmhf-rpi3: guestos: proceeding to test supervisor call (SVC) in SVC mode...\n");
 
-	for(i=0; i < 4096; i++){
+	for(i=0; i < MAXPERFITER; i++){
 		opcycles_start=pmu_getcyclecount();
 		svccall();
 		opcycles_end=pmu_getcyclecount();
@@ -113,7 +114,7 @@ void usr_main(void){
 	bcm2837_miniuart_puts("uxmhf-rpi3: guestos: successful return after supervisor call test.\n");
 
 	bcm2837_miniuart_puts(" op cycles=0x");
-	debug_hexdumpu32( (totalopcycles/4096) - pmu_getcyclecount_overhead());
+	debug_hexdumpu32( (totalopcycles/MAXPERFITER) - pmu_getcyclecount_overhead());
 
 
 	bcm2837_miniuart_puts("uXMHF-rpi3: guestos: Halting!\n");
@@ -176,7 +177,7 @@ void main(u32 r0, u32 id, struct atag *at){
 
 	bcm2837_miniuart_puts("uxmhf-rpi3: guestos: proceeding to test hypercall (HVC) in SVC mode...\n");
 
-	for(i=0; i < 4096; i++){
+	for(i=0; i < MAXPERFITER; i++){
 		opcycles_start=pmu_getcyclecount();
 		hypcall();
 		opcycles_end=pmu_getcyclecount();
@@ -187,7 +188,7 @@ void main(u32 r0, u32 id, struct atag *at){
 	bcm2837_miniuart_puts("uxmhf-rpi3: guestos: successful return after hypercall test.\n");
 
 	bcm2837_miniuart_puts(" op cycles=0x");
-	debug_hexdumpu32( (totalopcycles/4096) - pmu_getcyclecount_overhead());
+	debug_hexdumpu32( (totalopcycles/MAXPERFITER) - pmu_getcyclecount_overhead());
 
 	bcm2837_miniuart_puts("uxmhf-rpi3: guestos: proceeding to switch to USR mode...\n");
 	cpumodeswitch_svc2usr(&usr_main);
