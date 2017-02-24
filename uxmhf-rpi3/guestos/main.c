@@ -151,6 +151,14 @@ void main(u32 r0, u32 id, struct atag *at){
 	bcm2837_miniuart_puts(" SCTLR before= ");
 	debug_hexdumpu32(sctlr);
 
+	sctlr |= (1 << 12);	//enable instruction caching
+	sctlr |= (1 << 2);		//enable data caching
+
+	sysreg_write_sctlr(sctlr);
+
+	sctlr = sysreg_read_sctlr();
+	bcm2837_miniuart_puts(" SCTLR after= ");
+	debug_hexdumpu32(sctlr);
 
 
 	vbar = sysreg_read_vbar();
