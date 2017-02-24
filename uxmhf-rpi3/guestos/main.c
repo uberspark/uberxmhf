@@ -65,7 +65,7 @@ u32 pmu_cyclecountoverhead=0;
 /**/
 
 
-void pmu_getcyclecount_overhead(void){
+u32 pmu_getcyclecount_overhead(void){
 	u32 i;
 	u32 opcycles_start, opcycles_end;
 	u32 totalopcycles=0;
@@ -79,6 +79,7 @@ void pmu_getcyclecount_overhead(void){
 	bcm2837_miniuart_puts(" pmu_getcyclecount_overhead=0x");
 	debug_hexdumpu32( totalopcycles/4096 );
 
+	return (totalopcycles/4096);
 }
 
 
