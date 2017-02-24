@@ -40,6 +40,19 @@ svccall:
 	svc #0
 	bx lr
 
+.global sysreg_read_sctlr
+sysreg_read_sctlr:
+	mrc p15, 0, r0, c1, c0, 0
+	bx lr
+
+.global sysreg_write_sctlr
+sysreg_write_sctlr:
+	mcr p15, 0, r0, c1, c0, 0
+	bx lr
+
+
+
+
 .global cpumodeswitch_svc2usr
 cpumodeswitch_svc2usr:
 	cps	#0x10
