@@ -72,6 +72,7 @@ void main(u32 r0, u32 id, struct atag *at){
 	//bcm2837_miniuart_init();
 	u32 cpsr;
 	u32 hvbar, hcr, spsr_hyp;
+	u32 hsctlr;
 
 	bcm2837_miniuart_puts("uXMHF-rpi3: core: Hello World!\n");
 	bcm2837_miniuart_puts(" r0= ");
@@ -100,6 +101,11 @@ void main(u32 r0, u32 id, struct atag *at){
 		bcm2837_miniuart_puts("uXMHF-rpi3: core: not in HYP mode. Halting!\n");
 		HALT();
 	}
+
+	hsctlr = sysreg_read_hsctlr();
+	bcm2837_miniuart_puts(" HSCTLR before= ");
+	debug_hexdumpu32(hsctlr);
+
 
 	hvbar = sysreg_read_hvbar();
 	bcm2837_miniuart_puts(" HVBAR before= ");
