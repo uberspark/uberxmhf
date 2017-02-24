@@ -4,6 +4,7 @@
 	author: amit vasudevan (amitvasudevan@acm.org)
 */
 
+#include <types.h>
 #include <bcm2837.h>
 #include <miniuart.h>
 

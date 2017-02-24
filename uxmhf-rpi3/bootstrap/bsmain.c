@@ -1,3 +1,4 @@
+#include <types.h>
 #include <bcm2837.h>
 #include <miniuart.h>
 #include <atags.h>

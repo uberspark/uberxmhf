@@ -32,14 +32,5 @@
 #define AUX_MU_BAUD_REG (BCM2837_PERIPHERAL_BASE+0x00215068)
 
 
-#ifndef __ASSEMBLY__
-
-typedef unsigned int u32;
-typedef unsigned char u8;
-
-
-#endif // __ASSEMBLY__
-
-
 
 #endif //__BCM2837_H__
