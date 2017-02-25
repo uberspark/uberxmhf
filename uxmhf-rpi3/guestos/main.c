@@ -3,7 +3,6 @@
 #include <miniuart.h>
 #include <debug.h>
 
-#define HALT() while(1);
 #define MAXPERFITER		65536
 
 extern u32 g_svcvtable[];

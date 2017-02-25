@@ -5,7 +5,6 @@
 #include <atags.h>
 #include <debug.h>
 
-#define HALT() while(1);
 
 extern void chainload_os(u32 r0, u32 id, struct atag *at);
 extern void cpumodeswitch_hyp2svc(u32 address);
