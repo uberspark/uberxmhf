@@ -31,6 +31,14 @@ extern void sysreg_write_hsctlr(u32 value);
 
 extern void hypcall(void);
 
+extern void svccall(void);
+
+extern u32 sysreg_read_sctlr(void);
+extern void sysreg_write_sctlr(u32 value);
+
+
+extern u32 sysreg_read_vbar(void);
+extern void sysreg_write_vbar(u32 value);
 
 #endif // __ASSEMBLY__
 

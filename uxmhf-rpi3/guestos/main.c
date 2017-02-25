@@ -6,24 +6,9 @@
 #define HALT() while(1);
 #define MAXPERFITER		65536
 
-extern u32 mmio_read32 (u32 address);
-extern void mmio_write32 (u32 address, u32 value);
-extern u32 sysreg_read_cpsr(void);
-
-extern u32 sysreg_read_vbar(void);
-extern void sysreg_write_vbar(u32 value);
-
-extern u32 sysreg_read_sctlr(void);
-extern void sysreg_write_sctlr(u32 value);
-
-
-extern void hypcall(void);
-extern void svccall(void);
-
 extern u32 g_svcvtable[];
 
 extern void cpumodeswitch_svc2usr(u32 address);
-
 
 
 /* performance monitoring stuff */

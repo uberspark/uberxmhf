@@ -21,11 +21,14 @@ miniuart.o : ../common/miniuart.c
 debug.o : ../common/debug.c
 	$(TOOLPREFIX)gcc $(CFLAGS) ../common/debug.c -o debug.o
 
+arm8-32.o : ../common/arm8-32.s
+	$(TOOLPREFIX)gcc $(CFLAGS) -D__ASSEMBLY__ ../common/arm8-32.s -o arm8-32.o
+
 main.o : main.c
 	$(TOOLPREFIX)gcc $(CFLAGS) main.c -o main.o
 
-guestos.bin: entry.o miniuart.o debug.o svcvtable.o main.o
-	$(TOOLPREFIX)ld entry.o miniuart.o debug.o svcvtable.o main.o -T guestos.lscript -o guestos.elf
+guestos.bin: entry.o miniuart.o debug.o arm8-32.o svcvtable.o main.o
+	$(TOOLPREFIX)ld entry.o miniuart.o debug.o arm8-32.o svcvtable.o main.o -T guestos.lscript -o guestos.elf
 	#$(TOOLPREFIX)objdump -D core.elf > core.list
 	$(TOOLPREFIX)objcopy guestos.elf -O binary guestos.bin
 
