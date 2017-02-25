@@ -1,11 +1,10 @@
 #include <types.h>
+#include <arm8-32.h>
 #include <bcm2837.h>
 #include <miniuart.h>
 #include <atags.h>
 #include <debug.h>
 
-extern u32 mmio_read32 (u32 address);
-extern void mmio_write32 (u32 address, u32 value);
 extern void call_core(u32 r0, u32 id, struct atag *at);
 extern u32 g_oskrnl_startaddr;
 extern u32 g_oskrnl_size;

@@ -21,9 +21,12 @@ miniuart.o : ../common/miniuart.c
 debug.o : ../common/debug.c
 	$(TOOLPREFIX)gcc $(CFLAGS) ../common/debug.c -o debug.o
 
+arm8-32.o : ../common/arm8-32.s
+	$(TOOLPREFIX)gcc $(CFLAGS) -D__ASSEMBLY__ ../common/arm8-32.s -o arm8-32.o
 
-bootstrap.bin: bsentry.o bsmain.o miniuart.o debug.o
-	$(TOOLPREFIX)ld bsentry.o bsmain.o miniuart.o debug.o -T bootstrap.lscript -o bootstrap.elf
+
+bootstrap.bin: bsentry.o bsmain.o miniuart.o arm8-32.o debug.o
+	$(TOOLPREFIX)ld bsentry.o bsmain.o miniuart.o arm8-32.o debug.o -T bootstrap.lscript -o bootstrap.elf
 	#$(TOOLPREFIX)objdump -D bootstrap.elf > bootstrap.list
 	$(TOOLPREFIX)objcopy bootstrap.elf -O binary bootstrap.bin
 
