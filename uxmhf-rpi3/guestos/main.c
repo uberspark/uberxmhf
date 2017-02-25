@@ -1,4 +1,5 @@
 #include <types.h>
+#include <arm8-32.h>
 #include <bcm2837.h>
 #include <miniuart.h>
 #include <debug.h>
@@ -118,10 +119,6 @@ void main(u32 r0, u32 id, struct atag *at){
 	u32 totalopcycles=0;
 	u32 sctlr;
 
-	//init performance counter
-	pmu_initperfcounters(1, 0);
-
-
 	bcm2837_miniuart_puts("uXMHF-rpi3: guestos: Hello World!\n");
 	bcm2837_miniuart_puts(" r0= ");
 	debug_hexdumpu32(r0);
@@ -159,6 +156,14 @@ void main(u32 r0, u32 id, struct atag *at){
 	vbar = sysreg_read_vbar();
 	bcm2837_miniuart_puts(" loaded VBAR with g_svcvtable; VBAR after= ");
 	debug_hexdumpu32(vbar);
+
+
+
+	//init performance counter
+	pmu_initperfcounters(1, 0);
+
+
+
 
 
 	bcm2837_miniuart_puts("uxmhf-rpi3: guestos: proceeding to test hypercall (HVC) in SVC mode...\n");
