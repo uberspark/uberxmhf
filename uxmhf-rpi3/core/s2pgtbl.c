@@ -9,3 +9,9 @@
 #include <miniuart.h>
 #include <debug.h>
 
+/* setup CPU to support stage-2 table translation */
+void s2pgtbl_initialize(void){
+
+
+
+}
