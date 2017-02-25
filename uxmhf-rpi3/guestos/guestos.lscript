@@ -3,6 +3,7 @@
 
 	author: amit vasudevan (amitvasudevan@acm.org)
 */
+ENTRY(entry)
 
 MEMORY
 {
