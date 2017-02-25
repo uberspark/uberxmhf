@@ -4,6 +4,8 @@
 	author: amit vasudevan (amitvasudevan@acm.org)
 */
 
+.section ".text"
+
 .globl entry
 entry:
 

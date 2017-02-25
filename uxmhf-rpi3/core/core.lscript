@@ -23,13 +23,14 @@ SECTIONS
     	*(.bss*) 
 	} > ram = 0x0000
 
-    .data : { 
-    	*(.data*)
-    	*(.rodata*) 
-	} > ram = 0x0000
 
     .stack : { 
     	*(.stack*)
+	} > ram = 0x0000
+
+    .data : { 
+    	*(.data*)
+    	*(.rodata*) 
 		. = ALIGN(0x1000);
 	} > ram = 0x0000
 

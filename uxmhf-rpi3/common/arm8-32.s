@@ -7,6 +7,8 @@
 #include <types.h>
 #include <arm8-32.h>
 
+.section ".text"
+
 .globl mmio_write32
 mmio_write32:
     str r1,[r0]
