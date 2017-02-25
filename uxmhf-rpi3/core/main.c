@@ -1,4 +1,5 @@
 #include <types.h>
+#include <arm8-32.h>
 #include <bcm2837.h>
 #include <miniuart.h>
 #include <atags.h>
@@ -6,27 +7,11 @@
 
 #define HALT() while(1);
 
-extern u32 mmio_read32 (u32 address);
-extern void mmio_write32 (u32 address, u32 value);
 extern void chainload_os(u32 r0, u32 id, struct atag *at);
-
-extern u32 sysreg_read_scr(void);
-extern u32 sysreg_read_cpsr(void);
-extern u32 sysreg_read_hvbar(void);
-extern void sysreg_write_hvbar(u32 value);
-extern u32 sysreg_read_hcr(void);
-extern void sysreg_write_hcr(u32 value);
-extern u32 sysreg_read_spsr_hyp(void);
-
-extern u32 sysreg_read_hsctlr(void);
-extern void sysreg_write_hsctlr(u32 value);
-
-extern void hypcall(void);
 extern void cpumodeswitch_hyp2svc(u32 address);
 extern void entry_svc(void);
 
 extern u32 g_hypvtable[];
-
 
 u32 guestos_boot_r0=0;
 u32 guestos_boot_r1=0;
