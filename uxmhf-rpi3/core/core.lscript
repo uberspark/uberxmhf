@@ -16,23 +16,20 @@ SECTIONS
 	. = 0x30000000;
     
     .text : { 
-    	*(.text*) 
+    	*(.text) 
     } > ram = 0x0000
-    
-    .bss : { 
-    	*(.bss*) 
-	} > ram = 0x0000
 
     .data : { 
-    	*(.data*)
-    	*(.rodata*) 
+    	*(.rodata) 
+    	*(.data)
+    	*(.bss) 
 	} > ram = 0x0000
 
+    
     .stack : { 
-    	*(.stack*)
+    	*(.stack)
 		. = ALIGN(0x1000);
 	} > ram = 0x0000
-
 
 	/DISCARD/ : {
 		*(.ARM.attributes)

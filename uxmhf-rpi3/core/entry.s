@@ -33,10 +33,8 @@ hlt_entry_svc:
 	b hlt_entry_svc
 
 
-
 .globl chainload_os
 chainload_os:
-	//ldr r3, =0x00008000
 	ldr r3, =0x30002000
 	blx r3
 
@@ -51,7 +49,7 @@ cpumodeswitch_hyp2svc:
 	eret					//this will start executing at the address provided in SVC mode
 
 
-.section ".stack"
+.section ".stack", "aw"
 	.balign 8
 	.global stack
 	stack:	.space	256

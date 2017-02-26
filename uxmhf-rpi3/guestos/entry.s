@@ -22,7 +22,7 @@ cpumodeswitch_svc2usr:
 	blx	r0
 
 
-.section ".stack"
+.section ".stack", "aw"
 
 	.balign 8
 	.global stack

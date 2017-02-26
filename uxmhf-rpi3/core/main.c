@@ -45,7 +45,7 @@ void main_svc(void){
 	bcm2837_miniuart_puts("uXMHF-rpi3: core: Chainloading OS kernel...\n");
 
 	bcm2837_miniuart_flush();
-	//chainload_os(guestos_boot_r0, guestos_boot_r1, guestos_boot_r2);
+	chainload_os(guestos_boot_r0, guestos_boot_r1, guestos_boot_r2);
 
 	bcm2837_miniuart_puts("uxmhf-rpi3: core: Halting!\n");
 	HALT();
