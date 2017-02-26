@@ -126,6 +126,10 @@ void main(u32 r0, u32 id, struct atag *at){
 	bcm2837_miniuart_puts(" SPSR_hyp= ");
 	debug_hexdumpu32(spsr_hyp);
 
+	/* initialize cpu support for second stage page table translations */
+	bcm2837_miniuart_puts("uxmhf-rpi3: core: initializing cpu support for stage-2 pts...\n");
+	s2pgtbl_initialize();
+	bcm2837_miniuart_puts("uxmhf-rpi3: core: cpu ready for stage-2 pts...\n");
 
 	bcm2837_miniuart_puts("uxmhf-rpi3: core: proceeding to switch to SVC mode...\n");
 	cpumodeswitch_hyp2svc(&entry_svc);
