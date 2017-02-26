@@ -53,14 +53,14 @@ call_core:
 	.global g_core_size
 	.type g_core_size, %object
 	.size g_core_size, 4
-	g_core_size:	.word	0x1000
+	g_core_size:	.word	0x2000
 
 
 	.align 2
 	.global g_guestos_startaddr
 	.type g_guestos_startaddr, %object
 	.size g_guestos_startaddr, 4
-	g_guestos_startaddr:	.word	(0x41E000+0x8000+0x1000)
+	g_guestos_startaddr:	.word	(0x41E000+0x8000+0x2000)
 
 
 	.align 2
