@@ -8,6 +8,22 @@
 #define __ARM8_32_H__
 
 //
+// memory shareability types
+//
+#define	MEM_NON_SHAREABLE		0x0
+#define MEM_OUTER_SHAREABLE		0x2
+#define	MEM_INNER_SHAREABLE		0x3
+
+//
+// memory cacheability types
+//
+#define	MEM_NON_CACHEABLE								0x0
+#define MEM_WRITEBACK_READALLOCATE_WRITEALLOCATE		0x1
+#define	MEM_WRITETHROUGH_READALLOCATE_NOWRITEALLOCATE	0x2
+#define MEM_WRITEBACK_READALLOCATE_NOWRITEALLOCATE		0x3
+
+
+//
 // VTCR (virtualization translation control register) bit definitions
 // G6.2.161 ARMv8
 //
