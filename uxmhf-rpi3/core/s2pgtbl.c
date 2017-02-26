@@ -17,4 +17,8 @@ void s2pgtbl_initialize(void){
 	bcm2837_miniuart_puts("VTCR= ");
 	debug_hexdumpu32(vtcr);
 
+	//T0SZ=0; 32 bits addressing
+	//SL0=1; 3-level page table
+
+
 }
