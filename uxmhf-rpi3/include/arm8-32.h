@@ -7,6 +7,24 @@
 #ifndef __ARM8_32_H__
 #define __ARM8_32_H__
 
+//
+// VTCR (virtualization translation control register) bit definitions
+// G6.2.161 ARMv8
+//
+#define VTCR_RES1_MASK		0x80000000
+#define	VTCR_SH0_MASK		0x00003000
+#define VTCR_SH0_SHIFT		12
+#define	VTCR_ORGN0_MASK		0x00000C00
+#define VTCR_ORGN0_SHIFT	10
+#define	VTCR_IRGN0_MASK		0x00000300
+#define VTCR_IRGN0_SHIFT	8
+#define	VTCR_SL0_MASK		0x000000C0
+#define VTCR_SL0_SHIFT		6
+#define	VTCR_S_MASK			0x00000010
+#define	VTCR_S_SHIFT		4
+#define	VTCR_T0SZ_MASK		0x0000000F
+#define	VTCR_T0SZ_SHIFT		0
+
 
 
 #ifndef __ASSEMBLY__
