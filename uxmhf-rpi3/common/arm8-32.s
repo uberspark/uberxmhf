@@ -97,4 +97,13 @@ sysreg_write_vbar:
 	mcr p15, 0, r0, c12, c0, 0
 	bx lr
 
+.global sysreg_read_vtcr
+sysreg_read_vtcr:
+	mrc p15, 4, r0, c2, c1, 2
+	bx lr
+
+.global sysreg_write_vtcr
+sysreg_write_vtcr:
+	mcr p15, 4, r0, c2, c1, 2
+	bx lr
 

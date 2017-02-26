@@ -40,6 +40,10 @@ extern void sysreg_write_sctlr(u32 value);
 extern u32 sysreg_read_vbar(void);
 extern void sysreg_write_vbar(u32 value);
 
+extern u32 sysreg_read_vtcr(void);
+extern void sysreg_write_vtcr(u32 value);
+
+
 #endif // __ASSEMBLY__
 
 #endif //__ARM8_32_H__
