@@ -63,6 +63,21 @@
 #define HDCR_HPMN_SHIFT		0
 
 
+//
+// HCPTR (hyp architectural feature trap register) bit definitions
+// G6.2.57 ARMv8
+//
+#define HCPTR_RES1_MASK		0x000033ff
+#define HCPTR_TTA_MASK		0x00100000
+#define HCPTR_TTA_SHIFT		20
+#define HCPTR_TASE_MASK		0x00008000
+#define HCPTR_TASE_SHIFT	15
+#define HCPTR_TCP11_MASK	0x00000800
+#define HCPTR_TCP11_SHIFT	11
+#define HCPTR_TCP10_MASK	0x00000600
+#define HCPTR_TCP10_SHIFT	10
+
+
 
 
 
