@@ -121,6 +121,8 @@ extern void sysreg_write_hdcr(u32 value);
 extern u32 sysreg_read_hcptr(void);
 extern void sysreg_write_hcptr(u32 value);
 
+extern u32 sysreg_read_hstr(void);
+extern void sysreg_write_hstr(u32 value);
 
 #endif // __ASSEMBLY__
 

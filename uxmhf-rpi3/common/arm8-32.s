@@ -127,3 +127,12 @@ sysreg_write_hcptr:
 	mcr p15, 4, r0, c1, c1, 2
 	bx lr
 
+.global sysreg_read_hstr
+sysreg_read_hstr:
+	mrc p15, 4, r0, c1, c1, 3
+	bx lr
+
+.global sysreg_write_hstr
+sysreg_write_hstr:
+	mcr p15, 4, r0, c1, c1, 3
+	bx lr
