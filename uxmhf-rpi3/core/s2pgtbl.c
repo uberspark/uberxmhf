@@ -37,7 +37,8 @@ void s2pgtbl_initialize(void){
 	bcm2837_miniuart_puts("HDCR before= ");
 	debug_hexdumpu32(hdcr);
 
-	sysreg_write_hdcr(0);
+	hdcr &= HDCR_HPMN_MASK;
+	sysreg_write_hdcr(hdcr);
 
 	hdcr = sysreg_read_hdcr();
 	bcm2837_miniuart_puts("HDCR after= ");
