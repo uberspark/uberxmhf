@@ -77,6 +77,9 @@ extern void sysreg_write_vbar(u32 value);
 extern u32 sysreg_read_vtcr(void);
 extern void sysreg_write_vtcr(u32 value);
 
+extern u32 sysreg_read_hdcr(void);
+extern void sysreg_write_hdcr(u32 value);
+
 
 #endif // __ASSEMBLY__
 

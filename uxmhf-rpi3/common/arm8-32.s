@@ -107,3 +107,12 @@ sysreg_write_vtcr:
 	mcr p15, 4, r0, c2, c1, 2
 	bx lr
 
+.global sysreg_read_hdcr
+sysreg_read_hdcr:
+	mrc p15, 4, r0, c1, c1, 1
+	bx lr
+
+.global sysreg_write_hdcr
+sysreg_write_hdcr:
+	mcr p15, 4, r0, c1, c1, 1
+	bx lr
