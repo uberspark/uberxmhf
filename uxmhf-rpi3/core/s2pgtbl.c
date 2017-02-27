@@ -12,7 +12,7 @@
 
 /* setup CPU to support stage-2 table translation */
 void s2pgtbl_initialize(void){
-	u32 vtcr, hdcr;
+	u32 vtcr, hdcr, hcptr;
 
 	vtcr = sysreg_read_vtcr();
 	bcm2837_miniuart_puts("VTCR before= ");
@@ -43,5 +43,18 @@ void s2pgtbl_initialize(void){
 	hdcr = sysreg_read_hdcr();
 	bcm2837_miniuart_puts("HDCR after= ");
 	debug_hexdumpu32(hdcr);
+
+	hcptr = sysreg_read_hcptr();
+	bcm2837_miniuart_puts("HCPTR before= ");
+	debug_hexdumpu32(hcptr);
+
+	hcptr = 0;
+	hcptr |= HCPTR_RES1_MASK;
+	sysreg_write_hcptr(hcptr);
+
+	hcptr = sysreg_read_hcptr();
+	bcm2837_miniuart_puts("HCPTR after= ");
+	debug_hexdumpu32(hcptr);
+
 
 }
