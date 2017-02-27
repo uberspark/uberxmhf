@@ -116,3 +116,14 @@ sysreg_read_hdcr:
 sysreg_write_hdcr:
 	mcr p15, 4, r0, c1, c1, 1
 	bx lr
+
+.global sysreg_read_hcptr
+sysreg_read_hcptr:
+	mrc p15, 4, r0, c1, c1, 2
+	bx lr
+
+.global sysreg_write_hcptr
+sysreg_write_hcptr:
+	mcr p15, 4, r0, c1, c1, 2
+	bx lr
+
