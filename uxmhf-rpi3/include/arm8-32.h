@@ -41,6 +41,29 @@
 #define	VTCR_T0SZ_MASK		0x0000000F
 #define	VTCR_T0SZ_SHIFT		0
 
+//
+// HDCR (hyp debug control register) bit definitions
+// 4.5.38 Cortex-A53 TRM
+//
+#define HDCR_TDRA_MASK		0x00000800
+#define HDCR_TDRA_SHIFT		11
+#define HDCR_TDOSA_MASK		0x00000400
+#define HDCR_TDOSA_SHIFT	10
+#define HDCR_TDA_MASK		0x00000200
+#define HDCR_TDA_SHIFT		9
+#define HDCR_TDE_MASK		0x00000100
+#define HDCR_TDE_SHIFT		8
+#define HDCR_HPME_MASK		0x00000080
+#define HDCR_HPME_SHIFT		7
+#define HDCR_TPM_MASK		0x00000060
+#define HDCR_TPM_SHIFT		6
+#define HDCR_TPMCR_MASK		0x00000020
+#define HDCR_TPMCR_SHIFT	5
+#define HDCR_HPMN_MASK		0x0000001f
+#define HDCR_HPMN_SHIFT		0
+
+
+
 
 
 #ifndef __ASSEMBLY__
