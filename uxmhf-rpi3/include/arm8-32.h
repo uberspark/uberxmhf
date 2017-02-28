@@ -131,22 +131,28 @@
 #define LDESC_S2_MC_OUTER_WRITE_BACK_CACHEABLE_INNER_WRITE_BACK_CACHEABLE 			0xf
 
 
+//
+// stage-2 long descriptor translation table format descriptor macros
+// G4.5.2 ARMv8
+//
+#define ldesc_make_s2_l1e_invalid()	0x0ULL
+
+#define ldesc_make_s2_l1e_table(addr)	\
+		((addr & 0x000000FFFFFFF000ULL) | 0x3ULL)
+
+#define ldesc_make_s2_l2e_invalid()	0x0ULL
+
+#define ldesc_make_s2_l2e_table(addr)	\
+		((addr & 0x000000FFFFFFF000ULL) | 0x3ULL)
+
+#define ldesc_make_s2_l3e_invalid()	0x0ULL
+
+#define ldesc_make_s2_l3e_resinvalid()	0x1ULL
+
+#define ldesc_make_s2_l3e_page(addr, attrs)	\
+		((addr & 0x000000FFFFFFF000ULL) | attrs | 0x3ULL)
 
 
-
-/*
-LDESC_MAKE_S2_L1E_xxx
-
-L1E_INVALID
-L1E_TABLE
-
-L2E_INVALID
-L2E_TABLE
-
-L3E_PAGE
-L3E_INVALID
-L3E_RESINVALID
-*/
 
 
 
