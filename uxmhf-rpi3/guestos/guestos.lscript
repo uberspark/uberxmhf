@@ -7,7 +7,7 @@ ENTRY(entry)
 
 MEMORY
 {
-	ram (rwxai) : ORIGIN = 0x30002000, LENGTH = 0x1000
+	ram (rwxai) : ORIGIN = 0x31000000, LENGTH = 0x1000
 	unaccounted (rwxai) : ORIGIN = 0, LENGTH = 0 /* see section .unaccounted at end */
 }
 

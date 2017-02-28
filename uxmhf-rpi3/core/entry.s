@@ -35,7 +35,7 @@ hlt_entry_svc:
 
 .globl chainload_os
 chainload_os:
-	ldr r3, =0x30002000
+	ldr r3, =0x31000000
 	blx r3
 
 
