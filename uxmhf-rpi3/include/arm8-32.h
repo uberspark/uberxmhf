@@ -98,6 +98,17 @@
 
 
 //
+// stage-2 long descriptor memory access permission definitions for
+// BLOCK and PAGE descriptors
+// G4.6.5 ARMv8
+//
+#define LDESC_S2_S2AP_NO_ACCESS		0x0
+#define LDESC_S2_S2AP_READ_ONLY		0x1
+#define LDESC_S2_S2AP_WRITE_ONLY	0x2
+#define LDESC_S2_S2AP_READ_WRITE	0x3
+
+
+//
 // stage-2 long descriptor memory cacheability definitions for
 // BLOCK and PAGE descriptors
 // G4.7.5 ARMv8
@@ -118,6 +129,8 @@
 #define LDESC_S2_MC_OUTER_WRITE_BACK_CACHEABLE_INNER_NON_CACHEABLE 					0xd
 #define LDESC_S2_MC_OUTER_WRITE_BACK_CACHEABLE_INNER_WRITE_THROUGH_CACHEABLE 		0xe
 #define LDESC_S2_MC_OUTER_WRITE_BACK_CACHEABLE_INNER_WRITE_BACK_CACHEABLE 			0xf
+
+
 
 
 
