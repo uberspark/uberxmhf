@@ -55,9 +55,9 @@ void main_svc(void){
 void main(u32 r0, u32 id, struct atag *at){
 	//struct atag *pat;
 	//bcm2837_miniuart_init();
-	u32 cpsr;
+	//u32 cpsr;
 	u32 hvbar, hcr, spsr_hyp;
-	u32 hsctlr;
+	//u32 hsctlr;
 
 	bcm2837_miniuart_puts("uXMHF-rpi3: core: Hello World!\n");
 	bcm2837_miniuart_puts(" r0= ");
@@ -78,27 +78,7 @@ void main(u32 r0, u32 id, struct atag *at){
 	guestos_boot_r1=id;
 	guestos_boot_r2=at;
 
-	cpsr = sysreg_read_cpsr();
-	bcm2837_miniuart_puts(" CPSR[mode]= ");
-	debug_hexdumpu32((cpsr & 0xF));
 
-	if(! ((cpsr & 0xF) == 0xA) ){
-		bcm2837_miniuart_puts("uXMHF-rpi3: core: not in HYP mode. Halting!\n");
-		HALT();
-	}
-
-	hsctlr = sysreg_read_hsctlr();
-	bcm2837_miniuart_puts(" HSCTLR before= ");
-	debug_hexdumpu32(hsctlr);
-
-	hsctlr |= (1 << 12);	//enable instruction caching
-	hsctlr |= (1 << 2);		//enable data caching
-
-	sysreg_write_hsctlr(hsctlr);
-
-	hsctlr = sysreg_read_hsctlr();
-	bcm2837_miniuart_puts(" HSCTLR after= ");
-	debug_hexdumpu32(hsctlr);
 
 
 	hvbar = sysreg_read_hvbar();
