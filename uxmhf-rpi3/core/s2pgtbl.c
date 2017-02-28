@@ -13,11 +13,6 @@
 /* setup CPU to support stage-2 table translation */
 void s2pgtbl_initialize(void){
 	u32 vtcr, hdcr, hcptr, hstr;
-	u64 test=0xDEADBEEFF00DDEADULL;
-
-	bcm2837_miniuart_puts("dumping 64-bit constant= ");
-	debug_hexdumpu32(test >> 32);
-	debug_hexdumpu32((u32)test);
 
 	vtcr = sysreg_read_vtcr();
 	bcm2837_miniuart_puts("VTCR before= ");
