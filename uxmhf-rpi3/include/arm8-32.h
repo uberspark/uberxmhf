@@ -145,6 +145,9 @@
 
 #define ldesc_make_s2_l2e_invalid()	0x0ULL
 
+#define ldesc_make_s2_l2e_block(addr, attrs)	\
+		((addr & 0x000000FFFFE00000ULL) | attrs | 0x1ULL)
+
 #define ldesc_make_s2_l2e_table(addr)	\
 		((addr & 0x000000FFFFFFF000ULL) | 0x3ULL)
 
@@ -162,6 +165,7 @@
 #define L3_LDESC_TABLE_MAXENTRIES	512
 
 #define PAGE_SIZE_4K					4096
+#define PAGE_SIZE_2M					0x00200000UL
 #define PAGE_SIZE_1G					0x40000000UL
 
 //

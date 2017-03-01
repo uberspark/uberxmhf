@@ -91,8 +91,8 @@ void s2pgtbl_populate_tables(void){
 	//populate l1 ldesc table
 	for(i=0; i < L1_LDESC_TABLE_MAXENTRIES; i++){
 		if( i < L1_LDESC_TABLE_ENTRIES)
-			//l1_ldesc_table[i] = ldesc_make_s2_l1e_table((u32)&l2_ldesc_table[i * L2_LDESC_TABLE_MAXENTRIES]);
-			l1_ldesc_table[i] = ldesc_make_s2_l1e_block( (i * PAGE_SIZE_1G), attrs);
+			l1_ldesc_table[i] = ldesc_make_s2_l1e_table((u32)&l2_ldesc_table[i * L2_LDESC_TABLE_MAXENTRIES]);
+			//l1_ldesc_table[i] = ldesc_make_s2_l1e_block( (i * PAGE_SIZE_1G), attrs);
 		else
 			l1_ldesc_table[i] = ldesc_make_s2_l1e_invalid();
 	}
@@ -104,13 +104,14 @@ void s2pgtbl_populate_tables(void){
 		debug_hexdumpu32((u32)l1_ldesc_table[i]);
 	}
 
-/*
+
 	//populate l2 ldesc table
 	for(i=0; i < (L1_LDESC_TABLE_ENTRIES * L2_LDESC_TABLE_MAXENTRIES); i++){
-		l2_ldesc_table[i] = ldesc_make_s2_l2e_table((u32)&l3_ldesc_table[i * L3_LDESC_TABLE_MAXENTRIES]);
+		//l2_ldesc_table[i] = ldesc_make_s2_l2e_table((u32)&l3_ldesc_table[i * L3_LDESC_TABLE_MAXENTRIES]);
+		l2_ldesc_table[i] = ldesc_make_s2_l2e_block( (i * PAGE_SIZE_2M), attrs);
 	}
 
-
+/*
 	//debug
 	bcm2837_miniuart_puts("L3 attrs=\n");
 	debug_hexdumpu32(attrs >> 32);
