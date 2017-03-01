@@ -79,7 +79,7 @@ void guestos_tests2memfault(void){
 	volatile u8 *chptr = (volatile u8 *)&testbuffer;
 
 	//for(i=0; i < PAGE_SIZE_4K; i++)
-		ch = chptr[i];
+		chptr[i]=0;
 
 }
 
