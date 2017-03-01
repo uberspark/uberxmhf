@@ -72,6 +72,20 @@ u32 pmu_getcyclecount_overhead(void){
 }
 
 
+/* stage-2 memory fault test harness */
+void guestos_tests2memfault(void){
+	u32 i;
+	volatile u8 ch;
+	volatile u8 *chptr = (volatile u8 *)&testbuffer;
+
+	for(i=0; i < PAGE_SIZE_4K; i++)
+		ch = chptr[i];
+
+}
+
+
+
+
 void svc_handler(void){
 	//bcm2837_miniuart_puts("uXMHF-rpi3: guestos: SVC_handler [IN]\n");
 	//bcm2837_miniuart_puts("uXMHF-rpi3: guestos: SVC_handler [OUT]\n");
