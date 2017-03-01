@@ -161,6 +161,17 @@
 #define PAGE_SIZE_4K					4096
 
 
+//
+// VTTBR (virtualization translation table base register) bit definitions
+// G6.2.162 ARMv8
+//
+#define VTTBR_VMID_MASK				0x00FF000000000000ULL
+#define VTTBR_VMID_SHIFT			48
+#define VTTBR_BADDR_MASK			0x0000FFFFFFFFFFFFULL
+#define VTTBR_BADDR_SHIFT			0
+
+
+
 #ifndef __ASSEMBLY__
 
 extern u32 mmio_read32 (u32 address);

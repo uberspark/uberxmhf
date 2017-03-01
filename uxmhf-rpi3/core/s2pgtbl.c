@@ -123,5 +123,15 @@ void s2pgtbl_loadpgtblbase(void){
 	debug_hexdumpu32(vttbr >> 32);
 	debug_hexdumpu32((u32)vttbr);
 
+	vttbr = 0;
+	vttbr |= ((u64)&l1_ldesc_table & VTTBR_BADDR_MASK);
+	vttbr |= ((0x2 << VTTBR_VMID_SHIFT) & VTTBR_VMID_MASK);
+	sysreg_write_vttbr(vttbr);
+
+
+	vttbr = sysreg_read_vttbr();
+	bcm2837_miniuart_puts("VTTBR after=");
+	debug_hexdumpu32(vttbr >> 32);
+	debug_hexdumpu32((u32)vttbr);
 
 }
