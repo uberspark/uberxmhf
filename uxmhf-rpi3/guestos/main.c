@@ -74,11 +74,11 @@ u32 pmu_getcyclecount_overhead(void){
 
 /* stage-2 memory fault test harness */
 void guestos_tests2memfault(void){
-	u32 i;
+	u32 i=0;
 	volatile u8 ch;
 	volatile u8 *chptr = (volatile u8 *)&testbuffer;
 
-	for(i=0; i < PAGE_SIZE_4K; i++)
+	//for(i=0; i < PAGE_SIZE_4K; i++)
 		ch = chptr[i];
 
 }
@@ -123,18 +123,19 @@ void usr_main(void){
 	//get performance metrics for memfault
 	bcm2837_miniuart_puts("uxmhf-rpi3: guestos: proceeding to test mem fault...\n");
 
-	for(i=0; i < MAXPERFITER; i++){
-		opcycles_start=pmu_getcyclecount();
+/*	for(i=0; i < MAXPERFITER; i++){
+		opcycles_start=pmu_getcyclecount();*/
 		guestos_tests2memfault();
-		opcycles_end=pmu_getcyclecount();
+/*		opcycles_end=pmu_getcyclecount();
 		totalopcycles += (opcycles_end - opcycles_start);
 	}
-
+*/
 	bcm2837_miniuart_puts("uxmhf-rpi3: guestos: successful return after mem fault test.\n");
 
+/*
 	bcm2837_miniuart_puts(" op cycles=0x");
 	debug_hexdumpu32( (totalopcycles/MAXPERFITER) - pmu_getcyclecount_overhead());
-
+*/
 
 
 
