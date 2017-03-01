@@ -74,7 +74,7 @@ void s2pgtbl_initialize(void){
 // align at 2**5 which is 32 byte
 // c.f. G6.2.162 ARMv8
 //
-__attribute__((section(".data"))) __attribute__((align(32))) u64 l1_ldesc_table[L1_LDESC_TABLE_MAXENTRIES];
+__attribute__((section(".paligndata"))) __attribute__((align(PAGE_SIZE_4K))) u64 l1_ldesc_table[L1_LDESC_TABLE_MAXENTRIES];
 
 __attribute__((section(".paligndata"))) __attribute__((align(PAGE_SIZE_4K))) u64 l2_ldesc_table[L1_LDESC_TABLE_ENTRIES * L2_LDESC_TABLE_MAXENTRIES];
 __attribute__((section(".paligndata"))) __attribute__((align(PAGE_SIZE_4K))) u64 l3_ldesc_table[L1_LDESC_TABLE_ENTRIES * L2_LDESC_TABLE_MAXENTRIES * L3_LDESC_TABLE_MAXENTRIES];
