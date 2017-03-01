@@ -68,9 +68,16 @@ void s2pgtbl_initialize(void){
 
 }
 
-__attribute__((section(".data"))) u64 l1_ldesc_table[L1_LDESC_TABLE_MAXENTRIES];
-__attribute__((section(".data"))) u64 l2_ldesc_table[L1_LDESC_TABLE_ENTRIES * L2_LDESC_TABLE_MAXENTRIES];
-__attribute__((section(".data"))) u64 l3_ldesc_table[L1_LDESC_TABLE_ENTRIES * L2_LDESC_TABLE_MAXENTRIES * L3_LDESC_TABLE_MAXENTRIES];
+//
+// we need the l1 ldesc table to be aligned to 5-VTCR.T0SZ since we use a 3-level
+// page table. Since we set VTCR.T0SZ=0 (32-bit physical addressing) we need to
+// align at 2**5 which is 32 byte
+// c.f. G6.2.162 ARMv8
+//
+__attribute__((section(".data"))) __attribute__((align(32))) u64 l1_ldesc_table[L1_LDESC_TABLE_MAXENTRIES];
+
+__attribute__((section(".data"))) __attribute__((align(PAGE_SIZE_4K))) u64 l2_ldesc_table[L1_LDESC_TABLE_ENTRIES * L2_LDESC_TABLE_MAXENTRIES];
+__attribute__((section(".data"))) __attribute__((align(PAGE_SIZE_4K))) u64 l3_ldesc_table[L1_LDESC_TABLE_ENTRIES * L2_LDESC_TABLE_MAXENTRIES * L3_LDESC_TABLE_MAXENTRIES];
 
 void s2pgtbl_populate_tables(void){
 	u32 i;
@@ -85,11 +92,11 @@ void s2pgtbl_populate_tables(void){
 	}
 
 	//debug
-	//bcm2837_miniuart_puts("L1 LDESC table dump follows:\n");
-	//for(i=0; i < L1_LDESC_TABLE_ENTRIES; i++){
-	//	debug_hexdumpu32(l1_ldesc_table[i] >> 32);
-	//	debug_hexdumpu32((u32)l1_ldesc_table[i]);
-	//}
+	bcm2837_miniuart_puts("L1 LDESC table dump follows:\n");
+	for(i=0; i < L1_LDESC_TABLE_ENTRIES; i++){
+		debug_hexdumpu32(l1_ldesc_table[i] >> 32);
+		debug_hexdumpu32((u32)l1_ldesc_table[i]);
+	}
 
 	//populate l2 ldesc table
 	for(i=0; i < (L1_LDESC_TABLE_ENTRIES * L2_LDESC_TABLE_MAXENTRIES); i++){
