@@ -120,6 +120,24 @@ void usr_main(void){
 	debug_hexdumpu32( (totalopcycles/MAXPERFITER) - pmu_getcyclecount_overhead());
 
 
+	//get performance metrics for memfault
+	bcm2837_miniuart_puts("uxmhf-rpi3: guestos: proceeding to test mem fault...\n");
+
+	for(i=0; i < MAXPERFITER; i++){
+		opcycles_start=pmu_getcyclecount();
+		guestos_tests2memfault();
+		opcycles_end=pmu_getcyclecount();
+		totalopcycles += (opcycles_end - opcycles_start);
+	}
+
+	bcm2837_miniuart_puts("uxmhf-rpi3: guestos: successful return after mem fault test.\n");
+
+	bcm2837_miniuart_puts(" op cycles=0x");
+	debug_hexdumpu32( (totalopcycles/MAXPERFITER) - pmu_getcyclecount_overhead());
+
+
+
+
 	bcm2837_miniuart_puts("uXMHF-rpi3: guestos: Halting!\n");
 	HALT();
 }
