@@ -125,7 +125,7 @@ void s2pgtbl_loadpgtblbase(void){
 
 	vttbr = 0;
 	vttbr |= ((u64)&l1_ldesc_table & VTTBR_BADDR_MASK);
-	vttbr |= ((0x2 << VTTBR_VMID_SHIFT) & VTTBR_VMID_MASK);
+	vttbr |= (((u64)0x2 << VTTBR_VMID_SHIFT) & VTTBR_VMID_MASK);
 	sysreg_write_vttbr(vttbr);
 
 
