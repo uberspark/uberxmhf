@@ -204,6 +204,10 @@ extern void sysreg_write_hcptr(u32 value);
 extern u32 sysreg_read_hstr(void);
 extern void sysreg_write_hstr(u32 value);
 
+extern u64 sysreg_read_vttbr(void);
+extern void sysreg_write_vttbr(u64 value);
+
+
 #endif // __ASSEMBLY__
 
 #endif //__ARM8_32_H__

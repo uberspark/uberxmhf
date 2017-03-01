@@ -136,3 +136,17 @@ sysreg_read_hstr:
 sysreg_write_hstr:
 	mcr p15, 4, r0, c1, c1, 3
 	bx lr
+
+//returns a 64-bit value:
+//r0=lower 32-bits; r1=upper 32-bits (c.f. AAPCS)
+.global sysreg_read_vttbr
+sysreg_read_vttbr:
+	mrrc p15, 6, r0, r1, c2
+	bx lr
+
+//inputs: 64-bit value
+//r0=lower 32-bits; r1=upper 32-bits (c.f. AAPCS)
+.global sysreg_write_vttbr
+sysreg_write_vttbr:
+	mcrr p15, 6, r0, r1, c2
+	bx lr
