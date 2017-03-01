@@ -83,10 +83,15 @@ void s2pgtbl_populate_tables(void){
 	u32 i;
 	u64 attrs;
 
+	attrs = (LDESC_S2_MC_OUTER_WRITE_BACK_CACHEABLE_INNER_WRITE_BACK_CACHEABLE << LDESC_S2_MEMATTR_MC_SHIFT) |
+			(LDESC_S2_S2AP_READ_WRITE << LDESC_S2_MEMATTR_S2AP_SHIFT) |
+			(MEM_OUTER_SHAREABLE << LDESC_S2_MEMATTR_SH_SHIFT);
+
 	//populate l1 ldesc table
 	for(i=0; i < L1_LDESC_TABLE_MAXENTRIES; i++){
 		if( i < L1_LDESC_TABLE_ENTRIES)
-			l1_ldesc_table[i] = ldesc_make_s2_l1e_table((u32)&l2_ldesc_table[i * L2_LDESC_TABLE_MAXENTRIES]);
+			//l1_ldesc_table[i] = ldesc_make_s2_l1e_table((u32)&l2_ldesc_table[i * L2_LDESC_TABLE_MAXENTRIES]);
+			l1_ldesc_table[i] = ldesc_make_s2_l1e_block( (i * PAGE_SIZE_1G), attrs);
 		else
 			l1_ldesc_table[i] = ldesc_make_s2_l1e_invalid();
 	}
@@ -98,14 +103,12 @@ void s2pgtbl_populate_tables(void){
 		debug_hexdumpu32((u32)l1_ldesc_table[i]);
 	}
 
+/*
 	//populate l2 ldesc table
 	for(i=0; i < (L1_LDESC_TABLE_ENTRIES * L2_LDESC_TABLE_MAXENTRIES); i++){
 		l2_ldesc_table[i] = ldesc_make_s2_l2e_table((u32)&l3_ldesc_table[i * L3_LDESC_TABLE_MAXENTRIES]);
 	}
 
-	attrs = (LDESC_S2_MC_OUTER_WRITE_BACK_CACHEABLE_INNER_WRITE_BACK_CACHEABLE << LDESC_S2_MEMATTR_MC_SHIFT) |
-			(LDESC_S2_S2AP_READ_WRITE << LDESC_S2_MEMATTR_S2AP_SHIFT) |
-			(MEM_OUTER_SHAREABLE << LDESC_S2_MEMATTR_SH_SHIFT);
 
 	//debug
 	bcm2837_miniuart_puts("L3 attrs=\n");
@@ -117,7 +120,7 @@ void s2pgtbl_populate_tables(void){
 	for(i=0; i < (L1_LDESC_TABLE_ENTRIES * L2_LDESC_TABLE_MAXENTRIES * L3_LDESC_TABLE_MAXENTRIES); i++){
 		l3_ldesc_table[i] = ldesc_make_s2_l3e_page((i * PAGE_SIZE_4K), attrs);
 	}
-
+*/
 
 }
 
