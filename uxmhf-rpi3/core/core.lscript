@@ -23,6 +23,8 @@ SECTIONS
     	*(.rodata) 
     	*(.data)
     	*(.bss) 
+		. = ALIGN(0x1000);
+    	*(.paligndata) 
 	} > ram = 0x0000
 
     
