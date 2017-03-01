@@ -24,8 +24,10 @@ void hyphvc_handler(void){
 }
 
 void hypsvc_handler(void){
-	//bcm2837_miniuart_puts("uXMHF-rpi3: core: hypSVC_handler [IN]\n");
+	bcm2837_miniuart_puts("uXMHF-rpi3: core: hypSVC_handler [IN]\n");
 	//bcm2837_miniuart_puts("uXMHF-rpi3: core: hypSVC_handler [OUT]\n");
+	bcm2837_miniuart_puts("uXMHF-rpi3: core: Halting\n");
+	HALT();
 }
 
 
