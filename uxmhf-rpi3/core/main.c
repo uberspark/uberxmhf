@@ -24,8 +24,14 @@ void hyphvc_handler(void){
 }
 
 void hypsvc_handler(void){
+	u32 hsr;
 	bcm2837_miniuart_puts("uXMHF-rpi3: core: hypSVC_handler [IN]\n");
 	//bcm2837_miniuart_puts("uXMHF-rpi3: core: hypSVC_handler [OUT]\n");
+
+	hsr = sysreg_read_hsr();
+	bcm2837_miniuart_puts(" HSR= ");
+	debug_hexdumpu32(hsr);
+
 	bcm2837_miniuart_puts("uXMHF-rpi3: core: Halting\n");
 	HALT();
 }
