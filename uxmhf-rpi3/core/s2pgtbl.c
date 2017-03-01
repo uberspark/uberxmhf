@@ -20,8 +20,8 @@ void s2pgtbl_initialize(void){
 
 	vtcr = 0;
 	vtcr |= VTCR_RES1_MASK;	//reserved 1 bits
-	vtcr |= ((0 << VTCR_T0SZ_SHIFT) & VTCR_T0SZ_MASK);	//T0SZ=0; 32 bits physical address
-	vtcr |= ((0 << VTCR_S_SHIFT) & VTCR_S_MASK);		//S=0
+	vtcr |= ((0x8 << VTCR_T0SZ_SHIFT) & VTCR_T0SZ_MASK);	//T0SZ=-8; 40 bits physical address
+	vtcr |= ((1 << VTCR_S_SHIFT) & VTCR_S_MASK);		//S=1
 	vtcr |= ((1 << VTCR_SL0_SHIFT) & VTCR_SL0_MASK);	//SL0=1; 3-level page table
 	vtcr |= ((MEM_WRITEBACK_READALLOCATE_WRITEALLOCATE << VTCR_IRGN0_SHIFT) & VTCR_IRGN0_MASK);	//L1 cache attribute
 	vtcr |= ((MEM_WRITEBACK_READALLOCATE_WRITEALLOCATE << VTCR_ORGN0_SHIFT) & VTCR_ORGN0_MASK);	//L2 cache attribute
