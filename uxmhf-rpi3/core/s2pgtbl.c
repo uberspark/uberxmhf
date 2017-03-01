@@ -68,7 +68,9 @@ void s2pgtbl_initialize(void){
 
 }
 
-
+__attribute__((section(".data"))) u64 l1_ldesc_table[L1_LDESC_TABLE_MAXENTRIES];
+__attribute__((section(".data"))) u64 l2_ldesc_table[L1_LDESC_TABLE_ENTRIES * L2_LDESC_TABLE_MAXENTRIES];
+__attribute__((section(".data"))) u64 l3_ldesc_table[L1_LDESC_TABLE_ENTRIES * L2_LDESC_TABLE_MAXENTRIES * L3_LDESC_TABLE_MAXENTRIES];
 
 void s2pgtbl_populate_tables(void){
 
