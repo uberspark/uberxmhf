@@ -193,6 +193,15 @@
 #define HSR_ISS_MASK		0x1FFFFFFFUL
 #define HSR_ISS_SHIFT		0
 
+//
+// HSR (hyp syndrome register) EC values
+// G6.2.67 ARMv8
+//
+#define HSR_EC_HVC							0x12
+#define HSR_EC_PREFETCH_ABORT_ELCHANGE		0x20
+#define HSR_EC_PREFETCH_ABORT_NOELCHANGE	0x21
+#define HSR_EC_DATA_ABORT_ELCHANGE			0x24
+#define HSR_EC_DATA_ABORT_NOELCHANGE		0x25
 
 
 
