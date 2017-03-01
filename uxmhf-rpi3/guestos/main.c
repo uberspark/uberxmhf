@@ -11,6 +11,7 @@ extern u32 g_svcvtable[];
 
 extern void cpumodeswitch_svc2usr(u32 address);
 
+__attribute__((section(".testpage")) u8 testbuffer[GUESTOS_TESTPAGE_SIZE];
 
 /* performance monitoring stuff */
 static inline u32 pmu_getcyclecount(void){
