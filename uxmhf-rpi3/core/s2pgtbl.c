@@ -67,3 +67,10 @@ void s2pgtbl_initialize(void){
 	debug_hexdumpu32(hstr);
 
 }
+
+
+
+void s2pgtbl_populate_tables(void){
+
+}
+

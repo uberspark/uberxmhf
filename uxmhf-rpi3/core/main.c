@@ -111,6 +111,13 @@ void main(u32 r0, u32 id, struct atag *at){
 	s2pgtbl_initialize();
 	bcm2837_miniuart_puts("uxmhf-rpi3: core: cpu ready for stage-2 pts...\n");
 
+	/* populate stage-2 page tables */
+	bcm2837_miniuart_puts("uxmhf-rpi3: core: populating stage-2 pts...\n");
+	s2pgtbl_populate_tables();
+	bcm2837_miniuart_puts("uxmhf-rpi3: core: stage-2 pts populated.\n");
+
+
+
 	bcm2837_miniuart_puts("uxmhf-rpi3: core: proceeding to switch to SVC mode...\n");
 	cpumodeswitch_hyp2svc(&entry_svc);
 
