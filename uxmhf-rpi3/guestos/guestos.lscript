@@ -13,7 +13,7 @@ MEMORY
 
 SECTIONS
 {
-	. = 0x30002000;
+	. = 0x30800000;
     
     .text : { 
     	*(.text*) 
