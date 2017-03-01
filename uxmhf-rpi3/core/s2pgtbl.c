@@ -73,6 +73,22 @@ __attribute__((section(".data"))) u64 l2_ldesc_table[L1_LDESC_TABLE_ENTRIES * L2
 __attribute__((section(".data"))) u64 l3_ldesc_table[L1_LDESC_TABLE_ENTRIES * L2_LDESC_TABLE_MAXENTRIES * L3_LDESC_TABLE_MAXENTRIES];
 
 void s2pgtbl_populate_tables(void){
+	u32 i;
+
+	//populate l1 ldesc table
+	for(i=0; i < L1_LDESC_TABLE_MAXENTRIES; i++){
+		if( i < L1_LDESC_TABLE_ENTRIES)
+			l1_ldesc_table[i] = ldesc_make_s2_l1e_table((u32)&l2_ldesc_table[i * L2_LDESC_TABLE_MAXENTRIES]);
+		else
+			l1_ldesc_table[i] = ldesc_make_s2_l1e_invalid();
+	}
+
+	//debug
+	bcm2837_miniuart_puts("L1 LDESC table dump follows:\n");
+	for(i=0; i < L1_LDESC_TABLE_ENTRIES; i++){
+		debug_hexdumpu32(l1_ldesc_table[i] >> 32);
+		debug_hexdumpu32((u32)l1_ldesc_table[i]);
+	}
 
 }
 
