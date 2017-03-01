@@ -114,3 +114,14 @@ void s2pgtbl_populate_tables(void){
 
 }
 
+
+void s2pgtbl_loadpgtblbase(void){
+	u64 vttbr;
+
+	vttbr = sysreg_read_vttbr();
+	bcm2837_miniuart_puts("VTTBR before=");
+	debug_hexdumpu32(vttbr >> 32);
+	debug_hexdumpu32((u32)vttbr);
+
+
+}
