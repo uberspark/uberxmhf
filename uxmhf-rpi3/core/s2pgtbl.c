@@ -142,3 +142,19 @@ void s2pgtbl_loadpgtblbase(void){
 	debug_hexdumpu32((u32)vttbr);
 
 }
+
+void s2pgtbl_activatetranslation(void){
+	u32 hcr;
+
+	hcr = sysreg_read_hcr();
+	bcm2837_miniuart_puts("HCR before=");
+	debug_hexdumpu32(hcr);
+
+	hcr |= HCR_VM_MASK;
+	sysreg_write_hcr(hcr);
+
+	hcr = sysreg_read_hcr();
+	bcm2837_miniuart_puts("HCR after=");
+	debug_hexdumpu32(hcr);
+
+}

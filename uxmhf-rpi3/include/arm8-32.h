@@ -171,6 +171,13 @@
 #define VTTBR_BADDR_SHIFT			0
 
 
+//
+// HCR (hyp configuration register) bit definitions
+// G6.2.58 ARMv8
+//
+#define HCR_VM_MASK					0x00000001UL
+#define HCR_VM_SHIFT				0
+
 
 #ifndef __ASSEMBLY__
 
