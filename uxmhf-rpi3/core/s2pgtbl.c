@@ -84,11 +84,18 @@ void s2pgtbl_populate_tables(void){
 	}
 
 	//debug
-	bcm2837_miniuart_puts("L1 LDESC table dump follows:\n");
-	for(i=0; i < L1_LDESC_TABLE_ENTRIES; i++){
-		debug_hexdumpu32(l1_ldesc_table[i] >> 32);
-		debug_hexdumpu32((u32)l1_ldesc_table[i]);
+	//bcm2837_miniuart_puts("L1 LDESC table dump follows:\n");
+	//for(i=0; i < L1_LDESC_TABLE_ENTRIES; i++){
+	//	debug_hexdumpu32(l1_ldesc_table[i] >> 32);
+	//	debug_hexdumpu32((u32)l1_ldesc_table[i]);
+	//}
+
+	//populate l2 ldesc table
+	for(i=0; i < (L1_LDESC_TABLE_ENTRIES * L2_LDESC_TABLE_MAXENTRIES); i++){
+		l2_ldesc_table[i] = ldesc_make_s2_l2e_table((u32)&l3_ldesc_table[i * L3_LDESC_TABLE_MAXENTRIES]);
 	}
+
+
 
 }
 
