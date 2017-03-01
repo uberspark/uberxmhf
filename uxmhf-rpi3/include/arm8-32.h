@@ -182,6 +182,20 @@
 #define HCR_VM_SHIFT				0
 
 
+//
+// HSR (hyp syndrome register) bit definitions
+// G6.2.67 ARMv8
+//
+#define HSR_EC_MASK			0xFC000000UL
+#define HSR_EC_SHIFT		26
+#define HSR_IL_MASK			0x02000000UL
+#define HSR_IL_SHIFT		25
+#define HSR_ISS_MASK		0x1FFFFFFFUL
+#define HSR_ISS_SHIFT		0
+
+
+
+
 #ifndef __ASSEMBLY__
 
 extern u32 mmio_read32 (u32 address);
