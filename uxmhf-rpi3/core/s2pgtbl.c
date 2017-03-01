@@ -128,6 +128,9 @@ void s2pgtbl_populate_tables(void){
 void s2pgtbl_loadpgtblbase(void){
 	u64 vttbr;
 
+	bcm2837_miniuart_puts("L1 DESC table at=");
+	debug_hexdumpu32((u32)&l1_ldesc_table);
+
 	vttbr = sysreg_read_vttbr();
 	bcm2837_miniuart_puts("VTTBR before=");
 	debug_hexdumpu32(vttbr >> 32);
