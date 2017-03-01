@@ -3,6 +3,7 @@
 #include <bcm2837.h>
 #include <miniuart.h>
 #include <debug.h>
+#include <guestos.h>
 
 #define MAXPERFITER		65536
 
