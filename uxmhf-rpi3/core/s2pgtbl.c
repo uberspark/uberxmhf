@@ -88,6 +88,12 @@ void s2pgtbl_populate_tables(void){
 			(MEM_OUTER_SHAREABLE << LDESC_S2_MEMATTR_SH_SHIFT) |
 			LDESC_S2_MEMATTR_AF_MASK;
 
+	//debug
+	bcm2837_miniuart_puts(" attrs=\n");
+	debug_hexdumpu32(attrs >> 32);
+	debug_hexdumpu32((u32)attrs);
+
+
 	//populate l1 ldesc table
 	for(i=0; i < L1_LDESC_TABLE_MAXENTRIES; i++){
 		if( i < L1_LDESC_TABLE_ENTRIES)
@@ -107,22 +113,16 @@ void s2pgtbl_populate_tables(void){
 
 	//populate l2 ldesc table
 	for(i=0; i < (L1_LDESC_TABLE_ENTRIES * L2_LDESC_TABLE_MAXENTRIES); i++){
-		//l2_ldesc_table[i] = ldesc_make_s2_l2e_table((u32)&l3_ldesc_table[i * L3_LDESC_TABLE_MAXENTRIES]);
-		l2_ldesc_table[i] = ldesc_make_s2_l2e_block( (i * PAGE_SIZE_2M), attrs);
+		l2_ldesc_table[i] = ldesc_make_s2_l2e_table((u32)&l3_ldesc_table[i * L3_LDESC_TABLE_MAXENTRIES]);
+		//l2_ldesc_table[i] = ldesc_make_s2_l2e_block( (i * PAGE_SIZE_2M), attrs);
 	}
-
-/*
-	//debug
-	bcm2837_miniuart_puts("L3 attrs=\n");
-	debug_hexdumpu32(attrs >> 32);
-	debug_hexdumpu32((u32)attrs);
 
 
 	//populate l3 ldesc table
 	for(i=0; i < (L1_LDESC_TABLE_ENTRIES * L2_LDESC_TABLE_MAXENTRIES * L3_LDESC_TABLE_MAXENTRIES); i++){
 		l3_ldesc_table[i] = ldesc_make_s2_l3e_page((i * PAGE_SIZE_4K), attrs);
 	}
-*/
+
 
 }
 
