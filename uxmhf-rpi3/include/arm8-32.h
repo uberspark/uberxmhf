@@ -228,6 +228,8 @@ extern void sysreg_write_hstr(u32 value);
 extern u64 sysreg_read_vttbr(void);
 extern void sysreg_write_vttbr(u64 value);
 
+extern u32 sysreg_read_hsr(void);
+
 
 #endif // __ASSEMBLY__
 

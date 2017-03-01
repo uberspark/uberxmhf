@@ -150,3 +150,9 @@ sysreg_read_vttbr:
 sysreg_write_vttbr:
 	mcrr p15, 6, r0, r1, c2
 	bx lr
+
+
+.global sysreg_read_hsr
+sysreg_read_hsr:
+	mrc p15, 4, r0, c5, c2, 0
+	bx lr
