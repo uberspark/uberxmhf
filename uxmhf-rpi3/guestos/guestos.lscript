@@ -33,6 +33,11 @@ SECTIONS
 		. = ALIGN(0x1000);
 	} > ram = 0x0000
 
+	.testpage : {
+    	*(.testpage)
+		. = ALIGN(0x1000);
+	} > ram = 0x0000
+
 	/DISCARD/ : {
 		*(.ARM.attributes)
 		*(.comment)
