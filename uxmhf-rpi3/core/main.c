@@ -127,6 +127,9 @@ void main(u32 r0, u32 id, struct atag *at){
 	//fix reserved memory map
 	core_fixresmemmap((u32)at);
 
+	bcm2837_miniuart_puts("uXMHF-rpi3: core: WiP. Halting\n");
+	HALT();
+
 
 	//store guest OS boot register values
 	guestos_boot_r0=r0;
