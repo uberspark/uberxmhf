@@ -22,7 +22,8 @@ halt:
 
 .globl call_core
 call_core:
-	ldr r3, =0x30000000
+	//ldr r3, =0x30000000
+	ldr r3, =0x00008000
 	blx r3
 
 

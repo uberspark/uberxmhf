@@ -159,10 +159,10 @@ void main(u32 r0, u32 id, struct atag *at){
 	bcm2837_miniuart_puts("uXMHF-rpi3: core: ATAGS pointer is a FDT blob so no worries\n");
 
 	//fix reserved memory map
-	core_fixresmemmap((u32)at);
+	//core_fixresmemmap((u32)at);
 
-	bcm2837_miniuart_puts("uXMHF-rpi3: core: WiP. Halting\n");
-	HALT();
+	//bcm2837_miniuart_puts("uXMHF-rpi3: core: WiP. Halting\n");
+	//HALT();
 
 
 	//store guest OS boot register values
@@ -170,9 +170,7 @@ void main(u32 r0, u32 id, struct atag *at){
 	guestos_boot_r1=id;
 	guestos_boot_r2=at;
 
-
-
-
+/*
 	hvbar = sysreg_read_hvbar();
 	bcm2837_miniuart_puts(" HVBAR before= ");
 	debug_hexdumpu32(hvbar);
@@ -189,7 +187,6 @@ void main(u32 r0, u32 id, struct atag *at){
 	hypcall();
 	bcm2837_miniuart_puts("uxmhf-rpi3: core: successful return after hypercall test.\n");
 
-
 	hcr = sysreg_read_hcr();
 	bcm2837_miniuart_puts(" HCR before= ");
 	debug_hexdumpu32(hcr);
@@ -198,32 +195,34 @@ void main(u32 r0, u32 id, struct atag *at){
 	bcm2837_miniuart_puts(" SPSR_hyp= ");
 	debug_hexdumpu32(spsr_hyp);
 
-	/* initialize cpu support for second stage page table translations */
+	// initialize cpu support for second stage page table translations
 	bcm2837_miniuart_puts("uxmhf-rpi3: core: initializing cpu support for stage-2 pts...\n");
 	s2pgtbl_initialize();
 	bcm2837_miniuart_puts("uxmhf-rpi3: core: cpu ready for stage-2 pts...\n");
 
-	/* populate stage-2 page tables */
+	// populate stage-2 page tables
 	bcm2837_miniuart_puts("uxmhf-rpi3: core: populating stage-2 pts...\n");
 	s2pgtbl_populate_tables();
 	bcm2837_miniuart_puts("uxmhf-rpi3: core: stage-2 pts populated.\n");
 
-	/* load page table base */
+	// load page table base
 	s2pgtbl_loadpgtblbase();
 
-	/* activate translation */
+	// activate translation
 	s2pgtbl_activatetranslation();
 
 	bcm2837_miniuart_puts("uxmhf-rpi3: core: proceeding to switch to SVC mode...\n");
 	cpumodeswitch_hyp2svc(&entry_svc);
+*/
 
-	/*
+
+
 
 	bcm2837_miniuart_puts("uXMHF-rpi3: core: Chainloading OS kernel...\n");
 
 	bcm2837_miniuart_flush();
 	chainload_os(guestos_boot_r0, guestos_boot_r1, guestos_boot_r2);
-	*/
+
 
 	bcm2837_miniuart_puts("uxmhf-rpi3: core: We were not supposed to be here.Halting!\n");
 	HALT();
