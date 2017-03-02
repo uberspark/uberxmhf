@@ -257,6 +257,9 @@ extern void sysreg_write_vttbr(u64 value);
 
 extern u32 sysreg_read_hsr(void);
 
+extern u32 sysreg_read_elrhyp(void);
+extern void sysreg_write_elrhyp(u32 value);
+
 
 #endif // __ASSEMBLY__
 

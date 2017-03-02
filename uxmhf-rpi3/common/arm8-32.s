@@ -156,3 +156,15 @@ sysreg_write_vttbr:
 sysreg_read_hsr:
 	mrc p15, 4, r0, c5, c2, 0
 	bx lr
+
+
+.global sysreg_read_elrhyp
+sysreg_read_elrhyp:
+	mrs r0, ELR_hyp
+	bx lr
+
+
+.global sysreg_write_elrhyp
+sysreg_write_elrhyp:
+	msr ELR_hyp, r0
+	bx lr
