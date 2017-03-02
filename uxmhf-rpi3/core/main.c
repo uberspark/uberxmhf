@@ -38,6 +38,13 @@ void hypsvc_handler(void){
 		case HSR_EC_HVC:
 			break;
 
+		case HSR_EC_DATA_ABORT_ELCHANGE:
+			bcm2837_miniuart_puts("uXMHF-rpi3: core: s2pgtbl DATA access fault\n");
+			bcm2837_miniuart_puts(" HSR= ");
+			debug_hexdumpu32(hsr);
+			bcm2837_miniuart_puts("uXMHF-rpi3: core: Halting\n");
+			HALT();
+
 		default:
 			bcm2837_miniuart_puts("uXMHF-rpi3: core: UNHANDLED INTERCEPT!\n");
 			bcm2837_miniuart_puts(" HSR= ");
