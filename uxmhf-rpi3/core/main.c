@@ -3,6 +3,7 @@
 #include <bcm2837.h>
 #include <miniuart.h>
 #include <atags.h>
+#include <fdt.h>
 #include <debug.h>
 
 
@@ -108,10 +109,11 @@ void main(u32 r0, u32 id, struct atag *at){
 	bcm2837_miniuart_puts(" ATAGS= ");
 	debug_hexdumpu32(at);
 
-	if(at->size == 0xedfe0dd0)
+	if(at->size == FDT_MAGIC)
 		bcm2837_miniuart_puts("uXMHF-rpi3: core: ATAGS pointer is a FDT blob so no worries\n");
 	else{
 		bcm2837_miniuart_puts("uXMHF-rpi3: core: Error: require ATAGS to be FDT blob. Halting!\n");
+		HALT();
 	}
 
 	//store guest OS boot register values
