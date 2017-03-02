@@ -96,7 +96,41 @@ void main_svc(void){
 
 
 void core_fixresmemmap(u32 fdt_address){
+	struct fdt_header *fdth = (struct fdt_header *)fdt_address;
 
+	bcm2837_miniuart_puts("uxmhf-rpi3: core: core_fixresmemmap [IN]\n");
+
+	bcm2837_miniuart_puts(" fdt_address=0x");
+	debug_hexdumpu32(fdt_address);
+
+	bcm2837_miniuart_puts(" totalsize=0x");
+	debug_hexdumpu32(cpu_be2le_32(fdth->totalsize));
+
+	bcm2837_miniuart_puts(" off_dt_struct=0x");
+	debug_hexdumpu32(cpu_be2le_32(fdth->off_dt_struct));
+
+	bcm2837_miniuart_puts(" size_dt_struct=0x");
+	debug_hexdumpu32(cpu_be2le_32(fdth->size_dt_struct));
+
+	bcm2837_miniuart_puts(" off_dt_strings=0x");
+	debug_hexdumpu32(cpu_be2le_32(fdth->off_dt_strings));
+
+	bcm2837_miniuart_puts(" size_dt_strings=0x");
+	debug_hexdumpu32(cpu_be2le_32(fdth->size_dt_strings));
+
+
+	bcm2837_miniuart_puts(" off_mem_rsvmap=0x");
+	debug_hexdumpu32(cpu_be2le_32(fdth->off_mem_rsvmap));
+
+	bcm2837_miniuart_puts(" version=0x");
+	debug_hexdumpu32(cpu_be2le_32(fdth->version));
+
+	bcm2837_miniuart_puts(" last_comp_version=0x");
+	debug_hexdumpu32(cpu_be2le_32(fdth->last_comp_version));
+
+
+
+	bcm2837_miniuart_puts("uxmhf-rpi3: core: core_fixresmemmap [OUT]\n");
 }
 
 

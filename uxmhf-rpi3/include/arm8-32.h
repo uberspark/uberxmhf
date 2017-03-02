@@ -211,6 +211,13 @@
 
 #ifndef __ASSEMBLY__
 
+#define cpu_be2le_32(be_val) 				\
+		(u32) ( ((be_val >> 24) & 0xff) |		\
+                ((be_val << 8) & 0xff0000) | 	\
+                ((be_val >> 8) & 0xff00) |		\
+                ((be_val << 24) & 0xff000000) ) \
+
+
 extern u32 mmio_read32 (u32 address);
 extern void mmio_write32 (u32 address, u32 value);
 

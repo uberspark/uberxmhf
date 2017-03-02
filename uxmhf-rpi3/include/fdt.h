@@ -24,7 +24,9 @@ struct fdt_header {
 	u32 boot_cpuid_phys;
 	u32 size_dt_strings;
 	u32 size_dt_struct;
-};
+} __attribute__((packed));
+
+
 
 #endif // __ASSEMBLY__
 
