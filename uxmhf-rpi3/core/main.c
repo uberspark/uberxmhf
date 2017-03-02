@@ -40,20 +40,20 @@ void hypsvc_handler(void){
 			break;
 
 		case HSR_EC_DATA_ABORT_ELCHANGE:
-			bcm2837_miniuart_puts("uXMHF-rpi3: core: s2pgtbl DATA access fault\n");
-			bcm2837_miniuart_puts(" HSR= ");
-			debug_hexdumpu32(hsr);
+			//bcm2837_miniuart_puts("uXMHF-rpi3: core: s2pgtbl DATA access fault\n");
+			//bcm2837_miniuart_puts(" HSR= ");
+			//debug_hexdumpu32(hsr);
 
 			elr_hyp = sysreg_read_elrhyp();
-			bcm2837_miniuart_puts(" ELR_hyp= ");
-			debug_hexdumpu32(elr_hyp);
+			//bcm2837_miniuart_puts(" ELR_hyp= ");
+			//debug_hexdumpu32(elr_hyp);
 
 			elr_hyp += sizeof(u32);
 			sysreg_write_elrhyp(elr_hyp);
 
-			elr_hyp = sysreg_read_elrhyp();
-			bcm2837_miniuart_puts(" ELR_hyp [updated]= ");
-			debug_hexdumpu32(elr_hyp);
+			//elr_hyp = sysreg_read_elrhyp();
+			//bcm2837_miniuart_puts(" ELR_hyp [updated]= ");
+			//debug_hexdumpu32(elr_hyp);
 			break;
 
 			//bcm2837_miniuart_puts("uXMHF-rpi3: core: Halting\n");
