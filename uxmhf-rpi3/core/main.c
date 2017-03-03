@@ -170,7 +170,6 @@ void main(u32 r0, u32 id, struct atag *at){
 	guestos_boot_r1=id;
 	guestos_boot_r2=at;
 
-/*
 	hvbar = sysreg_read_hvbar();
 	bcm2837_miniuart_puts(" HVBAR before= ");
 	debug_hexdumpu32(hvbar);
@@ -186,6 +185,8 @@ void main(u32 r0, u32 id, struct atag *at){
 	bcm2837_miniuart_puts("uxmhf-rpi3: core: proceeding to test hypercall (HVC) in HYP mode...\n");
 	hypcall();
 	bcm2837_miniuart_puts("uxmhf-rpi3: core: successful return after hypercall test.\n");
+
+	/*
 
 	hcr = sysreg_read_hcr();
 	bcm2837_miniuart_puts(" HCR before= ");

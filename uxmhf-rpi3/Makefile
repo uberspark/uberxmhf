@@ -35,8 +35,7 @@ all: checkoskrnlimg
 	truncate --size=$(OSKRNLIMG_FINALSIZE) ./oskrnlimg.tmp 
 	cd guestos && make -w all
 	cd bootstrap && make -w all
-	#cat ./bootstrap/bootstrap.bin ./oskrnlimg.tmp ./core/core.bin ./guestos/guestos.bin > uxmhf-rpi3.img
-	cat ./bootstrap/bootstrap.bin ./oskrnlimg.tmp > uxmhf-rpi3.img
+	cat ./bootstrap/bootstrap.bin ./oskrnlimg.tmp ./core/core.bin ./guestos/guestos.bin > uxmhf-rpi3.img
 
 .PHONY: checkoskrnlimg
 checkoskrnlimg:

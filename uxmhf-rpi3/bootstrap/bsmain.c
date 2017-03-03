@@ -39,7 +39,7 @@ void bsmain(u32 r0, u32 id, struct atag *at){
 		HALT();
 	}
 
-/*
+
 	hsctlr = sysreg_read_hsctlr();
 	bcm2837_miniuart_puts(" HSCTLR before= ");
 	debug_hexdumpu32(hsctlr);
@@ -52,7 +52,7 @@ void bsmain(u32 r0, u32 id, struct atag *at){
 	hsctlr = sysreg_read_hsctlr();
 	bcm2837_miniuart_puts(" HSCTLR after= ");
 	debug_hexdumpu32(hsctlr);
-*/
+
 
 	bcm2837_miniuart_puts(" g_oskrnl_startaddr= ");
 	debug_hexdumpu32(g_oskrnl_startaddr);
@@ -74,7 +74,7 @@ void bsmain(u32 r0, u32 id, struct atag *at){
 	bcm2837_miniuart_puts(" ATAGS= ");
 	debug_hexdumpu32(at);
 
-/*
+
 	bcm2837_miniuart_puts("uXMHF-rpi3: bootstrap: relocating core...\n");
 	memcpy(0x30000000, g_core_startaddr, g_core_size);
 	bcm2837_miniuart_puts("uXMHF-rpi3: bootstrap: core relocated\n");
@@ -83,7 +83,7 @@ void bsmain(u32 r0, u32 id, struct atag *at){
 	bcm2837_miniuart_puts("uXMHF-rpi3: bootstrap: relocating guestos...\n");
 	memcpy(0x30800000, g_guestos_startaddr, g_guestos_size);
 	bcm2837_miniuart_puts("uXMHF-rpi3: bootstrap: guestos relocated\n");
-*/
+
 
 	/*if(at->size == 0xedfe0dd0)
 		bcm2837_miniuart_puts("uXMHF-rpi3: ATAGS pointer is a FDT blob so no worries\n");

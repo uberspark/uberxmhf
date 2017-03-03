@@ -10,10 +10,8 @@
 
 .globl bootstrap_entry
 bootstrap_entry:
-//	ldr sp, =0x00007f00
-//	bl bsmain
-	ldr r3, =0x00008000
-	blx r3
+	ldr sp, =0x00007f00
+	bl bsmain
 
 
 halt:
@@ -25,8 +23,7 @@ halt:
 
 .globl call_core
 call_core:
-	//ldr r3, =0x30000000
-	ldr r3, =0x00008000
+	ldr r3, =0x30000000
 	blx r3
 
 
