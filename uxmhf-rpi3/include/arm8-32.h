@@ -226,6 +226,8 @@ static inline u64 cpu_bswap_u64(u64 val){
 
 #define cpu_be2le_u32(be_val_u32)	cpu_bswap_u32(be_val_u32)
 #define cpu_be2le_u64(be_val_u64)	cpu_bswap_u64(be_val_u64)
+#define cpu_le2be_u32(le_val_u32)	cpu_bswap_u32(le_val_u32)
+#define cpu_le2be_u64(le_val_u64)	cpu_bswap_u64(le_val_u64)
 
 
 
