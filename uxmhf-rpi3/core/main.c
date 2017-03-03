@@ -98,6 +98,7 @@ void main_svc(void){
 void core_fixresmemmap(u32 fdt_address){
 	struct fdt_header *fdth = (struct fdt_header *)fdt_address;
 	struct fdt_reserve_entry *fdtrsvmmapentryp;
+	u32 newtotalsize;
 
 	bcm2837_miniuart_puts("uxmhf-rpi3: core: core_fixresmemmap [IN]\n");
 
@@ -129,6 +130,15 @@ void core_fixresmemmap(u32 fdt_address){
 	bcm2837_miniuart_puts(" last_comp_version=0x");
 	debug_hexdumpu32(cpu_be2le_u32(fdth->last_comp_version));
 
+
+	//take totalsize and compute var = size + 8 * 2
+	//put rsv_mem_off to size
+	//set totalsize to var
+	//populate fdtrsvmmapentryp to rsv_mem_off
+	//write the guestos extent as first entry
+	//add 16 bytes
+	//write 0s
+	//dump contents
 
 
 	//debug
