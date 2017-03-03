@@ -159,10 +159,10 @@ void main(u32 r0, u32 id, struct atag *at){
 	bcm2837_miniuart_puts("uXMHF-rpi3: core: ATAGS pointer is a FDT blob so no worries\n");
 
 	//fix reserved memory map
-	//core_fixresmemmap((u32)at);
+	core_fixresmemmap((u32)at);
 
-	//bcm2837_miniuart_puts("uXMHF-rpi3: core: WiP. Halting\n");
-	//HALT();
+	bcm2837_miniuart_puts("uXMHF-rpi3: core: WiP. Halting\n");
+	HALT();
 
 
 	//store guest OS boot register values
