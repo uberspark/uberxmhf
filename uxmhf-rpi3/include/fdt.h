@@ -26,7 +26,10 @@ struct fdt_header {
 	u32 size_dt_struct;
 } __attribute__((packed));
 
-
+struct fdt_reserve_entry {
+	u64 address;
+	u64 size;
+} __attribute__((packed));
 
 #endif // __ASSEMBLY__
 
