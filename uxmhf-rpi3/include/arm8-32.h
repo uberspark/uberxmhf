@@ -211,17 +211,22 @@
 
 #ifndef __ASSEMBLY__
 
-#define cpu_be2le_u32(be_val) 				\
-		(u32) ( ((be_val >> 24) & 0xff) |		\
-                ((be_val << 8) & 0xff0000) | 	\
-                ((be_val >> 8) & 0xff00) |		\
-                ((be_val << 24) & 0xff000000) ) \
 
-static inline cpu_be2le_u64(u64 val){
+static inline u32 cpu_bswap_u32(u32 val){
+    val = ((val << 8) & 0xFF00FF00 ) | ((val >> 8) & 0xFF00FF );
+    return (val << 16) | (val >> 16);
+}
+
+static inline u64 cpu_bswap_u64(u64 val){
     val = ((val << 8) & 0xFF00FF00FF00FF00ULL ) | ((val >> 8) & 0x00FF00FF00FF00FFULL );
     val = ((val << 16) & 0xFFFF0000FFFF0000ULL ) | ((val >> 16) & 0x0000FFFF0000FFFFULL );
     return (val << 32) | (val >> 32);
 }
+
+
+#define cpu_be2le_u32(be_val_u32)	cpu_bswap_u32(be_val_u32)
+#define cpu_be2le_u64(be_val_u64)	cpu_bswap_u64(be_val_u64)
+
 
 
 extern u32 mmio_read32 (u32 address);
