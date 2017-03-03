@@ -217,6 +217,12 @@
                 ((be_val >> 8) & 0xff00) |		\
                 ((be_val << 24) & 0xff000000) ) \
 
+static inline cpu_be2le_64(u64 val){
+    val = ((val << 8) & 0xFF00FF00FF00FF00ULL ) | ((val >> 8) & 0x00FF00FF00FF00FFULL );
+    val = ((val << 16) & 0xFFFF0000FFFF0000ULL ) | ((val >> 16) & 0x0000FFFF0000FFFFULL );
+    return (val << 32) | (val >> 32);
+}
+
 
 extern u32 mmio_read32 (u32 address);
 extern void mmio_write32 (u32 address, u32 value);
