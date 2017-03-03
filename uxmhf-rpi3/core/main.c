@@ -97,6 +97,7 @@ void main_svc(void){
 
 void core_fixresmemmap(u32 fdt_address){
 	struct fdt_header *fdth = (struct fdt_header *)fdt_address;
+	struct fdt_reserve_entry *fdtrsvmmapentryp;
 
 	bcm2837_miniuart_puts("uxmhf-rpi3: core: core_fixresmemmap [IN]\n");
 
@@ -128,6 +129,30 @@ void core_fixresmemmap(u32 fdt_address){
 	bcm2837_miniuart_puts(" last_comp_version=0x");
 	debug_hexdumpu32(cpu_be2le_u32(fdth->last_comp_version));
 
+
+
+	//debug
+	fdtrsvmmapentryp = (struct fdt_reserve_entry *)(fdt_address + cpu_be2le_u32(fdth->off_mem_rsvmap));
+	bcm2837_miniuart_puts("fdtrsvmmapentryp=0x");
+	debug_hexdumpu32((u32)fdtrsvmmapentryp);
+
+	bcm2837_miniuart_puts("uxmhf-rpi3: core: dumping reserved memmap...\n");
+
+	while(1){
+		u64 addr = cpu_be2le_u64(fdtrsvmmapentryp->address);
+		u64 size = cpu_be2le_u64(fdtrsvmmapentryp->size);
+		if( addr == 0ULL &&  size == 0ULL){
+			break;
+		}
+		bcm2837_miniuart_puts(" address:0x");
+		debug_hexdumpu32(addr >> 32);
+		debug_hexdumpu32((u32)addr);
+		bcm2837_miniuart_puts(" size:0x");
+		debug_hexdumpu32(size >> 32);
+		debug_hexdumpu32((u32)size);
+	}
+
+	bcm2837_miniuart_puts("uxmhf-rpi3: core: dumped reserved memmap...\n");
 
 
 	bcm2837_miniuart_puts("uxmhf-rpi3: core: core_fixresmemmap [OUT]\n");
