@@ -10,8 +10,11 @@
 
 .globl bootstrap_entry
 bootstrap_entry:
-	ldr sp, =0x00007f00
-	bl bsmain
+//	ldr sp, =0x00007f00
+//	bl bsmain
+	ldr r3, =0x00008000
+	blx r3
+
 
 halt:
 	b halt
