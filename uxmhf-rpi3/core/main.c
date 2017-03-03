@@ -104,29 +104,29 @@ void core_fixresmemmap(u32 fdt_address){
 	debug_hexdumpu32(fdt_address);
 
 	bcm2837_miniuart_puts(" totalsize=0x");
-	debug_hexdumpu32(cpu_be2le_32(fdth->totalsize));
+	debug_hexdumpu32(cpu_be2le_u32(fdth->totalsize));
 
 	bcm2837_miniuart_puts(" off_dt_struct=0x");
-	debug_hexdumpu32(cpu_be2le_32(fdth->off_dt_struct));
+	debug_hexdumpu32(cpu_be2le_u32(fdth->off_dt_struct));
 
 	bcm2837_miniuart_puts(" size_dt_struct=0x");
-	debug_hexdumpu32(cpu_be2le_32(fdth->size_dt_struct));
+	debug_hexdumpu32(cpu_be2le_u32(fdth->size_dt_struct));
 
 	bcm2837_miniuart_puts(" off_dt_strings=0x");
-	debug_hexdumpu32(cpu_be2le_32(fdth->off_dt_strings));
+	debug_hexdumpu32(cpu_be2le_u32(fdth->off_dt_strings));
 
 	bcm2837_miniuart_puts(" size_dt_strings=0x");
-	debug_hexdumpu32(cpu_be2le_32(fdth->size_dt_strings));
+	debug_hexdumpu32(cpu_be2le_u32(fdth->size_dt_strings));
 
 
 	bcm2837_miniuart_puts(" off_mem_rsvmap=0x");
-	debug_hexdumpu32(cpu_be2le_32(fdth->off_mem_rsvmap));
+	debug_hexdumpu32(cpu_be2le_u32(fdth->off_mem_rsvmap));
 
 	bcm2837_miniuart_puts(" version=0x");
-	debug_hexdumpu32(cpu_be2le_32(fdth->version));
+	debug_hexdumpu32(cpu_be2le_u32(fdth->version));
 
 	bcm2837_miniuart_puts(" last_comp_version=0x");
-	debug_hexdumpu32(cpu_be2le_32(fdth->last_comp_version));
+	debug_hexdumpu32(cpu_be2le_u32(fdth->last_comp_version));
 
 
 
