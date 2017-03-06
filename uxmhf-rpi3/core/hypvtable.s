@@ -36,6 +36,9 @@ g_hypvtable:
 	.balign 32
 	.global	hypvtable_reserved_handler
 hypvtable_reserved_handler:
+	ldr sp, =hypvtable_rsvhandler_stack_top
+	bl hyp_rsvhandler
+
 	hrh_halt:
 	b hrh_halt
 
@@ -154,5 +157,11 @@ hypvtable_hypsvc_handler:
 	hypvtable_hypsvc_stack:	.space	256
 	.global hypvtable_hypsvc_stack_top
 	hypvtable_hypsvc_stack_top:
+
+	.balign 8
+	.global hypvtable_rsvhandler_stack
+	hypvtable_rsvhandler_stack:	.space	256
+	.global hypvtable_rsvhandler_stack_top
+	hypvtable_rsvhandler_stack_top:
 
 

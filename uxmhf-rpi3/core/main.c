@@ -18,6 +18,13 @@ u32 guestos_boot_r1=0;
 u32 guestos_boot_r2=0;
 
 
+void hyp_rsvhandler(void){
+	bcm2837_miniuart_puts("uXMHF-rpi3: core: unhandled exception\n");
+	bcm2837_miniuart_puts("uXMHF-rpi3: core: Halting!\n");
+	HALT();
+}
+
+
 void hyphvc_handler(void){
 	bcm2837_miniuart_puts("uXMHF-rpi3: core: hyphvc_handler [IN]\n");
 	bcm2837_miniuart_puts("uXMHF-rpi3: core: Hello world from hypercall\n");
@@ -132,10 +139,12 @@ void core_fixresmemmap(u32 fdt_address){
 
 
 	//take totalsize and compute var = size + 8 * 2
-	newtotalsize = cpu_be2le_u32(fdth->totalsize) + (2 * sizeof(struct fdt_reserve_entry));
+	newtotalsize = cpu_be2le_u32(fdth->totalsize);
+	newtotalsize += (cpu_be2le_u32(fdth->totalsize) % sizeof(u32));
+	newtotalsize += (2 * sizeof(struct fdt_reserve_entry));
 
 	//put rsv_mem_off to size
-	fdth->off_mem_rsvmap = fdth->totalsize;
+	fdth->off_mem_rsvmap = cpu_le2be_u32(cpu_be2le_u32(fdth->totalsize) + (cpu_be2le_u32(fdth->totalsize) % sizeof(u32)));
 
 	//set totalsize to var
 	fdth->totalsize = cpu_le2be_u32(newtotalsize);
@@ -146,13 +155,17 @@ void core_fixresmemmap(u32 fdt_address){
 	debug_hexdumpu32((u32)fdtrsvmmapentryp);
 
 	//write the guestos extent as first entry
-	fdtrsvmmapentryp[0].address = cpu_le2be_u64(0x30000000);
-	fdtrsvmmapentryp[0].size = cpu_le2be_u64(0x800000);
+	fdtrsvmmapentryp->address = cpu_le2be_u64(0x30000000ULL);
+	//fdtrsvmmapentryp->size = cpu_le2be_u64(0x800000);
 
 	//add 16 bytes
 	//write 0s
-	fdtrsvmmapentryp[1].address = 0ULL;
-	fdtrsvmmapentryp[1].size = 0ULL;
+	fdtrsvmmapentryp++;
+	bcm2837_miniuart_puts("fdtrsvmmapentryp=0x");
+	debug_hexdumpu32((u32)fdtrsvmmapentryp);
+
+	fdtrsvmmapentryp->address = 0ULL;
+	fdtrsvmmapentryp->size = 0ULL;
 
 	//debug
 	bcm2837_miniuart_puts("uxmhf-rpi3: core: dumping reserved memmap...\n");
@@ -169,6 +182,9 @@ void core_fixresmemmap(u32 fdt_address){
 		bcm2837_miniuart_puts(" size:0x");
 		debug_hexdumpu32(size >> 32);
 		debug_hexdumpu32((u32)size);
+		fdtrsvmmapentryp++;
+		bcm2837_miniuart_puts("fdtrsvmmapentryp=0x");
+		debug_hexdumpu32((u32)fdtrsvmmapentryp);
 	}
 
 	bcm2837_miniuart_puts("uxmhf-rpi3: core: dumped reserved memmap...\n");
