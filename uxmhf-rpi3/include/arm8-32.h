@@ -218,11 +218,21 @@ static inline u32 cpu_bswap_u32(u32 val){
 }
 
 static inline u64 cpu_bswap_u64(u64 val){
-    val = ((val << 8) & 0xFF00FF00FF00FF00ULL ) | ((val >> 8) & 0x00FF00FF00FF00FFULL );
+	val = ((val << 8) & 0xFF00FF00FF00FF00ULL ) | ((val >> 8) & 0x00FF00FF00FF00FFULL );
     val = ((val << 16) & 0xFFFF0000FFFF0000ULL ) | ((val >> 16) & 0x0000FFFF0000FFFFULL );
     return (val << 32) | (val >> 32);
 }
 
+
+static inline void cpu_bswap_bytes(void *pv, u32 n){
+    u8 *p = pv;
+    u32 lo, hi;
+    for(lo=0, hi=n-1; hi>lo; lo++, hi--){
+        u8 tmp=p[lo];
+        p[lo] = p[hi];
+        p[hi] = tmp;
+    }
+}
 
 #define cpu_be2le_u32(be_val_u32)	cpu_bswap_u32(be_val_u32)
 #define cpu_be2le_u64(be_val_u64)	cpu_bswap_u64(be_val_u64)

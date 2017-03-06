@@ -157,6 +157,13 @@ void core_fixresmemmap(u32 fdt_address){
 	//write the guestos extent as first entry
 	fdtrsvmmapentryp->address = cpu_le2be_u64(0x30000000ULL);
 	//fdtrsvmmapentryp->size = cpu_le2be_u64(0x800000);
+	//fdtrsvmmapentryp->address = 0x30000000ULL;
+	//fdtrsvmmapentryp->size = 0x800000ULL;
+
+	bcm2837_miniuart_puts("uxmhf-rpi3: core: Halting!\n");
+	HALT();
+
+
 
 	//add 16 bytes
 	//write 0s
@@ -169,6 +176,9 @@ void core_fixresmemmap(u32 fdt_address){
 
 	//debug
 	bcm2837_miniuart_puts("uxmhf-rpi3: core: dumping reserved memmap...\n");
+	fdtrsvmmapentryp = (struct fdt_reserve_entry *)(fdt_address + cpu_be2le_u32(fdth->off_mem_rsvmap));
+	bcm2837_miniuart_puts("fdtrsvmmapentryp=0x");
+	debug_hexdumpu32((u32)fdtrsvmmapentryp);
 
 	while(1){
 		u64 addr = cpu_be2le_u64(fdtrsvmmapentryp->address);
