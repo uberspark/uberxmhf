@@ -163,6 +163,8 @@ void core_fixresmemmap(u32 fdt_address){
 	//write the guestos extent as first entry
 	fdtrsvmmapentryp->address = cpu_le2be_u64(0x0000000030000000ULL);
 	fdtrsvmmapentryp->size = cpu_le2be_u64(0x0000000000800000ULL);
+	//fdtrsvmmapentryp->address = 0ULL;
+	//fdtrsvmmapentryp->size = 0ULL;
 
 	//terminate the list with 0sadd 16 bytes
 	fdtrsvmmapentryp++;
@@ -229,8 +231,8 @@ void main(u32 r0, u32 id, struct atag *at){
 	//fix reserved memory map
 	core_fixresmemmap((u32)at);
 
-	bcm2837_miniuart_puts("uXMHF-rpi3: core: WiP. Halting\n");
-	HALT();
+	//bcm2837_miniuart_puts("uXMHF-rpi3: core: WiP. Halting\n");
+	//HALT();
 
 
 	//store guest OS boot register values
