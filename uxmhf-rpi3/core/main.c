@@ -166,20 +166,13 @@ void core_fixresmemmap(u32 fdt_address){
 	fdtrsvmmapentryp->address = cpu_le2be_u64(0x0000000030000000ULL);
 	fdtrsvmmapentryp->size = cpu_le2be_u64(0x0000000000800000ULL);
 
-	bcm2837_miniuart_puts("uxmhf-rpi3: core: Halting!\n");
-	bcm2837_miniuart_flush();
-	HALT();
-
-
-
-	//add 16 bytes
-	//write 0s
+	//terminate the list with 0sadd 16 bytes
 	fdtrsvmmapentryp++;
 	bcm2837_miniuart_puts("fdtrsvmmapentryp=0x");
 	debug_hexdumpu32((u32)fdtrsvmmapentryp);
 
-	//fdtrsvmmapentryp->address = 0ULL;
-	//fdtrsvmmapentryp->size = 0ULL;
+	fdtrsvmmapentryp->address = 0ULL;
+	fdtrsvmmapentryp->size = 0ULL;
 
 	//debug
 	bcm2837_miniuart_puts("uxmhf-rpi3: core: dumping reserved memmap...\n");
@@ -187,7 +180,7 @@ void core_fixresmemmap(u32 fdt_address){
 	bcm2837_miniuart_puts("fdtrsvmmapentryp=0x");
 	debug_hexdumpu32((u32)fdtrsvmmapentryp);
 
-/*
+
 	while(1){
 		u64 addr = cpu_be2le_u64(fdtrsvmmapentryp->address);
 		u64 size = cpu_be2le_u64(fdtrsvmmapentryp->size);
@@ -204,7 +197,7 @@ void core_fixresmemmap(u32 fdt_address){
 		bcm2837_miniuart_puts("fdtrsvmmapentryp=0x");
 		debug_hexdumpu32((u32)fdtrsvmmapentryp);
 	}
-*/
+
 	bcm2837_miniuart_puts("uxmhf-rpi3: core: dumped reserved memmap...\n");
 
 
