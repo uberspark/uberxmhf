@@ -1,1 +1,1 @@
-root=/dev/nfs nfsroot=10.0.0.1:/home/dv/nfs-root/raspbian-jessie-lite rw ip=dhcp rootwait elevator=deadline console=serial0,115200 console=tty1 loglevel=8 memmap=0x1000$0x30000000 
+root=/dev/nfs nfsroot=10.0.0.1:/home/dv/nfs-root/raspbian-jessie-lite rw ip=dhcp rootwait elevator=deadline console=serial0,115200 console=tty1 loglevel=8 memblock=debug 
