@@ -12,8 +12,13 @@ all: core.bin
 entry.o : entry.s
 	$(TOOLPREFIX)gcc $(CFLAGS) entry.s -o entry.o
 
+
 miniuart.o : ../common/miniuart.c
 	$(TOOLPREFIX)gcc $(CFLAGS) ../common/miniuart.c -o miniuart.o
+
+subr_prf.o : ../common/subr_prf.c
+	$(TOOLPREFIX)gcc $(CFLAGS) ../common/subr_prf.c -o subr_prf.o
+
 
 debug.o : ../common/debug.c
 	$(TOOLPREFIX)gcc $(CFLAGS) ../common/debug.c -o debug.o
@@ -34,8 +39,8 @@ s2pgtbl.o : s2pgtbl.c
 main.o : main.c
 	$(TOOLPREFIX)gcc $(CFLAGS) main.c -o main.o
 
-core.bin: entry.o miniuart.o debug.o atags.o arm8-32.o hypvtable.o s2pgtbl.o main.o
-	$(TOOLPREFIX)ld entry.o miniuart.o debug.o atags.o arm8-32.o hypvtable.o s2pgtbl.o main.o -T core.lscript -o core.elf
+core.bin: entry.o miniuart.o subr_prf.o debug.o atags.o arm8-32.o hypvtable.o s2pgtbl.o main.o
+	$(TOOLPREFIX)ld entry.o miniuart.o subr_prf.o debug.o atags.o arm8-32.o hypvtable.o s2pgtbl.o main.o -T core.lscript -o core.elf
 	#$(TOOLPREFIX)objdump -D core.elf > core.list
 	$(TOOLPREFIX)objcopy core.elf -O binary core.bin
 
