@@ -212,9 +212,9 @@ void main(u32 r0, u32 id, struct atag *at){
 	_XDPRINTF_("uXMHF-rpi3: core: Hello World!\n");
 	_XDPRINTF_(" r0=0x%08x, id=0x%08x, ATAGS=0x%08x\n", r0, id, at);
 
-	_XDPRINTF_(" testing, lock before=0x%08x\n", my_lock);
+	_XDPRINTF_(" acquiring lock [current value=0x%0x]...\n", my_lock);
 	spin_lock(&my_lock);
-	_XDPRINTF_(" testing, lock after=0x%08x\n", my_lock);
+	_XDPRINTF_(" lock acquires [current value=0x%08x]\n", my_lock);
 
 
 /*	bcm2837_miniuart_puts(" r0= ");
