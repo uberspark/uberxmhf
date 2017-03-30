@@ -10,3 +10,7 @@
 #include <miniuart.h>
 #include <debug.h>
 
+void mmu_disableallcaches(void){
+
+
+}
