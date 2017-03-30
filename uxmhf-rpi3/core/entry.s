@@ -53,13 +53,13 @@ cpumodeswitch_hyp2svc:
 .section ".stack", "aw"
 	.balign 8
 	.global stack
-	stack:	.space	512
+	stack:	.space	8192
 	.global stack_top
 	stack_top:
 
 	.balign 8
 	.global stacksvc
-	stacksvc:	.space	512
+	stacksvc:	.space	8192
 	.global stacksvc_top
 	stacksvc_top:
 
