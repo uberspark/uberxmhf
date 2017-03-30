@@ -9,6 +9,14 @@
 #include <miniuart.h>
 #include <debug.h>
 
+// gcc requires this for division by 0 on 64-bit values; used for debugging output
+void raise(void){
+	bcm2837_miniuart_puts("uXMHF-rpi3: core: compiler raise invoked -- division by 0!\n");
+	bcm2837_miniuart_puts("uXMHF-rpi3: core: Halting!\n");
+	HALT();
+}
+
+
 void debug_hexdumpu32(u32 value){
     u32 num_bits;
     u32 ch;

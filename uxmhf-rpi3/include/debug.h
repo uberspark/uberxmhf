@@ -13,6 +13,7 @@
 #if defined (__DEBUG_SERIAL__)
 
 
+
 //extern __attribute__(( section(".data") )) u32 libxmhfdebug_lock;
 
 static inline void _XDPRINTF_(const char *fmt, ...){
