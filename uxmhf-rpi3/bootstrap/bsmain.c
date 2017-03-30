@@ -14,13 +14,16 @@ extern u32 g_core_size;
 extern u32 g_guestos_startaddr;
 extern u32 g_guestos_size;
 
-void memcpy(void *dest, void *src, unsigned int n){
+//void memcpy(void *dest, void *src, unsigned int n){
+unsigned char *memcpy(unsigned char *dst, const unsigned char *src, size_t n){
 	u32 i;
 	u8 *bsrc = (u8 *)src;
-	u8 *bdest = (u8 *)dest;
+	u8 *bdest = (u8 *)dst;
 
-   for (i=0; i<n; i++)
+	for (i=0; i<n; i++)
        bdest[i] = bsrc[i];
+
+	return dst;
 }
 
 void bsmain(u32 r0, u32 id, struct atag *at){
