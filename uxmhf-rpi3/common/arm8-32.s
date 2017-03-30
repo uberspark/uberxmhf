@@ -168,3 +168,12 @@ sysreg_read_elrhyp:
 sysreg_write_elrhyp:
 	msr ELR_hyp, r0
 	bx lr
+
+
+//r0 specifies the 32-bit lock variable address
+.global spin_lock
+spin_lock:
+	ldr	r1, [r0]	//load 32-bit value of lock into r1
+	add r1, r1, #5	//add a constant 5
+	str r1, [r0]	//store 32-bit vaule of lock with updated value
+	bx lr
