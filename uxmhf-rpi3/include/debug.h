@@ -25,6 +25,7 @@ static inline void _XDPRINTF_(const char *fmt, ...){
 	retval = vsnprintf(&buffer, 1024, fmt, ap);
 	//spin_lock(&libxmhfdebug_lock);
 	bcm2837_miniuart_puts(&buffer);
+	bcm2837_miniuart_flush();
 	//spin_unlock(&libxmhfdebug_lock);
     va_end(ap);
 }

@@ -288,7 +288,6 @@ void main(u32 r0, u32 id, struct atag *at){
 
 	_XDPRINTF_("uXMHF-rpi3: core: Chainloading OS kernel...\n");
 
-	bcm2837_miniuart_flush();
 	chainload_os(guestos_boot_r0, guestos_boot_r1, guestos_boot_r2);
 
 
