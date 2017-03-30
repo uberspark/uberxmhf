@@ -221,11 +221,13 @@ void main(u32 r0, u32 id, struct atag *at){
 */
 
 	if(!(at->size == FDT_MAGIC)){
-		bcm2837_miniuart_puts("uXMHF-rpi3: core: Error: require ATAGS to be FDT blob. Halting!\n");
+		//bcm2837_miniuart_puts("uXMHF-rpi3: core: Error: require ATAGS to be FDT blob. Halting!\n");
+		_XDPRINTF_("uXMHF-rpi3: core: Error: require ATAGS to be FDT blob. Halting!\n");
 		HALT();
 	}
 
-	bcm2837_miniuart_puts("uXMHF-rpi3: core: ATAGS pointer is a FDT blob so no worries\n");
+	//bcm2837_miniuart_puts("uXMHF-rpi3: core: ATAGS pointer is a FDT blob so no worries\n");
+	_XDPRINTF_("uXMHF-rpi3: core: ATAGS pointer is a FDT blob so no worries\n");
 
 	//fix reserved memory map
 	core_fixresmemmap((u32)at);
@@ -233,27 +235,23 @@ void main(u32 r0, u32 id, struct atag *at){
 	//bcm2837_miniuart_puts("uXMHF-rpi3: core: WiP. Halting\n");
 	//HALT();
 
-
 	//store guest OS boot register values
 	guestos_boot_r0=r0;
 	guestos_boot_r1=id;
 	guestos_boot_r2=at;
 
 	hvbar = sysreg_read_hvbar();
-	bcm2837_miniuart_puts(" HVBAR before= ");
-	debug_hexdumpu32(hvbar);
+	_XDPRINTF_(" HVBAR before=0x%08x\n", hvbar);
+	_XDPRINTF_(" g_hypvtable at=0x%08x\n", (u32)&g_hypvtable);
 
-	bcm2837_miniuart_puts(" g_hypvtable at= ");
-	debug_hexdumpu32((u32)&g_hypvtable);
 	sysreg_write_hvbar((u32)&g_hypvtable);
 
 	hvbar = sysreg_read_hvbar();
-	bcm2837_miniuart_puts(" loaded HVBAR with g_hypvtable; HVBAR after= ");
-	debug_hexdumpu32(hvbar);
+	_XDPRINTF_(" loaded HVBAR with g_hypvtable; HVBAR after=0x%08x\n", hvbar);
 
-	bcm2837_miniuart_puts("uxmhf-rpi3: core: proceeding to test hypercall (HVC) in HYP mode...\n");
+	_XDPRINTF_("uxmhf-rpi3: core: proceeding to test hypercall (HVC) in HYP mode...\n");
 	hypcall();
-	bcm2837_miniuart_puts("uxmhf-rpi3: core: successful return after hypercall test.\n");
+	_XDPRINTF_("uxmhf-rpi3: core: successful return after hypercall test.\n");
 
 	/*
 
@@ -288,13 +286,13 @@ void main(u32 r0, u32 id, struct atag *at){
 
 
 
-	bcm2837_miniuart_puts("uXMHF-rpi3: core: Chainloading OS kernel...\n");
+	_XDPRINTF_("uXMHF-rpi3: core: Chainloading OS kernel...\n");
 
 	bcm2837_miniuart_flush();
 	chainload_os(guestos_boot_r0, guestos_boot_r1, guestos_boot_r2);
 
 
-	bcm2837_miniuart_puts("uxmhf-rpi3: core: We were not supposed to be here.Halting!\n");
+	_XDPRINTF_("uxmhf-rpi3: core: We were not supposed to be here.Halting!\n");
 	HALT();
 
 }
