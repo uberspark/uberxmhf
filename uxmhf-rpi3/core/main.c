@@ -18,6 +18,10 @@ u32 guestos_boot_r1=0;
 u32 guestos_boot_r2=0;
 
 
+void raise(void){
+	HALT();
+}
+
 void hyp_rsvhandler(void){
 	bcm2837_miniuart_puts("uXMHF-rpi3: core: unhandled exception\n");
 	bcm2837_miniuart_puts("uXMHF-rpi3: core: Halting!\n");
