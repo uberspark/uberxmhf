@@ -17,10 +17,11 @@ __check_defined = \
 
 TOOLPREFIX ?= arm-linux-gnueabihf-
 CFLAGS = -I./include -I../include -c -Wall -nostdlib -nostartfiles -ffreestanding -mcpu=cortex-a53
+CCLIB = $(shell $(TOOLPREFIX)gcc --print-lib)
 
 export TOOLPREFIX
 export CFLAGS
-
+export CCLIB
 
 .PHONY: all
 all: checkoskrnlimg 
