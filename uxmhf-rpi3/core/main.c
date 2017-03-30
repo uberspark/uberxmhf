@@ -204,13 +204,18 @@ void core_fixresmemmap(u32 fdt_address){
 }
 
 
-
+volatile u32 my_lock=1;
 
 void main(u32 r0, u32 id, struct atag *at){
 	u32 hvbar, hcr, spsr_hyp;
 
 	_XDPRINTF_("uXMHF-rpi3: core: Hello World!\n");
 	_XDPRINTF_(" r0=0x%08x, id=0x%08x, ATAGS=0x%08x\n", r0, id, at);
+
+	_XDPRINTF_(" testing, lock before=0x%08x\n", my_lock);
+	spin_lock(&my_lock);
+	_XDPRINTF_(" testing, lock after=0x%08x\n", my_lock);
+
 
 /*	bcm2837_miniuart_puts(" r0= ");
 	debug_hexdumpu32(r0);
