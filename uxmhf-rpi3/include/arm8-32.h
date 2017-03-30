@@ -281,7 +281,7 @@ extern u32 sysreg_read_elrhyp(void);
 extern void sysreg_write_elrhyp(u32 value);
 
 extern void sysreg_tlbiallh(void);
-
+extern void sysreg_iciallu(void);
 
 void spin_lock(u32 *lock);
 

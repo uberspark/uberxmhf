@@ -175,6 +175,12 @@ sysreg_tlbiallh:
 	mcr p15,4,r0,c8,c7,0
 	bx lr
 
+.global sysreg_iciallu
+sysreg_iciallu:
+	mcr p15,0,r0,c7,c5,0
+	bx lr
+
+
 //r0 specifies the 32-bit lock variable address
 .global spin_lock
 spin_lock:
