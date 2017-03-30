@@ -170,6 +170,11 @@ sysreg_write_elrhyp:
 	bx lr
 
 
+.global sysreg_tlbiall
+sysreg_tlbiall:
+	mcr p15,0,r0,c8,c7,0
+	bx lr
+
 //r0 specifies the 32-bit lock variable address
 .global spin_lock
 spin_lock:
