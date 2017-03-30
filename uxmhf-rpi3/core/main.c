@@ -217,7 +217,9 @@ void main(u32 r0, u32 id, struct atag *at){
 	u32 hvbar, hcr, spsr_hyp;
 	//u32 hsctlr;
 
-	bcm2837_miniuart_puts("uXMHF-rpi3: core: Hello World!\n");
+	//bcm2837_miniuart_puts("uXMHF-rpi3: core: Hello World!\n");
+	_XDPRINTF_("uXMHF-rpi3: core: Hello World!\n");
+
 	bcm2837_miniuart_puts(" r0= ");
 	debug_hexdumpu32(r0);
 	bcm2837_miniuart_puts(" id= ");
