@@ -68,5 +68,5 @@ call_core:
 	.global g_guestos_size
 	.type g_guestos_size, %object
 	.size g_guestos_size, 4
-	g_guestos_size:	.word	0x1000
+	g_guestos_size:	.word	0x3000
 
