@@ -17,8 +17,10 @@ u32 guestos_boot_r0=0;
 u32 guestos_boot_r1=0;
 u32 guestos_boot_r2=0;
 
-
+// gcc requires this for division by 0 on 64-bit values; used for debugging output
 void raise(void){
+	bcm2837_miniuart_puts("uXMHF-rpi3: core: compiler raise invoked -- division by 0!\n");
+	bcm2837_miniuart_puts("uXMHF-rpi3: core: Halting!\n");
 	HALT();
 }
 
