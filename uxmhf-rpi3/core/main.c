@@ -207,21 +207,18 @@ void core_fixresmemmap(u32 fdt_address){
 
 
 void main(u32 r0, u32 id, struct atag *at){
-	//struct atag *pat;
-	//bcm2837_miniuart_init();
-	//u32 cpsr;
 	u32 hvbar, hcr, spsr_hyp;
-	//u32 hsctlr;
 
-	//bcm2837_miniuart_puts("uXMHF-rpi3: core: Hello World!\n");
 	_XDPRINTF_("uXMHF-rpi3: core: Hello World!\n");
+	_XDPRINTF_(" r0=0x%08x, id=0x%08x, ATAGS=0x%08x\n", r0, id, at);
 
-	bcm2837_miniuart_puts(" r0= ");
+/*	bcm2837_miniuart_puts(" r0= ");
 	debug_hexdumpu32(r0);
 	bcm2837_miniuart_puts(" id= ");
 	debug_hexdumpu32(id);
 	bcm2837_miniuart_puts(" ATAGS= ");
 	debug_hexdumpu32(at);
+*/
 
 	if(!(at->size == FDT_MAGIC)){
 		bcm2837_miniuart_puts("uXMHF-rpi3: core: Error: require ATAGS to be FDT blob. Halting!\n");
