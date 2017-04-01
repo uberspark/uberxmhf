@@ -70,7 +70,7 @@ void hyppgtbl_populate_tables(void){
 	u64 l2_attrs = (LDESC_S1_AP_READWRITE << LDESC_S1_MEMATTR_AP_SHIFT) |
 			(MEM_OUTER_SHAREABLE << LDESC_S1_MEMATTR_SH_SHIFT) |
 			LDESC_S2_MEMATTR_AF_MASK |
-			(0 << LDESC_S1_MEMATTR_ATTRINDX_SHIFT);
+			(1 << LDESC_S1_MEMATTR_ATTRINDX_SHIFT);
 
 	//populate l1 ldesc table
 	for(i=0; i < L1_LDESC_TABLE_MAXENTRIES; i++){
