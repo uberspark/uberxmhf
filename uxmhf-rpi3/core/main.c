@@ -212,6 +212,15 @@ void main(u32 r0, u32 id, struct atag *at){
 	_XDPRINTF_("uXMHF-rpi3: core: Hello World!\n");
 	_XDPRINTF_(" r0=0x%08x, id=0x%08x, ATAGS=0x%08x\n", r0, id, at);
 
+
+	_XDPRINTF_(" proceeding to disable all caches...\n");
+	mmu_disableallcaches();
+	_XDPRINTF_(" caches flushed and disabled\n");
+	_XDPRINTF_(" proceeding to enable all caches...\n");
+	mmu_enableallcaches();
+	_XDPRINTF_(" caches enabled\n");
+
+
 	/*
 	_XDPRINTF_(" lock variable at address=0x%08x\n", &my_lock);
 	_XDPRINTF_(" acquiring lock [current value=0x%08x]...\n", (u32)my_lock);
