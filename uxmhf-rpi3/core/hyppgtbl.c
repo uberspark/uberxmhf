@@ -38,6 +38,15 @@
 //PXN and nG bits are res0 in HYP mode
 
 
+void hyppgtbl_initialize(void){
+	u32 mair0, mair1;
+
+	mair0 = sysreg_read_mair0();
+	mair1 = sysreg_read_mair1();
+
+	_XDPRINTF_("%s: mair0=0x%08x, mair1=0x%08x\n", __func__, mair0, mair1);
+}
+
 __attribute__((section(".paligndata"))) __attribute__((align(PAGE_SIZE_4K))) u64 hyp_l1_ldesc_table[L1_LDESC_TABLE_MAXENTRIES];
 __attribute__((section(".paligndata"))) __attribute__((align(PAGE_SIZE_4K))) u64 hyp_l2_ldesc_table[L1_LDESC_TABLE_ENTRIES * L2_LDESC_TABLE_MAXENTRIES];
 

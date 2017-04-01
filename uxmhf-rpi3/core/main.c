@@ -220,6 +220,7 @@ void main(u32 r0, u32 id, struct atag *at){
 	mmu_enableallcaches();
 	_XDPRINTF_(" caches enabled\n");
 
+	hyppgtbl_initialize();
 
 	_XDPRINTF_("uXMHF-rpi3: core: WiP. Halting\n");
 	HALT();
