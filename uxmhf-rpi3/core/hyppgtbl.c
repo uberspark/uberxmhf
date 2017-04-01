@@ -47,6 +47,5 @@ void hyppgtbl_populate_tables(void){
 
 
 }
-}
 
 
