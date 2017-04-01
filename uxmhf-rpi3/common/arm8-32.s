@@ -181,6 +181,28 @@ sysreg_iciallu:
 	bx lr
 
 
+.global sysreg_read_mair0
+sysreg_read_mair0:
+	mrc p15,0,r0,c10,c2,0
+	bx lr
+
+.global sysreg_write_mair0
+sysreg_write_mair0:
+	mcr p15,0,r0,c10,c2,0
+	bx lr
+
+
+.global sysreg_read_mair1
+sysreg_read_mair1:
+	mrc p15,0,r0,c10,c2,1
+	bx lr
+
+.global sysreg_write_mair1
+sysreg_write_mair1:
+	mcr p15,0,r0,c10,c2,1
+	bx lr
+
+
 //r0 specifies the 32-bit lock variable address
 .global spin_lock
 spin_lock:
