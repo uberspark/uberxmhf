@@ -26,3 +26,16 @@ void mmu_disableallcaches(void){
 	sysreg_write_hsctlr(hsctlr);
 
 }
+
+
+void mmu_enableallcaches(void){
+	u32 hsctlr;
+
+	//enable instruction and data caching
+	hsctlr = sysreg_read_hsctlr();
+	hsctlr |= (1 << 12);	//enable instruction caching
+	hsctlr |= (1 << 2);		//enable data caching
+	sysreg_write_hsctlr(hsctlr);
+
+}
+
