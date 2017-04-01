@@ -138,6 +138,8 @@
 
 
 
+
+
 //
 // stage-1 long descriptor translation table format descriptor macros
 // G4.5.2 ARMv8

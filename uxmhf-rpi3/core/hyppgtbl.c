@@ -30,6 +30,14 @@
 //especially the bit 0 M bit enables the MMU
 //AFE is 1
 
+//G6.2.100
+//MAIR0 and MAIR1 together have 8 memory region attributes
+//indexed by attrindx
+
+//G4.5.3
+//PXN and nG bits are res0 in HYP mode
+
+
 __attribute__((section(".paligndata"))) __attribute__((align(PAGE_SIZE_4K))) u64 hyp_l1_ldesc_table[L1_LDESC_TABLE_MAXENTRIES];
 __attribute__((section(".paligndata"))) __attribute__((align(PAGE_SIZE_4K))) u64 hyp_l2_ldesc_table[L1_LDESC_TABLE_ENTRIES * L2_LDESC_TABLE_MAXENTRIES];
 
