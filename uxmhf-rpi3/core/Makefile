@@ -36,14 +36,18 @@ arm8-32.o : ../common/arm8-32.s
 hypvtable.o : hypvtable.s
 	$(TOOLPREFIX)gcc $(CFLAGS) hypvtable.s -o hypvtable.o
 
+mmu.o : mmu.c
+	$(TOOLPREFIX)gcc $(CFLAGS) mmu.c -o mmu.o
+
+
 s2pgtbl.o : s2pgtbl.c
 	$(TOOLPREFIX)gcc $(CFLAGS) s2pgtbl.c -o s2pgtbl.o
 
 main.o : main.c
 	$(TOOLPREFIX)gcc $(CFLAGS) main.c -o main.o
 
-core.bin: entry.o miniuart.o strlen.o subr_prf.o debug.o atags.o arm8-32.o hypvtable.o s2pgtbl.o main.o
-	$(TOOLPREFIX)ld entry.o miniuart.o strlen.o subr_prf.o debug.o atags.o arm8-32.o hypvtable.o s2pgtbl.o main.o -T core.lscript -o core.elf $(CCLIB) 
+core.bin: entry.o miniuart.o strlen.o subr_prf.o debug.o atags.o arm8-32.o hypvtable.o mmu.o s2pgtbl.o main.o
+	$(TOOLPREFIX)ld entry.o miniuart.o strlen.o subr_prf.o debug.o atags.o arm8-32.o hypvtable.o mmu.o s2pgtbl.o main.o -T core.lscript -o core.elf $(CCLIB) 
 	#$(TOOLPREFIX)objdump -D core.elf > core.list
 	$(TOOLPREFIX)objcopy core.elf -O binary core.bin
 	
