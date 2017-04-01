@@ -44,7 +44,21 @@ void hyppgtbl_initialize(void){
 	mair0 = sysreg_read_mair0();
 	mair1 = sysreg_read_mair1();
 
-	_XDPRINTF_("%s: mair0=0x%08x, mair1=0x%08x\n", __func__, mair0, mair1);
+	_XDPRINTF_("%s: before: mair0=0x%08x, mair1=0x%08x\n", __func__, mair0, mair1);
+
+	mair0 = mair1 = (LDESC_S1_MAIR_HI_OUTER_NON_CACHEABLE | LDESC_S1_MAIR_LO_INNER_NON_CACHEABLE) |
+	((LDESC_S1_MAIR_HI_READALLOCATE_WRITEALLOCATE_OUTER_WRITE_BACK_NONTRANSIENT | LDESC_S1_MAIR_LO_READALLOCATE_WRITEALLOCATE_INNER_WRITE_BACK_NONTRANSIENT) << 8) |
+	((LDESC_S1_MAIR_HI_OUTER_NON_CACHEABLE | LDESC_S1_MAIR_LO_INNER_NON_CACHEABLE) << 16) |
+	((LDESC_S1_MAIR_HI_OUTER_NON_CACHEABLE | LDESC_S1_MAIR_LO_INNER_NON_CACHEABLE) << 24);
+
+	sysreg_write_mair0(mair0);
+	sysreg_write_mair1(mair1);
+
+	mair0 = sysreg_read_mair0();
+	mair1 = sysreg_read_mair1();
+
+	_XDPRINTF_("%s: after: mair0=0x%08x, mair1=0x%08x\n", __func__, mair0, mair1);
+
 }
 
 __attribute__((section(".paligndata"))) __attribute__((align(PAGE_SIZE_4K))) u64 hyp_l1_ldesc_table[L1_LDESC_TABLE_MAXENTRIES];
