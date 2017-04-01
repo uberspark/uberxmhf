@@ -78,6 +78,24 @@
 #define HCPTR_TCP10_SHIFT	10
 
 
+
+
+//
+// stage-1 long descriptor translation table format descriptor macros
+// G4.5.2 ARMv8
+//
+#define ldesc_make_s1_l1e_invalid()	0x0ULL
+
+#define ldesc_make_s1_l1e_table(addr)	\
+		((addr & 0x000000FFFFFFF000ULL) | 0x3ULL)
+
+#define ldesc_make_s1_l1e_block(addr, attrs)	\
+		((addr & 0x000000FFC0000000ULL) | attrs | 0x1ULL)
+
+
+
+
+
 //
 // stage-2 long descriptor memory attribute bit definitions for
 // BLOCK and PAGE descriptors
