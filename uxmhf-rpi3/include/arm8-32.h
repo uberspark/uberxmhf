@@ -92,6 +92,18 @@
 #define LDESC_S1_TABLEATTR_PXNTABLE_MASK	0x0800000000000000ULL
 #define LDESC_S1_TABLEATTR_PXNTABLE_SHIFT	59
 
+//
+// stage-1 long descriptor table, table attribute APTABLE bit definitions for
+// TABLE descriptors
+// G4.6.1 ARMv8
+//
+#define LDESC_S1_TABLEATTR_APTABLE_NONE								0x0
+#define LDESC_S1_TABLEATTR_APTABLE_NOACCESSPL0						0x1
+#define LDESC_S1_TABLEATTR_APTABLE_NOWRITEACCESSEXCP				0x2
+#define LDESC_S1_TABLEATTR_APTABLE_NOACCESSPL0_NOWRITEACCESSEXCP	0x3
+
+
+
 
 //
 // stage-1 long descriptor translation table format descriptor macros
