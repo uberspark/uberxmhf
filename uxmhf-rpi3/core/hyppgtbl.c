@@ -48,7 +48,7 @@ void hyppgtbl_populate_tables(void){
 	//populate l1 ldesc table
 	for(i=0; i < L1_LDESC_TABLE_MAXENTRIES; i++){
 		if( i < L1_LDESC_TABLE_ENTRIES)
-			hyp_l1_ldesc_table[i] = ldesc_make_s1_l1e_table((u32)&hyp_l2_ldesc_table[i * L2_LDESC_TABLE_MAXENTRIES]);
+			hyp_l1_ldesc_table[i] = ldesc_make_s1_l1e_table((u32)&hyp_l2_ldesc_table[i * L2_LDESC_TABLE_MAXENTRIES], attrs);
 		else
 			hyp_l1_ldesc_table[i] = ldesc_make_s1_l1e_invalid();
 	}
