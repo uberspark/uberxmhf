@@ -40,14 +40,14 @@ void hyppgtbl_populate_tables(void){
 	//populate l1 ldesc table
 	for(i=0; i < L1_LDESC_TABLE_MAXENTRIES; i++){
 		if( i < L1_LDESC_TABLE_ENTRIES)
-			l1_ldesc_table[i] = ldesc_make_s2_l1e_table((u32)&l2_ldesc_table[i * L2_LDESC_TABLE_MAXENTRIES]);
+			hyp_l1_ldesc_table[i] = ldesc_make_s1_l1e_table((u32)&hyp_l2_ldesc_table[i * L2_LDESC_TABLE_MAXENTRIES]);
 		else
-			l1_ldesc_table[i] = ldesc_make_s2_l1e_invalid();
+			hyp_l1_ldesc_table[i] = ldesc_make_s1_l1e_invalid();
 	}
 
 	//populate l2 ldesc table
 	for(i=0; i < (L1_LDESC_TABLE_ENTRIES * L2_LDESC_TABLE_MAXENTRIES); i++){
-		l2_ldesc_table[i] = ldesc_make_s1_l2e_block( (i * PAGE_SIZE_2M), attrs);
+		hyp_l2_ldesc_table[i] = ldesc_make_s1_l2e_block( (i * PAGE_SIZE_2M), attrs);
 	}
 
 
