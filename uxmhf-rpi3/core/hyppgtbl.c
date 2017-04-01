@@ -28,7 +28,7 @@
 //G6.2.66 ARMv8
 //HSCTLR has to be set appropriately
 //especially the bit 0 M bit enables the MMU
-
+//AFE is 1
 
 __attribute__((section(".paligndata"))) __attribute__((align(PAGE_SIZE_4K))) u64 hyp_l1_ldesc_table[L1_LDESC_TABLE_MAXENTRIES];
 __attribute__((section(".paligndata"))) __attribute__((align(PAGE_SIZE_4K))) u64 hyp_l2_ldesc_table[L1_LDESC_TABLE_ENTRIES * L2_LDESC_TABLE_MAXENTRIES];
