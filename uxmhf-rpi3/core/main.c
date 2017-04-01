@@ -221,6 +221,10 @@ void main(u32 r0, u32 id, struct atag *at){
 	_XDPRINTF_(" caches enabled\n");
 
 
+	_XDPRINTF_("uXMHF-rpi3: core: WiP. Halting\n");
+	HALT();
+
+
 	/*
 	_XDPRINTF_(" lock variable at address=0x%08x\n", &my_lock);
 	_XDPRINTF_(" acquiring lock [current value=0x%08x]...\n", (u32)my_lock);
