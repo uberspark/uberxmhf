@@ -92,6 +92,13 @@
 #define ldesc_make_s1_l1e_block(addr, attrs)	\
 		((addr & 0x000000FFC0000000ULL) | attrs | 0x1ULL)
 
+#define ldesc_make_s1_l2e_invalid()	0x0ULL
+
+#define ldesc_make_s1_l2e_block(addr, attrs)	\
+		((addr & 0x000000FFFFE00000ULL) | attrs | 0x1ULL)
+
+#define ldesc_make_s1_l2e_table(addr)	\
+		((addr & 0x000000FFFFFFF000ULL) | 0x3ULL)
 
 
 

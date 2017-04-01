@@ -35,6 +35,7 @@ __attribute__((section(".paligndata"))) __attribute__((align(PAGE_SIZE_4K))) u64
 
 void hyppgtbl_populate_tables(void){
 	u32 i;
+	u64 attrs=0;
 
 	//populate l1 ldesc table
 	for(i=0; i < L1_LDESC_TABLE_MAXENTRIES; i++){
@@ -44,6 +45,10 @@ void hyppgtbl_populate_tables(void){
 			l1_ldesc_table[i] = ldesc_make_s2_l1e_invalid();
 	}
 
+	//populate l2 ldesc table
+	for(i=0; i < (L1_LDESC_TABLE_ENTRIES * L2_LDESC_TABLE_MAXENTRIES); i++){
+		l2_ldesc_table[i] = ldesc_make_s1_l2e_block( (i * PAGE_SIZE_2M), attrs);
+	}
 
 
 }
