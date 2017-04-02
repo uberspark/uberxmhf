@@ -417,6 +417,11 @@ extern void sysreg_write_mair1(u32 value);
 extern void sysreg_tlbiallh(void);
 extern void sysreg_iciallu(void);
 
+extern u64 sysreg_read_httbr(void);
+extern void sysreg_write_httbr(u64 value);
+
+
+
 void spin_lock(u32 *lock);
 
 

@@ -202,6 +202,21 @@ sysreg_write_mair1:
 	mcr p15,0,r0,c10,c2,1
 	bx lr
 
+//returns a 64-bit value:
+//r0=lower 32-bits; r1=upper 32-bits (c.f. AAPCS)
+.global sysreg_read_httbr
+sysreg_read_httbr:
+	mrrc p15,4,r0,r1,c2
+	bx lr
+
+
+//inputs: 64-bit value
+//r0=lower 32-bits; r1=upper 32-bits (c.f. AAPCS)
+.global sysreg_write_httbr
+sysreg_write_httbr:
+	mcrr p15, 4, r0, r1, c2
+	bx lr
+
 
 //r0 specifies the 32-bit lock variable address
 .global spin_lock
