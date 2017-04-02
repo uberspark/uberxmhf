@@ -121,3 +121,17 @@ void hyppgtbl_loadpgtblbase(void){
 	_XDPRINTF_("%s: HTTBR after=0x%016llx\n", __func__, httbr);
 }
 
+
+void hyppgtbl_activatetranslation(void){
+	u32 hsctlr;
+
+	hsctlr = sysreg_read_hsctlr();
+	_XDPRINTF_("%s: HSCTLR before=0x%08x\n", __func__, hsctlr);
+
+	hsctlr |= HSCTLR_M_MASK;
+	sysreg_write_hsctlr(hsctlr);
+
+	hsctlr = sysreg_read_hsctlr();
+	_XDPRINTF_("%s: HSCTLR after=0x%08x\n", __func__, hsctlr);
+}
+

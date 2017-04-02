@@ -79,6 +79,15 @@
 
 
 //
+// HSCTLR (hyp system control register) bit definitions
+// G6.2.66 ARMv8
+//
+#define HSCTLR_M_MASK		0x00000001UL
+#define HSCTLR_M_SHIFT		0
+
+
+
+//
 // stage-1 long descriptor table attribute bit definitions for
 // TABLE descriptors
 // G4.5.3 ARMv8
