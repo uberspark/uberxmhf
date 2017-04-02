@@ -218,6 +218,17 @@ sysreg_write_httbr:
 	bx lr
 
 
+.global sysreg_read_htcr
+sysreg_read_htcr:
+	mrc p15,4,r0,c2,c0,2
+	bx lr
+
+.global sysreg_write_htcr
+sysreg_write_htcr:
+	mcr p15,4,r0,c2,c0,2
+	bx lr
+
+
 //r0 specifies the 32-bit lock variable address
 .global spin_lock
 spin_lock:
