@@ -40,6 +40,7 @@
 
 void hyppgtbl_initialize(void){
 	u32 mair0, mair1;
+	u32 htcr;
 
 	mair0 = sysreg_read_mair0();
 	mair1 = sysreg_read_mair1();
@@ -58,6 +59,21 @@ void hyppgtbl_initialize(void){
 	mair1 = sysreg_read_mair1();
 
 	_XDPRINTF_("%s: after: mair0=0x%08x, mair1=0x%08x\n", __func__, mair0, mair1);
+
+	htcr = sysreg_read_htcr();
+	_XDPRINTF_("%s: HTCR before=0x%08x\n", __func__, htcr);
+
+	htcr = 0;
+	htcr |= HTCR_RES1_MASK;	//reserved 1 bits
+	htcr |= ((0x0 << HTCR_T0SZ_SHIFT) & HTCR_T0SZ_MASK);	//T0SZ=0; 32 bits physical address
+	htcr |= ((MEM_WRITEBACK_READALLOCATE_WRITEALLOCATE << HTCR_IRGN0_SHIFT) & HTCR_IRGN0_MASK);	//L1 cache attribute
+	htcr |= ((MEM_WRITEBACK_READALLOCATE_WRITEALLOCATE << HTCR_ORGN0_SHIFT) & HTCR_ORGN0_MASK);	//L2 cache attribute
+	htcr |= ((MEM_OUTER_SHAREABLE << HTCR_SH0_SHIFT) & HTCR_SH0_MASK);	//shareability attribute
+
+	sysreg_write_htcr(htcr);
+
+	htcr = sysreg_read_htcr();
+	_XDPRINTF_("%s: HTCR after=0x%08x\n", __func__, htcr);
 
 }
 
