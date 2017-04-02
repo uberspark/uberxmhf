@@ -85,14 +85,15 @@ void hyppgtbl_populate_tables(void){
 	u64 l1_attrs= (LDESC_S1_TABLEATTR_APTABLE_NONE << LDESC_S1_TABLEATTR_APTABLE_SHIFT);
 	u64 l2_attrs = (LDESC_S1_AP_READWRITE << LDESC_S1_MEMATTR_AP_SHIFT) |
 			(MEM_OUTER_SHAREABLE << LDESC_S1_MEMATTR_SH_SHIFT) |
-			LDESC_S2_MEMATTR_AF_MASK |
+			LDESC_S1_MEMATTR_AF_MASK |
 			(1 << LDESC_S1_MEMATTR_ATTRINDX_SHIFT);
 
 	//populate l1 ldesc table
 	for(i=0; i < L1_LDESC_TABLE_MAXENTRIES; i++){
 		if( i < L1_LDESC_TABLE_ENTRIES)
-			hyp_l1_ldesc_table[i] = ldesc_make_s1_l1e_table((u32)&hyp_l2_ldesc_table[i * L2_LDESC_TABLE_MAXENTRIES], l1_attrs);
-		else
+			//hyp_l1_ldesc_table[i] = ldesc_make_s1_l1e_table((u32)&hyp_l2_ldesc_table[i * L2_LDESC_TABLE_MAXENTRIES], l1_attrs);
+			hyp_l1_ldesc_table[i] = ldesc_make_s1_l1e_block((i * PAGE_SIZE_1G), l2_attrs);
+			else
 			hyp_l1_ldesc_table[i] = ldesc_make_s1_l1e_invalid();
 	}
 
