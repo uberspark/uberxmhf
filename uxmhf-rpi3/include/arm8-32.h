@@ -456,6 +456,8 @@ extern void sysreg_write_httbr(u64 value);
 extern u32 sysreg_read_htcr(void);
 extern void sysreg_write_htcr(u32 value);
 
+extern u32 sysreg_read_actlr(void);
+extern void sysreg_write_actlr(u32 value);
 
 void spin_lock(u32 *lock);
 

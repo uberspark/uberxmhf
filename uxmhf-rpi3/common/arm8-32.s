@@ -67,6 +67,17 @@ sysreg_write_hsctlr:
 	mcr p15, 4, r0, c1, c0, 0
 	bx lr
 
+.global sysreg_read_actlr
+sysreg_read_actlr:
+	mrc p15, 0, r0, c1, c0, 1
+	bx lr
+
+.global sysreg_write_actlr
+sysreg_write_actlr:
+	mcr p15, 0, r0, c1, c0, 1
+	bx lr
+
+
 .global hypcall
 hypcall:
 	hvc #0
