@@ -220,7 +220,12 @@ void main(u32 r0, u32 id, struct atag *at){
 	mmu_enableallcaches();
 	_XDPRINTF_(" caches enabled\n");
 
+	_XDPRINTF_(" preparing CPU for MMU enablement...\n");
 	hyppgtbl_initialize();
+	_XDPRINTF_(" CPU prepared for MMU page-tables\n");
+	_XDPRINTF_(" preparing to populate MMU page-tables...\n");
+	hyppgtbl_populate_tables();
+	_XDPRINTF_(" MMU page-tables populated\n");
 
 	_XDPRINTF_("uXMHF-rpi3: core: WiP. Halting\n");
 	HALT();
