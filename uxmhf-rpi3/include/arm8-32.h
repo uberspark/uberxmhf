@@ -315,6 +315,21 @@
 
 
 //
+// HTCR (hyp translation control register) bit definitions
+// G6.2.69 ARMv8
+//
+#define HTCR_RES1_MASK		0x80800000UL
+#define HTCR_SH0_MASK		0x00003000UL
+#define HTCR_SH0_SHIFT		12
+#define HTCR_ORGN0_MASK		0x00000C00UL
+#define HTCR_ORGN0_SHIFT	10
+#define HTCR_IRGN0_MASK		0x00000300UL
+#define HTCR_IRGN0_SHIFT	8
+#define HTCR_T0SZ_MASK		0x00000007UL
+#define HTCR_T0SZ_SHIFT		0
+
+
+//
 // HCR (hyp configuration register) bit definitions
 // G6.2.58 ARMv8
 //
