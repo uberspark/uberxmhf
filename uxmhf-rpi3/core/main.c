@@ -213,12 +213,6 @@ void main(u32 r0, u32 id, struct atag *at){
 	_XDPRINTF_(" r0=0x%08x, id=0x%08x, ATAGS=0x%08x\n", r0, id, at);
 
 
-	_XDPRINTF_(" proceeding to disable all caches...\n");
-	mmu_disableallcaches();
-	_XDPRINTF_(" caches flushed and disabled\n");
-	_XDPRINTF_(" proceeding to enable all caches...\n");
-	mmu_enableallcaches();
-	_XDPRINTF_(" caches enabled\n");
 
 	_XDPRINTF_(" preparing CPU for MMU enablement...\n");
 	hyppgtbl_initialize();
@@ -229,9 +223,15 @@ void main(u32 r0, u32 id, struct atag *at){
 	_XDPRINTF_(" preparing to load MMU page-table base into HTTBR...\n");
 	hyppgtbl_loadpgtblbase();
 	_XDPRINTF_(" HTTBR loaded with MMU page-table base\n");
+	_XDPRINTF_(" proceeding to disable all caches...\n");
+	mmu_disableallcaches();
+	_XDPRINTF_(" caches flushed and disabled\n");
 	_XDPRINTF_(" preparing to activate stage-1 MMU translation...\n");
 	hyppgtbl_activatetranslation();
 	_XDPRINTF_(" stage-1 MMU translation activated successfully\n");
+	_XDPRINTF_(" proceeding to enable all caches...\n");
+	mmu_enableallcaches();
+	_XDPRINTF_(" caches enabled\n");
 
 	_XDPRINTF_("uXMHF-rpi3: core: WiP. Halting\n");
 	HALT();
