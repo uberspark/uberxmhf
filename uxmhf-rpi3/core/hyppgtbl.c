@@ -63,7 +63,7 @@ void hyppgtbl_initialize(void){
 	htcr = sysreg_read_htcr();
 	_XDPRINTF_("%s: HTCR before=0x%08x\n", __func__, htcr);
 
-	htcr = 0;
+	htcr &= HTCR_IMPDEF_MASK;	//clear out everything except implementation defined bits
 	htcr |= HTCR_RES1_MASK;	//reserved 1 bits
 	htcr |= ((0x0 << HTCR_T0SZ_SHIFT) & HTCR_T0SZ_MASK);	//T0SZ=0; 32 bits physical address
 	htcr |= ((MEM_WRITEBACK_READALLOCATE_WRITEALLOCATE << HTCR_IRGN0_SHIFT) & HTCR_IRGN0_MASK);	//L1 cache attribute
