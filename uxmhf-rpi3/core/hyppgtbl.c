@@ -134,12 +134,15 @@ void hyppgtbl_loadpgtblbase(void){
 void hyppgtbl_activatetranslation(void){
 	u32 hsctlr;
 
+	cpu_isb();
+
 	hsctlr = sysreg_read_hsctlr();
 	_XDPRINTF_("%s: HSCTLR before=0x%08x\n", __func__, hsctlr);
 
 	hsctlr |= HSCTLR_M_MASK;
 	_XDPRINTF_("%s: Going to set HSCTLR as=0x%08x\n", __func__, hsctlr);
 	sysreg_write_hsctlr(hsctlr);
+
 
 	hsctlr = sysreg_read_hsctlr();
 	_XDPRINTF_("%s: HSCTLR after=0x%08x\n", __func__, hsctlr);

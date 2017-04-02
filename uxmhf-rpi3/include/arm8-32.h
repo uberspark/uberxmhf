@@ -459,6 +459,8 @@ extern void sysreg_write_htcr(u32 value);
 extern u32 sysreg_read_actlr(void);
 extern void sysreg_write_actlr(u32 value);
 
+extern void cpu_isb(void);
+
 void spin_lock(u32 *lock);
 
 
@@ -466,3 +468,4 @@ void spin_lock(u32 *lock);
 #endif // __ASSEMBLY__
 
 #endif //__ARM8_32_H__
+;

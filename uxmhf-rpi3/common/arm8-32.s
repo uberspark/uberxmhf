@@ -65,6 +65,7 @@ sysreg_read_hsctlr:
 .global sysreg_write_hsctlr
 sysreg_write_hsctlr:
 	mcr p15, 4, r0, c1, c0, 0
+	isb
 	bx lr
 
 .global sysreg_read_actlr
@@ -75,6 +76,11 @@ sysreg_read_actlr:
 .global sysreg_write_actlr
 sysreg_write_actlr:
 	mcr p15, 0, r0, c1, c0, 1
+	bx lr
+
+.global cpu_isb
+cpu_isb:
+	isb
 	bx lr
 
 
