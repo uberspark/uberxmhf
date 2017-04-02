@@ -461,6 +461,8 @@ extern void sysreg_write_actlr(u32 value);
 
 extern void cpu_isb(void);
 
+extern u32 sysreg_read_idisar4(void);
+
 void spin_lock(u32 *lock);
 
 

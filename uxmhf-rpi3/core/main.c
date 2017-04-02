@@ -209,6 +209,7 @@ void core_fixresmemmap(u32 fdt_address){
 void main(u32 r0, u32 id, struct atag *at){
 	u32 hvbar, hcr, spsr_hyp;
 	u32 actlr;
+	u32 idisar4;
 
 	_XDPRINTF_("uXMHF-rpi3: core: Hello World!\n");
 	_XDPRINTF_(" r0=0x%08x, id=0x%08x, ATAGS=0x%08x\n", r0, id, at);
@@ -219,6 +220,9 @@ void main(u32 r0, u32 id, struct atag *at){
 	sysreg_write_actlr(actlr);
 	actlr= sysreg_read_actlr();
 	_XDPRINTF_(" actlr after=0x%08x\n", actlr);
+
+	idisar4 = sysreg_read_idisar4();
+	_XDPRINTF_(" idisar4=0x%08x\n", idisar4);
 
 
 	_XDPRINTF_(" preparing CPU for MMU enablement...\n");

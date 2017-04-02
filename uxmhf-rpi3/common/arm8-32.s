@@ -78,6 +78,11 @@ sysreg_write_actlr:
 	mcr p15, 0, r0, c1, c0, 1
 	bx lr
 
+.global sysreg_read_idisar4
+sysreg_read_idisar4:
+	mrc p15, 0, r0, c0, c2, 4
+	bx lr
+
 .global cpu_isb
 cpu_isb:
 	isb
