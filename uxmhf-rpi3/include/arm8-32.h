@@ -307,6 +307,14 @@
 
 
 //
+// HTTBR (Hyp translation table base register) bit definitions
+// G6.2.71 ARMv8
+//
+#define HTTBR_BADDR_MASK			0x0000FFFFFFFFFFFFULL
+#define HTTBR_BADDR_SHIFT			0
+
+
+//
 // HCR (hyp configuration register) bit definitions
 // G6.2.58 ARMv8
 //

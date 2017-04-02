@@ -89,3 +89,19 @@ void hyppgtbl_populate_tables(void){
 }
 
 
+void hyppgtbl_loadpgtblbase(void){
+	u64 httbr;
+
+	_XDPRINTF_("%s: hyp_l1_desc table at=0x%08x\n", __func__, (u32)&hyp_l1_ldesc_table);
+
+	httbr = sysreg_read_httbr();
+	_XDPRINTF_("%s: HTTBR before=0x%016llx\n", __func__, httbr);
+
+	httbr = 0;
+	httbr |= ((u64)&hyp_l1_ldesc_table & HTTBR_BADDR_MASK);
+	sysreg_write_httbr(httbr);
+
+	httbr = sysreg_read_httbr();
+	_XDPRINTF_("%s: HTTBR after=0x%016llx\n", __func__, httbr);
+}
+

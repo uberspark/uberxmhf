@@ -226,6 +226,9 @@ void main(u32 r0, u32 id, struct atag *at){
 	_XDPRINTF_(" preparing to populate MMU page-tables...\n");
 	hyppgtbl_populate_tables();
 	_XDPRINTF_(" MMU page-tables populated\n");
+	_XDPRINTF_(" preparing to load MMU page-table base into HTTBR...\n");
+	hyppgtbl_loadpgtblbase();
+	_XDPRINTF_(" HTTBR loaded with MMU page-table base\n");
 
 	_XDPRINTF_("uXMHF-rpi3: core: WiP. Halting\n");
 	HALT();
