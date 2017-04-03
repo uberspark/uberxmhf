@@ -113,9 +113,9 @@ void hyppgtbl_populate_tables(void){
 	for(i=0; i < L1_LDESC_TABLE_MAXENTRIES; i++){
 		if( i < L1_LDESC_TABLE_ENTRIES)
 			//hyp_l1_ldesc_table[i] = ldesc_make_s1_l1e_table((u32)&hyp_l2_ldesc_table[i * L2_LDESC_TABLE_MAXENTRIES], l1_attrs);
-			hyp_l1_ldesc_table[i] = ldesc_make_s1_l1e_block((i * PAGE_SIZE_1G), l2_attrs);
+				hyp_l1_ldesc_table[i] = ldesc_make_s1_l1e_block((i * PAGE_SIZE_1G), l2_attrs);
 			else
-			//hyp_l1_ldesc_table[i] = ldesc_make_s1_l1e_invalid();
+				hyp_l1_ldesc_table[i] = ldesc_make_s1_l1e_invalid();
 	}
 
 
@@ -168,7 +168,11 @@ void hyppgtbl_activatetranslation(void){
 
 	//invalidate all TLB
 	sysreg_tlbiallh();
-	sysreg_write_hsctlr(hsctlr);
+	//sysreg_write_hsctlr(hsctlr);
+
+
+	__mmu_activate(hsctlr);
+	_XDPRINTF_("%s: %u\n", __func__, __LINE__);
 
 
 	hsctlr = sysreg_read_hsctlr();

@@ -274,6 +274,16 @@ sysreg_write_htcr:
 	mcr p15,4,r0,c2,c0,2
 	bx lr
 
+//r0= hsctlr value
+.global __mmu_activate
+__mmu_activate:
+	mcr	p15, 4, r1, c8, c7, 0
+	dsb	ish
+	isb
+	mcr	p15, 4, r0, c1, c0, 0
+	bx lr
+
+
 
 //r0 specifies the 32-bit lock variable address
 .global spin_lock
