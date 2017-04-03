@@ -152,6 +152,16 @@ void hyppgtbl_loadpgtblbase(void){
 }
 
 
+static void cp_delay (void)
+{
+	volatile int i;
+	int j=0;
+
+	for (i = 0; i < 100; i++)
+		j++;
+	asm volatile("" : : : "memory");
+}
+
 void hyppgtbl_activatetranslation(void){
 	u32 hsctlr;
 
@@ -166,11 +176,13 @@ void hyppgtbl_activatetranslation(void){
 
 	_XDPRINTF_("%s: Going to set HSCTLR as=0x%08x\n", __func__, hsctlr);
 
+
+	cp_delay();
 	//invalidate all TLB
 	sysreg_tlbiallh();
 	//sysreg_write_hsctlr(hsctlr);
 
-
+	_XDPRINTF_("%s: %u\n", __func__, __LINE__);
 	__mmu_activate(hsctlr);
 	_XDPRINTF_("%s: %u\n", __func__, __LINE__);
 
