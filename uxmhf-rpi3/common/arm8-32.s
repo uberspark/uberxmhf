@@ -274,6 +274,16 @@ sysreg_write_htcr:
 	mcr p15,4,r0,c2,c0,2
 	bx lr
 
+.global sysreg_read_dacr
+sysreg_read_dacr:
+	mrc p15,0,r0,c3,c0,0
+	bx lr
+
+.global sysreg_write_dacr
+sysreg_write_dacr:
+	mcr p15,0,r0,c3,c0,0
+	bx lr
+
 //r0= hsctlr value
 .global __mmu_activate
 __mmu_activate:

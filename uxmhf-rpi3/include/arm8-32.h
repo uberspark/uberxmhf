@@ -466,6 +466,10 @@ extern void sysreg_write_htcr(u32 value);
 extern u32 sysreg_read_actlr(void);
 extern void sysreg_write_actlr(u32 value);
 
+extern u32 sysreg_read_dacr(void);
+extern void sysreg_write_dacr(u32 value);
+
+
 extern void cpu_isb(void);
 
 extern u32 sysreg_read_idisar4(void);
