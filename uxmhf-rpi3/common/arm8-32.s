@@ -64,6 +64,7 @@ sysreg_read_hsctlr:
 
 .global sysreg_write_hsctlr
 sysreg_write_hsctlr:
+	isb
 	mcr p15, 4, r0, c1, c0, 0
 	isb
 	bx lr
@@ -195,6 +196,7 @@ sysreg_write_elrhyp:
 .global sysreg_tlbiallh
 sysreg_tlbiallh:
 	mcr p15,4,r0,c8,c7,0
+	dsb ish
 	bx lr
 
 .global sysreg_iciallu
