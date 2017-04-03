@@ -122,7 +122,7 @@ void hyppgtbl_populate_tables(void){
 
 	//populate l1 ldesc table
 	for(i=0; i < L1_LDESC_TABLE_MAXENTRIES; i++){
-		if( i < L1_LDESC_TABLE_ENTRIES)
+		if( i < (L1_LDESC_TABLE_ENTRIES+1))
 			//hyp_l1_ldesc_table[i] = ldesc_make_s1_l1e_table((u32)&hyp_l2_ldesc_table[i * L2_LDESC_TABLE_MAXENTRIES], l1_attrs);
 				hyp_l1_ldesc_table[i] = ldesc_make_s1_l1e_block((i * PAGE_SIZE_1G), l2_attrs);
 			else
@@ -132,7 +132,7 @@ void hyppgtbl_populate_tables(void){
 
 	//debug
 	_XDPRINTF_("%s: dumping l1 ldesc table...\n", __func__);
-	for(i=0; i < L1_LDESC_TABLE_ENTRIES; i++){
+	for(i=0; i < (L1_LDESC_TABLE_ENTRIES+1); i++){
 		_XDPRINTF_(" %u-> %016llx\n", i, hyp_l1_ldesc_table[i]);
 	}
 	_XDPRINTF_("%s: l1 ldesc table dump finished\n", __func__);
