@@ -42,6 +42,17 @@ void hyppgtbl_initialize(void){
 	u32 mair0, mair1;
 	u32 htcr;
 	u32 hmair0, hmair1;
+	u32 dacr;
+
+
+	dacr = sysreg_read_dacr();
+	_XDPRINTF_("%s: before: dacr=0x%08x\n", __func__, dacr);
+	dacr = 0xFFFFFFFFUL;
+	sysreg_write_dacr(dacr);
+	dacr = sysreg_read_dacr();
+	_XDPRINTF_("%s: after: dacr=0x%08x\n", __func__, dacr);
+
+
 
 	mair0 = sysreg_read_mair0();
 	mair1 = sysreg_read_mair1();
