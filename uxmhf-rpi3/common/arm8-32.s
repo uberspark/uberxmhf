@@ -224,6 +224,28 @@ sysreg_write_mair1:
 	mcr p15,0,r0,c10,c2,1
 	bx lr
 
+
+.global sysreg_read_hmair0
+sysreg_read_hmair0:
+	mrc p15,4,r0,c10,c2,0
+	bx lr
+
+.global sysreg_write_hmair0
+sysreg_write_hmair0:
+	mcr p15,4,r0,c10,c2,0
+	bx lr
+
+.global sysreg_read_hmair1
+sysreg_read_hmair1:
+	mrc p15,4,r0,c10,c2,1
+	bx lr
+
+.global sysreg_write_hmair1
+sysreg_write_hmair1:
+	mcr p15,4,r0,c10,c2,1
+	bx lr
+
+
 //returns a 64-bit value:
 //r0=lower 32-bits; r1=upper 32-bits (c.f. AAPCS)
 .global sysreg_read_httbr

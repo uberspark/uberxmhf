@@ -447,6 +447,13 @@ extern void sysreg_write_mair0(u32 value);
 extern u32 sysreg_read_mair1(void);
 extern void sysreg_write_mair1(u32 value);
 
+extern u32 sysreg_read_hmair0(void);
+extern void sysreg_write_hmair0(u32 value);
+
+extern u32 sysreg_read_hmair1(void);
+extern void sysreg_write_hmair1(u32 value);
+
+
 extern void sysreg_tlbiallh(void);
 extern void sysreg_iciallu(void);
 
