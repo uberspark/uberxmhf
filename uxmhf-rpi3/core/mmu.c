@@ -57,3 +57,21 @@ void mmu_enabledcache(void){
 	sysreg_write_hsctlr(hsctlr);
 }
 
+//disable instruction caching
+void mmu_disableicache(void){
+	u32 hsctlr;
+
+	hsctlr = sysreg_read_hsctlr();
+	hsctlr &= ~(1 << 12);	//disable instruction caching
+	sysreg_write_hsctlr(hsctlr);
+}
+
+//disable data caching
+void mmu_disabledcache(void){
+	u32 hsctlr;
+
+	hsctlr = sysreg_read_hsctlr();
+	hsctlr &= ~(1 << 2);		//disable data caching
+	sysreg_write_hsctlr(hsctlr);
+}
+
