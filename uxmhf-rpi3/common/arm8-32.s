@@ -288,13 +288,13 @@ sysreg_write_dacr:
 //r0 specifies the 32-bit lock variable address
 .global spin_lock
 spin_lock:
-	mov r3, #0				//load r3 with 32-bit constant 0, signifies lock is occupied
+	mov r1, #0				//load r1 with 32-bit constant 0, signifies lock is occupied
 1:
 	ldrex r2, [r0]			//load current 32-bit value of lock and mark its memory region exclusive
-	teq r1, #1				//check if it is 1 i.e, free
+	teq r2, #1				//check if it is 1 i.e, free
 	wfene					//if not free, then put this core in the wait-for-event state
-	strexeq r2, r3, [r0]	//if free, try occupying the lock (storing 0); status is in r2
-	teqeq r2, #0			//if free, test the status of the store, 0=success, 1=fail
+	strexeq r3, r1, [r0]	//if free, try occupying the lock (storing 0); status is in r3
+	teqeq r3, #0			//if free, test the status of the store, 0=success, 1=fail
 	bne 1b					//start all over again if failure to store
 
 	dmb ish					//data memory barrier inner shareability; make memory updates visible to all cores
