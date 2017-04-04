@@ -150,57 +150,6 @@ void hyppgtbl_loadpgtblbase(void){
 }
 
 
-static void cp_delay (void)
-{
-	volatile int i;
-	int j=0;
-
-	for (i = 0; i < 100; i++)
-		j++;
-	asm volatile("" : : : "memory");
-}
-
-void hyppgtbl_activatetranslation(void){
-	u32 hsctlr;
-	//u32 hsctlr_nommu;
-
-	cpu_isb();
-
-	hsctlr = sysreg_read_hsctlr();
-	_XDPRINTF_("%s: HSCTLR before=0x%08x\n", __func__, hsctlr);
-	//hsctlr_nommu = hsctlr;
-
-	hsctlr |= HSCTLR_M_MASK;
-	hsctlr |= (1 << 12);	//enable instruction caching
-	hsctlr |= (1 << 2);		//enable data caching
-
-	_XDPRINTF_("%s: Going to set HSCTLR as=0x%08x\n", __func__, hsctlr);
-
-
-	cp_delay();
-	//invalidate all TLB
-	sysreg_tlbiallh();
-	//sysreg_write_hsctlr(hsctlr);
-
-	_XDPRINTF_("%s: %u\n", __func__, __LINE__);
-	//__mmu_activate(hsctlr, hsctlr_nommu);
-	__mmu_activate(hsctlr);
-
-	//hsctlr &= ~HSCTLR_M_MASK;
-	//hsctlr &= ~(1 << 12);	//disable instruction caching
-	//hsctlr &= ~(1 << 2);		//disable data caching
-	//__mmu_activate(hsctlr);
-
-
-	_XDPRINTF_("%s: %u\n", __func__, __LINE__);
-
-
-
-	hsctlr = sysreg_read_hsctlr();
-	_XDPRINTF_("%s: HSCTLR after=0x%08x\n", __func__, hsctlr);
-}
-
-
 void hyppgtbl_initialize_and_activate(void){
 	_XDPRINTF_("%s: [ENTER]\n", __func__);
 
@@ -228,8 +177,6 @@ void hyppgtbl_initialize_and_activate(void){
 	mmu_invalidateicache();
 	_XDPRINTF_("%s: invalidated icache\n", __func__);
 
-	//_XDPRINTF_(" preparing to activate stage-1 MMU translation...\n");
-	//hyppgtbl_activatetranslation();
 	mmu_activatetranslation();
 	_XDPRINTF_("%s: MMU translation activated\n", __func__);
 

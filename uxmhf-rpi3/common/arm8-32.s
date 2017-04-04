@@ -284,20 +284,6 @@ sysreg_write_dacr:
 	mcr p15,0,r0,c3,c0,0
 	bx lr
 
-//r0= hsctlr value
-//r1 = hsctlr value without MMU activation
-.global __mmu_activate
-__mmu_activate:
-	mcr	p15, 4, r2, c8, c7, 0
-	dsb	ish
-	isb
-	mcr	p15, 4, r0, c1, c0, 0
-	isb
-	//mcr	p15, 4, r1, c1, c0, 0
-	//isb
-	bx lr
-
-
 
 //r0 specifies the 32-bit lock variable address
 .global spin_lock
