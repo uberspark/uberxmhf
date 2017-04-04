@@ -231,6 +231,12 @@ void main(u32 r0, u32 id, struct atag *at){
 	_XDPRINTF_("%s: lock acquired\n", __func__);
 	_XDPRINTF_("%s: lock current value=0x%08x\n", __func__, my_lock);
 
+
+	_XDPRINTF_("%s: going to release lock...\n", __func__);
+	spin_unlock(&my_lock);
+	_XDPRINTF_("%s: lock released [cirrent value=0x%08x]\n", __func__, my_lock);
+
+
 	_XDPRINTF_("uXMHF-rpi3: core: WiP. Halting\n");
 	HALT();
 
