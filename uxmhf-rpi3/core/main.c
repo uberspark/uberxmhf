@@ -204,7 +204,7 @@ void core_fixresmemmap(u32 fdt_address){
 }
 
 
-//volatile __attribute__((aligned(16))) u32 my_lock=1;
+volatile __attribute__((aligned(16))) u32 my_lock=1;
 
 void main(u32 r0, u32 id, struct atag *at){
 	u32 hvbar, hcr, spsr_hyp;
@@ -216,17 +216,18 @@ void main(u32 r0, u32 id, struct atag *at){
 	hyppgtbl_initialize_and_activate();
 	_XDPRINTF_("%s: hyp page-tables initialized and activated\n", __func__);
 
+
+	_XDPRINTF_("%s: lock variable at address=0x%08x\n", __func__, &my_lock);
+	_XDPRINTF_("%s: acquiring lock [current value=0x%08x]...\n", __func__, (u32)my_lock);
+	spin_lock(&my_lock);
+	_XDPRINTF_("%s: lock acquired\n", __func__);
+	_XDPRINTF_("%s: lock current value=0x%08x\n", __func__, my_lock);
+
+
 	_XDPRINTF_("uXMHF-rpi3: core: WiP. Halting\n");
 	HALT();
 
 
-	/*
-	_XDPRINTF_(" lock variable at address=0x%08x\n", &my_lock);
-	_XDPRINTF_(" acquiring lock [current value=0x%08x]...\n", (u32)my_lock);
-	spin_lock(&my_lock);
-	_XDPRINTF_(" lock acquired\n");
-	_XDPRINTF_(" lock current value=0x%08x\n", my_lock);
-*/
 
 /*	bcm2837_miniuart_puts(" r0= ");
 	debug_hexdumpu32(r0);
