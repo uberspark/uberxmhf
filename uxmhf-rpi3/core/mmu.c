@@ -39,3 +39,21 @@ void mmu_enableallcaches(void){
 
 }
 
+//enable instruction caching
+void mmu_enableicache(void){
+	u32 hsctlr;
+
+	hsctlr = sysreg_read_hsctlr();
+	hsctlr |= (1 << 12);	//enable instruction caching
+	sysreg_write_hsctlr(hsctlr);
+}
+
+//enable data caching
+void mmu_enabledcache(void){
+	u32 hsctlr;
+
+	hsctlr = sysreg_read_hsctlr();
+	hsctlr |= (1 << 2);		//enable data caching
+	sysreg_write_hsctlr(hsctlr);
+}
+
