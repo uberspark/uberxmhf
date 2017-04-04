@@ -300,3 +300,16 @@ spin_lock:
 	dmb ish					//data memory barrier inner shareability; make memory updates visible to all cores
 
 	bx lr
+
+
+//r0 specifies the 32-bit lock variable address
+.global spin_unlock
+spin_unlock:
+	dmb ish					//data memory barrier
+	mov r1, #1				//load r1 with 32-bit constant 1, signifies lock is free
+	str r1, [r0]			//store 1 into lock indicating it is now free
+	dsb ishst				//allow other cores to see the value
+	sev						//signal other cores to wake up (if they are in the spinloop)
+
+	bx lr
+

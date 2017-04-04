@@ -475,6 +475,7 @@ extern void cpu_isb(void);
 extern u32 sysreg_read_idisar4(void);
 
 void spin_lock(u32 *lock);
+void spin_unlock(u32 *lock);
 
 
 
