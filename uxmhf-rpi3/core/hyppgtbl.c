@@ -228,9 +228,10 @@ void hyppgtbl_initialize_and_activate(void){
 	mmu_invalidateicache();
 	_XDPRINTF_("%s: invalidated icache\n", __func__);
 
-	_XDPRINTF_(" preparing to activate stage-1 MMU translation...\n");
-	hyppgtbl_activatetranslation();
-	_XDPRINTF_(" stage-1 MMU translation activated successfully\n");
+	//_XDPRINTF_(" preparing to activate stage-1 MMU translation...\n");
+	//hyppgtbl_activatetranslation();
+	mmu_activatetranslation();
+	_XDPRINTF_("%s: MMU translation activated\n", __func__);
 
 	mmu_enableicache();
 	_XDPRINTF_("%s: enabled icache\n", __func__);
