@@ -224,9 +224,9 @@ void main(u32 r0, u32 id, struct atag *at){
 	idisar4 = sysreg_read_idisar4();
 	_XDPRINTF_(" idisar4=0x%08x\n", idisar4);
 
-	_XDPRINTF_("%s: proceeding to initialize and activate hyp page-tables...\n");
+	_XDPRINTF_("%s: proceeding to initialize and activate hyp page-tables...\n", __func__);
 	hyppgtbl_initialize_and_activate();
-	_XDPRINTF_("%s: hyp page-tables initialized and activated\n");
+	_XDPRINTF_("%s: hyp page-tables initialized and activated\n", __func__);
 
 	_XDPRINTF_("uXMHF-rpi3: core: WiP. Halting\n");
 	HALT();
