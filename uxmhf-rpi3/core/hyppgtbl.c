@@ -215,10 +215,10 @@ void hyppgtbl_activatetranslation(void){
 	//__mmu_activate(hsctlr, hsctlr_nommu);
 	__mmu_activate(hsctlr);
 
-	hsctlr &= ~HSCTLR_M_MASK;
-	hsctlr &= ~(1 << 12);	//disable instruction caching
-	hsctlr &= ~(1 << 2);		//disable data caching
-	__mmu_activate(hsctlr);
+	//hsctlr &= ~HSCTLR_M_MASK;
+	//hsctlr &= ~(1 << 12);	//disable instruction caching
+	//hsctlr &= ~(1 << 2);		//disable data caching
+	//__mmu_activate(hsctlr);
 
 
 	_XDPRINTF_("%s: %u\n", __func__, __LINE__);
