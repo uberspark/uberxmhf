@@ -38,7 +38,7 @@
 //PXN and nG bits are res0 in HYP mode
 
 
-void hyppgtbl_initialize(void){
+void hyppgtbl_initialize_mair_htcr(void){
 	u32 mair0, mair1;
 	u32 htcr;
 	u32 hmair0, hmair1;
