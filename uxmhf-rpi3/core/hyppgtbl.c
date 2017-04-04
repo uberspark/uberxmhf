@@ -90,7 +90,7 @@ void hyppgtbl_initialize(void){
 	hmair1 = sysreg_read_hmair1();
 	_XDPRINTF_("%s: after: hmair0=0x%08x, hmair1=0x%08x\n", __func__, hmair0, hmair1);
 
-\
+
 
 	htcr = sysreg_read_htcr();
 	_XDPRINTF_("%s: HTCR before=0x%08x\n", __func__, htcr);
