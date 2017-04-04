@@ -285,12 +285,16 @@ sysreg_write_dacr:
 	bx lr
 
 //r0= hsctlr value
+//r1 = hsctlr value without MMU activation
 .global __mmu_activate
 __mmu_activate:
-	mcr	p15, 4, r1, c8, c7, 0
+	mcr	p15, 4, r2, c8, c7, 0
 	dsb	ish
 	isb
 	mcr	p15, 4, r0, c1, c0, 0
+	isb
+	mcr	p15, 4, r1, c1, c0, 0
+	isb
 	bx lr
 
 
