@@ -174,13 +174,14 @@ static void cp_delay (void)
 }
 
 void hyppgtbl_activatetranslation(void){
-	u32 hsctlr, hsctlr_nommu;
+	u32 hsctlr;
+	//u32 hsctlr_nommu;
 
 	cpu_isb();
 
 	hsctlr = sysreg_read_hsctlr();
 	_XDPRINTF_("%s: HSCTLR before=0x%08x\n", __func__, hsctlr);
-	hsctlr_nommu = hsctlr;
+	//hsctlr_nommu = hsctlr;
 
 	hsctlr |= HSCTLR_M_MASK;
 	hsctlr |= (1 << 12);	//enable instruction caching
@@ -195,7 +196,8 @@ void hyppgtbl_activatetranslation(void){
 	//sysreg_write_hsctlr(hsctlr);
 
 	_XDPRINTF_("%s: %u\n", __func__, __LINE__);
-	__mmu_activate(hsctlr, hsctlr_nommu);
+	//__mmu_activate(hsctlr, hsctlr_nommu);
+	__mmu_activate(hsctlr);
 	_XDPRINTF_("%s: %u\n", __func__, __LINE__);
 
 

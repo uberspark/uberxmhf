@@ -293,8 +293,8 @@ __mmu_activate:
 	isb
 	mcr	p15, 4, r0, c1, c0, 0
 	isb
-	mcr	p15, 4, r1, c1, c0, 0
-	isb
+	//mcr	p15, 4, r1, c1, c0, 0
+	//isb
 	bx lr
 
 
