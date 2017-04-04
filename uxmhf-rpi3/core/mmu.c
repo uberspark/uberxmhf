@@ -65,6 +65,8 @@ void mmu_activatetranslation(void){
 	_XDPRINTF_("%s: HSCTLR before=0x%08x\n", __func__, hsctlr);
 
 	hsctlr |= HSCTLR_M_MASK;
+	hsctlr |= (1 << 2);		//enable data caching
+	hsctlr |= (1 << 12);	//enable instruction caching
 
 	sysreg_write_hsctlr(hsctlr);
 

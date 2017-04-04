@@ -204,7 +204,7 @@ void core_fixresmemmap(u32 fdt_address){
 }
 
 
-volatile __attribute__((aligned(16))) u32 my_lock=1;
+volatile __attribute__((aligned(32))) u32 my_lock=1;
 
 void main(u32 r0, u32 id, struct atag *at){
 	u32 hvbar, hcr, spsr_hyp;
@@ -226,7 +226,8 @@ void main(u32 r0, u32 id, struct atag *at){
 
 	_XDPRINTF_("%s: lock variable at address=0x%08x\n", __func__, &my_lock);
 	_XDPRINTF_("%s: acquiring lock [current value=0x%08x]...\n", __func__, (u32)my_lock);
-	__sync_bool_compare_and_swap(&my_lock, 1, 0);
+	//__sync_bool_compare_and_swap(&my_lock, 1, 0);
+	spin_lock(&my_lock);
 	_XDPRINTF_("%s: lock acquired\n", __func__);
 	_XDPRINTF_("%s: lock current value=0x%08x\n", __func__, my_lock);
 

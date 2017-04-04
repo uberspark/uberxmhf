@@ -70,10 +70,10 @@ void hyppgtbl_initialize_translationcontrol(void){
 	htcr &= HTCR_IMPDEF_MASK;	//clear out everything except implementation defined bits
 	htcr |= HTCR_RES1_MASK;	//reserved 1 bits
 	htcr |= ((0x0 << HTCR_T0SZ_SHIFT) & HTCR_T0SZ_MASK);	//T0SZ=0; 32 bits physical address
-	//htcr |= ((MEM_WRITEBACK_READALLOCATE_WRITEALLOCATE << HTCR_IRGN0_SHIFT) & HTCR_IRGN0_MASK);	//L1 cache attribute
-	//htcr |= ((MEM_WRITEBACK_READALLOCATE_WRITEALLOCATE << HTCR_ORGN0_SHIFT) & HTCR_ORGN0_MASK);	//L2 cache attribute
-	htcr |= ((MEM_NON_CACHEABLE << HTCR_IRGN0_SHIFT) & HTCR_IRGN0_MASK);	//L1 cache attribute
-	htcr |= ((MEM_NON_CACHEABLE << HTCR_ORGN0_SHIFT) & HTCR_ORGN0_MASK);	//L2 cache attribute
+	htcr |= ((MEM_WRITEBACK_READALLOCATE_WRITEALLOCATE << HTCR_IRGN0_SHIFT) & HTCR_IRGN0_MASK);	//L1 cache attribute
+	htcr |= ((MEM_WRITEBACK_READALLOCATE_WRITEALLOCATE << HTCR_ORGN0_SHIFT) & HTCR_ORGN0_MASK);	//L2 cache attribute
+	//htcr |= ((MEM_NON_CACHEABLE << HTCR_IRGN0_SHIFT) & HTCR_IRGN0_MASK);	//L1 cache attribute
+	//htcr |= ((MEM_NON_CACHEABLE << HTCR_ORGN0_SHIFT) & HTCR_ORGN0_MASK);	//L2 cache attribute
 	htcr |= ((MEM_INNER_SHAREABLE << HTCR_SH0_SHIFT) & HTCR_SH0_MASK);	//shareability attribute
 
 	sysreg_write_htcr(htcr);
@@ -96,7 +96,7 @@ void hyppgtbl_populate_tables(void){
 	u64 l2_attrs = (LDESC_S1_AP_READWRITE << LDESC_S1_MEMATTR_AP_SHIFT) |
 			(MEM_INNER_SHAREABLE << LDESC_S1_MEMATTR_SH_SHIFT) |
 			LDESC_S1_MEMATTR_AF_MASK |
-			(2 << LDESC_S1_MEMATTR_ATTRINDX_SHIFT);
+			(1 << LDESC_S1_MEMATTR_ATTRINDX_SHIFT);
 
 	u64 l2_attrs_dev = (LDESC_S1_AP_READWRITE << LDESC_S1_MEMATTR_AP_SHIFT) |
 			(MEM_INNER_SHAREABLE << LDESC_S1_MEMATTR_SH_SHIFT) |
@@ -151,6 +151,7 @@ void hyppgtbl_loadpgtblbase(void){
 
 
 void hyppgtbl_initialize_and_activate(void){
+	u32 hsctlr;
 	_XDPRINTF_("%s: [ENTER]\n", __func__);
 
 	hyppgtbl_initialize_memoryattributes();
@@ -180,9 +181,12 @@ void hyppgtbl_initialize_and_activate(void){
 	mmu_activatetranslation();
 	_XDPRINTF_("%s: MMU translation activated\n", __func__);
 
-	mmu_enableicache();
-	_XDPRINTF_("%s: enabled icache\n", __func__);
+	//mmu_enableicache();
+	//_XDPRINTF_("%s: enabled icache\n", __func__);
 
-	mmu_enabledcache();
-	_XDPRINTF_("%s: enabled dcache\n", __func__);
+	//mmu_enabledcache();
+	//_XDPRINTF_("%s: enabled dcache\n", __func__);
+
+	hsctlr = sysreg_read_hsctlr();
+	_XDPRINTF_("%s: [EXIT] HSCTLR=0x%08x\n", __func__, hsctlr);
 }
