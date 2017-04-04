@@ -230,7 +230,7 @@ void hyppgtbl_activatetranslation(void){
 }
 
 
-void hyppgtbl_initialize(void){
+void hyppgtbl_initialize_and_activate(void){
 	_XDPRINTF_(" preparing CPU for MMU enablement...\n");
 	hyppgtbl_initialize_mair_htcr();
 	_XDPRINTF_(" CPU prepared for MMU page-tables\n");
