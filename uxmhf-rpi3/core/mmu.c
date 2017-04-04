@@ -28,6 +28,11 @@ void mmu_disableallcaches(void){
 }
 
 
+void mmu_invalidatetlbs(void){
+	//invalidate all TLB
+	sysreg_tlbiallh();
+}
+
 void mmu_enableallcaches(void){
 	u32 hsctlr;
 
