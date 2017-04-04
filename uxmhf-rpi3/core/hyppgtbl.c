@@ -38,6 +38,29 @@
 //PXN and nG bits are res0 in HYP mode
 
 
+void hyppgtbl_initialize_memoryattributes(void){
+	u32 hmair0, hmair1;
+
+	hmair0 = sysreg_read_hmair0();
+	hmair1 = sysreg_read_hmair1();
+	_XDPRINTF_("%s: before: hmair0=0x%08x, hmair1=0x%08x\n", __func__, hmair0, hmair1);
+
+	hmair0 = hmair1 = (LDESC_S1_MAIR_HI_DEV | LDESC_S1_MAIR_LO_DEVnGnRnE) |
+	((LDESC_S1_MAIR_HI_READALLOCATE_WRITEALLOCATE_OUTER_WRITE_BACK_NONTRANSIENT | LDESC_S1_MAIR_LO_READALLOCATE_WRITEALLOCATE_INNER_WRITE_BACK_NONTRANSIENT) << 8) |
+	((LDESC_S1_MAIR_HI_OUTER_NON_CACHEABLE | LDESC_S1_MAIR_LO_INNER_NON_CACHEABLE) << 16) |
+	((LDESC_S1_MAIR_HI_OUTER_NON_CACHEABLE | LDESC_S1_MAIR_LO_INNER_NON_CACHEABLE) << 24);
+
+	sysreg_write_hmair0(hmair0);
+	sysreg_write_hmair1(hmair1);
+
+	hmair0 = sysreg_read_hmair0();
+	hmair1 = sysreg_read_hmair1();
+	_XDPRINTF_("%s: after: hmair0=0x%08x, hmair1=0x%08x\n", __func__, hmair0, hmair1);
+}
+
+
+
+
 void hyppgtbl_initialize_mair_htcr(void){
 	u32 mair0, mair1;
 	u32 htcr;
