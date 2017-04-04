@@ -98,8 +98,10 @@ void hyppgtbl_initialize(void){
 	htcr &= HTCR_IMPDEF_MASK;	//clear out everything except implementation defined bits
 	htcr |= HTCR_RES1_MASK;	//reserved 1 bits
 	htcr |= ((0x0 << HTCR_T0SZ_SHIFT) & HTCR_T0SZ_MASK);	//T0SZ=0; 32 bits physical address
-	htcr |= ((MEM_WRITEBACK_READALLOCATE_WRITEALLOCATE << HTCR_IRGN0_SHIFT) & HTCR_IRGN0_MASK);	//L1 cache attribute
-	htcr |= ((MEM_WRITEBACK_READALLOCATE_WRITEALLOCATE << HTCR_ORGN0_SHIFT) & HTCR_ORGN0_MASK);	//L2 cache attribute
+	//htcr |= ((MEM_WRITEBACK_READALLOCATE_WRITEALLOCATE << HTCR_IRGN0_SHIFT) & HTCR_IRGN0_MASK);	//L1 cache attribute
+	//htcr |= ((MEM_WRITEBACK_READALLOCATE_WRITEALLOCATE << HTCR_ORGN0_SHIFT) & HTCR_ORGN0_MASK);	//L2 cache attribute
+	htcr |= ((MEM_NON_CACHEABLE << HTCR_IRGN0_SHIFT) & HTCR_IRGN0_MASK);	//L1 cache attribute
+	htcr |= ((MEM_NON_CACHEABLE << HTCR_ORGN0_SHIFT) & HTCR_ORGN0_MASK);	//L2 cache attribute
 	htcr |= ((MEM_INNER_SHAREABLE << HTCR_SH0_SHIFT) & HTCR_SH0_MASK);	//shareability attribute
 
 	sysreg_write_htcr(htcr);
@@ -115,10 +117,16 @@ __attribute__((section(".paligndata"))) __attribute__((align(PAGE_SIZE_4K))) u64
 void hyppgtbl_populate_tables(void){
 	u32 i;
 	u64 l1_attrs= (LDESC_S1_TABLEATTR_APTABLE_NONE << LDESC_S1_TABLEATTR_APTABLE_SHIFT);
+	//u64 l2_attrs = (LDESC_S1_AP_READWRITE << LDESC_S1_MEMATTR_AP_SHIFT) |
+	//		(MEM_INNER_SHAREABLE << LDESC_S1_MEMATTR_SH_SHIFT) |
+	//		LDESC_S1_MEMATTR_AF_MASK |
+	//		(1 << LDESC_S1_MEMATTR_ATTRINDX_SHIFT);
+
 	u64 l2_attrs = (LDESC_S1_AP_READWRITE << LDESC_S1_MEMATTR_AP_SHIFT) |
 			(MEM_INNER_SHAREABLE << LDESC_S1_MEMATTR_SH_SHIFT) |
 			LDESC_S1_MEMATTR_AF_MASK |
-			(1 << LDESC_S1_MEMATTR_ATTRINDX_SHIFT);
+			(2 << LDESC_S1_MEMATTR_ATTRINDX_SHIFT);
+
 
 	//populate l1 ldesc table
 	for(i=0; i < L1_LDESC_TABLE_MAXENTRIES; i++){
