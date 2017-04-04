@@ -61,59 +61,8 @@ void hyppgtbl_initialize_memoryattributes(void){
 
 
 
-void hyppgtbl_initialize_mair_htcr(void){
-	u32 mair0, mair1;
+void hyppgtbl_initialize_translationcontrol(void){
 	u32 htcr;
-	u32 hmair0, hmair1;
-	u32 dacr;
-
-
-	dacr = sysreg_read_dacr();
-	_XDPRINTF_("%s: before: dacr=0x%08x\n", __func__, dacr);
-	dacr = 0xFFFFFFFFUL;
-	sysreg_write_dacr(dacr);
-	dacr = sysreg_read_dacr();
-	_XDPRINTF_("%s: after: dacr=0x%08x\n", __func__, dacr);
-
-
-
-	mair0 = sysreg_read_mair0();
-	mair1 = sysreg_read_mair1();
-
-	_XDPRINTF_("%s: before: mair0=0x%08x, mair1=0x%08x\n", __func__, mair0, mair1);
-
-	mair0 = mair1 = (LDESC_S1_MAIR_HI_DEV | LDESC_S1_MAIR_LO_DEVnGnRnE) |
-	((LDESC_S1_MAIR_HI_READALLOCATE_WRITEALLOCATE_OUTER_WRITE_BACK_NONTRANSIENT | LDESC_S1_MAIR_LO_READALLOCATE_WRITEALLOCATE_INNER_WRITE_BACK_NONTRANSIENT) << 8) |
-	((LDESC_S1_MAIR_HI_OUTER_NON_CACHEABLE | LDESC_S1_MAIR_LO_INNER_NON_CACHEABLE) << 16) |
-	((LDESC_S1_MAIR_HI_OUTER_NON_CACHEABLE | LDESC_S1_MAIR_LO_INNER_NON_CACHEABLE) << 24);
-
-	sysreg_write_mair0(mair0);
-	sysreg_write_mair1(mair1);
-
-	mair0 = sysreg_read_mair0();
-	mair1 = sysreg_read_mair1();
-
-	_XDPRINTF_("%s: after: mair0=0x%08x, mair1=0x%08x\n", __func__, mair0, mair1);
-
-
-
-	hmair0 = sysreg_read_hmair0();
-	hmair1 = sysreg_read_hmair1();
-	_XDPRINTF_("%s: before: hmair0=0x%08x, hmair1=0x%08x\n", __func__, hmair0, hmair1);
-
-	hmair0 = hmair1 = (LDESC_S1_MAIR_HI_DEV | LDESC_S1_MAIR_LO_DEVnGnRnE) |
-	((LDESC_S1_MAIR_HI_READALLOCATE_WRITEALLOCATE_OUTER_WRITE_BACK_NONTRANSIENT | LDESC_S1_MAIR_LO_READALLOCATE_WRITEALLOCATE_INNER_WRITE_BACK_NONTRANSIENT) << 8) |
-	((LDESC_S1_MAIR_HI_OUTER_NON_CACHEABLE | LDESC_S1_MAIR_LO_INNER_NON_CACHEABLE) << 16) |
-	((LDESC_S1_MAIR_HI_OUTER_NON_CACHEABLE | LDESC_S1_MAIR_LO_INNER_NON_CACHEABLE) << 24);
-
-	sysreg_write_hmair0(hmair0);
-	sysreg_write_hmair1(hmair1);
-
-	hmair0 = sysreg_read_hmair0();
-	hmair1 = sysreg_read_hmair1();
-	_XDPRINTF_("%s: after: hmair0=0x%08x, hmair1=0x%08x\n", __func__, hmair0, hmair1);
-
-
 
 	htcr = sysreg_read_htcr();
 	_XDPRINTF_("%s: HTCR before=0x%08x\n", __func__, htcr);
@@ -131,7 +80,6 @@ void hyppgtbl_initialize_mair_htcr(void){
 
 	htcr = sysreg_read_htcr();
 	_XDPRINTF_("%s: HTCR after=0x%08x\n", __func__, htcr);
-
 }
 
 __attribute__((section(".paligndata"))) __attribute__((align(PAGE_SIZE_4K))) u64 hyp_l1_ldesc_table[L1_LDESC_TABLE_MAXENTRIES];
