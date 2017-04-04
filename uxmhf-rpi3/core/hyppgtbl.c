@@ -216,13 +216,25 @@ void hyppgtbl_initialize_and_activate(void){
 	hyppgtbl_loadpgtblbase();
 	_XDPRINTF_("%s: loaded page-table base register\n", __func__);
 
-	_XDPRINTF_(" proceeding to disable all caches...\n");
-	mmu_disableallcaches();
-	_XDPRINTF_(" caches flushed and disabled\n");
+	mmu_disableicache();
+	_XDPRINTF_("%s: disabled icache\n", __func__);
+
+	mmu_disabledcache();
+	_XDPRINTF_("%s: disabled dcache\n", __func__);
+
+	mmu_invalidatetlbs();
+	_XDPRINTF_("%s: invalidated TLBs\n", __func__);
+
+	mmu_invalidateicache();
+	_XDPRINTF_("%s: invalidated icache\n", __func__);
+
 	_XDPRINTF_(" preparing to activate stage-1 MMU translation...\n");
 	hyppgtbl_activatetranslation();
 	_XDPRINTF_(" stage-1 MMU translation activated successfully\n");
-	_XDPRINTF_(" proceeding to enable all caches...\n");
-	mmu_enableallcaches();
-	_XDPRINTF_(" caches enabled\n");
+
+	mmu_enableicache();
+	_XDPRINTF_("%s: enabled icache\n", __func__);
+
+	mmu_enabledcache();
+	_XDPRINTF_("%s: enabled dcache\n", __func__);
 }
