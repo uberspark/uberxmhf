@@ -33,6 +33,13 @@ void mmu_invalidatetlbs(void){
 	sysreg_tlbiallh();
 }
 
+void mmu_invalidateicache(void){
+	//invalidate instruction caches
+	sysreg_iciallu();
+}
+
+
+
 void mmu_enableallcaches(void){
 	u32 hsctlr;
 
