@@ -130,17 +130,17 @@ void hyppgtbl_populate_tables(void){
 
 	//populate l1 ldesc table
 	for(i=0; i < L1_LDESC_TABLE_MAXENTRIES; i++){
-		if( i < (L1_LDESC_TABLE_ENTRIES+1))
-			//hyp_l1_ldesc_table[i] = ldesc_make_s1_l1e_table((u32)&hyp_l2_ldesc_table[i * L2_LDESC_TABLE_MAXENTRIES], l1_attrs);
-				hyp_l1_ldesc_table[i] = ldesc_make_s1_l1e_block((i * PAGE_SIZE_1G), l2_attrs);
-			else
-				hyp_l1_ldesc_table[i] = ldesc_make_s1_l1e_invalid();
+		if( i < L1_LDESC_TABLE_ENTRIES)
+			hyp_l1_ldesc_table[i] = ldesc_make_s1_l1e_table((u32)&hyp_l2_ldesc_table[i * L2_LDESC_TABLE_MAXENTRIES], l1_attrs);
+			//hyp_l1_ldesc_table[i] = ldesc_make_s1_l1e_block((i * PAGE_SIZE_1G), l2_attrs);
+		else
+			hyp_l1_ldesc_table[i] = ldesc_make_s1_l1e_invalid();
 	}
 
 
 	//debug
 	_XDPRINTF_("%s: dumping l1 ldesc table...\n", __func__);
-	for(i=0; i < (L1_LDESC_TABLE_ENTRIES+1); i++){
+	for(i=0; i < L1_LDESC_TABLE_ENTRIES; i++){
 		_XDPRINTF_(" %u-> %016llx\n", i, hyp_l1_ldesc_table[i]);
 	}
 	_XDPRINTF_("%s: l1 ldesc table dump finished\n", __func__);
@@ -207,12 +207,14 @@ void hyppgtbl_activatetranslation(void){
 	//__mmu_activate(hsctlr, hsctlr_nommu);
 	__mmu_activate(hsctlr);
 
-	_XDPRINTF_("%s: %u\n", __func__, __LINE__);
-
 	hsctlr &= ~HSCTLR_M_MASK;
 	hsctlr &= ~(1 << 12);	//disable instruction caching
 	hsctlr &= ~(1 << 2);		//disable data caching
 	__mmu_activate(hsctlr);
+
+
+	_XDPRINTF_("%s: %u\n", __func__, __LINE__);
+
 
 
 	hsctlr = sysreg_read_hsctlr();
