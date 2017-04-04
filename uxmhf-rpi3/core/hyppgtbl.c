@@ -202,20 +202,20 @@ void hyppgtbl_activatetranslation(void){
 
 
 void hyppgtbl_initialize_and_activate(void){
-	_XDPRINTF_("%s: [ENTER]\n");
+	_XDPRINTF_("%s: [ENTER]\n", __func__);
 
 	hyppgtbl_initialize_memoryattributes();
-	_XDPRINTF_("%s: initialized memory attributes\n");
+	_XDPRINTF_("%s: initialized memory attributes\n", __func__);
 
 	hyppgtbl_initialize_translationcontrol();
-	_XDPRINTF_("%s: initialized translation control\n");
+	_XDPRINTF_("%s: initialized translation control\n", __func__);
 
-	_XDPRINTF_(" preparing to populate MMU page-tables...\n");
 	hyppgtbl_populate_tables();
-	_XDPRINTF_(" MMU page-tables populated\n");
-	_XDPRINTF_(" preparing to load MMU page-table base into HTTBR...\n");
+	_XDPRINTF_("%s: page-tables populated\n", __func__);
+
 	hyppgtbl_loadpgtblbase();
-	_XDPRINTF_(" HTTBR loaded with MMU page-table base\n");
+	_XDPRINTF_("%s: loaded page-table base register\n", __func__);
+
 	_XDPRINTF_(" proceeding to disable all caches...\n");
 	mmu_disableallcaches();
 	_XDPRINTF_(" caches flushed and disabled\n");
