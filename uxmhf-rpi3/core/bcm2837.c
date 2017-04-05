@@ -54,7 +54,7 @@ void bcm2837_platform_smpinitialize(void){
 
 	while (--timeout > 0) {
 		if (armlocalregisters_mailboxreadclear_cpu1->mailbox3readclear == 0) break;
-		cpu_relax();
+		cpu_dmbish();
 	}
 
 	if (timeout==0){

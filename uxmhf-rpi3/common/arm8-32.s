@@ -94,6 +94,12 @@ cpu_dsb:
 	dsb
 	bx lr
 
+.global cpu_dmbish
+cpu_dmbish:
+	dmb ish
+	bx lr
+
+
 .global hypcall
 hypcall:
 	hvc #0
