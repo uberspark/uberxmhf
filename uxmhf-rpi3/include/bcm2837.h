@@ -8,7 +8,7 @@
 #define __BCM2837_H__
 
 #define BCM2837_PERIPHERAL_BASE		0x3f000000
-
+#define BCM2837_MAXCPUS				4
 
 //GPIO registers
 #define GPFSEL1         (BCM2837_PERIPHERAL_BASE+0x00200004)
@@ -43,6 +43,8 @@ typedef struct armlocalregisters_mailboxwrite_t {
 	u32 mailbox2write;
 	u32 mailbox3write;
 } __attribute__((packed));
+
+extern armlocalregisters_mailboxwrite_t *armlocalregisters_mailboxwrite[BCM2837_MAXCPUS];
 
 #endif // __ASSEMBLY__
 
