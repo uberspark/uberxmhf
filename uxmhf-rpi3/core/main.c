@@ -330,10 +330,12 @@ void main(u32 r0, u32 id, struct atag *at){
 
 void secondary_main(u32 cpuid){
 
-	//_XDPRINTFSMP_("%s[%u]: ENTER...\n", __func__, cpuid);
-	bcm2837_miniuart_puts("secondary core alive and kicking!\n");
+	_XDPRINTF_("%s[%u]: ENTER...\n", __func__, cpuid);
 
-	//_XDPRINTFSMP_("%s[%u]: Halting!\n", __func__, cpuid);
+	hyppgtbl_activate();
+	_XDPRINTF_("%s[%u]: hyp page-tables activated\n", __func__, cpuid);
+
+	_XDPRINTF_("%s[%u]: Halting!\n", __func__, cpuid);
 	HALT();
 }
 
