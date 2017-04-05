@@ -236,9 +236,9 @@ void main(u32 r0, u32 id, struct atag *at){
 
 	_XDPRINTFSMP_("%s: proceeding to initialize SMP...\n", __func__);
 	bcm2837_platform_smpinitialize();
-	//_XDPRINTFSMP_("%s: secondary cores should have started. moving on with boot processor...\n", __func__);
+	_XDPRINTFSMP_("%s: secondary cores should have started. moving on with boot processor...\n", __func__);
 
-	//_XDPRINTFSMP_("%s: core: WiP. Halting\n", __func__);
+	_XDPRINTFSMP_("%s: core: WiP. Halting\n", __func__);
 	HALT();
 
 
@@ -328,6 +328,8 @@ void main(u32 r0, u32 id, struct atag *at){
 }
 
 
+extern u32 cpu1_smpready;
+
 void secondary_main(u32 cpuid){
 
 	_XDPRINTF_("%s[%u]: ENTER...\n", __func__, cpuid);
@@ -335,7 +337,10 @@ void secondary_main(u32 cpuid){
 	hyppgtbl_activate();
 	_XDPRINTF_("%s[%u]: hyp page-tables activated\n", __func__, cpuid);
 
-	_XDPRINTF_("%s[%u]: Halting!\n", __func__, cpuid);
+	_XDPRINTF_("%s[%u]: Signalling SMP readiness...\n", __func__, cpuid);
+	cpu1_smpready=1;
+
+	_XDPRINTFSMP_("%s[%u]: Halting!\n", __func__, cpuid);
 	HALT();
 }
 
