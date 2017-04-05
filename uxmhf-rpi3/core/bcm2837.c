@@ -10,4 +10,4 @@
 #include <miniuart.h>
 #include <debug.h>
 
-//armlocalregisters_mailboxwrite_t *armlocalregisters_mailboxwrite[BCM2837_MAXCPUS];
+ __attribute__((section(".data"))) armlocalregisters_mailboxwrite_t *armlocalregisters_mailboxwrite[BCM2837_MAXCPUS];
