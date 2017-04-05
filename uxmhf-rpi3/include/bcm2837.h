@@ -32,5 +32,18 @@
 #define AUX_MU_BAUD_REG (BCM2837_PERIPHERAL_BASE+0x00215068)
 
 
+#define ARMLOCALREGISTERS_BASE					0x40000000
+#define ARMLOCALREGISTERS_MAILBOXWRITE_BASE		(ARMLOCALREGISTERS_BASE + 0x80)
+
+#ifndef __ASSEMBLY__
+
+typedef struct armlocalregisters_mailboxwrite_t {
+	u32 mailbox0write;
+	u32 mailbox1write;
+	u32 mailbox2write;
+	u32 mailbox3write;
+} __attribute__((packed));
+
+#endif // __ASSEMBLY__
 
 #endif //__BCM2837_H__
