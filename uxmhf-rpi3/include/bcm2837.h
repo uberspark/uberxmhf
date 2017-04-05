@@ -37,12 +37,12 @@
 
 #ifndef __ASSEMBLY__
 
-typedef struct armlocalregisters_mailboxwrite_t {
+typedef struct {
 	u32 mailbox0write;
 	u32 mailbox1write;
 	u32 mailbox2write;
 	u32 mailbox3write;
-} __attribute__((packed));
+} armlocalregisters_mailboxwrite_t __attribute__((packed));
 
 extern armlocalregisters_mailboxwrite_t *armlocalregisters_mailboxwrite[BCM2837_MAXCPUS];
 
