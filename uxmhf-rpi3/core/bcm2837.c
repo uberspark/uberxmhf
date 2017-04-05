@@ -63,5 +63,5 @@ void bcm2837_platform_smpinitialize(void){
 		HALT();
 	}
 
-	_XDPRINTFSMP_("%s: cpu-1 started successfully\n", __func__);
+	//_XDPRINTFSMP_("%s: cpu-1 started successfully\n", __func__);
 }

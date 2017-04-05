@@ -55,6 +55,12 @@ cpumodeswitch_hyp2svc:
 .globl cpu1_entry
 cpu1_entry:
 
+
+	/* load stack and start C land */
+	ldr sp, =cpu1_stack_top
+	mov r0, #0
+	bl secondary_main
+
 cpu1_entry_halt:
 	b cpu1_entry_halt
 
@@ -72,6 +78,13 @@ cpu1_entry_halt:
 	stacksvc:	.space	8192
 	.global stacksvc_top
 	stacksvc_top:
+
+
+	.balign 8
+	.global cpu1_stack
+	cpu1_stack:	.space	8192
+	.global cpu1_stack_top
+	cpu1_stack_top:
 
 
 
