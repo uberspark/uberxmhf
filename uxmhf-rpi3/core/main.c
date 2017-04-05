@@ -215,9 +215,11 @@ void main(u32 r0, u32 id, struct atag *at){
 	bcm2837_platform_initialize();
 	_XDPRINTF_("%s: initialized base hardware platform\n", __func__);
 
-	_XDPRINTF_("%s: proceeding to initialize and activate hyp page-tables...\n", __func__);
-	hyppgtbl_initialize_and_activate();
-	_XDPRINTFSMP_("%s: hyp page-tables initialized and activated\n", __func__);
+	hyppgtbl_populate_tables();
+	_XDPRINTF_("%s: page-tables populated\n", __func__);
+
+	hyppgtbl_activate();
+	_XDPRINTF_("%s: hyp page-tables activated\n", __func__);
 
 /*
 	_XDPRINTFSMP_("%s: lock variable at address=0x%08x\n", __func__, &my_lock);

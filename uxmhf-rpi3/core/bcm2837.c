@@ -11,6 +11,8 @@
 #include <debug.h>
 
 extern void cpu1_entry(void);
+volatile u32 cpu1_smpready = 0;
+
 
 void bcm2837_platform_initialize(void){
 }
@@ -63,5 +65,9 @@ void bcm2837_platform_smpinitialize(void){
 		HALT();
 	}
 
-	//_XDPRINTFSMP_("%s: cpu-1 started successfully\n", __func__);
+	while(!cpu1_smpready){
+		cpu_dmbish();
+	}
+
+	_XDPRINTFSMP_("%s: cpu-1 started successfully\n", __func__);
 }

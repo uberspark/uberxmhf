@@ -150,7 +150,7 @@ void hyppgtbl_loadpgtblbase(void){
 }
 
 
-void hyppgtbl_initialize_and_activate(void){
+void hyppgtbl_activate(void){
 	u32 hsctlr;
 	_XDPRINTF_("%s: [ENTER]\n", __func__);
 
@@ -159,9 +159,6 @@ void hyppgtbl_initialize_and_activate(void){
 
 	hyppgtbl_initialize_translationcontrol();
 	_XDPRINTF_("%s: initialized translation control\n", __func__);
-
-	hyppgtbl_populate_tables();
-	_XDPRINTF_("%s: page-tables populated\n", __func__);
 
 	hyppgtbl_loadpgtblbase();
 	_XDPRINTF_("%s: loaded page-table base register\n", __func__);
