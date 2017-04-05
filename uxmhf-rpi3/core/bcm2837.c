@@ -41,5 +41,11 @@ void bcm2837_platform_smpinitialize(void){
 	}*/
 
 
+	cpu_dsb();
+	if( armlocalregisters_mailboxreadclear_cpu1->mailbox3readclear != 0){
+		_XDPRINTFSMP_("%s: cpu 1: failed to respond. Halting!\n", __func__);
+		HALT();
+	}
+
 
 }
