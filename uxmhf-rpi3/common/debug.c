@@ -9,6 +9,9 @@
 #include <miniuart.h>
 #include <debug.h>
 
+extern __attribute__(( section(".data") )) u32 xdprintfsmp_lock=1;
+
+
 // gcc requires this for division by 0 on 64-bit values; used for debugging output
 void raise(void){
 	bcm2837_miniuart_puts("uXMHF-rpi3: core: compiler raise invoked -- division by 0!\n");
