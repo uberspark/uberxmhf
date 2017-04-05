@@ -34,6 +34,7 @@
 
 #define ARMLOCALREGISTERS_BASE					0x40000000
 #define ARMLOCALREGISTERS_MAILBOXWRITE_BASE		(ARMLOCALREGISTERS_BASE + 0x80)
+#define ARMLOCALREGISTERS_MAILBOXREADCLEAR_BASE	(ARMLOCALREGISTERS_BASE + 0xC0)
 
 #ifndef __ASSEMBLY__
 
@@ -43,6 +44,15 @@ typedef struct {
 	u32 mailbox2write;
 	u32 mailbox3write;
 } armlocalregisters_mailboxwrite_t __attribute__((packed));
+
+
+typedef struct {
+	u32 mailbox0readclear;
+	u32 mailbox1readclear;
+	u32 mailbox2readclear;
+	u32 mailbox3readclear;
+} armlocalregisters_mailboxreadclear_t __attribute__((packed));
+
 
 #endif // __ASSEMBLY__
 
