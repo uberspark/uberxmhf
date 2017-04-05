@@ -44,8 +44,6 @@ typedef struct {
 	u32 mailbox3write;
 } armlocalregisters_mailboxwrite_t __attribute__((packed));
 
-extern armlocalregisters_mailboxwrite_t *armlocalregisters_mailboxwrite[BCM2837_MAXCPUS];
-
 #endif // __ASSEMBLY__
 
 #endif //__BCM2837_H__

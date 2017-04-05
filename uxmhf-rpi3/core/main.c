@@ -215,7 +215,6 @@ void main(u32 r0, u32 id, struct atag *at){
 	bcm2837_platform_initialize();
 	_XDPRINTF_("%s: initialized base hardware platform\n", __func__);
 
-
 	_XDPRINTF_("%s: proceeding to initialize and activate hyp page-tables...\n", __func__);
 	hyppgtbl_initialize_and_activate();
 
