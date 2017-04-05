@@ -89,6 +89,10 @@ cpu_isb:
 	isb
 	bx lr
 
+.global cpu_dsb
+cpu_dsb:
+	dsb
+	bx lr
 
 .global hypcall
 hypcall:
