@@ -212,6 +212,10 @@ void main(u32 r0, u32 id, struct atag *at){
 	_XDPRINTF_("uXMHF-rpi3: core: Hello World!\n");
 	_XDPRINTF_(" r0=0x%08x, id=0x%08x, ATAGS=0x%08x\n", r0, id, at);
 
+	bcm2837_platform_initialize();
+	_XDPRINTF_("%s: initialized base hardware platform\n", __func__);
+
+
 	_XDPRINTF_("%s: proceeding to initialize and activate hyp page-tables...\n", __func__);
 	hyppgtbl_initialize_and_activate();
 
