@@ -18,6 +18,7 @@ void bcm2837_platform_smpinitialize(void){
 	u32 i;
 	armlocalregisters_mailboxwrite_t *armlocalregisters_mailboxwrite_cpu1;
 	armlocalregisters_mailboxreadclear_t *armlocalregisters_mailboxreadclear_cpu1;
+	u32 timeout=20, clearsignal;
 
 	_XDPRINTFSMP_("%s: cpu 0: boot processor\n", __func__);
 
@@ -47,5 +48,19 @@ void bcm2837_platform_smpinitialize(void){
 		HALT();
 	}
 
+	//write cpu-1 execution start address
+	//armlocalregisters_mailboxwrite_cpu1->mailbox3write = (u32)&cpu1_entry;
+	armlocalregisters_mailboxwrite_cpu1->mailbox3write = 0;
 
+	while (--timeout > 0) {
+		if (armlocalregisters_mailboxreadclear_cpu1->mailbox3readclear == 0) break;
+		cpu_relax();
+	}
+
+	if (timeout==0){
+		_XDPRINTFSMP_("%s: cpu-1 failed to start. Halting!\n", __func__);
+		HALT();
+	}
+
+	_XDPRINTFSMP_("%s: cpu-1 started successfully\n", __func__);
 }
