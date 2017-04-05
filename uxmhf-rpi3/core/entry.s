@@ -50,6 +50,16 @@ cpumodeswitch_hyp2svc:
 	eret					//this will start executing at the address provided in SVC mode
 
 
+
+
+.globl cpu1_entry
+cpu1_entry:
+
+cpu1_entry_halt:
+	b cpu1_entry_halt
+
+
+
 .section ".stack", "aw"
 	.balign 8
 	.global stack

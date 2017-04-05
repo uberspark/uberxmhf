@@ -10,6 +10,8 @@
 #include <miniuart.h>
 #include <debug.h>
 
+extern void cpu1_entry(void);
+
 void bcm2837_platform_initialize(void){
 }
 
@@ -49,8 +51,7 @@ void bcm2837_platform_smpinitialize(void){
 	}
 
 	//write cpu-1 execution start address
-	//armlocalregisters_mailboxwrite_cpu1->mailbox3write = (u32)&cpu1_entry;
-	armlocalregisters_mailboxwrite_cpu1->mailbox3write = 0;
+	armlocalregisters_mailboxwrite_cpu1->mailbox3write = (u32)&cpu1_entry;
 
 	while (--timeout > 0) {
 		if (armlocalregisters_mailboxreadclear_cpu1->mailbox3readclear == 0) break;
