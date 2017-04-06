@@ -329,10 +329,12 @@ void main(u32 r0, u32 id, struct atag *at){
 
 
 extern u32 cpu1_smpready;
+extern u8 cpu_stacks[];
 
 void secondary_main(u32 cpuid){
 
-	_XDPRINTF_("%s[%u]: ENTER...\n", __func__, cpuid);
+	_XDPRINTF_("%s[%u]: ENTER: sp=0x%08x (cpu_stacks=0x%08x)\n", __func__, cpuid,
+			cpu_read_sp(), &cpu_stacks);
 
 	hyppgtbl_activate();
 	_XDPRINTF_("%s[%u]: hyp page-tables activated\n", __func__, cpuid);

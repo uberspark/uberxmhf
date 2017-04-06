@@ -99,6 +99,11 @@ cpu_dmbish:
 	dmb ish
 	bx lr
 
+.global cpu_read_sp
+cpu_read_sp:
+	mov r0, sp
+	bx lr
+
 
 .global hypcall
 hypcall:

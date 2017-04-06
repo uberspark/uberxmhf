@@ -473,6 +473,8 @@ extern void sysreg_write_dacr(u32 value);
 extern void cpu_isb(void);
 extern void cpu_dsb(void);
 extern void cpu_dmbish(void);
+extern u32 cpu_read_sp(void);
+
 
 extern u32 sysreg_read_idisar4(void);
 
