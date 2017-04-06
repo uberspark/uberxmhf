@@ -88,7 +88,10 @@ void hypsvc_handler(void){
 void main_svc(void){
 	u32 cpsr;
 
-	bcm2837_miniuart_puts("uXMHF-rpi3: core: now in SVC mode\n");
+	_XDPRINTF_("%s: now in SVC mode\n", __func__);
+
+	_XDPRINTF_("%s: WiP. Halting!\n", __func__);
+	HALT();
 
 	cpsr = sysreg_read_cpsr();
 	bcm2837_miniuart_puts(" CPSR[mode]= ");
