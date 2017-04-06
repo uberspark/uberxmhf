@@ -29,6 +29,13 @@ void hyphvc_handler(void){
 	bcm2837_miniuart_puts("uXMHF-rpi3: core: hyphvc_handler [IN]\n");
 	bcm2837_miniuart_puts("uXMHF-rpi3: core: Hello world from hypercall\n");
 	bcm2837_miniuart_puts("uXMHF-rpi3: core: hyphvc_handler [OUT]\n");
+
+
+/*	_XDPRINTFSMP_("uXMHF-rpi3: core: hyphvc_handler [IN]\n");
+	_XDPRINTFSMP_("uXMHF-rpi3: core: Hello world from hypercall\n");
+	_XDPRINTFSMP_("uXMHF-rpi3: core: hyphvc_handler [OUT]\n");
+*/
+
 }
 
 void hypsvc_handler(void){
@@ -212,6 +219,19 @@ void main(u32 r0, u32 id, struct atag *at){
 	_XDPRINTF_("uXMHF-rpi3: core: Hello World!\n");
 	_XDPRINTF_(" r0=0x%08x, id=0x%08x, ATAGS=0x%08x\n", r0, id, at);
 
+	if(!(at->size == FDT_MAGIC)){
+		//bcm2837_miniuart_puts("uXMHF-rpi3: core: Error: require ATAGS to be FDT blob. Halting!\n");
+		_XDPRINTF_("uXMHF-rpi3: core: Error: require ATAGS to be FDT blob. Halting!\n");
+		HALT();
+	}
+
+	//bcm2837_miniuart_puts("uXMHF-rpi3: core: ATAGS pointer is a FDT blob so no worries\n");
+	_XDPRINTF_("uXMHF-rpi3: core: ATAGS pointer is a FDT blob so no worries\n");
+
+	//fix reserved memory map
+	core_fixresmemmap((u32)at);
+
+
 	bcm2837_platform_initialize();
 	_XDPRINTF_("%s: initialized base hardware platform\n", __func__);
 
@@ -234,36 +254,12 @@ void main(u32 r0, u32 id, struct atag *at){
 	_XDPRINTFSMP_("%s: lock released [cirrent value=0x%08x]\n", __func__, my_lock);
 */
 
-/*	_XDPRINTFSMP_("%s: proceeding to initialize SMP...\n", __func__);
+	_XDPRINTFSMP_("%s: proceeding to initialize SMP...\n", __func__);
 	bcm2837_platform_smpinitialize();
 	_XDPRINTFSMP_("%s: secondary cores should have started. moving on with boot processor...\n", __func__);
 
-	_XDPRINTFSMP_("%s: core: WiP. Halting\n", __func__);
-	HALT();
-*/
 
-
-/*	bcm2837_miniuart_puts(" r0= ");
-	debug_hexdumpu32(r0);
-	bcm2837_miniuart_puts(" id= ");
-	debug_hexdumpu32(id);
-	bcm2837_miniuart_puts(" ATAGS= ");
-	debug_hexdumpu32(at);
-*/
-
-	if(!(at->size == FDT_MAGIC)){
-		//bcm2837_miniuart_puts("uXMHF-rpi3: core: Error: require ATAGS to be FDT blob. Halting!\n");
-		_XDPRINTF_("uXMHF-rpi3: core: Error: require ATAGS to be FDT blob. Halting!\n");
-		HALT();
-	}
-
-	//bcm2837_miniuart_puts("uXMHF-rpi3: core: ATAGS pointer is a FDT blob so no worries\n");
-	_XDPRINTF_("uXMHF-rpi3: core: ATAGS pointer is a FDT blob so no worries\n");
-
-	//fix reserved memory map
-	core_fixresmemmap((u32)at);
-
-	//bcm2837_miniuart_puts("uXMHF-rpi3: core: WiP. Halting\n");
+	//_XDPRINTFSMP_("%s: core: WiP. Halting\n", __func__);
 	//HALT();
 
 	//store guest OS boot register values
@@ -272,17 +268,17 @@ void main(u32 r0, u32 id, struct atag *at){
 	guestos_boot_r2=at;
 
 	hvbar = sysreg_read_hvbar();
-	_XDPRINTF_(" HVBAR before=0x%08x\n", hvbar);
-	_XDPRINTF_(" g_hypvtable at=0x%08x\n", (u32)&g_hypvtable);
+	_XDPRINTFSMP_(" HVBAR before=0x%08x\n", hvbar);
+	_XDPRINTFSMP_(" g_hypvtable at=0x%08x\n", (u32)&g_hypvtable);
 
 	sysreg_write_hvbar((u32)&g_hypvtable);
 
 	hvbar = sysreg_read_hvbar();
-	_XDPRINTF_(" loaded HVBAR with g_hypvtable; HVBAR after=0x%08x\n", hvbar);
+	_XDPRINTFSMP_(" loaded HVBAR with g_hypvtable; HVBAR after=0x%08x\n", hvbar);
 
-	_XDPRINTF_("uxmhf-rpi3: core: proceeding to test hypercall (HVC) in HYP mode...\n");
+	_XDPRINTFSMP_("uxmhf-rpi3: core: proceeding to test hypercall (HVC) in HYP mode...\n");
 	hypcall();
-	_XDPRINTF_("uxmhf-rpi3: core: successful return after hypercall test.\n");
+	_XDPRINTFSMP_("uxmhf-rpi3: core: successful return after hypercall test.\n");
 
 	/*
 
@@ -317,12 +313,12 @@ void main(u32 r0, u32 id, struct atag *at){
 
 
 
-	_XDPRINTF_("uXMHF-rpi3: core: Chainloading OS kernel...\n");
+	_XDPRINTFSMP_("uXMHF-rpi3: core: Chainloading OS kernel...\n");
 
 	chainload_os(guestos_boot_r0, guestos_boot_r1, guestos_boot_r2);
 
 
-	_XDPRINTF_("uxmhf-rpi3: core: We were not supposed to be here.Halting!\n");
+	_XDPRINTFSMP_("uxmhf-rpi3: core: We were not supposed to be here.Halting!\n");
 	HALT();
 
 }
