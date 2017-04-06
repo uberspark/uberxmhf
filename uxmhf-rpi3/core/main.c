@@ -234,13 +234,13 @@ void main(u32 r0, u32 id, struct atag *at){
 	_XDPRINTFSMP_("%s: lock released [cirrent value=0x%08x]\n", __func__, my_lock);
 */
 
-	_XDPRINTFSMP_("%s: proceeding to initialize SMP...\n", __func__);
+/*	_XDPRINTFSMP_("%s: proceeding to initialize SMP...\n", __func__);
 	bcm2837_platform_smpinitialize();
 	_XDPRINTFSMP_("%s: secondary cores should have started. moving on with boot processor...\n", __func__);
 
 	_XDPRINTFSMP_("%s: core: WiP. Halting\n", __func__);
 	HALT();
-
+*/
 
 
 /*	bcm2837_miniuart_puts(" r0= ");
