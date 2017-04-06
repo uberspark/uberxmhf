@@ -12,9 +12,9 @@
 entry:
 
 	/* turn on unaligned memory access */
-	mrc p15, #0, r4, c1, c0, #0
-	orr r4, #0x400000				/*set U bit (bit-22) */
-	mcr p15, #0, r4, c1, c0, #0
+	//mrc p15, #0, r4, c1, c0, #0
+	//orr r4, #0x400000				/*set U bit (bit-22) */
+	//mcr p15, #0, r4, c1, c0, #0
 
  	mrc p15, #0, r3, c0, c0, #5 	//read MPIDR
  	and r3, #3						//mask off the CPUID value
