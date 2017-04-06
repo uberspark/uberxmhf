@@ -41,8 +41,7 @@ void hyphvc_handler(void){
 void hypsvc_handler(void){
 	u32 hsr;
 	u32 elr_hyp;
-	//bcm2837_miniuart_puts("uXMHF-rpi3: core: hypSVC_handler [IN]\n");
-	//bcm2837_miniuart_puts("uXMHF-rpi3: core: hypSVC_handler [OUT]\n");
+	_XDPRINTFSMP_("%s: ENTER\n", __func__);
 
 	//read hsr to determine the cause of the intercept
 	hsr = sysreg_read_hsr();
@@ -81,6 +80,9 @@ void hypsvc_handler(void){
 			bcm2837_miniuart_puts("uXMHF-rpi3: core: Halting\n");
 			HALT();
 	}
+
+	_XDPRINTFSMP_("%s: EXIT\n", __func__);
+
 
 }
 
