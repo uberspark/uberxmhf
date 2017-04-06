@@ -55,18 +55,16 @@ cpumodeswitch_hyp2svc:
 .globl cpu1_entry
 cpu1_entry:
 
+ 	mrc p15, #0, r0, c0, c0, #5 	//read MPIDR
+ 	and r0, #3						//mask off the CPUID value
+	add r1, r0, #1					//r1 = index into cpu_stacks
 
-	/* load stack and start C land */
-	ldr sp, =cpu1_stack_top
-	//mov r0, #0
+	ldr sp, =cpu_stacks				//load cpu_stacks base into stack-pointer
+	mov r2, #8192
+	mul r3, r2, r1					//r3 is the offset to add based on index (r1)
+	add sp, sp, r3					//sp is the top-of-stack for this cpu
 
-	//read the Multiprocessor Affinity (MPIDR) register
- 	mrc p15, #0, r0, c0, c0, #5;
- 	//Mask off the CPUID value
- 	and r0, #3
-
-
-	bl secondary_main
+	bl secondary_main				//r0 is the cpuid
 
 cpu1_entry_halt:
 	b cpu1_entry_halt
@@ -88,10 +86,8 @@ cpu1_entry_halt:
 
 
 	.balign 8
-	.global cpu1_stack
-	cpu1_stack:	.space	8192
-	.global cpu1_stack_top
-	cpu1_stack_top:
+	.global cpu_stacks
+	cpu_stacks:	.space	(8192 * 4)
 
 
 
