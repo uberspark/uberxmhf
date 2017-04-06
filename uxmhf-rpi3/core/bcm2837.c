@@ -39,8 +39,7 @@ void bcm2837_platform_smpinitialize(void){
 	//_XDPRINTFSMP_("%s: cpu 1: armlocalregisters_mailboxreadclear->mailbox3readclear at 0x%08x\n", __func__, i, &armlocalregisters_mailboxreadclear_cpu1->mailbox3readclear);
 
 
-	//for(i=1; i < BCM2837_MAXCPUS; i++){
-	for(i=1; i < 3; i++){
+	for(i=1; i < BCM2837_MAXCPUS; i++){
 		//map armlocalregisters_mailboxwrite and mailboxreadclear
 		armlocalregisters_mailboxwrite = (armlocalregisters_mailboxwrite_t *)(ARMLOCALREGISTERS_MAILBOXWRITE_BASE + (i * sizeof(armlocalregisters_mailboxwrite_t)));
 		armlocalregisters_mailboxreadclear = (armlocalregisters_mailboxreadclear_t *)(ARMLOCALREGISTERS_MAILBOXREADCLEAR_BASE + (i * sizeof(armlocalregisters_mailboxreadclear_t)));
