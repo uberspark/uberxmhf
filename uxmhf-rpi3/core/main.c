@@ -328,7 +328,7 @@ void main(u32 r0, u32 id, struct atag *at){
 }
 
 
-extern u32 cpu1_smpready;
+extern u32 cpu_smpready[];
 extern u8 cpu_stacks[];
 
 void secondary_main(u32 cpuid){
@@ -340,7 +340,7 @@ void secondary_main(u32 cpuid){
 	_XDPRINTF_("%s[%u]: hyp page-tables activated\n", __func__, cpuid);
 
 	_XDPRINTF_("%s[%u]: Signalling SMP readiness...\n", __func__, cpuid);
-	cpu1_smpready=1;
+	cpu_smpready[cpuid]=1;
 
 	_XDPRINTFSMP_("%s[%u]: Halting!\n", __func__, cpuid);
 	HALT();

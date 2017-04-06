@@ -12,7 +12,7 @@
 
 extern void cpu1_entry(void);
 volatile u32 cpu1_smpready = 0;
-
+volatile u32 cpu_smpready[BCM2837_MAXCPUS] = {1, 0, 0, 0};
 
 void bcm2837_platform_initialize(void){
 }
@@ -65,7 +65,7 @@ void bcm2837_platform_smpinitialize(void){
 		HALT();
 	}
 
-	while(!cpu1_smpready){
+	while(!cpu_smpready[1]){
 		cpu_dmbish();
 	}
 
