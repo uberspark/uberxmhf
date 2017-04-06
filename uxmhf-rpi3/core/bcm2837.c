@@ -10,7 +10,7 @@
 #include <miniuart.h>
 #include <debug.h>
 
-extern void cpu1_entry(void);
+extern void secondary_cpu_entry(void);
 volatile u32 cpu1_smpready = 0;
 volatile u32 cpu_smpready[BCM2837_MAXCPUS] = {1, 0, 0, 0};
 
@@ -55,7 +55,7 @@ void bcm2837_platform_smpinitialize(void){
 		}
 
 		//write cpu execution start address
-		armlocalregisters_mailboxwrite->mailbox3write = (u32)&cpu1_entry;
+		armlocalregisters_mailboxwrite->mailbox3write = (u32)&secondary_cpu_entry;
 
 		while (--timeout > 0) {
 			if (armlocalregisters_mailboxreadclear->mailbox3readclear == 0) break;

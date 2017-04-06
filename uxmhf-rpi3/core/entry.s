@@ -52,8 +52,8 @@ cpumodeswitch_hyp2svc:
 
 
 
-.globl cpu1_entry
-cpu1_entry:
+.globl secondary_cpu_entry
+secondary_cpu_entry:
 
  	mrc p15, #0, r0, c0, c0, #5 	//read MPIDR
  	and r0, #3						//mask off the CPUID value
@@ -66,8 +66,8 @@ cpu1_entry:
 
 	bl secondary_main				//r0 is the cpuid
 
-cpu1_entry_halt:
-	b cpu1_entry_halt
+secondary_cpu_entry_halt:
+	b secondary_cpu_entry_halt
 
 
 
