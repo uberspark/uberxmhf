@@ -58,7 +58,14 @@ cpu1_entry:
 
 	/* load stack and start C land */
 	ldr sp, =cpu1_stack_top
-	mov r0, #0
+	//mov r0, #0
+
+	//read the Multiprocessor Affinity (MPIDR) register
+ 	mrc p15, #0, r0, c0, c0, #5;
+ 	//Mask off the CPUID value
+ 	and r0, #3
+
+
 	bl secondary_main
 
 cpu1_entry_halt:
