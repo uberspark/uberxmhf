@@ -6,6 +6,8 @@
 
 .section ".text"
 
+//r0, r1 and r2 are set by the boot-loader and need to
+//be preserved
 .globl entry
 entry:
 
@@ -14,8 +16,17 @@ entry:
 	orr r4, #0x400000				/*set U bit (bit-22) */
 	mcr p15, #0, r4, c1, c0, #0
 
+ 	mrc p15, #0, r3, c0, c0, #5 	//read MPIDR
+ 	and r3, #3						//mask off the CPUID value
+	add r4, r3, #1					//r4 = index into cpu_stacks
+
+	ldr sp, =cpu_stacks				//load cpu_stacks base into stack-pointer
+	mov r5, #8192
+	mul r6, r4, r5					//r6 is the offset to add based on index (r4)
+	add sp, sp, r6					//sp is the top-of-stack for this cpu
+
 	/* load stack and start C land */
-	ldr sp, =stack_top
+	//ldr sp, =stack_top
 	bl main
 
 halt:

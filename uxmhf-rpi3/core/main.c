@@ -212,9 +212,15 @@ void core_fixresmemmap(u32 fdt_address){
 
 
 volatile __attribute__((aligned(32))) u32 my_lock=1;
+extern u32 cpu_smpready[];
+extern u8 cpu_stacks[];
+
 
 void main(u32 r0, u32 id, struct atag *at){
 	u32 hvbar, hcr, spsr_hyp;
+
+	_XDPRINTF_("%s: ENTER: sp=0x%08x (cpu_stacks=0x%08x)\n", __func__,
+			cpu_read_sp(), &cpu_stacks);
 
 	_XDPRINTF_("uXMHF-rpi3: core: Hello World!\n");
 	_XDPRINTF_(" r0=0x%08x, id=0x%08x, ATAGS=0x%08x\n", r0, id, at);
@@ -324,8 +330,6 @@ void main(u32 r0, u32 id, struct atag *at){
 }
 
 
-extern u32 cpu_smpready[];
-extern u8 cpu_stacks[];
 
 void secondary_main(u32 cpuid){
 
