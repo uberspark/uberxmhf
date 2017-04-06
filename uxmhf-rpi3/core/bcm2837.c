@@ -40,7 +40,7 @@ void bcm2837_platform_smpinitialize(void){
 
 
 	//for(i=1; i < BCM2837_MAXCPUS; i++){
-	for(i=1; i < 2; i++){
+	for(i=1; i < 3; i++){
 		//map armlocalregisters_mailboxwrite and mailboxreadclear
 		armlocalregisters_mailboxwrite = (armlocalregisters_mailboxwrite_t *)(ARMLOCALREGISTERS_MAILBOXWRITE_BASE + (i * sizeof(armlocalregisters_mailboxwrite_t)));
 		armlocalregisters_mailboxreadclear = (armlocalregisters_mailboxreadclear_t *)(ARMLOCALREGISTERS_MAILBOXREADCLEAR_BASE + (i * sizeof(armlocalregisters_mailboxreadclear_t)));
