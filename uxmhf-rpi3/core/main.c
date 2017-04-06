@@ -90,25 +90,17 @@ void main_svc(void){
 
 	_XDPRINTF_("%s: now in SVC mode\n", __func__);
 
-	_XDPRINTF_("%s: WiP. Halting!\n", __func__);
-	HALT();
+	_XDPRINTF_("%s: CPSR[mode]=0x%08x\n", __func__, (sysreg_read_cpsr() & 0xF));
 
-	cpsr = sysreg_read_cpsr();
-	bcm2837_miniuart_puts(" CPSR[mode]= ");
-	debug_hexdumpu32((cpsr & 0xF));
-
-	bcm2837_miniuart_puts("uxmhf-rpi3: core: proceeding to test hypercall (HVC) in SVC mode...\n");
+	_XDPRINTF_("%s: proceeding to test hypercall (HVC) in SVC mode...\n", __func__);
 	hypcall();
-	bcm2837_miniuart_puts("uxmhf-rpi3: core: successful return after hypercall test.\n");
+	_XDPRINTF_("%s: successful return after hypercall test\n", __func__);
 
-	bcm2837_miniuart_puts("uXMHF-rpi3: core: Chainloading OS kernel...\n");
-
-	bcm2837_miniuart_flush();
+	_XDPRINTF_("%s: chainloading OS kernel...\n", __func__);
 	chainload_os(guestos_boot_r0, guestos_boot_r1, guestos_boot_r2);
 
-	bcm2837_miniuart_puts("uxmhf-rpi3: core: Halting!\n");
+	_XDPRINTF_("%s: should not be here. Halting!\n", __func__);
 	HALT();
-
 }
 
 
