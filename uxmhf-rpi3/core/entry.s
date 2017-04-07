@@ -55,7 +55,6 @@ cpumodeswitch_hyp2svc:
 
 
 
-
 .globl secondary_cpu_entry
 secondary_cpu_entry:
 

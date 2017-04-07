@@ -92,6 +92,8 @@ void main_svc(void){
 
 	_XDPRINTF_("%s: now in SVC mode\n", __func__);
 
+	_XDPRINTF_("%s: r0=0x%08x, id=0x%08x, ATAGS=0x%08x\n", __func__, guestos_boot_r0, guestos_boot_r1, guestos_boot_r2);
+
 	_XDPRINTF_("%s: CPSR[mode]=0x%08x\n", __func__, (sysreg_read_cpsr() & 0xF));
 
 	_XDPRINTF_("%s: proceeding to test hypercall (HVC) in SVC mode...\n", __func__);
@@ -320,6 +322,8 @@ void main(u32 r0, u32 id, struct atag *at){
 */
 
 	_XDPRINTFSMP_("uxmhf-rpi3: core: proceeding to switch to SVC mode...\n");
+	_XDPRINTF_("%s: r0=0x%08x, id=0x%08x, ATAGS=0x%08x\n", __func__, guestos_boot_r0, guestos_boot_r1, guestos_boot_r2);
+
 	cpumodeswitch_hyp2svc(&entry_svc);
 
 
