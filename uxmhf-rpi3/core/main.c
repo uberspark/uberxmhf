@@ -99,6 +99,8 @@ void main_svc(void){
 	_XDPRINTF_("%s: successful return after hypercall test\n", __func__);
 
 	_XDPRINTF_("%s: chainloading OS kernel...\n", __func__);
+	_XDPRINTF_("%s: r0=0x%08x, id=0x%08x, ATAGS=0x%08x\n", __func__, guestos_boot_r0, guestos_boot_r1, guestos_boot_r2);
+
 	chainload_os(guestos_boot_r0, guestos_boot_r1, guestos_boot_r2);
 
 	_XDPRINTF_("%s: should not be here. Halting!\n", __func__);
@@ -282,6 +284,13 @@ void main(u32 r0, u32 id, struct atag *at){
 	_XDPRINTFSMP_("uxmhf-rpi3: core: proceeding to test hypercall (HVC) in HYP mode...\n");
 	hypcall();
 	_XDPRINTFSMP_("uxmhf-rpi3: core: successful return after hypercall test.\n");
+
+
+	_XDPRINTFSMP_("%s: HCR=0x%08x\n", __func__, sysreg_read_hcr());
+	_XDPRINTFSMP_("%s: HSTR=0x%08x\n", __func__, sysreg_read_hstr());
+	_XDPRINTFSMP_("%s: HCPTR=0x%08x\n", __func__, sysreg_read_hcptr());
+	_XDPRINTFSMP_("%s: HDCR=0x%08x\n", __func__, sysreg_read_hdcr());
+
 
 	/*
 
