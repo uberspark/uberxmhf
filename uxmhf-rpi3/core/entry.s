@@ -44,13 +44,23 @@ chainload_os:
 	blx r3
 
 
+//.global cpumodeswitch_hyp2svc
+//cpumodeswitch_hyp2svc:
+//	msr ELR_hyp, r0			//store address to begin execution in SVC mode in ELR_hyp
+//   mrs r0, cpsr_all
+//    and r0, r0, #0xffffffe0
+//    orr r0, r0, #0x13
+//    msr SPSR_hyp, r0
+//	eret					//this will start executing at the address provided in SVC mode
+
+
 .global cpumodeswitch_hyp2svc
 cpumodeswitch_hyp2svc:
-	msr ELR_hyp, r0			//store address to begin execution in SVC mode in ELR_hyp
-    mrs r0, cpsr_all
-    and r0, r0, #0xffffffe0
-    orr r0, r0, #0x13
-    msr SPSR_hyp, r0
+	msr ELR_hyp, r3			//store address to begin execution in SVC mode in ELR_hyp
+    mrs r3, cpsr_all
+    and r3, r3, #0xffffffe0
+    orr r3, r3, #0x13
+    msr SPSR_hyp, r3
 	eret					//this will start executing at the address provided in SVC mode
 
 

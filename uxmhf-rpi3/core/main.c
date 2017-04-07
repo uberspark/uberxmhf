@@ -8,7 +8,9 @@
 
 
 extern void chainload_os(u32 r0, u32 id, struct atag *at);
-extern void cpumodeswitch_hyp2svc(u32 address);
+//extern void cpumodeswitch_hyp2svc(u32 address);
+extern void cpumodeswitch_hyp2svc(u32 r0, u32 id, struct atag *at, u32 address);
+
 extern void entry_svc(void);
 
 extern u32 g_hypvtable[];
@@ -87,12 +89,11 @@ void hypsvc_handler(void){
 }
 
 
-void main_svc(void){
+void main_svc(u32 r0, u32 id, struct atag *at){
 	u32 cpsr;
 
 	_XDPRINTF_("%s: now in SVC mode\n", __func__);
-
-	_XDPRINTF_("%s: r0=0x%08x, id=0x%08x, ATAGS=0x%08x\n", __func__, guestos_boot_r0, guestos_boot_r1, guestos_boot_r2);
+	_XDPRINTF_("%s: r0=0x%08x, id=0x%08x, ATAGS=0x%08x\n", __func__, r0, id, at);
 
 	_XDPRINTF_("%s: CPSR[mode]=0x%08x\n", __func__, (sysreg_read_cpsr() & 0xF));
 
@@ -101,9 +102,8 @@ void main_svc(void){
 	_XDPRINTF_("%s: successful return after hypercall test\n", __func__);
 
 	_XDPRINTF_("%s: chainloading OS kernel...\n", __func__);
-	_XDPRINTF_("%s: r0=0x%08x, id=0x%08x, ATAGS=0x%08x\n", __func__, guestos_boot_r0, guestos_boot_r1, guestos_boot_r2);
-
-	chainload_os(guestos_boot_r0, guestos_boot_r1, guestos_boot_r2);
+	_XDPRINTF_("%s: r0=0x%08x, id=0x%08x, ATAGS=0x%08x\n", __func__, r0, id, at);
+	chainload_os(r0, id, at);
 
 	_XDPRINTF_("%s: should not be here. Halting!\n", __func__);
 	HALT();
@@ -324,8 +324,8 @@ void main(u32 r0, u32 id, struct atag *at){
 	_XDPRINTFSMP_("uxmhf-rpi3: core: proceeding to switch to SVC mode...\n");
 	_XDPRINTF_("%s: r0=0x%08x, id=0x%08x, ATAGS=0x%08x\n", __func__, guestos_boot_r0, guestos_boot_r1, guestos_boot_r2);
 
-	cpumodeswitch_hyp2svc(&entry_svc);
-
+	//cpumodeswitch_hyp2svc(&entry_svc);
+	cpumodeswitch_hyp2svc(r0, id, at, &entry_svc);
 
 
 
