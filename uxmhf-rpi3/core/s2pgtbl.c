@@ -153,13 +153,14 @@ void s2pgtbl_populate_tables(void){
 void s2pgtbl_loadpgtblbase(void){
 	u64 vttbr;
 
-	bcm2837_miniuart_puts("L1 DESC table at=");
-	debug_hexdumpu32((u32)&l1_ldesc_table);
+	_XDPRINTFSMP_("%s: L1 DESC table at=0x%08x\n", __func__, (u32)&l1_ldesc_table);
 
 	vttbr = sysreg_read_vttbr();
-	bcm2837_miniuart_puts("VTTBR before=");
-	debug_hexdumpu32(vttbr >> 32);
-	debug_hexdumpu32((u32)vttbr);
+	_XDPRINTFSMP_("%s: VTTBR before=0x%016llx\n", __func__, vttbr);
+
+	//bcm2837_miniuart_puts("VTTBR before=");
+	//debug_hexdumpu32(vttbr >> 32);
+	//debug_hexdumpu32((u32)vttbr);
 
 	vttbr = 0;
 	vttbr |= ((u64)&l1_ldesc_table & VTTBR_BADDR_MASK);
@@ -168,9 +169,12 @@ void s2pgtbl_loadpgtblbase(void){
 
 
 	vttbr = sysreg_read_vttbr();
-	bcm2837_miniuart_puts("VTTBR after=");
-	debug_hexdumpu32(vttbr >> 32);
-	debug_hexdumpu32((u32)vttbr);
+	_XDPRINTFSMP_("%s: VTTBR after=0x%016llx\n", __func__, vttbr);
+
+
+	//bcm2837_miniuart_puts("VTTBR after=");
+	//debug_hexdumpu32(vttbr >> 32);
+	//debug_hexdumpu32((u32)vttbr);
 
 }
 
