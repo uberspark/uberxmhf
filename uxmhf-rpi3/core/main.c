@@ -344,8 +344,8 @@ void main(u32 r0, u32 id, struct atag *at){
 	_XDPRINTFSMP_("uxmhf-rpi3: core: proceeding to switch to SVC mode...\n");
 	_XDPRINTF_("%s: r0=0x%08x, id=0x%08x, ATAGS=0x%08x\n", __func__, guestos_boot_r0, guestos_boot_r1, guestos_boot_r2);
 
-	cpumodeswitch_hyp2svc(r0, id, at, &entry_svc);
-	//cpumodeswitch_hyp2svc(r0, id, at, 0x8000);
+	//cpumodeswitch_hyp2svc(r0, id, at, &entry_svc);
+	cpumodeswitch_hyp2svc(r0, id, at, 0x8000);
 
 
 
