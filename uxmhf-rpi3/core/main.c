@@ -248,6 +248,12 @@ void main(u32 r0, u32 id, struct atag *at){
 	hyppgtbl_activate();
 	_XDPRINTF_("%s: hyp page-tables activated\n", __func__);
 
+	// populate stage-2 page tables
+	s2pgtbl_populate_tables();
+	_XDPRINTF_("%s: stage-2 pts populated.\n", __func__);
+
+
+
 /*
 	_XDPRINTFSMP_("%s: lock variable at address=0x%08x\n", __func__, &my_lock);
 	_XDPRINTFSMP_("%s: acquiring lock [current value=0x%08x]...\n", __func__, (u32)my_lock);
