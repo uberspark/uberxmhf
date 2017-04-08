@@ -327,6 +327,19 @@ void main(u32 r0, u32 id, struct atag *at){
 	s2pgtbl_activatetranslation();
 */
 
+	// initialize cpu support for second stage page table translations
+	s2pgtbl_initialize();
+	_XDPRINTFSMP_("%s: cpu ready for stage-2 pts...\n", __func__);
+
+	// load page table base
+	s2pgtbl_loadpgtblbase();
+	_XDPRINTFSMP_("%s: loaded stage-2 page-table base register\n", __func__);
+
+	// activate translation
+	s2pgtbl_activatetranslation();
+	_XDPRINTFSMP_("%s: activated stage-2 translation\n", __func__);
+
+
 	_XDPRINTFSMP_("uxmhf-rpi3: core: proceeding to switch to SVC mode...\n");
 	_XDPRINTF_("%s: r0=0x%08x, id=0x%08x, ATAGS=0x%08x\n", __func__, guestos_boot_r0, guestos_boot_r1, guestos_boot_r2);
 
