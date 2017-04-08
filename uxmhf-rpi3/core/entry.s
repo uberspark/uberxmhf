@@ -28,7 +28,7 @@ halt:
 
 .globl entry_svc
 entry_svc:
-
+	hvc #0
 	/* load stack and start C land */
 	ldr sp, =stacksvc_top
 	bl main_svc
