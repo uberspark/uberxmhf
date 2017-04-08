@@ -116,8 +116,8 @@ void s2pgtbl_populate_tables(void){
 	//populate l1 ldesc table
 	for(i=0; i < L1_LDESC_TABLE_MAXENTRIES; i++){
 		if( i < L1_LDESC_TABLE_ENTRIES)
-			//l1_ldesc_table[i] = ldesc_make_s2_l1e_table((u32)&l2_ldesc_table[i * L2_LDESC_TABLE_MAXENTRIES]);
-			l1_ldesc_table[i] = ldesc_make_s2_l1e_block( (i * PAGE_SIZE_1G), attrs);
+			l1_ldesc_table[i] = ldesc_make_s2_l1e_table((u32)&l2_ldesc_table[i * L2_LDESC_TABLE_MAXENTRIES]);
+			//l1_ldesc_table[i] = ldesc_make_s2_l1e_block( (i * PAGE_SIZE_1G), attrs);
 		else
 			l1_ldesc_table[i] = ldesc_make_s2_l1e_invalid();
 	}
