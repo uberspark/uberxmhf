@@ -337,8 +337,8 @@ void main(u32 r0, u32 id, struct atag *at){
 	_XDPRINTFSMP_("%s: loaded stage-2 page-table base register\n", __func__);
 
 	// activate translation
-	s2pgtbl_activatetranslation();
-	_XDPRINTFSMP_("%s: activated stage-2 translation\n", __func__);
+	//s2pgtbl_activatetranslation();
+	//_XDPRINTFSMP_("%s: activated stage-2 translation\n", __func__);
 
 
 	_XDPRINTFSMP_("uxmhf-rpi3: core: proceeding to switch to SVC mode...\n");
