@@ -374,6 +374,7 @@ void secondary_main(u32 cpuid){
 
 	//use XDPRINTFSMP from hereon
 
+	bcm2837_platform_waitforstartup(cpuid);
 
 
 	_XDPRINTFSMP_("%s[%u]: Halting!\n", __func__, cpuid);
