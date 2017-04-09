@@ -80,5 +80,9 @@ u32 bcm2837_platform_waitforstartup(u32 cpuid){
 
 	_XDPRINTFSMP_("%s[%u]: Got startup signal, address=0x%08x\n", __func__, cpuid, cpu_startaddr);
 
+	armlocalregisters_mailboxreadclear->mailbox3readclear = cpu_startaddr;
+
+	_XDPRINTFSMP_("%s[%u]: Cleared mailbox and ready to go\n", __func__, cpuid);
+
 
 }
