@@ -39,14 +39,16 @@ call_core:
 	.global g_oskrnl_size
 	.type g_oskrnl_size, %object
 	.size g_oskrnl_size, 4
-	g_oskrnl_size:	.word	0x41E000
+	//g_oskrnl_size:	.word	0x41E000
+	g_oskrnl_size:	.word	0x41F000
 	//g_oskrnl_size:	.word	0x3ed000
 
 	.align 2
 	.global g_core_startaddr
 	.type g_core_startaddr, %object
 	.size g_core_startaddr, 4
-	g_core_startaddr:	.word	(0x41E000+0x8000)
+	//g_core_startaddr:	.word	(0x41E000+0x8000)
+	g_core_startaddr:	.word	(0x41F000+0x8000)
 	//g_core_startaddr:	.word	(0x3ed000+0x8000)
 
 
@@ -61,7 +63,8 @@ call_core:
 	.global g_guestos_startaddr
 	.type g_guestos_startaddr, %object
 	.size g_guestos_startaddr, 4
-	g_guestos_startaddr:	.word	(0x41E000+0x8000+0x800000)
+	//	g_guestos_startaddr:	.word	(0x41E000+0x8000+0x800000)
+	g_guestos_startaddr:	.word	(0x41F000+0x8000+0x800000)
 	//g_guestos_startaddr:	.word	(0x3ed000+0x8000+0x800000)
 
 
