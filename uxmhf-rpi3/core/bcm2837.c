@@ -58,3 +58,27 @@ void bcm2837_platform_smpinitialize(void){
 	}
 
 }
+
+
+u32 bcm2837_platform_waitforstartup(u32 cpuid){
+	armlocalregisters_mailboxwrite_t *armlocalregisters_mailboxwrite;
+	armlocalregisters_mailboxreadclear_t *armlocalregisters_mailboxreadclear;
+	u32 cpu_startaddr=0;
+
+	_XDPRINTFSMP_("%s[%u]: ENTER\n", __func__, cpuid);
+
+	armlocalregisters_mailboxwrite = (armlocalregisters_mailboxwrite_t *)(ARMLOCALREGISTERS_MAILBOXWRITE_BASE + (cpuid * sizeof(armlocalregisters_mailboxwrite_t)));
+	armlocalregisters_mailboxreadclear = (armlocalregisters_mailboxreadclear_t *)(ARMLOCALREGISTERS_MAILBOXREADCLEAR_BASE + (cpuid * sizeof(armlocalregisters_mailboxreadclear_t)));
+
+
+	_XDPRINTFSMP_("%s[%u]: Waiting on mailbox startup signal...\n", __func__, cpuid);
+
+	while(1){
+		cpu_startaddr=armlocalregisters_mailboxreadclear->mailbox3readclear;
+		if(cpu_startaddr != 0) break;
+	}
+
+	_XDPRINTFSMP_("%s[%u]: Got startup signal, address=0x%08x\n", __func__, cpuid, cpu_startaddr);
+
+
+}

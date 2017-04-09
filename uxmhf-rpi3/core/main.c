@@ -372,7 +372,15 @@ void secondary_main(u32 cpuid){
 	_XDPRINTF_("%s[%u]: Signalling SMP readiness...\n", __func__, cpuid);
 	cpu_smpready[cpuid]=1;
 
+	//use XDPRINTFSMP from hereon
+
+
+
 	_XDPRINTFSMP_("%s[%u]: Halting!\n", __func__, cpuid);
 	HALT();
 }
+
+
+
+
 
