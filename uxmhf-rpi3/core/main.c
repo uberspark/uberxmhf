@@ -9,7 +9,7 @@
 
 extern void chainload_os(u32 r0, u32 id, struct atag *at);
 //extern void cpumodeswitch_hyp2svc(u32 address);
-extern void cpumodeswitch_hyp2svc(u32 r0, u32 id, struct atag *at, u32 address);
+extern void cpumodeswitch_hyp2svc(u32 r0, u32 id, struct atag *at, u32 address, u32 cpuid);
 
 extern void entry_svc(void);
 

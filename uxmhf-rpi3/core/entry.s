@@ -47,11 +47,11 @@ chainload_os:
 
 .global cpumodeswitch_hyp2svc
 cpumodeswitch_hyp2svc:
-	msr ELR_hyp, r3			//store address to begin execution in SVC mode in ELR_hyp
-    mrs r3, cpsr_all
-    and r3, r3, #0xffffffe0
-    orr r3, r3, #0x13
-    msr SPSR_hyp, r3
+	msr ELR_hyp, r4			//store address to begin execution in SVC mode in ELR_hyp
+    mrs r4, cpsr_all
+    and r4, r4, #0xffffffe0
+    orr r4, r4, #0x13
+    msr SPSR_hyp, r4
 	eret					//this will start executing at the address provided in SVC mode
 
 
