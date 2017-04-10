@@ -8,6 +8,8 @@
 
 
 extern void chainload_os(u32 r0, u32 id, struct atag *at);
+extern void chainload_os_secondary(u32 address);
+
 //extern void cpumodeswitch_hyp2svc(u32 address);
 extern void cpumodeswitch_hyp2svc(u32 r0, u32 id, struct atag *at, u32 address, u32 cpuid);
 
@@ -389,10 +391,9 @@ void secondary_main(u32 cpuid){
 	_XDPRINTF_("%s[%u]: HDCR=0x%08x\n", __func__, cpuid, sysreg_read_hdcr());
 
 
-	_XDPRINTF_("%s[%u]: proceeding to switch to SVC mode...\n", __func__, cpuid);
 	//
-	//_XDPRINTF_("%s[%u]: Signalling SMP readiness...\n", __func__, cpuid);
-	//cpu_smpready[cpuid]=1;
+	_XDPRINTF_("%s[%u]: Signalling SMP readiness and booting into SVC mode...\n", __func__, cpuid);
+	cpu_smpready[cpuid]=1;
 
 	//use XDPRINTFSMP from hereon
 	//start_address=bcm2837_platform_waitforstartup(cpuid);
@@ -412,19 +413,22 @@ void secondary_main(u32 cpuid){
 
 //all secondary CPUs get here in SVC mode and enter the wait-for-startup loop
 void secondary_main_svc(u32 cpuid){
-	_XDPRINTF_("%s[%u]: ENTER: sp=0x%08x (cpu_stacks_svc=0x%08x)\n", __func__, cpuid,
-			cpu_read_sp(), &cpu_stacks_svc);
+	u32 start_address;
+	//_XDPRINTF_("%s[%u]: ENTER: sp=0x%08x (cpu_stacks_svc=0x%08x)\n", __func__, cpuid,
+	//		cpu_read_sp(), &cpu_stacks_svc);
 
 	//_XDPRINTF_("%s[%u]: Signalling SMP readiness...\n", __func__, cpuid);
 	//cpu_smpready[cpuid]=1;
 
 	//use XDPRINTFSMP from hereon
-	//start_address=bcm2837_platform_waitforstartup(cpuid);
+	start_address=bcm2837_platform_waitforstartup(cpuid);
 
 	//if(cpuid == 1){
 	//	_XDPRINTFSMP_("%s[%u]: Boooting CPU within guest at 0x%08x...\n", __func__, cpuid, start_address);
 	//	cpumodeswitch_hyp2svc(0, 0, 0, start_address);
 	//}
+	chainload_os_secondary(start_address);
+
 
 	_XDPRINTF_("%s[%u]: We should never be here. Halting!\n", __func__, cpuid);
 	HALT();
