@@ -43,9 +43,6 @@ chainload_os:
 	ldr r3, =0x00008000
 	blx r3
 
-.globl chainload_os_secondary
-chainload_os_secondary:
-	blx r0
 
 
 .global cpumodeswitch_hyp2svc
