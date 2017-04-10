@@ -362,6 +362,7 @@ void main(u32 r0, u32 id, struct atag *at){
 
 
 void secondary_main(u32 cpuid){
+	u32 start_address;
 
 	_XDPRINTF_("%s[%u]: ENTER: sp=0x%08x (cpu_stacks=0x%08x)\n", __func__, cpuid,
 			cpu_read_sp(), &cpu_stacks);
@@ -374,10 +375,13 @@ void secondary_main(u32 cpuid){
 
 	//use XDPRINTFSMP from hereon
 
-	bcm2837_platform_waitforstartup(cpuid);
+	start_address=bcm2837_platform_waitforstartup(cpuid);
 
 
-	_XDPRINTFSMP_("%s[%u]: Halting!\n", __func__, cpuid);
+	_XDPRINTFSMP_("%s[%u]: Boooting CPU within guest at 0x%08x...\n", __func__, cpuid, start_address);
+	cpumodeswitch_hyp2svc(0, 0, 0, start_address);
+
+	_XDPRINTFSMP_("%s[%u]: We should never be here. Halting!\n", __func__, cpuid);
 	HALT();
 }
 
