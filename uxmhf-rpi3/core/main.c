@@ -402,6 +402,21 @@ void secondary_main(u32 cpuid){
 }
 
 
+//all secondary CPUs get here in SVC mode and enter the wait-for-startup loop
+void secondary_main_svc(u32 cpuid){
+	_XDPRINTF_("%s[%u]: ENTER...\n", __func__, cpuid);
 
+	_XDPRINTF_("%s[%u]: Signalling SMP readiness...\n", __func__, cpuid);
+	cpu_smpready[cpuid]=1;
 
+	//use XDPRINTFSMP from hereon
+	//start_address=bcm2837_platform_waitforstartup(cpuid);
 
+	//if(cpuid == 1){
+	//	_XDPRINTFSMP_("%s[%u]: Boooting CPU within guest at 0x%08x...\n", __func__, cpuid, start_address);
+	//	cpumodeswitch_hyp2svc(0, 0, 0, start_address);
+	//}
+
+	_XDPRINTFSMP_("%s[%u]: We should never be here. Halting!\n", __func__, cpuid);
+	HALT();
+}
