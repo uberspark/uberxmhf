@@ -374,12 +374,18 @@ void secondary_main(u32 cpuid){
 	cpu_smpready[cpuid]=1;
 
 	//use XDPRINTFSMP from hereon
+	_XDPRINTFSMP_("%s[%u]: HCR=0x%08x\n", __func__, cpuid, sysreg_read_hcr());
+	_XDPRINTFSMP_("%s[%u]: HSTR=0x%08x\n", __func__, cpuid, sysreg_read_hstr());
+	_XDPRINTFSMP_("%s[%u]: HCPTR=0x%08x\n", __func__, cpuid, sysreg_read_hcptr());
+	_XDPRINTFSMP_("%s[%u]: HDCR=0x%08x\n", __func__, cpuid, sysreg_read_hdcr());
+
 
 	start_address=bcm2837_platform_waitforstartup(cpuid);
 
-
-	_XDPRINTFSMP_("%s[%u]: Boooting CPU within guest at 0x%08x...\n", __func__, cpuid, start_address);
-	cpumodeswitch_hyp2svc(0, 0, 0, start_address);
+	if(cpuid == 1){
+		_XDPRINTFSMP_("%s[%u]: Boooting CPU within guest at 0x%08x...\n", __func__, cpuid, start_address);
+		cpumodeswitch_hyp2svc(0, 0, 0, start_address);
+	}
 
 	_XDPRINTFSMP_("%s[%u]: We should never be here. Halting!\n", __func__, cpuid);
 	HALT();
