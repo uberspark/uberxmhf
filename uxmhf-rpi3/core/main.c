@@ -363,7 +363,7 @@ void secondary_main(u32 cpuid){
 
 		start_address=bcm2837_platform_waitforstartup(cpuid);
 
-		chainload_os(0, 0, 0, start_address);
+		//chainload_os(0, 0, 0, start_address);
 
 		HALT();
 	}
