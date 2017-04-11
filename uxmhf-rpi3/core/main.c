@@ -263,12 +263,12 @@ void main(u32 r0, u32 id, struct atag *at, u32 cpuid){
 	_XDPRINTF_("%s[%u]: successful return from hypercall\n", __func__, cpuid);
 
 	// initialize cpu support for second stage page table translations
-	//s2pgtbl_initialize();
-	//_XDPRINTF_("%s[%u]: cpu ready for stage-2 pts...\n", __func__, cpuid);
+	s2pgtbl_initialize();
+	_XDPRINTF_("%s[%u]: cpu ready for stage-2 pts...\n", __func__, cpuid);
 
 	// load page table base
-	//s2pgtbl_loadpgtblbase();
-	//_XDPRINTF_("%s[%u]: loaded stage-2 page-table base register\n", __func__, cpuid);
+	s2pgtbl_loadpgtblbase();
+	_XDPRINTF_("%s[%u]: loaded stage-2 page-table base register\n", __func__, cpuid);
 
 	// activate translation
 	//s2pgtbl_activatetranslation();
@@ -328,12 +328,12 @@ void secondary_main(u32 cpuid){
 	_XDPRINTF_("%s[%u]: successful return from hypercall\n", __func__, cpuid);
 
 	// initialize cpu support for second stage page table translations
-	//s2pgtbl_initialize();
-	//_XDPRINTF_("%s[%u]: cpu ready for stage-2 pts...\n", __func__, cpuid);
+	s2pgtbl_initialize();
+	_XDPRINTF_("%s[%u]: cpu ready for stage-2 pts...\n", __func__, cpuid);
 
 	// load page table base
-	//s2pgtbl_loadpgtblbase();
-	//_XDPRINTF_("%s[%u]: loaded stage-2 page-table base register\n", __func__, cpuid);
+	s2pgtbl_loadpgtblbase();
+	_XDPRINTF_("%s[%u]: loaded stage-2 page-table base register\n", __func__, cpuid);
 
 	// activate translation
 	//s2pgtbl_activatetranslation();
