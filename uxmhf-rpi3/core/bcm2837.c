@@ -22,9 +22,14 @@ void bcm2837_platform_smpinitialize(void){
 	u32 i;
 	armlocalregisters_mailboxwrite_t *armlocalregisters_mailboxwrite;
 	armlocalregisters_mailboxreadclear_t *armlocalregisters_mailboxreadclear;
+	armlocalregisters_mailboxreadclear_t *armlocalregisters_mailboxreadclear_cpu0;
+
 	u32 timeout=20;
 
+	armlocalregisters_mailboxreadclear_cpu0 = (armlocalregisters_mailboxreadclear_t *)(ARMLOCALREGISTERS_MAILBOXREADCLEAR_BASE + (0 * sizeof(armlocalregisters_mailboxreadclear_t)));
+
 	for(i=1; i < BCM2837_MAXCPUS; i++){
+		timeout=20;
 		armlocalregisters_mailboxwrite = (armlocalregisters_mailboxwrite_t *)(ARMLOCALREGISTERS_MAILBOXWRITE_BASE + (i * sizeof(armlocalregisters_mailboxwrite_t)));
 		armlocalregisters_mailboxreadclear = (armlocalregisters_mailboxreadclear_t *)(ARMLOCALREGISTERS_MAILBOXREADCLEAR_BASE + (i * sizeof(armlocalregisters_mailboxreadclear_t)));
 
@@ -50,9 +55,12 @@ void bcm2837_platform_smpinitialize(void){
 			HALT();
 		}
 
-		while(!cpu_smpready[i]){
+		while(armlocalregisters_mailboxreadclear_cpu0->mailbox3readclear == 0){
 			cpu_dmbish();
+			cpu_dsb();
 		}
+
+		armlocalregisters_mailboxreadclear_cpu0->mailbox3readclear = 1;
 
 		_XDPRINTFSMP_("%s: cpu-%u started successfully\n", __func__, i);
 	}
@@ -66,13 +74,13 @@ u32 bcm2837_platform_waitforstartup(u32 cpuid){
 	u32 cpu_startaddr=0;
 	u32 retval=0;
 
-	_XDPRINTFSMP_("%s[%u]: ENTER\n", __func__, cpuid);
+	//_XDPRINTFSMP_("%s[%u]: ENTER\n", __func__, cpuid);
 
 	armlocalregisters_mailboxwrite = (armlocalregisters_mailboxwrite_t *)(ARMLOCALREGISTERS_MAILBOXWRITE_BASE + (cpuid * sizeof(armlocalregisters_mailboxwrite_t)));
 	armlocalregisters_mailboxreadclear = (armlocalregisters_mailboxreadclear_t *)(ARMLOCALREGISTERS_MAILBOXREADCLEAR_BASE + (cpuid * sizeof(armlocalregisters_mailboxreadclear_t)));
 
 
-	_XDPRINTFSMP_("%s[%u]: Waiting on mailbox startup signal...\n", __func__, cpuid);
+	//_XDPRINTFSMP_("%s[%u]: Waiting on mailbox startup signal...\n", __func__, cpuid);
 
 	while(1){
 		cpu_startaddr=armlocalregisters_mailboxreadclear->mailbox3readclear;
@@ -83,11 +91,11 @@ u32 bcm2837_platform_waitforstartup(u32 cpuid){
 
 	armlocalregisters_mailboxreadclear->mailbox3readclear = cpu_startaddr;
 
-	_XDPRINTFSMP_("%s[%u]: Got startup signal, address=0x%08x\n", __func__, cpuid, cpu_startaddr);
+	//_XDPRINTFSMP_("%s[%u]: Got startup signal, address=0x%08x\n", __func__, cpuid, cpu_startaddr);
 	retval = cpu_startaddr;
 	cpu_startaddr=armlocalregisters_mailboxreadclear->mailbox3readclear;
-	_XDPRINTFSMP_("%s[%u]: Cleared mailbox [val=0x%08x] and ready to go\n", __func__, cpuid,
-			cpu_startaddr);
+	//_XDPRINTFSMP_("%s[%u]: Cleared mailbox [val=0x%08x] and ready to go\n", __func__, cpuid,
+	//		cpu_startaddr);
 
 	return retval;
 }
