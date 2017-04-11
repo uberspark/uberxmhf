@@ -50,7 +50,7 @@ hypvtable_reserved_handler:
 */
 	.global	hypvtable_hyphvc_handler
 hypvtable_hyphvc_handler:
-	ldr sp, =hypvtable_stack_top
+	//ldr sp, =hypvtable_stack_top
 
 	/* G1.9.2 (Figure G1-3)
 	   HYP mode uses LR_usr, i.e, does not have LR banking, so save
@@ -148,19 +148,19 @@ hypvtable_hypsvc_handler:
 .section ".stack"
 	.balign 8
 	.global hypvtable_stack
-	stack:	.space	256
+	stack:	.space	8192
 	.global hypvtable_stack_top
 	hypvtable_stack_top:
 
 	.balign 8
 	.global hypvtable_hypsvc_stack
-	hypvtable_hypsvc_stack:	.space	256
+	hypvtable_hypsvc_stack:	.space	8192
 	.global hypvtable_hypsvc_stack_top
 	hypvtable_hypsvc_stack_top:
 
 	.balign 8
 	.global hypvtable_rsvhandler_stack
-	hypvtable_rsvhandler_stack:	.space	256
+	hypvtable_rsvhandler_stack:	.space	8192
 	.global hypvtable_rsvhandler_stack_top
 	hypvtable_rsvhandler_stack_top:
 

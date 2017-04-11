@@ -29,16 +29,17 @@ void bcm2837_platform_smpinitialize(void){
 	armlocalregisters_mailboxreadclear_cpu0 = (armlocalregisters_mailboxreadclear_t *)(ARMLOCALREGISTERS_MAILBOXREADCLEAR_BASE + (0 * sizeof(armlocalregisters_mailboxreadclear_t)));
 
 	for(i=1; i < BCM2837_MAXCPUS; i++){
+	//for(i=1; i < 2; i++){
 		timeout=20;
 		armlocalregisters_mailboxwrite = (armlocalregisters_mailboxwrite_t *)(ARMLOCALREGISTERS_MAILBOXWRITE_BASE + (i * sizeof(armlocalregisters_mailboxwrite_t)));
 		armlocalregisters_mailboxreadclear = (armlocalregisters_mailboxreadclear_t *)(ARMLOCALREGISTERS_MAILBOXREADCLEAR_BASE + (i * sizeof(armlocalregisters_mailboxreadclear_t)));
 
-		_XDPRINTFSMP_("%s: cpu %u: armlocalregisters_mailboxwrite at 0x%08x\n", __func__, i, armlocalregisters_mailboxwrite);
-		_XDPRINTFSMP_("%s: cpu %u: armlocalregisters_mailboxwrite->mailbox3write at 0x%08x\n", __func__, i, &armlocalregisters_mailboxwrite->mailbox3write);
+		_XDPRINTF_("%s: cpu %u: armlocalregisters_mailboxwrite at 0x%08x\n", __func__, i, armlocalregisters_mailboxwrite);
+		_XDPRINTF_("%s: cpu %u: armlocalregisters_mailboxwrite->mailbox3write at 0x%08x\n", __func__, i, &armlocalregisters_mailboxwrite->mailbox3write);
 
 		cpu_dsb();
 		if( armlocalregisters_mailboxreadclear->mailbox3readclear != 0){
-			_XDPRINTFSMP_("%s: cpu %u: failed to respond. Halting!\n", __func__, i);
+			_XDPRINTF_("%s: cpu %u: failed to respond. Halting!\n", __func__, i);
 			HALT();
 		}
 
@@ -51,7 +52,7 @@ void bcm2837_platform_smpinitialize(void){
 		}
 
 		if (timeout==0){
-			_XDPRINTFSMP_("%s: cpu %u failed to start. Halting!\n", __func__, i);
+			_XDPRINTF_("%s: cpu %u failed to start. Halting!\n", __func__, i);
 			HALT();
 		}
 
@@ -62,7 +63,12 @@ void bcm2837_platform_smpinitialize(void){
 
 		armlocalregisters_mailboxreadclear_cpu0->mailbox3readclear = 1;
 
-		_XDPRINTFSMP_("%s: cpu-%u started successfully\n", __func__, i);
+		//while(!cpu_smpready[i]){
+		//	cpu_dmbish();
+		//	cpu_dsb();
+		//}
+
+		_XDPRINTF_("%s: cpu-%u started successfully\n", __func__, i);
 	}
 
 }
