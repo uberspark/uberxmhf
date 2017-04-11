@@ -455,7 +455,7 @@ void secondary_main_svc(u32 cpuid){
 	//use XDPRINTFSMP from hereon
 	start_address=bcm2837_platform_waitforstartup(cpuid);
 
-	if(cpuid == 1){
+	if(cpuid == 1 || cpuid == 2){
 	//	_XDPRINTFSMP_("%s[%u]: Boooting CPU within guest at 0x%08x...\n", __func__, cpuid, start_address);
 	//	cpumodeswitch_hyp2svc(0, 0, 0, start_address);
 		chainload_os_svc(start_address);
