@@ -271,8 +271,8 @@ void main(u32 r0, u32 id, struct atag *at, u32 cpuid){
 	_XDPRINTF_("%s[%u]: loaded stage-2 page-table base register\n", __func__, cpuid);
 
 	// activate translation
-	//s2pgtbl_activatetranslation();
-	//_XDPRINTF_("%s[%u]: activated stage-2 translation\n", __func__, cpuid);
+	s2pgtbl_activatetranslation();
+	_XDPRINTF_("%s[%u]: activated stage-2 translation\n", __func__, cpuid);
 
 	// boot secondary cores
 	_XDPRINTF_("%s[%u]: proceeding to initialize SMP...\n", __func__, cpuid);
@@ -336,8 +336,8 @@ void secondary_main(u32 cpuid){
 	_XDPRINTF_("%s[%u]: loaded stage-2 page-table base register\n", __func__, cpuid);
 
 	// activate translation
-	//s2pgtbl_activatetranslation();
-	//_XDPRINTF_("%s[%u]: activated stage-2 translation\n", __func__, cpuid);
+	s2pgtbl_activatetranslation();
+	_XDPRINTF_("%s[%u]: activated stage-2 translation\n", __func__, cpuid);
 
 
 /*
