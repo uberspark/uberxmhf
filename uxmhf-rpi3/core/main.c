@@ -358,11 +358,13 @@ void secondary_main(u32 cpuid){
 		armlocalregisters_mailboxwrite_t *armlocalregisters_mailboxwrite;
 		armlocalregisters_mailboxwrite = (armlocalregisters_mailboxwrite_t *)(ARMLOCALREGISTERS_MAILBOXWRITE_BASE + (0 * sizeof(armlocalregisters_mailboxwrite_t)));
 
-		_XDPRINTF_("%s[%u]: Signalling SMP readiness and halting!\n", __func__, cpuid);
+		_XDPRINTF_("%s[%u]: Signalling SMP readiness and entering SMP boot wait loop...\n", __func__, cpuid);
 		armlocalregisters_mailboxwrite->mailbox3write = 1;
 		cpu_dsb();
 
 		start_address=bcm2837_platform_waitforstartup(cpuid);
+
+		_XDPRINTFSMP_("%s[%u]: Got startup signal, address=0x%08x\n", __func__, cpuid, start_address);
 
 		chainload_os(0, 0, 0, start_address);
 
