@@ -280,7 +280,7 @@ void main(u32 r0, u32 id, struct atag *at, u32 cpuid){
 	_XDPRINTF_("%s[%u]: secondary cores booted, moving on...\n", __func__, cpuid);
 
 	//brief delay to allow secondary cores to start spinning on mailboxes
-	_XDPRINTF_("%s[%u]: waiting for secondary cores to spin into mailbox wait...\n", __func__, cpuid);
+/*	_XDPRINTF_("%s[%u]: waiting for secondary cores to spin into mailbox wait...\n", __func__, cpuid);
 	{
 		u32 i,j;
 		for(i=0; i < 1024*256; i++){
@@ -289,6 +289,7 @@ void main(u32 r0, u32 id, struct atag *at, u32 cpuid){
 			}
 		}
 	}
+*/
 
 	_XDPRINTF_("%s[%u]: booting guest in SVC mode\n", __func__, cpuid);
 	_XDPRINTF_("%s[%u]: r0=0x%08x, id=0x%08x, at=0x%08x\n", __func__, cpuid, r0, id, at);
