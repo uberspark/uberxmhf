@@ -258,9 +258,9 @@ void main(u32 r0, u32 id, struct atag *at, u32 cpuid){
 	_XDPRINTF_("%s[%u]: HVBAR[after]=0x%08x\n", __func__, cpuid, sysreg_read_hvbar());
 
 	//test hyp mode hvc
-	_XDPRINTF_("%s[%u]: proceeding to test hypercall (HVC) in HYP mode...\n", __func__, cpuid);
-	hypcall();
-	_XDPRINTF_("%s[%u]: successful return from hypercall\n", __func__, cpuid);
+	//_XDPRINTF_("%s[%u]: proceeding to test hypercall (HVC) in HYP mode...\n", __func__, cpuid);
+	//hypcall();
+	//_XDPRINTF_("%s[%u]: successful return from hypercall\n", __func__, cpuid);
 
 	// initialize cpu support for second stage page table translations
 	s2pgtbl_initialize();
@@ -324,9 +324,9 @@ void secondary_main(u32 cpuid){
 	_XDPRINTF_("%s[%u]: HVBAR[after]=0x%08x\n", __func__, cpuid, sysreg_read_hvbar());
 
 	//test hyp mode hvc
-	_XDPRINTF_("%s[%u]: proceeding to test hypercall (HVC) in HYP mode...\n", __func__, cpuid);
-	hypcall();
-	_XDPRINTF_("%s[%u]: successful return from hypercall\n", __func__, cpuid);
+	//_XDPRINTF_("%s[%u]: proceeding to test hypercall (HVC) in HYP mode...\n", __func__, cpuid);
+	//hypcall();
+	//_XDPRINTF_("%s[%u]: successful return from hypercall\n", __func__, cpuid);
 
 	// initialize cpu support for second stage page table translations
 	s2pgtbl_initialize();
