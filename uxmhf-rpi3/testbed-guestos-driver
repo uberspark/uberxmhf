@@ -1,5 +1,11 @@
 #!/bin/bash
 
 echo "Preparing to start test..."
+sudo insmod ./hypcall.ko
+echo "Loaded hypcall kernel module"
+dmesg | grep "hypcall"
+sudo rmmod hypcall.ko
+echo "Unloaded hypcall kernel module"
+dmesg | grep "hypcall"
 echo "All done. Shutting down..."
 sudo shutdown -hP now
