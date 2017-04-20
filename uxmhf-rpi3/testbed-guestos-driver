@@ -1,0 +1,5 @@
+#!/bin/bash
+
+echo "Preparing to start test..."
+echo "All done. Shutting down..."
+sudo shutdown -hP now
