@@ -21,6 +21,9 @@ int hypcall_init(void)
 {
 	printk(KERN_INFO "hypcall_init: LOAD\n");
 	printk(KERN_INFO "author: amit vasudevan (amitvasudevan@acm.org)\n");
+	printk(KERN_INFO "hypcall_init: preparing to invoke hypercall...\n");
+	hypcall_hvc();
+	printk(KERN_INFO "hypcall_init: came back after hypercall...\n");
 	return 0;
 }
 
