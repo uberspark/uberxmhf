@@ -31,23 +31,6 @@ static struct file_operations fops =
    .release = dev_release,
 };
 
-static int dev_open(struct inode *inodep, struct file *filep){
-   number_opens++;
-   printk(KERN_INFO "hypcall: device has been opened %d time(s)\n", number_opens);
-   return 0;
-}
-
-static int dev_release(struct inode *inodep, struct file *filep){
-   number_opens--;
-   printk(KERN_INFO "hypcall: device successfully closed\n");
-   return 0;
-}
-
-static ssize_t dev_write(struct file *filep, const char *buffer, size_t len, loff_t *offset){
-   printk(KERN_INFO "hypcall: dev_write invoked\n");
-   return 0;
-}
-
 
 void hypcall_hvc(void){
 	u32 r_r0, r_r1, r_r2;
@@ -67,6 +50,30 @@ void hypcall_hvc(void){
 
 	printk(KERN_INFO "hypcall_init: r0=0x%08x, r1=0x%08x, r2=0x%08x\n", r_r0, r_r1, r_r2);
 }
+
+
+static int dev_open(struct inode *inodep, struct file *filep){
+   number_opens++;
+   printk(KERN_INFO "hypcall: device has been opened %d time(s)\n", number_opens);
+   return 0;
+}
+
+static int dev_release(struct inode *inodep, struct file *filep){
+   number_opens--;
+   printk(KERN_INFO "hypcall: device successfully closed\n");
+   return 0;
+}
+
+static ssize_t dev_write(struct file *filep, const char *buffer, size_t len, loff_t *offset){
+   printk(KERN_INFO "hypcall: dev_write invoked\n");
+   printk(KERN_INFO "hypcall: preparing to invoke hypercall...\n");
+   hypcall_hvc();
+   printk(KERN_INFO "hypcall: came back after hypercall...\n");
+
+   return 0;
+}
+
+
 
 
 
