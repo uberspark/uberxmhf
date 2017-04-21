@@ -296,6 +296,11 @@
 		((addr & 0x000000FFFFFFF000ULL) | attrs | 0x3ULL)
 
 
+#define ldesc_get_s2_l3e_page_attrs(entry)	\
+		((entry & 0xFFF0000000000FF3ULL))
+
+
+
 #define L1_LDESC_TABLE_MAXENTRIES	1024
 #define L1_LDESC_TABLE_ENTRIES		3
 #define L2_LDESC_TABLE_MAXENTRIES	512

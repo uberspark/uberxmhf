@@ -24,3 +24,19 @@ void uapi_s2pgtbl_setprot(u32 address, u64 protection){
 
 }
 
+u64 uapi_s2pgtbl_getprot(u32 address){
+	u32 index;
+	u64 result=0;
+
+	if ( !((address >= UXMHF_CORE_START_ADDR) &&
+			  (address < UXMHF_CORE_END_ADDR)) ){
+		index = address/PAGE_SIZE_4K;
+		result = l3_ldesc_table[index];
+	}else{
+		result=0;
+	}
+
+	return result;
+}
+
+
