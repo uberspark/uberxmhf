@@ -10,7 +10,7 @@ void hypcall_hvc(void){
 		(	" mov r0, #0x10\r\n"
 			" mov r1, #0x11\r\n"
 			" mov r2, #0x12\r\n"
-			".long 0xE1400070 \r\n"
+			".long 0xE1400071 \r\n"
 			" mov %[res_r0], r0 \r\n"
 			" mov %[res_r1], r1 \r\n"
 			" mov %[res_r2], r2 \r\n"
