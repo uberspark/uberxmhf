@@ -6,10 +6,13 @@
 void hypcall_hvc(void){
 
 	asm volatile
-		(".long 0xE1400070"
+		(	" mov r0, #0x10\r\n"
+			" mov r1, #0x11\r\n"
+			" mov r2, #0x12\r\n"
+			".long 0xE1400070 \r\n"
 	           : /* output */
 	           : /* inputs */
-	           : /* clobber */
+	           : "r0", "r1", "r2" /* clobber */
 	    );
 
 }
