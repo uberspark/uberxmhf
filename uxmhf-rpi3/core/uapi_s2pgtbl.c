@@ -31,7 +31,7 @@ u64 uapi_s2pgtbl_getprot(u32 address){
 	if ( !((address >= UXMHF_CORE_START_ADDR) &&
 			  (address < UXMHF_CORE_END_ADDR)) ){
 		index = address/PAGE_SIZE_4K;
-		result = l3_ldesc_table[index];
+		result = ldesc_get_s2_l3e_page_attrs(l3_ldesc_table[index]);
 	}else{
 		result=0;
 	}
