@@ -1,6 +1,10 @@
-#include <stdio.h>
+#include<stdio.h>
+#include<stdlib.h>
+#include<errno.h>
+#include<fcntl.h>
+#include<string.h>
+#include<unistd.h>
 #include <sys/mman.h>
-#include <errno.h>
 
 
 //////////////////////////////////////////////////////////////////////////////
@@ -16,6 +20,7 @@ typedef unsigned long long int u64;
 
 
 __attribute__((aligned(4096))) static u8 test_buffer[4096];
+int fd;
 
 
 //////
@@ -52,7 +57,15 @@ static u64 va_to_pa(void *vaddr) {
 
 
 
+void appnpf_noaccess(u32 address){
+	int ret;
 
+	ret = write(fd, address, 2);
+	if (ret < 0){
+	  perror("Failed to issue hypercall.");
+	  return errno;
+	}
+}
 
 void do_testnpf(void){
     u32 va = (u32)&test_buffer;
@@ -77,6 +90,13 @@ void do_testnpf(void){
 
     printf("\n%s: Target buffer physical-address=0x%08x\n", __FUNCTION__, pa);
 
+    printf("\n%s: proceeding to set buffer to no-access", __FUNCTION__);
+
+    appnpf_noaccess(pa);
+
+    printf("\n%s: set buffer to no-access\n", __FUNCTION__);
+
+
 }
 
 
@@ -84,9 +104,19 @@ void do_testnpf(void){
 
 
 void main(void){
-    printf("\n%s: Proceeding with appnpf test...", __FUNCTION__);
+
+	printf("\n%s: Proceeding with appnpf test...", __FUNCTION__);
+
+	fd = open("/dev/hypcallchar", O_RDWR);             // Open the device with read/write access
+	if (fd < 0){
+	  perror("Failed to open the device...");
+	  return errno;
+	}
 
     do_testnpf();
+
+
+    close(fd);
 
     printf("\n%s: appnpf test done", __FUNCTION__);
     printf("\n\n");
