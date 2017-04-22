@@ -64,6 +64,13 @@ void hypsvc_handler(arm8_32_regs_t *r){
 						}
 						break;
 
+					case 2:{
+							_XDPRINTFSMP_("%s: setprot r0=0x%08x\n", __func__,
+									r->r0);
+						}
+						break;
+
+
 					default:
 						_XDPRINTFSMP_("%s: unknown HVC instruction imm16=0x%08x\n", __func__,
 								hvc_imm16);
