@@ -55,9 +55,9 @@ static u64 va_to_pa(void *vaddr) {
 
 
 void do_testnpf(void){
-    u32 va = &test_buffer;
+    u32 va = (u32)&test_buffer;
 
-    printf("\n%s: Target buffer virtual-address=0x%08x\n", __FUNCTION__, fva);
+    printf("\n%s: Target buffer virtual-address=0x%08x\n", __FUNCTION__, va);
 
 
 }
