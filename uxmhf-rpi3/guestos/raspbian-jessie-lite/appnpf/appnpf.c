@@ -56,9 +56,26 @@ static u64 va_to_pa(void *vaddr) {
 
 void do_testnpf(void){
     u32 va = (u32)&test_buffer;
+    u32 pa;
 
     printf("\n%s: Target buffer virtual-address=0x%08x\n", __FUNCTION__, va);
 
+    printf("\n%s: Proceeding to lock buffer in memory...", __FUNCTION__);
+
+    if(mlock(va, 4096) == -1) {
+    	  printf("\nFailed to lock page in memory: %s\n", strerror(errno));
+    	  exit(1);
+    }
+    if(mprotect(va, 4096, (PROT_READ | PROT_WRITE)) != 0){
+        printf("\n%s: Could not change page protections: %s\n", __FUNCTION__, strerror(errno));
+        exit(1);
+    }
+
+    printf("\n%s: Locked buffer in memory", __FUNCTION__);
+
+    pa=	va_to_pa(&test_buffer);
+
+    printf("\n%s: Target buffer physical-address=0x%08x\n", __FUNCTION__, pa);
 
 }
 
