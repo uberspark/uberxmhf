@@ -32,7 +32,7 @@ static struct file_operations fops =
 };
 
 
-void hypcall_hvc(void){
+void hypcall_hvc1(void){
 	u32 r_r0, r_r1, r_r2;
 
 	asm volatile
@@ -40,6 +40,27 @@ void hypcall_hvc(void){
 			" mov r1, #0x11\r\n"
 			" mov r2, #0x12\r\n"
 			".long 0xE1400071 \r\n"
+			" mov %[res_r0], r0 \r\n"
+			" mov %[res_r1], r1 \r\n"
+			" mov %[res_r2], r2 \r\n"
+	           : [res_r0] "=r" (r_r0), [res_r1] "=r" (r_r1), [res_r2] "=r" (r_r2) /* output */
+	           : /* inputs */
+	           : "r0", "r1", "r2" /* clobber */
+	    );
+
+	printk(KERN_INFO "hypcall_init: r0=0x%08x, r1=0x%08x, r2=0x%08x\n", r_r0, r_r1, r_r2);
+}
+
+
+
+void hypcall_hvc2(void){
+	u32 r_r0, r_r1, r_r2;
+
+	asm volatile
+		(	" mov r0, #0x10\r\n"
+			" mov r1, #0x11\r\n"
+			" mov r2, #0x12\r\n"
+			".long 0xE1400072 \r\n"
 			" mov %[res_r0], r0 \r\n"
 			" mov %[res_r1], r1 \r\n"
 			" mov %[res_r2], r2 \r\n"
@@ -66,9 +87,24 @@ static int dev_release(struct inode *inodep, struct file *filep){
 
 static ssize_t dev_write(struct file *filep, const char *buffer, size_t len, loff_t *offset){
    printk(KERN_INFO "hypcall: dev_write invoked\n");
-   printk(KERN_INFO "hypcall: preparing to invoke hypercall...\n");
-   hypcall_hvc();
-   printk(KERN_INFO "hypcall: came back after hypercall...\n");
+
+   switch(len){
+   	   case 1:
+   		   printk(KERN_INFO "hypcall: preparing to invoke hypercall 1...\n");
+   		   hypcall_hvc1();
+   		   printk(KERN_INFO "hypcall: came back after hypercall 1...\n");
+   		   break;
+
+   	   case 2:
+   		   printk(KERN_INFO "hypcall: preparing to invoke hypercall 2...\n");
+   		   hypcall_hvc2();
+   		   printk(KERN_INFO "hypcall: came back after hypercall 2...\n");
+   		   break;
+
+   	   default:
+   		   printk(KERN_INFO "hypcall: unknown hypercall, ignoring\n");
+   		   break;
+   }
 
    return 0;
 }
