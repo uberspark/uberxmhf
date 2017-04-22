@@ -17,7 +17,7 @@ int main(){
       return errno;
    }
 
-   ret = write(fd, NULL, 0);
+   ret = write(fd, NULL, 1);
    if (ret < 0){
       perror("Failed to write the message to the device.");
       return errno;
