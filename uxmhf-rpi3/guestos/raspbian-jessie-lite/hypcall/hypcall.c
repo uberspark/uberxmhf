@@ -64,6 +64,18 @@ void hypcall_hvc2(u32 address){
 	    );
 }
 
+void hypcall_hvc3(u32 address){
+
+	asm volatile
+		(	" mov r0, %[in_0]\r\n"
+			".long 0xE1400073 \r\n"
+	           : /* output */
+	           : [in_0] "r" (address) /* inputs */
+	           : "r0" /* clobber */
+	    );
+}
+
+
 
 static int dev_open(struct inode *inodep, struct file *filep){
    number_opens++;
@@ -92,6 +104,13 @@ static ssize_t dev_write(struct file *filep, const char *buffer, size_t len, lof
    		   printk(KERN_INFO "hypcall: address=0x%08x\n", (u32)buffer);
    		   hypcall_hvc2((u32)buffer);
    		   printk(KERN_INFO "hypcall: came back after hypercall 2...\n");
+   		   break;
+
+   	   case 3:
+   		   printk(KERN_INFO "hypcall: preparing to invoke hypercall 3...\n");
+   		   printk(KERN_INFO "hypcall: address=0x%08x\n", (u32)buffer);
+   		   hypcall_hvc3((u32)buffer);
+   		   printk(KERN_INFO "hypcall: came back after hypercall 3...\n");
    		   break;
 
    	   default:

@@ -67,6 +67,19 @@ void appnpf_noaccess(u32 address){
 	}
 }
 
+
+void appnpf_restoreaccess(u32 address){
+	int ret;
+
+	ret = write(fd, address, 3);
+	if (ret < 0){
+	  perror("Failed to issue hypercall.");
+	  return errno;
+	}
+}
+
+
+
 void do_testnpf(void){
     u32 va = (u32)&test_buffer;
     u32 pa;
@@ -95,6 +108,13 @@ void do_testnpf(void){
     appnpf_noaccess(pa);
 
     printf("\n%s: set buffer to no-access\n", __FUNCTION__);
+
+
+    printf("\n%s: proceeding to set restore buffer protections", __FUNCTION__);
+
+    appnpf_restoreaccess(pa);
+
+    printf("\n%s: restored buffer protections\n", __FUNCTION__);
 
 
 }
