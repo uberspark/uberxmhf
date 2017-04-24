@@ -65,14 +65,27 @@ void hypsvc_handler(arm8_32_regs_t *r){
 						break;
 
 					case 2:{
+							u64 attrs_noaccess = (LDESC_S2_MC_OUTER_WRITE_BACK_CACHEABLE_INNER_WRITE_BACK_CACHEABLE << LDESC_S2_MEMATTR_MC_SHIFT) |
+								(LDESC_S2_S2AP_NO_ACCESS << LDESC_S2_MEMATTR_S2AP_SHIFT) |
+								(MEM_INNER_SHAREABLE << LDESC_S2_MEMATTR_SH_SHIFT) |
+								LDESC_S2_MEMATTR_AF_MASK;
+
 							_XDPRINTFSMP_("%s: setprot_noaccess r0=0x%08x\n", __func__,
 									r->r0);
+							uapi_s2pgtbl_setprot(r->r0, attrs_noaccess);
 						}
 						break;
 
 					case 3:{
+							u64 attrs = (LDESC_S2_MC_OUTER_WRITE_BACK_CACHEABLE_INNER_WRITE_BACK_CACHEABLE << LDESC_S2_MEMATTR_MC_SHIFT) |
+								(LDESC_S2_S2AP_READ_WRITE << LDESC_S2_MEMATTR_S2AP_SHIFT) |
+								(MEM_INNER_SHAREABLE << LDESC_S2_MEMATTR_SH_SHIFT) |
+								LDESC_S2_MEMATTR_AF_MASK;
+
 							_XDPRINTFSMP_("%s: setprot_restore-access r0=0x%08x\n", __func__,
 									r->r0);
+
+							uapi_s2pgtbl_setprot(r->r0, attrs);
 						}
 						break;
 
