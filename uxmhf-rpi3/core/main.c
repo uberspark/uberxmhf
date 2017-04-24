@@ -101,24 +101,14 @@ void hypsvc_handler(arm8_32_regs_t *r){
 			break;
 
 		case HSR_EC_DATA_ABORT_ELCHANGE:
-			//bcm2837_miniuart_puts("uXMHF-rpi3: core: s2pgtbl DATA access fault\n");
-			//bcm2837_miniuart_puts(" HSR= ");
-			//debug_hexdumpu32(hsr);
-
-			elr_hyp = sysreg_read_elrhyp();
-			//bcm2837_miniuart_puts(" ELR_hyp= ");
-			//debug_hexdumpu32(elr_hyp);
-
-			elr_hyp += sizeof(u32);
-			sysreg_write_elrhyp(elr_hyp);
+			_XDPRINTFSMP_("%s: s2pgtbl DATA ABORT intercept (hsr=0x%08x)\n", __func__, hsr);
+			_XDPRINTFSMP_("%s: Halting!\n", __func__);
+			HALT();
 
 			//elr_hyp = sysreg_read_elrhyp();
-			//bcm2837_miniuart_puts(" ELR_hyp [updated]= ");
-			//debug_hexdumpu32(elr_hyp);
-			break;
-
-			//bcm2837_miniuart_puts("uXMHF-rpi3: core: Halting\n");
-			//HALT();
+			//elr_hyp += sizeof(u32);
+			//sysreg_write_elrhyp(elr_hyp);
+			//break;
 
 		default:
 			bcm2837_miniuart_puts("uXMHF-rpi3: core: UNHANDLED INTERCEPT!\n");
