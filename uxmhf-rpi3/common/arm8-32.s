@@ -322,6 +322,10 @@ sysreg_read_hdfar:
 	mrc p15,4,r0,c6,c0,0
 	bx lr
 
+.global sysreg_read_hpfar
+sysreg_read_hpfar:
+	mrc p15,4,r0,c6,c0,4
+	bx lr
 
 
 
