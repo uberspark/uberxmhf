@@ -42,7 +42,7 @@ void hyphvc_handler(void){
 // guest register and memory read/write helpers
 //////
 
-static void guest_regwrite(arm8_32_regs_t *r, regnum, u32 value){
+static void guest_regwrite(arm8_32_regs_t *r, u32 regnum, u32 value){
 	switch(regnum){
 		case 0:
 			r->r0 = value;
@@ -67,7 +67,7 @@ static void guest_regwrite(arm8_32_regs_t *r, regnum, u32 value){
 }
 
 
-static u32 guest_regread(arm8_32_regs_t *r, regnum){
+static u32 guest_regread(arm8_32_regs_t *r, u32 regnum){
 	switch(regnum){
 		case 0:
 			return(r->r0);
@@ -193,7 +193,7 @@ void hypsvc_handler(arm8_32_regs_t *r){
 				//_XDPRINTFSMP_("%s: Halting!\n", __func__);
 				//HALT();
 				guest_mem = (u8 *)fault_pa;
-				if(wnr){
+				if(da_iss_wnr){
 					//write
 					*guest_mem = (u8)guest_regread(r, da_iss_srt);
 				}else{
