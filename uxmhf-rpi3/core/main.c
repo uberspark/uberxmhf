@@ -86,6 +86,7 @@ void hypsvc_handler(arm8_32_regs_t *r){
 									r->r0);
 
 							uapi_s2pgtbl_setprot(r->r0, attrs);
+							sysreg_tlbiipas2is(r->r0);
 						}
 						break;
 

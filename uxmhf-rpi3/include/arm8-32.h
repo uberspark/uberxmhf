@@ -479,6 +479,7 @@ extern void sysreg_write_hmair1(u32 value);
 
 extern void sysreg_tlbiallh(void);
 extern void sysreg_iciallu(void);
+extern void sysreg_tlbiipas2is(u32 ipa);
 
 extern u64 sysreg_read_httbr(void);
 extern void sysreg_write_httbr(u64 value);

@@ -220,6 +220,17 @@ sysreg_iciallu:
 	bx lr
 
 
+//r0=ipa to flush s2pgtbl tlb entries for
+//vmid is obtained from current vttbr
+.global sysreg_tlbiipas2is
+sysreg_tlbiipas2is:
+	mcr p15,4,r0,c8,c0,1
+	isb
+	dsb ish
+	bx lr
+
+
+
 .global sysreg_read_mair0
 sysreg_read_mair0:
 	mrc p15,0,r0,c10,c2,0
