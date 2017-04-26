@@ -230,6 +230,12 @@ sysreg_tlbiipas2is:
 	bx lr
 
 
+.global sysreg_tlbiallis
+sysreg_tlbiallis:
+	mcr p15,0,r0,c8,c3,0
+	isb
+	dsb ish
+	bx lr
 
 .global sysreg_read_mair0
 sysreg_read_mair0:
