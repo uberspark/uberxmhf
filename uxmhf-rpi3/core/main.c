@@ -37,6 +37,59 @@ void hyphvc_handler(void){
 	_XDPRINTF_("%s: [OUT]\n", __func__);
 }
 
+
+//////
+// guest register and memory read/write helpers
+//////
+
+static void guest_regwrite(arm8_32_regs_t *r, regnum, u32 value){
+	switch(regnum){
+		case 0:
+			r->r0 = value;
+			break;
+
+		case 1:
+			r->r1 = value;
+			break;
+
+		case 2:
+			r->r2 = value;
+			break;
+
+		case 3:
+			r->r3 = value;
+			break;
+
+		default:
+			_XDPRINTFSMP_("%s: Invalid regnum=%u. Halting!\n", __func__, regnum);
+			HALT();
+	}
+}
+
+
+static u32 guest_regread(arm8_32_regs_t *r, regnum){
+	switch(regnum){
+		case 0:
+			return(r->r0);
+
+		case 1:
+			return(r->r1);
+
+		case 2:
+			return(r->r2);
+
+		case 3:
+			return(r->r3);
+
+		default:
+			_XDPRINTFSMP_("%s: Invalid regnum=%u. Halting!\n", __func__, regnum);
+			HALT();
+	}
+
+	return 0;	//never reached
+}
+
+
 void hypsvc_handler(arm8_32_regs_t *r){
 	u32 hsr;
 	u32 elr_hyp;
