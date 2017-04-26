@@ -167,6 +167,7 @@ void hypsvc_handler(arm8_32_regs_t *r){
 				u32 da_iss_sas;
 				u32 da_iss_srt;
 				u32 da_iss_wnr;
+				u8 *guest_mem;
 
 				da_iss = ((hsr & HSR_ISS_MASK) >> HSR_ISS_SHIFT);
 				da_iss_isv = (da_iss & 0x01000000UL) >> 24;
@@ -191,6 +192,14 @@ void hypsvc_handler(arm8_32_regs_t *r){
 						da_iss_sas, da_iss_srt, da_iss_wnr);
 				//_XDPRINTFSMP_("%s: Halting!\n", __func__);
 				//HALT();
+				guest_mem = (u8 *)fault_pa;
+				if(wnr){
+					//write
+					*guest_mem = (u8)guest_regread(r, da_iss_srt);
+				}else{
+					//read
+					guest_regwrite(r, da_iss_srt, (u32)*guest_mem);
+				}
 
 				elr_hyp = sysreg_read_elrhyp();
 				elr_hyp += sizeof(u32);
