@@ -19,7 +19,7 @@ typedef unsigned long long int u64;
 #define PAGEMAP_LENGTH 8
 
 
-__attribute__((aligned(4096))) static u8 test_buffer[4096];
+__attribute__((aligned(4096))) static volatile u8 test_buffer[4096];
 int fd;
 
 
@@ -83,6 +83,7 @@ void appnpf_restoreaccess(u32 address){
 void do_testnpf(void){
     u32 va = (u32)&test_buffer;
     u32 pa;
+    u32 val;
 
     printf("\n%s: Target buffer virtual-address=0x%08x\n", __FUNCTION__, va);
 
@@ -113,6 +114,7 @@ void do_testnpf(void){
     printf("\n%s: proceeding to write to buffer...\n", __FUNCTION__);
 
     test_buffer[5]='A';
+    val = test_buffer[5];
 
     printf("\n%s: proceeding to set restore buffer protections", __FUNCTION__);
 
@@ -120,7 +122,7 @@ void do_testnpf(void){
 
     printf("\n%s: restored buffer protections\n", __FUNCTION__);
 
-    printf("\n%s: test_buffer[5]=0x%02x\n", __FUNCTION__, test_buffer[5]);
+    printf("\n%s: val=0x%02x\n", __FUNCTION__, val);
 }
 
 
