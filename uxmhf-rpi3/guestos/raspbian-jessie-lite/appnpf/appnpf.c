@@ -111,6 +111,7 @@ void do_testnpf(void){
 
 
     printf("\n%s: proceeding to write to buffer...\n", __FUNCTION__);
+
     test_buffer[0]='A';
 
     printf("\n%s: proceeding to set restore buffer protections", __FUNCTION__);
@@ -119,10 +120,7 @@ void do_testnpf(void){
 
     printf("\n%s: restored buffer protections\n", __FUNCTION__);
 
-    printf("\n%s: proceeding to write to buffer...\n", __FUNCTION__);
-    test_buffer[0]='B';
-    printf("\n%s: successfully wrote buffer[0]=0x%02x\n", __FUNCTION__, test_buffer[0]);
-
+    printf("\n%s: test_buffer[0]=0x%02x\n", __FUNCTION__, test_buffer[0]);
 }
 
 
