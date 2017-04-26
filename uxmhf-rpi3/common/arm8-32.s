@@ -317,6 +317,14 @@ sysreg_write_dacr:
 	bx lr
 
 
+.global sysreg_read_hdfar
+sysreg_read_hdfar:
+	mrc p15,4,r0,c6,c0,0
+	bx lr
+
+
+
+
 //r0 specifies the 32-bit lock variable address
 .global spin_lock
 spin_lock:

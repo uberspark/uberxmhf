@@ -494,6 +494,7 @@ extern void sysreg_write_actlr(u32 value);
 extern u32 sysreg_read_dacr(void);
 extern void sysreg_write_dacr(u32 value);
 
+extern u32 sysreg_read_hdfar(void);
 
 extern void cpu_isb(void);
 extern void cpu_dsb(void);
