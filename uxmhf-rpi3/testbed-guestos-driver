@@ -13,5 +13,7 @@ echo "usr mode npf test app executed"
 sudo rmmod hypcall.ko
 echo "Unloaded hypcall kernel module"
 dmesg | grep "hypcall"
+echo "Waiting for test output to be flushed..."
+sleep 10
 echo "All done. Shutting down..."
 sudo shutdown -hP now
