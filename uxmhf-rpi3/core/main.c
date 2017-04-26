@@ -106,8 +106,14 @@ void hypsvc_handler(arm8_32_regs_t *r){
 
 		case HSR_EC_DATA_ABORT_ELCHANGE:{
 				u32 elr_hyp;
-				u32 fault_va = sysreg_read_hdfar();
-				u32 fault_pa = (sysreg_read_hpfar() & 0xFFFFFFF0) << 8;
+				u32 fault_va;
+				u32 fault_va_page_offset;
+				u32 fault_pa;
+
+				fault_va = sysreg_read_hdfar();
+				fault_va_page_offset = fault_va % 4096;
+				fault_pa = ((sysreg_read_hpfar() & 0xFFFFFFF0) << 8) | fault_va_page_offset;
+
 				_XDPRINTFSMP_("%s: s2pgtbl DATA ABORT intercept (hsr=0x%08x)\n", __func__, hsr);
 				_XDPRINTFSMP_("%s: s2pgtbl DATA ABORT va=0x%08x, pa=0x%08x\n", __func__,
 						fault_va, fault_pa);
