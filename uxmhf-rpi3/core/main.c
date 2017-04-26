@@ -73,6 +73,8 @@ void hypsvc_handler(arm8_32_regs_t *r){
 							_XDPRINTFSMP_("%s: setprot_noaccess r0=0x%08x\n", __func__,
 									r->r0);
 							uapi_s2pgtbl_setprot(r->r0, attrs_noaccess);
+							sysreg_tlbiipas2is(r->r0);
+
 						}
 						break;
 
