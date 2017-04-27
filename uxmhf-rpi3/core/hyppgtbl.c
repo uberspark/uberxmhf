@@ -123,7 +123,7 @@ void hyppgtbl_populate_tables(void){
 
 	//populate l2 ldesc table
 	for(i=0; i < (L1_LDESC_TABLE_ENTRIES * L2_LDESC_TABLE_MAXENTRIES); i++){
-		if ( (i * PAGE_SIZE_2M) >= BCM2837_PERIPHERAL_BASE )
+		if ( (i * PAGE_SIZE_2M) >= BCM2837_PERIPHERALS_BASE )
 			hyp_l2_ldesc_table[i] = ldesc_make_s1_l2e_block( (i * PAGE_SIZE_2M), l2_attrs_dev);
 		else
 			hyp_l2_ldesc_table[i] = ldesc_make_s1_l2e_block( (i * PAGE_SIZE_2M), l2_attrs);
