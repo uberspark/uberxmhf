@@ -19,4 +19,6 @@ void dmaprot_activate(void){
 
 	uapi_s2pgtbl_setprot(BCM2837_DMA0_REGS_BASE, attrs_dev);
 	sysreg_tlbiallis();
+	uapi_s2pgtbl_setprot(BCM2837_DMA15_REGS_BASE, attrs_dev);
+	sysreg_tlbiallis();
 }
