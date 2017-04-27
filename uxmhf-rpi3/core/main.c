@@ -163,13 +163,16 @@ void hypsvc_handler(arm8_32_regs_t *r){
 				u32 fault_va_page_offset;
 				u32 fault_pa;
 				u32 da_iss;
+				u32 da_il;
 				u32 da_iss_isv;
 				u32 da_iss_sas;
 				u32 da_iss_srt;
 				u32 da_iss_wnr;
-				u8 *guest_mem;
+				u32 *guest_mem;
 
 				da_iss = ((hsr & HSR_ISS_MASK) >> HSR_ISS_SHIFT);
+				da_il = ((hsr & HSR_IL_MASK) >> HSR_IL_SHIFT);
+
 				da_iss_isv = (da_iss & 0x01000000UL) >> 24;
 				da_iss_sas = (da_iss & 0x00C00000UL) >> 22;
 				da_iss_srt = (da_iss & 0x000F0000UL) >> 16;
@@ -182,6 +185,11 @@ void hypsvc_handler(arm8_32_regs_t *r){
 					HALT();
 				}
 
+				if(!da_il){
+					_XDPRINTFSMP_("%s: s2pgtbl DATA ABORT: invalid il. Halting!\n", __func__);
+					HALT();
+				}
+
 				fault_va = sysreg_read_hdfar();
 				fault_va_page_offset = fault_va % 4096;
 				fault_pa = ((sysreg_read_hpfar() & 0xFFFFFFF0) << 8) | fault_va_page_offset;
@@ -190,12 +198,17 @@ void hypsvc_handler(arm8_32_regs_t *r){
 						fault_va, fault_pa);
 				_XDPRINTFSMP_("%s: s2pgtbl DATA ABORT: sas=%u, srt=%u, wnr=%u\n", __func__,
 						da_iss_sas, da_iss_srt, da_iss_wnr);
-				_XDPRINTFSMP_("%s: Halting!\n", __func__);
-				HALT();
-				guest_mem = (u8 *)fault_pa;
+				//_XDPRINTFSMP_("%s: Halting!\n", __func__);
+				//HALT();
+				if(da_iss_sas != 0x2){
+					_XDPRINTFSMP_("%s: s2pgtbl DATA ABORT: invalid il. Halting!\n", __func__);
+					HALT();
+				}
+
+				guest_mem = (u32 *)fault_pa;
 				if(da_iss_wnr){
 					//write
-					*guest_mem = (u8)guest_regread(r, da_iss_srt);
+					*guest_mem = (u32)guest_regread(r, da_iss_srt);
 				}else{
 					//read
 					guest_regwrite(r, da_iss_srt, (u32)*guest_mem);
