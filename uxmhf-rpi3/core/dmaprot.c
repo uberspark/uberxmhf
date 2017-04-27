@@ -10,3 +10,13 @@
 #include <miniuart.h>
 #include <debug.h>
 
+//activate DMA protection mechanism
+void dmaprot_activate(void){
+	u64 attrs_dev = (LDESC_S2_MC_DEVnGnRnE << LDESC_S2_MEMATTR_MC_SHIFT) |
+			(LDESC_S2_S2AP_READ_ONLY << LDESC_S2_MEMATTR_S2AP_SHIFT) |
+			(MEM_INNER_SHAREABLE << LDESC_S2_MEMATTR_SH_SHIFT) |
+			LDESC_S2_MEMATTR_AF_MASK;
+
+	uapi_s2pgtbl_setprot(BCM2837_DMA0_REGS_BASE, attrs_dev);
+	sysreg_tlbiallis();
+}
