@@ -190,8 +190,8 @@ void hypsvc_handler(arm8_32_regs_t *r){
 						fault_va, fault_pa);
 				_XDPRINTFSMP_("%s: s2pgtbl DATA ABORT: sas=%u, srt=%u, wnr=%u\n", __func__,
 						da_iss_sas, da_iss_srt, da_iss_wnr);
-				//_XDPRINTFSMP_("%s: Halting!\n", __func__);
-				//HALT();
+				_XDPRINTFSMP_("%s: Halting!\n", __func__);
+				HALT();
 				guest_mem = (u8 *)fault_pa;
 				if(da_iss_wnr){
 					//write
