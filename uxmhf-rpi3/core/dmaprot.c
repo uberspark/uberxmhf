@@ -22,3 +22,20 @@ void dmaprot_activate(void){
 	uapi_s2pgtbl_setprot(BCM2837_DMA15_REGS_BASE, attrs_dev);
 	sysreg_tlbiallis();
 }
+
+_XDPRINTFSMP_("%s: s2pgtbl DATA ABORT va=0x%08x, pa=0x%08x\n", __func__,
+		fault_va, fault_pa);
+_XDPRINTFSMP_("%s: s2pgtbl DATA ABORT: sas=%u, srt=%u, wnr=%u\n", __func__,
+		da_iss_sas, da_iss_srt, da_iss_wnr);
+
+//handle DMA controller accesses
+//va = virtual address of DMA controller register
+//pa = physical address of DMA controller regiter
+//sas = size of access
+//srt = general purpose register number
+//wnr = write/read indicator
+//il = instruction length
+void dmaprot_handle_dmacontroller_access(u32 va, u32 pa, u32 sas, u32 srt, u32 wnr, u32 il){
+
+
+}
