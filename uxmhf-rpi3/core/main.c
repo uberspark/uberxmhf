@@ -199,13 +199,7 @@ void hypsvc_handler(arm8_32_regs_t *r){
 				_XDPRINTFSMP_("%s: s2pgtbl DATA ABORT: sas=%u, srt=%u, wnr=%u\n", __func__,
 						da_iss_sas, da_iss_srt, da_iss_wnr);
 
-				if(da_iss_wnr == 1){
-					_XDPRINTFSMP_("%s: wnr=1, Halting!\n", __func__);
-					HALT();
-				}
 
-				//_XDPRINTFSMP_("%s: Halting!\n", __func__);
-				//HALT();
 				if(da_iss_sas != 0x2){
 					_XDPRINTFSMP_("%s: s2pgtbl DATA ABORT: invalid il. Halting!\n", __func__);
 					HALT();
