@@ -208,14 +208,15 @@ void hypsvc_handler(arm8_32_regs_t *r){
 				if(da_iss_wnr){
 					//write
 					u32 value = (u32)guest_regread(r, da_iss_srt);
-					_XDPRINTFSMP_("%s: s2pgtbl DATA ABORT: value=0x%08x\n", __func__, value);
+					//_XDPRINTFSMP_("%s: s2pgtbl DATA ABORT: value=0x%08x\n", __func__, value);
 					*guest_mem = value;
 				}else{
 					//read
 					u32 value = (u32)*guest_mem;
-					_XDPRINTFSMP_("%s: s2pgtbl DATA ABORT: value=0x%08x\n", __func__, value);
+					//_XDPRINTFSMP_("%s: s2pgtbl DATA ABORT: value=0x%08x\n", __func__, value);
 					guest_regwrite(r, da_iss_srt, value);
 				}
+
 				cpu_dsb();
 				cpu_isb();
 
