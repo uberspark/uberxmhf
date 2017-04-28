@@ -5,7 +5,7 @@
 #include <atags.h>
 #include <fdt.h>
 #include <debug.h>
-
+#include <dmaprot.h>
 
 extern void chainload_os(u32 r0, u32 id, struct atag *at, u32 address);
 extern void chainload_os_svc(u32 start_address);
@@ -42,7 +42,7 @@ void hyphvc_handler(void){
 // guest register and memory read/write helpers
 //////
 
-static void guest_regwrite(arm8_32_regs_t *r, u32 regnum, u32 value){
+void guest_regwrite(arm8_32_regs_t *r, u32 regnum, u32 value){
 	switch(regnum){
 		case 0:
 			r->r0 = value;
@@ -67,7 +67,7 @@ static void guest_regwrite(arm8_32_regs_t *r, u32 regnum, u32 value){
 }
 
 
-static u32 guest_regread(arm8_32_regs_t *r, u32 regnum){
+u32 guest_regread(arm8_32_regs_t *r, u32 regnum){
 	switch(regnum){
 		case 0:
 			return(r->r0);
@@ -159,70 +159,38 @@ void hypsvc_handler(arm8_32_regs_t *r){
 
 		case HSR_EC_DATA_ABORT_ELCHANGE:{
 				u32 elr_hyp;
-				u32 fault_va;
+				//u32 fault_va;
 				u32 fault_va_page_offset;
-				u32 fault_pa;
+				//u32 fault_pa;
 				u32 da_iss;
-				u32 da_il;
+				//u32 da_il;
 				u32 da_iss_isv;
-				u32 da_iss_sas;
-				u32 da_iss_srt;
-				u32 da_iss_wnr;
-				volatile u32 *guest_mem;
+				//u32 da_iss_sas;
+				//u32 da_iss_srt;
+				//u32 da_iss_wnr;
+				info_intercept_data_abort_t ida;
 
 				da_iss = ((hsr & HSR_ISS_MASK) >> HSR_ISS_SHIFT);
-				da_il = ((hsr & HSR_IL_MASK) >> HSR_IL_SHIFT);
+				ida.il = ((hsr & HSR_IL_MASK) >> HSR_IL_SHIFT);
 				da_iss_isv = (da_iss & 0x01000000UL) >> 24;
-				da_iss_sas = (da_iss & 0x00C00000UL) >> 22;
-				da_iss_srt = (da_iss & 0x000F0000UL) >> 16;
-				da_iss_wnr = (da_iss & 0x00000040UL) >> 6;
-
-				//_XDPRINTFSMP_("%s: s2pgtbl DATA ABORT intercept (hsr=0x%08x)\n", __func__, hsr);
+				ida.sas = (da_iss & 0x00C00000UL) >> 22;
+				ida.srt = (da_iss & 0x000F0000UL) >> 16;
+				ida.wnr = (da_iss & 0x00000040UL) >> 6;
+				ida.va = sysreg_read_hdfar();
+				fault_va_page_offset = ida.va % 4096;
+				ida.pa = ((sysreg_read_hpfar() & 0xFFFFFFF0) << 8) | fault_va_page_offset;
+				ida.r = r;
 
 				if(!da_iss_isv){
 					_XDPRINTFSMP_("%s: s2pgtbl DATA ABORT: invalid isv. Halting!\n", __func__);
 					HALT();
 				}
 
-				//if(!da_il){
-				//	_XDPRINTFSMP_("%s: s2pgtbl DATA ABORT: invalid il. Halting!\n", __func__);
-				//	HALT();
-				//}
-
-				fault_va = sysreg_read_hdfar();
-				fault_va_page_offset = fault_va % 4096;
-				fault_pa = ((sysreg_read_hpfar() & 0xFFFFFFF0) << 8) | fault_va_page_offset;
-
-				//_XDPRINTFSMP_("%s: s2pgtbl DATA ABORT va=0x%08x, pa=0x%08x\n", __func__,
-				//		fault_va, fault_pa);
-				//_XDPRINTFSMP_("%s: s2pgtbl DATA ABORT: sas=%u, srt=%u, wnr=%u\n", __func__,
-				//		da_iss_sas, da_iss_srt, da_iss_wnr);
-
-
-				if(da_iss_sas != 0x2){
-					_XDPRINTFSMP_("%s: s2pgtbl DATA ABORT: invalid il. Halting!\n", __func__);
-					HALT();
-				}
-
-				guest_mem = (u32 *)fault_pa;
-				if(da_iss_wnr){
-					//write
-					u32 value = (u32)guest_regread(r, da_iss_srt);
-					//_XDPRINTFSMP_("%s: s2pgtbl DATA ABORT: value=0x%08x\n", __func__, value);
-					*guest_mem = value;
-				}else{
-					//read
-					u32 value = (u32)*guest_mem;
-					//_XDPRINTFSMP_("%s: s2pgtbl DATA ABORT: value=0x%08x\n", __func__, value);
-					guest_regwrite(r, da_iss_srt, value);
-				}
-
-				cpu_dsb();
-				cpu_isb();
+				dmaprot_handle_dmacontroller_access(&ida);
 
 				elr_hyp = sysreg_read_elrhyp();
 
-				if(da_il)
+				if(ida.il)
 					elr_hyp += sizeof(u32);
 				else
 					elr_hyp += sizeof(u16);

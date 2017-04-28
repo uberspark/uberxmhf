@@ -16,4 +16,4 @@ dmesg | grep "hypcall"
 echo "Waiting for test output to be flushed..."
 sleep 10
 echo "All done. Shutting down..."
-#sudo shutdown -hP now
+sudo shutdown -hP now
