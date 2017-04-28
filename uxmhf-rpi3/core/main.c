@@ -93,7 +93,7 @@ static u32 guest_regread(arm8_32_regs_t *r, u32 regnum){
 void hypsvc_handler(arm8_32_regs_t *r){
 	u32 hsr;
 	u32 elr_hyp;
-	_XDPRINTFSMP_("%s: ENTER\n", __func__);
+	//_XDPRINTFSMP_("%s: ENTER\n", __func__);
 
 	//read hsr to determine the cause of the intercept
 	hsr = sysreg_read_hsr();
@@ -239,7 +239,7 @@ void hypsvc_handler(arm8_32_regs_t *r){
 			HALT();
 	}
 
-	_XDPRINTFSMP_("%s: EXIT\n", __func__);
+	//_XDPRINTFSMP_("%s: EXIT\n", __func__);
 
 
 }
