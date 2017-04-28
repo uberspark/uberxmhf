@@ -168,36 +168,35 @@ void hypsvc_handler(arm8_32_regs_t *r){
 				u32 da_iss_sas;
 				u32 da_iss_srt;
 				u32 da_iss_wnr;
-				u32 *guest_mem;
+				volatile u32 *guest_mem;
 
 				da_iss = ((hsr & HSR_ISS_MASK) >> HSR_ISS_SHIFT);
 				da_il = ((hsr & HSR_IL_MASK) >> HSR_IL_SHIFT);
-
 				da_iss_isv = (da_iss & 0x01000000UL) >> 24;
 				da_iss_sas = (da_iss & 0x00C00000UL) >> 22;
 				da_iss_srt = (da_iss & 0x000F0000UL) >> 16;
 				da_iss_wnr = (da_iss & 0x00000040UL) >> 6;
 
-				_XDPRINTFSMP_("%s: s2pgtbl DATA ABORT intercept (hsr=0x%08x)\n", __func__, hsr);
+				//_XDPRINTFSMP_("%s: s2pgtbl DATA ABORT intercept (hsr=0x%08x)\n", __func__, hsr);
 
 				if(!da_iss_isv){
 					_XDPRINTFSMP_("%s: s2pgtbl DATA ABORT: invalid isv. Halting!\n", __func__);
 					HALT();
 				}
 
-				if(!da_il){
-					_XDPRINTFSMP_("%s: s2pgtbl DATA ABORT: invalid il. Halting!\n", __func__);
-					HALT();
-				}
+				//if(!da_il){
+				//	_XDPRINTFSMP_("%s: s2pgtbl DATA ABORT: invalid il. Halting!\n", __func__);
+				//	HALT();
+				//}
 
 				fault_va = sysreg_read_hdfar();
 				fault_va_page_offset = fault_va % 4096;
 				fault_pa = ((sysreg_read_hpfar() & 0xFFFFFFF0) << 8) | fault_va_page_offset;
 
-				_XDPRINTFSMP_("%s: s2pgtbl DATA ABORT va=0x%08x, pa=0x%08x\n", __func__,
-						fault_va, fault_pa);
-				_XDPRINTFSMP_("%s: s2pgtbl DATA ABORT: sas=%u, srt=%u, wnr=%u\n", __func__,
-						da_iss_sas, da_iss_srt, da_iss_wnr);
+				//_XDPRINTFSMP_("%s: s2pgtbl DATA ABORT va=0x%08x, pa=0x%08x\n", __func__,
+				//		fault_va, fault_pa);
+				//_XDPRINTFSMP_("%s: s2pgtbl DATA ABORT: sas=%u, srt=%u, wnr=%u\n", __func__,
+				//		da_iss_sas, da_iss_srt, da_iss_wnr);
 
 
 				if(da_iss_sas != 0x2){
@@ -217,9 +216,16 @@ void hypsvc_handler(arm8_32_regs_t *r){
 					_XDPRINTFSMP_("%s: s2pgtbl DATA ABORT: value=0x%08x\n", __func__, value);
 					guest_regwrite(r, da_iss_srt, value);
 				}
+				cpu_dsb();
+				cpu_isb();
 
 				elr_hyp = sysreg_read_elrhyp();
-				elr_hyp += sizeof(u32);
+
+				if(da_il)
+					elr_hyp += sizeof(u32);
+				else
+					elr_hyp += sizeof(u16);
+
 				sysreg_write_elrhyp(elr_hyp);
 			}
 			break;

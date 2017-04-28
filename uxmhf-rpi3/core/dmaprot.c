@@ -23,10 +23,6 @@ void dmaprot_activate(void){
 	sysreg_tlbiallis();
 }
 
-_XDPRINTFSMP_("%s: s2pgtbl DATA ABORT va=0x%08x, pa=0x%08x\n", __func__,
-		fault_va, fault_pa);
-_XDPRINTFSMP_("%s: s2pgtbl DATA ABORT: sas=%u, srt=%u, wnr=%u\n", __func__,
-		da_iss_sas, da_iss_srt, da_iss_wnr);
 
 //handle DMA controller accesses
 //va = virtual address of DMA controller register
