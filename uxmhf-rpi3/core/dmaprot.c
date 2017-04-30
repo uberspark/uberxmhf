@@ -25,6 +25,14 @@ void dmaprot_activate(void){
 }
 
 
+void dmaprot_sanitizecb(u32 cb_pa){
+	u32 cb_syspa = dmapa_to_syspa(cb_pa);
+
+	_XDPRINTFSMP_("%s: cb_pa=0x%08x, cb_syspa=0x%08x\n", __func__, cb_pa, cb_syspa);
+	_XDPRINTFSMP_("%s: Halting!\n", __func__);
+	HALT();
+}
+
 //handle DMA controller accesses
 //va = virtual address of DMA controller register
 //pa = physical address of DMA controller regiter
@@ -49,6 +57,9 @@ void dmaprot_handle_dmacontroller_access(info_intercept_data_abort_t *ida){
 		//write
 		u32 value = (u32)guest_regread(ida->r, ida->srt);
 		//_XDPRINTFSMP_("%s: s2pgtbl DATA ABORT: value=0x%08x\n", __func__, value);
+		if( ((u32)dmac_reg & 0x000000FFUL) == 0x04)
+			dmaprot_sanitizecb(value);
+
 		*dmac_reg = value;
 	}else{
 		//read

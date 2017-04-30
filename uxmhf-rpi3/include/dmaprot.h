@@ -10,6 +10,8 @@
 
 #ifndef __ASSEMBLY__
 
+#define dmapa_to_syspa(x) (x & 0x3FFFFFFFUL)
+
 typedef struct {
 	arm8_32_regs_t *r;
 	u32 va;
@@ -19,6 +21,8 @@ typedef struct {
 	u32 wnr;
 	u32 il;
 } info_intercept_data_abort_t;
+
+
 
 void dmaprot_activate(void);
 
