@@ -27,8 +27,18 @@ void dmaprot_activate(void){
 
 void dmaprot_sanitizecb(u32 cb_pa){
 	u32 cb_syspa = dmapa_to_syspa(cb_pa);
+	dmac_cb_t *dmacb;
 
 	_XDPRINTFSMP_("%s: cb_pa=0x%08x, cb_syspa=0x%08x\n", __func__, cb_pa, cb_syspa);
+	dmacb = (dmac_cb_t *)cb_syspa;
+	_XDPRINTFSMP_("%s: dumping dmacb...\n", __func__);
+	_XDPRINTFSMP_("%s: ti=0x%08x\n", __func__, dmacb->ti);
+	_XDPRINTFSMP_("%s: src_addr=0x%08x\n", __func__, dmacb->src_addr);
+	_XDPRINTFSMP_("%s: dst_addr=0x%08x\n", __func__, dmacb->dst_addr);
+	_XDPRINTFSMP_("%s: len=0x%08x\n", __func__, dmacb->len);
+	_XDPRINTFSMP_("%s: stride=0x%08x\n", __func__, dmacb->stride);
+	_XDPRINTFSMP_("%s: next_cb_addr=0x%08x\n", __func__, dmacb->next_cb_addr);
+
 	_XDPRINTFSMP_("%s: Halting!\n", __func__);
 	HALT();
 }

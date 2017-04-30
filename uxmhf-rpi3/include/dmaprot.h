@@ -23,6 +23,17 @@ typedef struct {
 } info_intercept_data_abort_t;
 
 
+typedef struct {
+	u32 ti;
+	u32 src_addr;
+	u32 dst_addr;
+	u32 len;
+	u32 stride;
+	u32 next_cb_addr;
+	u32 rsv_0;
+	u32 rsv_1;
+} dmac_cb_t;
+
 
 void dmaprot_activate(void);
 
