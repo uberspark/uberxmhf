@@ -165,6 +165,7 @@ void hypsvc_handler(arm8_32_regs_t *r){
 				u32 da_iss;
 				//u32 da_il;
 				u32 da_iss_isv;
+				u32 da_pa_page;
 				//u32 da_iss_sas;
 				//u32 da_iss_srt;
 				//u32 da_iss_wnr;
@@ -178,7 +179,8 @@ void hypsvc_handler(arm8_32_regs_t *r){
 				ida.wnr = (da_iss & 0x00000040UL) >> 6;
 				ida.va = sysreg_read_hdfar();
 				fault_va_page_offset = ida.va % 4096;
-				ida.pa = ((sysreg_read_hpfar() & 0xFFFFFFF0) << 8) | fault_va_page_offset;
+				da_pa_page = ((sysreg_read_hpfar() & 0xFFFFFFF0) << 8);
+				ida.pa = da_pa_page | fault_va_page_offset;
 				ida.r = r;
 
 				if(!da_iss_isv){
@@ -186,7 +188,14 @@ void hypsvc_handler(arm8_32_regs_t *r){
 					HALT();
 				}
 
-				dmaprot_handle_dmacontroller_access(&ida);
+				if( (da_pa_page == BCM2837_DMA0_REGS_BASE) ||
+					(da_pa_page == BCM2837_DMA15_REGS_BASE) ){
+					dmaprot_handle_dmacontroller_access(&ida);
+				}else{
+					_XDPRINTFSMP_("%s: unknown s2pgtbl DATA ABORT. Halting! (va=0x%08x, pa=0x%08x)\n",
+							__func__, ida.va, ida.pa);
+					HALT();
+				}
 
 				elr_hyp = sysreg_read_elrhyp();
 
