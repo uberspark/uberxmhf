@@ -34,7 +34,7 @@ void dmaprot_activate(void){
 //il = instruction length
 //void dmaprot_handle_dmacontroller_access(arm8_32_regs_t *r, u32 va, u32 pa, u32 sas, u32 srt, u32 wnr, u32 il){
 void dmaprot_handle_dmacontroller_access(info_intercept_data_abort_t *ida){
-	volatile u32 *guest_mem;
+	volatile u32 *dmac_reg;
 
 	if(ida->sas != 0x2){
 		_XDPRINTFSMP_("%s: invalid sas=%u. Halting!\n", __func__, ida->sas);
@@ -44,15 +44,15 @@ void dmaprot_handle_dmacontroller_access(info_intercept_data_abort_t *ida){
 	//_XDPRINTFSMP_("dmaprot: va=0x%08x, pa=0x%08x, sas=%u, srt=%u, wnr=%u, il=%u\n",
 	//		__func__,_va, pa, sas, srt, wnr, il);
 
-	guest_mem = (u32 *)ida->pa;
+	dmac_reg = (u32 *)ida->pa;
 	if(ida->wnr){
 		//write
 		u32 value = (u32)guest_regread(ida->r, ida->srt);
 		//_XDPRINTFSMP_("%s: s2pgtbl DATA ABORT: value=0x%08x\n", __func__, value);
-		*guest_mem = value;
+		*dmac_reg = value;
 	}else{
 		//read
-		u32 value = (u32)*guest_mem;
+		u32 value = (u32)*dmac_reg;
 		//_XDPRINTFSMP_("%s: s2pgtbl DATA ABORT: value=0x%08x\n", __func__, value);
 		guest_regwrite(ida->r, ida->srt, value);
 	}
