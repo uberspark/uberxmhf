@@ -114,8 +114,8 @@ hypvtable_hypsvc_handler:
 	   callee preserves r4-r8, r10, r11, r13 (SP)
 	   save the rest
 	*/
-	push {r14}
-	push {r13}
+	//push {r14}
+	//push {r13}
 	push {r12}
 	push {r11}
 	push {r10}
@@ -150,8 +150,8 @@ hypvtable_hypsvc_handler:
 	pop {r10}
 	pop {r11}
 	pop {r12}
-	pop {r13}
-	pop {r14}
+	//pop {r13}
+	//pop {r14}
 
 	pop	{lr}
 
@@ -174,7 +174,7 @@ hypvtable_hypsvc_handler:
 
 	.balign 8
 	.global hypvtable_hypsvc_stack
-	hypvtable_hypsvc_stack:	.space	8192
+	hypvtable_hypsvc_stack:	.space	16384
 	.global hypvtable_hypsvc_stack_top
 	hypvtable_hypsvc_stack_top:
 

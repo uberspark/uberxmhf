@@ -108,8 +108,8 @@ void hypsvc_handler(arm8_32_regs_t *r){
 
 				switch(hvc_imm16){
 					case 1:{
-							_XDPRINTFSMP_("%s: r0=0x%08x, r1=0x%08x, r2=0x%08x, r14=0x%08x\n", __func__,
-									r->r0, r->r1, r->r2, r->r14);
+							_XDPRINTFSMP_("%s: r0=0x%08x, r1=0x%08x, r2=0x%08x\n", __func__,
+									r->r0, r->r1, r->r2);
 
 							r->r0 = 0x21;
 							r->r1 = 0x22;

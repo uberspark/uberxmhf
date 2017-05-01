@@ -28,8 +28,33 @@ void dmaprot_activate(void){
 void dmaprot_sanitizecb(u32 cb_pa){
 	u32 cb_syspa = dmapa_to_syspa(cb_pa);
 	volatile dmac_cb_t *dmacb;
+	u32 i;
 
 	dmacb = (dmac_cb_t *)cb_syspa;
+
+	for(i=0; i < 32; i++){
+	//while(dmacb){
+		if( 	((dmapa_to_syspa(dmacb->src_addr) >= UXMHF_CORE_START_ADDR) &&
+				(dmapa_to_syspa(dmacb->src_addr) < UXMHF_CORE_END_ADDR)) ||
+				((dmapa_to_syspa(dmacb->dst_addr) >= UXMHF_CORE_START_ADDR) &&
+				(dmapa_to_syspa(dmacb->dst_addr) < UXMHF_CORE_END_ADDR))
+		){
+				_XDPRINTFSMP_("%s: CB using I/O or micro-hypervisor memory regions. Halting!\n",
+						__func__);
+				HALT();
+		}
+
+
+		dmacb = (dmac_cb_t *)dmapa_to_syspa(dmacb->next_cb_addr);
+		if(dmacb == 0)
+			break;
+	}
+
+	if(i==32){
+		_XDPRINTFSMP_("%s: CB linked-list too large. Halting!\n",
+				__func__);
+		HALT();
+	}
 
 /*	if( ((u32)dmacb >= BCM2837_PERIPHERALS_BASE) ||
 		(
@@ -45,7 +70,7 @@ void dmaprot_sanitizecb(u32 cb_pa){
 	}
 */
 
-	if( 	((dmapa_to_syspa(dmacb->src_addr) >= UXMHF_CORE_START_ADDR) &&
+/*	if( 	((dmapa_to_syspa(dmacb->src_addr) >= UXMHF_CORE_START_ADDR) &&
 			(dmapa_to_syspa(dmacb->src_addr) < UXMHF_CORE_END_ADDR)) ||
 			((dmapa_to_syspa(dmacb->dst_addr) >= UXMHF_CORE_START_ADDR) &&
 			(dmapa_to_syspa(dmacb->dst_addr) < UXMHF_CORE_END_ADDR))
@@ -97,9 +122,67 @@ void dmaprot_sanitizecb(u32 cb_pa){
 					__func__);
 			HALT();
 	}
+
+	dmacb = (dmac_cb_t *)dmapa_to_syspa(dmacb->next_cb_addr);
+	if(dmacb == 0)
+		goto end_dmaprot_sanitizecb;
+
+	if( 	((dmapa_to_syspa(dmacb->src_addr) >= UXMHF_CORE_START_ADDR) &&
+			(dmapa_to_syspa(dmacb->src_addr) < UXMHF_CORE_END_ADDR)) ||
+			((dmapa_to_syspa(dmacb->dst_addr) >= UXMHF_CORE_START_ADDR) &&
+			(dmapa_to_syspa(dmacb->dst_addr) < UXMHF_CORE_END_ADDR))
+	){
+			_XDPRINTFSMP_("%s: CB using I/O or micro-hypervisor memory regions. Halting!\n",
+					__func__);
+			HALT();
+	}
+
+	dmacb = (dmac_cb_t *)dmapa_to_syspa(dmacb->next_cb_addr);
+	if(dmacb == 0)
+		goto end_dmaprot_sanitizecb;
+
+	if( 	((dmapa_to_syspa(dmacb->src_addr) >= UXMHF_CORE_START_ADDR) &&
+			(dmapa_to_syspa(dmacb->src_addr) < UXMHF_CORE_END_ADDR)) ||
+			((dmapa_to_syspa(dmacb->dst_addr) >= UXMHF_CORE_START_ADDR) &&
+			(dmapa_to_syspa(dmacb->dst_addr) < UXMHF_CORE_END_ADDR))
+	){
+			_XDPRINTFSMP_("%s: CB using I/O or micro-hypervisor memory regions. Halting!\n",
+					__func__);
+			HALT();
+	}
+
+	dmacb = (dmac_cb_t *)dmapa_to_syspa(dmacb->next_cb_addr);
+	if(dmacb == 0)
+		goto end_dmaprot_sanitizecb;
+
+	if( 	((dmapa_to_syspa(dmacb->src_addr) >= UXMHF_CORE_START_ADDR) &&
+			(dmapa_to_syspa(dmacb->src_addr) < UXMHF_CORE_END_ADDR)) ||
+			((dmapa_to_syspa(dmacb->dst_addr) >= UXMHF_CORE_START_ADDR) &&
+			(dmapa_to_syspa(dmacb->dst_addr) < UXMHF_CORE_END_ADDR))
+	){
+			_XDPRINTFSMP_("%s: CB using I/O or micro-hypervisor memory regions. Halting!\n",
+					__func__);
+			HALT();
+	}
+
+	dmacb = (dmac_cb_t *)dmapa_to_syspa(dmacb->next_cb_addr);
+	if(dmacb == 0)
+		goto end_dmaprot_sanitizecb;
+
+	if( 	((dmapa_to_syspa(dmacb->src_addr) >= UXMHF_CORE_START_ADDR) &&
+			(dmapa_to_syspa(dmacb->src_addr) < UXMHF_CORE_END_ADDR)) ||
+			((dmapa_to_syspa(dmacb->dst_addr) >= UXMHF_CORE_START_ADDR) &&
+			(dmapa_to_syspa(dmacb->dst_addr) < UXMHF_CORE_END_ADDR))
+	){
+			_XDPRINTFSMP_("%s: CB using I/O or micro-hypervisor memory regions. Halting!\n",
+					__func__);
+			HALT();
+	}
+
 
 end_dmaprot_sanitizecb:
 	return;
+*/
 }
 
 
