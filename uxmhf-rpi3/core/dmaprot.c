@@ -67,6 +67,15 @@ void dmaprot_sanitizecb(u32 cb_pa){
 
 
 void dmaprot_channel_cs_write(u32 *dmac_reg, u32 value){
+	volatile u32 *dmac_cb_reg;
+	u32 dmac_cb_reg_value;
+
+	dmac_cb_reg = (u32 *)((u32)dmac_reg + 0x4);
+	dmac_cb_reg_value = *dmac_cb_reg;
+
+	_XDPRINTFSMP_("dmaprot: cs_write at 0x%08x; cb val=0x%08x\n", __func__,
+			(u32)dmac_reg, dmac_cb_reg_value);
+
 	*dmac_reg = value;
 }
 
