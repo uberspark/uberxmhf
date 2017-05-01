@@ -27,13 +27,19 @@ void dmaprot_activate(void){
 
 void dmaprot_sanitizecb(u32 cb_pa){
 	u32 cb_syspa = dmapa_to_syspa(cb_pa);
-	dmac_cb_t *dmacb;
+	volatile dmac_cb_t *dmacb;
+	//u32 i;
 
 	//_XDPRINTFSMP_("%s: cb_pa=0x%08x, cb_syspa=0x%08x\n", __func__, cb_pa, cb_syspa);
 	dmacb = (dmac_cb_t *)cb_syspa;
+	//i=0;
 
-	do {
-
+	while(1) {
+		if(dmacb == 0)
+			break;
+		//i++;
+		//if( i > 8)
+		//	break;
 		//_XDPRINTFSMP_("%s: dumping dmacb at 0x%08x...\n", __func__, dmacb);
 		//_XDPRINTFSMP_("%s: ti=0x%08x\n", __func__, dmacb->ti);
 		//_XDPRINTFSMP_("%s: src_addr=0x%08x\n", __func__, dmapa_to_syspa(dmacb->src_addr));
@@ -42,17 +48,26 @@ void dmaprot_sanitizecb(u32 cb_pa){
 		//_XDPRINTFSMP_("%s: stride=0x%08x\n", __func__, dmacb->stride);
 		//_XDPRINTFSMP_("%s: next_cb_addr=0x%08x\n", __func__, dmacb->next_cb_addr);
 
-		if( ((dmapa_to_syspa(dmacb->src_addr) >= UXMHF_CORE_START_ADDR) &&
+	//for(i=0; i < 16; i++){
+		/*if( ((dmapa_to_syspa(dmacb->src_addr) >= UXMHF_CORE_START_ADDR) &&
 			(dmapa_to_syspa(dmacb->src_addr) < UXMHF_CORE_END_ADDR)) ||
 			((dmapa_to_syspa(dmacb->dst_addr) >= UXMHF_CORE_START_ADDR) &&
 			(dmapa_to_syspa(dmacb->dst_addr) < UXMHF_CORE_END_ADDR)) ){
 			_XDPRINTFSMP_("%s: CB using micro-hypervisor memory regions. Halting!\n",
 					__func__);
 			HALT();
-		}
+		}*/
+	//}
 
-		dmacb = dmapa_to_syspa(dmacb->next_cb_addr);
-	}while (dmacb != 0);
+
+		dmacb = (dmac_cb_t *)dmapa_to_syspa(dmacb->next_cb_addr);
+	}
+
+}
+
+
+void dmaprot_channel_cs_write(u32 *dmac_reg, u32 value){
+	*dmac_reg = value;
 }
 
 //handle DMA controller accesses
@@ -79,10 +94,28 @@ void dmaprot_handle_dmacontroller_access(info_intercept_data_abort_t *ida){
 		//write
 		u32 value = (u32)guest_regread(ida->r, ida->srt);
 		//_XDPRINTFSMP_("%s: s2pgtbl DATA ABORT: value=0x%08x\n", __func__, value);
-		if( ((u32)dmac_reg & 0x000000FFUL) == 0x04)
-			dmaprot_sanitizecb(value);
+		if( ((u32)dmac_reg == (BCM2837_DMA0_REGS_BASE)) ||
+				((u32)dmac_reg == (BCM2837_DMA1_REGS_BASE)) ||
+				((u32)dmac_reg == (BCM2837_DMA2_REGS_BASE)) ||
+				((u32)dmac_reg == (BCM2837_DMA3_REGS_BASE)) ||
+				((u32)dmac_reg == (BCM2837_DMA4_REGS_BASE)) ||
+				((u32)dmac_reg == (BCM2837_DMA5_REGS_BASE)) ||
+				((u32)dmac_reg == (BCM2837_DMA6_REGS_BASE)) ||
+				((u32)dmac_reg == (BCM2837_DMA7_REGS_BASE)) ||
+				((u32)dmac_reg == (BCM2837_DMA8_REGS_BASE)) ||
+				((u32)dmac_reg == (BCM2837_DMA9_REGS_BASE)) ||
+				((u32)dmac_reg == (BCM2837_DMA10_REGS_BASE)) ||
+				((u32)dmac_reg == (BCM2837_DMA11_REGS_BASE)) ||
+				((u32)dmac_reg == (BCM2837_DMA12_REGS_BASE)) ||
+				((u32)dmac_reg == (BCM2837_DMA13_REGS_BASE)) ||
+				((u32)dmac_reg == (BCM2837_DMA14_REGS_BASE)) ||
+				((u32)dmac_reg == (BCM2837_DMA15_REGS_BASE)) ){
+			//dmaprot_sanitizecb(value);
+			dmaprot_channel_cs_write(dmac_reg, value);
+		}else{
+			*dmac_reg = value;
+		}
 
-		*dmac_reg = value;
 	}else{
 		//read
 		u32 value = (u32)*dmac_reg;
