@@ -28,12 +28,19 @@ void dmaprot_activate(void){
 void dmaprot_sanitizecb(u32 cb_pa){
 	u32 cb_syspa = dmapa_to_syspa(cb_pa);
 	volatile dmac_cb_t *dmacb;
+	volatile dmac_cb_t *dmacb_new;
+
 	u32 i;
 
 	dmacb = (dmac_cb_t *)cb_syspa;
+	i=0;
 
-	for(i=0; i < 64; i++){
-	//while(dmacb){
+	//for(i=0; i < 64; i++){
+	while(1){
+		i++;
+		if(i > 128)
+			_XDPRINTFSMP_("dmaprot(%u): 0x%08x\n",i , dmacb);
+
 		if( 	((dmapa_to_syspa(dmacb->src_addr) >= UXMHF_CORE_START_ADDR) &&
 				(dmapa_to_syspa(dmacb->src_addr) < UXMHF_CORE_END_ADDR)) ||
 				((dmapa_to_syspa(dmacb->dst_addr) >= UXMHF_CORE_START_ADDR) &&
@@ -45,16 +52,23 @@ void dmaprot_sanitizecb(u32 cb_pa){
 		}
 
 
-		dmacb = (dmac_cb_t *)dmapa_to_syspa(dmacb->next_cb_addr);
-		if(dmacb == 0)
+		dmacb_new = (dmac_cb_t *)dmapa_to_syspa(dmacb->next_cb_addr);
+		if(dmacb_new == 0)
 			break;
+
+		if(dmacb_new == dmacb){
+			_XDPRINTFSMP_("%s: wierd cyclic list. breaking\n",__func__);
+			HALT();
+		}
+
+		dmacb = dmacb_new;
 	}
 
-	if(i==64){
-		_XDPRINTFSMP_("%s: CB linked-list too large. Halting!\n",
-				__func__);
-		HALT();
-	}
+	//if(i==64){
+	//	_XDPRINTFSMP_("%s: CB linked-list too large. Halting!\n",
+	//			__func__);
+	//	HALT();
+	//}
 
 /*	if( ((u32)dmacb >= BCM2837_PERIPHERALS_BASE) ||
 		(
@@ -192,13 +206,16 @@ void dmaprot_channel_cs_write(u32 *dmac_reg, u32 value){
 
 	dmac_cb_reg = (u32 *)((u32)dmac_reg + 0x4);
 
+
 	if(value & 0x1){
 		//activating DMA
-		dmac_cb_reg_value = *dmac_cb_reg;
+		//dmac_cb_reg_value = *dmac_cb_reg;
 
-		//_XDPRINTFSMP_("dmaprot: cs_write at 0x%08x; cb val=0x%08x\n",
-		//		(u32)dmac_reg, dmac_cb_reg_value);
-		dmaprot_sanitizecb(dmac_cb_reg_value);
+		//_XDPRINTFSMP_("dmaprot: cs_write [ACTIVATE]\n");
+		//dmaprot_sanitizecb(dmac_cb_reg_value);
+	}else{
+		//deactivating DMA
+		//_XDPRINTFSMP_("dmaprot: cs_write [DE-ACTIVATE]\n");
 	}
 
 	//synchronize all memory accesses above
@@ -233,7 +250,7 @@ void dmaprot_handle_dmacontroller_access(info_intercept_data_abort_t *ida){
 		//write
 		u32 value = (u32)guest_regread(ida->r, ida->srt);
 		//_XDPRINTFSMP_("%s: s2pgtbl DATA ABORT: value=0x%08x\n", __func__, value);
-		if( ((u32)dmac_reg == (BCM2837_DMA0_REGS_BASE)) ||
+/*		if( ((u32)dmac_reg == (BCM2837_DMA0_REGS_BASE)) ||
 				((u32)dmac_reg == (BCM2837_DMA1_REGS_BASE)) ||
 				((u32)dmac_reg == (BCM2837_DMA2_REGS_BASE)) ||
 				((u32)dmac_reg == (BCM2837_DMA3_REGS_BASE)) ||
@@ -251,6 +268,26 @@ void dmaprot_handle_dmacontroller_access(info_intercept_data_abort_t *ida){
 				((u32)dmac_reg == (BCM2837_DMA15_REGS_BASE)) ){
 			//dmaprot_sanitizecb(value);
 			dmaprot_channel_cs_write(dmac_reg, value);
+*/
+		if( ((u32)dmac_reg == (BCM2837_DMA0_REGS_BASE + 0x1c)) ||
+				((u32)dmac_reg == (BCM2837_DMA1_REGS_BASE + 0x1c)) ||
+				((u32)dmac_reg == (BCM2837_DMA2_REGS_BASE + 0x1c)) ||
+				((u32)dmac_reg == (BCM2837_DMA3_REGS_BASE + 0x1c)) ||
+				((u32)dmac_reg == (BCM2837_DMA4_REGS_BASE + 0x1c)) ||
+				((u32)dmac_reg == (BCM2837_DMA5_REGS_BASE + 0x1c)) ||
+				((u32)dmac_reg == (BCM2837_DMA6_REGS_BASE + 0x1c)) ||
+				((u32)dmac_reg == (BCM2837_DMA7_REGS_BASE + 0x1c)) ||
+				((u32)dmac_reg == (BCM2837_DMA8_REGS_BASE + 0x1c)) ||
+				((u32)dmac_reg == (BCM2837_DMA9_REGS_BASE + 0x1c)) ||
+				((u32)dmac_reg == (BCM2837_DMA10_REGS_BASE + 0x1c)) ||
+				((u32)dmac_reg == (BCM2837_DMA11_REGS_BASE + 0x1c)) ||
+				((u32)dmac_reg == (BCM2837_DMA12_REGS_BASE + 0x1c)) ||
+				((u32)dmac_reg == (BCM2837_DMA13_REGS_BASE + 0x1c)) ||
+				((u32)dmac_reg == (BCM2837_DMA14_REGS_BASE + 0x1c)) ||
+				((u32)dmac_reg == (BCM2837_DMA15_REGS_BASE + 0x1c)) ){
+			_XDPRINTFSMP_("dmaprot: direct write to next cb addr reg. Halting\n");
+			HALT();
+
 		}else{
 			//synchronize all memory accesses above
 			cpu_dsb();
