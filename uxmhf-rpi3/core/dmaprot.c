@@ -28,41 +28,78 @@ void dmaprot_activate(void){
 void dmaprot_sanitizecb(u32 cb_pa){
 	u32 cb_syspa = dmapa_to_syspa(cb_pa);
 	volatile dmac_cb_t *dmacb;
-	//u32 i;
 
-	//_XDPRINTFSMP_("%s: cb_pa=0x%08x, cb_syspa=0x%08x\n", __func__, cb_pa, cb_syspa);
 	dmacb = (dmac_cb_t *)cb_syspa;
-	//i=0;
 
-	while(1) {
-		if(dmacb == 0)
-			break;
-		//i++;
-		//if( i > 8)
-		//	break;
-		//_XDPRINTFSMP_("%s: dumping dmacb at 0x%08x...\n", __func__, dmacb);
-		//_XDPRINTFSMP_("%s: ti=0x%08x\n", __func__, dmacb->ti);
-		//_XDPRINTFSMP_("%s: src_addr=0x%08x\n", __func__, dmapa_to_syspa(dmacb->src_addr));
-		//_XDPRINTFSMP_("%s: dst_addr=0x%08x\n", __func__, dmapa_to_syspa(dmacb->dst_addr));
-		//_XDPRINTFSMP_("%s: len=0x%08x\n", __func__, dmacb->len);
-		//_XDPRINTFSMP_("%s: stride=0x%08x\n", __func__, dmacb->stride);
-		//_XDPRINTFSMP_("%s: next_cb_addr=0x%08x\n", __func__, dmacb->next_cb_addr);
+/*	if( ((u32)dmacb >= BCM2837_PERIPHERALS_BASE) ||
+		(
+				((dmapa_to_syspa(dmacb->src_addr) >= UXMHF_CORE_START_ADDR) &&
+				(dmapa_to_syspa(dmacb->src_addr) < UXMHF_CORE_END_ADDR)) ||
+				((dmapa_to_syspa(dmacb->dst_addr) >= UXMHF_CORE_START_ADDR) &&
+				(dmapa_to_syspa(dmacb->dst_addr) < UXMHF_CORE_END_ADDR))
+		)
+	  ){
+		_XDPRINTFSMP_("%s: CB using I/O or micro-hypervisor memory regions. Halting!\n",
+				__func__);
+		HALT();
+	}
+*/
 
-	//for(i=0; i < 16; i++){
-		/*if( ((dmapa_to_syspa(dmacb->src_addr) >= UXMHF_CORE_START_ADDR) &&
+	if( 	((dmapa_to_syspa(dmacb->src_addr) >= UXMHF_CORE_START_ADDR) &&
 			(dmapa_to_syspa(dmacb->src_addr) < UXMHF_CORE_END_ADDR)) ||
 			((dmapa_to_syspa(dmacb->dst_addr) >= UXMHF_CORE_START_ADDR) &&
-			(dmapa_to_syspa(dmacb->dst_addr) < UXMHF_CORE_END_ADDR)) ){
-			_XDPRINTFSMP_("%s: CB using micro-hypervisor memory regions. Halting!\n",
+			(dmapa_to_syspa(dmacb->dst_addr) < UXMHF_CORE_END_ADDR))
+	){
+			_XDPRINTFSMP_("%s: CB using I/O or micro-hypervisor memory regions. Halting!\n",
 					__func__);
 			HALT();
-		}*/
-	//}
-
-
-		dmacb = (dmac_cb_t *)dmapa_to_syspa(dmacb->next_cb_addr);
 	}
 
+
+	dmacb = (dmac_cb_t *)dmapa_to_syspa(dmacb->next_cb_addr);
+	if(dmacb == 0)
+		goto end_dmaprot_sanitizecb;
+
+	if( 	((dmapa_to_syspa(dmacb->src_addr) >= UXMHF_CORE_START_ADDR) &&
+			(dmapa_to_syspa(dmacb->src_addr) < UXMHF_CORE_END_ADDR)) ||
+			((dmapa_to_syspa(dmacb->dst_addr) >= UXMHF_CORE_START_ADDR) &&
+			(dmapa_to_syspa(dmacb->dst_addr) < UXMHF_CORE_END_ADDR))
+	){
+			_XDPRINTFSMP_("%s: CB using I/O or micro-hypervisor memory regions. Halting!\n",
+					__func__);
+			HALT();
+	}
+
+	dmacb = (dmac_cb_t *)dmapa_to_syspa(dmacb->next_cb_addr);
+	if(dmacb == 0)
+		goto end_dmaprot_sanitizecb;
+
+	if( 	((dmapa_to_syspa(dmacb->src_addr) >= UXMHF_CORE_START_ADDR) &&
+			(dmapa_to_syspa(dmacb->src_addr) < UXMHF_CORE_END_ADDR)) ||
+			((dmapa_to_syspa(dmacb->dst_addr) >= UXMHF_CORE_START_ADDR) &&
+			(dmapa_to_syspa(dmacb->dst_addr) < UXMHF_CORE_END_ADDR))
+	){
+			_XDPRINTFSMP_("%s: CB using I/O or micro-hypervisor memory regions. Halting!\n",
+					__func__);
+			HALT();
+	}
+
+	dmacb = (dmac_cb_t *)dmapa_to_syspa(dmacb->next_cb_addr);
+	if(dmacb == 0)
+		goto end_dmaprot_sanitizecb;
+
+	if( 	((dmapa_to_syspa(dmacb->src_addr) >= UXMHF_CORE_START_ADDR) &&
+			(dmapa_to_syspa(dmacb->src_addr) < UXMHF_CORE_END_ADDR)) ||
+			((dmapa_to_syspa(dmacb->dst_addr) >= UXMHF_CORE_START_ADDR) &&
+			(dmapa_to_syspa(dmacb->dst_addr) < UXMHF_CORE_END_ADDR))
+	){
+			_XDPRINTFSMP_("%s: CB using I/O or micro-hypervisor memory regions. Halting!\n",
+					__func__);
+			HALT();
+	}
+
+end_dmaprot_sanitizecb:
+	return;
 }
 
 
@@ -71,10 +108,20 @@ void dmaprot_channel_cs_write(u32 *dmac_reg, u32 value){
 	u32 dmac_cb_reg_value;
 
 	dmac_cb_reg = (u32 *)((u32)dmac_reg + 0x4);
-	dmac_cb_reg_value = *dmac_cb_reg;
 
-	_XDPRINTFSMP_("dmaprot: cs_write at 0x%08x; cb val=0x%08x\n", __func__,
-			(u32)dmac_reg, dmac_cb_reg_value);
+	if(value & 0x1){
+		//activating DMA
+		dmac_cb_reg_value = *dmac_cb_reg;
+
+		//_XDPRINTFSMP_("dmaprot: cs_write at 0x%08x; cb val=0x%08x\n",
+		//		(u32)dmac_reg, dmac_cb_reg_value);
+		dmaprot_sanitizecb(dmac_cb_reg_value);
+	}
+
+	//synchronize all memory accesses above
+	cpu_dsb();
+	cpu_isb();
+
 
 	*dmac_reg = value;
 }
@@ -122,17 +169,22 @@ void dmaprot_handle_dmacontroller_access(info_intercept_data_abort_t *ida){
 			//dmaprot_sanitizecb(value);
 			dmaprot_channel_cs_write(dmac_reg, value);
 		}else{
+			//synchronize all memory accesses above
+			cpu_dsb();
+			cpu_isb();
+
 			*dmac_reg = value;
 		}
 
 	}else{
+		//synchronize all memory accesses above
+		cpu_dsb();
+		cpu_isb();
+
 		//read
 		u32 value = (u32)*dmac_reg;
 		//_XDPRINTFSMP_("%s: s2pgtbl DATA ABORT: value=0x%08x\n", __func__, value);
 		guest_regwrite(ida->r, ida->srt, value);
 	}
 
-	//synchronize all memory accesses above
-	cpu_dsb();
-	cpu_isb();
 }
