@@ -32,7 +32,7 @@ void dmaprot_sanitizecb(u32 cb_pa){
 
 	dmacb = (dmac_cb_t *)cb_syspa;
 
-	for(i=0; i < 32; i++){
+	for(i=0; i < 64; i++){
 	//while(dmacb){
 		if( 	((dmapa_to_syspa(dmacb->src_addr) >= UXMHF_CORE_START_ADDR) &&
 				(dmapa_to_syspa(dmacb->src_addr) < UXMHF_CORE_END_ADDR)) ||
@@ -50,7 +50,7 @@ void dmaprot_sanitizecb(u32 cb_pa){
 			break;
 	}
 
-	if(i==32){
+	if(i==64){
 		_XDPRINTFSMP_("%s: CB linked-list too large. Halting!\n",
 				__func__);
 		HALT();

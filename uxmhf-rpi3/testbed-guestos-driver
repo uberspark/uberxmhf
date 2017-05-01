@@ -18,7 +18,7 @@ sudo umount ~/mnt
 sleep 2
 sudo mount /dev/mmcblk0p1 ~/mnt
 sleep 2
-sudo iozone -e -I -a -s 2M -r 1k -i 0 -f ~/mnt/test-iozone
+sudo iozone -e -I -a -s 2M -r 2k -i 0 -f ~/mnt/test-iozone
 sleep 2
 sudo umount ~/mnt
 echo "Waiting for test output to be flushed..."
