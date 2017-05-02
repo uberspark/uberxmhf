@@ -120,6 +120,7 @@ u32 dmaprot_checkcblite(u32 dmac_channel, u32 cb_pa){
 	u32 cb_syspa = dmapa_to_syspa(cb_pa);
 	volatile dmac_cb_t *dmacb;
 	volatile dmac_cb_t *dmacb_prev=0;
+	u32 i=0;
 
 	dmacb = (dmac_cb_t *)cb_syspa;
 
@@ -139,17 +140,38 @@ u32 dmaprot_checkcblite(u32 dmac_channel, u32 cb_pa){
 		//bcm2837_miniuart_puts("dmaprot: ccb: next_cb_addr=");
 		//debug_hexdumpu32(dmacb->next_cb_addr);
 
-		if(dmacb->next_cb_addr == 0)
-			break;
+		dmac_cblist[dmac_channel][i].ti = dmacb->ti;
+		dmac_cblist[dmac_channel][i].src_addr = dmacb->src_addr;
+		dmac_cblist[dmac_channel][i].dst_addr = dmacb->dst_addr;
+		dmac_cblist[dmac_channel][i].len = dmacb->len;
+		dmac_cblist[dmac_channel][i].stride = dmacb->stride;
+		dmac_cblist[dmac_channel][i].rsv_0 = dmacb->rsv_0;
+		dmac_cblist[dmac_channel][i].rsv_1 = dmacb->rsv_1;
 
-		if(dmacb->next_cb_addr == cb_pa)
-			break;
 
-		if(dmapa_to_syspa(dmacb->next_cb_addr) == dmacb_prev)
+
+		if(dmacb->next_cb_addr == 0){
+			dmac_cblist[dmac_channel][i].next_cb_addr = 0;
 			break;
+		}
+
+		if(dmacb->next_cb_addr == cb_pa){
+			dmac_cblist[dmac_channel][i].next_cb_addr = syspa_to_dmapa((u32)&dmac_cblist[dmac_channel][0].ti);
+			break;
+		}
+
+		if(dmapa_to_syspa(dmacb->next_cb_addr) == dmacb_prev){
+			dmac_cblist[dmac_channel][i].next_cb_addr = syspa_to_dmapa((u32)&dmac_cblist[dmac_channel][i-1].ti);
+			break;
+		}
 
 		dmacb_prev = dmacb;
 		dmacb = (dmac_cb_t *)dmapa_to_syspa(dmacb->next_cb_addr);
+		i++;
+		if(i >= BCM2837_DMA_MAXCBRECORDS){
+			bcm2837_miniuart_puts("dmaprot: ccb: i < max records. Halting!\n");
+			HALT();
+		}
 	}
 
 	return 0;
