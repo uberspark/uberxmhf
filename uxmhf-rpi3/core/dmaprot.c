@@ -146,12 +146,13 @@ void dmaprot_channel_conblkad_access(u32 wnr, u32 dmac_channel, u32 *dmac_reg, u
 
 	if(wnr){	//write
 		//check cb
-		revised_value=dmaprot_checkcb(dmac_channel, value);
+		//revised_value=dmaprot_checkcb(dmac_channel, value);
+		dmaprot_checkcb(dmac_channel, value);
 
 		cpu_dsb();
 		cpu_isb();	//synchronize all memory accesses above
-		//*dmac_reg = value;
-		*dmac_reg = revised_value;
+		*dmac_reg = value;
+		//*dmac_reg = revised_value;
 
 	}else{		//read
 		_XDPRINTFSMP_("%s: not implemented. Halting!\n",__func__);
