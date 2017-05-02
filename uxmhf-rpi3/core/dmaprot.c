@@ -92,14 +92,27 @@ void dmaprot_channel_cs_access(u32 wnr, u32 dmac_channel, u32 *dmac_reg, u32 val
 		*dmac_reg = value;
 
 	}else{		//read
-		cpu_dsb();
-		cpu_isb();	//synchronize all memory accesses above
-		*dmac_reg = value;
+		_XDPRINTFSMP_("%s: not implemented. Halting!\n",__func__);
+		HALT();
 	}
 
 }
 
 
+void dmaprot_channel_conblkad_access(u32 wnr, u32 dmac_channel, u32 *dmac_reg, u32 value){
+
+	if(wnr){	//write
+
+		cpu_dsb();
+		cpu_isb();	//synchronize all memory accesses above
+		*dmac_reg = value;
+
+	}else{		//read
+		_XDPRINTFSMP_("%s: not implemented. Halting!\n",__func__);
+		HALT();
+	}
+
+}
 
 
 //handle DMA controller accesses
