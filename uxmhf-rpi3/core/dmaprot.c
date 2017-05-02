@@ -119,13 +119,12 @@ u32 dmaprot_checkcb(u32 dmac_channel, u32 cb_pa){
 u32 dmaprot_checkcblite(u32 dmac_channel, u32 cb_pa){
 	u32 cb_syspa = dmapa_to_syspa(cb_pa);
 	volatile dmac_cb_t *dmacb;
-	u32 i=0;
+	volatile dmac_cb_t *dmacb_prev=0;
 
 	dmacb = (dmac_cb_t *)cb_syspa;
 
 	bcm2837_miniuart_puts("dmaprot: ccb: cb_pa=");
 	debug_hexdumpu32(cb_pa);
-
 
 	while(1){
 
@@ -143,8 +142,11 @@ u32 dmaprot_checkcblite(u32 dmac_channel, u32 cb_pa){
 		if(dmacb->next_cb_addr == 0 || dmacb->next_cb_addr == cb_pa)
 			break;
 
+		if(dmapa_to_syspa(dmacb->next_cb_addr) == dmacb_prev)
+			break;
+
+		dmacb_prev = dmacb;
 		dmacb = (dmac_cb_t *)dmapa_to_syspa(dmacb->next_cb_addr);
-		i++;
 	}
 
 	return 0;
