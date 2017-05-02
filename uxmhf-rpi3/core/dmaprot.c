@@ -238,16 +238,32 @@ void dmaprot_channel_cs_write(u32 *dmac_reg, u32 value){
 //void dmaprot_handle_dmacontroller_access(arm8_32_regs_t *r, u32 va, u32 pa, u32 sas, u32 srt, u32 wnr, u32 il){
 void dmaprot_handle_dmacontroller_access(info_intercept_data_abort_t *ida){
 	volatile u32 *dmac_reg;
+	u32 dmac_reg_page;
+	u32 dmac_reg_off;
+	u32 dmac_channel;
 
+	//we only support 32-bit dmac accesses; bail out if this is not the case
 	if(ida->sas != 0x2){
 		_XDPRINTFSMP_("%s: invalid sas=%u. Halting!\n", __func__, ida->sas);
 		HALT();
 	}
 
-	//_XDPRINTFSMP_("dmaprot: va=0x%08x, pa=0x%08x, sas=%u, srt=%u, wnr=%u, il=%u\n",
-	//		__func__,_va, pa, sas, srt, wnr, il);
-
+	//compute dmac register address and register page-base
 	dmac_reg = (u32 *)ida->pa;
+	dmac_reg_page = (u32)dmac_reg & 0xFFFFF000UL;
+
+	//compute channel and register offset
+	if(dmac_reg_page == BCM2837_DMA15_REGS_BASE){
+		dmac_channel = 15;
+		dmac_reg_off = (u32)dmac_reg & 0x000000FFUL;
+	}else{
+		dmac_channel = (u32)dmac_reg & 0x00000F00UL;
+		if(dmac_channel == 15) //this is either int status or enable base register
+			dmac_channel = 16; //so set dmac_reg_channel to invalid value (16)
+		dmac_reg_off = (u32)dmac_reg & 0x000000FFUL;
+	}
+
+	//act on either writes or reads
 	if(ida->wnr){
 		//write
 		u32 value = (u32)guest_regread(ida->r, ida->srt);
