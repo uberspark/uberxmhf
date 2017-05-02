@@ -12,6 +12,8 @@
 #include <dmaprot.h>
 
 __attribute__((section(".paligndata"))) __attribute__((align(PAGE_SIZE_4K))) dmac_cb_t dmac_cblist[BCM2837_DMA_NUMCHANNELS][BCM2837_DMA_MAXCBRECORDS];
+__attribute__((section(".data"))) u8 dmaprot_logbuf[1024][256];
+u32 dmaprot_logbuf_index=0;
 
 //activate DMA protection mechanism
 void dmaprot_activate(void){
@@ -114,6 +116,42 @@ u32 dmaprot_checkcb(u32 dmac_channel, u32 cb_pa){
 
 
 
+u32 dmaprot_checkcblite(u32 dmac_channel, u32 cb_pa){
+	u32 cb_syspa = dmapa_to_syspa(cb_pa);
+	volatile dmac_cb_t *dmacb;
+	u32 i=0;
+
+	dmacb = (dmac_cb_t *)cb_syspa;
+
+	bcm2837_miniuart_puts("dmaprot: ccb: cb_pa=");
+	debug_hexdumpu32(cb_pa);
+
+
+	while(1){
+
+		bcm2837_miniuart_puts("dmaprot: ccb: ti=");
+		debug_hexdumpu32(dmacb->ti);
+		bcm2837_miniuart_puts("dmaprot: ccb: src_addr=");
+		debug_hexdumpu32(dmacb->src_addr);
+		bcm2837_miniuart_puts("dmaprot: ccb: dst_addr=");
+		debug_hexdumpu32(dmacb->dst_addr);
+		bcm2837_miniuart_puts("dmaprot: ccb: len=");
+		debug_hexdumpu32(dmacb->len);
+		bcm2837_miniuart_puts("dmaprot: ccb: next_cb_addr=");
+		debug_hexdumpu32(dmacb->next_cb_addr);
+
+		if(dmacb->next_cb_addr == 0 || dmacb->next_cb_addr == cb_pa)
+			break;
+
+		dmacb = (dmac_cb_t *)dmapa_to_syspa(dmacb->next_cb_addr);
+		i++;
+	}
+
+	return 0;
+}
+
+
+
 void dmaprot_channel_cs_access(u32 wnr, u32 dmac_channel, u32 *dmac_reg, u32 value){
 	volatile u32 *dmac_cb_reg;
 	u32 dmac_cb_reg_value;
@@ -147,7 +185,11 @@ void dmaprot_channel_conblkad_access(u32 wnr, u32 dmac_channel, u32 *dmac_reg, u
 	if(wnr){	//write
 		//check cb
 		//revised_value=dmaprot_checkcb(dmac_channel, value);
-		dmaprot_checkcb(dmac_channel, value);
+		//dmaprot_checkcb(dmac_channel, value);
+		//sprintf(dmaprot_logbuf[dmaprot_logbuf_index++][0], "dmaprot: conblkad=0x%08x\n", value);
+		bcm2837_miniuart_puts("dmaprot: conblkad=");
+		debug_hexdumpu32(value);
+		dmaprot_checkcblite(dmac_channel, value);
 
 		cpu_dsb();
 		cpu_isb();	//synchronize all memory accesses above
