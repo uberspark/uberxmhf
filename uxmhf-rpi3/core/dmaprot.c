@@ -70,6 +70,34 @@ void dmaprot_sanitizecb(u32 cb_pa){
 }
 
 
+void dmaprot_checkcb(u32 cb_pa){
+	u32 cb_syspa = dmapa_to_syspa(cb_pa);
+	volatile dmac_cb_t *dmacb;
+	volatile dmac_cb_t *dmacb_new;
+	volatile dmac_cb_t *dmacb_start;
+
+	dmacb = dmacb_start = (dmac_cb_t *)cb_syspa;
+
+	while(1){
+
+
+		dmacb_new = (dmac_cb_t *)dmapa_to_syspa(dmacb->next_cb_addr);
+
+		if(dmacb_new == 0)
+			break;
+
+		if(dmacb_new == dmacb_start)
+			break;
+
+		if(dmacb_new < dmacb)
+			dmacb_start = dmacb_new;
+
+		dmacb = dmacb_new;
+	}
+}
+
+
+
 
 
 void dmaprot_channel_cs_access(u32 wnr, u32 dmac_channel, u32 *dmac_reg, u32 value){
@@ -102,6 +130,8 @@ void dmaprot_channel_cs_access(u32 wnr, u32 dmac_channel, u32 *dmac_reg, u32 val
 void dmaprot_channel_conblkad_access(u32 wnr, u32 dmac_channel, u32 *dmac_reg, u32 value){
 
 	if(wnr){	//write
+		//check cb
+		dmaprot_checkcb(value);
 
 		cpu_dsb();
 		cpu_isb();	//synchronize all memory accesses above
