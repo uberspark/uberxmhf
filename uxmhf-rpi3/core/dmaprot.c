@@ -123,23 +123,26 @@ u32 dmaprot_checkcblite(u32 dmac_channel, u32 cb_pa){
 
 	dmacb = (dmac_cb_t *)cb_syspa;
 
-	bcm2837_miniuart_puts("dmaprot: ccb: cb_pa=");
-	debug_hexdumpu32(cb_pa);
+	//bcm2837_miniuart_puts("dmaprot: ccb: cb_pa=");
+	//debug_hexdumpu32(cb_pa);
 
 	while(1){
 
-		bcm2837_miniuart_puts("dmaprot: ccb: ti=");
-		debug_hexdumpu32(dmacb->ti);
-		bcm2837_miniuart_puts("dmaprot: ccb: src_addr=");
-		debug_hexdumpu32(dmacb->src_addr);
-		bcm2837_miniuart_puts("dmaprot: ccb: dst_addr=");
-		debug_hexdumpu32(dmacb->dst_addr);
-		bcm2837_miniuart_puts("dmaprot: ccb: len=");
-		debug_hexdumpu32(dmacb->len);
-		bcm2837_miniuart_puts("dmaprot: ccb: next_cb_addr=");
-		debug_hexdumpu32(dmacb->next_cb_addr);
+		//bcm2837_miniuart_puts("dmaprot: ccb: ti=");
+		//debug_hexdumpu32(dmacb->ti);
+		//bcm2837_miniuart_puts("dmaprot: ccb: src_addr=");
+		//debug_hexdumpu32(dmacb->src_addr);
+		//bcm2837_miniuart_puts("dmaprot: ccb: dst_addr=");
+		//debug_hexdumpu32(dmacb->dst_addr);
+		//bcm2837_miniuart_puts("dmaprot: ccb: len=");
+		//debug_hexdumpu32(dmacb->len);
+		//bcm2837_miniuart_puts("dmaprot: ccb: next_cb_addr=");
+		//debug_hexdumpu32(dmacb->next_cb_addr);
 
-		if(dmacb->next_cb_addr == 0 || dmacb->next_cb_addr == cb_pa)
+		if(dmacb->next_cb_addr == 0)
+			break;
+
+		if(dmacb->next_cb_addr == cb_pa)
 			break;
 
 		if(dmapa_to_syspa(dmacb->next_cb_addr) == dmacb_prev)
@@ -189,8 +192,8 @@ void dmaprot_channel_conblkad_access(u32 wnr, u32 dmac_channel, u32 *dmac_reg, u
 		//revised_value=dmaprot_checkcb(dmac_channel, value);
 		//dmaprot_checkcb(dmac_channel, value);
 		//sprintf(dmaprot_logbuf[dmaprot_logbuf_index++][0], "dmaprot: conblkad=0x%08x\n", value);
-		bcm2837_miniuart_puts("dmaprot: conblkad=");
-		debug_hexdumpu32(value);
+		//bcm2837_miniuart_puts("dmaprot: conblkad=");
+		//debug_hexdumpu32(value);
 		dmaprot_checkcblite(dmac_channel, value);
 
 		cpu_dsb();
