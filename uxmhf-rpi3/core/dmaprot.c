@@ -11,6 +11,8 @@
 #include <debug.h>
 #include <dmaprot.h>
 
+__attribute__((section(".paligndata"))) __attribute__((align(PAGE_SIZE_4K))) dmac_cb_t dmac_cblist[BCM2837_DMA_NUMCHANNELS][BCM2837_DMA_MAXCBRECORDS];
+
 //activate DMA protection mechanism
 void dmaprot_activate(void){
 	u64 attrs_dev = (LDESC_S2_MC_DEVnGnRnE << LDESC_S2_MEMATTR_MC_SHIFT) |
@@ -26,7 +28,7 @@ void dmaprot_activate(void){
 
 
 
-void dmaprot_checkcb(u32 cb_pa){
+void dmaprot_checkcb(u32 dmac_channel, u32 cb_pa){
 	u32 cb_syspa = dmapa_to_syspa(cb_pa);
 	volatile dmac_cb_t *dmacb;
 	volatile dmac_cb_t *dmacb_new;
@@ -34,6 +36,7 @@ void dmaprot_checkcb(u32 cb_pa){
 	u32 i=0;
 
 	dmacb = dmacb_start = (dmac_cb_t *)cb_syspa;
+
 
 	while(1){
 
@@ -47,25 +50,37 @@ void dmaprot_checkcb(u32 cb_pa){
 				HALT();
 		}
 
+		dmac_cblist[dmac_channel][i].ti = dmacb->ti;
+		dmac_cblist[dmac_channel][i].src_addr = dmacb->src_addr;
+		dmac_cblist[dmac_channel][i].dst_addr = dmacb->dst_addr;
+		dmac_cblist[dmac_channel][i].len = dmacb->len;
+		dmac_cblist[dmac_channel][i].stride = dmacb->stride;
+		dmac_cblist[dmac_channel][i].next_cb_addr = 0;
+		dmac_cblist[dmac_channel][i].rsv_0 = dmacb->rsv_0;
+		dmac_cblist[dmac_channel][i].rsv_1 = dmacb->rsv_1;
+
 
 		dmacb_new = (dmac_cb_t *)dmapa_to_syspa(dmacb->next_cb_addr);
 
 		if(dmacb_new == 0)
 			break;
 
-		if(dmacb_new == dmacb_start)
+		if(dmacb_new == dmacb_start){
+			dmac_cblist[dmac_channel][i].next_cb_addr = syspa_to_dmapa((u32)&dmac_cblist[dmac_channel][0].ti);
 			break;
-
-		if(dmacb_new < dmacb){
-			dmacb_start = dmacb_new;
-			i=0;
 		}
 
-		dmacb = dmacb_new;
-		i++;
-		if(i > 128){
-			_XDPRINTFSMP_("%s: max cb length reached. Halting!\n",__func__);
-			HALT();
+		if(dmacb_new < dmacb){
+			dmacb = dmacb_start = dmacb_new;
+			i=0;
+		}else{
+			dmacb = dmacb_new;
+			if((i+1) >= 128){
+				_XDPRINTFSMP_("%s: max cb length reached. Halting!\n",__func__);
+				HALT();
+			}
+			dmac_cblist[dmac_channel][i].next_cb_addr = syspa_to_dmapa((u32)&dmac_cblist[dmac_channel][i+1]);
+			i++;
 		}
 	}
 
@@ -85,7 +100,7 @@ void dmaprot_channel_cs_access(u32 wnr, u32 dmac_channel, u32 *dmac_reg, u32 val
 			dmac_cb_reg_value = *dmac_cb_reg;
 
 			//check cb
-			dmaprot_checkcb(dmac_cb_reg_value);
+			dmaprot_checkcb(dmac_channel, dmac_cb_reg_value);
 		}
 
 		cpu_dsb();
@@ -104,7 +119,7 @@ void dmaprot_channel_conblkad_access(u32 wnr, u32 dmac_channel, u32 *dmac_reg, u
 
 	if(wnr){	//write
 		//check cb
-		dmaprot_checkcb(value);
+		dmaprot_checkcb(dmac_channel, value);
 
 		cpu_dsb();
 		cpu_isb();	//synchronize all memory accesses above

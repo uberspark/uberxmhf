@@ -11,6 +11,7 @@
 #ifndef __ASSEMBLY__
 
 #define dmapa_to_syspa(x) (x & 0x3FFFFFFFUL)
+#define syspa_to_dmapa(x) (x | 0xC0000000UL)
 
 typedef struct {
 	arm8_32_regs_t *r;
