@@ -150,9 +150,14 @@ void dmaprot_handle_dmacontroller_access(info_intercept_data_abort_t *ida){
 		u32 value = (u32)guest_regread(ida->r, ida->srt);
 
 		switch(dmac_reg_off){
-			case 0x0:	//CS register
-				dmaprot_channel_cs_access(ida->wnr, dmac_channel, dmac_reg, value);
+			//case 0x0:	//CS register
+			//	dmaprot_channel_cs_access(ida->wnr, dmac_channel, dmac_reg, value);
+			//	break;
+
+			case 0x4:	//CONBLKAD register
+				dmaprot_channel_conblkad_access(ida->wnr, dmac_channel, dmac_reg, value);
 				break;
+
 
 			default:	//just pass-through writes
 				cpu_dsb();
