@@ -228,14 +228,38 @@ void dmaprot_channel_cs_write(u32 *dmac_reg, u32 value){
 	*dmac_reg = value;
 }
 
+
+void dmaprot_channel_cs_access(u32 wnr, u32 dmac_channel, u32 *dmac_reg, u32 value){
+	volatile u32 *dmac_cb_reg;
+	u32 dmac_cb_reg_value;
+
+	dmac_cb_reg = (u32 *)((u32)dmac_reg + 0x4);
+
+	if(wnr){	//write
+		if(value & 0x1){
+			//activating DMA, get current cb register value
+			dmac_cb_reg_value = *dmac_cb_reg;
+
+			//check cb
+			dmaprot_sanitizecb(dmac_cb_reg_value);
+		}
+
+		cpu_dsb();
+		cpu_isb();	//synchronize all memory accesses above
+		*dmac_reg = value;
+
+	}else{		//read
+		cpu_dsb();
+		cpu_isb();	//synchronize all memory accesses above
+		*dmac_reg = value;
+	}
+
+}
+
+
+
+
 //handle DMA controller accesses
-//va = virtual address of DMA controller register
-//pa = physical address of DMA controller regiter
-//sas = size of access
-//srt = general purpose register number
-//wnr = write/read indicator
-//il = instruction length
-//void dmaprot_handle_dmacontroller_access(arm8_32_regs_t *r, u32 va, u32 pa, u32 sas, u32 srt, u32 wnr, u32 il){
 void dmaprot_handle_dmacontroller_access(info_intercept_data_abort_t *ida){
 	volatile u32 *dmac_reg;
 	u32 dmac_reg_page;
@@ -264,94 +288,37 @@ void dmaprot_handle_dmacontroller_access(info_intercept_data_abort_t *ida){
 	}
 
 	//act on either writes or reads
-	if(ida->wnr){
-		//write
+	if(ida->wnr){	//dmac register write
+
+		//compute value that is going to be written
 		u32 value = (u32)guest_regread(ida->r, ida->srt);
-		//_XDPRINTFSMP_("%s: s2pgtbl DATA ABORT: value=0x%08x\n", __func__, value);
-		if( ((u32)dmac_reg == (BCM2837_DMA0_REGS_BASE)) ||
-				((u32)dmac_reg == (BCM2837_DMA1_REGS_BASE)) ||
-				((u32)dmac_reg == (BCM2837_DMA2_REGS_BASE)) ||
-				((u32)dmac_reg == (BCM2837_DMA3_REGS_BASE)) ||
-				((u32)dmac_reg == (BCM2837_DMA4_REGS_BASE)) ||
-				((u32)dmac_reg == (BCM2837_DMA5_REGS_BASE)) ||
-				((u32)dmac_reg == (BCM2837_DMA6_REGS_BASE)) ||
-				((u32)dmac_reg == (BCM2837_DMA7_REGS_BASE)) ||
-				((u32)dmac_reg == (BCM2837_DMA8_REGS_BASE)) ||
-				((u32)dmac_reg == (BCM2837_DMA9_REGS_BASE)) ||
-				((u32)dmac_reg == (BCM2837_DMA10_REGS_BASE)) ||
-				((u32)dmac_reg == (BCM2837_DMA11_REGS_BASE)) ||
-				((u32)dmac_reg == (BCM2837_DMA12_REGS_BASE)) ||
-				((u32)dmac_reg == (BCM2837_DMA13_REGS_BASE)) ||
-				((u32)dmac_reg == (BCM2837_DMA14_REGS_BASE)) ||
-				((u32)dmac_reg == (BCM2837_DMA15_REGS_BASE)) ){
-			//dmaprot_sanitizecb(value);
-			dmaprot_channel_cs_write(dmac_reg, value);
 
+		switch(dmac_reg_off){
+			case 0x0:	//CS register
+				dmaprot_channel_cs_access(ida->wnr, dmac_channel, dmac_reg, value);
+				break;
 
-/*		if( ((u32)dmac_reg == (BCM2837_DMA0_REGS_BASE+0x4)) ||
-					((u32)dmac_reg == (BCM2837_DMA1_REGS_BASE+0x4)) ||
-					((u32)dmac_reg == (BCM2837_DMA2_REGS_BASE+0x4)) ||
-					((u32)dmac_reg == (BCM2837_DMA3_REGS_BASE+0x4)) ||
-					((u32)dmac_reg == (BCM2837_DMA4_REGS_BASE+0x4)) ||
-					((u32)dmac_reg == (BCM2837_DMA5_REGS_BASE+0x4)) ||
-					((u32)dmac_reg == (BCM2837_DMA6_REGS_BASE+0x4)) ||
-					((u32)dmac_reg == (BCM2837_DMA7_REGS_BASE+0x4)) ||
-					((u32)dmac_reg == (BCM2837_DMA8_REGS_BASE+0x4)) ||
-					((u32)dmac_reg == (BCM2837_DMA9_REGS_BASE+0x4)) ||
-					((u32)dmac_reg == (BCM2837_DMA10_REGS_BASE+0x4)) ||
-					((u32)dmac_reg == (BCM2837_DMA11_REGS_BASE+0x4)) ||
-					((u32)dmac_reg == (BCM2837_DMA12_REGS_BASE+0x4)) ||
-					((u32)dmac_reg == (BCM2837_DMA13_REGS_BASE+0x4)) ||
-					((u32)dmac_reg == (BCM2837_DMA14_REGS_BASE+0x4)) ||
-					((u32)dmac_reg == (BCM2837_DMA15_REGS_BASE+0x4)) ){
-				dmaprot_sanitizecb(value);
-
-				//synchronize all memory accesses above
+			default:	//just pass-through writes
 				cpu_dsb();
-				cpu_isb();
-
+				cpu_isb();	//synchronize all memory accesses above
 				*dmac_reg = value;
-*/
-		}else{
-			//synchronize all memory accesses above
-			cpu_dsb();
-			cpu_isb();
-
-			*dmac_reg = value;
+				break;
 		}
 
-	}else{
-		//synchronize all memory accesses above
-		cpu_dsb();
-		cpu_isb();
+	}else{	//dmac register read
 
-		//read
-		u32 value = (u32)*dmac_reg;
-		//_XDPRINTFSMP_("%s: s2pgtbl DATA ABORT: value=0x%08x\n", __func__, value);
-		guest_regwrite(ida->r, ida->srt, value);
+		switch(dmac_reg_off){
+			default:{	//just pass-through reads
+					u32 value;
+					cpu_dsb();
+					cpu_isb();	//synchronize all memory accesses above
+					value = (u32)*dmac_reg;
+					guest_regwrite(ida->r, ida->srt, value);
+				}
+				break;
+		}
+
 	}
 
 }
 
-/*
-
-		if( ((u32)dmac_reg == (BCM2837_DMA0_REGS_BASE + 0x1c)) ||
-				((u32)dmac_reg == (BCM2837_DMA1_REGS_BASE + 0x1c)) ||
-				((u32)dmac_reg == (BCM2837_DMA2_REGS_BASE + 0x1c)) ||
-				((u32)dmac_reg == (BCM2837_DMA3_REGS_BASE + 0x1c)) ||
-				((u32)dmac_reg == (BCM2837_DMA4_REGS_BASE + 0x1c)) ||
-				((u32)dmac_reg == (BCM2837_DMA5_REGS_BASE + 0x1c)) ||
-				((u32)dmac_reg == (BCM2837_DMA6_REGS_BASE + 0x1c)) ||
-				((u32)dmac_reg == (BCM2837_DMA7_REGS_BASE + 0x1c)) ||
-				((u32)dmac_reg == (BCM2837_DMA8_REGS_BASE + 0x1c)) ||
-				((u32)dmac_reg == (BCM2837_DMA9_REGS_BASE + 0x1c)) ||
-				((u32)dmac_reg == (BCM2837_DMA10_REGS_BASE + 0x1c)) ||
-				((u32)dmac_reg == (BCM2837_DMA11_REGS_BASE + 0x1c)) ||
-				((u32)dmac_reg == (BCM2837_DMA12_REGS_BASE + 0x1c)) ||
-				((u32)dmac_reg == (BCM2837_DMA13_REGS_BASE + 0x1c)) ||
-				((u32)dmac_reg == (BCM2837_DMA14_REGS_BASE + 0x1c)) ||
-				((u32)dmac_reg == (BCM2837_DMA15_REGS_BASE + 0x1c)) ){
-			_XDPRINTFSMP_("dmaprot: direct write to next cb addr reg. Halting\n");
-			HALT();
-
-*/
