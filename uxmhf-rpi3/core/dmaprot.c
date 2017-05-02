@@ -34,7 +34,10 @@ u32 dmaprot_checkcb(u32 dmac_channel, u32 cb_pa){
 	volatile dmac_cb_t *dmacb_new;
 	volatile dmac_cb_t *dmacb_start;
 	u32 i=0;
+	//u32 count;
 
+	//_XDPRINTFSMP_("%s: dmac_channel=%u, cb_pa=0x%08x, cb_syspa=0x%08x\n",
+	//		__func__, dmac_channel, cb_pa, cb_syspa);
 
 	dmacb = dmacb_start = (dmac_cb_t *)cb_syspa;
 
@@ -85,7 +88,27 @@ u32 dmaprot_checkcb(u32 dmac_channel, u32 cb_pa){
 		}
 	}
 
+	//debug
+/*	i++;
+	_XDPRINTFSMP_("%s: dumping revised cb (len=%u)\n", __func__, i);
+	for(count=0; count < i; count++){
+		_XDPRINTFSMP_("[%u] ti = 0x%08x\n", count,
+				dmac_cblist[dmac_channel][count].ti);
+		_XDPRINTFSMP_("[%u] src_addr = 0x%08x\n", count,
+				dmac_cblist[dmac_channel][count].src_addr);
+		_XDPRINTFSMP_("[%u] dst_addr = 0x%08x\n", count,
+				dmac_cblist[dmac_channel][count].dst_addr);
+		_XDPRINTFSMP_("[%u] len = 0x%08x\n", count,
+				dmac_cblist[dmac_channel][count].len);
+		_XDPRINTFSMP_("[%u] stride = 0x%08x\n", count,
+				dmac_cblist[dmac_channel][count].stride);
+		_XDPRINTFSMP_("[%u] next_cb_addr = 0x%08x\n", count,
+				dmac_cblist[dmac_channel][count].next_cb_addr);
+	}
 
+	_XDPRINTFSMP_("%s: returning 0x%08x. Halting\n", __func__, syspa_to_dmapa((u32)&dmac_cblist[dmac_channel][0]));
+	HALT();
+*/
 	return syspa_to_dmapa((u32)&dmac_cblist[dmac_channel][0]);
 }
 
@@ -160,7 +183,7 @@ void dmaprot_handle_dmacontroller_access(info_intercept_data_abort_t *ida){
 		dmac_channel = 15;
 		dmac_reg_off = (u32)dmac_reg & 0x000000FFUL;
 	}else{
-		dmac_channel = (u32)dmac_reg & 0x00000F00UL;
+		dmac_channel = ((u32)dmac_reg & 0x00000F00UL) >> 8;
 		if(dmac_channel == 15) //this is either int status or enable base register
 			dmac_channel = 16; //so set dmac_reg_channel to invalid value (16)
 		dmac_reg_off = (u32)dmac_reg & 0x000000FFUL;
