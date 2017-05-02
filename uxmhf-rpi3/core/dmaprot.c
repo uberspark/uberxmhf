@@ -31,6 +31,7 @@ void dmaprot_checkcb(u32 cb_pa){
 	volatile dmac_cb_t *dmacb;
 	volatile dmac_cb_t *dmacb_new;
 	volatile dmac_cb_t *dmacb_start;
+	u32 i=0;
 
 	dmacb = dmacb_start = (dmac_cb_t *)cb_syspa;
 
@@ -55,10 +56,17 @@ void dmaprot_checkcb(u32 cb_pa){
 		if(dmacb_new == dmacb_start)
 			break;
 
-		if(dmacb_new < dmacb)
+		if(dmacb_new < dmacb){
 			dmacb_start = dmacb_new;
+			i=0;
+		}
 
 		dmacb = dmacb_new;
+		i++;
+		if(i > 128){
+			_XDPRINTFSMP_("%s: max cb length reached. Halting!\n",__func__);
+			HALT();
+		}
 	}
 
 }
