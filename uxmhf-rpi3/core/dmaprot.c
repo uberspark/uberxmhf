@@ -124,21 +124,21 @@ u32 dmaprot_checkcblite(u32 dmac_channel, u32 cb_pa){
 
 	dmacb = (dmac_cb_t *)cb_syspa;
 
-	//bcm2837_miniuart_puts("dmaprot: ccb: cb_pa=");
-	//debug_hexdumpu32(cb_pa);
+	bcm2837_miniuart_puts("dmaprot: ccb: cb_pa=");
+	debug_hexdumpu32(cb_pa);
 
 	while(1){
 
-		//bcm2837_miniuart_puts("dmaprot: ccb: ti=");
-		//debug_hexdumpu32(dmacb->ti);
-		//bcm2837_miniuart_puts("dmaprot: ccb: src_addr=");
-		//debug_hexdumpu32(dmacb->src_addr);
-		//bcm2837_miniuart_puts("dmaprot: ccb: dst_addr=");
-		//debug_hexdumpu32(dmacb->dst_addr);
-		//bcm2837_miniuart_puts("dmaprot: ccb: len=");
-		//debug_hexdumpu32(dmacb->len);
-		//bcm2837_miniuart_puts("dmaprot: ccb: next_cb_addr=");
-		//debug_hexdumpu32(dmacb->next_cb_addr);
+		bcm2837_miniuart_puts("dmaprot: ccb: ti=");
+		debug_hexdumpu32(dmacb->ti);
+		bcm2837_miniuart_puts("dmaprot: ccb: src_addr=");
+		debug_hexdumpu32(dmacb->src_addr);
+		bcm2837_miniuart_puts("dmaprot: ccb: dst_addr=");
+		debug_hexdumpu32(dmacb->dst_addr);
+		bcm2837_miniuart_puts("dmaprot: ccb: len=");
+		debug_hexdumpu32(dmacb->len);
+		bcm2837_miniuart_puts("dmaprot: ccb: next_cb_addr=");
+		debug_hexdumpu32(dmacb->next_cb_addr);
 
 		dmac_cblist[dmac_channel][i].ti = dmacb->ti;
 		dmac_cblist[dmac_channel][i].src_addr = dmacb->src_addr;
@@ -152,29 +152,55 @@ u32 dmaprot_checkcblite(u32 dmac_channel, u32 cb_pa){
 
 		if(dmacb->next_cb_addr == 0){
 			dmac_cblist[dmac_channel][i].next_cb_addr = 0;
+			i++;
 			break;
 		}
 
 		if(dmacb->next_cb_addr == cb_pa){
 			dmac_cblist[dmac_channel][i].next_cb_addr = syspa_to_dmapa((u32)&dmac_cblist[dmac_channel][0].ti);
+			i++;
 			break;
 		}
 
 		if(dmapa_to_syspa(dmacb->next_cb_addr) == dmacb_prev){
 			dmac_cblist[dmac_channel][i].next_cb_addr = syspa_to_dmapa((u32)&dmac_cblist[dmac_channel][i-1].ti);
+			i++;
 			break;
 		}
 
 		dmacb_prev = dmacb;
 		dmacb = (dmac_cb_t *)dmapa_to_syspa(dmacb->next_cb_addr);
-		i++;
-		if(i >= BCM2837_DMA_MAXCBRECORDS){
+
+		if((i+1) >= BCM2837_DMA_MAXCBRECORDS){
 			bcm2837_miniuart_puts("dmaprot: ccb: i < max records. Halting!\n");
 			HALT();
 		}
+		dmac_cblist[dmac_channel][i].next_cb_addr = syspa_to_dmapa((u32)&dmac_cblist[dmac_channel][i+1].ti);
+		i++;
 	}
 
-	return 0;
+	//debug
+	bcm2837_miniuart_puts("dumping shadow cb:\n");
+	{
+		u32 count;
+		for(count=0; count < i; count++){
+			bcm2837_miniuart_puts("ti = ");
+			debug_hexdumpu32(dmac_cblist[dmac_channel][count].ti);
+			bcm2837_miniuart_puts("src_addr = ");
+			debug_hexdumpu32(dmac_cblist[dmac_channel][count].src_addr);
+			bcm2837_miniuart_puts("dst_addr = ");
+			debug_hexdumpu32(dmac_cblist[dmac_channel][count].dst_addr);
+			bcm2837_miniuart_puts("len = ");
+			debug_hexdumpu32(dmac_cblist[dmac_channel][count].len);
+			bcm2837_miniuart_puts("next_cb_addr = ");
+			debug_hexdumpu32(dmac_cblist[dmac_channel][count].next_cb_addr);
+		}
+	}
+	bcm2837_miniuart_puts("dumping done; retval=\n");
+	debug_hexdumpu32((u32)&dmac_cblist[dmac_channel][0].ti);
+
+	return syspa_to_dmapa((u32)&dmac_cblist[dmac_channel][0].ti);
+	//return (u32)&dmac_cblist[dmac_channel][0].ti;
 }
 
 
@@ -205,6 +231,7 @@ void dmaprot_channel_cs_access(u32 wnr, u32 dmac_channel, u32 *dmac_reg, u32 val
 
 }
 
+u32 once=0;
 
 void dmaprot_channel_conblkad_access(u32 wnr, u32 dmac_channel, u32 *dmac_reg, u32 value){
 	u32 revised_value;
@@ -214,14 +241,20 @@ void dmaprot_channel_conblkad_access(u32 wnr, u32 dmac_channel, u32 *dmac_reg, u
 		//revised_value=dmaprot_checkcb(dmac_channel, value);
 		//dmaprot_checkcb(dmac_channel, value);
 		//sprintf(dmaprot_logbuf[dmaprot_logbuf_index++][0], "dmaprot: conblkad=0x%08x\n", value);
-		//bcm2837_miniuart_puts("dmaprot: conblkad=");
-		//debug_hexdumpu32(value);
-		dmaprot_checkcblite(dmac_channel, value);
+		bcm2837_miniuart_puts("dmaprot: conblkad=");
+		debug_hexdumpu32(value);
+		revised_value=dmaprot_checkcblite(dmac_channel, value);
+		bcm2837_miniuart_puts("dmaprot: conblkad[revised]=");
+		debug_hexdumpu32(revised_value);
 
 		cpu_dsb();
 		cpu_isb();	//synchronize all memory accesses above
-		*dmac_reg = value;
-		//*dmac_reg = revised_value;
+		if(once == 0){
+			*dmac_reg = revised_value;
+			once=1;
+		}else{
+			*dmac_reg = value;
+		}
 
 	}else{		//read
 		_XDPRINTFSMP_("%s: not implemented. Halting!\n",__func__);
