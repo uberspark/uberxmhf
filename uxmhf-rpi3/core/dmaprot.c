@@ -216,13 +216,22 @@ void dmaprot_channel_cs_access(u32 wnr, u32 dmac_channel, u32 *dmac_reg, u32 val
 			//activating DMA, get current cb register value
 			dmac_cb_reg_value = *dmac_cb_reg;
 
-			//check cb
-			dmaprot_checkcb(dmac_channel, dmac_cb_reg_value);
+			bcm2837_miniuart_puts("dmaprot: DMA_ACTIVATE=");
+			debug_hexdumpu32(dmac_cb_reg_value);
+		}else{
+			bcm2837_miniuart_puts("dmaprot: DMA_DE-ACTIVATE\n");
 		}
 
 		cpu_dsb();
 		cpu_isb();	//synchronize all memory accesses above
 		*dmac_reg = value;
+
+		bcm2837_miniuart_puts("dmaprot: waiting for DMA to complete...\n");
+		while(*dmac_cb_reg != 0){
+
+		}
+		bcm2837_miniuart_puts("dmaprot: DMA completed. Halting\n");
+		HALT();
 
 	}else{		//read
 		_XDPRINTFSMP_("%s: not implemented. Halting!\n",__func__);
@@ -299,9 +308,9 @@ void dmaprot_handle_dmacontroller_access(info_intercept_data_abort_t *ida){
 		u32 value = (u32)guest_regread(ida->r, ida->srt);
 
 		switch(dmac_reg_off){
-			//case 0x0:	//CS register
-			//	dmaprot_channel_cs_access(ida->wnr, dmac_channel, dmac_reg, value);
-			//	break;
+			case 0x0:	//CS register
+				dmaprot_channel_cs_access(ida->wnr, dmac_channel, dmac_reg, value);
+				break;
 
 			case 0x4:	//CONBLKAD register
 				dmaprot_channel_conblkad_access(ida->wnr, dmac_channel, dmac_reg, value);
