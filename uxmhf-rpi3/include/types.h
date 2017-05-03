@@ -24,7 +24,7 @@ typedef unsigned long long u64;
 
 
 #define UXMHF_CORE_START_ADDR (0x30000000)
-#define UXMHF_CORE_END_ADDR (0x30000000+0xA00000)
+#define UXMHF_CORE_END_ADDR (0x30000000+0xC00000)
 
 
 

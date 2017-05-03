@@ -130,6 +130,7 @@ void hyppgtbl_populate_tables(void){
 		_XDPRINTF_(" %u-> %016llx\n", i, hyp_l1_ldesc_table[i]);
 	}
 	_XDPRINTF_("%s: l1 ldesc table dump finished\n", __func__);
+	_XDPRINTF_("%s: dmac_cblist at 0x%08x\n", __func__, (u32)&dmac_cblist);
 
 	//populate l2 ldesc table
 	for(i=0; i < (L1_LDESC_TABLE_ENTRIES * L2_LDESC_TABLE_MAXENTRIES); i++){

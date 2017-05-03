@@ -7,7 +7,7 @@ ENTRY(entry)
 
 MEMORY
 {
-	ram (rwxai) : ORIGIN = 0x30000000, LENGTH = 0xA00000
+	ram (rwxai) : ORIGIN = 0x30000000, LENGTH = 0xC00000
 	unaccounted (rwxai) : ORIGIN = 0, LENGTH = 0 /* see section .unaccounted at end */
 }
 
@@ -25,12 +25,14 @@ SECTIONS
     	*(.bss) 
 		. = ALIGN(0x4000);
     	*(.paligndata) 
+    	. = ALIGN(0x200000);
+    	*(.palign2mdata)
 	} > ram = 0x0000
 
     
     .stack : { 
     	*(.stack)
-		. = ALIGN(0x200000); 
+		. = ALIGN(0x200000);
 	} > ram = 0x0000
 
 	/DISCARD/ : {

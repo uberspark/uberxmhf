@@ -56,7 +56,7 @@ call_core:
 	.global g_core_size
 	.type g_core_size, %object
 	.size g_core_size, 4
-	g_core_size:	.word	0xA00000
+	g_core_size:	.word	0xC00000
 
 
 	.align 2
@@ -64,7 +64,7 @@ call_core:
 	.type g_guestos_startaddr, %object
 	.size g_guestos_startaddr, 4
 	//	g_guestos_startaddr:	.word	(0x41E000+0x8000+0x800000)
-	g_guestos_startaddr:	.word	(0x41F000+0x8000+0xA00000)
+	g_guestos_startaddr:	.word	(0x41F000+0x8000+0xC00000)
 	//g_guestos_startaddr:	.word	(0x3ed000+0x8000+0x800000)
 
 
