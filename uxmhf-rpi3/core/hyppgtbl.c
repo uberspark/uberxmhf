@@ -10,6 +10,7 @@
 #include <miniuart.h>
 #include <debug.h>
 #include <guestos.h>
+#include <dmaprot.h>
 
 //G4.3
 //HYP mode _must_ use long descriptor format
@@ -85,6 +86,9 @@ void hyppgtbl_initialize_translationcontrol(void){
 __attribute__((section(".paligndata"))) __attribute__((align(PAGE_SIZE_4K))) u64 hyp_l1_ldesc_table[L1_LDESC_TABLE_MAXENTRIES];
 __attribute__((section(".paligndata"))) __attribute__((align(PAGE_SIZE_4K))) u64 hyp_l2_ldesc_table[L1_LDESC_TABLE_ENTRIES * L2_LDESC_TABLE_MAXENTRIES];
 
+extern dmac_cb_t dmac_cblist[BCM2837_DMA_NUMCHANNELS][BCM2837_DMA_MAXCBRECORDS];
+
+
 void hyppgtbl_populate_tables(void){
 	u32 i;
 	u64 l1_attrs= (LDESC_S1_TABLEATTR_APTABLE_NONE << LDESC_S1_TABLEATTR_APTABLE_SHIFT);
@@ -97,6 +101,12 @@ void hyppgtbl_populate_tables(void){
 			(MEM_INNER_SHAREABLE << LDESC_S1_MEMATTR_SH_SHIFT) |
 			LDESC_S1_MEMATTR_AF_MASK |
 			(1 << LDESC_S1_MEMATTR_ATTRINDX_SHIFT);
+
+	u64 l2_attrs_nc = (LDESC_S1_AP_READWRITE << LDESC_S1_MEMATTR_AP_SHIFT) |
+			(MEM_INNER_SHAREABLE << LDESC_S1_MEMATTR_SH_SHIFT) |
+			LDESC_S1_MEMATTR_AF_MASK |
+			(2 << LDESC_S1_MEMATTR_ATTRINDX_SHIFT);
+
 
 	u64 l2_attrs_dev = (LDESC_S1_AP_READWRITE << LDESC_S1_MEMATTR_AP_SHIFT) |
 			(MEM_INNER_SHAREABLE << LDESC_S1_MEMATTR_SH_SHIFT) |

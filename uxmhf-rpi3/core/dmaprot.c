@@ -12,8 +12,6 @@
 #include <dmaprot.h>
 
 __attribute__((section(".paligndata"))) __attribute__((align(PAGE_SIZE_4K))) dmac_cb_t dmac_cblist[BCM2837_DMA_NUMCHANNELS][BCM2837_DMA_MAXCBRECORDS];
-__attribute__((section(".data"))) u8 dmaprot_logbuf[1024][256];
-u32 dmaprot_logbuf_index=0;
 
 //activate DMA protection mechanism
 void dmaprot_activate(void){
@@ -253,6 +251,23 @@ void dmaprot_channel_cs_access(u32 wnr, u32 dmac_channel, u32 *dmac_reg, u32 val
 			bcm2837_miniuart_puts("dmaprot: DMA_DE-ACTIVATE\n");
 		}
 
+		/*//debug
+		{
+			volatile dmac_cb_t *dmacb = (dmac_cb_t *)0x3A900000;
+			volatile dmac_cb_t *dmacb_ref = (dmac_cb_t *)dmapa_to_syspa(dmac_cb_reg_value);
+
+			dmacb->ti = dmacb_ref->ti;
+			dmacb->src_addr = dmacb_ref->src_addr;
+			dmacb->dst_addr = dmacb_ref->dst_addr;
+			dmacb->len = dmacb_ref->len;
+			dmacb->stride = dmacb_ref->stride;
+			dmacb->next_cb_addr = dmacb_ref->next_cb_addr;
+			dmacb->rsv_0 = dmacb_ref->rsv_0;
+			dmacb->rsv_1 = dmacb_ref->rsv_1;
+
+			*dmac_cb_reg = syspa_to_dmapa((u32)dmacb);
+			dmac_cb_reg_value = *dmac_cb_reg;
+		}*/
 
 
 		cpu_dsb();
