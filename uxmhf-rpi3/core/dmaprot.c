@@ -204,12 +204,43 @@ u32 dmaprot_checkcblite(u32 dmac_channel, u32 cb_pa){
 }
 
 
+void dmaprot_dump_cb(u32 cb_pa){
+	u32 cb_syspa = dmapa_to_syspa(cb_pa);
+	volatile dmac_cb_t *dmacb;
+
+	dmacb = (dmac_cb_t *)cb_syspa;
+
+	bcm2837_miniuart_puts("dmaprot_dump_cb=");
+	debug_hexdumpu32(cb_pa);
+	bcm2837_miniuart_puts("  ti=");
+	debug_hexdumpu32(dmacb->ti);
+	bcm2837_miniuart_puts("  src_addr=");
+	debug_hexdumpu32(dmacb->src_addr);
+	bcm2837_miniuart_puts("  dst_addr=");
+	debug_hexdumpu32(dmacb->dst_addr);
+	bcm2837_miniuart_puts("  len=");
+	debug_hexdumpu32(dmacb->len);
+	bcm2837_miniuart_puts("  next_cb_addr=");
+	debug_hexdumpu32(dmacb->next_cb_addr);
+	bcm2837_miniuart_puts("dmaprot_dump_end\n");
+
+}
+
+u32 once_cs=0;
 
 void dmaprot_channel_cs_access(u32 wnr, u32 dmac_channel, u32 *dmac_reg, u32 value){
 	volatile u32 *dmac_cb_reg;
+	volatile u32 *dmac_ti_reg;
+	volatile u32 *dmac_src_reg;
+
 	u32 dmac_cb_reg_value;
+	u32 dmac_cs_reg_value;
+	u32 dmac_ti_reg_value;
+	u32 dmac_src_reg_value;
 
 	dmac_cb_reg = (u32 *)((u32)dmac_reg + 0x4);
+	dmac_ti_reg = (u32 *)((u32)dmac_reg + 0x8);
+	dmac_src_reg = (u32 *)((u32)dmac_reg + 0xc);
 
 	if(wnr){	//write
 		if(value & 0x1){
@@ -222,16 +253,33 @@ void dmaprot_channel_cs_access(u32 wnr, u32 dmac_channel, u32 *dmac_reg, u32 val
 			bcm2837_miniuart_puts("dmaprot: DMA_DE-ACTIVATE\n");
 		}
 
+
+
 		cpu_dsb();
 		cpu_isb();	//synchronize all memory accesses above
 		*dmac_reg = value;
 
-		bcm2837_miniuart_puts("dmaprot: waiting for DMA to complete...\n");
-		while(*dmac_cb_reg != 0){
+		if(once_cs == 0){
+			dmaprot_dump_cb(dmac_cb_reg_value);
 
+			dmac_ti_reg_value = *dmac_ti_reg;
+			bcm2837_miniuart_puts("dmaprot: TI val=");
+			debug_hexdumpu32(dmac_ti_reg_value);
+			dmac_src_reg_value = *dmac_src_reg;
+			bcm2837_miniuart_puts("dmaprot: SRC val=");
+			debug_hexdumpu32(dmac_src_reg_value);
+
+			bcm2837_miniuart_puts("dmaprot: waiting for DMA to complete...\n");
+			while(*dmac_cb_reg != 0){
+
+			}
+			dmac_cs_reg_value = *dmac_reg;
+			bcm2837_miniuart_puts("dmaprot: DMA completed=");
+			debug_hexdumpu32(dmac_cs_reg_value);
+
+			once_cs = 1;
+			HALT();
 		}
-		bcm2837_miniuart_puts("dmaprot: DMA completed. Halting\n");
-		HALT();
 
 	}else{		//read
 		_XDPRINTFSMP_("%s: not implemented. Halting!\n",__func__);
@@ -240,7 +288,7 @@ void dmaprot_channel_cs_access(u32 wnr, u32 dmac_channel, u32 *dmac_reg, u32 val
 
 }
 
-u32 once=0;
+u32 once=1;
 
 void dmaprot_channel_conblkad_access(u32 wnr, u32 dmac_channel, u32 *dmac_reg, u32 value){
 	u32 revised_value;
