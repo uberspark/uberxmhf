@@ -27,93 +27,6 @@ void dmaprot_activate(void){
 }
 
 
-
-u32 dmaprot_checkcb(u32 dmac_channel, u32 cb_pa){
-	u32 cb_syspa = dmapa_to_syspa(cb_pa);
-	volatile dmac_cb_t *dmacb;
-	volatile dmac_cb_t *dmacb_new;
-	volatile dmac_cb_t *dmacb_start;
-	u32 i=0;
-	//u32 count;
-
-	//_XDPRINTFSMP_("%s: dmac_channel=%u, cb_pa=0x%08x, cb_syspa=0x%08x\n",
-	//		__func__, dmac_channel, cb_pa, cb_syspa);
-
-	dmacb = dmacb_start = (dmac_cb_t *)cb_syspa;
-
-
-	while(1){
-
-		if( 	((dmapa_to_syspa(dmacb->src_addr) >= UXMHF_CORE_START_ADDR) &&
-				(dmapa_to_syspa(dmacb->src_addr) < UXMHF_CORE_END_ADDR)) ||
-				((dmapa_to_syspa(dmacb->dst_addr) >= UXMHF_CORE_START_ADDR) &&
-				(dmapa_to_syspa(dmacb->dst_addr) < UXMHF_CORE_END_ADDR))
-		){
-				_XDPRINTFSMP_("%s: CB using I/O or micro-hypervisor memory regions. Halting!\n",
-						__func__);
-				HALT();
-		}
-
-		dmac_cblist[dmac_channel][i].ti = dmacb->ti;
-		dmac_cblist[dmac_channel][i].src_addr = dmacb->src_addr;
-		dmac_cblist[dmac_channel][i].dst_addr = dmacb->dst_addr;
-		dmac_cblist[dmac_channel][i].len = dmacb->len;
-		dmac_cblist[dmac_channel][i].stride = dmacb->stride;
-		dmac_cblist[dmac_channel][i].next_cb_addr = 0;
-		dmac_cblist[dmac_channel][i].rsv_0 = dmacb->rsv_0;
-		dmac_cblist[dmac_channel][i].rsv_1 = dmacb->rsv_1;
-
-
-		dmacb_new = (dmac_cb_t *)dmapa_to_syspa(dmacb->next_cb_addr);
-
-		if(dmacb_new == 0)
-			break;
-
-		if(dmacb_new == dmacb_start){
-			dmac_cblist[dmac_channel][i].next_cb_addr = syspa_to_dmapa((u32)&dmac_cblist[dmac_channel][0].ti);
-			break;
-		}
-
-		if(dmacb_new < dmacb){
-			dmacb = dmacb_start = dmacb_new;
-			i=0;
-		}else{
-			dmacb = dmacb_new;
-			if((i+1) >= 128){
-				_XDPRINTFSMP_("%s: max cb length reached. Halting!\n",__func__);
-				HALT();
-			}
-			dmac_cblist[dmac_channel][i].next_cb_addr = syspa_to_dmapa((u32)&dmac_cblist[dmac_channel][i+1]);
-			i++;
-		}
-	}
-
-	//debug
-/*	i++;
-	_XDPRINTFSMP_("%s: dumping revised cb (len=%u)\n", __func__, i);
-	for(count=0; count < i; count++){
-		_XDPRINTFSMP_("[%u] ti = 0x%08x\n", count,
-				dmac_cblist[dmac_channel][count].ti);
-		_XDPRINTFSMP_("[%u] src_addr = 0x%08x\n", count,
-				dmac_cblist[dmac_channel][count].src_addr);
-		_XDPRINTFSMP_("[%u] dst_addr = 0x%08x\n", count,
-				dmac_cblist[dmac_channel][count].dst_addr);
-		_XDPRINTFSMP_("[%u] len = 0x%08x\n", count,
-				dmac_cblist[dmac_channel][count].len);
-		_XDPRINTFSMP_("[%u] stride = 0x%08x\n", count,
-				dmac_cblist[dmac_channel][count].stride);
-		_XDPRINTFSMP_("[%u] next_cb_addr = 0x%08x\n", count,
-				dmac_cblist[dmac_channel][count].next_cb_addr);
-	}
-
-	_XDPRINTFSMP_("%s: returning 0x%08x. Halting\n", __func__, syspa_to_dmapa((u32)&dmac_cblist[dmac_channel][0]));
-	HALT();
-*/
-	return syspa_to_dmapa((u32)&dmac_cblist[dmac_channel][0]);
-}
-
-
-
 u32 dmaprot_checkcblite(u32 dmac_channel, u32 cb_pa){
 	u32 cb_syspa = dmapa_to_syspa(cb_pa);
 	volatile dmac_cb_t *dmacb;
@@ -214,13 +127,13 @@ u32 dmaprot_checkcblite(u32 dmac_channel, u32 cb_pa){
 		}
 	}
 	bcm2837_miniuart_puts("dumping done; retval=\n");
-	debug_hexdumpu32((u32)&dmac_cblist[dmac_channel][0].ti);
+	debug_hexdumpu32(syspa_to_dmapa((u32)&dmac_cblist[dmac_channel][0].ti));
 	*/
 
 	return syspa_to_dmapa((u32)&dmac_cblist[dmac_channel][0].ti);
 }
 
-
+/*
 void dmaprot_dump_cb(u32 cb_pa){
 	u32 cb_syspa = dmapa_to_syspa(cb_pa);
 	volatile dmac_cb_t *dmacb;
@@ -242,22 +155,15 @@ void dmaprot_dump_cb(u32 cb_pa){
 	bcm2837_miniuart_puts("dmaprot_dump_end\n");
 
 }
+*/
 
-//u32 once_cs=0;
-
+/*
 void dmaprot_channel_cs_access(u32 wnr, u32 dmac_channel, u32 *dmac_reg, u32 value){
 	volatile u32 *dmac_cb_reg;
-	//volatile u32 *dmac_ti_reg;
-	//volatile u32 *dmac_src_reg;
 
 	u32 dmac_cb_reg_value;
-	//u32 dmac_cs_reg_value;
-	//u32 dmac_ti_reg_value;
-	//u32 dmac_src_reg_value;
 
 	dmac_cb_reg = (u32 *)((u32)dmac_reg + 0x4);
-	//dmac_ti_reg = (u32 *)((u32)dmac_reg + 0x8);
-	//dmac_src_reg = (u32 *)((u32)dmac_reg + 0xc);
 
 	if(wnr){	//write
 		if(value & 0x1){
@@ -270,50 +176,9 @@ void dmaprot_channel_cs_access(u32 wnr, u32 dmac_channel, u32 *dmac_reg, u32 val
 			bcm2837_miniuart_puts("dmaprot: DMA_DE-ACTIVATE\n");
 		}
 
-		/*//debug
-		{
-			volatile dmac_cb_t *dmacb = (dmac_cb_t *)0x3A900000;
-			volatile dmac_cb_t *dmacb_ref = (dmac_cb_t *)dmapa_to_syspa(dmac_cb_reg_value);
-
-			dmacb->ti = dmacb_ref->ti;
-			dmacb->src_addr = dmacb_ref->src_addr;
-			dmacb->dst_addr = dmacb_ref->dst_addr;
-			dmacb->len = dmacb_ref->len;
-			dmacb->stride = dmacb_ref->stride;
-			dmacb->next_cb_addr = dmacb_ref->next_cb_addr;
-			dmacb->rsv_0 = dmacb_ref->rsv_0;
-			dmacb->rsv_1 = dmacb_ref->rsv_1;
-
-			*dmac_cb_reg = syspa_to_dmapa((u32)dmacb);
-			dmac_cb_reg_value = *dmac_cb_reg;
-		}*/
-
-
 		cpu_dsb();
 		cpu_isb();	//synchronize all memory accesses above
 		*dmac_reg = value;
-
-		//if(once_cs == 0){
-			//dmaprot_dump_cb(dmac_cb_reg_value);
-
-			//dmac_ti_reg_value = *dmac_ti_reg;
-			//bcm2837_miniuart_puts("dmaprot: TI val=");
-			//debug_hexdumpu32(dmac_ti_reg_value);
-			//dmac_src_reg_value = *dmac_src_reg;
-			//bcm2837_miniuart_puts("dmaprot: SRC val=");
-			//debug_hexdumpu32(dmac_src_reg_value);
-
-			//bcm2837_miniuart_puts("dmaprot: waiting for DMA to complete...\n");
-			//while(*dmac_cb_reg != 0){
-
-			//}
-			//dmac_cs_reg_value = *dmac_reg;
-			//bcm2837_miniuart_puts("dmaprot: DMA completed=");
-			//debug_hexdumpu32(dmac_cs_reg_value);
-
-			//once_cs = 1;
-			//HALT();
-		//}
 
 	}else{		//read
 		_XDPRINTFSMP_("%s: not implemented. Halting!\n",__func__);
@@ -321,17 +186,13 @@ void dmaprot_channel_cs_access(u32 wnr, u32 dmac_channel, u32 *dmac_reg, u32 val
 	}
 
 }
-
-u32 once=0;
+*/
 
 void dmaprot_channel_conblkad_access(u32 wnr, u32 dmac_channel, u32 *dmac_reg, u32 value){
 	u32 revised_value;
 
 	if(wnr){	//write
-		//check cb
-		//revised_value=dmaprot_checkcb(dmac_channel, value);
-		//dmaprot_checkcb(dmac_channel, value);
-		//sprintf(dmaprot_logbuf[dmaprot_logbuf_index++][0], "dmaprot: conblkad=0x%08x\n", value);
+		//shadow cb
 		//bcm2837_miniuart_puts("dmaprot: conblkad=");
 		//debug_hexdumpu32(value);
 		revised_value=dmaprot_checkcblite(dmac_channel, value);
@@ -340,12 +201,7 @@ void dmaprot_channel_conblkad_access(u32 wnr, u32 dmac_channel, u32 *dmac_reg, u
 
 		cpu_dsb();
 		cpu_isb();	//synchronize all memory accesses above
-		//if(once < 1){
-			*dmac_reg = revised_value;
-			//once++;
-		//}else{
-		//	*dmac_reg = value;
-		//}
+		*dmac_reg = revised_value;
 
 	}else{		//read
 		_XDPRINTFSMP_("%s: not implemented. Halting!\n",__func__);
