@@ -7,13 +7,13 @@ ENTRY(entry)
 
 MEMORY
 {
-	ram (rwxai) : ORIGIN = 0x30000000, LENGTH = 0xC00000
+	ram (rwxai) : ORIGIN = 0x28000000, LENGTH = 0xC00000
 	unaccounted (rwxai) : ORIGIN = 0, LENGTH = 0 /* see section .unaccounted at end */
 }
 
 SECTIONS
 {
-	. = 0x30000000;
+	. = 0x28000000;
     
     .text : { 
     	*(.text) 
