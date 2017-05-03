@@ -27,7 +27,7 @@ void dmaprot_activate(void){
 }
 
 
-u32 dmaprot_checkcblite(u32 dmac_channel, u32 cb_pa){
+u32 dmaprot_shadowcb(u32 dmac_channel, u32 cb_pa){
 	u32 cb_syspa = dmapa_to_syspa(cb_pa);
 	volatile dmac_cb_t *dmacb;
 	volatile dmac_cb_t *dmacb_prev=0;
@@ -189,19 +189,19 @@ void dmaprot_channel_cs_access(u32 wnr, u32 dmac_channel, u32 *dmac_reg, u32 val
 */
 
 void dmaprot_channel_conblkad_access(u32 wnr, u32 dmac_channel, u32 *dmac_reg, u32 value){
-	u32 revised_value;
+	u32 shadow_value;
 
 	if(wnr){	//write
 		//shadow cb
 		//bcm2837_miniuart_puts("dmaprot: conblkad=");
 		//debug_hexdumpu32(value);
-		revised_value=dmaprot_checkcblite(dmac_channel, value);
-		//bcm2837_miniuart_puts("dmaprot: conblkad[revised]=");
-		//debug_hexdumpu32(revised_value);
+		shadow_value=dmaprot_shadowcb(dmac_channel, value);
+		//bcm2837_miniuart_puts("dmaprot: conblkad[shadow]=");
+		//debug_hexdumpu32(shadow_value);
 
 		cpu_dsb();
 		cpu_isb();	//synchronize all memory accesses above
-		*dmac_reg = revised_value;
+		*dmac_reg = shadow_value;
 
 	}else{		//read
 		_XDPRINTFSMP_("%s: not implemented. Halting!\n",__func__);
