@@ -122,21 +122,21 @@ u32 dmaprot_checkcblite(u32 dmac_channel, u32 cb_pa){
 
 	dmacb = (dmac_cb_t *)cb_syspa;
 
-	bcm2837_miniuart_puts("dmaprot: ccb: cb_pa=");
-	debug_hexdumpu32(cb_pa);
+	//bcm2837_miniuart_puts("dmaprot: ccb: cb_pa=");
+	//debug_hexdumpu32(cb_pa);
 
 	while(1){
 
-		bcm2837_miniuart_puts("dmaprot: ccb: ti=");
-		debug_hexdumpu32(dmacb->ti);
-		bcm2837_miniuart_puts("dmaprot: ccb: src_addr=");
-		debug_hexdumpu32(dmacb->src_addr);
-		bcm2837_miniuart_puts("dmaprot: ccb: dst_addr=");
-		debug_hexdumpu32(dmacb->dst_addr);
-		bcm2837_miniuart_puts("dmaprot: ccb: len=");
-		debug_hexdumpu32(dmacb->len);
-		bcm2837_miniuart_puts("dmaprot: ccb: next_cb_addr=");
-		debug_hexdumpu32(dmacb->next_cb_addr);
+		//bcm2837_miniuart_puts("dmaprot: ccb: ti=");
+		//debug_hexdumpu32(dmacb->ti);
+		//bcm2837_miniuart_puts("dmaprot: ccb: src_addr=");
+		//debug_hexdumpu32(dmacb->src_addr);
+		//bcm2837_miniuart_puts("dmaprot: ccb: dst_addr=");
+		//debug_hexdumpu32(dmacb->dst_addr);
+		//bcm2837_miniuart_puts("dmaprot: ccb: len=");
+		//debug_hexdumpu32(dmacb->len);
+		//bcm2837_miniuart_puts("dmaprot: ccb: next_cb_addr=");
+		//debug_hexdumpu32(dmacb->next_cb_addr);
 
 		dmac_cblist[dmac_channel][i].ti = dmacb->ti;
 		dmac_cblist[dmac_channel][i].src_addr = dmacb->src_addr;
@@ -178,7 +178,7 @@ u32 dmaprot_checkcblite(u32 dmac_channel, u32 cb_pa){
 	}
 
 	//debug
-	bcm2837_miniuart_puts("dumping shadow cb:\n");
+	/*bcm2837_miniuart_puts("dumping shadow cb:\n");
 	{
 		u32 count;
 		for(count=0; count < i; count++){
@@ -196,9 +196,9 @@ u32 dmaprot_checkcblite(u32 dmac_channel, u32 cb_pa){
 	}
 	bcm2837_miniuart_puts("dumping done; retval=\n");
 	debug_hexdumpu32((u32)&dmac_cblist[dmac_channel][0].ti);
+	*/
 
 	return syspa_to_dmapa((u32)&dmac_cblist[dmac_channel][0].ti);
-	//return (u32)&dmac_cblist[dmac_channel][0].ti;
 }
 
 
@@ -313,11 +313,11 @@ void dmaprot_channel_conblkad_access(u32 wnr, u32 dmac_channel, u32 *dmac_reg, u
 		//revised_value=dmaprot_checkcb(dmac_channel, value);
 		//dmaprot_checkcb(dmac_channel, value);
 		//sprintf(dmaprot_logbuf[dmaprot_logbuf_index++][0], "dmaprot: conblkad=0x%08x\n", value);
-		bcm2837_miniuart_puts("dmaprot: conblkad=");
-		debug_hexdumpu32(value);
+		//bcm2837_miniuart_puts("dmaprot: conblkad=");
+		//debug_hexdumpu32(value);
 		revised_value=dmaprot_checkcblite(dmac_channel, value);
-		bcm2837_miniuart_puts("dmaprot: conblkad[revised]=");
-		debug_hexdumpu32(revised_value);
+		//bcm2837_miniuart_puts("dmaprot: conblkad[revised]=");
+		//debug_hexdumpu32(revised_value);
 
 		cpu_dsb();
 		cpu_isb();	//synchronize all memory accesses above
