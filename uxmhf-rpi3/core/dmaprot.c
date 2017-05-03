@@ -119,6 +119,8 @@ u32 dmaprot_checkcblite(u32 dmac_channel, u32 cb_pa){
 	volatile dmac_cb_t *dmacb;
 	volatile dmac_cb_t *dmacb_prev=0;
 	u32 i=0;
+	u32 syspa_src_addr;
+	u32 syspa_dst_addr;
 
 	dmacb = (dmac_cb_t *)cb_syspa;
 
@@ -137,6 +139,23 @@ u32 dmaprot_checkcblite(u32 dmac_channel, u32 cb_pa){
 		//debug_hexdumpu32(dmacb->len);
 		//bcm2837_miniuart_puts("dmaprot: ccb: next_cb_addr=");
 		//debug_hexdumpu32(dmacb->next_cb_addr);
+
+		syspa_src_addr = dmapa_to_syspa(dmacb->src_addr);
+		syspa_dst_addr = dmapa_to_syspa(dmacb->dst_addr);
+
+		if( 	(syspa_src_addr >= UXMHF_CORE_START_ADDR &&
+				 syspa_src_addr < UXMHF_CORE_END_ADDR)
+		){
+			bcm2837_miniuart_puts("CB src_addr using micro-hypervisor memory regions. Halting!\n");
+			HALT();
+		}
+
+		if( 	(syspa_dst_addr >= UXMHF_CORE_START_ADDR &&
+				 syspa_dst_addr < UXMHF_CORE_END_ADDR)
+		){
+			bcm2837_miniuart_puts("CB dst_addr using micro-hypervisor memory regions. Halting!\n");
+			HALT();
+		}
 
 		dmac_cblist[dmac_channel][i].ti = dmacb->ti;
 		dmac_cblist[dmac_channel][i].src_addr = dmacb->src_addr;
