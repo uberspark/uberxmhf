@@ -11,7 +11,7 @@
 #include <debug.h>
 #include <dmaprot.h>
 
-__attribute__((section(".paligndata"))) __attribute__((align(PAGE_SIZE_4K))) dmac_cb_t dmac_cblist[BCM2837_DMA_NUMCHANNELS][BCM2837_DMA_MAXCBRECORDS];
+__attribute__((section(".paligndata"))) __attribute__((align(PAGE_SIZE_2M))) dmac_cb_t dmac_cblist[BCM2837_DMA_NUMCHANNELS][BCM2837_DMA_MAXCBRECORDS];
 
 //activate DMA protection mechanism
 void dmaprot_activate(void){
