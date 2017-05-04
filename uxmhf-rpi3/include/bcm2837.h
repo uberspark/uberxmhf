@@ -60,6 +60,11 @@
 #define BCM2837_DMA_NUMCHANNELS	16
 #define BCM2837_DMA_MAXCBRECORDS	4096
 
+
+//USB controller
+#define DWC_REGS_BASE	(BCM2837_PERIPHERALS_BASE + 0x00980000)
+
+
 #ifndef __ASSEMBLY__
 
 typedef struct {
