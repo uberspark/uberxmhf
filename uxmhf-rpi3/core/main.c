@@ -191,6 +191,10 @@ void hypsvc_handler(arm8_32_regs_t *r){
 				if( (da_pa_page == BCM2837_DMA0_REGS_BASE) ||
 					(da_pa_page == BCM2837_DMA15_REGS_BASE) ){
 					dmaprot_handle_dmacontroller_access(&ida);
+
+				}else if ( da_pa_page == DWC_REGS_BASE){
+					dmaprot_handle_usbdmac_access(&ida);
+
 				}else{
 					_XDPRINTFSMP_("%s: unknown s2pgtbl DATA ABORT. Halting! (va=0x%08x, pa=0x%08x)\n",
 							__func__, ida.va, ida.pa);
