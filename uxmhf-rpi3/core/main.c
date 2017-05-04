@@ -44,22 +44,19 @@ void hyphvc_handler(void){
 
 void guest_regwrite(arm8_32_regs_t *r, u32 regnum, u32 value){
 	switch(regnum){
-		case 0:
-			r->r0 = value;
-			break;
-
-		case 1:
-			r->r1 = value;
-			break;
-
-		case 2:
-			r->r2 = value;
-			break;
-
-		case 3:
-			r->r3 = value;
-			break;
-
+		case 0:		r->r0 = value; break;
+		case 1:		r->r1 = value; break;
+		case 2:		r->r2 = value; break;
+		case 3:		r->r3 = value; break;
+		case 4:		r->r4 = value; break;
+		case 5:		r->r5 = value; break;
+		case 6:		r->r6 = value; break;
+		case 7:		r->r7 = value; break;
+		case 8:		r->r8 = value; break;
+		case 9:		r->r9 = value; break;
+		case 10:	r->r10 = value; break;
+		case 11:	r->r11 = value; break;
+		case 12:	r->r12 = value; break;
 		default:
 			_XDPRINTFSMP_("%s: Invalid regnum=%u. Halting!\n", __func__, regnum);
 			HALT();
@@ -69,18 +66,19 @@ void guest_regwrite(arm8_32_regs_t *r, u32 regnum, u32 value){
 
 u32 guest_regread(arm8_32_regs_t *r, u32 regnum){
 	switch(regnum){
-		case 0:
-			return(r->r0);
-
-		case 1:
-			return(r->r1);
-
-		case 2:
-			return(r->r2);
-
-		case 3:
-			return(r->r3);
-
+		case 0:		return(r->r0);
+		case 1:		return(r->r1);
+		case 2:		return(r->r2);
+		case 3:		return(r->r3);
+		case 4:		return(r->r4);
+		case 5:		return(r->r5);
+		case 6:		return(r->r6);
+		case 7:		return(r->r7);
+		case 8:		return(r->r8);
+		case 9:		return(r->r9);
+		case 10:	return(r->r10);
+		case 11:	return(r->r11);
+		case 12:	return(r->r12);
 		default:
 			_XDPRINTFSMP_("%s: Invalid regnum=%u. Halting!\n", __func__, regnum);
 			HALT();
