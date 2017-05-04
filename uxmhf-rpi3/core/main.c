@@ -154,14 +154,14 @@ void hypsvc_handler(arm8_32_regs_t *r){
 							//_XDPRINTFSMP_("usbdmaprot[write]: reg=0x%08x, value=0x%08x\n",
 							//		(u32)dmac_reg, r->r1);
 
-							cpu_dsb();
-							cpu_isb();	//synchronize all memory accesses above
+							//cpu_dsb();
+							//cpu_isb();	//synchronize all memory accesses above
 							//_XDPRINTFSMP_("usbdmaprot[write]: proceeding to write...\n");
-							*dmac_reg = r->r1;
+							//*dmac_reg = r->r1;
 							//_XDPRINTFSMP_("usbdmaprot[write]: done. Halting!\n");
 							//HALT();
 					}
-						break;
+					break;
 
 					default:
 						_XDPRINTFSMP_("%s: unknown HVC instruction imm16=0x%08x. Halting!\n", __func__,
