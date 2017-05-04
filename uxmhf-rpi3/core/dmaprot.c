@@ -295,11 +295,32 @@ void dmaprot_handle_dmacontroller_access(info_intercept_data_abort_t *ida){
 
 //handle USB DMA controller accesses
 void dmaprot_handle_usbdmac_access(info_intercept_data_abort_t *ida){
+	volatile u32 *dmac_reg;
+	u32 reg_value;
+
+	dmac_reg = (u32 *)ida->pa;
+
 	bcm2837_miniuart_puts("dmaprotusb: register=");
 	debug_hexdumpu32(ida->pa);
 
-	bcm2837_miniuart_puts("dmaprotusb: Halting!\n");
-	HALT();
+	if(!ida->wnr){	//we only get here on writes, bail out otherwise
+		bcm2837_miniuart_puts("dmaprotusb: wnr=0, unhandled condition. Halting!\n");
+		HALT();
+	}
+
+	//we only support 32-bit dmac accesses; bail out if this is not the case
+	if(ida->sas != 0x2){
+		bcm2837_miniuart_puts("dmaprotusb: access is not 32-bits, unhandled condition. Halting!\n");
+		HALT();
+	}
+
+	//compute register value that is going to be written
+	reg_value = (u32)guest_regread(ida->r, ida->srt);
+
+	//just pass-through writes
+	cpu_dsb();
+	cpu_isb();	//synchronize all memory accesses above
+	*dmac_reg = reg_value;
 }
 
 
