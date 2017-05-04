@@ -295,7 +295,11 @@ void dmaprot_handle_dmacontroller_access(info_intercept_data_abort_t *ida){
 
 //handle USB DMA controller accesses
 void dmaprot_handle_usbdmac_access(info_intercept_data_abort_t *ida){
+	bcm2837_miniuart_puts("dmaprotusb: register=");
+	debug_hexdumpu32(ida->pa);
 
+	bcm2837_miniuart_puts("dmaprotusb: Halting!\n");
+	HALT();
 }
 
 
