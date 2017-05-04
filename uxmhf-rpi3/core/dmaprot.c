@@ -300,8 +300,8 @@ void dmaprot_handle_usbdmac_access(info_intercept_data_abort_t *ida){
 
 	dmac_reg = (u32 *)ida->pa;
 
-	bcm2837_miniuart_puts("dmaprotusb: register=");
-	debug_hexdumpu32(ida->pa);
+	//bcm2837_miniuart_puts("dmaprotusb: register=");
+	//debug_hexdumpu32(ida->pa);
 
 	if(!ida->wnr){	//we only get here on writes, bail out otherwise
 		bcm2837_miniuart_puts("dmaprotusb: wnr=0, unhandled condition. Halting!\n");
