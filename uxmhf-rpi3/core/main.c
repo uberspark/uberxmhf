@@ -90,22 +90,24 @@ u32 guest_regread(arm8_32_regs_t *r, u32 regnum){
 
 void hypsvc_handler(arm8_32_regs_t *r){
 	u32 hsr;
+	u32 hsr_ec;
 	u32 elr_hyp;
 	//_XDPRINTFSMP_("%s: ENTER\n", __func__);
 
 	//read hsr to determine the cause of the intercept
 	hsr = sysreg_read_hsr();
-
+	hsr_ec = ((hsr & HSR_EC_MASK) >> HSR_EC_SHIFT);
 	//bcm2837_miniuart_puts(" HSR= ");
 	//debug_hexdumpu32(hsr);
 
-	switch ( ((hsr & HSR_EC_MASK) >> HSR_EC_SHIFT) ){
+	//switch ( ((hsr & HSR_EC_MASK) >> HSR_EC_SHIFT) ){
+	switch (hsr_ec){
 		case HSR_EC_HVC:{
 				u32 hvc_iss = ((hsr & HSR_ISS_MASK) >> HSR_ISS_SHIFT);
 				u32 hvc_imm16 = hvc_iss & 0x0000FFFFUL;
 
 				switch(hvc_imm16){
-					case 1:{
+					/*case 1:{
 							_XDPRINTFSMP_("%s: r0=0x%08x, r1=0x%08x, r2=0x%08x\n", __func__,
 									r->r0, r->r1, r->r2);
 
@@ -114,6 +116,7 @@ void hypsvc_handler(arm8_32_regs_t *r){
 							r->r2 = 0x23;
 						}
 						break;
+
 
 					case 2:{
 							u64 attrs_noaccess = (LDESC_S2_MC_OUTER_WRITE_BACK_CACHEABLE_INNER_WRITE_BACK_CACHEABLE << LDESC_S2_MEMATTR_MC_SHIFT) |
@@ -129,6 +132,7 @@ void hypsvc_handler(arm8_32_regs_t *r){
 						}
 						break;
 
+
 					case 3:{
 							u64 attrs = (LDESC_S2_MC_OUTER_WRITE_BACK_CACHEABLE_INNER_WRITE_BACK_CACHEABLE << LDESC_S2_MEMATTR_MC_SHIFT) |
 								(LDESC_S2_S2AP_READ_WRITE << LDESC_S2_MEMATTR_S2AP_SHIFT) |
@@ -143,12 +147,26 @@ void hypsvc_handler(arm8_32_regs_t *r){
 							sysreg_tlbiallis();
 						}
 						break;
+					*/
 
+					case 5:{
+							volatile u32 *dmac_reg = (volatile u32 *)dmapa_to_syspa(r->r0);
+							//_XDPRINTFSMP_("usbdmaprot[write]: reg=0x%08x, value=0x%08x\n",
+							//		(u32)dmac_reg, r->r1);
 
+							cpu_dsb();
+							cpu_isb();	//synchronize all memory accesses above
+							//_XDPRINTFSMP_("usbdmaprot[write]: proceeding to write...\n");
+							*dmac_reg = r->r1;
+							//_XDPRINTFSMP_("usbdmaprot[write]: done. Halting!\n");
+							//HALT();
+					}
+						break;
 
 					default:
-						_XDPRINTFSMP_("%s: unknown HVC instruction imm16=0x%08x\n", __func__,
+						_XDPRINTFSMP_("%s: unknown HVC instruction imm16=0x%08x. Halting!\n", __func__,
 								hvc_imm16);
+						HALT();
 						break;
 				}
 
@@ -508,7 +526,7 @@ void secondary_main(u32 cpuid){
 		start_address=bcm2837_platform_waitforstartup(cpuid);
 
 		_XDPRINTFSMP_("%s[%u]: Got startup signal, address=0x%08x\n", __func__, cpuid, start_address);
-		//HALT();
+		HALT();
 
 		chainload_os(0, 0, 0, start_address);
 

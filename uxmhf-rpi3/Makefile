@@ -17,6 +17,7 @@ __check_defined = \
 
 TOOLPREFIX ?= arm-linux-gnueabihf-
 CFLAGS = -I./include -I../include -D__DEBUG_SERIAL__ -c -Wall -nostdlib -nostartfiles -ffreestanding -mcpu=cortex-a53
+#CFLAGS = -I./include -I../include -D__DEBUG_SERIAL__ -c -Wall -nostdlib -nostartfiles -ffreestanding -march=armv8-a+crc
 CCLIB = $(shell $(TOOLPREFIX)gcc --print-lib)
 
 export TOOLPREFIX
