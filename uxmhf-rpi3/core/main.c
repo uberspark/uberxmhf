@@ -157,7 +157,9 @@ void hypsvc_handler(arm8_32_regs_t *r){
 							//cpu_dsb();
 							//cpu_isb();	//synchronize all memory accesses above
 							//_XDPRINTFSMP_("usbdmaprot[write]: proceeding to write...\n");
-							//*dmac_reg = r->r1;
+							*dmac_reg = r->r1;
+							cpu_dsb();
+
 							//_XDPRINTFSMP_("usbdmaprot[write]: done. Halting!\n");
 							//HALT();
 					}
@@ -576,3 +578,4 @@ void secondary_main_svc(u32 cpuid){
 	spin_unlock(&my_lock);
 	_XDPRINTFSMP_("%s: lock released [cirrent value=0x%08x]\n", __func__, my_lock);
 */
+
