@@ -110,12 +110,7 @@ hypvtable_hypsvc_handler:
 	push {lr}
 
 
-	// 5.1.1 AAPCS
-	//   callee preserves r4-r8, r10, r11, r13 (SP)
-	//  save the rest
-
-	//push {r14}
-	//push {r13}
+	// save guest gprs
 	push {r12}
 	push {r11}
 	push {r10}
@@ -135,12 +130,6 @@ hypvtable_hypsvc_handler:
 	mov r0, sp
 	bl hypsvc_handler
 
-	//r0= register, r1=value
-	//dsb st
-	//str r1, [r0]
-
-
-
 	// restore all saved registers
 	pop {r0}
 	pop {r1}
@@ -155,8 +144,6 @@ hypvtable_hypsvc_handler:
 	pop {r10}
 	pop {r11}
 	pop {r12}
-	//pop {r13}
-	//pop {r14}
 
 	pop	{lr}
 
@@ -166,9 +153,6 @@ hypvtable_hypsvc_handler:
 	//	which basically returns to ELR_hyp and restores appropriate
 	//	PE (processor execution) state
 	//
-
-
-
 	eret
 
 
