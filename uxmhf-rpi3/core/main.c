@@ -164,7 +164,7 @@ void hypsvc_handler(arm8_32_regs_t *r){
 			}
 			break;
 
-		case HSR_EC_DATA_ABORT_ELCHANGE:{
+/*		case HSR_EC_DATA_ABORT_ELCHANGE:{
 				u32 elr_hyp;
 				//u32 fault_va;
 				u32 fault_va_page_offset;
@@ -218,6 +218,7 @@ void hypsvc_handler(arm8_32_regs_t *r){
 				sysreg_write_elrhyp(elr_hyp);
 			}
 			break;
+*/
 
 		default:
 			bcm2837_miniuart_puts("uXMHF-rpi3: core: UNHANDLED INTERCEPT!\n");
