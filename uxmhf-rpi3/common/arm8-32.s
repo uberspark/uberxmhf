@@ -11,6 +11,7 @@
 
 .globl mmio_write32
 mmio_write32:
+    dsb st
     str r1,[r0]
     bx lr
 
