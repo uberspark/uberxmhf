@@ -150,16 +150,17 @@ void hypsvc_handler(arm8_32_regs_t *r){
 					*/
 
 					case 5:{
-							volatile u32 *dmac_reg = (volatile u32 *)dmapa_to_syspa(r->r0);
+							//volatile u32 *dmac_reg = (volatile u32 *)dmapa_to_syspa(r->r0);
 							//_XDPRINTFSMP_("usbdmaprot[write]: reg=0x%08x, value=0x%08x\n",
 							//		(u32)dmac_reg, r->r1);
 
 							//cpu_dsb();
 							//cpu_isb();	//synchronize all memory accesses above
 							//_XDPRINTFSMP_("usbdmaprot[write]: proceeding to write...\n");
-							*dmac_reg = r->r1;
-							cpu_dsb();
+							//*dmac_reg = r->r1;
+							//cpu_dsb();
 
+							mmio_write32(r->r0, r->r1);
 							//_XDPRINTFSMP_("usbdmaprot[write]: done. Halting!\n");
 							//HALT();
 					}

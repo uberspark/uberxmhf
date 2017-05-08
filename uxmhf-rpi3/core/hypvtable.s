@@ -132,12 +132,12 @@ hypvtable_hypsvc_handler:
 
 
 	// invoke C handler
-	//mov r0, sp
-	//bl hypsvc_handler
+	mov r0, sp
+	bl hypsvc_handler
 
 	//r0= register, r1=value
-	dsb st
-	str r1, [r0]
+	//dsb st
+	//str r1, [r0]
 
 
 
