@@ -101,6 +101,9 @@ hypvtable_hyphvc_handler:
 */
 	.global	hypvtable_hypsvc_handler
 hypvtable_hypsvc_handler:
+	dsb
+	isb
+
 	ldr sp, =hypvtable_hypsvc_stack_top
 
 	// G1.9.2 (Figure G1-3)
@@ -157,6 +160,8 @@ hypvtable_hypsvc_handler:
 /*	dsb st
 	str r1, [r0]
 */
+	dsb
+	isb
 	eret
 
 

@@ -88,6 +88,55 @@ u32 guest_regread(arm8_32_regs_t *r, u32 regnum){
 }
 
 
+void guest_data_abort_handler(arm8_32_regs_t *r, u32 hsr){
+	u32 elr_hyp;
+	u32 fault_va;
+	u32 fault_pa_page;
+	u32 fault_pa;
+	u32 fault_va_page_offset;
+	u32 fault_iss;
+	u32 guest_regnum;
+	u32 guest_regvalue;
+
+	//fix return address
+	elr_hyp = sysreg_read_elrhyp();
+	elr_hyp += sizeof(u32);
+	sysreg_write_elrhyp(elr_hyp);
+
+	//get faulting va
+	fault_va= sysreg_read_hdfar();
+
+	//compute faulting va page_offset
+	fault_va_page_offset = fault_va & 0x00000FFFUL;
+
+	//get faulting pa page
+	fault_pa_page = sysreg_read_hpfar();
+	fault_pa_page = (fault_pa_page & 0xFFFFFFF0UL) << 8;
+
+	//compute faulting pa
+	fault_pa = 	fault_pa_page | fault_va_page_offset;
+
+	//get faulting iss
+	fault_iss = (hsr & HSR_ISS_MASK) >> HSR_ISS_SHIFT;
+
+	//compute guest register number
+	guest_regnum = (fault_iss & 0x000F0000UL) >> 16;
+
+	//get guest register value
+	guest_regvalue = guest_regread(r, guest_regnum);
+
+	//do the write
+	//bcm2837_miniuart_puts("dmaprotusb: reg=");
+	//debug_hexdumpu32(fault_pa);
+	//bcm2837_miniuart_puts("dmaprotusb: val=");
+	//debug_hexdumpu32(guest_regvalue);
+
+	mmio_write32(fault_pa, guest_regvalue);
+
+	//cpu_isb();
+}
+
+
 void hypsvc_handler(arm8_32_regs_t *r){
 	u32 hsr;
 	u32 hsr_ec;
@@ -174,7 +223,9 @@ void hypsvc_handler(arm8_32_regs_t *r){
 			break;
 
 		case HSR_EC_DATA_ABORT_ELCHANGE:{
-				u32 elr_hyp;
+				guest_data_abort_handler(r, hsr);
+
+				/*u32 elr_hyp;
 				//u32 fault_va;
 				u32 fault_va_page_offset;
 				//u32 fault_pa;
@@ -207,6 +258,7 @@ void hypsvc_handler(arm8_32_regs_t *r){
 				HALT();
 
 				mmio_write32(ida.pa, reg_value);
+*/
 
 				/*if(!da_iss_isv){
 					_XDPRINTFSMP_("%s: s2pgtbl DATA ABORT: invalid isv. Halting!\n", __func__);
@@ -226,6 +278,8 @@ void hypsvc_handler(arm8_32_regs_t *r){
 					HALT();
 				}
 				*/
+
+				/*
 				elr_hyp = sysreg_read_elrhyp();
 
 				if(ida.il)
@@ -234,6 +288,7 @@ void hypsvc_handler(arm8_32_regs_t *r){
 					elr_hyp += sizeof(u16);
 
 				sysreg_write_elrhyp(elr_hyp);
+				*/
 			}
 			break;
 
