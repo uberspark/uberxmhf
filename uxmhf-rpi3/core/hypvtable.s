@@ -153,6 +153,10 @@ hypvtable_hypsvc_handler:
 	//	which basically returns to ELR_hyp and restores appropriate
 	//	PE (processor execution) state
 	//
+
+/*	dsb st
+	str r1, [r0]
+*/
 	eret
 
 

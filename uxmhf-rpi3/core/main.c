@@ -150,7 +150,16 @@ void hypsvc_handler(arm8_32_regs_t *r){
 					*/
 
 					case 5:{
-							mmio_write32(r->r0, r->r1);
+						//_XDPRINTFSMP_("%s: HVC: reg=0x%08x, val=0x%08x\n",
+						//		__func__, r->r0, r->r1);
+
+						mmio_write32(r->r0, r->r1);
+						//bcm2837_miniuart_puts("HVC reg=");
+						//debug_hexdumpu32(r->r0);
+						//bcm2837_miniuart_puts("HVC val=");
+						//debug_hexdumpu32(r->r1);
+
+
 					}
 					break;
 
@@ -164,7 +173,7 @@ void hypsvc_handler(arm8_32_regs_t *r){
 			}
 			break;
 
-/*		case HSR_EC_DATA_ABORT_ELCHANGE:{
+		case HSR_EC_DATA_ABORT_ELCHANGE:{
 				u32 elr_hyp;
 				//u32 fault_va;
 				u32 fault_va_page_offset;
@@ -177,6 +186,7 @@ void hypsvc_handler(arm8_32_regs_t *r){
 				//u32 da_iss_srt;
 				//u32 da_iss_wnr;
 				info_intercept_data_abort_t ida;
+				u32 reg_value;
 
 				da_iss = ((hsr & HSR_ISS_MASK) >> HSR_ISS_SHIFT);
 				ida.il = ((hsr & HSR_IL_MASK) >> HSR_IL_SHIFT);
@@ -189,8 +199,16 @@ void hypsvc_handler(arm8_32_regs_t *r){
 				da_pa_page = ((sysreg_read_hpfar() & 0xFFFFFFF0) << 8);
 				ida.pa = da_pa_page | fault_va_page_offset;
 				ida.r = r;
+				reg_value = (u32)guest_regread(ida.r, ida.srt);
 
-				if(!da_iss_isv){
+
+				_XDPRINTFSMP_("%s: s2 DATA ABORT: va=0x%08x, pa=0x%08x, wnr=%u, value=0x%08x\n",
+						__func__, ida.va, ida.pa, ida.wnr, reg_value);
+				HALT();
+
+				mmio_write32(ida.pa, reg_value);
+
+				/*if(!da_iss_isv){
 					_XDPRINTFSMP_("%s: s2pgtbl DATA ABORT: invalid isv. Halting!\n", __func__);
 					HALT();
 				}
@@ -207,7 +225,7 @@ void hypsvc_handler(arm8_32_regs_t *r){
 							__func__, ida.va, ida.pa);
 					HALT();
 				}
-
+				*/
 				elr_hyp = sysreg_read_elrhyp();
 
 				if(ida.il)
@@ -218,7 +236,7 @@ void hypsvc_handler(arm8_32_regs_t *r){
 				sysreg_write_elrhyp(elr_hyp);
 			}
 			break;
-*/
+
 
 		default:
 			bcm2837_miniuart_puts("uXMHF-rpi3: core: UNHANDLED INTERCEPT!\n");

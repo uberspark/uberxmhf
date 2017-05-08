@@ -13,6 +13,8 @@
 mmio_write32:
     dsb st
     str r1,[r0]
+    dsb st
+    isb
     bx lr
 
 .globl mmio_read32
