@@ -101,7 +101,7 @@ hypvtable_hyphvc_handler:
 */
 	.global	hypvtable_hypsvc_handler
 hypvtable_hypsvc_handler:
-/*	ldr sp, =hypvtable_hypsvc_stack_top
+	ldr sp, =hypvtable_hypsvc_stack_top
 
 	// G1.9.2 (Figure G1-3)
 	// HYP mode uses LR_usr, i.e, does not have LR banking, so save
@@ -127,8 +127,17 @@ hypvtable_hypsvc_handler:
 
 
 	// invoke C handler
-	mov r0, sp
-	bl hypsvc_handler
+	//mov r0, sp
+	//bl hypsvc_handler
+
+	//we can clobber r0
+	//r1 = value, r2=register
+	mrs r0, ELR_hyp
+	add r0, #4
+	msr ELR_hyp, r0
+	dsb st
+	str r1, [r2]
+
 
 	// restore all saved registers
 	pop {r0}
@@ -153,8 +162,9 @@ hypvtable_hypsvc_handler:
 	//	which basically returns to ELR_hyp and restores appropriate
 	//	PE (processor execution) state
 	//
-*/
 
+
+/*
 	//we can clobber r0
 	//r1 = value, r2=register
 	mrs r0, ELR_hyp
@@ -162,6 +172,8 @@ hypvtable_hypsvc_handler:
 	msr ELR_hyp, r0
 	dsb st
 	str r1, [r2]
+*/
+
 	eret
 
 
