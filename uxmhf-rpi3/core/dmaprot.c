@@ -20,10 +20,10 @@ void dmaprot_activate(void){
 	//		(MEM_INNER_SHAREABLE << LDESC_S2_MEMATTR_SH_SHIFT) |
 	//		LDESC_S2_MEMATTR_AF_MASK;
 
-	u64 attrs_dev_dwc = (LDESC_S2_MC_DEVnGnRE << LDESC_S2_MEMATTR_MC_SHIFT) |
-			(LDESC_S2_S2AP_READ_ONLY << LDESC_S2_MEMATTR_S2AP_SHIFT) |
-			(MEM_NON_SHAREABLE << LDESC_S2_MEMATTR_SH_SHIFT) |
-			LDESC_S2_MEMATTR_AF_MASK;
+	//u64 attrs_dev_dwc = (LDESC_S2_MC_DEVnGnRE << LDESC_S2_MEMATTR_MC_SHIFT) |
+	//		(LDESC_S2_S2AP_READ_ONLY << LDESC_S2_MEMATTR_S2AP_SHIFT) |
+	//		(MEM_NON_SHAREABLE << LDESC_S2_MEMATTR_SH_SHIFT) |
+	//		LDESC_S2_MEMATTR_AF_MASK;
 
 
 	//uapi_s2pgtbl_setprot(BCM2837_DMA0_REGS_BASE, attrs_dev);
@@ -32,8 +32,8 @@ void dmaprot_activate(void){
 	//sysreg_tlbiallis();
 
 	//USB DMA controller
-	uapi_s2pgtbl_setprot(DWC_REGS_BASE, attrs_dev_dwc);
-	sysreg_tlbiallis();
+	//uapi_s2pgtbl_setprot(DWC_REGS_BASE, attrs_dev_dwc);
+	//sysreg_tlbiallis();
 
 
 
