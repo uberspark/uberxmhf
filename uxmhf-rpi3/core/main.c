@@ -121,10 +121,10 @@ void guest_data_abort_handler(arm8_32_regs_t *r, u32 hsr){
 	fault_va= sysreg_read_hdfar();
 
 	//debug: sanity check
-	if(fault_va != r->r0){
-		bcm2837_miniuart_puts("dmaprotusb: fault_va != r->r0. Halting!\n");
-		HALT();
-	}
+	//if(fault_va != r->r0){
+	//	bcm2837_miniuart_puts("dmaprotusb: fault_va != r->r0. Halting!\n");
+	//	HALT();
+	//}
 
 	//compute faulting va page_offset
 	fault_va_page_offset = fault_va & 0x00000FFFUL;
@@ -137,10 +137,10 @@ void guest_data_abort_handler(arm8_32_regs_t *r, u32 hsr){
 	fault_pa = 	fault_pa_page | fault_va_page_offset;
 
 	//debug: sanity check
-	if(fault_pa != r->r2){
-		bcm2837_miniuart_puts("dmaprotusb: fault_pa != r->r2. Halting!\n");
-		HALT();
-	}
+	//if(fault_pa != r->r2){
+	//	bcm2837_miniuart_puts("dmaprotusb: fault_pa != r->r2. Halting!\n");
+	//	HALT();
+	//}
 
 	//get faulting iss
 	fault_iss = (hsr & HSR_ISS_MASK) >> HSR_ISS_SHIFT;
@@ -152,13 +152,13 @@ void guest_data_abort_handler(arm8_32_regs_t *r, u32 hsr){
 	guest_regvalue = guest_regread(r, guest_regnum);
 
 	//debug: sanity check
-	if(guest_regvalue != r->r1){
-		bcm2837_miniuart_puts("dmaprotusb: guest_regvalue != r->r1. Halting!\n");
-		bcm2837_miniuart_puts("dmaprotusb: guest_regvalue=");
-		debug_hexdumpu32(guest_regvalue);
-		bcm2837_miniuart_flush();
-		HALT();
-	}
+	//if(guest_regvalue != r->r1){
+	//	bcm2837_miniuart_puts("dmaprotusb: guest_regvalue != r->r1. Halting!\n");
+	//	bcm2837_miniuart_puts("dmaprotusb: guest_regvalue=");
+	//	debug_hexdumpu32(guest_regvalue);
+	//	bcm2837_miniuart_flush();
+	//	HALT();
+	//}
 
 
 	mmio_write32(fault_pa, guest_regvalue);
