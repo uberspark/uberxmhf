@@ -143,6 +143,7 @@ void guest_data_abort_handler(arm8_32_regs_t *r, u32 hsr){
 		bcm2837_miniuart_puts("dmaprotusb: guest_regvalue != r->r1. Halting!\n");
 		bcm2837_miniuart_puts("dmaprotusb: guest_regvalue=");
 		debug_hexdumpu32(guest_regvalue);
+		bcm2837_miniuart_flush();
 		HALT();
 	}
 
