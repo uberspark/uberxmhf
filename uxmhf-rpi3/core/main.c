@@ -161,13 +161,7 @@ void guest_data_abort_handler(arm8_32_regs_t *r, u32 hsr){
 	}
 
 
-	//do the write
-	//bcm2837_miniuart_puts("dmaprotusb: reg=");
-	//debug_hexdumpu32(fault_pa);
-	//bcm2837_miniuart_puts("dmaprotusb: val=");
-	//debug_hexdumpu32(guest_regvalue);
-
-	mmio_write32(fault_pa, r->r1);
+	mmio_write32(fault_pa, guest_regvalue);
 }
 
 
