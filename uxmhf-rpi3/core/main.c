@@ -90,10 +90,10 @@ u32 guest_regread(arm8_32_regs_t *r, u32 regnum){
 
 void guest_data_abort_handler(arm8_32_regs_t *r, u32 hsr){
 	u32 elr_hyp;
-	//u32 fault_va;
+	u32 fault_va;
 	//u32 fault_pa_page;
 	//u32 fault_pa;
-	//u32 fault_va_page_offset;
+	u32 fault_va_page_offset;
 	//u32 fault_iss;
 	//u32 guest_regnum;
 	//u32 guest_regvalue;
@@ -105,10 +105,16 @@ void guest_data_abort_handler(arm8_32_regs_t *r, u32 hsr){
 	sysreg_write_elrhyp(elr_hyp);
 
 	//get faulting va
-	//fault_va= sysreg_read_hdfar();
+	fault_va= sysreg_read_hdfar();
+
+	//debug: sanity check
+	if(fault_va != r->r0){
+		bcm2837_miniuart_puts("dmaprotusb: fault_va != r->r0. Halting!\n");
+		HALT();
+	}
 
 	//compute faulting va page_offset
-	//fault_va_page_offset = fault_va & 0x00000FFFUL;
+	fault_va_page_offset = fault_va & 0x00000FFFUL;
 
 	//get faulting pa page
 	//fault_pa_page = sysreg_read_hpfar();
