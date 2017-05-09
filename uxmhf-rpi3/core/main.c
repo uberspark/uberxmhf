@@ -65,21 +65,34 @@ void guest_regwrite(arm8_32_regs_t *r, u32 regnum, u32 value){
 
 
 u32 guest_regread(arm8_32_regs_t *r, u32 regnum){
-	switch(regnum){
-		case 0:		return(r->r0);
-		case 1:		return(r->r1);
-		case 2:		return(r->r2);
-		case 3:		return(r->r3);
-		case 4:		return(r->r4);
-		case 5:		return(r->r5);
-		case 6:		return(r->r6);
-		case 7:		return(r->r7);
-		case 8:		return(r->r8);
-		case 9:		return(r->r9);
-		case 10:	return(r->r10);
-		case 11:	return(r->r11);
-		case 12:	return(r->r12);
-		default:
+
+	if(regnum == 0)
+		return(r->r0);
+	else if (regnum == 1)
+		return(r->r1);
+	else if (regnum == 2)
+		return(r->r2);
+	else if (regnum == 3)
+		return(r->r3);
+	else if (regnum == 4)
+		return(r->r4);
+	else if (regnum == 5)
+		return(r->r5);
+	else if (regnum == 6)
+		return(r->r6);
+	else if (regnum == 7)
+		return(r->r7);
+	else if (regnum == 8)
+		return(r->r8);
+	else if (regnum == 9)
+		return(r->r9);
+	else if (regnum == 10)
+		return(r->r10);
+	else if (regnum == 11)
+		return(r->r11);
+	else if (regnum == 12)
+		return(r->r12);
+	else{
 			_XDPRINTFSMP_("%s: Invalid regnum=%u. Halting!\n", __func__, regnum);
 			HALT();
 	}
@@ -139,13 +152,13 @@ void guest_data_abort_handler(arm8_32_regs_t *r, u32 hsr){
 	guest_regvalue = guest_regread(r, guest_regnum);
 
 	//debug: sanity check
-	if(guest_regvalue != r->r1){
-		bcm2837_miniuart_puts("dmaprotusb: guest_regvalue != r->r1. Halting!\n");
-		bcm2837_miniuart_puts("dmaprotusb: guest_regvalue=");
-		debug_hexdumpu32(guest_regvalue);
-		bcm2837_miniuart_flush();
-		HALT();
-	}
+	//if(guest_regvalue != r->r1){
+	//	bcm2837_miniuart_puts("dmaprotusb: guest_regvalue != r->r1. Halting!\n");
+	//	bcm2837_miniuart_puts("dmaprotusb: guest_regvalue=");
+	//	debug_hexdumpu32(guest_regvalue);
+	//	bcm2837_miniuart_flush();
+	//	HALT();
+	//}
 
 
 	//do the write
