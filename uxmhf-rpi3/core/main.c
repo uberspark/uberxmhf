@@ -94,9 +94,9 @@ void guest_data_abort_handler(arm8_32_regs_t *r, u32 hsr){
 	u32 fault_pa_page;
 	u32 fault_pa;
 	u32 fault_va_page_offset;
-	//u32 fault_iss;
-	//u32 guest_regnum;
-	//u32 guest_regvalue;
+	u32 fault_iss;
+	u32 guest_regnum;
+	u32 guest_regvalue;
 
 
 	//fix return address
@@ -130,13 +130,22 @@ void guest_data_abort_handler(arm8_32_regs_t *r, u32 hsr){
 	}
 
 	//get faulting iss
-	//fault_iss = (hsr & HSR_ISS_MASK) >> HSR_ISS_SHIFT;
+	fault_iss = (hsr & HSR_ISS_MASK) >> HSR_ISS_SHIFT;
 
 	//compute guest register number
-	//guest_regnum = (fault_iss & 0x000F0000UL) >> 16;
+	guest_regnum = (fault_iss & 0x000F0000UL) >> 16;
 
 	//get guest register value
-	//guest_regvalue = guest_regread(r, guest_regnum);
+	guest_regvalue = guest_regread(r, guest_regnum);
+
+	//debug: sanity check
+	if(guest_regvalue != r->r1){
+		bcm2837_miniuart_puts("dmaprotusb: guest_regvalue != r->r1. Halting!\n");
+		bcm2837_miniuart_puts("dmaprotusb: guest_regvalue=");
+		debug_hexdumpu32(guest_regvalue);
+		HALT();
+	}
+
 
 	//do the write
 	//bcm2837_miniuart_puts("dmaprotusb: reg=");
