@@ -619,7 +619,6 @@ void secondary_main(u32 cpuid){
 		start_address=bcm2837_platform_waitforstartup(cpuid);
 
 		_XDPRINTFSMP_("%s[%u]: Got startup signal, address=0x%08x\n", __func__, cpuid, start_address);
-		HALT();
 
 		chainload_os(0, 0, 0, start_address);
 
