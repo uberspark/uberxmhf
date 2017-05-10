@@ -125,43 +125,29 @@ void guest_hypercall_handler(arm8_32_regs_t *r, u32 hsr){
 	hvc_iss = ((hsr & HSR_ISS_MASK) >> HSR_ISS_SHIFT);
 
 
-	if( hvc_imm16 ==  1 ){
-		//_XDPRINTFSMP_("%s: r0=0x%08x, r1=0x%08x, r2=0x%08x\n", __func__,
-		//		r->r0, r->r1, r->r2);
+	if (hvc_imm16 == 2){
+		u64 attrs_noaccess = (LDESC_S2_MC_OUTER_WRITE_BACK_CACHEABLE_INNER_WRITE_BACK_CACHEABLE << LDESC_S2_MEMATTR_MC_SHIFT) |
+			(LDESC_S2_S2AP_NO_ACCESS << LDESC_S2_MEMATTR_S2AP_SHIFT) |
+			(MEM_INNER_SHAREABLE << LDESC_S2_MEMATTR_SH_SHIFT) |
+			LDESC_S2_MEMATTR_AF_MASK;
 
-		//r->r0 = 0x21;
-		//r->r1 = 0x22;
-		//r->r2 = 0x23;
+		_XDPRINTFSMP_("%s: setprot_noaccess r0=0x%08x\n", __func__,
+				r->r0);
 
-	}else if (hvc_imm16 == 2){
-		//u64 attrs_noaccess = (LDESC_S2_MC_OUTER_WRITE_BACK_CACHEABLE_INNER_WRITE_BACK_CACHEABLE << LDESC_S2_MEMATTR_MC_SHIFT) |
-		//	(LDESC_S2_S2AP_NO_ACCESS << LDESC_S2_MEMATTR_S2AP_SHIFT) |
-		//	(MEM_INNER_SHAREABLE << LDESC_S2_MEMATTR_SH_SHIFT) |
-		//	LDESC_S2_MEMATTR_AF_MASK;
-
-		//_XDPRINTFSMP_("%s: setprot_noaccess r0=0x%08x\n", __func__,
-		//		r->r0);
-
-		//uapi_s2pgtbl_setprot(r->r0, attrs_noaccess);
-		//sysreg_tlbiallis();
+		uapi_s2pgtbl_setprot(r->r0, attrs_noaccess);
+		sysreg_tlbiallis();
 
 	}else if (hvc_imm16 == 3){
-		//u64 attrs = (LDESC_S2_MC_OUTER_WRITE_BACK_CACHEABLE_INNER_WRITE_BACK_CACHEABLE << LDESC_S2_MEMATTR_MC_SHIFT) |
-		//	(LDESC_S2_S2AP_READ_WRITE << LDESC_S2_MEMATTR_S2AP_SHIFT) |
-		//	(MEM_INNER_SHAREABLE << LDESC_S2_MEMATTR_SH_SHIFT) |
-		//	LDESC_S2_MEMATTR_AF_MASK;
+		u64 attrs = (LDESC_S2_MC_OUTER_WRITE_BACK_CACHEABLE_INNER_WRITE_BACK_CACHEABLE << LDESC_S2_MEMATTR_MC_SHIFT) |
+			(LDESC_S2_S2AP_READ_WRITE << LDESC_S2_MEMATTR_S2AP_SHIFT) |
+			(MEM_INNER_SHAREABLE << LDESC_S2_MEMATTR_SH_SHIFT) |
+			LDESC_S2_MEMATTR_AF_MASK;
 
-		//_XDPRINTFSMP_("%s: setprot_restore-access r0=0x%08x\n", __func__,
-		//		r->r0);
+		_XDPRINTFSMP_("%s: setprot_restore-access r0=0x%08x\n", __func__,
+				r->r0);
 
-		//uapi_s2pgtbl_setprot(r->r0, attrs);
-		//sysreg_tlbiallis();
-
-	}else if (hvc_imm16 == 5) {
-		//_XDPRINTFSMP_("%s: HVC: reg=0x%08x, val=0x%08x\n",
-		//		__func__, r->r0, r->r1);
-
-		//mmio_write32(r->r0, r->r1);
+		uapi_s2pgtbl_setprot(r->r0, attrs);
+		sysreg_tlbiallis();
 
 	}else{
 		_XDPRINTFSMP_("%s: unknown HVC instruction imm16=0x%08x. Halting!\n", __func__,
