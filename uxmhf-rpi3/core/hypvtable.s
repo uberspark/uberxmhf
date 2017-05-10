@@ -27,7 +27,7 @@ g_hypvtable:
 	//cpu-0
 	b hypvtable_reserved_handler0
 	b hypvtable_reserved_handler0
-	b hypvtable_hyphvc_handler
+	b hypvtable_reserved_handler0
 	b hypvtable_reserved_handler0
 	b hypvtable_reserved_handler0
 	b hypvtable_hypsvc_handler
@@ -36,7 +36,7 @@ g_hypvtable:
 	//cpu-1
 	b hypvtable_reserved_handler1
 	b hypvtable_reserved_handler1
-	b hypvtable_hyphvc_handler
+	b hypvtable_reserved_handler1
 	b hypvtable_reserved_handler1
 	b hypvtable_reserved_handler1
 	b hypvtable_hypsvc_handler
@@ -45,7 +45,7 @@ g_hypvtable:
 	//cpu-2
 	b hypvtable_reserved_handler2
 	b hypvtable_reserved_handler2
-	b hypvtable_hyphvc_handler
+	b hypvtable_reserved_handler2
 	b hypvtable_reserved_handler2
 	b hypvtable_reserved_handler2
 	b hypvtable_hypsvc_handler
@@ -54,7 +54,7 @@ g_hypvtable:
 	//cpu-3
 	b hypvtable_reserved_handler3
 	b hypvtable_reserved_handler3
-	b hypvtable_hyphvc_handler
+	b hypvtable_reserved_handler3
 	b hypvtable_reserved_handler3
 	b hypvtable_reserved_handler3
 	b hypvtable_hypsvc_handler
