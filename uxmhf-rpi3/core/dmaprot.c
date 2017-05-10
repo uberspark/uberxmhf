@@ -338,6 +338,22 @@ void dmaprot_handle_usbdmac_access(info_intercept_data_abort_t *ida){
 void dmaprot_handle_usbdmac_access(info_intercept_data_abort_t *ida){
 	u32 guest_regvalue;
 
+	if(!ida->il){	//we only support 32-bit arm
+		_XDPRINTFSMP_("dmaprotusb: il=0, unhandled condition. Halting!\n");
+		HALT();
+	}
+
+	if(!ida->wnr){	//we only get here on writes, bail out otherwise
+		_XDPRINTFSMP_("dmaprotusb: wnr=0, unhandled condition. Halting!\n");
+		HALT();
+	}
+
+	//we only support 32-bit dmac accesses; bail out if this is not the case
+	if(ida->sas != 0x2){
+		_XDPRINTFSMP_("dmaprotusb: access is not 32-bits, unhandled condition. Halting!\n");
+		HALT();
+	}
+
 	//get guest register value
 	guest_regvalue = guest_regread(ida->r, ida->srt);
 
