@@ -241,12 +241,10 @@ __attribute__(( section(".data") )) u32 hypsvc_handler_lock=1;
 void hypsvc_handler(arm8_32_regs_t *r){
 	u32 hsr;
 	u32 hsr_ec;
-	u32 elr_hyp;
 	//_XDPRINTFSMP_("%s: ENTER\n", __func__);
 
 	//acquire lock
 	spin_lock(&hypsvc_handler_lock);
-
 
 	//read hsr to determine the cause of the intercept
 	hsr = sysreg_read_hsr();
@@ -255,162 +253,21 @@ void hypsvc_handler(arm8_32_regs_t *r){
 	//debug_hexdumpu32(hsr);
 
 	//switch ( ((hsr & HSR_EC_MASK) >> HSR_EC_SHIFT) ){
-	switch (hsr_ec){
-		case HSR_EC_HVC:{
-				u32 hvc_iss = ((hsr & HSR_ISS_MASK) >> HSR_ISS_SHIFT);
-				u32 hvc_imm16 = hvc_iss & 0x0000FFFFUL;
+	if(hsr_ec == HSR_EC_HVC){
+		guest_hypercall_handler(r, hsr);
 
-				switch(hvc_imm16){
-					/*case 1:{
-							_XDPRINTFSMP_("%s: r0=0x%08x, r1=0x%08x, r2=0x%08x\n", __func__,
-									r->r0, r->r1, r->r2);
+	}else if (hsr_ec == HSR_EC_DATA_ABORT_ELCHANGE){
+		guest_data_abort_handler(r, hsr);
 
-							r->r0 = 0x21;
-							r->r1 = 0x22;
-							r->r2 = 0x23;
-						}
-						break;
-
-
-					case 2:{
-							u64 attrs_noaccess = (LDESC_S2_MC_OUTER_WRITE_BACK_CACHEABLE_INNER_WRITE_BACK_CACHEABLE << LDESC_S2_MEMATTR_MC_SHIFT) |
-								(LDESC_S2_S2AP_NO_ACCESS << LDESC_S2_MEMATTR_S2AP_SHIFT) |
-								(MEM_INNER_SHAREABLE << LDESC_S2_MEMATTR_SH_SHIFT) |
-								LDESC_S2_MEMATTR_AF_MASK;
-
-							_XDPRINTFSMP_("%s: setprot_noaccess r0=0x%08x\n", __func__,
-									r->r0);
-							uapi_s2pgtbl_setprot(r->r0, attrs_noaccess);
-							//sysreg_tlbiipas2is(r->r0);
-							sysreg_tlbiallis();
-						}
-						break;
-
-
-					case 3:{
-							u64 attrs = (LDESC_S2_MC_OUTER_WRITE_BACK_CACHEABLE_INNER_WRITE_BACK_CACHEABLE << LDESC_S2_MEMATTR_MC_SHIFT) |
-								(LDESC_S2_S2AP_READ_WRITE << LDESC_S2_MEMATTR_S2AP_SHIFT) |
-								(MEM_INNER_SHAREABLE << LDESC_S2_MEMATTR_SH_SHIFT) |
-								LDESC_S2_MEMATTR_AF_MASK;
-
-							_XDPRINTFSMP_("%s: setprot_restore-access r0=0x%08x\n", __func__,
-									r->r0);
-
-							uapi_s2pgtbl_setprot(r->r0, attrs);
-							//sysreg_tlbiipas2is(r->r0);
-							sysreg_tlbiallis();
-						}
-						break;
-					*/
-
-					case 5:{
-						//_XDPRINTFSMP_("%s: HVC: reg=0x%08x, val=0x%08x\n",
-						//		__func__, r->r0, r->r1);
-
-						mmio_write32(r->r0, r->r1);
-						//bcm2837_miniuart_puts("HVC reg=");
-						//debug_hexdumpu32(r->r0);
-						//bcm2837_miniuart_puts("HVC val=");
-						//debug_hexdumpu32(r->r1);
-
-
-					}
-					break;
-
-					default:
-						_XDPRINTFSMP_("%s: unknown HVC instruction imm16=0x%08x. Halting!\n", __func__,
-								hvc_imm16);
-						HALT();
-						break;
-				}
-
-			}
-			break;
-
-		case HSR_EC_DATA_ABORT_ELCHANGE:{
-				guest_data_abort_handler(r, hsr);
-
-				/*u32 elr_hyp;
-				//u32 fault_va;
-				u32 fault_va_page_offset;
-				//u32 fault_pa;
-				u32 da_iss;
-				//u32 da_il;
-				u32 da_iss_isv;
-				u32 da_pa_page;
-				//u32 da_iss_sas;
-				//u32 da_iss_srt;
-				//u32 da_iss_wnr;
-				info_intercept_data_abort_t ida;
-				u32 reg_value;
-
-				da_iss = ((hsr & HSR_ISS_MASK) >> HSR_ISS_SHIFT);
-				ida.il = ((hsr & HSR_IL_MASK) >> HSR_IL_SHIFT);
-				da_iss_isv = (da_iss & 0x01000000UL) >> 24;
-				ida.sas = (da_iss & 0x00C00000UL) >> 22;
-				ida.srt = (da_iss & 0x000F0000UL) >> 16;
-				ida.wnr = (da_iss & 0x00000040UL) >> 6;
-				ida.va = sysreg_read_hdfar();
-				fault_va_page_offset = ida.va % 4096;
-				da_pa_page = ((sysreg_read_hpfar() & 0xFFFFFFF0) << 8);
-				ida.pa = da_pa_page | fault_va_page_offset;
-				ida.r = r;
-				reg_value = (u32)guest_regread(ida.r, ida.srt);
-
-
-				_XDPRINTFSMP_("%s: s2 DATA ABORT: va=0x%08x, pa=0x%08x, wnr=%u, value=0x%08x\n",
-						__func__, ida.va, ida.pa, ida.wnr, reg_value);
-				HALT();
-
-				mmio_write32(ida.pa, reg_value);
-*/
-
-				/*if(!da_iss_isv){
-					_XDPRINTFSMP_("%s: s2pgtbl DATA ABORT: invalid isv. Halting!\n", __func__);
-					HALT();
-				}
-
-				if( (da_pa_page == BCM2837_DMA0_REGS_BASE) ||
-					(da_pa_page == BCM2837_DMA15_REGS_BASE) ){
-					dmaprot_handle_dmacontroller_access(&ida);
-
-				}else if ( da_pa_page == DWC_REGS_BASE){
-					dmaprot_handle_usbdmac_access(&ida);
-
-				}else{
-					_XDPRINTFSMP_("%s: unknown s2pgtbl DATA ABORT. Halting! (va=0x%08x, pa=0x%08x)\n",
-							__func__, ida.va, ida.pa);
-					HALT();
-				}
-				*/
-
-				/*
-				elr_hyp = sysreg_read_elrhyp();
-
-				if(ida.il)
-					elr_hyp += sizeof(u32);
-				else
-					elr_hyp += sizeof(u16);
-
-				sysreg_write_elrhyp(elr_hyp);
-				*/
-			}
-			break;
-
-
-		default:
-			bcm2837_miniuart_puts("uXMHF-rpi3: core: UNHANDLED INTERCEPT!\n");
-			bcm2837_miniuart_puts(" HSR= ");
-			debug_hexdumpu32(hsr);
-			bcm2837_miniuart_puts("uXMHF-rpi3: core: Halting\n");
-			HALT();
+	}else{
+		_XDPRINTFSMP_("uXMHF-rpi3: core: UNHANDLED INTERCEPT HALTING! hsr=0x%08x\n", hsr);
+		HALT();
 	}
 
 	//_XDPRINTFSMP_("%s: EXIT\n", __func__);
 
 	//release lock
 	spin_unlock(&hypsvc_handler_lock);
-
 }
 
 
