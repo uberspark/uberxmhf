@@ -98,8 +98,8 @@ hypvtable_reserved_handler3:
 	exception return address is stored in ELR_hyp register and
 	points to the instruction *after* the HVC instruction (Table G1-9)
 */
-	.global	hypvtable_hypsvc_handler
-hypvtable_hypsvc_handler:
+	.global	hypvtable_hypsvc_handler_common
+hypvtable_hypsvc_handler_common:
 	ldr sp, =hypvtable_hypsvc_stack_top
 
 	// G1.9.2 (Figure G1-3)
