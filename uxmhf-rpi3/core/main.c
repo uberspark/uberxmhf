@@ -226,6 +226,11 @@ void guest_data_abort_handler(arm8_32_regs_t *r, u32 hsr){
 		HALT();
 	}
 
+	/*if( (da_pa_page == BCM2837_DMA0_REGS_BASE) ||
+		(da_pa_page == BCM2837_DMA15_REGS_BASE) ){
+		dmaprot_handle_dmacontroller_access(&ida);
+	*/
+
 }
 
 
