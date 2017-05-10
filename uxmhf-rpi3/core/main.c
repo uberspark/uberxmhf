@@ -177,9 +177,21 @@ void guest_data_abort_handler(arm8_32_regs_t *r, u32 hsr){
 	u32 fault_pa;
 	u32 fault_va_page_offset;
 	u32 fault_iss;
+	u32 fault_iss_isv;
 	u32 guest_regnum;
 	u32 guest_regvalue;
 	u32 fault_il;
+
+	//get faulting iss
+	fault_iss = (hsr & HSR_ISS_MASK) >> HSR_ISS_SHIFT;
+
+	//compute validity bit of additional information
+	fault_iss_isv = (fault_iss & 0x01000000UL) >> 24;
+
+	if(!fault_iss_isv){
+		_XDPRINTFSMP_("%s: s2pgtbl DATA ABORT: invalid isv. Halting!\n", __func__);
+		HALT();
+	}
 
 	//compute fault instruction length
 	fault_il = ((hsr & HSR_IL_MASK) >> HSR_IL_SHIFT);
@@ -205,8 +217,6 @@ void guest_data_abort_handler(arm8_32_regs_t *r, u32 hsr){
 	//compute faulting pa
 	fault_pa = 	fault_pa_page | fault_va_page_offset;
 
-	//get faulting iss
-	fault_iss = (hsr & HSR_ISS_MASK) >> HSR_ISS_SHIFT;
 
 	//compute guest register number
 	guest_regnum = (fault_iss & 0x000F0000UL) >> 16;
@@ -219,7 +229,7 @@ void guest_data_abort_handler(arm8_32_regs_t *r, u32 hsr){
 
 /*
  	da_iss = ((hsr & HSR_ISS_MASK) >> HSR_ISS_SHIFT);
-	ida.il = ((hsr & HSR_IL_MASK) >> HSR_IL_SHIFT);
+	ida.il = fault_il;
 	da_iss_isv = (da_iss & 0x01000000UL) >> 24;
 	ida.sas = (da_iss & 0x00C00000UL) >> 22;
 	ida.srt = (da_iss & 0x000F0000UL) >> 16;
