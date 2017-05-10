@@ -104,7 +104,7 @@ u32 guest_regread(arm8_32_regs_t *r, u32 regnum){
 	return 0;	//never reached
 }
 
-
+/*
 void guest_data_abort_handler(arm8_32_regs_t *r, u32 hsr){
 	u32 elr_hyp;
 	u32 fault_va;
@@ -167,6 +167,78 @@ void guest_data_abort_handler(arm8_32_regs_t *r, u32 hsr){
 
 	mmio_write32(fault_pa, guest_regvalue);
 }
+*/
+
+
+void guest_data_abort_handler(arm8_32_regs_t *r, u32 hsr){
+	u32 elr_hyp;
+	u32 fault_va;
+	u32 fault_pa_page;
+	u32 fault_pa;
+	u32 fault_va_page_offset;
+	u32 fault_iss;
+	u32 guest_regnum;
+	u32 guest_regvalue;
+	u32 fault_il;
+
+	//compute fault instruction length
+	fault_il = ((hsr & HSR_IL_MASK) >> HSR_IL_SHIFT);
+
+	//fix return address
+	elr_hyp = sysreg_read_elrhyp();
+	if(fault_il)
+		elr_hyp += sizeof(u32);
+	else
+		elr_hyp += sizeof(u16);
+	sysreg_write_elrhyp(elr_hyp);
+
+	//get faulting va
+	fault_va= sysreg_read_hdfar();
+
+	//compute faulting va page_offset
+	fault_va_page_offset = fault_va & 0x00000FFFUL;
+
+	//get faulting pa page
+	fault_pa_page = sysreg_read_hpfar();
+	fault_pa_page = (fault_pa_page & 0xFFFFFFF0UL) << 8;
+
+	//compute faulting pa
+	fault_pa = 	fault_pa_page | fault_va_page_offset;
+
+	//get faulting iss
+	fault_iss = (hsr & HSR_ISS_MASK) >> HSR_ISS_SHIFT;
+
+	//compute guest register number
+	guest_regnum = (fault_iss & 0x000F0000UL) >> 16;
+
+	//get guest register value
+	guest_regvalue = guest_regread(r, guest_regnum);
+
+
+	mmio_write32(fault_pa, guest_regvalue);
+
+/*
+ 	da_iss = ((hsr & HSR_ISS_MASK) >> HSR_ISS_SHIFT);
+	ida.il = ((hsr & HSR_IL_MASK) >> HSR_IL_SHIFT);
+	da_iss_isv = (da_iss & 0x01000000UL) >> 24;
+	ida.sas = (da_iss & 0x00C00000UL) >> 22;
+	ida.srt = (da_iss & 0x000F0000UL) >> 16;
+	ida.wnr = (da_iss & 0x00000040UL) >> 6;
+	ida.va = sysreg_read_hdfar();
+	fault_va_page_offset = ida.va % 4096;
+	da_pa_page = ((sysreg_read_hpfar() & 0xFFFFFFF0) << 8);
+	ida.pa = da_pa_page | fault_va_page_offset;
+	ida.r = r;
+	reg_value = (u32)guest_regread(ida.r, ida.srt);
+
+	info_intercept_data_abort_t ida;
+
+ */
+
+}
+
+
+
 
 __attribute__(( section(".data") )) u32 hypsvc_handler_lock=1;
 
