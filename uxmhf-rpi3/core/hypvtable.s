@@ -30,7 +30,7 @@ g_hypvtable:
 	b hypvtable_reserved_handler0
 	b hypvtable_reserved_handler0
 	b hypvtable_reserved_handler0
-	b hypvtable_hypsvc_handler
+	b hypvtable_hypsvc_handler0
 	b hypvtable_reserved_handler0
 	b hypvtable_reserved_handler0
 	//cpu-1
@@ -39,7 +39,7 @@ g_hypvtable:
 	b hypvtable_reserved_handler1
 	b hypvtable_reserved_handler1
 	b hypvtable_reserved_handler1
-	b hypvtable_hypsvc_handler
+	b hypvtable_hypsvc_handler1
 	b hypvtable_reserved_handler1
 	b hypvtable_reserved_handler1
 	//cpu-2
@@ -48,7 +48,7 @@ g_hypvtable:
 	b hypvtable_reserved_handler2
 	b hypvtable_reserved_handler2
 	b hypvtable_reserved_handler2
-	b hypvtable_hypsvc_handler
+	b hypvtable_hypsvc_handler2
 	b hypvtable_reserved_handler2
 	b hypvtable_reserved_handler2
 	//cpu-3
@@ -57,7 +57,7 @@ g_hypvtable:
 	b hypvtable_reserved_handler3
 	b hypvtable_reserved_handler3
 	b hypvtable_reserved_handler3
-	b hypvtable_hypsvc_handler
+	b hypvtable_hypsvc_handler3
 	b hypvtable_reserved_handler3
 	b hypvtable_reserved_handler3
 
@@ -92,6 +92,26 @@ hypvtable_reserved_handler3:
 
 
 
+	.global	hypvtable_hypsvc_handler0
+hypvtable_hypsvc_handler0:
+	ldr sp, =hypvtable_hypsvc_stack_top0
+	b hypvtable_hypsvc_handler_common
+
+	.global	hypvtable_hypsvc_handler1
+hypvtable_hypsvc_handler1:
+	ldr sp, =hypvtable_hypsvc_stack_top1
+	b hypvtable_hypsvc_handler_common
+
+	.global	hypvtable_hypsvc_handler2
+hypvtable_hypsvc_handler2:
+	ldr sp, =hypvtable_hypsvc_stack_top2
+	b hypvtable_hypsvc_handler_common
+
+	.global	hypvtable_hypsvc_handler3
+hypvtable_hypsvc_handler3:
+	ldr sp, =hypvtable_hypsvc_stack_top3
+	b hypvtable_hypsvc_handler_common
+
 
 /*
 	G1.12.3 ARMv8
@@ -100,8 +120,6 @@ hypvtable_reserved_handler3:
 */
 	.global	hypvtable_hypsvc_handler_common
 hypvtable_hypsvc_handler_common:
-	ldr sp, =hypvtable_hypsvc_stack_top
-
 	// G1.9.2 (Figure G1-3)
 	// HYP mode uses LR_usr, i.e, does not have LR banking, so save
 	// since we are going to be using LR for C calling
@@ -176,11 +194,28 @@ hypvtable_hypsvc_handler_common:
 	hypvtable_stack_top:
 
 	.balign 8
-	.global hypvtable_hypsvc_stack
-	hypvtable_hypsvc_stack:	.space	16384
-	.global hypvtable_hypsvc_stack_top
-	hypvtable_hypsvc_stack_top:
+	.global hypvtable_hypsvc_stack0
+	hypvtable_hypsvc_stack0:	.space	16384
+	.global hypvtable_hypsvc_stack_top0
+	hypvtable_hypsvc_stack_top0:
 
+	.balign 8
+	.global hypvtable_hypsvc_stack1
+	hypvtable_hypsvc_stack1:	.space	16384
+	.global hypvtable_hypsvc_stack_top1
+	hypvtable_hypsvc_stack_top1:
+
+	.balign 8
+	.global hypvtable_hypsvc_stack2
+	hypvtable_hypsvc_stack2:	.space	16384
+	.global hypvtable_hypsvc_stack_top2
+	hypvtable_hypsvc_stack_top2:
+
+	.balign 8
+	.global hypvtable_hypsvc_stack3
+	hypvtable_hypsvc_stack3:	.space	16384
+	.global hypvtable_hypsvc_stack_top3
+	hypvtable_hypsvc_stack_top3:
 
 	.balign 8
 	.global hypvtable_rsvhandler_stack0
