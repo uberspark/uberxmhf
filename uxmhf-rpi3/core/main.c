@@ -121,8 +121,8 @@ void guest_hypercall_handler(arm8_32_regs_t *r, u32 hsr){
 	u32 hvc_iss;
 	u32 hvc_imm16;
 
-	hvc_imm16 = hvc_iss & 0x0000FFFFUL;
 	hvc_iss = ((hsr & HSR_ISS_MASK) >> HSR_ISS_SHIFT);
+	hvc_imm16 = hvc_iss & 0x0000FFFFUL;
 
 
 	if (hvc_imm16 == 2){

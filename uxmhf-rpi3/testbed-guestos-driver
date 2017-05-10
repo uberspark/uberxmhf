@@ -8,10 +8,10 @@ dmesg | grep "hypcall"
 #echo "Executing usr mode hyper call test app..."
 #sudo ./apphcall
 #echo "usr mode hyper call test app executed"
-#echo "executing usr mode npf test app..."
-#sudo ./appnpf
-#echo "usr mode npf test app executed"
 #
+echo "executing usr mode npf test app..."
+sudo ./appnpf
+echo "usr mode npf test app executed"
 sudo rmmod hypcall.ko
 echo "Unloaded hypcall kernel module"
 dmesg | grep "hypcall"
