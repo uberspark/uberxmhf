@@ -28,6 +28,14 @@ extern u32 g_hypvtable[BCM2837_MAXCPUS][8];
 //u32 guestos_boot_r2=0;
 
 
+//////
+// appnpf hypapp related variables
+//////
+bool appnpf_activated=false;
+u32 appnpf_page_pa=0UL;
+
+
+
 void hyp_rsvhandler(void){
 	_XDPRINTF_("%s: unhandled exception\n", __func__);
 	_XDPRINTF_("%s: Halting!\n", __func__);
@@ -137,6 +145,9 @@ void guest_hypercall_handler(arm8_32_regs_t *r, u32 hsr){
 		uapi_s2pgtbl_setprot(r->r0, attrs_noaccess);
 		sysreg_tlbiallis();
 
+		appnpf_page_pa = r->r0;
+		appnpf_activated=true;
+
 	}else if (hvc_imm16 == 3){
 		u64 attrs = (LDESC_S2_MC_OUTER_WRITE_BACK_CACHEABLE_INNER_WRITE_BACK_CACHEABLE << LDESC_S2_MEMATTR_MC_SHIFT) |
 			(LDESC_S2_S2AP_READ_WRITE << LDESC_S2_MEMATTR_S2AP_SHIFT) |
@@ -148,6 +159,10 @@ void guest_hypercall_handler(arm8_32_regs_t *r, u32 hsr){
 
 		uapi_s2pgtbl_setprot(r->r0, attrs);
 		sysreg_tlbiallis();
+
+		appnpf_page_pa = 0UL;
+		appnpf_activated=false;
+
 
 	}else{
 		_XDPRINTFSMP_("%s: unknown HVC instruction imm16=0x%08x. Halting!\n", __func__,
@@ -222,6 +237,9 @@ void guest_data_abort_handler(arm8_32_regs_t *r, u32 hsr){
 
 	}else if ( fault_pa_page == DWC_REGS_BASE ){
 		dmaprot_handle_usbdmac_access(&ida);
+
+	}else if ( fault_pa_page == appnpf_page_pa && appnpf_activated){
+		//appnpf trigger, just omit the access
 
 	}else{
 		_XDPRINTFSMP_("%s: unknown s2pgtbl DATA ABORT. Halting! (va=0x%08x, pa=0x%08x)\n",
