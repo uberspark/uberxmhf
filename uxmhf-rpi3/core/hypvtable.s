@@ -24,6 +24,7 @@
 	.balign	32
 	.global g_hypvtable
 g_hypvtable:
+	//cpu-0
 	b hypvtable_reserved_handler
 	b hypvtable_reserved_handler
 	b hypvtable_hyphvc_handler
@@ -32,6 +33,34 @@ g_hypvtable:
 	b hypvtable_hypsvc_handler
 	b hypvtable_reserved_handler
 	b hypvtable_reserved_handler
+	//cpu-1
+	b hypvtable_reserved_handler
+	b hypvtable_reserved_handler
+	b hypvtable_hyphvc_handler
+	b hypvtable_reserved_handler
+	b hypvtable_reserved_handler
+	b hypvtable_hypsvc_handler
+	b hypvtable_reserved_handler
+	b hypvtable_reserved_handler
+	//cpu-2
+	b hypvtable_reserved_handler
+	b hypvtable_reserved_handler
+	b hypvtable_hyphvc_handler
+	b hypvtable_reserved_handler
+	b hypvtable_reserved_handler
+	b hypvtable_hypsvc_handler
+	b hypvtable_reserved_handler
+	b hypvtable_reserved_handler
+	//cpu-3
+	b hypvtable_reserved_handler
+	b hypvtable_reserved_handler
+	b hypvtable_hyphvc_handler
+	b hypvtable_reserved_handler
+	b hypvtable_reserved_handler
+	b hypvtable_hypsvc_handler
+	b hypvtable_reserved_handler
+	b hypvtable_reserved_handler
+
 
 	.balign 32
 	.global	hypvtable_reserved_handler
