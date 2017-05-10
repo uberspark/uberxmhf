@@ -17,7 +17,7 @@ extern void entry_svc(void);
 extern void secondary_cpu_entry_svc(void);
 
 
-extern u32 g_hypvtable[];
+extern u32 g_hypvtable[BCM2837_MAXCPUS][];
 
 //u32 guestos_boot_r0=0;
 //u32 guestos_boot_r1=0;
