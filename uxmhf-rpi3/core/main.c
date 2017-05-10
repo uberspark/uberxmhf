@@ -17,7 +17,11 @@ extern void entry_svc(void);
 extern void secondary_cpu_entry_svc(void);
 
 
-extern u32 g_hypvtable[BCM2837_MAXCPUS][];
+extern void hypvtable_reserved_handler();
+extern void hypvtable_hyphvc_handler();
+extern void hypvtable_hypsvc_handler();
+
+extern u32 g_hypvtable[BCM2837_MAXCPUS][8];
 
 //u32 guestos_boot_r0=0;
 //u32 guestos_boot_r1=0;
@@ -507,8 +511,27 @@ void main(u32 r0, u32 id, struct atag *at, u32 cpuid){
 	_XDPRINTF_("%s[%u]: HCPTR=0x%08x\n", __func__, cpuid, sysreg_read_hcptr());
 	_XDPRINTF_("%s[%u]: HDCR=0x%08x\n", __func__, cpuid, sysreg_read_hdcr());
 	_XDPRINTF_("%s[%u]: HVBAR[before]=0x%08x\n", __func__, cpuid, sysreg_read_hvbar());
+
+	//debug
+	_XDPRINTF_("%s[%u]: proceeding to dump ghypvtable...\n", __func__, cpuid);
+	_XDPRINTF_("%s[%u]: rsv handler at 0x%08x\n", __func__, cpuid, &hypvtable_reserved_handler);
+	_XDPRINTF_("%s[%u]: hvc handler at 0x%08x\n", __func__, cpuid, &hypvtable_hyphvc_handler);
+	_XDPRINTF_("%s[%u]: hvc handler at 0x%08x\n", __func__, cpuid, &hypvtable_hypsvc_handler);
+
+	{
+		u32 i, j;
+		for(i=0; i < BCM2837_MAXCPUS; i++){
+			_XDPRINTF_("  ghypvtable[%u] at 0x%08x\n", i, (u32)&g_hypvtable[i]);
+			for(j=0; j < 8; j++){
+				_XDPRINTF_("  ghypvtable[%u][%u]=0x%08x\n", i, j, g_hypvtable[i][j]);
+			}
+		}
+	}
+	_XDPRINTF_("%s[%u]: dumped g_hypvtable. Halting\n", __func__, cpuid);
+	HALT();
+
 	_XDPRINTF_("%s[%u]: ghypvtable at 0x%08x\n", __func__, cpuid, (u32)&g_hypvtable);
-	sysreg_write_hvbar((u32)&g_hypvtable);
+	sysreg_write_hvbar((u32)&g_hypvtable[cpuid]);
 	_XDPRINTF_("%s[%u]: HVBAR[after]=0x%08x\n", __func__, cpuid, sysreg_read_hvbar());
 
 	//test hyp mode hvc
@@ -573,8 +596,8 @@ void secondary_main(u32 cpuid){
 	_XDPRINTF_("%s[%u]: HCPTR=0x%08x\n", __func__, cpuid, sysreg_read_hcptr());
 	_XDPRINTF_("%s[%u]: HDCR=0x%08x\n", __func__, cpuid, sysreg_read_hdcr());
 	_XDPRINTF_("%s[%u]: HVBAR[before]=0x%08x\n", __func__, cpuid, sysreg_read_hvbar());
-	_XDPRINTF_("%s[%u]: ghypvtable at 0x%08x\n", __func__, cpuid, (u32)&g_hypvtable);
-	sysreg_write_hvbar((u32)&g_hypvtable);
+	_XDPRINTF_("%s[%u]: ghypvtable at 0x%08x\n", __func__, cpuid, (u32)&g_hypvtable[cpuid]);
+	sysreg_write_hvbar((u32)&g_hypvtable[cpuid]);
 	_XDPRINTF_("%s[%u]: HVBAR[after]=0x%08x\n", __func__, cpuid, sysreg_read_hvbar());
 
 	//test hyp mode hvc
