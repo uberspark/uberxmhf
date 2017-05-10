@@ -226,7 +226,15 @@ void guest_data_abort_handler(arm8_32_regs_t *r, u32 hsr){
 	ida.pa = fault_pa;
 	ida.r = r;
 
+	//handle data abort fault by passing it to appropriate module
+	if ( fault_pa_page == DWC_REGS_BASE ){
+		dmaprot_handle_usbdmac_access(&ida);
 
+	}else{
+		_XDPRINTFSMP_("%s: unknown s2pgtbl DATA ABORT. Halting! (va=0x%08x, pa=0x%08x)\n",
+			__func__, ida.va, ida.pa);
+		HALT();
+	}
 
 
 /*
