@@ -47,23 +47,35 @@ void hyphvc_handler(void){
 //////
 
 void guest_regwrite(arm8_32_regs_t *r, u32 regnum, u32 value){
-	switch(regnum){
-		case 0:		r->r0 = value; break;
-		case 1:		r->r1 = value; break;
-		case 2:		r->r2 = value; break;
-		case 3:		r->r3 = value; break;
-		case 4:		r->r4 = value; break;
-		case 5:		r->r5 = value; break;
-		case 6:		r->r6 = value; break;
-		case 7:		r->r7 = value; break;
-		case 8:		r->r8 = value; break;
-		case 9:		r->r9 = value; break;
-		case 10:	r->r10 = value; break;
-		case 11:	r->r11 = value; break;
-		case 12:	r->r12 = value; break;
-		default:
-			_XDPRINTFSMP_("%s: Invalid regnum=%u. Halting!\n", __func__, regnum);
-			HALT();
+	if(regnum == 0)
+		r->r0 = value;
+	else if(regnum == 1)
+		r->r1 = value;
+	else if(regnum == 2)
+		r->r2 = value;
+	else if(regnum == 3)
+		r->r3 = value;
+	else if(regnum == 4)
+		r->r4 = value;
+	else if(regnum == 5)
+		r->r5 = value;
+	else if(regnum == 6)
+		r->r6 = value;
+	else if(regnum == 7)
+		r->r7 = value;
+	else if(regnum == 8)
+		r->r8 = value;
+	else if(regnum == 9)
+		r->r9 = value;
+	else if(regnum == 10)
+		r->r10 = value;
+	else if(regnum == 11)
+		r->r11 = value;
+	else if(regnum == 12)
+		r->r12 = value;
+	else{
+		_XDPRINTFSMP_("%s: Invalid regnum=%u. Halting!\n", __func__, regnum);
+		HALT();
 	}
 }
 
