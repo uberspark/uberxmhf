@@ -179,7 +179,6 @@ void guest_data_abort_handler(arm8_32_regs_t *r, u32 hsr){
 	u32 fault_iss;
 	u32 fault_iss_isv;
 	u32 guest_regnum;
-	u32 guest_regvalue;
 	u32 fault_il;
 	info_intercept_data_abort_t ida;
 
@@ -228,11 +227,6 @@ void guest_data_abort_handler(arm8_32_regs_t *r, u32 hsr){
 	ida.r = r;
 
 
-	//get guest register value
-	guest_regvalue = guest_regread(ida.r, ida.srt);
-
-
-	mmio_write32(ida.pa, guest_regvalue);
 
 
 /*
