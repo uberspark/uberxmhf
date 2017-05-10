@@ -181,6 +181,7 @@ void guest_data_abort_handler(arm8_32_regs_t *r, u32 hsr){
 	u32 guest_regnum;
 	u32 guest_regvalue;
 	u32 fault_il;
+	info_intercept_data_abort_t ida;
 
 	//get faulting iss
 	fault_iss = (hsr & HSR_ISS_MASK) >> HSR_ISS_SHIFT;
@@ -217,15 +218,22 @@ void guest_data_abort_handler(arm8_32_regs_t *r, u32 hsr){
 	//compute faulting pa
 	fault_pa = 	fault_pa_page | fault_va_page_offset;
 
+	//fill out 	info_intercept_data_abort_t ida
+	ida.il = fault_il;
+	ida.sas = (fault_iss & 0x00C00000UL) >> 22;
+	ida.srt = (fault_iss & 0x000F0000UL) >> 16;
+	ida.wnr = (fault_iss & 0x00000040UL) >> 6;
+	ida.va = fault_va;
+	ida.pa = fault_pa;
+	ida.r = r;
 
-	//compute guest register number
-	guest_regnum = (fault_iss & 0x000F0000UL) >> 16;
 
 	//get guest register value
-	guest_regvalue = guest_regread(r, guest_regnum);
+	guest_regvalue = guest_regread(ida.r, ida.srt);
 
 
-	mmio_write32(fault_pa, guest_regvalue);
+	mmio_write32(ida.pa, guest_regvalue);
+
 
 /*
  	da_iss = ((hsr & HSR_ISS_MASK) >> HSR_ISS_SHIFT);
@@ -241,7 +249,6 @@ void guest_data_abort_handler(arm8_32_regs_t *r, u32 hsr){
 	ida.r = r;
 	reg_value = (u32)guest_regread(ida.r, ida.srt);
 
-	info_intercept_data_abort_t ida;
 
  */
 
