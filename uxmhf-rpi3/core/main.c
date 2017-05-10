@@ -512,7 +512,7 @@ void main(u32 r0, u32 id, struct atag *at, u32 cpuid){
 	_XDPRINTF_("%s[%u]: HDCR=0x%08x\n", __func__, cpuid, sysreg_read_hdcr());
 	_XDPRINTF_("%s[%u]: HVBAR[before]=0x%08x\n", __func__, cpuid, sysreg_read_hvbar());
 
-	//debug
+/*	//debug
 	_XDPRINTF_("%s[%u]: proceeding to dump ghypvtable...\n", __func__, cpuid);
 	_XDPRINTF_("%s[%u]: rsv handler at 0x%08x\n", __func__, cpuid, &hypvtable_reserved_handler);
 	_XDPRINTF_("%s[%u]: hvc handler at 0x%08x\n", __func__, cpuid, &hypvtable_hyphvc_handler);
@@ -529,8 +529,9 @@ void main(u32 r0, u32 id, struct atag *at, u32 cpuid){
 	}
 	_XDPRINTF_("%s[%u]: dumped g_hypvtable. Halting\n", __func__, cpuid);
 	HALT();
+*/
 
-	_XDPRINTF_("%s[%u]: ghypvtable at 0x%08x\n", __func__, cpuid, (u32)&g_hypvtable);
+	_XDPRINTF_("%s[%u]: ghypvtable at 0x%08x\n", __func__, cpuid, (u32)&g_hypvtable[cpuid]);
 	sysreg_write_hvbar((u32)&g_hypvtable[cpuid]);
 	_XDPRINTF_("%s[%u]: HVBAR[after]=0x%08x\n", __func__, cpuid, sysreg_read_hvbar());
 
