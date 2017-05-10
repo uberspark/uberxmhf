@@ -339,7 +339,7 @@ void dmaprot_handle_usbdmac_access(info_intercept_data_abort_t *ida){
 	u32 guest_regvalue;
 
 	//get guest register value
-	guest_regvalue = guest_regread(ida.r, ida.srt);
+	guest_regvalue = guest_regread(ida->r, ida->srt);
 
-	mmio_write32(ida.pa, guest_regvalue);
+	mmio_write32(ida->pa, guest_regvalue);
 }
