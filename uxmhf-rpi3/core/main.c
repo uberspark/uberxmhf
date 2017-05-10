@@ -168,12 +168,17 @@ void guest_data_abort_handler(arm8_32_regs_t *r, u32 hsr){
 	mmio_write32(fault_pa, guest_regvalue);
 }
 
+__attribute__(( section(".data") )) u32 hypsvc_handler_lock=1;
 
 void hypsvc_handler(arm8_32_regs_t *r){
 	u32 hsr;
 	u32 hsr_ec;
 	u32 elr_hyp;
 	//_XDPRINTFSMP_("%s: ENTER\n", __func__);
+
+	//acquire lock
+	spin_lock(&hypsvc_handler_lock);
+
 
 	//read hsr to determine the cause of the intercept
 	hsr = sysreg_read_hsr();
@@ -335,6 +340,8 @@ void hypsvc_handler(arm8_32_regs_t *r){
 
 	//_XDPRINTFSMP_("%s: EXIT\n", __func__);
 
+	//release lock
+	spin_unlock(&hypsvc_handler_lock);
 
 }
 
