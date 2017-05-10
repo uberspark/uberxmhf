@@ -236,24 +236,6 @@ void guest_data_abort_handler(arm8_32_regs_t *r, u32 hsr){
 		HALT();
 	}
 
-
-/*
- 	da_iss = ((hsr & HSR_ISS_MASK) >> HSR_ISS_SHIFT);
-	ida.il = fault_il;
-	da_iss_isv = (da_iss & 0x01000000UL) >> 24;
-	ida.sas = (da_iss & 0x00C00000UL) >> 22;
-	ida.srt = (da_iss & 0x000F0000UL) >> 16;
-	ida.wnr = (da_iss & 0x00000040UL) >> 6;
-	ida.va = sysreg_read_hdfar();
-	fault_va_page_offset = ida.va % 4096;
-	da_pa_page = ((sysreg_read_hpfar() & 0xFFFFFFF0) << 8);
-	ida.pa = da_pa_page | fault_va_page_offset;
-	ida.r = r;
-	reg_value = (u32)guest_regread(ida.r, ida.srt);
-
-
- */
-
 }
 
 
