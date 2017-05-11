@@ -599,33 +599,6 @@ void secondary_main(u32 cpuid){
 }
 
 
-//all secondary CPUs get here in SVC mode and enter the wait-for-startup loop
-void secondary_main_svc(u32 cpuid){
-	u32 start_address;
-	armlocalregisters_mailboxwrite_t *armlocalregisters_mailboxwrite;
-
-	armlocalregisters_mailboxwrite = (armlocalregisters_mailboxwrite_t *)(ARMLOCALREGISTERS_MAILBOXWRITE_BASE + (0 * sizeof(armlocalregisters_mailboxwrite_t)));
-
-	_XDPRINTF_("%s[%u]: ENTER: sp=0x%08x (cpu_stacks_svc=0x%08x)\n", __func__, cpuid,
-			cpu_read_sp(), &cpu_stacks_svc);
-
-	//_XDPRINTF_("%s[%u]: cpu_smpready[%u]=%u\n", __func__, cpuid, cpuid, cpu_smpready[cpuid]);
-	_XDPRINTF_("%s[%u]: Signalling SMP readiness and halting!\n", __func__, cpuid);
-	armlocalregisters_mailboxwrite->mailbox3write = 1;
-	//cpu_smpready[cpuid]=1;
-	cpu_dsb();
-
-	start_address=bcm2837_platform_waitforstartup(cpuid);
-
-	//if(cpuid == 1){
-		//chainload_os_svc(start_address);
-	//}
-
-	//_XDPRINTF_("%s[%u]: We should never be here. Halting!\n", __func__, cpuid);
-	HALT();
-}
-
-
 /*
 	_XDPRINTFSMP_("%s: lock variable at address=0x%08x\n", __func__, &my_lock);
 	_XDPRINTFSMP_("%s: acquiring lock [current value=0x%08x]...\n", __func__, (u32)my_lock);
