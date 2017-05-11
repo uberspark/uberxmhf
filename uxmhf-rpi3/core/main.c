@@ -133,7 +133,10 @@ void guest_hypercall_handler(arm8_32_regs_t *r, u32 hsr){
 	hvc_imm16 = hvc_iss & 0x0000FFFFUL;
 
 
-	if (hvc_imm16 == 2){
+	if (hvc_imm16 == 1){
+		//do nothing; null hypercall
+
+	}else if (hvc_imm16 == 2){
 		u64 attrs_noaccess = (LDESC_S2_MC_OUTER_WRITE_BACK_CACHEABLE_INNER_WRITE_BACK_CACHEABLE << LDESC_S2_MEMATTR_MC_SHIFT) |
 			(LDESC_S2_S2AP_NO_ACCESS << LDESC_S2_MEMATTR_S2AP_SHIFT) |
 			(MEM_INNER_SHAREABLE << LDESC_S2_MEMATTR_SH_SHIFT) |
