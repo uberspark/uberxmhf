@@ -13,7 +13,6 @@ extern void chainload_os_svc(u32 start_address);
 //extern void cpumodeswitch_hyp2svc(u32 address);
 extern void cpumodeswitch_hyp2svc(u32 r0, u32 id, struct atag *at, u32 address, u32 cpuid);
 
-extern void entry_svc(void);
 extern void secondary_cpu_entry_svc(void);
 
 
@@ -524,7 +523,6 @@ void main(u32 r0, u32 id, struct atag *at, u32 cpuid){
 	_XDPRINTF_("%s[%u]: booting guest in SVC mode\n", __func__, cpuid);
 	_XDPRINTF_("%s[%u]: r0=0x%08x, id=0x%08x, at=0x%08x\n", __func__, cpuid, r0, id, at);
 
-	//cpumodeswitch_hyp2svc(r0, id, at, &entry_svc);
 	//cpumodeswitch_hyp2svc(r0, id, at, 0x8000, 0);
 	chainload_os(r0,id,at,0x8000);
 

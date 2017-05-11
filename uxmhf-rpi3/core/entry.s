@@ -26,15 +26,6 @@ halt:
 	b halt
 
 
-.globl entry_svc
-entry_svc:
-	hvc #0
-	/* load stack and start C land */
-	ldr sp, =stacksvc_top
-	bl main_svc
-
-hlt_entry_svc:
-	b hlt_entry_svc
 
 
 //r0,r1,r2 go through to the guest os
@@ -142,13 +133,6 @@ secondary_cpu_entry_svc_halt:
 
 
 .section ".stack", "aw"
-
-	.balign 8
-	.global stacksvc
-	stacksvc:	.space	8192
-	.global stacksvc_top
-	stacksvc_top:
-
 
 	.balign 8
 	.global cpu_stacks
