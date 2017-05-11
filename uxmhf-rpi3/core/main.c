@@ -528,12 +528,18 @@ void main(u32 r0, u32 id, struct atag *at, u32 cpuid){
 }
 
 
-
+//////
+// secondary cores enter here after they are booted up
+//////
 void secondary_main(u32 cpuid){
-	armlocalregisters_mailboxwrite_t *armlocalregisters_mailboxwrite = (armlocalregisters_mailboxwrite_t *)(ARMLOCALREGISTERS_MAILBOXWRITE_BASE + (0 * sizeof(armlocalregisters_mailboxwrite_t)));
+	u32 start_address;
+	armlocalregisters_mailboxwrite_t *armlocalregisters_mailboxwrite;
+
 
 	_XDPRINTF_("%s[%u]: ENTER: sp=0x%08x (cpu_stacks=0x%08x)\n", __func__, cpuid,
 			cpu_read_sp(), &cpu_stacks);
+
+	armlocalregisters_mailboxwrite = (armlocalregisters_mailboxwrite_t *)(ARMLOCALREGISTERS_MAILBOXWRITE_BASE + (0 * sizeof(armlocalregisters_mailboxwrite_t)));
 
 	hyppgtbl_activate();
 	_XDPRINTF_("%s[%u]: hyp page-tables activated\n", __func__, cpuid);
@@ -548,11 +554,6 @@ void secondary_main(u32 cpuid){
 	sysreg_write_hvbar((u32)&g_hypvtable[cpuid]);
 	_XDPRINTF_("%s[%u]: HVBAR[after]=0x%08x\n", __func__, cpuid, sysreg_read_hvbar());
 
-	//test hyp mode hvc
-	//_XDPRINTF_("%s[%u]: proceeding to test hypercall (HVC) in HYP mode...\n", __func__, cpuid);
-	//hypcall();
-	//_XDPRINTF_("%s[%u]: successful return from hypercall\n", __func__, cpuid);
-
 	// initialize cpu support for second stage page table translations
 	s2pgtbl_initialize();
 	_XDPRINTF_("%s[%u]: cpu ready for stage-2 pts...\n", __func__, cpuid);
@@ -565,37 +566,18 @@ void secondary_main(u32 cpuid){
 	s2pgtbl_activatetranslation();
 	_XDPRINTF_("%s[%u]: activated stage-2 translation\n", __func__, cpuid);
 
+	_XDPRINTF_("%s[%u]: Signalling SMP readiness and entering SMP boot wait loop...\n", __func__, cpuid);
+	armlocalregisters_mailboxwrite->mailbox3write = 1;
+	cpu_dsb();
 
-/*
-	_XDPRINTF_("%s[%u]: Moving into SVC mode...\n", __func__, cpuid);
+	start_address=bcm2837_platform_waitforstartup(cpuid);
 
-	//_XDPRINTF_("%s[%u]: Signalling SMP readiness and moving into SVC mode...\n", __func__, cpuid);
-	//armlocalregisters_mailboxwrite->mailbox3write = 1;
-	//cpu_smpready[cpuid]=1;
+	_XDPRINTFSMP_("%s[%u]: Got startup signal, address=0x%08x\n", __func__, cpuid, start_address);
 
+	chainload_os(0, 0, 0, start_address);
 
-	_XDPRINTF_("%s[%u]: should never get here. halting!\n", __func__, cpuid);
+	_XDPRINTFSMP_("%s[%u]: Should never be here. Halting!\n", __func__, cpuid);
 	HALT();
-*/
-	{
-		u32 start_address;
-		armlocalregisters_mailboxwrite_t *armlocalregisters_mailboxwrite;
-		armlocalregisters_mailboxwrite = (armlocalregisters_mailboxwrite_t *)(ARMLOCALREGISTERS_MAILBOXWRITE_BASE + (0 * sizeof(armlocalregisters_mailboxwrite_t)));
-
-		_XDPRINTF_("%s[%u]: Signalling SMP readiness and entering SMP boot wait loop...\n", __func__, cpuid);
-		armlocalregisters_mailboxwrite->mailbox3write = 1;
-		cpu_dsb();
-
-		start_address=bcm2837_platform_waitforstartup(cpuid);
-
-		_XDPRINTFSMP_("%s[%u]: Got startup signal, address=0x%08x\n", __func__, cpuid, start_address);
-
-		chainload_os(0, 0, 0, start_address);
-
-		HALT();
-	}
-
-
 }
 
 
