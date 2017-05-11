@@ -7,21 +7,15 @@
 #include <debug.h>
 #include <dmaprot.h>
 
+//////
+// externs
+//////
+extern u8 cpu_stacks[];
 extern void chainload_os(u32 r0, u32 id, struct atag *at, u32 address);
-
-//extern void cpumodeswitch_hyp2svc(u32 address);
 extern void cpumodeswitch_hyp2svc(u32 r0, u32 id, struct atag *at, u32 address, u32 cpuid);
-
-
-extern void hypvtable_reserved_handler();
-extern void hypvtable_hyphvc_handler();
-extern void hypvtable_hypsvc_handler();
-
 extern u32 g_hypvtable[BCM2837_MAXCPUS][8];
 
-//u32 guestos_boot_r0=0;
-//u32 guestos_boot_r1=0;
-//u32 guestos_boot_r2=0;
+
 
 
 //////
@@ -411,10 +405,6 @@ void core_fixresmemmap(u32 fdt_address){
 }
 
 
-volatile __attribute__((aligned(32))) u32 my_lock=1;
-extern u32 cpu_smpready[];
-extern u8 cpu_stacks[];
-extern u8 cpu_stacks_svc[];
 
 //////
 // boot cpu enters here
