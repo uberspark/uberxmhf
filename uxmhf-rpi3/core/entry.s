@@ -111,25 +111,6 @@ secondary_cpu_entry_halt:
 
 
 
-.globl secondary_cpu_entry_svc
-secondary_cpu_entry_svc:
-
- 	mrc p15, #0, r0, c0, c0, #5 	//read MPIDR
- 	and r0, #3						//mask off the CPUID value
-	add r1, r0, #1					//r1 = index into cpu_stacks
-
-	ldr sp, =cpu_stacks_svc				//load cpu_stacks base into stack-pointer
-	mov r2, #8192
-	mul r3, r2, r1					//r3 is the offset to add based on index (r1)
-	add sp, sp, r3					//sp is the top-of-stack for this cpu
-
-	bl secondary_main_svc				//r0 is the cpuid
-
-secondary_cpu_entry_svc_halt:
-	b secondary_cpu_entry_svc_halt
-
-
-
 
 
 .section ".stack", "aw"

@@ -13,8 +13,6 @@ extern void chainload_os_svc(u32 start_address);
 //extern void cpumodeswitch_hyp2svc(u32 address);
 extern void cpumodeswitch_hyp2svc(u32 r0, u32 id, struct atag *at, u32 address, u32 cpuid);
 
-extern void secondary_cpu_entry_svc(void);
-
 
 extern void hypvtable_reserved_handler();
 extern void hypvtable_hyphvc_handler();
@@ -576,7 +574,6 @@ void secondary_main(u32 cpuid){
 	//armlocalregisters_mailboxwrite->mailbox3write = 1;
 	//cpu_smpready[cpuid]=1;
 
-	cpumodeswitch_hyp2svc(0, 0, 0, &secondary_cpu_entry_svc, cpuid);
 
 	_XDPRINTF_("%s[%u]: should never get here. halting!\n", __func__, cpuid);
 	HALT();
