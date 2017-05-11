@@ -416,7 +416,9 @@ extern u32 cpu_smpready[];
 extern u8 cpu_stacks[];
 extern u8 cpu_stacks_svc[];
 
-
+//////
+// boot cpu enters here
+//////
 void main(u32 r0, u32 id, struct atag *at, u32 cpuid){
 	u32 hvbar, hcr, spsr_hyp;
 
@@ -452,7 +454,6 @@ void main(u32 r0, u32 id, struct atag *at, u32 cpuid){
 	dmaprot_activate();
 	_XDPRINTF_("%s[%u]: DMA protection mechanism activated via stage-2 pts\n", __func__, cpuid);
 
-
 	//dump hyp registers and load hvbar
 	_XDPRINTF_("%s[%u]: HCR=0x%08x\n", __func__, cpuid, sysreg_read_hcr());
 	_XDPRINTF_("%s[%u]: HSTR=0x%08x\n", __func__, cpuid, sysreg_read_hstr());
@@ -460,33 +461,9 @@ void main(u32 r0, u32 id, struct atag *at, u32 cpuid){
 	_XDPRINTF_("%s[%u]: HDCR=0x%08x\n", __func__, cpuid, sysreg_read_hdcr());
 	_XDPRINTF_("%s[%u]: HVBAR[before]=0x%08x\n", __func__, cpuid, sysreg_read_hvbar());
 
-/*	//debug
-	_XDPRINTF_("%s[%u]: proceeding to dump ghypvtable...\n", __func__, cpuid);
-	_XDPRINTF_("%s[%u]: rsv handler at 0x%08x\n", __func__, cpuid, &hypvtable_reserved_handler);
-	_XDPRINTF_("%s[%u]: hvc handler at 0x%08x\n", __func__, cpuid, &hypvtable_hyphvc_handler);
-	_XDPRINTF_("%s[%u]: hvc handler at 0x%08x\n", __func__, cpuid, &hypvtable_hypsvc_handler);
-
-	{
-		u32 i, j;
-		for(i=0; i < BCM2837_MAXCPUS; i++){
-			_XDPRINTF_("  ghypvtable[%u] at 0x%08x\n", i, (u32)&g_hypvtable[i]);
-			for(j=0; j < 8; j++){
-				_XDPRINTF_("  ghypvtable[%u][%u]=0x%08x\n", i, j, g_hypvtable[i][j]);
-			}
-		}
-	}
-	_XDPRINTF_("%s[%u]: dumped g_hypvtable. Halting\n", __func__, cpuid);
-	HALT();
-*/
-
 	_XDPRINTF_("%s[%u]: ghypvtable at 0x%08x\n", __func__, cpuid, (u32)&g_hypvtable[cpuid]);
 	sysreg_write_hvbar((u32)&g_hypvtable[cpuid]);
 	_XDPRINTF_("%s[%u]: HVBAR[after]=0x%08x\n", __func__, cpuid, sysreg_read_hvbar());
-
-	//test hyp mode hvc
-	//_XDPRINTF_("%s[%u]: proceeding to test hypercall (HVC) in HYP mode...\n", __func__, cpuid);
-	//hypcall();
-	//_XDPRINTF_("%s[%u]: successful return from hypercall\n", __func__, cpuid);
 
 	// initialize cpu support for second stage page table translations
 	s2pgtbl_initialize();
@@ -505,25 +482,12 @@ void main(u32 r0, u32 id, struct atag *at, u32 cpuid){
 	bcm2837_platform_smpinitialize();
 	_XDPRINTF_("%s[%u]: secondary cores booted, moving on...\n", __func__, cpuid);
 
-	//brief delay to allow secondary cores to start spinning on mailboxes
-/*	_XDPRINTF_("%s[%u]: waiting for secondary cores to spin into mailbox wait...\n", __func__, cpuid);
-	{
-		u32 i,j;
-		for(i=0; i < 1024*256; i++){
-			for(j=0; j < 1024; j++){
-				cpu_dsb();
-			}
-		}
-	}
-*/
-
 	_XDPRINTF_("%s[%u]: booting guest in SVC mode\n", __func__, cpuid);
 	_XDPRINTF_("%s[%u]: r0=0x%08x, id=0x%08x, at=0x%08x\n", __func__, cpuid, r0, id, at);
 
-	//cpumodeswitch_hyp2svc(r0, id, at, 0x8000, 0);
 	chainload_os(r0,id,at,0x8000);
 
-	_XDPRINTF_("%s[%u]: Halting\n", __func__, cpuid);
+	_XDPRINTF_("%s[%u]: Should not come here.Halting\n", __func__, cpuid);
 	HALT();
 }
 
