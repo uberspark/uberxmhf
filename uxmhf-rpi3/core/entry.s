@@ -76,9 +76,6 @@ chainload_os:
 	eret
 
 
-.globl chainload_os_svc
-chainload_os_svc:
-	blx r0
 
 
 .global cpumodeswitch_hyp2svc

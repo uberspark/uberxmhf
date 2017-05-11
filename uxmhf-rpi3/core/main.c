@@ -8,7 +8,6 @@
 #include <dmaprot.h>
 
 extern void chainload_os(u32 r0, u32 id, struct atag *at, u32 address);
-extern void chainload_os_svc(u32 start_address);
 
 //extern void cpumodeswitch_hyp2svc(u32 address);
 extern void cpumodeswitch_hyp2svc(u32 r0, u32 id, struct atag *at, u32 address, u32 cpuid);
@@ -619,7 +618,7 @@ void secondary_main_svc(u32 cpuid){
 	start_address=bcm2837_platform_waitforstartup(cpuid);
 
 	//if(cpuid == 1){
-		chainload_os_svc(start_address);
+		//chainload_os_svc(start_address);
 	//}
 
 	//_XDPRINTF_("%s[%u]: We should never be here. Halting!\n", __func__, cpuid);
