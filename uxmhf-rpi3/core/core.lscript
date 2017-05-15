@@ -3,6 +3,8 @@
 
 	author: amit vasudevan (amitvasudevan@acm.org)
 */
+#include <config.h>
+
 ENTRY(entry)
 
 MEMORY
