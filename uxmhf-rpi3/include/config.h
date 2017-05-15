@@ -15,4 +15,4 @@
 #endif // __ASSEMBLY__
 
 
-#endif //__TYPES_H__
+#endif //__CONFIG_H__
