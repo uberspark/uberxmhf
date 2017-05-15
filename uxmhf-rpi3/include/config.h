@@ -4,7 +4,9 @@
 	author: amit vasudevan (amitvasudevan@acm.org)
 */
 
-#define CONFIG_PLACEHOLDER 	0x0
+#define UXMHF_CORE_START_ADDR (0x28000000)
+#define UXMHF_CORE_END_ADDR (0x28000000+0xC00000)
+
 
 #ifndef __CONFIG_H__
 #define __CONFIG_H__
