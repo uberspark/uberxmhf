@@ -44,6 +44,7 @@ checkoskrnlimg:
 	@echo $(OSKRNLIMG_FINALSIZE_HEX)
 	cp $(OSKRNLIMG) ./oskrnlimg.tmp
 	truncate --size=$(OSKRNLIMG_FINALSIZE) ./oskrnlimg.tmp 
+	./configure --with-core-startaddr=0x28000000 --with-core-size=0xC00000
 
 
 .PHONY: clean
