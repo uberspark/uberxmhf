@@ -29,6 +29,13 @@ export CCLIB
 .PHONY: all
 all: checkoskrnlimg 
 	cd core && make -w all
+	cd guestos && make -w all
+	cd bootstrap && make -w all
+	cat ./bootstrap/bootstrap.bin ./oskrnlimg.tmp ./core/core.bin ./guestos/guestos.bin > uxmhf-rpi3.img
+
+.PHONY: checkoskrnlimg
+checkoskrnlimg:
+	@:$(call check_defined, OSKRNLIMG)
 	$(eval OSKRNLIMG_SIZE := $(shell stat -L -c %s $(OSKRNLIMG)))
 	@echo $(OSKRNLIMG_SIZE)
 	$(eval OSKRNLIMG_PADSIZE := $(shell echo "4096 -( $(OSKRNLIMG_SIZE) % 4096)" | bc))
@@ -37,13 +44,6 @@ all: checkoskrnlimg
 	@echo $(OSKRNLIMG_FINALSIZE_HEX)
 	cp $(OSKRNLIMG) ./oskrnlimg.tmp
 	truncate --size=$(OSKRNLIMG_FINALSIZE) ./oskrnlimg.tmp 
-	cd guestos && make -w all
-	cd bootstrap && make -w all
-	cat ./bootstrap/bootstrap.bin ./oskrnlimg.tmp ./core/core.bin ./guestos/guestos.bin > uxmhf-rpi3.img
-
-.PHONY: checkoskrnlimg
-checkoskrnlimg:
-	@:$(call check_defined, OSKRNLIMG)
 
 
 .PHONY: clean
