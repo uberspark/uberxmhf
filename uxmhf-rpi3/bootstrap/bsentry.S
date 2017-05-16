@@ -7,6 +7,7 @@
 
 	author: amit vasudevan (amitvasudevan@acm.org)
 */
+#include <config.h>
 
 .globl bootstrap_entry
 bootstrap_entry:
@@ -23,7 +24,8 @@ halt:
 
 .globl call_core
 call_core:
-	ldr r3, =0x28000000
+	//ldr r3, =0x28000000
+	ldr r3, =(UXMHF_CORE_START_ADDR)
 	blx r3
 
 

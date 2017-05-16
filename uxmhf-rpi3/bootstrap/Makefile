@@ -9,8 +9,8 @@
 .PHONY: all
 all: bootstrap.bin
 
-bsentry.o : bsentry.s
-	$(TOOLPREFIX)gcc $(CFLAGS) bsentry.s -o bsentry.o
+bsentry.o : bsentry.S
+	$(TOOLPREFIX)gcc $(CFLAGS) bsentry.S -o bsentry.o
 
 bsmain.o : bsmain.c
 	$(TOOLPREFIX)gcc $(CFLAGS) bsmain.c -o bsmain.o
