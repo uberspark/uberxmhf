@@ -65,10 +65,10 @@ void bsmain(u32 r0, u32 id, struct atag *at){
 	debug_hexdumpu32(g_core_startaddr);
 	bcm2837_miniuart_puts(" g_core_size= ");
 	debug_hexdumpu32(g_core_size);
-	bcm2837_miniuart_puts(" g_guestos_startaddr= ");
-	debug_hexdumpu32(g_guestos_startaddr);
-	bcm2837_miniuart_puts(" g_guestos_size= ");
-	debug_hexdumpu32(g_guestos_size);
+	//bcm2837_miniuart_puts(" g_guestos_startaddr= ");
+	//debug_hexdumpu32(g_guestos_startaddr);
+	//bcm2837_miniuart_puts(" g_guestos_size= ");
+	//debug_hexdumpu32(g_guestos_size);
 
 	bcm2837_miniuart_puts(" r0= ");
 	debug_hexdumpu32(r0);
@@ -83,9 +83,9 @@ void bsmain(u32 r0, u32 id, struct atag *at){
 	bcm2837_miniuart_puts("uXMHF-rpi3: bootstrap: core relocated\n");
 
 
-	bcm2837_miniuart_puts("uXMHF-rpi3: bootstrap: relocating guestos...\n");
-	memcpy(0x28C00000, g_guestos_startaddr, g_guestos_size);
-	bcm2837_miniuart_puts("uXMHF-rpi3: bootstrap: guestos relocated\n");
+	//bcm2837_miniuart_puts("uXMHF-rpi3: bootstrap: relocating guestos...\n");
+	//memcpy(0x28C00000, g_guestos_startaddr, g_guestos_size);
+	//bcm2837_miniuart_puts("uXMHF-rpi3: bootstrap: guestos relocated\n");
 
 
 	/*if(at->size == 0xedfe0dd0)
