@@ -9,13 +9,13 @@ ENTRY(entry)
 
 MEMORY
 {
-	ram (rwxai) : ORIGIN = 0x28000000, LENGTH = 0xC00000
+	ram (rwxai) : ORIGIN = UXMHF_CORE_START_ADDR, LENGTH = UXMHF_CORE_SIZE
 	unaccounted (rwxai) : ORIGIN = 0, LENGTH = 0 /* see section .unaccounted at end */
 }
 
 SECTIONS
 {
-	. = 0x28000000;
+	. = UXMHF_CORE_START_ADDR;
     
     .text : { 
     	*(.text) 
