@@ -41,7 +41,11 @@ checkoskrnlimg:
 	$(eval OSKRNLIMG_PADSIZE := $(shell echo "4096 -( $(OSKRNLIMG_SIZE) % 4096)" | bc))
 	@echo $(OSKRNLIMG_PADSIZE)
 	$(eval OSKRNLIMG_FINALSIZE := $(shell echo "$(OSKRNLIMG_SIZE) + $(OSKRNLIMG_PADSIZE) " | bc))
-	@echo $(OSKRNLIMG_FINALSIZE_HEX)
+	@echo $(OSKRNLIMG_FINALSIZE)
+	$(eval CORE_STARTADDR := $(shell echo "$(OSKRNLIMG_FINALSIZE) + 32768" | bc))
+	$(eval CORE_STARTADDR_HEX=$(shell printf "0x%08x" $(CORE_STARTADDR)))
+	@echo $(CORE_STARTADDR)
+	@echo $(CORE_STARTADDR_HEX)
 	cp $(OSKRNLIMG) ./oskrnlimg.tmp
 	truncate --size=$(OSKRNLIMG_FINALSIZE) ./oskrnlimg.tmp 
 	./configure --with-core-startaddr=0x28000000 --with-core-size=0xC00000
