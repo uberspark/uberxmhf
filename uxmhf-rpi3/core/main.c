@@ -362,8 +362,8 @@ void core_fixresmemmap(u32 fdt_address){
 	debug_hexdumpu32(sizeof(struct fdt_reserve_entry));
 
 	//write the guestos extent as first entry
-	fdtrsvmmapentryp->address = cpu_le2be_u64(0x0000000028000000ULL);
-	fdtrsvmmapentryp->size = cpu_le2be_u64(0x0000000000C00000ULL);
+	fdtrsvmmapentryp->address = cpu_le2be_u64((u64)UXMHF_CORE_START_ADDR);
+	fdtrsvmmapentryp->size = cpu_le2be_u64((u64)UXMHF_CORE_SIZE);
 	//fdtrsvmmapentryp->address = 0ULL;
 	//fdtrsvmmapentryp->size = 0ULL;
 
