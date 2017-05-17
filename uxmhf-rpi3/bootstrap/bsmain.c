@@ -78,9 +78,9 @@ void bsmain(u32 r0, u32 id, struct atag *at){
 	debug_hexdumpu32(at);
 
 
-	bcm2837_miniuart_puts("uXMHF-rpi3: bootstrap: relocating core...\n");
-	memcpy(UXMHF_CORE_START_ADDR, g_core_startaddr, UXMHF_CORE_SIZE);
-	bcm2837_miniuart_puts("uXMHF-rpi3: bootstrap: core relocated\n");
+	//bcm2837_miniuart_puts("uXMHF-rpi3: bootstrap: relocating core...\n");
+	//memcpy(UXMHF_CORE_START_ADDR, g_core_startaddr, UXMHF_CORE_SIZE);
+	//bcm2837_miniuart_puts("uXMHF-rpi3: bootstrap: core relocated\n");
 
 
 	//bcm2837_miniuart_puts("uXMHF-rpi3: bootstrap: relocating guestos...\n");

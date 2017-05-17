@@ -37,18 +37,21 @@ all: checkoskrnlimg
 checkoskrnlimg:
 	@:$(call check_defined, OSKRNLIMG)
 	$(eval OSKRNLIMG_SIZE := $(shell stat -L -c %s $(OSKRNLIMG)))
-	@echo $(OSKRNLIMG_SIZE)
-	$(eval OSKRNLIMG_PADSIZE := $(shell echo "4096 -( $(OSKRNLIMG_SIZE) % 4096)" | bc))
-	@echo $(OSKRNLIMG_PADSIZE)
+	@echo OSKRNLIMG_SIZE=$(OSKRNLIMG_SIZE)
+	$(eval OSKRNLIMG_ENDADDR := $(shell echo "$(OSKRNLIMG_SIZE) + 32768" | bc))
+	@echo OSKRNLIMG_ENDADDR=$(OSKRNLIMG_ENDADDR)
+	$(eval OSKRNLIMG_PADSIZE := $(shell echo "16777216 -( $(OSKRNLIMG_ENDADDR) % 16777216)" | bc))
+	@echo OSKRNLIMG_PADSIZE=$(OSKRNLIMG_PADSIZE)
 	$(eval OSKRNLIMG_FINALSIZE := $(shell echo "$(OSKRNLIMG_SIZE) + $(OSKRNLIMG_PADSIZE) " | bc))
-	@echo $(OSKRNLIMG_FINALSIZE)
-	$(eval CORE_STARTADDR := $(shell echo "$(OSKRNLIMG_FINALSIZE) + 32768" | bc))
-	$(eval CORE_STARTADDR_HEX=$(shell printf "0x%08x" $(CORE_STARTADDR)))
-	@echo $(CORE_STARTADDR)
-	@echo $(CORE_STARTADDR_HEX)
+	@echo OSKRNLIMG_FINALSIZE=$(OSKRNLIMG_FINALSIZE)
+	#$(eval CORE_STARTADDR := $(shell echo "$(OSKRNLIMG_FINALSIZE)" | bc))
+	#$(eval CORE_STARTADDR_HEX=$(shell printf "0x%08x" $(CORE_STARTADDR)))
+	#@echo $(CORE_STARTADDR)
+	#@echo $(CORE_STARTADDR_HEX)
 	cp $(OSKRNLIMG) ./oskrnlimg.tmp
 	truncate --size=$(OSKRNLIMG_FINALSIZE) ./oskrnlimg.tmp 
-	./configure --with-core-startaddr=0x28000000 --with-core-size=0xC00000
+	#./configure --with-core-startaddr=$(CORE_STARTADDR_HEX) --with-core-size=0xC00000
+	./configure --with-core-startaddr=0x1000000 --with-core-size=0xC00000
 
 
 .PHONY: clean
