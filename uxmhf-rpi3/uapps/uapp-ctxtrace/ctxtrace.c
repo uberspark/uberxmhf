@@ -27,6 +27,21 @@ void ctxtrace_init(u32 cpuid){
 }
 
 
+
+void ctxtrace_ttbr0_access_handler(arm8_32_regs_t *r, u32 rw, u32 rt){
+	_XDPRINTFSMP_("%s: rw=%u, rt=%u\n", __func__, rw, rt);
+}
+
+void ctxtrace_ttbr1_access_handler(arm8_32_regs_t *r, u32 rw, u32 rt){
+	_XDPRINTFSMP_("%s: rw=%u, rt=%u\n", __func__, rw, rt);
+}
+
+void ctxtrace_ttbcr_access_handler(arm8_32_regs_t *r, u32 rw, u32 rt){
+	_XDPRINTFSMP_("%s: rw=%u, rt=%u\n", __func__, rw, rt);
+}
+
+
+
 //cp15 trap handler
 void ctxtrace_cp15_trap_handler(arm8_32_regs_t *r, u32 hsr){
 	u32 trap_iss;
@@ -54,5 +69,32 @@ void ctxtrace_cp15_trap_handler(arm8_32_regs_t *r, u32 hsr){
 
 	_XDPRINTFSMP_("%s: cv=%u, cond=%x, opc2=%u, opc1=%u, crn=%u, rt=%u, crm=%u, rw=%u\n",
 			__func__, cv, cond, opc2, opc1, crn, rt, crm, rw);
+
+	//if cv is zero bail-out
+	if(cv == 0){
+		_XDPRINTFSMP_("%s: unhandled case with cv=0. Halting!\n", __func__);
+		HALT();
+	}
+
+	//we currently ignore cond
+
+	//cases we support
+	if( crn == 0x2 && opc1 == 0 && crm == 0 && opc2 == 0){
+		//ttbr0 access
+		ctxtrace_ttbr0_access_handler(r, rw, rt);
+
+	}else if (crn == 0x2 && opc1 == 0 && crm == 0 && opc2 == 1){
+		//ttbr1 access
+		ctxtrace_ttbr1_access_handler(r, rw, rt);
+
+	}else if (crn == 0x2 && opc1 == 0 && crm == 0 && opc2 == 2){
+		//ttbcr access
+		ctxtrace_ttbcr_access_handler(r, rw, rt);
+
+	}else{
+		_XDPRINTFSMP_("%s: invalid case; unsupported. Halting!\n", __func__);
+		HALT();
+	}
+
 	HALT();
 }
