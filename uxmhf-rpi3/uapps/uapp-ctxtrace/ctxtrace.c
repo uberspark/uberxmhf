@@ -105,5 +105,4 @@ void ctxtrace_cp15_trap_handler(arm8_32_regs_t *r, u32 hsr){
 		HALT();
 	}
 
-	HALT();
 }
