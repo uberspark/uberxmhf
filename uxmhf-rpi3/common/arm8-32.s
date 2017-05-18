@@ -330,6 +330,9 @@ sysreg_read_hpfar:
 
 
 
+
+
+
 //r0 specifies the 32-bit lock variable address
 .global spin_lock
 spin_lock:
@@ -357,4 +360,20 @@ spin_unlock:
 	sev						//signal other cores to wake up (if they are in the spinloop)
 
 	bx lr
+
+
+//////
+// pl0,1 system register access functions
+// chiefly used for emulation/pass-thru
+//////
+.global sysreg_read_ttbcr
+sysreg_read_ttbcr:
+	mrc p15,0,r0,c2,c0,2
+	bx lr
+
+.global sysreg_write_ttbcr
+sysreg_write_ttbcr:
+	mcr p15,0,r0,c2,c0,2
+	bx lr
+
 

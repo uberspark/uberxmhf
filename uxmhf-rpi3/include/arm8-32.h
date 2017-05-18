@@ -506,9 +506,17 @@ extern u32 cpu_read_sp(void);
 
 extern u32 sysreg_read_idisar4(void);
 
+
 void spin_lock(u32 *lock);
 void spin_unlock(u32 *lock);
 
+
+//////
+// pl0,1 system register access functions
+// chiefly used for emulation/pass-thru
+//////
+u32 sysreg_read_ttbcr(void);
+void sysreg_write_ttbcr(u32 value);
 
 
 #endif // __ASSEMBLY__

@@ -30,14 +30,23 @@ void ctxtrace_init(u32 cpuid){
 
 void ctxtrace_ttbr0_access_handler(arm8_32_regs_t *r, u32 rw, u32 rt){
 	_XDPRINTFSMP_("%s: rw=%u, rt=%u\n", __func__, rw, rt);
+	HALT();
 }
 
 void ctxtrace_ttbr1_access_handler(arm8_32_regs_t *r, u32 rw, u32 rt){
 	_XDPRINTFSMP_("%s: rw=%u, rt=%u\n", __func__, rw, rt);
+	HALT();
 }
 
 void ctxtrace_ttbcr_access_handler(arm8_32_regs_t *r, u32 rw, u32 rt){
 	_XDPRINTFSMP_("%s: rw=%u, rt=%u\n", __func__, rw, rt);
+	if(rw == 1){
+		//read
+
+	}else{
+		//write
+
+	}
 }
 
 
