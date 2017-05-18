@@ -12,16 +12,16 @@
 #include <ctxtrace.h>
 
 //initialize guest context tracing
-void ctxtrace_init(void){
+void ctxtrace_init(u32 cpuid){
 	u32 hstr;
 
 	hstr = sysreg_read_hstr();
-	_XDPRINTFSMP_("%s: HSTR before=0x%08x\n", __func__, hstr);
+	_XDPRINTFSMP_("%s[%u]: HSTR before=0x%08x\n", __func__, cpuid, hstr);
 
 	hstr = hstr | (1UL << 2);	//activate trap on CP15, c2
 
-	_XDPRINTFSMP_("%s: HSTR after=0x%08x\n", __func__, hstr);
+	_XDPRINTFSMP_("%s[%u]: HSTR after=0x%08x\n", __func__, cpuid, hstr);
 	sysreg_write_hstr(hstr);
 
-	_XDPRINTFSMP_("%s: initialized guest context tracing\n", __func__);
+	_XDPRINTFSMP_("%s[%u]: initialized guest context tracing\n", __func__, cpuid);
 }
