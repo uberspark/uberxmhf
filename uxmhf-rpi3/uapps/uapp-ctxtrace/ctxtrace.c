@@ -25,3 +25,34 @@ void ctxtrace_init(u32 cpuid){
 
 	_XDPRINTFSMP_("%s[%u]: initialized guest context tracing\n", __func__, cpuid);
 }
+
+
+//cp15 trap handler
+void ctxtrace_cp15_trap_handler(arm8_32_regs_t *r, u32 hsr){
+	u32 trap_iss;
+	u32 rw;
+	u32 crm;
+	u32 rt;
+	u32 crn;
+	u32 opc1;
+	u32 opc2;
+	u32 cond;
+	u32 cv;
+
+	//get trap iss
+	trap_iss = (hsr & HSR_ISS_MASK) >> HSR_ISS_SHIFT;
+
+	//populate trap variables for easy trace/emulation
+	rw 		= (	trap_iss & 0x00000001UL );
+	crm 	= (	trap_iss & 0x0000001eUL	) >> 1;
+	rt 		= (	trap_iss & 0x000001c0UL	) >> 5;
+	crn 	= (	trap_iss & 0x00003c00UL	) >> 10;
+	opc1 	= (	trap_iss & 0x0001c000UL	) >> 14;
+	opc2 	= (	trap_iss & 0x000e0000UL	) >> 17;
+	cond 	= (	trap_iss & 0x00f00000UL	) >> 20;
+	cv 		= (	trap_iss & 0x01000000UL	) >> 24;
+
+	_XDPRINTFSMP_("%s: cv=%u, cond=%x, opc2=%u, opc1=%u, crn=%u, rt=%u, crm=%u, rw=%u\n",
+			__func__, cv, cond, opc2, opc1, crn, rt, crm, rw);
+	HALT();
+}

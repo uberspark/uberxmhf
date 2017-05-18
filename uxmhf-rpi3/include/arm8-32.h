@@ -367,6 +367,7 @@
 // HSR (hyp syndrome register) EC values
 // G6.2.67 ARMv8
 //
+#define HSR_EC_CP15_TRAP					0x3
 #define HSR_EC_HVC							0x12
 #define HSR_EC_PREFETCH_ABORT_ELCHANGE		0x20
 #define HSR_EC_PREFETCH_ABORT_NOELCHANGE	0x21

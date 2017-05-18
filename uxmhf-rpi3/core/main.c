@@ -248,6 +248,12 @@ void guest_data_abort_handler(arm8_32_regs_t *r, u32 hsr){
 
 
 
+void guest_cp15_trap_handler(arm8_32_regs_t *r, u32 hsr){
+	ctxtrace_cp15_trap_handler(r, hsr);
+}
+
+
+
 
 __attribute__(( section(".data") )) u32 hypsvc_handler_lock=1;
 
@@ -271,6 +277,9 @@ void hypsvc_handler(arm8_32_regs_t *r){
 
 	}else if (hsr_ec == HSR_EC_DATA_ABORT_ELCHANGE){
 		guest_data_abort_handler(r, hsr);
+
+	}else if (hsr_ec == HSR_EC_CP15_TRAP){
+		guest_cp15_trap_handler(r, hsr);
 
 	}else{
 		_XDPRINTFSMP_("uXMHF-rpi3: core: UNHANDLED INTERCEPT HALTING! hsr=0x%08x\n", hsr);
