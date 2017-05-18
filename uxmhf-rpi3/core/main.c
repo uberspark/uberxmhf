@@ -249,6 +249,21 @@ void guest_data_abort_handler(arm8_32_regs_t *r, u32 hsr){
 
 
 void guest_cp15_trap_handler(arm8_32_regs_t *r, u32 hsr){
+	u32 trap_il;
+	u32 elr_hyp;
+
+	//compute trapped instruction length
+	trap_il = ((hsr & HSR_IL_MASK) >> HSR_IL_SHIFT);
+
+	//fix return address
+	elr_hyp = sysreg_read_elrhyp();
+	if(trap_il)
+		elr_hyp += sizeof(u32);
+	else
+		elr_hyp += sizeof(u16);
+	sysreg_write_elrhyp(elr_hyp);
+
+
 	ctxtrace_cp15_trap_handler(r, hsr);
 }
 
