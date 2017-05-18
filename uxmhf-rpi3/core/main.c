@@ -470,6 +470,15 @@ void main(u32 r0, u32 id, struct atag *at, u32 cpuid){
 	s2pgtbl_activatetranslation();
 	_XDPRINTF_("%s[%u]: activated stage-2 translation\n", __func__, cpuid);
 
+
+	//////
+	// initialize hypapps
+	ctxtrace_init(cpuid);
+
+
+
+
+
 	// boot secondary cores
 	_XDPRINTF_("%s[%u]: proceeding to initialize SMP...\n", __func__, cpuid);
 	bcm2837_platform_smpinitialize();
@@ -522,6 +531,12 @@ void secondary_main(u32 cpuid){
 	// activate translation
 	s2pgtbl_activatetranslation();
 	_XDPRINTF_("%s[%u]: activated stage-2 translation\n", __func__, cpuid);
+
+
+	//////
+	// initialize hypapps
+	ctxtrace_init(cpuid);
+
 
 	_XDPRINTF_("%s[%u]: Signalling SMP readiness and entering SMP boot wait loop...\n", __func__, cpuid);
 	armlocalregisters_mailboxwrite->mailbox3write = 1;
