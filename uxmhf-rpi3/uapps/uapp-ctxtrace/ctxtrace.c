@@ -41,11 +41,11 @@ void ctxtrace_ttbr1_access_handler(arm8_32_regs_t *r, u32 rw, u32 rt){
 void ctxtrace_ttbcr_access_handler(arm8_32_regs_t *r, u32 rw, u32 rt){
 	_XDPRINTFSMP_("%s: rw=%u, rt=%u\n", __func__, rw, rt);
 	if(rw == 1){
-		//read
-
+		//read from system register and write to guest general purpose register
+		guest_regwrite(r, rt, sysreg_read_ttbcr());
 	}else{
-		//write
-
+		//write to system register by reading from guest general purpose register
+		sysreg_write_ttbcr(guest_regread(r, rt));
 	}
 }
 
