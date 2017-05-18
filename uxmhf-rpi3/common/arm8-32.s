@@ -376,4 +376,15 @@ sysreg_write_ttbcr:
 	mcr p15,0,r0,c2,c0,2
 	bx lr
 
+.global sysreg_read_ttbr0
+sysreg_read_ttbr0:
+	mrc p15,0,r0,c2,c0,0
+	bx lr
+
+.global sysreg_write_ttbr0
+sysreg_write_ttbr0:
+	mcr p15,0,r0,c2,c0,0
+	bx lr
+
+
 
