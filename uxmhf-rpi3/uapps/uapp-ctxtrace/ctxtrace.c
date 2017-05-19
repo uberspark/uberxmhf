@@ -29,7 +29,7 @@ void ctxtrace_init(u32 cpuid){
 
 
 void ctxtrace_ttbr0_access_handler(arm8_32_regs_t *r, u32 rw, u32 rt){
-	_XDPRINTFSMP_("%s: rw=%u, rt=%u\n", __func__, rw, rt);
+	//_XDPRINTFSMP_("%s: rw=%u, rt=%u\n", __func__, rw, rt);
 	if(rw == 1){
 		//read from system register and write to guest general purpose register
 		guest_regwrite(r, rt, sysreg_read_ttbr0());
@@ -40,7 +40,7 @@ void ctxtrace_ttbr0_access_handler(arm8_32_regs_t *r, u32 rw, u32 rt){
 }
 
 void ctxtrace_ttbr1_access_handler(arm8_32_regs_t *r, u32 rw, u32 rt){
-	_XDPRINTFSMP_("%s: rw=%u, rt=%u\n", __func__, rw, rt);
+	//_XDPRINTFSMP_("%s: rw=%u, rt=%u\n", __func__, rw, rt);
 	if(rw == 1){
 		//read from system register and write to guest general purpose register
 		guest_regwrite(r, rt, sysreg_read_ttbr1());
@@ -51,7 +51,7 @@ void ctxtrace_ttbr1_access_handler(arm8_32_regs_t *r, u32 rw, u32 rt){
 }
 
 void ctxtrace_ttbcr_access_handler(arm8_32_regs_t *r, u32 rw, u32 rt){
-	_XDPRINTFSMP_("%s: rw=%u, rt=%u\n", __func__, rw, rt);
+	//_XDPRINTFSMP_("%s: rw=%u, rt=%u\n", __func__, rw, rt);
 	if(rw == 1){
 		//read from system register and write to guest general purpose register
 		guest_regwrite(r, rt, sysreg_read_ttbcr());
@@ -88,11 +88,11 @@ void ctxtrace_cp15_trap_handler(arm8_32_regs_t *r, u32 hsr){
 	cond 	= (	trap_iss & 0x00f00000UL	) >> 20;
 	cv 		= (	trap_iss & 0x01000000UL	) >> 24;
 
-	_XDPRINTFSMP_("%s: cv=%u, cond=%x, opc2=%u, opc1=%u, crn=%u, rt=%u, crm=%u, rw=%u\n",
-			__func__, cv, cond, opc2, opc1, crn, rt, crm, rw);
 
 	//if cv is zero bail-out
 	if(cv == 0){
+		_XDPRINTFSMP_("%s: cv=%u, cond=%x, opc2=%u, opc1=%u, crn=%u, rt=%u, crm=%u, rw=%u\n",
+				__func__, cv, cond, opc2, opc1, crn, rt, crm, rw);
 		_XDPRINTFSMP_("%s: unhandled case with cv=0. Halting!\n", __func__);
 		HALT();
 	}
@@ -113,6 +113,8 @@ void ctxtrace_cp15_trap_handler(arm8_32_regs_t *r, u32 hsr){
 		ctxtrace_ttbcr_access_handler(r, rw, rt);
 
 	}else{
+		_XDPRINTFSMP_("%s: cv=%u, cond=%x, opc2=%u, opc1=%u, crn=%u, rt=%u, crm=%u, rw=%u\n",
+				__func__, cv, cond, opc2, opc1, crn, rt, crm, rw);
 		_XDPRINTFSMP_("%s: invalid case; unsupported. Halting!\n", __func__);
 		HALT();
 	}
