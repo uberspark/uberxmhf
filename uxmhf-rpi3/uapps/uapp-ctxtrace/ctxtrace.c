@@ -75,7 +75,7 @@ void ctxtrace_cp15_trap_handler(arm8_32_regs_t *r, u32 hsr){
 	//populate trap variables for easy trace/emulation
 	rw 		= (	trap_iss & 0x00000001UL );
 	crm 	= (	trap_iss & 0x0000001eUL	) >> 1;
-	rt 		= (	trap_iss & 0x000001c0UL	) >> 5;
+	rt 		= (	trap_iss & 0x000001e0UL	) >> 5;
 	crn 	= (	trap_iss & 0x00003c00UL	) >> 10;
 	opc1 	= (	trap_iss & 0x0001c000UL	) >> 14;
 	opc2 	= (	trap_iss & 0x000e0000UL	) >> 17;
