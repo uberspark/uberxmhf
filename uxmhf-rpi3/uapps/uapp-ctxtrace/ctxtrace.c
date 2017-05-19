@@ -30,7 +30,13 @@ void ctxtrace_init(u32 cpuid){
 
 void ctxtrace_ttbr0_access_handler(arm8_32_regs_t *r, u32 rw, u32 rt){
 	_XDPRINTFSMP_("%s: rw=%u, rt=%u\n", __func__, rw, rt);
-	HALT();
+	if(rw == 1){
+		//read from system register and write to guest general purpose register
+		guest_regwrite(r, rt, sysreg_read_ttbr0());
+	}else{
+		//write to system register by reading from guest general purpose register
+		sysreg_write_ttbr0(guest_regread(r, rt));
+	}
 }
 
 void ctxtrace_ttbr1_access_handler(arm8_32_regs_t *r, u32 rw, u32 rt){
