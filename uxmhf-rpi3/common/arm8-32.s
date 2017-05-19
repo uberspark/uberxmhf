@@ -386,5 +386,14 @@ sysreg_write_ttbr0:
 	mcr p15,0,r0,c2,c0,0
 	bx lr
 
+.global sysreg_read_ttbr1
+sysreg_read_ttbr1:
+	mrc p15,0,r0,c2,c0,1
+	bx lr
+
+.global sysreg_write_ttbr1
+sysreg_write_ttbr1:
+	mcr p15,0,r0,c2,c0,1
+	bx lr
 
 

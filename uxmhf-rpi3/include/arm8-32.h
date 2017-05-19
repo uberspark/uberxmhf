@@ -519,6 +519,8 @@ u32 sysreg_read_ttbcr(void);
 void sysreg_write_ttbcr(u32 value);
 u32 sysreg_read_ttbr0(void);
 void sysreg_write_ttbr0(u32 value);
+u32 sysreg_read_ttbr1(void);
+void sysreg_write_ttbr1(u32 value);
 
 
 #endif // __ASSEMBLY__
