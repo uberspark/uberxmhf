@@ -11,7 +11,7 @@
 
 CC = arm-linux-gnueabihf-gcc 
 
-CFLAGSFUSE = -D_FILE_OFFSET_BITS=64 -I.
+CFLAGSFUSE = -D_FILE_OFFSET_BITS=64 -I. -I/usr/include/fuse
 LLIBSFUSE = -pthread -lfuse
 LLIBSOPENSSL = -lcrypto
 
