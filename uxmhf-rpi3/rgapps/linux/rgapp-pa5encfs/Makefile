@@ -9,9 +9,9 @@
 # Modified for uxmhf by amit vasudevan (amitvasudevan@acm.org)
 
 
-CC = arm-linux-gnueabihf-gcc
+CC = arm-linux-gnueabihf-gcc 
 
-CFLAGSFUSE = -D_FILE_OFFSET_BITS=64 -I/usr/include/fuse
+CFLAGSFUSE = -D_FILE_OFFSET_BITS=64 -I.
 LLIBSFUSE = -pthread -lfuse
 LLIBSOPENSSL = -lcrypto
 
