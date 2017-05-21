@@ -47,7 +47,7 @@
 #include <dirent.h>
 #include <errno.h>
 #include <sys/time.h>
-#include "lib/aes-crypt.h"
+#include "aes-crypt.h"
 #ifdef HAVE_SETXATTR
 #include <sys/xattr.h>
 #endif
