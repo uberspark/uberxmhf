@@ -66,56 +66,56 @@ extern int do_crypt(FILE* in, FILE* out, int action, char* key_str){
 
     /* Loop through Input File*/
     for(;;){
-	/* Read Block */
-	inlen = fread(inbuf, sizeof(*inbuf), BLOCKSIZE, in);
-	if(inlen <= 0){
-	    /* EOF -> Break Loop */
-	    break;
-	}
+    	/* Read Block */
+    	inlen = fread(inbuf, sizeof(*inbuf), BLOCKSIZE, in);
+    	if(inlen <= 0){
+    		/* EOF -> Break Loop */
+    		break;
+    	}
 	
-	/* If in cipher mode, perform cipher transform on block */
-	if(action >= 0){
-	  fprintf(stderr, "aes-crypt debug: at location: 5\n");
-	    if(!EVP_CipherUpdate(&ctx, outbuf, &outlen, inbuf, inlen))
-		{
-		  fprintf(stderr, "aes-crypt debug: at location: 7\n");
-		    /* Error */
-		    EVP_CIPHER_CTX_cleanup(&ctx);
-		    return 0;
-		}
-	}
-	/* If in pass-through mode. copy block as is */
-	else{
-	  fprintf(stderr, "aes-crypt debug: at location: 8\n");
-	    memcpy(outbuf, inbuf, inlen);
-	    outlen = inlen;
-	}
+    	/* If in cipher mode, perform cipher transform on block */
+    	if(action >= 0){
+    		fprintf(stderr, "aes-crypt debug: at location: 5\n");
+    		if(!EVP_CipherUpdate(&ctx, outbuf, &outlen, inbuf, inlen))
+    		{
+    			fprintf(stderr, "aes-crypt debug: at location: 7\n");
+    			/* Error */
+    			EVP_CIPHER_CTX_cleanup(&ctx);
+    			return 0;
+    		}
+    	}
+    	/* If in pass-through mode. copy block as is */
+    	else{
+    		fprintf(stderr, "aes-crypt debug: at location: 8\n");
+    		memcpy(outbuf, inbuf, inlen);
+    		outlen = inlen;
+    	}
 
-	/* Write Block */
-	writelen = fwrite(outbuf, sizeof(*outbuf), outlen, out);
-	if(writelen != outlen){
-	  fprintf(stderr, "aes-crypt debug: at location: 9\n");
-	    /* Error */
-	    perror("fwrite error");
-	    EVP_CIPHER_CTX_cleanup(&ctx);
-	    return 0;
-	}
-    }
+    	/* Write Block */
+    	writelen = fwrite(outbuf, sizeof(*outbuf), outlen, out);
+    	if(writelen != outlen){
+    		fprintf(stderr, "aes-crypt debug: at location: 9\n");
+    		/* Error */
+    		perror("fwrite error");
+    		EVP_CIPHER_CTX_cleanup(&ctx);
+    		return 0;
+    	}
+    }	//end-for
     
     /* If in cipher mode, handle necessary padding */
     if(action >= 0){
       fprintf(stderr, "aes-crypt debug: at location: 10\n");
-	/* Handle remaining cipher block + padding */
-	if(!EVP_CipherFinal_ex(&ctx, outbuf, &outlen))
-	    {
+      /* Handle remaining cipher block + padding */
+      if(!EVP_CipherFinal_ex(&ctx, outbuf, &outlen))
+	  {
 	      fprintf(stderr, "aes-crypt debug: at location: 11\n");
-		/* Error */
-		EVP_CIPHER_CTX_cleanup(&ctx);
-		return 0;
-	    }
-	/* Write remainign cipher block + padding*/
-	fwrite(outbuf, sizeof(*inbuf), outlen, out);
-	EVP_CIPHER_CTX_cleanup(&ctx);
+	      /* Error */
+	      EVP_CIPHER_CTX_cleanup(&ctx);
+	      return 0;
+	  }
+      /* Write remainign cipher block + padding*/
+      fwrite(outbuf, sizeof(*inbuf), outlen, out);
+      EVP_CIPHER_CTX_cleanup(&ctx);
     }
     
     fprintf(stderr, "aes-crypt debug: at location: 12\n");
