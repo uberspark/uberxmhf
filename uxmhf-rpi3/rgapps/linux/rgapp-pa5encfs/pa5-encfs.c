@@ -89,9 +89,11 @@ int add_encrypted_attr(const char *path)
 // returns 1 on success, 0 on failure
 int add_nonpaddedsize_attr(const char *path, unsigned int nonpaddedsize){
 	int ret;
+	int setxattr_ret;
 
-	ret = setxattr(path, "user.nonpaddedsize", &nonpaddedsize, sizeof(unsigned int), 0);
-	fprintf(stderr, "\n%s: setxattr %s\n", __FUNCTION__, ((ret == 0) ? "succeeded" : "failed"));
+	setxattr_ret = setxattr(path, "user.nonpaddedsize", &nonpaddedsize, sizeof(unsigned int), 0);
+	ret = setxattr_ret == 0;
+	fprintf(stderr, "\n%s: setxattr %s\n", __FUNCTION__, ((ret > 0) ? "succeeded" : "failed"));
 
 	return ret;
 }
