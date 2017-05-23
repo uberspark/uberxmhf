@@ -91,11 +91,48 @@ char *prefix_path(const char *path)
 	return root_dir;
 }
 
+static inline int file_size(FILE *file) {
+    struct stat st;
+
+    if (fstat(fileno(file), &st) == 0)
+        return st.st_size;
+
+    return -1;
+}
+
+/* read_file: for debugging tempfiles */
+int read_file(FILE *file)
+{
+	int c;
+	int file_contains_something = 0;
+	FILE *read = file; /* don't move original file pointer */
+	if (read) {
+		while ((c = getc(read)) != EOF) {
+			file_contains_something = 1;
+			putc(c, stderr);
+		}
+	}
+	if (!file_contains_something)
+		fprintf(stderr, "file was empty\n");
+	rewind(file);
+	/* fseek(tmpf, offset, SEEK_END); */
+	return 0;
+}
+
+
+//////
+// various fuse entry-points
+//////
+
 static int xmp_getattr(const char *fuse_path, struct stat *stbuf)
 {
 	char *path = prefix_path(fuse_path);
 
 	int res;
+
+	//////
+	// TBD: return non-padded size in stbuf->st_size
+	//////
 
 	res = lstat(path, stbuf);
 	if (res == -1)
@@ -286,6 +323,11 @@ static int xmp_truncate(const char *fuse_path, off_t size)
 
 	int res;
 
+	//////
+	// TBD: check if file is encrypted, if so unencrypt and then
+	// truncate and then re-encrypt.
+	//////
+
 	res = truncate(path, size);
 	if (res == -1)
 		return -errno;
@@ -325,14 +367,6 @@ static int xmp_open(const char *fuse_path, struct fuse_file_info *fi)
 	return 0;
 }
 
-static inline int file_size(FILE *file) {
-    struct stat st;
-
-    if (fstat(fileno(file), &st) == 0)
-        return st.st_size;
-
-    return -1;
-}
 
 static int xmp_read(const char *fuse_path, char *buf, size_t size, off_t offset,
 		    struct fuse_file_info *fi)
@@ -357,6 +391,10 @@ static int xmp_read(const char *fuse_path, char *buf, size_t size, off_t offset,
 	fflush(tmpf);
 	fseek(tmpf, offset, SEEK_SET);
 
+	//////
+	// TBD: only read "size" bytes and account for padding
+	//////
+
 	/* Read our tmpfile into the buffer. */
 	res = fread(buf, 1, file_size(tmpf), tmpf);
 	if (res == -1)
@@ -368,24 +406,6 @@ static int xmp_read(const char *fuse_path, char *buf, size_t size, off_t offset,
 	return res;
 }
 
-/* read_file: for debugging tempfiles */
-int read_file(FILE *file)
-{
-	int c;
-	int file_contains_something = 0;
-	FILE *read = file; /* don't move original file pointer */
-	if (read) {
-		while ((c = getc(read)) != EOF) {
-			file_contains_something = 1;
-			putc(c, stderr);
-		}
-	}
-	if (!file_contains_something)
-		fprintf(stderr, "file was empty\n");
-	rewind(file);
-	/* fseek(tmpf, offset, SEEK_END); */
-	return 0;
-}
 
 static int xmp_write(const char *fuse_path, const char *buf, size_t size,
 		     off_t offset, struct fuse_file_info *fi)
@@ -437,6 +457,9 @@ static int xmp_statfs(const char *fuse_path, struct statvfs *stbuf)
 	char *path = prefix_path(fuse_path);
 
 	int res;
+	//////
+	// TBD: return non-padded size in stbuf->st_size
+	//////
 
 	res = statvfs(path, stbuf);
 	if (res == -1)
