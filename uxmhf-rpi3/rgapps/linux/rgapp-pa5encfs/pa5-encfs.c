@@ -43,6 +43,8 @@
 #include <string.h>
 #include <unistd.h>
 #include <linux/limits.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 #include <fcntl.h>
 #include <dirent.h>
 #include <errno.h>
@@ -81,7 +83,7 @@ int add_encrypted_attr(const char *path)
 	int setxattr_ret;
 	setxattr_ret = setxattr(path, "user.encfs", "true", (sizeof(char)*5), 0);
 	ret = setxattr_ret == 0;
-	fprintf(stderr, "\nsetxattr %s\n", ret > 0 ? "succeeded" : "failed");
+	fprintf(stderr, "\n%s: setxattr %s\n", __FUNCTION__, ret > 0 ? "succeeded" : "failed");
 	return ret;
 }
 
@@ -383,9 +385,31 @@ static int xmp_open(const char *fuse_path, struct fuse_file_info *fi)
 	char *path = prefix_path(fuse_path);
 	int res;
 
+	////we dont support O_TMPFILE, sanity check
+	//Note: this constant is not defined anywhere!
+	//if( (fi->flags & O_TMPFILE) ){
+	//	fprintf(stderr, "%s: unsupported O_TMPFILE in open -- error\n", __FUNCTION__);
+	//	return EINVAL;
+	//}
+
 	res = open(path, fi->flags);
 	if (res == -1)
 		return -errno;
+
+
+	if( (fi->flags & O_CREAT) ){
+		if (!add_encrypted_attr(path)){
+			fprintf(stderr, "%s: failed to add xattr-encrypted\n", __FUNCTION__);
+			return -errno;
+		}
+	}
+
+	if( (fi->flags & O_CREAT) || (fi->flags & O_TRUNC)){
+		if(!add_nonpaddedsize_attr(path, 0)){
+			fprintf(stderr, "%s: failed to add xattr-nonpaddedsize.\n", __FUNCTION__);
+			return -errno;
+		}
+	}
 
 	close(res);
 	return 0;
