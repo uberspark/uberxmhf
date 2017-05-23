@@ -508,9 +508,15 @@ static int xmp_create(const char* fuse_path, mode_t mode,
 	close(res);
 
 	if (!add_encrypted_attr(path)){
-		fprintf(stderr, "xmp_create: failed to add xattr.\n");
+		fprintf(stderr, "%s: failed to add xattr-encrypted\n", __FUNCTION__);
 		return -errno;
 	}
+
+	if(!add_nonpaddedsize_attr(path, 0)){
+		fprintf(stderr, "%s: failed to add xattr-nonpaddedsize.\n", __FUNCTION__);
+		return -errno;
+	}
+
 
 	return 0;
 }
