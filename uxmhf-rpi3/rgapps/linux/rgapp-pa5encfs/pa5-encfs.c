@@ -54,6 +54,11 @@
 
 /* #define XMP_DATA ((struct xmp_state *) fuse_get_context()->private_data) */
 
+//////
+// helper functions
+//////
+
+
 char* root_path;
 char* password;
 
@@ -79,6 +84,19 @@ int add_encrypted_attr(const char *path)
 	fprintf(stderr, "\nsetxattr %s\n", ret > 0 ? "succeeded" : "failed");
 	return ret;
 }
+
+// add non-padded size attr
+// returns 1 on success, 0 on failure
+int add_nonpaddedsize_attr(const char *path, unsigned int nonpaddedsize){
+	int ret;
+
+	ret = setxattr(path, "user.nonpaddedsize", &nonpaddedsize, sizeof(unsigned int), 0);
+	fprintf(stderr, "\n%s: setxattr %s\n", __FUNCTION__, ((ret == 0) ? "succeeded" : "failed"));
+
+	return ret;
+}
+
+
 
 char *prefix_path(const char *path)
 {
@@ -118,6 +136,10 @@ int read_file(FILE *file)
 	/* fseek(tmpf, offset, SEEK_END); */
 	return 0;
 }
+
+
+
+
 
 
 //////
