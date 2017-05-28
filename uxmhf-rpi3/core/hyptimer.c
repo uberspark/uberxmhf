@@ -27,6 +27,11 @@ void hyptimer_test(u32 cpuid){
 			((cpsr & (1UL << 7)) >> 7),
 			((cpsr & (1UL << 6)) >> 6) );
 
+	cpsr &= ~(1UL << 7);	//clear CPSR.I to allow IRQss
+	sysreg_write_cpsr(cpsr);
+
+	_XDPRINTFSMP_("%s[%u]: now moving into endless loop...\n", __func__, cpuid);
+	HALT();
 
 	_XDPRINTFSMP_("%s[%u]: EXIT\n", __func__, cpuid);
 }
