@@ -22,13 +22,21 @@ void hyptimer_test(u32 cpuid){
 	_XDPRINTFSMP_("%s[%u]: ENTER\n", __func__, cpuid);
 
 	cpsr = sysreg_read_cpsr();
-	_XDPRINTFSMP_("%s[%u]: CPSR=0x%08x; CPSR.A=%u, CPSR.I=%u, CPSR.F=%u\n",
+	_XDPRINTFSMP_("%s[%u]: CPSR[before]=0x%08x; CPSR.A=%u, CPSR.I=%u, CPSR.F=%u\n",
 			__func__, cpuid, cpsr, ((cpsr & (1UL << 8)) >> 8),
 			((cpsr & (1UL << 7)) >> 7),
 			((cpsr & (1UL << 6)) >> 6) );
 
 	cpsr &= ~(1UL << 7);	//clear CPSR.I to allow IRQss
 	sysreg_write_cpsr(cpsr);
+
+
+	cpsr = sysreg_read_cpsr();
+	_XDPRINTFSMP_("%s[%u]: CPSR[after]=0x%08x; CPSR.A=%u, CPSR.I=%u, CPSR.F=%u\n",
+			__func__, cpuid, cpsr, ((cpsr & (1UL << 8)) >> 8),
+			((cpsr & (1UL << 7)) >> 7),
+			((cpsr & (1UL << 6)) >> 6) );
+
 
 	_XDPRINTFSMP_("%s[%u]: now moving into endless loop...\n", __func__, cpuid);
 	HALT();
