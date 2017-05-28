@@ -634,7 +634,13 @@ void main(u32 r0, u32 id, struct atag *at, u32 cpuid){
 	HALT();
 #endif
 
+	//////
+	// hypervisor timer testing
+	//////
+	hyptimer_test(cpuid);
 
+	_XDPRINTFSMP_("%s[%u]: WiP. Halting\n", __func__, cpuid);
+	HALT();
 
 	// populate stage-2 page tables
 	s2pgtbl_populate_tables();
