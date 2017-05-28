@@ -420,3 +420,12 @@ sysreg_ats1cpr:
 sysreg_read_par:
 	mrc p15,0,r0,c7,c4,0
 	bx lr
+
+//////
+// generic timer system registers
+//////
+.global sysreg_read_cntpct
+sysreg_read_cntpct:
+	mrrc p15, 0, r0, r1, c14
+	bx lr
+

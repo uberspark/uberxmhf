@@ -528,6 +528,13 @@ u32 sysreg_read_ttbr1(void);
 void sysreg_write_ttbr1(u32 value);
 
 
+//////
+// generic timer system register access functions
+//////
+extern u64 sysreg_read_cntpct(void);
+
+
+
 #endif // __ASSEMBLY__
 
 #endif //__ARM8_32_H__
