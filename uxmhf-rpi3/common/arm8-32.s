@@ -36,6 +36,12 @@ sysreg_read_cpsr:
 	mrs r0, cpsr
 	bx lr
 
+.globl sysreg_write_cpsr
+sysreg_write_cpsr:
+	msr cpsr, r0
+	bx lr
+
+
 .global sysreg_read_hvbar
 sysreg_read_hvbar:
 	mrc p15, 4, r0, c12, c0, 0

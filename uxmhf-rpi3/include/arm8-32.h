@@ -422,6 +422,7 @@ extern void mmio_write32 (u32 address, u32 value);
 extern u32 sysreg_read_scr(void);
 
 extern u32 sysreg_read_cpsr(void);
+extern void sysreg_write_cpsr(u32 value);
 
 extern u32 sysreg_read_hvbar(void);
 extern void sysreg_write_hvbar(u32 value);
