@@ -429,3 +429,12 @@ sysreg_read_cntpct:
 	mrrc p15, 0, r0, r1, c14
 	bx lr
 
+.global sysreg_read_cnthp_tval
+sysreg_read_cnthp_tval:
+	mrc p15,4,r0,c14,c2,0
+	bx lr
+
+.global sysreg_write_cnthp_tval
+sysreg_write_cnthp_tval:
+	mcr p15,4,r0,c14,c2,0
+	bx lr
