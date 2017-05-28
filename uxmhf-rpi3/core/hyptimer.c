@@ -18,6 +18,7 @@
 //////
 void hyptimer_test(u32 cpuid){
 	u32 cpsr;
+	u64 cntpct_val;
 
 	_XDPRINTFSMP_("%s[%u]: ENTER\n", __func__, cpuid);
 
@@ -36,6 +37,10 @@ void hyptimer_test(u32 cpuid){
 			__func__, cpuid, cpsr, ((cpsr & (1UL << 8)) >> 8),
 			((cpsr & (1UL << 7)) >> 7),
 			((cpsr & (1UL << 6)) >> 6) );
+
+
+	cntpct_val = sysreg_read_cntpct();
+	_XDPRINTFSMP_("%s[%u]: CNTPCT=0x%016llx\n", __func__, cpuid, cntpct_val);
 
 
 	_XDPRINTFSMP_("%s[%u]: now moving into endless loop...\n", __func__, cpuid);
