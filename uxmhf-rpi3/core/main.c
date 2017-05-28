@@ -40,8 +40,8 @@ void hyp_rsvhandler(void){
 
 
 void hyp_irqhandler(void){
-	_XDPRINTFSMP_("%s: IRQ exception\n", __func__);
-	_XDPRINTFSMP_("%s: Halting!\n", __func__);
+	_XDPRINTF_("%s: IRQ exception\n", __func__);
+	_XDPRINTF_("%s: Halting!\n", __func__);
 	HALT();
 }
 
