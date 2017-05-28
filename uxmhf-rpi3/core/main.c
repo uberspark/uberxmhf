@@ -39,6 +39,14 @@ void hyp_rsvhandler(void){
 }
 
 
+void hyp_irqhandler(void){
+	_XDPRINTFSMP_("%s: IRQ exception\n", __func__);
+	_XDPRINTFSMP_("%s: Halting!\n", __func__);
+	HALT();
+}
+
+
+
 void hyphvc_handler(void){
 	_XDPRINTF_("%s: [IN]\n", __func__);
 	_XDPRINTF_("%s: Hello world from hypercall\n", __func__);

@@ -31,7 +31,7 @@ g_hypvtable:
 	b hypvtable_reserved_handler0
 	b hypvtable_reserved_handler0
 	b hypvtable_hypsvc_handler0
-	b hypvtable_reserved_handler0
+	b hypvtable_irq_handler0
 	b hypvtable_reserved_handler0
 	//cpu-1
 	b hypvtable_reserved_handler1
@@ -111,6 +111,17 @@ hypvtable_hypsvc_handler2:
 hypvtable_hypsvc_handler3:
 	ldr sp, =hypvtable_hypsvc_stack_top3
 	b hypvtable_hypsvc_handler_common
+
+
+	.balign 32
+	.global	hypvtable_irq_handler0
+hypvtable_irq_handler0:
+	ldr sp, =hypvtable_irqhandler_stack_top0
+	bl hyp_irqhandler
+1:	b 1b
+
+
+
 
 
 /*
@@ -230,3 +241,8 @@ hypvtable_hypsvc_handler_common:
 	.global hypvtable_rsvhandler_stack_top3
 	hypvtable_rsvhandler_stack_top3:
 
+	.balign 8
+	.global hypvtable_irqhandler_stack0
+	hypvtable_irqhandler_stack0:	.space	8192
+	.global hypvtable_irqhandler_stack_top0
+	hypvtable_irqhandler_stack_top0:
