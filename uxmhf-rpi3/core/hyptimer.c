@@ -11,6 +11,17 @@
 #include <debug.h>
 
 
+//////
+// hyptimer_emptyloop
+// empty loop for delay
+//////
+u32 hyptimer_emptyloop(void){
+	u32 i;
+	u32 dummy=0;
+	for(i=0; i < 1024; i++)
+		dummy+=i;
+	return dummy;
+}
 
 //////
 // hyptimer_test
@@ -40,7 +51,10 @@ void hyptimer_test(u32 cpuid){
 
 
 	cntpct_val = sysreg_read_cntpct();
-	_XDPRINTFSMP_("%s[%u]: CNTPCT=0x%016llx\n", __func__, cpuid, cntpct_val);
+	_XDPRINTFSMP_("%s[%u]: CNTPCT[before]=0x%016llx\n", __func__, cpuid, cntpct_val);
+	hyptimer_emptyloop();
+	cntpct_val = sysreg_read_cntpct();
+	_XDPRINTFSMP_("%s[%u]: CNTPCT[after]=0x%016llx\n", __func__, cpuid, cntpct_val);
 
 
 	_XDPRINTFSMP_("%s[%u]: now moving into endless loop...\n", __func__, cpuid);
