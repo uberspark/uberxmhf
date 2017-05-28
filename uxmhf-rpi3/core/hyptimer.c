@@ -73,7 +73,7 @@ void hyptimer_test(u32 cpuid){
 
 
 	_XDPRINTFSMP_("%s[%u]: CNTHP_TVAL[initial]=%d\n", __func__, cpuid, sysreg_read_cnthp_tval());
-	sysreg_write_cnthp_tval(1024*1024);
+	sysreg_write_cnthp_tval(10*1024*1024);
 	_XDPRINTFSMP_("%s[%u]: CNTHP_TVAL[reset]=%d\n", __func__, cpuid, sysreg_read_cnthp_tval());
 	//hyptimer_emptyloop();
 
