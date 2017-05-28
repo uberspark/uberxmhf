@@ -30,6 +30,7 @@ u32 hyptimer_emptyloop(void){
 void hyptimer_test(u32 cpuid){
 	u32 cpsr;
 	u64 cntpct_val;
+	u32 cpu0_tintctl_value;
 
 	_XDPRINTFSMP_("%s[%u]: ENTER\n", __func__, cpuid);
 
@@ -70,6 +71,13 @@ void hyptimer_test(u32 cpuid){
 	_XDPRINTFSMP_("%s[%u]: CNTHP_TVAL[current]=%d\n", __func__, cpuid, sysreg_read_cnthp_tval());
 	_XDPRINTFSMP_("%s[%u]: CNTHP_CTL[current]=%d\n", __func__, cpuid, sysreg_read_cnthp_ctl());
 
+	cpu0_tintctl_value = mmio_read32(LOCAL_TIMER_INT_CONTROL0);
+	_XDPRINTFSMP_("%s[%u]: cpu0_tintctl_value=0x%08x, CNTHPFIQ=%u, CNTHPIRQ=%u\n",
+			__func__, cpuid,
+			cpu0_tintctl_value,
+			((cpu0_tintctl_value & (1UL << 6)) >> 6),
+			((cpu0_tintctl_value & (1UL << 2)) >> 2)
+			);
 
 	_XDPRINTFSMP_("%s[%u]: now moving into endless loop...\n", __func__, cpuid);
 	HALT();
