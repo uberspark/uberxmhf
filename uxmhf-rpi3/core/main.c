@@ -452,7 +452,7 @@ void main(u32 r0, u32 id, struct atag *at, u32 cpuid){
 	_XDPRINTF_("%s[%u]: src_string=%s\n", __func__, cpuid, src_string);
 	_XDPRINTF_("%s[%u]: len src_string=%u\n", __func__, cpuid, strlen(src_string));
 	sha1(src_string, strlen(src_string), src_string_hash);
-	_XDPRINTF_("%s[%u]: hash src_string= %*D\n", __func__, cpuid, sizeof(src_string_hash), src_string_hash);
+	_XDPRINTF_("%s[%u]: hash src_string= %*D\n", __func__, cpuid, sizeof(src_string_hash), src_string_hash, " ");
 
 	_XDPRINTF_("%s[%u]: Halting!\n", __func__, cpuid);
 	HALT();

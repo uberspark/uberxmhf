@@ -27,8 +27,8 @@ CFLAGS = $(CFLAGS_DEFS) -c -Wall -nostdlib -nostartfiles -ffreestanding -mcpu=co
 #CFLAGS = -I./include -I../include -D__DEBUG_SERIAL__ -c -Wall -nostdlib -nostartfiles -ffreestanding -march=armv8-a+crc
 CCLIB = $(shell $(TOOLPREFIX)gcc --print-lib)
 
-LIBS = $(UXMHFRPI3_DIR)/libs/libxmhfc/libxmhfc.a
-LIBS += $(UXMHFRPI3_DIR)/libs/libxmhfcrypto/libxmhfcrypto.a
+LIBS = $(UXMHFRPI3_DIR)/libs/libxmhfcrypto/libxmhfcrypto.a
+LIBS += $(UXMHFRPI3_DIR)/libs/libxmhfc/libxmhfc.a
 
 
 # tools
