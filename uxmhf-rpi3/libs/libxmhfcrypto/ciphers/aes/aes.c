@@ -42,10 +42,6 @@
 #define LTC_TEST
 
 
-#ifdef LTC_RIJNDAEL
-
-#ifndef ENCRYPT_ONLY
-
 #define SETUP    rijndael_setup
 #define ECB_ENC  rijndael_ecb_encrypt
 #define ECB_DEC  rijndael_ecb_decrypt
@@ -71,10 +67,6 @@ const struct ltc_cipher_descriptor aes_desc =
     NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL
 };
 
-#else
-
-
-#endif
 
 #define __LTC_AES_TAB_C__
 #include "aes_tab.c"
@@ -87,9 +79,6 @@ static ulong32 setup_mix(ulong32 temp)
           (Te4_0[byte(temp, 3)]);
 }
 
-#ifndef ENCRYPT_ONLY
-
-#endif
 
  /**
     Initialize the AES (Rijndael) block cipher
@@ -103,9 +92,8 @@ int SETUP(const unsigned char *key, int keylen, int num_rounds, symmetric_key *s
 {
     int i;
     ulong32 temp, *rk;
-#ifndef ENCRYPT_ONLY
     ulong32 *rrk;
-#endif
+
     LTC_ARGCHK(key  != NULL);
     LTC_ARGCHK(skey != NULL);
 
@@ -142,11 +130,7 @@ int SETUP(const unsigned char *key, int keylen, int num_rounds, symmetric_key *s
         LOAD32H(rk[4], key + 16);
         LOAD32H(rk[5], key + 20);
         for (;;) {
-        #ifdef _MSC_VER
-
-        #else
             temp = rk[5];
-        #endif
             rk[ 6] = rk[ 0] ^ setup_mix(temp) ^ rcon[i];
             rk[ 7] = rk[ 1] ^ rk[ 6];
             rk[ 8] = rk[ 2] ^ rk[ 7];
@@ -164,11 +148,7 @@ int SETUP(const unsigned char *key, int keylen, int num_rounds, symmetric_key *s
         LOAD32H(rk[6], key + 24);
         LOAD32H(rk[7], key + 28);
         for (;;) {
-        #ifdef _MSC_VER
-
-        #else
             temp = rk[7];
-        #endif
             rk[ 8] = rk[ 0] ^ setup_mix(temp) ^ rcon[i];
             rk[ 9] = rk[ 1] ^ rk[ 8];
             rk[10] = rk[ 2] ^ rk[ 9];
@@ -189,7 +169,6 @@ int SETUP(const unsigned char *key, int keylen, int num_rounds, symmetric_key *s
        return CRYPT_ERROR;
     }
 
-#ifndef ENCRYPT_ONLY
     /* setup the inverse key now */
     rk   = skey->rijndael.dK;
     rrk  = skey->rijndael.eK + (28 + keylen) - 4;
@@ -205,9 +184,6 @@ int SETUP(const unsigned char *key, int keylen, int num_rounds, symmetric_key *s
     for (i = 1; i < skey->rijndael.Nr; i++) {
         rrk -= 4;
         rk  += 4;
-    #ifdef LTC_SMALL_CODE
-
-    #else
         temp = rrk[0];
         rk[0] =
             Tks0[byte(temp, 3)] ^
@@ -232,7 +208,6 @@ int SETUP(const unsigned char *key, int keylen, int num_rounds, symmetric_key *s
             Tks1[byte(temp, 2)] ^
             Tks2[byte(temp, 1)] ^
             Tks3[byte(temp, 0)];
-      #endif
 
     }
 
@@ -243,7 +218,6 @@ int SETUP(const unsigned char *key, int keylen, int num_rounds, symmetric_key *s
     *rk++ = *rrk++;
     *rk++ = *rrk++;
     *rk   = *rrk;
-#endif /* ENCRYPT_ONLY */
 
     return CRYPT_OK;
 }
@@ -255,11 +229,7 @@ int SETUP(const unsigned char *key, int keylen, int num_rounds, symmetric_key *s
   @param skey The key as scheduled
   @return CRYPT_OK if successful
 */
-#ifdef LTC_CLEAN_STACK
-
-#else
 int ECB_ENC(const unsigned char *pt, unsigned char *ct, symmetric_key *skey)
-#endif
 {
     ulong32 s0, s1, s2, s3, t0, t1, t2, t3, *rk;
     int Nr, r;
@@ -280,10 +250,6 @@ int ECB_ENC(const unsigned char *pt, unsigned char *ct, symmetric_key *skey)
     LOAD32H(s2, pt  +  8); s2 ^= rk[2];
     LOAD32H(s3, pt  + 12); s3 ^= rk[3];
 
-#ifdef LTC_SMALL_CODE
-
-
-#else
 
     /*
      * Nr - 1 full rounds:
@@ -346,7 +312,6 @@ int ECB_ENC(const unsigned char *pt, unsigned char *ct, symmetric_key *skey)
             rk[3];
     }
 
-#endif
 
     /*
      * apply last round and
@@ -384,11 +349,6 @@ int ECB_ENC(const unsigned char *pt, unsigned char *ct, symmetric_key *skey)
     return CRYPT_OK;
 }
 
-#ifdef LTC_CLEAN_STACK
-
-#endif
-
-#ifndef ENCRYPT_ONLY
 
 /**
   Decrypts a block of text with AES
@@ -397,11 +357,7 @@ int ECB_ENC(const unsigned char *pt, unsigned char *ct, symmetric_key *skey)
   @param skey The key as scheduled
   @return CRYPT_OK if successful
 */
-#ifdef LTC_CLEAN_STACK
-
-#else
 int ECB_DEC(const unsigned char *ct, unsigned char *pt, symmetric_key *skey)
-#endif
 {
     ulong32 s0, s1, s2, s3, t0, t1, t2, t3, *rk;
     int Nr, r;
@@ -422,9 +378,6 @@ int ECB_DEC(const unsigned char *ct, unsigned char *pt, symmetric_key *skey)
     LOAD32H(s2, ct  +  8); s2 ^= rk[2];
     LOAD32H(s3, ct  + 12); s3 ^= rk[3];
 
-#ifdef LTC_SMALL_CODE
-
-#else
 
     /*
      * Nr - 1 full rounds:
@@ -488,7 +441,6 @@ int ECB_DEC(const unsigned char *ct, unsigned char *pt, symmetric_key *skey)
             Td3(byte(t0, 0)) ^
             rk[3];
     }
-#endif
 
     /*
      * apply last round and
@@ -527,9 +479,6 @@ int ECB_DEC(const unsigned char *ct, unsigned char *pt, symmetric_key *skey)
 }
 
 
-#ifdef LTC_CLEAN_STACK
-
-#endif
 
 /**
   Performs a self-test of the AES block cipher
@@ -537,9 +486,6 @@ int ECB_DEC(const unsigned char *ct, unsigned char *pt, symmetric_key *skey)
 */
 int ECB_TEST(void)
 {
- #ifndef LTC_TEST
-
- #else
  int err;
  static const struct {
      int keylen;
@@ -587,8 +533,6 @@ int ECB_TEST(void)
     rijndael_ecb_encrypt(tests[i].pt, tmp[0], &key);
     rijndael_ecb_decrypt(tmp[0], tmp[1], &key);
     if (XMEMCMP(tmp[0], tests[i].ct, 16) || XMEMCMP(tmp[1], tests[i].pt, 16)) {
-#if 0
-#endif
         return CRYPT_FAIL_TESTVECTOR;
     }
 
@@ -599,10 +543,8 @@ int ECB_TEST(void)
     for (y = 0; y < 16; y++) if (tmp[0][y] != 0) return CRYPT_FAIL_TESTVECTOR;
   }
   return CRYPT_OK;
- #endif
 }
 
-#endif /* ENCRYPT_ONLY */
 
 
 /** Terminate the context
@@ -637,9 +579,4 @@ int ECB_KS(int *keysize)
    }
 }
 
-#endif
 
-
-/* $Source$ */
-/* $Revision$ */
-/* $Date$ */
