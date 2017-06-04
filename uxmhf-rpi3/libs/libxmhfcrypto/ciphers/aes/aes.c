@@ -32,6 +32,16 @@
 
 #include "tomcrypt.h"
 
+
+#define LTC_RIJNDAEL
+//undef ENCRYPT_ONLY
+#define __LTC_AES_TAB_C__
+//undef LTC_SMALL_CODE
+//undef _MSC_VER
+//undef LTC_CLEAN_STACK
+
+
+
 #ifdef LTC_RIJNDAEL
 
 #ifndef ENCRYPT_ONLY
