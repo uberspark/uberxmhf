@@ -43,9 +43,9 @@ export LIBS
 all: checkoskrnlimg 
 	cd libs/libxmhfc && make -w all
 	cd core && make -w all
-	#cd guestos && make -w all
-	#cd bootstrap && make -w all
-	#cat ./bootstrap/bootstrap.bin ./oskrnlimg.tmp ./core/core.bin ./guestos/guestos.bin > uxmhf-rpi3.img
+	cd guestos && make -w all
+	cd bootstrap && make -w all
+	cat ./bootstrap/bootstrap.bin ./oskrnlimg.tmp ./core/core.bin ./guestos/guestos.bin > uxmhf-rpi3.img
 
 .PHONY: checkoskrnlimg
 checkoskrnlimg:
