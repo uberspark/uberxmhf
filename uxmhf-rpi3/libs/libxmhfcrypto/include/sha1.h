@@ -50,8 +50,14 @@
 #define SHA1_RESULTLEN      (160/8)
 #define SHA_DIGEST_LENGTH	SHA1_RESULTLEN
 
+#ifndef __ASSEMBLY__
+
+
 
 int sha1(const uint8_t *message, uint32_t len, unsigned char md[SHA_DIGEST_LENGTH]);
+
+
+#endif // __ASSEMBLY__
 
 
 #endif /* __SHA1_H__ */

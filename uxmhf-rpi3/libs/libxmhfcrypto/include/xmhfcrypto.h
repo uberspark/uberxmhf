@@ -158,6 +158,7 @@ enum {
 
 
 //tomcrypt_hash.h
+
 struct sha1_state {
     u64 length;
     u32 state[5], curlen;
@@ -171,43 +172,6 @@ typedef union Hash_state {
     void *data;
 } hash_state;
 
-
-/* a simple macro for making hash "process" functions */
-#define HASH_PROCESS(func_name, compress_name, state_var, block_size)                       \
-int func_name (hash_state * md, const unsigned char *in, unsigned long inlen)               \
-{                                                                                           \
-    unsigned long n;                                                                        \
-    int           err;                                                                      \
-    assert(md != NULL);                                                                 \
-    assert(in != NULL);                                                                 \
-    if (md-> state_var .curlen > sizeof(md-> state_var .buf)) {                             \
-       return CRYPT_INVALID_ARG;                                                            \
-    }                                                                                       \
-    while (inlen > 0) {                                                                     \
-        if (md-> state_var .curlen == 0 && inlen >= block_size) {                           \
-           if ((err = compress_name (md, (unsigned char *)in)) != CRYPT_OK) {               \
-              return err;                                                                   \
-           }                                                                                \
-           md-> state_var .length += block_size * 8;                                        \
-           in             += block_size;                                                    \
-           inlen          -= block_size;                                                    \
-        } else {                                                                            \
-           n = MIN(inlen, (block_size - md-> state_var .curlen));                           \
-           memcpy(md-> state_var .buf + md-> state_var.curlen, in, (size_t)n);              \
-           md-> state_var .curlen += n;                                                     \
-           in             += n;                                                             \
-           inlen          -= n;                                                             \
-           if (md-> state_var .curlen == block_size) {                                      \
-              if ((err = compress_name (md, (unsigned char *)md-> state_var .buf)) != CRYPT_OK) {            \
-                 return err;                                                                \
-              }                                                                             \
-              md-> state_var .length += 8*block_size;                                       \
-              md-> state_var .curlen = 0;                                                   \
-           }                                                                                \
-       }                                                                                    \
-    }                                                                                       \
-    return CRYPT_OK;                                                                        \
-}
 
 
 
@@ -283,6 +247,5 @@ int func_name (hash_state * md, const unsigned char *in, unsigned long inlen)   
 
 
 
-#include <sha1.h>
 
 #endif /* __XMHFCRYPTO_H__ */
