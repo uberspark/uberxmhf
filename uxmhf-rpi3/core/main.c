@@ -438,10 +438,27 @@ void core_fixresmemmap(u32 fdt_address){
 //////
 void main(u32 r0, u32 id, struct atag *at, u32 cpuid){
 	u32 hvbar, hcr, spsr_hyp;
+	char *src_string="This is a string";
+	char dst_string[32];
 
 	_XDPRINTF_("%s[%u]: ENTER: sp=0x%08x (cpu_stacks=0x%08x)\n", __func__, cpuid,
 			cpu_read_sp(), &cpu_stacks);
 	_XDPRINTF_("%s[%u]: r0=0x%08x, id=0x%08x, ATAGS=0x%08x\n", __func__, cpuid, r0, id, at);
+
+
+	//////
+	//libxmhfc test
+	//////
+	_XDPRINTF_("%s[%u]: len=%u\n", __func__, cpuid, strlen(src_string));
+	_XDPRINTF_("%s[%u]: src_string=%s\n", __func__, cpuid, src_string);
+	strncpy(dst_string, src_string, strlen(src_string));
+	_XDPRINTF_("%s[%u]: dst_string=%s\n", __func__, cpuid, dst_string);
+
+
+	_XDPRINTF_("%s[%u]: Halting!\n", __func__, cpuid);
+	HALT();
+
+
 
 	//sanity check ATAGS pointer
 	if(!(at->size == FDT_MAGIC)){
