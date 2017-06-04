@@ -21,6 +21,13 @@ CFLAGS = $(CFLAGS_DEFS) -c -Wall -nostdlib -nostartfiles -ffreestanding -mcpu=co
 #CFLAGS = -I./include -I../include -D__DEBUG_SERIAL__ -c -Wall -nostdlib -nostartfiles -ffreestanding -march=armv8-a+crc
 CCLIB = $(shell $(TOOLPREFIX)gcc --print-lib)
 
+# tools
+export AR=ar
+export CP=cp
+export CCERT=$(TOOLPREFIX)gcc
+export CC=$(TOOLPREFIX)gcc
+
+
 export TOOLPREFIX
 export CFLAGS_DEFS
 export CFLAGS
