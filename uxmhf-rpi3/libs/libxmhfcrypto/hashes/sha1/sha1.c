@@ -44,14 +44,10 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-#undef DESC_DEF_ONLY
-#define LTC_SOURCE
 
-#include <uberspark.h>
 #include <string.h>
 #include <xmhfcrypto.h>
 #include <sha1.h>
-
 
 
 #define F0(x,y,z)  (z ^ (x & (y ^ z)))

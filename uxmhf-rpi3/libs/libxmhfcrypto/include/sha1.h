@@ -50,13 +50,8 @@
 #define SHA1_RESULTLEN      (160/8)
 #define SHA_DIGEST_LENGTH	SHA1_RESULTLEN
 
-//int sha1(const unsigned char *buffer, size_t len,
-//                unsigned char md[SHA_DIGEST_LENGTH]);
 
 int sha1(const uint8_t *message, uint32_t len, unsigned char md[SHA_DIGEST_LENGTH]);
 
-/*int sha1_init(hash_state * md);
-int sha1_process(hash_state * md, const unsigned char *in, unsigned long inlen);
-int sha1_done(hash_state * md, unsigned char *hash);*/
 
 #endif /* __SHA1_H__ */
