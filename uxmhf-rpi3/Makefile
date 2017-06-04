@@ -28,7 +28,7 @@ CFLAGS = $(CFLAGS_DEFS) -c -Wall -nostdlib -nostartfiles -ffreestanding -mcpu=co
 CCLIB = $(shell $(TOOLPREFIX)gcc --print-lib)
 
 LIBS = $(UXMHFRPI3_DIR)/libs/libxmhfc/libxmhfc.a
-LIBS += $(UXMHFRPI3_DIR)/libs/libxmhfc/libxmhfcrypto.a
+LIBS += $(UXMHFRPI3_DIR)/libs/libxmhfcrypto/libxmhfcrypto.a
 
 
 # tools
@@ -49,10 +49,10 @@ export LIBS
 all: checkoskrnlimg 
 	cd libs/libxmhfc && make -w all
 	cd libs/libxmhfcrypto && make -w all
-	#cd core && make -w all
-	#cd guestos && make -w all
-	#cd bootstrap && make -w all
-	#cat ./bootstrap/bootstrap.bin ./oskrnlimg.tmp ./core/core.bin ./guestos/guestos.bin > uxmhf-rpi3.img
+	cd core && make -w all
+	cd guestos && make -w all
+	cd bootstrap && make -w all
+	cat ./bootstrap/bootstrap.bin ./oskrnlimg.tmp ./core/core.bin ./guestos/guestos.bin > uxmhf-rpi3.img
 
 .PHONY: checkoskrnlimg
 checkoskrnlimg:
