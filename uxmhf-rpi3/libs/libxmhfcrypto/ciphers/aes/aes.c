@@ -39,7 +39,7 @@
 //undef LTC_SMALL_CODE
 //undef _MSC_VER
 //undef LTC_CLEAN_STACK
-
+#define LTC_TEST
 
 
 #ifdef LTC_RIJNDAEL
@@ -73,28 +73,6 @@ const struct ltc_cipher_descriptor aes_desc =
 
 #else
 
-#define SETUP    rijndael_enc_setup
-#define ECB_ENC  rijndael_enc_ecb_encrypt
-#define ECB_KS   rijndael_enc_keysize
-#define ECB_DONE rijndael_enc_done
-
-const struct ltc_cipher_descriptor rijndael_enc_desc =
-{
-    "rijndael",
-    6,
-    16, 32, 16, 10,
-    SETUP, ECB_ENC, NULL, NULL, ECB_DONE, ECB_KS,
-    NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL
-};
-
-const struct ltc_cipher_descriptor aes_enc_desc =
-{
-    "aes",
-    6,
-    16, 32, 16, 10,
-    SETUP, ECB_ENC, NULL, NULL, ECB_DONE, ECB_KS,
-    NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL
-};
 
 #endif
 
@@ -110,15 +88,7 @@ static ulong32 setup_mix(ulong32 temp)
 }
 
 #ifndef ENCRYPT_ONLY
-#ifdef LTC_SMALL_CODE
-static ulong32 setup_mix2(ulong32 temp)
-{
-   return Td0(255 & Te4[byte(temp, 3)]) ^
-          Td1(255 & Te4[byte(temp, 2)]) ^
-          Td2(255 & Te4[byte(temp, 1)]) ^
-          Td3(255 & Te4[byte(temp, 0)]);
-}
-#endif
+
 #endif
 
  /**
@@ -173,7 +143,7 @@ int SETUP(const unsigned char *key, int keylen, int num_rounds, symmetric_key *s
         LOAD32H(rk[5], key + 20);
         for (;;) {
         #ifdef _MSC_VER
-            temp = skey->rijndael.eK[rk - skey->rijndael.eK + 5];
+
         #else
             temp = rk[5];
         #endif
@@ -195,7 +165,7 @@ int SETUP(const unsigned char *key, int keylen, int num_rounds, symmetric_key *s
         LOAD32H(rk[7], key + 28);
         for (;;) {
         #ifdef _MSC_VER
-            temp = skey->rijndael.eK[rk - skey->rijndael.eK + 7];
+
         #else
             temp = rk[7];
         #endif
@@ -236,15 +206,8 @@ int SETUP(const unsigned char *key, int keylen, int num_rounds, symmetric_key *s
         rrk -= 4;
         rk  += 4;
     #ifdef LTC_SMALL_CODE
-        temp = rrk[0];
-        rk[0] = setup_mix2(temp);
-        temp = rrk[1];
-        rk[1] = setup_mix2(temp);
-        temp = rrk[2];
-        rk[2] = setup_mix2(temp);
-        temp = rrk[3];
-        rk[3] = setup_mix2(temp);
-     #else
+
+    #else
         temp = rrk[0];
         rk[0] =
             Tks0[byte(temp, 3)] ^
@@ -293,7 +256,7 @@ int SETUP(const unsigned char *key, int keylen, int num_rounds, symmetric_key *s
   @return CRYPT_OK if successful
 */
 #ifdef LTC_CLEAN_STACK
-static int _rijndael_ecb_encrypt(const unsigned char *pt, unsigned char *ct, symmetric_key *skey)
+
 #else
 int ECB_ENC(const unsigned char *pt, unsigned char *ct, symmetric_key *skey)
 #endif
@@ -319,38 +282,6 @@ int ECB_ENC(const unsigned char *pt, unsigned char *ct, symmetric_key *skey)
 
 #ifdef LTC_SMALL_CODE
 
-    for (r = 0; ; r++) {
-        rk += 4;
-        t0 =
-            Te0(byte(s0, 3)) ^
-            Te1(byte(s1, 2)) ^
-            Te2(byte(s2, 1)) ^
-            Te3(byte(s3, 0)) ^
-            rk[0];
-        t1 =
-            Te0(byte(s1, 3)) ^
-            Te1(byte(s2, 2)) ^
-            Te2(byte(s3, 1)) ^
-            Te3(byte(s0, 0)) ^
-            rk[1];
-        t2 =
-            Te0(byte(s2, 3)) ^
-            Te1(byte(s3, 2)) ^
-            Te2(byte(s0, 1)) ^
-            Te3(byte(s1, 0)) ^
-            rk[2];
-        t3 =
-            Te0(byte(s3, 3)) ^
-            Te1(byte(s0, 2)) ^
-            Te2(byte(s1, 1)) ^
-            Te3(byte(s2, 0)) ^
-            rk[3];
-        if (r == Nr-2) {
-           break;
-        }
-        s0 = t0; s1 = t1; s2 = t2; s3 = t3;
-    }
-    rk += 4;
 
 #else
 
@@ -454,12 +385,7 @@ int ECB_ENC(const unsigned char *pt, unsigned char *ct, symmetric_key *skey)
 }
 
 #ifdef LTC_CLEAN_STACK
-int ECB_ENC(const unsigned char *pt, unsigned char *ct, symmetric_key *skey)
-{
-   int err = _rijndael_ecb_encrypt(pt, ct, skey);
-   burn_stack(sizeof(unsigned long)*8 + sizeof(unsigned long*) + sizeof(int)*2);
-   return err;
-}
+
 #endif
 
 #ifndef ENCRYPT_ONLY
@@ -472,7 +398,7 @@ int ECB_ENC(const unsigned char *pt, unsigned char *ct, symmetric_key *skey)
   @return CRYPT_OK if successful
 */
 #ifdef LTC_CLEAN_STACK
-static int _rijndael_ecb_decrypt(const unsigned char *ct, unsigned char *pt, symmetric_key *skey)
+
 #else
 int ECB_DEC(const unsigned char *ct, unsigned char *pt, symmetric_key *skey)
 #endif
@@ -497,38 +423,6 @@ int ECB_DEC(const unsigned char *ct, unsigned char *pt, symmetric_key *skey)
     LOAD32H(s3, ct  + 12); s3 ^= rk[3];
 
 #ifdef LTC_SMALL_CODE
-    for (r = 0; ; r++) {
-        rk += 4;
-        t0 =
-            Td0(byte(s0, 3)) ^
-            Td1(byte(s3, 2)) ^
-            Td2(byte(s2, 1)) ^
-            Td3(byte(s1, 0)) ^
-            rk[0];
-        t1 =
-            Td0(byte(s1, 3)) ^
-            Td1(byte(s0, 2)) ^
-            Td2(byte(s3, 1)) ^
-            Td3(byte(s2, 0)) ^
-            rk[1];
-        t2 =
-            Td0(byte(s2, 3)) ^
-            Td1(byte(s1, 2)) ^
-            Td2(byte(s0, 1)) ^
-            Td3(byte(s3, 0)) ^
-            rk[2];
-        t3 =
-            Td0(byte(s3, 3)) ^
-            Td1(byte(s2, 2)) ^
-            Td2(byte(s1, 1)) ^
-            Td3(byte(s0, 0)) ^
-            rk[3];
-        if (r == Nr-2) {
-           break;
-        }
-        s0 = t0; s1 = t1; s2 = t2; s3 = t3;
-    }
-    rk += 4;
 
 #else
 
@@ -634,12 +528,7 @@ int ECB_DEC(const unsigned char *ct, unsigned char *pt, symmetric_key *skey)
 
 
 #ifdef LTC_CLEAN_STACK
-int ECB_DEC(const unsigned char *ct, unsigned char *pt, symmetric_key *skey)
-{
-   int err = _rijndael_ecb_decrypt(ct, pt, skey);
-   burn_stack(sizeof(unsigned long)*8 + sizeof(unsigned long*) + sizeof(int)*2);
-   return err;
-}
+
 #endif
 
 /**
@@ -649,7 +538,7 @@ int ECB_DEC(const unsigned char *ct, unsigned char *pt, symmetric_key *skey)
 int ECB_TEST(void)
 {
  #ifndef LTC_TEST
-    return CRYPT_NOP;
+
  #else
  int err;
  static const struct {
@@ -699,20 +588,6 @@ int ECB_TEST(void)
     rijndael_ecb_decrypt(tmp[0], tmp[1], &key);
     if (XMEMCMP(tmp[0], tests[i].ct, 16) || XMEMCMP(tmp[1], tests[i].pt, 16)) {
 #if 0
-       printf("\n\nTest %d failed\n", i);
-       if (XMEMCMP(tmp[0], tests[i].ct, 16)) {
-          printf("CT: ");
-          for (i = 0; i < 16; i++) {
-             printf("%02x ", tmp[0][i]);
-          }
-          printf("\n");
-       } else {
-          printf("PT: ");
-          for (i = 0; i < 16; i++) {
-             printf("%02x ", tmp[1][i]);
-          }
-          printf("\n");
-       }
 #endif
         return CRYPT_FAIL_TESTVECTOR;
     }
