@@ -32,7 +32,7 @@
 
 #include "tomcrypt.h"
 
-
+/*
 #define LTC_RIJNDAEL
 //undef ENCRYPT_ONLY
 #define __LTC_AES_TAB_C__
@@ -40,7 +40,7 @@
 //undef _MSC_VER
 //undef LTC_CLEAN_STACK
 #define LTC_TEST
-
+*/
 
 #define SETUP    rijndael_setup
 #define ECB_ENC  rijndael_ecb_encrypt
