@@ -6,6 +6,7 @@
 #include <fdt.h>
 #include <debug.h>
 #include <dmaprot.h>
+#include <xmhfcrypto.h>
 #include <sha1.h>
 
 //////
@@ -453,6 +454,12 @@ void main(u32 r0, u32 id, struct atag *at, u32 cpuid){
 	_XDPRINTF_("%s[%u]: len src_string=%u\n", __func__, cpuid, strlen(src_string));
 	sha1(src_string, strlen(src_string), src_string_hash);
 	_XDPRINTF_("%s[%u]: hash src_string= %*D\n", __func__, cpuid, sizeof(src_string_hash), src_string_hash, " ");
+
+	if( rijndael_test() != CRYPT_OK){
+		_XDPRINTF_("%s[%u]: AES test PASSED\n", __func__, cpuid);
+	}else{
+		_XDPRINTF_("%s[%u]: AES test FAILED\n", __func__, cpuid);
+	}
 
 	_XDPRINTF_("%s[%u]: Halting!\n", __func__, cpuid);
 	HALT();
