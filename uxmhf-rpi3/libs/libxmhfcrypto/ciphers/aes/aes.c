@@ -32,7 +32,7 @@
 
 #include <string.h>
 #include <xmhfcrypto.h>
-
+#include <aes.h>
 
 /*
 #define LTC_RIJNDAEL
@@ -70,8 +70,8 @@ const struct ltc_cipher_descriptor aes_desc =
 };
 */
 
-#define __LTC_AES_TAB_C__
-#include "aes_tab.c"
+//#define __LTC_AES_TAB_C__
+//#include "aes_tab.c"
 
 static u32 setup_mix(u32 temp)
 {

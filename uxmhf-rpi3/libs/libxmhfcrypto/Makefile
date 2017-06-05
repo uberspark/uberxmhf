@@ -6,6 +6,7 @@ vpath %.c $(srcdir) $(srcdir)/ciphers/aes
 
 C_SOURCES := hashes/sha1/sha1.c
 C_SOURCES += ciphers/aes/aes.c
+C_SOURCES += ciphers/aes/aes_tab.c
 
 O_SOURCES := $(C_SOURCES)
 O_SOURCES := $(patsubst hashes/sha1/%, %, $(O_SOURCES))
