@@ -456,9 +456,9 @@ void main(u32 r0, u32 id, struct atag *at, u32 cpuid){
 	_XDPRINTF_("%s[%u]: hash src_string= %*D\n", __func__, cpuid, sizeof(src_string_hash), src_string_hash, " ");
 
 	if( rijndael_test() != CRYPT_OK){
-		_XDPRINTF_("%s[%u]: AES test PASSED\n", __func__, cpuid);
-	}else{
 		_XDPRINTF_("%s[%u]: AES test FAILED\n", __func__, cpuid);
+	}else{
+		_XDPRINTF_("%s[%u]: AES test PASSED\n", __func__, cpuid);
 	}
 
 	_XDPRINTF_("%s[%u]: Halting!\n", __func__, cpuid);

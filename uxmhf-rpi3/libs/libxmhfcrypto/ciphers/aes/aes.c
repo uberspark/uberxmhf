@@ -527,7 +527,7 @@ int ECB_TEST(void)
   int i, y;
 
   for (i = 0; i < (int)(sizeof(tests)/sizeof(tests[0])); i++) {
-    zeromem(&key, sizeof(key));
+    memset(&key, 0, sizeof(key));
     if ((err = rijndael_setup(tests[i].key, tests[i].keylen, 0, &key)) != CRYPT_OK) {
        return err;
     }
@@ -554,7 +554,7 @@ int ECB_TEST(void)
 */
 void ECB_DONE(symmetric_key *skey)
 {
-  LTC_UNUSED_PARAM(skey);
+  (void)skey;
 }
 
 
