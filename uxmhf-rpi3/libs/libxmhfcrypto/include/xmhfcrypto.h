@@ -146,6 +146,16 @@ enum {
 //tomcrypt_cipher.h
 //Empty for now
 
+struct rijndael_key {
+   u32 eK[60], dK[60];
+   int Nr;
+};
+
+
+typedef union Symmetric_key {
+   struct rijndael_key rijndael;
+   void   *data;
+} symmetric_key;
 
 
 

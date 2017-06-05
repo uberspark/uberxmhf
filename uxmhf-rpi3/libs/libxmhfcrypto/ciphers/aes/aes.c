@@ -30,7 +30,9 @@
   Implementation of AES
 */
 
-#include "tomcrypt.h"
+#include <string.h>
+#include <xmhfcrypto.h>
+
 
 /*
 #define LTC_RIJNDAEL
@@ -48,7 +50,7 @@
 #define ECB_DONE rijndael_done
 #define ECB_TEST rijndael_test
 #define ECB_KS   rijndael_keysize
-
+/*
 const struct ltc_cipher_descriptor rijndael_desc =
 {
     "rijndael",
@@ -66,12 +68,12 @@ const struct ltc_cipher_descriptor aes_desc =
     SETUP, ECB_ENC, ECB_DEC, ECB_TEST, ECB_DONE, ECB_KS,
     NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL
 };
-
+*/
 
 #define __LTC_AES_TAB_C__
 #include "aes_tab.c"
 
-static ulong32 setup_mix(ulong32 temp)
+static u32 setup_mix(u32 temp)
 {
    return (Te4_3[byte(temp, 2)]) ^
           (Te4_2[byte(temp, 1)]) ^
@@ -91,8 +93,8 @@ static ulong32 setup_mix(ulong32 temp)
 int SETUP(const unsigned char *key, int keylen, int num_rounds, symmetric_key *skey)
 {
     int i;
-    ulong32 temp, *rk;
-    ulong32 *rrk;
+    u32 temp, *rk;
+    u32 *rrk;
 
     LTC_ARGCHK(key  != NULL);
     LTC_ARGCHK(skey != NULL);
@@ -231,7 +233,7 @@ int SETUP(const unsigned char *key, int keylen, int num_rounds, symmetric_key *s
 */
 int ECB_ENC(const unsigned char *pt, unsigned char *ct, symmetric_key *skey)
 {
-    ulong32 s0, s1, s2, s3, t0, t1, t2, t3, *rk;
+    u32 s0, s1, s2, s3, t0, t1, t2, t3, *rk;
     int Nr, r;
 
     LTC_ARGCHK(pt != NULL);
@@ -359,7 +361,7 @@ int ECB_ENC(const unsigned char *pt, unsigned char *ct, symmetric_key *skey)
 */
 int ECB_DEC(const unsigned char *ct, unsigned char *pt, symmetric_key *skey)
 {
-    ulong32 s0, s1, s2, s3, t0, t1, t2, t3, *rk;
+    u32 s0, s1, s2, s3, t0, t1, t2, t3, *rk;
     int Nr, r;
 
     LTC_ARGCHK(pt != NULL);
