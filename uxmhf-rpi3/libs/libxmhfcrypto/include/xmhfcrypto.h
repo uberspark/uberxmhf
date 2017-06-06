@@ -98,6 +98,10 @@ enum {
 
 
 
+//tomcrypt_cfg.h
+
+typedef u32 LTC_FAST_TYPE;
+#define LTC_FAST_TYPE_PTR_CAST(x) ((LTC_FAST_TYPE*)(void*)(x))
 
 
 

@@ -63,3 +63,185 @@ int rijndael_cbc_start(const unsigned char *IV, const unsigned char *key,
    return CRYPT_OK;
 }
 
+
+/**
+   Set an initial vector
+   @param IV   The initial vector
+   @param len  The length of the vector (in octets)
+   @param cbc  The CBC state
+   @return CRYPT_OK if successful
+*/
+int rijndael_cbc_setiv(const unsigned char *IV, unsigned long len, symmetric_CBC *cbc)
+{
+   LTC_ARGCHK(IV  != NULL);
+   LTC_ARGCHK(cbc != NULL);
+   if (len != (unsigned long)cbc->blocklen) {
+      return CRYPT_INVALID_ARG;
+   }
+   XMEMCPY(cbc->IV, IV, len);
+   return CRYPT_OK;
+}
+
+
+/**
+   Get the current initial vector
+   @param IV   [out] The destination of the initial vector
+   @param len  [in/out]  The max size and resulting size of the initial vector
+   @param cbc  The CBC state
+   @return CRYPT_OK if successful
+*/
+int rijndael_cbc_getiv(unsigned char *IV, unsigned long *len, symmetric_CBC *cbc)
+{
+   LTC_ARGCHK(IV  != NULL);
+   LTC_ARGCHK(len != NULL);
+   LTC_ARGCHK(cbc != NULL);
+   if ((unsigned long)cbc->blocklen > *len) {
+      *len = cbc->blocklen;
+      return CRYPT_BUFFER_OVERFLOW;
+   }
+   XMEMCPY(IV, cbc->IV, cbc->blocklen);
+   *len = cbc->blocklen;
+
+   return CRYPT_OK;
+}
+
+#define LTC_FAST
+
+/**
+  CBC encrypt
+  @param pt     Plaintext
+  @param ct     [out] Ciphertext
+  @param len    The number of bytes to process (must be multiple of block length)
+  @param cbc    CBC state
+  @return CRYPT_OK if successful
+*/
+int rijndael_cbc_encrypt(const unsigned char *pt, unsigned char *ct, unsigned long len, symmetric_CBC *cbc)
+{
+   int x, err;
+
+   LTC_ARGCHK(pt != NULL);
+   LTC_ARGCHK(ct != NULL);
+   LTC_ARGCHK(cbc != NULL);
+
+   //if ((err = cipher_is_valid(cbc->cipher)) != CRYPT_OK) {
+   //    return err;
+  // }
+
+   /* is blocklen valid? */
+   if (cbc->blocklen < 1 || cbc->blocklen > (int)sizeof(cbc->IV)) {
+      return CRYPT_INVALID_ARG;
+   }
+
+   if (len % cbc->blocklen) {
+      return CRYPT_INVALID_ARG;
+   }
+
+   if (cbc->blocklen % sizeof(LTC_FAST_TYPE)) {
+      return CRYPT_INVALID_ARG;
+   }
+
+   //if (cipher_descriptor[cbc->cipher].accel_cbc_encrypt != NULL) {
+   //   return cipher_descriptor[cbc->cipher].accel_cbc_encrypt(pt, ct, len / cbc->blocklen, cbc->IV, &cbc->key);
+   //} else {
+      while (len) {
+         /* xor IV against plaintext */
+         for (x = 0; x < cbc->blocklen; x += sizeof(LTC_FAST_TYPE)) {
+            *(LTC_FAST_TYPE_PTR_CAST((unsigned char *)cbc->IV + x)) ^= *(LTC_FAST_TYPE_PTR_CAST((unsigned char *)pt + x));
+         }
+
+         /* encrypt */
+         if ((err = rijndael_ecb_encrypt(cbc->IV, ct, &cbc->key)) != CRYPT_OK) {
+            return err;
+         }
+
+         /* store IV [ciphertext] for a future block */
+         for (x = 0; x < cbc->blocklen; x += sizeof(LTC_FAST_TYPE)) {
+            *(LTC_FAST_TYPE_PTR_CAST((unsigned char *)cbc->IV + x)) = *(LTC_FAST_TYPE_PTR_CAST((unsigned char *)ct + x));
+         }
+
+         ct  += cbc->blocklen;
+         pt  += cbc->blocklen;
+         len -= cbc->blocklen;
+      }
+   //}
+   return CRYPT_OK;
+}
+
+
+/** Terminate the chain
+  @param cbc    The CBC chain to terminate
+  @return CRYPT_OK on success
+*/
+int cbc_done(symmetric_CBC *cbc)
+{
+   int err;
+   LTC_ARGCHK(cbc != NULL);
+
+   //if ((err = cipher_is_valid(cbc->cipher)) != CRYPT_OK) {
+   //   return err;
+   //}
+   //cipher_descriptor[cbc->cipher].done(&cbc->key);
+   rijndael_done(&cbc->key);
+
+   return CRYPT_OK;
+}
+
+
+/**
+  CBC decrypt
+  @param ct     Ciphertext
+  @param pt     [out] Plaintext
+  @param len    The number of bytes to process (must be multiple of block length)
+  @param cbc    CBC state
+  @return CRYPT_OK if successful
+*/
+int rijndael_cbc_decrypt(const unsigned char *ct, unsigned char *pt, unsigned long len, symmetric_CBC *cbc)
+{
+   int x, err;
+   unsigned char tmp[16];
+   LTC_FAST_TYPE tmpy;
+
+   LTC_ARGCHK(pt  != NULL);
+   LTC_ARGCHK(ct  != NULL);
+   LTC_ARGCHK(cbc != NULL);
+
+   //if ((err = cipher_is_valid(cbc->cipher)) != CRYPT_OK) {
+   //    return err;
+  // }
+
+   /* is blocklen valid? */
+   if (cbc->blocklen < 1 || cbc->blocklen > (int)sizeof(cbc->IV) || cbc->blocklen > (int)sizeof(tmp)) {
+      return CRYPT_INVALID_ARG;
+   }
+
+   if (len % cbc->blocklen) {
+      return CRYPT_INVALID_ARG;
+   }
+
+   if (cbc->blocklen % sizeof(LTC_FAST_TYPE)) {
+      return CRYPT_INVALID_ARG;
+   }
+
+   //if (cipher_descriptor[cbc->cipher].accel_cbc_decrypt != NULL) {
+   //   return cipher_descriptor[cbc->cipher].accel_cbc_decrypt(ct, pt, len / cbc->blocklen, cbc->IV, &cbc->key);
+   //} else {
+      while (len) {
+         /* decrypt */
+         if ((err = rijndael_ecb_decrypt(ct, tmp, &cbc->key)) != CRYPT_OK) {
+            return err;
+         }
+
+         /* xor IV against plaintext */
+         for (x = 0; x < cbc->blocklen; x += sizeof(LTC_FAST_TYPE)) {
+            tmpy = *(LTC_FAST_TYPE_PTR_CAST((unsigned char *)cbc->IV + x)) ^ *(LTC_FAST_TYPE_PTR_CAST((unsigned char *)tmp + x));
+            *(LTC_FAST_TYPE_PTR_CAST((unsigned char *)cbc->IV + x)) = *(LTC_FAST_TYPE_PTR_CAST((unsigned char *)ct + x));
+            *(LTC_FAST_TYPE_PTR_CAST((unsigned char *)pt + x)) = tmpy;
+         }
+
+         ct  += cbc->blocklen;
+         pt  += cbc->blocklen;
+         len -= cbc->blocklen;
+      }
+   //}
+   return CRYPT_OK;
+}
