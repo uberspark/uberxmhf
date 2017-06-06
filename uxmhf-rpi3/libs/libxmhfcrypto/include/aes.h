@@ -50,6 +50,8 @@
 
 #ifndef __ASSEMBLY__
 
+extern const struct ltc_cipher_descriptor rijndael_desc;
+
 #define Te0(x) TE0[x]
 #define Te1(x) TE1[x]
 #define Te2(x) TE2[x]
