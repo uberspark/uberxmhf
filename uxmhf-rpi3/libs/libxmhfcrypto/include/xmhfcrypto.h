@@ -158,9 +158,35 @@ typedef union Symmetric_key {
 } symmetric_key;
 
 
+/** A block cipher CBC structure */
+typedef struct {
+   /** The index of the cipher chosen */
+   int                 cipher,
+   /** The block size of the given cipher */
+                       blocklen;
+   /** The current IV */
+   unsigned char       IV[MAXBLOCKSIZE];
+   /** The scheduled key */
+   symmetric_key       key;
+} symmetric_CBC;
 
 
 
+/** cipher descriptor table, last entry has "name == NULL" to mark the end of table */
+struct ltc_cipher_descriptor {
+   /** name of cipher */
+   char *name;
+   /** internal ID */
+   unsigned char ID;
+   /** min keysize (octets) */
+   int  min_key_length,
+   /** max keysize (octets) */
+        max_key_length,
+   /** block size (octets) */
+        block_length,
+   /** default number of rounds */
+        default_rounds;
+};
 
 
 

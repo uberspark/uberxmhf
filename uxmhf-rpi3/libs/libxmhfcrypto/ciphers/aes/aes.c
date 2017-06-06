@@ -50,16 +50,15 @@
 #define ECB_DONE rijndael_done
 #define ECB_TEST rijndael_test
 #define ECB_KS   rijndael_keysize
-/*
+
 const struct ltc_cipher_descriptor rijndael_desc =
 {
     "rijndael",
     6,
-    16, 32, 16, 10,
-    SETUP, ECB_ENC, ECB_DEC, ECB_TEST, ECB_DONE, ECB_KS,
-    NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL
+    16, 32, 16, 10
 };
 
+/*
 const struct ltc_cipher_descriptor aes_desc =
 {
     "aes",
