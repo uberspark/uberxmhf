@@ -8,6 +8,9 @@
 #	This is the Makefile for PA5.
 # Modified for uxmhf by amit vasudevan (amitvasudevan@acm.org)
 
+export CURRENT_DIR := $(realpath $(dir $(lastword $(MAKEFILE_LIST))))
+export UXMHFRPI3_DIR := $(CURRENT_DIR)/../../..
+
 
 CC = arm-linux-gnueabihf-gcc 
 
@@ -16,7 +19,10 @@ DIR_LIBFUSE = /home/amit/work/tools/arm-bcm2708/arm-rpi-4.9.3-linux-gnueabihf/ar
 DIR_LIBCRYPTO = /home/amit/work/tools/arm-bcm2708/arm-rpi-4.9.3-linux-gnueabihf/arm-linux-gnueabihf/sysroot/usr/lib/arm-linux-gnueabihf/libcrypto.so 
 DIR_LIBPTHREAD = /home/amit/work/tools/arm-bcm2708/arm-rpi-4.9.3-linux-gnueabihf/arm-linux-gnueabihf/sysroot/usr/lib/arm-linux-gnueabihf/libpthread.so 
 DIR_LIBDL = /home/amit/work/tools/arm-bcm2708/arm-rpi-4.9.3-linux-gnueabihf/arm-linux-gnueabihf/sysroot/lib/arm-linux-gnueabihf/libdl.so.2 
-LIBS = $(DIR_LIBFUSE) $(DIR_LIBPTHREAD) $(DIR_LIBCRYPTO)  $(DIR_LIBDL)   
+DIR_LIBXMHFCRYPTO = $(UXMHFRPI3_DIR)/libs/libxmhfcrypto/libxmhfcrypto.a
+
+
+LIBS = $(DIR_LIBXMHFCRYPTO) $(DIR_LIBFUSE) $(DIR_LIBPTHREAD) $(DIR_LIBCRYPTO)  $(DIR_LIBDL)   
 INCS = ../../../libs/libxmhfcrypto/include
 
 CFLAGS = -I. -I$(INCS) -c -g -Wall
