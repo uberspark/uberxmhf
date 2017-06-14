@@ -147,9 +147,24 @@ uint8_t aes_key[AES_KEY_LEN_BYTES] =
 extern int do_crypt(FILE* in, FILE* out, int action, char* key_str){
     symmetric_CBC cbc_ctx;
     int status;
+    char *plaintext = "0123456789abcdef0123456789abcdef";
+    char outtext[32];
 
     //start aes_cbc
     status = rijndael_cbc_start(aes_iv, aes_key, AES_KEY_LEN_BYTES, 0, &cbc_ctx);
+
+    if(status != CRYPT_OK){
+    	return 0;
+    }
+
+    //encrypt with aes cbc
+    status = rijndael_cbc_encrypt(plaintext, outtext, strlen(plaintext), &cbc_ctx);
+
+    if(status != CRYPT_OK){
+    	return 0;
+    }
+
+    status = rijndael_cbc_done( &cbc_ctx);
 
     if(status != CRYPT_OK){
     	return 0;
