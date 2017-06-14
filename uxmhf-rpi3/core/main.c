@@ -440,29 +440,10 @@ void core_fixresmemmap(u32 fdt_address){
 //////
 void main(u32 r0, u32 id, struct atag *at, u32 cpuid){
 	u32 hvbar, hcr, spsr_hyp;
-	char *src_string="This is a string";
-	char src_string_hash[SHA_DIGEST_LENGTH];
 
 	_XDPRINTF_("%s[%u]: ENTER: sp=0x%08x (cpu_stacks=0x%08x)\n", __func__, cpuid,
 			cpu_read_sp(), &cpu_stacks);
 	_XDPRINTF_("%s[%u]: r0=0x%08x, id=0x%08x, ATAGS=0x%08x\n", __func__, cpuid, r0, id, at);
-
-	//////
-	// libxmhfcrypto sha1 test
-	//////
-	_XDPRINTF_("%s[%u]: src_string=%s\n", __func__, cpuid, src_string);
-	_XDPRINTF_("%s[%u]: len src_string=%u\n", __func__, cpuid, strlen(src_string));
-	sha1(src_string, strlen(src_string), src_string_hash);
-	_XDPRINTF_("%s[%u]: hash src_string= %*D\n", __func__, cpuid, sizeof(src_string_hash), src_string_hash, " ");
-
-	if( rijndael_test() != CRYPT_OK){
-		_XDPRINTF_("%s[%u]: AES test FAILED\n", __func__, cpuid);
-	}else{
-		_XDPRINTF_("%s[%u]: AES test PASSED\n", __func__, cpuid);
-	}
-
-	_XDPRINTF_("%s[%u]: Halting!\n", __func__, cpuid);
-	HALT();
 
 	//sanity check ATAGS pointer
 	if(!(at->size == FDT_MAGIC)){

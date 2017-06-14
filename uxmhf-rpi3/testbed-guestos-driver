@@ -1,6 +1,6 @@
 #!/bin/bash
 
-echo "Preparing to start test..."
+#echo "Preparing to start test..."
 #sudo insmod ./hypcall.ko
 #echo "Loaded hypcall kernel module"
 #sleep 2
@@ -26,7 +26,7 @@ echo "Preparing to start test..."
 #echo iozone -e -I -a -s 2M -r 2k -i 0 -f ~/mnt/test-iozone
 #sleep 2
 #sudo umount ~/mnt
-echo "Waiting for test output to be flushed..."
-sleep 2
-echo "All done. Shutting down..."
-sudo shutdown -hP now
+#echo "Waiting for test output to be flushed..."
+#sleep 2
+#echo "All done. Shutting down..."
+#sudo shutdown -hP now

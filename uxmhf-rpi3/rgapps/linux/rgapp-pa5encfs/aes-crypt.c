@@ -122,3 +122,13 @@ extern int do_crypt(FILE* in, FILE* out, int action, char* key_str){
     /* Success */
     return 1;
 }
+
+
+/*
+	do_crypt using libxmhfcrypto aes primitive
+	aeskey of size TPM_AES_KEY_LEN_BYTES (16)
+	iv of size TPM_AES_KEY_LEN_BYTES (16) which is random
+	cbc_start
+	cbc_encrypt
+	cbc_done
+ */
