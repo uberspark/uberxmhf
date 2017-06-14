@@ -25,6 +25,12 @@
 #include <openssl/evp.h>
 #include <openssl/aes.h>
 
+typedef unsigned int u32;
+typedef unsigned long long int u64;
+typedef unsigned char u8;
+
+#include <xmhfcrypto.h>
+
 #define BLOCKSIZE 1024
 #define FAILURE 0
 #define SUCCESS 1

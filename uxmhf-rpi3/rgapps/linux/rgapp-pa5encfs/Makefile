@@ -17,8 +17,9 @@ DIR_LIBCRYPTO = /home/amit/work/tools/arm-bcm2708/arm-rpi-4.9.3-linux-gnueabihf/
 DIR_LIBPTHREAD = /home/amit/work/tools/arm-bcm2708/arm-rpi-4.9.3-linux-gnueabihf/arm-linux-gnueabihf/sysroot/usr/lib/arm-linux-gnueabihf/libpthread.so 
 DIR_LIBDL = /home/amit/work/tools/arm-bcm2708/arm-rpi-4.9.3-linux-gnueabihf/arm-linux-gnueabihf/sysroot/lib/arm-linux-gnueabihf/libdl.so.2 
 LIBS = $(DIR_LIBFUSE) $(DIR_LIBPTHREAD) $(DIR_LIBCRYPTO)  $(DIR_LIBDL)   
+INCS = ../../../libs/libxmhfcrypto/include
 
-CFLAGS = -c -g -Wall
+CFLAGS = -I. -I$(INCS) -c -g -Wall
 LFLAGS = -g -Wall -Wextra     
 
 .PHONY: all pa5-encfs clean unmount mount debug
