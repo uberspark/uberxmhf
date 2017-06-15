@@ -551,7 +551,7 @@ void main(u32 r0, u32 id, struct atag *at, u32 cpuid){
 
 	hyppgtbl_activate();
 	_XDPRINTF_("%s[%u]: hyp page-tables activated\n", __func__, cpuid);
-
+#if 0
 	//////
 	// aes cbc test
 	//////
@@ -569,7 +569,7 @@ void main(u32 r0, u32 id, struct atag *at, u32 cpuid){
 
 	_XDPRINTF_("%s[%u]: Halting!\n", __func__, cpuid);
 	HALT();
-
+#endif
 
 	// populate stage-2 page tables
 	s2pgtbl_populate_tables();

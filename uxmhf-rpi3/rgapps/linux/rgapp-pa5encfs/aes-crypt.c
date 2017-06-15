@@ -229,6 +229,13 @@ extern int do_crypt(FILE* in, FILE* out, int action, char* key_str){
     		break;
     	}
 
+    	//sanity check inlen is multiple of AES block length (16 bytes)
+    	if( inlen % 16 ){
+    		fprintf(stderr, "aes-crypt debug: at location: 1.1\n");
+    		return 0;
+    	}
+
+
     	/* If in cipher mode, perform cipher transform on block */
     	if(action == ENCRYPT){
     		fprintf(stderr, "aes-crypt debug: at location: 4\n");
