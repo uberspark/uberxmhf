@@ -44,14 +44,19 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
+/*
+ * modified for uxmhf-rpi3 by amit vasudevan (amitvasudevan@acm.org)
+ */
+
+
 /**
  * Common type and structure definitions across TrustVisor's internal
  * Micro-TPM implementation, tee-sdk's svcapi, and any PAL writer who
  * uses any of the relevant Micro-TPM operations.
  */
 
-#ifndef _TV_UTPM_H_
-#define _TV_UTPM_H_
+#ifndef __UTPM_H__
+#define __UTPM_H__
 
 /**
  * FIXME: Once libemhfcrypto exists, it may be reasonable to depend on
@@ -295,4 +300,4 @@ TPM_RESULT utpm_init_master_entropy(uint8_t *aeskey,
                                     uint8_t *hmackey,
                                     void /*rsa_context*/ *rsa);
 
-#endif /* _TV_UTPM_H_ */
+#endif /* __UTPM_H__ */
