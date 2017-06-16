@@ -571,6 +571,22 @@ void main(u32 r0, u32 id, struct atag *at, u32 cpuid){
 	HALT();
 #endif
 
+#if 1
+	//////
+	// sha-1 test
+	//////
+	if(sha1_test() != CRYPT_OK){
+		_XDPRINTF_("%s[%u]: sha-1 test FAILED\n", __func__, cpuid);
+	}else{
+		_XDPRINTF_("%s[%u]: sha-1 test PASSED\n", __func__, cpuid);
+	}
+
+	_XDPRINTF_("%s[%u]: Halting!\n", __func__, cpuid);
+	HALT();
+#endif
+
+
+
 	// populate stage-2 page tables
 	s2pgtbl_populate_tables();
 	_XDPRINTF_("%s[%u]: stage-2 pts populated.\n", __func__, cpuid);

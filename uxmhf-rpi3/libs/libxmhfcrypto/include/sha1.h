@@ -54,7 +54,14 @@
 
 
 
-int sha1(const uint8_t *message, uint32_t len, unsigned char md[SHA_DIGEST_LENGTH]);
+//int sha1(const uint8_t *message, uint32_t len, unsigned char md[SHA_DIGEST_LENGTH]);
+
+int  sha1_compress(hash_state *md, unsigned char *buf);
+int sha1_init(hash_state * md);
+int sha1_process (hash_state * md, const unsigned char *in, unsigned long inlen);
+int sha1_done(hash_state * md, unsigned char *out);
+
+
 
 
 #endif // __ASSEMBLY__

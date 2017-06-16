@@ -10,3 +10,11 @@
 #include <debug.h>
 #include <utpm.h>
 
+//////
+// global data variables
+//////
+// keys for software TPM seal, unseal and quote operations
+__attribute__((section(".data"))) uint8_t g_aeskey[TPM_AES_KEY_LEN_BYTES];
+__attribute__((section(".data"))) uint8_t g_hmackey[TPM_HMAC_KEY_LEN];
+//rsa_key g_rsa_key;
+
