@@ -116,6 +116,88 @@ int hmac_sha1_process(hmac_state *hmac, const unsigned char *in, unsigned long i
 }
 
 
+/**
+   Terminate an HMAC session
+   @param hmac    The HMAC state
+   @param out     [out] The destination of the HMAC authentication tag
+   @param outlen  [in/out]  The max size and resulting size of the HMAC authentication tag
+   @return CRYPT_OK if successful
+*/
+int hmac_sha1_done(hmac_state *hmac, unsigned char *out, unsigned long *outlen)
+{
+    //unsigned char *buf, *isha;
+	unsigned char buf[LTC_HMAC_SHA1_BLOCKSIZE], isha[20];
+    unsigned long hashsize, i;
+    //int hash, err;
+    int err;
+
+    LTC_ARGCHK(hmac  != NULL);
+    LTC_ARGCHK(out   != NULL);
+
+    /* test hash */
+    //hash = hmac->hash;
+    //if((err = hash_is_valid(hash)) != CRYPT_OK) {
+    //    return err;
+    //}
+
+    /* get the hash message digest size */
+    //hashsize = hash_descriptor[hash].hashsize;
+    hashsize = 20;
+
+    /* allocate buffers */
+    //buf  = XMALLOC(LTC_HMAC_BLOCKSIZE);
+    //isha = XMALLOC(hashsize);
+    //if (buf == NULL || isha == NULL) {
+    //   if (buf != NULL) {
+    //      XFREE(buf);
+    //   }
+    //   if (isha != NULL) {
+    //      XFREE(isha);
+    //   }
+    //   return CRYPT_MEM;
+    //}
+
+    /* Get the hash of the first HMAC vector plus the data */
+    if ((err = sha1_done(&hmac->md, isha)) != CRYPT_OK) {
+       goto LBL_ERR;
+    }
+
+    /* Create the second HMAC vector vector for step (3) */
+    for(i=0; i < LTC_HMAC_SHA1_BLOCKSIZE; i++) {
+        buf[i] = hmac->key[i] ^ 0x5C;
+    }
+
+    /* Now calculate the "outer" hash for step (5), (6), and (7) */
+    if ((err = sha1_init(&hmac->md)) != CRYPT_OK) {
+       goto LBL_ERR;
+    }
+    if ((err = sha1_process(&hmac->md, buf, LTC_HMAC_SHA1_BLOCKSIZE)) != CRYPT_OK) {
+       goto LBL_ERR;
+    }
+    if ((err = sha1_process(&hmac->md, isha, hashsize)) != CRYPT_OK) {
+       goto LBL_ERR;
+    }
+    if ((err = sha1_done(&hmac->md, buf)) != CRYPT_OK) {
+       goto LBL_ERR;
+    }
+
+    /* copy to output  */
+    for (i = 0; i < hashsize && i < *outlen; i++) {
+        out[i] = buf[i];
+    }
+    *outlen = i;
+
+    err = CRYPT_OK;
+LBL_ERR:
+    //XFREE(hmac->key);
+
+    //XFREE(isha);
+    //XFREE(buf);
+
+    return err;
+}
+
+
 
 
 /**
