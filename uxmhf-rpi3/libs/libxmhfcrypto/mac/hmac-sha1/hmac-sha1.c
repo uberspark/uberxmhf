@@ -61,9 +61,9 @@ int hmac_sha1_init(hmac_state *hmac, const unsigned char *key, unsigned long key
     /* (1) make sure we have a large enough key */
     if(keylen > LTC_HMAC_SHA1_BLOCKSIZE) {
         z = LTC_HMAC_SHA1_BLOCKSIZE;
-        //if ((err = hash_memory(hash, key, keylen, hmac->key, &z)) != CRYPT_OK) {
-        //   goto LBL_ERR;
-        //}
+        if ((err = sha1_memory(key, keylen, hmac->key, &z)) != CRYPT_OK) {
+           goto LBL_ERR;
+        }
         keylen = hashsize;
     } else {
         XMEMCPY(hmac->key, key, (size_t)keylen);
