@@ -61,5 +61,17 @@ void utpm_init_instance(utpm_master_state_t *utpm) {
 
 }
 
+////// PCR read
+/* software tpm pcr read */
+TPM_RESULT utpm_pcrread(TPM_DIGEST* pcr_value /* output */,
+                        utpm_master_state_t *utpm, uint32_t pcr_num) /* inputs */
+{
+    if(!pcr_value || !utpm) { return UTPM_ERR_BAD_PARAM; }
+    if(pcr_num >= TPM_PCR_NUM)  { return UTPM_ERR_PCR_OUT_OF_RANGE; }
+
+	memcpy(pcr_value->value, utpm->pcr_bank[pcr_num].value, TPM_PCR_SIZE);
+	return UTPM_SUCCESS;
+}
+
 
 
