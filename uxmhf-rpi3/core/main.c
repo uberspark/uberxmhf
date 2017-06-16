@@ -571,7 +571,7 @@ void main(u32 r0, u32 id, struct atag *at, u32 cpuid){
 	HALT();
 #endif
 
-#if 1
+#if 0
 	//////
 	// sha-1 test
 	//////
