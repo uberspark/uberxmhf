@@ -75,3 +75,33 @@ TPM_RESULT utpm_pcrread(TPM_DIGEST* pcr_value /* output */,
 
 
 
+////// PCR extend
+/* software tpm pcr extend */
+TPM_RESULT utpm_extend(TPM_DIGEST *measurement, utpm_master_state_t *utpm, uint32_t pcr_num)
+{
+    unsigned long outlen;
+    int rv;
+
+    if(!measurement || !utpm) { return UTPM_ERR_BAD_PARAM; }
+    if(pcr_num >= TPM_PCR_NUM) { return UTPM_ERR_PCR_OUT_OF_RANGE; }
+
+    _XDPRINTF_("utpm_extend: extending PCR %d\n", pcr_num);
+
+    //print_hex("utpm_extend: PCR before: ", utpm->pcr_bank[pcr_num].value, TPM_HASH_SIZE);
+    //print_hex("utpm_extend: measurement: ", measurement->value, TPM_HASH_SIZE);
+
+    /* pcr = H( pcr || measurement) */
+    outlen = sizeof(utpm->pcr_bank[pcr_num].value);
+    rv = sha1_memory_multi( utpm->pcr_bank[pcr_num].value, &outlen,
+                       utpm->pcr_bank[pcr_num].value, TPM_HASH_SIZE,
+                       measurement->value, TPM_HASH_SIZE,
+                            NULL, NULL);
+    if (rv) {
+      //abort();
+    	return UTPM_ERR;
+    }
+
+    //print_hex("utpm_extend: PCR after: ", utpm->pcr_bank[pcr_num].value, TPM_HASH_SIZE);
+
+	return UTPM_SUCCESS;
+}

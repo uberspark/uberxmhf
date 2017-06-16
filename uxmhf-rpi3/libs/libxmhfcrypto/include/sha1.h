@@ -61,6 +61,8 @@ int sha1_init(hash_state * md);
 int sha1_process (hash_state * md, const unsigned char *in, unsigned long inlen);
 int sha1_done(hash_state * md, unsigned char *out);
 int sha1_memory(const unsigned char *in, unsigned long inlen, unsigned char *out, unsigned long *outlen);
+int sha1_memory_multi(unsigned char *out, unsigned long *outlen,
+                      const unsigned char *in, unsigned long inlen, ...);
 
 
 

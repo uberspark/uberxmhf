@@ -361,3 +361,69 @@ LBL_ERR:
 }
 
 
+
+
+/**
+  Hash multiple (non-adjacent) blocks of memory at once.
+  @param hash   The index of the hash you wish to use
+  @param out    [out] Where to store the digest
+  @param outlen [in/out] Max size and resulting size of the digest
+  @param in     The data you wish to hash
+  @param inlen  The length of the data to hash (octets)
+  @param ...    tuples of (data,len) pairs to hash, terminated with a (NULL,x) (x=don't care)
+  @return CRYPT_OK if successful
+*/
+int sha1_memory_multi(unsigned char *out, unsigned long *outlen,
+                      const unsigned char *in, unsigned long inlen, ...)
+{
+    //hash_state          *md;
+    hash_state          md;
+    int                  err;
+    va_list              args;
+    const unsigned char *curptr;
+    unsigned long        curlen;
+
+    LTC_ARGCHK(in     != NULL);
+    LTC_ARGCHK(out    != NULL);
+    LTC_ARGCHK(outlen != NULL);
+
+    //if ((err = hash_is_valid(hash)) != CRYPT_OK) {
+    //    return err;
+    //}
+
+    if (*outlen < 20) {
+       *outlen = 20;
+       return CRYPT_BUFFER_OVERFLOW;
+    }
+
+    //md = XMALLOC(sizeof(hash_state));
+    //if (md == NULL) {
+    //   return CRYPT_MEM;
+    //}
+
+    if ((err = sha1_init(&md)) != CRYPT_OK) {
+       goto LBL_ERR;
+    }
+
+    va_start(args, inlen);
+    curptr = in;
+    curlen = inlen;
+    for (;;) {
+       /* process buf */
+       if ((err = sha1_process(&md, curptr, curlen)) != CRYPT_OK) {
+          goto LBL_ERR;
+       }
+       /* step to next */
+       curptr = va_arg(args, const unsigned char*);
+       if (curptr == NULL) {
+          break;
+       }
+       curlen = va_arg(args, unsigned long);
+    }
+    err = sha1_done(&md, out);
+    *outlen = 20;
+LBL_ERR:
+    //XFREE(md);
+    va_end(args);
+    return err;
+}
