@@ -1,6 +1,7 @@
 srcdir := $(dir $(lastword $(MAKEFILE_LIST)))
 vpath %.c $(srcdir) $(srcdir)/hashes/sha1
 vpath %.c $(srcdir) $(srcdir)/ciphers/aes
+vpath %.c $(srcdir) $(srcdir)/mac/hmac-sha1
 
 #include $(srcdir)/../../../common.mk
 
@@ -8,10 +9,12 @@ C_SOURCES := hashes/sha1/sha1.c
 C_SOURCES += ciphers/aes/aes.c
 C_SOURCES += ciphers/aes/aes_tab.c
 C_SOURCES += ciphers/aes/aes_cbc.c
+C_SOURCES += mac/hmac-sha1/hmac-sha1.c
 
 O_SOURCES := $(C_SOURCES)
 O_SOURCES := $(patsubst hashes/sha1/%, %, $(O_SOURCES))
 O_SOURCES := $(patsubst ciphers/aes/%, %, $(O_SOURCES))
+O_SOURCES := $(patsubst mac/hmac-sha1/%, %, $(O_SOURCES))
 
 OBJECTS = $(patsubst %.c, %.o, $(O_SOURCES))
 
