@@ -11,6 +11,8 @@
 #include <sha1.h>
 #include <aes.h>
 
+#include <utpm.h>
+
 //////
 // externs
 //////
@@ -580,6 +582,70 @@ void main(u32 r0, u32 id, struct atag *at, u32 cpuid){
 	}else{
 		_XDPRINTF_("%s[%u]: sha-1 test PASSED\n", __func__, cpuid);
 	}
+
+	_XDPRINTF_("%s[%u]: Halting!\n", __func__, cpuid);
+	HALT();
+#endif
+
+
+#if 1
+	//////
+	// utpm test
+	//////
+	{
+		utpm_master_state_t utpm;
+		TPM_DIGEST pcr0;
+		TPM_DIGEST measurement;
+		uint8_t digest[] =
+				{ 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+				  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01
+				};
+
+		uint8_t g_aeskey[TPM_AES_KEY_LEN_BYTES] =
+				{
+						0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08,
+						0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18
+				};
+
+		uint8_t g_hmackey[TPM_HMAC_KEY_LEN] =
+				{
+						0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f, 0x01, 0x02,
+						0x1a, 0x1b, 0x1c, 0x1d, 0x1e, 0x1f, 0x11, 0x12,
+						0xaa, 0xbb, 0xcc, 0xdd
+				};
+
+		uint8_t g_rsakey[] = {0x00, 0x00, 0x00, 0x00};
+
+		if (utpm_init_master_entropy(&g_aeskey, &g_hmackey, &g_rsakey) != UTPM_SUCCESS){
+			_XDPRINTF_("%s[%u]: utpm_init_master_entropy FAILED. Halting!\n", __func__, cpuid);
+			HALT();
+		}
+
+		utpm_init_instance(&utpm);
+
+		if( utpm_pcrread(&pcr0, &utpm, 0) != UTPM_SUCCESS ){
+			_XDPRINTF_("%s[%u]: utpm_pcrread FAILED. Halting!\n", __func__, cpuid);
+			HALT();
+		}
+
+		_XDPRINTF_("%s[%u]: pcr-0: %20D\n", __func__, cpuid, pcr0.value, " ");
+
+		memcpy(&measurement.value, &digest, sizeof(digest));
+
+		if( utpm_extend(&measurement, &utpm, 0) != UTPM_SUCCESS ){
+			_XDPRINTF_("%s[%u]: utpm_extend FAILED. Halting!\n", __func__, cpuid);
+			HALT();
+		}
+
+		if( utpm_pcrread(&pcr0, &utpm, 0) != UTPM_SUCCESS ){
+			_XDPRINTF_("%s[%u]: utpm_pcrread FAILED. Halting!\n", __func__, cpuid);
+			HALT();
+		}
+
+		_XDPRINTF_("%s[%u]: pcr-0: %20D\n", __func__, cpuid, pcr0.value, " ");
+
+	}
+
 
 	_XDPRINTF_("%s[%u]: Halting!\n", __func__, cpuid);
 	HALT();
