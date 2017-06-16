@@ -141,7 +141,6 @@ TPM_RESULT utpm_seal(utpm_master_state_t *utpm,
     //print_hex("  [TV:utpm_seal] g_hmackey:    ", g_hmackey, TPM_HASH_SIZE); /* XXX SECURITY */
     //print_hex("  [TV:utpm_seal] g_aeskey:     ", g_aeskey, TPM_AES_KEY_LEN_BYTES); /* XXX SECURITY */
 
-#if 0
     /**
      * Part 1: Populate digestAtCreation (only for tpmPcrInfo that selects 1+ PCRs).
      */
@@ -165,16 +164,17 @@ TPM_RESULT utpm_seal(utpm_master_state_t *utpm,
                                                &bytes_consumed_by_pcrInfo);
         if(0 != rv) { return 1; }
 
+		#if 0
         /* 2. overwrite digestAtCreation based on current PCR contents */
         rv = utpm_internal_digest_current_TpmPcrComposite(
             utpm,
             &tpmPcrInfo_internal.pcrSelection,
             &tpmPcrInfo_internal.digestAtCreation);
         if(0 != rv) { return 1; }
+		#endif
     } else {
         tpmPcrInfo_internal.pcrSelection.sizeOfSelect = 0;
     }
-#endif
 
 
 #if 0

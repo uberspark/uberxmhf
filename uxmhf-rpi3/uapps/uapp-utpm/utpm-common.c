@@ -77,3 +77,55 @@ unsigned int utpm_seal_output_size(unsigned int inlen,
 
     return size;
 }
+
+
+/* If no destination buffer is provided then just set the number of
+ * bytes that would be consumed.*/
+uint32_t utpm_internal_memcpy_TPM_PCR_SELECTION(
+    TPM_PCR_SELECTION *pcrSelection, uint8_t *dest, uint32_t *bytes_consumed)
+{
+    if(!pcrSelection || !bytes_consumed) return 1;
+
+    *bytes_consumed = sizeof(pcrSelection->sizeOfSelect) + pcrSelection->sizeOfSelect;
+
+    if(dest) {
+        memcpy(dest, pcrSelection, *bytes_consumed);
+    }
+
+    return 0; /* success */
+}
+
+
+/* If no destination buffer is provided then just set the number of
+ * bytes that would be consumed.*/
+uint32_t utpm_internal_memcpy_TPM_PCR_INFO(
+    TPM_PCR_INFO *pcrInfo, /* in */
+    uint8_t *dest, /* out */
+    uint32_t *bytes_consumed) /* out */
+{
+    uint32_t rv;
+
+    if(!pcrInfo || !bytes_consumed) { return 1; }
+
+    rv = utpm_internal_memcpy_TPM_PCR_SELECTION(&pcrInfo->pcrSelection, dest, bytes_consumed);
+    if(0 != rv) { return rv; }
+
+
+    if(pcrInfo->pcrSelection.sizeOfSelect > 0) {
+        /* If no destination buffer, then just return the required
+         * size in bytes_consumed. */
+        if(NULL == dest) {
+            *bytes_consumed += 2*TPM_HASH_SIZE;
+            return 0;
+        }
+        /* If we're still here, copy two TPM_COMPOSITE_HASH values to dest. */
+        else {
+            memcpy(dest + *bytes_consumed, pcrInfo->digestAtRelease.value, TPM_HASH_SIZE);
+            *bytes_consumed += TPM_HASH_SIZE;
+
+            memcpy(dest + *bytes_consumed, pcrInfo->digestAtCreation.value, TPM_HASH_SIZE);
+            *bytes_consumed += TPM_HASH_SIZE;
+        }
+    }
+    return 0;
+}
