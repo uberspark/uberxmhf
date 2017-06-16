@@ -53,4 +53,13 @@ TPM_RESULT utpm_init_master_entropy(uint8_t *aeskey,
 }
 
 
+////// initialize instance
+void utpm_init_instance(utpm_master_state_t *utpm) {
+    if(NULL == utpm) return;
+
+    memset(utpm->pcr_bank, 0, TPM_PCR_SIZE*TPM_PCR_NUM);
+
+}
+
+
 
