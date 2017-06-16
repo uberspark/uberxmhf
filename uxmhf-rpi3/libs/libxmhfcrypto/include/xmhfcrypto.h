@@ -221,11 +221,13 @@ typedef union Hash_state {
 //tomcrypt_mac.h
 //empty for now
 
+#define LTC_HMAC_BLOCKSIZE	64
+
 typedef struct Hmac_state {
      hash_state     md;
      int            hash;
      hash_state     hashstate;
-     unsigned char  *key;
+     unsigned char  key[LTC_HMAC_BLOCKSIZE];
 } hmac_state;
 
 
