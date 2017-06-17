@@ -399,7 +399,8 @@ TPM_RESULT utpm_unseal(utpm_master_state_t *utpm,
         TPM_PCR_INFO unsealedPcrInfo;
         uint32_t bytes_consumed_by_pcrInfo;
         uint32_t space_needed_for_composite = 0;
-        uint8_t *currentPcrComposite = NULL;
+        uint8_t buf_currentPcrComposite[MAX_PCR_COMPOSITE_SIZE];
+        uint8_t *currentPcrComposite = &buf_currentPcrComposite;
         TPM_COMPOSITE_HASH digestRightNow;
 
 
@@ -417,36 +418,37 @@ TPM_RESULT utpm_unseal(utpm_master_state_t *utpm,
         }
         /* 1b. Verify that required PCR values match */
         else {
-			#if 0
 
-        	print_hex("  unsealedPcrInfo.digestAtRelease: ", (uint8_t*)&unsealedPcrInfo.digestAtRelease, TPM_HASH_SIZE);
+        	//print_hex("  unsealedPcrInfo.digestAtRelease: ", (uint8_t*)&unsealedPcrInfo.digestAtRelease, TPM_HASH_SIZE);
 
             /* 2. Create current PCR Composite digest, for use in compairing against digestAtRelease */
             rv = utpm_internal_allocate_and_populate_current_TpmPcrComposite(
                 utpm,
                 &unsealedPcrInfo.pcrSelection,
-                &currentPcrComposite,
+                currentPcrComposite,
                 &space_needed_for_composite);
             if(rv != 0) {
-                dprintf(LOG_ERROR, "utpm_internal_allocate_and_populate_current_TpmPcrComposite FAILED\n");
+                //dprintf(LOG_ERROR, "utpm_internal_allocate_and_populate_current_TpmPcrComposite FAILED\n");
                 return 1;
             }
-            print_hex("  current PcrComposite: ", currentPcrComposite, space_needed_for_composite);
+            //print_hex("  current PcrComposite: ", currentPcrComposite, space_needed_for_composite);
+
 
             /* 3. Composite hash */
-            sha1_buffer(currentPcrComposite, space_needed_for_composite, digestRightNow.value);
-            print_hex("  digestRightNow: ", digestRightNow.value, TPM_HASH_SIZE);
+            //sha1_buffer(currentPcrComposite, space_needed_for_composite, digestRightNow.value);
+            sha1_memory(currentPcrComposite, space_needed_for_composite, digestRightNow.value, TPM_HASH_SIZE);
+
+            //print_hex("  digestRightNow: ", digestRightNow.value, TPM_HASH_SIZE);
 
             if(0 != memcmp(digestRightNow.value, unsealedPcrInfo.digestAtRelease.value, TPM_HASH_SIZE)) {
-                dprintf(LOG_ERROR, "0 != memcmp(digestRightNow.value, unsealedPcrInfo.digestAtRelease.value, TPM_HASH_SIZE)\n");
+                //dprintf(LOG_ERROR, "0 != memcmp(digestRightNow.value, unsealedPcrInfo.digestAtRelease.value, TPM_HASH_SIZE)\n");
                 rv = 1;
                 goto out;
             }
 
-            dprintf(LOG_TRACE, "[TV:UTPM_UNSEAL] digestAtRelase MATCH; Unseal ALLOWED!\n");
+            //dprintf(LOG_TRACE, "[TV:UTPM_UNSEAL] digestAtRelase MATCH; Unseal ALLOWED!\n");
 
             memcpy(digestAtCreation->value, unsealedPcrInfo.digestAtCreation.value, TPM_HASH_SIZE);
-			#endif
         }
         /* 4. Reshuffle output buffer and strip padding so that only
          * the user's plaintext is returned. Buffer's contents: [
