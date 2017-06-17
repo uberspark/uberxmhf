@@ -618,8 +618,11 @@ void main(u32 r0, u32 id, struct atag *at, u32 cpuid){
 		char *seal_inbuf = "0123456789abcdef";
 		uint32_t seal_inbuf_len = strlen(seal_inbuf)+1;
 		char seal_outbuf[32];
+		char seal_outbuf2[32];
 		uint32_t seal_outbuf_len;
+		uint32_t seal_outbuf2_len;
 		TPM_PCR_INFO tpmPcrInfo;
+		TPM_COMPOSITE_HASH digestAtCreation;
 
 		if (utpm_init_master_entropy(&g_aeskey, &g_hmackey, &g_rsakey) != UTPM_SUCCESS){
 			_XDPRINTF_("%s[%u]: utpm_init_master_entropy FAILED. Halting!\n", __func__, cpuid);
@@ -660,6 +663,16 @@ void main(u32 r0, u32 id, struct atag *at, u32 cpuid){
 		}
 
 		_XDPRINTF_("%s[%u]: utpm_seal PASSED\n", __func__, cpuid);
+
+		if( utpm_unseal(&utpm,
+		                       seal_outbuf, seal_outbuf_len,
+		                       seal_outbuf2, &seal_outbuf2_len,
+		                       &digestAtCreation) ){
+			_XDPRINTF_("%s[%u]: utpm_unseal FAILED. Halting!\n", __func__, cpuid);
+			HALT();
+		}
+
+		_XDPRINTF_("%s[%u]: utpm_unseal PASSED\n", __func__, cpuid);
 
 	}
 
