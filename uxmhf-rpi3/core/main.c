@@ -615,6 +615,11 @@ void main(u32 r0, u32 id, struct atag *at, u32 cpuid){
 				};
 
 		uint8_t g_rsakey[] = {0x00, 0x00, 0x00, 0x00};
+		char *seal_inbuf = "0123456789abcdef";
+		uint32_t seal_inbuf_len = strlen(seal_inbuf)+1;
+		char seal_outbuf[32];
+		uint32_t seal_outbuf_len;
+		TPM_PCR_INFO tpmPcrInfo;
 
 		if (utpm_init_master_entropy(&g_aeskey, &g_hmackey, &g_rsakey) != UTPM_SUCCESS){
 			_XDPRINTF_("%s[%u]: utpm_init_master_entropy FAILED. Halting!\n", __func__, cpuid);
@@ -643,6 +648,18 @@ void main(u32 r0, u32 id, struct atag *at, u32 cpuid){
 		}
 
 		_XDPRINTF_("%s[%u]: pcr-0: %20D\n", __func__, cpuid, pcr0.value, " ");
+
+		tpmPcrInfo.pcrSelection.sizeOfSelect = 0;
+		tpmPcrInfo.pcrSelection.pcrSelect[0] = 0;
+
+		if( utpm_seal(&utpm, &tpmPcrInfo,
+		                     seal_inbuf, seal_inbuf_len,
+		                     seal_outbuf, &seal_outbuf_len) ){
+			_XDPRINTF_("%s[%u]: utpm_seal FAILED. Halting!\n", __func__, cpuid);
+			HALT();
+		}
+
+		_XDPRINTF_("%s[%u]: utpm_seal PASSED\n", __func__, cpuid);
 
 	}
 
