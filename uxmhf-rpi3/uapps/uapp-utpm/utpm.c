@@ -300,3 +300,152 @@ TPM_RESULT utpm_seal(utpm_master_state_t *utpm,
 
 	return rv;
 }
+
+
+
+////// PCR UNSEAL
+TPM_RESULT utpm_unseal(utpm_master_state_t *utpm,
+                       uint8_t* input, uint32_t inlen,
+                       uint8_t* output, uint32_t* outlen,
+                       TPM_COMPOSITE_HASH *digestAtCreation) /* out */
+{
+	uint8_t hmacCalculated[TPM_HASH_SIZE];
+	uint32_t rv;
+        symmetric_CBC cbc_ctx;
+
+    if(!utpm || !input || !output || !outlen || !digestAtCreation) { return 1; }
+
+	/**
+     * Recall from utpm_seal():
+     * output = IV || AES-CBC(TPM_PCR_INFO || input_len || input || PADDING) || HMAC( entire ciphertext including IV )
+     */
+
+    /**
+     * Step 1: Verify HMAC.  This ensures the sealed ciphertext has
+     * not been modified and that it was sealed on this particular
+     * instance of TrustVisor.
+     */
+
+    /* Ciphertext (input) length should be a multiple of the AES block size + HMAC size */
+    if(0 != (inlen - TPM_HASH_SIZE) % TPM_AES_KEY_LEN_BYTES) {
+        //dprintf(LOG_ERROR, "Unseal Input **Length FAILURE**: 0 != (inlen - TPM_HASH_SIZE) %% TPM_AES_KEY_LEN_BYTES\n");
+        //dprintf(LOG_ERROR, "inlen %d, TPM_HASH_SIZE %d, TPM_AES_KEY_LEN_BYTES %d\n",
+        //        inlen, TPM_HASH_SIZE, TPM_AES_KEY_LEN_BYTES);
+        return 1;
+    }
+
+#if 0
+    /* HMAC should be the last TPM_HASH_SIZE bytes of the
+     * input. Calculate its expected value based on the first (inlen -
+     * TPM_HASH_SIZE) bytes of the input and compare against provided
+     * value. */
+    HMAC_SHA1(g_hmackey, TPM_HASH_SIZE, input, inlen - TPM_HASH_SIZE, hmacCalculated);
+    if(memcmp(hmacCalculated, input + inlen - TPM_HASH_SIZE, TPM_HASH_SIZE)) {
+        dprintf(LOG_ERROR, "Unseal HMAC **INTEGRITY FAILURE**: memcmp(hmacCalculated, input + inlen - TPM_HASH_SIZE, TPM_HASH_SIZE)\n");
+        print_hex("  hmacCalculated: ", hmacCalculated, TPM_HASH_SIZE);
+        print_hex("  input + inlen - TPM_HASH_SIZE:" , input + inlen - TPM_HASH_SIZE, TPM_HASH_SIZE);
+        return 1;
+    }
+
+    /**
+     * Step 2. Decrypt data.  I cannot think of a reason why this
+     * could ever fail if the above HMAC check was successful.
+     */
+
+    *outlen = inlen
+        - TPM_AES_KEY_LEN_BYTES /* iv */
+        - TPM_HASH_SIZE;        /* hmac */
+
+    if (cbc_start( find_cipher("aes"),
+                   input, /* iv is at beginning of input */
+                   g_aeskey, TPM_AES_KEY_LEN_BYTES,
+                   0,
+                   &cbc_ctx)) {
+      abort();
+    }
+    if (cbc_decrypt( input+TPM_AES_KEY_LEN_BYTES, /* offset to ciphertext just beyond iv */
+                     output,
+                     *outlen,
+                     &cbc_ctx)) {
+      abort();
+    }
+    if (cbc_done( &cbc_ctx)) {
+      abort();
+    }
+
+    print_hex("  Unsealed plaintext: ", output, *outlen);
+
+    /**
+     * Step 3. Verify that PCR values match.
+     */
+
+    /* 1. Determine which PCRs were included */
+    /* 2. Create the TPM_PCR_COMPOSITE for those PCRs with their current values */
+    /* 3. Compare the COMPOSITE_HASH with the one in the ciphertext. */
+
+    /* plaintext contains [ TPM_PCR_INFO | plaintextLen | plaintext ] */
+    { /* Separate logic for PCR checking since eventually it will
+       * likely be library functionality (TODO). */
+        uint8_t *p = output;
+        TPM_PCR_INFO unsealedPcrInfo;
+        uint32_t bytes_consumed_by_pcrInfo;
+        uint32_t space_needed_for_composite = 0;
+        uint8_t *currentPcrComposite = NULL;
+        TPM_COMPOSITE_HASH digestRightNow;
+
+        /* 1. TPM_PCR_INFO */
+        rv = utpm_internal_memcpy_TPM_PCR_INFO((TPM_PCR_INFO*)p, (uint8_t*)&unsealedPcrInfo, &bytes_consumed_by_pcrInfo);
+        if(0 != rv) return rv;
+        p += bytes_consumed_by_pcrInfo;
+        print_hex("  unsealedPcrInfo: ", (uint8_t*)&unsealedPcrInfo, bytes_consumed_by_pcrInfo);
+
+        /* 1a. Handle the simple case where no PCRs are involved */
+        if(bytes_consumed_by_pcrInfo <= sizeof(unsealedPcrInfo.pcrSelection.sizeOfSelect)) {
+            dprintf(LOG_TRACE, "  No PCRs selected.  No checking required.\n");
+            memset(digestAtCreation->value, 0, TPM_HASH_SIZE);
+        }
+        /* 1b. Verify that required PCR values match */
+        else {
+            print_hex("  unsealedPcrInfo.digestAtRelease: ", (uint8_t*)&unsealedPcrInfo.digestAtRelease, TPM_HASH_SIZE);
+
+            /* 2. Create current PCR Composite digest, for use in compairing against digestAtRelease */
+            rv = utpm_internal_allocate_and_populate_current_TpmPcrComposite(
+                utpm,
+                &unsealedPcrInfo.pcrSelection,
+                &currentPcrComposite,
+                &space_needed_for_composite);
+            if(rv != 0) {
+                dprintf(LOG_ERROR, "utpm_internal_allocate_and_populate_current_TpmPcrComposite FAILED\n");
+                return 1;
+            }
+            print_hex("  current PcrComposite: ", currentPcrComposite, space_needed_for_composite);
+
+            /* 3. Composite hash */
+            sha1_buffer(currentPcrComposite, space_needed_for_composite, digestRightNow.value);
+            print_hex("  digestRightNow: ", digestRightNow.value, TPM_HASH_SIZE);
+
+            if(0 != memcmp(digestRightNow.value, unsealedPcrInfo.digestAtRelease.value, TPM_HASH_SIZE)) {
+                dprintf(LOG_ERROR, "0 != memcmp(digestRightNow.value, unsealedPcrInfo.digestAtRelease.value, TPM_HASH_SIZE)\n");
+                rv = 1;
+                goto out;
+            }
+
+            dprintf(LOG_TRACE, "[TV:UTPM_UNSEAL] digestAtRelase MATCH; Unseal ALLOWED!\n");
+
+            memcpy(digestAtCreation->value, unsealedPcrInfo.digestAtCreation.value, TPM_HASH_SIZE);
+        }
+        /* 4. Reshuffle output buffer and strip padding so that only
+         * the user's plaintext is returned. Buffer's contents: [
+         * plaintextLen | plainText | padding ] */
+
+        *outlen = *((uint32_t*)p);
+        p += sizeof(uint32_t);
+        memcpy(output, p, *outlen);
+
+      out:
+        if(currentPcrComposite) { free(currentPcrComposite); currentPcrComposite = NULL; }
+    } /* END Separate logic for PCR checking. */
+#endif
+
+    return rv;
+}
