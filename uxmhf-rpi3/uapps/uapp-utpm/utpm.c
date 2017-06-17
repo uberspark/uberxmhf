@@ -383,7 +383,6 @@ TPM_RESULT utpm_unseal(utpm_master_state_t *utpm,
 
     //print_hex("  Unsealed plaintext: ", output, *outlen);
 
-#if 0
 
     /**
      * Step 3. Verify that PCR values match.
@@ -403,20 +402,24 @@ TPM_RESULT utpm_unseal(utpm_master_state_t *utpm,
         uint8_t *currentPcrComposite = NULL;
         TPM_COMPOSITE_HASH digestRightNow;
 
+
         /* 1. TPM_PCR_INFO */
         rv = utpm_internal_memcpy_TPM_PCR_INFO((TPM_PCR_INFO*)p, (uint8_t*)&unsealedPcrInfo, &bytes_consumed_by_pcrInfo);
         if(0 != rv) return rv;
         p += bytes_consumed_by_pcrInfo;
-        print_hex("  unsealedPcrInfo: ", (uint8_t*)&unsealedPcrInfo, bytes_consumed_by_pcrInfo);
+        //print_hex("  unsealedPcrInfo: ", (uint8_t*)&unsealedPcrInfo, bytes_consumed_by_pcrInfo);
+
 
         /* 1a. Handle the simple case where no PCRs are involved */
         if(bytes_consumed_by_pcrInfo <= sizeof(unsealedPcrInfo.pcrSelection.sizeOfSelect)) {
-            dprintf(LOG_TRACE, "  No PCRs selected.  No checking required.\n");
+            //dprintf(LOG_TRACE, "  No PCRs selected.  No checking required.\n");
             memset(digestAtCreation->value, 0, TPM_HASH_SIZE);
         }
         /* 1b. Verify that required PCR values match */
         else {
-            print_hex("  unsealedPcrInfo.digestAtRelease: ", (uint8_t*)&unsealedPcrInfo.digestAtRelease, TPM_HASH_SIZE);
+			#if 0
+
+        	print_hex("  unsealedPcrInfo.digestAtRelease: ", (uint8_t*)&unsealedPcrInfo.digestAtRelease, TPM_HASH_SIZE);
 
             /* 2. Create current PCR Composite digest, for use in compairing against digestAtRelease */
             rv = utpm_internal_allocate_and_populate_current_TpmPcrComposite(
@@ -443,6 +446,7 @@ TPM_RESULT utpm_unseal(utpm_master_state_t *utpm,
             dprintf(LOG_TRACE, "[TV:UTPM_UNSEAL] digestAtRelase MATCH; Unseal ALLOWED!\n");
 
             memcpy(digestAtCreation->value, unsealedPcrInfo.digestAtCreation.value, TPM_HASH_SIZE);
+			#endif
         }
         /* 4. Reshuffle output buffer and strip padding so that only
          * the user's plaintext is returned. Buffer's contents: [
@@ -453,9 +457,10 @@ TPM_RESULT utpm_unseal(utpm_master_state_t *utpm,
         memcpy(output, p, *outlen);
 
       out:
-        if(currentPcrComposite) { free(currentPcrComposite); currentPcrComposite = NULL; }
+        //if(currentPcrComposite) { free(currentPcrComposite); currentPcrComposite = NULL; }
+	  	 (void)0;
+
     } /* END Separate logic for PCR checking. */
-#endif
 
     return rv;
 }
