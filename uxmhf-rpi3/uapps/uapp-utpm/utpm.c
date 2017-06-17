@@ -127,8 +127,10 @@ TPM_RESULT utpm_seal(utpm_master_state_t *utpm,
     uint32_t bytes_consumed_by_pcrInfo;
     symmetric_CBC cbc_ctx;
     TPM_PCR_INFO tpmPcrInfo_internal;
-    uint8_t *plaintext = NULL;
+    uint8_t buf_plaintext[MAX_TPM_SEAL_DATA_SIZE];
+    uint8_t *plaintext = &buf_plaintext;
     uint32_t bytes_of_entropy = 0;
+    unsigned long hmac_sha1_out_len;
 
     if(!utpm || !tpmPcrInfo || !input || !output || !outlen) {
 		//dprintf(LOG_ERROR, "[TV] utpm_seal ERROR: !utpm || !tpmPcrInfo || !input || !output || !outlen\n");
@@ -175,58 +177,68 @@ TPM_RESULT utpm_seal(utpm_master_state_t *utpm,
     }
 
 
-#if 0
     /**
      * Part 2: Do the actual encryption
      */
+    if ( (inlen+100) > MAX_TPM_SEAL_DATA_SIZE)
+    	return 1;
 
-    plaintext = malloc(inlen + 100); /* XXX figure out actual required size */
-    // It's probably TPM_AES_KEY_LEN_BYTES + TPM_HASH_SIZE + sizeof(TPM_PCR_INFO)
-    if(NULL == plaintext) {
-        dprintf(LOG_ERROR, "ERROR: malloc FAILED\n");
-        return 1;
-    }
+    //plaintext = malloc(inlen + 100); /* XXX figure out actual required size */
+    //// It's probably TPM_AES_KEY_LEN_BYTES + TPM_HASH_SIZE + sizeof(TPM_PCR_INFO)
+    //if(NULL == plaintext) {
+    //    dprintf(LOG_ERROR, "ERROR: malloc FAILED\n");
+    //    return 1;
+    //}
+
 
     p = iv = plaintext;
 
 	/* 0. get IV */
     bytes_of_entropy = TPM_AES_KEY_LEN_BYTES;
-	rand_bytes(iv, &bytes_of_entropy);
+	utpm_rand_bytes(iv, &bytes_of_entropy);
     if(TPM_AES_KEY_LEN_BYTES != bytes_of_entropy) {
-        dprintf(LOG_ERROR, "ERROR: rand_bytes FAILED\n");
+        //dprintf(LOG_ERROR, "ERROR: rand_bytes FAILED\n");
         return UTPM_ERR_INSUFFICIENT_ENTROPY;
     }
     memcpy(output, iv, TPM_AES_KEY_LEN_BYTES); /* Copy IV directly to output */
     p += TPM_AES_KEY_LEN_BYTES; /* IV */
 
-    print_hex("  iv: ", iv, TPM_AES_KEY_LEN_BYTES);
+    //print_hex("  iv: ", iv, TPM_AES_KEY_LEN_BYTES);
+
+
 
 	/* output = IV || AES-CBC(TPM_PCR_INFO (or 0x0000 if none selected) || input_len || input || PADDING) || HMAC( entire ciphertext including IV ) */
     /* 1a. TPM_PCR_SELECTION with 0 PCRs selected */
     if(0 == tpmPcrInfo_internal.pcrSelection.sizeOfSelect) { /* no PCRs selected */
         memcpy(p, &tpmPcrInfo_internal.pcrSelection.sizeOfSelect,
                 sizeof(tpmPcrInfo_internal.pcrSelection.sizeOfSelect));
-        print_hex(" tpmPcrInfo_internal.pcrSelection.sizeOfSelect: ", p,
-                  sizeof(tpmPcrInfo_internal.pcrSelection.sizeOfSelect));
+        //print_hex(" tpmPcrInfo_internal.pcrSelection.sizeOfSelect: ", p,
+        //          sizeof(tpmPcrInfo_internal.pcrSelection.sizeOfSelect));
         p += sizeof(tpmPcrInfo_internal.pcrSelection.sizeOfSelect);
     }
     /* 1b. TPM_PCR_SELECTION with 1 or more PCRs selected */
     else {
         rv = utpm_internal_memcpy_TPM_PCR_INFO(&tpmPcrInfo_internal, p, &bytes_consumed_by_pcrInfo);
         if(0 != rv) { return 1; }
-        print_hex("  tpmPcrInfo_internal: ",
-                  (uint8_t*)&tpmPcrInfo_internal,
-                  bytes_consumed_by_pcrInfo);
+        //print_hex("  tpmPcrInfo_internal: ",
+        //          (uint8_t*)&tpmPcrInfo_internal,
+        //          bytes_consumed_by_pcrInfo);
         p += bytes_consumed_by_pcrInfo;
     }
+
+
+
     /* 2. input_len */
 	*((uint32_t *)p) = inlen;
-    print_hex(" inlen: ", p, sizeof(uint32_t));
+    //print_hex(" inlen: ", p, sizeof(uint32_t));
     p += sizeof(uint32_t);
+
+
     /* 3. actual input data */
 	memcpy(p, input, inlen);
-    print_hex(" input: ", p, inlen);
+    //print_hex(" input: ", p, inlen);
     p += inlen;
+
 
 	/* 4. add padding */
 	outlen_beforepad = (uint32_t)p - (uint32_t)plaintext;
@@ -237,44 +249,54 @@ TPM_RESULT utpm_seal(utpm_master_state_t *utpm,
 	}
 	memset(p, 0, *outlen-outlen_beforepad);
 
-    print_hex("padding: ", p, *outlen - outlen_beforepad);
+    //print_hex("padding: ", p, *outlen - outlen_beforepad);
     p += *outlen - outlen_beforepad;
 
+
     /* encrypt (1-4) data using g_aeskey in AES-CBC mode */
-    if ( cbc_start( find_cipher( "aes"), iv, g_aeskey, TPM_AES_KEY_LEN_BYTES, 0, &cbc_ctx)) {
-      abort();
+    if ( rijndael_cbc_start( iv, g_aeskey, TPM_AES_KEY_LEN_BYTES, 0, &cbc_ctx)) {
+      //abort();
+    	return 1;
     }
 
-    print_hex(" plaintext (including IV) just prior to AES encrypt: ", plaintext, *outlen);
-    if (cbc_encrypt( plaintext + TPM_AES_KEY_LEN_BYTES, /* skip IV */
+
+    //print_hex(" plaintext (including IV) just prior to AES encrypt: ", plaintext, *outlen);
+    if (rijndael_cbc_encrypt( plaintext + TPM_AES_KEY_LEN_BYTES, /* skip IV */
                      output + TPM_AES_KEY_LEN_BYTES, /* don't clobber IV */
                      *outlen - TPM_AES_KEY_LEN_BYTES,
                      &cbc_ctx)) {
-      abort();
+      //abort();
+    	return 1;
     }
-    if (cbc_done( &cbc_ctx)) {
-      abort();
+    if (rijndael_cbc_done( &cbc_ctx)) {
+      //abort();
+    	return 1;
     }
 
-    print_hex(" freshly encrypted ciphertext: ", output, *outlen);
+    //print_hex(" freshly encrypted ciphertext: ", output, *outlen);
+
 
 	/* 5. compute and append hmac */
-    HMAC_SHA1(g_hmackey, TPM_HASH_SIZE, output, *outlen, output + *outlen);
-    print_hex("hmac: ", output + *outlen, TPM_HASH_SIZE);
+    //HMAC_SHA1(g_hmackey, TPM_HASH_SIZE, output, *outlen, output + *outlen);
+    hmac_sha1_out_len = 20;
+    if( hmac_sha1_memory(g_hmackey, TPM_HASH_SIZE, output, *outlen, output + *outlen, &hmac_sha1_out_len) )
+    	return 1;
+
+    //print_hex("hmac: ", output + *outlen, TPM_HASH_SIZE);
     *outlen += TPM_HASH_SIZE; /* hmac */
 
-    dprintf(LOG_TRACE, "*outlen = %d\n", *outlen);
-    print_hex("ciphertext from utpm_seal: ", output, *outlen);
+
+    //dprintf(LOG_TRACE, "*outlen = %d\n", *outlen);
+    //print_hex("ciphertext from utpm_seal: ", output, *outlen);
 
     /* Sanity checking output size */
     if(*outlen != utpm_seal_output_size(inlen, false)) {
-        dprintf(LOG_ERROR, "\n\nERROR!!! *outlen(%d) != utpm_seal_output_size(%d)\n\n", *outlen,
-                utpm_seal_output_size(inlen, false));
+        //dprintf(LOG_ERROR, "\n\nERROR!!! *outlen(%d) != utpm_seal_output_size(%d)\n\n", *outlen,
+        //        utpm_seal_output_size(inlen, false));
+    	return 1;
     }
 
-    /* SECURITY: zero memory before freeing? */
-    if(plaintext) { free(plaintext); plaintext = NULL; iv = NULL; }
-#endif
+    //if(plaintext) { free(plaintext); plaintext = NULL; iv = NULL; }
 
 	return rv;
 }

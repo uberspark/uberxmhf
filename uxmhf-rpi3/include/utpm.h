@@ -83,6 +83,7 @@
 #define  MAX_PCR_DATA_SIZE (MAX_PCR_SEL_NUM*20)
 
 #define		MAX_PCR_COMPOSITE_SIZE	256
+#define		MAX_TPM_SEAL_DATA_SIZE	1124	//1K of data + 100 bytes of meta-data added by seal
 
 #define  MAX_TPM_EXTEND_DATA_LEN 4096
 #define  MAX_TPM_RAND_DATA_LEN 4096

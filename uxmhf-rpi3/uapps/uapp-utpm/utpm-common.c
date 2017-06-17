@@ -289,3 +289,36 @@ TPM_RESULT utpm_internal_digest_current_TpmPcrComposite(
 
     return rv;
 }
+
+
+/**
+ * Best effort to populate an array of *len random-bytes.  Returns 0
+ * on success, otherwise returns the number of bytes that were
+ * actually available (and updates *len).
+ */
+int utpm_rand_bytes(uint8_t *out, unsigned int *len) {
+    int rv=1;
+
+    //TBD: plug in random number generation
+
+    /* even here we do not want to tolerate failure to initialize */
+    //EU_VERIFY( g_master_prng_init_completed);
+
+    //EU_VERIFY( out);
+    //EU_VERIFY( len);
+    //EU_VERIFY( *len >= 1);
+
+    /* at the present time this will either give all requested bytes
+     * or fail completely.  no support for partial returns, though
+     * that may one day be desirable. */
+    //EU_VERIFYN( reseed_ctr_drbg_using_tpm_entropy_if_needed());
+
+    //EU_CHKN( rv = nist_ctr_drbg_generate(&g_drbg, out, *len, NULL, 0));
+
+    //eu_trace("Successfully generated %d pseudo-random bytes", *len);
+
+    rv=0;
+ out:
+    return rv;
+}
+
