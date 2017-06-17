@@ -312,6 +312,7 @@ TPM_RESULT utpm_unseal(utpm_master_state_t *utpm,
 	uint8_t hmacCalculated[TPM_HASH_SIZE];
 	uint32_t rv;
         symmetric_CBC cbc_ctx;
+        unsigned long hmac_sha1_out_len;
 
     if(!utpm || !input || !output || !outlen || !digestAtCreation) { return 1; }
 
@@ -334,18 +335,22 @@ TPM_RESULT utpm_unseal(utpm_master_state_t *utpm,
         return 1;
     }
 
-#if 0
     /* HMAC should be the last TPM_HASH_SIZE bytes of the
      * input. Calculate its expected value based on the first (inlen -
      * TPM_HASH_SIZE) bytes of the input and compare against provided
      * value. */
-    HMAC_SHA1(g_hmackey, TPM_HASH_SIZE, input, inlen - TPM_HASH_SIZE, hmacCalculated);
+    //HMAC_SHA1(g_hmackey, TPM_HASH_SIZE, input, inlen - TPM_HASH_SIZE, hmacCalculated);
+    hmac_sha1_out_len = 20;
+    if( hmac_sha1_memory(g_hmackey, TPM_HASH_SIZE, input, inlen - TPM_HASH_SIZE, hmacCalculated, &hmac_sha1_out_len) )
+    	return 1;
+
     if(memcmp(hmacCalculated, input + inlen - TPM_HASH_SIZE, TPM_HASH_SIZE)) {
-        dprintf(LOG_ERROR, "Unseal HMAC **INTEGRITY FAILURE**: memcmp(hmacCalculated, input + inlen - TPM_HASH_SIZE, TPM_HASH_SIZE)\n");
-        print_hex("  hmacCalculated: ", hmacCalculated, TPM_HASH_SIZE);
-        print_hex("  input + inlen - TPM_HASH_SIZE:" , input + inlen - TPM_HASH_SIZE, TPM_HASH_SIZE);
+        //dprintf(LOG_ERROR, "Unseal HMAC **INTEGRITY FAILURE**: memcmp(hmacCalculated, input + inlen - TPM_HASH_SIZE, TPM_HASH_SIZE)\n");
+        //print_hex("  hmacCalculated: ", hmacCalculated, TPM_HASH_SIZE);
+        //print_hex("  input + inlen - TPM_HASH_SIZE:" , input + inlen - TPM_HASH_SIZE, TPM_HASH_SIZE);
         return 1;
     }
+
 
     /**
      * Step 2. Decrypt data.  I cannot think of a reason why this
@@ -356,24 +361,29 @@ TPM_RESULT utpm_unseal(utpm_master_state_t *utpm,
         - TPM_AES_KEY_LEN_BYTES /* iv */
         - TPM_HASH_SIZE;        /* hmac */
 
-    if (cbc_start( find_cipher("aes"),
+    if (rijndael_cbc_start(
                    input, /* iv is at beginning of input */
                    g_aeskey, TPM_AES_KEY_LEN_BYTES,
                    0,
                    &cbc_ctx)) {
-      abort();
+      //abort();
+    	return 1;
     }
-    if (cbc_decrypt( input+TPM_AES_KEY_LEN_BYTES, /* offset to ciphertext just beyond iv */
+    if (rijndael_cbc_decrypt( input+TPM_AES_KEY_LEN_BYTES, /* offset to ciphertext just beyond iv */
                      output,
                      *outlen,
                      &cbc_ctx)) {
-      abort();
+      //abort();
+      return 1;
     }
-    if (cbc_done( &cbc_ctx)) {
-      abort();
+    if (rijndael_cbc_done( &cbc_ctx)) {
+      //abort();
+    	return 1;
     }
 
-    print_hex("  Unsealed plaintext: ", output, *outlen);
+    //print_hex("  Unsealed plaintext: ", output, *outlen);
+
+#if 0
 
     /**
      * Step 3. Verify that PCR values match.
