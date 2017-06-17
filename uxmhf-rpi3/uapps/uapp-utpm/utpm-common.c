@@ -96,6 +96,8 @@ uint32_t utpm_internal_memcpy_TPM_PCR_SELECTION(
 }
 
 
+
+
 /* If no destination buffer is provided then just set the number of
  * bytes that would be consumed.*/
 uint32_t utpm_internal_memcpy_TPM_PCR_INFO(
@@ -128,4 +130,44 @@ uint32_t utpm_internal_memcpy_TPM_PCR_INFO(
         }
     }
     return 0;
+}
+
+
+/**
+ * TPM_PCR_COMPOSITE is created by reading the current value of the
+ * PCRs mentioned in TPM_PCR_SELECTION.
+ *
+ * It does not make sense to call this function if the
+ * TPM_PCR_SELECTION does not select anything.
+ */
+TPM_RESULT utpm_internal_digest_current_TpmPcrComposite(
+    utpm_master_state_t *utpm,
+    TPM_PCR_SELECTION *pcrSelection,
+    TPM_COMPOSITE_HASH *digest)
+{
+    uint32_t space_needed_for_composite = 0;
+    uint8_t buf_tpm_pcr_composite[MAX_PCR_COMPOSITE_SIZE];
+    uint8_t *tpm_pcr_composite = &buf_tpm_pcr_composite;
+    uint32_t rv = 0;
+
+    if(!utpm || !pcrSelection || !digest) { return 1; }
+
+    if(pcrSelection->sizeOfSelect < 1) { return 1; }
+
+#if 0
+    rv = utpm_internal_allocate_and_populate_current_TpmPcrComposite(
+        utpm,
+        pcrSelection,
+        &tpm_pcr_composite,
+        &space_needed_for_composite);
+#endif
+
+    if(0 != rv) { return 1; }
+
+    //sha1_buffer(tpm_pcr_composite, space_needed_for_composite, digest->value);
+    sha1_memory(tpm_pcr_composite, space_needed_for_composite, digest->value, TPM_HASH_SIZE);
+
+    //if(tpm_pcr_composite) { free(tpm_pcr_composite); tpm_pcr_composite = NULL; }
+
+    return rv;
 }

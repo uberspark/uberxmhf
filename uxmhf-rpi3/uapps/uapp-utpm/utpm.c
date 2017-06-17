@@ -164,14 +164,12 @@ TPM_RESULT utpm_seal(utpm_master_state_t *utpm,
                                                &bytes_consumed_by_pcrInfo);
         if(0 != rv) { return 1; }
 
-		#if 0
         /* 2. overwrite digestAtCreation based on current PCR contents */
         rv = utpm_internal_digest_current_TpmPcrComposite(
             utpm,
             &tpmPcrInfo_internal.pcrSelection,
             &tpmPcrInfo_internal.digestAtCreation);
         if(0 != rv) { return 1; }
-		#endif
     } else {
         tpmPcrInfo_internal.pcrSelection.sizeOfSelect = 0;
     }
