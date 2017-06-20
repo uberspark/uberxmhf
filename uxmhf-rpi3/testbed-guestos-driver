@@ -4,7 +4,7 @@ echo "Preparing to start test..."
 sudo insmod /home/pi/uhcallkmod.ko
 echo "Loaded hypcall kernel module"
 sleep 2
-dmesg | grep "hypcall"
+dmesg | grep "uhcallkmod"
 #echo "Executing usr mode hyper call test app..."
 #sudo ./apphcall
 #echo "usr mode hyper call test app executed"
@@ -14,7 +14,7 @@ dmesg | grep "hypcall"
 sudo rmmod uhcallkmod.ko
 echo "Unloaded hypcall kernel module"
 sleep 2
-dmesg | grep "hypcall"
+dmesg | grep "uhcallkmod"
 #
 #sudo hdparm -t /dev/mmcblk0
 #sudo umount ~/mnt
