@@ -20,6 +20,45 @@ extern bool appnpf_activated;
 extern u32 appnpf_page_pa;
 
 
+//////
+// guest hypercall handler hub
+//////
+void guest_hypercall_handler(arm8_32_regs_t *r, u32 hsr){
+	u32 hvc_iss;
+	u32 hvc_imm16;
+
+	hvc_iss = ((hsr & HSR_ISS_MASK) >> HSR_ISS_SHIFT);
+	hvc_imm16 = hvc_iss & 0x0000FFFFUL;
+
+
+	if (hvc_imm16 == 0){
+		//do nothing; null hypercall
+
+	}else if (hvc_imm16 == 1){
+		//hypercall hub interaction
+		/*
+		 * r0 = hypercall function number
+		 * r1 = physical address of the guest buffer
+		 * r2 = size of the guest buffer
+		 * note: r1+r2 cannot cross page-boundary
+		 */
+		_XDPRINTFSMP_("%s: hcall: r0=0x%08x, r1=0x%08x, r2=0x%08x\n", __func__,
+				r->r0, r->r1, r->r2);
+
+
+	}else{
+		_XDPRINTFSMP_("%s: unknown HVC instruction imm16=0x%08x. Halting!\n", __func__,
+				hvc_imm16);
+		HALT();
+	}
+
+}
+
+
+
+
+////// deprecated stuff below
+#if 0
 void guest_hypercall_handler(arm8_32_regs_t *r, u32 hsr){
 	u32 hvc_iss;
 	u32 hvc_imm16;
@@ -69,3 +108,4 @@ void guest_hypercall_handler(arm8_32_regs_t *r, u32 hsr){
 	}
 
 }
+#endif
