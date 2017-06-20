@@ -1,20 +1,20 @@
 #!/bin/bash
 
 echo "Preparing to start test..."
-#sudo insmod ./hypcall.ko
-#echo "Loaded hypcall kernel module"
-#sleep 2
-#dmesg | grep "hypcall"
+sudo insmod /home/pi/uhcallkmod.ko
+echo "Loaded hypcall kernel module"
+sleep 2
+dmesg | grep "hypcall"
 #echo "Executing usr mode hyper call test app..."
 #sudo ./apphcall
 #echo "usr mode hyper call test app executed"
 #echo "executing usr mode npf test app..."
 #sudo ./appnpf
 #echo "usr mode npf test app executed"
-#sudo rmmod hypcall.ko
-#echo "Unloaded hypcall kernel module"
-#sleep 2
-#dmesg | grep "hypcall"
+sudo rmmod uhcallkmod.ko
+echo "Unloaded hypcall kernel module"
+sleep 2
+dmesg | grep "hypcall"
 #
 #sudo hdparm -t /dev/mmcblk0
 #sudo umount ~/mnt
