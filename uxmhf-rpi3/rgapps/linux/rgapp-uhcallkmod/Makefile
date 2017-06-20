@@ -1,1 +1,1 @@
-obj-m := hypcall.o
+obj-m := uhcallkmod.o
