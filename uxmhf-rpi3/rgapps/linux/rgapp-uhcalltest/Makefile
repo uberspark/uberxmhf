@@ -4,8 +4,10 @@
 export CURRENT_DIR := $(realpath $(dir $(lastword $(MAKEFILE_LIST))))
 export UXMHFRPI3_DIR := $(CURRENT_DIR)/../../..
 
-INCS = $(UXMHFRPI3_DIR)/include
-CFLAGS = -I. -I$(INCS) -g -Wall
+INCS = -I$(UXMHFRPI3_DIR)/include
+INCS += -I$(UXMHFRPI3_DIR)/libs/libuhcall/include
+
+CFLAGS = -I. $(INCS) -g -Wall
 
 
 .PHONY: all

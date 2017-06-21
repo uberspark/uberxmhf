@@ -11,6 +11,7 @@
 #include<string.h>
 #include<unistd.h>
 
+#include <uhcall.h>
 #include <uhcalltest.h>
 
 //////
