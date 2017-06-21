@@ -100,17 +100,19 @@ static int dev_release(struct inode *inodep, struct file *filep){
 }
 
 static ssize_t dev_write(struct file *filep, const char *buffer, size_t len, loff_t *offset){
-	uhcallmod_param_t *uhcallp;
+	uhcallkmod_param_t *uhcallp;
 
 	if(buffer == NULL)
 		return -EINVAL;
 
-	if(len != sizeof(uhcallmod_param_t))
+	if(len != sizeof(uhcallkmod_param_t))
 		return -EINVAL;
 
-	uhcallp = (uhcallmod_param_t *)buffer;
+	uhcallp = (uhcallkmod_param_t *)buffer;
 
-	printk(KERN_INFO "uhcallkmod: dev_write: buffer=0x%08x, len=0x%08x\n", buffer, len);
+	printk(KERN_INFO "uhcallkmod: dev_write: uhcall_function=0x%08x, uhcall_buffer=0x%08x, uhcall_buffer_len=0x%08x\n",
+			uhcallp->uhcall_function, uhcallp->uhcall_buffer, uhcallp->uhcall_buffer_len);
+
 
    return 0;
 }
