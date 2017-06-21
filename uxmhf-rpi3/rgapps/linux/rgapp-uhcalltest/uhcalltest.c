@@ -14,15 +14,6 @@
 #include <uhcall.h>
 #include <uhcalltest.h>
 
-//////
-// TBD: move into unified header location
-//////
-typedef struct {
-	unsigned long uhcall_function;
-	void *uhcall_buffer;
-	unsigned long uhcall_buffer_len;
-} uhcallkmod_param_t;
-
 
 int main(){
    int ret, fd;

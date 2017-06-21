@@ -10,6 +10,12 @@
 
 #ifndef __ASSEMBLY__
 
+typedef struct {
+	unsigned long uhcall_function;
+	void *uhcall_buffer;
+	unsigned long uhcall_buffer_len;
+} uhcallkmod_param_t;
+
 
 #endif // __ASSEMBLY__
 
