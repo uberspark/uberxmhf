@@ -11,9 +11,19 @@
 #include<string.h>
 #include<unistd.h>
 
+//////
+// TBD: move into unified header location
+//////
+typedef struct {
+	unsigned long uhcall_function;
+	void *uhcall_buffer;
+	unsigned long uhcall_buffer_len;
+} uhcallkmod_param_t;
+
 
 int main(){
    int ret, fd;
+   uhcallkmod_param_t uhcallp;
 
    printf("Starting usr mode hypercall test...\n");
 
@@ -24,7 +34,11 @@ int main(){
       return errno;
    }
 
-   ret = write(fd, NULL, 1);
+   uhcallp.uhcall_function=10;
+   uhcallp.uhcall_buffer=NULL;
+   uhcallp.uhcall_buffer_len=0;
+
+   ret = write(fd, &uhcallp, sizeof(uhcallp));
    if (ret < 0){
       perror("Failed to write the message to the device.");
       return errno;
