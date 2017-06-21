@@ -32,6 +32,7 @@ static struct device* hypcallcharDevice = NULL;
 static int     dev_open(struct inode *, struct file *);
 static int     dev_release(struct inode *, struct file *);
 static ssize_t dev_write(struct file *, const char *, size_t, loff_t *);
+static void uhcallkmod_hvc(u32 uhcall_function, void *uhcall_buffer, u32 uhcall_buffer_len);
 
 //file operations structure to interface with the above
 static struct file_operations fops =
@@ -42,23 +43,18 @@ static struct file_operations fops =
 };
 
 
-void hypcall_hvc1(void){
-	u32 r_r0, r_r1, r_r2;
+static void uhcallkmod_hvc(u32 uhcall_function, void *uhcall_buffer,
+		u32 uhcall_buffer_len){
 
 	asm volatile
-		(	" mov r0, #0x10\r\n"
-			" mov r1, #0x11\r\n"
-			" mov r2, #0x12\r\n"
+		(	" mov r0, %[in_0]\r\n"
+			" mov r1, %[in_1]\r\n"
+			" mov r2, %[in_2]\r\n"
 			".long 0xE1400071 \r\n"
-			" mov %[res_r0], r0 \r\n"
-			" mov %[res_r1], r1 \r\n"
-			" mov %[res_r2], r2 \r\n"
-	           : [res_r0] "=r" (r_r0), [res_r1] "=r" (r_r1), [res_r2] "=r" (r_r2) /* output */
-	           : /* inputs */
-	           : "r0", "r1", "r2" /* clobber */
+				: // outputs
+				: [in_0] "r" (uhcall_function), [in_1] "r" (uhcall_buffer), [in_2] "r" (uhcall_buffer_len)  // inouts
+	           : "r0", "r1", "r2" //clobber
 	    );
-
-	printk(KERN_INFO "hypcall_init: r0=0x%08x, r1=0x%08x, r2=0x%08x\n", r_r0, r_r1, r_r2);
 }
 
 
