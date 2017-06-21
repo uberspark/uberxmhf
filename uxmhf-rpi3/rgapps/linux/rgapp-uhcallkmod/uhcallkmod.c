@@ -5,15 +5,8 @@
 #include <linux/fs.h>             // header for the Linux file system support
 #include <asm/uaccess.h>          // required for the copy to user function
 
-//////
-// TBD: move into unified header location
-//////
-typedef struct {
-	u32 uhcall_function;
-	void *uhcall_buffer;
-	u32 uhcall_buffer_len;
-} uhcallkmod_param_t;
-
+#include <uhcall.h>
+#include <uhcalltest.h>
 
 #define  DEVICE_NAME "uhcallkmod"    			//device will appear at /dev/uhcallkmod
 #define  CLASS_NAME  "uhcallkmodchar"     	   //we are a character device driver
