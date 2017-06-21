@@ -11,6 +11,8 @@
 #include<string.h>
 #include<unistd.h>
 
+#include <uhcalltest.h>
+
 //////
 // TBD: move into unified header location
 //////
@@ -34,7 +36,7 @@ int main(){
       return errno;
    }
 
-   uhcallp.uhcall_function=10;
+   uhcallp.uhcall_function=UAPP_UHCALLTEST_FUNCTION_TEST;
    uhcallp.uhcall_buffer=NULL;
    uhcallp.uhcall_buffer_len=0;
 
