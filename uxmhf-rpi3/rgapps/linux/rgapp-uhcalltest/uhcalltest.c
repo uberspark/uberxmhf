@@ -1,3 +1,9 @@
+/*
+ * hypercall test program (uhcalltest)
+ * author: amit vasudevan (amitvasudevan@acm.org)
+ *
+ */
+
 #include<stdio.h>
 #include<stdlib.h>
 #include<errno.h>
@@ -11,9 +17,10 @@ int main(){
 
    printf("Starting usr mode hypercall test...\n");
 
-   fd = open("/dev/hypcallchar", O_RDWR);             // Open the device with read/write access
+   // Open the device with read/write access
+   fd = open("/dev/uhcallkmod", O_RDWR);
    if (fd < 0){
-      perror("Failed to open the device...");
+      perror("Failed to open /dev/uhcallkmod...");
       return errno;
    }
 
