@@ -58,31 +58,6 @@ static void uhcallkmod_hvc(u32 uhcall_function, void *uhcall_buffer,
 }
 
 
-
-void hypcall_hvc2(u32 address){
-
-	asm volatile
-		(	" mov r0, %[in_0]\r\n"
-			".long 0xE1400072 \r\n"
-	           : /* output */
-	           : [in_0] "r" (address) /* inputs */
-	           : "r0" /* clobber */
-	    );
-}
-
-void hypcall_hvc3(u32 address){
-
-	asm volatile
-		(	" mov r0, %[in_0]\r\n"
-			".long 0xE1400073 \r\n"
-	           : /* output */
-	           : [in_0] "r" (address) /* inputs */
-	           : "r0" /* clobber */
-	    );
-}
-
-
-
 static int dev_open(struct inode *inodep, struct file *filep){
    number_opens++;
    printk(KERN_INFO "uhcallkmod: device has been opened %d time(s)\n", number_opens);
