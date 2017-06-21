@@ -5,9 +5,9 @@ sudo insmod /home/pi/uhcallkmod.ko
 echo "Loaded hypcall kernel module"
 sleep 2
 dmesg | grep "uhcallkmod"
-#echo "Executing usr mode hyper call test app..."
-#sudo ./apphcall
-#echo "usr mode hyper call test app executed"
+echo "executing uhcalltest app..."
+sudo ./uhcalltest
+echo "uhcalltest app executed"
 #echo "executing usr mode npf test app..."
 #sudo ./appnpf
 #echo "usr mode npf test app executed"
