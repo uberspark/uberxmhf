@@ -21,7 +21,6 @@ TOOLPREFIX ?= arm-linux-gnueabihf-
 
 INCS = -I$(UXMHFRPI3_DIR)/libs/libxmhfc/include
 INCS += -I$(UXMHFRPI3_DIR)/libs/libxmhfcrypto/include
-INCS += -I$(UXMHFRPI3_DIR)/libs/libuhcall/include
 
 CFLAGS_DEFS =  $(INCS) -I./include -I../include -D__DEBUG_SERIAL__ 
 CFLAGS = $(CFLAGS_DEFS) -c -Wall -nostdlib -nostartfiles -ffreestanding -mcpu=cortex-a53
@@ -29,7 +28,6 @@ CFLAGS = $(CFLAGS_DEFS) -c -Wall -nostdlib -nostartfiles -ffreestanding -mcpu=co
 CCLIB = $(shell $(TOOLPREFIX)gcc --print-lib)
 
 LIBS = $(UXMHFRPI3_DIR)/libs/libxmhfcrypto/libxmhfcrypto.a
-LIBS += $(UXMHFRPI3_DIR)/libs/libuhcall/libuhcall.a
 LIBS += $(UXMHFRPI3_DIR)/libs/libxmhfc/libxmhfc.a
 
 
@@ -51,7 +49,6 @@ export LIBS
 all: checkoskrnlimg 
 	cd libs/libxmhfc && make -w all
 	cd libs/libxmhfcrypto && make -w all
-	cd libs/libuhcall && make -w all
 	cd core && make -w all
 	cd guestos && make -w all
 	cd bootstrap && make -w all
