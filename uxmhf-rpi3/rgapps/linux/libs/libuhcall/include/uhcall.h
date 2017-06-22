@@ -7,6 +7,9 @@
 #ifndef __UHCALL_H__
 #define __UHCALL_H__
 
+#define UHCALL_PM_PAGE_SHIFT 	12
+#define UHCALL_PM_LENGTH		 8
+
 
 #ifndef __ASSEMBLY__
 
@@ -15,6 +18,9 @@ typedef struct {
 	void *uhcall_buffer;
 	unsigned long uhcall_buffer_len;
 } uhcallkmod_param_t;
+
+
+bool uhcall_va2pa(void *vaddr, uint64_t *paddr);
 
 
 #endif // __ASSEMBLY__
