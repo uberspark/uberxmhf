@@ -51,3 +51,47 @@ bool uhcall_va2pa(void *vaddr, uint64_t *paddr) {
    *paddr = (page_frame_number << UHCALL_PM_PAGE_SHIFT);
    return true;
 }
+
+
+//////
+// uhcall micro-hypervisor hypercall interface
+// return true on success, false on error
+//////
+bool uhcall(uint32_t uhcall_function, void *uhcall_buffer, uint32_t uhcall_buffer_len){
+	int ret, fd;
+	uhcallkmod_param_t uhcallp;
+
+	//if uhcall_buffer is NULL then uhcall_buffer_len should be 0
+	//for a NULL hypercall test
+	if(uhcall_buffer == NULL && uhcall_buffer_len != 0)
+		return false;
+
+	//if uhcall_buffer is not NULL then base address of uhcall_buffer + uhcall_buffer_len
+	//cannot exceed a page size
+	if(uhcall_buffer != NULL){
+		if ( (((uint32_t)uhcall_buffer % UHCALL_PM_PAGE_SIZE) + uhcall_buffer_len) > UHCALL_PM_PAGE_SIZE )
+			return false;
+	}
+
+
+	//open uhcallkmod device
+	fd = open("/dev/uhcallkmod", O_RDWR);
+	if (fd < 0)
+	  return false; //Failed to open /dev/uhcallkmod
+
+	//populate uhcallkmod_param_t
+	uhcallp.uhcall_function=uhcall_function;
+	uhcallp.uhcall_buffer=uhcall_buffer;
+	uhcallp.uhcall_buffer_len=uhcall_buffer_len;
+
+	//issue the hypercall
+	ret = write(fd, &uhcallp, sizeof(uhcallp));
+	if (ret < 0)
+		return false;	//error in issuing hypercall
+
+	if ( close(fd) < 0 )
+		return false;	//error in closing uhcallkmod device
+
+	//hypercall succeeded
+	return true;
+}
