@@ -32,4 +32,5 @@ $(THE_ARCHIVE): $(OBJECTS)
 .PHONY: clean
 clean:
 	$(RM) -rf $(LIBUHCALL_OBJECTS_DIR)
+	$(RM) -f ./$(THE_ARCHIVE)
 

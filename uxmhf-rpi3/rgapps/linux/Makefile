@@ -25,10 +25,12 @@ INCS += -I$(CURRENT_DIR)/libs/libuhcall/include
 LIBS = $(CURRENT_DIR)/libs/libuhcall/libuhcall.a
 
 CFLAGS = -I. -I$(INCS) -c -g -Wall
+CCERTFLAGS = $(CFLAGS)
 LFLAGS = -g -Wall -Wextra     
 
 export TOOLPREFIX
 export CFLAGS
+export CCERTFLAGS
 export LIBS
 
 
