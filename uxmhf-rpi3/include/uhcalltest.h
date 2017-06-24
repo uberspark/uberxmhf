@@ -11,6 +11,10 @@
 
 #ifndef __ASSEMBLY__
 
+typedef struct {
+	uint8_t in[16];
+	uint8_t out[16];
+}uhcalltest_param_t;
 
 #endif // __ASSEMBLY__
 
