@@ -60,6 +60,7 @@ bool uhcall_va2pa(void *vaddr, uint64_t *paddr) {
 bool uhcall(uint32_t uhcall_function, void *uhcall_buffer, uint32_t uhcall_buffer_len){
 	int ret, fd;
 	uhcallkmod_param_t uhcallp;
+	uint32_t uhcall_buffer_paddr;
 
 	//if uhcall_buffer is NULL then uhcall_buffer_len should be 0
 	//for a NULL hypercall test
@@ -74,20 +75,36 @@ bool uhcall(uint32_t uhcall_function, void *uhcall_buffer, uint32_t uhcall_buffe
 	}
 
 
+
 	//open uhcallkmod device
 	fd = open("/dev/uhcallkmod", O_RDWR);
 	if (fd < 0)
 	  return false; //Failed to open /dev/uhcallkmod
 
+
+	//lock uhcall_buffer in memory
+    if(mlock(uhcall_buffer, UHCALL_PM_PAGE_SIZE) == -1)
+    	  return false; //nFailed to lock page in memory
+
+    //get buffer physical address
+    if(!uhcall_va2pa(uhcall_buffer, &uhcall_buffer_paddr) )
+    	return false;
+
 	//populate uhcallkmod_param_t
 	uhcallp.uhcall_function=uhcall_function;
-	uhcallp.uhcall_buffer=uhcall_buffer;
+	//uhcallp.uhcall_buffer=uhcall_buffer;
+	uhcallp.uhcall_buffer=uhcall_buffer_paddr;
 	uhcallp.uhcall_buffer_len=uhcall_buffer_len;
 
 	//issue the hypercall
 	ret = write(fd, &uhcallp, sizeof(uhcallp));
 	if (ret < 0)
 		return false;	//error in issuing hypercall
+
+	//unlock uhcall_buffer page
+	if(munlock(uhcall_buffer, UHCALL_PM_PAGE_SIZE) == -1)
+		return false; //Failed to unlock page in memory
+
 
 	if ( close(fd) < 0 )
 		return false;	//error in closing uhcallkmod device
