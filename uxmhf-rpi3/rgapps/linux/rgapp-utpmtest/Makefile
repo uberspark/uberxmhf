@@ -1,4 +1,4 @@
-#top-level Makefile for usr mode application to test hypercall
+#top-level Makefile for usr mode application to test micro-tpm
 # author: amit vasudevan (amitvasudevan@acm.org)
 
 export CURRENT_DIR := $(realpath $(dir $(lastword $(MAKEFILE_LIST))))
@@ -17,11 +17,11 @@ LFLAGS = -g -Wall -Wextra
 
 .PHONY: all
 all: 
-	arm-linux-gnueabihf-gcc $(CFLAGS) uhcalltest.c -o uhcalltest.o
-	arm-linux-gnueabihf-gcc $(LFLAGS) uhcalltest.o -o uhcalltest $(LIBS)
+	arm-linux-gnueabihf-gcc $(CFLAGS) utpmtest.c -o utpmtest.o
+	arm-linux-gnueabihf-gcc $(LFLAGS) utpmtest.o -o utpmtest $(LIBS)
 
 .PHONY: clean
 clean:
-	rm -f uhcalltest
+	rm -f utpmtest
 	rm -f *.o
 	
