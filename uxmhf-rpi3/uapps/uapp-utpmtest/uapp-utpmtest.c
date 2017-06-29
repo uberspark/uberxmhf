@@ -18,22 +18,19 @@
 
 //return true if handled the hypercall, false if not
 bool uapp_utpmtest_handlehcall(u32 uhcall_function, void *uhcall_buffer, u32 uhcall_buffer_len){
-	if(uhcall_function == UAPP_UTPM_FUNCTION_INIT_MASTER_ENTROPY){
-		utpm_init_master_entropy_param_t *utpm_init_master_entropy_param =
-				(utpm_init_master_entropy_param_t *)uhcall_buffer;
+	utpmtest_param_t *utpmtest_param = 	(utpmtest_param_t *)uhcall_buffer;
 
-		utpm_init_master_entropy_param->result =
-				utpm_init_master_entropy(&utpm_init_master_entropy_param->g_aeskey,
-						&utpm_init_master_entropy_param->g_hmackey,
-						&utpm_init_master_entropy_param->g_rsakey);
+	if(uhcall_function == UAPP_UTPM_FUNCTION_INIT_MASTER_ENTROPY){
+		utpmtest_param->result =
+				utpm_init_master_entropy(&utpmtest_param->g_aeskey,
+						&utpmtest_param->g_hmackey,
+						&utpmtest_param->g_rsakey);
 
 		return true;
 
 	} else	if(uhcall_function == UAPP_UTPM_FUNCTION_INIT_INSTANCE){
-			utpm_init_instance_param_t *utpm_init_instance_param =
-					(utpm_init_instance_param_t *)uhcall_buffer;
 
-			utpm_init_instance(&utpm_init_instance_param->utpm);
+			utpm_init_instance(&utpmtest_param->utpm);
 
 			return true;
 

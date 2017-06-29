@@ -114,24 +114,25 @@ void utpm_test(uint32_t cpuid)
 	}
 #endif //0
 
-__attribute__((aligned(4096))) utpm_init_master_entropy_param_t utpm_init_master_entropy_param =
+
+uint8_t g_aeskey[TPM_AES_KEY_LEN_BYTES] =
 		{
-				{
-						0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08,
-						0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18
-				},
-
-				{
-						0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f, 0x01, 0x02,
-						0x1a, 0x1b, 0x1c, 0x1d, 0x1e, 0x1f, 0x11, 0x12,
-						0xaa, 0xbb, 0xcc, 0xdd
-				},
-
-				{0x00, 0x00, 0x00, 0x00}
+				0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08,
+				0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18
 		};
 
+uint8_t g_hmackey[TPM_HMAC_KEY_LEN] =
+		{
+				0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f, 0x01, 0x02,
+				0x1a, 0x1b, 0x1c, 0x1d, 0x1e, 0x1f, 0x11, 0x12,
+				0xaa, 0xbb, 0xcc, 0xdd
+		};
 
-__attribute__((aligned(4096))) utpm_init_instance_param_t utpm_init_instance_param;
+uint8_t g_rsakey[] = {0x00, 0x00, 0x00, 0x00};
+
+
+__attribute__((aligned(4096))) utpmtest_param_t utpmtest_param;
+
 
 //////
 // utpm test
@@ -139,17 +140,21 @@ __attribute__((aligned(4096))) utpm_init_instance_param_t utpm_init_instance_par
 void utpm_test(uint32_t cpuid)
 {
 
-	if(!uhcall(UAPP_UTPM_FUNCTION_INIT_MASTER_ENTROPY, &utpm_init_master_entropy_param, sizeof(utpm_init_master_entropy_param_t))){
+	memcpy(&utpmtest_param.g_aeskey, &g_aeskey, TPM_AES_KEY_LEN_BYTES);
+	memcpy(&utpmtest_param.g_hmackey, &g_hmackey, TPM_HMAC_KEY_LEN);
+	memcpy(&utpmtest_param.g_rsakey, &g_rsakey, 4); //TODO: change to RSA key len when implemented
+
+	if(!uhcall(UAPP_UTPM_FUNCTION_INIT_MASTER_ENTROPY, &utpmtest_param, sizeof(utpmtest_param_t))){
 		_XDPRINTF_("%s[%u]: utpm_init_master_entropy hypercall FAILED. Halting!\n", __func__, cpuid);
 		exit(1);
 	}
 
-	if (utpm_init_master_entropy_param.result != UTPM_SUCCESS){
+	if (utpmtest_param.result != UTPM_SUCCESS){
 		_XDPRINTF_("%s[%u]: utpm_init_master_entropy FAILED. Halting!\n", __func__, cpuid);
 		exit(1);
 	}
 
-	if(!uhcall(UAPP_UTPM_FUNCTION_INIT_INSTANCE, &utpm_init_instance_param, sizeof(utpm_init_instance_param_t))){
+	if(!uhcall(UAPP_UTPM_FUNCTION_INIT_INSTANCE, &utpmtest_param, sizeof(utpmtest_param_t))){
 		_XDPRINTF_("%s[%u]: utpm_init_instance hypercall FAILED. Halting!\n", __func__, cpuid);
 		exit(1);
 	}
