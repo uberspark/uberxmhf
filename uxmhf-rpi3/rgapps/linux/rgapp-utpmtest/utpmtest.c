@@ -131,6 +131,9 @@ uint8_t g_hmackey[TPM_HMAC_KEY_LEN] =
 uint8_t g_rsakey[] = {0x00, 0x00, 0x00, 0x00};
 
 
+char *seal_inbuf = "0123456789abcdef";
+
+
 __attribute__((aligned(4096))) utpmtest_param_t utpmtest_param;
 
 
@@ -139,6 +142,12 @@ __attribute__((aligned(4096))) utpmtest_param_t utpmtest_param;
 //////
 void utpm_test(uint32_t cpuid)
 {
+	//sanity check
+	if( sizeof(utpmtest_param_t) > 4096){
+		_XDPRINTF_("%s[%u]: utpm_test: utpmtest_param_t > 4096. Halting!\n", __func__, cpuid);
+		exit(1);
+	}
+
 
 	memcpy(&utpmtest_param.g_aeskey, &g_aeskey, TPM_AES_KEY_LEN_BYTES);
 	memcpy(&utpmtest_param.g_hmackey, &g_hmackey, TPM_HMAC_KEY_LEN);
@@ -170,6 +179,23 @@ void utpm_test(uint32_t cpuid)
 	}
 
 	_XDPRINTF_("%s[%u]: pcr-0: %20D\n", __func__, cpuid, utpmtest_param.pcr0.value, " ");
+
+	utpmtest_param.tpmPcrInfo.pcrSelection.sizeOfSelect = 0;
+	utpmtest_param.tpmPcrInfo.pcrSelection.pcrSelect[0] = 0;
+	memcpy(utpmtest_param.seal_inbuf, seal_inbuf, 16);
+	utpmtest_param.seal_inbuf_len = 16;
+
+	if(!uhcall(UAPP_UTPM_FUNCTION_SEAL, &utpmtest_param, sizeof(utpmtest_param_t))){
+		_XDPRINTF_("%s[%u]: utpm_seal hypercall FAILED. Halting!\n", __func__, cpuid);
+		exit(1);
+	}
+	if (utpmtest_param.result != UTPM_SUCCESS){
+		_XDPRINTF_("%s[%u]: utpm_seal FAILED. Halting!\n", __func__, cpuid);
+		exit(1);
+	}
+
+
+
 
 }
 

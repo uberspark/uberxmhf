@@ -10,6 +10,7 @@
 #define UAPP_UTPM_FUNCTION_INIT_MASTER_ENTROPY	0x10
 #define UAPP_UTPM_FUNCTION_INIT_INSTANCE			0x11
 #define UAPP_UTPM_FUNCTION_PCRREAD				0x12
+#define UAPP_UTPM_FUNCTION_SEAL					0x13
 
 
 #ifndef __ASSEMBLY__
@@ -23,6 +24,13 @@ typedef struct {
 
 	TPM_DIGEST pcr0;
 	uint32_t pcr_num;
+
+	TPM_PCR_INFO tpmPcrInfo;
+	char seal_inbuf[16];
+	uint32_t seal_inbuf_len;
+	char seal_outbuf[32];
+	uint32_t seal_outbuf_len;
+
 
 	TPM_RESULT result;
 } utpmtest_param_t;
