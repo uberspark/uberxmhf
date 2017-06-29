@@ -199,6 +199,19 @@ void utpm_test(uint32_t cpuid)
 	}
 
 
+	utpmtest_param.pcr_num=0;
+	if(!uhcall(UAPP_UTPM_FUNCTION_PCRREAD, &utpmtest_param, sizeof(utpmtest_param_t))){
+		_XDPRINTF_("%s[%u]: utpm_pcrread hypercall FAILED. Halting!\n", __func__, cpuid);
+		exit(1);
+	}
+	if (utpmtest_param.result != UTPM_SUCCESS){
+		_XDPRINTF_("%s[%u]: utpm_pcrread FAILED. Halting!\n", __func__, cpuid);
+		exit(1);
+	}
+
+	_XDPRINTF_("%s[%u]: pcr-0: %20D\n", __func__, cpuid, utpmtest_param.pcr0.value, " ");
+
+
 
 	utpmtest_param.tpmPcrInfo.pcrSelection.sizeOfSelect = 0;
 	utpmtest_param.tpmPcrInfo.pcrSelection.pcrSelect[0] = 0;
