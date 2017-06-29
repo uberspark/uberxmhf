@@ -12,6 +12,7 @@
 #define UAPP_UTPM_FUNCTION_PCRREAD				0x12
 #define UAPP_UTPM_FUNCTION_EXTEND					0x13
 #define UAPP_UTPM_FUNCTION_SEAL					0x14
+#define UAPP_UTPM_FUNCTION_UNSEAL					0x15
 
 
 #ifndef __ASSEMBLY__
@@ -34,6 +35,10 @@ typedef struct {
 	uint32_t seal_inbuf_len;
 	char seal_outbuf[32];
 	uint32_t seal_outbuf_len;
+
+	char seal_outbuf2[32];
+	uint32_t seal_outbuf2_len;
+	TPM_COMPOSITE_HASH digestAtCreation;
 
 
 	TPM_RESULT result;

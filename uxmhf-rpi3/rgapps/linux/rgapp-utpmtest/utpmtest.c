@@ -228,6 +228,18 @@ void utpm_test(uint32_t cpuid)
 	}
 
 
+	_XDPRINTF_("%s[%u]: utpm_seal PASSED\n", __func__, cpuid);
+
+	if(!uhcall(UAPP_UTPM_FUNCTION_UNSEAL, &utpmtest_param, sizeof(utpmtest_param_t))){
+		_XDPRINTF_("%s[%u]: utpm_unseal hypercall FAILED. Halting!\n", __func__, cpuid);
+		exit(1);
+	}
+	if (utpmtest_param.result != UTPM_SUCCESS){
+		_XDPRINTF_("%s[%u]: utpm_unseal FAILED. Halting!\n", __func__, cpuid);
+		exit(1);
+	}
+
+	_XDPRINTF_("%s[%u]: utpm_unseal PASSED\n", __func__, cpuid);
 
 
 }

@@ -60,6 +60,15 @@ bool uapp_utpmtest_handlehcall(u32 uhcall_function, void *uhcall_buffer, u32 uhc
 
 			return true;
 
+	} else	if(uhcall_function == UAPP_UTPM_FUNCTION_UNSEAL){
+			utpmtest_param->result =
+					utpm_unseal(&utpmtest_param->utpm,
+					             &utpmtest_param->seal_outbuf, utpmtest_param->seal_outbuf_len,
+					             &utpmtest_param->seal_outbuf2, &utpmtest_param->seal_outbuf2_len,
+					             &utpmtest_param->digestAtCreation);
+
+			return true;
+
 
 	}else{
 		return false;
