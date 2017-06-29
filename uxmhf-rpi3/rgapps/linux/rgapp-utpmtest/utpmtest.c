@@ -130,8 +130,14 @@ uint8_t g_hmackey[TPM_HMAC_KEY_LEN] =
 
 uint8_t g_rsakey[] = {0x00, 0x00, 0x00, 0x00};
 
+uint8_t digest[] =
+		{ 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+		  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01
+		};
+
 
 char *seal_inbuf = "0123456789abcdef";
+
 
 
 __attribute__((aligned(4096))) utpmtest_param_t utpmtest_param;
@@ -179,6 +185,20 @@ void utpm_test(uint32_t cpuid)
 	}
 
 	_XDPRINTF_("%s[%u]: pcr-0: %20D\n", __func__, cpuid, utpmtest_param.pcr0.value, " ");
+
+	memcpy(&utpmtest_param.measurement.value, &digest, sizeof(digest));
+	utpmtest_param.pcr_num = 0;
+
+	if(!uhcall(UAPP_UTPM_FUNCTION_EXTEND, &utpmtest_param, sizeof(utpmtest_param_t))){
+		_XDPRINTF_("%s[%u]: utpm_extend hypercall FAILED. Halting!\n", __func__, cpuid);
+		exit(1);
+	}
+	if (utpmtest_param.result != UTPM_SUCCESS){
+		_XDPRINTF_("%s[%u]: utpm_extend FAILED. Halting!\n", __func__, cpuid);
+		exit(1);
+	}
+
+
 
 	utpmtest_param.tpmPcrInfo.pcrSelection.sizeOfSelect = 0;
 	utpmtest_param.tpmPcrInfo.pcrSelection.pcrSelect[0] = 0;

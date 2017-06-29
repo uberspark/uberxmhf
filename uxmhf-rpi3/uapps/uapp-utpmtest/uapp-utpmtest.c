@@ -41,6 +41,15 @@ bool uapp_utpmtest_handlehcall(u32 uhcall_function, void *uhcall_buffer, u32 uhc
 
 			return true;
 
+	} else	if(uhcall_function == UAPP_UTPM_FUNCTION_EXTEND){
+			utpmtest_param->result =
+					utpm_extend(&utpmtest_param->measurement,
+							&utpmtest_param->utpm, utpmtest_param->pcr_num);
+
+			return true;
+
+
+
 	} else	if(uhcall_function == UAPP_UTPM_FUNCTION_SEAL){
 			//_XDPRINTFSMP_("%s: SEAL function\n", __func__);
 			utpmtest_param->result =
