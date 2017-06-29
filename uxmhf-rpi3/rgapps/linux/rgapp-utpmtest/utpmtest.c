@@ -136,10 +136,15 @@ __attribute__((aligned(4096))) utpm_init_master_entropy_param_t utpm_init_master
 void utpm_test(uint32_t cpuid)
 {
 
-//	if (utpm_init_master_entropy(&g_aeskey, &g_hmackey, &g_rsakey) != UTPM_SUCCESS){
-//		_XDPRINTF_("%s[%u]: utpm_init_master_entropy FAILED. Halting!\n", __func__, cpuid);
-//		exit(1);
-//	}
+	if(!uhcall(UAPP_UTPM_FUNCTION_INIT_MASTER_ENTROPY, &utpm_init_master_entropy_param, sizeof(utpm_init_master_entropy_param_t))){
+		_XDPRINTF_("%s[%u]: utpm_init_master_entropy hypercall FAILED. Halting!\n", __func__, cpuid);
+		exit(1);
+	}
+
+	if (utpm_init_master_entropy_param.result != UTPM_SUCCESS){
+		_XDPRINTF_("%s[%u]: utpm_init_master_entropy FAILED. Halting!\n", __func__, cpuid);
+		exit(1);
+	}
 
 }
 
