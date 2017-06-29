@@ -8,6 +8,7 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <stdbool.h>
+#include <string.h>
 
 #include <errno.h>
 #include <fcntl.h>
@@ -15,7 +16,8 @@
 #include <unistd.h>
 
 #include <uhcall.h>
-
+#include <xmhfcrypto.h>
+#include <utpm.h>
 //__attribute__((aligned(4096))) static uhcalltest_param_t uhctp;
 
 int main(){
