@@ -130,6 +130,9 @@ __attribute__((aligned(4096))) utpm_init_master_entropy_param_t utpm_init_master
 				{0x00, 0x00, 0x00, 0x00}
 		};
 
+
+__attribute__((aligned(4096))) utpm_init_instance_param_t utpm_init_instance_param;
+
 //////
 // utpm test
 //////
@@ -143,6 +146,11 @@ void utpm_test(uint32_t cpuid)
 
 	if (utpm_init_master_entropy_param.result != UTPM_SUCCESS){
 		_XDPRINTF_("%s[%u]: utpm_init_master_entropy FAILED. Halting!\n", __func__, cpuid);
+		exit(1);
+	}
+
+	if(!uhcall(UAPP_UTPM_FUNCTION_INIT_INSTANCE, &utpm_init_instance_param, sizeof(utpm_init_instance_param_t))){
+		_XDPRINTF_("%s[%u]: utpm_init_instance hypercall FAILED. Halting!\n", __func__, cpuid);
 		exit(1);
 	}
 

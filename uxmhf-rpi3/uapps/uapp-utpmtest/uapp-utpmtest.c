@@ -29,6 +29,14 @@ bool uapp_utpmtest_handlehcall(u32 uhcall_function, void *uhcall_buffer, u32 uhc
 
 		return true;
 
+	} else	if(uhcall_function == UAPP_UTPM_FUNCTION_INIT_INSTANCE){
+			utpm_init_instance_param_t *utpm_init_instance_param =
+					(utpm_init_instance_param_t *)uhcall_buffer;
+
+			utpm_init_instance(&utpm_init_instance_param->utpm);
+
+			return true;
+
 	}else{
 		return false;
 	}
