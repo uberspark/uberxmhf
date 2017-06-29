@@ -9,6 +9,7 @@
 
 #define UAPP_UTPM_FUNCTION_INIT_MASTER_ENTROPY	0x10
 #define UAPP_UTPM_FUNCTION_INIT_INSTANCE			0x11
+#define UAPP_UTPM_FUNCTION_PCRREAD				0x12
 
 
 #ifndef __ASSEMBLY__
@@ -19,6 +20,9 @@ typedef struct {
 	uint8_t g_rsakey[4]; //TODO: fix this to RSA key len when implemented
 
 	utpm_master_state_t utpm;
+
+	TPM_DIGEST pcr0;
+	uint32_t pcr_num;
 
 	TPM_RESULT result;
 } utpmtest_param_t;

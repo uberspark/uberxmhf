@@ -34,6 +34,14 @@ bool uapp_utpmtest_handlehcall(u32 uhcall_function, void *uhcall_buffer, u32 uhc
 
 			return true;
 
+	} else	if(uhcall_function == UAPP_UTPM_FUNCTION_PCRREAD){
+
+			utpmtest_param->result =
+					utpm_pcrread(&utpmtest_param->pcr0, &utpmtest_param->utpm, &utpmtest_param->pcr_num);
+
+			return true;
+
+
 	}else{
 		return false;
 	}
