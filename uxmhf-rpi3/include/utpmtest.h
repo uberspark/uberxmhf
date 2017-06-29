@@ -7,6 +7,7 @@
 #ifndef __UTPMTEST_H__
 #define __UTPMTEST_H__
 
+#define UAPP_UTPM_FUNCTION_INIT_MASTER_ENTROPY	0x10
 
 #ifndef __ASSEMBLY__
 
