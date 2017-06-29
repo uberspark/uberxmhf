@@ -117,6 +117,7 @@ int main(){
 
    printf("Starting usr mode utpm test...\n");
 
+   utpm_test(0);
 
    printf("End of utpm test\n");
    return 0;
