@@ -15,7 +15,8 @@ typedef struct {
 	uint8_t g_aeskey[TPM_AES_KEY_LEN_BYTES];
 	uint8_t g_hmackey[TPM_HMAC_KEY_LEN];
 	uint8_t g_rsakey[4]; //TODO: fix this to RSA key len when implemented
-}utpm_init_master_entropy_t;
+	TPM_RESULT result;
+}utpm_init_master_entropy_param_t;
 
 #endif // __ASSEMBLY__
 
