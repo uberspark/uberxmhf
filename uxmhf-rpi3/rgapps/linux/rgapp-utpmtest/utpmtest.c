@@ -212,7 +212,7 @@ void utpm_test(uint32_t cpuid)
 	_XDPRINTF_("%s[%u]: pcr-0: %20D\n", __func__, cpuid, utpmtest_param.pcr0.value, " ");
 
 
-
+#if 0
 	utpmtest_param.tpmPcrInfo.pcrSelection.sizeOfSelect = 0;
 	utpmtest_param.tpmPcrInfo.pcrSelection.pcrSelect[0] = 0;
 	memcpy(utpmtest_param.seal_inbuf, seal_inbuf, 16);
@@ -240,7 +240,7 @@ void utpm_test(uint32_t cpuid)
 	}
 
 	_XDPRINTF_("%s[%u]: utpm_unseal PASSED\n", __func__, cpuid);
-
+#endif
 
 }
 
