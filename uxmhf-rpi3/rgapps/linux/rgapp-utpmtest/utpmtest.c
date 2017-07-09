@@ -152,6 +152,11 @@ void utpm_test(uint32_t cpuid)
 	if( sizeof(utpmtest_param_t) > 4096){
 		_XDPRINTF_("%s[%u]: utpm_test: utpmtest_param_t > 4096. Halting!\n", __func__, cpuid);
 		exit(1);
+	}else{
+		_XDPRINTF_("%s[%u]: utpm_test: utpmtest_param at 0x%08x, "
+				"utpmtest_param_t=%u\n", __func__, cpuid,
+				(uint32_t)&utpmtest_param,
+				sizeof(utpmtest_param_t));
 	}
 
 

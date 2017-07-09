@@ -20,6 +20,9 @@
 bool uapp_utpmtest_handlehcall(u32 uhcall_function, void *uhcall_buffer, u32 uhcall_buffer_len){
 	utpmtest_param_t *utpmtest_param = 	(utpmtest_param_t *)uhcall_buffer;
 
+	_XDPRINTFSMP_("%s: uhcall_function=%x, uhcall_buffer=0x%08x, uhcall_buffer_len=%u\n",
+			__func__, uhcall_function, uhcall_buffer, uhcall_buffer_len);
+
 	if(uhcall_function == UAPP_UTPM_FUNCTION_INIT_MASTER_ENTROPY){
 		utpmtest_param->result =
 				utpm_init_master_entropy(&utpmtest_param->g_aeskey,
@@ -54,10 +57,15 @@ bool uapp_utpmtest_handlehcall(u32 uhcall_function, void *uhcall_buffer, u32 uhc
 		_XDPRINTFSMP_("%s: SEAL function: seal_inbuf_len=%u\n", __func__,
 				utpmtest_param->seal_inbuf_len);
 
+			#if 0
 			utpmtest_param->result =
 					utpm_seal(&utpmtest_param->utpm, &utpmtest_param->tpmPcrInfo,
 							&utpmtest_param->seal_inbuf, utpmtest_param->seal_inbuf_len,
 							&utpmtest_param->seal_outbuf, &utpmtest_param->seal_outbuf_len);
+			#else
+
+			utpmtest_param->result = UTPM_SUCCESS;
+			#endif
 
 			_XDPRINTFSMP_("%s: SEAL function done: seal_outbuf_len=%u\n", __func__,
 					utpmtest_param->seal_outbuf_len);
