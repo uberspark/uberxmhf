@@ -1,7 +1,7 @@
 #!/bin/bash
 
 echo "Preparing to start test..."
-sudo rmmod /home/pi/uhcallmod.ko
+sudo rmmod /home/pi/uhcallmod.ko 
 sudo insmod /home/pi/uhcallkmod.ko
 echo "Loaded hypcall kernel module"
 sleep 2
