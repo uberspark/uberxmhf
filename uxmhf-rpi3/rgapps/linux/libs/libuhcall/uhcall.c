@@ -64,36 +64,38 @@ bool uhcall(uint32_t uhcall_function, void *uhcall_buffer, uint32_t uhcall_buffe
 
 	//if uhcall_buffer is NULL then uhcall_buffer_len should be 0
 	//for a NULL hypercall test
-	if(uhcall_buffer == NULL && uhcall_buffer_len != 0)
+	if(uhcall_buffer == NULL && uhcall_buffer_len != 0){
+	    printf("%s: error: line %u\n", __FUNCTION__, __LINE__);
 		return false;
+	}
 
 	//if uhcall_buffer is not NULL then base address of uhcall_buffer + uhcall_buffer_len
 	//cannot exceed a page size
 	if(uhcall_buffer != NULL){
-		if ( (((uint32_t)uhcall_buffer % UHCALL_PM_PAGE_SIZE) + uhcall_buffer_len) > UHCALL_PM_PAGE_SIZE )
+		if ( (((uint32_t)uhcall_buffer % UHCALL_PM_PAGE_SIZE) + uhcall_buffer_len) > UHCALL_PM_PAGE_SIZE ){
+		    printf("%s: error: line %u\n", __FUNCTION__, __LINE__);
 			return false;
+		}
 	}
-
-
 
 	//open uhcallkmod device
 	fd = open("/dev/uhcallkmod", O_RDWR);
-	if (fd < 0)
-	  return false; //Failed to open /dev/uhcallkmod
-
-    //printf("%s: line %u\n", __FUNCTION__, __LINE__);
+	if (fd < 0){
+	    printf("%s: error: line %u\n", __FUNCTION__, __LINE__);
+		return false; //Failed to open /dev/uhcallkmod
+	}
 
 	//lock uhcall_buffer in memory
-    if(mlock(uhcall_buffer, uhcall_buffer_len) == -1)
-    	  return false; //nFailed to lock page in memory
-
-    //printf("%s: line %u\n", __FUNCTION__, __LINE__);
-
+    if(mlock(uhcall_buffer, uhcall_buffer_len) == -1){
+	    printf("%s: error: line %u\n", __FUNCTION__, __LINE__);
+    	return false; //nFailed to lock page in memory
+    }
 
     //get buffer physical address
-    if(!uhcall_va2pa(uhcall_buffer, &uhcall_buffer_paddr) )
+    if(!uhcall_va2pa(uhcall_buffer, &uhcall_buffer_paddr) ){
+	    printf("%s: error: line %u\n", __FUNCTION__, __LINE__);
     	return false;
-    //printf("%s: line %u\n", __FUNCTION__, __LINE__);
+    }
 
 	//populate uhcallkmod_param_t
 	uhcallp.uhcall_function=uhcall_function;
@@ -103,21 +105,21 @@ bool uhcall(uint32_t uhcall_function, void *uhcall_buffer, uint32_t uhcall_buffe
 
 	//issue the hypercall
 	ret = write(fd, &uhcallp, sizeof(uhcallp));
-	if (ret < 0)
+	if (ret < 0){
+	    printf("%s: error: line %u\n", __FUNCTION__, __LINE__);
 		return false;	//error in issuing hypercall
-
-    //printf("%s: line %u\n", __FUNCTION__, __LINE__);
+	}
 
 	//unlock uhcall_buffer page
-	if(munlock(uhcall_buffer, uhcall_buffer_len) == -1)
+	if(munlock(uhcall_buffer, uhcall_buffer_len) == -1){
+	    printf("%s: error: line %u\n", __FUNCTION__, __LINE__);
 		return false; //Failed to unlock page in memory
+	}
 
-    //printf("%s: line %u\n", __FUNCTION__, __LINE__);
-
-	if ( close(fd) < 0 )
+	if ( close(fd) < 0 ){
+	    printf("%s: error: line %u\n", __FUNCTION__, __LINE__);
 		return false;	//error in closing uhcallkmod device
-
-    //printf("%s: line %u\n", __FUNCTION__, __LINE__);
+	}
 
 	//hypercall succeeded
 	return true;
