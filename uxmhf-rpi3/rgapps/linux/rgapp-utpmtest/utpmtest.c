@@ -136,7 +136,7 @@ uint8_t digest[] =
 		};
 
 
-char *seal_inbuf = "0123456789abcdef";
+char *seal_inbuf = "0123456789abcde";
 
 
 
@@ -227,9 +227,9 @@ void utpm_test(uint32_t cpuid)
 	}
 
 
-	_XDPRINTF_("%s[%u]: utpm_seal PASSED\n", __func__, cpuid);
+	_XDPRINTF_("%s[%u]: utpm_seal PASSED, seal_outbuf_len=%u\n", __func__, cpuid,
+			utpmtest_param.seal_outbuf_len);
 
-#if 0
 
 	if(!uhcall(UAPP_UTPM_FUNCTION_UNSEAL, &utpmtest_param, sizeof(utpmtest_param_t))){
 		_XDPRINTF_("%s[%u]: utpm_unseal hypercall FAILED. Halting!\n", __func__, cpuid);
@@ -241,7 +241,6 @@ void utpm_test(uint32_t cpuid)
 	}
 
 	_XDPRINTF_("%s[%u]: utpm_unseal PASSED\n", __func__, cpuid);
-#endif
 
 }
 

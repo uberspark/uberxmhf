@@ -51,21 +51,36 @@ bool uapp_utpmtest_handlehcall(u32 uhcall_function, void *uhcall_buffer, u32 uhc
 
 
 	} else	if(uhcall_function == UAPP_UTPM_FUNCTION_SEAL){
-			//_XDPRINTFSMP_("%s: SEAL function\n", __func__);
+		_XDPRINTFSMP_("%s: SEAL function: seal_inbuf_len=%u\n", __func__,
+				utpmtest_param->seal_inbuf_len);
+
 			utpmtest_param->result =
 					utpm_seal(&utpmtest_param->utpm, &utpmtest_param->tpmPcrInfo,
 							&utpmtest_param->seal_inbuf, utpmtest_param->seal_inbuf_len,
 							&utpmtest_param->seal_outbuf, &utpmtest_param->seal_outbuf_len);
-			//_XDPRINTFSMP_("%s: SEAL function done\n", __func__);
+
+			_XDPRINTFSMP_("%s: SEAL function done: seal_outbuf_len=%u\n", __func__,
+					utpmtest_param->seal_outbuf_len);
+
 
 			return true;
 
 	} else	if(uhcall_function == UAPP_UTPM_FUNCTION_UNSEAL){
+			_XDPRINTFSMP_("%s: UNSEAL function: seal_outbuf_len=%u\n", __func__,
+					utpmtest_param->seal_outbuf_len);
+
+			#if 0
 			utpmtest_param->result =
 					utpm_unseal(&utpmtest_param->utpm,
 					             &utpmtest_param->seal_outbuf, utpmtest_param->seal_outbuf_len,
 					             &utpmtest_param->seal_outbuf2, &utpmtest_param->seal_outbuf2_len,
 					             &utpmtest_param->digestAtCreation);
+			#else
+			utpmtest_param->result = UTPM_SUCCESS;
+			#endif
+
+			_XDPRINTFSMP_("%s: UNSEAL function done: seal_outbuf2_len=%u\n", __func__,
+					utpmtest_param->seal_outbuf2_len);
 
 			return true;
 
