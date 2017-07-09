@@ -160,9 +160,12 @@ void utpm_test(uint32_t cpuid)
 	}
 
 
+	utpmtest_param.magic = 0xDEADBEEF;
+
 	memcpy(&utpmtest_param.g_aeskey, &g_aeskey, TPM_AES_KEY_LEN_BYTES);
 	memcpy(&utpmtest_param.g_hmackey, &g_hmackey, TPM_HMAC_KEY_LEN);
 	memcpy(&utpmtest_param.g_rsakey, &g_rsakey, 4); //TODO: change to RSA key len when implemented
+
 
 	if(!uhcall(UAPP_UTPM_FUNCTION_INIT_MASTER_ENTROPY, &utpmtest_param, sizeof(utpmtest_param_t))){
 		_XDPRINTF_("%s[%u]: utpm_init_master_entropy hypercall FAILED. Halting!\n", __func__, cpuid);
@@ -174,6 +177,7 @@ void utpm_test(uint32_t cpuid)
 		exit(1);
 	}
 
+#if 0
 	if(!uhcall(UAPP_UTPM_FUNCTION_INIT_INSTANCE, &utpmtest_param, sizeof(utpmtest_param_t))){
 		_XDPRINTF_("%s[%u]: utpm_init_instance hypercall FAILED. Halting!\n", __func__, cpuid);
 		exit(1);
@@ -246,6 +250,7 @@ void utpm_test(uint32_t cpuid)
 	}
 
 	_XDPRINTF_("%s[%u]: utpm_unseal PASSED\n", __func__, cpuid);
+#endif
 
 }
 

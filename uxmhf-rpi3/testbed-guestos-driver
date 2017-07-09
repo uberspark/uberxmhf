@@ -5,7 +5,7 @@ sudo rmmod /home/pi/uhcallmod.ko
 sudo insmod /home/pi/uhcallkmod.ko
 echo "Loaded hypcall kernel module"
 sleep 2
-dmesg | grep "uhcallkmod"
+#dmesg | grep "uhcallkmod"
 #echo "executing uhcalltest app..."
 #sudo ./uhcalltest
 #echo "uhcalltest app executed"
@@ -18,7 +18,7 @@ echo "utpmtest app executed"
 sudo rmmod uhcallkmod.ko
 echo "Unloaded hypcall kernel module"
 sleep 2
-dmesg | grep "uhcallkmod"
+#dmesg | grep "uhcallkmod"
 #
 #sudo hdparm -t /dev/mmcblk0
 #sudo umount ~/mnt

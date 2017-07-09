@@ -24,6 +24,9 @@ bool uapp_utpmtest_handlehcall(u32 uhcall_function, void *uhcall_buffer, u32 uhc
 			__func__, uhcall_function, uhcall_buffer, uhcall_buffer_len);
 
 	if(uhcall_function == UAPP_UTPM_FUNCTION_INIT_MASTER_ENTROPY){
+		_XDPRINTFSMP_("%s: INIT_MASTER_ENTROPY: magic=0x%08x\n",
+				__func__, utpmtest_param->magic);
+
 		utpmtest_param->result =
 				utpm_init_master_entropy(&utpmtest_param->g_aeskey,
 						&utpmtest_param->g_hmackey,

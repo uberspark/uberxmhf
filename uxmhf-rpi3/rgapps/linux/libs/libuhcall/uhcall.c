@@ -41,10 +41,10 @@ bool uhcall_va2pa(void *vaddr, uint64_t *paddr) {
       return false; //Failed to seek pagemap to proper location
 
    // The page frame number is in bits 0-54 so read the
-   // first 7 bytes and clear the 55th bit
-   fread(&page_frame_number, 1, UHCALL_PM_LENGTH-1, pagemap);
+   // 8 bytes and clear evrything but 0-54
+   fread(&page_frame_number, 1, UHCALL_PM_LENGTH, pagemap);
 
-   page_frame_number &= 0x7FFFFFFFFFFFFF;
+   page_frame_number &= 0x7FFFFFFFFFFFFFULL;
 
    fclose(pagemap);
 
@@ -102,6 +102,9 @@ bool uhcall(uint32_t uhcall_function, void *uhcall_buffer, uint32_t uhcall_buffe
 	//uhcallp.uhcall_buffer=uhcall_buffer;
 	uhcallp.uhcall_buffer=uhcall_buffer_paddr;
 	uhcallp.uhcall_buffer_len=uhcall_buffer_len;
+
+	printf("%s: uhcall_function=%u, uhcall_buffer=0x%08x, uhcall_buffer_len=%u\n", __FUNCTION__,
+			uhcallp.uhcall_function, uhcallp.uhcall_buffer, uhcallp.uhcall_buffer_len);
 
 	//issue the hypercall
 	ret = write(fd, &uhcallp, sizeof(uhcallp));

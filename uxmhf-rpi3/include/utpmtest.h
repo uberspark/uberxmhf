@@ -18,6 +18,7 @@
 #ifndef __ASSEMBLY__
 
 typedef struct {
+	uint32_t magic;
 	uint8_t g_aeskey[TPM_AES_KEY_LEN_BYTES];
 	uint8_t g_hmackey[TPM_HMAC_KEY_LEN];
 	uint8_t g_rsakey[4]; //TODO: fix this to RSA key len when implemented
