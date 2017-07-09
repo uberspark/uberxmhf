@@ -212,7 +212,6 @@ void utpm_test(uint32_t cpuid)
 	_XDPRINTF_("%s[%u]: pcr-0: %20D\n", __func__, cpuid, utpmtest_param.pcr0.value, " ");
 
 
-#if 0
 	utpmtest_param.tpmPcrInfo.pcrSelection.sizeOfSelect = 0;
 	utpmtest_param.tpmPcrInfo.pcrSelection.pcrSelect[0] = 0;
 	memcpy(utpmtest_param.seal_inbuf, seal_inbuf, 16);
@@ -229,6 +228,8 @@ void utpm_test(uint32_t cpuid)
 
 
 	_XDPRINTF_("%s[%u]: utpm_seal PASSED\n", __func__, cpuid);
+
+#if 0
 
 	if(!uhcall(UAPP_UTPM_FUNCTION_UNSEAL, &utpmtest_param, sizeof(utpmtest_param_t))){
 		_XDPRINTF_("%s[%u]: utpm_unseal hypercall FAILED. Halting!\n", __func__, cpuid);
