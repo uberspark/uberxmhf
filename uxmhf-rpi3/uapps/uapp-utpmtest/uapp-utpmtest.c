@@ -27,10 +27,17 @@ bool uapp_utpmtest_handlehcall(u32 uhcall_function, void *uhcall_buffer, u32 uhc
 		_XDPRINTFSMP_("%s: INIT_MASTER_ENTROPY: magic=0x%08x\n",
 				__func__, utpmtest_param->magic);
 
+		if(utpmtest_param->magic != 0xDEADBEEF){
+			_XDPRINTFSMP_("%s: INIT_MASTER_ENTROPY: invalid magic!\n",
+					__func__);
+		}
+
+		#if 0
 		utpmtest_param->result =
 				utpm_init_master_entropy(&utpmtest_param->g_aeskey,
 						&utpmtest_param->g_hmackey,
 						&utpmtest_param->g_rsakey);
+		#endif
 
 		return true;
 
