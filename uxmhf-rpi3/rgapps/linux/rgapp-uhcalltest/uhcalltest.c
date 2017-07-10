@@ -25,6 +25,12 @@ int main(){
 
    printf("Starting usr mode hypercall test\n");
 
+	//lock uhcall_buffer in memory
+   if(mlock(&uhctp, sizeof(uhctp)) == -1){
+	    printf("%s: error: line %u\n", __FUNCTION__, __LINE__);
+	    exit(1); //nFailed to lock page in memory
+   }
+
 
    printf("populating uhctp.in[] and uhctp.out[]...\n");
    for(i=0; i < 16; i++)
@@ -56,6 +62,14 @@ int main(){
    for(i=0; i < 16; i++)
 	   printf("%c", uhctp.out[i]);
    printf("\ndumped uhctp.out[]\n");
+
+
+	//unlock uhcall_buffer page
+	if(munlock(&uhctp, sizeof(uhctp)) == -1){
+	    printf("%s: error: line %u\n", __FUNCTION__, __LINE__);
+		exit(1); //Failed to unlock page in memory
+	}
+
 
    printf("End of test\n");
    return 0;

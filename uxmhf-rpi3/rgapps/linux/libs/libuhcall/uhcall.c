@@ -85,11 +85,13 @@ bool uhcall(uint32_t uhcall_function, void *uhcall_buffer, uint32_t uhcall_buffe
 		return false; //Failed to open /dev/uhcallkmod
 	}
 
+#if 0
 	//lock uhcall_buffer in memory
     if(mlock(uhcall_buffer, uhcall_buffer_len) == -1){
 	    printf("%s: error: line %u\n", __FUNCTION__, __LINE__);
     	return false; //nFailed to lock page in memory
     }
+#endif
 
     //get buffer physical address
     if(!uhcall_va2pa(uhcall_buffer, &uhcall_buffer_paddr) ){
@@ -113,11 +115,13 @@ bool uhcall(uint32_t uhcall_function, void *uhcall_buffer, uint32_t uhcall_buffe
 		return false;	//error in issuing hypercall
 	}
 
+#if 0
 	//unlock uhcall_buffer page
 	if(munlock(uhcall_buffer, uhcall_buffer_len) == -1){
 	    printf("%s: error: line %u\n", __FUNCTION__, __LINE__);
 		return false; //Failed to unlock page in memory
 	}
+#endif
 
 	if ( close(fd) < 0 ){
 	    printf("%s: error: line %u\n", __FUNCTION__, __LINE__);
