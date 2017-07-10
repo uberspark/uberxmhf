@@ -72,7 +72,7 @@ bool uhcall_va2pa(void *vaddr, uint64_t *paddr) {
 bool uhcall(uint32_t uhcall_function, void *uhcall_buffer, uint32_t uhcall_buffer_len){
 	int ret, fd;
 	uhcallkmod_param_t uhcallp;
-	uint32_t uhcall_buffer_paddr;
+	uint64_t uhcall_buffer_paddr;
 
 	//if uhcall_buffer is NULL then uhcall_buffer_len should be 0
 	//for a NULL hypercall test
@@ -97,7 +97,7 @@ bool uhcall(uint32_t uhcall_function, void *uhcall_buffer, uint32_t uhcall_buffe
 		return false; //Failed to open /dev/uhcallkmod
 	}
 
-#if 0
+#if 1
 	//lock uhcall_buffer in memory
     if(mlock(uhcall_buffer, uhcall_buffer_len) == -1){
 	    printf("%s: error: line %u\n", __FUNCTION__, __LINE__);
@@ -127,7 +127,7 @@ bool uhcall(uint32_t uhcall_function, void *uhcall_buffer, uint32_t uhcall_buffe
 		return false;	//error in issuing hypercall
 	}
 
-#if 0
+#if 1
 	//unlock uhcall_buffer page
 	if(munlock(uhcall_buffer, uhcall_buffer_len) == -1){
 	    printf("%s: error: line %u\n", __FUNCTION__, __LINE__);

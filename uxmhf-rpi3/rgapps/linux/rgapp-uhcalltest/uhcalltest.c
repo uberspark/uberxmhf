@@ -19,7 +19,7 @@
 
 __attribute__((aligned(4096))) __attribute__((section(".data"))) uhcalltest_param_t uhctp;
 
-
+#if 0
 #define PAGEMAP_ENTRY 8
 #define GET_BIT(X,Y) (X & ((uint64_t)1<<Y)) >> Y
 #define GET_PFN(X) X & 0x7FFFFFFFFFFFFF
@@ -103,9 +103,9 @@ int main(){
 	printf("from uhcall_va2pa=0x%016llx\n", paddr);
 
 }
+#endif
 
 
-#if 0
 int main(){
 	uint8_t ch='a';
 	uint32_t i;
@@ -117,7 +117,7 @@ int main(){
 	   uhctp.in[i] = ch + i;
    memset(&uhctp.out, 0, 16);
 
-#if 1
+#if 0
 	//lock uhcall_buffer in memory
 	if(mlock(&uhctp, sizeof(uhctp)) == -1){
 		printf("%s: error: line %u\n", __FUNCTION__, __LINE__);
@@ -144,7 +144,7 @@ int main(){
    else
 	   printf("hypercall SUCCESS\n");
 
-#if 1
+#if 0
 	//unlock uhcall_buffer page
 	if(munlock(&uhctp, sizeof(uhctp)) == -1){
 	    printf("%s: error: line %u\n", __FUNCTION__, __LINE__);
@@ -168,4 +168,3 @@ int main(){
    printf("End of test\n");
    return 0;
 }
-#endif
