@@ -1,26 +1,24 @@
-#!/bin/bash
-
-echo "Preparing to start test..."
-sudo rmmod /home/pi/uhcallmod.ko 
-sudo insmod /home/pi/uhcallkmod.ko
-echo "Loaded hypcall kernel module"
-sleep 2
+#echo "Preparing to start test..."
+#sudo rmmod /home/pi/uhcallmod.ko 
+#sudo insmod ~/uhcallkmod.ko
+#echo "Loaded hypcall kernel module"
+#sleep 2
 #dmesg | grep "uhcallkmod"
 #sleep 2
-echo "executing uhcalltest app..."
-sudo ./uhcalltest
-echo "uhcalltest app executed"
+#echo "executing uhcalltest app..."
+#sudo ./uhcalltest
+#echo "uhcalltest app executed"
 #echo "executing utpmtest app..."
 #sudo ./utpmtest
 #echo "utpmtest app executed"
 #echo "executing usr mode npf test app..."
 #sudo ./appnpf
 #echo "usr mode npf test app executed"
-sudo rmmod uhcallkmod.ko
-echo "Unloaded hypcall kernel module"
-sleep 2
-dmesg | grep "uhcallkmod"
-sleep 2
+#sudo rmmod uhcallkmod.ko
+#echo "Unloaded hypcall kernel module"
+#sleep 2
+#dmesg | grep "uhcallkmod"
+#sleep 2
 #sudo hdparm -t /dev/mmcblk0
 #sudo umount ~/mnt
 #sleep 2
@@ -31,7 +29,7 @@ sleep 2
 #echo iozone -e -I -a -s 2M -r 2k -i 0 -f ~/mnt/test-iozone
 #sleep 2
 #sudo umount ~/mnt
-echo "Waiting for test output to be flushed..."
-sleep 2
-echo "All done. Shutting down..."
-sudo shutdown -hP now
+#echo "Waiting for test output to be flushed..."
+#sleep 2
+#echo "All done. Shutting down..."
+#sudo shutdown -hP now

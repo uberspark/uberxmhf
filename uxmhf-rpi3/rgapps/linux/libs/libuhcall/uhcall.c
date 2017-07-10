@@ -36,20 +36,32 @@ bool uhcall_va2pa(void *vaddr, uint64_t *paddr) {
 		return false;	//unable to open pagemap file
 
 	// seek to the page that vaddr is on
-   offset = (uint32_t)vaddr / getpagesize() * UHCALL_PM_LENGTH;
+   offset = ((uint32_t)vaddr / getpagesize()) * UHCALL_PM_LENGTH;
    if(fseek(pagemap, (uint32_t)offset, SEEK_SET) != 0)
       return false; //Failed to seek pagemap to proper location
 
    // The page frame number is in bits 0-54 so read the
    // 8 bytes and clear evrything but 0-54
-   fread(&page_frame_number, 1, UHCALL_PM_LENGTH, pagemap);
+   fread(&page_frame_number, UHCALL_PM_LENGTH, 1, pagemap);
 
+   if (page_frame_number & (1ULL << 63)) { // page present ?
+	   *paddr = page_frame_number & ((1ULL << 54) - 1); // pfn mask
+	   *paddr = *paddr * getpagesize();
+	   fclose(pagemap);
+	   return true;
+   }else{
+	   fclose(pagemap);
+	   return false;
+   }
+
+#if 0
    page_frame_number &= 0x7FFFFFFFFFFFFFULL;
 
    fclose(pagemap);
 
    *paddr = (page_frame_number << UHCALL_PM_PAGE_SHIFT);
    return true;
+#endif
 }
 
 
