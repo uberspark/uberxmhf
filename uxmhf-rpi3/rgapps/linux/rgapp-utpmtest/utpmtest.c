@@ -160,11 +160,19 @@ void utpm_test(uint32_t cpuid)
 	}
 
 
+	//lock uhcall_buffer in memory
+    if(mlock(&utpmtest_param, sizeof(utpmtest_param)) == -1){
+	    printf("%s: error: line %u\n", __FUNCTION__, __LINE__);
+    	exit(1); //nFailed to lock page in memory
+    }
+
+
+
 	utpmtest_param.magic = 0xDEADBEEF;
 
-	//memcpy(&utpmtest_param.g_aeskey, &g_aeskey, TPM_AES_KEY_LEN_BYTES);
-	//memcpy(&utpmtest_param.g_hmackey, &g_hmackey, TPM_HMAC_KEY_LEN);
-	//memcpy(&utpmtest_param.g_rsakey, &g_rsakey, 4); //TODO: change to RSA key len when implemented
+	memcpy(&utpmtest_param.g_aeskey, &g_aeskey, TPM_AES_KEY_LEN_BYTES);
+	memcpy(&utpmtest_param.g_hmackey, &g_hmackey, TPM_HMAC_KEY_LEN);
+	memcpy(&utpmtest_param.g_rsakey, &g_rsakey, 4); //TODO: change to RSA key len when implemented
 
 
 	if(!uhcall(UAPP_UTPM_FUNCTION_INIT_MASTER_ENTROPY, &utpmtest_param, sizeof(utpmtest_param_t))){
@@ -251,6 +259,14 @@ void utpm_test(uint32_t cpuid)
 
 	_XDPRINTF_("%s[%u]: utpm_unseal PASSED\n", __func__, cpuid);
 #endif
+
+	//unlock uhcall_buffer page
+	if(munlock(&utpmtest_param, sizeof(utpmtest_param)) == -1){
+	    printf("%s: error: line %u\n", __FUNCTION__, __LINE__);
+		exit(1);
+	}
+
+
 
 }
 

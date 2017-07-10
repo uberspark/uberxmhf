@@ -7,12 +7,12 @@ echo "Loaded hypcall kernel module"
 sleep 2
 #dmesg | grep "uhcallkmod"
 #sleep 2
-echo "executing uhcalltest app..."
-sudo ./uhcalltest
-echo "uhcalltest app executed"
-#echo "executing utpmtest app..."
-#sudo ./utpmtest
-#echo "utpmtest app executed"
+#echo "executing uhcalltest app..."
+#sudo ./uhcalltest
+#echo "uhcalltest app executed"
+echo "executing utpmtest app..."
+sudo ./utpmtest
+echo "utpmtest app executed"
 #echo "executing usr mode npf test app..."
 #sudo ./appnpf
 #echo "usr mode npf test app executed"
