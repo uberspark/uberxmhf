@@ -90,13 +90,6 @@ bool uhcall(uint32_t uhcall_function, void *uhcall_buffer, uint32_t uhcall_buffe
 		}
 	}
 
-	//open uhcallkmod device
-	fd = open("/dev/uhcallkmod", O_RDWR);
-	if (fd < 0){
-	    printf("%s: error: line %u\n", __FUNCTION__, __LINE__);
-		return false; //Failed to open /dev/uhcallkmod
-	}
-
 #if 1
 	//lock uhcall_buffer in memory
     if(mlock(uhcall_buffer, uhcall_buffer_len) == -1){
@@ -110,6 +103,15 @@ bool uhcall(uint32_t uhcall_function, void *uhcall_buffer, uint32_t uhcall_buffe
 	    printf("%s: error: line %u\n", __FUNCTION__, __LINE__);
     	return false;
     }
+
+
+	//open uhcallkmod device
+	fd = open("/dev/uhcallkmod", O_RDWR);
+	if (fd < 0){
+	    printf("%s: error: line %u\n", __FUNCTION__, __LINE__);
+		return false; //Failed to open /dev/uhcallkmod
+	}
+
 
 	//populate uhcallkmod_param_t
 	uhcallp.uhcall_function=uhcall_function;
