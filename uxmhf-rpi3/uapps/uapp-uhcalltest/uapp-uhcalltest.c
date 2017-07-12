@@ -14,10 +14,14 @@
 #include <uhcalltest.h>
 
 uint32_t va2pa(uint32_t va){
+	u32 ttbcr;
+
 	_XDPRINTFSMP_("%s: ENTER: va=0x%08x\n", __func__, va);
 
-	_XDPRINTFSMP_("%s: WiP. Halting\n", __func__);
-	HALT();
+	ttbcr = sysreg_read_ttbcr();
+	_XDPRINTFSMP_("%s: ttbcr=0x%08x\n", __func__, ttbcr);
+
+	_XDPRINTFSMP_("%s: WiP\n", __func__);
 }
 
 //return true if handled the hypercall, false if not
@@ -33,6 +37,7 @@ bool uapp_uhcalltest_handlehcall(u32 uhcall_function, void *uhcall_buffer, u32 u
 
 	va2pa((uint32_t)uhcall_buffer);
 
+#if 0
 	uhctp = (uhcalltest_param_t *)uhcall_buffer;
    _XDPRINTFSMP_("dumping uhctp->in[]...\n");
    for(i=0; i < 16; i++)
@@ -45,7 +50,7 @@ bool uapp_uhcalltest_handlehcall(u32 uhcall_function, void *uhcall_buffer, u32 u
    for(i=0; i < 16; i++)
 	   _XDPRINTFSMP_("%c", uhctp->out[i]);
    _XDPRINTFSMP_("\ndumped uhctp->out[]\n");
-
+#endif
 
 	return true;
 }
