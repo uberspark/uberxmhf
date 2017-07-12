@@ -3,7 +3,7 @@ UXMHFRPI3_DIR := $(CURRENT_DIR)/../../..
 
 UINCS = -I$(CURRENT_DIR)/.
 UINCS += -I$(UXMHFRPI3_DIR)/include
-UINCS += -I$(UXMHFRPI3_DIR)/libs/libuhcall/include
+UINCS += -I$(UXMHFRPI3_DIR)/rgapps/linux/libs/libuhcall/include
 
 EXTRA_CFLAGS := $(UINCS)
 
