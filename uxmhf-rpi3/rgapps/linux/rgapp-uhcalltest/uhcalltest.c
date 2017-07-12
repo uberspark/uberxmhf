@@ -20,7 +20,7 @@
 
 __attribute__((aligned(4096))) __attribute__((section(".data"))) uhcalltest_param_t uhctp;
 
-#if 0
+#if 1
 
 int main(){
 	uint8_t ch='a';
@@ -63,6 +63,7 @@ int main(){
 }
 #endif
 
+#if 0
 int main(){
 	uint8_t ch='a';
 	uint64_t paddr;
@@ -82,7 +83,7 @@ int main(){
     	exit(1);
     }
 
-    printf("%s: paddr=0x%016llx\n", __FUNCTION__);
+    printf("%s: paddr=0x%016llx\n", __FUNCTION__, paddr);
 
     fd = open("/dev/mem", O_RDWR|O_SYNC);
     myptr = (uhcalltest_param_t *)mmap(0, getpagesize(),
@@ -98,3 +99,4 @@ int main(){
     	exit(1);
     }
 }
+#endif
