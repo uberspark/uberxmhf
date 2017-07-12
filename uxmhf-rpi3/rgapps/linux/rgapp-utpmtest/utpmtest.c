@@ -140,7 +140,7 @@ char *seal_inbuf = "0123456789abcde";
 
 
 
-__attribute__((aligned(4096))) utpmtest_param_t utpmtest_param;
+__attribute__((aligned(4096))) __attribute__((section(".data"))) utpmtest_param_t utpmtest_param;
 
 
 //////
@@ -159,13 +159,13 @@ void utpm_test(uint32_t cpuid)
 				sizeof(utpmtest_param_t));
 	}
 
-
+#if 0
 	//lock uhcall_buffer in memory
     if(mlock(&utpmtest_param, sizeof(utpmtest_param)) == -1){
 	    printf("%s: error: line %u\n", __FUNCTION__, __LINE__);
     	exit(1); //nFailed to lock page in memory
     }
-
+#endif
 
 
 	utpmtest_param.magic = 0xDEADBEEF;
@@ -185,7 +185,7 @@ void utpm_test(uint32_t cpuid)
 		exit(1);
 	}
 
-#if 0
+#if 1
 	if(!uhcall(UAPP_UTPM_FUNCTION_INIT_INSTANCE, &utpmtest_param, sizeof(utpmtest_param_t))){
 		_XDPRINTF_("%s[%u]: utpm_init_instance hypercall FAILED. Halting!\n", __func__, cpuid);
 		exit(1);
@@ -260,12 +260,13 @@ void utpm_test(uint32_t cpuid)
 	_XDPRINTF_("%s[%u]: utpm_unseal PASSED\n", __func__, cpuid);
 #endif
 
+#if 0
 	//unlock uhcall_buffer page
 	if(munlock(&utpmtest_param, sizeof(utpmtest_param)) == -1){
 	    printf("%s: error: line %u\n", __FUNCTION__, __LINE__);
 		exit(1);
 	}
-
+#endif
 
 
 }
