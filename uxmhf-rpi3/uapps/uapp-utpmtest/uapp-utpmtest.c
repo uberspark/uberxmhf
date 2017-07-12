@@ -72,10 +72,13 @@ bool uapp_utpmtest_handlehcall(u32 uhcall_function, void *uhcall_buffer, u32 uhc
 		//		utpmtest_param->seal_inbuf_len);
 
 			#if 1
-			utpmtest_param->result =
-					utpm_seal(&utpmtest_param->utpm, &utpmtest_param->tpmPcrInfo,
-							&utpmtest_param->seal_inbuf, utpmtest_param->seal_inbuf_len,
-							&utpmtest_param->seal_outbuf, &utpmtest_param->seal_outbuf_len);
+			if(utpmtest_param->seal_inbuf_len <= 32){
+				utpmtest_param->result =
+						utpm_seal(&utpmtest_param->utpm, &utpmtest_param->tpmPcrInfo,
+								&utpmtest_param->seal_inbuf, utpmtest_param->seal_inbuf_len,
+								&utpmtest_param->seal_outbuf, &utpmtest_param->seal_outbuf_len);
+			}else
+				utpmtest_param->result = UTPM_ERR;
 			#endif
 
 			//_XDPRINTFSMP_("%s: SEAL function done: seal_outbuf_len=%u\n", __func__,
@@ -89,11 +92,14 @@ bool uapp_utpmtest_handlehcall(u32 uhcall_function, void *uhcall_buffer, u32 uhc
 			//		utpmtest_param->seal_outbuf_len);
 
 			#if 1
-			utpmtest_param->result =
-					utpm_unseal(&utpmtest_param->utpm,
-					             &utpmtest_param->seal_outbuf, utpmtest_param->seal_outbuf_len,
-					             &utpmtest_param->seal_outbuf2, &utpmtest_param->seal_outbuf2_len,
-					             &utpmtest_param->digestAtCreation);
+			if(utpmtest_param->seal_outbuf_len <= 32){
+				utpmtest_param->result =
+						utpm_unseal(&utpmtest_param->utpm,
+									 &utpmtest_param->seal_outbuf, utpmtest_param->seal_outbuf_len,
+									 &utpmtest_param->seal_outbuf2, &utpmtest_param->seal_outbuf2_len,
+									 &utpmtest_param->digestAtCreation);
+			}else
+				utpmtest_param->result = UTPM_ERR;
 			#endif
 
 			//_XDPRINTFSMP_("%s: UNSEAL function done: seal_outbuf2_len=%u\n", __func__,
