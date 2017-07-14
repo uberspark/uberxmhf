@@ -14,7 +14,10 @@
 #include <uhcalltest.h>
 
 #define MAX_LVL1_ENTRIES	4096
+#define MAX_LVL2_ENTRIES	256
+
 #define SIZEOF_LVL1_ENTRY_MAP	(1024*1024)	//each lvl1 entry maps to 1MB of memory
+#define SIZEOF_LVL2_ENTRY_MAP	(1024*1024)	//each lvl1 entry maps to 1MB of memory
 
 uint32_t va2pa(uint32_t va){
 	u32 ttbcr;
@@ -24,7 +27,10 @@ uint32_t va2pa(uint32_t va){
 	u32 *lvl1tbl;	//4096 entries
 	u32 i;
 	u32 lvl1tbl_index;
+	u32 lvl2tbl_index;
 	u32 lvl1tbl_entry;
+	u32 lvl2tbl_entry;
+	u32 *lvl2tbl;
 
 	_XDPRINTFSMP_("%s: ENTER: va=0x%08x\n", __func__, va);
 
@@ -42,6 +48,7 @@ uint32_t va2pa(uint32_t va){
 	_XDPRINTFSMP_("%s: pdbr=0x%08x\n", __func__, pdbr);
 
 	lvl1tbl_index = va/SIZEOF_LVL1_ENTRY_MAP;
+	lvl2tbl_index = (va % SIZEOF_LVL1_ENTRY_MAP) / 4096;
 
 	lvl1tbl = (u32 *)pdbr;
 
@@ -51,6 +58,20 @@ uint32_t va2pa(uint32_t va){
 
 	_XDPRINTFSMP_("%s: lvl1tbl_index=%u, lvl1tbl entry=0x%08x\n", __func__,
 			lvl1tbl_index, lvl1tbl_entry);
+
+	if( (lvl1tbl_entry & 0x00000003UL) != 0x1){
+		_XDPRINTFSMP_("%s: unhandled lvl1tbl_entry. Halting!\n", __func__);
+		HALT();
+	}
+
+	lvl2tbl = (u32 *) (u32)( lvl1tbl_entry & 0xFFFFFE00UL);
+
+	_XDPRINTFSMP_("%s: lvl2tbl=0x%08x\n", __func__, lvl2tbl);
+
+	lvl2tbl_entry = lvl2tbl[lvl2tbl_index];
+
+	_XDPRINTFSMP_("%s: lvl2tbl_index=%u, lvl2tbl entry=0x%08x\n", __func__,
+			lvl2tbl_index, lvl2tbl_entry);
 
 	_XDPRINTFSMP_("%s: WiP\n", __func__);
 }
