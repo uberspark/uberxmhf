@@ -19,6 +19,7 @@
 #define SIZEOF_LVL1_ENTRY_MAP	(1024*1024)	//each lvl1 entry maps to 1MB of memory
 #define SIZEOF_LVL2_ENTRY_MAP	(1024*1024)	//each lvl1 entry maps to 1MB of memory
 
+/*
 uint32_t va2pa(uint32_t va){
 	u32 ttbcr;
 	u32 ttbr0;
@@ -75,6 +76,20 @@ uint32_t va2pa(uint32_t va){
 
 	_XDPRINTFSMP_("%s: WiP\n", __func__);
 }
+*/
+
+
+uint32_t va2pa(uint32_t va){
+	u32 pa;
+
+	_XDPRINTFSMP_("%s: ENTER: va=0x%08x\n", __func__, va);
+
+
+
+	_XDPRINTFSMP_("%s: WiP\n", __func__);
+}
+
+
 
 //return true if handled the hypercall, false if not
 bool uapp_uhcalltest_handlehcall(u32 uhcall_function, void *uhcall_buffer, u32 uhcall_buffer_len){
