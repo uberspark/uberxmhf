@@ -15,11 +15,20 @@
 
 uint32_t va2pa(uint32_t va){
 	u32 ttbcr;
+	u32 ttbr0;
+	u32 ttbr1;
 
 	_XDPRINTFSMP_("%s: ENTER: va=0x%08x\n", __func__, va);
 
 	ttbcr = sysreg_read_ttbcr();
 	_XDPRINTFSMP_("%s: ttbcr=0x%08x\n", __func__, ttbcr);
+
+	ttbr0 = sysreg_read_ttbr0();
+	_XDPRINTFSMP_("%s: ttbr0=0x%08x\n", __func__, ttbr0);
+
+	ttbr1 = sysreg_read_ttbr1();
+	_XDPRINTFSMP_("%s: ttbr1=0x%08x\n", __func__, ttbr1);
+
 
 	_XDPRINTFSMP_("%s: WiP\n", __func__);
 }
