@@ -412,5 +412,5 @@ sysreg_ats1cpr:
 
 .global sysreg_read_par
 sysreg_read_par:
-	mcr p15,0,r0,c7,c4,0
+	mrc p15,0,r0,c7,c4,0
 	bx lr
