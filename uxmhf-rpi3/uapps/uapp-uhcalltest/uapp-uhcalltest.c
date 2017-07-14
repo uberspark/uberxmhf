@@ -13,10 +13,18 @@
 
 #include <uhcalltest.h>
 
+#define MAX_LVL1_ENTRIES	4096
+#define SIZEOF_LVL1_ENTRY_MAP	(1024*1024)	//each lvl1 entry maps to 1MB of memory
+
 uint32_t va2pa(uint32_t va){
 	u32 ttbcr;
 	u32 ttbr0;
 	u32 ttbr1;
+	u32 pdbr;
+	u32 *lvl1tbl;	//4096 entries
+	u32 i;
+	u32 lvl1tbl_index;
+	u32 lvl1tbl_entry;
 
 	_XDPRINTFSMP_("%s: ENTER: va=0x%08x\n", __func__, va);
 
@@ -29,6 +37,20 @@ uint32_t va2pa(uint32_t va){
 	ttbr1 = sysreg_read_ttbr1();
 	_XDPRINTFSMP_("%s: ttbr1=0x%08x\n", __func__, ttbr1);
 
+
+	pdbr = ttbr0 & 0xFFFFFF80UL;	//strip lower 7 bits
+	_XDPRINTFSMP_("%s: pdbr=0x%08x\n", __func__, pdbr);
+
+	lvl1tbl_index = va/SIZEOF_LVL1_ENTRY_MAP;
+
+	lvl1tbl = (u32 *)pdbr;
+
+	_XDPRINTFSMP_("%s: lvl1tbl=0x%08x\n", __func__, lvl1tbl);
+
+	lvl1tbl_entry = lvl1tbl[lvl1tbl_index];
+
+	_XDPRINTFSMP_("%s: lvl1tbl_index=%u, lvl1tbl entry=0x%08x\n", __func__,
+			lvl1tbl_index, lvl1tbl_entry);
 
 	_XDPRINTFSMP_("%s: WiP\n", __func__);
 }
