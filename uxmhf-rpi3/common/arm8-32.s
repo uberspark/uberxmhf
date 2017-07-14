@@ -402,6 +402,14 @@ sysreg_ats12nsour:
 	mcr p15,0,r0,c7,c8,6
 	bx lr
 
+
+//r0 is the input virtual address
+.global sysreg_ats1cpr
+sysreg_ats1cpr:
+	mcr p15,0,r0,c7,c8,0
+	bx lr
+
+
 .global sysreg_read_par
 sysreg_read_par:
 	mcr p15,0,r0,c7,c4,0
