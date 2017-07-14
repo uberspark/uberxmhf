@@ -401,3 +401,8 @@ sysreg_write_ttbr1:
 sysreg_ats12nsour:
 	mcr p15,0,r0,c7,c8,6
 	bx lr
+
+.global sysreg_read_par
+sysreg_read_par:
+	mcr p15,0,r0,c7,c4,0
+	bx lr
