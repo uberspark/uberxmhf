@@ -80,11 +80,14 @@ uint32_t va2pa(uint32_t va){
 
 
 uint32_t va2pa(uint32_t va){
-	u32 pa;
+	u32 par;
 
 	_XDPRINTFSMP_("%s: ENTER: va=0x%08x\n", __func__, va);
 
 	sysreg_ats12nsour(va);
+	par = sysreg_read_par();
+
+	_XDPRINTFSMP_("%s: PAR=0x%08x\n", __func__, par);
 
 	_XDPRINTFSMP_("%s: WiP\n", __func__);
 }
