@@ -90,6 +90,15 @@ uint32_t va2pa(uint32_t va){
 
 	_XDPRINTFSMP_("%s: PAR=0x%08x\n", __func__, par);
 
+	if(par & 0x1){
+		_XDPRINTFSMP_("%s: Fault in address translation. Halting!\n", __func__);
+		HALT();
+	}
+
+	par &= 0xFFFFF000UL;
+
+	_XDPRINTFSMP_("%s: PAR after pruning=0x%08x\n", __func__, par);
+
 #if 0
 	sysreg_ats1cpr(va);
 	par = sysreg_read_par();

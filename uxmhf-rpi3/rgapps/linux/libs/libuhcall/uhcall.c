@@ -98,12 +98,15 @@ bool uhcall(uint32_t uhcall_function, void *uhcall_buffer, uint32_t uhcall_buffe
     }
 #endif
 
+#if 0
     //get buffer physical address
     if(!uhcall_va2pa(uhcall_buffer, &uhcall_buffer_paddr) ){
 	    printf("%s: error: line %u\n", __FUNCTION__, __LINE__);
     	return false;
     }
 
+    printf("%s: uhcall_buffer_paddr=0x%08x\n", __FUNCTION__, (uint32_t)uhcall_buffer_paddr);
+#endif
 
 	//open uhcallkmod device
 	fd = open("/dev/uhcallkmod", O_RDWR);
