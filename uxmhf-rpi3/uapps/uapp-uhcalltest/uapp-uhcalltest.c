@@ -79,7 +79,7 @@ uint32_t va2pa(uint32_t va){
 */
 
 
-uint32_t va2pa(uint32_t va){
+bool va2pa(uint32_t va, u32 *pa){
 	u32 par;
 	u8 *ch;
 
@@ -96,27 +96,18 @@ uint32_t va2pa(uint32_t va){
 
 	_XDPRINTFSMP_("%s: PAR=0x%08x\n", __func__, par);
 
-	if(par & 0x1){
-		_XDPRINTFSMP_("%s: Fault in address translation. Halting!\n", __func__);
-		HALT();
-	}
+	if(par & 0x1)
+		return false; 	//_XDPRINTFSMP_("%s: Fault in address translation. Halting!\n", __func__);
 
 	par &= 0xFFFFF000UL;
 
 	_XDPRINTFSMP_("%s: PAR after pruning=0x%08x\n", __func__, par);
 
-#if 0
-	sysreg_ats1cpr(va);
-	par = sysreg_read_par();
+	*pa = par;
 
-	_XDPRINTFSMP_("%s: PAR(ats1cpr)=0x%08x\n", __func__, par);
-#endif
+	_XDPRINTFSMP_("%s: EXIT: pa=0x%08x\n", __func__, *pa);
 
-	ch = (u8 *)par;
-
-	_XDPRINTFSMP_("%s: ch=%c\n", __func__, *ch);
-
-	_XDPRINTFSMP_("%s: WiP\n", __func__);
+	return true;
 }
 
 
@@ -125,6 +116,7 @@ uint32_t va2pa(uint32_t va){
 bool uapp_uhcalltest_handlehcall(u32 uhcall_function, void *uhcall_buffer, u32 uhcall_buffer_len){
 	uhcalltest_param_t *uhctp;
 	uint32_t i;
+	u32 uhcall_buffer_paddr;
 
 	if(uhcall_function != UAPP_UHCALLTEST_FUNCTION_TEST)
 		return false;
@@ -132,18 +124,22 @@ bool uapp_uhcalltest_handlehcall(u32 uhcall_function, void *uhcall_buffer, u32 u
 	_XDPRINTFSMP_("%s: hcall: uhcall_function=0x%08x, uhcall_buffer=0x%08x, uhcall_buffer_len=0x%08x\n", __func__,
 			uhcall_function, uhcall_buffer, uhcall_buffer_len);
 
-	va2pa((uint32_t)uhcall_buffer);
+	if(!va2pa((uint32_t)uhcall_buffer, &uhcall_buffer_paddr))
+		return false;
+
+	uhctp = (uhcalltest_param_t *)uhcall_buffer_paddr;
 
 #if 0
-	uhctp = (uhcalltest_param_t *)uhcall_buffer;
-   _XDPRINTFSMP_("dumping uhctp->in[]...\n");
+   _XDPRINTFSMP_("dumping in[]...\n");
    for(i=0; i < 16; i++)
 	   _XDPRINTFSMP_("%c", uhctp->in[i]);
    _XDPRINTFSMP_("\ndumped uhctp->in[]\n");
+#endif
 
    memcpy(&uhctp->out, &uhctp->in, 16);
 
-   _XDPRINTFSMP_("dumping uhctp->out[]...\n");
+#if 0
+   _XDPRINTFSMP_("dumping out[]...\n");
    for(i=0; i < 16; i++)
 	   _XDPRINTFSMP_("%c", uhctp->out[i]);
    _XDPRINTFSMP_("\ndumped uhctp->out[]\n");

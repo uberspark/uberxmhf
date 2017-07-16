@@ -77,6 +77,8 @@ int main(){
 #if 1
 int main(){
 	uhcalltest_param_t *ptr_uhctp;
+	uint32_t i;
+	uint8_t ch='a';
 
     printf("%s: start\n", __FUNCTION__);
 
@@ -85,12 +87,27 @@ int main(){
     	exit(1);
 	}
 
-	ptr_uhctp->in[0]='A';
+
+	printf("%s: populating in[] and out[]...\n", __FUNCTION__);
+	for(i=0; i < 16; i++)
+	   ptr_uhctp->in[i] = ch + i;
+	memset(&ptr_uhctp->out, 0, 16);
+
+	printf("dumping in[]...\n");
+	for(i=0; i < 16; i++)
+		printf("%c", ptr_uhctp->in[i]);
+	printf("\n");
 
     if(!uhcall(UAPP_UHCALLTEST_FUNCTION_TEST, ptr_uhctp, sizeof(uhcalltest_param_t)))
  	   printf("hypercall FAILED\n");
     else
  	   printf("hypercall SUCCESS\n");
+
+    printf("dumping out[]...\n");
+    for(i=0; i < 16; i++)
+ 	   printf("%c", ptr_uhctp->out[i]);
+    printf("\n");
+
 
     free(ptr_uhctp);
 
