@@ -85,7 +85,7 @@ int main(){
     	exit(1);
 	}
 
-#if 0
+#if 1
 	if(mlock(ptrs, 32) == -1){
 	    printf("%s: error: line %u\n", __FUNCTION__);
     	exit(1);
@@ -99,7 +99,7 @@ int main(){
     else
  	   printf("hypercall SUCCESS\n");
 
-#if 0
+#if 1
     if(munlock(ptrs, 32) == -1){
 	    printf("%s: error: line %u\n", __FUNCTION__);
     	exit(1);
