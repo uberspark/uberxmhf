@@ -76,39 +76,25 @@ int main(){
 
 #if 1
 int main(){
-	uint8_t *ptrs;
+	uhcalltest_param_t *ptr_uhctp;
 
-    printf("Starting test\n");
+    printf("%s: start\n", __FUNCTION__);
 
-	if (posix_memalign(&ptrs, 4096, 32) != 0){
+	if (posix_memalign(&ptr_uhctp, 4096, sizeof(uhcalltest_param_t)) != 0){
 	    printf("%s: error: line %u\n", __FUNCTION__);
     	exit(1);
 	}
 
-#if 1
-	if(mlock(ptrs, 32) == -1){
-	    printf("%s: error: line %u\n", __FUNCTION__);
-    	exit(1);
-    }
-#endif
+	ptr_uhctp->in[0]='A';
 
-    ptrs[0] = 'a';
-
-    if(!uhcall(UAPP_UHCALLTEST_FUNCTION_TEST, ptrs, 32))
+    if(!uhcall(UAPP_UHCALLTEST_FUNCTION_TEST, ptr_uhctp, sizeof(uhcalltest_param_t)))
  	   printf("hypercall FAILED\n");
     else
  	   printf("hypercall SUCCESS\n");
 
-#if 1
-    if(munlock(ptrs, 32) == -1){
-	    printf("%s: error: line %u\n", __FUNCTION__);
-    	exit(1);
-    }
-#endif
+    free(ptr_uhctp);
 
-    free(ptrs);
-
-    printf("End of test\n");
+    printf("%s: end\n", __FUNCTION__);
     return 0;
 
 }
