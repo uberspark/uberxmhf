@@ -90,13 +90,6 @@ bool uhcall(uint32_t uhcall_function, void *uhcall_buffer, uint32_t uhcall_buffe
 		}
 	}
 
-#if 1
-	//lock uhcall_buffer in memory
-    if(mlock(uhcall_buffer, uhcall_buffer_len) == -1){
-	    printf("%s: error: line %u\n", __FUNCTION__, __LINE__);
-    	return false; //nFailed to lock page in memory
-    }
-#endif
 
 #if 0
     //get buffer physical address
@@ -116,6 +109,16 @@ bool uhcall(uint32_t uhcall_function, void *uhcall_buffer, uint32_t uhcall_buffe
 	}
 
 
+#if 0
+	//lock uhcall_buffer in memory
+    //if(mlock(uhcall_buffer, uhcall_buffer_len) == -1){
+    if(mlock(uhcall_buffer, 4096) == -1){
+		printf("%s: error: line %u\n", __FUNCTION__, __LINE__);
+    	return false; //nFailed to lock page in memory
+    }
+#endif
+
+
 	//populate uhcallkmod_param_t
 	uhcallp.uhcall_function=uhcall_function;
 	uhcallp.uhcall_buffer=(uint32_t)uhcall_buffer;
@@ -132,10 +135,11 @@ bool uhcall(uint32_t uhcall_function, void *uhcall_buffer, uint32_t uhcall_buffe
 		return false;	//error in issuing hypercall
 	}
 
-#if 1
+#if 0
 	//unlock uhcall_buffer page
-	if(munlock(uhcall_buffer, uhcall_buffer_len) == -1){
-	    printf("%s: error: line %u\n", __FUNCTION__, __LINE__);
+	//if(munlock(uhcall_buffer, uhcall_buffer_len) == -1){
+	if(munlock(uhcall_buffer, 4096) == -1){
+		printf("%s: error: line %u\n", __FUNCTION__, __LINE__);
 		return false; //Failed to unlock page in memory
 	}
 #endif

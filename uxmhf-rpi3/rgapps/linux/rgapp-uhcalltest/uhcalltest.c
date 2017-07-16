@@ -20,11 +20,16 @@
 
 __attribute__((aligned(4096))) __attribute__((section(".data"))) uhcalltest_param_t uhctp;
 
-#if 1
+#if 0
 
 int main(){
 	uint8_t ch='a';
 	uint32_t i;
+
+	if( mlockall(MCL_FUTURE) == -1){
+		printf("error locking memory\n");
+		exit(1);
+	}
 
    printf("Starting usr mode hypercall test\n");
 
@@ -58,45 +63,53 @@ int main(){
 	   printf("%c", uhctp.out[i]);
    printf("\ndumped uhctp.out[]\n");
 
+	if( munlockall() == -1){
+		printf("error unlocking memory\n");
+		exit(1);
+	}
+
+
    printf("End of test\n");
    return 0;
 }
 #endif
 
-#if 0
+#if 1
 int main(){
-	uint8_t ch='a';
-	uint64_t paddr;
-	uhcalltest_param_t *myptr;
-    int fd = 0;
+	uint8_t *ptrs;
 
-	uhctp.in[0] = ch;
+    printf("Starting test\n");
 
-    if(mlock(&uhctp, sizeof(&uhctp)) == -1){
+	if (posix_memalign(&ptrs, 4096, 32) != 0){
+	    printf("%s: error: line %u\n", __FUNCTION__);
+    	exit(1);
+	}
+
+#if 0
+	if(mlock(ptrs, 32) == -1){
 	    printf("%s: error: line %u\n", __FUNCTION__);
     	exit(1);
     }
+#endif
 
-    //get buffer physical address
-    if(!uhcall_va2pa(&uhctp, &paddr) ){
+    ptrs[0] = 'a';
+
+    if(!uhcall(UAPP_UHCALLTEST_FUNCTION_TEST, ptrs, 32))
+ 	   printf("hypercall FAILED\n");
+    else
+ 	   printf("hypercall SUCCESS\n");
+
+#if 0
+    if(munlock(ptrs, 32) == -1){
 	    printf("%s: error: line %u\n", __FUNCTION__);
     	exit(1);
     }
+#endif
 
-    printf("%s: paddr=0x%016llx\n", __FUNCTION__, paddr);
+    free(ptrs);
 
-    fd = open("/dev/mem", O_RDWR|O_SYNC);
-    myptr = (uhcalltest_param_t *)mmap(0, getpagesize(),
-    		PROT_READ|PROT_WRITE,
-			MAP_SHARED, fd, (uint32_t)paddr);
+    printf("End of test\n");
+    return 0;
 
-
-    printf("%s: char=%c\n", __FUNCTION__, myptr->in[0]);
-
-
-    if(munlock(&uhctp, sizeof(&uhctp)) == -1){
-	    printf("%s: error: line %u\n", __FUNCTION__);
-    	exit(1);
-    }
 }
 #endif
