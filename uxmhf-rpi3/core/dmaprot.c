@@ -50,8 +50,8 @@ u32 dmaprot_shadowcb(u32 dmac_channel, u32 cb_pa){
 
 	dmacb = (dmac_cb_t *)cb_syspa;
 
-	//bcm2837_miniuart_puts("dmaprot: ccb: cb_pa=");
-	//debug_hexdumpu32(cb_pa);
+	bcm2837_miniuart_puts("dmaprot: ccb: dmacb=");
+	debug_hexdumpu32((u32)dmacb);
 
 	while(1){
 
