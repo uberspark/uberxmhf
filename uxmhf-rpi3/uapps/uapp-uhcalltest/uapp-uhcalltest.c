@@ -83,9 +83,9 @@ bool va2pa(uint32_t va, u32 *pa){
 	u32 par;
 	u8 *ch;
 
-	_XDPRINTFSMP_("%s: ENTER: va=0x%08x\n", __func__, va);
+	//_XDPRINTFSMP_("%s: ENTER: va=0x%08x\n", __func__, va);
 
-	sysreg_tlbiallh();
+	//sysreg_tlbiallh();
 #if 0
 	sysreg_ats12nsour(va);
 	par = sysreg_read_par();
@@ -94,18 +94,18 @@ bool va2pa(uint32_t va, u32 *pa){
 	sysreg_ats1cpr(va);
 	par = sysreg_read_par();
 
-	_XDPRINTFSMP_("%s: PAR=0x%08x\n", __func__, par);
+	//_XDPRINTFSMP_("%s: PAR=0x%08x\n", __func__, par);
 
 	if(par & 0x1)
 		return false; 	//_XDPRINTFSMP_("%s: Fault in address translation. Halting!\n", __func__);
 
 	par &= 0xFFFFF000UL;
 
-	_XDPRINTFSMP_("%s: PAR after pruning=0x%08x\n", __func__, par);
+	//_XDPRINTFSMP_("%s: PAR after pruning=0x%08x\n", __func__, par);
 
 	*pa = par;
 
-	_XDPRINTFSMP_("%s: EXIT: pa=0x%08x\n", __func__, *pa);
+	//_XDPRINTFSMP_("%s: EXIT: pa=0x%08x\n", __func__, *pa);
 
 	return true;
 }
@@ -121,8 +121,8 @@ bool uapp_uhcalltest_handlehcall(u32 uhcall_function, void *uhcall_buffer, u32 u
 	if(uhcall_function != UAPP_UHCALLTEST_FUNCTION_TEST)
 		return false;
 
-	_XDPRINTFSMP_("%s: hcall: uhcall_function=0x%08x, uhcall_buffer=0x%08x, uhcall_buffer_len=0x%08x\n", __func__,
-			uhcall_function, uhcall_buffer, uhcall_buffer_len);
+	//_XDPRINTFSMP_("%s: hcall: uhcall_function=0x%08x, uhcall_buffer=0x%08x, uhcall_buffer_len=0x%08x\n", __func__,
+	//		uhcall_function, uhcall_buffer, uhcall_buffer_len);
 
 	if(!va2pa((uint32_t)uhcall_buffer, &uhcall_buffer_paddr))
 		return false;
