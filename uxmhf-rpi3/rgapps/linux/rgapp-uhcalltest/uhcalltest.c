@@ -74,7 +74,7 @@ int main(){
 }
 #endif
 
-#if 1
+#if 0
 int main(){
 	uhcalltest_param_t *ptr_uhctp;
 	uint32_t i;
@@ -116,3 +116,56 @@ int main(){
 
 }
 #endif
+
+
+void do_uhcalltest(void *bufptr){
+	uhcalltest_param_t *ptr_uhctp = (uhcalltest_param_t *)bufptr;
+	uint32_t i;
+	uint8_t ch='a';
+
+    printf("%s: start\n", __FUNCTION__);
+
+	printf("%s: populating in[] and out[]...\n", __FUNCTION__);
+	for(i=0; i < 16; i++)
+	   ptr_uhctp->in[i] = ch + i;
+	memset(&ptr_uhctp->out, 0, 16);
+
+	printf("dumping in[]...\n");
+	for(i=0; i < 16; i++)
+		printf("%c", ptr_uhctp->in[i]);
+	printf("\n");
+
+    if(!uhcall(UAPP_UHCALLTEST_FUNCTION_TEST, ptr_uhctp, sizeof(uhcalltest_param_t)))
+ 	   printf("hypercall FAILED\n");
+    else
+ 	   printf("hypercall SUCCESS\n");
+
+    printf("dumping out[]...\n");
+    for(i=0; i < 16; i++)
+ 	   printf("%c", ptr_uhctp->out[i]);
+    printf("\n");
+
+    printf("%s: end\n", __FUNCTION__);
+}
+
+
+int main(){
+	uhcalltest_param_t *ptr_uhctp;
+
+    printf("starting uhcalltest (with dynamic buffer)...\n");
+
+	if (posix_memalign(&ptr_uhctp, 4096, sizeof(uhcalltest_param_t)) != 0){
+	    printf("%s: error: line %u\n", __FUNCTION__);
+    	exit(1);
+	}
+
+	do_uhcalltest((void *)ptr_uhctp);
+
+    free(ptr_uhctp);
+
+    printf("end uhcalltest (with dynamic buffer)...\n");
+
+    return 0;
+}
+
+
