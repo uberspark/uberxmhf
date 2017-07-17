@@ -10,6 +10,7 @@
 
 export CURRENT_DIR := $(realpath $(dir $(lastword $(MAKEFILE_LIST))))
 export UXMHFRPI3_DIR := $(CURRENT_DIR)/../../..
+export RGAPPS_LIB_DIR := $(realpath $(CURRENT_DIR)/../libs)
 
 
 CC = arm-linux-gnueabihf-gcc 
@@ -22,10 +23,13 @@ DIR_LIBDL = /home/amit/work/tools/arm-bcm2708/arm-rpi-4.9.3-linux-gnueabihf/arm-
 DIR_LIBXMHFCRYPTO = $(UXMHFRPI3_DIR)/libs/libxmhfcrypto/libxmhfcrypto.a
 
 
-LIBS = $(DIR_LIBXMHFCRYPTO) $(DIR_LIBFUSE) $(DIR_LIBPTHREAD) $(DIR_LIBCRYPTO)  $(DIR_LIBDL)   
-INCS = ../../../libs/libxmhfcrypto/include
+LIBS = $(RGAPPS_LIB_DIR)/libuhcall/libuhcall.a
+LIBS += $(DIR_LIBXMHFCRYPTO) $(DIR_LIBFUSE) $(DIR_LIBPTHREAD) $(DIR_LIBCRYPTO)  $(DIR_LIBDL)   
 
-CFLAGS = -I. -I$(INCS) -c -g -Wall
+INCS = -I../../../libs/libxmhfcrypto/include
+INCS += -I$(RGAPPS_LIB_DIR)/libuhcall/include
+
+CFLAGS = -I. $(INCS) -c -g -Wall
 LFLAGS = -g -Wall -Wextra     
 
 .PHONY: all pa5-encfs clean unmount mount debug
