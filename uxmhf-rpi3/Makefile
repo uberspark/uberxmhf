@@ -22,7 +22,7 @@ TOOLPREFIX ?= arm-linux-gnueabihf-
 INCS = -I$(UXMHFRPI3_DIR)/libs/libxmhfc/include
 INCS += -I$(UXMHFRPI3_DIR)/libs/libxmhfcrypto/include
 INCS += -I$(UXMHFRPI3_DIR)/libs/libutpm/include
-INCS += -I$(UXMHFRPI3_DIR)/include
+#INCS += -I$(UXMHFRPI3_DIR)/include
 
 CFLAGS_DEFS =  $(INCS) -I./include -I../include -D__DEBUG_SERIAL__ 
 CFLAGS = $(CFLAGS_DEFS) -c -Wall -nostdlib -nostartfiles -ffreestanding -mcpu=cortex-a53
