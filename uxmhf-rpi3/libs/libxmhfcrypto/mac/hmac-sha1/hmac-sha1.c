@@ -4,6 +4,13 @@
  * adapted from libtomcrypto
  */
 
+#include <types.h>
+#include <arm8-32.h>
+#include <bcm2837.h>
+#include <miniuart.h>
+#include <debug.h>
+
+
 #include <string.h>
 #include <xmhfcrypto.h>
 #include <sha1.h>
@@ -228,6 +235,8 @@ int hmac_sha1_memory(const unsigned char *key,  unsigned long keylen,
     LTC_ARGCHK(out    != NULL);
     LTC_ARGCHK(outlen != NULL);
 
+	_XDPRINTFSMP_("%s: %u: inlen=%u, *outlen=%u\n", __func__, __LINE__,  inlen, *outlen);
+
     /* make sure hash descriptor is valid */
     //if ((err = hash_is_valid(hash)) != CRYPT_OK) {
     //   return err;
@@ -249,13 +258,19 @@ int hmac_sha1_memory(const unsigned char *key,  unsigned long keylen,
        goto LBL_ERR;
     }
 
+	_XDPRINTFSMP_("%s: %u\n", __func__, __LINE__);
+
     if ((err = hmac_sha1_process(&hmac, in, inlen)) != CRYPT_OK) {
        goto LBL_ERR;
     }
 
+	_XDPRINTFSMP_("%s: %u\n", __func__, __LINE__);
+
     if ((err = hmac_sha1_done(&hmac, out, outlen)) != CRYPT_OK) {
        goto LBL_ERR;
     }
+
+	_XDPRINTFSMP_("%s: %u\n", __func__, __LINE__);
 
    err = CRYPT_OK;
 LBL_ERR:

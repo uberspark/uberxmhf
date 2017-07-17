@@ -98,7 +98,7 @@ bool uhcall(uint32_t uhcall_function, void *uhcall_buffer, uint32_t uhcall_buffe
     	return false;
     }
 
-    printf("%s: uhcall_buffer_paddr=0x%08x\n", __FUNCTION__, (uint32_t)uhcall_buffer_paddr);
+    //printf("%s: uhcall_buffer_paddr=0x%08x\n", __FUNCTION__, (uint32_t)uhcall_buffer_paddr);
 #endif
 
 	//open uhcallkmod device

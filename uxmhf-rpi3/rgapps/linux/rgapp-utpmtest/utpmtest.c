@@ -201,7 +201,7 @@ void utpm_test(uint32_t cpuid)
 		exit(1);
 	}
 
-	_XDPRINTF_("%s[%u]: pcr-0: %20D\n", __func__, cpuid, utpmtest_param.pcr0.value, " ");
+	_XDPRINTF_("%s[%u]: pcr-0 read success\n", __func__, cpuid);
 
 	memcpy(&utpmtest_param.measurement.value, &digest, sizeof(digest));
 	utpmtest_param.pcr_num = 0;
@@ -215,6 +215,7 @@ void utpm_test(uint32_t cpuid)
 		exit(1);
 	}
 
+	_XDPRINTF_("%s[%u]: pcr-0 extend success\n", __func__, cpuid);
 
 	utpmtest_param.pcr_num=0;
 	if(!uhcall(UAPP_UTPM_FUNCTION_PCRREAD, &utpmtest_param, sizeof(utpmtest_param_t))){
@@ -226,7 +227,7 @@ void utpm_test(uint32_t cpuid)
 		exit(1);
 	}
 
-	_XDPRINTF_("%s[%u]: pcr-0: %20D\n", __func__, cpuid, utpmtest_param.pcr0.value, " ");
+	_XDPRINTF_("%s[%u]: pcr-0 read success\n", __func__, cpuid);
 
 
 	utpmtest_param.tpmPcrInfo.pcrSelection.sizeOfSelect = 0;

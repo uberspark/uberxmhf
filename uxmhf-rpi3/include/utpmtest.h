@@ -34,10 +34,10 @@ typedef struct {
 	TPM_PCR_INFO tpmPcrInfo;
 	char seal_inbuf[16];
 	uint32_t seal_inbuf_len;
-	char seal_outbuf[32];
+	char seal_outbuf[128];
 	uint32_t seal_outbuf_len;
 
-	char seal_outbuf2[32];
+	char seal_outbuf2[128];
 	uint32_t seal_outbuf2_len;
 	TPM_COMPOSITE_HASH digestAtCreation;
 
