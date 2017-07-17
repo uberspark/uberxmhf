@@ -152,6 +152,10 @@ void do_uhcalltest(void *bufptr){
 int main(){
 	uhcalltest_param_t *ptr_uhctp;
 
+    printf("starting uhcalltest (with static buffer)...\n");
+	do_uhcalltest((void *)&uhctp);
+    printf("end uhcalltest (with static buffer)...\n");
+
     printf("starting uhcalltest (with dynamic buffer)...\n");
 
 	if (posix_memalign(&ptr_uhctp, 4096, sizeof(uhcalltest_param_t)) != 0){
