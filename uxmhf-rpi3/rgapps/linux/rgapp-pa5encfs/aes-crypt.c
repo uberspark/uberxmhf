@@ -235,6 +235,9 @@ extern int do_crypt(FILE* in, FILE* out, int action, char* key_str){
 }
 #endif
 
+
+
+#if 0
 //////
 // back-end functions
 //////
@@ -295,6 +298,70 @@ void do_crypt_done(pa5encfs_param_t *ep){
 
 
 //////
+#endif
+
+
+//////
+// back-end functions
+//////
+/*
+	do_crypt using libxmhfcrypto aes primitive
+	aeskey of size TPM_AES_KEY_LEN_BYTES (16)
+	iv of size TPM_AES_KEY_LEN_BYTES (16) which is random
+	cbc_start
+	cbc_encrypt
+	cbc_done
+ */
+uint8_t aes_iv[AES_KEY_LEN_BYTES] =
+	{
+			0x1a, 0x2a, 0x3a, 0x4a, 0x5a, 0x6a, 0x7a, 0x8a,
+			0x1b, 0x2b, 0x3b, 0x4b, 0x5b, 0x6b, 0x7b, 0x8b
+	};
+uint8_t aes_key[AES_KEY_LEN_BYTES] =
+	{
+			0xfa, 0xea, 0xda, 0xca, 0xba, 0xaa, 0x9a, 0x8a,
+			0xfb, 0xeb, 0xdb, 0xcb, 0xbb, 0xab, 0x9b, 0x8b
+	};
+
+symmetric_CBC cbc_ctx;
+
+//returns 0 on fail
+void do_crypt_start(pa5encfs_param_t *ep){
+    if(!uhcall(UAPP_PA5ENCFS_FUNCTION_START, ep, sizeof(pa5encfs_param_t)))
+    	fprintf(stderr, "hypercall FAILED\n");
+    else
+    	fprintf(stderr, "hypercall SUCCESS\n");
+}
+
+//returns 0 on fail
+void do_crypt_encrypt(pa5encfs_param_t *ep){
+    if(!uhcall(UAPP_PA5ENCFS_FUNCTION_ENCRYPT, ep, sizeof(pa5encfs_param_t)))
+    	fprintf(stderr, "hypercall FAILED\n");
+    else
+    	fprintf(stderr, "hypercall SUCCESS\n");
+}
+
+//returns 0 on fail
+void do_crypt_decrypt(pa5encfs_param_t *ep){
+    if(!uhcall(UAPP_PA5ENCFS_FUNCTION_DECRYPT, ep, sizeof(pa5encfs_param_t)))
+    	fprintf(stderr, "hypercall FAILED\n");
+    else
+    	fprintf(stderr, "hypercall SUCCESS\n");
+}
+
+//returns 0 on fail
+void do_crypt_done(pa5encfs_param_t *ep){
+    if(!uhcall(UAPP_PA5ENCFS_FUNCTION_DONE, ep, sizeof(pa5encfs_param_t)))
+    	fprintf(stderr, "hypercall FAILED\n");
+    else
+    	fprintf(stderr, "hypercall SUCCESS\n");
+}
+
+
+
+//////
+
+
 
 extern int do_crypt(FILE* in, FILE* out, int action, char* key_str){
 
