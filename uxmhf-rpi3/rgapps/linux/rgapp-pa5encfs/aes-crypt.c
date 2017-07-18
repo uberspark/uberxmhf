@@ -153,7 +153,7 @@ uint8_t aes_key[AES_KEY_LEN_BYTES] =
 #define DECRYPT 0
 #define PASS_THROUGH (-1)
 
-
+#if 0
 extern int do_crypt(FILE* in, FILE* out, int action, char* key_str){
     /* Local Vars */
 
@@ -256,3 +256,128 @@ extern int do_crypt(FILE* in, FILE* out, int action, char* key_str){
 
     return 1;
 }
+#endif
+
+
+extern int do_crypt(FILE* in, FILE* out, int action, char* key_str){
+    /* Local Vars */
+
+    /* Buffers */
+    //unsigned char inbuf[BLOCKSIZE];
+	unsigned char *inbuf;
+    int inlen;
+    /* Allow enough space in output buffer for additional cipher block */
+    //unsigned char outbuf[BLOCKSIZE];
+    unsigned char *outbuf;
+    int outlen;
+    int writelen;
+
+	symmetric_CBC cbc_ctx;
+
+	//allocate memory
+	if (posix_memalign(&inbuf, 4096, BLOCKSIZE) != 0){
+	    //printf("%s: error: line %u\n", __FUNCTION__);
+    	return 0;
+	}
+	if (posix_memalign(&outbuf, 4096, BLOCKSIZE) != 0){
+	    //printf("%s: error: line %u\n", __FUNCTION__);
+    	return 0;
+	}
+
+
+    //action can be ENCRYPT (1), DECRYPT (0) or PASS_THROUGH (-1)
+
+    fprintf(stderr, "aes-crypt debug: at location 1\n");
+
+    /* Setup Encryption Key and Cipher Engine if in cipher mode */
+    if(action == ENCRYPT || action == DECRYPT){
+		fprintf(stderr, "aes-crypt debug: at location: 2\n");
+
+		if(!key_str){
+			fprintf(stderr, "aes-crypt debug: at location: 3\n");
+			/* Error */
+			fprintf(stderr, "Key_str must not be NULL\n");
+			goto ERR_freeall;
+		}
+
+		/* Build Key from String */
+		//TBD
+
+		/* Init Engine */
+		if( rijndael_cbc_start(aes_iv, aes_key, AES_KEY_LEN_BYTES, 0, &cbc_ctx) != CRYPT_OK )
+			goto ERR_freeall;
+    }
+
+    /* Loop through Input File*/
+    for(;;){
+    	/* Read Block */
+    	inlen = fread(inbuf, sizeof(*inbuf), BLOCKSIZE, in);
+    	if(inlen <= 0){
+    		/* EOF -> Break Loop */
+    		break;
+    	}
+
+    	//sanity check inlen is multiple of AES block length (16 bytes)
+    	if( inlen % 16 ){
+    		fprintf(stderr, "aes-crypt debug: at location: 1.1\n");
+    		goto ERR_freeall;
+    	}
+
+
+    	/* If in cipher mode, perform cipher transform on block */
+    	if(action == ENCRYPT){
+    		fprintf(stderr, "aes-crypt debug: at location: 4\n");
+
+    	    if( rijndael_cbc_encrypt(inbuf, outbuf, inlen, &cbc_ctx) != CRYPT_OK)
+    	    	goto ERR_freeall;
+
+    	    outlen = inlen;
+    		fprintf(stderr, "aes-crypt debug: at location: 5\n");
+
+    	    if( rijndael_cbc_done( &cbc_ctx) != CRYPT_OK)
+    	    	goto ERR_freeall;
+
+    		fprintf(stderr, "aes-crypt debug: at location: 6\n");
+
+    	}else if (action == DECRYPT){
+    		fprintf(stderr, "aes-crypt debug: at location: 7\n");
+
+    	    if( rijndael_cbc_decrypt(inbuf, outbuf, inlen, &cbc_ctx) != CRYPT_OK)
+    	    	goto ERR_freeall;
+
+    	    outlen = inlen;
+    		fprintf(stderr, "aes-crypt debug: at location: 8\n");
+
+    	    if( rijndael_cbc_done( &cbc_ctx) != CRYPT_OK)
+    	    	goto ERR_freeall;
+
+    		fprintf(stderr, "aes-crypt debug: at location: 9\n");
+
+    	}else{
+    		/* If in pass-through mode. copy block as is */
+    		fprintf(stderr, "aes-crypt debug: at location: 10\n");
+    		memcpy(outbuf, inbuf, inlen);
+    		outlen = inlen;
+    	}
+
+    	/* Write Block */
+    	writelen = fwrite(outbuf, sizeof(*outbuf), outlen, out);
+    	if(writelen != outlen){
+    		fprintf(stderr, "aes-crypt debug: at location: 11\n");
+    		/* Error */
+    		perror("fwrite error");
+    		goto ERR_freeall;
+    	}
+    }	//end-for
+
+	fprintf(stderr, "aes-crypt debug: at location: 12\n");
+	free(inbuf);
+	free(outbuf);
+	return 1;
+
+ERR_freeall:
+	free(inbuf);
+	free(outbuf);
+	return 0;
+}
+
