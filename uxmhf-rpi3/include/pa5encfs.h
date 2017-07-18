@@ -27,6 +27,7 @@ typedef struct {
     unsigned char outbuf[BLOCKSIZE];
     int outlen;
     int writelen;
+    int result;
 }pa5encfs_param_t;
 
 
