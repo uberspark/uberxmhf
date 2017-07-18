@@ -23,18 +23,18 @@
 	cbc_encrypt
 	cbc_done
  */
-uint8_t aes_iv[AES_KEY_LEN_BYTES] =
+__attribute__((section(".data"))) uint8_t pa5encfs_aes_iv[AES_KEY_LEN_BYTES] =
 	{
 			0x1a, 0x2a, 0x3a, 0x4a, 0x5a, 0x6a, 0x7a, 0x8a,
 			0x1b, 0x2b, 0x3b, 0x4b, 0x5b, 0x6b, 0x7b, 0x8b
 	};
-uint8_t aes_key[AES_KEY_LEN_BYTES] =
+__attribute__((section(".data"))) uint8_t pa5encfs_aes_key[AES_KEY_LEN_BYTES] =
 	{
 			0xfa, 0xea, 0xda, 0xca, 0xba, 0xaa, 0x9a, 0x8a,
 			0xfb, 0xeb, 0xdb, 0xcb, 0xbb, 0xab, 0x9b, 0x8b
 	};
 
-symmetric_CBC cbc_ctx;
+__attribute__((section(".data"))) symmetric_CBC cbc_ctx;
 
 
 //return true if handled the hypercall, false if not
@@ -46,7 +46,7 @@ bool uapp_pa5encfs_handlehcall(u32 uhcall_function, void *uhcall_buffer, u32 uhc
 	if(uhcall_function == UAPP_PA5ENCFS_FUNCTION_START){
 
 		/* Init Engine */
-		if( rijndael_cbc_start(aes_iv, aes_key, AES_KEY_LEN_BYTES, 0, &cbc_ctx) != CRYPT_OK )
+		if( rijndael_cbc_start(pa5encfs_aes_iv, pa5encfs_aes_key, AES_KEY_LEN_BYTES, 0, &cbc_ctx) != CRYPT_OK )
 			ep->result = 0;
 		else
 			ep->result = 1;
