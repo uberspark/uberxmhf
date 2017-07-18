@@ -277,6 +277,14 @@ void do_crypt_encrypt(pa5encfs_param_t *ep){
 }
 
 //returns 0 on fail
+void do_crypt_decrypt(pa5encfs_param_t *ep){
+    if( rijndael_cbc_decrypt(ep->inbuf, ep->outbuf, ep->inlen, &cbc_ctx) != CRYPT_OK)
+    	ep->result=0;
+	else
+		ep->result=1;
+}
+
+//returns 0 on fail
 void do_crypt_done(pa5encfs_param_t *ep){
     if( rijndael_cbc_done( &cbc_ctx) != CRYPT_OK)
     	ep->result=0;
@@ -284,13 +292,6 @@ void do_crypt_done(pa5encfs_param_t *ep){
 		ep->result=1;
 }
 
-//returns 0 on fail
-void do_crypt_decrypt(pa5encfs_param_t *ep){
-    if( rijndael_cbc_decrypt(ep->inbuf, ep->outbuf, ep->inlen, &cbc_ctx) != CRYPT_OK)
-    	ep->result=0;
-	else
-		ep->result=1;
-}
 
 
 //////
