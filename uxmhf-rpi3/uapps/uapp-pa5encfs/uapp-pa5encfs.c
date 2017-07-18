@@ -18,5 +18,29 @@
 bool uapp_pa5encfs_handlehcall(u32 uhcall_function, void *uhcall_buffer, u32 uhcall_buffer_len){
 	pa5encfs_param_t *ep;
 
-	return false;
+	ep = (pa5encfs_param_t *)uhcall_buffer;
+
+	if(uhcall_function == UAPP_PA5ENCFS_FUNCTION_START){
+
+		return true;
+
+	}else if (uhcall_function == UAPP_PA5ENCFS_FUNCTION_ENCRYPT){
+
+
+		return true;
+
+	}else if (uhcall_function == UAPP_PA5ENCFS_FUNCTION_DECRYPT){
+
+
+		return true;
+
+	}else if (uhcall_function == UAPP_PA5ENCFS_FUNCTION_DONE){
+
+
+		return true;
+	}else{
+
+		return false;
+	}
+
 }
