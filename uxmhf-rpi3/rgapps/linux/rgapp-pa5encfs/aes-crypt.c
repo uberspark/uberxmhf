@@ -255,18 +255,8 @@ extern int do_crypt(FILE* in, FILE* out, int action, char* key_str){
 
 
 extern int do_crypt(FILE* in, FILE* out, int action, char* key_str){
-    /* Local Vars */
-#if 0
-    /* Buffers */
-    //unsigned char inbuf[BLOCKSIZE];
-	unsigned char *inbuf;
-    int inlen;
-    /* Allow enough space in output buffer for additional cipher block */
-    //unsigned char outbuf[BLOCKSIZE];
-    unsigned char *outbuf;
-    int outlen;
-    int writelen;
-#endif
+
+	/* Local Vars */
     pa5encfs_param_t *ep;
 
 	symmetric_CBC cbc_ctx;
