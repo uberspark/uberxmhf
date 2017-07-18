@@ -18,9 +18,6 @@
 #include <pa5encfs.h>
 #include "aes-crypt.h"
 
-#define BLOCKSIZE 1024
-#define FAILURE 0
-#define SUCCESS 1
 
 #if 0
 extern int do_crypt(FILE* in, FILE* out, int action, char* key_str){
@@ -150,9 +147,6 @@ uint8_t aes_key[AES_KEY_LEN_BYTES] =
 
 
 
-#define ENCRYPT 1
-#define DECRYPT 0
-#define PASS_THROUGH (-1)
 
 #if 0
 extern int do_crypt(FILE* in, FILE* out, int action, char* key_str){
