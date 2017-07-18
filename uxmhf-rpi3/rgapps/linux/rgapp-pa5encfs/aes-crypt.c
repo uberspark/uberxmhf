@@ -15,6 +15,7 @@
  *
  */
 
+#include <pa5encfs.h>
 #include "aes-crypt.h"
 
 #define BLOCKSIZE 1024
