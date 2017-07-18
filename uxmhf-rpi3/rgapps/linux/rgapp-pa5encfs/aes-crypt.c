@@ -326,11 +326,6 @@ extern int do_crypt(FILE* in, FILE* out, int action, char* key_str){
 		/* Build Key from String */
 		//TBD
 
-		#if 0
-		/* Init Engine */
-		if( rijndael_cbc_start(aes_iv, aes_key, AES_KEY_LEN_BYTES, 0, &cbc_ctx) != CRYPT_OK )
-			goto ERR_freeall;
-		#endif
 		do_crypt_start(ep);
 		if(!ep->result)
 			goto ERR_freeall;
@@ -356,10 +351,6 @@ extern int do_crypt(FILE* in, FILE* out, int action, char* key_str){
     	if(action == ENCRYPT){
     		fprintf(stderr, "aes-crypt debug: at location: 4\n");
 
-			#if 0
-    	    if( rijndael_cbc_encrypt(ep->inbuf, ep->outbuf, ep->inlen, &cbc_ctx) != CRYPT_OK)
-    	    	goto ERR_freeall;
-			#endif
     	    do_crypt_encrypt(ep);
     	    if(!ep->result)
     	    	goto ERR_freeall;
@@ -367,10 +358,6 @@ extern int do_crypt(FILE* in, FILE* out, int action, char* key_str){
     	    ep->outlen = ep->inlen;
     		fprintf(stderr, "aes-crypt debug: at location: 5\n");
 
-			#if 0
-    	    if( rijndael_cbc_done( &cbc_ctx) != CRYPT_OK)
-    	    	goto ERR_freeall;
-			#endif
     	    do_crypt_done(ep);
     	    if(!ep->result)
     	    	goto ERR_freeall;
@@ -381,10 +368,6 @@ extern int do_crypt(FILE* in, FILE* out, int action, char* key_str){
     	}else if (action == DECRYPT){
     		fprintf(stderr, "aes-crypt debug: at location: 7\n");
 
-			#if 0
-    	    if( rijndael_cbc_decrypt(ep->inbuf, ep->outbuf, ep->inlen, &cbc_ctx) != CRYPT_OK)
-    	    	goto ERR_freeall;
-			#endif
     	    do_crypt_decrypt(ep);
     	    if(!ep->result)
     	    	goto ERR_freeall;
@@ -392,10 +375,6 @@ extern int do_crypt(FILE* in, FILE* out, int action, char* key_str){
     	    ep->outlen = ep->inlen;
     		fprintf(stderr, "aes-crypt debug: at location: 8\n");
 
-			#if 0
-    	    if( rijndael_cbc_done( &cbc_ctx) != CRYPT_OK)
-    	    	goto ERR_freeall;
-			#endif
     	    do_crypt_done(ep);
     	    if(!ep->result)
     	    	goto ERR_freeall;
