@@ -256,7 +256,7 @@ extern int do_crypt(FILE* in, FILE* out, int action, char* key_str){
 
 extern int do_crypt(FILE* in, FILE* out, int action, char* key_str){
     /* Local Vars */
-
+#if 0
     /* Buffers */
     //unsigned char inbuf[BLOCKSIZE];
 	unsigned char *inbuf;
@@ -266,15 +266,13 @@ extern int do_crypt(FILE* in, FILE* out, int action, char* key_str){
     unsigned char *outbuf;
     int outlen;
     int writelen;
+#endif
+    pa5encfs_param_t *ep;
 
 	symmetric_CBC cbc_ctx;
 
 	//allocate memory
-	if (posix_memalign(&inbuf, 4096, BLOCKSIZE) != 0){
-	    //printf("%s: error: line %u\n", __FUNCTION__);
-    	return 0;
-	}
-	if (posix_memalign(&outbuf, 4096, BLOCKSIZE) != 0){
+	if (posix_memalign(&ep, 4096, sizeof(pa5encfs_param_t)) != 0){
 	    //printf("%s: error: line %u\n", __FUNCTION__);
     	return 0;
 	}
@@ -306,14 +304,14 @@ extern int do_crypt(FILE* in, FILE* out, int action, char* key_str){
     /* Loop through Input File*/
     for(;;){
     	/* Read Block */
-    	inlen = fread(inbuf, sizeof(*inbuf), BLOCKSIZE, in);
-    	if(inlen <= 0){
+    	ep->inlen = fread(ep->inbuf, sizeof(unsigned char), BLOCKSIZE, in);
+    	if(ep->inlen <= 0){
     		/* EOF -> Break Loop */
     		break;
     	}
 
     	//sanity check inlen is multiple of AES block length (16 bytes)
-    	if( inlen % 16 ){
+    	if( ep->inlen % 16 ){
     		fprintf(stderr, "aes-crypt debug: at location: 1.1\n");
     		goto ERR_freeall;
     	}
@@ -323,10 +321,10 @@ extern int do_crypt(FILE* in, FILE* out, int action, char* key_str){
     	if(action == ENCRYPT){
     		fprintf(stderr, "aes-crypt debug: at location: 4\n");
 
-    	    if( rijndael_cbc_encrypt(inbuf, outbuf, inlen, &cbc_ctx) != CRYPT_OK)
+    	    if( rijndael_cbc_encrypt(ep->inbuf, ep->outbuf, ep->inlen, &cbc_ctx) != CRYPT_OK)
     	    	goto ERR_freeall;
 
-    	    outlen = inlen;
+    	    ep->outlen = ep->inlen;
     		fprintf(stderr, "aes-crypt debug: at location: 5\n");
 
     	    if( rijndael_cbc_done( &cbc_ctx) != CRYPT_OK)
@@ -337,10 +335,10 @@ extern int do_crypt(FILE* in, FILE* out, int action, char* key_str){
     	}else if (action == DECRYPT){
     		fprintf(stderr, "aes-crypt debug: at location: 7\n");
 
-    	    if( rijndael_cbc_decrypt(inbuf, outbuf, inlen, &cbc_ctx) != CRYPT_OK)
+    	    if( rijndael_cbc_decrypt(ep->inbuf, ep->outbuf, ep->inlen, &cbc_ctx) != CRYPT_OK)
     	    	goto ERR_freeall;
 
-    	    outlen = inlen;
+    	    ep->outlen = ep->inlen;
     		fprintf(stderr, "aes-crypt debug: at location: 8\n");
 
     	    if( rijndael_cbc_done( &cbc_ctx) != CRYPT_OK)
@@ -351,13 +349,13 @@ extern int do_crypt(FILE* in, FILE* out, int action, char* key_str){
     	}else{
     		/* If in pass-through mode. copy block as is */
     		fprintf(stderr, "aes-crypt debug: at location: 10\n");
-    		memcpy(outbuf, inbuf, inlen);
-    		outlen = inlen;
+    		memcpy(ep->outbuf, ep->inbuf, ep->inlen);
+    		ep->outlen = ep->inlen;
     	}
 
     	/* Write Block */
-    	writelen = fwrite(outbuf, sizeof(*outbuf), outlen, out);
-    	if(writelen != outlen){
+    	ep->writelen = fwrite(ep->outbuf, sizeof(unsigned char), ep->outlen, out);
+    	if(ep->writelen != ep->outlen){
     		fprintf(stderr, "aes-crypt debug: at location: 11\n");
     		/* Error */
     		perror("fwrite error");
@@ -366,13 +364,11 @@ extern int do_crypt(FILE* in, FILE* out, int action, char* key_str){
     }	//end-for
 
 	fprintf(stderr, "aes-crypt debug: at location: 12\n");
-	free(inbuf);
-	free(outbuf);
+	free(ep);
 	return 1;
 
 ERR_freeall:
-	free(inbuf);
-	free(outbuf);
+	free(ep);
 	return 0;
 }
 
