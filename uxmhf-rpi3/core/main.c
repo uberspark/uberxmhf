@@ -45,8 +45,9 @@ void hyp_irqhandler(void){
 }
 
 void hyp_fiqhandler(void){
-	//bcm2837_miniuart_puts("FIQ EXCEPTION-- Resuming\n");
-	sysreg_write_cnthp_tval(10*1024*1024);
+	bcm2837_miniuart_puts("FIQ EXCEPTION-- Halting\n");
+	//sysreg_write_cnthp_tval(10*1024*1024);
+	HALT();
 }
 
 

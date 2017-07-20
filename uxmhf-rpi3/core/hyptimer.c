@@ -83,8 +83,8 @@ void hyptimer_test(u32 cpuid){
 	_XDPRINTFSMP_("%s[%u]: CNTHP_CTL[current]=%d\n", __func__, cpuid, sysreg_read_cnthp_ctl());
 
 
-	cpsr &= ~(1UL << 6);	//clear CPSR.F to allow FIQs
-	sysreg_write_cpsr(cpsr);
+	//cpsr &= ~(1UL << 6);	//clear CPSR.F to allow FIQs
+	//sysreg_write_cpsr(cpsr);
 
 /*
 	cpsr = sysreg_read_cpsr();
