@@ -40,10 +40,14 @@ void hyp_rsvhandler(void){
 
 
 void hyp_irqhandler(void){
-	bcm2837_miniuart_puts("IRQ EXCEPTION-- Resuming\n");
-	sysreg_write_cnthp_tval(10*1024*1024);
+	bcm2837_miniuart_puts("IRQ EXCEPTION-- Halting!\n");
+	HALT();sysreg_write_cnthp_tval(10*1024*1024);
 }
 
+void hyp_fiqhandler(void){
+	bcm2837_miniuart_puts("FIQ EXCEPTION-- Resuming\n");
+	sysreg_write_cnthp_tval(10*1024*1024);
+}
 
 
 void hyphvc_handler(void){
