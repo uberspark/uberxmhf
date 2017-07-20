@@ -94,6 +94,7 @@ void hyptimer_test(u32 cpuid){
 			((cpsr & (1UL << 6)) >> 6) );
 */
 
+#if 0
 	_XDPRINTFSMP_("%s[%u]: CNTHP_TVAL[current]=%d\n", __func__, cpuid, sysreg_read_cnthp_tval());
 	_XDPRINTFSMP_("%s[%u]: CNTHP_CTL[current]=%d\n", __func__, cpuid, sysreg_read_cnthp_ctl());
 
@@ -105,6 +106,8 @@ void hyptimer_test(u32 cpuid){
 		loop_counter++;
 		hyptimer_emptyloop();
 	}
+#endif
+
 
 	_XDPRINTFSMP_("%s[%u]: EXIT\n", __func__, cpuid);
 }
