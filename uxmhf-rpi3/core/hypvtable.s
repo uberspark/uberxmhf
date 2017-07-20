@@ -31,8 +31,8 @@ g_hypvtable:
 	b hypvtable_reserved_handler0
 	b hypvtable_reserved_handler0
 	b hypvtable_hypsvc_handler0
-	b hypvtable_irq_handler0
 	b hypvtable_reserved_handler0
+	b hypvtable_fiq_handler0
 	//cpu-1
 	b hypvtable_reserved_handler1
 	b hypvtable_reserved_handler1
