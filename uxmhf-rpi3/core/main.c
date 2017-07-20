@@ -45,7 +45,7 @@ void hyp_irqhandler(void){
 }
 
 void hyp_fiqhandler(void){
-	bcm2837_miniuart_puts("FIQ EXCEPTION-- Resuming\n");
+	//bcm2837_miniuart_puts("FIQ EXCEPTION-- Resuming\n");
 	sysreg_write_cnthp_tval(10*1024*1024);
 }
 
@@ -656,6 +656,10 @@ void main(u32 r0, u32 id, struct atag *at, u32 cpuid){
 	// hypervisor timer testing
 	//////
 	hyptimer_test(cpuid);
+
+	hcr = sysreg_read_hcr();
+	hcr |= (1UL << 3); //enable FIQ mask override; this should land us in HYP mode FIQ handler when FIQs are triggered inside guest
+	sysreg_write_hcr(hcr);
 
 	//_XDPRINTFSMP_("%s[%u]: WiP. Halting\n", __func__, cpuid);
 	//HALT();
