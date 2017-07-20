@@ -82,7 +82,7 @@ main.o : main.c
 core.bin: entry.o miniuart.o strlen.o subr_prf.o debug.o atags.o arm8-32.o hypvtable.o mmu.o hyppgtbl.o s2pgtbl.o uapi_s2pgtbl.o dmaprot.o bcm2837.o hyptimer.o ctxtrace.o uapp-uhcalltest.o uapp-utpmtest.o uapp-pa5encfs.o ghcall.o main.o
 	cp -f core.lscript core.lscript.c
 	$(TOOLPREFIX)gcc -E -P $(CFLAGS_DEFS) core.lscript.c -o core.ls 
-	$(TOOLPREFIX)ld entry.o miniuart.o strlen.o subr_prf.o debug.o atags.o arm8-32.o hypvtable.o mmu.o hyppgtbl.o s2pgtbl.o uapi_s2pgtbl.o dmaprot.o bcm2837.o ctxtrace.o uapp-uhcalltest.o uapp-utpmtest.o uapp-pa5encfs.o ghcall.o main.o -T core.ls -o core.elf $(LIBS) $(CCLIB) 
+	$(TOOLPREFIX)ld entry.o miniuart.o strlen.o subr_prf.o debug.o atags.o arm8-32.o hypvtable.o mmu.o hyppgtbl.o s2pgtbl.o uapi_s2pgtbl.o dmaprot.o bcm2837.o hyptimer.o ctxtrace.o uapp-uhcalltest.o uapp-utpmtest.o uapp-pa5encfs.o ghcall.o main.o -T core.ls -o core.elf $(LIBS) $(CCLIB) 
 	$(TOOLPREFIX)objcopy core.elf -O binary core.bin
 	
 .PHONY: clean
