@@ -11,17 +11,6 @@
 #include <debug.h>
 
 
-//////
-// hyptimer_emptyloop
-// empty loop for delay
-//////
-u32 hyptimer_emptyloop(void){
-	u32 i;
-	u32 dummy=0;
-	for(i=0; i < 1024; i++)
-		dummy+=i;
-	return dummy;
-}
 
 //////
 // hyptimer_initialize
