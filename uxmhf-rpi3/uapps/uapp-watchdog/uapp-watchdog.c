@@ -10,3 +10,6 @@
 #include <miniuart.h>
 #include <debug.h>
 
+void uapp_watchdog_timerhandler(void){
+	bcm2837_miniuart_puts("WATCHDOG EXCEPTION-- Resuming\n");
+}
