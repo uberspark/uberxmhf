@@ -649,17 +649,13 @@ void main(u32 r0, u32 id, struct atag *at, u32 cpuid){
 	HALT();
 #endif
 
-	//////
-	// hypervisor timer testing
-	//////
-	hyptimer_test(cpuid);
+	// hypervisor timer initialization via FIQs
+	hyptimer_initialize(cpuid);
 
+	//enable FIQ mask override; this should land us in HYP mode FIQ handler when FIQs are triggered inside guest
 	hcr = sysreg_read_hcr();
-	hcr |= (1UL << 3); //enable FIQ mask override; this should land us in HYP mode FIQ handler when FIQs are triggered inside guest
+	hcr |= (1UL << 3);
 	sysreg_write_hcr(hcr);
-
-	//_XDPRINTFSMP_("%s[%u]: WiP. Halting\n", __func__, cpuid);
-	//HALT();
 
 	// populate stage-2 page tables
 	s2pgtbl_populate_tables();
