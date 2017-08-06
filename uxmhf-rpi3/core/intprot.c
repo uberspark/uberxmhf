@@ -44,6 +44,14 @@ void intprot_handle_intcontroller_access(info_intercept_data_abort_t *ida){
 		//compute value that is going to be written
 		u32 guest_value = (u32)guest_regread(ida->r, ida->srt);
 
+		//ensure HYP timer FIQs are always on
+		if(intc_reg == LOCAL_TIMER_INT_CONTROL0){
+			if ( !(guest_value & (1UL << 6)) ){
+				_XDPRINTFSMP_("%s: FATAL: guest tried to reset HYP timer FIQ. Halting!\n", __func__);
+				HALT();
+			}
+		}
+
 		//just pass-through writes
 		//mmio_write32(intc_reg, guest_value);
 		cpu_dsb();
