@@ -29,6 +29,9 @@ void intprot_activate(void){
 void intprot_handle_intcontroller_access(info_intercept_data_abort_t *ida){
 	volatile u32 *intc_reg;
 
+	_XDPRINTFSMP_("%s: access at 0x%08x. Halting!\n", __func__, ida->pa);
+	HALT();
+
 	//we only support 32-bit accesses; bail out if this is not the case
 	if(ida->sas != 0x2){
 		_XDPRINTFSMP_("%s: invalid sas=%u. Halting!\n", __func__, ida->sas);
