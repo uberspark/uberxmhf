@@ -88,7 +88,7 @@ void secboot_handle_sdhost_access(info_intercept_data_abort_t *ida){
 		u32 guest_value = (u32)guest_regread(ida->r, ida->srt);
 
 		if(sdhost_reg == (BCM2837_SDHOST_BASE + 0x0)){
-			_XDPRINTFSMP_("%s: CMD=0x%08x\n", __func__, guest_value);
+			//_XDPRINTFSMP_("%s: CMD=0x%08x\n", __func__, guest_value);
 		}
 
 		//just pass-through writes

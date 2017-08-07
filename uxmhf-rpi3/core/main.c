@@ -198,6 +198,9 @@ void guest_data_abort_handler(arm8_32_regs_t *r, u32 hsr){
 	}else if( fault_pa_page == BCM2837_EMMC_BASE){
 		secboot_handle_sdio_access(&ida);
 
+	}else if( fault_pa_page == BCM2837_SDHOST_BASE){
+		secboot_handle_sdhost_access(&ida);
+
 	}else if( (fault_pa_page == BCM2837_DMA0_REGS_BASE) ||
 		(fault_pa_page == BCM2837_DMA15_REGS_BASE) ){
 		dmaprot_handle_dmacontroller_access(&ida);
