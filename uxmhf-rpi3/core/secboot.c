@@ -13,14 +13,14 @@
 
 //activate secure boot protection mechanism
 void secboot_activate(void){
-	u64 attrs_dev_intc = (LDESC_S2_MC_DEVnGnRE << LDESC_S2_MEMATTR_MC_SHIFT) |
+	u64 attrs_dev_emmc = (LDESC_S2_MC_DEVnGnRE << LDESC_S2_MEMATTR_MC_SHIFT) |
 			(LDESC_S2_S2AP_READ_ONLY << LDESC_S2_MEMATTR_S2AP_SHIFT) |
 			(MEM_NON_SHAREABLE << LDESC_S2_MEMATTR_SH_SHIFT) |
 			LDESC_S2_MEMATTR_AF_MASK;
 
 
-	//uapi_s2pgtbl_setprot(ARMLOCALREGISTERS_BASE, attrs_dev_intc);
-	//sysreg_tlbiallis();
+	uapi_s2pgtbl_setprot(BCM2837_EMMC_BASE, attrs_dev_emmc);
+	sysreg_tlbiallis();
 }
 
 

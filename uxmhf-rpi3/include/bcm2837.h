@@ -93,6 +93,10 @@
 #define DWC_CHANNEL_REG_RESERVED2			0x1C
 
 
+//SD/MMC controller
+#define BCM2837_EMMC_BASE		(BCM2837_PERIPHERALS_BASE + 0x00300000)
+
+
 #ifndef __ASSEMBLY__
 
 typedef struct {
