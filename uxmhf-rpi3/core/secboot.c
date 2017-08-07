@@ -66,3 +66,43 @@ void secboot_handle_sdio_access(info_intercept_data_abort_t *ida){
 
 }
 
+
+
+//handle sdhost controller accesses
+void secboot_handle_sdhost_access(info_intercept_data_abort_t *ida){
+	volatile u32 *sdhost_reg;
+
+	//we only support 32-bit accesses; bail out if this is not the case
+	if(ida->sas != 0x2){
+		_XDPRINTFSMP_("%s: invalid sas=%u. Halting!\n", __func__, ida->sas);
+		HALT();
+	}
+
+	//compute sdhost register address
+	sdhost_reg = (u32 *)ida->pa;
+
+	//act on either writes or reads
+	if(ida->wnr){	//intc register write
+
+		//compute value that is going to be written
+		u32 guest_value = (u32)guest_regread(ida->r, ida->srt);
+
+		if(sdhost_reg == (BCM2837_SDHOST_BASE + 0x0)){
+			_XDPRINTFSMP_("%s: CMD=0x%08x\n", __func__, guest_value);
+		}
+
+		//just pass-through writes
+		//mmio_write32(intc_reg, guest_value);
+		cpu_dsb();
+		cpu_isb();	//synchronize all memory accesses above
+		*sdhost_reg = guest_value;
+
+	}else{	//sdhost register read
+		//we should never get here
+		_XDPRINTFSMP_("%s: invalid wnr=%u. Halting!\n", __func__, ida->wnr);
+		HALT();
+	}
+
+}
+
+
