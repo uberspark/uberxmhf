@@ -53,10 +53,10 @@ void secboot_handle_sdio_access(info_intercept_data_abort_t *ida){
 		}
 
 		//just pass-through writes
-		//mmio_write32(intc_reg, guest_value);
-		cpu_dsb();
-		cpu_isb();	//synchronize all memory accesses above
-		*sdio_reg = guest_value;
+		mmio_write32(sdio_reg, guest_value);
+		//cpu_dsb();
+		//cpu_isb();	//synchronize all memory accesses above
+		//*sdio_reg = guest_value;
 
 	}else{	//sdio register read
 		//we should never get here
@@ -92,10 +92,10 @@ void secboot_handle_sdhost_access(info_intercept_data_abort_t *ida){
 		}
 
 		//just pass-through writes
-		//mmio_write32(intc_reg, guest_value);
-		cpu_dsb();
-		cpu_isb();	//synchronize all memory accesses above
-		*sdhost_reg = guest_value;
+		mmio_write32(sdhost_reg, guest_value);
+		//cpu_dsb();
+		//cpu_isb();	//synchronize all memory accesses above
+		//*sdhost_reg = guest_value;
 
 	}else{	//sdhost register read
 		//we should never get here
