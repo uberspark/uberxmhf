@@ -11,6 +11,10 @@
 #include <debug.h>
 #include <dmaprot.h>
 
+#define SDCMD_WRITE_CMD	0x80
+#define SDCMD_READ_CMD	0x40
+#define SDCMD_CMD_MASK	0x3f
+
 //activate secure boot protection mechanism
 void secboot_activate(void){
 	u64 attrs_dev_ro = (LDESC_S2_MC_DEVnGnRE << LDESC_S2_MEMATTR_MC_SHIFT) |
@@ -49,7 +53,7 @@ void secboot_handle_sdio_access(info_intercept_data_abort_t *ida){
 		u32 guest_value = (u32)guest_regread(ida->r, ida->srt);
 
 		if(sdio_reg == (BCM2837_EMMC_BASE + 0x0c)){
-			_XDPRINTFSMP_("%s: CMD=0x%08x\n", __func__, guest_value);
+			//_XDPRINTFSMP_("%s: CMD=0x%08x\n", __func__, guest_value);
 		}
 
 		//just pass-through writes
@@ -88,6 +92,16 @@ void secboot_handle_sdhost_access(info_intercept_data_abort_t *ida){
 		u32 guest_value = (u32)guest_regread(ida->r, ida->srt);
 
 		if(sdhost_reg == (BCM2837_SDHOST_BASE + 0x0)){
+			//SDCMD register write
+			if( guest_value & SDCMD_WRITE_CMD){
+				u32 cmdop = guest_value & SDCMD_CMD_MASK;
+				if(cmdop == 24 || cmdop == 25){
+					//WRITE block commands
+					_XDPRINTFSMP_("%s: cmdop=%u(0x%08x), SDCMD=0x%08x. Halting!\n",
+							__func__, cmdop, cmdop, guest_value);
+					HALT();
+				}
+			}
 			//_XDPRINTFSMP_("%s: CMD=0x%08x\n", __func__, guest_value);
 		}
 
