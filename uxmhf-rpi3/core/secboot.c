@@ -54,6 +54,15 @@ void secboot_handle_sdio_access(info_intercept_data_abort_t *ida){
 
 		if(sdio_reg == (BCM2837_EMMC_BASE + 0x0c)){
 			//_XDPRINTFSMP_("%s: CMD=0x%08x\n", __func__, guest_value);
+			u32 cmdop = (guest_value & 0x3F000000UL) >> 24;
+			if(cmdop == 24 || cmdop == 25){
+				//WRITE block commands
+				u32 arg = mmio_read32(BCM2837_EMMC_BASE + 0x08);
+				_XDPRINTFSMP_("%s: cmdop=%u(0x%08x), CMD=0x%08x; arg=%u. Halting!\n",
+						__func__, cmdop, cmdop, guest_value, arg);
+				HALT();
+			}
+
 		}
 
 		//just pass-through writes
