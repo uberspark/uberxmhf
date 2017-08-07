@@ -44,6 +44,10 @@ void secboot_handle_sdio_access(info_intercept_data_abort_t *ida){
 		//compute value that is going to be written
 		u32 guest_value = (u32)guest_regread(ida->r, ida->srt);
 
+		if(sdio_reg == (BCM2837_EMMC_BASE + 0x0c)){
+			_XDPRINTFSMP_("%s: CMD=0x%08x\n", __func__, guest_value);
+		}
+
 		//just pass-through writes
 		//mmio_write32(intc_reg, guest_value);
 		cpu_dsb();
