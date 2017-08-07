@@ -97,8 +97,9 @@ void secboot_handle_sdhost_access(info_intercept_data_abort_t *ida){
 				u32 cmdop = guest_value & SDCMD_CMD_MASK;
 				if(cmdop == 24 || cmdop == 25){
 					//WRITE block commands
-					_XDPRINTFSMP_("%s: cmdop=%u(0x%08x), SDCMD=0x%08x. Halting!\n",
-							__func__, cmdop, cmdop, guest_value);
+					u32 arg = mmio_read32(BCM2837_SDHOST_BASE + 0x04);
+					_XDPRINTFSMP_("%s: cmdop=%u(0x%08x), SDCMD=0x%08x; arg=%u. Halting!\n",
+							__func__, cmdop, cmdop, guest_value, arg);
 					HALT();
 				}
 			}
