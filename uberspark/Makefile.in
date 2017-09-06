@@ -25,6 +25,7 @@ all: build-tools
 build-tools:
 	cd $(USPARK_TOOLSDIR) && $(OCAMLC) -o ubersparkconfig unix.cma ubersparkconfig.ml
 	cd $(USPARK_TOOLSDIR) && $(RM) umfcommon.cmi umfcommon.cmo umfcommon.cmt umfcommon.cmx umfcommon.o
+	cd $(USPARK_TOOLSDIR) && $(CP) -f umfcommon.ml umf/.	
 	cd $(USPARK_TOOLSDIR)/umf && $(MAKE) -w all
 	cd $(USPARK_TOOLSDIR) && $(RM) umfcommon.cmi umfcommon.cmo umfcommon.cmt umfcommon.cmx umfcommon.o
 	#cd $(USPARK_TOOLSDIR) && $(MAKE) -f ubp.mk -w all
