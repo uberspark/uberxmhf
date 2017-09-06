@@ -864,7 +864,8 @@ class embed_hwm_visitor = object (self)
     		end
 	    
 	    
-	    | GVarDecl(funspec,var,loc) ->
+	    (* | GVarDecl(funspec,var,loc) -> *)
+	 	| GVarDecl(var,loc) ->
 	    	begin
 				Self.result "var decl, name=%s\n" var.vname;
 				match var.vtype with
