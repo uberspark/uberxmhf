@@ -55,9 +55,10 @@ include $(UBERSPARK_HOMEDIR)/uberspark-common.mk
 ######
 
 export XMHF_TARGET_TRIAD := $(XMHF_TARGET_CPU)-$(XMHF_TARGET_CONTAINER)-$(XMHF_TARGET_PLATFORM)
-export CCERT_LIB := /usr/local/lib/compcert/
-
-
+CCERT_REALPATH := $(realpath $(shell which $(CCERT)))
+CCERT_BINDIR := $(dir $(CCERT_REALPATH))
+CCERT_BINDIR_NOSLASH := $(CCERT_BINDIR:/=)
+export CCERT_LIB :=  $(dir $(CCERT_BINDIR_NOSLASH))lib/compcert/
 
 ######
 # configuration definitions
