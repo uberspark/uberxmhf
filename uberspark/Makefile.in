@@ -24,19 +24,16 @@ all: build-tools
 .PHONY: build-tools
 build-tools:
 	cd $(USPARK_TOOLSDIR) && $(OCAMLC) -o ubersparkconfig unix.cma ubersparkconfig.ml
-	cd $(USPARK_TOOLSDIR) && $(RM) umfcommon.cmi umfcommon.cmo umfcommon.cmt umfcommon.cmx umfcommon.o
 	cd $(USPARK_TOOLSDIR) && $(CP) -f umfcommon.ml umf/.	
 	cd $(USPARK_TOOLSDIR)/umf && $(MAKE) -w all
-	cd $(USPARK_TOOLSDIR) && $(RM) umfcommon.cmi umfcommon.cmo umfcommon.cmt umfcommon.cmx umfcommon.o
 	cd $(USPARK_TOOLSDIR) && $(CP) -f umfcommon.ml ubp/.	
 	cd $(USPARK_TOOLSDIR)/ubp && $(MAKE) -w all
-	#cd $(USPARK_TOOLSDIR) && $(RM) umfcommon.annot umfcommon.cmi umfcommon.cmo umfcommon.cmt umfcommon.cmx umfcommon.o
 	cd $(USPARK_TOOLSDIR) && $(CP) -f umfcommon.ml ucasm/.	
 	cd $(USPARK_TOOLSDIR)/ucasm && $(MAKE) -w all
-	#cd $(USPARK_TOOLSDIR) && $(RM) umfcommon.annot umfcommon.cmi umfcommon.cmo umfcommon.cmt umfcommon.cmx umfcommon.o
-	#cd $(USPARK_TOOLSDIR) && $(MAKE) -f ucasm.mk -w all
-	#cd $(USPARK_TOOLSDIR) && $(RM) umfcommon.annot umfcommon.cmi umfcommon.cmo umfcommon.cmt umfcommon.cmx umfcommon.o
-	#cd $(USPARK_TOOLSDIR) && $(MAKE) -f uhwm.mk -w all
+	cd $(USPARK_TOOLSDIR) && $(CP) -f umfcommon.ml uhwm/.
+	cd $(USPARK_TOOLSDIR)/uhwm && $(MAKE) -w all
+	cd $(USPARK_TOOLSDIR) && $(CP) -f umfcommon.ml uccomp/.
+	cd $(USPARK_TOOLSDIR)/uccomp && $(MAKE) -w all
 	
 
 .PHONY: install-tools
