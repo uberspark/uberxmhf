@@ -62,8 +62,21 @@ you choose.
 
    	`sudo apt-get install lib32z1 lib32ncurses5 lib32bz2-1.0 gcc-multilib`
 
-	`sudo apt-get install ocaml ocaml-native-compilers coq`
-   	
+	`sudo apt-get install ocaml ocaml-findlib ocaml-native-compilers coq`
+
+	`sudo apt-get install graphviz libzarith-ocaml-dev libfindlib-ocaml-dev`
+
+
+2.	OPAM (OCaml Package Manager)
+
+	`wget https://raw.github.com/ocaml/opam/master/shell/opam_installer.sh -O - | sh -s /usr/local/bin`
+
+	`` eval `opam config env` ``
+		
+	`opam switch 4.02.3`
+
+	`opam install ocamlgraph`
+
 
 2.	Menhir Parser (version 20140422)
 
@@ -97,13 +110,13 @@ you choose.
 	`cd ..`
 
 
-4.	Frama-C (version Sodium-20150201)
+4.	Frama-C (version Phosphorus-20170501)
 
-	`wget http://frama-c.com/download/frama-c-Sodium-20150201.tar.gz`
+	`wget http://frama-c.com/download/frama-c-Phosphorus-20170501.tar.gz`
 
-	`tar -xvzf frama-c-Sodium-20150201.tar.gz`
+	`tar -xvzf frama-c-Phosphorus-20170501.tar.gz`
 
-	`cd frama-c-Sodium-20150201`
+	`cd frama-c-Phosphorus-20170501`
 
 	`./configure`
 
@@ -114,7 +127,7 @@ you choose.
 	`cd ..`
 	
  	You must also install CVC3, Alt-Ergo and Z3 as backend theorem provers. The WP Frama-C plugin manual
- 	(available [here](http://frama-c.com/download/wp-manual-Sodium-20150201.pdf)) contains a chapter on
+ 	(available [here](http://frama-c.com/download/wp-manual-Phosphorus-20170501.pdf)) contains a chapter on
  	installing the theorem provers.
 
 
