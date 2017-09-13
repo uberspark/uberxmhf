@@ -18,16 +18,16 @@ OBJECTS = $(patsubst %.c, %.o, $(C_SOURCES))
 ###### targets
 .PHONY: verify
 verify:
-	$(FRAMAC) -wp -wp-rte -wp-prover alt-ergo,z3,cvc3 -cpp-extra-args=-nostdinc $(V_FLAGS) $(srcdir)/memcmp.c
-	$(FRAMAC) -wp -wp-rte -wp-prover alt-ergo,cvc3 -cpp-extra-args=-nostdinc $(V_FLAGS) $(srcdir)/memcpy.c
-	$(FRAMAC) -wp -wp-rte -wp-prover alt-ergo,z3,cvc3 -cpp-extra-args=-nostdinc $(V_FLAGS) $(srcdir)/memset.c
-	$(FRAMAC) -wp -wp-rte -wp-prover alt-ergo,z3,cvc3 -cpp-extra-args=-nostdinc $(V_FLAGS) $(srcdir)/memmove.c
-	$(FRAMAC) -wp -wp-rte -wp-prover alt-ergo,z3,cvc3 -cpp-extra-args=-nostdinc $(V_FLAGS) $(srcdir)/strchr.c
-	$(FRAMAC) -wp -wp-rte -wp-prover alt-ergo,z3,cvc3 -cpp-extra-args=-nostdinc $(V_FLAGS) $(srcdir)/strcmp.c
-	$(FRAMAC) -wp -wp-rte -wp-prover alt-ergo,z3,cvc3 -cpp-extra-args=-nostdinc $(V_FLAGS) $(srcdir)/strlen.c
-	$(FRAMAC) -wp -wp-rte -wp-prover alt-ergo,z3,cvc3 -cpp-extra-args=-nostdinc $(V_FLAGS) $(srcdir)/strncmp.c
-	$(FRAMAC) -wp -wp-rte -wp-prover alt-ergo,z3,cvc3 -cpp-extra-args=-nostdinc $(V_FLAGS) $(srcdir)/strncpy.c
-	$(FRAMAC) -wp -wp-rte -wp-prover alt-ergo,z3,cvc3 -cpp-extra-args=-nostdinc $(V_FLAGS) $(srcdir)/strnlen.c
+	$(FRAMAC) -no-frama-c-stdlib -wp -wp-rte -wp-prover alt-ergo,z3,cvc3 -cpp-extra-args=-nostdinc $(V_FLAGS) $(srcdir)/memcmp.c
+	$(FRAMAC) -no-frama-c-stdlib -wp -wp-rte -wp-prover alt-ergo,cvc3 -cpp-extra-args=-nostdinc $(V_FLAGS) $(srcdir)/memcpy.c
+	$(FRAMAC) -no-frama-c-stdlib -wp -wp-rte -wp-prover alt-ergo,z3,cvc3 -cpp-extra-args=-nostdinc $(V_FLAGS) $(srcdir)/memset.c
+	$(FRAMAC) -no-frama-c-stdlib -wp -wp-rte -wp-prover alt-ergo,z3,cvc3 -cpp-extra-args=-nostdinc $(V_FLAGS) $(srcdir)/memmove.c
+	$(FRAMAC) -no-frama-c-stdlib -wp -wp-rte -wp-prover alt-ergo,z3,cvc3 -cpp-extra-args=-nostdinc $(V_FLAGS) $(srcdir)/strchr.c
+	$(FRAMAC) -no-frama-c-stdlib -wp -wp-rte -wp-prover alt-ergo,z3,cvc3 -cpp-extra-args=-nostdinc $(V_FLAGS) $(srcdir)/strcmp.c
+	$(FRAMAC) -no-frama-c-stdlib -wp -wp-rte -wp-prover alt-ergo,z3,cvc3 -cpp-extra-args=-nostdinc $(V_FLAGS) $(srcdir)/strlen.c
+	$(FRAMAC) -no-frama-c-stdlib -wp -wp-rte -wp-prover alt-ergo,z3,cvc3 -cpp-extra-args=-nostdinc $(V_FLAGS) $(srcdir)/strncmp.c
+	$(FRAMAC) -no-frama-c-stdlib -wp -wp-rte -wp-prover alt-ergo,z3,cvc3 -cpp-extra-args=-nostdinc $(V_FLAGS) $(srcdir)/strncpy.c
+	$(FRAMAC) -no-frama-c-stdlib -wp -wp-rte -wp-prover alt-ergo,z3,cvc3 -cpp-extra-args=-nostdinc $(V_FLAGS) $(srcdir)/strnlen.c
 
 .PHONY: build
 build: $(ARCHIVE)

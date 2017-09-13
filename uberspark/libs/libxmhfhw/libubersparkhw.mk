@@ -83,7 +83,7 @@ verify-with-val:
 		($(CP) -f $(srcdir)/$$i $$i.c) || exit 1; \
 	done;
 	@echo Sources prepped.
-	$(FRAMAC) -val -cpp-extra-args=-nostdinc $(V_FLAGS) $(srcdir)/verify/xmhfhw_casmfuncs_driver.c *.cS.c $(USPARK_INSTALL_HWMDIR)/*.c
+	$(FRAMAC) -no-frama-c-stdlib -val -cpp-extra-args=-nostdinc $(V_FLAGS) $(srcdir)/verify/xmhfhw_casmfuncs_driver.c *.cS.c $(USPARK_INSTALL_HWMDIR)/*.c
 	@for i in $(CS_SOURCES); \
 	do \
 		($(RM) $$i.c) || exit 1; \
