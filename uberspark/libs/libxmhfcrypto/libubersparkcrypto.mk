@@ -20,7 +20,7 @@ OBJECTS = $(patsubst %.c, %.o, $(O_SOURCES))
 ###### targets
 .PHONY: verify
 verify:
-	$(FRAMAC) -main sha1 -lib-entry -wp -wp-model +cint -wp-prover alt-ergo,cvc3,z3 -cpp-extra-args=-nostdinc $(V_FLAGS) $(srcdir)/hashes/sha1/sha1.c
+	$(FRAMAC) -no-frama-c-stdlib -main sha1 -lib-entry -wp -wp-model +cint -wp-prover alt-ergo,cvc3,z3 -cpp-extra-args=-nostdinc $(V_FLAGS) $(srcdir)/hashes/sha1/sha1.c
 
 .PHONY: build
 build: $(ARCHIVE)
