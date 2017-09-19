@@ -178,12 +178,17 @@ source-tree (where this README.md resides):
 	`./configure`
 
 
-3.  Verify and Build UberSpark libraries sources
+3.  Verify UberSpark libraries 
 
-	`make`
+	`make verify-ubersparklibs`
 
 
-4.  Install UberSpark libraries
+4.  Build UberSpark libraries
+
+	`make build-ubersparklibs`
+
+
+5.  Install UberSpark libraries
 
 	`sudo make install`
 
