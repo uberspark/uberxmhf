@@ -87,15 +87,15 @@ you choose.
 	`opam install coq`
 
 
-3.	Compcert (version 2.4-master)
+4.	Compcert (3.0.1)
 
-	`git clone https://github.com/AbsInt/CompCert.git compcert-git`
+	`wget http://compcert.inria.fr/release/compcert-3.1.tgz`
 
-	`cd compcert-git`
+	`tar -xvzf compcert-3.1.tgz`
 
-	`git checkout -b compcert 70b3b1cb`
+	`cd CompCert-3.1`
 
-	`./configure ia32-linux`
+	`./configure x86_32-linux`
 
 	`make all`
 
@@ -104,7 +104,7 @@ you choose.
 	`cd ..`
 
 
-4.	Frama-C (version Phosphorus-20170501)
+5.	Frama-C (version Phosphorus-20170501)
 
 	`wget http://frama-c.com/download/frama-c-Phosphorus-20170501.tar.gz`
 
@@ -268,7 +268,7 @@ Refer to the debugging section in the original XMHF documentation (available [he
 * Version 3.0 (Ratchet)
 	* add support for Frama-C Phosphorus-20170501
 	* add support for Compcert 3.0.1
-	* fix Issue #1
+	* fix issue #1
 	* minor build harness fixes and documentation updates
 
 
