@@ -268,7 +268,7 @@ Refer to the debugging section in the original XMHF documentation (available [he
 * Version 3.0 (Ratchet)
 	* add support for Frama-C Phosphorus-20170501
 	* add support for Compcert 3.0.1
-	* fix issue #1
+	* fix [issue #1](https://github.com/hypcode/uberspark/issues/1)
 	* minor build harness fixes and documentation updates
 
 
