@@ -53,7 +53,7 @@ Replace `<home-dir>` with your home-directory name and `<work-dir>` with any wor
 you choose.
 
 
-1.	Ubuntu 14.04 LTS 64-bit for development and verification (available [here](http://releases.ubuntu.com/14.04/)).
+1.	Ubuntu 14.04.2 LTS 64-bit for development and verification (available [here](http://old-releases.ubuntu.com/releases/14.04.2/ubuntu-14.04.2-desktop-amd64.iso)).
    	You will need to install the following packages after doing an update:
    	
    	`sudo apt-get update`
@@ -62,7 +62,7 @@ you choose.
 
    	`sudo apt-get install lib32z1 lib32ncurses5 lib32bz2-1.0 gcc-multilib`
 
-	`sudo apt-get install ocaml ocaml-findlib ocaml-native-compilers coq`
+	`sudo apt-get install ocaml ocaml-findlib ocaml-native-compilers`
 
 	`sudo apt-get install graphviz libzarith-ocaml-dev libfindlib-ocaml-dev`
 
@@ -75,33 +75,27 @@ you choose.
 		
 	`opam switch 4.02.3`
 
+
+3.	Menhir Parser (20170712), ocamlgraph (1.8.7), ocamlfind (1.7.3) and coq (8.6.1)
+
+	`opam install menhir`
+
 	`opam install ocamlgraph`
 
-
-2.	Menhir Parser (version 20140422)
-
-	`wget http://gallium.inria.fr/~fpottier/menhir/menhir-20140422.tar.gz`
-
-	`tar -xvzf menhir-20140422.tar.gz`
-
-	`cd menhir-20140422`
-
-	`sudo make PREFIX=/usr/local all`
-
-	`sudo make PREFIX=/usr/local install`
-
-	`cd ..`
+	`opam install ocamlfind`
 	
+	`opam install coq`
 
-3.	Compcert (version 2.4-master)
 
-	`git clone https://github.com/AbsInt/CompCert.git compcert-git`
+4.	Compcert (3.0.1)
 
-	`cd compcert-git`
+	`wget http://compcert.inria.fr/release/compcert-3.1.tgz`
 
-	`git checkout -b compcert 70b3b1cb`
+	`tar -xvzf compcert-3.1.tgz`
 
-	`./configure ia32-linux`
+	`cd CompCert-3.1`
+
+	`./configure x86_32-linux`
 
 	`make all`
 
@@ -110,7 +104,7 @@ you choose.
 	`cd ..`
 
 
-4.	Frama-C (version Phosphorus-20170501)
+5.	Frama-C (version Phosphorus-20170501)
 
 	`wget http://frama-c.com/download/frama-c-Phosphorus-20170501.tar.gz`
 
@@ -178,12 +172,17 @@ source-tree (where this README.md resides):
 	`./configure`
 
 
-3.  Verify and Build UberSpark libraries sources
+3.  Verify UberSpark libraries 
 
-	`make`
+	`make verify-ubersparklibs`
 
 
-4.  Install UberSpark libraries
+4.  Build UberSpark libraries
+
+	`make build-ubersparklibs`
+
+
+5.  Install UberSpark libraries
 
 	`sudo make install`
 
@@ -243,7 +242,7 @@ source-tree (where this README.md resides):
 
 ## Installing uXMHF
 
-Please see the hardware requirements of XMHF (available [here](http://xmhf.sourceforge.net/doc/xmhf/doc/hardware-requirements.md.html)) and the guest OSes supported (available [here](http://xmhf.sourceforge.net/doc/xmhf/doc/supported-OS.md.html)). More specifically, you will need an Intel TXT enabled chipset with EPT capabilities. The reference platform used for this release was a Dell Optiplex 9020 with an Intel Core-i5 4590 CPU running Ubuntu 12.04 LTS 32-bit SMP kernel  3.2.0-27-generic (note this is a non-PAE kernel).
+Please see the hardware requirements of XMHF (available [here](http://xmhf.sourceforge.net/doc/xmhf/doc/hardware-requirements.md.html)) and the guest OSes supported (available [here](http://xmhf.sourceforge.net/doc/xmhf/doc/supported-OS.md.html)). More specifically, you will need an Intel TXT enabled chipset with EPT capabilities. The reference platform used for this release was a Dell Optiplex 9020 with an Intel Core-i5 4590 CPU running Ubuntu 12.04 LTS 32-bit SMP kernel  3.2.0-23-generic (note this is a non-PAE kernel).
 
 Follow the installation instructions for XMHF (available [here](http://xmhf.sourceforge.net/doc/xmhf/doc/installing-xmhf.md.html)). However, replace the section on "GRUB entry to boot linux" with the following:
 
@@ -251,11 +250,11 @@ Follow the installation instructions for XMHF (available [here](http://xmhf.sour
    
     `rootnoverify (hd0,1)                                      # should point to /boot`
    
-    `kernel /xmhf-x86-vmx-x86pc.bin.gz serial=115200,8n1,0x3f8 # substitute in the correct serial address`
+    `kernel /boot/xmhf-x86-vmx-x86pc.bin.gz serial=115200,8n1,0x3f8 # substitute in the correct serial address`
    
     `modulenounzip (hd0)+1                                     # should point to where grub is installed`
    
-    `modulenounzip /4th_gen_i5_i7_SINIT_75.BIN                 # Intel TXT AC SINIT module`
+    `modulenounzip /boot/4th_gen_i5_i7_SINIT_75.BIN                 # Intel TXT AC SINIT module`
 
 
 ##Debugging uXMHF
@@ -266,10 +265,17 @@ Refer to the debugging section in the original XMHF documentation (available [he
 
 ## Releases and Changelog
 
+* Version 3.0 (Ratchet)
+	* added support for Frama-C Phosphorus-20170501
+	* added support for Compcert 3.0.1
+	* fixed [issue #1](https://github.com/hypcode/uberspark/issues/1)
+	* minor build harness fixes and documentation updates
+
+
 * Version 2.0 (Blades)
-	* separate uberspark, uberspark libraries and uxmhf verification/build processes
-	* refine and streamline uberspark and uxmhf verification/build harness
-	* fix minor errors in documentation and updates to reflect release changes
+	* separated uberspark, uberspark libraries and uxmhf verification/build processes
+	* refined and streamlined uberspark and uxmhf verification/build harness
+	* fixed minor errors in documentation and updates to reflect release changes
 
 
 * Version 1.0 (Cliff Jumper)
