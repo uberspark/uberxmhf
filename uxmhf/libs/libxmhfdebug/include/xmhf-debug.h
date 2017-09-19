@@ -52,6 +52,8 @@
 
 #if defined (__DEBUG_SERIAL__)
 
+#include <xmhfhw.h>
+
 #include "_com.h"        		//UART/serial
 
 #define LOG_LEVEL_NONE    0x00

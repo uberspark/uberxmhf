@@ -82,6 +82,7 @@ CCERT_FLAGS += -fbitfields
 CCERT_FLAGS += -fpacked-structs
 CCERT_FLAGS += -fstruct-return
 CCERT_FLAGS += -fno-inline-asm
+CCERT_FLAGS += -nostdinc
 
 ###### includes
 
