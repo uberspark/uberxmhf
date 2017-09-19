@@ -266,6 +266,13 @@ Refer to the debugging section in the original XMHF documentation (available [he
 
 ## Releases and Changelog
 
+* Version 3.0 (Ratchet)
+	* add support for Frama-C Phosphorus-20170501
+	* add support for Compcert 3.0.1
+	* fix Issue #1
+	* minor build harness fixes and documentation updates
+
+
 * Version 2.0 (Blades)
 	* separate uberspark, uberspark libraries and uxmhf verification/build processes
 	* refine and streamline uberspark and uxmhf verification/build harness
