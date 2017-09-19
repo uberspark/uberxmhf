@@ -53,7 +53,7 @@ Replace `<home-dir>` with your home-directory name and `<work-dir>` with any wor
 you choose.
 
 
-1.	Ubuntu 14.04 LTS 64-bit for development and verification (available [here](http://releases.ubuntu.com/14.04/)).
+1.	Ubuntu 14.04.2 LTS 64-bit for development and verification (available [here](http://old-releases.ubuntu.com/releases/14.04.2/ubuntu-14.04.2-desktop-amd64.iso)).
    	You will need to install the following packages after doing an update:
    	
    	`sudo apt-get update`
