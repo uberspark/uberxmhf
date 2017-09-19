@@ -248,7 +248,7 @@ source-tree (where this README.md resides):
 
 ## Installing uXMHF
 
-Please see the hardware requirements of XMHF (available [here](http://xmhf.sourceforge.net/doc/xmhf/doc/hardware-requirements.md.html)) and the guest OSes supported (available [here](http://xmhf.sourceforge.net/doc/xmhf/doc/supported-OS.md.html)). More specifically, you will need an Intel TXT enabled chipset with EPT capabilities. The reference platform used for this release was a Dell Optiplex 9020 with an Intel Core-i5 4590 CPU running Ubuntu 12.04 LTS 32-bit SMP kernel  3.2.0-27-generic (note this is a non-PAE kernel).
+Please see the hardware requirements of XMHF (available [here](http://xmhf.sourceforge.net/doc/xmhf/doc/hardware-requirements.md.html)) and the guest OSes supported (available [here](http://xmhf.sourceforge.net/doc/xmhf/doc/supported-OS.md.html)). More specifically, you will need an Intel TXT enabled chipset with EPT capabilities. The reference platform used for this release was a Dell Optiplex 9020 with an Intel Core-i5 4590 CPU running Ubuntu 12.04 LTS 32-bit SMP kernel  3.2.0-23-generic (note this is a non-PAE kernel).
 
 Follow the installation instructions for XMHF (available [here](http://xmhf.sourceforge.net/doc/xmhf/doc/installing-xmhf.md.html)). However, replace the section on "GRUB entry to boot linux" with the following:
 
