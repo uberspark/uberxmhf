@@ -65,14 +65,14 @@ let ucasm_process () =
     let oc = open_out outfile in
     let tline = ref "" in
     let outline = ref "" in	
-    let annotline_regexp = Str.regexp "annot " in
+    let annotline_regexp = Str.regexp "_ = annot " in
     		    	
 		try
     		while true do
       			tline := trim (input_line ic);
       			if (Str.string_match annotline_regexp !tline 0) then
       				begin
-		      			outline := (Str.string_after !tline 7);
+		      			outline := (Str.string_after !tline 11);
 		      			outline := Str.string_before !outline ((String.length !outline) - 3);
 		      			Printf.fprintf oc "%s\n" !outline; 
       				end

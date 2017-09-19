@@ -54,7 +54,7 @@
 	requires 0 <= saved_state->num_var_mtrrs < MAX_VARIABLE_MTRRS;
 	assigns \nothing;
 @*/
-bool validate_mtrrs(const mtrr_state_t *saved_state)
+bool validate_mtrrs(mtrr_state_t *saved_state)
 {
 	    mtrr_cap_t mtrr_cap;
 	    int ndx;
