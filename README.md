@@ -256,11 +256,11 @@ Follow the installation instructions for XMHF (available [here](http://xmhf.sour
    
     `rootnoverify (hd0,1)                                      # should point to /boot`
    
-    `kernel /xmhf-x86-vmx-x86pc.bin.gz serial=115200,8n1,0x3f8 # substitute in the correct serial address`
+    `kernel /boot/xmhf-x86-vmx-x86pc.bin.gz serial=115200,8n1,0x3f8 # substitute in the correct serial address`
    
     `modulenounzip (hd0)+1                                     # should point to where grub is installed`
    
-    `modulenounzip /4th_gen_i5_i7_SINIT_75.BIN                 # Intel TXT AC SINIT module`
+    `modulenounzip /boot/4th_gen_i5_i7_SINIT_75.BIN                 # Intel TXT AC SINIT module`
 
 
 ##Debugging uXMHF
