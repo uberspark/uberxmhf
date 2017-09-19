@@ -62,7 +62,7 @@ you choose.
 
    	`sudo apt-get install lib32z1 lib32ncurses5 lib32bz2-1.0 gcc-multilib`
 
-	`sudo apt-get install ocaml ocaml-findlib ocaml-native-compilers coq`
+	`sudo apt-get install ocaml ocaml-findlib ocaml-native-compilers`
 
 	`sudo apt-get install graphviz libzarith-ocaml-dev libfindlib-ocaml-dev`
 
@@ -75,23 +75,17 @@ you choose.
 		
 	`opam switch 4.02.3`
 
+
+3.	Menhir Parser (20170712), ocamlgraph (1.8.7), ocamlfind (1.7.3) and coq (8.6.1)
+
+	`opam install menhir`
+
 	`opam install ocamlgraph`
 
-
-2.	Menhir Parser (version 20140422)
-
-	`wget http://gallium.inria.fr/~fpottier/menhir/menhir-20140422.tar.gz`
-
-	`tar -xvzf menhir-20140422.tar.gz`
-
-	`cd menhir-20140422`
-
-	`sudo make PREFIX=/usr/local all`
-
-	`sudo make PREFIX=/usr/local install`
-
-	`cd ..`
+	`opam install ocamlfind`
 	
+	`opam install coq`
+
 
 3.	Compcert (version 2.4-master)
 
