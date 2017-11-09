@@ -33,28 +33,34 @@ Author: Amit Vasudevan (amitvasudevan@acm.org)
 	m. mkdir -p ~/uxmhf-rpi3-staging/boot
 	n. cp ./arch/arm/boot/dts/*.dtb ~/uxmhf-rpi3-staging/boot/.
 
-5. Build uxmhf-rpi3 on development system
+5. Obtain boot-partition extents
+	a. sudo fdisk -l /dev/mmcblk0
+	b. BP_START_SECTOR = note down start sector of /dev/mmcblk0p0 in the output
+	c. BP_END_SECTOR = note down end sector of /dev/mmcblk0p0 in the output
+	
+6. Build uxmhf-rpi3 on development system
 	a. git clone https://gitlab.com/hypcode/projs/sei-cdra/prototypes/uxmhf-rpi3.git
 	b. cd uxmhf-rpi3/uxmhf-rpi3
 	c. ./bsconfigure.sh
-	d. make clean
-	e. make OSKRNLIMG=~/uxmhf-rpi3-staging/kernel7.img
-	f. cp uxmhf-rpi3.img ~/uxmhf-rpi3-staging/.
-	g. cp rpi3-config.txt ~/uxmhf-rpi3-staging/config.txt
+	d. ./configure --with-boot-partition-start=BP_START_SECTOR --with-boot-partition-end=BP_END_SECTOR 
+	e. make clean
+	f. make OSKRNLIMG=~/uxmhf-rpi3-staging/kernel7.img
+	g. cp uxmhf-rpi3.img ~/uxmhf-rpi3-staging/.
+	h. cp rpi3-config.txt ~/uxmhf-rpi3-staging/config.txt
 
-6. Building uhcallkmod on development system
+7. Building uhcallkmod on development system
 	b. cd rgapps/linux/rgapp-uhcallkmod
 	c. ./build.sh ~/linux ~/tools/arm-bcm2708/gcc-linaro-arm-linux-gnueabihf-raspbian-x64/bin/
 	d. cp ./uhcallkmod.ko ~/uxmhf-rpi3-staging/.
 
-7. Building uhcalltest on development system
+8. Building uhcalltest on development system
 	b. Cd rgapps/linux
 	c. Make -w all
 	d. cd rgapp-uhcalltest
 	e. make -w all
 	f. cp ./uhcalltest ~/uxmhf-rpi3-staging/.
 	
-8. Deploying on sd-card
+9. Deploying on sd-card
 	a. mkdir -p ~/mnt/pi-boot
 	b. mkdir -p ~/mnt/pi-root
 	c. sudo mount /dev/mmcblk0p1 ~/mnt/pi-boot
@@ -77,14 +83,14 @@ Author: Amit Vasudevan (amitvasudevan@acm.org)
 	q. sudo mkdir -p ~/mnt/pi-root/lib/modules/4.4.50-v7+
 	r. sudo cp -R ~/uxmhf-rpi3-staging/mod_install/lib/modules/4.4.50-v7+/* ~/mnt/pi-root/lib/modules/4.4.50-v7+/.
 
-9. Setup serial debugging
+10. Setup serial debugging
 	a. Connect Pin 6 on pi to GND of serial cable; Pin 8 to RX and Pin 10 to TX
 	b. edit ~/mnt/pi-boot/config.txt add the following lines
 		enable_uart=1
 		init_uart_baud=115200
 		force_turbo=0
 
-10. Boot up and test
+11. Boot up and test
 	a. umount ~/mnt/pi-boot
 	b. umount ~/mnt/pi-root
 	c. Stick sdcard into the pi3
