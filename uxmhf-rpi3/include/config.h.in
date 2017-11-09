@@ -10,6 +10,8 @@
 #define UXMHF_CORE_START_ADDR 	@CORE_STARTADDR@
 #define UXMHF_CORE_SIZE			@CORE_SIZE@
 
+#define UXMHF_BOOT_PARTITION_START	2048
+#define UXMHF_BOOT_PARTITION_END		133119
 
 
 // computed parameters from above

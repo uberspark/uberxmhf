@@ -10,13 +10,12 @@
 #include <miniuart.h>
 #include <debug.h>
 #include <dmaprot.h>
+#include <config.h>
 
 #define SDCMD_WRITE_CMD	0x80
 #define SDCMD_READ_CMD	0x40
 #define SDCMD_CMD_MASK	0x3f
 
-#define UXMHF_BOOT_PARTITION_START	2048
-#define UXMHF_BOOT_PARTITION_END		133119
 
 //activate secure boot protection mechanism
 void secboot_activate(void){
