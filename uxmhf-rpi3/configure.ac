@@ -10,16 +10,16 @@ AC_SUBST([prefix])
 AC_SUBST([CORE_STARTADDR])
 AC_ARG_WITH([core_startaddr],
         AS_HELP_STRING([--with-core-startaddr=@<:@STARTADDR@:>@],
-                [select core_startaddr (0)]),
-                , [with_core_startaddr=0])
+                [select core_startaddr (0x1000000)]),
+                , [with_core_startaddr=0x1000000])
 CORE_STARTADDR=$[]with_core_startaddr
 
 # core size
 AC_SUBST([CORE_SIZE])
 AC_ARG_WITH([core_size],
         AS_HELP_STRING([--with-core-size=@<:@SIZE@:>@],
-                [select core_size (0)]),
-                , [with_core_size=0])
+                [select core_size (0xC00000)]),
+                , [with_core_size=0xC00000])
 CORE_SIZE=$[]with_core_size
 
 

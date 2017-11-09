@@ -4,9 +4,15 @@
 	author: amit vasudevan (amitvasudevan@acm.org)
 */
 
+
+// configure script parameters
+
 #define UXMHF_CORE_START_ADDR 	@CORE_STARTADDR@
 #define UXMHF_CORE_SIZE			@CORE_SIZE@
 
+
+
+// computed parameters from above
 #define UXMHF_CORE_END_ADDR 	( @CORE_STARTADDR@ + @CORE_SIZE@ )
 
 
