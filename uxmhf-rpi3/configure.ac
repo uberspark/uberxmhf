@@ -23,6 +23,23 @@ AC_ARG_WITH([core_size],
 CORE_SIZE=$[]with_core_size
 
 
+# boot partition start sector
+AC_SUBST([BOOT_PARTITION_START])
+AC_ARG_WITH([boot_partition_start],
+        AS_HELP_STRING([--with-boot-partition-start=@<:@SECTORNUM@:>@],
+                [select boot_partition_start (2048)]),
+                , [with_boot_partition_start=2048])
+BOOT_PARTITION_START=$[]with_boot_partition_start
+
+# boot partition end sector
+AC_SUBST([BOOT_PARTITION_END])
+AC_ARG_WITH([boot_partition_end],
+        AS_HELP_STRING([--with-boot-partition-end=@<:@SECTORNUM@:>@],
+                [select boot_partition_end (2048)]),
+                , [with_boot_partition_end=133119])
+BOOT_PARTITION_END=$[]with_boot_partition_end
+
+
 ###### autoconf output files
 AC_CONFIG_FILES(
 			[./include/config.h]
