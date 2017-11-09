@@ -15,8 +15,8 @@
 #define SDCMD_READ_CMD	0x40
 #define SDCMD_CMD_MASK	0x3f
 
-#define BOOT_PARTITION_START	2048
-#define BOOT_PARTITION_END		133119
+#define UXMHF_BOOT_PARTITION_START	2048
+#define UXMHF_BOOT_PARTITION_END		133119
 
 //activate secure boot protection mechanism
 void secboot_activate(void){
@@ -110,7 +110,7 @@ void secboot_handle_sdhost_access(info_intercept_data_abort_t *ida){
 				if(cmdop == 24 || cmdop == 25){
 					//WRITE block commands
 					u32 arg = mmio_read32(BCM2837_SDHOST_BASE + 0x04);
-					if(arg >= BOOT_PARTITION_START && arg <= BOOT_PARTITION_END){
+					if(arg >= UXMHF_BOOT_PARTITION_START && arg <= UXMHF_BOOT_PARTITION_END){
 						_XDPRINTFSMP_("%s: cmdop=%u(0x%08x), SDCMD=0x%08x; arg=%u. Halting!\n",
 								__func__, cmdop, cmdop, guest_value, arg);
 						HALT();
