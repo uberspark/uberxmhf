@@ -70,7 +70,7 @@ Author: Amit Vasudevan (amitvasudevan@acm.org)
 	f. sudo cp ~/uxmhf-rpi3-staging/uhcallkmod.ko ~/mnt/pi-root/home/pi/.
 	g. sudo cp ~/uxmhf-rpi3-staging/uxmhf-rpi3.img ~/mnt/pi-boot/.
 	
-	h. sudo cp ~/uxmhf-rpi3-staging/cmdline.txt ~/mnt/pi-boot/.
+	--h. sudo cp ~/uxmhf-rpi3-staging/cmdline.txt ~/mnt/pi-boot/.
 	i. sudo cp ~/uxmhf-rpi3-staging/config.txt ~/mnt/pi-boot/.
 	j. append loglevel=8 memblock=debug dwc_otg.fiq_enable=0 dwc_otg.fiq_fsm_enable=0 to ~/mnt/pi-boot/cmdline.txt
 	
@@ -82,6 +82,7 @@ Author: Amit Vasudevan (amitvasudevan@acm.org)
 	p. sudo cp -R ~/uxmhf-rpi3-staging/mod_install/lib/firmware/* ~/mnt/pi-root/lib/firmware/.
 	q. sudo mkdir -p ~/mnt/pi-root/lib/modules/4.4.50-v7+
 	r. sudo cp -R ~/uxmhf-rpi3-staging/mod_install/lib/modules/4.4.50-v7+/* ~/mnt/pi-root/lib/modules/4.4.50-v7+/.
+	s. edit ~/mnt/pi-root/etc/fstab and comment out line beginning with /dev/mmcblk0p1 which is mounted to boot
 
 10. Setup serial debugging
 	a. Connect Pin 6 on pi to GND of serial cable; Pin 8 to RX and Pin 10 to TX
