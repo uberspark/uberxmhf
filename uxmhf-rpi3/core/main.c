@@ -706,11 +706,6 @@ void main(u32 r0, u32 id, struct atag *at, u32 cpuid){
 	ctxtrace_init(cpuid);
 
 
-	_XDPRINTF_("%s[%u]: Halting!\n", __func__, cpuid);
-	HALT();
-
-
-
 	// boot secondary cores
 	_XDPRINTF_("%s[%u]: proceeding to initialize SMP...\n", __func__, cpuid);
 	bcm2837_platform_smpinitialize();
