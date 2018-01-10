@@ -100,5 +100,7 @@ void uapp_watchdog_timerhandler(void){
 
 
 void uapp_watchdog_initialize(u32 cpuid){
+	hypvtable_setentry(cpuid, 7, (u32)&hypvtable_fiq_handler0);
+
 	uapp_watchdog_timer_initialize(cpuid);
 }
