@@ -655,8 +655,6 @@ void main(u32 r0, u32 id, struct atag *at, u32 cpuid){
 	HALT();
 #endif
 
-	// hypervisor timer initialization via FIQs
-	hyptimer_initialize(cpuid);
 
 	//enable FIQ mask override; this should land us in HYP mode FIQ handler when FIQs are triggered inside guest
 	hcr = sysreg_read_hcr();
@@ -700,6 +698,7 @@ void main(u32 r0, u32 id, struct atag *at, u32 cpuid){
 	//////
 	// initialize hypapps
 	ctxtrace_init(cpuid);
+	uapp_watchdog_initialize(cpuid);
 
 
 	// boot secondary cores

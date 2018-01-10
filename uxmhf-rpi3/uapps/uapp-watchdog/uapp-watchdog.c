@@ -97,3 +97,8 @@ void uapp_watchdog_timerhandler(void){
 
 	//bcm2837_miniuart_puts("WATCHDOG EXCEPTION-- Resuming\n");
 }
+
+
+void uapp_watchdog_initialize(u32 cpuid){
+	uapp_watchdog_timer_initialize(cpuid);
+}
