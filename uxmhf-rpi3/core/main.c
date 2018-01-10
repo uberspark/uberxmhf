@@ -39,12 +39,6 @@ void hyp_rsvhandler(void){
 
 
 
-void hyp_fiqhandler(void){
-	uapp_watchdog_timerhandler();
-
-	//reset timer counter
-	sysreg_write_cnthp_tval(10*1024*1024);
-}
 
 
 void hyphvc_handler(void){

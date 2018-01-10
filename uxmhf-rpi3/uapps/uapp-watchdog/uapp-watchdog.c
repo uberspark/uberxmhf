@@ -11,6 +11,8 @@
 #include <debug.h>
 
 
+extern void hypvtable_fiq_handler0(void);
+
 __attribute__((section(".data"))) volatile u32 *gpio;
 bool led_on=false;
 
@@ -78,6 +80,13 @@ void uapp_watchdog_timer_initialize(u32 cpuid){
 	_XDPRINTFSMP_("%s[%u]: EXIT\n", __func__, cpuid);
 }
 
+
+void hyp_fiqhandler(void){
+	uapp_watchdog_timerhandler();
+
+	//reset timer counter
+	sysreg_write_cnthp_tval(10*1024*1024);
+}
 
 
 void uapp_watchdog_timerhandler(void){
