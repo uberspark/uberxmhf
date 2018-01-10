@@ -64,6 +64,7 @@ void hypvtable_initialize(u32 cpuid){
 	}
 	_XDPRINTFSMP_("%s[%u]: dumped ghypvtable\n", __func__, cpuid);
 
+#if 0
 	//test
 	hypvtable_setentry(cpuid, 7, (u32)&hypvtable_fiq_handler0);
 	_XDPRINTFSMP_("%s[%u]: dumping (ghypvtable at 0x%08x) contents...\n", __func__, cpuid, (u32)&g_hypvtable[cpuid]);
@@ -71,7 +72,7 @@ void hypvtable_initialize(u32 cpuid){
 		_XDPRINTFSMP_("%s[%u]:   0x%08x\n", __func__, cpuid, g_hypvtable[cpuid][i]);
 	}
 	_XDPRINTFSMP_("%s[%u]: dumped ghypvtable\n", __func__, cpuid);
-
+#endif
 
 
 	//setup HVBAR for vectors
