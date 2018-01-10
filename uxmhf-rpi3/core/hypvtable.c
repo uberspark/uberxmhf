@@ -18,6 +18,35 @@ extern u32 g_hypvtable[BCM2837_MAXCPUS][8];
 extern void hypvtable_fiq_handler0(void);
 extern void hypvtable_reserved_handler0(void);
 
+
+//////
+// hypvtable_setentry
+// initialize an entry in the vector table for given CPU
+// return 0 on success; non-zero on fail
+//////
+u32 hypvtable_setentry(u32 cpuid, u32 entry_idx, u32 entry_addr){
+	u32 vector_table_base;
+	u32 entry_value;
+
+	if(entry_idx > 7)
+		return 1;
+
+	vector_table_base =(u32)&g_hypvtable[cpuid];
+
+	if(entry_addr < vector_table_base)
+		return 2;
+
+	//formula to setup vector table value based on given 32-bit address
+	//1. addr - vtable_base + 0x4
+	//2. divide 1 by 4
+	//3. subtract 1
+	//4. add to unsigned 0xEA000000
+	entry_value = 0xEA000000 + (u32)(((entry_addr - vector_table_base + 0x4) / 4) - 1);
+
+	g_hypvtable[cpuid][entry_idx]=entry_value;
+}
+
+
 //////
 // hypvtable_initialize
 // initialize vector table for given CPU
@@ -35,11 +64,6 @@ void hypvtable_initialize(u32 cpuid){
 	_XDPRINTFSMP_("%s[%u]: dumped ghypvtable\n", __func__, cpuid);
 
 
-	//formula to setup vector table value based on given 32-bit address
-	//1. addr - vtable_base + 0x4
-	//2. divide 1 by 4
-	//3. subtract 1
-	//4. add to unsigned 0xEA000000
 
 	//setup HVBAR for vectors
 	_XDPRINTFSMP_("%s[%u]: HVBAR[before]=0x%08x\n", __func__, cpuid, sysreg_read_hvbar());
