@@ -11,7 +11,7 @@
 #include <debug.h>
 
 
-extern void hypvtable_fiq_handler0(void);
+extern void uapp_watchdog_fiq_handler(void);
 
 __attribute__((section(".data"))) volatile u32 *gpio;
 bool led_on=false;
@@ -81,7 +81,7 @@ void uapp_watchdog_timer_initialize(u32 cpuid){
 }
 
 
-void hyp_fiqhandler(void){
+void uapp_watchdog_fiqhandler(void){
 	uapp_watchdog_timerhandler();
 
 	//reset timer counter
@@ -109,7 +109,9 @@ void uapp_watchdog_timerhandler(void){
 
 
 void uapp_watchdog_initialize(u32 cpuid){
-	hypvtable_setentry(cpuid, 7, (u32)&hypvtable_fiq_handler0);
+	if(cpuid == 0){
+		hypvtable_setentry(cpuid, 7, (u32)&uapp_watchdog_fiq_handler);
+		uapp_watchdog_timer_initialize(cpuid);
 
-	uapp_watchdog_timer_initialize(cpuid);
+	}
 }

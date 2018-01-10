@@ -15,8 +15,6 @@
 // externs
 //////
 extern u32 g_hypvtable[BCM2837_MAXCPUS][8];
-extern void hypvtable_fiq_handler0(void);
-extern void hypvtable_reserved_handler0(void);
 
 
 //////
@@ -56,24 +54,11 @@ void hypvtable_initialize(u32 cpuid){
 	u32 i;
 
 	//debug
-	_XDPRINTFSMP_("%s[%u]: hypvtable_fiq_handler0 at 0x%08x\n", __func__, cpuid, (u32)&hypvtable_fiq_handler0);
-	_XDPRINTFSMP_("%s[%u]: hypvtable_reserved_handler0 at 0x%08x\n", __func__, cpuid, (u32)&hypvtable_reserved_handler0);
 	_XDPRINTFSMP_("%s[%u]: dumping (ghypvtable at 0x%08x) contents...\n", __func__, cpuid, (u32)&g_hypvtable[cpuid]);
 	for(i=0; i < 8; i++){
 		_XDPRINTFSMP_("%s[%u]:   0x%08x\n", __func__, cpuid, g_hypvtable[cpuid][i]);
 	}
 	_XDPRINTFSMP_("%s[%u]: dumped ghypvtable\n", __func__, cpuid);
-
-#if 0
-	//test
-	hypvtable_setentry(cpuid, 7, (u32)&hypvtable_fiq_handler0);
-	_XDPRINTFSMP_("%s[%u]: dumping (ghypvtable at 0x%08x) contents...\n", __func__, cpuid, (u32)&g_hypvtable[cpuid]);
-	for(i=0; i < 8; i++){
-		_XDPRINTFSMP_("%s[%u]:   0x%08x\n", __func__, cpuid, g_hypvtable[cpuid][i]);
-	}
-	_XDPRINTFSMP_("%s[%u]: dumped ghypvtable\n", __func__, cpuid);
-#endif
-
 
 	//setup HVBAR for vectors
 	_XDPRINTFSMP_("%s[%u]: HVBAR[before]=0x%08x\n", __func__, cpuid, sysreg_read_hvbar());

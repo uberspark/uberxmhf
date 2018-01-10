@@ -9,9 +9,9 @@
 
 
 	.balign 32
-	.global	hypvtable_fiq_handler0
-hypvtable_fiq_handler0:
-	ldr sp, =hypvtable_fiqhandler_stack_top0
+	.global	uapp_watchdog_fiq_handler
+uapp_watchdog_fiq_handler:
+	ldr sp, =uapp_watchdog_fiqhandler_stack_top
 
 	push {lr}
 
@@ -29,7 +29,7 @@ hypvtable_fiq_handler0:
 	push {r1}
 	push {r0}
 
-	bl hyp_fiqhandler
+	bl uapp_watchdog_fiqhandler
 
 	// restore all saved registers
 	pop {r0}
@@ -56,9 +56,9 @@ hypvtable_fiq_handler0:
 .section ".stack"
 
 	.balign 8
-	.global hypvtable_fiqhandler_stack0
-	hypvtable_fiqhandler_stack0:	.space	8192
-	.global hypvtable_fiqhandler_stack_top0
-	hypvtable_fiqhandler_stack_top0:
+	.global uapp_watchdog_fiqhandler_stack
+	uapp_watchdog_fiqhandler_stack:	.space	8192
+	.global uapp_watchdog_fiqhandler_stack_top
+	uapp_watchdog_fiqhandler_stack_top:
 
 
