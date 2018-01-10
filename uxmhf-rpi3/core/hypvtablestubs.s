@@ -32,7 +32,7 @@ g_hypvtable:
 	b hypvtable_reserved_handler0
 	b hypvtable_hypsvc_handler0
 	b hypvtable_reserved_handler0
-	b hypvtable_fiq_handler0
+	b hypvtable_reserved_handler0
 	//cpu-1
 	b hypvtable_reserved_handler1
 	b hypvtable_reserved_handler1
@@ -276,11 +276,5 @@ hypvtable_hypsvc_handler_common:
 	.global hypvtable_rsvhandler_stack_top3
 	hypvtable_rsvhandler_stack_top3:
 
-
-	.balign 8
-	.global hypvtable_fiqhandler_stack0
-	hypvtable_fiqhandler_stack0:	.space	8192
-	.global hypvtable_fiqhandler_stack_top0
-	hypvtable_fiqhandler_stack_top0:
 
 
