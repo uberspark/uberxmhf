@@ -556,9 +556,10 @@ void main(u32 r0, u32 id, struct atag *at, u32 cpuid){
 		uapp_pvdriver_uart_initialize_uapp(cpuid);
 	#endif
 
+	uapp_sched_initialize(cpuid);
+
 
 	//////
-
 	// boot secondary cores
 	_XDPRINTF_("%s[%u]: proceeding to initialize SMP...\n", __func__, cpuid);
 	bcm2837_platform_smpinitialize();
