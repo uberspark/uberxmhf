@@ -1,5 +1,5 @@
 /*
-	watchdog hypapp
+	scheduler hypapp
 
 	author: amit vasudevan (amitvasudevan@acm.org)
 */
@@ -11,22 +11,15 @@
 #include <debug.h>
 
 
-extern void uapp_watchdog_fiq_handler(void);
+extern void uapp_sched_fiq_handler(void);
 
-__attribute__((section(".data"))) volatile u32 *gpio;
-bool led_on=false;
-
-#define INP_GPIO(g) *(gpio+((g)/10)) &= ~(7<<(((g)%10)*3))
-#define OUT_GPIO(g) *(gpio+((g)/10)) |=  (1<<(((g)%10)*3))
-#define GPIO_SET *(gpio+7)  // sets   bits which are 1 ignores bits which are 0
-#define GPIO_CLR *(gpio+10) // clears bits which are 1 ignores bits which are 0
 
 
 //////
-// uapp watchdog timer_initialize
+// uapp sched timer_initialize
 // initialize hypervisor timer functionality
 //////
-void uapp_watchdog_timer_initialize(u32 cpuid){
+void uapp_sched_timer_initialize(u32 cpuid){
 	u32 cpsr;
 	u64 cntpct_val;
 	u32 cpu0_tintctl_value;
@@ -81,37 +74,22 @@ void uapp_watchdog_timer_initialize(u32 cpuid){
 }
 
 
-void uapp_watchdog_fiqhandler(void){
-	uapp_watchdog_timerhandler();
+void uapp_sched_fiqhandler(void){
+	uapp_sched_timerhandler();
 
 	//reset timer counter
 	sysreg_write_cnthp_tval(10*1024*1024);
 }
 
 
-void uapp_watchdog_timerhandler(void){
-	gpio = (u32 *)GPIO_BASE;
-
-	// set GPIO pin 7 as output
-	INP_GPIO(7); // must use INP_GPIO before we can use OUT_GPIO
-	OUT_GPIO(7);
-
-	if(led_on){
-		GPIO_CLR = (1 << 7);
-		led_on=false;
-	}else{
-		GPIO_SET = (1 << 7);
-		led_on=true;
-	}
-
-	//bcm2837_miniuart_puts("WATCHDOG EXCEPTION-- Resuming\n");
+void uapp_sched_timerhandler(void){
 }
 
 
-void uapp_watchdog_initialize(u32 cpuid){
+void uapp_sched_initialize(u32 cpuid){
 	if(cpuid == 0){
-		hypvtable_setentry(cpuid, 7, (u32)&uapp_watchdog_fiq_handler);
-		uapp_watchdog_timer_initialize(cpuid);
+		hypvtable_setentry(cpuid, 7, (u32)&uapp_sched_fiq_handler);
+		uapp_sched_timer_initialize(cpuid);
 
 	}
 }

@@ -1,5 +1,5 @@
 /*
-	uapp watchdog low-level support routines
+	uapp scheduler low-level support routines
 
 	author: amit vasudevan (amitvasudevan@acm.org)
 */
@@ -9,9 +9,9 @@
 
 
 	.balign 32
-	.global	uapp_watchdog_fiq_handler
-uapp_watchdog_fiq_handler:
-	ldr sp, =uapp_watchdog_fiqhandler_stack_top
+	.global	uapp_sched_fiq_handler
+uapp_sched_fiq_handler:
+	ldr sp, =uapp_sched_fiqhandler_stack_top
 
 	push {lr}
 
@@ -29,7 +29,7 @@ uapp_watchdog_fiq_handler:
 	push {r1}
 	push {r0}
 
-	bl uapp_watchdog_fiqhandler
+	bl uapp_sched_fiqhandler
 
 	// restore all saved registers
 	pop {r0}
@@ -56,9 +56,9 @@ uapp_watchdog_fiq_handler:
 .section ".stack"
 
 	.balign 8
-	.global uapp_watchdog_fiqhandler_stack
-	uapp_watchdog_fiqhandler_stack:	.space	8192
-	.global uapp_watchdog_fiqhandler_stack_top
-	uapp_watchdog_fiqhandler_stack_top:
+	.global uapp_sched_fiqhandler_stack
+	uapp_sched_fiqhandler_stack:	.space	8192
+	.global uapp_sched_fiqhandler_stack_top
+	uapp_sched_fiqhandler_stack_top:
 
 
