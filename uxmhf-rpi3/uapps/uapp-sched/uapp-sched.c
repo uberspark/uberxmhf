@@ -14,6 +14,26 @@
 extern void uapp_sched_fiq_handler(void);
 
 //////
+// global typedefs and variables
+//////
+#define TRUE  	1
+#define FALSE 	0
+
+#define MAX_TIMERS	4	//number of timers
+typedef u64 TIME;   	//our time type; 64-bits since we are using clock cycles
+#define VERY_LONG_TIME  0xffffffffffffffffULL	//longest time possible
+
+struct sched_timer {
+	u32 inuse;			// TRUE if in use
+	TIME time_to_wait;  // relative time to wait
+	u8 *event;    		// set to TRUE at timeout
+};
+
+__attribute__((section(".data"))) struct sched_timer sched_timers[MAX_TIMERS];   // set of timers
+
+
+
+//////
 // read current physical counter for the CPU; we use this as current time
 //////
 u64 uapp_sched_read_cpucounter(void){
@@ -89,6 +109,10 @@ void uapp_sched_fiqhandler(void){
 
 void uapp_sched_timerhandler(void){
 }
+
+
+
+
 
 
 void uapp_sched_initialize(u32 cpuid){
