@@ -30,6 +30,8 @@ struct sched_timer {
 };
 
 __attribute__((section(".data"))) struct sched_timer sched_timers[MAX_TIMERS];   // set of timers
+__attribute__((section(".data"))) volatile TIME time_now;
+
 
 void uapp_sched_timers_init(void){
   u32 i;
