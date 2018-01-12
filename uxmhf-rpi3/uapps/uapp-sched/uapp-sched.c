@@ -31,7 +31,12 @@ struct sched_timer {
 
 __attribute__((section(".data"))) struct sched_timer sched_timers[MAX_TIMERS];   // set of timers
 
+void uapp_sched_timers_init(void){
+  u32 i;
 
+  for(i=0; i < MAX_TIMERS; i++)
+	  sched_timers[i].inuse = FALSE;
+}
 
 //////
 // read current physical counter for the CPU; we use this as current time
