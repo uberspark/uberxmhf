@@ -31,7 +31,7 @@ struct sched_timer {
 
 __attribute__((section(".data"))) struct sched_timer sched_timers[MAX_TIMERS];   // set of timers
 __attribute__((section(".data"))) volatile TIME time_now;
-
+__attribute__((section(".data"))) struct sched_timer *timer_next = NULL; // timer we expect to run down next
 
 void uapp_sched_timers_init(void){
   u32 i;
@@ -39,6 +39,36 @@ void uapp_sched_timers_init(void){
   for(i=0; i < MAX_TIMERS; i++)
 	  sched_timers[i].inuse = FALSE;
 }
+
+//////
+// subtract time from all timers, enabling those that run out
+//////
+void uapp_sched_timers_update(TIME time){
+  static struct sched_timer timer_last = {
+    FALSE,  VERY_LONG_TIME, NULL
+  };
+  struct sched_timer *t;
+
+  timer_next = &timer_last;
+
+  for (t=sched_timers;t<&sched_timers[MAX_TIMERS];t++) {
+    if (t->inuse) {
+      if (time < t->time_to_wait) { // unexpired
+        t->time_to_wait -= time;
+        if (t->time_to_wait < timer_next->time_to_wait)
+          timer_next = t;
+      } else { // expired
+        /* tell scheduler */
+        *t->event = TRUE;
+        t->inuse = FALSE; 	// remove timer
+      }
+    }
+  }
+
+  /* reset timer_next if no timers found */
+  if (!timer_next->inuse) timer_next = 0;
+}
+
 
 //////
 // read current physical counter for the CPU; we use this as current time
