@@ -13,7 +13,12 @@
 
 extern void uapp_sched_fiq_handler(void);
 
-
+//////
+// read current physical counter for the CPU; we use this as current time
+//////
+u64 uapp_sched_read_cpucounter(void){
+	return sysreg_read_cntpct();
+}
 
 //////
 // uapp sched timer_initialize
@@ -87,9 +92,25 @@ void uapp_sched_timerhandler(void){
 
 
 void uapp_sched_initialize(u32 cpuid){
+#if 0
 	if(cpuid == 0){
 		hypvtable_setentry(cpuid, 7, (u32)&uapp_sched_fiq_handler);
 		uapp_sched_timer_initialize(cpuid);
 
 	}
+#endif
+
+	_XDPRINTFSMP_("%s[%u]: Current CPU counter=0x%016llx\n", __func__, cpuid,
+				uapp_sched_read_cpucounter());
+
+	_XDPRINTFSMP_("%s[%u]: Current CPU counter=0x%016llx\n", __func__, cpuid,
+				uapp_sched_read_cpucounter());
+
+	_XDPRINTFSMP_("%s[%u]: Current CPU counter=0x%016llx\n", __func__, cpuid,
+				uapp_sched_read_cpucounter());
+
+
+	_XDPRINTFSMP_("%s[%u]: WiP. Halting!\n", __func__, cpuid);
+	HALT();
 }
+
