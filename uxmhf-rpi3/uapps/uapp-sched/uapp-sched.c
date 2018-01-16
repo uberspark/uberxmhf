@@ -185,11 +185,11 @@ void uapp_sched_timer_initialize(u32 cpuid){
 
 
 
-	//cpsr = sysreg_read_cpsr();
-	//_XDPRINTFSMP_("%s[%u]: CPSR[before]=0x%08x; CPSR.A=%u, CPSR.I=%u, CPSR.F=%u\n",
-	//		__func__, cpuid, cpsr, ((cpsr & (1UL << 8)) >> 8),
-	//		((cpsr & (1UL << 7)) >> 7),
-	//		((cpsr & (1UL << 6)) >> 6) );
+	cpsr = sysreg_read_cpsr();
+	_XDPRINTFSMP_("%s[%u]: CPSR[before]=0x%08x; CPSR.A=%u, CPSR.I=%u, CPSR.F=%u\n",
+			__func__, cpuid, cpsr, ((cpsr & (1UL << 8)) >> 8),
+			((cpsr & (1UL << 7)) >> 7),
+			((cpsr & (1UL << 6)) >> 6) );
 
 
 	_XDPRINTFSMP_("%s[%u]: CNTHP_TVAL[initial]=%d\n", __func__, cpuid, sysreg_read_cnthp_tval());
@@ -201,18 +201,26 @@ void uapp_sched_timer_initialize(u32 cpuid){
 	_XDPRINTFSMP_("%s[%u]: CNTHP_CTL[current]=%d\n", __func__, cpuid, sysreg_read_cnthp_ctl());
 
 
-	//cpsr &= ~(1UL << 6);	//clear CPSR.F to allow FIQs
-	//sysreg_write_cpsr(cpsr);
+	cpsr &= ~(1UL << 6);	//clear CPSR.F to allow FIQs
+	sysreg_write_cpsr(cpsr);
 
 	_XDPRINTFSMP_("%s[%u]: EXIT\n", __func__, cpuid);
 }
 
 
 void uapp_sched_fiqhandler(void){
+
+#if 0
 	uapp_sched_timerhandler();
 
 	//reset timer counter
 	sysreg_write_cnthp_tval(10*1024*1024);
+#endif
+
+	_XDPRINTFSMP_("%s: Timer Fired!\n", __func__);
+
+	sysreg_write_cnthp_tval(10*1024*1024);
+
 }
 
 
@@ -230,25 +238,22 @@ void uapp_sched_timerhandler(void){
 
 
 void uapp_sched_initialize(u32 cpuid){
-#if 0
+
 	if(cpuid == 0){
+		_XDPRINTFSMP_("%s[%u]: Current CPU counter=0x%016llx\n", __func__, cpuid,
+				uapp_sched_read_cpucounter());
+
+		_XDPRINTFSMP_("%s[%u]: Current CPU counter=0x%016llx\n", __func__, cpuid,
+				uapp_sched_read_cpucounter());
+
+		_XDPRINTFSMP_("%s[%u]: Current CPU counter=0x%016llx\n", __func__, cpuid,
+				uapp_sched_read_cpucounter());
+
 		hypvtable_setentry(cpuid, 7, (u32)&uapp_sched_fiq_handler);
 		uapp_sched_timer_initialize(cpuid);
 
+		_XDPRINTFSMP_("%s[%u]: Going into endless loop...\n", __func__, cpuid);
+		HALT();
 	}
-#endif
-
-	_XDPRINTFSMP_("%s[%u]: Current CPU counter=0x%016llx\n", __func__, cpuid,
-				uapp_sched_read_cpucounter());
-
-	_XDPRINTFSMP_("%s[%u]: Current CPU counter=0x%016llx\n", __func__, cpuid,
-				uapp_sched_read_cpucounter());
-
-	_XDPRINTFSMP_("%s[%u]: Current CPU counter=0x%016llx\n", __func__, cpuid,
-				uapp_sched_read_cpucounter());
-
-
-	_XDPRINTFSMP_("%s[%u]: WiP. Halting!\n", __func__, cpuid);
-	HALT();
 }
 
