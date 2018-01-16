@@ -217,9 +217,14 @@ void uapp_sched_fiqhandler(void){
 
 
 void uapp_sched_timerhandler(void){
+	uapp_sched_timers_update(time_now - time_timer_set);
+
+	// start physical timer for next shortest time if one exists
+	if (timer_next) {
+		time_timer_set = time_now;
+	    //start_physical_timer(timer_next->time); //TBD
+	}
 }
-
-
 
 
 
