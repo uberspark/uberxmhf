@@ -69,6 +69,50 @@ void uapp_sched_timer_undeclare(struct sched_timer *t){
 
 
 //////
+// declare a timer
+// time = time to wait in clock ticks
+// returns NULL if something went wrong
+//////
+struct sched_timer *uapp_sched_timer_declare(u32 time, char *event){
+  struct sched_timer *t;
+
+  //disable_interrupts(); //TBD
+
+  for (t=sched_timers;t<&sched_timers[MAX_TIMERS];t++) {
+    if (!t->inuse) break;
+  }
+
+  // out of timers?
+  if (t == &sched_timers[MAX_TIMERS]) {
+    //enable_interrupts(); //TBD
+    return(0);
+  }
+
+  // install new timer
+  t->event = event;
+  t->time_to_wait = time;
+  if (!timer_next) {
+    // no timers set at all, so this is shortest
+    time_timer_set = time_now;
+    //start_physical_timer((timer_next = t)->time); //TBD
+  } else if ((time + time_now) < (timer_next->time_to_wait + time_timer_set)) {
+    // new timer is shorter than current one, so
+    uapp_sched_timers_update(time_now - time_timer_set);
+    time_timer_set = time_now;
+    //start_physical_timer((timer_next = t)->time); //TBD
+  } else {
+    // new timer is longer, than current one
+  }
+
+  t->inuse = TRUE;
+
+  //enable_interrupts(); //TBD
+
+  return(t);
+}
+
+
+//////
 // subtract time from all timers, enabling those that run out
 //////
 void uapp_sched_timers_update(TIME time){
