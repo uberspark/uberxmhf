@@ -13,6 +13,8 @@
 
 extern void uapp_sched_fiq_handler(void);
 
+u64 uapp_sched_read_cpucounter(void);
+
 //////
 // global typedefs and variables
 //////
@@ -30,7 +32,6 @@ struct sched_timer {
 };
 
 __attribute__((section(".data"))) struct sched_timer sched_timers[MAX_TIMERS];   // set of timers
-__attribute__((section(".data"))) volatile TIME time_now;
 __attribute__((section(".data"))) struct sched_timer *timer_next = NULL; // timer we expect to run down next
 __attribute__((section(".data"))) TIME time_timer_set;    // time when physical timer was set
 
@@ -57,10 +58,10 @@ void uapp_sched_timer_undeclare(struct sched_timer *t){
 
 	// check if we were waiting on this one
 	if (t == timer_next) {
-		uapp_sched_timers_update(time_now - time_timer_set);
+		uapp_sched_timers_update(uapp_sched_read_cpucounter() - time_timer_set);
 		if (timer_next) {
 			//start_physical_timer(timer_next->time); //TBD
-			time_timer_set = time_now;
+			time_timer_set = uapp_sched_read_cpucounter();
 		}
 	}
 
@@ -93,12 +94,12 @@ struct sched_timer *uapp_sched_timer_declare(u32 time, char *event){
   t->time_to_wait = time;
   if (!timer_next) {
     // no timers set at all, so this is shortest
-    time_timer_set = time_now;
+    time_timer_set = uapp_sched_read_cpucounter();
     //start_physical_timer((timer_next = t)->time); //TBD
-  } else if ((time + time_now) < (timer_next->time_to_wait + time_timer_set)) {
+  } else if ((time + uapp_sched_read_cpucounter()) < (timer_next->time_to_wait + time_timer_set)) {
     // new timer is shorter than current one, so
-    uapp_sched_timers_update(time_now - time_timer_set);
-    time_timer_set = time_now;
+    uapp_sched_timers_update(uapp_sched_read_cpucounter() - time_timer_set);
+    time_timer_set = uapp_sched_read_cpucounter();
     //start_physical_timer((timer_next = t)->time); //TBD
   } else {
     // new timer is longer, than current one
@@ -225,11 +226,11 @@ void uapp_sched_fiqhandler(void){
 
 
 void uapp_sched_timerhandler(void){
-	uapp_sched_timers_update(time_now - time_timer_set);
+	uapp_sched_timers_update(uapp_sched_read_cpucounter() - time_timer_set);
 
 	// start physical timer for next shortest time if one exists
 	if (timer_next) {
-		time_timer_set = time_now;
+		time_timer_set = uapp_sched_read_cpucounter();
 	    //start_physical_timer(timer_next->time); //TBD
 	}
 }
