@@ -32,6 +32,8 @@ struct sched_timer {
 __attribute__((section(".data"))) struct sched_timer sched_timers[MAX_TIMERS];   // set of timers
 __attribute__((section(".data"))) volatile TIME time_now;
 __attribute__((section(".data"))) struct sched_timer *timer_next = NULL; // timer we expect to run down next
+__attribute__((section(".data"))) TIME time_timer_set;    // time when physical timer was set
+
 
 void uapp_sched_timers_init(void){
   u32 i;
@@ -39,6 +41,32 @@ void uapp_sched_timers_init(void){
   for(i=0; i < MAX_TIMERS; i++)
 	  sched_timers[i].inuse = FALSE;
 }
+
+//////
+// undeclare (and disable) a timer
+//////
+void uapp_sched_timer_undeclare(struct sched_timer *t){
+	//disable_interrupts(); //TBD
+
+	if (!t->inuse) {
+		//enable_interrupts(); //TBD
+		return;
+	}
+
+	t->inuse = FALSE;
+
+	// check if we were waiting on this one
+	if (t == timer_next) {
+		uapp_sched_timers_update(time_now - time_timer_set);
+		if (timer_next) {
+			//start_physical_timer(timer_next->time); //TBD
+			time_timer_set = time_now;
+		}
+	}
+
+	//enable_interrupts(); //TBD
+}
+
 
 //////
 // subtract time from all timers, enabling those that run out
