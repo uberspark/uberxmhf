@@ -43,6 +43,29 @@ void uapp_sched_timers_init(void){
 	  sched_timers[i].inuse = FALSE;
 }
 
+
+//////
+// enable FIQs
+//////
+void enable_fiq(void){
+	u32 cpsr;
+	cpsr = sysreg_read_cpsr();
+	cpsr &= ~(1UL << 6);	//clear CPSR.F to allow FIQs
+	sysreg_write_cpsr(cpsr);
+}
+
+//////
+// disable FIQs
+//////
+void disable_fiq(void){
+	u32 cpsr;
+	cpsr = sysreg_read_cpsr();
+	cpsr |= (1UL << 6);	//set CPSR.F to prevent FIQs
+	sysreg_write_cpsr(cpsr);
+}
+
+
+
 //////
 // undeclare (and disable) a timer
 //////
