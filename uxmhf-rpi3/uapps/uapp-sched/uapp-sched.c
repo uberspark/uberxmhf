@@ -36,6 +36,9 @@ __attribute__((section(".data"))) struct sched_timer *timer_next = NULL; // time
 __attribute__((section(".data"))) TIME time_timer_set;    // time when physical timer was set
 
 
+//////
+// initialize timer data structures
+//////
 void uapp_sched_timers_init(void){
   u32 i;
 
@@ -70,10 +73,10 @@ void disable_fiq(void){
 // undeclare (and disable) a timer
 //////
 void uapp_sched_timer_undeclare(struct sched_timer *t){
-	//disable_interrupts(); //TBD
+	disable_fiq();
 
 	if (!t->inuse) {
-		//enable_interrupts(); //TBD
+		enable_fiq();
 		return;
 	}
 
@@ -88,7 +91,7 @@ void uapp_sched_timer_undeclare(struct sched_timer *t){
 		}
 	}
 
-	//enable_interrupts(); //TBD
+	enable_fiq();
 }
 
 
@@ -100,7 +103,7 @@ void uapp_sched_timer_undeclare(struct sched_timer *t){
 struct sched_timer *uapp_sched_timer_declare(u32 time, char *event){
   struct sched_timer *t;
 
-  //disable_interrupts(); //TBD
+  disable_fiq();
 
   for (t=sched_timers;t<&sched_timers[MAX_TIMERS];t++) {
     if (!t->inuse) break;
@@ -108,7 +111,7 @@ struct sched_timer *uapp_sched_timer_declare(u32 time, char *event){
 
   // out of timers?
   if (t == &sched_timers[MAX_TIMERS]) {
-    //enable_interrupts(); //TBD
+    enable_fiq();
     return(0);
   }
 
@@ -130,7 +133,7 @@ struct sched_timer *uapp_sched_timer_declare(u32 time, char *event){
 
   t->inuse = TRUE;
 
-  //enable_interrupts(); //TBD
+  enable_fiq(); //TBD
 
   return(t);
 }
