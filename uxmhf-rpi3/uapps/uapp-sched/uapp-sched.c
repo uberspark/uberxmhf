@@ -35,6 +35,10 @@ __attribute__((section(".data"))) struct sched_timer sched_timers[MAX_TIMERS];  
 __attribute__((section(".data"))) struct sched_timer *timer_next = NULL; // timer we expect to run down next
 __attribute__((section(".data"))) TIME time_timer_set;    // time when physical timer was set
 
+__attribute__((section(".data"))) struct sched_timer timer_last = {
+  FALSE,  VERY_LONG_TIME, NULL
+};
+
 
 //////
 // initialize timer data structures
@@ -143,9 +147,6 @@ struct sched_timer *uapp_sched_timer_declare(u32 time, char *event){
 // subtract time from all timers, enabling those that run out
 //////
 void uapp_sched_timers_update(TIME time){
-  static struct sched_timer timer_last = {
-    FALSE,  VERY_LONG_TIME, NULL
-  };
   struct sched_timer *t;
 
   timer_next = &timer_last;
