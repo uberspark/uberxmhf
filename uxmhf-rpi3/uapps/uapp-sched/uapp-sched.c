@@ -133,7 +133,7 @@ struct sched_timer *uapp_sched_timer_declare(u32 time, char *event){
 
   t->inuse = TRUE;
 
-  enable_fiq(); //TBD
+  enable_fiq();
 
   return(t);
 }
@@ -175,6 +175,15 @@ void uapp_sched_timers_update(TIME time){
 u64 uapp_sched_read_cpucounter(void){
 	return sysreg_read_cntpct();
 }
+
+
+//////
+// start physical timer to fire off after specified clock ticks
+//////
+void uapp_sched_start_physical_timer(TIME time){
+	sysreg_write_cnthp_tval(time);
+}
+
 
 //////
 // uapp sched timer_initialize
@@ -224,7 +233,8 @@ void uapp_sched_timer_initialize(u32 cpuid){
 
 
 	_XDPRINTFSMP_("%s[%u]: CNTHP_TVAL[initial]=%d\n", __func__, cpuid, sysreg_read_cnthp_tval());
-	sysreg_write_cnthp_tval(10*1024*1024);
+	//sysreg_write_cnthp_tval(10*1024*1024);
+	uapp_sched_start_physical_timer(10 * 1024 * 1024);
 	_XDPRINTFSMP_("%s[%u]: CNTHP_TVAL[reset]=%d\n", __func__, cpuid, sysreg_read_cnthp_tval());
 
 	sysreg_write_cnthp_ctl(0x1);
@@ -255,7 +265,9 @@ void uapp_sched_fiqhandler(void){
 
 	_XDPRINTFSMP_("%s: Timer Fired!\n", __func__);
 
-	sysreg_write_cnthp_tval(10*1024*1024);
+	//sysreg_write_cnthp_tval(10*1024*1024);
+	uapp_sched_start_physical_timer(10 * 1024 * 1024);
+
 
 }
 
