@@ -185,6 +185,15 @@ void uapp_sched_timer_initialize(u32 cpuid){
 
 	_XDPRINTFSMP_("%s[%u]: ENTER\n", __func__, cpuid);
 
+	//disable FIQs
+	disable_fiq();
+	cpsr = sysreg_read_cpsr();
+	_XDPRINTFSMP_("%s[%u]: CPSR[after disable_fiq]=0x%08x; CPSR.A=%u, CPSR.I=%u, CPSR.F=%u\n",
+			__func__, cpuid, cpsr, ((cpsr & (1UL << 8)) >> 8),
+			((cpsr & (1UL << 7)) >> 7),
+			((cpsr & (1UL << 6)) >> 6) );
+
+
 	//enable cpu0 timer interrupt control to generate FIQs
 	cpu0_tintctl_value = mmio_read32(LOCAL_TIMER_INT_CONTROL0);
 	_XDPRINTFSMP_("%s[%u]: cpu0_tintctl_value[before]=0x%08x, CNTHPFIQ=%u, CNTHPIRQ=%u\n",
@@ -209,11 +218,6 @@ void uapp_sched_timer_initialize(u32 cpuid){
 
 
 
-	cpsr = sysreg_read_cpsr();
-	_XDPRINTFSMP_("%s[%u]: CPSR[before]=0x%08x; CPSR.A=%u, CPSR.I=%u, CPSR.F=%u\n",
-			__func__, cpuid, cpsr, ((cpsr & (1UL << 8)) >> 8),
-			((cpsr & (1UL << 7)) >> 7),
-			((cpsr & (1UL << 6)) >> 6) );
 
 
 	_XDPRINTFSMP_("%s[%u]: CNTHP_TVAL[initial]=%d\n", __func__, cpuid, sysreg_read_cnthp_tval());
@@ -225,8 +229,13 @@ void uapp_sched_timer_initialize(u32 cpuid){
 	_XDPRINTFSMP_("%s[%u]: CNTHP_CTL[current]=%d\n", __func__, cpuid, sysreg_read_cnthp_ctl());
 
 
-	cpsr &= ~(1UL << 6);	//clear CPSR.F to allow FIQs
-	sysreg_write_cpsr(cpsr);
+	//enable FIQs
+	enable_fiq();
+	cpsr = sysreg_read_cpsr();
+	_XDPRINTFSMP_("%s[%u]: CPSR[after enable_fiq]=0x%08x; CPSR.A=%u, CPSR.I=%u, CPSR.F=%u\n",
+			__func__, cpuid, cpsr, ((cpsr & (1UL << 8)) >> 8),
+			((cpsr & (1UL << 7)) >> 7),
+			((cpsr & (1UL << 6)) >> 6) );
 
 	_XDPRINTFSMP_("%s[%u]: EXIT\n", __func__, cpuid);
 }
