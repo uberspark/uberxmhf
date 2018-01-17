@@ -256,19 +256,14 @@ void uapp_sched_timer_initialize(u32 cpuid){
 
 
 void uapp_sched_fiqhandler(void){
-
-#if 0
 	uapp_sched_timerhandler();
 
-	//reset timer counter
-	sysreg_write_cnthp_tval(10*1024*1024);
-#endif
-
+#if 0
 	_XDPRINTFSMP_("%s: Timer Fired!\n", __func__);
 
 	//sysreg_write_cnthp_tval(10*1024*1024);
 	uapp_sched_start_physical_timer(10 * 1024 * 1024);
-
+#endif
 
 }
 
