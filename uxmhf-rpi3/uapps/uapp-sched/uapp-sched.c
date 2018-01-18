@@ -183,6 +183,7 @@ u64 uapp_sched_read_cpucounter(void){
 //////
 void uapp_sched_start_physical_timer(TIME time){
 	sysreg_write_cnthp_tval(time);
+	sysreg_write_cnthp_ctl(0x1);
 }
 
 
@@ -231,8 +232,7 @@ void uapp_sched_timer_initialize(u32 cpuid){
 
 
 
-
-
+#if 0
 	_XDPRINTFSMP_("%s[%u]: CNTHP_TVAL[initial]=%d\n", __func__, cpuid, sysreg_read_cnthp_tval());
 	//sysreg_write_cnthp_tval(10*1024*1024);
 	uapp_sched_start_physical_timer(10 * 1024 * 1024);
@@ -241,7 +241,7 @@ void uapp_sched_timer_initialize(u32 cpuid){
 	sysreg_write_cnthp_ctl(0x1);
 	_XDPRINTFSMP_("%s[%u]: CNTHP_TVAL[current]=%d\n", __func__, cpuid, sysreg_read_cnthp_tval());
 	_XDPRINTFSMP_("%s[%u]: CNTHP_CTL[current]=%d\n", __func__, cpuid, sysreg_read_cnthp_ctl());
-
+#endif
 
 	//enable FIQs
 	enable_fiq();
