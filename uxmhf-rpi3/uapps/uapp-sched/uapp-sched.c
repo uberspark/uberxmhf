@@ -256,12 +256,13 @@ void uapp_sched_timer_initialize(u32 cpuid){
 
 
 void uapp_sched_fiqhandler(void){
-	uapp_sched_timerhandler();
-
 #if 0
+	uapp_sched_timerhandler();
+#endif
+
+#if 1
 	_XDPRINTFSMP_("%s: Timer Fired!\n", __func__);
 
-	//sysreg_write_cnthp_tval(10*1024*1024);
 	uapp_sched_start_physical_timer(10 * 1024 * 1024);
 #endif
 
@@ -295,6 +296,8 @@ void uapp_sched_initialize(u32 cpuid){
 
 		hypvtable_setentry(cpuid, 7, (u32)&uapp_sched_fiq_handler);
 		uapp_sched_timer_initialize(cpuid);
+		_XDPRINTFSMP_("%s[%u]: Starting first timer...\n", __func__, cpuid);
+		uapp_sched_start_physical_timer(10 * 1024 * 1024);
 
 		_XDPRINTFSMP_("%s[%u]: Going into endless loop...\n", __func__, cpuid);
 		HALT();
