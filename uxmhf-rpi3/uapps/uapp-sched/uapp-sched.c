@@ -41,6 +41,7 @@ __attribute__((section(".data"))) struct sched_timer timer_last = {
 
 
 __attribute__((section(".data"))) volatile u8 thread1_event = FALSE;
+__attribute__((section(".data"))) volatile u8 thread2_event = FALSE;
 
 
 
@@ -328,6 +329,7 @@ void uapp_sched_initialize(u32 cpuid){
 		#endif
 
 		uapp_sched_timer_declare(5 * 1024 * 1024, &thread1_event);
+		uapp_sched_timer_declare(10 * 1024 * 1024, &thread2_event);
 
 		_XDPRINTFSMP_("%s[%u]: Going into endless loop...\n", __func__, cpuid);
 		while(1){
@@ -336,6 +338,14 @@ void uapp_sched_initialize(u32 cpuid){
 				thread1_event = FALSE;
 				uapp_sched_timer_declare(5 * 1024 * 1024, &thread1_event);
 			}
+
+			if(thread2_event){
+				_XDPRINTFSMP_("%s[%u]: thread2 timer expired!\n", __func__, cpuid);
+				thread2_event = FALSE;
+				uapp_sched_timer_declare(10 * 1024 * 1024, &thread2_event);
+			}
+
+
 		}
 		HALT();
 	}
