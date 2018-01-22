@@ -256,11 +256,11 @@ void uapp_sched_timer_initialize(u32 cpuid){
 
 
 void uapp_sched_fiqhandler(void){
-#if 0
+#if 1
 	uapp_sched_timerhandler();
 #endif
 
-#if 1
+#if 0
 	_XDPRINTFSMP_("%s: Timer Fired!\n", __func__);
 
 	uapp_sched_start_physical_timer(10 * 1024 * 1024);
@@ -283,6 +283,8 @@ void uapp_sched_timerhandler(void){
 
 
 void uapp_sched_initialize(u32 cpuid){
+	volatile u8 thread1_event = FALSE;
+
 
 	if(cpuid == 0){
 		_XDPRINTFSMP_("%s[%u]: Current CPU counter=0x%016llx\n", __func__, cpuid,
@@ -296,10 +298,20 @@ void uapp_sched_initialize(u32 cpuid){
 
 		hypvtable_setentry(cpuid, 7, (u32)&uapp_sched_fiq_handler);
 		uapp_sched_timer_initialize(cpuid);
+
+		#if 0
 		_XDPRINTFSMP_("%s[%u]: Starting first timer...\n", __func__, cpuid);
 		uapp_sched_start_physical_timer(10 * 1024 * 1024);
+		#endif
+
+		uapp_sched_timer_declare(10 * 1024 * 1024, &thread1_event);
 
 		_XDPRINTFSMP_("%s[%u]: Going into endless loop...\n", __func__, cpuid);
+		while(1){
+			if(thread1_event){
+				_XDPRINTFSMP_("%s[%u]: thread1 timer expired!\n", __func__, cpuid);
+			}
+		}
 		HALT();
 	}
 }
