@@ -40,6 +40,10 @@ __attribute__((section(".data"))) struct sched_timer timer_last = {
 };
 
 
+__attribute__((section(".data"))) volatile u8 thread1_event = FALSE;
+
+
+
 //////
 // initialize timer data structures
 //////
@@ -126,13 +130,16 @@ struct sched_timer *uapp_sched_timer_declare(u32 time, char *event){
     // no timers set at all, so this is shortest
     time_timer_set = uapp_sched_read_cpucounter();
     uapp_sched_start_physical_timer((timer_next = t)->time_to_wait);
+	//_XDPRINTFSMP_("%s,%u: ENTER\n", __func__, __LINE__);
   } else if ((time + uapp_sched_read_cpucounter()) < (timer_next->time_to_wait + time_timer_set)) {
     // new timer is shorter than current one, so
     uapp_sched_timers_update(uapp_sched_read_cpucounter() - time_timer_set);
     time_timer_set = uapp_sched_read_cpucounter();
     uapp_sched_start_physical_timer((timer_next = t)->time_to_wait);
+	//_XDPRINTFSMP_("%s,%u: ENTER\n", __func__, __LINE__);
   } else {
     // new timer is longer, than current one
+	//_XDPRINTFSMP_("%s,%u: ENTER\n", __func__, __LINE__);
   }
 
   t->inuse = TRUE;
@@ -300,7 +307,6 @@ void uapp_sched_timerhandler(void){
 
 
 void uapp_sched_initialize(u32 cpuid){
-	volatile u8 thread1_event = FALSE;
 
 
 	if(cpuid == 0){
@@ -321,14 +327,14 @@ void uapp_sched_initialize(u32 cpuid){
 		uapp_sched_start_physical_timer(10 * 1024 * 1024);
 		#endif
 
-		uapp_sched_timer_declare((uapp_sched_read_cpucounter() + (10 * 1024 * 1024)), &thread1_event);
+		uapp_sched_timer_declare(5 * 1024 * 1024, &thread1_event);
 
 		_XDPRINTFSMP_("%s[%u]: Going into endless loop...\n", __func__, cpuid);
 		while(1){
 			if(thread1_event){
 				_XDPRINTFSMP_("%s[%u]: thread1 timer expired!\n", __func__, cpuid);
 				thread1_event = FALSE;
-				uapp_sched_timer_declare((uapp_sched_read_cpucounter() + (10 * 1024 * 1024)), &thread1_event);
+				uapp_sched_timer_declare(5 * 1024 * 1024, &thread1_event);
 			}
 		}
 		HALT();

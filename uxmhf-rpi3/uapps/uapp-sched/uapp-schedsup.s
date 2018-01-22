@@ -57,7 +57,7 @@ uapp_sched_fiq_handler:
 
 	.balign 8
 	.global uapp_sched_fiqhandler_stack
-	uapp_sched_fiqhandler_stack:	.space	8192
+	uapp_sched_fiqhandler_stack:	.space	16384
 	.global uapp_sched_fiqhandler_stack_top
 	uapp_sched_fiqhandler_stack_top:
 
