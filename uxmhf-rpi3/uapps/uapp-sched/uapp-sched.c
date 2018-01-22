@@ -154,13 +154,13 @@ void uapp_sched_timers_update(TIME time){
   for (t=sched_timers;t<&sched_timers[MAX_TIMERS];t++) {
     if (t->inuse) {
       if (time < t->time_to_wait) { // unexpired
-  		_XDPRINTFSMP_("%s,%u: ENTER\n", __func__, __LINE__);
+  		//_XDPRINTFSMP_("%s,%u: ENTER\n", __func__, __LINE__);
     	t->time_to_wait -= time;
         if (t->time_to_wait < timer_next->time_to_wait)
           timer_next = t;
       } else { // expired
         /* tell scheduler */
-		_XDPRINTFSMP_("%s,%u: ENTER\n", __func__, __LINE__);
+		//_XDPRINTFSMP_("%s,%u: ENTER\n", __func__, __LINE__);
     	*t->event = TRUE;
         t->inuse = FALSE; 	// remove timer
       }
@@ -284,13 +284,13 @@ void uapp_sched_fiqhandler(void){
 
 void uapp_sched_timerhandler(void){
 	uapp_sched_stop_physical_timer();
-	_XDPRINTFSMP_("%s,%u: ENTER\n", __func__, __LINE__);
+	//_XDPRINTFSMP_("%s,%u: ENTER\n", __func__, __LINE__);
 
 	uapp_sched_timers_update(uapp_sched_read_cpucounter() - time_timer_set);
 
 	// start physical timer for next shortest time if one exists
 	if (timer_next) {
-		_XDPRINTFSMP_("%s, %u: ENTER\n", __func__, __LINE__);
+		//_XDPRINTFSMP_("%s, %u: ENTER\n", __func__, __LINE__);
 		time_timer_set = uapp_sched_read_cpucounter();
 		uapp_sched_start_physical_timer(timer_next->time_to_wait);
 	}
@@ -328,6 +328,7 @@ void uapp_sched_initialize(u32 cpuid){
 			if(thread1_event){
 				_XDPRINTFSMP_("%s[%u]: thread1 timer expired!\n", __func__, cpuid);
 				thread1_event = FALSE;
+				uapp_sched_timer_declare((uapp_sched_read_cpucounter() + (10 * 1024 * 1024)), &thread1_event);
 			}
 		}
 		HALT();
