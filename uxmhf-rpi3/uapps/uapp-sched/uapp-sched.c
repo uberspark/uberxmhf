@@ -192,7 +192,7 @@ u64 uapp_sched_read_cpucounter(void){
 // start physical timer to fire off after specified clock ticks
 //////
 void uapp_sched_start_physical_timer(TIME time){
-	_XDPRINTFSMP_("%s: time=%u\n", __func__, (u32)time);
+	//_XDPRINTFSMP_("%s: time=%u\n", __func__, (u32)time);
 
 	sysreg_write_cnthp_tval(time);
 	sysreg_write_cnthp_ctl(0x1);
@@ -328,19 +328,23 @@ void uapp_sched_initialize(u32 cpuid){
 		uapp_sched_start_physical_timer(10 * 1024 * 1024);
 		#endif
 
-		uapp_sched_timer_declare(5 * 1024 * 1024, &thread1_event);
+		_XDPRINTFSMP_("%s[%u]: Starting first timer...\n", __func__, cpuid);
+
+		uapp_sched_timer_declare(3 * 1024 * 1024, &thread1_event);
 		uapp_sched_timer_declare(10 * 1024 * 1024, &thread2_event);
 
 		_XDPRINTFSMP_("%s[%u]: Going into endless loop...\n", __func__, cpuid);
 		while(1){
 			if(thread1_event){
-				_XDPRINTFSMP_("%s[%u]: thread1 timer expired!\n", __func__, cpuid);
+				//_XDPRINTFSMP_("%s[%u]: thread1 timer expired!\n", __func__, cpuid);
+				_XDPRINTFSMP_("%s: thread1 timer expired!\n", __func__);
 				thread1_event = FALSE;
-				uapp_sched_timer_declare(5 * 1024 * 1024, &thread1_event);
+				uapp_sched_timer_declare(3 * 1024 * 1024, &thread1_event);
 			}
 
 			if(thread2_event){
-				_XDPRINTFSMP_("%s[%u]: thread2 timer expired!\n", __func__, cpuid);
+				//_XDPRINTFSMP_("%s[%u]: thread2 timer expired!\n", __func__, cpuid);
+				_XDPRINTFSMP_("%s: thread2 timer expired!\n", __func__);
 				thread2_event = FALSE;
 				uapp_sched_timer_declare(10 * 1024 * 1024, &thread2_event);
 			}
