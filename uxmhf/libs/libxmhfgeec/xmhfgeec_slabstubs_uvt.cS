@@ -70,7 +70,7 @@ CASM_FUNCDEF_FULL(.slab_entrystub, 1, void, _slab_entrystub,
     xmhfhwm_cpu_insn_sysenter();
     xmhfhwm_cpu_insn_hlt();
 },
-void *noparam)
+slab_params_t *sp)
 
 //XXX: TODO: need to revise with sysenter
 CASM_FUNCDEF(void, __slab_callsentinel,
