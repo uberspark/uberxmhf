@@ -265,6 +265,9 @@ Refer to the debugging section in the original XMHF documentation (available [he
 
 ## Releases and Changelog
 
+* Version 3.1 (Flak)
+	* fixed uxmhf build errors
+
 * Version 3.0 (Ratchet)
 	* added support for Frama-C Phosphorus-20170501
 	* added support for Compcert 3.0.1
