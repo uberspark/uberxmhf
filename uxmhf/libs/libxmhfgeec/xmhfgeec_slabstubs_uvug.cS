@@ -61,7 +61,7 @@ CASM_FUNCDEF_FULL(.slab_entrystub, 1, void, _slab_entrystub,
 	xmhfhwm_cpu_insn_addl_imm_esp(0x4); //remove slab_params_t *
     xmhfhwm_cpu_insn_hlt();
 },
-void *noparam)
+slab_params_t *sp)
 
 CASM_FUNCDEF(void, __slab_callsentinel,
 {
