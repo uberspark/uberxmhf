@@ -44,6 +44,18 @@ __attribute__((section(".data"))) volatile u8 thread1_event = FALSE;
 __attribute__((section(".data"))) volatile u8 thread2_event = FALSE;
 
 
+//////
+// priority queue implementation
+//////
+
+#define PRIORITY_QUEUE_SIZE 5
+
+__attribute__((section(".data"))) int priority_queue[PRIORITY_QUEUE_SIZE][2] = {0};
+__attribute__((section(".data"))) int top = -1;
+__attribute__((section(".data"))) int bottom;
+
+
+
 
 //////
 // initialize timer data structures
