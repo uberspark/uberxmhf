@@ -50,10 +50,63 @@ __attribute__((section(".data"))) volatile u8 thread2_event = FALSE;
 
 #define PRIORITY_QUEUE_SIZE 5
 
-__attribute__((section(".data"))) int priority_queue[PRIORITY_QUEUE_SIZE][2] = {0};
+//first element [][0]=value, second element [][1] = priority
+__attribute__((section(".data"))) int priority_queue[PRIORITY_QUEUE_SIZE][2];
+
+#if 0
 __attribute__((section(".data"))) int top = -1;
 __attribute__((section(".data"))) int bottom;
+#endif
 
+__attribute__((section(".data"))) int front = -1;
+__attribute__((section(".data"))) int rear = -1;
+
+// Function to check priority and place element
+void check(int value, int priority){
+    int i,j;
+
+    for (i = 0; i <= rear; i++){
+        if (priority >= priority_queue[i][1]){
+            for (j = rear + 1; j > i; j--){
+                priority_queue[j][0] = priority_queue[j - 1][0];
+            	priority_queue[j][1] = priority_queue[j - 1][1];
+            }
+            priority_queue[i][0] = value;
+            priority_queue[i][1] = priority;
+            return;
+        }
+    }
+
+    priority_queue[i][0] = value;
+    priority_queue[i][1] = priority;
+}
+
+//return 0 on error, 1 on success
+int priority_queue_insert(int value, int priority){
+    if (rear >= PRIORITY_QUEUE_SIZE - 1){
+		_XDPRINTFSMP_("%s,%u: Queue overflow, no more elements can be inserted!\n", __func__, __LINE__);
+		return 0;
+    }
+
+    //no elements so far, so just insert at the beginning
+    if ((front == -1) && (rear == -1)){
+        front++;
+        rear++;
+        priority_queue[rear][0] = value;
+        priority_queue[rear][1] = priority;
+    }else{ //we have some elements already so check and insert by priority
+        check(value, priority);
+        //point to the rear of the queue
+        rear++;
+    }
+
+    return 1;
+}
+
+
+
+
+#if 0
 //returns 1 on success, 0 on failure
 int priority_queue_push(int value, int priority){
 	int i,j,k;
@@ -90,6 +143,10 @@ int priority_queue_push(int value, int priority){
 	}
 
 }
+#endif
+
+
+
 
 
 
