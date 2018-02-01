@@ -125,6 +125,33 @@ void priority_queue_display(void){
 	_XDPRINTFSMP_("%s,%u: Done.\n", __func__, __LINE__);
 }
 
+
+//return 0 on error, 1 on success
+int priority_queue_remove(int *value, int *priority){
+	int i;
+
+	//return error if we have no elements
+	if(priority_queue_totalelems == 0 ){
+		_XDPRINTFSMP_("%s,%u: No elements in queue!\n", __func__, __LINE__);
+		return 0;
+    }
+
+	//return the top element
+	*value = priority_queue[0][0];
+	*priority = priority_queue[0][1];
+
+	//move up everything else
+	for(i=0; i < (priority_queue_totalelems-1); i++){
+		priority_queue[i][0] = priority_queue[i+1][0];
+		priority_queue[i][1] = priority_queue[i+1][1];
+	}
+
+	priority_queue_totalelems--;
+	return 1;
+}
+
+
+
 #if 0
 // Function to check priority and place element
 void check(int value, int priority){
@@ -490,9 +517,10 @@ void uapp_sched_initialize(u32 cpuid){
 		_XDPRINTFSMP_("%s[%u]: Current CPU counter=0x%016llx\n", __func__, cpuid,
 				uapp_sched_read_cpucounter());
 
-		priority_queue_insert(0, 1);
-		priority_queue_insert(0, 2);
-		priority_queue_insert(0, 3);
+		priority_queue_insert(10, 1);
+		priority_queue_insert(11, 2);
+		priority_queue_insert(12, 1);
+		priority_queue_insert(13, 3);
 		priority_queue_display();
 
 		HALT();
