@@ -54,6 +54,42 @@ __attribute__((section(".data"))) int priority_queue[PRIORITY_QUEUE_SIZE][2] = {
 __attribute__((section(".data"))) int top = -1;
 __attribute__((section(".data"))) int bottom;
 
+//returns 1 on success, 0 on failure
+int priority_queue_push(int value, int priority){
+	int i,j,k;
+
+	if(top < PRIORITY_QUEUE_SIZE-1){
+		if(priority_queue[top][1] > priority){
+			for(i=0;i<top;i++){
+				if(priority_queue[i][1] > priority){
+					break;
+				}
+			}
+
+			for(j=top;j>=i;j--){
+				priority_queue[j+1][0] = priority_queue[j][0];
+				priority_queue[j+1][1] = priority_queue[j][1];
+			}
+
+			top++;
+
+			priority_queue[i][0] = value;
+			priority_queue[i][1] = priority;
+
+		}else{
+			top++;
+			priority_queue[top][0] = value;
+			priority_queue[top][1] = priority;
+		}
+
+		return 1;	//success
+
+	}else{
+		_XDPRINTFSMP_("%s,%u: Queue overflow!\n", __func__, __LINE__);
+		return 0;	//failure
+	}
+
+}
 
 
 
