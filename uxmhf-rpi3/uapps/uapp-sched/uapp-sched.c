@@ -50,8 +50,17 @@ __attribute__((section(".data"))) volatile u8 thread2_event = FALSE;
 
 #define PRIORITY_QUEUE_SIZE 5
 
+typedef struct {
+	void *data; //data or pointer to data
+	int priority; 	//priority (higher value = higher priority)
+} priority_queue_t;
+
+
 //first element [][0]=value, second element [][1] = priority
-__attribute__((section(".data"))) int priority_queue[PRIORITY_QUEUE_SIZE][2];
+//__attribute__((section(".data"))) int priority_queue[PRIORITY_QUEUE_SIZE][2];
+
+__attribute__((section(".data"))) priority_queue_t priority_queue[PRIORITY_QUEUE_SIZE];
+
 
 #if 0
 __attribute__((section(".data"))) int top = -1;
@@ -68,30 +77,30 @@ __attribute__((section(".data"))) int priority_queue_totalelems = 0;
 //maintain priority queue in descending order
 
 // Function to check priority and place element
-void check_and_insert(int value, int priority){
+void check_and_insert(void *data, int priority){
 	int i, j;
 
 	for(i=0; i < priority_queue_totalelems; i++){
-		if(priority > priority_queue[i][1]){
+		if(priority > priority_queue[i].priority){
 			//we found the index at which to insert (i)
 			//move elements from i through priority_queue_totalelems-1 forward
 			for(j=(priority_queue_totalelems-1); j>=i; j--){
-				priority_queue[j+1][0] = priority_queue[j][0];
-				priority_queue[j+1][1] = priority_queue[j][1];
+				priority_queue[j+1].data = priority_queue[j].data;
+				priority_queue[j+1].priority = priority_queue[j].priority;
 			}
 			//now insert at i
-			priority_queue[i][0] = value;
-			priority_queue[i][1] = priority;
+			priority_queue[i].data = data;
+			priority_queue[i].priority = priority;
 			return;
 		}
 	}
 
-    priority_queue[i][0] = value;
-    priority_queue[i][1] = priority;
+    priority_queue[i].data = data;
+    priority_queue[i].priority = priority;
 }
 
 //return 0 on error, 1 on success
-int priority_queue_insert(int value, int priority){
+int priority_queue_insert(void *data, int priority){
 	//return error if we are maxed out
 	if(priority_queue_totalelems >= PRIORITY_QUEUE_SIZE ){
 		_XDPRINTFSMP_("%s,%u: Queue overflow, no more elements can be inserted!\n", __func__, __LINE__);
@@ -100,12 +109,12 @@ int priority_queue_insert(int value, int priority){
 
 	//if we have no elements then just plug value and priority as the first
 	if(priority_queue_totalelems == 0){
-		priority_queue[priority_queue_totalelems][0] = value;
-		priority_queue[priority_queue_totalelems][1] = priority;
+		priority_queue[priority_queue_totalelems].data = data;
+		priority_queue[priority_queue_totalelems].priority = priority;
 		priority_queue_totalelems++;
 	}else{
 		//we have some elements so check and insert
-		check_and_insert(value, priority);
+		check_and_insert(data, priority);
 		priority_queue_totalelems++;
 	}
 
@@ -118,8 +127,8 @@ void priority_queue_display(void){
 	_XDPRINTFSMP_("%s,%u: Dumping queue...\n", __func__, __LINE__);
 
 	for(i=0; i < priority_queue_totalelems; i++){
-		_XDPRINTFSMP_("  index=%u: priority=%d, value=%d\n", i, priority_queue[i][1],
-					priority_queue[i][0]);
+		_XDPRINTFSMP_("  index=%u: priority=%d, data=%u\n", i, priority_queue[i].priority,
+					priority_queue[i].data);
 	}
 
 	_XDPRINTFSMP_("%s,%u: Done.\n", __func__, __LINE__);
@@ -127,7 +136,7 @@ void priority_queue_display(void){
 
 
 //return 0 on error, 1 on success
-int priority_queue_remove(int *value, int *priority){
+int priority_queue_remove(void *data, int *priority){
 	int i;
 
 	//return error if we have no elements
@@ -137,13 +146,13 @@ int priority_queue_remove(int *value, int *priority){
     }
 
 	//return the top element
-	*value = priority_queue[0][0];
-	*priority = priority_queue[0][1];
+	*((u32 *)data) = priority_queue[0].data;
+	*priority = priority_queue[0].priority;
 
 	//move up everything else
 	for(i=0; i < (priority_queue_totalelems-1); i++){
-		priority_queue[i][0] = priority_queue[i+1][0];
-		priority_queue[i][1] = priority_queue[i+1][1];
+		priority_queue[i].data = priority_queue[i+1].data;
+		priority_queue[i].priority = priority_queue[i+1].priority;
 	}
 
 	priority_queue_totalelems--;
@@ -538,7 +547,10 @@ void uapp_sched_initialize(u32 cpuid){
 		priority_queue_display();
 
 		priority_queue_insert(13, 3);
+		priority_queue_display();
+
 		priority_queue_insert(40, 1);
+		priority_queue_display();
 
 		priority_queue_remove(&value, &priority);
 		_XDPRINTFSMP_("%s: priority=%u, value=%u\n", __func__, priority, value);
