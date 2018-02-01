@@ -439,7 +439,7 @@ void uapp_sched_timerhandler(void){
 
 void uapp_sched_initialize(u32 cpuid){
 
-
+#if 0
 	if(cpuid == 0){
 		_XDPRINTFSMP_("%s[%u]: Current CPU counter=0x%016llx\n", __func__, cpuid,
 				uapp_sched_read_cpucounter());
@@ -481,6 +481,20 @@ void uapp_sched_initialize(u32 cpuid){
 
 
 		}
+		HALT();
+	}
+
+#endif
+
+	if(cpuid == 0){
+		_XDPRINTFSMP_("%s[%u]: Current CPU counter=0x%016llx\n", __func__, cpuid,
+				uapp_sched_read_cpucounter());
+
+		priority_queue_insert(0, 1);
+		priority_queue_insert(0, 2);
+		priority_queue_insert(0, 3);
+		priority_queue_display();
+
 		HALT();
 	}
 }
