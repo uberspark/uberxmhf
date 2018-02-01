@@ -112,6 +112,19 @@ int priority_queue_insert(int value, int priority){
 	return 1;
 }
 
+void priority_queue_display(void){
+	int i;
+
+	_XDPRINTFSMP_("%s,%u: Dumping queue...\n", __func__, __LINE__);
+
+	for(i=0; i < priority_queue_totalelems; i++){
+		_XDPRINTFSMP_("  index=%u: priority=%d, value=%d\n", i, priority_queue[i][1],
+					priority_queue[i][0]);
+	}
+
+	_XDPRINTFSMP_("%s,%u: Done.\n", __func__, __LINE__);
+}
+
 #if 0
 // Function to check priority and place element
 void check(int value, int priority){
