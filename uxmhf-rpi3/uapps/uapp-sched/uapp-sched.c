@@ -58,9 +58,61 @@ __attribute__((section(".data"))) int top = -1;
 __attribute__((section(".data"))) int bottom;
 #endif
 
+#if 0
 __attribute__((section(".data"))) int front = -1;
 __attribute__((section(".data"))) int rear = -1;
+#endif
 
+__attribute__((section(".data"))) int priority_queue_totalelems = 0;
+
+//maintain priority queue in descending order
+
+// Function to check priority and place element
+void check_and_insert(int value, int priority){
+	int i, j;
+
+	for(i=0; i < priority_queue_totalelems; i++){
+		if(priority > priority_queue[i][1]){
+			//we found the index at which to insert (i)
+			//move elements from i through priority_queue_totalelems-1 forward
+			for(j=(priority_queue_totalelems-1); j>=i; j--){
+				priority_queue[j+1][0] = priority_queue[j][0];
+				priority_queue[j+1][1] = priority_queue[j][1];
+			}
+			//now insert at i
+			priority_queue[i][0] = value;
+			priority_queue[i][1] = priority;
+			return;
+		}
+	}
+
+    priority_queue[i][0] = value;
+    priority_queue[i][1] = priority;
+}
+
+//return 0 on error, 1 on success
+int priority_queue_insert(int value, int priority){
+	//return error if we are maxed out
+	if(priority_queue_totalelems >= PRIORITY_QUEUE_SIZE ){
+		_XDPRINTFSMP_("%s,%u: Queue overflow, no more elements can be inserted!\n", __func__, __LINE__);
+		return 0;
+    }
+
+	//if we have no elements then just plug value and priority as the first
+	if(priority_queue_totalelems == 0){
+		priority_queue[priority_queue_totalelems][0] = value;
+		priority_queue[priority_queue_totalelems][1] = priority;
+		priority_queue_totalelems++;
+	}else{
+		//we have some elements so check and insert
+		check_and_insert(value, priority);
+		priority_queue_totalelems++;
+	}
+
+	return 1;
+}
+
+#if 0
 // Function to check priority and place element
 void check(int value, int priority){
     int i,j;
@@ -102,7 +154,7 @@ int priority_queue_insert(int value, int priority){
 
     return 1;
 }
-
+#endif
 
 
 
