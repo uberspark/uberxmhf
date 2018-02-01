@@ -465,6 +465,8 @@ void uapp_sched_timerhandler(void){
 
 
 void uapp_sched_initialize(u32 cpuid){
+	int value;
+	int priority;
 
 #if 0
 	if(cpuid == 0){
@@ -521,6 +523,33 @@ void uapp_sched_initialize(u32 cpuid){
 		priority_queue_insert(11, 2);
 		priority_queue_insert(12, 1);
 		priority_queue_insert(13, 3);
+		priority_queue_display();
+
+		priority_queue_remove(&value, &priority);
+		_XDPRINTFSMP_("%s: priority=%u, value=%u\n", __func__, priority, value);
+		priority_queue_display();
+
+		priority_queue_remove(&value, &priority);
+		_XDPRINTFSMP_("%s: priority=%u, value=%u\n", __func__, priority, value);
+		priority_queue_display();
+
+		priority_queue_remove(&value, &priority);
+		_XDPRINTFSMP_("%s: priority=%u, value=%u\n", __func__, priority, value);
+		priority_queue_display();
+
+		priority_queue_insert(13, 3);
+		priority_queue_insert(40, 1);
+
+		priority_queue_remove(&value, &priority);
+		_XDPRINTFSMP_("%s: priority=%u, value=%u\n", __func__, priority, value);
+		priority_queue_display();
+
+		priority_queue_remove(&value, &priority);
+		_XDPRINTFSMP_("%s: priority=%u, value=%u\n", __func__, priority, value);
+		priority_queue_display();
+
+		priority_queue_remove(&value, &priority);
+		_XDPRINTFSMP_("%s: priority=%u, value=%u\n", __func__, priority, value);
 		priority_queue_display();
 
 		HALT();
