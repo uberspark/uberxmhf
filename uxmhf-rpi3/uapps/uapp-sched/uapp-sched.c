@@ -29,6 +29,7 @@ struct sched_timer {
 	u32 inuse;			// TRUE if in use
 	TIME time_to_wait;  // relative time to wait
 	u8 *event;    		// set to TRUE at timeout
+	int priority;		// priority associated with the timer
 };
 
 __attribute__((section(".data"))) struct sched_timer sched_timers[MAX_TIMERS];   // set of timers
@@ -275,7 +276,7 @@ void uapp_sched_timer_undeclare(struct sched_timer *t){
 // time = time to wait in clock ticks
 // returns NULL if something went wrong
 //////
-struct sched_timer *uapp_sched_timer_declare(u32 time, char *event){
+struct sched_timer *uapp_sched_timer_declare(u32 time, char *event, int priority){
   struct sched_timer *t;
 
   disable_fiq();
@@ -293,6 +294,8 @@ struct sched_timer *uapp_sched_timer_declare(u32 time, char *event){
   // install new timer
   t->event = event;
   t->time_to_wait = time;
+  t->priority = priority;
+
   if (!timer_next) {
     // no timers set at all, so this is shortest
     time_timer_set = uapp_sched_read_cpucounter();
@@ -477,7 +480,7 @@ void uapp_sched_initialize(u32 cpuid){
 	int value;
 	int priority;
 
-#if 0
+#if 1
 	if(cpuid == 0){
 		_XDPRINTFSMP_("%s[%u]: Current CPU counter=0x%016llx\n", __func__, cpuid,
 				uapp_sched_read_cpucounter());
@@ -491,39 +494,42 @@ void uapp_sched_initialize(u32 cpuid){
 		hypvtable_setentry(cpuid, 7, (u32)&uapp_sched_fiq_handler);
 		uapp_sched_timer_initialize(cpuid);
 
-		#if 0
-		_XDPRINTFSMP_("%s[%u]: Starting first timer...\n", __func__, cpuid);
-		uapp_sched_start_physical_timer(10 * 1024 * 1024);
-		#endif
+		_XDPRINTFSMP_("%s[%u]: Starting timers...\n", __func__, cpuid);
 
-		_XDPRINTFSMP_("%s[%u]: Starting first timer...\n", __func__, cpuid);
+		uapp_sched_timer_declare(3 * 1024 * 1024, &thread1_event, 1);
+		uapp_sched_timer_declare(6 * 1024 * 1024, &thread2_event, 3);
 
-		uapp_sched_timer_declare(3 * 1024 * 1024, &thread1_event);
-		uapp_sched_timer_declare(10 * 1024 * 1024, &thread2_event);
+		_XDPRINTFSMP_("%s[%u]: Starting scheduler...\n", __func__, cpuid);
 
-		_XDPRINTFSMP_("%s[%u]: Going into endless loop...\n", __func__, cpuid);
 		while(1){
 			if(thread1_event){
 				//_XDPRINTFSMP_("%s[%u]: thread1 timer expired!\n", __func__, cpuid);
 				_XDPRINTFSMP_("%s: thread1 timer expired!\n", __func__);
 				thread1_event = FALSE;
-				uapp_sched_timer_declare(3 * 1024 * 1024, &thread1_event);
+				//uapp_sched_timer_declare(3 * 1024 * 1024, &thread1_event);
 			}
 
 			if(thread2_event){
 				//_XDPRINTFSMP_("%s[%u]: thread2 timer expired!\n", __func__, cpuid);
 				_XDPRINTFSMP_("%s: thread2 timer expired!\n", __func__);
 				thread2_event = FALSE;
-				uapp_sched_timer_declare(10 * 1024 * 1024, &thread2_event);
+				//uapp_sched_timer_declare(10 * 1024 * 1024, &thread2_event);
 			}
 
 
 		}
+
+		HALT();
+
+	}else{
+		_XDPRINTFSMP_("%s[%u]: Halting AP CPU!\n", __func__, cpuid);
 		HALT();
 	}
 
 #endif
 
+
+#if 0
 	if(cpuid == 0){
 		_XDPRINTFSMP_("%s[%u]: Current CPU counter=0x%016llx\n", __func__, cpuid,
 				uapp_sched_read_cpucounter());
@@ -566,5 +572,7 @@ void uapp_sched_initialize(u32 cpuid){
 
 		HALT();
 	}
+#endif
+
 }
 
