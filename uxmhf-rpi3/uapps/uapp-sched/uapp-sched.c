@@ -36,6 +36,8 @@ __attribute__((section(".data"))) struct sched_timer sched_timers[MAX_TIMERS];  
 __attribute__((section(".data"))) struct sched_timer *timer_next = NULL; // timer we expect to run down next
 __attribute__((section(".data"))) TIME time_timer_set;    // time when physical timer was set
 
+extern __attribute__(( section(".data") )) u32 priority_queue_lock=1;
+
 __attribute__((section(".data"))) struct sched_timer timer_last = {
   FALSE,  VERY_LONG_TIME, NULL
 };
@@ -142,7 +144,7 @@ int priority_queue_remove(void *data, int *priority){
 
 	//return error if we have no elements
 	if(priority_queue_totalelems == 0 ){
-		_XDPRINTFSMP_("%s,%u: No elements in queue!\n", __func__, __LINE__);
+		//_XDPRINTFSMP_("%s,%u: No elements in queue!\n", __func__, __LINE__);
 		return 0;
     }
 
@@ -340,6 +342,12 @@ void uapp_sched_timers_update(TIME time){
 		//_XDPRINTFSMP_("%s,%u: ENTER\n", __func__, __LINE__);
     	*t->event = TRUE;
         t->inuse = FALSE; 	// remove timer
+		//spin_lock(&priority_queue_lock);
+		//priority_queue_insert((void *)t, t->priority);
+		//spin_unlock(&priority_queue_lock);
+		//_XDPRINTFSMP_("%s,%u: inserted 0x%08x with priority=%d\n", __func__, __LINE__,
+		//		t, t->priority);
+
       }
     }
   }
@@ -479,6 +487,11 @@ void uapp_sched_timerhandler(void){
 void uapp_sched_initialize(u32 cpuid){
 	int value;
 	int priority;
+	struct sched_timer *task_timer;
+	u32 queue_data;
+	int status;
+	u32 sp, spnew;
+
 
 #if 1
 	if(cpuid == 0){
@@ -501,21 +514,44 @@ void uapp_sched_initialize(u32 cpuid){
 
 		_XDPRINTFSMP_("%s[%u]: Starting scheduler...\n", __func__, cpuid);
 
+		sp =sysreg_read_sp();
+		_XDPRINTFSMP_("%s[%u]: Stack pointer=0x%08x\n", __func__, cpuid, sp);
+
+
 		while(1){
+#if 1
 			if(thread1_event){
-				//_XDPRINTFSMP_("%s[%u]: thread1 timer expired!\n", __func__, cpuid);
-				_XDPRINTFSMP_("%s: thread1 timer expired!\n", __func__);
+				sp =sysreg_read_sp();
+				_XDPRINTFSMP_("%s: thread1 timer expired: sp=0x%08x!\n", __func__, sp);
 				thread1_event = FALSE;
-				//uapp_sched_timer_declare(3 * 1024 * 1024, &thread1_event);
+				uapp_sched_timer_declare(3 * 1024 * 1024, &thread1_event, 1);
 			}
 
 			if(thread2_event){
-				//_XDPRINTFSMP_("%s[%u]: thread2 timer expired!\n", __func__, cpuid);
-				_XDPRINTFSMP_("%s: thread2 timer expired!\n", __func__);
+				sp =sysreg_read_sp();
+				_XDPRINTFSMP_("%s: thread2 timer expired: sp=0x%08x!\n", __func__, sp);
 				thread2_event = FALSE;
-				//uapp_sched_timer_declare(10 * 1024 * 1024, &thread2_event);
+				uapp_sched_timer_declare(6 * 1024 * 1024, &thread2_event, 3);
 			}
+#endif
 
+#if 0
+			spnew =sysreg_read_sp();
+
+			/*status=0;
+			spin_lock(&priority_queue_lock);
+			//status = priority_queue_remove(&queue_data, &priority);
+			spin_unlock(&priority_queue_lock);
+			*/
+
+			/*if(status){
+				_XDPRINTFSMP_("%s: got queue 0x%08x, priority=%u\n", __func__,
+						queue_data, priority);
+
+				//task_timer = (struct sched_timer *)queue_data;
+				//_XDPRINTFSMP_("%s: task timer priority=%d expired!\n", __func__, task_timer->priority);
+			}*/
+#endif
 
 		}
 

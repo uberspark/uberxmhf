@@ -54,6 +54,14 @@ mmio_read32:
     ldr r0,[r0]
     bx lr
 
+
+.globl sysreg_read_sp
+sysreg_read_sp:
+	push {sp}
+	pop {r0}
+	bx lr
+
+
 .globl sysreg_read_spsr_hyp
 sysreg_read_spsr_hyp:
 	mrs r0, SPSR_hyp

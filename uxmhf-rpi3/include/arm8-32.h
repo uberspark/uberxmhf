@@ -453,6 +453,8 @@ static inline u64 cpu_bswap_u64(u64 val){
 extern u32 mmio_read32 (u32 address);
 extern void mmio_write32 (u32 address, u32 value);
 
+extern u32 sysreg_read_sp(void);
+
 extern u32 sysreg_read_scr(void);
 
 extern u32 sysreg_read_cpsr(void);
