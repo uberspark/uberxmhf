@@ -452,14 +452,19 @@ void uapp_sched_timer_initialize(u32 cpuid){
 	_XDPRINTFSMP_("%s[%u]: EXIT\n", __func__, cpuid);
 }
 
+volatile u32 fiq_sp = 0;
 
 void uapp_sched_fiqhandler(void){
+
 #if 0
 	uapp_sched_timerhandler();
 #endif
 
 #if 1
-	_XDPRINTFSMP_("%s: Timer Fired: sp=0x%08x!\n", __func__, sysreg_read_sp());
+	fiq_sp = sysreg_read_sp();
+	//_XDPRINTFSMP_("%s: Timer Fired: sp=0x%08x!\n", __func__, fiq_sp);
+	bcm2837_miniuart_puts("\r\ntimer fired: sp=0x");
+	debug_hexdumpu32(fiq_sp);
 
 	uapp_sched_start_physical_timer(10 * 1024 * 1024);
 #endif
