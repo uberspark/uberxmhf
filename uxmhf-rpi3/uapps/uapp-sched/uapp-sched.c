@@ -395,8 +395,9 @@ void uapp_sched_process_timers(void){
 	for(i=0; i < MAX_TIMERS; i++){
 		if(sched_timers[i].event){
 			sched_timers[i].event = FALSE;
-			_XDPRINTFSMP_("%s: timer expired; priority=%u\n", __func__,
-					sched_timers[i].priority);
+			priority_queue_insert((void *)&sched_timers[i], sched_timers[i].priority);
+			//_XDPRINTFSMP_("%s: timer expired; priority=%u\n", __func__,
+			//		sched_timers[i].priority);
 		}
 	}
 }
@@ -564,6 +565,20 @@ void uapp_sched_initialize(u32 cpuid){
 
 #if 1
 			uapp_sched_process_timers();
+
+			status=0;
+			//spin_lock(&priority_queue_lock);
+			status = priority_queue_remove(&queue_data, &priority);
+			//spin_unlock(&priority_queue_lock);
+
+			if(status){
+				_XDPRINTFSMP_("%s: got queue 0x%08x, priority=%u\n", __func__,
+						queue_data, priority);
+
+				task_timer = (struct sched_timer *)queue_data;
+				_XDPRINTFSMP_("%s: task timer priority=%d expired!\n", __func__, task_timer->priority);
+			}
+
 
 			/*spnew =sysreg_read_sp();
 			if(sp != spnew){
