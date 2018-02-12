@@ -28,10 +28,15 @@ typedef u64 TIME;   	//our time type; 64-bits since we are using clock cycles
 
 struct sched_timer {
 	u32 inuse;			// TRUE if in use
+	TIME sticky_time_to_wait;  // relative time to wait sticky
 	TIME time_to_wait;  // relative time to wait
 	u32 event;    		// set to TRUE at timeout
 	int priority;		// priority associated with the timer
 };
+
+volatile u32 fiq_sp = 0;
+volatile u32 normal_sp = 0;
+
 
 __attribute__((section(".data"))) struct sched_timer sched_timers[MAX_TIMERS];   // set of timers
 __attribute__((section(".data"))) struct sched_timer *timer_next = NULL; // timer we expect to run down next
@@ -298,6 +303,7 @@ struct sched_timer *uapp_sched_timer_declare(u32 time, char *event, int priority
   //t->event = event;
   t->event = FALSE;
   t->time_to_wait = time;
+  t->sticky_time_to_wait = time;
   t->priority = priority;
 
   if (!timer_next) {
@@ -389,15 +395,24 @@ void uapp_sched_stop_physical_timer(void){
 //////
 // scheduler timer event processing
 //////
-void uapp_sched_process_timers(void){
+void uapp_sched_process_timers(u32 cpuid){
 	u32 i;
+	u32 time_to_wait;
+	int priority;
 
 	for(i=0; i < MAX_TIMERS; i++){
 		if(sched_timers[i].event){
 			sched_timers[i].event = FALSE;
-			priority_queue_insert((void *)&sched_timers[i], sched_timers[i].priority);
-			//_XDPRINTFSMP_("%s: timer expired; priority=%u\n", __func__,
-			//		sched_timers[i].priority);
+			//priority_queue_insert((void *)&sched_timers[i], sched_timers[i].priority);
+			normal_sp = sysreg_read_sp();
+
+			_XDPRINTFSMP_("%s[%u]: normal_sp=0x%08x\n", __func__, cpuid, normal_sp);
+
+			_XDPRINTFSMP_("%s[%u]: timer expired; priority=%u, time_to_wait=%u\n", __func__, cpuid,
+					sched_timers[i].priority, sched_timers[i].sticky_time_to_wait/ (1024*1024));
+			time_to_wait = sched_timers[i].sticky_time_to_wait; //reload
+			priority = sched_timers[i].priority;
+			//uapp_sched_timer_declare(time_to_wait, NULL, priority);
 		}
 	}
 }
@@ -472,11 +487,21 @@ void uapp_sched_timer_initialize(u32 cpuid){
 	_XDPRINTFSMP_("%s[%u]: EXIT\n", __func__, cpuid);
 }
 
-volatile u32 fiq_sp = 0;
 
 void uapp_sched_fiqhandler(void){
 
 #if 1
+	fiq_sp = sysreg_read_sp();
+	_XDPRINTFSMP_("%s: Timer Fired: sp=0x%08x, cpsr=0x%08x!\n", __func__, fiq_sp,
+			sysreg_read_cpsr());
+	_XDPRINTFSMP_("%s: Halting!\n", __func__);
+	HALT();
+#endif
+
+
+#if 0
+	fiq_sp = sysreg_read_sp();
+	_XDPRINTFSMP_("%s: Timer Fired: sp=0x%08x!\n", __func__, fiq_sp);
 	uapp_sched_timerhandler();
 #endif
 
@@ -534,16 +559,17 @@ void uapp_sched_initialize(u32 cpuid){
 
 		_XDPRINTFSMP_("%s[%u]: Starting timers...\n", __func__, cpuid);
 
-		//uapp_sched_timer_declare(3 * 1024 * 1024, &thread1_event, 1);
-		//uapp_sched_timer_declare(6 * 1024 * 1024, &thread2_event, 3);
-		uapp_sched_timer_declare(10 * 1024 * 1024, NULL, 3);
+		uapp_sched_timer_declare(3 * 1024 * 1024, NULL, 1);
+		uapp_sched_timer_declare(9 * 1024 * 1024, NULL, 3);
+		//uapp_sched_timer_declare(10 * 1024 * 1024, NULL, 3);
 
 		_XDPRINTFSMP_("%s[%u]: Starting scheduler...\n", __func__, cpuid);
 
-		sp =sysreg_read_sp();
-		_XDPRINTFSMP_("%s[%u]: Stack pointer=0x%08x\n", __func__, cpuid, sp);
+		normal_sp =sysreg_read_sp();
 		_XDPRINTFSMP_("%s[%u]: FIQ Stack pointer base=0x%08x\n", __func__, cpuid,
 				&uapp_sched_fiqhandler_stack);
+		_XDPRINTFSMP_("%s[%u]: normal_sp=0x%08x\n", __func__, cpuid, normal_sp);
+		_XDPRINTFSMP_("%s[%u]: cpsr=0x%08x\n", __func__, cpuid, sysreg_read_cpsr());
 
 		while(1){
 #if 0
@@ -564,21 +590,22 @@ void uapp_sched_initialize(u32 cpuid){
 
 
 #if 1
-			uapp_sched_process_timers();
+			uapp_sched_process_timers(cpuid);
 
+#if 0
 			status=0;
 			//spin_lock(&priority_queue_lock);
 			status = priority_queue_remove(&queue_data, &priority);
 			//spin_unlock(&priority_queue_lock);
 
 			if(status){
-				_XDPRINTFSMP_("%s: got queue 0x%08x, priority=%u\n", __func__,
-						queue_data, priority);
+				//_XDPRINTFSMP_("%s: got queue 0x%08x, priority=%u\n", __func__,
+				//		queue_data, priority);
 
 				task_timer = (struct sched_timer *)queue_data;
-				_XDPRINTFSMP_("%s: task timer priority=%d expired!\n", __func__, task_timer->priority);
+				_XDPRINTFSMP_("%s[%u]: task timer priority=%d expired!\n", __func__, cpuid, task_timer->priority);
 			}
-
+#endif
 
 			/*spnew =sysreg_read_sp();
 			if(sp != spnew){
