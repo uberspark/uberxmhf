@@ -454,12 +454,12 @@ void uapp_sched_timer_initialize(u32 cpuid){
 
 
 void uapp_sched_fiqhandler(void){
-#if 1
+#if 0
 	uapp_sched_timerhandler();
 #endif
 
-#if 0
-	_XDPRINTFSMP_("%s: Timer Fired!\n", __func__);
+#if 1
+	_XDPRINTFSMP_("%s: Timer Fired: sp=0x%08x!\n", __func__, sysreg_read_sp());
 
 	uapp_sched_start_physical_timer(10 * 1024 * 1024);
 #endif
@@ -490,7 +490,7 @@ void uapp_sched_initialize(u32 cpuid){
 	struct sched_timer *task_timer;
 	u32 queue_data;
 	int status;
-	u32 sp, spnew;
+	volatile u32 sp, spnew;
 
 
 #if 1
@@ -509,8 +509,9 @@ void uapp_sched_initialize(u32 cpuid){
 
 		_XDPRINTFSMP_("%s[%u]: Starting timers...\n", __func__, cpuid);
 
-		uapp_sched_timer_declare(3 * 1024 * 1024, &thread1_event, 1);
-		uapp_sched_timer_declare(6 * 1024 * 1024, &thread2_event, 3);
+		//uapp_sched_timer_declare(3 * 1024 * 1024, &thread1_event, 1);
+		//uapp_sched_timer_declare(6 * 1024 * 1024, &thread2_event, 3);
+		uapp_sched_timer_declare(10 * 1024 * 1024, &thread2_event, 3);
 
 		_XDPRINTFSMP_("%s[%u]: Starting scheduler...\n", __func__, cpuid);
 
@@ -519,7 +520,7 @@ void uapp_sched_initialize(u32 cpuid){
 
 
 		while(1){
-#if 1
+#if 0
 			if(thread1_event){
 				sp =sysreg_read_sp();
 				_XDPRINTFSMP_("%s: thread1 timer expired: sp=0x%08x!\n", __func__, sp);
@@ -534,6 +535,30 @@ void uapp_sched_initialize(u32 cpuid){
 				uapp_sched_timer_declare(6 * 1024 * 1024, &thread2_event, 3);
 			}
 #endif
+
+
+#if 1
+			/*spnew =sysreg_read_sp();
+			if(sp != spnew){
+				_XDPRINTFSMP_("%s: we have some stack issues sp=0x%08x, spnew=0x%08x\n",
+						__func__, sp, spnew);
+				HALT();
+			}*/
+			/*status=0;
+			spin_lock(&priority_queue_lock);
+			//status = priority_queue_remove(&queue_data, &priority);
+			spin_unlock(&priority_queue_lock);
+			*/
+
+			/*if(status){
+				_XDPRINTFSMP_("%s: got queue 0x%08x, priority=%u\n", __func__,
+						queue_data, priority);
+
+				//task_timer = (struct sched_timer *)queue_data;
+				//_XDPRINTFSMP_("%s: task timer priority=%d expired!\n", __func__, task_timer->priority);
+			}*/
+#endif
+
 
 #if 0
 			spnew =sysreg_read_sp();
