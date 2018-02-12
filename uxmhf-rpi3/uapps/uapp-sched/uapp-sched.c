@@ -12,6 +12,7 @@
 
 
 extern void uapp_sched_fiq_handler(void);
+extern u32 uapp_sched_fiqhandler_stack[];
 
 u64 uapp_sched_read_cpucounter(void);
 
@@ -463,10 +464,10 @@ void uapp_sched_fiqhandler(void){
 #if 1
 	fiq_sp = sysreg_read_sp();
 	//_XDPRINTFSMP_("%s: Timer Fired: sp=0x%08x!\n", __func__, fiq_sp);
-	bcm2837_miniuart_puts("\r\ntimer fired: sp=0x");
+	bcm2837_miniuart_puts("\n FIQ timer fired: sp=0x");
 	debug_hexdumpu32(fiq_sp);
-
-	uapp_sched_start_physical_timer(10 * 1024 * 1024);
+	HALT();
+	//uapp_sched_start_physical_timer(10 * 1024 * 1024);
 #endif
 
 }
@@ -509,7 +510,7 @@ void uapp_sched_initialize(u32 cpuid){
 		_XDPRINTFSMP_("%s[%u]: Current CPU counter=0x%016llx\n", __func__, cpuid,
 				uapp_sched_read_cpucounter());
 
-		hypvtable_setentry(cpuid, 7, (u32)&uapp_sched_fiq_handler);
+		//hypvtable_setentry(cpuid, 7, (u32)&uapp_sched_fiq_handler);
 		uapp_sched_timer_initialize(cpuid);
 
 		_XDPRINTFSMP_("%s[%u]: Starting timers...\n", __func__, cpuid);
@@ -522,7 +523,8 @@ void uapp_sched_initialize(u32 cpuid){
 
 		sp =sysreg_read_sp();
 		_XDPRINTFSMP_("%s[%u]: Stack pointer=0x%08x\n", __func__, cpuid, sp);
-
+		_XDPRINTFSMP_("%s[%u]: FIQ Stack pointer base=0x%08x\n", __func__, cpuid,
+				&uapp_sched_fiqhandler_stack);
 
 		while(1){
 #if 0

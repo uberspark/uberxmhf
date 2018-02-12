@@ -57,8 +57,7 @@ mmio_read32:
 
 .globl sysreg_read_sp
 sysreg_read_sp:
-	push {sp}
-	pop {r0}
+	mov r0, sp
 	bx lr
 
 

@@ -66,7 +66,7 @@ g_hypvtable:
 	b hypvtable_reserved_handler0
 	b hypvtable_hypsvc_handler0
 	b hypvtable_reserved_handler0
-	b hypvtable_reserved_handler0
+	b uapp_sched_fiq_handler
 	//cpu-1
 	b hypvtable_reserved_handler1
 	b hypvtable_reserved_handler1
