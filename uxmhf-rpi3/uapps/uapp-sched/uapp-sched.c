@@ -29,7 +29,7 @@ typedef u64 TIME;   	//our time type; 64-bits since we are using clock cycles
 struct sched_timer {
 	u32 inuse;			// TRUE if in use
 	TIME time_to_wait;  // relative time to wait
-	u8 *event;    		// set to TRUE at timeout
+	u32 event;    		// set to TRUE at timeout
 	int priority;		// priority associated with the timer
 };
 
@@ -295,7 +295,8 @@ struct sched_timer *uapp_sched_timer_declare(u32 time, char *event, int priority
   }
 
   // install new timer
-  t->event = event;
+  //t->event = event;
+  t->event = FALSE;
   t->time_to_wait = time;
   t->priority = priority;
 
@@ -341,7 +342,7 @@ void uapp_sched_timers_update(TIME time){
       } else { // expired
         /* tell scheduler */
 		//_XDPRINTFSMP_("%s,%u: ENTER\n", __func__, __LINE__);
-    	*t->event = TRUE;
+    	t->event = TRUE;
         t->inuse = FALSE; 	// remove timer
 		//spin_lock(&priority_queue_lock);
 		//priority_queue_insert((void *)t, t->priority);
@@ -381,6 +382,23 @@ void uapp_sched_start_physical_timer(TIME time){
 //////
 void uapp_sched_stop_physical_timer(void){
 	sysreg_write_cnthp_ctl(0x0);
+}
+
+
+
+//////
+// scheduler timer event processing
+//////
+void uapp_sched_process_timers(void){
+	u32 i;
+
+	for(i=0; i < MAX_TIMERS; i++){
+		if(sched_timers[i].event){
+			sched_timers[i].event = FALSE;
+			_XDPRINTFSMP_("%s: timer expired; priority=%u\n", __func__,
+					sched_timers[i].priority);
+		}
+	}
 }
 
 
@@ -457,11 +475,11 @@ volatile u32 fiq_sp = 0;
 
 void uapp_sched_fiqhandler(void){
 
-#if 0
+#if 1
 	uapp_sched_timerhandler();
 #endif
 
-#if 1
+#if 0
 	fiq_sp = sysreg_read_sp();
 	//_XDPRINTFSMP_("%s: Timer Fired: sp=0x%08x!\n", __func__, fiq_sp);
 	bcm2837_miniuart_puts("\n FIQ timer fired: sp=0x");
@@ -517,7 +535,7 @@ void uapp_sched_initialize(u32 cpuid){
 
 		//uapp_sched_timer_declare(3 * 1024 * 1024, &thread1_event, 1);
 		//uapp_sched_timer_declare(6 * 1024 * 1024, &thread2_event, 3);
-		uapp_sched_timer_declare(10 * 1024 * 1024, &thread2_event, 3);
+		uapp_sched_timer_declare(10 * 1024 * 1024, NULL, 3);
 
 		_XDPRINTFSMP_("%s[%u]: Starting scheduler...\n", __func__, cpuid);
 
@@ -545,6 +563,8 @@ void uapp_sched_initialize(u32 cpuid){
 
 
 #if 1
+			uapp_sched_process_timers();
+
 			/*spnew =sysreg_read_sp();
 			if(sp != spnew){
 				_XDPRINTFSMP_("%s: we have some stack issues sp=0x%08x, spnew=0x%08x\n",
