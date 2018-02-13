@@ -20,9 +20,15 @@
 	.balign 32
 	.global	uapp_sched_fiq_handler
 uapp_sched_fiq_handler:
-	ldr sp, =uapp_sched_fiqhandler_stack_top	//load base into stack-pointer
+	//ldr sp, =uapp_sched_fiqhandler_stack_top	//load base into stack-pointer
 
 	push {r14}
+	push {r13}
+	push {r12}
+	push {r11}
+	push {r10}
+	push {r9}
+	push {r8}
 	push {r7}
 	push {r6}
 	push {r5}
@@ -43,6 +49,12 @@ uapp_sched_fiq_handler:
 	pop {r5}
 	pop {r6}
 	pop {r7}
+	pop {r8}
+	pop {r9}
+	pop {r10}
+	pop {r11}
+	pop {r12}
+	pop {r13}
 	pop	{r14}
 
 	eret

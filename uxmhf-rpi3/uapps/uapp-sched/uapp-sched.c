@@ -28,10 +28,10 @@ typedef u64 TIME;   	//our time type; 64-bits since we are using clock cycles
 
 struct sched_timer {
 	u32 inuse;			// TRUE if in use
-	TIME sticky_time_to_wait;  // relative time to wait sticky
-	TIME time_to_wait;  // relative time to wait
 	u32 event;    		// set to TRUE at timeout
 	int priority;		// priority associated with the timer
+	TIME sticky_time_to_wait;  // relative time to wait sticky
+	TIME time_to_wait;  // relative time to wait
 };
 
 volatile u32 fiq_sp = 0;
@@ -45,7 +45,11 @@ __attribute__((section(".data"))) TIME time_timer_set;    // time when physical 
 extern __attribute__(( section(".data") )) u32 priority_queue_lock=1;
 
 __attribute__((section(".data"))) struct sched_timer timer_last = {
-  FALSE,  VERY_LONG_TIME, NULL
+  FALSE,
+  FALSE,
+  0,
+  VERY_LONG_TIME,
+  VERY_LONG_TIME
 };
 
 
@@ -112,7 +116,7 @@ void check_and_insert(void *data, int priority){
 int priority_queue_insert(void *data, int priority){
 	//return error if we are maxed out
 	if(priority_queue_totalelems >= PRIORITY_QUEUE_SIZE ){
-		_XDPRINTFSMP_("%s,%u: Queue overflow, no more elements can be inserted!\n", __func__, __LINE__);
+		_XDPRINTF_("%s,%u: Queue overflow, no more elements can be inserted!\n", __func__, __LINE__);
 		return 0;
     }
 
@@ -133,14 +137,14 @@ int priority_queue_insert(void *data, int priority){
 void priority_queue_display(void){
 	int i;
 
-	_XDPRINTFSMP_("%s,%u: Dumping queue...\n", __func__, __LINE__);
+	_XDPRINTF_("%s,%u: Dumping queue...\n", __func__, __LINE__);
 
 	for(i=0; i < priority_queue_totalelems; i++){
-		_XDPRINTFSMP_("  index=%u: priority=%d, data=%u\n", i, priority_queue[i].priority,
+		_XDPRINTF_("  index=%u: priority=%d, data=%u\n", i, priority_queue[i].priority,
 					priority_queue[i].data);
 	}
 
-	_XDPRINTFSMP_("%s,%u: Done.\n", __func__, __LINE__);
+	_XDPRINTF_("%s,%u: Done.\n", __func__, __LINE__);
 }
 
 
@@ -306,20 +310,27 @@ struct sched_timer *uapp_sched_timer_declare(u32 time, char *event, int priority
   t->sticky_time_to_wait = time;
   t->priority = priority;
 
+  //_XDPRINTF_("%s,%u: event=%u, time_to_wait=%016llx, sticky_time_to_wait=%016llx, priority=%u\n",
+	//	  __func__, __LINE__,
+	//		t->event, t->time_to_wait, t->sticky_time_to_wait, t->priority);
+
+
   if (!timer_next) {
     // no timers set at all, so this is shortest
     time_timer_set = uapp_sched_read_cpucounter();
     uapp_sched_start_physical_timer((timer_next = t)->time_to_wait);
-	//_XDPRINTFSMP_("%s,%u: ENTER\n", __func__, __LINE__);
+	//_XDPRINTF_("%s,%u: ENTER, time_to_wait=%016llx\n", __func__, __LINE__,
+	//		t->time_to_wait);
   } else if ((time + uapp_sched_read_cpucounter()) < (timer_next->time_to_wait + time_timer_set)) {
     // new timer is shorter than current one, so
     uapp_sched_timers_update(uapp_sched_read_cpucounter() - time_timer_set);
     time_timer_set = uapp_sched_read_cpucounter();
     uapp_sched_start_physical_timer((timer_next = t)->time_to_wait);
-	//_XDPRINTFSMP_("%s,%u: ENTER\n", __func__, __LINE__);
+	//_XDPRINTF_("%s,%u: ENTER\n", __func__, __LINE__);
   } else {
     // new timer is longer, than current one
-	//_XDPRINTFSMP_("%s,%u: ENTER\n", __func__, __LINE__);
+	//_XDPRINTF_("%s,%u: ENTER, time_to_wait=%016llx\n", __func__, __LINE__,
+	//		t->time_to_wait);
   }
 
   t->inuse = TRUE;
@@ -338,16 +349,23 @@ void uapp_sched_timers_update(TIME time){
 
   timer_next = &timer_last;
 
+  //_XDPRINTF_("%s,%u: ENTER: time=%016llx\n", __func__, __LINE__, time);
+
   for (t=sched_timers;t<&sched_timers[MAX_TIMERS];t++) {
     if (t->inuse) {
       if (time < t->time_to_wait) { // unexpired
-  		//_XDPRINTFSMP_("%s,%u: ENTER\n", __func__, __LINE__);
-    	t->time_to_wait -= time;
-        if (t->time_to_wait < timer_next->time_to_wait)
+  		//_XDPRINTF_("%s,%u: ENTER: time_to_wait=%016llx\n", __func__, __LINE__,
+  		//		t->time_to_wait);
+  		//_XDPRINTF_("%s,%u: timer_next->time_to_wait=%016llx\n", __func__, __LINE__,
+  		//		timer_next->time_to_wait);
+  		t->time_to_wait -= time;
+        if (t->time_to_wait < timer_next->time_to_wait){
           timer_next = t;
+    		//_XDPRINTF_("%s,%u: ENTER\n", __func__, __LINE__);
+        }
       } else { // expired
         /* tell scheduler */
-		//_XDPRINTFSMP_("%s,%u: ENTER\n", __func__, __LINE__);
+		//_XDPRINTF_("%s,%u: ENTER\n", __func__, __LINE__);
     	t->event = TRUE;
         t->inuse = FALSE; 	// remove timer
 		//spin_lock(&priority_queue_lock);
@@ -361,7 +379,10 @@ void uapp_sched_timers_update(TIME time){
   }
 
   /* reset timer_next if no timers found */
-  if (!timer_next->inuse) timer_next = 0;
+  if (!timer_next->inuse) {
+	  timer_next = 0;
+		//_XDPRINTF_("%s,%u: ENTER\n", __func__, __LINE__);
+  }
 }
 
 
@@ -412,7 +433,7 @@ void uapp_sched_process_timers(u32 cpuid){
 					sched_timers[i].priority, sched_timers[i].sticky_time_to_wait/ (1024*1024));
 			time_to_wait = sched_timers[i].sticky_time_to_wait; //reload
 			priority = sched_timers[i].priority;
-			//uapp_sched_timer_declare(time_to_wait, NULL, priority);
+			uapp_sched_timer_declare(time_to_wait, NULL, priority);
 		}
 	}
 }
@@ -490,7 +511,7 @@ void uapp_sched_timer_initialize(u32 cpuid){
 
 void uapp_sched_fiqhandler(void){
 
-#if 1
+#if 0
 	fiq_sp = sysreg_read_sp();
 	_XDPRINTFSMP_("%s: Timer Fired: sp=0x%08x, cpsr=0x%08x!\n", __func__, fiq_sp,
 			sysreg_read_cpsr());
@@ -499,10 +520,13 @@ void uapp_sched_fiqhandler(void){
 #endif
 
 
-#if 0
+#if 1
 	fiq_sp = sysreg_read_sp();
-	_XDPRINTFSMP_("%s: Timer Fired: sp=0x%08x!\n", __func__, fiq_sp);
+	//_XDPRINTFSMP_("%s: Timer Fired: sp=0x%08x, cpsr=0x%08x\n", __func__,
+	//		fiq_sp, sysreg_read_cpsr());
 	uapp_sched_timerhandler();
+	//uapp_sched_start_physical_timer(3*1024*1024);
+	//_XDPRINTFSMP_("%s: resuming\n", __func__);
 #endif
 
 #if 0
@@ -525,10 +549,14 @@ void uapp_sched_timerhandler(void){
 
 	// start physical timer for next shortest time if one exists
 	if (timer_next) {
-		//_XDPRINTFSMP_("%s, %u: ENTER\n", __func__, __LINE__);
+		//_XDPRINTFSMP_("%s, %u: starting physical timer with %u\n", __func__, __LINE__,
+		//		timer_next->time_to_wait);
 		time_timer_set = uapp_sched_read_cpucounter();
 		uapp_sched_start_physical_timer(timer_next->time_to_wait);
 	}
+
+	//_XDPRINTFSMP_("%s,%u: ENTER\n", __func__, __LINE__);
+
 }
 
 
