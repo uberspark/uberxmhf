@@ -424,13 +424,13 @@ void uapp_sched_process_timers(u32 cpuid){
 	for(i=0; i < MAX_TIMERS; i++){
 		if(sched_timers[i].event){
 			sched_timers[i].event = FALSE;
-			//priority_queue_insert((void *)&sched_timers[i], sched_timers[i].priority);
-			normal_sp = sysreg_read_sp();
+			priority_queue_insert((void *)&sched_timers[i], sched_timers[i].priority);
+			//normal_sp = sysreg_read_sp();
 
-			_XDPRINTFSMP_("%s[%u]: normal_sp=0x%08x\n", __func__, cpuid, normal_sp);
+			//_XDPRINTFSMP_("%s[%u]: normal_sp=0x%08x\n", __func__, cpuid, normal_sp);
 
-			_XDPRINTFSMP_("%s[%u]: timer expired; priority=%u, time_to_wait=%u\n", __func__, cpuid,
-					sched_timers[i].priority, sched_timers[i].sticky_time_to_wait/ (1024*1024));
+			//_XDPRINTFSMP_("%s[%u]: timer expired; priority=%u, time_to_wait=%u\n", __func__, cpuid,
+			//		sched_timers[i].priority, sched_timers[i].sticky_time_to_wait/ (1024*1024));
 			time_to_wait = sched_timers[i].sticky_time_to_wait; //reload
 			priority = sched_timers[i].priority;
 			uapp_sched_timer_declare(time_to_wait, NULL, priority);
@@ -620,7 +620,7 @@ void uapp_sched_initialize(u32 cpuid){
 #if 1
 			uapp_sched_process_timers(cpuid);
 
-#if 0
+			#if 1
 			status=0;
 			//spin_lock(&priority_queue_lock);
 			status = priority_queue_remove(&queue_data, &priority);
@@ -633,7 +633,7 @@ void uapp_sched_initialize(u32 cpuid){
 				task_timer = (struct sched_timer *)queue_data;
 				_XDPRINTFSMP_("%s[%u]: task timer priority=%d expired!\n", __func__, cpuid, task_timer->priority);
 			}
-#endif
+			#endif
 
 			/*spnew =sysreg_read_sp();
 			if(sp != spnew){
