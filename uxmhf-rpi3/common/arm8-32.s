@@ -36,6 +36,12 @@ sysreg_read_cpsr:
 	mrs r0, cpsr
 	bx lr
 
+.globl sysreg_write_cpsr
+sysreg_write_cpsr:
+	msr cpsr, r0
+	bx lr
+
+
 .global sysreg_read_hvbar
 sysreg_read_hvbar:
 	mrc p15, 4, r0, c12, c0, 0
@@ -413,4 +419,33 @@ sysreg_ats1cpr:
 .global sysreg_read_par
 sysreg_read_par:
 	mrc p15,0,r0,c7,c4,0
+	bx lr
+
+//////
+// generic timer system registers
+//////
+.global sysreg_read_cntpct
+sysreg_read_cntpct:
+	mrrc p15, 0, r0, r1, c14
+	bx lr
+
+.global sysreg_read_cnthp_tval
+sysreg_read_cnthp_tval:
+	mrc p15,4,r0,c14,c2,0
+	bx lr
+
+.global sysreg_write_cnthp_tval
+sysreg_write_cnthp_tval:
+	mcr p15,4,r0,c14,c2,0
+	bx lr
+
+
+.global sysreg_read_cnthp_ctl
+sysreg_read_cnthp_ctl:
+	mrc p15,4,r0,c14,c2,1
+	bx lr
+
+.global sysreg_write_cnthp_ctl
+sysreg_write_cnthp_ctl:
+	mcr p15,4,r0,c14,c2,1
 	bx lr

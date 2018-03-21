@@ -39,6 +39,14 @@ void hyp_rsvhandler(void){
 }
 
 
+
+void hyp_fiqhandler(void){
+	bcm2837_miniuart_puts("FIQ EXCEPTION-- Resuming\n");
+	sysreg_write_cnthp_tval(10*1024*1024);
+	//HALT();
+}
+
+
 void hyphvc_handler(void){
 	_XDPRINTF_("%s: [IN]\n", __func__);
 	_XDPRINTF_("%s: Hello world from hypercall\n", __func__);
@@ -505,6 +513,13 @@ void main(u32 r0, u32 id, struct atag *at, u32 cpuid){
 	hyppgtbl_activate();
 	_XDPRINTF_("%s[%u]: hyp page-tables activated\n", __func__, cpuid);
 
+	//setup HVBAR for vectors
+	_XDPRINTFSMP_("%s[%u]: HVBAR[before]=0x%08x\n", __func__, cpuid, sysreg_read_hvbar());
+
+	_XDPRINTFSMP_("%s[%u]: ghypvtable at 0x%08x\n", __func__, cpuid, (u32)&g_hypvtable[cpuid]);
+	sysreg_write_hvbar((u32)&g_hypvtable[cpuid]);
+	_XDPRINTFSMP_("%s[%u]: HVBAR[after]=0x%08x\n", __func__, cpuid, sysreg_read_hvbar());
+
 
 #if 0
 	//////
@@ -634,7 +649,13 @@ void main(u32 r0, u32 id, struct atag *at, u32 cpuid){
 	HALT();
 #endif
 
+	// hypervisor timer initialization via FIQs
+	hyptimer_initialize(cpuid);
 
+	//enable FIQ mask override; this should land us in HYP mode FIQ handler when FIQs are triggered inside guest
+	hcr = sysreg_read_hcr();
+	hcr |= (1UL << 3);
+	sysreg_write_hcr(hcr);
 
 	// populate stage-2 page tables
 	s2pgtbl_populate_tables();
@@ -649,11 +670,6 @@ void main(u32 r0, u32 id, struct atag *at, u32 cpuid){
 	_XDPRINTF_("%s[%u]: HSTR=0x%08x\n", __func__, cpuid, sysreg_read_hstr());
 	_XDPRINTF_("%s[%u]: HCPTR=0x%08x\n", __func__, cpuid, sysreg_read_hcptr());
 	_XDPRINTF_("%s[%u]: HDCR=0x%08x\n", __func__, cpuid, sysreg_read_hdcr());
-	_XDPRINTF_("%s[%u]: HVBAR[before]=0x%08x\n", __func__, cpuid, sysreg_read_hvbar());
-
-	_XDPRINTF_("%s[%u]: ghypvtable at 0x%08x\n", __func__, cpuid, (u32)&g_hypvtable[cpuid]);
-	sysreg_write_hvbar((u32)&g_hypvtable[cpuid]);
-	_XDPRINTF_("%s[%u]: HVBAR[after]=0x%08x\n", __func__, cpuid, sysreg_read_hvbar());
 
 	// initialize cpu support for second stage page table translations
 	s2pgtbl_initialize();

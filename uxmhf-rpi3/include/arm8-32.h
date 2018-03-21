@@ -422,6 +422,7 @@ extern void mmio_write32 (u32 address, u32 value);
 extern u32 sysreg_read_scr(void);
 
 extern u32 sysreg_read_cpsr(void);
+extern void sysreg_write_cpsr(u32 value);
 
 extern u32 sysreg_read_hvbar(void);
 extern void sysreg_write_hvbar(u32 value);
@@ -525,6 +526,17 @@ u32 sysreg_read_ttbr0(void);
 void sysreg_write_ttbr0(u32 value);
 u32 sysreg_read_ttbr1(void);
 void sysreg_write_ttbr1(u32 value);
+
+
+//////
+// generic timer system register access functions
+//////
+extern u64 sysreg_read_cntpct(void);
+int sysreg_read_cnthp_tval(void);
+void sysreg_write_cnthp_tval(int value);
+u32 sysreg_read_cnthp_ctl(void);
+void sysreg_write_cnthp_ctl(u32 value);
+
 
 
 #endif // __ASSEMBLY__
