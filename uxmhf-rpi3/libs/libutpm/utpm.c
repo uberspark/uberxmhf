@@ -3,12 +3,13 @@
  * adapted from trustvisor utpm by amit vasudevan (amitvasudevan@acm.org
  */
 
-#include <types.h>
-#include <arm8-32.h>
-#include <bcm2837.h>
-#include <miniuart.h>
-#include <debug.h>
+//#include <types.h>
+//#include <arm8-32.h>
+//#include <bcm2837.h>
+//#include <miniuart.h>
+//#include <debug.h>
 
+#include <string.h>
 #include <xmhfcrypto.h>
 #include <sha1.h>
 #include <aes.h>
@@ -91,7 +92,7 @@ TPM_RESULT utpm_extend(TPM_DIGEST *measurement, utpm_master_state_t *utpm, uint3
     if(!measurement || !utpm) { return UTPM_ERR_BAD_PARAM; }
     if(pcr_num >= TPM_PCR_NUM) { return UTPM_ERR_PCR_OUT_OF_RANGE; }
 
-    _XDPRINTF_("utpm_extend: extending PCR %d\n", pcr_num);
+    //_XDPRINTF_("utpm_extend: extending PCR %d\n", pcr_num);
 
     //print_hex("utpm_extend: PCR before: ", utpm->pcr_bank[pcr_num].value, TPM_HASH_SIZE);
     //print_hex("utpm_extend: measurement: ", measurement->value, TPM_HASH_SIZE);
