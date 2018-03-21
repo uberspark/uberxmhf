@@ -192,7 +192,10 @@ void guest_data_abort_handler(arm8_32_regs_t *r, u32 hsr){
 
 
 	//handle data abort fault by passing it to appropriate module
-	if( (fault_pa_page == BCM2837_DMA0_REGS_BASE) ||
+	if ( fault_pa_page == ARMLOCALREGISTERS_BASE ){
+		intprot_handle_intcontroller_access(&ida);
+
+	}else if( (fault_pa_page == BCM2837_DMA0_REGS_BASE) ||
 		(fault_pa_page == BCM2837_DMA15_REGS_BASE) ){
 		dmaprot_handle_dmacontroller_access(&ida);
 
@@ -665,6 +668,10 @@ void main(u32 r0, u32 id, struct atag *at, u32 cpuid){
 	//activate DMA protection mechanism via stage-2 pts
 	dmaprot_activate();
 	_XDPRINTF_("%s[%u]: DMA protection mechanism activated via stage-2 pts\n", __func__, cpuid);
+
+	//activate interrupt protection mechanism via stage-2 pts
+	intprot_activate();
+	_XDPRINTF_("%s[%u]: INTERRUPT protection mechanism activated via stage-2 pts\n", __func__, cpuid);
 
 	//dump hyp registers and load hvbar
 	_XDPRINTF_("%s[%u]: HCR=0x%08x\n", __func__, cpuid, sysreg_read_hcr());
