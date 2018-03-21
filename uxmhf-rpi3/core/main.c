@@ -28,6 +28,14 @@ extern u32 g_hypvtable[BCM2837_MAXCPUS][8];
 //u32 guestos_boot_r2=0;
 
 
+//////
+// appnpf hypapp related variables
+//////
+bool appnpf_activated=false;
+u32 appnpf_page_pa=0UL;
+
+
+
 void hyp_rsvhandler(void){
 	_XDPRINTF_("%s: unhandled exception\n", __func__);
 	_XDPRINTF_("%s: Halting!\n", __func__);
@@ -121,47 +129,43 @@ void guest_hypercall_handler(arm8_32_regs_t *r, u32 hsr){
 	u32 hvc_iss;
 	u32 hvc_imm16;
 
-	hvc_imm16 = hvc_iss & 0x0000FFFFUL;
 	hvc_iss = ((hsr & HSR_ISS_MASK) >> HSR_ISS_SHIFT);
+	hvc_imm16 = hvc_iss & 0x0000FFFFUL;
 
 
-	if( hvc_imm16 ==  1 ){
-		//_XDPRINTFSMP_("%s: r0=0x%08x, r1=0x%08x, r2=0x%08x\n", __func__,
-		//		r->r0, r->r1, r->r2);
-
-		//r->r0 = 0x21;
-		//r->r1 = 0x22;
-		//r->r2 = 0x23;
+	if (hvc_imm16 == 1){
+		//do nothing; null hypercall
 
 	}else if (hvc_imm16 == 2){
-		//u64 attrs_noaccess = (LDESC_S2_MC_OUTER_WRITE_BACK_CACHEABLE_INNER_WRITE_BACK_CACHEABLE << LDESC_S2_MEMATTR_MC_SHIFT) |
-		//	(LDESC_S2_S2AP_NO_ACCESS << LDESC_S2_MEMATTR_S2AP_SHIFT) |
-		//	(MEM_INNER_SHAREABLE << LDESC_S2_MEMATTR_SH_SHIFT) |
-		//	LDESC_S2_MEMATTR_AF_MASK;
+		u64 attrs_noaccess = (LDESC_S2_MC_OUTER_WRITE_BACK_CACHEABLE_INNER_WRITE_BACK_CACHEABLE << LDESC_S2_MEMATTR_MC_SHIFT) |
+			(LDESC_S2_S2AP_NO_ACCESS << LDESC_S2_MEMATTR_S2AP_SHIFT) |
+			(MEM_INNER_SHAREABLE << LDESC_S2_MEMATTR_SH_SHIFT) |
+			LDESC_S2_MEMATTR_AF_MASK;
 
-		//_XDPRINTFSMP_("%s: setprot_noaccess r0=0x%08x\n", __func__,
-		//		r->r0);
+		_XDPRINTFSMP_("%s: setprot_noaccess r0=0x%08x\n", __func__,
+				r->r0);
 
-		//uapi_s2pgtbl_setprot(r->r0, attrs_noaccess);
-		//sysreg_tlbiallis();
+		uapi_s2pgtbl_setprot(r->r0, attrs_noaccess);
+		sysreg_tlbiallis();
+
+		appnpf_page_pa = r->r0;
+		appnpf_activated=true;
 
 	}else if (hvc_imm16 == 3){
-		//u64 attrs = (LDESC_S2_MC_OUTER_WRITE_BACK_CACHEABLE_INNER_WRITE_BACK_CACHEABLE << LDESC_S2_MEMATTR_MC_SHIFT) |
-		//	(LDESC_S2_S2AP_READ_WRITE << LDESC_S2_MEMATTR_S2AP_SHIFT) |
-		//	(MEM_INNER_SHAREABLE << LDESC_S2_MEMATTR_SH_SHIFT) |
-		//	LDESC_S2_MEMATTR_AF_MASK;
+		u64 attrs = (LDESC_S2_MC_OUTER_WRITE_BACK_CACHEABLE_INNER_WRITE_BACK_CACHEABLE << LDESC_S2_MEMATTR_MC_SHIFT) |
+			(LDESC_S2_S2AP_READ_WRITE << LDESC_S2_MEMATTR_S2AP_SHIFT) |
+			(MEM_INNER_SHAREABLE << LDESC_S2_MEMATTR_SH_SHIFT) |
+			LDESC_S2_MEMATTR_AF_MASK;
 
-		//_XDPRINTFSMP_("%s: setprot_restore-access r0=0x%08x\n", __func__,
-		//		r->r0);
+		_XDPRINTFSMP_("%s: setprot_restore-access r0=0x%08x\n", __func__,
+				r->r0);
 
-		//uapi_s2pgtbl_setprot(r->r0, attrs);
-		//sysreg_tlbiallis();
+		uapi_s2pgtbl_setprot(r->r0, attrs);
+		sysreg_tlbiallis();
 
-	}else if (hvc_imm16 == 5) {
-		//_XDPRINTFSMP_("%s: HVC: reg=0x%08x, val=0x%08x\n",
-		//		__func__, r->r0, r->r1);
+		appnpf_page_pa = 0UL;
+		appnpf_activated=false;
 
-		//mmio_write32(r->r0, r->r1);
 
 	}else{
 		_XDPRINTFSMP_("%s: unknown HVC instruction imm16=0x%08x. Halting!\n", __func__,
@@ -236,6 +240,9 @@ void guest_data_abort_handler(arm8_32_regs_t *r, u32 hsr){
 
 	}else if ( fault_pa_page == DWC_REGS_BASE ){
 		dmaprot_handle_usbdmac_access(&ida);
+
+	}else if ( fault_pa_page == appnpf_page_pa && appnpf_activated){
+		//appnpf trigger, just omit the access
 
 	}else{
 		_XDPRINTFSMP_("%s: unknown s2pgtbl DATA ABORT. Halting! (va=0x%08x, pa=0x%08x)\n",
