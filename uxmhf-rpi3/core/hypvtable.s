@@ -103,19 +103,14 @@ hypvtable_hyphvc_handler:
 hypvtable_hypsvc_handler:
 	ldr sp, =hypvtable_hypsvc_stack_top
 
-	/* G1.9.2 (Figure G1-3)
-	   HYP mode uses LR_usr, i.e, does not have LR banking, so save
-	   since we are going to be using LR for C calling
-	*/
+	// G1.9.2 (Figure G1-3)
+	// HYP mode uses LR_usr, i.e, does not have LR banking, so save
+	// since we are going to be using LR for C calling
+
 	push {lr}
 
 
-	/* 5.1.1 AAPCS
-	   callee preserves r4-r8, r10, r11, r13 (SP)
-	   save the rest
-	*/
-	//push {r14}
-	//push {r13}
+	// save guest gprs
 	push {r12}
 	push {r11}
 	push {r10}
@@ -131,12 +126,11 @@ hypvtable_hypsvc_handler:
 	push {r0}
 
 
-	/* invoke C handler */
+	// invoke C handler
 	mov r0, sp
 	bl hypsvc_handler
 
-
-	/* restore all saved registers */
+	// restore all saved registers
 	pop {r0}
 	pop {r1}
 	pop {r2}
@@ -150,17 +144,19 @@ hypvtable_hypsvc_handler:
 	pop {r10}
 	pop {r11}
 	pop {r12}
-	//pop {r13}
-	//pop {r14}
 
 	pop	{lr}
 
-	/*
-		G1.13.1 ARMv8
-		exception returns from HYP mode is made via ERET instruction
-		which basically returns to ELR_hyp and restores appropriate
-		PE (processor execution) state
-	*/
+	//
+	//	G1.13.1 ARMv8
+	//	exception returns from HYP mode is made via ERET instruction
+	//	which basically returns to ELR_hyp and restores appropriate
+	//	PE (processor execution) state
+	//
+
+/*	dsb st
+	str r1, [r0]
+*/
 	eret
 
 

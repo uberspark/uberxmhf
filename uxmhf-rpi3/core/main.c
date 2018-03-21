@@ -44,22 +44,19 @@ void hyphvc_handler(void){
 
 void guest_regwrite(arm8_32_regs_t *r, u32 regnum, u32 value){
 	switch(regnum){
-		case 0:
-			r->r0 = value;
-			break;
-
-		case 1:
-			r->r1 = value;
-			break;
-
-		case 2:
-			r->r2 = value;
-			break;
-
-		case 3:
-			r->r3 = value;
-			break;
-
+		case 0:		r->r0 = value; break;
+		case 1:		r->r1 = value; break;
+		case 2:		r->r2 = value; break;
+		case 3:		r->r3 = value; break;
+		case 4:		r->r4 = value; break;
+		case 5:		r->r5 = value; break;
+		case 6:		r->r6 = value; break;
+		case 7:		r->r7 = value; break;
+		case 8:		r->r8 = value; break;
+		case 9:		r->r9 = value; break;
+		case 10:	r->r10 = value; break;
+		case 11:	r->r11 = value; break;
+		case 12:	r->r12 = value; break;
 		default:
 			_XDPRINTFSMP_("%s: Invalid regnum=%u. Halting!\n", __func__, regnum);
 			HALT();
@@ -69,18 +66,19 @@ void guest_regwrite(arm8_32_regs_t *r, u32 regnum, u32 value){
 
 u32 guest_regread(arm8_32_regs_t *r, u32 regnum){
 	switch(regnum){
-		case 0:
-			return(r->r0);
-
-		case 1:
-			return(r->r1);
-
-		case 2:
-			return(r->r2);
-
-		case 3:
-			return(r->r3);
-
+		case 0:		return(r->r0);
+		case 1:		return(r->r1);
+		case 2:		return(r->r2);
+		case 3:		return(r->r3);
+		case 4:		return(r->r4);
+		case 5:		return(r->r5);
+		case 6:		return(r->r6);
+		case 7:		return(r->r7);
+		case 8:		return(r->r8);
+		case 9:		return(r->r9);
+		case 10:	return(r->r10);
+		case 11:	return(r->r11);
+		case 12:	return(r->r12);
 		default:
 			_XDPRINTFSMP_("%s: Invalid regnum=%u. Halting!\n", __func__, regnum);
 			HALT();
@@ -92,22 +90,24 @@ u32 guest_regread(arm8_32_regs_t *r, u32 regnum){
 
 void hypsvc_handler(arm8_32_regs_t *r){
 	u32 hsr;
+	u32 hsr_ec;
 	u32 elr_hyp;
 	//_XDPRINTFSMP_("%s: ENTER\n", __func__);
 
 	//read hsr to determine the cause of the intercept
 	hsr = sysreg_read_hsr();
-
+	hsr_ec = ((hsr & HSR_EC_MASK) >> HSR_EC_SHIFT);
 	//bcm2837_miniuart_puts(" HSR= ");
 	//debug_hexdumpu32(hsr);
 
-	switch ( ((hsr & HSR_EC_MASK) >> HSR_EC_SHIFT) ){
+	//switch ( ((hsr & HSR_EC_MASK) >> HSR_EC_SHIFT) ){
+	switch (hsr_ec){
 		case HSR_EC_HVC:{
 				u32 hvc_iss = ((hsr & HSR_ISS_MASK) >> HSR_ISS_SHIFT);
 				u32 hvc_imm16 = hvc_iss & 0x0000FFFFUL;
 
 				switch(hvc_imm16){
-					case 1:{
+					/*case 1:{
 							_XDPRINTFSMP_("%s: r0=0x%08x, r1=0x%08x, r2=0x%08x\n", __func__,
 									r->r0, r->r1, r->r2);
 
@@ -116,6 +116,7 @@ void hypsvc_handler(arm8_32_regs_t *r){
 							r->r2 = 0x23;
 						}
 						break;
+
 
 					case 2:{
 							u64 attrs_noaccess = (LDESC_S2_MC_OUTER_WRITE_BACK_CACHEABLE_INNER_WRITE_BACK_CACHEABLE << LDESC_S2_MEMATTR_MC_SHIFT) |
@@ -131,6 +132,7 @@ void hypsvc_handler(arm8_32_regs_t *r){
 						}
 						break;
 
+
 					case 3:{
 							u64 attrs = (LDESC_S2_MC_OUTER_WRITE_BACK_CACHEABLE_INNER_WRITE_BACK_CACHEABLE << LDESC_S2_MEMATTR_MC_SHIFT) |
 								(LDESC_S2_S2AP_READ_WRITE << LDESC_S2_MEMATTR_S2AP_SHIFT) |
@@ -145,12 +147,26 @@ void hypsvc_handler(arm8_32_regs_t *r){
 							sysreg_tlbiallis();
 						}
 						break;
+					*/
+
+					case 5:{
+						//_XDPRINTFSMP_("%s: HVC: reg=0x%08x, val=0x%08x\n",
+						//		__func__, r->r0, r->r1);
+
+						mmio_write32(r->r0, r->r1);
+						//bcm2837_miniuart_puts("HVC reg=");
+						//debug_hexdumpu32(r->r0);
+						//bcm2837_miniuart_puts("HVC val=");
+						//debug_hexdumpu32(r->r1);
 
 
+					}
+					break;
 
 					default:
-						_XDPRINTFSMP_("%s: unknown HVC instruction imm16=0x%08x\n", __func__,
+						_XDPRINTFSMP_("%s: unknown HVC instruction imm16=0x%08x. Halting!\n", __func__,
 								hvc_imm16);
+						HALT();
 						break;
 				}
 
@@ -170,6 +186,7 @@ void hypsvc_handler(arm8_32_regs_t *r){
 				//u32 da_iss_srt;
 				//u32 da_iss_wnr;
 				info_intercept_data_abort_t ida;
+				u32 reg_value;
 
 				da_iss = ((hsr & HSR_ISS_MASK) >> HSR_ISS_SHIFT);
 				ida.il = ((hsr & HSR_IL_MASK) >> HSR_IL_SHIFT);
@@ -182,8 +199,16 @@ void hypsvc_handler(arm8_32_regs_t *r){
 				da_pa_page = ((sysreg_read_hpfar() & 0xFFFFFFF0) << 8);
 				ida.pa = da_pa_page | fault_va_page_offset;
 				ida.r = r;
+				reg_value = (u32)guest_regread(ida.r, ida.srt);
 
-				if(!da_iss_isv){
+
+				_XDPRINTFSMP_("%s: s2 DATA ABORT: va=0x%08x, pa=0x%08x, wnr=%u, value=0x%08x\n",
+						__func__, ida.va, ida.pa, ida.wnr, reg_value);
+				HALT();
+
+				mmio_write32(ida.pa, reg_value);
+
+				/*if(!da_iss_isv){
 					_XDPRINTFSMP_("%s: s2pgtbl DATA ABORT: invalid isv. Halting!\n", __func__);
 					HALT();
 				}
@@ -191,12 +216,16 @@ void hypsvc_handler(arm8_32_regs_t *r){
 				if( (da_pa_page == BCM2837_DMA0_REGS_BASE) ||
 					(da_pa_page == BCM2837_DMA15_REGS_BASE) ){
 					dmaprot_handle_dmacontroller_access(&ida);
+
+				}else if ( da_pa_page == DWC_REGS_BASE){
+					dmaprot_handle_usbdmac_access(&ida);
+
 				}else{
 					_XDPRINTFSMP_("%s: unknown s2pgtbl DATA ABORT. Halting! (va=0x%08x, pa=0x%08x)\n",
 							__func__, ida.va, ida.pa);
 					HALT();
 				}
-
+				*/
 				elr_hyp = sysreg_read_elrhyp();
 
 				if(ida.il)
@@ -207,6 +236,7 @@ void hypsvc_handler(arm8_32_regs_t *r){
 				sysreg_write_elrhyp(elr_hyp);
 			}
 			break;
+
 
 		default:
 			bcm2837_miniuart_puts("uXMHF-rpi3: core: UNHANDLED INTERCEPT!\n");
@@ -506,6 +536,7 @@ void secondary_main(u32 cpuid){
 		start_address=bcm2837_platform_waitforstartup(cpuid);
 
 		_XDPRINTFSMP_("%s[%u]: Got startup signal, address=0x%08x\n", __func__, cpuid, start_address);
+		HALT();
 
 		chainload_os(0, 0, 0, start_address);
 
@@ -555,3 +586,4 @@ void secondary_main_svc(u32 cpuid){
 	spin_unlock(&my_lock);
 	_XDPRINTFSMP_("%s: lock released [cirrent value=0x%08x]\n", __func__, my_lock);
 */
+

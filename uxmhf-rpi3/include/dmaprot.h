@@ -40,6 +40,8 @@ void dmaprot_activate(void);
 
 void dmaprot_handle_dmacontroller_access(info_intercept_data_abort_t *ida);
 
+void dmaprot_handle_usbdmac_access(info_intercept_data_abort_t *ida);
+
 
 #endif // __ASSEMBLY__
 
