@@ -7,37 +7,34 @@
 #include <debug.h>
 
 
-extern void chainload_os(u32 r0, u32 id, struct atag *at);
+extern void chainload_os(u32 r0, u32 id, struct atag *at, u32 address);
+extern void chainload_os_svc(u32 start_address);
+
 //extern void cpumodeswitch_hyp2svc(u32 address);
-extern void cpumodeswitch_hyp2svc(u32 r0, u32 id, struct atag *at, u32 address);
+extern void cpumodeswitch_hyp2svc(u32 r0, u32 id, struct atag *at, u32 address, u32 cpuid);
 
 extern void entry_svc(void);
+extern void secondary_cpu_entry_svc(void);
+
 
 extern u32 g_hypvtable[];
 
-u32 guestos_boot_r0=0;
-u32 guestos_boot_r1=0;
-u32 guestos_boot_r2=0;
+//u32 guestos_boot_r0=0;
+//u32 guestos_boot_r1=0;
+//u32 guestos_boot_r2=0;
 
 
 void hyp_rsvhandler(void){
-	bcm2837_miniuart_puts("uXMHF-rpi3: core: unhandled exception\n");
-	bcm2837_miniuart_puts("uXMHF-rpi3: core: Halting!\n");
+	_XDPRINTF_("%s: unhandled exception\n", __func__);
+	_XDPRINTF_("%s: Halting!\n", __func__);
 	HALT();
 }
 
 
 void hyphvc_handler(void){
-	bcm2837_miniuart_puts("uXMHF-rpi3: core: hyphvc_handler [IN]\n");
-	bcm2837_miniuart_puts("uXMHF-rpi3: core: Hello world from hypercall\n");
-	bcm2837_miniuart_puts("uXMHF-rpi3: core: hyphvc_handler [OUT]\n");
-
-
-/*	_XDPRINTFSMP_("uXMHF-rpi3: core: hyphvc_handler [IN]\n");
-	_XDPRINTFSMP_("uXMHF-rpi3: core: Hello world from hypercall\n");
-	_XDPRINTFSMP_("uXMHF-rpi3: core: hyphvc_handler [OUT]\n");
-*/
-
+	_XDPRINTF_("%s: [IN]\n", __func__);
+	_XDPRINTF_("%s: Hello world from hypercall\n", __func__);
+	_XDPRINTF_("%s: [OUT]\n", __func__);
 }
 
 void hypsvc_handler(void){
@@ -216,43 +213,193 @@ void core_fixresmemmap(u32 fdt_address){
 volatile __attribute__((aligned(32))) u32 my_lock=1;
 extern u32 cpu_smpready[];
 extern u8 cpu_stacks[];
+extern u8 cpu_stacks_svc[];
 
 
-void main(u32 r0, u32 id, struct atag *at){
+void main(u32 r0, u32 id, struct atag *at, u32 cpuid){
 	u32 hvbar, hcr, spsr_hyp;
 
-	_XDPRINTF_("%s: ENTER: sp=0x%08x (cpu_stacks=0x%08x)\n", __func__,
+	_XDPRINTF_("%s[%u]: ENTER: sp=0x%08x (cpu_stacks=0x%08x)\n", __func__, cpuid,
 			cpu_read_sp(), &cpu_stacks);
+	_XDPRINTF_("%s[%u]: r0=0x%08x, id=0x%08x, ATAGS=0x%08x\n", __func__, cpuid, r0, id, at);
 
-	_XDPRINTF_("uXMHF-rpi3: core: Hello World!\n");
-	_XDPRINTF_(" r0=0x%08x, id=0x%08x, ATAGS=0x%08x\n", r0, id, at);
-
+	//sanity check ATAGS pointer
 	if(!(at->size == FDT_MAGIC)){
-		//bcm2837_miniuart_puts("uXMHF-rpi3: core: Error: require ATAGS to be FDT blob. Halting!\n");
-		_XDPRINTF_("uXMHF-rpi3: core: Error: require ATAGS to be FDT blob. Halting!\n");
+		_XDPRINTF_("%s[%u]: Error: require ATAGS to be FDT blob. Halting!\n", __func__, cpuid);
 		HALT();
 	}
-
-	//bcm2837_miniuart_puts("uXMHF-rpi3: core: ATAGS pointer is a FDT blob so no worries\n");
-	_XDPRINTF_("uXMHF-rpi3: core: ATAGS pointer is a FDT blob so no worries\n");
+	_XDPRINTF_("%s[%u]: ATAGS pointer is a FDT blob so no worries\n", __func__, cpuid);
 
 	//fix reserved memory map
 	core_fixresmemmap((u32)at);
 
-
+	//initialize base hardware platform
 	bcm2837_platform_initialize();
-	_XDPRINTF_("%s: initialized base hardware platform\n", __func__);
+	_XDPRINTF_("%s[%u]: initialized base hardware platform\n", __func__, cpuid);
 
 	hyppgtbl_populate_tables();
-	_XDPRINTF_("%s: page-tables populated\n", __func__);
+	_XDPRINTF_("%s[%u]: page-tables populated\n", __func__, cpuid);
 
 	hyppgtbl_activate();
-	_XDPRINTF_("%s: hyp page-tables activated\n", __func__);
+	_XDPRINTF_("%s[%u]: hyp page-tables activated\n", __func__, cpuid);
 
 	// populate stage-2 page tables
 	s2pgtbl_populate_tables();
-	_XDPRINTF_("%s: stage-2 pts populated.\n", __func__);
+	_XDPRINTF_("%s[%u]: stage-2 pts populated.\n", __func__, cpuid);
 
+	//dump hyp registers and load hvbar
+	_XDPRINTF_("%s[%u]: HCR=0x%08x\n", __func__, cpuid, sysreg_read_hcr());
+	_XDPRINTF_("%s[%u]: HSTR=0x%08x\n", __func__, cpuid, sysreg_read_hstr());
+	_XDPRINTF_("%s[%u]: HCPTR=0x%08x\n", __func__, cpuid, sysreg_read_hcptr());
+	_XDPRINTF_("%s[%u]: HDCR=0x%08x\n", __func__, cpuid, sysreg_read_hdcr());
+	_XDPRINTF_("%s[%u]: HVBAR[before]=0x%08x\n", __func__, cpuid, sysreg_read_hvbar());
+	_XDPRINTF_("%s[%u]: ghypvtable at 0x%08x\n", __func__, cpuid, (u32)&g_hypvtable);
+	sysreg_write_hvbar((u32)&g_hypvtable);
+	_XDPRINTF_("%s[%u]: HVBAR[after]=0x%08x\n", __func__, cpuid, sysreg_read_hvbar());
+
+	//test hyp mode hvc
+	//_XDPRINTF_("%s[%u]: proceeding to test hypercall (HVC) in HYP mode...\n", __func__, cpuid);
+	//hypcall();
+	//_XDPRINTF_("%s[%u]: successful return from hypercall\n", __func__, cpuid);
+
+	// initialize cpu support for second stage page table translations
+	s2pgtbl_initialize();
+	_XDPRINTF_("%s[%u]: cpu ready for stage-2 pts...\n", __func__, cpuid);
+
+	// load page table base
+	s2pgtbl_loadpgtblbase();
+	_XDPRINTF_("%s[%u]: loaded stage-2 page-table base register\n", __func__, cpuid);
+
+	// activate translation
+	s2pgtbl_activatetranslation();
+	_XDPRINTF_("%s[%u]: activated stage-2 translation\n", __func__, cpuid);
+
+	// boot secondary cores
+	_XDPRINTF_("%s[%u]: proceeding to initialize SMP...\n", __func__, cpuid);
+	bcm2837_platform_smpinitialize();
+	_XDPRINTF_("%s[%u]: secondary cores booted, moving on...\n", __func__, cpuid);
+
+	//brief delay to allow secondary cores to start spinning on mailboxes
+/*	_XDPRINTF_("%s[%u]: waiting for secondary cores to spin into mailbox wait...\n", __func__, cpuid);
+	{
+		u32 i,j;
+		for(i=0; i < 1024*256; i++){
+			for(j=0; j < 1024; j++){
+				cpu_dsb();
+			}
+		}
+	}
+*/
+
+	_XDPRINTF_("%s[%u]: booting guest in SVC mode\n", __func__, cpuid);
+	_XDPRINTF_("%s[%u]: r0=0x%08x, id=0x%08x, at=0x%08x\n", __func__, cpuid, r0, id, at);
+
+	//cpumodeswitch_hyp2svc(r0, id, at, &entry_svc);
+	//cpumodeswitch_hyp2svc(r0, id, at, 0x8000, 0);
+	chainload_os(r0,id,at,0x8000);
+
+	_XDPRINTF_("%s[%u]: Halting\n", __func__, cpuid);
+	HALT();
+}
+
+
+
+void secondary_main(u32 cpuid){
+	armlocalregisters_mailboxwrite_t *armlocalregisters_mailboxwrite = (armlocalregisters_mailboxwrite_t *)(ARMLOCALREGISTERS_MAILBOXWRITE_BASE + (0 * sizeof(armlocalregisters_mailboxwrite_t)));
+
+	_XDPRINTF_("%s[%u]: ENTER: sp=0x%08x (cpu_stacks=0x%08x)\n", __func__, cpuid,
+			cpu_read_sp(), &cpu_stacks);
+
+	hyppgtbl_activate();
+	_XDPRINTF_("%s[%u]: hyp page-tables activated\n", __func__, cpuid);
+
+	//dump hyp registers and load hvbar
+	_XDPRINTF_("%s[%u]: HCR=0x%08x\n", __func__, cpuid, sysreg_read_hcr());
+	_XDPRINTF_("%s[%u]: HSTR=0x%08x\n", __func__, cpuid, sysreg_read_hstr());
+	_XDPRINTF_("%s[%u]: HCPTR=0x%08x\n", __func__, cpuid, sysreg_read_hcptr());
+	_XDPRINTF_("%s[%u]: HDCR=0x%08x\n", __func__, cpuid, sysreg_read_hdcr());
+	_XDPRINTF_("%s[%u]: HVBAR[before]=0x%08x\n", __func__, cpuid, sysreg_read_hvbar());
+	_XDPRINTF_("%s[%u]: ghypvtable at 0x%08x\n", __func__, cpuid, (u32)&g_hypvtable);
+	sysreg_write_hvbar((u32)&g_hypvtable);
+	_XDPRINTF_("%s[%u]: HVBAR[after]=0x%08x\n", __func__, cpuid, sysreg_read_hvbar());
+
+	//test hyp mode hvc
+	//_XDPRINTF_("%s[%u]: proceeding to test hypercall (HVC) in HYP mode...\n", __func__, cpuid);
+	//hypcall();
+	//_XDPRINTF_("%s[%u]: successful return from hypercall\n", __func__, cpuid);
+
+	// initialize cpu support for second stage page table translations
+	s2pgtbl_initialize();
+	_XDPRINTF_("%s[%u]: cpu ready for stage-2 pts...\n", __func__, cpuid);
+
+	// load page table base
+	s2pgtbl_loadpgtblbase();
+	_XDPRINTF_("%s[%u]: loaded stage-2 page-table base register\n", __func__, cpuid);
+
+	// activate translation
+	s2pgtbl_activatetranslation();
+	_XDPRINTF_("%s[%u]: activated stage-2 translation\n", __func__, cpuid);
+
+
+/*
+	_XDPRINTF_("%s[%u]: Moving into SVC mode...\n", __func__, cpuid);
+
+	//_XDPRINTF_("%s[%u]: Signalling SMP readiness and moving into SVC mode...\n", __func__, cpuid);
+	//armlocalregisters_mailboxwrite->mailbox3write = 1;
+	//cpu_smpready[cpuid]=1;
+
+	cpumodeswitch_hyp2svc(0, 0, 0, &secondary_cpu_entry_svc, cpuid);
+
+	_XDPRINTF_("%s[%u]: should never get here. halting!\n", __func__, cpuid);
+	HALT();
+*/
+	{
+		u32 start_address;
+		armlocalregisters_mailboxwrite_t *armlocalregisters_mailboxwrite;
+		armlocalregisters_mailboxwrite = (armlocalregisters_mailboxwrite_t *)(ARMLOCALREGISTERS_MAILBOXWRITE_BASE + (0 * sizeof(armlocalregisters_mailboxwrite_t)));
+
+		_XDPRINTF_("%s[%u]: Signalling SMP readiness and entering SMP boot wait loop...\n", __func__, cpuid);
+		armlocalregisters_mailboxwrite->mailbox3write = 1;
+		cpu_dsb();
+
+		start_address=bcm2837_platform_waitforstartup(cpuid);
+
+		_XDPRINTFSMP_("%s[%u]: Got startup signal, address=0x%08x\n", __func__, cpuid, start_address);
+
+		chainload_os(0, 0, 0, start_address);
+
+		HALT();
+	}
+
+
+}
+
+
+//all secondary CPUs get here in SVC mode and enter the wait-for-startup loop
+void secondary_main_svc(u32 cpuid){
+	u32 start_address;
+	armlocalregisters_mailboxwrite_t *armlocalregisters_mailboxwrite;
+
+	armlocalregisters_mailboxwrite = (armlocalregisters_mailboxwrite_t *)(ARMLOCALREGISTERS_MAILBOXWRITE_BASE + (0 * sizeof(armlocalregisters_mailboxwrite_t)));
+
+	_XDPRINTF_("%s[%u]: ENTER: sp=0x%08x (cpu_stacks_svc=0x%08x)\n", __func__, cpuid,
+			cpu_read_sp(), &cpu_stacks_svc);
+
+	//_XDPRINTF_("%s[%u]: cpu_smpready[%u]=%u\n", __func__, cpuid, cpuid, cpu_smpready[cpuid]);
+	_XDPRINTF_("%s[%u]: Signalling SMP readiness and halting!\n", __func__, cpuid);
+	armlocalregisters_mailboxwrite->mailbox3write = 1;
+	//cpu_smpready[cpuid]=1;
+	cpu_dsb();
+
+	start_address=bcm2837_platform_waitforstartup(cpuid);
+
+	//if(cpuid == 1){
+		chainload_os_svc(start_address);
+	//}
+
+	//_XDPRINTF_("%s[%u]: We should never be here. Halting!\n", __func__, cpuid);
+	HALT();
+}
 
 
 /*
@@ -267,112 +414,3 @@ void main(u32 r0, u32 id, struct atag *at){
 	spin_unlock(&my_lock);
 	_XDPRINTFSMP_("%s: lock released [cirrent value=0x%08x]\n", __func__, my_lock);
 */
-
-	_XDPRINTFSMP_("%s: proceeding to initialize SMP...\n", __func__);
-	bcm2837_platform_smpinitialize();
-	_XDPRINTFSMP_("%s: secondary cores should have started. moving on with boot processor...\n", __func__);
-
-
-	//_XDPRINTFSMP_("%s: core: WiP. Halting\n", __func__);
-	//HALT();
-
-	//store guest OS boot register values
-	guestos_boot_r0=r0;
-	guestos_boot_r1=id;
-	guestos_boot_r2=at;
-
-	hvbar = sysreg_read_hvbar();
-	_XDPRINTFSMP_(" HVBAR before=0x%08x\n", hvbar);
-	_XDPRINTFSMP_(" g_hypvtable at=0x%08x\n", (u32)&g_hypvtable);
-
-	sysreg_write_hvbar((u32)&g_hypvtable);
-
-	hvbar = sysreg_read_hvbar();
-	_XDPRINTFSMP_(" loaded HVBAR with g_hypvtable; HVBAR after=0x%08x\n", hvbar);
-
-	_XDPRINTFSMP_("uxmhf-rpi3: core: proceeding to test hypercall (HVC) in HYP mode...\n");
-	hypcall();
-	_XDPRINTFSMP_("uxmhf-rpi3: core: successful return after hypercall test.\n");
-
-
-	_XDPRINTFSMP_("%s: HCR=0x%08x\n", __func__, sysreg_read_hcr());
-	_XDPRINTFSMP_("%s: HSTR=0x%08x\n", __func__, sysreg_read_hstr());
-	_XDPRINTFSMP_("%s: HCPTR=0x%08x\n", __func__, sysreg_read_hcptr());
-	_XDPRINTFSMP_("%s: HDCR=0x%08x\n", __func__, sysreg_read_hdcr());
-
-
-	/*
-
-	hcr = sysreg_read_hcr();
-	bcm2837_miniuart_puts(" HCR before= ");
-	debug_hexdumpu32(hcr);
-
-	spsr_hyp = sysreg_read_spsr_hyp();
-	bcm2837_miniuart_puts(" SPSR_hyp= ");
-	debug_hexdumpu32(spsr_hyp);
-
-	// initialize cpu support for second stage page table translations
-	bcm2837_miniuart_puts("uxmhf-rpi3: core: initializing cpu support for stage-2 pts...\n");
-	s2pgtbl_initialize();
-	bcm2837_miniuart_puts("uxmhf-rpi3: core: cpu ready for stage-2 pts...\n");
-
-	// populate stage-2 page tables
-	bcm2837_miniuart_puts("uxmhf-rpi3: core: populating stage-2 pts...\n");
-	s2pgtbl_populate_tables();
-	bcm2837_miniuart_puts("uxmhf-rpi3: core: stage-2 pts populated.\n");
-
-	// load page table base
-	s2pgtbl_loadpgtblbase();
-
-	// activate translation
-	s2pgtbl_activatetranslation();
-*/
-
-	// initialize cpu support for second stage page table translations
-	s2pgtbl_initialize();
-	_XDPRINTFSMP_("%s: cpu ready for stage-2 pts...\n", __func__);
-
-	// load page table base
-	s2pgtbl_loadpgtblbase();
-	_XDPRINTFSMP_("%s: loaded stage-2 page-table base register\n", __func__);
-
-	// activate translation
-	s2pgtbl_activatetranslation();
-	_XDPRINTFSMP_("%s: activated stage-2 translation\n", __func__);
-
-
-	_XDPRINTFSMP_("uxmhf-rpi3: core: proceeding to switch to SVC mode...\n");
-	_XDPRINTF_("%s: r0=0x%08x, id=0x%08x, ATAGS=0x%08x\n", __func__, guestos_boot_r0, guestos_boot_r1, guestos_boot_r2);
-
-	//cpumodeswitch_hyp2svc(r0, id, at, &entry_svc);
-	cpumodeswitch_hyp2svc(r0, id, at, 0x8000);
-
-
-
-/*
-	_XDPRINTFSMP_("uXMHF-rpi3: core: Chainloading OS kernel...\n");
-	chainload_os(guestos_boot_r0, guestos_boot_r1, guestos_boot_r2);
-*/
-
-	_XDPRINTFSMP_("uxmhf-rpi3: core: We were not supposed to be here.Halting!\n");
-	HALT();
-
-}
-
-
-
-void secondary_main(u32 cpuid){
-
-	_XDPRINTF_("%s[%u]: ENTER: sp=0x%08x (cpu_stacks=0x%08x)\n", __func__, cpuid,
-			cpu_read_sp(), &cpu_stacks);
-
-	hyppgtbl_activate();
-	_XDPRINTF_("%s[%u]: hyp page-tables activated\n", __func__, cpuid);
-
-	_XDPRINTF_("%s[%u]: Signalling SMP readiness...\n", __func__, cpuid);
-	cpu_smpready[cpuid]=1;
-
-	_XDPRINTFSMP_("%s[%u]: Halting!\n", __func__, cpuid);
-	HALT();
-}
-
