@@ -82,26 +82,33 @@ __attribute__((section(".paligndata"))) __attribute__((align(PAGE_SIZE_4K))) u64
 
 void s2pgtbl_populate_tables(void){
 	u32 i;
-	u64 attrs, roattrs;
+	u64 attrs;
+	//u64 roattrs;
+	u64 attrs_dev;
 
 	attrs = (LDESC_S2_MC_OUTER_WRITE_BACK_CACHEABLE_INNER_WRITE_BACK_CACHEABLE << LDESC_S2_MEMATTR_MC_SHIFT) |
 			(LDESC_S2_S2AP_READ_WRITE << LDESC_S2_MEMATTR_S2AP_SHIFT) |
-			(MEM_OUTER_SHAREABLE << LDESC_S2_MEMATTR_SH_SHIFT) |
+			(MEM_INNER_SHAREABLE << LDESC_S2_MEMATTR_SH_SHIFT) |
 			LDESC_S2_MEMATTR_AF_MASK;
 
-	roattrs = (LDESC_S2_MC_OUTER_WRITE_BACK_CACHEABLE_INNER_WRITE_BACK_CACHEABLE << LDESC_S2_MEMATTR_MC_SHIFT) |
-			(LDESC_S2_S2AP_READ_ONLY << LDESC_S2_MEMATTR_S2AP_SHIFT) |
-			(MEM_OUTER_SHAREABLE << LDESC_S2_MEMATTR_SH_SHIFT) |
+	attrs_dev = (LDESC_S2_MC_DEVnGnRnE << LDESC_S2_MEMATTR_MC_SHIFT) |
+			(LDESC_S2_S2AP_READ_WRITE << LDESC_S2_MEMATTR_S2AP_SHIFT) |
+			(MEM_INNER_SHAREABLE << LDESC_S2_MEMATTR_SH_SHIFT) |
 			LDESC_S2_MEMATTR_AF_MASK;
+
+	//roattrs = (LDESC_S2_MC_OUTER_WRITE_BACK_CACHEABLE_INNER_WRITE_BACK_CACHEABLE << LDESC_S2_MEMATTR_MC_SHIFT) |
+	//		(LDESC_S2_S2AP_READ_ONLY << LDESC_S2_MEMATTR_S2AP_SHIFT) |
+	//		(MEM_OUTER_SHAREABLE << LDESC_S2_MEMATTR_SH_SHIFT) |
+	//		LDESC_S2_MEMATTR_AF_MASK;
 
 
 	//debug
 	bcm2837_miniuart_puts(" attrs=\n");
 	debug_hexdumpu32(attrs >> 32);
 	debug_hexdumpu32((u32)attrs);
-	bcm2837_miniuart_puts(" roattrs=\n");
-	debug_hexdumpu32(roattrs >> 32);
-	debug_hexdumpu32((u32)roattrs);
+	//bcm2837_miniuart_puts(" roattrs=\n");
+	//debug_hexdumpu32(roattrs >> 32);
+	//debug_hexdumpu32((u32)roattrs);
 
 
 	//populate l1 ldesc table
@@ -130,12 +137,15 @@ void s2pgtbl_populate_tables(void){
 
 	//populate l3 ldesc table
 	for(i=0; i < (L1_LDESC_TABLE_ENTRIES * L2_LDESC_TABLE_MAXENTRIES * L3_LDESC_TABLE_MAXENTRIES); i++){
-		if( (i * PAGE_SIZE_4K) == GUESTOS_TESTPAGE_ADDR)
-			l3_ldesc_table[i] = ldesc_make_s2_l3e_page((i * PAGE_SIZE_4K), roattrs);
+		//if( (i * PAGE_SIZE_4K) == GUESTOS_TESTPAGE_ADDR)
+		//	l3_ldesc_table[i] = ldesc_make_s2_l3e_page((i * PAGE_SIZE_4K), roattrs);
+		//else
+		//	l3_ldesc_table[i] = ldesc_make_s2_l3e_page((i * PAGE_SIZE_4K), attrs);
+		if ( (i * PAGE_SIZE_4K) >= BCM2837_PERIPHERAL_BASE )
+			l3_ldesc_table[i] = ldesc_make_s2_l3e_page((i * PAGE_SIZE_4K), attrs_dev);
 		else
 			l3_ldesc_table[i] = ldesc_make_s2_l3e_page((i * PAGE_SIZE_4K), attrs);
 	}
-
 
 }
 

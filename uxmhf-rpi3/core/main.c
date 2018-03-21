@@ -8,7 +8,9 @@
 
 
 extern void chainload_os(u32 r0, u32 id, struct atag *at);
-extern void cpumodeswitch_hyp2svc(u32 address);
+//extern void cpumodeswitch_hyp2svc(u32 address);
+extern void cpumodeswitch_hyp2svc(u32 r0, u32 id, struct atag *at, u32 address);
+
 extern void entry_svc(void);
 
 extern u32 g_hypvtable[];
@@ -41,8 +43,7 @@ void hyphvc_handler(void){
 void hypsvc_handler(void){
 	u32 hsr;
 	u32 elr_hyp;
-	//bcm2837_miniuart_puts("uXMHF-rpi3: core: hypSVC_handler [IN]\n");
-	//bcm2837_miniuart_puts("uXMHF-rpi3: core: hypSVC_handler [OUT]\n");
+	_XDPRINTFSMP_("%s: ENTER\n", __func__);
 
 	//read hsr to determine the cause of the intercept
 	hsr = sysreg_read_hsr();
@@ -82,30 +83,30 @@ void hypsvc_handler(void){
 			HALT();
 	}
 
+	_XDPRINTFSMP_("%s: EXIT\n", __func__);
+
+
 }
 
 
-void main_svc(void){
+void main_svc(u32 r0, u32 id, struct atag *at){
 	u32 cpsr;
 
-	bcm2837_miniuart_puts("uXMHF-rpi3: core: now in SVC mode\n");
+	_XDPRINTF_("%s: now in SVC mode\n", __func__);
+	_XDPRINTF_("%s: r0=0x%08x, id=0x%08x, ATAGS=0x%08x\n", __func__, r0, id, at);
 
-	cpsr = sysreg_read_cpsr();
-	bcm2837_miniuart_puts(" CPSR[mode]= ");
-	debug_hexdumpu32((cpsr & 0xF));
+	_XDPRINTF_("%s: CPSR[mode]=0x%08x\n", __func__, (sysreg_read_cpsr() & 0xF));
 
-	bcm2837_miniuart_puts("uxmhf-rpi3: core: proceeding to test hypercall (HVC) in SVC mode...\n");
+	_XDPRINTF_("%s: proceeding to test hypercall (HVC) in SVC mode...\n", __func__);
 	hypcall();
-	bcm2837_miniuart_puts("uxmhf-rpi3: core: successful return after hypercall test.\n");
+	_XDPRINTF_("%s: successful return after hypercall test\n", __func__);
 
-	bcm2837_miniuart_puts("uXMHF-rpi3: core: Chainloading OS kernel...\n");
+	_XDPRINTF_("%s: chainloading OS kernel...\n", __func__);
+	_XDPRINTF_("%s: r0=0x%08x, id=0x%08x, ATAGS=0x%08x\n", __func__, r0, id, at);
+	chainload_os(r0, id, at);
 
-	bcm2837_miniuart_flush();
-	chainload_os(guestos_boot_r0, guestos_boot_r1, guestos_boot_r2);
-
-	bcm2837_miniuart_puts("uxmhf-rpi3: core: Halting!\n");
+	_XDPRINTF_("%s: should not be here. Halting!\n", __func__);
 	HALT();
-
 }
 
 
@@ -286,6 +287,13 @@ void main(u32 r0, u32 id, struct atag *at){
 	hypcall();
 	_XDPRINTFSMP_("uxmhf-rpi3: core: successful return after hypercall test.\n");
 
+
+	_XDPRINTFSMP_("%s: HCR=0x%08x\n", __func__, sysreg_read_hcr());
+	_XDPRINTFSMP_("%s: HSTR=0x%08x\n", __func__, sysreg_read_hstr());
+	_XDPRINTFSMP_("%s: HCPTR=0x%08x\n", __func__, sysreg_read_hcptr());
+	_XDPRINTFSMP_("%s: HDCR=0x%08x\n", __func__, sysreg_read_hdcr());
+
+
 	/*
 
 	hcr = sysreg_read_hcr();
@@ -311,18 +319,20 @@ void main(u32 r0, u32 id, struct atag *at){
 
 	// activate translation
 	s2pgtbl_activatetranslation();
-
-	bcm2837_miniuart_puts("uxmhf-rpi3: core: proceeding to switch to SVC mode...\n");
-	cpumodeswitch_hyp2svc(&entry_svc);
 */
 
+	_XDPRINTFSMP_("uxmhf-rpi3: core: proceeding to switch to SVC mode...\n");
+	_XDPRINTF_("%s: r0=0x%08x, id=0x%08x, ATAGS=0x%08x\n", __func__, guestos_boot_r0, guestos_boot_r1, guestos_boot_r2);
+
+	//cpumodeswitch_hyp2svc(r0, id, at, &entry_svc);
+	cpumodeswitch_hyp2svc(r0, id, at, 0x8000);
 
 
 
+/*
 	_XDPRINTFSMP_("uXMHF-rpi3: core: Chainloading OS kernel...\n");
-
 	chainload_os(guestos_boot_r0, guestos_boot_r1, guestos_boot_r2);
-
+*/
 
 	_XDPRINTFSMP_("uxmhf-rpi3: core: We were not supposed to be here.Halting!\n");
 	HALT();
