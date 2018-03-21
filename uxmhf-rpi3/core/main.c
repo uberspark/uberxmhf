@@ -19,7 +19,6 @@
 extern u8 cpu_stacks[];
 extern void chainload_os(u32 r0, u32 id, struct atag *at, u32 address);
 extern void cpumodeswitch_hyp2svc(u32 r0, u32 id, struct atag *at, u32 address, u32 cpuid);
-extern u32 g_hypvtable[BCM2837_MAXCPUS][8];
 
 
 
@@ -40,12 +39,6 @@ void hyp_rsvhandler(void){
 
 
 
-void hyp_fiqhandler(void){
-	uapp_watchdog_timerhandler();
-
-	//reset timer counter
-	sysreg_write_cnthp_tval(10*1024*1024);
-}
 
 
 void hyphvc_handler(void){
@@ -523,12 +516,9 @@ void main(u32 r0, u32 id, struct atag *at, u32 cpuid){
 	hyppgtbl_activate();
 	_XDPRINTF_("%s[%u]: hyp page-tables activated\n", __func__, cpuid);
 
-	//setup HVBAR for vectors
-	_XDPRINTFSMP_("%s[%u]: HVBAR[before]=0x%08x\n", __func__, cpuid, sysreg_read_hvbar());
 
-	_XDPRINTFSMP_("%s[%u]: ghypvtable at 0x%08x\n", __func__, cpuid, (u32)&g_hypvtable[cpuid]);
-	sysreg_write_hvbar((u32)&g_hypvtable[cpuid]);
-	_XDPRINTFSMP_("%s[%u]: HVBAR[after]=0x%08x\n", __func__, cpuid, sysreg_read_hvbar());
+	//initialize CPU vector table
+	hypvtable_initialize(cpuid);
 
 
 #if 0
@@ -659,8 +649,6 @@ void main(u32 r0, u32 id, struct atag *at, u32 cpuid){
 	HALT();
 #endif
 
-	// hypervisor timer initialization via FIQs
-	hyptimer_initialize(cpuid);
 
 	//enable FIQ mask override; this should land us in HYP mode FIQ handler when FIQs are triggered inside guest
 	hcr = sysreg_read_hcr();
@@ -704,6 +692,7 @@ void main(u32 r0, u32 id, struct atag *at, u32 cpuid){
 	//////
 	// initialize hypapps
 	ctxtrace_init(cpuid);
+	uapp_watchdog_initialize(cpuid);
 
 
 	// boot secondary cores
@@ -742,10 +731,9 @@ void secondary_main(u32 cpuid){
 	_XDPRINTF_("%s[%u]: HSTR=0x%08x\n", __func__, cpuid, sysreg_read_hstr());
 	_XDPRINTF_("%s[%u]: HCPTR=0x%08x\n", __func__, cpuid, sysreg_read_hcptr());
 	_XDPRINTF_("%s[%u]: HDCR=0x%08x\n", __func__, cpuid, sysreg_read_hdcr());
-	_XDPRINTF_("%s[%u]: HVBAR[before]=0x%08x\n", __func__, cpuid, sysreg_read_hvbar());
-	_XDPRINTF_("%s[%u]: ghypvtable at 0x%08x\n", __func__, cpuid, (u32)&g_hypvtable[cpuid]);
-	sysreg_write_hvbar((u32)&g_hypvtable[cpuid]);
-	_XDPRINTF_("%s[%u]: HVBAR[after]=0x%08x\n", __func__, cpuid, sysreg_read_hvbar());
+
+	//setup vector table for CPU
+	hypvtable_initialize(cpuid);
 
 	// initialize cpu support for second stage page table translations
 	s2pgtbl_initialize();
