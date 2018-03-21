@@ -184,11 +184,6 @@ void guest_data_abort_handler(arm8_32_regs_t *r, u32 hsr){
 	//compute validity bit of additional information
 	fault_iss_isv = (fault_iss & 0x01000000UL) >> 24;
 
-	if(!fault_iss_isv){
-		_XDPRINTFSMP_("%s: s2pgtbl DATA ABORT: invalid isv. Halting!\n", __func__);
-		HALT();
-	}
-
 	//compute fault instruction length
 	fault_il = ((hsr & HSR_IL_MASK) >> HSR_IL_SHIFT);
 
@@ -221,6 +216,14 @@ void guest_data_abort_handler(arm8_32_regs_t *r, u32 hsr){
 	ida.va = fault_va;
 	ida.pa = fault_pa;
 	ida.r = r;
+
+
+	if(!fault_iss_isv){
+		_XDPRINTFSMP_("%s: s2pgtbl DATA ABORT: invalid isv. Halting!\n", __func__);
+		_XDPRINTFSMP_("%s: va=0x%08x, pa=0x%08x\n",	__func__, ida.va, ida.pa);
+		HALT();
+	}
+
 
 	//handle data abort fault by passing it to appropriate module
 	if( (fault_pa_page == BCM2837_DMA0_REGS_BASE) ||
@@ -362,8 +365,8 @@ void core_fixresmemmap(u32 fdt_address){
 	debug_hexdumpu32(sizeof(struct fdt_reserve_entry));
 
 	//write the guestos extent as first entry
-	fdtrsvmmapentryp->address = cpu_le2be_u64(0x0000000028000000ULL);
-	fdtrsvmmapentryp->size = cpu_le2be_u64(0x0000000000C00000ULL);
+	fdtrsvmmapentryp->address = cpu_le2be_u64((u64)UXMHF_CORE_START_ADDR);
+	fdtrsvmmapentryp->size = cpu_le2be_u64((u64)UXMHF_CORE_SIZE);
 	//fdtrsvmmapentryp->address = 0ULL;
 	//fdtrsvmmapentryp->size = 0ULL;
 

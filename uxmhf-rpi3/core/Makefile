@@ -60,8 +60,9 @@ main.o : main.c
 	$(TOOLPREFIX)gcc $(CFLAGS) main.c -o main.o
 
 core.bin: entry.o miniuart.o strlen.o subr_prf.o debug.o atags.o arm8-32.o hypvtable.o mmu.o hyppgtbl.o s2pgtbl.o uapi_s2pgtbl.o dmaprot.o bcm2837.o main.o
-	$(TOOLPREFIX)ld entry.o miniuart.o strlen.o subr_prf.o debug.o atags.o arm8-32.o hypvtable.o mmu.o hyppgtbl.o s2pgtbl.o uapi_s2pgtbl.o dmaprot.o bcm2837.o main.o -T core.lscript -o core.elf $(CCLIB) 
-	#$(TOOLPREFIX)objdump -D core.elf > core.list
+	cp -f core.lscript core.lscript.c
+	$(TOOLPREFIX)gcc -E -P $(CFLAGS_DEFS) core.lscript.c -o core.ls 
+	$(TOOLPREFIX)ld entry.o miniuart.o strlen.o subr_prf.o debug.o atags.o arm8-32.o hypvtable.o mmu.o hyppgtbl.o s2pgtbl.o uapi_s2pgtbl.o dmaprot.o bcm2837.o main.o -T core.ls -o core.elf $(CCLIB) 
 	$(TOOLPREFIX)objcopy core.elf -O binary core.bin
 	
 .PHONY: clean
@@ -69,3 +70,4 @@ clean:
 	rm -f *.o
 	rm -f *.elf
 	rm -f *.bin
+	rm -f core.lscript.c
