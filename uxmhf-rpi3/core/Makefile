@@ -56,6 +56,7 @@ dmaprot.o : dmaprot.c
 bcm2837.o : bcm2837.c
 	$(TOOLPREFIX)gcc $(CFLAGS) bcm2837.c -o bcm2837.o
 
+
 ctxtrace.o : ../uapps/uapp-ctxtrace/ctxtrace.c
 	$(TOOLPREFIX)gcc $(CFLAGS) ../uapps/uapp-ctxtrace/ctxtrace.c -o ctxtrace.o
 
@@ -66,14 +67,21 @@ utpm-common.o : ../uapps/uapp-utpm/utpm-common.c
 utpm.o : ../uapps/uapp-utpm/utpm.c
 	$(TOOLPREFIX)gcc $(CFLAGS) ../uapps/uapp-utpm/utpm.c -o utpm.o
 
+uapp-uhcalltest.o : ../uapps/uapp-uhcalltest/uapp-uhcalltest.c
+	$(TOOLPREFIX)gcc $(CFLAGS) ../uapps/uapp-uhcalltest/uapp-uhcalltest.c -o uapp-uhcalltest.o
+
+
+ghcall.o : ghcall.c
+	$(TOOLPREFIX)gcc $(CFLAGS) ghcall.c -o ghcall.o
+
 
 main.o : main.c
 	$(TOOLPREFIX)gcc $(CFLAGS) main.c -o main.o
 
-core.bin: entry.o miniuart.o strlen.o subr_prf.o debug.o atags.o arm8-32.o hypvtable.o mmu.o hyppgtbl.o s2pgtbl.o uapi_s2pgtbl.o dmaprot.o bcm2837.o ctxtrace.o utpm-common.o utpm.o main.o
+core.bin: entry.o miniuart.o strlen.o subr_prf.o debug.o atags.o arm8-32.o hypvtable.o mmu.o hyppgtbl.o s2pgtbl.o uapi_s2pgtbl.o dmaprot.o bcm2837.o ctxtrace.o utpm-common.o utpm.o uapp-uhcalltest.o ghcall.o main.o
 	cp -f core.lscript core.lscript.c
 	$(TOOLPREFIX)gcc -E -P $(CFLAGS_DEFS) core.lscript.c -o core.ls 
-	$(TOOLPREFIX)ld entry.o miniuart.o strlen.o subr_prf.o debug.o atags.o arm8-32.o hypvtable.o mmu.o hyppgtbl.o s2pgtbl.o uapi_s2pgtbl.o dmaprot.o bcm2837.o ctxtrace.o utpm-common.o utpm.o main.o -T core.ls -o core.elf $(LIBS) $(CCLIB) 
+	$(TOOLPREFIX)ld entry.o miniuart.o strlen.o subr_prf.o debug.o atags.o arm8-32.o hypvtable.o mmu.o hyppgtbl.o s2pgtbl.o uapi_s2pgtbl.o dmaprot.o bcm2837.o ctxtrace.o utpm-common.o utpm.o uapp-uhcalltest.o ghcall.o main.o -T core.ls -o core.elf $(LIBS) $(CCLIB) 
 	$(TOOLPREFIX)objcopy core.elf -O binary core.bin
 	
 .PHONY: clean

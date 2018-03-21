@@ -1,1 +1,0 @@
-obj-m := hypcall.o
