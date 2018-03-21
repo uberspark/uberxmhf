@@ -17,7 +17,11 @@ extern void entry_svc(void);
 extern void secondary_cpu_entry_svc(void);
 
 
-extern u32 g_hypvtable[];
+extern void hypvtable_reserved_handler();
+extern void hypvtable_hyphvc_handler();
+extern void hypvtable_hypsvc_handler();
+
+extern u32 g_hypvtable[BCM2837_MAXCPUS][8];
 
 //u32 guestos_boot_r0=0;
 //u32 guestos_boot_r1=0;
@@ -43,23 +47,35 @@ void hyphvc_handler(void){
 //////
 
 void guest_regwrite(arm8_32_regs_t *r, u32 regnum, u32 value){
-	switch(regnum){
-		case 0:		r->r0 = value; break;
-		case 1:		r->r1 = value; break;
-		case 2:		r->r2 = value; break;
-		case 3:		r->r3 = value; break;
-		case 4:		r->r4 = value; break;
-		case 5:		r->r5 = value; break;
-		case 6:		r->r6 = value; break;
-		case 7:		r->r7 = value; break;
-		case 8:		r->r8 = value; break;
-		case 9:		r->r9 = value; break;
-		case 10:	r->r10 = value; break;
-		case 11:	r->r11 = value; break;
-		case 12:	r->r12 = value; break;
-		default:
-			_XDPRINTFSMP_("%s: Invalid regnum=%u. Halting!\n", __func__, regnum);
-			HALT();
+	if(regnum == 0)
+		r->r0 = value;
+	else if(regnum == 1)
+		r->r1 = value;
+	else if(regnum == 2)
+		r->r2 = value;
+	else if(regnum == 3)
+		r->r3 = value;
+	else if(regnum == 4)
+		r->r4 = value;
+	else if(regnum == 5)
+		r->r5 = value;
+	else if(regnum == 6)
+		r->r6 = value;
+	else if(regnum == 7)
+		r->r7 = value;
+	else if(regnum == 8)
+		r->r8 = value;
+	else if(regnum == 9)
+		r->r9 = value;
+	else if(regnum == 10)
+		r->r10 = value;
+	else if(regnum == 11)
+		r->r11 = value;
+	else if(regnum == 12)
+		r->r12 = value;
+	else{
+		_XDPRINTFSMP_("%s: Invalid regnum=%u. Halting!\n", __func__, regnum);
+		HALT();
 	}
 }
 
@@ -101,6 +117,61 @@ u32 guest_regread(arm8_32_regs_t *r, u32 regnum){
 }
 
 
+void guest_hypercall_handler(arm8_32_regs_t *r, u32 hsr){
+	u32 hvc_iss;
+	u32 hvc_imm16;
+
+	hvc_imm16 = hvc_iss & 0x0000FFFFUL;
+	hvc_iss = ((hsr & HSR_ISS_MASK) >> HSR_ISS_SHIFT);
+
+
+	if( hvc_imm16 ==  1 ){
+		//_XDPRINTFSMP_("%s: r0=0x%08x, r1=0x%08x, r2=0x%08x\n", __func__,
+		//		r->r0, r->r1, r->r2);
+
+		//r->r0 = 0x21;
+		//r->r1 = 0x22;
+		//r->r2 = 0x23;
+
+	}else if (hvc_imm16 == 2){
+		//u64 attrs_noaccess = (LDESC_S2_MC_OUTER_WRITE_BACK_CACHEABLE_INNER_WRITE_BACK_CACHEABLE << LDESC_S2_MEMATTR_MC_SHIFT) |
+		//	(LDESC_S2_S2AP_NO_ACCESS << LDESC_S2_MEMATTR_S2AP_SHIFT) |
+		//	(MEM_INNER_SHAREABLE << LDESC_S2_MEMATTR_SH_SHIFT) |
+		//	LDESC_S2_MEMATTR_AF_MASK;
+
+		//_XDPRINTFSMP_("%s: setprot_noaccess r0=0x%08x\n", __func__,
+		//		r->r0);
+
+		//uapi_s2pgtbl_setprot(r->r0, attrs_noaccess);
+		//sysreg_tlbiallis();
+
+	}else if (hvc_imm16 == 3){
+		//u64 attrs = (LDESC_S2_MC_OUTER_WRITE_BACK_CACHEABLE_INNER_WRITE_BACK_CACHEABLE << LDESC_S2_MEMATTR_MC_SHIFT) |
+		//	(LDESC_S2_S2AP_READ_WRITE << LDESC_S2_MEMATTR_S2AP_SHIFT) |
+		//	(MEM_INNER_SHAREABLE << LDESC_S2_MEMATTR_SH_SHIFT) |
+		//	LDESC_S2_MEMATTR_AF_MASK;
+
+		//_XDPRINTFSMP_("%s: setprot_restore-access r0=0x%08x\n", __func__,
+		//		r->r0);
+
+		//uapi_s2pgtbl_setprot(r->r0, attrs);
+		//sysreg_tlbiallis();
+
+	}else if (hvc_imm16 == 5) {
+		//_XDPRINTFSMP_("%s: HVC: reg=0x%08x, val=0x%08x\n",
+		//		__func__, r->r0, r->r1);
+
+		//mmio_write32(r->r0, r->r1);
+
+	}else{
+		_XDPRINTFSMP_("%s: unknown HVC instruction imm16=0x%08x. Halting!\n", __func__,
+				hvc_imm16);
+		HALT();
+	}
+
+}
+
+
 void guest_data_abort_handler(arm8_32_regs_t *r, u32 hsr){
 	u32 elr_hyp;
 	u32 fault_va;
@@ -108,23 +179,35 @@ void guest_data_abort_handler(arm8_32_regs_t *r, u32 hsr){
 	u32 fault_pa;
 	u32 fault_va_page_offset;
 	u32 fault_iss;
+	u32 fault_iss_isv;
 	u32 guest_regnum;
-	u32 guest_regvalue;
+	u32 fault_il;
+	info_intercept_data_abort_t ida;
 
+	//get faulting iss
+	fault_iss = (hsr & HSR_ISS_MASK) >> HSR_ISS_SHIFT;
+
+	//compute validity bit of additional information
+	fault_iss_isv = (fault_iss & 0x01000000UL) >> 24;
+
+	if(!fault_iss_isv){
+		_XDPRINTFSMP_("%s: s2pgtbl DATA ABORT: invalid isv. Halting!\n", __func__);
+		HALT();
+	}
+
+	//compute fault instruction length
+	fault_il = ((hsr & HSR_IL_MASK) >> HSR_IL_SHIFT);
 
 	//fix return address
 	elr_hyp = sysreg_read_elrhyp();
-	elr_hyp += sizeof(u32);
+	if(fault_il)
+		elr_hyp += sizeof(u32);
+	else
+		elr_hyp += sizeof(u16);
 	sysreg_write_elrhyp(elr_hyp);
 
 	//get faulting va
 	fault_va= sysreg_read_hdfar();
-
-	//debug: sanity check
-	//if(fault_va != r->r0){
-	//	bcm2837_miniuart_puts("dmaprotusb: fault_va != r->r0. Halting!\n");
-	//	HALT();
-	//}
 
 	//compute faulting va page_offset
 	fault_va_page_offset = fault_va & 0x00000FFFUL;
@@ -136,40 +219,45 @@ void guest_data_abort_handler(arm8_32_regs_t *r, u32 hsr){
 	//compute faulting pa
 	fault_pa = 	fault_pa_page | fault_va_page_offset;
 
-	//debug: sanity check
-	//if(fault_pa != r->r2){
-	//	bcm2837_miniuart_puts("dmaprotusb: fault_pa != r->r2. Halting!\n");
-	//	HALT();
-	//}
+	//fill out 	info_intercept_data_abort_t ida
+	ida.il = fault_il;
+	ida.sas = (fault_iss & 0x00C00000UL) >> 22;
+	ida.srt = (fault_iss & 0x000F0000UL) >> 16;
+	ida.wnr = (fault_iss & 0x00000040UL) >> 6;
+	ida.va = fault_va;
+	ida.pa = fault_pa;
+	ida.r = r;
 
-	//get faulting iss
-	fault_iss = (hsr & HSR_ISS_MASK) >> HSR_ISS_SHIFT;
-
-	//compute guest register number
-	guest_regnum = (fault_iss & 0x000F0000UL) >> 16;
-
-	//get guest register value
-	guest_regvalue = guest_regread(r, guest_regnum);
-
-	//debug: sanity check
-	//if(guest_regvalue != r->r1){
-	//	bcm2837_miniuart_puts("dmaprotusb: guest_regvalue != r->r1. Halting!\n");
-	//	bcm2837_miniuart_puts("dmaprotusb: guest_regvalue=");
-	//	debug_hexdumpu32(guest_regvalue);
-	//	bcm2837_miniuart_flush();
-	//	HALT();
-	//}
+	//handle data abort fault by passing it to appropriate module
+	if( (fault_pa_page == BCM2837_DMA0_REGS_BASE) ||
+		(fault_pa_page == BCM2837_DMA15_REGS_BASE) ){
+		dmaprot_handle_dmacontroller_access(&ida);
 
 
-	mmio_write32(fault_pa, guest_regvalue);
+	}else if ( fault_pa_page == DWC_REGS_BASE ){
+		dmaprot_handle_usbdmac_access(&ida);
+
+	}else{
+		_XDPRINTFSMP_("%s: unknown s2pgtbl DATA ABORT. Halting! (va=0x%08x, pa=0x%08x)\n",
+			__func__, ida.va, ida.pa);
+		HALT();
+	}
+
+
 }
 
+
+
+
+__attribute__(( section(".data") )) u32 hypsvc_handler_lock=1;
 
 void hypsvc_handler(arm8_32_regs_t *r){
 	u32 hsr;
 	u32 hsr_ec;
-	u32 elr_hyp;
 	//_XDPRINTFSMP_("%s: ENTER\n", __func__);
+
+	//acquire lock
+	spin_lock(&hypsvc_handler_lock);
 
 	//read hsr to determine the cause of the intercept
 	hsr = sysreg_read_hsr();
@@ -178,160 +266,21 @@ void hypsvc_handler(arm8_32_regs_t *r){
 	//debug_hexdumpu32(hsr);
 
 	//switch ( ((hsr & HSR_EC_MASK) >> HSR_EC_SHIFT) ){
-	switch (hsr_ec){
-		case HSR_EC_HVC:{
-				u32 hvc_iss = ((hsr & HSR_ISS_MASK) >> HSR_ISS_SHIFT);
-				u32 hvc_imm16 = hvc_iss & 0x0000FFFFUL;
+	if(hsr_ec == HSR_EC_HVC){
+		guest_hypercall_handler(r, hsr);
 
-				switch(hvc_imm16){
-					/*case 1:{
-							_XDPRINTFSMP_("%s: r0=0x%08x, r1=0x%08x, r2=0x%08x\n", __func__,
-									r->r0, r->r1, r->r2);
+	}else if (hsr_ec == HSR_EC_DATA_ABORT_ELCHANGE){
+		guest_data_abort_handler(r, hsr);
 
-							r->r0 = 0x21;
-							r->r1 = 0x22;
-							r->r2 = 0x23;
-						}
-						break;
-
-
-					case 2:{
-							u64 attrs_noaccess = (LDESC_S2_MC_OUTER_WRITE_BACK_CACHEABLE_INNER_WRITE_BACK_CACHEABLE << LDESC_S2_MEMATTR_MC_SHIFT) |
-								(LDESC_S2_S2AP_NO_ACCESS << LDESC_S2_MEMATTR_S2AP_SHIFT) |
-								(MEM_INNER_SHAREABLE << LDESC_S2_MEMATTR_SH_SHIFT) |
-								LDESC_S2_MEMATTR_AF_MASK;
-
-							_XDPRINTFSMP_("%s: setprot_noaccess r0=0x%08x\n", __func__,
-									r->r0);
-							uapi_s2pgtbl_setprot(r->r0, attrs_noaccess);
-							//sysreg_tlbiipas2is(r->r0);
-							sysreg_tlbiallis();
-						}
-						break;
-
-
-					case 3:{
-							u64 attrs = (LDESC_S2_MC_OUTER_WRITE_BACK_CACHEABLE_INNER_WRITE_BACK_CACHEABLE << LDESC_S2_MEMATTR_MC_SHIFT) |
-								(LDESC_S2_S2AP_READ_WRITE << LDESC_S2_MEMATTR_S2AP_SHIFT) |
-								(MEM_INNER_SHAREABLE << LDESC_S2_MEMATTR_SH_SHIFT) |
-								LDESC_S2_MEMATTR_AF_MASK;
-
-							_XDPRINTFSMP_("%s: setprot_restore-access r0=0x%08x\n", __func__,
-									r->r0);
-
-							uapi_s2pgtbl_setprot(r->r0, attrs);
-							//sysreg_tlbiipas2is(r->r0);
-							sysreg_tlbiallis();
-						}
-						break;
-					*/
-
-					case 5:{
-						//_XDPRINTFSMP_("%s: HVC: reg=0x%08x, val=0x%08x\n",
-						//		__func__, r->r0, r->r1);
-
-						mmio_write32(r->r0, r->r1);
-						//bcm2837_miniuart_puts("HVC reg=");
-						//debug_hexdumpu32(r->r0);
-						//bcm2837_miniuart_puts("HVC val=");
-						//debug_hexdumpu32(r->r1);
-
-
-					}
-					break;
-
-					default:
-						_XDPRINTFSMP_("%s: unknown HVC instruction imm16=0x%08x. Halting!\n", __func__,
-								hvc_imm16);
-						HALT();
-						break;
-				}
-
-			}
-			break;
-
-		case HSR_EC_DATA_ABORT_ELCHANGE:{
-				guest_data_abort_handler(r, hsr);
-
-				/*u32 elr_hyp;
-				//u32 fault_va;
-				u32 fault_va_page_offset;
-				//u32 fault_pa;
-				u32 da_iss;
-				//u32 da_il;
-				u32 da_iss_isv;
-				u32 da_pa_page;
-				//u32 da_iss_sas;
-				//u32 da_iss_srt;
-				//u32 da_iss_wnr;
-				info_intercept_data_abort_t ida;
-				u32 reg_value;
-
-				da_iss = ((hsr & HSR_ISS_MASK) >> HSR_ISS_SHIFT);
-				ida.il = ((hsr & HSR_IL_MASK) >> HSR_IL_SHIFT);
-				da_iss_isv = (da_iss & 0x01000000UL) >> 24;
-				ida.sas = (da_iss & 0x00C00000UL) >> 22;
-				ida.srt = (da_iss & 0x000F0000UL) >> 16;
-				ida.wnr = (da_iss & 0x00000040UL) >> 6;
-				ida.va = sysreg_read_hdfar();
-				fault_va_page_offset = ida.va % 4096;
-				da_pa_page = ((sysreg_read_hpfar() & 0xFFFFFFF0) << 8);
-				ida.pa = da_pa_page | fault_va_page_offset;
-				ida.r = r;
-				reg_value = (u32)guest_regread(ida.r, ida.srt);
-
-
-				_XDPRINTFSMP_("%s: s2 DATA ABORT: va=0x%08x, pa=0x%08x, wnr=%u, value=0x%08x\n",
-						__func__, ida.va, ida.pa, ida.wnr, reg_value);
-				HALT();
-
-				mmio_write32(ida.pa, reg_value);
-*/
-
-				/*if(!da_iss_isv){
-					_XDPRINTFSMP_("%s: s2pgtbl DATA ABORT: invalid isv. Halting!\n", __func__);
-					HALT();
-				}
-
-				if( (da_pa_page == BCM2837_DMA0_REGS_BASE) ||
-					(da_pa_page == BCM2837_DMA15_REGS_BASE) ){
-					dmaprot_handle_dmacontroller_access(&ida);
-
-				}else if ( da_pa_page == DWC_REGS_BASE){
-					dmaprot_handle_usbdmac_access(&ida);
-
-				}else{
-					_XDPRINTFSMP_("%s: unknown s2pgtbl DATA ABORT. Halting! (va=0x%08x, pa=0x%08x)\n",
-							__func__, ida.va, ida.pa);
-					HALT();
-				}
-				*/
-
-				/*
-				elr_hyp = sysreg_read_elrhyp();
-
-				if(ida.il)
-					elr_hyp += sizeof(u32);
-				else
-					elr_hyp += sizeof(u16);
-
-				sysreg_write_elrhyp(elr_hyp);
-				*/
-			}
-			break;
-
-
-		default:
-			bcm2837_miniuart_puts("uXMHF-rpi3: core: UNHANDLED INTERCEPT!\n");
-			bcm2837_miniuart_puts(" HSR= ");
-			debug_hexdumpu32(hsr);
-			bcm2837_miniuart_puts("uXMHF-rpi3: core: Halting\n");
-			HALT();
+	}else{
+		_XDPRINTFSMP_("uXMHF-rpi3: core: UNHANDLED INTERCEPT HALTING! hsr=0x%08x\n", hsr);
+		HALT();
 	}
 
 	//_XDPRINTFSMP_("%s: EXIT\n", __func__);
 
-
+	//release lock
+	spin_unlock(&hypsvc_handler_lock);
 }
 
 
@@ -507,8 +456,28 @@ void main(u32 r0, u32 id, struct atag *at, u32 cpuid){
 	_XDPRINTF_("%s[%u]: HCPTR=0x%08x\n", __func__, cpuid, sysreg_read_hcptr());
 	_XDPRINTF_("%s[%u]: HDCR=0x%08x\n", __func__, cpuid, sysreg_read_hdcr());
 	_XDPRINTF_("%s[%u]: HVBAR[before]=0x%08x\n", __func__, cpuid, sysreg_read_hvbar());
-	_XDPRINTF_("%s[%u]: ghypvtable at 0x%08x\n", __func__, cpuid, (u32)&g_hypvtable);
-	sysreg_write_hvbar((u32)&g_hypvtable);
+
+/*	//debug
+	_XDPRINTF_("%s[%u]: proceeding to dump ghypvtable...\n", __func__, cpuid);
+	_XDPRINTF_("%s[%u]: rsv handler at 0x%08x\n", __func__, cpuid, &hypvtable_reserved_handler);
+	_XDPRINTF_("%s[%u]: hvc handler at 0x%08x\n", __func__, cpuid, &hypvtable_hyphvc_handler);
+	_XDPRINTF_("%s[%u]: hvc handler at 0x%08x\n", __func__, cpuid, &hypvtable_hypsvc_handler);
+
+	{
+		u32 i, j;
+		for(i=0; i < BCM2837_MAXCPUS; i++){
+			_XDPRINTF_("  ghypvtable[%u] at 0x%08x\n", i, (u32)&g_hypvtable[i]);
+			for(j=0; j < 8; j++){
+				_XDPRINTF_("  ghypvtable[%u][%u]=0x%08x\n", i, j, g_hypvtable[i][j]);
+			}
+		}
+	}
+	_XDPRINTF_("%s[%u]: dumped g_hypvtable. Halting\n", __func__, cpuid);
+	HALT();
+*/
+
+	_XDPRINTF_("%s[%u]: ghypvtable at 0x%08x\n", __func__, cpuid, (u32)&g_hypvtable[cpuid]);
+	sysreg_write_hvbar((u32)&g_hypvtable[cpuid]);
 	_XDPRINTF_("%s[%u]: HVBAR[after]=0x%08x\n", __func__, cpuid, sysreg_read_hvbar());
 
 	//test hyp mode hvc
@@ -573,8 +542,8 @@ void secondary_main(u32 cpuid){
 	_XDPRINTF_("%s[%u]: HCPTR=0x%08x\n", __func__, cpuid, sysreg_read_hcptr());
 	_XDPRINTF_("%s[%u]: HDCR=0x%08x\n", __func__, cpuid, sysreg_read_hdcr());
 	_XDPRINTF_("%s[%u]: HVBAR[before]=0x%08x\n", __func__, cpuid, sysreg_read_hvbar());
-	_XDPRINTF_("%s[%u]: ghypvtable at 0x%08x\n", __func__, cpuid, (u32)&g_hypvtable);
-	sysreg_write_hvbar((u32)&g_hypvtable);
+	_XDPRINTF_("%s[%u]: ghypvtable at 0x%08x\n", __func__, cpuid, (u32)&g_hypvtable[cpuid]);
+	sysreg_write_hvbar((u32)&g_hypvtable[cpuid]);
 	_XDPRINTF_("%s[%u]: HVBAR[after]=0x%08x\n", __func__, cpuid, sysreg_read_hvbar());
 
 	//test hyp mode hvc
@@ -619,7 +588,6 @@ void secondary_main(u32 cpuid){
 		start_address=bcm2837_platform_waitforstartup(cpuid);
 
 		_XDPRINTFSMP_("%s[%u]: Got startup signal, address=0x%08x\n", __func__, cpuid, start_address);
-		HALT();
 
 		chainload_os(0, 0, 0, start_address);
 

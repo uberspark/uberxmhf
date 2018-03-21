@@ -15,10 +15,10 @@ __attribute__((section(".palign2mdata"))) __attribute__((align(PAGE_SIZE_2M))) d
 
 //activate DMA protection mechanism
 void dmaprot_activate(void){
-	//u64 attrs_dev = (LDESC_S2_MC_DEVnGnRnE << LDESC_S2_MEMATTR_MC_SHIFT) |
-	//		(LDESC_S2_S2AP_NO_ACCESS << LDESC_S2_MEMATTR_S2AP_SHIFT) |
-	//		(MEM_INNER_SHAREABLE << LDESC_S2_MEMATTR_SH_SHIFT) |
-	//		LDESC_S2_MEMATTR_AF_MASK;
+	u64 attrs_dev = (LDESC_S2_MC_DEVnGnRE << LDESC_S2_MEMATTR_MC_SHIFT) |
+			(LDESC_S2_S2AP_NO_ACCESS << LDESC_S2_MEMATTR_S2AP_SHIFT) |
+			(MEM_NON_SHAREABLE << LDESC_S2_MEMATTR_SH_SHIFT) |
+			LDESC_S2_MEMATTR_AF_MASK;
 
 	u64 attrs_dev_dwc = (LDESC_S2_MC_DEVnGnRE << LDESC_S2_MEMATTR_MC_SHIFT) |
 			(LDESC_S2_S2AP_READ_ONLY << LDESC_S2_MEMATTR_S2AP_SHIFT) |
@@ -26,10 +26,10 @@ void dmaprot_activate(void){
 			LDESC_S2_MEMATTR_AF_MASK;
 
 
-	//uapi_s2pgtbl_setprot(BCM2837_DMA0_REGS_BASE, attrs_dev);
-	//sysreg_tlbiallis();
-	//uapi_s2pgtbl_setprot(BCM2837_DMA15_REGS_BASE, attrs_dev);
-	//sysreg_tlbiallis();
+	uapi_s2pgtbl_setprot(BCM2837_DMA0_REGS_BASE, attrs_dev);
+	sysreg_tlbiallis();
+	uapi_s2pgtbl_setprot(BCM2837_DMA15_REGS_BASE, attrs_dev);
+	sysreg_tlbiallis();
 
 	//USB DMA controller
 	uapi_s2pgtbl_setprot(DWC_REGS_BASE, attrs_dev_dwc);
@@ -295,41 +295,26 @@ void dmaprot_handle_dmacontroller_access(info_intercept_data_abort_t *ida){
 
 //handle USB DMA controller accesses
 void dmaprot_handle_usbdmac_access(info_intercept_data_abort_t *ida){
-	volatile u32 *dmac_reg;
-	u32 reg_value;
-
-	dmac_reg = (u32 *)ida->pa;
-
-	//bcm2837_miniuart_puts("dmaprotusb: register=");
-	//debug_hexdumpu32(ida->pa);
+	u32 guest_regvalue;
 
 	if(!ida->il){	//we only support 32-bit arm
-		bcm2837_miniuart_puts("dmaprotusb: il=0, unhandled condition. Halting!\n");
+		_XDPRINTFSMP_("dmaprotusb: il=0, unhandled condition. Halting!\n");
 		HALT();
 	}
 
-
 	if(!ida->wnr){	//we only get here on writes, bail out otherwise
-		bcm2837_miniuart_puts("dmaprotusb: wnr=0, unhandled condition. Halting!\n");
+		_XDPRINTFSMP_("dmaprotusb: wnr=0, unhandled condition. Halting!\n");
 		HALT();
 	}
 
 	//we only support 32-bit dmac accesses; bail out if this is not the case
 	if(ida->sas != 0x2){
-		bcm2837_miniuart_puts("dmaprotusb: access is not 32-bits, unhandled condition. Halting!\n");
+		_XDPRINTFSMP_("dmaprotusb: access is not 32-bits, unhandled condition. Halting!\n");
 		HALT();
 	}
 
-	//compute register value that is going to be written
-	reg_value = (u32)guest_regread(ida->r, ida->srt);
+	//get guest register value
+	guest_regvalue = guest_regread(ida->r, ida->srt);
 
-	//bcm2837_miniuart_puts("dmaprotusb: value=");
-	//debug_hexdumpu32(reg_value);
-
-	//just pass-through writes
-	cpu_dsb();
-	cpu_isb();	//synchronize all memory accesses above
-	*dmac_reg = reg_value;
+	mmio_write32(ida->pa, guest_regvalue);
 }
-
-
