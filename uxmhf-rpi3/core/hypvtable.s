@@ -171,17 +171,6 @@ hypvtable_hypsvc_handler_common:
 	//	PE (processor execution) state
 	//
 
-
-/*
-	//we can clobber r0
-	//r1 = value, r2=register
-	mrs r0, ELR_hyp
-	add r0, #4
-	msr ELR_hyp, r0
-	dsb st
-	str r1, [r2]
-*/
-
 	eret
 
 
@@ -241,54 +230,3 @@ hypvtable_hypsvc_handler_common:
 	.global hypvtable_rsvhandler_stack_top3
 	hypvtable_rsvhandler_stack_top3:
 
-
-/*
-//
-//	G1.12.3 ARMv8
-//	exception return address is stored in ELR_hyp register and
-//	points to the instruction *after* the HVC instruction (Table G1-9)
-//
-	.global	hypvtable_hyphvc_handler
-hypvtable_hyphvc_handler:
-	//ldr sp, =hypvtable_stack_top
-
-	// G1.9.2 (Figure G1-3)
-	//  HYP mode uses LR_usr, i.e, does not have LR banking, so save
-	//  since we are going to be using LR for C calling
-	//
-	push {lr}
-
-
-	// 5.1.1 AAPCS
-	//  callee preserves r4-r8, r10, r11, r13 (SP)
-	// save the rest
-	//
-	push {r0}
-	push {r1}
-	push {r2}
-	push {r3}
-	push {r9}
-	push {r12}
-
-	// invoke C handler
-	bl hyphvc_handler
-
-
-	// restore all saved registers
-	pop	{r12}
-	pop	{r9}
-	pop	{r3}
-	pop	{r2}
-	pop	{r1}
-	pop	{r0}
-
-	pop	{lr}
-
-	//
-	//G1.13.1 ARMv8
-	//	exception returns from HYP mode is made via ERET instruction
-	//	which basically returns to ELR_hyp and restores appropriate
-	//	PE (processor execution) state
-	//
-	eret
-*/

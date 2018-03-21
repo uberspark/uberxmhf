@@ -7,25 +7,15 @@
 #include <debug.h>
 #include <dmaprot.h>
 
+//////
+// externs
+//////
+extern u8 cpu_stacks[];
 extern void chainload_os(u32 r0, u32 id, struct atag *at, u32 address);
-extern void chainload_os_svc(u32 start_address);
-
-//extern void cpumodeswitch_hyp2svc(u32 address);
 extern void cpumodeswitch_hyp2svc(u32 r0, u32 id, struct atag *at, u32 address, u32 cpuid);
-
-extern void entry_svc(void);
-extern void secondary_cpu_entry_svc(void);
-
-
-extern void hypvtable_reserved_handler();
-extern void hypvtable_hyphvc_handler();
-extern void hypvtable_hypsvc_handler();
-
 extern u32 g_hypvtable[BCM2837_MAXCPUS][8];
 
-//u32 guestos_boot_r0=0;
-//u32 guestos_boot_r1=0;
-//u32 guestos_boot_r2=0;
+
 
 
 //////
@@ -415,12 +405,10 @@ void core_fixresmemmap(u32 fdt_address){
 }
 
 
-volatile __attribute__((aligned(32))) u32 my_lock=1;
-extern u32 cpu_smpready[];
-extern u8 cpu_stacks[];
-extern u8 cpu_stacks_svc[];
 
-
+//////
+// boot cpu enters here
+//////
 void main(u32 r0, u32 id, struct atag *at, u32 cpuid){
 	u32 hvbar, hcr, spsr_hyp;
 
@@ -456,7 +444,6 @@ void main(u32 r0, u32 id, struct atag *at, u32 cpuid){
 	dmaprot_activate();
 	_XDPRINTF_("%s[%u]: DMA protection mechanism activated via stage-2 pts\n", __func__, cpuid);
 
-
 	//dump hyp registers and load hvbar
 	_XDPRINTF_("%s[%u]: HCR=0x%08x\n", __func__, cpuid, sysreg_read_hcr());
 	_XDPRINTF_("%s[%u]: HSTR=0x%08x\n", __func__, cpuid, sysreg_read_hstr());
@@ -464,33 +451,9 @@ void main(u32 r0, u32 id, struct atag *at, u32 cpuid){
 	_XDPRINTF_("%s[%u]: HDCR=0x%08x\n", __func__, cpuid, sysreg_read_hdcr());
 	_XDPRINTF_("%s[%u]: HVBAR[before]=0x%08x\n", __func__, cpuid, sysreg_read_hvbar());
 
-/*	//debug
-	_XDPRINTF_("%s[%u]: proceeding to dump ghypvtable...\n", __func__, cpuid);
-	_XDPRINTF_("%s[%u]: rsv handler at 0x%08x\n", __func__, cpuid, &hypvtable_reserved_handler);
-	_XDPRINTF_("%s[%u]: hvc handler at 0x%08x\n", __func__, cpuid, &hypvtable_hyphvc_handler);
-	_XDPRINTF_("%s[%u]: hvc handler at 0x%08x\n", __func__, cpuid, &hypvtable_hypsvc_handler);
-
-	{
-		u32 i, j;
-		for(i=0; i < BCM2837_MAXCPUS; i++){
-			_XDPRINTF_("  ghypvtable[%u] at 0x%08x\n", i, (u32)&g_hypvtable[i]);
-			for(j=0; j < 8; j++){
-				_XDPRINTF_("  ghypvtable[%u][%u]=0x%08x\n", i, j, g_hypvtable[i][j]);
-			}
-		}
-	}
-	_XDPRINTF_("%s[%u]: dumped g_hypvtable. Halting\n", __func__, cpuid);
-	HALT();
-*/
-
 	_XDPRINTF_("%s[%u]: ghypvtable at 0x%08x\n", __func__, cpuid, (u32)&g_hypvtable[cpuid]);
 	sysreg_write_hvbar((u32)&g_hypvtable[cpuid]);
 	_XDPRINTF_("%s[%u]: HVBAR[after]=0x%08x\n", __func__, cpuid, sysreg_read_hvbar());
-
-	//test hyp mode hvc
-	//_XDPRINTF_("%s[%u]: proceeding to test hypercall (HVC) in HYP mode...\n", __func__, cpuid);
-	//hypcall();
-	//_XDPRINTF_("%s[%u]: successful return from hypercall\n", __func__, cpuid);
 
 	// initialize cpu support for second stage page table translations
 	s2pgtbl_initialize();
@@ -509,36 +472,28 @@ void main(u32 r0, u32 id, struct atag *at, u32 cpuid){
 	bcm2837_platform_smpinitialize();
 	_XDPRINTF_("%s[%u]: secondary cores booted, moving on...\n", __func__, cpuid);
 
-	//brief delay to allow secondary cores to start spinning on mailboxes
-/*	_XDPRINTF_("%s[%u]: waiting for secondary cores to spin into mailbox wait...\n", __func__, cpuid);
-	{
-		u32 i,j;
-		for(i=0; i < 1024*256; i++){
-			for(j=0; j < 1024; j++){
-				cpu_dsb();
-			}
-		}
-	}
-*/
-
 	_XDPRINTF_("%s[%u]: booting guest in SVC mode\n", __func__, cpuid);
 	_XDPRINTF_("%s[%u]: r0=0x%08x, id=0x%08x, at=0x%08x\n", __func__, cpuid, r0, id, at);
 
-	//cpumodeswitch_hyp2svc(r0, id, at, &entry_svc);
-	//cpumodeswitch_hyp2svc(r0, id, at, 0x8000, 0);
 	chainload_os(r0,id,at,0x8000);
 
-	_XDPRINTF_("%s[%u]: Halting\n", __func__, cpuid);
+	_XDPRINTF_("%s[%u]: Should not come here.Halting\n", __func__, cpuid);
 	HALT();
 }
 
 
-
+//////
+// secondary cores enter here after they are booted up
+//////
 void secondary_main(u32 cpuid){
-	armlocalregisters_mailboxwrite_t *armlocalregisters_mailboxwrite = (armlocalregisters_mailboxwrite_t *)(ARMLOCALREGISTERS_MAILBOXWRITE_BASE + (0 * sizeof(armlocalregisters_mailboxwrite_t)));
+	u32 start_address;
+	armlocalregisters_mailboxwrite_t *armlocalregisters_mailboxwrite;
+
 
 	_XDPRINTF_("%s[%u]: ENTER: sp=0x%08x (cpu_stacks=0x%08x)\n", __func__, cpuid,
 			cpu_read_sp(), &cpu_stacks);
+
+	armlocalregisters_mailboxwrite = (armlocalregisters_mailboxwrite_t *)(ARMLOCALREGISTERS_MAILBOXWRITE_BASE + (0 * sizeof(armlocalregisters_mailboxwrite_t)));
 
 	hyppgtbl_activate();
 	_XDPRINTF_("%s[%u]: hyp page-tables activated\n", __func__, cpuid);
@@ -553,11 +508,6 @@ void secondary_main(u32 cpuid){
 	sysreg_write_hvbar((u32)&g_hypvtable[cpuid]);
 	_XDPRINTF_("%s[%u]: HVBAR[after]=0x%08x\n", __func__, cpuid, sysreg_read_hvbar());
 
-	//test hyp mode hvc
-	//_XDPRINTF_("%s[%u]: proceeding to test hypercall (HVC) in HYP mode...\n", __func__, cpuid);
-	//hypcall();
-	//_XDPRINTF_("%s[%u]: successful return from hypercall\n", __func__, cpuid);
-
 	// initialize cpu support for second stage page table translations
 	s2pgtbl_initialize();
 	_XDPRINTF_("%s[%u]: cpu ready for stage-2 pts...\n", __func__, cpuid);
@@ -570,78 +520,19 @@ void secondary_main(u32 cpuid){
 	s2pgtbl_activatetranslation();
 	_XDPRINTF_("%s[%u]: activated stage-2 translation\n", __func__, cpuid);
 
-
-/*
-	_XDPRINTF_("%s[%u]: Moving into SVC mode...\n", __func__, cpuid);
-
-	//_XDPRINTF_("%s[%u]: Signalling SMP readiness and moving into SVC mode...\n", __func__, cpuid);
-	//armlocalregisters_mailboxwrite->mailbox3write = 1;
-	//cpu_smpready[cpuid]=1;
-
-	cpumodeswitch_hyp2svc(0, 0, 0, &secondary_cpu_entry_svc, cpuid);
-
-	_XDPRINTF_("%s[%u]: should never get here. halting!\n", __func__, cpuid);
-	HALT();
-*/
-	{
-		u32 start_address;
-		armlocalregisters_mailboxwrite_t *armlocalregisters_mailboxwrite;
-		armlocalregisters_mailboxwrite = (armlocalregisters_mailboxwrite_t *)(ARMLOCALREGISTERS_MAILBOXWRITE_BASE + (0 * sizeof(armlocalregisters_mailboxwrite_t)));
-
-		_XDPRINTF_("%s[%u]: Signalling SMP readiness and entering SMP boot wait loop...\n", __func__, cpuid);
-		armlocalregisters_mailboxwrite->mailbox3write = 1;
-		cpu_dsb();
-
-		start_address=bcm2837_platform_waitforstartup(cpuid);
-
-		_XDPRINTFSMP_("%s[%u]: Got startup signal, address=0x%08x\n", __func__, cpuid, start_address);
-
-		chainload_os(0, 0, 0, start_address);
-
-		HALT();
-	}
-
-
-}
-
-
-//all secondary CPUs get here in SVC mode and enter the wait-for-startup loop
-void secondary_main_svc(u32 cpuid){
-	u32 start_address;
-	armlocalregisters_mailboxwrite_t *armlocalregisters_mailboxwrite;
-
-	armlocalregisters_mailboxwrite = (armlocalregisters_mailboxwrite_t *)(ARMLOCALREGISTERS_MAILBOXWRITE_BASE + (0 * sizeof(armlocalregisters_mailboxwrite_t)));
-
-	_XDPRINTF_("%s[%u]: ENTER: sp=0x%08x (cpu_stacks_svc=0x%08x)\n", __func__, cpuid,
-			cpu_read_sp(), &cpu_stacks_svc);
-
-	//_XDPRINTF_("%s[%u]: cpu_smpready[%u]=%u\n", __func__, cpuid, cpuid, cpu_smpready[cpuid]);
-	_XDPRINTF_("%s[%u]: Signalling SMP readiness and halting!\n", __func__, cpuid);
+	_XDPRINTF_("%s[%u]: Signalling SMP readiness and entering SMP boot wait loop...\n", __func__, cpuid);
 	armlocalregisters_mailboxwrite->mailbox3write = 1;
-	//cpu_smpready[cpuid]=1;
 	cpu_dsb();
 
 	start_address=bcm2837_platform_waitforstartup(cpuid);
 
-	//if(cpuid == 1){
-		chainload_os_svc(start_address);
-	//}
+	_XDPRINTFSMP_("%s[%u]: Got startup signal, address=0x%08x\n", __func__, cpuid, start_address);
 
-	//_XDPRINTF_("%s[%u]: We should never be here. Halting!\n", __func__, cpuid);
+	chainload_os(0, 0, 0, start_address);
+
+	_XDPRINTFSMP_("%s[%u]: Should never be here. Halting!\n", __func__, cpuid);
 	HALT();
 }
 
 
-/*
-	_XDPRINTFSMP_("%s: lock variable at address=0x%08x\n", __func__, &my_lock);
-	_XDPRINTFSMP_("%s: acquiring lock [current value=0x%08x]...\n", __func__, (u32)my_lock);
-	spin_lock(&my_lock);
-	_XDPRINTFSMP_("%s: lock acquired\n", __func__);
-	_XDPRINTFSMP_("%s: lock current value=0x%08x\n", __func__, my_lock);
-
-
-	_XDPRINTFSMP_("%s: going to release lock...\n", __func__);
-	spin_unlock(&my_lock);
-	_XDPRINTFSMP_("%s: lock released [cirrent value=0x%08x]\n", __func__, my_lock);
-*/
 
