@@ -147,6 +147,10 @@ void hyppgtbl_populate_tables(void){
 		}else if ( (i * PAGE_SIZE_2M) >= BCM2837_PERIPHERALS_BASE ){
 			hyp_l2_ldesc_table[i] = ldesc_make_s1_l2e_block( (i * PAGE_SIZE_2M), l2_attrs_dev);
 
+		}else if ( ((i * PAGE_SIZE_2M) >= 0x3AC00000) && ((i * PAGE_SIZE_2M) < BCM2837_PERIPHERALS_BASE) ){
+			//TBD: track guest MAIR
+			hyp_l2_ldesc_table[i] = ldesc_make_s1_l2e_block( (i * PAGE_SIZE_2M), l2_attrs_nc);
+
 		}else{
 			hyp_l2_ldesc_table[i] = ldesc_make_s1_l2e_block( (i * PAGE_SIZE_2M), l2_attrs);
 		}
