@@ -264,7 +264,9 @@ typedef union Hash_state {
    #define MAX(x,y) ((x)>(y)?(x):(y))
 #endif
 
-#define CHAR_BIT 	8
+#ifndef CHAR_BIT
+	#define CHAR_BIT 	8
+#endif
 
 
 

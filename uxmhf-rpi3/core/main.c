@@ -6,8 +6,10 @@
 #include <fdt.h>
 #include <debug.h>
 #include <dmaprot.h>
+
 #include <xmhfcrypto.h>
 #include <sha1.h>
+#include <aes.h>
 
 //////
 // externs
@@ -435,34 +437,100 @@ void core_fixresmemmap(u32 fdt_address){
 
 
 
+uint8_t aes_iv[AES_KEY_LEN_BYTES] =
+	{
+			0x1a, 0x2a, 0x3a, 0x4a, 0x5a, 0x6a, 0x7a, 0x8a,
+			0x1b, 0x2b, 0x3b, 0x4b, 0x5b, 0x6b, 0x7b, 0x8b
+	};
+uint8_t aes_key[AES_KEY_LEN_BYTES] =
+	{
+			0xfa, 0xea, 0xda, 0xca, 0xba, 0xaa, 0x9a, 0x8a,
+			0xfb, 0xeb, 0xdb, 0xcb, 0xbb, 0xab, 0x9b, 0x8b
+	};
+
+char *plaintext = "0123456789abcdef0123456789abcdef";
+__attribute__ ( (section(".data")) ) char outtext[32];
+
+
+int do_encrypt(void){
+    symmetric_CBC cbc_ctx;
+    int status;
+
+    _XDPRINTF_("%s: ENTER\n", __func__);
+    _XDPRINTF_("  plaintext=%32D\n", plaintext, " ");
+
+
+    //start aes_cbc
+    status = rijndael_cbc_start(aes_iv, aes_key, AES_KEY_LEN_BYTES, 0, &cbc_ctx);
+
+    if(status != CRYPT_OK){
+    	return 0;
+    }
+
+    //encrypt with aes cbc
+    status = rijndael_cbc_encrypt(plaintext, outtext, strlen(plaintext), &cbc_ctx);
+
+    if(status != CRYPT_OK){
+    	return 0;
+    }
+
+    status = rijndael_cbc_done( &cbc_ctx);
+
+    if(status != CRYPT_OK){
+    	return 0;
+    }
+
+    _XDPRINTF_("  outtext=%32D\n", outtext, " ");
+
+
+    return 1;
+}
+
+
+int do_decrypt(void){
+    symmetric_CBC cbc_ctx;
+    int status;
+
+    _XDPRINTF_("%s: ENTER\n", __func__);
+    _XDPRINTF_("  outtext=%32D\n", outtext, " ");
+
+
+    //start aes_cbc
+    status = rijndael_cbc_start(aes_iv, aes_key, AES_KEY_LEN_BYTES, 0, &cbc_ctx);
+
+    if(status != CRYPT_OK){
+    	return 0;
+    }
+
+    //encrypt with aes cbc
+    status = rijndael_cbc_decrypt(outtext, plaintext, 32, &cbc_ctx);
+
+    if(status != CRYPT_OK){
+    	return 0;
+    }
+
+    status = rijndael_cbc_done( &cbc_ctx);
+
+    if(status != CRYPT_OK){
+    	return 0;
+    }
+
+    _XDPRINTF_("  plaintext=%32D\n", plaintext, " ");
+
+
+    return 1;
+}
+
+
 //////
 // boot cpu enters here
 //////
 void main(u32 r0, u32 id, struct atag *at, u32 cpuid){
 	u32 hvbar, hcr, spsr_hyp;
-	char *src_string="This is a string";
-	char src_string_hash[SHA_DIGEST_LENGTH];
 
 	_XDPRINTF_("%s[%u]: ENTER: sp=0x%08x (cpu_stacks=0x%08x)\n", __func__, cpuid,
 			cpu_read_sp(), &cpu_stacks);
 	_XDPRINTF_("%s[%u]: r0=0x%08x, id=0x%08x, ATAGS=0x%08x\n", __func__, cpuid, r0, id, at);
-
-	//////
-	// libxmhfcrypto sha1 test
-	//////
-	_XDPRINTF_("%s[%u]: src_string=%s\n", __func__, cpuid, src_string);
-	_XDPRINTF_("%s[%u]: len src_string=%u\n", __func__, cpuid, strlen(src_string));
-	sha1(src_string, strlen(src_string), src_string_hash);
-	_XDPRINTF_("%s[%u]: hash src_string= %*D\n", __func__, cpuid, sizeof(src_string_hash), src_string_hash, " ");
-
-	if( rijndael_test() != CRYPT_OK){
-		_XDPRINTF_("%s[%u]: AES test FAILED\n", __func__, cpuid);
-	}else{
-		_XDPRINTF_("%s[%u]: AES test PASSED\n", __func__, cpuid);
-	}
-
-	_XDPRINTF_("%s[%u]: Halting!\n", __func__, cpuid);
-	HALT();
 
 	//sanity check ATAGS pointer
 	if(!(at->size == FDT_MAGIC)){
@@ -483,6 +551,25 @@ void main(u32 r0, u32 id, struct atag *at, u32 cpuid){
 
 	hyppgtbl_activate();
 	_XDPRINTF_("%s[%u]: hyp page-tables activated\n", __func__, cpuid);
+#if 0
+	//////
+	// aes cbc test
+	//////
+	if(!do_encrypt()){
+		_XDPRINTF_("%s[%u]: aes cbc encryption FAILED\n", __func__, cpuid);
+	}else{
+		_XDPRINTF_("%s[%u]: aes cbc encryption PASSED\n", __func__, cpuid);
+	}
+
+	if(!do_decrypt()){
+		_XDPRINTF_("%s[%u]: aes cbc decryption FAILED\n", __func__, cpuid);
+	}else{
+		_XDPRINTF_("%s[%u]: aes cbc decryption PASSED\n", __func__, cpuid);
+	}
+
+	_XDPRINTF_("%s[%u]: Halting!\n", __func__, cpuid);
+	HALT();
+#endif
 
 	// populate stage-2 page tables
 	s2pgtbl_populate_tables();

@@ -47,6 +47,7 @@
 #ifndef __AES_H__
 #define __AES_H__
 
+#define AES_KEY_LEN_BYTES	16
 
 #ifndef __ASSEMBLY__
 

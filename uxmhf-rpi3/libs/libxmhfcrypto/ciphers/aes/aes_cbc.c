@@ -172,7 +172,7 @@ int rijndael_cbc_encrypt(const unsigned char *pt, unsigned char *ct, unsigned lo
   @param cbc    The CBC chain to terminate
   @return CRYPT_OK on success
 */
-int cbc_done(symmetric_CBC *cbc)
+int rijndael_cbc_done(symmetric_CBC *cbc)
 {
    int err;
    LTC_ARGCHK(cbc != NULL);

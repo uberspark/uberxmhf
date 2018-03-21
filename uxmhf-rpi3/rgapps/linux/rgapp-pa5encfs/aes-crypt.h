@@ -20,10 +20,18 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdint.h>
 #include <string.h>
 
 #include <openssl/evp.h>
 #include <openssl/aes.h>
+
+typedef unsigned int u32;
+typedef unsigned long long int u64;
+typedef unsigned char u8;
+
+#include <xmhfcrypto.h>
+#include <aes.h>
 
 #define BLOCKSIZE 1024
 #define FAILURE 0
