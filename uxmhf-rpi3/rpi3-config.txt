@@ -7,6 +7,8 @@ init_uart_baud=115200
 #force turbo mode (max freq.)
 force_turbo=0
 
+core_freq=250
+
 #disable overscan
 disable_overscan=1
 
