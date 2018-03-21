@@ -20,11 +20,28 @@
 bool uapp_utpmtest_handlehcall(u32 uhcall_function, void *uhcall_buffer, u32 uhcall_buffer_len){
 	utpmtest_param_t *utpmtest_param = 	(utpmtest_param_t *)uhcall_buffer;
 
+	//_XDPRINTFSMP_("%s: uhcall_function=%x, uhcall_buffer=0x%08x, uhcall_buffer_len=%u\n",
+	//		__func__, uhcall_function, uhcall_buffer, uhcall_buffer_len);
+
+#if 0
+	if(utpmtest_param->magic != 0xDEADBEEF){
+		_XDPRINTFSMP_("%s: invalid magic -- check buffer locking!\n",
+				__func__);
+
+	}
+#endif
+
 	if(uhcall_function == UAPP_UTPM_FUNCTION_INIT_MASTER_ENTROPY){
+		//_XDPRINTFSMP_("%s: INIT_MASTER_ENTROPY: magic=0x%08x\n",
+		//		__func__, utpmtest_param->magic);
+
+
+		#if 1
 		utpmtest_param->result =
 				utpm_init_master_entropy(&utpmtest_param->g_aeskey,
 						&utpmtest_param->g_hmackey,
 						&utpmtest_param->g_rsakey);
+		#endif
 
 		return true;
 
@@ -51,21 +68,42 @@ bool uapp_utpmtest_handlehcall(u32 uhcall_function, void *uhcall_buffer, u32 uhc
 
 
 	} else	if(uhcall_function == UAPP_UTPM_FUNCTION_SEAL){
-			//_XDPRINTFSMP_("%s: SEAL function\n", __func__);
-			utpmtest_param->result =
-					utpm_seal(&utpmtest_param->utpm, &utpmtest_param->tpmPcrInfo,
-							&utpmtest_param->seal_inbuf, utpmtest_param->seal_inbuf_len,
-							&utpmtest_param->seal_outbuf, &utpmtest_param->seal_outbuf_len);
-			//_XDPRINTFSMP_("%s: SEAL function done\n", __func__);
+		//_XDPRINTFSMP_("%s: SEAL function: seal_inbuf_len=%u\n", __func__,
+		//		utpmtest_param->seal_inbuf_len);
+
+			#if 1
+			if(utpmtest_param->seal_inbuf_len <= 32){
+				utpmtest_param->result =
+						utpm_seal(&utpmtest_param->utpm, &utpmtest_param->tpmPcrInfo,
+								&utpmtest_param->seal_inbuf, utpmtest_param->seal_inbuf_len,
+								&utpmtest_param->seal_outbuf, &utpmtest_param->seal_outbuf_len);
+			}else
+				utpmtest_param->result = UTPM_ERR;
+			#endif
+
+			//_XDPRINTFSMP_("%s: SEAL function done: seal_outbuf_len=%u\n", __func__,
+			//		utpmtest_param->seal_outbuf_len);
+
 
 			return true;
 
 	} else	if(uhcall_function == UAPP_UTPM_FUNCTION_UNSEAL){
-			utpmtest_param->result =
-					utpm_unseal(&utpmtest_param->utpm,
-					             &utpmtest_param->seal_outbuf, utpmtest_param->seal_outbuf_len,
-					             &utpmtest_param->seal_outbuf2, &utpmtest_param->seal_outbuf2_len,
-					             &utpmtest_param->digestAtCreation);
+			//_XDPRINTFSMP_("%s: UNSEAL function: seal_outbuf_len=%u\n", __func__,
+			//		utpmtest_param->seal_outbuf_len);
+
+			#if 1
+			if(utpmtest_param->seal_outbuf_len <= 32){
+				utpmtest_param->result =
+						utpm_unseal(&utpmtest_param->utpm,
+									 &utpmtest_param->seal_outbuf, utpmtest_param->seal_outbuf_len,
+									 &utpmtest_param->seal_outbuf2, &utpmtest_param->seal_outbuf2_len,
+									 &utpmtest_param->digestAtCreation);
+			}else
+				utpmtest_param->result = UTPM_ERR;
+			#endif
+
+			//_XDPRINTFSMP_("%s: UNSEAL function done: seal_outbuf2_len=%u\n", __func__,
+			//		utpmtest_param->seal_outbuf2_len);
 
 			return true;
 
