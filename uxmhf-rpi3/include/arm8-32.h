@@ -373,6 +373,24 @@
 #ifndef __ASSEMBLY__
 
 
+typedef struct {
+	u32 r0;
+	u32 r1;
+	u32 r2;
+	u32 r3;
+	u32 r4;
+	u32 r5;
+	u32 r6;
+	u32 r7;
+	u32 r8;
+	u32 r9;
+	u32 r10;
+	u32 r11;
+	u32 r12;
+	u32 r13;
+	u32 r14;
+} arm8_32_regs_t;
+
 static inline u32 cpu_bswap_u32(u32 val){
     val = ((val << 8) & 0xFF00FF00 ) | ((val >> 8) & 0xFF00FF );
     return (val << 16) | (val >> 16);

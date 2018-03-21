@@ -37,7 +37,7 @@ void hyphvc_handler(void){
 	_XDPRINTF_("%s: [OUT]\n", __func__);
 }
 
-void hypsvc_handler(void){
+void hypsvc_handler(arm8_32_regs_t *r){
 	u32 hsr;
 	u32 elr_hyp;
 	_XDPRINTFSMP_("%s: ENTER\n", __func__);
@@ -49,7 +49,28 @@ void hypsvc_handler(void){
 	//debug_hexdumpu32(hsr);
 
 	switch ( ((hsr & HSR_EC_MASK) >> HSR_EC_SHIFT) ){
-		case HSR_EC_HVC:
+		case HSR_EC_HVC:{
+				u32 hvc_iss = ((hsr & HSR_ISS_MASK) >> HSR_ISS_SHIFT);
+				u32 hvc_imm16 = hvc_iss & 0x0000FFFFUL;
+
+				switch(hvc_imm16){
+					case 1:{
+							_XDPRINTFSMP_("%s: r0=0x%08x, r1=0x%08x, r2=0x%08x, r14=0x%08x\n", __func__,
+									r->r0, r->r1, r->r2, r->r14);
+
+							r->r0 = 0x21;
+							r->r1 = 0x22;
+							r->r2 = 0x23;
+						}
+						break;
+
+					default:
+						_XDPRINTFSMP_("%s: unknown HVC instruction imm16=0x%08x\n", __func__,
+								hvc_imm16);
+						break;
+				}
+
+			}
 			break;
 
 		case HSR_EC_DATA_ABORT_ELCHANGE:
