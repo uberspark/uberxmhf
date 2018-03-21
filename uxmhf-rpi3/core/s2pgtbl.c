@@ -21,12 +21,14 @@ void s2pgtbl_initialize(void){
 
 	vtcr = 0;
 	vtcr |= VTCR_RES1_MASK;	//reserved 1 bits
-	vtcr |= ((0x8 << VTCR_T0SZ_SHIFT) & VTCR_T0SZ_MASK);	//T0SZ=-8; 40 bits physical address
-	vtcr |= ((1 << VTCR_S_SHIFT) & VTCR_S_MASK);		//S=1
+	//vtcr |= ((0x8 << VTCR_T0SZ_SHIFT) & VTCR_T0SZ_MASK);	//T0SZ=-8; 40 bits physical address
+	//vtcr |= ((1 << VTCR_S_SHIFT) & VTCR_S_MASK);		//S=1
+	vtcr |= ((0x0 << VTCR_T0SZ_SHIFT) & VTCR_T0SZ_MASK);	//T0SZ=0; 32 bits physical address
+	vtcr |= ((0 << VTCR_S_SHIFT) & VTCR_S_MASK);		//S=0
 	vtcr |= ((1 << VTCR_SL0_SHIFT) & VTCR_SL0_MASK);	//SL0=1; 3-level page table
 	vtcr |= ((MEM_WRITEBACK_READALLOCATE_WRITEALLOCATE << VTCR_IRGN0_SHIFT) & VTCR_IRGN0_MASK);	//L1 cache attribute
 	vtcr |= ((MEM_WRITEBACK_READALLOCATE_WRITEALLOCATE << VTCR_ORGN0_SHIFT) & VTCR_ORGN0_MASK);	//L2 cache attribute
-	vtcr |= ((MEM_OUTER_SHAREABLE << VTCR_SH0_SHIFT) & VTCR_SH0_MASK);	//shareability attribute
+	vtcr |= ((MEM_INNER_SHAREABLE << VTCR_SH0_SHIFT) & VTCR_SH0_MASK);	//shareability attribute
 
 	sysreg_write_vtcr(vtcr);
 
@@ -153,13 +155,14 @@ void s2pgtbl_populate_tables(void){
 void s2pgtbl_loadpgtblbase(void){
 	u64 vttbr;
 
-	bcm2837_miniuart_puts("L1 DESC table at=");
-	debug_hexdumpu32((u32)&l1_ldesc_table);
+	_XDPRINTFSMP_("%s: L1 DESC table at=0x%08x\n", __func__, (u32)&l1_ldesc_table);
 
 	vttbr = sysreg_read_vttbr();
-	bcm2837_miniuart_puts("VTTBR before=");
-	debug_hexdumpu32(vttbr >> 32);
-	debug_hexdumpu32((u32)vttbr);
+	_XDPRINTFSMP_("%s: VTTBR before=0x%016llx\n", __func__, vttbr);
+
+	//bcm2837_miniuart_puts("VTTBR before=");
+	//debug_hexdumpu32(vttbr >> 32);
+	//debug_hexdumpu32((u32)vttbr);
 
 	vttbr = 0;
 	vttbr |= ((u64)&l1_ldesc_table & VTTBR_BADDR_MASK);
@@ -168,9 +171,12 @@ void s2pgtbl_loadpgtblbase(void){
 
 
 	vttbr = sysreg_read_vttbr();
-	bcm2837_miniuart_puts("VTTBR after=");
-	debug_hexdumpu32(vttbr >> 32);
-	debug_hexdumpu32((u32)vttbr);
+	_XDPRINTFSMP_("%s: VTTBR after=0x%016llx\n", __func__, vttbr);
+
+
+	//bcm2837_miniuart_puts("VTTBR after=");
+	//debug_hexdumpu32(vttbr >> 32);
+	//debug_hexdumpu32((u32)vttbr);
 
 }
 

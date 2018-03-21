@@ -101,9 +101,10 @@ void main_svc(u32 r0, u32 id, struct atag *at){
 	hypcall();
 	_XDPRINTF_("%s: successful return after hypercall test\n", __func__);
 
-	_XDPRINTF_("%s: chainloading OS kernel...\n", __func__);
-	_XDPRINTF_("%s: r0=0x%08x, id=0x%08x, ATAGS=0x%08x\n", __func__, r0, id, at);
-	chainload_os(r0, id, at);
+
+	//_XDPRINTF_("%s: chainloading OS kernel...\n", __func__);
+	//_XDPRINTF_("%s: r0=0x%08x, id=0x%08x, ATAGS=0x%08x\n", __func__, r0, id, at);
+	//chainload_os(r0, id, at);
 
 	_XDPRINTF_("%s: should not be here. Halting!\n", __func__);
 	HALT();
@@ -248,6 +249,12 @@ void main(u32 r0, u32 id, struct atag *at){
 	hyppgtbl_activate();
 	_XDPRINTF_("%s: hyp page-tables activated\n", __func__);
 
+	// populate stage-2 page tables
+	s2pgtbl_populate_tables();
+	_XDPRINTF_("%s: stage-2 pts populated.\n", __func__);
+
+
+
 /*
 	_XDPRINTFSMP_("%s: lock variable at address=0x%08x\n", __func__, &my_lock);
 	_XDPRINTFSMP_("%s: acquiring lock [current value=0x%08x]...\n", __func__, (u32)my_lock);
@@ -320,6 +327,19 @@ void main(u32 r0, u32 id, struct atag *at){
 	// activate translation
 	s2pgtbl_activatetranslation();
 */
+
+	// initialize cpu support for second stage page table translations
+	s2pgtbl_initialize();
+	_XDPRINTFSMP_("%s: cpu ready for stage-2 pts...\n", __func__);
+
+	// load page table base
+	s2pgtbl_loadpgtblbase();
+	_XDPRINTFSMP_("%s: loaded stage-2 page-table base register\n", __func__);
+
+	// activate translation
+	s2pgtbl_activatetranslation();
+	_XDPRINTFSMP_("%s: activated stage-2 translation\n", __func__);
+
 
 	_XDPRINTFSMP_("uxmhf-rpi3: core: proceeding to switch to SVC mode...\n");
 	_XDPRINTF_("%s: r0=0x%08x, id=0x%08x, ATAGS=0x%08x\n", __func__, guestos_boot_r0, guestos_boot_r1, guestos_boot_r2);
