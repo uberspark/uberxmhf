@@ -36,6 +36,9 @@ static struct file_operations fops =
 };
 
 
+__attribute__((aligned(4096))) unsigned char buffer[]= {'a', 'b', 'c', 'd'};
+
+
 static void uhcallkmod_hvc(u32 uhcall_function, void *uhcall_buffer,
 		u32 uhcall_buffer_len){
 
@@ -78,6 +81,7 @@ static ssize_t dev_write(struct file *filep, const char *buffer, size_t len, lof
 			uhcallp->uhcall_function, uhcallp->uhcall_buffer, uhcallp->uhcall_buffer_len);
 
 	uhcallkmod_hvc(uhcallp->uhcall_function, uhcallp->uhcall_buffer, uhcallp->uhcall_buffer_len);
+	//uhcallkmod_hvc(uhcallp->uhcall_function, &buffer, uhcallp->uhcall_buffer_len);
 
    return 0;
 }
@@ -114,6 +118,7 @@ int uhcallkmod_init(void)
 	  return PTR_ERR(hypcallcharDevice);
 	}
 	printk(KERN_INFO "uhcallkmod: device class created correctly\n");
+
 
 	return 0;
 }

@@ -396,4 +396,21 @@ sysreg_write_ttbr1:
 	mcr p15,0,r0,c2,c0,1
 	bx lr
 
+//r0 is the input virtual address
+.global sysreg_ats12nsour
+sysreg_ats12nsour:
+	mcr p15,0,r0,c7,c8,6
+	bx lr
 
+
+//r0 is the input virtual address
+.global sysreg_ats1cpr
+sysreg_ats1cpr:
+	mcr p15,0,r0,c7,c8,0
+	bx lr
+
+
+.global sysreg_read_par
+sysreg_read_par:
+	mrc p15,0,r0,c7,c4,0
+	bx lr

@@ -144,11 +144,15 @@ TPM_RESULT utpm_seal(utpm_master_state_t *utpm,
     //print_hex("  [TV:utpm_seal] g_hmackey:    ", g_hmackey, TPM_HASH_SIZE); /* XXX SECURITY */
     //print_hex("  [TV:utpm_seal] g_aeskey:     ", g_aeskey, TPM_AES_KEY_LEN_BYTES); /* XXX SECURITY */
 
+	//_XDPRINTFSMP_("%s: %u\n", __func__, __LINE__);
+
     /**
      * Part 1: Populate digestAtCreation (only for tpmPcrInfo that selects 1+ PCRs).
      */
     if(0 != tpmPcrInfo->pcrSelection.sizeOfSelect) {
-        /* The caller does not provide the DigestAtCreation component of
+    	//_XDPRINTFSMP_("%s: %u\n", __func__, __LINE__);
+
+    	/* The caller does not provide the DigestAtCreation component of
          * the tpmPcrInfo input parameter, so we must populate this
          * component of the TPM_PCR_INFO structure ourselves,
          * internally. */
@@ -177,12 +181,16 @@ TPM_RESULT utpm_seal(utpm_master_state_t *utpm,
         tpmPcrInfo_internal.pcrSelection.sizeOfSelect = 0;
     }
 
+	//_XDPRINTFSMP_("%s: %u\n", __func__, __LINE__);
+
 
     /**
      * Part 2: Do the actual encryption
      */
     if ( (inlen+100) > MAX_TPM_SEAL_DATA_SIZE)
     	return 1;
+
+	//_XDPRINTFSMP_("%s: %u\n", __func__, __LINE__);
 
     //plaintext = malloc(inlen + 100); /* XXX figure out actual required size */
     //// It's probably TPM_AES_KEY_LEN_BYTES + TPM_HASH_SIZE + sizeof(TPM_PCR_INFO)
@@ -206,6 +214,7 @@ TPM_RESULT utpm_seal(utpm_master_state_t *utpm,
 
     //print_hex("  iv: ", iv, TPM_AES_KEY_LEN_BYTES);
 
+	//_XDPRINTFSMP_("%s: %u\n", __func__, __LINE__);
 
 
 	/* output = IV || AES-CBC(TPM_PCR_INFO (or 0x0000 if none selected) || input_len || input || PADDING) || HMAC( entire ciphertext including IV ) */
@@ -216,6 +225,8 @@ TPM_RESULT utpm_seal(utpm_master_state_t *utpm,
         //print_hex(" tpmPcrInfo_internal.pcrSelection.sizeOfSelect: ", p,
         //          sizeof(tpmPcrInfo_internal.pcrSelection.sizeOfSelect));
         p += sizeof(tpmPcrInfo_internal.pcrSelection.sizeOfSelect);
+    	//_XDPRINTFSMP_("%s: %u\n", __func__, __LINE__);
+
     }
     /* 1b. TPM_PCR_SELECTION with 1 or more PCRs selected */
     else {
@@ -225,6 +236,8 @@ TPM_RESULT utpm_seal(utpm_master_state_t *utpm,
         //          (uint8_t*)&tpmPcrInfo_internal,
         //          bytes_consumed_by_pcrInfo);
         p += bytes_consumed_by_pcrInfo;
+    	//_XDPRINTFSMP_("%s: %u\n", __func__, __LINE__);
+
     }
 
 
@@ -240,6 +253,7 @@ TPM_RESULT utpm_seal(utpm_master_state_t *utpm,
     //print_hex(" input: ", p, inlen);
     p += inlen;
 
+	//_XDPRINTFSMP_("%s: %u\n", __func__, __LINE__);
 
 	/* 4. add padding */
 	outlen_beforepad = (uint32_t)p - (uint32_t)plaintext;
@@ -249,6 +263,9 @@ TPM_RESULT utpm_seal(utpm_master_state_t *utpm,
 		*outlen = outlen_beforepad;
 	}
 	memset(p, 0, *outlen-outlen_beforepad);
+
+	//_XDPRINTFSMP_("%s: %u outlen_beforepad=%u, *outlen=%u\n", __func__, __LINE__,
+	//		outlen_beforepad, *outlen);
 
     //print_hex("padding: ", p, *outlen - outlen_beforepad);
     p += *outlen - outlen_beforepad;
@@ -260,6 +277,7 @@ TPM_RESULT utpm_seal(utpm_master_state_t *utpm,
     	return 1;
     }
 
+	//_XDPRINTFSMP_("%s: %u\n", __func__, __LINE__);
 
     //print_hex(" plaintext (including IV) just prior to AES encrypt: ", plaintext, *outlen);
     if (rijndael_cbc_encrypt( plaintext + TPM_AES_KEY_LEN_BYTES, /* skip IV */
@@ -269,6 +287,10 @@ TPM_RESULT utpm_seal(utpm_master_state_t *utpm,
       //abort();
     	return 1;
     }
+
+	//_XDPRINTFSMP_("%s: %u\n", __func__, __LINE__);
+
+
     if (rijndael_cbc_done( &cbc_ctx)) {
       //abort();
     	return 1;
@@ -276,12 +298,15 @@ TPM_RESULT utpm_seal(utpm_master_state_t *utpm,
 
     //print_hex(" freshly encrypted ciphertext: ", output, *outlen);
 
+	//_XDPRINTFSMP_("%s: %u: *outlen=%u\n", __func__, __LINE__, *outlen);
 
 	/* 5. compute and append hmac */
     //HMAC_SHA1(g_hmackey, TPM_HASH_SIZE, output, *outlen, output + *outlen);
     hmac_sha1_out_len = 20;
     if( hmac_sha1_memory(g_hmackey, TPM_HASH_SIZE, output, *outlen, output + *outlen, &hmac_sha1_out_len) )
     	return 1;
+
+	//_XDPRINTFSMP_("%s: %u\n", __func__, __LINE__);
 
     //print_hex("hmac: ", output + *outlen, TPM_HASH_SIZE);
     *outlen += TPM_HASH_SIZE; /* hmac */
@@ -296,6 +321,8 @@ TPM_RESULT utpm_seal(utpm_master_state_t *utpm,
         //        utpm_seal_output_size(inlen, false));
     	return 1;
     }
+
+	//_XDPRINTFSMP_("%s: %u\n", __func__, __LINE__);
 
     //if(plaintext) { free(plaintext); plaintext = NULL; iv = NULL; }
 

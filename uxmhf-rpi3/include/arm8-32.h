@@ -507,6 +507,10 @@ extern u32 cpu_read_sp(void);
 extern u32 sysreg_read_idisar4(void);
 
 
+extern void sysreg_ats12nsour(u32 value);
+extern void sysreg_ats1cpr(u32 value);
+extern u32 sysreg_read_par(void);
+
 void spin_lock(u32 *lock);
 void spin_unlock(u32 *lock);
 
