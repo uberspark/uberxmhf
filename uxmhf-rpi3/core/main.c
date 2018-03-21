@@ -248,6 +248,27 @@ void guest_data_abort_handler(arm8_32_regs_t *r, u32 hsr){
 
 
 
+void guest_cp15_trap_handler(arm8_32_regs_t *r, u32 hsr){
+	u32 trap_il;
+	u32 elr_hyp;
+
+	//compute trapped instruction length
+	trap_il = ((hsr & HSR_IL_MASK) >> HSR_IL_SHIFT);
+
+	//fix return address
+	elr_hyp = sysreg_read_elrhyp();
+	if(trap_il)
+		elr_hyp += sizeof(u32);
+	else
+		elr_hyp += sizeof(u16);
+	sysreg_write_elrhyp(elr_hyp);
+
+
+	ctxtrace_cp15_trap_handler(r, hsr);
+}
+
+
+
 
 __attribute__(( section(".data") )) u32 hypsvc_handler_lock=1;
 
@@ -271,6 +292,9 @@ void hypsvc_handler(arm8_32_regs_t *r){
 
 	}else if (hsr_ec == HSR_EC_DATA_ABORT_ELCHANGE){
 		guest_data_abort_handler(r, hsr);
+
+	}else if (hsr_ec == HSR_EC_CP15_TRAP){
+		guest_cp15_trap_handler(r, hsr);
 
 	}else{
 		_XDPRINTFSMP_("uXMHF-rpi3: core: UNHANDLED INTERCEPT HALTING! hsr=0x%08x\n", hsr);
@@ -470,6 +494,15 @@ void main(u32 r0, u32 id, struct atag *at, u32 cpuid){
 	s2pgtbl_activatetranslation();
 	_XDPRINTF_("%s[%u]: activated stage-2 translation\n", __func__, cpuid);
 
+
+	//////
+	// initialize hypapps
+	ctxtrace_init(cpuid);
+
+
+
+
+
 	// boot secondary cores
 	_XDPRINTF_("%s[%u]: proceeding to initialize SMP...\n", __func__, cpuid);
 	bcm2837_platform_smpinitialize();
@@ -522,6 +555,12 @@ void secondary_main(u32 cpuid){
 	// activate translation
 	s2pgtbl_activatetranslation();
 	_XDPRINTF_("%s[%u]: activated stage-2 translation\n", __func__, cpuid);
+
+
+	//////
+	// initialize hypapps
+	ctxtrace_init(cpuid);
+
 
 	_XDPRINTF_("%s[%u]: Signalling SMP readiness and entering SMP boot wait loop...\n", __func__, cpuid);
 	armlocalregisters_mailboxwrite->mailbox3write = 1;

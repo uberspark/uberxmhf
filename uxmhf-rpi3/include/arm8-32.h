@@ -367,6 +367,7 @@
 // HSR (hyp syndrome register) EC values
 // G6.2.67 ARMv8
 //
+#define HSR_EC_CP15_TRAP					0x3
 #define HSR_EC_HVC							0x12
 #define HSR_EC_PREFETCH_ABORT_ELCHANGE		0x20
 #define HSR_EC_PREFETCH_ABORT_NOELCHANGE	0x21
@@ -505,9 +506,21 @@ extern u32 cpu_read_sp(void);
 
 extern u32 sysreg_read_idisar4(void);
 
+
 void spin_lock(u32 *lock);
 void spin_unlock(u32 *lock);
 
+
+//////
+// pl0,1 system register access functions
+// chiefly used for emulation/pass-thru
+//////
+u32 sysreg_read_ttbcr(void);
+void sysreg_write_ttbcr(u32 value);
+u32 sysreg_read_ttbr0(void);
+void sysreg_write_ttbr0(u32 value);
+u32 sysreg_read_ttbr1(void);
+void sysreg_write_ttbr1(u32 value);
 
 
 #endif // __ASSEMBLY__

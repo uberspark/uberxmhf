@@ -37,7 +37,7 @@ chainload_os:
 	mov	r7, #0
 	//mcr	p15, 4, r7, c1, c1, 0	// HCR=0
 	mcr	p15, 4, r7, c1, c1, 2	// HCPTR=0
-	mcr	p15, 4, r7, c1, c1, 3	// HSTR=0
+	//mcr	p15, 4, r7, c1, c1, 3	// HSTR=0
 
 	//mcr	p15, 4, r7, c1, c0, 0	// HSCTLR=0
 

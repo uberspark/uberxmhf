@@ -42,7 +42,7 @@ SECTIONS
 		*(.comment)
 		*(.ARM.extab)
 		*(.ARM.exidx)
-		*(.debug_frame)
+		*(.debug_*)
 	}
 
 	/* this is to cause the link to fail if there is
