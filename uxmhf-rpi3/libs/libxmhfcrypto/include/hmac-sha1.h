@@ -44,25 +44,20 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-#ifndef __SHA1_H__
-#define __SHA1_H__
+#ifndef __HMAC_SHA1_H__
+#define __HMAC_SHA1_H__
 
-#define SHA1_RESULTLEN      (160/8)
-#define SHA_DIGEST_LENGTH	SHA1_RESULTLEN
 
 #ifndef __ASSEMBLY__
 
 
+int hmac_sha1_init(hmac_state *hmac, const unsigned char *key, unsigned long keylen);
+int hmac_sha1_process(hmac_state *hmac, const unsigned char *in, unsigned long inlen);
+int hmac_sha1_done(hmac_state *hmac, unsigned char *out, unsigned long *outlen);
 
-//int sha1(const uint8_t *message, uint32_t len, unsigned char md[SHA_DIGEST_LENGTH]);
-
-int  sha1_compress(hash_state *md, unsigned char *buf);
-int sha1_init(hash_state * md);
-int sha1_process (hash_state * md, const unsigned char *in, unsigned long inlen);
-int sha1_done(hash_state * md, unsigned char *out);
-int sha1_memory(const unsigned char *in, unsigned long inlen, unsigned char *out, unsigned long *outlen);
-int sha1_memory_multi(unsigned char *out, unsigned long *outlen,
-                      const unsigned char *in, unsigned long inlen, ...);
+int hmac_sha1_memory(const unsigned char *key,  unsigned long keylen,
+                const unsigned char *in,   unsigned long inlen,
+                      unsigned char *out,  unsigned long *outlen);
 
 
 
@@ -70,4 +65,4 @@ int sha1_memory_multi(unsigned char *out, unsigned long *outlen,
 #endif // __ASSEMBLY__
 
 
-#endif /* __SHA1_H__ */
+#endif /* __HMAC_SHA1_H__ */

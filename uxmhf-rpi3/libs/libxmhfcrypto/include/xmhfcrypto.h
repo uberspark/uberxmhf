@@ -90,7 +90,10 @@ enum {
    CRYPT_PK_INVALID_SIZE,  /* Invalid size input for PK parameters */
 
    CRYPT_INVALID_PRIME_SIZE,/* Invalid size of prime requested */
-   CRYPT_PK_INVALID_PADDING /* Invalid padding on input */
+   CRYPT_PK_INVALID_PADDING, /* Invalid padding on input */
+
+   CRYPT_HASH_OVERFLOW      /* Hash applied to too many bits */
+
 };
 
 
@@ -217,6 +220,15 @@ typedef union Hash_state {
 
 //tomcrypt_mac.h
 //empty for now
+
+#define LTC_HMAC_BLOCKSIZE	64
+
+typedef struct Hmac_state {
+     hash_state     md;
+     int            hash;
+     hash_state     hashstate;
+     unsigned char  key[LTC_HMAC_BLOCKSIZE];
+} hmac_state;
 
 
 
