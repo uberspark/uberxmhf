@@ -5,7 +5,7 @@
 #include <atags.h>
 #include <fdt.h>
 #include <debug.h>
-
+#include <dmaprot.h>
 
 extern void chainload_os(u32 r0, u32 id, struct atag *at, u32 address);
 extern void chainload_os_svc(u32 start_address);
@@ -42,7 +42,7 @@ void hyphvc_handler(void){
 // guest register and memory read/write helpers
 //////
 
-static void guest_regwrite(arm8_32_regs_t *r, u32 regnum, u32 value){
+void guest_regwrite(arm8_32_regs_t *r, u32 regnum, u32 value){
 	switch(regnum){
 		case 0:
 			r->r0 = value;
@@ -67,7 +67,7 @@ static void guest_regwrite(arm8_32_regs_t *r, u32 regnum, u32 value){
 }
 
 
-static u32 guest_regread(arm8_32_regs_t *r, u32 regnum){
+u32 guest_regread(arm8_32_regs_t *r, u32 regnum){
 	switch(regnum){
 		case 0:
 			return(r->r0);
@@ -93,7 +93,7 @@ static u32 guest_regread(arm8_32_regs_t *r, u32 regnum){
 void hypsvc_handler(arm8_32_regs_t *r){
 	u32 hsr;
 	u32 elr_hyp;
-	_XDPRINTFSMP_("%s: ENTER\n", __func__);
+	//_XDPRINTFSMP_("%s: ENTER\n", __func__);
 
 	//read hsr to determine the cause of the intercept
 	hsr = sysreg_read_hsr();
@@ -108,8 +108,8 @@ void hypsvc_handler(arm8_32_regs_t *r){
 
 				switch(hvc_imm16){
 					case 1:{
-							_XDPRINTFSMP_("%s: r0=0x%08x, r1=0x%08x, r2=0x%08x, r14=0x%08x\n", __func__,
-									r->r0, r->r1, r->r2, r->r14);
+							_XDPRINTFSMP_("%s: r0=0x%08x, r1=0x%08x, r2=0x%08x\n", __func__,
+									r->r0, r->r1, r->r2);
 
 							r->r0 = 0x21;
 							r->r1 = 0x22;
@@ -159,50 +159,51 @@ void hypsvc_handler(arm8_32_regs_t *r){
 
 		case HSR_EC_DATA_ABORT_ELCHANGE:{
 				u32 elr_hyp;
-				u32 fault_va;
+				//u32 fault_va;
 				u32 fault_va_page_offset;
-				u32 fault_pa;
+				//u32 fault_pa;
 				u32 da_iss;
+				//u32 da_il;
 				u32 da_iss_isv;
-				u32 da_iss_sas;
-				u32 da_iss_srt;
-				u32 da_iss_wnr;
-				u8 *guest_mem;
+				u32 da_pa_page;
+				//u32 da_iss_sas;
+				//u32 da_iss_srt;
+				//u32 da_iss_wnr;
+				info_intercept_data_abort_t ida;
 
 				da_iss = ((hsr & HSR_ISS_MASK) >> HSR_ISS_SHIFT);
+				ida.il = ((hsr & HSR_IL_MASK) >> HSR_IL_SHIFT);
 				da_iss_isv = (da_iss & 0x01000000UL) >> 24;
-				da_iss_sas = (da_iss & 0x00C00000UL) >> 22;
-				da_iss_srt = (da_iss & 0x000F0000UL) >> 16;
-				da_iss_wnr = (da_iss & 0x00000040UL) >> 6;
-
-				_XDPRINTFSMP_("%s: s2pgtbl DATA ABORT intercept (hsr=0x%08x)\n", __func__, hsr);
+				ida.sas = (da_iss & 0x00C00000UL) >> 22;
+				ida.srt = (da_iss & 0x000F0000UL) >> 16;
+				ida.wnr = (da_iss & 0x00000040UL) >> 6;
+				ida.va = sysreg_read_hdfar();
+				fault_va_page_offset = ida.va % 4096;
+				da_pa_page = ((sysreg_read_hpfar() & 0xFFFFFFF0) << 8);
+				ida.pa = da_pa_page | fault_va_page_offset;
+				ida.r = r;
 
 				if(!da_iss_isv){
 					_XDPRINTFSMP_("%s: s2pgtbl DATA ABORT: invalid isv. Halting!\n", __func__);
 					HALT();
 				}
 
-				fault_va = sysreg_read_hdfar();
-				fault_va_page_offset = fault_va % 4096;
-				fault_pa = ((sysreg_read_hpfar() & 0xFFFFFFF0) << 8) | fault_va_page_offset;
-
-				_XDPRINTFSMP_("%s: s2pgtbl DATA ABORT va=0x%08x, pa=0x%08x\n", __func__,
-						fault_va, fault_pa);
-				_XDPRINTFSMP_("%s: s2pgtbl DATA ABORT: sas=%u, srt=%u, wnr=%u\n", __func__,
-						da_iss_sas, da_iss_srt, da_iss_wnr);
-				//_XDPRINTFSMP_("%s: Halting!\n", __func__);
-				//HALT();
-				guest_mem = (u8 *)fault_pa;
-				if(da_iss_wnr){
-					//write
-					*guest_mem = (u8)guest_regread(r, da_iss_srt);
+				if( (da_pa_page == BCM2837_DMA0_REGS_BASE) ||
+					(da_pa_page == BCM2837_DMA15_REGS_BASE) ){
+					dmaprot_handle_dmacontroller_access(&ida);
 				}else{
-					//read
-					guest_regwrite(r, da_iss_srt, (u32)*guest_mem);
+					_XDPRINTFSMP_("%s: unknown s2pgtbl DATA ABORT. Halting! (va=0x%08x, pa=0x%08x)\n",
+							__func__, ida.va, ida.pa);
+					HALT();
 				}
 
 				elr_hyp = sysreg_read_elrhyp();
-				elr_hyp += sizeof(u32);
+
+				if(ida.il)
+					elr_hyp += sizeof(u32);
+				else
+					elr_hyp += sizeof(u16);
+
 				sysreg_write_elrhyp(elr_hyp);
 			}
 			break;
@@ -215,7 +216,7 @@ void hypsvc_handler(arm8_32_regs_t *r){
 			HALT();
 	}
 
-	_XDPRINTFSMP_("%s: EXIT\n", __func__);
+	//_XDPRINTFSMP_("%s: EXIT\n", __func__);
 
 
 }
@@ -302,8 +303,8 @@ void core_fixresmemmap(u32 fdt_address){
 	debug_hexdumpu32(sizeof(struct fdt_reserve_entry));
 
 	//write the guestos extent as first entry
-	fdtrsvmmapentryp->address = cpu_le2be_u64(0x0000000030000000ULL);
-	fdtrsvmmapentryp->size = cpu_le2be_u64(0x0000000000800000ULL);
+	fdtrsvmmapentryp->address = cpu_le2be_u64(0x0000000028000000ULL);
+	fdtrsvmmapentryp->size = cpu_le2be_u64(0x0000000000C00000ULL);
 	//fdtrsvmmapentryp->address = 0ULL;
 	//fdtrsvmmapentryp->size = 0ULL;
 
@@ -381,6 +382,11 @@ void main(u32 r0, u32 id, struct atag *at, u32 cpuid){
 	// populate stage-2 page tables
 	s2pgtbl_populate_tables();
 	_XDPRINTF_("%s[%u]: stage-2 pts populated.\n", __func__, cpuid);
+
+	//activate DMA protection mechanism via stage-2 pts
+	dmaprot_activate();
+	_XDPRINTF_("%s[%u]: DMA protection mechanism activated via stage-2 pts\n", __func__, cpuid);
+
 
 	//dump hyp registers and load hvbar
 	_XDPRINTF_("%s[%u]: HCR=0x%08x\n", __func__, cpuid, sysreg_read_hcr());

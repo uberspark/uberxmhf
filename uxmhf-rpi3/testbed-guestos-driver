@@ -4,16 +4,29 @@ echo "Preparing to start test..."
 sudo insmod ./hypcall.ko
 echo "Loaded hypcall kernel module"
 dmesg | grep "hypcall"
+#
 #echo "Executing usr mode hyper call test app..."
 #sudo ./apphcall
 #echo "usr mode hyper call test app executed"
-echo "executing usr mode npf test app..."
-sudo ./appnpf
-echo "usr mode npf test app executed"
+#echo "executing usr mode npf test app..."
+#sudo ./appnpf
+#echo "usr mode npf test app executed"
+#
 sudo rmmod hypcall.ko
 echo "Unloaded hypcall kernel module"
 dmesg | grep "hypcall"
-echo "Waiting for test output to be flushed..."
-sleep 10
-echo "All done. Shutting down..."
-sudo shutdown -hP now
+#
+#sudo hdparm -t /dev/mmcblk0
+#sudo umount ~/mnt
+#sleep 2
+#
+#sudo mount /dev/mmcblk0p1 ~/mnt
+#sleep 2
+#sudo iozone -e -I -a -s 2M -r 2k -i 0 -f ~/mnt/test-iozone
+echo iozone -e -I -a -s 2M -r 2k -i 0 -f ~/mnt/test-iozone
+#sleep 2
+#sudo umount ~/mnt
+#echo "Waiting for test output to be flushed..."
+#sleep 10
+#echo "All done. Shutting down..."
+#sudo shutdown -hP now

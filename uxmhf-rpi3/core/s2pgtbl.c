@@ -98,6 +98,12 @@ void s2pgtbl_populate_tables(void){
 			(MEM_INNER_SHAREABLE << LDESC_S2_MEMATTR_SH_SHIFT) |
 			LDESC_S2_MEMATTR_AF_MASK;
 
+	//attrs = (LDESC_S2_MC_OUTER_NON_CACHEABLE_INNER_NON_CACHEABLE << LDESC_S2_MEMATTR_MC_SHIFT) |
+	//		(LDESC_S2_S2AP_READ_WRITE << LDESC_S2_MEMATTR_S2AP_SHIFT) |
+	//		(MEM_INNER_SHAREABLE << LDESC_S2_MEMATTR_SH_SHIFT) |
+	//		LDESC_S2_MEMATTR_AF_MASK;
+
+
 	attrs_dev = (LDESC_S2_MC_DEVnGnRnE << LDESC_S2_MEMATTR_MC_SHIFT) |
 			(LDESC_S2_S2AP_READ_WRITE << LDESC_S2_MEMATTR_S2AP_SHIFT) |
 			(MEM_INNER_SHAREABLE << LDESC_S2_MEMATTR_SH_SHIFT) |
@@ -156,7 +162,7 @@ void s2pgtbl_populate_tables(void){
 		//	l3_ldesc_table[i] = ldesc_make_s2_l3e_page((i * PAGE_SIZE_4K), roattrs);
 		//else
 		//	l3_ldesc_table[i] = ldesc_make_s2_l3e_page((i * PAGE_SIZE_4K), attrs);
-		if ( (i * PAGE_SIZE_4K) >= BCM2837_PERIPHERAL_BASE )
+		if ( (i * PAGE_SIZE_4K) >= BCM2837_PERIPHERALS_BASE )
 			l3_ldesc_table[i] = ldesc_make_s2_l3e_page((i * PAGE_SIZE_4K), attrs_dev);
 		else if ( ((i * PAGE_SIZE_4K) >= UXMHF_CORE_START_ADDR) &&
 				  ((i * PAGE_SIZE_4K) < UXMHF_CORE_END_ADDR) )

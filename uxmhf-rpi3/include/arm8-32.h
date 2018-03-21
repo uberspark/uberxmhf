@@ -392,8 +392,8 @@ typedef struct {
 	u32 r10;
 	u32 r11;
 	u32 r12;
-	u32 r13;
-	u32 r14;
+	//u32 r13;
+	//u32 r14;
 } arm8_32_regs_t;
 
 static inline u32 cpu_bswap_u32(u32 val){

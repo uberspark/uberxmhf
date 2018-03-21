@@ -79,12 +79,12 @@ void bsmain(u32 r0, u32 id, struct atag *at){
 
 
 	bcm2837_miniuart_puts("uXMHF-rpi3: bootstrap: relocating core...\n");
-	memcpy(0x30000000, g_core_startaddr, g_core_size);
+	memcpy(0x28000000, g_core_startaddr, g_core_size);
 	bcm2837_miniuart_puts("uXMHF-rpi3: bootstrap: core relocated\n");
 
 
 	bcm2837_miniuart_puts("uXMHF-rpi3: bootstrap: relocating guestos...\n");
-	memcpy(0x30800000, g_guestos_startaddr, g_guestos_size);
+	memcpy(0x28C00000, g_guestos_startaddr, g_guestos_size);
 	bcm2837_miniuart_puts("uXMHF-rpi3: bootstrap: guestos relocated\n");
 
 
