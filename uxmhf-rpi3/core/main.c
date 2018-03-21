@@ -41,9 +41,10 @@ void hyp_rsvhandler(void){
 
 
 void hyp_fiqhandler(void){
-	bcm2837_miniuart_puts("FIQ EXCEPTION-- Resuming\n");
+	uapp_watchdog_timerhandler();
+
+	//reset timer counter
 	sysreg_write_cnthp_tval(10*1024*1024);
-	//HALT();
 }
 
 
