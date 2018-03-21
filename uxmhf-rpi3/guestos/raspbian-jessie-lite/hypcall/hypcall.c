@@ -32,7 +32,7 @@ static struct file_operations fops =
 };
 
 
-void hypcall_hvc(void){
+void hypcall_hvc1(void){
 	u32 r_r0, r_r1, r_r2;
 
 	asm volatile
@@ -52,6 +52,31 @@ void hypcall_hvc(void){
 }
 
 
+
+void hypcall_hvc2(u32 address){
+
+	asm volatile
+		(	" mov r0, %[in_0]\r\n"
+			".long 0xE1400072 \r\n"
+	           : /* output */
+	           : [in_0] "r" (address) /* inputs */
+	           : "r0" /* clobber */
+	    );
+}
+
+void hypcall_hvc3(u32 address){
+
+	asm volatile
+		(	" mov r0, %[in_0]\r\n"
+			".long 0xE1400073 \r\n"
+	           : /* output */
+	           : [in_0] "r" (address) /* inputs */
+	           : "r0" /* clobber */
+	    );
+}
+
+
+
 static int dev_open(struct inode *inodep, struct file *filep){
    number_opens++;
    printk(KERN_INFO "hypcall: device has been opened %d time(s)\n", number_opens);
@@ -66,9 +91,32 @@ static int dev_release(struct inode *inodep, struct file *filep){
 
 static ssize_t dev_write(struct file *filep, const char *buffer, size_t len, loff_t *offset){
    printk(KERN_INFO "hypcall: dev_write invoked\n");
-   printk(KERN_INFO "hypcall: preparing to invoke hypercall...\n");
-   hypcall_hvc();
-   printk(KERN_INFO "hypcall: came back after hypercall...\n");
+
+   switch(len){
+   	   case 1:
+   		   printk(KERN_INFO "hypcall: preparing to invoke hypercall 1...\n");
+   		   hypcall_hvc1();
+   		   printk(KERN_INFO "hypcall: came back after hypercall 1...\n");
+   		   break;
+
+   	   case 2:
+   		   printk(KERN_INFO "hypcall: preparing to invoke hypercall 2...\n");
+   		   printk(KERN_INFO "hypcall: address=0x%08x\n", (u32)buffer);
+   		   hypcall_hvc2((u32)buffer);
+   		   printk(KERN_INFO "hypcall: came back after hypercall 2...\n");
+   		   break;
+
+   	   case 3:
+   		   printk(KERN_INFO "hypcall: preparing to invoke hypercall 3...\n");
+   		   printk(KERN_INFO "hypcall: address=0x%08x\n", (u32)buffer);
+   		   hypcall_hvc3((u32)buffer);
+   		   printk(KERN_INFO "hypcall: came back after hypercall 3...\n");
+   		   break;
+
+   	   default:
+   		   printk(KERN_INFO "hypcall: unknown hypercall, ignoring\n");
+   		   break;
+   }
 
    return 0;
 }

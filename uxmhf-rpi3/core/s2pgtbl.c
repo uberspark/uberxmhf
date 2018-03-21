@@ -84,8 +84,6 @@ __attribute__((section(".paligndata"))) __attribute__((align(PAGE_SIZE_4K))) u64
 
 
 
-#define UXMHF_CORE_START_ADDR (0x30000000)
-#define UXMHF_CORE_END_ADDR (0x30000000+0x800000)
 
 
 void s2pgtbl_populate_tables(void){

@@ -37,6 +37,59 @@ void hyphvc_handler(void){
 	_XDPRINTF_("%s: [OUT]\n", __func__);
 }
 
+
+//////
+// guest register and memory read/write helpers
+//////
+
+static void guest_regwrite(arm8_32_regs_t *r, u32 regnum, u32 value){
+	switch(regnum){
+		case 0:
+			r->r0 = value;
+			break;
+
+		case 1:
+			r->r1 = value;
+			break;
+
+		case 2:
+			r->r2 = value;
+			break;
+
+		case 3:
+			r->r3 = value;
+			break;
+
+		default:
+			_XDPRINTFSMP_("%s: Invalid regnum=%u. Halting!\n", __func__, regnum);
+			HALT();
+	}
+}
+
+
+static u32 guest_regread(arm8_32_regs_t *r, u32 regnum){
+	switch(regnum){
+		case 0:
+			return(r->r0);
+
+		case 1:
+			return(r->r1);
+
+		case 2:
+			return(r->r2);
+
+		case 3:
+			return(r->r3);
+
+		default:
+			_XDPRINTFSMP_("%s: Invalid regnum=%u. Halting!\n", __func__, regnum);
+			HALT();
+	}
+
+	return 0;	//never reached
+}
+
+
 void hypsvc_handler(arm8_32_regs_t *r){
 	u32 hsr;
 	u32 elr_hyp;
@@ -64,6 +117,37 @@ void hypsvc_handler(arm8_32_regs_t *r){
 						}
 						break;
 
+					case 2:{
+							u64 attrs_noaccess = (LDESC_S2_MC_OUTER_WRITE_BACK_CACHEABLE_INNER_WRITE_BACK_CACHEABLE << LDESC_S2_MEMATTR_MC_SHIFT) |
+								(LDESC_S2_S2AP_NO_ACCESS << LDESC_S2_MEMATTR_S2AP_SHIFT) |
+								(MEM_INNER_SHAREABLE << LDESC_S2_MEMATTR_SH_SHIFT) |
+								LDESC_S2_MEMATTR_AF_MASK;
+
+							_XDPRINTFSMP_("%s: setprot_noaccess r0=0x%08x\n", __func__,
+									r->r0);
+							uapi_s2pgtbl_setprot(r->r0, attrs_noaccess);
+							//sysreg_tlbiipas2is(r->r0);
+							sysreg_tlbiallis();
+						}
+						break;
+
+					case 3:{
+							u64 attrs = (LDESC_S2_MC_OUTER_WRITE_BACK_CACHEABLE_INNER_WRITE_BACK_CACHEABLE << LDESC_S2_MEMATTR_MC_SHIFT) |
+								(LDESC_S2_S2AP_READ_WRITE << LDESC_S2_MEMATTR_S2AP_SHIFT) |
+								(MEM_INNER_SHAREABLE << LDESC_S2_MEMATTR_SH_SHIFT) |
+								LDESC_S2_MEMATTR_AF_MASK;
+
+							_XDPRINTFSMP_("%s: setprot_restore-access r0=0x%08x\n", __func__,
+									r->r0);
+
+							uapi_s2pgtbl_setprot(r->r0, attrs);
+							//sysreg_tlbiipas2is(r->r0);
+							sysreg_tlbiallis();
+						}
+						break;
+
+
+
 					default:
 						_XDPRINTFSMP_("%s: unknown HVC instruction imm16=0x%08x\n", __func__,
 								hvc_imm16);
@@ -73,25 +157,55 @@ void hypsvc_handler(arm8_32_regs_t *r){
 			}
 			break;
 
-		case HSR_EC_DATA_ABORT_ELCHANGE:
-			//bcm2837_miniuart_puts("uXMHF-rpi3: core: s2pgtbl DATA access fault\n");
-			//bcm2837_miniuart_puts(" HSR= ");
-			//debug_hexdumpu32(hsr);
+		case HSR_EC_DATA_ABORT_ELCHANGE:{
+				u32 elr_hyp;
+				u32 fault_va;
+				u32 fault_va_page_offset;
+				u32 fault_pa;
+				u32 da_iss;
+				u32 da_iss_isv;
+				u32 da_iss_sas;
+				u32 da_iss_srt;
+				u32 da_iss_wnr;
+				u8 *guest_mem;
 
-			elr_hyp = sysreg_read_elrhyp();
-			//bcm2837_miniuart_puts(" ELR_hyp= ");
-			//debug_hexdumpu32(elr_hyp);
+				da_iss = ((hsr & HSR_ISS_MASK) >> HSR_ISS_SHIFT);
+				da_iss_isv = (da_iss & 0x01000000UL) >> 24;
+				da_iss_sas = (da_iss & 0x00C00000UL) >> 22;
+				da_iss_srt = (da_iss & 0x000F0000UL) >> 16;
+				da_iss_wnr = (da_iss & 0x00000040UL) >> 6;
 
-			elr_hyp += sizeof(u32);
-			sysreg_write_elrhyp(elr_hyp);
+				_XDPRINTFSMP_("%s: s2pgtbl DATA ABORT intercept (hsr=0x%08x)\n", __func__, hsr);
 
-			//elr_hyp = sysreg_read_elrhyp();
-			//bcm2837_miniuart_puts(" ELR_hyp [updated]= ");
-			//debug_hexdumpu32(elr_hyp);
+				if(!da_iss_isv){
+					_XDPRINTFSMP_("%s: s2pgtbl DATA ABORT: invalid isv. Halting!\n", __func__);
+					HALT();
+				}
+
+				fault_va = sysreg_read_hdfar();
+				fault_va_page_offset = fault_va % 4096;
+				fault_pa = ((sysreg_read_hpfar() & 0xFFFFFFF0) << 8) | fault_va_page_offset;
+
+				_XDPRINTFSMP_("%s: s2pgtbl DATA ABORT va=0x%08x, pa=0x%08x\n", __func__,
+						fault_va, fault_pa);
+				_XDPRINTFSMP_("%s: s2pgtbl DATA ABORT: sas=%u, srt=%u, wnr=%u\n", __func__,
+						da_iss_sas, da_iss_srt, da_iss_wnr);
+				//_XDPRINTFSMP_("%s: Halting!\n", __func__);
+				//HALT();
+				guest_mem = (u8 *)fault_pa;
+				if(da_iss_wnr){
+					//write
+					*guest_mem = (u8)guest_regread(r, da_iss_srt);
+				}else{
+					//read
+					guest_regwrite(r, da_iss_srt, (u32)*guest_mem);
+				}
+
+				elr_hyp = sysreg_read_elrhyp();
+				elr_hyp += sizeof(u32);
+				sysreg_write_elrhyp(elr_hyp);
+			}
 			break;
-
-			//bcm2837_miniuart_puts("uXMHF-rpi3: core: Halting\n");
-			//HALT();
 
 		default:
 			bcm2837_miniuart_puts("uXMHF-rpi3: core: UNHANDLED INTERCEPT!\n");

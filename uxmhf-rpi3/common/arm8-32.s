@@ -220,6 +220,23 @@ sysreg_iciallu:
 	bx lr
 
 
+//r0=ipa to flush s2pgtbl tlb entries for
+//vmid is obtained from current vttbr
+.global sysreg_tlbiipas2is
+sysreg_tlbiipas2is:
+	mcr p15,4,r0,c8,c0,1
+	isb
+	dsb ish
+	bx lr
+
+
+.global sysreg_tlbiallis
+sysreg_tlbiallis:
+	mcr p15,0,r0,c8,c3,0
+	isb
+	dsb ish
+	bx lr
+
 .global sysreg_read_mair0
 sysreg_read_mair0:
 	mrc p15,0,r0,c10,c2,0
@@ -298,6 +315,18 @@ sysreg_read_dacr:
 sysreg_write_dacr:
 	mcr p15,0,r0,c3,c0,0
 	bx lr
+
+
+.global sysreg_read_hdfar
+sysreg_read_hdfar:
+	mrc p15,4,r0,c6,c0,0
+	bx lr
+
+.global sysreg_read_hpfar
+sysreg_read_hpfar:
+	mrc p15,4,r0,c6,c0,4
+	bx lr
+
 
 
 //r0 specifies the 32-bit lock variable address

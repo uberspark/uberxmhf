@@ -296,6 +296,11 @@
 		((addr & 0x000000FFFFFFF000ULL) | attrs | 0x3ULL)
 
 
+#define ldesc_get_s2_l3e_page_attrs(entry)	\
+		((entry & 0xFFF0000000000FF3ULL))
+
+
+
 #define L1_LDESC_TABLE_MAXENTRIES	1024
 #define L1_LDESC_TABLE_ENTRIES		3
 #define L2_LDESC_TABLE_MAXENTRIES	512
@@ -474,6 +479,8 @@ extern void sysreg_write_hmair1(u32 value);
 
 extern void sysreg_tlbiallh(void);
 extern void sysreg_iciallu(void);
+extern void sysreg_tlbiipas2is(u32 ipa);
+extern void sysreg_tlbiallis(void);
 
 extern u64 sysreg_read_httbr(void);
 extern void sysreg_write_httbr(u64 value);
@@ -487,6 +494,8 @@ extern void sysreg_write_actlr(u32 value);
 extern u32 sysreg_read_dacr(void);
 extern void sysreg_write_dacr(u32 value);
 
+extern u32 sysreg_read_hdfar(void);
+extern u32 sysreg_read_hpfar(void);
 
 extern void cpu_isb(void);
 extern void cpu_dsb(void);
