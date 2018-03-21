@@ -15,19 +15,33 @@ __check_defined = \
                 to OS kernel image file [required by target `$@'])))
 
 
+export UXMHFRPI3_DIR := $(realpath $(dir $(lastword $(MAKEFILE_LIST))))
+
 TOOLPREFIX ?= arm-linux-gnueabihf-
-CFLAGS_DEFS = -I./include -I../include -D__DEBUG_SERIAL__ 
+CFLAGS_DEFS = -I$(UXMHFRPI3_DIR)/libs/libxmhfc/include -I./include -I../include -D__DEBUG_SERIAL__ 
 CFLAGS = $(CFLAGS_DEFS) -c -Wall -nostdlib -nostartfiles -ffreestanding -mcpu=cortex-a53
 #CFLAGS = -I./include -I../include -D__DEBUG_SERIAL__ -c -Wall -nostdlib -nostartfiles -ffreestanding -march=armv8-a+crc
 CCLIB = $(shell $(TOOLPREFIX)gcc --print-lib)
+LIBS = $(UXMHFRPI3_DIR)/libs/libxmhfc/libxmhfc.a
+
+
+# tools
+export AR=ar
+export CP=cp
+export CCERT=$(TOOLPREFIX)gcc
+export CC=$(TOOLPREFIX)gcc
+export CCERT_FLAGS=$(CFLAGS)
+export RM=rm
 
 export TOOLPREFIX
 export CFLAGS_DEFS
 export CFLAGS
 export CCLIB
+export LIBS
 
 .PHONY: all
 all: checkoskrnlimg 
+	cd libs/libxmhfc && make -w all
 	cd core && make -w all
 	cd guestos && make -w all
 	cd bootstrap && make -w all
