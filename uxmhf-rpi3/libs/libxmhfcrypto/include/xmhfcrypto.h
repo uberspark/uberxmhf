@@ -103,7 +103,7 @@ enum {
 
 //tomcrypt_cfg.h
 
-typedef u32 LTC_FAST_TYPE;
+typedef uint32_t LTC_FAST_TYPE;
 #define LTC_FAST_TYPE_PTR_CAST(x) ((LTC_FAST_TYPE*)(void*)(x))
 
 
@@ -154,7 +154,7 @@ typedef u32 LTC_FAST_TYPE;
 //Empty for now
 
 struct rijndael_key {
-   u32 eK[60], dK[60];
+   uint32_t eK[60], dK[60];
    int Nr;
 };
 
@@ -203,9 +203,9 @@ struct ltc_cipher_descriptor {
 //tomcrypt_hash.h
 
 struct sha1_state {
-    u64 length;
-    u32 state[5], curlen;
-    u8 buf[64];
+    uint64_t length;
+    uint32_t state[5], curlen;
+    uint8_t buf[64];
 };
 
 
