@@ -65,26 +65,103 @@ void guest_regwrite(arm8_32_regs_t *r, u32 regnum, u32 value){
 
 
 u32 guest_regread(arm8_32_regs_t *r, u32 regnum){
-	switch(regnum){
-		case 0:		return(r->r0);
-		case 1:		return(r->r1);
-		case 2:		return(r->r2);
-		case 3:		return(r->r3);
-		case 4:		return(r->r4);
-		case 5:		return(r->r5);
-		case 6:		return(r->r6);
-		case 7:		return(r->r7);
-		case 8:		return(r->r8);
-		case 9:		return(r->r9);
-		case 10:	return(r->r10);
-		case 11:	return(r->r11);
-		case 12:	return(r->r12);
-		default:
+
+	if(regnum == 0)
+		return(r->r0);
+	else if (regnum == 1)
+		return(r->r1);
+	else if (regnum == 2)
+		return(r->r2);
+	else if (regnum == 3)
+		return(r->r3);
+	else if (regnum == 4)
+		return(r->r4);
+	else if (regnum == 5)
+		return(r->r5);
+	else if (regnum == 6)
+		return(r->r6);
+	else if (regnum == 7)
+		return(r->r7);
+	else if (regnum == 8)
+		return(r->r8);
+	else if (regnum == 9)
+		return(r->r9);
+	else if (regnum == 10)
+		return(r->r10);
+	else if (regnum == 11)
+		return(r->r11);
+	else if (regnum == 12)
+		return(r->r12);
+	else{
 			_XDPRINTFSMP_("%s: Invalid regnum=%u. Halting!\n", __func__, regnum);
 			HALT();
 	}
 
 	return 0;	//never reached
+}
+
+
+void guest_data_abort_handler(arm8_32_regs_t *r, u32 hsr){
+	u32 elr_hyp;
+	u32 fault_va;
+	u32 fault_pa_page;
+	u32 fault_pa;
+	u32 fault_va_page_offset;
+	u32 fault_iss;
+	u32 guest_regnum;
+	u32 guest_regvalue;
+
+
+	//fix return address
+	elr_hyp = sysreg_read_elrhyp();
+	elr_hyp += sizeof(u32);
+	sysreg_write_elrhyp(elr_hyp);
+
+	//get faulting va
+	fault_va= sysreg_read_hdfar();
+
+	//debug: sanity check
+	//if(fault_va != r->r0){
+	//	bcm2837_miniuart_puts("dmaprotusb: fault_va != r->r0. Halting!\n");
+	//	HALT();
+	//}
+
+	//compute faulting va page_offset
+	fault_va_page_offset = fault_va & 0x00000FFFUL;
+
+	//get faulting pa page
+	fault_pa_page = sysreg_read_hpfar();
+	fault_pa_page = (fault_pa_page & 0xFFFFFFF0UL) << 8;
+
+	//compute faulting pa
+	fault_pa = 	fault_pa_page | fault_va_page_offset;
+
+	//debug: sanity check
+	//if(fault_pa != r->r2){
+	//	bcm2837_miniuart_puts("dmaprotusb: fault_pa != r->r2. Halting!\n");
+	//	HALT();
+	//}
+
+	//get faulting iss
+	fault_iss = (hsr & HSR_ISS_MASK) >> HSR_ISS_SHIFT;
+
+	//compute guest register number
+	guest_regnum = (fault_iss & 0x000F0000UL) >> 16;
+
+	//get guest register value
+	guest_regvalue = guest_regread(r, guest_regnum);
+
+	//debug: sanity check
+	//if(guest_regvalue != r->r1){
+	//	bcm2837_miniuart_puts("dmaprotusb: guest_regvalue != r->r1. Halting!\n");
+	//	bcm2837_miniuart_puts("dmaprotusb: guest_regvalue=");
+	//	debug_hexdumpu32(guest_regvalue);
+	//	bcm2837_miniuart_flush();
+	//	HALT();
+	//}
+
+
+	mmio_write32(fault_pa, guest_regvalue);
 }
 
 
@@ -174,7 +251,9 @@ void hypsvc_handler(arm8_32_regs_t *r){
 			break;
 
 		case HSR_EC_DATA_ABORT_ELCHANGE:{
-				u32 elr_hyp;
+				guest_data_abort_handler(r, hsr);
+
+				/*u32 elr_hyp;
 				//u32 fault_va;
 				u32 fault_va_page_offset;
 				//u32 fault_pa;
@@ -207,6 +286,7 @@ void hypsvc_handler(arm8_32_regs_t *r){
 				HALT();
 
 				mmio_write32(ida.pa, reg_value);
+*/
 
 				/*if(!da_iss_isv){
 					_XDPRINTFSMP_("%s: s2pgtbl DATA ABORT: invalid isv. Halting!\n", __func__);
@@ -226,6 +306,8 @@ void hypsvc_handler(arm8_32_regs_t *r){
 					HALT();
 				}
 				*/
+
+				/*
 				elr_hyp = sysreg_read_elrhyp();
 
 				if(ida.il)
@@ -234,6 +316,7 @@ void hypsvc_handler(arm8_32_regs_t *r){
 					elr_hyp += sizeof(u16);
 
 				sysreg_write_elrhyp(elr_hyp);
+				*/
 			}
 			break;
 

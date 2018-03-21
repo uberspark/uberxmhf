@@ -154,9 +154,17 @@ hypvtable_hypsvc_handler:
 	//	PE (processor execution) state
 	//
 
-/*	dsb st
-	str r1, [r0]
+
+/*
+	//we can clobber r0
+	//r1 = value, r2=register
+	mrs r0, ELR_hyp
+	add r0, #4
+	msr ELR_hyp, r0
+	dsb st
+	str r1, [r2]
 */
+
 	eret
 
 
