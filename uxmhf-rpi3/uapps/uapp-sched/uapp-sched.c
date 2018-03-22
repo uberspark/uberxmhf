@@ -373,6 +373,9 @@ void uapp_sched_timers_update(TIME time){
 		//spin_unlock(&priority_queue_lock);
 		//_XDPRINTFSMP_("%s,%u: inserted 0x%08x with priority=%d\n", __func__, __LINE__,
 		//		t, t->priority);
+		_XDPRINTFSMP_("\n%s: task timer priority=%d expired!\n", __func__, t->priority);
+
+
 
       }
     }
@@ -585,7 +588,7 @@ void uapp_sched_initialize(u32 cpuid){
 
 		//_XDPRINTFSMP_("%s[%u]: Starting timers...\n", __func__, cpuid);
 
-		//uapp_sched_timer_declare(3 * 1024 * 1024, NULL, 1);
+		uapp_sched_timer_declare(3 * 1024 * 1024, NULL, 1);
 		//uapp_sched_timer_declare(9 * 1024 * 1024, NULL, 3);
 		//uapp_sched_timer_declare(10 * 1024 * 1024, NULL, 3);
 
