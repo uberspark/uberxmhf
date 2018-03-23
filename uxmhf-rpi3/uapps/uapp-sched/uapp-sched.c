@@ -291,7 +291,7 @@ void uapp_sched_timer_undeclare(struct sched_timer *t){
 struct sched_timer *uapp_sched_timer_declare(u32 time, char *event, int priority){
   struct sched_timer *t;
 
-  disable_fiq();
+  //disable_fiq();
 
   for (t=sched_timers;t<&sched_timers[MAX_TIMERS];t++) {
     if (!t->inuse) break;
@@ -335,7 +335,7 @@ struct sched_timer *uapp_sched_timer_declare(u32 time, char *event, int priority
 
   t->inuse = TRUE;
 
-  enable_fiq();
+  //enable_fiq();
 
   return(t);
 }
@@ -454,6 +454,7 @@ void uapp_sched_process_timers_fiq(void){
 			priority = sched_timers[i].priority;
 			uapp_sched_timer_declare(time_to_wait, NULL, priority);
 			_XDPRINTFSMP_("\n%s: re-activated timer priority=%d expired!\n", __func__, priority);
+			break;
 		}
 	}
 }
@@ -519,7 +520,7 @@ void uapp_sched_timer_initialize(u32 cpuid){
 #endif
 
 	//enable FIQs
-	enable_fiq();
+	//enable_fiq();
 	cpsr = sysreg_read_cpsr();
 	_XDPRINTFSMP_("%s[%u]: CPSR[after enable_fiq]=0x%08x; CPSR.A=%u, CPSR.I=%u, CPSR.F=%u\n",
 			__func__, cpuid, cpsr, ((cpsr & (1UL << 8)) >> 8),
@@ -545,8 +546,8 @@ void uapp_sched_fiqhandler(void){
 	fiq_sp = sysreg_read_sp();
 	//_XDPRINTFSMP_("%s: Timer Fired: sp=0x%08x, cpsr=0x%08x\n", __func__,
 	//		fiq_sp, sysreg_read_cpsr());
-	uapp_sched_timerhandler();
-	//uapp_sched_start_physical_timer(3*1024*1024);
+	//uapp_sched_timerhandler();
+	uapp_sched_start_physical_timer(15*1024*1024);
 	//_XDPRINTFSMP_("%s: resuming\n", __func__);
 #endif
 
@@ -607,7 +608,10 @@ void uapp_sched_initialize(u32 cpuid){
 		//_XDPRINTFSMP_("%s[%u]: Starting timers...\n", __func__, cpuid);
 
 		//uapp_sched_timer_declare(3 * 1024 * 1024, NULL, 1);
-		uapp_sched_timer_declare(9 * 1024 * 1024, NULL, 3);
+		//disable_fiq();
+		//uapp_sched_timer_declare(9 * 1024 * 1024, NULL, 3);
+		//enable_fiq();
+		uapp_sched_start_physical_timer(15*1024*1024);
 		//uapp_sched_timer_declare(10 * 1024 * 1024, NULL, 3);
 
 		_XDPRINTFSMP_("%s[%u]: Initializing scheduler...\n", __func__, cpuid);

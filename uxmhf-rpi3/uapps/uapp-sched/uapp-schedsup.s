@@ -20,7 +20,7 @@
 	.balign 32
 	.global	uapp_sched_fiq_handler
 uapp_sched_fiq_handler:
-	//ldr sp, =uapp_sched_fiqhandler_stack_top	//load base into stack-pointer
+	ldr sp, =uapp_sched_fiqhandler_stack_top	//load base into stack-pointer
 
 	push {r14}
 	push {r13}
