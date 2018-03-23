@@ -642,7 +642,7 @@ void uapp_sched_initialize(u32 cpuid){
 
 
 
-void_uapp_sched_logic(void){
+void uapp_sched_logic(void){
 	struct sched_timer *task_timer;
 	u32 queue_data;
 	int priority;
