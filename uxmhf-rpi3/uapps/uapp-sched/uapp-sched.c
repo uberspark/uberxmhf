@@ -585,6 +585,8 @@ void uapp_sched_timerhandler(void){
 
 	//_XDPRINTFSMP_("%s,%u: ENTER\n", __func__, __LINE__);
 	//uapp_sched_process_timers_fiq();
+	uapp_sched_logic();
+
 }
 
 
