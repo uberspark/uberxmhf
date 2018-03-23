@@ -12,39 +12,34 @@
 
 #include <hypmtscheduler.h>
 
+
+//////
+// externs
+//////
+
 extern void uapp_sched_fiq_handler(void);
 extern u32 uapp_sched_fiqhandler_stack[];
+extern __attribute__(( section(".data") )) u32 priority_queue_lock=1;
+
+
+//////
+// forward function prototypes
+//////
 
 u64 uapp_sched_read_cpucounter(void);
 void_uapp_sched_logic(void);
 
-//////
-// global typedefs and variables
-//////
-#define TRUE  	1
-#define FALSE 	0
 
-#define MAX_TIMERS	4	//number of timers
-typedef u64 TIME;   	//our time type; 64-bits since we are using clock cycles
-#define VERY_LONG_TIME  0xffffffffffffffffULL	//longest time possible
-
-struct sched_timer {
-	u32 inuse;			// TRUE if in use
-	u32 event;    		// set to TRUE at timeout
-	int priority;		// priority associated with the timer
-	TIME sticky_time_to_wait;  // relative time to wait sticky
-	TIME time_to_wait;  // relative time to wait
-};
+//////
+// global variables
+//////
 
 volatile u32 fiq_sp = 0;
 volatile u32 normal_sp = 0;
 
-
 __attribute__((section(".data"))) struct sched_timer sched_timers[MAX_TIMERS];   // set of timers
 __attribute__((section(".data"))) struct sched_timer *timer_next = NULL; // timer we expect to run down next
 __attribute__((section(".data"))) TIME time_timer_set;    // time when physical timer was set
-
-extern __attribute__(( section(".data") )) u32 priority_queue_lock=1;
 
 __attribute__((section(".data"))) struct sched_timer timer_last = {
   FALSE,
@@ -53,7 +48,6 @@ __attribute__((section(".data"))) struct sched_timer timer_last = {
   VERY_LONG_TIME,
   VERY_LONG_TIME
 };
-
 
 __attribute__((section(".data"))) volatile u8 thread1_event = FALSE;
 __attribute__((section(".data"))) volatile u8 thread2_event = FALSE;
