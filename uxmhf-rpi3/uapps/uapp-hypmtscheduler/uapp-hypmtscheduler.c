@@ -10,6 +10,7 @@
 #include <miniuart.h>
 #include <debug.h>
 
+#include <hypmtscheduler.h>
 
 extern void uapp_sched_fiq_handler(void);
 extern u32 uapp_sched_fiqhandler_stack[];
