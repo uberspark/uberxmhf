@@ -7,6 +7,7 @@
 #ifndef __HYPMTSCHEDULER_H__
 #define __HYPMTSCHEDULER_H__
 
+#define UAPP_HYPMTSCHEDULER_FUNCTION_TEST	0xC0
 
 #ifndef __ASSEMBLY__
 
@@ -24,6 +25,11 @@ struct sched_timer {
 	TIME sticky_time_to_wait;  // relative time to wait sticky
 	TIME time_to_wait;  // relative time to wait
 };
+
+typedef struct {
+	uint8_t in[16];
+	uint8_t out[16];
+}ugapp_hypmtscheduler_param_t;
 
 
 #endif // __ASSEMBLY__
