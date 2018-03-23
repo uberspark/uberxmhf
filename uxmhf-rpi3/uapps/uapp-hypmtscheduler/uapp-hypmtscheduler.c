@@ -64,23 +64,7 @@ typedef struct {
 	int priority; 	//priority (higher value = higher priority)
 } priority_queue_t;
 
-
-//first element [][0]=value, second element [][1] = priority
-//__attribute__((section(".data"))) int priority_queue[PRIORITY_QUEUE_SIZE][2];
-
 __attribute__((section(".data"))) priority_queue_t priority_queue[PRIORITY_QUEUE_SIZE];
-
-
-#if 0
-__attribute__((section(".data"))) int top = -1;
-__attribute__((section(".data"))) int bottom;
-#endif
-
-#if 0
-__attribute__((section(".data"))) int front = -1;
-__attribute__((section(".data"))) int rear = -1;
-#endif
-
 __attribute__((section(".data"))) int priority_queue_totalelems = 0;
 
 //maintain priority queue in descending order
@@ -167,53 +151,6 @@ int priority_queue_remove(void *data, int *priority){
 	priority_queue_totalelems--;
 	return 1;
 }
-
-
-
-#if 0
-// Function to check priority and place element
-void check(int value, int priority){
-    int i,j;
-
-    for (i = 0; i <= rear; i++){
-        if (priority >= priority_queue[i][1]){
-            for (j = rear + 1; j > i; j--){
-                priority_queue[j][0] = priority_queue[j - 1][0];
-            	priority_queue[j][1] = priority_queue[j - 1][1];
-            }
-            priority_queue[i][0] = value;
-            priority_queue[i][1] = priority;
-            return;
-        }
-    }
-
-    priority_queue[i][0] = value;
-    priority_queue[i][1] = priority;
-}
-
-//return 0 on error, 1 on success
-int priority_queue_insert(int value, int priority){
-    if (rear >= PRIORITY_QUEUE_SIZE - 1){
-		_XDPRINTFSMP_("%s,%u: Queue overflow, no more elements can be inserted!\n", __func__, __LINE__);
-		return 0;
-    }
-
-    //no elements so far, so just insert at the beginning
-    if ((front == -1) && (rear == -1)){
-        front++;
-        rear++;
-        priority_queue[rear][0] = value;
-        priority_queue[rear][1] = priority;
-    }else{ //we have some elements already so check and insert by priority
-        check(value, priority);
-        //point to the rear of the queue
-        rear++;
-    }
-
-    return 1;
-}
-#endif
-
 
 
 
@@ -439,25 +376,6 @@ void uapp_sched_process_timers(u32 cpuid){
 	}
 }
 
-//////
-// scheduler timer event processing withih FIQ context
-//////
-void uapp_sched_process_timers_fiq(void){
-	u32 i;
-	u32 time_to_wait;
-	int priority;
-
-	for(i=0; i < MAX_TIMERS; i++){
-		if(sched_timers[i].event){
-			sched_timers[i].event = FALSE;
-			time_to_wait = sched_timers[i].sticky_time_to_wait; //reload
-			priority = sched_timers[i].priority;
-			uapp_sched_timer_declare(time_to_wait, NULL, priority);
-			_XDPRINTFSMP_("\n%s: re-activated timer priority=%d expired!\n", __func__, priority);
-			break;
-		}
-	}
-}
 
 
 
@@ -508,16 +426,6 @@ void uapp_sched_timer_initialize(u32 cpuid){
 
 
 
-#if 0
-	_XDPRINTFSMP_("%s[%u]: CNTHP_TVAL[initial]=%d\n", __func__, cpuid, sysreg_read_cnthp_tval());
-	//sysreg_write_cnthp_tval(10*1024*1024);
-	uapp_sched_start_physical_timer(10 * 1024 * 1024);
-	_XDPRINTFSMP_("%s[%u]: CNTHP_TVAL[reset]=%d\n", __func__, cpuid, sysreg_read_cnthp_tval());
-
-	sysreg_write_cnthp_ctl(0x1);
-	_XDPRINTFSMP_("%s[%u]: CNTHP_TVAL[current]=%d\n", __func__, cpuid, sysreg_read_cnthp_tval());
-	_XDPRINTFSMP_("%s[%u]: CNTHP_CTL[current]=%d\n", __func__, cpuid, sysreg_read_cnthp_ctl());
-#endif
 
 	//enable FIQs
 	//enable_fiq();
@@ -533,16 +441,6 @@ void uapp_sched_timer_initialize(u32 cpuid){
 
 void uapp_sched_fiqhandler(void){
 
-#if 0
-	fiq_sp = sysreg_read_sp();
-	_XDPRINTFSMP_("%s: Timer Fired: sp=0x%08x, cpsr=0x%08x!\n", __func__, fiq_sp,
-			sysreg_read_cpsr());
-	_XDPRINTFSMP_("%s: Halting!\n", __func__);
-	HALT();
-#endif
-
-
-#if 1
 	//fiq_sp = sysreg_read_sp();
 	//_XDPRINTFSMP_("%s: Timer Fired: sp=0x%08x, cpsr=0x%08x\n", __func__,
 	//		fiq_sp, sysreg_read_cpsr());
@@ -550,16 +448,6 @@ void uapp_sched_fiqhandler(void){
 	//bcm2837_miniuart_puts("\n[HYPTIMER]: Fired!!\n");
 	//uapp_sched_start_physical_timer(3 * 20 * 1024 * 1024);
 	//_XDPRINTFSMP_("%s: resuming\n", __func__);
-#endif
-
-#if 0
-	fiq_sp = sysreg_read_sp();
-	_XDPRINTFSMP_("%s: Timer Fired: sp=0x%08x!\n", __func__, fiq_sp);
-	//bcm2837_miniuart_puts("\n FIQ timer fired: sp=0x");
-	//debug_hexdumpu32(fiq_sp);
-	HALT();
-	//uapp_sched_start_physical_timer(10 * 1024 * 1024);
-#endif
 
 }
 
@@ -584,6 +472,33 @@ void uapp_sched_timerhandler(void){
 
 }
 
+
+
+
+
+
+void uapp_sched_logic(void){
+	struct sched_timer *task_timer;
+	u32 queue_data;
+	int priority;
+	int status;
+	volatile u32 sp, spnew;
+
+	//TBD: remove hard-coded cpuid (0) below
+	uapp_sched_process_timers(0);
+
+	status=0;
+	status = priority_queue_remove(&queue_data, &priority);
+
+	if(status){
+		task_timer = (struct sched_timer *)queue_data;
+    	//bcm2837_miniuart_puts("\n[HYPSCHED]: Task timer expired. Priority=0x");
+    	//debug_hexdumpu32(task_timer->priority);
+    	//bcm2837_miniuart_puts("\n");
+		_XDPRINTFSMP_("\n[HYPSCHED]: task timer priority=%d expired!\n", task_timer->priority);
+	}
+
+}
 
 
 void uapp_sched_initialize(u32 cpuid){
@@ -639,33 +554,91 @@ void uapp_sched_initialize(u32 cpuid){
 
 
 
-void uapp_sched_logic(void){
-	struct sched_timer *task_timer;
-	u32 queue_data;
-	int priority;
-	int status;
-	volatile u32 sp, spnew;
 
-	//TBD: remove hard-coded cpuid (0) below
-	uapp_sched_process_timers(0);
 
-	status=0;
-	status = priority_queue_remove(&queue_data, &priority);
 
-	if(status){
-		task_timer = (struct sched_timer *)queue_data;
-    	//bcm2837_miniuart_puts("\n[HYPSCHED]: Task timer expired. Priority=0x");
-    	//debug_hexdumpu32(task_timer->priority);
-    	//bcm2837_miniuart_puts("\n");
-		_XDPRINTFSMP_("\n[HYPSCHED]: task timer priority=%d expired!\n", task_timer->priority);
-	}
 
+//////
+// DEFUNCT
+//////
+
+#if 0
+__attribute__((section(".data"))) int top = -1;
+__attribute__((section(".data"))) int bottom;
+#endif
+
+#if 0
+__attribute__((section(".data"))) int front = -1;
+__attribute__((section(".data"))) int rear = -1;
+#endif
+
+
+#if 0
+// Function to check priority and place element
+void check(int value, int priority){
+    int i,j;
+
+    for (i = 0; i <= rear; i++){
+        if (priority >= priority_queue[i][1]){
+            for (j = rear + 1; j > i; j--){
+                priority_queue[j][0] = priority_queue[j - 1][0];
+            	priority_queue[j][1] = priority_queue[j - 1][1];
+            }
+            priority_queue[i][0] = value;
+            priority_queue[i][1] = priority;
+            return;
+        }
+    }
+
+    priority_queue[i][0] = value;
+    priority_queue[i][1] = priority;
 }
 
+//return 0 on error, 1 on success
+int priority_queue_insert(int value, int priority){
+    if (rear >= PRIORITY_QUEUE_SIZE - 1){
+		_XDPRINTFSMP_("%s,%u: Queue overflow, no more elements can be inserted!\n", __func__, __LINE__);
+		return 0;
+    }
+
+    //no elements so far, so just insert at the beginning
+    if ((front == -1) && (rear == -1)){
+        front++;
+        rear++;
+        priority_queue[rear][0] = value;
+        priority_queue[rear][1] = priority;
+    }else{ //we have some elements already so check and insert by priority
+        check(value, priority);
+        //point to the rear of the queue
+        rear++;
+    }
+
+    return 1;
+}
+#endif
 
 
+#if 0
+//////
+// scheduler timer event processing withih FIQ context
+//////
+void uapp_sched_process_timers_fiq(void){
+	u32 i;
+	u32 time_to_wait;
+	int priority;
 
-
+	for(i=0; i < MAX_TIMERS; i++){
+		if(sched_timers[i].event){
+			sched_timers[i].event = FALSE;
+			time_to_wait = sched_timers[i].sticky_time_to_wait; //reload
+			priority = sched_timers[i].priority;
+			uapp_sched_timer_declare(time_to_wait, NULL, priority);
+			_XDPRINTFSMP_("\n%s: re-activated timer priority=%d expired!\n", __func__, priority);
+			break;
+		}
+	}
+}
+#endif
 
 
 #if 0
@@ -842,4 +815,49 @@ void uapp_sched_initialize(u32 cpuid){
 
 }
 
+#endif
+
+#if 0
+void uapp_sched_fiqhandler(void){
+
+#if 0
+	fiq_sp = sysreg_read_sp();
+	_XDPRINTFSMP_("%s: Timer Fired: sp=0x%08x, cpsr=0x%08x!\n", __func__, fiq_sp,
+			sysreg_read_cpsr());
+	_XDPRINTFSMP_("%s: Halting!\n", __func__);
+	HALT();
+#endif
+
+
+#if 1
+	//fiq_sp = sysreg_read_sp();
+	//_XDPRINTFSMP_("%s: Timer Fired: sp=0x%08x, cpsr=0x%08x\n", __func__,
+	//		fiq_sp, sysreg_read_cpsr());
+	uapp_sched_timerhandler();
+	//bcm2837_miniuart_puts("\n[HYPTIMER]: Fired!!\n");
+	//uapp_sched_start_physical_timer(3 * 20 * 1024 * 1024);
+	//_XDPRINTFSMP_("%s: resuming\n", __func__);
+#endif
+
+#if 0
+	fiq_sp = sysreg_read_sp();
+	_XDPRINTFSMP_("%s: Timer Fired: sp=0x%08x!\n", __func__, fiq_sp);
+	//bcm2837_miniuart_puts("\n FIQ timer fired: sp=0x");
+	//debug_hexdumpu32(fiq_sp);
+	HALT();
+	//uapp_sched_start_physical_timer(10 * 1024 * 1024);
+#endif
+
+}
+#endif
+
+#if 0
+	_XDPRINTFSMP_("%s[%u]: CNTHP_TVAL[initial]=%d\n", __func__, cpuid, sysreg_read_cnthp_tval());
+	//sysreg_write_cnthp_tval(10*1024*1024);
+	uapp_sched_start_physical_timer(10 * 1024 * 1024);
+	_XDPRINTFSMP_("%s[%u]: CNTHP_TVAL[reset]=%d\n", __func__, cpuid, sysreg_read_cnthp_tval());
+
+	sysreg_write_cnthp_ctl(0x1);
+	_XDPRINTFSMP_("%s[%u]: CNTHP_TVAL[current]=%d\n", __func__, cpuid, sysreg_read_cnthp_tval());
+	_XDPRINTFSMP_("%s[%u]: CNTHP_CTL[current]=%d\n", __func__, cpuid, sysreg_read_cnthp_ctl());
 #endif
