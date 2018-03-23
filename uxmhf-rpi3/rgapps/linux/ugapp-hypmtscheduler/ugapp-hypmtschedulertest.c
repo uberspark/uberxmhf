@@ -18,7 +18,22 @@
 #include <uhcall.h>
 #include <hypmtscheduler.h>
 
+__attribute__((aligned(4096))) __attribute__((section(".data"))) ugapp_hypmtscheduler_param_t hmtsp;
+
 int main(){
+    printf("%s: start\n", __FUNCTION__);
+
+    memset(&hmtsp, 0, sizeof(hmtsp));
+    hmtsp.in[0] = 'X';
+
+    if(!uhcall(UAPP_HYPMTSCHEDULER_FUNCTION_TEST, &hmtsp, sizeof(ugapp_hypmtscheduler_param_t)))
+ 	   printf("hypercall FAILED\n");
+    else
+ 	   printf("hypercall SUCCESS\n");
+
+
+    printf("%s: return value=%c\n", __FUNCTION__, hmtsp.out[0]);
+    printf("%s: end\n", __FUNCTION__);
 
     return 0;
 }
