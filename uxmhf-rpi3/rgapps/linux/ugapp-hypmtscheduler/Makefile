@@ -1,4 +1,4 @@
-#top-level Makefile for usr mode application to test hypercall
+#top-level Makefile for usr mode application to test hypmtscheduler
 # author: amit vasudevan (amitvasudevan@acm.org)
 
 export CURRENT_DIR := $(realpath $(dir $(lastword $(MAKEFILE_LIST))))
@@ -17,11 +17,11 @@ LFLAGS = -g -Wall -Wextra
 
 .PHONY: all
 all: 
-	arm-linux-gnueabihf-gcc $(CFLAGS) uhcalltest.c -o uhcalltest.o
-	arm-linux-gnueabihf-gcc $(LFLAGS) uhcalltest.o -o uhcalltest $(LIBS)
+	arm-linux-gnueabihf-gcc $(CFLAGS) ugapp-hypmtschedulertest.c -o ugapp-hypmtschedulertest.o
+	arm-linux-gnueabihf-gcc $(LFLAGS) ugapp-hypmtschedulertest.o -o ugapp-hypmtschedulertest $(LIBS)
 
 .PHONY: clean
 clean:
-	rm -f uhcalltest
+	rm -f ugapp-hypmtschedulertest
 	rm -f *.o
 	
