@@ -15,6 +15,7 @@ extern void uapp_sched_fiq_handler(void);
 extern u32 uapp_sched_fiqhandler_stack[];
 
 u64 uapp_sched_read_cpucounter(void);
+void_uapp_sched_logic(void);
 
 //////
 // global typedefs and variables
@@ -374,9 +375,9 @@ void uapp_sched_timers_update(TIME time){
 		//_XDPRINTFSMP_("%s,%u: inserted 0x%08x with priority=%d\n", __func__, __LINE__,
 		//		t, t->priority);
 		//_XDPRINTFSMP_("\n%s: task timer priority=%d expired!\n", __func__, t->priority);
-    	bcm2837_miniuart_puts("\n[HYPSCHED]: Task timer expired. Priority=0x");
-    	debug_hexdumpu32(t->priority);
-    	bcm2837_miniuart_puts(" recorded.\n");
+    	//bcm2837_miniuart_puts("\n[HYPSCHED]: Task timer expired. Priority=0x");
+    	//debug_hexdumpu32(t->priority);
+    	//bcm2837_miniuart_puts(" recorded.\n");
 
         //uapp_sched_timer_declare(t->sticky_time_to_wait, NULL, t->priority);
       }
@@ -641,7 +642,27 @@ void uapp_sched_initialize(u32 cpuid){
 
 
 
+void_uapp_sched_logic(void){
+	struct sched_timer *task_timer;
+	u32 queue_data;
+	int priority;
+	int status;
+	volatile u32 sp, spnew;
 
+	//TBD: remove hard-coded cpuid (0) below
+	uapp_sched_process_timers(0);
+
+	status=0;
+	status = priority_queue_remove(&queue_data, &priority);
+
+	if(status){
+		task_timer = (struct sched_timer *)queue_data;
+    	bcm2837_miniuart_puts("\n[HYPSCHED]: Task timer expired. Priority=0x");
+    	debug_hexdumpu32(task_timer->priority);
+    	bcm2837_miniuart_puts("\n");
+	}
+
+}
 
 
 
