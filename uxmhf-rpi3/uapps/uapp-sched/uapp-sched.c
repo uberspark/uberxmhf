@@ -374,7 +374,7 @@ void uapp_sched_timers_update(TIME time){
 		//_XDPRINTFSMP_("%s,%u: inserted 0x%08x with priority=%d\n", __func__, __LINE__,
 		//		t, t->priority);
 		_XDPRINTFSMP_("\n%s: task timer priority=%d expired!\n", __func__, t->priority);
-		uapp_sched_timer_declare(t->sticky_time_to_wait, NULL, t->priority);
+		//uapp_sched_timer_declare(t->sticky_time_to_wait, NULL, t->priority);
       }
     }
   }
@@ -438,6 +438,26 @@ void uapp_sched_process_timers(u32 cpuid){
 		}
 	}
 }
+
+//////
+// scheduler timer event processing withih FIQ context
+//////
+void uapp_sched_process_timers_fiq(void){
+	u32 i;
+	u32 time_to_wait;
+	int priority;
+
+	for(i=0; i < MAX_TIMERS; i++){
+		if(sched_timers[i].event){
+			sched_timers[i].event = FALSE;
+			time_to_wait = sched_timers[i].sticky_time_to_wait; //reload
+			priority = sched_timers[i].priority;
+			uapp_sched_timer_declare(time_to_wait, NULL, priority);
+			_XDPRINTFSMP_("\n%s: re-activated timer priority=%d expired!\n", __func__, priority);
+		}
+	}
+}
+
 
 
 
@@ -557,7 +577,7 @@ void uapp_sched_timerhandler(void){
 	}
 
 	//_XDPRINTFSMP_("%s,%u: ENTER\n", __func__, __LINE__);
-
+	uapp_sched_process_timers_fiq();
 }
 
 
