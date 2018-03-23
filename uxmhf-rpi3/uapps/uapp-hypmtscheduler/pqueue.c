@@ -45,7 +45,7 @@ void check_and_insert(void *data, int priority){
 int priority_queue_insert(void *data, int priority){
 	//return error if we are maxed out
 	if(priority_queue_totalelems >= PRIORITY_QUEUE_SIZE ){
-		_XDPRINTF_("%s,%u: Queue overflow, no more elements can be inserted!\n", __func__, __LINE__);
+		//_XDPRINTF_("%s,%u: Queue overflow, no more elements can be inserted!\n", __func__, __LINE__);
 		return 0;
     }
 
