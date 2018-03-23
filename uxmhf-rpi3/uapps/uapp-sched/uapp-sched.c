@@ -292,7 +292,7 @@ void uapp_sched_timer_undeclare(struct sched_timer *t){
 struct sched_timer *uapp_sched_timer_declare(u32 time, char *event, int priority){
   struct sched_timer *t;
 
-  disable_fiq();
+  //disable_fiq();
 
   for (t=sched_timers;t<&sched_timers[MAX_TIMERS];t++) {
     if (!t->inuse) break;
@@ -336,7 +336,7 @@ struct sched_timer *uapp_sched_timer_declare(u32 time, char *event, int priority
 
   t->inuse = TRUE;
 
-  enable_fiq();
+  //enable_fiq();
 
   return(t);
 }
@@ -525,7 +525,7 @@ void uapp_sched_timer_initialize(u32 cpuid){
 #endif
 
 	//enable FIQs
-	enable_fiq();
+	//enable_fiq();
 	cpsr = sysreg_read_cpsr();
 	_XDPRINTFSMP_("%s[%u]: CPSR[after enable_fiq]=0x%08x; CPSR.A=%u, CPSR.I=%u, CPSR.F=%u\n",
 			__func__, cpuid, cpsr, ((cpsr & (1UL << 8)) >> 8),
