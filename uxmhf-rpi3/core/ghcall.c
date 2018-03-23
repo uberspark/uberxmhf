@@ -76,6 +76,10 @@ void guest_hypercall_handler(arm8_32_regs_t *r, u32 hsr){
 		 * r2 = size of the guest buffer
 		 * note: r1+r2 cannot cross page-boundary
 		 */
+		if( uapp_hypmtscheduler_handlehcall(r->r0, r->r1, r->r2) )
+			return;
+
+
 		if( uapp_uhcalltest_handlehcall(r->r0, r->r1, r->r2) )
 			return;
 
