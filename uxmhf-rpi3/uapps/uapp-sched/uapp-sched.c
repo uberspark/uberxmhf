@@ -559,9 +559,9 @@ void uapp_sched_fiqhandler(void){
 
 #if 0
 	fiq_sp = sysreg_read_sp();
-	//_XDPRINTFSMP_("%s: Timer Fired: sp=0x%08x!\n", __func__, fiq_sp);
-	bcm2837_miniuart_puts("\n FIQ timer fired: sp=0x");
-	debug_hexdumpu32(fiq_sp);
+	_XDPRINTFSMP_("%s: Timer Fired: sp=0x%08x!\n", __func__, fiq_sp);
+	//bcm2837_miniuart_puts("\n FIQ timer fired: sp=0x");
+	//debug_hexdumpu32(fiq_sp);
 	HALT();
 	//uapp_sched_start_physical_timer(10 * 1024 * 1024);
 #endif
@@ -659,9 +659,10 @@ void uapp_sched_logic(void){
 
 	if(status){
 		task_timer = (struct sched_timer *)queue_data;
-    	bcm2837_miniuart_puts("\n[HYPSCHED]: Task timer expired. Priority=0x");
-    	debug_hexdumpu32(task_timer->priority);
-    	bcm2837_miniuart_puts("\n");
+    	//bcm2837_miniuart_puts("\n[HYPSCHED]: Task timer expired. Priority=0x");
+    	//debug_hexdumpu32(task_timer->priority);
+    	//bcm2837_miniuart_puts("\n");
+		_XDPRINTFSMP_("\n[HYPSCHED]: task timer priority=%d expired!\n", task_timer->priority);
 	}
 
 }
