@@ -547,6 +547,7 @@ void uapp_sched_fiqhandler(void){
 	//_XDPRINTFSMP_("%s: Timer Fired: sp=0x%08x, cpsr=0x%08x\n", __func__,
 	//		fiq_sp, sysreg_read_cpsr());
 	//uapp_sched_timerhandler();
+	bcm2837_miniuart_puts("\n[HYPTIMER]: Fired!!\n");
 	uapp_sched_start_physical_timer(15*1024*1024);
 	//_XDPRINTFSMP_("%s: resuming\n", __func__);
 #endif
