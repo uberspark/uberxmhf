@@ -548,7 +548,7 @@ void uapp_sched_fiqhandler(void){
 	//		fiq_sp, sysreg_read_cpsr());
 	//uapp_sched_timerhandler();
 	bcm2837_miniuart_puts("\n[HYPTIMER]: Fired!!\n");
-	uapp_sched_start_physical_timer(15*1024*1024);
+	uapp_sched_start_physical_timer(60*1024*1024);
 	//_XDPRINTFSMP_("%s: resuming\n", __func__);
 #endif
 
@@ -612,7 +612,7 @@ void uapp_sched_initialize(u32 cpuid){
 		//disable_fiq();
 		//uapp_sched_timer_declare(9 * 1024 * 1024, NULL, 3);
 		//enable_fiq();
-		uapp_sched_start_physical_timer(15*1024*1024);
+		uapp_sched_start_physical_timer(60*1024*1024);
 		//uapp_sched_timer_declare(10 * 1024 * 1024, NULL, 3);
 
 		_XDPRINTFSMP_("%s[%u]: Initializing scheduler...\n", __func__, cpuid);
