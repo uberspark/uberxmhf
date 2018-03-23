@@ -392,7 +392,7 @@ void uapp_sched_logic(void){
     	//bcm2837_miniuart_puts("\n[HYPSCHED]: Task timer expired. Priority=0x");
     	//debug_hexdumpu32(task_timer->priority);
     	//bcm2837_miniuart_puts("\n");
-		//_XDPRINTFSMP_("\n[HYPSCHED]: task timer priority=%d expired!\n", task_timer->priority);
+		_XDPRINTF_("\n[HYPSCHED]: task timer priority=%d expired!\n", task_timer->priority);
 	}
 
 }
@@ -458,8 +458,8 @@ bool uapp_hypmtscheduler_handlehcall(u32 uhcall_function, void *uhcall_buffer,
 	if(uhcall_function != UAPP_HYPMTSCHEDULER_FUNCTION_TEST)
 		return false;
 
-	//_XDPRINTFSMP_("%s: hcall: uhcall_function=0x%08x, uhcall_buffer=0x%08x, uhcall_buffer_len=0x%08x\n", __func__,
-	//		uhcall_function, uhcall_buffer, uhcall_buffer_len);
+	_XDPRINTF_("%s: hcall: uhcall_function=0x%08x, uhcall_buffer=0x%08x, uhcall_buffer_len=0x%08x\n", __func__,
+			uhcall_function, uhcall_buffer, uhcall_buffer_len);
 
 	hmtsp = (ugapp_hypmtscheduler_param_t *)uhcall_buffer;
 
