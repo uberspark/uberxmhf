@@ -14,12 +14,12 @@
 #define FALSE 	0
 
 #define MAX_TIMERS	4	//number of timers
-typedef u64 TIME;   	//our time type; 64-bits since we are using clock cycles
+typedef uint64_t TIME;   	//our time type; 64-bits since we are using clock cycles
 #define VERY_LONG_TIME  0xffffffffffffffffULL	//longest time possible
 
 struct sched_timer {
-	u32 inuse;			// TRUE if in use
-	u32 event;    		// set to TRUE at timeout
+	uint32_t inuse;			// TRUE if in use
+	uint32_t event;    		// set to TRUE at timeout
 	int priority;		// priority associated with the timer
 	TIME sticky_time_to_wait;  // relative time to wait sticky
 	TIME time_to_wait;  // relative time to wait
