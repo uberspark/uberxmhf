@@ -26,14 +26,15 @@ int main(){
     memset(&hmtsp, 0, sizeof(hmtsp));
 
     hmtsp.uhcall_fn = UAPP_HYPMTSCHEDULER_UHCALL_FNCREATEHYPTHREAD;
+    hmtsp.iparam_1 = 3 * 20 * 1024 * 1024;	//~3 sec period
+    hmtsp.iparam_2 = 1;						//priority=1
 
     if(!uhcall(UAPP_HYPMTSCHEDULER_UHCALL, &hmtsp, sizeof(ugapp_hypmtscheduler_param_t)))
  	   printf("hypercall FAILED\n");
     else
  	   printf("hypercall SUCCESS\n");
 
-
-    //printf("%s: return value=%c\n", __FUNCTION__, hmtsp.out[0]);
+    printf("%s: return status=%u\n", __FUNCTION__, hmtsp.status);
     printf("%s: end\n", __FUNCTION__);
 
     return 0;

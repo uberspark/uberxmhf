@@ -30,8 +30,9 @@ struct sched_timer {
 
 typedef struct {
 	uint8_t uhcall_fn;
-	uint8_t in[16];
-	uint8_t out[16];
+	uint32_t iparam_1;
+	uint32_t iparam_2;
+	uint32_t status;
 }ugapp_hypmtscheduler_param_t;
 
 

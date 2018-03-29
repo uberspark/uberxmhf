@@ -389,10 +389,10 @@ void uapp_sched_logic(void){
 
 	if(status){
 		task_timer = (struct sched_timer *)queue_data;
-    	//bcm2837_miniuart_puts("\n[HYPSCHED]: Task timer expired. Priority=0x");
-    	//debug_hexdumpu32(task_timer->priority);
-    	//bcm2837_miniuart_puts("\n");
-		_XDPRINTF_("\n[HYPSCHED]: task timer priority=%d expired!\n", task_timer->priority);
+    	bcm2837_miniuart_puts("\n[HYPSCHED]: Task timer expired. Priority=0x");
+    	debug_hexdumpu32(task_timer->priority);
+    	bcm2837_miniuart_puts("\n");
+		//_XDPRINTF_("\n[HYPSCHED]: task timer priority=%d expired!\n", task_timer->priority);
 	}
 
 }
@@ -461,7 +461,15 @@ bool uapp_hypmtscheduler_handlehcall(u32 uhcall_function, void *uhcall_buffer,
 	hmtsp = (ugapp_hypmtscheduler_param_t *)uhcall_buffer;
 
 	if(hmtsp->uhcall_fn == UAPP_HYPMTSCHEDULER_UHCALL_FNCREATEHYPTHREAD){
-		_XDPRINTF_("%s: FNCREATEHYPTHREAD\n");
+		//_XDPRINTF_("%s: FNCREATEHYPTHREAD: period=0x%08x, priority=%u\n", __func__,
+		//		hmtsp->iparam_1, hmtsp->iparam_2);
+    	bcm2837_miniuart_puts("\n[HYPSCHED:FNCREATEHYPTHREAD]: period=0x");
+    	debug_hexdumpu32(hmtsp->iparam_1);
+    	bcm2837_miniuart_puts(" priority=0x\n");
+    	debug_hexdumpu32(hmtsp->iparam_2);
+    	bcm2837_miniuart_puts("\n");
+
+		hmtsp->status=0;	//success
 
 	}else{
 		_XDPRINTF_("%s: uknown uhcall_fn=%u. Ignoring.\n",
