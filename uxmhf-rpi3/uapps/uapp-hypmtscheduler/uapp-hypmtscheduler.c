@@ -458,12 +458,15 @@ bool uapp_hypmtscheduler_handlehcall(u32 uhcall_function, void *uhcall_buffer,
 	if(uhcall_function != UAPP_HYPMTSCHEDULER_UHCALL)
 		return false;
 
-	_XDPRINTF_("%s: hcall: uhcall_function=0x%08x, uhcall_buffer=0x%08x, uhcall_buffer_len=0x%08x\n", __func__,
-			uhcall_function, uhcall_buffer, uhcall_buffer_len);
-
 	hmtsp = (ugapp_hypmtscheduler_param_t *)uhcall_buffer;
 
-	hmtsp->out[0] = hmtsp->in[0];
+	if(hmtsp->uhcall_fn == UAPP_HYPMTSCHEDULER_UHCALL_FNCREATEHYPTHREAD){
+		_XDPRINTF_("%s: FNCREATEHYPTHREAD\n");
+
+	}else{
+		_XDPRINTF_("%s: uknown uhcall_fn=%u. Ignoring.\n",
+				__func__, hmtsp->uhcall_fn);
+	}
 
 	return true;
 }

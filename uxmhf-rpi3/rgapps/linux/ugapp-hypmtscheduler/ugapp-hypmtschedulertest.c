@@ -24,7 +24,8 @@ int main(){
     printf("%s: start\n", __FUNCTION__);
 
     memset(&hmtsp, 0, sizeof(hmtsp));
-    hmtsp.in[0] = 'X';
+
+    hmtsp.uhcall_fn = UAPP_HYPMTSCHEDULER_UHCALL_FNCREATEHYPTHREAD;
 
     if(!uhcall(UAPP_HYPMTSCHEDULER_UHCALL, &hmtsp, sizeof(ugapp_hypmtscheduler_param_t)))
  	   printf("hypercall FAILED\n");
@@ -32,7 +33,7 @@ int main(){
  	   printf("hypercall SUCCESS\n");
 
 
-    printf("%s: return value=%c\n", __FUNCTION__, hmtsp.out[0]);
+    //printf("%s: return value=%c\n", __FUNCTION__, hmtsp.out[0]);
     printf("%s: end\n", __FUNCTION__);
 
     return 0;
