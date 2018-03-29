@@ -26,7 +26,7 @@ int main(){
     memset(&hmtsp, 0, sizeof(hmtsp));
     hmtsp.in[0] = 'X';
 
-    if(!uhcall(UAPP_HYPMTSCHEDULER_FUNCTION_TEST, &hmtsp, sizeof(ugapp_hypmtscheduler_param_t)))
+    if(!uhcall(UAPP_HYPMTSCHEDULER_UHCALL, &hmtsp, sizeof(ugapp_hypmtscheduler_param_t)))
  	   printf("hypercall FAILED\n");
     else
  	   printf("hypercall SUCCESS\n");

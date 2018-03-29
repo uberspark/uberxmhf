@@ -455,7 +455,7 @@ bool uapp_hypmtscheduler_handlehcall(u32 uhcall_function, void *uhcall_buffer,
 	uint32_t i;
 	u32 uhcall_buffer_paddr;
 
-	if(uhcall_function != UAPP_HYPMTSCHEDULER_FUNCTION_TEST)
+	if(uhcall_function != UAPP_HYPMTSCHEDULER_UHCALL)
 		return false;
 
 	_XDPRINTF_("%s: hcall: uhcall_function=0x%08x, uhcall_buffer=0x%08x, uhcall_buffer_len=0x%08x\n", __func__,

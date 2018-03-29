@@ -7,7 +7,7 @@
 #ifndef __HYPMTSCHEDULER_H__
 #define __HYPMTSCHEDULER_H__
 
-#define UAPP_HYPMTSCHEDULER_FUNCTION_TEST	0xC0
+#define UAPP_HYPMTSCHEDULER_UHCALL	0xC0
 
 #ifndef __ASSEMBLY__
 
@@ -27,6 +27,7 @@ struct sched_timer {
 };
 
 typedef struct {
+	uint8_t uhcall_fn;
 	uint8_t in[16];
 	uint8_t out[16];
 }ugapp_hypmtscheduler_param_t;
