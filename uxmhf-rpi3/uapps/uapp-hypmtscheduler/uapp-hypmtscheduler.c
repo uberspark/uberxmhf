@@ -91,7 +91,7 @@ void disable_fiq(void){
 // undeclare (and disable) a timer
 //////
 void uapp_sched_timer_undeclare(struct sched_timer *t){
-	disable_fiq();
+	//disable_fiq();
 
 	if (!t->inuse) {
 		enable_fiq();
@@ -109,7 +109,7 @@ void uapp_sched_timer_undeclare(struct sched_timer *t){
 		}
 	}
 
-	enable_fiq();
+	//enable_fiq();
 }
 
 
@@ -129,7 +129,7 @@ struct sched_timer *uapp_sched_timer_declare(u32 time, char *event, int priority
 
   // out of timers?
   if (t == &sched_timers[MAX_TIMERS]) {
-    enable_fiq();
+    //enable_fiq();
     return(0);
   }
 
@@ -151,6 +151,12 @@ struct sched_timer *uapp_sched_timer_declare(u32 time, char *event, int priority
     uapp_sched_start_physical_timer((timer_next = t)->time_to_wait);
 	//_XDPRINTF_("%s,%u: ENTER, time_to_wait=%016llx\n", __func__, __LINE__,
 	//		t->time_to_wait);
+	bcm2837_miniuart_puts("[HYPSCHED]: shortest timer set val=0x\n");
+    debug_hexdumpu32(t->time_to_wait);
+	bcm2837_miniuart_puts("\n");
+
+
+
   } else if ((time + uapp_sched_read_cpucounter()) < (timer_next->time_to_wait + time_timer_set)) {
     // new timer is shorter than current one, so
     uapp_sched_timers_update(uapp_sched_read_cpucounter() - time_timer_set);
@@ -234,6 +240,9 @@ u64 uapp_sched_read_cpucounter(void){
 //////
 void uapp_sched_start_physical_timer(TIME time){
 	//_XDPRINTFSMP_("%s: time=%u\n", __func__, (u32)time);
+	bcm2837_miniuart_puts("\n[HYPSCHED:start_physical_timer: period=0x");
+	debug_hexdumpu32((u32)time);
+	bcm2837_miniuart_puts("\n");
 
 	sysreg_write_cnthp_tval(time);
 	sysreg_write_cnthp_ctl(0x1);
@@ -341,6 +350,7 @@ void uapp_sched_fiqhandler(void){
 	//fiq_sp = sysreg_read_sp();
 	//_XDPRINTFSMP_("%s: Timer Fired: sp=0x%08x, cpsr=0x%08x\n", __func__,
 	//		fiq_sp, sysreg_read_cpsr());
+	bcm2837_miniuart_puts("\n[HYPTIMER]: Fired!!\n");
 	uapp_sched_timerhandler();
 	//bcm2837_miniuart_puts("\n[HYPTIMER]: Fired!!\n");
 	//uapp_sched_start_physical_timer(3 * 20 * 1024 * 1024);
@@ -468,6 +478,9 @@ bool uapp_hypmtscheduler_handlehcall(u32 uhcall_function, void *uhcall_buffer,
     	bcm2837_miniuart_puts(" priority=0x\n");
     	debug_hexdumpu32(hmtsp->iparam_2);
     	bcm2837_miniuart_puts("\n");
+
+		//uapp_sched_timer_declare(hmtsp->iparam_1, NULL, hmtsp->iparam_2);
+		uapp_sched_timer_declare(3 * 1024 * 1024, NULL, 1);
 
 		hmtsp->status=0;	//success
 
