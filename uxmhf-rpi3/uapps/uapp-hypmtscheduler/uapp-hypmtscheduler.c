@@ -151,9 +151,9 @@ struct sched_timer *uapp_sched_timer_declare(u32 time, char *event, int priority
     uapp_sched_start_physical_timer((timer_next = t)->time_to_wait);
 	//_XDPRINTF_("%s,%u: ENTER, time_to_wait=%016llx\n", __func__, __LINE__,
 	//		t->time_to_wait);
-	bcm2837_miniuart_puts("[HYPSCHED]: shortest timer set val=0x\n");
-    debug_hexdumpu32(t->time_to_wait);
-	bcm2837_miniuart_puts("\n");
+	//bcm2837_miniuart_puts("[HYPSCHED]: shortest timer set val=0x\n");
+    //debug_hexdumpu32(t->time_to_wait);
+	//bcm2837_miniuart_puts("\n");
 
 
 
@@ -240,9 +240,9 @@ u64 uapp_sched_read_cpucounter(void){
 //////
 void uapp_sched_start_physical_timer(TIME time){
 	//_XDPRINTFSMP_("%s: time=%u\n", __func__, (u32)time);
-	bcm2837_miniuart_puts("\n[HYPSCHED:start_physical_timer: period=0x");
-	debug_hexdumpu32((u32)time);
-	bcm2837_miniuart_puts("\n");
+	//bcm2837_miniuart_puts("\n[HYPSCHED:start_physical_timer: period=0x");
+	//debug_hexdumpu32((u32)time);
+	//bcm2837_miniuart_puts("\n");
 
 	sysreg_write_cnthp_tval(time);
 	sysreg_write_cnthp_ctl(0x1);
@@ -350,7 +350,7 @@ void uapp_sched_fiqhandler(void){
 	//fiq_sp = sysreg_read_sp();
 	//_XDPRINTFSMP_("%s: Timer Fired: sp=0x%08x, cpsr=0x%08x\n", __func__,
 	//		fiq_sp, sysreg_read_cpsr());
-	bcm2837_miniuart_puts("\n[HYPTIMER]: Fired!!\n");
+	//bcm2837_miniuart_puts("\n[HYPTIMER]: Fired!!\n");
 	uapp_sched_timerhandler();
 	//bcm2837_miniuart_puts("\n[HYPTIMER]: Fired!!\n");
 	//uapp_sched_start_physical_timer(3 * 20 * 1024 * 1024);
@@ -439,7 +439,7 @@ void uapp_sched_initialize(u32 cpuid){
 		//uapp_sched_start_physical_timer(3 * 20 * 1024 * 1024);
 		//uapp_sched_timer_declare(10 * 1024 * 1024, NULL, 3);
 
-		//uapp_sched_timer_declare(3 * 20 * 1024 * 1024, NULL, 1);
+		uapp_sched_timer_declare(3 * 20 * 1024 * 1024, NULL, 1);
 		//uapp_sched_timer_declare(9 * 20 * 1024 * 1024, NULL, 3);
 
 
@@ -480,7 +480,7 @@ bool uapp_hypmtscheduler_handlehcall(u32 uhcall_function, void *uhcall_buffer,
     	bcm2837_miniuart_puts("\n");
 
 		//uapp_sched_timer_declare(hmtsp->iparam_1, NULL, hmtsp->iparam_2);
-		uapp_sched_timer_declare(3 * 1024 * 1024, NULL, 1);
+		uapp_sched_timer_declare(9 * 20 * 1024 * 1024, NULL, 3);
 
 		hmtsp->status=0;	//success
 
