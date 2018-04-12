@@ -35,6 +35,7 @@ void_uapp_sched_logic(void);
 //////
 
 volatile u32 fiq_sp = 0;
+volatile u32 fiq_cpsr = 0;
 volatile u32 normal_sp = 0;
 
 __attribute__((section(".data"))) struct sched_timer sched_timers[MAX_TIMERS];   // set of timers
@@ -346,6 +347,23 @@ void uapp_sched_timer_initialize(u32 cpuid){
 
 
 void uapp_sched_fiqhandler(void){
+	fiq_cpsr = sysreg_read_cpsr();
+	bcm2837_miniuart_puts("\n[HYPTIMER]: Fired!: ");
+
+	bcm2837_miniuart_puts("CPSR.A=0x");
+	debug_hexdumpu32(((fiq_cpsr & (1UL << 8)) >> 8));
+	bcm2837_miniuart_puts(" ");
+
+	bcm2837_miniuart_puts("CPSR.I=0x");
+	debug_hexdumpu32(((fiq_cpsr & (1UL << 7)) >> 7));
+	bcm2837_miniuart_puts(" ");
+
+	bcm2837_miniuart_puts("CPSR.F=0x");
+	debug_hexdumpu32(((fiq_cpsr & (1UL << 6)) >> 6));
+	bcm2837_miniuart_puts("\n");
+
+	bcm2837_miniuart_puts("\n[HYPTIMER]: Halting!\n");
+	HALT();
 
 	//fiq_sp = sysreg_read_sp();
 	//_XDPRINTFSMP_("%s: Timer Fired: sp=0x%08x, cpsr=0x%08x\n", __func__,
