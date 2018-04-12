@@ -452,7 +452,7 @@ void uapp_sched_timerhandler(void){
 
 
 
-void uapp_sched_run_next_hyptask(void){
+void uapp_sched_run_hyptasks(void){
 	int status;
 	u32 queue_data;
 	int priority;
@@ -489,12 +489,16 @@ void uapp_sched_logic(void){
 	bcm2837_miniuart_puts("\n[HYPSCHED]: Came in. Halting Wip!\n");
 
 	uapp_sched_process_timers(0); //TBD: remove hard-coded cpuid (0)
+	uapp_sched_run_hyptasks();
+
+	#if 0
 	while(1){
-		uapp_sched_run_next_hyptask();
+		uapp_sched_run_hyptasks();
 		uapp_sched_process_timers(0); //TBD: remove hard-coded cpuid (0)
 		if(priority_queue_isempty())
 			break;
 	}
+	#endif
 
 	bcm2837_miniuart_puts("\n[HYPSCHED]: Finished all HypTasks. Now resuming guest...\n");
 	//bcm2837_miniuart_puts("\n[HYPSCHED]: Halting WiP!\n");
