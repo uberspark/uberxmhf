@@ -479,8 +479,8 @@ bool uapp_hypmtscheduler_handlehcall(u32 uhcall_function, void *uhcall_buffer,
     	debug_hexdumpu32(hmtsp->iparam_2);
     	bcm2837_miniuart_puts("\n");
 
-		//uapp_sched_timer_declare(hmtsp->iparam_1, NULL, hmtsp->iparam_2);
-		uapp_sched_timer_declare(9 * 20 * 1024 * 1024, NULL, 3);
+		uapp_sched_timer_declare(hmtsp->iparam_1, NULL, hmtsp->iparam_2);
+		//uapp_sched_timer_declare(9 * 20 * 1024 * 1024, NULL, 3);
 
 		hmtsp->status=0;	//success
 
