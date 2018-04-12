@@ -38,6 +38,8 @@ volatile u32 fiq_sp = 0;
 volatile u32 fiq_cpsr = 0;
 volatile u32 normal_sp = 0;
 
+__attribute__((section(".data"))) volatile fiq_timer_handler_timerevent_triggered = 0;
+
 __attribute__((section(".data"))) struct sched_timer sched_timers[MAX_TIMERS];   // set of timers
 __attribute__((section(".data"))) struct sched_timer *timer_next = NULL; // timer we expect to run down next
 __attribute__((section(".data"))) TIME time_timer_set;    // time when physical timer was set
@@ -381,23 +383,22 @@ void uapp_sched_fiqhandler(void){
 
 
 void uapp_sched_timerhandler(void){
+	//stop physical timer
 	uapp_sched_stop_physical_timer();
-	//_XDPRINTFSMP_("%s,%u: ENTER\n", __func__, __LINE__);
 
+	//set timerevent_triggered flag to false (0)
+	fiq_timer_handler_timerevent_triggered=0;
+
+	//update sw timers
 	uapp_sched_timers_update(uapp_sched_read_cpucounter() - time_timer_set);
 
 	// start physical timer for next shortest time if one exists
 	if (timer_next) {
-		//_XDPRINTFSMP_("%s, %u: starting physical timer with %u\n", __func__, __LINE__,
-		//		timer_next->time_to_wait);
 		time_timer_set = uapp_sched_read_cpucounter();
 		uapp_sched_start_physical_timer(timer_next->time_to_wait);
 	}
 
-	//_XDPRINTFSMP_("%s,%u: ENTER\n", __func__, __LINE__);
-	//uapp_sched_process_timers_fiq();
 	uapp_sched_logic();
-
 }
 
 
