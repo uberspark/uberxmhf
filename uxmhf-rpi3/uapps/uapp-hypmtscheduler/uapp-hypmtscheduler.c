@@ -452,6 +452,32 @@ void uapp_sched_timerhandler(void){
 
 
 
+void uapp_sched_run_next_hyptask(void){
+	int status;
+	u32 queue_data;
+	int priority;
+	struct sched_timer *task_timer;
+
+
+	status=0;
+	while(1){
+		status = priority_queue_remove(&queue_data, &priority);
+		if(status == 0)
+			break;
+		task_timer = (struct sched_timer *)queue_data;
+
+		//interrupts enable
+
+		bcm2837_miniuart_puts("\n[HYPSCHED]: HypTask with Priority=0x");
+    	debug_hexdumpu32(task_timer->priority);
+		bcm2837_miniuart_puts(" has completed a run\n");
+
+
+		//interrupts disable
+	}
+
+}
+
 
 void uapp_sched_logic(void){
 	struct sched_timer *task_timer;
@@ -462,6 +488,8 @@ void uapp_sched_logic(void){
 
 	bcm2837_miniuart_puts("\n[HYPSCHED]: Came in. Halting Wip!\n");
 	HALT();
+
+
 
 	//TBD: remove hard-coded cpuid (0) below
 	uapp_sched_process_timers(0);
