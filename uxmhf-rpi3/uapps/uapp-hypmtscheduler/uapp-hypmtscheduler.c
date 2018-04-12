@@ -493,9 +493,9 @@ void uapp_sched_logic(void){
 	//HALT();
 
 	uapp_sched_process_timers(0); //TBD: remove hard-coded cpuid (0)
-	uapp_sched_run_hyptasks();
+	//uapp_sched_run_hyptasks();
 
-	#if 0
+	#if 1
 	while(1){
 		uapp_sched_run_hyptasks();
 		uapp_sched_process_timers(0); //TBD: remove hard-coded cpuid (0)
