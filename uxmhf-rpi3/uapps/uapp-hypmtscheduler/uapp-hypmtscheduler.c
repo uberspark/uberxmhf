@@ -497,8 +497,15 @@ void uapp_sched_logic(void){
 	}
 
 	bcm2837_miniuart_puts("\n[HYPSCHED]: Finished all HypTasks. Now resuming guest...\n");
-	bcm2837_miniuart_puts("\n[HYPSCHED]: Halting WiP!\n");
-	HALT();
+	//bcm2837_miniuart_puts("\n[HYPSCHED]: Halting WiP!\n");
+	//HALT();
+
+	//resume guest
+	sysreg_write_elrhyp(fiq_timer_handler_guestmode_pc);
+   	sysreg_write_spsr_hyp(fiq_timer_handler_guestmode_spsr);
+   	fiq_timer_handler_guestmode_pc = 0;
+   	fiq_timer_handler_guestmode_spsr = 0;
+   	cpu_eret();
 
 }
 
