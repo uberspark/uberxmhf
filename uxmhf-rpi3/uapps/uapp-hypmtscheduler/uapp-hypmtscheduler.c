@@ -487,12 +487,25 @@ void uapp_sched_logic(void){
 	volatile u32 sp, spnew;
 
 	bcm2837_miniuart_puts("\n[HYPSCHED]: Came in. Halting Wip!\n");
-	HALT();
+
+	a. Process_timers //initial queue population
+	b. Do{
+	c. Run_next_hyptask()
+	d. Process_timers();
+	e. If queue is empty
+	f. Break
+	g. }
+	h. Resume guest via eret
 
 
 
-	//TBD: remove hard-coded cpuid (0) below
-	uapp_sched_process_timers(0);
+	uapp_sched_process_timers(0); //TBD: remove hard-coded cpuid (0)
+	while(1){
+		uapp_sched_run_next_hyptask();
+		uapp_sched_process_timers(0); //TBD: remove hard-coded cpuid (0)
+
+	}
+
 
 	status=0;
 	status = priority_queue_remove(&queue_data, &priority);

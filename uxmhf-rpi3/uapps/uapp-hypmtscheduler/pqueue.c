@@ -89,6 +89,14 @@ int priority_queue_remove(void *data, int *priority){
 	return 1;
 }
 
+//returns 1 if queue is empty else 0
+int priority_queue_isempty(void){
+	if(priority_queue_totalelems == 0 )
+		return 1;
+	else
+		return 0;
+}
+
 
 #if 0
 void priority_queue_display(void){
