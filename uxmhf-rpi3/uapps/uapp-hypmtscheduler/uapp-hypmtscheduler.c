@@ -36,9 +36,12 @@ void_uapp_sched_logic(void);
 
 volatile u32 fiq_sp = 0;
 volatile u32 fiq_cpsr = 0;
+volatile u32 fiq_pemode= 0;
 volatile u32 normal_sp = 0;
 
-__attribute__((section(".data"))) volatile fiq_timer_handler_timerevent_triggered = 0;
+__attribute__((section(".data"))) volatile u32 fiq_timer_handler_timerevent_triggered = 0;
+__attribute__((section(".data"))) volatile u32 fiq_timer_handler_guestmode_pc = 0;
+__attribute__((section(".data"))) volatile u32 fiq_timer_handler_guestmode_spsr = 0;
 
 __attribute__((section(".data"))) struct sched_timer sched_timers[MAX_TIMERS];   // set of timers
 __attribute__((section(".data"))) struct sched_timer *timer_next = NULL; // timer we expect to run down next
@@ -408,17 +411,31 @@ void uapp_sched_timerhandler(void){
     	bcm2837_miniuart_puts("spsr_hyp=0x");
     	debug_hexdumpu32(sysreg_read_spsr_hyp());
     	bcm2837_miniuart_puts("\n");
+    	return;
 
 	}else{
-		//timer has expired
-    	bcm2837_miniuart_puts("\n[HYPTIMER]: Timers EXPIRED EOI: elr_hyp=0x");
-    	debug_hexdumpu32(sysreg_read_elrhyp());
-    	bcm2837_miniuart_puts("spsr_hyp=0x");
-    	debug_hexdumpu32(sysreg_read_spsr_hyp());
-    	bcm2837_miniuart_puts("\n");
-    	bcm2837_miniuart_puts("Halting. Wip!\n");
-    	HALT();
+		//timer has expired, so let us look at the PE state
+		//which triggered this timer FIQ to decide on our course of
+		//action
+		fiq_pemode = sysreg_read_spsr_hyp() & 0x0000000FUL;
+		if(fiq_pemode == 0xA){
+			//PE state was hyp mode, so we simply resume
+	    	bcm2837_miniuart_puts("\n[HYPTIMER]: PE state=HYP, resuming\n");
+			return;
+		}else{
+			//PE state says we are in guest mode
+			fiq_timer_handler_guestmode_pc = sysreg_read_elrhyp();
+			fiq_timer_handler_guestmode_spsr = sysreg_read_spsr_hyp();
+	    	bcm2837_miniuart_puts("\n[HYPTIMER]: PE state=GUEST, PC=0x");
+	    	debug_hexdumpu32(fiq_timer_handler_guestmode_pc);
+	    	bcm2837_miniuart_puts(" SPSR=0x");
+	    	debug_hexdumpu32(fiq_timer_handler_guestmode_spsr);
+	    	bcm2837_miniuart_puts("\n");
 
+	    	bcm2837_miniuart_puts("Halting. Wip!\n");
+	    	HALT();
+
+		}
 	}
 
 	//uapp_sched_logic();
