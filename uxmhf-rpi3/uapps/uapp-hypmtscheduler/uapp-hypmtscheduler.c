@@ -207,7 +207,8 @@ void uapp_sched_timers_update(TIME time){
 		//_XDPRINTF_("%s,%u: ENTER\n", __func__, __LINE__);
     	t->event = TRUE;
         t->inuse = FALSE; 	// remove timer
-		//spin_lock(&priority_queue_lock);
+        fiq_timer_handler_timerevent_triggered=1; //set timerevent_triggered to true
+        //spin_lock(&priority_queue_lock);
 		//priority_queue_insert((void *)t, t->priority);
 		//spin_unlock(&priority_queue_lock);
 		//_XDPRINTFSMP_("%s,%u: inserted 0x%08x with priority=%d\n", __func__, __LINE__,
@@ -383,6 +384,8 @@ void uapp_sched_fiqhandler(void){
 
 
 void uapp_sched_timerhandler(void){
+	bcm2837_miniuart_puts("\n[HYPTIMER]: Fired\n");
+
 	//stop physical timer
 	uapp_sched_stop_physical_timer();
 
@@ -398,7 +401,27 @@ void uapp_sched_timerhandler(void){
 		uapp_sched_start_physical_timer(timer_next->time_to_wait);
 	}
 
-	uapp_sched_logic();
+	if (fiq_timer_handler_timerevent_triggered == 0){
+		//no timers expired so just return from timer interrupt
+    	bcm2837_miniuart_puts("\n[HYPTIMER]: No timers expired EOI: elr_hyp=0x");
+    	debug_hexdumpu32(sysreg_read_elrhyp());
+    	bcm2837_miniuart_puts("spsr_hyp=0x");
+    	debug_hexdumpu32(sysreg_read_spsr_hyp());
+    	bcm2837_miniuart_puts("\n");
+
+	}else{
+		//timer has expired
+    	bcm2837_miniuart_puts("\n[HYPTIMER]: Timers EXPIRED EOI: elr_hyp=0x");
+    	debug_hexdumpu32(sysreg_read_elrhyp());
+    	bcm2837_miniuart_puts("spsr_hyp=0x");
+    	debug_hexdumpu32(sysreg_read_spsr_hyp());
+    	bcm2837_miniuart_puts("\n");
+    	bcm2837_miniuart_puts("Halting. Wip!\n");
+    	HALT();
+
+	}
+
+	//uapp_sched_logic();
 }
 
 
