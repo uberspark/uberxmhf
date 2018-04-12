@@ -60,6 +60,8 @@ __attribute__((section(".data"))) volatile u8 thread2_event = FALSE;
 
 
 
+
+
 //////
 // initialize timer data structures
 //////
@@ -441,7 +443,8 @@ void uapp_sched_timerhandler(void){
 	    	//issue eret
 	    	sysreg_write_elrhyp(&uapp_hypmtsched_schedentry);
 	    	sysreg_write_spsr_hyp(0x000001DA);
-	    	cpu_eret();
+	    	//cpu_eret();
+	    	return;
 		}
 	}
 
@@ -487,6 +490,7 @@ void uapp_sched_logic(void){
 	volatile u32 sp, spnew;
 
 	bcm2837_miniuart_puts("\n[HYPSCHED]: Came in. Halting Wip!\n");
+	//HALT();
 
 	uapp_sched_process_timers(0); //TBD: remove hard-coded cpuid (0)
 	uapp_sched_run_hyptasks();
@@ -509,8 +513,8 @@ void uapp_sched_logic(void){
    	sysreg_write_spsr_hyp(fiq_timer_handler_guestmode_spsr);
    	fiq_timer_handler_guestmode_pc = 0;
    	fiq_timer_handler_guestmode_spsr = 0;
-   	cpu_eret();
-
+   	//cpu_eret();
+   	return;
 }
 
 
@@ -570,6 +574,10 @@ bool uapp_hypmtscheduler_handlehcall(u32 uhcall_function, void *uhcall_buffer,
 	ugapp_hypmtscheduler_param_t *hmtsp;
 	uint32_t i;
 	u32 uhcall_buffer_paddr;
+
+	bcm2837_miniuart_puts("\nHYPSCHED:UHCALL: CPSR=0x");
+	debug_hexdumpu32(sysreg_read_cpsr());
+	bcm2837_miniuart_puts("\n");
 
 	if(uhcall_function != UAPP_HYPMTSCHEDULER_UHCALL)
 		return false;
