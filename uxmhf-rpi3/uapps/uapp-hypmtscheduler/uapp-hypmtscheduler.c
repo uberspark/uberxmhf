@@ -488,35 +488,17 @@ void uapp_sched_logic(void){
 
 	bcm2837_miniuart_puts("\n[HYPSCHED]: Came in. Halting Wip!\n");
 
-	a. Process_timers //initial queue population
-	b. Do{
-	c. Run_next_hyptask()
-	d. Process_timers();
-	e. If queue is empty
-	f. Break
-	g. }
-	h. Resume guest via eret
-
-
-
 	uapp_sched_process_timers(0); //TBD: remove hard-coded cpuid (0)
 	while(1){
 		uapp_sched_run_next_hyptask();
 		uapp_sched_process_timers(0); //TBD: remove hard-coded cpuid (0)
-
+		if(priority_queue_isempty())
+			break;
 	}
 
-
-	status=0;
-	status = priority_queue_remove(&queue_data, &priority);
-
-	if(status){
-		task_timer = (struct sched_timer *)queue_data;
-    	bcm2837_miniuart_puts("\n[HYPSCHED]: Task timer expired. Priority=0x");
-    	debug_hexdumpu32(task_timer->priority);
-    	bcm2837_miniuart_puts("\n");
-		//_XDPRINTF_("\n[HYPSCHED]: task timer priority=%d expired!\n", task_timer->priority);
-	}
+	bcm2837_miniuart_puts("\n[HYPSCHED]: Finished all HypTasks. Now resuming guest...\n");
+	bcm2837_miniuart_puts("\n[HYPSCHED]: Halting WiP!\n");
+	HALT();
 
 }
 
