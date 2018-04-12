@@ -347,6 +347,7 @@ void uapp_sched_timer_initialize(u32 cpuid){
 
 
 void uapp_sched_fiqhandler(void){
+#if 0
 	fiq_cpsr = sysreg_read_cpsr();
 	bcm2837_miniuart_puts("\n[HYPTIMER]: Fired!: ");
 
@@ -364,6 +365,8 @@ void uapp_sched_fiqhandler(void){
 
 	bcm2837_miniuart_puts("\n[HYPTIMER]: Halting!\n");
 	HALT();
+#endif
+
 
 	//fiq_sp = sysreg_read_sp();
 	//_XDPRINTFSMP_("%s: Timer Fired: sp=0x%08x, cpsr=0x%08x\n", __func__,
