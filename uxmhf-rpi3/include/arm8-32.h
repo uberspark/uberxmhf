@@ -467,6 +467,7 @@ extern u32 sysreg_read_hcr(void);
 extern void sysreg_write_hcr(u32 value);
 
 extern u32 sysreg_read_spsr_hyp(void);
+extern void sysreg_write_spsr_hyp(u32 value);
 
 extern u32 sysreg_read_hsctlr(void);
 extern void sysreg_write_hsctlr(u32 value);
@@ -551,6 +552,8 @@ extern u32 sysreg_read_par(void);
 void spin_lock(u32 *lock);
 void spin_unlock(u32 *lock);
 
+
+void cpu_eret(void);
 
 //////
 // pl0,1 system register access functions

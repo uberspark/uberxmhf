@@ -20,7 +20,7 @@
 extern void uapp_sched_fiq_handler(void);
 extern u32 uapp_sched_fiqhandler_stack[];
 extern __attribute__(( section(".data") )) u32 priority_queue_lock=1;
-
+extern void uapp_hypmtsched_schedentry(void);
 
 //////
 // forward function prototypes
@@ -432,9 +432,16 @@ void uapp_sched_timerhandler(void){
 	    	debug_hexdumpu32(fiq_timer_handler_guestmode_spsr);
 	    	bcm2837_miniuart_puts("\n");
 
-	    	bcm2837_miniuart_puts("Halting. Wip!\n");
-	    	HALT();
+	    	//bcm2837_miniuart_puts("Halting. Wip!\n");
+	    	//HALT();
 
+	    	//write scheduler main to elr_hyp
+	    	//read spsr_hyp; change mode to hyp with all A, I and F masks set
+	    	//0x000001DA
+	    	//issue eret
+	    	sysreg_write_elrhyp(&uapp_hypmtsched_schedentry);
+	    	sysreg_write_spsr_hyp(0x000001DA);
+	    	cpu_eret();
 		}
 	}
 
@@ -452,6 +459,9 @@ void uapp_sched_logic(void){
 	int priority;
 	int status;
 	volatile u32 sp, spnew;
+
+	bcm2837_miniuart_puts("\n[HYPSCHED]: Came in. Halting Wip!\n");
+	HALT();
 
 	//TBD: remove hard-coded cpuid (0) below
 	uapp_sched_process_timers(0);

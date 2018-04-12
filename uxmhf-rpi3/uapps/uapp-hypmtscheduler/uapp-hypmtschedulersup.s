@@ -61,6 +61,12 @@ uapp_sched_fiq_handler:
 
 
 
+	.balign 32
+	.global	uapp_hypmtsched_schedentry
+uapp_hypmtsched_schedentry:
+	ldr sp, =uapp_sched_main_stack_top	//load base into stack-pointer
+	bl uapp_sched_logic
+
 
 .section ".stack"
 
@@ -69,6 +75,13 @@ uapp_sched_fiq_handler:
 	uapp_sched_fiqhandler_stack:	.space	16384
 	.global uapp_sched_fiqhandler_stack_top
 	uapp_sched_fiqhandler_stack_top:
+
+
+	.balign 8
+	.global uapp_sched_main_stack
+	uapp_sched_main_stack:	.space	16384
+	.global uapp_sched_main_stack_top
+	uapp_sched_main_stack_top:
 
 
 /*

@@ -66,6 +66,11 @@ sysreg_read_spsr_hyp:
 	mrs r0, SPSR_hyp
 	bx lr
 
+.globl sysreg_write_spsr_hyp
+sysreg_write_spsr_hyp:
+	msr SPSR_hyp, r0
+	bx lr
+
 
 .globl sysreg_read_scr
 sysreg_read_scr:
@@ -490,3 +495,8 @@ sysreg_read_cnthp_ctl:
 sysreg_write_cnthp_ctl:
 	mcr p15,4,r0,c14,c2,1
 	bx lr
+
+.global cpu_eret
+cpu_eret:
+	eret
+
