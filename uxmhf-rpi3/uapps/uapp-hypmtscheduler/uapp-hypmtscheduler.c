@@ -61,13 +61,11 @@ __attribute__((section(".data"))) volatile u8 thread2_event = FALSE;
 
 
 void hyptask1(void){
-
-
+	bcm2837_miniuart_puts("\n[HYPSCHED]: HypTask-1 completed run with Priority=0x");
 }
 
 void hyptask2(void){
-
-
+	bcm2837_miniuart_puts("\n[HYPSCHED]: HypTask-2 completed run with Priority=0x");
 }
 
 
@@ -499,8 +497,9 @@ void uapp_sched_run_hyptasks(void){
 		//interrupts enable
 		enable_fiq();
 
-		bcm2837_miniuart_puts("\n[HYPSCHED]: HypTask completed run with Priority=0x");
-    	debug_hexdumpu32(task_timer->priority);
+		//bcm2837_miniuart_puts("\n[HYPSCHED]: HypTask completed run with Priority=0x");
+    	//debug_hexdumpu32(task_timer->priority);
+		task_timer->tfunc();
 
 		//interrupts disable
 		disable_fiq();
