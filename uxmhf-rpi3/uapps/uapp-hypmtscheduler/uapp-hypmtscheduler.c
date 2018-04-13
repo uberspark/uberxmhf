@@ -19,6 +19,7 @@
 
 extern void uapp_sched_fiq_handler(void);
 extern u32 uapp_sched_fiqhandler_stack[];
+extern u32 uapp_sched_fiqhandler_stack_top[];
 extern __attribute__(( section(".data") )) u32 priority_queue_lock=1;
 extern void uapp_hypmtsched_schedentry(void);
 
@@ -354,7 +355,7 @@ void uapp_sched_timer_initialize(u32 cpuid){
 }
 
 
-void uapp_sched_fiqhandler(void){
+void uapp_sched_fiqhandler(u32 debug_val){
 #if 0
 	fiq_cpsr = sysreg_read_cpsr();
 	bcm2837_miniuart_puts("\n[HYPTIMER]: Fired!: ");
@@ -371,8 +372,21 @@ void uapp_sched_fiqhandler(void){
 	debug_hexdumpu32(((fiq_cpsr & (1UL << 6)) >> 6));
 	bcm2837_miniuart_puts("\n");
 
-	bcm2837_miniuart_puts("\n[HYPTIMER]: Halting!\n");
-	HALT();
+	bcm2837_miniuart_puts("\n debug_val=0x");
+	debug_hexdumpu32(debug_val);
+	bcm2837_miniuart_puts("\n");
+
+	bcm2837_miniuart_puts("\n sp=0x");
+	debug_hexdumpu32(sysreg_read_sp());
+	bcm2837_miniuart_puts("\n");
+
+	bcm2837_miniuart_puts("\n stacktop=0x");
+	debug_hexdumpu32(&uapp_sched_fiqhandler_stack_top);
+	bcm2837_miniuart_puts("\n");
+
+
+	//bcm2837_miniuart_puts("\n[HYPTIMER]: Halting!\n");
+	//HALT();
 #endif
 
 
@@ -389,7 +403,7 @@ void uapp_sched_fiqhandler(void){
 
 
 void uapp_sched_timerhandler(void){
-	bcm2837_miniuart_puts("\n[HYPTIMER]: Fired\n");
+	//bcm2837_miniuart_puts("\n[HYPTIMER]: Fired\n");
 
 	//stop physical timer
 	uapp_sched_stop_physical_timer();
@@ -489,7 +503,7 @@ void uapp_sched_logic(void){
 	int status;
 	volatile u32 sp, spnew;
 
-	bcm2837_miniuart_puts("\n[HYPSCHED]: Came in. Halting Wip!\n");
+	//bcm2837_miniuart_puts("\n[HYPSCHED]: Came in. Halting Wip!\n");
 	//HALT();
 
 	uapp_sched_process_timers(0); //TBD: remove hard-coded cpuid (0)
