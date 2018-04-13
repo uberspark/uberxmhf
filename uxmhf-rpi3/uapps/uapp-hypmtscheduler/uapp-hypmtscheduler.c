@@ -60,7 +60,15 @@ __attribute__((section(".data"))) volatile u8 thread1_event = FALSE;
 __attribute__((section(".data"))) volatile u8 thread2_event = FALSE;
 
 
+void hyptask1(void){
 
+
+}
+
+void hyptask2(void){
+
+
+}
 
 
 //////
@@ -127,8 +135,9 @@ void uapp_sched_timer_undeclare(struct sched_timer *t){
 // time = time to wait in clock ticks
 // returns NULL if something went wrong
 //////
-struct sched_timer *uapp_sched_timer_declare(u32 time, char *event, int priority){
-  struct sched_timer *t;
+//struct sched_timer *uapp_sched_timer_declare(u32 time, char *event, int priority){
+struct sched_timer *uapp_sched_timer_declare(u32 time, HYPTHREADFUNC func, int priority){
+	struct sched_timer *t;
 
   //disable_fiq();
 
@@ -148,6 +157,7 @@ struct sched_timer *uapp_sched_timer_declare(u32 time, char *event, int priority
   t->time_to_wait = time;
   t->sticky_time_to_wait = time;
   t->priority = priority;
+  t->tfunc = func;
 
   //_XDPRINTF_("%s,%u: event=%u, time_to_wait=%016llx, sticky_time_to_wait=%016llx, priority=%u\n",
 	//	  __func__, __LINE__,
@@ -287,7 +297,7 @@ void uapp_sched_process_timers(u32 cpuid){
 			//		sched_timers[i].priority, sched_timers[i].sticky_time_to_wait/ (1024*1024));
 			time_to_wait = sched_timers[i].sticky_time_to_wait; //reload
 			priority = sched_timers[i].priority;
-			uapp_sched_timer_declare(time_to_wait, NULL, priority);
+			uapp_sched_timer_declare(time_to_wait, sched_timers[i].tfunc, priority);
 		}
 	}
 }
@@ -566,7 +576,7 @@ void uapp_sched_initialize(u32 cpuid){
 		//uapp_sched_start_physical_timer(3 * 20 * 1024 * 1024);
 		//uapp_sched_timer_declare(10 * 1024 * 1024, NULL, 3);
 
-		uapp_sched_timer_declare(3 * 20 * 1024 * 1024, NULL, 1);
+		uapp_sched_timer_declare(3 * 20 * 1024 * 1024, &hyptask1, 1);
 		//uapp_sched_timer_declare(9 * 20 * 1024 * 1024, NULL, 3);
 
 
@@ -610,7 +620,7 @@ bool uapp_hypmtscheduler_handlehcall(u32 uhcall_function, void *uhcall_buffer,
     	debug_hexdumpu32(hmtsp->iparam_2);
     	bcm2837_miniuart_puts("\n");
 
-		uapp_sched_timer_declare(hmtsp->iparam_1, NULL, hmtsp->iparam_2);
+		uapp_sched_timer_declare(hmtsp->iparam_1, &hyptask2, hmtsp->iparam_2);
 		//uapp_sched_timer_declare(9 * 20 * 1024 * 1024, NULL, 3);
 
 		hmtsp->status=0;	//success
