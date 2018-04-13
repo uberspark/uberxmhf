@@ -355,7 +355,9 @@ void uapp_sched_timer_initialize(u32 cpuid){
 }
 
 
-void uapp_sched_fiqhandler(u32 debug_val){
+//void uapp_sched_fiqhandler(u32 debug_val){
+void uapp_sched_fiqhandler(void){
+
 #if 0
 	fiq_cpsr = sysreg_read_cpsr();
 	bcm2837_miniuart_puts("\n[HYPTIMER]: Fired!: ");
@@ -422,11 +424,11 @@ void uapp_sched_timerhandler(void){
 
 	if (fiq_timer_handler_timerevent_triggered == 0){
 		//no timers expired so just return from timer interrupt
-    	bcm2837_miniuart_puts("\n[HYPTIMER]: No timers expired EOI: elr_hyp=0x");
-    	debug_hexdumpu32(sysreg_read_elrhyp());
-    	bcm2837_miniuart_puts("spsr_hyp=0x");
-    	debug_hexdumpu32(sysreg_read_spsr_hyp());
-    	bcm2837_miniuart_puts("\n");
+    	//bcm2837_miniuart_puts("\n[HYPTIMER]: No timers expired EOI: elr_hyp=0x");
+    	//debug_hexdumpu32(sysreg_read_elrhyp());
+    	//bcm2837_miniuart_puts("spsr_hyp=0x");
+    	//debug_hexdumpu32(sysreg_read_spsr_hyp());
+    	//bcm2837_miniuart_puts("\n");
     	return;
 
 	}else{
@@ -442,11 +444,11 @@ void uapp_sched_timerhandler(void){
 			//PE state says we are in guest mode
 			fiq_timer_handler_guestmode_pc = sysreg_read_elrhyp();
 			fiq_timer_handler_guestmode_spsr = sysreg_read_spsr_hyp();
-	    	bcm2837_miniuart_puts("\n[HYPTIMER]: PE state=GUEST, PC=0x");
-	    	debug_hexdumpu32(fiq_timer_handler_guestmode_pc);
-	    	bcm2837_miniuart_puts(" SPSR=0x");
-	    	debug_hexdumpu32(fiq_timer_handler_guestmode_spsr);
-	    	bcm2837_miniuart_puts("\n");
+	    	//bcm2837_miniuart_puts("\n[HYPTIMER]: PE state=GUEST, PC=0x");
+	    	//debug_hexdumpu32(fiq_timer_handler_guestmode_pc);
+	    	//bcm2837_miniuart_puts(" SPSR=0x");
+	    	//debug_hexdumpu32(fiq_timer_handler_guestmode_spsr);
+	    	//bcm2837_miniuart_puts("\n");
 
 	    	//bcm2837_miniuart_puts("Halting. Wip!\n");
 	    	//HALT();
@@ -486,10 +488,8 @@ void uapp_sched_run_hyptasks(void){
 		//interrupts enable
 		enable_fiq();
 
-		bcm2837_miniuart_puts("\n[HYPSCHED]: HypTask with Priority=0x");
+		bcm2837_miniuart_puts("\n[HYPSCHED]: HypTask completed run with Priority=0x");
     	debug_hexdumpu32(task_timer->priority);
-		bcm2837_miniuart_puts(" has completed a run\n");
-
 
 		//interrupts disable
 		disable_fiq();
@@ -520,7 +520,7 @@ void uapp_sched_logic(void){
 	}
 	#endif
 
-	bcm2837_miniuart_puts("\n[HYPSCHED]: Finished all HypTasks. Now resuming guest...\n");
+	//bcm2837_miniuart_puts("\n[HYPSCHED]: Finished all HypTasks. Now resuming guest...\n");
 	//bcm2837_miniuart_puts("\n[HYPSCHED]: Halting WiP!\n");
 	//HALT();
 
