@@ -484,6 +484,7 @@ void uapp_sched_run_hyptasks(void){
 		task_timer = (struct sched_timer *)queue_data;
 
 		//interrupts enable
+		enable_fiq();
 
 		bcm2837_miniuart_puts("\n[HYPSCHED]: HypTask with Priority=0x");
     	debug_hexdumpu32(task_timer->priority);
@@ -491,6 +492,7 @@ void uapp_sched_run_hyptasks(void){
 
 
 		//interrupts disable
+		disable_fiq();
 	}
 
 }
