@@ -27,12 +27,12 @@ uapp_sched_fiq_handler:
 	//cmp r0, #0xA			//did we get called from HYP mode?
 	//beq uapp_sched_fiq_handler_skip_setup_sp		//if so, skip loading sp
 
-	ldr sp, =uapp_sched_fiqhandler_stack_top	//load base into stack-pointer
+	//ldr sp, =uapp_sched_fiqhandler_stack_top	//load base into stack-pointer
 
 uapp_sched_fiq_handler_skip_setup_sp:
 
 	push {r14}
-	push {r13}
+	//push {r13}
 	push {r12}
 	push {r11}
 	push {r10}
@@ -65,8 +65,9 @@ uapp_sched_fiq_handler_skip_setup_sp:
 	pop {r10}
 	pop {r11}
 	pop {r12}
-	pop {r13}
+	//pop {r13}
 	pop	{r14}
+
 
 	eret
 
