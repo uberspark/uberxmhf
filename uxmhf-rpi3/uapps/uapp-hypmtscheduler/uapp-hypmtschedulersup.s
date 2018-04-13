@@ -20,12 +20,12 @@
 	.balign 32
 	.global	uapp_sched_fiq_handler
 uapp_sched_fiq_handler:
-	msr SPSR_und, r0		//save r0
+	//msr SPSR_und, r0		//save r0
 
-	mrs r0, SPSR_hyp		//load SPSR_hyp into r0
-	and r0, r0, #0xF		//get the mode bits
-	cmp r0, #0xA			//did we get called from HYP mode?
-	beq uapp_sched_fiq_handler_skip_setup_sp		//if so, skip loading sp
+	//mrs r0, SPSR_hyp		//load SPSR_hyp into r0
+	//and r0, r0, #0xF		//get the mode bits
+	//cmp r0, #0xA			//did we get called from HYP mode?
+	//beq uapp_sched_fiq_handler_skip_setup_sp		//if so, skip loading sp
 
 	ldr sp, =uapp_sched_fiqhandler_stack_top	//load base into stack-pointer
 
@@ -45,13 +45,14 @@ uapp_sched_fiq_handler_skip_setup_sp:
 	push {r3}
 	push {r2}
 	push {r1}
+	push {r0}
 
-	//push {r0}
 	bl uapp_sched_fiqhandler
-	//pop {r0}
+
 
 	// restore all saved registers
-	mrs r0, SPSR_und		//restore r0
+	pop {r0}
+	//mrs r0, SPSR_und		//restore r0
 	pop {r1}
 	pop {r2}
 	pop {r3}
