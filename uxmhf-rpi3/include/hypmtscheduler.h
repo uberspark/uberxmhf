@@ -20,7 +20,9 @@
 typedef uint64_t TIME;   	//our time type; 64-bits since we are using clock cycles
 #define VERY_LONG_TIME  0xffffffffffffffffULL	//longest time possible
 
-typedef void (*HYPTHREADFUNC)(void);
+struct sched_timer;
+
+typedef void (*HYPTHREADFUNC)(struct sched_timer *);
 
 struct sched_timer {
 	uint32_t inuse;			// TRUE if in use
@@ -37,6 +39,7 @@ typedef struct {
 	uint32_t iparam_2;
 	uint32_t status;
 }ugapp_hypmtscheduler_param_t;
+
 
 
 #endif // __ASSEMBLY__
