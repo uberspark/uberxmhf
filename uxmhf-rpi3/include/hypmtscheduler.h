@@ -28,6 +28,7 @@ struct sched_timer {
 	int priority;		// priority associated with the timer
 	TIME sticky_time_to_wait;  // relative time to wait sticky
 	TIME time_to_wait;  // relative time to wait
+	HYPTHREADFUNC tfunc;	//the hypthread function associated with the timer
 };
 
 typedef struct {
