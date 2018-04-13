@@ -20,6 +20,8 @@
 typedef uint64_t TIME;   	//our time type; 64-bits since we are using clock cycles
 #define VERY_LONG_TIME  0xffffffffffffffffULL	//longest time possible
 
+typedef void (*HYPTHREADFUNC)(void);
+
 struct sched_timer {
 	uint32_t inuse;			// TRUE if in use
 	uint32_t event;    		// set to TRUE at timeout
