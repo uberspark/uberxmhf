@@ -1,0 +1,13 @@
+#!/bin/sh
+LD="@LD@"
+prefix="@prefix@"
+LDFLAGS="@LDFLAGS@"
+LDLIBS="@LDLIBS@"
+
+for ARG in $@ ; do
+  if [ x"$ARG" = x"-nostdlib" ] || [ x"$ARG" = x"-nodefaultlibs" ] ; then
+      LDLIBS=""
+  fi
+done
+
+exec $LD $LDFLAGS "$@" $LDLIBS
