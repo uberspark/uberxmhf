@@ -1,0 +1,9 @@
+prefix=@prefix@
+includedir=@includedir@
+
+Name: trustvisor
+Description: trustvisor hypervisor
+Requires:
+Version: @PACKAGE_VERSION@
+Libs:
+Cflags: -I${includedir}
