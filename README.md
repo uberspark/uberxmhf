@@ -28,3 +28,16 @@ nested (2-dimensional) paging.
 The framework is capable of running unmodified legacy multiprocessor 
 capable OSes such as Windows and Linux.  
 
+Hardware Platforms and Capabilities
+===================================
+
+
+| Platform 	| Verification Status 	| uberguests Tested	| Documentation |
+| --- 		| 	--- 				| 			--- 	| --- 			| 
+| x86-32 Intel PC |	Verified			| Ubuntu 12.04 LTS  (3.2.0-23-generic) |  [./uxmhf/README.md](uxmhf/README.md) |
+| Raspberry PI 3 |	Planned			| Raspbian (4.4.y), <br> Emlid RT Linux (4.4.y) |  [./uxmhf-rpi3/README.md](uxmhf-rpi3/README.md) |
+| x86-32 AMD PC, <br> x86-32 Intel PC (legacy) |	Verified			| Windows XP, <br> Ubuntu 12.04 LTS (3.2.0-23-generic) |  [./xmhf/README.md](xmhf/README.md) |
+
+
+
+
