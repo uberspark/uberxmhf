@@ -48,6 +48,13 @@ x86-32 AMD PC, x86-32 Intel PC (legacy), libbaremetal and Lockdown
 * Other contributors: Jonathan McCune, James Newsome, Ning Qu, and Yanlin Li
 
 
+## Contributing
+
+uberXMHF is always open to contributions. The easiest mechanism is probably to
+fork the git repository through the web UI, make the changes on your fork, 
+and then issue a pull request through the web UI.
+
+
 ## Copying
 
 The uberXMHF project comprises code from multiple sources, under multiple
