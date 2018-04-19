@@ -449,7 +449,7 @@ void uapp_sched_timerhandler(void){
 		fiq_pemode = sysreg_read_spsr_hyp() & 0x0000000FUL;
 		if(fiq_pemode == 0xA){
 			//PE state was hyp mode, so we simply resume
-	    	bcm2837_miniuart_puts("\n[HYPTIMER]: PE state=HYP, Halting!\n");
+	    	bcm2837_miniuart_puts("\n[HYPTIMER]: Timer expired, PE state=HYP, queuing...\n");
 	    	//HALT();
 			return;
 		}else{
