@@ -53,3 +53,47 @@ x86-32 AMD PC, x86-32 Intel PC (legacy), libbaremetal and Lockdown
 The uberXMHF project comprises code from multiple sources, under multiple
 open source licenses. See [COPYING.md](COPYING.md) for details.
 
+## Related Publications
+
+* Have your PI and Eat it Too: Practical Security on a Low-cost Ubiquitous 
+Computing Platform. Amit Vasudevan, Sagar Chaki. IEEE Euro Symposium on
+Security and Privacy, 2018.
+
+* UberSpark: Enforcing Verifiable Object Abstractions for Automated Compositional Security Analysis of a Hypervisor. Amit Vasudevan, Sagar Chaki, Petros Maniatis, Limin Jia, Anupam Datta. USENIX Security Symposium, 2016. [[pdf](http://hypcode.org/paper-uberspark-xmhf-USENIXSEC-2016.pdf)]
+
+* UberSpark: Enforcing Verifiable Object Abstractions for Automated Compositional Security Analysis of a Hypervisor. Amit Vasudevan, Sagar Chaki, Petros Maniatis, Limin Jia, Anupam Datta. CMU CyLab Technical Report CMU-CyLab-16-003. June 2016. [[pdf](http://hypcode.org/tr_CMUCyLab16003.pdf)]
+
+* Design, Implementation and Verification of an eXtensible and 
+  Modular Hypervisor Framework. Amit Vasudevan, Sagar Chaki, Limin Jia,
+  Jonathan M. McCune, James Newsome, and Anupam Datta. 
+  IEEE Symposium on Security and Privacy, 
+  May 2013. [pdf](http://hypcode.org/paper-xmhf-IEEES&P-2013.pdf)
+
+* Building Verifiable Trusted Path on Commodity x86 Computers.
+  Zongwei Zhou, Virgil Gligor, James Newsome, and Jonathan M. McCune. 
+  IEEE Symposium on Security and Privacy (IEEE S&P), 2012.
+  [pdf](http://users.ece.cmu.edu/~zongweiz/media/TP_Oakland12.pdf)
+
+* "It's an app. It's a hypervisor. It's a hypapp.": Design and
+  Implementation of an eXtensible and Modular Hypervisor
+  Framework. Amit Vasudevan, Jonathan M. McCune, and James
+  Newsome. Technical Report CMU-CyLab-12-014, June 2012.
+  [pdf](http://www.cylab.cmu.edu/files/pdfs/tech_reports/CMUCyLab12014.pdf)
+
+* TrustVisor: Efficient TCB Reduction and Attestation.  Jonathan
+  M. McCune, Yanlin Li, Ning Qu, Zongwei Zhou, Anupam Datta, Virgil
+  Gligor, and Adrian Perrig. IEEE Symposium on Security and Privacy,
+  May 2010. [pdf](http://www.ece.cmu.edu/~jmmccune/papers/MLQZDGP2010.pdf)
+
+* Lockdown: Towards a Safe and Practical Architecture for Security
+  Applications on Commodity Platforms.  Amit Vasudevan and Bryan Parno
+  and Ning Qu and Virgil D. Gligor and Adrian Perrig. Proceedings of
+  the 5th International Conference on Trust and Trustworthy Computing
+  (TRUST), June 2012.
+  [pdf](http://hypcode.org/paper-lockdown-TRUST-2012.pdf)
+
+* Lockdown: A Safe and Practical Environment for Security Applications
+  (CMU-CyLab-09-011) Amit Vasudevan and Bryan Parno and Ning Qu and
+  Virgil D. Gligor and Adrian Perrig. Technical Report
+  CMU-CyLab-09-011, June 2009.
+  [pdf](http://www.cylab.cmu.edu/files/pdfs/tech_reports/CMUCyLab09011.pdf)
