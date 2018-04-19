@@ -1,5 +1,6 @@
-Introduction
-============
+# uber eXtensible Micro-Hypervisor Framework (uberXMHF)
+
+## Introduction
 
 The Uber eXtensible Micro-Hypervisor Framework (UberXMHF)
 strives to be a comprehensive and flexible platform for performing 
@@ -28,8 +29,7 @@ nested (2-dimensional) paging.
 The framework is capable of running unmodified legacy multiprocessor 
 capable OSes such as Windows and Linux.  
 
-Hardware Platforms and Capabilities
-===================================
+## Hardware Platforms and Capabilities
 
 
 | Platform 	| Verification Status 	| uberguests Tested	| Documentation |
@@ -39,5 +39,17 @@ Hardware Platforms and Capabilities
 | x86-32 AMD PC, <br> x86-32 Intel PC (legacy) |	Verified			| Windows XP, <br> Ubuntu 12.04 LTS (3.2.0-23-generic) |  [./xmhf/README.md](xmhf/README.md) |
 
 
+## Contacts, Maintainers and Contributors
+* Amit Vasudevan [amitvasudevan@acm.org] for uberXMHF: x86-32 Intel PC, Raspberry PI 3,
+x86-32 AMD PC, x86-32 Intel PC (legacy), libbaremetal and Lockdown
 
+* Zongwei Zhou for (TrustVisor and tee-sdk)
+
+* Other contributors: Jonathan McCune, James Newsome, Ning Qu, and Yanlin Li
+
+
+## Copying
+
+The uberXMHF project comprises code from multiple sources, under multiple
+open source licenses. See [COPYING.md](COPYING.md) for details.
 
