@@ -59,6 +59,7 @@ There is currently some GPL-licensed code in this repository. See below.
 GPL status of sub-folders
 ==========================
 
-xmhf-uobjs/xc_newlog uberobject uses some GPL code for E1000 network hardware
+./uxmhf/xmhf-uobjs/xc_newlog uberobject uses some GPL code for E1000 network hardware
 interactions.
 
+./xmhf/ uses some GPL code as documented in ./xmhf/COPYING.md
