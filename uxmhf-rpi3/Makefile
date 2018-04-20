@@ -54,9 +54,8 @@ all: checkoskrnlimg
 	cd libs/libxmhfcrypto && make -w all
 	cd libs/libutpm && make -w all
 	cd core && make -w all
-	cd guestos && make -w all
 	cd bootstrap && make -w all
-	cat ./bootstrap/bootstrap.bin ./oskrnlimg.tmp ./core/core.bin ./guestos/guestos.bin > uxmhf-rpi3.img
+	cat ./bootstrap/bootstrap.bin ./oskrnlimg.tmp ./core/core.bin > uxmhf-rpi3.img
 
 .PHONY: checkoskrnlimg
 checkoskrnlimg:
@@ -83,7 +82,6 @@ checkoskrnlimg:
 clean:
 	cd core && make -w clean
 	cd bootstrap && make -w clean
-	cd guestos && make -w clean
 	rm -f *.o
 	rm -f *.img 
 	rm -f *.elf
