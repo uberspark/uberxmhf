@@ -1,1 +1,0 @@
-root=/dev/nfs nfsroot=10.0.0.1:/home/dv/nfs-root/guestos rw ip=dhcp rootwait elevator=deadline console=serial0,115200 console=tty1 loglevel=8 memblock=debug dwc_otg.fiq_enable=0 dwc_otg.fiq_fsm_enable=0 
