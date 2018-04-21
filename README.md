@@ -108,6 +108,11 @@ Security and Privacy, 2018.
   
 ## Changelog
 
+* Version 4.0 (Brawn)
+	* first stand-alone uberXMHF release
+	* added Raspberry PI 3 hardware platform support
+	* consolidated past XMHF x86-32 AMD PC and x86-32 Intel PC (legacy) releases
+	* various documentation updates
 
 * Version 3.1 (Flak)
 	* fixed uxmhf build errors

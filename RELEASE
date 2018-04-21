@@ -1,3 +1,9 @@
 Version: 4.0
 Codename: Brawn
-Release-date: 20th April 2018 
+Release-date: 20th April 2018
+Changelog:
+	* first stand-alone uberXMHF release
+	* added Raspberry PI 3 hardware platform support
+	* consolidated past XMHF x86-32 AMD PC and x86-32 Intel PC (legacy) releases
+	* various documentation updates
+ 
