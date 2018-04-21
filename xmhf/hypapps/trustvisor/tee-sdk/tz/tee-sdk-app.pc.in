@@ -1,0 +1,14 @@
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+libdir=@libdir@
+includedir=@includedir@
+datarootdir=@datarootdir@
+datadir=@datadir@
+pkgdatadir=@pkgdatadir@
+
+Name: tee-sdk-app
+Description: used for applications that talk to tee services
+Requires:
+Version: @PACKAGE_VERSION@
+Libs: -L${libdir}/tee-sdk -ltz
+Cflags: -I${includedir}

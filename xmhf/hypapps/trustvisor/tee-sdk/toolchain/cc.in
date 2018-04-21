@@ -1,0 +1,24 @@
+#!/bin/sh
+CC="@CC@"
+CCINC="@CCINC@"
+ARCH="@ARCH@"
+OS="@OS@"
+prefix="@prefix@"
+CFLAGS="@CFLAGS@"
+LDFLAGS="@LDFLAGS@"
+LDLIBS="@LDLIBS@"
+
+for ARG in $@ ; do
+  if [ x"$ARG" = x"-nostdlib" ] || [ x"$ARG" = x"-nodefaultlibs" ] ; then
+      LDLIBS=""
+  fi
+done
+
+for ARG in $@ ; do
+  if [ x"$ARG" = x"-c" ] || [ x"$ARG" = x"-S" ] || [ x"$ARG" = x"-E" ] ; then
+      LDLIBS=""
+      LDFLAGS=""
+  fi
+done
+
+exec $CC $CFLAGS $LDFLAGS "$@" $LDLIBS

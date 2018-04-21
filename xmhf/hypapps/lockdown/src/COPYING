@@ -1,0 +1,170 @@
+Third-party external libraries, __not within this repository__, 
+that we "dynamically link" against:
+
+guestos/windows/win2k3/ldnvfctl/
+================================
+
+1. WinPcap (wpcap.lib) (http://www.winpcap.org/) 
+		- BSD
+
+2. libusb-win32 (libusb.lib) (http://libusb-win32.sourceforge.net) 
+		- LGPLv2.1
+
+
+Third-party code __within this repository__ comes from other sources
+that is summarized below (with associated license):
+
+verifier/
+=========
+
+1. LPCUSB, an USB device driver for LPC microcontrollers  (BSD)
+
+/*-
+	LPCUSB, an USB device driver for LPC microcontrollers	
+	Copyright (C) 2006 Bertrik Sikken (bertrik@sikken.nl)
+
+	Redistribution and use in source and binary forms, with or without
+	modification, are permitted provided that the following conditions are met:
+
+	1. Redistributions of source code must retain the above copyright
+	   notice, this list of conditions and the following disclaimer.
+	2. Redistributions in binary form must reproduce the above copyright
+	   notice, this list of conditions and the following disclaimer in the
+	   documentation and/or other materials provided with the distribution.
+	3. The name of the author may not be used to endorse or promote products
+	   derived from this software without specific prior written permission.
+
+	THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
+	IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+	OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
+	IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, 
+	INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
+	NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+	DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+	THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+	(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
+	THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+*/
+
+2. LPC ARM processor runtime environment (custom copyright, see below)
+
+/*-
+ ******************************************************************************
+ *
+ * $RCSfile: $
+ * $Revision: $
+ *
+ * Header file for Philips LPC ARM Processors.
+ * Copyright 2004 R O SoftWare
+ *
+ * No guarantees, warrantees, or promises, implied or otherwise.
+ * May be used for hobby or commercial purposes provided copyright
+ * notice remains intact.
+ *
+ *****************************************************************************/
+
+
+3. CRC module (custom copyright, see below)
+
+/*-
+  * ============================================================= 
+  *  COPYRIGHT (C) 1986 Gary S. Brown.  You may use this program, or       
+  *  code or tables extracted from it, as desired without restriction.     
+  *                                                                        
+  *  First, the polynomial itself and its table of feedback terms.  The    
+  *  polynomial is                                                         
+  *  X^32+X^26+X^23+X^22+X^16+X^12+X^11+X^10+X^8+X^7+X^5+X^4+X^2+X^1+X^0   
+  *                                                                        
+  *  Note that we take it "backwards" and put the highest-order term in    
+  *  the lowest-order bit.  The X^32 term is "implied"; the LSB is the     
+  *  X^31 term, etc.  The X^0 term (usually shown as "+1") results in      
+  *  the MSB being 1.                                                      
+  *                                                                        
+  *  Note that the usual hardware shift register implementation, which     
+  *  is what we're using (we're merely optimizing it by doing eight-bit    
+  *  chunks at a time) shifts bits into the lowest-order term.  In our     
+  *  implementation, that means shifting towards the right.  Why do we     
+  *  do it this way?  Because the calculated CRC must be transmitted in    
+  *  order from highest-order term to lowest-order term.  UARTs transmit   
+  *  characters in order from LSB to MSB.  By storing the CRC this way,    
+  *  we hand it to the UART in the order low-byte to high-byte; the UART   
+  *  sends each low-bit to hight-bit; and the result is transmission bit   
+  *  by bit from highest- to lowest-order term without requiring any bit   
+  *  shuffling on our part.  Reception works similarly.                    
+  *                                                                        
+  *  The feedback terms table consists of 256, 32-bit entries.  Notes:     
+  *                                                                        
+  *      The table can be generated at runtime if desired; code to do so   
+  *      is shown later.  It might not be obvious, but the feedback        
+  *      terms simply represent the results of eight shift/xor opera-      
+  *      tions for all combinations of data and CRC register values.       
+  *                                                                        
+  *      The values must be right-shifted by eight bits by the "updcrc"    
+  *      logic; the shift must be unsigned (bring in zeroes).  On some     
+  *      hardware you could probably optimize the shift in assembler by    
+  *      using byte-swap instructions.                                     
+  *      polynomial $edb88320                                              
+  *                                                                        
+  *  --------------------------------------------------------------------  */
+
+
+guestos/windows/genhashes/
+==========================
+
+1. libtomcrypto(sha1) (WTFPL)
+
+/*-
+ * LibTomCrypt, modular cryptographic library -- Tom St Denis
+ *
+ * LibTomCrypt is a library that provides various cryptographic
+ * algorithms in a highly modular and flexible manner.
+ *
+ * The library is free for all purposes without any express
+ * guarantee it works.
+ *
+ * Tom St Denis, tomstdenis@gmail.com, http://libtom.org
+ */
+
+guestos/windows/win2k3/ldnvfctl/
+================================
+
+1. ssldump (http://www.rtfm.com/ssldump/) - BSD
+
+/**
+
+   Copyright (C) 1999-2000 RTFM, Inc.
+   All Rights Reserved
+
+   This package is a SSLv3/TLS protocol analyzer written by Eric Rescorla
+   <ekr@rtfm.com> and licensed by RTFM, Inc.
+
+   Redistribution and use in source and binary forms, with or without
+   modification, are permitted provided that the following conditions
+   are met:
+   1. Redistributions of source code must retain the above copyright
+      notice, this list of conditions and the following disclaimer.
+   2. Redistributions in binary form must reproduce the above copyright
+      notice, this list of conditions and the following disclaimer in the
+      documentation and/or other materials provided with the distribution.
+   3. All advertising materials mentioning features or use of this software
+      must display the following acknowledgement:
+   
+      This product includes software developed by Eric Rescorla for
+      RTFM, Inc.
+
+   4. Neither the name of RTFM, Inc. nor the name of Eric Rescorla may be
+      used to endorse or promote products derived from this
+      software without specific prior written permission.
+
+   THIS SOFTWARE IS PROVIDED BY ERIC RESCORLA AND RTFM, INC. ``AS IS'' AND
+   ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+   IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+   ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
+   FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+   DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+   OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+   HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+   LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+   OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY SUCH DAMAGE.
+
+ */

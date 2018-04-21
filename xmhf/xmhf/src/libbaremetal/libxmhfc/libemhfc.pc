@@ -1,0 +1,11 @@
+prefix=/usr/local
+exec_prefix=${prefix}
+libdir=${exec_prefix}/lib
+includedir=${prefix}/include
+
+Name: libemhfc
+Description: Extremely barebones libc replacement
+Requires: 
+Version: 0.1
+Libs: -L${libdir} -lemhfc
+Cflags:
