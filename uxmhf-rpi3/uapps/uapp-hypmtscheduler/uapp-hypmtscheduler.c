@@ -137,7 +137,9 @@ void uapp_sched_timer_undeclare(struct sched_timer *t){
 // returns NULL if something went wrong
 //////
 //struct sched_timer *uapp_sched_timer_declare(u32 time, char *event, int priority){
-struct sched_timer *uapp_sched_timer_declare(u32 time, HYPTHREADFUNC func, int priority){
+//struct sched_timer *uapp_sched_timer_declare(u32 time, HYPTHREADFUNC func, int priority){
+struct sched_timer *uapp_sched_timer_declare(u32 first_time_period,
+		u32 regular_time_period, int priority, HYPTHREADFUNC func,){
 	struct sched_timer *t;
 
   //disable_fiq();
@@ -155,10 +157,14 @@ struct sched_timer *uapp_sched_timer_declare(u32 time, HYPTHREADFUNC func, int p
   // install new timer
   //t->event = event;
   t->event = FALSE;
-  t->time_to_wait = time;
-  t->sticky_time_to_wait = time;
+  t->regular_time_period = regular_time_period;
+  t->first_time_period = first_time_period;
   t->priority = priority;
   t->tfunc = func;
+
+  t->first_time_period_expired = 0;
+  t->time_to_wait = first_time_period;
+  t->sticky_time_to_wait = regular_time_period;
 
   //_XDPRINTF_("%s,%u: event=%u, time_to_wait=%016llx, sticky_time_to_wait=%016llx, priority=%u\n",
 	//	  __func__, __LINE__,
@@ -177,7 +183,7 @@ struct sched_timer *uapp_sched_timer_declare(u32 time, HYPTHREADFUNC func, int p
 
 
 
-  } else if ((time + uapp_sched_read_cpucounter()) < (timer_next->time_to_wait + time_timer_set)) {
+  } else if ((first_time_period + uapp_sched_read_cpucounter()) < (timer_next->time_to_wait + time_timer_set)) {
     // new timer is shorter than current one, so
     uapp_sched_timers_update(uapp_sched_read_cpucounter() - time_timer_set);
     time_timer_set = uapp_sched_read_cpucounter();
