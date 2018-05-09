@@ -28,6 +28,7 @@ struct sched_timer {
 	uint32_t inuse;			// TRUE if in use
 	uint32_t event;    		// set to TRUE at timeout
 	int priority;		// priority associated with the timer
+	int first_time_period_expired;	//1 if first_time_period has expired, 0 otherwise
 	TIME sticky_time_to_wait;  // relative time to wait sticky
 	TIME regular_time_period;	//the regular time period of this timer
 	TIME first_time_period; //the first time period of this timer
