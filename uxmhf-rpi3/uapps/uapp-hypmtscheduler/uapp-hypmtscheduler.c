@@ -302,9 +302,10 @@ void uapp_sched_process_timers(u32 cpuid){
 
 			//_XDPRINTFSMP_("%s[%u]: timer expired; priority=%u, time_to_wait=%u\n", __func__, cpuid,
 			//		sched_timers[i].priority, sched_timers[i].sticky_time_to_wait/ (1024*1024));
-			time_to_wait = sched_timers[i].sticky_time_to_wait; //reload
+
+			time_to_wait = sched_timers[i].regular_time_period; //reload
 			priority = sched_timers[i].priority;
-			uapp_sched_timer_declare(time_to_wait, sched_timers[i].tfunc, priority);
+			uapp_sched_timer_declare(time_to_wait, time_to_wait, priority, sched_timers[i].tfunc);
 		}
 	}
 }
@@ -584,7 +585,7 @@ void uapp_sched_initialize(u32 cpuid){
 		//uapp_sched_start_physical_timer(3 * 20 * 1024 * 1024);
 		//uapp_sched_timer_declare(10 * 1024 * 1024, NULL, 3);
 
-		uapp_sched_timer_declare(3 * 20 * 1024 * 1024, &hyptask1, 1);
+		uapp_sched_timer_declare(3 * 20 * 1024 * 1024, 3 * 20 * 1024 * 1024, 1, &hyptask1);
 		//uapp_sched_timer_declare(9 * 20 * 1024 * 1024, NULL, 3);
 
 
