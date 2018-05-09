@@ -29,6 +29,8 @@ struct sched_timer {
 	uint32_t event;    		// set to TRUE at timeout
 	int priority;		// priority associated with the timer
 	TIME sticky_time_to_wait;  // relative time to wait sticky
+	TIME regular_time_period;	//the regular time period of this timer
+	TIME first_time_period; //the first time period of this timer
 	TIME time_to_wait;  // relative time to wait
 	HYPTHREADFUNC tfunc;	//the hypthread function associated with the timer
 };
