@@ -623,13 +623,15 @@ bool uapp_hypmtscheduler_handlehcall(u32 uhcall_function, void *uhcall_buffer,
 	if(hmtsp->uhcall_fn == UAPP_HYPMTSCHEDULER_UHCALL_FNCREATEHYPTHREAD){
 		//_XDPRINTF_("%s: FNCREATEHYPTHREAD: period=0x%08x, priority=%u\n", __func__,
 		//		hmtsp->iparam_1, hmtsp->iparam_2);
-    	bcm2837_miniuart_puts("\n[HYPSCHED:FNCREATEHYPTHREAD]: period=0x");
+    	bcm2837_miniuart_puts("\n[HYPSCHED:FNCREATEHYPTHREAD]: first period=0x");
     	debug_hexdumpu32(hmtsp->iparam_1);
-    	bcm2837_miniuart_puts(" priority=0x\n");
+    	bcm2837_miniuart_puts(", regular period=0x");
     	debug_hexdumpu32(hmtsp->iparam_2);
+    	bcm2837_miniuart_puts(", priority=0x\n");
+    	debug_hexdumpu32(hmtsp->iparam_3);
     	bcm2837_miniuart_puts("\n");
 
-		uapp_sched_timer_declare(hmtsp->iparam_1, &hyptask2, hmtsp->iparam_2);
+		uapp_sched_timer_declare(hmtsp->iparam_1, hmtsp->iparam_2, hmtsp->iparam_3, &hyptask2);
 		//uapp_sched_timer_declare(9 * 20 * 1024 * 1024, NULL, 3);
 
 		hmtsp->status=0;	//success
