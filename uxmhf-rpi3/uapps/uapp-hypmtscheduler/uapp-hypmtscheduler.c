@@ -139,7 +139,7 @@ void uapp_sched_timer_undeclare(struct sched_timer *t){
 //struct sched_timer *uapp_sched_timer_declare(u32 time, char *event, int priority){
 //struct sched_timer *uapp_sched_timer_declare(u32 time, HYPTHREADFUNC func, int priority){
 struct sched_timer *uapp_sched_timer_declare(u32 first_time_period,
-		u32 regular_time_period, int priority, HYPTHREADFUNC func,){
+		u32 regular_time_period, int priority, HYPTHREADFUNC func){
 	struct sched_timer *t;
 
   //disable_fiq();
