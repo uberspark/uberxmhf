@@ -585,7 +585,7 @@ void uapp_sched_initialize(u32 cpuid){
 		//uapp_sched_start_physical_timer(3 * 20 * 1024 * 1024);
 		//uapp_sched_timer_declare(10 * 1024 * 1024, NULL, 3);
 
-		uapp_sched_timer_declare(3 * 20 * 1024 * 1024, 3 * 20 * 1024 * 1024, 1, &hyptask1);
+		uapp_sched_timer_declare(3 * 20 * 1024 * 1024, 5 * 20 * 1024 * 1024, 1, &hyptask1);
 		//uapp_sched_timer_declare(9 * 20 * 1024 * 1024, NULL, 3);
 
 

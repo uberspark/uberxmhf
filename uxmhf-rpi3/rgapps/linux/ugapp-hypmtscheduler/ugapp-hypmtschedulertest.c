@@ -26,8 +26,8 @@ int main(){
     memset(&hmtsp, 0, sizeof(hmtsp));
 
     hmtsp.uhcall_fn = UAPP_HYPMTSCHEDULER_UHCALL_FNCREATEHYPTHREAD;
-    hmtsp.iparam_1 = 9 * 20 * 1024 * 1024;	//~9 sec period first time
-    hmtsp.iparam_2 = 9 * 20 * 1024 * 1024;	//~9 sec period thereafter
+    hmtsp.iparam_1 = 8 * 20 * 1024 * 1024;	//~9 sec period first time
+    hmtsp.iparam_2 = 15 * 20 * 1024 * 1024;	//~9 sec period thereafter
     hmtsp.iparam_3 = 3;						//priority=1
 
     if(!uhcall(UAPP_HYPMTSCHEDULER_UHCALL, &hmtsp, sizeof(ugapp_hypmtscheduler_param_t)))
