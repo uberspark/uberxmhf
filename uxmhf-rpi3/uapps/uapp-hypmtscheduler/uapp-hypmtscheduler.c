@@ -337,16 +337,10 @@ void uapp_sched_process_timers(u32 cpuid){
 		if(sched_timers[i].event){
 			sched_timers[i].event = FALSE;
 			priority_queue_insert((void *)&sched_timers[i], sched_timers[i].priority);
-			//normal_sp = sysreg_read_sp();
-
-			//_XDPRINTFSMP_("%s[%u]: normal_sp=0x%08x\n", __func__, cpuid, normal_sp);
-
-			//_XDPRINTFSMP_("%s[%u]: timer expired; priority=%u, time_to_wait=%u\n", __func__, cpuid,
-			//		sched_timers[i].priority, sched_timers[i].sticky_time_to_wait/ (1024*1024));
-
 			time_to_wait = sched_timers[i].regular_time_period; //reload
 			priority = sched_timers[i].priority;
-			uapp_sched_timer_declare(time_to_wait, time_to_wait, priority, sched_timers[i].tfunc);
+			//uapp_sched_timer_declare(time_to_wait, time_to_wait, priority, sched_timers[i].tfunc);
+			uapp_sched_timer_redeclare(&sched_timers[i], time_to_wait, time_to_wait, priority, sched_timers[i].tfunc);
 		}
 	}
 }
