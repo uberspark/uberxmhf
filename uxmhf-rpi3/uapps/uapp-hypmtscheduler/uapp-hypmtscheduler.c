@@ -487,7 +487,7 @@ void uapp_sched_timerhandler(void){
 		fiq_pemode = sysreg_read_spsr_hyp() & 0x0000000FUL;
 		if(fiq_pemode == 0xA){
 			//PE state was hyp mode, so we simply resume
-	    	bcm2837_miniuart_puts("\n[HYPTIMER]: Timer expired, PE state=HYP, queuing...\n");
+	    	//bcm2837_miniuart_puts("\n[HYPTIMER]: Timer expired, PE state=HYP, queuing...\n");
 	    	//HALT();
 			return;
 		}else{
@@ -684,6 +684,10 @@ void uapp_hypmtscheduler_handlehcall_createhyptask(ugapp_hypmtscheduler_param_t 
 		return;
 	}
 
+	bcm2837_miniuart_puts("\n[HYPMTSCHED: CREATEHYPTASK]: struct sched_timer=0x");
+	debug_hexdumpu32((uint32_t)hyptask_handle_list[i].t);
+	bcm2837_miniuart_puts("\n");
+
 	hmtsp->oparam_1 = i;	//return hyptask handle
 	hmtsp->status=1;	//success
 }
@@ -719,6 +723,12 @@ void uapp_hypmtscheduler_handlehcall_disablehyptask(ugapp_hypmtscheduler_param_t
 	hyptask_timer->disable_tfunc = TRUE;
 
 	hmtsp->status=1; //success
+
+	bcm2837_miniuart_puts("\n[HYPMTSCHED: DISABLEHYPTASK]: struct sched_timer=0x");
+	debug_hexdumpu32((uint32_t)hyptask_timer);
+	bcm2837_miniuart_puts("\n");
+
+	HALT();
 }
 
 
@@ -730,8 +740,10 @@ bool uapp_hypmtscheduler_handlehcall(u32 uhcall_function, void *uhcall_buffer,
 		u32 uhcall_buffer_len){
 	ugapp_hypmtscheduler_param_t *hmtsp;
 
-	if(uhcall_function != UAPP_HYPMTSCHEDULER_UHCALL)
+	if(uhcall_function != UAPP_HYPMTSCHEDULER_UHCALL){
+
 		return false;
+	}
 
 	hmtsp = (ugapp_hypmtscheduler_param_t *)uhcall_buffer;
 
