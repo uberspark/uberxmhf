@@ -535,7 +535,8 @@ void uapp_sched_run_hyptasks(void){
 
 		//bcm2837_miniuart_puts("\n[HYPSCHED]: HypTask completed run with Priority=0x");
     	//debug_hexdumpu32(task_timer->priority);
-		task_timer->tfunc(task_timer);
+		if(task_timer->tfunc)
+			task_timer->tfunc(task_timer);
 
 		//interrupts disable
 		disable_fiq();
@@ -619,16 +620,13 @@ __attribute__((section(".data"))) hypmtscheduler_hyptask_handle_t hyptask_handle
 
 
 
+//////////////////////////////////////////////////////////////////////////////
+// hypmtscheduler hypercall APIs
+//////////////////////////////////////////////////////////////////////////////
 
 
-
-
-
-
-
-
-
-//return true if handled the hypercall, false if not
+// top-level hypercall handler hub
+// return true if handled the hypercall, false if not
 bool uapp_hypmtscheduler_handlehcall(u32 uhcall_function, void *uhcall_buffer,
 		u32 uhcall_buffer_len){
 	ugapp_hypmtscheduler_param_t *hmtsp;
@@ -668,6 +666,8 @@ bool uapp_hypmtscheduler_handlehcall(u32 uhcall_function, void *uhcall_buffer,
 	return true;
 }
 
+
+
 //////////////////////////////////////////////////////////////////////////////
 // main hypmtscheduler initialization function
 //////////////////////////////////////////////////////////////////////////////
@@ -706,7 +706,7 @@ void uapp_sched_initialize(u32 cpuid){
 		uapp_sched_timer_initialize(cpuid);
 
 		//declare a dummy timer to initialize timer subsystem
-		uapp_sched_timer_declare(3 * 20 * 1024 * 1024, 5 * 20 * 1024 * 1024, 1, &hyptask1);
+		uapp_sched_timer_declare(3 * 20 * 1024 * 1024, 3 * 20 * 1024 * 1024, 1, NULL);
 
 	}else{
 		_XDPRINTFSMP_("%s[%u]: AP CPU: nothing to do, moving on...\n", __func__, cpuid);
