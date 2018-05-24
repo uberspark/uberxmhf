@@ -204,6 +204,20 @@ struct sched_timer *uapp_sched_timer_declare(u32 first_time_period,
 
 
 //////
+// redeclare an expired timer
+//////
+struct sched_timer *uapp_sched_timer_redeclare(struct sched_timer *t, u32 first_time_period,
+		u32 regular_time_period, int priority, HYPTHREADFUNC func){
+
+
+	return t;
+}
+
+
+
+
+
+//////
 // subtract time from all timers, enabling those that run out
 //////
 void uapp_sched_timers_update(TIME time){
