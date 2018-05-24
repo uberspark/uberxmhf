@@ -629,17 +629,61 @@ __attribute__((section(".data"))) hypmtscheduler_hyptask_handle_t hyptask_handle
 
 // create hyptask API
 void uapp_hypmtscheduler_handlehcall_createhyptask(ugapp_hypmtscheduler_param_t *hmtsp){
+	uint32_t hyptask_first_period = hmtsp->iparam_1;
+	uint32_t hyptask_regular_period = hmtsp->iparam_2;
+	uint32_t hyptask_priority = hmtsp->iparam_3;
+	uint32_t hyptask_id = hmtsp->iparam_4;
+	uint32_t i;
+	uint32_t hyptask_handle_found;
+
 	bcm2837_miniuart_puts("\n[HYPMTSCHED: CREATEHYPTASK]: first period=0x");
-	debug_hexdumpu32(hmtsp->iparam_1);
+	debug_hexdumpu32(hyptask_first_period);
 	bcm2837_miniuart_puts(", regular period=0x");
-	debug_hexdumpu32(hmtsp->iparam_2);
+	debug_hexdumpu32(hyptask_regular_period);
 	bcm2837_miniuart_puts(", priority=0x\n");
-	debug_hexdumpu32(hmtsp->iparam_3);
+	debug_hexdumpu32(hyptask_priority);
+	bcm2837_miniuart_puts("\n");
+	bcm2837_miniuart_puts(", hyptask id=0x\n");
+	debug_hexdumpu32(hyptask_id);
 	bcm2837_miniuart_puts("\n");
 
-	uapp_sched_timer_declare(hmtsp->iparam_1, hmtsp->iparam_2, hmtsp->iparam_3, &hyptask2);
+	//allocate hyptask_handle
+	hyptask_handle_found=0;
+	for(i=0; i< HYPMTSCHEDULER_MAX_HYPTASKS; i++){
+		if(!hyptask_handle_list[i].inuse){
+			hyptask_handle_list[i].inuse = true;
+			hyptask_handle_found=1;
+			break;
+		}
+	}
 
-	hmtsp->status=0;	//success
+	//check if we were able to allocate a hytask handle
+	if(!hyptask_handle_found){
+		hmtsp->status=0; //fail
+		return;
+	}
+
+	//now check if the given hyptask_id is valid
+	if(hyptask_id > (HYPMTSCHEDULER_MAX_HYPTASKID-1) ){
+		hmtsp->status=0; //fail
+		return;
+	}
+
+	//ok now populate the hyptask_id within the hyptask handle
+	hyptask_handle_list[i].hyptask_id = hyptask_id;
+
+	hyptask_handle_list[i].t = uapp_sched_timer_declare(hyptask_first_period, hyptask_regular_period,
+			hyptask_priority,
+			hyptask_idlist[hyptask_id]);
+
+	//check if we were able to allocate a timer for the hyptask
+	if(!hyptask_handle_list[i].t){
+		hmtsp->status=0; //fail
+		return;
+	}
+
+	hmtsp->oparam_1 = i;	//return hyptask handle
+	hmtsp->status=1;	//success
 }
 
 
@@ -705,7 +749,7 @@ void uapp_sched_initialize(u32 cpuid){
 		//initialize timers
 		uapp_sched_timer_initialize(cpuid);
 
-		//declare a dummy timer to initialize timer subsystem
+		//declare a keep-alive timer to initialize timer subsystem
 		uapp_sched_timer_declare(3 * 20 * 1024 * 1024, 3 * 20 * 1024 * 1024, 1, NULL);
 
 	}else{

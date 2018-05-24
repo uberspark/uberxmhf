@@ -29,13 +29,21 @@ int main(){
     hmtsp.iparam_1 = 4 * 20 * 1024 * 1024;	//first period
     hmtsp.iparam_2 = 8 * 20 * 1024 * 1024;	//regular period thereafter
     hmtsp.iparam_3 = 3;						//priority
+    hmtsp.iparam_4 = 3;						//hyptask id
 
-    if(!uhcall(UAPP_HYPMTSCHEDULER_UHCALL, &hmtsp, sizeof(ugapp_hypmtscheduler_param_t)))
- 	   printf("hypercall FAILED\n");
+    if(!uhcall(UAPP_HYPMTSCHEDULER_UHCALL, &hmtsp, sizeof(ugapp_hypmtscheduler_param_t))){
+ 	   printf("hypercall FAILED. Exiting\n");
+ 	   exit(1);
+    }
     else
  	   printf("hypercall SUCCESS\n");
 
-    printf("%s: return status=%u\n", __FUNCTION__, hmtsp.status);
+    if(!hmtsp.status){
+  	   printf("createhyptask failed. Exiting\n");
+  	   exit(1);
+    }
+
+    printf("%s: createhyptask success oparam_1=%u\n", __FUNCTION__, hmtsp.oparam_1);
     printf("%s: end\n", __FUNCTION__);
 
     return 0;

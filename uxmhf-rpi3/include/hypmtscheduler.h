@@ -45,6 +45,8 @@ typedef struct {
 	uint32_t iparam_1;
 	uint32_t iparam_2;
 	uint32_t iparam_3;
+	uint32_t iparam_4;
+	uint32_t oparam_1;
 	uint32_t status;
 }ugapp_hypmtscheduler_param_t;
 
