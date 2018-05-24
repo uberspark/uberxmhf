@@ -638,6 +638,9 @@ void uapp_sched_initialize(u32 cpuid){
 		_XDPRINTFSMP_("%s[%u]: Current CPU counter=0x%016llx\n", __func__, cpuid,
 				uapp_sched_read_cpucounter());
 
+		//zero-initialize hyptask_handle_list
+		memset(&hyptask_handle_list, 0, sizeof(hyptask_handle_list));
+
 		//hypvtable_setentry(cpuid, 7, (u32)&uapp_sched_fiq_handler);
 		uapp_sched_timer_initialize(cpuid);
 
