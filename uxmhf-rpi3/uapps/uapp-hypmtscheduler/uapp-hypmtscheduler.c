@@ -60,16 +60,40 @@ __attribute__((section(".data"))) volatile u8 thread1_event = FALSE;
 __attribute__((section(".data"))) volatile u8 thread2_event = FALSE;
 
 
+
+//////////////////////////////////////////////////////////////////////////////
+// hyptask definitions
+//////////////////////////////////////////////////////////////////////////////
+
+void hyptask0(struct sched_timer *t){
+	bcm2837_miniuart_puts("\n[HYPSCHED]: HypTask-0 completed run with Priority=0x");
+	debug_hexdumpu32(t->priority);
+
+}
+
 void hyptask1(struct sched_timer *t){
 	bcm2837_miniuart_puts("\n[HYPSCHED]: HypTask-1 completed run with Priority=0x");
 	debug_hexdumpu32(t->priority);
-
 }
 
 void hyptask2(struct sched_timer *t){
 	bcm2837_miniuart_puts("\n[HYPSCHED]: HypTask-2 completed run with Priority=0x");
 	debug_hexdumpu32(t->priority);
 }
+
+void hyptask3(struct sched_timer *t){
+	bcm2837_miniuart_puts("\n[HYPSCHED]: HypTask-3 completed run with Priority=0x");
+	debug_hexdumpu32(t->priority);
+}
+
+__attribute__((section(".data"))) HYPTHREADFUNC hyptask_idlist[HYPMTSCHEDULER_MAX_HYPTASKID] =
+		{
+			&hyptask0,
+			&hyptask1,
+			&hyptask2,
+			&hyptask3
+		};
+
 
 
 //////
