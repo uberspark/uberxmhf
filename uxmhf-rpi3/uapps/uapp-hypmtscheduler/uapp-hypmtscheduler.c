@@ -209,6 +209,33 @@ struct sched_timer *uapp_sched_timer_declare(u32 first_time_period,
 struct sched_timer *uapp_sched_timer_redeclare(struct sched_timer *t, u32 first_time_period,
 		u32 regular_time_period, int priority, HYPTHREADFUNC func){
 
+	t->event = FALSE;
+	t->first_time_period = first_time_period;
+	t->regular_time_period = regular_time_period;
+	t->priority = priority;
+	t->tfunc = func;
+
+	t->first_time_period_expired = 0;
+	t->time_to_wait = first_time_period;
+	t->sticky_time_to_wait = regular_time_period;
+
+	if (!timer_next) {
+		// no timers set at all, so this is shortest
+		time_timer_set = uapp_sched_read_cpucounter();
+		uapp_sched_start_physical_timer((timer_next = t)->time_to_wait);
+
+	} else if ((first_time_period + uapp_sched_read_cpucounter()) < (timer_next->time_to_wait + time_timer_set)) {
+	    // new timer is shorter than current one, so update all timers
+		// and set this one as the shortest timer
+	    uapp_sched_timers_update(uapp_sched_read_cpucounter() - time_timer_set);
+	    time_timer_set = uapp_sched_read_cpucounter();
+	    uapp_sched_start_physical_timer((timer_next = t)->time_to_wait);
+
+	} else {
+	    // new timer is longer, than current one, so we dont do anything
+	}
+
+	t->inuse = TRUE;
 
 	return t;
 }
