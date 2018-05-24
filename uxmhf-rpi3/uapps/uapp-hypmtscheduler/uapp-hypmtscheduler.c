@@ -687,6 +687,41 @@ void uapp_hypmtscheduler_handlehcall_createhyptask(ugapp_hypmtscheduler_param_t 
 }
 
 
+// disable hyptask API
+void uapp_hypmtscheduler_handlehcall_disablehyptask(ugapp_hypmtscheduler_param_t *hmtsp){
+	uint32_t hyptask_handle = hmtsp->iparam_1;
+	struct sched_timer *hyptask_timer;
+	uint32_t i;
+	uint32_t hyptask_handle_found;
+
+	bcm2837_miniuart_puts("\n[HYPMTSCHED: DISABLEHYPTASK]: hyptask_handle=0x");
+	debug_hexdumpu32(hyptask_handle);
+	bcm2837_miniuart_puts("\n");
+
+	//check if provided hyptask handle is within limits
+	if(hyptask_handle >= HYPMTSCHEDULER_MAX_HYPTASKS){
+		hmtsp->status=0; //fail
+		return;
+	}
+
+	//check if provided hyptask handle is in use
+	if(!hyptask_handle_list[hyptask_handle].inuse){
+		hmtsp->status=0; //fail
+		return;
+	}
+
+	//ok grab the timer for the hyptask
+	hyptask_timer = hyptask_handle_list[hyptask_handle].t;
+
+	//set the disabled flag so that hyptask function is not executed
+	hyptask_timer->disable_tfunc = TRUE;
+
+	hmtsp->status=1; //success
+}
+
+
+
+
 // top-level hypercall handler hub
 // return true if handled the hypercall, false if not
 bool uapp_hypmtscheduler_handlehcall(u32 uhcall_function, void *uhcall_buffer,
