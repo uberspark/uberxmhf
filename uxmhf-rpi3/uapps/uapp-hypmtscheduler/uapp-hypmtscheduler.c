@@ -202,6 +202,7 @@ struct sched_timer *uapp_sched_timer_redeclare(struct sched_timer *t, u32 first_
 		u32 regular_time_period, int priority, HYPTHREADFUNC func){
 
 	t->event = FALSE;
+	t->disable_tfunc = FALSE;
 	t->first_time_period = first_time_period;
 	t->regular_time_period = regular_time_period;
 	t->priority = priority;
