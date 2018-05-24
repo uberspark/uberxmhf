@@ -148,6 +148,7 @@ struct sched_timer *uapp_sched_timer_declare(u32 first_time_period,
   // install new timer
   //t->event = event;
   t->event = FALSE;
+  t->disable_tfunc = FALSE;
   t->regular_time_period = regular_time_period;
   t->first_time_period = first_time_period;
   t->priority = priority;
@@ -327,7 +328,7 @@ void uapp_sched_process_timers(u32 cpuid){
 	for(i=0; i < MAX_TIMERS; i++){
 		if(sched_timers[i].event){
 			sched_timers[i].event = FALSE;
-			if(sched_timers[i].tfunc){
+			if(sched_timers[i].tfunc && !sched_timers[i].disable_tfunc){
 				priority_queue_insert((void *)&sched_timers[i], sched_timers[i].priority);
 			}
 
