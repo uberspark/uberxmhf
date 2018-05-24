@@ -45,6 +45,13 @@ typedef struct {
 }ugapp_hypmtscheduler_param_t;
 
 
+typedef struct {
+	uint32_t inuse;
+	uint32_t hyptask_id;
+	struct sched_timer *t;
+}hypmtscheduler_hyptask_handle_t;
+
+
 
 #endif // __ASSEMBLY__
 
