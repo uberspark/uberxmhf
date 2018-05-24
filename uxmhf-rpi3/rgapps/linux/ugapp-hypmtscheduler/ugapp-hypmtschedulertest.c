@@ -20,9 +20,8 @@
 
 __attribute__((aligned(4096))) __attribute__((section(".data"))) ugapp_hypmtscheduler_param_t hmtsp;
 
-int main(){
-    printf("%s: start\n", __FUNCTION__);
 
+void test_createhyptask(void){
     memset(&hmtsp, 0, sizeof(hmtsp));
 
     hmtsp.uhcall_fn = UAPP_HYPMTSCHEDULER_UHCALL_CREATEHYPTASK;
@@ -44,8 +43,35 @@ int main(){
     }
 
     printf("%s: createhyptask success oparam_1=%u\n", __FUNCTION__, hmtsp.oparam_1);
-    printf("%s: end\n", __FUNCTION__);
+}
 
+int main(int argc, char *argv[]){
+    unsigned int testcase_num;
+	printf("%s: start\n", __FUNCTION__);
+
+    memset(&hmtsp, 0, sizeof(hmtsp));
+
+    if(argc != 2){
+  	   printf("usage: ugapp-hypmtschedulertest <testcasenum>\n");
+  	   exit(1);
+    }
+
+    testcase_num = atoi(argv[1]);
+
+	printf("%s: testcase_num=%u\n", __FUNCTION__, testcase_num);
+
+	switch(testcase_num){
+	case 0:
+		test_createhyptask();
+		break;
+
+	default:
+		printf("%s: unknown testcase_num=%u, exiting!\n", __FUNCTION__, testcase_num);
+		exit(1);
+	}
+
+
+    printf("%s: end-of-test\n", __FUNCTION__);
     return 0;
 }
 
