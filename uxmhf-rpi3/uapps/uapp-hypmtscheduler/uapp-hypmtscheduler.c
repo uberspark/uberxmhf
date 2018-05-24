@@ -624,43 +624,40 @@ __attribute__((section(".data"))) hypmtscheduler_hyptask_handle_t hyptask_handle
 // hypmtscheduler hypercall APIs
 //////////////////////////////////////////////////////////////////////////////
 
+// create hyptask API
+void uapp_hypmtscheduler_handlehcall_createhyptask(ugapp_hypmtscheduler_param_t *hmtsp){
+	bcm2837_miniuart_puts("\n[HYPMTSCHED: CREATEHYPTASK]: first period=0x");
+	debug_hexdumpu32(hmtsp->iparam_1);
+	bcm2837_miniuart_puts(", regular period=0x");
+	debug_hexdumpu32(hmtsp->iparam_2);
+	bcm2837_miniuart_puts(", priority=0x\n");
+	debug_hexdumpu32(hmtsp->iparam_3);
+	bcm2837_miniuart_puts("\n");
+
+	uapp_sched_timer_declare(hmtsp->iparam_1, hmtsp->iparam_2, hmtsp->iparam_3, &hyptask2);
+
+	hmtsp->status=0;	//success
+}
+
 
 // top-level hypercall handler hub
 // return true if handled the hypercall, false if not
 bool uapp_hypmtscheduler_handlehcall(u32 uhcall_function, void *uhcall_buffer,
 		u32 uhcall_buffer_len){
 	ugapp_hypmtscheduler_param_t *hmtsp;
-	uint32_t i;
-	u32 uhcall_buffer_paddr;
-
-	bcm2837_miniuart_puts("\nHYPSCHED:UHCALL: CPSR=0x");
-	debug_hexdumpu32(sysreg_read_cpsr());
-	bcm2837_miniuart_puts("\n");
 
 	if(uhcall_function != UAPP_HYPMTSCHEDULER_UHCALL)
 		return false;
 
 	hmtsp = (ugapp_hypmtscheduler_param_t *)uhcall_buffer;
 
-	if(hmtsp->uhcall_fn == UAPP_HYPMTSCHEDULER_UHCALL_FNCREATEHYPTHREAD){
-		//_XDPRINTF_("%s: FNCREATEHYPTHREAD: period=0x%08x, priority=%u\n", __func__,
-		//		hmtsp->iparam_1, hmtsp->iparam_2);
-    	bcm2837_miniuart_puts("\n[HYPSCHED:FNCREATEHYPTHREAD]: first period=0x");
-    	debug_hexdumpu32(hmtsp->iparam_1);
-    	bcm2837_miniuart_puts(", regular period=0x");
-    	debug_hexdumpu32(hmtsp->iparam_2);
-    	bcm2837_miniuart_puts(", priority=0x\n");
-    	debug_hexdumpu32(hmtsp->iparam_3);
-    	bcm2837_miniuart_puts("\n");
-
-		uapp_sched_timer_declare(hmtsp->iparam_1, hmtsp->iparam_2, hmtsp->iparam_3, &hyptask2);
-		//uapp_sched_timer_declare(9 * 20 * 1024 * 1024, NULL, 3);
-
-		hmtsp->status=0;	//success
+	if(hmtsp->uhcall_fn == UAPP_HYPMTSCHEDULER_UHCALL_CREATEHYPTASK){
+		uapp_hypmtscheduler_handlehcall_createhyptask(hmtsp);
 
 	}else{
-		_XDPRINTF_("%s: uknown uhcall_fn=%u. Ignoring.\n",
-				__func__, hmtsp->uhcall_fn);
+		bcm2837_miniuart_puts("\nHYPMTSCHED: UHCALL: ignoring unknown uhcall_fn=0x");
+		debug_hexdumpu32(hmtsp->uhcall_fn);
+		bcm2837_miniuart_puts("\n");
 	}
 
 	return true;
