@@ -619,59 +619,6 @@ __attribute__((section(".data"))) hypmtscheduler_hyptask_handle_t hyptask_handle
 
 
 
-void uapp_sched_initialize(u32 cpuid){
-	int value;
-	int priority;
-	struct sched_timer *task_timer;
-	u32 queue_data;
-	int status;
-	volatile u32 sp, spnew;
-
-
-	if(cpuid == 0){
-		_XDPRINTFSMP_("%s[%u]: Current CPU counter=0x%016llx\n", __func__, cpuid,
-				uapp_sched_read_cpucounter());
-
-		_XDPRINTFSMP_("%s[%u]: Current CPU counter=0x%016llx\n", __func__, cpuid,
-				uapp_sched_read_cpucounter());
-
-		_XDPRINTFSMP_("%s[%u]: Current CPU counter=0x%016llx\n", __func__, cpuid,
-				uapp_sched_read_cpucounter());
-
-		//zero-initialize hyptask_handle_list
-		memset(&hyptask_handle_list, 0, sizeof(hyptask_handle_list));
-
-		//hypvtable_setentry(cpuid, 7, (u32)&uapp_sched_fiq_handler);
-		uapp_sched_timer_initialize(cpuid);
-
-		//_XDPRINTFSMP_("%s[%u]: Starting timers...\n", __func__, cpuid);
-
-		//uapp_sched_timer_declare(3 * 1024 * 1024, NULL, 1);
-		//disable_fiq();
-		//uapp_sched_timer_declare(9 * 1024 * 1024, NULL, 3);
-		//enable_fiq();
-		//uapp_sched_start_physical_timer(3 * 20 * 1024 * 1024);
-		//uapp_sched_timer_declare(10 * 1024 * 1024, NULL, 3);
-
-		uapp_sched_timer_declare(3 * 20 * 1024 * 1024, 5 * 20 * 1024 * 1024, 1, &hyptask1);
-		//uapp_sched_timer_declare(9 * 20 * 1024 * 1024, NULL, 3);
-
-
-
-		_XDPRINTFSMP_("%s[%u]: Initializing scheduler...\n", __func__, cpuid);
-
-		normal_sp =sysreg_read_sp();
-		_XDPRINTFSMP_("%s[%u]: FIQ Stack pointer base=0x%08x\n", __func__, cpuid,
-				&uapp_sched_fiqhandler_stack);
-		_XDPRINTFSMP_("%s[%u]: normal_sp=0x%08x\n", __func__, cpuid, normal_sp);
-		_XDPRINTFSMP_("%s[%u]: cpsr=0x%08x\n", __func__, cpuid, sysreg_read_cpsr());
-
-	}else{
-		_XDPRINTFSMP_("%s[%u]: AP CPU: nothing to do, moving on...\n", __func__, cpuid);
-	}
-
-}
-
 
 
 
@@ -719,4 +666,50 @@ bool uapp_hypmtscheduler_handlehcall(u32 uhcall_function, void *uhcall_buffer,
 	}
 
 	return true;
+}
+
+//////////////////////////////////////////////////////////////////////////////
+// main hypmtscheduler initialization function
+//////////////////////////////////////////////////////////////////////////////
+
+void uapp_sched_initialize(u32 cpuid){
+	int value;
+	int priority;
+	struct sched_timer *task_timer;
+	u32 queue_data;
+	int status;
+	volatile u32 sp, spnew;
+
+
+	if(cpuid == 0){
+		_XDPRINTFSMP_("%s[%u]: Initializing scheduler...\n", __func__, cpuid);
+
+		normal_sp =sysreg_read_sp();
+		_XDPRINTFSMP_("%s[%u]: FIQ Stack pointer base=0x%08x\n", __func__, cpuid,
+				&uapp_sched_fiqhandler_stack);
+		_XDPRINTFSMP_("%s[%u]: normal_sp=0x%08x\n", __func__, cpuid, normal_sp);
+		_XDPRINTFSMP_("%s[%u]: cpsr=0x%08x\n", __func__, cpuid, sysreg_read_cpsr());
+
+		_XDPRINTFSMP_("%s[%u]: Current CPU counter=0x%016llx\n", __func__, cpuid,
+				uapp_sched_read_cpucounter());
+
+		_XDPRINTFSMP_("%s[%u]: Current CPU counter=0x%016llx\n", __func__, cpuid,
+				uapp_sched_read_cpucounter());
+
+		_XDPRINTFSMP_("%s[%u]: Current CPU counter=0x%016llx\n", __func__, cpuid,
+				uapp_sched_read_cpucounter());
+
+		//zero-initialize hyptask_handle_list
+		memset(&hyptask_handle_list, 0, sizeof(hyptask_handle_list));
+
+		//initialize timers
+		uapp_sched_timer_initialize(cpuid);
+
+		//declare a dummy timer to initialize timer subsystem
+		uapp_sched_timer_declare(3 * 20 * 1024 * 1024, 5 * 20 * 1024 * 1024, 1, &hyptask1);
+
+	}else{
+		_XDPRINTFSMP_("%s[%u]: AP CPU: nothing to do, moving on...\n", __func__, cpuid);
+	}
+
 }
