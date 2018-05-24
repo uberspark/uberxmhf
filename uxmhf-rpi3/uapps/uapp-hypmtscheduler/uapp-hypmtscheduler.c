@@ -614,6 +614,9 @@ __attribute__((section(".data"))) HYPTHREADFUNC hyptask_idlist[HYPMTSCHEDULER_MA
 			&hyptask3
 		};
 
+__attribute__((section(".data"))) hypmtscheduler_hyptask_handle_t hyptask_handle_list[HYPMTSCHEDULER_MAX_HYPTASKS];
+
+
 
 
 void uapp_sched_initialize(u32 cpuid){
