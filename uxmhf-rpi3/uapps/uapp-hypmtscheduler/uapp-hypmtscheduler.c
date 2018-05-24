@@ -327,7 +327,10 @@ void uapp_sched_process_timers(u32 cpuid){
 	for(i=0; i < MAX_TIMERS; i++){
 		if(sched_timers[i].event){
 			sched_timers[i].event = FALSE;
-			priority_queue_insert((void *)&sched_timers[i], sched_timers[i].priority);
+			if(sched_timers[i].tfunc){
+				priority_queue_insert((void *)&sched_timers[i], sched_timers[i].priority);
+			}
+
 			time_to_wait = sched_timers[i].regular_time_period; //reload
 			priority = sched_timers[i].priority;
 			//uapp_sched_timer_declare(time_to_wait, time_to_wait, priority, sched_timers[i].tfunc);
