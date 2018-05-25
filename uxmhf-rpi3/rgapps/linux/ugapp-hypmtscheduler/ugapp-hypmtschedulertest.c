@@ -68,6 +68,28 @@ void test_disablehyptask(void){
 }
 
 
+void test_deletehyptask(void){
+    memset(&hmtsp, 0, sizeof(hmtsp));
+
+    hmtsp.uhcall_fn = UAPP_HYPMTSCHEDULER_UHCALL_DELETEHYPTASK;
+    hmtsp.iparam_1 = 0;				//hyptask id
+
+    if(!uhcall(UAPP_HYPMTSCHEDULER_UHCALL, &hmtsp, sizeof(ugapp_hypmtscheduler_param_t))){
+ 	   printf("hypercall FAILED. Exiting\n");
+ 	   exit(1);
+    }
+    else
+ 	   printf("hypercall SUCCESS\n");
+
+    if(!hmtsp.status){
+  	   printf("deletehyptask failed. Exiting\n");
+  	   exit(1);
+    }
+
+    printf("%s: deletehyptask success\n", __FUNCTION__);
+}
+
+
 int main(int argc, char *argv[]){
     unsigned int testcase_num;
 	printf("%s: start\n", __FUNCTION__);
@@ -90,6 +112,10 @@ int main(int argc, char *argv[]){
 
 	case 1:
 		test_disablehyptask();
+		break;
+
+	case 2:
+		test_deletehyptask();
 		break;
 
 	default:
