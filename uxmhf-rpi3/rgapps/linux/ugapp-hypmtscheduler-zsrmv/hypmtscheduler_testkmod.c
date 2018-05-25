@@ -79,8 +79,24 @@ static int dev_open(struct inode *inodep, struct file *filep){
 }
 
 static ssize_t dev_write(struct file *filep, const char *buffer, size_t len, loff_t *offset){
-	//return -EINVAL;
-	__hvc(0, NULL, 0);
+	switch(len){
+	case 1:
+		printk(KERN_INFO "hypmtschedulerkmod: create_hyptask\n");
+		break;
+
+	case 2:
+		printk(KERN_INFO "hypmtschedulerkmod: disable_hyptask\n");
+		break;
+
+	case 3:
+		printk(KERN_INFO "hypmtschedulerkmod: delete_hyptask\n");
+		break;
+
+	default:
+		printk(KERN_INFO "hypmtschedulerkmod: unknown function, ignoring\n");
+		break;
+	}
+
 	return 0;
 }
 
