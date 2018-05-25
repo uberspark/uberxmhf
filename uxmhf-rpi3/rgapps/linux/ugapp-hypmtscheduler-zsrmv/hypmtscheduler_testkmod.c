@@ -39,6 +39,8 @@
 #include <linux/fs.h>             // header for the Linux file system support
 #include <asm/uaccess.h>          // required for the copy to user function
 
+#include <hypmtscheduler.h>
+
 #define  DEVICE_NAME "hypmtschedulerkmod"    			//device will appear at /dev/uhcallkmod
 #define  CLASS_NAME  "hypmtschedulerkmodchar"     	   //we are a character device driver
 
@@ -85,7 +87,7 @@ static ssize_t dev_write(struct file *filep, const char *buffer, size_t len, lof
 	switch(len){
 	case 1:
 		printk(KERN_INFO "hypmtschedulerkmod: create_hyptask\n");
-		if(!hypmtscheduler_createhyptask(4 * 20 * 1024 * 1024, 8 * 20 * 1024 * 1024,
+		if(!hypmtscheduler_createhyptask(4 * HYPMTSCHEDULER_TIME_1SEC, 8 * HYPMTSCHEDULER_TIME_1SEC,
 					3, 3, &hyptask_handle)){
 			printk(KERN_INFO "hypmtschedulerkmod: create_hyptask failed\n");
 			return -EINVAL;

@@ -17,6 +17,8 @@
 #define HYPMTSCHEDULER_MAX_HYPTASKID	4
 #define HYPMTSCHEDULER_MAX_HYPTASKS		4
 
+
+
 #ifndef __ASSEMBLY__
 
 #define TRUE  	1
@@ -25,6 +27,10 @@
 #define MAX_TIMERS	4	//number of timers
 typedef uint64_t TIME;   	//our time type; 64-bits since we are using clock cycles
 #define VERY_LONG_TIME  0xffffffffffffffffULL	//longest time possible
+
+#define HYPMTSCHEDULER_TIME_1SEC			15518102UL
+#define HYPMTSCHEDULER_TIME_1MSEC			(HYPMTSCHEDULER_1SEC / 1000)
+#define HYPMTSCHEDULER_TIME_1USEC			(HYPMTSCHEDULER_1MSEC / 1000)
 
 struct sched_timer;
 
