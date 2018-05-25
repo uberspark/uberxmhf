@@ -69,12 +69,12 @@ bool hypmtscheduler_createhyptask(u32 first_period, u32 regular_period,
 	hmtsp_page = alloc_page(GFP_KERNEL | __GFP_ZERO);
 
 	if(!hmtsp_page){
-		__free_page(hmtsp_page);
 		return false;
 	}
 
 	hmtsp = (ugapp_hypmtscheduler_param_t *)page_address(hmtsp_page);
 
+	hmtsp->uhcall_fn = UAPP_HYPMTSCHEDULER_UHCALL_CREATEHYPTASK;
     hmtsp->iparam_1 = first_period;	//first period
     hmtsp->iparam_2 = regular_period;	//regular period thereafter
     hmtsp->iparam_3 = priority;						//priority

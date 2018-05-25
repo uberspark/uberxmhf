@@ -54,8 +54,8 @@ static struct device* hypmtschedulercharDevice = NULL;
 
 //externals
 extern  void __hvc(u32 uhcall_function, void *uhcall_buffer, u32 uhcall_buffer_len);
-extern void hypmtscheduler_createhyptask(u32 first_period, u32 regular_period,
-			u32 priority, u32 hyptask_id);
+extern bool hypmtscheduler_createhyptask(u32 first_period, u32 regular_period,
+			u32 priority, u32 hyptask_id, u32 *hyptask_handle);
 
 
 //prototypes for character driver interaction
@@ -95,8 +95,19 @@ static int dev_release(struct inode *inodep, struct file *filep){
 //module initialization function
 int hypmtschedulerkmod_init(void)
 {
+	u32 hyptask_handle;
+
 	printk(KERN_INFO "hypmtschedulerkmod: LOAD\n");
 	printk(KERN_INFO "author: amit vasudevan (amitvasudevan@acm.org)\n");
+
+#if 1
+	if(!hypmtscheduler_createhyptask(4 * 20 * 1024 * 1024, 8 * 20 * 1024 * 1024,
+				3, 3, &hyptask_handle)){
+		printk(KERN_INFO "hypmtschedulerkmod: create_hyptask failed\n");
+		return -EINVAL;
+	}
+#endif
+
 
 	//try to allocate a major number dynamically
 	major_number = register_chrdev(0, DEVICE_NAME, &fops);
@@ -126,8 +137,6 @@ int hypmtschedulerkmod_init(void)
 	printk(KERN_INFO "hypmtschedulerkmod: device class created correctly\n");
 
 
-	hypmtscheduler_createhyptask(4 * 20 * 1024 * 1024, 8 * 20 * 1024 * 1024,
-				3, 3);
 
 
 	return 0;
