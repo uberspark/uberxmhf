@@ -52,11 +52,14 @@ static int    number_opens = 0;
 static struct class*  hypmtschedulercharClass  = NULL;
 static struct device* hypmtschedulercharDevice = NULL;
 
+//externals
+extern  void __hvc(u32 uhcall_function, void *uhcall_buffer, u32 uhcall_buffer_len);
+
+
 //prototypes for character driver interaction
 static int     dev_open(struct inode *, struct file *);
 static ssize_t dev_write(struct file *, const char *, size_t, loff_t *);
 static int     dev_release(struct inode *, struct file *);
-static void __hvc(u32 uhcall_function, void *uhcall_buffer, u32 uhcall_buffer_len);
 
 //file operations structure to interface with the above
 static struct file_operations fops =
@@ -75,6 +78,7 @@ static int dev_open(struct inode *inodep, struct file *filep){
 
 static ssize_t dev_write(struct file *filep, const char *buffer, size_t len, loff_t *offset){
 	//return -EINVAL;
+	__hvc(0, NULL, 0);
 	return 0;
 }
 
@@ -84,20 +88,6 @@ static int dev_release(struct inode *inodep, struct file *filep){
    return 0;
 }
 
-
-static void __hvc(u32 uhcall_function, void *uhcall_buffer,
-		u32 uhcall_buffer_len){
-
-	asm volatile
-		(	" mov r0, %[in_0]\r\n"
-			" mov r1, %[in_1]\r\n"
-			" mov r2, %[in_2]\r\n"
-			".long 0xE1400071 \r\n"
-				: // outputs
-				: [in_0] "r" (uhcall_function), [in_1] "r" (uhcall_buffer), [in_2] "r" (uhcall_buffer_len)  // inouts
-	           : "r0", "r1", "r2" //clobber
-	    );
-}
 
 
 //module initialization function
