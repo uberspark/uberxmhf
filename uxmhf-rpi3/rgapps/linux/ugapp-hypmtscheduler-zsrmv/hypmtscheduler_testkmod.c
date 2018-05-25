@@ -56,6 +56,8 @@ static struct device* hypmtschedulercharDevice = NULL;
 extern  void __hvc(u32 uhcall_function, void *uhcall_buffer, u32 uhcall_buffer_len);
 extern bool hypmtscheduler_createhyptask(u32 first_period, u32 regular_period,
 			u32 priority, u32 hyptask_id, u32 *hyptask_handle);
+extern bool hypmtscheduler_disablehyptask(u32 hyptask_handle);
+extern bool hypmtscheduler_deletehyptask(u32 hyptask_handle);
 
 
 //prototypes for character driver interaction
@@ -71,6 +73,7 @@ static struct file_operations fops =
    .release = dev_release,
 };
 
+u32 hyptask_handle;
 
 static int dev_open(struct inode *inodep, struct file *filep){
    number_opens++;
@@ -82,14 +85,27 @@ static ssize_t dev_write(struct file *filep, const char *buffer, size_t len, lof
 	switch(len){
 	case 1:
 		printk(KERN_INFO "hypmtschedulerkmod: create_hyptask\n");
+		if(!hypmtscheduler_createhyptask(4 * 20 * 1024 * 1024, 8 * 20 * 1024 * 1024,
+					3, 3, &hyptask_handle)){
+			printk(KERN_INFO "hypmtschedulerkmod: create_hyptask failed\n");
+			return -EINVAL;
+		}
 		break;
 
 	case 2:
 		printk(KERN_INFO "hypmtschedulerkmod: disable_hyptask\n");
+		if(!hypmtscheduler_disablehyptask(hyptask_handle)){
+			printk(KERN_INFO "hypmtschedulerkmod: disable_hyptask failed\n");
+			return -EINVAL;
+		}
 		break;
 
 	case 3:
 		printk(KERN_INFO "hypmtschedulerkmod: delete_hyptask\n");
+		if(!hypmtscheduler_deletehyptask(hyptask_handle)){
+			printk(KERN_INFO "hypmtschedulerkmod: delete_hyptask failed\n");
+			return -EINVAL;
+		}
 		break;
 
 	default:
@@ -111,7 +127,6 @@ static int dev_release(struct inode *inodep, struct file *filep){
 //module initialization function
 int hypmtschedulerkmod_init(void)
 {
-	u32 hyptask_handle;
 
 	printk(KERN_INFO "hypmtschedulerkmod: LOAD\n");
 	printk(KERN_INFO "author: amit vasudevan (amitvasudevan@acm.org)\n");
