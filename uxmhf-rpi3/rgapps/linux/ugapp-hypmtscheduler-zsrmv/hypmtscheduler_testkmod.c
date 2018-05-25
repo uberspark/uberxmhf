@@ -54,6 +54,8 @@ static struct device* hypmtschedulercharDevice = NULL;
 
 //externals
 extern  void __hvc(u32 uhcall_function, void *uhcall_buffer, u32 uhcall_buffer_len);
+extern void hypmtscheduler_createhyptask(u32 first_period, u32 regular_period,
+			u32 priority, u32 hyptask_id);
 
 
 //prototypes for character driver interaction
@@ -122,6 +124,10 @@ int hypmtschedulerkmod_init(void)
 	  return PTR_ERR(hypmtschedulercharDevice);
 	}
 	printk(KERN_INFO "hypmtschedulerkmod: device class created correctly\n");
+
+
+	hypmtscheduler_createhyptask(4 * 20 * 1024 * 1024, 8 * 20 * 1024 * 1024,
+				3, 3);
 
 
 	return 0;
