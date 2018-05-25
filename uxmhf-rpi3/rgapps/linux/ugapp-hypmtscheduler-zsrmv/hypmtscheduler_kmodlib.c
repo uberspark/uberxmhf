@@ -39,6 +39,8 @@
 #include <linux/fs.h>             // header for the Linux file system support
 #include <asm/uaccess.h>          // required for the copy to user function
 
+#include <hypmtscheduler.h>
+
 
 void __hvc(u32 uhcall_function, void *uhcall_buffer,
 		u32 uhcall_buffer_len){
@@ -54,3 +56,7 @@ void __hvc(u32 uhcall_function, void *uhcall_buffer,
 	    );
 }
 
+void hypmtscheduler_createhyptask(u32 first_period, u32 regular_period,
+			u32 priority, u32 hyptask_id){
+
+}
