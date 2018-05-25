@@ -21,6 +21,8 @@ extern void uapp_sched_fiq_handler(void);
 extern u32 uapp_sched_fiqhandler_stack[];
 extern u32 uapp_sched_fiqhandler_stack_top[];
 extern __attribute__(( section(".data") )) u32 priority_queue_lock=1;
+extern __attribute__(( section(".data") )) u32 hypmtscheduler_execution_lock=1;
+
 extern void uapp_hypmtsched_schedentry(void);
 
 //////
@@ -445,7 +447,10 @@ void uapp_sched_fiqhandler(void){
 	//_XDPRINTFSMP_("%s: Timer Fired: sp=0x%08x, cpsr=0x%08x\n", __func__,
 	//		fiq_sp, sysreg_read_cpsr());
 	//bcm2837_miniuart_puts("\n[HYPTIMER]: Fired!!\n");
+    spin_lock(&hypmtscheduler_execution_lock);
 	uapp_sched_timerhandler();
+    spin_unlock(&hypmtscheduler_execution_lock);
+
 	//bcm2837_miniuart_puts("\n[HYPTIMER]: Fired!!\n");
 	//uapp_sched_start_physical_timer(3 * 20 * 1024 * 1024);
 	//_XDPRINTFSMP_("%s: resuming\n", __func__);
@@ -741,9 +746,10 @@ bool uapp_hypmtscheduler_handlehcall(u32 uhcall_function, void *uhcall_buffer,
 	ugapp_hypmtscheduler_param_t *hmtsp;
 
 	if(uhcall_function != UAPP_HYPMTSCHEDULER_UHCALL){
-
 		return false;
 	}
+
+    spin_lock(&hypmtscheduler_execution_lock);
 
 	hmtsp = (ugapp_hypmtscheduler_param_t *)uhcall_buffer;
 
@@ -758,6 +764,8 @@ bool uapp_hypmtscheduler_handlehcall(u32 uhcall_function, void *uhcall_buffer,
 		debug_hexdumpu32(hmtsp->uhcall_fn);
 		bcm2837_miniuart_puts("\n");
 	}
+
+    spin_unlock(&hypmtscheduler_execution_lock);
 
 	return true;
 }
