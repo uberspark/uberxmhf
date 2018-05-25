@@ -7,4 +7,4 @@ UINCS += -I$(UXMHFRPI3_DIR)/rgapps/linux/libs/libuhcall/include
 
 EXTRA_CFLAGS := $(UINCS)
 
-obj-m := hypmtscheduler_test.o
+obj-m := hypmtscheduler_testkmod.o
