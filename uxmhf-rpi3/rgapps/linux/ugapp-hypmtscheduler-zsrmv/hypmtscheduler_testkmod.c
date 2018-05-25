@@ -116,7 +116,7 @@ int hypmtschedulerkmod_init(void)
 	printk(KERN_INFO "hypmtschedulerkmod: LOAD\n");
 	printk(KERN_INFO "author: amit vasudevan (amitvasudevan@acm.org)\n");
 
-#if 1
+#if 0
 	if(!hypmtscheduler_createhyptask(4 * 20 * 1024 * 1024, 8 * 20 * 1024 * 1024,
 				3, 3, &hyptask_handle)){
 		printk(KERN_INFO "hypmtschedulerkmod: create_hyptask failed\n");

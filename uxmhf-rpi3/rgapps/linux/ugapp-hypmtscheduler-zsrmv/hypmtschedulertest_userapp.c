@@ -17,17 +17,39 @@
 
 //#include <hypmtscheduler.h>
 
+void kmod_comms(unsigned int function){
+	int ret, fd;
+
+	//open uhcallkmod device
+	fd = open("/dev/hypmtschedulerkmod", O_RDWR);
+	if (fd < 0){
+	    printf("%s: error: line %u\n", __FUNCTION__, __LINE__);
+		exit(1); //Failed to open /dev/uhcallkmod
+	}
+
+	ret = write(fd, NULL, function);
+	if (ret < 0){
+	    printf("%s: error: line %u\n", __FUNCTION__, __LINE__);
+		exit(1);	//error in write
+	}
+
+	if ( close(fd) < 0 ){
+	    printf("%s: error: line %u\n", __FUNCTION__, __LINE__);
+		exit(1);	//error in closing uhcallkmod device
+	}
+}
+
 
 void test_createhyptask(void){
-
+	kmod_comms(1);
 }
 
 void test_disablehyptask(void){
-
+	kmod_comms(2);
 }
 
 void test_deletehyptask(void){
-
+	kmod_comms(3);
 }
 
 
@@ -45,15 +67,15 @@ int main(int argc, char *argv[]){
 	printf("%s: testcase_num=%u\n", __FUNCTION__, testcase_num);
 
 	switch(testcase_num){
-	case 0:
+	case 1:
 		test_createhyptask();
 		break;
 
-	case 1:
+	case 2:
 		test_disablehyptask();
 		break;
 
-	case 2:
+	case 3:
 		test_deletehyptask();
 		break;
 
