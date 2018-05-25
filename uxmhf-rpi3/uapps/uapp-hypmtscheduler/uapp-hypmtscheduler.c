@@ -447,9 +447,9 @@ void uapp_sched_fiqhandler(void){
 	//_XDPRINTFSMP_("%s: Timer Fired: sp=0x%08x, cpsr=0x%08x\n", __func__,
 	//		fiq_sp, sysreg_read_cpsr());
 	//bcm2837_miniuart_puts("\n[HYPTIMER]: Fired!!\n");
-    spin_lock(&hypmtscheduler_execution_lock);
+    //spin_lock(&hypmtscheduler_execution_lock);
 	uapp_sched_timerhandler();
-    spin_unlock(&hypmtscheduler_execution_lock);
+    //spin_unlock(&hypmtscheduler_execution_lock);
 
 	//bcm2837_miniuart_puts("\n[HYPTIMER]: Fired!!\n");
 	//uapp_sched_start_physical_timer(3 * 20 * 1024 * 1024);
@@ -729,11 +729,10 @@ void uapp_hypmtscheduler_handlehcall_disablehyptask(ugapp_hypmtscheduler_param_t
 
 	hmtsp->status=1; //success
 
-	bcm2837_miniuart_puts("\n[HYPMTSCHED: DISABLEHYPTASK]: struct sched_timer=0x");
-	debug_hexdumpu32((uint32_t)hyptask_timer);
-	bcm2837_miniuart_puts("\n");
-
-	HALT();
+	//bcm2837_miniuart_puts("\n[HYPMTSCHED: DISABLEHYPTASK]: struct sched_timer=0x");
+	//debug_hexdumpu32((uint32_t)hyptask_timer);
+	//bcm2837_miniuart_puts("\n");
+	//HALT();
 }
 
 
@@ -749,7 +748,7 @@ bool uapp_hypmtscheduler_handlehcall(u32 uhcall_function, void *uhcall_buffer,
 		return false;
 	}
 
-    spin_lock(&hypmtscheduler_execution_lock);
+    //spin_lock(&hypmtscheduler_execution_lock);
 
 	hmtsp = (ugapp_hypmtscheduler_param_t *)uhcall_buffer;
 
@@ -765,7 +764,7 @@ bool uapp_hypmtscheduler_handlehcall(u32 uhcall_function, void *uhcall_buffer,
 		bcm2837_miniuart_puts("\n");
 	}
 
-    spin_unlock(&hypmtscheduler_execution_lock);
+    //spin_unlock(&hypmtscheduler_execution_lock);
 
 	return true;
 }
