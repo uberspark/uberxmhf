@@ -105,7 +105,7 @@ void uapp_sched_timer_undeclare(struct sched_timer *t){
 	//disable_fiq();
 
 	if (!t->inuse) {
-		enable_fiq();
+		//enable_fiq();
 		return;
 	}
 
@@ -733,6 +733,43 @@ void uapp_hypmtscheduler_handlehcall_disablehyptask(ugapp_hypmtscheduler_param_t
 	//debug_hexdumpu32((uint32_t)hyptask_timer);
 	//bcm2837_miniuart_puts("\n");
 	//HALT();
+}
+
+
+
+// delete hyptask API
+void uapp_hypmtscheduler_handlehcall_deleteehyptask(ugapp_hypmtscheduler_param_t *hmtsp){
+	uint32_t hyptask_handle = hmtsp->iparam_1;
+	struct sched_timer *hyptask_timer;
+
+	bcm2837_miniuart_puts("\n[HYPMTSCHED: DELETEHYPTASK]: hyptask_handle=0x");
+	debug_hexdumpu32(hyptask_handle);
+	bcm2837_miniuart_puts("\n");
+
+	//check if provided hyptask handle is within limits
+	if(hyptask_handle >= HYPMTSCHEDULER_MAX_HYPTASKS){
+		hmtsp->status=0; //fail
+		return;
+	}
+
+	//check if provided hyptask handle is in use
+	if(!hyptask_handle_list[hyptask_handle].inuse){
+		hmtsp->status=0; //fail
+		return;
+	}
+
+	//ok grab the timer for the hyptask
+	hyptask_timer = hyptask_handle_list[hyptask_handle].t;
+
+	//disable the timer assocated with this hyptask
+	uapp_sched_timer_undeclare(hyptask_timer);
+
+	//reset handle for future use
+	hyptask_handle_list[hyptask_handle].inuse = FALSE;
+	hyptask_handle_list[hyptask_handle].hyptask_id = 0;
+	hyptask_handle_list[hyptask_handle].t = NULL;
+
+	hmtsp->status=1; //success
 }
 
 
