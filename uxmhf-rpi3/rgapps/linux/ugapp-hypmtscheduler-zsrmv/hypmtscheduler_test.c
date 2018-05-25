@@ -39,27 +39,24 @@
 #include <linux/fs.h>             // header for the Linux file system support
 #include <asm/uaccess.h>          // required for the copy to user function
 
-#include <uhcall.h>
-#include <uhcalltest.h>
-
-#define  DEVICE_NAME "uhcallkmod"    			//device will appear at /dev/uhcallkmod
-#define  CLASS_NAME  "uhcallkmodchar"     	   //we are a character device driver
+#define  DEVICE_NAME "hypmtschedulerkmod"    			//device will appear at /dev/uhcallkmod
+#define  CLASS_NAME  "hypmtschedulerkmodchar"     	   //we are a character device driver
 
 MODULE_LICENSE("GPL");				//appease the kernel
 MODULE_AUTHOR("Amit Vasudevan");
-MODULE_DESCRIPTION("Hypercall char driver for uxmhf-rpi3");
+MODULE_DESCRIPTION("hypmtscheduler guest kernel-module char driver for uxmhf-rpi3");
 MODULE_VERSION("0.1");
 
 static int    major_number;
 static int    number_opens = 0;
-static struct class*  hypcallcharClass  = NULL;
-static struct device* hypcallcharDevice = NULL;
+static struct class*  hypmtschedulercharClass  = NULL;
+static struct device* hypmtschedulercharDevice = NULL;
 
 //prototypes for character driver interaction
 static int     dev_open(struct inode *, struct file *);
-static int     dev_release(struct inode *, struct file *);
 static ssize_t dev_write(struct file *, const char *, size_t, loff_t *);
-static void uhcallkmod_hvc(u32 uhcall_function, void *uhcall_buffer, u32 uhcall_buffer_len);
+static int     dev_release(struct inode *, struct file *);
+static void __hvc(u32 uhcall_function, void *uhcall_buffer, u32 uhcall_buffer_len);
 
 //file operations structure to interface with the above
 static struct file_operations fops =
@@ -70,10 +67,25 @@ static struct file_operations fops =
 };
 
 
-__attribute__((aligned(4096))) unsigned char buffer[]= {'a', 'b', 'c', 'd'};
+static int dev_open(struct inode *inodep, struct file *filep){
+   number_opens++;
+   printk(KERN_INFO "hypmtschedulerkmod: device has been opened %d time(s)\n", number_opens);
+   return 0;
+}
+
+static ssize_t dev_write(struct file *filep, const char *buffer, size_t len, loff_t *offset){
+	//return -EINVAL;
+	return 0;
+}
+
+static int dev_release(struct inode *inodep, struct file *filep){
+   number_opens--;
+   printk(KERN_INFO "hypmtschedulerkmod: device successfully closed\n");
+   return 0;
+}
 
 
-static void uhcallkmod_hvc(u32 uhcall_function, void *uhcall_buffer,
+static void __hvc(u32 uhcall_function, void *uhcall_buffer,
 		u32 uhcall_buffer_len){
 
 	asm volatile
@@ -88,84 +100,52 @@ static void uhcallkmod_hvc(u32 uhcall_function, void *uhcall_buffer,
 }
 
 
-static int dev_open(struct inode *inodep, struct file *filep){
-   number_opens++;
-   printk(KERN_INFO "uhcallkmod: device has been opened %d time(s)\n", number_opens);
-   return 0;
-}
-
-static int dev_release(struct inode *inodep, struct file *filep){
-   number_opens--;
-   printk(KERN_INFO "uhcallkmod: device successfully closed\n");
-   return 0;
-}
-
-static ssize_t dev_write(struct file *filep, const char *buffer, size_t len, loff_t *offset){
-	uhcallkmod_param_t *uhcallp;
-
-	if(buffer == NULL)
-		return -EINVAL;
-
-	if(len != sizeof(uhcallkmod_param_t))
-		return -EINVAL;
-
-	uhcallp = (uhcallkmod_param_t *)buffer;
-
-	printk(KERN_INFO "uhcallkmod: dev_write: uhcall_function=0x%08x, uhcall_buffer=0x%08x, uhcall_buffer_len=0x%08x\n",
-			uhcallp->uhcall_function, uhcallp->uhcall_buffer, uhcallp->uhcall_buffer_len);
-
-	uhcallkmod_hvc(uhcallp->uhcall_function, uhcallp->uhcall_buffer, uhcallp->uhcall_buffer_len);
-	//uhcallkmod_hvc(uhcallp->uhcall_function, &buffer, uhcallp->uhcall_buffer_len);
-
-   return 0;
-}
-
 //module initialization function
-int uhcallkmod_init(void)
+int hypmtschedulerkmod_init(void)
 {
-	printk(KERN_INFO "uhcallkmod: LOAD\n");
+	printk(KERN_INFO "hypmtschedulerkmod: LOAD\n");
 	printk(KERN_INFO "author: amit vasudevan (amitvasudevan@acm.org)\n");
 
 	//try to allocate a major number dynamically
 	major_number = register_chrdev(0, DEVICE_NAME, &fops);
 	if (major_number<0){
-	  printk(KERN_ALERT "uhcallkmod: failed to register a major number\n");
+	  printk(KERN_ALERT "hypmtschedulerkmod: failed to register a major number\n");
 	  return major_number;
 	}
-	printk(KERN_INFO "uhcallkmod: registered correctly with major number %d\n", major_number);
+	printk(KERN_INFO "hypmtschedulerkmod: registered correctly with major number %d\n", major_number);
 
 	// Register the device class
-	hypcallcharClass = class_create(THIS_MODULE, CLASS_NAME);
-	if (IS_ERR(hypcallcharClass)){
+	hypmtschedulercharClass = class_create(THIS_MODULE, CLASS_NAME);
+	if (IS_ERR(hypmtschedulercharClass)){
 	  unregister_chrdev(major_number, DEVICE_NAME);
-	  printk(KERN_ALERT "uhcallkmod: Failed to register device class\n");
-	  return PTR_ERR(hypcallcharClass);
+	  printk(KERN_ALERT "hypmtschedulerkmod: Failed to register device class\n");
+	  return PTR_ERR(hypmtschedulercharClass);
 	}
-	printk(KERN_INFO "uhcallkmod: device class registered correctly\n");
+	printk(KERN_INFO "hypmtschedulerkmod: device class registered correctly\n");
 
 	// register the device driver
-	hypcallcharDevice = device_create(hypcallcharClass, NULL, MKDEV(major_number, 0), NULL, DEVICE_NAME);
-	if (IS_ERR(hypcallcharDevice)){
-	  class_destroy(hypcallcharClass);
+	hypmtschedulercharDevice = device_create(hypmtschedulercharClass, NULL, MKDEV(major_number, 0), NULL, DEVICE_NAME);
+	if (IS_ERR(hypmtschedulercharDevice)){
+	  class_destroy(hypmtschedulercharClass);
 	  unregister_chrdev(major_number, DEVICE_NAME);
-	  printk(KERN_ALERT "uhcallkmod:Failed to create the device\n");
-	  return PTR_ERR(hypcallcharDevice);
+	  printk(KERN_ALERT "hypmtschedulerkmod:Failed to create the device\n");
+	  return PTR_ERR(hypmtschedulercharDevice);
 	}
-	printk(KERN_INFO "uhcallkmod: device class created correctly\n");
+	printk(KERN_INFO "hypmtschedulerkmod: device class created correctly\n");
 
 
 	return 0;
 }
 
 //module unload function
-void uhcallkmod_exit(void)
+void hypmtschedulerkmod_exit(void)
 {
-	device_destroy(hypcallcharClass, MKDEV(major_number, 0));     // remove the device
-	class_unregister(hypcallcharClass);                          // unregister the device class
-	class_destroy(hypcallcharClass);                             // remove the device class
+	device_destroy(hypmtschedulercharClass, MKDEV(major_number, 0));     // remove the device
+	class_unregister(hypmtschedulercharClass);                          // unregister the device class
+	class_destroy(hypmtschedulercharClass);                             // remove the device class
 	unregister_chrdev(major_number, DEVICE_NAME);             // unregister the major number
-	printk(KERN_INFO "uhcallkmod: UNLOAD\n");
+	printk(KERN_INFO "hypmtschedulerkmod: UNLOAD\n");
 }
 
-module_init(uhcallkmod_init);
-module_exit(uhcallkmod_exit);
+module_init(hypmtschedulerkmod_init);
+module_exit(hypmtschedulerkmod_exit);
