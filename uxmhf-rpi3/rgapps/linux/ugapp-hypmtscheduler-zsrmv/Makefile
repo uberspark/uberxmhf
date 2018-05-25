@@ -10,3 +10,19 @@ EXTRA_CFLAGS := $(UINCS)
 obj-m := hypmtschedulertestkmod.o
 
 hypmtschedulertestkmod-objs := hypmtscheduler_testkmod.o hypmtscheduler_kmodlib.o
+
+INCS = -I$(UXMHFRPI3_DIR)/include
+
+USER_CFLAGS = -I. $(INCS) -c -g -Wall
+USER_LFLAGS = -g -Wall -Wextra     
+
+.PHONY: builduserapp
+builduserapp: 
+	arm-linux-gnueabihf-gcc $(USER_CFLAGS) hypmtschedulertest_userapp.c -o hypmtschedulertest_userapp.o
+	arm-linux-gnueabihf-gcc $(USER_LFLAGS) hypmtschedulertest_userapp.o -o hypmtschedulertest_userapp 
+
+.PHONY: cleanuserapp
+cleanuserapp:
+	rm -f hypmtschedulertest_userapp
+	rm -f hypmtschedulertest_userapp.o
+	
