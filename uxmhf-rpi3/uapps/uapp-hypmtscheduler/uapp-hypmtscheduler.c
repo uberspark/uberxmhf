@@ -738,7 +738,7 @@ void uapp_hypmtscheduler_handlehcall_disablehyptask(ugapp_hypmtscheduler_param_t
 
 
 // delete hyptask API
-void uapp_hypmtscheduler_handlehcall_deleteehyptask(ugapp_hypmtscheduler_param_t *hmtsp){
+void uapp_hypmtscheduler_handlehcall_deletehyptask(ugapp_hypmtscheduler_param_t *hmtsp){
 	uint32_t hyptask_handle = hmtsp->iparam_1;
 	struct sched_timer *hyptask_timer;
 
@@ -794,6 +794,9 @@ bool uapp_hypmtscheduler_handlehcall(u32 uhcall_function, void *uhcall_buffer,
 
 	}else if(hmtsp->uhcall_fn == UAPP_HYPMTSCHEDULER_UHCALL_DISABLEHYPTASK){
 		uapp_hypmtscheduler_handlehcall_disablehyptask(hmtsp);
+
+	}else if(hmtsp->uhcall_fn == UAPP_HYPMTSCHEDULER_UHCALL_DELETEHYPTASK){
+		uapp_hypmtscheduler_handlehcall_deletehyptask(hmtsp);
 
 	}else{
 		bcm2837_miniuart_puts("\nHYPMTSCHED: UHCALL: ignoring unknown uhcall_fn=0x");
