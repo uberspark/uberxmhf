@@ -34,6 +34,29 @@ micro-hypervisor with the uberguest
 1. Note: `disable` and `delete` only work on the first hyptask created for the above example. However, it is straightforward to modify the kernel module and the user-mode application to support multiple hyptasks as required
 
 
+## Developer notes for kernel-mode test application for mixed-trust scheduler
+
+1. The following kernel-mode module APIs are available to bridge the hypervisor scheduler APIs (defined within `rgapps/linux/ugapp-hypmtscheduler-zsrmv\hypmtscheduler_kmodlib.c`)
+	1.  `bool hypmtscheduler_createhyptask(u32 first_period, u32 regular_period,
+			u32 priority, u32 hyptask_id, u32 *hyptask_handle)`
+		1. creates a hyptask with specified `first_period`, `regular_period` and `priority`
+		1. `first_period` and `regular_period` are hyptask time-periods specified as clock-cycles. For convenience definitions `HYPMTSCHEDULER_TIME_1SEC`, `HYPMTSCHEDULER_TIME_1MSEC` and `HYPMTSCHEDULER_TIME_1USEC` are provided within `include/hypmtscheduler.h` for approx. clock-cycles corresponding to 1 second, milli-second and micro-second respectively.
+		1. `priority` is a `u32` with higher number indicating higher priority
+		1. `hyptask_id` is a number from 0 to `HYPMTSCHEDULER_MAX_HYPTASKID` (defined within `include/hypmtscheduler.h`) which selects a hyptask function to execute
+		1. hyptask functions are defined within `uapps/uapp-hypmtscheduler/uapp-hypmtscheduler.c` and mapped via the array `HYPTHREADFUNC hyptask_idlist`	
+		1. `hyptask_handle` contains the hyptask reference upon successful hyptask creation (i.e., when the function `hypmtscheduler_createhyptask` returns `true`)
+	1.  `bool hypmtscheduler_disablehyptask(u32 hyptask_handle)`
+		1. disables hyptask execution for a hyptask referenced by `hyptask_handle`
+		1. `hyptask_handle` is the reference of the hyptask returned by a previous invocation to `hypmtscheduler_createhyptask`
+		1. returns `true` on success
+	1.  `bool hypmtscheduler_deletehyptask(u32 hyptask_handle)`
+		1. deletes a hyptask for a hyptask referenced by `hyptask_handle`
+		1. `hyptask_handle` is the reference of the hyptask returned by a previous invocation to `hypmtscheduler_createhyptask`
+		1. returns `true` on success
+		
+
+1. You will need to include `rgapps/linux/ugapp-hypmtscheduler-zsrmv\hypmtscheduler_kmodlib.c` and `include/hypmtscheduler.h` within your own custom kernel module build in the event you want to use the hyper scheduler APIs within your own kernel-module. See `rgapps/linux/ugapp-hypmtscheduler-zsrmv\Makefile` for further details.
+
 
 ## Instructions to build and run user-mode test application for mixed-trust scheduler
 
