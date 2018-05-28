@@ -599,89 +599,65 @@ void uapp_sched_logic(void){
 
 void hyptask0(struct sched_timer *t){
 	//debug
-	bcm2837_miniuart_puts("\n[HYPMTSCHED:TSTAMP]:HYPTASKBEFOREEXEC:0x");
-	debug_hexdumpu32(0);
-	bcm2837_miniuart_puts(":0x");
-	cpu_counter=uapp_sched_read_cpucounter();
-	debug_hexdumpu32((uint32_t)cpu_counter);
-	bcm2837_miniuart_puts("\n");
+	cpu_counter = uapp_sched_read_cpucounter();
+	_XDPRINTF_("\n[HYPMTSCHED:TSTAMP]:HYPTASKBEFOREEXEC:%u:%u", 0,
+			cpu_counter);
 
 	bcm2837_miniuart_puts("\n[HYPSCHED]: HypTask-0 completed run with Priority=0x");
 	debug_hexdumpu32(t->priority);
 
 	//debug
-	bcm2837_miniuart_puts("\n[HYPMTSCHED:TSTAMP]:HYPTASKAFTEREXEC:0x");
-	debug_hexdumpu32(0);
-	bcm2837_miniuart_puts(":0x");
-	cpu_counter=uapp_sched_read_cpucounter();
-	debug_hexdumpu32((uint32_t)cpu_counter);
-	bcm2837_miniuart_puts("\n");
+	cpu_counter = uapp_sched_read_cpucounter();
+	_XDPRINTF_("\n[HYPMTSCHED:TSTAMP]:HYPTASKAFTEREXEC:%u:%u", 0,
+			cpu_counter);
 
 }
 
 void hyptask1(struct sched_timer *t){
 	//debug
-	bcm2837_miniuart_puts("\n[HYPMTSCHED:TSTAMP]:HYPTASKBEFOREEXEC:0x");
-	debug_hexdumpu32(1);
-	bcm2837_miniuart_puts(":0x");
-	cpu_counter=uapp_sched_read_cpucounter();
-	debug_hexdumpu32((uint32_t)cpu_counter);
-	bcm2837_miniuart_puts("\n");
+	cpu_counter = uapp_sched_read_cpucounter();
+	_XDPRINTF_("\n[HYPMTSCHED:TSTAMP]:HYPTASKBEFOREEXEC:%u:%u", 1,
+			cpu_counter);
 
 	bcm2837_miniuart_puts("\n[HYPSCHED]: HypTask-1 completed run with Priority=0x");
 	debug_hexdumpu32(t->priority);
 
 	//debug
-	bcm2837_miniuart_puts("\n[HYPMTSCHED:TSTAMP]:HYPTASKAFTEREXEC:0x");
-	debug_hexdumpu32(1);
-	bcm2837_miniuart_puts(":0x");
-	cpu_counter=uapp_sched_read_cpucounter();
-	debug_hexdumpu32((uint32_t)cpu_counter);
-	bcm2837_miniuart_puts("\n");
+	cpu_counter = uapp_sched_read_cpucounter();
+	_XDPRINTF_("\n[HYPMTSCHED:TSTAMP]:HYPTASKAFTEREXEC:%u:%u", 1,
+			cpu_counter);
 
 }
 
 void hyptask2(struct sched_timer *t){
 	//debug
-	bcm2837_miniuart_puts("\n[HYPMTSCHED:TSTAMP]:HYPTASKBEFOREEXEC:0x");
-	debug_hexdumpu32(2);
-	bcm2837_miniuart_puts(":0x");
-	cpu_counter=uapp_sched_read_cpucounter();
-	debug_hexdumpu32((uint32_t)cpu_counter);
-	bcm2837_miniuart_puts("\n");
+	cpu_counter = uapp_sched_read_cpucounter();
+	_XDPRINTF_("\n[HYPMTSCHED:TSTAMP]:HYPTASKBEFOREEXEC:%u:%u", 2,
+			cpu_counter);
 
 	bcm2837_miniuart_puts("\n[HYPSCHED]: HypTask-2 completed run with Priority=0x");
 	debug_hexdumpu32(t->priority);
 
 	//debug
-	bcm2837_miniuart_puts("\n[HYPMTSCHED:TSTAMP]:HYPTASKAFTEREXEC:0x");
-	debug_hexdumpu32(2);
-	bcm2837_miniuart_puts(":0x");
-	cpu_counter=uapp_sched_read_cpucounter();
-	debug_hexdumpu32((uint32_t)cpu_counter);
-	bcm2837_miniuart_puts("\n");
+	cpu_counter = uapp_sched_read_cpucounter();
+	_XDPRINTF_("\n[HYPMTSCHED:TSTAMP]:HYPTASKAFTEREXEC:%u:%u", 2,
+			cpu_counter);
 
 }
 
 void hyptask3(struct sched_timer *t){
 	//debug
-	bcm2837_miniuart_puts("\n[HYPMTSCHED:TSTAMP]:HYPTASKBEFOREEXEC:0x");
-	debug_hexdumpu32(3);
-	bcm2837_miniuart_puts(":0x");
-	cpu_counter=uapp_sched_read_cpucounter();
-	debug_hexdumpu32((uint32_t)cpu_counter);
-	bcm2837_miniuart_puts("\n");
+	cpu_counter = uapp_sched_read_cpucounter();
+	_XDPRINTF_("\n[HYPMTSCHED:TSTAMP]:HYPTASKBEFOREEXEC:%u:%u", 3,
+			cpu_counter);
 
 	bcm2837_miniuart_puts("\n[HYPSCHED]: HypTask-3 completed run with Priority=0x");
 	debug_hexdumpu32(t->priority);
 
 	//debug
-	bcm2837_miniuart_puts("\n[HYPMTSCHED:TSTAMP]:HYPTASKAFTEREXEC:0x");
-	debug_hexdumpu32(3);
-	bcm2837_miniuart_puts(":0x");
-	cpu_counter=uapp_sched_read_cpucounter();
-	debug_hexdumpu32((uint32_t)cpu_counter);
-	bcm2837_miniuart_puts("\n");
+	cpu_counter = uapp_sched_read_cpucounter();
+	_XDPRINTF_("\n[HYPMTSCHED:TSTAMP]:HYPTASKAFTEREXEC:%u:%lu", 3,
+			cpu_counter);
 
 }
 
@@ -765,12 +741,15 @@ void uapp_hypmtscheduler_handlehcall_createhyptask(ugapp_hypmtscheduler_param_t 
 	hmtsp->status=1;	//success
 
 	//debug
-	bcm2837_miniuart_puts("\n[HYPMTSCHED:TSTAMP]:CREATEHYPTASK:0x");
-	debug_hexdumpu32(i);
-	bcm2837_miniuart_puts(":0x");
-	cpu_counter=uapp_sched_read_cpucounter();
-	debug_hexdumpu32((uint32_t)cpu_counter);
-	bcm2837_miniuart_puts("\n");
+	//bcm2837_miniuart_puts("\n[HYPMTSCHED:TSTAMP]:CREATEHYPTASK:0x");
+	//debug_hexdumpu32(i);
+	//bcm2837_miniuart_puts(":0x");
+	//cpu_counter=uapp_sched_read_cpucounter();
+	//debug_hexdumpu32((uint32_t)cpu_counter);
+	//bcm2837_miniuart_puts("\n");
+	cpu_counter = uapp_sched_read_cpucounter();
+	_XDPRINTF_("\n[HYPMTSCHED:TSTAMP]:CREATEHYPTASK:%u:%u", hyptask_id,
+			cpu_counter);
 
 
 
