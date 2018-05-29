@@ -155,7 +155,7 @@ bool hypmtscheduler_deletehyptask(u32 hyptask_handle){
 }
 
 
-u64 hypmtscheduler_getrawtick64(void){
+bool hypmtscheduler_getrawtick64(u64 *tickcount){
 
 	ugapp_hypmtscheduler_param_t *hmtsp;
 	struct page *hmtsp_page;
@@ -163,7 +163,7 @@ u64 hypmtscheduler_getrawtick64(void){
 
 	hmtsp_page = alloc_page(GFP_KERNEL | __GFP_ZERO);
 
-	if(!hmtsp_page){
+	if(!hmtsp_page || !tickcount){
 		return false;
 	}
 
@@ -179,13 +179,13 @@ u64 hypmtscheduler_getrawtick64(void){
 		return false;
 	}
 
-	return (u64)((hmtsp->oparam_1 << 32) | hmtsp->oparam_2);
+	*tickcount = (u64)((hmtsp->oparam_1 << 32) | hmtsp->oparam_2);
 
 	__free_page(hmtsp_page);
 	return true;
 }
 
-u32 hypmtscheduler_getrawtick32(void){
+bool hypmtscheduler_getrawtick32(u32 *tickcount){
 
 	ugapp_hypmtscheduler_param_t *hmtsp;
 	struct page *hmtsp_page;
@@ -193,7 +193,7 @@ u32 hypmtscheduler_getrawtick32(void){
 
 	hmtsp_page = alloc_page(GFP_KERNEL | __GFP_ZERO);
 
-	if(!hmtsp_page){
+	if(!hmtsp_page || !tickcount){
 		return false;
 	}
 
@@ -209,7 +209,7 @@ u32 hypmtscheduler_getrawtick32(void){
 		return false;
 	}
 
-	return hmtsp->oparam_2;
+	*tickcount = hmtsp->oparam_2;
 
 	__free_page(hmtsp_page);
 	return true;

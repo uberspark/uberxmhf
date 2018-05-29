@@ -60,8 +60,8 @@ extern bool hypmtscheduler_createhyptask(u32 first_period, u32 regular_period,
 			u32 priority, u32 hyptask_id, u32 *hyptask_handle);
 extern bool hypmtscheduler_disablehyptask(u32 hyptask_handle);
 extern bool hypmtscheduler_deletehyptask(u32 hyptask_handle);
-extern u32 hypmtscheduler_getrawtick32(void);
-extern u64 hypmtscheduler_getrawtick64(void);
+extern bool hypmtscheduler_getrawtick32(u32 *tickcount);
+extern bool hypmtscheduler_getrawtick64(u64 *tickcount);
 
 
 //prototypes for character driver interaction
@@ -138,8 +138,15 @@ int hypmtschedulerkmod_init(void)
 	printk(KERN_INFO "author: amit vasudevan (amitvasudevan@acm.org)\n");
 
 #if 1
-	rawtick_32 = hypmtscheduler_getrawtick32();
-	rawtick_64 = hypmtscheduler_getrawtick64();
+	if(!hypmtscheduler_getrawtick32(&rawtick_32)){
+		printk(KERN_INFO "hypmtschedulerkmod: error getting rawtick_32, exiting!\n");
+		return -EINVAL;
+	}
+
+	if(!hypmtscheduler_getrawtick64(&rawtick_64)){
+		printk(KERN_INFO "hypmtschedulerkmod: error getting rawtick_64, exiting!\n");
+		return -EINVAL;
+	}
 
 	printk(KERN_INFO "hypmtschedulerkmod: rawtick_32 = 0x%08x\n", rawtick_32);
 	printk(KERN_INFO "hypmtschedulerkmod: rawtick_64 = 0x%016llx\n", rawtick_64);
