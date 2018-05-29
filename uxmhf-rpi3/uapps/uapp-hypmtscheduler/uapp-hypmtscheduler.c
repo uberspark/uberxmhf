@@ -887,6 +887,19 @@ void uapp_hypmtscheduler_handlehcall_deletehyptask(ugapp_hypmtscheduler_param_t 
 
 
 
+// delete hyptask API
+void uapp_hypmtscheduler_handlehcall_getrawtick(ugapp_hypmtscheduler_param_t *hmtsp){
+	uint64_t rawtsc;
+
+	//bcm2837_miniuart_puts("\n[HYPMTSCHED: GETRAWTICK]");
+	rawtsc=uapp_sched_read_cpucounter();
+	hmtsp->oparam_1 = (uint32_t) ((uint64_t)rawtsc >> 32);
+	hmtsp->oparam_2 = (uint32_t) rawtsc;
+
+	hmtsp->status=1; //success
+}
+
+
 
 // top-level hypercall handler hub
 // return true if handled the hypercall, false if not

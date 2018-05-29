@@ -12,6 +12,7 @@
 #define UAPP_HYPMTSCHEDULER_UHCALL_CREATEHYPTASK	1
 #define UAPP_HYPMTSCHEDULER_UHCALL_DISABLEHYPTASK	2
 #define UAPP_HYPMTSCHEDULER_UHCALL_DELETEHYPTASK	3
+#define UAPP_HYPMTSCHEDULER_UHCALL_GETRAWTICK		4
 
 
 #define HYPMTSCHEDULER_MAX_HYPTASKID	4
@@ -56,6 +57,7 @@ typedef struct {
 	uint32_t iparam_3;
 	uint32_t iparam_4;
 	uint32_t oparam_1;
+	uint32_t oparam_2;
 	uint32_t status;
 }ugapp_hypmtscheduler_param_t;
 
