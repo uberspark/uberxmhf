@@ -60,6 +60,8 @@ extern bool hypmtscheduler_createhyptask(u32 first_period, u32 regular_period,
 			u32 priority, u32 hyptask_id, u32 *hyptask_handle);
 extern bool hypmtscheduler_disablehyptask(u32 hyptask_handle);
 extern bool hypmtscheduler_deletehyptask(u32 hyptask_handle);
+extern u32 hypmtscheduler_getrawtick32(void);
+extern u64 hypmtscheduler_getrawtick64(void);
 
 
 //prototypes for character driver interaction
@@ -129,16 +131,18 @@ static int dev_release(struct inode *inodep, struct file *filep){
 //module initialization function
 int hypmtschedulerkmod_init(void)
 {
+	u32 rawtick_32;
+	u64 rawtick_64;
 
 	printk(KERN_INFO "hypmtschedulerkmod: LOAD\n");
 	printk(KERN_INFO "author: amit vasudevan (amitvasudevan@acm.org)\n");
 
-#if 0
-	if(!hypmtscheduler_createhyptask(4 * 20 * 1024 * 1024, 8 * 20 * 1024 * 1024,
-				3, 3, &hyptask_handle)){
-		printk(KERN_INFO "hypmtschedulerkmod: create_hyptask failed\n");
-		return -EINVAL;
-	}
+#if 1
+	rawtick_32 = hypmtscheduler_getrawtick32();
+	rawtick_64 = hypmtscheduler_getrawtick64();
+
+	printk(KERN_INFO "hypmtschedulerkmod: rawtick_32 = 0x%08x\n", rawtick_32);
+	printk(KERN_INFO "hypmtschedulerkmod: rawtick_64 = 0x%016llx\n", rawtick_64);
 #endif
 
 
