@@ -184,3 +184,33 @@ u64 hypmtscheduler_getrawtick64(void){
 	__free_page(hmtsp_page);
 	return true;
 }
+
+u32 hypmtscheduler_getrawtick32(void){
+
+	ugapp_hypmtscheduler_param_t *hmtsp;
+	struct page *hmtsp_page;
+	u32 hmtsp_paddr;
+
+	hmtsp_page = alloc_page(GFP_KERNEL | __GFP_ZERO);
+
+	if(!hmtsp_page){
+		return false;
+	}
+
+	hmtsp = (ugapp_hypmtscheduler_param_t *)page_address(hmtsp_page);
+
+	hmtsp->uhcall_fn = UAPP_HYPMTSCHEDULER_UHCALL_GETRAWTICK;
+
+	hmtsp_paddr = page_to_phys(hmtsp_page);
+	__hvc(UAPP_HYPMTSCHEDULER_UHCALL, hmtsp_paddr, sizeof(ugapp_hypmtscheduler_param_t));
+
+	if(!hmtsp->status){
+		__free_page(hmtsp_page);
+		return false;
+	}
+
+	return hmtsp->oparam_2;
+
+	__free_page(hmtsp_page);
+	return true;
+}
