@@ -53,6 +53,12 @@ micro-hypervisor with the uberguest
 		1. deletes a hyptask for a hyptask referenced by `hyptask_handle`
 		1. `hyptask_handle` is the reference of the hyptask returned by a previous invocation to `hypmtscheduler_createhyptask`
 		1. returns `true` on success
+	1.  `bool hypmtscheduler_getrawtick32(u32 *tickcount)`
+		1. gets 32-bit raw time-stamp counter value for CPU
+		1. returns `true` on success
+	1.  `bool hypmtscheduler_getrawtick64(u64 *tickcount)`
+		1. gets 64-bit raw time-stamp counter value for CPU
+		1. returns `true` on success
 		
 
 1. You will need to include `rgapps/linux/ugapp-hypmtscheduler-zsrmv\hypmtscheduler_kmodlib.c` and `include/hypmtscheduler.h` within your own custom kernel module build in the event you want to use the hyper scheduler APIs within your own kernel-module. See `rgapps/linux/ugapp-hypmtscheduler-zsrmv\Makefile` for further details.
