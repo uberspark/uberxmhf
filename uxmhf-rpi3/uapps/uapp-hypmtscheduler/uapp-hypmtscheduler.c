@@ -887,7 +887,7 @@ void uapp_hypmtscheduler_handlehcall_deletehyptask(ugapp_hypmtscheduler_param_t 
 
 
 
-// delete hyptask API
+// getrawtick API
 void uapp_hypmtscheduler_handlehcall_getrawtick(ugapp_hypmtscheduler_param_t *hmtsp){
 	uint64_t rawtsc;
 
