@@ -140,10 +140,15 @@ int hypmtschedulerkmod_init(void)
 	u64 rawtick_64;
 #endif
 
-#if 1
+#if 0
 	u64 ts, te;
 	u32 cntfrq;
 #endif
+
+#if 1
+	u64 ts, tm, te;
+#endif
+
 
 	printk(KERN_INFO "hypmtschedulerkmod: LOAD\n");
 	printk(KERN_INFO "author: amit vasudevan (amitvasudevan@acm.org)\n");
@@ -164,13 +169,27 @@ int hypmtschedulerkmod_init(void)
 #endif
 
 
-#if 1
+#if 0
 	ts=sysreg_read_cntvct();
 	msleep(2000);
 	te=sysreg_read_cntvct();
 	printk(KERN_INFO "hypmtschedulerkmod: elapsed cycles = %llu\n",  (te-ts));
 	printk(KERN_INFO "hypmtschedulerkmod: cntfrq = %u\n", sysreg_read_cntfrq());
 #endif
+
+#if 1
+	ts=sysreg_read_cntvct();
+	if(!hypmtscheduler_getrawtick64(&tm)){
+		printk(KERN_INFO "hypmtschedulerkmod: error getting rawtick_64, exiting!\n");
+		return -EINVAL;
+	}
+	te=sysreg_read_cntvct();
+	printk(KERN_INFO "hypmtschedulerkmod: ts=%llu\n",  ts);
+	printk(KERN_INFO "hypmtschedulerkmod: tm=%llu\n",  tm);
+	printk(KERN_INFO "hypmtschedulerkmod: te=%llu\n",  te);
+	printk(KERN_INFO "hypmtschedulerkmod: cntfrq = %u\n", sysreg_read_cntfrq());
+#endif
+
 
 
 	//try to allocate a major number dynamically
