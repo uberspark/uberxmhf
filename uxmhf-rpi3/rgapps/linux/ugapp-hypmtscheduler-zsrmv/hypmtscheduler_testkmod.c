@@ -62,6 +62,8 @@ extern bool hypmtscheduler_disablehyptask(u32 hyptask_handle);
 extern bool hypmtscheduler_deletehyptask(u32 hyptask_handle);
 extern bool hypmtscheduler_getrawtick32(u32 *tickcount);
 extern bool hypmtscheduler_getrawtick64(u64 *tickcount);
+extern u32 sysreg_read_cntfrq(void);
+extern u64 sysreg_read_cntvct(void);
 
 
 //prototypes for character driver interaction
@@ -128,16 +130,24 @@ static int dev_release(struct inode *inodep, struct file *filep){
 
 
 
+
 //module initialization function
 int hypmtschedulerkmod_init(void)
 {
+#if 0
 	u32 rawtick_32;
 	u64 rawtick_64;
+#endif
+
+#if 1
+	u64 ts, te;
+	u32 cntfrq;
+#endif
 
 	printk(KERN_INFO "hypmtschedulerkmod: LOAD\n");
 	printk(KERN_INFO "author: amit vasudevan (amitvasudevan@acm.org)\n");
 
-#if 1
+#if 0
 	if(!hypmtscheduler_getrawtick32(&rawtick_32)){
 		printk(KERN_INFO "hypmtschedulerkmod: error getting rawtick_32, exiting!\n");
 		return -EINVAL;
@@ -150,6 +160,12 @@ int hypmtschedulerkmod_init(void)
 
 	printk(KERN_INFO "hypmtschedulerkmod: rawtick_32 = 0x%08x\n", rawtick_32);
 	printk(KERN_INFO "hypmtschedulerkmod: rawtick_64 = 0x%016llx\n", rawtick_64);
+#endif
+
+
+#if 1
+	printk(KERN_INFO "hypmtschedulerkmod: te = %llu\n",  sysreg_read_cntvct());
+	printk(KERN_INFO "hypmtschedulerkmod: cntfrq = %u\n", sysreg_read_cntfrq());
 #endif
 
 

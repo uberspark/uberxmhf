@@ -9,7 +9,7 @@ EXTRA_CFLAGS := $(UINCS)
 
 obj-m := hypmtschedulertestkmod.o
 
-hypmtschedulertestkmod-objs := hypmtscheduler_testkmod.o hypmtscheduler_kmodlib.o
+hypmtschedulertestkmod-objs := hypmtscheduler_testkmod.o hypmtscheduler_testkmodsup.o hypmtscheduler_kmodlib.o
 
 INCS = -I$(UXMHFRPI3_DIR)/include
 
