@@ -16,6 +16,8 @@
 #include <sys/mman.h>
 
 //#include <hypmtscheduler.h>
+extern unsigned int sysreg_read_cntfrq();
+extern unsigned long long int sysreg_read_cntvct();
 
 void kmod_comms(unsigned int function){
 	int ret, fd;
@@ -52,6 +54,17 @@ void test_deletehyptask(void){
 	kmod_comms(3);
 }
 
+void test_cyclecounter(void){
+	unsigned long long te, ts;
+	unsigned long freq;
+
+	//asm volatile ("isb; mrrc %0, cntvct_el0" : "=r" (ts));
+	ts = sysreg_read_cntvct();
+	sleep (2);
+	te = sysreg_read_cntvct();
+	printf("Cycles Elapsed: %llu\n", (te-ts));
+	printf("Frequency = %u\n",sysreg_read_cntfrq());
+}
 
 int main(int argc, char *argv[]){
     unsigned int testcase_num;
@@ -78,6 +91,11 @@ int main(int argc, char *argv[]){
 	case 3:
 		test_deletehyptask();
 		break;
+
+	case 4:
+		test_cyclecounter();
+		break;
+
 
 	default:
 		printf("%s: unknown testcase_num=%u, exiting!\n", __FUNCTION__, testcase_num);

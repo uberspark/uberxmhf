@@ -13,13 +13,14 @@ hypmtschedulertestkmod-objs := hypmtscheduler_testkmod.o hypmtscheduler_kmodlib.
 
 INCS = -I$(UXMHFRPI3_DIR)/include
 
-USER_CFLAGS = -I. $(INCS) -c -g -Wall
+USER_CFLAGS = -I. $(INCS) -c -g -Wall -mcpu=cortex-a53
 USER_LFLAGS = -g -Wall -Wextra     
 
 .PHONY: builduserapp
 builduserapp: 
 	arm-linux-gnueabihf-gcc $(USER_CFLAGS) hypmtschedulertest_userapp.c -o hypmtschedulertest_userapp.o
-	arm-linux-gnueabihf-gcc $(USER_LFLAGS) hypmtschedulertest_userapp.o -o hypmtschedulertest_userapp 
+	arm-linux-gnueabihf-gcc $(USER_CFLAGS) hypmtschedulertest_userappsup.s -o hypmtschedulertest_userappsup.o
+	arm-linux-gnueabihf-gcc $(USER_LFLAGS) hypmtschedulertest_userapp.o hypmtschedulertest_userappsup.o -o hypmtschedulertest_userapp 
 
 .PHONY: cleanuserapp
 cleanuserapp:
