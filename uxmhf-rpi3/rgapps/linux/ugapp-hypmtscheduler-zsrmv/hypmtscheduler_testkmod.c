@@ -37,6 +37,7 @@
 #include <linux/device.h>         // header to support the kernel Driver Model
 #include <linux/kernel.h>         // contains types, macros, functions for the kernel
 #include <linux/fs.h>             // header for the Linux file system support
+#include <linux/delay.h>
 #include <asm/uaccess.h>          // required for the copy to user function
 
 #include <hypmtscheduler.h>
@@ -164,7 +165,10 @@ int hypmtschedulerkmod_init(void)
 
 
 #if 1
-	printk(KERN_INFO "hypmtschedulerkmod: te = %llu\n",  sysreg_read_cntvct());
+	ts=sysreg_read_cntvct();
+	msleep(2000);
+	te=sysreg_read_cntvct();
+	printk(KERN_INFO "hypmtschedulerkmod: elapsed cycles = %llu\n",  (te-ts));
 	printk(KERN_INFO "hypmtschedulerkmod: cntfrq = %u\n", sysreg_read_cntfrq());
 #endif
 
