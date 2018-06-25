@@ -403,6 +403,12 @@ void uapp_sched_timer_initialize(u32 cpuid){
 			((cpsr & (1UL << 7)) >> 7),
 			((cpsr & (1UL << 6)) >> 6) );
 
+
+	//read out generic timer frequency
+	_XDPRINTFSMP_("%s[%u]: CNTFRQ=%u\n",
+			__func__, cpuid, sysreg_read_cntfrq());
+
+
 	_XDPRINTFSMP_("%s[%u]: EXIT\n", __func__, cpuid);
 }
 
@@ -752,6 +758,11 @@ void uapp_hypmtscheduler_handlehcall_createhyptask(ugapp_hypmtscheduler_param_t 
 	bcm2837_miniuart_puts(", hyptask id=0x\n");
 	debug_hexdumpu32(hyptask_id);
 	bcm2837_miniuart_puts("\n");
+
+	bcm2837_miniuart_puts("\n[HYPMTSCHED: CREATEHYPTASK]: CNTFRQ=0x");
+	debug_hexdumpu32(sysreg_read_cntfrq());
+	bcm2837_miniuart_puts("\n");
+
 
 	//allocate hyptask_handle
 	hyptask_handle_found=0;
