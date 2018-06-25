@@ -570,6 +570,7 @@ void sysreg_write_ttbr1(u32 value);
 //////
 // generic timer system register access functions
 //////
+u32 sysreg_read_cntfrq(void);
 extern u64 sysreg_read_cntpct(void);
 int sysreg_read_cnthp_tval(void);
 void sysreg_write_cnthp_tval(int value);

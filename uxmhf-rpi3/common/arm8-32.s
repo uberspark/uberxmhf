@@ -470,6 +470,11 @@ sysreg_read_par:
 //////
 // generic timer system registers
 //////
+.global sysreg_read_cntfrq
+sysreg_read_cntfrq:
+	mrc p15, 0, r0, c14, c0, 0
+	bx lr
+
 .global sysreg_read_cntpct
 sysreg_read_cntpct:
 	mrrc p15, 0, r0, r1, c14
@@ -484,7 +489,6 @@ sysreg_read_cnthp_tval:
 sysreg_write_cnthp_tval:
 	mcr p15,4,r0,c14,c2,0
 	bx lr
-
 
 .global sysreg_read_cnthp_ctl
 sysreg_read_cnthp_ctl:
