@@ -80,6 +80,20 @@ u64 hypmtscheduler_readtsc64(void){
 }
 
 
+u32 hypmtscheduler_readtscfreq(void){
+	u32 tsc_freq;
+
+	asm volatile
+		(	" isb\r\n"
+			"mrc p15, 0, r0, c14, c0, 0 \r\n"
+			" mov %0, r0 \r\n"
+				: "=r" (tsc_freq) // outputs
+				: // inputs
+	           : "r0" //clobber
+	    );
+
+	return tsc_freq;
+}
 
 bool hypmtscheduler_createhyptask(u32 first_period, u32 regular_period,
 			u32 priority, u32 hyptask_id, u32 *hyptask_handle){
