@@ -572,6 +572,7 @@ void sysreg_write_ttbr1(u32 value);
 //////
 u32 sysreg_read_cntfrq(void);
 extern u64 sysreg_read_cntpct(void);
+extern u64 sysreg_read_cntvct(void);
 int sysreg_read_cnthp_tval(void);
 void sysreg_write_cnthp_tval(int value);
 u32 sysreg_read_cnthp_ctl(void);
