@@ -59,6 +59,28 @@ void __hvc(u32 uhcall_function, void *uhcall_buffer,
 	    );
 }
 
+u64 hypmtscheduler_readtsc64(void){
+	u32 tsc_lo, tsc_hi;
+	u64 l_tickcount;
+
+	asm volatile
+		(	" isb\r\n"
+			" mrrc p15, 1, r0, r1, c14 \r\n"
+			" mov %0, r0 \r\n"
+			" mov %1, r1 \r\n"
+				: "=r" (tsc_lo), "=r" (tsc_hi) // outputs
+				: // inputs
+	           : "r0", "r1" //clobber
+	    );
+
+	l_tickcount = tsc_hi;
+	l_tickcount = l_tickcount << 32;
+	l_tickcount |= tsc_lo;
+
+}
+
+
+
 bool hypmtscheduler_createhyptask(u32 first_period, u32 regular_period,
 			u32 priority, u32 hyptask_id, u32 *hyptask_handle){
 
