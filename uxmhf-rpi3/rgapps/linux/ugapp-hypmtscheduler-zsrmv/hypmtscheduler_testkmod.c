@@ -57,6 +57,7 @@ static struct device* hypmtschedulercharDevice = NULL;
 
 //externals
 extern  void __hvc(u32 uhcall_function, void *uhcall_buffer, u32 uhcall_buffer_len);
+extern u64 hypmtscheduler_readtsc64(void);
 extern bool hypmtscheduler_createhyptask(u32 first_period, u32 regular_period,
 			u32 priority, u32 hyptask_id, u32 *hyptask_handle);
 extern bool hypmtscheduler_disablehyptask(u32 hyptask_handle);
@@ -178,12 +179,12 @@ int hypmtschedulerkmod_init(void)
 #endif
 
 #if 1
-	ts=sysreg_read_cntvct();
+	ts=hypmtscheduler_readtsc64();
 	if(!hypmtscheduler_getrawtick64(&tm)){
 		printk(KERN_INFO "hypmtschedulerkmod: error getting rawtick_64, exiting!\n");
 		return -EINVAL;
 	}
-	te=sysreg_read_cntvct();
+	te=hypmtscheduler_readtsc64();
 	printk(KERN_INFO "hypmtschedulerkmod: ts=%llu\n",  ts);
 	printk(KERN_INFO "hypmtschedulerkmod: tm=%llu\n",  tm);
 	printk(KERN_INFO "hypmtschedulerkmod: te=%llu\n",  te);
