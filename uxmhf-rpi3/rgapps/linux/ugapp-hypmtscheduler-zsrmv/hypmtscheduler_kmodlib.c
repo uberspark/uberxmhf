@@ -173,7 +173,7 @@ bool hypmtscheduler_getrawtick64(u64 *tickcount){
 	hmtsp->uhcall_fn = UAPP_HYPMTSCHEDULER_UHCALL_GETRAWTICK;
 
 	hmtsp_paddr = page_to_phys(hmtsp_page);
-#if 0
+
 	__hvc(UAPP_HYPMTSCHEDULER_UHCALL, hmtsp_paddr, sizeof(ugapp_hypmtscheduler_param_t));
 
 	if(!hmtsp->status){
@@ -193,7 +193,6 @@ bool hypmtscheduler_getrawtick64(u64 *tickcount){
 	//*tickcount = (u64)((hmtsp->oparam_1 << 32) | hmtsp->oparam_2);
 	*tickcount = l_tickcount;
 	__free_page(hmtsp_page);
-#endif
 
 	return true;
 }
