@@ -181,12 +181,10 @@ int hypmtschedulerkmod_init(void)
 
 #if 1
 	ts=hypmtscheduler_readtsc64();
-	udelay(1);
-	/*if(!hypmtscheduler_getrawtick64(&tm)){
+	if(!hypmtscheduler_getrawtick64(&tm)){
 		printk(KERN_INFO "hypmtschedulerkmod: error getting rawtick_64, exiting!\n");
 		return -EINVAL;
-	}*/
-	tm=0;
+	}
 	te=hypmtscheduler_readtsc64();
 	printk(KERN_INFO "hypmtschedulerkmod: ts=%llu\n",  ts);
 	printk(KERN_INFO "hypmtschedulerkmod: tm=%llu\n",  tm);

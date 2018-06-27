@@ -902,8 +902,8 @@ void uapp_hypmtscheduler_handlehcall_deletehyptask(ugapp_hypmtscheduler_param_t 
 void uapp_hypmtscheduler_handlehcall_getrawtick(ugapp_hypmtscheduler_param_t *hmtsp){
 	uint64_t rawtsc;
 
-	//rawtsc=uapp_sched_read_cpucounter();
-	rawtsc = sysreg_read_cntvct();
+	rawtsc=uapp_sched_read_cpucounter();
+	//rawtsc = sysreg_read_cntvct();
 	hmtsp->oparam_1 = (uint32_t) ((uint64_t)rawtsc >> 32);
 	hmtsp->oparam_2 = (uint32_t) rawtsc;
 
