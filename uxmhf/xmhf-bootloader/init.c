@@ -929,6 +929,14 @@ void cstartup(multiboot_info_t *mbi){
 		HALT();
 	}
 
+    _XDPRINTF_("XMHF boot-loader: mod_0: start=0x%08x, end=0x%08x\n",
+    		mod_array[0].mod_start, mod_array[0].mod_end);
+    _XDPRINTF_("XMHF boot-loader: mod_1: start=0x%08x, end=0x%08x\n",
+    		mod_array[1].mod_start, mod_array[1].mod_end);
+
+	//sl_rt_size = (mod_array[0].mod_start - __TARGET_BASE_BOOTLOADER) - __TARGET_SIZE_BOOTLOADER;
+
+
     //check CPU type (Intel vs AMD)
 	cpu_vendor = xmhf_baseplatform_arch_getcpuvendor();
 
