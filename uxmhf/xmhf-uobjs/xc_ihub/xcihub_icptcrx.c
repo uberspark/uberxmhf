@@ -55,6 +55,9 @@
 #include <uapi_gcpustate.h>
 #include <uapi_hcpustate.h>
 
+#define CR4_SMEP	(1UL << 20)
+#define CR4_SMAP 	(1UL << 21)
+#define CR4_PKE		(1UL << 22)
 /*
  * xcihub_icptcrx -- rich guest control register access emulation
  *
@@ -75,6 +78,122 @@ static u32 _xcihub_icptcrx_getregval(u32 gpr, x86regs_t r){
 			//_XDPRINTF_("\n%s: warning, invalid gpr value (%u): returning zero value", __FUNCTION__, gpr);
 			return 0;
 	}
+}
+
+u32 xcihub_icptcrx_read_cr4(u32 cpuid){
+	slab_params_t spl;
+	xmhf_uapi_gcpustate_vmrw_params_t *gcpustate_vmrwp = (xmhf_uapi_gcpustate_vmrw_params_t *)spl.in_out_params;
+
+	memset(&spl, 0, sizeof(spl));
+
+	spl.cpuid = cpuid;
+	spl.src_slabid = XMHFGEEC_SLAB_XC_IHUB;
+	spl.dst_slabid = XMHFGEEC_SLAB_UAPI_GCPUSTATE;
+	spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_VMREAD;
+	gcpustate_vmrwp->encoding = VMCS_GUEST_CR4;
+	XMHF_SLAB_CALLNEW(&spl);
+
+	return (gcpustate_vmrwp->value);
+}
+
+u32 xcihub_icptcrx_read_cr4_shadow(u32 cpuid){
+	slab_params_t spl;
+	xmhf_uapi_gcpustate_vmrw_params_t *gcpustate_vmrwp = (xmhf_uapi_gcpustate_vmrw_params_t *)spl.in_out_params;
+
+	memset(&spl, 0, sizeof(spl));
+
+	spl.cpuid = cpuid;
+	spl.src_slabid = XMHFGEEC_SLAB_XC_IHUB;
+	spl.dst_slabid = XMHFGEEC_SLAB_UAPI_GCPUSTATE;
+	spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_VMREAD;
+	gcpustate_vmrwp->encoding = VMCS_CONTROL_CR4_SHADOW;
+	XMHF_SLAB_CALLNEW(&spl);
+
+	return (gcpustate_vmrwp->value);
+}
+
+
+
+bool is_paging_enabled(u32 cpuid){
+	slab_params_t spl;
+	xmhf_uapi_gcpustate_vmrw_params_t *gcpustate_vmrwp = (xmhf_uapi_gcpustate_vmrw_params_t *)spl.in_out_params;
+
+	memset(&spl, 0, sizeof(spl));
+
+	spl.cpuid = cpuid;
+	spl.src_slabid = XMHFGEEC_SLAB_XC_IHUB;
+	spl.dst_slabid = XMHFGEEC_SLAB_UAPI_GCPUSTATE;
+	spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_VMREAD;
+	gcpustate_vmrwp->encoding = VMCS_GUEST_CR0;
+	XMHF_SLAB_CALLNEW(&spl);
+
+	if(gcpustate_vmrwp->value & CR0_PG)
+		return true;
+	else
+		return false;
+}
+
+
+u32 xcihub_icptcrx_handle_cr4(u32 cpuid, u32 src_slabid, u32 cr4){
+	slab_params_t spl;
+	xmhf_uapi_gcpustate_vmrw_params_t *gcpustate_vmrwp = (xmhf_uapi_gcpustate_vmrw_params_t *)spl.in_out_params;
+	u32 old_cr4 = xcihub_icptcrx_read_cr4(cpuid);
+	u32 pdptr_bits = CR4_PGE | CR4_PSE | CR4_PAE |
+					   CR4_SMEP | CR4_SMAP | CR4_PKE;
+	u32 hw_cr4;
+
+
+	memset(&spl, 0, sizeof(spl));
+
+	_XDPRINTF_("%s[%u]: CR4[WRITE]: old=0x%08x, new=0x%08x\n",
+			__func__, cpuid, old_cr4, cr4);
+
+	if(is_paging_enabled(cpuid) && (cr4 & CR4_PAE)
+			&& ((cr4 ^ old_cr4) & pdptr_bits) ){
+		_XDPRINTF_("%s[%u]: CR4[WRITE]: PAE enabling logic.WiP!\n", __func__, cpuid);
+		CASM_FUNCCALL(xmhfhw_cpu_hlt, CASM_NOPARAM);
+	}
+
+	if ((cr4 & CR4_PCIDE) && !(old_cr4 & CR4_PCIDE)) {
+		_XDPRINTF_("%s[%u]: CR4[WRITE]: PCIDE logic enabling.WiP!\n", __func__, cpuid);
+			CASM_FUNCCALL(xmhfhw_cpu_hlt, CASM_NOPARAM);
+	}
+
+	//set cr4 logic
+	hw_cr4 = (xcihub_icptcrx_read_cr4_shadow(cpuid) & CR4_MCE) |
+			(cr4 & ~CR4_MCE);
+
+	hw_cr4 |= CR4_VMXE;
+
+	spl.cpuid = cpuid;
+	spl.src_slabid = XMHFGEEC_SLAB_XC_IHUB;
+	spl.dst_slabid = XMHFGEEC_SLAB_UAPI_GCPUSTATE;
+	spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_VMWRITE;
+	gcpustate_vmrwp->encoding = VMCS_CONTROL_CR4_SHADOW;
+	gcpustate_vmrwp->value = cr4;
+	XMHF_SLAB_CALLNEW(&spl);
+
+	gcpustate_vmrwp->encoding = VMCS_GUEST_CR4;
+	gcpustate_vmrwp->value = hw_cr4;
+	XMHF_SLAB_CALLNEW(&spl);
+
+	_XDPRINTF_("%s[%u]: CR4[WRITE]: old=0x%08x, new=0x%08x, final=0x%08x\n",
+			__func__, cpuid, old_cr4, cr4, hw_cr4);
+
+
+	if (((cr4 ^ old_cr4) & pdptr_bits) ||
+		    (!(cr4 & CR4_PCIDE) && (old_cr4 & CR4_PCIDE))){
+		_XDPRINTF_("%s[%u]: CR4[WRITE]: flushing TLB\n", __func__, cpuid);
+		CASM_FUNCCALL(xmhfhw_cpu_invvpid, VMX_INVVPID_SINGLECONTEXT, src_slabid, 0, 0);
+	}
+
+	if ((cr4 ^ old_cr4) & (CR4_OSXSAVE | CR4_PKE)){
+		_XDPRINTF_("%s[%u]: CR4[WRITE]: Should we update cpuid?\n", __func__, cpuid);
+		//CASM_FUNCCALL(xmhfhw_cpu_hlt, CASM_NOPARAM);
+		CASM_FUNCCALL(xmhfhw_cpu_invvpid, VMX_INVVPID_SINGLECONTEXT, src_slabid, 0, 0);
+	}
+
+	return 0;
 }
 
 void xcihub_icptcrx(u32 cpuid, u32 src_slabid){
@@ -134,6 +253,7 @@ void xcihub_icptcrx(u32 cpuid, u32 src_slabid){
 		CASM_FUNCCALL(xmhfhw_cpu_invvpid, VMX_INVVPID_SINGLECONTEXT, src_slabid, 0, 0);
 
 	}else if(crx == 0x4 && tofrom == VMX_CRX_ACCESS_TO){
+#if 0
 		//CR4 write emulation
 		u32 cr4_shadow = 0;
 		u32 cr4_value = _xcihub_icptcrx_getregval(gpr, r);
@@ -164,6 +284,9 @@ void xcihub_icptcrx(u32 cpuid, u32 src_slabid){
 
 		//we need to flush logical processor VPID mappings as we emulated CR0 load above
 		CASM_FUNCCALL(xmhfhw_cpu_invvpid, VMX_INVVPID_SINGLECONTEXT, src_slabid, 0, 0);
+#endif
+
+		xcihub_icptcrx_handle_cr4(cpuid, src_slabid, _xcihub_icptcrx_getregval(gpr, r));
 
 	}else{
 		_XDPRINTF_("%s[%u]: Unhandled CRx access, crx=0x%08x, gpr=%u, tofrom=%u\n", __func__, cpuid, crx, gpr, tofrom);

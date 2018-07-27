@@ -266,22 +266,24 @@ static bool __xmhfhic_x86vmx_setupvmxstate(u64 cpuid){
 	CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_CONTROL_VMX_SECCPU_BASED, (u32)((u64)CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmread,VMCS_CONTROL_VMX_SECCPU_BASED) | (u64)(1 << 7)) );
 
 	//trap access to CR0 fixed 1-bits
+	_XDPRINTF_("%s[%u]: CR0_MASK=0x%08x\n", __func__, (u32)cpuid, (u32)__xmhfhic_x86vmx_archdata[cpuindex].vmx_msrs[INDEX_IA32_VMX_CR0_FIXED0_MSR]);
 	CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_CONTROL_CR0_MASK, (u32)(((((u32)__xmhfhic_x86vmx_archdata[cpuindex].vmx_msrs[INDEX_IA32_VMX_CR0_FIXED0_MSR] & ~(CR0_PE)) & ~(CR0_PG)) | CR0_CD) | CR0_NW) );
-
-
 	CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_GUEST_CR0, (u32)__xmhfhic_x86vmx_archdata[cpuindex].vmx_msrs[INDEX_IA32_VMX_CR0_FIXED0_MSR]);
 
 
 	//setup CR4 and CR4 access
 	{
-		_XDPRINTF_("%s[%u]: CR4_MASK=0x%08x\n", __func__, (u32)cpuid, (u32)__xmhfhic_x86vmx_archdata[cpuindex].vmx_msrs[INDEX_IA32_VMX_CR4_FIXED0_MSR]);
-		//trap access to CR4 fixed bits (this includes the VMXE bit)
-		CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_CONTROL_CR4_MASK, (u32)__xmhfhic_x86vmx_archdata[cpuindex].vmx_msrs[INDEX_IA32_VMX_CR4_FIXED0_MSR]);
-		CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_GUEST_CR4, (u32)__xmhfhic_x86vmx_archdata[cpuindex].vmx_msrs[INDEX_IA32_VMX_CR4_FIXED0_MSR]);
-		CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_CONTROL_CR4_SHADOW, (u32)__xmhfhic_x86vmx_archdata[cpuindex].vmx_msrs[INDEX_IA32_VMX_CR4_FIXED0_MSR]);
+		u32 control_cr4_mask = ~ (CR4_PVI | CR4_DE | CR4_PCE | CR4_OSFXSR | CR4_OSXMMEXCPT | CR4_TSD | CR4_PGE);
+		_XDPRINTF_("%s[%u]: CR4_ALWAYS1BITS_MASK=0x%08x\n", __func__, (u32)cpuid, (u32)__xmhfhic_x86vmx_archdata[cpuindex].vmx_msrs[INDEX_IA32_VMX_CR4_FIXED0_MSR]);
+		//trap access to non-guest controlled CR4 fixed bits (this includes the VMXE bit)
+		CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_CONTROL_CR4_MASK,
+				control_cr4_mask);
+		CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_GUEST_CR4,
+				(u32)__xmhfhic_x86vmx_archdata[cpuindex].vmx_msrs[INDEX_IA32_VMX_CR4_FIXED0_MSR]);
+		CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_CONTROL_CR4_SHADOW,
+				(u32)__xmhfhic_x86vmx_archdata[cpuindex].vmx_msrs[INDEX_IA32_VMX_CR4_FIXED0_MSR]);
 	}
 
-	_XDPRINTF_("%s[%u]: CR0_MASK=0x%08x\n", __func__, (u32)cpuid, (u32)__xmhfhic_x86vmx_archdata[cpuindex].vmx_msrs[INDEX_IA32_VMX_CR0_FIXED0_MSR]);
 
 	return true;
 }
