@@ -96,6 +96,24 @@ u32 xcihub_icptcrx_read_cr4(u32 cpuid){
 	return (gcpustate_vmrwp->value);
 }
 
+u32 xcihub_icptcrx_read_cr0(u32 cpuid){
+	slab_params_t spl;
+	xmhf_uapi_gcpustate_vmrw_params_t *gcpustate_vmrwp = (xmhf_uapi_gcpustate_vmrw_params_t *)spl.in_out_params;
+
+	memset(&spl, 0, sizeof(spl));
+
+	spl.cpuid = cpuid;
+	spl.src_slabid = XMHFGEEC_SLAB_XC_IHUB;
+	spl.dst_slabid = XMHFGEEC_SLAB_UAPI_GCPUSTATE;
+	spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_VMREAD;
+	gcpustate_vmrwp->encoding = VMCS_GUEST_CR0;
+	XMHF_SLAB_CALLNEW(&spl);
+
+	return (gcpustate_vmrwp->value);
+}
+
+
+
 u32 xcihub_icptcrx_read_cr4_shadow(u32 cpuid){
 	slab_params_t spl;
 	xmhf_uapi_gcpustate_vmrw_params_t *gcpustate_vmrwp = (xmhf_uapi_gcpustate_vmrw_params_t *)spl.in_out_params;
@@ -131,6 +149,55 @@ bool is_paging_enabled(u32 cpuid){
 		return true;
 	else
 		return false;
+}
+
+#define CR0_RESERVED_BITS                                               \
+        (~(u32)(CR0_PE | CR0_MP | CR0_EM | CR0_TS \
+                          | CR0_ET | CR0_NE | CR0_WP | CR0_AM \
+                          | CR0_NW | CR0_CD | CR0_PG))
+
+#define GUEST_CR0_MASK (CR0_NW | CR0_CD)
+
+u32 xcihub_icptcrx_handle_cr0(u32 cpuid, u32 src_slabid, u32 cr0){
+	slab_params_t spl;
+	xmhf_uapi_gcpustate_vmrw_params_t *gcpustate_vmrwp = (xmhf_uapi_gcpustate_vmrw_params_t *)spl.in_out_params;
+	u32 old_cr0 = xcihub_icptcrx_read_cr0(cpuid);
+	u32 hw_cr0;
+	u32 update_bits = CR0_PG | CR0_WP;
+
+	memset(&spl, 0, sizeof(spl));
+
+	cr0 |= CR0_ET;
+	cr0 &= ~CR0_RESERVED_BITS;
+
+	hw_cr0 = (cr0 & ~GUEST_CR0_MASK);
+	hw_cr0 |= CR0_NE;
+
+		spl.cpuid = cpuid;
+		spl.src_slabid = XMHFGEEC_SLAB_XC_IHUB;
+		spl.dst_slabid = XMHFGEEC_SLAB_UAPI_GCPUSTATE;
+		spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_VMWRITE;
+		gcpustate_vmrwp->encoding = VMCS_CONTROL_CR0_SHADOW;
+		gcpustate_vmrwp->value = cr0;
+		XMHF_SLAB_CALLNEW(&spl);
+
+		gcpustate_vmrwp->encoding = VMCS_GUEST_CR0;
+		gcpustate_vmrwp->value = hw_cr0;
+		XMHF_SLAB_CALLNEW(&spl);
+
+		if ((cr0 ^ old_cr0) & CR0_PG) {
+			_XDPRINTF_("%s[%u]: CR0[WRITE]: flushing TLB(PG bit)\n", __func__, cpuid);
+			CASM_FUNCCALL(xmhfhw_cpu_invvpid, VMX_INVVPID_SINGLECONTEXT, src_slabid, 0, 0);
+		}
+
+		if ((cr0 ^ old_cr0) & update_bits){
+			_XDPRINTF_("%s[%u]: CR0[WRITE]: flushing TLB(update bits)\n", __func__, cpuid);
+			CASM_FUNCCALL(xmhfhw_cpu_invvpid, VMX_INVVPID_SINGLECONTEXT, src_slabid, 0, 0);
+		}
+
+	_XDPRINTF_("%s[%u]: CR0[WRITE]: old=0x%08x, new=0x%08x, final=0x%08x\n",
+			__func__, cpuid, old_cr0, cr0, hw_cr0);
+
 }
 
 
@@ -235,6 +302,7 @@ void xcihub_icptcrx(u32 cpuid, u32 src_slabid){
 	}
 
 	if (crx == 0x0 && tofrom == VMX_CRX_ACCESS_TO){
+#if 0
 		//CR0 access
 		u32 cr0_value = _xcihub_icptcrx_getregval(gpr, r);
 		//_XDPRINTF_("%s[%u]: CR0 access, gpr=%u, tofrom=%u\n", __func__, cpuid, gpr, tofrom);
@@ -251,6 +319,9 @@ void xcihub_icptcrx(u32 cpuid, u32 src_slabid){
 
 		//we need to flush logical processor VPID mappings as we emulated CR0 load above
 		CASM_FUNCCALL(xmhfhw_cpu_invvpid, VMX_INVVPID_SINGLECONTEXT, src_slabid, 0, 0);
+#endif
+		xcihub_icptcrx_handle_cr0(cpuid, src_slabid, _xcihub_icptcrx_getregval(gpr, r));
+
 
 	}else if(crx == 0x4 && tofrom == VMX_CRX_ACCESS_TO){
 #if 0
