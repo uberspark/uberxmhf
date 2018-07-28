@@ -195,8 +195,8 @@ u32 xcihub_icptcrx_handle_cr0(u32 cpuid, u32 src_slabid, u32 cr0){
 			CASM_FUNCCALL(xmhfhw_cpu_invvpid, VMX_INVVPID_SINGLECONTEXT, src_slabid, 0, 0);
 		}
 
-	_XDPRINTF_("%s[%u]: CR0[WRITE]: old=0x%08x, new=0x%08x, final=0x%08x\n",
-			__func__, cpuid, old_cr0, cr0, hw_cr0);
+	//_XDPRINTF_("%s[%u]: CR0[WRITE]: old=0x%08x, new=0x%08x, final=0x%08x\n",
+	//		__func__, cpuid, old_cr0, cr0, hw_cr0);
 
 }
 
