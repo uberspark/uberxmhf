@@ -649,8 +649,9 @@ void hyptask0(struct sched_timer *t){
 	bcm2837_miniuart_puts("\n[HYPMTSCHED:TSTAMP]:HYPTASKBEFOREEXEC:0x");
 	debug_hexdumpu32(0);
 	bcm2837_miniuart_puts(":0x");
-	cpu_counter=uapp_sched_read_cpucounter();
-	debug_hexdumpu32((uint32_t)cpu_counter);
+	cpu_counter=uapp_sched_rdtsc64();;
+	debug_hexdumpu32((uint32_t)(cpu_counter >> 32));
+	debug_hexdumpu32((uint32_t)(cpu_counter));
 	bcm2837_miniuart_puts("\n");
 
 
@@ -665,8 +666,9 @@ void hyptask0(struct sched_timer *t){
 	bcm2837_miniuart_puts("\n[HYPMTSCHED:TSTAMP]:HYPTASKAFTEREXEC:0x");
 	debug_hexdumpu32(0);
 	bcm2837_miniuart_puts(":0x");
-	cpu_counter=uapp_sched_read_cpucounter();
-	debug_hexdumpu32((uint32_t)cpu_counter);
+	cpu_counter=uapp_sched_rdtsc64();;
+	debug_hexdumpu32((uint32_t)(cpu_counter >> 32));
+	debug_hexdumpu32((uint32_t)(cpu_counter));
 	bcm2837_miniuart_puts("\n");
 
 }
@@ -679,8 +681,9 @@ void hyptask1(struct sched_timer *t){
 	bcm2837_miniuart_puts("\n[HYPMTSCHED:TSTAMP]:HYPTASKBEFOREEXEC:0x");
 	debug_hexdumpu32(1);
 	bcm2837_miniuart_puts(":0x");
-	cpu_counter=uapp_sched_read_cpucounter();
-	debug_hexdumpu32((uint32_t)cpu_counter);
+	cpu_counter=uapp_sched_rdtsc64();;
+	debug_hexdumpu32((uint32_t)(cpu_counter >> 32));
+	debug_hexdumpu32((uint32_t)(cpu_counter));
 	bcm2837_miniuart_puts("\n");
 
 
@@ -694,8 +697,9 @@ void hyptask1(struct sched_timer *t){
 	bcm2837_miniuart_puts("\n[HYPMTSCHED:TSTAMP]:HYPTASKAFTEREXEC:0x");
 	debug_hexdumpu32(1);
 	bcm2837_miniuart_puts(":0x");
-	cpu_counter=uapp_sched_read_cpucounter();
-	debug_hexdumpu32((uint32_t)cpu_counter);
+	cpu_counter=uapp_sched_rdtsc64();;
+	debug_hexdumpu32((uint32_t)(cpu_counter >> 32));
+	debug_hexdumpu32((uint32_t)(cpu_counter));
 	bcm2837_miniuart_puts("\n");
 
 }
@@ -708,8 +712,9 @@ void hyptask2(struct sched_timer *t){
 	bcm2837_miniuart_puts("\n[HYPMTSCHED:TSTAMP]:HYPTASKBEFOREEXEC:0x");
 	debug_hexdumpu32(2);
 	bcm2837_miniuart_puts(":0x");
-	cpu_counter=uapp_sched_read_cpucounter();
-	debug_hexdumpu32((uint32_t)cpu_counter);
+	cpu_counter=uapp_sched_rdtsc64();;
+	debug_hexdumpu32((uint32_t)(cpu_counter >> 32));
+	debug_hexdumpu32((uint32_t)(cpu_counter));
 	bcm2837_miniuart_puts("\n");
 
 
@@ -723,8 +728,9 @@ void hyptask2(struct sched_timer *t){
 	bcm2837_miniuart_puts("\n[HYPMTSCHED:TSTAMP]:HYPTASKAFTEREXEC:0x");
 	debug_hexdumpu32(2);
 	bcm2837_miniuart_puts(":0x");
-	cpu_counter=uapp_sched_read_cpucounter();
-	debug_hexdumpu32((uint32_t)cpu_counter);
+	cpu_counter=uapp_sched_rdtsc64();;
+	debug_hexdumpu32((uint32_t)(cpu_counter >> 32));
+	debug_hexdumpu32((uint32_t)(cpu_counter));
 	bcm2837_miniuart_puts("\n");
 
 
@@ -738,8 +744,9 @@ void hyptask3(struct sched_timer *t){
 	bcm2837_miniuart_puts("\n[HYPMTSCHED:TSTAMP]:HYPTASKBEFOREEXEC:0x");
 	debug_hexdumpu32(3);
 	bcm2837_miniuart_puts(":0x");
-	cpu_counter=uapp_sched_read_cpucounter();
-	debug_hexdumpu32((uint32_t)cpu_counter);
+	cpu_counter=uapp_sched_rdtsc64();;
+	debug_hexdumpu32((uint32_t)(cpu_counter >> 32));
+	debug_hexdumpu32((uint32_t)(cpu_counter));
 	bcm2837_miniuart_puts("\n");
 
 
@@ -753,8 +760,9 @@ void hyptask3(struct sched_timer *t){
 	bcm2837_miniuart_puts("\n[HYPMTSCHED:TSTAMP]:HYPTASKAFTEREXEC:0x");
 	debug_hexdumpu32(3);
 	bcm2837_miniuart_puts(":0x");
-	cpu_counter=uapp_sched_read_cpucounter();
-	debug_hexdumpu32((uint32_t)cpu_counter);
+	cpu_counter=uapp_sched_rdtsc64();;
+	debug_hexdumpu32((uint32_t)(cpu_counter >> 32));
+	debug_hexdumpu32((uint32_t)(cpu_counter));
 	bcm2837_miniuart_puts("\n");
 
 }
