@@ -313,6 +313,29 @@ void uapp_sched_init_cputsc(void){
 }
 
 
+u64 uapp_sched_rdtsc64(void){
+	u32 tsc_lo, tsc_hi;
+	u64 l_tickcount;
+
+	asm volatile
+		(	" isb\r\n"
+			" mrrc p15, 0, r0, r1, c9 \r\n"
+			" mov %0, r0 \r\n"
+			" mov %1, r1 \r\n"
+				: "=r" (tsc_lo), "=r" (tsc_hi) // outputs
+				: // inputs
+	           : "r0", "r1" //clobber
+	    );
+
+	l_tickcount = tsc_hi;
+	l_tickcount = l_tickcount << 32;
+	l_tickcount |= tsc_lo;
+
+	return l_tickcount;
+}
+
+
+
 //////
 // start physical timer to fire off after specified clock ticks
 //////
