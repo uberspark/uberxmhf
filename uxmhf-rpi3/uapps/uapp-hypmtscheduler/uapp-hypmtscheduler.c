@@ -992,6 +992,13 @@ void uapp_sched_initialize(u32 cpuid){
 		_XDPRINTFSMP_("%s[%u]: normal_sp=0x%08x\n", __func__, cpuid, normal_sp);
 		_XDPRINTFSMP_("%s[%u]: cpsr=0x%08x\n", __func__, cpuid, sysreg_read_cpsr());
 
+		_XDPRINTFSMP_("%s[%u]: proceeding to initialize TSC...\n",
+				__func__, cpuid);
+		uapp_sched_init_cputsc();
+		_XDPRINTFSMP_("%s[%u]: TSC initialized\n",
+				__func__, cpuid);
+
+
 		_XDPRINTFSMP_("%s[%u]: Current CPU counter=0x%016llx\n", __func__, cpuid,
 				uapp_sched_read_cpucounter());
 
