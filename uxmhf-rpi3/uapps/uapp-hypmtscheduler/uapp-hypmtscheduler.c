@@ -298,6 +298,20 @@ u64 uapp_sched_read_cpucounter(void){
 	return sysreg_read_cntpct();
 }
 
+#define PMCNTNSET_C_BIT		0x80000000
+#define PMCR_C_BIT			0x00000004
+#define PMCR_E_BIT			0x00000001
+
+void uapp_sched_init_cputsc(void){
+	unsigned long tmp;
+
+	tmp = PMCNTNSET_C_BIT;
+	asm volatile ("mcr p15, 0, %0, c9, c12, 1" : : "r" (tmp));
+	asm volatile ("mrc p15, 0, %0, c9, c12, 0" : "=r" (tmp));
+	tmp |= PMCR_C_BIT | PMCR_E_BIT;
+	asm volatile ("mcr p15, 0, %0, c9, c12, 0" : : "r" (tmp));
+}
+
 
 //////
 // start physical timer to fire off after specified clock ticks
