@@ -69,7 +69,7 @@ void xcihub_icptrdmsr(u32 cpuid){
 	u32 info_vmexit_instruction_length;
 	x86regs_t r;
 
-	//_XDPRINTF_("%s[%u]: VMX_VMEXIT_RDMSR\n", __func__, cpuid);
+
 	spl.cpuid = cpuid;
 	spl.src_slabid = XMHFGEEC_SLAB_XC_IHUB;
 	spl.dst_slabid = XMHFGEEC_SLAB_UAPI_GCPUSTATE;
@@ -104,7 +104,11 @@ void xcihub_icptrdmsr(u32 cpuid){
 		r.eax = gcpustate_vmrwp->value;
 		break;
 	    default:
-		spl.dst_slabid = XMHFGEEC_SLAB_UAPI_HCPUSTATE;
+		if((u32)r.ecx == 0xc0010117){
+			_XDPRINTF_("%s[%u]: VMX_VMEXIT_RDMSR: unsupported. warning!\n", __func__, cpuid);
+		}
+
+    	spl.dst_slabid = XMHFGEEC_SLAB_UAPI_HCPUSTATE;
 		spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_RDMSR;
 		hcpustate_msrp->msr = r.ecx;
 		hcpustate_msrp->value = 0;
