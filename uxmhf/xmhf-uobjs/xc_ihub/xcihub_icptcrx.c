@@ -113,6 +113,23 @@ u32 xcihub_icptcrx_read_cr0(u32 cpuid){
 }
 
 
+u32 xcihub_icptcrx_read_cr3(u32 cpuid){
+	slab_params_t spl;
+	xmhf_uapi_gcpustate_vmrw_params_t *gcpustate_vmrwp = (xmhf_uapi_gcpustate_vmrw_params_t *)spl.in_out_params;
+
+	memset(&spl, 0, sizeof(spl));
+
+	spl.cpuid = cpuid;
+	spl.src_slabid = XMHFGEEC_SLAB_XC_IHUB;
+	spl.dst_slabid = XMHFGEEC_SLAB_UAPI_GCPUSTATE;
+	spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_VMREAD;
+	gcpustate_vmrwp->encoding = VMCS_GUEST_CR3;
+	XMHF_SLAB_CALLNEW(&spl);
+
+	return (gcpustate_vmrwp->value);
+}
+
+
 
 u32 xcihub_icptcrx_read_cr4_shadow(u32 cpuid){
 	slab_params_t spl;
@@ -186,8 +203,10 @@ u32 xcihub_icptcrx_handle_cr0(u32 cpuid, u32 src_slabid, u32 cr0){
 		XMHF_SLAB_CALLNEW(&spl);
 
 		if ((cr0 ^ old_cr0) & CR0_PG) {
-			_XDPRINTF_("%s[%u]: CR0[WRITE]: flushing TLB(PG bit)\n", __func__, cpuid);
+			u32 cr3 =
+			_XDPRINTF_("%s[%u]: CR0[WRITE]: PG bit set logic\n", __func__, cpuid);
 			CASM_FUNCCALL(xmhfhw_cpu_invvpid, VMX_INVVPID_SINGLECONTEXT, src_slabid, 0, 0);
+
 		}
 
 		if ((cr0 ^ old_cr0) & update_bits){

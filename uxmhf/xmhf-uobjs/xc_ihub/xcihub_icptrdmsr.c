@@ -104,17 +104,22 @@ void xcihub_icptrdmsr(u32 cpuid){
 		r.eax = gcpustate_vmrwp->value;
 		break;
 	    default:
-		if((u32)r.ecx == 0xc0010117){
+		if(		(u32)r.ecx != 0xc0010117 &&
+				(u32)r.ecx != 0xd90 ){
+	    	spl.dst_slabid = XMHFGEEC_SLAB_UAPI_HCPUSTATE;
+			spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_RDMSR;
+			hcpustate_msrp->msr = r.ecx;
+			hcpustate_msrp->value = 0;
+			XMHF_SLAB_CALLNEW(&spl);
+			r.edx = (u32)((u64)hcpustate_msrp->value >> 32);
+			r.eax = (u32)hcpustate_msrp->value;
+
+		}else{
 			_XDPRINTF_("%s[%u]: VMX_VMEXIT_RDMSR: unsupported. warning!\n", __func__, cpuid);
+			r.edx = (u32)0;
+			r.eax = (u32)0;
 		}
 
-    	spl.dst_slabid = XMHFGEEC_SLAB_UAPI_HCPUSTATE;
-		spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_RDMSR;
-		hcpustate_msrp->msr = r.ecx;
-		hcpustate_msrp->value = 0;
-		XMHF_SLAB_CALLNEW(&spl);
-		r.edx = (u32)((u64)hcpustate_msrp->value >> 32);
-		r.eax = (u32)hcpustate_msrp->value;
 		break;
 	}
 
