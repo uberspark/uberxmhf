@@ -262,3 +262,106 @@ bool hypmtscheduler_getrawtick32(u32 *tickcount){
 	__free_page(hmtsp_page);
 	return true;
 }
+
+
+bool hypmtscheduler_getrawtick64(u64 *tickcount){
+
+	ugapp_hypmtscheduler_param_t *hmtsp;
+	struct page *hmtsp_page;
+	u32 hmtsp_paddr;
+	u64 l_tickcount;
+
+	hmtsp_page = alloc_page(GFP_KERNEL | __GFP_ZERO);
+
+	if(!hmtsp_page || !tickcount){
+		return false;
+	}
+
+	hmtsp = (ugapp_hypmtscheduler_param_t *)page_address(hmtsp_page);
+
+	hmtsp->uhcall_fn = UAPP_HYPMTSCHEDULER_UHCALL_GETRAWTICK;
+
+	hmtsp_paddr = page_to_phys(hmtsp_page);
+
+	__hvc(UAPP_HYPMTSCHEDULER_UHCALL, hmtsp_paddr, sizeof(ugapp_hypmtscheduler_param_t));
+
+	if(!hmtsp->status){
+		__free_page(hmtsp_page);
+		return false;
+	}
+
+
+	l_tickcount = hmtsp->oparam_1;
+	l_tickcount = l_tickcount << 32;
+	l_tickcount |= hmtsp->oparam_2;
+
+	printk(KERN_INFO "hypmtscheduler_getrawtick64: oparam_1 = 0x%08x\n", hmtsp->oparam_1);
+	printk(KERN_INFO "hypmtscheduler_getrawtick64: oparam_2 = 0x%08x\n", hmtsp->oparam_2);
+	printk(KERN_INFO "hypmtscheduler_getrawtick64: l_tickcount = 0x%016llx\n", l_tickcount);
+
+	//*tickcount = (u64)((hmtsp->oparam_1 << 32) | hmtsp->oparam_2);
+	*tickcount = l_tickcount;
+	__free_page(hmtsp_page);
+
+	return true;
+}
+
+bool hypmtscheduler_inittsc(void){
+
+	ugapp_hypmtscheduler_param_t *hmtsp;
+	struct page *hmtsp_page;
+	u32 hmtsp_paddr;
+
+	hmtsp_page = alloc_page(GFP_KERNEL | __GFP_ZERO);
+
+	if(!hmtsp_page || !tickcount){
+		return false;
+	}
+
+	hmtsp = (ugapp_hypmtscheduler_param_t *)page_address(hmtsp_page);
+
+	hmtsp->uhcall_fn = UAPP_HYPMTSCHEDULER_UHCALL_INITTSC;
+
+	hmtsp_paddr = page_to_phys(hmtsp_page);
+	__hvc(UAPP_HYPMTSCHEDULER_UHCALL, hmtsp_paddr, sizeof(ugapp_hypmtscheduler_param_t));
+
+	if(!hmtsp->status){
+		__free_page(hmtsp_page);
+		return false;
+	}
+
+	__free_page(hmtsp_page);
+	return true;
+}
+
+
+bool hypmtscheduler_logtsc(u32 event){
+
+	ugapp_hypmtscheduler_param_t *hmtsp;
+	struct page *hmtsp_page;
+	u32 hmtsp_paddr;
+
+	hmtsp_page = alloc_page(GFP_KERNEL | __GFP_ZERO);
+
+	if(!hmtsp_page || !tickcount){
+		return false;
+	}
+
+	hmtsp = (ugapp_hypmtscheduler_param_t *)page_address(hmtsp_page);
+
+	hmtsp->uhcall_fn = UAPP_HYPMTSCHEDULER_UHCALL_LOGTSC;
+	hmtsp->iparam_1 = event;
+
+	hmtsp_paddr = page_to_phys(hmtsp_page);
+	__hvc(UAPP_HYPMTSCHEDULER_UHCALL, hmtsp_paddr, sizeof(ugapp_hypmtscheduler_param_t));
+
+	if(!hmtsp->status){
+		__free_page(hmtsp_page);
+		return false;
+	}
+
+	__free_page(hmtsp_page);
+	return true;
+}
+
+
