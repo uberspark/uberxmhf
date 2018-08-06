@@ -988,6 +988,9 @@ bool uapp_hypmtscheduler_handlehcall(u32 uhcall_function, void *uhcall_buffer,
 	}else if(hmtsp->uhcall_fn == UAPP_HYPMTSCHEDULER_UHCALL_GETRAWTICK){
 		uapp_hypmtscheduler_handlehcall_getrawtick(hmtsp);
 
+	}else if(hmtsp->uhcall_fn == UAPP_HYPMTSCHEDULER_UHCALL_INITTSC){
+		uapp_sched_init_cputsc();
+
 	}else{
 		bcm2837_miniuart_puts("\nHYPMTSCHED: UHCALL: ignoring unknown uhcall_fn=0x");
 		debug_hexdumpu32(hmtsp->uhcall_fn);
