@@ -969,7 +969,9 @@ void uapp_hypmtscheduler_handlehcall_logtsc(ugapp_hypmtscheduler_param_t *hmtsp)
 	hmtsp->oparam_1 = (uint32_t) ((uint64_t)rawtsc >> 32);
 	hmtsp->oparam_2 = (uint32_t) rawtsc;
 
-	bcm2837_miniuart_puts("\n[HYPMTSCHED: LOGTSC]: TSC=0x");
+	bcm2837_miniuart_puts("\n[HYPMTSCHED: LOGTSC]: EVT:0x"
+	debug_hexdumpu32(hmtsp->iparam_1);
+	bcm2837_miniuart_puts(" TSC=0x");
 	debug_hexdumpu32(hmtsp->oparam_1);
 	debug_hexdumpu32(hmtsp->oparam_2);
 	bcm2837_miniuart_puts("\n");
