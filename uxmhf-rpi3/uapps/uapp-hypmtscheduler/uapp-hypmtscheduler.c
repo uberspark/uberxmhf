@@ -961,6 +961,22 @@ void uapp_hypmtscheduler_handlehcall_getrawtick(ugapp_hypmtscheduler_param_t *hm
 }
 
 
+// getrawtick API
+void uapp_hypmtscheduler_handlehcall_logtsc(ugapp_hypmtscheduler_param_t *hmtsp){
+	uint64_t rawtsc;
+
+	rawtsc=uapp_sched_rdtsc64();
+	hmtsp->oparam_1 = (uint32_t) ((uint64_t)rawtsc >> 32);
+	hmtsp->oparam_2 = (uint32_t) rawtsc;
+
+	bcm2837_miniuart_puts("\n[HYPMTSCHED: LOGTSC]: TSC=0x");
+	debug_hexdumpu32(hmtsp->oparam_1);
+	debug_hexdumpu32(hmtsp->oparam_2);
+	bcm2837_miniuart_puts("\n");
+
+	hmtsp->status=1; //success
+}
+
 
 // top-level hypercall handler hub
 // return true if handled the hypercall, false if not
@@ -990,6 +1006,9 @@ bool uapp_hypmtscheduler_handlehcall(u32 uhcall_function, void *uhcall_buffer,
 
 	}else if(hmtsp->uhcall_fn == UAPP_HYPMTSCHEDULER_UHCALL_INITTSC){
 		uapp_sched_init_cputsc();
+
+	}else if(hmtsp->uhcall_fn == UAPP_HYPMTSCHEDULER_UHCALL_LOGTSC){
+		uapp_hypmtscheduler_handlehcall_logtsc(hmtsp);
 
 	}else{
 		bcm2837_miniuart_puts("\nHYPMTSCHED: UHCALL: ignoring unknown uhcall_fn=0x");
