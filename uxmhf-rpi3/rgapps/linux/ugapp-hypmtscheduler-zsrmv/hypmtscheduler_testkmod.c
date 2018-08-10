@@ -94,7 +94,7 @@ static ssize_t dev_write(struct file *filep, const char *buffer, size_t len, lof
 	switch(len){
 	case 1:
 		printk(KERN_INFO "hypmtschedulerkmod: create_hyptask\n");
-		if(!hypmtscheduler_createhyptask(4 * HYPMTSCHEDULER_TIME_1SEC, 8 * HYPMTSCHEDULER_TIME_1SEC,
+		if(!hypmtscheduler_createhyptask(1 * HYPMTSCHEDULER_TIME_1SEC, 2 * HYPMTSCHEDULER_TIME_1SEC,
 					3, 3, &hyptask_handle)){
 			printk(KERN_INFO "hypmtschedulerkmod: create_hyptask failed\n");
 			return -EINVAL;
