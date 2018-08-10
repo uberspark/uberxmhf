@@ -834,6 +834,9 @@ void uapp_hypmtscheduler_handlehcall_createhyptask(ugapp_hypmtscheduler_param_t 
 	//ok now populate the hyptask_id within the hyptask handle
 	hyptask_handle_list[i].hyptask_id = hyptask_id;
 
+	//adjust first period
+	//hyptask_first_period += 0x6076be;
+
 	hyptask_handle_list[i].t = uapp_sched_timer_declare(hyptask_first_period, hyptask_regular_period,
 			hyptask_priority,
 			hyptask_idlist[hyptask_id]);
@@ -844,25 +847,22 @@ void uapp_hypmtscheduler_handlehcall_createhyptask(ugapp_hypmtscheduler_param_t 
 		return;
 	}
 
+	//dump timer value just as we created this task
+	bcm2837_miniuart_puts("\n[HYPMTSCHED:TSTAMP]:CREATEHYPTASK:0x");
+	debug_hexdumpu32(i);
+	bcm2837_miniuart_puts(":0x");
+	cpu_counter=uapp_sched_read_cpucounter();
+	debug_hexdumpu32((uint32_t)(cpu_counter >> 32));
+	debug_hexdumpu32((uint32_t)(cpu_counter));
+	bcm2837_miniuart_puts("\n");
+
+
 	bcm2837_miniuart_puts("\n[HYPMTSCHED: CREATEHYPTASK]: struct sched_timer=0x");
 	debug_hexdumpu32((uint32_t)hyptask_handle_list[i].t);
 	bcm2837_miniuart_puts("\n");
 
 	hmtsp->oparam_1 = i;	//return hyptask handle
 	hmtsp->status=1;	//success
-
-	//debug
-	bcm2837_miniuart_puts("\n[HYPMTSCHED:TSTAMP]:CREATEHYPTASK:0x");
-	debug_hexdumpu32(i);
-	bcm2837_miniuart_puts(":0x");
-	cpu_counter=uapp_sched_read_cpucounter();
-	debug_hexdumpu32((uint32_t)cpu_counter);
-	bcm2837_miniuart_puts("\n");
-	//cpu_counter = uapp_sched_read_cpucounter();
-	//_XDPRINTF_("\n[HYPMTSCHED:TSTAMP]:CREATEHYPTASK:%u:%u", hyptask_id,
-	//		cpu_counter);
-
-
 
 }
 
@@ -1070,7 +1070,7 @@ void uapp_sched_initialize(u32 cpuid){
 		uapp_sched_timer_initialize(cpuid);
 
 		//declare a keep-alive timer to initialize timer subsystem
-		uapp_sched_timer_declare((3 * HYPMTSCHEDULER_TIME_1SEC), (3 * HYPMTSCHEDULER_TIME_1SEC), 1, NULL);
+		uapp_sched_timer_declare((20 * HYPMTSCHEDULER_TIME_1SEC), (20 * HYPMTSCHEDULER_TIME_1SEC), 1, NULL);
 
 	}else{
 		_XDPRINTFSMP_("%s[%u]: AP CPU: nothing to do, moving on...\n", __func__, cpuid);
