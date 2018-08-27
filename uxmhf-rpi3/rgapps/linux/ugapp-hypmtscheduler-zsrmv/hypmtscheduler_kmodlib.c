@@ -323,3 +323,58 @@ bool hypmtscheduler_logtsc(u32 event){
 }
 
 
+
+bool hypmtscheduler_dumpdebuglog(u8 *dst_log_buffer, u32 *num_entries){
+
+	ugapp_hypmtscheduler_param_t *hmtsp;
+	struct page *hmtsp_page;
+	u32 hmtsp_paddr;
+	struct page *debug_log_buffer_page;
+	u32 debug_log_buffer_page_paddr;
+
+	if(!dst_log_buffer || !num_entries){
+		return false;
+	}
+
+	*num_entries=0;
+
+	//allocate physical page for parameter passing
+	hmtsp_page = alloc_page(GFP_KERNEL | __GFP_ZERO);
+
+	if(!hmtsp_page){
+		return false;
+	}
+
+	hmtsp = (ugapp_hypmtscheduler_param_t *)page_address(hmtsp_page);
+
+
+	//allocate debug log buffer page and compute its physical address
+	debug_log_buffer_page = alloc_page(GFP_KERNEL | __GFP_ZERO);
+
+	if(!debug_log_buffer_page){
+		return false;
+	}
+
+	debug_log_buffer_page_paddr = page_to_phys(debug_log_buffer_page);
+
+
+	hmtsp->uhcall_fn = UAPP_HYPMTSCHEDULER_UHCALL_DUMPDEBUGLOG;
+	hmtsp->iparam_1 = debug_log_buffer_page_paddr;
+
+	hmtsp_paddr = page_to_phys(hmtsp_page);
+	__hvc(UAPP_HYPMTSCHEDULER_UHCALL, hmtsp_paddr, sizeof(ugapp_hypmtscheduler_param_t));
+
+	if(!hmtsp->status){
+		__free_page(debug_log_buffer_page);
+		__free_page(hmtsp_page);
+		return false;
+	}
+
+	*num_entries = hmtsp->oparam_1;
+
+	__free_page(debug_log_buffer_page);
+	__free_page(hmtsp_page);
+	return true;
+}
+
+
