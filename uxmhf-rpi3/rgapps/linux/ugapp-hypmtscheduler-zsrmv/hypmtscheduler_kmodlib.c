@@ -370,6 +370,8 @@ bool hypmtscheduler_dumpdebuglog(u8 *dst_log_buffer, u32 *num_entries){
 		return false;
 	}
 
+	memcpy(dst_log_buffer, page_address(debug_log_buffer_page),
+			hmtsp->oparam_1 * sizeof(sizeof(hypmtscheduler_logentry_t)));
 	*num_entries = hmtsp->oparam_1;
 
 	__free_page(debug_log_buffer_page);
