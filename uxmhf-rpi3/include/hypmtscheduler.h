@@ -15,6 +15,7 @@
 #define UAPP_HYPMTSCHEDULER_UHCALL_GETRAWTICK		4
 #define UAPP_HYPMTSCHEDULER_UHCALL_INITTSC			5
 #define UAPP_HYPMTSCHEDULER_UHCALL_LOGTSC			6
+#define UAPP_HYPMTSCHEDULER_UHCALL_DUMPDEBUGLOG		7
 
 
 #define HYPMTSCHEDULER_MAX_HYPTASKID	4
@@ -27,6 +28,8 @@
 #define DEBUG_LOG_EVTTYPE_INITTSC				53
 #define DEBUG_LOG_EVTTYPE_HYPTASKEXEC			54
 
+
+#define DEBUG_LOGGING_SERIAL	1
 
 
 #ifndef __ASSEMBLY__
@@ -78,6 +81,13 @@ typedef struct {
 	struct sched_timer *t;
 }hypmtscheduler_hyptask_handle_t;
 
+typedef struct {
+	u32 hyptask_id;
+	u64 timestamp;
+	u32 event_type;
+} hypmtscheduler_logentry_t;
+
+#define DEBUG_LOG_SIZE (4096/sizeof(hypmtscheduler_logentry_t))
 
 
 #endif // __ASSEMBLY__

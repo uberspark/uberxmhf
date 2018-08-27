@@ -25,6 +25,10 @@ extern __attribute__(( section(".data") )) u32 hypmtscheduler_execution_lock=1;
 
 extern void uapp_hypmtsched_schedentry(void);
 
+extern __attribute__((section(".data"))) u32 debug_log_buffer_index;
+extern __attribute__((section(".data"))) hypmtscheduler_logentry_t debug_log_buffer[DEBUG_LOG_SIZE];
+
+
 //////
 // forward function prototypes
 //////
@@ -1016,6 +1020,26 @@ void uapp_hypmtscheduler_handlehcall_inittsc(ugapp_hypmtscheduler_param_t *hmtsp
 }
 
 
+//dump debug log API
+void uapp_hypmtscheduler_handlehcall_dumpdebuglog(ugapp_hypmtscheduler_param_t *hmtsp){
+	u8 *debug_log_target_buffer = hmtsp->iparam_1;
+
+	//we need a non-NULL log target buffer. if not bail out gracefully
+	if(!debug_log_target_buffer){
+		hmtsp->status=0;
+		return;
+	}
+
+	//copy over the debug log for the number of entries logged
+	memcpy(debug_log_target_buffer, &debug_log_buffer,
+			debug_log_buffer_index * sizeof(hypmtscheduler_logentry_t));
+
+	hmtsp->oparam_1 = debug_log_buffer_index;
+	hmtsp->status=1; //success
+}
+
+
+
 
 #if 0
 // getrawtick API
@@ -1090,6 +1114,10 @@ bool uapp_hypmtscheduler_handlehcall(u32 uhcall_function, void *uhcall_buffer,
 	}else if(hmtsp->uhcall_fn == UAPP_HYPMTSCHEDULER_UHCALL_LOGTSC){
 		uapp_hypmtscheduler_handlehcall_logtsc(hmtsp);
 #endif
+
+	}else if(hmtsp->uhcall_fn == UAPP_HYPMTSCHEDULER_UHCALL_DUMPDEBUGLOG){
+		uapp_hypmtscheduler_handlehcall_dumpdebuglog(hmtsp);
+
 
 	}else{
 		bcm2837_miniuart_puts("\nHYPMTSCHED: UHCALL: ignoring unknown uhcall_fn=0x");

@@ -12,19 +12,6 @@
 
 #include <hypmtscheduler.h>
 
-
-#define DEBUG_LOGGING_SERIAL	1
-
-
-typedef struct {
-	u32 hyptask_id;
-	u64 timestamp;
-	u32 event_type;
-} hypmtscheduler_logentry_t;
-
-#define DEBUG_LOG_SIZE (4096/sizeof(hypmtscheduler_logentry_t))
-
-
 __attribute__((section(".data"))) hypmtscheduler_logentry_t debug_log_buffer[DEBUG_LOG_SIZE];
 __attribute__((section(".data"))) u32 debug_log_buffer_index = 0;
 
