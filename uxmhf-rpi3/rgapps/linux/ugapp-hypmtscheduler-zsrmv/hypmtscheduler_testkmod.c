@@ -65,6 +65,7 @@ extern bool hypmtscheduler_disablehyptask(u32 hyptask_handle);
 extern bool hypmtscheduler_deletehyptask(u32 hyptask_handle);
 extern bool hypmtscheduler_getrawtick32(u32 *tickcount);
 extern bool hypmtscheduler_getrawtick64(u64 *tickcount);
+extern bool hypmtscheduler_dumpdebuglog(u8 *dst_log_buffer, u32 *num_entries);
 extern u32 sysreg_read_cntfrq(void);
 extern u64 sysreg_read_cntvct(void);
 
@@ -83,6 +84,10 @@ static struct file_operations fops =
 };
 
 u32 hyptask_handle;
+
+hypmtscheduler_logentry_t debug_log[DEBUG_LOG_SIZE];
+u32 debug_log_buffer_index = 0;
+
 
 static int dev_open(struct inode *inodep, struct file *filep){
    number_opens++;
@@ -116,6 +121,18 @@ static ssize_t dev_write(struct file *filep, const char *buffer, size_t len, lof
 			return -EINVAL;
 		}
 		break;
+
+	case 4:
+		{
+			printk(KERN_INFO "hypmtschedulerkmod: dump debug log...\n");
+
+			if(!hypmtscheduler_dumpdebuglog(&debug_log, &debug_log_buffer_index)){
+				printk(KERN_INFO "hypmtschedulerkmod: dumpdebuglog hypercall API failed\n");
+				return -EINVAL;
+			}
+		}
+		break;
+
 
 	default:
 		printk(KERN_INFO "hypmtschedulerkmod: unknown function, ignoring\n");
