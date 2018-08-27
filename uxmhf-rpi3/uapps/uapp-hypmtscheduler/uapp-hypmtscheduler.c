@@ -942,6 +942,15 @@ void uapp_hypmtscheduler_handlehcall_deletehyptask(ugapp_hypmtscheduler_param_t 
 }
 
 
+
+// init TSC API
+void uapp_hypmtscheduler_handlehcall_inittsc(ugapp_hypmtscheduler_param_t *hmtsp){
+	uapp_sched_init_cputsc();
+	hmtsp->status=1; //success
+}
+
+
+
 #if 0
 // getrawtick API
 void uapp_hypmtscheduler_handlehcall_getrawtick(ugapp_hypmtscheduler_param_t *hmtsp){
@@ -1009,7 +1018,7 @@ bool uapp_hypmtscheduler_handlehcall(u32 uhcall_function, void *uhcall_buffer,
 #endif
 
 	}else if(hmtsp->uhcall_fn == UAPP_HYPMTSCHEDULER_UHCALL_INITTSC){
-		uapp_sched_init_cputsc();
+		uapp_hypmtscheduler_handlehcall_inittsc(hmtsp);
 
 #if 0
 	}else if(hmtsp->uhcall_fn == UAPP_HYPMTSCHEDULER_UHCALL_LOGTSC){
