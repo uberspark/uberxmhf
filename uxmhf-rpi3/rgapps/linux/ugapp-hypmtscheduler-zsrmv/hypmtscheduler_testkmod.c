@@ -147,7 +147,7 @@ int hypmtschedulerkmod_init(void)
 	u32 cntfrq;
 #endif
 
-#if 1
+#if 0
 	u64 ts, tm, te;
 #endif
 
@@ -179,7 +179,7 @@ int hypmtschedulerkmod_init(void)
 	printk(KERN_INFO "hypmtschedulerkmod: cntfrq = %u\n", sysreg_read_cntfrq());
 #endif
 
-#if 1
+#if 0
 	ts=hypmtscheduler_readtsc64();
 	if(!hypmtscheduler_getrawtick64(&tm)){
 		printk(KERN_INFO "hypmtschedulerkmod: error getting rawtick_64, exiting!\n");

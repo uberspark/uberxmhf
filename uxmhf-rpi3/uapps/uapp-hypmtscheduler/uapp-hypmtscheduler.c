@@ -828,6 +828,7 @@ void uapp_hypmtscheduler_handlehcall_createhyptask(ugapp_hypmtscheduler_param_t 
 	uint32_t i;
 	uint32_t hyptask_handle_found;
 
+#if 0
 	bcm2837_miniuart_puts("\n[HYPMTSCHED: CREATEHYPTASK]: first period=0x");
 	debug_hexdumpu32(hyptask_first_period);
 	bcm2837_miniuart_puts(", regular period=0x");
@@ -842,6 +843,9 @@ void uapp_hypmtscheduler_handlehcall_createhyptask(ugapp_hypmtscheduler_param_t 
 	bcm2837_miniuart_puts("\n[HYPMTSCHED: CREATEHYPTASK]: CNTFRQ=0x");
 	debug_hexdumpu32(sysreg_read_cntfrq());
 	bcm2837_miniuart_puts("\n");
+#endif
+
+	debug_log_tsc(hyptask_id, uapp_sched_read_cpucounter(), DEBUG_LOG_EVTTYPE_CREATEHYPTASK);
 
 
 	//allocate hyptask_handle
@@ -882,6 +886,7 @@ void uapp_hypmtscheduler_handlehcall_createhyptask(ugapp_hypmtscheduler_param_t 
 		return;
 	}
 
+#if 0
 	//dump timer value just as we created this task
 	bcm2837_miniuart_puts("\n[HYPMTSCHED:TSTAMP]:CREATEHYPTASK:0x");
 	debug_hexdumpu32(i);
@@ -895,6 +900,10 @@ void uapp_hypmtscheduler_handlehcall_createhyptask(ugapp_hypmtscheduler_param_t 
 	bcm2837_miniuart_puts("\n[HYPMTSCHED: CREATEHYPTASK]: struct sched_timer=0x");
 	debug_hexdumpu32((uint32_t)hyptask_handle_list[i].t);
 	bcm2837_miniuart_puts("\n");
+#endif
+
+	debug_log_tsc(hyptask_id, uapp_sched_read_cpucounter(), DEBUG_LOG_EVTTYPE_CREATEHYPTASK);
+
 
 	hmtsp->oparam_1 = i;	//return hyptask handle
 	hmtsp->status=1;	//success
@@ -909,9 +918,12 @@ void uapp_hypmtscheduler_handlehcall_disablehyptask(ugapp_hypmtscheduler_param_t
 	uint32_t i;
 	uint32_t hyptask_handle_found;
 
+#if 0
 	bcm2837_miniuart_puts("\n[HYPMTSCHED: DISABLEHYPTASK]: hyptask_handle=0x");
 	debug_hexdumpu32(hyptask_handle);
 	bcm2837_miniuart_puts("\n");
+#endif
+
 
 	//check if provided hyptask handle is within limits
 	if(hyptask_handle >= HYPMTSCHEDULER_MAX_HYPTASKS){
@@ -924,6 +936,8 @@ void uapp_hypmtscheduler_handlehcall_disablehyptask(ugapp_hypmtscheduler_param_t
 		hmtsp->status=0; //fail
 		return;
 	}
+
+	debug_log_tsc(hyptask_handle_list[hyptask_handle].hyptask_id, uapp_sched_read_cpucounter(), DEBUG_LOG_EVTTYPE_DISABLEHYPTASK);
 
 	//ok grab the timer for the hyptask
 	hyptask_timer = hyptask_handle_list[hyptask_handle].t;
@@ -933,10 +947,15 @@ void uapp_hypmtscheduler_handlehcall_disablehyptask(ugapp_hypmtscheduler_param_t
 
 	hmtsp->status=1; //success
 
+
+	debug_log_tsc(hyptask_handle_list[hyptask_handle].hyptask_id, uapp_sched_read_cpucounter(), DEBUG_LOG_EVTTYPE_DISABLEHYPTASK);
+
+#if 0
 	//bcm2837_miniuart_puts("\n[HYPMTSCHED: DISABLEHYPTASK]: struct sched_timer=0x");
 	//debug_hexdumpu32((uint32_t)hyptask_timer);
 	//bcm2837_miniuart_puts("\n");
 	//HALT();
+#endif
 }
 
 
@@ -945,10 +964,13 @@ void uapp_hypmtscheduler_handlehcall_disablehyptask(ugapp_hypmtscheduler_param_t
 void uapp_hypmtscheduler_handlehcall_deletehyptask(ugapp_hypmtscheduler_param_t *hmtsp){
 	uint32_t hyptask_handle = hmtsp->iparam_1;
 	struct sched_timer *hyptask_timer;
+	u32 hyptask_id;
 
+#if 0
 	bcm2837_miniuart_puts("\n[HYPMTSCHED: DELETEHYPTASK]: hyptask_handle=0x");
 	debug_hexdumpu32(hyptask_handle);
 	bcm2837_miniuart_puts("\n");
+#endif
 
 	//check if provided hyptask handle is within limits
 	if(hyptask_handle >= HYPMTSCHEDULER_MAX_HYPTASKS){
@@ -961,6 +983,10 @@ void uapp_hypmtscheduler_handlehcall_deletehyptask(ugapp_hypmtscheduler_param_t 
 		hmtsp->status=0; //fail
 		return;
 	}
+
+	hyptask_id = hyptask_handle_list[hyptask_handle].hyptask_id;
+
+	debug_log_tsc(hyptask_id, uapp_sched_read_cpucounter(), DEBUG_LOG_EVTTYPE_DELETEHYPTASK);
 
 	//ok grab the timer for the hyptask
 	hyptask_timer = hyptask_handle_list[hyptask_handle].t;
@@ -974,14 +1000,19 @@ void uapp_hypmtscheduler_handlehcall_deletehyptask(ugapp_hypmtscheduler_param_t 
 	hyptask_handle_list[hyptask_handle].t = NULL;
 
 	hmtsp->status=1; //success
+
+	debug_log_tsc(hyptask_id, uapp_sched_read_cpucounter(), DEBUG_LOG_EVTTYPE_DELETEHYPTASK);
+
 }
 
 
 
 // init TSC API
 void uapp_hypmtscheduler_handlehcall_inittsc(ugapp_hypmtscheduler_param_t *hmtsp){
+	debug_log_tsc(0xFFFFFFFFUL, uapp_sched_read_cpucounter(), DEBUG_LOG_EVTTYPE_INITTSC);
 	uapp_sched_init_cputsc();
 	hmtsp->status=1; //success
+	debug_log_tsc(0xFFFFFFFFUL, uapp_sched_read_cpucounter(), DEBUG_LOG_EVTTYPE_INITTSC);
 }
 
 
