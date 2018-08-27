@@ -646,6 +646,7 @@ void hyptask0(struct sched_timer *t){
 	//_XDPRINTF_("\n[HYPMTSCHED:TSTAMP]:HYPTASKBEFOREEXEC:%u:%u", 0,
 	//		cpu_counter);
 	//debug
+#if 0
 	bcm2837_miniuart_puts("\n[HYPMTSCHED:TSTAMP]:HYPTASKBEFOREEXEC:0x");
 	debug_hexdumpu32(0);
 	bcm2837_miniuart_puts(":0x");
@@ -653,12 +654,18 @@ void hyptask0(struct sched_timer *t){
 	debug_hexdumpu32((uint32_t)(cpu_counter >> 32));
 	debug_hexdumpu32((uint32_t)(cpu_counter));
 	bcm2837_miniuart_puts("\n");
+#endif
+	debug_log_tsc(0, uapp_sched_read_cpucounter(), DEBUG_LOG_EVTTYPE_HYPTASKEXEC);
 
-
-
+#if 0
 	bcm2837_miniuart_puts("\n[HYPSCHED]: HypTask-0 completed run with Priority=0x");
 	debug_hexdumpu32(t->priority);
+#endif
 
+
+	debug_log_tsc(0, uapp_sched_read_cpucounter(), DEBUG_LOG_EVTTYPE_HYPTASKEXEC);
+
+#if 0
 	//debug
 	//cpu_counter = uapp_sched_read_cpucounter();
 	//_XDPRINTF_("\n[HYPMTSCHED:TSTAMP]:HYPTASKAFTEREXEC:%u:%u", 0,
@@ -670,10 +677,12 @@ void hyptask0(struct sched_timer *t){
 	debug_hexdumpu32((uint32_t)(cpu_counter >> 32));
 	debug_hexdumpu32((uint32_t)(cpu_counter));
 	bcm2837_miniuart_puts("\n");
+#endif
 
 }
 
 void hyptask1(struct sched_timer *t){
+#if 0
 	//debug
 	//cpu_counter = uapp_sched_read_cpucounter();
 	//_XDPRINTF_("\n[HYPMTSCHED:TSTAMP]:HYPTASKBEFOREEXEC:%u:%u", 1,
@@ -685,11 +694,18 @@ void hyptask1(struct sched_timer *t){
 	debug_hexdumpu32((uint32_t)(cpu_counter >> 32));
 	debug_hexdumpu32((uint32_t)(cpu_counter));
 	bcm2837_miniuart_puts("\n");
+#endif
+	debug_log_tsc(1, uapp_sched_read_cpucounter(), DEBUG_LOG_EVTTYPE_HYPTASKEXEC);
 
 
+#if 0
 	bcm2837_miniuart_puts("\n[HYPSCHED]: HypTask-1 completed run with Priority=0x");
 	debug_hexdumpu32(t->priority);
+#endif
 
+
+	debug_log_tsc(1, uapp_sched_read_cpucounter(), DEBUG_LOG_EVTTYPE_HYPTASKEXEC);
+#if 0
 	//debug
 	//cpu_counter = uapp_sched_read_cpucounter();
 	//_XDPRINTF_("\n[HYPMTSCHED:TSTAMP]:HYPTASKAFTEREXEC:%u:%u", 1,
@@ -701,10 +717,12 @@ void hyptask1(struct sched_timer *t){
 	debug_hexdumpu32((uint32_t)(cpu_counter >> 32));
 	debug_hexdumpu32((uint32_t)(cpu_counter));
 	bcm2837_miniuart_puts("\n");
-
+#endif
 }
 
+
 void hyptask2(struct sched_timer *t){
+#if 0
 	//debug
 	//cpu_counter = uapp_sched_read_cpucounter();
 	//_XDPRINTF_("\n[HYPMTSCHED:TSTAMP]:HYPTASKBEFOREEXEC:%u:%u", 2,
@@ -716,11 +734,18 @@ void hyptask2(struct sched_timer *t){
 	debug_hexdumpu32((uint32_t)(cpu_counter >> 32));
 	debug_hexdumpu32((uint32_t)(cpu_counter));
 	bcm2837_miniuart_puts("\n");
+#endif
+	debug_log_tsc(2, uapp_sched_read_cpucounter(), DEBUG_LOG_EVTTYPE_HYPTASKEXEC);
 
-
+#if 0
 	bcm2837_miniuart_puts("\n[HYPSCHED]: HypTask-2 completed run with Priority=0x");
 	debug_hexdumpu32(t->priority);
+#endif
 
+
+	debug_log_tsc(2, uapp_sched_read_cpucounter(), DEBUG_LOG_EVTTYPE_HYPTASKEXEC);
+
+#if 0
 	//debug
 	//cpu_counter = uapp_sched_read_cpucounter();
 	//_XDPRINTF_("\n[HYPMTSCHED:TSTAMP]:HYPTASKAFTEREXEC:%u:%u", 2,
@@ -732,11 +757,13 @@ void hyptask2(struct sched_timer *t){
 	debug_hexdumpu32((uint32_t)(cpu_counter >> 32));
 	debug_hexdumpu32((uint32_t)(cpu_counter));
 	bcm2837_miniuart_puts("\n");
-
+#endif
 
 }
 
+
 void hyptask3(struct sched_timer *t){
+#if 0
 	//debug
 	//cpu_counter = uapp_sched_read_cpucounter();
 	//_XDPRINTF_("\n[HYPMTSCHED:TSTAMP]:HYPTASKBEFOREEXEC:%u:%u", 3,
@@ -748,11 +775,18 @@ void hyptask3(struct sched_timer *t){
 	debug_hexdumpu32((uint32_t)(cpu_counter >> 32));
 	debug_hexdumpu32((uint32_t)(cpu_counter));
 	bcm2837_miniuart_puts("\n");
+#endif
+	debug_log_tsc(3, uapp_sched_read_cpucounter(), DEBUG_LOG_EVTTYPE_HYPTASKEXEC);
 
 
+#if 0
 	bcm2837_miniuart_puts("\n[HYPSCHED]: HypTask-3 completed run with Priority=0x");
 	debug_hexdumpu32(t->priority);
+#endif
 
+	debug_log_tsc(3, uapp_sched_read_cpucounter(), DEBUG_LOG_EVTTYPE_HYPTASKEXEC);
+
+#if 0
 	//debug
 	//cpu_counter = uapp_sched_read_cpucounter();
 	//_XDPRINTF_("\n[HYPMTSCHED:TSTAMP]:HYPTASKAFTEREXEC:%u:%lu", 3,
@@ -764,6 +798,7 @@ void hyptask3(struct sched_timer *t){
 	debug_hexdumpu32((uint32_t)(cpu_counter >> 32));
 	debug_hexdumpu32((uint32_t)(cpu_counter));
 	bcm2837_miniuart_puts("\n");
+#endif
 
 }
 
