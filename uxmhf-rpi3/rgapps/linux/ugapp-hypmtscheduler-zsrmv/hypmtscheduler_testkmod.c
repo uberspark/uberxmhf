@@ -138,6 +138,7 @@ static ssize_t dev_write(struct file *filep, const char *buffer, size_t len, lof
 
 			for(i=0; i < debug_log_buffer_index; i++){
 				printk(KERN_INFO "hypmtschedulerkmod: %03u --> 0x%08x 0x%016llx 0x%08x\n",
+						i,
 						debug_log[i].hyptask_id,
 						debug_log[i].timestamp,
 						debug_log[i].event_type);

@@ -1022,7 +1022,7 @@ void uapp_hypmtscheduler_handlehcall_inittsc(ugapp_hypmtscheduler_param_t *hmtsp
 
 //dump debug log API
 void uapp_hypmtscheduler_handlehcall_dumpdebuglog(ugapp_hypmtscheduler_param_t *hmtsp){
-	u8 *debug_log_target_buffer = hmtsp->iparam_1;
+	u8 *debug_log_target_buffer = (u8 *)hmtsp->iparam_1;
 
 	//we need a non-NULL log target buffer. if not bail out gracefully
 	if(!debug_log_target_buffer){
