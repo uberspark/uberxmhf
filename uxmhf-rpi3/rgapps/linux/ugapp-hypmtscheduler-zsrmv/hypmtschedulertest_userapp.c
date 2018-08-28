@@ -54,6 +54,10 @@ void test_deletehyptask(void){
 	kmod_comms(3);
 }
 
+void test_dumpdebuglog(void){
+	kmod_comms(4);
+}
+
 void test_cyclecounter(void){
 	unsigned long long te, ts;
 	unsigned long freq;
@@ -93,7 +97,8 @@ int main(int argc, char *argv[]){
 		break;
 
 	case 4:
-		test_cyclecounter();
+		//test_cyclecounter();
+		test_dumpdebuglog();
 		break;
 
 
