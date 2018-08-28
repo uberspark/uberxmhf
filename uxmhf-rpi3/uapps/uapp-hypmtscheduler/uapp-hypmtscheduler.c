@@ -659,7 +659,7 @@ void hyptask0(struct sched_timer *t){
 	debug_hexdumpu32((uint32_t)(cpu_counter));
 	bcm2837_miniuart_puts("\n");
 #endif
-	debug_log_tsc(0, uapp_sched_read_cpucounter(), DEBUG_LOG_EVTTYPE_HYPTASKEXEC);
+	debug_log_tsc(0, uapp_sched_read_cpucounter(), DEBUG_LOG_EVTTYPE_HYPTASKEXEC_BEFORE);
 
 #if 0
 	bcm2837_miniuart_puts("\n[HYPSCHED]: HypTask-0 completed run with Priority=0x");
@@ -667,7 +667,7 @@ void hyptask0(struct sched_timer *t){
 #endif
 
 
-	debug_log_tsc(0, uapp_sched_read_cpucounter(), DEBUG_LOG_EVTTYPE_HYPTASKEXEC);
+	debug_log_tsc(0, uapp_sched_read_cpucounter(), DEBUG_LOG_EVTTYPE_HYPTASKEXEC_AFTER);
 
 #if 0
 	//debug
@@ -699,7 +699,7 @@ void hyptask1(struct sched_timer *t){
 	debug_hexdumpu32((uint32_t)(cpu_counter));
 	bcm2837_miniuart_puts("\n");
 #endif
-	debug_log_tsc(1, uapp_sched_read_cpucounter(), DEBUG_LOG_EVTTYPE_HYPTASKEXEC);
+	debug_log_tsc(1, uapp_sched_read_cpucounter(), DEBUG_LOG_EVTTYPE_HYPTASKEXEC_BEFORE);
 
 
 #if 0
@@ -708,7 +708,7 @@ void hyptask1(struct sched_timer *t){
 #endif
 
 
-	debug_log_tsc(1, uapp_sched_read_cpucounter(), DEBUG_LOG_EVTTYPE_HYPTASKEXEC);
+	debug_log_tsc(1, uapp_sched_read_cpucounter(), DEBUG_LOG_EVTTYPE_HYPTASKEXEC_AFTER);
 #if 0
 	//debug
 	//cpu_counter = uapp_sched_read_cpucounter();
@@ -739,7 +739,7 @@ void hyptask2(struct sched_timer *t){
 	debug_hexdumpu32((uint32_t)(cpu_counter));
 	bcm2837_miniuart_puts("\n");
 #endif
-	debug_log_tsc(2, uapp_sched_read_cpucounter(), DEBUG_LOG_EVTTYPE_HYPTASKEXEC);
+	debug_log_tsc(2, uapp_sched_read_cpucounter(), DEBUG_LOG_EVTTYPE_HYPTASKEXEC_BEFORE);
 
 #if 0
 	bcm2837_miniuart_puts("\n[HYPSCHED]: HypTask-2 completed run with Priority=0x");
@@ -747,7 +747,7 @@ void hyptask2(struct sched_timer *t){
 #endif
 
 
-	debug_log_tsc(2, uapp_sched_read_cpucounter(), DEBUG_LOG_EVTTYPE_HYPTASKEXEC);
+	debug_log_tsc(2, uapp_sched_read_cpucounter(), DEBUG_LOG_EVTTYPE_HYPTASKEXEC_AFTER);
 
 #if 0
 	//debug
@@ -780,7 +780,7 @@ void hyptask3(struct sched_timer *t){
 	debug_hexdumpu32((uint32_t)(cpu_counter));
 	bcm2837_miniuart_puts("\n");
 #endif
-	debug_log_tsc(3, uapp_sched_read_cpucounter(), DEBUG_LOG_EVTTYPE_HYPTASKEXEC);
+	debug_log_tsc(3, uapp_sched_read_cpucounter(), DEBUG_LOG_EVTTYPE_HYPTASKEXEC_BEFORE);
 
 
 #if 0
@@ -788,7 +788,7 @@ void hyptask3(struct sched_timer *t){
 	debug_hexdumpu32(t->priority);
 #endif
 
-	debug_log_tsc(3, uapp_sched_read_cpucounter(), DEBUG_LOG_EVTTYPE_HYPTASKEXEC);
+	debug_log_tsc(3, uapp_sched_read_cpucounter(), DEBUG_LOG_EVTTYPE_HYPTASKEXEC_AFTER);
 
 #if 0
 	//debug
@@ -849,7 +849,7 @@ void uapp_hypmtscheduler_handlehcall_createhyptask(ugapp_hypmtscheduler_param_t 
 	bcm2837_miniuart_puts("\n");
 #endif
 
-	debug_log_tsc(hyptask_id, uapp_sched_read_cpucounter(), DEBUG_LOG_EVTTYPE_CREATEHYPTASK);
+	debug_log_tsc(hyptask_id, uapp_sched_read_cpucounter(), DEBUG_LOG_EVTTYPE_CREATEHYPTASK_BEFORE);
 
 
 	//allocate hyptask_handle
@@ -906,7 +906,7 @@ void uapp_hypmtscheduler_handlehcall_createhyptask(ugapp_hypmtscheduler_param_t 
 	bcm2837_miniuart_puts("\n");
 #endif
 
-	debug_log_tsc(hyptask_id, uapp_sched_read_cpucounter(), DEBUG_LOG_EVTTYPE_CREATEHYPTASK);
+	debug_log_tsc(hyptask_id, uapp_sched_read_cpucounter(), DEBUG_LOG_EVTTYPE_CREATEHYPTASK_AFTER);
 
 
 	hmtsp->oparam_1 = i;	//return hyptask handle
@@ -941,7 +941,7 @@ void uapp_hypmtscheduler_handlehcall_disablehyptask(ugapp_hypmtscheduler_param_t
 		return;
 	}
 
-	debug_log_tsc(hyptask_handle_list[hyptask_handle].hyptask_id, uapp_sched_read_cpucounter(), DEBUG_LOG_EVTTYPE_DISABLEHYPTASK);
+	debug_log_tsc(hyptask_handle_list[hyptask_handle].hyptask_id, uapp_sched_read_cpucounter(), DEBUG_LOG_EVTTYPE_DISABLEHYPTASK_BEFORE);
 
 	//ok grab the timer for the hyptask
 	hyptask_timer = hyptask_handle_list[hyptask_handle].t;
@@ -952,7 +952,7 @@ void uapp_hypmtscheduler_handlehcall_disablehyptask(ugapp_hypmtscheduler_param_t
 	hmtsp->status=1; //success
 
 
-	debug_log_tsc(hyptask_handle_list[hyptask_handle].hyptask_id, uapp_sched_read_cpucounter(), DEBUG_LOG_EVTTYPE_DISABLEHYPTASK);
+	debug_log_tsc(hyptask_handle_list[hyptask_handle].hyptask_id, uapp_sched_read_cpucounter(), DEBUG_LOG_EVTTYPE_DISABLEHYPTASK_AFTER);
 
 #if 0
 	//bcm2837_miniuart_puts("\n[HYPMTSCHED: DISABLEHYPTASK]: struct sched_timer=0x");
@@ -990,7 +990,7 @@ void uapp_hypmtscheduler_handlehcall_deletehyptask(ugapp_hypmtscheduler_param_t 
 
 	hyptask_id = hyptask_handle_list[hyptask_handle].hyptask_id;
 
-	debug_log_tsc(hyptask_id, uapp_sched_read_cpucounter(), DEBUG_LOG_EVTTYPE_DELETEHYPTASK);
+	debug_log_tsc(hyptask_id, uapp_sched_read_cpucounter(), DEBUG_LOG_EVTTYPE_DELETEHYPTASK_BEFORE);
 
 	//ok grab the timer for the hyptask
 	hyptask_timer = hyptask_handle_list[hyptask_handle].t;
@@ -1005,7 +1005,7 @@ void uapp_hypmtscheduler_handlehcall_deletehyptask(ugapp_hypmtscheduler_param_t 
 
 	hmtsp->status=1; //success
 
-	debug_log_tsc(hyptask_id, uapp_sched_read_cpucounter(), DEBUG_LOG_EVTTYPE_DELETEHYPTASK);
+	debug_log_tsc(hyptask_id, uapp_sched_read_cpucounter(), DEBUG_LOG_EVTTYPE_DELETEHYPTASK_AFTER);
 
 }
 
@@ -1013,10 +1013,10 @@ void uapp_hypmtscheduler_handlehcall_deletehyptask(ugapp_hypmtscheduler_param_t 
 
 // init TSC API
 void uapp_hypmtscheduler_handlehcall_inittsc(ugapp_hypmtscheduler_param_t *hmtsp){
-	debug_log_tsc(0xFFFFFFFFUL, uapp_sched_read_cpucounter(), DEBUG_LOG_EVTTYPE_INITTSC);
+	debug_log_tsc(0xFFFFFFFFUL, uapp_sched_read_cpucounter(), DEBUG_LOG_EVTTYPE_INITTSC_BEFORE);
 	uapp_sched_init_cputsc();
 	hmtsp->status=1; //success
-	debug_log_tsc(0xFFFFFFFFUL, uapp_sched_read_cpucounter(), DEBUG_LOG_EVTTYPE_INITTSC);
+	debug_log_tsc(0xFFFFFFFFUL, uapp_sched_read_cpucounter(), DEBUG_LOG_EVTTYPE_INITTSC_AFTER);
 }
 
 
