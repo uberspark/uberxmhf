@@ -127,7 +127,7 @@ u64 gp_s2_setupmpgtblug_getflags(u32 slabid, u32 spa, u32 spatype){
 		xmhfgeec_slab_info_table[slabid].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG_GUEST){
 		//code=rx, data,stack,dmadata,mmio=rw;
 		//other slabs = no mapping; other region = no mapping
-#if 0
+#if 1
 		if((spatype & _SLAB_SPATYPE_MASK_SAMESLAB) && (spatype & 0x0000000FUL) != _SLAB_SPATYPE_OTHER){
 
 			if((spatype & 0x0000000FUL) == _SLAB_SPATYPE_SLAB_CODE){

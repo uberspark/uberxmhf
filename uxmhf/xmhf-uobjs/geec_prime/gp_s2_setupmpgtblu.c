@@ -158,14 +158,14 @@ void gp_s2_setupmpgtblu(void){
 			_XDPRINTF_("%s: slab %u --> ppopulating uV{T,U}_prog_guest page-tables...\n", __func__, i);
 			gp_s2_setupmpgtblug(i);
 			//@ghost gp_s2_setupmpgtblu_invokedug[i] = true;
-			_XDPRINTF_("%s: slab %u --> uV{T,U}_prog_guest page-tables populated (testing)\n", __func__, i);
+			_XDPRINTF_("%s: slab %u --> uV{T,U}_prog_guest page-tables populated\n", __func__, i);
 
 		}else if (xmhfgeec_slab_info_table[i].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG_RICHGUEST){
 
 			_XDPRINTF_("%s: slab %u --> ppopulating rich-guest page-tables...\n", __func__, i);
 			gp_s2_setupmpgtblug_rg(i);
 			//@ghost gp_s2_setupmpgtblu_invokedug_rg[i] = true;
-			_XDPRINTF_("%s: slab %u --> rich-guest page-tables populated (testing)\n", __func__, i);
+			_XDPRINTF_("%s: slab %u --> rich-guest page-tables populated\n", __func__, i);
 
 
 		}else if ( ((xmhfgeec_slab_info_table[i].slabtype == XMHFGEEC_SLABTYPE_VfT_SENTINEL) ||
