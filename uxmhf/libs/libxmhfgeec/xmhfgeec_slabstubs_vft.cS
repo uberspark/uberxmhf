@@ -56,7 +56,7 @@
 #include <xmhf-debug.h>
 
 #define xmhfhwm_cpu_insn_jmpxsentinel() \
-	__builtin_annot("movl $0x03200000, %eax"); \
+	__builtin_annot("movl $0x06200000, %eax"); \
 	__builtin_annot("jmpl *%eax "); \
 	__builtin_annot("hlt "); \
 	xmhfhwm_vdriver_sentinel(); \
