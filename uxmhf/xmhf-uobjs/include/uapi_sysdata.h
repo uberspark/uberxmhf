@@ -64,10 +64,10 @@
 #ifndef __ASSEMBLY__
 
 typedef struct {
-	u32 baseaddr_high;
 	u32 baseaddr_low;
-	u32 length_high;
+	u32 baseaddr_high;
 	u32 length_low;
+	u32 length_high;
 	u32 type;
 }__attribute__((packed)) uxmhf_uapi_sysdata_e820addentry_t;
 
@@ -78,10 +78,10 @@ typedef struct {
 
 typedef struct {
 	u32 index;
-	u32 baseaddr_high;
 	u32 baseaddr_low;
-	u32 length_high;
+	u32 baseaddr_high;
 	u32 length_low;
+	u32 length_high;
 	u32 type;
 }__attribute__((packed)) uxmhf_uapi_sysdata_e820getentryforindex_t;
 
