@@ -152,7 +152,7 @@ void gp_s1_iommuinit(void){
 
 
 		//enable VT-d translation
-#if 0
+#if 1
 		xmhfhw_platform_x86pc_vtd_drhd_enable_translation(&vtd_drhd[drhd_handle]);
 #endif
 
