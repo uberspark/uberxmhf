@@ -18,13 +18,13 @@
 //////
 
 extern void uapp_sched_fiq_handler(void);
-extern u32 uapp_sched_fiqhandler_stack[];
-extern u32 uapp_sched_fiqhandler_stack_top[];
-extern __attribute__(( section(".data") )) u32 priority_queue_lock=1;
-extern __attribute__(( section(".data") )) u32 hypmtscheduler_execution_lock=1;
-
 extern void uapp_hypmtsched_schedentry(void);
 
+extern u32 uapp_sched_fiqhandler_stack[];
+extern u32 uapp_sched_fiqhandler_stack_top[];
+
+extern __attribute__(( section(".data") )) u32 priority_queue_lock=1;
+extern __attribute__(( section(".data") )) u32 hypmtscheduler_execution_lock=1;
 extern __attribute__((section(".data"))) u32 debug_log_buffer_index;
 extern __attribute__((section(".data"))) hypmtscheduler_logentry_t debug_log_buffer[DEBUG_LOG_SIZE];
 
@@ -34,26 +34,32 @@ extern __attribute__((section(".data"))) hypmtscheduler_logentry_t debug_log_buf
 //////
 
 u64 uapp_sched_read_cpucounter(void);
-void_uapp_sched_logic(void);
+void uapp_sched_logic(void);
+
 
 
 //////
 // global variables
 //////
 
-volatile u32 fiq_sp = 0;
-volatile u32 fiq_cpsr = 0;
-volatile u32 fiq_pemode= 0;
-volatile u32 normal_sp = 0;
-
+// set to 1 if any timer has expired upon handling a FIQ timer interrupt
 __attribute__((section(".data"))) volatile u32 fiq_timer_handler_timerevent_triggered = 0;
+
+// guest mode saved PC/SPSR to resume control at after we finish processing
+// hyptask scheduling
 __attribute__((section(".data"))) volatile u32 fiq_timer_handler_guestmode_pc = 0;
 __attribute__((section(".data"))) volatile u32 fiq_timer_handler_guestmode_spsr = 0;
 
-__attribute__((section(".data"))) struct sched_timer sched_timers[MAX_TIMERS];   // set of timers
-__attribute__((section(".data"))) struct sched_timer *timer_next = NULL; // timer we expect to run down next
-__attribute__((section(".data"))) TIME time_timer_set;    // time when physical timer was set
+// set of timers
+__attribute__((section(".data"))) struct sched_timer sched_timers[MAX_TIMERS];
 
+// timer we expect to run down next
+__attribute__((section(".data"))) struct sched_timer *timer_next = NULL;
+
+// last time when physical timer was programmed
+__attribute__((section(".data"))) TIME time_timer_set;
+
+// this is a timer which should never expire, only there to serve as a guard
 __attribute__((section(".data"))) struct sched_timer timer_last = {
   FALSE,
   FALSE,
@@ -61,12 +67,6 @@ __attribute__((section(".data"))) struct sched_timer timer_last = {
   VERY_LONG_TIME,
   VERY_LONG_TIME
 };
-
-__attribute__((section(".data"))) volatile u8 thread1_event = FALSE;
-__attribute__((section(".data"))) volatile u8 thread2_event = FALSE;
-
-uint64_t cpu_counter=0;
-
 
 
 
@@ -165,7 +165,7 @@ struct sched_timer *uapp_sched_timer_declare(u32 first_time_period,
   t->time_to_wait = first_time_period;
   t->sticky_time_to_wait = regular_time_period;
 
-  //_XDPRINTF_("%s,%u: event=%u, time_to_wait=%016llx, sticky_time_to_wait=%016llx, priority=%u\n",
+  //_XDPRINTF_("%s,%u: even///t=%u, time_to_wait=%016llx, sticky_time_to_wait=%016llx, priority=%u\n",
 	//	  __func__, __LINE__,
 	//		t->event, t->time_to_wait, t->sticky_time_to_wait, t->priority);
 
@@ -537,8 +537,9 @@ void uapp_sched_timerhandler(void){
 		//timer has expired, so let us look at the PE state
 		//which triggered this timer FIQ to decide on our course of
 		//action
-		fiq_pemode = sysreg_read_spsr_hyp() & 0x0000000FUL;
-		if(fiq_pemode == 0xA){
+		//fiq_pemode = sysreg_read_spsr_hyp() & 0x0000000FUL;
+		//if(fiq_pemode == 0xA){
+		if( (sysreg_read_spsr_hyp() & 0x0000000FUL) == 0xA){
 			//PE state was hyp mode, so we simply resume
 	    	//bcm2837_miniuart_puts("\n[HYPTIMER]: Timer expired, PE state=HYP, queuing...\n");
 	    	//HALT();
@@ -1148,10 +1149,10 @@ void uapp_sched_initialize(u32 cpuid){
 	if(cpuid == 0){
 		_XDPRINTFSMP_("%s[%u]: Initializing scheduler...\n", __func__, cpuid);
 
-		normal_sp =sysreg_read_sp();
+		//normal_sp =sysreg_read_sp();
 		_XDPRINTFSMP_("%s[%u]: FIQ Stack pointer base=0x%08x\n", __func__, cpuid,
 				&uapp_sched_fiqhandler_stack);
-		_XDPRINTFSMP_("%s[%u]: normal_sp=0x%08x\n", __func__, cpuid, normal_sp);
+		_XDPRINTFSMP_("%s[%u]: normal_sp=0x%08x\n", __func__, cpuid, sysreg_read_sp());
 		_XDPRINTFSMP_("%s[%u]: cpsr=0x%08x\n", __func__, cpuid, sysreg_read_cpsr());
 
 		_XDPRINTFSMP_("%s[%u]: proceeding to initialize TSC...\n",
