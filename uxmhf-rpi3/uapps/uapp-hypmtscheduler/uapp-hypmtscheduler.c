@@ -211,53 +211,18 @@ void uapp_sched_timers_update(TIME time){
 }
 
 
-
-
-
-//////
-// enable FIQs
-//////
-void enable_fiq(void){
-	u32 cpsr;
-	cpsr = sysreg_read_cpsr();
-	cpsr &= ~(1UL << 6);	//clear CPSR.F to allow FIQs
-	sysreg_write_cpsr(cpsr);
-}
-
-//////
-// disable FIQs
-//////
-void disable_fiq(void){
-	u32 cpsr;
-	cpsr = sysreg_read_cpsr();
-	cpsr |= (1UL << 6);	//set CPSR.F to prevent FIQs
-	sysreg_write_cpsr(cpsr);
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-//////
-// read current physical counter for the CPU; we use this as current time
-//////
-u64 uapp_sched_read_cpucounter(void){
-	return sysreg_read_cntpct();
-}
+//////////////////////////////////////////////////////////////////////////////
+// interrupt control and physical timer functions
+//////////////////////////////////////////////////////////////////////////////
 
 #define PMCNTNSET_C_BIT		0x80000000
 #define PMCR_C_BIT			0x00000004
 #define PMCR_E_BIT			0x00000001
 
+
+//////
+// initialize CPU time-stamp counter
+//////
 void uapp_sched_init_cputsc(void){
 	unsigned long tmp;
 
@@ -269,6 +234,9 @@ void uapp_sched_init_cputsc(void){
 }
 
 
+//////
+// read CPU's 64-bit time-stamp counter value
+//////
 u64 uapp_sched_rdtsc64(void){
 	u32 tsc_lo, tsc_hi;
 	u64 l_tickcount;
@@ -291,19 +259,44 @@ u64 uapp_sched_rdtsc64(void){
 }
 
 
+//////
+// enable FIQs
+//////
+void enable_fiq(void){
+	u32 cpsr;
+	cpsr = sysreg_read_cpsr();
+	cpsr &= ~(1UL << 6);	//clear CPSR.F to allow FIQs
+	sysreg_write_cpsr(cpsr);
+}
+
+
+//////
+// disable FIQs
+//////
+void disable_fiq(void){
+	u32 cpsr;
+	cpsr = sysreg_read_cpsr();
+	cpsr |= (1UL << 6);	//set CPSR.F to prevent FIQs
+	sysreg_write_cpsr(cpsr);
+}
+
+
+//////
+// read current physical timer counter; we use this as current time
+//////
+u64 uapp_sched_read_cpucounter(void){
+	return sysreg_read_cntpct();
+}
+
 
 //////
 // start physical timer to fire off after specified clock ticks
 //////
 void uapp_sched_start_physical_timer(TIME time){
-	//_XDPRINTFSMP_("%s: time=%u\n", __func__, (u32)time);
-	//bcm2837_miniuart_puts("\n[HYPSCHED:start_physical_timer: period=0x");
-	//debug_hexdumpu32((u32)time);
-	//bcm2837_miniuart_puts("\n");
-
 	sysreg_write_cnthp_tval(time);
 	sysreg_write_cnthp_ctl(0x1);
 }
+
 
 //////
 // stop physical timer
@@ -311,6 +304,12 @@ void uapp_sched_start_physical_timer(TIME time){
 void uapp_sched_stop_physical_timer(void){
 	sysreg_write_cnthp_ctl(0x0);
 }
+
+
+//////////////////////////////////////////////////////////////////////////////
+
+
+
 
 
 
