@@ -13,9 +13,10 @@
 #include <hypmtscheduler.h>
 
 
-//////
+//////////////////////////////////////////////////////////////////////////////
 // externs
-//////
+//////////////////////////////////////////////////////////////////////////////
+
 
 extern void uapp_sched_fiq_handler(void);
 extern void uapp_hypmtsched_schedentry(void);
@@ -29,18 +30,29 @@ extern __attribute__((section(".data"))) u32 debug_log_buffer_index;
 extern __attribute__((section(".data"))) hypmtscheduler_logentry_t debug_log_buffer[DEBUG_LOG_SIZE];
 
 
-//////
+//////////////////////////////////////////////////////////////////////////////
+
+
+
+
+
+//////////////////////////////////////////////////////////////////////////////
 // forward function prototypes
-//////
+//////////////////////////////////////////////////////////////////////////////
 
 u64 uapp_sched_read_cpucounter(void);
 void uapp_sched_logic(void);
 
 
+//////////////////////////////////////////////////////////////////////////////
 
-//////
+
+
+
+
+//////////////////////////////////////////////////////////////////////////////
 // global variables
-//////
+//////////////////////////////////////////////////////////////////////////////
 
 // set to 1 if any timer has expired upon handling a FIQ timer interrupt
 __attribute__((section(".data"))) volatile u32 fiq_timer_handler_timerevent_triggered = 0;
@@ -68,14 +80,25 @@ __attribute__((section(".data"))) struct sched_timer timer_last = {
   VERY_LONG_TIME
 };
 
+//////////////////////////////////////////////////////////////////////////////
 
 
-//////
+
+
+
+
+
+
+
+//////////////////////////////////////////////////////////////////////////////
 // software timer implementation
-//////
+//////////////////////////////////////////////////////////////////////////////
 
+
+//////
 // initialize timers struct
 // run_context = interrupts disabled
+//////
 void uapp_sched_timers_init(void){
   u32 i;
 
@@ -84,8 +107,10 @@ void uapp_sched_timers_init(void){
 }
 
 
+//////
 // undeclare (and disable) a timer
 // run_ccontext =
+//////
 void uapp_sched_timer_undeclare(struct sched_timer *t){
 
 	if (!t->inuse) {
@@ -105,8 +130,10 @@ void uapp_sched_timer_undeclare(struct sched_timer *t){
 }
 
 
+//////
 // instantiate timer for a given struct time entry
 // run_context:
+//////
 struct sched_timer *uapp_sched_timer_instantiate(struct sched_timer *t, u32 first_time_period,
 		u32 regular_time_period, int priority, HYPTHREADFUNC func){
 
@@ -147,9 +174,11 @@ struct sched_timer *uapp_sched_timer_instantiate(struct sched_timer *t, u32 firs
 }
 
 
+//////
 // declare a timer
 // returns NULL if we are out of timers
 // run_context:
+//////
 struct sched_timer *uapp_sched_timer_declare(u32 first_time_period,
 		u32 regular_time_period, int priority, HYPTHREADFUNC func){
 
@@ -171,7 +200,9 @@ struct sched_timer *uapp_sched_timer_declare(u32 first_time_period,
 }
 
 
+//////
 // redeclare an expired timer
+//////
 struct sched_timer *uapp_sched_timer_redeclare(struct sched_timer *t, u32 first_time_period,
 		u32 regular_time_period, int priority, HYPTHREADFUNC func){
 
@@ -181,8 +212,10 @@ struct sched_timer *uapp_sched_timer_redeclare(struct sched_timer *t, u32 first_
 }
 
 
+//////
 // update the timers subtracting time from all timers,
 // enabling those that run out
+//////
 void uapp_sched_timers_update(TIME time){
 	struct sched_timer *t;
 
@@ -209,6 +242,13 @@ void uapp_sched_timers_update(TIME time){
 	  timer_next = 0;
 	}
 }
+
+
+//////////////////////////////////////////////////////////////////////////////
+
+
+
+
 
 
 //////////////////////////////////////////////////////////////////////////////
