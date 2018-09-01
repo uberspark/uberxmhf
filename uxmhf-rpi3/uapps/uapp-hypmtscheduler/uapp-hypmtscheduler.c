@@ -353,8 +353,14 @@ void uapp_sched_stop_physical_timer(void){
 
 
 
+//////////////////////////////////////////////////////////////////////////////
+// hypmtscheduler non-preemptive priority scheduling logic
+//////////////////////////////////////////////////////////////////////////////
+
+
 //////
-// scheduler timer event processing
+// process all the timers that have expired, entering them into the
+// priority queue iff a disable signal is absent
 //////
 void uapp_sched_process_timers(u32 cpuid){
 	u32 i;
@@ -370,73 +376,56 @@ void uapp_sched_process_timers(u32 cpuid){
 
 			time_to_wait = sched_timers[i].regular_time_period; //reload
 			priority = sched_timers[i].priority;
-			//uapp_sched_timer_declare(time_to_wait, time_to_wait, priority, sched_timers[i].tfunc);
 			uapp_sched_timer_redeclare(&sched_timers[i], time_to_wait, time_to_wait, priority, sched_timers[i].tfunc);
 		}
 	}
 }
 
 
+//////
+// process priority queue and run hyptasks associated with the timers
+// hyptasks are run with interrupts enabled so we can continue to process
+// timers that expire during hyptask execution
+//////
+void uapp_sched_run_hyptasks(void){
+	int status;
+	u32 queue_data;
+	int priority;
+	struct sched_timer *task_timer;
 
 
+	status=0;
+	while(1){
+		status = priority_queue_remove(&queue_data, &priority);
+		if(status == 0)
+			break;
+		task_timer = (struct sched_timer *)queue_data;
 
+		//interrupts enable
+		enable_fiq();
 
+		if(task_timer->tfunc)
+			task_timer->tfunc(task_timer);
 
-
-//void uapp_sched_fiqhandler(u32 debug_val){
-void uapp_sched_fiqhandler(void){
-
-#if 0
-	fiq_cpsr = sysreg_read_cpsr();
-	bcm2837_miniuart_puts("\n[HYPTIMER]: Fired!: ");
-
-	bcm2837_miniuart_puts("CPSR.A=0x");
-	debug_hexdumpu32(((fiq_cpsr & (1UL << 8)) >> 8));
-	bcm2837_miniuart_puts(" ");
-
-	bcm2837_miniuart_puts("CPSR.I=0x");
-	debug_hexdumpu32(((fiq_cpsr & (1UL << 7)) >> 7));
-	bcm2837_miniuart_puts(" ");
-
-	bcm2837_miniuart_puts("CPSR.F=0x");
-	debug_hexdumpu32(((fiq_cpsr & (1UL << 6)) >> 6));
-	bcm2837_miniuart_puts("\n");
-
-	bcm2837_miniuart_puts("\n debug_val=0x");
-	debug_hexdumpu32(debug_val);
-	bcm2837_miniuart_puts("\n");
-
-	bcm2837_miniuart_puts("\n sp=0x");
-	debug_hexdumpu32(sysreg_read_sp());
-	bcm2837_miniuart_puts("\n");
-
-	bcm2837_miniuart_puts("\n stacktop=0x");
-	debug_hexdumpu32(&uapp_sched_fiqhandler_stack_top);
-	bcm2837_miniuart_puts("\n");
-
-
-	//bcm2837_miniuart_puts("\n[HYPTIMER]: Halting!\n");
-	//HALT();
-#endif
-
-
-	//fiq_sp = sysreg_read_sp();
-	//_XDPRINTFSMP_("%s: Timer Fired: sp=0x%08x, cpsr=0x%08x\n", __func__,
-	//		fiq_sp, sysreg_read_cpsr());
-	//bcm2837_miniuart_puts("\n[HYPTIMER]: Fired!!\n");
-    //spin_lock(&hypmtscheduler_execution_lock);
-	uapp_sched_timerhandler();
-    //spin_unlock(&hypmtscheduler_execution_lock);
-
-	//bcm2837_miniuart_puts("\n[HYPTIMER]: Fired!!\n");
-	//uapp_sched_start_physical_timer(3 * 20 * 1024 * 1024);
-	//_XDPRINTFSMP_("%s: resuming\n", __func__);
-
+		//interrupts disable
+		disable_fiq();
+	}
 }
 
 
+
+//////
+// FIQ timer handler
+//////
+void uapp_sched_fiqhandler(void){
+	uapp_sched_timerhandler();
+}
+
+
+//////
+// FIQ timer handler
+//////
 void uapp_sched_timerhandler(void){
-	//bcm2837_miniuart_puts("\n[HYPTIMER]: Fired\n");
 
 	//stop physical timer
 	uapp_sched_stop_physical_timer();
@@ -455,84 +444,36 @@ void uapp_sched_timerhandler(void){
 
 	if (fiq_timer_handler_timerevent_triggered == 0){
 		//no timers expired so just return from timer interrupt
-    	//bcm2837_miniuart_puts("\n[HYPTIMER]: No timers expired EOI: elr_hyp=0x");
-    	//debug_hexdumpu32(sysreg_read_elrhyp());
-    	//bcm2837_miniuart_puts("spsr_hyp=0x");
-    	//debug_hexdumpu32(sysreg_read_spsr_hyp());
-    	//bcm2837_miniuart_puts("\n");
     	return;
 
 	}else{
 		//timer has expired, so let us look at the PE state
 		//which triggered this timer FIQ to decide on our course of
 		//action
-		//fiq_pemode = sysreg_read_spsr_hyp() & 0x0000000FUL;
-		//if(fiq_pemode == 0xA){
 		if( (sysreg_read_spsr_hyp() & 0x0000000FUL) == 0xA){
 			//PE state was hyp mode, so we simply resume
-	    	//bcm2837_miniuart_puts("\n[HYPTIMER]: Timer expired, PE state=HYP, queuing...\n");
-	    	//HALT();
 			return;
 		}else{
-			//PE state says we are in guest mode
+			//PE state says we are in guest mode, so stow away guest mode
+			//pc and spsr so we can resume guest after processing all the
+			//timers that have expired
 			fiq_timer_handler_guestmode_pc = sysreg_read_elrhyp();
 			fiq_timer_handler_guestmode_spsr = sysreg_read_spsr_hyp();
-	    	//bcm2837_miniuart_puts("\n[HYPTIMER]: PE state=GUEST, PC=0x");
-	    	//debug_hexdumpu32(fiq_timer_handler_guestmode_pc);
-	    	//bcm2837_miniuart_puts(" SPSR=0x");
-	    	//debug_hexdumpu32(fiq_timer_handler_guestmode_spsr);
-	    	//bcm2837_miniuart_puts("\n");
 
-	    	//bcm2837_miniuart_puts("Halting. Wip!\n");
-	    	//HALT();
-
-	    	//write scheduler main to elr_hyp
-	    	//read spsr_hyp; change mode to hyp with all A, I and F masks set
-	    	//0x000001DA
-	    	//issue eret
-	    	sysreg_write_elrhyp(&uapp_hypmtsched_schedentry);
+			//resume at uapp_sched_logic in HYP mode
+			sysreg_write_elrhyp(&uapp_hypmtsched_schedentry);
 	    	sysreg_write_spsr_hyp(0x000001DA);
-	    	//cpu_eret();
 	    	return;
 		}
 	}
-
-	//uapp_sched_logic();
 }
 
 
 
-
-
-void uapp_sched_run_hyptasks(void){
-	int status;
-	u32 queue_data;
-	int priority;
-	struct sched_timer *task_timer;
-
-
-	status=0;
-	while(1){
-		status = priority_queue_remove(&queue_data, &priority);
-		if(status == 0)
-			break;
-		task_timer = (struct sched_timer *)queue_data;
-
-		//interrupts enable
-		enable_fiq();
-
-		//bcm2837_miniuart_puts("\n[HYPSCHED]: HypTask completed run with Priority=0x");
-    	//debug_hexdumpu32(task_timer->priority);
-		if(task_timer->tfunc)
-			task_timer->tfunc(task_timer);
-
-		//interrupts disable
-		disable_fiq();
-	}
-
-}
-
-
+//////
+// scheduling logic that runs in HYP mode to process timers that
+// have expired
+//////
 void uapp_sched_logic(void){
 	struct sched_timer *task_timer;
 	u32 queue_data;
@@ -540,35 +481,28 @@ void uapp_sched_logic(void){
 	int status;
 	volatile u32 sp, spnew;
 
-	//bcm2837_miniuart_puts("\n[HYPSCHED]: Came in. Halting Wip!\n");
-	//HALT();
 
+	//process expired timers
 	uapp_sched_process_timers(0); //TBD: remove hard-coded cpuid (0)
-	//uapp_sched_run_hyptasks();
 
-	#if 1
+	//run all queued hyptasks
 	while(1){
 		uapp_sched_run_hyptasks();
 		uapp_sched_process_timers(0); //TBD: remove hard-coded cpuid (0)
 		if(priority_queue_isempty())
 			break;
 	}
-	#endif
-
-	//bcm2837_miniuart_puts("\n[HYPSCHED]: Finished all HypTasks. Now resuming guest...\n");
-	//bcm2837_miniuart_puts("\n[HYPSCHED]: Halting WiP!\n");
-	//HALT();
 
 	//resume guest
 	sysreg_write_elrhyp(fiq_timer_handler_guestmode_pc);
    	sysreg_write_spsr_hyp(fiq_timer_handler_guestmode_spsr);
    	fiq_timer_handler_guestmode_pc = 0;
    	fiq_timer_handler_guestmode_spsr = 0;
-   	//cpu_eret();
    	return;
 }
 
 
+//////////////////////////////////////////////////////////////////////////////
 
 
 
