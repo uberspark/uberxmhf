@@ -381,68 +381,6 @@ void uapp_sched_process_timers(u32 cpuid){
 
 
 
-//////
-// uapp sched timer_initialize
-// initialize hypervisor timer functionality
-//////
-void uapp_sched_timer_initialize(u32 cpuid){
-	u32 cpsr;
-	u64 cntpct_val;
-	u32 cpu0_tintctl_value;
-	u32 loop_counter=0;
-
-	_XDPRINTFSMP_("%s[%u]: ENTER\n", __func__, cpuid);
-
-	//disable FIQs
-	disable_fiq();
-	cpsr = sysreg_read_cpsr();
-	_XDPRINTFSMP_("%s[%u]: CPSR[after disable_fiq]=0x%08x; CPSR.A=%u, CPSR.I=%u, CPSR.F=%u\n",
-			__func__, cpuid, cpsr, ((cpsr & (1UL << 8)) >> 8),
-			((cpsr & (1UL << 7)) >> 7),
-			((cpsr & (1UL << 6)) >> 6) );
-
-
-	//enable cpu0 timer interrupt control to generate FIQs
-	cpu0_tintctl_value = mmio_read32(LOCAL_TIMER_INT_CONTROL0);
-	_XDPRINTFSMP_("%s[%u]: cpu0_tintctl_value[before]=0x%08x, CNTHPFIQ=%u, CNTHPIRQ=%u\n",
-			__func__, cpuid,
-			cpu0_tintctl_value,
-			((cpu0_tintctl_value & (1UL << 6)) >> 6),
-			((cpu0_tintctl_value & (1UL << 2)) >> 2)
-			);
-
-	cpu0_tintctl_value &= ~(1UL << 2); //disable IRQs
-	cpu0_tintctl_value |= (1UL << 6); //enable FIQs
-	mmio_write32(LOCAL_TIMER_INT_CONTROL0, cpu0_tintctl_value);
-
-
-	cpu0_tintctl_value = mmio_read32(LOCAL_TIMER_INT_CONTROL0);
-	_XDPRINTFSMP_("%s[%u]: cpu0_tintctl_value[after]=0x%08x, CNTHPFIQ=%u, CNTHPIRQ=%u\n",
-			__func__, cpuid,
-			cpu0_tintctl_value,
-			((cpu0_tintctl_value & (1UL << 6)) >> 6),
-			((cpu0_tintctl_value & (1UL << 2)) >> 2)
-			);
-
-
-
-
-	//enable FIQs
-	//enable_fiq();
-	cpsr = sysreg_read_cpsr();
-	_XDPRINTFSMP_("%s[%u]: CPSR[after enable_fiq]=0x%08x; CPSR.A=%u, CPSR.I=%u, CPSR.F=%u\n",
-			__func__, cpuid, cpsr, ((cpsr & (1UL << 8)) >> 8),
-			((cpsr & (1UL << 7)) >> 7),
-			((cpsr & (1UL << 6)) >> 6) );
-
-
-	//read out generic timer frequency
-	_XDPRINTFSMP_("%s[%u]: CNTFRQ=%u\n",
-			__func__, cpuid, sysreg_read_cntfrq());
-
-
-	_XDPRINTFSMP_("%s[%u]: EXIT\n", __func__, cpuid);
-}
 
 
 //void uapp_sched_fiqhandler(u32 debug_val){
@@ -1124,10 +1062,78 @@ bool uapp_hypmtscheduler_handlehcall(u32 uhcall_function, void *uhcall_buffer,
 
 
 
+
+
+
+
 //////////////////////////////////////////////////////////////////////////////
-// main hypmtscheduler initialization function
+// hypmtscheduler initialization
 //////////////////////////////////////////////////////////////////////////////
 
+
+//////
+// initialize hypmtscheduler timing functionality
+//////
+void uapp_sched_timer_initialize(u32 cpuid){
+	u32 cpsr;
+	u64 cntpct_val;
+	u32 cpu0_tintctl_value;
+	u32 loop_counter=0;
+
+	_XDPRINTFSMP_("%s[%u]: ENTER\n", __func__, cpuid);
+
+	//disable FIQs
+	disable_fiq();
+
+	cpsr = sysreg_read_cpsr();
+	_XDPRINTFSMP_("%s[%u]: CPSR[after disable_fiq]=0x%08x; CPSR.A=%u, CPSR.I=%u, CPSR.F=%u\n",
+			__func__, cpuid, cpsr, ((cpsr & (1UL << 8)) >> 8),
+			((cpsr & (1UL << 7)) >> 7),
+			((cpsr & (1UL << 6)) >> 6) );
+
+
+	//enable cpu0 timer interrupt control to generate FIQs
+	cpu0_tintctl_value = mmio_read32(LOCAL_TIMER_INT_CONTROL0);
+	_XDPRINTFSMP_("%s[%u]: cpu0_tintctl_value[before]=0x%08x, CNTHPFIQ=%u, CNTHPIRQ=%u\n",
+			__func__, cpuid,
+			cpu0_tintctl_value,
+			((cpu0_tintctl_value & (1UL << 6)) >> 6),
+			((cpu0_tintctl_value & (1UL << 2)) >> 2)
+			);
+
+	cpu0_tintctl_value &= ~(1UL << 2); //disable IRQs
+	cpu0_tintctl_value |= (1UL << 6); //enable FIQs
+	mmio_write32(LOCAL_TIMER_INT_CONTROL0, cpu0_tintctl_value);
+
+
+	cpu0_tintctl_value = mmio_read32(LOCAL_TIMER_INT_CONTROL0);
+	_XDPRINTFSMP_("%s[%u]: cpu0_tintctl_value[after]=0x%08x, CNTHPFIQ=%u, CNTHPIRQ=%u\n",
+			__func__, cpuid,
+			cpu0_tintctl_value,
+			((cpu0_tintctl_value & (1UL << 6)) >> 6),
+			((cpu0_tintctl_value & (1UL << 2)) >> 2)
+			);
+
+	cpsr = sysreg_read_cpsr();
+	_XDPRINTFSMP_("%s[%u]: CPSR[after enable_fiq]=0x%08x; CPSR.A=%u, CPSR.I=%u, CPSR.F=%u\n",
+			__func__, cpuid, cpsr, ((cpsr & (1UL << 8)) >> 8),
+			((cpsr & (1UL << 7)) >> 7),
+			((cpsr & (1UL << 6)) >> 6) );
+
+
+	//read out generic timer frequency
+	_XDPRINTFSMP_("%s[%u]: CNTFRQ=%u\n",
+			__func__, cpuid, sysreg_read_cntfrq());
+
+
+	_XDPRINTFSMP_("%s[%u]: EXIT\n", __func__, cpuid);
+}
+
+
+
+//////
+// the main initialization function
+//////
 void uapp_sched_initialize(u32 cpuid){
 	int value;
 	int priority;
@@ -1176,3 +1182,6 @@ void uapp_sched_initialize(u32 cpuid){
 	}
 
 }
+
+
+//////////////////////////////////////////////////////////////////////////////
