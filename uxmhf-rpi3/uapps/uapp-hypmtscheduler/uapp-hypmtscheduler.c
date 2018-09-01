@@ -123,6 +123,8 @@ void uapp_sched_timer_undeclare(struct sched_timer *t){
 	if (t == timer_next) {
 		uapp_sched_timers_update(uapp_sched_read_cpucounter() - time_timer_set);
 		if (timer_next) {
+			debug_log_tsc((u32)timer_next->time_to_wait,
+					uapp_sched_read_cpucounter(), DEBUG_LOG_EVTTYPE_PHYSTIMERPROGRAM_UNDECLARE);
 			uapp_sched_start_physical_timer(timer_next->time_to_wait);
 			time_timer_set = uapp_sched_read_cpucounter();
 		}
@@ -151,6 +153,8 @@ struct sched_timer *uapp_sched_timer_instantiate(struct sched_timer *t, u32 firs
 	if (!timer_next) {
 		// no timers set at all, so this is shortest
 		time_timer_set = uapp_sched_read_cpucounter();
+		debug_log_tsc((u32)(timer_next = t)->time_to_wait,
+				uapp_sched_read_cpucounter(), DEBUG_LOG_EVTTYPE_PHYSTIMERPROGRAM_INSTANTIATESHORTEST);
 		uapp_sched_start_physical_timer((timer_next = t)->time_to_wait);
 
 	} else if ((first_time_period + uapp_sched_read_cpucounter()) < (timer_next->time_to_wait + time_timer_set)) {
@@ -158,6 +162,8 @@ struct sched_timer *uapp_sched_timer_instantiate(struct sched_timer *t, u32 firs
 		// this timer as the physical timer
 		uapp_sched_timers_update(uapp_sched_read_cpucounter() - time_timer_set);
 		time_timer_set = uapp_sched_read_cpucounter();
+		debug_log_tsc((u32)(timer_next = t)->time_to_wait,
+				uapp_sched_read_cpucounter(), DEBUG_LOG_EVTTYPE_PHYSTIMERPROGRAM_INSTANTIATESHORTER);
 		uapp_sched_start_physical_timer((timer_next = t)->time_to_wait);
 
 	} else {
@@ -441,6 +447,8 @@ void uapp_sched_timerhandler(void){
 	// start physical timer for next shortest time if one exists
 	if (timer_next) {
 		time_timer_set = uapp_sched_read_cpucounter();
+		debug_log_tsc((u32)timer_next->time_to_wait,
+				uapp_sched_read_cpucounter(), DEBUG_LOG_EVTTYPE_PHYSTIMERPROGRAM_TIMERHANDLER);
 		uapp_sched_start_physical_timer(timer_next->time_to_wait);
 	}
 
