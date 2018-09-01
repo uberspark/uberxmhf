@@ -753,7 +753,10 @@ __attribute__((section(".data"))) hypmtscheduler_hyptask_handle_t hyptask_handle
 // hypmtscheduler hypercall APIs
 //////////////////////////////////////////////////////////////////////////////
 
+
+//////
 // create hyptask API
+//////
 void uapp_hypmtscheduler_handlehcall_createhyptask(ugapp_hypmtscheduler_param_t *hmtsp){
 	uint32_t hyptask_first_period = hmtsp->iparam_1;
 	uint32_t hyptask_regular_period = hmtsp->iparam_2;
@@ -762,25 +765,7 @@ void uapp_hypmtscheduler_handlehcall_createhyptask(ugapp_hypmtscheduler_param_t 
 	uint32_t i;
 	uint32_t hyptask_handle_found;
 
-#if 0
-	bcm2837_miniuart_puts("\n[HYPMTSCHED: CREATEHYPTASK]: first period=0x");
-	debug_hexdumpu32(hyptask_first_period);
-	bcm2837_miniuart_puts(", regular period=0x");
-	debug_hexdumpu32(hyptask_regular_period);
-	bcm2837_miniuart_puts(", priority=0x\n");
-	debug_hexdumpu32(hyptask_priority);
-	bcm2837_miniuart_puts("\n");
-	bcm2837_miniuart_puts(", hyptask id=0x\n");
-	debug_hexdumpu32(hyptask_id);
-	bcm2837_miniuart_puts("\n");
-
-	bcm2837_miniuart_puts("\n[HYPMTSCHED: CREATEHYPTASK]: CNTFRQ=0x");
-	debug_hexdumpu32(sysreg_read_cntfrq());
-	bcm2837_miniuart_puts("\n");
-#endif
-
 	debug_log_tsc(hyptask_id, uapp_sched_read_cpucounter(), DEBUG_LOG_EVTTYPE_CREATEHYPTASK_BEFORE);
-
 
 	//allocate hyptask_handle
 	hyptask_handle_found=0;
@@ -807,9 +792,6 @@ void uapp_hypmtscheduler_handlehcall_createhyptask(ugapp_hypmtscheduler_param_t 
 	//ok now populate the hyptask_id within the hyptask handle
 	hyptask_handle_list[i].hyptask_id = hyptask_id;
 
-	//adjust first period
-	//hyptask_first_period += 0x6076be;
-
 	hyptask_handle_list[i].t = uapp_sched_timer_declare(hyptask_first_period, hyptask_regular_period,
 			hyptask_priority,
 			hyptask_idlist[hyptask_id]);
@@ -820,44 +802,21 @@ void uapp_hypmtscheduler_handlehcall_createhyptask(ugapp_hypmtscheduler_param_t 
 		return;
 	}
 
-#if 0
-	//dump timer value just as we created this task
-	bcm2837_miniuart_puts("\n[HYPMTSCHED:TSTAMP]:CREATEHYPTASK:0x");
-	debug_hexdumpu32(i);
-	bcm2837_miniuart_puts(":0x");
-	cpu_counter=uapp_sched_read_cpucounter();
-	debug_hexdumpu32((uint32_t)(cpu_counter >> 32));
-	debug_hexdumpu32((uint32_t)(cpu_counter));
-	bcm2837_miniuart_puts("\n");
-
-
-	bcm2837_miniuart_puts("\n[HYPMTSCHED: CREATEHYPTASK]: struct sched_timer=0x");
-	debug_hexdumpu32((uint32_t)hyptask_handle_list[i].t);
-	bcm2837_miniuart_puts("\n");
-#endif
-
 	debug_log_tsc(hyptask_id, uapp_sched_read_cpucounter(), DEBUG_LOG_EVTTYPE_CREATEHYPTASK_AFTER);
-
 
 	hmtsp->oparam_1 = i;	//return hyptask handle
 	hmtsp->status=1;	//success
-
 }
 
 
+//////
 // disable hyptask API
+//////
 void uapp_hypmtscheduler_handlehcall_disablehyptask(ugapp_hypmtscheduler_param_t *hmtsp){
 	uint32_t hyptask_handle = hmtsp->iparam_1;
 	struct sched_timer *hyptask_timer;
 	uint32_t i;
 	uint32_t hyptask_handle_found;
-
-#if 0
-	bcm2837_miniuart_puts("\n[HYPMTSCHED: DISABLEHYPTASK]: hyptask_handle=0x");
-	debug_hexdumpu32(hyptask_handle);
-	bcm2837_miniuart_puts("\n");
-#endif
-
 
 	//check if provided hyptask handle is within limits
 	if(hyptask_handle >= HYPMTSCHEDULER_MAX_HYPTASKS){
@@ -881,30 +840,17 @@ void uapp_hypmtscheduler_handlehcall_disablehyptask(ugapp_hypmtscheduler_param_t
 
 	hmtsp->status=1; //success
 
-
 	debug_log_tsc(hyptask_handle_list[hyptask_handle].hyptask_id, uapp_sched_read_cpucounter(), DEBUG_LOG_EVTTYPE_DISABLEHYPTASK_AFTER);
-
-#if 0
-	//bcm2837_miniuart_puts("\n[HYPMTSCHED: DISABLEHYPTASK]: struct sched_timer=0x");
-	//debug_hexdumpu32((uint32_t)hyptask_timer);
-	//bcm2837_miniuart_puts("\n");
-	//HALT();
-#endif
 }
 
 
-
+//////
 // delete hyptask API
+//////
 void uapp_hypmtscheduler_handlehcall_deletehyptask(ugapp_hypmtscheduler_param_t *hmtsp){
 	uint32_t hyptask_handle = hmtsp->iparam_1;
 	struct sched_timer *hyptask_timer;
 	u32 hyptask_id;
-
-#if 0
-	bcm2837_miniuart_puts("\n[HYPMTSCHED: DELETEHYPTASK]: hyptask_handle=0x");
-	debug_hexdumpu32(hyptask_handle);
-	bcm2837_miniuart_puts("\n");
-#endif
 
 	//check if provided hyptask handle is within limits
 	if(hyptask_handle >= HYPMTSCHEDULER_MAX_HYPTASKS){
@@ -936,12 +882,12 @@ void uapp_hypmtscheduler_handlehcall_deletehyptask(ugapp_hypmtscheduler_param_t 
 	hmtsp->status=1; //success
 
 	debug_log_tsc(hyptask_id, uapp_sched_read_cpucounter(), DEBUG_LOG_EVTTYPE_DELETEHYPTASK_AFTER);
-
 }
 
 
-
+//////
 // init TSC API
+//////
 void uapp_hypmtscheduler_handlehcall_inittsc(ugapp_hypmtscheduler_param_t *hmtsp){
 	debug_log_tsc(0xFFFFFFFFUL, uapp_sched_read_cpucounter(), DEBUG_LOG_EVTTYPE_INITTSC_BEFORE);
 	uapp_sched_init_cputsc();
@@ -950,7 +896,9 @@ void uapp_hypmtscheduler_handlehcall_inittsc(ugapp_hypmtscheduler_param_t *hmtsp
 }
 
 
+//////
 //dump debug log API
+//////
 void uapp_hypmtscheduler_handlehcall_dumpdebuglog(ugapp_hypmtscheduler_param_t *hmtsp){
 	u8 *debug_log_target_buffer = (u8 *)hmtsp->iparam_1;
 
@@ -969,48 +917,10 @@ void uapp_hypmtscheduler_handlehcall_dumpdebuglog(ugapp_hypmtscheduler_param_t *
 }
 
 
-
-
-#if 0
-// getrawtick API
-void uapp_hypmtscheduler_handlehcall_getrawtick(ugapp_hypmtscheduler_param_t *hmtsp){
-	uint64_t rawtsc;
-
-	rawtsc=uapp_sched_read_cpucounter();
-	//rawtsc = sysreg_read_cntvct();
-	hmtsp->oparam_1 = (uint32_t) ((uint64_t)rawtsc >> 32);
-	hmtsp->oparam_2 = (uint32_t) rawtsc;
-
-	bcm2837_miniuart_puts("\n[HYPMTSCHED: GETRAWTICK]: CNTPCT=0x");
-	debug_hexdumpu32(hmtsp->oparam_1);
-	debug_hexdumpu32(hmtsp->oparam_2);
-	bcm2837_miniuart_puts("\n");
-
-	hmtsp->status=1; //success
-}
-
-
-// getrawtick API
-void uapp_hypmtscheduler_handlehcall_logtsc(ugapp_hypmtscheduler_param_t *hmtsp){
-	uint64_t rawtsc;
-
-	rawtsc=uapp_sched_rdtsc64();
-	hmtsp->oparam_1 = (uint32_t) ((uint64_t)rawtsc >> 32);
-	hmtsp->oparam_2 = (uint32_t) rawtsc;
-
-	bcm2837_miniuart_puts("\n[HYPMTSCHED: LOGTSC]: EVT:0x");
-	debug_hexdumpu32(hmtsp->iparam_1);
-	bcm2837_miniuart_puts(" TSC=0x");
-	debug_hexdumpu32(hmtsp->oparam_1);
-	debug_hexdumpu32(hmtsp->oparam_2);
-	bcm2837_miniuart_puts("\n");
-
-	hmtsp->status=1; //success
-}
-#endif
-
+//////
 // top-level hypercall handler hub
 // return true if handled the hypercall, false if not
+//////
 bool uapp_hypmtscheduler_handlehcall(u32 uhcall_function, void *uhcall_buffer,
 		u32 uhcall_buffer_len){
 	ugapp_hypmtscheduler_param_t *hmtsp;
@@ -1018,8 +928,6 @@ bool uapp_hypmtscheduler_handlehcall(u32 uhcall_function, void *uhcall_buffer,
 	if(uhcall_function != UAPP_HYPMTSCHEDULER_UHCALL){
 		return false;
 	}
-
-    //spin_lock(&hypmtscheduler_execution_lock);
 
 	hmtsp = (ugapp_hypmtscheduler_param_t *)uhcall_buffer;
 
@@ -1032,22 +940,11 @@ bool uapp_hypmtscheduler_handlehcall(u32 uhcall_function, void *uhcall_buffer,
 	}else if(hmtsp->uhcall_fn == UAPP_HYPMTSCHEDULER_UHCALL_DELETEHYPTASK){
 		uapp_hypmtscheduler_handlehcall_deletehyptask(hmtsp);
 
-#if 0
-	}else if(hmtsp->uhcall_fn == UAPP_HYPMTSCHEDULER_UHCALL_GETRAWTICK){
-		uapp_hypmtscheduler_handlehcall_getrawtick(hmtsp);
-#endif
-
 	}else if(hmtsp->uhcall_fn == UAPP_HYPMTSCHEDULER_UHCALL_INITTSC){
 		uapp_hypmtscheduler_handlehcall_inittsc(hmtsp);
 
-#if 0
-	}else if(hmtsp->uhcall_fn == UAPP_HYPMTSCHEDULER_UHCALL_LOGTSC){
-		uapp_hypmtscheduler_handlehcall_logtsc(hmtsp);
-#endif
-
 	}else if(hmtsp->uhcall_fn == UAPP_HYPMTSCHEDULER_UHCALL_DUMPDEBUGLOG){
 		uapp_hypmtscheduler_handlehcall_dumpdebuglog(hmtsp);
-
 
 	}else{
 		bcm2837_miniuart_puts("\nHYPMTSCHED: UHCALL: ignoring unknown uhcall_fn=0x");
@@ -1055,10 +952,12 @@ bool uapp_hypmtscheduler_handlehcall(u32 uhcall_function, void *uhcall_buffer,
 		bcm2837_miniuart_puts("\n");
 	}
 
-    //spin_unlock(&hypmtscheduler_execution_lock);
-
 	return true;
 }
+
+
+//////////////////////////////////////////////////////////////////////////////
+
 
 
 
