@@ -71,14 +71,147 @@ __attribute__((section(".data"))) struct sched_timer timer_last = {
 
 
 //////
-// initialize timer data structures
+// software timer implementation
 //////
+
+// initialize timers struct
+// run_context = interrupts disabled
 void uapp_sched_timers_init(void){
   u32 i;
 
   for(i=0; i < MAX_TIMERS; i++)
 	  sched_timers[i].inuse = FALSE;
 }
+
+
+// undeclare (and disable) a timer
+// run_ccontext =
+void uapp_sched_timer_undeclare(struct sched_timer *t){
+
+	if (!t->inuse) {
+		return;
+	}
+
+	t->inuse = FALSE;
+
+	// check if we were waiting on this one
+	if (t == timer_next) {
+		uapp_sched_timers_update(uapp_sched_read_cpucounter() - time_timer_set);
+		if (timer_next) {
+			uapp_sched_start_physical_timer(timer_next->time_to_wait);
+			time_timer_set = uapp_sched_read_cpucounter();
+		}
+	}
+}
+
+
+// instantiate timer for a given struct time entry
+// run_context:
+struct sched_timer *uapp_sched_timer_instantiate(struct sched_timer *t, u32 first_time_period,
+		u32 regular_time_period, int priority, HYPTHREADFUNC func){
+
+	// initialize the timer struct
+	t->event = FALSE;
+	t->disable_tfunc = FALSE;
+	t->first_time_period = first_time_period;
+	t->regular_time_period = regular_time_period;
+	t->priority = priority;
+	t->tfunc = func;
+	t->first_time_period_expired = 0;
+	t->time_to_wait = first_time_period;
+	t->sticky_time_to_wait = regular_time_period;
+
+	if (!timer_next) {
+		// no timers set at all, so this is shortest
+		time_timer_set = uapp_sched_read_cpucounter();
+		uapp_sched_start_physical_timer((timer_next = t)->time_to_wait);
+
+	} else if ((first_time_period + uapp_sched_read_cpucounter()) < (timer_next->time_to_wait + time_timer_set)) {
+		// new timer is shorter than current one, so update all timers and set
+		// this timer as the physical timer
+		uapp_sched_timers_update(uapp_sched_read_cpucounter() - time_timer_set);
+		time_timer_set = uapp_sched_read_cpucounter();
+		uapp_sched_start_physical_timer((timer_next = t)->time_to_wait);
+
+	} else {
+		// new timer is longer, than current one, do nothing now
+		// next call to uapp_sched_timers_update  will take care of bumping this
+		// timer to the correct position
+
+	}
+
+	//this timer is in use now
+	t->inuse = TRUE;
+
+	return(t);
+}
+
+
+// declare a timer
+// returns NULL if we are out of timers
+// run_context:
+struct sched_timer *uapp_sched_timer_declare(u32 first_time_period,
+		u32 regular_time_period, int priority, HYPTHREADFUNC func){
+
+	struct sched_timer *t;
+
+	//grab a free timer entry
+	for (t=sched_timers;t<&sched_timers[MAX_TIMERS];t++) {
+		if (!t->inuse) break;
+	}
+
+	// out of timers?
+	if (t == &sched_timers[MAX_TIMERS]) {
+		return 0;
+	}
+
+	//instantiate this timer and return it
+	return uapp_sched_timer_instantiate(t, first_time_period, regular_time_period,
+			priority, func);
+}
+
+
+// redeclare an expired timer
+struct sched_timer *uapp_sched_timer_redeclare(struct sched_timer *t, u32 first_time_period,
+		u32 regular_time_period, int priority, HYPTHREADFUNC func){
+
+	//(re) instantate the timer with specified values
+	return uapp_sched_timer_instantiate(t, first_time_period, regular_time_period,
+			priority, func);
+}
+
+
+// update the timers subtracting time from all timers,
+// enabling those that run out
+void uapp_sched_timers_update(TIME time){
+	struct sched_timer *t;
+
+	timer_next = &timer_last;
+
+	for (t=sched_timers;t<&sched_timers[MAX_TIMERS];t++) {
+		if (t->inuse) {
+		  if (time < t->time_to_wait) { // unexpired
+			t->time_to_wait -= time;
+			if (t->time_to_wait < timer_next->time_to_wait){
+			  timer_next = t;
+			}
+
+		  } else { // expired
+			t->event = TRUE;
+			t->inuse = FALSE; 	// remove timer
+			fiq_timer_handler_timerevent_triggered=1; //set timerevent_triggered to true
+		  }
+		}
+	  }
+
+	// reset timer_next if no timers found
+	if (!timer_next->inuse) {
+	  timer_next = 0;
+	}
+}
+
+
+
 
 
 //////
@@ -103,196 +236,15 @@ void disable_fiq(void){
 
 
 
-//////
-// undeclare (and disable) a timer
-//////
-void uapp_sched_timer_undeclare(struct sched_timer *t){
-	//disable_fiq();
-
-	if (!t->inuse) {
-		//enable_fiq();
-		return;
-	}
-
-	t->inuse = FALSE;
-
-	// check if we were waiting on this one
-	if (t == timer_next) {
-		uapp_sched_timers_update(uapp_sched_read_cpucounter() - time_timer_set);
-		if (timer_next) {
-			uapp_sched_start_physical_timer(timer_next->time_to_wait);
-			time_timer_set = uapp_sched_read_cpucounter();
-		}
-	}
-
-	//enable_fiq();
-}
-
-
-//////
-// declare a timer
-// time = time to wait in clock ticks
-// returns NULL if something went wrong
-//////
-//struct sched_timer *uapp_sched_timer_declare(u32 time, char *event, int priority){
-//struct sched_timer *uapp_sched_timer_declare(u32 time, HYPTHREADFUNC func, int priority){
-struct sched_timer *uapp_sched_timer_declare(u32 first_time_period,
-		u32 regular_time_period, int priority, HYPTHREADFUNC func){
-	struct sched_timer *t;
-
-  //disable_fiq();
-
-  for (t=sched_timers;t<&sched_timers[MAX_TIMERS];t++) {
-    if (!t->inuse) break;
-  }
-
-  // out of timers?
-  if (t == &sched_timers[MAX_TIMERS]) {
-    //enable_fiq();
-    return(0);
-  }
-
-  // install new timer
-  //t->event = event;
-  t->event = FALSE;
-  t->disable_tfunc = FALSE;
-  t->regular_time_period = regular_time_period;
-  t->first_time_period = first_time_period;
-  t->priority = priority;
-  t->tfunc = func;
-
-  t->first_time_period_expired = 0;
-  t->time_to_wait = first_time_period;
-  t->sticky_time_to_wait = regular_time_period;
-
-  //_XDPRINTF_("%s,%u: even///t=%u, time_to_wait=%016llx, sticky_time_to_wait=%016llx, priority=%u\n",
-	//	  __func__, __LINE__,
-	//		t->event, t->time_to_wait, t->sticky_time_to_wait, t->priority);
-
-
-  if (!timer_next) {
-    // no timers set at all, so this is shortest
-    time_timer_set = uapp_sched_read_cpucounter();
-    uapp_sched_start_physical_timer((timer_next = t)->time_to_wait);
-	//_XDPRINTF_("%s,%u: ENTER, time_to_wait=%016llx\n", __func__, __LINE__,
-	//		t->time_to_wait);
-	//bcm2837_miniuart_puts("[HYPSCHED]: shortest timer set val=0x\n");
-    //debug_hexdumpu32(t->time_to_wait);
-	//bcm2837_miniuart_puts("\n");
-
-
-
-  } else if ((first_time_period + uapp_sched_read_cpucounter()) < (timer_next->time_to_wait + time_timer_set)) {
-    // new timer is shorter than current one, so
-    uapp_sched_timers_update(uapp_sched_read_cpucounter() - time_timer_set);
-    time_timer_set = uapp_sched_read_cpucounter();
-    uapp_sched_start_physical_timer((timer_next = t)->time_to_wait);
-	//_XDPRINTF_("%s,%u: ENTER\n", __func__, __LINE__);
-  } else {
-    // new timer is longer, than current one
-	//_XDPRINTF_("%s,%u: ENTER, time_to_wait=%016llx\n", __func__, __LINE__,
-	//		t->time_to_wait);
-  }
-
-  t->inuse = TRUE;
-
-  //enable_fiq();
-
-  return(t);
-}
-
-
-//////
-// redeclare an expired timer
-//////
-struct sched_timer *uapp_sched_timer_redeclare(struct sched_timer *t, u32 first_time_period,
-		u32 regular_time_period, int priority, HYPTHREADFUNC func){
-
-	t->event = FALSE;
-	t->disable_tfunc = FALSE;
-	t->first_time_period = first_time_period;
-	t->regular_time_period = regular_time_period;
-	t->priority = priority;
-	t->tfunc = func;
-
-	t->first_time_period_expired = 0;
-	t->time_to_wait = first_time_period;
-	t->sticky_time_to_wait = regular_time_period;
-
-	if (!timer_next) {
-		// no timers set at all, so this is shortest
-		time_timer_set = uapp_sched_read_cpucounter();
-		uapp_sched_start_physical_timer((timer_next = t)->time_to_wait);
-
-	} else if ((first_time_period + uapp_sched_read_cpucounter()) < (timer_next->time_to_wait + time_timer_set)) {
-	    // new timer is shorter than current one, so update all timers
-		// and set this one as the shortest timer
-	    uapp_sched_timers_update(uapp_sched_read_cpucounter() - time_timer_set);
-	    time_timer_set = uapp_sched_read_cpucounter();
-	    uapp_sched_start_physical_timer((timer_next = t)->time_to_wait);
-
-	} else {
-	    // new timer is longer, than current one, so we dont do anything
-	}
-
-	t->inuse = TRUE;
-
-	return t;
-}
 
 
 
 
 
-//////
-// subtract time from all timers, enabling those that run out
-//////
-void uapp_sched_timers_update(TIME time){
-  struct sched_timer *t;
 
-  timer_next = &timer_last;
 
-  //_XDPRINTF_("%s,%u: ENTER: time=%016llx\n", __func__, __LINE__, time);
 
-  for (t=sched_timers;t<&sched_timers[MAX_TIMERS];t++) {
-    if (t->inuse) {
-      if (time < t->time_to_wait) { // unexpired
-  		//_XDPRINTF_("%s,%u: ENTER: time_to_wait=%016llx\n", __func__, __LINE__,
-  		//		t->time_to_wait);
-  		//_XDPRINTF_("%s,%u: timer_next->time_to_wait=%016llx\n", __func__, __LINE__,
-  		//		timer_next->time_to_wait);
-  		t->time_to_wait -= time;
-        if (t->time_to_wait < timer_next->time_to_wait){
-          timer_next = t;
-    		//_XDPRINTF_("%s,%u: ENTER\n", __func__, __LINE__);
-        }
-      } else { // expired
-        /* tell scheduler */
-		//_XDPRINTF_("%s,%u: ENTER\n", __func__, __LINE__);
-    	t->event = TRUE;
-        t->inuse = FALSE; 	// remove timer
-        fiq_timer_handler_timerevent_triggered=1; //set timerevent_triggered to true
-        //spin_lock(&priority_queue_lock);
-		//priority_queue_insert((void *)t, t->priority);
-		//spin_unlock(&priority_queue_lock);
-		//_XDPRINTFSMP_("%s,%u: inserted 0x%08x with priority=%d\n", __func__, __LINE__,
-		//		t, t->priority);
-		//_XDPRINTFSMP_("\n%s: task timer priority=%d expired!\n", __func__, t->priority);
-    	//bcm2837_miniuart_puts("\n[HYPSCHED]: Task timer expired. Priority=0x");
-    	//debug_hexdumpu32(t->priority);
-    	//bcm2837_miniuart_puts(" recorded.\n");
 
-        //uapp_sched_timer_declare(t->sticky_time_to_wait, NULL, t->priority);
-      }
-    }
-  }
-
-  /* reset timer_next if no timers found */
-  if (!timer_next->inuse) {
-	  timer_next = 0;
-		//_XDPRINTF_("%s,%u: ENTER\n", __func__, __LINE__);
-  }
-}
 
 
 //////
