@@ -73,11 +73,16 @@ __attribute__((section(".data"))) TIME time_timer_set;
 
 // this is a timer which should never expire, only there to serve as a guard
 __attribute__((section(".data"))) struct sched_timer timer_last = {
-  FALSE,
-  FALSE,
-  0,
-  VERY_LONG_TIME,
-  VERY_LONG_TIME
+  FALSE,	//inuse
+  FALSE,	//event
+  FALSE, 	//disable_tfunc
+  0,		//priority
+  0,		//first_time_period_expired
+  VERY_LONG_TIME,	//sticky_time_to_wait
+  VERY_LONG_TIME, 	//regular_time_period
+  VERY_LONG_TIME, 	//first_time_period
+  VERY_LONG_TIME, 	//time_to_wait
+  0					//tfunc
 };
 
 //////////////////////////////////////////////////////////////////////////////
