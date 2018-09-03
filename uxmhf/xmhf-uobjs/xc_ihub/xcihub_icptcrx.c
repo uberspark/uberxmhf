@@ -290,6 +290,8 @@ void xcihub_icptcrx(u32 cpuid, u32 src_slabid){
 	u32 info_vmexit_instruction_length;
 	u32 info_exit_qualification;
 	u32 tofrom, gpr, crx;
+	u32 lmsw_op_type, lmsw_src_data;
+	u32 hw_cr0;
 	x86regs_t r;
 
 	//_XDPRINTF_("%s[%u]: CRX access\n", __func__, cpuid);
@@ -313,6 +315,7 @@ void xcihub_icptcrx(u32 cpuid, u32 src_slabid){
 	crx=(u32) ((u32)info_exit_qualification & 0x0000000FUL);
 	gpr=(u32) (((u32)info_exit_qualification & 0x00000F00UL) >> (u32)8);
 	tofrom = (u32) (((u32)info_exit_qualification & 0x00000030UL) >> (u32)4);
+
 
 	if ( !(gpr >=0 && gpr <= 7) ){
 		_XDPRINTF_("%s[%u]: invalid GPR value, gpr=%u\n", __func__, cpuid, gpr);
@@ -340,6 +343,20 @@ void xcihub_icptcrx(u32 cpuid, u32 src_slabid){
 #endif
 		xcihub_icptcrx_handle_cr0(cpuid, src_slabid, _xcihub_icptcrx_getregval(gpr, r));
 
+	}else if (crx == 0x0 && tofrom == 0x3){
+		//LMSW instruction
+		lmsw_op_type = (u32) (((u32)info_exit_qualification & 0x00000040UL) >> (u32)6);
+		lmsw_src_data = (u32) (((u32)info_exit_qualification & 0xFFFF0000UL) >> (u32)16);
+		lmsw_src_data &= 0x0000000FUL;
+		hw_cr0 = xcihub_icptcrx_read_cr0((u32)cpuid);
+
+		_XDPRINTF_("%s[%u]: CR0 write via LMSW: hw_cr0=0x%08x, op_type=%u, src_data=0x%08x\n", __func__, cpuid,
+				hw_cr0, lmsw_op_type, lmsw_src_data);
+
+		hw_cr0 &= 0xFFFFFFF0UL;
+		hw_cr0 |= lmsw_src_data;
+
+		xcihub_icptcrx_handle_cr0(cpuid, src_slabid, hw_cr0);
 
 	}else if(crx == 0x4 && tofrom == VMX_CRX_ACCESS_TO){
 #if 0
