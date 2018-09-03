@@ -128,8 +128,8 @@ void uapp_sched_timer_undeclare(struct sched_timer *t){
 	if (t == timer_next) {
 		uapp_sched_timers_update(uapp_sched_read_cpucounter() - time_timer_set);
 		if (timer_next) {
-			debug_log_tsc((u32)timer_next->time_to_wait,
-					uapp_sched_read_cpucounter(), DEBUG_LOG_EVTTYPE_PHYSTIMERPROGRAM_UNDECLARE);
+			//debug_log_tsc((u32)timer_next->time_to_wait,
+			//		uapp_sched_read_cpucounter(), DEBUG_LOG_EVTTYPE_PHYSTIMERPROGRAM_UNDECLARE);
 			uapp_sched_start_physical_timer(timer_next->time_to_wait);
 			time_timer_set = uapp_sched_read_cpucounter();
 		}
@@ -158,8 +158,8 @@ struct sched_timer *uapp_sched_timer_instantiate(struct sched_timer *t, u32 firs
 	if (!timer_next) {
 		// no timers set at all, so this is shortest
 		time_timer_set = uapp_sched_read_cpucounter();
-		debug_log_tsc((u32)(timer_next = t)->time_to_wait,
-				uapp_sched_read_cpucounter(), DEBUG_LOG_EVTTYPE_PHYSTIMERPROGRAM_INSTANTIATESHORTEST);
+		//debug_log_tsc((u32)(timer_next = t)->time_to_wait,
+		//		uapp_sched_read_cpucounter(), DEBUG_LOG_EVTTYPE_PHYSTIMERPROGRAM_INSTANTIATESHORTEST);
 		uapp_sched_start_physical_timer((timer_next = t)->time_to_wait);
 
 	} else if ((first_time_period + uapp_sched_read_cpucounter()) < (timer_next->time_to_wait + time_timer_set)) {
@@ -167,8 +167,8 @@ struct sched_timer *uapp_sched_timer_instantiate(struct sched_timer *t, u32 firs
 		// this timer as the physical timer
 		uapp_sched_timers_update(uapp_sched_read_cpucounter() - time_timer_set);
 		time_timer_set = uapp_sched_read_cpucounter();
-		debug_log_tsc((u32)(timer_next = t)->time_to_wait,
-				uapp_sched_read_cpucounter(), DEBUG_LOG_EVTTYPE_PHYSTIMERPROGRAM_INSTANTIATESHORTER);
+		//debug_log_tsc((u32)(timer_next = t)->time_to_wait,
+		//		uapp_sched_read_cpucounter(), DEBUG_LOG_EVTTYPE_PHYSTIMERPROGRAM_INSTANTIATESHORTER);
 		uapp_sched_start_physical_timer((timer_next = t)->time_to_wait);
 
 	} else {
@@ -438,7 +438,7 @@ void uapp_sched_fiqhandler(void){
 //////
 void uapp_sched_timerhandler(void){
 
-	debug_log_tsc(0xFFFFFFFFFUL, uapp_sched_read_cpucounter(), DEBUG_LOG_EVTTYPE_TIMERHANDLER_BEFORE);
+	//debug_log_tsc(0xFFFFFFFFFUL, uapp_sched_read_cpucounter(), DEBUG_LOG_EVTTYPE_TIMERHANDLER_BEFORE);
 
 	//stop physical timer
 	uapp_sched_stop_physical_timer();
@@ -452,14 +452,14 @@ void uapp_sched_timerhandler(void){
 	// start physical timer for next shortest time if one exists
 	if (timer_next) {
 		time_timer_set = uapp_sched_read_cpucounter();
-		debug_log_tsc((u32)timer_next->time_to_wait,
-				uapp_sched_read_cpucounter(), DEBUG_LOG_EVTTYPE_PHYSTIMERPROGRAM_TIMERHANDLER);
+		//debug_log_tsc((u32)timer_next->time_to_wait,
+		//		uapp_sched_read_cpucounter(), DEBUG_LOG_EVTTYPE_PHYSTIMERPROGRAM_TIMERHANDLER);
 		uapp_sched_start_physical_timer(timer_next->time_to_wait);
 	}
 
 	if (fiq_timer_handler_timerevent_triggered == 0){
 		//no timers expired so just return from timer interrupt
-		debug_log_tsc(0xFFFFFFFFFUL, uapp_sched_read_cpucounter(), DEBUG_LOG_EVTTYPE_TIMERHANDLER_AFTER_NOTIMERSEXPIRED);
+		//debug_log_tsc(0xFFFFFFFFFUL, uapp_sched_read_cpucounter(), DEBUG_LOG_EVTTYPE_TIMERHANDLER_AFTER_NOTIMERSEXPIRED);
 		return;
 
 	}else{
@@ -468,7 +468,7 @@ void uapp_sched_timerhandler(void){
 		//action
 		if( (sysreg_read_spsr_hyp() & 0x0000000FUL) == 0xA){
 			//PE state was hyp mode, so we simply resume
-			debug_log_tsc(0xFFFFFFFFFUL, uapp_sched_read_cpucounter(), DEBUG_LOG_EVTTYPE_TIMERHANDLER_AFTER_TIMEREXPIREDINHYP);
+			//debug_log_tsc(0xFFFFFFFFFUL, uapp_sched_read_cpucounter(), DEBUG_LOG_EVTTYPE_TIMERHANDLER_AFTER_TIMEREXPIREDINHYP);
 			return;
 		}else{
 			//PE state says we are in guest mode, so stow away guest mode
@@ -480,7 +480,7 @@ void uapp_sched_timerhandler(void){
 			//resume at uapp_sched_logic in HYP mode
 			sysreg_write_elrhyp(&uapp_hypmtsched_schedentry);
 	    	sysreg_write_spsr_hyp(0x000001DA);
-			debug_log_tsc(0xFFFFFFFFFUL, uapp_sched_read_cpucounter(), DEBUG_LOG_EVTTYPE_TIMERHANDLER_AFTER_TIMEREXPIREDGOTOSCHEDLOGIC);
+			//debug_log_tsc(0xFFFFFFFFFUL, uapp_sched_read_cpucounter(), DEBUG_LOG_EVTTYPE_TIMERHANDLER_AFTER_TIMEREXPIREDGOTOSCHEDLOGIC);
 	    	return;
 		}
 	}
@@ -499,7 +499,7 @@ void uapp_sched_logic(void){
 	int status;
 	volatile u32 sp, spnew;
 
-	debug_log_tsc(0xFFFFFFFFFUL, uapp_sched_read_cpucounter(), DEBUG_LOG_EVTTYPE_SCHEDLOGIC_BEFORE);
+	//debug_log_tsc(0xFFFFFFFFFUL, uapp_sched_read_cpucounter(), DEBUG_LOG_EVTTYPE_SCHEDLOGIC_BEFORE);
 
 	//process expired timers
 	uapp_sched_process_timers(0); //TBD: remove hard-coded cpuid (0)
@@ -518,7 +518,7 @@ void uapp_sched_logic(void){
    	fiq_timer_handler_guestmode_pc = 0;
    	fiq_timer_handler_guestmode_spsr = 0;
 
-	debug_log_tsc(0xFFFFFFFFFUL, uapp_sched_read_cpucounter(), DEBUG_LOG_EVTTYPE_SCHEDLOGIC_AFTER);
+	//debug_log_tsc(0xFFFFFFFFFUL, uapp_sched_read_cpucounter(), DEBUG_LOG_EVTTYPE_SCHEDLOGIC_AFTER);
 
    	return;
 }
@@ -751,7 +751,7 @@ bool uapp_hypmtscheduler_handlehcall(u32 uhcall_function, void *uhcall_buffer,
 		u32 uhcall_buffer_len){
 	ugapp_hypmtscheduler_param_t *hmtsp;
 
-	debug_log_tsc(0xFFFFFFFFUL, uapp_sched_read_cpucounter(), DEBUG_LOG_EVTTYPE_HANDLEHCALL_BEFORE);
+	//debug_log_tsc(0xFFFFFFFFUL, uapp_sched_read_cpucounter(), DEBUG_LOG_EVTTYPE_HANDLEHCALL_BEFORE);
 
 	if(uhcall_function != UAPP_HYPMTSCHEDULER_UHCALL){
 		return false;
@@ -780,7 +780,7 @@ bool uapp_hypmtscheduler_handlehcall(u32 uhcall_function, void *uhcall_buffer,
 		bcm2837_miniuart_puts("\n");
 	}
 
-	debug_log_tsc(0xFFFFFFFFUL, uapp_sched_read_cpucounter(), DEBUG_LOG_EVTTYPE_HANDLEHCALL_AFTER);
+	//debug_log_tsc(0xFFFFFFFFUL, uapp_sched_read_cpucounter(), DEBUG_LOG_EVTTYPE_HANDLEHCALL_AFTER);
 
 	return true;
 }
