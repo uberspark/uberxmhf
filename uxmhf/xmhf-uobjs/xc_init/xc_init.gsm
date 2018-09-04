@@ -1,4 +1,6 @@
-//slab manifest
+#include <uberspark.h>
+#include <xmhf-hwm.h>
+
 #include <geec_sentinel.h>
 #include <uapi_gcpustate.h>
 #include <xh_hyperdep.h>
@@ -6,26 +8,82 @@
 #include <xh_ssteptrace.h>
 #include <xh_aprvexec.h>
 
-//slab memory sections
-MS:CODE:0x200000:void:void
-MS:DATA:0x200000:void:void
-MS:STACK:0x600000:void:void
-MS:DMADATA:0x200000:void:void
+{
+	"uobj-name": "xc_init",
+	"uobj-type": "VfT_SLAB",
+	"uobj-subtype": "INIT",
+
+	"uobj-uapifunctions":[],
+
+	"uobj-callees": "	geec_sentinel
+						uapi_gcpustate
+						xg_richguest
+						xh_hyperdep
+						xh_syscalllog
+						xh_ssteptrace
+					",
+
+
+	"uobj-uapicallees":[
+		{ 
+			"uobj-name": "uapi_gcpustate",
+			"uobj-uapifunctionid": USMF_STR(XMHF_HIC_UAPI_CPUSTATE_VMREAD), 
+			"opt1" : "(void)0;",
+			"opt2" : "(1)" 
+		},
+		{ 
+			"uobj-name": "uapi_gcpustate",
+			"uobj-uapifunctionid": USMF_STR(XMHF_HIC_UAPI_CPUSTATE_VMWRITE), 
+			"opt1" : "(void)0;",
+			"opt2" : "(1)" 
+		},
+		{ 
+			"uobj-name": "uapi_gcpustate",
+			"uobj-uapifunctionid": USMF_STR(XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSWRITE), 
+			"opt1" : "(void)0;",
+			"opt2" : "(1)" 
+		}	
+	],	
+
+
+	"uobj-resource-devices":[],
+
+	"uobj-resource-memory":[],	
+
+	"uobj-exportfunctions": "",
+
+
+	"uobj-binary-sections":[
+		{ 
+			"section-name": "code",
+			"section-size": "0x200000"
+		},
+		{ 
+			"section-name": "data",
+			"section-size": "0x200000"
+		},
+		{ 
+			"section-name": "stack",
+			"section-size": "0x600000"
+		},
+		{ 
+			"section-name": "dmadata",
+			"section-size": "0x200000"
+		}
+	],	
+
+	
+	"c-files":	"",
+		
+	"v-harness": []
+		
+	
+}
 
 
 
-S:geec_sentinel:void:void:void
-S:uapi_gcpustate:void:void:void
-S:xg_richguest:void:void:void
-S:xh_hyperdep:void:void:void
-S:xh_syscalllog:void:void:void
-S:xh_ssteptrace:void:void:void
-//S:xh_aprvexec:void:void:void
 
 
-U:uapi_gcpustate:XMHF_HIC_UAPI_CPUSTATE_VMWRITE:void:void
-U:uapi_gcpustate:XMHF_HIC_UAPI_CPUSTATE_VMREAD:void:void
-U:uapi_gcpustate:XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSWRITE:void:void
 
 
 

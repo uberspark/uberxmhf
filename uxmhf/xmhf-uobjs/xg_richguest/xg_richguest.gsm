@@ -1,26 +1,97 @@
-//slab manifest
+#include <uberspark.h>
+#include <xmhf-hwm.h>
+
 #include <xmhf.h>
 #include <xmhfgeec.h>
 #include <xg_richguest.h>
 
-//slab memory sections
-MS:CODE:0:void:void
-MS:DATA:__TARGET_BASE_XMHF:void:void
-MS:STACK:__TARGET_MAX_XMHF:void:void
-MS:DMADATA:__TARGET_MAX_SYS:void:void
 
-RD:INCL:0xffff:0xffff:void
-//RD:EXCL:PCI_VENDOR_ID_LOGNIC:PCI_DEVICE_ID_LOGNIC:void
-//RD:EXCL:PCI_VENDOR_ID_XMHFGEEC:PCI_DEVICE_ID_XMHFGEEC_TXT:void
-//RD:EXCL:PCI_VENDOR_ID_XMHFGEEC:PCI_DEVICE_ID_XMHFGEEC_IOMMU:void
+{
+	"uobj-name": "xg_richguest",
+	"uobj-type": "uVU_SLAB",
+	"uobj-subtype": "XRICHGUEST",
 
-RM:READ:xc_init:void:void
-RM:READ:xc_ihub:void:void
-RM:WRITE:xc_init:void:void
-RM:WRITE:xc_ihub:void:void
-//RM:READ:xh_aprvexec:void:void
-RM:READ:xh_syscalllog:void:void
-RM:READ:xh_ssteptrace:void:void
+	"uobj-uapifunctions":[],
+
+	"uobj-callees": "",
+
+	"uobj-uapicallees":[],
+
+	"uobj-resource-devices":[
+		{ 
+			"type": "include",
+			"opt1" : USMF_STR(0xffff),
+			"opt2" : USMF_STR(0xffff) 
+		},
+		{ 
+			"type": "exclude",
+			"opt1" : USMF_STR(PCI_VENDOR_ID_LOGNIC),
+			"opt2" : USMF_STR(PCI_DEVICE_ID_LOGNIC) 
+		}
+
+	],	
+
+	"uobj-resource-memory":[
+		{
+			"access-type" : "read",
+			"uobj-name" : "xc_init"
+		},
+		{
+			"access-type" : "read",
+			"uobj-name" : "xc_ihub"
+		},
+		{
+			"access-type" : "write",
+			"uobj-name" : "xc_init"
+		},
+		{
+			"access-type" : "write",
+			"uobj-name" : "xc_ihub"
+		},
+		{
+			"access-type" : "read",
+			"uobj-name" : "xh_syscalllog"
+		},
+		{
+			"access-type" : "read",
+			"uobj-name" : "xh_ssteptrace"
+		}
+	
+	],	
+
+	"uobj-exportfunctions": "",
+
+
+	"uobj-binary-sections":[
+		{ 
+			"section-name": "code",
+			"section-size": "0x0"
+		},
+		{ 
+			"section-name": "data",
+			"section-size": USMF_STR(__TARGET_BASE_XMHF)
+		},
+		{ 
+			"section-name": "stack",
+			"section-size": USMF_STR(__TARGET_MAX_XMHF)
+		},
+		{ 
+			"section-name": "dmadata",
+			"section-size": USMF_STR(__TARGET_MAX_SYS)
+		}
+	],	
+
+	
+	"c-files":	"",
+		
+	"v-harness": []
+		
+	
+}
+
+
+
+
 
 
 
