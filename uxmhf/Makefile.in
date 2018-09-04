@@ -172,7 +172,8 @@ uxmhf-verif-gensentinelstubs: _uobjs_configureandgenerateuobjinfonoexports
 uxmhf-verifyuobjs-compcheck: _uobjs_preprocessmanifests
 	@echo Proceeding to generate composition check files...
 	$(MKDIR) -p $(XMHF_OBJDIR)/_verif_ccomp
-	cd $(XMHF_DIR) && $(FRAMAC) -load-module $(USPARK_INSTALL_TOOLSDIR)/Uccomp -umf-uobjlist $(XMHF_DIR)/UOBJLIST -umf-outuobjccompdriver $(XMHF_OBJDIR)/_verif_ccomp/ccompdriverfile.c.v.c -umf-outuobjccompcheck $(XMHF_OBJDIR)/_verif_ccomp/ccompcheckfile.c.v.c  -umf-maxincldevlistentries $(XMHF_CONFIG_MAX_INCLDEVLIST_ENTRIES) -umf-maxexcldevlistentries $(XMHF_CONFIG_MAX_EXCLDEVLIST_ENTRIES) -umf-maxmemoffsetentries $(XMHF_CONFIG_MAX_MEMOFFSET_ENTRIES)
+	#cd $(XMHF_DIR) && $(FRAMAC) -load-module $(USPARK_INSTALL_TOOLSDIR)/Uccomp -umf-uobjlist $(XMHF_DIR)/UOBJLIST -umf-outuobjccompdriver $(XMHF_OBJDIR)/_verif_ccomp/ccompdriverfile.c.v.c -umf-outuobjccompcheck $(XMHF_OBJDIR)/_verif_ccomp/ccompcheckfile.c.v.c  -umf-maxincldevlistentries $(XMHF_CONFIG_MAX_INCLDEVLIST_ENTRIES) -umf-maxexcldevlistentries $(XMHF_CONFIG_MAX_EXCLDEVLIST_ENTRIES) -umf-maxmemoffsetentries $(XMHF_CONFIG_MAX_MEMOFFSET_ENTRIES)
+	cd $(XMHF_DIR) && $(USPARK_INSTALL_TOOLSDIR)/uccomp $(XMHF_DIR)/UOBJLIST $(XMHF_OBJDIR)/_verif_ccomp/ccompdriverfile.c.v.c $(XMHF_OBJDIR)/_verif_ccomp/ccompcheckfile.c.v.c $(XMHF_CONFIG_MAX_INCLDEVLIST_ENTRIES)  $(XMHF_CONFIG_MAX_EXCLDEVLIST_ENTRIES) $(XMHF_CONFIG_MAX_MEMOFFSET_ENTRIES) 0
 	@echo composition check files generated
 	cd $(XMHF_OBJDIR)/_verif_ccomp && $(FRAMAC) -val -no-val-show-progress -slevel 2048 -cpp-extra-args=-nostdinc $(VFLAGS) ccompdriverfile.c.v.c ccompcheckfile.c.v.c
 
