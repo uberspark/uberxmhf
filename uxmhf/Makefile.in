@@ -19,9 +19,9 @@ export LIBXMHFDEBUG_SRC := $(realpath $(XMHF_DIR)/libs/libxmhfdebug)
 export LIBXMHFGEEC_SRC := $(realpath $(XMHF_DIR)/libs/libxmhfgeec)
 
 ## uobj source paths and count
-export XMHF_SLAB_DIRS := $(shell awk -F, '{print $$1}' $(XMHF_DIR)/UOBJLIST)
+export XMHF_SLAB_DIRS := $(shell awk -F, '{print $$1}' $(XMHF_DIR)/xmhf-uobjs/UOBJLIST)
 XMHF_SLAB_NAMES := $(notdir $(XMHF_SLAB_DIRS))
-export XMHF_SLAB_TOTAL := $(shell wc -l < $(XMHF_DIR)/UOBJLIST)
+export XMHF_SLAB_TOTAL := $(shell wc -l < $(XMHF_DIR)/xmhf-uobjs/UOBJLIST)
 
 
 
@@ -80,14 +80,14 @@ _uobjs_preprocessmanifests:
 #_uobjs_configureandgenerateuobjinfonoexports: _uobjs_preprocessmanifests
 _uobjs_configureandgenerateuobjinfonoexports:
 	#cd $(XMHF_DIR) && $(FRAMAC) -load-module $(USPARK_INSTALL_TOOLSDIR)/Umf -umf-uobjlist $(XMHF_DIR)/UOBJLIST -umf-uobjconfigurescript $(XMHF_DIR)/configure-uxmhfuobj -umf-outuobjinfotable $(XMHF_OBJDIR)/uobjinfotable.c -umf-outlinkerscript $(XMHF_OBJDIR)/xmhf.lscript -umf-loadaddr $(XMHF_CONFIG_LOADADDR) -umf-loadmaxsize $(XMHF_CONFIG_LOADMAXSIZE) -umf-totaluhuobjs $(XMHFGEEC_TOTAL_UHSLABS) -umf-maxincldevlistentries $(XMHF_CONFIG_MAX_INCLDEVLIST_ENTRIES) -umf-maxexcldevlistentries $(XMHF_CONFIG_MAX_EXCLDEVLIST_ENTRIES) -umf-maxmemoffsetentries $(XMHF_CONFIG_MAX_MEMOFFSET_ENTRIES)
-	cd $(XMHF_DIR) && $(USPARK_INSTALL_TOOLSDIR)/umf $(XMHF_DIR)/UOBJLIST $(XMHF_DIR)/configure-uxmhfuobj $(XMHF_OBJDIR)/uobjinfotable.c $(XMHF_OBJDIR)/xmhf.lscript $(XMHF_CONFIG_LOADADDR) $(XMHF_CONFIG_LOADMAXSIZE) $(XMHFGEEC_TOTAL_UHSLABS) $(XMHF_CONFIG_MAX_INCLDEVLIST_ENTRIES) $(XMHF_CONFIG_MAX_EXCLDEVLIST_ENTRIES) $(XMHF_CONFIG_MAX_MEMOFFSET_ENTRIES) 0 "$(CCERT_CFLAGS)"
+	cd $(XMHF_DIR) && $(USPARK_INSTALL_TOOLSDIR)/umf $(XMHF_DIR)/xmhf-uobjs/UOBJLIST $(XMHF_DIR)/configure-uxmhfuobj $(XMHF_OBJDIR)/uobjinfotable.c $(XMHF_OBJDIR)/xmhf.lscript $(XMHF_CONFIG_LOADADDR) $(XMHF_CONFIG_LOADMAXSIZE) $(XMHFGEEC_TOTAL_UHSLABS) $(XMHF_CONFIG_MAX_INCLDEVLIST_ENTRIES) $(XMHF_CONFIG_MAX_EXCLDEVLIST_ENTRIES) $(XMHF_CONFIG_MAX_MEMOFFSET_ENTRIES) 0 "$(CCERT_CFLAGS)"
 
 .PHONY: _uobjs_generateuobjinfoexports
 #_uobjs_generateuobjinfoexports: _uobjs_preprocessmanifests
 _uobjs_generateuobjinfoexports:
 	@echo generating uobj info table with memoffsets...
 	#cd $(XMHF_DIR) && $(FRAMAC) -load-module $(USPARK_INSTALL_TOOLSDIR)/Umf -umf-uobjlist $(XMHF_DIR)/UOBJLIST -umf-uobjconfigurescript $(XMHF_DIR)/configure-uxmhfuobj -umf-outuobjinfotable $(XMHF_OBJDIR)/uobjinfotable.c -umf-outlinkerscript $(XMHF_OBJDIR)/xmhf.lscript -umf-loadaddr $(XMHF_CONFIG_LOADADDR) -umf-loadmaxsize $(XMHF_CONFIG_LOADMAXSIZE) -umf-totaluhuobjs $(XMHFGEEC_TOTAL_UHSLABS) -umf-maxincldevlistentries $(XMHF_CONFIG_MAX_INCLDEVLIST_ENTRIES) -umf-maxexcldevlistentries $(XMHF_CONFIG_MAX_EXCLDEVLIST_ENTRIES) -umf-maxmemoffsetentries $(XMHF_CONFIG_MAX_MEMOFFSET_ENTRIES) -umf-memoffsets
-	cd $(XMHF_DIR) && $(USPARK_INSTALL_TOOLSDIR)/umf $(XMHF_DIR)/UOBJLIST $(XMHF_DIR)/configure-uxmhfuobj $(XMHF_OBJDIR)/uobjinfotable.c $(XMHF_OBJDIR)/xmhf.lscript $(XMHF_CONFIG_LOADADDR) $(XMHF_CONFIG_LOADMAXSIZE) $(XMHFGEEC_TOTAL_UHSLABS) $(XMHF_CONFIG_MAX_INCLDEVLIST_ENTRIES) $(XMHF_CONFIG_MAX_EXCLDEVLIST_ENTRIES) $(XMHF_CONFIG_MAX_MEMOFFSET_ENTRIES) 1 "$(CCERT_CFLAGS)"
+	cd $(XMHF_DIR) && $(USPARK_INSTALL_TOOLSDIR)/umf $(XMHF_DIR)/xmhf-uobjs/UOBJLIST $(XMHF_DIR)/configure-uxmhfuobj $(XMHF_OBJDIR)/uobjinfotable.c $(XMHF_OBJDIR)/xmhf.lscript $(XMHF_CONFIG_LOADADDR) $(XMHF_CONFIG_LOADMAXSIZE) $(XMHFGEEC_TOTAL_UHSLABS) $(XMHF_CONFIG_MAX_INCLDEVLIST_ENTRIES) $(XMHF_CONFIG_MAX_EXCLDEVLIST_ENTRIES) $(XMHF_CONFIG_MAX_MEMOFFSET_ENTRIES) 1 "$(CCERT_CFLAGS)"
 	@echo uobj info table with memoffsets ready.
 	
 .PHONY: uobjinfotable_buildpass1
