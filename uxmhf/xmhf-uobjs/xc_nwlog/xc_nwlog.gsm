@@ -10,7 +10,7 @@ MS:DATA:0x200000:void:void
 MS:STACK:0x600000:void:void
 MS:DMADATA:0x200000:void:void
 
-RD:INCL:PCI_VENDOR_ID_LOGNIC:PCI_DEVICE_ID_LOGNIC:void
+//RD:INCL:PCI_VENDOR_ID_LOGNIC:PCI_DEVICE_ID_LOGNIC:void
 
 // S:uapi_gcpustate:void:void:void
 

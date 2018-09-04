@@ -51,12 +51,12 @@ ENTRY(init_start)
 
 MEMORY
 {
-  all (rwxai) : ORIGIN = 0x1E00000, LENGTH = 6M
+  all (rwxai) : ORIGIN = 0x1E00000, LENGTH = 20M
   bl_hdr (rwxai) : ORIGIN = 0x1E00000, LENGTH = 0x1000	 /*4K*/
   bl_code (rwxai) : ORIGIN = 0x1E01000, LENGTH = 0x10000 /*64K*/
   bl_data (rwxai) : ORIGIN = 0x1E11000, LENGTH = 0x8000  /*32K*/
   bl_stack (rwxai) : ORIGIN = 0x1E19000, LENGTH = 0x500000 /*5M*/
-  bl_filler (rwxai) : ORIGIN = 0x2319000, LENGTH = 0xE7000 /*924K*/
+  bl_filler (rwxai) : ORIGIN = 0x2319000, LENGTH = 0x3EE7000 
   unaccounted (rwxai) : ORIGIN = 0, LENGTH = 0 /* see section .unaccounted at end */
 }
 
@@ -93,8 +93,8 @@ SECTIONS
 
 	.filler : {
 		LONG(0)
-		. = 0xE7000;
-	} >bl_filler=0x0000
+		. = 0x3EE7000;
+	} >bl_filler=0x9090
 
 	/* this is to cause the link to fail if there is
 	* anything we didn't explicitly place.

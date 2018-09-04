@@ -51,16 +51,56 @@
 #include <xc.h>
 #include <xc_ihub.h>
 
+#include <uapi_gcpustate.h>
+
 /*
  * xcihub_halt -- halt on unhandled rich guest intercepts
  *
  * author: amit vasudevan (amitvasudevan@acm.org)
  */
 
+#if 1
+void xcihub_halt_eptviolation(u32 cpuid, u32 info_vmexitreason){
+         	u64 errorcode;
+         	u64 gpa;
+         	u64 gva;
+         	slab_params_t spl;
+       	    xmhf_uapi_gcpustate_vmrw_params_t *gcpustate_vmrwp =
+                (xmhf_uapi_gcpustate_vmrw_params_t *)spl.in_out_params;
+
+
+         	spl.src_slabid = XMHFGEEC_SLAB_XC_IHUB;
+         	spl.dst_slabid = XMHFGEEC_SLAB_UAPI_GCPUSTATE;
+         	spl.cpuid = cpuid;
+            spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_VMREAD;
+
+            gcpustate_vmrwp->encoding = VMCS_INFO_EXIT_QUALIFICATION;
+            XMHF_SLAB_CALLNEW(&spl);
+            errorcode = gcpustate_vmrwp->value;
+
+            gcpustate_vmrwp->encoding = VMCS_INFO_GUEST_PADDR_FULL;
+            XMHF_SLAB_CALLNEW(&spl);
+            gpa = gcpustate_vmrwp->value;
+
+            gcpustate_vmrwp->encoding = VMCS_INFO_GUEST_LINEAR_ADDRESS;
+            XMHF_SLAB_CALLNEW(&spl);
+            gva = gcpustate_vmrwp->value;
+
+        	_XDPRINTF_("%s[%u]: EPT violation gpa=0x%016llx\n", __func__, cpuid, gpa);
+        	_XDPRINTF_("%s[%u]: EPT violation gva=0x%016llx\n", __func__, cpuid, gva);
+        	_XDPRINTF_("%s[%u]: EPT violation error_code=0x%016llx\n", __func__, cpuid, errorcode);
+}
+#endif
+
+
+
 void xcihub_halt(u32 cpuid, u32 info_vmexit_reason){
 	_XDPRINTF_("%s[%u]: unhandled intercept %x. Halting!\n", __func__, cpuid, info_vmexit_reason);
+#if 1
+	if(info_vmexit_reason == 0x30){
+		xcihub_halt_eptviolation(cpuid, info_vmexit_reason);
+	}
+#endif
 	CASM_FUNCCALL(xmhfhw_cpu_hlt, CASM_NOPARAM);
 }
-
-
 

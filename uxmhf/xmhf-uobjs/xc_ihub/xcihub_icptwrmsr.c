@@ -67,7 +67,10 @@ void xcihub_icptwrmsr(u32 cpuid){
 	u32 info_vmexit_instruction_length;
 	x86regs_t r;
 
-	//_XDPRINTF_("%s[%u]: VMX_VMEXIT_WRMSR\n", __func__, cpuid);
+	if((u32)r.ecx == 0xc0010117){
+		_XDPRINTF_("%s[%u]: VMX_VMEXIT_WRMSR: unsupported. warning!\n", __func__, cpuid);
+	}
+
 	memset(&spl, 0, sizeof(spl));
 
 	spl.cpuid = cpuid;
