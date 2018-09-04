@@ -163,7 +163,8 @@ uxmhf-binimage:
 uxmhf-verif-gensentinelstubs: _uobjs_configureandgenerateuobjinfonoexports
 		@echo Proceeding to generate sentinel stubs for blueprint conformance...
 		$(MKDIR) -p $(XMHF_OBJDIR)/_verif_bp
-		cd $(XMHF_DIR) && $(FRAMAC) -load-module $(USPARK_INSTALL_TOOLSDIR)/Ubp -umf-uobjlist $(XMHF_DIR)/UOBJLIST -umf-outdirsentinelstubs $(XMHF_OBJDIR)/_verif_bp/  -umf-maxincldevlistentries $(XMHF_CONFIG_MAX_INCLDEVLIST_ENTRIES) -umf-maxexcldevlistentries $(XMHF_CONFIG_MAX_EXCLDEVLIST_ENTRIES) -umf-maxmemoffsetentries $(XMHF_CONFIG_MAX_MEMOFFSET_ENTRIES)
+		#cd $(XMHF_DIR) && $(FRAMAC) -load-module $(USPARK_INSTALL_TOOLSDIR)/Ubp -umf-uobjlist $(XMHF_DIR)/UOBJLIST -umf-outdirsentinelstubs $(XMHF_OBJDIR)/_verif_bp/  -umf-maxincldevlistentries $(XMHF_CONFIG_MAX_INCLDEVLIST_ENTRIES) -umf-maxexcldevlistentries $(XMHF_CONFIG_MAX_EXCLDEVLIST_ENTRIES) -umf-maxmemoffsetentries $(XMHF_CONFIG_MAX_MEMOFFSET_ENTRIES)
+		cd $(XMHF_DIR) && $(USPARK_INSTALL_TOOLSDIR)/ubp $(XMHF_DIR)/UOBJLIST $(XMHF_OBJDIR)/_verif_bp/ $(XMHF_CONFIG_MAX_INCLDEVLIST_ENTRIES) $(XMHF_CONFIG_MAX_EXCLDEVLIST_ENTRIES) $(XMHF_CONFIG_MAX_MEMOFFSET_ENTRIES) 0
 		@echo sentinel stubs generated
 
 	
