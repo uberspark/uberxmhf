@@ -19,10 +19,11 @@ export LIBXMHFDEBUG_SRC := $(realpath $(XMHF_DIR)/libs/libxmhfdebug)
 export LIBXMHFGEEC_SRC := $(realpath $(XMHF_DIR)/libs/libxmhfgeec)
 
 ## uobj source paths and count
-export XMHF_SLAB_DIRS := $(shell awk -F, '{print $$1}' $(XMHF_DIR)/xmhf-uobjs/UOBJLIST)
+#export XMHF_SLAB_DIRS := $(shell awk -F, '{print $$1}' $(XMHF_DIR)/xmhf-uobjs/UOBJLIST)
+export XMHF_SLAB_DIRS := $(shell sed '1,2d;$$d' ~/data/hypcode/projs/pubrepos-bleeding-edge/uberxmhf.git/uxmhf/xmhf-uobjs/UOBJLIST | sed '$$d' | awk '{$$1=$$1;print}')
 XMHF_SLAB_NAMES := $(notdir $(XMHF_SLAB_DIRS))
-export XMHF_SLAB_TOTAL := $(shell wc -l < $(XMHF_DIR)/xmhf-uobjs/UOBJLIST)
-
+#export XMHF_SLAB_TOTAL := $(shell wc -l < $(XMHF_DIR)/xmhf-uobjs/UOBJLIST)
+export XMHF_SLAB_TOTAL := $(shell sed '1,2d;$$d' $(XMHF_DIR)/xmhf-uobjs/UOBJLIST | sed '$$d' | awk '{$$1=$$1;print}' | wc -l)
 
 
 
@@ -114,9 +115,11 @@ uxmhf-uobjsbuild: uobjs_buildpass1 uobjs_buildpass2
 .PHONY: uobjs_buildpass1
 uobjs_buildpass1: _uobjs_configureandgenerateuobjinfonoexports uobjinfotable_buildpass1 
 	@echo Building uobjs - pass1...
+	@echo $(XMHF_SLAB_DIRS)
+	@echo $(XMHF_SLAB_TOTAL)
 	@for i in $(XMHF_SLAB_DIRS); \
 	do \
-		(cd $(XMHF_OBJDIR) &&	echo "Making all in $$i..." && $(MAKE) -f $(XMHF_DIR)/$$i/Makefile -w all) || exit 1; \
+		(cd $(XMHF_OBJDIR) &&	echo "Making all in $$i..." && $(MAKE) -f $(XMHF_DIR)/xmhf-uobjs/$$i/Makefile -w all) || exit 1; \
 	done;
 	@echo uobjs build pass1 SUCCESS
 
