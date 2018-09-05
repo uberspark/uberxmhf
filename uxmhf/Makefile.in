@@ -128,7 +128,7 @@ uobjs_buildpass2: _uobjs_generateuobjinfoexports uobjinfotable_buildpass2
 	@echo Building uobjs - pass2...
 	@for i in $(XMHF_SLAB_DIRS); \
 	do \
-		(cd $(XMHF_OBJDIR) &&	echo "Making all in $$i..." && $(MAKE) -f $(XMHF_DIR)/$$i/Makefile -w linkslabbin) || exit 1; \
+		(cd $(XMHF_OBJDIR) &&	echo "Making all in $$i..." && $(MAKE) -f $(XMHF_DIR)/xmhf-uobjs/$$i/Makefile -w linkslabbin) || exit 1; \
 	done;
 	@echo uobjs build pass2 SUCCESS
 
