@@ -22,13 +22,14 @@
 			"type": "include",
 			"opt1" : USMF_STR(0xffff),
 			"opt2" : USMF_STR(0xffff) 
-		},
+		}
+/*		,
 		{ 
 			"type": "exclude",
 			"opt1" : USMF_STR(PCI_VENDOR_ID_LOGNIC),
 			"opt2" : USMF_STR(PCI_DEVICE_ID_LOGNIC) 
 		}
-
+*/
 	],	
 
 	"uobj-resource-memory":[
