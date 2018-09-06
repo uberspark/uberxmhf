@@ -20,7 +20,7 @@ export LIBXMHFGEEC_SRC := $(realpath $(XMHF_DIR)/libs/libxmhfgeec)
 
 ## uobj source paths and count
 #export XMHF_SLAB_DIRS := $(shell awk -F, '{print $$1}' $(XMHF_DIR)/xmhf-uobjs/UOBJLIST)
-export XMHF_SLAB_DIRS := $(shell sed '1,2d;$$d' ~/data/hypcode/projs/pubrepos-bleeding-edge/uberxmhf.git/uxmhf/xmhf-uobjs/UOBJLIST | sed '$$d' | awk '{$$1=$$1;print}')
+export XMHF_SLAB_DIRS := $(shell sed '1,2d;$$d' $(XMHF_DIR)/xmhf-uobjs/UOBJLIST | sed '$$d' | awk '{$$1=$$1;print}')
 XMHF_SLAB_NAMES := $(notdir $(XMHF_SLAB_DIRS))
 #export XMHF_SLAB_TOTAL := $(shell wc -l < $(XMHF_DIR)/xmhf-uobjs/UOBJLIST)
 export XMHF_SLAB_TOTAL := $(shell sed '1,2d;$$d' $(XMHF_DIR)/xmhf-uobjs/UOBJLIST | sed '$$d' | awk '{$$1=$$1;print}' | wc -l)
