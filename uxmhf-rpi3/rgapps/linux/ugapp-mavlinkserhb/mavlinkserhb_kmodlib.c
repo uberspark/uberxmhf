@@ -42,7 +42,7 @@
 #include <asm/uaccess.h>          // required for the copy to user function
 #include <asm/io.h>          // required for the copy to user function
 
-#include <hypmtscheduler.h>
+#include "../../../include/mavlinkserhb.h"
 
 
 void __hvc(u32 uhcall_function, void *uhcall_buffer,
@@ -59,324 +59,32 @@ void __hvc(u32 uhcall_function, void *uhcall_buffer,
 	    );
 }
 
-u64 hypmtscheduler_readtsc64(void){
-	u32 tsc_lo, tsc_hi;
-	u64 l_tickcount;
 
-	asm volatile
-		(	" isb\r\n"
-			" mrrc p15, 1, r0, r1, c14 \r\n"
-			" mov %0, r0 \r\n"
-			" mov %1, r1 \r\n"
-				: "=r" (tsc_lo), "=r" (tsc_hi) // outputs
-				: // inputs
-	           : "r0", "r1" //clobber
-	    );
+void mavlinkserhb_initialize(void){
 
-	l_tickcount = tsc_hi;
-	l_tickcount = l_tickcount << 32;
-	l_tickcount |= tsc_lo;
+	uapp_mavlinkserhb_param_t *mlhbsp;
+	struct page *mlhbsp_page;
+	u32 mlhbsp_paddr;
 
+	mlhbsp_page = alloc_page(GFP_KERNEL | __GFP_ZERO);
+
+	if(!mlhbsp_page){
+		return false;
+	}
+
+	mlhbsp = (uapp_mavlinkserhb_param_t *)page_address(mlhbsp_page);
+
+	mlhbsp->uhcall_fn = UAPP_MAVLINKSERHB_UHCALL_INITIALIZE;
+
+	mlhbsp_paddr = page_to_phys(mlhbsp_page);
+	__hvc(UAPP_MAVLINKSERHB_UHCALL, mlhbsp_paddr, sizeof(uapp_mavlinkserhb_param_t));
+
+	if(!mlhbsp->status){
+		__free_page(mlhbsp_page);
+		return false;
+	}
+
+	__free_page(mlhbsp_page);
+	return;
 }
-
-
-u32 hypmtscheduler_readtscfreq(void){
-	u32 tsc_freq;
-
-	asm volatile
-		(	" isb\r\n"
-			"mrc p15, 0, r0, c14, c0, 0 \r\n"
-			" mov %0, r0 \r\n"
-				: "=r" (tsc_freq) // outputs
-				: // inputs
-	           : "r0" //clobber
-	    );
-
-	return tsc_freq;
-}
-
-bool hypmtscheduler_createhyptask(u32 first_period, u32 regular_period,
-			u32 priority, u32 hyptask_id, u32 *hyptask_handle){
-
-	ugapp_hypmtscheduler_param_t *hmtsp;
-	struct page *hmtsp_page;
-	u32 hmtsp_paddr;
-
-	hmtsp_page = alloc_page(GFP_KERNEL | __GFP_ZERO);
-
-	if(!hmtsp_page){
-		return false;
-	}
-
-	hmtsp = (ugapp_hypmtscheduler_param_t *)page_address(hmtsp_page);
-
-	hmtsp->uhcall_fn = UAPP_HYPMTSCHEDULER_UHCALL_CREATEHYPTASK;
-    hmtsp->iparam_1 = first_period;	//first period
-    hmtsp->iparam_2 = regular_period;	//regular period thereafter
-    hmtsp->iparam_3 = priority;						//priority
-    hmtsp->iparam_4 = hyptask_id;						//hyptask id
-
-	hmtsp_paddr = page_to_phys(hmtsp_page);
-	__hvc(UAPP_HYPMTSCHEDULER_UHCALL, hmtsp_paddr, sizeof(ugapp_hypmtscheduler_param_t));
-
-	if(!hmtsp->status){
-		__free_page(hmtsp_page);
-		return false;
-	}
-
-	*hyptask_handle = hmtsp->oparam_1;
-
-	__free_page(hmtsp_page);
-	return true;
-}
-
-
-bool hypmtscheduler_disablehyptask(u32 hyptask_handle){
-
-	ugapp_hypmtscheduler_param_t *hmtsp;
-	struct page *hmtsp_page;
-	u32 hmtsp_paddr;
-
-	hmtsp_page = alloc_page(GFP_KERNEL | __GFP_ZERO);
-
-	if(!hmtsp_page){
-		return false;
-	}
-
-	hmtsp = (ugapp_hypmtscheduler_param_t *)page_address(hmtsp_page);
-
-	hmtsp->uhcall_fn = UAPP_HYPMTSCHEDULER_UHCALL_DISABLEHYPTASK;
-    hmtsp->iparam_1 = hyptask_handle;	//handle of hyptask
-
-	hmtsp_paddr = page_to_phys(hmtsp_page);
-	__hvc(UAPP_HYPMTSCHEDULER_UHCALL, hmtsp_paddr, sizeof(ugapp_hypmtscheduler_param_t));
-
-	if(!hmtsp->status){
-		__free_page(hmtsp_page);
-		return false;
-	}
-
-	__free_page(hmtsp_page);
-	return true;
-}
-
-
-bool hypmtscheduler_deletehyptask(u32 hyptask_handle){
-
-	ugapp_hypmtscheduler_param_t *hmtsp;
-	struct page *hmtsp_page;
-	u32 hmtsp_paddr;
-
-	hmtsp_page = alloc_page(GFP_KERNEL | __GFP_ZERO);
-
-	if(!hmtsp_page){
-		return false;
-	}
-
-	hmtsp = (ugapp_hypmtscheduler_param_t *)page_address(hmtsp_page);
-
-	hmtsp->uhcall_fn = UAPP_HYPMTSCHEDULER_UHCALL_DELETEHYPTASK;
-    hmtsp->iparam_1 = hyptask_handle;	//handle of hyptask
-
-	hmtsp_paddr = page_to_phys(hmtsp_page);
-	__hvc(UAPP_HYPMTSCHEDULER_UHCALL, hmtsp_paddr, sizeof(ugapp_hypmtscheduler_param_t));
-
-	if(!hmtsp->status){
-		__free_page(hmtsp_page);
-		return false;
-	}
-
-	__free_page(hmtsp_page);
-	return true;
-}
-
-
-bool hypmtscheduler_getrawtick64(u64 *tickcount){
-
-	ugapp_hypmtscheduler_param_t *hmtsp;
-	struct page *hmtsp_page;
-	u32 hmtsp_paddr;
-	u64 l_tickcount;
-
-	hmtsp_page = alloc_page(GFP_KERNEL | __GFP_ZERO);
-
-	if(!hmtsp_page || !tickcount){
-		return false;
-	}
-
-	hmtsp = (ugapp_hypmtscheduler_param_t *)page_address(hmtsp_page);
-
-	hmtsp->uhcall_fn = UAPP_HYPMTSCHEDULER_UHCALL_GETRAWTICK;
-
-	hmtsp_paddr = page_to_phys(hmtsp_page);
-
-	__hvc(UAPP_HYPMTSCHEDULER_UHCALL, hmtsp_paddr, sizeof(ugapp_hypmtscheduler_param_t));
-
-	if(!hmtsp->status){
-		__free_page(hmtsp_page);
-		return false;
-	}
-
-
-	l_tickcount = hmtsp->oparam_1;
-	l_tickcount = l_tickcount << 32;
-	l_tickcount |= hmtsp->oparam_2;
-
-	printk(KERN_INFO "hypmtscheduler_getrawtick64: oparam_1 = 0x%08x\n", hmtsp->oparam_1);
-	printk(KERN_INFO "hypmtscheduler_getrawtick64: oparam_2 = 0x%08x\n", hmtsp->oparam_2);
-	printk(KERN_INFO "hypmtscheduler_getrawtick64: l_tickcount = 0x%016llx\n", l_tickcount);
-
-	//*tickcount = (u64)((hmtsp->oparam_1 << 32) | hmtsp->oparam_2);
-	*tickcount = l_tickcount;
-	__free_page(hmtsp_page);
-
-	return true;
-}
-
-bool hypmtscheduler_getrawtick32(u32 *tickcount){
-
-	ugapp_hypmtscheduler_param_t *hmtsp;
-	struct page *hmtsp_page;
-	u32 hmtsp_paddr;
-
-	hmtsp_page = alloc_page(GFP_KERNEL | __GFP_ZERO);
-
-	if(!hmtsp_page || !tickcount){
-		return false;
-	}
-
-	hmtsp = (ugapp_hypmtscheduler_param_t *)page_address(hmtsp_page);
-
-	hmtsp->uhcall_fn = UAPP_HYPMTSCHEDULER_UHCALL_GETRAWTICK;
-
-	hmtsp_paddr = page_to_phys(hmtsp_page);
-	__hvc(UAPP_HYPMTSCHEDULER_UHCALL, hmtsp_paddr, sizeof(ugapp_hypmtscheduler_param_t));
-
-	if(!hmtsp->status){
-		__free_page(hmtsp_page);
-		return false;
-	}
-
-	*tickcount = hmtsp->oparam_2;
-
-	__free_page(hmtsp_page);
-	return true;
-}
-
-
-bool hypmtscheduler_inittsc(void){
-
-	ugapp_hypmtscheduler_param_t *hmtsp;
-	struct page *hmtsp_page;
-	u32 hmtsp_paddr;
-
-	hmtsp_page = alloc_page(GFP_KERNEL | __GFP_ZERO);
-
-	if(!hmtsp_page){
-		return false;
-	}
-
-	hmtsp = (ugapp_hypmtscheduler_param_t *)page_address(hmtsp_page);
-
-	hmtsp->uhcall_fn = UAPP_HYPMTSCHEDULER_UHCALL_INITTSC;
-
-	hmtsp_paddr = page_to_phys(hmtsp_page);
-	__hvc(UAPP_HYPMTSCHEDULER_UHCALL, hmtsp_paddr, sizeof(ugapp_hypmtscheduler_param_t));
-
-	if(!hmtsp->status){
-		__free_page(hmtsp_page);
-		return false;
-	}
-
-	__free_page(hmtsp_page);
-	return true;
-}
-
-
-bool hypmtscheduler_logtsc(u32 event){
-
-	ugapp_hypmtscheduler_param_t *hmtsp;
-	struct page *hmtsp_page;
-	u32 hmtsp_paddr;
-
-	hmtsp_page = alloc_page(GFP_KERNEL | __GFP_ZERO);
-
-	if(!hmtsp_page){
-		return false;
-	}
-
-	hmtsp = (ugapp_hypmtscheduler_param_t *)page_address(hmtsp_page);
-
-	hmtsp->uhcall_fn = UAPP_HYPMTSCHEDULER_UHCALL_LOGTSC;
-	hmtsp->iparam_1 = event;
-
-	hmtsp_paddr = page_to_phys(hmtsp_page);
-	__hvc(UAPP_HYPMTSCHEDULER_UHCALL, hmtsp_paddr, sizeof(ugapp_hypmtscheduler_param_t));
-
-	if(!hmtsp->status){
-		__free_page(hmtsp_page);
-		return false;
-	}
-
-	__free_page(hmtsp_page);
-	return true;
-}
-
-
-
-bool hypmtscheduler_dumpdebuglog(u8 *dst_log_buffer, u32 *num_entries){
-
-	ugapp_hypmtscheduler_param_t *hmtsp;
-	struct page *hmtsp_page;
-	u32 hmtsp_paddr;
-	struct page *debug_log_buffer_page;
-	u32 debug_log_buffer_page_paddr;
-
-	if(!dst_log_buffer || !num_entries){
-		return false;
-	}
-
-	*num_entries=0;
-
-	//allocate physical page for parameter passing
-	hmtsp_page = alloc_page(GFP_KERNEL | __GFP_ZERO);
-
-	if(!hmtsp_page){
-		return false;
-	}
-
-	hmtsp = (ugapp_hypmtscheduler_param_t *)page_address(hmtsp_page);
-
-
-	//allocate debug log buffer page and compute its physical address
-	debug_log_buffer_page = alloc_page(GFP_KERNEL | __GFP_ZERO);
-
-	if(!debug_log_buffer_page){
-		return false;
-	}
-
-	debug_log_buffer_page_paddr = page_to_phys(debug_log_buffer_page);
-
-
-	hmtsp->uhcall_fn = UAPP_HYPMTSCHEDULER_UHCALL_DUMPDEBUGLOG;
-	hmtsp->iparam_1 = debug_log_buffer_page_paddr;
-
-	hmtsp_paddr = page_to_phys(hmtsp_page);
-	__hvc(UAPP_HYPMTSCHEDULER_UHCALL, hmtsp_paddr, sizeof(ugapp_hypmtscheduler_param_t));
-
-	if(!hmtsp->status){
-		__free_page(debug_log_buffer_page);
-		__free_page(hmtsp_page);
-		return false;
-	}
-
-	memcpy(dst_log_buffer, page_address(debug_log_buffer_page),
-			hmtsp->oparam_1 * sizeof(hypmtscheduler_logentry_t));
-	*num_entries = hmtsp->oparam_1;
-
-	__free_page(debug_log_buffer_page);
-	__free_page(hmtsp_page);
-	return true;
-}
-
 
