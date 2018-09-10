@@ -47,8 +47,23 @@ void uapp_mavlinkserhb_handleheartbeat(struct sched_timer *t){
 //////
 bool uapp_mavlinkserhb_handlehcall(u32 uhcall_function, void *uhcall_buffer,
 		u32 uhcall_buffer_len){
+	uapp_mavlinkserhb_param_t *mlhbsp;
 
-	return false;
+	if(uhcall_function != UAPP_MAVLINKSERHB_UHCALL){
+		return false;
+	}
+
+	mlhbsp = (uapp_mavlinkserhb_param_t *)uhcall_buffer;
+
+	if(mlhbsp->uhcall_fn == UAPP_MAVLINKSERHB_UHCALL_INITIALIZE){
+
+
+	}else{
+		//ignore unknown uhcall_fn silently
+
+	}
+
+	return true;
 }
 
 
