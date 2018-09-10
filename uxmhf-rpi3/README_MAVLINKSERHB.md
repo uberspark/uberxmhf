@@ -1,6 +1,5 @@
 # Micro-hypervisor based MAVLINK serial heart-beat (mavlinkserhb) uberapp
 
-
 ## Developer notes for mavlinkserhb
 
 1. mavlinkserhb is controlled via the following components:
@@ -15,11 +14,34 @@
 which in turn interacts with `uapp-mavlinkserhb` via a hypercall. 
 
 1. the periodic heat-beat is designed to be handled by the function 
-`uapp_mavlinkserhb_handleheartbeat` within `uapp-mavlinkserhb`
+`uapp_mavlinkserhb_handleheartbeat` within `uapp-mavlinkserhb`. This periodic function
+is created within the function `uapp_mavlinkserhb_handlehcall_initialize` within
+`uapp-mavlinkserhb` with a period of 500ms (2Hz).  
 
 1. the following are the serial hw functions available to implement the serial 
-protocol
-	1. 
+protocol within `uapp_mavlinkserhb_handleheartbeat` :
+	1. `void uapp_mavlinkserhb_uart_init(void)` : this function initializes the 
+	UART hardware
+	1. `void uapp_mavlinkserhb_uart_flush(void)` : this function flushes the UART
+	output (write) buffers
+	1. `void uapp_mavlinkserhb_uart_send(u8 *buffer, u32 buf_len)` : this function
+	sends (writes) a `buffer` of `buf_len` bytes to the UART. Note: You need to
+	invoke `uapp_mavlinkserhb_uart_flush` explicitly after the send if you wish to
+	flush the write buffer and ensure all bytes are written out prior to 
+	performing any further operations.
+	1. `int uapp_mavlinkserhb_uart_checkrecv(void)` : this function returns 1 if
+	there are bytes waiting to be read from the UART receive buffer. A return
+	value of 0 signifies an empty receive buffer.
+	1. `int uapp_mavlinkserhb_uart_recv(u8 *buffer, u32 max_len, u32 *len_read)` :
+	this function reads the UART receive buffer into the `buffer` specified 
+	upto `max_len` bytes and returns the actual number of bytes read into 
+	`len_read`. The function returns 1 if the UART receive buffer is empty 
+	as a result	of this read. A return value of 0 indicates the UART receive
+	buffer still has pending bytes to be read after this function returns 
+	(e.g., if `max_len` was less than number of bytes in the UART receive
+	buffer).
+	 
+	
 
 
 
