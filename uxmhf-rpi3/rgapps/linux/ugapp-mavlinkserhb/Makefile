@@ -7,9 +7,9 @@ UINCS += -I$(UXMHFRPI3_DIR)/rgapps/linux/libs/libuhcall/include
 
 EXTRA_CFLAGS := $(UINCS)
 
-obj-m := hypmtschedulertestkmod.o
+obj-m := mavlinkserhbkmod.o
 
-hypmtschedulertestkmod-objs := hypmtscheduler_testkmod.o hypmtscheduler_testkmodsup.o hypmtscheduler_kmodlib.o
+hypmtschedulertestkmod-objs := mavlinkserhb_kmod.o mavlinkserhb_kmodsup.o mavlinkserhb_kmodlib.o
 
 INCS = -I$(UXMHFRPI3_DIR)/include
 
@@ -18,12 +18,13 @@ USER_LFLAGS = -g -Wall -Wextra
 
 .PHONY: builduserapp
 builduserapp: 
-	arm-linux-gnueabihf-gcc $(USER_CFLAGS) hypmtschedulertest_userapp.c -o hypmtschedulertest_userapp.o
-	arm-linux-gnueabihf-gcc $(USER_CFLAGS) hypmtschedulertest_userappsup.s -o hypmtschedulertest_userappsup.o
-	arm-linux-gnueabihf-gcc $(USER_LFLAGS) hypmtschedulertest_userapp.o hypmtschedulertest_userappsup.o -o hypmtschedulertest_userapp 
+	arm-linux-gnueabihf-gcc $(USER_CFLAGS) mavlinkserhb_userapp.c -o mavlinkserhb_userapp.o
+	arm-linux-gnueabihf-gcc $(USER_CFLAGS) mavlinkserhb_userappsup.S -o mavlinkserhb_userappsup.o
+	arm-linux-gnueabihf-gcc $(USER_LFLAGS) mavlinkserhb_userapp.o mavlinkserhb_userappsup.o -o mavlinkserhb_userapp 
 
 .PHONY: cleanuserapp
 cleanuserapp:
-	rm -f hypmtschedulertest_userapp
-	rm -f hypmtschedulertest_userapp.o
+	rm -f mavlinkserhb_userapp
+	rm -f mavlinkserhb_userapp.o
+	rm -f mavlinkserhb_userappsup.o
 	
