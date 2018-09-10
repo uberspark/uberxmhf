@@ -87,6 +87,32 @@ void uapp_mavlinkserhb_uart_send(u8 *buffer, u32 buf_len){
 }
 
 
+//////
+// read bytes from UART until max_len or read buffer exhausted
+// return 0: read buffer still has characters
+// return 1: read buffer exhausted
+//////
+int uapp_mavlinkserhb_uart_recv(u8 *buffer, u32 max_len, u32 *len_read){
+	u32 i;
+
+	i=0;
+	while(uapp_mavlinkserhb_uart_checkrecv()){
+		buffer[i] = mmio_read32(AUX_MU_IO_REG) & 0xFF;
+		i++;
+		if(i == max_len)
+			break;
+	}
+
+	*len_read = i;
+
+	if(uapp_mavlinkserhb_uart_checkrecv())
+		return 0;
+	else
+		return 1;
+}
+
+
+
 
 
 //////////////////////////////////////////////////////////////////////////////
