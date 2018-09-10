@@ -109,6 +109,10 @@ typedef struct {
 #define DEBUG_LOG_SIZE (4096/sizeof(hypmtscheduler_logentry_t))
 
 
+struct sched_timer *uapp_sched_timer_declare(u32 first_time_period,
+		u32 regular_time_period, int priority, HYPTHREADFUNC func);
+
+
 #endif // __ASSEMBLY__
 
 
