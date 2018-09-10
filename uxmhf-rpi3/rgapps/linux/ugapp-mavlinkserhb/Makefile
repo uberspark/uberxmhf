@@ -9,7 +9,7 @@ EXTRA_CFLAGS := $(UINCS)
 
 obj-m := mavlinkserhbkmod.o
 
-hypmtschedulertestkmod-objs := mavlinkserhb_kmod.o mavlinkserhb_kmodsup.o mavlinkserhb_kmodlib.o
+mavlinkserhbkmod-objs := mavlinkserhb_kmod.o mavlinkserhb_kmodsup.o mavlinkserhb_kmodlib.o
 
 INCS = -I$(UXMHFRPI3_DIR)/include
 
