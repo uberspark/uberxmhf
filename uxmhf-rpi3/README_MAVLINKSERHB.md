@@ -20,8 +20,9 @@ is created within the function `uapp_mavlinkserhb_handlehcall_initialize` within
 
 1. the following are the serial hw functions available to implement the serial 
 protocol within `uapp_mavlinkserhb_handleheartbeat` :
-	1. `void uapp_mavlinkserhb_uart_init(void)` : this function initializes the 
-	UART hardware
+	1. `void uapp_mavlinkserhb_uart_init(u32 baudrate)` : this function initializes the 
+	UART hardware with the specified `baudrate` with the typical `8N1` (8 data bits,
+	no parity bit, 1 stop bit) configuration. 
 	1. `void uapp_mavlinkserhb_uart_flush(void)` : this function flushes the UART
 	output (write) buffers
 	1. `void uapp_mavlinkserhb_uart_send(u8 *buffer, u32 buf_len)` : this function
