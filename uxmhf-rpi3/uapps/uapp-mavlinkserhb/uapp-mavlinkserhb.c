@@ -40,6 +40,17 @@ void uapp_mavlinkserhb_handleheartbeat(struct sched_timer *t){
 // mavlinkserhb hypercall APIs
 //////////////////////////////////////////////////////////////////////////////
 
+//////
+// mavlinkserhb initialize hypercall API
+// creates the heart-beat thread to begin processing mavlink heart-beat
+// messages
+//////
+uapp_mavlinkserhb_handlehcall_initialize(uapp_mavlinkserhb_param_t *mlhbsp){
+
+
+}
+
+
 
 //////
 // top-level hypercall handler hub
@@ -56,7 +67,7 @@ bool uapp_mavlinkserhb_handlehcall(u32 uhcall_function, void *uhcall_buffer,
 	mlhbsp = (uapp_mavlinkserhb_param_t *)uhcall_buffer;
 
 	if(mlhbsp->uhcall_fn == UAPP_MAVLINKSERHB_UHCALL_INITIALIZE){
-
+		uapp_mavlinkserhb_handlehcall_initialize(mlhbsp);
 
 	}else{
 		//ignore unknown uhcall_fn silently
