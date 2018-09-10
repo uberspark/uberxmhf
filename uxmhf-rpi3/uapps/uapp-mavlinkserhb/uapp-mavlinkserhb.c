@@ -21,6 +21,11 @@
 //////////////////////////////////////////////////////////////////////////////
 // mavlinkserhb serial port hw interface
 //////////////////////////////////////////////////////////////////////////////
+
+
+//////
+// initialize UART hardware for 115200 8N1
+//////
 void uapp_mavlinkserhb_uart_init(void){
     unsigned int gpio_fnsel, i;
 
@@ -46,6 +51,15 @@ void uapp_mavlinkserhb_uart_init(void){
     for(i=0; i<150; i++);				//delay
     mmio_write32(GPPUDCLK0,0);
     mmio_write32(AUX_MU_CNTL_REG,3);
+}
+
+
+
+//////
+// flush FIFO queue
+//////
+void uapp_mavlinkserhb_uart_flush(void){
+    while( (mmio_read32(AUX_MU_LSR_REG) & 0x100) );
 }
 
 
