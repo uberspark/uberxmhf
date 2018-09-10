@@ -24,9 +24,10 @@
 
 
 //////
-// initialize UART hardware for 115200 8N1
+// initialize UART hardware for given baudrate with the typical
+// 8 stop bits, no parity, 1 stop bit configuration (8N1)
 //////
-void uapp_mavlinkserhb_uart_init(void){
+void uapp_mavlinkserhb_uart_init(u32 baudrate){
     unsigned int gpio_fnsel, i;
 
     mmio_write32(AUX_ENABLES,1);
@@ -36,7 +37,8 @@ void uapp_mavlinkserhb_uart_init(void){
     mmio_write32(AUX_MU_MCR_REG,0);
     mmio_write32(AUX_MU_IER_REG,0);
     mmio_write32(AUX_MU_IIR_REG,0xC6);
-    mmio_write32(AUX_MU_BAUD_REG,270); //((250,000,000/115200)/8)-1 = 270
+    //mmio_write32(AUX_MU_BAUD_REG, 270); //((250,000,000/115200)/8)-1 = 270
+    mmio_write32(AUX_MU_BAUD_REG, (((250000000/baudrate)/8)-1) );
 
     gpio_fnsel=mmio_read32(GPFSEL1);
     gpio_fnsel &= ~(7<<12); 			//GPIO 14 (TX)
@@ -175,7 +177,7 @@ void uapp_mavlinkserhb_handleheartbeat(struct sched_timer *t){
 uapp_mavlinkserhb_handlehcall_initialize(uapp_mavlinkserhb_param_t *mlhbsp){
 
 	//initialize UART
-	uapp_mavlinkserhb_uart_init();
+	uapp_mavlinkserhb_uart_init(115200);
 
 	//declare a timer to deal with heart-beat
 	uapp_sched_timer_declare((0.5 * HYPMTSCHEDULER_TIME_1SEC),
