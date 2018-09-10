@@ -47,7 +47,6 @@ void kmod_comms(unsigned int function){
 // main function
 //////
 int main(int argc, char *argv[]){
-    unsigned int testcase_num;
 	printf("%s: start\n", __FUNCTION__);
 
 	kmod_comms(UAPP_MAVLINKSERHB_UHCALL_INITIALIZE);
