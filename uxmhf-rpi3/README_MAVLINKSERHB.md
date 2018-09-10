@@ -1,42 +1,40 @@
-# Micro-hypervisor based Mixed Trust Scheduler uberapp
+# Micro-hypervisor based MAVLINK serial heart-beat (mavlinkserhb) uberapp
 
-## Instructions to build and run kernel-mode test application for mixed-trust scheduler
+## Instructions to build and run mavlinkserhb
 
 1.  Follow all instructions described in README.md and stop after 
 building `uhcalltest` on development system
 
-1. At this point build `hypmtschedulertestkmod.ko` on development system
-	1. `cd rgapps/linux/ugapp-hypmtscheduler-zsrmv`
-	1. `./build.sh ~/linux ~/tools/arm-bcm2708/gcc-linaro-arm-linux-gnueabihf-raspbian-x64/bin/`
-	1. `cp ./hypmtschedulertestkmod.ko ~/uxmhf-rpi3-staging/.`
+1. At this point build `mavlinkserhbkmod.ko` on development system
+	1. `cd rgapps/linux/ugapp-mavlinkserhb`
+	1. `make -C ~/linux ARCH=arm CROSS_COMPILE=~/tools/arm-bcm2708/gcc-linaro-arm-linux-gnueabihf-raspbian-x64/bin/arm-linux-gnueabihf- M=$PWD`
+	1. `cp ./mavlinkserhbkmod.ko ~/uxmhf-rpi3-staging/.`
 
-1. Build `hypmtschedulertest_userapp` on development system
-	1. `cd rgapps/linux/ugapp-hypmtscheduler-zsrmv`
+1. Build `mavlinkserhb_userapp` on development system
+	1. `cd rgapps/linux/ugapp-mavlinkserhb`
 	1. `make builduserapp`
-	1. `cp ./hypmtschedulertest_userapp.ko ~/uxmhf-rpi3-staging/.`
+	1. `cp ./mavlinkserhb_userapp.ko ~/uxmhf-rpi3-staging/.`
 
 1. Continue with remaining instructions described in README.md and boot the
 micro-hypervisor with the uberguest
 
-1. Install `hypmtschedulertestkmod.ko` within uberguest
-	1. `sudo insmod hypmtschedulertestkmod.ko`
+1. Install `mavlinkserhbkmod.ko` within uberguest
+	1. `sudo insmod mavlinkserhbkmod.ko`
 
-1. Run `hypmtschedulertest_userapp` (hypmtscheduler user-mode test application) within uberguest to create a hyptask
-	1. `sudo ./hypmtschedulertest_userapp 1`
+1. Run `mavlinkserhb_userapp` (mavlinkserhb user-mode test application) within uberguest to start heart-beat protocol
+	1. `sudo ./mavlinkserhb_userapp 1`
 
-1. Run `hypmtschedulertest_userapp` (hypmtscheduler user-mode test application) within uberguest to disable hyptask execution for a period
-	1. `sudo ./hypmtschedulertest_userapp 2`
+## Developer notes for mavlinkserhb
 
-1. Run `hypmtschedulertest_userapp` (hypmtscheduler user-mode test application) within uberguest to delete hyptask
-	1. `sudo ./hypmtschedulertest_userapp 3`
+1. mavlinkserhb is controlled via a user-space application that interacts with the mavlinkserhb kernel module(`ugapp-mavlinkserhbkmod`), which in turn interacts with the mavlinkserhb hyptask uberapp(`uapp-mavlinkserhb`). 
 
 
-1. Note: `disable` and `delete` only work on the first hyptask created for the above example. However, it is straightforward to modify the kernel module and the user-mode application to support multiple hyptasks as required
+1. The default periodic heart-beat protocol relies on a serial loopback interface and sends a 8-byte buffer followed by a read which expects the same 8-byte buffer sent. The system is halted if the received buffer does not match the send bufer.
 
 
-## Developer notes for kernel-mode test application for mixed-trust scheduler
+1. The heart-beat protocol can be customized within the function `` in `` 
 
-1. The following kernel-mode module APIs are available to bridge the hypervisor scheduler APIs (defined within `rgapps/linux/ugapp-hypmtscheduler-zsrmv\hypmtscheduler_kmodlib.c`)
+The following kernel-mode module APIs are available to bridge the hypervisor scheduler APIs (defined within `rgapps/linux/ugapp-hypmtscheduler-zsrmv\hypmtscheduler_kmodlib.c`)
 	1.  `bool hypmtscheduler_createhyptask(u32 first_period, u32 regular_period,
 			u32 priority, u32 hyptask_id, u32 *hyptask_handle)`
 		1. creates a hyptask with specified `first_period`, `regular_period` and `priority`
