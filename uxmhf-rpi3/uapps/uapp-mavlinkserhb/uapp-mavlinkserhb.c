@@ -147,6 +147,9 @@ void uapp_mavlinkserhb_handleheartbeat(struct sched_timer *t){
 //////
 uapp_mavlinkserhb_handlehcall_initialize(uapp_mavlinkserhb_param_t *mlhbsp){
 
+	//initialize UART
+	uapp_mavlinkserhb_uart_init();
+
 	//declare a timer to deal with heart-beat
 	uapp_sched_timer_declare((0.5 * HYPMTSCHEDULER_TIME_1SEC),
 			(0.5 * HYPMTSCHEDULER_TIME_1SEC), 99, &uapp_mavlinkserhb_handleheartbeat);
