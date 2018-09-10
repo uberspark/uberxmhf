@@ -23,7 +23,7 @@ protocol
 
 
 
-## Instructions to build and run mavlinkserhb
+## Instructions to build mavlinkserhb components
 
 1.  Follow all instructions described in README.md and stop after 
 building `uhcalltest` on development system
@@ -34,12 +34,18 @@ building `uhcalltest` on development system
 	1. `cp ./mavlinkserhbkmod.ko ~/uxmhf-rpi3-staging/.`
 
 1. Build `mavlinkserhb_userapp` on development system
+	1. `cd rgapps/linux`
+	1. `make`
 	1. `cd rgapps/linux/ugapp-mavlinkserhb`
 	1. `make builduserapp`
-	1. `cp ./mavlinkserhb_userapp.ko ~/uxmhf-rpi3-staging/.`
+	1. `cp ./mavlinkserhb_userapp ~/uxmhf-rpi3-staging/.`
 
 1. Continue with remaining instructions described in README.md and boot the
 micro-hypervisor with the uberguest
+
+
+
+
 
 1. Install `mavlinkserhbkmod.ko` within uberguest
 	1. `sudo insmod mavlinkserhbkmod.ko`
