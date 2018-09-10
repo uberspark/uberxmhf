@@ -15,4 +15,3 @@
 #include <debug.h>
 
 #include <mavlinkserhb.h>
-
