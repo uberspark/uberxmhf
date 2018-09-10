@@ -7,8 +7,23 @@
 #ifndef __MAVLINKSERHB_H__
 #define __MAVLINKSERHB_H__
 
+#define UAPP_MAVLINKSERHB_UHCALL	0xD0
+
+#define UAPP_MAVLINKSERHB_UHCALL_INITIALIZE			1
+
 
 #ifndef __ASSEMBLY__
+
+typedef struct {
+	uint8_t uhcall_fn;
+	uint32_t iparam_1;
+	uint32_t iparam_2;
+	uint32_t iparam_3;
+	uint32_t iparam_4;
+	uint32_t oparam_1;
+	uint32_t oparam_2;
+	uint32_t status;
+}uapp_mavlinkserhb_param_t;
 
 
 
