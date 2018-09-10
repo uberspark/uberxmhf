@@ -21,7 +21,7 @@
 // the periodic function which handles the heart-beat protocol
 //////
 void uapp_mavlinkserhb_handleheartbeat(struct sched_timer *t){
-
+	bcm2837_miniuart_puts("mavlinkserhb: periodic heart-beat handler fired\n");
 }
 
 
