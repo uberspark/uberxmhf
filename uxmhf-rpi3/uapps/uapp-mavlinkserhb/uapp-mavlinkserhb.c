@@ -67,7 +67,7 @@ void uapp_mavlinkserhb_uart_flush(void){
 // check is we have something in receive queue
 // return 1 if true, else 0
 //////
-int uapp_mavlinkserhb_uart_check(void){
+int uapp_mavlinkserhb_uart_checkrecv(void){
 
 	if( mmio_read32(AUX_MU_LSR_REG) & 0x01 ) return 1;
     return 0;
