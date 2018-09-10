@@ -74,6 +74,19 @@ int uapp_mavlinkserhb_uart_checkrecv(void){
 }
 
 
+//////
+// write bytes to UART
+//////
+void uapp_mavlinkserhb_uart_send(u8 *buffer, u32 buf_len){
+	u32 i;
+
+	for(i=0; i < buf_len; i++){
+	    while(! (mmio_read32(AUX_MU_LSR_REG) & 0x20) );
+	    mmio_write32(AUX_MU_IO_REG,(u32)buffer[i]);
+	}
+}
+
+
 
 
 //////////////////////////////////////////////////////////////////////////////
