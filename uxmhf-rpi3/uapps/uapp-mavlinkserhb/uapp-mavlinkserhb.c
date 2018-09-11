@@ -183,6 +183,7 @@ uapp_mavlinkserhb_handlehcall_initialize(uapp_mavlinkserhb_param_t *mlhbsp){
 	uapp_sched_timer_declare((0.5 * HYPMTSCHEDULER_TIME_1SEC),
 			(0.5 * HYPMTSCHEDULER_TIME_1SEC), 99, &uapp_mavlinkserhb_handleheartbeat);
 
+
 	//bcm2837_miniuart_puts("mavlinkserhb: initialize hypercall\n");
 }
 
@@ -227,9 +228,24 @@ bool uapp_mavlinkserhb_handlehcall(u32 uhcall_function, void *uhcall_buffer,
 // the main initialization function
 //////
 void uapp_mavlinkserhb_initialize(u32 cpuid){
+	u32 len;
+	u8 ch;
 
 	if(cpuid == 0){
 		_XDPRINTFSMP_("%s[%u]: Initializing mavlinkserhb...\n", __func__, cpuid);
+
+		//initialize UART
+		uapp_mavlinkserhb_uart_init(115200);
+
+		bcm2837_miniuart_puts("mavlinkserhb: initialize: going into read loop...\n");
+
+		while(1){
+			uapp_mavlinkserhb_uart_recv(&ch, sizeof(ch), &len);
+			if(len == 1){
+				uapp_mavlinkserhb_uart_send(&ch, sizeof(ch));
+				uapp_mavlinkserhb_uart_flush();
+			}
+		}
 
 	}else{
 		_XDPRINTFSMP_("%s[%u]: AP CPU: nothing to do, moving on...\n", __func__, cpuid);
