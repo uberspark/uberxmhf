@@ -228,31 +228,33 @@ bool uapp_mavlinkserhb_handlehcall(u32 uhcall_function, void *uhcall_buffer,
 // the main initialization function
 //////
 void uapp_mavlinkserhb_initialize(u32 cpuid){
-	u32 len;
-	u8 ch;
 
 	if(cpuid == 0){
 		_XDPRINTFSMP_("%s[%u]: Initializing mavlinkserhb...\n", __func__, cpuid);
-
-		//initialize UART
-		uapp_mavlinkserhb_uart_init(115200);
-
-		bcm2837_miniuart_puts("mavlinkserhb: initialize: going into read loop...\n");
-
-		while(1){
-			uapp_mavlinkserhb_uart_recv(&ch, sizeof(ch), &len);
-			if(len == 1){
-				uapp_mavlinkserhb_uart_send(&ch, sizeof(ch));
-				uapp_mavlinkserhb_uart_flush();
-			}
-		}
 
 	}else{
 		_XDPRINTFSMP_("%s[%u]: AP CPU: nothing to do, moving on...\n", __func__, cpuid);
 	}
 
-
 }
 
 
 //////////////////////////////////////////////////////////////////////////////
+
+#if 0
+void uapp_mavlinkserhb_uartreadexample(void){
+	u32 len;
+	u8 ch;
+
+	//initialize UART
+	uapp_mavlinkserhb_uart_init(115200);
+
+	while(1){
+		uapp_mavlinkserhb_uart_recv(&ch, sizeof(ch), &len);
+		if(len == 1){
+			uapp_mavlinkserhb_uart_send(&ch, sizeof(ch));
+			uapp_mavlinkserhb_uart_flush();
+		}
+	}
+}
+#endif
