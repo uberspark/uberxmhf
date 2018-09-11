@@ -125,37 +125,11 @@ int uapp_mavlinkserhb_uart_recv(u8 *buffer, u32 max_len, u32 *len_read){
 //////////////////////////////////////////////////////////////////////////////
 
 
-typedef struct {
-	u32 id;
-	u32 data;
-} mavlink_data_t;
-
-__attribute__((section(".data"))) mavlink_data_t mavlink_data;
 
 //////
 // the periodic function which handles the heart-beat protocol
 //////
 void uapp_mavlinkserhb_handleheartbeat(struct sched_timer *t){
-	u32 len;
-
-	mavlink_data.id = 0xDEADF00D;
-	mavlink_data.data = 0xF00DDEAD;
-
-	uapp_mavlinkserhb_uart_send(&mavlink_data, sizeof(mavlink_data));
-	uapp_mavlinkserhb_uart_flush();
-	if(uapp_mavlinkserhb_uart_recv(&mavlink_data, sizeof(mavlink_data), &len)){
-		if(len == sizeof(mavlink_data)){
-			if(mavlink_data.id == 0xDEADF00D && mavlink_data.data == 0xF00DDEAD){
-
-			}else{
-				HALT();
-			}
-		}else{
-			HALT();
-		}
-	}else{
-		HALT();
-	}
 
 }
 
