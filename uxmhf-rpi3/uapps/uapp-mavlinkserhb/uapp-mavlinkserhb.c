@@ -18,6 +18,9 @@
 #include <mavlinkserhb.h>
 
 
+struct sched_timer *mavlinkserhb_hyptask=NULL;
+
+
 //////////////////////////////////////////////////////////////////////////////
 // mavlinkserhb serial port hw interface
 //////////////////////////////////////////////////////////////////////////////
@@ -238,11 +241,13 @@ uapp_mavlinkserhb_handlehcall_activatehbhyptask(uapp_mavlinkserhb_param_t *mlhbs
 	//declare a timer to deal with heart-beat
 	//uapp_sched_timer_declare((0.5 * HYPMTSCHEDULER_TIME_1SEC),
 	//		(0.5 * HYPMTSCHEDULER_TIME_1SEC), 99, &uapp_mavlinkserhb_handleheartbeat);
-	uapp_sched_timer_declare(mlhbsp->iparam_1,
+	mavlinkserhb_hyptask = uapp_sched_timer_declare(mlhbsp->iparam_1,
 			mlhbsp->iparam_2, mlhbsp->iparam_3, &uapp_mavlinkserhb_handleheartbeat);
 
-	//success
-	mlhbsp->status=1;
+	if(mavlinkserhb_hyptask == NULL)
+		mlhbsp->status=0;	//fail
+	else
+		mlhbsp->status=1; 	//success
 }
 
 
