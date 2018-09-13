@@ -129,8 +129,9 @@ micro-hypervisor with the uberguest
 1. Install `mavlinkserhbkmod.ko` within uberguest once booted 
 	1. `sudo insmod mavlinkserhbkmod.ko`
 
-1. Run `mavlinkserhb_userapp` (mavlinkserhb user-mode test application) within uberguest to start heart-beat protocol
-	1. `sudo ./mavlinkserhb_userapp`
+1. Run `mavlinkserhb_userapp n` (mavlinkserhb user-mode test application) within uberguest to test various APIs. `n` is a number from `1` through `6`. see Developer notes for mavlinkserhb kernel module and user-app above. For example, the following will
+initialize the UART
+	1. `sudo ./mavlinkserhb_userapp 1`
 
 1. Remove `mavlinkserhbkmod.ko` within uberguest once done
 	1. `sudo rmmod uhcallkmod`
