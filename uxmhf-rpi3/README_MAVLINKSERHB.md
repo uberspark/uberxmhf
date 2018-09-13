@@ -1,6 +1,7 @@
 # Micro-hypervisor based MAVLINK serial heart-beat (mavlinkserhb) uberapp
 
-## Developer notes for mavlinkserhb uapp
+
+## General notes and initial system configuration
 
 1. mavlinkserhb is controlled via the following components:
   1. a user-space application (`mavlinkserhb_userapp`) located at 
@@ -12,6 +13,23 @@
 
 1. `mavlinkserhb_userapp` interacts with `mavlinkserhbkmod` via a system-call, 
 which in turn interacts with `uapp-mavlinkserhb` via a hypercall. 
+
+1. boot the PI3 without uberXMHF and issue the following two commands to 
+deactivate the serial port driver for the Raspbian (guest) OS
+  1. `sudo systemctl stop serial-getty@serial0`
+  1. `sudo systemctl disable serial-getty@serial0`
+
+1. Note that we need to interact with the PI3 either via a dedicated screen 
+and keyboard or via SSH (network). The serial interface will not be available
+for testing the mavlinkserhb uberapp. Further, the
+serial debug messages from uberXMHF will only be emitted until control is 
+transferred to the raspbian linux kernel. Once the kernel gets control, you
+will not see any further serial debug messages from uberXMHF. 
+
+
+
+## Developer notes for mavlinkserhb uapp
+
 
 1. the periodic heat-beat is designed to be handled by the function 
 `uapp_mavlinkserhb_handleheartbeat` within `uapp-mavlinkserhb`. This periodic function
