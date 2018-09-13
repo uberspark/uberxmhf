@@ -177,3 +177,67 @@ bool mavlinkserhb_checkrecv(u8 *buffer, u32 buf_len){
 
 
 
+
+bool mavlinkserhb_recv(u8 *buffer, u32 max_len, u32 *len_read, bool *uartreadbufexhausted){
+
+	uapp_mavlinkserhb_param_t *mlhbsp;
+	struct page *mlhbsp_page;
+	u32 mlhbsp_paddr;
+	struct page *buffer_page;
+	u32 buffer_page_paddr;
+
+	//sanity check length
+	if(max_len > 4096)
+		return false;
+
+	//allocate parameter page
+	mlhbsp_page = alloc_page(GFP_KERNEL | __GFP_ZERO);
+
+	if(!mlhbsp_page){
+		return false;
+	}
+
+	mlhbsp = (uapp_mavlinkserhb_param_t *)page_address(mlhbsp_page);
+
+	//allocate buffer physical page
+	buffer_page = alloc_page(GFP_KERNEL | __GFP_ZERO);
+
+	if(!buffer_page){
+		return false;
+	}
+
+	buffer_page_paddr = page_to_phys(buffer_page);
+
+
+	//issue send hypercall
+	mlhbsp->uhcall_fn = UAPP_MAVLINKSERHB_UHCALL_RECV;
+	mlhbsp->iparam_1 = buffer_page_paddr;
+	mlhbsp->iparam_2 = max_len;
+
+
+	mlhbsp_paddr = page_to_phys(mlhbsp_page);
+	__hvc(UAPP_MAVLINKSERHB_UHCALL, mlhbsp_paddr, sizeof(uapp_mavlinkserhb_param_t));
+
+
+	if(!mlhbsp->status){
+		//error
+		__free_page(mlhbsp_page);
+		__free_page(buffer_page);
+		return false;
+	}
+
+	//oparam_1 = bytes read
+	//oparam_2 = 0 if UART read buffer not exhausted
+	//oparam_2 = 1 if UART read buffer exhausted
+	*len_read = mlhbsp->oparam_1;
+
+	if(mlhbsp->oparam_2)
+		*uartreadbufexhausted = true;
+	else
+		*uartreadbufexhausted = false;
+
+	__free_page(mlhbsp_page);
+	__free_page(buffer_page);
+	return true;
+}
+
