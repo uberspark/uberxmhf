@@ -162,6 +162,30 @@ uapp_mavlinkserhb_handlehcall_initialize(uapp_mavlinkserhb_param_t *mlhbsp){
 }
 
 
+//////
+// mavlinkserhb send hypercall API
+// send bytes via UART
+//////
+uapp_mavlinkserhb_handlehcall_send(uapp_mavlinkserhb_param_t *mlhbsp){
+	//iparam_1 = buffer physical address
+	//iparam_2 = buffer length (in bytes)
+
+	//sanity check buffer length, currently only a max of 4096 bytes
+	//can be sent at a time
+	if(mlhbsp->iparam_2 > 4096){
+		mlhbsp->status=0;
+		return;
+	}
+
+	//send the bytes out through the UART
+	uapp_mavlinkserhb_uart_send(mlhbsp->iparam_1, mlhbsp->iparam_2);
+
+	//set status to indicate success
+	mlhbsp->status=1;
+}
+
+
+
 
 //////
 // top-level hypercall handler hub
