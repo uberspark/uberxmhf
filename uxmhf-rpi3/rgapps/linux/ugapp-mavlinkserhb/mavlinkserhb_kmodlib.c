@@ -139,6 +139,9 @@ bool mavlinkserhb_send(u8 *buffer, u32 buf_len){
 
 	__free_page(mlhbsp_page);
 	__free_page(buffer_page);
-	return;
+	return true;
 }
+
+
+
 
