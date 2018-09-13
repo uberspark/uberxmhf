@@ -205,6 +205,32 @@ void uapp_mavlinkserhb_handlehcall_checkrecv(uapp_mavlinkserhb_param_t *mlhbsp){
 
 
 //////
+// mavlinkserhb recv hypercall API
+// recv bytes via UART
+//////
+void uapp_mavlinkserhb_handlehcall_recv(uapp_mavlinkserhb_param_t *mlhbsp){
+	//iparam_1 = buffer physical address
+	//iparam_2 = buffer max length (in bytes)
+
+	//oparam_1 = length read
+
+	//sanity check buffer length, currently only a max of 4096 bytes
+	//can be received at a time
+	if(mlhbsp->iparam_2 > 4096){
+		mlhbsp->status=0;
+		return;
+	}
+
+	//read bytes from UART
+	uapp_mavlinkserhb_uart_recv(mlhbsp->iparam_1, mlhbsp->iparam_2, &mlhbsp->oparam_1);
+
+	//set status to indicate success
+	mlhbsp->status=1;
+}
+
+
+
+//////
 // top-level hypercall handler hub
 // return true if handled the hypercall, false if not
 //////
