@@ -150,11 +150,12 @@ void uapp_mavlinkserhb_handleheartbeat(struct sched_timer *t){
 // mavlinkserhb initialize hypercall API
 // initialize UART
 //////
-uapp_mavlinkserhb_handlehcall_initialize(uapp_mavlinkserhb_param_t *mlhbsp){
+void uapp_mavlinkserhb_handlehcall_initialize(uapp_mavlinkserhb_param_t *mlhbsp){
 
 	//initialize UART with specified parameter
 	uapp_mavlinkserhb_uart_init(mlhbsp->iparam_1);
 
+	mlhbsp->status=1;
 }
 
 

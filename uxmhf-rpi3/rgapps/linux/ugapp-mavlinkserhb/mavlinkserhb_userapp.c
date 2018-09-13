@@ -43,16 +43,29 @@ void kmod_comms(unsigned int function){
 }
 
 
+
 //////
 // main function
 //////
 int main(int argc, char *argv[]){
 	printf("%s: start\n", __FUNCTION__);
 
-	kmod_comms(UAPP_MAVLINKSERHB_UHCALL_INITIALIZE);
+    if(argc != 2){
+  	   printf("usage: mavlinkserhb_userapp <api_id>\n");
+  	   exit(1);
+    }
 
-    printf("%s: end\n", __FUNCTION__);
+	switch(atoi(argv[1])){
+	case 1:
+		kmod_comms(UAPP_MAVLINKSERHB_UHCALL_INITIALIZE);
+		break;
+
+	default:
+		printf("%s: unknown testcase_num=%u, exiting!\n", __FUNCTION__, atoi(argv[1]));
+		exit(1);
+	}
+
+    printf("%s: end-of-test\n", __FUNCTION__);
     return 0;
 }
-
 
