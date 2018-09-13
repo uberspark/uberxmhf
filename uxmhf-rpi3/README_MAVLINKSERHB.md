@@ -79,8 +79,9 @@ to interact with `uapp-mavlinkserhb` uberapp via hypercalls:
 1. the test user-space application (`mavlinkserhb_userapp`) employs ioctl(write)
 to communicate with the kernel-module (`mavlinkserhbkmod`)
 
-1. 
-
+1. `mavlinkserhb_userapp` is invoked with parameters `1` through `6` to test
+the aforementioned kernel-module interfaces. The test-rig can be found within
+the function `dev_write` within the `mavlinkserhbkmod` sources.
 
 
 ## Instructions to build and deploy mavlinkserhb components
