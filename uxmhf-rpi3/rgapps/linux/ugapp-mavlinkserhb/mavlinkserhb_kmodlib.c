@@ -88,3 +88,57 @@ void mavlinkserhb_initialize(void){
 	return;
 }
 
+
+
+bool mavlinkserhb_send(u8 *buffer, u32 buf_len){
+
+	uapp_mavlinkserhb_param_t *mlhbsp;
+	struct page *mlhbsp_page;
+	u32 mlhbsp_paddr;
+	struct page *buffer_page;
+	u32 buffer_page_paddr;
+
+	//sanity check length
+	if(buf_len > 4096)
+		return false;
+
+	//allocate parameter page
+	mlhbsp_page = alloc_page(GFP_KERNEL | __GFP_ZERO);
+
+	if(!mlhbsp_page){
+		return false;
+	}
+
+	mlhbsp = (uapp_mavlinkserhb_param_t *)page_address(mlhbsp_page);
+
+	//allocate buffer physical page
+	buffer_page = alloc_page(GFP_KERNEL | __GFP_ZERO);
+
+	if(!buffer_page){
+		return false;
+	}
+
+	buffer_page_paddr = page_to_phys(buffer_page);
+
+	//copy over buffer contents to buffer physical page
+	memcpy(page_address(buffer_page), buffer, buf_len);
+
+	//issue send hypercall
+	mlhbsp->uhcall_fn = UAPP_MAVLINKSERHB_UHCALL_SEND;
+	mlhbsp->iparam_1 = buffer_page_paddr;
+	mlhbsp->iparam_2 = buf_len;
+
+	mlhbsp_paddr = page_to_phys(mlhbsp_page);
+	__hvc(UAPP_MAVLINKSERHB_UHCALL, mlhbsp_paddr, sizeof(uapp_mavlinkserhb_param_t));
+
+	if(!mlhbsp->status){
+		__free_page(mlhbsp_page);
+		__free_page(buffer_page);
+		return false;
+	}
+
+	__free_page(mlhbsp_page);
+	__free_page(buffer_page);
+	return;
+}
+
