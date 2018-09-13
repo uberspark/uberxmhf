@@ -188,6 +188,22 @@ void uapp_mavlinkserhb_handlehcall_send(uapp_mavlinkserhb_param_t *mlhbsp){
 
 
 //////
+// mavlinkserhb recv check hypercall API
+// check if UART receive buffer has any characters
+//////
+void uapp_mavlinkserhb_handlehcall_checkrecv(uapp_mavlinkserhb_param_t *mlhbsp){
+
+	if(uapp_mavlinkserhb_uart_checkrecv())
+		mlhbsp->status=0;
+	else
+		mlhbsp->status=1;
+
+	return;
+}
+
+
+
+//////
 // top-level hypercall handler hub
 // return true if handled the hypercall, false if not
 //////
