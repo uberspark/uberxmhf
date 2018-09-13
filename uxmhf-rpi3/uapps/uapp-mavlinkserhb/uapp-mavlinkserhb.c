@@ -175,8 +175,9 @@ void uapp_mavlinkserhb_handlehcall_send(uapp_mavlinkserhb_param_t *mlhbsp){
 		return;
 	}
 
-	//send the bytes out through the UART
+	//send the bytes out through the UART and flush output
 	uapp_mavlinkserhb_uart_send(mlhbsp->iparam_1, mlhbsp->iparam_2);
+	uapp_mavlinkserhb_uart_flush();
 
 	//set status to indicate success
 	mlhbsp->status=1;
