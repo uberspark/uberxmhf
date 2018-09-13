@@ -166,7 +166,7 @@ uapp_mavlinkserhb_handlehcall_initialize(uapp_mavlinkserhb_param_t *mlhbsp){
 // mavlinkserhb send hypercall API
 // send bytes via UART
 //////
-uapp_mavlinkserhb_handlehcall_send(uapp_mavlinkserhb_param_t *mlhbsp){
+void uapp_mavlinkserhb_handlehcall_send(uapp_mavlinkserhb_param_t *mlhbsp){
 	//iparam_1 = buffer physical address
 	//iparam_2 = buffer length (in bytes)
 
