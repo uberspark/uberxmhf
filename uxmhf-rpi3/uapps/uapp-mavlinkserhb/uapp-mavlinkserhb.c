@@ -241,6 +241,8 @@ uapp_mavlinkserhb_handlehcall_activatehbhyptask(uapp_mavlinkserhb_param_t *mlhbs
 	uapp_sched_timer_declare(mlhbsp->iparam_1,
 			mlhbsp->iparam_2, mlhbsp->iparam_3, &uapp_mavlinkserhb_handleheartbeat);
 
+	//success
+	mlhbsp->status=1;
 }
 
 

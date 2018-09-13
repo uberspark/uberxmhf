@@ -242,3 +242,35 @@ bool mavlinkserhb_recv(u8 *buffer, u32 max_len, u32 *len_read, bool *uartreadbuf
 	return true;
 }
 
+
+bool mavlinkserhb_activatehbhyptask(u32 first_period, u32 recurring_period,
+		u32 priority){
+
+	uapp_mavlinkserhb_param_t *mlhbsp;
+	struct page *mlhbsp_page;
+	u32 mlhbsp_paddr;
+
+	mlhbsp_page = alloc_page(GFP_KERNEL | __GFP_ZERO);
+
+	if(!mlhbsp_page){
+		return false;
+	}
+
+	mlhbsp = (uapp_mavlinkserhb_param_t *)page_address(mlhbsp_page);
+
+	mlhbsp->uhcall_fn = UAPP_MAVLINKSERHB_UHCALL_ACTIVATEHBHYPTASK;
+	mlhbsp->iparam_1 = first_period;
+	mlhbsp->iparam_2 = recurring_period;
+	mlhbsp->iparam_3 = priority;
+
+	mlhbsp_paddr = page_to_phys(mlhbsp_page);
+	__hvc(UAPP_MAVLINKSERHB_UHCALL, mlhbsp_paddr, sizeof(uapp_mavlinkserhb_param_t));
+
+	if(!mlhbsp->status){
+		__free_page(mlhbsp_page);
+		return false;
+	}
+
+	__free_page(mlhbsp_page);
+	return true;
+}

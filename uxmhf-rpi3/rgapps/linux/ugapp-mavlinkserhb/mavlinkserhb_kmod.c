@@ -63,7 +63,8 @@ extern void mavlinkserhb_initialize(u32 baudrate);
 extern bool mavlinkserhb_send(u8 *buffer, u32 buf_len);
 extern bool mavlinkserhb_checkrecv(u8 *buffer, u32 buf_len);
 extern bool mavlinkserhb_recv(u8 *buffer, u32 max_len, u32 *len_read, bool *uartreadbufexhausted);
-
+extern bool mavlinkserhb_activatehbhyptask(u32 first_period, u32 recurring_period,
+		u32 priority);
 
 
 //////
