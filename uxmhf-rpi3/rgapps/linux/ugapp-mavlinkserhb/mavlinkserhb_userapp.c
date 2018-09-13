@@ -72,6 +72,14 @@ int main(int argc, char *argv[]){
 		kmod_comms(UAPP_MAVLINKSERHB_UHCALL_RECV);
 		break;
 
+	case 5:
+		kmod_comms(UAPP_MAVLINKSERHB_UHCALL_ACTIVATEHBHYPTASK);
+		break;
+
+	case 6:
+		kmod_comms(UAPP_MAVLINKSERHB_UHCALL_DEACTIVATEHBHYPTASK);
+		break;
+
 	default:
 		printf("%s: unknown testcase_num=%u, exiting!\n", __FUNCTION__, atoi(argv[1]));
 		exit(1);

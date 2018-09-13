@@ -133,7 +133,8 @@ int uapp_mavlinkserhb_uart_recv(u8 *buffer, u32 max_len, u32 *len_read){
 // the periodic function which handles the heart-beat protocol
 //////
 void uapp_mavlinkserhb_handleheartbeat(struct sched_timer *t){
-
+	uapp_mavlinkserhb_uart_send("A", 1);
+	uapp_mavlinkserhb_uart_flush();
 }
 
 //////////////////////////////////////////////////////////////////////////////

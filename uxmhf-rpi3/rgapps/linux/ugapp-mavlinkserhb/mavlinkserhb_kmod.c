@@ -40,6 +40,7 @@
 #include <linux/delay.h>
 #include <asm/uaccess.h>          // required for the copy to user function
 
+#include "../../../include/hypmtscheduler.h"
 #include "../../../include/mavlinkserhb.h"
 
 #define  DEVICE_NAME "mavlinkserhbkmod"    			//device will appear at /dev/uhcallkmod
@@ -131,6 +132,23 @@ static ssize_t dev_write(struct file *filep, const char *buffer, size_t len, lof
 				printk(KERN_INFO "mavlinkserhbkmod: no data in recv buffer\n");
 			}
 		}
+			break;
+
+		case UAPP_MAVLINKSERHB_UHCALL_ACTIVATEHBHYPTASK:
+			if(mavlinkserhb_activatehbhyptask((0.5 * HYPMTSCHEDULER_TIME_1SEC),
+					(0.5 * HYPMTSCHEDULER_TIME_1SEC), 99)){
+				printk(KERN_INFO "mavlinkserhbkmod: started hb hyptask\n");
+			}else{
+				printk(KERN_INFO "mavlinkserhbkmod: could not activate hb hyptask\n");
+			}
+			break;
+
+		case UAPP_MAVLINKSERHB_UHCALL_DEACTIVATEHBHYPTASK:
+			if(mavlinkserhb_deactivatehbhyptask()){
+				printk(KERN_INFO "mavlinkserhbkmod: deactivated hb hyptask\n");
+			}else{
+				printk(KERN_INFO "mavlinkserhbkmod: could not de-activate hb hyptask\n");
+			}
 			break;
 
 		default:
