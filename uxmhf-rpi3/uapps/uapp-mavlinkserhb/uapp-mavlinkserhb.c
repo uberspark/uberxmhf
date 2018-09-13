@@ -213,6 +213,7 @@ void uapp_mavlinkserhb_handlehcall_recv(uapp_mavlinkserhb_param_t *mlhbsp){
 	//iparam_2 = buffer max length (in bytes)
 
 	//oparam_1 = length read
+	//oparam_2 = UART read buffer status (1=exhausted, 0=not exhausted)
 
 	//sanity check buffer length, currently only a max of 4096 bytes
 	//can be received at a time
