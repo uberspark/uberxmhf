@@ -99,6 +99,14 @@ static ssize_t dev_write(struct file *filep, const char *buffer, size_t len, lof
 			printk(KERN_INFO "mavlinkserhbkmod: initialization successful!\n");
 			break;
 
+		case UAPP_MAVLINKSERHB_UHCALL_SEND:
+			printk(KERN_INFO "mavlinkserhbkmod: send\n");
+			if(mavlinkserhb_send("Test", 4))
+				printk(KERN_INFO "mavlinkserhbkmod: send successful!\n");
+			else
+				printk(KERN_INFO "mavlinkserhbkmod: error in send\n");
+			break;
+
 		default:
 			printk(KERN_INFO "mavlinkserhbkmod: unknown function, ignoring\n");
 			break;
