@@ -251,6 +251,25 @@ uapp_mavlinkserhb_handlehcall_activatehbhyptask(uapp_mavlinkserhb_param_t *mlhbs
 }
 
 
+//////
+// mavlinkserhb de-activate heart-beat hyptask
+// deactivates the heart-beat thread to stop processing mavlink heart-beat
+// messages
+//////
+void uapp_mavlinkserhb_handlehcall_deactivatehbhyptask(uapp_mavlinkserhb_param_t *mlhbsp){
+
+	if(mavlinkserhb_hyptask == NULL){
+		mlhbsp->status=0;	//fail
+		return;
+	}
+
+	uapp_sched_timer_undeclare(mavlinkserhb_hyptask);
+
+	mlhbsp->status=1; 	//success
+	return;
+}
+
+
 
 //////
 // top-level hypercall handler hub
@@ -280,6 +299,9 @@ bool uapp_mavlinkserhb_handlehcall(u32 uhcall_function, void *uhcall_buffer,
 
 	}else if(mlhbsp->uhcall_fn == UAPP_MAVLINKSERHB_UHCALL_ACTIVATEHBHYPTASK){
 			uapp_mavlinkserhb_handlehcall_activatehbhyptask(mlhbsp);
+
+	}else if(mlhbsp->uhcall_fn == UAPP_MAVLINKSERHB_UHCALL_DEACTIVATEHBHYPTASK){
+			uapp_mavlinkserhb_handlehcall_deactivatehbhyptask(mlhbsp);
 
 	}else{
 		//ignore unknown uhcall_fn silently
