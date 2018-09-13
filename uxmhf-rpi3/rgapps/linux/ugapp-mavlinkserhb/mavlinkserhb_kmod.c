@@ -60,9 +60,9 @@ static struct device* mavlinkserhbcharDevice = NULL;
 //////
 extern  void __hvc(u32 uhcall_function, void *uhcall_buffer, u32 uhcall_buffer_len);
 extern void mavlinkserhb_initialize(void);
-bool mavlinkserhb_send(u8 *buffer, u32 buf_len);
-bool mavlinkserhb_checkrecv(u8 *buffer, u32 buf_len);
-bool mavlinkserhb_recv(u8 *buffer, u32 max_len, u32 *len_read, bool *uartreadbufexhausted);
+extern bool mavlinkserhb_send(u8 *buffer, u32 buf_len);
+extern bool mavlinkserhb_checkrecv(u8 *buffer, u32 buf_len);
+extern bool mavlinkserhb_recv(u8 *buffer, u32 max_len, u32 *len_read, bool *uartreadbufexhausted);
 
 
 
