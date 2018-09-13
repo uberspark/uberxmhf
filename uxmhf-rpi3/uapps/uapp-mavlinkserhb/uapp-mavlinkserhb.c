@@ -247,6 +247,15 @@ bool uapp_mavlinkserhb_handlehcall(u32 uhcall_function, void *uhcall_buffer,
 	if(mlhbsp->uhcall_fn == UAPP_MAVLINKSERHB_UHCALL_INITIALIZE){
 		uapp_mavlinkserhb_handlehcall_initialize(mlhbsp);
 
+	}else if(mlhbsp->uhcall_fn == UAPP_MAVLINKSERHB_UHCALL_SEND){
+			uapp_mavlinkserhb_handlehcall_send(mlhbsp);
+
+	}else if(mlhbsp->uhcall_fn == UAPP_MAVLINKSERHB_UHCALL_CHECKRECV){
+			uapp_mavlinkserhb_handlehcall_checkrecv(mlhbsp);
+
+	}else if(mlhbsp->uhcall_fn == UAPP_MAVLINKSERHB_UHCALL_RECV){
+			uapp_mavlinkserhb_handlehcall_recv(mlhbsp);
+
 	}else{
 		//ignore unknown uhcall_fn silently
 
