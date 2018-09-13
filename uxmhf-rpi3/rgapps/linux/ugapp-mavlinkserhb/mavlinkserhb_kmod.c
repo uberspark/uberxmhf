@@ -59,7 +59,7 @@ static struct device* mavlinkserhbcharDevice = NULL;
 //externals
 //////
 extern  void __hvc(u32 uhcall_function, void *uhcall_buffer, u32 uhcall_buffer_len);
-extern void mavlinkserhb_initialize(void);
+extern void mavlinkserhb_initialize(u32 baudrate);
 extern bool mavlinkserhb_send(u8 *buffer, u32 buf_len);
 extern bool mavlinkserhb_checkrecv(u8 *buffer, u32 buf_len);
 extern bool mavlinkserhb_recv(u8 *buffer, u32 max_len, u32 *len_read, bool *uartreadbufexhausted);
@@ -93,7 +93,7 @@ static ssize_t dev_write(struct file *filep, const char *buffer, size_t len, lof
 	switch(len){
 		case UAPP_MAVLINKSERHB_UHCALL_INITIALIZE:
 			printk(KERN_INFO "mavlinkserhbkmod: initialize\n");
-			mavlinkserhb_initialize();
+			mavlinkserhb_initialize(115200);
 			printk(KERN_INFO "mavlinkserhbkmod: initialization successful!\n");
 			break;
 

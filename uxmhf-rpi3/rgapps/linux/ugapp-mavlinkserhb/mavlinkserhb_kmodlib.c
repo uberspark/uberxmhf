@@ -60,7 +60,7 @@ void __hvc(u32 uhcall_function, void *uhcall_buffer,
 }
 
 
-void mavlinkserhb_initialize(void){
+void mavlinkserhb_initialize(u32 baudrate){
 
 	uapp_mavlinkserhb_param_t *mlhbsp;
 	struct page *mlhbsp_page;
@@ -75,6 +75,7 @@ void mavlinkserhb_initialize(void){
 	mlhbsp = (uapp_mavlinkserhb_param_t *)page_address(mlhbsp_page);
 
 	mlhbsp->uhcall_fn = UAPP_MAVLINKSERHB_UHCALL_INITIALIZE;
+	mlhbsp->iparam_1 = baudrate;
 
 	mlhbsp_paddr = page_to_phys(mlhbsp_page);
 	__hvc(UAPP_MAVLINKSERHB_UHCALL, mlhbsp_paddr, sizeof(uapp_mavlinkserhb_param_t));
