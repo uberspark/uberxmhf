@@ -232,6 +232,27 @@ void uapp_mavlinkserhb_handlehcall_recv(uapp_mavlinkserhb_param_t *mlhbsp){
 
 
 //////
+// mavlinkserhb activate heart-beat hyptask
+// creates the heart-beat thread to begin processing mavlink heart-beat
+// messages
+//////
+uapp_mavlinkserhb_handlehcall_activatehbhyptask(uapp_mavlinkserhb_param_t *mlhbsp){
+
+	//iparam_1 is the first time period of the hb hyptask
+	//iparam_2 is the recurring time period thereafter
+	//iparam_3 is the priority of the hb hyptask
+
+	//declare a timer to deal with heart-beat
+	//uapp_sched_timer_declare((0.5 * HYPMTSCHEDULER_TIME_1SEC),
+	//		(0.5 * HYPMTSCHEDULER_TIME_1SEC), 99, &uapp_mavlinkserhb_handleheartbeat);
+	uapp_sched_timer_declare(mlhbsp->iparam_1,
+			mlhbsp->iparam_2, mlhbsp->iparam_3, &uapp_mavlinkserhb_handleheartbeat);
+
+}
+
+
+
+//////
 // top-level hypercall handler hub
 // return true if handled the hypercall, false if not
 //////
@@ -256,6 +277,9 @@ bool uapp_mavlinkserhb_handlehcall(u32 uhcall_function, void *uhcall_buffer,
 
 	}else if(mlhbsp->uhcall_fn == UAPP_MAVLINKSERHB_UHCALL_RECV){
 			uapp_mavlinkserhb_handlehcall_recv(mlhbsp);
+
+	}else if(mlhbsp->uhcall_fn == UAPP_MAVLINKSERHB_UHCALL_ACTIVATEHBHYPTASK){
+			uapp_mavlinkserhb_handlehcall_activatehbhyptask(mlhbsp);
 
 	}else{
 		//ignore unknown uhcall_fn silently
