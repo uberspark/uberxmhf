@@ -115,6 +115,23 @@ static ssize_t dev_write(struct file *filep, const char *buffer, size_t len, lof
 				printk(KERN_INFO "mavlinkserhbkmod: no data in recv buffer\n");
 			break;
 
+		case UAPP_MAVLINKSERHB_UHCALL_RECV:
+		{
+			bool readbufferexhausted;
+			u32 len_read;
+			u8 buffer[3];
+			printk(KERN_INFO "mavlinkserhbkmod: recv\n");
+			memset(buffer, sizeof(buffer), 0);
+			if(mavlinkserhb_recv(&buffer, sizeof(buffer), &len_read, &readbufferexhausted)){
+				printk(KERN_INFO "mavlinkserhbkmod: read: <0x%02x|0x%02x|0x%02x>, len_read=%u, \
+						readbufferexhausted=%u\n", buffer[0], buffer[1], buffer[2],
+						len_read, readbufferexhausted);
+
+			}else{
+				printk(KERN_INFO "mavlinkserhbkmod: no data in recv buffer\n");
+			}
+		}
+			break;
 
 		default:
 			printk(KERN_INFO "mavlinkserhbkmod: unknown function, ignoring\n");

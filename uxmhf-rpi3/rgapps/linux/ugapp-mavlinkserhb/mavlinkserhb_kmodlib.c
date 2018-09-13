@@ -237,6 +237,8 @@ bool mavlinkserhb_recv(u8 *buffer, u32 max_len, u32 *len_read, bool *uartreadbuf
 	else
 		*uartreadbufexhausted = false;
 
+	memcpy(buffer, page_address(buffer_page), mlhbsp->oparam_1);
+
 	__free_page(mlhbsp_page);
 	__free_page(buffer_page);
 	return true;
