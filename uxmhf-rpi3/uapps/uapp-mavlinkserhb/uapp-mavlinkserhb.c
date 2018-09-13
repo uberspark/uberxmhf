@@ -222,7 +222,7 @@ void uapp_mavlinkserhb_handlehcall_recv(uapp_mavlinkserhb_param_t *mlhbsp){
 	}
 
 	//read bytes from UART
-	uapp_mavlinkserhb_uart_recv(mlhbsp->iparam_1, mlhbsp->iparam_2, &mlhbsp->oparam_1);
+	mlhbsp->oparam_2 = uapp_mavlinkserhb_uart_recv(mlhbsp->iparam_1, mlhbsp->iparam_2, &mlhbsp->oparam_1);
 
 	//set status to indicate success
 	mlhbsp->status=1;
