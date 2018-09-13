@@ -190,13 +190,14 @@ void uapp_mavlinkserhb_handlehcall_send(uapp_mavlinkserhb_param_t *mlhbsp){
 //////
 // mavlinkserhb recv check hypercall API
 // check if UART receive buffer has any characters
+// returns 0 if no characters, 1 if there are characters
 //////
 void uapp_mavlinkserhb_handlehcall_checkrecv(uapp_mavlinkserhb_param_t *mlhbsp){
 
 	if(uapp_mavlinkserhb_uart_checkrecv())
-		mlhbsp->status=0;
-	else
 		mlhbsp->status=1;
+	else
+		mlhbsp->status=0;
 
 	return;
 }
