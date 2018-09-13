@@ -145,7 +145,7 @@ bool mavlinkserhb_send(u8 *buffer, u32 buf_len){
 
 
 
-bool mavlinkserhb_checkrecv(u8 *buffer, u32 buf_len){
+bool mavlinkserhb_checkrecv(void){
 
 	uapp_mavlinkserhb_param_t *mlhbsp;
 	struct page *mlhbsp_page;

@@ -64,6 +64,9 @@ int main(int argc, char *argv[]){
 		kmod_comms(UAPP_MAVLINKSERHB_UHCALL_SEND);
 		break;
 
+	case 3:
+		kmod_comms(UAPP_MAVLINKSERHB_UHCALL_CHECKRECV);
+		break;
 
 	default:
 		printf("%s: unknown testcase_num=%u, exiting!\n", __FUNCTION__, atoi(argv[1]));

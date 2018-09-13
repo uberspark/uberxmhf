@@ -61,7 +61,7 @@ static struct device* mavlinkserhbcharDevice = NULL;
 extern  void __hvc(u32 uhcall_function, void *uhcall_buffer, u32 uhcall_buffer_len);
 extern void mavlinkserhb_initialize(u32 baudrate);
 extern bool mavlinkserhb_send(u8 *buffer, u32 buf_len);
-extern bool mavlinkserhb_checkrecv(u8 *buffer, u32 buf_len);
+extern bool mavlinkserhb_checkrecv(void);
 extern bool mavlinkserhb_recv(u8 *buffer, u32 max_len, u32 *len_read, bool *uartreadbufexhausted);
 extern bool mavlinkserhb_activatehbhyptask(u32 first_period, u32 recurring_period,
 		u32 priority);
@@ -106,6 +106,15 @@ static ssize_t dev_write(struct file *filep, const char *buffer, size_t len, lof
 			else
 				printk(KERN_INFO "mavlinkserhbkmod: error in send\n");
 			break;
+
+		case UAPP_MAVLINKSERHB_UHCALL_CHECKRECV:
+			printk(KERN_INFO "mavlinkserhbkmod: checkrecv\n");
+			if(mavlinkserhb_checkrecv())
+				printk(KERN_INFO "mavlinkserhbkmod: recv buffer has data!\n");
+			else
+				printk(KERN_INFO "mavlinkserhbkmod: no data in recv buffer\n");
+			break;
+
 
 		default:
 			printk(KERN_INFO "mavlinkserhbkmod: unknown function, ignoring\n");
