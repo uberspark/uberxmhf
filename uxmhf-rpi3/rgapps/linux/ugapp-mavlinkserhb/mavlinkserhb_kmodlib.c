@@ -144,4 +144,36 @@ bool mavlinkserhb_send(u8 *buffer, u32 buf_len){
 
 
 
+bool mavlinkserhb_checkrecv(u8 *buffer, u32 buf_len){
+
+	uapp_mavlinkserhb_param_t *mlhbsp;
+	struct page *mlhbsp_page;
+	u32 mlhbsp_paddr;
+
+	//allocate parameter page
+	mlhbsp_page = alloc_page(GFP_KERNEL | __GFP_ZERO);
+
+	if(!mlhbsp_page){
+		return false;
+	}
+
+	mlhbsp = (uapp_mavlinkserhb_param_t *)page_address(mlhbsp_page);
+
+	//issue checkrecv hypercall
+	mlhbsp->uhcall_fn = UAPP_MAVLINKSERHB_UHCALL_CHECKRECV;
+
+	mlhbsp_paddr = page_to_phys(mlhbsp_page);
+	__hvc(UAPP_MAVLINKSERHB_UHCALL, mlhbsp_paddr, sizeof(uapp_mavlinkserhb_param_t));
+
+
+	if(!mlhbsp->status){
+		__free_page(mlhbsp_page);
+		return false;
+	}else{
+		__free_page(mlhbsp_page);
+		return true;
+	}
+}
+
+
 
