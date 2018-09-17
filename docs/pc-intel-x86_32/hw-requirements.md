@@ -1,6 +1,6 @@
 ---
 layout: page
-tocref: uber eXtensible Micro-Hypervisor Framework &gt; pc-intel-x86_32 
+tocref: uber eXtensible Micro-Hypervisor Framework Documentation &gt; pc-intel-x86_32 
 title: Hardware Requirements
 ---
 

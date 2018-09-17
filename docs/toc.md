@@ -1,10 +1,10 @@
 ---
 layout: page
-tocref: uber eXtensible Micro-Hypervisor Framework
-title: Documentation
+tocref: uber eXtensible Micro-Hypervisor Framework Documentation
+title: Supported Platforms
 ---
 
-* [uberXMHF for PC Intel x86 32-bit hardware platform (pc-intel-x86_32)](#)
+* PC Intel x86 32-bit hardware platform (pc-intel-x86_32)
     * [Hardware Requirements]({% link docs/pc-intel-x86_32/hw-requirements.md %})
     * [Supported OSes](#)
     * [Verifying and Building](#)
