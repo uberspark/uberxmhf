@@ -8,7 +8,7 @@ title: Supported Platforms
     * [Hardware Requirements]({% link docs/pc-intel-x86_32/hw-requirements.md %})
     * [Supported OSes]({% link docs/pc-intel-x86_32/supported-os.md %})
     * [Verifying and Building]({% link docs/pc-intel-x86_32/verify-build.md %})
-    * [Installing](#)
+    * [Installing]({% link docs/pc-intel-x86_32/installing.md %})
     * [Debugging](#)
 
 * [uberXMHF for Raspberry PI 3 ARMv8 32-bit hardware 
