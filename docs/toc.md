@@ -19,7 +19,7 @@ platform (rpi3-cortex_a53-armv8_32)](#)
     * [Installing](#)
     * [Debugging](#)
 
-* [uberXMHF for PC AMD x86 32-bit/Legacy Intel x86 32-bit hardware platforms (pc-legacy-x86_32)](#)
+* PC AMD x86 32-bit/Legacy Intel x86 32-bit hardware platforms (pc-legacy-x86_32)
     * [Hardware Requirements](#)
 	* [Supported OSes](#)
 	* [Verifying and Building](#)
