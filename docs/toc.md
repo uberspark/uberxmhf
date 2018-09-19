@@ -6,7 +6,7 @@ title: Supported Platforms
 
 * PC Intel x86 32-bit hardware platform (pc-intel-x86_32)
     * [Hardware Requirements]({% link docs/pc-intel-x86_32/hw-requirements.md %})
-    * [Supported OSes](#)
+    * [Supported OSes]({% link docs/pc-intel-x86_32/supported-os.md %})
     * [Verifying and Building](#)
     * [Installing](#)
     * [Debugging](#)
