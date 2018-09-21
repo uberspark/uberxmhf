@@ -4,6 +4,36 @@ tocref: uber eXtensible Micro-Hypervisor Framework Documentation &gt; pc-legacy-
 title: TrustVisor uberApp
 ---
 
+## Introduction
+
+TrustVisor is a special-purpose hypervisor that provides measured, 
+isolated execution environments for security-sensitive
+code modules (Pieces of Application Logic - PALs) 
+without trusting the OS or the application that invokes the code modules.
+
+The isolated execution environment protects the code
+integrity, execution integrity, as well as data integrity and secrecy
+for PALs. TrustVisor produces evidence of
+its initialization in the TPM's Platform Configuration Registers.
+This evidence (in the form of a hash chain) can be used to generate a
+TPM-based attestation that TrustVisor has loaded on a platform.
+Further, TrustVisor implements a software-based, micro-TPM (uTPM) 
+that can execute at higher speed on the platform's primary CPU than
+hardware TPM. It also generates and manages its own identity keypair
+that can be used to generate subsequent attestations to the isolation
+and execution of individual PALs, leveraging the uTPM.
+
+The implementation of TrustVisor contained herein leverages 
+uberXMHF (pc-legacy-x86_32).  
+The original design and implementation of TrustVisor is described in:
+
+*TrustVisor: Efficient TCB Reduction and Attestation*. Jonathan
+M. McCune, Yanlin Li, Ning Qu, Zongwei Zhou, Anupam Datta, Virgil
+Gligor, and Adrian Perrig. IEEE Symposium on Security and Privacy, May
+2010.[(pdf)](http://www.ece.cmu.edu/~jmmccune/papers/MLQZDGP2010.pdf)
+
+
+<br/>
 <a name="buildtrustvisor"></a>
 ## Building 
 
