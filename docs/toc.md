@@ -26,7 +26,7 @@ platform (rpi3-cortex_a53-armv8_32)](#)
 	* [Installing]({% link docs/pc-legacy-x86_32/installing.md %})
 	* [Debugging]({% link docs/pc-legacy-x86_32/debugging.md %})
 	* uberApps
-		* [TrustVisor](#)
+		* [TrustVisor]({% link docs/pc-legacy-x86_32/uberapp-trustvisor.md %})
 		* [Lockdown]({% link docs/pc-legacy-x86_32/uberapp-lockdown.md %})
 
 <hr>
