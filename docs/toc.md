@@ -17,7 +17,7 @@ platform (rpi3-cortex_a53-armv8_32)
     * [Supported OSes]({% link docs/rpi3-cortex_a53-armv8_32/supported-os.md %})
     * [Building]({% link docs/rpi3-cortex_a53-armv8_32/build.md %})
     * [Installing]({% link docs/rpi3-cortex_a53-armv8_32/installing.md %})
-    * [Debugging](#)
+    * [Debugging]({% link docs/rpi3-cortex_a53-armv8_32/debugging.md %})
 
 * PC AMD x86 32-bit/Legacy Intel x86 32-bit hardware platforms (pc-legacy-x86_32)
     * [Hardware Requirements]({% link docs/pc-legacy-x86_32/hw-requirements.md %})
