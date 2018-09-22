@@ -528,6 +528,26 @@ void uapp_sched_logic(void){
 
 
 
+/// Dio: utility to plot 'busy' time
+// pi3-1.2GHz
+#define IN_LOOP_ONE_MS 70575
+#define NUM_IN_LOOPS_ONE_MS 1
+#define NUM_SILENT_ITERATIONS 10000
+
+void busy(long millis)
+{
+  long i,j,k,s;  
+  s=0;
+  for (k=0;k<millis;k++)
+    for (i=0;i<NUM_IN_LOOPS_ONE_MS;i++)
+      for (j=0;j<IN_LOOP_ONE_MS;j++){
+        s++;
+	if (s >= NUM_SILENT_ITERATIONS){
+	  s=0;
+	}
+      }
+}
+
 
 
 //////////////////////////////////////////////////////////////////////////////
@@ -536,26 +556,28 @@ void uapp_sched_logic(void){
 
 void hyptask0(struct sched_timer *t){
 	debug_log_tsc(0, uapp_sched_read_cpucounter(), DEBUG_LOG_EVTTYPE_HYPTASKEXEC_BEFORE);
-
+	uapp_mavlinkserhb_uart_send("A", 1);
+	uapp_mavlinkserhb_uart_flush();
+	//busy(10);
 	debug_log_tsc(0, uapp_sched_read_cpucounter(), DEBUG_LOG_EVTTYPE_HYPTASKEXEC_AFTER);
 }
 
 void hyptask1(struct sched_timer *t){
 	debug_log_tsc(1, uapp_sched_read_cpucounter(), DEBUG_LOG_EVTTYPE_HYPTASKEXEC_BEFORE);
-
+	//busy(10);
 	debug_log_tsc(1, uapp_sched_read_cpucounter(), DEBUG_LOG_EVTTYPE_HYPTASKEXEC_AFTER);
 }
 
 
 void hyptask2(struct sched_timer *t){
 	debug_log_tsc(2, uapp_sched_read_cpucounter(), DEBUG_LOG_EVTTYPE_HYPTASKEXEC_BEFORE);
-
+	//busy(10);
 	debug_log_tsc(2, uapp_sched_read_cpucounter(), DEBUG_LOG_EVTTYPE_HYPTASKEXEC_AFTER);
 }
 
 void hyptask3(struct sched_timer *t){
 	debug_log_tsc(3, uapp_sched_read_cpucounter(), DEBUG_LOG_EVTTYPE_HYPTASKEXEC_BEFORE);
-
+	//busy(10);
 	debug_log_tsc(3, uapp_sched_read_cpucounter(), DEBUG_LOG_EVTTYPE_HYPTASKEXEC_AFTER);
 }
 
@@ -740,6 +762,9 @@ void uapp_hypmtscheduler_handlehcall_dumpdebuglog(ugapp_hypmtscheduler_param_t *
 
 	hmtsp->oparam_1 = debug_log_buffer_index;
 	hmtsp->status=1; //success
+
+	// Dio: resetting buffer to zero
+	debug_log_buffer_index = 0;
 }
 
 
