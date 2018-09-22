@@ -15,7 +15,7 @@ title: Supported Platforms
 platform (rpi3-cortex_a53-armv8_32)
     * [Hardware Requirements]({% link docs/rpi3-cortex_a53-armv8_32/hw-requirements.md %})
     * [Supported OSes]({% link docs/rpi3-cortex_a53-armv8_32/supported-os.md %})
-    * [Verifying and Building](#)
+    * [Building]({% link docs/rpi3-cortex_a53-armv8_32/build.md %})
     * [Installing](#)
     * [Debugging](#)
 
