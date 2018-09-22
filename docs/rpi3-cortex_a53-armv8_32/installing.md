@@ -8,6 +8,8 @@ Refer to the [build process]({% link docs/rpi3-cortex_a53-armv8_32/build.md %})
 to build the required binaries for installation. Then proceed with the 
 following instructions to deploy uberXMHF on the SD card:
 
+## Deploying binaries to SD Card
+
 1. `mkdir -p ~/mnt/pi-boot`
 
 1. `mkdir -p ~/mnt/pi-root`
@@ -44,4 +46,16 @@ following instructions to deploy uberXMHF on the SD card:
 
 1. Edit `~/mnt/pi-root/etc/fstab` and comment out line beginning with `/dev/mmcblk0p1` which is mounted to boot
 
+
+## Boot up and test
+
+1. `umount ~/mnt/pi-boot`
+
+1. `umount ~/mnt/pi-root`
+
+1. Insert sd-card into the Raspberry PI 3
+
+1. Power on the Raspberry PI 3
+
+1. ... and you should see uberXMHF booting up with debug output and the guest starting soon thereafter
 

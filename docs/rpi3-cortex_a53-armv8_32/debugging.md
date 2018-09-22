@@ -23,11 +23,17 @@ available [here](https://www.adafruit.com/product/954?gclid=Cj0KCQjw_ODWBRCTARIs
 Connect Pin 6 on PI to GND of serial cable; Pin 8 to RX and Pin 10 to TX.
 
 See [Installing uberXMHF (rpi3-cortex_a53-armv8_32)]({% link docs/rpi3-cortex_a53-armv8_32/installing.md %}) for how to install
-the uberXMHF binaries on the SD card. Before powering on the PI3 and
-doing a boot, perform the following on the development system:
+the uberXMHF binaries on the SD card. In the 
+*Deploying binaries to SD Card* section, perform the following on 
+the `host system` where development is done:
 
 	1. Edit `~/mnt/pi-boot/config.txt` and add the following lines: 
 		`enable_uart=1` 
 		`init_uart_baud=115200` 
 		`force_turbo=0`
 
+Before powering up the PI 3 and performing a boot, do the following on
+the `host system` in a seperate terminal (replace ttyUSB0 with the 
+serial port of the USB to TTL adapter):
+
+	sudo screen /dev/ttyUSB0 115200 8N1
