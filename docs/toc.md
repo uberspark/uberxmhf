@@ -11,9 +11,9 @@ title: Supported Platforms
     * [Installing]({% link docs/pc-intel-x86_32/installing.md %})
     * [Debugging]({% link docs/pc-intel-x86_32/debugging.md %})
 
-* [uberXMHF for Raspberry PI 3 ARMv8 32-bit hardware 
-platform (rpi3-cortex_a53-armv8_32)](#)
-    * [Hardware Requirements](#)
+* uberXMHF for Raspberry PI 3 ARMv8 32-bit hardware 
+platform (rpi3-cortex_a53-armv8_32)
+    * [Hardware Requirements]({% link docs/rpi3-cortex_a53-armv8_32/hw-requirements.md %})
     * [Supported OSes](#)
     * [Verifying and Building](#)
     * [Installing](#)
