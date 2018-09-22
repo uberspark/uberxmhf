@@ -14,7 +14,7 @@ title: Supported Platforms
 * uberXMHF for Raspberry PI 3 ARMv8 32-bit hardware 
 platform (rpi3-cortex_a53-armv8_32)
     * [Hardware Requirements]({% link docs/rpi3-cortex_a53-armv8_32/hw-requirements.md %})
-    * [Supported OSes](#)
+    * [Supported OSes]({% link docs/rpi3-cortex_a53-armv8_32/supported-os.md %})
     * [Verifying and Building](#)
     * [Installing](#)
     * [Debugging](#)
