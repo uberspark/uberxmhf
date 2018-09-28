@@ -1,4 +1,10 @@
-# Quick start to using uberXMHF Raspberry PI 3
+---
+layout: page
+tocref: uber eXtensible Micro-Hypervisor Framework Documentation &gt; rpi3-cortex_a53-armv8_32  
+title: Building
+---
+
+## Build Core Micro-Hypervisor Framework
 
 1.  Prepare raspberry pi sd-card image
 	1. Download https://downloads.raspberrypi.org/raspbian_lite/images/raspbian_lite-2016-11-29/2016-11-25-raspbian-jessie-lite.zip
@@ -45,6 +51,14 @@
 	1. `cp uxmhf-rpi3.img ~/uxmhf-rpi3-staging/.`
 	1. `cp rpi3-config.txt ~/uxmhf-rpi3-staging/config.txt`
 
+
+<br/>
+## Build uberApps
+
+Example uberApps are found within `uxmhf-rpi3/rgapps/linux`. The following
+instructions show how the example uberApp `rgapp-uhcalltest` (to test 
+hypercalls) is built. 
+
 1. Building `uhcallkmod` on development system
 	1. `cd rgapps/linux/rgapp-uhcallkmod`
 	1. `./build.sh ~/linux ~/tools/arm-bcm2708/gcc-linaro-arm-linux-gnueabihf-raspbian-x64/bin/`
@@ -56,41 +70,5 @@
 	1. `cd rgapp-uhcalltest`
 	1. `make -w all`
 	1. `cp ./uhcalltest ~/uxmhf-rpi3-staging/.`
-	
-1. Deploying on sd-card
-	1. `mkdir -p ~/mnt/pi-boot`
-	1. `mkdir -p ~/mnt/pi-root`
-	1. `sudo mount /dev/mmcblk0p1 ~/mnt/pi-boot`
-	1. `sudo mount /dev/mmcblk0p2 ~/mnt/pi-root`
-	1. `sudo cp ~/uxmhf-rpi3-staging/uhcalltest ~/mnt/pi-root/home/pi/.`
-	1. `sudo cp ~/uxmhf-rpi3-staging/uhcallkmod.ko ~/mnt/pi-root/home/pi/.`
-	1. `sudo cp ~/uxmhf-rpi3-staging/uxmhf-rpi3.img ~/mnt/pi-boot/.`
-	1. `sudo cp ~/uxmhf-rpi3-staging/config.txt ~/mnt/pi-boot/.`
-	1. Append `loglevel=8 memblock=debug dwc_otg.fiq_enable=0 dwc_otg.fiq_fsm_enable=0` to `~/mnt/pi-boot/cmdline.txt`
-	1. `sudo cp ~/uxmhf-rpi3-staging/boot/* ~/mnt/pi-boot/.`
-	1. `sudo mkdir -p ~/mnt/pi-boot/overlays`
-	1. `sudo cp -R ~/uxmhf-rpi3-staging/overlays/* ~/mnt/pi-boot/overlays/.`
-	1. `sudo cp ~/uxmhf-rpi3-staging/kernel7.img ~/mnt/pi-boot/.`
-	1. `sudo mkdir -p ~/mnt/pi-root/lib/firmware`
-	1. `sudo cp -R ~/uxmhf-rpi3-staging/mod_install/lib/firmware/* ~/mnt/pi-root/lib/firmware/.`
-	1. `sudo mkdir -p ~/mnt/pi-root/lib/modules/4.4.50-v7+`
-	1. `sudo cp -R ~/uxmhf-rpi3-staging/mod_install/lib/modules/4.4.50-v7+/* ~/mnt/pi-root/lib/modules/4.4.50-v7+/.`
-	1. Edit `~/mnt/pi-root/etc/fstab` and comment out line beginning with `/dev/mmcblk0p1` which is mounted to boot
-
-1. Setup serial debugging
-	1. Required: USB to TTL Serial Debug Cable for Raspberry Pi; available [here](https://www.adafruit.com/product/954?gclid=Cj0KCQjw_ODWBRCTARIsAE2_EvVn-6n_HsU-McCFk-ffkiPooqiDkVjVaZtq39GAIyy5s8Ep5yb6K9QaAtKQEALw_wcB)
-	1. Connect Pin 6 on PI to GND of serial cable; Pin 8 to RX and Pin 10 to TX
-	1. Edit `~/mnt/pi-boot/config.txt` and add the following lines: <br>
-		`enable_uart=1` <br>
-		`init_uart_baud=115200` <br>
-		`force_turbo=0`
-
-1. Boot up and test
-	1. `umount ~/mnt/pi-boot`
-	1. `umount ~/mnt/pi-root`
-	1. Insert sd-card into the Raspberry PI 3
-	1. On a seperate terminal in the development system execute: `sudo screen /dev/ttyUSB0 115200 8N1`
-	1. Power on the Raspberry PI 3
-	1. ... and you should see uberXMHF booting up with debug output and the guest starting soon thereafter
-
+ 
 

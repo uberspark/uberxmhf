@@ -1,15 +1,20 @@
-Terminology
-===========
+---
+layout: page
+tocref: uber eXtensible Micro-Hypervisor Framework Documentation &gt; pc-legacy-x86_32 
+title: Debugging
+---
+
+## Terminology
 
 * `host system` -- system where the serial log is collected and examined.
-* `target system` -- system where XMHF runs and ouputs debug information via the serial port.
+* `target system` -- system where uberXMHF (pc-legacy-x86_32) runs and 
+ouputs debug information via the serial port.
 
-Debugging Setup
-===============
+## Debugging Setup
 
-XMHF debugging is done primarily via the serial port.
-See [Installing XMHF](./installing-xmhf.md) for how to pass serial
-port configuration parameters to XMHF. 
+uberXMHF (pc-legacy-x86_32) debugging is done primarily via the serial port.
+See [Installing uberXMHF (pc-legacy-x86_32)]({% link docs/pc-legacy-x86_32/installing.md %}) for how to pass serial
+port configuration parameters to uberXMHF (pc-legacy-x86_32). 
 You can use `dmesg | grep ttyS` on a Linux guest OS on the target 
 system to examine the serial ports that the target system recognizes.
 
@@ -19,21 +24,19 @@ Technology (AMT) Serial-Over-LAN (SOL) capability. AMT SOL exposes
 a serial port to the underlying platform once enabled (typically in
 the BIOS).
 
-Serial Debuging without AMT
----------------------------
+### Serial Debuging without AMT
 
 * Connect the `host system` and the `target system` via a NULL serial
 cable. 
 
 * On the `target system` ensure that you pass the correct serial port
-configuration parameters to XMHF (see [Installing XMHF](./installing-xmhf.md)).
+configuration parameters to uberXMHF (pc-legacy-x86_32) (see [Installing uberXMHF (pc-legacy-x86_32)]({% link docs/pc-legacy-x86_32/installing.md %})).
 A typical non-AMT configuration parameter will be similar to this: `serial=115200,8n1,0x3f8`
 
 * On the `host system` run a terminal emulation program such as `minicom` (Ubuntu)
 or `hyperterminal` (Windows). Ensure that the serial port configuration baud rate, parity, data and stop bits match (e.g., `115200, 8n1`)
 
-Serial Debugging with AMT
--------------------------
+### Serial Debugging with AMT
 
 You will typically need to enable AMT in the BIOS/firmware of the `target system` . 
 Since various BIOSes expose AMT in different ways, we will use the 
@@ -69,7 +72,7 @@ Enter the AMT configuration; on the 8540p, hit
     protocol. You'll need it to use `amtterm`. 
     
 * On the `target system` ensure that you pass the correct serial port
-configuration parameters to XMHF (see [Installing XMHF](./installing-xmhf.md)).
+configuration parameters to XMHF (see [Installing uberXMHF (pc-legacy-x86_32)]({% link  docs/pc-legacy-x86_32/installing.md %})).
 A typical AMT serial configuration parameter will be similar to this: `serial=115200,8n1,0x6080`
 
 * On the `host system`, install `amtterm` to obtain the serial debugging
