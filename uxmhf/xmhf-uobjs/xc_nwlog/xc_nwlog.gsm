@@ -1,19 +1,65 @@
-//slab manifest
+#include <uberspark.h>
+#include <xmhf-hwm.h>
+
 #include <xmhf.h>
 #include <xmhfgeec.h>
 
 #include <xc_nwlog.h>
 
-//slab memory sections
-MS:CODE:0x200000:void:void
-MS:DATA:0x200000:void:void
-MS:STACK:0x600000:void:void
-MS:DMADATA:0x200000:void:void
 
-RD:INCL:PCI_VENDOR_ID_LOGNIC:PCI_DEVICE_ID_LOGNIC:void
+{
+	"uobj-name": "xc_nwlog",
+	"uobj-type": "VfT_SLAB",
+	"uobj-subtype": "XCORE",
 
-// S:uapi_gcpustate:void:void:void
+	"uobj-uapifunctions":[],
 
-// U:uapi_gcpustate:XMHF_HIC_UAPI_CPUSTATE_VMREAD:void:void
+	"uobj-callees": "",
+
+	"uobj-uapicallees":[],
+
+
+	"uobj-resource-devices":[
+/*		{ 
+			"type": "include",
+			"opt1" : USMF_STR(PCI_VENDOR_ID_LOGNIC),
+			"opt2" : USMF_STR(PCI_DEVICE_ID_LOGNIC) 
+		}
+*/
+	],	
+
+	"uobj-resource-memory":[],	
+
+	"uobj-exportfunctions": "",
+
+
+	"uobj-binary-sections":[
+		{ 
+			"section-name": "code",
+			"section-size": "0x200000"
+		},
+		{ 
+			"section-name": "data",
+			"section-size": "0x200000"
+		},
+		{ 
+			"section-name": "stack",
+			"section-size": "0x600000"
+		},
+		{ 
+			"section-name": "dmadata",
+			"section-size": "0x200000"
+		}
+	],	
+
+	
+	"c-files":	"",
+		
+	"v-harness": []
+		
+	
+}
+
+
 
 

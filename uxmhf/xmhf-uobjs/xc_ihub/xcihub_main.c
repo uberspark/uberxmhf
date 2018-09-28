@@ -57,6 +57,20 @@
  * author: amit vasudevan (amitvasudevan@acm.org)
  */
 
+#if 1
+void update_exhub_withinfo(u32 cpuid, bool exit_status, u32 info_reason){
+	slab_params_t spl;
+
+	spl.cpuid = cpuid;
+	spl.src_slabid = XMHFGEEC_SLAB_XC_IHUB;
+	spl.dst_slabid = XMHFGEEC_SLAB_XC_EXHUB;
+	spl.dst_uapifn = 1;
+	spl.in_out_params[0] = exit_status;
+	spl.in_out_params[1] = info_reason;
+	XMHF_SLAB_CALLNEW(&spl);
+}
+#endif
+
 
 
 
@@ -219,13 +233,11 @@ void slab_main(slab_params_t *sp){
 	u32 info_vmexit_reason;
 	slab_params_t spl;
 	xmhf_uapi_gcpustate_vmrw_params_t *gcpustate_vmrwp = (xmhf_uapi_gcpustate_vmrw_params_t *)&spl.in_out_params[0];
+	u32 cr4;
 
     //grab lock
     CASM_FUNCCALL(spin_lock,&xcihub_smplock);
 
-	//_XDPRINTF_("XCIHUB[%u]: Got control: src=%u, dst=%u, esp=%08x, eflags=%08x\n",
-	//	(u16)sp->cpuid, sp->src_slabid, sp->dst_slabid, CASM_FUNCCALL(read_esp,CASM_NOPARAM),
-	//		CASM_FUNCCALL(read_eflags, CASM_NOPARAM));
 	spl.cpuid = sp->cpuid;
 	spl.src_slabid = XMHFGEEC_SLAB_XC_IHUB;
 
@@ -250,7 +262,24 @@ void slab_main(slab_params_t *sp){
 	XMHF_SLAB_CALLNEW(&spl);
 	info_vmexit_reason = gcpustate_vmrwp->value;
 
+#if 0
+	cr4= CASM_FUNCCALL(read_cr4, CASM_NOPARAM);
+	if(cr4 != 0x00046230){
+		_XDPRINTF_("XCIHUB[%u]: s=%u, d=%u, er=%u, esp=%08x, eflags=%08x, cr4=0x%08x\n",
+				(u16)sp->cpuid,
+				sp->src_slabid,
+				sp->dst_slabid,
+				info_vmexit_reason,
+				CASM_FUNCCALL(read_esp,CASM_NOPARAM),
+				CASM_FUNCCALL(read_eflags, CASM_NOPARAM),
+				cr4);
+	}
+#endif
+
+	update_exhub_withinfo((u16)sp->cpuid, true, info_vmexit_reason);
+
 	slab_main_helper(info_vmexit_reason, sp->src_slabid, (u16)sp->cpuid);
+
 
 	//load GPRs
 	spl.dst_slabid = XMHFGEEC_SLAB_UAPI_GCPUSTATE;
@@ -266,6 +295,8 @@ void slab_main(slab_params_t *sp){
 	sp->in_out_params[7] = spl.in_out_params[7];
 
 	//_XDPRINTF_("XCIHUB[%u]: Resuming guest, esp=%08x\n", (u16)sp->cpuid, CASM_FUNCCALL(read_esp,CASM_NOPARAM));
+
+	update_exhub_withinfo((u16)sp->cpuid, false, info_vmexit_reason);
 
     //release lock
     CASM_FUNCCALL(spin_unlock,&xcihub_smplock);

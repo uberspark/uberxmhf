@@ -139,7 +139,8 @@ bool xcihub_rg_e820emulation(u32 cpuid, u32 src_slabid){
 			splusysd.dst_uapifn = UXMHF_UAPI_SYSDATA_E820GETENTRYFORINDEX;
 			usysd_getentryforindex->index = r.ebx;
 			XMHF_SLAB_CALLNEW(&splusysd);
-			CASM_FUNCCALL(xmhfhw_sysmem_copy_obj2sys, (u32)(g_es_base+(u16)r.edi), &(usysd_getentryforindex->baseaddr_high), 20);
+
+			CASM_FUNCCALL(xmhfhw_sysmem_copy_obj2sys, (u32)(g_es_base+(u16)r.edi), &(usysd_getentryforindex->baseaddr_low), 20);
 
 			_XDPRINTF_("%s[%u]:   base: 0x%08x%08x  len=0x%08x%08x, t=0x%08x\n", __func__, cpuid,
 					usysd_getentryforindex->baseaddr_high, usysd_getentryforindex->baseaddr_low,

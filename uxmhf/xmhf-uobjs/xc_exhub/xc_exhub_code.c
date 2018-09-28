@@ -57,6 +57,8 @@
 #include <xc.h>
 #include <xc_exhub.h>
 
+bool ihub_exit_status = false;
+u32 ihub_exit_info = 0;
 
 static void _xcexhub_unhandled(x86vmx_exception_frame_t *exframe){
     //dump relevant info
@@ -127,21 +129,34 @@ void main(void){
 #endif
 
 void slab_main(slab_params_t *sp){
-    x86vmx_exception_frame_t *exframe = (x86vmx_exception_frame_t *)&sp->in_out_params[0];
 
-	_XDPRINTF_("XC_EXHUB[%u]: Got control: ESP=%08x, src_slabid=%u, dst_slabid=%u\n",
-                (u16)sp->cpuid, CASM_FUNCCALL(read_esp,CASM_NOPARAM), sp->src_slabid, sp->dst_slabid);
+	if( sp->dst_uapifn == 1){
 
-	if(exframe->vector == 0x3){
-		_xcexhub_unhandled(exframe);
-		_XDPRINTF_("%s: exception 3, returning\n", __func__);
+		ihub_exit_status = sp->in_out_params[0];
+		ihub_exit_info = sp->in_out_params[1];
+
 	}else{
-		_xcexhub_unhandled(exframe);
-		_XDPRINTF_("\nHalting System!\n");
-		CASM_FUNCCALL(xmhfhw_cpu_hlt, CASM_NOPARAM);
+
+		x86vmx_exception_frame_t *exframe = (x86vmx_exception_frame_t *)&sp->in_out_params[0];
+
+		_XDPRINTF_("XC_EXHUB[%u]: Got control: ESP=%08x, src_slabid=%u, dst_slabid=%u\n",
+	                (u16)sp->cpuid, CASM_FUNCCALL(read_esp,CASM_NOPARAM), sp->src_slabid, sp->dst_slabid);
+		_XDPRINTF_("XC_EXHUB[%u]: ihub_exit_status=%u, ihub_exit_info=%u\n",
+					          (u16)sp->cpuid, ihub_exit_status, ihub_exit_info);
+
+
+		if(exframe->vector == 0x3){
+			_xcexhub_unhandled(exframe);
+			_XDPRINTF_("%s: exception 3, returning\n", __func__);
+		}else{
+			_xcexhub_unhandled(exframe);
+			_XDPRINTF_("\nHalting System!\n");
+			CASM_FUNCCALL(xmhfhw_cpu_hlt, CASM_NOPARAM);
+		}
+
+	    return;
 	}
 
-    return;
 }
 
 

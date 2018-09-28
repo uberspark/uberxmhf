@@ -55,6 +55,14 @@
 #include <xmhfgeec.h>
 #include <xmhf-debug.h>
 
+#define xmhfhwm_cpu_insn_jmpxsentinel() \
+	__builtin_annot("movl $0x06200000, %eax"); \
+	__builtin_annot("jmpl *%eax "); \
+	__builtin_annot("hlt "); \
+	xmhfhwm_vdriver_sentinel(); \
+	_impl_xmhfhwm_cpu_insn_hlt(); \
+
+
 CASM_FUNCDEF_FULL(.slab_entrystub, 1, void, _slab_entrystub,
 {
 	xmhfhwm_cpu_insn_pushl_mesp(0x4); //push slab_params_t *
@@ -77,7 +85,7 @@ CASM_FUNCDEF_FULL(.slab_entrystub, 1, void, _slab_entrystub,
 	xmhfhwm_cpu_insn_movl_meax_ecx(0x8); //ecx = dst_slabid
 	xmhfhwm_cpu_insn_movl_ecx_meax(0x4); //[eax+4] = src_slabid = dst_slabid
 	xmhfhwm_cpu_insn_movl_edx_meax(0x8); //[eax+8] = dst_slabid = src_slabid
-	xmhfhwm_cpu_insn_jmpsentinel(); // xfer control to sentinel
+	xmhfhwm_cpu_insn_jmpxsentinel(); // xfer control to sentinel
 
 
 	CASM_LABEL(call_exception)
@@ -86,7 +94,7 @@ CASM_FUNCDEF_FULL(.slab_entrystub, 1, void, _slab_entrystub,
 	xmhfhwm_cpu_insn_movl_meax_ecx(0x8); //ecx = dst_slabid
 	xmhfhwm_cpu_insn_movl_ecx_meax(0x4); //[eax+4] = src_slabid = dst_slabid
 	xmhfhwm_cpu_insn_movl_edx_meax(0x8); //[eax+8] = dst_slabid = src_slabid
-	xmhfhwm_cpu_insn_jmpsentinel(); // xfer control to sentinel
+	xmhfhwm_cpu_insn_jmpxsentinel(); // xfer control to sentinel
 
 
 	CASM_LABEL(call_intercept)
@@ -95,7 +103,7 @@ CASM_FUNCDEF_FULL(.slab_entrystub, 1, void, _slab_entrystub,
 	xmhfhwm_cpu_insn_movl_meax_ecx(0x8); //ecx = dst_slabid
 	xmhfhwm_cpu_insn_movl_ecx_meax(0x4); //[eax+4] = src_slabid = dst_slabid
 	xmhfhwm_cpu_insn_movl_edx_meax(0x8); //[eax+8] = dst_slabid = src_slabid
-	xmhfhwm_cpu_insn_jmpsentinel(); // xfer control to sentinel
+	xmhfhwm_cpu_insn_jmpxsentinel(); // xfer control to sentinel
 
 
 	CASM_LABEL(call_vft_to_vft_prog)
@@ -109,7 +117,7 @@ CASM_FUNCDEF(void, __slab_callsentinel,
 {
     xmhfhwm_cpu_insn_movl_mesp_eax(0x4);
     xmhfhwm_cpu_insn_movl_imm_meax(XMHFGEEC_SENTINEL_CALL_FROM_VfT_PROG, 0x0);
-    xmhfhwm_cpu_insn_jmpsentinel();
+    xmhfhwm_cpu_insn_jmpxsentinel();
 },
 slab_params_t *sp)
 

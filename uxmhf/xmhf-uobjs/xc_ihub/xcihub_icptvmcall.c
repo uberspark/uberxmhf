@@ -68,6 +68,7 @@ void xcihub_icptvmcall(u32 cpuid, u32 src_slabid){
 	//check to see if we need to handle rich guest E820 emulation, if so handle
 	//emulation, else rotate through hypapp callbacks
 	if (!xcihub_rg_e820emulation(cpuid, src_slabid)){
+
 		xc_hcbinvoke(XMHFGEEC_SLAB_XC_IHUB, cpuid, XC_HYPAPPCB_HYPERCALL, 0, src_slabid);
 
 		//skip over VMCALL by updating guest RIP

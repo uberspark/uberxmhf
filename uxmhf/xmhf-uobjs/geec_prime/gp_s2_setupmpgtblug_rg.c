@@ -108,7 +108,11 @@ void gp_s2_setupmpgtblug_rg(u32 slabid){
 		spl.in_out_params[0] = slabid;
 		spl.in_out_params[1] = (i*PAGE_SIZE_4K);
 		spl.in_out_params[2] = 0;
+#if 1
 		spl.in_out_params[3] = (u32) ((i*PAGE_SIZE_4K))  | ((u32)memorytype * 8) |  (u32)flags ;	//present, UC
+#else
+		spl.in_out_params[3] = (u32) ((i*PAGE_SIZE_4K))  | ((u32)memorytype * 8) |  (u32)0x7 ;	//present, UC
+#endif
 		spl.in_out_params[4] = 0;
 
 		//@assert (spl.src_slabid == XMHFGEEC_SLAB_GEEC_PRIME);

@@ -206,10 +206,14 @@
 
 	//physical address where the XMHF boot-loader is loaded (e.g., via GRUB)
 	#define __TARGET_BASE_BOOTLOADER		0x01E00000		//30MB
-	#define __TARGET_SIZE_BOOTLOADER		0x00600000		//6MB
+
+	//size of the boot-loader should put the bootloader base + size to
+	//match __TARGET_BASE_XMHF
+	#define __TARGET_SIZE_BOOTLOADER		(__TARGET_BASE_XMHF - __TARGET_BASE_BOOTLOADER)
 
 	//physical address of geec_prime slab (acts as secure loader)
-	#define __TARGET_BASE_SL				0x03200000		//36+14MB
+	#define __TARGET_BASE_SL				(__TARGET_BASE_XMHF + 0x00e00000)
+
 	#define __TARGET_SIZE_SL				0x00200000
 
 //----------------------------------------------------------------------

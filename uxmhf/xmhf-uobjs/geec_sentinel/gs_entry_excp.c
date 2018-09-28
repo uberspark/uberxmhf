@@ -80,6 +80,7 @@ void gs_entry_excp(x86vmx_exception_frame_t *exframe){
     spl.slab_ctype = XMHFGEEC_SENTINEL_CALL_EXCEPTION;
     spl.src_slabid = XMHFGEEC_SLAB_GEEC_SENTINEL; //XXX: TODO: grab src_slabid based on exframe->orig_rip
     spl.dst_slabid = XMHFGEEC_SLAB_XC_EXHUB;
+    spl.dst_uapifn = 0;
     spl.cpuid = xmhf_baseplatform_arch_x86_getcpulapicid();
     memcpy(&spl.in_out_params[0], exframe,
            sizeof(x86vmx_exception_frame_t));
