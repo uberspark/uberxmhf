@@ -1,6 +1,6 @@
 Version: 4.1
-Codename: TBD
-Release-date: TBD
+Codename: clutch hitting is the key to an effective offense
+Release-date: 3rd October 2018
 Changelog:
 	* added support for Ubuntu 16.04 LTS with Linux kernel 4.4.x 32-bits (CONFIG_X86_PAE=n)
 	* migrated uberobject manifests to JSON format
