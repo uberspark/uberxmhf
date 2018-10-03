@@ -25,13 +25,14 @@ security invariants of uberXMHF.
 
 
 ## Contacts, Maintainers and Contributors
-* Amit Vasudevan [<http://hypcode.org>] for uberXMHF: 
-pc-intel-x86-32 (Intel PC), 
-rpi3-cortex_a53_armv8_32 (Raspberry PI 3),
-pc-lagacy-x86-32 (AMD PC, Intel PC (legacy)), 
-libbaremetal and Lockdown
+* Amit Vasudevan [<http://hypcode.org>]
+  * uberXMHF: pc-intel-x86-32 (Intel PC), 
+  rpi3-cortex_a53_armv8_32 (Raspberry PI 3), and
+  pc-lagacy-x86-32 (AMD PC, Intel PC (legacy))
+  * libbaremetal and Lockdown
 
-* Zongwei Zhou for (TrustVisor and tee-sdk)
+* Zongwei Zhou 
+  * TrustVisor and tee-sdk
 
 * Other contributors: Jonathan McCune, James Newsome, Ning Qu, and Yanlin Li
 
