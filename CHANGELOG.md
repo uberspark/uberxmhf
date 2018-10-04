@@ -2,27 +2,32 @@
 
 ## Changelog
 
-* Version 4.0 (Brawn)
+* Version 4.1
+	* added support for Ubuntu 16.04 LTS with Linux kernel 4.4.x 32-bits (CONFIG_X86_PAE=n)
+	* migrated uberobject manifests to JSON format
+	* various documentation updates
+
+* Version 4.0 
 	* first stand-alone uberXMHF release
 	* added Raspberry PI 3 hardware platform support
 	* consolidated past XMHF x86-32 AMD PC and x86-32 Intel PC (legacy) releases
 	* various documentation updates
 
-* Version 3.1 (Flak)
+* Version 3.1 
 	* fixed uxmhf build errors
 
-* Version 3.0 (Ratchet)
+* Version 3.0 
 	* added support for Frama-C Phosphorus-20170501
 	* added support for Compcert 3.0.1
 	* fixed error due to improper inclusion of xh_ssteptrace in the verification process
 	* minor build harness fixes and documentation updates
 
-* Version 2.0 (Blades)
+* Version 2.0 
 	* separated uberspark, uberspark libraries and uxmhf verification/build processes
 	* refined and streamlined uberspark and uxmhf verification/build harness
 	* fixed minor errors in documentation and updates to reflect release changes
 
-* Version 1.0 (Cliff Jumper)
+* Version 1.0 
 	* initial release of uberXMHF x86-32 Intel PC
   
 * Version 0.2.2

@@ -13,26 +13,28 @@ The framework is capable of running unmodified legacy multiprocessor
 capable OSes such as Windows and Linux.  
 
 Visit: <http://uberxmhf.org> for more information on how to download, 
-build, install and get involved.
+build, install, contribute and get involved.
 
-Read the documentation at `docs/toc.md`. The formatted documentation can 
-also be read online at: <http://uberxmhf.org/docs/toc.html>
+The formatted documentation can 
+be read online at: <http://uberxmhf.org/docs/toc.html>
+
+Documentation sources are within `docs/` 
+
+uberSpark (<http://uberspark.org>) is used to build and verify 
+security invariants of uberXMHF.
 
 
 ## Contacts, Maintainers and Contributors
-* Amit Vasudevan [amitvasudevan@acm.org] for uberXMHF: x86-32 Intel PC, Raspberry PI 3,
-x86-32 AMD PC, x86-32 Intel PC (legacy), libbaremetal and Lockdown
+* Amit Vasudevan [<http://hypcode.org>]
+  * uberXMHF: pc-intel-x86-32 (Intel PC), 
+  rpi3-cortex_a53_armv8_32 (Raspberry PI 3), and
+  pc-lagacy-x86-32 (AMD PC, Intel PC (legacy))
+  * libbaremetal and Lockdown
 
-* Zongwei Zhou for (TrustVisor and tee-sdk)
+* Zongwei Zhou 
+  * TrustVisor and tee-sdk
 
 * Other contributors: Jonathan McCune, James Newsome, Ning Qu, and Yanlin Li
-
-
-## Contributing
-
-uberXMHF is always open to contributions. The easiest mechanism is probably to
-fork the git repository through the web UI, make the changes on your fork, 
-and then issue a pull request through the web UI.
 
 
 ## Copying
