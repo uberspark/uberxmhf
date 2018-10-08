@@ -1001,6 +1001,10 @@ void uapp_sched_initialize(u32 cpuid){
 		//declare a keep-alive timer to initialize timer subsystem
 		//uapp_sched_timer_declare((20 * HYPMTSCHEDULER_TIME_1SEC), (20 * HYPMTSCHEDULER_TIME_1SEC), 1, NULL);
 
+#ifdef __SECURE_HYPTASK_BOOTSTRAP__
+		uapp_sched_bootstrap_hyptasks(cpuid);
+#endif
+
 	}else{
 		_XDPRINTFSMP_("%s[%u]: AP CPU: nothing to do, moving on...\n", __func__, cpuid);
 	}
