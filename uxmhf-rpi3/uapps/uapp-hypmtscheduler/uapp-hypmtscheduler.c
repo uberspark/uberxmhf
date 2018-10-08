@@ -89,6 +89,40 @@ __attribute__((section(".data"))) struct sched_timer timer_last = {
   0					//tfunc
 };
 
+
+
+#ifdef __SECURE_HYPTASK_BOOTSTRAP__
+
+hypmtscheduler_secure_bootstrap_config_t hyptask_secure_bootstrap_config[] = {
+		{ (0.5 * HYPMTSCHEDULER_TIME_1SEC),	//hyptask_first_period
+		  (1 * HYPMTSCHEDULER_TIME_1SEC),	//hyptask_regular_period
+		  1, 								//hyptask_priority
+		  0 								//hyptask_id
+		},
+
+		{ (1.5 * HYPMTSCHEDULER_TIME_1SEC),	//hyptask_first_period
+		  (2 * HYPMTSCHEDULER_TIME_1SEC),	//hyptask_regular_period
+		  2, 								//hyptask_priority
+		  1 								//hyptask_id
+		},
+
+		{ (2.5 * HYPMTSCHEDULER_TIME_1SEC),	//hyptask_first_period
+		  (3 * HYPMTSCHEDULER_TIME_1SEC),	//hyptask_regular_period
+		  3, 								//hyptask_priority
+		  2 								//hyptask_id
+		},
+
+		{ (3.5 * HYPMTSCHEDULER_TIME_1SEC),	//hyptask_first_period
+		  (4 * HYPMTSCHEDULER_TIME_1SEC),	//hyptask_regular_period
+		  4, 								//hyptask_priority
+		  3 								//hyptask_id
+		}
+
+};
+
+#endif
+
+
 //////////////////////////////////////////////////////////////////////////////
 
 
