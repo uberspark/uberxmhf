@@ -826,7 +826,10 @@ bool uapp_hypmtscheduler_handlehcall(u32 uhcall_function, void *uhcall_buffer,
 	hmtsp = (ugapp_hypmtscheduler_param_t *)uhcall_buffer;
 
 	if(hmtsp->uhcall_fn == UAPP_HYPMTSCHEDULER_UHCALL_CREATEHYPTASK){
+
+#ifndef __SECURE_HYPTASK_BOOTSTRAP__
 		uapp_hypmtscheduler_handlehcall_createhyptask(hmtsp);
+#endif
 
 	}else if(hmtsp->uhcall_fn == UAPP_HYPMTSCHEDULER_UHCALL_DISABLEHYPTASK){
 		uapp_hypmtscheduler_handlehcall_disablehyptask(hmtsp);
