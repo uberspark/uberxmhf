@@ -120,6 +120,9 @@ hypmtscheduler_secure_bootstrap_config_t hyptask_secure_bootstrap_config[] = {
 
 };
 
+
+#define HYPTASK_BSTRAP_CONFIG_TOTAL	4
+
 #endif
 
 
@@ -853,8 +856,37 @@ bool uapp_hypmtscheduler_handlehcall(u32 uhcall_function, void *uhcall_buffer,
 
 
 
+//////////////////////////////////////////////////////////////////////////////
+// hypmtscheduler helper functions
+//////////////////////////////////////////////////////////////////////////////
+
+#ifdef __SECURE_HYPTASK_BOOTSTRAP__
+
+void uapp_sched_bootstrap_hyptasks(u32 cpuid){
+	uint32_t i;
+	ugapp_hypmtscheduler_param_t hmtsp;
+
+	for(i=0; i < HYPTASK_BSTRAP_CONFIG_TOTAL; i++){
+		hmtsp.iparam_1 = hyptask_secure_bootstrap_config[i].hyptask_first_period;
+		hmtsp.iparam_2 = hyptask_secure_bootstrap_config[i].hyptask_regular_period;
+		hmtsp.iparam_3 = hyptask_secure_bootstrap_config[i].hyptask_priority;
+		hmtsp.iparam_4 = hyptask_secure_bootstrap_config[i].hyptask_id;
+
+		uapp_hypmtscheduler_handlehcall_createhyptask(&hmtsp);
+
+		if(hmtsp.status != 1){
+			_XDPRINTFSMP_("%s[%u]: Halting!. Error in bootstrapping hyptask index=%u\n",
+					__func__, cpuid, i);
+			while(1);
+		}
+	}
+
+}
+
+#endif
 
 
+//////////////////////////////////////////////////////////////////////////////
 
 
 
