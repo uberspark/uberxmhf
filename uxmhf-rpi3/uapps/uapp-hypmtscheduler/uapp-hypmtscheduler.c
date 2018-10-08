@@ -10,7 +10,7 @@
 #include <miniuart.h>
 #include <debug.h>
 
-#define __SECURE_HYPTASK_BOOTSTRAP__	1
+//#define __SECURE_HYPTASK_BOOTSTRAP__	1
 
 #include <hypmtscheduler.h>
 
