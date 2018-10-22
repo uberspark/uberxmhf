@@ -200,6 +200,8 @@ CASM_FUNCDECL(void gs_exit_retuv2vstub(void *caller_stack_frame));
 
 CASM_FUNCDECL(void gs_exit_callv2v(u32 entry_point, void *caller_stack_frame));
 
+CASM_FUNCDECL(void gs_exit_ret2v(void *caller_stack_frame));
+
 CASM_FUNCDECL(u32 gs_exit_callv2uvg(void *noparam));
 
 
