@@ -82,7 +82,28 @@ static inline void _geec_sentinel_checkandhalt_callcaps(u32 src_slabid, u32 dst_
     }
 }
 
+//////
+// process sentinel uobj specific calls
+//////
+void sentinel_processapicall(slab_params_t *sp, void *caller_stack_frame){
+	//sanity check we are only being invoked by prime uobj
+	if(sp->src_slabid != XMHFGEEC_SLAB_GEEC_PRIME){
+		_XDPRINTF_("SENTINEL[ln:%u]: halting. should never be here!\n",
+					   __LINE__);
+		HALT();
+	}
 
+	switch(sp->dst_uapifn){
+		case UAPI_SENTINEL_TEST:
+
+			break;
+
+		default:
+			_XDPRINTF_("SENTINEL(ln:%u): Unrecognized transition. Halting!\n", __LINE__);
+			HALT();
+	}
+
+}
 
 void geec_sentinel_main(slab_params_t *sp, void *caller_stack_frame){
 
@@ -93,7 +114,7 @@ void geec_sentinel_main(slab_params_t *sp, void *caller_stack_frame){
 
         	if(sp->dst_slabid == XMHFGEEC_SLAB_GEEC_SENTINEL){
         		//this is a sentinel uobj specific initialization call
-
+        		sentinel_processapicall(sp, caller_stack_frame);
         	}else{
 
 				switch (xmhfgeec_slab_info_table[sp->dst_slabid].slabtype){
