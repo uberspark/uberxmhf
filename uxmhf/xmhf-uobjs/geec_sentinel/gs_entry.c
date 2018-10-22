@@ -91,77 +91,82 @@ void geec_sentinel_main(slab_params_t *sp, void *caller_stack_frame){
     switch(sp->slab_ctype){
         case XMHFGEEC_SENTINEL_CALL_FROM_VfT_PROG:{
 
-            switch (xmhfgeec_slab_info_table[sp->dst_slabid].slabtype){
+        	if(sp->dst_slabid == XMHFGEEC_SLAB_GEEC_SENTINEL){
+        		//this is a sentinel uobj specific initialization call
 
-                case XMHFGEEC_SLABTYPE_VfT_PROG:{
-                    //_geec_sentinel_checkandhalt_callcaps(sp->src_slabid, sp->dst_slabid, sp->dst_uapifn);
-                    CASM_FUNCCALL(gs_exit_callv2v,
-                                  xmhfgeec_slab_info_table[sp->dst_slabid].entrystub,
-                                  caller_stack_frame);
-                    _XDPRINTF_("GEEC_SENTINEL[ln:%u]: halting. should never be here!\n",
-                               __LINE__);
-                    HALT();
+        	}else{
 
-                }
-                break;
+				switch (xmhfgeec_slab_info_table[sp->dst_slabid].slabtype){
 
+					case XMHFGEEC_SLABTYPE_VfT_PROG:{
+						//_geec_sentinel_checkandhalt_callcaps(sp->src_slabid, sp->dst_slabid, sp->dst_uapifn);
+						CASM_FUNCCALL(gs_exit_callv2v,
+									  xmhfgeec_slab_info_table[sp->dst_slabid].entrystub,
+									  caller_stack_frame);
+						_XDPRINTF_("GEEC_SENTINEL[ln:%u]: halting. should never be here!\n",
+								   __LINE__);
+						HALT();
 
-                case XMHFGEEC_SLABTYPE_uVT_PROG:
-                case XMHFGEEC_SLABTYPE_uVU_PROG:{
-                    //_geec_sentinel_checkandhalt_callcaps(sp->src_slabid, sp->dst_slabid, sp->dst_uapifn);
-                    sp->slab_ctype = XMHFGEEC_SENTINEL_CALL_VfT_PROG_TO_uVT_uVU_PROG;
-                    gs_exit_callv2uv(sp, caller_stack_frame);
-                    _XDPRINTF_("GEEC_SENTINEL[ln:%u]: halting. should never be here!\n",
-                               __LINE__);
-                    HALT();
-
-                }
-                break;
+					}
+					break;
 
 
-                case XMHFGEEC_SLABTYPE_uVT_PROG_GUEST:
-                case XMHFGEEC_SLABTYPE_uVU_PROG_GUEST:
-                case XMHFGEEC_SLABTYPE_uVU_PROG_RICHGUEST:{
-                    u32 errorcode;
-                    //_geec_sentinel_checkandhalt_callcaps(sp->src_slabid, sp->dst_slabid, sp->dst_uapifn);
-                    //_XDPRINTF_("GEEC_SENTINEL: launching guest %u...\n", sp->dst_slabid);
-                    sp->slab_ctype = XMHFGEEC_SENTINEL_CALL_VfT_PROG_TO_uVT_uVU_PROG_GUEST;
-                    CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_CONTROL_VPID, sp->dst_slabid );
-                    CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_CONTROL_EPT_POINTER_FULL, (xmhfgeec_slab_info_table[sp->dst_slabid].mempgtbl_cr3  | 0x1E) );
-                    CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_CONTROL_EPT_POINTER_HIGH, 0);
-                    CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_CONTROL_IO_BITMAPA_ADDRESS_FULL, xmhfgeec_slab_info_table[sp->dst_slabid].iotbl_base);
-                    CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_CONTROL_IO_BITMAPA_ADDRESS_HIGH, 0);
-                    CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_CONTROL_IO_BITMAPB_ADDRESS_FULL, (xmhfgeec_slab_info_table[sp->dst_slabid].iotbl_base + PAGE_SIZE_4K));
-                    CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_CONTROL_IO_BITMAPB_ADDRESS_HIGH, 0);
+					case XMHFGEEC_SLABTYPE_uVT_PROG:
+					case XMHFGEEC_SLABTYPE_uVU_PROG:{
+						//_geec_sentinel_checkandhalt_callcaps(sp->src_slabid, sp->dst_slabid, sp->dst_uapifn);
+						sp->slab_ctype = XMHFGEEC_SENTINEL_CALL_VfT_PROG_TO_uVT_uVU_PROG;
+						gs_exit_callv2uv(sp, caller_stack_frame);
+						_XDPRINTF_("GEEC_SENTINEL[ln:%u]: halting. should never be here!\n",
+								   __LINE__);
+						HALT();
 
-                    if (xmhfgeec_slab_info_table[sp->dst_slabid].slabtype != XMHFGEEC_SLABTYPE_uVU_PROG_RICHGUEST){
-                    	CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_GUEST_RSP, xmhfgeec_slab_info_table[sp->dst_slabid].slabtos[(u16)sp->cpuid]);
-                    	CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_GUEST_RIP, xmhfgeec_slab_info_table[sp->dst_slabid].entrystub);
-                    }
+					}
+					break;
 
-                    errorcode = CASM_FUNCCALL(gs_exit_callv2uvg, CASM_NOPARAM);
 
-                    switch(errorcode){
-                        case 0:	//no error code, VMCS pointer is invalid
-                            _XDPRINTF_("GEEC_SENTINEL: VMLAUNCH error; VMCS pointer invalid?\n");
-                            break;
-                        case 1:{//error code available, so dump it
-                            u32 code=xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_VMINSTR_ERROR);
-                            _XDPRINTF_("GEEC_SENTINEL: VMLAUNCH error; code=%x\n", code);
-                            break;
-                        }
-                    }
+					case XMHFGEEC_SLABTYPE_uVT_PROG_GUEST:
+					case XMHFGEEC_SLABTYPE_uVU_PROG_GUEST:
+					case XMHFGEEC_SLABTYPE_uVU_PROG_RICHGUEST:{
+						u32 errorcode;
+						//_geec_sentinel_checkandhalt_callcaps(sp->src_slabid, sp->dst_slabid, sp->dst_uapifn);
+						//_XDPRINTF_("GEEC_SENTINEL: launching guest %u...\n", sp->dst_slabid);
+						sp->slab_ctype = XMHFGEEC_SENTINEL_CALL_VfT_PROG_TO_uVT_uVU_PROG_GUEST;
+						CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_CONTROL_VPID, sp->dst_slabid );
+						CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_CONTROL_EPT_POINTER_FULL, (xmhfgeec_slab_info_table[sp->dst_slabid].mempgtbl_cr3  | 0x1E) );
+						CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_CONTROL_EPT_POINTER_HIGH, 0);
+						CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_CONTROL_IO_BITMAPA_ADDRESS_FULL, xmhfgeec_slab_info_table[sp->dst_slabid].iotbl_base);
+						CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_CONTROL_IO_BITMAPA_ADDRESS_HIGH, 0);
+						CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_CONTROL_IO_BITMAPB_ADDRESS_FULL, (xmhfgeec_slab_info_table[sp->dst_slabid].iotbl_base + PAGE_SIZE_4K));
+						CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_CONTROL_IO_BITMAPB_ADDRESS_HIGH, 0);
 
-                    HALT();
+						if (xmhfgeec_slab_info_table[sp->dst_slabid].slabtype != XMHFGEEC_SLABTYPE_uVU_PROG_RICHGUEST){
+							CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_GUEST_RSP, xmhfgeec_slab_info_table[sp->dst_slabid].slabtos[(u16)sp->cpuid]);
+							CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_GUEST_RIP, xmhfgeec_slab_info_table[sp->dst_slabid].entrystub);
+						}
 
-                }
-                break;
+						errorcode = CASM_FUNCCALL(gs_exit_callv2uvg, CASM_NOPARAM);
 
-                default:
-                    _XDPRINTF_("GEEC_SENTINEL(ln:%u): Unrecognized transition. Halting!\n", __LINE__);
-                    HALT();
-            }
+						switch(errorcode){
+							case 0:	//no error code, VMCS pointer is invalid
+								_XDPRINTF_("GEEC_SENTINEL: VMLAUNCH error; VMCS pointer invalid?\n");
+								break;
+							case 1:{//error code available, so dump it
+								u32 code=xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_VMINSTR_ERROR);
+								_XDPRINTF_("GEEC_SENTINEL: VMLAUNCH error; code=%x\n", code);
+								break;
+							}
+						}
 
+						HALT();
+
+					}
+					break;
+
+					default:
+						_XDPRINTF_("GEEC_SENTINEL(ln:%u): Unrecognized transition. Halting!\n", __LINE__);
+						HALT();
+				}
+        	} //endif
 
         }
         break;
