@@ -97,7 +97,21 @@ void sentinel_processapicall(slab_params_t *sp, void *caller_stack_frame){
 		case UAPI_SENTINEL_TEST:
             _XDPRINTF_("SENTINEL[cpu=%u]: TEST\n",
                        (u16)sp->cpuid);
-			break;
+
+            //setup SYSENTER/SYSEXIT mechanism
+        	{
+        	CASM_FUNCCALL(wrmsr64, IA32_SYSENTER_CS_MSR, (u32)__CS_CPL0, 0);
+        	CASM_FUNCCALL(wrmsr64, IA32_SYSENTER_EIP_MSR,
+        			(u32)&gs_syscallstub, 0);
+        	CASM_FUNCCALL(wrmsr64, IA32_SYSENTER_ESP_MSR,
+        			(u32)((u32)_sysenter_stack[(u16)sp->cpuid] + MAX_PLATFORM_CPUSTACK_SIZE), 0);
+        	}
+        	_XDPRINTF_("%s: setup SYSENTER/SYSEXIT mechanism\n", __func__);
+        	_XDPRINTF_("SYSENTER CS=%016llx\n", CASM_FUNCCALL(rdmsr64,IA32_SYSENTER_CS_MSR));
+        	_XDPRINTF_("SYSENTER RIP=%016llx\n", CASM_FUNCCALL(rdmsr64,IA32_SYSENTER_EIP_MSR));
+        	_XDPRINTF_("SYSENTER RSP=%016llx\n", CASM_FUNCCALL(rdmsr64,IA32_SYSENTER_ESP_MSR));
+
+            break;
 
 		default:
 			_XDPRINTF_("SENTINEL(ln:%u): Unrecognized transition. Halting!\n", __LINE__);

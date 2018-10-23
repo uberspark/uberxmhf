@@ -52,3 +52,5 @@
 
 __attribute__((section(".data"))) u32 gs_siss_indices[MAX_PLATFORM_CPUS] = { 0 };
 __attribute__((section(".data"))) gs_siss_element_t gs_siss[MAX_PLATFORM_CPUS][512];
+// sysenter CPU stacks
+__attribute__(( section(".stack") )) __attribute__(( aligned(4096) )) u8 _sysenter_stack[MAX_PLATFORM_CPUS][MAX_PLATFORM_CPUSTACK_SIZE];

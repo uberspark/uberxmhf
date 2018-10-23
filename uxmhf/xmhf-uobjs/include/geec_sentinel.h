@@ -61,8 +61,7 @@
 #ifndef __ASSEMBLY__
 
 
-
-
+extern __attribute__(( section(".stack") )) __attribute__(( aligned(4096) )) u8 _sysenter_stack[MAX_PLATFORM_CPUS][MAX_PLATFORM_CPUSTACK_SIZE];
 
 extern __attribute__((section(".data"))) __attribute__((aligned(4096))) xmhfgeec_slab_info_t xmhfgeec_slab_info_table[XMHFGEEC_TOTAL_SLABS];
 

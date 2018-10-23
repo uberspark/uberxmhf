@@ -438,7 +438,7 @@ void gp_s5_setupcpustate(u32 cpuid, bool isbsp){
 		XMHF_SLAB_CALLNEW(&spl);
 	}
 
-
+#if 0
 	//setup SYSENTER/SYSEXIT mechanism
 	{
 	CASM_FUNCCALL(wrmsr64, IA32_SYSENTER_CS_MSR, (u32)__CS_CPL0, 0);
@@ -449,7 +449,7 @@ void gp_s5_setupcpustate(u32 cpuid, bool isbsp){
 	_XDPRINTF_("SYSENTER CS=%016llx\n", CASM_FUNCCALL(rdmsr64,IA32_SYSENTER_CS_MSR));
 	_XDPRINTF_("SYSENTER RIP=%016llx\n", CASM_FUNCCALL(rdmsr64,IA32_SYSENTER_EIP_MSR));
 	_XDPRINTF_("SYSENTER RSP=%016llx\n", CASM_FUNCCALL(rdmsr64,IA32_SYSENTER_ESP_MSR));
-
+#endif
 
 	//setup VMX state
 	if(!__xmhfhic_x86vmx_setupvmxstate(cpuid)){
