@@ -426,7 +426,7 @@ void gp_s5_setupcpustate(u32 cpuid, bool isbsp){
 	_XDPRINTF_("%s[%u]: Set CR0.EM to be VMX compatible\n", __func__, (u32)cpuid);
 
 
-
+	//setup sysenter syscall stub
 	{
 		slab_params_t spl;
 
@@ -437,19 +437,6 @@ void gp_s5_setupcpustate(u32 cpuid, bool isbsp){
 
 		XMHF_SLAB_CALLNEW(&spl);
 	}
-
-#if 0
-	//setup SYSENTER/SYSEXIT mechanism
-	{
-	CASM_FUNCCALL(wrmsr64, IA32_SYSENTER_CS_MSR, (u32)__CS_CPL0, 0);
-	CASM_FUNCCALL(wrmsr64, IA32_SYSENTER_EIP_MSR, (u32)xmhfgeec_slab_info_table[XMHFGEEC_SLAB_GEEC_SENTINEL].slab_memoffset_entries[GEEC_SENTINEL_MEMOFFSETS_SYSENTERHANDLER_IDX], 0);
-	CASM_FUNCCALL(wrmsr64, IA32_SYSENTER_ESP_MSR, (u32)((u32)_geec_primesmp_sysenter_stack[(u32)cpuid] + MAX_PLATFORM_CPUSTACK_SIZE), 0);
-	}
-	_XDPRINTF_("%s: setup SYSENTER/SYSEXIT mechanism\n", __func__);
-	_XDPRINTF_("SYSENTER CS=%016llx\n", CASM_FUNCCALL(rdmsr64,IA32_SYSENTER_CS_MSR));
-	_XDPRINTF_("SYSENTER RIP=%016llx\n", CASM_FUNCCALL(rdmsr64,IA32_SYSENTER_EIP_MSR));
-	_XDPRINTF_("SYSENTER RSP=%016llx\n", CASM_FUNCCALL(rdmsr64,IA32_SYSENTER_ESP_MSR));
-#endif
 
 	//setup VMX state
 	if(!__xmhfhic_x86vmx_setupvmxstate(cpuid)){
