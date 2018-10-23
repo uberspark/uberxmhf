@@ -426,6 +426,19 @@ void gp_s5_setupcpustate(u32 cpuid, bool isbsp){
 	_XDPRINTF_("%s[%u]: Set CR0.EM to be VMX compatible\n", __func__, (u32)cpuid);
 
 
+
+	{
+		slab_params_t spl;
+
+		spl.src_slabid = XMHFGEEC_SLAB_GEEC_PRIME;
+		spl.dst_slabid = XMHFGEEC_SLAB_GEEC_SENTINEL;
+		spl.cpuid = cpuid;
+		spl.dst_uapifn = UAPI_SENTINEL_TEST;
+
+		XMHF_SLAB_CALLNEW(&spl);
+	}
+
+
 	//setup SYSENTER/SYSEXIT mechanism
 	{
 	CASM_FUNCCALL(wrmsr64, IA32_SYSENTER_CS_MSR, (u32)__CS_CPL0, 0);
