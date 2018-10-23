@@ -44,42 +44,45 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-// XMHF slab import library decls./defns.
-// author: amit vasudevan (amitvasudevan@acm.org)
+/*
+ * HIC trampoline and stubs
+ *
+ * author: amit vasudevan (amitvasudevan@acm.org)
+ */
 
-#ifndef __XC_IHUB_H__
-#define __XC_IHUB_H__
-
-
-#ifndef __ASSEMBLY__
-
-CASM_FUNCDECL(void xcihub_entry_icptstub(void *noparam));
-void xcihub_entry_icpt(x86regs_t *r);
-CASM_FUNCDECL(void xcihub_reticpt(x86regs_t *r));
+#include <xmhf.h>
+#include <xmhf-debug.h>
+#include <xmhfgeec.h>
+#include <xc_ihub.h>
 
 
-/*@
-	requires 0 <= cbtype <= XC_HYPAPPCB_MAXMASK;
-@*/
-u32 xc_hcbinvoke(u32 src_slabid, u32 cpuid, u32 cbtype, u32 cbqual, u32 guest_slab_index);
+////// intercepts
 
-void xcihub_icptvmcall(u32 cpuid, u32 src_slabid);
-void xcihub_icptcpuid(u32 cpuid);
-void xcihub_icptwrmsr(u32 cpuid);
-void xcihub_icptrdmsr(u32 cpuid);
-void xcihub_icptcrx(u32 cpuid, u32 src_slabid);
-void xcihub_icptxsetbv(u32 cpuid);
-void xcihub_icptsipi(u32 cpuid);
-void xcihub_halt(u32 cpuid, u32 info_vmexit_reason);
+void xcihub_entry_icpt(x86regs_t *r){
+    slab_params_t spl;
+    u32 eflags;
 
-bool xcihub_rg_e820emulation(u32 cpuid, u32 src_slabid);
+    eflags = CASM_FUNCCALL(read_eflags,CASM_NOPARAM);
+    eflags &= ~(EFLAGS_IOPL); //clear out IOPL bits
+    eflags |= EFLAGS_IOPL;
+    CASM_FUNCCALL(write_eflags,eflags);
 
-extern __attribute__(( section(".data") )) volatile u32 xcihub_smplock;
+    memset(&spl, 0, sizeof(spl));
+
+    spl.slab_ctype = XMHFGEEC_SENTINEL_CALL_INTERCEPT;
+    spl.src_slabid = CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmread,VMCS_CONTROL_VPID);
+    spl.dst_slabid = XMHFGEEC_SLAB_XC_IHUB;
+    spl.cpuid = xmhf_baseplatform_arch_x86_getcpulapicid();
+
+    memcpy(&spl.in_out_params[0], r, sizeof(x86regs_t));
+
+    //invoke processing of intercept
 
 
+    //exit to guest
+    CASM_FUNCCALL(xcihub_reticpt, &spl.in_out_params[0]);
+    _XDPRINTF_("XC_IHUB[ln:%u]: halting. should never be here!\n",
+               __LINE__);
+    HALT();
+}
 
-
-#endif //__ASSEMBLY__
-
-
-#endif //__XC_IHUB_H__
