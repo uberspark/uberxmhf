@@ -72,7 +72,7 @@
 		},
 		{ 
 			"section-name": "stack",
-			"section-size": "0x600000"
+			"section-size": "0xA00000"
 		},
 		{ 
 			"section-name": "dmadata",
