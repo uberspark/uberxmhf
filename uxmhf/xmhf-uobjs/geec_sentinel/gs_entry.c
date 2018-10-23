@@ -103,6 +103,13 @@ void sentinel_processapicall(slab_params_t *sp, void *caller_stack_frame){
 			HALT();
 	}
 
+	CASM_FUNCCALL(gs_exit_ret2v,
+				  caller_stack_frame);
+
+    _XDPRINTF_("SENTINEL[ln:%u]: halting. should never be here!\n",
+               __LINE__);
+    HALT();
+
 }
 
 void geec_sentinel_main(slab_params_t *sp, void *caller_stack_frame){
