@@ -95,7 +95,8 @@ void sentinel_processapicall(slab_params_t *sp, void *caller_stack_frame){
 
 	switch(sp->dst_uapifn){
 		case UAPI_SENTINEL_TEST:
-
+            _XDPRINTF_("SENTINEL[cpu=%u]: TEST\n",
+                       (u16)sp->cpuid);
 			break;
 
 		default:
