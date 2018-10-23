@@ -76,8 +76,13 @@ void xcihub_entry_icpt(x86regs_t *r){
 
     memcpy(&spl.in_out_params[0], r, sizeof(x86regs_t));
 
+    //invoke processing of intercept
 
-    //geec_sentinel_main(&spl, &spl);
 
+    //exit to guest
+    CASM_FUNCCALL(xcihub_exit_reticpt, &sp->in_out_params[0]);
+    _XDPRINTF_("XC_IHUB[ln:%u]: halting. should never be here!\n",
+               __LINE__);
+    HALT();
 }
 
