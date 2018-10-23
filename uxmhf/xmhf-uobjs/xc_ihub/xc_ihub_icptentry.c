@@ -53,12 +53,12 @@
 #include <xmhf.h>
 #include <xmhf-debug.h>
 #include <xmhfgeec.h>
-#include <geec_sentinel.h>
+#include <xc_ihub.h>
 
 
 ////// intercepts
 
-void gs_entry_icpt(x86regs_t *r){
+void xcihub_entry_icpt(x86regs_t *r){
     slab_params_t spl;
     u32 eflags;
 
@@ -77,7 +77,7 @@ void gs_entry_icpt(x86regs_t *r){
     memcpy(&spl.in_out_params[0], r, sizeof(x86regs_t));
 
 
-    geec_sentinel_main(&spl, &spl);
+    //geec_sentinel_main(&spl, &spl);
 
 }
 

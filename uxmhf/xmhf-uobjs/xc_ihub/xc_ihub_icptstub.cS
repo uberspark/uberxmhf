@@ -54,7 +54,7 @@
 #include <xmhf-debug.h>
 #include <xmhfgeec.h>
 
-#include <geec_sentinel.h>
+#include <xc_ihub.h>
 
 #if defined (__XMHF_VERIFICATION__) && defined (__USPARK_FRAMAC_VA__)
 #include <xc.h>
@@ -82,11 +82,11 @@ void main(void){
 }
 #endif
 ////// intercept entry point
-CASM_FUNCDEF(void, gs_entry_icptstub,
+CASM_FUNCDEF(void, xcihub_entry_icptstub,
 {
     xmhfhwm_cpu_insn_pushal();
     xmhfhwm_cpu_insn_pushl_esp();
-    xmhfhwm_cpu_insn_call_c_1p(gs_entry_icpt, x86regs_t *);
+    xmhfhwm_cpu_insn_call_c_1p(xcihub_entry_icpt, x86regs_t *);
     xmhfhwm_cpu_insn_hlt();
 },
 void *noparam)

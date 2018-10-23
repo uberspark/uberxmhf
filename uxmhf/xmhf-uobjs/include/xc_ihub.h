@@ -53,6 +53,10 @@
 
 #ifndef __ASSEMBLY__
 
+CASM_FUNCDECL(void xcihub_entry_icptstub(void *noparam));
+void xcihub_entry_icpt(x86regs_t *r);
+
+
 /*@
 	requires 0 <= cbtype <= XC_HYPAPPCB_MAXMASK;
 @*/
