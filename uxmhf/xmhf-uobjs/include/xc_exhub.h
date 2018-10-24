@@ -52,6 +52,7 @@
 
 #define UAPI_XCEXHUB_DEBUG     	1
 #define UAPI_XCEXHUB_SETUPIDT	2
+#define UAPI_XCEXHUB_LOADIDT	3
 
 #ifndef __ASSEMBLY__
 
