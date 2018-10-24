@@ -51,16 +51,16 @@
 #include <xc_exhub.h>
 
 // IDT
-__attribute__((section(".data"))) __attribute__(( aligned(16) )) idtentry_t __xmhfhic_x86vmx_idt_start[EMHF_XCPHANDLER_MAXEXCEPTIONS] ;
+__attribute__((section(".data"))) __attribute__(( aligned(16) )) idtentry_t xcexhub_idt_data[EMHF_XCPHANDLER_MAXEXCEPTIONS] ;
 // IDT descriptor
-__attribute__((section(".data"))) __attribute__(( aligned(16) )) arch_x86_idtdesc_t __xmhfhic_x86vmx_idt = {
-	.size=sizeof(__xmhfhic_x86vmx_idt_start)-1,
-	.base=(u32)&__xmhfhic_x86vmx_idt_start,
+__attribute__((section(".data"))) __attribute__(( aligned(16) )) arch_x86_idtdesc_t xcexhub_idt = {
+	.size=sizeof(xcexhub_idt_data)-1,
+	.base=(u32)&xcexhub_idt_data,
 };
 
 
 //list of exception handlers
-__attribute__((section(".data"))) uint32_t xcexhub_excp_handlers[] = {
+__attribute__((section(".data"))) uint32_t xcexhub_excp_handlers[EMHF_XCPHANDLER_MAXEXCEPTIONS] = {
 		(uint32_t)&__xmhf_exception_handler_0,
 		(uint32_t)&__xmhf_exception_handler_1,
 		(uint32_t)&__xmhf_exception_handler_2,
