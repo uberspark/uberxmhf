@@ -229,7 +229,7 @@ void main(void){
 	assigns xcihub_callicptvmcall;
 	assigns xcihub_callhalt;
 @*/
-void slab_main(slab_params_t *sp){
+void xcihub_icptmain(slab_params_t *sp){
 	u32 info_vmexit_reason;
 	slab_params_t spl;
 	xmhf_uapi_gcpustate_vmrw_params_t *gcpustate_vmrwp = (xmhf_uapi_gcpustate_vmrw_params_t *)&spl.in_out_params[0];

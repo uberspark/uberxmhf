@@ -77,7 +77,7 @@ void xcihub_entry_icpt(x86regs_t *r){
     memcpy(&spl.in_out_params[0], r, sizeof(x86regs_t));
 
     //invoke processing of intercept
-
+    xcihub_icptmain(&spl);
 
     //exit to guest
     CASM_FUNCCALL(xcihub_reticpt, &spl.in_out_params[0]);
