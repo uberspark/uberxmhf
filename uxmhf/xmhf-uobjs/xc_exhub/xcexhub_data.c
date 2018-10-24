@@ -44,30 +44,16 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-// XMHF slab import library decls./defns.
-// author: amit vasudevan (amitvasudevan@acm.org)
 
-#ifndef __XC_EXHUB_H__
-#define __XC_EXHUB_H__
+#include <xmhf.h>
+#include <xmhf-debug.h>
+#include <xmhfgeec.h>
+#include <xc_exhub.h>
 
-#define UAPI_XCEXHUB_DEBUG     	1
-#define UAPI_XCEXHUB_SETUPIDT	2
-
-#ifndef __ASSEMBLY__
-
-extern __attribute__((section(".data"))) __attribute__(( aligned(16) )) idtentry_t __xmhfhic_x86vmx_idt_start[EMHF_XCPHANDLER_MAXEXCEPTIONS]; //ro
-extern __attribute__((section(".data"))) __attribute__(( aligned(16) )) arch_x86_idtdesc_t __xmhfhic_x86vmx_idt; //ro
-
-
-
-void xcexhub_entryexcp(x86vmx_exception_frame_t *exframe);
-CASM_FUNCDECL(void xcexhub_retexcp(x86vmx_exception_frame_t *exframe));
-void xcexhub_excpmain(slab_params_t *sp);
-
-void xcexhub_setupidt(void);
-
-
-#endif //__ASSEMBLY__
-
-
-#endif //__XC_EXHUB_H__
+// IDT
+__attribute__((section(".data"))) __attribute__(( aligned(16) )) idtentry_t __xmhfhic_x86vmx_idt_start[EMHF_XCPHANDLER_MAXEXCEPTIONS] ;
+// IDT descriptor
+__attribute__((section(".data"))) __attribute__(( aligned(16) )) arch_x86_idtdesc_t __xmhfhic_x86vmx_idt = {
+	.size=sizeof(__xmhfhic_x86vmx_idt_start)-1,
+	.base=(u32)&__xmhfhic_x86vmx_idt_start,
+};
