@@ -50,7 +50,8 @@
 #ifndef __XC_EXHUB_H__
 #define __XC_EXHUB_H__
 
-#define UAPI_XCEXHUB_DEBUG     1
+#define UAPI_XCEXHUB_DEBUG     	1
+#define UAPI_XCEXHUB_SETUPIDT	2
 
 #ifndef __ASSEMBLY__
 

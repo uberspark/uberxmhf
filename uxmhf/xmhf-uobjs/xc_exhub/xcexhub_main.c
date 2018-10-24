@@ -102,6 +102,10 @@ void slab_main(slab_params_t *sp){
 		ihub_exit_status = sp->in_out_params[0];
 		ihub_exit_info = sp->in_out_params[1];
 
+	}else if( sp->dst_uapifn == UAPI_XCEXHUB_SETUPIDT){
+
+			ihub_exit_status = sp->in_out_params[0];
+			ihub_exit_info = sp->in_out_params[1];
 
 	}else{
 		//unknown api ignore and return
