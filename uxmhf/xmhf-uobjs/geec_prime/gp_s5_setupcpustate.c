@@ -52,7 +52,7 @@
 #include <geec_sentinel.h>
 //#include <uapi_slabmempgtbl.h>
 //#include <xc_init.h>
-
+#include <xc_ihub.h>
 
 
 //set IOPl to CPl-3
@@ -155,7 +155,21 @@ static bool __xmhfhic_x86vmx_setupvmxstate(u64 cpuid){
 	CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_HOST_IDTR_BASE, CASM_FUNCCALL32(xmhf_baseplatform_arch_x86_getidtbase,CASM_NOPARAM));
 	CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_HOST_TR_BASE, CASM_FUNCCALL(xmhf_baseplatform_arch_x86_gettssbase,CASM_NOPARAM));
 
+#if 0
 	CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_HOST_RIP, xmhfgeec_slab_info_table[XMHFGEEC_SLAB_GEEC_SENTINEL].slab_memoffset_entries[GEEC_SENTINEL_MEMOFFSETS_INTERCEPTHANDLER_IDX]);
+#endif
+	//setup intercept handler stub
+	{
+		slab_params_t spl;
+
+		spl.src_slabid = XMHFGEEC_SLAB_GEEC_PRIME;
+		spl.dst_slabid = XMHFGEEC_SLAB_XC_IHUB;
+		spl.cpuid = (u16)cpuid;
+		spl.dst_uapifn = UAPI_XCIHUB_INSTALLICPTHANDLER;
+
+		XMHF_SLAB_CALLNEW(&spl);
+	}
+
 
 	CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_HOST_RSP, CASM_FUNCCALL32(read_esp,CASM_NOPARAM));
 
