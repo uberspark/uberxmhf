@@ -7,6 +7,7 @@
 
 export XMHF_SLAB_NAME := xc_exhub
 export XMHF_SLAB_SOURCES := $(wildcard $(srcdir)/*.c)
+XMHF_SLAB_SOURCES += $(wildcard $(srcdir)/*.cS)
 
 
 ########################################################################
