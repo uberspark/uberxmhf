@@ -85,9 +85,8 @@ void xcexhub_setupidt(void){
 	for(i=0; i < EMHF_XCPHANDLER_MAXEXCEPTIONS; i++){
 		//__xmhfhic_x86vmx_idt_start[i].isrLow= (u16)xmhfgeec_slab_info_table[XMHFGEEC_SLAB_GEEC_SENTINEL].slab_memoffset_entries[GEEC_SENTINEL_MEMOFFSETS_EXCEPTIONHANDLERS_IDX+i];
 		//__xmhfhic_x86vmx_idt_start[i].isrHigh= (u16) ( xmhfgeec_slab_info_table[XMHFGEEC_SLAB_GEEC_SENTINEL].slab_memoffset_entries[GEEC_SENTINEL_MEMOFFSETS_EXCEPTIONHANDLERS_IDX+i] >> 16 );
-		__xmhfhic_x86vmx_idt_start[i].isrLow= 0;
-		__xmhfhic_x86vmx_idt_start[i].isrHigh= 0;
-
+		__xmhfhic_x86vmx_idt_start[i].isrLow= (u16)xcexhub_excp_handlers[i];
+		__xmhfhic_x86vmx_idt_start[i].isrHigh= (u16)((u32)xcexhub_excp_handlers[i] >> 16);
 		__xmhfhic_x86vmx_idt_start[i].isrSelector = __CS_CPL0;
 		__xmhfhic_x86vmx_idt_start[i].count=0x0;
 		__xmhfhic_x86vmx_idt_start[i].type=0xEE;	//32-bit interrupt gate
