@@ -72,7 +72,7 @@
 
 ////// exceptions
 
-void gs_entryexcp(x86vmx_exception_frame_t *exframe){
+void xcexhub_entryexcp(x86vmx_exception_frame_t *exframe){
     slab_params_t spl;
 
     memset(&spl, 0, sizeof(spl));
@@ -86,11 +86,11 @@ void gs_entryexcp(x86vmx_exception_frame_t *exframe){
            sizeof(x86vmx_exception_frame_t));
 
     //invoke exception processing
-    xcexhub_excpmain(&spl)
+    xcexhub_excpmain(&spl);
 
     //return from exception
     CASM_FUNCCALL(xcexhub_retexcp,
-        &spl->in_out_params[0]);
+        &spl.in_out_params[0]);
     _XDPRINTF_("GEEC_SENTINEL[ln:%u]: halting. should never be here!\n",
                __LINE__);
     HALT();
