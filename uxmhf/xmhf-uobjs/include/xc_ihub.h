@@ -50,6 +50,8 @@
 #ifndef __XC_IHUB_H__
 #define __XC_IHUB_H__
 
+#define UAPI_XCIHUB_INSTALLICPTHANDLER    0
+
 
 #ifndef __ASSEMBLY__
 

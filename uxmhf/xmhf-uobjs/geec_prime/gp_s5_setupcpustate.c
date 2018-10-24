@@ -154,7 +154,9 @@ static bool __xmhfhic_x86vmx_setupvmxstate(u64 cpuid){
 	CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_HOST_GDTR_BASE, CASM_FUNCCALL32(xmhf_baseplatform_arch_x86_getgdtbase,CASM_NOPARAM));
 	CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_HOST_IDTR_BASE, CASM_FUNCCALL32(xmhf_baseplatform_arch_x86_getidtbase,CASM_NOPARAM));
 	CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_HOST_TR_BASE, CASM_FUNCCALL(xmhf_baseplatform_arch_x86_gettssbase,CASM_NOPARAM));
+
 	CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_HOST_RIP, xmhfgeec_slab_info_table[XMHFGEEC_SLAB_GEEC_SENTINEL].slab_memoffset_entries[GEEC_SENTINEL_MEMOFFSETS_INTERCEPTHANDLER_IDX]);
+
 	CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_HOST_RSP, CASM_FUNCCALL32(read_esp,CASM_NOPARAM));
 
 
