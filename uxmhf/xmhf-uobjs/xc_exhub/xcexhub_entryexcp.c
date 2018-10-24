@@ -85,8 +85,8 @@ void gs_entryexcp(x86vmx_exception_frame_t *exframe){
     memcpy(&spl.in_out_params[0], exframe,
            sizeof(x86vmx_exception_frame_t));
 
-    //geec_sentinel_main(&spl, &spl);
-
+    //invoke exception processing
+    xcexhub_excpmain(&spl)
 
     //return from exception
     CASM_FUNCCALL(xcexhub_retexcp,

@@ -55,7 +55,7 @@
 
 void xcexhub_entryexcp(x86vmx_exception_frame_t *exframe);
 CASM_FUNCDECL(void xcexhub_retexcp(x86vmx_exception_frame_t *exframe));
-
+void xcexhub_excpmain(slab_params_t *sp);
 
 #endif //__ASSEMBLY__
 
