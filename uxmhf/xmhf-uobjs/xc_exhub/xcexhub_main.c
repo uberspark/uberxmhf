@@ -104,6 +104,8 @@ void slab_main(slab_params_t *sp){
 
 	}else if( sp->dst_uapifn == UAPI_XCEXHUB_SETUPIDT){
 
+		xcexhub_setupidt();
+
 	}else if( sp->dst_uapifn == UAPI_XCEXHUB_LOADIDT){
 
 		CASM_FUNCCALL(xmhfhw_cpu_loadIDT,&__xmhfhic_x86vmx_idt);
