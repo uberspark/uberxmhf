@@ -86,5 +86,13 @@ void gs_entryexcp(x86vmx_exception_frame_t *exframe){
            sizeof(x86vmx_exception_frame_t));
 
     //geec_sentinel_main(&spl, &spl);
+
+
+    //return from exception
+    CASM_FUNCCALL(xcexhub_retexcp,
+        &spl->in_out_params[0]);
+    _XDPRINTF_("GEEC_SENTINEL[ln:%u]: halting. should never be here!\n",
+               __LINE__);
+    HALT();
 }
 
