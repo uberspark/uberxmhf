@@ -111,6 +111,10 @@ void slab_main(slab_params_t *sp){
 		CASM_FUNCCALL(xmhfhw_cpu_loadIDT,&xcexhub_idt);
 		_XDPRINTF_("%s[%u]: IDT loaded\n", __func__, (u16)sp->cpuid);
 
+	}else if( sp->dst_uapifn == UAPI_XCEXHUB_LOADHOSTIDTRBASE){
+
+		CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_HOST_IDTR_BASE, CASM_FUNCCALL32(xmhf_baseplatform_arch_x86_getidtbase,CASM_NOPARAM));
+
 	}else{
 		//unknown api ignore and return
 	    return;
