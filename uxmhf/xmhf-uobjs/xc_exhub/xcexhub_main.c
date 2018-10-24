@@ -97,7 +97,7 @@ void main(void){
 
 void slab_main(slab_params_t *sp){
 
-	if( sp->dst_uapifn == 1){
+	if( sp->dst_uapifn == UAPI_XCEXHUB_DEBUG){
 
 		ihub_exit_status = sp->in_out_params[0];
 		ihub_exit_info = sp->in_out_params[1];
