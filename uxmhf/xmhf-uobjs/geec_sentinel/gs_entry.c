@@ -250,87 +250,21 @@ void geec_sentinel_main(slab_params_t *sp, void *caller_stack_frame){
 
 
 
-        case XMHFGEEC_SENTINEL_CALL_INTERCEPT:{
-            if(!(xmhfgeec_slab_info_table[sp->dst_slabid].slabtype == XMHFGEEC_SLABTYPE_VfT_PROG)){
-                _XDPRINTF_("GEEC_SENTINEL(ln:%u): intercept target slab not VfT_PROG_INTERCEPT. Halting!\n", __LINE__);
-                HALT();
-            }
-
-            CASM_FUNCCALL(gs_exit_callicpt,
-              xmhfgeec_slab_info_table[sp->dst_slabid].entrystub,
-              caller_stack_frame);
-            _XDPRINTF_("GEEC_SENTINEL[ln:%u]: halting. should never be here!\n",
-                       __LINE__);
-            HALT();
-
-        }
-        break;
 
 
 
 
 
 
-        case XMHFGEEC_SENTINEL_RET_INTERCEPT:{
-            if(!
-               (xmhfgeec_slab_info_table[sp->src_slabid].slabtype == XMHFGEEC_SLABTYPE_VfT_PROG &&
-                (xmhfgeec_slab_info_table[sp->dst_slabid].slabtype == XMHFGEEC_SLABTYPE_uVT_PROG_GUEST ||
-                 xmhfgeec_slab_info_table[sp->dst_slabid].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG_GUEST ||
-                 xmhfgeec_slab_info_table[sp->dst_slabid].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG_RICHGUEST
-                )
-               )){
-                _XDPRINTF_("GEEC_SENTINEL(ln:%u): intercept ret source slab not VfT_PROG_INTERCEPT. Halting!\n", __LINE__);
-                HALT();
-            }
-
-            //_XDPRINTF_("GEEC_SENTINEL: resuming guest %u...\n", sp->dst_slabid);
-            CASM_FUNCCALL(gs_exit_reticpt, sp->in_out_params);
-            _XDPRINTF_("GEEC_SENTINEL[ln:%u]: halting. should never be here!\n",
-                       __LINE__);
-            HALT();
-
-        }
-        break;
-
-
-
-        case XMHFGEEC_SENTINEL_CALL_EXCEPTION:{
-            if(!(xmhfgeec_slab_info_table[sp->dst_slabid].slabtype == XMHFGEEC_SLABTYPE_VfT_PROG)){
-                _XDPRINTF_("GEEC_SENTINEL(ln:%u): exception target slab not VfT_PROG. Halting!\n", __LINE__);
-                HALT();
-            }
-
-            CASM_FUNCCALL(gs_exit_callexcp,
-              xmhfgeec_slab_info_table[sp->dst_slabid].entrystub,
-              caller_stack_frame);
-            _XDPRINTF_("GEEC_SENTINEL[ln:%u]: halting. should never be here!\n",
-                       __LINE__);
-            HALT();
-
-        }
-        break;
 
 
 
 
 
 
-        case XMHFGEEC_SENTINEL_RET_EXCEPTION:{
-            if(!
-               (xmhfgeec_slab_info_table[sp->src_slabid].slabtype == XMHFGEEC_SLABTYPE_VfT_PROG &&
-                sp->dst_slabid == XMHFGEEC_SLAB_GEEC_SENTINEL)){
-                _XDPRINTF_("GEEC_SENTINEL(ln:%u): exception ret source slab not VfT_PROG_EXCEPTION. Halting!\n", __LINE__);
-                HALT();
-            }
 
-            CASM_FUNCCALL(gs_exit_retexcp,
-                sp->in_out_params);
-            _XDPRINTF_("GEEC_SENTINEL[ln:%u]: halting. should never be here!\n",
-                       __LINE__);
-            HALT();
 
-        }
-        break;
+
 
 
 
