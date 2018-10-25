@@ -17,6 +17,8 @@
 						uapi_slabmempgtbl
 						xc_init
 						uapi_sysdata
+						xc_ihub
+						xc_exhub
 					",
 
 	"uobj-uapicallees":[

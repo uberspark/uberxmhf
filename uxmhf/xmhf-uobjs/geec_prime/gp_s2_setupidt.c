@@ -49,48 +49,17 @@
 #include <xmhfgeec.h>
 
 #include <geec_prime.h>
-#include <geec_sentinel.h>
+#include <xc_exhub.h>
 
 //initialize IDT
-/*@
-	assigns __xmhfhic_x86vmx_idt_start[0..(EMHF_XCPHANDLER_MAXEXCEPTIONS-1)].isrLow;
-	assigns __xmhfhic_x86vmx_idt_start[0..(EMHF_XCPHANDLER_MAXEXCEPTIONS-1)].isrHigh;
-	assigns __xmhfhic_x86vmx_idt_start[0..(EMHF_XCPHANDLER_MAXEXCEPTIONS-1)].isrSelector;
-	assigns __xmhfhic_x86vmx_idt_start[0..(EMHF_XCPHANDLER_MAXEXCEPTIONS-1)].count;
-	assigns __xmhfhic_x86vmx_idt_start[0..(EMHF_XCPHANDLER_MAXEXCEPTIONS-1)].type;
-	ensures \forall integer x; 0 <= x < (EMHF_XCPHANDLER_MAXEXCEPTIONS-1) ==> (__xmhfhic_x86vmx_idt_start[x].type == 0xEE);
-	ensures \forall integer x; 0 <= x < (EMHF_XCPHANDLER_MAXEXCEPTIONS-1) ==> (__xmhfhic_x86vmx_idt_start[x].count == 0x0);
-	ensures \forall integer x; 0 <= x < (EMHF_XCPHANDLER_MAXEXCEPTIONS-1) ==> (__xmhfhic_x86vmx_idt_start[x].isrSelector == __CS_CPL0);
-	ensures \forall integer x; 0 <= x < (EMHF_XCPHANDLER_MAXEXCEPTIONS-1) ==> (__xmhfhic_x86vmx_idt_start[x].isrHigh == (u16) ( xmhfgeec_slab_info_table[XMHFGEEC_SLAB_GEEC_SENTINEL].slab_memoffset_entries[GEEC_SENTINEL_MEMOFFSETS_EXCEPTIONHANDLERS_IDX+x] >> 16 ));
-	ensures \forall integer x; 0 <= x < (EMHF_XCPHANDLER_MAXEXCEPTIONS-1) ==> (__xmhfhic_x86vmx_idt_start[x].isrLow == (u16)xmhfgeec_slab_info_table[XMHFGEEC_SLAB_GEEC_SENTINEL].slab_memoffset_entries[GEEC_SENTINEL_MEMOFFSETS_EXCEPTIONHANDLERS_IDX+x]);
-@*/
 void gp_s2_setupidt(void){
-	u32 i;
+	slab_params_t spl;
 
+	spl.src_slabid = XMHFGEEC_SLAB_GEEC_PRIME;
+	spl.dst_slabid = XMHFGEEC_SLAB_XC_EXHUB;
+	spl.cpuid = 0;
+	spl.dst_uapifn = UAPI_XCEXHUB_SETUPIDT;
 
-    	/*@
-		loop invariant a1: 0 <= i <= EMHF_XCPHANDLER_MAXEXCEPTIONS;
-		loop invariant a2: \forall integer x; 0 <= x < i ==> (__xmhfhic_x86vmx_idt_start[x].type == 0xEE);
-		loop invariant a3: \forall integer x; 0 <= x < i ==> (__xmhfhic_x86vmx_idt_start[x].count == 0x0);
-		loop invariant a4: \forall integer x; 0 <= x < i ==> (__xmhfhic_x86vmx_idt_start[x].isrSelector == __CS_CPL0);
-		loop invariant a5: \forall integer x; 0 <= x < i ==> (__xmhfhic_x86vmx_idt_start[x].isrHigh == (u16) ( xmhfgeec_slab_info_table[XMHFGEEC_SLAB_GEEC_SENTINEL].slab_memoffset_entries[GEEC_SENTINEL_MEMOFFSETS_EXCEPTIONHANDLERS_IDX+x] >> 16 ));
-		loop invariant a6: \forall integer x; 0 <= x < i ==> (__xmhfhic_x86vmx_idt_start[x].isrLow == (u16)xmhfgeec_slab_info_table[XMHFGEEC_SLAB_GEEC_SENTINEL].slab_memoffset_entries[GEEC_SENTINEL_MEMOFFSETS_EXCEPTIONHANDLERS_IDX+x]);
-		loop assigns __xmhfhic_x86vmx_idt_start[0..(EMHF_XCPHANDLER_MAXEXCEPTIONS-1)].isrLow;
-		loop assigns __xmhfhic_x86vmx_idt_start[0..(EMHF_XCPHANDLER_MAXEXCEPTIONS-1)].isrHigh;
-		loop assigns __xmhfhic_x86vmx_idt_start[0..(EMHF_XCPHANDLER_MAXEXCEPTIONS-1)].isrSelector;
-		loop assigns __xmhfhic_x86vmx_idt_start[0..(EMHF_XCPHANDLER_MAXEXCEPTIONS-1)].count;
-		loop assigns __xmhfhic_x86vmx_idt_start[0..(EMHF_XCPHANDLER_MAXEXCEPTIONS-1)].type;
-		loop assigns i;
-		loop variant EMHF_XCPHANDLER_MAXEXCEPTIONS - i;
-	@*/
-	for(i=0; i < EMHF_XCPHANDLER_MAXEXCEPTIONS; i++){
-		__xmhfhic_x86vmx_idt_start[i].isrLow= (u16)xmhfgeec_slab_info_table[XMHFGEEC_SLAB_GEEC_SENTINEL].slab_memoffset_entries[GEEC_SENTINEL_MEMOFFSETS_EXCEPTIONHANDLERS_IDX+i];
-		__xmhfhic_x86vmx_idt_start[i].isrHigh= (u16) ( xmhfgeec_slab_info_table[XMHFGEEC_SLAB_GEEC_SENTINEL].slab_memoffset_entries[GEEC_SENTINEL_MEMOFFSETS_EXCEPTIONHANDLERS_IDX+i] >> 16 );
-		__xmhfhic_x86vmx_idt_start[i].isrSelector = __CS_CPL0;
-		__xmhfhic_x86vmx_idt_start[i].count=0x0;
-		__xmhfhic_x86vmx_idt_start[i].type=0xEE;	//32-bit interrupt gate
-					//present=1, DPL=11b, system=0, type=1110b
-
-	}
+	XMHF_SLAB_CALLNEW(&spl);
 }
 

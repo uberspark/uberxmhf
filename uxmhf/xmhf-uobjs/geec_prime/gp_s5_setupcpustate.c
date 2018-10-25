@@ -53,7 +53,7 @@
 //#include <uapi_slabmempgtbl.h>
 //#include <xc_init.h>
 #include <xc_ihub.h>
-
+#include <xc_exhub.h>
 
 //set IOPl to CPl-3
 static void __xmhfhic_x86vmx_setIOPL3(u64 cpuid){
@@ -152,7 +152,24 @@ static bool __xmhfhic_x86vmx_setupvmxstate(u64 cpuid){
 	//_XDPRINTF_("%s: read_tr_sel = %08x\n", __func__, CASM_FUNCCALL(read_tr_sel,CASM_NOPARAM));
 	//_XDPRINTF_("%s: HOST TR SELECTOR = %08x\n", __func__, CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmread,VMCS_HOST_TR_SELECTOR));
 	CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_HOST_GDTR_BASE, CASM_FUNCCALL32(xmhf_baseplatform_arch_x86_getgdtbase,CASM_NOPARAM));
+
+#if 0
 	CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_HOST_IDTR_BASE, CASM_FUNCCALL32(xmhf_baseplatform_arch_x86_getidtbase,CASM_NOPARAM));
+#endif
+	//setup host IDTR
+	{
+		slab_params_t spl;
+
+		spl.src_slabid = XMHFGEEC_SLAB_GEEC_PRIME;
+		spl.dst_slabid = XMHFGEEC_SLAB_XC_EXHUB;
+		spl.cpuid = (u16)cpuid;
+		spl.dst_uapifn = UAPI_XCEXHUB_LOADHOSTIDTRBASE;
+
+		XMHF_SLAB_CALLNEW(&spl);
+	}
+
+
+
 	CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_HOST_TR_BASE, CASM_FUNCCALL(xmhf_baseplatform_arch_x86_gettssbase,CASM_NOPARAM));
 
 #if 0
@@ -397,8 +414,20 @@ void gp_s5_setupcpustate(u32 cpuid, bool isbsp){
 
 
 	//load IDT
+#if 0
 	CASM_FUNCCALL(xmhfhw_cpu_loadIDT,&__xmhfhic_x86vmx_idt);
 	_XDPRINTF_("%s[%u]: IDT loaded\n", __func__, (u32)cpuid);
+#endif
+	{
+		slab_params_t spl;
+
+		spl.src_slabid = XMHFGEEC_SLAB_GEEC_PRIME;
+		spl.dst_slabid = XMHFGEEC_SLAB_XC_EXHUB;
+		spl.cpuid = (u16)cpuid;
+		spl.dst_uapifn = UAPI_XCEXHUB_LOADIDT;
+
+		XMHF_SLAB_CALLNEW(&spl);
+	}
 
 
 	////turn on CR0.WP bit for supervisor mode write protection
