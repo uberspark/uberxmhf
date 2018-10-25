@@ -189,14 +189,6 @@ __attribute__((section(".data"))) __attribute__(( aligned(16) )) arch_x86_gdtdes
 	.base=(u32)&__xmhfhic_x86vmx_gdt_start,
 };
 
-// IDT
-__attribute__((section(".data"))) __attribute__(( aligned(16) )) idtentry_t __xmhfhic_x86vmx_idt_start[EMHF_XCPHANDLER_MAXEXCEPTIONS] ;
-// IDT descriptor
-__attribute__((section(".data"))) __attribute__(( aligned(16) )) arch_x86_idtdesc_t __xmhfhic_x86vmx_idt = {
-	.size=sizeof(__xmhfhic_x86vmx_idt_start)-1,
-	.base=(u32)&__xmhfhic_x86vmx_idt_start,
-};
-
 
 //////
 // per-CPU data structures

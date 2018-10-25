@@ -153,9 +153,6 @@ static bool __xmhfhic_x86vmx_setupvmxstate(u64 cpuid){
 	//_XDPRINTF_("%s: HOST TR SELECTOR = %08x\n", __func__, CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmread,VMCS_HOST_TR_SELECTOR));
 	CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_HOST_GDTR_BASE, CASM_FUNCCALL32(xmhf_baseplatform_arch_x86_getgdtbase,CASM_NOPARAM));
 
-#if 0
-	CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_HOST_IDTR_BASE, CASM_FUNCCALL32(xmhf_baseplatform_arch_x86_getidtbase,CASM_NOPARAM));
-#endif
 	//setup host IDTR
 	{
 		slab_params_t spl;
@@ -172,9 +169,6 @@ static bool __xmhfhic_x86vmx_setupvmxstate(u64 cpuid){
 
 	CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_HOST_TR_BASE, CASM_FUNCCALL(xmhf_baseplatform_arch_x86_gettssbase,CASM_NOPARAM));
 
-#if 0
-	CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_HOST_RIP, xmhfgeec_slab_info_table[XMHFGEEC_SLAB_GEEC_SENTINEL].slab_memoffset_entries[GEEC_SENTINEL_MEMOFFSETS_INTERCEPTHANDLER_IDX]);
-#endif
 	//setup intercept handler stub
 	{
 		slab_params_t spl;
@@ -414,10 +408,6 @@ void gp_s5_setupcpustate(u32 cpuid, bool isbsp){
 
 
 	//load IDT
-#if 0
-	CASM_FUNCCALL(xmhfhw_cpu_loadIDT,&__xmhfhic_x86vmx_idt);
-	_XDPRINTF_("%s[%u]: IDT loaded\n", __func__, (u32)cpuid);
-#endif
 	{
 		slab_params_t spl;
 
