@@ -50,8 +50,17 @@
 #ifndef __XC_IHUB_H__
 #define __XC_IHUB_H__
 
+#define UAPI_XCIHUB_INSTALLICPTHANDLER    0
+
 
 #ifndef __ASSEMBLY__
+
+CASM_FUNCDECL(void xcihub_entry_icptstub(void *noparam));
+void xcihub_entry_icpt(x86regs_t *r);
+CASM_FUNCDECL(void xcihub_reticpt(x86regs_t *r));
+
+void xcihub_icptmain(slab_params_t *sp);
+
 
 /*@
 	requires 0 <= cbtype <= XC_HYPAPPCB_MAXMASK;

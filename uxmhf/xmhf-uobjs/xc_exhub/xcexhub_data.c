@@ -44,53 +44,54 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-/*
- GEEC sentinel low-level support routines
- author: amit vasudevan (amitvasudevan@acm.org)
-*/
 
 #include <xmhf.h>
-#include <xmhf-hwm.h>
 #include <xmhf-debug.h>
 #include <xmhfgeec.h>
+#include <xc_exhub.h>
 
-#include <geec_sentinel.h>
-
-#if defined (__XMHF_VERIFICATION__) && defined (__USPARK_FRAMAC_VA__)
-#include <xc.h>
-#include <xc_ihub.h>
-
-u32 check_eip = CASM_RET_EIP;
-u32 cpuid = 0;	//cpu
-
-void xmhfhwm_vdriver_slabep(void){
-	//@assert xmhfhwm_cpu_gprs_eip == (u32)xmhfgeec_slab_info_table[XMHFGEEC_SLAB_XC_IHUB].entrystub;
-	//@assert false;
-}
-
-void drv_path_callicpt(void){
-	//invoke sentinel intercept stub
-	CASM_FUNCCALL(gs_entry_icptstub, CASM_NOPARAM);
-	//@assert false;
-}
-
-void main(void){
-	//populate hardware model stack and program counter
-	xmhfhwm_cpu_gprs_esp = _slab_tos[cpuid];
-	xmhfhwm_cpu_gprs_eip = check_eip;
-	drv_path_callicpt();
-}
-#endif
-////// intercept entry point
-CASM_FUNCDEF(void, gs_entry_icptstub,
-{
-    xmhfhwm_cpu_insn_pushal();
-    xmhfhwm_cpu_insn_pushl_esp();
-    xmhfhwm_cpu_insn_call_c_1p(gs_entry_icpt, x86regs_t *);
-    xmhfhwm_cpu_insn_hlt();
-},
-void *noparam)
+// IDT
+__attribute__((section(".data"))) __attribute__(( aligned(16) )) idtentry_t xcexhub_idt_data[EMHF_XCPHANDLER_MAXEXCEPTIONS] ;
+// IDT descriptor
+__attribute__((section(".data"))) __attribute__(( aligned(16) )) arch_x86_idtdesc_t xcexhub_idt = {
+	.size=sizeof(xcexhub_idt_data)-1,
+	.base=(u32)&xcexhub_idt_data,
+};
 
 
-
+//list of exception handlers
+__attribute__((section(".data"))) uint32_t xcexhub_excp_handlers[EMHF_XCPHANDLER_MAXEXCEPTIONS] = {
+		(uint32_t)&__xmhf_exception_handler_0,
+		(uint32_t)&__xmhf_exception_handler_1,
+		(uint32_t)&__xmhf_exception_handler_2,
+		(uint32_t)&__xmhf_exception_handler_3,
+		(uint32_t)&__xmhf_exception_handler_4,
+		(uint32_t)&__xmhf_exception_handler_5,
+		(uint32_t)&__xmhf_exception_handler_6,
+		(uint32_t)&__xmhf_exception_handler_7,
+		(uint32_t)&__xmhf_exception_handler_8,
+		(uint32_t)&__xmhf_exception_handler_9,
+		(uint32_t)&__xmhf_exception_handler_10,
+		(uint32_t)&__xmhf_exception_handler_11,
+		(uint32_t)&__xmhf_exception_handler_12,
+		(uint32_t)&__xmhf_exception_handler_13,
+		(uint32_t)&__xmhf_exception_handler_14,
+		(uint32_t)&__xmhf_exception_handler_15,
+		(uint32_t)&__xmhf_exception_handler_16,
+		(uint32_t)&__xmhf_exception_handler_17,
+		(uint32_t)&__xmhf_exception_handler_18,
+		(uint32_t)&__xmhf_exception_handler_19,
+		(uint32_t)&__xmhf_exception_handler_20,
+		(uint32_t)&__xmhf_exception_handler_21,
+		(uint32_t)&__xmhf_exception_handler_22,
+		(uint32_t)&__xmhf_exception_handler_23,
+		(uint32_t)&__xmhf_exception_handler_24,
+		(uint32_t)&__xmhf_exception_handler_25,
+		(uint32_t)&__xmhf_exception_handler_26,
+		(uint32_t)&__xmhf_exception_handler_27,
+		(uint32_t)&__xmhf_exception_handler_28,
+		(uint32_t)&__xmhf_exception_handler_29,
+		(uint32_t)&__xmhf_exception_handler_30,
+		(uint32_t)&__xmhf_exception_handler_31
+};
 

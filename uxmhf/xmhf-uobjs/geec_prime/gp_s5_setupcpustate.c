@@ -52,8 +52,8 @@
 #include <geec_sentinel.h>
 //#include <uapi_slabmempgtbl.h>
 //#include <xc_init.h>
-
-
+#include <xc_ihub.h>
+#include <xc_exhub.h>
 
 //set IOPl to CPl-3
 static void __xmhfhic_x86vmx_setIOPL3(u64 cpuid){
@@ -152,9 +152,36 @@ static bool __xmhfhic_x86vmx_setupvmxstate(u64 cpuid){
 	//_XDPRINTF_("%s: read_tr_sel = %08x\n", __func__, CASM_FUNCCALL(read_tr_sel,CASM_NOPARAM));
 	//_XDPRINTF_("%s: HOST TR SELECTOR = %08x\n", __func__, CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmread,VMCS_HOST_TR_SELECTOR));
 	CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_HOST_GDTR_BASE, CASM_FUNCCALL32(xmhf_baseplatform_arch_x86_getgdtbase,CASM_NOPARAM));
-	CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_HOST_IDTR_BASE, CASM_FUNCCALL32(xmhf_baseplatform_arch_x86_getidtbase,CASM_NOPARAM));
+
+	//setup host IDTR
+	{
+		slab_params_t spl;
+
+		spl.src_slabid = XMHFGEEC_SLAB_GEEC_PRIME;
+		spl.dst_slabid = XMHFGEEC_SLAB_XC_EXHUB;
+		spl.cpuid = (u16)cpuid;
+		spl.dst_uapifn = UAPI_XCEXHUB_LOADHOSTIDTRBASE;
+
+		XMHF_SLAB_CALLNEW(&spl);
+	}
+
+
+
 	CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_HOST_TR_BASE, CASM_FUNCCALL(xmhf_baseplatform_arch_x86_gettssbase,CASM_NOPARAM));
-	CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_HOST_RIP, xmhfgeec_slab_info_table[XMHFGEEC_SLAB_GEEC_SENTINEL].slab_memoffset_entries[GEEC_SENTINEL_MEMOFFSETS_INTERCEPTHANDLER_IDX]);
+
+	//setup intercept handler stub
+	{
+		slab_params_t spl;
+
+		spl.src_slabid = XMHFGEEC_SLAB_GEEC_PRIME;
+		spl.dst_slabid = XMHFGEEC_SLAB_XC_IHUB;
+		spl.cpuid = (u16)cpuid;
+		spl.dst_uapifn = UAPI_XCIHUB_INSTALLICPTHANDLER;
+
+		XMHF_SLAB_CALLNEW(&spl);
+	}
+
+
 	CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_HOST_RSP, CASM_FUNCCALL32(read_esp,CASM_NOPARAM));
 
 
@@ -381,8 +408,16 @@ void gp_s5_setupcpustate(u32 cpuid, bool isbsp){
 
 
 	//load IDT
-	CASM_FUNCCALL(xmhfhw_cpu_loadIDT,&__xmhfhic_x86vmx_idt);
-	_XDPRINTF_("%s[%u]: IDT loaded\n", __func__, (u32)cpuid);
+	{
+		slab_params_t spl;
+
+		spl.src_slabid = XMHFGEEC_SLAB_GEEC_PRIME;
+		spl.dst_slabid = XMHFGEEC_SLAB_XC_EXHUB;
+		spl.cpuid = (u16)cpuid;
+		spl.dst_uapifn = UAPI_XCEXHUB_LOADIDT;
+
+		XMHF_SLAB_CALLNEW(&spl);
+	}
 
 
 	////turn on CR0.WP bit for supervisor mode write protection
@@ -426,17 +461,17 @@ void gp_s5_setupcpustate(u32 cpuid, bool isbsp){
 	_XDPRINTF_("%s[%u]: Set CR0.EM to be VMX compatible\n", __func__, (u32)cpuid);
 
 
-	//setup SYSENTER/SYSEXIT mechanism
+	//setup sysenter syscall stub
 	{
-	CASM_FUNCCALL(wrmsr64, IA32_SYSENTER_CS_MSR, (u32)__CS_CPL0, 0);
-	CASM_FUNCCALL(wrmsr64, IA32_SYSENTER_EIP_MSR, (u32)xmhfgeec_slab_info_table[XMHFGEEC_SLAB_GEEC_SENTINEL].slab_memoffset_entries[GEEC_SENTINEL_MEMOFFSETS_SYSENTERHANDLER_IDX], 0);
-	CASM_FUNCCALL(wrmsr64, IA32_SYSENTER_ESP_MSR, (u32)((u32)_geec_primesmp_sysenter_stack[(u32)cpuid] + MAX_PLATFORM_CPUSTACK_SIZE), 0);
-	}
-	_XDPRINTF_("%s: setup SYSENTER/SYSEXIT mechanism\n", __func__);
-	_XDPRINTF_("SYSENTER CS=%016llx\n", CASM_FUNCCALL(rdmsr64,IA32_SYSENTER_CS_MSR));
-	_XDPRINTF_("SYSENTER RIP=%016llx\n", CASM_FUNCCALL(rdmsr64,IA32_SYSENTER_EIP_MSR));
-	_XDPRINTF_("SYSENTER RSP=%016llx\n", CASM_FUNCCALL(rdmsr64,IA32_SYSENTER_ESP_MSR));
+		slab_params_t spl;
 
+		spl.src_slabid = XMHFGEEC_SLAB_GEEC_PRIME;
+		spl.dst_slabid = XMHFGEEC_SLAB_GEEC_SENTINEL;
+		spl.cpuid = cpuid;
+		spl.dst_uapifn = UAPI_SENTINEL_INSTALLSYSCALLSTUB;
+
+		XMHF_SLAB_CALLNEW(&spl);
+	}
 
 	//setup VMX state
 	if(!__xmhfhic_x86vmx_setupvmxstate(cpuid)){

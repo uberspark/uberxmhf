@@ -57,8 +57,6 @@
 #include <xc.h>
 #include <xc_exhub.h>
 
-bool ihub_exit_status = false;
-u32 ihub_exit_info = 0;
 
 static void _xcexhub_unhandled(x86vmx_exception_frame_t *exframe){
     //dump relevant info
@@ -120,7 +118,7 @@ void main(void){
 	test_sp.in_out_params[12] = framac_nondetu32(); 	test_sp.in_out_params[13] = framac_nondetu32();
 	test_sp.in_out_params[14] = framac_nondetu32(); 	test_sp.in_out_params[15] = framac_nondetu32();
 
-	slab_main(&test_sp);
+	xcexhub_excpmain(&test_sp);
 
 	/*@assert ((xmhfhwm_cpu_state == CPU_STATE_RUNNING && xmhfhwm_cpu_gprs_esp == check_esp && xmhfhwm_cpu_gprs_eip == check_eip) ||
 		(xmhfhwm_cpu_state == CPU_STATE_HALT));
@@ -128,35 +126,22 @@ void main(void){
 }
 #endif
 
-void slab_main(slab_params_t *sp){
+void xcexhub_excpmain(slab_params_t *sp){
+	x86vmx_exception_frame_t *exframe = (x86vmx_exception_frame_t *)&sp->in_out_params[0];
 
-	if( sp->dst_uapifn == 1){
+	_XDPRINTF_("XC_EXHUB[%u]: Got control: ESP=%08x, src_slabid=%u, dst_slabid=%u\n",
+				(u16)sp->cpuid, CASM_FUNCCALL(read_esp,CASM_NOPARAM), sp->src_slabid, sp->dst_slabid);
 
-		ihub_exit_status = sp->in_out_params[0];
-		ihub_exit_info = sp->in_out_params[1];
-
+	if(exframe->vector == 0x3){
+		_xcexhub_unhandled(exframe);
+		_XDPRINTF_("%s: exception 3, returning\n", __func__);
 	}else{
-
-		x86vmx_exception_frame_t *exframe = (x86vmx_exception_frame_t *)&sp->in_out_params[0];
-
-		_XDPRINTF_("XC_EXHUB[%u]: Got control: ESP=%08x, src_slabid=%u, dst_slabid=%u\n",
-	                (u16)sp->cpuid, CASM_FUNCCALL(read_esp,CASM_NOPARAM), sp->src_slabid, sp->dst_slabid);
-		_XDPRINTF_("XC_EXHUB[%u]: ihub_exit_status=%u, ihub_exit_info=%u\n",
-					          (u16)sp->cpuid, ihub_exit_status, ihub_exit_info);
-
-
-		if(exframe->vector == 0x3){
-			_xcexhub_unhandled(exframe);
-			_XDPRINTF_("%s: exception 3, returning\n", __func__);
-		}else{
-			_xcexhub_unhandled(exframe);
-			_XDPRINTF_("\nHalting System!\n");
-			CASM_FUNCCALL(xmhfhw_cpu_hlt, CASM_NOPARAM);
-		}
-
-	    return;
+		_xcexhub_unhandled(exframe);
+		_XDPRINTF_("\nHalting System!\n");
+		CASM_FUNCCALL(xmhfhw_cpu_hlt, CASM_NOPARAM);
 	}
 
+	return;
 }
 
 

@@ -53,9 +53,9 @@
 #include <xmhf-hwm.h>
 #include <xmhf-debug.h>
 #include <xmhfgeec.h>
-#include <geec_sentinel.h>
+#include <xc_exhub.h>
 
-CASM_FUNCDEF(void, gs_exit_retexcp,
+CASM_FUNCDEF(void, xcexhub_retexcp,
 {
     xmhfhwm_cpu_insn_movl_mesp_eax(0x4);    //eax = exception frame
     xmhfhwm_cpu_insn_movl_meax_edi(0x0);

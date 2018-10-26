@@ -56,15 +56,16 @@
 #include <geec_sentinel.h>
 
 
-
-CASM_FUNCDEF(void, gs_exit_callicpt,
+CASM_FUNCDEF(void, gs_exit_ret2v,
 {
-	xmhfhwm_cpu_insn_movl_mesp_eax(0x4);
-	xmhfhwm_cpu_insn_movl_mesp_edx(0x8);
-	xmhfhwm_cpu_insn_pushl_edx();
-	xmhfhwm_cpu_insn_pushl_imm(0x0);
-	xmhfhwm_cpu_insn_jmpslabep();
+    xmhfhwm_cpu_insn_movl_mesp_edx(0x4);
+    xmhfhwm_cpu_insn_movl_edx_esp();
+    xmhfhwm_cpu_insn_popl_ebx();
+    xmhfhwm_cpu_insn_popl_esi();
+    xmhfhwm_cpu_insn_popl_edi();
+    xmhfhwm_cpu_insn_popl_ebp();
+    xmhfhwm_cpu_insn_ret();
 },
-u32 entry_point, void *caller_stack_frame)
+void *caller_stack_frame)
 
 

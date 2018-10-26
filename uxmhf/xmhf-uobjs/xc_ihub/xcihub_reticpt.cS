@@ -45,39 +45,34 @@
  */
 
 /*
- * HIC trampoline and stubs
- *
- * author: amit vasudevan (amitvasudevan@acm.org)
- */
+ GEEC sentinel low-level support routines
+ author: amit vasudevan (amitvasudevan@acm.org)
+*/
 
 #include <xmhf.h>
+#include <xmhf-hwm.h>
 #include <xmhf-debug.h>
 #include <xmhfgeec.h>
-#include <geec_sentinel.h>
+#include <xc_ihub.h>
 
 
-////// intercepts
-
-void gs_entry_icpt(x86regs_t *r){
-    slab_params_t spl;
-    u32 eflags;
-
-    eflags = CASM_FUNCCALL(read_eflags,CASM_NOPARAM);
-    eflags &= ~(EFLAGS_IOPL); //clear out IOPL bits
-    eflags |= EFLAGS_IOPL;
-    CASM_FUNCCALL(write_eflags,eflags);
-
-    memset(&spl, 0, sizeof(spl));
-
-    spl.slab_ctype = XMHFGEEC_SENTINEL_CALL_INTERCEPT;
-    spl.src_slabid = CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmread,VMCS_CONTROL_VPID);
-    spl.dst_slabid = XMHFGEEC_SLAB_XC_IHUB;
-    spl.cpuid = xmhf_baseplatform_arch_x86_getcpulapicid();
-
-    memcpy(&spl.in_out_params[0], r, sizeof(x86regs_t));
 
 
-    geec_sentinel_main(&spl, &spl);
 
-}
+CASM_FUNCDEF(void, xcihub_reticpt,
+{
+    xmhfhwm_cpu_insn_movl_mesp_eax(0x4);
+    xmhfhwm_cpu_insn_movl_meax_edi(0x0);
+    xmhfhwm_cpu_insn_movl_meax_esi(0x4);
+    xmhfhwm_cpu_insn_movl_meax_ebp(0x8);
+    xmhfhwm_cpu_insn_movl_meax_esp(0xC);
+    xmhfhwm_cpu_insn_movl_meax_ebx(0x10);
+    xmhfhwm_cpu_insn_movl_meax_edx(0x14);
+    xmhfhwm_cpu_insn_movl_meax_ecx(0x18);
+    xmhfhwm_cpu_insn_movl_meax_eax(0x1C);
+    xmhfhwm_cpu_insn_vmresume();
+    xmhfhwm_cpu_insn_hlt();
+},
+x86regs_t *r)
+
 

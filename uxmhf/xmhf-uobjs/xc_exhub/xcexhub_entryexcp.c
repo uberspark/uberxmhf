@@ -45,27 +45,54 @@
  */
 
 /*
- GEEC sentinel low-level support routines
- author: amit vasudevan (amitvasudevan@acm.org)
-*/
+ * HIC trampoline and stubs
+ *
+ * author: amit vasudevan (amitvasudevan@acm.org)
+ */
 
 #include <xmhf.h>
-#include <xmhf-hwm.h>
 #include <xmhf-debug.h>
 #include <xmhfgeec.h>
-#include <geec_sentinel.h>
+#include <xc_exhub.h>
 
 
+/*static void _geec_sentinel_dump_exframe(x86vmx_exception_frame_t *exframe){
+    //dump relevant info
+    _XDPRINTF_("%s: [START]\n\n", __func__);
+    _XDPRINTF_("exception %x\n", exframe->vector);
+    _XDPRINTF_("errorcode=0x%08x\n", exframe->error_code);
+    _XDPRINTF_("CS:EIP:EFLAGS = 0x%08x:0x%08x:0x%08x\n", exframe->orig_cs, exframe->orig_rip, exframe->orig_rflags);
+    _XDPRINTF_("SS:ESP = 0x%08x:0x%08x\n", exframe->orig_ss, exframe->orig_rsp);
+    _XDPRINTF_("EAX=0x%08x, EBX=0x%08x\n", exframe->eax, exframe->ebx);
+    _XDPRINTF_("ECX=0x%08x, EDX=0x%08x\n", exframe->ecx, exframe->edx);
+    _XDPRINTF_("ESI=0x%08x, EDI=0x%08x\n", exframe->esi, exframe->edi);
+    _XDPRINTF_("EBP=0x%08x, ESP=0x%08x\n", exframe->ebp, exframe->esp);
+    _XDPRINTF_("%s: [END]\n\n", __func__);
+}*/
 
-CASM_FUNCDEF(void, gs_exit_callexcp,
-{
-    xmhfhwm_cpu_insn_movl_mesp_eax(0x4);
-    xmhfhwm_cpu_insn_movl_mesp_edx(0x8);
-    //xmhfhwm_cpu_insn_movl_edx_esp();
-    //xmhfhwm_cpu_insn_pushl_esp();
-    xmhfhwm_cpu_insn_pushl_edx();
-    xmhfhwm_cpu_insn_pushl_imm(0x0);
-	xmhfhwm_cpu_insn_jmpslabep();
-},
-u32 entry_point, void *caller_stack_frame)
+////// exceptions
+
+void xcexhub_entryexcp(x86vmx_exception_frame_t *exframe){
+    slab_params_t spl;
+
+    memset(&spl, 0, sizeof(spl));
+
+    spl.slab_ctype = XMHFGEEC_SENTINEL_CALL_EXCEPTION;
+    spl.src_slabid = XMHFGEEC_SLAB_GEEC_SENTINEL; //XXX: TODO: grab src_slabid based on exframe->orig_rip
+    spl.dst_slabid = XMHFGEEC_SLAB_XC_EXHUB;
+    spl.dst_uapifn = 0;
+    spl.cpuid = xmhf_baseplatform_arch_x86_getcpulapicid();
+    memcpy(&spl.in_out_params[0], exframe,
+           sizeof(x86vmx_exception_frame_t));
+
+    //invoke exception processing
+    xcexhub_excpmain(&spl);
+
+    //return from exception
+    CASM_FUNCCALL(xcexhub_retexcp,
+        &spl.in_out_params[0]);
+    _XDPRINTF_("GEEC_SENTINEL[ln:%u]: halting. should never be here!\n",
+               __LINE__);
+    HALT();
+}
 

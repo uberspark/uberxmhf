@@ -53,26 +53,44 @@
 #include <xmhf-hwm.h>
 #include <xmhf-debug.h>
 #include <xmhfgeec.h>
-#include <geec_sentinel.h>
 
+#include <xc_ihub.h>
 
+#if defined (__XMHF_VERIFICATION__) && defined (__USPARK_FRAMAC_VA__)
+#include <xc.h>
+#include <xc_ihub.h>
 
+u32 check_eip = CASM_RET_EIP;
+u32 cpuid = 0;	//cpu
 
+void xmhfhwm_vdriver_slabep(void){
+	//@assert xmhfhwm_cpu_gprs_eip == (u32)xmhfgeec_slab_info_table[XMHFGEEC_SLAB_XC_IHUB].entrystub;
+	//@assert false;
+}
 
-CASM_FUNCDEF(void, gs_exit_reticpt,
+void drv_path_callicpt(void){
+	//invoke sentinel intercept stub
+	CASM_FUNCCALL(gs_entry_icptstub, CASM_NOPARAM);
+	//@assert false;
+}
+
+void main(void){
+	//populate hardware model stack and program counter
+	xmhfhwm_cpu_gprs_esp = _slab_tos[cpuid];
+	xmhfhwm_cpu_gprs_eip = check_eip;
+	drv_path_callicpt();
+}
+#endif
+////// intercept entry point
+CASM_FUNCDEF(void, xcihub_entry_icptstub,
 {
-    xmhfhwm_cpu_insn_movl_mesp_eax(0x4);
-    xmhfhwm_cpu_insn_movl_meax_edi(0x0);
-    xmhfhwm_cpu_insn_movl_meax_esi(0x4);
-    xmhfhwm_cpu_insn_movl_meax_ebp(0x8);
-    xmhfhwm_cpu_insn_movl_meax_esp(0xC);
-    xmhfhwm_cpu_insn_movl_meax_ebx(0x10);
-    xmhfhwm_cpu_insn_movl_meax_edx(0x14);
-    xmhfhwm_cpu_insn_movl_meax_ecx(0x18);
-    xmhfhwm_cpu_insn_movl_meax_eax(0x1C);
-    xmhfhwm_cpu_insn_vmresume();
+    xmhfhwm_cpu_insn_pushal();
+    xmhfhwm_cpu_insn_pushl_esp();
+    xmhfhwm_cpu_insn_call_c_1p(xcihub_entry_icpt, x86regs_t *);
     xmhfhwm_cpu_insn_hlt();
 },
-x86regs_t *r)
+void *noparam)
+
+
 
 

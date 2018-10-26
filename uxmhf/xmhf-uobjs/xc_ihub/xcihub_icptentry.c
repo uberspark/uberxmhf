@@ -53,38 +53,36 @@
 #include <xmhf.h>
 #include <xmhf-debug.h>
 #include <xmhfgeec.h>
-#include <geec_sentinel.h>
+#include <xc_ihub.h>
 
 
-/*static void _geec_sentinel_dump_exframe(x86vmx_exception_frame_t *exframe){
-    //dump relevant info
-    _XDPRINTF_("%s: [START]\n\n", __func__);
-    _XDPRINTF_("exception %x\n", exframe->vector);
-    _XDPRINTF_("errorcode=0x%08x\n", exframe->error_code);
-    _XDPRINTF_("CS:EIP:EFLAGS = 0x%08x:0x%08x:0x%08x\n", exframe->orig_cs, exframe->orig_rip, exframe->orig_rflags);
-    _XDPRINTF_("SS:ESP = 0x%08x:0x%08x\n", exframe->orig_ss, exframe->orig_rsp);
-    _XDPRINTF_("EAX=0x%08x, EBX=0x%08x\n", exframe->eax, exframe->ebx);
-    _XDPRINTF_("ECX=0x%08x, EDX=0x%08x\n", exframe->ecx, exframe->edx);
-    _XDPRINTF_("ESI=0x%08x, EDI=0x%08x\n", exframe->esi, exframe->edi);
-    _XDPRINTF_("EBP=0x%08x, ESP=0x%08x\n", exframe->ebp, exframe->esp);
-    _XDPRINTF_("%s: [END]\n\n", __func__);
-}*/
+////// intercepts
 
-////// exceptions
-
-void gs_entry_excp(x86vmx_exception_frame_t *exframe){
+void xcihub_entry_icpt(x86regs_t *r){
     slab_params_t spl;
+    u32 eflags;
+
+    eflags = CASM_FUNCCALL(read_eflags,CASM_NOPARAM);
+    eflags &= ~(EFLAGS_IOPL); //clear out IOPL bits
+    eflags |= EFLAGS_IOPL;
+    CASM_FUNCCALL(write_eflags,eflags);
 
     memset(&spl, 0, sizeof(spl));
 
-    spl.slab_ctype = XMHFGEEC_SENTINEL_CALL_EXCEPTION;
-    spl.src_slabid = XMHFGEEC_SLAB_GEEC_SENTINEL; //XXX: TODO: grab src_slabid based on exframe->orig_rip
-    spl.dst_slabid = XMHFGEEC_SLAB_XC_EXHUB;
-    spl.dst_uapifn = 0;
+    spl.slab_ctype = XMHFGEEC_SENTINEL_CALL_INTERCEPT;
+    spl.src_slabid = CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmread,VMCS_CONTROL_VPID);
+    spl.dst_slabid = XMHFGEEC_SLAB_XC_IHUB;
     spl.cpuid = xmhf_baseplatform_arch_x86_getcpulapicid();
-    memcpy(&spl.in_out_params[0], exframe,
-           sizeof(x86vmx_exception_frame_t));
 
-    geec_sentinel_main(&spl, &spl);
+    memcpy(&spl.in_out_params[0], r, sizeof(x86regs_t));
+
+    //invoke processing of intercept
+    xcihub_icptmain(&spl);
+
+    //exit to guest
+    CASM_FUNCCALL(xcihub_reticpt, &spl.in_out_params[0]);
+    _XDPRINTF_("XC_IHUB[ln:%u]: halting. should never be here!\n",
+               __LINE__);
+    HALT();
 }
 

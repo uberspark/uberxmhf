@@ -51,17 +51,13 @@
 #define __GEEC_SENTINEL_H_
 
 
-#define GEEC_SENTINEL_MEMOFFSETS_SYSENTERHANDLER_IDX        0
-#define GEEC_SENTINEL_MEMOFFSETS_INTERCEPTHANDLER_IDX       1
-#define GEEC_SENTINEL_MEMOFFSETS_EXCEPTIONHANDLERS_IDX      2
-
+#define UAPI_SENTINEL_INSTALLSYSCALLSTUB     0
 
 
 #ifndef __ASSEMBLY__
 
 
-
-
+extern __attribute__(( section(".stack") )) __attribute__(( aligned(4096) )) u8 _sysenter_stack[MAX_PLATFORM_CPUS][MAX_PLATFORM_CPUSTACK_SIZE];
 
 extern __attribute__((section(".data"))) __attribute__((aligned(4096))) xmhfgeec_slab_info_t xmhfgeec_slab_info_table[XMHFGEEC_TOTAL_SLABS];
 
@@ -172,9 +168,9 @@ void geec_sentinel_main(slab_params_t *sp, void *caller_stack_frame);
 
 
 
-void gs_entry_excp(x86vmx_exception_frame_t *exframe);
-CASM_FUNCDECL(void gs_exit_callexcp(u32 entry_point, void *caller_stack_frame));
-CASM_FUNCDECL(void gs_exit_retexcp(x86vmx_exception_frame_t *exframe));
+//void gs_entry_excp(x86vmx_exception_frame_t *exframe);
+//CASM_FUNCDECL(void gs_exit_callexcp(u32 entry_point, void *caller_stack_frame));
+//CASM_FUNCDECL(void gs_exit_retexcp(x86vmx_exception_frame_t *exframe));
 
 
 CASM_FUNCDECL(void gs_syscallstub(void *noparam));
@@ -199,50 +195,52 @@ CASM_FUNCDECL(void gs_exit_retuv2vstub(void *caller_stack_frame));
 
 CASM_FUNCDECL(void gs_exit_callv2v(u32 entry_point, void *caller_stack_frame));
 
+CASM_FUNCDECL(void gs_exit_ret2v(void *caller_stack_frame));
+
 CASM_FUNCDECL(u32 gs_exit_callv2uvg(void *noparam));
 
 
 
 
-CASM_FUNCDECL(void gs_entry_icptstub(void *noparam));
-void gs_entry_icpt(x86regs_t *r);
-CASM_FUNCDECL(void gs_exit_callicpt(u32 entry_point, void *caller_stack_frame));
-CASM_FUNCDECL(void gs_exit_reticpt(x86regs_t *r));
+//CASM_FUNCDECL(void gs_entry_icptstub(void *noparam));
+//void gs_entry_icpt(x86regs_t *r);
+//CASM_FUNCDECL(void gs_exit_callicpt(u32 entry_point, void *caller_stack_frame));
+//CASM_FUNCDECL(void gs_exit_reticpt(x86regs_t *r));
 
 
 
-CASM_FUNCDECL(void __xmhf_exception_handler_0(void *noparam));
-CASM_FUNCDECL(void __xmhf_exception_handler_1(void *noparam));
-CASM_FUNCDECL(void __xmhf_exception_handler_2(void *noparam));
-CASM_FUNCDECL(void __xmhf_exception_handler_3(void *noparam));
-CASM_FUNCDECL(void __xmhf_exception_handler_4(void *noparam));
-CASM_FUNCDECL(void __xmhf_exception_handler_5(void *noparam));
-CASM_FUNCDECL(void __xmhf_exception_handler_6(void *noparam));
-CASM_FUNCDECL(void __xmhf_exception_handler_7(void *noparam));
-CASM_FUNCDECL(void __xmhf_exception_handler_8(void *noparam));
-CASM_FUNCDECL(void __xmhf_exception_handler_9(void *noparam));
-CASM_FUNCDECL(void __xmhf_exception_handler_10(void *noparam));
-CASM_FUNCDECL(void __xmhf_exception_handler_11(void *noparam));
-CASM_FUNCDECL(void __xmhf_exception_handler_12(void *noparam));
-CASM_FUNCDECL(void __xmhf_exception_handler_13(void *noparam));
-CASM_FUNCDECL(void __xmhf_exception_handler_14(void *noparam));
-CASM_FUNCDECL(void __xmhf_exception_handler_15(void *noparam));
-CASM_FUNCDECL(void __xmhf_exception_handler_16(void *noparam));
-CASM_FUNCDECL(void __xmhf_exception_handler_17(void *noparam));
-CASM_FUNCDECL(void __xmhf_exception_handler_18(void *noparam));
-CASM_FUNCDECL(void __xmhf_exception_handler_19(void *noparam));
-CASM_FUNCDECL(void __xmhf_exception_handler_20(void *noparam));
-CASM_FUNCDECL(void __xmhf_exception_handler_21(void *noparam));
-CASM_FUNCDECL(void __xmhf_exception_handler_22(void *noparam));
-CASM_FUNCDECL(void __xmhf_exception_handler_23(void *noparam));
-CASM_FUNCDECL(void __xmhf_exception_handler_24(void *noparam));
-CASM_FUNCDECL(void __xmhf_exception_handler_25(void *noparam));
-CASM_FUNCDECL(void __xmhf_exception_handler_26(void *noparam));
-CASM_FUNCDECL(void __xmhf_exception_handler_27(void *noparam));
-CASM_FUNCDECL(void __xmhf_exception_handler_28(void *noparam));
-CASM_FUNCDECL(void __xmhf_exception_handler_29(void *noparam));
-CASM_FUNCDECL(void __xmhf_exception_handler_30(void *noparam));
-CASM_FUNCDECL(void __xmhf_exception_handler_31(void *noparam));
+//CASM_FUNCDECL(void __xmhf_exception_handler_0(void *noparam));
+//CASM_FUNCDECL(void __xmhf_exception_handler_1(void *noparam));
+//CASM_FUNCDECL(void __xmhf_exception_handler_2(void *noparam));
+//CASM_FUNCDECL(void __xmhf_exception_handler_3(void *noparam));
+//CASM_FUNCDECL(void __xmhf_exception_handler_4(void *noparam));
+//CASM_FUNCDECL(void __xmhf_exception_handler_5(void *noparam));
+//CASM_FUNCDECL(void __xmhf_exception_handler_6(void *noparam));
+//CASM_FUNCDECL(void __xmhf_exception_handler_7(void *noparam));
+//CASM_FUNCDECL(void __xmhf_exception_handler_8(void *noparam));
+//CASM_FUNCDECL(void __xmhf_exception_handler_9(void *noparam));
+//CASM_FUNCDECL(void __xmhf_exception_handler_10(void *noparam));
+//CASM_FUNCDECL(void __xmhf_exception_handler_11(void *noparam));
+//CASM_FUNCDECL(void __xmhf_exception_handler_12(void *noparam));
+//CASM_FUNCDECL(void __xmhf_exception_handler_13(void *noparam));
+//CASM_FUNCDECL(void __xmhf_exception_handler_14(void *noparam));
+//CASM_FUNCDECL(void __xmhf_exception_handler_15(void *noparam));
+//CASM_FUNCDECL(void __xmhf_exception_handler_16(void *noparam));
+//CASM_FUNCDECL(void __xmhf_exception_handler_17(void *noparam));
+//CASM_FUNCDECL(void __xmhf_exception_handler_18(void *noparam));
+//CASM_FUNCDECL(void __xmhf_exception_handler_19(void *noparam));
+//CASM_FUNCDECL(void __xmhf_exception_handler_20(void *noparam));
+//CASM_FUNCDECL(void __xmhf_exception_handler_21(void *noparam));
+//CASM_FUNCDECL(void __xmhf_exception_handler_22(void *noparam));
+//CASM_FUNCDECL(void __xmhf_exception_handler_23(void *noparam));
+//CASM_FUNCDECL(void __xmhf_exception_handler_24(void *noparam));
+//CASM_FUNCDECL(void __xmhf_exception_handler_25(void *noparam));
+//CASM_FUNCDECL(void __xmhf_exception_handler_26(void *noparam));
+//CASM_FUNCDECL(void __xmhf_exception_handler_27(void *noparam));
+//CASM_FUNCDECL(void __xmhf_exception_handler_28(void *noparam));
+//CASM_FUNCDECL(void __xmhf_exception_handler_29(void *noparam));
+//CASM_FUNCDECL(void __xmhf_exception_handler_30(void *noparam));
+//CASM_FUNCDECL(void __xmhf_exception_handler_31(void *noparam));
 
 
 

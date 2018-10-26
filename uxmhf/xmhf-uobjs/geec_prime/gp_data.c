@@ -189,14 +189,6 @@ __attribute__((section(".data"))) __attribute__(( aligned(16) )) arch_x86_gdtdes
 	.base=(u32)&__xmhfhic_x86vmx_gdt_start,
 };
 
-// IDT
-__attribute__((section(".data"))) __attribute__(( aligned(16) )) idtentry_t __xmhfhic_x86vmx_idt_start[EMHF_XCPHANDLER_MAXEXCEPTIONS] ;
-// IDT descriptor
-__attribute__((section(".data"))) __attribute__(( aligned(16) )) arch_x86_idtdesc_t __xmhfhic_x86vmx_idt = {
-	.size=sizeof(__xmhfhic_x86vmx_idt_start)-1,
-	.base=(u32)&__xmhfhic_x86vmx_idt_start,
-};
-
 
 //////
 // per-CPU data structures
@@ -210,8 +202,10 @@ __attribute__(( section(".stack") )) __attribute__(( aligned(4096) )) u8 _init_c
 __attribute__((section(".data"))) __attribute__(( aligned(4096) )) geec_prime_tss_t __xmhfhic_x86vmx_tss[MAX_PLATFORM_CPUS] = { 0 };
 // TSS stacks
 __attribute__((section(".stack"))) __attribute__(( aligned(4096) )) u8 __xmhfhic_x86vmx_tss_stack[MAX_PLATFORM_CPUS][PAGE_SIZE_4K];
-// sysenter CPU stacks
-__attribute__(( section(".stack") )) __attribute__(( aligned(4096) )) u8 _geec_primesmp_sysenter_stack[MAX_PLATFORM_CPUS][MAX_PLATFORM_CPUSTACK_SIZE];
+
+//// sysenter CPU stacks
+//__attribute__(( section(".stack") )) __attribute__(( aligned(4096) )) u8 _geec_primesmp_sysenter_stack[MAX_PLATFORM_CPUS][MAX_PLATFORM_CPUSTACK_SIZE];
+
 // archdata
 __attribute__((section(".data"))) __attribute__(( aligned(4096) )) xc_cpuarchdata_x86vmx_t __xmhfhic_x86vmx_archdata[MAX_PLATFORM_CPUS];
 //cpuidtable
