@@ -49,7 +49,7 @@
 #include <xmhfgeec.h>
 
 #include <geec_prime.h>
-
+#include <uapi_iotbl.h>
 
 //@ghost bool gp_s2_setupiotbl_invokeduhslabiotbl[XMHFGEEC_TOTAL_SLABS];
 //@ghost bool gp_s2_setupiotbl_invokedugslabiotbl[XMHFGEEC_TOTAL_SLABS];
@@ -195,6 +195,21 @@ void gp_s2_setupiotbl(void){
 	}
 
 	_XDPRINTF_("%s: setup unverified slab legacy I/O permission tables\n", __func__);
+
+#if 1
+	{
+		slab_params_t spl;
+
+		spl.src_slabid = XMHFGEEC_SLAB_GEEC_PRIME;
+		spl.dst_slabid = UOBJ_UAPI_IOTBL;
+		spl.cpuid = 0;
+		spl.dst_uapifn = UXMHF_UAPI_IOTBL_TEST;
+
+		XMHF_SLAB_CALLNEW(&spl);
+	}
+
+
+#endif
 
 }
 
