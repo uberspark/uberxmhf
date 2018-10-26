@@ -54,7 +54,7 @@
 #include <xmhf-debug.h>
 #include <xmhfgeec.h>
 #include <geec_sentinel.h>
-
+#include <uapi_iotbl.h>
 
 
 
@@ -94,6 +94,21 @@ void sentinel_processapicall(slab_params_t *sp, void *caller_stack_frame){
 	}
 
 	switch(sp->dst_uapifn){
+		case UAPI_SENTINEL_TEST:
+		{
+			slab_params_t spl;
+
+			spl.slab_ctype = XMHFGEEC_SENTINEL_CALL_FROM_VfT_PROG;
+			spl.src_slabid = XMHFGEEC_SLAB_GEEC_SENTINEL;
+			spl.dst_slabid = UOBJ_UAPI_IOTBL;
+			spl.cpuid = sp->cpuid;
+			spl.dst_uapifn = UXMHF_UAPI_IOTBL_TEST;
+
+			CASM_FUNCCALL(gs_calluobj, &spl,
+					xmhfgeec_slab_info_table[spl.dst_slabid].entrystub);
+
+		}
+		break;
 
 		case UAPI_SENTINEL_INSTALLSYSCALLSTUB:
             _XDPRINTF_("SENTINEL[cpu=%u]: TEST\n",

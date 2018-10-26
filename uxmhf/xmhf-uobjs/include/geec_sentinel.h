@@ -52,6 +52,7 @@
 
 
 #define UAPI_SENTINEL_INSTALLSYSCALLSTUB     0
+#define UAPI_SENTINEL_TEST    1
 
 
 #ifndef __ASSEMBLY__
