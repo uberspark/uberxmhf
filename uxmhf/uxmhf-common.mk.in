@@ -69,9 +69,9 @@ export XMHFGEEC_TOTAL_UGSLABS := 1
 
 ## load base, at 36M
 export XMHF_CONFIG_LOADADDR := 0x06200000
-## load size, 450M
+## load max size
 export XMHF_CONFIG_LOADMAXSIZE := 0x1C600000
-## load max addr, 486M
+## load max addr
 export XMHF_CONFIG_LOADMAXADDR := 0x22800000
 ## system max addr, 4GB
 export XMHF_CONFIG_MAXSYSADDR := 0xFFFFFFFF
