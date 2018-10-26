@@ -196,7 +196,7 @@ void gp_s2_setupiotbl(void){
 
 	_XDPRINTF_("%s: setup unverified slab legacy I/O permission tables\n", __func__);
 
-#if 1
+#if 0
 	{
 		slab_params_t spl;
 
