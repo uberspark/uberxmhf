@@ -49,6 +49,7 @@
 #include <xmhfgeec.h>
 
 #include <geec_prime.h>
+#include <geec_sentinel.h>
 #include <uapi_iotbl.h>
 
 //@ghost bool gp_s2_setupiotbl_invokeduhslabiotbl[XMHFGEEC_TOTAL_SLABS];
@@ -210,6 +211,23 @@ void gp_s2_setupiotbl(void){
 
 
 #endif
+
+
+#if 1
+	{
+		slab_params_t spl;
+
+		spl.src_slabid = XMHFGEEC_SLAB_GEEC_PRIME;
+		spl.dst_slabid = XMHFGEEC_SLAB_GEEC_SENTINEL;
+		spl.cpuid = 0;
+		spl.dst_uapifn = UAPI_SENTINEL_TEST;
+
+		XMHF_SLAB_CALLNEW(&spl);
+	}
+
+
+#endif
+
 
 }
 
