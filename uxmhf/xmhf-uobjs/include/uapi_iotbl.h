@@ -65,6 +65,10 @@
 
 #ifndef __ASSEMBLY__
 
+extern u8 uiotbl_uhslab_iobitmap[XMHFGEEC_TOTAL_UHSLABS][3*PAGE_SIZE_4K];
+extern u8 uiotbl_ugslab_iobitmap[XMHFGEEC_TOTAL_UGSLABS][3*PAGE_SIZE_4K];
+
+
 typedef struct {
     u32 dst_slabid;
 	u32 iotbl_base;
