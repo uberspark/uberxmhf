@@ -86,6 +86,15 @@ typedef struct {
 void uiotbl_setupiotblugportaccess(uapi_iotbl_setupiotblugportaccess_t *ps);
 
 
+typedef struct {
+	u32 uhslabiobitmap_idx;
+	u16 port;
+	u16 port_size;
+}__attribute__((packed)) uapi_iotbl_setupiotbluhportaccess_t;
+
+void uiotbl_setupiotbluhportaccess(uapi_iotbl_setupiotbluhportaccess_t *ps);
+
+
 /*@
 	requires 0 <= uhslabiobitmap_idx < XMHFGEEC_TOTAL_UHSLABS;
 	requires 0 <= port < 65536;
