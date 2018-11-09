@@ -74,7 +74,16 @@ typedef struct {
     u32 dst_slabid;
 }__attribute__((packed)) uapi_iotbl_initiotbl_t;
 
+
 void uiotbl_initiotbl(uapi_iotbl_initiotbl_t *ps);
+
+typedef struct {
+	u32 ugslabiobitmap_idx;
+	u16 port;
+	u16 port_size;
+}__attribute__((packed)) uapi_iotbl_setupiotblugportaccess_t;
+
+void uiotbl_setupiotblugportaccess(uapi_iotbl_setupiotblugportaccess_t *ps);
 
 
 /*@
