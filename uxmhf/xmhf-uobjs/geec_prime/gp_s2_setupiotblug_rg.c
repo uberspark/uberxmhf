@@ -50,6 +50,7 @@
 #include <xmhfgeec.h>
 
 #include <geec_prime.h>
+#include <uapi_iotbl.h>
 
 /*@
 	requires (slabid >= XMHFGEEC_UGSLAB_BASE_IDX && slabid <= XMHFGEEC_UGSLAB_MAX_IDX);
@@ -62,6 +63,20 @@ void gp_s2_setupiotblug_rg(u32 slabid){
 
 #if 0
 	memset(&gp_rwdatahdr.gp_ugslab_iobitmap[(slabid - XMHFGEEC_UGSLAB_BASE_IDX)], 0UL, sizeof(gp_rwdatahdr.gp_ugslab_iobitmap[0]));
+#else
+	{
+		slab_params_t spl;
+		uapi_iotbl_initiotbl_t *ps = (uapi_iotbl_initiotbl_t *)spl.in_out_params;
+
+		spl.src_slabid = XMHFGEEC_SLAB_GEEC_PRIME;
+		spl.dst_slabid = UOBJ_UAPI_IOTBL;
+		spl.cpuid = 0;
+		spl.dst_uapifn = UXMHF_UAPI_IOTBL_INITIOTBL;
+
+		ps->dst_slabid = slabid;
+
+		XMHF_SLAB_CALLNEW(&spl);
+	}
 #endif
 
 }

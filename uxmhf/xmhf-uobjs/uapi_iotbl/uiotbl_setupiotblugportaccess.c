@@ -96,7 +96,8 @@ void uiotbl_setupiotblug_allowaccesstoport(u32 ugslabiobitmap_idx, u16 port, u16
 }
 
 void uiotbl_setupiotblugportaccess(uapi_iotbl_setupiotblugportaccess_t *ps){
-	uiotbl_setupiotblug_allowaccesstoport(ps->ugslabiobitmap_idx,
+	uiotbl_setupiotblug_allowaccesstoport(
+			(ps->ugslabiobitmap_idx - XMHFGEEC_UGSLAB_BASE_IDX),
 			ps->port,
 			ps->port_size);
 }

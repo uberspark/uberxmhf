@@ -213,7 +213,7 @@ void gp_s2_setupiotbl(void){
 #endif
 
 
-#if 1
+#if 0
 	{
 		slab_params_t spl;
 

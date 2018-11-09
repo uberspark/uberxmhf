@@ -49,7 +49,7 @@
 #include <xmhfgeec.h>
 
 #include <geec_prime.h>
-
+#include <uapi_iotbl.h>
 
 //@ghost bool gp_s2_setupiotbluh_helper_invokedportaccess[PCI_CONF_MAX_BARS];
 /*@
@@ -91,6 +91,22 @@ static inline void gp_s2_setupiotbluh_helper(u32 slabid, u32 sysdev_memioregions
 
 #if 0
 				gp_s2_setupiotbluh_allowaccesstoport((slabid - XMHFGEEC_UHSLAB_BASE_IDX), portnum, 1);
+#else
+				{
+					slab_params_t spl;
+					uapi_iotbl_setupiotbluhportaccess_t *ps = (uapi_iotbl_setupiotbluhportaccess_t *)spl.in_out_params;
+
+					spl.src_slabid = XMHFGEEC_SLAB_GEEC_PRIME;
+					spl.dst_slabid = UOBJ_UAPI_IOTBL;
+					spl.cpuid = 0;
+					spl.dst_uapifn = UXMHF_UAPI_IOTBL_SETUPIOTBLUHPORTACCESS;
+
+					ps->uhslabiobitmap_idx = slabid;
+					ps->port = portnum;
+					ps->port_size = 1;
+
+					XMHF_SLAB_CALLNEW(&spl);
+				}
 #endif
 
 			}
@@ -118,6 +134,20 @@ void gp_s2_setupiotbluh(u32 slabid){
 
 #if 0
         memset(&gp_rwdatahdr.gp_uhslab_iobitmap[(slabid - XMHFGEEC_UHSLAB_BASE_IDX)], 0xFFFFFFFFUL, sizeof(gp_rwdatahdr.gp_uhslab_iobitmap[0]));
+#else
+        {
+        	slab_params_t spl;
+        	uapi_iotbl_initiotbl_t *ps = (uapi_iotbl_initiotbl_t *)spl.in_out_params;
+
+        	spl.src_slabid = XMHFGEEC_SLAB_GEEC_PRIME;
+        	spl.dst_slabid = UOBJ_UAPI_IOTBL;
+        	spl.cpuid = 0;
+        	spl.dst_uapifn = UXMHF_UAPI_IOTBL_INITIOTBL;
+
+        	ps->dst_slabid = slabid;
+
+        	XMHF_SLAB_CALLNEW(&spl);
+        }
 #endif
 
     	/*@
@@ -134,5 +164,6 @@ void gp_s2_setupiotbluh(u32 slabid){
 		//@ghost gp_s2_setupiotbluh_invokedhelper[i] = true;
 	}
 }
+
 
 

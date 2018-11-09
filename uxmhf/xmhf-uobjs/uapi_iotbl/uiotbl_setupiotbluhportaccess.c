@@ -95,7 +95,8 @@ void uiotbl_setupiotbluh_allowaccesstoport(u32 uhslabiobitmap_idx, u16 port, u16
 }
 
 void uiotbl_setupiotbluhportaccess(uapi_iotbl_setupiotbluhportaccess_t *ps){
-	uiotbl_setupiotbluh_allowaccesstoport(ps->uhslabiobitmap_idx,
+	uiotbl_setupiotbluh_allowaccesstoport(
+			(ps->uhslabiobitmap_idx - XMHFGEEC_UHSLAB_BASE_IDX),
 			ps->port,
 			ps->port_size);
 }

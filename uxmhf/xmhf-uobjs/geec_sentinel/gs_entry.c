@@ -193,11 +193,30 @@ void geec_sentinel_main(slab_params_t *sp, void *caller_stack_frame){
 						CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_CONTROL_VPID, sp->dst_slabid );
 						CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_CONTROL_EPT_POINTER_FULL, (xmhfgeec_slab_info_table[sp->dst_slabid].mempgtbl_cr3  | 0x1E) );
 						CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_CONTROL_EPT_POINTER_HIGH, 0);
-#if 1
+#if 0
 						CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_CONTROL_IO_BITMAPA_ADDRESS_FULL, xmhfgeec_slab_info_table[sp->dst_slabid].iotbl_base);
 						CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_CONTROL_IO_BITMAPA_ADDRESS_HIGH, 0);
 						CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_CONTROL_IO_BITMAPB_ADDRESS_FULL, (xmhfgeec_slab_info_table[sp->dst_slabid].iotbl_base + PAGE_SIZE_4K));
 						CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_CONTROL_IO_BITMAPB_ADDRESS_HIGH, 0);
+#else
+						{
+							slab_params_t spl;
+							uapi_iotbl_getiotblbase_t *ps = (uapi_iotbl_getiotblbase_t *)spl.in_out_params;
+
+							spl.slab_ctype = XMHFGEEC_SENTINEL_CALL_FROM_VfT_PROG;
+							spl.src_slabid = XMHFGEEC_SLAB_GEEC_SENTINEL;
+							spl.dst_slabid = UOBJ_UAPI_IOTBL;
+							spl.cpuid = sp->cpuid;
+							spl.dst_uapifn = UXMHF_UAPI_IOTBL_GETIOTBLBASE;
+
+							CASM_FUNCCALL(gs_calluobj, &spl,
+									xmhfgeec_slab_info_table[spl.dst_slabid].entrystub);
+
+							CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_CONTROL_IO_BITMAPA_ADDRESS_FULL, ps->iotbl_base);
+							CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_CONTROL_IO_BITMAPA_ADDRESS_HIGH, 0);
+							CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_CONTROL_IO_BITMAPB_ADDRESS_FULL, (ps->iotbl_base + PAGE_SIZE_4K));
+							CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_CONTROL_IO_BITMAPB_ADDRESS_HIGH, 0);
+						}
 #endif
 
 						if (xmhfgeec_slab_info_table[sp->dst_slabid].slabtype != XMHFGEEC_SLABTYPE_uVU_PROG_RICHGUEST){
