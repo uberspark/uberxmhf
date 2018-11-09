@@ -89,7 +89,9 @@ static inline void gp_s2_setupiotbluh_helper(u32 slabid, u32 sysdev_memioregions
 			for(portnum= sysdev_memioregions[sysdev_memioregions_index].memioextents[k].addr_start;
 				portnum < sysdev_memioregions[sysdev_memioregions_index].memioextents[k].addr_end; portnum++){
 
+#if 1
 				gp_s2_setupiotbluh_allowaccesstoport((slabid - XMHFGEEC_UHSLAB_BASE_IDX), portnum, 1);
+#endif
 
 			}
 
@@ -114,7 +116,9 @@ static inline void gp_s2_setupiotbluh_helper(u32 slabid, u32 sysdev_memioregions
 void gp_s2_setupiotbluh(u32 slabid){
 	u32 i;
 
+#if 1
         memset(&gp_rwdatahdr.gp_uhslab_iobitmap[(slabid - XMHFGEEC_UHSLAB_BASE_IDX)], 0xFFFFFFFFUL, sizeof(gp_rwdatahdr.gp_uhslab_iobitmap[0]));
+#endif
 
     	/*@
 		loop invariant a1: 0 <= i <= _sda_slab_devicemap[slabid].device_count;

@@ -193,10 +193,12 @@ void geec_sentinel_main(slab_params_t *sp, void *caller_stack_frame){
 						CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_CONTROL_VPID, sp->dst_slabid );
 						CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_CONTROL_EPT_POINTER_FULL, (xmhfgeec_slab_info_table[sp->dst_slabid].mempgtbl_cr3  | 0x1E) );
 						CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_CONTROL_EPT_POINTER_HIGH, 0);
+#if 1
 						CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_CONTROL_IO_BITMAPA_ADDRESS_FULL, xmhfgeec_slab_info_table[sp->dst_slabid].iotbl_base);
 						CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_CONTROL_IO_BITMAPA_ADDRESS_HIGH, 0);
 						CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_CONTROL_IO_BITMAPB_ADDRESS_FULL, (xmhfgeec_slab_info_table[sp->dst_slabid].iotbl_base + PAGE_SIZE_4K));
 						CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_CONTROL_IO_BITMAPB_ADDRESS_HIGH, 0);
+#endif
 
 						if (xmhfgeec_slab_info_table[sp->dst_slabid].slabtype != XMHFGEEC_SLABTYPE_uVU_PROG_RICHGUEST){
 							CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_GUEST_RSP, xmhfgeec_slab_info_table[sp->dst_slabid].slabtos[(u16)sp->cpuid]);

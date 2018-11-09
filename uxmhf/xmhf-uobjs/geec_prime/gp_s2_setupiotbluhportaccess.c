@@ -50,6 +50,7 @@
 
 #include <geec_prime.h>
 
+#if 1
 /*@
 	requires 0 <= objidx < XMHFGEEC_TOTAL_UHSLABS;
 	requires 0 <= bitmapidx < (3*PAGE_SIZE_4K);
@@ -59,8 +60,9 @@
 static inline void gp_s2_setupiotbluh_allowaccesstoport_setmask(u32 objidx, u32 bitmapidx, u8 mask){
 	gp_rwdatahdr.gp_uhslab_iobitmap[objidx][bitmapidx] = gp_rwdatahdr.gp_uhslab_iobitmap[objidx][bitmapidx] & mask;
 }
+#endif
 
-
+#if 1
 //@ghost u8 gp_s2_setupiotbluh_allowaccesstoport_invokedsetmask[4];
 /*@
 	requires 0 <= uhslabiobitmap_idx < XMHFGEEC_TOTAL_UHSLABS;
@@ -94,3 +96,4 @@ void gp_s2_setupiotbluh_allowaccesstoport(u32 uhslabiobitmap_idx, u16 port, u16 
 		//@ghost gp_s2_setupiotbluh_allowaccesstoport_invokedsetmask[i] = true;
 	}
 }
+#endif
