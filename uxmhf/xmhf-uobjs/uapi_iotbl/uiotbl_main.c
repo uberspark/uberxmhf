@@ -60,10 +60,24 @@
 
 void slab_main(slab_params_t *sp){
 
-	if( sp->dst_uapifn == UXMHF_UAPI_IOTBL_TEST){
-		_XDPRINTF_("UAPI_IOTBL[%u]: Test uAPI\n", (u16)sp->cpuid);
-	}else{
-		//_XDPRINTF_("UAPI_IOTBL[%u]: Unknown uAPI function %x. ignoring!\n", (u16)sp->cpuid, sp->dst_uapifn);
+	if(sp->dst_uapifn == UXMHF_UAPI_IOTBL_GETIOTBLBASE &&
+			sp->src_slabid < XMHFGEEC_TOTAL_SLABS){
+		uiotbl_getiotblbase(sp);
+
+	}else if(sp->dst_uapifn == UXMHF_UAPI_IOTBL_INITIOTBL &&
+			sp->src_slabid < XMHFGEEC_TOTAL_SLABS){
+		uiotbl_initiotbl(sp);
+
+	}else if(sp->dst_uapifn == UXMHF_UAPI_IOTBL_SETUPIOTBLUGPORTACCESS &&
+			sp->src_slabid < XMHFGEEC_TOTAL_SLABS){
+		uiotbl_setupiotblugportaccess(sp);
+
+	}else if(sp->dst_uapifn == UXMHF_UAPI_IOTBL_SETUPIOTBLUHPORTACCESS &&
+			sp->src_slabid < XMHFGEEC_TOTAL_SLABS){
+		uiotbl_setupiotbluhportaccess(sp);
+
+	}else {
+		//unknown uapi
 	}
 
 }
