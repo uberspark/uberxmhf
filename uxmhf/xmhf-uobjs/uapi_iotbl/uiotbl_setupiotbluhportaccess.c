@@ -57,7 +57,7 @@
 	assigns gp_rwdatahdr.gp_uhslab_iobitmap[objidx][bitmapidx];
 	ensures (gp_rwdatahdr.gp_uhslab_iobitmap[objidx][bitmapidx] == (\at(gp_rwdatahdr.gp_uhslab_iobitmap[objidx][bitmapidx], Pre) & mask));
 @*/
-static inline void gp_s2_setupiotbluh_allowaccesstoport_setmask(u32 objidx, u32 bitmapidx, u8 mask){
+static inline void uiotbl_setupiotbluh_allowaccesstoport_setmask(u32 objidx, u32 bitmapidx, u8 mask){
 	gp_rwdatahdr.gp_uhslab_iobitmap[objidx][bitmapidx] = gp_rwdatahdr.gp_uhslab_iobitmap[objidx][bitmapidx] & mask;
 }
 #endif
@@ -71,7 +71,7 @@ static inline void gp_s2_setupiotbluh_allowaccesstoport_setmask(u32 objidx, u32 
 	assigns gp_rwdatahdr.gp_uhslab_iobitmap[uhslabiobitmap_idx][((port+0)/8)..((port+(port_size-1))/8)];
 	assigns gp_s2_setupiotbluh_allowaccesstoport_invokedsetmask[0..(port_size-1)];
 @*/
-void gp_s2_setupiotbluh_allowaccesstoport(u32 uhslabiobitmap_idx, u16 port, u16 port_size){
+void uiotbl_setupiotbluh_allowaccesstoport(u32 uhslabiobitmap_idx, u16 port, u16 port_size){
 	u32 i;
 	u8 bitmask;
 	u32 bitmapidx;
@@ -92,7 +92,7 @@ void gp_s2_setupiotbluh_allowaccesstoport(u32 uhslabiobitmap_idx, u16 port, u16 
 
 		//@assert as1: (bitmask == ((u8)1 << ((port+i) % 8)));
 		//@assert as2: (bitmapidx == ((port+i)/8));
-		gp_s2_setupiotbluh_allowaccesstoport_setmask(uhslabiobitmap_idx, bitmapidx, ~bitmask);
+		uiotbl_setupiotbluh_allowaccesstoport_setmask(uhslabiobitmap_idx, bitmapidx, ~bitmask);
 		//@ghost gp_s2_setupiotbluh_allowaccesstoport_invokedsetmask[i] = true;
 	}
 }
