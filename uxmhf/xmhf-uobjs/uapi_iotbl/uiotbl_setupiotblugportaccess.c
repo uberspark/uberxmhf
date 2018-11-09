@@ -53,11 +53,11 @@
 /*@
 	requires 0 <= objidx < XMHFGEEC_TOTAL_UGSLABS;
 	requires 0 <= bitmapidx < (3*PAGE_SIZE_4K);
-	assigns gp_rwdatahdr.gp_ugslab_iobitmap[objidx][bitmapidx];
-	ensures (gp_rwdatahdr.gp_ugslab_iobitmap[objidx][bitmapidx] == (\at(gp_rwdatahdr.gp_ugslab_iobitmap[objidx][bitmapidx], Pre) & mask));
+	assigns uiotbl_ugslab_iobitmap[objidx][bitmapidx];
+	ensures (uiotbl_ugslab_iobitmap[objidx][bitmapidx] == (\at(uiotbl_ugslab_iobitmap[objidx][bitmapidx], Pre) & mask));
 @*/
 static inline void uiotbl_setupiotblug_allowaccesstoport_setmask(u32 objidx, u32 bitmapidx, u8 mask){
-	gp_rwdatahdr.gp_ugslab_iobitmap[objidx][bitmapidx] = gp_rwdatahdr.gp_ugslab_iobitmap[objidx][bitmapidx] & mask;
+	uiotbl_ugslab_iobitmap[objidx][bitmapidx] = uiotbl_ugslab_iobitmap[objidx][bitmapidx] & mask;
 }
 
 
@@ -66,7 +66,7 @@ static inline void uiotbl_setupiotblug_allowaccesstoport_setmask(u32 objidx, u32
 	requires 0 <= ugslabiobitmap_idx < XMHFGEEC_TOTAL_UGSLABS;
 	requires 0 <= port < 65536;
 	requires 0 <= port_size <= 4;
-	assigns gp_rwdatahdr.gp_ugslab_iobitmap[ugslabiobitmap_idx][((port+0)/8)..((port+(port_size-1))/8)];
+	assigns uiotbl_ugslab_iobitmap[ugslabiobitmap_idx][((port+0)/8)..((port+(port_size-1))/8)];
 	assigns gp_s2_setupiotblug_allowaccesstoport_invokedsetmask[0..(port_size-1)];
 @*/
 void uiotbl_setupiotblug_allowaccesstoport(u32 ugslabiobitmap_idx, u16 port, u16 port_size){
@@ -81,7 +81,7 @@ void uiotbl_setupiotblug_allowaccesstoport(u32 ugslabiobitmap_idx, u16 port, u16
 		loop assigns i;
 		loop assigns bitmask;
 		loop assigns bitmapidx;
-		loop assigns gp_rwdatahdr.gp_ugslab_iobitmap[ugslabiobitmap_idx][((port+0)/8)..((port+(port_size-1))/8)];
+		loop assigns uiotbl_ugslab_iobitmap[ugslabiobitmap_idx][((port+0)/8)..((port+(port_size-1))/8)];
 		loop variant port_size - i;
 	@*/
 	for(i=0; i < port_size; i++){

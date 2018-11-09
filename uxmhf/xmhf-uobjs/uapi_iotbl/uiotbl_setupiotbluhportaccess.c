@@ -80,7 +80,7 @@ void uiotbl_setupiotbluh_allowaccesstoport(u32 uhslabiobitmap_idx, u16 port, u16
 		loop assigns i;
 		loop assigns bitmask;
 		loop assigns bitmapidx;
-		loop assigns gp_rwdatahdr.gp_uhslab_iobitmap[uhslabiobitmap_idx][((port+0)/8)..((port+(port_size-1))/8)];
+		loop assigns uiotbl_uhslab_iobitmap[uhslabiobitmap_idx][((port+0)/8)..((port+(port_size-1))/8)];
 		loop variant port_size - i;
 	@*/
 	for(i=0; i < port_size; i++){
