@@ -69,6 +69,14 @@ typedef struct {
 
 void uiotbl_getiotblbase(uapi_iotbl_getiotblbase_t *ps);
 
+
+typedef struct {
+    u32 dst_slabid;
+}__attribute__((packed)) uapi_iotbl_initiotbl_t;
+
+void uiotbl_initiotbl(uapi_iotbl_initiotbl_t *ps);
+
+
 /*@
 	requires 0 <= uhslabiobitmap_idx < XMHFGEEC_TOTAL_UHSLABS;
 	requires 0 <= port < 65536;
