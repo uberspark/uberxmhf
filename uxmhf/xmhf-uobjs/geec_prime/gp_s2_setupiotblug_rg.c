@@ -60,7 +60,7 @@
 @*/
 void gp_s2_setupiotblug_rg(u32 slabid){
 
-#if 1
+#if 0
 	memset(&gp_rwdatahdr.gp_ugslab_iobitmap[(slabid - XMHFGEEC_UGSLAB_BASE_IDX)], 0UL, sizeof(gp_rwdatahdr.gp_ugslab_iobitmap[0]));
 #endif
 
