@@ -56,22 +56,23 @@
 
 #include <uapi_iotbl.h>
 
-//void uiotbl_getiotblbase(uapi_iotbl_getiotblbase_t *ps){
-//	ps->iotbl_base =
-//}
+void uiotbl_getiotblbase(uapi_iotbl_getiotblbase_t *ps){
+	//uh
+	if( xmhfgeec_slab_info_table[ps->dst_slabid].slabtype == XMHFGEEC_SLABTYPE_uVT_PROG ||
+			xmhfgeec_slab_info_table[ps->dst_slabid].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG) {
+		ps->iotbl_base = (u32)&uiotbl_ugslab_iobitmap[(ps->dst_slabid - XMHFGEEC_UHSLAB_BASE_IDX)];
 
+	//ug
+	}else if (
+			xmhfgeec_slab_info_table[ps->dst_slabid].slabtype == XMHFGEEC_SLABTYPE_uVT_PROG_GUEST ||
+			xmhfgeec_slab_info_table[ps->dst_slabid].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG_GUEST ||
+			xmhfgeec_slab_info_table[ps->dst_slabid].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG_RICHGUEST
+		){
+		ps->iotbl_base = (u32)&uiotbl_ugslab_iobitmap[(ps->dst_slabid - XMHFGEEC_UGSLAB_BASE_IDX)];
 
-#if 0
+	//v
+	}else{
+		ps->iotbl_base = 0;
+	}
+}
 
-					case XMHFGEEC_SLABTYPE_uVT_PROG_GUEST:
-					case XMHFGEEC_SLABTYPE_uVU_PROG_GUEST:
-					case XMHFGEEC_SLABTYPE_uVU_PROG_RICHGUEST:{
-
-
-						CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_CONTROL_IO_BITMAPA_ADDRESS_FULL, xmhfgeec_slab_info_table[sp->dst_slabid].iotbl_base);
-						CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_CONTROL_IO_BITMAPA_ADDRESS_HIGH, 0);
-						CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_CONTROL_IO_BITMAPB_ADDRESS_FULL, (xmhfgeec_slab_info_table[sp->dst_slabid].iotbl_base + PAGE_SIZE_4K));
-						CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_CONTROL_IO_BITMAPB_ADDRESS_HIGH, 0);
-
-
-#endif

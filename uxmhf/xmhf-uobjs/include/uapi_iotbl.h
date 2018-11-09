@@ -67,6 +67,7 @@ typedef struct {
 }__attribute__((packed)) uapi_iotbl_getiotblbase_t;
 
 
+void uiotbl_getiotblbase(uapi_iotbl_getiotblbase_t *ps);
 
 /*@
 	requires 0 <= uhslabiobitmap_idx < XMHFGEEC_TOTAL_UHSLABS;
