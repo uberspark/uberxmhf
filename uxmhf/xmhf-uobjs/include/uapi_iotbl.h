@@ -61,6 +61,13 @@
 
 #ifndef __ASSEMBLY__
 
+typedef struct {
+    u32 dst_slabid;
+	u32 iotbl_base;
+}__attribute__((packed)) uapi_iotbl_getiotblbase_t;
+
+
+
 /*@
 	requires 0 <= uhslabiobitmap_idx < XMHFGEEC_TOTAL_UHSLABS;
 	requires 0 <= port < 65536;

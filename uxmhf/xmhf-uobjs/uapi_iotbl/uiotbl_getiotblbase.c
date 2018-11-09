@@ -56,6 +56,10 @@
 
 #include <uapi_iotbl.h>
 
+//void uiotbl_getiotblbase(uapi_iotbl_getiotblbase_t *ps){
+//	ps->iotbl_base =
+//}
+
 
 #if 0
 
