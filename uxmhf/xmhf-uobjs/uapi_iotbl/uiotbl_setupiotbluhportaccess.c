@@ -48,41 +48,39 @@
 #include <xmhf-debug.h>
 #include <xmhfgeec.h>
 
-#include <geec_prime.h>
-
+#include <uapi_iotbl.h>
 
 /*@
-	requires 0 <= objidx < XMHFGEEC_TOTAL_UGSLABS;
+	requires 0 <= objidx < XMHFGEEC_TOTAL_UHSLABS;
 	requires 0 <= bitmapidx < (3*PAGE_SIZE_4K);
-	assigns gp_rwdatahdr.gp_ugslab_iobitmap[objidx][bitmapidx];
-	ensures (gp_rwdatahdr.gp_ugslab_iobitmap[objidx][bitmapidx] == (\at(gp_rwdatahdr.gp_ugslab_iobitmap[objidx][bitmapidx], Pre) & mask));
+	assigns uiotbl_uhslab_iobitmap[objidx][bitmapidx];
+	ensures (uiotbl_uhslab_iobitmap[objidx][bitmapidx] == (\at(uiotbl_uhslab_iobitmap[objidx][bitmapidx], Pre) & mask));
 @*/
-static inline void gp_s2_setupiotblug_allowaccesstoport_setmask(u32 objidx, u32 bitmapidx, u8 mask){
-	gp_rwdatahdr.gp_ugslab_iobitmap[objidx][bitmapidx] = gp_rwdatahdr.gp_ugslab_iobitmap[objidx][bitmapidx] & mask;
+static inline void uiotbl_setupiotbluh_allowaccesstoport_setmask(u32 objidx, u32 bitmapidx, u8 mask){
+	uiotbl_uhslab_iobitmap[objidx][bitmapidx] = uiotbl_uhslab_iobitmap[objidx][bitmapidx] & mask;
 }
 
-
-//@ghost u8 gp_s2_setupiotblug_allowaccesstoport_invokedsetmask[4];
+//@ghost u8 gp_s2_setupiotbluh_allowaccesstoport_invokedsetmask[4];
 /*@
-	requires 0 <= ugslabiobitmap_idx < XMHFGEEC_TOTAL_UGSLABS;
+	requires 0 <= uhslabiobitmap_idx < XMHFGEEC_TOTAL_UHSLABS;
 	requires 0 <= port < 65536;
 	requires 0 <= port_size <= 4;
-	assigns gp_rwdatahdr.gp_ugslab_iobitmap[ugslabiobitmap_idx][((port+0)/8)..((port+(port_size-1))/8)];
-	assigns gp_s2_setupiotblug_allowaccesstoport_invokedsetmask[0..(port_size-1)];
+	assigns uiotbl_uhslab_iobitmap[uhslabiobitmap_idx][((port+0)/8)..((port+(port_size-1))/8)];
+	assigns gp_s2_setupiotbluh_allowaccesstoport_invokedsetmask[0..(port_size-1)];
 @*/
-void gp_s2_setupiotblug_allowaccesstoport(u32 ugslabiobitmap_idx, u16 port, u16 port_size){
+void uiotbl_setupiotbluh_allowaccesstoport(u32 uhslabiobitmap_idx, u16 port, u16 port_size){
 	u32 i;
 	u8 bitmask;
 	u32 bitmapidx;
 
 	/*@
 		loop invariant d1: 0 <= i <= port_size;
-		loop invariant d2: \forall integer x; 0 <= x < i ==> (gp_s2_setupiotblug_allowaccesstoport_invokedsetmask[x] == true);
-		loop assigns gp_s2_setupiotblug_allowaccesstoport_invokedsetmask[0..(port_size-1)];
+		loop invariant d2: \forall integer x; 0 <= x < i ==> (gp_s2_setupiotbluh_allowaccesstoport_invokedsetmask[x] == true);
+		loop assigns gp_s2_setupiotbluh_allowaccesstoport_invokedsetmask[0..(port_size-1)];
 		loop assigns i;
 		loop assigns bitmask;
 		loop assigns bitmapidx;
-		loop assigns gp_rwdatahdr.gp_ugslab_iobitmap[ugslabiobitmap_idx][((port+0)/8)..((port+(port_size-1))/8)];
+		loop assigns uiotbl_uhslab_iobitmap[uhslabiobitmap_idx][((port+0)/8)..((port+(port_size-1))/8)];
 		loop variant port_size - i;
 	@*/
 	for(i=0; i < port_size; i++){
@@ -91,7 +89,14 @@ void gp_s2_setupiotblug_allowaccesstoport(u32 ugslabiobitmap_idx, u16 port, u16 
 
 		//@assert as1: (bitmask == ((u8)1 << ((port+i) % 8)));
 		//@assert as2: (bitmapidx == ((port+i)/8));
-		gp_s2_setupiotblug_allowaccesstoport_setmask(ugslabiobitmap_idx, bitmapidx, ~bitmask);
-		//@ghost gp_s2_setupiotblug_allowaccesstoport_invokedsetmask[i] = true;
+		uiotbl_setupiotbluh_allowaccesstoport_setmask(uhslabiobitmap_idx, bitmapidx, ~bitmask);
+		//@ghost gp_s2_setupiotbluh_allowaccesstoport_invokedsetmask[i] = true;
 	}
+}
+
+void uiotbl_setupiotbluhportaccess(uapi_iotbl_setupiotbluhportaccess_t *ps){
+	uiotbl_setupiotbluh_allowaccesstoport(
+			(ps->uhslabiobitmap_idx - XMHFGEEC_UHSLAB_BASE_IDX),
+			ps->port,
+			ps->port_size);
 }

@@ -44,41 +44,81 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-#include <xmhf.h>
-#include <xmhf-debug.h>
 
-#include <xmhfgeec.h>
+/*
+ *
+ *  I/O permission tables uAPI
+ *
+ *  author: amit vasudevan (amitvasudevan@acm.org)
+ */
 
-#include <geec_prime.h>
-#include <uapi_iotbl.h>
+#ifndef __UAPI_IOTBL_H__
+#define __UAPI_IOTBL_H__
+
+
+#define UXMHF_UAPI_IOTBL_TEST					1
+#define UXMHF_UAPI_IOTBL_GETIOTBLBASE			2
+#define UXMHF_UAPI_IOTBL_INITIOTBL				3
+#define UXMHF_UAPI_IOTBL_SETUPIOTBLUGPORTACCESS	4
+#define UXMHF_UAPI_IOTBL_SETUPIOTBLUHPORTACCESS	5
+
+
+#ifndef __ASSEMBLY__
+
+extern u8 uiotbl_uhslab_iobitmap[XMHFGEEC_TOTAL_UHSLABS][3*PAGE_SIZE_4K];
+extern u8 uiotbl_ugslab_iobitmap[XMHFGEEC_TOTAL_UGSLABS][3*PAGE_SIZE_4K];
+
+
+typedef struct {
+    u32 dst_slabid;
+	u32 iotbl_base;
+}__attribute__((packed)) uapi_iotbl_getiotblbase_t;
+
+
+void uiotbl_getiotblbase(uapi_iotbl_getiotblbase_t *ps);
+
+
+typedef struct {
+    u32 dst_slabid;
+}__attribute__((packed)) uapi_iotbl_initiotbl_t;
+
+
+void uiotbl_initiotbl(uapi_iotbl_initiotbl_t *ps);
+
+typedef struct {
+	u32 ugslabiobitmap_idx;
+	u16 port;
+	u16 port_size;
+}__attribute__((packed)) uapi_iotbl_setupiotblugportaccess_t;
+
+void uiotbl_setupiotblugportaccess(uapi_iotbl_setupiotblugportaccess_t *ps);
+
+
+typedef struct {
+	u32 uhslabiobitmap_idx;
+	u16 port;
+	u16 port_size;
+}__attribute__((packed)) uapi_iotbl_setupiotbluhportaccess_t;
+
+void uiotbl_setupiotbluhportaccess(uapi_iotbl_setupiotbluhportaccess_t *ps);
+
 
 /*@
-	requires (slabid >= XMHFGEEC_UGSLAB_BASE_IDX && slabid <= XMHFGEEC_UGSLAB_MAX_IDX);
-	assigns gp_rwdatahdr.gp_ugslab_iobitmap[(slabid - XMHFGEEC_UGSLAB_BASE_IDX)][0..(3*PAGE_SIZE_4K)-1];
-	ensures \forall integer x; 0 <= x < (3*PAGE_SIZE_4K) ==> (
-		gp_rwdatahdr.gp_ugslab_iobitmap[(slabid - XMHFGEEC_UGSLAB_BASE_IDX)][x] == 0
-						);
+	requires 0 <= uhslabiobitmap_idx < XMHFGEEC_TOTAL_UHSLABS;
+	requires 0 <= port < 65536;
+	requires 0 <= port_size <= 4;
 @*/
-void gp_s2_setupiotblug_rg(u32 slabid){
-
-#if 0
-	memset(&gp_rwdatahdr.gp_ugslab_iobitmap[(slabid - XMHFGEEC_UGSLAB_BASE_IDX)], 0UL, sizeof(gp_rwdatahdr.gp_ugslab_iobitmap[0]));
-#else
-	{
-		slab_params_t spl;
-		uapi_iotbl_initiotbl_t *ps = (uapi_iotbl_initiotbl_t *)spl.in_out_params;
-
-		spl.src_slabid = XMHFGEEC_SLAB_GEEC_PRIME;
-		spl.dst_slabid = UOBJ_UAPI_IOTBL;
-		spl.cpuid = 0;
-		spl.dst_uapifn = UXMHF_UAPI_IOTBL_INITIOTBL;
-
-		ps->dst_slabid = slabid;
-
-		XMHF_SLAB_CALLNEW(&spl);
-	}
-#endif
-
-}
+void uiotbl_setupiotbluh_allowaccesstoport(u32 uhslabiobitmap_idx, u16 port, u16 port_size);
 
 
+/*@
+	requires 0 <= ugslabiobitmap_idx < XMHFGEEC_TOTAL_UGSLABS;
+	requires 0 <= port < 65536;
+	requires 0 <= port_size <= 4;
+@*/
+void uiotbl_setupiotblug_allowaccesstoport(u32 ugslabiobitmap_idx, u16 port, u16 port_size);
+
+
+#endif	//__ASSEMBLY__
+
+#endif //__UAPI_IOTBL_H__

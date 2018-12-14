@@ -44,53 +44,38 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
+/*
+ * I/O permission tables uAPI
+ *
+ * author: amit vasudevan (amitvasudevan@acm.org)
+ */
+
 #include <xmhf.h>
 #include <xmhf-debug.h>
 #include <xmhfgeec.h>
 
-#include <geec_prime.h>
+#include <uapi_iotbl.h>
 
-/*@
-	requires 0 <= objidx < XMHFGEEC_TOTAL_UHSLABS;
-	requires 0 <= bitmapidx < (3*PAGE_SIZE_4K);
-	assigns gp_rwdatahdr.gp_uhslab_iobitmap[objidx][bitmapidx];
-	ensures (gp_rwdatahdr.gp_uhslab_iobitmap[objidx][bitmapidx] == (\at(gp_rwdatahdr.gp_uhslab_iobitmap[objidx][bitmapidx], Pre) & mask));
-@*/
-static inline void gp_s2_setupiotbluh_allowaccesstoport_setmask(u32 objidx, u32 bitmapidx, u8 mask){
-	gp_rwdatahdr.gp_uhslab_iobitmap[objidx][bitmapidx] = gp_rwdatahdr.gp_uhslab_iobitmap[objidx][bitmapidx] & mask;
-}
+void uiotbl_getiotblbase(uapi_iotbl_getiotblbase_t *ps){
+	//uh
+	if( xmhfgeec_slab_info_table[ps->dst_slabid].slabtype == XMHFGEEC_SLABTYPE_uVT_PROG ||
+			xmhfgeec_slab_info_table[ps->dst_slabid].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG) {
+		ps->iotbl_base = (u32)&uiotbl_ugslab_iobitmap[(ps->dst_slabid - XMHFGEEC_UHSLAB_BASE_IDX)];
 
+	//ug
+	}else if (
+			xmhfgeec_slab_info_table[ps->dst_slabid].slabtype == XMHFGEEC_SLABTYPE_uVT_PROG_GUEST ||
+			xmhfgeec_slab_info_table[ps->dst_slabid].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG_GUEST ||
+			xmhfgeec_slab_info_table[ps->dst_slabid].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG_RICHGUEST
+		){
+		ps->iotbl_base = (u32)&uiotbl_ugslab_iobitmap[(ps->dst_slabid - XMHFGEEC_UGSLAB_BASE_IDX)];
 
-//@ghost u8 gp_s2_setupiotbluh_allowaccesstoport_invokedsetmask[4];
-/*@
-	requires 0 <= uhslabiobitmap_idx < XMHFGEEC_TOTAL_UHSLABS;
-	requires 0 <= port < 65536;
-	requires 0 <= port_size <= 4;
-	assigns gp_rwdatahdr.gp_uhslab_iobitmap[uhslabiobitmap_idx][((port+0)/8)..((port+(port_size-1))/8)];
-	assigns gp_s2_setupiotbluh_allowaccesstoport_invokedsetmask[0..(port_size-1)];
-@*/
-void gp_s2_setupiotbluh_allowaccesstoport(u32 uhslabiobitmap_idx, u16 port, u16 port_size){
-	u32 i;
-	u8 bitmask;
-	u32 bitmapidx;
-
-	/*@
-		loop invariant d1: 0 <= i <= port_size;
-		loop invariant d2: \forall integer x; 0 <= x < i ==> (gp_s2_setupiotbluh_allowaccesstoport_invokedsetmask[x] == true);
-		loop assigns gp_s2_setupiotbluh_allowaccesstoport_invokedsetmask[0..(port_size-1)];
-		loop assigns i;
-		loop assigns bitmask;
-		loop assigns bitmapidx;
-		loop assigns gp_rwdatahdr.gp_uhslab_iobitmap[uhslabiobitmap_idx][((port+0)/8)..((port+(port_size-1))/8)];
-		loop variant port_size - i;
-	@*/
-	for(i=0; i < port_size; i++){
-		bitmask =  ((u8)1 << ((port+i) % 8));
-		bitmapidx = ((port+i)/8);
-
-		//@assert as1: (bitmask == ((u8)1 << ((port+i) % 8)));
-		//@assert as2: (bitmapidx == ((port+i)/8));
-		gp_s2_setupiotbluh_allowaccesstoport_setmask(uhslabiobitmap_idx, bitmapidx, ~bitmask);
-		//@ghost gp_s2_setupiotbluh_allowaccesstoport_invokedsetmask[i] = true;
+	//v
+	}else{
+		ps->iotbl_base = 0;
 	}
+
+	//_XDPRINTF_("%s: dst_slabid=%u, iotbl_base=0x%08x\n", __func__,
+	//		ps->dst_slabid, ps->iotbl_base);
 }
+

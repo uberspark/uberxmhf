@@ -44,41 +44,43 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
+/*
+ * I/O permission tables uAPI
+ *
+ * author: amit vasudevan (amitvasudevan@acm.org)
+ */
+
 #include <xmhf.h>
 #include <xmhf-debug.h>
-
 #include <xmhfgeec.h>
 
-#include <geec_prime.h>
 #include <uapi_iotbl.h>
 
-/*@
-	requires (slabid >= XMHFGEEC_UGSLAB_BASE_IDX && slabid <= XMHFGEEC_UGSLAB_MAX_IDX);
-	assigns gp_rwdatahdr.gp_ugslab_iobitmap[(slabid - XMHFGEEC_UGSLAB_BASE_IDX)][0..(3*PAGE_SIZE_4K)-1];
-	ensures \forall integer x; 0 <= x < (3*PAGE_SIZE_4K) ==> (
-		gp_rwdatahdr.gp_ugslab_iobitmap[(slabid - XMHFGEEC_UGSLAB_BASE_IDX)][x] == 0
-						);
-@*/
-void gp_s2_setupiotblug_rg(u32 slabid){
 
-#if 0
-	memset(&gp_rwdatahdr.gp_ugslab_iobitmap[(slabid - XMHFGEEC_UGSLAB_BASE_IDX)], 0UL, sizeof(gp_rwdatahdr.gp_ugslab_iobitmap[0]));
-#else
-	{
-		slab_params_t spl;
-		uapi_iotbl_initiotbl_t *ps = (uapi_iotbl_initiotbl_t *)spl.in_out_params;
+void uiotbl_initiotbl(uapi_iotbl_initiotbl_t *ps){
+	//uh
+	if( xmhfgeec_slab_info_table[ps->dst_slabid].slabtype == XMHFGEEC_SLABTYPE_uVT_PROG ||
+			xmhfgeec_slab_info_table[ps->dst_slabid].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG) {
+        memset(&uiotbl_uhslab_iobitmap[(ps->dst_slabid - XMHFGEEC_UHSLAB_BASE_IDX)], 0xFFFFFFFFUL, sizeof(uiotbl_uhslab_iobitmap[0]));
 
-		spl.src_slabid = XMHFGEEC_SLAB_GEEC_PRIME;
-		spl.dst_slabid = UOBJ_UAPI_IOTBL;
-		spl.cpuid = 0;
-		spl.dst_uapifn = UXMHF_UAPI_IOTBL_INITIOTBL;
+	//ug
+	}else if (
+			xmhfgeec_slab_info_table[ps->dst_slabid].slabtype == XMHFGEEC_SLABTYPE_uVT_PROG_GUEST ||
+			xmhfgeec_slab_info_table[ps->dst_slabid].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG_GUEST
+		){
+        memset(&uiotbl_ugslab_iobitmap[(ps->dst_slabid - XMHFGEEC_UGSLAB_BASE_IDX)], 0xFFFFFFFFUL, sizeof(uiotbl_ugslab_iobitmap[0]));
 
-		ps->dst_slabid = slabid;
+	//ug_rg
+	}else if (
+			xmhfgeec_slab_info_table[ps->dst_slabid].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG_RICHGUEST
+		){
+		memset(&uiotbl_ugslab_iobitmap[(ps->dst_slabid - XMHFGEEC_UGSLAB_BASE_IDX)], 0UL, sizeof(uiotbl_ugslab_iobitmap[0]));
 
-		XMHF_SLAB_CALLNEW(&spl);
+	//v
+	}else{
+
 	}
-#endif
+
 
 }
-
 

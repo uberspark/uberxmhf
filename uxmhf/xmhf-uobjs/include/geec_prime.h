@@ -177,8 +177,8 @@ typedef struct {
 	XMHF_BOOTINFO xcbootinfo_store;
 	u64 gp_vhslabmempgtbl_lvl4t[PAE_MAXPTRS_PER_PML4T];
 	u64 gp_uhslabmempgtbl_lvl4t[XMHFGEEC_TOTAL_UHSLABS][PAE_MAXPTRS_PER_PML4T];
-	u8 gp_uhslab_iobitmap[XMHFGEEC_TOTAL_UHSLABS][3*PAGE_SIZE_4K];
-	u8 gp_ugslab_iobitmap[XMHFGEEC_TOTAL_UGSLABS][3*PAGE_SIZE_4K];
+	//u8 gp_uhslab_iobitmap[XMHFGEEC_TOTAL_UHSLABS][3*PAGE_SIZE_4K];
+	//u8 gp_ugslab_iobitmap[XMHFGEEC_TOTAL_UGSLABS][3*PAGE_SIZE_4K];
 } __attribute__((packed)) gp_rwdatahdr_t;
 
 
@@ -443,12 +443,6 @@ bool gp_s2_sdminitdevmap_isdevinexcl(u32 slabid, u32 vendor_id, u32 device_id);
 void gp_s2_sdminitdevmap(void);
 
 
-/*@
-	requires 0 <= uhslabiobitmap_idx < XMHFGEEC_TOTAL_UHSLABS;
-	requires 0 <= port < 65536;
-	requires 0 <= port_size <= 4;
-@*/
-void gp_s2_setupiotbluh_allowaccesstoport(u32 uhslabiobitmap_idx, u16 port, u16 port_size);
 
 
 /*@
@@ -458,13 +452,6 @@ void gp_s2_setupiotbluh_allowaccesstoport(u32 uhslabiobitmap_idx, u16 port, u16 
 @*/
 void gp_s2_setupiotbluh(u32 slabid);
 
-
-/*@
-	requires 0 <= ugslabiobitmap_idx < XMHFGEEC_TOTAL_UGSLABS;
-	requires 0 <= port < 65536;
-	requires 0 <= port_size <= 4;
-@*/
-void gp_s2_setupiotblug_allowaccesstoport(u32 ugslabiobitmap_idx, u16 port, u16 port_size);
 
 /*@
 	requires (slabid >= XMHFGEEC_UGSLAB_BASE_IDX && slabid <= XMHFGEEC_UGSLAB_MAX_IDX);

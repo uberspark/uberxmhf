@@ -52,6 +52,7 @@
 
 
 #define UAPI_SENTINEL_INSTALLSYSCALLSTUB     0
+#define UAPI_SENTINEL_TEST    1
 
 
 #ifndef __ASSEMBLY__
@@ -172,6 +173,7 @@ void geec_sentinel_main(slab_params_t *sp, void *caller_stack_frame);
 //CASM_FUNCDECL(void gs_exit_callexcp(u32 entry_point, void *caller_stack_frame));
 //CASM_FUNCDECL(void gs_exit_retexcp(x86vmx_exception_frame_t *exframe));
 
+CASM_FUNCDECL(void gs_calluobj(slab_params_t *sp, u32 entry_point));
 
 CASM_FUNCDECL(void gs_syscallstub(void *noparam));
 void gs_entry_syscall(slab_params_t *sp, void *caller_stack_frame);

@@ -482,7 +482,6 @@ void slab_main(slab_params_t *sp){
 	static volatile u32 cpucount=0;
 	#endif //__DEBUG_SERIAL__
 
-
     //grab lock
     CASM_FUNCCALL(spin_lock,&__xcinit_smplock);
 
@@ -499,7 +498,6 @@ void slab_main(slab_params_t *sp){
         _XDPRINTF_("XC_INIT[%u]: BSP: guest boot-module copied\n", (u16)sp->cpuid);
     }
 
-
     //setup guest uobj state
     xcinit_setup_guest(sp, isbsp);
 
@@ -511,13 +509,12 @@ void slab_main(slab_params_t *sp){
     _XDPRINTF_("XC_INIT[%u]: Proceeding to call guest: ESP=%08x, eflags=%08x\n", (u16)sp->cpuid,
     		CASM_FUNCCALL(read_esp,CASM_NOPARAM), CASM_FUNCCALL(read_eflags, CASM_NOPARAM));
 
-	#if defined (__DEBUG_SERIAL__)
+    #if defined (__DEBUG_SERIAL__)
 	cpucount++;
 	#endif //__DEBUG_SERIAL__
 
     //release lock
     CASM_FUNCCALL(spin_unlock,&__xcinit_smplock);
-
 
     #if defined (__DEBUG_SERIAL__)
     while(cpucount < __XMHF_CONFIG_DEBUG_SERIAL_MAXCPUS__);
@@ -525,7 +522,6 @@ void slab_main(slab_params_t *sp){
 
     //call guest
     xcinit_do_callguest(sp);
-
 
     //_XDPRINTF_("%s[%u]: Should  never get here.Halting!\n", __func__, (u16)sp->cpuid);
     CASM_FUNCCALL(xmhfhw_cpu_hlt, CASM_NOPARAM);
