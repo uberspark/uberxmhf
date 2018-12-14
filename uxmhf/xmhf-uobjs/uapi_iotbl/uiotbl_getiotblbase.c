@@ -75,7 +75,7 @@ void uiotbl_getiotblbase(uapi_iotbl_getiotblbase_t *ps){
 		ps->iotbl_base = 0;
 	}
 
-	_XDPRINTF_("%s: dst_slabid=%u, iotbl_base=0x%08x\n", __func__,
-			ps->dst_slabid, ps->iotbl_base);
+	//_XDPRINTF_("%s: dst_slabid=%u, iotbl_base=0x%08x\n", __func__,
+	//		ps->dst_slabid, ps->iotbl_base);
 }
 

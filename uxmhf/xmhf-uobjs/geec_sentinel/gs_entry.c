@@ -211,12 +211,12 @@ void geec_sentinel_main(slab_params_t *sp, void *caller_stack_frame){
 
 							ps->dst_slabid = sp->dst_slabid;
 
-							_XDPRINTF_("GEEC_SENTINEL: guest: slabid=%u\n", ps->dst_slabid);
+							//_XDPRINTF_("GEEC_SENTINEL: guest: slabid=%u\n", ps->dst_slabid);
 
 							CASM_FUNCCALL(gs_calluobj, &spl,
 									xmhfgeec_slab_info_table[spl.dst_slabid].entrystub);
 
-							_XDPRINTF_("GEEC_SENTINEL: guest: iotbl_base=0x%08x\n", ps->iotbl_base);
+							//_XDPRINTF_("GEEC_SENTINEL: guest: iotbl_base=0x%08x\n", ps->iotbl_base);
 
 							CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_CONTROL_IO_BITMAPA_ADDRESS_FULL, ps->iotbl_base);
 							CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_CONTROL_IO_BITMAPA_ADDRESS_HIGH, 0);
