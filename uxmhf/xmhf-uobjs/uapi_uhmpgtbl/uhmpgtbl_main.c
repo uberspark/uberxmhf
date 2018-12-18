@@ -45,7 +45,7 @@
  */
 
 /*
- * slab memory pagetable uAPI
+ * untrusted hypervisoe memory pagetable uAPI
  *
  * author: amit vasudevan (amitvasudevan@acm.org)
  */
@@ -54,66 +54,25 @@
 #include <xmhf-debug.h>
 #include <xmhfgeec.h>
 
-#include <uapi_slabmempgtbl.h>
+#include <uapi_uhmpgtbl.h>
 
 
-/////
-//@ ghost bool ugmpgtbl_methodcall_inittable = false;
-//@ ghost bool ugmpgtbl_methodcall_setentry = false;
-//@ ghost bool ugmpgtbl_methodcall_getentry = false;
-//@ ghost bool ugmpgtbl_methodcall_flushtlb = false;
-//@ ghost bool ugmpgtbl_methodcall_invalid = false;
-/*@
-	requires \valid(sp);
-	assigns sp->in_out_params[0..15];
-	assigns ugmpgtbl_methodcall_inittable, ugmpgtbl_methodcall_setentry, ugmpgtbl_methodcall_getentry, ugmpgtbl_methodcall_flushtlb, ugmpgtbl_methodcall_invalid;
-	ensures (sp->dst_uapifn == XMHFGEEC_UAPI_SLABMEMPGTBL_INITMEMPGTBL) ==> (ugmpgtbl_methodcall_inittable == true);
-	ensures (sp->dst_uapifn == XMHFGEEC_UAPI_SLABMEMPGTBL_SETENTRYFORPADDR) ==> (ugmpgtbl_methodcall_setentry == true);
-	ensures (sp->dst_uapifn == XMHFGEEC_UAPI_SLABMEMPGTBL_GETENTRYFORPADDR) ==> (ugmpgtbl_methodcall_getentry == true);
-	ensures (sp->dst_uapifn == XMHFGEEC_UAPI_SLABMEMPGTBL_FLUSHTLB) ==> (ugmpgtbl_methodcall_flushtlb == true);
-	ensures !( sp->dst_uapifn == XMHFGEEC_UAPI_SLABMEMPGTBL_INITMEMPGTBL ||
-		   sp->dst_uapifn == XMHFGEEC_UAPI_SLABMEMPGTBL_SETENTRYFORPADDR ||
-		   sp->dst_uapifn == XMHFGEEC_UAPI_SLABMEMPGTBL_GETENTRYFORPADDR ||
-		   sp->dst_uapifn == XMHFGEEC_UAPI_SLABMEMPGTBL_FLUSHTLB) ==> (ugmpgtbl_methodcall_invalid == true);
-@*/
 void slab_main(slab_params_t *sp){
 
-	if(sp->dst_uapifn == XMHFGEEC_UAPI_SLABMEMPGTBL_INITMEMPGTBL){
-	    xmhfgeec_uapi_slabmempgtbl_initmempgtbl_params_t *initmempgtblp =
-		(xmhfgeec_uapi_slabmempgtbl_initmempgtbl_params_t *)sp->in_out_params;
+	if(sp->dst_uapifn == UAPI_UHMPGTBL_INITMEMPGTBLXMHFGEEC_UAPI_SLABMEMPGTBL_INITMEMPGTBL){
+		uapi_uhmpgtblmempgtbl_initmempgtbl_params_t *initmempgtblp =
+		(uapi_uhmpgtblmempgtbl_initmempgtbl_params_t *)sp->in_out_params;
 
-            //@ ghost ugmpgtbl_methodcall_inittable = true;
-	    _slabmempgtbl_initmempgtbl(initmempgtblp);
+	    _uhmpgtbl_initmempgtbl(initmempgtblp);
 
-	}else if (sp->dst_uapifn == XMHFGEEC_UAPI_SLABMEMPGTBL_SETENTRYFORPADDR){
-          xmhfgeec_uapi_slabmempgtbl_setentryforpaddr_params_t *setentryforpaddrp =
-            (xmhfgeec_uapi_slabmempgtbl_setentryforpaddr_params_t *)sp->in_out_params;
+	}else if (sp->dst_uapifn == UAPI_UHMPGTBL_SETENTRYFORPADDR){
+		uapi_uhmpgtblmempgtbl_setentryforpaddr_params_t *setentryforpaddrp =
+            (uapi_uhmpgtblmempgtbl_setentryforpaddr_params_t *)sp->in_out_params;
 
-            //@ ghost ugmpgtbl_methodcall_setentry = true;
-            _slabmempgtbl_setentryforpaddr(setentryforpaddrp);
-
-	}else if (sp->dst_uapifn == XMHFGEEC_UAPI_SLABMEMPGTBL_GETENTRYFORPADDR){
-            xmhfgeec_uapi_slabmempgtbl_getentryforpaddr_params_t *getentryforpaddrp =
-                (xmhfgeec_uapi_slabmempgtbl_getentryforpaddr_params_t *)sp->in_out_params;
-
-
-            //@ ghost ugmpgtbl_methodcall_getentry = true;
-            _slabmempgtbl_getentryforpaddr(getentryforpaddrp);
-
-
-	}else if (sp->dst_uapifn == XMHFGEEC_UAPI_SLABMEMPGTBL_FLUSHTLB){
-		xmhfgeec_uapi_slabmempgtbl_flushtlb_params_t *flushtlbp =
-                (xmhfgeec_uapi_slabmempgtbl_flushtlb_params_t *)sp->in_out_params;
-
-            //@ ghost ugmpgtbl_methodcall_flushtlb = true;
-            _slabmempgtbl_flushtlb(flushtlbp);
-
-
+            _uhmpgtbl_setentryforpaddr(setentryforpaddrp);
 
 	}else{
-
-            //@ ghost ugmpgtbl_methodcall_invalid = true;
-            //_XDPRINTF_("UAPI_SLABMEMPGTBL[%u]: Unknown uAPI function %x. Halting!\n",
+            //_XDPRINTF_("uapi_uhmpgtbl[%u]: Unknown uAPI function %x. Halting!\n",
             //        (u16)sp->cpuid, sp->dst_uapifn);
 	}
 }
