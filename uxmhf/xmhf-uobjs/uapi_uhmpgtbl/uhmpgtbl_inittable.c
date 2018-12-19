@@ -79,7 +79,7 @@ static void _uhmpgtbl_initmempgtbl_pae(u32 slabid){
 }
 
 
-void _uhmpgtbl_initmempgtbl(uapi_uhmpgtblmempgtbl_initmempgtbl_params_t *initmempgtblp){
+void _uhmpgtbl_initmempgtbl(uapi_uhmpgtbl_initmempgtbl_params_t *initmempgtblp){
 
     if( (initmempgtblp->dst_slabid < XMHFGEEC_TOTAL_SLABS) &&
 	(initmempgtblp->dst_slabid >= XMHFGEEC_UHSLAB_BASE_IDX && initmempgtblp->dst_slabid <= XMHFGEEC_UHSLAB_MAX_IDX) &&

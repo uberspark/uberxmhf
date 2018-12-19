@@ -69,13 +69,13 @@ extern __attribute__((section(".data"))) __attribute__((aligned(4096)))  u64 _uh
 
 typedef struct {
     u32 dst_slabid;
-}__attribute__((packed)) uapi_uhmpgtblmempgtbl_initmempgtbl_params_t;
+}__attribute__((packed)) uapi_uhmpgtbl_initmempgtbl_params_t;
 
 typedef struct {
     u32 dst_slabid;
     u64 pa;
     u64 entry;
-}__attribute__((packed)) uapi_uhmpgtblmempgtbl_setentryforpaddr_params_t;
+}__attribute__((packed)) uapi_uhmpgtbl_setentryforpaddr_params_t;
 
 
 
@@ -85,13 +85,13 @@ typedef struct {
 /*@
 	requires \valid(initmempgtblp);
 @*/
-void _uhmpgtbl_initmempgtbl(uapi_uhmpgtblmempgtbl_initmempgtbl_params_t *initmempgtblp);
+void _uhmpgtbl_initmempgtbl(uapi_uhmpgtbl_initmempgtbl_params_t *initmempgtblp);
 
 
 /*@
   requires \valid(setentryforpaddrp);
 @*/
-void _uhmpgtbl_setentryforpaddr(uapi_uhmpgtblmempgtbl_setentryforpaddr_params_t *setentryforpaddrp);
+void _uhmpgtbl_setentryforpaddr(uapi_uhmpgtbl_setentryforpaddr_params_t *setentryforpaddrp);
 
 
 

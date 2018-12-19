@@ -58,16 +58,19 @@
 
 void _uhmpgtbl_setentryforpaddr(uapi_uhmpgtbl_setentryforpaddr_params_t *setentryforpaddrp){
     if(	(setentryforpaddrp->dst_slabid < XMHFGEEC_TOTAL_SLABS) &&
-    	(pae_get_pdpt_index(setentryforpaddrp->pa) < PAE_PTRS_PER_PDPT &&
+    	(   pae_get_pdpt_index(setentryforpaddrp->pa) < PAE_PTRS_PER_PDPT &&
     		pae_get_pdt_index(setentryforpaddrp->pa) < PAE_PTRS_PER_PDT &&
-			pae_get_pt_index(setentryforpaddrp->pa) < PAE_PTRS_PER_PT) &&
-			( (setentryforpaddrp->dst_slabid >= XMHFGEEC_UHSLAB_BASE_IDX &&
-					setentryforpaddrp->dst_slabid <= XMHFGEEC_UHSLAB_MAX_IDX) &&
-			(xmhfgeec_slab_info_table[setentryforpaddrp->dst_slabid].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG ||
-			 xmhfgeec_slab_info_table[setentryforpaddrp->dst_slabid].slabtype == XMHFGEEC_SLABTYPE_uVT_PROG)
-			)
+			pae_get_pt_index(setentryforpaddrp->pa) < PAE_PTRS_PER_PT
+		) &&
+    	( (setentryforpaddrp->dst_slabid >= XMHFGEEC_UHSLAB_BASE_IDX &&
+				setentryforpaddrp->dst_slabid <= XMHFGEEC_UHSLAB_MAX_IDX
+		  ) &&
+		  (xmhfgeec_slab_info_table[setentryforpaddrp->dst_slabid].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG ||
+			    xmhfgeec_slab_info_table[setentryforpaddrp->dst_slabid].slabtype == XMHFGEEC_SLABTYPE_uVT_PROG
+		  )
+		)
       ) {
-		_uhmpgtbl_lvl1t[(setentryforpaddrp->dst_slabid - XMHFGEEC_UHSLAB_BASE_IDX)][pae_get_pdpt_index(setentryforpaddrp->pa)][pae_get_pdt_index(setentryforpaddrp->pa)][pae_get_pt_index(setentryforpaddrp->pa)] =
+    	_uhslabmempgtbl_lvl1t[(setentryforpaddrp->dst_slabid - XMHFGEEC_UHSLAB_BASE_IDX)][setentryforpaddrp->pa/PAGE_SIZE_4K] =
 			setentryforpaddrp->entry;
     }else{
     	//nothing

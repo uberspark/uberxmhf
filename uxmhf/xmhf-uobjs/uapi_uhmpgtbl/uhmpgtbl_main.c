@@ -59,15 +59,15 @@
 
 void slab_main(slab_params_t *sp){
 
-	if(sp->dst_uapifn == UAPI_UHMPGTBL_INITMEMPGTBLXMHFGEEC_UAPI_SLABMEMPGTBL_INITMEMPGTBL){
-		uapi_uhmpgtblmempgtbl_initmempgtbl_params_t *initmempgtblp =
-		(uapi_uhmpgtblmempgtbl_initmempgtbl_params_t *)sp->in_out_params;
+	if(sp->dst_uapifn == UAPI_UHMPGTBL_INITMEMPGTBL){
+		uapi_uhmpgtbl_initmempgtbl_params_t *initmempgtblp =
+		(uapi_uhmpgtbl_initmempgtbl_params_t *)sp->in_out_params;
 
 	    _uhmpgtbl_initmempgtbl(initmempgtblp);
 
 	}else if (sp->dst_uapifn == UAPI_UHMPGTBL_SETENTRYFORPADDR){
-		uapi_uhmpgtblmempgtbl_setentryforpaddr_params_t *setentryforpaddrp =
-            (uapi_uhmpgtblmempgtbl_setentryforpaddr_params_t *)sp->in_out_params;
+		uapi_uhmpgtbl_setentryforpaddr_params_t *setentryforpaddrp =
+            (uapi_uhmpgtbl_setentryforpaddr_params_t *)sp->in_out_params;
 
             _uhmpgtbl_setentryforpaddr(setentryforpaddrp);
 
