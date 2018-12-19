@@ -78,7 +78,9 @@ void gp_s2_setupmpgtbluh(u32 slabid){
 	u64 flags;
 	u32 spatype;
 	u32 i, j;
+	slab_params_t spl;
 
+#if 0
 	//zero out pdpt
 	/*@
 		loop invariant a1: 0 <= i <= PAE_MAXPTRS_PER_PDPT;
@@ -128,6 +130,15 @@ void gp_s2_setupmpgtbluh(u32 slabid){
 			pae_make_pde(&gp_uhslabmempgtbl_lvl1t[(slabid - XMHFGEEC_UHSLAB_BASE_IDX)][(i * PAE_PTRS_PER_PT)], (u64)(_PAGE_PRESENT | _PAGE_RW | _PAGE_USER));
 	}
 
+#endif
+
+	spl.src_slabid = XMHFGEEC_SLAB_GEEC_PRIME;
+	spl.dst_slabid = UOBJ_UAPI_UHMPGTBL;
+	spl.cpuid = 0; //XXX: fixme, need to plug in BSP cpuid
+	spl.dst_uapifn = XUAPI_UHMPGTBL_INITMEMPGTBL;
+	spl.in_out_params[0] = slabid;
+
+	XMHF_SLAB_CALLNEW(&spl);
 
 
 	//pts
