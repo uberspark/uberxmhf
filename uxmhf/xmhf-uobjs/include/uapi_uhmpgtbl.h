@@ -73,7 +73,7 @@ typedef struct {
 
 typedef struct {
     u32 dst_slabid;
-    u64 gpa;
+    u64 pa;
     u64 entry;
 }__attribute__((packed)) uapi_uhmpgtblmempgtbl_setentryforpaddr_params_t;
 
