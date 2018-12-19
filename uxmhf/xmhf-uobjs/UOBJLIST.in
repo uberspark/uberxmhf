@@ -11,6 +11,7 @@
 						uapi_slabmempgtbl
 						uapi_sysdata
 						uapi_iotbl
+						uapi_uhmpgtbl
 						xh_syscalllog
 						xh_hyperdep
 						xh_ssteptrace
