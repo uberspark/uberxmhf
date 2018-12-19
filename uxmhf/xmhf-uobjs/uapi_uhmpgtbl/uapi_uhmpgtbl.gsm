@@ -43,7 +43,7 @@
 		},
 		{ 
 			"section-name": "data",
-			"section-size": "0x200000"
+			"section-size": "0xA00000"
 		},
 		{ 
 			"section-name": "stack",
