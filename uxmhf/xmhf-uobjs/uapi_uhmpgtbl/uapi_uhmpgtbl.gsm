@@ -1,30 +1,25 @@
 #include <uberspark.h>
 #include <xmhf-hwm.h>
 #include <geec_sentinel.h>
-#include <uapi_slabmempgtbl.h>
+#include <uapi_uhmpgtbl.h>
 
 {
-	"uobj-name": "uapi_slabmempgtbl",
+	"uobj-name": "uapi_uhmpgtbl",
 	"uobj-type": "VfT_SLAB",
 	"uobj-subtype": "UAPI",
 
 	"uobj-uapifunctions":[
 		{ 
-			"uapifunction-id": USMF_STR(XMHFGEEC_UAPI_SLABMEMPGTBL_INITMEMPGTBL),
+			"uapifunction-id": USMF_STR(UAPI_UHMPGTBL_INITMEMPGTBL),
 			"uapifunction-definition" : 
-				"void _slabmempgtbl_initmempgtbl(xmhfgeec_uapi_slabmempgtbl_initmempgtbl_params_t *initmempgtblp)", 
+				"void _uhmpgtbl_initmempgtbl(uapi_uhmpgtblmempgtbl_initmempgtbl_params_t *initmempgtblp)", 
 			"uapifunction-drivercode" : 
-				"{xmhfgeec_uapi_slabmempgtbl_initmempgtbl_params_t initmempgtblp; initmempgtblp.dst_slabid = framac_nondetu32(); _slabmempgtbl_initmempgtbl(&initmempgtblp);}"
+				"{uapi_uhmpgtblmempgtbl_initmempgtbl_params_t initmempgtblp; initmempgtblp.dst_slabid = framac_nondetu32(); _uhmpgtbl_initmempgtbl(&initmempgtblp);}"
 		},
 		{ 
-			"uapifunction-id": USMF_STR(XMHFGEEC_UAPI_SLABMEMPGTBL_SETENTRYFORPADDR),
-			"uapifunction-definition" : "void _slabmempgtbl_setentryforpaddr(xmhfgeec_uapi_slabmempgtbl_setentryforpaddr_params_t *setentryforpaddrp)", 
-			"uapifunction-drivercode" : "{xmhfgeec_uapi_slabmempgtbl_setentryforpaddr_params_t setentryforpaddrp; setentryforpaddrp.dst_slabid = framac_nondetu32(); setentryforpaddrp.gpa = framac_nondetu32(); setentryforpaddrp.entry = framac_nondetu32(); _slabmempgtbl_setentryforpaddr(&setentryforpaddrp);}"
-		},
-		{ 
-			"uapifunction-id": USMF_STR(XMHFGEEC_UAPI_SLABMEMPGTBL_GETENTRYFORPADDR),
-			"uapifunction-definition" : "void _slabmempgtbl_getentryforpaddr(xmhfgeec_uapi_slabmempgtbl_getentryforpaddr_params_t *getentryforpaddrp)", 
-			"uapifunction-drivercode" : "{xmhfgeec_uapi_slabmempgtbl_getentryforpaddr_params_t getentryforpaddrp; getentryforpaddrp.dst_slabid = framac_nondetu32(); getentryforpaddrp.gpa = framac_nondetu32(); _slabmempgtbl_getentryforpaddr(&getentryforpaddrp);}"
+			"uapifunction-id": USMF_STR(UAPI_UHMPGTBL_SETENTRYFORPADDR),
+			"uapifunction-definition" : "void _uhmpgtbl_setentryforpaddr(uapi_uhmpgtbl_setentryforpaddr_params_t *setentryforpaddrp)", 
+			"uapifunction-drivercode" : "{uapi_uhmpgtbl_setentryforpaddr_params_t setentryforpaddrp; setentryforpaddrp.dst_slabid = framac_nondetu32(); setentryforpaddrp.gpa = framac_nondetu32(); setentryforpaddrp.entry = framac_nondetu32(); _uhmpgtbl_setentryforpaddr(&setentryforpaddrp);}"
 		}
 	],
 
@@ -48,7 +43,7 @@
 		},
 		{ 
 			"section-name": "data",
-			"section-size": "0x4200000"
+			"section-size": "0x200000"
 		},
 		{ 
 			"section-name": "stack",
