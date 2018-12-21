@@ -55,7 +55,7 @@
 #include <xmhfgeec.h>
 
 #include <geec_sentinel.h>
-
+#include <uapi_uhmpgtbl.h>
 
 void gs_exit_callv2uv(slab_params_t *sp, void *caller_stack_frame){
     slab_params_t *dst_sp;
@@ -66,13 +66,13 @@ void gs_exit_callv2uv(slab_params_t *sp, void *caller_stack_frame){
 #if 1
 	{
 		slab_params_t spl;
-		_t *ps = (_t *)spl.in_out_params;
+		uapi_uhmpgtbl_getmpgtblbase_t *ps = (uapi_uhmpgtbl_getmpgtblbase_t *)spl.in_out_params;
 
 		spl.slab_ctype = XMHFGEEC_SENTINEL_CALL_FROM_VfT_PROG;
 		spl.src_slabid = XMHFGEEC_SLAB_GEEC_SENTINEL;
 		spl.dst_slabid = UOBJ_UAPI_UHMPGTBL;
 		spl.cpuid = sp->cpuid;
-		spl.dst_uapifn = UXMHF_UAPI_UHMPGTBL_GETMPGTBLBASE;
+		spl.dst_uapifn = UAPI_UHMPGTBL_GETMPGTBLBASE;
 
 		//ps->dst_slabid = sp->dst_slabid;
 

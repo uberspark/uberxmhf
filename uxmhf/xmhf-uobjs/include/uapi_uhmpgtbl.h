@@ -57,7 +57,7 @@
 
 #define UAPI_UHMPGTBL_INITMEMPGTBL     0
 #define UAPI_UHMPGTBL_SETENTRYFORPADDR 1
-
+#define UAPI_UHMPGTBL_GETMPGTBLBASE	   2
 
 #ifndef __ASSEMBLY__
 
@@ -77,6 +77,10 @@ typedef struct {
     u64 entry;
 }__attribute__((packed)) uapi_uhmpgtbl_setentryforpaddr_params_t;
 
+typedef struct {
+    u32 dst_slabid;
+    u64 mpgtblbase;
+}__attribute__((packed)) uapi_uhmpgtbl_getmpgtblbase_t;
 
 
 
