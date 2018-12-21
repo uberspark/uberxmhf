@@ -66,7 +66,7 @@ void gs_exit_callv2uv(slab_params_t *sp, void *caller_stack_frame){
 #if 1
 	{
 		slab_params_t spl;
-		uapi_uhmpgtbl_getmpgtblbase_t *ps = (uapi_uhmpgtbl_getmpgtblbase_t *)spl.in_out_params;
+		uapi_uhmpgtbl_getmpgtblbase_params_t *ps = (uapi_uhmpgtbl_getmpgtblbase_params_t *)spl.in_out_params;
 
 		spl.slab_ctype = XMHFGEEC_SENTINEL_CALL_FROM_VfT_PROG;
 		spl.src_slabid = XMHFGEEC_SLAB_GEEC_SENTINEL;

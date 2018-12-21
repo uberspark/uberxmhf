@@ -44,64 +44,35 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-
 /*
+ * slab memory pagetable uAPI
  *
- *  untrusted hypervisor uobj pagetable uAPI
- *
- *  author: amit vasudevan (amitvasudevan@acm.org)
+ * author: amit vasudevan (amitvasudevan@acm.org)
  */
 
-#ifndef __UAPI_UHMPGTBL_H__
-#define __UAPI_UHMPGTBL_H__
+#include <xmhf.h>
+#include <xmhf-debug.h>
+#include <xmhfgeec.h>
 
-#define UAPI_UHMPGTBL_INITMEMPGTBL     0
-#define UAPI_UHMPGTBL_SETENTRYFORPADDR 1
-#define UAPI_UHMPGTBL_GETMPGTBLBASE	   2
+#include <uapi_uhmpgtbl.h>
 
-#ifndef __ASSEMBLY__
+void _uhmpgtbl_getmpgtblbase(uapi_uhmpgtbl_getmpgtblbase_params_t *p){
+    if(	(p->dst_slabid < XMHFGEEC_TOTAL_SLABS) &&
+    	( (p->dst_slabid >= XMHFGEEC_UHSLAB_BASE_IDX &&
+				p->dst_slabid <= XMHFGEEC_UHSLAB_MAX_IDX
+		  ) &&
+		  (xmhfgeec_slab_info_table[p->dst_slabid].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG ||
+			    xmhfgeec_slab_info_table[p->dst_slabid].slabtype == XMHFGEEC_SLABTYPE_uVT_PROG
+		  )
+		)
+      ) {
 
-extern __attribute__((section(".rwdatahdr"))) __attribute__((aligned(4096))) u64 _uhslabmempgtbl_lvl4t[XMHFGEEC_TOTAL_UHSLABS][PAE_MAXPTRS_PER_PML4T];
-extern __attribute__((section(".data"))) __attribute__((aligned(4096))) u64 _uhslabmempgtbl_lvl3t[XMHFGEEC_TOTAL_UHSLABS][PAE_MAXPTRS_PER_PDPT];
-extern __attribute__((section(".data"))) __attribute__((aligned(4096))) u64 _uhslabmempgtbl_lvl2t[XMHFGEEC_TOTAL_UHSLABS][PAE_PTRS_PER_PDPT * PAE_PTRS_PER_PDT];
-extern __attribute__((section(".data"))) __attribute__((aligned(4096)))  u64 _uhslabmempgtbl_lvl1t[XMHFGEEC_TOTAL_UHSLABS][PAE_PTRS_PER_PDPT * PAE_PTRS_PER_PDT * PAE_PTRS_PER_PT];
-
-
-typedef struct {
-    u32 dst_slabid;
-}__attribute__((packed)) uapi_uhmpgtbl_initmempgtbl_params_t;
-
-typedef struct {
-    u32 dst_slabid;
-    u64 pa;
-    u64 entry;
-}__attribute__((packed)) uapi_uhmpgtbl_setentryforpaddr_params_t;
-
-typedef struct {
-    u32 dst_slabid;
-    u64 mpgtblbase;
-}__attribute__((packed)) uapi_uhmpgtbl_getmpgtblbase_params_t;
+    	p->mpgtblbase = (u64)&_uhslabmempgtbl_lvl4t[(p->dst_slabid - XMHFGEEC_UHSLAB_BASE_IDX)];
+    }else{
+    	//nothing
+    }
+}
 
 
 
 
-
-/*@
-	requires \valid(initmempgtblp);
-@*/
-void _uhmpgtbl_initmempgtbl(uapi_uhmpgtbl_initmempgtbl_params_t *initmempgtblp);
-
-
-/*@
-  requires \valid(setentryforpaddrp);
-@*/
-void _uhmpgtbl_setentryforpaddr(uapi_uhmpgtbl_setentryforpaddr_params_t *setentryforpaddrp);
-
-/*@
-  requires \valid(p);
-@*/
-void _uhmpgtbl_getmpgtblbase(uapi_uhmpgtbl_getmpgtblbase_params_t *p);
-
-#endif	//__ASSEMBLY__
-
-#endif //__UAPI_UHMPGTBL_H__
