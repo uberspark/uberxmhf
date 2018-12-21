@@ -63,6 +63,25 @@ void gs_exit_callv2uv(slab_params_t *sp, void *caller_stack_frame){
 
     _XDPRINTF_("%s[%u]: src=%u, dst=%u\n", __func__, (u16)sp->cpuid, sp->src_slabid, sp->dst_slabid);
 
+#if 1
+	{
+		slab_params_t spl;
+		_t *ps = (_t *)spl.in_out_params;
+
+		spl.slab_ctype = XMHFGEEC_SENTINEL_CALL_FROM_VfT_PROG;
+		spl.src_slabid = XMHFGEEC_SLAB_GEEC_SENTINEL;
+		spl.dst_slabid = UOBJ_UAPI_UHMPGTBL;
+		spl.cpuid = sp->cpuid;
+		spl.dst_uapifn = UXMHF_UAPI_UHMPGTBL_GETMPGTBLBASE;
+
+		//ps->dst_slabid = sp->dst_slabid;
+
+		CASM_FUNCCALL(gs_calluobj, &spl,
+				xmhfgeec_slab_info_table[spl.dst_slabid].entrystub);
+	}
+#endif
+
+
     //save caller stack frame address (esp)
     _XDPRINTF_("%s[%u]: src tos before=%x\n", __func__, (u16)sp->cpuid, xmhfgeec_slab_info_table[sp->src_slabid].slabtos[(u16)sp->cpuid]);
     xmhfgeec_slab_info_table[sp->src_slabid].slabtos[(u16)sp->cpuid] =
