@@ -87,7 +87,8 @@ typedef struct {
 
 typedef struct {
     u32 mpgtblbase;
-    u32 uobj_id;
+    u32 status;
+    u32 mpgtblbase_idx;
 }__attribute__((packed)) uapi_uhmpgtbl_getidxformpgtblbase_params_t;
 
 
