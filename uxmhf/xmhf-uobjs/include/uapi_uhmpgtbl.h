@@ -55,9 +55,10 @@
 #ifndef __UAPI_UHMPGTBL_H__
 #define __UAPI_UHMPGTBL_H__
 
-#define UAPI_UHMPGTBL_INITMEMPGTBL     0
-#define UAPI_UHMPGTBL_SETENTRYFORPADDR 1
-#define UAPI_UHMPGTBL_GETMPGTBLBASE	   2
+#define UAPI_UHMPGTBL_INITMEMPGTBL     			0
+#define UAPI_UHMPGTBL_SETENTRYFORPADDR 			1
+#define UAPI_UHMPGTBL_GETMPGTBLBASE	   			2
+#define UAPI_UHMPGTBL_GETIDXFORMPGTBLBASE		3
 
 #ifndef __ASSEMBLY__
 
@@ -84,6 +85,11 @@ typedef struct {
 }__attribute__((packed)) uapi_uhmpgtbl_getmpgtblbase_params_t;
 
 
+typedef struct {
+    u32 mpgtblbase;
+    u32 uobj_id;
+}__attribute__((packed)) uapi_uhmpgtbl_getidxformpgtblbase_params_t;
+
 
 
 
@@ -102,6 +108,13 @@ void _uhmpgtbl_setentryforpaddr(uapi_uhmpgtbl_setentryforpaddr_params_t *setentr
   requires \valid(p);
 @*/
 void _uhmpgtbl_getmpgtblbase(uapi_uhmpgtbl_getmpgtblbase_params_t *p);
+
+
+/*@
+  requires \valid(p);
+@*/
+void _uhmpgtbl_getidxformpgtblbase(uapi_uhmpgtbl_getidxformpgtblbase_params_t *p);
+
 
 #endif	//__ASSEMBLY__
 
