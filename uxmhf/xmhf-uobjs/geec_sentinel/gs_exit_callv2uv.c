@@ -60,26 +60,12 @@
 void gs_exit_callv2uv(slab_params_t *sp, void *caller_stack_frame){
     slab_params_t *dst_sp;
     gs_siss_element_t siss_elem;
+#if 1
+    slab_params_t spl;
+	uapi_uhmpgtbl_getmpgtblbase_params_t *ps = (uapi_uhmpgtbl_getmpgtblbase_params_t *)spl.in_out_params;
+#endif
 
     _XDPRINTF_("%s[%u]: src=%u, dst=%u\n", __func__, (u16)sp->cpuid, sp->src_slabid, sp->dst_slabid);
-
-#if 1
-	{
-		slab_params_t spl;
-		uapi_uhmpgtbl_getmpgtblbase_params_t *ps = (uapi_uhmpgtbl_getmpgtblbase_params_t *)spl.in_out_params;
-
-		spl.slab_ctype = XMHFGEEC_SENTINEL_CALL_FROM_VfT_PROG;
-		spl.src_slabid = XMHFGEEC_SLAB_GEEC_SENTINEL;
-		spl.dst_slabid = UOBJ_UAPI_UHMPGTBL;
-		spl.cpuid = sp->cpuid;
-		spl.dst_uapifn = UAPI_UHMPGTBL_GETMPGTBLBASE;
-
-		//ps->dst_slabid = sp->dst_slabid;
-
-		CASM_FUNCCALL(gs_calluobj, &spl,
-				xmhfgeec_slab_info_table[spl.dst_slabid].entrystub);
-	}
-#endif
 
 
     //save caller stack frame address (esp)
@@ -124,13 +110,34 @@ void gs_exit_callv2uv(slab_params_t *sp, void *caller_stack_frame){
 
 
 
+#if 1
+	spl.slab_ctype = XMHFGEEC_SENTINEL_CALL_FROM_VfT_PROG;
+	spl.src_slabid = XMHFGEEC_SLAB_GEEC_SENTINEL;
+	spl.dst_slabid = UOBJ_UAPI_UHMPGTBL;
+	spl.cpuid = sp->cpuid;
+	spl.dst_uapifn = UAPI_UHMPGTBL_GETMPGTBLBASE;
+
+	ps->dst_slabid = sp->dst_slabid;
+
+	CASM_FUNCCALL(gs_calluobj, &spl,
+			xmhfgeec_slab_info_table[spl.dst_slabid].entrystub);
+
+    _XDPRINTF_("%s[%u]: dst mempgtbl base=%x, orig_base=%x\n", __func__,
+               (u16)sp->cpuid,
+			   ps->mpgtblbase,
+			   xmhfgeec_slab_info_table[sp->dst_slabid].mempgtbl_cr3);
+	CASM_FUNCCALL(write_cr3,xmhfgeec_slab_info_table[sp->dst_slabid].mempgtbl_cr3);
+	_XDPRINTF_("%s[%u]: swiched to dst mempgtbl\n", __func__,
+			   (u16)sp->cpuid);
+
+#else
     //switch to destination slab page tables
     _XDPRINTF_("%s[%u]: dst mempgtbl base=%x\n", __func__,
                (u16)sp->cpuid, xmhfgeec_slab_info_table[sp->dst_slabid].mempgtbl_cr3);
     CASM_FUNCCALL(write_cr3,xmhfgeec_slab_info_table[sp->dst_slabid].mempgtbl_cr3);
     _XDPRINTF_("%s[%u]: swiched to dst mempgtbl\n", __func__,
                (u16)sp->cpuid);
-
+#endif
 
 
     _XDPRINTF_("%s[%u]: entry=%x, dst_sp=%x, eflags=%08x, proceeding to xfer...\n", __func__,

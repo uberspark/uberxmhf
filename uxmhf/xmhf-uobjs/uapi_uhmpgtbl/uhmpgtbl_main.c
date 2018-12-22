@@ -72,8 +72,13 @@ void slab_main(slab_params_t *sp){
             _uhmpgtbl_setentryforpaddr(setentryforpaddrp);
 
 	}else if (sp->dst_uapifn == UAPI_UHMPGTBL_GETMPGTBLBASE){
-        _XDPRINTF_("uapi_uhmpgtbl[%u]: GETMPGTBLBASE\n",
+		uapi_uhmpgtbl_getmpgtblbase_params_t *p =
+            (uapi_uhmpgtbl_getmpgtblbase_params_t *)sp->in_out_params;
+
+		_XDPRINTF_("uapi_uhmpgtbl[%u]: GETMPGTBLBASE\n",
                 (u16)sp->cpuid);
+
+        _uhmpgtbl_getmpgtblbase(p);
 
 	}else{
             //_XDPRINTF_("uapi_uhmpgtbl[%u]: Unknown uAPI function %x. Halting!\n",

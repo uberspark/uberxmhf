@@ -67,7 +67,7 @@ void _uhmpgtbl_getmpgtblbase(uapi_uhmpgtbl_getmpgtblbase_params_t *p){
 		)
       ) {
 
-    	p->mpgtblbase = (u64)&_uhslabmempgtbl_lvl4t[(p->dst_slabid - XMHFGEEC_UHSLAB_BASE_IDX)];
+    	p->mpgtblbase = (u32)&_uhslabmempgtbl_lvl4t[(p->dst_slabid - XMHFGEEC_UHSLAB_BASE_IDX)];
     }else{
     	//nothing
     }

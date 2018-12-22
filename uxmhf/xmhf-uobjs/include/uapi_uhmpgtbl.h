@@ -79,7 +79,7 @@ typedef struct {
 
 typedef struct {
     u32 dst_slabid;
-    u64 mpgtblbase;
+    u32 mpgtblbase;
 }__attribute__((packed)) uapi_uhmpgtbl_getmpgtblbase_params_t;
 
 
