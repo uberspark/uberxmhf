@@ -73,8 +73,9 @@ typedef struct {
 
 typedef struct {
     u32 dst_slabid;
-    u64 pa;
-    u64 entry;
+    u32 pa;
+    u32 entry_lo;
+    u32 entry_hi;
 }__attribute__((packed)) uapi_uhmpgtbl_setentryforpaddr_params_t;
 
 typedef struct {

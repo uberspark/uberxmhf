@@ -49,7 +49,7 @@
 #include <xmhfgeec.h>
 
 #include <geec_prime.h>
-
+#include <uapi_uhmpgtbl.h>
 
 //setup unverified hypervisor (uh) slab memory page tables
 /*@
@@ -80,7 +80,7 @@ void gp_s2_setupmpgtbluh(u32 slabid){
 	u32 i, j;
 	slab_params_t spl;
 
-#if 1
+#if 0
 	//zero out pdpt
 	/*@
 		loop invariant a1: 0 <= i <= PAE_MAXPTRS_PER_PDPT;
@@ -135,7 +135,7 @@ void gp_s2_setupmpgtbluh(u32 slabid){
 	spl.src_slabid = XMHFGEEC_SLAB_GEEC_PRIME;
 	spl.dst_slabid = UOBJ_UAPI_UHMPGTBL;
 	spl.cpuid = 0; //XXX: fixme, need to plug in BSP cpuid
-	spl.dst_uapifn = XUAPI_UHMPGTBL_INITMEMPGTBL;
+	spl.dst_uapifn = UAPI_UHMPGTBL_INITMEMPGTBL;
 	spl.in_out_params[0] = slabid;
 
 	XMHF_SLAB_CALLNEW(&spl);

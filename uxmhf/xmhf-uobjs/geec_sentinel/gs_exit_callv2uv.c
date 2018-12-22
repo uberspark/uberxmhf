@@ -122,11 +122,10 @@ void gs_exit_callv2uv(slab_params_t *sp, void *caller_stack_frame){
 	CASM_FUNCCALL(gs_calluobj, &spl,
 			xmhfgeec_slab_info_table[spl.dst_slabid].entrystub);
 
-    _XDPRINTF_("%s[%u]: dst mempgtbl base=%x, orig_base=%x\n", __func__,
+    _XDPRINTF_("%s[%u]: dst mempgtbl base=%x\n", __func__,
                (u16)sp->cpuid,
-			   ps->mpgtblbase,
-			   xmhfgeec_slab_info_table[sp->dst_slabid].mempgtbl_cr3);
-	CASM_FUNCCALL(write_cr3,xmhfgeec_slab_info_table[sp->dst_slabid].mempgtbl_cr3);
+			   ps->mpgtblbase);
+	CASM_FUNCCALL(write_cr3,ps->mpgtblbase);
 	_XDPRINTF_("%s[%u]: swiched to dst mempgtbl\n", __func__,
 			   (u16)sp->cpuid);
 
