@@ -87,7 +87,7 @@ void _uhmpgtbl_initmempgtbl(uapi_uhmpgtbl_initmempgtbl_params_t *initmempgtblp){
 	 xmhfgeec_slab_info_table[initmempgtblp->dst_slabid].slabtype == XMHFGEEC_SLABTYPE_uVT_PROG)
       ){
 
-            _uhmpgtbl_initmempgtbl_pae((initmempgtblp->dst_slabid - XMHFGEEC_UHSLAB_BASE_IDX));
+            _uhmpgtbl_initmempgtbl_pae(initmempgtblp->dst_slabid);
 
             _XDPRINTF_("%s: setup slab %u with PAE\n", __func__,
             		initmempgtblp->dst_slabid);
