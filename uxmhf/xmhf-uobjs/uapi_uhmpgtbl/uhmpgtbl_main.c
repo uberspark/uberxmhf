@@ -80,6 +80,12 @@ void slab_main(slab_params_t *sp){
 
         _uhmpgtbl_getmpgtblbase(p);
 
+	}else if (sp->dst_uapifn == UAPI_UHMPGTBL_GETIDXFORMPGTBLBASE){
+		uapi_uhmpgtbl_getidxformpgtblbase_params_t *p =
+            (uapi_uhmpgtbl_getidxformpgtblbase_params_t *)sp->in_out_params;
+
+        _uhmpgtbl_getidxformpgtblbase(p);
+
 	}else{
             //_XDPRINTF_("uapi_uhmpgtbl[%u]: Unknown uAPI function %x. Halting!\n",
             //        (u16)sp->cpuid, sp->dst_uapifn);
