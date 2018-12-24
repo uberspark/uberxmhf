@@ -73,10 +73,6 @@ void gs_entry_syscall(slab_params_t *sp, void *caller_stack_frame){
         HALT();
     }
 
-#if 0
-    sp->src_slabid =
-        (CASM_FUNCCALL(read_cr3, CASM_NOPARAM) - xmhfgeec_slab_info_table[XMHFGEEC_UHSLAB_BASE_IDX].mempgtbl_cr3)/PAGE_SIZE_4K + XMHFGEEC_UHSLAB_BASE_IDX;
-#else
     {
         slab_params_t spl;
     	uapi_uhmpgtbl_getidxformpgtblbase_params_t *ps =
@@ -101,7 +97,6 @@ void gs_entry_syscall(slab_params_t *sp, void *caller_stack_frame){
 
     	sp->src_slabid = ps->mpgtblbase_idx + XMHFGEEC_UHSLAB_BASE_IDX;
     }
-#endif
 
     _XDPRINTF_("%s: sp=%x, cpuid=%u, src=%u, dst=%u, ctype=%x\n", __func__,
                (u32)sp, (u16)sp->cpuid, sp->src_slabid, sp->dst_slabid, sp->slab_ctype);

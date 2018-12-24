@@ -60,10 +60,8 @@
 void gs_exit_callv2uv(slab_params_t *sp, void *caller_stack_frame){
     slab_params_t *dst_sp;
     gs_siss_element_t siss_elem;
-#if 1
     slab_params_t spl;
 	uapi_uhmpgtbl_getmpgtblbase_params_t *ps = (uapi_uhmpgtbl_getmpgtblbase_params_t *)spl.in_out_params;
-#endif
 
     _XDPRINTF_("%s[%u]: src=%u, dst=%u\n", __func__, (u16)sp->cpuid, sp->src_slabid, sp->dst_slabid);
 
@@ -110,7 +108,7 @@ void gs_exit_callv2uv(slab_params_t *sp, void *caller_stack_frame){
 
 
 
-#if 1
+    //switch to destination slab page tables
 	spl.slab_ctype = XMHFGEEC_SENTINEL_CALL_FROM_VfT_PROG;
 	spl.src_slabid = XMHFGEEC_SLAB_GEEC_SENTINEL;
 	spl.dst_slabid = UOBJ_UAPI_UHMPGTBL;
@@ -128,15 +126,6 @@ void gs_exit_callv2uv(slab_params_t *sp, void *caller_stack_frame){
 	CASM_FUNCCALL(write_cr3,ps->mpgtblbase);
 	_XDPRINTF_("%s[%u]: swiched to dst mempgtbl\n", __func__,
 			   (u16)sp->cpuid);
-
-#else
-    //switch to destination slab page tables
-    _XDPRINTF_("%s[%u]: dst mempgtbl base=%x\n", __func__,
-               (u16)sp->cpuid, xmhfgeec_slab_info_table[sp->dst_slabid].mempgtbl_cr3);
-    CASM_FUNCCALL(write_cr3,xmhfgeec_slab_info_table[sp->dst_slabid].mempgtbl_cr3);
-    _XDPRINTF_("%s[%u]: swiched to dst mempgtbl\n", __func__,
-               (u16)sp->cpuid);
-#endif
 
 
     _XDPRINTF_("%s[%u]: entry=%x, dst_sp=%x, eflags=%08x, proceeding to xfer...\n", __func__,
