@@ -45,7 +45,7 @@
  */
 
 /*
- * HIC trampoline and stubs
+ * uhmpgtbl uAPI
  *
  * author: amit vasudevan (amitvasudevan@acm.org)
  */
@@ -54,54 +54,19 @@
 #include <xmhf-debug.h>
 #include <xmhfgeec.h>
 
-#include <geec_sentinel.h>
 #include <uapi_uhmpgtbl.h>
 
-////// sysenter
+void _uhmpgtbl_getidxformpgtblbase(uapi_uhmpgtbl_getidxformpgtblbase_params_t *p){
+	u32 idx;
 
-//in general sp->xxx is untrusted and must be sanity checked
-void gs_entry_syscall(slab_params_t *sp, void *caller_stack_frame){
-
-    //sanity check sp
-    sp->cpuid = xmhf_baseplatform_arch_x86_getcpulapicid();
-
-    if( !(sp->slab_ctype == XMHFGEEC_SENTINEL_RET_VfT_PROG_TO_uVT_uVU_PROG ||
-          sp->slab_ctype == XMHFGEEC_SENTINEL_CALL_uVT_uVU_PROG_TO_VfT_PROG
-          ) ){
-        _XDPRINTF_("%s[ln:%u]: inconsistent sp->xxx (%x). halting!\n", __func__,
-                   __LINE__, sp->slab_ctype);
-        HALT();
-    }
-
-    {
-        slab_params_t spl;
-    	uapi_uhmpgtbl_getidxformpgtblbase_params_t *ps =
-    			(uapi_uhmpgtbl_getidxformpgtblbase_params_t *)spl.in_out_params;
-
-    	spl.slab_ctype = XMHFGEEC_SENTINEL_CALL_FROM_VfT_PROG;
-    	spl.src_slabid = XMHFGEEC_SLAB_GEEC_SENTINEL;
-    	spl.dst_slabid = UOBJ_UAPI_UHMPGTBL;
-    	spl.cpuid = sp->cpuid;
-    	spl.dst_uapifn = UAPI_UHMPGTBL_GETIDXFORMPGTBLBASE;
-
-    	ps->mpgtblbase = CASM_FUNCCALL(read_cr3, CASM_NOPARAM) & 0xFFFFF000UL;
-
-    	CASM_FUNCCALL(gs_calluobj, &spl,
-    			xmhfgeec_slab_info_table[spl.dst_slabid].entrystub);
-
-    	if(!ps->status){
-            _XDPRINTF_("%s[ln:%u]: invalid unverified memory page table base (%x). halting!\n",
-            		__func__, __LINE__, ps->mpgtblbase);
-            HALT();
-    	}
-
-    	sp->src_slabid = ps->mpgtblbase_idx + XMHFGEEC_UHSLAB_BASE_IDX;
-    }
-
-    _XDPRINTF_("%s: sp=%x, cpuid=%u, src=%u, dst=%u, ctype=%x\n", __func__,
-               (u32)sp, (u16)sp->cpuid, sp->src_slabid, sp->dst_slabid, sp->slab_ctype);
-
-    geec_sentinel_main(sp, caller_stack_frame);
+	idx = ((u32)p->mpgtblbase - (u32)&_uhslabmempgtbl_lvl4t[0])/PAE_MAXPTRS_PER_PML4T;
+	if (idx < XMHFGEEC_TOTAL_UHSLABS){
+		p->mpgtblbase_idx = idx;
+		p->status=1;
+	}else{
+		p->mpgtblbase_idx = 0;
+		p->status = 0;
+	}
 }
 
 

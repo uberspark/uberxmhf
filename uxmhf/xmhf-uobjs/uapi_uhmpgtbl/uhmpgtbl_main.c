@@ -45,7 +45,7 @@
  */
 
 /*
- * HIC trampoline and stubs
+ * untrusted hypervisoe memory pagetable uAPI
  *
  * author: amit vasudevan (amitvasudevan@acm.org)
  */
@@ -54,56 +54,40 @@
 #include <xmhf-debug.h>
 #include <xmhfgeec.h>
 
-#include <geec_sentinel.h>
 #include <uapi_uhmpgtbl.h>
 
-////// sysenter
 
-//in general sp->xxx is untrusted and must be sanity checked
-void gs_entry_syscall(slab_params_t *sp, void *caller_stack_frame){
+void slab_main(slab_params_t *sp){
 
-    //sanity check sp
-    sp->cpuid = xmhf_baseplatform_arch_x86_getcpulapicid();
+	if(sp->dst_uapifn == UAPI_UHMPGTBL_INITMEMPGTBL){
+		uapi_uhmpgtbl_initmempgtbl_params_t *initmempgtblp =
+		(uapi_uhmpgtbl_initmempgtbl_params_t *)sp->in_out_params;
 
-    if( !(sp->slab_ctype == XMHFGEEC_SENTINEL_RET_VfT_PROG_TO_uVT_uVU_PROG ||
-          sp->slab_ctype == XMHFGEEC_SENTINEL_CALL_uVT_uVU_PROG_TO_VfT_PROG
-          ) ){
-        _XDPRINTF_("%s[ln:%u]: inconsistent sp->xxx (%x). halting!\n", __func__,
-                   __LINE__, sp->slab_ctype);
-        HALT();
-    }
+	    _uhmpgtbl_initmempgtbl(initmempgtblp);
 
-    {
-        slab_params_t spl;
-    	uapi_uhmpgtbl_getidxformpgtblbase_params_t *ps =
-    			(uapi_uhmpgtbl_getidxformpgtblbase_params_t *)spl.in_out_params;
+	}else if (sp->dst_uapifn == UAPI_UHMPGTBL_SETENTRYFORPADDR){
+		uapi_uhmpgtbl_setentryforpaddr_params_t *setentryforpaddrp =
+            (uapi_uhmpgtbl_setentryforpaddr_params_t *)sp->in_out_params;
 
-    	spl.slab_ctype = XMHFGEEC_SENTINEL_CALL_FROM_VfT_PROG;
-    	spl.src_slabid = XMHFGEEC_SLAB_GEEC_SENTINEL;
-    	spl.dst_slabid = UOBJ_UAPI_UHMPGTBL;
-    	spl.cpuid = sp->cpuid;
-    	spl.dst_uapifn = UAPI_UHMPGTBL_GETIDXFORMPGTBLBASE;
+            _uhmpgtbl_setentryforpaddr(setentryforpaddrp);
 
-    	ps->mpgtblbase = CASM_FUNCCALL(read_cr3, CASM_NOPARAM) & 0xFFFFF000UL;
+	}else if (sp->dst_uapifn == UAPI_UHMPGTBL_GETMPGTBLBASE){
+		uapi_uhmpgtbl_getmpgtblbase_params_t *p =
+            (uapi_uhmpgtbl_getmpgtblbase_params_t *)sp->in_out_params;
 
-    	CASM_FUNCCALL(gs_calluobj, &spl,
-    			xmhfgeec_slab_info_table[spl.dst_slabid].entrystub);
+		_XDPRINTF_("uapi_uhmpgtbl[%u]: GETMPGTBLBASE\n",
+                (u16)sp->cpuid);
 
-    	if(!ps->status){
-            _XDPRINTF_("%s[ln:%u]: invalid unverified memory page table base (%x). halting!\n",
-            		__func__, __LINE__, ps->mpgtblbase);
-            HALT();
-    	}
+        _uhmpgtbl_getmpgtblbase(p);
 
-    	sp->src_slabid = ps->mpgtblbase_idx + XMHFGEEC_UHSLAB_BASE_IDX;
-    }
+	}else if (sp->dst_uapifn == UAPI_UHMPGTBL_GETIDXFORMPGTBLBASE){
+		uapi_uhmpgtbl_getidxformpgtblbase_params_t *p =
+            (uapi_uhmpgtbl_getidxformpgtblbase_params_t *)sp->in_out_params;
 
-    _XDPRINTF_("%s: sp=%x, cpuid=%u, src=%u, dst=%u, ctype=%x\n", __func__,
-               (u32)sp, (u16)sp->cpuid, sp->src_slabid, sp->dst_slabid, sp->slab_ctype);
+        _uhmpgtbl_getidxformpgtblbase(p);
 
-    geec_sentinel_main(sp, caller_stack_frame);
+	}else{
+            //_XDPRINTF_("uapi_uhmpgtbl[%u]: Unknown uAPI function %x. Halting!\n",
+            //        (u16)sp->cpuid, sp->dst_uapifn);
+	}
 }
-
-
-
-

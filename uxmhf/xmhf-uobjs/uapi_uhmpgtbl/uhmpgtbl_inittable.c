@@ -45,7 +45,7 @@
  */
 
 /*
- * HIC trampoline and stubs
+ * hypervisor untrusted uobj pagetable uAPI
  *
  * author: amit vasudevan (amitvasudevan@acm.org)
  */
@@ -54,56 +54,46 @@
 #include <xmhf-debug.h>
 #include <xmhfgeec.h>
 
-#include <geec_sentinel.h>
 #include <uapi_uhmpgtbl.h>
 
-////// sysenter
 
-//in general sp->xxx is untrusted and must be sanity checked
-void gs_entry_syscall(slab_params_t *sp, void *caller_stack_frame){
+static void _uhmpgtbl_initmempgtbl_pae(u32 slabid){
+	u32 i, j;
 
-    //sanity check sp
-    sp->cpuid = xmhf_baseplatform_arch_x86_getcpulapicid();
+	for(i=0; i < PAE_MAXPTRS_PER_PDPT; i++){
+		_uhslabmempgtbl_lvl4t[(slabid - XMHFGEEC_UHSLAB_BASE_IDX)][i] = 0;
+	}
 
-    if( !(sp->slab_ctype == XMHFGEEC_SENTINEL_RET_VfT_PROG_TO_uVT_uVU_PROG ||
-          sp->slab_ctype == XMHFGEEC_SENTINEL_CALL_uVT_uVU_PROG_TO_VfT_PROG
-          ) ){
-        _XDPRINTF_("%s[ln:%u]: inconsistent sp->xxx (%x). halting!\n", __func__,
-                   __LINE__, sp->slab_ctype);
-        HALT();
-    }
+	//assign 4GB pdpt entries
+	for(i=0; i < PAE_PTRS_PER_PDPT; i++){
+		_uhslabmempgtbl_lvl4t[(slabid - XMHFGEEC_UHSLAB_BASE_IDX)][i] =
+		    pae_make_pdpe(&_uhslabmempgtbl_lvl2t[(slabid - XMHFGEEC_UHSLAB_BASE_IDX)][i * PAE_PTRS_PER_PDT], (u64)(_PAGE_PRESENT));
+	}
 
-    {
-        slab_params_t spl;
-    	uapi_uhmpgtbl_getidxformpgtblbase_params_t *ps =
-    			(uapi_uhmpgtbl_getidxformpgtblbase_params_t *)spl.in_out_params;
+	//pdt setup
+	for(i=0; i < PAE_PTRS_PER_PDPT * PAE_PTRS_PER_PDT; i++){
+		_uhslabmempgtbl_lvl2t[(slabid - XMHFGEEC_UHSLAB_BASE_IDX)][i] =
+			pae_make_pde(&_uhslabmempgtbl_lvl1t[(slabid - XMHFGEEC_UHSLAB_BASE_IDX)][(i * PAE_PTRS_PER_PT)], (u64)(_PAGE_PRESENT | _PAGE_RW | _PAGE_USER));
+	}
 
-    	spl.slab_ctype = XMHFGEEC_SENTINEL_CALL_FROM_VfT_PROG;
-    	spl.src_slabid = XMHFGEEC_SLAB_GEEC_SENTINEL;
-    	spl.dst_slabid = UOBJ_UAPI_UHMPGTBL;
-    	spl.cpuid = sp->cpuid;
-    	spl.dst_uapifn = UAPI_UHMPGTBL_GETIDXFORMPGTBLBASE;
-
-    	ps->mpgtblbase = CASM_FUNCCALL(read_cr3, CASM_NOPARAM) & 0xFFFFF000UL;
-
-    	CASM_FUNCCALL(gs_calluobj, &spl,
-    			xmhfgeec_slab_info_table[spl.dst_slabid].entrystub);
-
-    	if(!ps->status){
-            _XDPRINTF_("%s[ln:%u]: invalid unverified memory page table base (%x). halting!\n",
-            		__func__, __LINE__, ps->mpgtblbase);
-            HALT();
-    	}
-
-    	sp->src_slabid = ps->mpgtblbase_idx + XMHFGEEC_UHSLAB_BASE_IDX;
-    }
-
-    _XDPRINTF_("%s: sp=%x, cpuid=%u, src=%u, dst=%u, ctype=%x\n", __func__,
-               (u32)sp, (u16)sp->cpuid, sp->src_slabid, sp->dst_slabid, sp->slab_ctype);
-
-    geec_sentinel_main(sp, caller_stack_frame);
 }
 
 
+void _uhmpgtbl_initmempgtbl(uapi_uhmpgtbl_initmempgtbl_params_t *initmempgtblp){
 
+    if( (initmempgtblp->dst_slabid < XMHFGEEC_TOTAL_SLABS) &&
+	(initmempgtblp->dst_slabid >= XMHFGEEC_UHSLAB_BASE_IDX && initmempgtblp->dst_slabid <= XMHFGEEC_UHSLAB_MAX_IDX) &&
+	(xmhfgeec_slab_info_table[initmempgtblp->dst_slabid].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG ||
+	 xmhfgeec_slab_info_table[initmempgtblp->dst_slabid].slabtype == XMHFGEEC_SLABTYPE_uVT_PROG)
+      ){
+
+            _uhmpgtbl_initmempgtbl_pae(initmempgtblp->dst_slabid);
+
+            _XDPRINTF_("%s: setup slab %u with PAE\n", __func__,
+            		initmempgtblp->dst_slabid);
+
+	}else{
+		//_XDPRINTF_("%s: Halting. Unknown slab type %u\n", __func__, slabtype);
+	}
+}
 
