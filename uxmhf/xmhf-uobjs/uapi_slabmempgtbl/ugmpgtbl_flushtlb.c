@@ -93,7 +93,11 @@ void _slabmempgtbl_flushtlb(xmhfgeec_uapi_slabmempgtbl_flushtlb_params_t *flusht
 			 xmhfgeec_slab_info_table[flushtlbp->dst_slabid].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG_RICHGUEST)
 			)
 	      ) {
+#if 0
 		status = CASM_FUNCCALL(__vmx_invept, VMX_INVEPT_SINGLECONTEXT, 0, (xmhfgeec_slab_info_table[flushtlbp->dst_slabid].mempgtbl_cr3 | 0x1E), 0);
+#else
+		status = CASM_FUNCCALL(__vmx_invept, VMX_INVEPT_SINGLECONTEXT, 0, ((u32)&_slabmempgtbl_lvl4t[(flushtlbp->dst_slabid - XMHFGEEC_UGSLAB_BASE_IDX)] | 0x1E), 0);
+#endif
 		//@ghost flushtlb_invoke_invept = true;
 	}else{
 		//@ghost flushtlb_invoke_invept = false;
