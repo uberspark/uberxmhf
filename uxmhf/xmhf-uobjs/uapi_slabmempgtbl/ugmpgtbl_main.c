@@ -108,6 +108,11 @@ void slab_main(slab_params_t *sp){
             //@ ghost ugmpgtbl_methodcall_flushtlb = true;
             _slabmempgtbl_flushtlb(flushtlbp);
 
+	}else if (sp->dst_uapifn == UAPI_UGMPGTBL_GETMPGTBLBASE){
+		uapi_ugmpgtbl_getmpgtblbase_params_t *p =
+                (uapi_ugmpgtbl_getmpgtblbase_params_t *)sp->in_out_params;
+
+            _ugmpgtbl_getmpgtblbase(p);
 
 
 	}else{
