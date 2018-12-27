@@ -102,6 +102,12 @@ typedef struct {
 
 
 /*@
+  requires \valid(p);
+@*/
+void _ugmpgtbl_getmpgtblbase(uapi_ugmpgtbl_getmpgtblbase_params_t *p);
+
+
+/*@
   requires \valid(flushtlbp);
 @*/
 void _slabmempgtbl_flushtlb(xmhfgeec_uapi_slabmempgtbl_flushtlb_params_t *flushtlbp);
