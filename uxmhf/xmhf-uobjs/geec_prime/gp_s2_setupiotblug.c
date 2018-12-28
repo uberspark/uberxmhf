@@ -88,9 +88,6 @@ static inline void gp_s2_setupiotblug_helper(u32 slabid, u32 sysdev_memioregions
 			@*/
 			for(portnum= sysdev_memioregions[sysdev_memioregions_index].memioextents[k].addr_start;
 				portnum < sysdev_memioregions[sysdev_memioregions_index].memioextents[k].addr_end; portnum++){
-#if 0
-				gp_s2_setupiotblug_allowaccesstoport((slabid - XMHFGEEC_UGSLAB_BASE_IDX), portnum, 1);
-#else
 				{
 					slab_params_t spl;
 					uapi_iotbl_setupiotblugportaccess_t *ps = (uapi_iotbl_setupiotblugportaccess_t *)spl.in_out_params;
@@ -106,7 +103,6 @@ static inline void gp_s2_setupiotblug_helper(u32 slabid, u32 sysdev_memioregions
 
 					XMHF_SLAB_CALLNEW(&spl);
 				}
-#endif
 			}
 
 			//@ghost gp_s2_setupiotblug_helper_invokedportaccess[k] = true;
@@ -130,9 +126,6 @@ static inline void gp_s2_setupiotblug_helper(u32 slabid, u32 sysdev_memioregions
 void gp_s2_setupiotblug(u32 slabid){
 	u32 i;
 
-#if 0
-        memset(&gp_rwdatahdr.gp_ugslab_iobitmap[(slabid - XMHFGEEC_UGSLAB_BASE_IDX)], 0xFFFFFFFFUL, sizeof(gp_rwdatahdr.gp_ugslab_iobitmap[0]));
-#else
         {
         	slab_params_t spl;
         	uapi_iotbl_initiotbl_t *ps = (uapi_iotbl_initiotbl_t *)spl.in_out_params;
@@ -146,7 +139,6 @@ void gp_s2_setupiotblug(u32 slabid){
 
         	XMHF_SLAB_CALLNEW(&spl);
         }
-#endif
     	/*@
 		loop invariant a1: 0 <= i <= _sda_slab_devicemap[slabid].device_count;
 		loop invariant a2: \forall integer x; 0 <= x < i ==>

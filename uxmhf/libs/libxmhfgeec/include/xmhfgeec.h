@@ -144,8 +144,8 @@ typedef struct {
 typedef struct {
 	bool slab_inuse;
 	u32 slabtype;
-	u32 mempgtbl_cr3;
-	u32 iotbl_base;
+	//u32 mempgtbl_cr3;
+	//u32 iotbl_base;
 	u32 slabtos[MAX_PLATFORM_CPUS];
     slab_callcaps_t slab_callcaps;
     bool slab_uapisupported;
@@ -157,7 +157,7 @@ typedef struct {
     slab_device_entry_t excl_devices[XMHF_CONFIG_MAX_EXCLDEVLIST_ENTRIES];
     u32 excl_devices_count;
     physmem_extent_t slab_physmem_extents[HIC_SLAB_PHYSMEM_MAXEXTENTS];
-    slab_memoffset_t slab_memoffset_entries[XMHF_CONFIG_MAX_MEMOFFSET_ENTRIES];
+    //slab_memoffset_t slab_memoffset_entries[XMHF_CONFIG_MAX_MEMOFFSET_ENTRIES];
 	slab_entrystub_t entrystub;
 } __attribute__((packed)) xmhfgeec_slab_info_t;
 

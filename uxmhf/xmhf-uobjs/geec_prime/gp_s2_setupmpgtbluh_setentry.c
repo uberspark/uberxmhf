@@ -50,6 +50,24 @@
 
 #include <geec_prime.h>
 #include <uapi_uhmpgtbl.h>
+#include <uapi_iotbl.h>
+
+u32 _setupmpgtbluh_setentry_getiotblbase(u32 slabid){
+	slab_params_t spl;
+	uapi_iotbl_getiotblbase_t *ps = (uapi_iotbl_getiotblbase_t *)spl.in_out_params;
+
+	spl.src_slabid = XMHFGEEC_SLAB_GEEC_PRIME;
+	spl.dst_slabid = UOBJ_UAPI_IOTBL;
+	spl.dst_uapifn = UXMHF_UAPI_IOTBL_GETIOTBLBASE;
+	spl.cpuid = 0; //TODO: BSP CPU id
+
+	ps->dst_slabid = slabid;
+
+	XMHF_SLAB_CALLNEW(&spl);
+
+	return ps->iotbl_base;
+}
+
 
 void _setupmpgtbluh_setentry_helper(u32 slabid, u32 ptindex, u64 entry){
 	slab_params_t spl;
@@ -130,13 +148,14 @@ bool gp_s2_setupmpgtbluh_setentry(u32 slabid, u32 uhslabmempgtbl_idx, u32 spatyp
 		if(ptindex < ((1024*1024)-3)){
 			//map unverified slab iotbl instead (12K)
 			_setupmpgtbluh_setentry_helper(slabid, ptindex,
-					pae_make_pte(xmhfgeec_slab_info_table[slabid].iotbl_base, flags));
+					pae_make_pte(_setupmpgtbluh_setentry_getiotblbase(slabid), flags));
 
 			_setupmpgtbluh_setentry_helper(slabid, ptindex+1,
-					pae_make_pte(xmhfgeec_slab_info_table[slabid].iotbl_base+PAGE_SIZE_4K, flags));
+					pae_make_pte(_setupmpgtbluh_setentry_getiotblbase(slabid)+PAGE_SIZE_4K, flags));
 
 			_setupmpgtbluh_setentry_helper(slabid, ptindex+2,
-					pae_make_pte(xmhfgeec_slab_info_table[slabid].iotbl_base+(2*PAGE_SIZE_4K), flags));
+					pae_make_pte(_setupmpgtbluh_setentry_getiotblbase(slabid)+(2*PAGE_SIZE_4K), flags));
+
 
 			//@ghost gp_s2_setupmpgtbluh_setentry_halted = false;
 			return false;

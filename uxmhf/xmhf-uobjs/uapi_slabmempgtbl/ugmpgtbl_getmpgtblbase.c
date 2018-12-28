@@ -44,16 +44,35 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-// xmhf.h - main XMHF header file
-// author: amit vasudevan (amitvasudevan@acm.org)
+/*
+ * slab memory pagetable uAPI
+ *
+ * author: amit vasudevan (amitvasudevan@acm.org)
+ */
 
-#ifndef __XMHF_H_
-#define __XMHF_H_
+#include <xmhf.h>
+#include <xmhf-debug.h>
+#include <xmhfgeec.h>
 
-#include <uberspark.h>
+#include <uapi_slabmempgtbl.h>
 
-#include <xmhf-config.h>		//XMHF platform/arch config, TODO: this needs to be platform/arch independent push arch dependent stuff into arch/
-#include <xmhf-types.h>			//XMHF specific base types
-#include <xmhf-error.h>			//error handling
+void _ugmpgtbl_getmpgtblbase(uapi_ugmpgtbl_getmpgtblbase_params_t *p){
 
-#endif /* __XMHF_H_ */
+	if( (p->dst_slabid < XMHFGEEC_TOTAL_SLABS)
+			&&
+		(p->dst_slabid >= XMHFGEEC_UGSLAB_BASE_IDX &&
+		 p->dst_slabid <= XMHFGEEC_UGSLAB_MAX_IDX)
+		  	&&
+		( xmhfgeec_slab_info_table[p->dst_slabid].slabtype == XMHFGEEC_SLABTYPE_uVT_PROG_GUEST ||
+			 xmhfgeec_slab_info_table[p->dst_slabid].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG_GUEST ||
+			 xmhfgeec_slab_info_table[p->dst_slabid].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG_RICHGUEST
+		)
+	   ) {
+
+    	p->mpgtblbase = (u32)&_slabmempgtbl_lvl4t[(p->dst_slabid - XMHFGEEC_UGSLAB_BASE_IDX)];
+
+	}else{
+
+		p->mpgtblbase = 0;
+	}
+}

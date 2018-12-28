@@ -262,20 +262,6 @@ void xcihub_icptmain(slab_params_t *sp){
 	XMHF_SLAB_CALLNEW(&spl);
 	info_vmexit_reason = gcpustate_vmrwp->value;
 
-#if 0
-	cr4= CASM_FUNCCALL(read_cr4, CASM_NOPARAM);
-	if(cr4 != 0x00046230){
-		_XDPRINTF_("XCIHUB[%u]: s=%u, d=%u, er=%u, esp=%08x, eflags=%08x, cr4=0x%08x\n",
-				(u16)sp->cpuid,
-				sp->src_slabid,
-				sp->dst_slabid,
-				info_vmexit_reason,
-				CASM_FUNCCALL(read_esp,CASM_NOPARAM),
-				CASM_FUNCCALL(read_eflags, CASM_NOPARAM),
-				cr4);
-	}
-#endif
-
 	update_exhub_withinfo((u16)sp->cpuid, true, info_vmexit_reason);
 
 	slab_main_helper(info_vmexit_reason, sp->src_slabid, (u16)sp->cpuid);

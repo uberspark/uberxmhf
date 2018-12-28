@@ -323,24 +323,6 @@ void xcihub_icptcrx(u32 cpuid, u32 src_slabid){
 	}
 
 	if (crx == 0x0 && tofrom == VMX_CRX_ACCESS_TO){
-#if 0
-		//CR0 access
-		u32 cr0_value = _xcihub_icptcrx_getregval(gpr, r);
-		//_XDPRINTF_("%s[%u]: CR0 access, gpr=%u, tofrom=%u\n", __func__, cpuid, gpr, tofrom);
-
-		//propagate CR0 while keeping CR_CD and CR0_NW clear in control CR0 shadow
-		spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_VMWRITE;
-		gcpustate_vmrwp->encoding = VMCS_GUEST_CR0;
-		gcpustate_vmrwp->value = cr0_value;
-		XMHF_SLAB_CALLNEW(&spl);
-
-		gcpustate_vmrwp->encoding = VMCS_CONTROL_CR0_SHADOW;
-		gcpustate_vmrwp->value = (cr0_value & ~(CR0_CD | CR0_NW));
-		XMHF_SLAB_CALLNEW(&spl);
-
-		//we need to flush logical processor VPID mappings as we emulated CR0 load above
-		CASM_FUNCCALL(xmhfhw_cpu_invvpid, VMX_INVVPID_SINGLECONTEXT, src_slabid, 0, 0);
-#endif
 		xcihub_icptcrx_handle_cr0(cpuid, src_slabid, _xcihub_icptcrx_getregval(gpr, r));
 
 	}else if (crx == 0x0 && tofrom == 0x3){
@@ -359,38 +341,6 @@ void xcihub_icptcrx(u32 cpuid, u32 src_slabid){
 		xcihub_icptcrx_handle_cr0(cpuid, src_slabid, hw_cr0);
 
 	}else if(crx == 0x4 && tofrom == VMX_CRX_ACCESS_TO){
-#if 0
-		//CR4 write emulation
-		u32 cr4_shadow = 0;
-		u32 cr4_value = _xcihub_icptcrx_getregval(gpr, r);
-
-		_XDPRINTF_("%s[%u]: CR4[WRITE], gpr=%u, value=0x%08x, tofrom=%u\n",
-				__func__, cpuid, gpr, cr4_value, tofrom);
-
-		//read CR4 shadow to get fixed 1 bits that we need to set
-		spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_VMREAD;
-		gcpustate_vmrwp->encoding = VMCS_CONTROL_CR4_SHADOW;
-		XMHF_SLAB_CALLNEW(&spl);
-		cr4_shadow = gcpustate_vmrwp->value;
-
-		_XDPRINTF_("%s[%u]: CR4[WRITE], cr4_shadow=0x%08x\n",
-				__func__, cpuid, cr4_shadow);
-
-		//propagate CR4 but set fixed 1 bits
-		spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_VMWRITE;
-		gcpustate_vmrwp->encoding = VMCS_GUEST_CR4;
-		gcpustate_vmrwp->value = cr4_value | cr4_shadow;
-		XMHF_SLAB_CALLNEW(&spl);
-
-		//propagate CR4 read shadow as well but set fixed 1 bits
-		spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_VMWRITE;
-		gcpustate_vmrwp->encoding = VMCS_CONTROL_CR4_SHADOW;
-		gcpustate_vmrwp->value = cr4_value | cr4_shadow;
-		XMHF_SLAB_CALLNEW(&spl);
-
-		//we need to flush logical processor VPID mappings as we emulated CR0 load above
-		CASM_FUNCCALL(xmhfhw_cpu_invvpid, VMX_INVVPID_SINGLECONTEXT, src_slabid, 0, 0);
-#endif
 
 		xcihub_icptcrx_handle_cr4(cpuid, src_slabid, _xcihub_icptcrx_getregval(gpr, r));
 
