@@ -61,9 +61,6 @@
 @*/
 void gp_s2_setupiotblug_rg(u32 slabid){
 
-#if 0
-	memset(&gp_rwdatahdr.gp_ugslab_iobitmap[(slabid - XMHFGEEC_UGSLAB_BASE_IDX)], 0UL, sizeof(gp_rwdatahdr.gp_ugslab_iobitmap[0]));
-#else
 	{
 		slab_params_t spl;
 		uapi_iotbl_initiotbl_t *ps = (uapi_iotbl_initiotbl_t *)spl.in_out_params;
@@ -77,7 +74,6 @@ void gp_s2_setupiotblug_rg(u32 slabid){
 
 		XMHF_SLAB_CALLNEW(&spl);
 	}
-#endif
 
 }
 

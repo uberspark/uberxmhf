@@ -146,17 +146,6 @@ bool gp_s2_setupmpgtbluh_setentry(u32 slabid, u32 uhslabmempgtbl_idx, u32 spatyp
 	   xmhfgeec_slab_info_table[slabid].slabtype != XMHFGEEC_SLABTYPE_VfT_PROG &&
 	   xmhfgeec_slab_info_table[slabid].slabtype != XMHFGEEC_SLABTYPE_VfT_SENTINEL){
 		if(ptindex < ((1024*1024)-3)){
-#if 0
-			//map unverified slab iotbl instead (12K)
-			_setupmpgtbluh_setentry_helper(slabid, ptindex,
-					pae_make_pte(xmhfgeec_slab_info_table[slabid].iotbl_base, flags));
-
-			_setupmpgtbluh_setentry_helper(slabid, ptindex+1,
-					pae_make_pte(xmhfgeec_slab_info_table[slabid].iotbl_base+PAGE_SIZE_4K, flags));
-
-			_setupmpgtbluh_setentry_helper(slabid, ptindex+2,
-					pae_make_pte(xmhfgeec_slab_info_table[slabid].iotbl_base+(2*PAGE_SIZE_4K), flags));
-#else
 			//map unverified slab iotbl instead (12K)
 			_setupmpgtbluh_setentry_helper(slabid, ptindex,
 					pae_make_pte(_setupmpgtbluh_setentry_getiotblbase(slabid), flags));
@@ -168,7 +157,6 @@ bool gp_s2_setupmpgtbluh_setentry(u32 slabid, u32 uhslabmempgtbl_idx, u32 spatyp
 					pae_make_pte(_setupmpgtbluh_setentry_getiotblbase(slabid)+(2*PAGE_SIZE_4K), flags));
 
 
-#endif
 			//@ghost gp_s2_setupmpgtbluh_setentry_halted = false;
 			return false;
 		}else{
