@@ -16,7 +16,7 @@ export XMHF_BOOTLOADER_SRC := $(realpath $(XMHF_DIR)/xmhf-bootloader)
 
 ## uXMHF specific libraries
 export LIBXMHFDEBUG_SRC := $(realpath $(XMHF_DIR)/libs/libxmhfdebug)
-export LIBXMHFGEEC_SRC := $(realpath $(XMHF_DIR)/libs/libxmhfgeec)
+#export LIBXMHFGEEC_SRC := $(realpath $(XMHF_DIR)/libs/libxmhfgeec)
 
 ## uobj source paths and count
 #export XMHF_SLAB_DIRS := $(shell awk -F, '{print $$1}' $(XMHF_DIR)/xmhf-uobjs/UOBJLIST)
@@ -51,16 +51,17 @@ _libxmhfdebug:
 	@echo libxmhfdebug built sucessfully.
 
 
-.PHONY: _libxmhfgeec
-_libxmhfgeec:
-	@echo building libxmhfgeec...
-	$(MKDIR) -p $(XMHF_LIBS_OBJECTS_DIR)
-	cd $(XMHF_LIBS_OBJECTS_DIR) &&	$(MAKE) -f $(LIBXMHFGEEC_SRC)/Makefile -w all
-	@echo libxmhfgeec built sucessfully.
+#.PHONY: _libxmhfgeec
+#_libxmhfgeec:
+#	@echo building libxmhfgeec...
+#	$(MKDIR) -p $(XMHF_LIBS_OBJECTS_DIR)
+#	cd $(XMHF_LIBS_OBJECTS_DIR) &&	$(MAKE) -f $(LIBXMHFGEEC_SRC)/Makefile -w all
+#	@echo libxmhfgeec built sucessfully.
 	
 
 .PHONY: uxmhf-libs
-uxmhf-libs: _libxmhfdebug _libxmhfgeec
+#uxmhf-libs: _libxmhfdebug _libxmhfgeec
+uxmhf-libs: _libxmhfdebug 
 
 
 
