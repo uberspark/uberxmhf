@@ -60,14 +60,14 @@
 
 
 //max. include device list entries
-#define XMHF_CONFIG_MAX_INCLDEVLIST_ENTRIES __XMHF_CONFIG_MAX_INCLDEVLIST_ENTRIES__
+//#define XMHF_CONFIG_MAX_INCLDEVLIST_ENTRIES __XMHF_CONFIG_MAX_INCLDEVLIST_ENTRIES__
 
 //max. exclude device list entries
-#define XMHF_CONFIG_MAX_EXCLDEVLIST_ENTRIES __XMHF_CONFIG_MAX_EXCLDEVLIST_ENTRIES__
+//#define XMHF_CONFIG_MAX_EXCLDEVLIST_ENTRIES __XMHF_CONFIG_MAX_EXCLDEVLIST_ENTRIES__
 
 
 //max. memoffset entries
-#define XMHF_CONFIG_MAX_MEMOFFSET_ENTRIES __XMHF_CONFIG_MAX_MEMOFFSET_ENTRIES__
+//#define XMHF_CONFIG_MAX_MEMOFFSET_ENTRIES __XMHF_CONFIG_MAX_MEMOFFSET_ENTRIES__
 
 
 
@@ -137,7 +137,7 @@
 
 //======================================================================
 
-#define	XMHF_SLAB_STACKSIZE		(16384)
+//#define	XMHF_SLAB_STACKSIZE		(16384)
 
 
 
@@ -147,8 +147,8 @@
 // for now, manually keep in sync based on the conf. selected
 //////
 
-#define XMHFGEEC_MAX_SLABS                  32
-#define XMHFGEEC_TOTAL_SLABS                16
+//#define XMHFGEEC_MAX_SLABS                  32
+//#define XMHFGEEC_TOTAL_SLABS                16
 
 #define XMHFGEEC_SLAB_GEEC_SENTINEL         0
 #define XMHFGEEC_SLAB_GEEC_PRIME            1
