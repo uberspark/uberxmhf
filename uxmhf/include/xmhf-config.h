@@ -87,7 +87,7 @@
 
 //max. cores/vcpus we support currently
 //#ifndef __XMHF_VERIFICATION__
-	#define	MAX_PLATFORM_CPUS					(256)
+//	#define	MAX_PLATFORM_CPUS					(256)
 //#else
 //	#define	MAX_PLATFORM_CPUS					(1)
 //#endif
