@@ -51,6 +51,8 @@
 #define __XMHF_H_
 
 #include <uberspark.h>
+#include <xmhfhw.h>
+
 
 #include <xmhf-config.h>		//XMHF platform/arch config, TODO: this needs to be platform/arch independent push arch dependent stuff into arch/
 #include <xmhf-types.h>			//XMHF specific base types
