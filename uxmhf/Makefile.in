@@ -15,7 +15,7 @@ include ./uxmhf-common.mk
 export XMHF_BOOTLOADER_SRC := $(realpath $(XMHF_DIR)/xmhf-bootloader)
 
 ## uXMHF specific libraries
-export LIBXMHFDEBUG_SRC := $(realpath $(XMHF_DIR)/libs/libxmhfdebug)
+#export LIBXMHFDEBUG_SRC := $(realpath $(XMHF_DIR)/libs/libxmhfdebug)
 #export LIBXMHFGEEC_SRC := $(realpath $(XMHF_DIR)/libs/libxmhfgeec)
 
 ## uobj source paths and count
@@ -35,7 +35,8 @@ export XMHF_SLAB_TOTAL := $(shell sed '1,2d;$$d' $(XMHF_DIR)/xmhf-uobjs/UOBJLIST
 ######
 # uxmhf image
 .PHONY: uxmhf-image
-uxmhf-image: uxmhf-libs uxmhf-uobjsbuild uxmhf-bootloader uxmhf-binimage
+#uxmhf-image: uxmhf-libs uxmhf-uobjsbuild uxmhf-bootloader uxmhf-binimage
+uxmhf-image: uxmhf-uobjsbuild uxmhf-bootloader uxmhf-binimage
 
 
 
@@ -43,12 +44,12 @@ uxmhf-image: uxmhf-libs uxmhf-uobjsbuild uxmhf-bootloader uxmhf-binimage
 ######
 # uxmhf-libs build
 
-.PHONY: _libxmhfdebug
-_libxmhfdebug:
-	@echo building libxmhfdebug...
-	$(MKDIR) -p $(XMHF_LIBS_OBJECTS_DIR)
-	cd $(XMHF_LIBS_OBJECTS_DIR) &&	$(MAKE) -f $(LIBXMHFDEBUG_SRC)/Makefile -w all
-	@echo libxmhfdebug built sucessfully.
+#.PHONY: _libxmhfdebug
+#_libxmhfdebug:
+#	@echo building libxmhfdebug...
+#	$(MKDIR) -p $(XMHF_LIBS_OBJECTS_DIR)
+#	cd $(XMHF_LIBS_OBJECTS_DIR) &&	$(MAKE) -f $(LIBXMHFDEBUG_SRC)/Makefile -w all
+#	@echo libxmhfdebug built sucessfully.
 
 
 #.PHONY: _libxmhfgeec
@@ -59,9 +60,10 @@ _libxmhfdebug:
 #	@echo libxmhfgeec built sucessfully.
 	
 
-.PHONY: uxmhf-libs
+#.PHONY: uxmhf-libs
 #uxmhf-libs: _libxmhfdebug _libxmhfgeec
-uxmhf-libs: _libxmhfdebug 
+#uxmhf-libs: _libxmhfdebug 
+#uxmhf-libs:  
 
 
 
@@ -80,6 +82,7 @@ _uobjs_preprocessmanifests:
 
 .PHONY: _uobjs_configureandgenerateuobjinfo
 _uobjs_configureandgenerateuobjinfo:
+	$(MKDIR) -p $(XMHF_OBJDIR)
 	cd $(XMHF_DIR) && $(USPARK_INSTALL_TOOLSDIR)/umf $(XMHF_DIR)/xmhf-uobjs/UOBJLIST $(XMHF_DIR)/configure-uxmhfuobj $(XMHF_OBJDIR)/uobjinfotable.c $(XMHF_OBJDIR)/xmhf.lscript $(XMHF_CONFIG_LOADADDR) $(XMHF_CONFIG_LOADMAXSIZE) $(XMHFGEEC_TOTAL_UHSLABS) $(XMHF_CONFIG_MAX_INCLDEVLIST_ENTRIES) $(XMHF_CONFIG_MAX_EXCLDEVLIST_ENTRIES) $(XMHF_CONFIG_MAX_MEMOFFSET_ENTRIES) 0 "$(CCERT_CFLAGS)"
 
 
