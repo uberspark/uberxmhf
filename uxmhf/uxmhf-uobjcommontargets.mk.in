@@ -29,7 +29,7 @@ LINKER_SCRIPT_OUTPUT := $(XMHF_SLAB_NAME).lds
 #ifeq ($(XMHF_SLAB_FULLLINK), y)
 export LDFLAGS := --oformat elf32-i386
 #else
-#    export LDFLAGS := -r --oformat elf32-i386
+
 #endif
 
 # targets
@@ -57,7 +57,6 @@ verifybase:
 		($(CP) -f $$i $(XMHF_SLAB_VERIFICATION_DIR)/$$i.v.c) || exit 1; \
 	done;
 	$(CP) -f $(XMHF_OBJDIR)/_verif_bp/$(XMHF_SLAB_NAME)_sstub.ag.v.c $(XMHF_SLAB_VERIFICATION_DIR)/.
-	#$(CP) -f $(srcdir)/../../libs/libxmhfgeec/xmhfgeec_slabmapdef.c $(XMHF_SLAB_VERIFICATION_DIR)/.
 	$(CP) -f $(V_LIBXMHFGEEC_MODULES_DIR)/xmhfgeec_slabmapdef.c $(XMHF_SLAB_VERIFICATION_DIR)/.
 	$(CP) -f $(XMHF_OBJDIR)/uobjinfotable.c $(XMHF_SLAB_VERIFICATION_DIR)/xmhfgeec_slabinfotable.c
 	$(MKDIR) -p $(XMHF_SLAB_VERIFICATION_DIR)/libxmhfhw
