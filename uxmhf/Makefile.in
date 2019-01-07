@@ -14,15 +14,11 @@ include ./uxmhf-common.mk
 ## bootloader source path
 export XMHF_BOOTLOADER_SRC := $(realpath $(XMHF_DIR)/xmhf-bootloader)
 
-## uXMHF specific libraries
-export LIBXMHFDEBUG_SRC := $(realpath $(XMHF_DIR)/libs/libxmhfdebug)
-export LIBXMHFGEEC_SRC := $(realpath $(XMHF_DIR)/libs/libxmhfgeec)
 
 ## uobj source paths and count
 #export XMHF_SLAB_DIRS := $(shell awk -F, '{print $$1}' $(XMHF_DIR)/xmhf-uobjs/UOBJLIST)
 export XMHF_SLAB_DIRS := $(shell sed '1,2d;$$d' $(XMHF_DIR)/xmhf-uobjs/UOBJLIST | sed '$$d' | awk '{$$1=$$1;print}')
 XMHF_SLAB_NAMES := $(notdir $(XMHF_SLAB_DIRS))
-#export XMHF_SLAB_TOTAL := $(shell wc -l < $(XMHF_DIR)/xmhf-uobjs/UOBJLIST)
 export XMHF_SLAB_TOTAL := $(shell sed '1,2d;$$d' $(XMHF_DIR)/xmhf-uobjs/UOBJLIST | sed '$$d' | awk '{$$1=$$1;print}' | wc -l)
 
 
@@ -35,32 +31,10 @@ export XMHF_SLAB_TOTAL := $(shell sed '1,2d;$$d' $(XMHF_DIR)/xmhf-uobjs/UOBJLIST
 ######
 # uxmhf image
 .PHONY: uxmhf-image
-uxmhf-image: uxmhf-libs uxmhf-uobjsbuild uxmhf-bootloader uxmhf-binimage
+uxmhf-image: uxmhf-uobjsbuild uxmhf-bootloader uxmhf-binimage
 
 
 
-
-######
-# uxmhf-libs build
-
-.PHONY: _libxmhfdebug
-_libxmhfdebug:
-	@echo building libxmhfdebug...
-	$(MKDIR) -p $(XMHF_LIBS_OBJECTS_DIR)
-	cd $(XMHF_LIBS_OBJECTS_DIR) &&	$(MAKE) -f $(LIBXMHFDEBUG_SRC)/Makefile -w all
-	@echo libxmhfdebug built sucessfully.
-
-
-.PHONY: _libxmhfgeec
-_libxmhfgeec:
-	@echo building libxmhfgeec...
-	$(MKDIR) -p $(XMHF_LIBS_OBJECTS_DIR)
-	cd $(XMHF_LIBS_OBJECTS_DIR) &&	$(MAKE) -f $(LIBXMHFGEEC_SRC)/Makefile -w all
-	@echo libxmhfgeec built sucessfully.
-	
-
-.PHONY: uxmhf-libs
-uxmhf-libs: _libxmhfdebug _libxmhfgeec
 
 
 
@@ -79,6 +53,7 @@ _uobjs_preprocessmanifests:
 
 .PHONY: _uobjs_configureandgenerateuobjinfo
 _uobjs_configureandgenerateuobjinfo:
+	$(MKDIR) -p $(XMHF_OBJDIR)
 	cd $(XMHF_DIR) && $(USPARK_INSTALL_TOOLSDIR)/umf $(XMHF_DIR)/xmhf-uobjs/UOBJLIST $(XMHF_DIR)/configure-uxmhfuobj $(XMHF_OBJDIR)/uobjinfotable.c $(XMHF_OBJDIR)/xmhf.lscript $(XMHF_CONFIG_LOADADDR) $(XMHF_CONFIG_LOADMAXSIZE) $(XMHFGEEC_TOTAL_UHSLABS) $(XMHF_CONFIG_MAX_INCLDEVLIST_ENTRIES) $(XMHF_CONFIG_MAX_EXCLDEVLIST_ENTRIES) $(XMHF_CONFIG_MAX_MEMOFFSET_ENTRIES) 0 "$(CCERT_CFLAGS)"
 
 
@@ -170,7 +145,6 @@ uxmhf-verifyuobjs-all: uxmhf-verifyuobjs-prep
 	
 .PHONY: clean 
 clean:
-	#$(RM) -f $(XMHF_DIR)/uxmhf/xmhf-uobjs/geec_sentinel/__geec_sentinel_autogendata_slabinfotable
 	$(RM) -rf $(XMHF_OBJDIR)
 
 # http://www.gnu.org/software/automake/manual/automake.html#Clean

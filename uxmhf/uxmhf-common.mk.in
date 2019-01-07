@@ -138,6 +138,9 @@ V_LIBXMHFHW_MODULES := $(patsubst $(V_LIBXMHFHW_MODULES_DIR)/%, %, $(V_LIBXMHFHW
 export V_LIBXMHFHW_MODULES_DIR;
 export V_LIBXMHFHW_MODULES;
 
+# construct directory for libxmhfgeec
+V_LIBXMHFGEEC_MODULES_DIR := $(realpath $(UBERSPARK_LIBSDIR)/libxmhfgeec)
+export V_LIBXMHFGEEC_MODULES_DIR;
 
 
 
