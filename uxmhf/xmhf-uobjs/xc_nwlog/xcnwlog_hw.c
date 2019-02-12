@@ -71,7 +71,7 @@ static int32_t e1000_get_phy_cfg_done(struct e1000_hw *hw);
 static void e1000_init_rx_addrs(struct e1000_hw *hw);
 static void e1000_initialize_hardware_bits(struct e1000_hw *hw);
 static void e1000_put_hw_eeprom_semaphore(struct e1000_hw *hw);
-static int32_t e1000_set_d0_lplu_state(struct e1000_hw *hw, boolean_t active);
+static int32_t e1000_set_d0_lplu_state(struct e1000_hw *hw, bool active);
 static void e1000_set_pci_express_master_disable(struct e1000_hw *hw);
 static int32_t e1000_setup_copper_link(struct e1000_hw *hw);
 static int32_t e1000_spi_eeprom_ready(struct e1000_hw *hw);
@@ -1373,7 +1373,7 @@ e1000_clear_vfta(struct e1000_hw *hw)
 
 static int32_t
 e1000_set_d0_lplu_state(struct e1000_hw *hw,
-                        boolean_t active)
+                        bool active)
 {
     int32_t ret_val;
     uint16_t phy_data;
