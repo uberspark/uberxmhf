@@ -69,8 +69,8 @@
 		) ==> 	(hyperdep_methodcall_hcbhypercall_invalid == true);
 @*/
 
-static inline void hyperdep_hcbhypercall_helper(u32 cpuindex, u32 call_id, u32 guest_slab_index, u64 gpa){
-	_XDPRINTF_("%s[%u]: call_id=%x, gpa=%016llx\n", __func__, (u16)cpuindex, call_id, gpa);
+static inline void hyperdep_hcbhypercall_helper(uint32_t cpuindex, uint32_t call_id, uint32_t guest_slab_index, uint64_t gpa){
+	_XDPRINTF_("%s[%u]: call_id=%x, gpa=%016llx\n", __func__, (uint16_t)cpuindex, call_id, gpa);
 
 	if(call_id == HYPERDEP_ACTIVATEDEP){
 		hyperdep_activatedep(cpuindex, guest_slab_index, gpa);
@@ -81,7 +81,7 @@ static inline void hyperdep_hcbhypercall_helper(u32 cpuindex, u32 call_id, u32 g
 		//@ghost hyperdep_methodcall_hcbhypercall_deactivatedep = true;
 
 	}else{
-		//_XDPRINTF_("%s[%u]: unsupported hypercall %x. Ignoring\n",__func__, (u16)cpuindex, call_id);
+		//_XDPRINTF_("%s[%u]: unsupported hypercall %x. Ignoring\n",__func__, (uint16_t)cpuindex, call_id);
 		//@ghost hyperdep_methodcall_hcbhypercall_invalid = true;
 
 	}
@@ -91,13 +91,13 @@ static inline void hyperdep_hcbhypercall_helper(u32 cpuindex, u32 call_id, u32 g
 /*@
 	ensures hyperdep_hcbhypercall_invokehelper == true;
 @*/
-void hyperdep_hcbhypercall(u32 cpuindex, u32 guest_slab_index){
+void hyperdep_hcbhypercall(uint32_t cpuindex, uint32_t guest_slab_index){
 	slab_params_t spl;
 	xmhf_uapi_gcpustate_gprs_params_t *gcpustate_gprs =
 		(xmhf_uapi_gcpustate_gprs_params_t *)spl.in_out_params;
 	x86regs_t *gprs = (x86regs_t *)&gcpustate_gprs->gprs;
-	u32 call_id;
-	u64 gpa;
+	uint32_t call_id;
+	uint64_t gpa;
 
 	spl.in_out_params[0] = spl.in_out_params[1] = spl.in_out_params[2] = spl.in_out_params[3] = 0;
 	spl.in_out_params[4] = spl.in_out_params[5] = spl.in_out_params[6] = spl.in_out_params[7] = 0;
@@ -108,7 +108,7 @@ void hyperdep_hcbhypercall(u32 cpuindex, u32 guest_slab_index){
 	XMHF_SLAB_CALLNEW(&spl);
 
 	call_id = gprs->eax;
-	gpa = ((u64)gprs->ebx << 32) | gprs->edx;
+	gpa = ((uint64_t)gprs->ebx << 32) | gprs->edx;
 
 	hyperdep_hcbhypercall_helper(cpuindex, call_id, guest_slab_index, gpa);
 	//@ghost hyperdep_hcbhypercall_invokehelper = true;

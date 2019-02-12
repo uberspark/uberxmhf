@@ -60,23 +60,23 @@ void gs_exit_calluv2v(slab_params_t *sp, void *caller_stack_frame){
     slab_params_t *dst_sp;
 	gs_siss_element_t siss_elem;
 
-    _XDPRINTF_("%s[%u]: src=%u, dst=%u\n", __func__, (u16)sp->cpuid, sp->src_slabid, sp->dst_slabid);
+    _XDPRINTF_("%s[%u]: src=%u, dst=%u\n", __func__, (uint16_t)sp->cpuid, sp->src_slabid, sp->dst_slabid);
 
     //save caller stack frame address (esp)
-    _XDPRINTF_("%s[%u]: src tos before=%x\n", __func__, (u16)sp->cpuid, xmhfgeec_slab_info_table[sp->src_slabid].slabtos[(u16)sp->cpuid]);
-    xmhfgeec_slab_info_table[sp->src_slabid].slabtos[(u16)sp->cpuid] =
-        (u32)caller_stack_frame;
-    _XDPRINTF_("%s[%u]: src tos after=%x\n", __func__, (u16)sp->cpuid, xmhfgeec_slab_info_table[sp->src_slabid].slabtos[(u16)sp->cpuid]);
+    _XDPRINTF_("%s[%u]: src tos before=%x\n", __func__, (uint16_t)sp->cpuid, xmhfgeec_slab_info_table[sp->src_slabid].slabtos[(uint16_t)sp->cpuid]);
+    xmhfgeec_slab_info_table[sp->src_slabid].slabtos[(uint16_t)sp->cpuid] =
+        (uint32_t)caller_stack_frame;
+    _XDPRINTF_("%s[%u]: src tos after=%x\n", __func__, (uint16_t)sp->cpuid, xmhfgeec_slab_info_table[sp->src_slabid].slabtos[(uint16_t)sp->cpuid]);
 
 
     //make space on destination slab stack for slab_params_t and copy parameters
     {
-        _XDPRINTF_("%s[%u]: dst tos before=%x\n", __func__, (u16)sp->cpuid, xmhfgeec_slab_info_table[sp->dst_slabid].slabtos[(u16)sp->cpuid]);
-        xmhfgeec_slab_info_table[sp->dst_slabid].slabtos[(u16)sp->cpuid] -= sizeof(slab_params_t);
-        _XDPRINTF_("%s[%u]: dst tos after=%x\n", __func__, (u16)sp->cpuid, xmhfgeec_slab_info_table[sp->dst_slabid].slabtos[(u16)sp->cpuid]);
-        dst_sp = (slab_params_t *) xmhfgeec_slab_info_table[sp->dst_slabid].slabtos[(u16)sp->cpuid];
-        _XDPRINTF_("%s[%u]: copying params to dst_sp=%x from sp=%x\n", __func__, (u16)sp->cpuid,
-                   (u32)dst_sp, (u32)sp);
+        _XDPRINTF_("%s[%u]: dst tos before=%x\n", __func__, (uint16_t)sp->cpuid, xmhfgeec_slab_info_table[sp->dst_slabid].slabtos[(uint16_t)sp->cpuid]);
+        xmhfgeec_slab_info_table[sp->dst_slabid].slabtos[(uint16_t)sp->cpuid] -= sizeof(slab_params_t);
+        _XDPRINTF_("%s[%u]: dst tos after=%x\n", __func__, (uint16_t)sp->cpuid, xmhfgeec_slab_info_table[sp->dst_slabid].slabtos[(uint16_t)sp->cpuid]);
+        dst_sp = (slab_params_t *) xmhfgeec_slab_info_table[sp->dst_slabid].slabtos[(uint16_t)sp->cpuid];
+        _XDPRINTF_("%s[%u]: copying params to dst_sp=%x from sp=%x\n", __func__, (uint16_t)sp->cpuid,
+                   (uint32_t)dst_sp, (uint32_t)sp);
 
         CASM_FUNCCALL(xmhfhw_sysmemaccess_copy, dst_sp, sp, sizeof(slab_params_t));
     }
@@ -87,8 +87,8 @@ void gs_exit_calluv2v(slab_params_t *sp, void *caller_stack_frame){
     //tuple to safe stack
     _XDPRINTF_("%s[%u]: safepush: {cpuid: %u, src: %u, dst: %u, ctype: 0x%x, \
                csf=0x%x, sp=0x%x \n",
-            __func__, (u16)sp->cpuid,
-               (u16)sp->cpuid, sp->src_slabid, sp->dst_slabid, sp->slab_ctype,
+            __func__, (uint16_t)sp->cpuid,
+               (uint16_t)sp->cpuid, sp->src_slabid, sp->dst_slabid, sp->slab_ctype,
                caller_stack_frame, sp);
 
 	siss_elem.src_slabid = sp->src_slabid;
@@ -97,13 +97,13 @@ void gs_exit_calluv2v(slab_params_t *sp, void *caller_stack_frame){
 	siss_elem.caller_stack_frame = caller_stack_frame;
 	siss_elem.sp = sp;
 
-    //gs_siss_push((u16)sp->cpuid, sp->src_slabid, sp->dst_slabid,
+    //gs_siss_push((uint16_t)sp->cpuid, sp->src_slabid, sp->dst_slabid,
     //                   sp->slab_ctype, caller_stack_frame, sp);
-    gs_siss_push((u16)sp->cpuid, siss_elem);
+    gs_siss_push((uint16_t)sp->cpuid, siss_elem);
 
 
     _XDPRINTF_("%s[%u]: entry=%x, dst_sp=%x, proceeding to xfer...\n", __func__,
-               (u16)sp->cpuid, xmhfgeec_slab_info_table[sp->dst_slabid].entrystub, (u32)dst_sp);
+               (uint16_t)sp->cpuid, xmhfgeec_slab_info_table[sp->dst_slabid].entrystub, (uint32_t)dst_sp);
 
 
     CASM_FUNCCALL(gs_exit_calluv2vstub,
@@ -111,7 +111,7 @@ void gs_exit_calluv2v(slab_params_t *sp, void *caller_stack_frame){
                                   dst_sp);
 
 
-    _XDPRINTF_("%s[%u]: wip. halting!\n", __func__, (u16)sp->cpuid);
+    _XDPRINTF_("%s[%u]: wip. halting!\n", __func__, (uint16_t)sp->cpuid);
     HALT();
 }
 

@@ -72,7 +72,7 @@
 	ensures (invokedsdadoalloc == true);
 @*/
 void gp_s2_sda(void){
-	u32 i;
+	uint32_t i;
 
 	/*@
 		loop invariant a1: 0 <= i <= XMHFGEEC_TOTAL_SLABS;

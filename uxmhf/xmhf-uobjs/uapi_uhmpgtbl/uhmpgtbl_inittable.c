@@ -57,8 +57,8 @@
 #include <uapi_uhmpgtbl.h>
 
 
-static void _uhmpgtbl_initmempgtbl_pae(u32 slabid){
-	u32 i, j;
+static void _uhmpgtbl_initmempgtbl_pae(uint32_t slabid){
+	uint32_t i, j;
 
 	for(i=0; i < PAE_MAXPTRS_PER_PDPT; i++){
 		_uhslabmempgtbl_lvl4t[(slabid - XMHFGEEC_UHSLAB_BASE_IDX)][i] = 0;
@@ -67,13 +67,13 @@ static void _uhmpgtbl_initmempgtbl_pae(u32 slabid){
 	//assign 4GB pdpt entries
 	for(i=0; i < PAE_PTRS_PER_PDPT; i++){
 		_uhslabmempgtbl_lvl4t[(slabid - XMHFGEEC_UHSLAB_BASE_IDX)][i] =
-		    pae_make_pdpe(&_uhslabmempgtbl_lvl2t[(slabid - XMHFGEEC_UHSLAB_BASE_IDX)][i * PAE_PTRS_PER_PDT], (u64)(_PAGE_PRESENT));
+		    pae_make_pdpe(&_uhslabmempgtbl_lvl2t[(slabid - XMHFGEEC_UHSLAB_BASE_IDX)][i * PAE_PTRS_PER_PDT], (uint64_t)(_PAGE_PRESENT));
 	}
 
 	//pdt setup
 	for(i=0; i < PAE_PTRS_PER_PDPT * PAE_PTRS_PER_PDT; i++){
 		_uhslabmempgtbl_lvl2t[(slabid - XMHFGEEC_UHSLAB_BASE_IDX)][i] =
-			pae_make_pde(&_uhslabmempgtbl_lvl1t[(slabid - XMHFGEEC_UHSLAB_BASE_IDX)][(i * PAE_PTRS_PER_PT)], (u64)(_PAGE_PRESENT | _PAGE_RW | _PAGE_USER));
+			pae_make_pde(&_uhslabmempgtbl_lvl1t[(slabid - XMHFGEEC_UHSLAB_BASE_IDX)][(i * PAE_PTRS_PER_PT)], (uint64_t)(_PAGE_PRESENT | _PAGE_RW | _PAGE_USER));
 	}
 
 }

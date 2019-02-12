@@ -115,7 +115,7 @@ static mtrr_state_t *g_saved_mtrrs = NULL;
  */
 bool set_mtrrs_for_acmod(acm_hdr_t *hdr)
 {
-    u32 eflags;
+    uint32_t eflags;
     unsigned long cr0, cr4;
 
     /*
@@ -217,7 +217,7 @@ static void print_mle_hdr(const mle_hdr_t *mle_hdr)
     print_txt_caps("\t ", mle_hdr->capabilities);
 }
 
-#define MAKE_PDTE(addr)  (PAGE_ALIGN_4K((u32)addr) | 0x01)
+#define MAKE_PDTE(addr)  (PAGE_ALIGN_4K((uint32_t)addr) | 0x01)
 
 /* we assume/know that our image is <2MB and thus fits w/in a single */
 /* PT (512*4KB = 2MB) and thus fixed to 1 pg dir ptr and 1 pgdir and */
@@ -253,8 +253,8 @@ static void *build_mle_pagetable(uint32_t mle_start, uint32_t mle_size)
     _XDPRINTF_("ptab_size=%x, ptab_base=%p\n", ptab_size, ptab_base);
 
     pg_dir_ptr_tab = (void *)ptab_base;
-    pg_dir         = (void *)((u32)pg_dir_ptr_tab + PAGE_SIZE_4K);
-    pg_tab         = (void *)((u32)pg_dir + PAGE_SIZE_4K);
+    pg_dir         = (void *)((uint32_t)pg_dir_ptr_tab + PAGE_SIZE_4K);
+    pg_tab         = (void *)((uint32_t)pg_dir + PAGE_SIZE_4K);
 
     /* only use first entry in page dir ptr table */
     *(uint64_t *)pg_dir_ptr_tab = MAKE_PDTE(pg_dir);
@@ -273,7 +273,7 @@ static void *build_mle_pagetable(uint32_t mle_start, uint32_t mle_size)
     do {
         *pte = MAKE_PDTE(mle_start + mle_off);
         _XDPRINTF_("pte = 0x%08x\n*pte = 0x%15llx\n",
-               (u32)pte, *pte);
+               (uint32_t)pte, *pte);
 
         pte++;
         mle_off += PAGE_SIZE_4K;
@@ -353,8 +353,8 @@ static txt_heap_t *init_txt_heap(void *ptab_base, acm_hdr_t *sinit,
 
 	xmhfhw_sysmemaccess_writeu64(
 		(get_os_mle_data_start(txt_heap, (uint32_t)read_pub_config_reg(TXTCR_HEAP_SIZE)) - sizeof(uint64_t)),
-		(u32)(sizeof(os_mle_data) + sizeof(uint64_t)),
-		(u32)((u64)(sizeof(os_mle_data) + sizeof(uint64_t)) >> 32) );
+		(uint32_t)(sizeof(os_mle_data) + sizeof(uint64_t)),
+		(uint32_t)((uint64_t)(sizeof(os_mle_data) + sizeof(uint64_t)) >> 32) );
 
 	    memset(&os_mle_data, 0, sizeof(os_mle_data));
 	    os_mle_data.version = 0x02;
@@ -379,8 +379,8 @@ static txt_heap_t *init_txt_heap(void *ptab_base, acm_hdr_t *sinit,
 
 	xmhfhw_sysmemaccess_writeu64(
 		(get_os_sinit_data_start(txt_heap, (uint32_t)read_pub_config_reg(TXTCR_HEAP_SIZE)) - sizeof(uint64_t)),
-		(u32)(sizeof(os_sinit_data) + sizeof(uint64_t)),
-		(u32)((u64)(sizeof(os_sinit_data) + sizeof(uint64_t)) >> 32) );
+		(uint32_t)(sizeof(os_sinit_data) + sizeof(uint64_t)),
+		(uint32_t)((uint64_t)(sizeof(os_sinit_data) + sizeof(uint64_t)) >> 32) );
 
 
 	memset(&os_sinit_data, 0, sizeof(os_sinit_data));
@@ -392,13 +392,13 @@ static txt_heap_t *init_txt_heap(void *ptab_base, acm_hdr_t *sinit,
 	HALT_ON_ERRORCOND(sizeof(mle_hdr_t) < TEMPORARY_MAX_MLE_HEADER_SIZE);
 	memcpy(phys_mle_start, &g_mle_hdr, sizeof(mle_hdr_t));
 	_XDPRINTF_("Copied mle_hdr (0x%08x, 0x%x bytes) into SL (0x%08x)\n",
-	   (u32)&g_mle_hdr, sizeof(mle_hdr_t), (u32)phys_mle_start);
+	   (uint32_t)&g_mle_hdr, sizeof(mle_hdr_t), (uint32_t)phys_mle_start);
 
 	os_sinit_data.mle_hdr_base = 0; // linear addr (offset from MLE base) of mle header, in MLE page tables
 
 
-	os_sinit_data.vtd_pmr_lo_base = (u64)__TARGET_BASE_SL;
-	os_sinit_data.vtd_pmr_lo_size = (u64)__TARGET_SIZE_SL;
+	os_sinit_data.vtd_pmr_lo_base = (uint64_t)__TARGET_BASE_SL;
+	os_sinit_data.vtd_pmr_lo_size = (uint64_t)__TARGET_SIZE_SL;
 	_XDPRINTF_("\nvtd_pmr_lo_base=%016llx, size=%016llx", os_sinit_data.vtd_pmr_lo_base, os_sinit_data.vtd_pmr_lo_size);
 
 	sinit_caps = get_sinit_capabilities(sinit);
@@ -435,7 +435,7 @@ static txt_heap_t *init_txt_heap(void *ptab_base, acm_hdr_t *sinit,
     return txt_heap;
 }
 
-void delay(u64 cycles)
+void delay(uint64_t cycles)
 {
     uint64_t start = rdtsc64(CASM_NOPARAM);
 
@@ -472,7 +472,7 @@ tb_error_t txt_launch_environment(void *sinit_ptr, size_t sinit_size,
     print_mle_hdr(&g_mle_hdr);
 
     /* create MLE page table */
-    mle_ptab_base = build_mle_pagetable((u32)phys_mle_start, mle_size);
+    mle_ptab_base = build_mle_pagetable((uint32_t)phys_mle_start, mle_size);
     if ( mle_ptab_base == NULL )
         return TB_ERR_FATAL;
 
@@ -518,7 +518,7 @@ tb_error_t txt_launch_environment(void *sinit_ptr, size_t sinit_size,
 
 bool txt_prepare_cpu(void)
 {
-    u32 eflags, cr0;
+    uint32_t eflags, cr0;
     uint64_t mcg_cap, mcg_stat;
     getsec_parameters_t params;
     unsigned int i;

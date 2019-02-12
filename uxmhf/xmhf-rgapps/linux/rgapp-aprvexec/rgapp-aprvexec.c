@@ -11,9 +11,9 @@
 //////////////////////////////////////////////////////////////////////////////
 // base types
 
-typedef unsigned char u8;
-typedef unsigned int u32;
-typedef unsigned long long int u64;
+typedef unsigned char uint8_t;
+typedef unsigned int uint32_t;
+typedef unsigned long long int uint64_t;
 
 
 #define PAGE_SHIFT 12
@@ -23,7 +23,7 @@ typedef unsigned long long int u64;
 //////
 // vmcall interface
 //////
-static void __vmcall(u32 eax, u32 ebx, u32 edx){
+static void __vmcall(uint32_t eax, uint32_t ebx, uint32_t edx){
 	asm volatile (
 			"movl %0, %%eax \r\n"
 			"movl %1, %%ebx \r\n"
@@ -39,10 +39,10 @@ static void __vmcall(u32 eax, u32 ebx, u32 edx){
 //////
 // va_to_pa: virtual to physical address mapping
 //////
-static u64 va_to_pa(void *vaddr) {
+static uint64_t va_to_pa(void *vaddr) {
 	FILE *pagemap;
 	unsigned long offset;
-	u64 page_frame_number = 0;
+	uint64_t page_frame_number = 0;
 
 	// open the pagemap file for the current process
 	pagemap = fopen("/proc/self/pagemap", "rb");
@@ -84,8 +84,8 @@ extern void do_testxhapprovexec_functoprotect(void);
 #define APRVEXEC_UNLOCK   			0xD1
 
 void do_testxhapprovexec(void){
-    u32 fva = &do_testxhapprovexec_functoprotect;
-	u32 fpa;
+    uint32_t fva = &do_testxhapprovexec_functoprotect;
+	uint32_t fpa;
 
     printf("\n%s: Target function virtual-address=0x%08x\n", __FUNCTION__, fva);
 
@@ -123,7 +123,7 @@ void do_testxhapprovexec(void){
     //printf("\n%s: Preparing to execute code modification attack...\n", __FUNCTION__);
     //
     //{
-    //	*((u8 *)&do_testxhapprovexec_functoprotect) = 0xAB;
+    //	*((uint8_t *)&do_testxhapprovexec_functoprotect) = 0xAB;
     //}
     //printf("\n%s: Code modification attack successful\n", __FUNCTION__);
 
@@ -166,7 +166,7 @@ void main(void){
 // building pieces
 //////
 
-//__attribute__((aligned(4096))) static u8 testxhhyperdep_page[4096];
+//__attribute__((aligned(4096))) static uint8_t testxhhyperdep_page[4096];
 
 
 //printf("\n%s: DEP page unlocked", __FUNCTION__);

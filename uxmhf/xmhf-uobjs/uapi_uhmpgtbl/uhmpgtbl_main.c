@@ -76,7 +76,7 @@ void slab_main(slab_params_t *sp){
             (uapi_uhmpgtbl_getmpgtblbase_params_t *)sp->in_out_params;
 
 		_XDPRINTF_("uapi_uhmpgtbl[%u]: GETMPGTBLBASE\n",
-                (u16)sp->cpuid);
+                (uint16_t)sp->cpuid);
 
         _uhmpgtbl_getmpgtblbase(p);
 
@@ -88,6 +88,6 @@ void slab_main(slab_params_t *sp){
 
 	}else{
             //_XDPRINTF_("uapi_uhmpgtbl[%u]: Unknown uAPI function %x. Halting!\n",
-            //        (u16)sp->cpuid, sp->dst_uapifn);
+            //        (uint16_t)sp->cpuid, sp->dst_uapifn);
 	}
 }

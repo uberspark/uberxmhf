@@ -58,29 +58,29 @@
 #ifndef __ASSEMBLY__
 
 
-extern __attribute__(( section(".stack") )) __attribute__(( aligned(4096) )) u8 _sysenter_stack[MAX_PLATFORM_CPUS][MAX_PLATFORM_CPUSTACK_SIZE];
+extern __attribute__(( section(".stack") )) __attribute__(( aligned(4096) )) uint8_t _sysenter_stack[MAX_PLATFORM_CPUS][MAX_PLATFORM_CPUSTACK_SIZE];
 
 extern __attribute__((section(".data"))) __attribute__((aligned(4096))) xmhfgeec_slab_info_t xmhfgeec_slab_info_table[XMHFGEEC_TOTAL_SLABS];
 
 
 typedef struct {
-    u32 src_slabid;
-    u32 dst_slabid;
-    u32 slab_ctype;
+    uint32_t src_slabid;
+    uint32_t dst_slabid;
+    uint32_t slab_ctype;
     void *caller_stack_frame;
     slab_params_t *sp;
 }__attribute__((packed)) gs_siss_element_t;
 
 
-extern __attribute__((section(".data"))) u32 gs_siss_indices[MAX_PLATFORM_CPUS];
+extern __attribute__((section(".data"))) uint32_t gs_siss_indices[MAX_PLATFORM_CPUS];
 extern __attribute__((section(".data"))) gs_siss_element_t gs_siss[MAX_PLATFORM_CPUS][512];
 
 
-//@	logic u32 sissCapacity{L}(u32 siss_id) = (u32)512;
+//@	logic uint32_t sissCapacity{L}(uint32_t siss_id) = (uint32_t)512;
 
-//@	logic u32 sissSize{L}(u32 siss_id) = gs_siss_indices[siss_id];
+//@	logic uint32_t sissSize{L}(uint32_t siss_id) = gs_siss_indices[siss_id];
 
-//@	logic gs_siss_element_t * sissStorage{L}(u32 siss_id) = &gs_siss[siss_id][0];
+//@	logic gs_siss_element_t * sissStorage{L}(uint32_t siss_id) = &gs_siss[siss_id][0];
 
 /*@
  predicate sissTop{L}(gs_siss_element_t * elem, integer index, gs_siss_element_t input) =
@@ -92,9 +92,9 @@ extern __attribute__((section(".data"))) gs_siss_element_t gs_siss[MAX_PLATFORM_
 		);
 */
 
-//@	predicate sissEmpty{L}(u32 siss_id) = (sissSize(siss_id) == 0);
+//@	predicate sissEmpty{L}(uint32_t siss_id) = (sissSize(siss_id) == 0);
 
-//@	predicate sissFull{L}(u32 siss_id) = (sissSize(siss_id) == sissCapacity(siss_id));
+//@	predicate sissFull{L}(uint32_t siss_id) = (sissSize(siss_id) == sissCapacity(siss_id));
 
 /*@
 	predicate
@@ -109,7 +109,7 @@ extern __attribute__((section(".data"))) gs_siss_element_t gs_siss[MAX_PLATFORM_
 */
 
 /*@
-	predicate sissValid{L}(u32 siss_id) =
+	predicate sissValid{L}(uint32_t siss_id) =
 		(siss_id < MAX_PLATFORM_CPUS &&
 		0 < sissCapacity( siss_id) &&
 		0 <= sissSize (siss_id) <= sissCapacity ( siss_id) &&
@@ -117,10 +117,10 @@ extern __attribute__((section(".data"))) gs_siss_element_t gs_siss[MAX_PLATFORM_
 		);
 @*/
 
-//void gs_siss_pop(u32 cpuid, u32 *src_slabid, u32 *dst_slabid, u32 *hic_calltype,
+//void gs_siss_pop(uint32_t cpuid, uint32_t *src_slabid, uint32_t *dst_slabid, uint32_t *hic_calltype,
                        //void **caller_stack_framep, slab_params_t **spp);
 
-void gs_siss_pop(u32 siss_id, gs_siss_element_t *elem);
+void gs_siss_pop(uint32_t siss_id, gs_siss_element_t *elem);
                        //void **caller_stack_framep, slab_params_t **spp);
 
 
@@ -161,7 +161,7 @@ void gs_siss_pop(u32 siss_id, gs_siss_element_t *elem);
 	complete behaviors ;
 	disjoint behaviors ;
 */
-void gs_siss_push(u32 siss_id, gs_siss_element_t elem);
+void gs_siss_push(uint32_t siss_id, gs_siss_element_t elem);
 
 
 void geec_sentinel_main(slab_params_t *sp, void *caller_stack_frame);
@@ -170,10 +170,10 @@ void geec_sentinel_main(slab_params_t *sp, void *caller_stack_frame);
 
 
 //void gs_entry_excp(x86vmx_exception_frame_t *exframe);
-//CASM_FUNCDECL(void gs_exit_callexcp(u32 entry_point, void *caller_stack_frame));
+//CASM_FUNCDECL(void gs_exit_callexcp(uint32_t entry_point, void *caller_stack_frame));
 //CASM_FUNCDECL(void gs_exit_retexcp(x86vmx_exception_frame_t *exframe));
 
-CASM_FUNCDECL(void gs_calluobj(slab_params_t *sp, u32 entry_point));
+CASM_FUNCDECL(void gs_calluobj(slab_params_t *sp, uint32_t entry_point));
 
 CASM_FUNCDECL(void gs_syscallstub(void *noparam));
 void gs_entry_syscall(slab_params_t *sp, void *caller_stack_frame);
@@ -182,12 +182,12 @@ void gs_exit_retv2uv(slab_params_t *sp, void *caller_stack_frame);
 CASM_FUNCDECL(void gs_exit_retv2uvstub(void *caller_stack_frame));
 
 void gs_exit_calluv2v(slab_params_t *sp, void *caller_stack_frame);
-CASM_FUNCDECL(void gs_exit_calluv2vstub(u32 entry_point, void *callee_stack_frame));
+CASM_FUNCDECL(void gs_exit_calluv2vstub(uint32_t entry_point, void *callee_stack_frame));
 
 
 
 void gs_exit_callv2uv(slab_params_t *sp, void *caller_stack_frame);
-CASM_FUNCDECL(void gs_exit_callv2uvstub(u32 entry_point, void *callee_stack_frame));
+CASM_FUNCDECL(void gs_exit_callv2uvstub(uint32_t entry_point, void *callee_stack_frame));
 
 
 void gs_exit_retuv2v(slab_params_t *sp, void *caller_stack_frame);
@@ -195,18 +195,18 @@ CASM_FUNCDECL(void gs_exit_retuv2vstub(void *caller_stack_frame));
 
 
 
-CASM_FUNCDECL(void gs_exit_callv2v(u32 entry_point, void *caller_stack_frame));
+CASM_FUNCDECL(void gs_exit_callv2v(uint32_t entry_point, void *caller_stack_frame));
 
 CASM_FUNCDECL(void gs_exit_ret2v(void *caller_stack_frame));
 
-CASM_FUNCDECL(u32 gs_exit_callv2uvg(void *noparam));
+CASM_FUNCDECL(uint32_t gs_exit_callv2uvg(void *noparam));
 
 
 
 
 //CASM_FUNCDECL(void gs_entry_icptstub(void *noparam));
 //void gs_entry_icpt(x86regs_t *r);
-//CASM_FUNCDECL(void gs_exit_callicpt(u32 entry_point, void *caller_stack_frame));
+//CASM_FUNCDECL(void gs_exit_callicpt(uint32_t entry_point, void *caller_stack_frame));
 //CASM_FUNCDECL(void gs_exit_reticpt(x86regs_t *r));
 
 

@@ -58,8 +58,8 @@
 #include <xh_syscalllog.h>
 
 // initialization handler
-void sysclog_hcbinit(u32 cpuindex){
-	_XDPRINTF_("%s[%u]: syscalllog initializing...\n", __func__, (u16)cpuindex);
+void sysclog_hcbinit(uint32_t cpuindex){
+	_XDPRINTF_("%s[%u]: syscalllog initializing...\n", __func__, (uint16_t)cpuindex);
 
 }
 

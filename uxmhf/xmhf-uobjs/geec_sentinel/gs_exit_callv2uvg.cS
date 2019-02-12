@@ -59,7 +59,7 @@
 
 //if we return, we had an error and we return the
 //corresponding error code
-CASM_FUNCDEF(u32, gs_exit_callv2uvg,
+CASM_FUNCDEF(uint32_t, gs_exit_callv2uvg,
 {
 	xmhfhwm_cpu_insn_movl_imm_edx(0x80);
     xmhfhwm_cpu_insn_vmlaunch();

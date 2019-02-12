@@ -80,7 +80,7 @@ void slab_main(slab_params_t *sp){
 	switch(sp->dst_uapifn){
 		case UAPI_XCIHUB_INSTALLICPTHANDLER:
             _XDPRINTF_("XCIHUB[cpu=%u]: intalling icpt handler\n",
-                       (u16)sp->cpuid);
+                       (uint16_t)sp->cpuid);
 
             CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_HOST_RIP,
             		&xcihub_entry_icptstub);
@@ -89,7 +89,7 @@ void slab_main(slab_params_t *sp){
 
 		default:
             _XDPRINTF_("XCIHUB[cpu=%u]: unknown uapifn(%u). ignoring!\n",
-                       (u16)sp->cpuid, sp->dst_uapifn);
+                       (uint16_t)sp->cpuid, sp->dst_uapifn);
 
             break;
 

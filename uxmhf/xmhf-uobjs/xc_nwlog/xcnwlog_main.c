@@ -66,8 +66,8 @@
 #if defined (__XMHF_VERIFICATION__) && defined (__USPARK_FRAMAC_VA__)
 #include <xmhf-hwm.h>
 
-u32 cpuid = 0;	//BSP cpu
-u32 check_esp, check_eip = CASM_RET_EIP;
+uint32_t cpuid = 0;	//BSP cpu
+uint32_t check_esp, check_eip = CASM_RET_EIP;
 slab_params_t test_sp;
 typedef enum {
 	XCNWLOG_VERIF_INIT,
@@ -77,7 +77,7 @@ typedef enum {
 xcnwlog_verif_t xcnwlog_verif = XCNWLOG_VERIF_INIT;
 bool xcnwlog_logdata_startedxmit = false;
 
-void cbhwm_e1000_write_tdt(u32 origval, u32 newval){
+void cbhwm_e1000_write_tdt(uint32_t origval, uint32_t newval){
 	switch(xcnwlog_verif){
 		case XCNWLOG_VERIF_INIT:
 			//@assert 1;
@@ -87,7 +87,7 @@ void cbhwm_e1000_write_tdt(u32 origval, u32 newval){
 			if(xmhfhwm_e1000_tctl & E1000_TCTL_EN){
 				//@assert newval == 1;
 				//@assert xmhfhwm_e1000_tdbah == 0;
-				//@assert xmhfhwm_e1000_tdbal == (u32)&xcnwlog_desc;
+				//@assert xmhfhwm_e1000_tdbal == (uint32_t)&xcnwlog_desc;
 				//@assert xmhfhwm_e1000_status_transmitting == false;
 				xcnwlog_logdata_startedxmit = true;
 			}
@@ -100,7 +100,7 @@ void cbhwm_e1000_write_tdt(u32 origval, u32 newval){
 	}
 }
 
-void cbhwm_e1000_write_tdbah(u32 origval, u32 newval){
+void cbhwm_e1000_write_tdbah(uint32_t origval, uint32_t newval){
 	switch(xcnwlog_verif){
 		case XCNWLOG_VERIF_INIT:
 			//@assert 1;
@@ -117,7 +117,7 @@ void cbhwm_e1000_write_tdbah(u32 origval, u32 newval){
 	}
 }
 
-void cbhwm_e1000_write_tdbal(u32 origval, u32 newval){
+void cbhwm_e1000_write_tdbal(uint32_t origval, uint32_t newval){
 	switch(xcnwlog_verif){
 		case XCNWLOG_VERIF_INIT:
 			//@assert 1;
@@ -134,7 +134,7 @@ void cbhwm_e1000_write_tdbal(u32 origval, u32 newval){
 	}
 }
 
-void cbhwm_e1000_write_tdlen(u32 origval, u32 newval){
+void cbhwm_e1000_write_tdlen(uint32_t origval, uint32_t newval){
 	switch(xcnwlog_verif){
 		case XCNWLOG_VERIF_INIT:
 			//@assert 1;
@@ -174,7 +174,7 @@ void main(void){
 	//@assert (e1000_adapt.tx_ring.tdt == (uint16_t)(E1000_TDT));
 	//@assert (e1000_adapt.tx_ring.tdh == (uint16_t)(E1000_TDH));
         //@assert xmhfhwm_e1000_tdbah == 0;
-	//@assert xmhfhwm_e1000_tdbal == (u32)&xcnwlog_desc;
+	//@assert xmhfhwm_e1000_tdbal == (uint32_t)&xcnwlog_desc;
 	//@assert xmhfhwm_e1000_tdlen == 4096;
 
 	//@assert xmhfhwm_e1000_status_transmitting == false;
@@ -204,7 +204,7 @@ void main(void){
 void slab_main(slab_params_t *sp){
 
 	_XDPRINTF_("XCNWLOG[%u]: Got control: src=%u, dst=%u, esp=%08x, eflags=%08x\n",
-		(u16)sp->cpuid, sp->src_slabid, sp->dst_slabid, CASM_FUNCCALL(read_esp,CASM_NOPARAM),
+		(uint16_t)sp->cpuid, sp->src_slabid, sp->dst_slabid, CASM_FUNCCALL(read_esp,CASM_NOPARAM),
 			CASM_FUNCCALL(read_eflags, CASM_NOPARAM));
 
 	if(sp->dst_uapifn == XMHFGEEC_SLAB_XC_NWLOG_INITIALIZE){
@@ -226,7 +226,7 @@ void slab_main(slab_params_t *sp){
 
         }else {
 		_XDPRINTF_("XCNWLOG[%u]: Unknown sub-function %x. Halting!\n",
-		    (u16)sp->cpuid, sp->dst_uapifn);
+		    (uint16_t)sp->cpuid, sp->dst_uapifn);
 		//@ghost xcnwlog_methodcall_invalid = true;
 
 

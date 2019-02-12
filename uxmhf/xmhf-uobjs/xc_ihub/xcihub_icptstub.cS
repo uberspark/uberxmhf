@@ -60,11 +60,11 @@
 #include <xc.h>
 #include <xc_ihub.h>
 
-u32 check_eip = CASM_RET_EIP;
-u32 cpuid = 0;	//cpu
+uint32_t check_eip = CASM_RET_EIP;
+uint32_t cpuid = 0;	//cpu
 
 void xmhfhwm_vdriver_slabep(void){
-	//@assert xmhfhwm_cpu_gprs_eip == (u32)xmhfgeec_slab_info_table[XMHFGEEC_SLAB_XC_IHUB].entrystub;
+	//@assert xmhfhwm_cpu_gprs_eip == (uint32_t)xmhfgeec_slab_info_table[XMHFGEEC_SLAB_XC_IHUB].entrystub;
 	//@assert false;
 }
 

@@ -58,7 +58,7 @@
  */
 
 #if 1
-void update_exhub_withinfo(u32 cpuid, bool exit_status, u32 info_reason){
+void update_exhub_withinfo(uint32_t cpuid, bool exit_status, uint32_t info_reason){
 	slab_params_t spl;
 
 	spl.cpuid = cpuid;
@@ -117,8 +117,8 @@ void update_exhub_withinfo(u32 cpuid, bool exit_status, u32 info_reason){
 
 
 @*/
-static void slab_main_helper(u32 vmexit_reason, u32 src_slabid, u32 cpuid){
-	u32 hcb_status;
+static void slab_main_helper(uint32_t vmexit_reason, uint32_t src_slabid, uint32_t cpuid){
+	uint32_t hcb_status;
 
 	if (vmexit_reason == VMX_VMEXIT_RDMSR){
 		hcb_status = xc_hcbinvoke(XMHFGEEC_SLAB_XC_IHUB, cpuid, XC_HYPAPPCB_TRAP_INSTRUCTION,
@@ -126,10 +126,10 @@ static void slab_main_helper(u32 vmexit_reason, u32 src_slabid, u32 cpuid){
 		//@ghost xcihub_callhcbinvoke=true;
 		//@ghost xcihub_callicptvmcall=false;
 		//@ghost xcihub_callhalt=false;
-		if(hcb_status == XC_HYPAPPCB_CHAIN) xcihub_icptrdmsr((u16)cpuid);
+		if(hcb_status == XC_HYPAPPCB_CHAIN) xcihub_icptrdmsr((uint16_t)cpuid);
 
 	}else if(vmexit_reason == VMX_VMEXIT_VMCALL){
-		xcihub_icptvmcall((u16)cpuid, src_slabid);
+		xcihub_icptvmcall((uint16_t)cpuid, src_slabid);
 		//@ghost xcihub_callicptvmcall=true;
 		//@ghost xcihub_callhcbinvoke=false;
 		//@ghost xcihub_callhalt=false;
@@ -140,7 +140,7 @@ static void slab_main_helper(u32 vmexit_reason, u32 src_slabid, u32 cpuid){
 		//@ghost xcihub_callhcbinvoke=true;
 		//@ghost xcihub_callicptvmcall=false;
 		//@ghost xcihub_callhalt=false;
-		if(hcb_status == XC_HYPAPPCB_CHAIN) xcihub_icptcpuid((u16)cpuid);
+		if(hcb_status == XC_HYPAPPCB_CHAIN) xcihub_icptcpuid((uint16_t)cpuid);
 
 
 	}else if (vmexit_reason == VMX_VMEXIT_WRMSR){
@@ -149,22 +149,22 @@ static void slab_main_helper(u32 vmexit_reason, u32 src_slabid, u32 cpuid){
 		//@ghost xcihub_callhcbinvoke=true;
 		//@ghost xcihub_callicptvmcall=false;
 		//@ghost xcihub_callhalt=false;
-		if(hcb_status == XC_HYPAPPCB_CHAIN)	xcihub_icptwrmsr((u16)cpuid);
+		if(hcb_status == XC_HYPAPPCB_CHAIN)	xcihub_icptwrmsr((uint16_t)cpuid);
 
 	}else if (vmexit_reason == VMX_VMEXIT_CRX_ACCESS){
-		xcihub_icptcrx((u16)cpuid, src_slabid);
+		xcihub_icptcrx((uint16_t)cpuid, src_slabid);
 		//@ghost xcihub_callhcbinvoke=false;
 		//@ghost xcihub_callicptvmcall=false;
 		//@ghost xcihub_callhalt=false;
 
 	}else if (vmexit_reason == VMX_VMEXIT_XSETBV){
-		xcihub_icptxsetbv((u16)cpuid);
+		xcihub_icptxsetbv((uint16_t)cpuid);
 		//@ghost xcihub_callhcbinvoke=false;
 		//@ghost xcihub_callicptvmcall=false;
 		//@ghost xcihub_callhalt=false;
 
 	}else if (vmexit_reason == VMX_VMEXIT_SIPI){
-		xcihub_icptsipi((u16)cpuid);
+		xcihub_icptsipi((uint16_t)cpuid);
 		//@ghost xcihub_callhcbinvoke=false;
 		//@ghost xcihub_callicptvmcall=false;
 		//@ghost xcihub_callhalt=false;
@@ -174,7 +174,7 @@ static void slab_main_helper(u32 vmexit_reason, u32 src_slabid, u32 cpuid){
 		//@ghost xcihub_callhcbinvoke=true;
 		//@ghost xcihub_callicptvmcall=false;
 		//@ghost xcihub_callhalt=false;
-		if(hcb_status == XC_HYPAPPCB_CHAIN)	xcihub_halt((u16)cpuid, vmexit_reason);
+		if(hcb_status == XC_HYPAPPCB_CHAIN)	xcihub_halt((uint16_t)cpuid, vmexit_reason);
 
 	}else if (vmexit_reason == VMX_VMEXIT_EXCEPTION){
 		hcb_status = xc_hcbinvoke(XMHFGEEC_SLAB_XC_IHUB, cpuid, XC_HYPAPPCB_TRAP_EXCEPTION, 0, src_slabid);
@@ -183,7 +183,7 @@ static void slab_main_helper(u32 vmexit_reason, u32 src_slabid, u32 cpuid){
 		//@ghost xcihub_callhalt=false;
 
 	}else {
-		xcihub_halt((u16)cpuid, vmexit_reason);
+		xcihub_halt((uint16_t)cpuid, vmexit_reason);
 		//@ghost xcihub_callhcbinvoke=false;
 		//@ghost xcihub_callicptvmcall=false;
 		//@ghost xcihub_callhalt=true;
@@ -193,8 +193,8 @@ static void slab_main_helper(u32 vmexit_reason, u32 src_slabid, u32 cpuid){
 
 
 #if defined (__XMHF_VERIFICATION__) && defined (__USPARK_FRAMAC_VA__)
-u32 check_esp, check_eip = CASM_RET_EIP;
-u32 cpuid = 0;	//cpu id
+uint32_t check_esp, check_eip = CASM_RET_EIP;
+uint32_t cpuid = 0;	//cpu id
 
 void main(void){
 	//populate hardware model stack and program counter
@@ -230,10 +230,10 @@ void main(void){
 	assigns xcihub_callhalt;
 @*/
 void xcihub_icptmain(slab_params_t *sp){
-	u32 info_vmexit_reason;
+	uint32_t info_vmexit_reason;
 	slab_params_t spl;
 	xmhf_uapi_gcpustate_vmrw_params_t *gcpustate_vmrwp = (xmhf_uapi_gcpustate_vmrw_params_t *)&spl.in_out_params[0];
-	u32 cr4;
+	uint32_t cr4;
 
     //grab lock
     CASM_FUNCCALL(spin_lock,&xcihub_smplock);
@@ -262,9 +262,9 @@ void xcihub_icptmain(slab_params_t *sp){
 	XMHF_SLAB_CALLNEW(&spl);
 	info_vmexit_reason = gcpustate_vmrwp->value;
 
-	update_exhub_withinfo((u16)sp->cpuid, true, info_vmexit_reason);
+	update_exhub_withinfo((uint16_t)sp->cpuid, true, info_vmexit_reason);
 
-	slab_main_helper(info_vmexit_reason, sp->src_slabid, (u16)sp->cpuid);
+	slab_main_helper(info_vmexit_reason, sp->src_slabid, (uint16_t)sp->cpuid);
 
 
 	//load GPRs
@@ -280,9 +280,9 @@ void xcihub_icptmain(slab_params_t *sp){
 	sp->in_out_params[6] = spl.in_out_params[6];
 	sp->in_out_params[7] = spl.in_out_params[7];
 
-	//_XDPRINTF_("XCIHUB[%u]: Resuming guest, esp=%08x\n", (u16)sp->cpuid, CASM_FUNCCALL(read_esp,CASM_NOPARAM));
+	//_XDPRINTF_("XCIHUB[%u]: Resuming guest, esp=%08x\n", (uint16_t)sp->cpuid, CASM_FUNCCALL(read_esp,CASM_NOPARAM));
 
-	update_exhub_withinfo((u16)sp->cpuid, false, info_vmexit_reason);
+	update_exhub_withinfo((uint16_t)sp->cpuid, false, info_vmexit_reason);
 
     //release lock
     CASM_FUNCCALL(spin_unlock,&xcihub_smplock);

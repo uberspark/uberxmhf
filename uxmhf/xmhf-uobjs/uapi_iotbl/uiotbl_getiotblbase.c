@@ -60,7 +60,7 @@ void uiotbl_getiotblbase(uapi_iotbl_getiotblbase_t *ps){
 	//uh
 	if( xmhfgeec_slab_info_table[ps->dst_slabid].slabtype == XMHFGEEC_SLABTYPE_uVT_PROG ||
 			xmhfgeec_slab_info_table[ps->dst_slabid].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG) {
-		ps->iotbl_base = (u32)&uiotbl_ugslab_iobitmap[(ps->dst_slabid - XMHFGEEC_UHSLAB_BASE_IDX)];
+		ps->iotbl_base = (uint32_t)&uiotbl_ugslab_iobitmap[(ps->dst_slabid - XMHFGEEC_UHSLAB_BASE_IDX)];
 
 	//ug
 	}else if (
@@ -68,7 +68,7 @@ void uiotbl_getiotblbase(uapi_iotbl_getiotblbase_t *ps){
 			xmhfgeec_slab_info_table[ps->dst_slabid].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG_GUEST ||
 			xmhfgeec_slab_info_table[ps->dst_slabid].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG_RICHGUEST
 		){
-		ps->iotbl_base = (u32)&uiotbl_ugslab_iobitmap[(ps->dst_slabid - XMHFGEEC_UGSLAB_BASE_IDX)];
+		ps->iotbl_base = (uint32_t)&uiotbl_ugslab_iobitmap[(ps->dst_slabid - XMHFGEEC_UGSLAB_BASE_IDX)];
 
 	//v
 	}else{

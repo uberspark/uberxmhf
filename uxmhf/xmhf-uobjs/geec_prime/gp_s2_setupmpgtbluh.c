@@ -65,19 +65,19 @@
 
 	ensures \forall integer x; 0 <= x < PAE_PTRS_PER_PDPT ==> (
 			gp_rwdatahdr.gp_uhslabmempgtbl_lvl4t[(slabid - XMHFGEEC_UHSLAB_BASE_IDX)][x] ==
-			(pae_make_pdpe(&gp_uhslabmempgtbl_lvl2t[(slabid - XMHFGEEC_UHSLAB_BASE_IDX)][x * PAE_PTRS_PER_PDT], (u64)(_PAGE_PRESENT)))
+			(pae_make_pdpe(&gp_uhslabmempgtbl_lvl2t[(slabid - XMHFGEEC_UHSLAB_BASE_IDX)][x * PAE_PTRS_PER_PDT], (uint64_t)(_PAGE_PRESENT)))
 			);
 
 
 	ensures \forall integer x; 0 <= x < PAE_PTRS_PER_PDT ==> (
 			gp_uhslabmempgtbl_lvl2t[(slabid - XMHFGEEC_UHSLAB_BASE_IDX)][x] ==
-			(pae_make_pde(&gp_uhslabmempgtbl_lvl1t[(slabid - XMHFGEEC_UHSLAB_BASE_IDX)][(x * PAE_PTRS_PER_PT)], (u64)(_PAGE_PRESENT | _PAGE_RW | _PAGE_USER)))
+			(pae_make_pde(&gp_uhslabmempgtbl_lvl1t[(slabid - XMHFGEEC_UHSLAB_BASE_IDX)][(x * PAE_PTRS_PER_PT)], (uint64_t)(_PAGE_PRESENT | _PAGE_RW | _PAGE_USER)))
 			);
 @*/
-void gp_s2_setupmpgtbluh(u32 slabid){
-	u64 flags;
-	u32 spatype;
-	u32 i, j;
+void gp_s2_setupmpgtbluh(uint32_t slabid){
+	uint64_t flags;
+	uint32_t spatype;
+	uint32_t i, j;
 	slab_params_t spl;
 
 
@@ -99,8 +99,8 @@ void gp_s2_setupmpgtbluh(u32 slabid){
 		loop variant ((PAE_PTRS_PER_PDPT * PAE_PTRS_PER_PDT * PAE_PTRS_PER_PT)+0x2) - i;
 	@*/
 	for(i=0; i < (PAE_PTRS_PER_PDPT * PAE_PTRS_PER_PDT * PAE_PTRS_PER_PT); i++){
-		spatype =  gp_s2_setupmpgtbl_getspatype(slabid, (u32)(i*PAGE_SIZE_4K));
-		flags = gp_s2_setupmpgtbluh_getflags(slabid, (u32)(i*PAGE_SIZE_4K), spatype);
+		spatype =  gp_s2_setupmpgtbl_getspatype(slabid, (uint32_t)(i*PAGE_SIZE_4K));
+		flags = gp_s2_setupmpgtbluh_getflags(slabid, (uint32_t)(i*PAGE_SIZE_4K), spatype);
 
 		if(!gp_s2_setupmpgtbluh_setentry(slabid, (slabid - XMHFGEEC_UHSLAB_BASE_IDX), spatype, i, flags))
 			i+=2;

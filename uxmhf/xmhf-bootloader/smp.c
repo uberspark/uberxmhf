@@ -59,15 +59,15 @@
 
 //forward prototypes
 static int mp_checksum(unsigned char *mp, int len);
-static u32 mp_scan_config(u32 base, u32 length, MPFP **mpfp);
-static u32 mp_getebda(void);
+static uint32_t mp_scan_config(uint32_t base, uint32_t length, MPFP **mpfp);
+static uint32_t mp_getebda(void);
 ACPI_RSDP * ACPIGetRSDP(void);
 
 //exposed interface to the outside world
-//inputs: array of type PCPU and pointer to u32 which will
+//inputs: array of type PCPU and pointer to uint32_t which will
 //receive the number of cores/CPUs in the system
 //returns: 1 on succes, 0 on any failure
-u32 smp_getinfo(PCPU *pcpus, u32 *num_pcpus){
+uint32_t smp_getinfo(PCPU *pcpus, uint32_t *num_pcpus){
 	MPFP *mpfp;
 	MPCONFTABLE *mpctable;
 
@@ -75,17 +75,17 @@ u32 smp_getinfo(PCPU *pcpus, u32 *num_pcpus){
 
 #if 0
 	ACPI_XSDT *xsdt;
-	u32 n_xsdt_entries;
-	u64 *xsdtentrylist;
+	uint32_t n_xsdt_entries;
+	uint64_t *xsdtentrylist;
 #else
 	ACPI_RSDT	*rsdt;
-	u32 n_rsdt_entries;
-	u32 *rsdtentrylist;
+	uint32_t n_rsdt_entries;
+	uint32_t *rsdtentrylist;
 #endif
 
   ACPI_MADT *madt;
-	u8 madt_found=0;
-	u32 i;
+	uint8_t madt_found=0;
+	uint32_t i;
 
 	//we scan ACPI MADT and then the MP configuration table if one is
 	//present, in that order!
@@ -101,37 +101,37 @@ u32 smp_getinfo(PCPU *pcpus, u32 *num_pcpus){
 		goto fallthrough;
 	}
 
-	_XDPRINTF_("\nACPI RSDP at 0x%08x", (u32)rsdp);
+	_XDPRINTF_("\nACPI RSDP at 0x%08x", (uint32_t)rsdp);
 
 #if 0
-	xsdt=(ACPI_XSDT *)(u32)rsdp->xsdtaddress;
-	n_xsdt_entries=(u32)((xsdt->length-sizeof(ACPI_XSDT))/8);
+	xsdt=(ACPI_XSDT *)(uint32_t)rsdp->xsdtaddress;
+	n_xsdt_entries=(uint32_t)((xsdt->length-sizeof(ACPI_XSDT))/8);
 
 	_XDPRINTF_("\nACPI XSDT at 0x%08x", xsdt);
   _XDPRINTF_("\n	len=0x%08x, headerlen=0x%08x, numentries=%u",
 			xsdt->length, sizeof(ACPI_XSDT), n_xsdt_entries);
 
-  xsdtentrylist=(u64 *) ( (u32)xsdt + sizeof(ACPI_XSDT) );
+  xsdtentrylist=(uint64_t *) ( (uint32_t)xsdt + sizeof(ACPI_XSDT) );
 
 	for(i=0; i< n_xsdt_entries; i++){
-    madt=(ACPI_MADT *)( (u32)xsdtentrylist[i]);
+    madt=(ACPI_MADT *)( (uint32_t)xsdtentrylist[i]);
     if(madt->signature == ACPI_MADT_SIGNATURE){
     	madt_found=1;
     	break;
     }
 	}
 #else
-	rsdt=(ACPI_RSDT *)(u32)rsdp->rsdtaddress;
-	n_rsdt_entries=(u32)((rsdt->length-sizeof(ACPI_RSDT))/4);
+	rsdt=(ACPI_RSDT *)(uint32_t)rsdp->rsdtaddress;
+	n_rsdt_entries=(uint32_t)((rsdt->length-sizeof(ACPI_RSDT))/4);
 
-	_XDPRINTF_("\nACPI RSDT at 0x%08x", (u32)rsdt);
+	_XDPRINTF_("\nACPI RSDT at 0x%08x", (uint32_t)rsdt);
   _XDPRINTF_("\n	len=0x%08x, headerlen=0x%08x, numentries=%u",
 			rsdt->length, sizeof(ACPI_RSDT), n_rsdt_entries);
 
-  rsdtentrylist=(u32 *) ( (u32)rsdt + sizeof(ACPI_RSDT) );
+  rsdtentrylist=(uint32_t *) ( (uint32_t)rsdt + sizeof(ACPI_RSDT) );
 
 	for(i=0; i< n_rsdt_entries; i++){
-    madt=(ACPI_MADT *)( (u32)rsdtentrylist[i]);
+    madt=(ACPI_MADT *)( (uint32_t)rsdtentrylist[i]);
     if(madt->signature == ACPI_MADT_SIGNATURE){
     	madt_found=1;
     	break;
@@ -146,20 +146,20 @@ u32 smp_getinfo(PCPU *pcpus, u32 *num_pcpus){
 		goto fallthrough;
 	}
 
-	_XDPRINTF_("\nACPI MADT at 0x%08x", (u32)madt);
+	_XDPRINTF_("\nACPI MADT at 0x%08x", (uint32_t)madt);
 	_XDPRINTF_("\n	len=0x%08x, record-length=%u bytes", madt->length,
 			madt->length - sizeof(ACPI_MADT));
 
 	//scan through MADT APIC records to find processors
 	*num_pcpus=0;
 	{
-		u32 madtrecordlength = madt->length - sizeof(ACPI_MADT);
-		u32 madtcurrentrecordoffset=0;
-		u32 i=0;
-		u32 foundcores=0;
+		uint32_t madtrecordlength = madt->length - sizeof(ACPI_MADT);
+		uint32_t madtcurrentrecordoffset=0;
+		uint32_t i=0;
+		uint32_t foundcores=0;
 
 		do{
-			ACPI_MADT_APIC *apicrecord = (ACPI_MADT_APIC *)((u32)madt + sizeof(ACPI_MADT) + madtcurrentrecordoffset);
+			ACPI_MADT_APIC *apicrecord = (ACPI_MADT_APIC *)((uint32_t)madt + sizeof(ACPI_MADT) + madtcurrentrecordoffset);
  		  _XDPRINTF_("\nrec type=0x%02x, length=%u bytes, flags=0x%08x, id=0x%02x", apicrecord->type,
 			 		apicrecord->length, apicrecord->flags, apicrecord->lapicid);
 
@@ -200,7 +200,7 @@ fallthrough:
 			mp_scan_config(mp_getebda(), 0x400, &mpfp) ||
 			mp_scan_config(0xF0000, 0x10000, &mpfp) ){
 
-	    _XDPRINTF_("\nMP table found at: 0x%08x", (u32)mpfp);
+	    _XDPRINTF_("\nMP table found at: 0x%08x", (uint32_t)mpfp);
   		_XDPRINTF_("\nMP spec rev=0x%02x", mpfp->spec_rev);
   		_XDPRINTF_("\nMP feature info1=0x%02x", mpfp->mpfeatureinfo1);
   		_XDPRINTF_("\nMP feature info2=0x%02x", mpfp->mpfeatureinfo2);
@@ -229,7 +229,7 @@ fallthrough:
 
 			{
 		    int i;
-		    u32 addrofnextentry= (u32)mpctable + sizeof(MPCONFTABLE);
+		    uint32_t addrofnextentry= (uint32_t)mpctable + sizeof(MPCONFTABLE);
 
 		    for(i=0; i < mpctable->entrycount; i++){
 		      MPENTRYCPU *cpu = (MPENTRYCPU *)addrofnextentry;
@@ -239,7 +239,7 @@ fallthrough:
 		      if(cpu->cpuflags & 0x1){
  		        HALT_ON_ERRORCOND( *num_pcpus < MAX_PCPU_ENTRIES);
 						_XDPRINTF_("\nCPU (0x%08x) #%u: lapic id=0x%02x, ver=0x%02x, cpusig=0x%08x",
-		          (u32)cpu, i, cpu->lapicid, cpu->lapicver, cpu->cpusig);
+		          (uint32_t)cpu, i, cpu->lapicid, cpu->lapicver, cpu->cpusig);
 		        pcpus[i].lapic_id = cpu->lapicid;
 		        pcpus[i].lapic_ver = cpu->lapicver;
 		        pcpus[i].lapic_base = mpctable->lapicaddr;
@@ -273,12 +273,12 @@ static int mp_checksum(unsigned char *mp, int len){
 
 //returns 1 if MP table found and populates mpfp with MP table pointer
 //returns 0 if no MP table and makes mpfp=NULL
-static u32 mp_scan_config(u32 base, u32 length, MPFP **mpfp){
-	u32 *bp = (u32 *)base;
+static uint32_t mp_scan_config(uint32_t base, uint32_t length, MPFP **mpfp){
+	uint32_t *bp = (uint32_t *)base;
   MPFP *mpf;
 
   _XDPRINTF_("\n%s: Finding MP table from 0x%08x for %u bytes",
-                        __func__, (u32)bp, length);
+                        __func__, (uint32_t)bp, length);
 
   while (length > 0) {
      mpf = (MPFP *)bp;
@@ -289,7 +289,7 @@ static u32 mp_scan_config(u32 base, u32 length, MPFP **mpfp){
                      || (mpf->spec_rev == 4))) {
 
                         _XDPRINTF_("\n%s: found SMP MP-table at 0x%08x",
-                               __func__, (u32)mpf);
+                               __func__, (uint32_t)mpf);
 
 												*mpfp = mpf;
                         return 1;
@@ -303,47 +303,47 @@ static u32 mp_scan_config(u32 base, u32 length, MPFP **mpfp){
 }
 
 
-u32 mp_getebda(void){
-  u16 ebdaseg;
-  u32 ebdaphys;
+uint32_t mp_getebda(void){
+  uint16_t ebdaseg;
+  uint32_t ebdaphys;
   //get EBDA segment from 040E:0000h in BIOS data area
-  ebdaseg= * ((u16 *)0x0000040E);
+  ebdaseg= * ((uint16_t *)0x0000040E);
   //convert it to its 32-bit physical address
-  ebdaphys=(u32)(ebdaseg * 16);
+  ebdaphys=(uint32_t)(ebdaseg * 16);
 	return ebdaphys;
 }
 
 //------------------------------------------------------------------------------
-u32 _ACPIGetRSDPComputeChecksum(u32 spaddr, u32 size){
+uint32_t _ACPIGetRSDPComputeChecksum(uint32_t spaddr, uint32_t size){
   char *p;
   char checksum=0;
-  u32 i;
+  uint32_t i;
 
   p=(char *)spaddr;
 
   for(i=0; i< size; i++)
     checksum+= (char)(*(p+i));
 
-  return (u32)checksum;
+  return (uint32_t)checksum;
 }
 
 //get the physical address of the root system description pointer (rsdp)
 //return 0 if not found
 ACPI_RSDP * ACPIGetRSDP(void){
-  u16 ebdaseg;
-  u32 ebdaphys;
-  u32 i, found=0;
+  uint16_t ebdaseg;
+  uint32_t ebdaphys;
+  uint32_t i, found=0;
   ACPI_RSDP *rsdp;
 
   //get EBDA segment from 040E:0000h in BIOS data area
-  ebdaseg= * ((u16 *)0x0000040E);
+  ebdaseg= * ((uint16_t *)0x0000040E);
   //convert it to its 32-bit physical address
-  ebdaphys=(u32)(ebdaseg * 16);
+  ebdaphys=(uint32_t)(ebdaseg * 16);
   //search first 1KB of ebda for rsdp signature (8 bytes long)
   for(i=0; i < (1024-8); i+=16){
     rsdp=(ACPI_RSDP *)(ebdaphys+i);
     if(rsdp->signature == ACPI_RSDP_SIGNATURE){
-      if(!_ACPIGetRSDPComputeChecksum((u32)rsdp, 20)){
+      if(!_ACPIGetRSDPComputeChecksum((uint32_t)rsdp, 20)){
         found=1;
         break;
       }
@@ -357,7 +357,7 @@ ACPI_RSDP * ACPIGetRSDP(void){
   for(i=0xE0000; i < (0xFFFFF-8); i+=16){
     rsdp=(ACPI_RSDP *)i;
     if(rsdp->signature == ACPI_RSDP_SIGNATURE){
-      if(!_ACPIGetRSDPComputeChecksum((u32)rsdp, 20)){
+      if(!_ACPIGetRSDPComputeChecksum((uint32_t)rsdp, 20)){
         found=1;
         break;
       }

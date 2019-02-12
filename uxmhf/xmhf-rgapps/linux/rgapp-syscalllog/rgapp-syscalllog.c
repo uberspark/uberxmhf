@@ -14,9 +14,9 @@
 //////////////////////////////////////////////////////////////////////////////
 // base types
 
-typedef unsigned char u8;
-typedef unsigned int u32;
-typedef unsigned long long int u64;
+typedef unsigned char uint8_t;
+typedef unsigned int uint32_t;
+typedef unsigned long long int uint64_t;
 
 
 #define PAGE_SHIFT 12
@@ -26,7 +26,7 @@ typedef unsigned long long int u64;
 //////
 // vmcall interface
 //////
-__attribute__ ((always_inline)) static inline void __vmcall(u32 eax, u32 ebx, u32 edx, u32 ecx){
+__attribute__ ((always_inline)) static inline void __vmcall(uint32_t eax, uint32_t ebx, uint32_t edx, uint32_t ecx){
 	asm volatile (
 			"movl %0, %%eax \r\n"
 			"movl %1, %%ebx \r\n"
@@ -43,10 +43,10 @@ __attribute__ ((always_inline)) static inline void __vmcall(u32 eax, u32 ebx, u3
 //////
 // va_to_pa: virtual to physical address mapping
 //////
-static u64 va_to_pa(void *vaddr) {
+static uint64_t va_to_pa(void *vaddr) {
 	FILE *pagemap;
 	unsigned long offset;
-	u64 page_frame_number = 0;
+	uint64_t page_frame_number = 0;
 
 	// open the pagemap file for the current process
 	pagemap = fopen("/proc/self/pagemap", "rb");
@@ -77,7 +77,7 @@ static u64 va_to_pa(void *vaddr) {
 // get syscall page
 // return 0 on failure, else the 32-bit virtual address of the syscall page
 //////
-static u32 getsyscallvaddr(char **envp) {
+static uint32_t getsyscallvaddr(char **envp) {
 	Elf32_auxv_t *auxv;
 
 	// walk past all env pointers
@@ -103,19 +103,19 @@ static u32 getsyscallvaddr(char **envp) {
 #define SYSCALLLOG_REGISTER     			0xF0
 #define SYSCALL_GETPID						0x1
 
-typedef u32 (*SYSCALLFPTR)(u32 syscallnum);
+typedef uint32_t (*SYSCALLFPTR)(uint32_t syscallnum);
 
-u32 orig_vsyscall_entry_point;
-u32 syscall_vaddr;
-u32 shadow_syscall_vaddr;
-u32 syscall_page_vaddr, syscall_page_paddr;
-u32 syscall_shadowpage_vaddr, syscall_shadowpage_paddr;
+uint32_t orig_vsyscall_entry_point;
+uint32_t syscall_vaddr;
+uint32_t shadow_syscall_vaddr;
+uint32_t syscall_page_vaddr, syscall_page_paddr;
+uint32_t syscall_shadowpage_vaddr, syscall_shadowpage_paddr;
 
-__attribute__ ((aligned(4096))) u8 syscall_shadowpage[4096];
+__attribute__ ((aligned(4096))) uint8_t syscall_shadowpage[4096];
 
 
-__attribute__ ((aligned(4096))) u32 ksyscall(u32 syscallnum){
-	u32 pid;
+__attribute__ ((aligned(4096))) uint32_t ksyscall(uint32_t syscallnum){
+	uint32_t pid;
 	switch(syscallnum){
 		case SYSCALL_GETPID:
 			asm volatile	(
@@ -144,7 +144,7 @@ __attribute__ ((aligned(4096))) u32 ksyscall(u32 syscallnum){
 
 
 __attribute__ ((aligned(4096))) void do_testsyscalllog(char **envp){
-	u32 pid;
+	uint32_t pid;
 	SYSCALLFPTR psyscall = NULL;
 
 	orig_vsyscall_entry_point = getsyscallvaddr(envp);
@@ -226,7 +226,7 @@ __attribute__ ((aligned(4096))) int main(int argc, char **argv, char **envp) {
 // building pieces
 //////
 
-//__attribute__((aligned(4096))) static u8 testxhhyperdep_page[4096];
+//__attribute__((aligned(4096))) static uint8_t testxhhyperdep_page[4096];
 
 
 //printf("\n%s: DEP page unlocked", __FUNCTION__);

@@ -56,18 +56,18 @@
 	assigns __xmhfhic_x86vmx_tss[tssidx].tss_mainblock[0..(PAGE_SIZE_4K-1)];
 	assigns __xmhfhic_x86vmx_tss[tssidx].tss_iobitmap[0..((3*PAGE_SIZE_4K)-1)];
 	ensures (((tss_t *)__xmhfhic_x86vmx_tss[tssidx].tss_mainblock)->esp0 ==
-		(u32) ( &__xmhfhic_x86vmx_tss_stack[tssidx] + sizeof(__xmhfhic_x86vmx_tss_stack[0]) )
+		(uint32_t) ( &__xmhfhic_x86vmx_tss_stack[tssidx] + sizeof(__xmhfhic_x86vmx_tss_stack[0]) )
 		);
 	ensures (((tss_t *)__xmhfhic_x86vmx_tss[tssidx].tss_mainblock)->ss0 == __DS_CPL0);
 	ensures (((tss_t *)__xmhfhic_x86vmx_tss[tssidx].tss_mainblock)->iotbl_addr == PAGE_SIZE_4K);
 @*/
-void gp_s2_setuptss_inittss(u32 tssidx){
+void gp_s2_setuptss_inittss(uint32_t tssidx){
 	tss_t *tss= (tss_t *)__xmhfhic_x86vmx_tss[tssidx].tss_mainblock;
 
 	memset(&__xmhfhic_x86vmx_tss[tssidx].tss_mainblock, 0, PAGE_SIZE_4K);
 	memset(&__xmhfhic_x86vmx_tss[tssidx].tss_iobitmap, 0, (3*PAGE_SIZE_4K));
 
-	tss->esp0 = (u32) ( &__xmhfhic_x86vmx_tss_stack[tssidx] + sizeof(__xmhfhic_x86vmx_tss_stack[0]) );
+	tss->esp0 = (uint32_t) ( &__xmhfhic_x86vmx_tss_stack[tssidx] + sizeof(__xmhfhic_x86vmx_tss_stack[0]) );
 	tss->ss0 = __DS_CPL0;
 	tss->iotbl_addr = PAGE_SIZE_4K;
 

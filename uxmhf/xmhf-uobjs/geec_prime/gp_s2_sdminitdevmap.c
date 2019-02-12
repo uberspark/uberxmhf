@@ -79,7 +79,7 @@
 
 @*/
 void gp_s2_sdminitdevmap(void){
-    u32 i, j, k;
+    uint32_t i, j, k;
 
     _XDPRINTF_("%s: numentries_sysdev_mmioregions=%u\n", __func__, numentries_sysdev_memioregions);
 
@@ -150,7 +150,7 @@ void gp_s2_sdminitdevmap(void){
 	#if defined (__DEBUG_SERIAL__)
     //debug dump
     {
-        u32 i, j;
+        uint32_t i, j;
         for(i=0; i < XMHFGEEC_TOTAL_SLABS; i++){
             _XDPRINTF_("%s: slab %u...\n", __func__, i);
             for(j=0; j < _sda_slab_devicemap[i].device_count; j++){

@@ -74,9 +74,9 @@
 		) ==> (\result == 0xFFFFFFFFUL );
 
 @*/
-u32 gp_s2_sdadoalloc_getuobjfordev(u32 bus, u32 dev, u32 func){
-    u32 i;
-    u32 j;
+uint32_t gp_s2_sdadoalloc_getuobjfordev(uint32_t bus, uint32_t dev, uint32_t func){
+    uint32_t i;
+    uint32_t j;
 
 	/*@
 		loop invariant a1: 0 <= i <= XMHFGEEC_TOTAL_SLABS;

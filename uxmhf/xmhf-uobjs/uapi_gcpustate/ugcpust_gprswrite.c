@@ -59,6 +59,6 @@
 #include <uapi_gcpustate.h>
 
 
-void ugcpust_gprswrite(u32 cpuid, xmhf_uapi_gcpustate_gprs_params_t *gprs){
+void ugcpust_gprswrite(uint32_t cpuid, xmhf_uapi_gcpustate_gprs_params_t *gprs){
 	memcpy(&guestgprs[cpuid], &gprs->gprs, sizeof(x86regs_t));
 }

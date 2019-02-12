@@ -71,7 +71,7 @@ static int32_t e1000_get_phy_cfg_done(struct e1000_hw *hw);
 static void e1000_init_rx_addrs(struct e1000_hw *hw);
 static void e1000_initialize_hardware_bits(struct e1000_hw *hw);
 static void e1000_put_hw_eeprom_semaphore(struct e1000_hw *hw);
-static int32_t e1000_set_d0_lplu_state(struct e1000_hw *hw, boolean_t active);
+static int32_t e1000_set_d0_lplu_state(struct e1000_hw *hw, bool active);
 static void e1000_set_pci_express_master_disable(struct e1000_hw *hw);
 static int32_t e1000_setup_copper_link(struct e1000_hw *hw);
 static int32_t e1000_spi_eeprom_ready(struct e1000_hw *hw);
@@ -88,7 +88,7 @@ static int32_t e1000_acquire_eeprom(struct e1000_hw *hw);
 static void e1000_release_eeprom(struct e1000_hw *hw);
 static void e1000_standby_eeprom(struct e1000_hw *hw);
 
-void e1000_delay(u64 count)
+void e1000_delay(uint64_t count)
 {
 	if (count)
 		while (count --);
@@ -1373,7 +1373,7 @@ e1000_clear_vfta(struct e1000_hw *hw)
 
 static int32_t
 e1000_set_d0_lplu_state(struct e1000_hw *hw,
-                        boolean_t active)
+                        bool active)
 {
     int32_t ret_val;
     uint16_t phy_data;
@@ -1609,39 +1609,39 @@ e1000_check_phy_reset_block(struct e1000_hw *hw)
 
 static void e1000_pci_set_master(pci_device_t *nwdevice)
 {
-        u32 cmd;
+        uint32_t cmd;
 
         xmhf_baseplatform_arch_x86_pci_type1_read(nwdevice->bus,
 						nwdevice->dev,
 						nwdevice->func,
 						PCI_CONF_HDR_IDX_COMMAND,
-						sizeof(u16),
+						sizeof(uint16_t),
 						&cmd);
         cmd |= PCI_COMMAND_MASTER;
         xmhf_baseplatform_arch_x86_pci_type1_write(nwdevice->bus,
 						nwdevice->dev,
 						nwdevice->func,
 						PCI_CONF_HDR_IDX_COMMAND,
-						sizeof(u16),
+						sizeof(uint16_t),
 						cmd);
 }
 
 static void e1000_pci_disable_master(pci_device_t *nwdevice)
 {
-        u16 cmd;
+        uint16_t cmd;
 
         xmhf_baseplatform_arch_x86_pci_type1_read(nwdevice->bus,
 						nwdevice->dev,
 						nwdevice->func,
 						PCI_CONF_HDR_IDX_COMMAND,
-						sizeof(u16),
+						sizeof(uint16_t),
 						&cmd);
         cmd &= ~PCI_COMMAND_MASTER;
         xmhf_baseplatform_arch_x86_pci_type1_write(nwdevice->bus,
 						nwdevice->dev,
 						nwdevice->func,
 						PCI_CONF_HDR_IDX_COMMAND,
-						sizeof(u16),
+						sizeof(uint16_t),
 						cmd);
 
 }
@@ -1682,9 +1682,9 @@ void e1000_mdelay1(unsigned int msec)
  * second is seconds to wait
  * the third one depends how fast your CPU is
  */
-	u64 cycles = E1000_TIMEOUT_1MS * msec;
-	u64 diff;
-	u64 tscbefore, tscafter;
+	uint64_t cycles = E1000_TIMEOUT_1MS * msec;
+	uint64_t diff;
+	uint64_t tscbefore, tscafter;
 	tscbefore = CASM_FUNCCALL(rdtsc64, CASM_NOPARAM);
 	do
 	{
@@ -1916,7 +1916,7 @@ e1000_configure_tx(void)
 	//E1000_WRITE_REG(hw, TDBAH, (tdba >> 32));
 	//E1000_WRITE_REG(hw, TDBAL, (tdba & 0x00000000ffffffffULL));
 	E1000_WRITE_REG(hw, TDBAH, 0);
-	E1000_WRITE_REG(hw, TDBAL, (u32)e1000_adapt.tx_ring.dma_desc);
+	E1000_WRITE_REG(hw, TDBAL, (uint32_t)e1000_adapt.tx_ring.dma_desc);
 	E1000_WRITE_REG(hw, TDT, 0);
 	E1000_WRITE_REG(hw, TDH, 0);
 	e1000_adapt.tx_ring.tdh = (E1000_TDH);
@@ -1989,7 +1989,7 @@ void e1000_xmit(unsigned short tail)
 }
 
 
-u32 e1000_check4xmit(void)
+uint32_t e1000_check4xmit(void)
 {
 	unsigned short tail, head;
 
@@ -2039,10 +2039,10 @@ void e1000_xmitack(void){
 	_XDPRINTF_("%s: transmit successful\n", __func__);
 }
 
-u32 e1000_init_module(void)
+uint32_t e1000_init_module(void)
 {
 	int ret = 0;
-	u32 i;
+	uint32_t i;
 
 
 	//TODO: probe PCI bus to figure out b,d,f

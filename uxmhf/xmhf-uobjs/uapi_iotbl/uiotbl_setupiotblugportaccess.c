@@ -56,12 +56,12 @@
 	assigns uiotbl_ugslab_iobitmap[objidx][bitmapidx];
 	ensures (uiotbl_ugslab_iobitmap[objidx][bitmapidx] == (\at(uiotbl_ugslab_iobitmap[objidx][bitmapidx], Pre) & mask));
 @*/
-static inline void uiotbl_setupiotblug_allowaccesstoport_setmask(u32 objidx, u32 bitmapidx, u8 mask){
+static inline void uiotbl_setupiotblug_allowaccesstoport_setmask(uint32_t objidx, uint32_t bitmapidx, uint8_t mask){
 	uiotbl_ugslab_iobitmap[objidx][bitmapidx] = uiotbl_ugslab_iobitmap[objidx][bitmapidx] & mask;
 }
 
 
-//@ghost u8 gp_s2_setupiotblug_allowaccesstoport_invokedsetmask[4];
+//@ghost uint8_t gp_s2_setupiotblug_allowaccesstoport_invokedsetmask[4];
 /*@
 	requires 0 <= ugslabiobitmap_idx < XMHFGEEC_TOTAL_UGSLABS;
 	requires 0 <= port < 65536;
@@ -69,10 +69,10 @@ static inline void uiotbl_setupiotblug_allowaccesstoport_setmask(u32 objidx, u32
 	assigns uiotbl_ugslab_iobitmap[ugslabiobitmap_idx][((port+0)/8)..((port+(port_size-1))/8)];
 	assigns gp_s2_setupiotblug_allowaccesstoport_invokedsetmask[0..(port_size-1)];
 @*/
-void uiotbl_setupiotblug_allowaccesstoport(u32 ugslabiobitmap_idx, u16 port, u16 port_size){
-	u32 i;
-	u8 bitmask;
-	u32 bitmapidx;
+void uiotbl_setupiotblug_allowaccesstoport(uint32_t ugslabiobitmap_idx, uint16_t port, uint16_t port_size){
+	uint32_t i;
+	uint8_t bitmask;
+	uint32_t bitmapidx;
 
 	/*@
 		loop invariant d1: 0 <= i <= port_size;
@@ -85,10 +85,10 @@ void uiotbl_setupiotblug_allowaccesstoport(u32 ugslabiobitmap_idx, u16 port, u16
 		loop variant port_size - i;
 	@*/
 	for(i=0; i < port_size; i++){
-		bitmask =  ((u8)1 << ((port+i) % 8));
+		bitmask =  ((uint8_t)1 << ((port+i) % 8));
 		bitmapidx = ((port+i)/8);
 
-		//@assert as1: (bitmask == ((u8)1 << ((port+i) % 8)));
+		//@assert as1: (bitmask == ((uint8_t)1 << ((port+i) % 8)));
 		//@assert as2: (bitmapidx == ((port+i)/8));
 		uiotbl_setupiotblug_allowaccesstoport_setmask(ugslabiobitmap_idx, bitmapidx, ~bitmask);
 		//@ghost gp_s2_setupiotblug_allowaccesstoport_invokedsetmask[i] = true;

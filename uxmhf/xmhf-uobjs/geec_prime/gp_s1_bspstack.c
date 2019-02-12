@@ -55,20 +55,20 @@
 
 
 //@ghost bool gp_s1_bspstack_invoke_bspstkactivate = false;
-//@ghost u64 gflags[PAE_PTRS_PER_PDPT][PAE_PTRS_PER_PDT];
+//@ghost uint64_t gflags[PAE_PTRS_PER_PDPT][PAE_PTRS_PER_PDT];
 /*@
 	assigns _xcprimeon_init_pdpt[0..(PAE_MAXPTRS_PER_PDPT-1)];
 	assigns _xcprimeon_init_pdt[0..(PAE_PTRS_PER_PDPT-1)][0..(PAE_PTRS_PER_PDT-1)];
 	assigns gflags[0..(PAE_PTRS_PER_PDPT-1)][0..(PAE_PTRS_PER_PDT-1)];
 	assigns gp_s1_bspstack_invoke_bspstkactivate;
 	ensures gp_s1_bspstack_invoke_bspstkactivate == true;
-	ensures \forall integer x; 0 <= x < PAE_PTRS_PER_PDPT ==> ( _xcprimeon_init_pdpt[x] == (pae_make_pdpe((u32)&_xcprimeon_init_pdt[x][0], (_PAGE_PRESENT))) );
+	ensures \forall integer x; 0 <= x < PAE_PTRS_PER_PDPT ==> ( _xcprimeon_init_pdpt[x] == (pae_make_pdpe((uint32_t)&_xcprimeon_init_pdt[x][0], (_PAGE_PRESENT))) );
 	ensures \forall integer x; PAE_PTRS_PER_PDPT <= x < PAE_MAXPTRS_PER_PDPT ==> ( _xcprimeon_init_pdpt[x] == 0 );
-	ensures \forall integer x, y; 0 <= x < PAE_PTRS_PER_PDPT && 0 <= y < PAE_PTRS_PER_PDT ==> ( _xcprimeon_init_pdt[x][y] == (pae_make_pde_big((u32)((x*(PAGE_SIZE_2M * PAE_PTRS_PER_PDT)) + (PAGE_SIZE_2M * y)), gflags[x][y])) );
+	ensures \forall integer x, y; 0 <= x < PAE_PTRS_PER_PDPT && 0 <= y < PAE_PTRS_PER_PDT ==> ( _xcprimeon_init_pdt[x][y] == (pae_make_pde_big((uint32_t)((x*(PAGE_SIZE_2M * PAE_PTRS_PER_PDT)) + (PAGE_SIZE_2M * y)), gflags[x][y])) );
 @*/
 void gp_s1_bspstack(void){
-	u32 i, j;
-	u64 flags;
+	uint32_t i, j;
+	uint64_t flags;
 
 	//clear PDPT
 	/*@
@@ -83,8 +83,8 @@ void gp_s1_bspstack(void){
 
     	/*@
 		loop invariant a3: 0 <= i <= PAE_PTRS_PER_PDPT;
-		loop invariant a4: \forall integer x; 0 <= x < i ==> ( _xcprimeon_init_pdpt[x] == (pae_make_pdpe((u32)&_xcprimeon_init_pdt[x][0], (_PAGE_PRESENT))) );
-		loop invariant a41: \forall integer x, y; 0 <= x < i && 0 <= y < PAE_PTRS_PER_PDT ==> ( _xcprimeon_init_pdt[x][y] == (pae_make_pde_big((u32)((x*(PAGE_SIZE_2M * PAE_PTRS_PER_PDT)) + (PAGE_SIZE_2M * y)), gflags[x][y])) );
+		loop invariant a4: \forall integer x; 0 <= x < i ==> ( _xcprimeon_init_pdpt[x] == (pae_make_pdpe((uint32_t)&_xcprimeon_init_pdt[x][0], (_PAGE_PRESENT))) );
+		loop invariant a41: \forall integer x, y; 0 <= x < i && 0 <= y < PAE_PTRS_PER_PDT ==> ( _xcprimeon_init_pdt[x][y] == (pae_make_pde_big((uint32_t)((x*(PAGE_SIZE_2M * PAE_PTRS_PER_PDT)) + (PAGE_SIZE_2M * y)), gflags[x][y])) );
 		loop assigns _xcprimeon_init_pdpt[0..(PAE_PTRS_PER_PDPT-1)];
 		loop assigns _xcprimeon_init_pdt[0..(PAE_PTRS_PER_PDPT-1)][0..(PAE_PTRS_PER_PDT-1)];
 		loop assigns gflags[0..(PAE_PTRS_PER_PDPT-1)][0..(PAE_PTRS_PER_PDT-1)];
@@ -94,11 +94,11 @@ void gp_s1_bspstack(void){
 		loop variant PAE_PTRS_PER_PDPT - i;
 	@*/
 	for(i=0; i < PAE_PTRS_PER_PDPT; i++){
-		_xcprimeon_init_pdpt[i] = pae_make_pdpe((u32)&_xcprimeon_init_pdt[i][0], (_PAGE_PRESENT));
+		_xcprimeon_init_pdpt[i] = pae_make_pdpe((uint32_t)&_xcprimeon_init_pdt[i][0], (_PAGE_PRESENT));
 
 		/*@
 			loop invariant a5: 0 <= j <= PAE_PTRS_PER_PDT;
-			loop invariant a6: \forall integer y; 0 <= y < j ==> ( _xcprimeon_init_pdt[i][y] == (pae_make_pde_big((u32)((i*(PAGE_SIZE_2M * PAE_PTRS_PER_PDT)) + (PAGE_SIZE_2M * y)), gflags[i][y])) );
+			loop invariant a6: \forall integer y; 0 <= y < j ==> ( _xcprimeon_init_pdt[i][y] == (pae_make_pde_big((uint32_t)((i*(PAGE_SIZE_2M * PAE_PTRS_PER_PDT)) + (PAGE_SIZE_2M * y)), gflags[i][y])) );
 			loop assigns _xcprimeon_init_pdt[i][0..(PAE_PTRS_PER_PDT-1)];
 			loop assigns gflags[i][0..(PAE_PTRS_PER_PDT-1)];
 			loop assigns j;

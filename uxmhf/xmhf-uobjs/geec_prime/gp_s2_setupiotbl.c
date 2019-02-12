@@ -106,7 +106,7 @@
 		) ==> (gp_s2_setupiotbl_handleinvalidobjs[x] == true) );
 @*/
 void gp_s2_setupiotbl(void){
-	u32 i, slabtype;
+	uint32_t i, slabtype;
 
 
 

@@ -80,15 +80,15 @@
 
 
 typedef struct {
-    u32 cbtype;
-    u32 cbqual;
-    u32 guest_slab_index;
-    u32 cbresult;
+    uint32_t cbtype;
+    uint32_t cbqual;
+    uint32_t guest_slab_index;
+    uint32_t cbresult;
 }__attribute__((packed)) xc_hypappcb_params_t;
 
 typedef struct {
-    u32 xmhfhic_slab_index;
-    u32 cbmask;
+    uint32_t xmhfhic_slab_index;
+    uint32_t cbmask;
 } __attribute__((packed)) xc_hypapp_info_t;
 
 

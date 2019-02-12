@@ -61,4 +61,4 @@
 
 __attribute__((section(".data"))) GRUBE820 usysd_memmapinfo[MAX_E820_ENTRIES];
 
-__attribute__((section(".data"))) u32 usysd_memmapinfo_maxindex=0;
+__attribute__((section(".data"))) uint32_t usysd_memmapinfo_maxindex=0;

@@ -75,7 +75,7 @@
 	complete behaviors;
 	disjoint behaviors;
 @*/
-void gp_s2_sdminitdevmap_adddeventry(u32 slabid, u32 sysdev_mmioregions_index){
+void gp_s2_sdminitdevmap_adddeventry(uint32_t slabid, uint32_t sysdev_mmioregions_index){
 
 	if( _sda_slab_devicemap[slabid].device_count >= MAX_PLATFORM_DEVICES){
 	    _XDPRINTF_("%s: Halting! device_count >= MAX_PLATFORM_DEVICES\n", __func__);

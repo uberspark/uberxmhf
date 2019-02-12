@@ -66,6 +66,6 @@ CASM_FUNCDEF(void, gs_exit_calluv2vstub,
     xmhfhwm_cpu_insn_pushl_imm(0x0);
     xmhfhwm_cpu_insn_jmpslabep();
 },
-u32 entry_point, void *callee_stack_frame)
+uint32_t entry_point, void *callee_stack_frame)
 
 

@@ -63,24 +63,24 @@
 	assigns _slabmempgtbl_lvl4t[slabid][0..(PAE_MAXPTRS_PER_PML4T-1)];
 	assigns _slabmempgtbl_lvl3t[slabid][0..(PAE_MAXPTRS_PER_PDPT-1)];
 	assigns _slabmempgtbl_lvl2t[slabid][0..(PAE_MAXPTRS_PER_PDPT-1)][0..(PAE_PTRS_PER_PDT-1)];
-	ensures (\forall u32 x; 0 <= x < PAE_PTRS_PER_PML4T ==>
-		 ( (u64)_slabmempgtbl_lvl4t[slabid][x] ) == ( ((u64)&_slabmempgtbl_lvl3t[slabid] | 0x7) )
+	ensures (\forall uint32_t x; 0 <= x < PAE_PTRS_PER_PML4T ==>
+		 ( (uint64_t)_slabmempgtbl_lvl4t[slabid][x] ) == ( ((uint64_t)&_slabmempgtbl_lvl3t[slabid] | 0x7) )
 		);
-	ensures (\forall u32 x; 0 <= x < PAE_PTRS_PER_PDPT ==>
-		 ( (u64)_slabmempgtbl_lvl3t[slabid][x] ) == ( ((u64)&_slabmempgtbl_lvl2t[slabid][x] | 0x7 ) )
+	ensures (\forall uint32_t x; 0 <= x < PAE_PTRS_PER_PDPT ==>
+		 ( (uint64_t)_slabmempgtbl_lvl3t[slabid][x] ) == ( ((uint64_t)&_slabmempgtbl_lvl2t[slabid][x] | 0x7 ) )
 		);
 
 	ensures (\forall integer x,y; 0 <= x < (PAE_PTRS_PER_PDPT-1) && 0 <= y < (PAE_PTRS_PER_PDT-1) ==>
-	         ( (u64)_slabmempgtbl_lvl2t[slabid][x][y] == ((u64)&_slabmempgtbl_lvl1t[slabid][x][y] | 0x7 ) )
+	         ( (uint64_t)_slabmempgtbl_lvl2t[slabid][x][y] == ((uint64_t)&_slabmempgtbl_lvl1t[slabid][x][y] | 0x7 ) )
 		);
 @*/
-static void _slabmempgtbl_initmempgtbl_ept4K(u32 slabid){
-	u32 i, j;
+static void _slabmempgtbl_initmempgtbl_ept4K(uint32_t slabid){
+	uint32_t i, j;
 
 	//pml4t zero out
 	/*@
 		loop invariant a1: 0 <= i <= PAE_MAXPTRS_PER_PML4T;
-		loop invariant a2: \forall integer x; 0 <= x < i ==> ( (u64)_slabmempgtbl_lvl4t[slabid][x] == 0 );
+		loop invariant a2: \forall integer x; 0 <= x < i ==> ( (uint64_t)_slabmempgtbl_lvl4t[slabid][x] == 0 );
 		loop assigns _slabmempgtbl_lvl4t[slabid][0..(PAE_MAXPTRS_PER_PML4T-1)];
 		loop assigns i;
 		loop variant PAE_MAXPTRS_PER_PML4T - i;
@@ -94,7 +94,7 @@ static void _slabmempgtbl_initmempgtbl_ept4K(u32 slabid){
 	//memset(&_slabmempgtbl_lvl3t[slabid], 0, PAGE_SIZE_4K);
 	/*@
 		loop invariant a1: 0 <= i <= PAE_MAXPTRS_PER_PDPT;
-		loop invariant a2: \forall integer x; 0 <= x < i ==> ( (u64)_slabmempgtbl_lvl3t[slabid][x] == 0 );
+		loop invariant a2: \forall integer x; 0 <= x < i ==> ( (uint64_t)_slabmempgtbl_lvl3t[slabid][x] == 0 );
 		loop assigns _slabmempgtbl_lvl3t[slabid][0..(PAE_MAXPTRS_PER_PDPT-1)];
 		loop assigns i;
 		loop variant PAE_MAXPTRS_PER_PDPT - i;
@@ -107,31 +107,31 @@ static void _slabmempgtbl_initmempgtbl_ept4K(u32 slabid){
 	//pml4t setup
 	/*@
 		loop invariant a1: 0 <= i <= PAE_PTRS_PER_PML4T;
-		loop invariant a2: \forall integer x; 0 <= x < i ==> ( (u64)_slabmempgtbl_lvl4t[slabid][x] == ((u64)&_slabmempgtbl_lvl3t[slabid] | 0x7) );
+		loop invariant a2: \forall integer x; 0 <= x < i ==> ( (uint64_t)_slabmempgtbl_lvl4t[slabid][x] == ((uint64_t)&_slabmempgtbl_lvl3t[slabid] | 0x7) );
 		loop assigns _slabmempgtbl_lvl4t[slabid][0..(PAE_PTRS_PER_PML4T-1)];
 		loop assigns i;
 		loop variant PAE_PTRS_PER_PML4T - i;
 	@*/
 	for(i=0; i < PAE_PTRS_PER_PML4T; i++){
-		_slabmempgtbl_lvl4t[slabid][i] = ((u64)&_slabmempgtbl_lvl3t[slabid] | 0x7);
+		_slabmempgtbl_lvl4t[slabid][i] = ((uint64_t)&_slabmempgtbl_lvl3t[slabid] | 0x7);
 	}
 
 	//pdpt setup
 	/*@
 		loop invariant a1: 0 <= i <= PAE_PTRS_PER_PDPT;
-		loop invariant a2: \forall integer x; 0 <= x < i ==> ( (u64)_slabmempgtbl_lvl3t[slabid][x] == ((u64)&_slabmempgtbl_lvl2t[slabid][x] | 0x7 ) );
+		loop invariant a2: \forall integer x; 0 <= x < i ==> ( (uint64_t)_slabmempgtbl_lvl3t[slabid][x] == ((uint64_t)&_slabmempgtbl_lvl2t[slabid][x] | 0x7 ) );
 		loop assigns _slabmempgtbl_lvl3t[slabid][0..(PAE_PTRS_PER_PDPT-1)];
 		loop assigns i;
 		loop variant PAE_PTRS_PER_PDPT - i;
 	@*/
 	for(i=0; i < PAE_PTRS_PER_PDPT; i++){
-		_slabmempgtbl_lvl3t[slabid][i] = ((u64)&_slabmempgtbl_lvl2t[slabid][i] | 0x7 );
+		_slabmempgtbl_lvl3t[slabid][i] = ((uint64_t)&_slabmempgtbl_lvl2t[slabid][i] | 0x7 );
 	}
 
 	//pt setup
 	/*@
 		loop invariant z1: 0 <= i <= PAE_PTRS_PER_PDPT;
-		loop invariant o1: \forall integer x,y; 0 <= x < i && 0 <= y < (PAE_PTRS_PER_PDT-1) ==> ( (u64)_slabmempgtbl_lvl2t[slabid][x][y] == ((u64)&_slabmempgtbl_lvl1t[slabid][x][y] | 0x7 ) );
+		loop invariant o1: \forall integer x,y; 0 <= x < i && 0 <= y < (PAE_PTRS_PER_PDT-1) ==> ( (uint64_t)_slabmempgtbl_lvl2t[slabid][x][y] == ((uint64_t)&_slabmempgtbl_lvl1t[slabid][x][y] | 0x7 ) );
 		loop assigns i;
 		loop assigns j;
 		loop assigns _slabmempgtbl_lvl2t[slabid][0..(PAE_MAXPTRS_PER_PDPT-1)][0..(PAE_PTRS_PER_PDT-1)];
@@ -141,12 +141,12 @@ static void _slabmempgtbl_initmempgtbl_ept4K(u32 slabid){
 		/*@
 		loop invariant z2: 0 <= j <= PAE_PTRS_PER_PDT;
 		loop assigns j;
-		loop invariant o2: \forall integer x; 0 <= x < j ==> ( (u64)_slabmempgtbl_lvl2t[slabid][i][x] == ((u64)&_slabmempgtbl_lvl1t[slabid][i][x] | 0x7 ) );
+		loop invariant o2: \forall integer x; 0 <= x < j ==> ( (uint64_t)_slabmempgtbl_lvl2t[slabid][i][x] == ((uint64_t)&_slabmempgtbl_lvl1t[slabid][i][x] | 0x7 ) );
 		loop assigns _slabmempgtbl_lvl2t[slabid][i][0..(PAE_PTRS_PER_PDT-1)];
 		loop variant PAE_PTRS_PER_PDT - j;
 		@*/
 		for(j=0; j < PAE_PTRS_PER_PDT; j++){
-			_slabmempgtbl_lvl2t[slabid][i][j] = ((u64)&_slabmempgtbl_lvl1t[slabid][i][j] | 0x7 );
+			_slabmempgtbl_lvl2t[slabid][i][j] = ((uint64_t)&_slabmempgtbl_lvl1t[slabid][i][j] | 0x7 );
 		}
 	}
 

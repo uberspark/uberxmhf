@@ -62,8 +62,8 @@
 				(gp_s2_setupiotblug_helper_invokedportaccess[x] == true)
 						);
 @*/
-static inline void gp_s2_setupiotblug_helper(u32 slabid, u32 sysdev_memioregions_index){
-	u32 k, portnum;
+static inline void gp_s2_setupiotblug_helper(uint32_t slabid, uint32_t sysdev_memioregions_index){
+	uint32_t k, portnum;
 
 	/*@
 		loop invariant b1: 0 <= k <= PCI_CONF_MAX_BARS;
@@ -123,8 +123,8 @@ static inline void gp_s2_setupiotblug_helper(u32 slabid, u32 sysdev_memioregions
 	ensures \forall integer x; 0 <= x < (_sda_slab_devicemap[slabid].device_count-1) ==>
 				(gp_s2_setupiotblug_invokedhelper[x] == true);
 @*/
-void gp_s2_setupiotblug(u32 slabid){
-	u32 i;
+void gp_s2_setupiotblug(uint32_t slabid){
+	uint32_t i;
 
         {
         	slab_params_t spl;

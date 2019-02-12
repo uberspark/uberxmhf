@@ -60,11 +60,11 @@
 	ensures \forall integer x; 0 <= x < (EMHF_XCPHANDLER_MAXEXCEPTIONS-1) ==> (xcexhub_idt_data[x].type == 0xEE);
 	ensures \forall integer x; 0 <= x < (EMHF_XCPHANDLER_MAXEXCEPTIONS-1) ==> (xcexhub_idt_data[x].count == 0x0);
 	ensures \forall integer x; 0 <= x < (EMHF_XCPHANDLER_MAXEXCEPTIONS-1) ==> (xcexhub_idt_data[x].isrSelector == __CS_CPL0);
-	ensures \forall integer x; 0 <= x < (EMHF_XCPHANDLER_MAXEXCEPTIONS-1) ==> (xcexhub_idt_data[x].isrHigh == (u16) ( xmhfgeec_slab_info_table[XMHFGEEC_SLAB_GEEC_SENTINEL].slab_memoffset_entries[GEEC_SENTINEL_MEMOFFSETS_EXCEPTIONHANDLERS_IDX+x] >> 16 ));
-	ensures \forall integer x; 0 <= x < (EMHF_XCPHANDLER_MAXEXCEPTIONS-1) ==> (xcexhub_idt_data[x].isrLow == (u16)xmhfgeec_slab_info_table[XMHFGEEC_SLAB_GEEC_SENTINEL].slab_memoffset_entries[GEEC_SENTINEL_MEMOFFSETS_EXCEPTIONHANDLERS_IDX+x]);
+	ensures \forall integer x; 0 <= x < (EMHF_XCPHANDLER_MAXEXCEPTIONS-1) ==> (xcexhub_idt_data[x].isrHigh == (uint16_t) ( xmhfgeec_slab_info_table[XMHFGEEC_SLAB_GEEC_SENTINEL].slab_memoffset_entries[GEEC_SENTINEL_MEMOFFSETS_EXCEPTIONHANDLERS_IDX+x] >> 16 ));
+	ensures \forall integer x; 0 <= x < (EMHF_XCPHANDLER_MAXEXCEPTIONS-1) ==> (xcexhub_idt_data[x].isrLow == (uint16_t)xmhfgeec_slab_info_table[XMHFGEEC_SLAB_GEEC_SENTINEL].slab_memoffset_entries[GEEC_SENTINEL_MEMOFFSETS_EXCEPTIONHANDLERS_IDX+x]);
 @*/
 void xcexhub_setupidt(void){
-	u32 i;
+	uint32_t i;
 
 
     	/*@
@@ -72,8 +72,8 @@ void xcexhub_setupidt(void){
 		loop invariant a2: \forall integer x; 0 <= x < i ==> (xcexhub_idt_data[x].type == 0xEE);
 		loop invariant a3: \forall integer x; 0 <= x < i ==> (xcexhub_idt_data[x].count == 0x0);
 		loop invariant a4: \forall integer x; 0 <= x < i ==> (xcexhub_idt_data[x].isrSelector == __CS_CPL0);
-		loop invariant a5: \forall integer x; 0 <= x < i ==> (xcexhub_idt_data[x].isrHigh == (u16) ( xmhfgeec_slab_info_table[XMHFGEEC_SLAB_GEEC_SENTINEL].slab_memoffset_entries[GEEC_SENTINEL_MEMOFFSETS_EXCEPTIONHANDLERS_IDX+x] >> 16 ));
-		loop invariant a6: \forall integer x; 0 <= x < i ==> (xcexhub_idt_data[x].isrLow == (u16)xmhfgeec_slab_info_table[XMHFGEEC_SLAB_GEEC_SENTINEL].slab_memoffset_entries[GEEC_SENTINEL_MEMOFFSETS_EXCEPTIONHANDLERS_IDX+x]);
+		loop invariant a5: \forall integer x; 0 <= x < i ==> (xcexhub_idt_data[x].isrHigh == (uint16_t) ( xmhfgeec_slab_info_table[XMHFGEEC_SLAB_GEEC_SENTINEL].slab_memoffset_entries[GEEC_SENTINEL_MEMOFFSETS_EXCEPTIONHANDLERS_IDX+x] >> 16 ));
+		loop invariant a6: \forall integer x; 0 <= x < i ==> (xcexhub_idt_data[x].isrLow == (uint16_t)xmhfgeec_slab_info_table[XMHFGEEC_SLAB_GEEC_SENTINEL].slab_memoffset_entries[GEEC_SENTINEL_MEMOFFSETS_EXCEPTIONHANDLERS_IDX+x]);
 		loop assigns xcexhub_idt_data[0..(EMHF_XCPHANDLER_MAXEXCEPTIONS-1)].isrLow;
 		loop assigns xcexhub_idt_data[0..(EMHF_XCPHANDLER_MAXEXCEPTIONS-1)].isrHigh;
 		loop assigns xcexhub_idt_data[0..(EMHF_XCPHANDLER_MAXEXCEPTIONS-1)].isrSelector;
@@ -83,10 +83,10 @@ void xcexhub_setupidt(void){
 		loop variant EMHF_XCPHANDLER_MAXEXCEPTIONS - i;
 	@*/
 	for(i=0; i < EMHF_XCPHANDLER_MAXEXCEPTIONS; i++){
-		//xcexhub_idt_data[i].isrLow= (u16)xmhfgeec_slab_info_table[XMHFGEEC_SLAB_GEEC_SENTINEL].slab_memoffset_entries[GEEC_SENTINEL_MEMOFFSETS_EXCEPTIONHANDLERS_IDX+i];
-		//xcexhub_idt_data[i].isrHigh= (u16) ( xmhfgeec_slab_info_table[XMHFGEEC_SLAB_GEEC_SENTINEL].slab_memoffset_entries[GEEC_SENTINEL_MEMOFFSETS_EXCEPTIONHANDLERS_IDX+i] >> 16 );
-		xcexhub_idt_data[i].isrLow= (u16)xcexhub_excp_handlers[i];
-		xcexhub_idt_data[i].isrHigh= (u16)((u32)xcexhub_excp_handlers[i] >> 16);
+		//xcexhub_idt_data[i].isrLow= (uint16_t)xmhfgeec_slab_info_table[XMHFGEEC_SLAB_GEEC_SENTINEL].slab_memoffset_entries[GEEC_SENTINEL_MEMOFFSETS_EXCEPTIONHANDLERS_IDX+i];
+		//xcexhub_idt_data[i].isrHigh= (uint16_t) ( xmhfgeec_slab_info_table[XMHFGEEC_SLAB_GEEC_SENTINEL].slab_memoffset_entries[GEEC_SENTINEL_MEMOFFSETS_EXCEPTIONHANDLERS_IDX+i] >> 16 );
+		xcexhub_idt_data[i].isrLow= (uint16_t)xcexhub_excp_handlers[i];
+		xcexhub_idt_data[i].isrHigh= (uint16_t)((uint32_t)xcexhub_excp_handlers[i] >> 16);
 		xcexhub_idt_data[i].isrSelector = __CS_CPL0;
 		xcexhub_idt_data[i].count=0x0;
 		xcexhub_idt_data[i].type=0xEE;	//32-bit interrupt gate

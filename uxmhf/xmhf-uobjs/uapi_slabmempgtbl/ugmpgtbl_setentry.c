@@ -57,7 +57,7 @@
 #include <uapi_slabmempgtbl.h>
 
 
-//@ghost u64 setentry_fullentry=0;
+//@ghost uint64_t setentry_fullentry=0;
 /*@
 	requires \valid(setentryforpaddrp);
 

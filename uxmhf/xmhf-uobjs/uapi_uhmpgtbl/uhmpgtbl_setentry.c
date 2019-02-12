@@ -67,7 +67,7 @@ void _uhmpgtbl_setentryforpaddr(uapi_uhmpgtbl_setentryforpaddr_params_t *setentr
 		)
       ) {
     	_uhslabmempgtbl_lvl1t[(setentryforpaddrp->dst_slabid - XMHFGEEC_UHSLAB_BASE_IDX)][(setentryforpaddrp->pa/PAGE_SIZE_4K)] =
-			((u64)setentryforpaddrp->entry_hi << 32) | (u64)setentryforpaddrp->entry_lo;
+			((uint64_t)setentryforpaddrp->entry_hi << 32) | (uint64_t)setentryforpaddrp->entry_lo;
     }else{
         _XDPRINTF_("%s: error in setentryforpaddr\n", __func__);
 

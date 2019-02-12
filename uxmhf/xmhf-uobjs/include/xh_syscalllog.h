@@ -62,19 +62,19 @@
 
 
 extern __attribute__((section(".data"))) bool sl_activated;
-extern __attribute__((section(".data"))) u32 sl_syscall_page_paddr;
-extern __attribute__((section(".data"))) u32 sl_syscall_shadowpage_vaddr;
+extern __attribute__((section(".data"))) uint32_t sl_syscall_page_paddr;
+extern __attribute__((section(".data"))) uint32_t sl_syscall_shadowpage_vaddr;
 
 
 
-void sysclog_hcbhypercall(u32 cpuindex, u32 guest_slab_index);
-void sysclog_hcbinit(u32 cpuindex);
-u32 sysclog_hcbinsntrap(u32 cpuindex, u32 guest_slab_index, u32 insntype);
-bool sysclog_hcbmemfault(u32 cpuindex, u32 guest_slab_index);
-void sysclog_hcbshutdown(u32 cpuindex, u32 guest_slab_index);
+void sysclog_hcbhypercall(uint32_t cpuindex, uint32_t guest_slab_index);
+void sysclog_hcbinit(uint32_t cpuindex);
+uint32_t sysclog_hcbinsntrap(uint32_t cpuindex, uint32_t guest_slab_index, uint32_t insntype);
+bool sysclog_hcbmemfault(uint32_t cpuindex, uint32_t guest_slab_index);
+void sysclog_hcbshutdown(uint32_t cpuindex, uint32_t guest_slab_index);
 
-void sysclog_register(u32 cpuindex, u32 guest_slab_index, u32 syscall_page_paddr, u32 syscall_shadowpage_vaddr, u32 syscall_shadowpage_paddr);
-bool sysclog_loginfo(u32 cpuindex, u32 guest_slab_index, u64 gpa, u64 gva, u64 errorcode);
+void sysclog_register(uint32_t cpuindex, uint32_t guest_slab_index, uint32_t syscall_page_paddr, uint32_t syscall_shadowpage_vaddr, uint32_t syscall_shadowpage_paddr);
+bool sysclog_loginfo(uint32_t cpuindex, uint32_t guest_slab_index, uint64_t gpa, uint64_t gva, uint64_t errorcode);
 
 
 

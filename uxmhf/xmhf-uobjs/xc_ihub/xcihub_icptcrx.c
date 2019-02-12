@@ -64,7 +64,7 @@
  * author: amit vasudevan (amitvasudevan@acm.org)
  */
 
-static u32 _xcihub_icptcrx_getregval(u32 gpr, x86regs_t r){
+static uint32_t _xcihub_icptcrx_getregval(uint32_t gpr, x86regs_t r){
 	  switch(gpr){
 		case 0: return r.eax;
 		case 1: return r.ecx;
@@ -80,7 +80,7 @@ static u32 _xcihub_icptcrx_getregval(u32 gpr, x86regs_t r){
 	}
 }
 
-u32 xcihub_icptcrx_read_cr4(u32 cpuid){
+uint32_t xcihub_icptcrx_read_cr4(uint32_t cpuid){
 	slab_params_t spl;
 	xmhf_uapi_gcpustate_vmrw_params_t *gcpustate_vmrwp = (xmhf_uapi_gcpustate_vmrw_params_t *)spl.in_out_params;
 
@@ -96,7 +96,7 @@ u32 xcihub_icptcrx_read_cr4(u32 cpuid){
 	return (gcpustate_vmrwp->value);
 }
 
-u32 xcihub_icptcrx_read_cr0(u32 cpuid){
+uint32_t xcihub_icptcrx_read_cr0(uint32_t cpuid){
 	slab_params_t spl;
 	xmhf_uapi_gcpustate_vmrw_params_t *gcpustate_vmrwp = (xmhf_uapi_gcpustate_vmrw_params_t *)spl.in_out_params;
 
@@ -113,7 +113,7 @@ u32 xcihub_icptcrx_read_cr0(u32 cpuid){
 }
 
 
-u32 xcihub_icptcrx_read_cr3(u32 cpuid){
+uint32_t xcihub_icptcrx_read_cr3(uint32_t cpuid){
 	slab_params_t spl;
 	xmhf_uapi_gcpustate_vmrw_params_t *gcpustate_vmrwp = (xmhf_uapi_gcpustate_vmrw_params_t *)spl.in_out_params;
 
@@ -131,7 +131,7 @@ u32 xcihub_icptcrx_read_cr3(u32 cpuid){
 
 
 
-u32 xcihub_icptcrx_read_cr4_shadow(u32 cpuid){
+uint32_t xcihub_icptcrx_read_cr4_shadow(uint32_t cpuid){
 	slab_params_t spl;
 	xmhf_uapi_gcpustate_vmrw_params_t *gcpustate_vmrwp = (xmhf_uapi_gcpustate_vmrw_params_t *)spl.in_out_params;
 
@@ -149,7 +149,7 @@ u32 xcihub_icptcrx_read_cr4_shadow(u32 cpuid){
 
 
 
-bool is_paging_enabled(u32 cpuid){
+bool is_paging_enabled(uint32_t cpuid){
 	slab_params_t spl;
 	xmhf_uapi_gcpustate_vmrw_params_t *gcpustate_vmrwp = (xmhf_uapi_gcpustate_vmrw_params_t *)spl.in_out_params;
 
@@ -169,18 +169,18 @@ bool is_paging_enabled(u32 cpuid){
 }
 
 #define CR0_RESERVED_BITS                                               \
-        (~(u32)(CR0_PE | CR0_MP | CR0_EM | CR0_TS \
+        (~(uint32_t)(CR0_PE | CR0_MP | CR0_EM | CR0_TS \
                           | CR0_ET | CR0_NE | CR0_WP | CR0_AM \
                           | CR0_NW | CR0_CD | CR0_PG))
 
 #define GUEST_CR0_MASK (CR0_NW | CR0_CD)
 
-u32 xcihub_icptcrx_handle_cr0(u32 cpuid, u32 src_slabid, u32 cr0){
+uint32_t xcihub_icptcrx_handle_cr0(uint32_t cpuid, uint32_t src_slabid, uint32_t cr0){
 	slab_params_t spl;
 	xmhf_uapi_gcpustate_vmrw_params_t *gcpustate_vmrwp = (xmhf_uapi_gcpustate_vmrw_params_t *)spl.in_out_params;
-	u32 old_cr0 = xcihub_icptcrx_read_cr0(cpuid);
-	u32 hw_cr0;
-	u32 update_bits = CR0_PG | CR0_WP;
+	uint32_t old_cr0 = xcihub_icptcrx_read_cr0(cpuid);
+	uint32_t hw_cr0;
+	uint32_t update_bits = CR0_PG | CR0_WP;
 
 	memset(&spl, 0, sizeof(spl));
 
@@ -219,13 +219,13 @@ u32 xcihub_icptcrx_handle_cr0(u32 cpuid, u32 src_slabid, u32 cr0){
 }
 
 
-u32 xcihub_icptcrx_handle_cr4(u32 cpuid, u32 src_slabid, u32 cr4){
+uint32_t xcihub_icptcrx_handle_cr4(uint32_t cpuid, uint32_t src_slabid, uint32_t cr4){
 	slab_params_t spl;
 	xmhf_uapi_gcpustate_vmrw_params_t *gcpustate_vmrwp = (xmhf_uapi_gcpustate_vmrw_params_t *)spl.in_out_params;
-	u32 old_cr4 = xcihub_icptcrx_read_cr4(cpuid);
-	u32 pdptr_bits = CR4_PGE | CR4_PSE | CR4_PAE |
+	uint32_t old_cr4 = xcihub_icptcrx_read_cr4(cpuid);
+	uint32_t pdptr_bits = CR4_PGE | CR4_PSE | CR4_PAE |
 					   CR4_SMEP | CR4_SMAP | CR4_PKE;
-	u32 hw_cr4;
+	uint32_t hw_cr4;
 
 
 	memset(&spl, 0, sizeof(spl));
@@ -281,17 +281,17 @@ u32 xcihub_icptcrx_handle_cr4(u32 cpuid, u32 src_slabid, u32 cr4){
 	return 0;
 }
 
-void xcihub_icptcrx(u32 cpuid, u32 src_slabid){
+void xcihub_icptcrx(uint32_t cpuid, uint32_t src_slabid){
 	slab_params_t spl;
 	xmhf_uapi_gcpustate_vmrw_params_t *gcpustate_vmrwp = (xmhf_uapi_gcpustate_vmrw_params_t *)spl.in_out_params;
 	xmhf_uapi_gcpustate_gprs_params_t *gcpustate_gprs = (xmhf_uapi_gcpustate_gprs_params_t *)spl.in_out_params;
 
-	u32 guest_rip;
-	u32 info_vmexit_instruction_length;
-	u32 info_exit_qualification;
-	u32 tofrom, gpr, crx;
-	u32 lmsw_op_type, lmsw_src_data;
-	u32 hw_cr0;
+	uint32_t guest_rip;
+	uint32_t info_vmexit_instruction_length;
+	uint32_t info_exit_qualification;
+	uint32_t tofrom, gpr, crx;
+	uint32_t lmsw_op_type, lmsw_src_data;
+	uint32_t hw_cr0;
 	x86regs_t r;
 
 	//_XDPRINTF_("%s[%u]: CRX access\n", __func__, cpuid);
@@ -312,9 +312,9 @@ void xcihub_icptcrx(u32 cpuid, u32 src_slabid){
 	XMHF_SLAB_CALLNEW(&spl);
 	info_exit_qualification = gcpustate_vmrwp->value;
 
-	crx=(u32) ((u32)info_exit_qualification & 0x0000000FUL);
-	gpr=(u32) (((u32)info_exit_qualification & 0x00000F00UL) >> (u32)8);
-	tofrom = (u32) (((u32)info_exit_qualification & 0x00000030UL) >> (u32)4);
+	crx=(uint32_t) ((uint32_t)info_exit_qualification & 0x0000000FUL);
+	gpr=(uint32_t) (((uint32_t)info_exit_qualification & 0x00000F00UL) >> (uint32_t)8);
+	tofrom = (uint32_t) (((uint32_t)info_exit_qualification & 0x00000030UL) >> (uint32_t)4);
 
 
 	if ( !(gpr >=0 && gpr <= 7) ){
@@ -327,10 +327,10 @@ void xcihub_icptcrx(u32 cpuid, u32 src_slabid){
 
 	}else if (crx == 0x0 && tofrom == 0x3){
 		//LMSW instruction
-		lmsw_op_type = (u32) (((u32)info_exit_qualification & 0x00000040UL) >> (u32)6);
-		lmsw_src_data = (u32) (((u32)info_exit_qualification & 0xFFFF0000UL) >> (u32)16);
+		lmsw_op_type = (uint32_t) (((uint32_t)info_exit_qualification & 0x00000040UL) >> (uint32_t)6);
+		lmsw_src_data = (uint32_t) (((uint32_t)info_exit_qualification & 0xFFFF0000UL) >> (uint32_t)16);
 		lmsw_src_data &= 0x0000000FUL;
-		hw_cr0 = xcihub_icptcrx_read_cr0((u32)cpuid);
+		hw_cr0 = xcihub_icptcrx_read_cr0((uint32_t)cpuid);
 
 		_XDPRINTF_("%s[%u]: CR0 write via LMSW: hw_cr0=0x%08x, op_type=%u, src_data=0x%08x\n", __func__, cpuid,
 				hw_cr0, lmsw_op_type, lmsw_src_data);

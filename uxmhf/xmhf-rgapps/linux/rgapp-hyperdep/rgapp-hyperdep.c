@@ -7,9 +7,9 @@
 #include <sys/mman.h>
 #include <errno.h>
 
-typedef unsigned char u8;
-typedef unsigned int u32;
-typedef unsigned long long int u64;
+typedef unsigned char uint8_t;
+typedef unsigned int uint32_t;
+typedef unsigned long long int uint64_t;
 
 
 #define PAGE_SHIFT 12
@@ -22,14 +22,14 @@ typedef unsigned long long int u64;
 //////////////////////////////////////////////////////////////////////////////
 // xhhyperdep test
 
-__attribute__((aligned(4096))) static u8 testxhhyperdep_page[4096];
+__attribute__((aligned(4096))) static uint8_t testxhhyperdep_page[4096];
 
 #define HYPERDEP_ACTIVATEDEP			0xC0
 #define HYPERDEP_DEACTIVATEDEP			0xC1
 
 typedef void (*DEPFN)(void);
 
-static void __vmcall(u32 eax, u32 ebx, u32 edx){
+static void __vmcall(uint32_t eax, uint32_t ebx, uint32_t edx){
 	asm volatile (
 			"movl %0, %%eax \r\n"
 			"movl %1, %%ebx \r\n"
@@ -42,10 +42,10 @@ static void __vmcall(u32 eax, u32 ebx, u32 edx){
 }
 
 
-static u64 va_to_pa(void *vaddr) {
+static uint64_t va_to_pa(void *vaddr) {
 	FILE *pagemap;
 	unsigned long offset;
-	u64 page_frame_number = 0;
+	uint64_t page_frame_number = 0;
 
 	// open the pagemap file for the current process
 	pagemap = fopen("/proc/self/pagemap", "rb");
@@ -73,9 +73,9 @@ static u64 va_to_pa(void *vaddr) {
 
 
 
-void do_testxhhyperdep(u32 gpa){
+void do_testxhhyperdep(uint32_t gpa){
     DEPFN fn = (DEPFN)&testxhhyperdep_page;
-    u32 i;
+    uint32_t i;
 
     testxhhyperdep_page[0] = 0xC3; //ret instruction
 
@@ -101,7 +101,7 @@ void do_testxhhyperdep(u32 gpa){
     //write some stuff to the data page
     printf("\n%s: Writing data to buffer...", __FUNCTION__);
     for(i=0; i < 255; i++)
-    	testxhhyperdep_page[i]=(u8)i;
+    	testxhhyperdep_page[i]=(uint8_t)i;
     printf("\n%s: data written successfully", __FUNCTION__);
 
 

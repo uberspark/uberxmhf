@@ -55,9 +55,9 @@
 	ensures 0 <= numentries_sysdev_memioregions <= MAX_PLATFORM_DEVICES;
 @*/
 void gp_s2_sdmenumsysdevices(void){
-    u32 b, d, f, i;
+    uint32_t b, d, f, i;
 	vtd_drhd_handle_t drhd_handle;
-	u32 vendor_id, device_id;
+	uint32_t vendor_id, device_id;
 
     //as a first step, add several non-PCI system devices to the
     //sysdev list using XMHF/GEEC psuedo-PCI vendor and device IDs
@@ -124,8 +124,8 @@ void gp_s2_sdmenumsysdevices(void){
 			@*/
 			for(f=0; f < PCI_FUNCTION_MAX; f++){
 				//read device and vendor ids, if no device then both will be 0xFFFF
-				xmhf_baseplatform_arch_x86_pci_type1_read(b, d, f, PCI_CONF_HDR_IDX_VENDOR_ID, sizeof(u16), &vendor_id);
-				xmhf_baseplatform_arch_x86_pci_type1_read(b, d, f, PCI_CONF_HDR_IDX_DEVICE_ID, sizeof(u16), &device_id);
+				xmhf_baseplatform_arch_x86_pci_type1_read(b, d, f, PCI_CONF_HDR_IDX_VENDOR_ID, sizeof(uint16_t), &vendor_id);
+				xmhf_baseplatform_arch_x86_pci_type1_read(b, d, f, PCI_CONF_HDR_IDX_DEVICE_ID, sizeof(uint16_t), &device_id);
 
 				if( !(vendor_id == 0xFFFF && device_id == 0xFFFF) ){
 	                gp_s2_sdmenumsysdevices_memioextents(b, d, f, vendor_id, device_id);
@@ -139,7 +139,7 @@ void gp_s2_sdmenumsysdevices(void){
 
     //be verbose about the system devices and their MM(IO) extents
     {
-        u32 i, j;
+        uint32_t i, j;
         for(i=0; i <numentries_sysdev_memioregions; i++){
             _XDPRINTF_("Device idx=%u, %x:%x:%x (vid:did=%x:%x, type=%x)...\n", i, sysdev_memioregions[i].b,
                        sysdev_memioregions[i].d, sysdev_memioregions[i].f, sysdev_memioregions[i].vendor_id,

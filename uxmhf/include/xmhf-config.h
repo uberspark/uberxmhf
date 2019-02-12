@@ -293,11 +293,11 @@
 
 /*#if defined (__DEBUG_SERIAL__)
 
-extern u8 _libxmhfdebugdata_start[];
-extern u8 _libxmhfdebugdata_end[];
+extern uint8_t _libxmhfdebugdata_start[];
+extern uint8_t _libxmhfdebugdata_end[];
 
-#define     ADDR_LIBXMHFDEBUGDATA_START           ((u32)_libxmhfdebugdata_start)
-#define     ADDR_LIBXMHFDEBUGDATA_END             ((u32)_libxmhfdebugdata_end)
+#define     ADDR_LIBXMHFDEBUGDATA_START           ((uint32_t)_libxmhfdebugdata_start)
+#define     ADDR_LIBXMHFDEBUGDATA_END             ((uint32_t)_libxmhfdebugdata_end)
 
 #endif // defined
 */

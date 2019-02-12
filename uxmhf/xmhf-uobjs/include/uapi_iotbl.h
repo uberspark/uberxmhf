@@ -65,13 +65,13 @@
 
 #ifndef __ASSEMBLY__
 
-extern u8 uiotbl_uhslab_iobitmap[XMHFGEEC_TOTAL_UHSLABS][3*PAGE_SIZE_4K];
-extern u8 uiotbl_ugslab_iobitmap[XMHFGEEC_TOTAL_UGSLABS][3*PAGE_SIZE_4K];
+extern uint8_t uiotbl_uhslab_iobitmap[XMHFGEEC_TOTAL_UHSLABS][3*PAGE_SIZE_4K];
+extern uint8_t uiotbl_ugslab_iobitmap[XMHFGEEC_TOTAL_UGSLABS][3*PAGE_SIZE_4K];
 
 
 typedef struct {
-    u32 dst_slabid;
-	u32 iotbl_base;
+    uint32_t dst_slabid;
+	uint32_t iotbl_base;
 }__attribute__((packed)) uapi_iotbl_getiotblbase_t;
 
 
@@ -79,25 +79,25 @@ void uiotbl_getiotblbase(uapi_iotbl_getiotblbase_t *ps);
 
 
 typedef struct {
-    u32 dst_slabid;
+    uint32_t dst_slabid;
 }__attribute__((packed)) uapi_iotbl_initiotbl_t;
 
 
 void uiotbl_initiotbl(uapi_iotbl_initiotbl_t *ps);
 
 typedef struct {
-	u32 ugslabiobitmap_idx;
-	u16 port;
-	u16 port_size;
+	uint32_t ugslabiobitmap_idx;
+	uint16_t port;
+	uint16_t port_size;
 }__attribute__((packed)) uapi_iotbl_setupiotblugportaccess_t;
 
 void uiotbl_setupiotblugportaccess(uapi_iotbl_setupiotblugportaccess_t *ps);
 
 
 typedef struct {
-	u32 uhslabiobitmap_idx;
-	u16 port;
-	u16 port_size;
+	uint32_t uhslabiobitmap_idx;
+	uint16_t port;
+	uint16_t port_size;
 }__attribute__((packed)) uapi_iotbl_setupiotbluhportaccess_t;
 
 void uiotbl_setupiotbluhportaccess(uapi_iotbl_setupiotbluhportaccess_t *ps);
@@ -108,7 +108,7 @@ void uiotbl_setupiotbluhportaccess(uapi_iotbl_setupiotbluhportaccess_t *ps);
 	requires 0 <= port < 65536;
 	requires 0 <= port_size <= 4;
 @*/
-void uiotbl_setupiotbluh_allowaccesstoport(u32 uhslabiobitmap_idx, u16 port, u16 port_size);
+void uiotbl_setupiotbluh_allowaccesstoport(uint32_t uhslabiobitmap_idx, uint16_t port, uint16_t port_size);
 
 
 /*@
@@ -116,7 +116,7 @@ void uiotbl_setupiotbluh_allowaccesstoport(u32 uhslabiobitmap_idx, u16 port, u16
 	requires 0 <= port < 65536;
 	requires 0 <= port_size <= 4;
 @*/
-void uiotbl_setupiotblug_allowaccesstoport(u32 ugslabiobitmap_idx, u16 port, u16 port_size);
+void uiotbl_setupiotblug_allowaccesstoport(uint32_t ugslabiobitmap_idx, uint16_t port, uint16_t port_size);
 
 
 #endif	//__ASSEMBLY__

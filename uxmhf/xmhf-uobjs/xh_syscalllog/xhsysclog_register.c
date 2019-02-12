@@ -59,7 +59,7 @@
 #include <xh_syscalllog.h>
 
 //register a syscall handler code page (at gpa)
-void sysclog_register(u32 cpuindex, u32 guest_slab_index, u32 syscall_page_paddr, u32 syscall_shadowpage_vaddr, u32 syscall_shadowpage_paddr){
+void sysclog_register(uint32_t cpuindex, uint32_t guest_slab_index, uint32_t syscall_page_paddr, uint32_t syscall_shadowpage_vaddr, uint32_t syscall_shadowpage_paddr){
 
 	slab_params_t spl;
 	xmhfgeec_uapi_slabmempgtbl_getentryforpaddr_params_t *getentryforpaddrp =
@@ -71,9 +71,9 @@ void sysclog_register(u32 cpuindex, u32 guest_slab_index, u32 syscall_page_paddr
 
 
 	_XDPRINTF_("%s[%u]: gid=%u, syscall_page_paddr=0x%08x\n",
-				__func__, (u16)cpuindex, guest_slab_index, syscall_page_paddr);
+				__func__, (uint16_t)cpuindex, guest_slab_index, syscall_page_paddr);
 	_XDPRINTF_("%s[%u]: syscall_shadowpage_vaddr=0x%08x, syscall_shadowpage_paddr=0x%08x\n",
-				__func__, (u16)cpuindex, syscall_shadowpage_vaddr, syscall_shadowpage_paddr);
+				__func__, (uint16_t)cpuindex, syscall_shadowpage_vaddr, syscall_shadowpage_paddr);
 
 	spl.src_slabid = XMHFGEEC_SLAB_XH_SYSCALLLOG;
 	spl.cpuid = cpuindex;
@@ -85,7 +85,7 @@ void sysclog_register(u32 cpuindex, u32 guest_slab_index, u32 syscall_page_paddr
 	getentryforpaddrp->result_entry = 0;
 	XMHF_SLAB_CALLNEW(&spl);
 	_XDPRINTF_("%s[%u]: syscall_page existing entry = 0x%08x\n",
-				__func__, (u16)cpuindex, (u32)getentryforpaddrp->result_entry);
+				__func__, (uint16_t)cpuindex, (uint32_t)getentryforpaddrp->result_entry);
 
 	 spl.dst_uapifn = XMHFGEEC_UAPI_SLABMEMPGTBL_SETENTRYFORPADDR;
 	setentryforpaddrp->dst_slabid = guest_slab_index;
@@ -93,7 +93,7 @@ void sysclog_register(u32 cpuindex, u32 guest_slab_index, u32 syscall_page_paddr
 	setentryforpaddrp->entry = getentryforpaddrp->result_entry & ~(0x4);
 	XMHF_SLAB_CALLNEW(&spl);
 	_XDPRINTF_("%s[%u]: syscall_page new entry = 0x%08x\n",
-				__func__, (u16)cpuindex, (u32)setentryforpaddrp->entry);
+				__func__, (uint16_t)cpuindex, (uint32_t)setentryforpaddrp->entry);
 
 	//flush EPT TLB for permission changes to take effect
 	spl.dst_uapifn = XMHFGEEC_UAPI_SLABMEMPGTBL_FLUSHTLB;

@@ -58,16 +58,16 @@
  *
  * author: amit vasudevan (amitvasudevan@acm.org)
  */
-void xcihub_icptwrmsr(u32 cpuid){
+void xcihub_icptwrmsr(uint32_t cpuid){
 	slab_params_t spl;
 	xmhf_uapi_gcpustate_vmrw_params_t *gcpustate_vmrwp = (xmhf_uapi_gcpustate_vmrw_params_t *)spl.in_out_params;
 	xmhf_uapi_gcpustate_gprs_params_t *gcpustate_gprs = (xmhf_uapi_gcpustate_gprs_params_t *)spl.in_out_params;
 	xmhf_uapi_hcpustate_msr_params_t *hcpustate_msrp = (xmhf_uapi_hcpustate_msr_params_t *)spl.in_out_params;
-	u32 guest_rip;
-	u32 info_vmexit_instruction_length;
+	uint32_t guest_rip;
+	uint32_t info_vmexit_instruction_length;
 	x86regs_t r;
 
-	if((u32)r.ecx == 0xc0010117){
+	if((uint32_t)r.ecx == 0xc0010117){
 		_XDPRINTF_("%s[%u]: VMX_VMEXIT_WRMSR: unsupported. warning!\n", __func__, cpuid);
 	}
 
@@ -81,7 +81,7 @@ void xcihub_icptwrmsr(u32 cpuid){
 	XMHF_SLAB_CALLNEW(&spl);
 	memcpy(&r, &gcpustate_gprs->gprs, sizeof(x86regs_t));
 
-	switch((u32)r.ecx){
+	switch((uint32_t)r.ecx){
 	    case IA32_SYSENTER_CS_MSR:
 		spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_VMWRITE;
 		gcpustate_vmrwp->encoding = VMCS_GUEST_SYSENTER_CS;
@@ -104,7 +104,7 @@ void xcihub_icptwrmsr(u32 cpuid){
 		spl.dst_slabid = XMHFGEEC_SLAB_UAPI_HCPUSTATE;
 		spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_WRMSR;
 		hcpustate_msrp->msr = r.ecx;
-		hcpustate_msrp->value = ((u64)r.edx << 32) | (u64)r.eax;
+		hcpustate_msrp->value = ((uint64_t)r.edx << 32) | (uint64_t)r.eax;
 		XMHF_SLAB_CALLNEW(&spl);
 		break;
 	}

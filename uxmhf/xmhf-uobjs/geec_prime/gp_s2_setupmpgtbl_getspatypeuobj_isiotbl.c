@@ -55,34 +55,34 @@
 	requires 0 <= slabid < XMHFGEEC_TOTAL_SLABS ;
 	assigns \nothing;
 	behavior isiotbl:
-		assumes (\forall u32 x; 0 <= x < MAX_PLATFORM_CPUS ==> (!(spa >= (u32)&__xmhfhic_x86vmx_tss[x].tss_iobitmap &&
-			spa < ((u32)&__xmhfhic_x86vmx_tss[x].tss_iobitmap[3*PAGE_SIZE_4K]) )) );
+		assumes (\forall uint32_t x; 0 <= x < MAX_PLATFORM_CPUS ==> (!(spa >= (uint32_t)&__xmhfhic_x86vmx_tss[x].tss_iobitmap &&
+			spa < ((uint32_t)&__xmhfhic_x86vmx_tss[x].tss_iobitmap[3*PAGE_SIZE_4K]) )) );
 		ensures	(\result == false);
 	behavior isnotiotbl:
-		assumes !(\forall u32 x; 0 <= x < MAX_PLATFORM_CPUS ==> (!(spa >= (u32)&__xmhfhic_x86vmx_tss[x].tss_iobitmap &&
-			spa < ((u32)&__xmhfhic_x86vmx_tss[x].tss_iobitmap[3*PAGE_SIZE_4K]) )) );
+		assumes !(\forall uint32_t x; 0 <= x < MAX_PLATFORM_CPUS ==> (!(spa >= (uint32_t)&__xmhfhic_x86vmx_tss[x].tss_iobitmap &&
+			spa < ((uint32_t)&__xmhfhic_x86vmx_tss[x].tss_iobitmap[3*PAGE_SIZE_4K]) )) );
 		ensures	(\result == true);
 	complete  behaviors;
 	disjoint behaviors;
 	//ensures (\result == true) || (\result == false);
-	//ensures (\forall u32 x; 0 <= x < MAX_PLATFORM_CPUS ==> (!(spa >= (u32)&__xmhfhic_x86vmx_tss[x].tss_iobitmap &&
-	//  spa < ((u32)&__xmhfhic_x86vmx_tss[x].tss_iobitmap[3*PAGE_SIZE_4K]) )) ) ==> 	(\result == false);
-	//ensures !(\forall u32 x; 0 <= x < MAX_PLATFORM_CPUS ==> (!(spa >= (u32)&__xmhfhic_x86vmx_tss[x].tss_iobitmap &&
-	//  spa < ((u32)&__xmhfhic_x86vmx_tss[x].tss_iobitmap[3*PAGE_SIZE_4K]) )) ) ==> 	(\result == true);
+	//ensures (\forall uint32_t x; 0 <= x < MAX_PLATFORM_CPUS ==> (!(spa >= (uint32_t)&__xmhfhic_x86vmx_tss[x].tss_iobitmap &&
+	//  spa < ((uint32_t)&__xmhfhic_x86vmx_tss[x].tss_iobitmap[3*PAGE_SIZE_4K]) )) ) ==> 	(\result == false);
+	//ensures !(\forall uint32_t x; 0 <= x < MAX_PLATFORM_CPUS ==> (!(spa >= (uint32_t)&__xmhfhic_x86vmx_tss[x].tss_iobitmap &&
+	//  spa < ((uint32_t)&__xmhfhic_x86vmx_tss[x].tss_iobitmap[3*PAGE_SIZE_4K]) )) ) ==> 	(\result == true);
 @*/
-bool gp_s2_setupmpgtbl_getspatypeuobj_isiotbl(u32 slabid, u32 spa){
-	u32 i;
+bool gp_s2_setupmpgtbl_getspatypeuobj_isiotbl(uint32_t slabid, uint32_t spa){
+	uint32_t i;
 
 	/*@
 		loop invariant b1: 0 <= i <= MAX_PLATFORM_CPUS;
-		loop invariant b2: \forall integer x; 0 <= x < i ==> (!(spa >= (u32)&__xmhfhic_x86vmx_tss[x].tss_iobitmap &&
-		  spa < ((u32)&__xmhfhic_x86vmx_tss[x].tss_iobitmap[3*PAGE_SIZE_4K]) ));
+		loop invariant b2: \forall integer x; 0 <= x < i ==> (!(spa >= (uint32_t)&__xmhfhic_x86vmx_tss[x].tss_iobitmap &&
+		  spa < ((uint32_t)&__xmhfhic_x86vmx_tss[x].tss_iobitmap[3*PAGE_SIZE_4K]) ));
 		loop assigns i;
 		loop variant MAX_PLATFORM_CPUS - i;
 	@*/
 	for(i=0; i < MAX_PLATFORM_CPUS; i++){
-		if (spa >= (u32)&__xmhfhic_x86vmx_tss[i].tss_iobitmap &&
-		  spa < ((u32)&__xmhfhic_x86vmx_tss[i].tss_iobitmap[3*PAGE_SIZE_4K]) ){
+		if (spa >= (uint32_t)&__xmhfhic_x86vmx_tss[i].tss_iobitmap &&
+		  spa < ((uint32_t)&__xmhfhic_x86vmx_tss[i].tss_iobitmap[3*PAGE_SIZE_4K]) ){
 		    return true;
 		}
 	}

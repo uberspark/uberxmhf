@@ -57,9 +57,9 @@
 #include <uapi_uhmpgtbl.h>
 
 void _uhmpgtbl_getidxformpgtblbase(uapi_uhmpgtbl_getidxformpgtblbase_params_t *p){
-	u32 idx;
+	uint32_t idx;
 
-	idx = ((u32)p->mpgtblbase - (u32)&_uhslabmempgtbl_lvl4t[0])/PAE_MAXPTRS_PER_PML4T;
+	idx = ((uint32_t)p->mpgtblbase - (uint32_t)&_uhslabmempgtbl_lvl4t[0])/PAE_MAXPTRS_PER_PML4T;
 	if (idx < XMHFGEEC_TOTAL_UHSLABS){
 		p->mpgtblbase_idx = idx;
 		p->status=1;

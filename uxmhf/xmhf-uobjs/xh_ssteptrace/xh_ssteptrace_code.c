@@ -62,12 +62,12 @@
 
 
 
-static u8 _st_tracebuffer[256];
+static uint8_t _st_tracebuffer[256];
 
 // trace (single-step) on
-static void st_on(u32 cpuindex, u32 guest_slab_index){
-    u32 guest_rflags;
-    u32 exception_bitmap;
+static void st_on(uint32_t cpuindex, uint32_t guest_slab_index){
+    uint32_t guest_rflags;
+    uint32_t exception_bitmap;
     slab_params_t spl;
     xmhf_uapi_gcpustate_vmrw_params_t *gcpustate_vmrwp =
         (xmhf_uapi_gcpustate_vmrw_params_t *)spl.in_out_params;
@@ -104,9 +104,9 @@ if(!ssteptrace_on){
 }
 
 // trace (single-step) off
-static void st_off(u32 cpuindex, u32 guest_slab_index){
-    u32 guest_rflags;
-    u32 exception_bitmap;
+static void st_off(uint32_t cpuindex, uint32_t guest_slab_index){
+    uint32_t guest_rflags;
+    uint32_t exception_bitmap;
     slab_params_t spl;
     xmhf_uapi_gcpustate_vmrw_params_t *gcpustate_vmrwp =
         (xmhf_uapi_gcpustate_vmrw_params_t *)spl.in_out_params;
@@ -147,7 +147,7 @@ if(ssteptrace_on){
 
 
 
-static u8 _st_sigdatabase[][SHA_DIGEST_LENGTH] = {
+static uint8_t _st_sigdatabase[][SHA_DIGEST_LENGTH] = {
   {0xd1, 0x4e, 0x30, 0x25,  0x8e,  0x16, 0x85, 0x9b, 0x21, 0x81, 0x74, 0x78, 0xbb, 0x1b, 0x5d, 0x99, 0xb5, 0x48, 0x60, 0xca},
   {0xa1, 0x4e, 0x30, 0x25,  0x8e,  0x16, 0x85, 0x9b, 0x21, 0x71, 0x74, 0x78, 0xbb, 0x1b, 0x5d, 0x99, 0xb5, 0x48, 0x60, 0xca},
   {0xf1, 0x4e, 0x30, 0x25,  0x8e,  0x16, 0x85, 0x9b, 0x21, 0x81, 0x54, 0x78, 0xbb, 0x1b, 0x5d, 0x99, 0xb5, 0x48, 0x60, 0xca},
@@ -158,9 +158,9 @@ static u8 _st_sigdatabase[][SHA_DIGEST_LENGTH] = {
 
 
 // scan for a trace match with incoming trace in buffer
-static bool st_scanforsignature(u8 *buffer, u32 buffer_size){
-    u8 digest[SHA_DIGEST_LENGTH];
-    u64 i;
+static bool st_scanforsignature(uint8_t *buffer, uint32_t buffer_size){
+    uint8_t digest[SHA_DIGEST_LENGTH];
+    uint64_t i;
 
     //compute SHA-1 of the buffer
     sha1(buffer, buffer_size, digest);
@@ -183,22 +183,22 @@ static bool st_scanforsignature(u8 *buffer, u32 buffer_size){
 
 
 // initialization
-static void _hcb_initialize(u32 cpuindex){
+static void _hcb_initialize(uint32_t cpuindex){
 
 	_XDPRINTF_("%s[%u]: xhssteptrace initializing...\n", __func__,
-            (u16)cpuindex);
+            (uint16_t)cpuindex);
 
 }
 
 
 // hypercall
-static void _hcb_hypercall(u32 cpuindex, u32 guest_slab_index){
+static void _hcb_hypercall(uint32_t cpuindex, uint32_t guest_slab_index){
     slab_params_t spl;
     xmhf_uapi_gcpustate_gprs_params_t *gcpustate_gprs =
         (xmhf_uapi_gcpustate_gprs_params_t *)spl.in_out_params;
     x86regs_t *gprs = (x86regs_t *)&gcpustate_gprs->gprs;
-	u32 call_id;
-	//u64 gpa;
+	uint32_t call_id;
+	//uint64_t gpa;
 
     spl.src_slabid = XMHFGEEC_SLAB_XH_SSTEPTRACE;
     spl.dst_slabid = XMHFGEEC_SLAB_UAPI_GCPUSTATE;
@@ -209,32 +209,32 @@ static void _hcb_hypercall(u32 cpuindex, u32 guest_slab_index){
     XMHF_SLAB_CALLNEW(&spl);
 
     call_id = gprs->eax;
-    //gpa = ((u64)gprs->edx << 32) | gprs->ebx;
+    //gpa = ((uint64_t)gprs->edx << 32) | gprs->ebx;
 
-	//_XDPRINTF_("%s[%u]: call_id=%x, gpa=%016llx\n", __func__, (u16)cpuindex, call_id, gpa);
+	//_XDPRINTF_("%s[%u]: call_id=%x, gpa=%016llx\n", __func__, (uint16_t)cpuindex, call_id, gpa);
 
 	switch(call_id){
 
 		case SSTEPTRACE_REGISTER:{
 			ssteptrace_codepaddr = gprs->edx;
-			_XDPRINTF_("%s[%u]: call_id=%x(REGISTER) at paddr=0x%08x\n", __func__, (u16)cpuindex, call_id, ssteptrace_codepaddr);
+			_XDPRINTF_("%s[%u]: call_id=%x(REGISTER) at paddr=0x%08x\n", __func__, (uint16_t)cpuindex, call_id, ssteptrace_codepaddr);
 		}
 		break;
 
 		case SSTEPTRACE_ON:{
-		    _XDPRINTF_("%s[%u]: call_id=%x(TRACE_ON)\n", __func__, (u16)cpuindex, call_id);
+		    _XDPRINTF_("%s[%u]: call_id=%x(TRACE_ON)\n", __func__, (uint16_t)cpuindex, call_id);
 			st_on(cpuindex, guest_slab_index);
 		}
 		break;
 
 		case SSTEPTRACE_OFF:{
-		    _XDPRINTF_("%s[%u]: call_id=%x(TRACE_OFF)\n", __func__, (u16)cpuindex, call_id);
+		    _XDPRINTF_("%s[%u]: call_id=%x(TRACE_OFF)\n", __func__, (uint16_t)cpuindex, call_id);
 			st_off(cpuindex, guest_slab_index);
 		}
 		break;
 
 		default:
-            //_XDPRINTF_("%s[%u]: unsupported hypercall %x. Ignoring\n", __func__, (u16)cpuindex, call_id);
+            //_XDPRINTF_("%s[%u]: unsupported hypercall %x. Ignoring\n", __func__, (uint16_t)cpuindex, call_id);
 			break;
 	}
 
@@ -244,9 +244,9 @@ static void _hcb_hypercall(u32 cpuindex, u32 guest_slab_index){
 
 
 // trap exception
-static void _hcb_trap_exception(u32 cpuindex, u32 guest_slab_index){
-    u32 info_vmexit_interruption_information;
-    u32 guest_rip, guest_rip_paddr;
+static void _hcb_trap_exception(uint32_t cpuindex, uint32_t guest_slab_index){
+    uint32_t info_vmexit_interruption_information;
+    uint32_t guest_rip, guest_rip_paddr;
     slab_params_t spl;
     xmhf_uapi_gcpustate_vmrw_params_t *gcpustate_vmrwp =
         (xmhf_uapi_gcpustate_vmrw_params_t *)spl.in_out_params;
@@ -266,10 +266,10 @@ static void _hcb_trap_exception(u32 cpuindex, u32 guest_slab_index){
         info_vmexit_interruption_information = gcpustate_vmrwp->value;
 
         _XDPRINTF_("%s[%u]: guest slab %u exception %u...\n",
-                   __func__, (u16)cpuindex, guest_slab_index,
-                   (u8)info_vmexit_interruption_information);
+                   __func__, (uint16_t)cpuindex, guest_slab_index,
+                   (uint8_t)info_vmexit_interruption_information);
 
-        if((u8)info_vmexit_interruption_information != 0x1)
+        if((uint8_t)info_vmexit_interruption_information != 0x1)
             return;
 
         gcpustate_vmrwp->encoding = VMCS_GUEST_RIP;
@@ -288,14 +288,14 @@ static void _hcb_trap_exception(u32 cpuindex, u32 guest_slab_index){
 
         guest_rip_paddr = ssteptrace_codepaddr | (guest_rip & 0x00000FFFUL);
         _XDPRINTF_("%s[%u]: guest slab RIP=%x, RIP paddr=0x%08x\n",
-                   __func__, (u16)cpuindex, guest_rip, guest_rip_paddr);
+                   __func__, (uint16_t)cpuindex, guest_rip, guest_rip_paddr);
 
         CASM_FUNCCALL(xmhfhw_sysmemaccess_copy, &_st_tracebuffer, guest_rip_paddr, sizeof(_st_tracebuffer));
 
         //try to see if we found a match in our trace database
         st_scanforsignature(&_st_tracebuffer, sizeof(_st_tracebuffer));
         _XDPRINTF_("%s[%u]: scan complete\n",
-                   __func__, (u16)cpuindex);
+                   __func__, (uint16_t)cpuindex);
 
     }
 
@@ -303,9 +303,9 @@ static void _hcb_trap_exception(u32 cpuindex, u32 guest_slab_index){
 
 
 // shutdown
-static void _hcb_shutdown(u32 cpuindex, u32 guest_slab_index){
+static void _hcb_shutdown(uint32_t cpuindex, uint32_t guest_slab_index){
 	_XDPRINTF_("%s[%u]: guest slab %u shutdown...\n",
-            __func__, (u16)cpuindex, guest_slab_index);
+            __func__, (uint16_t)cpuindex, guest_slab_index);
 }
 
 
@@ -321,7 +321,7 @@ static void _hcb_shutdown(u32 cpuindex, u32 guest_slab_index){
 ///////
 // slab interface
 
-//void slab_interface(slab_input_params_t *iparams, u64 iparams_size, slab_output_params_t *oparams, u64 oparams_size, u64 src_slabid, u64 cpuindex){
+//void slab_interface(slab_input_params_t *iparams, uint64_t iparams_size, slab_output_params_t *oparams, uint64_t oparams_size, uint64_t src_slabid, uint64_t cpuindex){
 void slab_main(slab_params_t *sp){
     //xc_hypappcb_inputparams_t *hcb_iparams = (xc_hypappcb_inputparams_t *)iparams;
     //xc_hypappcb_outputparams_t *hcb_oparams = (xc_hypappcb_outputparams_t *)oparams;
@@ -330,7 +330,7 @@ void slab_main(slab_params_t *sp){
 
 
 	//_XDPRINTF_("XHSSTEPTRACE[%u]: Got control, cbtype=%x: ESP=%08x\n",
-    //            (u16)sp->cpuid, hcbp->cbtype, CASM_FUNCCALL(read_esp,CASM_NOPARAM));
+    //            (uint16_t)sp->cpuid, hcbp->cbtype, CASM_FUNCCALL(read_esp,CASM_NOPARAM));
 
 
     switch(hcbp->cbtype){
@@ -375,7 +375,7 @@ void slab_main(slab_params_t *sp){
 
         default:{
             _XDPRINTF_("%s[%u]: Unknown cbtype. Ignoring!\n",
-                __func__, (u16)sp->cpuid);
+                __func__, (uint16_t)sp->cpuid);
         }
     }
 

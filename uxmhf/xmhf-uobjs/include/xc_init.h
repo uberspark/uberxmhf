@@ -54,7 +54,7 @@
 #ifndef __ASSEMBLY__
 
 
-extern __attribute__(( section(".data") )) u32 __xcinit_smplock;
+extern __attribute__(( section(".data") )) uint32_t __xcinit_smplock;
 
 
 #endif //__ASSEMBLY__
