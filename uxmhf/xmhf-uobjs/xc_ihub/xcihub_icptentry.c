@@ -60,7 +60,7 @@
 
 void xcihub_entry_icpt(x86regs_t *r){
     slab_params_t spl;
-    u32 eflags;
+    uint32_t eflags;
 
     eflags = CASM_FUNCCALL(read_eflags,CASM_NOPARAM);
     eflags &= ~(EFLAGS_IOPL); //clear out IOPL bits

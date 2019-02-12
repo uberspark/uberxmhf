@@ -65,20 +65,20 @@ void xcihub_icptmain(slab_params_t *sp);
 /*@
 	requires 0 <= cbtype <= XC_HYPAPPCB_MAXMASK;
 @*/
-u32 xc_hcbinvoke(u32 src_slabid, u32 cpuid, u32 cbtype, u32 cbqual, u32 guest_slab_index);
+uint32_t xc_hcbinvoke(uint32_t src_slabid, uint32_t cpuid, uint32_t cbtype, uint32_t cbqual, uint32_t guest_slab_index);
 
-void xcihub_icptvmcall(u32 cpuid, u32 src_slabid);
-void xcihub_icptcpuid(u32 cpuid);
-void xcihub_icptwrmsr(u32 cpuid);
-void xcihub_icptrdmsr(u32 cpuid);
-void xcihub_icptcrx(u32 cpuid, u32 src_slabid);
-void xcihub_icptxsetbv(u32 cpuid);
-void xcihub_icptsipi(u32 cpuid);
-void xcihub_halt(u32 cpuid, u32 info_vmexit_reason);
+void xcihub_icptvmcall(uint32_t cpuid, uint32_t src_slabid);
+void xcihub_icptcpuid(uint32_t cpuid);
+void xcihub_icptwrmsr(uint32_t cpuid);
+void xcihub_icptrdmsr(uint32_t cpuid);
+void xcihub_icptcrx(uint32_t cpuid, uint32_t src_slabid);
+void xcihub_icptxsetbv(uint32_t cpuid);
+void xcihub_icptsipi(uint32_t cpuid);
+void xcihub_halt(uint32_t cpuid, uint32_t info_vmexit_reason);
 
-bool xcihub_rg_e820emulation(u32 cpuid, u32 src_slabid);
+bool xcihub_rg_e820emulation(uint32_t cpuid, uint32_t src_slabid);
 
-extern __attribute__(( section(".data") )) volatile u32 xcihub_smplock;
+extern __attribute__(( section(".data") )) volatile uint32_t xcihub_smplock;
 
 
 

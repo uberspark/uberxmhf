@@ -59,7 +59,7 @@
 		gp_rwdatahdr.gp_ugslab_iobitmap[(slabid - XMHFGEEC_UGSLAB_BASE_IDX)][x] == 0
 						);
 @*/
-void gp_s2_setupiotblug_rg(u32 slabid){
+void gp_s2_setupiotblug_rg(uint32_t slabid){
 
 	{
 		slab_params_t spl;

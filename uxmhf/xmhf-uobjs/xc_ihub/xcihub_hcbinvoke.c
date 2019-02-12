@@ -74,8 +74,8 @@
 	complete behaviors;
 	disjoint behaviors;
 @*/
-static u32 xc_hcbinvoke_helper(u32 hcbentry, u32 cbtype, u32 src_slabid, u32 cpuid, u32 guest_slab_index, u32 cbqual){
-	u32 status = XC_HYPAPPCB_CHAIN;
+static uint32_t xc_hcbinvoke_helper(uint32_t hcbentry, uint32_t cbtype, uint32_t src_slabid, uint32_t cpuid, uint32_t guest_slab_index, uint32_t cbqual){
+	uint32_t status = XC_HYPAPPCB_CHAIN;
 	slab_params_t spl;
 
 	spl.src_slabid = src_slabid;
@@ -105,10 +105,10 @@ static u32 xc_hcbinvoke_helper(u32 hcbentry, u32 cbtype, u32 src_slabid, u32 cpu
 	assigns invoke_helper[0..(HYPAPP_INFO_TABLE_NUMENTRIES-1)];
 	ensures \result == XC_HYPAPPCB_CHAIN || \result == XC_HYPAPPCB_NOCHAIN;
 @*/
-u32 xc_hcbinvoke(u32 src_slabid, u32 cpuid, u32 cbtype, u32 cbqual, u32 guest_slab_index){
-    u32 status = XC_HYPAPPCB_CHAIN;
+uint32_t xc_hcbinvoke(uint32_t src_slabid, uint32_t cpuid, uint32_t cbtype, uint32_t cbqual, uint32_t guest_slab_index){
+    uint32_t status = XC_HYPAPPCB_CHAIN;
     bool nochain = false;
-    u32 i;
+    uint32_t i;
 	/*@
 		loop invariant a1: 0 <= i <= HYPAPP_INFO_TABLE_NUMENTRIES;
 		loop invariant a2: \forall integer x; 0 <= x < i ==> ( invoke_helper[x] == true );

@@ -59,11 +59,11 @@
 #if defined (__XMHF_VERIFICATION__) && defined (__USPARK_FRAMAC_VA__)
 #include <xc_exhub.h>
 
-u32 saved_cpu_gprs_ebx=0;
-u32 saved_cpu_gprs_esi=0;
-u32 saved_cpu_gprs_edi=0;
-u32 saved_cpu_gprs_ebp=0;
-u32 cpuid = 0;	//cpu
+uint32_t saved_cpu_gprs_ebx=0;
+uint32_t saved_cpu_gprs_esi=0;
+uint32_t saved_cpu_gprs_edi=0;
+uint32_t saved_cpu_gprs_ebp=0;
+uint32_t cpuid = 0;	//cpu
 
 void cabi_establish(void){
 	xmhfhwm_cpu_gprs_ebx = 5UL;
@@ -80,13 +80,13 @@ void cabi_check(void){
 	//@ assert saved_cpu_gprs_edi == xmhfhwm_cpu_gprs_edi;
 }
 
-u32 check_esp, check_eip = CASM_RET_EIP;
+uint32_t check_esp, check_eip = CASM_RET_EIP;
 
 	#if defined (DRV_PATH_CALLEXCP)
 	x86vmx_exception_frame_t drv_path_callexcp_excpframe;
 	
 	void xmhfhwm_vdriver_slabep(void){
-		//@assert xmhfhwm_cpu_gprs_eip == (u32)xmhfgeec_slab_info_table[XMHFGEEC_SLAB_XC_EXHUB].entrystub;
+		//@assert xmhfhwm_cpu_gprs_eip == (uint32_t)xmhfgeec_slab_info_table[XMHFGEEC_SLAB_XC_EXHUB].entrystub;
 		//@assert false;
 	}
 	

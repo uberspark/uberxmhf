@@ -92,9 +92,9 @@
 	disjoint behaviors ;
 */
 
-void gs_siss_push(u32 siss_id, gs_siss_element_t elem)
+void gs_siss_push(uint32_t siss_id, gs_siss_element_t elem)
 {
-    u32 safestack_index =  gs_siss_indices[siss_id];
+    uint32_t safestack_index =  gs_siss_indices[siss_id];
     if(safestack_index >=0 && safestack_index < 512) {
         gs_siss[siss_id][safestack_index].src_slabid = elem.src_slabid;
         gs_siss[siss_id][safestack_index].dst_slabid = elem.dst_slabid;

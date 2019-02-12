@@ -120,8 +120,8 @@
 	disjoint behaviors;
 @*/
 
-u64 gp_s2_setupmpgtblug_getflags(u32 slabid, u32 spa, u32 spatype){
-	u64 flags=0;
+uint64_t gp_s2_setupmpgtblug_getflags(uint32_t slabid, uint32_t spa, uint32_t spatype){
+	uint64_t flags=0;
 
 	if(xmhfgeec_slab_info_table[slabid].slabtype == XMHFGEEC_SLABTYPE_uVT_PROG_GUEST ||
 		xmhfgeec_slab_info_table[slabid].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG_GUEST){

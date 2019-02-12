@@ -55,7 +55,7 @@ __attribute__((section(".data"))) __attribute__(( aligned(16) )) idtentry_t xcex
 // IDT descriptor
 __attribute__((section(".data"))) __attribute__(( aligned(16) )) arch_x86_idtdesc_t xcexhub_idt = {
 	.size=sizeof(xcexhub_idt_data)-1,
-	.base=(u32)&xcexhub_idt_data,
+	.base=(uint32_t)&xcexhub_idt_data,
 };
 
 

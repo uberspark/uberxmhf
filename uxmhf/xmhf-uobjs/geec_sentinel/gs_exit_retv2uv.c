@@ -63,21 +63,21 @@ void gs_exit_retv2uv(slab_params_t *sp, void *caller_stack_frame){
     slab_params_t *dst_sp;
     gs_siss_element_t elem;
 
-    _XDPRINTF_("%s[%u]: src=%u, dst=%u\n", __func__, (u16)sp->cpuid, sp->src_slabid, sp->dst_slabid);
+    _XDPRINTF_("%s[%u]: src=%u, dst=%u\n", __func__, (uint16_t)sp->cpuid, sp->src_slabid, sp->dst_slabid);
 
 
     //pop tuple from safe stack
-    //gs_siss_pop((u16)sp->cpuid, &elem.src_slabid, &elem.dst_slabid, &elem.slab_ctype, &elem.caller_stack_frame,
+    //gs_siss_pop((uint16_t)sp->cpuid, &elem.src_slabid, &elem.dst_slabid, &elem.slab_ctype, &elem.caller_stack_frame,
     //                    &elem.sp);
-    gs_siss_pop((u16)sp->cpuid, &elem);
+    gs_siss_pop((uint16_t)sp->cpuid, &elem);
 
 
 
 
     _XDPRINTF_("%s[%u]: safepop: {cpuid: %u, src: %u, dst: %u, ctype: 0x%x, \
                csf=0x%x, sp=0x%x \n",
-            __func__, (u16)sp->cpuid,
-               (u16)sp->cpuid, elem.src_slabid, elem.dst_slabid, elem.slab_ctype,
+            __func__, (uint16_t)sp->cpuid,
+               (uint16_t)sp->cpuid, elem.src_slabid, elem.dst_slabid, elem.slab_ctype,
                elem.caller_stack_frame, elem.sp);
 
     //check to ensure this return is paired with a prior call
@@ -97,7 +97,7 @@ void gs_exit_retv2uv(slab_params_t *sp, void *caller_stack_frame){
     CASM_FUNCCALL(gs_exit_retv2uvstub,
                       elem.caller_stack_frame);
 
-    _XDPRINTF_("%s[%u]: wip. halting!\n", __func__, (u16)sp->cpuid);
+    _XDPRINTF_("%s[%u]: wip. halting!\n", __func__, (uint16_t)sp->cpuid);
     HALT();
 
 }

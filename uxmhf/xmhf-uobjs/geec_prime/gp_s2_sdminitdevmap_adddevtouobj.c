@@ -73,8 +73,8 @@
 			 (gp_s2_sdminitdevmap_adddevtouobj_isdevinexcl[x] == false)) ==>
 			(gp_s2_sdminitdevmap_adddevtouobj_coradddeventry[x] == false);
 @*/
-void gp_s2_sdminitdevmap_adddevtouobj(u32 slabid, u32 vendor_id, u32 device_id){
-	u32 k;
+void gp_s2_sdminitdevmap_adddevtouobj(uint32_t slabid, uint32_t vendor_id, uint32_t device_id){
+	uint32_t k;
 	bool isdevinexcl;
 
 	/*@

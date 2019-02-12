@@ -58,14 +58,14 @@
 #include <xc_exhub.h>
 
 bool ihub_exit_status = false;
-u32 ihub_exit_info = 0;
+uint32_t ihub_exit_info = 0;
 
 
 
 #if defined (__XMHF_VERIFICATION__) && defined (__USPARK_FRAMAC_VA__)
-u32 check_esp, check_eip = CASM_RET_EIP;
+uint32_t check_esp, check_eip = CASM_RET_EIP;
 slab_params_t test_sp;
-u32 cpuid = 0;	//cpu id
+uint32_t cpuid = 0;	//cpu id
 
 void main(void){
 	//populate hardware model stack and program counter
@@ -109,7 +109,7 @@ void slab_main(slab_params_t *sp){
 	}else if( sp->dst_uapifn == UAPI_XCEXHUB_LOADIDT){
 
 		CASM_FUNCCALL(xmhfhw_cpu_loadIDT,&xcexhub_idt);
-		_XDPRINTF_("%s[%u]: IDT loaded\n", __func__, (u16)sp->cpuid);
+		_XDPRINTF_("%s[%u]: IDT loaded\n", __func__, (uint16_t)sp->cpuid);
 
 	}else if( sp->dst_uapifn == UAPI_XCEXHUB_LOADHOSTIDTRBASE){
 

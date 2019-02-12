@@ -53,21 +53,21 @@
 /*@
 	requires (__TRSEL/8) <= gdtindex <= (XMHFGEEC_MAX_GDT_CODEDATA_DESCRIPTORS + MAX_PLATFORM_CPUS);
 	requires 0 <= tssidx < MAX_PLATFORM_CPUS;
-	ensures (((TSSENTRY *)&__xmhfhic_x86vmx_gdt_start[gdtindex])->baseAddr0_15 == ((u16)((u32)&__xmhfhic_x86vmx_tss[tssidx].tss_mainblock & 0x0000FFFF)));
-	ensures (((TSSENTRY *)&__xmhfhic_x86vmx_gdt_start[gdtindex])->baseAddr16_23 == ((u8)(((u32)&__xmhfhic_x86vmx_tss[tssidx].tss_mainblock & 0x00FF0000) >> 16)));
-	ensures (((TSSENTRY *)&__xmhfhic_x86vmx_gdt_start[gdtindex])->baseAddr24_31 == ((u8)(((u32)&__xmhfhic_x86vmx_tss[tssidx].tss_mainblock & 0xFF000000) >> 24)) );
+	ensures (((TSSENTRY *)&__xmhfhic_x86vmx_gdt_start[gdtindex])->baseAddr0_15 == ((uint16_t)((uint32_t)&__xmhfhic_x86vmx_tss[tssidx].tss_mainblock & 0x0000FFFF)));
+	ensures (((TSSENTRY *)&__xmhfhic_x86vmx_gdt_start[gdtindex])->baseAddr16_23 == ((uint8_t)(((uint32_t)&__xmhfhic_x86vmx_tss[tssidx].tss_mainblock & 0x00FF0000) >> 16)));
+	ensures (((TSSENTRY *)&__xmhfhic_x86vmx_gdt_start[gdtindex])->baseAddr24_31 == ((uint8_t)(((uint32_t)&__xmhfhic_x86vmx_tss[tssidx].tss_mainblock & 0xFF000000) >> 24)) );
 	ensures (((TSSENTRY *)&__xmhfhic_x86vmx_gdt_start[gdtindex])->attributes1 == 0xE9);
 	ensures (((TSSENTRY *)&__xmhfhic_x86vmx_gdt_start[gdtindex])->limit16_19attributes2 == 0x0);
 	ensures (((TSSENTRY *)&__xmhfhic_x86vmx_gdt_start[gdtindex])->limit0_15 == ((4*PAGE_SIZE_4K)-1) );
 
 @*/
-void gp_s2_setupgdt_setgdttssentry(u32 gdtindex, u32 tssidx){
+void gp_s2_setupgdt_setgdttssentry(uint32_t gdtindex, uint32_t tssidx){
 	TSSENTRY *t = (TSSENTRY *)&__xmhfhic_x86vmx_gdt_start[gdtindex];
-	u32 tss_base = (u32)&__xmhfhic_x86vmx_tss[tssidx].tss_mainblock;
+	uint32_t tss_base = (uint32_t)&__xmhfhic_x86vmx_tss[tssidx].tss_mainblock;
 
-	t->baseAddr0_15= (u16)(tss_base & 0x0000FFFF);
-	t->baseAddr16_23= (u8)((tss_base & 0x00FF0000) >> 16);
-	t->baseAddr24_31= (u8)((tss_base & 0xFF000000) >> 24);
+	t->baseAddr0_15= (uint16_t)(tss_base & 0x0000FFFF);
+	t->baseAddr16_23= (uint8_t)((tss_base & 0x00FF0000) >> 16);
+	t->baseAddr24_31= (uint8_t)((tss_base & 0xFF000000) >> 24);
 	t->attributes1= 0xE9;
 	t->limit16_19attributes2= 0x0;
 	t->limit0_15=(4*PAGE_SIZE_4K)-1;

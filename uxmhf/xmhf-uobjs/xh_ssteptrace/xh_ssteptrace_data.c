@@ -57,15 +57,15 @@
 
 #if defined (__XMHF_VERIFICATION__)
 bool ssteptrace_on= nondet_bool();
-u32 ssteptrace_codepaddr = nondet_u32();
+uint32_t ssteptrace_codepaddr = nondet_u32();
 
 #else
 bool ssteptrace_on = false;
-u32 ssteptrace_codepaddr = 0;
+uint32_t ssteptrace_codepaddr = 0;
 #endif
 
 /*
-void xhssteptrace_inv_xmhf_hic_uapi_cpustate_vmwrite(u64 encoding, u64 value){
+void xhssteptrace_inv_xmhf_hic_uapi_cpustate_vmwrite(uint64_t encoding, uint64_t value){
     if(!ssteptrace_on){
         if(encoding == VMCS_CONTROL_EXCEPTION_BITMAP)
             assert( value & (1 << 1) );

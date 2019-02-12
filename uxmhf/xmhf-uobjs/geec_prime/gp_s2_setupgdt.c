@@ -60,7 +60,7 @@
 				(gp_s2_setupgdt_invokehelper[x] == true) );
 @*/
 void gp_s2_setupgdt(void){
-	u32 i;
+	uint32_t i;
 
     	/*@
 		loop invariant a1: 0 <= i <= xcbootinfo->cpuinfo_numentries;
@@ -80,8 +80,8 @@ void gp_s2_setupgdt(void){
 
 			_XDPRINTF_("%s: setup TSS CPU idx=%u with base address=%x, iobitmap=%x\n, size=%u bytes", __func__,
 			       xcbootinfo->cpuinfo_buffer[i].lapic_id,
-			       (u32)(&__xmhfhic_x86vmx_tss[xcbootinfo->cpuinfo_buffer[i].lapic_id].tss_mainblock),
-				(u32)&__xmhfhic_x86vmx_tss[xcbootinfo->cpuinfo_buffer[i].lapic_id].tss_iobitmap,
+			       (uint32_t)(&__xmhfhic_x86vmx_tss[xcbootinfo->cpuinfo_buffer[i].lapic_id].tss_mainblock),
+				(uint32_t)&__xmhfhic_x86vmx_tss[xcbootinfo->cpuinfo_buffer[i].lapic_id].tss_iobitmap,
 				((4*PAGE_SIZE_4K)-1) );
 
 		}

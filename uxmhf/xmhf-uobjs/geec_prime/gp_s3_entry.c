@@ -67,7 +67,7 @@
 void gp_s3_entry(void){
 
 	//switch to verified object page tables
-	CASM_FUNCCALL(write_cr3,(u32)&gp_rwdatahdr.gp_vhslabmempgtbl_lvl4t);
+	CASM_FUNCCALL(write_cr3,(uint32_t)&gp_rwdatahdr.gp_vhslabmempgtbl_lvl4t);
 	//@ghost gp_s3_entry_invoked_writecr3 = true;
 
 	//save cpu MTRR state which we will later replicate on all APs

@@ -88,7 +88,7 @@ void slab_main(slab_params_t *sp){
 		usysd_e820getentryforindex((uxmhf_uapi_sysdata_e820getentryforindex_t *)sp->in_out_params);
 		//@ghost usysd_methodcall_e820getentryforindex = true;
 	}else{
-		//_XDPRINTF_("UAPI_SYSDATA[%u]: Unknown uAPI function %x. Halting!\n", (u16)sp->cpuid, sp->dst_uapifn);
+		//_XDPRINTF_("UAPI_SYSDATA[%u]: Unknown uAPI function %x. Halting!\n", (uint16_t)sp->cpuid, sp->dst_uapifn);
 		//@ghost usysd_methodcall_invalid = true;
 	}
 

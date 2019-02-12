@@ -63,7 +63,7 @@
 				)
 			);
 		ensures ( _slabdevpgtbl_vtd_cet[bus][((dev*PCI_FUNCTION_MAX) + func)].qwords[0] ==
-			    (vtd_make_cete((u64)&_slabdevpgtbl_pml4t[slabid], VTD_CET_PRESENT))
+			    (vtd_make_cete((uint64_t)&_slabdevpgtbl_pml4t[slabid], VTD_CET_PRESENT))
 			);
 		ensures ( _slabdevpgtbl_vtd_cet[bus][((dev*PCI_FUNCTION_MAX) + func)].qwords[1] ==
 			    (vtd_make_cetehigh(2, (slabid)))
@@ -81,7 +81,7 @@
 				)
 			);
 		ensures ( _slabdevpgtbl_vtd_cet[bus][((dev*PCI_FUNCTION_MAX) + func)].qwords[0] ==
-			    (vtd_make_cete((u64)&_slabdevpgtbl_pdpt[slabid], VTD_CET_PRESENT))
+			    (vtd_make_cete((uint64_t)&_slabdevpgtbl_pdpt[slabid], VTD_CET_PRESENT))
 			);
 		ensures ( _slabdevpgtbl_vtd_cet[bus][((dev*PCI_FUNCTION_MAX) + func)].qwords[1] ==
 			    (vtd_make_cetehigh(1, (slabid)))
@@ -111,7 +111,7 @@
 	disjoint behaviors;
 @*/
 
-bool gp_s2_sdabinddevice(u32 slabid, u32 pagewalk_lvl,  u32 bus, u32 dev, u32 func){
+bool gp_s2_sdabinddevice(uint32_t slabid, uint32_t pagewalk_lvl,  uint32_t bus, uint32_t dev, uint32_t func){
 	bool retstatus=false;
 
 	if(	(slabid == 0) ||
@@ -126,7 +126,7 @@ bool gp_s2_sdabinddevice(u32 slabid, u32 pagewalk_lvl,  u32 bus, u32 dev, u32 fu
 		// (d* PCI_FUNCTION_MAX) + f = index into the cet
 		if(pagewalk_lvl == VTD_PAGEWALK_4LEVEL){
 			_slabdevpgtbl_vtd_cet[bus][((dev*PCI_FUNCTION_MAX) + func)].qwords[0] =
-			    vtd_make_cete((u64)&_slabdevpgtbl_pml4t[slabid], VTD_CET_PRESENT);
+			    vtd_make_cete((uint64_t)&_slabdevpgtbl_pml4t[slabid], VTD_CET_PRESENT);
 			_slabdevpgtbl_vtd_cet[bus][((dev*PCI_FUNCTION_MAX) + func)].qwords[1] =
 			    vtd_make_cetehigh(2, (slabid));
 			_XDPRINTF_("%s: CET, 4-lvl[%u][%u]: h=0x%016llx, l=0x%016llx\n",  __func__,
@@ -138,7 +138,7 @@ bool gp_s2_sdabinddevice(u32 slabid, u32 pagewalk_lvl,  u32 bus, u32 dev, u32 fu
 			retstatus = true;
 		}else if (pagewalk_lvl == VTD_PAGEWALK_3LEVEL){
 			_slabdevpgtbl_vtd_cet[bus][((dev*PCI_FUNCTION_MAX) + func)].qwords[0] =
-			    vtd_make_cete((u64)&_slabdevpgtbl_pdpt[slabid], VTD_CET_PRESENT);
+			    vtd_make_cete((uint64_t)&_slabdevpgtbl_pdpt[slabid], VTD_CET_PRESENT);
 			_slabdevpgtbl_vtd_cet[bus][((dev*PCI_FUNCTION_MAX) + func)].qwords[1] =
 			    vtd_make_cetehigh(1, (slabid));
 			_XDPRINTF_("%s: CET, 3-lvl[%u][%u]: h=0x%016llx, l=0x%016llx\n",  __func__,

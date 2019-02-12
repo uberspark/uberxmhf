@@ -64,25 +64,25 @@
 #ifndef __ASSEMBLY__
 
 typedef struct {
-	u32 baseaddr_low;
-	u32 baseaddr_high;
-	u32 length_low;
-	u32 length_high;
-	u32 type;
+	uint32_t baseaddr_low;
+	uint32_t baseaddr_high;
+	uint32_t length_low;
+	uint32_t length_high;
+	uint32_t type;
 }__attribute__((packed)) uxmhf_uapi_sysdata_e820addentry_t;
 
 
 typedef struct {
-	u32 index;
+	uint32_t index;
 }__attribute__((packed)) uxmhf_uapi_sysdata_e820getmaxindex_t;
 
 typedef struct {
-	u32 index;
-	u32 baseaddr_low;
-	u32 baseaddr_high;
-	u32 length_low;
-	u32 length_high;
-	u32 type;
+	uint32_t index;
+	uint32_t baseaddr_low;
+	uint32_t baseaddr_high;
+	uint32_t length_low;
+	uint32_t length_high;
+	uint32_t type;
 }__attribute__((packed)) uxmhf_uapi_sysdata_e820getentryforindex_t;
 
 
@@ -103,7 +103,7 @@ void usysd_e820getmaxindex(uxmhf_uapi_sysdata_e820getmaxindex_t *indexp);
 
 extern __attribute__((section(".data"))) GRUBE820 usysd_memmapinfo[MAX_E820_ENTRIES];
 
-extern __attribute__((section(".data"))) u32 usysd_memmapinfo_maxindex;
+extern __attribute__((section(".data"))) uint32_t usysd_memmapinfo_maxindex;
 
 
 

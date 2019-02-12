@@ -52,15 +52,15 @@
 #include <geec_prime.h>
 
 #if defined (__XMHF_VERIFICATION__) && defined (__USPARK_FRAMAC_VA__)
-u32 check_esp, check_eip = CASM_RET_EIP;
+uint32_t check_esp, check_eip = CASM_RET_EIP;
 
-void xmhfhwm_vdriver_writeesp(u32 oldval, u32 newval){
-	//@assert (newval >= ((u32)&_init_bsp_cpustack + 4)) && (newval <= ((u32)&_init_bsp_cpustack + MAX_PLATFORM_CPUSTACK_SIZE)) ;
+void xmhfhwm_vdriver_writeesp(uint32_t oldval, uint32_t newval){
+	//@assert (newval >= ((uint32_t)&_init_bsp_cpustack + 4)) && (newval <= ((uint32_t)&_init_bsp_cpustack + MAX_PLATFORM_CPUSTACK_SIZE)) ;
 }
 
 void main(void){
 	//populate hardware model stack and program counter
-	xmhfhwm_cpu_gprs_esp = (u32)&_init_bsp_cpustack + MAX_PLATFORM_CPUSTACK_SIZE;
+	xmhfhwm_cpu_gprs_esp = (uint32_t)&_init_bsp_cpustack + MAX_PLATFORM_CPUSTACK_SIZE;
 	xmhfhwm_cpu_gprs_eip = check_eip;
 	check_esp = xmhfhwm_cpu_gprs_esp; // pointing to top-of-stack
 
@@ -81,8 +81,8 @@ void main(void){
 void gp_s1_postdrt(void){
 	txt_heap_t *txt_heap;
 	os_mle_data_t os_mle_data;
-	u32 txt_heap_size;
-	u32 os_mle_data_paddr;
+	uint32_t txt_heap_size;
+	uint32_t os_mle_data_paddr;
 
 	//save SINIT to MLE MTRR mappings
 	xmhfhw_cpu_x86_save_mtrrs(&sinit2mle_mtrrs);
@@ -90,16 +90,16 @@ void gp_s1_postdrt(void){
 	os_mle_data.saved_mtrr_state.num_var_mtrrs=0;
 
 	txt_heap = get_txt_heap();
-	_XDPRINTF_("SL: txt_heap = 0x%08x\n", (u32)txt_heap);
+	_XDPRINTF_("SL: txt_heap = 0x%08x\n", (uint32_t)txt_heap);
 
 	txt_heap_size =  (uint32_t)read_pub_config_reg(TXTCR_HEAP_SIZE);
-	os_mle_data_paddr = get_os_mle_data_start((txt_heap_t*)((u32)txt_heap), txt_heap_size);
+	os_mle_data_paddr = get_os_mle_data_start((txt_heap_t*)((uint32_t)txt_heap), txt_heap_size);
 	//@assert (os_mle_data_paddr == (XMHFHWM_TXT_SYSMEM_HEAPBASE+0x8+sizeof(bios_data_t)+0x8));
 
-	CASM_FUNCCALL(xmhfhw_sysmem_copy_sys2obj, (u32)&os_mle_data,
+	CASM_FUNCCALL(xmhfhw_sysmem_copy_sys2obj, (uint32_t)&os_mle_data,
 		os_mle_data_paddr, sizeof(os_mle_data_t));
 
-	_XDPRINTF_("SL: os_mle_data = 0x%08x, size=%u bytes\n", (u32)&os_mle_data,
+	_XDPRINTF_("SL: os_mle_data = 0x%08x, size=%u bytes\n", (uint32_t)&os_mle_data,
 			sizeof(os_mle_data));
 
 	if(os_mle_data.saved_mtrr_state.num_var_mtrrs < MAX_VARIABLE_MTRRS){

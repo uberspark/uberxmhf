@@ -71,7 +71,7 @@
 		ensures (_slabdevpgtbl_infotable[slabid].devpgtbl_initialized == true);
 		ensures (invokedsplintpdt == true);
 		ensures (  _slabdevpgtbl_pml4t[slabid][0] ==
-			  (vtd_make_pml4te((u64)&_slabdevpgtbl_pdpt[slabid], (VTD_PAGE_READ | VTD_PAGE_WRITE)))
+			  (vtd_make_pml4te((uint64_t)&_slabdevpgtbl_pdpt[slabid], (VTD_PAGE_READ | VTD_PAGE_WRITE)))
 			);
 		ensures \forall integer x; 1 <= x < VTD_MAXPTRS_PER_PML4T ==> (
 				(_slabdevpgtbl_pml4t[slabid][x] == 0)
@@ -79,7 +79,7 @@
 
 		ensures \forall integer x; 0 <= x < VTD_PTRS_PER_PDPT ==> (
 				_slabdevpgtbl_pdpt[slabid][x] ==
-				 (vtd_make_pdpte((u64)&_slabdevpgtbl_pdt[slabid][x*VTD_PTRS_PER_PDT], (VTD_PAGE_READ | VTD_PAGE_WRITE)))
+				 (vtd_make_pdpte((uint64_t)&_slabdevpgtbl_pdt[slabid][x*VTD_PTRS_PER_PDT], (VTD_PAGE_READ | VTD_PAGE_WRITE)))
 				);
 
 		ensures \forall integer x; VTD_PTRS_PER_PDPT <= x < VTD_MAXPTRS_PER_PDPT ==> (
@@ -101,8 +101,8 @@
 	complete behaviors;
 	disjoint behaviors;
 @*/
-void gp_s2_sdasetupdevpgtbl(u32 slabid){
-	u32 i;
+void gp_s2_sdasetupdevpgtbl(uint32_t slabid){
+	uint32_t i;
 
 
 	if(
@@ -127,7 +127,7 @@ void gp_s2_sdasetupdevpgtbl(u32 slabid){
 
 
 		_slabdevpgtbl_pml4t[slabid][0] =
-			vtd_make_pml4te((u64)&_slabdevpgtbl_pdpt[slabid], (VTD_PAGE_READ | VTD_PAGE_WRITE));
+			vtd_make_pml4te((uint64_t)&_slabdevpgtbl_pdpt[slabid], (VTD_PAGE_READ | VTD_PAGE_WRITE));
 
 
 		//initialize lvl2 page table (pdpt)
@@ -148,7 +148,7 @@ void gp_s2_sdasetupdevpgtbl(u32 slabid){
 			loop invariant a5: 0 <= i <= VTD_PTRS_PER_PDPT;
 			loop invariant a6: \forall integer x; 0 <= x < i ==> (
 				_slabdevpgtbl_pdpt[slabid][x] ==
-				 (vtd_make_pdpte((u64)&_slabdevpgtbl_pdt[slabid][x*VTD_PTRS_PER_PDT], (VTD_PAGE_READ | VTD_PAGE_WRITE)))
+				 (vtd_make_pdpte((uint64_t)&_slabdevpgtbl_pdt[slabid][x*VTD_PTRS_PER_PDT], (VTD_PAGE_READ | VTD_PAGE_WRITE)))
 				);
 			loop assigns i;
 			loop assigns _slabdevpgtbl_pdpt[slabid][0..(VTD_PTRS_PER_PDPT-1)];
@@ -156,7 +156,7 @@ void gp_s2_sdasetupdevpgtbl(u32 slabid){
 		@*/
 		for(i=0; i < VTD_PTRS_PER_PDPT; i++){
 			_slabdevpgtbl_pdpt[slabid][i] =
-				vtd_make_pdpte((u64)&_slabdevpgtbl_pdt[slabid][i*VTD_PTRS_PER_PDT], (VTD_PAGE_READ | VTD_PAGE_WRITE));
+				vtd_make_pdpte((uint64_t)&_slabdevpgtbl_pdt[slabid][i*VTD_PTRS_PER_PDT], (VTD_PAGE_READ | VTD_PAGE_WRITE));
 		}
 
 

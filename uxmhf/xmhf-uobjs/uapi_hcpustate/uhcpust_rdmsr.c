@@ -56,7 +56,7 @@
 
 #include <uapi_hcpustate.h>
 
-//@ghost u64 rdmsr_val;
+//@ghost uint64_t rdmsr_val;
 /*@
 	requires \valid(msrp);
 	assigns msrp->value;

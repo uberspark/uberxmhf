@@ -115,13 +115,13 @@
 
 
 typedef struct {
-    u64 encoding;
-    u64 value;
+    uint64_t encoding;
+    uint64_t value;
 }__attribute__((packed)) xmhf_uapi_gcpustate_vmrw_params_t;
 
 typedef struct {
-    u32 msr;
-    u64 value;
+    uint32_t msr;
+    uint64_t value;
 }__attribute__((packed)) xmhf_uapi_gcpustate_msrrw_params_t;
 
 
@@ -131,7 +131,7 @@ typedef struct {
 
 
 extern __attribute__((section(".data"))) x86regs_t guestgprs[MAX_PLATFORM_CPUS];
-extern __attribute__((section(".data"))) u64 guestmsrs[GCPUSTATE_MSR_MAXCOUNT];
+extern __attribute__((section(".data"))) uint64_t guestmsrs[GCPUSTATE_MSR_MAXCOUNT];
 
 
 /*@
@@ -142,19 +142,19 @@ void ugcpust_vmread(xmhf_uapi_gcpustate_vmrw_params_t *vmrwp);
 /*@
 	requires \valid(vmrwp);
 @*/
-void ugcpust_vmwrite(u32 srcslabid, xmhf_uapi_gcpustate_vmrw_params_t *vmrwp);
+void ugcpust_vmwrite(uint32_t srcslabid, xmhf_uapi_gcpustate_vmrw_params_t *vmrwp);
 
 /*@
 	requires \valid(gprs);
 	requires 0 <= cpuid < MAX_PLATFORM_CPUS;
 @*/
-void ugcpust_gprsread(u32 cpuid, xmhf_uapi_gcpustate_gprs_params_t *gprs);
+void ugcpust_gprsread(uint32_t cpuid, xmhf_uapi_gcpustate_gprs_params_t *gprs);
 
 /*@
 	requires \valid(gprs);
 	requires 0 <= cpuid < MAX_PLATFORM_CPUS;
 @*/
-void ugcpust_gprswrite(u32 cpuid, xmhf_uapi_gcpustate_gprs_params_t *gprs);
+void ugcpust_gprswrite(uint32_t cpuid, xmhf_uapi_gcpustate_gprs_params_t *gprs);
 
 /*@
 	requires \valid(msrrwp);

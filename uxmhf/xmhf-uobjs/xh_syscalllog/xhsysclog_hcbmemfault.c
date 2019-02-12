@@ -61,14 +61,14 @@
 /*@
 	ensures (sysclog_hcbmemfault_invokelogger == true);
 @*/
-bool sysclog_hcbmemfault(u32 cpuindex, u32 guest_slab_index){
+bool sysclog_hcbmemfault(uint32_t cpuindex, uint32_t guest_slab_index){
 	bool result;
 	slab_params_t spl;
 	xmhf_uapi_gcpustate_vmrw_params_t *gcpustate_vmrwp =
 		(xmhf_uapi_gcpustate_vmrw_params_t *)spl.in_out_params;
-	u64 errorcode;
-	u64 gpa;
-	u64 gva;
+	uint64_t errorcode;
+	uint64_t gpa;
+	uint64_t gva;
 
 	spl.src_slabid = XMHFGEEC_SLAB_XH_SYSCALLLOG;
 	spl.dst_slabid = XMHFGEEC_SLAB_UAPI_GCPUSTATE;

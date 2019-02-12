@@ -57,10 +57,10 @@
 #include <xh_hyperdep.h>
 
 //memory fault handler
-void hyperdep_hcbmemfault(u32 cpuindex, u32 guest_slab_index){
-	u64 errorcode;
-	u64 gpa;
-	u64 gva;
+void hyperdep_hcbmemfault(uint32_t cpuindex, uint32_t guest_slab_index){
+	uint64_t errorcode;
+	uint64_t gpa;
+	uint64_t gva;
 	slab_params_t spl;
 	xmhf_uapi_gcpustate_vmrw_params_t *gcpustate_vmrwp =
 		(xmhf_uapi_gcpustate_vmrw_params_t *)spl.in_out_params;
@@ -86,9 +86,9 @@ void hyperdep_hcbmemfault(u32 cpuindex, u32 guest_slab_index){
 	XMHF_SLAB_CALLNEW(&spl);
 	gva = gcpustate_vmrwp->value;
 
-	if(hd_activated && hd_pageaddr == (u32)gpa){
+	if(hd_activated && hd_pageaddr == (uint32_t)gpa){
 		_XDPRINTF_("%s[%u]: memory fault in guest slab %u; gpa=%016llx, gva=%016llx, errorcode=%016llx, data page execution. Halting!\n",
-				__func__, (u16)cpuindex, guest_slab_index, gpa, gva, errorcode);
+				__func__, (uint16_t)cpuindex, guest_slab_index, gpa, gva, errorcode);
 		CASM_FUNCCALL(xmhfhw_cpu_hlt, CASM_NOPARAM);
 	}
 }

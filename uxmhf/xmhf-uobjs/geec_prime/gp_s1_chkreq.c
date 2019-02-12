@@ -52,16 +52,16 @@
 
 
 #if defined (__XMHF_VERIFICATION__) && defined (__USPARK_FRAMAC_VA__)
-u32 check_esp, check_eip = CASM_RET_EIP;
+uint32_t check_esp, check_eip = CASM_RET_EIP;
 
 
-void xmhfhwm_vdriver_writeesp(u32 oldval, u32 newval){
-	//@assert (newval >= ((u32)&_init_bsp_cpustack + 4)) && (newval <= ((u32)&_init_bsp_cpustack + MAX_PLATFORM_CPUSTACK_SIZE)) ;
+void xmhfhwm_vdriver_writeesp(uint32_t oldval, uint32_t newval){
+	//@assert (newval >= ((uint32_t)&_init_bsp_cpustack + 4)) && (newval <= ((uint32_t)&_init_bsp_cpustack + MAX_PLATFORM_CPUSTACK_SIZE)) ;
 }
 
 void main(void){
 	//populate hardware model stack and program counter
-	xmhfhwm_cpu_gprs_esp = (u32)&_init_bsp_cpustack + MAX_PLATFORM_CPUSTACK_SIZE;
+	xmhfhwm_cpu_gprs_esp = (uint32_t)&_init_bsp_cpustack + MAX_PLATFORM_CPUSTACK_SIZE;
 	xmhfhwm_cpu_gprs_eip = check_eip;
 	check_esp = xmhfhwm_cpu_gprs_esp; // pointing to top-of-stack
 
@@ -75,7 +75,7 @@ void main(void){
 ///////////////////////////////////////////////////////////////
 // sanity check HIC (hardware) requirements
 void gp_s1_chkreq(void){
-	u32 cpu_vendor;
+	uint32_t cpu_vendor;
 
 	//grab CPU vendor
 	cpu_vendor = xmhf_baseplatform_arch_getcpuvendor();
@@ -86,8 +86,8 @@ void gp_s1_chkreq(void){
 
 	//check VMX support
 	{
-		u32	cpu_features;
-		u32 res0,res1,res2;
+		uint32_t	cpu_features;
+		uint32_t res0,res1,res2;
 
 		CASM_FUNCCALL(xmhfhw_cpu_cpuid,0x1, &res0, &res1, &cpu_features, &res2);
 
@@ -99,7 +99,7 @@ void gp_s1_chkreq(void){
 
 	//we require unrestricted guest and EPT support, bail out if we don't have it
 	{
-		u64 msr_procctls2 = CASM_FUNCCALL(rdmsr64,IA32_VMX_PROCBASED_CTLS2_MSR);
+		uint64_t msr_procctls2 = CASM_FUNCCALL(rdmsr64,IA32_VMX_PROCBASED_CTLS2_MSR);
 		if( !( (msr_procctls2 >> 32) & 0x80 ) ){
 			_XDPRINTF_("%s: need unrestricted guest support but did not find any!\n", __func__);
 			CASM_FUNCCALL(xmhfhw_cpu_hlt, CASM_NOPARAM);

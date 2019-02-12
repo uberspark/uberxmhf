@@ -55,8 +55,8 @@
 #include <xh_hyperdep.h>
 
 // initialization handler
-void hyperdep_hcbinit(u32 cpuindex){
-	_XDPRINTF_("%s[%u]: hyperDEP initializing...\n", __func__, (u16)cpuindex);
+void hyperdep_hcbinit(uint32_t cpuindex){
+	_XDPRINTF_("%s[%u]: hyperDEP initializing...\n", __func__, (uint16_t)cpuindex);
 }
 
 

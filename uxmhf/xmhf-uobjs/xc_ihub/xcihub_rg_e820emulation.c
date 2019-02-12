@@ -57,19 +57,19 @@
  *
  * author: amit vasudevan (amitvasudevan@acm.org)
  */
-bool xcihub_rg_e820emulation(u32 cpuid, u32 src_slabid){
+bool xcihub_rg_e820emulation(uint32_t cpuid, uint32_t src_slabid){
 	slab_params_t spl;
 	xmhf_uapi_gcpustate_vmrw_params_t *gcpustate_vmrwp = (xmhf_uapi_gcpustate_vmrw_params_t *)spl.in_out_params;
 	xmhf_uapi_gcpustate_gprs_params_t *gcpustate_gprs = (xmhf_uapi_gcpustate_gprs_params_t *)spl.in_out_params;
 	slab_params_t splusysd;
 	uxmhf_uapi_sysdata_e820getmaxindex_t *usysd_getmaxindex = (uxmhf_uapi_sysdata_e820getmaxindex_t *)splusysd.in_out_params;
 	uxmhf_uapi_sysdata_e820getentryforindex_t *usysd_getentryforindex = (uxmhf_uapi_sysdata_e820getentryforindex_t *)splusysd.in_out_params;
-	u32 g_cs_base, g_eip;
-	u32 g_es_base, g_ss_base;
-	u32 g_esp;
-	u16 g_flags;
-	u32 e820_maxindex;
-	u16 orig_int15h_ip, orig_int15h_cs;
+	uint32_t g_cs_base, g_eip;
+	uint32_t g_es_base, g_ss_base;
+	uint32_t g_esp;
+	uint16_t g_flags;
+	uint32_t e820_maxindex;
+	uint16_t orig_int15h_ip, orig_int15h_cs;
 	x86regs_t r;
 
 	//clear out slab_params
@@ -118,16 +118,16 @@ bool xcihub_rg_e820emulation(u32 cpuid, u32 src_slabid){
 
 
 	//if E820 service then...
-	if((u16)r.eax == 0xE820){
+	if((uint16_t)r.eax == 0xE820){
 		//AX=0xE820, EBX=continuation value, 0 for first call
 		//ES:DI pointer to buffer, ECX=buffer size, EDX='SMAP'
 		//return value, CF=0 indicated no error, EAX='SMAP'
 		//ES:DI left untouched, ECX=size returned, EBX=next continuation value
 		//EBX=0 if last descriptor
 		_XDPRINTF_("%s[%u]: INT 15(e820): AX=0x%04x, EDX=0x%08x, EBX=0x%08x\n", __func__, cpuid,
-					(u16)r.eax, (u32)r.edx, (u32)r.ebx);
+					(uint16_t)r.eax, (uint32_t)r.edx, (uint32_t)r.ebx);
 		_XDPRINTF_("%s[%u]:   ECX=0x%08x, ES(base)=0x%08x, DI=0x%04x\n", __func__, cpuid,
-				(u32)r.ecx, g_es_base, (u16)r.edi);
+				(uint32_t)r.ecx, g_es_base, (uint16_t)r.edi);
 
 		//read maximum E820 index
 		splusysd.dst_uapifn = UXMHF_UAPI_SYSDATA_E820GETMAXINDEX;
@@ -140,7 +140,7 @@ bool xcihub_rg_e820emulation(u32 cpuid, u32 src_slabid){
 			usysd_getentryforindex->index = r.ebx;
 			XMHF_SLAB_CALLNEW(&splusysd);
 
-			CASM_FUNCCALL(xmhfhw_sysmem_copy_obj2sys, (u32)(g_es_base+(u16)r.edi), &(usysd_getentryforindex->baseaddr_low), 20);
+			CASM_FUNCCALL(xmhfhw_sysmem_copy_obj2sys, (uint32_t)(g_es_base+(uint16_t)r.edi), &(usysd_getentryforindex->baseaddr_low), 20);
 
 			_XDPRINTF_("%s[%u]:   base: 0x%08x%08x  len=0x%08x%08x, t=0x%08x\n", __func__, cpuid,
 					usysd_getentryforindex->baseaddr_high, usysd_getentryforindex->baseaddr_low,
@@ -164,7 +164,7 @@ bool xcihub_rg_e820emulation(u32 cpuid, u32 src_slabid){
 			//...
 
 			//grab guest eflags on guest stack
-			g_flags = CASM_FUNCCALL(xmhfhw_sysmemaccess_readu16, ((u32)g_ss_base + (u16)g_esp + 0x4));
+			g_flags = CASM_FUNCCALL(xmhfhw_sysmemaccess_readu16, ((uint32_t)g_ss_base + (uint16_t)g_esp + 0x4));
 
 			//increment e820 descriptor continuation value
 			r.ebx=r.ebx+1;
@@ -172,13 +172,13 @@ bool xcihub_rg_e820emulation(u32 cpuid, u32 src_slabid){
 			if(r.ebx > (e820_maxindex-1) ){
 				//we have reached the last record, so set CF and make EBX=0
 				r.ebx=0;
-				g_flags |= (u16)EFLAGS_CF;
+				g_flags |= (uint16_t)EFLAGS_CF;
 			}else{
 				//we still have more records, so clear CF
-				g_flags &= ~(u16)EFLAGS_CF;
+				g_flags &= ~(uint16_t)EFLAGS_CF;
 			}
 
-			CASM_FUNCCALL(xmhfhw_sysmemaccess_writeu16, ((u32)g_ss_base + (u16)g_esp + 0x4), g_flags);
+			CASM_FUNCCALL(xmhfhw_sysmemaccess_writeu16, ((uint32_t)g_ss_base + (uint16_t)g_esp + 0x4), g_flags);
 
 		}else{	//invalid state specified during INT 15 E820, halt
 			_XDPRINTF_("%s[%u]: INT15 (E820), invalid state specified by guest. Halting!\n", __func__, cpuid);

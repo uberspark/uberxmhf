@@ -59,13 +59,13 @@
 
 
 // hypercall handler
-void sysclog_hcbhypercall(u32 cpuindex, u32 guest_slab_index){
+void sysclog_hcbhypercall(uint32_t cpuindex, uint32_t guest_slab_index){
     slab_params_t spl;
     xmhf_uapi_gcpustate_gprs_params_t *gcpustate_gprs =
         (xmhf_uapi_gcpustate_gprs_params_t *)spl.in_out_params;
     x86regs_t *gprs = (x86regs_t *)&gcpustate_gprs->gprs;
-	u32 call_id;
-	u32 syscall_page_paddr, syscall_shadowpage_vaddr, syscall_shadowpage_paddr;
+	uint32_t call_id;
+	uint32_t syscall_page_paddr, syscall_shadowpage_vaddr, syscall_shadowpage_paddr;
 
 	spl.in_out_params[0] = spl.in_out_params[1] = spl.in_out_params[2] = spl.in_out_params[3]=0;
 	spl.in_out_params[4] = spl.in_out_params[5] = spl.in_out_params[6] = spl.in_out_params[7]=0;
@@ -84,13 +84,13 @@ void sysclog_hcbhypercall(u32 cpuindex, u32 guest_slab_index){
 	switch(call_id){
 
 		case SYSCALLLOG_REGISTER:{
-			//_XDPRINTF_("%s[%u]: call_id=%x, gpa=%016llx\n", __func__, (u16)cpuindex, call_id, gpa);
+			//_XDPRINTF_("%s[%u]: call_id=%x, gpa=%016llx\n", __func__, (uint16_t)cpuindex, call_id, gpa);
 			sysclog_register(cpuindex, guest_slab_index, syscall_page_paddr, syscall_shadowpage_vaddr, syscall_shadowpage_paddr);
 		}
 		break;
 
 		default:
-            //_XDPRINTF_("%s[%u]: unsupported hypercall %x. Ignoring\n",  __func__, (u16)cpuindex, call_id);
+            //_XDPRINTF_("%s[%u]: unsupported hypercall %x. Ignoring\n",  __func__, (uint16_t)cpuindex, call_id);
 			break;
 	}
 

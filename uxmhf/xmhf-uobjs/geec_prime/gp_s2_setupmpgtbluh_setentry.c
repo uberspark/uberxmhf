@@ -52,7 +52,7 @@
 #include <uapi_uhmpgtbl.h>
 #include <uapi_iotbl.h>
 
-u32 _setupmpgtbluh_setentry_getiotblbase(u32 slabid){
+uint32_t _setupmpgtbluh_setentry_getiotblbase(uint32_t slabid){
 	slab_params_t spl;
 	uapi_iotbl_getiotblbase_t *ps = (uapi_iotbl_getiotblbase_t *)spl.in_out_params;
 
@@ -69,7 +69,7 @@ u32 _setupmpgtbluh_setentry_getiotblbase(u32 slabid){
 }
 
 
-void _setupmpgtbluh_setentry_helper(u32 slabid, u32 ptindex, u64 entry){
+void _setupmpgtbluh_setentry_helper(uint32_t slabid, uint32_t ptindex, uint64_t entry){
 	slab_params_t spl;
 	uapi_uhmpgtbl_setentryforpaddr_params_t *p =
 			(uapi_uhmpgtbl_setentryforpaddr_params_t *)spl.in_out_params;
@@ -80,8 +80,8 @@ void _setupmpgtbluh_setentry_helper(u32 slabid, u32 ptindex, u64 entry){
 
 	p->dst_slabid = slabid;
 	p->pa = (ptindex * PAGE_SIZE_4K);
-	p->entry_lo = (u32) entry;
-	p->entry_hi = (u32)((u64)entry >> 32);
+	p->entry_lo = (uint32_t) entry;
+	p->entry_hi = (uint32_t)((uint64_t)entry >> 32);
 
 	XMHF_SLAB_CALLNEW(&spl);
 }
@@ -139,7 +139,7 @@ void _setupmpgtbluh_setentry_helper(u32 slabid, u32 ptindex, u64 entry){
 	disjoint behaviors;
 
 @*/
-bool gp_s2_setupmpgtbluh_setentry(u32 slabid, u32 uhslabmempgtbl_idx, u32 spatype, u32 ptindex, u64 flags){
+bool gp_s2_setupmpgtbluh_setentry(uint32_t slabid, uint32_t uhslabmempgtbl_idx, uint32_t spatype, uint32_t ptindex, uint64_t flags){
 
 
 	if((spatype & 0x0000000FUL) == _SLAB_SPATYPE_GEEC_PRIME_IOTBL &&

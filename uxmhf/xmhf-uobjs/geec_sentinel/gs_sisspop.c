@@ -57,7 +57,7 @@
 
 
 
-//void gs_siss_pop(u32 cpuid, u32 *src_slabid, u32 *dst_slabid, u32 *hic_calltype,
+//void gs_siss_pop(uint32_t cpuid, uint32_t *src_slabid, uint32_t *dst_slabid, uint32_t *hic_calltype,
 //                       void **caller_stack_framep, slab_params_t **spp)
 /*@
 	requires sissValid (siss_id);
@@ -93,9 +93,9 @@
 	disjoint behaviors ;
 
 */
-void gs_siss_pop(u32 siss_id, gs_siss_element_t *elem)
+void gs_siss_pop(uint32_t siss_id, gs_siss_element_t *elem)
 {
-    u32 safestack_index = gs_siss_indices[siss_id];
+    uint32_t safestack_index = gs_siss_indices[siss_id];
 
     if(safestack_index >0 && safestack_index <= 512){
         safestack_index--;

@@ -52,15 +52,15 @@
 #include <xc_init.h>
 
 #if defined (__XMHF_VERIFICATION__) && defined (__USPARK_FRAMAC_VA__)
-	u32 check_esp, check_eip = CASM_RET_EIP;
+	uint32_t check_esp, check_eip = CASM_RET_EIP;
 	bool gp_s5_entry_invoked = false;
 
-	void xmhfhwm_vdriver_writeesp(u32 oldval, u32 newval){
-		//@assert (newval >= ((u32)&_init_bsp_cpustack + 4)) && (newval <= ((u32)&_init_bsp_cpustack + MAX_PLATFORM_CPUSTACK_SIZE)) ;
+	void xmhfhwm_vdriver_writeesp(uint32_t oldval, uint32_t newval){
+		//@assert (newval >= ((uint32_t)&_init_bsp_cpustack + 4)) && (newval <= ((uint32_t)&_init_bsp_cpustack + MAX_PLATFORM_CPUSTACK_SIZE)) ;
 	}
 
-	void xmhfhwm_vdriver_cpu_writecr3(u32 oldval, u32 newval){
-		//@assert (newval ==(u32)&gp_rwdatahdr.gp_vhslabmempgtbl_lvl4t);
+	void xmhfhwm_vdriver_cpu_writecr3(uint32_t oldval, uint32_t newval){
+		//@assert (newval ==(uint32_t)&gp_rwdatahdr.gp_vhslabmempgtbl_lvl4t);
 	}
 
 	void __slab_callsentinel(slab_params_t *sp){
@@ -71,9 +71,9 @@
 	}
 
 	void main(void){
-		u32 cpuid = framac_nondetu32interval(0, 255);
+		uint32_t cpuid = framac_nondetu32interval(0, 255);
 		//populate hardware model stack and program counter
-		xmhfhwm_cpu_gprs_esp = (u32)&_init_bsp_cpustack + MAX_PLATFORM_CPUSTACK_SIZE;
+		xmhfhwm_cpu_gprs_esp = (uint32_t)&_init_bsp_cpustack + MAX_PLATFORM_CPUSTACK_SIZE;
 		xmhfhwm_cpu_gprs_eip = check_eip;
 		check_esp = xmhfhwm_cpu_gprs_esp; // pointing to top-of-stack
 
@@ -86,7 +86,7 @@
 
 #endif
 
-void gp_s5_invokestrt(u32 cpuid){
+void gp_s5_invokestrt(uint32_t cpuid){
 	slab_params_t sp;
 
 	memset(&sp, 0, sizeof(sp));
@@ -98,6 +98,6 @@ void gp_s5_invokestrt(u32 cpuid){
 	XMHF_SLAB_CALLNEW(&sp);
 
 	_XDPRINTF_("%s[%u]: Should never be here. Halting!\n",
-		__func__, (u16)cpuid);
+		__func__, (uint16_t)cpuid);
 	CASM_FUNCCALL(xmhfhw_cpu_hlt, CASM_NOPARAM);
 }

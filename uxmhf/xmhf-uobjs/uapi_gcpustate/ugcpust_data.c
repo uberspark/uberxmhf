@@ -53,4 +53,4 @@
 
 __attribute__((section(".data"))) x86regs_t guestgprs[MAX_PLATFORM_CPUS];
 
-__attribute__((section(".data"))) u64 guestmsrs[GCPUSTATE_MSR_MAXCOUNT];
+__attribute__((section(".data"))) uint64_t guestmsrs[GCPUSTATE_MSR_MAXCOUNT];

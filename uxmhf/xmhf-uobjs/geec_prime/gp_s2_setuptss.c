@@ -61,7 +61,7 @@
 				(gp_s2_setuptss_invokehelper[x] == true) );
 @*/
 void gp_s2_setuptss(void){
-	u32 i;
+	uint32_t i;
 
 	//initialize TSS descriptors for all CPUs
    	/*@

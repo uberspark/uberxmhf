@@ -62,25 +62,25 @@
 /*@
 
 	behavior yes_log:
-		assumes (sl_activated && (((u32)gpa & 0xFFFFF000UL) == sl_syscall_page_paddr));
+		assumes (sl_activated && (((uint32_t)gpa & 0xFFFFF000UL) == sl_syscall_page_paddr));
 		ensures sysclog_loginfo_nwlogged == true;
 
 	behavior no_log:
-		assumes !(sl_activated && (((u32)gpa & 0xFFFFF000UL) == sl_syscall_page_paddr));
+		assumes !(sl_activated && (((uint32_t)gpa & 0xFFFFF000UL) == sl_syscall_page_paddr));
 		ensures sysclog_loginfo_nwlogged == false;
 
 	complete behaviors;
 	disjoint behaviors;
 @*/
-bool sysclog_loginfo(u32 cpuindex, u32 guest_slab_index, u64 gpa, u64 gva, u64 errorcode){
+bool sysclog_loginfo(uint32_t cpuindex, uint32_t guest_slab_index, uint64_t gpa, uint64_t gva, uint64_t errorcode){
 	slab_params_t spl;
 	xmhf_uapi_gcpustate_vmrw_params_t *gcpustate_vmrwp =
 		(xmhf_uapi_gcpustate_vmrw_params_t *)spl.in_out_params;
 
-	if(sl_activated && (((u32)gpa & 0xFFFFF000UL) == sl_syscall_page_paddr)){
+	if(sl_activated && (((uint32_t)gpa & 0xFFFFF000UL) == sl_syscall_page_paddr)){
 
 		_XDPRINTF_("%s[%u]: syscall trapping in guest slab %u; gpa=0x%08x, gva=0x%08x, errorcode=0x%08x\n",
-		__func__, (u16)cpuindex, guest_slab_index, (u32)gpa, (u32)gva, (u32)errorcode);
+		__func__, (uint16_t)cpuindex, guest_slab_index, (uint32_t)gpa, (uint32_t)gva, (uint32_t)errorcode);
 
 
 		spl.src_slabid = XMHFGEEC_SLAB_XH_SYSCALLLOG;
@@ -103,11 +103,11 @@ bool sysclog_loginfo(u32 cpuindex, u32 guest_slab_index, u64 gpa, u64 gva, u64 e
 		spl.dst_slabid = XMHFGEEC_SLAB_UAPI_GCPUSTATE;
 		spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_VMWRITE;
 		gcpustate_vmrwp->encoding = VMCS_GUEST_RIP;
-		gcpustate_vmrwp->value = sl_syscall_shadowpage_vaddr | ((u32)gpa & 0x00000FFFUL);
+		gcpustate_vmrwp->value = sl_syscall_shadowpage_vaddr | ((uint32_t)gpa & 0x00000FFFUL);
 		XMHF_SLAB_CALLNEW(&spl);
 
 		_XDPRINTF_("%s[%u]: syscall trapping reset eip to 0x%08x\n",
-		__func__, (u16)cpuindex, gcpustate_vmrwp->value);
+		__func__, (uint16_t)cpuindex, gcpustate_vmrwp->value);
 
 		return true;
 	}else{

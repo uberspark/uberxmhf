@@ -58,12 +58,12 @@
  * author: amit vasudevan (amitvasudevan@acm.org)
  */
 
-void xcihub_icptcpuid(u32 cpuid){
+void xcihub_icptcpuid(uint32_t cpuid){
 	slab_params_t spl;
 	xmhf_uapi_gcpustate_vmrw_params_t *gcpustate_vmrwp = (xmhf_uapi_gcpustate_vmrw_params_t *)spl.in_out_params;
 	xmhf_uapi_gcpustate_gprs_params_t *gcpustate_gprs = (xmhf_uapi_gcpustate_gprs_params_t *)spl.in_out_params;
-	u32 guest_rip;
-	u32 info_vmexit_instruction_length;
+	uint32_t guest_rip;
+	uint32_t info_vmexit_instruction_length;
 	x86regs_t r;
 
 	//_XDPRINTF_("%s[%u]: VMX_VMEXIT_CPUID\n",   __func__, cpuid);
@@ -78,7 +78,7 @@ void xcihub_icptcpuid(u32 cpuid){
 	memcpy(&r, &gcpustate_gprs->gprs, sizeof(x86regs_t));
 
 	//invoke actual CPUID instruction
-	CASM_FUNCCALL(xmhfhw_cpu_cpuid,(u32)r.eax, (u32 *)&r.eax, (u32 *)&r.ebx, (u32 *)&r.ecx, (u32 *)&r.edx);
+	CASM_FUNCCALL(xmhfhw_cpu_cpuid,(uint32_t)r.eax, (uint32_t *)&r.eax, (uint32_t *)&r.ebx, (uint32_t *)&r.ecx, (uint32_t *)&r.edx);
 
 	spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSWRITE;
 	memcpy(&gcpustate_gprs->gprs, &r, sizeof(x86regs_t));

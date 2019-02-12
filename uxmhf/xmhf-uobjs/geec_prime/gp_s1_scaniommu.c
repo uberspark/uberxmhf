@@ -58,15 +58,15 @@
 //vtd_dmar_table_physical_address (physical address of the DMAR table)
 
 #if defined (__XMHF_VERIFICATION__) && defined (__USPARK_FRAMAC_VA__)
-u32 check_esp, check_eip = CASM_RET_EIP;
+uint32_t check_esp, check_eip = CASM_RET_EIP;
 
-void xmhfhwm_vdriver_writeesp(u32 oldval, u32 newval){
-	//@assert (newval >= ((u32)&_init_bsp_cpustack + 4)) && (newval <= ((u32)&_init_bsp_cpustack + MAX_PLATFORM_CPUSTACK_SIZE)) ;
+void xmhfhwm_vdriver_writeesp(uint32_t oldval, uint32_t newval){
+	//@assert (newval >= ((uint32_t)&_init_bsp_cpustack + 4)) && (newval <= ((uint32_t)&_init_bsp_cpustack + MAX_PLATFORM_CPUSTACK_SIZE)) ;
 }
 
 void main(void){
 	//populate hardware model stack and program counter
-	xmhfhwm_cpu_gprs_esp = (u32)&_init_bsp_cpustack + MAX_PLATFORM_CPUSTACK_SIZE;
+	xmhfhwm_cpu_gprs_esp = (uint32_t)&_init_bsp_cpustack + MAX_PLATFORM_CPUSTACK_SIZE;
 	xmhfhwm_cpu_gprs_eip = check_eip;
 	check_esp = xmhfhwm_cpu_gprs_esp; // pointing to top-of-stack
 
@@ -90,12 +90,12 @@ void main(void){
 void gp_s1_scaniommu(void){
 	ACPI_RSDP rsdp = {0};
 	ACPI_RSDT rsdt = {0};
-	u32 num_rsdtentries=0;
-	u32 rsdtentries[ACPI_MAX_RSDT_ENTRIES];
-	u32 status;
+	uint32_t num_rsdtentries=0;
+	uint32_t rsdtentries[ACPI_MAX_RSDT_ENTRIES];
+	uint32_t status;
 	VTD_DMAR dmar = {0};
-	u32 i, dmarfound;
-	u32 remappingstructuresaddrphys;
+	uint32_t i, dmarfound;
+	uint32_t remappingstructuresaddrphys;
 
 	//set maxhandle to 0 to start with. if we have any errors before
 	//we finalize maxhandle we can just bail out
@@ -126,7 +126,7 @@ void gp_s1_scaniommu(void){
 
 
 	//grab ACPI RSDT
-	CASM_FUNCCALL(xmhfhw_sysmem_copy_sys2obj, (u8 *)&rsdt, (u8 *)rsdp.rsdtaddress, sizeof(ACPI_RSDT));
+	CASM_FUNCCALL(xmhfhw_sysmem_copy_sys2obj, (uint8_t *)&rsdt, (uint8_t *)rsdp.rsdtaddress, sizeof(ACPI_RSDT));
 	_XDPRINTF_("%s:%u RSDT at %08x, len=%u bytes, hdrlen=%u bytes\n",
 		__func__, __LINE__, rsdp.rsdtaddress, rsdt.length, sizeof(ACPI_RSDT));
 
@@ -149,7 +149,7 @@ void gp_s1_scaniommu(void){
 
 
 	//get the RSDT entry list
-	num_rsdtentries = (rsdt.length - sizeof(ACPI_RSDT))/ sizeof(u32);
+	num_rsdtentries = (rsdt.length - sizeof(ACPI_RSDT))/ sizeof(uint32_t);
 	if(num_rsdtentries >= ACPI_MAX_RSDT_ENTRIES){
 		_XDPRINTF_("%s:%u num_rsdtentries(%u) > ACPI_MAX_RSDT_ENTRIES (%u). Halting!\n",
 			__func__, __LINE__, num_rsdtentries, ACPI_MAX_RSDT_ENTRIES);
@@ -161,13 +161,13 @@ void gp_s1_scaniommu(void){
 
 
 
-	CASM_FUNCCALL(xmhfhw_sysmem_copy_sys2obj, (u8 *)&rsdtentries, (u8 *)(rsdp.rsdtaddress + sizeof(ACPI_RSDT)),
-			sizeof(u32)*num_rsdtentries);
+	CASM_FUNCCALL(xmhfhw_sysmem_copy_sys2obj, (uint8_t *)&rsdtentries, (uint8_t *)(rsdp.rsdtaddress + sizeof(ACPI_RSDT)),
+			sizeof(uint32_t)*num_rsdtentries);
 
 
 	//find the VT-d DMAR table in the list (if any)
 	for(i=0; i< num_rsdtentries; i++){
-		CASM_FUNCCALL(xmhfhw_sysmem_copy_sys2obj, (u8 *)&dmar, (u8 *)rsdtentries[i], sizeof(VTD_DMAR));
+		CASM_FUNCCALL(xmhfhw_sysmem_copy_sys2obj, (uint8_t *)&dmar, (uint8_t *)rsdtentries[i], sizeof(VTD_DMAR));
 		if(dmar.signature == VTD_DMAR_SIGNATURE){
 		  dmarfound=1;
 			#if defined (__DEBUG_SERIAL__)
@@ -215,9 +215,9 @@ void gp_s1_scaniommu(void){
 	remappingstructuresaddrphys=vtd_dmar_table_physical_address+sizeof(VTD_DMAR);
 
 	while(i < (dmar.length-sizeof(VTD_DMAR))){
-		u16 type, length;
-		CASM_FUNCCALL(xmhfhw_sysmem_copy_sys2obj,(u8 *)&type, (u8 *)(remappingstructuresaddrphys+i), sizeof(u16));
-		CASM_FUNCCALL(xmhfhw_sysmem_copy_sys2obj,(u8 *)&length, (u8 *)(remappingstructuresaddrphys+i+sizeof(u16)), sizeof(u16));
+		uint16_t type, length;
+		CASM_FUNCCALL(xmhfhw_sysmem_copy_sys2obj,(uint8_t *)&type, (uint8_t *)(remappingstructuresaddrphys+i), sizeof(uint16_t));
+		CASM_FUNCCALL(xmhfhw_sysmem_copy_sys2obj,(uint8_t *)&length, (uint8_t *)(remappingstructuresaddrphys+i+sizeof(uint16_t)), sizeof(uint16_t));
 
 		switch(type){
 			case  0:  //DRHD
@@ -226,13 +226,13 @@ void gp_s1_scaniommu(void){
 						__LINE__, vtd_num_drhd, VTD_MAX_DRHD);
 					CASM_FUNCCALL(xmhfhw_cpu_hlt, CASM_NOPARAM);
 				}
-				CASM_FUNCCALL(xmhfhw_sysmem_copy_sys2obj, (u8 *)&vtd_drhd[vtd_num_drhd], (u8 *)(remappingstructuresaddrphys+i), length);
+				CASM_FUNCCALL(xmhfhw_sysmem_copy_sys2obj, (uint8_t *)&vtd_drhd[vtd_num_drhd], (uint8_t *)(remappingstructuresaddrphys+i), length);
 				vtd_num_drhd++;
-				i+=(u32)length;
+				i+=(uint32_t)length;
 				break;
 
 			default:	//unknown type, we skip this
-				i += (u32)length;
+				i += (uint32_t)length;
 				break;
 		}
 	}
@@ -265,7 +265,7 @@ void gp_s1_scaniommu(void){
 		_XDPRINTF_("		cap=0x%016llx\n", pack_VTD_CAP_REG(&cap));
 		//ecap.value = _vtd_reg_read(&vtd_drhd[i], VTD_ECAP_REG_OFF);
 		unpack_VTD_ECAP_REG(&ecap, _vtd_reg_read(&vtd_drhd[i], VTD_ECAP_REG_OFF));
-		_XDPRINTF_("		ecap=0x%016llx\n", (u64)pack_VTD_ECAP_REG(&ecap));
+		_XDPRINTF_("		ecap=0x%016llx\n", (uint64_t)pack_VTD_ECAP_REG(&ecap));
 		_XDPRINTF_("	iotlb_regaddr=%08x, iva_regaddr=%08x\n",
 					vtd_drhd[i].iotlb_regaddr, vtd_drhd[i].iva_regaddr);
 
@@ -276,6 +276,6 @@ void gp_s1_scaniommu(void){
 	vtd_drhd_scanned = true;
 
 	_XDPRINTF_("%s: Vt-d: maxhandle = %u, dmar table addr=0x%08x\n", __func__,
-		(u32)vtd_drhd_maxhandle, (u32)vtd_dmar_table_physical_address);
+		(uint32_t)vtd_drhd_maxhandle, (uint32_t)vtd_dmar_table_physical_address);
 
 }

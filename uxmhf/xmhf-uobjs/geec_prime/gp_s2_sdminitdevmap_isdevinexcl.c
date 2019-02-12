@@ -69,8 +69,8 @@
 			(\result == false);
 	ensures (\result == true) || (\result == false);
 @*/
-bool gp_s2_sdminitdevmap_isdevinexcl(u32 slabid, u32 vendor_id, u32 device_id){
-    u32 i;
+bool gp_s2_sdminitdevmap_isdevinexcl(uint32_t slabid, uint32_t vendor_id, uint32_t device_id){
+    uint32_t i;
 
 	/*@
 		loop invariant a1: 0 <= i <= xmhfgeec_slab_info_table[slabid].excl_devices_count;

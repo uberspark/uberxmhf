@@ -50,30 +50,30 @@
 
 #include <geec_prime.h>
 
-//@ ghost u32 gretval;
+//@ ghost uint32_t gretval;
 /*@
 	requires 0 <= slab_index < XMHFGEEC_TOTAL_SLABS ;
 	assigns gretval;
-	ensures (\forall u32 x; 0 <= x < XMHFGEEC_TOTAL_SLABS ==> (gretval == _SLAB_SPATYPE_OTHER)) ==> (\result == _SLAB_SPATYPE_OTHER);
-	ensures (\exists u32 x; 0 <= x < XMHFGEEC_TOTAL_SLABS ==> ( !(gretval == _SLAB_SPATYPE_OTHER) &&
+	ensures (\forall uint32_t x; 0 <= x < XMHFGEEC_TOTAL_SLABS ==> (gretval == _SLAB_SPATYPE_OTHER)) ==> (\result == _SLAB_SPATYPE_OTHER);
+	ensures (\exists uint32_t x; 0 <= x < XMHFGEEC_TOTAL_SLABS ==> ( !(gretval == _SLAB_SPATYPE_OTHER) &&
 		(( (x == slab_index) || ((xmhfgeec_slab_info_table[x].slab_memgrantreadcaps & XMHFGEEC_SLAB_MEMGRANTREADCAP_MASK(slab_index)) ||
 			(xmhfgeec_slab_info_table[x].slab_memgrantwritecaps & XMHFGEEC_SLAB_MEMGRANTWRITECAP_MASK(slab_index))) )) )
 		==> (\result == (gretval | xmhfgeec_slab_info_table[x].slabtype | _SLAB_SPATYPE_MASK_SAMESLAB)) );
-	ensures (\exists u32 x; 0 <= x < XMHFGEEC_TOTAL_SLABS ==> ( !(gretval == _SLAB_SPATYPE_OTHER) &&
+	ensures (\exists uint32_t x; 0 <= x < XMHFGEEC_TOTAL_SLABS ==> ( !(gretval == _SLAB_SPATYPE_OTHER) &&
 		!(( (x == slab_index) || ((xmhfgeec_slab_info_table[x].slab_memgrantreadcaps & XMHFGEEC_SLAB_MEMGRANTREADCAP_MASK(slab_index)) ||
 			(xmhfgeec_slab_info_table[x].slab_memgrantwritecaps & XMHFGEEC_SLAB_MEMGRANTWRITECAP_MASK(slab_index))) )) )
 		==> (\result == (gretval | xmhfgeec_slab_info_table[x].slabtype) ) );
 @*/
-u32 gp_s2_setupmpgtbl_getspatype(u32 slab_index, u32 spa){
-	u32 i;
-	u32 retval;
+uint32_t gp_s2_setupmpgtbl_getspatype(uint32_t slab_index, uint32_t spa){
+	uint32_t i;
+	uint32_t retval;
 
 
 	//slab memory regions
 
 	/*@
 		loop invariant b1: 0 <= i <= XMHFGEEC_TOTAL_SLABS;
-		loop invariant b2: \forall u32 x; 0 <= x < i ==> (gretval == _SLAB_SPATYPE_OTHER);
+		loop invariant b2: \forall uint32_t x; 0 <= x < i ==> (gretval == _SLAB_SPATYPE_OTHER);
 		loop assigns i, retval, gretval;
 		loop variant XMHFGEEC_TOTAL_SLABS - i;
 	@*/

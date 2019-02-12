@@ -57,11 +57,11 @@
  *
  * author: amit vasudevan (amitvasudevan@acm.org)
  */
-void xcihub_icptvmcall(u32 cpuid, u32 src_slabid){
+void xcihub_icptvmcall(uint32_t cpuid, uint32_t src_slabid){
 	slab_params_t spl;
 	xmhf_uapi_gcpustate_vmrw_params_t *gcpustate_vmrwp = (xmhf_uapi_gcpustate_vmrw_params_t *)spl.in_out_params;
-	u32 guest_rip;
-	u32 info_vmexit_instruction_length;
+	uint32_t guest_rip;
+	uint32_t info_vmexit_instruction_length;
 
 	//_XDPRINTF_("%s[%u]: VMX_VMEXIT_VMCALL\n", __func__, cpuid);
 

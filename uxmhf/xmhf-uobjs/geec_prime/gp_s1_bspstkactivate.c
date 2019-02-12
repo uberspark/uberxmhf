@@ -52,11 +52,11 @@
 
 #if defined (__XMHF_VERIFICATION__) && defined (__USPARK_FRAMAC_VA__)
 bool gp_s1_hub_called = false;
-u32 check_esp, check_eip = CASM_RET_EIP;
+uint32_t check_esp, check_eip = CASM_RET_EIP;
 slab_params_t test_sp;
 
-void xmhfhwm_vdriver_writeesp(u32 oldval, u32 newval){
-	//@assert (newval >= ((u32)&_init_bsp_cpustack + 4)) && (newval <= ((u32)&_init_bsp_cpustack + MAX_PLATFORM_CPUSTACK_SIZE)) ;
+void xmhfhwm_vdriver_writeesp(uint32_t oldval, uint32_t newval){
+	//@assert (newval >= ((uint32_t)&_init_bsp_cpustack + 4)) && (newval <= ((uint32_t)&_init_bsp_cpustack + MAX_PLATFORM_CPUSTACK_SIZE)) ;
 }
 
 void gp_s1_hub(void){
@@ -64,7 +64,7 @@ void gp_s1_hub(void){
 	//@assert (xmhfhwm_cpu_msr_efer & (1ULL << EFER_NXE));
 	//@assert (xmhfhwm_cpu_cr4 & CR4_PSE);
 	//@assert (xmhfhwm_cpu_cr4 & CR4_PAE);
-	//@assert (xmhfhwm_cpu_cr3 == (u32)&_xcprimeon_init_pdpt);
+	//@assert (xmhfhwm_cpu_cr3 == (uint32_t)&_xcprimeon_init_pdpt);
 	//@assert (xmhfhwm_cpu_cr0 == (CR0_PE | CR0_PG | CR0_ET | CR0_EM));
 
 	//indicate s1_hub was invoked from bspstkactivate
@@ -73,7 +73,7 @@ void gp_s1_hub(void){
 
 void main(void){
 	//populate hardware model stack and program counter
-	xmhfhwm_cpu_gprs_esp = (u32)&_init_bsp_cpustack + MAX_PLATFORM_CPUSTACK_SIZE;
+	xmhfhwm_cpu_gprs_esp = (uint32_t)&_init_bsp_cpustack + MAX_PLATFORM_CPUSTACK_SIZE;
 	xmhfhwm_cpu_gprs_eip = check_eip;
 	check_esp = xmhfhwm_cpu_gprs_esp; // pointing to top-of-stack
 
@@ -87,13 +87,13 @@ void main(void){
 #endif
 
 void gp_s1_bspstkactivate(void){
-	u64 _msrefer;
-	u32 _cr4;
-	u32 _cr0 = (CR0_PE | CR0_PG | CR0_ET | CR0_EM);
+	uint64_t _msrefer;
+	uint32_t _cr4;
+	uint32_t _cr0 = (CR0_PE | CR0_PG | CR0_ET | CR0_EM);
 
 	_msrefer = CASM_FUNCCALL(rdmsr64, MSR_EFER);
 	_msrefer |= (1ULL << EFER_NXE);
-	CASM_FUNCCALL(wrmsr64, MSR_EFER, (u32)_msrefer, (u32)((u64)_msrefer >> 32) );
+	CASM_FUNCCALL(wrmsr64, MSR_EFER, (uint32_t)_msrefer, (uint32_t)((uint64_t)_msrefer >> 32) );
 
 	_XDPRINTF_("EFER=%016llx\n", CASM_FUNCCALL(rdmsr64,MSR_EFER));
 
@@ -103,7 +103,7 @@ void gp_s1_bspstkactivate(void){
 
 	_XDPRINTF_("CR4=%08x\n", CASM_FUNCCALL(read_cr4,CASM_NOPARAM));
 
-	CASM_FUNCCALL(write_cr3,(u32)&_xcprimeon_init_pdpt);
+	CASM_FUNCCALL(write_cr3,(uint32_t)&_xcprimeon_init_pdpt);
 
 	_XDPRINTF_("CR3=%08x\n", CASM_FUNCCALL(read_cr3,CASM_NOPARAM));
 

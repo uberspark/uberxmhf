@@ -61,19 +61,19 @@
 	assigns _slabdevpgtbl_pt[slabid][pd_index][0..(VTD_PTRS_PER_PT-1)];
 
 	ensures ( _slabdevpgtbl_pdt[slabid][(startpaddr/PAGE_SIZE_2M)] ==
-	    (vtd_make_pdte((u64)&_slabdevpgtbl_pt[slabid][pd_index], (VTD_PAGE_READ | VTD_PAGE_WRITE)))
+	    (vtd_make_pdte((uint64_t)&_slabdevpgtbl_pt[slabid][pd_index], (VTD_PAGE_READ | VTD_PAGE_WRITE)))
 		);
 	ensures \forall integer x; 0 <= x < VTD_PTRS_PER_PT ==> (
 			    _slabdevpgtbl_pt[slabid][pd_index][x] ==
 				(vtd_make_pte((startpaddr+(x * PAGE_SIZE_4K)), (VTD_PAGE_READ | VTD_PAGE_WRITE)))
 			);
 @*/
-void gp_s2_sdasetupdevpgtbl_setptentries(u32 slabid, u32 pd_index, u32 startpaddr){
-	u32 i;
+void gp_s2_sdasetupdevpgtbl_setptentries(uint32_t slabid, uint32_t pd_index, uint32_t startpaddr){
+	uint32_t i;
 
 	//stick a pt for the pdt entry
 	_slabdevpgtbl_pdt[slabid][(startpaddr/PAGE_SIZE_2M)] =
-	    vtd_make_pdte((u64)&_slabdevpgtbl_pt[slabid][pd_index], (VTD_PAGE_READ | VTD_PAGE_WRITE));
+	    vtd_make_pdte((uint64_t)&_slabdevpgtbl_pt[slabid][pd_index], (VTD_PAGE_READ | VTD_PAGE_WRITE));
 
  	/*@
 		loop invariant a1: 0 <= i <= VTD_PTRS_PER_PT;

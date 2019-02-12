@@ -119,6 +119,6 @@ void slab_main(slab_params_t *sp){
 
             //@ ghost ugmpgtbl_methodcall_invalid = true;
             //_XDPRINTF_("UAPI_SLABMEMPGTBL[%u]: Unknown uAPI function %x. Halting!\n",
-            //        (u16)sp->cpuid, sp->dst_uapifn);
+            //        (uint16_t)sp->cpuid, sp->dst_uapifn);
 	}
 }

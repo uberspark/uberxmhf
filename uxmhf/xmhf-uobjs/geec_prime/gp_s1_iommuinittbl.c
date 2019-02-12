@@ -57,17 +57,17 @@
 	assigns _slabdevpgtbl_vtd_ret[0..(VTD_RET_MAXPTRS-1)].qwords[1];
 	assigns invoked_clearcet[0..(VTD_RET_MAXPTRS-1)];
 	assigns vtd_ret_address;
-	ensures \forall integer x; 0 <= x < VTD_RET_MAXPTRS ==> ( _slabdevpgtbl_vtd_ret[x].qwords[0] == (vtd_make_rete((u64)&_slabdevpgtbl_vtd_cet[x], VTD_RET_PRESENT)) );
+	ensures \forall integer x; 0 <= x < VTD_RET_MAXPTRS ==> ( _slabdevpgtbl_vtd_ret[x].qwords[0] == (vtd_make_rete((uint64_t)&_slabdevpgtbl_vtd_cet[x], VTD_RET_PRESENT)) );
 	ensures \forall integer x; 0 <= x < VTD_RET_MAXPTRS ==> ( _slabdevpgtbl_vtd_ret[x].qwords[1] == 0 );
 	ensures \forall integer x; 0 <= x < VTD_RET_MAXPTRS ==> ( invoked_clearcet[x] == true );
-	ensures vtd_ret_address == (u32)&_slabdevpgtbl_vtd_ret;
+	ensures vtd_ret_address == (uint32_t)&_slabdevpgtbl_vtd_ret;
 @*/
 void gp_s1_iommuinittbl(void){
-    u32 i, j;
+    uint32_t i, j;
 
 	/*@
 		loop invariant a1: 0 <= i <= VTD_RET_MAXPTRS;
-		loop invariant a2: \forall integer x; 0 <= x < i ==> ( _slabdevpgtbl_vtd_ret[x].qwords[0] == (vtd_make_rete((u64)&_slabdevpgtbl_vtd_cet[x], VTD_RET_PRESENT)) );
+		loop invariant a2: \forall integer x; 0 <= x < i ==> ( _slabdevpgtbl_vtd_ret[x].qwords[0] == (vtd_make_rete((uint64_t)&_slabdevpgtbl_vtd_cet[x], VTD_RET_PRESENT)) );
 		loop invariant a3: \forall integer x; 0 <= x < i ==> ( _slabdevpgtbl_vtd_ret[x].qwords[1] == 0 );
 		loop invariant a4: \forall integer x; 0 <= x < i ==> ( invoked_clearcet[x] == true );
 		loop assigns _slabdevpgtbl_vtd_ret[0..(VTD_RET_MAXPTRS-1)].qwords[0];
@@ -78,13 +78,13 @@ void gp_s1_iommuinittbl(void){
 	@*/
     for(i=0; i< VTD_RET_MAXPTRS; i++){
         _slabdevpgtbl_vtd_ret[i].qwords[0] =
-            vtd_make_rete((u64)&_slabdevpgtbl_vtd_cet[i], VTD_RET_PRESENT);
+            vtd_make_rete((uint64_t)&_slabdevpgtbl_vtd_cet[i], VTD_RET_PRESENT);
         _slabdevpgtbl_vtd_ret[i].qwords[1] = 0ULL;
 
 	gp_s1_iommuinittbl_clearcet(i);
 	//@ghost invoked_clearcet[i] = true;
     }
 
-    vtd_ret_address = (u32)&_slabdevpgtbl_vtd_ret;
+    vtd_ret_address = (uint32_t)&_slabdevpgtbl_vtd_ret;
 }
 

@@ -63,7 +63,7 @@
 // sentinel hub
 /////
 
-static inline void _geec_sentinel_checkandhalt_callcaps(u32 src_slabid, u32 dst_slabid, u32 dst_uapifn){
+static inline void _geec_sentinel_checkandhalt_callcaps(uint32_t src_slabid, uint32_t dst_slabid, uint32_t dst_uapifn){
     //check call capabilities
     if( !(xmhfgeec_slab_info_table[dst_slabid].slab_callcaps & XMHFGEEC_SLAB_CALLCAP_MASK(src_slabid)) ){
         _XDPRINTF_("GEEC_SENTINEL: Halt!. callcap check failed for src(%u)-->dst(%u), dst caps=0x%x\n",
@@ -77,7 +77,7 @@ static inline void _geec_sentinel_checkandhalt_callcaps(u32 src_slabid, u32 dst_
         {
             _XDPRINTF_("GEEC_SENTINEL: Halt!. uapicap check failed for src(%u)-->dst(%u), dst_uapifn=%u, dst_uapimask=0x%08x\n",
                        src_slabid, dst_slabid, dst_uapifn,
-                       (u32)xmhfgeec_slab_info_table[src_slabid].slab_uapicaps[dst_slabid]);
+                       (uint32_t)xmhfgeec_slab_info_table[src_slabid].slab_uapicaps[dst_slabid]);
             HALT();
         }
     }
@@ -113,15 +113,15 @@ void sentinel_processapicall(slab_params_t *sp, void *caller_stack_frame){
 
 		case UAPI_SENTINEL_INSTALLSYSCALLSTUB:
             _XDPRINTF_("SENTINEL[cpu=%u]: TEST\n",
-                       (u16)sp->cpuid);
+                       (uint16_t)sp->cpuid);
 
             //setup SYSENTER/SYSEXIT mechanism
         	{
-        	CASM_FUNCCALL(wrmsr64, IA32_SYSENTER_CS_MSR, (u32)__CS_CPL0, 0);
+        	CASM_FUNCCALL(wrmsr64, IA32_SYSENTER_CS_MSR, (uint32_t)__CS_CPL0, 0);
         	CASM_FUNCCALL(wrmsr64, IA32_SYSENTER_EIP_MSR,
-        			(u32)&gs_syscallstub, 0);
+        			(uint32_t)&gs_syscallstub, 0);
         	CASM_FUNCCALL(wrmsr64, IA32_SYSENTER_ESP_MSR,
-        			(u32)((u32)_sysenter_stack[(u16)sp->cpuid] + MAX_PLATFORM_CPUSTACK_SIZE), 0);
+        			(uint32_t)((uint32_t)_sysenter_stack[(uint16_t)sp->cpuid] + MAX_PLATFORM_CPUSTACK_SIZE), 0);
         	}
         	_XDPRINTF_("%s: setup SYSENTER/SYSEXIT mechanism\n", __func__);
         	_XDPRINTF_("SYSENTER CS=%016llx\n", CASM_FUNCCALL(rdmsr64,IA32_SYSENTER_CS_MSR));
@@ -187,7 +187,7 @@ void geec_sentinel_main(slab_params_t *sp, void *caller_stack_frame){
 					case XMHFGEEC_SLABTYPE_uVT_PROG_GUEST:
 					case XMHFGEEC_SLABTYPE_uVU_PROG_GUEST:
 					case XMHFGEEC_SLABTYPE_uVU_PROG_RICHGUEST:{
-						u32 errorcode;
+						uint32_t errorcode;
 						//_geec_sentinel_checkandhalt_callcaps(sp->src_slabid, sp->dst_slabid, sp->dst_uapifn);
 						//_XDPRINTF_("GEEC_SENTINEL: launching guest %u...\n", sp->dst_slabid);
 						sp->slab_ctype = XMHFGEEC_SENTINEL_CALL_VfT_PROG_TO_uVT_uVU_PROG_GUEST;
@@ -245,7 +245,7 @@ void geec_sentinel_main(slab_params_t *sp, void *caller_stack_frame){
 						}
 
 						if (xmhfgeec_slab_info_table[sp->dst_slabid].slabtype != XMHFGEEC_SLABTYPE_uVU_PROG_RICHGUEST){
-							CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_GUEST_RSP, xmhfgeec_slab_info_table[sp->dst_slabid].slabtos[(u16)sp->cpuid]);
+							CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_GUEST_RSP, xmhfgeec_slab_info_table[sp->dst_slabid].slabtos[(uint16_t)sp->cpuid]);
 							CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_GUEST_RIP, xmhfgeec_slab_info_table[sp->dst_slabid].entrystub);
 						}
 
@@ -256,7 +256,7 @@ void geec_sentinel_main(slab_params_t *sp, void *caller_stack_frame){
 								_XDPRINTF_("GEEC_SENTINEL: VMLAUNCH error; VMCS pointer invalid?\n");
 								break;
 							case 1:{//error code available, so dump it
-								u32 code=xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_VMINSTR_ERROR);
+								uint32_t code=xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_VMINSTR_ERROR);
 								_XDPRINTF_("GEEC_SENTINEL: VMLAUNCH error; code=%x\n", code);
 								break;
 							}

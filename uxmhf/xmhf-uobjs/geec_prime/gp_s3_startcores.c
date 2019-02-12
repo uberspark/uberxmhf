@@ -52,33 +52,33 @@
 
 
 #if defined (__XMHF_VERIFICATION__) && defined (__USPARK_FRAMAC_VA__)
-	u32 check_esp, check_eip = CASM_RET_EIP;
+	uint32_t check_esp, check_eip = CASM_RET_EIP;
 
-	void xmhfhwm_vdriver_writeesp(u32 oldval, u32 newval){
-		//@assert (newval >= ((u32)&_init_bsp_cpustack + 4)) && (newval <= ((u32)&_init_bsp_cpustack + MAX_PLATFORM_CPUSTACK_SIZE)) ;
+	void xmhfhwm_vdriver_writeesp(uint32_t oldval, uint32_t newval){
+		//@assert (newval >= ((uint32_t)&_init_bsp_cpustack + 4)) && (newval <= ((uint32_t)&_init_bsp_cpustack + MAX_PLATFORM_CPUSTACK_SIZE)) ;
 	}
 
-	void xmhfhwm_vdriver_cpu_writecr3(u32 oldval, u32 newval){
+	void xmhfhwm_vdriver_cpu_writecr3(uint32_t oldval, uint32_t newval){
 		//@assert 0;
 	}
 
-	void xmhfhwm_vdriver_txt_write_rlp_wakeup_addr(u32 oldval, u32 newval){
+	void xmhfhwm_vdriver_txt_write_rlp_wakeup_addr(uint32_t oldval, uint32_t newval){
 		x86smp_apbootstrapdata_t *apdata = (x86smp_apbootstrapdata_t *)&xmhfhwm_mem_region_apbootstrap_dataseg;
 
 		if(newval != 0){
 			//@assert (xmhfhwm_txt_mle_join_hi == 0);
-			//@assert (xmhfhwm_txt_mle_join_lo == ((u32)(X86SMP_APBOOTSTRAP_DATASEG << 4) + 16));
+			//@assert (xmhfhwm_txt_mle_join_lo == ((uint32_t)(X86SMP_APBOOTSTRAP_DATASEG << 4) + 16));
 			//@assert (apdata->ap_eip == (X86SMP_APBOOTSTRAP_CODESEG << 4));
 		}
 	}
 
-	void xmhfhwm_vdriver_mem_copy_to_apbootstrap_codeseg(u32 sourceaddr){
-		//@assert (sourceaddr == (u32)&gp_s4_entry);
+	void xmhfhwm_vdriver_mem_copy_to_apbootstrap_codeseg(uint32_t sourceaddr){
+		//@assert (sourceaddr == (uint32_t)&gp_s4_entry);
 	}
 
 	void main(void){
 		//populate hardware model stack and program counter
-		xmhfhwm_cpu_gprs_esp = (u32)&_init_bsp_cpustack + MAX_PLATFORM_CPUSTACK_SIZE;
+		xmhfhwm_cpu_gprs_esp = (uint32_t)&_init_bsp_cpustack + MAX_PLATFORM_CPUSTACK_SIZE;
 		xmhfhwm_cpu_gprs_eip = check_eip;
 		check_esp = xmhfhwm_cpu_gprs_esp; // pointing to top-of-stack
 
@@ -100,7 +100,7 @@ void gp_s3_startcores(void){
 	//populate apdata structure
 	apdata.ap_cr3 = CASM_FUNCCALL(read_cr3,CASM_NOPARAM);
 	apdata.ap_cr4 = CASM_FUNCCALL(read_cr4,CASM_NOPARAM);
-	apdata.ap_entrypoint = (u32)&gp_s4_apstacks;
+	apdata.ap_entrypoint = (uint32_t)&gp_s4_apstacks;
 	apdata.ap_gdtdesc_limit = sizeof(apdata.ap_gdt) - 1;
 	apdata.ap_gdtdesc_base = (X86SMP_APBOOTSTRAP_DATASEG << 4) + 48;
 	apdata.ap_cs_selector = __CS_CPL0;
@@ -114,11 +114,11 @@ void gp_s3_startcores(void){
 	//_XDPRINTF_("  apdata.ap_gdt at %08x\n", &apdata.ap_gdt);
 
 	//copy apdata to X86SMP_APBOOTSTRAP_DATASEG
-	CASM_FUNCCALL(xmhfhw_sysmem_copy_obj2sys, (u32)(X86SMP_APBOOTSTRAP_DATASEG << 4),
+	CASM_FUNCCALL(xmhfhw_sysmem_copy_obj2sys, (uint32_t)(X86SMP_APBOOTSTRAP_DATASEG << 4),
 						(void *)&apdata, sizeof(apdata));
 
 	//copy AP entry code to X86SMP_APBOOTSTRAP_CODESEG
-	CASM_FUNCCALL(xmhfhw_sysmem_copy_obj2sys, (u32)(X86SMP_APBOOTSTRAP_CODESEG << 4),
+	CASM_FUNCCALL(xmhfhw_sysmem_copy_obj2sys, (uint32_t)(X86SMP_APBOOTSTRAP_CODESEG << 4),
 		(void *)&gp_s4_entry, PAGE_SIZE_4K);
 
 
@@ -139,7 +139,7 @@ void gp_s3_startcores(void){
         //__getsec_smctrl();
 
 	//get a pointer to the mle_join data structure within apdata
-        mle_join = (mle_join_t *)((u32)(X86SMP_APBOOTSTRAP_DATASEG << 4) + 16);
+        mle_join = (mle_join_t *)((uint32_t)(X86SMP_APBOOTSTRAP_DATASEG << 4) + 16);
 
         _XDPRINTF_("\nBSP: mle_join.gdt_limit = %x", mle_join->gdt_limit);
         _XDPRINTF_("\nBSP: mle_join.gdt_base = %x", mle_join->gdt_base);

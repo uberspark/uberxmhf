@@ -11,9 +11,9 @@
 //////////////////////////////////////////////////////////////////////////////
 // base types
 
-typedef unsigned char u8;
-typedef unsigned int u32;
-typedef unsigned long long int u64;
+typedef unsigned char uint8_t;
+typedef unsigned int uint32_t;
+typedef unsigned long long int uint64_t;
 
 
 #define PAGE_SHIFT 12
@@ -23,7 +23,7 @@ typedef unsigned long long int u64;
 //////
 // vmcall interface
 //////
-__attribute__ ((always_inline)) static inline void __vmcall(u32 eax, u32 ebx, u32 edx){
+__attribute__ ((always_inline)) static inline void __vmcall(uint32_t eax, uint32_t ebx, uint32_t edx){
 	asm volatile (
 			"movl %0, %%eax \r\n"
 			"movl %1, %%ebx \r\n"
@@ -39,10 +39,10 @@ __attribute__ ((always_inline)) static inline void __vmcall(u32 eax, u32 ebx, u3
 //////
 // va_to_pa: virtual to physical address mapping
 //////
-static u64 va_to_pa(void *vaddr) {
+static uint64_t va_to_pa(void *vaddr) {
 	FILE *pagemap;
 	unsigned long offset;
-	u64 page_frame_number = 0;
+	uint64_t page_frame_number = 0;
 
 	// open the pagemap file for the current process
 	pagemap = fopen("/proc/self/pagemap", "rb");
@@ -79,8 +79,8 @@ static u64 va_to_pa(void *vaddr) {
 #define SSTEPTRACE_OFF         			0xE2
 
 __attribute__((aligned(4096))) void do_testssteptrace(void){
-	u32 fva = &do_testssteptrace;
-	u32 fpa;
+	uint32_t fva = &do_testssteptrace;
+	uint32_t fpa;
 
 	printf("\n%s: Proceeding to lock test function at va=0x%08x...", __FUNCTION__, fva);
 
@@ -153,7 +153,7 @@ void main(void){
 // building pieces
 //////
 
-//__attribute__((aligned(4096))) static u8 testxhhyperdep_page[4096];
+//__attribute__((aligned(4096))) static uint8_t testxhhyperdep_page[4096];
 
 
 //printf("\n%s: DEP page unlocked", __FUNCTION__);

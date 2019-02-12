@@ -53,18 +53,18 @@
 
 /*@
 	requires 0 <= slabid < XMHFGEEC_TOTAL_SLABS ;
-	requires \forall u32 x; 0 <= x < MAX_PLATFORM_CPUS ==> (_sda_slab_devicemap[slabid].sysdev_mmioregions_indices[x] < MAX_PLATFORM_DEVICES);
+	requires \forall uint32_t x; 0 <= x < MAX_PLATFORM_CPUS ==> (_sda_slab_devicemap[slabid].sysdev_mmioregions_indices[x] < MAX_PLATFORM_DEVICES);
 	requires 0 <= _sda_slab_devicemap[slabid].device_count < MAX_PLATFORM_DEVICES;
 	assigns \nothing;
 	ensures (\result == true) || (\result == false) ;
-	ensures (\forall u32 x, u32 y; ( (0 <= x < _sda_slab_devicemap[slabid].device_count) &&
+	ensures (\forall uint32_t x, uint32_t y; ( (0 <= x < _sda_slab_devicemap[slabid].device_count) &&
 					   (0 <= y < PCI_CONF_MAX_BARS) ) ==> !(sysdev_memioregions[_sda_slab_devicemap[slabid].sysdev_mmioregions_indices[x]].memioextents[y].extent_type == _MEMIOREGIONS_EXTENTS_TYPE_MEM &&
 			(spa >= sysdev_memioregions[_sda_slab_devicemap[slabid].sysdev_mmioregions_indices[x]].memioextents[y].addr_start &&
 			    spa < sysdev_memioregions[_sda_slab_devicemap[slabid].sysdev_mmioregions_indices[x]].memioextents[y].addr_end) )) ==> 	(\result == false);
 
 @*/
-bool gp_s2_setupmpgtbl_getspatypeuobj_ismmio(u32 slabid, u32 spa){
-    u32 i, j;
+bool gp_s2_setupmpgtbl_getspatypeuobj_ismmio(uint32_t slabid, uint32_t spa){
+    uint32_t i, j;
 
 	/*@
 		loop invariant c1: 0 <= i <= _sda_slab_devicemap[slabid].device_count;

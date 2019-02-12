@@ -55,8 +55,8 @@
 #include <xh_hyperdep.h>
 
 //shutdown handler
-void hyperdep_hcbshutdown(u32 cpuindex, u32 guest_slab_index){
-	_XDPRINTF_("%s[%u]: guest slab %u shutdown...\n", __func__, (u16)cpuindex, guest_slab_index);
+void hyperdep_hcbshutdown(uint32_t cpuindex, uint32_t guest_slab_index){
+	_XDPRINTF_("%s[%u]: guest slab %u shutdown...\n", __func__, (uint16_t)cpuindex, guest_slab_index);
 }
 
 

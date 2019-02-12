@@ -93,9 +93,9 @@
 	complete behaviors ;
 	disjoint behaviors ;
 */
-void xcnwlog_ls_push(u32 nwlog_id, xcnwlog_ls_element_t elem)
+void xcnwlog_ls_push(uint32_t nwlog_id, xcnwlog_ls_element_t elem)
 {
-    u32 log_index =  xcnwlog_ls_index[nwlog_id];
+    uint32_t log_index =  xcnwlog_ls_index[nwlog_id];
     if(log_index >=0 && log_index < XC_NWLOG_BUF_MAXELEM) {
         xcnwlog_ls[nwlog_id][log_index].logbuf[0] = elem.logbuf[0];
         xcnwlog_ls[nwlog_id][log_index].logbuf[1] = elem.logbuf[1];

@@ -58,12 +58,12 @@
  *
  * author: amit vasudevan (amitvasudevan@acm.org)
  */
-void xcihub_icptsipi(u32 cpuid){
+void xcihub_icptsipi(uint32_t cpuid){
 	slab_params_t spl;
 	xmhf_uapi_gcpustate_vmrw_params_t *gcpustate_vmrwp = (xmhf_uapi_gcpustate_vmrw_params_t *)spl.in_out_params;
-	u32 info_vmexit_instruction_length;
-	u32 info_exit_qualification;
-	u32 sipivector;
+	uint32_t info_vmexit_instruction_length;
+	uint32_t info_exit_qualification;
+	uint32_t sipivector;
 
 	memset(&spl, 0, sizeof(spl));
 	spl.cpuid = cpuid;
@@ -77,7 +77,7 @@ void xcihub_icptsipi(u32 cpuid){
 	info_exit_qualification = gcpustate_vmrwp->value;
 
 	//compute SIPI vector
-	sipivector = (u8)info_exit_qualification;
+	sipivector = (uint8_t)info_exit_qualification;
 	_XDPRINTF_("%s[%u]: SIPI intercept, vector=0x%08x\n", __func__, cpuid, sipivector);
 
 	spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_VMWRITE;

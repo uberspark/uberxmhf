@@ -62,33 +62,33 @@
 
 #ifndef __ASSEMBLY__
 
-extern __attribute__((section(".rwdatahdr"))) __attribute__((aligned(4096))) u64 _uhslabmempgtbl_lvl4t[XMHFGEEC_TOTAL_UHSLABS][PAE_MAXPTRS_PER_PML4T];
-extern __attribute__((section(".data"))) __attribute__((aligned(4096))) u64 _uhslabmempgtbl_lvl3t[XMHFGEEC_TOTAL_UHSLABS][PAE_MAXPTRS_PER_PDPT];
-extern __attribute__((section(".data"))) __attribute__((aligned(4096))) u64 _uhslabmempgtbl_lvl2t[XMHFGEEC_TOTAL_UHSLABS][PAE_PTRS_PER_PDPT * PAE_PTRS_PER_PDT];
-extern __attribute__((section(".data"))) __attribute__((aligned(4096)))  u64 _uhslabmempgtbl_lvl1t[XMHFGEEC_TOTAL_UHSLABS][PAE_PTRS_PER_PDPT * PAE_PTRS_PER_PDT * PAE_PTRS_PER_PT];
+extern __attribute__((section(".rwdatahdr"))) __attribute__((aligned(4096))) uint64_t _uhslabmempgtbl_lvl4t[XMHFGEEC_TOTAL_UHSLABS][PAE_MAXPTRS_PER_PML4T];
+extern __attribute__((section(".data"))) __attribute__((aligned(4096))) uint64_t _uhslabmempgtbl_lvl3t[XMHFGEEC_TOTAL_UHSLABS][PAE_MAXPTRS_PER_PDPT];
+extern __attribute__((section(".data"))) __attribute__((aligned(4096))) uint64_t _uhslabmempgtbl_lvl2t[XMHFGEEC_TOTAL_UHSLABS][PAE_PTRS_PER_PDPT * PAE_PTRS_PER_PDT];
+extern __attribute__((section(".data"))) __attribute__((aligned(4096)))  uint64_t _uhslabmempgtbl_lvl1t[XMHFGEEC_TOTAL_UHSLABS][PAE_PTRS_PER_PDPT * PAE_PTRS_PER_PDT * PAE_PTRS_PER_PT];
 
 
 typedef struct {
-    u32 dst_slabid;
+    uint32_t dst_slabid;
 }__attribute__((packed)) uapi_uhmpgtbl_initmempgtbl_params_t;
 
 typedef struct {
-    u32 dst_slabid;
-    u32 pa;
-    u32 entry_lo;
-    u32 entry_hi;
+    uint32_t dst_slabid;
+    uint32_t pa;
+    uint32_t entry_lo;
+    uint32_t entry_hi;
 }__attribute__((packed)) uapi_uhmpgtbl_setentryforpaddr_params_t;
 
 typedef struct {
-    u32 dst_slabid;
-    u32 mpgtblbase;
+    uint32_t dst_slabid;
+    uint32_t mpgtblbase;
 }__attribute__((packed)) uapi_uhmpgtbl_getmpgtblbase_params_t;
 
 
 typedef struct {
-    u32 mpgtblbase;
-    u32 status;
-    u32 mpgtblbase_idx;
+    uint32_t mpgtblbase;
+    uint32_t status;
+    uint32_t mpgtblbase_idx;
 }__attribute__((packed)) uapi_uhmpgtbl_getidxformpgtblbase_params_t;
 
 

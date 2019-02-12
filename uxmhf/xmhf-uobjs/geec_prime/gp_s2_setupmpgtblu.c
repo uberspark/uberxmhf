@@ -96,7 +96,7 @@
 			  ) ==> (gp_s2_setupmpgtblu_invokedinvalidobjs[x] == true) );
 @*/
 void gp_s2_setupmpgtblu(void){
-    u32 i;
+    uint32_t i;
 
 
     	/*@

@@ -61,6 +61,6 @@ CASM_FUNCDEF(void, gs_calluobj,
     xmhfhwm_cpu_insn_movl_mesp_eax(0x8);
     xmhfhwm_cpu_insn_jmpslabep();
 },
-slab_params_t *sp, u32 entry_point)
+slab_params_t *sp, uint32_t entry_point)
 
 

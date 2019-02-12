@@ -66,37 +66,37 @@
 
 #ifndef __ASSEMBLY__
 
-extern __attribute__((section(".rwdatahdr"))) __attribute__((aligned(4096))) u64 _slabmempgtbl_lvl4t[XMHFGEEC_TOTAL_UGSLABS][PAE_MAXPTRS_PER_PML4T];
-extern __attribute__((section(".data"))) __attribute__((aligned(4096))) u64 _slabmempgtbl_lvl3t[XMHFGEEC_TOTAL_UGSLABS][PAE_MAXPTRS_PER_PDPT];
-extern __attribute__((section(".data"))) __attribute__((aligned(4096))) u64 _slabmempgtbl_lvl2t[XMHFGEEC_TOTAL_UGSLABS][PAE_PTRS_PER_PDPT][PAE_PTRS_PER_PDT];
-extern __attribute__((section(".data"))) __attribute__((aligned(4096)))  u64 _slabmempgtbl_lvl1t[XMHFGEEC_TOTAL_UGSLABS][PAE_PTRS_PER_PDPT][PAE_PTRS_PER_PDT][PAE_PTRS_PER_PT];
+extern __attribute__((section(".rwdatahdr"))) __attribute__((aligned(4096))) uint64_t _slabmempgtbl_lvl4t[XMHFGEEC_TOTAL_UGSLABS][PAE_MAXPTRS_PER_PML4T];
+extern __attribute__((section(".data"))) __attribute__((aligned(4096))) uint64_t _slabmempgtbl_lvl3t[XMHFGEEC_TOTAL_UGSLABS][PAE_MAXPTRS_PER_PDPT];
+extern __attribute__((section(".data"))) __attribute__((aligned(4096))) uint64_t _slabmempgtbl_lvl2t[XMHFGEEC_TOTAL_UGSLABS][PAE_PTRS_PER_PDPT][PAE_PTRS_PER_PDT];
+extern __attribute__((section(".data"))) __attribute__((aligned(4096)))  uint64_t _slabmempgtbl_lvl1t[XMHFGEEC_TOTAL_UGSLABS][PAE_PTRS_PER_PDPT][PAE_PTRS_PER_PDT][PAE_PTRS_PER_PT];
 
 
 
 typedef struct {
-    u32 dst_slabid;
+    uint32_t dst_slabid;
 }__attribute__((packed)) xmhfgeec_uapi_slabmempgtbl_initmempgtbl_params_t;
 
 typedef struct {
-    u32 dst_slabid;
-    u64 gpa;
-    u64 entry;
+    uint32_t dst_slabid;
+    uint64_t gpa;
+    uint64_t entry;
 }__attribute__((packed)) xmhfgeec_uapi_slabmempgtbl_setentryforpaddr_params_t;
 
 typedef struct {
-    u32 dst_slabid;
-    u64 gpa;
-    u64 result_entry;
+    uint32_t dst_slabid;
+    uint64_t gpa;
+    uint64_t result_entry;
 }__attribute__((packed)) xmhfgeec_uapi_slabmempgtbl_getentryforpaddr_params_t;
 
 typedef struct {
-    u32 dst_slabid;
+    uint32_t dst_slabid;
 }__attribute__((packed)) xmhfgeec_uapi_slabmempgtbl_flushtlb_params_t;
 
 
 typedef struct {
-    u32 dst_slabid;
-    u32 mpgtblbase;
+    uint32_t dst_slabid;
+    uint32_t mpgtblbase;
 }__attribute__((packed)) uapi_ugmpgtbl_getmpgtblbase_params_t;
 
 

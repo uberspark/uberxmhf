@@ -52,5 +52,5 @@
 #include <uapi_iotbl.h>
 
 //__attribute__((section(".data")))
-__attribute__((section(".data"))) __attribute__((aligned(4096))) u8 uiotbl_uhslab_iobitmap[XMHFGEEC_TOTAL_UHSLABS][3*PAGE_SIZE_4K];
-__attribute__((section(".data"))) __attribute__((aligned(4096))) u8 uiotbl_ugslab_iobitmap[XMHFGEEC_TOTAL_UGSLABS][3*PAGE_SIZE_4K];
+__attribute__((section(".data"))) __attribute__((aligned(4096))) uint8_t uiotbl_uhslab_iobitmap[XMHFGEEC_TOTAL_UHSLABS][3*PAGE_SIZE_4K];
+__attribute__((section(".data"))) __attribute__((aligned(4096))) uint8_t uiotbl_ugslab_iobitmap[XMHFGEEC_TOTAL_UGSLABS][3*PAGE_SIZE_4K];

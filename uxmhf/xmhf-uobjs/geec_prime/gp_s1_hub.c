@@ -84,22 +84,22 @@ void gp_s1_hub(void){
 	//[debug] print relevant startup info.
 	_XDPRINTF_("%s: alive and starting...\n", __func__);
 
-	_XDPRINTF_("    xcbootinfo at = 0x%08x\n", (u32)xcbootinfo);
+	_XDPRINTF_("    xcbootinfo at = 0x%08x\n", (uint32_t)xcbootinfo);
 	_XDPRINTF_("	numE820Entries=%u\n", xcbootinfo->memmapinfo_numentries);
-	_XDPRINTF_("	system memory map buffer at 0x%08x\n", (u32)&xcbootinfo->memmapinfo_buffer);
+	_XDPRINTF_("	system memory map buffer at 0x%08x\n", (uint32_t)&xcbootinfo->memmapinfo_buffer);
 	_XDPRINTF_("	numCPUEntries=%u\n", xcbootinfo->cpuinfo_numentries);
-	_XDPRINTF_("	cpuinfo buffer at 0x%08x\n", (u32)&xcbootinfo->cpuinfo_buffer);
+	_XDPRINTF_("	cpuinfo buffer at 0x%08x\n", (uint32_t)&xcbootinfo->cpuinfo_buffer);
 	_XDPRINTF_("	XMHF size= %u bytes\n", __TARGET_SIZE_XMHF);
 	_XDPRINTF_("	OS bootmodule at 0x%08x, size=%u bytes\n",
 		xcbootinfo->richguest_bootmodule_base, xcbootinfo->richguest_bootmodule_size);
 	_XDPRINTF_("\tcmdline = \"%s\"\n", xcbootinfo->cmdline_buffer);
 	_XDPRINTF_("SL: runtime at 0x%08x; size=0x%08x bytes\n", __TARGET_BASE_XMHF, __TARGET_SIZE_XMHF);
-	_XDPRINTF_("SL: XMHF_BOOTINFO at 0x%08x, magic=0x%08x\n", (u32)xcbootinfo, xcbootinfo->magic);
+	_XDPRINTF_("SL: XMHF_BOOTINFO at 0x%08x, magic=0x%08x\n", (uint32_t)xcbootinfo, xcbootinfo->magic);
 	HALT_ON_ERRORCOND(xcbootinfo->magic == RUNTIME_PARAMETER_BLOCK_MAGIC);
  	_XDPRINTF_("\nNumber of E820 entries = %u", xcbootinfo->memmapinfo_numentries);
 	{
-		u32 i;
-		for(i=0; i < (u32)xcbootinfo->memmapinfo_numentries; i++){
+		uint32_t i;
+		for(i=0; i < (uint32_t)xcbootinfo->memmapinfo_numentries; i++){
 			_XDPRINTF_("\n0x%08x%08x, size=0x%08x%08x (%u)",
 			  xcbootinfo->memmapinfo_buffer[i].baseaddr_high, xcbootinfo->memmapinfo_buffer[i].baseaddr_low,
 			  xcbootinfo->memmapinfo_buffer[i].length_high, xcbootinfo->memmapinfo_buffer[i].length_low,
@@ -109,7 +109,7 @@ void gp_s1_hub(void){
 
 	//print out slab table
 	{
-		u32 i, j;
+		uint32_t i, j;
 
 		for(i=0; i < XMHFGEEC_TOTAL_SLABS; i++){
 			_XDPRINTF_("slab %u: dumping slab header\n", i);

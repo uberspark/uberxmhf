@@ -62,7 +62,7 @@
 	complete behaviors;
 	disjoint behaviors;
 @*/
-u64 _gp_s1_bspstack_getflagsforspa(u32 paddr){
+uint64_t _gp_s1_bspstack_getflagsforspa(uint32_t paddr){
 	if(paddr == 0xfee00000 || paddr == 0xfec00000)
                 return (_PAGE_RW | _PAGE_PSE | _PAGE_PRESENT | _PAGE_PCD);
 	else
