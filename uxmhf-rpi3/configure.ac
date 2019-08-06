@@ -4,6 +4,21 @@ AC_INIT([uxmhf-rpi3], [1.0])
 ###### autoconf general options
 AC_SUBST([prefix])
 
+###### simple configuration of tools. (just looks for matching binary on PATH)
+AC_CHECK_PROG([MAKE], [make], [make])
+AC_CHECK_PROG([CCERT], [arm-linux-gnueabihf-gcc], [arm-linux-gnueabihf-gcc])
+AC_CHECK_PROG([CC], [arm-linux-gnueabihf-gcc], [arm-linux-gnueabihf-gcc])
+AC_CHECK_PROG([AS], [arm-linux-gnueabihf-as], [arm-linux-gnueabihf-as])
+AC_CHECK_PROG([AR], [arm-linux-gnueabihf-ar], [arm-linux-gnueabihf-ar])
+AC_CHECK_PROG([RM], [rm -f], [rm -f])
+AC_CHECK_PROG([CP], [cp], [cp])
+AC_CHECK_PROG([MKDIR], [mkdir], [mkdir])
+AC_CHECK_PROG([LD], [arm-linux-gnueabihf-ld], [arm-linux-gnueabihf-ld])
+AC_CHECK_PROG([OBJCOPY], [arm-linux-gnueabihf-objcopy], [arm-linux-gnueabihf-objcopy])
+AC_CHECK_PROG([CAT], [cat], [cat])
+
+
+
 ###### uxmhf-rpi3 specific options
 
 # core start address
