@@ -19,12 +19,24 @@ export UXMHFRPI3_DIR := $(realpath $(dir $(lastword $(MAKEFILE_LIST))))
 
 TOOLPREFIX ?= arm-linux-gnueabihf-
 
-# tools
-export AR=ar
-export CP=cp
-export CCERT=$(TOOLPREFIX)gcc
-export CC=$(TOOLPREFIX)gcc
-export RM=rm
+
+######
+# autoconf controlled variables
+######
+
+export MAKE = @MAKE@
+export CCERT = @CCERT@
+export CC = @CC@
+export AS = @AS@
+export AR = @AR@
+export RM = @RM@
+export CP = @CP@				
+export MKDIR = @MKDIR@
+export LD = @LD@
+export OBJCOPY = @OBJCOPY@
+export CAT = @CAT@
+
+export prefix=@prefix@
 
 
 INCS = -I$(UXMHFRPI3_DIR)/libs/libxmhfc/include
