@@ -39,6 +39,15 @@ AC_ARG_WITH([boot_partition_end],
                 , [with_boot_partition_end=137215])
 BOOT_PARTITION_END=$[]with_boot_partition_end
 
+# selectively enable/disable secure boot
+AC_SUBST([SECBOOT])
+AC_ARG_ENABLE([SECBOOT],
+        AS_HELP_STRING([--enable-secboot@<:@=yes|no@:>@],
+                [enable Secure Boot]),
+                , [enable_secboot=no])
+AS_IF([test "x${enable_secboot}" != "xno"],
+      [SECBOOT=y],
+      [SECBOOT=n])
 
 ###### autoconf output files
 AC_CONFIG_FILES(
