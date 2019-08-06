@@ -38,16 +38,25 @@ export CAT = @CAT@
 
 export prefix=@prefix@
 
+export SECBOOT := @SECBOOT@
+
 
 INCS = -I$(UXMHFRPI3_DIR)/libs/libxmhfc/include
 INCS += -I$(UXMHFRPI3_DIR)/libs/libxmhfcrypto/include
 INCS += -I$(UXMHFRPI3_DIR)/libs/libutpm/include
-#INCS += -I$(UXMHFRPI3_DIR)/include
 
 CFLAGS_DEFS =  $(INCS) -I./include -I../include -D__DEBUG_SERIAL__ 
+
+######
+# refine CFLAG definitions based on uxmhf rpi3 configure options
+######
+
+ifeq ($(SECBOOT), y)
+	CFLAGS_DEFS += -D__SECBOOT__
+endif
+
+
 CFLAGS = $(CFLAGS_DEFS) -c -Wall -nostdlib -nostartfiles -ffreestanding -mcpu=cortex-a53
-#CFLAGS = -I./include -I../include -D__DEBUG_SERIAL__ -c -Wall -nostdlib -nostartfiles -ffreestanding -march=armv8-a+crc
-export CCERT_FLAGS=$(CFLAGS)
 CCLIB = $(shell $(TOOLPREFIX)gcc --print-lib)
 
 LIBS = $(UXMHFRPI3_DIR)/libs/libutpm/libutpm.a
@@ -56,6 +65,9 @@ LIBS += $(UXMHFRPI3_DIR)/libs/libxmhfc/libxmhfc.a
 
 
 
+
+
+export CCERT_FLAGS=$(CFLAGS)
 export TOOLPREFIX
 export CFLAGS_DEFS
 export CFLAGS

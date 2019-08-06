@@ -56,7 +56,7 @@ BOOT_PARTITION_END=$[]with_boot_partition_end
 
 # selectively enable/disable secure boot
 AC_SUBST([SECBOOT])
-AC_ARG_ENABLE([SECBOOT],
+AC_ARG_ENABLE([secboot],
         AS_HELP_STRING([--enable-secboot@<:@=yes|no@:>@],
                 [enable Secure Boot]),
                 , [enable_secboot=no])
