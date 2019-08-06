@@ -19,6 +19,14 @@ export UXMHFRPI3_DIR := $(realpath $(dir $(lastword $(MAKEFILE_LIST))))
 
 TOOLPREFIX ?= arm-linux-gnueabihf-
 
+# tools
+export AR=ar
+export CP=cp
+export CCERT=$(TOOLPREFIX)gcc
+export CC=$(TOOLPREFIX)gcc
+export RM=rm
+
+
 INCS = -I$(UXMHFRPI3_DIR)/libs/libxmhfc/include
 INCS += -I$(UXMHFRPI3_DIR)/libs/libxmhfcrypto/include
 INCS += -I$(UXMHFRPI3_DIR)/libs/libutpm/include
@@ -27,6 +35,7 @@ INCS += -I$(UXMHFRPI3_DIR)/libs/libutpm/include
 CFLAGS_DEFS =  $(INCS) -I./include -I../include -D__DEBUG_SERIAL__ 
 CFLAGS = $(CFLAGS_DEFS) -c -Wall -nostdlib -nostartfiles -ffreestanding -mcpu=cortex-a53
 #CFLAGS = -I./include -I../include -D__DEBUG_SERIAL__ -c -Wall -nostdlib -nostartfiles -ffreestanding -march=armv8-a+crc
+export CCERT_FLAGS=$(CFLAGS)
 CCLIB = $(shell $(TOOLPREFIX)gcc --print-lib)
 
 LIBS = $(UXMHFRPI3_DIR)/libs/libutpm/libutpm.a
@@ -34,13 +43,6 @@ LIBS += $(UXMHFRPI3_DIR)/libs/libxmhfcrypto/libxmhfcrypto.a
 LIBS += $(UXMHFRPI3_DIR)/libs/libxmhfc/libxmhfc.a
 
 
-# tools
-export AR=ar
-export CP=cp
-export CCERT=$(TOOLPREFIX)gcc
-export CC=$(TOOLPREFIX)gcc
-export CCERT_FLAGS=$(CFLAGS)
-export RM=rm
 
 export TOOLPREFIX
 export CFLAGS_DEFS
