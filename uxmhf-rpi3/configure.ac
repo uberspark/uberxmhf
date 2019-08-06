@@ -51,7 +51,7 @@ AS_IF([test "x${enable_secboot}" != "xno"],
 
 ###### autoconf output files
 AC_CONFIG_FILES(
-			[./include/config.h]
+			[./include/config.h Makefile]
 	)
 
 AC_OUTPUT
