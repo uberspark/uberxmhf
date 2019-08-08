@@ -19,14 +19,48 @@ export UXMHFRPI3_DIR := $(realpath $(dir $(lastword $(MAKEFILE_LIST))))
 
 TOOLPREFIX ?= arm-linux-gnueabihf-
 
+
+######
+# autoconf controlled variables
+######
+
+export MAKE = @MAKE@
+export CCERT = @CCERT@
+export CC = @CC@
+export AS = @AS@
+export AR = @AR@
+export RM = @RM@
+export CP = @CP@				
+export MKDIR = @MKDIR@
+export LD = @LD@
+export OBJCOPY = @OBJCOPY@
+export CAT = @CAT@
+
+export prefix=@prefix@
+
+export SECBOOT := @SECBOOT@
+export DMAPROT := @DMAPROT@
+
+
 INCS = -I$(UXMHFRPI3_DIR)/libs/libxmhfc/include
 INCS += -I$(UXMHFRPI3_DIR)/libs/libxmhfcrypto/include
 INCS += -I$(UXMHFRPI3_DIR)/libs/libutpm/include
-#INCS += -I$(UXMHFRPI3_DIR)/include
 
 CFLAGS_DEFS =  $(INCS) -I./include -I../include -D__DEBUG_SERIAL__ 
+
+######
+# refine CFLAG definitions based on uxmhf rpi3 configure options
+######
+
+ifeq ($(SECBOOT), y)
+	CFLAGS_DEFS += -D__SECBOOT__
+endif
+
+ifeq ($(DMAPROT), y)
+	CFLAGS_DEFS += -D__DMAPROT__
+endif
+
 CFLAGS = $(CFLAGS_DEFS) -c -Wall -nostdlib -nostartfiles -ffreestanding -mcpu=cortex-a53
-#CFLAGS = -I./include -I../include -D__DEBUG_SERIAL__ -c -Wall -nostdlib -nostartfiles -ffreestanding -march=armv8-a+crc
 CCLIB = $(shell $(TOOLPREFIX)gcc --print-lib)
 
 LIBS = $(UXMHFRPI3_DIR)/libs/libutpm/libutpm.a
@@ -34,14 +68,10 @@ LIBS += $(UXMHFRPI3_DIR)/libs/libxmhfcrypto/libxmhfcrypto.a
 LIBS += $(UXMHFRPI3_DIR)/libs/libxmhfc/libxmhfc.a
 
 
-# tools
-export AR=ar
-export CP=cp
-export CCERT=$(TOOLPREFIX)gcc
-export CC=$(TOOLPREFIX)gcc
-export CCERT_FLAGS=$(CFLAGS)
-export RM=rm
 
+
+
+export CCERT_FLAGS=$(CFLAGS)
 export TOOLPREFIX
 export CFLAGS_DEFS
 export CFLAGS
