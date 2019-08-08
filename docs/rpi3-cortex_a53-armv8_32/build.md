@@ -55,8 +55,8 @@ title: Building
 	1. `cp uxmhf-rpi3.img ~/uxmhf-rpi3-staging/.`
 	1. `cp rpi3-config.txt ~/uxmhf-rpi3-staging/config.txt`
 
-1. Note: you can run `./configure` above any combination of the following optional 
-   parameters as needed:
+1. Note: you can run `./configure` above any combination of the following 
+   optional (experimental) parameters as needed:
     1. `./configure --enable-dmaprot` to enable DMA protection capabilities
     1. `./configure --enable-secboot --with-boot-partition-start=BP_START_SECTOR --with-boot-partition-end=BP_END_SECTOR` to enable secure boot capabilities. In this case `BP_START_SECTOR` and 
     `BP_END_SECTOR` are the values of the starting and end sectors of the following command: 
