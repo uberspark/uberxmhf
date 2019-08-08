@@ -46,20 +46,23 @@ title: Building
 	1. `mkdir -p ~/uxmhf-rpi3-staging/boot`
 	1. `cp ./arch/arm/boot/dts/*.dtb ~/uxmhf-rpi3-staging/boot/.`
 
-1. Obtain sd-card boot-partition extents
-	1. `sudo fdisk -l /dev/mmcblk0`
-	1. note down start sector of /dev/mmcblk0p0 in the output (`BP_START_SECTOR`)
-	1. note down end sector of /dev/mmcblk0p0 in the output (`BP_END_SECTOR`)
-	
 1. Build uberXMHF Raspbery PI 3 on development system
 	1. `cd uxmhf-rpi3`
 	1. `./bsconfigure.sh`
-	1. `./configure --with-boot-partition-start=BP_START_SECTOR --with-boot-partition-end=BP_END_SECTOR` 
+	1. `./configure` 
 	1. `make clean`
 	1. `make OSKRNLIMG=~/uxmhf-rpi3-staging/kernel7.img`
 	1. `cp uxmhf-rpi3.img ~/uxmhf-rpi3-staging/.`
 	1. `cp rpi3-config.txt ~/uxmhf-rpi3-staging/config.txt`
 
+1. Note: you can run `./configure` above any combination of the following optional 
+   parameters as needed:
+    1. `./configure --enable-dmaprot` to enable DMA protection capabilities
+    1. `./configure --enable-secboot --with-boot-partition-start=BP_START_SECTOR --with-boot-partition-end=BP_END_SECTOR` to enable secure boot capabilities. In this case `BP_START_SECTOR` and 
+    `BP_END_SECTOR` are the values of the starting and end sectors of the following command: 
+    `sudo fdisk -l /dev/mmcblk0`. Repleace `/dev/mmcblk0` with the sdcard device on the development
+    system.
+    
 
 <br/>
 ## Build uberApps
