@@ -11,6 +11,15 @@ title: Building
 	1. Use [win32diskimager](https://sourceforge.net/projects/win32diskimager/) under Windows OS to burn contents of .zip
 	1. Use ImageWriter tool under Ubuntu
 	
+1. Boot into raspbian using the sd-card on the pi and resize the root filesystem to
+   fit the entire sd card. Use the following commands once logged in:
+   1. sudo raspi-config
+   1. (optional) run the bottom option 'update' to make sure you have latest version of
+   the configuration software
+   1. run the second option 'expand_rootfs'
+   1. click 'finish'
+   1. select 'YES' when asked for a reboot
+	
 1. Development system (VM, baremetal or Windows/WSL with Ubuntu 16.04.x) setup
 	1. `sudo apt-get update`
 	1. `sudo apt-get install build-essential autoconf autotools-dev`
