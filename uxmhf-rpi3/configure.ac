@@ -64,6 +64,19 @@ AS_IF([test "x${enable_secboot}" != "xno"],
       [SECBOOT=y],
       [SECBOOT=n])
 
+# selectively enable/disable DMA protection
+AC_SUBST([DMAPROT])
+AC_ARG_ENABLE([dmaprot],
+        AS_HELP_STRING([--enable-dmaprot@<:@=yes|no@:>@],
+                [enable DMA Protection]),
+                , [enable_dmaprot=no])
+AS_IF([test "x${enable_dmaprot}" != "xno"],
+      [DMAPROT=y],
+      [DMAPROT=n])
+
+
+
+
 ###### autoconf output files
 AC_CONFIG_FILES(
 			[./include/config.h Makefile]
