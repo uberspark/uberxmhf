@@ -13,12 +13,12 @@ title: Building
 	
 1. Boot into raspbian using the sd-card on the pi and resize the root filesystem to
    fit the entire sd card. Use the following commands once logged in:
-   1. sudo raspi-config
-   1. (optional) run the bottom option 'update' to make sure you have latest version of
+   1. `sudo raspi-config`
+   1. (optional) run the bottom option `update` to make sure you have latest version of
    the configuration software
-   1. run the second option 'expand_rootfs'
-   1. click 'finish'
-   1. select 'YES' when asked for a reboot
+   1. run the second option `expand_rootfs`
+   1. click `finish`
+   1. select `YES` when asked for a reboot
 	
 1. Development system (VM, baremetal or Windows/WSL with Ubuntu 16.04.x) setup
 	1. `sudo apt-get update`
@@ -55,12 +55,12 @@ title: Building
 	1. `cp uxmhf-rpi3.img ~/uxmhf-rpi3-staging/.`
 	1. `cp rpi3-config.txt ~/uxmhf-rpi3-staging/config.txt`
 
-1. Note: you can run `./configure` above any combination of the following 
+1. Note: you can run `./configure` above using any combination of the following 
    optional (experimental) parameters as needed:
     1. `./configure --enable-dmaprot` to enable DMA protection capabilities
     1. `./configure --enable-secboot --with-boot-partition-start=BP_START_SECTOR --with-boot-partition-end=BP_END_SECTOR` to enable secure boot capabilities. In this case `BP_START_SECTOR` and 
-    `BP_END_SECTOR` are the values of the starting and end sectors of the following command: 
-    `sudo fdisk -l /dev/mmcblk0`. Repleace `/dev/mmcblk0` with the sdcard device on the development
+    `BP_END_SECTOR` are the values of the starting and ending sectors of the boot partition (`/dev/mmcblk0p0`) as obtained from the output of the following command: 
+    `sudo fdisk -l /dev/mmcblk0`. Replace `/dev/mmcblk0` with the sdcard device on the development
     system.
     
 
