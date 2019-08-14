@@ -117,15 +117,6 @@ uxmhf-verif-gensentinelstubs: _uobjs_configureandgenerateuobjinfo
 		@echo sentinel stubs generated
 
 	
-.PHONY: uxmhf-verifyuobjs-compcheck
-#uxmhf-verifyuobjs-compcheck: _uobjs_preprocessmanifests
-uxmhf-verifyuobjs-compcheck:
-	@echo Proceeding to generate composition check files...
-	$(MKDIR) -p $(XMHF_OBJDIR)/_verif_ccomp
-	cd $(XMHF_DIR) && $(USPARK_INSTALL_TOOLSDIR)/uccomp $(XMHF_DIR)/xmhf-uobjs/UOBJLIST $(XMHF_OBJDIR)/_verif_ccomp/ccompdriverfile.c.v.c $(XMHF_OBJDIR)/_verif_ccomp/ccompcheckfile.c.v.c $(XMHF_CONFIG_MAX_INCLDEVLIST_ENTRIES)  $(XMHF_CONFIG_MAX_EXCLDEVLIST_ENTRIES) $(XMHF_CONFIG_MAX_MEMOFFSET_ENTRIES) 0
-	@echo composition check files generated
-	cd $(XMHF_OBJDIR)/_verif_ccomp && $(FRAMAC) -val -no-val-show-progress -slevel 2048 -cpp-extra-args=-nostdinc $(VFLAGS) ccompdriverfile.c.v.c ccompcheckfile.c.v.c
-	@echo composition check: success!
 
 	
 .PHONY: uxmhf-verifyuobjs-prep
