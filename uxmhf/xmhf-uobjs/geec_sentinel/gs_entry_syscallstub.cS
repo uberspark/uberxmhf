@@ -87,9 +87,6 @@ uint32_t check_esp, check_eip = CASM_RET_EIP;
 			xmhfgeec_slab_info_table[XMHFGEEC_SLAB_XH_SSTEPTRACE].slab_physmem_extents[2].addr_end;
 		xmhfhwm_sysmemaccess_physmem_extents_total++;
 	
-		//load cr3 for xc_testslab
-		xmhfhwm_cpu_cr3 = xmhfgeec_slab_info_table[XMHFGEEC_SLAB_XH_SSTEPTRACE].mempgtbl_cr3;
-	
 		//setup verified slab stack parameters for parameter marshalling
 		xmhfhwm_cpu_gprs_esp -= sizeof(slab_params_t);
 		xmhfgeec_slab_info_table[XMHFGEEC_SLAB_UAPI_GCPUSTATE].slabtos[cpuid] = xmhfhwm_cpu_gprs_esp;
