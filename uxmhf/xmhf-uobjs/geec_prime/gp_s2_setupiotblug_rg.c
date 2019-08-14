@@ -54,10 +54,6 @@
 
 /*@
 	requires (slabid >= XMHFGEEC_UGSLAB_BASE_IDX && slabid <= XMHFGEEC_UGSLAB_MAX_IDX);
-	assigns gp_rwdatahdr.gp_ugslab_iobitmap[(slabid - XMHFGEEC_UGSLAB_BASE_IDX)][0..(3*PAGE_SIZE_4K)-1];
-	ensures \forall integer x; 0 <= x < (3*PAGE_SIZE_4K) ==> (
-		gp_rwdatahdr.gp_ugslab_iobitmap[(slabid - XMHFGEEC_UGSLAB_BASE_IDX)][x] == 0
-						);
 @*/
 void gp_s2_setupiotblug_rg(uint32_t slabid){
 
