@@ -54,7 +54,6 @@
 //setup unverified hypervisor (uh) slab memory page tables
 /*@
 	requires XMHFGEEC_UHSLAB_BASE_IDX <= slabid <= XMHFGEEC_UHSLAB_MAX_IDX;
-	requires 0 <= xmhfgeec_slab_info_table[slabid].iotbl_base < (0xFFFFFFFFUL - (3*PAGE_SIZE_4K));
 
 	assigns gp_rwdatahdr.gp_uhslabmempgtbl_lvl4t[(slabid - XMHFGEEC_UHSLAB_BASE_IDX)][0..(PAE_MAXPTRS_PER_PDPT-1)];
 	assigns gp_uhslabmempgtbl_lvl2t[(slabid - XMHFGEEC_UHSLAB_BASE_IDX)][0..((PAE_PTRS_PER_PDPT * PAE_PTRS_PER_PDT)-1)];

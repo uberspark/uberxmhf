@@ -56,8 +56,6 @@
 //@ghost bool gp_s2_setupmpgtblu_handlevfobjs[XMHFGEEC_TOTAL_SLABS];
 //@ghost bool gp_s2_setupmpgtblu_invokedinvalidobjs[XMHFGEEC_TOTAL_SLABS];
 /*@
-	requires \forall integer x; 0 <= x < XMHFGEEC_TOTAL_SLABS ==>
-		(0 <= xmhfgeec_slab_info_table[x].iotbl_base < (0xFFFFFFFFUL - (3*PAGE_SIZE_4K)));
 	assigns gp_s2_setupmpgtblu_invokeduh[0..(XMHFGEEC_TOTAL_SLABS-1)];
 	assigns gp_s2_setupmpgtblu_invokedug[0..(XMHFGEEC_TOTAL_SLABS-1)];
 	assigns gp_s2_setupmpgtblu_invokedug_rg[0..(XMHFGEEC_TOTAL_SLABS-1)];
