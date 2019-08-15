@@ -467,10 +467,19 @@ void main(u32 r0, u32 id, struct atag *at, u32 cpuid){
 	hypvtable_initialize(cpuid);
 
 #if defined (__FIQREFLECTION__)
+
 	//enable FIQ mask override; this should land us in HYP mode FIQ handler when FIQs are triggered inside guest
 	hcr = sysreg_read_hcr();
 	hcr |= (1UL << 3);
 	sysreg_write_hcr(hcr);
+
+#else
+
+	//disable FIQ mask override; let guest process FIQs
+	hcr = sysreg_read_hcr();
+	hcr &= ~(1UL << 3);
+	sysreg_write_hcr(hcr);
+
 #endif
 
 	// populate stage-2 page tables
