@@ -84,6 +84,15 @@ AS_IF([test "x${enable_intprot}" != "xno"],
       [INTPROT=y],
       [INTPROT=n])
 
+# selectively enable/disable FIQ reflection
+AC_SUBST([FIQREFLECTION])
+AC_ARG_ENABLE([fiqreflection],
+        AS_HELP_STRING([--enable-fiqreflection@<:@=yes|no@:>@],
+                [enable FIQ interrupt Reflection]),
+                , [enable_fiqreflection=no])
+AS_IF([test "x${enable_fiqreflection}" != "xno"],
+      [FIQREFLECTION=y],
+      [FIQREFLECTION=n])
 
 
 ###### autoconf output files
