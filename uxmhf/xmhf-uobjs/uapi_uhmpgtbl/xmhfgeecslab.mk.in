@@ -13,6 +13,6 @@ export XMHF_SLAB_SOURCES := $(wildcard $(srcdir)/*.c)
 
 .PHONY: verify
 verify: verifybase
-	@echo Proceeding to verify $(XMHF_SLAB_NAME)...
+	@echo Nothing to verify for $(XMHF_SLAB_NAME)...
 	
 	

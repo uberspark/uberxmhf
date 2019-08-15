@@ -93,7 +93,6 @@ void _setupmpgtbluh_setentry_helper(uint32_t slabid, uint32_t ptindex, uint64_t 
 	requires 0 <= slabid < XMHFGEEC_TOTAL_SLABS;
 	requires 0 <= uhslabmempgtbl_idx < XMHFGEEC_TOTAL_UHSLABS;
 	requires 0 <= ptindex < (1024*1024);
-	requires 0 <= xmhfgeec_slab_info_table[slabid].iotbl_base < (0xFFFFFFFFUL - (3*PAGE_SIZE_4K));
 
 	behavior mapiotbl:
 		assumes (
@@ -103,12 +102,12 @@ void _setupmpgtbluh_setentry_helper(uint32_t slabid, uint32_t ptindex, uint64_t 
  	                 ) &&
 		        (ptindex < ((1024*1024)-3))
 			);
-		ensures (gp_uhslabmempgtbl_lvl1t[uhslabmempgtbl_idx][ptindex] ==
-			(pae_make_pte(xmhfgeec_slab_info_table[slabid].iotbl_base, flags)));
-		ensures (gp_uhslabmempgtbl_lvl1t[uhslabmempgtbl_idx][ptindex+1] ==
-			(pae_make_pte(xmhfgeec_slab_info_table[slabid].iotbl_base+PAGE_SIZE_4K, flags)));
-		ensures (gp_uhslabmempgtbl_lvl1t[uhslabmempgtbl_idx][ptindex+2] ==
-			(pae_make_pte(xmhfgeec_slab_info_table[slabid].iotbl_base+(2*PAGE_SIZE_4K), flags)));
+		//ensures (gp_uhslabmempgtbl_lvl1t[uhslabmempgtbl_idx][ptindex] ==
+		//	(pae_make_pte(0, flags)));
+		//ensures (gp_uhslabmempgtbl_lvl1t[uhslabmempgtbl_idx][ptindex+1] ==
+		//	(pae_make_pte(0+PAGE_SIZE_4K, flags)));
+		//ensures (gp_uhslabmempgtbl_lvl1t[uhslabmempgtbl_idx][ptindex+2] ==
+		//	(pae_make_pte((0+2*PAGE_SIZE_4K), flags)));
 		ensures (gp_s2_setupmpgtbluh_setentry_halted == false);
 		ensures (\result == false);
 

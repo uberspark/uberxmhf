@@ -36,12 +36,7 @@ tree of the sources:
 	replace `<uobj-name>` with the uberobject directory name (e.g., `xh_hyperdep`)
 
 
-3.	Performing uberobject composition check
-	
-	`make uxmhf-verifyuobjs-compcheck`
-
-
-4.	Verifying all the uberobjects
+3.	Verifying all the uberobjects
 	
 	`make uxmhf-verifyuobjs-all`
 

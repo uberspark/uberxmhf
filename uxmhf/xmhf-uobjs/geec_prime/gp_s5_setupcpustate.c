@@ -362,17 +362,11 @@ static bool __xmhfhic_x86vmx_setupvmxstate(uint64_t cpuid){
 		//@assert (xmhfhwm_cpu_gs_selector == __DS_CPL0);
 		//@assert (xmhfhwm_cpu_ss_selector == __DS_CPL0);
 		//@assert (xmhfhwm_cpu_tr_selector ==(__TRSEL + ((uint32_t)cpuid * 8) ));
-		//@assert (xmhfhwm_cpu_idtr_base == (uint32_t)&__xmhfhic_x86vmx_idt_start);
 		//@assert (xmhfhwm_cpu_eflags & EFLAGS_IOPL);
 		// //@assert (xmhfhwm_cpu_msr_apic_base == MMIO_APIC_BASE);
 		//@assert (xmhfhwm_cpu_msr_efer & ((1 << EFER_NXE)));
 		//@assert (xmhfhwm_cpu_cr4 & CR4_OSXSAVE);
 		//@assert (xmhfhwm_cpu_cr0 & 0x20);
-		//@assert (xmhfhwm_cpu_msr_sysenter_cs == __CS_CPL0);
-		//@assert (xmhfhwm_cpu_msr_sysenter_eip == xmhfgeec_slab_info_table[XMHFGEEC_SLAB_GEEC_SENTINEL].slab_memoffset_entries[GEEC_SENTINEL_MEMOFFSETS_SYSENTERHANDLER_IDX]);
-		//@assert (xmhfhwm_cpu_msr_sysenter_esp_lo == (uint32_t)((uint32_t)&_geec_primesmp_sysenter_stack[(uint32_t)cpuid+1]));
-		//@assert (xmhfhwm_cpu_msr_sysenter_esp_hi == 0);
-		//@assert (xmhfhwm_cpu_vmcs_host_rip == xmhfgeec_slab_info_table[XMHFGEEC_SLAB_GEEC_SENTINEL].slab_memoffset_entries[GEEC_SENTINEL_MEMOFFSETS_INTERCEPTHANDLER_IDX]);
 		//@assert (xmhfhwm_cpu_vmcs_host_rsp >= ((uint32_t)&_init_bsp_cpustack + 4)) && (xmhfhwm_cpu_vmcs_host_rsp <= ((uint32_t)&_init_bsp_cpustack + MAX_PLATFORM_CPUSTACK_SIZE)) ;
 		//@assert (xmhfhwm_cpu_vmcs_host_cr3 == (uint32_t)&gp_rwdatahdr.gp_vhslabmempgtbl_lvl4t);
 

@@ -57,5 +57,6 @@
 #include <xmhf-config.h>		//XMHF platform/arch config, TODO: this needs to be platform/arch independent push arch dependent stuff into arch/
 #include <xmhf-types.h>			//XMHF specific base types
 #include <xmhf-error.h>			//error handling
+#include <xc.h>					//core framework decls.
 
 #endif /* __XMHF_H_ */
