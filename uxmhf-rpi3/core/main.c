@@ -731,9 +731,11 @@ void main(u32 r0, u32 id, struct atag *at, u32 cpuid){
 
 	//////
 	// initialize hypapps
-	ctxtrace_init(cpuid);
-	uapp_watchdog_initialize(cpuid);
 
+	//ctxtrace_init(cpuid);
+	//uapp_watchdog_initialize(cpuid);
+
+	//////
 
 	// boot secondary cores
 	_XDPRINTF_("%s[%u]: proceeding to initialize SMP...\n", __func__, cpuid);
