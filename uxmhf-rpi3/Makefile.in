@@ -64,6 +64,9 @@ ifeq ($(INTPROT), y)
 	CFLAGS_DEFS += -D__INTPROT__
 endif
 
+ifeq ($(FIQREFLECTION), y)
+	CFLAGS_DEFS += -D__FIQREFLECTION__
+endif
 
 CFLAGS = $(CFLAGS_DEFS) -c -Wall -nostdlib -nostartfiles -ffreestanding -mcpu=cortex-a53
 CCLIB = $(shell $(TOOLPREFIX)gcc --print-lib)
