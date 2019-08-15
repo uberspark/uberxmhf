@@ -74,6 +74,15 @@ AS_IF([test "x${enable_dmaprot}" != "xno"],
       [DMAPROT=y],
       [DMAPROT=n])
 
+# selectively enable/disable interrupt protection
+AC_SUBST([INTPROT])
+AC_ARG_ENABLE([intprot],
+        AS_HELP_STRING([--enable-intprot@<:@=yes|no@:>@],
+                [enable Interrupt Protection]),
+                , [enable_intprot=no])
+AS_IF([test "x${enable_intprot}" != "xno"],
+      [INTPROT=y],
+      [INTPROT=n])
 
 
 
