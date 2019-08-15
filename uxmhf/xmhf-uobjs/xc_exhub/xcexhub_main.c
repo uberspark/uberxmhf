@@ -54,7 +54,7 @@
 #include <xmhfgeec.h>
 #include <xmhf-debug.h>
 
-#include <xc.h>
+//#include <xc.h>
 #include <xc_exhub.h>
 
 bool ihub_exit_status = false;

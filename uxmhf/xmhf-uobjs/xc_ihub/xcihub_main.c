@@ -69,11 +69,7 @@
 	assigns sp->in_out_params[5];
 	assigns sp->in_out_params[6];
 	assigns sp->in_out_params[7];
-	assigns xcihub_smplock;
 
-	assigns xcihub_callhcbinvoke;
-	assigns xcihub_callicptvmcall;
-	assigns xcihub_callhalt;
 @*/
 void slab_main(slab_params_t *sp){
 
