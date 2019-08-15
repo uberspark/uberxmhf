@@ -699,9 +699,11 @@ void main(u32 r0, u32 id, struct atag *at, u32 cpuid){
 	_XDPRINTF_("%s[%u]: DMA protection mechanism activated via stage-2 pts\n", __func__, cpuid);
 #endif
 
+#if defined (__INTPROT__)
 	//activate interrupt protection mechanism via stage-2 pts
 	intprot_activate();
 	_XDPRINTF_("%s[%u]: INTERRUPT protection mechanism activated via stage-2 pts\n", __func__, cpuid);
+#endif
 
 #if defined (__SECBOOT__)
 	//activate secure boot protection mechanism
