@@ -62,6 +62,8 @@ title: Building
     `BP_END_SECTOR` are the values of the starting and ending sectors of the boot partition (`/dev/mmcblk0p0`) as obtained from the output of the following command: 
     `sudo fdisk -l /dev/mmcblk0`. Replace `/dev/mmcblk0` with the sdcard device on the development
     system.
+    1. `./configure --enable-intprot` to enable interrupt protection capabilities
+    1. `./configure --enable-fiqreflection` to enable guest FIQ interrupts to be handled within micro-hypervisor
     
 
 <br/>
