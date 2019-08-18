@@ -49,6 +49,42 @@
 #include <xmhfgeec.h>
 
 #include <geec_prime.h>
+#include <uapi_uhmpgtbl.h>
+#include <uapi_iotbl.h>
+
+uint32_t _setupmpgtbluh_setentry_getiotblbase(uint32_t slabid){
+	slab_params_t spl;
+	uapi_iotbl_getiotblbase_t *ps = (uapi_iotbl_getiotblbase_t *)spl.in_out_params;
+
+	spl.src_slabid = XMHFGEEC_SLAB_GEEC_PRIME;
+	spl.dst_slabid = UOBJ_UAPI_IOTBL;
+	spl.dst_uapifn = UXMHF_UAPI_IOTBL_GETIOTBLBASE;
+	spl.cpuid = 0; //TODO: BSP CPU id
+
+	ps->dst_slabid = slabid;
+
+	XMHF_SLAB_CALLNEW(&spl);
+
+	return ps->iotbl_base;
+}
+
+
+void _setupmpgtbluh_setentry_helper(uint32_t slabid, uint32_t ptindex, uint64_t entry){
+	slab_params_t spl;
+	uapi_uhmpgtbl_setentryforpaddr_params_t *p =
+			(uapi_uhmpgtbl_setentryforpaddr_params_t *)spl.in_out_params;
+
+	spl.src_slabid = XMHFGEEC_SLAB_GEEC_PRIME;
+	spl.dst_slabid = UOBJ_UAPI_UHMPGTBL;
+	spl.dst_uapifn = UAPI_UHMPGTBL_SETENTRYFORPADDR;
+
+	p->dst_slabid = slabid;
+	p->pa = (ptindex * PAGE_SIZE_4K);
+	p->entry_lo = (uint32_t) entry;
+	p->entry_hi = (uint32_t)((uint64_t)entry >> 32);
+
+	XMHF_SLAB_CALLNEW(&spl);
+}
 
 //returns true if entry was mapped unchanged
 //returns false if entry belonged to iotbl and was mapped with uobj specific iotbl
@@ -57,7 +93,6 @@
 	requires 0 <= slabid < XMHFGEEC_TOTAL_SLABS;
 	requires 0 <= uhslabmempgtbl_idx < XMHFGEEC_TOTAL_UHSLABS;
 	requires 0 <= ptindex < (1024*1024);
-	requires 0 <= xmhfgeec_slab_info_table[slabid].iotbl_base < (0xFFFFFFFFUL - (3*PAGE_SIZE_4K));
 
 	behavior mapiotbl:
 		assumes (
@@ -67,12 +102,12 @@
  	                 ) &&
 		        (ptindex < ((1024*1024)-3))
 			);
-		ensures (gp_uhslabmempgtbl_lvl1t[uhslabmempgtbl_idx][ptindex] ==
-			(pae_make_pte(xmhfgeec_slab_info_table[slabid].iotbl_base, flags)));
-		ensures (gp_uhslabmempgtbl_lvl1t[uhslabmempgtbl_idx][ptindex+1] ==
-			(pae_make_pte(xmhfgeec_slab_info_table[slabid].iotbl_base+PAGE_SIZE_4K, flags)));
-		ensures (gp_uhslabmempgtbl_lvl1t[uhslabmempgtbl_idx][ptindex+2] ==
-			(pae_make_pte(xmhfgeec_slab_info_table[slabid].iotbl_base+(2*PAGE_SIZE_4K), flags)));
+		//ensures (gp_uhslabmempgtbl_lvl1t[uhslabmempgtbl_idx][ptindex] ==
+		//	(pae_make_pte(0, flags)));
+		//ensures (gp_uhslabmempgtbl_lvl1t[uhslabmempgtbl_idx][ptindex+1] ==
+		//	(pae_make_pte(0+PAGE_SIZE_4K, flags)));
+		//ensures (gp_uhslabmempgtbl_lvl1t[uhslabmempgtbl_idx][ptindex+2] ==
+		//	(pae_make_pte((0+2*PAGE_SIZE_4K), flags)));
 		ensures (gp_s2_setupmpgtbluh_setentry_halted == false);
 		ensures (\result == false);
 
@@ -103,21 +138,23 @@
 	disjoint behaviors;
 
 @*/
-bool gp_s2_setupmpgtbluh_setentry(u32 slabid, u32 uhslabmempgtbl_idx, u32 spatype, u32 ptindex, u64 flags){
+bool gp_s2_setupmpgtbluh_setentry(uint32_t slabid, uint32_t uhslabmempgtbl_idx, uint32_t spatype, uint32_t ptindex, uint64_t flags){
+
 
 	if((spatype & 0x0000000FUL) == _SLAB_SPATYPE_GEEC_PRIME_IOTBL &&
 	   xmhfgeec_slab_info_table[slabid].slabtype != XMHFGEEC_SLABTYPE_VfT_PROG &&
 	   xmhfgeec_slab_info_table[slabid].slabtype != XMHFGEEC_SLABTYPE_VfT_SENTINEL){
 		if(ptindex < ((1024*1024)-3)){
 			//map unverified slab iotbl instead (12K)
-			gp_uhslabmempgtbl_lvl1t[uhslabmempgtbl_idx][ptindex] =
-				pae_make_pte(xmhfgeec_slab_info_table[slabid].iotbl_base, flags);
+			_setupmpgtbluh_setentry_helper(slabid, ptindex,
+					pae_make_pte(_setupmpgtbluh_setentry_getiotblbase(slabid), flags));
 
-			gp_uhslabmempgtbl_lvl1t[uhslabmempgtbl_idx][ptindex+1] =
-				pae_make_pte(xmhfgeec_slab_info_table[slabid].iotbl_base+PAGE_SIZE_4K, flags);
+			_setupmpgtbluh_setentry_helper(slabid, ptindex+1,
+					pae_make_pte(_setupmpgtbluh_setentry_getiotblbase(slabid)+PAGE_SIZE_4K, flags));
 
-			gp_uhslabmempgtbl_lvl1t[uhslabmempgtbl_idx][ptindex+2] =
-				pae_make_pte(xmhfgeec_slab_info_table[slabid].iotbl_base+(2*PAGE_SIZE_4K), flags);
+			_setupmpgtbluh_setentry_helper(slabid, ptindex+2,
+					pae_make_pte(_setupmpgtbluh_setentry_getiotblbase(slabid)+(2*PAGE_SIZE_4K), flags));
+
 
 			//@ghost gp_s2_setupmpgtbluh_setentry_halted = false;
 			return false;
@@ -128,8 +165,9 @@ bool gp_s2_setupmpgtbluh_setentry(u32 slabid, u32 uhslabmempgtbl_idx, u32 spatyp
 			return false;
 		}
 	}else{
-		gp_uhslabmempgtbl_lvl1t[uhslabmempgtbl_idx][ptindex] =
-			pae_make_pte((ptindex*PAGE_SIZE_4K), flags);
+
+		_setupmpgtbluh_setentry_helper(slabid, ptindex,
+				pae_make_pte((ptindex*PAGE_SIZE_4K), flags));
 
 		//@ghost gp_s2_setupmpgtbluh_setentry_halted = false;
 		return true;

@@ -58,14 +58,14 @@
  *
  * author: amit vasudevan (amitvasudevan@acm.org)
  */
-void xcihub_icptxsetbv(u32 cpuid){
+void xcihub_icptxsetbv(uint32_t cpuid){
 	slab_params_t spl;
 	xmhf_uapi_gcpustate_vmrw_params_t *gcpustate_vmrwp = (xmhf_uapi_gcpustate_vmrw_params_t *)spl.in_out_params;
 	xmhf_uapi_gcpustate_gprs_params_t *gcpustate_gprs = (xmhf_uapi_gcpustate_gprs_params_t *)spl.in_out_params;
-	u32 guest_rip;
-	u32 info_vmexit_instruction_length;
+	uint32_t guest_rip;
+	uint32_t info_vmexit_instruction_length;
 	x86regs_t r;
-	u64 xcr_value;
+	uint64_t xcr_value;
 
 	//_XDPRINTF_("%s[%u]: CRX access\n", __func__, cpuid);
 
@@ -79,7 +79,7 @@ void xcihub_icptxsetbv(u32 cpuid){
 	XMHF_SLAB_CALLNEW(&spl);
 	memcpy(&r, &gcpustate_gprs->gprs, sizeof(x86regs_t));
 
-   	xcr_value = ((u64)r.edx << 32) + (u64)r.eax;
+   	xcr_value = ((uint64_t)r.edx << 32) + (uint64_t)r.eax;
 
    	if(r.ecx != XCR_XFEATURE_ENABLED_MASK){
    		_XDPRINTF_("%s[%u]: unhandled XCR register %u", __func__, cpuid, r.ecx);

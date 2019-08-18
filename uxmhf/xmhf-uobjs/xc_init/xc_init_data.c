@@ -51,5 +51,5 @@
 
 #include <xc_init.h>
 
-__attribute__(( section(".data") )) u32 __xcinit_smplock = 1;
+__attribute__(( section(".data") )) uint32_t __xcinit_smplock = 1;
 

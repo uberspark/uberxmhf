@@ -69,16 +69,16 @@
 #define XC_NWLOG_BUF_MAXIDX	1
 
 typedef struct {
-    u32 logbuf[16];
+    uint32_t logbuf[16];
 }__attribute__((packed)) xcnwlog_ls_element_t;
 
 
 typedef struct {
-    u8 dst_mac[6];
-    u8 src_mac[6];
-    u8 type[2];
-    u8 reserved[2];
-	u32 logbuf[48];
+    uint8_t dst_mac[6];
+    uint8_t src_mac[6];
+    uint8_t type[2];
+    uint8_t reserved[2];
+	uint32_t logbuf[48];
 }__attribute__((packed)) xcnwlog_packet_t;
 
 
@@ -86,13 +86,13 @@ typedef struct {
 
 //extern __attribute__((section(".slab_dmadata"))) xcnwlog_ls_element_t xcnwlog_lsdma[XC_NWLOG_BUF_MAXIDX][XC_NWLOG_BUF_MAXELEM];
 
-extern __attribute__((section(".slab_dmadata"))) __attribute__((aligned(4096))) u8 xcnwlog_desc[PAGE_SIZE_4K];
+extern __attribute__((section(".slab_dmadata"))) __attribute__((aligned(4096))) uint8_t xcnwlog_desc[PAGE_SIZE_4K];
 
 extern __attribute__((section(".slab_dmadata"))) __attribute__((aligned(4096))) xcnwlog_packet_t xcnwlog_packet;
 
 
 extern __attribute__((section(".data"))) xcnwlog_ls_element_t xcnwlog_ls[XC_NWLOG_BUF_MAXIDX][XC_NWLOG_BUF_MAXELEM];
-extern __attribute__((section(".data"))) u32 xcnwlog_ls_index[XC_NWLOG_BUF_MAXIDX];
+extern __attribute__((section(".data"))) uint32_t xcnwlog_ls_index[XC_NWLOG_BUF_MAXIDX];
 
 
 extern __attribute__((section(".data"))) char e1000_driver_name[];
@@ -112,11 +112,11 @@ extern __attribute__((section(".data"))) unsigned char e1000_pkt_type[];
 
 
 
-//@	logic u32 nwlogCapacity{L}(u32 nwlog_id) = (u32)16;
+//@	logic uint32_t nwlogCapacity{L}(uint32_t nwlog_id) = (uint32_t)16;
 
-//@	logic u32 nwlogSize{L}(u32 nwlog_id) = xcnwlog_ls_index[nwlog_id];
+//@	logic uint32_t nwlogSize{L}(uint32_t nwlog_id) = xcnwlog_ls_index[nwlog_id];
 
-//@	logic xcnwlog_ls_element_t * nwlogStorage{L}(u32 nwlog_id) = &xcnwlog_ls[nwlog_id][0];
+//@	logic xcnwlog_ls_element_t * nwlogStorage{L}(uint32_t nwlog_id) = &xcnwlog_ls[nwlog_id][0];
 
 /*@
  predicate nwlogTop{L}(xcnwlog_ls_element_t * elem, integer index, xcnwlog_ls_element_t input) =
@@ -128,9 +128,9 @@ extern __attribute__((section(".data"))) unsigned char e1000_pkt_type[];
 		);
 */
 
-//@	predicate nwlogEmpty{L}(u32 nwlog_id) = (nwlogSize(nwlog_id) == 0);
+//@	predicate nwlogEmpty{L}(uint32_t nwlog_id) = (nwlogSize(nwlog_id) == 0);
 
-//@	predicate nwlogFull{L}(u32 nwlog_id) = (nwlogSize(nwlog_id) == nwlogCapacity(nwlog_id));
+//@	predicate nwlogFull{L}(uint32_t nwlog_id) = (nwlogSize(nwlog_id) == nwlogCapacity(nwlog_id));
 
 /*@
 	predicate
@@ -145,7 +145,7 @@ extern __attribute__((section(".data"))) unsigned char e1000_pkt_type[];
 */
 
 /*@
-	predicate nwlogValid{L}(u32 nwlog_id) =
+	predicate nwlogValid{L}(uint32_t nwlog_id) =
 		(nwlog_id < XC_NWLOG_BUF_MAXIDX &&
 		0 < nwlogCapacity( nwlog_id) &&
 		0 <= nwlogSize (nwlog_id) <= nwlogCapacity ( nwlog_id) &&
@@ -154,10 +154,10 @@ extern __attribute__((section(".data"))) unsigned char e1000_pkt_type[];
 @*/
 
 
-u32 e1000_init_module(void);
+uint32_t e1000_init_module(void);
 void e1000_xmitack(void);
 
-void xcnwlog_ls_push(u32 nwlog_id, xcnwlog_ls_element_t elem);
+void xcnwlog_ls_push(uint32_t nwlog_id, xcnwlog_ls_element_t elem);
 void xcnwlog_init(void);
 void xcnwlog_logdata(xcnwlog_ls_element_t elem);
 

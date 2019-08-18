@@ -63,9 +63,9 @@
 #define APRVEXEC_LOCK     			0xD0
 #define APRVEXEC_UNLOCK   			0xD1
 
-static u8 _ae_page_buffer[PAGE_SIZE_4K];
+static uint8_t _ae_page_buffer[PAGE_SIZE_4K];
 
-static u8 _ae_database[][SHA_DIGEST_LENGTH] = {
+static uint8_t _ae_database[][SHA_DIGEST_LENGTH] = {
   {0xd1, 0x4e, 0x30, 0x25,  0x8e,  0x16, 0x85, 0x9b, 0x21, 0x81, 0x74, 0x78, 0xbb, 0x1b, 0x5d, 0x99, 0xb5, 0x48, 0x60, 0xca},
   {0xa1, 0x4e, 0x30, 0x25,  0x8e,  0x16, 0x85, 0x9b, 0x21, 0x71, 0x74, 0x78, 0xbb, 0x1b, 0x5d, 0x99, 0xb5, 0x48, 0x60, 0xca},
   {0xf1, 0x4e, 0x30, 0x25,  0x8e,  0x16, 0x85, 0x9b, 0x21, 0x81, 0x54, 0x78, 0xbb, 0x1b, 0x5d, 0x99, 0xb5, 0x48, 0x60, 0xca},
@@ -78,15 +78,15 @@ static u8 _ae_database[][SHA_DIGEST_LENGTH] = {
 
 
 //approve and lock a page (at gpa)
-static void ae_lock(u32 cpuindex, u32 guest_slab_index, u64 gpa){
+static void ae_lock(uint32_t cpuindex, uint32_t guest_slab_index, uint64_t gpa){
     slab_params_t spl;
     //xmhf_hic_uapi_physmem_desc_t *pdesc = (xmhf_hic_uapi_physmem_desc_t *)&spl.in_out_params[2];
     //xmhf_uapi_slabmemacc_params_t *smemaccp = (xmhf_uapi_slabmemacc_params_t *)spl.in_out_params;
-    u8 digest[SHA_DIGEST_LENGTH];
+    uint8_t digest[SHA_DIGEST_LENGTH];
     bool found_in_database=false;
-    u32 i;
+    uint32_t i;
 
-    _XDPRINTF_("%s[%u]: starting...\n", __func__, (u16)cpuindex);
+    _XDPRINTF_("%s[%u]: starting...\n", __func__, (uint16_t)cpuindex);
     spl.src_slabid = XMHFGEEC_SLAB_XH_APRVEXEC;
     //spl.dst_slabid = XMHFGEEC_SLAB_UAPI_SLABMEMACC;
     spl.cpuid = cpuindex;
@@ -104,17 +104,17 @@ if(!ae_activated){
 		PAGE_SIZE_4K);
 
     _XDPRINTF_("%s[%u]: grabbed page contents at gpa=%016x\n",
-                __func__, (u16)cpuindex, gpa);
+                __func__, (uint16_t)cpuindex, gpa);
 
     _XDPRINTF_("%s[%u]: %02x, %02x, %02x, %02x, %02x ...\n",
-                __func__, (u16)cpuindex, _ae_page_buffer[0], _ae_page_buffer[1],
+                __func__, (uint16_t)cpuindex, _ae_page_buffer[0], _ae_page_buffer[1],
 				_ae_page_buffer[2], _ae_page_buffer[3], _ae_page_buffer[4]);
 
     //compute SHA-1 of the local page buffer
     sha1(&_ae_page_buffer, PAGE_SIZE_4K, digest);
 
     _XDPRINTF_("%s[%u]: computed SHA-1: %*D\n",
-               __func__, (u16)cpuindex, SHA_DIGEST_LENGTH, digest, " ");
+               __func__, (uint16_t)cpuindex, SHA_DIGEST_LENGTH, digest, " ");
 
     //compare computed SHA-1 to the database
     for(i=0; i < NUMENTRIES_AE_DATABASE; i++){
@@ -127,12 +127,12 @@ if(!ae_activated){
     //if not approved then just return
     if(!found_in_database){
         _XDPRINTF_("%s[%u]: could not find entry in database. returning\n",
-               __func__, (u16)cpuindex);
+               __func__, (uint16_t)cpuindex);
         return;
     }
 
     _XDPRINTF_("%s[%u]: entry matched in database, proceeding to lock page...\n",
-               __func__, (u16)cpuindex);
+               __func__, (uint16_t)cpuindex);
 
     {
         //lock the code page so no one can write to it
@@ -154,7 +154,7 @@ if(!ae_activated){
         getentryforpaddrp->gpa = gpa;
         XMHF_SLAB_CALLNEW(&spl);
         _XDPRINTF_("%s[%u]: original entry for gpa=%016llx is %016llx\n",
-                   __func__, (u16)cpuindex, gpa, getentryforpaddrp->result_entry);
+                   __func__, (uint16_t)cpuindex, gpa, getentryforpaddrp->result_entry);
 
          spl.dst_uapifn = XMHFGEEC_UAPI_SLABMEMPGTBL_SETENTRYFORPADDR;
         setentryforpaddrp->dst_slabid = guest_slab_index;
@@ -179,15 +179,15 @@ if(!ae_activated){
         getentryforpaddrp->gpa = gpa;
         XMHF_SLAB_CALLNEW(&spl);
        _XDPRINTF_("%s[%u]: new entry for gpa=%016llx is %016llx\n",
-                  __func__, (u16)cpuindex, gpa, getentryforpaddrp->result_entry);
+                  __func__, (uint16_t)cpuindex, gpa, getentryforpaddrp->result_entry);
 
         //////
 */
 
         ae_activated = true;
-        ae_paddr = (u32)gpa;
+        ae_paddr = (uint32_t)gpa;
         _XDPRINTF_("%s[%u]: approved and locked page at gpa %x\n",
-                   __func__, (u16)cpuindex, gpa);
+                   __func__, (uint16_t)cpuindex, gpa);
     }
 }
 
@@ -195,7 +195,7 @@ if(!ae_activated){
 
 
 //unlock a page (at gpa)
-static void ae_unlock(u32 cpuindex, u32 guest_slab_index, u64 gpa){
+static void ae_unlock(uint32_t cpuindex, uint32_t guest_slab_index, uint64_t gpa){
      slab_params_t spl;
      //xmhf_hic_uapi_mempgtbl_desc_t *mdesc = (xmhf_hic_uapi_mempgtbl_desc_t *)&spl.in_out_params[2];
     //xmhf_uapi_slabmempgtbl_entry_params_t *smpgtblep =
@@ -211,7 +211,7 @@ static void ae_unlock(u32 cpuindex, u32 guest_slab_index, u64 gpa){
      spl.cpuid = cpuindex;
      //spl.in_out_params[0] = XMHF_HIC_UAPI_MEMPGTBL;
 
-    _XDPRINTF_("%s[%u]: starting...\n", __func__, (u16)cpuindex);
+    _XDPRINTF_("%s[%u]: starting...\n", __func__, (uint16_t)cpuindex);
 
     if(ae_activated){
          //unlock the code page
@@ -221,7 +221,7 @@ static void ae_unlock(u32 cpuindex, u32 guest_slab_index, u64 gpa){
          XMHF_SLAB_CALLNEW(&spl);
 
          _XDPRINTF_("%s[%u]: original entry for gpa=%016llx is %016llx\n",
-                    __func__, (u16)cpuindex, gpa, getentryforpaddrp->result_entry);
+                    __func__, (uint16_t)cpuindex, gpa, getentryforpaddrp->result_entry);
 
          spl.dst_uapifn = XMHFGEEC_UAPI_SLABMEMPGTBL_SETENTRYFORPADDR;
         setentryforpaddrp->dst_slabid = guest_slab_index;
@@ -233,7 +233,7 @@ static void ae_unlock(u32 cpuindex, u32 guest_slab_index, u64 gpa){
         ae_activated=false;
         ae_paddr=0;
         _XDPRINTF_("%s[%u]: restored permissions for page at %016llx\n",
-                   __func__, (u16)cpuindex, gpa);
+                   __func__, (uint16_t)cpuindex, gpa);
     }
 }
 
@@ -244,18 +244,18 @@ static void ae_unlock(u32 cpuindex, u32 guest_slab_index, u64 gpa){
 
 
 //initialization
-static void _hcb_initialize(u32 cpuindex){
-	_XDPRINTF_("%s[%u]: aprvexec initializing...\n", __func__, (u16)cpuindex);
+static void _hcb_initialize(uint32_t cpuindex){
+	_XDPRINTF_("%s[%u]: aprvexec initializing...\n", __func__, (uint16_t)cpuindex);
 }
 
 //hypercall
-static void _hcb_hypercall(u64 cpuindex, u64 guest_slab_index){
+static void _hcb_hypercall(uint64_t cpuindex, uint64_t guest_slab_index){
     slab_params_t spl;
     xmhf_uapi_gcpustate_gprs_params_t *gcpustate_gprs =
         (xmhf_uapi_gcpustate_gprs_params_t *)spl.in_out_params;
     x86regs_t *gprs = (x86regs_t *)&gcpustate_gprs->gprs;
-	u32 call_id;
-	u64 gpa;
+	uint32_t call_id;
+	uint64_t gpa;
 
     spl.src_slabid = XMHFGEEC_SLAB_XH_APRVEXEC;
     spl.dst_slabid = XMHFGEEC_SLAB_UAPI_GCPUSTATE;
@@ -267,7 +267,7 @@ static void _hcb_hypercall(u64 cpuindex, u64 guest_slab_index){
 
 
     call_id = gprs->eax;
-    gpa = ((u64)gprs->ebx << 32) | gprs->edx;
+    gpa = ((uint64_t)gprs->ebx << 32) | gprs->edx;
 
 
 
@@ -275,22 +275,22 @@ static void _hcb_hypercall(u64 cpuindex, u64 guest_slab_index){
 
 		case APRVEXEC_LOCK:{
 		    _XDPRINTF_("%s[%u]: call_id=%x(LOCK), eax=%08x,ebx=%08x,edx=%08x\n",
-		               __func__, (u16)cpuindex, call_id, gprs->eax, gprs->ebx, gprs->edx);
-			_XDPRINTF_("%s[%u]: call_id=%x(LOCK), gpa=%016llx\n", __func__, (u16)cpuindex, call_id, gpa);
+		               __func__, (uint16_t)cpuindex, call_id, gprs->eax, gprs->ebx, gprs->edx);
+			_XDPRINTF_("%s[%u]: call_id=%x(LOCK), gpa=%016llx\n", __func__, (uint16_t)cpuindex, call_id, gpa);
 		    ae_lock(cpuindex, guest_slab_index, gpa);
 		}
 		break;
 
 		case APRVEXEC_UNLOCK:{
 		    _XDPRINTF_("%s[%u]: call_id=%x(UNLOCK), eax=%08x,ebx=%08x,edx=%08x\n",
-		               __func__, (u16)cpuindex, call_id, gprs->eax, gprs->ebx, gprs->edx);
-			_XDPRINTF_("%s[%u]: call_id=%x(UNLOCK), gpa=%016llx\n", __func__, (u16)cpuindex, call_id, gpa);
+		               __func__, (uint16_t)cpuindex, call_id, gprs->eax, gprs->ebx, gprs->edx);
+			_XDPRINTF_("%s[%u]: call_id=%x(UNLOCK), gpa=%016llx\n", __func__, (uint16_t)cpuindex, call_id, gpa);
 			ae_unlock(cpuindex, guest_slab_index, gpa);
 		}
 		break;
 
 		default:
-            //_XDPRINTF_("%s[%u]: unsupported hypercall %x. Ignoring\n", __func__, (u16)cpuindex, call_id);
+            //_XDPRINTF_("%s[%u]: unsupported hypercall %x. Ignoring\n", __func__, (uint16_t)cpuindex, call_id);
 			break;
 	}
 
@@ -298,19 +298,19 @@ static void _hcb_hypercall(u64 cpuindex, u64 guest_slab_index){
 
 
 //memory fault
-static void _hcb_memoryfault(u32 cpuindex, u32 guest_slab_index, u64 gpa, u64 gva, u64 errorcode){
+static void _hcb_memoryfault(uint32_t cpuindex, uint32_t guest_slab_index, uint64_t gpa, uint64_t gva, uint64_t errorcode){
 
-    if(ae_activated && ae_paddr == (u32)gpa){
+    if(ae_activated && ae_paddr == (uint32_t)gpa){
     	_XDPRINTF_("%s[%u]: memory fault in guest slab %u; gpa=%016llx, gva=%016llx, errorcode=%016llx, write error to approved code. Halting!\n",
-            __func__, (u16)cpuindex, guest_slab_index, gpa, gva, errorcode);
+            __func__, (uint16_t)cpuindex, guest_slab_index, gpa, gva, errorcode);
     	HALT();
     }
 
 }
 
 // shutdown
-static void _hcb_shutdown(u32 cpuindex, u32 guest_slab_index){
-	_XDPRINTF_("%s[%u]: guest slab %u shutdown...\n", __func__, (u16)cpuindex, guest_slab_index);
+static void _hcb_shutdown(uint32_t cpuindex, uint32_t guest_slab_index){
+	_XDPRINTF_("%s[%u]: guest slab %u shutdown...\n", __func__, (uint16_t)cpuindex, guest_slab_index);
 }
 
 
@@ -324,7 +324,7 @@ static void _hcb_shutdown(u32 cpuindex, u32 guest_slab_index){
 //////
 // slab interface
 
-//void slab_interface(slab_input_params_t *iparams, u64 iparams_size, slab_output_params_t *oparams, u64 oparams_size, u64 src_slabid, u64 cpuindex){
+//void slab_interface(slab_input_params_t *iparams, uint64_t iparams_size, slab_output_params_t *oparams, uint64_t oparams_size, uint64_t src_slabid, uint64_t cpuindex){
 void slab_main(slab_params_t *sp){
     //xc_hypappcb_inputparams_t *hcb_iparams = (xc_hypappcb_inputparams_t *)iparams;
     //xc_hypappcb_outputparams_t *hcb_oparams = (xc_hypappcb_outputparams_t *)oparams;
@@ -332,7 +332,7 @@ void slab_main(slab_params_t *sp){
     hcbp->cbresult=XC_HYPAPPCB_CHAIN;
 
 	//_XDPRINTF_("XHAPRVEXEC[%u]: Got control, cbtype=%x: ESP=%08x\n",
-    //             (u16)sp->cpuid, hcbp->cbtype, CASM_FUNCCALL(read_esp,CASM_NOPARAM));
+    //             (uint16_t)sp->cpuid, hcbp->cbtype, CASM_FUNCCALL(read_esp,CASM_NOPARAM));
 
 
     switch(hcbp->cbtype){
@@ -347,9 +347,9 @@ void slab_main(slab_params_t *sp){
         break;
 
         case XC_HYPAPPCB_MEMORYFAULT:{
-         	u64 errorcode;
-         	u64 gpa;
-         	u64 gva;
+         	uint64_t errorcode;
+         	uint64_t gpa;
+         	uint64_t gva;
          	slab_params_t spl;
        	    xmhf_uapi_gcpustate_vmrw_params_t *gcpustate_vmrwp =
                 (xmhf_uapi_gcpustate_vmrw_params_t *)spl.in_out_params;
@@ -403,7 +403,7 @@ void slab_main(slab_params_t *sp){
 
         default:{
             //_XDPRINTF_("%s[%u]: Unknown cbtype. Ignoring!\n",
-            //    __func__, (u16)sp->cpuid);
+            //    __func__, (uint16_t)sp->cpuid);
         }
     }
 

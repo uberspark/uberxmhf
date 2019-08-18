@@ -63,8 +63,8 @@
 
 
 typedef struct {
-    u32 msr;
-    u64 value;
+    uint32_t msr;
+    uint64_t value;
 }__attribute__((packed)) xmhf_uapi_hcpustate_msr_params_t;
 
 
@@ -77,7 +77,7 @@ void uhcpust_rdmsr(xmhf_uapi_hcpustate_msr_params_t *msrp);
 	requires \valid(msrp);
 	requires 0 <= srcslabid < XMHFGEEC_TOTAL_SLABS;
 @*/
-void uhcpust_wrmsr(u32 srcslabid, xmhf_uapi_hcpustate_msr_params_t *msrp);
+void uhcpust_wrmsr(uint32_t srcslabid, xmhf_uapi_hcpustate_msr_params_t *msrp);
 
 
 #endif	//__ASSEMBLY__

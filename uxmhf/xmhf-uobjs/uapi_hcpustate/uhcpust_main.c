@@ -82,7 +82,7 @@ void slab_main(slab_params_t *sp){
 		//@ghost uhcpust_methodcall_rdmsr = true;
 
 	}else {
-		//_XDPRINTF_("UAPI_HCPUSTATE[%u]: Unknown uAPI function %x. Halting!\n",(u16)sp->cpuid, sp->dst_uapifn);
+		//_XDPRINTF_("UAPI_HCPUSTATE[%u]: Unknown uAPI function %x. Halting!\n",(uint16_t)sp->cpuid, sp->dst_uapifn);
 		//@ghost uhcpust_methodcall_invalid = true;
 
 	}

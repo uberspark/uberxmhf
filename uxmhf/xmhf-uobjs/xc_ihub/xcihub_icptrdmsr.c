@@ -59,14 +59,14 @@
  * author: amit vasudevan (amitvasudevan@acm.org)
  */
 
-void xcihub_icptrdmsr(u32 cpuid){
+void xcihub_icptrdmsr(uint32_t cpuid){
 	slab_params_t spl;
 	xmhf_uapi_gcpustate_vmrw_params_t *gcpustate_vmrwp = (xmhf_uapi_gcpustate_vmrw_params_t *)spl.in_out_params;
 	xmhf_uapi_gcpustate_gprs_params_t *gcpustate_gprs = (xmhf_uapi_gcpustate_gprs_params_t *)spl.in_out_params;
 	xmhf_uapi_hcpustate_msr_params_t *hcpustate_msrp = (xmhf_uapi_hcpustate_msr_params_t *)spl.in_out_params;
-	u32 guest_rip;
-	u64 msrvalue;
-	u32 info_vmexit_instruction_length;
+	uint32_t guest_rip;
+	uint64_t msrvalue;
+	uint32_t info_vmexit_instruction_length;
 	x86regs_t r;
 
 
@@ -78,7 +78,7 @@ void xcihub_icptrdmsr(u32 cpuid){
 	XMHF_SLAB_CALLNEW(&spl);
 	memcpy(&r, &gcpustate_gprs->gprs, sizeof(x86regs_t));
 
-	switch((u32)r.ecx){
+	switch((uint32_t)r.ecx){
 	    case IA32_SYSENTER_CS_MSR:
 		spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_VMREAD;
 		gcpustate_vmrwp->encoding = VMCS_GUEST_SYSENTER_CS;
@@ -104,20 +104,20 @@ void xcihub_icptrdmsr(u32 cpuid){
 		r.eax = gcpustate_vmrwp->value;
 		break;
 	    default:
-		if(		(u32)r.ecx != 0xc0010117 &&
-				(u32)r.ecx != 0xd90 ){
+		if(		(uint32_t)r.ecx != 0xc0010117 &&
+				(uint32_t)r.ecx != 0xd90 ){
 	    	spl.dst_slabid = XMHFGEEC_SLAB_UAPI_HCPUSTATE;
 			spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_RDMSR;
 			hcpustate_msrp->msr = r.ecx;
 			hcpustate_msrp->value = 0;
 			XMHF_SLAB_CALLNEW(&spl);
-			r.edx = (u32)((u64)hcpustate_msrp->value >> 32);
-			r.eax = (u32)hcpustate_msrp->value;
+			r.edx = (uint32_t)((uint64_t)hcpustate_msrp->value >> 32);
+			r.eax = (uint32_t)hcpustate_msrp->value;
 
 		}else{
 			_XDPRINTF_("%s[%u]: VMX_VMEXIT_RDMSR: unsupported. warning!\n", __func__, cpuid);
-			r.edx = (u32)0;
-			r.eax = (u32)0;
+			r.edx = (uint32_t)0;
+			r.eax = (uint32_t)0;
 		}
 
 		break;

@@ -1,4 +1,4 @@
-AC_INIT([emhf], [0.2])
+AC_INIT([emhf], [5.0])
 AC_CONFIG_AUX_DIR([build-aux]) # use this if\when switching to automake
 
 AC_PROG_INSTALL

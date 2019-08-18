@@ -61,7 +61,7 @@
 /*@
 	ensures (!hd_activated && gpa != 0) ==> (hd_activated == true);
 @*/
-void hyperdep_activatedep(u32 cpuindex, u32 guest_slab_index, u64 gpa){
+void hyperdep_activatedep(uint32_t cpuindex, uint32_t guest_slab_index, uint64_t gpa){
 	slab_params_t spl;
 	xmhfgeec_uapi_slabmempgtbl_getentryforpaddr_params_t *getentryforpaddrp =
 		(xmhfgeec_uapi_slabmempgtbl_getentryforpaddr_params_t *)spl.in_out_params;
@@ -80,7 +80,7 @@ void hyperdep_activatedep(u32 cpuindex, u32 guest_slab_index, u64 gpa){
 		//@assert getentryforpaddrp->gpa == gpa;
 		XMHF_SLAB_CALLNEW(&spl);
 
-		_XDPRINTF_("%s[%u]: original entry for gpa=%016llx is %016llx\n", __func__, (u16)cpuindex,
+		_XDPRINTF_("%s[%u]: original entry for gpa=%016llx is %016llx\n", __func__, (uint16_t)cpuindex,
 		       gpa, getentryforpaddrp->result_entry);
 
 		spl.dst_uapifn = XMHFGEEC_UAPI_SLABMEMPGTBL_SETENTRYFORPADDR;
@@ -91,10 +91,10 @@ void hyperdep_activatedep(u32 cpuindex, u32 guest_slab_index, u64 gpa){
 		//@assert !(setentryforpaddrp->entry & 0x4);
 		XMHF_SLAB_CALLNEW(&spl);
 
-		_XDPRINTF_("%s[%u]: activated DEP for page at gpa %016llx\n", __func__, (u16)cpuindex, gpa);
+		_XDPRINTF_("%s[%u]: activated DEP for page at gpa %016llx\n", __func__, (uint16_t)cpuindex, gpa);
 
 		hd_activated=true;
-		hd_pageaddr = (u32)gpa;
+		hd_pageaddr = (uint32_t)gpa;
 	}else{
 	    //do nothing
 	}

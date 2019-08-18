@@ -320,8 +320,8 @@ static void print_sinit_mle_data(sinit_mle_data_t *sinit_mle_data)
     _XDPRINTF_("\t num_vtd_dmars: %u\n", sinit_mle_data->num_vtd_dmars);
     _XDPRINTF_("\t vtd_dmars_off: 0x%x\n", sinit_mle_data->vtd_dmars_off);
     print_sinit_mdrs((sinit_mdr_t *)
-                     (((u32)sinit_mle_data - (u32)sizeof(uint64_t)) +
-                      (u32)sinit_mle_data->mdrs_off), sinit_mle_data->num_mdrs);
+                     (((uint32_t)sinit_mle_data - (uint32_t)sizeof(uint64_t)) +
+                      (uint32_t)sinit_mle_data->mdrs_off), sinit_mle_data->num_mdrs);
     if ( sinit_mle_data->version >= 8 )
         _XDPRINTF_("\t proc_scrtm_status: 0x%08x\n",
                sinit_mle_data->proc_scrtm_status);

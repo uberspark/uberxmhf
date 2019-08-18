@@ -36,12 +36,7 @@ tree of the sources:
 	replace `<uobj-name>` with the uberobject directory name (e.g., `xh_hyperdep`)
 
 
-3.	Performing uberobject composition check
-	
-	`make uxmhf-verifyuobjs-compcheck`
-
-
-4.	Verifying all the uberobjects
+3.	Verifying all the uberobjects
 	
 	`make uxmhf-verifyuobjs-all`
 
@@ -58,8 +53,7 @@ tree of the sources:
 	`./configure --enable-debug-serial=<your-serial-port-number>`
 
 	replace `<your-serial-port-number>` with the system serial port number.
-	Note: if you omit the parameter to `--enable-debug-serial` the default port chosen
-	is `0x3f8` or `COM1`.
+	e.g., `0x3f8` for `COM1`.
 
  
 2.	Building the uberobject binaries and the final hypervisor image

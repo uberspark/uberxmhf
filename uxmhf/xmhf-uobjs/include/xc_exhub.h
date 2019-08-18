@@ -50,8 +50,56 @@
 #ifndef __XC_EXHUB_H__
 #define __XC_EXHUB_H__
 
+#define UAPI_XCEXHUB_DEBUG     	1
+#define UAPI_XCEXHUB_SETUPIDT	2
+#define UAPI_XCEXHUB_LOADIDT	3
+#define UAPI_XCEXHUB_LOADHOSTIDTRBASE 4
 
 #ifndef __ASSEMBLY__
+
+extern __attribute__((section(".data"))) __attribute__(( aligned(16) )) idtentry_t xcexhub_idt_data[EMHF_XCPHANDLER_MAXEXCEPTIONS]; //ro
+extern __attribute__((section(".data"))) __attribute__(( aligned(16) )) arch_x86_idtdesc_t xcexhub_idt; //ro
+extern __attribute__((section(".data"))) uint32_t xcexhub_excp_handlers[EMHF_XCPHANDLER_MAXEXCEPTIONS];
+
+
+CASM_FUNCDECL(void __xmhf_exception_handler_0(void *noparam));
+CASM_FUNCDECL(void __xmhf_exception_handler_1(void *noparam));
+CASM_FUNCDECL(void __xmhf_exception_handler_2(void *noparam));
+CASM_FUNCDECL(void __xmhf_exception_handler_3(void *noparam));
+CASM_FUNCDECL(void __xmhf_exception_handler_4(void *noparam));
+CASM_FUNCDECL(void __xmhf_exception_handler_5(void *noparam));
+CASM_FUNCDECL(void __xmhf_exception_handler_6(void *noparam));
+CASM_FUNCDECL(void __xmhf_exception_handler_7(void *noparam));
+CASM_FUNCDECL(void __xmhf_exception_handler_8(void *noparam));
+CASM_FUNCDECL(void __xmhf_exception_handler_9(void *noparam));
+CASM_FUNCDECL(void __xmhf_exception_handler_10(void *noparam));
+CASM_FUNCDECL(void __xmhf_exception_handler_11(void *noparam));
+CASM_FUNCDECL(void __xmhf_exception_handler_12(void *noparam));
+CASM_FUNCDECL(void __xmhf_exception_handler_13(void *noparam));
+CASM_FUNCDECL(void __xmhf_exception_handler_14(void *noparam));
+CASM_FUNCDECL(void __xmhf_exception_handler_15(void *noparam));
+CASM_FUNCDECL(void __xmhf_exception_handler_16(void *noparam));
+CASM_FUNCDECL(void __xmhf_exception_handler_17(void *noparam));
+CASM_FUNCDECL(void __xmhf_exception_handler_18(void *noparam));
+CASM_FUNCDECL(void __xmhf_exception_handler_19(void *noparam));
+CASM_FUNCDECL(void __xmhf_exception_handler_20(void *noparam));
+CASM_FUNCDECL(void __xmhf_exception_handler_21(void *noparam));
+CASM_FUNCDECL(void __xmhf_exception_handler_22(void *noparam));
+CASM_FUNCDECL(void __xmhf_exception_handler_23(void *noparam));
+CASM_FUNCDECL(void __xmhf_exception_handler_24(void *noparam));
+CASM_FUNCDECL(void __xmhf_exception_handler_25(void *noparam));
+CASM_FUNCDECL(void __xmhf_exception_handler_26(void *noparam));
+CASM_FUNCDECL(void __xmhf_exception_handler_27(void *noparam));
+CASM_FUNCDECL(void __xmhf_exception_handler_28(void *noparam));
+CASM_FUNCDECL(void __xmhf_exception_handler_29(void *noparam));
+CASM_FUNCDECL(void __xmhf_exception_handler_30(void *noparam));
+CASM_FUNCDECL(void __xmhf_exception_handler_31(void *noparam));
+
+void xcexhub_entryexcp(x86vmx_exception_frame_t *exframe);
+CASM_FUNCDECL(void xcexhub_retexcp(x86vmx_exception_frame_t *exframe));
+void xcexhub_excpmain(slab_params_t *sp);
+
+void xcexhub_setupidt(void);
 
 
 #endif //__ASSEMBLY__

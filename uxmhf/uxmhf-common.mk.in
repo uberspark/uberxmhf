@@ -69,10 +69,10 @@ export XMHFGEEC_TOTAL_UGSLABS := 1
 
 ## load base, at 36M
 export XMHF_CONFIG_LOADADDR := 0x06200000
-## load size, 450M
-export XMHF_CONFIG_LOADMAXSIZE := 0x1C200000
-## load max addr, 486M
-export XMHF_CONFIG_LOADMAXADDR := 0x22400000
+## load max size
+export XMHF_CONFIG_LOADMAXSIZE := 0x1D200000
+## load max addr
+export XMHF_CONFIG_LOADMAXADDR := 0x23400000
 ## system max addr, 4GB
 export XMHF_CONFIG_MAXSYSADDR := 0xFFFFFFFF
 
@@ -91,7 +91,7 @@ export XMHF_BUILD_VERSION := 4.1
 #export XMHF_BUILD_REVISION_BRANCH := $(shell git rev-parse --abbrev-ref HEAD)
 #export XMHF_BUILD_REVISION_COMMIT := $(shell git log --pretty=format:'%H' -n 1)
 #export XMHF_BUILD_REVISION := $(XMHF_BUILD_REVISION_BRANCH)-$(XMHF_BUILD_REVISION_COMMIT)
-export XMHF_BUILD_REVISION := clutch-hitting-is-the-key-to-an-effective-offense
+export XMHF_BUILD_REVISION := sometimes-even-the-wisest-of-man-and-machines-can-be-in-error
 
 
 
@@ -138,6 +138,9 @@ V_LIBXMHFHW_MODULES := $(patsubst $(V_LIBXMHFHW_MODULES_DIR)/%, %, $(V_LIBXMHFHW
 export V_LIBXMHFHW_MODULES_DIR;
 export V_LIBXMHFHW_MODULES;
 
+# construct directory for libxmhfgeec
+V_LIBXMHFGEEC_MODULES_DIR := $(realpath $(UBERSPARK_LIBSDIR)/libxmhfgeec)
+export V_LIBXMHFGEEC_MODULES_DIR;
 
 
 

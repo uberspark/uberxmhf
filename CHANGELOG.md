@@ -2,6 +2,21 @@
 
 ## Changelog
 
+* Version 5.0
+	* various documentation fixes
+	* rpi3-cortex_a53-armv8_32: refactored secure-boot, interrupt protection, 
+	  DMA protection, and FIQ reflection as modular build-time options
+	* rpi3-cortex_a53-armv8_32: fixed stability issues within core micro-hypervisor framework
+	* pc-intel-x86_32: migrated debug and uobject info library to core uberspark framework
+	* pc-intel-x86_32: migrated data types to be stdint compatible
+	* pc-intel-x86_32: removed micro-hypervisor specific dependencies on uobject info table
+	* pc-intel-x86_32: added new uobject uhmpgtbl to deal with hypervisor page tables for
+	  unverified hypervisor uobjects
+	* pc-intel-x86_32: added new uobject iotbl to deal with hypervisor legacy I/O tables 
+	  for unverified hypervisor uobjects
+	* pc-intel-x86_32: revised exhub uobject to handle IDT initialization and operation
+	* pc-intel-x86_32: refactored build process to eliminate redundant passes
+
 * Version 4.1
 	* added support for Ubuntu 16.04 LTS with Linux kernel 4.4.x 32-bits (CONFIG_X86_PAE=n)
 	* migrated uberobject manifests to JSON format

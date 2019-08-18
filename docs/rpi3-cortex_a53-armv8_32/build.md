@@ -11,6 +11,15 @@ title: Building
 	1. Use [win32diskimager](https://sourceforge.net/projects/win32diskimager/) under Windows OS to burn contents of .zip
 	1. Use ImageWriter tool under Ubuntu
 	
+1. Boot into raspbian using the sd-card on the pi and resize the root filesystem to
+   fit the entire sd card. Use the following commands once logged in:
+   1. `sudo raspi-config`
+   1. (optional) run the bottom option `update` to make sure you have latest version of
+   the configuration software
+   1. run the second option `expand_rootfs`
+   1. click `finish`
+   1. select `YES` when asked for a reboot
+	
 1. Development system (VM, baremetal or Windows/WSL with Ubuntu 16.04.x) setup
 	1. `sudo apt-get update`
 	1. `sudo apt-get install build-essential autoconf autotools-dev`
@@ -37,20 +46,25 @@ title: Building
 	1. `mkdir -p ~/uxmhf-rpi3-staging/boot`
 	1. `cp ./arch/arm/boot/dts/*.dtb ~/uxmhf-rpi3-staging/boot/.`
 
-1. Obtain sd-card boot-partition extents
-	1. `sudo fdisk -l /dev/mmcblk0`
-	1. note down start sector of /dev/mmcblk0p0 in the output (`BP_START_SECTOR`)
-	1. note down end sector of /dev/mmcblk0p0 in the output (`BP_END_SECTOR`)
-	
 1. Build uberXMHF Raspbery PI 3 on development system
 	1. `cd uxmhf-rpi3`
 	1. `./bsconfigure.sh`
-	1. `./configure --with-boot-partition-start=BP_START_SECTOR --with-boot-partition-end=BP_END_SECTOR` 
+	1. `./configure` 
 	1. `make clean`
 	1. `make OSKRNLIMG=~/uxmhf-rpi3-staging/kernel7.img`
 	1. `cp uxmhf-rpi3.img ~/uxmhf-rpi3-staging/.`
 	1. `cp rpi3-config.txt ~/uxmhf-rpi3-staging/config.txt`
 
+1. Note: you can run `./configure` above using any combination of the following 
+   optional (experimental) parameters as needed:
+    1. `./configure --enable-dmaprot` to enable DMA protection capabilities
+    1. `./configure --enable-secboot --with-boot-partition-start=BP_START_SECTOR --with-boot-partition-end=BP_END_SECTOR` to enable secure boot capabilities. In this case `BP_START_SECTOR` and 
+    `BP_END_SECTOR` are the values of the starting and ending sectors of the boot partition (`/dev/mmcblk0p0`) as obtained from the output of the following command: 
+    `sudo fdisk -l /dev/mmcblk0`. Replace `/dev/mmcblk0` with the sdcard device on the development
+    system.
+    1. `./configure --enable-intprot` to enable interrupt protection capabilities
+    1. `./configure --enable-fiqreflection` to enable guest FIQ interrupts to be handled within micro-hypervisor
+    
 
 <br/>
 ## Build uberApps

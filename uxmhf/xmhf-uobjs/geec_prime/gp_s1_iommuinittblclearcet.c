@@ -58,8 +58,8 @@
 	ensures \forall integer y; 0 <= y < VTD_CET_MAXPTRS ==> ( _slabdevpgtbl_vtd_cet[retindex][y].qwords[1] == 0 );
 
 @*/
-void gp_s1_iommuinittbl_clearcet(u32 retindex){
-	u32 j;
+void gp_s1_iommuinittbl_clearcet(uint32_t retindex){
+	uint32_t j;
 
 	/*@
 		loop invariant b1: 0 <= j <= VTD_CET_MAXPTRS;

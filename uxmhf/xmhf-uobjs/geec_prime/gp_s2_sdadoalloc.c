@@ -50,7 +50,7 @@
 
 #include <geec_prime.h>
 
-//@ghost u32 uobjfordev[MAX_PLATFORM_DEVICES];
+//@ghost uint32_t uobjfordev[MAX_PLATFORM_DEVICES];
 //@ghost bool invokedgetuobjfordev[MAX_PLATFORM_DEVICES];
 //@ghost bool invokedsdabinddevice[MAX_PLATFORM_DEVICES];
 /*@
@@ -83,8 +83,8 @@
 
 @*/
 void gp_s2_sdadoalloc(void){
-	u32 i;
-	u32 dst_slabid;
+	uint32_t i;
+	uint32_t dst_slabid;
 
 
 		/*@

@@ -50,4 +50,4 @@
 #include <xc.h>
 #include <xc_ihub.h>
 
-__attribute__(( section(".data") )) volatile u32 xcihub_smplock = 1;
+__attribute__(( section(".data") )) volatile uint32_t xcihub_smplock = 1;

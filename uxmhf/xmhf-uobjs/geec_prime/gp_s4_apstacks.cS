@@ -58,11 +58,11 @@
 	x86smp_apbootstrapdata_t *apdptr = (x86smp_apbootstrapdata_t *)&xmhfhwm_mem_region_apbootstrap_dataseg;
 	bool invoked_gp_s5_entry = false;
 	
-	void xmhfhwm_vdriver_writeesp(u32 oldval, u32 newval){
+	void xmhfhwm_vdriver_writeesp(uint32_t oldval, uint32_t newval){
 	}
 	
-	void xmhfhwm_vdriver_cpu_writecr3(u32 oldval, u32 newval){
-		//@assert (newval ==(u32)&gp_rwdatahdr.gp_vhslabmempgtbl_lvl4t);
+	void xmhfhwm_vdriver_cpu_writecr3(uint32_t oldval, uint32_t newval){
+		//@assert (newval ==(uint32_t)&gp_rwdatahdr.gp_vhslabmempgtbl_lvl4t);
 	}
 
 	void xmhfhwm_vdriver_smpcommon(void){
@@ -72,25 +72,25 @@
 		//@assert (xmhfhwm_cpu_gs_selector == 0x8);
 		//@assert (xmhfhwm_cpu_ss_selector == 0x8);
 		//@assert (xmhfhwm_cpu_cr4 == 0x30);
-		//@assert (xmhfhwm_cpu_cr3 ==(u32)&gp_rwdatahdr.gp_vhslabmempgtbl_lvl4t);
+		//@assert (xmhfhwm_cpu_cr3 ==(uint32_t)&gp_rwdatahdr.gp_vhslabmempgtbl_lvl4t);
 		//@assert (xmhfhwm_cpu_msr_efer & 0x800);
 		//@assert (xmhfhwm_cpu_cr0 == 0x80000015);
 		//@assert (xmhfhwm_cpu_msr_apic_base == MMIO_APIC_BASE);
 	}
 
 	void main(void){
-		u32 i;
+		uint32_t i;
 
 		//execute harness
 		for(i=0; i < (MAX_PLATFORM_CPUS-1); i++){
-			xmhfhwm_cpu_gprs_esp = (u32)&_init_bsp_cpustack + MAX_PLATFORM_CPUSTACK_SIZE;
+			xmhfhwm_cpu_gprs_esp = (uint32_t)&_init_bsp_cpustack + MAX_PLATFORM_CPUSTACK_SIZE;
 			xmhfhwm_cpu_ds_selector = 0x8;
 			xmhfhwm_cpu_cr4 = 0;
-			xmhfhwm_cpu_gprs_ebx = (u32)&gp_rwdatahdr.gp_vhslabmempgtbl_lvl4t;
+			xmhfhwm_cpu_gprs_ebx = (uint32_t)&gp_rwdatahdr.gp_vhslabmempgtbl_lvl4t;
 			xmhfhwm_lapic_reg_id = i << 24;
 			CASM_FUNCCALL(gp_s4_apstacks, CASM_NOPARAM);
 			//@assert (invoked_gp_s5_entry == true);
-			//@assert (xmhfhwm_cpu_gprs_esp == ((u32)&_init_cpustacks[i+1][8]));
+			//@assert (xmhfhwm_cpu_gprs_esp == ((uint32_t)&_init_cpustacks[i+1][8]));
 		}
 	}
 #endif

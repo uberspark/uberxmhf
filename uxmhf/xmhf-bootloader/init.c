@@ -65,56 +65,56 @@
 #include "_multiboot.h"
 
 ////libxmhfdebug
-//u32 libxmhfdebug_lock = 1;
+//uint32_t libxmhfdebug_lock = 1;
 
 
 
 
 //the vcpu structure which holds the current state of a core
 typedef struct _bootvcpu {
-  u32 esp;                //used to establish stack for the CPU
-  u32 id;                 //LAPIC id of the core
-  u32 cpu_vendor;					//Intel or AMD
-  u32 isbsp;							//1 if this core is BSP else 0
+  uint32_t esp;                //used to establish stack for the CPU
+  uint32_t id;                 //LAPIC id of the core
+  uint32_t cpu_vendor;					//Intel or AMD
+  uint32_t isbsp;							//1 if this core is BSP else 0
 } __attribute__((packed)) BOOTVCPU;
 
 #define SIZE_STRUCT_BOOTVCPU    (sizeof(struct _bootvcpu))
 
 //---forward prototypes---------------------------------------------------------
-u32 smp_getinfo(PCPU *pcpus, u32 *num_pcpus);
+uint32_t smp_getinfo(PCPU *pcpus, uint32_t *num_pcpus);
 void cstartup(multiboot_info_t *mbi);
 MPFP * MP_GetFPStructure(void);
-u32 _MPFPComputeChecksum(u32 spaddr, u32 size);
-u32 isbsp(void);
+uint32_t _MPFPComputeChecksum(uint32_t spaddr, uint32_t size);
+uint32_t isbsp(void);
 
 //---globals--------------------------------------------------------------------
  __attribute__(( section(".data") )) PCPU pcpus[MAX_PCPU_ENTRIES];
-u32 pcpus_numentries=0;
- __attribute__(( section(".data") )) u32 cpu_vendor;    //CPU_VENDOR_INTEL or CPU_VENDOR_AMD
- __attribute__(( section(".data") )) u32 hypervisor_image_baseaddress;    //2M aligned highest physical memory address
+uint32_t pcpus_numentries=0;
+ __attribute__(( section(".data") )) uint32_t cpu_vendor;    //CPU_VENDOR_INTEL or CPU_VENDOR_AMD
+ __attribute__(( section(".data") )) uint32_t hypervisor_image_baseaddress;    //2M aligned highest physical memory address
 //where the hypervisor binary is relocated to
  __attribute__(( section(".data") )) GRUBE820 grube820list[MAX_E820_ENTRIES];
-u32 grube820list_numentries=0;        //actual number of e820 entries returned
+uint32_t grube820list_numentries=0;        //actual number of e820 entries returned
 //by grub
 
 //master-id table which holds LAPIC ID to BOOTVCPU mapping for each physical core
 MIDTAB midtable[MAX_MIDTAB_ENTRIES] __attribute__(( section(".data") ));
 
 //number of physical cores in the system
-u32 midtable_numentries=0;
+uint32_t midtable_numentries=0;
 
 //BOOTVCPU buffers for all cores
 BOOTVCPU vcpubuffers[MAX_VCPU_ENTRIES] __attribute__(( section(".data") ));
 
 //initial stacks for all cores
-u8 cpustacks[RUNTIME_STACK_SIZE * MAX_PCPU_ENTRIES] __attribute__(( section(".stack") ));
+uint8_t cpustacks[RUNTIME_STACK_SIZE * MAX_PCPU_ENTRIES] __attribute__(( section(".stack") ));
 
 XMHF_BOOTINFO *xslbootinfo = NULL;
 
 /* TODO: refactor to eliminate a lot of these globals, or at least use
  * static where appropriate */
-static u8 *g_sinit_module_ptr = NULL;
-static u32 g_sinit_module_size = 0;
+static uint8_t *g_sinit_module_ptr = NULL;
+static uint32_t g_sinit_module_size = 0;
 
 extern void init_core_lowlevel_setup(void);
 
@@ -167,9 +167,9 @@ void dealwithMP(void){
 
 
 //---microsecond delay----------------------------------------------------------
-void udelay(u32 usecs){
-    u8 val;
-    u32 latchregval;
+void udelay(uint32_t usecs){
+    uint8_t val;
+    uint32_t latchregval;
 
     //enable 8254 ch-2 counter
     val = inb(0x61);
@@ -184,9 +184,9 @@ void udelay(u32 usecs){
     latchregval = (1193182 * usecs) / 1000000;
 
     //write latch register to ch-2
-    val = (u8)latchregval;
+    val = (uint8_t)latchregval;
     outb(val, 0x42);
-    val = (u8)((u32)latchregval >> (u32)8);
+    val = (uint8_t)((uint32_t)latchregval >> (uint32_t)8);
     outb(val , 0x42);
 
     //wait for countdown
@@ -201,21 +201,21 @@ void udelay(u32 usecs){
 
 //---INIT IPI routine-----------------------------------------------------------
 void send_init_ipi_to_all_APs(void) {
-    u32 eax, edx;
-    u64 msr_value;
-    volatile u32 *icr;
-    u32 timeout = 0x01000000;
+    uint32_t eax, edx;
+    uint64_t msr_value;
+    volatile uint32_t *icr;
+    uint32_t timeout = 0x01000000;
 
     //read LAPIC base address from MSR
 	msr_value = rdmsr64( MSR_APIC_BASE);
-	eax = (u32)msr_value;
-	edx = (u32)(msr_value >> 32);
+	eax = (uint32_t)msr_value;
+	edx = (uint32_t)(msr_value >> 32);
 
 
     HALT_ON_ERRORCOND( edx == 0 ); //APIC is below 4G
     _XDPRINTF_("\nLAPIC base and status=0x%08x", eax);
 
-    icr = (u32 *) (((u32)eax & 0xFFFFF000UL) + 0x300);
+    icr = (uint32_t *) (((uint32_t)eax & 0xFFFFF000UL) + 0x300);
 
     //send INIT
     _XDPRINTF_("\nSending INIT IPI to all APs...");
@@ -223,7 +223,7 @@ void send_init_ipi_to_all_APs(void) {
     udelay(10000);
     //wait for command completion
     {
-        u32 val;
+        uint32_t val;
         do{
             val = *icr;
         }while(--timeout > 0 && (val & 0x1000) );
@@ -238,7 +238,7 @@ void send_init_ipi_to_all_APs(void) {
 
 //---E820 parsing and handling--------------------------------------------------
 //runtimesize is assumed to be 2M aligned
-u32 dealwithE820(multiboot_info_t *mbi, u32 runtimesize __attribute__((unused))){
+uint32_t dealwithE820(multiboot_info_t *mbi, uint32_t runtimesize __attribute__((unused))){
     //check if GRUB has a valid E820 map
     if(!(mbi->flags & MBI_MEMMAP)){
         _XDPRINTF_("\n%s: no E820 map provided. HALT!", __func__);
@@ -266,7 +266,7 @@ u32 dealwithE820(multiboot_info_t *mbi, u32 runtimesize __attribute__((unused)))
 
     //debug: print grube820list
     {
-        u32 i;
+        uint32_t i;
         _XDPRINTF_("\noriginal system E820 map follows:\n");
         for(i=0; i < grube820list_numentries; i++){
             _XDPRINTF_("\n0x%08x%08x, size=0x%08x%08x (%u)",
@@ -280,13 +280,13 @@ u32 dealwithE820(multiboot_info_t *mbi, u32 runtimesize __attribute__((unused)))
     //traverse e820 list forward to find an entry with type=0x1 (free)
     //with free amount of memory for runtime
     {
-        u32 foundentry=0;
-        u32 slruntimephysicalbase=__TARGET_BASE_XMHF;	//SL + runtime base
-        u32 i;
+        uint32_t foundentry=0;
+        uint32_t slruntimephysicalbase=__TARGET_BASE_XMHF;	//SL + runtime base
+        uint32_t i;
 
         //for(i= (int)(grube820list_numentries-1); i >=0; i--){
 		for(i= 0; i < grube820list_numentries; i++){
-            u32 baseaddr, size;
+            uint32_t baseaddr, size;
             baseaddr = grube820list[i].baseaddr_low;
             size = grube820list[i].length_low;
 
@@ -319,7 +319,7 @@ u32 dealwithE820(multiboot_info_t *mbi, u32 runtimesize __attribute__((unused)))
 
 				//temporary E820 table with index
 				GRUBE820 te820[MAX_E820_ENTRIES];
-				u32 j=0;
+				uint32_t j=0;
 
 				//copy all entries from original E820 table until index i
 				for(j=0; j < i; j++)
@@ -375,7 +375,7 @@ u32 dealwithE820(multiboot_info_t *mbi, u32 runtimesize __attribute__((unused)))
 
 		//debug: print grube820list
 		{
-			u32 i;
+			uint32_t i;
 			_XDPRINTF_("\nrevised system E820 map follows:\n");
 			for(i=0; i < grube820list_numentries; i++){
 				_XDPRINTF_("\n0x%08x%08x, size=0x%08x%08x (%u)",
@@ -396,8 +396,8 @@ u32 dealwithE820(multiboot_info_t *mbi, u32 runtimesize __attribute__((unused)))
 /* Based primarily on tboot-20101005's txt/verify.c */
 bool txt_supports_txt(void) {
 
-    u32 cpuid_ext_feat_info, dummy;
-    u64 feat_ctrl_msr;
+    uint32_t cpuid_ext_feat_info, dummy;
+    uint64_t feat_ctrl_msr;
     capabilities_t cap;
 
     xmhfhw_cpu_cpuid(1, &dummy, &dummy, &cpuid_ext_feat_info, &dummy);
@@ -555,7 +555,7 @@ bool txt_do_senter(void *phys_mle_start, size_t mle_size) {
     txt_status_regs();
 
     if((err = txt_verify_platform()) != TB_ERR_NONE) {
-        _XDPRINTF_("ERROR: txt_verify_platform returned 0x%08x\n", (u32)err);
+        _XDPRINTF_("ERROR: txt_verify_platform returned 0x%08x\n", (uint32_t)err);
         return false;
     }
     if(!txt_prepare_cpu()) {
@@ -591,7 +591,7 @@ static bool txt_parse_sinit(module_t *mod_array, unsigned int mods_count) {
         bytes = mod_array[i].mod_end - mod_array[i].mod_start;
         _XDPRINTF_("Checking whether MBI module %i is SINIT...\n", i);
         if(is_sinit_acmod((void*)mod_array[i].mod_start, bytes, false)) {
-            g_sinit_module_ptr = (u8*)mod_array[i].mod_start;
+            g_sinit_module_ptr = (uint8_t*)mod_array[i].mod_start;
             g_sinit_module_size = bytes;
             _XDPRINTF_("YES! SINIT found @ %p, %d bytes\n",
                    g_sinit_module_ptr, g_sinit_module_size);
@@ -610,7 +610,7 @@ static bool svm_verify_platform(void) __attribute__((unused));
 static bool svm_verify_platform(void)
 {
     uint32_t eax, edx, ebx, ecx;
-    u64 msr_value;
+    uint64_t msr_value;
     uint64_t efer;
 
     xmhfhw_cpu_cpuid(0x80000001, &eax, &ebx, &ecx, &edx);
@@ -622,8 +622,8 @@ static bool svm_verify_platform(void)
 
     /* Check whether SVM feature is disabled in BIOS */
 	msr_value = rdmsr64( VM_CR_MSR);
-	eax = (u32)msr_value;
-	edx = (u32)(msr_value >> 32);
+	eax = (uint32_t)msr_value;
+	edx = (uint32_t)(msr_value >> 32);
 
 
     if (eax & VM_CR_SVME_DISABLE) {
@@ -633,7 +633,7 @@ static bool svm_verify_platform(void)
 
     /* Turn on SVM */
     efer = rdmsr64(MSR_EFER) | (1<<EFER_SVME);
-    wrmsr64(MSR_EFER, (u32)efer, (u32)((u64)efer >> 32));
+    wrmsr64(MSR_EFER, (uint32_t)efer, (uint32_t)((uint64_t)efer >> 32));
     efer = rdmsr64(MSR_EFER);
     if ((efer & (1<<EFER_SVME)) == 0) {
         _XDPRINTF_("ERR: Could not enable AMD SVM\n");
@@ -655,7 +655,7 @@ static bool svm_prepare_cpu(void)
     uint64_t mcg_cap, mcg_stat;
     uint64_t apicbase;
     uint32_t cr0;
-    u32 i, bound;
+    uint32_t i, bound;
 
     /* must be running at CPL 0 => this is implicit in even getting this far */
     /* since our bootstrap code loads a GDT, etc. */
@@ -685,7 +685,7 @@ static bool svm_prepare_cpu(void)
 
     /* all machine check regs are clear */
     mcg_cap = rdmsr64(MSR_MCG_CAP);
-    bound = (u32)mcg_cap & 0x000000ff;
+    bound = (uint32_t)mcg_cap & 0x000000ff;
     for (i = 0; i < bound; i++) {
         mcg_stat = rdmsr64(MSR_MC0_STATUS + 4*i);
         if (mcg_stat & (1ULL << 63)) {
@@ -710,7 +710,7 @@ static bool svm_prepare_cpu(void)
 //inputs:
 //cpu_vendor = intel or amd
 //slbase= physical memory address of start of sl
-void do_drtm(BOOTVCPU __attribute__((unused))*vcpu, u32 slbase, size_t mle_size __attribute__((unused))){
+void do_drtm(BOOTVCPU __attribute__((unused))*vcpu, uint32_t slbase, size_t mle_size __attribute__((unused))){
 //#ifdef __MP_VERSION__
     HALT_ON_ERRORCOND(vcpu->id == 0);
     //send INIT IPI to all APs
@@ -744,7 +744,7 @@ void do_drtm(BOOTVCPU __attribute__((unused))*vcpu, u32 slbase, size_t mle_size 
         //        : "ebx","ecx");
        // }
 		//#endif
-        skinit((u32)slbase);
+        skinit((uint32_t)slbase);
     } else {
         _XDPRINTF_("\n******  INIT(early): Begin TXT Stuff  ******\n");
         txt_do_senter((void*)(slbase+3*PAGE_SIZE_4K), TEMPORARY_HARDCODED_MLE_SIZE);
@@ -755,15 +755,15 @@ void do_drtm(BOOTVCPU __attribute__((unused))*vcpu, u32 slbase, size_t mle_size 
 #else  //!__DRT__
 	//don't use SKINIT or SENTER
 	{
-		u32 sl_entry_point;
-		u16 *sl_entry_point_offset = (u16 *)slbase;
+		uint32_t sl_entry_point;
+		uint16_t *sl_entry_point_offset = (uint16_t *)slbase;
 		typedef void(*FCALL)(void);
 		FCALL invokesl;
 
 		_XDPRINTF_("\n****** NO DRTM startup ******\n");
-		_XDPRINTF_("\nslbase=0x%08x, sl_entry_point_offset=0x%08x", (u32)slbase, *sl_entry_point_offset);
-		sl_entry_point = (u32)slbase + (u32) (*sl_entry_point_offset);
-		invokesl = (FCALL)(u32)sl_entry_point;
+		_XDPRINTF_("\nslbase=0x%08x, sl_entry_point_offset=0x%08x", (uint32_t)slbase, *sl_entry_point_offset);
+		sl_entry_point = (uint32_t)slbase + (uint32_t) (*sl_entry_point_offset);
+		invokesl = (FCALL)(uint32_t)sl_entry_point;
 		_XDPRINTF_("\nSL entry point to transfer control to: 0x%08x", invokesl);
 		invokesl();
         _XDPRINTF_("\nINIT(early): error(fatal), should never come here!");
@@ -774,27 +774,27 @@ void do_drtm(BOOTVCPU __attribute__((unused))*vcpu, u32 slbase, size_t mle_size 
 }
 
 
-void setupvcpus(u32 cpu_vendor, MIDTAB *midtable, u32 midtable_numentries){
-    u32 i;
+void setupvcpus(uint32_t cpu_vendor, MIDTAB *midtable, uint32_t midtable_numentries){
+    uint32_t i;
     BOOTVCPU *vcpu;
 
     _XDPRINTF_("\n%s: cpustacks range 0x%08x-0x%08x in 0x%08x chunks",
-           __func__, (u32)cpustacks, (u32)cpustacks + (RUNTIME_STACK_SIZE * MAX_VCPU_ENTRIES),
+           __func__, (uint32_t)cpustacks, (uint32_t)cpustacks + (RUNTIME_STACK_SIZE * MAX_VCPU_ENTRIES),
            RUNTIME_STACK_SIZE);
     _XDPRINTF_("\n%s: vcpubuffers range 0x%08x-0x%08x in 0x%08x chunks",
-           __func__, (u32)vcpubuffers, (u32)vcpubuffers + (SIZE_STRUCT_BOOTVCPU * MAX_VCPU_ENTRIES),
+           __func__, (uint32_t)vcpubuffers, (uint32_t)vcpubuffers + (SIZE_STRUCT_BOOTVCPU * MAX_VCPU_ENTRIES),
            SIZE_STRUCT_BOOTVCPU);
 
     for(i=0; i < midtable_numentries; i++){
-        vcpu = (BOOTVCPU *)((u32)vcpubuffers + (u32)(i * SIZE_STRUCT_BOOTVCPU));
+        vcpu = (BOOTVCPU *)((uint32_t)vcpubuffers + (uint32_t)(i * SIZE_STRUCT_BOOTVCPU));
         memset((void *)vcpu, 0, sizeof(BOOTVCPU));
 
         vcpu->cpu_vendor = cpu_vendor;
 
-        vcpu->esp = ((u32)cpustacks + (i * RUNTIME_STACK_SIZE)) + RUNTIME_STACK_SIZE;
+        vcpu->esp = ((uint32_t)cpustacks + (i * RUNTIME_STACK_SIZE)) + RUNTIME_STACK_SIZE;
         vcpu->id = midtable[i].cpu_lapic_id;
 
-        midtable[i].vcpu_vaddr_ptr = (u32)vcpu;
+        midtable[i].vcpu_vaddr_ptr = (uint32_t)vcpu;
         _XDPRINTF_("\nCPU #%u: vcpu_vaddr_ptr=0x%08x, esp=0x%08x", i, midtable[i].vcpu_vaddr_ptr,
                vcpu->esp);
     }
@@ -803,24 +803,24 @@ void setupvcpus(u32 cpu_vendor, MIDTAB *midtable, u32 midtable_numentries){
 
 //---wakeupAPs------------------------------------------------------------------
 void wakeupAPs(void){
-    u32 eax, edx;
-    volatile u32 *icr;
-    u64 msr_value;
+    uint32_t eax, edx;
+    volatile uint32_t *icr;
+    uint64_t msr_value;
 
     //read LAPIC base address from MSR
 	msr_value = rdmsr64( MSR_APIC_BASE);
-	eax = (u32)msr_value;
-	edx = (u32)(msr_value >> 32);
+	eax = (uint32_t)msr_value;
+	edx = (uint32_t)(msr_value >> 32);
 
 
     HALT_ON_ERRORCOND( edx == 0 ); //APIC is below 4G
     //_XDPRINTF_("\nLAPIC base and status=0x%08x", eax);
 
-    icr = (u32 *) (((u32)eax & 0xFFFFF000UL) + 0x300);
+    icr = (uint32_t *) (((uint32_t)eax & 0xFFFFF000UL) + 0x300);
 
     {
-        extern u32 _ap_bootstrap_start[], _ap_bootstrap_end[];
-        memcpy((void *)0x10000, (void *)_ap_bootstrap_start, (u32)_ap_bootstrap_end - (u32)_ap_bootstrap_start + 1);
+        extern uint32_t _ap_bootstrap_start[], _ap_bootstrap_end[];
+        memcpy((void *)0x10000, (void *)_ap_bootstrap_start, (uint32_t)_ap_bootstrap_end - (uint32_t)_ap_bootstrap_start + 1);
     }
 
     //our test code is at 1000:0000, we need to send 10 as vector
@@ -830,7 +830,7 @@ void wakeupAPs(void){
     udelay(10000);
     //wait for command completion
     {
-        u32 val;
+        uint32_t val;
         do{
             val = *icr;
         }while( (val & 0x1000) );
@@ -846,7 +846,7 @@ void wakeupAPs(void){
             udelay(200);
             //wait for command completion
             {
-                u32 val;
+                uint32_t val;
                 do{
                     val = *icr;
                 }while( (val & 0x1000) );
@@ -890,7 +890,7 @@ bool svm_prepare_tpm(void) {
 //---init main----------------------------------------------------------------
 void cstartup(multiboot_info_t *mbi){
     module_t *mod_array;
-    u32 mods_count;
+    uint32_t mods_count;
 	size_t hypapp_size;
 
     /* parse command line */
@@ -999,17 +999,17 @@ void cstartup(multiboot_info_t *mbi){
     //print_hex("    INIT(early): *UNTRUSTED* gold runtime: ",
     //         g_init_gold.sha_runtime, SHA_DIGEST_LENGTH);
     //hashandprint("    INIT(early): *UNTRUSTED* comp runtime: ",
-    //             (u8*)hypervisor_image_baseaddress+0x200000, sl_rt_size-0x200000);
+    //             (uint8_t*)hypervisor_image_baseaddress+0x200000, sl_rt_size-0x200000);
     /* SL low 64K */
     //print_hex("    INIT(early): *UNTRUSTED* gold SL low 64K: ",
     //          g_init_gold.sha_slbelow64K, SHA_DIGEST_LENGTH);
     //hashandprint("    INIT(early): *UNTRUSTED* comp SL low 64K: ",
-    //             (u8*)hypervisor_image_baseaddress, 0x10000);
+    //             (uint8_t*)hypervisor_image_baseaddress, 0x10000);
     /* SL above 64K */
     //print_hex("    INIT(early): *UNTRUSTED* gold SL above 64K: ",
     //          g_init_gold.sha_slabove64K, SHA_DIGEST_LENGTH);
     //hashandprint("    INIT(early): *UNTRUSTED* comp SL above 64K): ",
-    //             (u8*)hypervisor_image_baseaddress+0x10000, 0x200000-0x10000);
+    //             (uint8_t*)hypervisor_image_baseaddress+0x10000, 0x200000-0x10000);
 
 
     //print out stats
@@ -1021,7 +1021,7 @@ void cstartup(multiboot_info_t *mbi){
     //fill in "sl" parameter block
     {
         //"sl" parameter block is at hypervisor_image_baseaddress + 0x10000
-        xslbootinfo = (XMHF_BOOTINFO *)((u32)hypervisor_image_baseaddress + 0x10000);
+        xslbootinfo = (XMHF_BOOTINFO *)((uint32_t)hypervisor_image_baseaddress + 0x10000);
         HALT_ON_ERRORCOND(xslbootinfo->magic == SL_PARAMETER_BLOCK_MAGIC);
         xslbootinfo->memmapinfo_numentries = grube820list_numentries;
         HALT_ON_ERRORCOND(xslbootinfo->memmapinfo_numentries <= 64);
@@ -1037,7 +1037,7 @@ void cstartup(multiboot_info_t *mbi){
 		/*//check if we have an optional app module and if so populate relevant SLPB
 		//fields
 		{
-			u32 i, bytes;
+			uint32_t i, bytes;
 			xslbootinfo->runtime_appmodule_base= 0;
 			xslbootinfo->runtime_appmodule_size= 0;
 
@@ -1066,8 +1066,8 @@ void cstartup(multiboot_info_t *mbi){
 
     //fill in bootinfo
     {
-        xslbootinfo = (XMHF_BOOTINFO *)((u32)__TARGET_BASE_SL + PAGE_SIZE_2M);
-        _XDPRINTF_("xmhf-bootloader: xslbootinfo=%08x, magic=%x\n", (u32)xslbootinfo, xslbootinfo->magic);
+        xslbootinfo = (XMHF_BOOTINFO *)((uint32_t)__TARGET_BASE_SL + PAGE_SIZE_2M);
+        _XDPRINTF_("xmhf-bootloader: xslbootinfo=%08x, magic=%x\n", (uint32_t)xslbootinfo, xslbootinfo->magic);
         HALT_ON_ERRORCOND(xslbootinfo->magic == RUNTIME_PARAMETER_BLOCK_MAGIC);
         xslbootinfo->memmapinfo_numentries = grube820list_numentries;
         HALT_ON_ERRORCOND(xslbootinfo->memmapinfo_numentries <= 64);
@@ -1115,14 +1115,14 @@ void cstartup(multiboot_info_t *mbi){
 
 //---isbsp----------------------------------------------------------------------
 //returns 1 if the calling CPU is the BSP, else 0
-u32 isbsp(void){
-    u32 eax, edx;
-    u64 msr_value;
+uint32_t isbsp(void){
+    uint32_t eax, edx;
+    uint64_t msr_value;
 
     //read LAPIC base address from MSR
 	msr_value = rdmsr64( MSR_APIC_BASE);
-	eax = (u32)msr_value;
-	edx = (u32)(msr_value >> 32);
+	eax = (uint32_t)msr_value;
+	edx = (uint32_t)(msr_value >> 32);
 
 
     HALT_ON_ERRORCOND( edx == 0 ); //APIC is below 4G
@@ -1136,31 +1136,31 @@ u32 isbsp(void){
 
 //---CPUs must all have their microcode cleared for SKINIT to be successful-----
 void svm_clear_microcode(BOOTVCPU *vcpu){
-    u32 ucode_rev;
-    u32 dummy=0;
-    u64 msr_value, clear_value;
+    uint32_t ucode_rev;
+    uint32_t dummy=0;
+    uint64_t msr_value, clear_value;
 
     // Current microcode patch level available via MSR read
 	msr_value = rdmsr64( MSR_AMD64_PATCH_LEVEL);
-	ucode_rev = (u32)msr_value;
-	dummy = (u32)(msr_value >> 32);
+	ucode_rev = (uint32_t)msr_value;
+	dummy = (uint32_t)(msr_value >> 32);
 
 
 
     _XDPRINTF_("\nCPU(0x%02x): existing microcode version 0x%08x", vcpu->id, ucode_rev);
 
-	clear_value = (u64)(((u64)dummy << 32) | dummy);
+	clear_value = (uint64_t)(((uint64_t)dummy << 32) | dummy);
     if(ucode_rev != 0) {
-        wrmsr64(MSR_AMD64_PATCH_CLEAR, (u32)clear_value, (u32)((u64)clear_value >> 32) );
+        wrmsr64(MSR_AMD64_PATCH_CLEAR, (uint32_t)clear_value, (uint32_t)((uint64_t)clear_value >> 32) );
         _XDPRINTF_("\nCPU(0x%02x): microcode CLEARED", vcpu->id);
     }
 }
 
 
-u32 cpus_active=0; //number of CPUs that are awake, should be equal to
+uint32_t cpus_active=0; //number of CPUs that are awake, should be equal to
 //midtable_numentries -1 if all went well with the
 //MP startup protocol
-u32 lock_cpus_active=1; //spinlock to access the above
+uint32_t lock_cpus_active=1; //spinlock to access the above
 
 
 //------------------------------------------------------------------------------

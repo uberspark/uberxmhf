@@ -65,9 +65,9 @@
 
 //VFM
 extern bool ssteptrace_on;
-extern u32 ssteptrace_codepaddr;
+extern uint32_t ssteptrace_codepaddr;
 
-//void xhssteptrace_inv_xmhf_hic_uapi_cpustate_vmwrite(u64 encoding, u64 value);
+//void xhssteptrace_inv_xmhf_hic_uapi_cpustate_vmwrite(uint64_t encoding, uint64_t value);
 #endif	//__ASSEMBLY__
 
 #endif //__XH_SSTEPTRACE_H__

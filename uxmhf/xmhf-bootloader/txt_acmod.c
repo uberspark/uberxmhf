@@ -253,7 +253,7 @@ static void print_acm_hdr(acm_hdr_t *hdr, const char *mod_name)
            hdr->scratch_size);
 
     /* GDT */
-    //print_hex("\t\t SINIT GDT: ", (void *)((u32)hdr+hdr->gdt_base), hdr->gdt_limit);
+    //print_hex("\t\t SINIT GDT: ", (void *)((uint32_t)hdr+hdr->gdt_base), hdr->gdt_limit);
     /* info table */
     _XDPRINTF_("\t info_table:\n");
     info_table = get_acmod_info_table(hdr);

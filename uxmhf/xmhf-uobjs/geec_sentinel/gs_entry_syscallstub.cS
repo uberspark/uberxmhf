@@ -62,14 +62,14 @@
 #include <uapi_gcpustate.h>
 #include <xh_aprvexec.h>
 
-u32 cpuid = 0;	//cpu
-u32 check_esp, check_eip = CASM_RET_EIP;
+uint32_t cpuid = 0;	//cpu
+uint32_t check_esp, check_eip = CASM_RET_EIP;
 
 	#if defined (DRV_PATH_CALLUH2VH)
 	slab_params_t drv_path_calluh2vh_callersp;
 	
 	void xmhfhwm_vdriver_slabep(void){
-		//@assert xmhfhwm_cpu_gprs_eip == (u32)xmhfgeec_slab_info_table[XMHFGEEC_SLAB_UAPI_GCPUSTATE].entrystub;
+		//@assert xmhfhwm_cpu_gprs_eip == (uint32_t)xmhfgeec_slab_info_table[XMHFGEEC_SLAB_UAPI_GCPUSTATE].entrystub;
 		//@assert false;
 	}
 	
@@ -86,9 +86,6 @@ u32 check_esp, check_eip = CASM_RET_EIP;
 		xmhfhwm_sysmemaccess_physmem_extents[xmhfhwm_sysmemaccess_physmem_extents_total].addr_end =
 			xmhfgeec_slab_info_table[XMHFGEEC_SLAB_XH_SSTEPTRACE].slab_physmem_extents[2].addr_end;
 		xmhfhwm_sysmemaccess_physmem_extents_total++;
-	
-		//load cr3 for xc_testslab
-		xmhfhwm_cpu_cr3 = xmhfgeec_slab_info_table[XMHFGEEC_SLAB_XH_SSTEPTRACE].mempgtbl_cr3;
 	
 		//setup verified slab stack parameters for parameter marshalling
 		xmhfhwm_cpu_gprs_esp -= sizeof(slab_params_t);
@@ -128,16 +125,16 @@ u32 check_esp, check_eip = CASM_RET_EIP;
 		xmhfhwm_sysmemaccess_physmem_extents_total++;
 	
 		//setup verified slab stack frame that this slab is returning to
-		xmhfhwm_cpu_gprs_esp -= sizeof(u32);
-		*(u32 *)xmhfhwm_cpu_gprs_esp = CASM_RET_EIP;
-		xmhfhwm_cpu_gprs_esp -= sizeof(u32);
-		*(u32 *)xmhfhwm_cpu_gprs_esp = xmhfhwm_cpu_gprs_ebp;
-		xmhfhwm_cpu_gprs_esp -= sizeof(u32);
-		*(u32 *)xmhfhwm_cpu_gprs_esp = xmhfhwm_cpu_gprs_edi;
-		xmhfhwm_cpu_gprs_esp -= sizeof(u32);
-		*(u32 *)xmhfhwm_cpu_gprs_esp = xmhfhwm_cpu_gprs_esi;
-		xmhfhwm_cpu_gprs_esp -= sizeof(u32);
-		*(u32 *)xmhfhwm_cpu_gprs_esp = xmhfhwm_cpu_gprs_ebx;
+		xmhfhwm_cpu_gprs_esp -= sizeof(uint32_t);
+		*(uint32_t *)xmhfhwm_cpu_gprs_esp = CASM_RET_EIP;
+		xmhfhwm_cpu_gprs_esp -= sizeof(uint32_t);
+		*(uint32_t *)xmhfhwm_cpu_gprs_esp = xmhfhwm_cpu_gprs_ebp;
+		xmhfhwm_cpu_gprs_esp -= sizeof(uint32_t);
+		*(uint32_t *)xmhfhwm_cpu_gprs_esp = xmhfhwm_cpu_gprs_edi;
+		xmhfhwm_cpu_gprs_esp -= sizeof(uint32_t);
+		*(uint32_t *)xmhfhwm_cpu_gprs_esp = xmhfhwm_cpu_gprs_esi;
+		xmhfhwm_cpu_gprs_esp -= sizeof(uint32_t);
+		*(uint32_t *)xmhfhwm_cpu_gprs_esp = xmhfhwm_cpu_gprs_ebx;
 	
 		//plug in an entry in the SISS corresponding to this RET
 		siss_elem.src_slabid = XMHFGEEC_SLAB_XC_INIT;

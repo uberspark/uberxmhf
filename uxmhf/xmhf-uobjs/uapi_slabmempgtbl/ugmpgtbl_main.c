@@ -108,12 +108,17 @@ void slab_main(slab_params_t *sp){
             //@ ghost ugmpgtbl_methodcall_flushtlb = true;
             _slabmempgtbl_flushtlb(flushtlbp);
 
+	}else if (sp->dst_uapifn == UAPI_UGMPGTBL_GETMPGTBLBASE){
+		uapi_ugmpgtbl_getmpgtblbase_params_t *p =
+                (uapi_ugmpgtbl_getmpgtblbase_params_t *)sp->in_out_params;
+
+            _ugmpgtbl_getmpgtblbase(p);
 
 
 	}else{
 
             //@ ghost ugmpgtbl_methodcall_invalid = true;
             //_XDPRINTF_("UAPI_SLABMEMPGTBL[%u]: Unknown uAPI function %x. Halting!\n",
-            //        (u16)sp->cpuid, sp->dst_uapifn);
+            //        (uint16_t)sp->cpuid, sp->dst_uapifn);
 	}
 }

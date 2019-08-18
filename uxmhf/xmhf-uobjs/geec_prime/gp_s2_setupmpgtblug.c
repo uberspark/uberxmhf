@@ -54,17 +54,17 @@
 
 //setup unverified guest (ug) slab memory page tables
 //@ghost bool gp_s2_setupmpgtblug_invokedmemorytype[1024*1024];
-//@ghost u64 gp_s2_setupmpgtblug_invokedflags[1024*1024];
+//@ghost uint64_t gp_s2_setupmpgtblug_invokedflags[1024*1024];
 /*@
 	requires 0 <= slabid < XMHFGEEC_TOTAL_SLABS;
 	assigns gp_s2_setupmpgtblug_invokedmemorytype[0..((1024*1024)-1)];
 	assigns gp_s2_setupmpgtblug_invokedflags[0..((1024*1024)-1)];
 @*/
-void gp_s2_setupmpgtblug(u32 slabid){
-	u64 flags;
-	u32 spatype;
-	u32 memorytype;
-	u32 i;
+void gp_s2_setupmpgtblug(uint32_t slabid){
+	uint64_t flags;
+	uint32_t spatype;
+	uint32_t memorytype;
+	uint32_t i;
 	slab_params_t spl;
 
 	spl.src_slabid = XMHFGEEC_SLAB_GEEC_PRIME;
@@ -98,12 +98,12 @@ void gp_s2_setupmpgtblug(u32 slabid){
 		loop variant (1024*1024) - i;
 	@*/
 	for(i=0; i < (1024*1024); i++){
-		memorytype = gp_s2_setupmpgtblug_getmtype((u64)(i*PAGE_SIZE_4K));
+		memorytype = gp_s2_setupmpgtblug_getmtype((uint64_t)(i*PAGE_SIZE_4K));
 		//@ghost gp_s2_setupmpgtblug_invokedmemorytype[i] = true;
 
-		spatype = gp_s2_setupmpgtbl_getspatype(slabid, (u32)(i*PAGE_SIZE_4K));
+		spatype = gp_s2_setupmpgtbl_getspatype(slabid, (uint32_t)(i*PAGE_SIZE_4K));
 
-		flags = gp_s2_setupmpgtblug_getflags(slabid, (u32)(i*PAGE_SIZE_4K), spatype);
+		flags = gp_s2_setupmpgtblug_getflags(slabid, (uint32_t)(i*PAGE_SIZE_4K), spatype);
 		//@ghost gp_s2_setupmpgtblug_invokedflags[i] = true;
 
 
@@ -111,7 +111,7 @@ void gp_s2_setupmpgtblug(u32 slabid){
 		spl.in_out_params[0] = slabid;
 		spl.in_out_params[1] = (i*PAGE_SIZE_4K);
 		spl.in_out_params[2] = 0;
-		spl.in_out_params[3] = (u32) ((i*PAGE_SIZE_4K))  | ((u32)memorytype * 8) |  (u32)flags ;	//present, UC
+		spl.in_out_params[3] = (uint32_t) ((i*PAGE_SIZE_4K))  | ((uint32_t)memorytype * 8) |  (uint32_t)flags ;	//present, UC
                 spl.in_out_params[4] = 0;
 
 		//@assert (spl.src_slabid == XMHFGEEC_SLAB_GEEC_PRIME);
@@ -120,7 +120,7 @@ void gp_s2_setupmpgtblug(u32 slabid){
 		//@assert (spl.in_out_params[0] == slabid);
 		//@assert (spl.in_out_params[1] == (i*PAGE_SIZE_4K));
 		//@assert (spl.in_out_params[2] == 0);
-		//@assert (spl.in_out_params[3] == ((u32) ((i*PAGE_SIZE_4K))  | ((u32)memorytype * 8) |  (u32)flags)) ;
+		//@assert (spl.in_out_params[3] == ((uint32_t) ((i*PAGE_SIZE_4K))  | ((uint32_t)memorytype * 8) |  (uint32_t)flags)) ;
 		//@assert (spl.in_out_params[4] == 0);
 		XMHF_SLAB_CALLNEW(&spl);
 	}

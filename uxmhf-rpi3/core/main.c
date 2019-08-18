@@ -41,11 +41,6 @@
 #include <debug.h>
 #include <dmaprot.h>
 
-#include <xmhfcrypto.h>
-#include <sha1.h>
-#include <aes.h>
-
-#include <utpm.h>
 
 //////
 // externs
@@ -435,89 +430,6 @@ void core_fixresmemmap(u32 fdt_address){
 
 
 
-uint8_t aes_iv[AES_KEY_LEN_BYTES] =
-	{
-			0x1a, 0x2a, 0x3a, 0x4a, 0x5a, 0x6a, 0x7a, 0x8a,
-			0x1b, 0x2b, 0x3b, 0x4b, 0x5b, 0x6b, 0x7b, 0x8b
-	};
-uint8_t aes_key[AES_KEY_LEN_BYTES] =
-	{
-			0xfa, 0xea, 0xda, 0xca, 0xba, 0xaa, 0x9a, 0x8a,
-			0xfb, 0xeb, 0xdb, 0xcb, 0xbb, 0xab, 0x9b, 0x8b
-	};
-
-char *plaintext = "0123456789abcdef0123456789abcdef";
-__attribute__ ( (section(".data")) ) char outtext[32];
-
-
-int do_encrypt(void){
-    symmetric_CBC cbc_ctx;
-    int status;
-
-    _XDPRINTF_("%s: ENTER\n", __func__);
-    _XDPRINTF_("  plaintext=%32D\n", plaintext, " ");
-
-
-    //start aes_cbc
-    status = rijndael_cbc_start(aes_iv, aes_key, AES_KEY_LEN_BYTES, 0, &cbc_ctx);
-
-    if(status != CRYPT_OK){
-    	return 0;
-    }
-
-    //encrypt with aes cbc
-    status = rijndael_cbc_encrypt(plaintext, outtext, strlen(plaintext), &cbc_ctx);
-
-    if(status != CRYPT_OK){
-    	return 0;
-    }
-
-    status = rijndael_cbc_done( &cbc_ctx);
-
-    if(status != CRYPT_OK){
-    	return 0;
-    }
-
-    _XDPRINTF_("  outtext=%32D\n", outtext, " ");
-
-
-    return 1;
-}
-
-
-int do_decrypt(void){
-    symmetric_CBC cbc_ctx;
-    int status;
-
-    _XDPRINTF_("%s: ENTER\n", __func__);
-    _XDPRINTF_("  outtext=%32D\n", outtext, " ");
-
-
-    //start aes_cbc
-    status = rijndael_cbc_start(aes_iv, aes_key, AES_KEY_LEN_BYTES, 0, &cbc_ctx);
-
-    if(status != CRYPT_OK){
-    	return 0;
-    }
-
-    //encrypt with aes cbc
-    status = rijndael_cbc_decrypt(outtext, plaintext, 32, &cbc_ctx);
-
-    if(status != CRYPT_OK){
-    	return 0;
-    }
-
-    status = rijndael_cbc_done( &cbc_ctx);
-
-    if(status != CRYPT_OK){
-    	return 0;
-    }
-
-    _XDPRINTF_("  plaintext=%32D\n", plaintext, " ");
-
-
-    return 1;
-}
 
 
 //////
@@ -554,155 +466,42 @@ void main(u32 r0, u32 id, struct atag *at, u32 cpuid){
 	//initialize CPU vector table
 	hypvtable_initialize(cpuid);
 
-
-#if 0
-	//////
-	// aes cbc test
-	//////
-	if(!do_encrypt()){
-		_XDPRINTF_("%s[%u]: aes cbc encryption FAILED\n", __func__, cpuid);
-	}else{
-		_XDPRINTF_("%s[%u]: aes cbc encryption PASSED\n", __func__, cpuid);
-	}
-
-	if(!do_decrypt()){
-		_XDPRINTF_("%s[%u]: aes cbc decryption FAILED\n", __func__, cpuid);
-	}else{
-		_XDPRINTF_("%s[%u]: aes cbc decryption PASSED\n", __func__, cpuid);
-	}
-
-	_XDPRINTF_("%s[%u]: Halting!\n", __func__, cpuid);
-	HALT();
-#endif
-
-#if 0
-	//////
-	// sha-1 test
-	//////
-	if(sha1_test() != CRYPT_OK){
-		_XDPRINTF_("%s[%u]: sha-1 test FAILED\n", __func__, cpuid);
-	}else{
-		_XDPRINTF_("%s[%u]: sha-1 test PASSED\n", __func__, cpuid);
-	}
-
-	_XDPRINTF_("%s[%u]: Halting!\n", __func__, cpuid);
-	HALT();
-#endif
-
-
-#if 0
-	//////
-	// utpm test
-	//////
-	{
-		utpm_master_state_t utpm;
-		TPM_DIGEST pcr0;
-		TPM_DIGEST measurement;
-		uint8_t digest[] =
-				{ 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-				  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01
-				};
-
-		uint8_t g_aeskey[TPM_AES_KEY_LEN_BYTES] =
-				{
-						0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08,
-						0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18
-				};
-
-		uint8_t g_hmackey[TPM_HMAC_KEY_LEN] =
-				{
-						0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f, 0x01, 0x02,
-						0x1a, 0x1b, 0x1c, 0x1d, 0x1e, 0x1f, 0x11, 0x12,
-						0xaa, 0xbb, 0xcc, 0xdd
-				};
-
-		uint8_t g_rsakey[] = {0x00, 0x00, 0x00, 0x00};
-		char *seal_inbuf = "0123456789abcdef";
-		uint32_t seal_inbuf_len = strlen(seal_inbuf)+1;
-		char seal_outbuf[32];
-		char seal_outbuf2[32];
-		uint32_t seal_outbuf_len;
-		uint32_t seal_outbuf2_len;
-		TPM_PCR_INFO tpmPcrInfo;
-		TPM_COMPOSITE_HASH digestAtCreation;
-
-		if (utpm_init_master_entropy(&g_aeskey, &g_hmackey, &g_rsakey) != UTPM_SUCCESS){
-			_XDPRINTF_("%s[%u]: utpm_init_master_entropy FAILED. Halting!\n", __func__, cpuid);
-			HALT();
-		}
-
-		utpm_init_instance(&utpm);
-
-		if( utpm_pcrread(&pcr0, &utpm, 0) != UTPM_SUCCESS ){
-			_XDPRINTF_("%s[%u]: utpm_pcrread FAILED. Halting!\n", __func__, cpuid);
-			HALT();
-		}
-
-		_XDPRINTF_("%s[%u]: pcr-0: %20D\n", __func__, cpuid, pcr0.value, " ");
-
-		memcpy(&measurement.value, &digest, sizeof(digest));
-
-		if( utpm_extend(&measurement, &utpm, 0) != UTPM_SUCCESS ){
-			_XDPRINTF_("%s[%u]: utpm_extend FAILED. Halting!\n", __func__, cpuid);
-			HALT();
-		}
-
-		if( utpm_pcrread(&pcr0, &utpm, 0) != UTPM_SUCCESS ){
-			_XDPRINTF_("%s[%u]: utpm_pcrread FAILED. Halting!\n", __func__, cpuid);
-			HALT();
-		}
-
-		_XDPRINTF_("%s[%u]: pcr-0: %20D\n", __func__, cpuid, pcr0.value, " ");
-
-		tpmPcrInfo.pcrSelection.sizeOfSelect = 0;
-		tpmPcrInfo.pcrSelection.pcrSelect[0] = 0;
-
-		if( utpm_seal(&utpm, &tpmPcrInfo,
-		                     seal_inbuf, seal_inbuf_len,
-		                     seal_outbuf, &seal_outbuf_len) ){
-			_XDPRINTF_("%s[%u]: utpm_seal FAILED. Halting!\n", __func__, cpuid);
-			HALT();
-		}
-
-		_XDPRINTF_("%s[%u]: utpm_seal PASSED\n", __func__, cpuid);
-
-		if( utpm_unseal(&utpm,
-		                       seal_outbuf, seal_outbuf_len,
-		                       seal_outbuf2, &seal_outbuf2_len,
-		                       &digestAtCreation) ){
-			_XDPRINTF_("%s[%u]: utpm_unseal FAILED. Halting!\n", __func__, cpuid);
-			HALT();
-		}
-
-		_XDPRINTF_("%s[%u]: utpm_unseal PASSED\n", __func__, cpuid);
-
-	}
-
-
-	_XDPRINTF_("%s[%u]: Halting!\n", __func__, cpuid);
-	HALT();
-#endif
-
+#if defined (__FIQREFLECTION__)
 
 	//enable FIQ mask override; this should land us in HYP mode FIQ handler when FIQs are triggered inside guest
 	hcr = sysreg_read_hcr();
 	hcr |= (1UL << 3);
 	sysreg_write_hcr(hcr);
 
+#else
+
+	//disable FIQ mask override; let guest process FIQs
+	hcr = sysreg_read_hcr();
+	hcr &= ~(1UL << 3);
+	sysreg_write_hcr(hcr);
+
+#endif
+
 	// populate stage-2 page tables
 	s2pgtbl_populate_tables();
 	_XDPRINTF_("%s[%u]: stage-2 pts populated.\n", __func__, cpuid);
 
+#if defined (__DMAPROT__)
 	//activate DMA protection mechanism via stage-2 pts
 	dmaprot_activate();
 	_XDPRINTF_("%s[%u]: DMA protection mechanism activated via stage-2 pts\n", __func__, cpuid);
+#endif
 
+#if defined (__INTPROT__)
 	//activate interrupt protection mechanism via stage-2 pts
 	intprot_activate();
 	_XDPRINTF_("%s[%u]: INTERRUPT protection mechanism activated via stage-2 pts\n", __func__, cpuid);
+#endif
 
+#if defined (__SECBOOT__)
 	//activate secure boot protection mechanism
 	secboot_activate();
+#endif
 
 	//dump hyp registers and load hvbar
 	_XDPRINTF_("%s[%u]: HCR=0x%08x\n", __func__, cpuid, sysreg_read_hcr());
@@ -725,9 +524,11 @@ void main(u32 r0, u32 id, struct atag *at, u32 cpuid){
 
 	//////
 	// initialize hypapps
-	ctxtrace_init(cpuid);
-	uapp_watchdog_initialize(cpuid);
 
+	//ctxtrace_init(cpuid);
+	//uapp_watchdog_initialize(cpuid);
+
+	//////
 
 	// boot secondary cores
 	_XDPRINTF_("%s[%u]: proceeding to initialize SMP...\n", __func__, cpuid);

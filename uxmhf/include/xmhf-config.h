@@ -60,14 +60,14 @@
 
 
 //max. include device list entries
-#define XMHF_CONFIG_MAX_INCLDEVLIST_ENTRIES __XMHF_CONFIG_MAX_INCLDEVLIST_ENTRIES__
+//#define XMHF_CONFIG_MAX_INCLDEVLIST_ENTRIES __XMHF_CONFIG_MAX_INCLDEVLIST_ENTRIES__
 
 //max. exclude device list entries
-#define XMHF_CONFIG_MAX_EXCLDEVLIST_ENTRIES __XMHF_CONFIG_MAX_EXCLDEVLIST_ENTRIES__
+//#define XMHF_CONFIG_MAX_EXCLDEVLIST_ENTRIES __XMHF_CONFIG_MAX_EXCLDEVLIST_ENTRIES__
 
 
 //max. memoffset entries
-#define XMHF_CONFIG_MAX_MEMOFFSET_ENTRIES __XMHF_CONFIG_MAX_MEMOFFSET_ENTRIES__
+//#define XMHF_CONFIG_MAX_MEMOFFSET_ENTRIES __XMHF_CONFIG_MAX_MEMOFFSET_ENTRIES__
 
 
 
@@ -87,7 +87,7 @@
 
 //max. cores/vcpus we support currently
 //#ifndef __XMHF_VERIFICATION__
-	#define	MAX_PLATFORM_CPUS					(256)
+//	#define	MAX_PLATFORM_CPUS					(256)
 //#else
 //	#define	MAX_PLATFORM_CPUS					(1)
 //#endif
@@ -137,7 +137,7 @@
 
 //======================================================================
 
-#define	XMHF_SLAB_STACKSIZE		(16384)
+//#define	XMHF_SLAB_STACKSIZE		(16384)
 
 
 
@@ -147,8 +147,8 @@
 // for now, manually keep in sync based on the conf. selected
 //////
 
-#define XMHFGEEC_MAX_SLABS                  32
-#define XMHFGEEC_TOTAL_SLABS                14
+//#define XMHFGEEC_MAX_SLABS                  32
+//#define XMHFGEEC_TOTAL_SLABS                16
 
 #define XMHFGEEC_SLAB_GEEC_SENTINEL         0
 #define XMHFGEEC_SLAB_GEEC_PRIME            1
@@ -160,18 +160,20 @@
 #define XMHFGEEC_SLAB_UAPI_HCPUSTATE        7
 #define XMHFGEEC_SLAB_UAPI_SLABMEMPGTBL     8
 #define XMHFGEEC_SLAB_UAPI_SYSDATA			9
-#define XMHFGEEC_SLAB_XH_SYSCALLLOG         10
-#define XMHFGEEC_SLAB_XH_HYPERDEP           11
-#define XMHFGEEC_SLAB_XH_SSTEPTRACE         12
-#define XMHFGEEC_SLAB_XG_RICHGUEST         	13
+#define UOBJ_UAPI_IOTBL						10
+#define UOBJ_UAPI_UHMPGTBL					11
+#define XMHFGEEC_SLAB_XH_SYSCALLLOG         12
+#define XMHFGEEC_SLAB_XH_HYPERDEP           13
+#define XMHFGEEC_SLAB_XH_SSTEPTRACE         14
+#define XMHFGEEC_SLAB_XG_RICHGUEST         	15
 
 
 #define XMHFGEEC_VHSLAB_BASE_IDX		0
-#define XMHFGEEC_VHSLAB_MAX_IDX			11
-#define XMHFGEEC_UHSLAB_BASE_IDX		12
-#define XMHFGEEC_UHSLAB_MAX_IDX			12
-#define XMHFGEEC_UGSLAB_BASE_IDX		13
-#define XMHFGEEC_UGSLAB_MAX_IDX			13
+#define XMHFGEEC_VHSLAB_MAX_IDX			13
+#define XMHFGEEC_UHSLAB_BASE_IDX		14
+#define XMHFGEEC_UHSLAB_MAX_IDX			14
+#define XMHFGEEC_UGSLAB_BASE_IDX		15
+#define XMHFGEEC_UGSLAB_MAX_IDX			15
 
 
 #define XMHFGEEC_TOTAL_VHSLABS		((XMHFGEEC_VHSLAB_MAX_IDX - XMHFGEEC_VHSLAB_BASE_IDX) + 1)
@@ -212,7 +214,7 @@
 	#define __TARGET_SIZE_BOOTLOADER		(__TARGET_BASE_XMHF - __TARGET_BASE_BOOTLOADER)
 
 	//physical address of geec_prime slab (acts as secure loader)
-	#define __TARGET_BASE_SL				(__TARGET_BASE_XMHF + 0x00e00000)
+	#define __TARGET_BASE_SL				(__TARGET_BASE_XMHF + 0x01200000)
 
 	#define __TARGET_SIZE_SL				0x00200000
 
@@ -291,11 +293,11 @@
 
 /*#if defined (__DEBUG_SERIAL__)
 
-extern u8 _libxmhfdebugdata_start[];
-extern u8 _libxmhfdebugdata_end[];
+extern uint8_t _libxmhfdebugdata_start[];
+extern uint8_t _libxmhfdebugdata_end[];
 
-#define     ADDR_LIBXMHFDEBUGDATA_START           ((u32)_libxmhfdebugdata_start)
-#define     ADDR_LIBXMHFDEBUGDATA_END             ((u32)_libxmhfdebugdata_end)
+#define     ADDR_LIBXMHFDEBUGDATA_START           ((uint32_t)_libxmhfdebugdata_start)
+#define     ADDR_LIBXMHFDEBUGDATA_END             ((uint32_t)_libxmhfdebugdata_end)
 
 #endif // defined
 */

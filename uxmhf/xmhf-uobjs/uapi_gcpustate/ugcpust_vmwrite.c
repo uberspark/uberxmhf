@@ -135,7 +135,7 @@
 	complete behaviors;
 	disjoint behaviors;
 @*/
-void ugcpust_vmwrite(u32 srcslabid, xmhf_uapi_gcpustate_vmrw_params_t *vmrwp){
+void ugcpust_vmwrite(uint32_t srcslabid, xmhf_uapi_gcpustate_vmrw_params_t *vmrwp){
 	if(srcslabid == XMHFGEEC_SLAB_GEEC_PRIME){
 		CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite, vmrwp->encoding, vmrwp->value);
 		//@ghost ugcpust_vmwrite_callvmwrite = true;

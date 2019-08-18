@@ -60,10 +60,10 @@
  */
 
 #if 1
-void xcihub_halt_eptviolation(u32 cpuid, u32 info_vmexitreason){
-         	u64 errorcode;
-         	u64 gpa;
-         	u64 gva;
+void xcihub_halt_eptviolation(uint32_t cpuid, uint32_t info_vmexitreason){
+         	uint64_t errorcode;
+         	uint64_t gpa;
+         	uint64_t gva;
          	slab_params_t spl;
        	    xmhf_uapi_gcpustate_vmrw_params_t *gcpustate_vmrwp =
                 (xmhf_uapi_gcpustate_vmrw_params_t *)spl.in_out_params;
@@ -94,7 +94,7 @@ void xcihub_halt_eptviolation(u32 cpuid, u32 info_vmexitreason){
 
 
 
-void xcihub_halt(u32 cpuid, u32 info_vmexit_reason){
+void xcihub_halt(uint32_t cpuid, uint32_t info_vmexit_reason){
 	_XDPRINTF_("%s[%u]: unhandled intercept %x. Halting!\n", __func__, cpuid, info_vmexit_reason);
 #if 1
 	if(info_vmexit_reason == 0x30){

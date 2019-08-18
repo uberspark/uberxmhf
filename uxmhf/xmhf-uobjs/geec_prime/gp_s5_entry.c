@@ -67,10 +67,10 @@
 	ensures (gp_s5_entry_invokedstrt == true);
 @*/
 void gp_s5_entry(void){
-	u32 cpuid;
+	uint32_t cpuid;
 	bool isbsp;
 	#if defined (__DEBUG_SERIAL__)
-	static volatile u32 cpucount=0;
+	static volatile uint32_t cpucount=0;
 	#endif //__DEBUG_SERIAL__
 
 	isbsp = xmhfhw_lapic_isbsp();
@@ -85,12 +85,12 @@ void gp_s5_entry(void){
     CASM_FUNCCALL(spin_lock,&gp_state4_smplock);
 	//@ghost gp_s5_entry_invokedspinlock = true;
 
-    _XDPRINTF_("%s[%u]: ESP=%08x\n", __func__, (u16)cpuid, CASM_FUNCCALL(read_esp,CASM_NOPARAM));
+    _XDPRINTF_("%s[%u]: ESP=%08x\n", __func__, (uint16_t)cpuid, CASM_FUNCCALL(read_esp,CASM_NOPARAM));
 
 	//@assert gp_s5_entry_invokedisbsp == true;
 	//@assert gp_s5_entry_invokedgetcpulapicid == true;
 	//@assert gp_s5_entry_invokedspinlock == true;
-    gp_s5_setupcpustate((u16)cpuid, isbsp);
+    gp_s5_setupcpustate((uint16_t)cpuid, isbsp);
 	//@ghost gp_s5_entry_invokedsetupcpustate = true;
 
 	#if defined (__DEBUG_SERIAL__)

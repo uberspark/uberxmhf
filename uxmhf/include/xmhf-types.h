@@ -60,38 +60,38 @@
 #define __xmhfattribute__(x)
 
 
-typedef u32 	paddr_t;		//physical address
+typedef uint32_t 	paddr_t;		//physical address
 typedef void* 	hva_t; 			//hypervisor virtual address
-typedef u64 	spa_t; 			//system physical address
-typedef u32 	gva_t; 			//guest virtual address. we only support 32-bit guests
-typedef u64 	gpa_t; 			//guest physical address. can be 64-bit with PAE
+typedef uint64_t 	spa_t; 			//system physical address
+typedef uint32_t 	gva_t; 			//guest virtual address. we only support 32-bit guests
+typedef uint64_t 	gpa_t; 			//guest physical address. can be 64-bit with PAE
 typedef void*   dma_addr_t;
 
 //"golden" digest values injected during build process
 //NOTE: NO WAY TO SELF-CHECK slbelow64K; JUST A SANITY-CHECK
 typedef struct _integrity_measurement_values {
-    u8 sha_slbelow64K[20]; // TODO: play nice with SHA_DIGEST_LENGTH in sha1.h
-    u8 sha_slabove64K[20];
-    u8 sha_runtime[20];
+    uint8_t sha_slbelow64K[20]; // TODO: play nice with SHA_DIGEST_LENGTH in sha1.h
+    uint8_t sha_slabove64K[20];
+    uint8_t sha_runtime[20];
 } INTEGRITY_MEASUREMENT_VALUES;
 
 //XXX: this is currently close to GRUB, but is essentially a generic memory map structure
 typedef struct _grube820 {
-  u32 baseaddr_low;
-  u32 baseaddr_high;
-  u32 length_low;
-  u32 length_high;
-  u32 type;
+  uint32_t baseaddr_low;
+  uint32_t baseaddr_high;
+  uint32_t length_low;
+  uint32_t length_high;
+  uint32_t type;
 } __attribute__((packed)) GRUBE820;
 
 #define SIZE_STRUCT_GRUBE820  (sizeof(struct _grube820))
 
 //XXX: this is currently close to x86 platforms, but is essentially a generic physical CPU structure
 typedef struct _pcpu {
-  u32 lapic_id;
-  u32 lapic_ver;
-  u32 lapic_base;
-  u32 isbsp;
+  uint32_t lapic_id;
+  uint32_t lapic_ver;
+  uint32_t lapic_base;
+  uint32_t isbsp;
 } __attribute__((packed)) PCPU;
 
 #define SIZE_STRUCT_PCPU  (sizeof(struct _pcpu))
@@ -100,31 +100,31 @@ typedef struct _pcpu {
 //the master-id table, which is used by the AP bootstrap code
 //to locate its own vcpu structure
 typedef struct _midtab {
-  u32 cpu_lapic_id;       //CPU LAPIC id (unique)
-  u32 vcpu_vaddr_ptr;     //virt. addr. pointer to vcpu struct for this CPU
+  uint32_t cpu_lapic_id;       //CPU LAPIC id (unique)
+  uint32_t vcpu_vaddr_ptr;     //virt. addr. pointer to vcpu struct for this CPU
 } __attribute__((packed)) MIDTAB;
 
 #define SIZE_STRUCT_MIDTAB  (sizeof(struct _midtab))
 
 //XMHF_BOOTINFO
 typedef struct {
-	u32 magic;
-	u32 richguest_bootmodule_base;
-	u32 richguest_bootmodule_size;
-	u32 memmapinfo_numentries;
+	uint32_t magic;
+	uint32_t richguest_bootmodule_base;
+	uint32_t richguest_bootmodule_size;
+	uint32_t memmapinfo_numentries;
 	GRUBE820 memmapinfo_buffer[MAX_E820_ENTRIES];
-	u32 cpuinfo_numentries;
+	uint32_t cpuinfo_numentries;
 	PCPU cpuinfo_buffer[MAX_PCPU_ENTRIES];
-	u8 debugcontrol_buffer[16];
-	u8 cmdline_buffer[MAX_CMDLINE_BUFFER_SIZE];
-	u8 filler[2652];
+	uint8_t debugcontrol_buffer[16];
+	uint8_t cmdline_buffer[MAX_CMDLINE_BUFFER_SIZE];
+	uint8_t filler[2652];
 } __attribute__((packed)) XMHF_BOOTINFO;
 
 __attribute__(( section(".sharedro_xcbootinfoptr") )) extern XMHF_BOOTINFO *xcbootinfo;
 
 typedef struct {
-		u32 cpuid;				//unique CPU id
-		u32 cpu_index;			//0 based index
+		uint32_t cpuid;				//unique CPU id
+		uint32_t cpu_index;			//0 based index
 } __attribute__((packed)) xmhf_cputable_t;
 
 
@@ -133,13 +133,13 @@ typedef struct {
 //XMHF core api CPU descriptor type
 typedef struct {
 	bool isbsp;
-	u32 cpu_index;
+	uint32_t cpu_index;
 } cpu_desc_t;
 
 //XMHF core api partition descriptor type
 typedef struct {
-	u32 partition_index;
-	u32 numcpus;
+	uint32_t partition_index;
+	uint32_t numcpus;
 } partition_desc_t;
 
 //XMHF core api context descriptor type (context = partition + cpu pair)

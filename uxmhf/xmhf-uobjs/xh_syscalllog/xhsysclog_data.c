@@ -56,6 +56,6 @@
 
 
 __attribute__((section(".data"))) bool sl_activated=false;
-__attribute__((section(".data"))) u32 sl_syscall_page_paddr=0;
-__attribute__((section(".data"))) u32 sl_syscall_shadowpage_vaddr=0;
+__attribute__((section(".data"))) uint32_t sl_syscall_page_paddr=0;
+__attribute__((section(".data"))) uint32_t sl_syscall_shadowpage_vaddr=0;
 

@@ -49,7 +49,8 @@
 #include <xmhfgeec.h>
 
 #include <geec_prime.h>
-
+#include <geec_sentinel.h>
+#include <uapi_iotbl.h>
 
 //@ghost bool gp_s2_setupiotbl_invokeduhslabiotbl[XMHFGEEC_TOTAL_SLABS];
 //@ghost bool gp_s2_setupiotbl_invokedugslabiotbl[XMHFGEEC_TOTAL_SLABS];
@@ -105,7 +106,7 @@
 		) ==> (gp_s2_setupiotbl_handleinvalidobjs[x] == true) );
 @*/
 void gp_s2_setupiotbl(void){
-	u32 i, slabtype;
+	uint32_t i, slabtype;
 
 
 
@@ -195,6 +196,10 @@ void gp_s2_setupiotbl(void){
 	}
 
 	_XDPRINTF_("%s: setup unverified slab legacy I/O permission tables\n", __func__);
+
+
+
+
 
 }
 

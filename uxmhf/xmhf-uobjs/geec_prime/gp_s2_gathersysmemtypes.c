@@ -52,15 +52,15 @@
 #include <geec_prime.h>
 
 #if defined (__XMHF_VERIFICATION__) && defined (__USPARK_FRAMAC_VA__)
-u32 check_esp, check_eip = CASM_RET_EIP;
+uint32_t check_esp, check_eip = CASM_RET_EIP;
 
-void xmhfhwm_vdriver_writeesp(u32 oldval, u32 newval){
-	//@assert (newval >= ((u32)&_init_bsp_cpustack + 4)) && (newval <= ((u32)&_init_bsp_cpustack + MAX_PLATFORM_CPUSTACK_SIZE)) ;
+void xmhfhwm_vdriver_writeesp(uint32_t oldval, uint32_t newval){
+	//@assert (newval >= ((uint32_t)&_init_bsp_cpustack + 4)) && (newval <= ((uint32_t)&_init_bsp_cpustack + MAX_PLATFORM_CPUSTACK_SIZE)) ;
 }
 
 void main(void){
 	//populate hardware model stack and program counter
-	xmhfhwm_cpu_gprs_esp = (u32)&_init_bsp_cpustack + MAX_PLATFORM_CPUSTACK_SIZE;
+	xmhfhwm_cpu_gprs_esp = (uint32_t)&_init_bsp_cpustack + MAX_PLATFORM_CPUSTACK_SIZE;
 	xmhfhwm_cpu_gprs_eip = check_eip;
 	check_esp = xmhfhwm_cpu_gprs_esp; // pointing to top-of-stack
 
@@ -74,10 +74,10 @@ void main(void){
 
 //---gather memory types for system physical memory------------------------------
 void gp_s2_gathersysmemtypes(void){
- 	u32 eax, ebx, ecx, edx;
-	u32 index=0;
-	u32 num_vmtrrs=0;	//number of variable length MTRRs supported by the CPU
-	u64 msr_value;
+ 	uint32_t eax, ebx, ecx, edx;
+	uint32_t index=0;
+	uint32_t num_vmtrrs=0;	//number of variable length MTRRs supported by the CPU
+	uint64_t msr_value;
 
 	//0. sanity check
   	//check MTRR support
@@ -85,17 +85,17 @@ void gp_s2_gathersysmemtypes(void){
   	ecx=0x00000000;
 	CASM_FUNCCALL(xmhfhw_cpu_cpuid,0x00000001, &eax, &ebx, &ecx, &edx);
 
-  	if( !(edx & (u32)(1 << 12)) ){
+  	if( !(edx & (uint32_t)(1 << 12)) ){
   		_XDPRINTF_("\n%s: CPU does not support MTRRs!", __func__);
   		CASM_FUNCCALL(xmhfhw_cpu_hlt, CASM_NOPARAM);
   	}
 
   	//check MTRR caps
 	msr_value = CASM_FUNCCALL(rdmsr64, IA32_MTRRCAP);
-	eax = (u32)msr_value;
-	edx = (u32)(msr_value >> 32);
+	eax = (uint32_t)msr_value;
+	edx = (uint32_t)(msr_value >> 32);
 
-	num_vmtrrs = (u8)eax;
+	num_vmtrrs = (uint8_t)eax;
   	_XDPRINTF_("\nIA32_MTRRCAP: %08x%08x VCNT=%u, FIX=%u, WC=%u, SMRR=%u",
   		edx, eax, num_vmtrrs, ((eax & (1 << 8)) >> 8),  ((eax & (1 << 10)) >> 10),
   			((eax & (1 << 11)) >> 11));
@@ -121,8 +121,8 @@ void gp_s2_gathersysmemtypes(void){
 	//2. grab memory types using FIXED MTRRs
 	//0x00000000-0x0007FFFF
 	msr_value = CASM_FUNCCALL(rdmsr64, IA32_MTRR_FIX64K_00000);
-	eax = (u32)msr_value;
-	edx = (u32)(msr_value >> 32);
+	eax = (uint32_t)msr_value;
+	edx = (uint32_t)(msr_value >> 32);
 
 	_vmx_ept_memorytypes[index].startaddr = 0x00000000; _vmx_ept_memorytypes[index].endaddr = 0x0000FFFF; _vmx_ept_memorytypes[index++].type= ((eax & 0x000000FF) >> 0);
 	_vmx_ept_memorytypes[index].startaddr = 0x00010000; _vmx_ept_memorytypes[index].endaddr = 0x0001FFFF; _vmx_ept_memorytypes[index++].type= ((eax & 0x0000FF00) >> 8);
@@ -135,8 +135,8 @@ void gp_s2_gathersysmemtypes(void){
 
 	//0x00080000-0x0009FFFF
   	msr_value = CASM_FUNCCALL(rdmsr64, IA32_MTRR_FIX16K_80000);
-	eax = (u32)msr_value;
-	edx = (u32)(msr_value >> 32);
+	eax = (uint32_t)msr_value;
+	edx = (uint32_t)(msr_value >> 32);
 
 	_vmx_ept_memorytypes[index].startaddr = 0x00080000; _vmx_ept_memorytypes[index].endaddr = 0x00083FFF; _vmx_ept_memorytypes[index++].type= ((eax & 0x000000FF) >> 0);
 	_vmx_ept_memorytypes[index].startaddr = 0x00084000; _vmx_ept_memorytypes[index].endaddr = 0x00087FFF; _vmx_ept_memorytypes[index++].type= ((eax & 0x0000FF00) >> 8);
@@ -149,8 +149,8 @@ void gp_s2_gathersysmemtypes(void){
 
 	//0x000A0000-0x000BFFFF
     	msr_value = CASM_FUNCCALL(rdmsr64, IA32_MTRR_FIX16K_A0000);
-	eax = (u32)msr_value;
-	edx = (u32)(msr_value >> 32);
+	eax = (uint32_t)msr_value;
+	edx = (uint32_t)(msr_value >> 32);
 
 	_vmx_ept_memorytypes[index].startaddr = 0x000A0000; _vmx_ept_memorytypes[index].endaddr = 0x000A3FFF; _vmx_ept_memorytypes[index++].type= ((eax & 0x000000FF) >> 0);
 	_vmx_ept_memorytypes[index].startaddr = 0x000A4000; _vmx_ept_memorytypes[index].endaddr = 0x000A7FFF; _vmx_ept_memorytypes[index++].type= ((eax & 0x0000FF00) >> 8);
@@ -163,8 +163,8 @@ void gp_s2_gathersysmemtypes(void){
 
 	//0x000C0000-0x000C7FFF
        	msr_value = CASM_FUNCCALL(rdmsr64, IA32_MTRR_FIX4K_C0000);
-	eax = (u32)msr_value;
-	edx = (u32)(msr_value >> 32);
+	eax = (uint32_t)msr_value;
+	edx = (uint32_t)(msr_value >> 32);
 
 	_vmx_ept_memorytypes[index].startaddr = 0x000C0000; _vmx_ept_memorytypes[index].endaddr = 0x000C0FFF; _vmx_ept_memorytypes[index++].type= ((eax & 0x000000FF) >> 0);
 	_vmx_ept_memorytypes[index].startaddr = 0x000C1000; _vmx_ept_memorytypes[index].endaddr = 0x000C1FFF; _vmx_ept_memorytypes[index++].type= ((eax & 0x0000FF00) >> 8);
@@ -177,8 +177,8 @@ void gp_s2_gathersysmemtypes(void){
 
 	//0x000C8000-0x000C8FFF
        	msr_value = CASM_FUNCCALL(rdmsr64, IA32_MTRR_FIX4K_C8000);
-	eax = (u32)msr_value;
-	edx = (u32)(msr_value >> 32);
+	eax = (uint32_t)msr_value;
+	edx = (uint32_t)(msr_value >> 32);
 
 	_vmx_ept_memorytypes[index].startaddr = 0x000C8000; _vmx_ept_memorytypes[index].endaddr = 0x000C8FFF; _vmx_ept_memorytypes[index++].type= ((eax & 0x000000FF) >> 0);
 	_vmx_ept_memorytypes[index].startaddr = 0x000C9000; _vmx_ept_memorytypes[index].endaddr = 0x000C9FFF; _vmx_ept_memorytypes[index++].type= ((eax & 0x0000FF00) >> 8);
@@ -191,8 +191,8 @@ void gp_s2_gathersysmemtypes(void){
 
 	//0x000D0000-0x000D7FFF
        	msr_value = CASM_FUNCCALL(rdmsr64, IA32_MTRR_FIX4K_D0000);
-	eax = (u32)msr_value;
-	edx = (u32)(msr_value >> 32);
+	eax = (uint32_t)msr_value;
+	edx = (uint32_t)(msr_value >> 32);
 
 	_vmx_ept_memorytypes[index].startaddr = 0x000D0000; _vmx_ept_memorytypes[index].endaddr = 0x000D0FFF; _vmx_ept_memorytypes[index++].type= ((eax & 0x000000FF) >> 0);
 	_vmx_ept_memorytypes[index].startaddr = 0x000D1000; _vmx_ept_memorytypes[index].endaddr = 0x000D1FFF; _vmx_ept_memorytypes[index++].type= ((eax & 0x0000FF00) >> 8);
@@ -205,8 +205,8 @@ void gp_s2_gathersysmemtypes(void){
 
 	//0x000D8000-0x000DFFFF
        	msr_value = CASM_FUNCCALL(rdmsr64, IA32_MTRR_FIX4K_D8000);
-	eax = (u32)msr_value;
-	edx = (u32)(msr_value >> 32);
+	eax = (uint32_t)msr_value;
+	edx = (uint32_t)(msr_value >> 32);
 
 	_vmx_ept_memorytypes[index].startaddr = 0x000D8000; _vmx_ept_memorytypes[index].endaddr = 0x000D8FFF; _vmx_ept_memorytypes[index++].type= ((eax & 0x000000FF) >> 0);
 	_vmx_ept_memorytypes[index].startaddr = 0x000D9000; _vmx_ept_memorytypes[index].endaddr = 0x000D9FFF; _vmx_ept_memorytypes[index++].type= ((eax & 0x0000FF00) >> 8);
@@ -219,8 +219,8 @@ void gp_s2_gathersysmemtypes(void){
 
 	//0x000E0000-0x000E7FFF
        	msr_value = CASM_FUNCCALL(rdmsr64, IA32_MTRR_FIX4K_E0000);
-	eax = (u32)msr_value;
-	edx = (u32)(msr_value >> 32);
+	eax = (uint32_t)msr_value;
+	edx = (uint32_t)(msr_value >> 32);
 
 	_vmx_ept_memorytypes[index].startaddr = 0x000E0000; _vmx_ept_memorytypes[index].endaddr = 0x000E0FFF; _vmx_ept_memorytypes[index++].type= ((eax & 0x000000FF) >> 0);
 	_vmx_ept_memorytypes[index].startaddr = 0x000E1000; _vmx_ept_memorytypes[index].endaddr = 0x000E1FFF; _vmx_ept_memorytypes[index++].type= ((eax & 0x0000FF00) >> 8);
@@ -233,8 +233,8 @@ void gp_s2_gathersysmemtypes(void){
 
 	//0x000E8000-0x000EFFFF
        	msr_value = CASM_FUNCCALL(rdmsr64, IA32_MTRR_FIX4K_E8000);
-	eax = (u32)msr_value;
-	edx = (u32)(msr_value >> 32);
+	eax = (uint32_t)msr_value;
+	edx = (uint32_t)(msr_value >> 32);
 
 	_vmx_ept_memorytypes[index].startaddr = 0x000E8000; _vmx_ept_memorytypes[index].endaddr = 0x000E8FFF; _vmx_ept_memorytypes[index++].type= ((eax & 0x000000FF) >> 0);
 	_vmx_ept_memorytypes[index].startaddr = 0x000E9000; _vmx_ept_memorytypes[index].endaddr = 0x000E9FFF; _vmx_ept_memorytypes[index++].type= ((eax & 0x0000FF00) >> 8);
@@ -247,8 +247,8 @@ void gp_s2_gathersysmemtypes(void){
 
 	//0x000F0000-0x000F7FFF
        	msr_value = CASM_FUNCCALL(rdmsr64, IA32_MTRR_FIX4K_F0000);
-	eax = (u32)msr_value;
-	edx = (u32)(msr_value >> 32);
+	eax = (uint32_t)msr_value;
+	edx = (uint32_t)(msr_value >> 32);
 
 	_vmx_ept_memorytypes[index].startaddr = 0x000F0000; _vmx_ept_memorytypes[index].endaddr = 0x000F0FFF; _vmx_ept_memorytypes[index++].type= ((eax & 0x000000FF) >> 0);
 	_vmx_ept_memorytypes[index].startaddr = 0x000F1000; _vmx_ept_memorytypes[index].endaddr = 0x000F1FFF; _vmx_ept_memorytypes[index++].type= ((eax & 0x0000FF00) >> 8);
@@ -261,8 +261,8 @@ void gp_s2_gathersysmemtypes(void){
 
 	//0x000F8000-0x000FFFFF
        	msr_value = CASM_FUNCCALL(rdmsr64, IA32_MTRR_FIX4K_F8000);
-	eax = (u32)msr_value;
-	edx = (u32)(msr_value >> 32);
+	eax = (uint32_t)msr_value;
+	edx = (uint32_t)(msr_value >> 32);
 
 	_vmx_ept_memorytypes[index].startaddr = 0x000F8000; _vmx_ept_memorytypes[index].endaddr = 0x000F8FFF; _vmx_ept_memorytypes[index++].type= ((eax & 0x000000FF) >> 0);
 	_vmx_ept_memorytypes[index].startaddr = 0x000F9000; _vmx_ept_memorytypes[index].endaddr = 0x000F9FFF; _vmx_ept_memorytypes[index++].type= ((eax & 0x0000FF00) >> 8);
@@ -276,30 +276,30 @@ void gp_s2_gathersysmemtypes(void){
 
 	//3. grab memory types using variable length MTRRs
 	{
-		u64 paddrmask = 0x0000000FFFFFFFFFULL; //36-bits physical address, TODO: need to make this dynamic
-		u64 vMTRR_base, vMTRR_mask;
-		u32 msrval=IA32_MTRR_PHYSBASE0;
-		u32 i;
+		uint64_t paddrmask = 0x0000000FFFFFFFFFULL; //36-bits physical address, TODO: need to make this dynamic
+		uint64_t vMTRR_base, vMTRR_mask;
+		uint32_t msrval=IA32_MTRR_PHYSBASE0;
+		uint32_t i;
 
 		for(i=0; i < num_vmtrrs; i++){
 			msr_value = CASM_FUNCCALL(rdmsr64, msrval);
-			eax = (u32)msr_value;
-			edx = (u32)(msr_value >> 32);
+			eax = (uint32_t)msr_value;
+			edx = (uint32_t)(msr_value >> 32);
 
-			vMTRR_base = ((u64)edx << 32) | (u64)eax;
+			vMTRR_base = ((uint64_t)edx << 32) | (uint64_t)eax;
 			msrval++;
 			msr_value = CASM_FUNCCALL(rdmsr64, msrval);
-			eax = (u32)msr_value;
-			edx = (u32)(msr_value >> 32);
+			eax = (uint32_t)msr_value;
+			edx = (uint32_t)(msr_value >> 32);
 
-			vMTRR_mask = ((u64)edx << 32) | (u64)eax;
+			vMTRR_mask = ((uint64_t)edx << 32) | (uint64_t)eax;
 			msrval++;
-			if( (vMTRR_mask & ((u64)1 << 11)) ){
-				_vmx_ept_memorytypes[index].startaddr = (vMTRR_base & (u64)0xFFFFFFFFFFFFF000ULL);
-				_vmx_ept_memorytypes[index].endaddr = (vMTRR_base & (u64)0xFFFFFFFFFFFFF000ULL) +
-					(u64) (~(vMTRR_mask & (u64)0xFFFFFFFFFFFFF000ULL) &
+			if( (vMTRR_mask & ((uint64_t)1 << 11)) ){
+				_vmx_ept_memorytypes[index].startaddr = (vMTRR_base & (uint64_t)0xFFFFFFFFFFFFF000ULL);
+				_vmx_ept_memorytypes[index].endaddr = (vMTRR_base & (uint64_t)0xFFFFFFFFFFFFF000ULL) +
+					(uint64_t) (~(vMTRR_mask & (uint64_t)0xFFFFFFFFFFFFF000ULL) &
 						paddrmask);
-				_vmx_ept_memorytypes[index++].type = ((u32)vMTRR_base & (u32)0x000000FF);
+				_vmx_ept_memorytypes[index++].type = ((uint32_t)vMTRR_base & (uint32_t)0x000000FF);
 			}else{
 				_vmx_ept_memorytypes[index++].invalid = 1;
 			}

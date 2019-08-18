@@ -63,16 +63,16 @@
 
 
 extern bool hd_activated;
-extern u32 hd_pageaddr;
+extern uint32_t hd_pageaddr;
 
 
-void hyperdep_hcbshutdown(u32 cpuindex, u32 guest_slab_index);
-void hyperdep_hcbmemfault(u32 cpuindex, u32 guest_slab_index);
-void hyperdep_hcbinit(u32 cpuindex);
-void hyperdep_hcbhypercall(u32 cpuindex, u32 guest_slab_index);
+void hyperdep_hcbshutdown(uint32_t cpuindex, uint32_t guest_slab_index);
+void hyperdep_hcbmemfault(uint32_t cpuindex, uint32_t guest_slab_index);
+void hyperdep_hcbinit(uint32_t cpuindex);
+void hyperdep_hcbhypercall(uint32_t cpuindex, uint32_t guest_slab_index);
 
-void hyperdep_deactivatedep(u32 cpuindex, u32 guest_slab_index, u64 gpa);
-void hyperdep_activatedep(u32 cpuindex, u32 guest_slab_index, u64 gpa);
+void hyperdep_deactivatedep(uint32_t cpuindex, uint32_t guest_slab_index, uint64_t gpa);
+void hyperdep_activatedep(uint32_t cpuindex, uint32_t guest_slab_index, uint64_t gpa);
 
 
 

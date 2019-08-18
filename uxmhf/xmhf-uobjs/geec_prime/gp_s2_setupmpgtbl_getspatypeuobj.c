@@ -54,7 +54,7 @@
 //@ghost bool gisiotbl, gisdevicemmio;
 /*@
 	requires 0 <= slab_index < XMHFGEEC_TOTAL_SLABS ;
-	requires \forall u32 x; 0 <= x < MAX_PLATFORM_CPUS ==> (_sda_slab_devicemap[slab_index].sysdev_mmioregions_indices[x] < MAX_PLATFORM_DEVICES);
+	requires \forall uint32_t x; 0 <= x < MAX_PLATFORM_CPUS ==> (_sda_slab_devicemap[slab_index].sysdev_mmioregions_indices[x] < MAX_PLATFORM_DEVICES);
 	requires 0 <= _sda_slab_devicemap[slab_index].device_count < MAX_PLATFORM_DEVICES;
 	assigns gisiotbl, gisdevicemmio;
 	ensures ( (\result == _SLAB_SPATYPE_GEEC_PRIME_IOTBL) ||
@@ -91,7 +91,7 @@
 
 
 @*/
-u32 gp_s2_setupmpgtbl_getspatypeuobj(u32 slab_index, u32 spa){
+uint32_t gp_s2_setupmpgtbl_getspatypeuobj(uint32_t slab_index, uint32_t spa){
 		bool isiotbl, isdevicemmio;
 
 		isiotbl = gp_s2_setupmpgtbl_getspatypeuobj_isiotbl(slab_index, spa);

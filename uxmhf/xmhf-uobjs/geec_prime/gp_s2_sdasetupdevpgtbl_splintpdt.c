@@ -64,8 +64,8 @@
 		 ( invokedsetptentries[x] == true)
 		);
 @*/
-void gp_s2_sdasetupdevpgtbl_splintpdt(u32 slabid, u32 paddr_start, u32 paddr_end){
-	u32 pd_index=0;
+void gp_s2_sdasetupdevpgtbl_splintpdt(uint32_t slabid, uint32_t paddr_start, uint32_t paddr_end){
+	uint32_t pd_index=0;
 
 	/*@
 		loop invariant a1: 0 <= pd_index <= ((paddr_end - paddr_start)/PAGE_SIZE_2M);

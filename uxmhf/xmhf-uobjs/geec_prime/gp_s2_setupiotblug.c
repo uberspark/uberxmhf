@@ -49,6 +49,7 @@
 #include <xmhfgeec.h>
 
 #include <geec_prime.h>
+#include <uapi_iotbl.h>
 
 //@ghost bool gp_s2_setupiotblug_helper_invokedportaccess[PCI_CONF_MAX_BARS];
 /*@
@@ -61,8 +62,8 @@
 				(gp_s2_setupiotblug_helper_invokedportaccess[x] == true)
 						);
 @*/
-static inline void gp_s2_setupiotblug_helper(u32 slabid, u32 sysdev_memioregions_index){
-	u32 k, portnum;
+static inline void gp_s2_setupiotblug_helper(uint32_t slabid, uint32_t sysdev_memioregions_index){
+	uint32_t k, portnum;
 
 	/*@
 		loop invariant b1: 0 <= k <= PCI_CONF_MAX_BARS;
@@ -87,9 +88,21 @@ static inline void gp_s2_setupiotblug_helper(u32 slabid, u32 sysdev_memioregions
 			@*/
 			for(portnum= sysdev_memioregions[sysdev_memioregions_index].memioextents[k].addr_start;
 				portnum < sysdev_memioregions[sysdev_memioregions_index].memioextents[k].addr_end; portnum++){
+				{
+					slab_params_t spl;
+					uapi_iotbl_setupiotblugportaccess_t *ps = (uapi_iotbl_setupiotblugportaccess_t *)spl.in_out_params;
 
-				gp_s2_setupiotblug_allowaccesstoport((slabid - XMHFGEEC_UGSLAB_BASE_IDX), portnum, 1);
+					spl.src_slabid = XMHFGEEC_SLAB_GEEC_PRIME;
+					spl.dst_slabid = UOBJ_UAPI_IOTBL;
+					spl.cpuid = 0;
+					spl.dst_uapifn = UXMHF_UAPI_IOTBL_SETUPIOTBLUGPORTACCESS;
 
+					ps->ugslabiobitmap_idx = slabid;
+					ps->port = portnum;
+					ps->port_size = 1;
+
+					XMHF_SLAB_CALLNEW(&spl);
+				}
 			}
 
 			//@ghost gp_s2_setupiotblug_helper_invokedportaccess[k] = true;
@@ -110,11 +123,22 @@ static inline void gp_s2_setupiotblug_helper(u32 slabid, u32 sysdev_memioregions
 	ensures \forall integer x; 0 <= x < (_sda_slab_devicemap[slabid].device_count-1) ==>
 				(gp_s2_setupiotblug_invokedhelper[x] == true);
 @*/
-void gp_s2_setupiotblug(u32 slabid){
-	u32 i;
+void gp_s2_setupiotblug(uint32_t slabid){
+	uint32_t i;
 
-        memset(&gp_rwdatahdr.gp_ugslab_iobitmap[(slabid - XMHFGEEC_UGSLAB_BASE_IDX)], 0xFFFFFFFFUL, sizeof(gp_rwdatahdr.gp_ugslab_iobitmap[0]));
+        {
+        	slab_params_t spl;
+        	uapi_iotbl_initiotbl_t *ps = (uapi_iotbl_initiotbl_t *)spl.in_out_params;
 
+        	spl.src_slabid = XMHFGEEC_SLAB_GEEC_PRIME;
+        	spl.dst_slabid = UOBJ_UAPI_IOTBL;
+        	spl.cpuid = 0;
+        	spl.dst_uapifn = UXMHF_UAPI_IOTBL_INITIOTBL;
+
+        	ps->dst_slabid = slabid;
+
+        	XMHF_SLAB_CALLNEW(&spl);
+        }
     	/*@
 		loop invariant a1: 0 <= i <= _sda_slab_devicemap[slabid].device_count;
 		loop invariant a2: \forall integer x; 0 <= x < i ==>

@@ -73,7 +73,7 @@ __attribute__((section(".slab_codehdr"))) x86vmx_mle_header_t mleheader = { 0 };
 
 
 // initialization BSP stack
-__attribute__(( section(".stack") )) __attribute__(( aligned(4096) )) u8 _init_bsp_cpustack[MAX_PLATFORM_CPUSTACK_SIZE];
+__attribute__(( section(".stack") )) __attribute__(( aligned(4096) )) uint8_t _init_bsp_cpustack[MAX_PLATFORM_CPUSTACK_SIZE];
 
 
 
@@ -116,7 +116,7 @@ extern void __xmhf_exception_handler_31(void);
 
 #define XMHF_EXCEPTION_HANDLER_ADDROF(vector) &__xmhf_exception_handler_##vector
 
-u32  __xmhfhic_exceptionstubs[] = { XMHF_EXCEPTION_HANDLER_ADDROF(0),
+uint32_t  __xmhfhic_exceptionstubs[] = { XMHF_EXCEPTION_HANDLER_ADDROF(0),
 							XMHF_EXCEPTION_HANDLER_ADDROF(1),
 							XMHF_EXCEPTION_HANDLER_ADDROF(2),
 							XMHF_EXCEPTION_HANDLER_ADDROF(3),
@@ -155,7 +155,7 @@ u32  __xmhfhic_exceptionstubs[] = { XMHF_EXCEPTION_HANDLER_ADDROF(0),
 
 
 // following two data structures used for SMP bootup
-__attribute__(( aligned(16) )) u64 _xcsmp_ap_init_gdt_start[]  = {
+__attribute__(( aligned(16) )) uint64_t _xcsmp_ap_init_gdt_start[]  = {
 	0x0000000000000000ULL,	//NULL descriptor
 	0x00af9b000000ffffULL,	//CPL-0 64-bit code descriptor (CS64)
 	0x00af93000000ffffULL,	//CPL-0 64-bit data descriptor (DS/SS/ES/FS/GS)
@@ -173,7 +173,7 @@ void __xmhfhic_smp_cpu_x86_smpinitialize_commonstart(void);
 
 
 // GDT
-__attribute__((section(".data"))) __attribute__(( aligned(16) )) u64 __xmhfhic_x86vmx_gdt_start[XMHFGEEC_MAX_GDT_CODEDATA_DESCRIPTORS + MAX_PLATFORM_CPUS]  = {
+__attribute__((section(".data"))) __attribute__(( aligned(16) )) uint64_t __xmhfhic_x86vmx_gdt_start[XMHFGEEC_MAX_GDT_CODEDATA_DESCRIPTORS + MAX_PLATFORM_CPUS]  = {
 	0x0000000000000000ULL,	//NULL descriptor
 	0x00cf9a000000ffffULL,	//CPL-0 32-bit code descriptor (CS64)
 	0x00cf92000000ffffULL,	//CPL-0 32-bit data descriptor (DS/SS/ES/FS/GS)
@@ -186,15 +186,7 @@ __attribute__((section(".data"))) __attribute__(( aligned(16) )) u64 __xmhfhic_x
 // GDT descriptor
 __attribute__((section(".data"))) __attribute__(( aligned(16) )) arch_x86_gdtdesc_t __xmhfhic_x86vmx_gdt  = {
 	.size=sizeof(__xmhfhic_x86vmx_gdt_start)-1,
-	.base=(u32)&__xmhfhic_x86vmx_gdt_start,
-};
-
-// IDT
-__attribute__((section(".data"))) __attribute__(( aligned(16) )) idtentry_t __xmhfhic_x86vmx_idt_start[EMHF_XCPHANDLER_MAXEXCEPTIONS] ;
-// IDT descriptor
-__attribute__((section(".data"))) __attribute__(( aligned(16) )) arch_x86_idtdesc_t __xmhfhic_x86vmx_idt = {
-	.size=sizeof(__xmhfhic_x86vmx_idt_start)-1,
-	.base=(u32)&__xmhfhic_x86vmx_idt_start,
+	.base=(uint32_t)&__xmhfhic_x86vmx_gdt_start,
 };
 
 
@@ -204,46 +196,50 @@ __attribute__((section(".data"))) __attribute__(( aligned(16) )) arch_x86_idtdes
 
 
 // initialization phase CPU stacks
-__attribute__(( section(".stack") )) __attribute__(( aligned(4096) )) u8 _init_cpustacks[MAX_PLATFORM_CPUS][MAX_PLATFORM_CPUSTACK_SIZE];
+__attribute__(( section(".stack") )) __attribute__(( aligned(4096) )) uint8_t _init_cpustacks[MAX_PLATFORM_CPUS][MAX_PLATFORM_CPUSTACK_SIZE];
 // TSS
-//__attribute__((section(".data"))) __attribute__(( aligned(4096) )) u8 __xmhfhic_x86vmx_tss[MAX_PLATFORM_CPUS][4*PAGE_SIZE_4K] = { 0 };
+//__attribute__((section(".data"))) __attribute__(( aligned(4096) )) uint8_t __xmhfhic_x86vmx_tss[MAX_PLATFORM_CPUS][4*PAGE_SIZE_4K] = { 0 };
 __attribute__((section(".data"))) __attribute__(( aligned(4096) )) geec_prime_tss_t __xmhfhic_x86vmx_tss[MAX_PLATFORM_CPUS] = { 0 };
 // TSS stacks
-__attribute__((section(".stack"))) __attribute__(( aligned(4096) )) u8 __xmhfhic_x86vmx_tss_stack[MAX_PLATFORM_CPUS][PAGE_SIZE_4K];
-// sysenter CPU stacks
-__attribute__(( section(".stack") )) __attribute__(( aligned(4096) )) u8 _geec_primesmp_sysenter_stack[MAX_PLATFORM_CPUS][MAX_PLATFORM_CPUSTACK_SIZE];
+__attribute__((section(".stack"))) __attribute__(( aligned(4096) )) uint8_t __xmhfhic_x86vmx_tss_stack[MAX_PLATFORM_CPUS][PAGE_SIZE_4K];
+
+//// sysenter CPU stacks
+//__attribute__(( section(".stack") )) __attribute__(( aligned(4096) )) uint8_t _geec_primesmp_sysenter_stack[MAX_PLATFORM_CPUS][MAX_PLATFORM_CPUSTACK_SIZE];
+
 // archdata
 __attribute__((section(".data"))) __attribute__(( aligned(4096) )) xc_cpuarchdata_x86vmx_t __xmhfhic_x86vmx_archdata[MAX_PLATFORM_CPUS];
 //cpuidtable
-//__attribute__((section(".data"))) __attribute__(( aligned(4) )) u32 __xmhfhic_x86vmx_cpuidtable[MAX_X86_APIC_ID];
+//__attribute__((section(".data"))) __attribute__(( aligned(4) )) uint32_t __xmhfhic_x86vmx_cpuidtable[MAX_X86_APIC_ID];
 
 
 //////
 // verified hypervisor slab memory page-tables
-__attribute__((section(".data"))) __attribute__((aligned(4096))) u64 gp_vhslabmempgtbl_lvl3t[PAE_MAXPTRS_PER_PDPT];
-//__attribute__((section(".data"))) __attribute__((aligned(4096))) u64 gp_vhslabmempgtbl_lvl2t[PAE_PTRS_PER_PDPT][PAE_PTRS_PER_PDT];
-__attribute__((section(".data"))) __attribute__((aligned(4096))) u64 gp_vhslabmempgtbl_lvl2t[PAE_PTRS_PER_PDPT * PAE_PTRS_PER_PDT];
-//__attribute__((section(".data"))) __attribute__((aligned(4096)))  u64 gp_vhslabmempgtbl_lvl1t[PAE_PTRS_PER_PDPT][PAE_PTRS_PER_PDT][PAE_PTRS_PER_PT];
-__attribute__((section(".data"))) __attribute__((aligned(4096)))  u64 gp_vhslabmempgtbl_lvl1t[PAE_PTRS_PER_PDPT * PAE_PTRS_PER_PDT * PAE_PTRS_PER_PT];
+__attribute__((section(".data"))) __attribute__((aligned(4096))) uint64_t gp_vhslabmempgtbl_lvl3t[PAE_MAXPTRS_PER_PDPT];
+//__attribute__((section(".data"))) __attribute__((aligned(4096))) uint64_t gp_vhslabmempgtbl_lvl2t[PAE_PTRS_PER_PDPT][PAE_PTRS_PER_PDT];
+__attribute__((section(".data"))) __attribute__((aligned(4096))) uint64_t gp_vhslabmempgtbl_lvl2t[PAE_PTRS_PER_PDPT * PAE_PTRS_PER_PDT];
+//__attribute__((section(".data"))) __attribute__((aligned(4096)))  uint64_t gp_vhslabmempgtbl_lvl1t[PAE_PTRS_PER_PDPT][PAE_PTRS_PER_PDT][PAE_PTRS_PER_PT];
+__attribute__((section(".data"))) __attribute__((aligned(4096)))  uint64_t gp_vhslabmempgtbl_lvl1t[PAE_PTRS_PER_PDPT * PAE_PTRS_PER_PDT * PAE_PTRS_PER_PT];
 
-
+#if 1
 //////
 // unverified hypervisor slab memory page-tables
-__attribute__((section(".data"))) __attribute__((aligned(4096))) u64 gp_uhslabmempgtbl_lvl3t[XMHFGEEC_TOTAL_UHSLABS][PAE_MAXPTRS_PER_PDPT];
-__attribute__((section(".data"))) __attribute__((aligned(4096))) u64 gp_uhslabmempgtbl_lvl2t[XMHFGEEC_TOTAL_UHSLABS][PAE_PTRS_PER_PDPT * PAE_PTRS_PER_PDT];
-__attribute__((section(".data"))) __attribute__((aligned(4096)))  u64 gp_uhslabmempgtbl_lvl1t[XMHFGEEC_TOTAL_UHSLABS][PAE_PTRS_PER_PDPT * PAE_PTRS_PER_PDT * PAE_PTRS_PER_PT];
+
+__attribute__((section(".data"))) __attribute__((aligned(4096))) uint64_t gp_uhslabmempgtbl_lvl3t[XMHFGEEC_TOTAL_UHSLABS][PAE_MAXPTRS_PER_PDPT];
+__attribute__((section(".data"))) __attribute__((aligned(4096))) uint64_t gp_uhslabmempgtbl_lvl2t[XMHFGEEC_TOTAL_UHSLABS][PAE_PTRS_PER_PDPT * PAE_PTRS_PER_PDT];
+__attribute__((section(".data"))) __attribute__((aligned(4096)))  uint64_t gp_uhslabmempgtbl_lvl1t[XMHFGEEC_TOTAL_UHSLABS][PAE_PTRS_PER_PDPT * PAE_PTRS_PER_PDT * PAE_PTRS_PER_PT];
+#endif
 
 
 //////
 // bootstrap unity mapped page-tables
-__attribute__((section(".data"))) __attribute__((aligned(4096))) u64 _xcprimeon_init_pdt[PAE_PTRS_PER_PDPT][PAE_PTRS_PER_PDT];
-__attribute__((section(".data"))) __attribute__((aligned(4096))) u64 _xcprimeon_init_pdpt[PAE_MAXPTRS_PER_PDPT];
+__attribute__((section(".data"))) __attribute__((aligned(4096))) uint64_t _xcprimeon_init_pdt[PAE_PTRS_PER_PDPT][PAE_PTRS_PER_PDT];
+__attribute__((section(".data"))) __attribute__((aligned(4096))) uint64_t _xcprimeon_init_pdpt[PAE_MAXPTRS_PER_PDPT];
 
 
 __attribute__((section(".data"))) slab_devicemap_t _sda_slab_devicemap[XMHFGEEC_TOTAL_SLABS];
 
 __attribute__((section(".data"))) sysdev_memioregions_t sysdev_memioregions[MAX_PLATFORM_DEVICES];
-__attribute__((section(".data"))) u32 numentries_sysdev_memioregions=0;
+__attribute__((section(".data"))) uint32_t numentries_sysdev_memioregions=0;
 
 
 __attribute__((section(".data"))) struct _memorytype _vmx_ept_memorytypes[MAX_MEMORYTYPE_ENTRIES]; //EPT memory types array
@@ -251,17 +247,17 @@ __attribute__((section(".data"))) struct _memorytype _vmx_ept_memorytypes[MAX_ME
 __attribute__((section(".data"))) mtrr_state_t _mtrrs;
 __attribute__((section(".data"))) mtrr_state_t sinit2mle_mtrrs;
 
-__attribute__((section(".data"))) u32 gp_state4_smplock = 1;
+__attribute__((section(".data"))) uint32_t gp_state4_smplock = 1;
 
 
 //DMA Remapping Hardware Unit Definitions
 __attribute__((section(".data"))) VTD_DRHD vtd_drhd[VTD_MAX_DRHD];
-__attribute__((section(".data"))) u32 vtd_num_drhd=0;	//total number of DMAR h/w units
+__attribute__((section(".data"))) uint32_t vtd_num_drhd=0;	//total number of DMAR h/w units
 __attribute__((section(".data"))) bool vtd_drhd_scanned=false;	//set to true once DRHD units have been scanned in the system
 
 __attribute__((section(".data"))) vtd_drhd_handle_t vtd_drhd_maxhandle=0;
-__attribute__((section(".data"))) u32 vtd_dmar_table_physical_address=0;
-__attribute__((section(".data"))) u32 vtd_ret_address=0;
+__attribute__((section(".data"))) uint32_t vtd_dmar_table_physical_address=0;
+__attribute__((section(".data"))) uint32_t vtd_ret_address=0;
 
 
 //DMA page tables
@@ -279,7 +275,7 @@ __attribute__((section(".data"))) __attribute__((aligned(4096))) vtd_pte_t _slab
 
 
 __attribute__((section(".data"))) _slabdevpgtbl_infotable_t _slabdevpgtbl_infotable[XMHFGEEC_TOTAL_SLABS];
-__attribute__((section(".data"))) u32 vtd_pagewalk_level;
+__attribute__((section(".data"))) uint32_t vtd_pagewalk_level;
 
 
 //SMP

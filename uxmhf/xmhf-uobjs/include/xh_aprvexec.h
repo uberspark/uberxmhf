@@ -61,7 +61,7 @@
 
 //VFM
 extern bool ae_activated;
-extern u32 ae_paddr;
+extern uint32_t ae_paddr;
 
 //void xhapprovexec_inv_xmhf_hic_uapi_mempgtbl_setentry(xmhf_hic_uapi_mempgtbl_desc_t *imdesc);
 

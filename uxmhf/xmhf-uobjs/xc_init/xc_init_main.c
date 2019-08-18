@@ -103,7 +103,7 @@ static void xcinit_setup_guest(slab_params_t *sp, bool isbsp){
 
 		//generic guest VMCS setup
 		gcpustate_vmrwp->encoding = VMCS_CONTROL_CR4_SHADOW;
-		gcpustate_vmrwp->value =(u64)CR4_VMXE;
+		gcpustate_vmrwp->value =(uint64_t)CR4_VMXE;
 		XMHF_SLAB_CALLNEW(&spl);
 
 		gcpustate_vmrwp->encoding = VMCS_CONTROL_PAGEFAULT_ERRORCODE_MASK;
@@ -286,7 +286,7 @@ static void xcinit_setup_guest(slab_params_t *sp, bool isbsp){
 
 		//guest EIP and activity state
 		if(isbsp){
-			_XDPRINTF_("%s[%u]: BSP: setting RIP and activity state for boot\n", __func__, (u16)sp->cpuid);
+			_XDPRINTF_("%s[%u]: BSP: setting RIP and activity state for boot\n", __func__, (uint16_t)sp->cpuid);
 			gcpustate_vmrwp->encoding = VMCS_GUEST_RIP;
 			gcpustate_vmrwp->value = 0x00007C00;
 			XMHF_SLAB_CALLNEW(&spl);
@@ -360,9 +360,9 @@ static void xcinit_setup_guest(slab_params_t *sp, bool isbsp){
 //////
 // invoke hypapp initialization callbacks
 //////
-static u32 xc_hcbinvoke(u32 src_slabid, u32 cpuid, u32 cbtype, u32 cbqual, u32 guest_slab_index){
-    u32 status = XC_HYPAPPCB_CHAIN;
-    u32 i;
+static uint32_t xc_hcbinvoke(uint32_t src_slabid, uint32_t cpuid, uint32_t cbtype, uint32_t cbqual, uint32_t guest_slab_index){
+    uint32_t status = XC_HYPAPPCB_CHAIN;
+    uint32_t i;
     slab_params_t spl;
     xc_hypappcb_params_t *hcbp = (xc_hypappcb_params_t *)&spl.in_out_params[0];
 
@@ -393,7 +393,7 @@ static u32 xc_hcbinvoke(u32 src_slabid, u32 cpuid, u32 cbtype, u32 cbqual, u32 g
 // setup E820 hook for guest uobj
 //////
 static void	xcinit_e820initializehooks(void){
-		u16 orig_int15h_ip, orig_int15h_cs;
+		uint16_t orig_int15h_ip, orig_int15h_cs;
 
 		//implant VMCALL followed by IRET at 0040:04AC
 		CASM_FUNCCALL(xmhfhw_sysmemaccess_writeu8, 0x4ac, 0x0f); //VMCALL
@@ -417,7 +417,7 @@ static void	xcinit_e820initializehooks(void){
 //////
 // copy guest boot module into appropriate location
 //////
-static void	xcinit_copyguestbootmodule(u32 g_bm_base, u32 g_bm_size){
+static void	xcinit_copyguestbootmodule(uint32_t g_bm_base, uint32_t g_bm_size){
 	_XDPRINTF_("%s: boot-module at 0x%08x, size=0x%08x (%u) bytes\n", __func__, g_bm_base, g_bm_size, g_bm_size);
 	if( (g_bm_size == 512) ){
 		CASM_FUNCCALL(xmhfhw_sysmemaccess_copy, 0x00007C00, g_bm_base, g_bm_size);
@@ -430,9 +430,9 @@ static void	xcinit_copyguestbootmodule(u32 g_bm_base, u32 g_bm_size){
 
 
 #if defined (__XMHF_VERIFICATION__) && defined (__USPARK_FRAMAC_VA__)
-u32 check_esp, check_eip = CASM_RET_EIP;
+uint32_t check_esp, check_eip = CASM_RET_EIP;
 slab_params_t test_sp;
-u32 cpuid = 0;	//cpu id
+uint32_t cpuid = 0;	//cpu id
 
 void main(void){
 	//populate hardware model stack and program counter
@@ -479,26 +479,24 @@ void slab_main(slab_params_t *sp){
     bool isbsp = xmhfhw_lapic_isbsp();
 
     #if defined (__DEBUG_SERIAL__)
-	static volatile u32 cpucount=0;
+	static volatile uint32_t cpucount=0;
 	#endif //__DEBUG_SERIAL__
-
 
     //grab lock
     CASM_FUNCCALL(spin_lock,&__xcinit_smplock);
 
-    _XDPRINTF_("XC_INIT[%u]: got control: ESP=%08x\n", (u16)sp->cpuid, CASM_FUNCCALL(read_esp,CASM_NOPARAM));
-    _XDPRINTF_("XC_INIT[%u]: HYPAPP_INFO_TABLE_NUMENTRIES=%u\n", (u16)sp->cpuid, HYPAPP_INFO_TABLE_NUMENTRIES);
+    _XDPRINTF_("XC_INIT[%u]: got control: ESP=%08x\n", (uint16_t)sp->cpuid, CASM_FUNCCALL(read_esp,CASM_NOPARAM));
+    _XDPRINTF_("XC_INIT[%u]: HYPAPP_INFO_TABLE_NUMENTRIES=%u\n", (uint16_t)sp->cpuid, HYPAPP_INFO_TABLE_NUMENTRIES);
 
     //plant int 15h redirection code for E820 reporting and copy boot-module
     if(isbsp){
-        _XDPRINTF_("XC_INIT[%u]: BSP: Proceeding to install E820 redirection...\n", (u16)sp->cpuid);
+        _XDPRINTF_("XC_INIT[%u]: BSP: Proceeding to install E820 redirection...\n", (uint16_t)sp->cpuid);
     	xcinit_e820initializehooks();
-        _XDPRINTF_("XC_INIT[%u]: BSP: E820 redirection enabled\n", (u16)sp->cpuid);
-        _XDPRINTF_("XC_INIT[%u]: BSP: Proceeding to copy guest boot-module...\n", (u16)sp->cpuid);
+        _XDPRINTF_("XC_INIT[%u]: BSP: E820 redirection enabled\n", (uint16_t)sp->cpuid);
+        _XDPRINTF_("XC_INIT[%u]: BSP: Proceeding to copy guest boot-module...\n", (uint16_t)sp->cpuid);
     	xcinit_copyguestbootmodule(sp->in_out_params[0], sp->in_out_params[1]);
-        _XDPRINTF_("XC_INIT[%u]: BSP: guest boot-module copied\n", (u16)sp->cpuid);
+        _XDPRINTF_("XC_INIT[%u]: BSP: guest boot-module copied\n", (uint16_t)sp->cpuid);
     }
-
 
     //setup guest uobj state
     xcinit_setup_guest(sp, isbsp);
@@ -508,16 +506,15 @@ void slab_main(slab_params_t *sp){
     xc_hcbinvoke(XMHFGEEC_SLAB_XC_INIT, sp->cpuid, XC_HYPAPPCB_INITIALIZE, 0, XMHFGEEC_SLAB_XG_RICHGUEST);
 
 
-    _XDPRINTF_("XC_INIT[%u]: Proceeding to call guest: ESP=%08x, eflags=%08x\n", (u16)sp->cpuid,
+    _XDPRINTF_("XC_INIT[%u]: Proceeding to call guest: ESP=%08x, eflags=%08x\n", (uint16_t)sp->cpuid,
     		CASM_FUNCCALL(read_esp,CASM_NOPARAM), CASM_FUNCCALL(read_eflags, CASM_NOPARAM));
 
-	#if defined (__DEBUG_SERIAL__)
+    #if defined (__DEBUG_SERIAL__)
 	cpucount++;
 	#endif //__DEBUG_SERIAL__
 
     //release lock
     CASM_FUNCCALL(spin_unlock,&__xcinit_smplock);
-
 
     #if defined (__DEBUG_SERIAL__)
     while(cpucount < __XMHF_CONFIG_DEBUG_SERIAL_MAXCPUS__);
@@ -526,8 +523,7 @@ void slab_main(slab_params_t *sp){
     //call guest
     xcinit_do_callguest(sp);
 
-
-    //_XDPRINTF_("%s[%u]: Should  never get here.Halting!\n", __func__, (u16)sp->cpuid);
+    //_XDPRINTF_("%s[%u]: Should  never get here.Halting!\n", __func__, (uint16_t)sp->cpuid);
     CASM_FUNCCALL(xmhfhw_cpu_hlt, CASM_NOPARAM);
 
     return;
