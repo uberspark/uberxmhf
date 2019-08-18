@@ -1,6 +1,6 @@
 Version: 5.0
 Release Tagline: sometimes even the wisest of man and machines can be in error
-Release Date: 16-Aug-2019
+Release Date: 18-Aug-2019
 Release Notes:
 	* various documentation fixes
 	* rpi3-cortex_a53-armv8_32: refactored secure-boot, interrupt protection, 
