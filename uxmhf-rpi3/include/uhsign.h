@@ -12,7 +12,7 @@ typedef struct {
   uint32_t digest_size;
 } uhsign_const_params;
 
-struct uhsign_const_params uhsign_consts = { "super_secret_key_for_hmac", 25, 20 };
+uhsign_const_params uhsign_consts = { (uint8_t *)"super_secret_key_for_hmac", 25, 20 };
   
 typedef struct {
   uint8_t *pkt;

@@ -13,11 +13,11 @@
 #include <uhcall.h>
 #include <uhsign.h>
 
-__attribute__((aligned(4096))) __attribute__((section(".data"))) uhcalltest_param_t uhcp;
+__attribute__((aligned(4096))) __attribute__((section(".data"))) uhsign_param_t uhcp;
 
 void do_uhsign(uint8_t *pkt, uint32_t pkt_size) {
   uint32_t i;
-  uint8_t key="super_secret_hmac_key";
+  uint8_t *key=(uint8_t *)"super_secret_hmac_key";
   uint32_t key_size = 21;
   uint32_t digest_size=20;
   uhsign_param_t *ptr_uhcp;
@@ -39,7 +39,7 @@ void do_uhsign(uint8_t *pkt, uint32_t pkt_size) {
 
 
 int main() {
-  uint8_t *data="hello world";
+  uint8_t *data=(uint8_t *)"hello world";
   uint32_t data_len=11;
 
   do_uhsign(data,data_len);
