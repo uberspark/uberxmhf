@@ -33,7 +33,7 @@ void do_uhsign(uint8_t *pkt, uint32_t pkt_size) {
     printf("SUCCESS\n");
 
   for(i=0;i<20;i++)
-    printf("%c", ptr_uhcp->digest[i]);
+    printf("%02x", ptr_uhcp->digest[i]);
   printf("\n");
 }
 
