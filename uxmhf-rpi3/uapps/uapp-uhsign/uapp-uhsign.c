@@ -55,6 +55,34 @@
 // access control via code white-listing
 //////
 
+
+// test white-listing hash
+unsigned char whitelist_hash[] = {
+        0xa9, 0x99, 0x3e, 0x36, 0x47, 
+        0x06, 0x81, 0x6a, 0xba, 0x3e, 
+        0x25, 0x71, 0x78, 0x50, 0xc2, 
+        0x6c, 0x9c, 0xd0, 0xd8, 0x9d 
+};
+
+#define HASH_SIZE (sizeof(whitelist_hash)/sizeof(unsigned char))
+
+//check white-listing hash with a memory regions specified by
+//physical address and size
+//return: true if ok, false if not
+bool uapp_uhsign_check_whitelist(uint32_t paddr, uint32_t size){
+  hash_state md;
+  unsigned char computed_hash[HASH_SIZE];
+
+  if ( sha1_memory((const unsigned char *)paddr, size, &compute_hash, HASH_SIZE) == CRYPT_OK ){
+    return true;
+  }else{
+    return false;
+  }
+}
+
+
+
+
 // translate virtual address to physical address
 bool uapp_uhsign_va2pa(uint32_t va, u32 *pa){
 	u32 par;
