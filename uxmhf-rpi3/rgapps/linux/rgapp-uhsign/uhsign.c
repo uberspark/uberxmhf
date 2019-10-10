@@ -55,10 +55,31 @@
 __attribute__((aligned(4096))) __attribute__((section(".data"))) uhsign_param_t uhcp;
 
 void do_uhsign(uint8_t *pkt, uint32_t pkt_size) {
+  printf("** debug: in do_uhsign func\n");
   uint32_t i;
   uhsign_param_t *ptr_uhcp;
+  printf("** debug: define vars\n");  
   memcpy(ptr_uhcp->pkt, pkt, pkt_size);
+  printf("** debug: post memcpy\n");  
   ptr_uhcp->pkt_size=pkt_size;
+
+  printf("initializing data\n");
+  
+  if(!uhcall(UAPP_UHSIGN_FUNCTION_SIGN, ptr_uhcp, sizeof(uhsign_param_t)))
+    printf("hypercall FAILED\n");
+  else
+    printf("SUCCESS\n");
+
+  for(i=0;i<20;i++)
+    printf("%02x", ptr_uhcp->digest[i]);
+  printf("\n");
+}
+
+void do_uhsign1(void *bufprt) {
+  printf("** debug: in do_uhsign func\n");
+  uint32_t i;
+  uhsign_param_t *ptr_uhcp = (uhsign_param_t *)bufptr;
+  printf("** debug: define vars\n");  
 
   printf("initializing data\n");
   
@@ -76,8 +97,17 @@ void do_uhsign(uint8_t *pkt, uint32_t pkt_size) {
 int main() {
   uint8_t *data=(uint8_t *)"hello world";
   uint32_t data_len=11;
+  uhsign_param_t *ptr_uhcp;
+  ptr_uhcp->pkt=data;
+  ptr_uhcp->pkt_size=data_len;
   printf("starting demo...\n");
+
+  printf("[] passing uhsign_param_t\n");
   
+  do_uhsign1(data,data_len);
+
+  printf("[] passing pointer to data\n");
+
   do_uhsign(data,data_len);
 
   printf("demo complete, thanks for your time\n");
