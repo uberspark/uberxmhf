@@ -85,7 +85,6 @@ bool uapp_uhsign_check_whitelist(uint32_t paddr, uint32_t size){
     #endif
     if (memcmp (computed_hash, whitelist_hash, HASH_SIZE) != 0) {
       //hash did not match
-     _XDPRINTFSMP_("__unmatched hash__");
       return false;
     }else{
       //hash matched
@@ -107,7 +106,7 @@ bool uapp_uhsign_va2pa(uint32_t va, u32 *pa){
 	par = sysreg_read_par();
 
 	if(par & 0x1)
-		return false; 	//_XDPRINTFSMP_("%s: Fault in address translation. Halting!\n", __func__);
+		return false; 	
 
 	par &= 0xFFFFF000UL;
 
@@ -119,23 +118,32 @@ bool uapp_uhsign_va2pa(uint32_t va, u32 *pa){
 // acl is based on code white-list hashing
 void uapp_uhsign_checkacl(uint32_t va){
     u32 paddr;
+    
+    #if 0
     _XDPRINTFSMP_("%s: enter\n", __func__);
+    #endif
 
 	  if(!va2pa((uint32_t)va, &paddr)){
+      #if 0
       _XDPRINTFSMP_("%s: no va to pa mapping for 0\n", __func__);
+      #endif
+      //__SECURITY ACTION__: no va to pa mapping in guest; fail silently for now
     }else{
       _XDPRINTFSMP_("va to pa mapping=0x%08x\n", __func__, paddr);
-       uapp_uhsign_check_whitelist(paddr, WHITELIST_COMPARE_BYTES);
+       if(uapp_uhsign_check_whitelist(paddr, WHITELIST_COMPARE_BYTES)){
+          _XDPRINTFSMP_("ACL passed\n");
+          //acl passed
+       }else
+       {
+         //__SECURITY ACTION__: acl check error; fail silently for now
+       }
+       
     }
 
+    #if 0
     _XDPRINTFSMP_("%s: exit\n", __func__);
-
+    #endif
 }
-
-
-
-
-
 
 //////
 
