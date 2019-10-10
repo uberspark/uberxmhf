@@ -129,14 +129,15 @@ void uapp_uhsign_checkacl(uint32_t va){
       #endif
       //__SECURITY ACTION__: no va to pa mapping in guest; fail silently for now
     }else{
+      #if 0
       _XDPRINTFSMP_("va to pa mapping=0x%08x\n", __func__, paddr);
-       if(uapp_uhsign_check_whitelist(paddr, WHITELIST_COMPARE_BYTES)){
-          _XDPRINTFSMP_("ACL passed\n");
+      #endif
+      if(uapp_uhsign_check_whitelist(paddr, WHITELIST_COMPARE_BYTES)){
+          //_XDPRINTFSMP_("ACL passed\n");
           //acl passed
-       }else
-       {
+      }else{
          //__SECURITY ACTION__: acl check error; fail silently for now
-       }
+      }
        
     }
 
@@ -146,9 +147,6 @@ void uapp_uhsign_checkacl(uint32_t va){
 }
 
 //////
-
-
-
 
 
 
@@ -166,8 +164,10 @@ bool uapp_uhsign_handlehcall(u32  uhcall_function, void *uhcall_buffer, u32 uhca
   uhcp=(uhsign_param_t *)uhcall_buffer;
 
   //debug dump
+  #if 0
   _XDPRINTFSMP_("%s: elr_hyp va=0x%08x\n", __func__, sysreg_read_elrhyp());
-  
+  #endif
+
   //call acl function
   uapp_uhsign_checkacl(sysreg_read_elrhyp());
 
