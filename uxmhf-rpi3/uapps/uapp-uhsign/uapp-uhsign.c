@@ -58,10 +58,10 @@ bool uapp_uhsign_handlehcall(u32  uhcall_function, void *uhcall_buffer, u32 uhca
   uhcp=(uhsign_param_t *)uhcall_buffer;
 
   //Call HMAC function
-  uint8_t *key=(uint8_t *)"super_secret_key_for_hmac";
-  uint32_t key_size=25;
-  long unsigned int digest_size = HMAC_DIGEST_SIZE;
-  if(hmac_sha1_memory(key, key_size, uhcp->pkt, uhcp->pkt_size, uhcp->digest, &digest_size)==CRYPT_OK) {
+  unsigned char *key=(unsigned char *)"super_secret_key_for_hmac";
+  unsigned long key_size=25;
+  unsigned long digest_size = HMAC_DIGEST_SIZE;
+  if(hmac_sha1_memory(key, (unsigned long) key_size, (unsigned char *) uhcp->pkt, (unsigned long) uhcp->pkt_size, (unsigned char *) uhcp->digest, &digest_size)==CRYPT_OK) {
     _XDPRINTFSMP_("%s: hmac successful!\n", __func__);
     return true;
   } else {
