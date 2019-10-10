@@ -104,7 +104,7 @@ int main() {
 
   printf("[] passing uhsign_param_t\n");
   
-  do_uhsign1(data,data_len);
+  do_uhsign1((void *)&ptr_uhcp);
 
   printf("[] passing pointer to data\n");
 
