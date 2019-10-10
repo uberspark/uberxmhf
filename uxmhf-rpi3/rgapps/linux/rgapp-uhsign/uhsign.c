@@ -56,23 +56,24 @@ __attribute__((aligned(4096))) __attribute__((section(".data"))) uhsign_param_t 
 
 void do_uhsign(uint8_t *pkt, uint32_t pkt_size) {
   uint32_t i;
-  uhsign_param_t uhcp;
-  memcpy(&uhcp.pkt, pkt, pkt_size);
-  uhcp.pkt_size=pkt_size;
-
-  if(!uhcall(UAPP_UHSIGN_FUNCTION_SIGN, (uhsign_param_t *)&uhcp, sizeof(uhsign_param_t)))
+  uhsign_param_t *uhcp_ptr = malloc(sizeof(uhsign_param_t));
+  memcpy(&uhcp_ptr->pkt, pkt, pkt_size);
+  uhcp_ptr->pkt_size=pkt_size;
+  
+  if(!uhcall(UAPP_UHSIGN_FUNCTION_SIGN, uhcp_ptr, sizeof(uhsign_param_t)))
     printf("hypercall FAILED\n");
   else
     printf("SUCCESS\n");
   
-  printf("Digest: ");  
+  printf("Digest: ");
   for(i=0;i<20;i++)
-    printf("%02x", uhcp.digest[i]);
+    printf("%02x", uhcp_ptr->digest[i]);
   printf("\n");
+
+  free(uhcp_ptr);
 }
 
 void do_uhsign1(void *bufptr) {
-  uint32_t i;
   uhsign_param_t *ptr_uhcp = (uhsign_param_t *)bufptr;
 
   if(!uhcall(UAPP_UHSIGN_FUNCTION_SIGN, ptr_uhcp, sizeof(uhsign_param_t)))
@@ -81,6 +82,7 @@ void do_uhsign1(void *bufptr) {
     printf("SUCCESS\n");
 
   printf("Digest: ");
+  uint32_t i;
   for(i=0;i<20;i++)
     printf("%02x", ptr_uhcp->digest[i]);
   printf("\n");
