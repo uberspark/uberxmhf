@@ -92,7 +92,7 @@ int main() {
   uint32_t data_len=11;
   uhsign_param_t ptr_uhcp;
   memcpy(&ptr_uhcp.pkt, data, data_len); 
-  ptr_uhcp.pkt_size=11;
+  ptr_uhcp.pkt_size=data_len;
 
   printf("starting demo...\n");
 

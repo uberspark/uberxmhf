@@ -26,5 +26,5 @@ local:
 
 .PHONY: clean
 clean:
-	rm -f uhcalltest
+	rm -f uhsign
 	rm -f *.o

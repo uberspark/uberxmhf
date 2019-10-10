@@ -58,7 +58,7 @@ configure:1910: result: arm-linux-gnueabihf-ar
 configure:1920: checking for rm
 configure:1947: result: rm -f
 configure:1957: checking for cp
-configure:1984: result: cp																
+configure:1984: result: cp																				
 configure:1994: checking for mkdir
 configure:2021: result: mkdir
 configure:2031: checking for arm-linux-gnueabihf-ld
@@ -102,7 +102,7 @@ ac_cv_prog_AS=arm-linux-gnueabihf-as
 ac_cv_prog_CAT=cat
 ac_cv_prog_CC=arm-linux-gnueabihf-gcc
 ac_cv_prog_CCERT=arm-linux-gnueabihf-gcc
-ac_cv_prog_CP='cp																'
+ac_cv_prog_CP='cp																				'
 ac_cv_prog_LD=arm-linux-gnueabihf-ld
 ac_cv_prog_MAKE=make
 ac_cv_prog_MKDIR=mkdir
@@ -122,7 +122,7 @@ CC='arm-linux-gnueabihf-gcc'
 CCERT='arm-linux-gnueabihf-gcc'
 CORE_SIZE='0xC00000'
 CORE_STARTADDR='0x1000000'
-CP='cp																'
+CP='cp																				'
 DEFS='-DPACKAGE_NAME=\"uxmhf-rpi3\" -DPACKAGE_TARNAME=\"uxmhf-rpi3\" -DPACKAGE_VERSION=\"5.0\" -DPACKAGE_STRING=\"uxmhf-rpi3\ 5.0\" -DPACKAGE_BUGREPORT=\"\" -DPACKAGE_URL=\"\"'
 DMAPROT='n'
 ECHO_C=''
