@@ -52,10 +52,16 @@
 #include <uhcall.h>
 #include <uhsign.h>
 
+#include <xmhfcrypto.h>
+#include <hmac-sha1.h>
+
+
 __attribute__((aligned(4096))) __attribute__((section(".data"))) uhsign_param_t uhcp;
 
+__attribute__((section(".data"))) unsigned char key[]="super_secret_key_for_hmac";
+#define USER_KEY_SIZE (sizeof(key))
+
 void do_uhsign(uint8_t *pkt, uint32_t pkt_size) {
-  uint32_t i;
   memcpy(&uhcp.pkt, pkt, pkt_size); 
   uhcp.pkt_size=pkt_size;
   uhsign_param_t *uhcp_ptr = &uhcp;
@@ -64,12 +70,14 @@ void do_uhsign(uint8_t *pkt, uint32_t pkt_size) {
     printf("hypercall FAILED\n");
   else
     printf("SUCCESS\n");
-  
+
+  /*
   printf("Digest: ");
+  uint32_t i;
   for(i=0;i<20;i++)
     printf("%02x", uhcp_ptr->digest[i]);
   printf("\n");
-
+  */
 }
 
 void do_uhsign1(void *bufptr) {
@@ -80,11 +88,13 @@ void do_uhsign1(void *bufptr) {
   else
     printf("SUCCESS\n");
 
+  /*
   printf("Digest: ");
   uint32_t i;
   for(i=0;i<20;i++)
     printf("%02x", ptr_uhcp->digest[i]);
   printf("\n");
+  */
 }
 
 
@@ -94,12 +104,25 @@ int main() {
   memcpy(&uhcp.pkt, data, data_len); 
   uhcp.pkt_size=data_len;
 
-  printf("starting demo...\n");
-
-  printf("[] passing uhsign_param_t\n");
+  //printf("[] passing uhsign_param_t\n");
   
-  do_uhsign1((void *)&uhcp);
+  //do_uhsign1((void *)&uhcp);
 
+  /* moving uapp actions into userspace for benchmarking */
+
+  unsigned long digest_size=20;
+  unsigned char *digest;
+  int i;
+  uint8_t output[20];
+  if(hmac_sha1_memory(key, (unsigned long) USER_KEY_SIZE, (unsigned char *) data, (unsigned long) data_len, digest, &digest_size)==CRYPT_OK) {
+    for(i=0;i<digest_size;i++)
+      output[i]=(uint8_t)*(digest+i);
+    printf("%02x", output[i]);
+  }
+  printf("\n");
+
+    
+  /*
   printf("\n");
 
   memset(&uhcp.pkt, 0, data_len);
@@ -109,6 +132,7 @@ int main() {
   do_uhsign(data, data_len);
 
   printf("demo complete, thanks for your time\n");
+  */
   
   return 0;
 }

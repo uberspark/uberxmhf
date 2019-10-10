@@ -7,9 +7,10 @@ export RGAPPS_LIB_DIR := $(realpath $(CURRENT_DIR)/../libs)
 
 INCS = -I$(UXMHFRPI3_DIR)/include
 INCS += -I$(RGAPPS_LIB_DIR)/libuhcall/include
+INCS += -I$(UXMHFRPI3_DIR)/libs/libxmhfcrypto/include
 
 LIBS = $(RGAPPS_LIB_DIR)/libuhcall/libuhcall.a
-
+LIBS += $(UXMHFRPI3_DIR)/libs/libxmhfcrypto/libxmhfcrypto.a
 
 CFLAGS = -I. $(INCS) -c -g -Wall
 LFLAGS = -g -Wall -Wextra     
