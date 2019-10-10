@@ -65,15 +65,24 @@ unsigned char whitelist_hash[] = {
 };
 
 #define HASH_SIZE (sizeof(whitelist_hash)/sizeof(unsigned char))
+#define WHITELIST_COMPARE_BYTES 32
 
 //check white-listing hash with a memory regions specified by
 //physical address and size
 //return: true if ok, false if not
 bool uapp_uhsign_check_whitelist(uint32_t paddr, uint32_t size){
   hash_state md;
+  int i;
   unsigned char computed_hash[HASH_SIZE];
 
-  if ( sha1_memory((const unsigned char *)paddr, size, &compute_hash, HASH_SIZE) == CRYPT_OK ){
+  if ( sha1_memory((const unsigned char *)paddr, size, &computed_hash, HASH_SIZE) == CRYPT_OK ){
+     _XDPRINTFSMP_("Hash follows:\n\n");
+
+    for (i=0; i < HASH_SIZE; i++)
+      _XDPRINTFSMP_("0x%02x ", computed_hash[i]);
+    
+     _XDPRINTFSMP_("\n\n");
+
     return true;
   }else{
     return false;
@@ -103,10 +112,12 @@ void uapp_uhsign_checkacl(uint32_t va){
     u32 paddr;
     _XDPRINTFSMP_("%s: enter\n", __func__);
 
+
 	  if(!va2pa((uint32_t)va, &paddr)){
       _XDPRINTFSMP_("%s: no va to pa mapping for 0\n", __func__);
     }else{
       _XDPRINTFSMP_("va to pa mapping=0x%08x\n", __func__, paddr);
+       uapp_uhsign_check_whitelist(paddr, WHITELIST_COMPARE_BYTES);
     }
 
     _XDPRINTFSMP_("%s: exit\n", __func__);
