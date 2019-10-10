@@ -1,3 +1,42 @@
+/*
+ * @UBERXMHF_LICENSE_HEADER_START@
+ *
+ * uber eXtensible Micro-Hypervisor Framework (Raspberry Pi)
+ *
+ * Copyright 2018 Carnegie Mellon University. All Rights Reserved.
+ *
+ * NO WARRANTY. THIS CARNEGIE MELLON UNIVERSITY AND SOFTWARE ENGINEERING
+ * INSTITUTE MATERIAL IS FURNISHED ON AN "AS-IS" BASIS. CARNEGIE MELLON
+ * UNIVERSITY MAKES NO WARRANTIES OF ANY KIND, EITHER EXPRESSED OR IMPLIED,
+ * AS TO ANY MATTER INCLUDING, BUT NOT LIMITED TO, WARRANTY OF FITNESS FOR
+ * PURPOSE OR MERCHANTABILITY, EXCLUSIVITY, OR RESULTS OBTAINED FROM USE OF
+ * THE MATERIAL. CARNEGIE MELLON UNIVERSITY DOES NOT MAKE ANY WARRANTY OF
+ * ANY KIND WITH RESPECT TO FREEDOM FROM PATENT, TRADEMARK, OR COPYRIGHT
+ * INFRINGEMENT.
+ *
+ * Released under a BSD (SEI)-style license, please see LICENSE or
+ * contact permission@sei.cmu.edu for full terms.
+ *
+ * [DISTRIBUTION STATEMENT A] This material has been approved for public
+ * release and unlimited distribution.  Please see Copyright notice for
+ * non-US Government use and distribution.
+ *
+ * Carnegie Mellon is registered in the U.S. Patent and Trademark Office by
+ * Carnegie Mellon University.
+ *
+ * @UBERXMHF_LICENSE_HEADER_END@
+ */
+
+/*
+ * Author: Matt McCormack (matthew.mccormack@live.com)
+ *
+ */
+
+/*
+ * hypercall program (uhsign)
+ * author: matt mccormack (matthew.mccormack@live.com)
+ *
+ */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -17,16 +56,12 @@ __attribute__((aligned(4096))) __attribute__((section(".data"))) uhsign_param_t 
 
 void do_uhsign(uint8_t *pkt, uint32_t pkt_size) {
   uint32_t i;
-  uint8_t *key=(uint8_t *)"super_secret_hmac_key";
-  uint32_t key_size = 21;
-  uint32_t digest_size=20;
   uhsign_param_t *ptr_uhcp;
   memcpy(ptr_uhcp->pkt, pkt, pkt_size);
-  memcpy(ptr_uhcp->key, key, key_size);  
   ptr_uhcp->pkt_size=pkt_size;
-  ptr_uhcp->key_size=key_size;
-  ptr_uhcp->digest_size=digest_size;
 
+  printf("initializing data\n");
+  
   if(!uhcall(UAPP_UHSIGN_FUNCTION_SIGN, ptr_uhcp, sizeof(uhsign_param_t)))
     printf("hypercall FAILED\n");
   else
@@ -41,9 +76,12 @@ void do_uhsign(uint8_t *pkt, uint32_t pkt_size) {
 int main() {
   uint8_t *data=(uint8_t *)"hello world";
   uint32_t data_len=11;
-
+  printf("starting demo...\n");
+  
   do_uhsign(data,data_len);
 
+  printf("demo complete, thanks for your time\n");
+  
   return 0;
 }
   
