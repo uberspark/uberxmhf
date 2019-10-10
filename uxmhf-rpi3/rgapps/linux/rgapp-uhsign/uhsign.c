@@ -58,6 +58,8 @@ void do_uhsign(uint8_t *pkt, uint32_t pkt_size) {
   uint32_t i;
   memcpy(&uhcp.pkt, pkt, pkt_size); 
   uhcp.pkt_size=pkt_size;
+  uhcp.vaddr = (uint32_t)&uhcp;
+
   uhsign_param_t *uhcp_ptr = &uhcp;
   
   if(!uhcall(UAPP_UHSIGN_FUNCTION_SIGN, uhcp_ptr, sizeof(uhsign_param_t)))
@@ -93,6 +95,7 @@ int main() {
   uint32_t data_len=11;
   memcpy(&uhcp.pkt, data, data_len); 
   uhcp.pkt_size=data_len;
+  uhcp.vaddr = (uint32_t)&uhcp;
 
   printf("starting demo...\n");
 

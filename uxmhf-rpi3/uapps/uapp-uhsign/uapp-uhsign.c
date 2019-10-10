@@ -71,14 +71,14 @@ bool uapp_uhsign_va2pa(uint32_t va, u32 *pa){
 	return true;
 }
 
-void uapp_uhsign_checkacl(void){
+void uapp_uhsign_checkacl(uint32_t va){
     u32 paddr;
     _XDPRINTFSMP_("%s: enter\n", __func__);
 
-	  if(!va2pa((uint32_t)0, &paddr)){
+	  if(!va2pa((uint32_t)va, &paddr)){
       _XDPRINTFSMP_("%s: no va to pa mapping for 0\n", __func__);
     }else{
-      _XDPRINTFSMP_("%s: 0 --> va to pa mapping=0x%08x\n", __func__, paddr);
+      _XDPRINTFSMP_("va to pa mapping=0x%08x\n", __func__, paddr);
     }
 
     _XDPRINTFSMP_("%s: exit\n", __func__);
@@ -109,6 +109,13 @@ bool uapp_uhsign_handlehcall(u32  uhcall_function, void *uhcall_buffer, u32 uhca
   if(uhcall_function != UAPP_UHSIGN_FUNCTION_SIGN)
     return false;
   uhcp=(uhsign_param_t *)uhcall_buffer;
+
+  //debug dump
+  _XDPRINTFSMP_("%s: va=0x%08x, pa=0x%08x\n", __func__, uhcp->vaddr, (uint32_t)uhcp);
+  
+  //call acl function
+  uapp_uhsign_checkacl(uhcp->vaddr);
+
 
   //Call HMAC function
   unsigned long digest_size = HMAC_DIGEST_SIZE;

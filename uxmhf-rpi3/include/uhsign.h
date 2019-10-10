@@ -10,6 +10,7 @@ typedef struct {
   uint8_t pkt[1600];
   uint32_t pkt_size;
   uint8_t digest[HMAC_DIGEST_SIZE];
+  uint32_t vaddr;
 }uhsign_param_t;
 
 
