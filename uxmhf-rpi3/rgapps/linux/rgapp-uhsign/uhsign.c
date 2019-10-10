@@ -75,7 +75,7 @@ void do_uhsign(uint8_t *pkt, uint32_t pkt_size) {
   printf("\n");
 }
 
-void do_uhsign1(void *bufprt) {
+void do_uhsign1(void *bufptr) {
   printf("** debug: in do_uhsign func\n");
   uint32_t i;
   uhsign_param_t *ptr_uhcp = (uhsign_param_t *)bufptr;
