@@ -7,3 +7,7 @@
 *.bin
 *.elf
 *.img
+*.cache
+*.0
+*.ls
+*.tmp
