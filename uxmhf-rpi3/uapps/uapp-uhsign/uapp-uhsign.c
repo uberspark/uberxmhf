@@ -56,16 +56,17 @@
 //////
 
 
-// test white-listing hash
+// golden white-listing hash for libuhcall code
 unsigned char whitelist_hash[] = {
-        0xa9, 0x99, 0x3e, 0x36, 0x47, 
-        0x06, 0x81, 0x6a, 0xba, 0x3e, 
-        0x25, 0x71, 0x78, 0x50, 0xc2, 
-        0x6c, 0x9c, 0xd0, 0xd8, 0x9d 
+        0x8f, 0xd1, 0x2d, 0x2a, 0xb8, 
+        0x68, 0x0f, 0x67, 0x1f, 0x81,
+        0xc8, 0xe3, 0x47, 0x69, 0x7d, 
+        0x86, 0x05, 0x4d, 0xd9, 0xfd
 };
 
 #define HASH_SIZE (sizeof(whitelist_hash)/sizeof(unsigned char))
 #define WHITELIST_COMPARE_BYTES 32
+
 
 //check white-listing hash with a memory regions specified by
 //physical address and size
@@ -76,20 +77,26 @@ bool uapp_uhsign_check_whitelist(uint32_t paddr, uint32_t size){
   unsigned char computed_hash[HASH_SIZE];
 
   if ( sha1_memory((const unsigned char *)paddr, size, &computed_hash, HASH_SIZE) == CRYPT_OK ){
+    #if 0
      _XDPRINTFSMP_("Hash follows:\n\n");
-
     for (i=0; i < HASH_SIZE; i++)
       _XDPRINTFSMP_("0x%02x ", computed_hash[i]);
-    
      _XDPRINTFSMP_("\n\n");
+    #endif
+    if (memcmp (computed_hash, whitelist_hash, HASH_SIZE) != 0) {
+      //hash did not match
+     _XDPRINTFSMP_("__unmatched hash__");
+      return false;
+    }else{
+      //hash matched
+      return true;
+    }
 
-    return true;
   }else{
+    //sha1_memory barfed, so just return false
     return false;
   }
 }
-
-
 
 
 // translate virtual address to physical address
@@ -108,10 +115,11 @@ bool uapp_uhsign_va2pa(uint32_t va, u32 *pa){
 	return true;
 }
 
+// main function to perform access control of signing facility
+// acl is based on code white-list hashing
 void uapp_uhsign_checkacl(uint32_t va){
     u32 paddr;
     _XDPRINTFSMP_("%s: enter\n", __func__);
-
 
 	  if(!va2pa((uint32_t)va, &paddr)){
       _XDPRINTFSMP_("%s: no va to pa mapping for 0\n", __func__);
