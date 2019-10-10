@@ -49,6 +49,9 @@
 #include <hmac-sha1.h>
 #include <xmhfcrypto.h>
 
+__attribute__((section(".data"))) unsigned char key[]="super_secret_key_for_hmac";
+#define KEY_SIZE (sizeof(key))
+
 bool uapp_uhsign_handlehcall(u32  uhcall_function, void *uhcall_buffer, u32 uhcall_buffer_len)
 {
   uhsign_param_t *uhcp;
@@ -58,12 +61,10 @@ bool uapp_uhsign_handlehcall(u32  uhcall_function, void *uhcall_buffer, u32 uhca
   uhcp=(uhsign_param_t *)uhcall_buffer;
 
   //Call HMAC function
-  unsigned char *key=(unsigned char *)"super_secret_key_for_hmac";
-  unsigned long key_size=25;
   unsigned long digest_size = HMAC_DIGEST_SIZE;
   unsigned char *digest_result;
   int i;
-  if(hmac_sha1_memory(key, (unsigned long) key_size, (unsigned char *) uhcp->pkt, (unsigned long) uhcp->pkt_size, digest_result, &digest_size)==CRYPT_OK) {
+  if(hmac_sha1_memory(key, (unsigned long) KEY_SIZE, (unsigned char *) uhcp->pkt, (unsigned long) uhcp->pkt_size, digest_result, &digest_size)==CRYPT_OK) {
     for(i=0;i<digest_size;i++) {
       uhcp->digest[i]=(uint8_t)*(digest_result+i);
     }
@@ -71,9 +72,9 @@ bool uapp_uhsign_handlehcall(u32  uhcall_function, void *uhcall_buffer, u32 uhca
     return true;
   } else {
     _XDPRINTFSMP_("%s: hmac error!\n", __func__);
+    return false;
   }
 
-  return false;
 }
 
   
