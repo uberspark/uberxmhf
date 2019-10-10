@@ -150,11 +150,10 @@ bool uapp_uhsign_handlehcall(u32  uhcall_function, void *uhcall_buffer, u32 uhca
   uhcp=(uhsign_param_t *)uhcall_buffer;
 
   //debug dump
-  _XDPRINTFSMP_("%s: va=0x%08x, pa=0x%08x\n", __func__, uhcp->vaddr, (uint32_t)uhcp);
+  _XDPRINTFSMP_("%s: elr_hyp va=0x%08x\n", __func__, sysreg_read_elrhyp());
   
   //call acl function
-  uapp_uhsign_checkacl(uhcp->vaddr);
-
+  uapp_uhsign_checkacl(sysreg_read_elrhyp());
 
   //Call HMAC function
   unsigned long digest_size = HMAC_DIGEST_SIZE;
