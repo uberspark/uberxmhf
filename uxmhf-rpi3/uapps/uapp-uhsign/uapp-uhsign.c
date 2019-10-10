@@ -36,7 +36,8 @@
 	uhsign hypapp
 	guest hypercall to generate HMAC signature of data blob
 
-        author: matt mccormack (mmccorm1@andrew.cmu.edu)
+        authors: matt mccormack (mmccorm1@andrew.cmu.edu)
+                amit vasudevan (<amitvasudevan@acm.org>)
 */
 
 #include <types.h>
@@ -48,6 +49,55 @@
 #include <uhsign.h>
 #include <hmac-sha1.h>
 #include <xmhfcrypto.h>
+
+
+//////
+// access control via code white-listing
+//////
+
+// translate virtual address to physical address
+bool uapp_uhsign_va2pa(uint32_t va, u32 *pa){
+	u32 par;
+
+	sysreg_ats1cpr(va);
+	par = sysreg_read_par();
+
+	if(par & 0x1)
+		return false; 	//_XDPRINTFSMP_("%s: Fault in address translation. Halting!\n", __func__);
+
+	par &= 0xFFFFF000UL;
+
+	*pa = par;
+	return true;
+}
+
+void uapp_uhsign_checkacl(void){
+    u32 paddr;
+    _XDPRINTFSMP_("%s: enter\n", __func__);
+
+	  if(!va2pa((uint32_t)0, &paddr)){
+      _XDPRINTFSMP_("%s: no va to pa mapping for 0\n", __func__);
+    }else{
+      _XDPRINTFSMP_("%s: 0 --> va to pa mapping=0x%08x\n", __func__, paddr);
+    }
+
+    _XDPRINTFSMP_("%s: exit\n", __func__);
+
+}
+
+
+
+
+
+
+//////
+
+
+
+
+
+
+
 
 __attribute__((section(".data"))) unsigned char key[]="super_secret_key_for_hmac";
 #define KEY_SIZE (sizeof(key))
