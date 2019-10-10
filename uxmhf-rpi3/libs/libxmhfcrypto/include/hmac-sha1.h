@@ -38,6 +38,7 @@
 
 #ifndef __ASSEMBLY__
 
+#include <xmhfcrypto.h>
 
 int hmac_sha1_init(hmac_state *hmac, const unsigned char *key, unsigned long keylen);
 int hmac_sha1_process(hmac_state *hmac, const unsigned char *in, unsigned long inlen);
