@@ -1,3 +1,9 @@
+*.a
 *.o
 *.*~
 *~
+*.log
+*.status
+*.bin
+*.elf
+*.img
