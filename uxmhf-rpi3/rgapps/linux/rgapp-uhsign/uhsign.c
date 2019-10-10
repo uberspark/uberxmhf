@@ -70,7 +70,6 @@ void do_uhsign(uint8_t *pkt, uint32_t pkt_size) {
     printf("%02x", uhcp_ptr->digest[i]);
   printf("\n");
 
-  free(uhcp_ptr);
 }
 
 void do_uhsign1(void *bufptr) {
