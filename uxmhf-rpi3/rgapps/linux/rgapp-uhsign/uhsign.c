@@ -98,8 +98,8 @@ int main() {
   uint8_t *data=(uint8_t *)"hello world";
   uint32_t data_len=11;
   uhsign_param_t *ptr_uhcp;
-  memcpy(ptr_uhcp->pkt,data, data_len);
-  ptr_uhcp->pkt_size=data_len;
+  ptr_uhcp->pkt=(uint8_t *)"hello world";
+  ptr_uhcp->pkt_size=11;
   printf("starting demo...\n");
 
   printf("[] passing uhsign_param_t\n");
