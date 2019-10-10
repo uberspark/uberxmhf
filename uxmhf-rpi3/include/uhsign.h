@@ -7,9 +7,9 @@
 #ifndef __ASSEMBLY__
 
 typedef struct {
-  uint8_t *pkt;
+  uint8_t pkt[1600];
   uint32_t pkt_size;
-  uint8_t *digest;
+  uint8_t digest[HMAC_DIGEST_SIZE];
 }uhsign_param_t;
 
 
