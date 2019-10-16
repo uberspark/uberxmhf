@@ -55,6 +55,7 @@
 #include <xmhfcrypto.h>
 #include <hmac-sha1.h>
 
+#include <sys/time.h>
 
 __attribute__((aligned(4096))) __attribute__((section(".data"))) uhsign_param_t uhcp;
 
@@ -71,13 +72,12 @@ void do_uhsign(uint8_t *pkt, uint32_t pkt_size) {
   else
     printf("SUCCESS\n");
 
-  /*
   printf("Digest: ");
   uint32_t i;
   for(i=0;i<20;i++)
     printf("%02x", uhcp_ptr->digest[i]);
   printf("\n");
-  */
+
 }
 
 void do_uhsign1(void *bufptr) {
@@ -88,30 +88,33 @@ void do_uhsign1(void *bufptr) {
   else
     printf("SUCCESS\n");
 
-  /*
+
   printf("Digest: ");
   uint32_t i;
   for(i=0;i<20;i++)
     printf("%02x", ptr_uhcp->digest[i]);
   printf("\n");
-  */
+
 }
 
 
 int main() {
+  struct timeval tv1, tv2;
+  //clock_t begin = clock();
+  gettimeofday(&tv1, NULL);
   uint8_t *data=(uint8_t *)"hello world";
   uint32_t data_len=11;
   memcpy(&uhcp.pkt, data, data_len); 
   uhcp.pkt_size=data_len;
 
-  //printf("[] passing uhsign_param_t\n");
-  
-  //do_uhsign1((void *)&uhcp);
+  printf("[] passing uhsign_param_t\n");
+
+  do_uhsign1((void *)&uhcp);
 
   /* moving uapp actions into userspace for benchmarking */
-
+  /*
   unsigned long digest_size=20;
-  unsigned char *digest;
+  unsigned char *digest=NULL;
   int i;
   uint8_t output[20];
   if(hmac_sha1_memory(key, (unsigned long) USER_KEY_SIZE, (unsigned char *) data, (unsigned long) data_len, digest, &digest_size)==CRYPT_OK) {
@@ -120,9 +123,9 @@ int main() {
     printf("%02x", output[i]);
   }
   printf("\n");
-
+  */
     
-  /*
+
   printf("\n");
 
   memset(&uhcp.pkt, 0, data_len);
@@ -132,8 +135,12 @@ int main() {
   do_uhsign(data, data_len);
 
   printf("demo complete, thanks for your time\n");
-  */
-  
+
+
+  //clock_t end = clock();
+  gettimeofday(&tv2, NULL);
+  //double time_spend = (double)(end-begin) / CLOCKS_PER_SEC;
+  printf("Total time = %f seconds\n", (double) (tv2.tv_usec-tv1.tv_usec)/1000000 + (double) (tv2.tv_sec - tv1.tv_sec));
   return 0;
 }
   

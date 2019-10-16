@@ -46,7 +46,6 @@
 #include <debug.h>
 #include <dmaprot.h>
 
-
 //////
 // externs
 //////
