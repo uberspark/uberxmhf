@@ -33,4 +33,6 @@ RUN cd /uberxmhf/uxmhf-rpi3/rgapps/linux/rgapp-uhcallkmod && \
 RUN cd /uberxmhf/uxmhf-rpi3/rgapps/linux/ && make -w all && cd rgapp-uhcalltest && \
     make -w all && cp ./uhcalltest /uxmhf-rpi3-staging/.
 
+COPY transfer.sh /
+
 RUN /bin/bash
