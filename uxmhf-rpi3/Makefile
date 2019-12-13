@@ -30,7 +30,7 @@ export CC = arm-linux-gnueabihf-gcc
 export AS = arm-linux-gnueabihf-as
 export AR = arm-linux-gnueabihf-ar
 export RM = rm -f
-export CP = cp								
+export CP = cp												
 export MKDIR = mkdir
 export LD = arm-linux-gnueabihf-ld
 export OBJCOPY = arm-linux-gnueabihf-objcopy
@@ -40,6 +40,7 @@ export prefix=/usr/local
 
 export SECBOOT := n
 export DMAPROT := n
+export ENABLE_UAPP_UHSIGN := n
 
 
 INCS = -I$(UXMHFRPI3_DIR)/libs/libxmhfc/include
@@ -66,6 +67,10 @@ endif
 
 ifeq ($(FIQREFLECTION), y)
 	CFLAGS_DEFS += -D__FIQREFLECTION__
+endif
+
+ifeq ($(ENABLE_UAPP_UHSIGN),y)
+	CFLAGS_DEFS += -D__ENABLE_UAPP_UHSIGN__
 endif
 
 CFLAGS = $(CFLAGS_DEFS) -c -Wall -nostdlib -nostartfiles -ffreestanding -mcpu=cortex-a53
