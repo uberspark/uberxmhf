@@ -40,6 +40,7 @@ export prefix=@prefix@
 
 export SECBOOT := @SECBOOT@
 export DMAPROT := @DMAPROT@
+export ENABLE_UAPP_UHSIGN := @ENABLE_UAPP_UHSIGN@
 
 
 INCS = -I$(UXMHFRPI3_DIR)/libs/libxmhfc/include
@@ -66,6 +67,10 @@ endif
 
 ifeq ($(FIQREFLECTION), y)
 	CFLAGS_DEFS += -D__FIQREFLECTION__
+endif
+
+ifeq ($(ENABLE_UAPP_UHSIGN),y)
+	CFLAGS_DEFS += -D__ENABLE_UAPP_UHSIGN__
 endif
 
 CFLAGS = $(CFLAGS_DEFS) -c -Wall -nostdlib -nostartfiles -ffreestanding -mcpu=cortex-a53

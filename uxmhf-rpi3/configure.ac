@@ -94,6 +94,15 @@ AS_IF([test "x${enable_fiqreflection}" != "xno"],
       [FIQREFLECTION=y],
       [FIQREFLECTION=n])
 
+# selectively enable/disable HMAC functionality in hypervisor
+AC_SUBST([ENABLE_UAPP_UHSIGN])
+AC_ARG_ENABLE([uapp_uhsign],
+	AS_HELP_STRING([--enable-uapp-uhsign@<:@=yes|no@:>@],
+		[enable signing uapp]),
+		, [enable_uapp_uhsign=no])
+AS_IF([test "x${enable_uapp_uhsign}" != "xno"],
+      [ENABLE_UAPP_UHSIGN=y],
+      [ENABLE_UAPP_UHSIGN=n])
 
 ###### autoconf output files
 AC_CONFIG_FILES(

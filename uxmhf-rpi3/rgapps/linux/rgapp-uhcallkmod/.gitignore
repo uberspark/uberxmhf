@@ -1,0 +1,11 @@
+*.cmd
+*.symvers
+*.order
+*.mod.c
+*.ko
+*.mod
+*.o
+.built-in.o.cmd
+.tmp_versions/uhcallkmod.mod
+.uhcallkmod.mod.o.cmd
+.uhcallkmod.o.cmd
