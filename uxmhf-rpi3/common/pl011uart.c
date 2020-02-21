@@ -108,7 +108,7 @@ void bcm2837_pl011uart_puts(char *buffer){
 
 /* UART flush */
 void bcm2837_pl011uart_flush(void){
-
+    while( !(mmio_read32(PL011_UART_FR_REG) & 0x80) );
 }
 
 
