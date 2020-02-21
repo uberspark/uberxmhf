@@ -45,7 +45,7 @@
 
 //mailbox message buffer
 //has to be aligned on a 16 byte boundary
-__attribute__((aligned(16))) volatile  unsigned int mailbox_msgbuf[MAILBOX_MAXBUFSIZE];
+__attribute__((aligned(16))) __attribute__((section(".data"))) volatile  unsigned int mailbox_msgbuf[MAILBOX_MAXBUFSIZE];
 
 // make a mailbox call
 // return: 0 if failure, non-zero on success

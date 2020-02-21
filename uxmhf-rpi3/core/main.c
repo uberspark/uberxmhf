@@ -40,7 +40,7 @@
 #include <fdt.h>
 #include <debug.h>
 #include <dmaprot.h>
-
+#include <mailbox.h>
 
 //////
 // externs
@@ -437,6 +437,7 @@ void core_fixresmemmap(u32 fdt_address){
 //////
 void main(u32 r0, u32 id, struct atag *at, u32 cpuid){
 	u32 hvbar, hcr, spsr_hyp;
+	u64 boardserial;
 
 	_XDPRINTF_("%s[%u]: ENTER: sp=0x%08x (cpu_stacks=0x%08x)\n", __func__, cpuid,
 			cpu_read_sp(), &cpu_stacks);
@@ -451,6 +452,14 @@ void main(u32 r0, u32 id, struct atag *at, u32 cpuid){
 
 	//fix reserved memory map
 	core_fixresmemmap((u32)at);
+
+
+#if 1
+	boardserial = bcm2837_mailbox_get_board_serial();
+	_XDPRINTF_("%s[%u]: board serial=0x%016llx\n", __func__, cpuid, boardserial);
+#endif
+
+
 
 	//initialize base hardware platform
 	bcm2837_platform_initialize();
