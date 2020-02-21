@@ -41,7 +41,22 @@
 #ifndef __MAILBOX_H__
 #define __MAILBOX_H__
 
+#define MAILBOX_REQUEST    		0
 
+//channels 
+#define MAILBOX_CHANNEL_POWER   0
+#define MAILBOX_CHANNEL_FB      1
+#define MAILBOX_CHANNEL_VUART   2
+#define MAILBOX_CHANNEL_VCHIQ   3
+#define MAILBOX_CHANNEL_LEDS    4
+#define MAILBOX_CHANNEL_BTNS    5
+#define MAILBOX_CHANNEL_TOUCH   6
+#define MAILBOX_CHANNEL_COUNT   7
+#define MAILBOX_CHANNEL_PROP    8
+
+// tags 
+#define MAILBOX_TAG_GETSERIAL   0x10004
+#define MAILBOX_TAG_LAST        0
 
 #ifndef __ASSEMBLY__
 
