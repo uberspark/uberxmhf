@@ -65,6 +65,11 @@
 int bcm2837_mailbox_call(unsigned char channel, unsigned char *buffer, unsigned int buffer_size){
 
 
+// mailbox return serial number
+// return 0 on failure
+u64 bcm2837_mailbox_get_board_serial(void){
+
+
 #endif // __ASSEMBLY__
 
 

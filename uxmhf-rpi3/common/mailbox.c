@@ -90,3 +90,31 @@ int bcm2837_mailbox_call(unsigned char channel, unsigned char *buffer, unsigned 
     //we never get here
     return 0;
 }
+
+
+
+// mailbox return serial number
+// return 0 on failure
+u64 bcm2837_mailbox_get_board_serial(void){
+    u64 board_serial=0;
+    unsigned int mailbox_msg[8];
+    
+    // get the board's unique serial number with a mailbox call
+    mailbox_msg[0] = sizeof(mailbox_msg);       // length of the message in bytes
+    mailbox_msg[1] = MAILBOX_REQUEST;           // this is a request message
+    mailbox_msg[2] = MAILBOX_TAG_GETSERIAL;     // get serial number command
+    mailbox_msg[3] = 8;                         // output buffer size in bytes
+    mailbox_msg[4] = 0;                         // 
+    mailbox_msg[5] = 0;                         // clear output buffer
+    mailbox_msg[6] = 0;
+    mailbox_msg[7] = MAILBOX_TAG_LAST;
+
+    if ( bcm2837_mailbox_call(MAILBOX_CHANNEL_PROP, &mailbox_msg, sizeof(mailbox_msg)) ){
+        board_serial = ((u64)mailbox_msg[6] << 32) | (u64)mailbox_msg[5]; 
+    }
+
+    return board_serial;
+}
+
+
+
