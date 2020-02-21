@@ -94,6 +94,9 @@ void bcm2837_pl011uart_init(void){
 /* UART character output function */
 void bcm2837_pl011uart_putc(u8 ch){
 
+    //wait until we can send 
+    while(! (mmio_read32(PL011_UART_FR_REG) & 0x20) );
+    mmio_write32(PL011_UART_DR_REG, ch);
 }
 
 /* UART string output function */
