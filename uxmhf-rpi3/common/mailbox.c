@@ -43,4 +43,50 @@
 #include <bcm2837.h>
 #include <mailbox.h>
 
+//mailbox message buffer
+//has to be aligned on a 16 byte boundary
+volatile __attribute__((aligned(16))) unsigned int mailbox_msgbuf[MAILBOX_MAXBUFSIZE];
 
+
+// make a mailbox call
+// return: 0 if failure, non-zero on success
+int bcm2837_mailbox_call(unsigned char channel, unsigned char *buffer, unsigned int buffer_size){
+    unsigned int mailbox_msgbuf_channel_addr;
+    int i;
+
+    // sanity check buffer size
+    if (buffer_size > MAILBOX_MAXBUFSIZE)
+        return 0;
+
+    //first copy the buffer into our mailbox message buffer
+    memcpy(mailbox_msgbuf, buffer, buffer_size);
+
+    //compute address of the message buffer including the channel identifier
+    mailbox_msgbuf_channel_addr = (((unsigned int)((unsigned long)&mailbox_msgbuf) & ~0xF) | ( channel &0xF ));
+    
+    // wait till we are clear to write to the mailbox
+    do {
+        for(i=0; i<5; i++); // nop
+    } while (*((volatile unsigned int *)MAILBOX_STATUS_REG) & MAILBOX_FULL);
+
+    //write the address of the message to the mailbox with channel identifier
+    *((volatile unsigned int *)MAILBOX_WRITE_REG) = mailbox_msgbuf_channel_addr;
+
+    //now wait for the response
+    while(1) {
+        // check for a reaponse
+        do{
+            for(i=0; i<5; i++); // nop
+        }while (*((volatile unsigned int *)MAILBOX_STATUS_REG) & MAILBOX_EMPTY);
+    
+        // is it a response to our message?
+        if(  *((volatile unsigned int *)MAILBOX_READ_REG) == mailbox_msgbuf_channel_addr){
+            // return 0 or non-zero based on if it isa valid successful response
+            return (mailbox_msgbuf[1] == MAILBOX_RESPONSE);
+        }
+            
+    }
+
+    //we never get here
+    return 0;
+}

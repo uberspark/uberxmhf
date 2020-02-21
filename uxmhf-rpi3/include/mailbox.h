@@ -45,7 +45,9 @@
 
 #ifndef __ASSEMBLY__
 
-//void bcm2837_xxx(void);
+// make a mailbox call
+// return: 0 if failure, non-zero on success
+int bcm2837_mailbox_call(unsigned char channel, unsigned char *buffer, unsigned int buffer_size){
 
 
 #endif // __ASSEMBLY__

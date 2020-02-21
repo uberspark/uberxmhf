@@ -58,7 +58,7 @@
 #define MAILBOX_RESPONSE   						0x80000000
 #define MAILBOX_FULL       						0x80000000
 #define MAILBOX_EMPTY      						0x40000000
-
+#define MAILBOX_MAXBUFSIZE						36
 
 
 //////
