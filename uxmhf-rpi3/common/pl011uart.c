@@ -40,6 +40,7 @@
 
 #include <types.h>
 #include <bcm2837.h>
+#include <mailbox.h>
 #include <pl011uart.h>
 
 
@@ -49,7 +50,44 @@ extern void mmio_write32 (u32 address, u32 value);
 
 /* UART initialization function */
 void bcm2837_pl011uart_init(void){
+    register unsigned int r;
+    unsigned int mbox_msg[9];
+    unsigned int i;
 
+    mmio_write32(PL011_UART_CR_REG, 0);         // turn off PL011 when we work with it
+    
+    // set up clock for consistent divisor values 
+    mbox_msg[0] = sizeof(mbox_msg);
+    mbox_msg[1] = MAILBOX_REQUEST;
+    mbox_msg[2] = MAILBOX_TAG_SETCLKRATE; // set clock rate
+    mbox_msg[3] = 12;
+    mbox_msg[4] = 8;
+    mbox_msg[5] = 2;           // UART clock
+    mbox_msg[6] = 4000000;     // 4Mhz
+    mbox_msg[7] = 0;           // clear turbo
+    mbox_msg[8] = MAILBOX_TAG_LAST;
+    bcm2837_mailbox_call(MAILBOX_CHANNEL_PROP, &mbox_msg, sizeof(mbox_msg));
+
+    //map PL011 UART to GPIO pins
+    r=mmio_read32(GPFSEL1);
+    r &= ~((7<<12) | (7<<15)); // gpio14, gpio15
+    r |= (4<<12) | (4<<15);    // alt0
+    mmio_write32(GPFSEL1, r);
+
+
+    mmio_write32(GPPUD, 0);            // enable pins 14 and 15
+    for(i=0; i<150; i++);
+
+    mmio_write32(GPPUDCLK0, (1<<14)|(1<<15));
+    for(i=0; i<150; i++);
+
+    mmio_write32(GPPUDCLK0,0);  // flush GPIO setup
+
+    mmio_write32(PL011_UART_ICR_REG, 0x7FF);    // clear interrupts
+    mmio_write32(PL011_UART_IBRD_REG, 2);       // 115200 baud
+    mmio_write32(PL011_UART_FBRD_REG, 0xB);
+    mmio_write32(PL011_UART_LCR_REG, 0b11<<5);  // 8n1
+    mmio_write32(PL011_UART_CR_REG, 0x301);     // enable Tx, Rx, FIFO
 }
 
 
