@@ -45,8 +45,7 @@
 
 //mailbox message buffer
 //has to be aligned on a 16 byte boundary
-volatile __attribute__((aligned(16))) unsigned int mailbox_msgbuf[MAILBOX_MAXBUFSIZE];
-
+__attribute__((aligned(16))) volatile  unsigned int mailbox_msgbuf[MAILBOX_MAXBUFSIZE];
 
 // make a mailbox call
 // return: 0 if failure, non-zero on success
@@ -91,8 +90,6 @@ int bcm2837_mailbox_call(unsigned char channel, unsigned char *buffer, unsigned 
     return 0;
 }
 
-
-
 // mailbox return serial number
 // return 0 on failure
 u64 bcm2837_mailbox_get_board_serial(void){
@@ -113,8 +110,7 @@ u64 bcm2837_mailbox_get_board_serial(void){
         board_serial = ((u64)mailbox_msg[6] << 32) | (u64)mailbox_msg[5]; 
     }
 
-    return board_serial;
+    return (board_serial);
 }
-
 
 
