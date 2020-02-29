@@ -58,8 +58,6 @@ int bcm2837_mailbox_call(unsigned char channel, unsigned char *buffer, unsigned 
     if (buffer_size > MAILBOX_MAXBUFSIZE)
         return 0;
 
-	_XDPRINTF_("%s[%u]\n", __func__, __LINE__);
-
     //first copy the buffer into our mailbox message buffer
     memcpy(mailbox_msgbuf, buffer, buffer_size);
 
@@ -84,9 +82,7 @@ int bcm2837_mailbox_call(unsigned char channel, unsigned char *buffer, unsigned 
         // is it a response to our message?
         if(  mmio_read32(MAILBOX_READ_REG) == mailbox_msgbuf_channel_addr){
             // return 0 or non-zero based on if it isa valid successful response
-           	_XDPRINTF_("%s[%u]\n", __func__, __LINE__);
             if( mailbox_msgbuf[1] == MAILBOX_RESPONSE){
-           	    _XDPRINTF_("%s[%u]\n", __func__, __LINE__);
                 //copy mailbox message buffer into user buffer
                 memcpy(buffer, mailbox_msgbuf, buffer_size);
             }
@@ -116,17 +112,9 @@ u64 bcm2837_mailbox_get_board_serial(void){
     mailbox_msg[6] = 0;
     mailbox_msg[7] = MAILBOX_TAG_LAST;
 
-	_XDPRINTF_("%s[%u]\n", __func__, __LINE__);
-
     if ( bcm2837_mailbox_call(MAILBOX_CHANNEL_PROP, &mailbox_msg, sizeof(mailbox_msg)) ){
-       	_XDPRINTF_("%s[%u]: mailbox_msg[6]=0x%08x, mailbox_msg[5]=0x%08x\n", __func__, __LINE__, mailbox_msg[6], mailbox_msg[5]);
-
         board_serial = ((u64)mailbox_msg[6] << 32) | (u64)mailbox_msg[5]; 
-       	_XDPRINTF_("%s[%u]\n", __func__, __LINE__);
     }
-
-
-	_XDPRINTF_("%s[%u]\n", __func__, __LINE__);
 
     return (board_serial);
 }
