@@ -85,6 +85,11 @@ int bcm2837_mailbox_call(unsigned char channel, unsigned char *buffer, unsigned 
         if(  mmio_read32(MAILBOX_READ_REG) == mailbox_msgbuf_channel_addr){
             // return 0 or non-zero based on if it isa valid successful response
            	_XDPRINTF_("%s[%u]\n", __func__, __LINE__);
+            if( mailbox_msgbuf[1] == MAILBOX_RESPONSE){
+           	    _XDPRINTF_("%s[%u]\n", __func__, __LINE__);
+                //copy mailbox message buffer into user buffer
+                memcpy(buffer, mailbox_msgbuf, buffer_size);
+            }
             return (mailbox_msgbuf[1] == MAILBOX_RESPONSE);
         }
             
