@@ -50,7 +50,7 @@ void s2pgtbl_initialize(void){
 	u32 vtcr, hdcr, hcptr, hstr;
 
 	vtcr = sysreg_read_vtcr();
-	bcm2837_miniuart_puts("VTCR before= ");
+	uart_puts("VTCR before= ");
 	debug_hexdumpu32(vtcr);
 
 	vtcr = 0;
@@ -67,22 +67,22 @@ void s2pgtbl_initialize(void){
 	sysreg_write_vtcr(vtcr);
 
 	vtcr = sysreg_read_vtcr();
-	bcm2837_miniuart_puts("VTCR after= ");
+	uart_puts("VTCR after= ");
 	debug_hexdumpu32(vtcr);
 
 	hdcr = sysreg_read_hdcr();
-	bcm2837_miniuart_puts("HDCR before= ");
+	uart_puts("HDCR before= ");
 	debug_hexdumpu32(hdcr);
 
 	hdcr &= HDCR_HPMN_MASK;
 	sysreg_write_hdcr(hdcr);
 
 	hdcr = sysreg_read_hdcr();
-	bcm2837_miniuart_puts("HDCR after= ");
+	uart_puts("HDCR after= ");
 	debug_hexdumpu32(hdcr);
 
 	hcptr = sysreg_read_hcptr();
-	bcm2837_miniuart_puts("HCPTR before= ");
+	uart_puts("HCPTR before= ");
 	debug_hexdumpu32(hcptr);
 
 	hcptr = 0;
@@ -90,17 +90,17 @@ void s2pgtbl_initialize(void){
 	sysreg_write_hcptr(hcptr);
 
 	hcptr = sysreg_read_hcptr();
-	bcm2837_miniuart_puts("HCPTR after= ");
+	uart_puts("HCPTR after= ");
 	debug_hexdumpu32(hcptr);
 
 	hstr = sysreg_read_hstr();
-	bcm2837_miniuart_puts("HSTR before= ");
+	uart_puts("HSTR before= ");
 	debug_hexdumpu32(hstr);
 
 	sysreg_write_hstr(0);
 
 	hstr = sysreg_read_hstr();
-	bcm2837_miniuart_puts("HSTR after= ");
+	uart_puts("HSTR after= ");
 	debug_hexdumpu32(hstr);
 
 }
@@ -158,10 +158,10 @@ void s2pgtbl_populate_tables(void){
 
 
 	//debug
-	bcm2837_miniuart_puts(" attrs=\n");
+	uart_puts(" attrs=\n");
 	debug_hexdumpu32(attrs >> 32);
 	debug_hexdumpu32((u32)attrs);
-	//bcm2837_miniuart_puts(" roattrs=\n");
+	//uart_puts(" roattrs=\n");
 	//debug_hexdumpu32(roattrs >> 32);
 	//debug_hexdumpu32((u32)roattrs);
 
@@ -176,7 +176,7 @@ void s2pgtbl_populate_tables(void){
 	}
 
 	//debug
-	bcm2837_miniuart_puts("L1 LDESC table dump follows:\n");
+	uart_puts("L1 LDESC table dump follows:\n");
 	for(i=0; i < L1_LDESC_TABLE_ENTRIES; i++){
 		debug_hexdumpu32(l1_ldesc_table[i] >> 32);
 		debug_hexdumpu32((u32)l1_ldesc_table[i]);
@@ -216,7 +216,7 @@ void s2pgtbl_loadpgtblbase(void){
 	vttbr = sysreg_read_vttbr();
 	_XDPRINTFSMP_("%s: VTTBR before=0x%016llx\n", __func__, vttbr);
 
-	//bcm2837_miniuart_puts("VTTBR before=");
+	//uart_puts("VTTBR before=");
 	//debug_hexdumpu32(vttbr >> 32);
 	//debug_hexdumpu32((u32)vttbr);
 
@@ -230,7 +230,7 @@ void s2pgtbl_loadpgtblbase(void){
 	_XDPRINTFSMP_("%s: VTTBR after=0x%016llx\n", __func__, vttbr);
 
 
-	//bcm2837_miniuart_puts("VTTBR after=");
+	//uart_puts("VTTBR after=");
 	//debug_hexdumpu32(vttbr >> 32);
 	//debug_hexdumpu32((u32)vttbr);
 
@@ -240,14 +240,14 @@ void s2pgtbl_activatetranslation(void){
 	u32 hcr;
 
 	hcr = sysreg_read_hcr();
-	bcm2837_miniuart_puts("HCR before=");
+	uart_puts("HCR before=");
 	debug_hexdumpu32(hcr);
 
 	hcr |= HCR_VM_MASK;
 	sysreg_write_hcr(hcr);
 
 	hcr = sysreg_read_hcr();
-	bcm2837_miniuart_puts("HCR after=");
+	uart_puts("HCR after=");
 	debug_hexdumpu32(hcr);
 
 }

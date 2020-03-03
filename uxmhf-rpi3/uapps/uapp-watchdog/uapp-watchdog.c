@@ -138,7 +138,7 @@ void uapp_watchdog_timerhandler(void){
 		led_on=true;
 	}
 
-	//bcm2837_miniuart_puts("WATCHDOG EXCEPTION-- Resuming\n");
+	//uart_puts("WATCHDOG EXCEPTION-- Resuming\n");
 }
 
 
