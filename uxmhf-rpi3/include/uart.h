@@ -47,11 +47,15 @@
 
 #ifndef __ASSEMBLY__
 
-#define uart_init bcm2837_miniuart_init
-#define uart_putc bcm2837_miniuart_putc
-#define uart_puts bcm2837_miniuart_puts
-#define uart_flush bcm2837_miniuart_flush
+//#define uart_init bcm2837_miniuart_init
+//#define uart_putc bcm2837_miniuart_putc
+//#define uart_puts bcm2837_miniuart_puts
+//#define uart_flush bcm2837_miniuart_flush
 
+#define uart_init bcm2837_pl011uart_init
+#define uart_putc bcm2837_pl011uart_putc
+#define uart_puts bcm2837_pl011uart_puts
+#define uart_flush bcm2837_pl011uart_flush
 
 #endif // __ASSEMBLY__
 
