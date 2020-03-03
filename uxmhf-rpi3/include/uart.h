@@ -42,20 +42,43 @@
 #ifndef __UART_H__
 #define __UART_H__
 
-#include <miniuart.h>
-#include <pl011uart.h>
+#if defined (__DEBUG_UART__)
+
+	#if defined (__DEBUG_UART_PL011__)
+		#include <pl011uart.h>
+	#else
+		#include <miniuart.h>
+	#endif
+
+#endif
+
 
 #ifndef __ASSEMBLY__
 
-//#define uart_init bcm2837_miniuart_init
-//#define uart_putc bcm2837_miniuart_putc
-//#define uart_puts bcm2837_miniuart_puts
-//#define uart_flush bcm2837_miniuart_flush
+#if defined (__DEBUG_UART__)
 
-#define uart_init bcm2837_pl011uart_init
-#define uart_putc bcm2837_pl011uart_putc
-#define uart_puts bcm2837_pl011uart_puts
-#define uart_flush bcm2837_pl011uart_flush
+	#if defined (__DEBUG_UART_PL011__)
+		#define uart_init bcm2837_pl011uart_init
+		#define uart_putc bcm2837_pl011uart_putc
+		#define uart_puts bcm2837_pl011uart_puts
+		#define uart_flush bcm2837_pl011uart_flush
+	#else
+		#define uart_init bcm2837_miniuart_init
+		#define uart_putc bcm2837_miniuart_putc
+		#define uart_puts bcm2837_miniuart_puts
+		#define uart_flush bcm2837_miniuart_flush
+	#endif
+
+#else
+
+	#define uart_init(x) 
+	#define uart_putc(x)
+	#define uart_puts(x)
+	#define uart_flush(x)
+
+#endif
+
+
 
 #endif // __ASSEMBLY__
 

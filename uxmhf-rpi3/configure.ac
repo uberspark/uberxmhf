@@ -104,6 +104,30 @@ AS_IF([test "x${enable_uapp_uhsign}" != "xno"],
       [ENABLE_UAPP_UHSIGN=y],
       [ENABLE_UAPP_UHSIGN=n])
 
+
+# selectively enable/disable debugging via UART
+AC_SUBST([ENABLE_DEBUG_UART])
+AC_ARG_ENABLE([debug_uart],
+	AS_HELP_STRING([--enable-debug-uart@<:@=yes|no@:>@],
+		[enable debug via UART, default is via mini UART]),
+		, [enable_debug_uart=no])
+AS_IF([test "x${enable_debug_uart}" != "xno"],
+      [ENABLE_DEBUG_UART=y],
+      [ENABLE_DEBUG_UART=n])
+
+
+# selectively enable/disable debugging via PL011 UART
+AC_SUBST([ENABLE_DEBUG_UART_PL011])
+AC_ARG_ENABLE([debug_uart_pl011],
+	AS_HELP_STRING([--enable-debug-uart-pl011@<:@=yes|no@:>@],
+		[enable debug via PL011 UART]),
+		, [enable_debug_uart_pl011=no])
+AS_IF([test "x${enable_debug_uart_pl011}" != "xno"],
+      [ENABLE_DEBUG_UART_PL011=y],
+      [ENABLE_DEBUG_UART_PL011=n])
+
+
+
 ###### autoconf output files
 AC_CONFIG_FILES(
 			[./include/config.h Makefile]

@@ -44,7 +44,7 @@
 #ifndef __ASSEMBLY__
 
 
-#if defined (__DEBUG_SERIAL__)
+#if defined (__DEBUG_UART__)
 
 
 
