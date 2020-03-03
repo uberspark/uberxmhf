@@ -128,7 +128,7 @@ checkoskrnlimg:
 	cp $(OSKRNLIMG) ./oskrnlimg.tmp
 	truncate --size=$(OSKRNLIMG_FINALSIZE) ./oskrnlimg.tmp 
 	#./configure --with-core-startaddr=$(CORE_STARTADDR_HEX) --with-core-size=0xC00000
-	./configure --with-core-startaddr=0x1000000 --with-core-size=0xC00000
+	#./configure --with-core-startaddr=0x1000000 --with-core-size=0xC00000
 
 
 .PHONY: clean
