@@ -41,7 +41,6 @@
 #include <types.h>
 #include <bcm2837.h>
 #include <mailbox.h>
-#include <miniuart.h>
 #include <pl011uart.h>
 
 
@@ -69,16 +68,6 @@ void bcm2837_pl011uart_init(void){
     mbox_msg[8] = MAILBOX_TAG_LAST;
 
     bcm2837_mailbox_call(MAILBOX_CHANNEL_PROP, &mbox_msg, sizeof(mbox_msg));
-
-#if 0
-    if ( bcm2837_mailbox_call(MAILBOX_CHANNEL_PROP, &mbox_msg, sizeof(mbox_msg)) ){
-    	bcm2837_miniuart_puts("mailbox call success!\n");
-        bcm2837_miniuart_flush();
-    }else{
-    	bcm2837_miniuart_puts("mailbox call FAIL!\n");
-        bcm2837_miniuart_flush();
-    }
-#endif 
 
     //map PL011 UART to GPIO pins
     r=mmio_read32(GPFSEL1);
