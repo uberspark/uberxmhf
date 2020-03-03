@@ -443,6 +443,21 @@ void main(u32 r0, u32 id, struct atag *at, u32 cpuid){
 			cpu_read_sp(), &cpu_stacks);
 	_XDPRINTF_("%s[%u]: r0=0x%08x, id=0x%08x, ATAGS=0x%08x\n", __func__, cpuid, r0, id, at);
 
+#if 1
+	bcm2837_miniuart_puts("proceding to init PL011 UART...\n");
+	bcm2837_pl011uart_init();
+	
+	bcm2837_pl011uart_puts("Hello world from PL011 UART!\n");
+
+	//bcm2837_pl011uart_puts("Hello world from PL011 UART!\n");
+	bcm2837_miniuart_puts("We should not be seeing this!\n");
+
+	//bcm2837_pl011uart_puts("Halting!\n");
+
+	//HALT();
+#endif
+
+
 	//sanity check ATAGS pointer
 	if(!(at->size == FDT_MAGIC)){
 		_XDPRINTF_("%s[%u]: Error: require ATAGS to be FDT blob. Halting!\n", __func__, cpuid);

@@ -41,6 +41,7 @@
 #include <types.h>
 #include <bcm2837.h>
 #include <mailbox.h>
+#include <miniuart.h>
 #include <pl011uart.h>
 
 
@@ -61,12 +62,23 @@ void bcm2837_pl011uart_init(void){
     mbox_msg[1] = MAILBOX_REQUEST;
     mbox_msg[2] = MAILBOX_TAG_SETCLKRATE; // set clock rate
     mbox_msg[3] = 12;
-    mbox_msg[4] = 8;
+    mbox_msg[4] = 0;
     mbox_msg[5] = 2;           // UART clock
     mbox_msg[6] = 4000000;     // 4Mhz
     mbox_msg[7] = 0;           // clear turbo
     mbox_msg[8] = MAILBOX_TAG_LAST;
+
     bcm2837_mailbox_call(MAILBOX_CHANNEL_PROP, &mbox_msg, sizeof(mbox_msg));
+
+#if 0
+    if ( bcm2837_mailbox_call(MAILBOX_CHANNEL_PROP, &mbox_msg, sizeof(mbox_msg)) ){
+    	bcm2837_miniuart_puts("mailbox call success!\n");
+        bcm2837_miniuart_flush();
+    }else{
+    	bcm2837_miniuart_puts("mailbox call FAIL!\n");
+        bcm2837_miniuart_flush();
+    }
+#endif 
 
     //map PL011 UART to GPIO pins
     r=mmio_read32(GPFSEL1);
@@ -95,7 +107,7 @@ void bcm2837_pl011uart_init(void){
 void bcm2837_pl011uart_putc(u8 ch){
 
     //wait until we can send 
-    while(! (mmio_read32(PL011_UART_FR_REG) & 0x20) );
+    while( (mmio_read32(PL011_UART_FR_REG) & 0x20) );
     mmio_write32(PL011_UART_DR_REG, ch);
 }
 
