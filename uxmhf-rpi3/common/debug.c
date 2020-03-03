@@ -40,7 +40,7 @@
 
 #include <types.h>
 #include <bcm2837.h>
-#include <miniuart.h>
+#include <uart.h>
 #include <debug.h>
 
 extern __attribute__(( section(".data") )) u32 xdprintfsmp_lock=1;

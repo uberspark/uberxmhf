@@ -40,7 +40,7 @@
 
 #include <types.h>
 #include <bcm2837.h>
-#include <miniuart.h>
+#include <uart.h>
 #include <atags.h>
 
 void atag_dumptags(struct atag *at){

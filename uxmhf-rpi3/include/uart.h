@@ -42,7 +42,8 @@
 #ifndef __UART_H__
 #define __UART_H__
 
-
+#include <miniuart.h>
+#include <pl011uart.h>
 
 #ifndef __ASSEMBLY__
 
