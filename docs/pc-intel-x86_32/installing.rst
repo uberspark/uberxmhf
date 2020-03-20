@@ -1,26 +1,19 @@
-.. role:: raw-html-m2r(raw)
-   :format: html
+.. include:: /macros.rst
 
 
-----
-
-layout: page
-tocref: uber eXtensible Micro-Hypervisor Framework Documentation &gt; pc-intel-x86_32 
-
-title: Installing
------------------
+Installing
+==========
 
 Prerequisites
 -------------
 
-As a first step, check the :doc:`uberXMHF (pc-intel-x86_32) Hardware Requirements <{% link docs/pc-intel-x86_32/hw-requirements>`\ , and
+As a first step, check the :doc:`uberXMHF (pc-intel-x86_32) Hardware Requirements <pc-intel-x86_32/hw-requirements>`\ , and
 be sure to enable the corresponding BIOS options. Also make sure your
 BIOS is up to date; you could ruin your motherboard if your BIOS is
 buggy. Secondly, ensure that you are running one of the supported 
-guest operating systems (see :doc:`uberXMHF (pc-intel-x86_32) Supported Guest Operating Systems <{% link docs/pc-intel-x86_32/supported-os>`\ ).
+guest operating systems (see :doc:`uberXMHF (pc-intel-x86_32) Supported Guest Operating Systems <pc-intel-x86_32/supported-os>`\ ).
 Lastly, configure your system to boot uberXMHF as described below.
 
-:raw-html-m2r:`<br/>`
 
 Configure target system to boot uberXMHF
 ----------------------------------------
@@ -75,7 +68,7 @@ Building and Installing uberXMHF binaries
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 If you haven't already built and installed uberXMHF, 
-see :doc:`Verifying and Building uberXMHF (pc-intel-x86_32) <{% link docs/pc-intel-x86_32/verify-build>`
+see :doc:`Verifying and Building uberXMHF (pc-intel-x86_32) <pc-intel-x86_32/verify-build>`
 
 Adding a Grub entry to boot Linux
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

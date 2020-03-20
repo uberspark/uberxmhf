@@ -1,12 +1,8 @@
+.. include:: /macros.rst
 
-----
 
-layout: page
-tocref: uber eXtensible Micro-Hypervisor Framework Documentation &gt; pc-intel-x86_32 
-
-title: Hardware Requirements
-----------------------------
-
+Hardware Requirements
+=====================
 
 * 
   **A TPM (v1.2 or above)** The BIOS feature is often called something 

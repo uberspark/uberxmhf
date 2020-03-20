@@ -1,11 +1,8 @@
+.. include:: /macros.rst
 
-----
 
-layout: page
-tocref: uber eXtensible Micro-Hypervisor Framework Documentation &gt; pc-intel-x86_32 
-
-title: Supported OS
--------------------
+Supported OS
+============
 
 In principle, any guest operating system should be supported so 
 long as it:

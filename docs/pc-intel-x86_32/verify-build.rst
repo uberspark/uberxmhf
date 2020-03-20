@@ -1,21 +1,14 @@
-.. role:: raw-html-m2r(raw)
-   :format: html
+.. include:: /macros.rst
 
 
-----
-
-layout: page
-tocref: uber eXtensible Micro-Hypervisor Framework Documentation &gt; pc-intel-x86_32 
-
-title: Verifying and Building
------------------------------
+Verifying and Building
+======================
 
 Software Requirements and Dependencies
 --------------------------------------
 
-UberSpark development and verification framework (available `here <http://uberspark.org>`_\ ).
+UberSpark development and verification framework (available `here <https://uberspark.org>`_\ ).
 
-:raw-html-m2r:`<br/>`  
 
 Verfying
 --------
@@ -51,7 +44,6 @@ tree of the sources:
 
    ``make uxmhf-verifyuobjs-all``
 
-:raw-html-m2r:`<br/>`  
 
 Building
 --------

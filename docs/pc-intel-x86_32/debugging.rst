@@ -1,14 +1,8 @@
-.. role:: raw-html-m2r(raw)
-   :format: html
+.. include:: /macros.rst
 
 
-----
-
-layout: page
-tocref: uber eXtensible Micro-Hypervisor Framework Documentation &gt; pc-intel-x86_32 
-
-title: Debugging
-----------------
+Debugging
+=========
 
 Terminology
 -----------
@@ -17,14 +11,14 @@ Terminology
 * ``host system`` -- system where the serial log is collected and examined.
 * ``target system`` -- system where XMHF runs and ouputs debug information via the serial port.
 
-:raw-html-m2r:`<br/>`
 
 Debugging Setup
 ---------------
 
 XMHF debugging is done primarily via the serial port.
-See :doc:`Installing uberXMHF (pc-intel-x86_32) <{% link docs/pc-intel-x86_32/installing>` for how to pass serial
+See :doc:`Installing uberXMHF (pc-intel-x86_32) <pc-intel-x86_32/installing>` for how to pass serial
 port configuration parameters to XMHF. 
+
 You can use ``dmesg | grep ttyS`` on a Linux guest OS on the target 
 system to examine the serial ports that the target system recognizes.
 
@@ -37,14 +31,13 @@ the BIOS).
 Serial Debuging without AMT
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-
 * 
   Connect the ``host system`` and the ``target system`` via a NULL serial
   cable. 
 
 * 
   On the ``target system`` ensure that you pass the correct serial port
-  configuration parameters to XMHF (see :doc:`Installing uberXMHF (pc-intel-x86_32) <{% link docs/pc-intel-x86_32/installing>`\ ).
+  configuration parameters to XMHF (see :doc:`Installing uberXMHF (pc-intel-x86_32) <pc-intel-x86_32/installing>`\ ).
   A typical non-AMT configuration parameter will be similar to this: ``serial=115200,8n1,0x3f8``
 
 * 
@@ -95,7 +88,7 @@ probably need a little adaptation on other platforms running AMT.
 
 * 
   On the ``target system`` ensure that you pass the correct serial port
-  configuration parameters to XMHF (see :doc:`Installing uberXMHF (pc-intel-x86_32) <{% link docs/pc-intel-x86_32/installing>`\ ).
+  configuration parameters to XMHF (see :doc:`Installing uberXMHF (pc-intel-x86_32) <pc-intel-x86_32/installing>`\ ).
   A typical AMT serial configuration parameter will be similar to this: ``serial=115200,8n1,0x6080``
 
 * 
