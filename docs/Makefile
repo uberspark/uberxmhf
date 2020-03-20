@@ -19,12 +19,6 @@ docs_build_prep:
 	cd $(UBERXMHF_DOC_PATH)/_temp && git clone https://github.com/uberspark/uberspark-htmlcss-themes.git uberspark-htmlcss-themes.git
 	cd $(UBERXMHF_DOC_PATH)/_themes && ln -sf ../_temp/uberspark-htmlcss-themes.git/rtd_uberspark/sphinx_rtd_theme/ rtd_uberspark
 
-### common documentation build prep
-.PHONY: docs_build_prep
-docs_build_prep:
-	cd $(UBERXMHF_DOC_PATH) && git clone https://github.com/uberspark/uberspark-htmlcss-themes.git _themes
-	mkdir -p $(UBERXMHF_DOC_PATH)/_build
-
 .PHONY: docs_pdf
 docs_pdf: docs_build_prep
 	@$(SPHINXBUILD) -b latex "$(UBERXMHF_DOC_SOURCEDIR)" "$(UBERXMHF_DOC_BUILDDIR)"
