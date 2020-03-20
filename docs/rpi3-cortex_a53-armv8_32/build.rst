@@ -1,14 +1,8 @@
-.. role:: raw-html-m2r(raw)
-   :format: html
+.. include:: /macros.rst
 
 
-----
-
-layout: page
-tocref: uber eXtensible Micro-Hypervisor Framework Documentation &gt; rpi3-cortex_a53-armv8_32  
-
-title: Building
----------------
+Building
+========
 
 Build Core Micro-Hypervisor Framework
 -------------------------------------
@@ -94,7 +88,6 @@ Build Core Micro-Hypervisor Framework
    #. ``./configure --enable-intprot`` to enable interrupt protection capabilities
    #. ``./configure --enable-fiqreflection`` to enable guest FIQ interrupts to be handled within micro-hypervisor
 
-:raw-html-m2r:`<br/>`
 
 Build uberApps
 --------------

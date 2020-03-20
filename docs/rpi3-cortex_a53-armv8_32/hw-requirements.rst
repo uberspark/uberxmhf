@@ -1,11 +1,8 @@
+.. include:: /macros.rst
 
-----
 
-layout: page
-tocref: uber eXtensible Micro-Hypervisor Framework Documentation &gt; rpi3-cortex_a53-armv8_32 
-
-title: Hardware Requirements
-----------------------------
+Hardware Requirements
+=====================
 
 
 * 

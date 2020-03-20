@@ -1,13 +1,10 @@
+.. include:: /macros.rst
 
-----
 
-layout: page
-tocref: uber eXtensible Micro-Hypervisor Framework Documentation &gt; rpi3-cortex_a53-armv8_32  
+Installing
+==========
 
-title: Installing
------------------
-
-Refer to the :doc:`build process <{% link docs/rpi3-cortex_a53-armv8_32/build>`
+Refer to the :doc:`build process <rpi3-cortex_a53-armv8_32/build>`
 to build the required binaries for installation. Then proceed with the 
 following instructions to deploy uberXMHF on the SD card:
 
