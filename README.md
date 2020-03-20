@@ -18,7 +18,15 @@ build, install, contribute and get involved.
 The formatted documentation can 
 be read online at: <http://uberxmhf.org/docs/toc.html>
 
-Documentation sources are within `docs/` 
+Documentation sources are within `docs/` and can be built using
+`make clean` followed by `make docs_html` within the `docs/` folder.
+Note that you will need a working installation of sphinx to build
+the documentation within your development environment. For example, 
+within Ubuntu/Debian distributions the following will install sphinx:
+
+`sudo apt install python3-pip`
+`python3 -m pip install sphinx==2.2.0`
+`python3 -m pip install sphinx-jsondomain==0.0.3`
 
 uberSpark (<http://uberspark.org>) is used to build and verify 
 security invariants of uberXMHF.
