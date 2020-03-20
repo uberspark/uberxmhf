@@ -1,11 +1,8 @@
+.. include:: /macros.rst
 
-----
 
-layout: page
-tocref: uber eXtensible Micro-Hypervisor Framework Documentation &gt; pc-legacy-x86_32 
-
-title: Debugging
-----------------
+Debugging
+=========
 
 Terminology
 -----------
@@ -19,7 +16,7 @@ Debugging Setup
 ---------------
 
 uberXMHF (pc-legacy-x86_32) debugging is done primarily via the serial port.
-See :doc:`Installing uberXMHF (pc-legacy-x86_32) <{% link docs/pc-legacy-x86_32/installing>` for how to pass serial
+See :doc:`Installing uberXMHF (pc-legacy-x86_32) <pc-legacy-x86_32/installing>` for how to pass serial
 port configuration parameters to uberXMHF (pc-legacy-x86_32). 
 You can use ``dmesg | grep ttyS`` on a Linux guest OS on the target 
 system to examine the serial ports that the target system recognizes.
@@ -40,7 +37,7 @@ Serial Debuging without AMT
 
 * 
   On the ``target system`` ensure that you pass the correct serial port
-  configuration parameters to uberXMHF (pc-legacy-x86_32) (see :doc:`Installing uberXMHF (pc-legacy-x86_32) <{% link docs/pc-legacy-x86_32/installing>`\ ).
+  configuration parameters to uberXMHF (pc-legacy-x86_32) (see :doc:`Installing uberXMHF (pc-legacy-x86_32) <pc-legacy-x86_32/installing>`\ ).
   A typical non-AMT configuration parameter will be similar to this: ``serial=115200,8n1,0x3f8``
 
 * 
@@ -91,7 +88,7 @@ probably need a little adaptation on other platforms running AMT.
 
 * 
   On the ``target system`` ensure that you pass the correct serial port
-  configuration parameters to XMHF (see :doc:`Installing uberXMHF (pc-legacy-x86_32) <{% link  docs/pc-legacy-x86_32/installing>`\ ).
+  configuration parameters to XMHF (see :doc:`Installing uberXMHF (pc-legacy-x86_32) <pc-legacy-x86_32/installing>`\ ).
   A typical AMT serial configuration parameter will be similar to this: ``serial=115200,8n1,0x6080``
 
 * 

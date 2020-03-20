@@ -1,14 +1,8 @@
-.. role:: raw-html-m2r(raw)
-   :format: html
+.. include:: /macros.rst
 
 
-----
-
-layout: page
-tocref: uber eXtensible Micro-Hypervisor Framework Documentation &gt; pc-legacy-x86_32 
-
-title: TrustVisor uberApp
--------------------------
+|uberapp| - TrustVisor
+======================
 
 Introduction
 ------------
@@ -39,26 +33,24 @@ M. McCune, Yanlin Li, Ning Qu, Zongwei Zhou, Anupam Datta, Virgil
 Gligor, and Adrian Perrig. IEEE Symposium on Security and Privacy, May
 2010.\ `(pdf) <http://www.ece.cmu.edu/~jmmccune/papers/MLQZDGP2010.pdf>`_
 
-:raw-html-m2r:`<br/>`
 :raw-html-m2r:`<a name="buildtrustvisor"></a>`
 
 Building
 --------
 
-The TrustVisor build is primarily driven from the uberXMHF (pc-legacy-x86_32) build process; see :doc:`Building uberXMHF (pc-legacy-x86_32) <{% link docs/pc-legacy-x86_32/verify-build>`. When
+The TrustVisor build is primarily driven from the uberXMHF (pc-legacy-x86_32) build process; see :doc:`Building uberXMHF (pc-legacy-x86_32) <pc-legacy-x86_32/verify-build>`. When
 running ``configure``\ , you will need to set ``--with-approot=hypapps/trustvisor`` 
 to point to the TrustVisor source code. To install trustvisor
 development headers (for :ref:`TEE-SDK <tee-sdk>`\ ), please 
 use ``./configure --prefix=...`` to specify
 the install path, and run ``make install-dev``.
 
-:raw-html-m2r:`<br/>`
 
 Installing
 ----------
 
 To *run* TrustVisor on a given machine, installation is similar to that
-of any other hypapp. See :doc:`Installing uberXMHF (pc-legacy-x86_32) <{% link docs/pc-legacy-x86_32/installing>`.
+of any other hypapp. See :doc:`Installing uberXMHF (pc-legacy-x86_32) <pc-legacy-x86_32/installing>`.
 
 Note that for certain platforms (e.g., HP EliteBook 2540p), if the TPM locality
 are not properly configured, trustvisor crashes at startup when attempting to 
@@ -185,8 +177,6 @@ closed. https://sourceforge.net/p/xmhf/tickets/15/
 
 
 
-:raw-html-m2r:`<br/>`
-
 Trusted Execution Environment (TEE) SDK
 ---------------------------------------
 
@@ -232,7 +222,6 @@ Files (relative to ``xmhf/hypapps/trustvisor/tee-sdk/``\ )
   as part of this package.
 * examples/: Examples and tests.
 
-:raw-html-m2r:`<br/>`
 
 Installing TEE-SDK
 ------------------
@@ -362,7 +351,6 @@ the components installed by ``make`` are:
   with pals. It is not installed by default, but can be installed with
   ``make openssl``
 
-:raw-html-m2r:`<br/>`
 
 Using TEE-SDK
 -------------

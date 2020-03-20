@@ -1,11 +1,8 @@
+.. include:: /macros.rst
 
-----
 
-layout: page
-tocref: uber eXtensible Micro-Hypervisor Framework Documentation &gt; pc-legacy-x86_32 
-
-title: Supported OS
--------------------
+Supported OS
+============
 
 In principle, any 32-bit guest operating system should be supported so 
 long as it:

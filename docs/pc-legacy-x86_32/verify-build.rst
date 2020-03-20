@@ -1,14 +1,8 @@
-.. role:: raw-html-m2r(raw)
-   :format: html
+.. include:: /macros.rst
 
 
-----
-
-layout: page
-tocref: uber eXtensible Micro-Hypervisor Framework Documentation &gt; pc-legacy-x86_32 
-
-title: Verifying and Building
------------------------------
+Verifying and Building
+======================
 
 Verifying
 ---------
@@ -118,8 +112,8 @@ via 2nd level hardware page tables.
 Building
 --------
 
-uberXMHF (pc-legacy-x86_32) and uberapps (e.g., :doc:`TrustVisor <{% link docs/pc-legacy-x86_32/uberapp-trustvisor>`\ , 
-:doc:`Lockdown <{% link docs/pc-legacy-x86_32/uberapp-lockdown>`\ ) get built 
+uberXMHF (pc-legacy-x86_32) and uberapps (e.g., :doc:`TrustVisor <pc-legacy-x86_32/uberapp-trustvisor>`\ , 
+:doc:`Lockdown <pc-legacy-x86_32/uberapp-lockdown>`\ ) get built 
 in a Linux environment with 
 a recent version of gcc. uberXMHF (pc-legacy-x86_32) has been verified to 
 build on Ubuntu 10, 11, and 12 series, both 32 and 64 bit.
@@ -212,7 +206,7 @@ the target system (on which uberXMHF (pc-legacy-x86_32) is installed) are
 the same. If not, 
 you will need to manually copy the files ``./xmhf/init-x86.bin`` 
 and ``./xmhf/hypervisor-x86.bin.gz`` to the ``/boot`` folder of the
-target system (see :doc:`Installing uberXMHF (pc-legacy-x86_32) <{% link docs/pc-legacy-x86_32/installing>` ).  
+target system (see :doc:`Installing uberXMHF (pc-legacy-x86_32) <pc-legacy-x86_32/installing>` ).  
 
 Build configuration options
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^

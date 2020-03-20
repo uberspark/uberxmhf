@@ -1,11 +1,8 @@
+.. include:: /macros.rst
 
-----
 
-layout: page
-tocref: uber eXtensible Micro-Hypervisor Framework Documentation &gt; pc-legacy-x86_32 
-
-title: Hardware Requirements
-----------------------------
+Hardware Requirements
+=====================
 
 
 * 
