@@ -50,7 +50,7 @@ How do I verify uberXMHF (pc-legacy-x86_32) and/or a uberapp?
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Configure and build uberXMHF (pc-legacy-x86_32)/uberapp as described in 
-the :ref:`Building <building>`
+the :ref:`Building`
 section below. The following describe the specific steps to verify the 
 uberXMHF (pc-legacy-x86_32) core memory integrity using the example 
 verify uberapp.
@@ -112,8 +112,8 @@ via 2nd level hardware page tables.
 Building
 --------
 
-uberXMHF (pc-legacy-x86_32) and uberapps (e.g., :doc:`TrustVisor <pc-legacy-x86_32/uberapp-trustvisor>`\ , 
-:doc:`Lockdown <pc-legacy-x86_32/uberapp-lockdown>`\ ) get built 
+uberXMHF (pc-legacy-x86_32) and uberapps (e.g., :doc:`TrustVisor </pc-legacy-x86_32/uberapp-trustvisor>`\ , 
+:doc:`Lockdown </pc-legacy-x86_32/uberapp-lockdown>`\ ) get built 
 in a Linux environment with 
 a recent version of gcc. uberXMHF (pc-legacy-x86_32) has been verified to 
 build on Ubuntu 10, 11, and 12 series, both 32 and 64 bit.
@@ -206,7 +206,7 @@ the target system (on which uberXMHF (pc-legacy-x86_32) is installed) are
 the same. If not, 
 you will need to manually copy the files ``./xmhf/init-x86.bin`` 
 and ``./xmhf/hypervisor-x86.bin.gz`` to the ``/boot`` folder of the
-target system (see :doc:`Installing uberXMHF (pc-legacy-x86_32) <pc-legacy-x86_32/installing>` ).  
+target system (see :doc:`Installing uberXMHF (pc-legacy-x86_32) </pc-legacy-x86_32/installing>` ).  
 
 Build configuration options
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^

@@ -63,7 +63,7 @@ tree of the sources:
 
 #. Building the uberobject binaries and the final hypervisor image
 
-.. code-block::
+.. code-block:: bash
 
    `make uxmhf-image`
 

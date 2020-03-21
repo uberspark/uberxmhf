@@ -33,15 +33,16 @@ M. McCune, Yanlin Li, Ning Qu, Zongwei Zhou, Anupam Datta, Virgil
 Gligor, and Adrian Perrig. IEEE Symposium on Security and Privacy, May
 2010.\ `(pdf) <http://www.ece.cmu.edu/~jmmccune/papers/MLQZDGP2010.pdf>`_
 
-:raw-html-m2r:`<a name="buildtrustvisor"></a>`
+.. _building:
 
 Building
 --------
 
-The TrustVisor build is primarily driven from the uberXMHF (pc-legacy-x86_32) build process; see :doc:`Building uberXMHF (pc-legacy-x86_32) <pc-legacy-x86_32/verify-build>`. When
-running ``configure``\ , you will need to set ``--with-approot=hypapps/trustvisor`` 
+The TrustVisor build is primarily driven from the uberXMHF (pc-legacy-x86_32) build process; 
+see :doc:`Building uberXMHF (pc-legacy-x86_32) </pc-legacy-x86_32/verify-build>`. When
+running ``configure`` , you will need to set ``--with-approot=hypapps/trustvisor`` 
 to point to the TrustVisor source code. To install trustvisor
-development headers (for :ref:`TEE-SDK <tee-sdk>`\ ), please 
+development headers (for :ref:`teesdk` ), please 
 use ``./configure --prefix=...`` to specify
 the install path, and run ``make install-dev``.
 
@@ -50,7 +51,7 @@ Installing
 ----------
 
 To *run* TrustVisor on a given machine, installation is similar to that
-of any other hypapp. See :doc:`Installing uberXMHF (pc-legacy-x86_32) <pc-legacy-x86_32/installing>`.
+of any other hypapp. See :doc:`Installing uberXMHF (pc-legacy-x86_32) </pc-legacy-x86_32/installing>`.
 
 Note that for certain platforms (e.g., HP EliteBook 2540p), if the TPM locality
 are not properly configured, trustvisor crashes at startup when attempting to 
@@ -175,7 +176,7 @@ closed. https://sourceforge.net/p/xmhf/tickets/15/
    /etc/init.d/jtss stop
    modprobe -r tpm_tis
 
-
+.. _teesdk:
 
 Trusted Execution Environment (TEE) SDK
 ---------------------------------------
@@ -236,7 +237,7 @@ installed in two places.
 
 *First*\ , install the headers in a 'normal' system location. This can be
 installed by ``make install-dev``\ , when you build
-:ref:`build TrustVisor <buildtrustvisor>`. 
+:ref:`building`. 
 If you directly install TrustVisor binary on your platform without building 
 it, please download and uncompress the uberXMHF package, go to the ``xmhf`` 
 directory 
@@ -524,8 +525,7 @@ Calling services
 Services are called through the TrustZone API. You must open a session
 with a currently-loaded service. A session can be used for multiple
 invocations of a service. See the
-:doc:`TrustZone API specification <>`
-for details.
+`TrustZone API specification <>`_ for details.
 
 Developing services
 ^^^^^^^^^^^^^^^^^^^

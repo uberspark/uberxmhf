@@ -34,6 +34,6 @@ The original design and implementation of Lockdown is described in:
   http://www.cylab.cmu.edu/files/pdfs/tech_reports/CMUCyLab09011.pdf
 
 The implementation of Lockdown contained herein can be via the
-core build process (see :doc:`Building uberXMHF (pc-legacy-x86_32) <pc-legacy-x86_32/verify-build>`\ ). Note that the implementation 
+core build process (see :doc:`Building uberXMHF (pc-legacy-x86_32) </pc-legacy-x86_32/verify-build>`\ ). Note that the implementation 
 is a **\ *research prototype*\ ** and does not yet fully provide the 
 security properties of the design.

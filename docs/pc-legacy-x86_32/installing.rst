@@ -7,12 +7,12 @@ Installing
 Prerequisites
 -------------
 
-As a first step, check the :doc:`uberXMHF (pc-legacy-x86_32) Hardware Requirements <pc-legacy-x86_32/hw-requirements>`\ , and
+As a first step, check the :doc:`uberXMHF (pc-legacy-x86_32) Hardware Requirements </pc-legacy-x86_32/hw-requirements>`\ , and
 be sure to enable the corresponding BIOS options. Also make sure your
 BIOS is up to date; you could ruin your motherboard if your BIOS is
 buggy. Secondly, ensure that you are running one of the supported 
 guest operating systems (see :doc:`uberXMHF (pc-legacy-x86_32) Supported Guest 
-Operating Systems <pc-legacy-x86_32/supported-os>`\ ).
+Operating Systems </pc-legacy-x86_32/supported-os>`\ ).
 Lastly, configure your system to boot uberXMHF (pc-legacy-x86_32) as 
 described below.
 
@@ -73,7 +73,7 @@ Building and Installing uberXMHF (pc-legacy-x86_32) binaries
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 If you haven't already built and installed uberXMHF (pc-legacy-x86_32), 
-see :doc:`Building uberXMHF (pc-legacy-x86_32) <pc-legacy-x86_32/verify-build>`
+see :doc:`Building uberXMHF (pc-legacy-x86_32) </pc-legacy-x86_32/verify-build>`
 
 Adding a Grub entry
 ^^^^^^^^^^^^^^^^^^^

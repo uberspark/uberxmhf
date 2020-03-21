@@ -7,11 +7,11 @@ Installing
 Prerequisites
 -------------
 
-As a first step, check the :doc:`uberXMHF (pc-intel-x86_32) Hardware Requirements <pc-intel-x86_32/hw-requirements>`\ , and
+As a first step, check the :doc:`uberXMHF (pc-intel-x86_32) Hardware Requirements </pc-intel-x86_32/hw-requirements>`\ , and
 be sure to enable the corresponding BIOS options. Also make sure your
 BIOS is up to date; you could ruin your motherboard if your BIOS is
 buggy. Secondly, ensure that you are running one of the supported 
-guest operating systems (see :doc:`uberXMHF (pc-intel-x86_32) Supported Guest Operating Systems <pc-intel-x86_32/supported-os>`\ ).
+guest operating systems (see :doc:`uberXMHF (pc-intel-x86_32) Supported Guest Operating Systems </pc-intel-x86_32/supported-os>`\ ).
 Lastly, configure your system to boot uberXMHF as described below.
 
 
@@ -34,7 +34,7 @@ need to downgrade to Grub 1.
 
 The following commands accomplish the above task on Ubuntu:
 
-.. code-block::
+.. code-block:: bash
 
    sudo apt-get purge grub* os-prober
    sudo apt-get purge grub-gfxpayload-lists
@@ -45,7 +45,7 @@ The following commands accomplish the above task on Ubuntu:
 
 And remove lines (if any) from ``/boot/grub/menu.lst``\ :
 
-.. code-block::
+.. code-block:: bash
 
    title          Chainload into GRUB 2
    root           b5912383-7f9e-4911-b51d-b14ce8cea70b
@@ -68,14 +68,14 @@ Building and Installing uberXMHF binaries
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 If you haven't already built and installed uberXMHF, 
-see :doc:`Verifying and Building uberXMHF (pc-intel-x86_32) <pc-intel-x86_32/verify-build>`
+see :doc:`Verifying and Building uberXMHF (pc-intel-x86_32) </pc-intel-x86_32/verify-build>`
 
 Adding a Grub entry to boot Linux
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 You will need to add a Grub entry to ``/boot/grub/menu.lst``. To ensure
-that it doesn't get clobbered, put it **\ *outside the AUTOMAGIC KERNEL
-LIST*\ **.
+that it doesn't get clobbered, put it **outside** the **AUTOMAGIC KERNEL
+LIST**.
 
 To boot a Linux guest, we create a grub entry that loads the
 hypervisor, and then re-loads grub. When booting the machine, first
@@ -83,7 +83,7 @@ choose the uberXMHF entry, and then choose a normal Linux entry.
 
 A grub entry for uberXMHF should look something like this:
 
-.. code-block::
+.. code-block:: bash
 
    title uberXMHF
    rootnoverify (hd0,1)                                      # should point to /boot
@@ -104,7 +104,7 @@ entry. You can automate this by using savedefault.
 
 Set grub to boot the saved default:
 
-.. code-block::
+.. code-block:: bash
 
    default         saved
 
@@ -112,7 +112,7 @@ Set grub to boot the saved default:
 Have your uberXMHF entry and what you want as your default OS entry save
 each-other as the new default:
 
-.. code-block::
+.. code-block:: bash
 
    title uberXMHF
        savedefault 1

@@ -25,7 +25,7 @@ available `here <https://www.adafruit.com/product/954?gclid=Cj0KCQjw_ODWBRCTARIs
 
 Connect Pin 6 on PI to GND of serial cable; Pin 8 to RX and Pin 10 to TX.
 
-See :doc:`Installing uberXMHF (rpi3-cortex_a53-armv8_32) <rpi3-cortex_a53-armv8_32/installing>` for how to install
+See :doc:`Installing uberXMHF (rpi3-cortex_a53-armv8_32) </rpi3-cortex_a53-armv8_32/installing>` for how to install
 the uberXMHF binaries on the SD card. In the 
 *Deploying binaries to SD Card* section, perform the following on 
 the ``host system`` where development is done:

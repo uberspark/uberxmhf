@@ -6,9 +6,9 @@
 Welcome to |uxmhflong|'s documentation!
 =======================================
 
-The |umxmhflong| (|uxmhf|) is a compositionally verifiable, extensible, micro-hypervisor framework for 
+The |uxmhflong| (|uxmhf|) is a compositionally verifiable, extensible, micro-hypervisor framework for 
 commodity platforms advocating the design and development of a new class of security-oriented
- micro-hypervisor based applications (“|uberapps|”).
+micro-hypervisor based applications (“|uberapps|”).
 
 |uxmhf| is designed to achieve three goals: modular extensibility, automated (compositional) verification, and 
 high performance.
