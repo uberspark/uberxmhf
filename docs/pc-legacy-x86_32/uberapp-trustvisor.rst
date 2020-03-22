@@ -25,7 +25,7 @@ that can be used to generate subsequent attestations to the isolation
 and execution of individual PALs, leveraging the uTPM.
 
 The implementation of TrustVisor contained herein leverages 
-uberXMHF (pc-legacy-x86_32).\ :raw-html-m2r:`<br>`
+uberXMHF (pc-legacy-x86_32).\ 
 The original design and implementation of TrustVisor is described in:
 
 *TrustVisor: Efficient TCB Reduction and Attestation*. Jonathan
@@ -74,7 +74,7 @@ is possible to manually remove this driver (\ ``modprobe -r
 tpm_infineon``\ ) and ``modprobe tpm_tis``\ , if you know what you're
 doing. In ``/etc/modprobe.d/blacklist.conf`` add
 
-.. code-block::
+.. code-block:: c
 
    blacklist tpm_infineon
 
@@ -87,7 +87,7 @@ probably start up again after the next reboot.  You may wish to
 uninstall it or disable it more permanently if you're not otherwise
 using it.
 
-.. code-block::
+.. code-block:: c
 
    /etc/init.d/trousers status
    /etc/init.d/trousers stop
@@ -99,7 +99,7 @@ Install jTpmTools
 Our current testing has been with v0.6 but we will soon move to
 v0.7. https://sourceforge.net/projects/trustedjava/files/jTPM%20Tools/
 
-.. code-block::
+.. code-block:: c
 
    sudo dpkg -i jtpmtools_0.6.deb
 
@@ -107,7 +107,7 @@ v0.7. https://sourceforge.net/projects/trustedjava/files/jTPM%20Tools/
 Set the tpm device to be accessible by jtss
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. code-block::
+.. code-block:: bash
 
    chown jtss:tss /dev/tpm0
    /etc/init.d/jtss start
@@ -126,7 +126,7 @@ the owner password is not compromised, so feel free to use a well
 known password or empty string if you are not using the TPM for other
 purposes that might require a strong TPM owner password.
 
-.. code-block::
+.. code-block:: bash
 
    jtt take_owner -e ASCII -o 'owner_password'
 
@@ -138,7 +138,7 @@ We actually define two nv spaces. One stores TrustVisor's master
 secret. The other stores the root of a hash chain used for replay
 protection (see [Memoir])
 
-.. code-block::
+.. code-block:: bash
 
    jtt nv_definespace \
        --index 0x00015213 \
@@ -171,7 +171,7 @@ removed. Hence, we want to stop all the drivers that rely on the Linux
 TPM device driver.  This requirement will go away once issue 15 is
 closed. https://sourceforge.net/p/xmhf/tickets/15/
 
-.. code-block::
+.. code-block:: bash
 
    /etc/init.d/jtss stop
    modprobe -r tpm_tis
@@ -243,7 +243,7 @@ it, please download and uncompress the uberXMHF package, go to the ``xmhf``
 directory 
 and run the following commands:
 
-.. code-block::
+.. code-block:: bash
 
    ./autogen.sh
    ./configure --with-approot=hypapps/trustvisor
@@ -253,7 +253,7 @@ and run the following commands:
 *Second*\ , you will then need to reconfigure to point to the Trustvisor PAL
 cross-compilation environment and install the headers again:
 
-.. code-block::
+.. code-block:: bash
 
    ./configure --with-approot=hypapps/trustvisor --prefix=$(SYSROOT)/usr
    make install-dev
@@ -273,7 +273,7 @@ For newlib library, we use newlib-1.19.0 version.
 Download the ``newlib-1.19.0.tar.gz`` from ftp://sourceware.org/pub/newlib/index.html, 
 untar it to ../ports/newlib/ directory, then execute the following commands:
 
-.. code-block::
+.. code-block:: bash
 
    cd ../ports/newlib/newlib-1.19.0
    patch -p1 < ../newlib-tee-sdk-131021.patch
@@ -283,7 +283,7 @@ For openssl library, we use openssl-1.0.0d version.
 Download the ``openssl-1.0.0d.tar.gz`` from http://www.openssl.org/source/,
 untar it to ../ports/openssl/ directory, then execute the following commands:
 
-.. code-block::
+.. code-block:: bash
 
    cd ../ports/openssl/openssl-1.0.0d
    patch -p1 < ../openssl-tee-sdk-131021.patch
@@ -291,7 +291,7 @@ untar it to ../ports/openssl/ directory, then execute the following commands:
 
 Note that you would have prompts as follows:
 
-.. code-block::
+.. code-block:: bash
 
    Reversed (or previously applied) patch detected!  Assume -R? [n] 
    Apply anyway? [n]
@@ -311,7 +311,7 @@ libraries, go to TEE-SDK directory and run
 If you would like to override the default paths, specify your overrides 
 as parameters to ``make``\ :
 
-.. code-block::
+.. code-block:: bash
 
    make PREFIX=$(PREFIX) HOST=$(HOST) SYSROOT=$(SYSROOT)
 
@@ -436,9 +436,8 @@ Loading and unloading services
 
 Services are loaded and unloaded through the TrustZone service manager:
 
-.. code-block::
+.. code-block:: c
 
-   :::c
    tz_return_t tzRet;
    tz_device_t tzDevice;
    tz_session_t tzManagerSession;
@@ -486,9 +485,8 @@ Services are loaded and unloaded through the TrustZone service manager:
 The TrustVisor back-end provides some convenience functions for an
 application to load an unload a single PAL:
 
-.. code-block::
+.. code-block:: c
 
-   :::c
    tz_device_t tzDevice;
    tz_session_t tzPalSession;
    tz_uuid_t tzSvcId;
@@ -525,7 +523,7 @@ Calling services
 Services are called through the TrustZone API. You must open a session
 with a currently-loaded service. A session can be used for multiple
 invocations of a service. See the
-`TrustZone API specification <>`_ for details.
+`TrustZone API specification <http://infocenter.arm.com/help/topic/com.arm.doc.prd29-genc-009492c/PRD29-GENC-009492C_trustzone_security_whitepaper.pdf>`_ for details.
 
 Developing services
 ^^^^^^^^^^^^^^^^^^^
@@ -553,9 +551,8 @@ Service entry point
 
 The service entry point should have the following prototype:
 
-.. code-block::
+.. code-block:: c
 
-   :::c
    void pal_entry(uint32_t uiCommand,
                   tzi_encode_buffer_t *psInBuf,
                   tzi_encode_buffer_t *psOutBuf,

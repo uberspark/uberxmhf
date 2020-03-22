@@ -1,5 +1,6 @@
 .. include:: /macros.rst
 
+.. _pc-legacy-x86_32-verifybuilding:
 
 Verifying and Building
 ======================
@@ -40,7 +41,7 @@ CBMC: v4.1 32-bit; Available `here <http://www.cprover.org/cbmc/download/cbmc_4.
 
 Install using: 
 
-.. code-block::
+.. code-block:: bash
 
    sudo dpkg -i cbmc_4.1_i386.deb
 
@@ -57,28 +58,28 @@ verify uberapp.
 
 Change working directory to the uberXMHF (pc-legacy-x86_32) source tree root.
 
-.. code-block::
+.. code-block:: bash
 
    cd ./xmhf
 
 
 Generate the ``./configure`` script.
 
-.. code-block::
+.. code-block:: bash
 
    ./autogen.sh
 
 
 Configure the XMHF verify hypapp.
 
-.. code-block::
+.. code-block:: bash
 
    ./configure --with-approot=hypapps/verify 
 
 
 Verify
 
-.. code-block::
+.. code-block:: bash
 
    make verifyall
    or
@@ -107,7 +108,6 @@ core API function ``xmhf_memprot_setprot``
 allows manipulating guest memory protections
 via 2nd level hardware page tables. 
 
-:raw-html-m2r:`<a name="building"></a>`
 
 Building
 --------
@@ -123,7 +123,7 @@ Build tools
 
 A (partial) list of packages to install:
 
-.. code-block::
+.. code-block:: bash
 
    aptitude install pbuilder texinfo ruby build-essential autoconf libtool
 
@@ -131,7 +131,7 @@ A (partial) list of packages to install:
 On 64-bit platforms, you will also need to install 32-bit
 libraries. On Ubuntu 12:
 
-.. code-block::
+.. code-block:: bash
 
    aptitude install gcc-multilib
 
@@ -144,7 +144,7 @@ One "drives" the build from the root directory of uberXMHF (pc-legacy-x86_32):
 
 The interesting high-level build commands include:
 
-.. code-block::
+.. code-block:: bash
 
    ./autogen.sh           # creates ./configure
    ./configure            # creates Makefile from Makefile.in
@@ -172,28 +172,28 @@ uberapp as a running example.
 
 Change working directory to the uberXMHF (pc-legacy-x86_32) root directory.
 
-.. code-block::
+.. code-block:: bash
 
    cd ./xmhf
 
 
 Generate the ``./configure`` script.
 
-.. code-block::
+.. code-block:: bash
 
    ./autogen.sh
 
 
 Configure the uberXMHF (pc-legacy-x86_32) uberapp.
 
-.. code-block::
+.. code-block:: bash
 
    ./configure --with-approot=hypapps/helloworld
 
 
 Generate and install the binaries:
 
-.. code-block::
+.. code-block:: bash
 
    make
    make install

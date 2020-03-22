@@ -12,7 +12,6 @@ Terminology
 * ``target system`` -- system where uberXMHF runs and ouputs debug information 
   via the serial port.
 
-:raw-html-m2r:`<br/>`
 
 Debugging Setup
 ---------------
@@ -30,18 +29,19 @@ the uberXMHF binaries on the SD card. In the
 *Deploying binaries to SD Card* section, perform the following on 
 the ``host system`` where development is done:
 
-.. code-block::
+Edit ``~/mnt/pi-boot/config.txt`` and add the following lines: 
 
-   1. Edit `~/mnt/pi-boot/config.txt` and add the following lines: 
-       `enable_uart=1` 
-       `init_uart_baud=115200` 
-       `force_turbo=0`
+.. code-block:: bash
+
+    enable_uart=1 
+    init_uart_baud=115200 
+    force_turbo=0
 
 
 Before powering up the PI 3 and performing a boot, do the following on
 the ``host system`` in a seperate terminal (replace ttyUSB0 with the 
 serial port of the USB to TTL adapter):
 
-.. code-block::
+.. code-block:: bash
 
    sudo screen /dev/ttyUSB0 115200 8N1

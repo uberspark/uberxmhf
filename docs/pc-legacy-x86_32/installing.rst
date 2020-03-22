@@ -16,8 +16,6 @@ Operating Systems </pc-legacy-x86_32/supported-os>`\ ).
 Lastly, configure your system to boot uberXMHF (pc-legacy-x86_32) as 
 described below.
 
-:raw-html-m2r:`<br/>`
-
 Configure target system to boot uberXMHF
 ----------------------------------------
 
@@ -38,7 +36,7 @@ need to downgrade to Grub 1.
 
 The following commands accomplish the above task on Ubuntu:
 
-.. code-block::
+.. code-block:: bash
 
    sudo apt-get purge grub* os-prober
    sudo apt-get purge grub-gfxpayload-lists
@@ -49,7 +47,7 @@ The following commands accomplish the above task on Ubuntu:
 
 And remove lines (if any) from ``/boot/grub/menu.lst``\ :
 
-.. code-block::
+.. code-block:: bash
 
    title          Chainload into GRUB 2
    root           b5912383-7f9e-4911-b51d-b14ce8cea70b
@@ -79,8 +77,8 @@ Adding a Grub entry
 ^^^^^^^^^^^^^^^^^^^
 
 You will need to add a Grub entry to ``/boot/grub/menu.lst``. To ensure
-that it doesn't get clobbered, put it **\ *outside the AUTOMAGIC KERNEL
-LIST*\ **.
+that it doesn't get clobbered, put it **outside** the **AUTOMAGIC KERNEL
+LIST**.
 
 Grub entry to boot Linux
 ^^^^^^^^^^^^^^^^^^^^^^^^
@@ -92,7 +90,7 @@ normal Linux entry.
 
 A grub entry for uberXMHF (pc-legacy-x86_32) should look something like this:
 
-.. code-block::
+.. code-block:: bash
 
    title uberXMHF (pc-legacy-x86_32)
        rootnoverify (hd0,1)                         # should point to /boot
@@ -105,7 +103,7 @@ On Intel it is necessary to append one more line to provide the SINIT
 Authenticated Code module, or "ACmod". This should be the *last*
 line. E.g.,
 
-.. code-block::
+.. code-block:: bash
 
        module /i5_i7_DUAL_SINIT_18.BIN
 
@@ -124,7 +122,7 @@ instead of recursively loading grub. Do this by modifying the
 installed instead of pointing to the MBR. For example, if Windows is
 installed on ``/dev/sda3``\ :
 
-.. code-block::
+.. code-block:: bash
 
    title Windows on uberXMHF (pc-legacy-x86_32)
        rootnoverify (hd0,1)                         # should point to /boot
@@ -146,7 +144,7 @@ entry. You can automate this by using savedefault.
 
 Set grub to boot the saved default:
 
-.. code-block::
+.. code-block:: bash
 
    default         saved
 
@@ -155,7 +153,7 @@ Have your uberXMHF (pc-legacy-x86_32) entry and what you want as your
 default OS entry save
 each-other as the new default:
 
-.. code-block::
+.. code-block:: bash
 
    title uberXMHF (pc-legacy-x86_32)
        savedefault 1
