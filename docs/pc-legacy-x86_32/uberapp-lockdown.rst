@@ -1,10 +1,12 @@
----
-layout: page
-tocref: uber eXtensible Micro-Hypervisor Framework Documentation &gt; pc-legacy-x86_32 
-title: Lockdown uberApp
----
+.. include:: /macros.rst
 
-## Introduction
+
+|uberapp| - Lockdown
+====================
+
+
+Introduction
+------------
 
 Lockdown provides the user with a red/green system: an isolated and
 constrained environment for performing online transactions, as well as
@@ -15,20 +17,23 @@ which environment is active and to switch between them.
 
 The original design and implementation of Lockdown is described in:
 
-* Lockdown: Towards a Safe and Practical Architecture for Security
+
+* 
+  Lockdown: Towards a Safe and Practical Architecture for Security
   Applications on Commodity Platforms.  Amit Vasudevan and Bryan Parno
   and Ning Qu and Virgil D. Gligor and Adrian Perrig. Proceedings of
   the 5th International Conference on Trust and Trustworthy Computing
   (TRUST), June 2012.
-  <http://hypcode.org/paper-lockdown-TRUST-2012.pdf>
+  http://hypcode.org/paper-lockdown-TRUST-2012.pdf
 
-* Lockdown: A Safe and Practical Environment for Security Applications
+* 
+  Lockdown: A Safe and Practical Environment for Security Applications
   (CMU-CyLab-09-011) Amit Vasudevan and Bryan Parno and Ning Qu and
   Virgil D. Gligor and Adrian Perrig. Technical Report
   CMU-CyLab-09-011, June 2009.
-  <http://www.cylab.cmu.edu/files/pdfs/tech_reports/CMUCyLab09011.pdf>
+  http://www.cylab.cmu.edu/files/pdfs/tech_reports/CMUCyLab09011.pdf
 
 The implementation of Lockdown contained herein can be via the
-core build process (see [Building uberXMHF (pc-legacy-x86_32)]({% link docs/pc-legacy-x86_32/verify-build.md %})). Note that the implementation 
-is a ***research prototype*** and does not yet fully provide the 
+core build process (see :doc:`Building uberXMHF (pc-legacy-x86_32) </pc-legacy-x86_32/verify-build>`\ ). Note that the implementation 
+is a **research prototype** and does not yet fully provide the 
 security properties of the design.
