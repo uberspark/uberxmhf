@@ -87,6 +87,8 @@ Build Core Micro-Hypervisor Framework
       system.
    #. ``./configure --enable-intprot`` to enable interrupt protection capabilities
    #. ``./configure --enable-fiqreflection`` to enable guest FIQ interrupts to be handled within micro-hypervisor
+   #. ``./configure --enable-debug-uart`` to enable debug output via UART; defaults to mini UART. To use the full (PL011)
+      UART, specify ``--enable-debug-uart-pl011`` in addition to ``--enable-debug-uart``. 
 
 
 Build uberApps
@@ -114,3 +116,10 @@ hypercalls) is built.
    #. ``cd rgapp-uhcalltest``
    #. ``make -w all``
    #. ``cp ./uhcalltest ~/uxmhf-rpi3-staging/.``
+
+#. 
+   Note: you can enable other uberApps by running ``./configure`` with the appropriate 
+   parameters. The following uberApps are currently supported:
+
+
+   #. ``./configure --enable-uapp-uhsign`` to enable a uberApp which provides HMAC key signing functionality

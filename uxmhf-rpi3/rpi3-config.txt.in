@@ -9,6 +9,10 @@ force_turbo=0
 
 core_freq=250
 
+#allocate miniuart to bluetooth and make full UART available in case
+#--enable-debug-uart-pl011 is selected
+@RPI3CONFIG_ENABLE_DEBUG_UART_PL011@
+
 #disable overscan
 disable_overscan=1
 

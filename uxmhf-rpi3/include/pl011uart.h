@@ -33,44 +33,26 @@
  */
 
 /*
-	ARM 8 stage-2 page table translation uapi
+	broadcom 2837 pl011 uart support
 
 	author: amit vasudevan (amitvasudevan@acm.org)
 */
 
-#include <types.h>
-#include <arm8-32.h>
-#include <bcm2837.h>
-#include <uart.h>
-#include <debug.h>
-#include <guestos.h>
-
-extern u64 l3_ldesc_table[L1_LDESC_TABLE_ENTRIES * L2_LDESC_TABLE_MAXENTRIES * L3_LDESC_TABLE_MAXENTRIES];
-
-void uapi_s2pgtbl_setprot(u32 address, u64 protection){
-	u32 index;
-
-	if ( !((address >= UXMHF_CORE_START_ADDR) &&
-			  (address < UXMHF_CORE_END_ADDR)) ){
-		index = address/PAGE_SIZE_4K;
-		l3_ldesc_table[index] = ldesc_make_s2_l3e_page(address, protection);
-	}
-
-}
-
-u64 uapi_s2pgtbl_getprot(u32 address){
-	u32 index;
-	u64 result=0;
-
-	if ( !((address >= UXMHF_CORE_START_ADDR) &&
-			  (address < UXMHF_CORE_END_ADDR)) ){
-		index = address/PAGE_SIZE_4K;
-		result = ldesc_get_s2_l3e_page_attrs(l3_ldesc_table[index]);
-	}else{
-		result=0;
-	}
-
-	return result;
-}
+#ifndef __PL011UART_H__
+#define __PL011UART_H__
 
 
+
+#ifndef __ASSEMBLY__
+
+void bcm2837_pl011uart_init(void);
+void bcm2837_pl011uart_putc(u8 ch);
+void bcm2837_pl011uart_puts(char *buffer);
+void bcm2837_pl011uart_flush(void);
+
+
+#endif // __ASSEMBLY__
+
+
+
+#endif //__PL011UART_H__

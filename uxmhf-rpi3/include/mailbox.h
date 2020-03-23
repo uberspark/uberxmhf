@@ -33,44 +33,46 @@
  */
 
 /*
-	ARM 8 stage-2 page table translation uapi
+	broadcom 2837 mailbox support
 
 	author: amit vasudevan (amitvasudevan@acm.org)
 */
 
-#include <types.h>
-#include <arm8-32.h>
-#include <bcm2837.h>
-#include <uart.h>
-#include <debug.h>
-#include <guestos.h>
+#ifndef __MAILBOX_H__
+#define __MAILBOX_H__
 
-extern u64 l3_ldesc_table[L1_LDESC_TABLE_ENTRIES * L2_LDESC_TABLE_MAXENTRIES * L3_LDESC_TABLE_MAXENTRIES];
+#define MAILBOX_REQUEST    		0
 
-void uapi_s2pgtbl_setprot(u32 address, u64 protection){
-	u32 index;
+//channels 
+#define MAILBOX_CHANNEL_POWER   0
+#define MAILBOX_CHANNEL_FB      1
+#define MAILBOX_CHANNEL_VUART   2
+#define MAILBOX_CHANNEL_VCHIQ   3
+#define MAILBOX_CHANNEL_LEDS    4
+#define MAILBOX_CHANNEL_BTNS    5
+#define MAILBOX_CHANNEL_TOUCH   6
+#define MAILBOX_CHANNEL_COUNT   7
+#define MAILBOX_CHANNEL_PROP    8
 
-	if ( !((address >= UXMHF_CORE_START_ADDR) &&
-			  (address < UXMHF_CORE_END_ADDR)) ){
-		index = address/PAGE_SIZE_4K;
-		l3_ldesc_table[index] = ldesc_make_s2_l3e_page(address, protection);
-	}
+// tags 
+#define MAILBOX_TAG_GETSERIAL   0x10004
+#define MAILBOX_TAG_SETCLKRATE  0x38002
+#define MAILBOX_TAG_LAST        0
 
-}
+#ifndef __ASSEMBLY__
 
-u64 uapi_s2pgtbl_getprot(u32 address){
-	u32 index;
-	u64 result=0;
-
-	if ( !((address >= UXMHF_CORE_START_ADDR) &&
-			  (address < UXMHF_CORE_END_ADDR)) ){
-		index = address/PAGE_SIZE_4K;
-		result = ldesc_get_s2_l3e_page_attrs(l3_ldesc_table[index]);
-	}else{
-		result=0;
-	}
-
-	return result;
-}
+// make a mailbox call
+// return: 0 if failure, non-zero on success
+int bcm2837_mailbox_call(unsigned char channel, unsigned char *buffer, unsigned int buffer_size);
 
 
+// mailbox return serial number
+// return 0 on failure
+u64 bcm2837_mailbox_get_board_serial(void);
+
+
+#endif // __ASSEMBLY__
+
+
+
+#endif //__MAILBOX_H__

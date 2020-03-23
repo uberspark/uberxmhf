@@ -33,44 +33,55 @@
  */
 
 /*
-	ARM 8 stage-2 page table translation uapi
+	generic uart interface 
+	will end up using either minuart or pl011 uart based on build configuration
 
 	author: amit vasudevan (amitvasudevan@acm.org)
 */
 
-#include <types.h>
-#include <arm8-32.h>
-#include <bcm2837.h>
-#include <uart.h>
-#include <debug.h>
-#include <guestos.h>
+#ifndef __UART_H__
+#define __UART_H__
 
-extern u64 l3_ldesc_table[L1_LDESC_TABLE_ENTRIES * L2_LDESC_TABLE_MAXENTRIES * L3_LDESC_TABLE_MAXENTRIES];
+#if defined (__DEBUG_UART__)
 
-void uapi_s2pgtbl_setprot(u32 address, u64 protection){
-	u32 index;
+	#if defined (__DEBUG_UART_PL011__)
+		#include <pl011uart.h>
+	#else
+		#include <miniuart.h>
+	#endif
 
-	if ( !((address >= UXMHF_CORE_START_ADDR) &&
-			  (address < UXMHF_CORE_END_ADDR)) ){
-		index = address/PAGE_SIZE_4K;
-		l3_ldesc_table[index] = ldesc_make_s2_l3e_page(address, protection);
-	}
-
-}
-
-u64 uapi_s2pgtbl_getprot(u32 address){
-	u32 index;
-	u64 result=0;
-
-	if ( !((address >= UXMHF_CORE_START_ADDR) &&
-			  (address < UXMHF_CORE_END_ADDR)) ){
-		index = address/PAGE_SIZE_4K;
-		result = ldesc_get_s2_l3e_page_attrs(l3_ldesc_table[index]);
-	}else{
-		result=0;
-	}
-
-	return result;
-}
+#endif
 
 
+#ifndef __ASSEMBLY__
+
+#if defined (__DEBUG_UART__)
+
+	#if defined (__DEBUG_UART_PL011__)
+		#define uart_init bcm2837_pl011uart_init
+		#define uart_putc bcm2837_pl011uart_putc
+		#define uart_puts bcm2837_pl011uart_puts
+		#define uart_flush bcm2837_pl011uart_flush
+	#else
+		#define uart_init bcm2837_miniuart_init
+		#define uart_putc bcm2837_miniuart_putc
+		#define uart_puts bcm2837_miniuart_puts
+		#define uart_flush bcm2837_miniuart_flush
+	#endif
+
+#else
+
+	#define uart_init(x) 
+	#define uart_putc(x)
+	#define uart_puts(x)
+	#define uart_flush(x)
+
+#endif
+
+
+
+#endif // __ASSEMBLY__
+
+
+
+#endif //__UART_H__

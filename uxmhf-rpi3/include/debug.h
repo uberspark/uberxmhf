@@ -44,7 +44,7 @@
 #ifndef __ASSEMBLY__
 
 
-#if defined (__DEBUG_SERIAL__)
+#if defined (__DEBUG_UART__)
 
 
 
@@ -58,8 +58,8 @@ static inline void _XDPRINTF_(const char *fmt, ...){
 	va_start(ap, fmt);
 	retval = vsnprintf(&buffer, 1024, fmt, ap);
 	//spin_lock(&libxmhfdebug_lock);
-	bcm2837_miniuart_puts(&buffer);
-	bcm2837_miniuart_flush();
+	uart_puts(&buffer);
+	uart_flush();
 	//spin_unlock(&libxmhfdebug_lock);
     va_end(ap);
 }
@@ -73,8 +73,8 @@ static inline void _XDPRINTFSMP_(const char *fmt, ...){
 	va_start(ap, fmt);
 	retval = vsnprintf(&buffer, 1024, fmt, ap);
 	spin_lock(&xdprintfsmp_lock);
-	bcm2837_miniuart_puts(&buffer);
-	bcm2837_miniuart_flush();
+	uart_puts(&buffer);
+	uart_flush();
 	spin_unlock(&xdprintfsmp_lock);
     va_end(ap);
 }

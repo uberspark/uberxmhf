@@ -35,12 +35,13 @@
 #include <types.h>
 #include <arm8-32.h>
 #include <bcm2837.h>
-#include <miniuart.h>
+#include <mailbox.h>
+#include <uart.h>
+#include <debug.h>
+
 #include <atags.h>
 #include <fdt.h>
-#include <debug.h>
 #include <dmaprot.h>
-
 
 //////
 // externs
@@ -280,7 +281,7 @@ void hypsvc_handler(arm8_32_regs_t *r){
 	//read hsr to determine the cause of the intercept
 	hsr = sysreg_read_hsr();
 	hsr_ec = ((hsr & HSR_EC_MASK) >> HSR_EC_SHIFT);
-	//bcm2837_miniuart_puts(" HSR= ");
+	//uart_puts(" HSR= ");
 	//debug_hexdumpu32(hsr);
 
 	//switch ( ((hsr & HSR_EC_MASK) >> HSR_EC_SHIFT) ){
@@ -332,38 +333,38 @@ void core_fixresmemmap(u32 fdt_address){
 	struct fdt_reserve_entry *fdtrsvmmapentryp;
 	u32 newtotalsize, padding;
 
-	bcm2837_miniuart_puts("uxmhf-rpi3: core: core_fixresmemmap [IN]\n");
+	uart_puts("uxmhf-rpi3: core: core_fixresmemmap [IN]\n");
 
-	bcm2837_miniuart_puts(" fdt_address=0x");
+	uart_puts(" fdt_address=0x");
 	debug_hexdumpu32(fdt_address);
 
-	bcm2837_miniuart_puts(" totalsize=0x");
+	uart_puts(" totalsize=0x");
 	debug_hexdumpu32(cpu_be2le_u32(fdth->totalsize));
 
-	bcm2837_miniuart_puts(" off_dt_struct=0x");
+	uart_puts(" off_dt_struct=0x");
 	debug_hexdumpu32(cpu_be2le_u32(fdth->off_dt_struct));
 
-	bcm2837_miniuart_puts(" size_dt_struct=0x");
+	uart_puts(" size_dt_struct=0x");
 	debug_hexdumpu32(cpu_be2le_u32(fdth->size_dt_struct));
 
-	bcm2837_miniuart_puts(" off_dt_strings=0x");
+	uart_puts(" off_dt_strings=0x");
 	debug_hexdumpu32(cpu_be2le_u32(fdth->off_dt_strings));
 
-	bcm2837_miniuart_puts(" size_dt_strings=0x");
+	uart_puts(" size_dt_strings=0x");
 	debug_hexdumpu32(cpu_be2le_u32(fdth->size_dt_strings));
 
-	bcm2837_miniuart_puts(" off_mem_rsvmap=0x");
+	uart_puts(" off_mem_rsvmap=0x");
 	debug_hexdumpu32(cpu_be2le_u32(fdth->off_mem_rsvmap));
 
-	bcm2837_miniuart_puts(" version=0x");
+	uart_puts(" version=0x");
 	debug_hexdumpu32(cpu_be2le_u32(fdth->version));
 
-	bcm2837_miniuart_puts(" last_comp_version=0x");
+	uart_puts(" last_comp_version=0x");
 	debug_hexdumpu32(cpu_be2le_u32(fdth->last_comp_version));
 
 	//pad totalsize to a page-boundary
 	padding = PAGE_SIZE_4K - (cpu_be2le_u32(fdth->totalsize) % PAGE_SIZE_4K);
-	bcm2837_miniuart_puts("padding=0x");
+	uart_puts("padding=0x");
 	debug_hexdumpu32(padding);
 
 	//take totalsize and compute var = size + 8 * 2
@@ -380,9 +381,9 @@ void core_fixresmemmap(u32 fdt_address){
 	//populate fdtrsvmmapentryp to rsv_mem_off
 	fdtrsvmmapentryp = (struct fdt_reserve_entry *)(fdt_address + cpu_be2le_u32(fdth->off_mem_rsvmap));
 
-	bcm2837_miniuart_puts("fdtrsvmmapentryp=0x");
+	uart_puts("fdtrsvmmapentryp=0x");
 	debug_hexdumpu32((u32)fdtrsvmmapentryp);
-	bcm2837_miniuart_puts("sizeof(fdtrsvmmapentryp)=0x");
+	uart_puts("sizeof(fdtrsvmmapentryp)=0x");
 	debug_hexdumpu32(sizeof(struct fdt_reserve_entry));
 
 	//write the guestos extent as first entry
@@ -393,16 +394,16 @@ void core_fixresmemmap(u32 fdt_address){
 
 	//terminate the list with 0sadd 16 bytes
 	fdtrsvmmapentryp++;
-	bcm2837_miniuart_puts("fdtrsvmmapentryp=0x");
+	uart_puts("fdtrsvmmapentryp=0x");
 	debug_hexdumpu32((u32)fdtrsvmmapentryp);
 
 	fdtrsvmmapentryp->address = 0ULL;
 	fdtrsvmmapentryp->size = 0ULL;
 
 	//debug
-	bcm2837_miniuart_puts("uxmhf-rpi3: core: dumping reserved memmap...\n");
+	uart_puts("uxmhf-rpi3: core: dumping reserved memmap...\n");
 	fdtrsvmmapentryp = (struct fdt_reserve_entry *)(fdt_address + cpu_be2le_u32(fdth->off_mem_rsvmap));
-	bcm2837_miniuart_puts("fdtrsvmmapentryp=0x");
+	uart_puts("fdtrsvmmapentryp=0x");
 	debug_hexdumpu32((u32)fdtrsvmmapentryp);
 
 
@@ -412,20 +413,20 @@ void core_fixresmemmap(u32 fdt_address){
 		if( addr == 0ULL &&  size == 0ULL){
 			break;
 		}
-		bcm2837_miniuart_puts(" address:0x");
+		uart_puts(" address:0x");
 		debug_hexdumpu32(addr >> 32);
 		debug_hexdumpu32((u32)addr);
-		bcm2837_miniuart_puts(" size:0x");
+		uart_puts(" size:0x");
 		debug_hexdumpu32(size >> 32);
 		debug_hexdumpu32((u32)size);
 		fdtrsvmmapentryp++;
-		bcm2837_miniuart_puts("fdtrsvmmapentryp=0x");
+		uart_puts("fdtrsvmmapentryp=0x");
 		debug_hexdumpu32((u32)fdtrsvmmapentryp);
 	}
 
-	bcm2837_miniuart_puts("uxmhf-rpi3: core: dumped reserved memmap...\n");
+	uart_puts("uxmhf-rpi3: core: dumped reserved memmap...\n");
 
-	bcm2837_miniuart_puts("uxmhf-rpi3: core: core_fixresmemmap [OUT]\n");
+	uart_puts("uxmhf-rpi3: core: core_fixresmemmap [OUT]\n");
 }
 
 
@@ -437,10 +438,12 @@ void core_fixresmemmap(u32 fdt_address){
 //////
 void main(u32 r0, u32 id, struct atag *at, u32 cpuid){
 	u32 hvbar, hcr, spsr_hyp;
+	u64 boardserial;
 
 	_XDPRINTF_("%s[%u]: ENTER: sp=0x%08x (cpu_stacks=0x%08x)\n", __func__, cpuid,
 			cpu_read_sp(), &cpu_stacks);
 	_XDPRINTF_("%s[%u]: r0=0x%08x, id=0x%08x, ATAGS=0x%08x\n", __func__, cpuid, r0, id, at);
+
 
 	//sanity check ATAGS pointer
 	if(!(at->size == FDT_MAGIC)){
@@ -451,6 +454,14 @@ void main(u32 r0, u32 id, struct atag *at, u32 cpuid){
 
 	//fix reserved memory map
 	core_fixresmemmap((u32)at);
+
+
+#if 1
+	boardserial = bcm2837_mailbox_get_board_serial();
+	_XDPRINTF_("%s[%u]: board serial=0x%016llx\n", __func__, cpuid, boardserial);
+#endif
+
+
 
 	//initialize base hardware platform
 	bcm2837_platform_initialize();
