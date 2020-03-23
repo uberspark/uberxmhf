@@ -130,7 +130,7 @@ AS_IF([test "x${enable_debug_uart_pl011}" != "xno"],
 
 ###### autoconf output files
 AC_CONFIG_FILES(
-			[./include/config.h Makefile]
+			[./include/config.h Makefile rpi3-config.txt]
 	)
 
 AC_OUTPUT
