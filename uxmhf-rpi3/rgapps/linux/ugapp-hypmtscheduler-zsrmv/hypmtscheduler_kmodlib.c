@@ -44,7 +44,8 @@
 
 #include <hypmtscheduler.h>
 
-
+#ifndef __HVC__
+#define __HVC__
 void __hvc(u32 uhcall_function, void *uhcall_buffer,
 		u32 uhcall_buffer_len){
 
@@ -58,6 +59,7 @@ void __hvc(u32 uhcall_function, void *uhcall_buffer,
 	           : "r0", "r1", "r2" //clobber
 	    );
 }
+#endif
 
 u64 hypmtscheduler_readtsc64(void){
 	u32 tsc_lo, tsc_hi;
@@ -146,6 +148,36 @@ bool hypmtscheduler_disablehyptask(u32 hyptask_handle){
 	hmtsp = (ugapp_hypmtscheduler_param_t *)page_address(hmtsp_page);
 
 	hmtsp->uhcall_fn = UAPP_HYPMTSCHEDULER_UHCALL_DISABLEHYPTASK;
+    hmtsp->iparam_1 = hyptask_handle;	//handle of hyptask
+
+	hmtsp_paddr = page_to_phys(hmtsp_page);
+	__hvc(UAPP_HYPMTSCHEDULER_UHCALL, hmtsp_paddr, sizeof(ugapp_hypmtscheduler_param_t));
+
+	if(!hmtsp->status){
+		__free_page(hmtsp_page);
+		return false;
+	}
+
+	__free_page(hmtsp_page);
+	return true;
+}
+
+
+bool hypmtscheduler_guestjobstart(u32 hyptask_handle){
+
+	ugapp_hypmtscheduler_param_t *hmtsp;
+	struct page *hmtsp_page;
+	u32 hmtsp_paddr;
+
+	hmtsp_page = alloc_page(GFP_KERNEL | __GFP_ZERO);
+
+	if(!hmtsp_page){
+		return false;
+	}
+
+	hmtsp = (ugapp_hypmtscheduler_param_t *)page_address(hmtsp_page);
+
+	hmtsp->uhcall_fn = UAPP_HYPMTSCHEDULER_UHCALL_GUESTJOBSTART;
     hmtsp->iparam_1 = hyptask_handle;	//handle of hyptask
 
 	hmtsp_paddr = page_to_phys(hmtsp_page);

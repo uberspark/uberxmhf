@@ -45,6 +45,8 @@
 #include "../../../include/mavlinkserhb.h"
 
 
+#ifndef __HVC__
+#define __HVC__
 void __hvc(u32 uhcall_function, void *uhcall_buffer,
 		u32 uhcall_buffer_len){
 
@@ -58,6 +60,7 @@ void __hvc(u32 uhcall_function, void *uhcall_buffer,
 	           : "r0", "r1", "r2" //clobber
 	    );
 }
+#endif
 
 
 void mavlinkserhb_initialize(u32 baudrate){

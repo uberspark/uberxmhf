@@ -18,7 +18,7 @@ __attribute__((section(".data"))) u32 debug_log_buffer_index = 0;
 void debug_log_tsc(u32 hyptask_id, u64 timestamp, u32 event_type){
 
 	if(debug_log_buffer_index >= DEBUG_LOG_SIZE){
-		bcm2837_miniuart_puts("\n[debug_log_tsc]: WARNING: buffer full, not logging anymore!");
+	  //bcm2837_miniuart_puts("\n[debug_log_tsc]: WARNING: buffer full, not logging anymore!");
 	}else{
 		debug_log_buffer[debug_log_buffer_index].hyptask_id = hyptask_id;
 		debug_log_buffer[debug_log_buffer_index].timestamp = timestamp;

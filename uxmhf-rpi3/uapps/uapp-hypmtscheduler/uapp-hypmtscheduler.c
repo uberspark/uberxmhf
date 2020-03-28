@@ -37,7 +37,11 @@ extern __attribute__((section(".data"))) hypmtscheduler_logentry_t debug_log_buf
 //////////////////////////////////////////////////////////////////////////////
 
 
-
+/** ************************************
+ * Dio: I moved the declaration of the hyptask table here to be able to access it 
+ * from the timer functions
+ */
+__attribute__((section(".data"))) hypmtscheduler_hyptask_handle_t hyptask_handle_list[HYPMTSCHEDULER_MAX_HYPTASKS];
 
 
 //////////////////////////////////////////////////////////////////////////////
@@ -75,6 +79,7 @@ __attribute__((section(".data"))) struct sched_timer *timer_next = NULL;
 // last time when physical timer was programmed
 __attribute__((section(".data"))) TIME time_timer_set;
 
+
 // this is a timer which should never expire, only there to serve as a guard
 __attribute__((section(".data"))) struct sched_timer timer_last = {
   FALSE,	//inuse
@@ -96,32 +101,32 @@ __attribute__((section(".data"))) struct sched_timer timer_last = {
 hypmtscheduler_secure_bootstrap_config_t hyptask_secure_bootstrap_config[] = {
 		{ (0.5 * HYPMTSCHEDULER_TIME_1SEC),	//hyptask_first_period
 		  (1 * HYPMTSCHEDULER_TIME_1SEC),	//hyptask_regular_period
-		  1, 								//hyptask_priority
+		  4, 								//hyptask_priority
 		  0 								//hyptask_id
 		},
 
 		{ (1.5 * HYPMTSCHEDULER_TIME_1SEC),	//hyptask_first_period
 		  (2 * HYPMTSCHEDULER_TIME_1SEC),	//hyptask_regular_period
-		  2, 								//hyptask_priority
+		  3, 								//hyptask_priority
 		  1 								//hyptask_id
 		},
 
 		{ (2.5 * HYPMTSCHEDULER_TIME_1SEC),	//hyptask_first_period
 		  (3 * HYPMTSCHEDULER_TIME_1SEC),	//hyptask_regular_period
-		  3, 								//hyptask_priority
+		  2, 								//hyptask_priority
 		  2 								//hyptask_id
 		},
 
 		{ (3.5 * HYPMTSCHEDULER_TIME_1SEC),	//hyptask_first_period
 		  (4 * HYPMTSCHEDULER_TIME_1SEC),	//hyptask_regular_period
-		  4, 								//hyptask_priority
+		  1, 								//hyptask_priority
 		  3 								//hyptask_id
 		}
 
 };
 
 
-#define HYPTASK_BSTRAP_CONFIG_TOTAL	4
+#define HYPTASK_BSTRAP_CONFIG_TOTAL	1
 
 #endif
 
@@ -148,8 +153,10 @@ hypmtscheduler_secure_bootstrap_config_t hyptask_secure_bootstrap_config[] = {
 void uapp_sched_timers_init(void){
   u32 i;
 
-  for(i=0; i < MAX_TIMERS; i++)
+  for(i=0; i < MAX_TIMERS; i++){
 	  sched_timers[i].inuse = FALSE;
+	  sched_timers[i].hyptask_handle = -1;
+  }
 }
 
 
@@ -164,6 +171,7 @@ void uapp_sched_timer_undeclare(struct sched_timer *t){
 	}
 
 	t->inuse = FALSE;
+	t->hyptask_handle = -1;
 
 	// check if we were waiting on this one
 	if (t == timer_next) {
@@ -426,6 +434,12 @@ void uapp_sched_process_timers(u32 cpuid){
 				priority_queue_insert((void *)&sched_timers[i], sched_timers[i].priority);
 			}
 
+			if (sched_timers[i].hyptask_handle >=0){
+			  hyptask_handle_list[sched_timers[i].hyptask_handle].valid_guest_mask &= ~GUEST_JOB_START_VALID_MASK;
+			  hyptask_handle_list[sched_timers[i].hyptask_handle].last_enforcement_timestamp = uapp_sched_read_cpucounter();
+			  hyptask_handle_list[sched_timers[i].hyptask_handle].num_periods ++;
+			}
+
 			time_to_wait = sched_timers[i].regular_time_period; //reload
 			priority = sched_timers[i].priority;
 			uapp_sched_timer_redeclare(&sched_timers[i], time_to_wait, time_to_wait, priority, sched_timers[i].tfunc);
@@ -443,11 +457,18 @@ void uapp_sched_run_hyptasks(void){
 	int status;
 	u32 queue_data;
 	int priority;
+	int cnt=0;
 	struct sched_timer *task_timer;
 
 
 	status=0;
 	while(1){
+	        cnt++;
+		if (cnt > 5){
+		  bcm2837_miniuart_puts("ERROR: Scheduling more than 5!!\n");
+		  break;
+		}
+		
 		status = priority_queue_remove(&queue_data, &priority);
 		if(status == 0)
 			break;
@@ -568,7 +589,6 @@ void uapp_sched_logic(void){
 //////////////////////////////////////////////////////////////////////////////
 
 
-
 /// Dio: utility to plot 'busy' time
 // pi3-1.2GHz
 #define IN_LOOP_ONE_MS 70575
@@ -589,6 +609,7 @@ void busy(long millis)
       }
 }
 
+uint8_t heartbeat[] = { 0xfd, 0x09, 0x00, 0x00, 0x00, 0x00, 0xfb, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x06, 0x08, 0x00, 0x00, 0x03, 0x2f, 0x0f,0xfd, 0x35, 0x00, 0x00, 0x00, 0x00, 0xfb, 0x54, 0x00, 0x00, 0x1a, 0x9f, 0x62, 0x09, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xc7, 0x09, 0x00, 0x00, 0x01, 0x6c, 0xc1};
 
 
 //////////////////////////////////////////////////////////////////////////////
@@ -596,30 +617,34 @@ void busy(long millis)
 //////////////////////////////////////////////////////////////////////////////
 
 void hyptask0(struct sched_timer *t){
-	debug_log_tsc(0, uapp_sched_read_cpucounter(), DEBUG_LOG_EVTTYPE_HYPTASKEXEC_BEFORE);
-	uapp_mavlinkserhb_uart_send("A", 1);
-	uapp_mavlinkserhb_uart_flush();
-	//busy(10);
-	debug_log_tsc(0, uapp_sched_read_cpucounter(), DEBUG_LOG_EVTTYPE_HYPTASKEXEC_AFTER);
+  debug_log_tsc(0, uapp_sched_read_cpucounter(), DEBUG_LOG_EVTTYPE_HYPTASKEXEC_BEFORE);
+  /* uapp_mavlinkserhb_uart_send(heartbeat, sizeof(heartbeat)); */
+  /* uapp_mavlinkserhb_uart_flush(); */
+  busy(10);
+  bcm2837_miniuart_puts("A");
+  debug_log_tsc(0, uapp_sched_read_cpucounter(), DEBUG_LOG_EVTTYPE_HYPTASKEXEC_AFTER);
 }
 
 void hyptask1(struct sched_timer *t){
-	debug_log_tsc(1, uapp_sched_read_cpucounter(), DEBUG_LOG_EVTTYPE_HYPTASKEXEC_BEFORE);
-	//busy(10);
-	debug_log_tsc(1, uapp_sched_read_cpucounter(), DEBUG_LOG_EVTTYPE_HYPTASKEXEC_AFTER);
+  debug_log_tsc(1, uapp_sched_read_cpucounter(), DEBUG_LOG_EVTTYPE_HYPTASKEXEC_BEFORE);
+	/* //busy(10); */
+  debug_log_tsc(1, uapp_sched_read_cpucounter(), DEBUG_LOG_EVTTYPE_HYPTASKEXEC_AFTER);
+  //bcm2837_miniuart_puts("B");
 }
 
 
 void hyptask2(struct sched_timer *t){
-	debug_log_tsc(2, uapp_sched_read_cpucounter(), DEBUG_LOG_EVTTYPE_HYPTASKEXEC_BEFORE);
-	//busy(10);
-	debug_log_tsc(2, uapp_sched_read_cpucounter(), DEBUG_LOG_EVTTYPE_HYPTASKEXEC_AFTER);
+  debug_log_tsc(2, uapp_sched_read_cpucounter(), DEBUG_LOG_EVTTYPE_HYPTASKEXEC_BEFORE);
+	/* //busy(10); */
+  debug_log_tsc(2, uapp_sched_read_cpucounter(), DEBUG_LOG_EVTTYPE_HYPTASKEXEC_AFTER);
+  //bcm2837_miniuart_puts("C");
 }
 
 void hyptask3(struct sched_timer *t){
-	debug_log_tsc(3, uapp_sched_read_cpucounter(), DEBUG_LOG_EVTTYPE_HYPTASKEXEC_BEFORE);
-	//busy(10);
-	debug_log_tsc(3, uapp_sched_read_cpucounter(), DEBUG_LOG_EVTTYPE_HYPTASKEXEC_AFTER);
+  debug_log_tsc(3, uapp_sched_read_cpucounter(), DEBUG_LOG_EVTTYPE_HYPTASKEXEC_BEFORE);
+	/* //busy(10); */
+  debug_log_tsc(3, uapp_sched_read_cpucounter(), DEBUG_LOG_EVTTYPE_HYPTASKEXEC_AFTER);
+  //bcm2837_miniuart_puts("D");
 }
 
 __attribute__((section(".data"))) HYPTHREADFUNC hyptask_idlist[HYPMTSCHEDULER_MAX_HYPTASKID] =
@@ -630,7 +655,13 @@ __attribute__((section(".data"))) HYPTHREADFUNC hyptask_idlist[HYPMTSCHEDULER_MA
 			&hyptask3
 		};
 
-__attribute__((section(".data"))) hypmtscheduler_hyptask_handle_t hyptask_handle_list[HYPMTSCHEDULER_MAX_HYPTASKS];
+
+/******************************************************
+ * Dio: I moved the declaration of the hyptask table
+ * to the top to be able to access it from the
+ * timer functions
+ ******************************************************/
+//__attribute__((section(".data"))) hypmtscheduler_hyptask_handle_t hyptask_handle_list[HYPMTSCHEDULER_MAX_HYPTASKS];
 
 
 //////////////////////////////////////////////////////////////////////////////
@@ -653,8 +684,14 @@ void uapp_hypmtscheduler_handlehcall_createhyptask(ugapp_hypmtscheduler_param_t 
 	uint32_t hyptask_id = hmtsp->iparam_4;
 	uint32_t i;
 	uint32_t hyptask_handle_found;
+	TIME now;
+
 
 	debug_log_tsc(hyptask_id, uapp_sched_read_cpucounter(), DEBUG_LOG_EVTTYPE_CREATEHYPTASK_BEFORE);
+	now = hyptask_first_period;
+	debug_log_tsc(hyptask_id, now , DEBUG_LOG_EVTTYPE_FIRST_PERIOD_PARAM);
+	now = hyptask_regular_period;
+	debug_log_tsc(hyptask_id, now, DEBUG_LOG_EVTTYPE_REGULAR_PERIOD_PARAM);
 
 	//allocate hyptask_handle
 	hyptask_handle_found=0;
@@ -681,6 +718,13 @@ void uapp_hypmtscheduler_handlehcall_createhyptask(ugapp_hypmtscheduler_param_t 
 	//ok now populate the hyptask_id within the hyptask handle
 	hyptask_handle_list[i].hyptask_id = hyptask_id;
 
+	// record creation timestampt before programming the timer
+	// we are pulling back the clock by 1000 ticks : debugging
+	hyptask_handle_list[i].guest_task_creation_timestamp = uapp_sched_read_cpucounter() - 1000;
+	hyptask_handle_list[i].guest_job_start_timestamp = 0;
+	hyptask_handle_list[i].num_periods = 0;
+
+	
 	hyptask_handle_list[i].t = uapp_sched_timer_declare(hyptask_first_period, hyptask_regular_period,
 			hyptask_priority,
 			hyptask_idlist[hyptask_id]);
@@ -690,6 +734,14 @@ void uapp_hypmtscheduler_handlehcall_createhyptask(ugapp_hypmtscheduler_param_t 
 		hmtsp->status=0; //fail
 		return;
 	}
+
+	hyptask_handle_list[i].t->hyptask_handle = i;
+
+	/*
+	hyptask_handle_list[i].guest_task_creation_timestamp = uapp_sched_read_cpucounter();
+	hyptask_handle_list[i].guest_job_start_timestamp = 0;
+	hyptask_handle_list[i].num_periods = 0;
+	*/
 
 	debug_log_tsc(hyptask_id, uapp_sched_read_cpucounter(), DEBUG_LOG_EVTTYPE_CREATEHYPTASK_AFTER);
 
@@ -721,15 +773,109 @@ void uapp_hypmtscheduler_handlehcall_disablehyptask(ugapp_hypmtscheduler_param_t
 
 	debug_log_tsc(hyptask_handle_list[hyptask_handle].hyptask_id, uapp_sched_read_cpucounter(), DEBUG_LOG_EVTTYPE_DISABLEHYPTASK_BEFORE);
 
+	hyptask_handle_list[hyptask_handle].guest_job_end_timestamp = uapp_sched_read_cpucounter();
+
 	//ok grab the timer for the hyptask
 	hyptask_timer = hyptask_handle_list[hyptask_handle].t;
 
-	//set the disabled flag so that hyptask function is not executed
-	hyptask_timer->disable_tfunc = TRUE;
+	if ( (hyptask_handle_list[hyptask_handle].valid_guest_mask & GUEST_JOB_START_VALID_MASK)
+	     &&
+	     (
+	      (hyptask_handle_list[hyptask_handle].guest_job_end_timestamp <= hyptask_handle_list[hyptask_handle].guest_task_creation_timestamp +
+	       hyptask_handle_list[hyptask_handle].t->first_time_period)
+	      ||
+	      (
+	       hyptask_handle_list[hyptask_handle].guest_job_end_timestamp >=  hyptask_handle_list[hyptask_handle].guest_task_creation_timestamp +
+	       (hyptask_handle_list[hyptask_handle].t->regular_time_period * hyptask_handle_list[hyptask_handle].num_periods)
+	       &&
+		hyptask_handle_list[hyptask_handle].guest_job_end_timestamp <=  hyptask_handle_list[hyptask_handle].guest_task_creation_timestamp +
+		(hyptask_handle_list[hyptask_handle].t->regular_time_period * hyptask_handle_list[hyptask_handle].num_periods) +
+		hyptask_handle_list[hyptask_handle].t->first_time_period
+	      )
+	      )
+	     )
+	  {
+	    hyptask_handle_list[hyptask_handle].valid_guest_mask |= GUEST_JOB_END_VALID_MASK;
+	  }
+	else
+	  {
+	    hyptask_handle_list[hyptask_handle].valid_guest_mask &= ~GUEST_JOB_END_VALID_MASK;
+	  }
 
+	if ((hyptask_handle_list[hyptask_handle].valid_guest_mask & GUEST_JOB_END_VALID_MASK))
+	  {
+	    //set the disabled flag so that hyptask function is not executed
+	    hyptask_timer->disable_tfunc = TRUE;
+	  }		    
+
+
+	// Dio: debug conditions that are not working
+	// hyptask_timer->disable_tfunc = TRUE;
+
+	if (!(hyptask_handle_list[hyptask_handle].valid_guest_mask & GUEST_JOB_START_VALID_MASK)){
+	  debug_log_tsc(hyptask_handle_list[hyptask_handle].hyptask_id, uapp_sched_read_cpucounter(), DEBUG_LOG_EVTTYPE_DISABLEHYPTASK_INVALID_START);
+	  debug_log_tsc(hyptask_handle_list[hyptask_handle].hyptask_id, uapp_sched_read_cpucounter(), DEBUG_LOG_EVTTYPE_INVALID_START_NUM_PERIOD_OFFSET+hyptask_handle_list[hyptask_handle].num_periods);
+	}
+	
 	hmtsp->status=1; //success
 
 	debug_log_tsc(hyptask_handle_list[hyptask_handle].hyptask_id, uapp_sched_read_cpucounter(), DEBUG_LOG_EVTTYPE_DISABLEHYPTASK_AFTER);
+}
+
+
+
+//////
+// mark start of guest job for hyptask API
+//////
+void uapp_hypmtscheduler_handlehcall_guestjobstart(ugapp_hypmtscheduler_param_t *hmtsp){
+	uint32_t hyptask_handle = hmtsp->iparam_1;
+	struct sched_timer *hyptask_timer;
+	uint32_t i;
+	uint32_t hyptask_handle_found;
+	TIME now;
+
+	//check if provided hyptask handle is within limits
+	if(hyptask_handle >= HYPMTSCHEDULER_MAX_HYPTASKS){
+		hmtsp->status=0; //fail
+		return;
+	}
+
+	//check if provided hyptask handle is in use
+	if(!hyptask_handle_list[hyptask_handle].inuse){
+		hmtsp->status=0; //fail
+		return;
+	}
+
+	debug_log_tsc(hyptask_handle_list[hyptask_handle].hyptask_id, uapp_sched_read_cpucounter(), DEBUG_LOG_EVTTYPE_STARTGUESTJOB_BEFORE);
+
+	now = uapp_sched_read_cpucounter();
+	
+	if (
+	       (hyptask_handle_list[hyptask_handle].guest_job_start_timestamp == 0 &&
+	          now <= hyptask_handle_list[hyptask_handle].guest_task_creation_timestamp + hyptask_handle_list[hyptask_handle].t->first_time_period
+	       ) ||
+	       (hyptask_handle_list[hyptask_handle].guest_job_start_timestamp <= hyptask_handle_list[hyptask_handle].last_enforcement_timestamp
+		&&
+		now >=  hyptask_handle_list[hyptask_handle].guest_task_creation_timestamp +
+		(hyptask_handle_list[hyptask_handle].t->regular_time_period * hyptask_handle_list[hyptask_handle].num_periods)
+		&&
+		now <=  hyptask_handle_list[hyptask_handle].guest_task_creation_timestamp +
+		(hyptask_handle_list[hyptask_handle].t->regular_time_period * hyptask_handle_list[hyptask_handle].num_periods) +
+		hyptask_handle_list[hyptask_handle].t->first_time_period
+		)
+	    )
+	  {
+	    hyptask_handle_list[hyptask_handle].valid_guest_mask |= GUEST_JOB_START_VALID_MASK ;
+	  } else
+	  {
+	    hyptask_handle_list[hyptask_handle].valid_guest_mask &= ~GUEST_JOB_START_VALID_MASK ;
+	  }
+
+	hyptask_handle_list[hyptask_handle].guest_job_start_timestamp = now;
+	
+	hmtsp->status=1; //success
+
+	debug_log_tsc(hyptask_handle_list[hyptask_handle].hyptask_id, uapp_sched_read_cpucounter(), DEBUG_LOG_EVTTYPE_STARTGUESTJOB_AFTER);
 }
 
 
@@ -833,7 +979,8 @@ bool uapp_hypmtscheduler_handlehcall(u32 uhcall_function, void *uhcall_buffer,
 
 	}else if(hmtsp->uhcall_fn == UAPP_HYPMTSCHEDULER_UHCALL_DISABLEHYPTASK){
 		uapp_hypmtscheduler_handlehcall_disablehyptask(hmtsp);
-
+	}else if(hmtsp->uhcall_fn == UAPP_HYPMTSCHEDULER_UHCALL_GUESTJOBSTART){
+	        uapp_hypmtscheduler_handlehcall_guestjobstart(hmtsp);
 	}else if(hmtsp->uhcall_fn == UAPP_HYPMTSCHEDULER_UHCALL_DELETEHYPTASK){
 		uapp_hypmtscheduler_handlehcall_deletehyptask(hmtsp);
 
@@ -1005,6 +1152,7 @@ void uapp_sched_initialize(u32 cpuid){
 		//uapp_sched_timer_declare((20 * HYPMTSCHEDULER_TIME_1SEC), (20 * HYPMTSCHEDULER_TIME_1SEC), 1, NULL);
 
 #ifdef __SECURE_HYPTASK_BOOTSTRAP__
+		
 		uapp_sched_bootstrap_hyptasks(cpuid);
 #endif
 
