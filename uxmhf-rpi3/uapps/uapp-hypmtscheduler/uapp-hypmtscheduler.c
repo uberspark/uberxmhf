@@ -720,7 +720,7 @@ void uapp_hypmtscheduler_handlehcall_createhyptask(ugapp_hypmtscheduler_param_t 
 
 	// record creation timestampt before programming the timer
 	// we are pulling back the clock by 1000 ticks : debugging
-	hyptask_handle_list[i].guest_task_creation_timestamp = uapp_sched_read_cpucounter() - 1000;
+	hyptask_handle_list[i].guest_task_creation_timestamp = uapp_sched_read_cpucounter();// - 1000;
 	hyptask_handle_list[i].guest_job_start_timestamp = 0;
 	hyptask_handle_list[i].num_periods = 0;
 
