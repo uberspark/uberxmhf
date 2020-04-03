@@ -108,19 +108,19 @@ void bcm2837_pl011uart_puts(char *buffer){
 
 
 /* UART character read function (non-blocking)*/
-u8 bcm2837_pl011uart_getc(void) {
-    u8 recv_ch;
+bool bcm2837_pl011uart_getc(u8 *recv_ch) {
     
     //check if there is a byte in the FIFO buffer
     if ( ! (mmio_read32(PL011_UART_FR_REG) & 0x10) ){
 
         //receive FIFO is not-empty, so read the next character
-        recv_ch=(u8)mmio_read32(PL011_UART_DR_REG);
+        *recv_ch=(u8)mmio_read32(PL011_UART_DR_REG);
 
+        return true;
+    }else{
+        return false;
     }
 
-    return recv_ch;
-    //return recv_ch=='\r'?'\n':r;
 }
 
 

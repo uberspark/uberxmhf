@@ -88,13 +88,11 @@ void bcm2837_miniuart_puts(char *buffer){
 
 
 // UART character read function (non-blocking)
-u8 bcm2837_miniuart_getc(void) {
-    u8 recv_ch=0;
-
+bool bcm2837_miniuart_getc(u8 *recv_ch) {
     // logic TBD
+    *recv_ch = 0;
 
-    return recv_ch;
-    //return recv_ch=='\r'?'\n':r;
+    return true;
 }
 
 
