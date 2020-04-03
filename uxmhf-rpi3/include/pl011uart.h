@@ -48,6 +48,7 @@
 void bcm2837_pl011uart_init(void);
 void bcm2837_pl011uart_putc(u8 ch);
 void bcm2837_pl011uart_puts(char *buffer);
+u8 bcm2837_pl011uart_getc(void);
 void bcm2837_pl011uart_flush(void);
 
 
