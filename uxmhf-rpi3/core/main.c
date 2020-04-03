@@ -462,7 +462,12 @@ void main(u32 r0, u32 id, struct atag *at, u32 cpuid){
 #endif
 
 
+#if 1
+	//test PL011 receive function
+	_XDPRINTF_("%s[%u]: proceeding to test serial receive...\n", __func__, cpuid);
+	
 
+#endif
 	//initialize base hardware platform
 	bcm2837_platform_initialize();
 	_XDPRINTF_("%s[%u]: initialized base hardware platform\n", __func__, cpuid);
