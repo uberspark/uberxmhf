@@ -61,11 +61,13 @@
 		#define uart_init bcm2837_pl011uart_init
 		#define uart_putc bcm2837_pl011uart_putc
 		#define uart_puts bcm2837_pl011uart_puts
+		#define uart_getc bcm2837_pl011uart_getc
 		#define uart_flush bcm2837_pl011uart_flush
 	#else
 		#define uart_init bcm2837_miniuart_init
 		#define uart_putc bcm2837_miniuart_putc
 		#define uart_puts bcm2837_miniuart_puts
+		#define uart_getc bcm2837_miniuart_getc
 		#define uart_flush bcm2837_miniuart_flush
 	#endif
 
@@ -74,6 +76,7 @@
 	#define uart_init(x) 
 	#define uart_putc(x)
 	#define uart_puts(x)
+	#define uart_getc(x)
 	#define uart_flush(x)
 
 #endif
