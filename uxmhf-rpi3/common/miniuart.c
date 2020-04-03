@@ -86,6 +86,18 @@ void bcm2837_miniuart_puts(char *buffer){
 		bcm2837_miniuart_putc(*buffer++);
 }
 
+
+// UART character read function (non-blocking)
+u8 bcm2837_miniuart_getc(void) {
+    u8 recv_ch=0;
+
+    // logic TBD
+
+    return recv_ch;
+    //return recv_ch=='\r'?'\n':r;
+}
+
+
 void bcm2837_miniuart_flush(void){
     while( (mmio_read32(AUX_MU_LSR_REG) & 0x100) );
 }
