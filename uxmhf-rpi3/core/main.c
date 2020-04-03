@@ -476,6 +476,12 @@ void main(u32 r0, u32 id, struct atag *at, u32 cpuid){
 #endif
 
 
+#if 1
+	_XDPRINTF_("%s[%u]: halting, work-in-progress!\n", __func__, cpuid);
+	HALT();
+#endif
+
+
 	//initialize base hardware platform
 	bcm2837_platform_initialize();
 	_XDPRINTF_("%s[%u]: initialized base hardware platform\n", __func__, cpuid);
