@@ -17,12 +17,20 @@ Debugging Setup
 ---------------
 
 uberXMHF (rpi3-cortex_a53-armv8_32) debugging is done primarily via the 
-Raspberry PI 3 serial port.
+Raspberry PI 3 serial port using a USB to TTL serial cable.
 
-You will need to purchase a USB to TTL serial cable such as the one 
-available `here <https://www.adafruit.com/product/954?gclid=Cj0KCQjw_ODWBRCTARIsAE2_EvVn-6n_HsU-McCFk-ffkiPooqiDkVjVaZtq39GAIyy5s8Ep5yb6K9QaAtKQEALw_wcB>`_
+There are two types of USB to TTL serial cables available:
 
-Connect Pin 6 on PI to GND of serial cable; Pin 8 to RX and Pin 10 to TX.
+* *without* hardware-flow control (RTS/CTS) pins such as the one available 
+  `here <https://www.adafruit.com/product/954>`_. This cable has four wires:
+  red (power), black (ground), white (TX out of PI), and green (RX into PI). Connect physical Pin 6 on 
+  the PI header to ground (black) of serial cable; Pin 8 to TX out of PI (white) and Pin 10 to RX into PI (green).
+
+* *with* hardware-flow control (RTS/CTS) pins such as the one available 
+  `here <https://www.adafruit.com/product/70>`_. This cable has six wires:
+  black (ground), brown (CTS), red (power, 5V), orange (RXD into PI), yellow (TXD out of PI), green (RTS). Connect physical Pin 6 on 
+  the PI header to ground (black) of serial cable; Pin 8 to TXD out of PI (yellow) and Pin 10 to RXD into PI (orange).
+
 
 See :doc:`Installing uberXMHF (rpi3-cortex_a53-armv8_32) </rpi3-cortex_a53-armv8_32/installing>` for how to install
 the uberXMHF binaries on the SD card. In the 
