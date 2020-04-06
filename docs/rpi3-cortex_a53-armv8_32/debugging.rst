@@ -23,8 +23,13 @@ There are two types of USB to TTL serial cables available:
 
 * *without* hardware-flow control (RTS/CTS) pins such as the one available 
   `here <https://www.adafruit.com/product/954>`_. This cable has four wires:
-  red (power), black (ground), white (TX out of PI), and green (RX into PI). Connect physical Pin 6 on 
-  the PI header to ground (black) of serial cable; Pin 8 to TX out of PI (white) and Pin 10 to RX into PI (green).
+  red (power), black (ground), white (TX out of PI), and green (RX into PI). 
+  The following
+  is the connection to the PI 40-pin header:
+ 
+  * Physical Pin 6  <--> ground (black) of serial cable
+  * Physical Pin 8  <--> TX out of PI (white) of serial cable 
+  * Physical Pin 10 <--> RX into PI (green) of serial cable
 
 * *with* hardware-flow control (RTS/CTS) pins such as the one available 
   `here <https://www.adafruit.com/product/70>`_. This cable has six wires:
@@ -36,7 +41,7 @@ There are two types of USB to TTL serial cables available:
   * Physical Pin 10 <--> RXD into PI (orange) of serial cable
   * Physical Pin 11 <--> CTS (brown) of serial cable
   * Physical Pin 36 <--> RTS (green) of serial cable
-  
+
 
 
 
