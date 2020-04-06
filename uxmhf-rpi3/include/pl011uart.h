@@ -45,7 +45,10 @@
 
 #ifndef __ASSEMBLY__
 
+#if defined (__DEBUG_UART_PL011_CTSRTS__)
 void bcm2837_pl011uart_init_hwflowcontrol(void);
+#endif
+
 void bcm2837_pl011uart_init(void);
 void bcm2837_pl011uart_putc(u8 ch);
 void bcm2837_pl011uart_puts(char *buffer);

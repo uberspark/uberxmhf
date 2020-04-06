@@ -47,6 +47,7 @@
 extern u32 mmio_read32 (u32 address);
 extern void mmio_write32 (u32 address, u32 value);
 
+#if defined (__DEBUG_UART_PL011_CTSRTS__)
 /* UART initialize hardware flow control */
 void bcm2837_pl011uart_init_hwflowcontrol(void){
     register unsigned int r;
@@ -66,6 +67,7 @@ void bcm2837_pl011uart_init_hwflowcontrol(void){
 
     mmio_write32(GPPUDCLK0,0);  // flush GPIO setup
 }
+#endif
 
 
 /* UART initialization function */
@@ -104,9 +106,10 @@ void bcm2837_pl011uart_init(void){
 
     mmio_write32(GPPUDCLK0,0);  // flush GPIO setup
 
-
+#if defined (__DEBUG_UART_PL011_CTSRTS__)
     //enable h/w flow control
     bcm2837_pl011uart_init_hwflowcontrol();
+#endif
 
     mmio_write32(PL011_UART_ICR_REG, 0x7FF);    // clear interrupts
     mmio_write32(PL011_UART_IBRD_REG, 2);       // 115200 baud
