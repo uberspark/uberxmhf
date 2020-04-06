@@ -28,8 +28,16 @@ There are two types of USB to TTL serial cables available:
 
 * *with* hardware-flow control (RTS/CTS) pins such as the one available 
   `here <https://www.adafruit.com/product/70>`_. This cable has six wires:
-  black (ground), brown (CTS), red (power, 5V), orange (RXD into PI), yellow (TXD out of PI), green (RTS). Connect physical Pin 6 on 
-  the PI header to ground (black) of serial cable; Pin 8 to TXD out of PI (yellow) and Pin 10 to RXD into PI (orange).
+  black (ground), brown (CTS), red (power, 5V), orange (RXD into PI), yellow (TXD out of PI), green (RTS). The following
+  is the connection to the PI 40-pin header:
+
+  * Physical Pin 6  <--> ground (black) of serial cable
+  * Physical Pin 8  <--> TXD out of PI (yellow) of serial cable
+  * Physical Pin 10 <--> RXD into PI (orange) of serial cable
+  * Physical Pin 11 <--> CTS (brown) of serial cable
+  * Physical Pin 36 <--> RTS (green) of serial cable
+  
+
 
 
 See :doc:`Installing uberXMHF (rpi3-cortex_a53-armv8_32) </rpi3-cortex_a53-armv8_32/installing>` for how to install

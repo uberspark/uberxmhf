@@ -45,6 +45,7 @@
 
 #ifndef __ASSEMBLY__
 
+void bcm2837_pl011uart_init_hwflowcontrol(void);
 void bcm2837_pl011uart_init(void);
 void bcm2837_pl011uart_putc(u8 ch);
 void bcm2837_pl011uart_puts(char *buffer);

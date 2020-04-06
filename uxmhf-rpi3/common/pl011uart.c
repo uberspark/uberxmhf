@@ -47,6 +47,26 @@
 extern u32 mmio_read32 (u32 address);
 extern void mmio_write32 (u32 address, u32 value);
 
+/* UART initialize hardware flow control */
+void bcm2837_pl011uart_init_hwflowcontrol(void){
+    register unsigned int r;
+    unsigned int i;
+
+    // GPIO 16 for CTS0 and 17 for RTS0
+    r=mmio_read32(GPFSEL1);
+    r |= 0x00fc0000; 
+    mmio_write32(GPFSEL1, r);
+
+    // enable pins 16 and 17
+    mmio_write32(GPPUD, 0);            
+    for(i=0; i<150; i++);
+
+    mmio_write32(GPPUDCLK0, (1<<16)|(1<<17));
+    for(i=0; i<150; i++);
+
+    mmio_write32(GPPUDCLK0,0);  // flush GPIO setup
+}
+
 
 /* UART initialization function */
 void bcm2837_pl011uart_init(void){
@@ -83,6 +103,10 @@ void bcm2837_pl011uart_init(void){
     for(i=0; i<150; i++);
 
     mmio_write32(GPPUDCLK0,0);  // flush GPIO setup
+
+
+    //enable h/w flow control
+    bcm2837_pl011uart_init_hwflowcontrol();
 
     mmio_write32(PL011_UART_ICR_REG, 0x7FF);    // clear interrupts
     mmio_write32(PL011_UART_IBRD_REG, 2);       // 115200 baud
