@@ -462,195 +462,10 @@ void main(u32 r0, u32 id, struct atag *at, u32 cpuid){
 	_XDPRINTF_("%s[%u]: board serial=0x%016llx\n", __func__, cpuid, boardserial);
 #endif
 
-#if 0
-	{
-		unsigned int i;
-		unsigned int pl011_uart_rxff;
-		unsigned int pl011_uart_rts;
-		unsigned int pl011_uart_cts;
-
-		pl011_uart_rts = (mmio_read32(PL011_UART_CR_REG) & 0x800) >> 11;
-		pl011_uart_cts = (mmio_read32(PL011_UART_FR_REG) & 0x1);
-
-		_XDPRINTF_("%s[%u]: going into Rx full indicator loop (RTS=%u, CTS=%u)...\n", __func__, cpuid,
-			pl011_uart_rts, pl011_uart_cts);
-
-		uart_putc('@');
-		for(i=0; i < (3*1024*1024); i++);	
-
-		while(1){
-			pl011_uart_rxff = (mmio_read32(PL011_UART_FR_REG) & 0x40) >> 6;
-
-			if(pl011_uart_rxff){
-				pl011_uart_rts = (mmio_read32(PL011_UART_CR_REG) & 0x800) >> 11;
-				pl011_uart_cts = (mmio_read32(PL011_UART_FR_REG) & 0x1);
-
-				_XDPRINTF_("%s[%u]: RX FULL!! (RTS=%u, CTS=%u)\n", __func__, cpuid, pl011_uart_rts, pl011_uart_cts);
-				for(i=0; i < (3*1024*1024); i++);	
-			}
-		}
-	}
-	
-	HALT();
-#endif
 
 #if 1
-	{
-		unsigned int i;
-		unsigned int pl011_uart_rxff;
-		unsigned int num_count=0;
-		unsigned char ch;
-
-		unsigned int pl011_uart_rts;
-		unsigned int pl011_uart_cts;
-
-		pl011_uart_rts = !(mmio_read32(PL011_UART_CR_REG) & 0x800) >> 11;
-		pl011_uart_cts = !(mmio_read32(PL011_UART_FR_REG) & 0x1);
-		_XDPRINTF_("%s[%u]: RTS=%u, CTS=%u\n", __func__, cpuid,	pl011_uart_rts, pl011_uart_cts);
-
-		//wait a little for reception to begin hitting the UART
-		for(i=0; i < 12*1024*1024; i++);
-		_XDPRINTF_("%s[%u]: going into read loop...\n", __func__, cpuid);
-
-		pl011_uart_rxff = (mmio_read32(PL011_UART_FR_REG) & 0x40) >> 6;
-
-		if(pl011_uart_rxff){
-			_XDPRINTF_("%s[%u]: RX FULL!!\n", __func__, cpuid);
-			pl011_uart_rts = !(mmio_read32(PL011_UART_CR_REG) & 0x800) >> 11;
-			pl011_uart_cts = !(mmio_read32(PL011_UART_FR_REG) & 0x1);
-			_XDPRINTF_("%s[%u]: RTS=%u, CTS=%u\n", __func__, cpuid,	pl011_uart_rts, pl011_uart_cts);
-		}
-
-		while(uart_getc(&ch)){
-			_XDPRINTF_("%c|0x%02x\n", ch, ch);
-			num_count++;
-		}
-
-		_XDPRINTF_("%s[%u]: Total chars received=%u, Halting!\n", __func__, cpuid, num_count);
-		HALT();
-	}
-#endif
-
-
-#if 0
-	{
-		volatile unsigned int num_count=0;
-		u8 ch;
-		unsigned int i, j;
-
-		//send special character to start bulk transmission
-		uart_putc('@');
-
-		//now wait for the first character to get to us
-		while (1){
-			if(uart_getc(&ch)){
-				num_count++;
-				_XDPRINTF_("%c|0x%02x (%u)\n", ch, ch, num_count);
-			}
-		}
-		
-
-		_XDPRINTF_("num_count=%u\n", num_count);
-		HALT();
-
-	}
-#endif
-
-
-#if 0
-	{
-		unsigned int num_count=0;
-		u8 ch;
-		unsigned int i;
-		unsigned int pl011_uart_rts;
-		unsigned int pl011_uart_cts;
-		unsigned int pl011_uart_rxff;
-
-		pl011_uart_rts = (mmio_read32(PL011_UART_CR_REG) & 0x800) >> 11;
-		pl011_uart_cts = (mmio_read32(PL011_UART_FR_REG) & 0x1);
-		pl011_uart_rxff = (mmio_read32(PL011_UART_FR_REG) & 0x40) >> 6;
-
-		_XDPRINTF_("%s[%u]: PL011 UART RTS=%u\n", __func__, cpuid, pl011_uart_rts);
-		_XDPRINTF_("%s[%u]: PL011 UART CTS=%u\n", __func__, cpuid, pl011_uart_cts);
-		_XDPRINTF_("%s[%u]: PL011 UART RXFF=%u\n", __func__, cpuid, pl011_uart_rxff);
-
-		//test PL011 receive function
-		_XDPRINTF_("%s[%u]: going in for a few seconds delay...\n", __func__, cpuid);
-		while(num_count < 1024){
-				for(i=0; i < (48*1024); i++);	
-				num_count++;
-		}
-
-		//dump out contents of RTS pin
-		pl011_uart_rts = (mmio_read32(PL011_UART_CR_REG) & 0x800) >> 11;
-		pl011_uart_cts = (mmio_read32(PL011_UART_FR_REG) & 0x1);
-		pl011_uart_rxff = (mmio_read32(PL011_UART_FR_REG) & 0x40) >> 6;
-
-		if (pl011_uart_cts){
-				uart_puts(" AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n\n\n");
-				uart_puts(" AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n\n\n");
-				uart_puts(" AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n\n\n");
-				uart_puts(" AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n\n\n");
-				uart_puts(" AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n\n\n");
-				uart_puts(" AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n\n\n");
-				uart_puts(" AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n\n\n");
-				uart_puts(" AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n\n\n");
-				uart_puts(" AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n\n\n");
-				uart_puts(" AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n\n\n");
-				uart_puts(" AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n\n\n");
-				uart_puts(" AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n\n\n");
-				uart_puts(" AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n\n\n");
-				uart_puts(" AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n\n\n");
-				uart_puts(" AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n\n\n");
-				uart_puts(" AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n\n\n");
-				uart_puts(" AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n\n\n");
-				uart_puts(" AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n\n\n");
-				uart_puts(" AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n\n\n");
-				uart_puts(" AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n\n\n");
-				uart_puts(" AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n\n\n");
-				uart_puts(" AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n\n\n");
-				uart_puts(" AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n\n\n");
-				uart_puts(" AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n\n\n");
-
-		}else{
-				uart_puts(" BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB\n\n\n");
-				uart_puts(" BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB\n\n\n");
-				uart_puts(" BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB\n\n\n");
-				uart_puts(" BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB\n\n\n");
-				uart_puts(" BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB\n\n\n");
-				uart_puts(" BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB\n\n\n");
-				uart_puts(" BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB\n\n\n");
-				uart_puts(" BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB\n\n\n");
-				uart_puts(" BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB\n\n\n");
-				uart_puts(" BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB\n\n\n");
-				uart_puts(" BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB\n\n\n");
-				uart_puts(" BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB\n\n\n");
-				uart_puts(" BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB\n\n\n");
-				uart_puts(" BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB\n\n\n");
-				uart_puts(" BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB\n\n\n");
-				uart_puts(" BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB\n\n\n");
-				uart_puts(" BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB\n\n\n");
-				uart_puts(" BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB\n\n\n");
-				uart_puts(" BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB\n\n\n");
-				uart_puts(" BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB\n\n\n");
-				uart_puts(" BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB\n\n\n");
-				uart_puts(" BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB\n\n\n");
-
-		}
-	}
-#endif
-
-
-#if 0
-	//_XDPRINTF_("%s[%u]: halting, work-in-progress!\n", __func__, cpuid);
-	{
-		unsigned int i;
-		while(1){
-			_XDPRINTF_("num_count=%u\n", num_count);
-			for(i=0; i < (10* 1024 * 1024); i++);
-		}
-		HALT();
-	}
+	uart_testrecv();
+	HALT();
 #endif
 
 
@@ -805,4 +620,43 @@ void secondary_main(u32 cpuid){
 }
 
 
+
+//////
+// test functions
+//////
+/* UART receive test function */
+void uart_testrecv(void){
+    unsigned int i;
+    unsigned int pl011_uart_rxff;
+    unsigned int num_count;
+    unsigned char ch;
+
+    unsigned int pl011_uart_rts;
+    unsigned int pl011_uart_cts;
+
+    num_count=0;
+    pl011_uart_rts = !(mmio_read32(PL011_UART_CR_REG) & 0x800) >> 11;
+    pl011_uart_cts = !(mmio_read32(PL011_UART_FR_REG) & 0x1);
+    _XDPRINTF_("%s: RTS=%u, CTS=%u\n", __func__, pl011_uart_rts, pl011_uart_cts);
+
+    //wait a little for reception to begin hitting the UART
+    for(i=0; i < 12*1024*1024; i++);
+    _XDPRINTF_("%s: going into read loop...\n", __func__);
+
+    pl011_uart_rxff = (mmio_read32(PL011_UART_FR_REG) & 0x40) >> 6;
+
+    if(pl011_uart_rxff){
+        _XDPRINTF_("%s: RX FULL!!\n", __func__);
+        pl011_uart_rts = !(mmio_read32(PL011_UART_CR_REG) & 0x800) >> 11;
+        pl011_uart_cts = !(mmio_read32(PL011_UART_FR_REG) & 0x1);
+        _XDPRINTF_("%s: RTS=%u, CTS=%u\n", __func__,	pl011_uart_rts, pl011_uart_cts);
+    }
+
+    while(uart_getc(&ch)){
+        _XDPRINTF_("%c|0x%02x\n", ch, ch);
+        num_count++;
+    }
+
+    _XDPRINTF_("%s: Total chars received=%u\n", __func__, num_count);
+}
 

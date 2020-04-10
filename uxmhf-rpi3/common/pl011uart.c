@@ -41,6 +41,7 @@
 #include <types.h>
 #include <bcm2837.h>
 #include <mailbox.h>
+#include <uart.h>
 #include <pl011uart.h>
 
 
