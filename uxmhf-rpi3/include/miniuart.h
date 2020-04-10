@@ -48,6 +48,7 @@
 void bcm2837_miniuart_init(void);
 void bcm2837_miniuart_putc(u8 ch);
 void bcm2837_miniuart_puts(char *buffer);
+bool bcm2837_miniuart_getc(u8 *recv_ch);
 void bcm2837_miniuart_flush(void);
 
 

@@ -43,6 +43,7 @@ export DMAPROT := @DMAPROT@
 export ENABLE_UAPP_UHSIGN := @ENABLE_UAPP_UHSIGN@
 export ENABLE_DEBUG_UART := @ENABLE_DEBUG_UART@
 export ENABLE_DEBUG_UART_PL011 := @ENABLE_DEBUG_UART_PL011@
+export ENABLE_DEBUG_UART_PL011_CTSRTS := @ENABLE_DEBUG_UART_PL011_CTSRTS@
 
 
 INCS = -I$(UXMHFRPI3_DIR)/libs/libxmhfc/include
@@ -81,6 +82,10 @@ endif
 
 ifeq ($(ENABLE_DEBUG_UART_PL011),y)
 	CFLAGS_DEFS += -D__DEBUG_UART_PL011__
+endif
+
+ifeq ($(ENABLE_DEBUG_UART_PL011_CTSRTS),y)
+	CFLAGS_DEFS += -D__DEBUG_UART_PL011_CTSRTS__
 endif
 
 CFLAGS = $(CFLAGS_DEFS) -c -Wall -nostdlib -nostartfiles -ffreestanding -mcpu=cortex-a53

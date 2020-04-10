@@ -440,6 +440,7 @@ void main(u32 r0, u32 id, struct atag *at, u32 cpuid){
 	u32 hvbar, hcr, spsr_hyp;
 	u64 boardserial;
 
+
 	_XDPRINTF_("%s[%u]: ENTER: sp=0x%08x (cpu_stacks=0x%08x)\n", __func__, cpuid,
 			cpu_read_sp(), &cpu_stacks);
 	_XDPRINTF_("%s[%u]: r0=0x%08x, id=0x%08x, ATAGS=0x%08x\n", __func__, cpuid, r0, id, at);
@@ -461,6 +462,11 @@ void main(u32 r0, u32 id, struct atag *at, u32 cpuid){
 	_XDPRINTF_("%s[%u]: board serial=0x%016llx\n", __func__, cpuid, boardserial);
 #endif
 
+
+#if 0
+	uart_testrecv();
+	HALT();
+#endif
 
 
 	//initialize base hardware platform
@@ -614,4 +620,43 @@ void secondary_main(u32 cpuid){
 }
 
 
+
+//////
+// test functions
+//////
+/* UART receive test function */
+void uart_testrecv(void){
+    unsigned int i;
+    unsigned int pl011_uart_rxff;
+    unsigned int num_count;
+    unsigned char ch;
+
+    unsigned int pl011_uart_rts;
+    unsigned int pl011_uart_cts;
+
+    num_count=0;
+    pl011_uart_rts = !(mmio_read32(PL011_UART_CR_REG) & 0x800) >> 11;
+    pl011_uart_cts = !(mmio_read32(PL011_UART_FR_REG) & 0x1);
+    _XDPRINTF_("%s: RTS=%u, CTS=%u\n", __func__, pl011_uart_rts, pl011_uart_cts);
+
+    //wait a little for reception to begin hitting the UART
+    for(i=0; i < 12*1024*1024; i++);
+    _XDPRINTF_("%s: going into read loop...\n", __func__);
+
+    pl011_uart_rxff = (mmio_read32(PL011_UART_FR_REG) & 0x40) >> 6;
+
+    if(pl011_uart_rxff){
+        _XDPRINTF_("%s: RX FULL!!\n", __func__);
+        pl011_uart_rts = !(mmio_read32(PL011_UART_CR_REG) & 0x800) >> 11;
+        pl011_uart_cts = !(mmio_read32(PL011_UART_FR_REG) & 0x1);
+        _XDPRINTF_("%s: RTS=%u, CTS=%u\n", __func__,	pl011_uart_rts, pl011_uart_cts);
+    }
+
+    while(uart_getc(&ch)){
+        _XDPRINTF_("%c|0x%02x\n", ch, ch);
+        num_count++;
+    }
+
+    _XDPRINTF_("%s: Total chars received=%u\n", __func__, num_count);
+}
 
