@@ -47,28 +47,6 @@
 extern u32 mmio_read32 (u32 address);
 extern void mmio_write32 (u32 address, u32 value);
 
-#if defined (__DEBUG_UART_PL011_CTSRTS__)
-/* UART initialize hardware flow control */
-void bcm2837_pl011uart_init_hwflowcontrol(void){
-    register unsigned int r;
-    unsigned int i;
-
-    // GPIO 16 for CTS0 and 17 for RTS0
-    r=mmio_read32(GPFSEL1);
-    r |= 0x00fc0000; 
-    mmio_write32(GPFSEL1, r);
-
-    // enable pins 16 and 17
-    mmio_write32(GPPUD, 0);            
-    for(i=0; i<150; i++);
-
-    mmio_write32(GPPUDCLK0, (1<<16)|(1<<17));
-    for(i=0; i<150; i++);
-
-    mmio_write32(GPPUDCLK0,0);  // flush GPIO setup
-}
-#endif
-
 
 /* UART initialization function */
 void bcm2837_pl011uart_init(void){
@@ -95,27 +73,45 @@ void bcm2837_pl011uart_init(void){
     r=mmio_read32(GPFSEL1);
     r &= ~((7<<12) | (7<<15)); // gpio14, gpio15
     r |= (4<<12) | (4<<15);    // alt0
+
+#if defined (__DEBUG_UART_PL011_CTSRTS__)
+    r |= 0x00fc0000; 
+#endif
+
     mmio_write32(GPFSEL1, r);
 
 
-    mmio_write32(GPPUD, 0);            // enable pins 14 and 15
+    mmio_write32(GPPUD, 0);            // remove current pullup/pulldown configuration
+
     for(i=0; i<150; i++);
 
+#if defined (__DEBUG_UART_PL011_CTSRTS__)
+    mmio_write32(GPPUDCLK0, (1<<14)|(1<<15)|(1<<16)|(1<<17) );
+#else
     mmio_write32(GPPUDCLK0, (1<<14)|(1<<15));
+#endif
+
     for(i=0; i<150; i++);
+
+    mmio_write32(GPPUD, 0);     // flush GPIO setup
 
     mmio_write32(GPPUDCLK0,0);  // flush GPIO setup
 
-#if defined (__DEBUG_UART_PL011_CTSRTS__)
-    //enable h/w flow control
-    bcm2837_pl011uart_init_hwflowcontrol();
-#endif
 
     mmio_write32(PL011_UART_ICR_REG, 0x7FF);    // clear interrupts
     mmio_write32(PL011_UART_IBRD_REG, 2);       // 115200 baud
     mmio_write32(PL011_UART_FBRD_REG, 0xB);
-    mmio_write32(PL011_UART_LCR_REG, 0b11<<5);  // 8n1
-    mmio_write32(PL011_UART_CR_REG, 0x301);     // enable Tx, Rx, FIFO
+    mmio_write32(PL011_UART_LCR_REG, 0x0);      // flush transmit fifo
+    
+    for(i=0; i<150; i++);
+    
+    mmio_write32(PL011_UART_LCR_REG, 0x72);  // 8 bits, odd parity, 1 stop bit, enable FIFO
+
+#if defined (__DEBUG_UART_PL011_CTSRTS__)
+    mmio_write32(PL011_UART_CR_REG, 0xC301);     // enable CTS, RTS, Tx, Rx 
+#else
+    mmio_write32(PL011_UART_CR_REG, 0x301);     // enable Tx, Rx
+#endif
 }
 
 
