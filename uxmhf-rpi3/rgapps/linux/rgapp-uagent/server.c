@@ -94,6 +94,7 @@ void func(int sockfd) {
     bzero(buff, sizeof(buff));
     bzero(encBuff, sizeof(encBuff));
     bzero(decBuff, sizeof(decBuff));
+    memset(&uhcp.pkt_size, 0, 1600);
 
     read(sockfd, encBuff, sizeof(encBuff));
 
@@ -109,7 +110,7 @@ void func(int sockfd) {
     do_ucrypt((void *)&uhcp);
     memcpy(&decBuff[4], &uhcp.pkt_data, uhcp.pkt_size);
     decBuff[0]=uhcp.pkt_size;
-    strncpy(buff, &decBuff[4], decBuff[0]);
+    memcpy(buff, &decBuff[4], (uint32_t) decBuff[0]);
 
     printf("From Client : %s", buff);
     if ((strncmp(buff, "exit", 4))==0){
@@ -120,7 +121,7 @@ void func(int sockfd) {
     bzero(buff, sizeof(buff));
     bzero(encBuff, sizeof(encBuff));
     bzero(decBuff, sizeof(decBuff));    
-    bzero(uhcp.pkt_data, 1600);
+    memset(&uhcp.pkt_data, 0, 1600);
     
     printf("Enter the string : ");
     n=0;
@@ -130,7 +131,8 @@ void func(int sockfd) {
     uhcp.op=1; //encrypt
     do_ucrypt((void *)&uhcp);
     memcpy(&encBuff[4], &uhcp.pkt_data, cryptLen(uhcp.pkt_size));
-    encBuff[0]=cryptLen(uhcp.pkt_size);
+    encBuff[0]=cryptLen(uhcp.pkt_size);    
+
 
     printf("sending...");
     for(i=0; i<uhcp.pkt_size; i++)
@@ -187,7 +189,7 @@ int main() {
   else
     printf("server accepted the client.\n");
   
-  func(sockfd);
+  func(connfd);
   
   close(sockfd);
 }
