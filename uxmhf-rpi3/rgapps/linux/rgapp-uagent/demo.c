@@ -73,6 +73,13 @@ void do_ucrypt(void *bufptr) {
 int main() {
   uint8_t *data=(uint8_t *)"hello world";
   uint32_t data_len=11;
+
+  printf("input: ");
+  uint32_t i;
+  for(i=0;i<data_len;i++)
+    printf("%02x", data[i]);
+  printf("\n");  
+  
   memcpy(&uhcp.pkt_data, data, data_len); 
   uhcp.pkt_size=data_len;
   uhcp.vaddr = (uint32_t)&uhcp;

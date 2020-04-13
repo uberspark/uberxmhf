@@ -69,12 +69,18 @@ void do_ucrypt(void *bufptr) {
   else
     printf("SUCCESS\n");
 
-
   printf("output: ");
   uint32_t i;
-  for(i=0;i<uhcp.pkt_size;i++)
+  for(i=0;i<ptr_uhcp->pkt_size;i++)
     printf("%02x", ptr_uhcp->pkt_data[i]);
   printf("\n");
+}
+
+int cryptLen(int in_len){
+  int numBlocks=in_len/16;
+  if(in_len%16)
+    numBlocks++;
+  return numBlocks*16;
 }
 
 void func(int sockfd) {
@@ -90,9 +96,16 @@ void func(int sockfd) {
     bzero(decBuff, sizeof(decBuff));
 
     read(sockfd, encBuff, sizeof(encBuff));
-    memcpy(&uhcp.pkt_data, &encBuff[4], encBuff[0]); 
-    uhcp.pkt_size=encBuff[0];
-    uhcp.op=1; //encrypt
+
+    int i;
+    printf("received...");
+    for(i=0; i<encBuff[0]; i++)
+      printf("%02x", encBuff[i+4]);
+    printf("\n");
+    
+    memcpy(&uhcp.pkt_data, &encBuff[4], (uint32_t) encBuff[0]); 
+    uhcp.pkt_size=(uint32_t)encBuff[0];
+    uhcp.op=2; //decrypt
     do_ucrypt((void *)&uhcp);
     memcpy(&decBuff[4], &uhcp.pkt_data, uhcp.pkt_size);
     decBuff[0]=uhcp.pkt_size;
@@ -116,10 +129,15 @@ void func(int sockfd) {
     uhcp.pkt_size=n;
     uhcp.op=1; //encrypt
     do_ucrypt((void *)&uhcp);
-    memcpy(&encBuff[4], &uhcp.pkt_data, uhcp.pkt_size);
-    encBuff[0]=uhcp.pkt_size;
+    memcpy(&encBuff[4], &uhcp.pkt_data, cryptLen(uhcp.pkt_size));
+    encBuff[0]=cryptLen(uhcp.pkt_size);
+
+    printf("sending...");
+    for(i=0; i<uhcp.pkt_size; i++)
+      printf("%02x", encBuff[i+4]);
+    printf("\n");
     
-    write(sockfd, encBuff, uhcp.pkt_size+4);
+    write(sockfd, encBuff, cryptLen(uhcp.pkt_size)+4);
     if((strncmp(buff, "exit", 4))==0){
       printf("Server Exit...\n");
       break;

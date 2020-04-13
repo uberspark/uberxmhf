@@ -152,8 +152,14 @@ uint32_t calc_crypto_size(uint32_t input_size){
   return num_blocks*BLOCK_SIZE;
 }
  
-__attribute__((section(".data"))) uint8_t key[]="super_secret_key";
-__attribute__((section(".data"))) uint8_t iv[]="1234567890123456";
+__attribute__((section(".data"))) uint8_t key[16]={
+  0x73, 0x75, 0x70, 0x65, 0x72, 0x5f, 0x73, 0x65, 0x63, 0x72, 0x65,
+  0x74, 0x5f, 0x6b, 0x65, 0x79
+}; //"super_secret_key"
+__attribute__((section(".data"))) uint8_t iv[16]={
+  0x31, 0x32, 0x33, 0x34, 0x035, 0x36, 0x37, 0x38, 0x39, 0x30, 0x31,
+  0x32, 0x33, 0x34, 0x35, 0x36
+}; //"1234567890123456"
 #define KEY_SIZE (sizeof(key))
 
 bool uapp_uagent_handlehcall(u32  uhcall_function, void *uhcall_buffer, u32 uhcall_buffer_len)
@@ -171,7 +177,7 @@ bool uapp_uagent_handlehcall(u32  uhcall_function, void *uhcall_buffer, u32 uhca
   #endif
 
   //call acl function
-  uapp_uagent_checkacl(sysreg_read_elrhyp());
+  //uapp_uagent_checkacl(sysreg_read_elrhyp());
 
   //Call AES_CBC function(s)
   symmetric_CBC cbc_ctx;
@@ -179,7 +185,7 @@ bool uapp_uagent_handlehcall(u32  uhcall_function, void *uhcall_buffer, u32 uhca
 
   memset(data_buffer, 0, 1600);
 
-  if(rijndael_cbc_start(iv, key, KEY_SIZE, 0, cbc_ctx)) {
+  if(rijndael_cbc_start(iv, key, KEY_SIZE, 0, &cbc_ctx)) {
     return false;
   }
   
