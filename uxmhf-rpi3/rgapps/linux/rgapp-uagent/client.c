@@ -66,12 +66,13 @@ void do_ucrypt(void *bufptr) {
   uagent_param_t *ptr_uhcp = (uagent_param_t *)bufptr;
   if(!uhcall(UAPP_UAGENT_FUNCTION_SIGN, ptr_uhcp, sizeof(uagent_param_t)))
     printf("hypercall FAILED\n");
-
+  /*
   printf("output: ");
   uint32_t i;
   for(i=0;i<ptr_uhcp->pkt_size;i++)
     printf("%02x", ptr_uhcp->pkt_data[i]);
   printf("\n");
+  */
 }
 
 int cryptLen(int in_len){
@@ -104,12 +105,13 @@ void func(int sockfd) {
     memcpy(&encBuff[4], &uhcp.pkt_data, cryptLen(uhcp.pkt_size));
     encBuff[0]=cryptLen(uhcp.pkt_size);
 
+    /*
     int i;
     printf("sending...");
     for(i=0; i<(uhcp.pkt_size); i++)
       printf("%02x", encBuff[i+4]);
     printf("\n");
-
+    */
     
     write(sockfd, encBuff, cryptLen(uhcp.pkt_size)+4);
     if((strncmp(buff, "exit", 4))==0){
@@ -124,10 +126,12 @@ void func(int sockfd) {
     
     read(sockfd, encBuff, sizeof(encBuff));
 
+    /*
     printf("received...");
     for(i=0; i<encBuff[0]; i++)
       printf("%02x", encBuff[i+4]);
     printf("\n");
+    */
     
     memcpy(&uhcp.pkt_data, &encBuff[4], encBuff[0]); 
     uhcp.pkt_size=encBuff[0];
