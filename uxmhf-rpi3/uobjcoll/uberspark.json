@@ -32,7 +32,7 @@
 
 		/* uobjcoll public methods */
 		"publicmethods" : {
-			"uberspark/uobjcoll/platform/rpi3/uxmhf" : {
+			"uberspark/uobjcoll/platform/rpi3/uxmhf/main" : {
 				"main" : [ "call" ]
 			}
 		}	

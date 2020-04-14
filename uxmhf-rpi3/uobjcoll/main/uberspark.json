@@ -24,7 +24,7 @@
 		"sources" : {
 		    "h-files": [ "include/arm8-32.h", "include/atags.h",
 				 "include/bcm2837.h", "include/config.h",
-				 "include/cxtrace.h", "include/debug.h",
+				 "include/ctxtrace.h", "include/debug.h",
 				 "include/dmaprot.h", "include/fdt.h",
 				 "include/guestos.h", "include/mailbox.h",
 				 "include/miniuart.h", "include/pa5encfs.h",
