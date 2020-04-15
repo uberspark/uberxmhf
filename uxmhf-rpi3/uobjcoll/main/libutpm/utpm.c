@@ -43,13 +43,13 @@
 //#include <miniuart.h>
 //#include <debug.h>
 
-#include <uberspark/uobjcoll/platform/rpi3/uxmhf/include/libxmhfc/string.h>
-#include <uberspark/uobjcoll/platform/rpi3/uxmhf/include/libxmhfcrypto/xmhfcrypto.h>
-#include <uberspark/uobjcoll/platform/rpi3/uxmhf/include/libxmhfcrypto/sha1.h>
-#include <uberspark/uobjcoll/platform/rpi3/uxmhf/include/libxmhfcrypto/aes.h>
-#include <uberspark/uobjcoll/platform/rpi3/uxmhf/include/libxmhfcrypto/hmac-sha1.h>
+#include <uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/libxmhfc/string.h>
+#include <uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/libxmhfcrypto/xmhfcrypto.h>
+#include <uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/libxmhfcrypto/sha1.h>
+#include <uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/libxmhfcrypto/aes.h>
+#include <uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/libxmhfcrypto/hmac-sha1.h>
 
-#include <uberspark/uobjcoll/platform/rpi3/uxmhf/include/libutpm/utpm.h>
+#include <uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/libutpm/utpm.h>
 #include <uberspark/include/uberspark.h>
 
 //////

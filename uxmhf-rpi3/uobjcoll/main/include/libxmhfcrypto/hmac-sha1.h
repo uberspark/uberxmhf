@@ -38,7 +38,7 @@
 
 #ifndef __ASSEMBLY__
 
-#include <uberspark/uobjcoll/platform/rpi3/uxmhf/include/libxmhfcrypto/xmhfcrypto.h>
+#include <uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/libxmhfcrypto/xmhfcrypto.h>
 #include <uberspark/include/uberspark.h>
 
 int hmac_sha1_init(hmac_state *hmac, const unsigned char *key, unsigned long keylen);

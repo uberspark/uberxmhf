@@ -38,7 +38,7 @@
 #ifndef __STDDEF_H__
 #define __STDDEF_H__
 
-#include <uberspark/uobjcoll/platform/rpi3/uxmhf/include/libxmhfc/stdint.h>
+#include <uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/libxmhfc/stdint.h>
 #include <uberspark/include/uberspark.h>
 
 #ifndef NULL

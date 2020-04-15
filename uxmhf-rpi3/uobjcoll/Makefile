@@ -17,4 +17,4 @@ all:
 
 .PHONY: clean
 clean: 
-	rm -rf uobjcoll/_build
+	rm -rf _build

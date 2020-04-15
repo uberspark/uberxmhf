@@ -38,13 +38,13 @@
 	author: amit vasudevan (amitvasudevan@acm.org)
 */
 
-#include <uberspark/uobjcoll/platform/rpi3/uxmhf/include/libxmhfc/types.h>
-#include <uberspark/uobjcoll/platform/rpi3/uxmhf/include/arm8-32.h>
-#include <uberspark/uobjcoll/platform/rpi3/uxmhf/include/bcm2837.h>
-#include <uberspark/uobjcoll/platform/rpi3/uxmhf/include/uart.h>
-#include <uberspark/uobjcoll/platform/rpi3/uxmhf/include/debug.h>
+#include <uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/types.h>
+#include <uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/arm8-32.h>
+#include <uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/bcm2837.h>
+#include <uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/uart.h>
+#include <uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/debug.h>
 
-#include <uberspark/uobjcoll/platform/rpi3/uxmhf/include/uhcalltest.h>
+#include <uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/uhcalltest.h>
 #include <uberspark/include/uberspark.h>
 
 #define MAX_LVL1_ENTRIES	4096

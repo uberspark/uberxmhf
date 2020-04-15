@@ -45,9 +45,9 @@
 #if defined (__DEBUG_UART__)
 
 	#if defined (__DEBUG_UART_PL011__)
-		#include <uberspark/uobjcoll/platform/rpi3/uxmhf/include/pl011uart.h>
+		#include <uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/pl011uart.h>
 	#else
-		#include <uberspark/uobjcoll/platform/rpi3/uxmhf/include/miniuart.h>
+		#include <uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/miniuart.h>
 	#endif
 
 #endif

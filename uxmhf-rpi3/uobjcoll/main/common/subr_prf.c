@@ -78,9 +78,9 @@
  */
 
 
-#include <uberspark/uobjcoll/platform/rpi3/uxmhf/include/libxmhfc/stdint.h>
-#include <uberspark/uobjcoll/platform/rpi3/uxmhf/include/libxmhfc/stddef.h>
-#include <uberspark/uobjcoll/platform/rpi3/uxmhf/include/libxmhfc/ctype.h>
+#include <uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/libxmhfc/stdint.h>
+#include <uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/libxmhfc/stddef.h>
+#include <uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/libxmhfc/ctype.h>
 #include <uberspark/include/uberspark.h>
 
 //#include <sys/libkern.h>

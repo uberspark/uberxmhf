@@ -32,8 +32,8 @@
  *
  */
 
-#include <uberspark/uobjcoll/platform/rpi3/uxmhf/include/libxmhfc/stdint.h>
-#include <uberspark/uobjcoll/platform/rpi3/uxmhf/include/libxmhfc/string.h>
+#include <uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/libxmhfc/stdint.h>
+#include <uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/libxmhfc/string.h>
 #include <uberspark/include/uberspark.h>
 
 #if 0

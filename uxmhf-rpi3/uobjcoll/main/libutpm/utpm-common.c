@@ -44,7 +44,7 @@
 //#include <debug.h>
 
 #include <string.h>
-#include <uberspark/uobjcoll/platform/rpi3/uxmhf/include/libutpm/utpm.h>
+#include <uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/libutpm/utpm.h>
 #include <uberspark/include/uberspark.h>
 
 void utpm_pcr_select_i(TPM_PCR_SELECTION *tpmsel, uint32_t i) {

@@ -41,12 +41,12 @@
 #ifndef __TYPES_H__
 #define __TYPES_H__
 
-#include <uberspark/uobjcoll/platform/rpi3/uxmhf/include/config.h>
-#include <uberspark/uobjcoll/platform/rpi3/uxmhf/include/libxmhfc/stdint.h>
-#include <uberspark/uobjcoll/platform/rpi3/uxmhf/include/libxmhfc/stdbool.h>
-#include <uberspark/uobjcoll/platform/rpi3/uxmhf/include/libxmhfc/stddef.h>
-#include <uberspark/uobjcoll/platform/rpi3/uxmhf/include/libxmhfc/stdarg.h>
-#include <uberspark/uobjcoll/platform/rpi3/uxmhf/include/libxmhfc/string.h>
+#include <uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/config.h>
+#include <uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/libxmhfc/stdint.h>
+#include <uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/libxmhfc/stdbool.h>
+#include <uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/libxmhfc/stddef.h>
+#include <uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/libxmhfc/stdarg.h>
+#include <uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/libxmhfc/string.h>
 
 
 #ifndef __ASSEMBLY__

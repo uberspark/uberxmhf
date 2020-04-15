@@ -38,9 +38,9 @@
 	author: amit vasudevan (amitvasudevan@acm.org)
 */
 
-#include <uberspark/uobjcoll/platform/rpi3/uxmhf/include/types.h>
-#include <uberspark/uobjcoll/platform/rpi3/uxmhf/include/bcm2837.h>
-#include <uberspark/uobjcoll/platform/rpi3/uxmhf/include/miniuart.h>
+#include <uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/types.h>
+#include <uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/bcm2837.h>
+#include <uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/miniuart.h>
 #include <uberspark/include/uberspark.h>
 
 
