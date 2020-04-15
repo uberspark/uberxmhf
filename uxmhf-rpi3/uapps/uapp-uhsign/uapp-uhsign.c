@@ -144,8 +144,8 @@ void uapp_uhsign_checkacl(uint32_t va){
 }
 
 
-__attribute__((section(".data"))) unsigned char key[]="super_secret_key_for_hmac";
-#define KEY_SIZE (sizeof(key))
+__attribute__((section(".data"))) unsigned char uhsign_key[]="super_secret_key_for_hmac";
+#define UHSIGN_KEY_SIZE (sizeof(uhsign_key))
 
 bool uapp_uhsign_handlehcall(u32  uhcall_function, void *uhcall_buffer, u32 uhcall_buffer_len)
 {
@@ -169,7 +169,7 @@ bool uapp_uhsign_handlehcall(u32  uhcall_function, void *uhcall_buffer, u32 uhca
   unsigned char *digest_result;
   int i;
 
-  if(hmac_sha1_memory(key, (unsigned long) KEY_SIZE, (unsigned char *) uhcp->pkt, (unsigned long) uhcp->pkt_size, digest_result, &digest_size)==CRYPT_OK) {
+  if(hmac_sha1_memory(uhsign_key, (unsigned long) UHSIGN_KEY_SIZE, (unsigned char *) uhcp->pkt, (unsigned long) uhcp->pkt_size, digest_result, &digest_size)==CRYPT_OK) {
     for(i=0;i<digest_size;i++) {
       uhcp->digest[i]=(uint8_t)*(digest_result+i);
     }

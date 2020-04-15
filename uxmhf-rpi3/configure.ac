@@ -104,6 +104,16 @@ AS_IF([test "x${enable_uapp_uhsign}" != "xno"],
       [ENABLE_UAPP_UHSIGN=y],
       [ENABLE_UAPP_UHSIGN=n])
 
+# selectively enable/disable AES encryption functionality in hypervisor
+AC_SUBST([ENABLE_UAPP_UAGENT])
+AC_ARG_ENABLE([uapp_uagent],
+	AS_HELP_STRING([--enable-uapp-uagent@<:@=yes|no@:>@],
+		[enable signing uapp]),
+		, [enable_uapp_uagent=no])
+AS_IF([test "x${enable_uapp_uagent}" != "xno"],
+      [ENABLE_UAPP_UAGENT=y],
+      [ENABLE_UAPP_UAGENT=n])
+
 
 # selectively enable/disable debugging via UART
 AC_SUBST([ENABLE_DEBUG_UART])
