@@ -58,14 +58,14 @@
 
 
 // golden white-listing hash for libuhcall code
-uint8_t whitelist_hash[] = {
+uint8_t uagent_whitelist_hash[] = {
         0x8f, 0xd1, 0x2d, 0x2a, 0xb8, 
         0x68, 0x0f, 0x67, 0x1f, 0x81,
         0xc8, 0xe3, 0x47, 0x69, 0x7d, 
         0x86, 0x05, 0x4d, 0xd9, 0xfd
 };
-#define HASH_SIZE (sizeof(whitelist_hash)/sizeof(unsigned char))
-#define WHITELIST_COMPARE_BYTES 32
+#define HASH_SIZE (sizeof(uagent_whitelist_hash)/sizeof(unsigned char))
+#define UAGENT_WHITELIST_COMPARE_BYTES 32
 
 
 //check white-listing hash with a memory regions specified by
@@ -82,7 +82,7 @@ bool uapp_uagent_check_whitelist(uint32_t paddr, uint32_t size){
       _XDPRINTFSMP_("0x%02x ", computed_hash[i]);
      _XDPRINTFSMP_("\n\n");
     #endif
-    if (memcmp (computed_hash, whitelist_hash, HASH_SIZE) != 0) {
+     if (memcmp (computed_hash, uagent_whitelist_hash, HASH_SIZE) != 0) {
       //hash did not match
       return false;
     }else{
@@ -130,7 +130,7 @@ void uapp_uagent_checkacl(uint32_t va){
       #if 0
       _XDPRINTFSMP_("va to pa mapping=0x%08x\n", __func__, paddr);
       #endif
-      if(uapp_uagent_check_whitelist(paddr, WHITELIST_COMPARE_BYTES)){
+      if(uapp_uagent_check_whitelist(paddr, UAGENT_WHITELIST_COMPARE_BYTES)){
           //_XDPRINTFSMP_("ACL passed\n");
           //acl passed
       }else{
