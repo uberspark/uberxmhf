@@ -44,7 +44,6 @@
 #include <uart.h>
 #include <debug.h>
 
-
 extern void uapp_watchdog_fiq_handler(void);
 
 __attribute__((section(".data"))) volatile u32 *gpio;

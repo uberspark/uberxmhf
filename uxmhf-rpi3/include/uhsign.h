@@ -2,7 +2,6 @@
 #define __UHSIGN_H__
 
 #include <stdint.h>
-#include <inttypes.h>
 
 #define UAPP_UHSIGN_FUNCTION_SIGN    0x69
 #define HMAC_DIGEST_SIZE 20

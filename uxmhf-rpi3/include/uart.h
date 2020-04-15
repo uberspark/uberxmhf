@@ -43,12 +43,13 @@
 #define __UART_H__
 
 #if defined (__ENABLE_UART_PL011__)
-	#include <pl011uart.h>
+    #include <pl011uart.h>
 #elif defined (__ENABLE_UART_MINI__)
-	#include <miniuart.h>
+    #include <miniuart.h>
 #else
-	//
+//
 #endif
+
 
 
 #ifndef __ASSEMBLY__

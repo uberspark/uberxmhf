@@ -69,6 +69,7 @@
 
 #include <stdint.h>
 #include <string.h>
+
 /*
 char *
 strchr(const char *p, int ch)

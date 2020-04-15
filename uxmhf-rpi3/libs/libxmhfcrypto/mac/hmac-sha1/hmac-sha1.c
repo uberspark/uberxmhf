@@ -44,12 +44,10 @@
 //#include <miniuart.h>
 //#include <debug.h>
 
-
 #include <string.h>
 #include <xmhfcrypto.h>
 #include <sha1.h>
 #include <hmac-sha1.h>
-
 
 #define LTC_HMAC_SHA1_BLOCKSIZE 64
 

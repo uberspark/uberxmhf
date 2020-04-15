@@ -44,6 +44,7 @@
 //#include <debug.h>
 
 #include <string.h>
+
 #include <utpm.h>
 
 void utpm_pcr_select_i(TPM_PCR_SELECTION *tpmsel, uint32_t i) {

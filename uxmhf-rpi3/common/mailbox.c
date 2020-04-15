@@ -38,12 +38,13 @@
 	author: amit vasudevan (amitvasudevan@acm.org)
 */
 
-#include <types.h>
-#include <arm8-32.h>
-#include <bcm2837.h>
-#include <mailbox.h>
-#include <uart.h>
-#include <debug.h>
+#include <uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/types.h>
+#include <uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/arm8-32.h>
+#include <uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/bcm2837.h>
+#include <uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/mailbox.h>
+#include <uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/uart.h>
+#include <uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/debug.h>
+#include <uberspark/include/uberspark.h>
 
 //mailbox message buffer
 //has to be aligned on a 16 byte boundary

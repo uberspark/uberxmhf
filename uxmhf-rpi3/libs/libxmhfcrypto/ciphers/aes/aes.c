@@ -68,16 +68,6 @@
 #include <xmhfcrypto.h>
 #include <aes.h>
 
-/*
-#define LTC_RIJNDAEL
-//undef ENCRYPT_ONLY
-#define __LTC_AES_TAB_C__
-//undef LTC_SMALL_CODE
-//undef _MSC_VER
-//undef LTC_CLEAN_STACK
-#define LTC_TEST
-*/
-
 #define SETUP    rijndael_setup
 #define ECB_ENC  rijndael_ecb_encrypt
 #define ECB_DEC  rijndael_ecb_decrypt
@@ -91,20 +81,6 @@ const struct ltc_cipher_descriptor rijndael_desc =
     6,
     16, 32, 16, 10
 };
-
-/*
-const struct ltc_cipher_descriptor aes_desc =
-{
-    "aes",
-    6,
-    16, 32, 16, 10,
-    SETUP, ECB_ENC, ECB_DEC, ECB_TEST, ECB_DONE, ECB_KS,
-    NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL
-};
-*/
-
-//#define __LTC_AES_TAB_C__
-//#include "aes_tab.c"
 
 static u32 setup_mix(u32 temp)
 {
