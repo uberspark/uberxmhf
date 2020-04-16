@@ -1,0 +1,87 @@
+OSKRNLIMG_SIZE=4235480
+OSKRNLIMG_ENDADDR=4268248
+OSKRNLIMG_PADSIZE=12508968
+OSKRNLIMG_FINALSIZE=16744448
+#
+#
+#@echo 16744448
+#@echo 0x00ff8000
+cp /home/slab/uxmhf-rpi3-staging/kernel7.img ./oskrnlimg.tmp
+truncate --size=16744448 ./oskrnlimg.tmp 
+#./configure --with-core-startaddr=0x00ff8000 --with-core-size=0xC00000
+#./configure --with-core-startaddr=0x1000000 --with-core-size=0xC00000
+cd libs/libxmhfc && make -w all
+make[1]: Entering directory '/home/slab/Code/uberxmhf/uxmhf-rpi3/libs/libxmhfc'
+mkdir -p _objs_libxmhfc
+Building memmove.o from memmove.c
+arm-linux-gnueabihf-gcc -c -I/home/slab/Code/uberxmhf/uxmhf-rpi3/libs/libxmhfc/include -I/home/slab/Code/uberxmhf/uxmhf-rpi3/libs/libxmhfcrypto/include -I/home/slab/Code/uberxmhf/uxmhf-rpi3/libs/libutpm/include -I./include -I../include   -D__ENABLE_UAPP_UHSIGN__ -D__ENABLE_UAPP_UAGENT__ -c -Wall -nostdlib -nostartfiles -ffreestanding -mcpu=cortex-a53 -o _objs_libxmhfc/memmove.o memmove.c
+mkdir -p _objs_libxmhfc
+Building strnlen.o from strnlen.c
+arm-linux-gnueabihf-gcc -c -I/home/slab/Code/uberxmhf/uxmhf-rpi3/libs/libxmhfc/include -I/home/slab/Code/uberxmhf/uxmhf-rpi3/libs/libxmhfcrypto/include -I/home/slab/Code/uberxmhf/uxmhf-rpi3/libs/libutpm/include -I./include -I../include   -D__ENABLE_UAPP_UHSIGN__ -D__ENABLE_UAPP_UAGENT__ -c -Wall -nostdlib -nostartfiles -ffreestanding -mcpu=cortex-a53 -o _objs_libxmhfc/strnlen.o strnlen.c
+mkdir -p _objs_libxmhfc
+Building strcmp.o from strcmp.c
+arm-linux-gnueabihf-gcc -c -I/home/slab/Code/uberxmhf/uxmhf-rpi3/libs/libxmhfc/include -I/home/slab/Code/uberxmhf/uxmhf-rpi3/libs/libxmhfcrypto/include -I/home/slab/Code/uberxmhf/uxmhf-rpi3/libs/libutpm/include -I./include -I../include   -D__ENABLE_UAPP_UHSIGN__ -D__ENABLE_UAPP_UAGENT__ -c -Wall -nostdlib -nostartfiles -ffreestanding -mcpu=cortex-a53 -o _objs_libxmhfc/strcmp.o strcmp.c
+mkdir -p _objs_libxmhfc
+Building memcmp.o from memcmp.c
+arm-linux-gnueabihf-gcc -c -I/home/slab/Code/uberxmhf/uxmhf-rpi3/libs/libxmhfc/include -I/home/slab/Code/uberxmhf/uxmhf-rpi3/libs/libxmhfcrypto/include -I/home/slab/Code/uberxmhf/uxmhf-rpi3/libs/libutpm/include -I./include -I../include   -D__ENABLE_UAPP_UHSIGN__ -D__ENABLE_UAPP_UAGENT__ -c -Wall -nostdlib -nostartfiles -ffreestanding -mcpu=cortex-a53 -o _objs_libxmhfc/memcmp.o memcmp.c
+mkdir -p _objs_libxmhfc
+Building memcpy.o from memcpy.c
+arm-linux-gnueabihf-gcc -c -I/home/slab/Code/uberxmhf/uxmhf-rpi3/libs/libxmhfc/include -I/home/slab/Code/uberxmhf/uxmhf-rpi3/libs/libxmhfcrypto/include -I/home/slab/Code/uberxmhf/uxmhf-rpi3/libs/libutpm/include -I./include -I../include   -D__ENABLE_UAPP_UHSIGN__ -D__ENABLE_UAPP_UAGENT__ -c -Wall -nostdlib -nostartfiles -ffreestanding -mcpu=cortex-a53 -o _objs_libxmhfc/memcpy.o memcpy.c
+mkdir -p _objs_libxmhfc
+Building strncmp.o from strncmp.c
+arm-linux-gnueabihf-gcc -c -I/home/slab/Code/uberxmhf/uxmhf-rpi3/libs/libxmhfc/include -I/home/slab/Code/uberxmhf/uxmhf-rpi3/libs/libxmhfcrypto/include -I/home/slab/Code/uberxmhf/uxmhf-rpi3/libs/libutpm/include -I./include -I../include   -D__ENABLE_UAPP_UHSIGN__ -D__ENABLE_UAPP_UAGENT__ -c -Wall -nostdlib -nostartfiles -ffreestanding -mcpu=cortex-a53 -o _objs_libxmhfc/strncmp.o strncmp.c
+mkdir -p _objs_libxmhfc
+Building strncpy.o from strncpy.c
+arm-linux-gnueabihf-gcc -c -I/home/slab/Code/uberxmhf/uxmhf-rpi3/libs/libxmhfc/include -I/home/slab/Code/uberxmhf/uxmhf-rpi3/libs/libxmhfcrypto/include -I/home/slab/Code/uberxmhf/uxmhf-rpi3/libs/libutpm/include -I./include -I../include   -D__ENABLE_UAPP_UHSIGN__ -D__ENABLE_UAPP_UAGENT__ -c -Wall -nostdlib -nostartfiles -ffreestanding -mcpu=cortex-a53 -o _objs_libxmhfc/strncpy.o strncpy.c
+mkdir -p _objs_libxmhfc
+Building memset.o from memset.c
+arm-linux-gnueabihf-gcc -c -I/home/slab/Code/uberxmhf/uxmhf-rpi3/libs/libxmhfc/include -I/home/slab/Code/uberxmhf/uxmhf-rpi3/libs/libxmhfcrypto/include -I/home/slab/Code/uberxmhf/uxmhf-rpi3/libs/libutpm/include -I./include -I../include   -D__ENABLE_UAPP_UHSIGN__ -D__ENABLE_UAPP_UAGENT__ -c -Wall -nostdlib -nostartfiles -ffreestanding -mcpu=cortex-a53 -o _objs_libxmhfc/memset.o memset.c
+mkdir -p _objs_libxmhfc
+Building strlen.o from strlen.c
+arm-linux-gnueabihf-gcc -c -I/home/slab/Code/uberxmhf/uxmhf-rpi3/libs/libxmhfc/include -I/home/slab/Code/uberxmhf/uxmhf-rpi3/libs/libxmhfcrypto/include -I/home/slab/Code/uberxmhf/uxmhf-rpi3/libs/libutpm/include -I./include -I../include   -D__ENABLE_UAPP_UHSIGN__ -D__ENABLE_UAPP_UAGENT__ -c -Wall -nostdlib -nostartfiles -ffreestanding -mcpu=cortex-a53 -o _objs_libxmhfc/strlen.o strlen.c
+mkdir -p _objs_libxmhfc
+Building strchr.o from strchr.c
+arm-linux-gnueabihf-gcc -c -I/home/slab/Code/uberxmhf/uxmhf-rpi3/libs/libxmhfc/include -I/home/slab/Code/uberxmhf/uxmhf-rpi3/libs/libxmhfcrypto/include -I/home/slab/Code/uberxmhf/uxmhf-rpi3/libs/libutpm/include -I./include -I../include   -D__ENABLE_UAPP_UHSIGN__ -D__ENABLE_UAPP_UAGENT__ -c -Wall -nostdlib -nostartfiles -ffreestanding -mcpu=cortex-a53 -o _objs_libxmhfc/strchr.o strchr.c
+cd _objs_libxmhfc && arm-linux-gnueabihf-ar -rcs libxmhfc.a  memmove.o  strnlen.o  strcmp.o  memcmp.o  memcpy.o  strncmp.o  strncpy.o  memset.o  strlen.o  strchr.o
+cp				 _objs_libxmhfc/libxmhfc.a .
+make[1]: Leaving directory '/home/slab/Code/uberxmhf/uxmhf-rpi3/libs/libxmhfc'
+cd libs/libxmhfcrypto && make -w all
+make[1]: Entering directory '/home/slab/Code/uberxmhf/uxmhf-rpi3/libs/libxmhfcrypto'
+mkdir -p _objs_libxmhfcrypto
+Building sha1.o from .//hashes/sha1/sha1.c
+arm-linux-gnueabihf-gcc -c -I/home/slab/Code/uberxmhf/uxmhf-rpi3/libs/libxmhfc/include -I/home/slab/Code/uberxmhf/uxmhf-rpi3/libs/libxmhfcrypto/include -I/home/slab/Code/uberxmhf/uxmhf-rpi3/libs/libutpm/include -I./include -I../include   -D__ENABLE_UAPP_UHSIGN__ -D__ENABLE_UAPP_UAGENT__ -c -Wall -nostdlib -nostartfiles -ffreestanding -mcpu=cortex-a53 -o _objs_libxmhfcrypto/sha1.o .//hashes/sha1/sha1.c
+mkdir -p _objs_libxmhfcrypto
+Building aes.o from .//ciphers/aes/aes.c
+arm-linux-gnueabihf-gcc -c -I/home/slab/Code/uberxmhf/uxmhf-rpi3/libs/libxmhfc/include -I/home/slab/Code/uberxmhf/uxmhf-rpi3/libs/libxmhfcrypto/include -I/home/slab/Code/uberxmhf/uxmhf-rpi3/libs/libutpm/include -I./include -I../include   -D__ENABLE_UAPP_UHSIGN__ -D__ENABLE_UAPP_UAGENT__ -c -Wall -nostdlib -nostartfiles -ffreestanding -mcpu=cortex-a53 -o _objs_libxmhfcrypto/aes.o .//ciphers/aes/aes.c
+mkdir -p _objs_libxmhfcrypto
+Building aes_tab.o from .//ciphers/aes/aes_tab.c
+arm-linux-gnueabihf-gcc -c -I/home/slab/Code/uberxmhf/uxmhf-rpi3/libs/libxmhfc/include -I/home/slab/Code/uberxmhf/uxmhf-rpi3/libs/libxmhfcrypto/include -I/home/slab/Code/uberxmhf/uxmhf-rpi3/libs/libutpm/include -I./include -I../include   -D__ENABLE_UAPP_UHSIGN__ -D__ENABLE_UAPP_UAGENT__ -c -Wall -nostdlib -nostartfiles -ffreestanding -mcpu=cortex-a53 -o _objs_libxmhfcrypto/aes_tab.o .//ciphers/aes/aes_tab.c
+mkdir -p _objs_libxmhfcrypto
+Building aes_cbc.o from .//ciphers/aes/aes_cbc.c
+arm-linux-gnueabihf-gcc -c -I/home/slab/Code/uberxmhf/uxmhf-rpi3/libs/libxmhfc/include -I/home/slab/Code/uberxmhf/uxmhf-rpi3/libs/libxmhfcrypto/include -I/home/slab/Code/uberxmhf/uxmhf-rpi3/libs/libutpm/include -I./include -I../include   -D__ENABLE_UAPP_UHSIGN__ -D__ENABLE_UAPP_UAGENT__ -c -Wall -nostdlib -nostartfiles -ffreestanding -mcpu=cortex-a53 -o _objs_libxmhfcrypto/aes_cbc.o .//ciphers/aes/aes_cbc.c
+mkdir -p _objs_libxmhfcrypto
+Building hmac-sha1.o from .//mac/hmac-sha1/hmac-sha1.c
+arm-linux-gnueabihf-gcc -c -I/home/slab/Code/uberxmhf/uxmhf-rpi3/libs/libxmhfc/include -I/home/slab/Code/uberxmhf/uxmhf-rpi3/libs/libxmhfcrypto/include -I/home/slab/Code/uberxmhf/uxmhf-rpi3/libs/libutpm/include -I./include -I../include   -D__ENABLE_UAPP_UHSIGN__ -D__ENABLE_UAPP_UAGENT__ -c -Wall -nostdlib -nostartfiles -ffreestanding -mcpu=cortex-a53 -o _objs_libxmhfcrypto/hmac-sha1.o .//mac/hmac-sha1/hmac-sha1.c
+cd _objs_libxmhfcrypto && arm-linux-gnueabihf-ar -rcs libxmhfcrypto.a  sha1.o  aes.o  aes_tab.o  aes_cbc.o  hmac-sha1.o
+cp				 _objs_libxmhfcrypto/libxmhfcrypto.a .
+make[1]: Leaving directory '/home/slab/Code/uberxmhf/uxmhf-rpi3/libs/libxmhfcrypto'
+cd libs/libutpm && make -w all
+make[1]: Entering directory '/home/slab/Code/uberxmhf/uxmhf-rpi3/libs/libutpm'
+mkdir -p _objs_libutpm
+Building utpm-common.o from utpm-common.c
+arm-linux-gnueabihf-gcc -c -I/home/slab/Code/uberxmhf/uxmhf-rpi3/libs/libxmhfc/include -I/home/slab/Code/uberxmhf/uxmhf-rpi3/libs/libxmhfcrypto/include -I/home/slab/Code/uberxmhf/uxmhf-rpi3/libs/libutpm/include -I./include -I../include   -D__ENABLE_UAPP_UHSIGN__ -D__ENABLE_UAPP_UAGENT__ -c -Wall -nostdlib -nostartfiles -ffreestanding -mcpu=cortex-a53 -o _objs_libutpm/utpm-common.o utpm-common.c
+mkdir -p _objs_libutpm
+Building utpm.o from utpm.c
+arm-linux-gnueabihf-gcc -c -I/home/slab/Code/uberxmhf/uxmhf-rpi3/libs/libxmhfc/include -I/home/slab/Code/uberxmhf/uxmhf-rpi3/libs/libxmhfcrypto/include -I/home/slab/Code/uberxmhf/uxmhf-rpi3/libs/libutpm/include -I./include -I../include   -D__ENABLE_UAPP_UHSIGN__ -D__ENABLE_UAPP_UAGENT__ -c -Wall -nostdlib -nostartfiles -ffreestanding -mcpu=cortex-a53 -o _objs_libutpm/utpm.o utpm.c
+cd _objs_libutpm && arm-linux-gnueabihf-ar -rcs libutpm.a  utpm-common.o  utpm.o
+cp				 _objs_libutpm/libutpm.a .
+make[1]: Leaving directory '/home/slab/Code/uberxmhf/uxmhf-rpi3/libs/libutpm'
+cd core && make -w all
+make[1]: Entering directory '/home/slab/Code/uberxmhf/uxmhf-rpi3/core'
+make[1]: Nothing to be done for 'all'.
+make[1]: Leaving directory '/home/slab/Code/uberxmhf/uxmhf-rpi3/core'
+cd bootstrap && make -w all
+make[1]: Entering directory '/home/slab/Code/uberxmhf/uxmhf-rpi3/bootstrap'
+make[1]: Nothing to be done for 'all'.
+make[1]: Leaving directory '/home/slab/Code/uberxmhf/uxmhf-rpi3/bootstrap'
+cat ./bootstrap/bootstrap.bin ./oskrnlimg.tmp ./core/core.bin > uxmhf-rpi3.img

@@ -47,109 +47,20 @@
 #include <debug.h>
 
 #include <uagent.h>
+#include <whitelist.h>
 #include <aes.h>
 #include <hmac-sha1.h>
 #include <xmhfcrypto.h>
 
 
-//////
-// access control via code white-listing
-//////
-
-
-// golden white-listing hash for libuhcall code
-uint8_t uagent_whitelist_hash[] = {
-        0x8f, 0xd1, 0x2d, 0x2a, 0xb8, 
-        0x68, 0x0f, 0x67, 0x1f, 0x81,
-        0xc8, 0xe3, 0x47, 0x69, 0x7d, 
-        0x86, 0x05, 0x4d, 0xd9, 0xfd
-};
-#define HASH_SIZE (sizeof(uagent_whitelist_hash)/sizeof(unsigned char))
-#define UAGENT_WHITELIST_COMPARE_BYTES 32
-
-
-//check white-listing hash with a memory regions specified by
-//physical address and size
-//return: true if ok, false if not
-bool uapp_uagent_check_whitelist(uint32_t paddr, uint32_t size){
-  uint8_t computed_hash[HASH_SIZE];
-
-  if(sha1_memory((const uint8_t *)paddr, size, &computed_hash, HASH_SIZE) == CRYPT_OK){
-    #if 0
-    uint32_t i;    
-     _XDPRINTFSMP_("Hash follows:\n\n");
-    for (i=0; i < HASH_SIZE; i++)
-      _XDPRINTFSMP_("0x%02x ", computed_hash[i]);
-     _XDPRINTFSMP_("\n\n");
-    #endif
-     if (memcmp (computed_hash, uagent_whitelist_hash, HASH_SIZE) != 0) {
-      //hash did not match
-      return false;
-    }else{
-      //hash matched
-      return true;
-    }
-
-  }else{
-    //sha1_memory barfed, so just return false
-    return false;
-  }
-}
-
-// translate virtual address to physical address
-bool uapp_uagent_va2pa(uint32_t va, u32 *pa){
-	u32 par;
-
-	sysreg_ats1cpr(va);
-	par = sysreg_read_par();
-
-	if(par & 0x1)
-		return false; 	
-
-	par &= 0xFFFFF000UL;
-
-	*pa = par;
-	return true;
-}
-
-// main function to perform access control of signing facility
-// acl is based on code white-list hashing
-void uapp_uagent_checkacl(uint32_t va){
-    u32 paddr;
-    
-    #if 0
-    _XDPRINTFSMP_("%s: enter\n", __func__);
-    #endif
-
-    if(!va2pa((uint32_t)va, &paddr)){
-      #if 0
-      _XDPRINTFSMP_("%s: no va to pa mapping for 0\n", __func__);
-      #endif
-      //__SECURITY ACTION__: no va to pa mapping in guest; fail silently for now
-    }else{
-      #if 0
-      _XDPRINTFSMP_("va to pa mapping=0x%08x\n", __func__, paddr);
-      #endif
-      if(uapp_uagent_check_whitelist(paddr, UAGENT_WHITELIST_COMPARE_BYTES)){
-          //_XDPRINTFSMP_("ACL passed\n");
-          //acl passed
-      }else{
-         //__SECURITY ACTION__: acl check error; fail silently for now
-      }
-    }
-    #if 0
-    _XDPRINTFSMP_("%s: exit\n", __func__);
-    #endif
-}
-
-#define BLOCK_SIZE 16
+#define UAGENT_BLOCK_SIZE 16
 
 uint32_t calc_crypto_size(uint32_t input_size){
   uint32_t num_blocks;
-  num_blocks=input_size/BLOCK_SIZE;
-  if(input_size%BLOCK_SIZE)
+  num_blocks=input_size/UAGENT_BLOCK_SIZE;
+  if(input_size%UAGENT_BLOCK_SIZE)
     num_blocks++;
-  return num_blocks*BLOCK_SIZE;
+  return num_blocks*UAGENT_BLOCK_SIZE;
 }
  
 __attribute__((section(".data"))) uint8_t uagent_key[16]={
@@ -177,7 +88,7 @@ bool uapp_uagent_handlehcall(u32  uhcall_function, void *uhcall_buffer, u32 uhca
   #endif
 
   //call acl function
-  //uapp_uagent_checkacl(sysreg_read_elrhyp());
+  uapp_checkacl(sysreg_read_elrhyp());
 
   //Call AES_CBC function(s)
   symmetric_CBC cbc_ctx;

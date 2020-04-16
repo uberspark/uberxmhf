@@ -126,7 +126,6 @@ done:
 **/
 int hmac_sha1_process(hmac_state *hmac, const unsigned char *in, unsigned long inlen)
 {
-    int err;
     LTC_ARGCHK(hmac != NULL);
     LTC_ARGCHK(in != NULL);
     return sha1_process(&hmac->md, in, inlen);
