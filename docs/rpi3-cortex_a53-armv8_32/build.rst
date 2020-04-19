@@ -123,3 +123,4 @@ hypercalls) is built.
 
 
    #. ``./configure --enable-uapp-uhsign`` to enable a uberApp which provides HMAC key signing functionality
+   #. ``./configure --enable-uapp-uagent`` to enable a uberApp which provides AES encryption functionality
