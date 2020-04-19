@@ -29,66 +29,29 @@
 
 /*
  * Author: Amit Vasudevan (amitvasudevan@acm.org)
+ *         Matt McCormack (matthew.mccormack@live.com)
  *
  */
 
-#ifndef __AES_H__
-#define __AES_H__
+/*
+	access control via code white-listing
 
-#include <xmhfcrypto.h>
+	author: amit vasudevan (amitvasudevan@acm.org)
+                matt mccormack (matthew.mccormack@live.com)
+*/
 
-#define AES_KEY_LEN_BYTES	16
+#ifndef __WHITELIST_H__
+#define __WHITELIST_H__
+
+
 
 #ifndef __ASSEMBLY__
 
-extern const struct ltc_cipher_descriptor rijndael_desc;
-
-#define Te0(x) TE0[x]
-#define Te1(x) TE1[x]
-#define Te2(x) TE2[x]
-#define Te3(x) TE3[x]
-
-#define Td0(x) TD0[x]
-#define Td1(x) TD1[x]
-#define Td2(x) TD2[x]
-#define Td3(x) TD3[x]
-
-const u32 Te4[256];
-const u32 Td4[256];
-
-
-extern const u32 TE0[256];
-extern const u32 TE1[256];
-extern const u32 TE2[256];
-extern const u32 TE3[256];
-
-
-extern const u32 Te4_0[];
-extern const u32 Te4_1[];
-extern const u32 Te4_2[];
-extern const u32 Te4_3[];
-
-extern const u32 TD0[256];
-extern const u32 TD1[256];
-extern const u32 TD2[256];
-extern const u32 TD3[256];
-
-extern const u32 Tks0[];
-extern const u32 Tks1[];
-extern const u32 Tks2[];
-extern const u32 Tks3[];
-
-extern const u32 rcon[];
-
-int rijndael_cbc_start(const unsigned char * IV, const unsigned char *key,
-		       int keylen, int num_rounds, symmetric_CBC *cbc);
-int rijndael_cbc_encrypt(const unsigned char *pt, unsigned char *ct, unsigned long len, symmetric_CBC *cbc);
-int rijndael_cbc_done(symmetric_CBC *cbc);
-int rijndael_cbc_decrypt(const unsigned char *ct, unsigned char *pt, unsigned long len, symmetric_CBC *cbc);
-
+void uapp_checkacl(uint32_t va);
 
 
 #endif // __ASSEMBLY__
 
 
-#endif /* __AES_H__ */
+
+#endif //__WHITELIST_H__

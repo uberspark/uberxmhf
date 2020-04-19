@@ -1,0 +1,4 @@
+hypapp for encrypting/decrypting data
+Note: poor use of crypto, using fixed IV (for AES-CBC).
+
+author: matt mccormack (matthew.mccormack@live.com)

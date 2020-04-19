@@ -5,6 +5,8 @@
 #
 #
 
+OPT_FILES := 
+
 .PHONY: all
 all: core.bin
 
@@ -39,6 +41,11 @@ atags.o : ../common/atags.c
 arm8-32.o : ../common/arm8-32.s
 	$(TOOLPREFIX)gcc $(CFLAGS) -D__ASSEMBLY__ ../common/arm8-32.s -o arm8-32.o
 
+ifeq ($(filter $(ENABLE_UAPP_UAGENT) $(ENABLE_UAPP_UHSIGN),y),y)
+whitelist.o : ../common/whitelist.c
+	$(TOOLPREFIX)gcc $(CFLAGS) ../common/whitelist.c -o whitelist.o
+OPT_FILES += whitelist.o
+endif
 
 hypvtablestubs.o : hypvtablestubs.s
 	$(TOOLPREFIX)gcc $(CFLAGS) hypvtablestubs.s -o hypvtablestubs.o
@@ -84,7 +91,14 @@ uapp-uhcalltest.o : ../uapps/uapp-uhcalltest/uapp-uhcalltest.c
 
 ifeq ($(ENABLE_UAPP_UHSIGN), y)
 uapp-uhsign.o : ../uapps/uapp-uhsign/uapp-uhsign.c
-	$(TOOLPREFIX)gcc $(CFLAGS) ../uapps/uapp-uhsign/uapp-uhsign.c -o uapp-uhsign.o
+	$(TOOLPREFIX)gcc $(CFLAGS) ../uapps/uapp-uhsign/uapp-uhsign.c -o uapp-uhsign.o 
+OPT_FILES += uapp-uhsign.o
+endif
+
+ifeq ($(ENABLE_UAPP_UAGENT), y)
+uapp-uagent.o : ../uapps/uapp-uagent/uapp-uagent.c
+	$(TOOLPREFIX)gcc $(CFLAGS) ../uapps/uapp-uagent/uapp-uagent.c -o uapp-uagent.o 
+OPT_FILES += uapp-uagent.o
 endif
 
 uapp-utpmtest.o : ../uapps/uapp-utpmtest/uapp-utpmtest.c
@@ -108,20 +122,12 @@ ghcall.o : ghcall.c
 main.o : main.c
 	$(TOOLPREFIX)gcc $(CFLAGS) main.c -o main.o
 
-ifeq ($(ENABLE_UAPP_UHSIGN), y)
-core.bin: entry.o miniuart.o pl011uart.o mailbox.o strlen.o subr_prf.o debug.o atags.o arm8-32.o hypvtablestubs.o hypvtable.o mmu.o hyppgtbl.o s2pgtbl.o uapi_s2pgtbl.o dmaprot.o intprot.o secboot.o bcm2837.o hyptimer.o ctxtrace.o uapp-uhcalltest.o uapp-uhsign.o uapp-utpmtest.o uapp-pa5encfs.o uapp-watchdogsup.o uapp-watchdog.o ghcall.o main.o
+core.bin: entry.o miniuart.o pl011uart.o mailbox.o strlen.o subr_prf.o debug.o atags.o arm8-32.o hypvtablestubs.o hypvtable.o mmu.o hyppgtbl.o s2pgtbl.o uapi_s2pgtbl.o dmaprot.o intprot.o secboot.o bcm2837.o hyptimer.o ctxtrace.o uapp-uhcalltest.o uapp-utpmtest.o uapp-pa5encfs.o uapp-watchdogsup.o uapp-watchdog.o $(OPT_FILES) ghcall.o main.o
 	cp -f core.lscript core.lscript.c
+	echo $(OPT_FILES)
 	$(TOOLPREFIX)gcc -E -P $(CFLAGS_DEFS) core.lscript.c -o core.ls 
-	$(TOOLPREFIX)ld entry.o miniuart.o pl011uart.o mailbox.o strlen.o subr_prf.o debug.o atags.o arm8-32.o hypvtablestubs.o hypvtable.o mmu.o hyppgtbl.o s2pgtbl.o uapi_s2pgtbl.o dmaprot.o intprot.o secboot.o bcm2837.o hyptimer.o ctxtrace.o uapp-uhcalltest.o uapp-uhsign.o uapp-utpmtest.o uapp-pa5encfs.o uapp-watchdogsup.o uapp-watchdog.o ghcall.o main.o -T core.ls -o core.elf $(LIBS) $(CCLIB)
+	$(TOOLPREFIX)ld entry.o miniuart.o pl011uart.o mailbox.o strlen.o subr_prf.o debug.o atags.o arm8-32.o hypvtablestubs.o hypvtable.o mmu.o hyppgtbl.o s2pgtbl.o uapi_s2pgtbl.o dmaprot.o intprot.o secboot.o bcm2837.o hyptimer.o ctxtrace.o uapp-uhcalltest.o uapp-utpmtest.o uapp-pa5encfs.o uapp-watchdogsup.o uapp-watchdog.o $(OPT_FILES) ghcall.o main.o -T core.ls -o core.elf $(LIBS) $(CCLIB)
 	$(TOOLPREFIX)objcopy core.elf -O binary core.bin
-else
-core.bin: entry.o miniuart.o pl011uart.o mailbox.o strlen.o subr_prf.o debug.o atags.o arm8-32.o hypvtablestubs.o hypvtable.o mmu.o hyppgtbl.o s2pgtbl.o uapi_s2pgtbl.o dmaprot.o intprot.o secboot.o bcm2837.o hyptimer.o ctxtrace.o uapp-uhcalltest.o uapp-utpmtest.o uapp-pa5encfs.o uapp-watchdogsup.o uapp-watchdog.o ghcall.o main.o
-	cp -f core.lscript core.lscript.c
-	$(TOOLPREFIX)gcc -E -P $(CFLAGS_DEFS) core.lscript.c -o core.ls 
-	$(TOOLPREFIX)ld entry.o miniuart.o pl011uart.o mailbox.o strlen.o subr_prf.o debug.o atags.o arm8-32.o hypvtablestubs.o hypvtable.o mmu.o hyppgtbl.o s2pgtbl.o uapi_s2pgtbl.o dmaprot.o intprot.o secboot.o bcm2837.o hyptimer.o ctxtrace.o uapp-uhcalltest.o uapp-utpmtest.o uapp-pa5encfs.o uapp-watchdogsup.o uapp-watchdog.o ghcall.o main.o -T core.ls -o core.elf $(LIBS) $(CCLIB)
-	$(TOOLPREFIX)objcopy core.elf -O binary core.bin
-endif
-
 
 
 .PHONY: clean
