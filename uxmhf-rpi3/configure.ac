@@ -156,15 +156,15 @@ AS_IF([test "x${enable_uart_pl011}" != "xno"],
 
 
 # selectively enable/disable PL011 UART hardware flow control
-AC_SUBST([ENABLE_DEBUG_UART_PL011_CTSRTS])
+AC_SUBST([ENABLE_UART_PL011_CTSRTS])
 
-AC_ARG_ENABLE([debug_uart_pl011_ctsrts],
-	AS_HELP_STRING([--enable-debug-uart-pl011-ctsrts@<:@=yes|no@:>@],
+AC_ARG_ENABLE([uart_pl011_ctsrts],
+	AS_HELP_STRING([--enable-uart-pl011-ctsrts@<:@=yes|no@:>@],
 		[enable PL011 UART hardware flow control (CTS/RTS)]),
-		, [enable_debug_uart_pl011_ctsrts=no])
-AS_IF([test "x${enable_debug_uart_pl011_ctsrts}" != "xno"],
-      [ENABLE_DEBUG_UART_PL011_CTSRTS=y],
-      [ENABLE_DEBUG_UART_PL011_CTSRTS=n])
+		, [enable_uart_pl011_ctsrts=no])
+AS_IF([test "x${enable_uart_pl011_ctsrts}" != "xno"],
+      [ENABLE_UART_PL011_CTSRTS=y],
+      [ENABLE_UART_PL011_CTSRTS=n])
 
 
 ###### autoconf output files
