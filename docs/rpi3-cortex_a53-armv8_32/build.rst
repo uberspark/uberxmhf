@@ -87,9 +87,9 @@ Build Core Micro-Hypervisor Framework
       system.
    #. ``./configure --enable-intprot`` to enable interrupt protection capabilities
    #. ``./configure --enable-fiqreflection`` to enable guest FIQ interrupts to be handled within micro-hypervisor
-   #. ``./configure --enable-debug-uart`` to enable debug output via UART; defaults to mini UART. To use the full (PL011)
-      UART, specify ``--enable-uart-pl011`` in addition to ``--enable-debug-uart``. If using the full (PL011) UART,
-      you can additionally specify ``--enable-debug-uart-pl011-ctsrts`` to enable UART hardware flow control.
+   #. ``./configure --enable-debug-uart`` to enable debug output via UART; you must additionally either specify,
+      Mini UART (via ``--enable-uart-mini``) or full (PL011) UART (via ``--enable-uart-pl011``).
+      Also, if using PL011 UART, you can specify ``--enable-debug-uart-pl011-ctsrts`` to enable UART hardware flow control. 
 
 
 Build uberApps
