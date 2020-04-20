@@ -126,6 +126,19 @@ AS_IF([test "x${enable_debug_uart}" != "xno"],
       [ENABLE_DEBUG_UART=n])
 
 
+# selectively enable/disable Mini UART support
+AC_SUBST([ENABLE_UART_MINI])
+
+AC_ARG_ENABLE([uart_mini],
+	AS_HELP_STRING([--enable-uart-mini@<:@=yes|no@:>@],
+		[enable Mini UART]),
+		, [enable_uart_mini=no])
+AS_IF([test "x${enable_uart_mini}" != "xno"],
+      [ENABLE_UART_MINI=y],
+      [ENABLE_UART_MINI=n])
+
+
+
 # selectively enable/disable PL011 UART support
 AC_SUBST([ENABLE_UART_PL011])
 AC_SUBST([RPI3CONFIG_ENABLE_UART_PL011])
