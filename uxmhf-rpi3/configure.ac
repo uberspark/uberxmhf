@@ -126,20 +126,20 @@ AS_IF([test "x${enable_debug_uart}" != "xno"],
       [ENABLE_DEBUG_UART=n])
 
 
-# selectively enable/disable debugging via PL011 UART
-AC_SUBST([ENABLE_DEBUG_UART_PL011])
-AC_SUBST([RPI3CONFIG_ENABLE_DEBUG_UART_PL011])
+# selectively enable/disable PL011 UART support
+AC_SUBST([ENABLE_UART_PL011])
+AC_SUBST([RPI3CONFIG_ENABLE_UART_PL011])
 
-AC_ARG_ENABLE([debug_uart_pl011],
-	AS_HELP_STRING([--enable-debug-uart-pl011@<:@=yes|no@:>@],
-		[enable debug via PL011 UART]),
-		, [enable_debug_uart_pl011=no])
-AS_IF([test "x${enable_debug_uart_pl011}" != "xno"],
-      [ENABLE_DEBUG_UART_PL011=y],
-      [ENABLE_DEBUG_UART_PL011=n])
-AS_IF([test "x${enable_debug_uart_pl011}" != "xno"],
-      [RPI3CONFIG_ENABLE_DEBUG_UART_PL011=dtoverlay=pi3-miniuart-bt],
-      [RPI3CONFIG_ENABLE_DEBUG_UART_PL011=])
+AC_ARG_ENABLE([uart_pl011],
+	AS_HELP_STRING([--enable-uart-pl011@<:@=yes|no@:>@],
+		[enable PL011 UART]),
+		, [enable_uart_pl011=no])
+AS_IF([test "x${enable_uart_pl011}" != "xno"],
+      [ENABLE_UART_PL011=y],
+      [ENABLE_UART_PL011=n])
+AS_IF([test "x${enable_uart_pl011}" != "xno"],
+      [RPI3CONFIG_ENABLE_UART_PL011=dtoverlay=pi3-miniuart-bt],
+      [RPI3CONFIG_ENABLE_UART_PL011=])
 
 
 # selectively enable/disable PL011 UART hardware flow control

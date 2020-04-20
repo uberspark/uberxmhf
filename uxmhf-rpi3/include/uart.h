@@ -57,7 +57,7 @@
 
 #if defined (__DEBUG_UART__)
 
-	#if defined (__DEBUG_UART_PL011__)
+	#if defined (__ENABLE_UART_PL011__)
 		#define uart_init bcm2837_pl011uart_init
 		#define uart_can_send bcm2837_pl011uart_can_send
 		#define uart_can_recv bcm2837_pl011uart_can_recv
