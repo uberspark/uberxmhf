@@ -131,7 +131,8 @@ void bcm2837_pl011uart_puts(char *buffer){
 }
 
 
-/* UART character read function (non-blocking)*/
+// UART character read function (non-blocking)
+// return true if character read; false if no characters to read
 bool bcm2837_pl011uart_getc(u8 *recv_ch) {
     
     //check if there is a byte in the FIFO buffer
