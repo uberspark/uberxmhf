@@ -440,6 +440,10 @@ void main(u32 r0, u32 id, struct atag *at, u32 cpuid){
 	u32 hvbar, hcr, spsr_hyp;
 	u64 boardserial;
 
+#if defined (__DEBUG_UART__)
+	//initialize uart
+	uart_init();
+#endif
 
 	_XDPRINTF_("%s[%u]: ENTER: sp=0x%08x (cpu_stacks=0x%08x)\n", __func__, cpuid,
 			cpu_read_sp(), &cpu_stacks);
@@ -465,6 +469,11 @@ void main(u32 r0, u32 id, struct atag *at, u32 cpuid){
 
 #if 0
 	uart_testrecv();
+	HALT();
+#endif
+
+#if 1
+	_XDPRINTF_("%s[%u]: Halting!\n", __func__, cpuid);
 	HALT();
 #endif
 
