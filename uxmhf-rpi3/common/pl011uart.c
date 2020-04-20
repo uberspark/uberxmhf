@@ -116,7 +116,10 @@ void bcm2837_pl011uart_init(void){
 }
 
 bool bcm2837_pl011uart_can_send(void){
-    return true;
+    if( (mmio_read32(PL011_UART_FR_REG) & 0x20) )
+        return false;
+    else   
+        return true;
 }
 
 bool bcm2837_pl011uart_can_recv(void){
@@ -128,7 +131,7 @@ bool bcm2837_pl011uart_can_recv(void){
 void bcm2837_pl011uart_putc(u8 ch){
 
     //wait until we can send 
-    while( (mmio_read32(PL011_UART_FR_REG) & 0x20) );
+    while( bcm2837_pl011uart_can_send() == false );
     mmio_write32(PL011_UART_DR_REG, ch);
 }
 
