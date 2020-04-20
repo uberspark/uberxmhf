@@ -445,6 +445,7 @@ void main(u32 r0, u32 id, struct atag *at, u32 cpuid){
 	uart_init();
 #endif
 
+	_XDPRINTF_("uberXMHF (Raspberry Pi 3) - Booting...\n", __func__, cpuid);
 	_XDPRINTF_("%s[%u]: ENTER: sp=0x%08x (cpu_stacks=0x%08x)\n", __func__, cpuid,
 			cpu_read_sp(), &cpu_stacks);
 	_XDPRINTF_("%s[%u]: r0=0x%08x, id=0x%08x, ATAGS=0x%08x\n", __func__, cpuid, r0, id, at);
