@@ -123,7 +123,10 @@ bool bcm2837_pl011uart_can_send(void){
 }
 
 bool bcm2837_pl011uart_can_recv(void){
-    return true;
+    if ( ! (mmio_read32(PL011_UART_FR_REG) & 0x10) )
+        return true;
+    else    
+        return false;
 }
 
 
@@ -147,7 +150,7 @@ void bcm2837_pl011uart_puts(char *buffer){
 bool bcm2837_pl011uart_getc(u8 *recv_ch) {
     
     //check if there is a byte in the FIFO buffer
-    if ( ! (mmio_read32(PL011_UART_FR_REG) & 0x10) ){
+    if ( bcm2837_pl011uart_can_recv() ){
 
         //receive FIFO is not-empty, so read the next character
         *recv_ch=(u8)mmio_read32(PL011_UART_DR_REG);
