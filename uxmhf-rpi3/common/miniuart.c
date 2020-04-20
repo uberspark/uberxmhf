@@ -76,6 +76,15 @@ void bcm2837_miniuart_init(void){
 }
 
 
+bool bcm2837_miniuart_can_send(void){
+    return true;
+}
+
+bool bcm2837_miniuart_can_recv(void){
+    return true;
+}
+
+
 void bcm2837_miniuart_putc(u8 ch){
     while(! (mmio_read32(AUX_MU_LSR_REG) & 0x20) );
     mmio_write32(AUX_MU_IO_REG,(u32)ch);

@@ -115,6 +115,14 @@ void bcm2837_pl011uart_init(void){
 #endif
 }
 
+bool bcm2837_pl011uart_can_send(void){
+    return true;
+}
+
+bool bcm2837_pl011uart_can_recv(void){
+    return true;
+}
+
 
 /* UART character output function */
 void bcm2837_pl011uart_putc(u8 ch){

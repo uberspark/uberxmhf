@@ -59,12 +59,16 @@
 
 	#if defined (__DEBUG_UART_PL011__)
 		#define uart_init bcm2837_pl011uart_init
+		#define uart_can_send bcm2837_pl011uart_can_send
+		#define uart_can_recv bcm2837_pl011uart_can_recv
 		#define uart_putc bcm2837_pl011uart_putc
 		#define uart_puts bcm2837_pl011uart_puts
 		#define uart_getc bcm2837_pl011uart_getc
 		#define uart_flush bcm2837_pl011uart_flush
 	#else
 		#define uart_init bcm2837_miniuart_init
+		#define uart_can_send bcm2837_miniuart_can_send
+		#define uart_can_recv bcm2837_miniuart_can_recv
 		#define uart_putc bcm2837_miniuart_putc
 		#define uart_puts bcm2837_miniuart_puts
 		#define uart_getc bcm2837_miniuart_getc
@@ -74,6 +78,8 @@
 #else
 
 	#define uart_init(x) 
+	#define uart_can_send(x)
+	#define uart_can_recv(x)
 	#define uart_putc(x)
 	#define uart_puts(x)
 	#define uart_getc(x)

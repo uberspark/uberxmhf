@@ -50,6 +50,8 @@ void bcm2837_pl011uart_init_hwflowcontrol(void);
 #endif
 
 void bcm2837_pl011uart_init(void);
+bool bcm2837_pl011uart_can_send(void);
+bool bcm2837_pl011uart_can_recv(void);
 void bcm2837_pl011uart_putc(u8 ch);
 void bcm2837_pl011uart_puts(char *buffer);
 bool bcm2837_pl011uart_getc(u8 *recv_ch);
