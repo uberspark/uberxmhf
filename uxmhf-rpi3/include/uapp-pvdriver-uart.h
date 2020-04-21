@@ -19,6 +19,15 @@
 
 #ifndef __ASSEMBLY__
 
+
+void uapp_pvdriver_uart_init(void);
+void uapp_pvdriver_uart_send(u8 *buffer, u32 buf_len);
+int uapp_pvdriver_uart_recv(u8 *buffer, u32 max_len, u32 *len_read);
+int uapp_pvdriver_uart_can_send(void);
+int uapp_pvdriver_uart_can_recv(void);
+void uapp_pvdriver_uart_flush(void);
+
+
 typedef struct {
 	uint8_t uhcall_fn;
 	uint32_t iparam_1;
