@@ -115,6 +115,17 @@ AS_IF([test "x${enable_uapp_uagent}" != "xno"],
       [ENABLE_UAPP_UAGENT=n])
 
 
+# selectively enable/disable UART para-virtualized driver backend in hypervisor
+AC_SUBST([ENABLE_UAPP_PVDRIVER_UART])
+AC_ARG_ENABLE([uapp_pvdriver_uart],
+	AS_HELP_STRING([--enable-uapp-pvdriver-uart@<:@=yes|no@:>@],
+		[enable UART para-virtualized driver backend uapp]),
+		, [enable_uapp_pvdriver_uart=no])
+AS_IF([test "x${enable_uapp_pvdriver_uart}" != "xno"],
+      [ENABLE_UAPP_PVDRIVER_UART=y],
+      [ENABLE_UAPP_PVDRIVER_UART=n])
+
+
 # selectively enable/disable debugging via UART
 AC_SUBST([ENABLE_DEBUG_UART])
 AC_ARG_ENABLE([debug_uart],
