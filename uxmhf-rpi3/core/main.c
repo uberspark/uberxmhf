@@ -550,10 +550,12 @@ void main(u32 r0, u32 id, struct atag *at, u32 cpuid){
 
 
 	//////
-	// initialize hypapps
+	// initialize uapps
 
-	//ctxtrace_init(cpuid);
-	//uapp_watchdog_initialize(cpuid);
+	#if defined (__ENABLE_UAPP_PVDRIVER_UART__)
+		uapp_pvdriver_uart_initialize_uapp(cpuid);
+	#endif
+
 
 	//////
 
@@ -608,11 +610,6 @@ void secondary_main(u32 cpuid){
 	// activate translation
 	s2pgtbl_activatetranslation();
 	_XDPRINTF_("%s[%u]: activated stage-2 translation\n", __func__, cpuid);
-
-
-	//////
-	// initialize hypapps
-	ctxtrace_init(cpuid);
 
 
 	_XDPRINTF_("%s[%u]: Signalling SMP readiness and entering SMP boot wait loop...\n", __func__, cpuid);
