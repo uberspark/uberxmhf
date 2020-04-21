@@ -91,3 +91,135 @@ void uapp_pvdriver_uart_flush(void){
 
 
 //////////////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////////////
+// pvdriver_uart hypercall APIs
+//////////////////////////////////////////////////////////////////////////////
+
+////// init
+void uapp_pvdriver_uart_handlehcall_init(uapp_pvdriver_uart_param_t *hparams){
+
+	//init
+	uapp_pvdriver_uart_init();
+
+	hparams->status=1;
+}
+
+
+////// send
+void uapp_pvdriver_uart_handlehcall_send(uapp_pvdriver_uart_param_t *hparams){
+	//iparam_1 = buffer physical address
+	//iparam_2 = buffer length (in bytes)
+
+	//sanity check buffer length, currently only a max of 4096 bytes
+	//can be sent at a time
+	if(hparams->iparam_2 > 4096){
+		hparams->status=0;
+		return;
+	}
+
+	//send the bytes out through the UART and flush output
+	uapp_pvdriver_uart_send(hparams->iparam_1, hparams->iparam_2);
+	uapp_pvdriver_uart_flush();
+
+	//set status to indicate success
+	hparams->status=1;
+}
+
+
+
+
+////// recv
+void uapp_pvdriver_uart_handlehcall_recv(uapp_pvdriver_uart_param_t *hparams){
+	//iparam_1 = buffer physical address
+	//iparam_2 = buffer max length (in bytes)
+
+	//oparam_1 = length read
+	//oparam_2 = UART read buffer status (1=exhausted, 0=not exhausted)
+
+	//sanity check buffer length, currently only a max of 4096 bytes
+	//can be received at a time
+	if(hparams->iparam_2 > 4096){
+		hparams->status=0;
+		return;
+	}
+
+	//read bytes from UART
+	hparams->oparam_2 = uapp_pvdriver_uart_recv(hparams->iparam_1, hparams->iparam_2, &hparams->oparam_1);
+
+	//set status to indicate success
+	hparams->status=1;
+}
+
+
+
+////// can_send
+void uapp_pvdriver_uart_handlehcall_can_send(uapp_pvdriver_uart_param_t *hparams){
+
+	if(uapp_pvdriver_uart_can_send())
+		hparams->status=1;
+	else
+		hparams->status=0;
+
+	return;
+}
+
+////// can_recv
+void uapp_pvdriver_uart_handlehcall_can_recv(uapp_pvdriver_uart_param_t *hparams){
+
+	if(uapp_pvdriver_uart_can_recv())
+		hparams->status=1;
+	else
+		hparams->status=0;
+
+	return;
+}
+
+////// flush
+void uapp_pvdriver_uart_handlehcall_flush(uapp_pvdriver_uart_param_t *hparams){
+    uapp_pvdriver_uart_flush();
+    hparams->status=1;
+}
+
+
+////// hypercall handler hub
+////// return true if handled the hypercall, false if not
+bool uapp_pvdriver_uart_handlehcall(u32 uhcall_function, void *uhcall_buffer,
+		u32 uhcall_buffer_len){
+	uapp_pvdriver_uart_param_t *hparams;
+
+	if(uhcall_function != UAPP_PVDRIVER_UART_UHCALL){
+		return false;
+	}
+
+	hparams = (uapp_pvdriver_uart_param_t *)uhcall_buffer;
+
+	if(hparams->uhcall_fn == UAPP_PVDRIVER_UART_UHCALL_INIT){
+		uapp_pvdriver_uart_handlehcall_init(hparams);
+
+	}else if(hparams->uhcall_fn == UAPP_PVDRIVER_UART_UHCALL_SEND){
+			uapp_pvdriver_uart_handlehcall_send(hparams);
+
+	}else if(hparams->uhcall_fn == UAPP_PVDRIVER_UART_UHCALL_RECV){
+			uapp_pvdriver_uart_handlehcall_recv(hparams);
+
+	}else if(hparams->uhcall_fn == UAPP_PVDRIVER_UART_UHCALL_CAN_SEND){
+			uapp_pvdriver_uart_handlehcall_can_send(hparams);
+
+	}else if(hparams->uhcall_fn == UAPP_PVDRIVER_UART_UHCALL_CAN_RECV){
+			uapp_pvdriver_uart_handlehcall_can_recv(hparams);
+
+	}else if(hparams->uhcall_fn == UAPP_PVDRIVER_UART_UHCALL_FLUSH){
+			uapp_pvdriver_uart_handlehcall_flush(hparams);
+
+	}else{
+		//ignore unknown uhcall_fn silently
+
+	}
+
+	return true;
+}
+
+
+//////////////////////////////////////////////////////////////////////////////
