@@ -106,7 +106,8 @@ void bcm2837_pl011uart_init(void){
     
     for(i=0; i<150; i++);
     
-    mmio_write32(PL011_UART_LCR_REG, 0x72);  // 8 bits, odd parity, 1 stop bit, enable FIFO
+//    mmio_write32(PL011_UART_LCR_REG, 0x72);  // 8 bits, odd parity, 1 stop bit, enable FIFO
+    mmio_write32(PL011_UART_LCR_REG, 0x70);  // 8 bits, no parity, 1 stop bit, enable FIFO
 
 #if defined (__ENABLE_UART_PL011_CTSRTS__)
     mmio_write32(PL011_UART_CR_REG, 0xC301);     // enable CTS, RTS, Tx, Rx 
