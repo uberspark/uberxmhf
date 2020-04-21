@@ -44,7 +44,7 @@
 
 #if defined (__DEBUG_UART__)
 
-	#if defined (__DEBUG_UART_PL011__)
+	#if defined (__ENABLE_UART_PL011__)
 		#include <pl011uart.h>
 	#else
 		#include <miniuart.h>
