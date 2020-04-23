@@ -39,8 +39,7 @@ int uapp_pvdriver_uart_recv(u8 *buffer, u32 max_len, u32 *len_read){
 	u32 i;
 
 	i=0;
-	while(uart_can_recv()){
-		uart_getc(&buffer[i]);
+	while(uart_getc(&buffer[i])){
 		i++;
 		if(i == max_len)
 			break;
