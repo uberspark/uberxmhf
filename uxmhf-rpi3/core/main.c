@@ -281,8 +281,8 @@ void hypsvc_handler(arm8_32_regs_t *r){
 	//read hsr to determine the cause of the intercept
 	hsr = sysreg_read_hsr();
 	hsr_ec = ((hsr & HSR_EC_MASK) >> HSR_EC_SHIFT);
-	//uart_puts(" HSR= ");
-	//debug_hexdumpu32(hsr);
+	////uart_puts(" HSR= ");
+	////debug_hexdumpu32(hsr);
 
 	//switch ( ((hsr & HSR_EC_MASK) >> HSR_EC_SHIFT) ){
 	if(hsr_ec == HSR_EC_HVC){
@@ -333,39 +333,39 @@ void core_fixresmemmap(u32 fdt_address){
 	struct fdt_reserve_entry *fdtrsvmmapentryp;
 	u32 newtotalsize, padding;
 
-	uart_puts("uxmhf-rpi3: core: core_fixresmemmap [IN]\n");
+	//uart_puts("uxmhf-rpi3: core: core_fixresmemmap [IN]\n");
 
-	uart_puts(" fdt_address=0x");
-	debug_hexdumpu32(fdt_address);
+	//uart_puts(" fdt_address=0x");
+	//debug_hexdumpu32(fdt_address);
 
-	uart_puts(" totalsize=0x");
-	debug_hexdumpu32(cpu_be2le_u32(fdth->totalsize));
+	//uart_puts(" totalsize=0x");
+	//debug_hexdumpu32(cpu_be2le_u32(fdth->totalsize));
 
-	uart_puts(" off_dt_struct=0x");
-	debug_hexdumpu32(cpu_be2le_u32(fdth->off_dt_struct));
+	//uart_puts(" off_dt_struct=0x");
+	//debug_hexdumpu32(cpu_be2le_u32(fdth->off_dt_struct));
 
-	uart_puts(" size_dt_struct=0x");
-	debug_hexdumpu32(cpu_be2le_u32(fdth->size_dt_struct));
+	//uart_puts(" size_dt_struct=0x");
+	//debug_hexdumpu32(cpu_be2le_u32(fdth->size_dt_struct));
 
-	uart_puts(" off_dt_strings=0x");
-	debug_hexdumpu32(cpu_be2le_u32(fdth->off_dt_strings));
+	//uart_puts(" off_dt_strings=0x");
+	//debug_hexdumpu32(cpu_be2le_u32(fdth->off_dt_strings));
 
-	uart_puts(" size_dt_strings=0x");
-	debug_hexdumpu32(cpu_be2le_u32(fdth->size_dt_strings));
+	//uart_puts(" size_dt_strings=0x");
+	//debug_hexdumpu32(cpu_be2le_u32(fdth->size_dt_strings));
 
-	uart_puts(" off_mem_rsvmap=0x");
-	debug_hexdumpu32(cpu_be2le_u32(fdth->off_mem_rsvmap));
+	//uart_puts(" off_mem_rsvmap=0x");
+	//debug_hexdumpu32(cpu_be2le_u32(fdth->off_mem_rsvmap));
 
-	uart_puts(" version=0x");
-	debug_hexdumpu32(cpu_be2le_u32(fdth->version));
+	//uart_puts(" version=0x");
+	//debug_hexdumpu32(cpu_be2le_u32(fdth->version));
 
-	uart_puts(" last_comp_version=0x");
-	debug_hexdumpu32(cpu_be2le_u32(fdth->last_comp_version));
+	//uart_puts(" last_comp_version=0x");
+	//debug_hexdumpu32(cpu_be2le_u32(fdth->last_comp_version));
 
 	//pad totalsize to a page-boundary
 	padding = PAGE_SIZE_4K - (cpu_be2le_u32(fdth->totalsize) % PAGE_SIZE_4K);
-	uart_puts("padding=0x");
-	debug_hexdumpu32(padding);
+	//uart_puts("padding=0x");
+	//debug_hexdumpu32(padding);
 
 	//take totalsize and compute var = size + 8 * 2
 	newtotalsize = cpu_be2le_u32(fdth->totalsize);
@@ -381,10 +381,10 @@ void core_fixresmemmap(u32 fdt_address){
 	//populate fdtrsvmmapentryp to rsv_mem_off
 	fdtrsvmmapentryp = (struct fdt_reserve_entry *)(fdt_address + cpu_be2le_u32(fdth->off_mem_rsvmap));
 
-	uart_puts("fdtrsvmmapentryp=0x");
-	debug_hexdumpu32((u32)fdtrsvmmapentryp);
-	uart_puts("sizeof(fdtrsvmmapentryp)=0x");
-	debug_hexdumpu32(sizeof(struct fdt_reserve_entry));
+	//uart_puts("fdtrsvmmapentryp=0x");
+	//debug_hexdumpu32((u32)fdtrsvmmapentryp);
+	//uart_puts("sizeof(fdtrsvmmapentryp)=0x");
+	//debug_hexdumpu32(sizeof(struct fdt_reserve_entry));
 
 	//write the guestos extent as first entry
 	fdtrsvmmapentryp->address = cpu_le2be_u64((u64)UXMHF_CORE_START_ADDR);
@@ -394,17 +394,17 @@ void core_fixresmemmap(u32 fdt_address){
 
 	//terminate the list with 0sadd 16 bytes
 	fdtrsvmmapentryp++;
-	uart_puts("fdtrsvmmapentryp=0x");
-	debug_hexdumpu32((u32)fdtrsvmmapentryp);
+	//uart_puts("fdtrsvmmapentryp=0x");
+	//debug_hexdumpu32((u32)fdtrsvmmapentryp);
 
 	fdtrsvmmapentryp->address = 0ULL;
 	fdtrsvmmapentryp->size = 0ULL;
 
 	//debug
-	uart_puts("uxmhf-rpi3: core: dumping reserved memmap...\n");
+	//uart_puts("uxmhf-rpi3: core: dumping reserved memmap...\n");
 	fdtrsvmmapentryp = (struct fdt_reserve_entry *)(fdt_address + cpu_be2le_u32(fdth->off_mem_rsvmap));
-	uart_puts("fdtrsvmmapentryp=0x");
-	debug_hexdumpu32((u32)fdtrsvmmapentryp);
+	//uart_puts("fdtrsvmmapentryp=0x");
+	//debug_hexdumpu32((u32)fdtrsvmmapentryp);
 
 
 	while(1){
@@ -413,20 +413,20 @@ void core_fixresmemmap(u32 fdt_address){
 		if( addr == 0ULL &&  size == 0ULL){
 			break;
 		}
-		uart_puts(" address:0x");
-		debug_hexdumpu32(addr >> 32);
-		debug_hexdumpu32((u32)addr);
-		uart_puts(" size:0x");
-		debug_hexdumpu32(size >> 32);
-		debug_hexdumpu32((u32)size);
+		//uart_puts(" address:0x");
+		//debug_hexdumpu32(addr >> 32);
+		//debug_hexdumpu32((u32)addr);
+		//uart_puts(" size:0x");
+		//debug_hexdumpu32(size >> 32);
+		//debug_hexdumpu32((u32)size);
 		fdtrsvmmapentryp++;
-		uart_puts("fdtrsvmmapentryp=0x");
-		debug_hexdumpu32((u32)fdtrsvmmapentryp);
+		//uart_puts("fdtrsvmmapentryp=0x");
+		//debug_hexdumpu32((u32)fdtrsvmmapentryp);
 	}
 
-	uart_puts("uxmhf-rpi3: core: dumped reserved memmap...\n");
+	//uart_puts("uxmhf-rpi3: core: dumped reserved memmap...\n");
 
-	uart_puts("uxmhf-rpi3: core: core_fixresmemmap [OUT]\n");
+	//uart_puts("uxmhf-rpi3: core: core_fixresmemmap [OUT]\n");
 }
 
 
@@ -440,7 +440,12 @@ void main(u32 r0, u32 id, struct atag *at, u32 cpuid){
 	u32 hvbar, hcr, spsr_hyp;
 	u64 boardserial;
 
+#if defined (__ENABLE_UART_PL011__) || defined (__ENABLE_UART_MINI__)
+	//initialize uart
+	uart_init();
+#endif
 
+	_XDPRINTF_("uberXMHF (Raspberry Pi 3) - Booting...\n", __func__, cpuid);
 	_XDPRINTF_("%s[%u]: ENTER: sp=0x%08x (cpu_stacks=0x%08x)\n", __func__, cpuid,
 			cpu_read_sp(), &cpu_stacks);
 	_XDPRINTF_("%s[%u]: r0=0x%08x, id=0x%08x, ATAGS=0x%08x\n", __func__, cpuid, r0, id, at);
@@ -465,6 +470,11 @@ void main(u32 r0, u32 id, struct atag *at, u32 cpuid){
 
 #if 0
 	uart_testrecv();
+	HALT();
+#endif
+
+#if 0
+	_XDPRINTF_("%s[%u]: Halting!\n", __func__, cpuid);
 	HALT();
 #endif
 
@@ -540,10 +550,12 @@ void main(u32 r0, u32 id, struct atag *at, u32 cpuid){
 
 
 	//////
-	// initialize hypapps
+	// initialize uapps
 
-	//ctxtrace_init(cpuid);
-	//uapp_watchdog_initialize(cpuid);
+	#if defined (__ENABLE_UAPP_PVDRIVER_UART__)
+		uapp_pvdriver_uart_initialize_uapp(cpuid);
+	#endif
+
 
 	//////
 
@@ -598,11 +610,6 @@ void secondary_main(u32 cpuid){
 	// activate translation
 	s2pgtbl_activatetranslation();
 	_XDPRINTF_("%s[%u]: activated stage-2 translation\n", __func__, cpuid);
-
-
-	//////
-	// initialize hypapps
-	ctxtrace_init(cpuid);
 
 
 	_XDPRINTF_("%s[%u]: Signalling SMP readiness and entering SMP boot wait loop...\n", __func__, cpuid);

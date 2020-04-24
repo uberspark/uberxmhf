@@ -87,9 +87,9 @@ Build Core Micro-Hypervisor Framework
       system.
    #. ``./configure --enable-intprot`` to enable interrupt protection capabilities
    #. ``./configure --enable-fiqreflection`` to enable guest FIQ interrupts to be handled within micro-hypervisor
-   #. ``./configure --enable-debug-uart`` to enable debug output via UART; defaults to mini UART. To use the full (PL011)
-      UART, specify ``--enable-debug-uart-pl011`` in addition to ``--enable-debug-uart``. If using the full (PL011) UART,
-      you can additionally specify ``--enable-debug-uart-pl011-ctsrts`` to enable UART hardware flow control.
+   #. ``./configure --enable-debug-uart`` to enable debug output via UART; you must additionally either specify,
+      Mini UART (via ``--enable-uart-mini``) or full (PL011) UART (via ``--enable-uart-pl011``).
+      Also, if using PL011 UART, you can specify ``--enable-uart-pl011-ctsrts`` to enable UART hardware flow control. 
 
 
 Build uberApps
@@ -125,3 +125,13 @@ hypercalls) is built.
 
    #. ``./configure --enable-uapp-uhsign`` to enable a uberApp which provides HMAC key signing functionality
    #. ``./configure --enable-uapp-uagent`` to enable a uberApp which provides AES encryption functionality
+   #. ``./configure --enable-uapp-pvdriver-uart`` to enable a uberApp which provides a guest OS UART para-virtualized driver backend
+      
+      #. For the UART para-virtualized driver backend uapp, you will need to build the RPi kernel by ensuring that
+         ``CONFIG_SERIAL_AMBA_PL011=y`` and ``CONFIG_SERIAL_AMBA_PL011_CONSOLE=y`` within the file ``.config`` is replaced
+         by ``# CONFIG_SERIAL_AMBA_PL011 is not set`` and ``# CONFIG_SERIAL_AMBA_PL011_CONSOLE is not set`` respectively between
+         the ``make ARCH=arm CROSS_COMPILE=~/tools/arm-bcm2708/arm-rpi-4.9.3-linux-gnueabihf/bin/arm-linux-gnueabihf- bcm2709_defconfig``
+         and ``make -j 4 ARCH=arm CROSS_COMPILE=~/tools/arm-bcm2708/arm-rpi-4.9.3-linux-gnueabihf/bin/arm-linux-gnueabihf- zImage modules dtbs``
+         steps in the **Install and build RPI kernel on development system** section within **Build Core Micro-Hypervisor Framework**
+         above. 
+

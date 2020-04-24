@@ -75,7 +75,7 @@ void bcm2837_pl011uart_init(void){
     r &= ~((7<<12) | (7<<15)); // gpio14, gpio15
     r |= (4<<12) | (4<<15);    // alt0
 
-#if defined (__DEBUG_UART_PL011_CTSRTS__)
+#if defined (__ENABLE_UART_PL011_CTSRTS__)
     r |= 0x00fc0000; 
 #endif
 
@@ -86,7 +86,7 @@ void bcm2837_pl011uart_init(void){
 
     for(i=0; i<150; i++);
 
-#if defined (__DEBUG_UART_PL011_CTSRTS__)
+#if defined (__ENABLE_UART_PL011_CTSRTS__)
     mmio_write32(GPPUDCLK0, (1<<14)|(1<<15)|(1<<16)|(1<<17) );
 #else
     mmio_write32(GPPUDCLK0, (1<<14)|(1<<15));
@@ -106,13 +106,28 @@ void bcm2837_pl011uart_init(void){
     
     for(i=0; i<150; i++);
     
-    mmio_write32(PL011_UART_LCR_REG, 0x72);  // 8 bits, odd parity, 1 stop bit, enable FIFO
+//    mmio_write32(PL011_UART_LCR_REG, 0x72);  // 8 bits, odd parity, 1 stop bit, enable FIFO
+    mmio_write32(PL011_UART_LCR_REG, 0x70);  // 8 bits, no parity, 1 stop bit, enable FIFO
 
-#if defined (__DEBUG_UART_PL011_CTSRTS__)
+#if defined (__ENABLE_UART_PL011_CTSRTS__)
     mmio_write32(PL011_UART_CR_REG, 0xC301);     // enable CTS, RTS, Tx, Rx 
 #else
     mmio_write32(PL011_UART_CR_REG, 0x301);     // enable Tx, Rx
 #endif
+}
+
+bool bcm2837_pl011uart_can_send(void){
+    if( (mmio_read32(PL011_UART_FR_REG) & 0x20) )
+        return false;
+    else   
+        return true;
+}
+
+bool bcm2837_pl011uart_can_recv(void){
+    if ( ! (mmio_read32(PL011_UART_FR_REG) & 0x10) )
+        return true;
+    else    
+        return false;
 }
 
 
@@ -120,7 +135,7 @@ void bcm2837_pl011uart_init(void){
 void bcm2837_pl011uart_putc(u8 ch){
 
     //wait until we can send 
-    while( (mmio_read32(PL011_UART_FR_REG) & 0x20) );
+    while( bcm2837_pl011uart_can_send() == false );
     mmio_write32(PL011_UART_DR_REG, ch);
 }
 
@@ -131,11 +146,12 @@ void bcm2837_pl011uart_puts(char *buffer){
 }
 
 
-/* UART character read function (non-blocking)*/
+// UART character read function (non-blocking)
+// return true if character read; false if no characters to read
 bool bcm2837_pl011uart_getc(u8 *recv_ch) {
     
     //check if there is a byte in the FIFO buffer
-    if ( ! (mmio_read32(PL011_UART_FR_REG) & 0x10) ){
+    if ( bcm2837_pl011uart_can_recv() ){
 
         //receive FIFO is not-empty, so read the next character
         *recv_ch=(u8)mmio_read32(PL011_UART_DR_REG);

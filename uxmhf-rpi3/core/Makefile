@@ -101,6 +101,13 @@ uapp-uagent.o : ../uapps/uapp-uagent/uapp-uagent.c
 OPT_FILES += uapp-uagent.o
 endif
 
+ifeq ($(ENABLE_UAPP_PVDRIVER_UART), y)
+uapp-pvdriver-uart.o : ../uapps/uapp-pvdriver-uart/uapp-pvdriver-uart.c
+	$(TOOLPREFIX)gcc $(CFLAGS) ../uapps/uapp-pvdriver-uart/uapp-pvdriver-uart.c -o uapp-pvdriver-uart.o 
+OPT_FILES += uapp-pvdriver-uart.o
+endif
+
+
 uapp-utpmtest.o : ../uapps/uapp-utpmtest/uapp-utpmtest.c
 	$(TOOLPREFIX)gcc $(CFLAGS) ../uapps/uapp-utpmtest/uapp-utpmtest.c -o uapp-utpmtest.o
 

@@ -76,8 +76,23 @@ void bcm2837_miniuart_init(void){
 }
 
 
+bool bcm2837_miniuart_can_send(void){
+    if (! (mmio_read32(AUX_MU_LSR_REG) & 0x20) )
+        return false;
+    else
+        return true;
+}
+
+bool bcm2837_miniuart_can_recv(void){
+	if( mmio_read32(AUX_MU_LSR_REG) & 0x01 ) 
+        return true;
+    else
+        return false;
+}
+
+
 void bcm2837_miniuart_putc(u8 ch){
-    while(! (mmio_read32(AUX_MU_LSR_REG) & 0x20) );
+    while( bcm2837_miniuart_can_send() == false );
     mmio_write32(AUX_MU_IO_REG,(u32)ch);
 }
 
@@ -88,11 +103,20 @@ void bcm2837_miniuart_puts(char *buffer){
 
 
 // UART character read function (non-blocking)
+// return true if character read; false if no characters to read
 bool bcm2837_miniuart_getc(u8 *recv_ch) {
-    // logic TBD
-    *recv_ch = 0;
 
-    return true;
+    //do we have a character to receive?
+	if( bcm2837_miniuart_can_recv() ) {
+        
+        //yes, so store the character
+        *recv_ch=(u8)(mmio_read32(AUX_MU_IO_REG) & 0xFF);
+
+        return true;   
+    }else{
+        return false;
+    }
+
 }
 
 
