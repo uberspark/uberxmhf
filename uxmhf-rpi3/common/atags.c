@@ -44,7 +44,7 @@
 #include <atags.h>
 
 void atag_dumptags(struct atag *at){
-	uart_puts("uXMHF-rpi3: Dumping ATAG list...\n");
+	//uart_puts("uXMHF-rpi3: Dumping ATAG list...\n");
 /*
 	while(at->hdr.tag != ATAG_NONE){
 		switch(at->hdr.tag){
@@ -72,6 +72,6 @@ void atag_dumptags(struct atag *at){
 		at=atag_next(at);
 	}
 */
-	uart_puts("uXMHF-rpi3: Dumped ATAG list.\n");
+	//uart_puts("uXMHF-rpi3: Dumped ATAG list.\n");
 
 }
