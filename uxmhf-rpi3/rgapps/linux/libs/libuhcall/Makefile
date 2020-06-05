@@ -26,7 +26,7 @@ $(THE_ARCHIVE): $(OBJECTS)
 %.o: %.c
 	mkdir -p $(LIBUHCALL_OBJECTS_DIR)
 	@echo Building "$@" from "$<"
-	$(CCERT) -c $(CCERT_FLAGS) -o $(LIBUHCALL_OBJECTS_DIR)/$@ $<
+	$(CCERT) -c $(CCERT_FLAGS) -fPIC -o $(LIBUHCALL_OBJECTS_DIR)/$@ $<
 
 
 .PHONY: clean
