@@ -48,12 +48,12 @@ extern __attribute__(( section(".data") )) u32 xdprintfsmp_lock=1;
 
 // gcc requires this for division by 0 on 64-bit values; used for debugging output
 void raise(void){
-	uart_puts("uXMHF-rpi3: core: compiler raise invoked -- division by 0!\n");
-	uart_puts("uXMHF-rpi3: core: Halting!\n");
+	//uart_puts("uXMHF-rpi3: core: compiler raise invoked -- division by 0!\n");
+	//uart_puts("uXMHF-rpi3: core: Halting!\n");
 	HALT();
 }
 
-
+#if 0
 void debug_hexdumpu32(u32 value){
     u32 num_bits;
     u32 ch;
@@ -75,3 +75,4 @@ void debug_hexdumpu32(u32 value){
     uart_putc(' ');
     uart_putc('\n');
 }
+#endif
