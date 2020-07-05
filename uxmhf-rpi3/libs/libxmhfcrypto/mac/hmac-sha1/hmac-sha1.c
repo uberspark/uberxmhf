@@ -44,12 +44,10 @@
 //#include <miniuart.h>
 //#include <debug.h>
 
-
 #include <string.h>
 #include <xmhfcrypto.h>
 #include <sha1.h>
 #include <hmac-sha1.h>
-
 
 #define LTC_HMAC_SHA1_BLOCKSIZE 64
 
@@ -126,7 +124,6 @@ done:
 **/
 int hmac_sha1_process(hmac_state *hmac, const unsigned char *in, unsigned long inlen)
 {
-    int err;
     LTC_ARGCHK(hmac != NULL);
     LTC_ARGCHK(in != NULL);
     return sha1_process(&hmac->md, in, inlen);

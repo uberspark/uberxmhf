@@ -29,60 +29,29 @@
 
 /*
  * Author: Amit Vasudevan (amitvasudevan@acm.org)
+ *         Matt McCormack (matthew.mccormack@live.com)
  *
  */
 
 /*
-	micro-tpm test application
+	access control via code white-listing
 
 	author: amit vasudevan (amitvasudevan@acm.org)
+                matt mccormack (matthew.mccormack@live.com)
 */
 
-#ifndef __UTPMTEST_H__
-#define __UTPMTEST_H__
+#ifndef __WHITELIST_H__
+#define __WHITELIST_H__
 
-#define UAPP_UTPM_FUNCTION_INIT_MASTER_ENTROPY	0x10
-#define UAPP_UTPM_FUNCTION_INIT_INSTANCE			0x11
-#define UAPP_UTPM_FUNCTION_PCRREAD				0x12
-#define UAPP_UTPM_FUNCTION_EXTEND					0x13
-#define UAPP_UTPM_FUNCTION_SEAL					0x14
-#define UAPP_UTPM_FUNCTION_UNSEAL					0x15
 
 
 #ifndef __ASSEMBLY__
 
-typedef struct {
-	uint32_t magic;
-	uint8_t g_aeskey[TPM_AES_KEY_LEN_BYTES];
-	uint8_t g_hmackey[TPM_HMAC_KEY_LEN];
-	uint8_t g_rsakey[4]; //TODO: fix this to RSA key len when implemented
-
-	utpm_master_state_t utpm;
-
-	TPM_DIGEST pcr0;
-	uint32_t pcr_num;
-
-	TPM_DIGEST measurement;
-
-
-	TPM_PCR_INFO tpmPcrInfo;
-	char seal_inbuf[16];
-	uint32_t seal_inbuf_len;
-	char seal_outbuf[128];
-	uint32_t seal_outbuf_len;
-
-	char seal_outbuf2[128];
-	uint32_t seal_outbuf2_len;
-	TPM_COMPOSITE_HASH digestAtCreation;
-
-
-	TPM_RESULT result;
-} utpmtest_param_t;
-
+void uapp_checkacl(uint32_t va);
 
 
 #endif // __ASSEMBLY__
 
 
 
-#endif //__UTPMTEST_H__
+#endif //__WHITELIST_H__

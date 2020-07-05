@@ -72,15 +72,18 @@
 		/* legacy CoSS functions/code that this uobj invokes */
 		"legacy-callees": [
 		],
-	    "uobjrtl": [
-		{
-		    "namespace": "uberspark/uobjrtl/crt"
-		},
-		{
-		    "namespace": "uberspark/uobjrtl/crypto"
-		}
-	    ]	    
 
+		/* uobjrtl */
+		"uobjrtl": [
+			{
+				"namespace" : "uberspark/uobjrtl/crt"
+			},
+
+			{
+				"namespace" : "uberspark/uobjrtl/crypto"
+			}
+		]
+		
 	}
 
 }

@@ -44,7 +44,7 @@
 #include <mailbox.h>
 #include <uart.h>
 #include <debug.h>
-
+x
 //mailbox message buffer
 //has to be aligned on a 16 byte boundary
 __attribute__((aligned(16))) __attribute__((section(".data"))) volatile  unsigned int mailbox_msgbuf[MAILBOX_MAXBUFSIZE];

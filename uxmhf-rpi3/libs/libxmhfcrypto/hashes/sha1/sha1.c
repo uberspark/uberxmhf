@@ -37,31 +37,6 @@
 #include <xmhfcrypto.h>
 #include <sha1.h>
 
-// undef LTC_CLEAN_STACK
-//#define LTC_SHA1
-// undef LTC_SMALL_CODE
-
-
-#if 0
-const struct ltc_hash_descriptor sha1_desc =
-{
-    "sha1",
-    2,
-    20,
-    64,
-
-    /* OID */
-   { 1, 3, 14, 3, 2, 26,  },
-   6,
-
-    &sha1_init,
-    &sha1_process,
-    &sha1_done,
-    &sha1_test,
-    NULL
-};
-#endif //0
-
 #define F0(x,y,z)  (z ^ (x & (y ^ z)))
 #define F1(x,y,z)  (x ^ y ^ z)
 #define F2(x,y,z)  ((x & y) | (z & (x | y)))

@@ -44,7 +44,6 @@
 #include <uart.h>
 #include <debug.h>
 
-
 //////
 // externs
 //////

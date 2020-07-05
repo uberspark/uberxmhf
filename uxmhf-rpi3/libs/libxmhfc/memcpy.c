@@ -35,7 +35,6 @@
 #include <stdint.h>
 #include <string.h>
 
-
 /*void *memcpy(void * to, const void * from, u32 n)
 {
   size_t i;
