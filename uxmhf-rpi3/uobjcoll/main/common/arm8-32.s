@@ -38,8 +38,8 @@
 	author: amit vasudevan (amitvasudevan@acm.org)
 */
 
-#include <uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/types.h>
-#include <uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/arm8-32.h>	
+#include <types.h>
+#include <arm8-32.h>
 
 .section ".text"
 
