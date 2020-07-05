@@ -43,7 +43,7 @@
 #include <uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/uart.h>
 #include <uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/debug.h>
 #include <uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/guestos.h>
-#include <uberspark/include/uberspark.h>
+//#include <uberspark/include/uberspark.h>
 
 /* setup CPU to support stage-2 table translation */
 void s2pgtbl_initialize(void){

@@ -1,0 +1,979 @@
+building xmhf-rpi3...
+uberspark staging switch rpi3 
+uberspark >> enforcing verifiable object abstractions for commodity system software stacks
+uberspark >> front-end tool
+uberspark >> version: 6.0.0
+uberspark >> website: https://uberspark.org
+uberspark >> creator: amit vasudevan <amitvasudevan@acm.org>
+uberspark >> 
+uberspark >> Loading current configuration...uberspark >> config_ns_json_path=/home/slab/uberspark/staging/rpi3/uberspark/config/uberspark.json
+[OK]
+uberspark >> successfully switched to staging: 'rpi3'
+uberspark uobjcoll build -v --platform=rpi3 --arch=armv8_32 --cpu=generic .
+uberspark >> enforcing verifiable object abstractions for commodity system software stacks
+uberspark >> front-end tool
+uberspark >> version: 6.0.0
+uberspark >> website: https://uberspark.org
+uberspark >> creator: amit vasudevan <amitvasudevan@acm.org>
+uberspark >> 
+uberspark >> namespace root dir prefix=/home/slab
+uberspark >> staging dir prefix=/home/slab/uberspark/staging/rpi3
+uberspark >> Loading current configuration...uberspark >> config_ns_json_path=/home/slab/uberspark/staging/rpi3/uberspark/config/uberspark.json
+[OK]
+uberspark >> uobj collection build start...
+uberspark >> uobj collection path ns=/home/slab/uberspark/staging/rpi3/uberspark/uobjcoll/platform/rpi3/uxmhf
+uberspark >> uobj collection uobjs=1
+uberspark >> intrauobjcoll sentinels=1
+uberspark >> uobjcoll_publicmethods sentinels=1
+uberspark >> create_sentinels_hashtbl: total unique uobjcoll_publicmethods sentinels=1
+uberspark >> sentinel_mf_filename=/home/slab/uberspark/staging/rpi3/uberspark/sentinels/cpu/armv8_32/generic/hyp/interuobjcoll/call/uberspark.json
+uberspark >> create_sentinels_hashtbl: adding key=call
+uberspark >> create_sentinels_hashtbl: total unique uobjcoll_publicmethods sentinels=1
+uberspark >> sentinel_mf_filename=/home/slab/uberspark/staging/rpi3/uberspark/sentinels/cpu/armv8_32/generic/hyp/intrauobjcoll/call/uberspark.json
+uberspark >> create_sentinels_hashtbl: adding key=call
+uberspark >> create_sentinels_hashtbl: total unique intrauobjcoll sentinels=1
+uberspark >> created uobj collection uobjcoll_publicmethods and intrauobjcoll sentinels hashtbl
+uberspark >> loading cc-bridge settings from file: /home/slab/uberspark/bridges/cc-bridge/container/amd64/armv8_32/generic/gcc/v4.9.3/uberspark.json
+uberspark >> loaded cc_bridge settings
+uberspark >> building cc-bridge: bridges/cc-bridge/container/amd64/armv8_32/generic/gcc/v4.9.3
+uberspark >> [docker] Sending build context to Docker daemon  3.584kB
+uberspark >> [docker] Step 1/3 : FROM amd64/ubuntu:16.04
+uberspark >> [docker]  ---> 77be327e4b63
+uberspark >> [docker] Step 2/3 : LABEL maintainer="Amit Vasudevan <amitvasudevan@acm.org>, Matt McCormack <matthew.mccormack@live.com>" author="Matt McCormack <matthew.mccormack@live.com"
+uberspark >> [docker]  ---> Using cache
+uberspark >> [docker]  ---> f37a9a6995ae
+uberspark >> [docker] Step 3/3 : RUN apt-get update &&    apt-get -yqq install gcc-4.9-arm-linux-gnueabihf     	    	 	 gcc-4.9-multilib-arm-linux-gnueabihf 			 binutils-arm-linux-gnueabihf &&    apt-get clean && rm -rf /var/lib/apt/lists/* &&    ln -s /usr/bin/arm-linux-gnueabihf-gcc-4.9 /usr/bin/gcc
+uberspark >> [docker]  ---> Using cache
+uberspark >> [docker]  ---> 3d5eaa0fe730
+uberspark >> [docker] Successfully built 3d5eaa0fe730
+uberspark >> [docker] Successfully tagged uberspark/bridges/cc-bridge/container/amd64/armv8_32/generic/gcc/v4.9.3:latest
+uberspark >> cc_bridge build success
+uberspark >> loading as-bridge settings from file: /home/slab/uberspark/bridges/as-bridge/container/amd64/armv8_32/generic/gnu-as/v2.26.1/uberspark.json
+uberspark >> loaded as_bridge settings
+uberspark >> building as-bridge: bridges/as-bridge/container/amd64/armv8_32/generic/gnu-as/v2.26.1
+uberspark >> [docker] Sending build context to Docker daemon  3.584kB
+uberspark >> [docker] Step 1/3 : FROM amd64/ubuntu:16.04
+uberspark >> [docker]  ---> 77be327e4b63
+uberspark >> [docker] Step 2/3 : LABEL maintainer="Amit Vasudevan <amitvasudevan@acm.org>, Matt McCormack <matthew.mccormack@live.com>" author="Matt McCormack <matthew.mccormack@live.com>"
+uberspark >> [docker]  ---> Using cache
+uberspark >> [docker]  ---> 0f16423929ca
+uberspark >> [docker] Step 3/3 : RUN apt-get update &&    apt-get -yqq install gcc-arm-linux-gnueabihf     	    	 	 gcc-multilib-arm-linux-gnueabihf 			 binutils-arm-linux-gnueabihf &&    apt-get clean && rm -rf /var/lib/apt/lists/* &&    ln -s /usr/bin/arm-linux-gnueabihf-gcc /usr/bin/gcc
+uberspark >> [docker]  ---> Using cache
+uberspark >> [docker]  ---> 8a9a1dd36cdb
+uberspark >> [docker] Successfully built 8a9a1dd36cdb
+uberspark >> [docker] Successfully tagged uberspark/bridges/as-bridge/container/amd64/armv8_32/generic/gnu-as/v2.26.1:latest
+uberspark >> as_bridge build success
+uberspark >> loading ld-bridge settings from file: /home/slab/uberspark/bridges/ld-bridge/container/amd64/armv8_32/generic/gnu-ld/v2.26.1/uberspark.json
+uberspark >> loaded ld_bridge settings
+uberspark >> building ld-bridge: bridges/ld-bridge/container/amd64/armv8_32/generic/gnu-ld/v2.26.1
+uberspark >> [docker] Sending build context to Docker daemon  3.584kB
+uberspark >> [docker] Step 1/3 : FROM amd64/ubuntu:16.04
+uberspark >> [docker]  ---> 77be327e4b63
+uberspark >> [docker] Step 2/3 : LABEL maintainer="Amit Vasudevan <amitvasudevan@acm.org>, Matt McCormack <matthew.mccormack@live.com>" author="Matt McCormack <matthew.mccormack@live.com>"
+uberspark >> [docker]  ---> Using cache
+uberspark >> [docker]  ---> 0f16423929ca
+uberspark >> [docker] Step 3/3 : RUN apt-get update &&    apt-get -yqq install gcc-arm-linux-gnueabihf     	    	 	 gcc-multilib-arm-linux-gnueabihf 			 binutils-arm-linux-gnueabihf &&    apt-get clean && rm -rf /var/lib/apt/lists/*
+uberspark >> [docker]  ---> Using cache
+uberspark >> [docker]  ---> a1c64414de39
+uberspark >> [docker] Successfully built a1c64414de39
+uberspark >> [docker] Successfully tagged uberspark/bridges/ld-bridge/container/amd64/armv8_32/generic/gnu-ld/v2.26.1:latest
+uberspark >> ld_bridge build success
+uberspark >> collect_uobjinfo: total collection uobjs=1
+uberspark >> successfully collected uobj information
+uberspark >> namespace root=/home/slab/uberspark/staging/rpi3/uberspark/
+uberspark >> abs_uobjcoll_path_ns=/home/slab/Code/uberxmhf/uxmhf-rpi3/uobjcoll
+uberspark >> in_namespace_build=false
+uberspark >> prepping for out-of-namespace build...
+uberspark >> d_path_ns=/home/slab/uberspark/staging/rpi3/uberspark/uobjcoll/platform/rpi3/uxmhf
+uberspark >> uobjcoll canonical build namespace ready
+uberspark >> initializing uobj 'main'...
+uberspark >> uobj target spec => ::
+uberspark >> uobj target definition => rpi3:armv8_32:generic
+uberspark >> json_node_uberspark_uobj_to_var: retval=true
+uberspark >> total sources: h files=18, c files=26, casm files=0, asm files=4
+uberspark >> total public methods:1,1
+uberspark >> list of uobj-intrauobjcoll-callees follows:
+uberspark >> total interuobjcoll callees=0
+uberspark >> total legacy callees=0
+uberspark >> binary sections override:0
+uberspark >> successfully parsed uobj manifest
+uberspark >> reading slt manifest from:/home/slab/uberspark/staging/rpi3/uberspark/uobjslt/armv8_32/generic/uberspark.json
+uberspark >> uobjrtl namespace=uberspark/uobjrtl/crt
+uberspark >> uobjrtl namespace=uberspark/uobjrtl/crypto
+uberspark >> Consolidating uobj section memory map...
+uberspark >> section at address 0x00000000, size=0x00200000 padding=0x00000000
+uberspark >> section at address 0x00200000, size=0x00200000 padding=0x00000000
+uberspark >> section is for publicmethod: name=main
+uberspark >> updated publicmethod address as 0x00200000
+uberspark >> section at address 0x00400000, size=0x00200000 padding=0x00000000
+uberspark >> section at address 0x00600000, size=0x00200000 padding=0x00000000
+uberspark >> section at address 0x00800000, size=0x00200000 padding=0x00000000
+uberspark >> section at address 0x00a00000, size=0x00200000 padding=0x00000000
+uberspark >> section at address 0x00c00000, size=0x00200000 padding=0x00000000
+uberspark >> section at address 0x00e00000, size=0x00200000 padding=0x00000000
+uberspark >> section at address 0x01000000, size=0x00200000 padding=0x00000000
+uberspark >> section at address 0x01200000, size=0x00200000 padding=0x00000000
+uberspark >> section at address 0x01400000, size=0x00200000 padding=0x00000000
+uberspark >> section at address 0x01600000, size=0x00200000 padding=0x00000000
+uberspark >> section at address 0x01800000, size=0x00200000 padding=0x00000000
+uberspark >> section at address 0x01a00000, size=0x00200000 padding=0x00000000
+uberspark >> uobj section memory map initialized
+uberspark >> uobj 'main' successfully initialized; size=0x02400000
+uberspark >> adding public method info for uobj 'main', total public methods=1
+uberspark >> uobjcoll uobjs publicmethods hashtbl dump follows:
+uberspark >> canonical pm_name=uberspark_uobjcoll_platform_rpi3_uxmhf_main__main; pm_name=main, pm_addr=0x00200000
+uberspark >> create_uobjs_publicmethods_list_mforder [START]
+uberspark >> adding public method info for uobj 'main', total public methods=1
+uberspark >> uobjcoll uobjs publicmethods assoc list dump follows:
+uberspark >> canonical pm_name=uberspark_uobjcoll_platform_rpi3_uxmhf_main__main; pm_name=main, pm_addr=0x00200000
+uberspark >> create_uobjs_publicmethods_list_mforder [END]
+uberspark >> created uobj collection uobjs public methods hashtable and association list
+uberspark >> proceeding to add inter-uobjcoll sentinel sections...
+uberspark >> pm_name=uberspark_uobjcoll_platform_rpi3_uxmhf_main__main
+uberspark >> sentinel type=call, size=0x00001000
+uberspark >> added section for uobjcoll_publicmethods sentinel '.section_uobjcoll_publicmethod_sentinel_uberspark_uobjcoll_platform_rpi3_uxmhf_main__main__call' at 0x60000000, size=00200000...
+uberspark >> proceeding to add intra-uobjcoll sentinel sections...
+uberspark >> pm_name=uberspark_uobjcoll_platform_rpi3_uxmhf_main__main
+uberspark >> sentinel type=call, size=0x00001000
+uberspark >> added section for intrauobjcoll sentinel '.section_intrauobjcoll_publicmethod_sentinel_uberspark_uobjcoll_platform_rpi3_uxmhf_main__main__call' at 0x60200000, size=00200000...
+uberspark >> proceeding to add uobj sections...
+uberspark >> adding section for uobj 'main' at 0x60400000, size=02400000...
+uberspark >> File "uberspark_uobjcoll.ml", line 676, characters 93-100: d_load_address=0x60000000, d_size=0x02800000
+uberspark >> consolidated uobj collection sections, total size=0x02800000
+uberspark >> File "uberspark_uobjcoll.ml", line 510, characters 103-110: total d_memorymapped_sections_list elements=3
+uberspark >> computing memory-map for uobj 'main' at load-address=0x60400000...
+uberspark >> section at address 0x60400000, size=0x00200000 padding=0x00000000
+uberspark >> section at address 0x60600000, size=0x00200000 padding=0x00000000
+uberspark >> section is for publicmethod: name=main
+uberspark >> updated publicmethod address as 0x60600000
+uberspark >> section at address 0x60800000, size=0x00200000 padding=0x00000000
+uberspark >> section at address 0x60a00000, size=0x00200000 padding=0x00000000
+uberspark >> section at address 0x60c00000, size=0x00200000 padding=0x00000000
+uberspark >> section at address 0x60e00000, size=0x00200000 padding=0x00000000
+uberspark >> section at address 0x61000000, size=0x00200000 padding=0x00000000
+uberspark >> section at address 0x61200000, size=0x00200000 padding=0x00000000
+uberspark >> section at address 0x61400000, size=0x00200000 padding=0x00000000
+uberspark >> section at address 0x61600000, size=0x00200000 padding=0x00000000
+uberspark >> section at address 0x61800000, size=0x00200000 padding=0x00000000
+uberspark >> section at address 0x61a00000, size=0x00200000 padding=0x00000000
+uberspark >> section at address 0x61c00000, size=0x00200000 padding=0x00000000
+uberspark >> section at address 0x61e00000, size=0x00200000 padding=0x00000000
+uberspark >> computed uobj section memory map for all uobjs within collection
+uberspark >> adding public method info for uobj 'main', total public methods=1
+uberspark >> uobjcoll uobjs publicmethods hashtbl dump follows:
+uberspark >> canonical pm_name=uberspark_uobjcoll_platform_rpi3_uxmhf_main__main; pm_name=main, pm_addr=0x60600000
+uberspark >> created uobj collection uobjs public methods hashtable and association list with address
+uberspark >> created sentinel address hashtbls
+uberspark >> prepare_for_uobjcoll_sentinel_codegen: uobjcoll_publicmethods publicmethods=1
+uberspark >> uobjcoll_publicmethods; added sentinel type call for public-method uberspark_uobjcoll_platform_rpi3_uxmhf_main__main
+uberspark >> intrauobjcoll; added sentinel type call for public-method uberspark_uobjcoll_platform_rpi3_uxmhf_main__main
+uberspark >> dump of list of sentinels for codegen follows:
+uberspark >> name=uberspark_uobjcoll_platform_rpi3_uxmhf_main__main__call, addr=0x60000000, pm_addr=0x60600000
+uberspark >> name=uberspark_uobjcoll_platform_rpi3_uxmhf_main__main__call, addr=0x60200000, pm_addr=0x60600000
+uberspark >> dumped list of sentinels for codegen
+uberspark >> prepared inputs for sentinel code generation
+uberspark >> File "uberspark_codegen.ml", line 673, characters 8-15: length of pm_sentinel_list=2
+uberspark >> generated source for  uobj collection sentinel definitions
+uberspark >> setup intrauobjcoll callees sentinel type hashtbl
+uberspark >> Building uobj 'main'...
+uberspark >> setup uobj sentinel linkage table information
+uberspark >> uobjrtl namespace staging-dir-prefix=/home/slab/uberspark/staging/rpi3
+uberspark >> uobjrtl builddir prefix=/home/slab/Code/uberxmhf/uxmhf-rpi3/uobjcoll/_build/main/_build
+uberspark >> uobjrtl namespace=uberspark/uobjrtl/crt
+uberspark >>   module path=src/memcmp.c
+uberspark >>   module path=src/memcpy.c
+uberspark >>   module path=src/memmove.c
+uberspark >>   module path=src/memset.c
+uberspark >>   module path=src/strchr.c
+uberspark >>   module path=src/strcmp.c
+uberspark >>   module path=src/strlen.c
+uberspark >>   module path=src/strncmp.c
+uberspark >>   module path=src/strncpy.c
+uberspark >>   module path=src/strnlen.c
+uberspark >> uobjrtl namespace=uberspark/uobjrtl/crypto
+uberspark >>   module path=src/ciphers/aes/aes.c
+uberspark >>   module path=src/ciphers/aes/aes_cbc.c
+uberspark >>   module path=src/ciphers/aes/aes_tab.c
+uberspark >>   module path=src/hashes/sha1/sha1.c
+uberspark >>   module path=src/mac/hmacsha1/hmacsha1.c
+uberspark >> Generating uobj top-level include header source...[OK]
+uberspark >> prepare_slt_codegen: start
+uberspark >> length of callees_sentinel_type_hashtbl=1
+uberspark >> prepare_slt_codegen: end
+uberspark >> Generating uobj binary public methods info source...[OK]
+uberspark >> Generating uobj binary intrauobjcoll callees info source...[OK]
+uberspark >> Generating uobj binary interuobjcoll callees info source...[OK]
+uberspark >> Generating uobj binary legacy callees info source...[OK]
+uberspark >> Generating uobj binary header source...[OK]
+uberspark >> Generating uobj binary linker script...[OK]
+uberspark >> prepared uobj sources
+uberspark >> namespace root=/home/slab/uberspark/staging/rpi3/uberspark/
+uberspark >> abs_uobj_path_ns=/home/slab/Code/uberxmhf/uxmhf-rpi3/uobjcoll/_build/main
+uberspark >> in_namespace_build=false
+uberspark >> prepping for out-of-namespace build...
+uberspark >> d_path_ns=/home/slab/uberspark/staging/rpi3/uberspark/uobjcoll/platform/rpi3/uxmhf/main
+uberspark >> d_path_to_mf_filename=/home/slab/Code/uberxmhf/uxmhf-rpi3/uobjcoll/_build/main
+uberspark >> d_path_ns=/home/slab/uberspark/staging/rpi3/uberspark/uobjcoll/platform/rpi3/uxmhf/main
+uberspark >> ready for out-of-namespace build
+uberspark >> using uobj collection default bridges...
+uberspark >> proceeding to compile c files...
+uberspark >> d_cmd=echo Compiling uobj_pminfo.c... && gcc   -I. -I/home/slab/uberspark/staging/rpi3 -c uobj_pminfo.c -o uobj_pminfo.c.o  && echo Compiling uobj_intrauobjcoll_callees_info.c... && gcc   -I. -I/home/slab/uberspark/staging/rpi3 -c uobj_intrauobjcoll_callees_info.c -o uobj_intrauobjcoll_callees_info.c.o  && echo Compiling uobj_interuobjcoll_callees_info.c... && gcc   -I. -I/home/slab/uberspark/staging/rpi3 -c uobj_interuobjcoll_callees_info.c -o uobj_interuobjcoll_callees_info.c.o  && echo Compiling uobj_legacy_callees_info.c... && gcc   -I. -I/home/slab/uberspark/staging/rpi3 -c uobj_legacy_callees_info.c -o uobj_legacy_callees_info.c.o  && echo Compiling uobj_binhdr.c... && gcc   -I. -I/home/slab/uberspark/staging/rpi3 -c uobj_binhdr.c -o uobj_binhdr.c.o  && echo Compiling uberspark/uobjrtl/crt/src/memcmp.c... && gcc   -I. -I/home/slab/uberspark/staging/rpi3 -c uberspark/uobjrtl/crt/src/memcmp.c -o uberspark/uobjrtl/crt/src/memcmp.c.o  && echo Compiling uberspark/uobjrtl/crt/src/memcpy.c... && gcc   -I. -I/home/slab/uberspark/staging/rpi3 -c uberspark/uobjrtl/crt/src/memcpy.c -o uberspark/uobjrtl/crt/src/memcpy.c.o  && echo Compiling uberspark/uobjrtl/crt/src/memmove.c... && gcc   -I. -I/home/slab/uberspark/staging/rpi3 -c uberspark/uobjrtl/crt/src/memmove.c -o uberspark/uobjrtl/crt/src/memmove.c.o  && echo Compiling uberspark/uobjrtl/crt/src/memset.c... && gcc   -I. -I/home/slab/uberspark/staging/rpi3 -c uberspark/uobjrtl/crt/src/memset.c -o uberspark/uobjrtl/crt/src/memset.c.o  && echo Compiling uberspark/uobjrtl/crt/src/strchr.c... && gcc   -I. -I/home/slab/uberspark/staging/rpi3 -c uberspark/uobjrtl/crt/src/strchr.c -o uberspark/uobjrtl/crt/src/strchr.c.o  && echo Compiling uberspark/uobjrtl/crt/src/strcmp.c... && gcc   -I. -I/home/slab/uberspark/staging/rpi3 -c uberspark/uobjrtl/crt/src/strcmp.c -o uberspark/uobjrtl/crt/src/strcmp.c.o  && echo Compiling uberspark/uobjrtl/crt/src/strlen.c... && gcc   -I. -I/home/slab/uberspark/staging/rpi3 -c uberspark/uobjrtl/crt/src/strlen.c -o uberspark/uobjrtl/crt/src/strlen.c.o  && echo Compiling uberspark/uobjrtl/crt/src/strncmp.c... && gcc   -I. -I/home/slab/uberspark/staging/rpi3 -c uberspark/uobjrtl/crt/src/strncmp.c -o uberspark/uobjrtl/crt/src/strncmp.c.o  && echo Compiling uberspark/uobjrtl/crt/src/strncpy.c... && gcc   -I. -I/home/slab/uberspark/staging/rpi3 -c uberspark/uobjrtl/crt/src/strncpy.c -o uberspark/uobjrtl/crt/src/strncpy.c.o  && echo Compiling uberspark/uobjrtl/crt/src/strnlen.c... && gcc   -I. -I/home/slab/uberspark/staging/rpi3 -c uberspark/uobjrtl/crt/src/strnlen.c -o uberspark/uobjrtl/crt/src/strnlen.c.o  && echo Compiling uberspark/uobjrtl/crypto/src/ciphers/aes/aes.c... && gcc   -I. -I/home/slab/uberspark/staging/rpi3 -c uberspark/uobjrtl/crypto/src/ciphers/aes/aes.c -o uberspark/uobjrtl/crypto/src/ciphers/aes/aes.c.o  && echo Compiling uberspark/uobjrtl/crypto/src/ciphers/aes/aes_cbc.c... && gcc   -I. -I/home/slab/uberspark/staging/rpi3 -c uberspark/uobjrtl/crypto/src/ciphers/aes/aes_cbc.c -o uberspark/uobjrtl/crypto/src/ciphers/aes/aes_cbc.c.o  && echo Compiling uberspark/uobjrtl/crypto/src/ciphers/aes/aes_tab.c... && gcc   -I. -I/home/slab/uberspark/staging/rpi3 -c uberspark/uobjrtl/crypto/src/ciphers/aes/aes_tab.c -o uberspark/uobjrtl/crypto/src/ciphers/aes/aes_tab.c.o  && echo Compiling uberspark/uobjrtl/crypto/src/hashes/sha1/sha1.c... && gcc   -I. -I/home/slab/uberspark/staging/rpi3 -c uberspark/uobjrtl/crypto/src/hashes/sha1/sha1.c -o uberspark/uobjrtl/crypto/src/hashes/sha1/sha1.c.o  && echo Compiling uberspark/uobjrtl/crypto/src/mac/hmacsha1/hmacsha1.c... && gcc   -I. -I/home/slab/uberspark/staging/rpi3 -c uberspark/uobjrtl/crypto/src/mac/hmacsha1/hmacsha1.c -o uberspark/uobjrtl/crypto/src/mac/hmacsha1/hmacsha1.c.o  && echo Compiling core/main.c... && gcc   -I. -I/home/slab/uberspark/staging/rpi3 -c core/main.c -o core/main.c.o  && echo Compiling core/ghcall.c... && gcc   -I. -I/home/slab/uberspark/staging/rpi3 -c core/ghcall.c -o core/ghcall.c.o  && echo Compiling uapps/uapp-watchdog.c... && gcc   -I. -I/home/slab/uberspark/staging/rpi3 -c uapps/uapp-watchdog.c -o uapps/uapp-watchdog.c.o  && echo Compiling uapps/uapp-pa5encfs.c... && gcc   -I. -I/home/slab/uberspark/staging/rpi3 -c uapps/uapp-pa5encfs.c -o uapps/uapp-pa5encfs.c.o  && echo Compiling uapps/uapp-utpmtest.c... && gcc   -I. -I/home/slab/uberspark/staging/rpi3 -c uapps/uapp-utpmtest.c -o uapps/uapp-utpmtest.c.o  && echo Compiling uapps/uapp-uhsign.c... && gcc   -I. -I/home/slab/uberspark/staging/rpi3 -c uapps/uapp-uhsign.c -o uapps/uapp-uhsign.c.o  && echo Compiling uapps/uapp-uhcalltest.c... && gcc   -I. -I/home/slab/uberspark/staging/rpi3 -c uapps/uapp-uhcalltest.c -o uapps/uapp-uhcalltest.c.o  && echo Compiling core/hyptimer.c... && gcc   -I. -I/home/slab/uberspark/staging/rpi3 -c core/hyptimer.c -o core/hyptimer.c.o  && echo Compiling uapps/ctxtrace.c... && gcc   -I. -I/home/slab/uberspark/staging/rpi3 -c uapps/ctxtrace.c -o uapps/ctxtrace.c.o  && echo Compiling core/bcm2837.c... && gcc   -I. -I/home/slab/uberspark/staging/rpi3 -c core/bcm2837.c -o core/bcm2837.c.o  && echo Compiling core/secboot.c... && gcc   -I. -I/home/slab/uberspark/staging/rpi3 -c core/secboot.c -o core/secboot.c.o  && echo Compiling core/intprot.c... && gcc   -I. -I/home/slab/uberspark/staging/rpi3 -c core/intprot.c -o core/intprot.c.o  && echo Compiling core/dmaprot.c... && gcc   -I. -I/home/slab/uberspark/staging/rpi3 -c core/dmaprot.c -o core/dmaprot.c.o  && echo Compiling core/uapi_s2pgtbl.c... && gcc   -I. -I/home/slab/uberspark/staging/rpi3 -c core/uapi_s2pgtbl.c -o core/uapi_s2pgtbl.c.o  && echo Compiling core/s2pgtbl.c... && gcc   -I. -I/home/slab/uberspark/staging/rpi3 -c core/s2pgtbl.c -o core/s2pgtbl.c.o  && echo Compiling core/hyppgtbl.c... && gcc   -I. -I/home/slab/uberspark/staging/rpi3 -c core/hyppgtbl.c -o core/hyppgtbl.c.o  && echo Compiling core/mmu.c... && gcc   -I. -I/home/slab/uberspark/staging/rpi3 -c core/mmu.c -o core/mmu.c.o  && echo Compiling core/hypvtable.c... && gcc   -I. -I/home/slab/uberspark/staging/rpi3 -c core/hypvtable.c -o core/hypvtable.c.o  && echo Compiling common/atags.c... && gcc   -I. -I/home/slab/uberspark/staging/rpi3 -c common/atags.c -o common/atags.c.o  && echo Compiling common/debug.c... && gcc   -I. -I/home/slab/uberspark/staging/rpi3 -c common/debug.c -o common/debug.c.o  && echo Compiling common/subr_prf.c... && gcc   -I. -I/home/slab/uberspark/staging/rpi3 -c common/subr_prf.c -o common/subr_prf.c.o  && echo Compiling common/mailbox.c... && gcc   -I. -I/home/slab/uberspark/staging/rpi3 -c common/mailbox.c -o common/mailbox.c.o  && echo Compiling common/pl011uart.c... && gcc   -I. -I/home/slab/uberspark/staging/rpi3 -c common/pl011uart.c -o common/pl011uart.c.o  && echo Compiling common/miniuart.c... && gcc   -I. -I/home/slab/uberspark/staging/rpi3 -c common/miniuart.c -o common/miniuart.c.o  && echo Compiling libutpm/utpm-common.c... && gcc   -I. -I/home/slab/uberspark/staging/rpi3 -c libutpm/utpm-common.c -o libutpm/utpm-common.c.o  && echo Compiling libutpm/utpm.c... && gcc   -I. -I/home/slab/uberspark/staging/rpi3 -c libutpm/utpm.c -o libutpm/utpm.c.o 
+uberspark >> context_path=/home/slab/Code/uberxmhf/uxmhf-rpi3/uobjcoll/_build/main/_build
+uberspark >> [docker] Compiling uobj_pminfo.c...
+uberspark >> [docker] In file included from uobj_pminfo.c:8:0:
+uberspark >> [docker] /home/slab/uberspark/staging/rpi3/uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/uobj.h:10:81: warning: 'struct atag' declared inside parameter list
+uberspark >> [docker]  extern void UBERSPARK_UOBJ_PUBLICMETHOD(main) (uint32_t r0, uint32_t id, struct atag *at, uint32_t cpuid);
+uberspark >> [docker]                                                                                  ^
+uberspark >> [docker] /home/slab/uberspark/staging/rpi3/uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/uobj.h:10:81: warning: its scope is only this definition or declaration, which is probably not what you want
+uberspark >> [docker] Compiling uobj_intrauobjcoll_callees_info.c...
+uberspark >> [docker] Compiling uobj_interuobjcoll_callees_info.c...
+uberspark >> [docker] Compiling uobj_legacy_callees_info.c...
+uberspark >> [docker] Compiling uobj_binhdr.c...
+uberspark >> [docker] Compiling uberspark/uobjrtl/crt/src/memcmp.c...
+uberspark >> [docker] Compiling uberspark/uobjrtl/crt/src/memcpy.c...
+uberspark >> [docker] Compiling uberspark/uobjrtl/crt/src/memmove.c...
+uberspark >> [docker] Compiling uberspark/uobjrtl/crt/src/memset.c...
+uberspark >> [docker] Compiling uberspark/uobjrtl/crt/src/strchr.c...
+uberspark >> [docker] Compiling uberspark/uobjrtl/crt/src/strcmp.c...
+uberspark >> [docker] Compiling uberspark/uobjrtl/crt/src/strlen.c...
+uberspark >> [docker] Compiling uberspark/uobjrtl/crt/src/strncmp.c...
+uberspark >> [docker] Compiling uberspark/uobjrtl/crt/src/strncpy.c...
+uberspark >> [docker] Compiling uberspark/uobjrtl/crt/src/strnlen.c...
+uberspark >> [docker] Compiling uberspark/uobjrtl/crypto/src/ciphers/aes/aes.c...
+uberspark >> [docker] Compiling uberspark/uobjrtl/crypto/src/ciphers/aes/aes_cbc.c...
+uberspark >> [docker] Compiling uberspark/uobjrtl/crypto/src/ciphers/aes/aes_tab.c...
+uberspark >> [docker] Compiling uberspark/uobjrtl/crypto/src/hashes/sha1/sha1.c...
+uberspark >> [docker] Compiling uberspark/uobjrtl/crypto/src/mac/hmacsha1/hmacsha1.c...
+uberspark >> [docker] Compiling core/main.c...
+uberspark >> [docker] In file included from /home/slab/uberspark/staging/rpi3/uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/types.h:45:0,
+uberspark >> [docker]                  from core/main.c:36:
+uberspark >> [docker] /home/slab/uberspark/staging/rpi3/uberspark/uobjrtl/crt/include/stdint.h:79:1: warning: useless type name in empty declaration
+uberspark >> [docker]  typedef __uint32_t      __size_t;               /* sizeof() */
+uberspark >> [docker]  ^
+uberspark >> [docker] /home/slab/uberspark/staging/rpi3/uberspark/uobjrtl/crt/include/stdint.h:100:0: warning: "INT8_C" redefined
+uberspark >> [docker]  #define INT8_C(c)               (c)
+uberspark >> [docker]  ^
+uberspark >> [docker] In file included from /usr/lib/gcc-cross/arm-linux-gnueabihf/4.9/include/stdint.h:9:0,
+uberspark >> [docker]                  from /home/slab/uberspark/staging/rpi3/uberspark/include/uberspark.h:53,
+uberspark >> [docker]                  from core/main.c:35:
+uberspark >> [docker] /usr/arm-linux-gnueabihf/include/stdint.h:282:0: note: this is the location of the previous definition
+uberspark >> [docker]  # define INT8_C(c) c
+uberspark >> [docker]  ^
+uberspark >> [docker] In file included from /home/slab/uberspark/staging/rpi3/uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/types.h:45:0,
+uberspark >> [docker]                  from core/main.c:36:
+uberspark >> [docker] /home/slab/uberspark/staging/rpi3/uberspark/uobjrtl/crt/include/stdint.h:101:0: warning: "INT16_C" redefined
+uberspark >> [docker]  #define INT16_C(c)              (c)
+uberspark >> [docker]  ^
+uberspark >> [docker] In file included from /usr/lib/gcc-cross/arm-linux-gnueabihf/4.9/include/stdint.h:9:0,
+uberspark >> [docker]                  from /home/slab/uberspark/staging/rpi3/uberspark/include/uberspark.h:53,
+uberspark >> [docker]                  from core/main.c:35:
+uberspark >> [docker] /usr/arm-linux-gnueabihf/include/stdint.h:283:0: note: this is the location of the previous definition
+uberspark >> [docker]  # define INT16_C(c) c
+uberspark >> [docker]  ^
+uberspark >> [docker] In file included from /home/slab/uberspark/staging/rpi3/uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/types.h:45:0,
+uberspark >> [docker]                  from core/main.c:36:
+uberspark >> [docker] /home/slab/uberspark/staging/rpi3/uberspark/uobjrtl/crt/include/stdint.h:102:0: warning: "INT32_C" redefined
+uberspark >> [docker]  #define INT32_C(c)              (c)
+uberspark >> [docker]  ^
+uberspark >> [docker] In file included from /usr/lib/gcc-cross/arm-linux-gnueabihf/4.9/include/stdint.h:9:0,
+uberspark >> [docker]                  from /home/slab/uberspark/staging/rpi3/uberspark/include/uberspark.h:53,
+uberspark >> [docker]                  from core/main.c:35:
+uberspark >> [docker] /usr/arm-linux-gnueabihf/include/stdint.h:284:0: note: this is the location of the previous definition
+uberspark >> [docker]  # define INT32_C(c) c
+uberspark >> [docker]  ^
+uberspark >> [docker] In file included from /home/slab/uberspark/staging/rpi3/uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/types.h:45:0,
+uberspark >> [docker]                  from core/main.c:36:
+uberspark >> [docker] /home/slab/uberspark/staging/rpi3/uberspark/uobjrtl/crt/include/stdint.h:103:0: warning: "INT64_C" redefined
+uberspark >> [docker]  #define INT64_C(c)              (c ## LL)
+uberspark >> [docker]  ^
+uberspark >> [docker] In file included from /usr/lib/gcc-cross/arm-linux-gnueabihf/4.9/include/stdint.h:9:0,
+uberspark >> [docker]                  from /home/slab/uberspark/staging/rpi3/uberspark/include/uberspark.h:53,
+uberspark >> [docker]                  from core/main.c:35:
+uberspark >> [docker] /usr/arm-linux-gnueabihf/include/stdint.h:288:0: note: this is the location of the previous definition
+uberspark >> [docker]  #  define INT64_C(c) c ## LL
+uberspark >> [docker]  ^
+uberspark >> [docker] In file included from /home/slab/uberspark/staging/rpi3/uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/types.h:45:0,
+uberspark >> [docker]                  from core/main.c:36:
+uberspark >> [docker] /home/slab/uberspark/staging/rpi3/uberspark/uobjrtl/crt/include/stdint.h:105:0: warning: "UINT8_C" redefined
+uberspark >> [docker]  #define UINT8_C(c)              (c)
+uberspark >> [docker]  ^
+uberspark >> [docker] In file included from /usr/lib/gcc-cross/arm-linux-gnueabihf/4.9/include/stdint.h:9:0,
+uberspark >> [docker]                  from /home/slab/uberspark/staging/rpi3/uberspark/include/uberspark.h:53,
+uberspark >> [docker]                  from core/main.c:35:
+uberspark >> [docker] /usr/arm-linux-gnueabihf/include/stdint.h:292:0: note: this is the location of the previous definition
+uberspark >> [docker]  # define UINT8_C(c) c
+uberspark >> [docker]  ^
+uberspark >> [docker] In file included from /home/slab/uberspark/staging/rpi3/uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/types.h:45:0,
+uberspark >> [docker]                  from core/main.c:36:
+uberspark >> [docker] /home/slab/uberspark/staging/rpi3/uberspark/uobjrtl/crt/include/stdint.h:106:0: warning: "UINT16_C" redefined
+uberspark >> [docker]  #define UINT16_C(c)             (c)
+uberspark >> [docker]  ^
+uberspark >> [docker] In file included from /usr/lib/gcc-cross/arm-linux-gnueabihf/4.9/include/stdint.h:9:0,
+uberspark >> [docker]                  from /home/slab/uberspark/staging/rpi3/uberspark/include/uberspark.h:53,
+uberspark >> [docker]                  from core/main.c:35:
+uberspark >> [docker] /usr/arm-linux-gnueabihf/include/stdint.h:293:0: note: this is the location of the previous definition
+uberspark >> [docker]  # define UINT16_C(c) c
+uberspark >> [docker]  ^
+uberspark >> [docker] In file included from /home/slab/uberspark/staging/rpi3/uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/types.h:45:0,
+uberspark >> [docker]                  from core/main.c:36:
+uberspark >> [docker] /home/slab/uberspark/staging/rpi3/uberspark/uobjrtl/crt/include/stdint.h:107:0: warning: "UINT32_C" redefined
+uberspark >> [docker]  #define UINT32_C(c)             (c ## U)
+uberspark >> [docker]  ^
+uberspark >> [docker] In file included from /usr/lib/gcc-cross/arm-linux-gnueabihf/4.9/include/stdint.h:9:0,
+uberspark >> [docker]                  from /home/slab/uberspark/staging/rpi3/uberspark/include/uberspark.h:53,
+uberspark >> [docker]                  from core/main.c:35:
+uberspark >> [docker] /usr/arm-linux-gnueabihf/include/stdint.h:294:0: note: this is the location of the previous definition
+uberspark >> [docker]  # define UINT32_C(c) c ## U
+uberspark >> [docker]  ^
+uberspark >> [docker] In file included from /home/slab/uberspark/staging/rpi3/uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/types.h:45:0,
+uberspark >> [docker]                  from core/main.c:36:
+uberspark >> [docker] /home/slab/uberspark/staging/rpi3/uberspark/uobjrtl/crt/include/stdint.h:108:0: warning: "UINT64_C" redefined
+uberspark >> [docker]  #define UINT64_C(c)             (c ## ULL)
+uberspark >> [docker]  ^
+uberspark >> [docker] In file included from /usr/lib/gcc-cross/arm-linux-gnueabihf/4.9/include/stdint.h:9:0,
+uberspark >> [docker]                  from /home/slab/uberspark/staging/rpi3/uberspark/include/uberspark.h:53,
+uberspark >> [docker]                  from core/main.c:35:
+uberspark >> [docker] /usr/arm-linux-gnueabihf/include/stdint.h:298:0: note: this is the location of the previous definition
+uberspark >> [docker]  #  define UINT64_C(c) c ## ULL
+uberspark >> [docker]  ^
+uberspark >> [docker] In file included from /home/slab/uberspark/staging/rpi3/uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/types.h:45:0,
+uberspark >> [docker]                  from core/main.c:36:
+uberspark >> [docker] /home/slab/uberspark/staging/rpi3/uberspark/uobjrtl/crt/include/stdint.h:110:0: warning: "INTMAX_C" redefined
+uberspark >> [docker]  #define INTMAX_C(c)             (c ## LL)
+uberspark >> [docker]  ^
+uberspark >> [docker] In file included from /usr/lib/gcc-cross/arm-linux-gnueabihf/4.9/include/stdint.h:9:0,
+uberspark >> [docker]                  from /home/slab/uberspark/staging/rpi3/uberspark/include/uberspark.h:53,
+uberspark >> [docker]                  from core/main.c:35:
+uberspark >> [docker] /usr/arm-linux-gnueabihf/include/stdint.h:306:0: note: this is the location of the previous definition
+uberspark >> [docker]  #  define INTMAX_C(c) c ## LL
+uberspark >> [docker]  ^
+uberspark >> [docker] In file included from /home/slab/uberspark/staging/rpi3/uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/types.h:45:0,
+uberspark >> [docker]                  from core/main.c:36:
+uberspark >> [docker] /home/slab/uberspark/staging/rpi3/uberspark/uobjrtl/crt/include/stdint.h:111:0: warning: "UINTMAX_C" redefined
+uberspark >> [docker]  #define UINTMAX_C(c)            (c ## ULL)
+uberspark >> [docker]  ^
+uberspark >> [docker] In file included from /usr/lib/gcc-cross/arm-linux-gnueabihf/4.9/include/stdint.h:9:0,
+uberspark >> [docker]                  from /home/slab/uberspark/staging/rpi3/uberspark/include/uberspark.h:53,
+uberspark >> [docker]                  from core/main.c:35:
+uberspark >> [docker] /usr/arm-linux-gnueabihf/include/stdint.h:307:0: note: this is the location of the previous definition
+uberspark >> [docker]  #  define UINTMAX_C(c) c ## ULL
+uberspark >> [docker]  ^
+uberspark >> [docker] In file included from /home/slab/uberspark/staging/rpi3/uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/types.h:45:0,
+uberspark >> [docker]                  from core/main.c:36:
+uberspark >> [docker] /home/slab/uberspark/staging/rpi3/uberspark/uobjrtl/crt/include/stdint.h:122:0: warning: "INT8_MIN" redefined
+uberspark >> [docker]  #define INT8_MIN        (-0x7f-1)
+uberspark >> [docker]  ^
+uberspark >> [docker] In file included from /usr/lib/gcc-cross/arm-linux-gnueabihf/4.9/include/stdint.h:9:0,
+uberspark >> [docker]                  from /home/slab/uberspark/staging/rpi3/uberspark/include/uberspark.h:53,
+uberspark >> [docker]                  from core/main.c:35:
+uberspark >> [docker] /usr/arm-linux-gnueabihf/include/stdint.h:155:0: note: this is the location of the previous definition
+uberspark >> [docker]  # define INT8_MIN  (-128)
+uberspark >> [docker]  ^
+uberspark >> [docker] In file included from /home/slab/uberspark/staging/rpi3/uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/types.h:45:0,
+uberspark >> [docker]                  from core/main.c:36:
+uberspark >> [docker] /home/slab/uberspark/staging/rpi3/uberspark/uobjrtl/crt/include/stdint.h:123:0: warning: "INT16_MIN" redefined
+uberspark >> [docker]  #define INT16_MIN       (-0x7fff-1)
+uberspark >> [docker]  ^
+uberspark >> [docker] In file included from /usr/lib/gcc-cross/arm-linux-gnueabihf/4.9/include/stdint.h:9:0,
+uberspark >> [docker]                  from /home/slab/uberspark/staging/rpi3/uberspark/include/uberspark.h:53,
+uberspark >> [docker]                  from core/main.c:35:
+uberspark >> [docker] /usr/arm-linux-gnueabihf/include/stdint.h:156:0: note: this is the location of the previous definition
+uberspark >> [docker]  # define INT16_MIN  (-32767-1)
+uberspark >> [docker]  ^
+uberspark >> [docker] In file included from /home/slab/uberspark/staging/rpi3/uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/types.h:45:0,
+uberspark >> [docker]                  from core/main.c:36:
+uberspark >> [docker] /home/slab/uberspark/staging/rpi3/uberspark/uobjrtl/crt/include/stdint.h:124:0: warning: "INT32_MIN" redefined
+uberspark >> [docker]  #define INT32_MIN       (-0x7fffffff-1)
+uberspark >> [docker]  ^
+uberspark >> [docker] In file included from /usr/lib/gcc-cross/arm-linux-gnueabihf/4.9/include/stdint.h:9:0,
+uberspark >> [docker]                  from /home/slab/uberspark/staging/rpi3/uberspark/include/uberspark.h:53,
+uberspark >> [docker]                  from core/main.c:35:
+uberspark >> [docker] /usr/arm-linux-gnueabihf/include/stdint.h:157:0: note: this is the location of the previous definition
+uberspark >> [docker]  # define INT32_MIN  (-2147483647-1)
+uberspark >> [docker]  ^
+uberspark >> [docker] In file included from /home/slab/uberspark/staging/rpi3/uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/types.h:45:0,
+uberspark >> [docker]                  from core/main.c:36:
+uberspark >> [docker] /home/slab/uberspark/staging/rpi3/uberspark/uobjrtl/crt/include/stdint.h:125:0: warning: "INT64_MIN" redefined
+uberspark >> [docker]  #define INT64_MIN       (-0x7fffffffffffffffLL-1)
+uberspark >> [docker]  ^
+uberspark >> [docker] In file included from /usr/lib/gcc-cross/arm-linux-gnueabihf/4.9/include/stdint.h:9:0,
+uberspark >> [docker]                  from /home/slab/uberspark/staging/rpi3/uberspark/include/uberspark.h:53,
+uberspark >> [docker]                  from core/main.c:35:
+uberspark >> [docker] /usr/arm-linux-gnueabihf/include/stdint.h:158:0: note: this is the location of the previous definition
+uberspark >> [docker]  # define INT64_MIN  (-__INT64_C(9223372036854775807)-1)
+uberspark >> [docker]  ^
+uberspark >> [docker] In file included from /home/slab/uberspark/staging/rpi3/uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/types.h:45:0,
+uberspark >> [docker]                  from core/main.c:36:
+uberspark >> [docker] /home/slab/uberspark/staging/rpi3/uberspark/uobjrtl/crt/include/stdint.h:128:0: warning: "INT8_MAX" redefined
+uberspark >> [docker]  #define INT8_MAX        0x7f
+uberspark >> [docker]  ^
+uberspark >> [docker] In file included from /usr/lib/gcc-cross/arm-linux-gnueabihf/4.9/include/stdint.h:9:0,
+uberspark >> [docker]                  from /home/slab/uberspark/staging/rpi3/uberspark/include/uberspark.h:53,
+uberspark >> [docker]                  from core/main.c:35:
+uberspark >> [docker] /usr/arm-linux-gnueabihf/include/stdint.h:160:0: note: this is the location of the previous definition
+uberspark >> [docker]  # define INT8_MAX  (127)
+uberspark >> [docker]  ^
+uberspark >> [docker] In file included from /home/slab/uberspark/staging/rpi3/uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/types.h:45:0,
+uberspark >> [docker]                  from core/main.c:36:
+uberspark >> [docker] /home/slab/uberspark/staging/rpi3/uberspark/uobjrtl/crt/include/stdint.h:129:0: warning: "INT16_MAX" redefined
+uberspark >> [docker]  #define INT16_MAX       0x7fff
+uberspark >> [docker]  ^
+uberspark >> [docker] In file included from /usr/lib/gcc-cross/arm-linux-gnueabihf/4.9/include/stdint.h:9:0,
+uberspark >> [docker]                  from /home/slab/uberspark/staging/rpi3/uberspark/include/uberspark.h:53,
+uberspark >> [docker]                  from core/main.c:35:
+uberspark >> [docker] /usr/arm-linux-gnueabihf/include/stdint.h:161:0: note: this is the location of the previous definition
+uberspark >> [docker]  # define INT16_MAX  (32767)
+uberspark >> [docker]  ^
+uberspark >> [docker] In file included from /home/slab/uberspark/staging/rpi3/uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/types.h:45:0,
+uberspark >> [docker]                  from core/main.c:36:
+uberspark >> [docker] /home/slab/uberspark/staging/rpi3/uberspark/uobjrtl/crt/include/stdint.h:130:0: warning: "INT32_MAX" redefined
+uberspark >> [docker]  #define INT32_MAX       0x7fffffff
+uberspark >> [docker]  ^
+uberspark >> [docker] In file included from /usr/lib/gcc-cross/arm-linux-gnueabihf/4.9/include/stdint.h:9:0,
+uberspark >> [docker]                  from /home/slab/uberspark/staging/rpi3/uberspark/include/uberspark.h:53,
+uberspark >> [docker]                  from core/main.c:35:
+uberspark >> [docker] /usr/arm-linux-gnueabihf/include/stdint.h:162:0: note: this is the location of the previous definition
+uberspark >> [docker]  # define INT32_MAX  (2147483647)
+uberspark >> [docker]  ^
+uberspark >> [docker] In file included from /home/slab/uberspark/staging/rpi3/uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/types.h:45:0,
+uberspark >> [docker]                  from core/main.c:36:
+uberspark >> [docker] /home/slab/uberspark/staging/rpi3/uberspark/uobjrtl/crt/include/stdint.h:131:0: warning: "INT64_MAX" redefined
+uberspark >> [docker]  #define INT64_MAX       0x7fffffffffffffffLL
+uberspark >> [docker]  ^
+uberspark >> [docker] In file included from /usr/lib/gcc-cross/arm-linux-gnueabihf/4.9/include/stdint.h:9:0,
+uberspark >> [docker]                  from /home/slab/uberspark/staging/rpi3/uberspark/include/uberspark.h:53,
+uberspark >> [docker]                  from core/main.c:35:
+uberspark >> [docker] /usr/arm-linux-gnueabihf/include/stdint.h:163:0: note: this is the location of the previous definition
+uberspark >> [docker]  # define INT64_MAX  (__INT64_C(9223372036854775807))
+uberspark >> [docker]  ^
+uberspark >> [docker] In file included from /home/slab/uberspark/staging/rpi3/uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/types.h:45:0,
+uberspark >> [docker]                  from core/main.c:36:
+uberspark >> [docker] /home/slab/uberspark/staging/rpi3/uberspark/uobjrtl/crt/include/stdint.h:134:0: warning: "UINT8_MAX" redefined
+uberspark >> [docker]  #define UINT8_MAX       0xff
+uberspark >> [docker]  ^
+uberspark >> [docker] In file included from /usr/lib/gcc-cross/arm-linux-gnueabihf/4.9/include/stdint.h:9:0,
+uberspark >> [docker]                  from /home/slab/uberspark/staging/rpi3/uberspark/include/uberspark.h:53,
+uberspark >> [docker]                  from core/main.c:35:
+uberspark >> [docker] /usr/arm-linux-gnueabihf/include/stdint.h:166:0: note: this is the location of the previous definition
+uberspark >> [docker]  # define UINT8_MAX  (255)
+uberspark >> [docker]  ^
+uberspark >> [docker] In file included from /home/slab/uberspark/staging/rpi3/uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/types.h:45:0,
+uberspark >> [docker]                  from core/main.c:36:
+uberspark >> [docker] /home/slab/uberspark/staging/rpi3/uberspark/uobjrtl/crt/include/stdint.h:135:0: warning: "UINT16_MAX" redefined
+uberspark >> [docker]  #define UINT16_MAX      0xffff
+uberspark >> [docker]  ^
+uberspark >> [docker] In file included from /usr/lib/gcc-cross/arm-linux-gnueabihf/4.9/include/stdint.h:9:0,
+uberspark >> [docker]                  from /home/slab/uberspark/staging/rpi3/uberspark/include/uberspark.h:53,
+uberspark >> [docker]                  from core/main.c:35:
+uberspark >> [docker] /usr/arm-linux-gnueabihf/include/stdint.h:167:0: note: this is the location of the previous definition
+uberspark >> [docker]  # define UINT16_MAX  (65535)
+uberspark >> [docker]  ^
+uberspark >> [docker] In file included from /home/slab/uberspark/staging/rpi3/uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/types.h:45:0,
+uberspark >> [docker]                  from core/main.c:36:
+uberspark >> [docker] /home/slab/uberspark/staging/rpi3/uberspark/uobjrtl/crt/include/stdint.h:136:0: warning: "UINT32_MAX" redefined
+uberspark >> [docker]  #define UINT32_MAX      0xffffffffU
+uberspark >> [docker]  ^
+uberspark >> [docker] In file included from /usr/lib/gcc-cross/arm-linux-gnueabihf/4.9/include/stdint.h:9:0,
+uberspark >> [docker]                  from /home/slab/uberspark/staging/rpi3/uberspark/include/uberspark.h:53,
+uberspark >> [docker]                  from core/main.c:35:
+uberspark >> [docker] /usr/arm-linux-gnueabihf/include/stdint.h:168:0: note: this is the location of the previous definition
+uberspark >> [docker]  # define UINT32_MAX  (4294967295U)
+uberspark >> [docker]  ^
+uberspark >> [docker] In file included from /home/slab/uberspark/staging/rpi3/uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/types.h:45:0,
+uberspark >> [docker]                  from core/main.c:36:
+uberspark >> [docker] /home/slab/uberspark/staging/rpi3/uberspark/uobjrtl/crt/include/stdint.h:137:0: warning: "UINT64_MAX" redefined
+uberspark >> [docker]  #define UINT64_MAX      0xffffffffffffffffULL
+uberspark >> [docker]  ^
+uberspark >> [docker] In file included from /usr/lib/gcc-cross/arm-linux-gnueabihf/4.9/include/stdint.h:9:0,
+uberspark >> [docker]                  from /home/slab/uberspark/staging/rpi3/uberspark/include/uberspark.h:53,
+uberspark >> [docker]                  from core/main.c:35:
+uberspark >> [docker] /usr/arm-linux-gnueabihf/include/stdint.h:169:0: note: this is the location of the previous definition
+uberspark >> [docker]  # define UINT64_MAX  (__UINT64_C(18446744073709551615))
+uberspark >> [docker]  ^
+uberspark >> [docker] In file included from /home/slab/uberspark/staging/rpi3/uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/types.h:45:0,
+uberspark >> [docker]                  from core/main.c:36:
+uberspark >> [docker] /home/slab/uberspark/staging/rpi3/uberspark/uobjrtl/crt/include/stdint.h:144:0: warning: "INT_LEAST8_MIN" redefined
+uberspark >> [docker]  #define INT_LEAST8_MIN  INT8_MIN
+uberspark >> [docker]  ^
+uberspark >> [docker] In file included from /usr/lib/gcc-cross/arm-linux-gnueabihf/4.9/include/stdint.h:9:0,
+uberspark >> [docker]                  from /home/slab/uberspark/staging/rpi3/uberspark/include/uberspark.h:53,
+uberspark >> [docker]                  from core/main.c:35:
+uberspark >> [docker] /usr/arm-linux-gnueabihf/include/stdint.h:173:0: note: this is the location of the previous definition
+uberspark >> [docker]  # define INT_LEAST8_MIN  (-128)
+uberspark >> [docker]  ^
+uberspark >> [docker] In file included from /home/slab/uberspark/staging/rpi3/uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/types.h:45:0,
+uberspark >> [docker]                  from core/main.c:36:
+uberspark >> [docker] /home/slab/uberspark/staging/rpi3/uberspark/uobjrtl/crt/include/stdint.h:145:0: warning: "INT_LEAST16_MIN" redefined
+uberspark >> [docker]  #define INT_LEAST16_MIN INT16_MIN
+uberspark >> [docker]  ^
+uberspark >> [docker] In file included from /usr/lib/gcc-cross/arm-linux-gnueabihf/4.9/include/stdint.h:9:0,
+uberspark >> [docker]                  from /home/slab/uberspark/staging/rpi3/uberspark/include/uberspark.h:53,
+uberspark >> [docker]                  from core/main.c:35:
+uberspark >> [docker] /usr/arm-linux-gnueabihf/include/stdint.h:174:0: note: this is the location of the previous definition
+uberspark >> [docker]  # define INT_LEAST16_MIN (-32767-1)
+uberspark >> [docker]  ^
+uberspark >> [docker] In file included from /home/slab/uberspark/staging/rpi3/uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/types.h:45:0,
+uberspark >> [docker]                  from core/main.c:36:
+uberspark >> [docker] /home/slab/uberspark/staging/rpi3/uberspark/uobjrtl/crt/include/stdint.h:146:0: warning: "INT_LEAST32_MIN" redefined
+uberspark >> [docker]  #define INT_LEAST32_MIN INT32_MIN
+uberspark >> [docker]  ^
+uberspark >> [docker] In file included from /usr/lib/gcc-cross/arm-linux-gnueabihf/4.9/include/stdint.h:9:0,
+uberspark >> [docker]                  from /home/slab/uberspark/staging/rpi3/uberspark/include/uberspark.h:53,
+uberspark >> [docker]                  from core/main.c:35:
+uberspark >> [docker] /usr/arm-linux-gnueabihf/include/stdint.h:175:0: note: this is the location of the previous definition
+uberspark >> [docker]  # define INT_LEAST32_MIN (-2147483647-1)
+uberspark >> [docker]  ^
+uberspark >> [docker] In file included from /home/slab/uberspark/staging/rpi3/uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/types.h:45:0,
+uberspark >> [docker]                  from core/main.c:36:
+uberspark >> [docker] /home/slab/uberspark/staging/rpi3/uberspark/uobjrtl/crt/include/stdint.h:147:0: warning: "INT_LEAST64_MIN" redefined
+uberspark >> [docker]  #define INT_LEAST64_MIN INT64_MIN
+uberspark >> [docker]  ^
+uberspark >> [docker] In file included from /usr/lib/gcc-cross/arm-linux-gnueabihf/4.9/include/stdint.h:9:0,
+uberspark >> [docker]                  from /home/slab/uberspark/staging/rpi3/uberspark/include/uberspark.h:53,
+uberspark >> [docker]                  from core/main.c:35:
+uberspark >> [docker] /usr/arm-linux-gnueabihf/include/stdint.h:176:0: note: this is the location of the previous definition
+uberspark >> [docker]  # define INT_LEAST64_MIN (-__INT64_C(9223372036854775807)-1)
+uberspark >> [docker]  ^
+uberspark >> [docker] In file included from /home/slab/uberspark/staging/rpi3/uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/types.h:45:0,
+uberspark >> [docker]                  from core/main.c:36:
+uberspark >> [docker] /home/slab/uberspark/staging/rpi3/uberspark/uobjrtl/crt/include/stdint.h:150:0: warning: "INT_LEAST8_MAX" redefined
+uberspark >> [docker]  #define INT_LEAST8_MAX  INT8_MAX
+uberspark >> [docker]  ^
+uberspark >> [docker] In file included from /usr/lib/gcc-cross/arm-linux-gnueabihf/4.9/include/stdint.h:9:0,
+uberspark >> [docker]                  from /home/slab/uberspark/staging/rpi3/uberspark/include/uberspark.h:53,
+uberspark >> [docker]                  from core/main.c:35:
+uberspark >> [docker] /usr/arm-linux-gnueabihf/include/stdint.h:178:0: note: this is the location of the previous definition
+uberspark >> [docker]  # define INT_LEAST8_MAX  (127)
+uberspark >> [docker]  ^
+uberspark >> [docker] In file included from /home/slab/uberspark/staging/rpi3/uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/types.h:45:0,
+uberspark >> [docker]                  from core/main.c:36:
+uberspark >> [docker] /home/slab/uberspark/staging/rpi3/uberspark/uobjrtl/crt/include/stdint.h:151:0: warning: "INT_LEAST16_MAX" redefined
+uberspark >> [docker]  #define INT_LEAST16_MAX INT16_MAX
+uberspark >> [docker]  ^
+uberspark >> [docker] In file included from /usr/lib/gcc-cross/arm-linux-gnueabihf/4.9/include/stdint.h:9:0,
+uberspark >> [docker]                  from /home/slab/uberspark/staging/rpi3/uberspark/include/uberspark.h:53,
+uberspark >> [docker]                  from core/main.c:35:
+uberspark >> [docker] /usr/arm-linux-gnueabihf/include/stdint.h:179:0: note: this is the location of the previous definition
+uberspark >> [docker]  # define INT_LEAST16_MAX (32767)
+uberspark >> [docker]  ^
+uberspark >> [docker] In file included from /home/slab/uberspark/staging/rpi3/uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/types.h:45:0,
+uberspark >> [docker]                  from core/main.c:36:
+uberspark >> [docker] /home/slab/uberspark/staging/rpi3/uberspark/uobjrtl/crt/include/stdint.h:152:0: warning: "INT_LEAST32_MAX" redefined
+uberspark >> [docker]  #define INT_LEAST32_MAX INT32_MAX
+uberspark >> [docker]  ^
+uberspark >> [docker] In file included from /usr/lib/gcc-cross/arm-linux-gnueabihf/4.9/include/stdint.h:9:0,
+uberspark >> [docker]                  from /home/slab/uberspark/staging/rpi3/uberspark/include/uberspark.h:53,
+uberspark >> [docker]                  from core/main.c:35:
+uberspark >> [docker] /usr/arm-linux-gnueabihf/include/stdint.h:180:0: note: this is the location of the previous definition
+uberspark >> [docker]  # define INT_LEAST32_MAX (2147483647)
+uberspark >> [docker]  ^
+uberspark >> [docker] In file included from /home/slab/uberspark/staging/rpi3/uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/types.h:45:0,
+uberspark >> [docker]                  from core/main.c:36:
+uberspark >> [docker] /home/slab/uberspark/staging/rpi3/uberspark/uobjrtl/crt/include/stdint.h:153:0: warning: "INT_LEAST64_MAX" redefined
+uberspark >> [docker]  #define INT_LEAST64_MAX INT64_MAX
+uberspark >> [docker]  ^
+uberspark >> [docker] In file included from /usr/lib/gcc-cross/arm-linux-gnueabihf/4.9/include/stdint.h:9:0,
+uberspark >> [docker]                  from /home/slab/uberspark/staging/rpi3/uberspark/include/uberspark.h:53,
+uberspark >> [docker]                  from core/main.c:35:
+uberspark >> [docker] /usr/arm-linux-gnueabihf/include/stdint.h:181:0: note: this is the location of the previous definition
+uberspark >> [docker]  # define INT_LEAST64_MAX (__INT64_C(9223372036854775807))
+uberspark >> [docker]  ^
+uberspark >> [docker] In file included from /home/slab/uberspark/staging/rpi3/uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/types.h:45:0,
+uberspark >> [docker]                  from core/main.c:36:
+uberspark >> [docker] /home/slab/uberspark/staging/rpi3/uberspark/uobjrtl/crt/include/stdint.h:156:0: warning: "UINT_LEAST8_MAX" redefined
+uberspark >> [docker]  #define UINT_LEAST8_MAX  UINT8_MAX
+uberspark >> [docker]  ^
+uberspark >> [docker] In file included from /usr/lib/gcc-cross/arm-linux-gnueabihf/4.9/include/stdint.h:9:0,
+uberspark >> [docker]                  from /home/slab/uberspark/staging/rpi3/uberspark/include/uberspark.h:53,
+uberspark >> [docker]                  from core/main.c:35:
+uberspark >> [docker] /usr/arm-linux-gnueabihf/include/stdint.h:184:0: note: this is the location of the previous definition
+uberspark >> [docker]  # define UINT_LEAST8_MAX (255)
+uberspark >> [docker]  ^
+uberspark >> [docker] In file included from /home/slab/uberspark/staging/rpi3/uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/types.h:45:0,
+uberspark >> [docker]                  from core/main.c:36:
+uberspark >> [docker] /home/slab/uberspark/staging/rpi3/uberspark/uobjrtl/crt/include/stdint.h:157:0: warning: "UINT_LEAST16_MAX" redefined
+uberspark >> [docker]  #define UINT_LEAST16_MAX UINT16_MAX
+uberspark >> [docker]  ^
+uberspark >> [docker] In file included from /usr/lib/gcc-cross/arm-linux-gnueabihf/4.9/include/stdint.h:9:0,
+uberspark >> [docker]                  from /home/slab/uberspark/staging/rpi3/uberspark/include/uberspark.h:53,
+uberspark >> [docker]                  from core/main.c:35:
+uberspark >> [docker] /usr/arm-linux-gnueabihf/include/stdint.h:185:0: note: this is the location of the previous definition
+uberspark >> [docker]  # define UINT_LEAST16_MAX (65535)
+uberspark >> [docker]  ^
+uberspark >> [docker] In file included from /home/slab/uberspark/staging/rpi3/uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/types.h:45:0,
+uberspark >> [docker]                  from core/main.c:36:
+uberspark >> [docker] /home/slab/uberspark/staging/rpi3/uberspark/uobjrtl/crt/include/stdint.h:158:0: warning: "UINT_LEAST32_MAX" redefined
+uberspark >> [docker]  #define UINT_LEAST32_MAX UINT32_MAX
+uberspark >> [docker]  ^
+uberspark >> [docker] In file included from /usr/lib/gcc-cross/arm-linux-gnueabihf/4.9/include/stdint.h:9:0,
+uberspark >> [docker]                  from /home/slab/uberspark/staging/rpi3/uberspark/include/uberspark.h:53,
+uberspark >> [docker]                  from core/main.c:35:
+uberspark >> [docker] /usr/arm-linux-gnueabihf/include/stdint.h:186:0: note: this is the location of the previous definition
+uberspark >> [docker]  # define UINT_LEAST32_MAX (4294967295U)
+uberspark >> [docker]  ^
+uberspark >> [docker] In file included from /home/slab/uberspark/staging/rpi3/uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/types.h:45:0,
+uberspark >> [docker]                  from core/main.c:36:
+uberspark >> [docker] /home/slab/uberspark/staging/rpi3/uberspark/uobjrtl/crt/include/stdint.h:159:0: warning: "UINT_LEAST64_MAX" redefined
+uberspark >> [docker]  #define UINT_LEAST64_MAX UINT64_MAX
+uberspark >> [docker]  ^
+uberspark >> [docker] In file included from /usr/lib/gcc-cross/arm-linux-gnueabihf/4.9/include/stdint.h:9:0,
+uberspark >> [docker]                  from /home/slab/uberspark/staging/rpi3/uberspark/include/uberspark.h:53,
+uberspark >> [docker]                  from core/main.c:35:
+uberspark >> [docker] /usr/arm-linux-gnueabihf/include/stdint.h:187:0: note: this is the location of the previous definition
+uberspark >> [docker]  # define UINT_LEAST64_MAX (__UINT64_C(18446744073709551615))
+uberspark >> [docker]  ^
+uberspark >> [docker] In file included from /home/slab/uberspark/staging/rpi3/uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/types.h:45:0,
+uberspark >> [docker]                  from core/main.c:36:
+uberspark >> [docker] /home/slab/uberspark/staging/rpi3/uberspark/uobjrtl/crt/include/stdint.h:166:0: warning: "INT_FAST8_MIN" redefined
+uberspark >> [docker]  #define INT_FAST8_MIN   INT32_MIN
+uberspark >> [docker]  ^
+uberspark >> [docker] In file included from /usr/lib/gcc-cross/arm-linux-gnueabihf/4.9/include/stdint.h:9:0,
+uberspark >> [docker]                  from /home/slab/uberspark/staging/rpi3/uberspark/include/uberspark.h:53,
+uberspark >> [docker]                  from core/main.c:35:
+uberspark >> [docker] /usr/arm-linux-gnueabihf/include/stdint.h:191:0: note: this is the location of the previous definition
+uberspark >> [docker]  # define INT_FAST8_MIN  (-128)
+uberspark >> [docker]  ^
+uberspark >> [docker] In file included from /home/slab/uberspark/staging/rpi3/uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/types.h:45:0,
+uberspark >> [docker]                  from core/main.c:36:
+uberspark >> [docker] /home/slab/uberspark/staging/rpi3/uberspark/uobjrtl/crt/include/stdint.h:167:0: warning: "INT_FAST16_MIN" redefined
+uberspark >> [docker]  #define INT_FAST16_MIN  INT32_MIN
+uberspark >> [docker]  ^
+uberspark >> [docker] In file included from /usr/lib/gcc-cross/arm-linux-gnueabihf/4.9/include/stdint.h:9:0,
+uberspark >> [docker]                  from /home/slab/uberspark/staging/rpi3/uberspark/include/uberspark.h:53,
+uberspark >> [docker]                  from core/main.c:35:
+uberspark >> [docker] /usr/arm-linux-gnueabihf/include/stdint.h:196:0: note: this is the location of the previous definition
+uberspark >> [docker]  #  define INT_FAST16_MIN (-2147483647-1)
+uberspark >> [docker]  ^
+uberspark >> [docker] In file included from /home/slab/uberspark/staging/rpi3/uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/types.h:45:0,
+uberspark >> [docker]                  from core/main.c:36:
+uberspark >> [docker] /home/slab/uberspark/staging/rpi3/uberspark/uobjrtl/crt/include/stdint.h:168:0: warning: "INT_FAST32_MIN" redefined
+uberspark >> [docker]  #define INT_FAST32_MIN  INT32_MIN
+uberspark >> [docker]  ^
+uberspark >> [docker] In file included from /usr/lib/gcc-cross/arm-linux-gnueabihf/4.9/include/stdint.h:9:0,
+uberspark >> [docker]                  from /home/slab/uberspark/staging/rpi3/uberspark/include/uberspark.h:53,
+uberspark >> [docker]                  from core/main.c:35:
+uberspark >> [docker] /usr/arm-linux-gnueabihf/include/stdint.h:197:0: note: this is the location of the previous definition
+uberspark >> [docker]  #  define INT_FAST32_MIN (-2147483647-1)
+uberspark >> [docker]  ^
+uberspark >> [docker] In file included from /home/slab/uberspark/staging/rpi3/uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/types.h:45:0,
+uberspark >> [docker]                  from core/main.c:36:
+uberspark >> [docker] /home/slab/uberspark/staging/rpi3/uberspark/uobjrtl/crt/include/stdint.h:169:0: warning: "INT_FAST64_MIN" redefined
+uberspark >> [docker]  #define INT_FAST64_MIN  INT64_MIN
+uberspark >> [docker]  ^
+uberspark >> [docker] In file included from /usr/lib/gcc-cross/arm-linux-gnueabihf/4.9/include/stdint.h:9:0,
+uberspark >> [docker]                  from /home/slab/uberspark/staging/rpi3/uberspark/include/uberspark.h:53,
+uberspark >> [docker]                  from core/main.c:35:
+uberspark >> [docker] /usr/arm-linux-gnueabihf/include/stdint.h:199:0: note: this is the location of the previous definition
+uberspark >> [docker]  # define INT_FAST64_MIN  (-__INT64_C(9223372036854775807)-1)
+uberspark >> [docker]  ^
+uberspark >> [docker] In file included from /home/slab/uberspark/staging/rpi3/uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/types.h:45:0,
+uberspark >> [docker]                  from core/main.c:36:
+uberspark >> [docker] /home/slab/uberspark/staging/rpi3/uberspark/uobjrtl/crt/include/stdint.h:172:0: warning: "INT_FAST8_MAX" redefined
+uberspark >> [docker]  #define INT_FAST8_MAX   INT32_MAX
+uberspark >> [docker]  ^
+uberspark >> [docker] In file included from /usr/lib/gcc-cross/arm-linux-gnueabihf/4.9/include/stdint.h:9:0,
+uberspark >> [docker]                  from /home/slab/uberspark/staging/rpi3/uberspark/include/uberspark.h:53,
+uberspark >> [docker]                  from core/main.c:35:
+uberspark >> [docker] /usr/arm-linux-gnueabihf/include/stdint.h:201:0: note: this is the location of the previous definition
+uberspark >> [docker]  # define INT_FAST8_MAX  (127)
+uberspark >> [docker]  ^
+uberspark >> [docker] In file included from /home/slab/uberspark/staging/rpi3/uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/types.h:45:0,
+uberspark >> [docker]                  from core/main.c:36:
+uberspark >> [docker] /home/slab/uberspark/staging/rpi3/uberspark/uobjrtl/crt/include/stdint.h:173:0: warning: "INT_FAST16_MAX" redefined
+uberspark >> [docker]  #define INT_FAST16_MAX  INT32_MAX
+uberspark >> [docker]  ^
+uberspark >> [docker] In file included from /usr/lib/gcc-cross/arm-linux-gnueabihf/4.9/include/stdint.h:9:0,
+uberspark >> [docker]                  from /home/slab/uberspark/staging/rpi3/uberspark/include/uberspark.h:53,
+uberspark >> [docker]                  from core/main.c:35:
+uberspark >> [docker] /usr/arm-linux-gnueabihf/include/stdint.h:206:0: note: this is the location of the previous definition
+uberspark >> [docker]  #  define INT_FAST16_MAX (2147483647)
+uberspark >> [docker]  ^
+uberspark >> [docker] In file included from /home/slab/uberspark/staging/rpi3/uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/types.h:45:0,
+uberspark >> [docker]                  from core/main.c:36:
+uberspark >> [docker] /home/slab/uberspark/staging/rpi3/uberspark/uobjrtl/crt/include/stdint.h:174:0: warning: "INT_FAST32_MAX" redefined
+uberspark >> [docker]  #define INT_FAST32_MAX  INT32_MAX
+uberspark >> [docker]  ^
+uberspark >> [docker] In file included from /usr/lib/gcc-cross/arm-linux-gnueabihf/4.9/include/stdint.h:9:0,
+uberspark >> [docker]                  from /home/slab/uberspark/staging/rpi3/uberspark/include/uberspark.h:53,
+uberspark >> [docker]                  from core/main.c:35:
+uberspark >> [docker] /usr/arm-linux-gnueabihf/include/stdint.h:207:0: note: this is the location of the previous definition
+uberspark >> [docker]  #  define INT_FAST32_MAX (2147483647)
+uberspark >> [docker]  ^
+uberspark >> [docker] In file included from /home/slab/uberspark/staging/rpi3/uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/types.h:45:0,
+uberspark >> [docker]                  from core/main.c:36:
+uberspark >> [docker] /home/slab/uberspark/staging/rpi3/uberspark/uobjrtl/crt/include/stdint.h:175:0: warning: "INT_FAST64_MAX" redefined
+uberspark >> [docker]  #define INT_FAST64_MAX  INT64_MAX
+uberspark >> [docker]  ^
+uberspark >> [docker] In file included from /usr/lib/gcc-cross/arm-linux-gnueabihf/4.9/include/stdint.h:9:0,
+uberspark >> [docker]                  from /home/slab/uberspark/staging/rpi3/uberspark/include/uberspark.h:53,
+uberspark >> [docker]                  from core/main.c:35:
+uberspark >> [docker] /usr/arm-linux-gnueabihf/include/stdint.h:209:0: note: this is the location of the previous definition
+uberspark >> [docker]  # define INT_FAST64_MAX  (__INT64_C(9223372036854775807))
+uberspark >> [docker]  ^
+uberspark >> [docker] In file included from /home/slab/uberspark/staging/rpi3/uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/types.h:45:0,
+uberspark >> [docker]                  from core/main.c:36:
+uberspark >> [docker] /home/slab/uberspark/staging/rpi3/uberspark/uobjrtl/crt/include/stdint.h:178:0: warning: "UINT_FAST8_MAX" redefined
+uberspark >> [docker]  #define UINT_FAST8_MAX  UINT32_MAX
+uberspark >> [docker]  ^
+uberspark >> [docker] In file included from /usr/lib/gcc-cross/arm-linux-gnueabihf/4.9/include/stdint.h:9:0,
+uberspark >> [docker]                  from /home/slab/uberspark/staging/rpi3/uberspark/include/uberspark.h:53,
+uberspark >> [docker]                  from core/main.c:35:
+uberspark >> [docker] /usr/arm-linux-gnueabihf/include/stdint.h:212:0: note: this is the location of the previous definition
+uberspark >> [docker]  # define UINT_FAST8_MAX  (255)
+uberspark >> [docker]  ^
+uberspark >> [docker] In file included from /home/slab/uberspark/staging/rpi3/uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/types.h:45:0,
+uberspark >> [docker]                  from core/main.c:36:
+uberspark >> [docker] /home/slab/uberspark/staging/rpi3/uberspark/uobjrtl/crt/include/stdint.h:179:0: warning: "UINT_FAST16_MAX" redefined
+uberspark >> [docker]  #define UINT_FAST16_MAX UINT32_MAX
+uberspark >> [docker]  ^
+uberspark >> [docker] In file included from /usr/lib/gcc-cross/arm-linux-gnueabihf/4.9/include/stdint.h:9:0,
+uberspark >> [docker]                  from /home/slab/uberspark/staging/rpi3/uberspark/include/uberspark.h:53,
+uberspark >> [docker]                  from core/main.c:35:
+uberspark >> [docker] /usr/arm-linux-gnueabihf/include/stdint.h:217:0: note: this is the location of the previous definition
+uberspark >> [docker]  #  define UINT_FAST16_MAX (4294967295U)
+uberspark >> [docker]  ^
+uberspark >> [docker] In file included from /home/slab/uberspark/staging/rpi3/uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/types.h:45:0,
+uberspark >> [docker]                  from core/main.c:36:
+uberspark >> [docker] /home/slab/uberspark/staging/rpi3/uberspark/uobjrtl/crt/include/stdint.h:180:0: warning: "UINT_FAST32_MAX" redefined
+uberspark >> [docker]  #define UINT_FAST32_MAX UINT32_MAX
+uberspark >> [docker]  ^
+uberspark >> [docker] In file included from /usr/lib/gcc-cross/arm-linux-gnueabihf/4.9/include/stdint.h:9:0,
+uberspark >> [docker]                  from /home/slab/uberspark/staging/rpi3/uberspark/include/uberspark.h:53,
+uberspark >> [docker]                  from core/main.c:35:
+uberspark >> [docker] /usr/arm-linux-gnueabihf/include/stdint.h:218:0: note: this is the location of the previous definition
+uberspark >> [docker]  #  define UINT_FAST32_MAX (4294967295U)
+uberspark >> [docker]  ^
+uberspark >> [docker] In file included from /home/slab/uberspark/staging/rpi3/uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/types.h:45:0,
+uberspark >> [docker]                  from core/main.c:36:
+uberspark >> [docker] /home/slab/uberspark/staging/rpi3/uberspark/uobjrtl/crt/include/stdint.h:181:0: warning: "UINT_FAST64_MAX" redefined
+uberspark >> [docker]  #define UINT_FAST64_MAX UINT64_MAX
+uberspark >> [docker]  ^
+uberspark >> [docker] In file included from /usr/lib/gcc-cross/arm-linux-gnueabihf/4.9/include/stdint.h:9:0,
+uberspark >> [docker]                  from /home/slab/uberspark/staging/rpi3/uberspark/include/uberspark.h:53,
+uberspark >> [docker]                  from core/main.c:35:
+uberspark >> [docker] /usr/arm-linux-gnueabihf/include/stdint.h:220:0: note: this is the location of the previous definition
+uberspark >> [docker]  # define UINT_FAST64_MAX (__UINT64_C(18446744073709551615))
+uberspark >> [docker]  ^
+uberspark >> [docker] In file included from /home/slab/uberspark/staging/rpi3/uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/types.h:45:0,
+uberspark >> [docker]                  from core/main.c:36:
+uberspark >> [docker] /home/slab/uberspark/staging/rpi3/uberspark/uobjrtl/crt/include/stdint.h:187:0: warning: "INTPTR_MIN" redefined
+uberspark >> [docker]  #define INTPTR_MIN      INT32_MIN
+uberspark >> [docker]  ^
+uberspark >> [docker] In file included from /usr/lib/gcc-cross/arm-linux-gnueabihf/4.9/include/stdint.h:9:0,
+uberspark >> [docker]                  from /home/slab/uberspark/staging/rpi3/uberspark/include/uberspark.h:53,
+uberspark >> [docker]                  from core/main.c:35:
+uberspark >> [docker] /usr/arm-linux-gnueabihf/include/stdint.h:229:0: note: this is the location of the previous definition
+uberspark >> [docker]  #  define INTPTR_MIN  (-2147483647-1)
+uberspark >> [docker]  ^
+uberspark >> [docker] In file included from /home/slab/uberspark/staging/rpi3/uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/types.h:45:0,
+uberspark >> [docker]                  from core/main.c:36:
+uberspark >> [docker] /home/slab/uberspark/staging/rpi3/uberspark/uobjrtl/crt/include/stdint.h:188:0: warning: "INTPTR_MAX" redefined
+uberspark >> [docker]  #define INTPTR_MAX      INT32_MAX
+uberspark >> [docker]  ^
+uberspark >> [docker] In file included from /usr/lib/gcc-cross/arm-linux-gnueabihf/4.9/include/stdint.h:9:0,
+uberspark >> [docker]                  from /home/slab/uberspark/staging/rpi3/uberspark/include/uberspark.h:53,
+uberspark >> [docker]                  from core/main.c:35:
+uberspark >> [docker] /usr/arm-linux-gnueabihf/include/stdint.h:230:0: note: this is the location of the previous definition
+uberspark >> [docker]  #  define INTPTR_MAX  (2147483647)
+uberspark >> [docker]  ^
+uberspark >> [docker] In file included from /home/slab/uberspark/staging/rpi3/uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/types.h:45:0,
+uberspark >> [docker]                  from core/main.c:36:
+uberspark >> [docker] /home/slab/uberspark/staging/rpi3/uberspark/uobjrtl/crt/include/stdint.h:189:0: warning: "UINTPTR_MAX" redefined
+uberspark >> [docker]  #define UINTPTR_MAX     UINT32_MAX
+uberspark >> [docker]  ^
+uberspark >> [docker] In file included from /usr/lib/gcc-cross/arm-linux-gnueabihf/4.9/include/stdint.h:9:0,
+uberspark >> [docker]                  from /home/slab/uberspark/staging/rpi3/uberspark/include/uberspark.h:53,
+uberspark >> [docker]                  from core/main.c:35:
+uberspark >> [docker] /usr/arm-linux-gnueabihf/include/stdint.h:231:0: note: this is the location of the previous definition
+uberspark >> [docker]  #  define UINTPTR_MAX  (4294967295U)
+uberspark >> [docker]  ^
+uberspark >> [docker] In file included from /home/slab/uberspark/staging/rpi3/uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/types.h:45:0,
+uberspark >> [docker]                  from core/main.c:36:
+uberspark >> [docker] /home/slab/uberspark/staging/rpi3/uberspark/uobjrtl/crt/include/stdint.h:195:0: warning: "INTMAX_MIN" redefined
+uberspark >> [docker]  #define INTMAX_MIN      INT64_MIN
+uberspark >> [docker]  ^
+uberspark >> [docker] In file included from /usr/lib/gcc-cross/arm-linux-gnueabihf/4.9/include/stdint.h:9:0,
+uberspark >> [docker]                  from /home/slab/uberspark/staging/rpi3/uberspark/include/uberspark.h:53,
+uberspark >> [docker]                  from core/main.c:35:
+uberspark >> [docker] /usr/arm-linux-gnueabihf/include/stdint.h:236:0: note: this is the location of the previous definition
+uberspark >> [docker]  # define INTMAX_MIN  (-__INT64_C(9223372036854775807)-1)
+uberspark >> [docker]  ^
+uberspark >> [docker] In file included from /home/slab/uberspark/staging/rpi3/uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/types.h:45:0,
+uberspark >> [docker]                  from core/main.c:36:
+uberspark >> [docker] /home/slab/uberspark/staging/rpi3/uberspark/uobjrtl/crt/include/stdint.h:196:0: warning: "INTMAX_MAX" redefined
+uberspark >> [docker]  #define INTMAX_MAX      INT64_MAX
+uberspark >> [docker]  ^
+uberspark >> [docker] In file included from /usr/lib/gcc-cross/arm-linux-gnueabihf/4.9/include/stdint.h:9:0,
+uberspark >> [docker]                  from /home/slab/uberspark/staging/rpi3/uberspark/include/uberspark.h:53,
+uberspark >> [docker]                  from core/main.c:35:
+uberspark >> [docker] /usr/arm-linux-gnueabihf/include/stdint.h:238:0: note: this is the location of the previous definition
+uberspark >> [docker]  # define INTMAX_MAX  (__INT64_C(9223372036854775807))
+uberspark >> [docker]  ^
+uberspark >> [docker] In file included from /home/slab/uberspark/staging/rpi3/uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/types.h:45:0,
+uberspark >> [docker]                  from core/main.c:36:
+uberspark >> [docker] /home/slab/uberspark/staging/rpi3/uberspark/uobjrtl/crt/include/stdint.h:197:0: warning: "UINTMAX_MAX" redefined
+uberspark >> [docker]  #define UINTMAX_MAX     UINT64_MAX
+uberspark >> [docker]  ^
+uberspark >> [docker] In file included from /usr/lib/gcc-cross/arm-linux-gnueabihf/4.9/include/stdint.h:9:0,
+uberspark >> [docker]                  from /home/slab/uberspark/staging/rpi3/uberspark/include/uberspark.h:53,
+uberspark >> [docker]                  from core/main.c:35:
+uberspark >> [docker] /usr/arm-linux-gnueabihf/include/stdint.h:241:0: note: this is the location of the previous definition
+uberspark >> [docker]  # define UINTMAX_MAX  (__UINT64_C(18446744073709551615))
+uberspark >> [docker]  ^
+uberspark >> [docker] In file included from /home/slab/uberspark/staging/rpi3/uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/types.h:45:0,
+uberspark >> [docker]                  from core/main.c:36:
+uberspark >> [docker] /home/slab/uberspark/staging/rpi3/uberspark/uobjrtl/crt/include/stdint.h:204:0: warning: "PTRDIFF_MIN" redefined
+uberspark >> [docker]  #define PTRDIFF_MIN     INT32_MIN
+uberspark >> [docker]  ^
+uberspark >> [docker] In file included from /usr/lib/gcc-cross/arm-linux-gnueabihf/4.9/include/stdint.h:9:0,
+uberspark >> [docker]                  from /home/slab/uberspark/staging/rpi3/uberspark/include/uberspark.h:53,
+uberspark >> [docker]                  from core/main.c:35:
+uberspark >> [docker] /usr/arm-linux-gnueabihf/include/stdint.h:251:0: note: this is the location of the previous definition
+uberspark >> [docker]  #  define PTRDIFF_MIN  (-2147483647-1)
+uberspark >> [docker]  ^
+uberspark >> [docker] In file included from /home/slab/uberspark/staging/rpi3/uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/types.h:45:0,
+uberspark >> [docker]                  from core/main.c:36:
+uberspark >> [docker] /home/slab/uberspark/staging/rpi3/uberspark/uobjrtl/crt/include/stdint.h:205:0: warning: "PTRDIFF_MAX" redefined
+uberspark >> [docker]  #define PTRDIFF_MAX     INT32_MAX
+uberspark >> [docker]  ^
+uberspark >> [docker] In file included from /usr/lib/gcc-cross/arm-linux-gnueabihf/4.9/include/stdint.h:9:0,
+uberspark >> [docker]                  from /home/slab/uberspark/staging/rpi3/uberspark/include/uberspark.h:53,
+uberspark >> [docker]                  from core/main.c:35:
+uberspark >> [docker] /usr/arm-linux-gnueabihf/include/stdint.h:252:0: note: this is the location of the previous definition
+uberspark >> [docker]  #  define PTRDIFF_MAX  (2147483647)
+uberspark >> [docker]  ^
+uberspark >> [docker] In file included from /home/slab/uberspark/staging/rpi3/uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/types.h:45:0,
+uberspark >> [docker]                  from core/main.c:36:
+uberspark >> [docker] /home/slab/uberspark/staging/rpi3/uberspark/uobjrtl/crt/include/stdint.h:208:0: warning: "SIZE_MAX" redefined
+uberspark >> [docker]  #define SIZE_MAX        UINT32_MAX
+uberspark >> [docker]  ^
+uberspark >> [docker] In file included from /usr/lib/gcc-cross/arm-linux-gnueabihf/4.9/include/stdint.h:9:0,
+uberspark >> [docker]                  from /home/slab/uberspark/staging/rpi3/uberspark/include/uberspark.h:53,
+uberspark >> [docker]                  from core/main.c:35:
+uberspark >> [docker] /usr/arm-linux-gnueabihf/include/stdint.h:266:0: note: this is the location of the previous definition
+uberspark >> [docker]  #   define SIZE_MAX  (4294967295U)
+uberspark >> [docker]  ^
+uberspark >> [docker] In file included from /home/slab/uberspark/staging/rpi3/uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/types.h:45:0,
+uberspark >> [docker]                  from core/main.c:36:
+uberspark >> [docker] /home/slab/uberspark/staging/rpi3/uberspark/uobjrtl/crt/include/stdint.h:216:0: warning: "WINT_MIN" redefined
+uberspark >> [docker]  #define WINT_MIN        INT32_MIN
+uberspark >> [docker]  ^
+uberspark >> [docker] In file included from /usr/lib/gcc-cross/arm-linux-gnueabihf/4.9/include/stdint.h:9:0,
+uberspark >> [docker]                  from /home/slab/uberspark/staging/rpi3/uberspark/include/uberspark.h:53,
+uberspark >> [docker]                  from core/main.c:35:
+uberspark >> [docker] /usr/arm-linux-gnueabihf/include/stdint.h:278:0: note: this is the location of the previous definition
+uberspark >> [docker]  # define WINT_MIN  (0u)
+uberspark >> [docker]  ^
+uberspark >> [docker] In file included from /home/slab/uberspark/staging/rpi3/uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/types.h:45:0,
+uberspark >> [docker]                  from core/main.c:36:
+uberspark >> [docker] /home/slab/uberspark/staging/rpi3/uberspark/uobjrtl/crt/include/stdint.h:217:0: warning: "WINT_MAX" redefined
+uberspark >> [docker]  #define WINT_MAX        INT32_MAX
+uberspark >> [docker]  ^
+uberspark >> [docker] In file included from /usr/lib/gcc-cross/arm-linux-gnueabihf/4.9/include/stdint.h:9:0,
+uberspark >> [docker]                  from /home/slab/uberspark/staging/rpi3/uberspark/include/uberspark.h:53,
+uberspark >> [docker]                  from core/main.c:35:
+uberspark >> [docker] /usr/arm-linux-gnueabihf/include/stdint.h:279:0: note: this is the location of the previous definition
+uberspark >> [docker]  # define WINT_MAX  (4294967295u)
+uberspark >> [docker]  ^
+uberspark >> [docker] In file included from /home/slab/uberspark/staging/rpi3/uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/types.h:45:0,
+uberspark >> [docker]                  from core/main.c:36:
+uberspark >> [docker] /home/slab/uberspark/staging/rpi3/uberspark/uobjrtl/crt/include/stdint.h:297:33: error: conflicting types for 'int_fast8_t'
+uberspark >> [docker]  typedef __int_fast8_t           int_fast8_t;
+uberspark >> [docker]                                  ^
+uberspark >> [docker] In file included from /usr/lib/gcc-cross/arm-linux-gnueabihf/4.9/include/stdint.h:9:0,
+uberspark >> [docker]                  from /home/slab/uberspark/staging/rpi3/uberspark/include/uberspark.h:53,
+uberspark >> [docker]                  from core/main.c:35:
+uberspark >> [docker] /usr/arm-linux-gnueabihf/include/stdint.h:90:22: note: previous declaration of 'int_fast8_t' was here
+uberspark >> [docker]  typedef signed char  int_fast8_t;
+uberspark >> [docker]                       ^
+uberspark >> [docker] In file included from /home/slab/uberspark/staging/rpi3/uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/types.h:45:0,
+uberspark >> [docker]                  from core/main.c:36:
+uberspark >> [docker] /home/slab/uberspark/staging/rpi3/uberspark/uobjrtl/crt/include/stdint.h:302:33: error: conflicting types for 'uint_fast8_t'
+uberspark >> [docker]  typedef __uint_fast8_t          uint_fast8_t;
+uberspark >> [docker]                                  ^
+uberspark >> [docker] In file included from /usr/lib/gcc-cross/arm-linux-gnueabihf/4.9/include/stdint.h:9:0,
+uberspark >> [docker]                  from /home/slab/uberspark/staging/rpi3/uberspark/include/uberspark.h:53,
+uberspark >> [docker]                  from core/main.c:35:
+uberspark >> [docker] /usr/arm-linux-gnueabihf/include/stdint.h:103:24: note: previous declaration of 'uint_fast8_t' was here
+uberspark >> [docker]  typedef unsigned char  uint_fast8_t;
+uberspark >> [docker]                         ^
+uberspark >> [docker] In file included from /home/slab/uberspark/staging/rpi3/uberspark/include/uberspark.h:54:0,
+uberspark >> [docker]                  from core/main.c:35:
+uberspark >> [docker] /home/slab/uberspark/staging/rpi3/uberspark/uobjrtl/crt/include/stdbool.h:41:19: error: two or more data types in declaration specifiers
+uberspark >> [docker]  typedef boolean_t bool;
+uberspark >> [docker]                    ^
+uberspark >> [docker] In file included from /home/slab/uberspark/staging/rpi3/uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/types.h:46:0,
+uberspark >> [docker]                  from core/main.c:36:
+uberspark >> [docker] /home/slab/uberspark/staging/rpi3/uberspark/uobjrtl/crt/include/stdbool.h:41:1: warning: useless type name in empty declaration
+uberspark >> [docker]  typedef boolean_t bool;
+uberspark >> [docker]  ^
+uberspark >> [docker] /home/slab/uberspark/staging/rpi3/uberspark/uobjrtl/crt/include/stdbool.h:44:0: warning: "__bool_true_false_are_defined" redefined
+uberspark >> [docker]  #define __bool_true_false_are_defined
+uberspark >> [docker]  ^
+uberspark >> [docker] In file included from /home/slab/uberspark/staging/rpi3/uberspark/include/uberspark.h:54:0,
+uberspark >> [docker]                  from core/main.c:35:
+uberspark >> [docker] /usr/lib/gcc-cross/arm-linux-gnueabihf/4.9/include/stdbool.h:48:0: note: this is the location of the previous definition
+uberspark >> [docker]  #define __bool_true_false_are_defined 1
+uberspark >> [docker]  ^
+uberspark >> [docker] In file included from /home/slab/uberspark/staging/rpi3/uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/types.h:47:0,
+uberspark >> [docker]                  from core/main.c:36:
+uberspark >> [docker] /home/slab/uberspark/staging/rpi3/uberspark/uobjrtl/crt/include/stddef.h:58:0: warning: "offsetof" redefined
+uberspark >> [docker]      #define offsetof(type,field) (int)&(((type *)0)->field)
+uberspark >> [docker]  ^
+uberspark >> [docker] In file included from /home/slab/uberspark/staging/rpi3/uberspark/include/uberspark.h:55:0,
+uberspark >> [docker]                  from core/main.c:35:
+uberspark >> [docker] /usr/lib/gcc-cross/arm-linux-gnueabihf/4.9/include/stddef.h:413:0: note: this is the location of the previous definition
+uberspark >> [docker]  #define offsetof(TYPE, MEMBER) __builtin_offsetof (TYPE, MEMBER)
+uberspark >> [docker]  ^
+uberspark >> [docker] In file included from /home/slab/uberspark/staging/rpi3/uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/types.h:48:0,
+uberspark >> [docker]                  from core/main.c:36:
+uberspark >> [docker] /home/slab/uberspark/staging/rpi3/uberspark/uobjrtl/crt/include/stdarg.h:50:0: warning: "va_start" redefined
+uberspark >> [docker]  #define va_start(ap, param) __builtin_va_start(ap, param)
+uberspark >> [docker]  ^
+uberspark >> [docker] In file included from /home/slab/uberspark/staging/rpi3/uberspark/include/uberspark.h:56:0,
+uberspark >> [docker]                  from core/main.c:35:
+uberspark >> [docker] /usr/lib/gcc-cross/arm-linux-gnueabihf/4.9/include/stdarg.h:47:0: note: this is the location of the previous definition
+uberspark >> [docker]  #define va_start(v,l) __builtin_va_start(v,l)
+uberspark >> [docker]  ^
+uberspark >> [docker] In file included from /home/slab/uberspark/staging/rpi3/uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/types.h:48:0,
+uberspark >> [docker]                  from core/main.c:36:
+uberspark >> [docker] /home/slab/uberspark/staging/rpi3/uberspark/uobjrtl/crt/include/stdarg.h:51:0: warning: "va_end" redefined
+uberspark >> [docker]  #define va_end(ap)          __builtin_va_end(ap)
+uberspark >> [docker]  ^
+uberspark >> [docker] In file included from /home/slab/uberspark/staging/rpi3/uberspark/include/uberspark.h:56:0,
+uberspark >> [docker]                  from core/main.c:35:
+uberspark >> [docker] /usr/lib/gcc-cross/arm-linux-gnueabihf/4.9/include/stdarg.h:48:0: note: this is the location of the previous definition
+uberspark >> [docker]  #define va_end(v) __builtin_va_end(v)
+uberspark >> [docker]  ^
+uberspark >> [docker] In file included from /home/slab/uberspark/staging/rpi3/uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/types.h:48:0,
+uberspark >> [docker]                  from core/main.c:36:
+uberspark >> [docker] /home/slab/uberspark/staging/rpi3/uberspark/uobjrtl/crt/include/stdarg.h:52:0: warning: "va_arg" redefined
+uberspark >> [docker]  #define va_arg(ap, type)    __builtin_va_arg(ap, type)
+uberspark >> [docker]  ^
+uberspark >> [docker] In file included from /home/slab/uberspark/staging/rpi3/uberspark/include/uberspark.h:56:0,
+uberspark >> [docker]                  from core/main.c:35:
+uberspark >> [docker] /usr/lib/gcc-cross/arm-linux-gnueabihf/4.9/include/stdarg.h:49:0: note: this is the location of the previous definition
+uberspark >> [docker]  #define va_arg(v,l) __builtin_va_arg(v,l)
+uberspark >> [docker]  ^
+uberspark >> [docker] In file included from /home/slab/uberspark/staging/rpi3/uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/types.h:48:0,
+uberspark >> [docker]                  from core/main.c:36:
+uberspark >> [docker] /home/slab/uberspark/staging/rpi3/uberspark/uobjrtl/crt/include/stdarg.h:60:0: warning: "va_copy" redefined
+uberspark >> [docker]  #define va_copy(dest, src)  __builtin_va_copy(dest, src)
+uberspark >> [docker]  ^
+uberspark >> [docker] In file included from /home/slab/uberspark/staging/rpi3/uberspark/include/uberspark.h:56:0,
+uberspark >> [docker]                  from core/main.c:35:
+uberspark >> [docker] /usr/lib/gcc-cross/arm-linux-gnueabihf/4.9/include/stdarg.h:51:0: note: this is the location of the previous definition
+uberspark >> [docker]  #define va_copy(d,s) __builtin_va_copy(d,s)
+uberspark >> [docker]  ^
+uberspark >> [docker] In file included from core/main.c:38:0:
+uberspark >> [docker] /home/slab/uberspark/staging/rpi3/uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/bcm2837.h:181:1: warning: 'packed' attribute ignored [-Wattributes]
+uberspark >> [docker]  } armlocalregisters_mailboxwrite_t __attribute__((packed));
+uberspark >> [docker]  ^
+uberspark >> [docker] /home/slab/uberspark/staging/rpi3/uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/bcm2837.h:189:1: warning: 'packed' attribute ignored [-Wattributes]
+uberspark >> [docker]  } armlocalregisters_mailboxreadclear_t __attribute__((packed));
+uberspark >> [docker]  ^
+uberspark >> ERROR: could not compile one or more uobj c files!
+ 
+uberspark >> ERROR: could not build uobj(s)!
+ 
+Makefile:12: recipe for target 'all' failed

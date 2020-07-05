@@ -47,9 +47,9 @@
 #include <uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/debug.h>
 
 #include <uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/uhsign.h>
-#include <uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/libxmhfcrypto/hmac-sha1.h>
-#include <uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/libxmhfcrypto/xmhfcrypto.h>
-#include <uberspark/include/uberspark.h>
+#include <uberspark/uobjrtl/crypto/include/mac/hmacsha1/hmacsha1.h>
+#include <uberspark/uobjrtl/crypto/include/basedefs.h>
+//#include <uberspark/include/uberspark.h>
 
 
 //////

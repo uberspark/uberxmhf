@@ -44,7 +44,7 @@
 #include <uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/mailbox.h>
 #include <uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/uart.h>
 #include <uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/debug.h>
-#include <uberspark/include/uberspark.h>
+//#include <uberspark/include/uberspark.h>
 
 //mailbox message buffer
 //has to be aligned on a 16 byte boundary

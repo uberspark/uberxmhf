@@ -45,7 +45,7 @@
 #include <uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/fdt.h>
 #include <uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/debug.h>
 #include <uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/dmaprot.h>
-#include <uberspark/include/uberspark.h>
+//#include <uberspark/include/uberspark.h>
 
 //////
 // externs

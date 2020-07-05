@@ -44,7 +44,7 @@
 #include <uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/uart.h>
 #include <uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/debug.h>
 #include <uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/dmaprot.h>
-#include <uberspark/include/uberspark.h>
+//#include <uberspark/include/uberspark.h>
 
 __attribute__((section(".palign2mdata"))) __attribute__((align(PAGE_SIZE_2M))) dmac_cb_t dmac_cblist[BCM2837_DMA_NUMCHANNELS][BCM2837_DMA_MAXCBRECORDS];
 

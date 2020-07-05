@@ -1,9 +1,9 @@
 #ifndef __UHSIGN_H__
 #define __UHSIGN_H__
 
-#include <uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/libxmhfc/stdint.h>
+#include <uberspark/uobjrtl/crt/include/stdint.h>
 //#include <inttypes.h>
-#include <uberspark/include/uberspark.h>
+//#include <uberspark/include/uberspark.h>
 
 #define UAPP_UHSIGN_FUNCTION_SIGN    0x69
 #define HMAC_DIGEST_SIZE 20

@@ -42,11 +42,11 @@
 #define __TYPES_H__
 
 #include <uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/config.h>
-#include <uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/libxmhfc/stdint.h>
-#include <uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/libxmhfc/stdbool.h>
-#include <uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/libxmhfc/stddef.h>
-#include <uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/libxmhfc/stdarg.h>
-#include <uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/libxmhfc/string.h>
+#include <uberspark/uobjrtl/crt/include/stdint.h>
+#include <uberspark/uobjrtl/crt/include/stdbool.h>
+#include <uberspark/uobjrtl/crt/include/stddef.h>
+#include <uberspark/uobjrtl/crt/include/stdarg.h>
+#include <uberspark/uobjrtl/crt/include/string.h>
 
 
 #ifndef __ASSEMBLY__

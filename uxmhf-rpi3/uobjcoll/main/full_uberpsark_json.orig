@@ -32,7 +32,12 @@
 				 "include/uart.h", "include/uhcalltest.h",
 				 "include/utpmtest.h", "include/uhsign.h" ],
 		    "c-files": [ "core/main.c", "core/ghcall.c",
-				 "core/hyptimer.c", 
+				 "uapps/uapp-watchdog.c",
+				 "uapps/uapp-pa5encfs.c",
+				 "uapps/uapp-utpmtest.c",
+				 "uapps/uapp-uhsign.c",
+				 "uapps/uapp-uhcalltest.c",
+				 "core/hyptimer.c", "uapps/ctxtrace.c",
 				 "core/bcm2837.c", "core/secboot.c",
 				 "core/intprot.c", "core/dmaprot.c",
 				 "core/uapi_s2pgtbl.c", "core/s2pgtbl.c",
@@ -43,7 +48,8 @@
 				 "common/pl011uart.c", "common/miniuart.c",
 				 "libutpm/utpm-common.c", "libutpm/utpm.c" ],
 		    "casm-files": [ ],
-		    "asm-files": [ "core/hypvtablestubs.s",
+		    "asm-files": [ "uapps/uapp-watchdogsup.s",
+				   "core/hypvtablestubs.s",
 				   "common/arm8-32.s", "core/entry.s"  ]
 		},
 	

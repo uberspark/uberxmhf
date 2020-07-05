@@ -44,7 +44,7 @@
 #include <uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/debug.h>
 #include <uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/guestos.h>
 #include <uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/dmaprot.h>
-#include <uberspark/include/uberspark.h>
+//#include <uberspark/include/uberspark.h>
 
 //G4.3
 //HYP mode _must_ use long descriptor format

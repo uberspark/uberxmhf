@@ -42,7 +42,7 @@
 #include <uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/bcm2837.h>
 #include <uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/mailbox.h>
 #include <uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/pl011uart.h>
-#include <uberspark/include/uberspark.h>
+//#include <uberspark/include/uberspark.h>
 
 
 extern u32 mmio_read32 (u32 address);

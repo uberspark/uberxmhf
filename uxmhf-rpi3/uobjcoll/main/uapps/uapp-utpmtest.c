@@ -44,10 +44,10 @@
 #include <uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/uart.h>
 #include <uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/debug.h>
 
-#include <uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/libxmhfcrypto/xmhfcrypto.h>
+#include <uberspark/uobjrtl/crypto/include/basedefs.h>
 #include <uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/libutpm/utpm.h>
 #include <uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/utpmtest.h>
-#include <uberspark/include/uberspark.h>
+//#include <uberspark/include/uberspark.h>
 
 
 //return true if handled the hypercall, false if not

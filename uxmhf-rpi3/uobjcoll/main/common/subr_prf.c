@@ -78,10 +78,10 @@
  */
 
 
-#include <uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/libxmhfc/stdint.h>
-#include <uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/libxmhfc/stddef.h>
-#include <uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/libxmhfc/ctype.h>
-#include <uberspark/include/uberspark.h>
+#include <uberspark/uobjrtl/crt/include/stdint.h>
+#include <uberspark/uobjrtl/crt/include/stddef.h>
+#include <uberspark/uobjrtl/crt/include/ctype.h>
+//#include <uberspark/include/uberspark.h>
 
 //#include <sys/libkern.h>
 static __inline int imax(int a, int b) { return (a > b ? a : b); }
@@ -461,7 +461,7 @@ reswitch:	switch (ch = (u_char)*fmt++) {
 			if (p == NULL)
 				p = "(null)";
 			if (!dot)
-				n = strlen (p);
+				n = uberspark_uobjrtl_crt__strlen (p);
 			else
 				for (n = 0; n < dwidth && p[n]; n++)
 					continue;

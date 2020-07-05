@@ -44,7 +44,7 @@
 #include <uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/debug.h>
 #include <uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/dmaprot.h>
 #include <uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/config.h>
-#include <uberspark/include/uberspark.h>
+//#include <uberspark/include/uberspark.h>
 
 #define SDCMD_WRITE_CMD	0x80
 #define SDCMD_READ_CMD	0x40

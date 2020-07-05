@@ -45,7 +45,7 @@
 #include <uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/debug.h>
 
 #include <uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/uhcalltest.h>
-#include <uberspark/include/uberspark.h>
+//#include <uberspark/include/uberspark.h>
 
 #define MAX_LVL1_ENTRIES	4096
 #define MAX_LVL2_ENTRIES	256
@@ -171,7 +171,7 @@ bool uapp_uhcalltest_handlehcall(u32 uhcall_function, void *uhcall_buffer, u32 u
    _XDPRINTFSMP_("\ndumped uhctp->in[]\n");
 #endif
 
-   memcpy(&uhctp->out, &uhctp->in, 16);
+   uberspark_uobjrtl_crt__memcpy(&uhctp->out, &uhctp->in, 16);
 
 #if 0
    _XDPRINTFSMP_("dumping out[]...\n");

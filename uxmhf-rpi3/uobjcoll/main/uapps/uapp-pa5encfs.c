@@ -44,10 +44,10 @@
 #include <uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/uart.h>
 #include <uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/debug.h>
 
-#include <uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/libxmhfcrypto/xmhfcrypto.h>
-#include <uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/libxmhfcrypto/aes.h>
+#include <uberspark/uobjrtl/crypto/include/basedefs.h>
+#include <uberspark/uobjrtl/crypto/include/ciphers/aes/aes.h>
 #include <uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/pa5encfs.h>
-#include <uberspark/include/uberspark.h>
+//#include <uberspark/include/uberspark.h>
 
 /*
 	do_crypt using libxmhfcrypto aes primitive

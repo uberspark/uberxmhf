@@ -35,7 +35,7 @@
 			"uberspark/uobjcoll/platform/rpi3/uxmhf/main" : {
 				"main" : [ "call" ]
 			}
-		}	
+		}
 
 	}
 

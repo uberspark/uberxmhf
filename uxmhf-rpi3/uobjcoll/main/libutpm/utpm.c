@@ -43,14 +43,14 @@
 //#include <miniuart.h>
 //#include <debug.h>
 
-#include <uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/libxmhfc/string.h>
-#include <uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/libxmhfcrypto/xmhfcrypto.h>
-#include <uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/libxmhfcrypto/sha1.h>
-#include <uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/libxmhfcrypto/aes.h>
-#include <uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/libxmhfcrypto/hmac-sha1.h>
+#include <uberspark/uobjrtl/crt/include/string.h>
+#include <uberspark/uobjrtl/crypto/include/basedefs.h>
+#include <uberspark/uobjrtl/crypto/include/hashes/sha1/sha1.h>
+#include <uberspark/uobjrtl/crypto/include/ciphers/aes/aes.h>
+#include <uberspark/uobjrtl/crypto/include/mac/hmacsha1/hmacsha1.h>
 
 #include <uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/libutpm/utpm.h>
-#include <uberspark/include/uberspark.h>
+//#include <uberspark/include/uberspark.h>
 
 //////
 // global data variables
@@ -82,8 +82,8 @@ TPM_RESULT utpm_init_master_entropy(uint8_t *aeskey,
 
     }
 
-    memcpy(g_aeskey, aeskey, TPM_AES_KEY_LEN_BYTES);
-    memcpy(g_hmackey, hmackey, TPM_HMAC_KEY_LEN);
+    uberspark_uobjrtl_crt__memcpy(g_aeskey, aeskey, TPM_AES_KEY_LEN_BYTES);
+    uberspark_uobjrtl_crt__memcpy(g_hmackey, hmackey, TPM_HMAC_KEY_LEN);
     //memcpy(&g_rsa_key, rsa, sizeof(g_rsa_key));
 
     /* ensure libtomcrypto's math descriptor is initialized */
@@ -99,7 +99,7 @@ TPM_RESULT utpm_init_master_entropy(uint8_t *aeskey,
 void utpm_init_instance(utpm_master_state_t *utpm) {
     if(NULL == utpm) return;
 
-    memset(utpm->pcr_bank, 0, TPM_PCR_SIZE*TPM_PCR_NUM);
+    uberspark_uobjrtl_crt__memset(utpm->pcr_bank, 0, TPM_PCR_SIZE*TPM_PCR_NUM);
 
 }
 
@@ -111,7 +111,7 @@ TPM_RESULT utpm_pcrread(TPM_DIGEST* pcr_value /* output */,
     if(!pcr_value || !utpm) { return UTPM_ERR_BAD_PARAM; }
     if(pcr_num >= TPM_PCR_NUM)  { return UTPM_ERR_PCR_OUT_OF_RANGE; }
 
-	memcpy(pcr_value->value, utpm->pcr_bank[pcr_num].value, TPM_PCR_SIZE);
+	uberspark_uobjrtl_crt__memcpy(pcr_value->value, utpm->pcr_bank[pcr_num].value, TPM_PCR_SIZE);
 	return UTPM_SUCCESS;
 }
 
@@ -134,7 +134,7 @@ TPM_RESULT utpm_extend(TPM_DIGEST *measurement, utpm_master_state_t *utpm, uint3
 
     /* pcr = H( pcr || measurement) */
     outlen = sizeof(utpm->pcr_bank[pcr_num].value);
-    rv = sha1_memory_multi( utpm->pcr_bank[pcr_num].value, &outlen,
+    rv = uberspark_uobjrtl_crypto_hashes_sha1__sha1_memory_multi( utpm->pcr_bank[pcr_num].value, &outlen,
                        utpm->pcr_bank[pcr_num].value, TPM_HASH_SIZE,
                        measurement->value, TPM_HASH_SIZE,
                             NULL, NULL);
@@ -244,7 +244,7 @@ TPM_RESULT utpm_seal(utpm_master_state_t *utpm,
         //dprintf(LOG_ERROR, "ERROR: rand_bytes FAILED\n");
         return UTPM_ERR_INSUFFICIENT_ENTROPY;
     }
-    memcpy(output, iv, TPM_AES_KEY_LEN_BYTES); /* Copy IV directly to output */
+    uberspark_uobjrtl_crt__memcpy(output, iv, TPM_AES_KEY_LEN_BYTES); /* Copy IV directly to output */
     p += TPM_AES_KEY_LEN_BYTES; /* IV */
 
     //print_hex("  iv: ", iv, TPM_AES_KEY_LEN_BYTES);
@@ -255,7 +255,7 @@ TPM_RESULT utpm_seal(utpm_master_state_t *utpm,
 	/* output = IV || AES-CBC(TPM_PCR_INFO (or 0x0000 if none selected) || input_len || input || PADDING) || HMAC( entire ciphertext including IV ) */
     /* 1a. TPM_PCR_SELECTION with 0 PCRs selected */
     if(0 == tpmPcrInfo_internal.pcrSelection.sizeOfSelect) { /* no PCRs selected */
-        memcpy(p, &tpmPcrInfo_internal.pcrSelection.sizeOfSelect,
+        uberspark_uobjrtl_crt__memcpy(p, &tpmPcrInfo_internal.pcrSelection.sizeOfSelect,
                 sizeof(tpmPcrInfo_internal.pcrSelection.sizeOfSelect));
         //print_hex(" tpmPcrInfo_internal.pcrSelection.sizeOfSelect: ", p,
         //          sizeof(tpmPcrInfo_internal.pcrSelection.sizeOfSelect));
@@ -284,7 +284,7 @@ TPM_RESULT utpm_seal(utpm_master_state_t *utpm,
 
 
     /* 3. actual input data */
-	memcpy(p, input, inlen);
+	uberspark_uobjrtl_crt__memcpy(p, input, inlen);
     //print_hex(" input: ", p, inlen);
     p += inlen;
 
@@ -297,7 +297,7 @@ TPM_RESULT utpm_seal(utpm_master_state_t *utpm,
 	} else {
 		*outlen = outlen_beforepad;
 	}
-	memset(p, 0, *outlen-outlen_beforepad);
+	uberspark_ubojrtl_crt__memset(p, 0, *outlen-outlen_beforepad);
 
 	//_XDPRINTFSMP_("%s: %u outlen_beforepad=%u, *outlen=%u\n", __func__, __LINE__,
 	//		outlen_beforepad, *outlen);
@@ -338,7 +338,7 @@ TPM_RESULT utpm_seal(utpm_master_state_t *utpm,
 	/* 5. compute and append hmac */
     //HMAC_SHA1(g_hmackey, TPM_HASH_SIZE, output, *outlen, output + *outlen);
     hmac_sha1_out_len = 20;
-    if( hmac_sha1_memory(g_hmackey, TPM_HASH_SIZE, output, *outlen, output + *outlen, &hmac_sha1_out_len) )
+    if( uberspark_uobjrtl_crypto__mac_hmacsha1__hmac_sha1_memory(g_hmackey, TPM_HASH_SIZE, output, *outlen, output + *outlen, &hmac_sha1_out_len) )
     	return 1;
 
 	//_XDPRINTFSMP_("%s: %u\n", __func__, __LINE__);
@@ -404,10 +404,10 @@ TPM_RESULT utpm_unseal(utpm_master_state_t *utpm,
      * value. */
     //HMAC_SHA1(g_hmackey, TPM_HASH_SIZE, input, inlen - TPM_HASH_SIZE, hmacCalculated);
     hmac_sha1_out_len = 20;
-    if( hmac_sha1_memory(g_hmackey, TPM_HASH_SIZE, input, inlen - TPM_HASH_SIZE, hmacCalculated, &hmac_sha1_out_len) )
+    if( uberspark_uobjrtl_crypto__mac_hmacsha1__hmac_sha1_memory(g_hmackey, TPM_HASH_SIZE, input, inlen - TPM_HASH_SIZE, hmacCalculated, &hmac_sha1_out_len) )
     	return 1;
 
-    if(memcmp(hmacCalculated, input + inlen - TPM_HASH_SIZE, TPM_HASH_SIZE)) {
+    if(uberspark_uobjrtl_crt__memcmp(hmacCalculated, input + inlen - TPM_HASH_SIZE, TPM_HASH_SIZE)) {
         //dprintf(LOG_ERROR, "Unseal HMAC **INTEGRITY FAILURE**: memcmp(hmacCalculated, input + inlen - TPM_HASH_SIZE, TPM_HASH_SIZE)\n");
         //print_hex("  hmacCalculated: ", hmacCalculated, TPM_HASH_SIZE);
         //print_hex("  input + inlen - TPM_HASH_SIZE:" , input + inlen - TPM_HASH_SIZE, TPM_HASH_SIZE);
@@ -477,7 +477,7 @@ TPM_RESULT utpm_unseal(utpm_master_state_t *utpm,
         /* 1a. Handle the simple case where no PCRs are involved */
         if(bytes_consumed_by_pcrInfo <= sizeof(unsealedPcrInfo.pcrSelection.sizeOfSelect)) {
             //dprintf(LOG_TRACE, "  No PCRs selected.  No checking required.\n");
-            memset(digestAtCreation->value, 0, TPM_HASH_SIZE);
+            uberspark_uobjrtl_crt__memset(digestAtCreation->value, 0, TPM_HASH_SIZE);
         }
         /* 1b. Verify that required PCR values match */
         else {
@@ -499,11 +499,11 @@ TPM_RESULT utpm_unseal(utpm_master_state_t *utpm,
 
             /* 3. Composite hash */
             //sha1_buffer(currentPcrComposite, space_needed_for_composite, digestRightNow.value);
-            sha1_memory(currentPcrComposite, space_needed_for_composite, digestRightNow.value, TPM_HASH_SIZE);
+            uberspark_uobjrtl_crypto__hashes_sha1__sha1_memory(currentPcrComposite, space_needed_for_composite, digestRightNow.value, TPM_HASH_SIZE);
 
             //print_hex("  digestRightNow: ", digestRightNow.value, TPM_HASH_SIZE);
 
-            if(0 != memcmp(digestRightNow.value, unsealedPcrInfo.digestAtRelease.value, TPM_HASH_SIZE)) {
+            if(0 != uberspark_uobjrtl_crtl__memcmp(digestRightNow.value, unsealedPcrInfo.digestAtRelease.value, TPM_HASH_SIZE)) {
                 //dprintf(LOG_ERROR, "0 != memcmp(digestRightNow.value, unsealedPcrInfo.digestAtRelease.value, TPM_HASH_SIZE)\n");
                 rv = 1;
                 goto out;
@@ -511,7 +511,7 @@ TPM_RESULT utpm_unseal(utpm_master_state_t *utpm,
 
             //dprintf(LOG_TRACE, "[TV:UTPM_UNSEAL] digestAtRelase MATCH; Unseal ALLOWED!\n");
 
-            memcpy(digestAtCreation->value, unsealedPcrInfo.digestAtCreation.value, TPM_HASH_SIZE);
+            uberspark_uobjrtl_crt__memcpy(digestAtCreation->value, unsealedPcrInfo.digestAtCreation.value, TPM_HASH_SIZE);
         }
         /* 4. Reshuffle output buffer and strip padding so that only
          * the user's plaintext is returned. Buffer's contents: [
@@ -519,7 +519,7 @@ TPM_RESULT utpm_unseal(utpm_master_state_t *utpm,
 
         *outlen = *((uint32_t*)p);
         p += sizeof(uint32_t);
-        memcpy(output, p, *outlen);
+        uberspark_uobjrtl_crtl__memcpy(output, p, *outlen);
 
       out:
         //if(currentPcrComposite) { free(currentPcrComposite); currentPcrComposite = NULL; }

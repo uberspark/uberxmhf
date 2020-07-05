@@ -42,7 +42,7 @@
 #include <uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/bcm2837.h>
 #include <uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/uart.h>
 #include <uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/atags.h>
-#include <uberspark/include/uberspark.h>
+//#include <uberspark/include/uberspark.h>
 
 void atag_dumptags(struct atag *at){
 	uart_puts("uXMHF-rpi3: Dumping ATAG list...\n");

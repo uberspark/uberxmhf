@@ -42,7 +42,7 @@
 #include <uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/bcm2837.h>
 #include <uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/uart.h>
 #include <uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/debug.h>
-#include <uberspark/include/uberspark.h>
+//#include <uberspark/include/uberspark.h>
 
 
 //////
