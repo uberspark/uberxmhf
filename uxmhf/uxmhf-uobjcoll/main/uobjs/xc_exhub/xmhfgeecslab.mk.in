@@ -1,0 +1,18 @@
+########################################################################
+#
+# options that each slab will customize
+# author: amit vasudevan (amitvasudevan@acm.org)
+#
+########################################################################
+
+export XMHF_SLAB_NAME := xc_exhub
+export XMHF_SLAB_SOURCES := $(wildcard $(srcdir)/*.c)
+XMHF_SLAB_SOURCES += $(wildcard $(srcdir)/*.cS)
+
+
+########################################################################
+
+.PHONY: verify
+verify: verifybase
+	@echo Nothing to verify for $(XMHF_SLAB_NAME)...
+	cd $(XMHF_SLAB_VERIFICATION_DIR) && frama-c -no-frama-c-stdlib -val -cpp-extra-args=-nostdinc -cpp-extra-args=-D__USPARK_FRAMAC_VA__ -slevel 2048 $(VFLAGS) xmhfgeec_slabinfotable.c xmhfgeec_slabmapdef.c xcexhub*.c libxmhfhw/*.v.c $(V_XMHFHWM_MODULES)

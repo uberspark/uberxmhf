@@ -1,0 +1,20 @@
+{
+	"uobj-list": 	"	
+						geec_sentinel
+						geec_prime
+						xc_init
+						xc_exhub
+						xc_ihub
+						xc_nwlog
+						uapi_gcpustate
+						uapi_hcpustate
+						uapi_slabmempgtbl
+						uapi_sysdata
+						uapi_iotbl
+						uapi_uhmpgtbl
+						xh_syscalllog
+						xh_hyperdep
+						xh_ssteptrace
+						xg_richguest
+					"
+}

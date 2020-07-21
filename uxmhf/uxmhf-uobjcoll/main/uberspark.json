@@ -1,0 +1,256 @@
+/*
+	uxmhf main uobj json manifest
+	author: ethan joseph (ethanj217@gmail.com)
+*/
+
+{
+
+    /* manifest header */
+ "uberspark-manifest":{
+     "manifest_node_types" : [ "uberspark-uobj" ],
+     "uberspark_min_version" : "6.0.0",
+     "uberspark_max_version" : "any"
+ },
+
+
+   /* uobj declaration */
+ "uberspark-uobj" : {
+     "namespace" : "uberspark/uobjs/platform/pc/uxmhf/main",
+     "platform" : "pc",
+     "arch" : "x86_32",
+     "cpu" : "generic",
+
+     /* sources */
+     "sources" : {
+         "h-files": [ 
+            "include/geec_prime.h",
+            /* "include/geec_sentinel.h", */
+			"include/uapi_gcpustate.h",
+			"include/uapi_hcpustate.h",
+			"include/uapi_iotbl.h",
+			"include/uapi_slabmempgtbl.h",
+			"include/uapi_sysdata.h",
+			"include/uapi_uhmpgtbl.h",
+			"include/xc.h",
+			"include/xc_exhub.h",
+			"include/xc_ihub.h",
+			"include/xc_init.h",
+			"include/xc_nwlog.h",
+			"include/xg_richguest.h",
+			"include/xh_aprvexec.h",
+			"include/xh_hyperdep.h",
+			"include/xh_ssteptrace.h",
+            "include/xh_syscalllog.h",
+			"include/xmhf-config.h",
+			"include/xmhf-error.h",
+			"include/xmhf-types.h",
+			"include/xmhf.h"
+        ],
+         "c-files": [ 
+			"uobjs/geec_prime/gp_data.c",
+			"uobjs/geec_prime/gp_s1_bspstack.c",
+			"uobjs/geec_prime/gp_s1_bspstackgetflags.c",
+			"uobjs/geec_prime/gp_s1_bspstkactivate.c",
+			"uobjs/geec_prime/gp_s1_chkreq.c",
+			"uobjs/geec_prime/gp_s1_hub.c",
+			"uobjs/geec_prime/gp_s1_iommuinit.c",
+			"uobjs/geec_prime/gp_s1_iommuinittbl.c",
+			"uobjs/geec_prime/gp_s1_iommuinittblclearcet.c",
+			"uobjs/geec_prime/gp_s1_postdrt.c",
+			"uobjs/geec_prime/gp_s1_scaniommu.c",
+			"uobjs/geec_prime/gp_s2_entry.c",
+			"uobjs/geec_prime/gp_s2_gathersysmemtypes.c",
+			"uobjs/geec_prime/gp_s2_initsysmemmap.c",
+			"uobjs/geec_prime/gp_s2_sda.c",
+			"uobjs/geec_prime/gp_s2_sdabinddevice.c",
+			"uobjs/geec_prime/gp_s2_sdadoalloc.c",
+			"uobjs/geec_prime/gp_s2_sdadoalloc_getuobjfordev.c",
+			"uobjs/geec_prime/gp_s2_sdasetupdevpgtbl.c",
+			"uobjs/geec_prime/gp_s2_sdasetupdevpgtbl_rg.c",
+			"uobjs/geec_prime/gp_s2_sdasetupdevpgtbl_setptentries.c",
+			"uobjs/geec_prime/gp_s2_sdasetupdevpgtbl_splintpdt.c",
+			"uobjs/geec_prime/gp_s2_sdmenumsysdevices.c",
+			"uobjs/geec_prime/gp_s2_sdmenumsysdevices_memioextents.c",
+			"uobjs/geec_prime/gp_s2_sdminitdevmap.c",
+			"uobjs/geec_prime/gp_s2_sdminitdevmap_addalldevstouobj.c",
+			"uobjs/geec_prime/gp_s2_sdminitdevmap_adddeventry.c",
+			"uobjs/geec_prime/gp_s2_sdminitdevmap_adddevtouobj.c",
+			"uobjs/geec_prime/gp_s2_sdminitdevmap_isdevinexcl.c",
+			"uobjs/geec_prime/gp_s2_setupgdt.c",
+			"uobjs/geec_prime/gp_s2_setupgdttssentry.c",
+			"uobjs/geec_prime/gp_s2_setupidt.c",
+			"uobjs/geec_prime/gp_s2_setupiotbl.c",
+			"uobjs/geec_prime/gp_s2_setupiotblug.c",
+			"uobjs/geec_prime/gp_s2_setupiotblug_rg.c",
+			"uobjs/geec_prime/gp_s2_setupiotbluh.c",
+			"uobjs/geec_prime/gp_s2_setupmpgtbl_getspatype.c",
+			"uobjs/geec_prime/gp_s2_setupmpgtbl_getspatypeuobj.c",
+			"uobjs/geec_prime/gp_s2_setupmpgtbl_getspatypeuobj_isiotbl.c",
+			"uobjs/geec_prime/gp_s2_setupmpgtbl_getspatypeuobj_ismmio.c",
+			"uobjs/geec_prime/gp_s2_setupmpgtblu.c",
+			"uobjs/geec_prime/gp_s2_setupmpgtblug.c",
+			"uobjs/geec_prime/gp_s2_setupmpgtblug_getflags.c",
+			"uobjs/geec_prime/gp_s2_setupmpgtblug_getmtype.c",
+			"uobjs/geec_prime/gp_s2_setupmpgtblug_rg.c",
+			"uobjs/geec_prime/gp_s2_setupmpgtbluh.c",
+			"uobjs/geec_prime/gp_s2_setupmpgtbluh_getflags.c",
+			"uobjs/geec_prime/gp_s2_setupmpgtbluh_setentry.c",
+			"uobjs/geec_prime/gp_s2_setupmpgtblv.c",
+			"uobjs/geec_prime/gp_s2_setupmpgtblv_getflags.c",
+			"uobjs/geec_prime/gp_s2_setuptss.c",
+			"uobjs/geec_prime/gp_s2_setuptssinittss.c",
+			"uobjs/geec_prime/gp_s3_entry.c",
+			"uobjs/geec_prime/gp_s3_startcores.c",
+			"uobjs/geec_prime/gp_s5_entry.c",
+			"uobjs/geec_prime/gp_s5_invokestrt.c",
+            "uobjs/geec_prime/gp_s5_setupcpustate.c",
+            /*
+			"uobjs/geec_sentinel/gs_data.c",
+			"uobjs/geec_sentinel/gs_entry.c",
+			"uobjs/geec_sentinel/gs_entry_syscall.c",
+			"uobjs/geec_sentinel/gs_exit_calluv2v.c",
+			"uobjs/geec_sentinel/gs_exit_callv2uv.c",
+			"uobjs/geec_sentinel/gs_exit_retuv2v.c",
+			"uobjs/geec_sentinel/gs_exit_retv2uv.c",
+			"uobjs/geec_sentinel/gs_sisspop.c",
+			"uobjs/geec_sentinel/gs_sisspush.c",
+			*/
+			"uobjs/uapi_gcpustate/ugcpust_data.c",
+			"uobjs/uapi_gcpustate/ugcpust_gprsread.c",
+			"uobjs/uapi_gcpustate/ugcpust_gprswrite.c",
+			"uobjs/uapi_gcpustate/ugcpust_main.c",
+			"uobjs/uapi_gcpustate/ugcpust_msrread.c",
+			"uobjs/uapi_gcpustate/ugcpust_msrwrite.c",
+			"uobjs/uapi_gcpustate/ugcpust_vmread.c",
+			"uobjs/uapi_gcpustate/ugcpust_vmwrite.c",
+			"uobjs/uapi_hcpustate/uhcpust_data.c",
+			"uobjs/uapi_hcpustate/uhcpust_main.c",
+			"uobjs/uapi_hcpustate/uhcpust_rdmsr.c",
+			"uobjs/uapi_hcpustate/uhcpust_wrmsr.c",
+			"uobjs/uapi_iotbl/uiotbl_data.c",
+			"uobjs/uapi_iotbl/uiotbl_getiotblbase.c",
+			"uobjs/uapi_iotbl/uiotbl_initiotbl.c",
+			"uobjs/uapi_iotbl/uiotbl_main.c",
+			"uobjs/uapi_iotbl/uiotbl_setupiotblugportaccess.c",
+			"uobjs/uapi_iotbl/uiotbl_setupiotbluhportaccess.c",
+			"uobjs/uapi_slabmempgtbl/ugmpgtbl_data.c",
+			"uobjs/uapi_slabmempgtbl/ugmpgtbl_flushtlb.c",
+			"uobjs/uapi_slabmempgtbl/ugmpgtbl_getentry.c",
+			"uobjs/uapi_slabmempgtbl/ugmpgtbl_getmpgtblbase.c",
+			"uobjs/uapi_slabmempgtbl/ugmpgtbl_inittable.c",
+			"uobjs/uapi_slabmempgtbl/ugmpgtbl_main.c",
+			"uobjs/uapi_slabmempgtbl/ugmpgtbl_setentry.c",
+			"uobjs/uapi_sysdata/usysd_data.c",
+			"uobjs/uapi_sysdata/usysd_e820addentry.c",
+			"uobjs/uapi_sysdata/usysd_e820getentryforindex.c",
+			"uobjs/uapi_sysdata/usysd_e820getmaxindex.c",
+			"uobjs/uapi_sysdata/usysd_main.c",
+			"uobjs/uapi_uhmpgtbl/uhmpgtbl_data.c",
+			"uobjs/uapi_uhmpgtbl/uhmpgtbl_getidxformpgtblbase.c",
+			"uobjs/uapi_uhmpgtbl/uhmpgtbl_getmpgtblbase.c",
+			"uobjs/uapi_uhmpgtbl/uhmpgtbl_inittable.c",
+			"uobjs/uapi_uhmpgtbl/uhmpgtbl_main.c",
+			"uobjs/uapi_uhmpgtbl/uhmpgtbl_setentry.c",
+			"uobjs/xc_exhub/xcexhub_data.c",
+			"uobjs/xc_exhub/xcexhub_entryexcp.c",
+			"uobjs/xc_exhub/xcexhub_excpmain.c",
+			"uobjs/xc_exhub/xcexhub_main.c",
+			"uobjs/xc_exhub/xcexhub_setupidt.c",
+			"uobjs/xc_ihub/xcihub_data.c",
+			"uobjs/xc_ihub/xcihub_halt.c",
+			"uobjs/xc_ihub/xcihub_hcbinvoke.c",
+			"uobjs/xc_ihub/xcihub_icptcpuid.c",
+			"uobjs/xc_ihub/xcihub_icptcrx.c",
+			"uobjs/xc_ihub/xcihub_icptentry.c",
+			"uobjs/xc_ihub/xcihub_icptmain.c",
+			"uobjs/xc_ihub/xcihub_icptrdmsr.c",
+			"uobjs/xc_ihub/xcihub_icptsipi.c",
+			"uobjs/xc_ihub/xcihub_icptvmcall.c",
+			"uobjs/xc_ihub/xcihub_icptwrmsr.c",
+			"uobjs/xc_ihub/xcihub_icptxsetbv.c",
+			"uobjs/xc_ihub/xcihub_main.c",
+			"uobjs/xc_ihub/xcihub_rg_e820emulation.c",
+			"uobjs/xc_init/xc_init_data.c",
+			"uobjs/xc_init/xc_init_main.c",
+			"uobjs/xc_nwlog/xcnwlog_addtolog.c",
+			"uobjs/xc_nwlog/xcnwlog_data.c",
+			"uobjs/xc_nwlog/xcnwlog_hw.c",
+			"uobjs/xc_nwlog/xcnwlog_init.c",
+			"uobjs/xc_nwlog/xcnwlog_logdata.c",
+			"uobjs/xc_nwlog/xcnwlog_main.c",
+			"uobjs/xh_aprvexec/xh_aprvexec_code.c",
+			"uobjs/xh_aprvexec/xh_aprvexec_data.c",
+			"uobjs/xh_hyperdep/xhhyperdep_activate.c",
+			"uobjs/xh_hyperdep/xhhyperdep_data.c",
+			"uobjs/xh_hyperdep/xhhyperdep_deactivate.c",
+			"uobjs/xh_hyperdep/xhhyperdep_hcbhypercall.c",
+			"uobjs/xh_hyperdep/xhhyperdep_hcbinit.c",
+			"uobjs/xh_hyperdep/xhhyperdep_hcbmemfault.c",
+			"uobjs/xh_hyperdep/xhhyperdep_hcbshutdown.c",
+			"uobjs/xh_hyperdep/xhhyperdep_main.c",
+			"uobjs/xh_ssteptrace/xh_ssteptrace_code.c",
+			"uobjs/xh_ssteptrace/xh_ssteptrace_data.c",
+			"uobjs/xh_syscalllog/xhsysclog_data.c",
+			"uobjs/xh_syscalllog/xhsysclog_hcbhypercall.c",
+			"uobjs/xh_syscalllog/xhsysclog_hcbinit.c",
+			"uobjs/xh_syscalllog/xhsysclog_hcbmemfault.c",
+			"uobjs/xh_syscalllog/xhsysclog_loginfo.c",
+			"uobjs/xh_syscalllog/xhsysclog_main.c",
+            "uobjs/xh_syscalllog/xhsysclog_register.c"
+        ],
+         "casm-files": [ 
+            "uobjs/geec_prime/gp_s1_entry.cS",
+			"uobjs/geec_prime/gp_s4_apstacks.cS",
+            "uobjs/geec_prime/gp_s4_entry.cS",
+            /*
+			"uobjs/geec_sentinel/gs_calluobj.cS",
+			"uobjs/geec_sentinel/gs_entry_callstub.cS",
+			"uobjs/geec_sentinel/gs_entry_syscallstub.cS",
+			"uobjs/geec_sentinel/gs_exit_calluv2vstub.cS",
+			"uobjs/geec_sentinel/gs_exit_callv2uvg.cS",
+			"uobjs/geec_sentinel/gs_exit_callv2uvstub.cS",
+			"uobjs/geec_sentinel/gs_exit_callv2v.cS",
+			"uobjs/geec_sentinel/gs_exit_ret2v.cS",
+			"uobjs/geec_sentinel/gs_exit_retuv2vstub.cS",
+			"uobjs/geec_sentinel/gs_exit_retv2uvstub.cS",
+			*/
+			"uobjs/xc_exhub/xcexhub_excpstub.cS",
+			"uobjs/xc_exhub/xcexhub_retexcp.cS",
+			"uobjs/xc_ihub/xcihub_icptstub.cS",
+			"uobjs/xc_ihub/xcihub_reticpt.cS",
+			"uobjs/xh_aprvexec/xh_aprvexec_codesup.cS",
+            "uobjs/xh_ssteptrace/xh_ssteptrace_codesup.cS"
+         ],
+         "asm-files": [ 
+            
+         ]
+     },
+ 
+     /* public methods */
+     "publicmethods" : {
+     },
+
+     /* public methods of other uobjs that this uobj invokes 
+         within the same collection
+     */
+     "intrauobjcoll-callees" : {
+     },
+ 
+
+     /* public methods of other uobjs that this uobj invokes 
+         across other collection(s)
+     */
+     "interuobjcoll-callees": {
+     },
+ 
+     /* legacy CoSS functions/code that this uobj invokes */
+     "legacy-callees": [
+     ],
+
+     /* uobjrtl */
+     "uobjrtl": [
+     ]
+     
+ }
+
+}

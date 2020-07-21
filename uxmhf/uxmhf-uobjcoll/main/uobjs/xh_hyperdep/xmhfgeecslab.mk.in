@@ -1,0 +1,24 @@
+########################################################################
+#
+# options that each slab will customize
+# author: amit vasudevan (amitvasudevan@acm.org)
+#
+########################################################################
+
+export XMHF_SLAB_NAME := xh_hyperdep
+export XMHF_SLAB_SOURCES := $(wildcard $(srcdir)/*.c)
+
+
+########################################################################
+
+.PHONY: verify
+verify: verifybase
+	@echo Proceeding to verify $(XMHF_SLAB_NAME)...
+	cd $(XMHF_SLAB_VERIFICATION_DIR) && frama-c -no-frama-c-stdlib -main slab_main -lib-entry -wp -wp-rte -wp-model +cint+cast  -wp-prover alt-ergo,cvc3,z3 -cpp-extra-args=-nostdinc $(VFLAGS) xhhyperdep_data.c.v.c xhhyperdep_main.c.v.c
+	cd $(XMHF_SLAB_VERIFICATION_DIR) && frama-c -no-frama-c-stdlib -main hyperdep_hcbhypercall -lib-entry -wp -wp-rte -wp-model +cint+cast  -wp-prover alt-ergo,cvc3,z3 -cpp-extra-args=-nostdinc $(VFLAGS) xhhyperdep_data.c.v.c xhhyperdep_hcbhypercall.c.v.c
+	cd $(XMHF_SLAB_VERIFICATION_DIR) && frama-c -no-frama-c-stdlib -main hyperdep_activatedep -lib-entry -wp -wp-rte -wp-model +cint+cast  -wp-prover alt-ergo,cvc3,z3 -cpp-extra-args=-nostdinc $(VFLAGS) xhhyperdep_data.c.v.c xhhyperdep_activate.c.v.c
+	cd $(XMHF_SLAB_VERIFICATION_DIR) && frama-c -no-frama-c-stdlib -val -cpp-extra-args=-nostdinc -cpp-extra-args=-D__USPARK_FRAMAC_VA__ -slevel 2048 $(VFLAGS) *.c xmhfgeec_*.c *.ag.v.c libxmhfhw/*.v.c $(V_XMHFHWM_MODULES)
+	
+
+
+

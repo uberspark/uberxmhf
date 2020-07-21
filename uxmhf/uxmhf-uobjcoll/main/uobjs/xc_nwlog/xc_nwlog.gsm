@@ -1,0 +1,65 @@
+#include <uberspark.h>
+#include <xmhf-hwm.h>
+
+#include <xmhf.h>
+#include <xmhfgeec.h>
+
+#include <xc_nwlog.h>
+
+
+{
+	"uobj-name": "xc_nwlog",
+	"uobj-type": "VfT_SLAB",
+	"uobj-subtype": "XCORE",
+
+	"uobj-uapifunctions":[],
+
+	"uobj-callees": "",
+
+	"uobj-uapicallees":[],
+
+
+	"uobj-resource-devices":[
+/*		{ 
+			"type": "include",
+			"opt1" : USMF_STR(PCI_VENDOR_ID_LOGNIC),
+			"opt2" : USMF_STR(PCI_DEVICE_ID_LOGNIC) 
+		}
+*/
+	],	
+
+	"uobj-resource-memory":[],	
+
+	"uobj-exportfunctions": "",
+
+
+	"uobj-binary-sections":[
+		{ 
+			"section-name": "code",
+			"section-size": "0x200000"
+		},
+		{ 
+			"section-name": "data",
+			"section-size": "0x200000"
+		},
+		{ 
+			"section-name": "stack",
+			"section-size": "0x600000"
+		},
+		{ 
+			"section-name": "dmadata",
+			"section-size": "0x200000"
+		}
+	],	
+
+	
+	"c-files":	"",
+		
+	"v-harness": []
+		
+	
+}
+
+
+
+
