@@ -228,6 +228,11 @@
  
      /* public methods */
      "publicmethods" : {
+		 "main" : [
+			 "void",
+			 "(void)",
+			 "1"
+		 ]
      },
 
      /* public methods of other uobjs that this uobj invokes 
