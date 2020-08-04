@@ -77,7 +77,7 @@ bool khcall(uint32_t khcall_function, void *khcall_buffer, uint32_t khcall_buffe
 	}
 
 	// allocate kernel page
-	k_page = alloc_gate(GFP_KERNEL | __GFP_ZERO);
+	k_page = alloc_page(GFP_KERNEL | __GFP_ZERO);
 	khcall_kbuff = (void *)page_address(k_page);
 
 	// copy hypercall buffer into kernel page
