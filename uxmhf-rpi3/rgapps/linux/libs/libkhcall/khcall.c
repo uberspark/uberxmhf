@@ -49,7 +49,7 @@
 
 #include <khcall.h>
 
-
+static void khcall_hvc(uint32_t khcall_function, void *khcall_buffer, uint32_t khcall_buffer_len);
 
 //////
 // khcall micro-hypervisor hypercall interface
@@ -63,15 +63,15 @@ bool khcall(uint32_t khcall_function, void *khcall_buffer, uint32_t khcall_buffe
 	//if khcall_buffer is NULL then khcall_buffer_len should be 0
 	//for a NULL hypercall test
 	if(khcall_buffer == NULL && khcall_buffer_len != 0){
-	  printf("%s: error: line %u\n", __FUNCTION__, __LINE__);
+	  printk("%s: error: line %u\n", __FUNCTION__, __LINE__);
 	  return false;
 	}
 
 	//if khcall_buffer is not NULL then base address of khcall_buffer + khcall_buffer_len
 	//cannot exceed a page size 
 	if(khcall_buffer != NULL){
-	  if ((((uint32_t)khcall_buffer % UHCALL_PM_PAGE_SIZE) + uhcall_buffer_len) > KHCALL_PM_PAGE_SIZE){
-	    printf("%s: error: line %u\n", __FUNCTION__, __LINE__);
+	  if ((((uint32_t)khcall_buffer % KHCALL_PM_PAGE_SIZE) + khcall_buffer_len) > KHCALL_PM_PAGE_SIZE){
+	    printk("%s: error: line %u\n", __FUNCTION__, __LINE__);
 	    return false;
 	  }
 	}
