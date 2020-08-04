@@ -17,5 +17,5 @@ make -C $LINUX_KERNEL_SRC ARCH=arm \
 CROSS_COMPILE=$CROSS_COMPILE_TOOLS_DIR/arm-linux-gnueabihf- \
 M=$PWD
 
-echo "Library build success!"
+echo "Module build success!"
 
