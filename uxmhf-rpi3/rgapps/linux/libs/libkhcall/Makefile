@@ -2,6 +2,21 @@
 # author: amit vasudevan (amitvasudevan@acm.org),
 #         matt mccormack (matthew.mccormack@live.com)
 
+export AR=ar
+export CP=cp
+export CCERT=$(TOOLPREFIX)gcc
+export CC=$(TOOLPREFIX)gcc
+export CCERT_FLAGS=$(CFLAGS)
+export RM=rm
+
+TOOLPREFIX ?= arm-linux-gnueabihf-
+
+INCS = -I.
+
+CFLAGS = -I. -I$(INCS) -c -g -Wall
+CCERTFLAGS = $(CFLAGS)
+LFLAGS = -g -Wall -Wextra   
+
 srcdir := $(dir $(lastword $(MAKEFILE_LIST)))
 vpath %.c $(srcdir)
 
