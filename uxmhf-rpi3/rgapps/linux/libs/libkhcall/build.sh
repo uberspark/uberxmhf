@@ -17,5 +17,7 @@ make -C $LINUX_KERNEL_SRC ARCH=arm \
 CROSS_COMPILE=$CROSS_COMPILE_TOOLS_DIR/arm-linux-gnueabihf- \
 M=$PWD
 
+mv lib.a libkhcall.a
+
 echo "Module build success!"
 
