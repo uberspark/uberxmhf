@@ -1,3 +1,43 @@
+uberspark staging create rpi3
+uberspark >> enforcing verifiable object abstractions for commodity system software stacks
+uberspark >> front-end tool
+uberspark >> version: 6.0.0
+uberspark >> website: https://uberspark.org
+uberspark >> creator: amit vasudevan <amitvasudevan@acm.org>
+uberspark >> 
+uberspark >> Loading current configuration...uberspark >> config_ns_json_path=/home/slab/uberspark/staging/rpi3/uberspark/config/uberspark.json
+[OK]
+uberspark >> successfully created and switched to staging: 'rpi3'
+uberspark staging config-set --setting-name=bridge_cc_bridge --setting-value=container/amd64/armv8_32/generic/gcc/v4.9.3
+uberspark >> enforcing verifiable object abstractions for commodity system software stacks
+uberspark >> front-end tool
+uberspark >> version: 6.0.0
+uberspark >> website: https://uberspark.org
+uberspark >> creator: amit vasudevan <amitvasudevan@acm.org>
+uberspark >> 
+uberspark >> Loading current configuration...uberspark >> config_ns_json_path=/home/slab/uberspark/staging/rpi3/uberspark/config/uberspark.json
+[OK]
+uberspark >> configuration setting 'bridge_cc_bridge' set to 'container/amd64/armv8_32/generic/gcc/v4.9.3' within current configuration
+uberspark staging config-set --setting-name=bridge_as_bridge --setting-value=container/amd64/armv8_32/generic/gnu-as/v2.26.1
+uberspark >> enforcing verifiable object abstractions for commodity system software stacks
+uberspark >> front-end tool
+uberspark >> version: 6.0.0
+uberspark >> website: https://uberspark.org
+uberspark >> creator: amit vasudevan <amitvasudevan@acm.org>
+uberspark >> 
+uberspark >> Loading current configuration...uberspark >> config_ns_json_path=/home/slab/uberspark/staging/rpi3/uberspark/config/uberspark.json
+[OK]
+uberspark >> configuration setting 'bridge_as_bridge' set to 'container/amd64/armv8_32/generic/gnu-as/v2.26.1' within current configuration
+uberspark staging config-set --setting-name=bridge_ld_bridge --setting-value=container/amd64/armv8_32/generic/gnu-ld/v2.26.1
+uberspark >> enforcing verifiable object abstractions for commodity system software stacks
+uberspark >> front-end tool
+uberspark >> version: 6.0.0
+uberspark >> website: https://uberspark.org
+uberspark >> creator: amit vasudevan <amitvasudevan@acm.org>
+uberspark >> 
+uberspark >> Loading current configuration...uberspark >> config_ns_json_path=/home/slab/uberspark/staging/rpi3/uberspark/config/uberspark.json
+[OK]
+uberspark >> configuration setting 'bridge_ld_bridge' set to 'container/amd64/armv8_32/generic/gnu-ld/v2.26.1' within current configuration
 building xmhf-rpi3...
 uberspark staging switch rpi3 
 uberspark >> enforcing verifiable object abstractions for commodity system software stacks
@@ -217,7 +257,7 @@ uberspark >> d_path_ns=/home/slab/uberspark/staging/rpi3/uberspark/uobjcoll/plat
 uberspark >> ready for out-of-namespace build
 uberspark >> using uobj collection default bridges...
 uberspark >> proceeding to compile c files...
-uberspark >> d_cmd=echo Compiling uobj_pminfo.c... && gcc -nostdinc   -I. -I/home/slab/uberspark/staging/rpi3 -c uobj_pminfo.c -o uobj_pminfo.c.o  && echo Compiling uobj_intrauobjcoll_callees_info.c... && gcc -nostdinc   -I. -I/home/slab/uberspark/staging/rpi3 -c uobj_intrauobjcoll_callees_info.c -o uobj_intrauobjcoll_callees_info.c.o  && echo Compiling uobj_interuobjcoll_callees_info.c... && gcc -nostdinc   -I. -I/home/slab/uberspark/staging/rpi3 -c uobj_interuobjcoll_callees_info.c -o uobj_interuobjcoll_callees_info.c.o  && echo Compiling uobj_legacy_callees_info.c... && gcc -nostdinc   -I. -I/home/slab/uberspark/staging/rpi3 -c uobj_legacy_callees_info.c -o uobj_legacy_callees_info.c.o  && echo Compiling uobj_binhdr.c... && gcc -nostdinc   -I. -I/home/slab/uberspark/staging/rpi3 -c uobj_binhdr.c -o uobj_binhdr.c.o  && echo Compiling uberspark/uobjrtl/crt/src/memcmp.c... && gcc -nostdinc   -I. -I/home/slab/uberspark/staging/rpi3 -c uberspark/uobjrtl/crt/src/memcmp.c -o uberspark/uobjrtl/crt/src/memcmp.c.o  && echo Compiling uberspark/uobjrtl/crt/src/memcpy.c... && gcc -nostdinc   -I. -I/home/slab/uberspark/staging/rpi3 -c uberspark/uobjrtl/crt/src/memcpy.c -o uberspark/uobjrtl/crt/src/memcpy.c.o  && echo Compiling uberspark/uobjrtl/crt/src/memmove.c... && gcc -nostdinc   -I. -I/home/slab/uberspark/staging/rpi3 -c uberspark/uobjrtl/crt/src/memmove.c -o uberspark/uobjrtl/crt/src/memmove.c.o  && echo Compiling uberspark/uobjrtl/crt/src/memset.c... && gcc -nostdinc   -I. -I/home/slab/uberspark/staging/rpi3 -c uberspark/uobjrtl/crt/src/memset.c -o uberspark/uobjrtl/crt/src/memset.c.o  && echo Compiling uberspark/uobjrtl/crt/src/strchr.c... && gcc -nostdinc   -I. -I/home/slab/uberspark/staging/rpi3 -c uberspark/uobjrtl/crt/src/strchr.c -o uberspark/uobjrtl/crt/src/strchr.c.o  && echo Compiling uberspark/uobjrtl/crt/src/strcmp.c... && gcc -nostdinc   -I. -I/home/slab/uberspark/staging/rpi3 -c uberspark/uobjrtl/crt/src/strcmp.c -o uberspark/uobjrtl/crt/src/strcmp.c.o  && echo Compiling uberspark/uobjrtl/crt/src/strlen.c... && gcc -nostdinc   -I. -I/home/slab/uberspark/staging/rpi3 -c uberspark/uobjrtl/crt/src/strlen.c -o uberspark/uobjrtl/crt/src/strlen.c.o  && echo Compiling uberspark/uobjrtl/crt/src/strncmp.c... && gcc -nostdinc   -I. -I/home/slab/uberspark/staging/rpi3 -c uberspark/uobjrtl/crt/src/strncmp.c -o uberspark/uobjrtl/crt/src/strncmp.c.o  && echo Compiling uberspark/uobjrtl/crt/src/strncpy.c... && gcc -nostdinc   -I. -I/home/slab/uberspark/staging/rpi3 -c uberspark/uobjrtl/crt/src/strncpy.c -o uberspark/uobjrtl/crt/src/strncpy.c.o  && echo Compiling uberspark/uobjrtl/crt/src/strnlen.c... && gcc -nostdinc   -I. -I/home/slab/uberspark/staging/rpi3 -c uberspark/uobjrtl/crt/src/strnlen.c -o uberspark/uobjrtl/crt/src/strnlen.c.o  && echo Compiling uberspark/uobjrtl/crypto/src/ciphers/aes/aes.c... && gcc -nostdinc   -I. -I/home/slab/uberspark/staging/rpi3 -c uberspark/uobjrtl/crypto/src/ciphers/aes/aes.c -o uberspark/uobjrtl/crypto/src/ciphers/aes/aes.c.o  && echo Compiling uberspark/uobjrtl/crypto/src/ciphers/aes/aes_cbc.c... && gcc -nostdinc   -I. -I/home/slab/uberspark/staging/rpi3 -c uberspark/uobjrtl/crypto/src/ciphers/aes/aes_cbc.c -o uberspark/uobjrtl/crypto/src/ciphers/aes/aes_cbc.c.o  && echo Compiling uberspark/uobjrtl/crypto/src/ciphers/aes/aes_tab.c... && gcc -nostdinc   -I. -I/home/slab/uberspark/staging/rpi3 -c uberspark/uobjrtl/crypto/src/ciphers/aes/aes_tab.c -o uberspark/uobjrtl/crypto/src/ciphers/aes/aes_tab.c.o  && echo Compiling uberspark/uobjrtl/crypto/src/hashes/sha1/sha1.c... && gcc -nostdinc   -I. -I/home/slab/uberspark/staging/rpi3 -c uberspark/uobjrtl/crypto/src/hashes/sha1/sha1.c -o uberspark/uobjrtl/crypto/src/hashes/sha1/sha1.c.o  && echo Compiling uberspark/uobjrtl/crypto/src/mac/hmacsha1/hmacsha1.c... && gcc -nostdinc   -I. -I/home/slab/uberspark/staging/rpi3 -c uberspark/uobjrtl/crypto/src/mac/hmacsha1/hmacsha1.c -o uberspark/uobjrtl/crypto/src/mac/hmacsha1/hmacsha1.c.o  && echo Compiling core/main.c... && gcc -nostdinc   -I. -I/home/slab/uberspark/staging/rpi3 -c core/main.c -o core/main.c.o  && echo Compiling core/ghcall.c... && gcc -nostdinc   -I. -I/home/slab/uberspark/staging/rpi3 -c core/ghcall.c -o core/ghcall.c.o  && echo Compiling core/hyptimer.c... && gcc -nostdinc   -I. -I/home/slab/uberspark/staging/rpi3 -c core/hyptimer.c -o core/hyptimer.c.o  && echo Compiling core/bcm2837.c... && gcc -nostdinc   -I. -I/home/slab/uberspark/staging/rpi3 -c core/bcm2837.c -o core/bcm2837.c.o  && echo Compiling core/secboot.c... && gcc -nostdinc   -I. -I/home/slab/uberspark/staging/rpi3 -c core/secboot.c -o core/secboot.c.o  && echo Compiling core/intprot.c... && gcc -nostdinc   -I. -I/home/slab/uberspark/staging/rpi3 -c core/intprot.c -o core/intprot.c.o  && echo Compiling core/dmaprot.c... && gcc -nostdinc   -I. -I/home/slab/uberspark/staging/rpi3 -c core/dmaprot.c -o core/dmaprot.c.o  && echo Compiling core/uapi_s2pgtbl.c... && gcc -nostdinc   -I. -I/home/slab/uberspark/staging/rpi3 -c core/uapi_s2pgtbl.c -o core/uapi_s2pgtbl.c.o  && echo Compiling core/s2pgtbl.c... && gcc -nostdinc   -I. -I/home/slab/uberspark/staging/rpi3 -c core/s2pgtbl.c -o core/s2pgtbl.c.o  && echo Compiling core/hyppgtbl.c... && gcc -nostdinc   -I. -I/home/slab/uberspark/staging/rpi3 -c core/hyppgtbl.c -o core/hyppgtbl.c.o  && echo Compiling core/mmu.c... && gcc -nostdinc   -I. -I/home/slab/uberspark/staging/rpi3 -c core/mmu.c -o core/mmu.c.o  && echo Compiling core/hypvtable.c... && gcc -nostdinc   -I. -I/home/slab/uberspark/staging/rpi3 -c core/hypvtable.c -o core/hypvtable.c.o  && echo Compiling common/atags.c... && gcc -nostdinc   -I. -I/home/slab/uberspark/staging/rpi3 -c common/atags.c -o common/atags.c.o  && echo Compiling common/debug.c... && gcc -nostdinc   -I. -I/home/slab/uberspark/staging/rpi3 -c common/debug.c -o common/debug.c.o  && echo Compiling common/subr_prf.c... && gcc -nostdinc   -I. -I/home/slab/uberspark/staging/rpi3 -c common/subr_prf.c -o common/subr_prf.c.o  && echo Compiling common/mailbox.c... && gcc -nostdinc   -I. -I/home/slab/uberspark/staging/rpi3 -c common/mailbox.c -o common/mailbox.c.o  && echo Compiling common/pl011uart.c... && gcc -nostdinc   -I. -I/home/slab/uberspark/staging/rpi3 -c common/pl011uart.c -o common/pl011uart.c.o  && echo Compiling common/miniuart.c... && gcc -nostdinc   -I. -I/home/slab/uberspark/staging/rpi3 -c common/miniuart.c -o common/miniuart.c.o  && echo Compiling libutpm/utpm-common.c... && gcc -nostdinc   -I. -I/home/slab/uberspark/staging/rpi3 -c libutpm/utpm-common.c -o libutpm/utpm-common.c.o  && echo Compiling libutpm/utpm.c... && gcc -nostdinc   -I. -I/home/slab/uberspark/staging/rpi3 -c libutpm/utpm.c -o libutpm/utpm.c.o 
+uberspark >> d_cmd=echo Compiling uobj_pminfo.c... && arm-linux-gnueabihf-gcc-4.9 -nostdinc -nostartfiles -mcpu=cortex-a53   -I. -I/home/slab/uberspark/staging/rpi3 -c uobj_pminfo.c -o uobj_pminfo.c.o  && echo Compiling uobj_intrauobjcoll_callees_info.c... && arm-linux-gnueabihf-gcc-4.9 -nostdinc -nostartfiles -mcpu=cortex-a53   -I. -I/home/slab/uberspark/staging/rpi3 -c uobj_intrauobjcoll_callees_info.c -o uobj_intrauobjcoll_callees_info.c.o  && echo Compiling uobj_interuobjcoll_callees_info.c... && arm-linux-gnueabihf-gcc-4.9 -nostdinc -nostartfiles -mcpu=cortex-a53   -I. -I/home/slab/uberspark/staging/rpi3 -c uobj_interuobjcoll_callees_info.c -o uobj_interuobjcoll_callees_info.c.o  && echo Compiling uobj_legacy_callees_info.c... && arm-linux-gnueabihf-gcc-4.9 -nostdinc -nostartfiles -mcpu=cortex-a53   -I. -I/home/slab/uberspark/staging/rpi3 -c uobj_legacy_callees_info.c -o uobj_legacy_callees_info.c.o  && echo Compiling uobj_binhdr.c... && arm-linux-gnueabihf-gcc-4.9 -nostdinc -nostartfiles -mcpu=cortex-a53   -I. -I/home/slab/uberspark/staging/rpi3 -c uobj_binhdr.c -o uobj_binhdr.c.o  && echo Compiling uberspark/uobjrtl/crt/src/memcmp.c... && arm-linux-gnueabihf-gcc-4.9 -nostdinc -nostartfiles -mcpu=cortex-a53   -I. -I/home/slab/uberspark/staging/rpi3 -c uberspark/uobjrtl/crt/src/memcmp.c -o uberspark/uobjrtl/crt/src/memcmp.c.o  && echo Compiling uberspark/uobjrtl/crt/src/memcpy.c... && arm-linux-gnueabihf-gcc-4.9 -nostdinc -nostartfiles -mcpu=cortex-a53   -I. -I/home/slab/uberspark/staging/rpi3 -c uberspark/uobjrtl/crt/src/memcpy.c -o uberspark/uobjrtl/crt/src/memcpy.c.o  && echo Compiling uberspark/uobjrtl/crt/src/memmove.c... && arm-linux-gnueabihf-gcc-4.9 -nostdinc -nostartfiles -mcpu=cortex-a53   -I. -I/home/slab/uberspark/staging/rpi3 -c uberspark/uobjrtl/crt/src/memmove.c -o uberspark/uobjrtl/crt/src/memmove.c.o  && echo Compiling uberspark/uobjrtl/crt/src/memset.c... && arm-linux-gnueabihf-gcc-4.9 -nostdinc -nostartfiles -mcpu=cortex-a53   -I. -I/home/slab/uberspark/staging/rpi3 -c uberspark/uobjrtl/crt/src/memset.c -o uberspark/uobjrtl/crt/src/memset.c.o  && echo Compiling uberspark/uobjrtl/crt/src/strchr.c... && arm-linux-gnueabihf-gcc-4.9 -nostdinc -nostartfiles -mcpu=cortex-a53   -I. -I/home/slab/uberspark/staging/rpi3 -c uberspark/uobjrtl/crt/src/strchr.c -o uberspark/uobjrtl/crt/src/strchr.c.o  && echo Compiling uberspark/uobjrtl/crt/src/strcmp.c... && arm-linux-gnueabihf-gcc-4.9 -nostdinc -nostartfiles -mcpu=cortex-a53   -I. -I/home/slab/uberspark/staging/rpi3 -c uberspark/uobjrtl/crt/src/strcmp.c -o uberspark/uobjrtl/crt/src/strcmp.c.o  && echo Compiling uberspark/uobjrtl/crt/src/strlen.c... && arm-linux-gnueabihf-gcc-4.9 -nostdinc -nostartfiles -mcpu=cortex-a53   -I. -I/home/slab/uberspark/staging/rpi3 -c uberspark/uobjrtl/crt/src/strlen.c -o uberspark/uobjrtl/crt/src/strlen.c.o  && echo Compiling uberspark/uobjrtl/crt/src/strncmp.c... && arm-linux-gnueabihf-gcc-4.9 -nostdinc -nostartfiles -mcpu=cortex-a53   -I. -I/home/slab/uberspark/staging/rpi3 -c uberspark/uobjrtl/crt/src/strncmp.c -o uberspark/uobjrtl/crt/src/strncmp.c.o  && echo Compiling uberspark/uobjrtl/crt/src/strncpy.c... && arm-linux-gnueabihf-gcc-4.9 -nostdinc -nostartfiles -mcpu=cortex-a53   -I. -I/home/slab/uberspark/staging/rpi3 -c uberspark/uobjrtl/crt/src/strncpy.c -o uberspark/uobjrtl/crt/src/strncpy.c.o  && echo Compiling uberspark/uobjrtl/crt/src/strnlen.c... && arm-linux-gnueabihf-gcc-4.9 -nostdinc -nostartfiles -mcpu=cortex-a53   -I. -I/home/slab/uberspark/staging/rpi3 -c uberspark/uobjrtl/crt/src/strnlen.c -o uberspark/uobjrtl/crt/src/strnlen.c.o  && echo Compiling uberspark/uobjrtl/crypto/src/ciphers/aes/aes.c... && arm-linux-gnueabihf-gcc-4.9 -nostdinc -nostartfiles -mcpu=cortex-a53   -I. -I/home/slab/uberspark/staging/rpi3 -c uberspark/uobjrtl/crypto/src/ciphers/aes/aes.c -o uberspark/uobjrtl/crypto/src/ciphers/aes/aes.c.o  && echo Compiling uberspark/uobjrtl/crypto/src/ciphers/aes/aes_cbc.c... && arm-linux-gnueabihf-gcc-4.9 -nostdinc -nostartfiles -mcpu=cortex-a53   -I. -I/home/slab/uberspark/staging/rpi3 -c uberspark/uobjrtl/crypto/src/ciphers/aes/aes_cbc.c -o uberspark/uobjrtl/crypto/src/ciphers/aes/aes_cbc.c.o  && echo Compiling uberspark/uobjrtl/crypto/src/ciphers/aes/aes_tab.c... && arm-linux-gnueabihf-gcc-4.9 -nostdinc -nostartfiles -mcpu=cortex-a53   -I. -I/home/slab/uberspark/staging/rpi3 -c uberspark/uobjrtl/crypto/src/ciphers/aes/aes_tab.c -o uberspark/uobjrtl/crypto/src/ciphers/aes/aes_tab.c.o  && echo Compiling uberspark/uobjrtl/crypto/src/hashes/sha1/sha1.c... && arm-linux-gnueabihf-gcc-4.9 -nostdinc -nostartfiles -mcpu=cortex-a53   -I. -I/home/slab/uberspark/staging/rpi3 -c uberspark/uobjrtl/crypto/src/hashes/sha1/sha1.c -o uberspark/uobjrtl/crypto/src/hashes/sha1/sha1.c.o  && echo Compiling uberspark/uobjrtl/crypto/src/mac/hmacsha1/hmacsha1.c... && arm-linux-gnueabihf-gcc-4.9 -nostdinc -nostartfiles -mcpu=cortex-a53   -I. -I/home/slab/uberspark/staging/rpi3 -c uberspark/uobjrtl/crypto/src/mac/hmacsha1/hmacsha1.c -o uberspark/uobjrtl/crypto/src/mac/hmacsha1/hmacsha1.c.o  && echo Compiling core/main.c... && arm-linux-gnueabihf-gcc-4.9 -nostdinc -nostartfiles -mcpu=cortex-a53   -I. -I/home/slab/uberspark/staging/rpi3 -c core/main.c -o core/main.c.o  && echo Compiling core/ghcall.c... && arm-linux-gnueabihf-gcc-4.9 -nostdinc -nostartfiles -mcpu=cortex-a53   -I. -I/home/slab/uberspark/staging/rpi3 -c core/ghcall.c -o core/ghcall.c.o  && echo Compiling core/hyptimer.c... && arm-linux-gnueabihf-gcc-4.9 -nostdinc -nostartfiles -mcpu=cortex-a53   -I. -I/home/slab/uberspark/staging/rpi3 -c core/hyptimer.c -o core/hyptimer.c.o  && echo Compiling core/bcm2837.c... && arm-linux-gnueabihf-gcc-4.9 -nostdinc -nostartfiles -mcpu=cortex-a53   -I. -I/home/slab/uberspark/staging/rpi3 -c core/bcm2837.c -o core/bcm2837.c.o  && echo Compiling core/secboot.c... && arm-linux-gnueabihf-gcc-4.9 -nostdinc -nostartfiles -mcpu=cortex-a53   -I. -I/home/slab/uberspark/staging/rpi3 -c core/secboot.c -o core/secboot.c.o  && echo Compiling core/intprot.c... && arm-linux-gnueabihf-gcc-4.9 -nostdinc -nostartfiles -mcpu=cortex-a53   -I. -I/home/slab/uberspark/staging/rpi3 -c core/intprot.c -o core/intprot.c.o  && echo Compiling core/dmaprot.c... && arm-linux-gnueabihf-gcc-4.9 -nostdinc -nostartfiles -mcpu=cortex-a53   -I. -I/home/slab/uberspark/staging/rpi3 -c core/dmaprot.c -o core/dmaprot.c.o  && echo Compiling core/uapi_s2pgtbl.c... && arm-linux-gnueabihf-gcc-4.9 -nostdinc -nostartfiles -mcpu=cortex-a53   -I. -I/home/slab/uberspark/staging/rpi3 -c core/uapi_s2pgtbl.c -o core/uapi_s2pgtbl.c.o  && echo Compiling core/s2pgtbl.c... && arm-linux-gnueabihf-gcc-4.9 -nostdinc -nostartfiles -mcpu=cortex-a53   -I. -I/home/slab/uberspark/staging/rpi3 -c core/s2pgtbl.c -o core/s2pgtbl.c.o  && echo Compiling core/hyppgtbl.c... && arm-linux-gnueabihf-gcc-4.9 -nostdinc -nostartfiles -mcpu=cortex-a53   -I. -I/home/slab/uberspark/staging/rpi3 -c core/hyppgtbl.c -o core/hyppgtbl.c.o  && echo Compiling core/mmu.c... && arm-linux-gnueabihf-gcc-4.9 -nostdinc -nostartfiles -mcpu=cortex-a53   -I. -I/home/slab/uberspark/staging/rpi3 -c core/mmu.c -o core/mmu.c.o  && echo Compiling core/hypvtable.c... && arm-linux-gnueabihf-gcc-4.9 -nostdinc -nostartfiles -mcpu=cortex-a53   -I. -I/home/slab/uberspark/staging/rpi3 -c core/hypvtable.c -o core/hypvtable.c.o  && echo Compiling common/atags.c... && arm-linux-gnueabihf-gcc-4.9 -nostdinc -nostartfiles -mcpu=cortex-a53   -I. -I/home/slab/uberspark/staging/rpi3 -c common/atags.c -o common/atags.c.o  && echo Compiling common/debug.c... && arm-linux-gnueabihf-gcc-4.9 -nostdinc -nostartfiles -mcpu=cortex-a53   -I. -I/home/slab/uberspark/staging/rpi3 -c common/debug.c -o common/debug.c.o  && echo Compiling common/subr_prf.c... && arm-linux-gnueabihf-gcc-4.9 -nostdinc -nostartfiles -mcpu=cortex-a53   -I. -I/home/slab/uberspark/staging/rpi3 -c common/subr_prf.c -o common/subr_prf.c.o  && echo Compiling common/mailbox.c... && arm-linux-gnueabihf-gcc-4.9 -nostdinc -nostartfiles -mcpu=cortex-a53   -I. -I/home/slab/uberspark/staging/rpi3 -c common/mailbox.c -o common/mailbox.c.o  && echo Compiling common/pl011uart.c... && arm-linux-gnueabihf-gcc-4.9 -nostdinc -nostartfiles -mcpu=cortex-a53   -I. -I/home/slab/uberspark/staging/rpi3 -c common/pl011uart.c -o common/pl011uart.c.o  && echo Compiling common/miniuart.c... && arm-linux-gnueabihf-gcc-4.9 -nostdinc -nostartfiles -mcpu=cortex-a53   -I. -I/home/slab/uberspark/staging/rpi3 -c common/miniuart.c -o common/miniuart.c.o  && echo Compiling libutpm/utpm-common.c... && arm-linux-gnueabihf-gcc-4.9 -nostdinc -nostartfiles -mcpu=cortex-a53   -I. -I/home/slab/uberspark/staging/rpi3 -c libutpm/utpm-common.c -o libutpm/utpm-common.c.o  && echo Compiling libutpm/utpm.c... && arm-linux-gnueabihf-gcc-4.9 -nostdinc -nostartfiles -mcpu=cortex-a53   -I. -I/home/slab/uberspark/staging/rpi3 -c libutpm/utpm.c -o libutpm/utpm.c.o 
 uberspark >> context_path=/home/slab/Code/uberxmhf/uxmhf-rpi3/uobjcoll/_build/main/_build
 uberspark >> [docker] Compiling uobj_pminfo.c...
 uberspark >> [docker] In file included from uobj_pminfo.c:8:0:
@@ -532,16 +572,243 @@ uberspark >> [docker]  int uberspark_uobjrtl_crypto__hashes_sha1__sha1_memory(co
 uberspark >> [docker]      ^
 uberspark >> compiled c files successfully!
 uberspark >> proceeding to compile asm files...
-uberspark >> d_cmd=echo Compiling uobjslt-intrauobjcoll-callees.S... && gcc   -I. -I/home/slab/uberspark/staging/rpi3 -c uobjslt-intrauobjcoll-callees.S -o uobjslt-intrauobjcoll-callees.S.o  && echo Compiling uobjslt-interuobjcoll-callees.S... && gcc   -I. -I/home/slab/uberspark/staging/rpi3 -c uobjslt-interuobjcoll-callees.S -o uobjslt-interuobjcoll-callees.S.o  && echo Compiling uobjslt-legacy-callees.S... && gcc   -I. -I/home/slab/uberspark/staging/rpi3 -c uobjslt-legacy-callees.S -o uobjslt-legacy-callees.S.o  && echo Compiling core/hypvtablestubs.s... && gcc   -I. -I/home/slab/uberspark/staging/rpi3 -c core/hypvtablestubs.s -o core/hypvtablestubs.s.o  && echo Compiling common/arm8-32.s... && gcc   -I. -I/home/slab/uberspark/staging/rpi3 -c common/arm8-32.s -o common/arm8-32.s.o  && echo Compiling core/entry.s... && gcc   -I. -I/home/slab/uberspark/staging/rpi3 -c core/entry.s -o core/entry.s.o 
+uberspark >> d_cmd=echo Compiling uobjslt-intrauobjcoll-callees.S... && arm-linux-gnueabihf-gcc -mcpu=cortex-a53   -I. -I/home/slab/uberspark/staging/rpi3 -c uobjslt-intrauobjcoll-callees.S -o uobjslt-intrauobjcoll-callees.S.o  && echo Compiling uobjslt-interuobjcoll-callees.S... && arm-linux-gnueabihf-gcc -mcpu=cortex-a53   -I. -I/home/slab/uberspark/staging/rpi3 -c uobjslt-interuobjcoll-callees.S -o uobjslt-interuobjcoll-callees.S.o  && echo Compiling uobjslt-legacy-callees.S... && arm-linux-gnueabihf-gcc -mcpu=cortex-a53   -I. -I/home/slab/uberspark/staging/rpi3 -c uobjslt-legacy-callees.S -o uobjslt-legacy-callees.S.o  && echo Compiling core/hypvtablestubs.s... && arm-linux-gnueabihf-gcc -mcpu=cortex-a53   -I. -I/home/slab/uberspark/staging/rpi3 -c core/hypvtablestubs.s -o core/hypvtablestubs.s.o  && echo Compiling common/arm8-32.s... && arm-linux-gnueabihf-gcc -mcpu=cortex-a53   -I. -I/home/slab/uberspark/staging/rpi3 -c common/arm8-32.s -o common/arm8-32.s.o  && echo Compiling core/entry.s... && arm-linux-gnueabihf-gcc -mcpu=cortex-a53   -I. -I/home/slab/uberspark/staging/rpi3 -c core/entry.s -o core/entry.s.o 
 uberspark >> context_path=/home/slab/Code/uberxmhf/uxmhf-rpi3/uobjcoll/_build/main/_build
 uberspark >> [docker] Compiling uobjslt-intrauobjcoll-callees.S...
 uberspark >> [docker] Compiling uobjslt-interuobjcoll-callees.S...
 uberspark >> [docker] Compiling uobjslt-legacy-callees.S...
 uberspark >> [docker] Compiling core/hypvtablestubs.s...
-uberspark >> [docker] core/hypvtablestubs.s: Assembler messages:
-uberspark >> [docker] core/hypvtablestubs.s:213: Error: selected processor does not support `eret' in ARM mode
-uberspark >> ERROR: could not compile one or more uobj asm files!
+uberspark >> [docker] Compiling common/arm8-32.s...
+uberspark >> [docker] Compiling core/entry.s...
+uberspark >> compiled asm files successfully!
+uberspark >> proceeding to link object files...
+uberspark >> d_cmd=arm-linux-gnueabihf-ld -nostdinc  -nostartfiles  -T uobj.lscript uobj_pminfo.c.o uobj_intrauobjcoll_callees_info.c.o uobj_interuobjcoll_callees_info.c.o uobj_legacy_callees_info.c.o uobj_binhdr.c.o uberspark/uobjrtl/crt/src/memcmp.c.o uberspark/uobjrtl/crt/src/memcpy.c.o uberspark/uobjrtl/crt/src/memmove.c.o uberspark/uobjrtl/crt/src/memset.c.o uberspark/uobjrtl/crt/src/strchr.c.o uberspark/uobjrtl/crt/src/strcmp.c.o uberspark/uobjrtl/crt/src/strlen.c.o uberspark/uobjrtl/crt/src/strncmp.c.o uberspark/uobjrtl/crt/src/strncpy.c.o uberspark/uobjrtl/crt/src/strnlen.c.o uberspark/uobjrtl/crypto/src/ciphers/aes/aes.c.o uberspark/uobjrtl/crypto/src/ciphers/aes/aes_cbc.c.o uberspark/uobjrtl/crypto/src/ciphers/aes/aes_tab.c.o uberspark/uobjrtl/crypto/src/hashes/sha1/sha1.c.o uberspark/uobjrtl/crypto/src/mac/hmacsha1/hmacsha1.c.o core/main.c.o core/ghcall.c.o core/hyptimer.c.o core/bcm2837.c.o core/secboot.c.o core/intprot.c.o core/dmaprot.c.o core/uapi_s2pgtbl.c.o core/s2pgtbl.c.o core/hyppgtbl.c.o core/mmu.c.o core/hypvtable.c.o common/atags.c.o common/debug.c.o common/subr_prf.c.o common/mailbox.c.o common/pl011uart.c.o common/miniuart.c.o libutpm/utpm-common.c.o libutpm/utpm.c.o uobjslt-intrauobjcoll-callees.S.o uobjslt-interuobjcoll-callees.S.o uobjslt-legacy-callees.S.o core/hypvtablestubs.s.o common/arm8-32.s.o core/entry.s.o -o uobj.bin
+uberspark >> context_path=/home/slab/Code/uberxmhf/uxmhf-rpi3/uobjcoll/_build/main/_build
+uberspark >> [docker] uberspark/uobjrtl/crypto/src/ciphers/aes/aes_cbc.c.o: In function `uberspark_uobjrtl_crypto__ciphers_aes__rijndael_cbc_decrypt':
+uberspark >> [docker] aes_cbc.c:(.text+0x216): undefined reference to `__stack_chk_guard'
+uberspark >> [docker] aes_cbc.c:(.text+0x21a): undefined reference to `__stack_chk_guard'
+uberspark >> [docker] aes_cbc.c:(.text+0x300): undefined reference to `__stack_chk_guard'
+uberspark >> [docker] aes_cbc.c:(.text+0x304): undefined reference to `__stack_chk_guard'
+uberspark >> [docker] aes_cbc.c:(.text+0x310): undefined reference to `__stack_chk_fail'
+uberspark >> [docker] uberspark/uobjrtl/crypto/src/hashes/sha1/sha1.c.o: In function `uberspark_uobjrtl_crypto__hashes_sha1__sha1_compress':
+uberspark >> [docker] sha1.c:(.text+0xe): undefined reference to `__stack_chk_guard'
+uberspark >> [docker] sha1.c:(.text+0x12): undefined reference to `__stack_chk_guard'
+uberspark >> [docker] sha1.c:(.text+0xa24): undefined reference to `__stack_chk_guard'
+uberspark >> [docker] sha1.c:(.text+0xa28): undefined reference to `__stack_chk_guard'
+uberspark >> [docker] sha1.c:(.text+0xa36): undefined reference to `__stack_chk_fail'
+uberspark >> [docker] uberspark/uobjrtl/crypto/src/hashes/sha1/sha1.c.o: In function `uberspark_uobjrtl_crypto__hashes_sha1__sha1_memory':
+uberspark >> [docker] sha1.c:(.text+0xdaa): undefined reference to `__stack_chk_guard'
+uberspark >> [docker] sha1.c:(.text+0xdae): undefined reference to `__stack_chk_guard'
+uberspark >> [docker] sha1.c:(.text+0xe0c): undefined reference to `__stack_chk_guard'
+uberspark >> [docker] sha1.c:(.text+0xe10): undefined reference to `__stack_chk_guard'
+uberspark >> [docker] sha1.c:(.text+0xe1c): undefined reference to `__stack_chk_fail'
+uberspark >> [docker] uberspark/uobjrtl/crypto/src/hashes/sha1/sha1.c.o: In function `uberspark_uobjrtl_crypto__hashes_sha1__sha1_memory_multi':
+uberspark >> [docker] sha1.c:(.text+0xe36): undefined reference to `__stack_chk_guard'
+uberspark >> [docker] sha1.c:(.text+0xe3a): undefined reference to `__stack_chk_guard'
+uberspark >> [docker] sha1.c:(.text+0xeca): undefined reference to `__stack_chk_guard'
+uberspark >> [docker] sha1.c:(.text+0xece): undefined reference to `__stack_chk_guard'
+uberspark >> [docker] sha1.c:(.text+0xedc): undefined reference to `__stack_chk_fail'
+uberspark >> [docker] uberspark/uobjrtl/crypto/src/mac/hmacsha1/hmacsha1.c.o: In function `uberspark_uobjrtl_crypto__mac_hmacsha1__hmac_sha1_init':
+uberspark >> [docker] hmacsha1.c:(.text+0xc): undefined reference to `__stack_chk_guard'
+uberspark >> [docker] hmacsha1.c:(.text+0x10): undefined reference to `__stack_chk_guard'
+uberspark >> [docker] hmacsha1.c:(.text+0xe0): undefined reference to `__stack_chk_guard'
+uberspark >> [docker] hmacsha1.c:(.text+0xe4): undefined reference to `__stack_chk_guard'
+uberspark >> [docker] hmacsha1.c:(.text+0xf0): undefined reference to `__stack_chk_fail'
+uberspark >> [docker] uberspark/uobjrtl/crypto/src/mac/hmacsha1/hmacsha1.c.o: In function `uberspark_uobjrtl_crypto__mac_hmacsha1__hmac_sha1_done':
+uberspark >> [docker] hmacsha1.c:(.text+0x12c): undefined reference to `__stack_chk_guard'
+uberspark >> [docker] hmacsha1.c:(.text+0x130): undefined reference to `__stack_chk_guard'
+uberspark >> [docker] hmacsha1.c:(.text+0x21a): undefined reference to `__stack_chk_guard'
+uberspark >> [docker] hmacsha1.c:(.text+0x21e): undefined reference to `__stack_chk_guard'
+uberspark >> [docker] hmacsha1.c:(.text+0x22a): undefined reference to `__stack_chk_fail'
+uberspark >> [docker] uberspark/uobjrtl/crypto/src/mac/hmacsha1/hmacsha1.c.o: In function `uberspark_uobjrtl_crypto__mac_hmacsha1__hmac_sha1_memory':
+uberspark >> [docker] hmacsha1.c:(.text+0x262): undefined reference to `__stack_chk_guard'
+uberspark >> [docker] hmacsha1.c:(.text+0x266): undefined reference to `__stack_chk_guard'
+uberspark >> [docker] hmacsha1.c:(.text+0x2ee): undefined reference to `__stack_chk_guard'
+uberspark >> [docker] hmacsha1.c:(.text+0x2f2): undefined reference to `__stack_chk_guard'
+uberspark >> [docker] hmacsha1.c:(.text+0x300): undefined reference to `__stack_chk_fail'
+uberspark >> [docker] core/main.c.o: In function `guest_data_abort_handler':
+uberspark >> [docker] main.c:(.text+0x292): undefined reference to `__stack_chk_guard'
+uberspark >> [docker] main.c:(.text+0x296): undefined reference to `__stack_chk_guard'
+uberspark >> [docker] main.c:(.text+0x3de): undefined reference to `__stack_chk_guard'
+uberspark >> [docker] main.c:(.text+0x3e2): undefined reference to `__stack_chk_guard'
+uberspark >> [docker] main.c:(.text+0x3ee): undefined reference to `__stack_chk_fail'
+uberspark >> [docker] core/main.c.o: In function `guest_cp15_trap_handler':
+uberspark >> [docker] main.c:(.text+0x430): undefined reference to `ctxtrace_cp15_trap_handler'
+uberspark >> [docker] core/main.c.o: In function `secondary_main':
+uberspark >> [docker] main.c:(.text+0x794): undefined reference to `ctxtrace_init'
+uberspark >> [docker] core/ghcall.c.o: In function `guest_hypercall_handler':
+uberspark >> [docker] ghcall.c:(.text+0x32): undefined reference to `uapp_uhcalltest_handlehcall'
+uberspark >> [docker] ghcall.c:(.text+0x4c): undefined reference to `uapp_utpmtest_handlehcall'
+uberspark >> [docker] ghcall.c:(.text+0x66): undefined reference to `uapp_pa5encfs_handlehcall'
+uberspark >> [docker] `dmac_cblist' referenced in section `.text' of core/dmaprot.c.o: defined in discarded section `.palign2mdata' of core/dmaprot.c.o
+uberspark >> [docker] `dmac_cblist' referenced in section `.text' of core/dmaprot.c.o: defined in discarded section `.palign2mdata' of core/dmaprot.c.o
+uberspark >> [docker] `dmac_cblist' referenced in section `.text' of core/dmaprot.c.o: defined in discarded section `.palign2mdata' of core/dmaprot.c.o
+uberspark >> [docker] `dmac_cblist' referenced in section `.text' of core/dmaprot.c.o: defined in discarded section `.palign2mdata' of core/dmaprot.c.o
+uberspark >> [docker] `dmac_cblist' referenced in section `.text' of core/dmaprot.c.o: defined in discarded section `.palign2mdata' of core/dmaprot.c.o
+uberspark >> [docker] `dmac_cblist' referenced in section `.text' of core/dmaprot.c.o: defined in discarded section `.palign2mdata' of core/dmaprot.c.o
+uberspark >> [docker] `dmac_cblist' referenced in section `.text' of core/dmaprot.c.o: defined in discarded section `.palign2mdata' of core/dmaprot.c.o
+uberspark >> [docker] `dmac_cblist' referenced in section `.text' of core/dmaprot.c.o: defined in discarded section `.palign2mdata' of core/dmaprot.c.o
+uberspark >> [docker] `dmac_cblist' referenced in section `.text' of core/dmaprot.c.o: defined in discarded section `.palign2mdata' of core/dmaprot.c.o
+uberspark >> [docker] `dmac_cblist' referenced in section `.text' of core/dmaprot.c.o: defined in discarded section `.palign2mdata' of core/dmaprot.c.o
+uberspark >> [docker] `dmac_cblist' referenced in section `.text' of core/dmaprot.c.o: defined in discarded section `.palign2mdata' of core/dmaprot.c.o
+uberspark >> [docker] `dmac_cblist' referenced in section `.text' of core/dmaprot.c.o: defined in discarded section `.palign2mdata' of core/dmaprot.c.o
+uberspark >> [docker] `dmac_cblist' referenced in section `.text' of core/dmaprot.c.o: defined in discarded section `.palign2mdata' of core/dmaprot.c.o
+uberspark >> [docker] `dmac_cblist' referenced in section `.text' of core/dmaprot.c.o: defined in discarded section `.palign2mdata' of core/dmaprot.c.o
+uberspark >> [docker] `dmac_cblist' referenced in section `.text' of core/dmaprot.c.o: defined in discarded section `.palign2mdata' of core/dmaprot.c.o
+uberspark >> [docker] `dmac_cblist' referenced in section `.text' of core/dmaprot.c.o: defined in discarded section `.palign2mdata' of core/dmaprot.c.o
+uberspark >> [docker] `dmac_cblist' referenced in section `.text' of core/dmaprot.c.o: defined in discarded section `.palign2mdata' of core/dmaprot.c.o
+uberspark >> [docker] `dmac_cblist' referenced in section `.text' of core/dmaprot.c.o: defined in discarded section `.palign2mdata' of core/dmaprot.c.o
+uberspark >> [docker] `dmac_cblist' referenced in section `.text' of core/dmaprot.c.o: defined in discarded section `.palign2mdata' of core/dmaprot.c.o
+uberspark >> [docker] `dmac_cblist' referenced in section `.text' of core/dmaprot.c.o: defined in discarded section `.palign2mdata' of core/dmaprot.c.o
+uberspark >> [docker] `dmac_cblist' referenced in section `.text' of core/dmaprot.c.o: defined in discarded section `.palign2mdata' of core/dmaprot.c.o
+uberspark >> [docker] `dmac_cblist' referenced in section `.text' of core/dmaprot.c.o: defined in discarded section `.palign2mdata' of core/dmaprot.c.o
+uberspark >> [docker] `dmac_cblist' referenced in section `.text' of core/dmaprot.c.o: defined in discarded section `.palign2mdata' of core/dmaprot.c.o
+uberspark >> [docker] `dmac_cblist' referenced in section `.text' of core/dmaprot.c.o: defined in discarded section `.palign2mdata' of core/dmaprot.c.o
+uberspark >> [docker] `dmac_cblist' referenced in section `.text' of core/dmaprot.c.o: defined in discarded section `.palign2mdata' of core/dmaprot.c.o
+uberspark >> [docker] `dmac_cblist' referenced in section `.text' of core/dmaprot.c.o: defined in discarded section `.palign2mdata' of core/dmaprot.c.o
+uberspark >> [docker] `dmac_cblist' referenced in section `.text' of core/dmaprot.c.o: defined in discarded section `.palign2mdata' of core/dmaprot.c.o
+uberspark >> [docker] `dmac_cblist' referenced in section `.text' of core/dmaprot.c.o: defined in discarded section `.palign2mdata' of core/dmaprot.c.o
+uberspark >> [docker] `dmac_cblist' referenced in section `.text' of core/dmaprot.c.o: defined in discarded section `.palign2mdata' of core/dmaprot.c.o
+uberspark >> [docker] `dmac_cblist' referenced in section `.text' of core/dmaprot.c.o: defined in discarded section `.palign2mdata' of core/dmaprot.c.o
+uberspark >> [docker] `l3_ldesc_table' referenced in section `.text' of core/uapi_s2pgtbl.c.o: defined in discarded section `.paligndata' of core/s2pgtbl.c.o
+uberspark >> [docker] `l3_ldesc_table' referenced in section `.text' of core/uapi_s2pgtbl.c.o: defined in discarded section `.paligndata' of core/s2pgtbl.c.o
+uberspark >> [docker] `l3_ldesc_table' referenced in section `.text' of core/uapi_s2pgtbl.c.o: defined in discarded section `.paligndata' of core/s2pgtbl.c.o
+uberspark >> [docker] `l3_ldesc_table' referenced in section `.text' of core/uapi_s2pgtbl.c.o: defined in discarded section `.paligndata' of core/s2pgtbl.c.o
+uberspark >> [docker] `l2_ldesc_table' referenced in section `.text' of core/s2pgtbl.c.o: defined in discarded section `.paligndata' of core/s2pgtbl.c.o
+uberspark >> [docker] `l2_ldesc_table' referenced in section `.text' of core/s2pgtbl.c.o: defined in discarded section `.paligndata' of core/s2pgtbl.c.o
+uberspark >> [docker] `l1_ldesc_table' referenced in section `.text' of core/s2pgtbl.c.o: defined in discarded section `.paligndata' of core/s2pgtbl.c.o
+uberspark >> [docker] `l1_ldesc_table' referenced in section `.text' of core/s2pgtbl.c.o: defined in discarded section `.paligndata' of core/s2pgtbl.c.o
+uberspark >> [docker] `l1_ldesc_table' referenced in section `.text' of core/s2pgtbl.c.o: defined in discarded section `.paligndata' of core/s2pgtbl.c.o
+uberspark >> [docker] `l1_ldesc_table' referenced in section `.text' of core/s2pgtbl.c.o: defined in discarded section `.paligndata' of core/s2pgtbl.c.o
+uberspark >> [docker] `l1_ldesc_table' referenced in section `.text' of core/s2pgtbl.c.o: defined in discarded section `.paligndata' of core/s2pgtbl.c.o
+uberspark >> [docker] `l1_ldesc_table' referenced in section `.text' of core/s2pgtbl.c.o: defined in discarded section `.paligndata' of core/s2pgtbl.c.o
+uberspark >> [docker] `l1_ldesc_table' referenced in section `.text' of core/s2pgtbl.c.o: defined in discarded section `.paligndata' of core/s2pgtbl.c.o
+uberspark >> [docker] `l1_ldesc_table' referenced in section `.text' of core/s2pgtbl.c.o: defined in discarded section `.paligndata' of core/s2pgtbl.c.o
+uberspark >> [docker] `l3_ldesc_table' referenced in section `.text' of core/s2pgtbl.c.o: defined in discarded section `.paligndata' of core/s2pgtbl.c.o
+uberspark >> [docker] `l3_ldesc_table' referenced in section `.text' of core/s2pgtbl.c.o: defined in discarded section `.paligndata' of core/s2pgtbl.c.o
+uberspark >> [docker] `l2_ldesc_table' referenced in section `.text' of core/s2pgtbl.c.o: defined in discarded section `.paligndata' of core/s2pgtbl.c.o
+uberspark >> [docker] `l2_ldesc_table' referenced in section `.text' of core/s2pgtbl.c.o: defined in discarded section `.paligndata' of core/s2pgtbl.c.o
+uberspark >> [docker] `l3_ldesc_table' referenced in section `.text' of core/s2pgtbl.c.o: defined in discarded section `.paligndata' of core/s2pgtbl.c.o
+uberspark >> [docker] `l3_ldesc_table' referenced in section `.text' of core/s2pgtbl.c.o: defined in discarded section `.paligndata' of core/s2pgtbl.c.o
+uberspark >> [docker] `l3_ldesc_table' referenced in section `.text' of core/s2pgtbl.c.o: defined in discarded section `.paligndata' of core/s2pgtbl.c.o
+uberspark >> [docker] `l3_ldesc_table' referenced in section `.text' of core/s2pgtbl.c.o: defined in discarded section `.paligndata' of core/s2pgtbl.c.o
+uberspark >> [docker] `l3_ldesc_table' referenced in section `.text' of core/s2pgtbl.c.o: defined in discarded section `.paligndata' of core/s2pgtbl.c.o
+uberspark >> [docker] `l3_ldesc_table' referenced in section `.text' of core/s2pgtbl.c.o: defined in discarded section `.paligndata' of core/s2pgtbl.c.o
+uberspark >> [docker] `l1_ldesc_table' referenced in section `.text' of core/s2pgtbl.c.o: defined in discarded section `.paligndata' of core/s2pgtbl.c.o
+uberspark >> [docker] `l1_ldesc_table' referenced in section `.text' of core/s2pgtbl.c.o: defined in discarded section `.paligndata' of core/s2pgtbl.c.o
+uberspark >> [docker] `hyp_l2_ldesc_table' referenced in section `.text' of core/hyppgtbl.c.o: defined in discarded section `.paligndata' of core/hyppgtbl.c.o
+uberspark >> [docker] `hyp_l2_ldesc_table' referenced in section `.text' of core/hyppgtbl.c.o: defined in discarded section `.paligndata' of core/hyppgtbl.c.o
+uberspark >> [docker] `hyp_l1_ldesc_table' referenced in section `.text' of core/hyppgtbl.c.o: defined in discarded section `.paligndata' of core/hyppgtbl.c.o
+uberspark >> [docker] `hyp_l1_ldesc_table' referenced in section `.text' of core/hyppgtbl.c.o: defined in discarded section `.paligndata' of core/hyppgtbl.c.o
+uberspark >> [docker] `hyp_l1_ldesc_table' referenced in section `.text' of core/hyppgtbl.c.o: defined in discarded section `.paligndata' of core/hyppgtbl.c.o
+uberspark >> [docker] `hyp_l1_ldesc_table' referenced in section `.text' of core/hyppgtbl.c.o: defined in discarded section `.paligndata' of core/hyppgtbl.c.o
+uberspark >> [docker] `dmac_cblist' referenced in section `.text' of core/hyppgtbl.c.o: defined in discarded section `.palign2mdata' of core/dmaprot.c.o
+uberspark >> [docker] `dmac_cblist' referenced in section `.text' of core/hyppgtbl.c.o: defined in discarded section `.palign2mdata' of core/dmaprot.c.o
+uberspark >> [docker] `hyp_l2_ldesc_table' referenced in section `.text' of core/hyppgtbl.c.o: defined in discarded section `.paligndata' of core/hyppgtbl.c.o
+uberspark >> [docker] `hyp_l2_ldesc_table' referenced in section `.text' of core/hyppgtbl.c.o: defined in discarded section `.paligndata' of core/hyppgtbl.c.o
+uberspark >> [docker] `hyp_l2_ldesc_table' referenced in section `.text' of core/hyppgtbl.c.o: defined in discarded section `.paligndata' of core/hyppgtbl.c.o
+uberspark >> [docker] `hyp_l2_ldesc_table' referenced in section `.text' of core/hyppgtbl.c.o: defined in discarded section `.paligndata' of core/hyppgtbl.c.o
+uberspark >> [docker] `hyp_l2_ldesc_table' referenced in section `.text' of core/hyppgtbl.c.o: defined in discarded section `.paligndata' of core/hyppgtbl.c.o
+uberspark >> [docker] `hyp_l2_ldesc_table' referenced in section `.text' of core/hyppgtbl.c.o: defined in discarded section `.paligndata' of core/hyppgtbl.c.o
+uberspark >> [docker] `hyp_l2_ldesc_table' referenced in section `.text' of core/hyppgtbl.c.o: defined in discarded section `.paligndata' of core/hyppgtbl.c.o
+uberspark >> [docker] `hyp_l2_ldesc_table' referenced in section `.text' of core/hyppgtbl.c.o: defined in discarded section `.paligndata' of core/hyppgtbl.c.o
+uberspark >> [docker] `hyp_l2_ldesc_table' referenced in section `.text' of core/hyppgtbl.c.o: defined in discarded section `.paligndata' of core/hyppgtbl.c.o
+uberspark >> [docker] `hyp_l2_ldesc_table' referenced in section `.text' of core/hyppgtbl.c.o: defined in discarded section `.paligndata' of core/hyppgtbl.c.o
+uberspark >> [docker] `hyp_l1_ldesc_table' referenced in section `.text' of core/hyppgtbl.c.o: defined in discarded section `.paligndata' of core/hyppgtbl.c.o
+uberspark >> [docker] `hyp_l1_ldesc_table' referenced in section `.text' of core/hyppgtbl.c.o: defined in discarded section `.paligndata' of core/hyppgtbl.c.o
+uberspark >> [docker] common/subr_prf.c.o: In function `sprintf':
+uberspark >> [docker] subr_prf.c:(.text+0x2e): undefined reference to `__stack_chk_guard'
+uberspark >> [docker] subr_prf.c:(.text+0x32): undefined reference to `__stack_chk_guard'
+uberspark >> [docker] subr_prf.c:(.text+0x60): undefined reference to `__stack_chk_guard'
+uberspark >> [docker] subr_prf.c:(.text+0x64): undefined reference to `__stack_chk_guard'
+uberspark >> [docker] subr_prf.c:(.text+0x70): undefined reference to `__stack_chk_fail'
+uberspark >> [docker] common/subr_prf.c.o: In function `snprintf':
+uberspark >> [docker] subr_prf.c:(.text+0xc4): undefined reference to `__stack_chk_guard'
+uberspark >> [docker] subr_prf.c:(.text+0xc8): undefined reference to `__stack_chk_guard'
+uberspark >> [docker] subr_prf.c:(.text+0xe8): undefined reference to `__stack_chk_guard'
+uberspark >> [docker] subr_prf.c:(.text+0xec): undefined reference to `__stack_chk_guard'
+uberspark >> [docker] subr_prf.c:(.text+0xf8): undefined reference to `__stack_chk_fail'
+uberspark >> [docker] common/subr_prf.c.o: In function `vsnprintf':
+uberspark >> [docker] subr_prf.c:(.text+0x116): undefined reference to `__stack_chk_guard'
+uberspark >> [docker] subr_prf.c:(.text+0x11a): undefined reference to `__stack_chk_guard'
+uberspark >> [docker] subr_prf.c:(.text+0x158): undefined reference to `__stack_chk_guard'
+uberspark >> [docker] subr_prf.c:(.text+0x15c): undefined reference to `__stack_chk_guard'
+uberspark >> [docker] subr_prf.c:(.text+0x168): undefined reference to `__stack_chk_fail'
+uberspark >> [docker] common/subr_prf.c.o: In function `vsnrprintf':
+uberspark >> [docker] subr_prf.c:(.text+0x182): undefined reference to `__stack_chk_guard'
+uberspark >> [docker] subr_prf.c:(.text+0x186): undefined reference to `__stack_chk_guard'
+uberspark >> [docker] subr_prf.c:(.text+0x1c4): undefined reference to `__stack_chk_guard'
+uberspark >> [docker] subr_prf.c:(.text+0x1c8): undefined reference to `__stack_chk_guard'
+uberspark >> [docker] subr_prf.c:(.text+0x1d4): undefined reference to `__stack_chk_fail'
+uberspark >> [docker] common/subr_prf.c.o: In function `ksprintn':
+uberspark >> [docker] subr_prf.c:(.text+0x240): undefined reference to `__aeabi_uldivmod'
+uberspark >> [docker] subr_prf.c:(.text+0x29c): undefined reference to `__aeabi_uldivmod'
+uberspark >> [docker] common/subr_prf.c.o: In function `kvprintf':
+uberspark >> [docker] subr_prf.c:(.text+0x2e6): undefined reference to `__stack_chk_guard'
+uberspark >> [docker] subr_prf.c:(.text+0x2ea): undefined reference to `__stack_chk_guard'
+uberspark >> [docker] subr_prf.c:(.text+0x36c): undefined reference to `__stack_chk_guard'
+uberspark >> [docker] subr_prf.c:(.text+0x370): undefined reference to `__stack_chk_guard'
+uberspark >> [docker] subr_prf.c:(.text+0x1396): undefined reference to `__stack_chk_fail'
+uberspark >> [docker] common/mailbox.c.o: In function `bcm2837_mailbox_call':
+uberspark >> [docker] mailbox.c:(.text+0x24): undefined reference to `memcpy'
+uberspark >> [docker] mailbox.c:(.text+0xc8): undefined reference to `memcpy'
+uberspark >> [docker] common/mailbox.c.o: In function `bcm2837_mailbox_get_board_serial':
+uberspark >> [docker] mailbox.c:(.text+0xfa): undefined reference to `__stack_chk_guard'
+uberspark >> [docker] mailbox.c:(.text+0xfe): undefined reference to `__stack_chk_guard'
+uberspark >> [docker] mailbox.c:(.text+0x176): undefined reference to `__stack_chk_guard'
+uberspark >> [docker] mailbox.c:(.text+0x17a): undefined reference to `__stack_chk_guard'
+uberspark >> [docker] mailbox.c:(.text+0x186): undefined reference to `__stack_chk_fail'
+uberspark >> [docker] common/pl011uart.c.o: In function `bcm2837_pl011uart_init':
+uberspark >> [docker] pl011uart.c:(.text+0x6): undefined reference to `__stack_chk_guard'
+uberspark >> [docker] pl011uart.c:(.text+0xa): undefined reference to `__stack_chk_guard'
+uberspark >> [docker] pl011uart.c:(.text+0x112): undefined reference to `__stack_chk_guard'
+uberspark >> [docker] pl011uart.c:(.text+0x116): undefined reference to `__stack_chk_guard'
+uberspark >> [docker] pl011uart.c:(.text+0x122): undefined reference to `__stack_chk_fail'
+uberspark >> [docker] libutpm/utpm-common.c.o: In function `utpm_internal_memcpy_TPM_PCR_SELECTION':
+uberspark >> [docker] utpm-common.c:(.text+0x160): undefined reference to `memcpy'
+uberspark >> [docker] libutpm/utpm-common.c.o: In function `utpm_internal_memcpy_TPM_PCR_INFO':
+uberspark >> [docker] utpm-common.c:(.text+0x1d4): undefined reference to `memcpy'
+uberspark >> [docker] utpm-common.c:(.text+0x1f4): undefined reference to `memcpy'
+uberspark >> [docker] libutpm/utpm-common.c.o: In function `utpm_internal_allocate_and_populate_current_TpmPcrComposite':
+uberspark >> [docker] utpm-common.c:(.text+0x2e0): undefined reference to `memcpy'
+uberspark >> [docker] utpm-common.c:(.text+0x332): undefined reference to `memcpy'
+uberspark >> [docker] libutpm/utpm-common.c.o: In function `utpm_internal_digest_current_TpmPcrComposite':
+uberspark >> [docker] utpm-common.c:(.text+0x37e): undefined reference to `__stack_chk_guard'
+uberspark >> [docker] utpm-common.c:(.text+0x382): undefined reference to `__stack_chk_guard'
+uberspark >> [docker] utpm-common.c:(.text+0x418): undefined reference to `sha1_memory'
+uberspark >> [docker] utpm-common.c:(.text+0x424): undefined reference to `__stack_chk_guard'
+uberspark >> [docker] utpm-common.c:(.text+0x428): undefined reference to `__stack_chk_guard'
+uberspark >> [docker] utpm-common.c:(.text+0x436): undefined reference to `__stack_chk_fail'
+uberspark >> [docker] libutpm/utpm.c.o: In function `utpm_extend':
+uberspark >> [docker] utpm.c:(.text+0xc4): undefined reference to `__stack_chk_guard'
+uberspark >> [docker] utpm.c:(.text+0xc8): undefined reference to `__stack_chk_guard'
+uberspark >> [docker] utpm.c:(.text+0x11e): undefined reference to `uberspark_uobjrtl_crypto_hashes_sha1__sha1_memory_multi'
+uberspark >> [docker] utpm.c:(.text+0x132): undefined reference to `__stack_chk_guard'
+uberspark >> [docker] utpm.c:(.text+0x136): undefined reference to `__stack_chk_guard'
+uberspark >> [docker] utpm.c:(.text+0x142): undefined reference to `__stack_chk_fail'
+uberspark >> [docker] libutpm/utpm.c.o: In function `utpm_seal':
+uberspark >> [docker] utpm.c:(.text+0x17c): undefined reference to `__stack_chk_guard'
+uberspark >> [docker] utpm.c:(.text+0x180): undefined reference to `__stack_chk_guard'
+uberspark >> [docker] utpm.c:(.text+0x3ea): undefined reference to `uberspark_ubojrtl_crt__memset'
+uberspark >> [docker] utpm.c:(.text+0x422): undefined reference to `rijndael_cbc_start'
+uberspark >> [docker] utpm.c:(.text+0x450): undefined reference to `rijndael_cbc_encrypt'
+uberspark >> [docker] utpm.c:(.text+0x464): undefined reference to `rijndael_cbc_done'
+uberspark >> [docker] utpm.c:(.text+0x4e6): undefined reference to `__stack_chk_guard'
+uberspark >> [docker] utpm.c:(.text+0x4ea): undefined reference to `__stack_chk_guard'
+uberspark >> [docker] utpm.c:(.text+0x4f8): undefined reference to `__stack_chk_fail'
+uberspark >> [docker] libutpm/utpm.c.o: In function `utpm_unseal':
+uberspark >> [docker] utpm.c:(.text+0x534): undefined reference to `__stack_chk_guard'
+uberspark >> [docker] utpm.c:(.text+0x538): undefined reference to `__stack_chk_guard'
+uberspark >> [docker] utpm.c:(.text+0x614): undefined reference to `rijndael_cbc_start'
+uberspark >> [docker] utpm.c:(.text+0x63c): undefined reference to `rijndael_cbc_decrypt'
+uberspark >> [docker] utpm.c:(.text+0x650): undefined reference to `rijndael_cbc_done'
+uberspark >> [docker] utpm.c:(.text+0x728): undefined reference to `uberspark_uobjrtl_crtl__memcmp'
+uberspark >> [docker] utpm.c:(.text+0x77c): undefined reference to `uberspark_uobjrtl_crtl__memcpy'
+uberspark >> [docker] utpm.c:(.text+0x788): undefined reference to `__stack_chk_guard'
+uberspark >> [docker] utpm.c:(.text+0x78c): undefined reference to `__stack_chk_guard'
+uberspark >> [docker] utpm.c:(.text+0x79a): undefined reference to `__stack_chk_fail'
+uberspark >> ERROR: could not link uobj object files!
  
 uberspark >> ERROR: could not build uobj(s)!
  
-Makefile:12: recipe for target 'all' failed
+Makefile:24: recipe for target 'build' failed
