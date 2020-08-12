@@ -137,6 +137,6 @@ hypercalls) is built.
 
 	 
 #.
-Note about uberapp libraries:
+   Note about uberapp libraries:
 
    #. There are two libraries to support integrating uberapps into an existing code base. There is a userspace library (``libuhcall``) and a kernel space library (``libkhcall``). These provide a function call interface for making a hyper call (e.g., ``uhcall()`` for making userspace calls to invoke an uberapp).
