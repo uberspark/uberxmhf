@@ -61,7 +61,7 @@ int bcm2837_mailbox_call(unsigned char channel, unsigned char *buffer, unsigned 
         return 0;
 
     //first copy the buffer into our mailbox message buffer
-    memcpy(mailbox_msgbuf, buffer, buffer_size);
+    uberspark_uobjrtl_crt__memcpy(mailbox_msgbuf, buffer, buffer_size);
 
     //compute address of the message buffer including the channel identifier
     mailbox_msgbuf_channel_addr = (((unsigned int)((unsigned long)&mailbox_msgbuf) & ~0xF) | ( channel &0xF ));
@@ -86,7 +86,7 @@ int bcm2837_mailbox_call(unsigned char channel, unsigned char *buffer, unsigned 
             // return 0 or non-zero based on if it isa valid successful response
             if( mailbox_msgbuf[1] == MAILBOX_RESPONSE){
                 //copy mailbox message buffer into user buffer
-                memcpy(buffer, mailbox_msgbuf, buffer_size);
+                uberspark_uobjrtl_crt__memcpy(buffer, mailbox_msgbuf, buffer_size);
             }
             return (mailbox_msgbuf[1] == MAILBOX_RESPONSE);
         }

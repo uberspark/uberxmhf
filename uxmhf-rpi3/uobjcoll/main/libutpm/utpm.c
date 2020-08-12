@@ -134,7 +134,7 @@ TPM_RESULT utpm_extend(TPM_DIGEST *measurement, utpm_master_state_t *utpm, uint3
 
     /* pcr = H( pcr || measurement) */
     outlen = sizeof(utpm->pcr_bank[pcr_num].value);
-    rv = uberspark_uobjrtl_crypto_hashes_sha1__sha1_memory_multi( utpm->pcr_bank[pcr_num].value, &outlen,
+    rv = uberspark_uobjrtl_crypto__hashes_sha1__sha1_memory_multi( utpm->pcr_bank[pcr_num].value, &outlen,
                        utpm->pcr_bank[pcr_num].value, TPM_HASH_SIZE,
                        measurement->value, TPM_HASH_SIZE,
                             NULL, NULL);
@@ -297,7 +297,7 @@ TPM_RESULT utpm_seal(utpm_master_state_t *utpm,
 	} else {
 		*outlen = outlen_beforepad;
 	}
-	uberspark_ubojrtl_crt__memset(p, 0, *outlen-outlen_beforepad);
+	uberspark_uobjrtl_crt__memset(p, 0, *outlen-outlen_beforepad);
 
 	//_XDPRINTFSMP_("%s: %u outlen_beforepad=%u, *outlen=%u\n", __func__, __LINE__,
 	//		outlen_beforepad, *outlen);
@@ -307,7 +307,7 @@ TPM_RESULT utpm_seal(utpm_master_state_t *utpm,
 
 
     /* encrypt (1-4) data using g_aeskey in AES-CBC mode */
-    if ( rijndael_cbc_start( iv, g_aeskey, TPM_AES_KEY_LEN_BYTES, 0, &cbc_ctx)) {
+    if ( uberspark_uobjrtl_crypto__ciphers_aes__rijndael_cbc_start( iv, g_aeskey, TPM_AES_KEY_LEN_BYTES, 0, &cbc_ctx)) {
       //abort();
     	return 1;
     }
@@ -315,7 +315,7 @@ TPM_RESULT utpm_seal(utpm_master_state_t *utpm,
 	//_XDPRINTFSMP_("%s: %u\n", __func__, __LINE__);
 
     //print_hex(" plaintext (including IV) just prior to AES encrypt: ", plaintext, *outlen);
-    if (rijndael_cbc_encrypt( plaintext + TPM_AES_KEY_LEN_BYTES, /* skip IV */
+    if (uberspark_uobjrtl_crypto__ciphers_aes__rijndael_cbc_encrypt( plaintext + TPM_AES_KEY_LEN_BYTES, /* skip IV */
                      output + TPM_AES_KEY_LEN_BYTES, /* don't clobber IV */
                      *outlen - TPM_AES_KEY_LEN_BYTES,
                      &cbc_ctx)) {
@@ -326,7 +326,7 @@ TPM_RESULT utpm_seal(utpm_master_state_t *utpm,
 	//_XDPRINTFSMP_("%s: %u\n", __func__, __LINE__);
 
 
-    if (rijndael_cbc_done( &cbc_ctx)) {
+    if (uberspark_uobjrtl_crypto__ciphers_aes__rijndael_cbc_done( &cbc_ctx)) {
       //abort();
     	return 1;
     }
@@ -424,7 +424,7 @@ TPM_RESULT utpm_unseal(utpm_master_state_t *utpm,
         - TPM_AES_KEY_LEN_BYTES /* iv */
         - TPM_HASH_SIZE;        /* hmac */
 
-    if (rijndael_cbc_start(
+    if (uberspark_uobjrtl_crypto__ciphers_aes__rijndael_cbc_start(
                    input, /* iv is at beginning of input */
                    g_aeskey, TPM_AES_KEY_LEN_BYTES,
                    0,
@@ -432,14 +432,14 @@ TPM_RESULT utpm_unseal(utpm_master_state_t *utpm,
       //abort();
     	return 1;
     }
-    if (rijndael_cbc_decrypt( input+TPM_AES_KEY_LEN_BYTES, /* offset to ciphertext just beyond iv */
+    if (uberspark_uobjrtl_crypto__ciphers_aes__rijndael_cbc_decrypt( input+TPM_AES_KEY_LEN_BYTES, /* offset to ciphertext just beyond iv */
                      output,
                      *outlen,
                      &cbc_ctx)) {
       //abort();
       return 1;
     }
-    if (rijndael_cbc_done( &cbc_ctx)) {
+    if (uberspark_uobjrtl_crypto__ciphers_aes__rijndael_cbc_done( &cbc_ctx)) {
       //abort();
     	return 1;
     }
@@ -503,7 +503,7 @@ TPM_RESULT utpm_unseal(utpm_master_state_t *utpm,
 
             //print_hex("  digestRightNow: ", digestRightNow.value, TPM_HASH_SIZE);
 
-            if(0 != uberspark_uobjrtl_crtl__memcmp(digestRightNow.value, unsealedPcrInfo.digestAtRelease.value, TPM_HASH_SIZE)) {
+            if(0 != uberspark_uobjrtl_crt__memcmp(digestRightNow.value, unsealedPcrInfo.digestAtRelease.value, TPM_HASH_SIZE)) {
                 //dprintf(LOG_ERROR, "0 != memcmp(digestRightNow.value, unsealedPcrInfo.digestAtRelease.value, TPM_HASH_SIZE)\n");
                 rv = 1;
                 goto out;
@@ -519,7 +519,7 @@ TPM_RESULT utpm_unseal(utpm_master_state_t *utpm,
 
         *outlen = *((uint32_t*)p);
         p += sizeof(uint32_t);
-        uberspark_uobjrtl_crtl__memcpy(output, p, *outlen);
+        uberspark_uobjrtl_crt__memcpy(output, p, *outlen);
 
       out:
         //if(currentPcrComposite) { free(currentPcrComposite); currentPcrComposite = NULL; }

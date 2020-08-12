@@ -126,7 +126,7 @@ uint32_t utpm_internal_memcpy_TPM_PCR_SELECTION(
     *bytes_consumed = sizeof(pcrSelection->sizeOfSelect) + pcrSelection->sizeOfSelect;
 
     if(dest) {
-        memcpy(dest, pcrSelection, *bytes_consumed);
+        uberspark_uobjrtl_crt__memcpy(dest, pcrSelection, *bytes_consumed);
     }
 
     return 0; /* success */
@@ -159,10 +159,10 @@ uint32_t utpm_internal_memcpy_TPM_PCR_INFO(
         }
         /* If we're still here, copy two TPM_COMPOSITE_HASH values to dest. */
         else {
-            memcpy(dest + *bytes_consumed, pcrInfo->digestAtRelease.value, TPM_HASH_SIZE);
+            uberspark_uobjrtl_crt__memcpy(dest + *bytes_consumed, pcrInfo->digestAtRelease.value, TPM_HASH_SIZE);
             *bytes_consumed += TPM_HASH_SIZE;
 
-            memcpy(dest + *bytes_consumed, pcrInfo->digestAtCreation.value, TPM_HASH_SIZE);
+            uberspark_uobjrtl_crt__memcpy(dest + *bytes_consumed, pcrInfo->digestAtCreation.value, TPM_HASH_SIZE);
             *bytes_consumed += TPM_HASH_SIZE;
         }
     }
@@ -256,7 +256,7 @@ uint32_t utpm_internal_allocate_and_populate_current_TpmPcrComposite(
     p = tpm_pcr_composite;
 
     /* 1. TPM_PCR_COMPOSITE.select */
-    memcpy(p, tpmsel, sizeof(tpmsel->sizeOfSelect) + tpmsel->sizeOfSelect);
+    uberspark_uobjrtl_crt__memcpy(p, tpmsel, sizeof(tpmsel->sizeOfSelect) + tpmsel->sizeOfSelect);
     p += sizeof(tpmsel->sizeOfSelect) + tpmsel->sizeOfSelect;
     /* 2. TPM_PCR_COMPOSITE.valueSize (big endian # of bytes (not # of PCRs)) */
     *((uint32_t*)p) = utpm_ntohl(num_pcrs_to_include*TPM_HASH_SIZE);
@@ -264,7 +264,7 @@ uint32_t utpm_internal_allocate_and_populate_current_TpmPcrComposite(
     /* 3. TPM_PCR_COMPOSITE.pcrValue[] */
     for(i=0; i<TPM_PCR_NUM; i++) {
         if(utpm_pcr_is_selected(tpmsel, i)) {
-            memcpy(p, utpm->pcr_bank[i].value, TPM_HASH_SIZE);
+            uberspark_uobjrtl_crt__memcpy(p, utpm->pcr_bank[i].value, TPM_HASH_SIZE);
             //dprintf(LOG_TRACE, "  PCR-%d: ", i);
             //print_hex(NULL, p, TPM_HASH_SIZE);
             p += TPM_HASH_SIZE;
@@ -320,7 +320,7 @@ TPM_RESULT utpm_internal_digest_current_TpmPcrComposite(
     if(0 != rv) { return 1; }
 
     //sha1_buffer(tpm_pcr_composite, space_needed_for_composite, digest->value);
-    sha1_memory(tpm_pcr_composite, space_needed_for_composite, digest->value, TPM_HASH_SIZE);
+    uberspark_uobjrtl_crypto__hashes_sha1__sha1_memory(tpm_pcr_composite, space_needed_for_composite, digest->value, TPM_HASH_SIZE);
 
     //if(tpm_pcr_composite) { free(tpm_pcr_composite); tpm_pcr_composite = NULL; }
 
