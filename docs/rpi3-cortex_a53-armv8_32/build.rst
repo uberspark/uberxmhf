@@ -125,6 +125,7 @@ hypercalls) is built.
 
    #. ``./configure --enable-uapp-uhsign`` to enable a uberApp which provides HMAC key signing functionality
    #. ``./configure --enable-uapp-uagent`` to enable a uberApp which provides AES encryption functionality
+   #. ``./configure --enable-uapp-uhstateDB`` to enable a uberApp which provides a simple database that tracks the state of each entry   
    #. ``./configure --enable-uapp-pvdriver-uart`` to enable a uberApp which provides a guest OS UART para-virtualized driver backend
       
       #. For the UART para-virtualized driver backend uapp, you will need to build the RPi kernel by ensuring that
