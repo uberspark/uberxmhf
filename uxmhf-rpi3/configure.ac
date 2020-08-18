@@ -118,7 +118,7 @@ AS_IF([test "x${enable_uapp_uagent}" != "xno"],
 # selectively enable/disable simple state DB functionality in hypervisor
 AC_SUBST([ENABLE_UAPP_STATEDB])
 AC_ARG_ENABLE([uapp_stateDB],
-	AS_HELP_STRING([--enable-uapp-stateDB@<:@=yes|no@:>@],
+	AS_HELP_STRING([--enable-uapp-uhstateDB@<:@=yes|no@:>@],
 		[enable stateDB uapp]),
 		, [enable_uapp_stateDB=no])
 AS_IF([test "x${enable_uapp_stateDB}" != "xno"],
