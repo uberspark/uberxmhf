@@ -43,12 +43,13 @@
  *
  * @XMHF_LICENSE_HEADER_END@
  */
-#include <uberspark/include/uberspark.h>
+
 // hyperdep hypapp main module
 // author: amit vasudevan (amitvasudevan@acm.org)
 
 #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf.h>
-#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf-debug.h>
+// #include <xmhfgeec.h>
+// #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf-debug.h>
 
 #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xc.h>
 #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/uapi_gcpustate.h>
@@ -64,9 +65,9 @@ uint32_t check_esp, check_eip = CASM_RET_EIP;
 
 void main(void){
 	//populate hardware model stack and program counter
-	xmhfhwm_cpu_gprs_esp = _slab_tos[cpuid];
-	xmhfhwm_cpu_gprs_eip = check_eip;
-	check_esp = xmhfhwm_cpu_gprs_esp; // pointing to top-of-stack
+	hwm_cpu_gprs_esp = _slab_tos[cpuid];
+	hwm_cpu_gprs_eip = check_eip;
+	check_esp = hwm_cpu_gprs_esp; // pointing to top-of-stack
 
 	test_sp.src_slabid = framac_nondetu32interval(0, XMHFGEEC_TOTAL_SLABS-1);
 	test_sp.dst_slabid = XMHFGEEC_SLAB_XH_HYPERDEP;
@@ -83,8 +84,8 @@ void main(void){
 
 	slab_main(&test_sp);
 
-	/*@assert ((xmhfhwm_cpu_state == CPU_STATE_RUNNING && xmhfhwm_cpu_gprs_esp == check_esp && xmhfhwm_cpu_gprs_eip == check_eip) ||
-		(xmhfhwm_cpu_state == CPU_STATE_HALT));
+	/*@assert ((hwm_cpu_state == CPU_STATE_RUNNING && hwm_cpu_gprs_esp == check_esp && hwm_cpu_gprs_eip == check_eip) ||
+		(hwm_cpu_state == CPU_STATE_HALT));
 	@*/
 
 }

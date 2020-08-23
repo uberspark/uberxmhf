@@ -43,7 +43,7 @@
  *
  * @XMHF_LICENSE_HEADER_END@
  */
-#include <uberspark/include/uberspark.h>
+
 
 /*
  * uXMHF core exception handling uobj
@@ -51,7 +51,8 @@
  */
 
 #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf.h>
-#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf-debug.h>
+// #include <xmhfgeec.h>
+// #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf-debug.h>
 
 //#include <xc.h>
 #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xc_exhub.h>
@@ -68,9 +69,9 @@ uint32_t cpuid = 0;	//cpu id
 
 void main(void){
 	//populate hardware model stack and program counter
-	xmhfhwm_cpu_gprs_esp = _slab_tos[cpuid];
-	xmhfhwm_cpu_gprs_eip = check_eip;
-	check_esp = xmhfhwm_cpu_gprs_esp; // pointing to top-of-stack
+	hwm_cpu_gprs_esp = _slab_tos[cpuid];
+	hwm_cpu_gprs_eip = check_eip;
+	check_esp = hwm_cpu_gprs_esp; // pointing to top-of-stack
 
     test_sp.slab_ctype = framac_nondetu32();
     test_sp.src_slabid = framac_nondetu32();
@@ -88,8 +89,8 @@ void main(void){
 
 	slab_main(&test_sp);
 
-	/*@assert ((xmhfhwm_cpu_state == CPU_STATE_RUNNING && xmhfhwm_cpu_gprs_esp == check_esp && xmhfhwm_cpu_gprs_eip == check_eip) ||
-		(xmhfhwm_cpu_state == CPU_STATE_HALT));
+	/*@assert ((hwm_cpu_state == CPU_STATE_RUNNING && hwm_cpu_gprs_esp == check_esp && hwm_cpu_gprs_eip == check_eip) ||
+		(hwm_cpu_state == CPU_STATE_HALT));
 	@*/
 }
 #endif
@@ -107,12 +108,12 @@ void slab_main(slab_params_t *sp){
 
 	}else if( sp->dst_uapifn == UAPI_XCEXHUB_LOADIDT){
 
-		CASM_FUNCCALL(xmhfhw_cpu_loadIDT,&xcexhub_idt);
+		CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__loadIDT,&xcexhub_idt);
 		_XDPRINTF_("%s[%u]: IDT loaded\n", __func__, (uint16_t)sp->cpuid);
 
 	}else if( sp->dst_uapifn == UAPI_XCEXHUB_LOADHOSTIDTRBASE){
 
-		CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_HOST_IDTR_BASE, CASM_FUNCCALL32(xmhf_baseplatform_arch_x86_getidtbase,CASM_NOPARAM));
+		CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__x86vmx_vmwrite,VMCS_HOST_IDTR_BASE, CASM_FUNCCALL32(xmhf_baseplatform_arch_x86_getidtbase,CASM_NOPARAM));
 
 	}else{
 		//unknown api ignore and return

@@ -43,7 +43,7 @@
  *
  * @XMHF_LICENSE_HEADER_END@
  */
-#include <uberspark/include/uberspark.h>
+
 /*
  * HIC trampoline and stubs
  *
@@ -51,7 +51,8 @@
  */
 
 #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf.h>
-#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf-debug.h>
+// #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf-debug.h>
+// #include <xmhfgeec.h>
 #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xc_ihub.h>
 
 
@@ -69,7 +70,7 @@ void xcihub_entry_icpt(x86regs_t *r){
     memset(&spl, 0, sizeof(spl));
 
     spl.slab_ctype = XMHFGEEC_SENTINEL_CALL_INTERCEPT;
-    spl.src_slabid = CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmread,VMCS_CONTROL_VPID);
+    spl.src_slabid = CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__x86vmx_vmread,VMCS_CONTROL_VPID);
     spl.dst_slabid = XMHFGEEC_SLAB_XC_IHUB;
     spl.cpuid = xmhf_baseplatform_arch_x86_getcpulapicid();
 

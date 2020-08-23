@@ -43,20 +43,18 @@
  *
  * @XMHF_LICENSE_HEADER_END@
  */
-#include <uberspark/include/uberspark.h>
+
 /*
  * sysdata (E820) state uAPI
  *
  * author: amit vasudevan (amitvasudevan@acm.org)
  */
-#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/uberspark.h>
 
-#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/uberspark/uobjs/platform/pc/uxmhf/uapi_sysdata/include/xmhf.h>
-#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/uberspark/uobjs/platform/pc/uxmhf/uapi_sysdata/include/xmhf-debug.h>
+#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf.h>
+// #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf-debug.h>
+// #include <xmhfgeec.h>
 
-#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/uberspark/uobjrtl/geec/include/xmhfgeec.h>
-
-#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/uberspark/uobjs/platform/pc/uxmhf/uapi_sysdata/include/uapi_sysdata.h>
+#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/uapi_sysdata.h>
 
 
 

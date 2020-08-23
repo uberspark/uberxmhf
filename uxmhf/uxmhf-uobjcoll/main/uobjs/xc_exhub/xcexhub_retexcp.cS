@@ -49,25 +49,25 @@
  author: amit vasudevan (amitvasudevan@acm.org)
 */
 
-#include <xmhf.h>
-#include <xmhf-hwm.h>
-#include <xmhf-debug.h>
-#include <xmhfgeec.h>
-#include <xc_exhub.h>
+#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf.h>
+#include <uberspark/hwm/arch/x86_32/intel/hwm.h>
+// #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf-debug.h>
+// #include <xmhfgeec.h>
+#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xc_exhub.h>
 
 CASM_FUNCDEF(void, xcexhub_retexcp,
 {
-    xmhfhwm_cpu_insn_movl_mesp_eax(0x4);    //eax = exception frame
-    xmhfhwm_cpu_insn_movl_meax_edi(0x0);
-    xmhfhwm_cpu_insn_movl_meax_esi(0x4);
-    xmhfhwm_cpu_insn_movl_meax_ebp(0x8);
-    xmhfhwm_cpu_insn_movl_meax_esp(0xC);
-    xmhfhwm_cpu_insn_movl_meax_ebx(0x10);
-    xmhfhwm_cpu_insn_movl_meax_edx(0x14);
-    xmhfhwm_cpu_insn_movl_meax_ecx(0x18);
-    xmhfhwm_cpu_insn_movl_meax_eax(0x1C);
-    xmhfhwm_cpu_insn_addl_imm_esp(0x8);
-    xmhfhwm_cpu_insn_iretl();
+    __casm__movl_mesp_eax(0x4);    //eax = exception frame
+    __casm__movl_meax_edi(0x0);
+    __casm__movl_meax_esi(0x4);
+    __casm__movl_meax_ebp(0x8);
+    __casm__movl_meax_esp(0xC);
+    __casm__movl_meax_ebx(0x10);
+    __casm__movl_meax_edx(0x14);
+    __casm__movl_meax_ecx(0x18);
+    __casm__movl_meax_eax(0x1C);
+    __casm__addl_imm_esp(0x8);
+    __casm__iretl();
 },
 x86vmx_exception_frame_t *exframe)
 

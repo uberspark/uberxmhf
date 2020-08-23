@@ -43,9 +43,10 @@
  *
  * @XMHF_LICENSE_HEADER_END@
  */
-#include <uberspark/include/uberspark.h>
+
 #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf.h>
-#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf-debug.h>
+// #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf-debug.h>
+// #include <xmhfgeec.h>
 
 #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/geec_prime.h>
 
@@ -72,7 +73,7 @@ void gp_s5_entry(void){
 	static volatile uint32_t cpucount=0;
 	#endif //__DEBUG_SERIAL__
 
-	isbsp = xmhfhw_lapic_isbsp();
+	isbsp = uberspark_uobjrtl_hw__generic_x86_32_intel__lapic_isbsp();
 	//@ghost gp_s5_entry_invokedisbsp = true;
 
 	//@assert gp_s5_entry_invokedisbsp == true;

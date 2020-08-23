@@ -43,9 +43,10 @@
  *
  * @XMHF_LICENSE_HEADER_END@
  */
-#include <uberspark/include/uberspark.h>
+
 #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf.h>
-#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf-debug.h>
+// #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf-debug.h>
+// #include <xmhfgeec.h>
 
 #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/geec_prime.h>
 
@@ -59,15 +60,15 @@
 #if defined (__XMHF_VERIFICATION__) && defined (__USPARK_FRAMAC_VA__)
 uint32_t check_esp, check_eip = CASM_RET_EIP;
 
-void xmhfhwm_vdriver_writeesp(uint32_t oldval, uint32_t newval){
+void hwm_vdriver_writeesp(uint32_t oldval, uint32_t newval){
 	//@assert (newval >= ((uint32_t)&_init_bsp_cpustack + 4)) && (newval <= ((uint32_t)&_init_bsp_cpustack + MAX_PLATFORM_CPUSTACK_SIZE)) ;
 }
 
 void main(void){
 	//populate hardware model stack and program counter
-	xmhfhwm_cpu_gprs_esp = (uint32_t)&_init_bsp_cpustack + MAX_PLATFORM_CPUSTACK_SIZE;
-	xmhfhwm_cpu_gprs_eip = check_eip;
-	check_esp = xmhfhwm_cpu_gprs_esp; // pointing to top-of-stack
+	hwm_cpu_gprs_esp = (uint32_t)&_init_bsp_cpustack + MAX_PLATFORM_CPUSTACK_SIZE;
+	hwm_cpu_gprs_eip = check_eip;
+	check_esp = hwm_cpu_gprs_esp; // pointing to top-of-stack
 
 	//execute harness
 	gp_s1_scaniommu();
@@ -81,8 +82,8 @@ void main(void){
 	//@assert (vtd_drhd[1].iotlb_regaddr == 0x00000000fed91108ULL);
 	//@assert (vtd_drhd[1].iva_regaddr == 0x00000000fed91100ULL);
 
-	//@assert xmhfhwm_cpu_gprs_esp == check_esp;
-	//@assert xmhfhwm_cpu_gprs_eip == check_eip;
+	//@assert hwm_cpu_gprs_esp == check_esp;
+	//@assert hwm_cpu_gprs_eip == check_eip;
 }
 #endif
 
@@ -101,10 +102,10 @@ void gp_s1_scaniommu(void){
 	vtd_drhd_maxhandle=0;
 
 	//get ACPI RSDP
-	status=xmhfhw_platform_x86pc_acpi_getRSDP(&rsdp);
+	status=uberspark_uobjrtl_hw__generic_x86_32_intel__acpi_getRSDP(&rsdp);
 	if(status == 0){
 		_XDPRINTF_("%s:%u unable to get ACPI RSDP. Halting!\n", __func__, __LINE__);
-                CASM_FUNCCALL(xmhfhw_cpu_hlt, CASM_NOPARAM);
+                CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__hlt, CASM_NOPARAM);
 	}
 
 
@@ -125,7 +126,7 @@ void gp_s1_scaniommu(void){
 
 
 	//grab ACPI RSDT
-	CASM_FUNCCALL(xmhfhw_sysmem_copy_sys2obj, (uint8_t *)&rsdt, (uint8_t *)rsdp.rsdtaddress, sizeof(ACPI_RSDT));
+	CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__sysmem_copy_sys2obj, (uint8_t *)&rsdt, (uint8_t *)rsdp.rsdtaddress, sizeof(ACPI_RSDT));
 	_XDPRINTF_("%s:%u RSDT at %08x, len=%u bytes, hdrlen=%u bytes\n",
 		__func__, __LINE__, rsdp.rsdtaddress, rsdt.length, sizeof(ACPI_RSDT));
 
@@ -152,7 +153,7 @@ void gp_s1_scaniommu(void){
 	if(num_rsdtentries >= ACPI_MAX_RSDT_ENTRIES){
 		_XDPRINTF_("%s:%u num_rsdtentries(%u) > ACPI_MAX_RSDT_ENTRIES (%u). Halting!\n",
 			__func__, __LINE__, num_rsdtentries, ACPI_MAX_RSDT_ENTRIES);
-                CASM_FUNCCALL(xmhfhw_cpu_hlt, CASM_NOPARAM);
+                CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__hlt, CASM_NOPARAM);
 	}
 
 	_XDPRINTF_("%s:%u RSDT entry list at %08x, len=%u", __func__, __LINE__,
@@ -160,13 +161,13 @@ void gp_s1_scaniommu(void){
 
 
 
-	CASM_FUNCCALL(xmhfhw_sysmem_copy_sys2obj, (uint8_t *)&rsdtentries, (uint8_t *)(rsdp.rsdtaddress + sizeof(ACPI_RSDT)),
+	CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__sysmem_copy_sys2obj, (uint8_t *)&rsdtentries, (uint8_t *)(rsdp.rsdtaddress + sizeof(ACPI_RSDT)),
 			sizeof(uint32_t)*num_rsdtentries);
 
 
 	//find the VT-d DMAR table in the list (if any)
 	for(i=0; i< num_rsdtentries; i++){
-		CASM_FUNCCALL(xmhfhw_sysmem_copy_sys2obj, (uint8_t *)&dmar, (uint8_t *)rsdtentries[i], sizeof(VTD_DMAR));
+		CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__sysmem_copy_sys2obj, (uint8_t *)&dmar, (uint8_t *)rsdtentries[i], sizeof(VTD_DMAR));
 		if(dmar.signature == VTD_DMAR_SIGNATURE){
 		  dmarfound=1;
 			#if defined (__DEBUG_SERIAL__)
@@ -200,7 +201,7 @@ void gp_s1_scaniommu(void){
 	//if no DMAR table, bail out
 	if(!dmarfound){
 		_XDPRINTF_("%s:%u Error No DMAR table. Halting!", __func__, __LINE__);
-                CASM_FUNCCALL(xmhfhw_cpu_hlt, CASM_NOPARAM);
+                CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__hlt, CASM_NOPARAM);
 	}
 
 	vtd_dmar_table_physical_address = rsdtentries[i]; //DMAR table physical memory address;
@@ -215,17 +216,17 @@ void gp_s1_scaniommu(void){
 
 	while(i < (dmar.length-sizeof(VTD_DMAR))){
 		uint16_t type, length;
-		CASM_FUNCCALL(xmhfhw_sysmem_copy_sys2obj,(uint8_t *)&type, (uint8_t *)(remappingstructuresaddrphys+i), sizeof(uint16_t));
-		CASM_FUNCCALL(xmhfhw_sysmem_copy_sys2obj,(uint8_t *)&length, (uint8_t *)(remappingstructuresaddrphys+i+sizeof(uint16_t)), sizeof(uint16_t));
+		CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__sysmem_copy_sys2obj,(uint8_t *)&type, (uint8_t *)(remappingstructuresaddrphys+i), sizeof(uint16_t));
+		CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__sysmem_copy_sys2obj,(uint8_t *)&length, (uint8_t *)(remappingstructuresaddrphys+i+sizeof(uint16_t)), sizeof(uint16_t));
 
 		switch(type){
 			case  0:  //DRHD
 				if(vtd_num_drhd >= VTD_MAX_DRHD){
 					_XDPRINTF_("%s:%u vtd_num_drhd (%u) > VTD_MAX_DRHD (%u). Halting!", __func__,
 						__LINE__, vtd_num_drhd, VTD_MAX_DRHD);
-					CASM_FUNCCALL(xmhfhw_cpu_hlt, CASM_NOPARAM);
+					CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__hlt, CASM_NOPARAM);
 				}
-				CASM_FUNCCALL(xmhfhw_sysmem_copy_sys2obj, (uint8_t *)&vtd_drhd[vtd_num_drhd], (uint8_t *)(remappingstructuresaddrphys+i), length);
+				CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__sysmem_copy_sys2obj, (uint8_t *)&vtd_drhd[vtd_num_drhd], (uint8_t *)(remappingstructuresaddrphys+i), length);
 				vtd_num_drhd++;
 				i+=(uint32_t)length;
 				break;

@@ -43,12 +43,13 @@
  *
  * @XMHF_LICENSE_HEADER_END@
  */
-#include <uberspark/include/uberspark.h>
+
 // hyperdep hypapp
 // author: amit vasudevan (amitvasudevan@acm.org)
 
 #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf.h>
-#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf-debug.h>
+// #include <xmhfgeec.h>
+// #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf-debug.h>
 
 #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xc.h>
 #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/uapi_gcpustate.h>
@@ -88,7 +89,7 @@ void hyperdep_hcbmemfault(uint32_t cpuindex, uint32_t guest_slab_index){
 	if(hd_activated && hd_pageaddr == (uint32_t)gpa){
 		_XDPRINTF_("%s[%u]: memory fault in guest slab %u; gpa=%016llx, gva=%016llx, errorcode=%016llx, data page execution. Halting!\n",
 				__func__, (uint16_t)cpuindex, guest_slab_index, gpa, gva, errorcode);
-		CASM_FUNCCALL(xmhfhw_cpu_hlt, CASM_NOPARAM);
+		CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__hlt, CASM_NOPARAM);
 	}
 }
 

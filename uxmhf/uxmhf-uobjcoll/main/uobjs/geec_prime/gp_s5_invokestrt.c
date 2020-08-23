@@ -43,9 +43,10 @@
  *
  * @XMHF_LICENSE_HEADER_END@
  */
-#include <uberspark/include/uberspark.h>
+
 #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf.h>
-#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf-debug.h>
+// #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf-debug.h>
+// #include <xmhfgeec.h>
 
 #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/geec_prime.h>
 #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xc_init.h>
@@ -54,11 +55,11 @@
 	uint32_t check_esp, check_eip = CASM_RET_EIP;
 	bool gp_s5_entry_invoked = false;
 
-	void xmhfhwm_vdriver_writeesp(uint32_t oldval, uint32_t newval){
+	void hwm_vdriver_writeesp(uint32_t oldval, uint32_t newval){
 		//@assert (newval >= ((uint32_t)&_init_bsp_cpustack + 4)) && (newval <= ((uint32_t)&_init_bsp_cpustack + MAX_PLATFORM_CPUSTACK_SIZE)) ;
 	}
 
-	void xmhfhwm_vdriver_cpu_writecr3(uint32_t oldval, uint32_t newval){
+	void hwm_vdriver_cpu_writecr3(uint32_t oldval, uint32_t newval){
 		//@assert (newval ==(uint32_t)&gp_rwdatahdr.gp_vhslabmempgtbl_lvl4t);
 	}
 
@@ -66,21 +67,21 @@
 		//@assert (sp->src_slabid == XMHFGEEC_SLAB_GEEC_PRIME);
 		//@assert (sp->dst_slabid == XMHFGEEC_SLAB_XC_INIT);
 		//@assert (sp->cpuid >=0 && sp->cpuid <= 255);
-		//@assert (xmhfhwm_cpu_state == CPU_STATE_RUNNING);
+		//@assert (hwm_cpu_state == CPU_STATE_RUNNING);
 	}
 
 	void main(void){
 		uint32_t cpuid = framac_nondetu32interval(0, 255);
 		//populate hardware model stack and program counter
-		xmhfhwm_cpu_gprs_esp = (uint32_t)&_init_bsp_cpustack + MAX_PLATFORM_CPUSTACK_SIZE;
-		xmhfhwm_cpu_gprs_eip = check_eip;
-		check_esp = xmhfhwm_cpu_gprs_esp; // pointing to top-of-stack
+		hwm_cpu_gprs_esp = (uint32_t)&_init_bsp_cpustack + MAX_PLATFORM_CPUSTACK_SIZE;
+		hwm_cpu_gprs_eip = check_eip;
+		check_esp = hwm_cpu_gprs_esp; // pointing to top-of-stack
 
 		//execute harness
 		gp_s5_invokestrt(cpuid);
 
-		//@assert xmhfhwm_cpu_gprs_esp == check_esp;
-		//@assert xmhfhwm_cpu_gprs_eip == check_eip;
+		//@assert hwm_cpu_gprs_esp == check_esp;
+		//@assert hwm_cpu_gprs_eip == check_eip;
 	}
 
 #endif
@@ -98,5 +99,5 @@ void gp_s5_invokestrt(uint32_t cpuid){
 
 	_XDPRINTF_("%s[%u]: Should never be here. Halting!\n",
 		__func__, (uint16_t)cpuid);
-	CASM_FUNCCALL(xmhfhw_cpu_hlt, CASM_NOPARAM);
+	CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__hlt, CASM_NOPARAM);
 }

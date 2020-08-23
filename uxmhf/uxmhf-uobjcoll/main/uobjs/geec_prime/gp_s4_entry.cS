@@ -44,11 +44,11 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-#include <xmhf.h>
-#include <xmhf-debug.h>
+#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf.h>
+// #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf-debug.h>
 
-#include <xmhfgeec.h>
-#include <geec_prime.h>
+// #include <xmhfgeec.h>
+#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/geec_prime.h>
 
 
 // GEEC prime SMP assembly language code blobs
@@ -56,27 +56,27 @@
 
 #if defined (__XMHF_VERIFICATION__) && defined (__USPARK_FRAMAC_VA__)
 	uint32_t check_esp, check_eip = CASM_RET_EIP;
-	x86smp_apbootstrapdata_t *apdptr = (x86smp_apbootstrapdata_t *)&xmhfhwm_mem_region_apbootstrap_dataseg;
+	x86smp_apbootstrapdata_t *apdptr = (x86smp_apbootstrapdata_t *)&hwm_mem_region_apbootstrap_dataseg;
 
-	void xmhfhwm_vdriver_writeesp(uint32_t oldval, uint32_t newval){
+	void hwm_vdriver_writeesp(uint32_t oldval, uint32_t newval){
 		//@assert (newval >= ((uint32_t)&_init_bsp_cpustack + 4)) && (newval <= ((uint32_t)&_init_bsp_cpustack + MAX_PLATFORM_CPUSTACK_SIZE)) ;
 	}
 
-	void xmhfhwm_vdriver_cpu_writecr3(uint32_t oldval, uint32_t newval){
+	void hwm_vdriver_cpu_writecr3(uint32_t oldval, uint32_t newval){
 		//@assert (newval ==(uint32_t)&gp_rwdatahdr.gp_vhslabmempgtbl_lvl4t);
 	}
 
-	void xmhfhwm_vdriver_apentry(void){
-		//@assert (xmhfhwm_cpu_gprs_eax == (uint32_t)&gp_s4_apstacks);
-		//@assert (xmhfhwm_cpu_gprs_ebx == 0xDEADBEEF);
-		//@assert (xmhfhwm_cpu_gprs_edi == 0);
+	void hwm_vdriver_apentry(void){
+		//@assert (hwm_cpu_gprs_eax == (uint32_t)&gp_s4_apstacks);
+		//@assert (hwm_cpu_gprs_ebx == 0xDEADBEEF);
+		//@assert (hwm_cpu_gprs_edi == 0);
 	}
 
 	void main(void){
 		//populate hardware model stack and program counter
-		xmhfhwm_cpu_gprs_esp = (uint32_t)&_init_bsp_cpustack + MAX_PLATFORM_CPUSTACK_SIZE;
-		xmhfhwm_cpu_gprs_eip = check_eip;
-		check_esp = xmhfhwm_cpu_gprs_esp; // pointing to top-of-stack
+		hwm_cpu_gprs_esp = (uint32_t)&_init_bsp_cpustack + MAX_PLATFORM_CPUSTACK_SIZE;
+		hwm_cpu_gprs_eip = check_eip;
+		check_esp = hwm_cpu_gprs_esp; // pointing to top-of-stack
 	
 		//execute harness
 		apdptr->ap_cr3 = 0xDEADBEEF;
@@ -85,8 +85,8 @@
 	
 		CASM_FUNCCALL(gp_s4_entry, CASM_NOPARAM);
 	
-		//@assert xmhfhwm_cpu_gprs_esp == check_esp;
-		//@assert xmhfhwm_cpu_gprs_eip == check_eip;
+		//@assert hwm_cpu_gprs_esp == check_esp;
+		//@assert hwm_cpu_gprs_eip == check_eip;
 	}
 
 #endif
@@ -95,23 +95,23 @@
 
 CASM_FUNCDEF(void, gp_s4_entry,
 {
-    xmhfhwm_cpu_insn_movw_imm_ax(__DS_CPL0);
-    xmhfhwm_cpu_insn_movw_ax_ds();
+    __casm__movw_imm_ax(__DS_CPL0);
+    __casm__movw_ax_ds();
 
-    xmhfhwm_cpu_insn_movl_imm_esi(((X86SMP_APBOOTSTRAP_DATASEG << 4) + 32))
-    xmhfhwm_cpu_insn_movl_mesi_eax(0x0);
-    xmhfhwm_cpu_insn_movl_eax_edi();
+    __casm__movl_imm_esi(((X86SMP_APBOOTSTRAP_DATASEG << 4) + 32))
+    __casm__movl_mesi_eax(0x0);
+    __casm__movl_eax_edi();
 
-    xmhfhwm_cpu_insn_movl_imm_esi(((X86SMP_APBOOTSTRAP_DATASEG << 4) + 0));
-    xmhfhwm_cpu_insn_movl_mesi_eax(0x0);
-    xmhfhwm_cpu_insn_movl_eax_ebx();
+    __casm__movl_imm_esi(((X86SMP_APBOOTSTRAP_DATASEG << 4) + 0));
+    __casm__movl_mesi_eax(0x0);
+    __casm__movl_eax_ebx();
 
-    xmhfhwm_cpu_insn_movl_imm_esi(((X86SMP_APBOOTSTRAP_DATASEG << 4) + 8));
-    xmhfhwm_cpu_insn_movl_mesi_eax(0x0);
+    __casm__movl_imm_esi(((X86SMP_APBOOTSTRAP_DATASEG << 4) + 8));
+    __casm__movl_mesi_eax(0x0);
 
-    xmhfhwm_cpu_insn_jmpapentry();
+    __casm__jmpapentry();
 
-    xmhfhwm_cpu_insn_ret();
+    __casm__ret();
     CASM_BALIGN(4096);
 },
 void *noparam)

@@ -28,23 +28,23 @@ verif_s1:
 	@echo Verifying stage-1...
 	cd $(XMHF_SLAB_VERIFICATION_DIR) && frama-c -no-frama-c-stdlib -main gp_s1_bspstack -lib-entry -wp -wp-rte -wp-model +cint+cast  -wp-prover alt-ergo,cvc3,z3 -cpp-extra-args=-nostdinc $(VFLAGS) gp_data.c.v.c gp_s1_bspstack.c.v.c
 	cd $(XMHF_SLAB_VERIFICATION_DIR) && frama-c -no-frama-c-stdlib -main _gp_s1_bspstack_getflagsforspa -lib-entry -wp -wp-rte -wp-model +cint+cast  -wp-prover alt-ergo,cvc3,z3 -cpp-extra-args=-nostdinc $(VFLAGS) gp_data.c.v.c gp_s1_bspstackgetflags.c.v.c
-	cd $(XMHF_SLAB_VERIFICATION_DIR) && frama-c -no-frama-c-stdlib -val -no-val-show-progress -slevel 2048 -cpp-extra-args=-nostdinc -cpp-extra-args=-D__USPARK_FRAMAC_VA__ $(VFLAGS) gp_data.c.v.c gp_s1_bspstkactivate.c.v.c xmhfgeec_slabinfotable.c xmhfgeec_slabmapdef.c libxmhfhw/*.v.c $(V_XMHFHWM_MODULES)
-	cd $(XMHF_SLAB_VERIFICATION_DIR) && frama-c -no-frama-c-stdlib -val -no-val-show-progress -slevel 2048 -cpp-extra-args=-nostdinc -cpp-extra-args=-D__USPARK_FRAMAC_VA__ $(VFLAGS) gp_data.c.v.c gp_s1_chkreq.c.v.c xmhfgeec_slabinfotable.c xmhfgeec_slabmapdef.c libxmhfhw/*.v.c $(V_XMHFHWM_MODULES)
-	cd $(XMHF_SLAB_VERIFICATION_DIR) && frama-c -no-frama-c-stdlib -val -no-val-show-progress -slevel 2048 -cpp-extra-args=-nostdinc -cpp-extra-args=-D__USPARK_FRAMAC_VA__ $(VFLAGS) gp_data.c.v.c gp_s1_entry.cS.v.c xmhfgeec_slabinfotable.c xmhfgeec_slabmapdef.c libxmhfhw/*.v.c $(V_XMHFHWM_MODULES)
+	cd $(XMHF_SLAB_VERIFICATION_DIR) && frama-c -no-frama-c-stdlib -val -no-val-show-progress -slevel 2048 -cpp-extra-args=-nostdinc -cpp-extra-args=-D__USPARK_FRAMAC_VA__ $(VFLAGS) gp_data.c.v.c gp_s1_bspstkactivate.c.v.c xmhfgeec_slabinfotable.c xmhfgeec_slabmapdef.c libxmhfhw/*.v.c $(V_hwm_MODULES)
+	cd $(XMHF_SLAB_VERIFICATION_DIR) && frama-c -no-frama-c-stdlib -val -no-val-show-progress -slevel 2048 -cpp-extra-args=-nostdinc -cpp-extra-args=-D__USPARK_FRAMAC_VA__ $(VFLAGS) gp_data.c.v.c gp_s1_chkreq.c.v.c xmhfgeec_slabinfotable.c xmhfgeec_slabmapdef.c libxmhfhw/*.v.c $(V_hwm_MODULES)
+	cd $(XMHF_SLAB_VERIFICATION_DIR) && frama-c -no-frama-c-stdlib -val -no-val-show-progress -slevel 2048 -cpp-extra-args=-nostdinc -cpp-extra-args=-D__USPARK_FRAMAC_VA__ $(VFLAGS) gp_data.c.v.c gp_s1_entry.cS.v.c xmhfgeec_slabinfotable.c xmhfgeec_slabmapdef.c libxmhfhw/*.v.c $(V_hwm_MODULES)
 	cd $(XMHF_SLAB_VERIFICATION_DIR) && frama-c -no-frama-c-stdlib -main gp_s1_hub -lib-entry -wp -wp-rte -wp-model +cint+cast  -wp-prover alt-ergo,cvc3,z3 -cpp-extra-args=-nostdinc $(VFLAGS) gp_data.c.v.c gp_s1_hub.c.v.c
-	cd $(XMHF_SLAB_VERIFICATION_DIR) && frama-c -no-frama-c-stdlib -val -no-val-show-progress -slevel 2048 -cpp-extra-args=-nostdinc -cpp-extra-args=-D__USPARK_FRAMAC_VA__ $(VFLAGS) gp_data.c.v.c gp_s1_iommuinit.c.v.c xmhfgeec_slabinfotable.c xmhfgeec_slabmapdef.c libxmhfhw/xmhfhw_vtd*.c.v.c libxmhfhw/*.cS.v.c $(V_XMHFHWM_MODULES)
+	cd $(XMHF_SLAB_VERIFICATION_DIR) && frama-c -no-frama-c-stdlib -val -no-val-show-progress -slevel 2048 -cpp-extra-args=-nostdinc -cpp-extra-args=-D__USPARK_FRAMAC_VA__ $(VFLAGS) gp_data.c.v.c gp_s1_iommuinit.c.v.c xmhfgeec_slabinfotable.c xmhfgeec_slabmapdef.c libxmhfhw/xmhfhw_vtd*.c.v.c libxmhfhw/*.cS.v.c $(V_hwm_MODULES)
 	cd $(XMHF_SLAB_VERIFICATION_DIR) && frama-c -no-frama-c-stdlib -main gp_s1_iommuinittbl -lib-entry -wp -wp-rte -wp-model +cint+cast  -wp-prover alt-ergo,cvc3,z3 -cpp-extra-args=-nostdinc $(VFLAGS) gp_data.c.v.c gp_s1_iommuinittbl.c.v.c
 	cd $(XMHF_SLAB_VERIFICATION_DIR) && frama-c -no-frama-c-stdlib -main gp_s1_iommuinittblclearcet -lib-entry -wp -wp-rte -wp-model +cint+cast  -wp-prover alt-ergo,cvc3,z3 -cpp-extra-args=-nostdinc $(VFLAGS) gp_data.c.v.c gp_s1_iommuinittblclearcet.c.v.c
-	cd $(XMHF_SLAB_VERIFICATION_DIR) && frama-c -no-frama-c-stdlib -val -no-val-show-progress -slevel 2048 -cpp-extra-args=-nostdinc -cpp-extra-args=-D__USPARK_FRAMAC_VA__ $(VFLAGS) gp_data.c.v.c gp_s1_postdrt.c.v.c xmhfgeec_slabinfotable.c xmhfgeec_slabmapdef.c libxmhfhw/*.cS.v.c libxmhfhw/xmhfhw_cpu_txt*.c.v.c $(V_XMHFHWM_MODULES)
-	cd $(XMHF_SLAB_VERIFICATION_DIR) && frama-c -no-frama-c-stdlib -val -no-val-show-progress -slevel 2048 -cpp-extra-args=-nostdinc -cpp-extra-args=-D__USPARK_FRAMAC_VA__ $(VFLAGS) gp_data.c.v.c gp_s1_scaniommu.c.v.c xmhfgeec_slabinfotable.c xmhfgeec_slabmapdef.c libxmhfhw/xmhfhw_sysmem_getacpirsdp.c.v.c libxmhfhw/xmhfhw_vtd_readreg.c.v.c libxmhfhw/*.cS.v.c $(V_XMHFHWM_MODULES)
+	cd $(XMHF_SLAB_VERIFICATION_DIR) && frama-c -no-frama-c-stdlib -val -no-val-show-progress -slevel 2048 -cpp-extra-args=-nostdinc -cpp-extra-args=-D__USPARK_FRAMAC_VA__ $(VFLAGS) gp_data.c.v.c gp_s1_postdrt.c.v.c xmhfgeec_slabinfotable.c xmhfgeec_slabmapdef.c libxmhfhw/*.cS.v.c libxmhfhw/uberspark_uobjrtl_hw__generic_x86_32_intel__txt*.c.v.c $(V_hwm_MODULES)
+	cd $(XMHF_SLAB_VERIFICATION_DIR) && frama-c -no-frama-c-stdlib -val -no-val-show-progress -slevel 2048 -cpp-extra-args=-nostdinc -cpp-extra-args=-D__USPARK_FRAMAC_VA__ $(VFLAGS) gp_data.c.v.c gp_s1_scaniommu.c.v.c xmhfgeec_slabinfotable.c xmhfgeec_slabmapdef.c libxmhfhw/xmhfhw_sysmem_getacpirsdp.c.v.c libxmhfhw/xmhfhw_vtd_readreg.c.v.c libxmhfhw/*.cS.v.c $(V_hwm_MODULES)
 	
 
 .PHONY: verif_s2
 verif_s2: 
 	@echo Verifying stage-2...
 	cd $(XMHF_SLAB_VERIFICATION_DIR) && frama-c -no-frama-c-stdlib -main gp_s2_entry -lib-entry -wp -wp-rte -wp-model +cint+cast  -wp-prover alt-ergo,cvc3,z3 -cpp-extra-args=-nostdinc $(VFLAGS) gp_s2_entry.c.v.c
-	cd $(XMHF_SLAB_VERIFICATION_DIR) && frama-c -no-frama-c-stdlib -val -no-val-show-progress -slevel 2048 -cpp-extra-args=-nostdinc -cpp-extra-args=-D__USPARK_FRAMAC_VA__ $(VFLAGS) gp_data.c.v.c gp_s2_gathersysmemtypes.c.v.c xmhfgeec_slabinfotable.c xmhfgeec_slabmapdef.c libxmhfhw/*.cS.v.c $(V_XMHFHWM_MODULES)
-	cd $(XMHF_SLAB_VERIFICATION_DIR) && frama-c -no-frama-c-stdlib -val -no-val-show-progress -slevel 2048 -cpp-extra-args=-nostdinc -cpp-extra-args=-D__USPARK_FRAMAC_VA__ $(VFLAGS) gp_data.c.v.c gp_s2_initsysmemmap.c.v.c xmhfgeec_slabinfotable.c xmhfgeec_slabmapdef.c libxmhfhw/*.cS.v.c $(V_XMHFHWM_MODULES)
+	cd $(XMHF_SLAB_VERIFICATION_DIR) && frama-c -no-frama-c-stdlib -val -no-val-show-progress -slevel 2048 -cpp-extra-args=-nostdinc -cpp-extra-args=-D__USPARK_FRAMAC_VA__ $(VFLAGS) gp_data.c.v.c gp_s2_gathersysmemtypes.c.v.c xmhfgeec_slabinfotable.c xmhfgeec_slabmapdef.c libxmhfhw/*.cS.v.c $(V_hwm_MODULES)
+	cd $(XMHF_SLAB_VERIFICATION_DIR) && frama-c -no-frama-c-stdlib -val -no-val-show-progress -slevel 2048 -cpp-extra-args=-nostdinc -cpp-extra-args=-D__USPARK_FRAMAC_VA__ $(VFLAGS) gp_data.c.v.c gp_s2_initsysmemmap.c.v.c xmhfgeec_slabinfotable.c xmhfgeec_slabmapdef.c libxmhfhw/*.cS.v.c $(V_hwm_MODULES)
 	cd $(XMHF_SLAB_VERIFICATION_DIR) && frama-c -no-frama-c-stdlib -main gp_s2_sda -lib-entry -wp -wp-rte -wp-model +cint+cast  -wp-prover alt-ergo,cvc3,z3 -cpp-extra-args=-nostdinc $(VFLAGS) gp_data.c.v.c gp_s2_sda.c.v.c
 	cd $(XMHF_SLAB_VERIFICATION_DIR) && frama-c -no-frama-c-stdlib -main gp_s2_sdabinddevice -lib-entry -wp -wp-rte -wp-model +cint+cast  -wp-prover alt-ergo,cvc3,z3 -cpp-extra-args=-nostdinc $(VFLAGS) gp_data.c.v.c gp_s2_sdabinddevice.c.v.c
 	cd $(XMHF_SLAB_VERIFICATION_DIR) && frama-c -no-frama-c-stdlib -main gp_s2_sdadoalloc_getuobjfordev -lib-entry -wp -wp-rte -wp-model +cint+cast  -wp-prover alt-ergo,cvc3,z3 -cpp-extra-args=-nostdinc $(VFLAGS) gp_data.c.v.c gp_s2_sdadoalloc_getuobjfordev.c.v.c
@@ -75,7 +75,7 @@ verif_s2:
 	cd $(XMHF_SLAB_VERIFICATION_DIR) && frama-c -no-frama-c-stdlib -main gp_s2_setupmpgtbl_getspatypeuobj -lib-entry -wp -wp-rte -wp-model +cint+cast  -wp-prover alt-ergo,cvc3,z3 -cpp-extra-args=-nostdinc $(VFLAGS) gp_data.c.v.c gp_s2_setupmpgtbl_getspatypeuobj.c.v.c
 	cd $(XMHF_SLAB_VERIFICATION_DIR) && frama-c -no-frama-c-stdlib -main gp_s2_setupmpgtblu -lib-entry -wp -wp-rte -wp-model +cint+cast  -wp-prover alt-ergo,cvc3,z3 -cpp-extra-args=-nostdinc $(VFLAGS) gp_data.c.v.c gp_s2_setupmpgtblu.c.v.c
 	cd $(XMHF_SLAB_VERIFICATION_DIR) && frama-c -no-frama-c-stdlib -main gp_s2_setupmpgtblug_getflags -lib-entry -wp -wp-rte -wp-model +cint+cast  -wp-prover alt-ergo,cvc3,z3 -cpp-extra-args=-nostdinc $(VFLAGS) gp_data.c.v.c gp_s2_setupmpgtblug_getflags.c.v.c
-	cd $(XMHF_SLAB_VERIFICATION_DIR) && frama-c -no-frama-c-stdlib -val -no-val-show-progress -slevel 2048 -cpp-extra-args=-nostdinc -cpp-extra-args=-D__USPARK_FRAMAC_VA__ $(VFLAGS) gp_data.c.v.c gp_s2_setupmpgtblug_getmtype.c.v.c xmhfgeec_slabinfotable.c xmhfgeec_slabmapdef.c libxmhfhw/*.cS.v.c $(V_XMHFHWM_MODULES)
+	cd $(XMHF_SLAB_VERIFICATION_DIR) && frama-c -no-frama-c-stdlib -val -no-val-show-progress -slevel 2048 -cpp-extra-args=-nostdinc -cpp-extra-args=-D__USPARK_FRAMAC_VA__ $(VFLAGS) gp_data.c.v.c gp_s2_setupmpgtblug_getmtype.c.v.c xmhfgeec_slabinfotable.c xmhfgeec_slabmapdef.c libxmhfhw/*.cS.v.c $(V_hwm_MODULES)
 	cd $(XMHF_SLAB_VERIFICATION_DIR) && frama-c -no-frama-c-stdlib -main gp_s2_setupmpgtblug_rg -lib-entry -wp -wp-rte -wp-model +cint+cast  -wp-prover alt-ergo,cvc3,z3 -cpp-extra-args=-nostdinc $(VFLAGS) gp_data.c.v.c gp_s2_setupmpgtblug_rg.c.v.c
 	cd $(XMHF_SLAB_VERIFICATION_DIR) && frama-c -no-frama-c-stdlib -main gp_s2_setupmpgtblug -lib-entry -wp -wp-rte -wp-model +cint+cast  -wp-prover alt-ergo,cvc3,z3 -cpp-extra-args=-nostdinc $(VFLAGS) gp_data.c.v.c gp_s2_setupmpgtblug.c.v.c
 #	cd $(XMHF_SLAB_VERIFICATION_DIR) && frama-c -no-frama-c-stdlib -main gp_s2_setupmpgtbluh_getflags -lib-entry -wp -wp-rte -wp-model +cint+cast  -wp-prover alt-ergo,cvc3,z3 -cpp-extra-args=-nostdinc $(VFLAGS) gp_data.c.v.c gp_s2_setupmpgtbluh_getflags.c.v.c
@@ -90,20 +90,20 @@ verif_s2:
 verif_s3: 
 	@echo Verifying stage-3...
 	cd $(XMHF_SLAB_VERIFICATION_DIR) && frama-c -no-frama-c-stdlib -main gp_s3_entry -lib-entry -wp -wp-rte -wp-model +cint+cast  -wp-prover alt-ergo,cvc3,z3 -cpp-extra-args=-nostdinc $(VFLAGS) gp_data.c.v.c gp_s3_entry.c.v.c
-	cd $(XMHF_SLAB_VERIFICATION_DIR) && frama-c -no-frama-c-stdlib -pp-annot -val -no-val-show-progress -slevel 2048 -cpp-extra-args=-nostdinc -cpp-extra-args=-D__USPARK_FRAMAC_VA__ $(VFLAGS) gp_data.c.v.c gp_s3_startcores.c.v.c xmhfgeec_slabinfotable.c xmhfgeec_slabmapdef.c libxmhfhw/xmhfhw_cpu_txt*.c.v.c libxmhfhw/*.cS.v.c $(V_XMHFHWM_MODULES)
+	cd $(XMHF_SLAB_VERIFICATION_DIR) && frama-c -no-frama-c-stdlib -pp-annot -val -no-val-show-progress -slevel 2048 -cpp-extra-args=-nostdinc -cpp-extra-args=-D__USPARK_FRAMAC_VA__ $(VFLAGS) gp_data.c.v.c gp_s3_startcores.c.v.c xmhfgeec_slabinfotable.c xmhfgeec_slabmapdef.c libxmhfhw/uberspark_uobjrtl_hw__generic_x86_32_intel__txt*.c.v.c libxmhfhw/*.cS.v.c $(V_hwm_MODULES)
 
 .PHONY: verif_s4
 verif_s4: 
 	@echo Verifying stage-4...
-	cd $(XMHF_SLAB_VERIFICATION_DIR) && frama-c -no-frama-c-stdlib -val -no-val-show-progress -slevel 2048 -cpp-extra-args=-nostdinc -cpp-extra-args=-D__USPARK_FRAMAC_VA__ $(VFLAGS) gp_data.c.v.c gp_s4_apstacks.cS.v.c xmhfgeec_slabinfotable.c xmhfgeec_slabmapdef.c libxmhfhw/*.cS.v.c $(V_XMHFHWM_MODULES)
-	cd $(XMHF_SLAB_VERIFICATION_DIR) && frama-c -no-frama-c-stdlib -val -no-val-show-progress -slevel 2048 -cpp-extra-args=-nostdinc -cpp-extra-args=-D__USPARK_FRAMAC_VA__ $(VFLAGS) gp_data.c.v.c gp_s4_entry.cS.v.c xmhfgeec_slabinfotable.c xmhfgeec_slabmapdef.c libxmhfhw/*.cS.v.c $(V_XMHFHWM_MODULES)
+	cd $(XMHF_SLAB_VERIFICATION_DIR) && frama-c -no-frama-c-stdlib -val -no-val-show-progress -slevel 2048 -cpp-extra-args=-nostdinc -cpp-extra-args=-D__USPARK_FRAMAC_VA__ $(VFLAGS) gp_data.c.v.c gp_s4_apstacks.cS.v.c xmhfgeec_slabinfotable.c xmhfgeec_slabmapdef.c libxmhfhw/*.cS.v.c $(V_hwm_MODULES)
+	cd $(XMHF_SLAB_VERIFICATION_DIR) && frama-c -no-frama-c-stdlib -val -no-val-show-progress -slevel 2048 -cpp-extra-args=-nostdinc -cpp-extra-args=-D__USPARK_FRAMAC_VA__ $(VFLAGS) gp_data.c.v.c gp_s4_entry.cS.v.c xmhfgeec_slabinfotable.c xmhfgeec_slabmapdef.c libxmhfhw/*.cS.v.c $(V_hwm_MODULES)
 
 .PHONY: verif_s5
 verif_s5: 
 	@echo Verifying stage-5...
 	cd $(XMHF_SLAB_VERIFICATION_DIR) && frama-c -no-frama-c-stdlib -main gp_s5_entry -lib-entry -wp -wp-rte -wp-model +cint+cast  -wp-prover alt-ergo,cvc3,z3 -cpp-extra-args=-nostdinc $(VFLAGS) gp_data.c.v.c gp_s5_entry.c.v.c
-	cd $(XMHF_SLAB_VERIFICATION_DIR) && frama-c -no-frama-c-stdlib -val -no-val-show-progress -slevel 2048 -cpp-extra-args=-nostdinc -cpp-extra-args=-D__USPARK_FRAMAC_VA__ $(VFLAGS) gp_data.c.v.c gp_s5_invokestrt.c.v.c xmhfgeec_slabinfotable.c xmhfgeec_slabmapdef.c libxmhfhw/*.cS.v.c $(V_XMHFHWM_MODULES)
-	cd $(XMHF_SLAB_VERIFICATION_DIR) && frama-c -no-frama-c-stdlib -val -no-val-show-progress -slevel 2048 -cpp-extra-args=-nostdinc -cpp-extra-args=-D__USPARK_FRAMAC_VA__ $(VFLAGS) gp_data.c.v.c gp_s5_setupcpustate.c.v.c xmhfgeec_slabinfotable.c xmhfgeec_slabmapdef.c libxmhfhw/*.c.v.c libxmhfhw/*.cS.v.c $(V_XMHFHWM_MODULES)
+	cd $(XMHF_SLAB_VERIFICATION_DIR) && frama-c -no-frama-c-stdlib -val -no-val-show-progress -slevel 2048 -cpp-extra-args=-nostdinc -cpp-extra-args=-D__USPARK_FRAMAC_VA__ $(VFLAGS) gp_data.c.v.c gp_s5_invokestrt.c.v.c xmhfgeec_slabinfotable.c xmhfgeec_slabmapdef.c libxmhfhw/*.cS.v.c $(V_hwm_MODULES)
+	cd $(XMHF_SLAB_VERIFICATION_DIR) && frama-c -no-frama-c-stdlib -val -no-val-show-progress -slevel 2048 -cpp-extra-args=-nostdinc -cpp-extra-args=-D__USPARK_FRAMAC_VA__ $(VFLAGS) gp_data.c.v.c gp_s5_setupcpustate.c.v.c xmhfgeec_slabinfotable.c xmhfgeec_slabmapdef.c libxmhfhw/*.c.v.c libxmhfhw/*.cS.v.c $(V_hwm_MODULES)
 
 
 

@@ -43,9 +43,10 @@
  *
  * @XMHF_LICENSE_HEADER_END@
  */
-#include <uberspark/include/uberspark.h>
+
 #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf.h>
-#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf-debug.h>
+// #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf-debug.h>
+// #include <xmhfgeec.h>
 
 #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/geec_prime.h>
 
@@ -53,39 +54,39 @@
 #if defined (__XMHF_VERIFICATION__) && defined (__USPARK_FRAMAC_VA__)
 	uint32_t check_esp, check_eip = CASM_RET_EIP;
 
-	void xmhfhwm_vdriver_writeesp(uint32_t oldval, uint32_t newval){
+	void hwm_vdriver_writeesp(uint32_t oldval, uint32_t newval){
 		//@assert (newval >= ((uint32_t)&_init_bsp_cpustack + 4)) && (newval <= ((uint32_t)&_init_bsp_cpustack + MAX_PLATFORM_CPUSTACK_SIZE)) ;
 	}
 
-	void xmhfhwm_vdriver_cpu_writecr3(uint32_t oldval, uint32_t newval){
+	void hwm_vdriver_cpu_writecr3(uint32_t oldval, uint32_t newval){
 		//@assert 0;
 	}
 
-	void xmhfhwm_vdriver_txt_write_rlp_wakeup_addr(uint32_t oldval, uint32_t newval){
-		x86smp_apbootstrapdata_t *apdata = (x86smp_apbootstrapdata_t *)&xmhfhwm_mem_region_apbootstrap_dataseg;
+	void hwm_vdriver_txt_write_rlp_wakeup_addr(uint32_t oldval, uint32_t newval){
+		x86smp_apbootstrapdata_t *apdata = (x86smp_apbootstrapdata_t *)&hwm_mem_region_apbootstrap_dataseg;
 
 		if(newval != 0){
-			//@assert (xmhfhwm_txt_mle_join_hi == 0);
-			//@assert (xmhfhwm_txt_mle_join_lo == ((uint32_t)(X86SMP_APBOOTSTRAP_DATASEG << 4) + 16));
+			//@assert (hwm_txt_mle_join_hi == 0);
+			//@assert (hwm_txt_mle_join_lo == ((uint32_t)(X86SMP_APBOOTSTRAP_DATASEG << 4) + 16));
 			//@assert (apdata->ap_eip == (X86SMP_APBOOTSTRAP_CODESEG << 4));
 		}
 	}
 
-	void xmhfhwm_vdriver_mem_copy_to_apbootstrap_codeseg(uint32_t sourceaddr){
+	void hwm_vdriver_mem_copy_to_apbootstrap_codeseg(uint32_t sourceaddr){
 		//@assert (sourceaddr == (uint32_t)&gp_s4_entry);
 	}
 
 	void main(void){
 		//populate hardware model stack and program counter
-		xmhfhwm_cpu_gprs_esp = (uint32_t)&_init_bsp_cpustack + MAX_PLATFORM_CPUSTACK_SIZE;
-		xmhfhwm_cpu_gprs_eip = check_eip;
-		check_esp = xmhfhwm_cpu_gprs_esp; // pointing to top-of-stack
+		hwm_cpu_gprs_esp = (uint32_t)&_init_bsp_cpustack + MAX_PLATFORM_CPUSTACK_SIZE;
+		hwm_cpu_gprs_eip = check_eip;
+		check_esp = hwm_cpu_gprs_esp; // pointing to top-of-stack
 
 		//execute harness
 		gp_s3_startcores();
 
-		//@assert xmhfhwm_cpu_gprs_esp == check_esp;
-		//@assert xmhfhwm_cpu_gprs_eip == check_eip;
+		//@assert hwm_cpu_gprs_esp == check_esp;
+		//@assert hwm_cpu_gprs_eip == check_eip;
 	}
 #endif // __XMHF_VERIFICATION__
 
@@ -113,21 +114,21 @@ void gp_s3_startcores(void){
 	//_XDPRINTF_("  apdata.ap_gdt at %08x\n", &apdata.ap_gdt);
 
 	//copy apdata to X86SMP_APBOOTSTRAP_DATASEG
-	CASM_FUNCCALL(xmhfhw_sysmem_copy_obj2sys, (uint32_t)(X86SMP_APBOOTSTRAP_DATASEG << 4),
+	CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__sysmem_copy_obj2sys, (uint32_t)(X86SMP_APBOOTSTRAP_DATASEG << 4),
 						(void *)&apdata, sizeof(apdata));
 
 	//copy AP entry code to X86SMP_APBOOTSTRAP_CODESEG
-	CASM_FUNCCALL(xmhfhw_sysmem_copy_obj2sys, (uint32_t)(X86SMP_APBOOTSTRAP_CODESEG << 4),
+	CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__sysmem_copy_obj2sys, (uint32_t)(X86SMP_APBOOTSTRAP_CODESEG << 4),
 		(void *)&gp_s4_entry, PAGE_SIZE_4K);
 
 
 	//grab sinit2mle and os2sinit data structures from TXT heap
         txt_heap = get_txt_heap();
-        CASM_FUNCCALL(xmhfhw_sysmem_copy_sys2obj, &sinit_mle_data,
+        CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__sysmem_copy_sys2obj, &sinit_mle_data,
 		get_sinit_mle_data_start(txt_heap, (uint32_t)read_pub_config_reg(TXTCR_HEAP_SIZE)),
 		sizeof(sinit_mle_data_t));
 
-        CASM_FUNCCALL(xmhfhw_sysmem_copy_sys2obj, &os_sinit_data,
+        CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__sysmem_copy_sys2obj, &os_sinit_data,
 		get_os_sinit_data_start(txt_heap, (uint32_t)read_pub_config_reg(TXTCR_HEAP_SIZE)),
 		sizeof(os_sinit_data_t));
 
@@ -153,7 +154,7 @@ void gp_s3_startcores(void){
         if (os_sinit_data.capabilities & TXT_CAPS_T_RLP_WAKE_MONITOR) {
             _XDPRINTF_("BSP: joining RLPs to MLE with MONITOR wakeup\n");
             _XDPRINTF_("BSP: rlp_wakeup_addr=0x%08x\n", sinit_mle_data.rlp_wakeup_addr);
-	    CASM_FUNCCALL(xmhfhw_sysmemaccess_writeu32, sinit_mle_data.rlp_wakeup_addr, 0x01);
+	    CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__sysmemaccess_writeu32, sinit_mle_data.rlp_wakeup_addr, 0x01);
         }else {
             _XDPRINTF_("BSP: joining RLPs to MLE with GETSEC[WAKEUP]\n");
             __getsec_wakeup();

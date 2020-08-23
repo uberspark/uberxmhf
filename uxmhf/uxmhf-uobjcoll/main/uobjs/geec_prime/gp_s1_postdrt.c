@@ -43,37 +43,38 @@
  *
  * @XMHF_LICENSE_HEADER_END@
  */
-#include <uberspark/include/uberspark.h>
+
 #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf.h>
 #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf-hwm.h>
-#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf-debug.h>
+// #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf-debug.h>
+// #include <xmhfgeec.h>
 
 #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/geec_prime.h>
 
 #if defined (__XMHF_VERIFICATION__) && defined (__USPARK_FRAMAC_VA__)
 uint32_t check_esp, check_eip = CASM_RET_EIP;
 
-void xmhfhwm_vdriver_writeesp(uint32_t oldval, uint32_t newval){
+void hwm_vdriver_writeesp(uint32_t oldval, uint32_t newval){
 	//@assert (newval >= ((uint32_t)&_init_bsp_cpustack + 4)) && (newval <= ((uint32_t)&_init_bsp_cpustack + MAX_PLATFORM_CPUSTACK_SIZE)) ;
 }
 
 void main(void){
 	//populate hardware model stack and program counter
-	xmhfhwm_cpu_gprs_esp = (uint32_t)&_init_bsp_cpustack + MAX_PLATFORM_CPUSTACK_SIZE;
-	xmhfhwm_cpu_gprs_eip = check_eip;
-	check_esp = xmhfhwm_cpu_gprs_esp; // pointing to top-of-stack
+	hwm_cpu_gprs_esp = (uint32_t)&_init_bsp_cpustack + MAX_PLATFORM_CPUSTACK_SIZE;
+	hwm_cpu_gprs_eip = check_eip;
+	check_esp = hwm_cpu_gprs_esp; // pointing to top-of-stack
 
-	// //@assert (xmhfhwm_txt_heap.biosdatasize == sizeof(bios_data_t));
-	// //@assert (xmhfhwm_txt_heap.osmledatasize == PAGE_SIZE_4K);
-	// //@assert (xmhfhwm_txt_heap.ossinitdatasize == sizeof(os_sinit_data_t));
-	// //@assert (xmhfhwm_txt_heap.sinitmledatasize == sizeof(sinit_mle_data_t));
+	// //@assert (hwm_txt_heap.biosdatasize == sizeof(bios_data_t));
+	// //@assert (hwm_txt_heap.osmledatasize == PAGE_SIZE_4K);
+	// //@assert (hwm_txt_heap.ossinitdatasize == sizeof(os_sinit_data_t));
+	// //@assert (hwm_txt_heap.sinitmledatasize == sizeof(sinit_mle_data_t));
 
 	//execute harness
 	gp_s1_postdrt();
 
-	//@assert xmhfhwm_cpu_state == CPU_STATE_RUNNING || xmhfhwm_cpu_state == CPU_STATE_HALT;
-	//@assert xmhfhwm_cpu_gprs_esp == check_esp;
-	//@assert xmhfhwm_cpu_gprs_eip == check_eip;
+	//@assert hwm_cpu_state == CPU_STATE_RUNNING || hwm_cpu_state == CPU_STATE_HALT;
+	//@assert hwm_cpu_gprs_esp == check_esp;
+	//@assert hwm_cpu_gprs_eip == check_eip;
 }
 #endif
 
@@ -84,7 +85,7 @@ void gp_s1_postdrt(void){
 	uint32_t os_mle_data_paddr;
 
 	//save SINIT to MLE MTRR mappings
-	xmhfhw_cpu_x86_save_mtrrs(&sinit2mle_mtrrs);
+	uberspark_uobjrtl_hw__generic_x86_32_intel__x86_save_mtrrs(&sinit2mle_mtrrs);
 
 	os_mle_data.saved_mtrr_state.num_var_mtrrs=0;
 
@@ -93,9 +94,9 @@ void gp_s1_postdrt(void){
 
 	txt_heap_size =  (uint32_t)read_pub_config_reg(TXTCR_HEAP_SIZE);
 	os_mle_data_paddr = get_os_mle_data_start((txt_heap_t*)((uint32_t)txt_heap), txt_heap_size);
-	//@assert (os_mle_data_paddr == (XMHFHWM_TXT_SYSMEM_HEAPBASE+0x8+sizeof(bios_data_t)+0x8));
+	//@assert (os_mle_data_paddr == (hwm_TXT_SYSMEM_HEAPBASE+0x8+sizeof(bios_data_t)+0x8));
 
-	CASM_FUNCCALL(xmhfhw_sysmem_copy_sys2obj, (uint32_t)&os_mle_data,
+	CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__sysmem_copy_sys2obj, (uint32_t)&os_mle_data,
 		os_mle_data_paddr, sizeof(os_mle_data_t));
 
 	_XDPRINTF_("SL: os_mle_data = 0x%08x, size=%u bytes\n", (uint32_t)&os_mle_data,
@@ -105,19 +106,19 @@ void gp_s1_postdrt(void){
 		// restore pre-SENTER MTRRs that were overwritten for SINIT launch
 		if(!validate_mtrrs(&os_mle_data.saved_mtrr_state)) {
 			_XDPRINTF_("Error: validate_mtrrs() failed.\n");
-			CASM_FUNCCALL(xmhfhw_cpu_hlt, CASM_NOPARAM);
+			CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__hlt, CASM_NOPARAM);
 		}
 
 		_XDPRINTF_("SL: Validated MTRRs\n");
 
-		xmhfhw_cpu_x86_restore_mtrrs(&(os_mle_data.saved_mtrr_state));
+		uberspark_uobjrtl_hw__generic_x86_32_intel__x86_restore_mtrrs(&(os_mle_data.saved_mtrr_state));
 
 		_XDPRINTF_("SL: Restored MTRRs\n");
 
 	}else{
 		_XDPRINTF_("%s:%u num_var_mtrrs >= MAX_VARIABLE_MTRRS\n",
 			__func__, __LINE__);
-		CASM_FUNCCALL(xmhfhw_cpu_hlt, CASM_NOPARAM);
+		CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__hlt, CASM_NOPARAM);
 	}
 
 

@@ -43,9 +43,10 @@
  *
  * @XMHF_LICENSE_HEADER_END@
  */
-#include <uberspark/include/uberspark.h>
+
 #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf.h>
-#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf-debug.h>
+// #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf-debug.h>
+// #include <xmhfgeec.h>
 
 #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/geec_prime.h>
 
@@ -175,7 +176,7 @@ void gp_s2_setupmpgtblu(void){
 			//we have no idea what type of slab this is, halt!
 			_XDPRINTF_("%s:%u no idea of slab %u of type %u. Halting!\n",
 				__func__, __LINE__, i, xmhfgeec_slab_info_table[i].slabtype);
-			CASM_FUNCCALL(xmhfhw_cpu_hlt, CASM_NOPARAM);
+			CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__hlt, CASM_NOPARAM);
 			//@ghost gp_s2_setupmpgtblu_invokedinvalidobjs[i] = true;
 
 		}

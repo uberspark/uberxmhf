@@ -43,7 +43,7 @@
  *
  * @XMHF_LICENSE_HEADER_END@
  */
-#include <uberspark/include/uberspark.h>
+
 /*
  * HIC trampoline and stubs
  *
@@ -51,7 +51,8 @@
  */
 
 #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf.h>
-#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf-debug.h>
+// #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf-debug.h>
+// #include <xmhfgeec.h>
 #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/geec_sentinel.h>
 
 #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/uapi_iotbl.h>
@@ -190,7 +191,7 @@ void geec_sentinel_main(slab_params_t *sp, void *caller_stack_frame){
 						//_geec_sentinel_checkandhalt_callcaps(sp->src_slabid, sp->dst_slabid, sp->dst_uapifn);
 						//_XDPRINTF_("GEEC_SENTINEL: launching guest %u...\n", sp->dst_slabid);
 						sp->slab_ctype = XMHFGEEC_SENTINEL_CALL_VfT_PROG_TO_uVT_uVU_PROG_GUEST;
-						CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_CONTROL_VPID, sp->dst_slabid );
+						CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__x86vmx_vmwrite,VMCS_CONTROL_VPID, sp->dst_slabid );
 
 						{
 							slab_params_t spl;
@@ -211,8 +212,8 @@ void geec_sentinel_main(slab_params_t *sp, void *caller_stack_frame){
 
 							//_XDPRINTF_("GEEC_SENTINEL: guest: eptp base=0x%08x\n", ps->mpgtblbase);
 
-							CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_CONTROL_EPT_POINTER_FULL, (ps->mpgtblbase  | 0x1E) );
-							CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_CONTROL_EPT_POINTER_HIGH, 0);
+							CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__x86vmx_vmwrite,VMCS_CONTROL_EPT_POINTER_FULL, (ps->mpgtblbase  | 0x1E) );
+							CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__x86vmx_vmwrite,VMCS_CONTROL_EPT_POINTER_HIGH, 0);
 						}
 
 
@@ -237,15 +238,15 @@ void geec_sentinel_main(slab_params_t *sp, void *caller_stack_frame){
 
 							//_XDPRINTF_("GEEC_SENTINEL: guest: iotbl_base=0x%08x\n", ps->iotbl_base);
 
-							CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_CONTROL_IO_BITMAPA_ADDRESS_FULL, ps->iotbl_base);
-							CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_CONTROL_IO_BITMAPA_ADDRESS_HIGH, 0);
-							CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_CONTROL_IO_BITMAPB_ADDRESS_FULL, (ps->iotbl_base + PAGE_SIZE_4K));
-							CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_CONTROL_IO_BITMAPB_ADDRESS_HIGH, 0);
+							CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__x86vmx_vmwrite,VMCS_CONTROL_IO_BITMAPA_ADDRESS_FULL, ps->iotbl_base);
+							CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__x86vmx_vmwrite,VMCS_CONTROL_IO_BITMAPA_ADDRESS_HIGH, 0);
+							CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__x86vmx_vmwrite,VMCS_CONTROL_IO_BITMAPB_ADDRESS_FULL, (ps->iotbl_base + PAGE_SIZE_4K));
+							CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__x86vmx_vmwrite,VMCS_CONTROL_IO_BITMAPB_ADDRESS_HIGH, 0);
 						}
 
 						if (xmhfgeec_slab_info_table[sp->dst_slabid].slabtype != XMHFGEEC_SLABTYPE_uVU_PROG_RICHGUEST){
-							CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_GUEST_RSP, xmhfgeec_slab_info_table[sp->dst_slabid].slabtos[(uint16_t)sp->cpuid]);
-							CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_GUEST_RIP, xmhfgeec_slab_info_table[sp->dst_slabid].entrystub);
+							CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__x86vmx_vmwrite,VMCS_GUEST_RSP, xmhfgeec_slab_info_table[sp->dst_slabid].slabtos[(uint16_t)sp->cpuid]);
+							CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__x86vmx_vmwrite,VMCS_GUEST_RIP, xmhfgeec_slab_info_table[sp->dst_slabid].entrystub);
 						}
 
 						errorcode = CASM_FUNCCALL(gs_exit_callv2uvg, CASM_NOPARAM);
@@ -255,7 +256,7 @@ void geec_sentinel_main(slab_params_t *sp, void *caller_stack_frame){
 								_XDPRINTF_("GEEC_SENTINEL: VMLAUNCH error; VMCS pointer invalid?\n");
 								break;
 							case 1:{//error code available, so dump it
-								uint32_t code=xmhfhw_cpu_x86vmx_vmread(VMCS_INFO_VMINSTR_ERROR);
+								uint32_t code=uberspark_uobjrtl_hw__generic_x86_32_intel__x86vmx_vmread(VMCS_INFO_VMINSTR_ERROR);
 								_XDPRINTF_("GEEC_SENTINEL: VMLAUNCH error; code=%x\n", code);
 								break;
 							}

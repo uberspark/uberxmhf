@@ -43,31 +43,32 @@
  *
  * @XMHF_LICENSE_HEADER_END@
  */
-#include <uberspark/include/uberspark.h>
-#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf.h>
-#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf-debug.h>
 
+#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf.h>
+// #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf-debug.h>
+
+// #include <xmhfgeec.h>
 
 #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/geec_prime.h>
 
 #if defined (__XMHF_VERIFICATION__) && defined (__USPARK_FRAMAC_VA__)
 uint32_t check_esp, check_eip = CASM_RET_EIP;
 
-void xmhfhwm_vdriver_writeesp(uint32_t oldval, uint32_t newval){
+void hwm_vdriver_writeesp(uint32_t oldval, uint32_t newval){
 	//@assert (newval >= ((uint32_t)&_init_bsp_cpustack + 4)) && (newval <= ((uint32_t)&_init_bsp_cpustack + MAX_PLATFORM_CPUSTACK_SIZE)) ;
 }
 
 void main(void){
 	//populate hardware model stack and program counter
-	xmhfhwm_cpu_gprs_esp = (uint32_t)&_init_bsp_cpustack + MAX_PLATFORM_CPUSTACK_SIZE;
-	xmhfhwm_cpu_gprs_eip = check_eip;
-	check_esp = xmhfhwm_cpu_gprs_esp; // pointing to top-of-stack
+	hwm_cpu_gprs_esp = (uint32_t)&_init_bsp_cpustack + MAX_PLATFORM_CPUSTACK_SIZE;
+	hwm_cpu_gprs_eip = check_eip;
+	check_esp = hwm_cpu_gprs_esp; // pointing to top-of-stack
 
 	//execute harness
 	gp_s2_gathersysmemtypes();
 
-	//@assert xmhfhwm_cpu_gprs_esp == check_esp;
-	//@assert xmhfhwm_cpu_gprs_eip == check_eip;
+	//@assert hwm_cpu_gprs_esp == check_esp;
+	//@assert hwm_cpu_gprs_eip == check_eip;
 }
 #endif
 
@@ -82,11 +83,11 @@ void gp_s2_gathersysmemtypes(void){
   	//check MTRR support
   	eax=0x00000001;
   	ecx=0x00000000;
-	CASM_FUNCCALL(xmhfhw_cpu_cpuid,0x00000001, &eax, &ebx, &ecx, &edx);
+	CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__cpuid,0x00000001, &eax, &ebx, &ecx, &edx);
 
   	if( !(edx & (uint32_t)(1 << 12)) ){
   		_XDPRINTF_("\n%s: CPU does not support MTRRs!", __func__);
-  		CASM_FUNCCALL(xmhfhw_cpu_hlt, CASM_NOPARAM);
+  		CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__hlt, CASM_NOPARAM);
   	}
 
   	//check MTRR caps
@@ -103,14 +104,14 @@ void gp_s2_gathersysmemtypes(void){
   	if( ! ((eax & (1 << 8)) >> 8) ){
   		_XDPRINTF_("%s:%u Fixed MTRRs are not supported. Halting!\n",
 			__func__, __LINE__);
-  		CASM_FUNCCALL(xmhfhw_cpu_hlt, CASM_NOPARAM);
+  		CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__hlt, CASM_NOPARAM);
   	}
 
   	//ensure number of variable MTRRs are within the maximum supported
   	if( ! (num_vmtrrs <= MAX_VARIABLE_MEMORYTYPE_ENTRIES) ){
   		_XDPRINTF_("%s:%u Total variable MTRRs exceeded config. Halting!\n",
 			__func__, __LINE__);
-  		CASM_FUNCCALL(xmhfhw_cpu_hlt, CASM_NOPARAM);
+  		CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__hlt, CASM_NOPARAM);
   	}
 
 

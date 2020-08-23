@@ -43,7 +43,7 @@
  *
  * @XMHF_LICENSE_HEADER_END@
  */
-#include <uberspark/include/uberspark.h>
+
 /*
  * HIC trampoline and stubs
  *
@@ -51,7 +51,8 @@
  */
 
 #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf.h>
-#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf-debug.h>
+// #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf-debug.h>
+// #include <xmhfgeec.h>
 #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/geec_sentinel.h>
 
 
@@ -89,7 +90,7 @@ void gs_exit_retv2uv(slab_params_t *sp, void *caller_stack_frame){
 
 
     //marshall parameters
-    CASM_FUNCCALL(xmhfhw_sysmemaccess_copy, (elem.sp)->in_out_params, sp->in_out_params, sizeof(sp->in_out_params));
+    CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__sysmemaccess_copy, (elem.sp)->in_out_params, sp->in_out_params, sizeof(sp->in_out_params));
 
 
     //return back to VfT_PROG slab

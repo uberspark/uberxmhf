@@ -49,22 +49,22 @@
  author: amit vasudevan (amitvasudevan@acm.org)
 */
 
-#include <xmhf.h>
-#include <xmhf-hwm.h>
-#include <xmhf-debug.h>
-#include <xmhfgeec.h>
+#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf.h>
+#include <uberspark/hwm/arch/x86_32/intel/hwm.h>
+// #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf-debug.h>
+// #include <xmhfgeec.h>
 
-#include <xc_ihub.h>
+#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xc_ihub.h>
 
 #if defined (__XMHF_VERIFICATION__) && defined (__USPARK_FRAMAC_VA__)
-#include <xc.h>
-#include <xc_ihub.h>
+#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xc.h>
+#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xc_ihub.h>
 
 uint32_t check_eip = CASM_RET_EIP;
 uint32_t cpuid = 0;	//cpu
 
-void xmhfhwm_vdriver_slabep(void){
-	//@assert xmhfhwm_cpu_gprs_eip == (uint32_t)xmhfgeec_slab_info_table[XMHFGEEC_SLAB_XC_IHUB].entrystub;
+void hwm_vdriver_slabep(void){
+	//@assert hwm_cpu_gprs_eip == (uint32_t)xmhfgeec_slab_info_table[XMHFGEEC_SLAB_XC_IHUB].entrystub;
 	//@assert false;
 }
 
@@ -76,18 +76,18 @@ void drv_path_callicpt(void){
 
 void main(void){
 	//populate hardware model stack and program counter
-	xmhfhwm_cpu_gprs_esp = _slab_tos[cpuid];
-	xmhfhwm_cpu_gprs_eip = check_eip;
+	hwm_cpu_gprs_esp = _slab_tos[cpuid];
+	hwm_cpu_gprs_eip = check_eip;
 	drv_path_callicpt();
 }
 #endif
 ////// intercept entry point
 CASM_FUNCDEF(void, xcihub_entry_icptstub,
 {
-    xmhfhwm_cpu_insn_pushal();
-    xmhfhwm_cpu_insn_pushl_esp();
-    xmhfhwm_cpu_insn_call_c_1p(xcihub_entry_icpt, x86regs_t *);
-    xmhfhwm_cpu_insn_hlt();
+    __casm__pushal();
+    __casm__pushl_esp();
+    __casm__call_c_1p(xcihub_entry_icpt, x86regs_t *);
+    __casm__hlt();
 },
 void *noparam)
 

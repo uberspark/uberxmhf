@@ -43,9 +43,10 @@
  *
  * @XMHF_LICENSE_HEADER_END@
  */
-#include <uberspark/include/uberspark.h>
+
 #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf.h>
-#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf-debug.h>
+// #include <xmhfgeec.h>
+// #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf-debug.h>
 
 #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xc.h>
 #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xc_nwlog.h>
@@ -83,11 +84,11 @@ void cbhwm_e1000_write_tdt(uint32_t origval, uint32_t newval){
 			break;
 
 		case XCNWLOG_VERIF_LOGDATA:{
-			if(xmhfhwm_e1000_tctl & E1000_TCTL_EN){
+			if(hwm_e1000_tctl & E1000_TCTL_EN){
 				//@assert newval == 1;
-				//@assert xmhfhwm_e1000_tdbah == 0;
-				//@assert xmhfhwm_e1000_tdbal == (uint32_t)&xcnwlog_desc;
-				//@assert xmhfhwm_e1000_status_transmitting == false;
+				//@assert hwm_e1000_tdbah == 0;
+				//@assert hwm_e1000_tdbal == (uint32_t)&xcnwlog_desc;
+				//@assert hwm_e1000_status_transmitting == false;
 				xcnwlog_logdata_startedxmit = true;
 			}
 			break;
@@ -152,9 +153,9 @@ void cbhwm_e1000_write_tdlen(uint32_t origval, uint32_t newval){
 
 void main(void){
 	//populate hardware model stack and program counter
-	xmhfhwm_cpu_gprs_esp = _slab_tos[cpuid];
-	xmhfhwm_cpu_gprs_eip = check_eip;
-	check_esp = xmhfhwm_cpu_gprs_esp; // pointing to top-of-stack
+	hwm_cpu_gprs_esp = _slab_tos[cpuid];
+	hwm_cpu_gprs_eip = check_eip;
+	check_esp = hwm_cpu_gprs_esp; // pointing to top-of-stack
 
 	test_sp.src_slabid = framac_nondetu32interval(0, XMHFGEEC_TOTAL_SLABS-1);
 	test_sp.in_out_params[0] =  framac_nondetu32(); 	test_sp.in_out_params[1] = framac_nondetu32();
@@ -172,17 +173,17 @@ void main(void){
 	//@assert (e1000_adapt.hw.hw_addr == (uint8_t *)E1000_HWADDR_BASE);
 	//@assert (e1000_adapt.tx_ring.tdt == (uint16_t)(E1000_TDT));
 	//@assert (e1000_adapt.tx_ring.tdh == (uint16_t)(E1000_TDH));
-        //@assert xmhfhwm_e1000_tdbah == 0;
-	//@assert xmhfhwm_e1000_tdbal == (uint32_t)&xcnwlog_desc;
-	//@assert xmhfhwm_e1000_tdlen == 4096;
+        //@assert hwm_e1000_tdbah == 0;
+	//@assert hwm_e1000_tdbal == (uint32_t)&xcnwlog_desc;
+	//@assert hwm_e1000_tdlen == 4096;
 
-	//@assert xmhfhwm_e1000_status_transmitting == false;
+	//@assert hwm_e1000_status_transmitting == false;
 	xcnwlog_verif = XCNWLOG_VERIF_LOGDATA;
 	e1000_xmitack();
-	//@assert xmhfhwm_e1000_status_transmitting == false;
+	//@assert hwm_e1000_status_transmitting == false;
 
-	//@assert xmhfhwm_cpu_gprs_esp == check_esp;
-	//@assert xmhfhwm_cpu_gprs_eip == check_eip;
+	//@assert hwm_cpu_gprs_esp == check_esp;
+	//@assert hwm_cpu_gprs_eip == check_eip;
 }
 #endif
 

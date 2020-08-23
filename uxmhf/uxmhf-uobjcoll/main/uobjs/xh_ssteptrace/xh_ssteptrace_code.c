@@ -43,12 +43,13 @@
  *
  * @XMHF_LICENSE_HEADER_END@
  */
-#include <uberspark/include/uberspark.h>
+
 // hyperdep hypapp main module
 // author: amit vasudevan (amitvasudevan@acm.org)
 
 #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf.h>
-#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf-debug.h>
+// #include <xmhfgeec.h>
+// #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf-debug.h>
 
 #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xc.h>
 #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/uapi_gcpustate.h>
@@ -289,7 +290,7 @@ static void _hcb_trap_exception(uint32_t cpuindex, uint32_t guest_slab_index){
         _XDPRINTF_("%s[%u]: guest slab RIP=%x, RIP paddr=0x%08x\n",
                    __func__, (uint16_t)cpuindex, guest_rip, guest_rip_paddr);
 
-        CASM_FUNCCALL(xmhfhw_sysmemaccess_copy, &_st_tracebuffer, guest_rip_paddr, sizeof(_st_tracebuffer));
+        CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__sysmemaccess_copy, &_st_tracebuffer, guest_rip_paddr, sizeof(_st_tracebuffer));
 
         //try to see if we found a match in our trace database
         st_scanforsignature(&_st_tracebuffer, sizeof(_st_tracebuffer));

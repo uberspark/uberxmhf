@@ -52,24 +52,32 @@
 
 
 //total unverified hypervisor slabs
-#define XMHFGEEC_TOTAL_UHSLABS __XMHFGEEC_TOTAL_UHSLABS__
+#define XMHFGEEC_TOTAL_UHSLABS 1 //__XMHFGEEC_TOTAL_UHSLABS__
 
 //total unverified guest slabs
-#define XMHFGEEC_TOTAL_UGSLABS __XMHFGEEC_TOTAL_UGSLABS__
+#define XMHFGEEC_TOTAL_UGSLABS 1 //__XMHFGEEC_TOTAL_UGSLABS__
 
 
 
 //max. include device list entries
-//#define XMHF_CONFIG_MAX_INCLDEVLIST_ENTRIES __XMHF_CONFIG_MAX_INCLDEVLIST_ENTRIES__
+#define XMHF_CONFIG_MAX_INCLDEVLIST_ENTRIES 6 //__XMHF_CONFIG_MAX_INCLDEVLIST_ENTRIES__
 
 //max. exclude device list entries
-//#define XMHF_CONFIG_MAX_EXCLDEVLIST_ENTRIES __XMHF_CONFIG_MAX_EXCLDEVLIST_ENTRIES__
+#define XMHF_CONFIG_MAX_EXCLDEVLIST_ENTRIES 6 //__XMHF_CONFIG_MAX_EXCLDEVLIST_ENTRIES__
 
 
 //max. memoffset entries
-//#define XMHF_CONFIG_MAX_MEMOFFSET_ENTRIES __XMHF_CONFIG_MAX_MEMOFFSET_ENTRIES__
+#define XMHF_CONFIG_MAX_MEMOFFSET_ENTRIES 64 //__XMHF_CONFIG_MAX_MEMOFFSET_ENTRIES__
 
+/* defining variables temporarily before compilation flags are added to next-gen uberspark */
 
+#define __XMHF_CONFIG_DEBUG_SERIAL_MAXCPUS__ 8
+#define __XMHF_BUILD_VERSION__ 5.0
+#define __XMHF_BUILD_REVISION__ "sometimes-even-the-wisest-of-man-and-machines-can-be-in-error"
+#define __USPARK_FRAMAC_VA__
+#define __ASSEMBLY__
+
+/*                                                                                         */
 
 //"runtime" parameter block magic value
 #define RUNTIME_PARAMETER_BLOCK_MAGIC	0xF00DDEAD
@@ -86,11 +94,11 @@
 #define MAX_CMDLINE_BUFFER_SIZE			(128)
 
 //max. cores/vcpus we support currently
-//#ifndef __XMHF_VERIFICATION__
-//	#define	MAX_PLATFORM_CPUS					(256)
-//#else
-//	#define	MAX_PLATFORM_CPUS					(1)
-//#endif
+#ifndef __XMHF_VERIFICATION__
+	#define	MAX_PLATFORM_CPUS					(256)
+#else
+	#define	MAX_PLATFORM_CPUS					(1)
+#endif
 
 //max. platform devices we support currently
 #define MAX_PLATFORM_DEVICES                    (64)
@@ -180,8 +188,11 @@
 #define __XMHFGEEC_TOTAL_UHSLABS	((XMHFGEEC_UHSLAB_MAX_IDX - XMHFGEEC_UHSLAB_BASE_IDX) + 1)
 #define __XMHFGEEC_TOTAL_UGSLABS		((XMHFGEEC_UGSLAB_MAX_IDX - XMHFGEEC_UGSLAB_BASE_IDX) + 1)
 
+#define STR_HELPER(x) #x
+#define STR(x) STR_HELPER(x)
 
 #if (XMHFGEEC_TOTAL_UHSLABS != __XMHFGEEC_TOTAL_UHSLABS)
+	#pragma message "umm " STR(XMHFGEEC_TOTAL_UHSLABS) "!=" STR(__XMHFGEEC_TOTAL_UHSLABS)
 	#error FATAL: Mistmatch in XMHFGEEC_TOTAL_UHSLABS (common.mk.in) and __XMHFGEEC_TOTAL_UHSLABS (xmhf-config.h)
 #endif
 
@@ -200,10 +211,10 @@
 //----------------------------------------------------------------------
 // XMHF platform memory map
 	//physical memory extents of the XMHF framework
-	#define __TARGET_BASE_XMHF				__XMHF_CONFIG_LOADADDR__
-	#define __TARGET_SIZE_XMHF				__XMHF_CONFIG_LOADMAXSIZE__
-	#define __TARGET_MAX_XMHF				__XMHF_CONFIG_LOADMAXADDR__
-	#define __TARGET_MAX_SYS				__XMHF_CONFIG_MAXSYSADDR__
+	#define __TARGET_BASE_XMHF				0x06200000 // __XMHF_CONFIG_LOADADDR__
+	#define __TARGET_SIZE_XMHF				0x1D200000 // __XMHF_CONFIG_LOADMAXSIZE__
+	#define __TARGET_MAX_XMHF				0x23400000 // __XMHF_CONFIG_LOADMAXADDR__
+	#define __TARGET_MAX_SYS				0xFFFFFFFF // __XMHF_CONFIG_MAXSYSADDR__
 
 
 	//physical address where the XMHF boot-loader is loaded (e.g., via GRUB)

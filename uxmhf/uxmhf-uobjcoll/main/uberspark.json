@@ -12,7 +12,6 @@
      "uberspark_max_version" : "any"
  },
 
-
    /* uobj declaration */
  "uberspark-uobj" : {
      "namespace" : "uberspark/uobjs/platform/pc/uxmhf/main",
@@ -196,7 +195,7 @@
 			"uobjs/xh_syscalllog/xhsysclog_hcbmemfault.c",
 			"uobjs/xh_syscalllog/xhsysclog_loginfo.c",
 			"uobjs/xh_syscalllog/xhsysclog_main.c",
-            "uobjs/xh_syscalllog/xhsysclog_register.c"
+			"uobjs/xh_syscalllog/xhsysclog_register.c"
         ],
          "casm-files": [ 
             "uobjs/geec_prime/gp_s1_entry.cS",
@@ -222,10 +221,10 @@
             "uobjs/xh_ssteptrace/xh_ssteptrace_codesup.cS"
          ],
          "asm-files": [ 
-            
+
          ]
      },
- 
+
      /* public methods */
      "publicmethods" : {
 		 "main" : [
@@ -247,13 +246,19 @@
      */
      "interuobjcoll-callees": {
      },
- 
+
      /* legacy CoSS functions/code that this uobj invokes */
      "legacy-callees": [
      ],
 
      /* uobjrtl */
      "uobjrtl": [
+		 {
+			 "namespace" : "uberspark/uobjrtl/crypto"
+		 },
+		 {
+			"namespace" : "uberspark/uobjrtl/hw"
+		 }
      ]
      
  }

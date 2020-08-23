@@ -49,17 +49,17 @@
  author: amit vasudevan (amitvasudevan@acm.org)
 */
 
-#include <xmhf.h>
-#include <xmhf-hwm.h>
-#include <xmhf-debug.h>
-#include <xmhfgeec.h>
-#include <geec_sentinel.h>
+#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf.h>
+#include <uberspark/hwm/arch/x86_32/intel/hwm.h>
+// #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf-debug.h>
+// #include <xmhfgeec.h>
+#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/geec_sentinel.h>
 
 
 CASM_FUNCDEF(void, gs_calluobj,
 {
-    xmhfhwm_cpu_insn_movl_mesp_eax(0x8);
-    xmhfhwm_cpu_insn_jmpslabep();
+    __casm__movl_mesp_eax(0x8);
+    __casm__jmpslabep();
 },
 slab_params_t *sp, uint32_t entry_point)
 

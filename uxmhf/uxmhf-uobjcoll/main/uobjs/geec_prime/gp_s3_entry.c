@@ -43,10 +43,11 @@
  *
  * @XMHF_LICENSE_HEADER_END@
  */
-#include <uberspark/include/uberspark.h>
-#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf.h>
-#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf-debug.h>
 
+#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf.h>
+// #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf-debug.h>
+
+// #include <xmhfgeec.h>
 
 #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/geec_prime.h>
 
@@ -71,13 +72,13 @@ void gp_s3_entry(void){
 
 	//save cpu MTRR state which we will later replicate on all APs
 	//@assert gp_s3_entry_invoked_writecr3 == true;
-	xmhfhw_cpu_x86_save_mtrrs(&_mtrrs);
+	uberspark_uobjrtl_hw__generic_x86_32_intel__x86_save_mtrrs(&_mtrrs);
 	//@ghost gp_s3_entry_invoked_savemtrrs = true;
 
 	//restore SINIT to MLE MTRR mappings
 	//@assert gp_s3_entry_invoked_writecr3 == true;
 	//@assert gp_s3_entry_invoked_savemtrrs == true;
-	xmhfhw_cpu_x86_restore_mtrrs(&sinit2mle_mtrrs);
+	uberspark_uobjrtl_hw__generic_x86_32_intel__x86_restore_mtrrs(&sinit2mle_mtrrs);
 	//@ghost gp_s3_entry_invoked_restoremtrrs = true;
 
 	//start all cores

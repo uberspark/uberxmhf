@@ -43,9 +43,10 @@
  *
  * @XMHF_LICENSE_HEADER_END@
  */
-#include <uberspark/include/uberspark.h>
+
 #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf.h>
-#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf-debug.h>
+// #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf-debug.h>
+// #include <xmhfgeec.h>
 
 #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/geec_prime.h>
 
@@ -54,20 +55,20 @@
 uint32_t check_esp, check_eip = CASM_RET_EIP;
 
 
-void xmhfhwm_vdriver_writeesp(uint32_t oldval, uint32_t newval){
+void hwm_vdriver_writeesp(uint32_t oldval, uint32_t newval){
 	//@assert (newval >= ((uint32_t)&_init_bsp_cpustack + 4)) && (newval <= ((uint32_t)&_init_bsp_cpustack + MAX_PLATFORM_CPUSTACK_SIZE)) ;
 }
 
 void main(void){
 	//populate hardware model stack and program counter
-	xmhfhwm_cpu_gprs_esp = (uint32_t)&_init_bsp_cpustack + MAX_PLATFORM_CPUSTACK_SIZE;
-	xmhfhwm_cpu_gprs_eip = check_eip;
-	check_esp = xmhfhwm_cpu_gprs_esp; // pointing to top-of-stack
+	hwm_cpu_gprs_esp = (uint32_t)&_init_bsp_cpustack + MAX_PLATFORM_CPUSTACK_SIZE;
+	hwm_cpu_gprs_eip = check_eip;
+	check_esp = hwm_cpu_gprs_esp; // pointing to top-of-stack
 
 	//execute harness
 	gp_s1_chkreq();
 
-	//@assert ((xmhfhwm_cpu_state == CPU_STATE_HALT) ||  ( (xmhfhwm_cpu_state == CPU_STATE_RUNNING) && (xmhfhwm_cpu_gprs_esp == check_esp) && (xmhfhwm_cpu_gprs_eip == check_eip) && (gp_rwdatahdr.xcbootinfo_store.memmapinfo_numentries < MAX_E820_ENTRIES))  );
+	//@assert ((hwm_cpu_state == CPU_STATE_HALT) ||  ( (hwm_cpu_state == CPU_STATE_RUNNING) && (hwm_cpu_gprs_esp == check_esp) && (hwm_cpu_gprs_eip == check_eip) && (gp_rwdatahdr.xcbootinfo_store.memmapinfo_numentries < MAX_E820_ENTRIES))  );
 }
 #endif
 
@@ -80,7 +81,7 @@ void gp_s1_chkreq(void){
 	cpu_vendor = xmhf_baseplatform_arch_getcpuvendor();
 	if (cpu_vendor != CPU_VENDOR_INTEL){
 		_XDPRINTF_("%s: not an Intel CPU but running VMX backend. Halting!\n", __func__);
-		CASM_FUNCCALL(xmhfhw_cpu_hlt, CASM_NOPARAM);
+		CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__hlt, CASM_NOPARAM);
 	}
 
 	//check VMX support
@@ -88,11 +89,11 @@ void gp_s1_chkreq(void){
 		uint32_t	cpu_features;
 		uint32_t res0,res1,res2;
 
-		CASM_FUNCCALL(xmhfhw_cpu_cpuid,0x1, &res0, &res1, &cpu_features, &res2);
+		CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__cpuid,0x1, &res0, &res1, &cpu_features, &res2);
 
 		if ( ( cpu_features & (1<<5) ) == 0 ){
 			_XDPRINTF_("No VMX support. Halting!\n");
-			CASM_FUNCCALL(xmhfhw_cpu_hlt, CASM_NOPARAM);
+			CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__hlt, CASM_NOPARAM);
 		}
 	}
 
@@ -101,27 +102,27 @@ void gp_s1_chkreq(void){
 		uint64_t msr_procctls2 = CASM_FUNCCALL(rdmsr64,IA32_VMX_PROCBASED_CTLS2_MSR);
 		if( !( (msr_procctls2 >> 32) & 0x80 ) ){
 			_XDPRINTF_("%s: need unrestricted guest support but did not find any!\n", __func__);
-			CASM_FUNCCALL(xmhfhw_cpu_hlt, CASM_NOPARAM);
+			CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__hlt, CASM_NOPARAM);
 		}
 
 		if( !( (msr_procctls2 >> 32) & 0x2) ){
 			_XDPRINTF_("%s: need EPTt support but did not find any!\n", __func__);
-			CASM_FUNCCALL(xmhfhw_cpu_hlt, CASM_NOPARAM);
+			CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__hlt, CASM_NOPARAM);
 		}
 	}
 
 
 
 	//initialize platform bus
-	if(!xmhfhw_platform_bus_init()){
+	if(!uberspark_uobjrtl_hw__generic_x86_32_intel__bus_init()){
 		_XDPRINTF_("%s: need PCI type-1 access but did not find any!\n", __func__);
-		CASM_FUNCCALL(xmhfhw_cpu_hlt, CASM_NOPARAM);
+		CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__hlt, CASM_NOPARAM);
 	}
 
 	//ensure bootinfo structure sanity
 	if(!(gp_rwdatahdr.xcbootinfo_store.memmapinfo_numentries < MAX_E820_ENTRIES)){
 		_XDPRINTF_("%s: xcbootinfo_store.memmapinfo_numentries (%u) out-of-bounds!\n", __func__, gp_rwdatahdr.xcbootinfo_store.memmapinfo_numentries);
-		CASM_FUNCCALL(xmhfhw_cpu_hlt, CASM_NOPARAM);
+		CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__hlt, CASM_NOPARAM);
 	}
 
 	//@assert (gp_rwdatahdr.xcbootinfo_store.memmapinfo_numentries < MAX_E820_ENTRIES);

@@ -43,9 +43,10 @@
  *
  * @XMHF_LICENSE_HEADER_END@
  */
-#include <uberspark/include/uberspark.h>
+
 #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf.h>
-#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf-debug.h>
+// #include <xmhfgeec.h>
+// #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf-debug.h>
 
 #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xc.h>
 #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xc_ihub.h>
@@ -77,7 +78,7 @@ void xcihub_icptcpuid(uint32_t cpuid){
 	memcpy(&r, &gcpustate_gprs->gprs, sizeof(x86regs_t));
 
 	//invoke actual CPUID instruction
-	CASM_FUNCCALL(xmhfhw_cpu_cpuid,(uint32_t)r.eax, (uint32_t *)&r.eax, (uint32_t *)&r.ebx, (uint32_t *)&r.ecx, (uint32_t *)&r.edx);
+	CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__cpuid,(uint32_t)r.eax, (uint32_t *)&r.eax, (uint32_t *)&r.ebx, (uint32_t *)&r.ecx, (uint32_t *)&r.edx);
 
 	spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSWRITE;
 	memcpy(&gcpustate_gprs->gprs, &r, sizeof(x86regs_t));

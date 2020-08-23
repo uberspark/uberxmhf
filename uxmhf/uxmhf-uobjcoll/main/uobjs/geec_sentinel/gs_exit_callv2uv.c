@@ -43,7 +43,7 @@
  *
  * @XMHF_LICENSE_HEADER_END@
  */
-#include <uberspark/include/uberspark.h>
+
 /*
  * HIC trampoline and stubs
  *
@@ -51,7 +51,8 @@
  */
 
 #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf.h>
-#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf-debug.h>
+// #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf-debug.h>
+// #include <xmhfgeec.h>
 
 #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/geec_sentinel.h>
 #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/uapi_uhmpgtbl.h>
@@ -82,7 +83,7 @@ void gs_exit_callv2uv(slab_params_t *sp, void *caller_stack_frame){
         _XDPRINTF_("%s[%u]: copying params to dst_sp=%x from sp=%x\n", __func__, (uint16_t)sp->cpuid,
                    (uint32_t)dst_sp, (uint32_t)sp);
         //memcpy(dst_sp, sp, sizeof(slab_params_t));
-        CASM_FUNCCALL(xmhfhw_sysmemaccess_copy, dst_sp, sp, sizeof(slab_params_t));
+        CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__sysmemaccess_copy, dst_sp, sp, sizeof(slab_params_t));
 
     }
 

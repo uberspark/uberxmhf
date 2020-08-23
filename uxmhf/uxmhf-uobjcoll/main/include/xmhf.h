@@ -50,13 +50,13 @@
 #ifndef __XMHF_H_
 #define __XMHF_H_
 
-#include <uberspark.h>
-#include <xmhfhw.h>
+#include <uberspark/include/uberspark.h>
+#include <uberspark/uobjrtl/hw/include/generic/x86_32/intel/hw.h>
 
+#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf-config.h>          //XMHF platform/arch config, TODO: this needs to be platform/arch independent push arch dependent stuff into arch/
+#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf-types.h>           //XMHF specific base types
+#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf-error.h>			//error handling
+#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xc.h>					//core framework decls.
 
-#include <xmhf-config.h>		//XMHF platform/arch config, TODO: this needs to be platform/arch independent push arch dependent stuff into arch/
-#include <xmhf-types.h>			//XMHF specific base types
-#include <xmhf-error.h>			//error handling
-#include <xc.h>					//core framework decls.
 
 #endif /* __XMHF_H_ */

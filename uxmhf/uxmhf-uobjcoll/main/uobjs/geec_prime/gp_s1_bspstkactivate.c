@@ -43,9 +43,10 @@
  *
  * @XMHF_LICENSE_HEADER_END@
  */
-#include <uberspark/include/uberspark.h>
+
 #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf.h>
-#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf-debug.h>
+// #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf-debug.h>
+// #include <xmhfgeec.h>
 
 #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/geec_prime.h>
 
@@ -54,17 +55,17 @@ bool gp_s1_hub_called = false;
 uint32_t check_esp, check_eip = CASM_RET_EIP;
 slab_params_t test_sp;
 
-void xmhfhwm_vdriver_writeesp(uint32_t oldval, uint32_t newval){
+void hwm_vdriver_writeesp(uint32_t oldval, uint32_t newval){
 	//@assert (newval >= ((uint32_t)&_init_bsp_cpustack + 4)) && (newval <= ((uint32_t)&_init_bsp_cpustack + MAX_PLATFORM_CPUSTACK_SIZE)) ;
 }
 
 void gp_s1_hub(void){
-	//@assert xmhfhwm_cpu_state == CPU_STATE_RUNNING;
-	//@assert (xmhfhwm_cpu_msr_efer & (1ULL << EFER_NXE));
-	//@assert (xmhfhwm_cpu_cr4 & CR4_PSE);
-	//@assert (xmhfhwm_cpu_cr4 & CR4_PAE);
-	//@assert (xmhfhwm_cpu_cr3 == (uint32_t)&_xcprimeon_init_pdpt);
-	//@assert (xmhfhwm_cpu_cr0 == (CR0_PE | CR0_PG | CR0_ET | CR0_EM));
+	//@assert hwm_cpu_state == CPU_STATE_RUNNING;
+	//@assert (hwm_cpu_msr_efer & (1ULL << EFER_NXE));
+	//@assert (hwm_cpu_cr4 & CR4_PSE);
+	//@assert (hwm_cpu_cr4 & CR4_PAE);
+	//@assert (hwm_cpu_cr3 == (uint32_t)&_xcprimeon_init_pdpt);
+	//@assert (hwm_cpu_cr0 == (CR0_PE | CR0_PG | CR0_ET | CR0_EM));
 
 	//indicate s1_hub was invoked from bspstkactivate
 	gp_s1_hub_called = true;
@@ -72,16 +73,16 @@ void gp_s1_hub(void){
 
 void main(void){
 	//populate hardware model stack and program counter
-	xmhfhwm_cpu_gprs_esp = (uint32_t)&_init_bsp_cpustack + MAX_PLATFORM_CPUSTACK_SIZE;
-	xmhfhwm_cpu_gprs_eip = check_eip;
-	check_esp = xmhfhwm_cpu_gprs_esp; // pointing to top-of-stack
+	hwm_cpu_gprs_esp = (uint32_t)&_init_bsp_cpustack + MAX_PLATFORM_CPUSTACK_SIZE;
+	hwm_cpu_gprs_eip = check_eip;
+	check_esp = hwm_cpu_gprs_esp; // pointing to top-of-stack
 
 	//execute harness
 	gp_s1_bspstkactivate();
 
 	//@assert gp_s1_hub_called == true;
-	//@assert xmhfhwm_cpu_gprs_esp == check_esp;
-	//@assert xmhfhwm_cpu_gprs_eip == check_eip;
+	//@assert hwm_cpu_gprs_esp == check_esp;
+	//@assert hwm_cpu_gprs_eip == check_eip;
 }
 #endif
 

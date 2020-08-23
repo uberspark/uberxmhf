@@ -43,9 +43,10 @@
  *
  * @XMHF_LICENSE_HEADER_END@
  */
-#include <uberspark/include/uberspark.h>
+
 #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf.h>
-#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf-debug.h>
+// #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf-debug.h>
+// #include <xmhfgeec.h>
 
 #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/geec_prime.h>
 
@@ -267,7 +268,7 @@ void gp_s2_sdmenumsysdevices_memioextents(uint32_t b, uint32_t d, uint32_t f, ui
 
 		_XDPRINTF_("%s: Halting!. numentries_sysdev_memioregions >= MAX_PLATFORM_DEVICES(%u)\n",
                    __func__, MAX_PLATFORM_DEVICES);
-        CASM_FUNCCALL(xmhfhw_cpu_hlt, CASM_NOPARAM);
+        CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__hlt, CASM_NOPARAM);
         //@ghost gp_s2_sdmenumsysdevices_memioextents_syshalt = true;
 
 	}

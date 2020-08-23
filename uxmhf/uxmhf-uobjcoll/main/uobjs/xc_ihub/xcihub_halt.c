@@ -43,9 +43,10 @@
  *
  * @XMHF_LICENSE_HEADER_END@
  */
-#include <uberspark/include/uberspark.h>
+
 #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf.h>
-#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf-debug.h>
+// #include <xmhfgeec.h>
+// #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf-debug.h>
 
 #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xc.h>
 #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xc_ihub.h>
@@ -100,6 +101,6 @@ void xcihub_halt(uint32_t cpuid, uint32_t info_vmexit_reason){
 		xcihub_halt_eptviolation(cpuid, info_vmexit_reason);
 	}
 #endif
-	CASM_FUNCCALL(xmhfhw_cpu_hlt, CASM_NOPARAM);
+	CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__hlt, CASM_NOPARAM);
 }
 

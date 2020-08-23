@@ -49,11 +49,11 @@
  author: amit vasudevan (amitvasudevan@acm.org)
 */
 
-#include <xmhf.h>
-#include <xmhf-hwm.h>
-#include <xmhf-debug.h>
-#include <xmhfgeec.h>
-#include <geec_sentinel.h>
+#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf.h>
+#include <uberspark/hwm/arch/x86_32/intel/hwm.h>
+// #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf-debug.h>
+// #include <xmhfgeec.h>
+#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/geec_sentinel.h>
 
 
 
@@ -61,19 +61,19 @@
 //corresponding error code
 CASM_FUNCDEF(uint32_t, gs_exit_callv2uvg,
 {
-	xmhfhwm_cpu_insn_movl_imm_edx(0x80);
-    xmhfhwm_cpu_insn_vmlaunch();
-    xmhfhwm_cpu_insn_jc(__vmx_start_hvm_failinvalid);
-    xmhfhwm_cpu_insn_jnz(__vmx_start_hvm_undefinedimplementation);
-    xmhfhwm_cpu_insn_movl_imm_eax(0x1);		//VMLAUNCH error, XXX: need to read from VM instruction error field in VMCS
-    xmhfhwm_cpu_insn_jmplabel(__vmx_start_continue);
+	__casm__movl_imm_edx(0x80);
+    __casm__vmlaunch();
+    __casm__jc(__vmx_start_hvm_failinvalid);
+    __casm__jnz(__vmx_start_hvm_undefinedimplementation);
+    __casm__movl_imm_eax(0x1);		//VMLAUNCH error, XXX: need to read from VM instruction error field in VMCS
+    __casm__jmplabel(__vmx_start_continue);
     CASM_LABEL(__vmx_start_hvm_undefinedimplementation);
-    xmhfhwm_cpu_insn_movl_imm_eax(0x2);		//violation of VMLAUNCH specs., handle it anyways
-    xmhfhwm_cpu_insn_jmplabel(__vmx_start_continue);
+    __casm__movl_imm_eax(0x2);		//violation of VMLAUNCH specs., handle it anyways
+    __casm__jmplabel(__vmx_start_continue);
     CASM_LABEL(__vmx_start_hvm_failinvalid);
-    xmhfhwm_cpu_insn_xorl_eax_eax();		//return 0 as we have no error code available
+    __casm__xorl_eax_eax();		//return 0 as we have no error code available
     CASM_LABEL(__vmx_start_continue);
-    xmhfhwm_cpu_insn_retu32();
+    __casm__retu32();
 },
 void *noparam)
 

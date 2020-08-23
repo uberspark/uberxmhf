@@ -43,12 +43,13 @@
  *
  * @XMHF_LICENSE_HEADER_END@
  */
-#include <uberspark/include/uberspark.h>
+
 // aprvexec hypapp main module
 // author: amit vasudevan (amitvasudevan@acm.org)
 
 #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf.h>
-#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf-debug.h>
+// #include <xmhfgeec.h>
+// #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf-debug.h>
 
 #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xc.h>
 #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/uapi_gcpustate.h>
@@ -99,7 +100,7 @@ if(!ae_activated){
     ////spl.in_out_params[0] = XMHF_HIC_UAPI_PHYSMEM;
     // spl.dst_uapifn = XMHF_HIC_UAPI_PHYSMEM_PEEK;
     //XMHF_SLAB_CALLNEW(&spl);
-    CASM_FUNCCALL(xmhfhw_sysmemaccess_copy, &_ae_page_buffer, gpa,
+    CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__sysmemaccess_copy, &_ae_page_buffer, gpa,
 		PAGE_SIZE_4K);
 
     _XDPRINTF_("%s[%u]: grabbed page contents at gpa=%016x\n",

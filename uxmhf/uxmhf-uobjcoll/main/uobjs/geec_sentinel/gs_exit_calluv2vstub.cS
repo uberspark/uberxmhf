@@ -49,22 +49,22 @@
  author: amit vasudevan (amitvasudevan@acm.org)
 */
 
-#include <xmhf.h>
-#include <xmhf-hwm.h>
-#include <xmhf-debug.h>
-#include <xmhfgeec.h>
-#include <geec_sentinel.h>
+#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf.h>
+#include <uberspark/hwm/arch/x86_32/intel/hwm.h>
+// #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf-debug.h>
+// #include <xmhfgeec.h>
+#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/geec_sentinel.h>
 
 
 
 CASM_FUNCDEF(void, gs_exit_calluv2vstub,
 {
-    xmhfhwm_cpu_insn_movl_mesp_eax(0x4);
-    xmhfhwm_cpu_insn_movl_mesp_edx(0x8);
-    xmhfhwm_cpu_insn_movl_edx_esp();
-    xmhfhwm_cpu_insn_pushl_esp();
-    xmhfhwm_cpu_insn_pushl_imm(0x0);
-    xmhfhwm_cpu_insn_jmpslabep();
+    __casm__movl_mesp_eax(0x4);
+    __casm__movl_mesp_edx(0x8);
+    __casm__movl_edx_esp();
+    __casm__pushl_esp();
+    __casm__pushl_imm(0x0);
+    __casm__jmpslabep();
 },
 uint32_t entry_point, void *callee_stack_frame)
 

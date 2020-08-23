@@ -43,10 +43,11 @@
  *
  * @XMHF_LICENSE_HEADER_END@
  */
-#include <uberspark/include/uberspark.h>
-#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf.h>
-#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf-debug.h>
 
+#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf.h>
+// #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf-debug.h>
+
+// #include <xmhfgeec.h>
 
 #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/geec_prime.h>
 
@@ -169,7 +170,7 @@ void gp_s2_sdasetupdevpgtbl(uint32_t slabid){
 		_XDPRINTF_("%s: Error: slab %u dmadata section over limit. bailing out!\n",
 			   __func__, slabid);
 		_slabdevpgtbl_infotable[slabid].devpgtbl_initialized = false;
-		CASM_FUNCCALL(xmhfhw_cpu_hlt, CASM_NOPARAM);
+		CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__hlt, CASM_NOPARAM);
 		//@ghost invokedhalt = true;
 	}
 

@@ -43,9 +43,10 @@
  *
  * @XMHF_LICENSE_HEADER_END@
  */
-#include <uberspark/include/uberspark.h>
+
 #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf.h>
-#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf-debug.h>
+// #include <xmhfgeec.h>
+// #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf-debug.h>
 
 #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhfhw.h>
 
@@ -203,13 +204,13 @@ uint32_t xcihub_icptcrx_handle_cr0(uint32_t cpuid, uint32_t src_slabid, uint32_t
 
 		if ((cr0 ^ old_cr0) & CR0_PG) {
 			_XDPRINTF_("%s[%u]: CR0[WRITE]: PG bit set logic\n", __func__, cpuid);
-			CASM_FUNCCALL(xmhfhw_cpu_invvpid, VMX_INVVPID_SINGLECONTEXT, src_slabid, 0, 0);
+			CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__invvpid, VMX_INVVPID_SINGLECONTEXT, src_slabid, 0, 0);
 
 		}
 
 		if ((cr0 ^ old_cr0) & update_bits){
 			_XDPRINTF_("%s[%u]: CR0[WRITE]: flushing TLB(update bits)\n", __func__, cpuid);
-			CASM_FUNCCALL(xmhfhw_cpu_invvpid, VMX_INVVPID_SINGLECONTEXT, src_slabid, 0, 0);
+			CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__invvpid, VMX_INVVPID_SINGLECONTEXT, src_slabid, 0, 0);
 		}
 
 	//_XDPRINTF_("%s[%u]: CR0[WRITE]: old=0x%08x, new=0x%08x, final=0x%08x\n",
@@ -235,12 +236,12 @@ uint32_t xcihub_icptcrx_handle_cr4(uint32_t cpuid, uint32_t src_slabid, uint32_t
 	if(is_paging_enabled(cpuid) && (cr4 & CR4_PAE)
 			&& ((cr4 ^ old_cr4) & pdptr_bits) ){
 		_XDPRINTF_("%s[%u]: CR4[WRITE]: PAE enabling logic.WiP!\n", __func__, cpuid);
-		CASM_FUNCCALL(xmhfhw_cpu_hlt, CASM_NOPARAM);
+		CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__hlt, CASM_NOPARAM);
 	}
 
 	if ((cr4 & CR4_PCIDE) && !(old_cr4 & CR4_PCIDE)) {
 		_XDPRINTF_("%s[%u]: CR4[WRITE]: PCIDE logic enabling.WiP!\n", __func__, cpuid);
-			CASM_FUNCCALL(xmhfhw_cpu_hlt, CASM_NOPARAM);
+			CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__hlt, CASM_NOPARAM);
 	}
 
 	//set cr4 logic
@@ -268,13 +269,13 @@ uint32_t xcihub_icptcrx_handle_cr4(uint32_t cpuid, uint32_t src_slabid, uint32_t
 	if (((cr4 ^ old_cr4) & pdptr_bits) ||
 		    (!(cr4 & CR4_PCIDE) && (old_cr4 & CR4_PCIDE))){
 		_XDPRINTF_("%s[%u]: CR4[WRITE]: flushing TLB\n", __func__, cpuid);
-		CASM_FUNCCALL(xmhfhw_cpu_invvpid, VMX_INVVPID_SINGLECONTEXT, src_slabid, 0, 0);
+		CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__invvpid, VMX_INVVPID_SINGLECONTEXT, src_slabid, 0, 0);
 	}
 
 	if ((cr4 ^ old_cr4) & (CR4_OSXSAVE | CR4_PKE)){
 		_XDPRINTF_("%s[%u]: CR4[WRITE]: Should we update cpuid?\n", __func__, cpuid);
-		//CASM_FUNCCALL(xmhfhw_cpu_hlt, CASM_NOPARAM);
-		CASM_FUNCCALL(xmhfhw_cpu_invvpid, VMX_INVVPID_SINGLECONTEXT, src_slabid, 0, 0);
+		//CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__hlt, CASM_NOPARAM);
+		CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__invvpid, VMX_INVVPID_SINGLECONTEXT, src_slabid, 0, 0);
 	}
 
 	return 0;
@@ -318,7 +319,7 @@ void xcihub_icptcrx(uint32_t cpuid, uint32_t src_slabid){
 
 	if ( !(gpr >=0 && gpr <= 7) ){
 		_XDPRINTF_("%s[%u]: invalid GPR value, gpr=%u\n", __func__, cpuid, gpr);
-		CASM_FUNCCALL(xmhfhw_cpu_hlt, CASM_NOPARAM);
+		CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__hlt, CASM_NOPARAM);
 	}
 
 	if (crx == 0x0 && tofrom == VMX_CRX_ACCESS_TO){
@@ -345,7 +346,7 @@ void xcihub_icptcrx(uint32_t cpuid, uint32_t src_slabid){
 
 	}else{
 		_XDPRINTF_("%s[%u]: Unhandled CRx access, crx=0x%08x, gpr=%u, tofrom=%u\n", __func__, cpuid, crx, gpr, tofrom);
-		CASM_FUNCCALL(xmhfhw_cpu_hlt, CASM_NOPARAM);
+		CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__hlt, CASM_NOPARAM);
 	}
 
 	//skip over CRx instruction by adjusting RIP

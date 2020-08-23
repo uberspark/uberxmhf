@@ -17,6 +17,6 @@ verify: verifybase
 	cd $(XMHF_SLAB_VERIFICATION_DIR) && frama-c -no-frama-c-stdlib -main slab_main -lib-entry -wp -wp-rte -wp-model +cint+cast  -wp-prover alt-ergo,cvc3,z3 -cpp-extra-args=-nostdinc $(VFLAGS) xhsysclog_data.c.v.c xhsysclog_main.c.v.c
 	cd $(XMHF_SLAB_VERIFICATION_DIR) && frama-c -no-frama-c-stdlib -main sysclog_hcbmemfault -lib-entry -wp -wp-rte -wp-model +cint+cast  -wp-prover alt-ergo,cvc3,z3 -cpp-extra-args=-nostdinc $(VFLAGS) xhsysclog_data.c.v.c xhsysclog_hcbmemfault.c.v.c
 	cd $(XMHF_SLAB_VERIFICATION_DIR) && frama-c -no-frama-c-stdlib -main sysclog_loginfo -lib-entry -wp -wp-rte -wp-model +cint+cast  -wp-prover alt-ergo,cvc3,z3 -cpp-extra-args=-nostdinc $(VFLAGS) xhsysclog_data.c.v.c xhsysclog_loginfo.c.v.c
-	cd $(XMHF_SLAB_VERIFICATION_DIR) && frama-c -no-frama-c-stdlib -val -cpp-extra-args=-nostdinc -cpp-extra-args=-D__USPARK_FRAMAC_VA__ -slevel 2048 $(VFLAGS) *.c xmhfgeec_*.c *.ag.v.c libxmhfhw/*.v.c $(V_XMHFHWM_MODULES)
+	cd $(XMHF_SLAB_VERIFICATION_DIR) && frama-c -no-frama-c-stdlib -val -cpp-extra-args=-nostdinc -cpp-extra-args=-D__USPARK_FRAMAC_VA__ -slevel 2048 $(VFLAGS) *.c xmhfgeec_*.c *.ag.v.c libxmhfhw/*.v.c $(V_hwm_MODULES)
 
 

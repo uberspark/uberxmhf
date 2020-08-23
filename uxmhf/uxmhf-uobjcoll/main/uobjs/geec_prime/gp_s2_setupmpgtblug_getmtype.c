@@ -43,9 +43,10 @@
  *
  * @XMHF_LICENSE_HEADER_END@
  */
-#include <uberspark/include/uberspark.h>
+
 #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf.h>
-#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf-debug.h>
+// #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf-debug.h>
+// #include <xmhfgeec.h>
 
 #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/geec_prime.h>
 
@@ -69,23 +70,23 @@
 uint32_t check_esp, check_eip = CASM_RET_EIP;
 uint64_t p_pagebaseaddr;
 
-void xmhfhwm_vdriver_writeesp(uint32_t oldval, uint32_t newval){
+void hwm_vdriver_writeesp(uint32_t oldval, uint32_t newval){
 	//@assert (newval >= ((uint32_t)&_init_bsp_cpustack + 4)) && (newval <= ((uint32_t)&_init_bsp_cpustack + MAX_PLATFORM_CPUSTACK_SIZE)) ;
 }
 
 void main(void){
 	//populate hardware model stack and program counter
-	xmhfhwm_cpu_gprs_esp = (uint32_t)&_init_bsp_cpustack + MAX_PLATFORM_CPUSTACK_SIZE;
-	xmhfhwm_cpu_gprs_eip = check_eip;
-	check_esp = xmhfhwm_cpu_gprs_esp; // pointing to top-of-stack
+	hwm_cpu_gprs_esp = (uint32_t)&_init_bsp_cpustack + MAX_PLATFORM_CPUSTACK_SIZE;
+	hwm_cpu_gprs_eip = check_eip;
+	check_esp = hwm_cpu_gprs_esp; // pointing to top-of-stack
 
 	//execute harness
 	p_pagebaseaddr = framac_nondetu32interval(0, 0xFFFFFFFFUL);
 	gp_s2_setupmpgtblug_getmtype(p_pagebaseaddr);
 
-	//@assert xmhfhwm_cpu_state == CPU_STATE_RUNNING || xmhfhwm_cpu_state == CPU_STATE_HALT;
-	//@assert xmhfhwm_cpu_gprs_esp == check_esp;
-	//@assert xmhfhwm_cpu_gprs_eip == check_eip;
+	//@assert hwm_cpu_state == CPU_STATE_RUNNING || hwm_cpu_state == CPU_STATE_HALT;
+	//@assert hwm_cpu_gprs_esp == check_esp;
+	//@assert hwm_cpu_gprs_eip == check_eip;
 }
 #endif
 
@@ -101,7 +102,7 @@ uint32_t gp_s2_setupmpgtblug_getmtype(uint64_t pagebaseaddr){
 		}
 
 		_XDPRINTF_("\n%s: endaddr < 1M and unmatched fixed MTRR. Halt!", __func__);
-		CASM_FUNCCALL(xmhfhw_cpu_hlt, CASM_NOPARAM);
+		CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__hlt, CASM_NOPARAM);
 	}
 
 	//page base address is above 1M, use VARIABLE MTRRs
@@ -120,7 +121,7 @@ uint32_t gp_s2_setupmpgtblug_getmtype(uint64_t pagebaseaddr){
 						if(!(prev_type == _vmx_ept_memorytypes[i].type)){
 							_XDPRINTF_("%s:%u MTRR type/range unhandled. Halting!\n",
 									__func__, __LINE__);
-							CASM_FUNCCALL(xmhfhw_cpu_hlt, CASM_NOPARAM);
+							CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__hlt, CASM_NOPARAM);
 						}
 					}
 				}

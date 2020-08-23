@@ -49,15 +49,15 @@
  author: amit vasudevan (amitvasudevan@acm.org)
 */
 
-#include <xmhf.h>
-#include <xmhf-hwm.h>
-#include <xmhf-debug.h>
-#include <xmhfgeec.h>
+#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf.h>
+#include <uberspark/hwm/arch/x86_32/intel/hwm.h>
+// #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf-debug.h>
+// #include <xmhfgeec.h>
 
-#include <xc_exhub.h>
+#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xc_exhub.h>
 
 #if defined (__XMHF_VERIFICATION__) && defined (__USPARK_FRAMAC_VA__)
-#include <xc_exhub.h>
+#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xc_exhub.h>
 
 uint32_t saved_cpu_gprs_ebx=0;
 uint32_t saved_cpu_gprs_esi=0;
@@ -66,18 +66,18 @@ uint32_t saved_cpu_gprs_ebp=0;
 uint32_t cpuid = 0;	//cpu
 
 void cabi_establish(void){
-	xmhfhwm_cpu_gprs_ebx = 5UL;
-	xmhfhwm_cpu_gprs_esi = 6UL;
-	xmhfhwm_cpu_gprs_edi = 7UL;
-	saved_cpu_gprs_ebx = xmhfhwm_cpu_gprs_ebx;
-	saved_cpu_gprs_esi = xmhfhwm_cpu_gprs_esi;
-	saved_cpu_gprs_edi = xmhfhwm_cpu_gprs_edi;
+	hwm_cpu_gprs_ebx = 5UL;
+	hwm_cpu_gprs_esi = 6UL;
+	hwm_cpu_gprs_edi = 7UL;
+	saved_cpu_gprs_ebx = hwm_cpu_gprs_ebx;
+	saved_cpu_gprs_esi = hwm_cpu_gprs_esi;
+	saved_cpu_gprs_edi = hwm_cpu_gprs_edi;
 }
 
 void cabi_check(void){
-	//@ assert saved_cpu_gprs_ebx == xmhfhwm_cpu_gprs_ebx;
-	//@ assert saved_cpu_gprs_esi == xmhfhwm_cpu_gprs_esi;
-	//@ assert saved_cpu_gprs_edi == xmhfhwm_cpu_gprs_edi;
+	//@ assert saved_cpu_gprs_ebx == hwm_cpu_gprs_ebx;
+	//@ assert saved_cpu_gprs_esi == hwm_cpu_gprs_esi;
+	//@ assert saved_cpu_gprs_edi == hwm_cpu_gprs_edi;
 }
 
 uint32_t check_esp, check_eip = CASM_RET_EIP;
@@ -85,13 +85,13 @@ uint32_t check_esp, check_eip = CASM_RET_EIP;
 	#if defined (DRV_PATH_CALLEXCP)
 	x86vmx_exception_frame_t drv_path_callexcp_excpframe;
 	
-	void xmhfhwm_vdriver_slabep(void){
-		//@assert xmhfhwm_cpu_gprs_eip == (uint32_t)xmhfgeec_slab_info_table[XMHFGEEC_SLAB_XC_EXHUB].entrystub;
+	void hwm_vdriver_slabep(void){
+		//@assert hwm_cpu_gprs_eip == (uint32_t)xmhfgeec_slab_info_table[XMHFGEEC_SLAB_XC_EXHUB].entrystub;
 		//@assert false;
 	}
 	
 	void drv_path_callexcp(void){
-		xmhfhwm_cpu_gprs_esp -= sizeof(x86vmx_exception_frame_t);
+		hwm_cpu_gprs_esp -= sizeof(x86vmx_exception_frame_t);
 	
 		//invoke sentinel exception stub
 		CASM_FUNCCALL(__xmhf_exception_handler_8, CASM_NOPARAM);
@@ -102,9 +102,9 @@ uint32_t check_esp, check_eip = CASM_RET_EIP;
 
 void main(void){
 	//populate hardware model stack and program counter
-	xmhfhwm_cpu_gprs_esp = _slab_tos[cpuid];
-	xmhfhwm_cpu_gprs_eip = check_eip;
-	check_esp = xmhfhwm_cpu_gprs_esp; // pointing to top-of-stack
+	hwm_cpu_gprs_esp = _slab_tos[cpuid];
+	hwm_cpu_gprs_eip = check_eip;
+	check_esp = hwm_cpu_gprs_esp; // pointing to top-of-stack
 
 	#if defined (DRV_PATH_CALLEXCP)
 	drv_path_callexcp();
@@ -118,29 +118,29 @@ void main(void){
 #define XMHF_EXCEPTION_HANDLER_DEFINE(vector) 												\
 	CASM_FUNCDEF(void, __xmhf_exception_handler_##vector, 					\
     { \
-        xmhfhwm_cpu_insn_pushl_imm(vector); \
-        xmhfhwm_cpu_insn_pushal(); \
-        xmhfhwm_cpu_insn_movw_imm_ax(__DS_CPL0); \
-        xmhfhwm_cpu_insn_movw_ax_ds();\
-        xmhfhwm_cpu_insn_movw_ax_es();\
-        xmhfhwm_cpu_insn_pushl_esp(); \
-	xmhfhwm_cpu_insn_call_c_1p(xcexhub_entryexcp,x86vmx_exception_frame_t *); \
-        xmhfhwm_cpu_insn_hlt(); \
+        __casm__pushl_imm(vector); \
+        __casm__pushal(); \
+        __casm__movw_imm_ax(__DS_CPL0); \
+        __casm__movw_ax_ds();\
+        __casm__movw_ax_es();\
+        __casm__pushl_esp(); \
+	__casm__call_c_1p(xcexhub_entryexcp,x86vmx_exception_frame_t *); \
+        __casm__hlt(); \
     },\
     void *noparam) \
 
 #define XMHF_EXCEPTION_HANDLER_DEFINE_WITHERRORCODE(vector) 												\
 	CASM_FUNCDEF(void, __xmhf_exception_handler_##vector, 					\
     {\
-		xmhfhwm_cpu_insn_pushl_imm(0x0); \
-        xmhfhwm_cpu_insn_pushl_imm(vector); \
-        xmhfhwm_cpu_insn_pushal(); \
-        xmhfhwm_cpu_insn_movw_imm_ax(__DS_CPL0); \
-        xmhfhwm_cpu_insn_movw_ax_ds();\
-        xmhfhwm_cpu_insn_movw_ax_es();\
-        xmhfhwm_cpu_insn_pushl_esp(); \
-        xmhfhwm_cpu_insn_call_c_1p(xcexhub_entryexcp,x86vmx_exception_frame_t *); \
-        xmhfhwm_cpu_insn_hlt(); \
+		__casm__pushl_imm(0x0); \
+        __casm__pushl_imm(vector); \
+        __casm__pushal(); \
+        __casm__movw_imm_ax(__DS_CPL0); \
+        __casm__movw_ax_ds();\
+        __casm__movw_ax_es();\
+        __casm__pushl_esp(); \
+        __casm__call_c_1p(xcexhub_entryexcp,x86vmx_exception_frame_t *); \
+        __casm__hlt(); \
     },\
     void *noparam) \
 

@@ -49,26 +49,26 @@
  author: amit vasudevan (amitvasudevan@acm.org)
 */
 
-#include <xmhf.h>
-#include <xmhf-hwm.h>
-#include <xmhf-debug.h>
-#include <xmhfgeec.h>
-#include <geec_sentinel.h>
+#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf.h>
+#include <uberspark/hwm/arch/x86_32/intel/hwm.h>
+// #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf-debug.h>
+// #include <xmhfgeec.h>
+#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/geec_sentinel.h>
 
 
 CASM_FUNCDEF(void, gs_exit_callv2uvstub,
 {
-    xmhfhwm_cpu_insn_movl_mesp_edx(0x4);    //edx = entry_point
-    xmhfhwm_cpu_insn_movl_mesp_ecx(0x8);    //ecx = callee_stack_frame
-    xmhfhwm_cpu_insn_jmpuhslabretaddr();
-    //xmhfhwm_cpu_insn_sysexit();             //sysexit to ring-3
-    //xmhfhwm_cpu_insn_hlt();
+    __casm__movl_mesp_edx(0x4);    //edx = entry_point
+    __casm__movl_mesp_ecx(0x8);    //ecx = callee_stack_frame
+    __casm__jmpuhslabretaddr();
+    //__casm__sysexit();             //sysexit to ring-3
+    //__casm__hlt();
 
-    //xmhfhwm_cpu_insn_movl_mesp_eax(0x4);
-    //xmhfhwm_cpu_insn_movl_mesp_edx(0x8);
-    //xmhfhwm_cpu_insn_movl_edx_esp();
-    //xmhfhwm_cpu_insn_jmpl_eax();
-    //xmhfhwm_cpu_insn_hlt();
+    //__casm__movl_mesp_eax(0x4);
+    //__casm__movl_mesp_edx(0x8);
+    //__casm__movl_edx_esp();
+    //__casm__jmpl_eax();
+    //__casm__hlt();
 
 },
 uint32_t entry_point, void *callee_stack_frame)

@@ -44,11 +44,11 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-#include <xmhf.h>
-#include <xmhf-debug.h>
-#include <xmhfgeec.h>
+#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf.h>
+// #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf-debug.h>
+// #include <xmhfgeec.h>
 
-#include <geec_prime.h>
+#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/geec_prime.h>
 
 //////
 // XMHF/GEEC prime state-1 entry
@@ -57,30 +57,30 @@
 #if defined (__XMHF_VERIFICATION__) && defined (__USPARK_FRAMAC_VA__)
 bool gp_s1_bspstack_called = false;
 
-void xmhfhwm_vdriver_writeesp(uint32_t oldval, uint32_t newval){
+void hwm_vdriver_writeesp(uint32_t oldval, uint32_t newval){
 	//@assert (newval >= ((uint32_t)&_init_bsp_cpustack + 4)) && (newval <= ((uint32_t)&_init_bsp_cpustack + MAX_PLATFORM_CPUSTACK_SIZE)) ;
 }
 
 void gp_s1_bspstack(void){
-	//@assert xmhfhwm_cpu_gprs_esp == (uint32_t)&_init_bsp_cpustack + MAX_PLATFORM_CPUSTACK_SIZE - 4;
-	//@assert xmhfhwm_cpu_es_selector == xmhfhwm_cpu_ds_selector;
-	//@assert xmhfhwm_cpu_fs_selector == xmhfhwm_cpu_ds_selector;
-	//@assert xmhfhwm_cpu_gs_selector == xmhfhwm_cpu_ds_selector;
-	//@assert xmhfhwm_cpu_ss_selector == xmhfhwm_cpu_ds_selector;
-	//@assert xmhfhwm_cpu_state == CPU_STATE_RUNNING;
+	//@assert hwm_cpu_gprs_esp == (uint32_t)&_init_bsp_cpustack + MAX_PLATFORM_CPUSTACK_SIZE - 4;
+	//@assert hwm_cpu_es_selector == hwm_cpu_ds_selector;
+	//@assert hwm_cpu_fs_selector == hwm_cpu_ds_selector;
+	//@assert hwm_cpu_gs_selector == hwm_cpu_ds_selector;
+	//@assert hwm_cpu_ss_selector == hwm_cpu_ds_selector;
+	//@assert hwm_cpu_state == CPU_STATE_RUNNING;
 
 	//indicate bspstack was invoked from entry
 	gp_s1_bspstack_called = true;
 	//setup stack back to normal so value can return from the initial call to slab_main
-	xmhfhwm_cpu_gprs_esp = (uint32_t)&_init_bsp_cpustack + MAX_PLATFORM_CPUSTACK_SIZE - 8;
+	hwm_cpu_gprs_esp = (uint32_t)&_init_bsp_cpustack + MAX_PLATFORM_CPUSTACK_SIZE - 8;
 }
 
 void main(void){
 	//populate hardware model stack and program counter
-	xmhfhwm_cpu_gprs_esp = (uint32_t)&_init_bsp_cpustack + MAX_PLATFORM_CPUSTACK_SIZE;
+	hwm_cpu_gprs_esp = (uint32_t)&_init_bsp_cpustack + MAX_PLATFORM_CPUSTACK_SIZE;
 
 	//execute harness
-	xmhfhwm_cpu_ds_selector = 0x8;
+	hwm_cpu_ds_selector = 0x8;
 	CASM_FUNCCALL(slab_main, CASM_NOPARAM);
 	//@assert gp_s1_bspstack_called == true;
 }
@@ -88,17 +88,17 @@ void main(void){
 
 CASM_FUNCDEF(void, slab_main,
 {
-	xmhfhwm_cpu_insn_movw_ds_ax();
-	xmhfhwm_cpu_insn_movw_ax_es();
-	xmhfhwm_cpu_insn_movw_ax_fs();
-	xmhfhwm_cpu_insn_movw_ax_gs();
-	xmhfhwm_cpu_insn_movw_ax_ss();
-	xmhfhwm_cpu_insn_movl_imm_eax(_init_bsp_cpustack);
-	xmhfhwm_cpu_insn_addl_imm_eax(MAX_PLATFORM_CPUSTACK_SIZE);
-	xmhfhwm_cpu_insn_movl_eax_esp();
-	xmhfhwm_cpu_insn_call_c(gp_s1_bspstack);
-	xmhfhwm_cpu_insn_hlt();
-	xmhfhwm_cpu_insn_ret()
+	__casm__movw_ds_ax();
+	__casm__movw_ax_es();
+	__casm__movw_ax_fs();
+	__casm__movw_ax_gs();
+	__casm__movw_ax_ss();
+	__casm__movl_imm_eax(_init_bsp_cpustack);
+	__casm__addl_imm_eax(MAX_PLATFORM_CPUSTACK_SIZE);
+	__casm__movl_eax_esp();
+	__casm__call_c(gp_s1_bspstack);
+	__casm__hlt();
+	__casm__ret()
 },
 slab_params_t *sp)
 

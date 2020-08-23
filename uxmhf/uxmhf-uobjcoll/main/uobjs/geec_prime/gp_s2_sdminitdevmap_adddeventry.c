@@ -43,9 +43,10 @@
  *
  * @XMHF_LICENSE_HEADER_END@
  */
-#include <uberspark/include/uberspark.h>
+
 #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf.h>
-#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf-debug.h>
+// #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf-debug.h>
+// #include <xmhfgeec.h>
 
 #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/geec_prime.h>
 
@@ -78,7 +79,7 @@ void gp_s2_sdminitdevmap_adddeventry(uint32_t slabid, uint32_t sysdev_mmioregion
 
 	if( _sda_slab_devicemap[slabid].device_count >= MAX_PLATFORM_DEVICES){
 	    _XDPRINTF_("%s: Halting! device_count >= MAX_PLATFORM_DEVICES\n", __func__);
-	    CASM_FUNCCALL(xmhfhw_cpu_hlt, CASM_NOPARAM);
+	    CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__hlt, CASM_NOPARAM);
 		//@ghost gp_s2_sdminitdevmap_adddeventry_syshalt = true;
 	}else{
 		//@ghost gp_s2_sdminitdevmap_adddeventry_syshalt = false;

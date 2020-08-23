@@ -43,7 +43,7 @@
  *
  * @XMHF_LICENSE_HEADER_END@
  */
-#include <uberspark/include/uberspark.h>
+
 /*
  * guest CPU state uAPI
  *
@@ -51,8 +51,9 @@
  */
 
 #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf.h>
-#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf-debug.h>
+// #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf-debug.h>
 
+// #include <xmhfgeec.h>
 
 #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/uapi_gcpustate.h>
 
@@ -136,7 +137,7 @@
 @*/
 void ugcpust_vmwrite(uint32_t srcslabid, xmhf_uapi_gcpustate_vmrw_params_t *vmrwp){
 	if(srcslabid == XMHFGEEC_SLAB_GEEC_PRIME){
-		CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite, vmrwp->encoding, vmrwp->value);
+		CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__x86vmx_vmwrite, vmrwp->encoding, vmrwp->value);
 		//@ghost ugcpust_vmwrite_callvmwrite = true;
 
 	}else{
@@ -170,7 +171,7 @@ void ugcpust_vmwrite(uint32_t srcslabid, xmhf_uapi_gcpustate_vmrw_params_t *vmrw
 			vmrwp->encoding == VMCS_HOST_GS_SELECTOR		||
 			vmrwp->encoding == VMCS_HOST_TR_SELECTOR)
 		){
-			CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite, vmrwp->encoding, vmrwp->value);
+			CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__x86vmx_vmwrite, vmrwp->encoding, vmrwp->value);
 			//@ghost ugcpust_vmwrite_callvmwrite = true;
 
 		}else{

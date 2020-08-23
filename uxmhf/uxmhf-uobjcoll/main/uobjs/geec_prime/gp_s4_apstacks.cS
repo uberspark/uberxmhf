@@ -44,38 +44,38 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-#include <xmhf.h>
-#include <xmhf-debug.h>
-#include <xmhfgeec.h>
+#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf.h>
+// #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf-debug.h>
+// #include <xmhfgeec.h>
 
-#include <geec_prime.h>
+#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/geec_prime.h>
 
 
 // GEEC prime SMP assembly language code blobs
 // author: amit vasudevan (amitvasudevan@acm.org)
 
 #if defined (__XMHF_VERIFICATION__) && defined (__USPARK_FRAMAC_VA__)
-	x86smp_apbootstrapdata_t *apdptr = (x86smp_apbootstrapdata_t *)&xmhfhwm_mem_region_apbootstrap_dataseg;
+	x86smp_apbootstrapdata_t *apdptr = (x86smp_apbootstrapdata_t *)&hwm_mem_region_apbootstrap_dataseg;
 	bool invoked_gp_s5_entry = false;
 	
-	void xmhfhwm_vdriver_writeesp(uint32_t oldval, uint32_t newval){
+	void hwm_vdriver_writeesp(uint32_t oldval, uint32_t newval){
 	}
 	
-	void xmhfhwm_vdriver_cpu_writecr3(uint32_t oldval, uint32_t newval){
+	void hwm_vdriver_cpu_writecr3(uint32_t oldval, uint32_t newval){
 		//@assert (newval ==(uint32_t)&gp_rwdatahdr.gp_vhslabmempgtbl_lvl4t);
 	}
 
-	void xmhfhwm_vdriver_smpcommon(void){
+	void hwm_vdriver_smpcommon(void){
 		invoked_gp_s5_entry = true;
-		//@assert (xmhfhwm_cpu_es_selector == 0x8);
-		//@assert (xmhfhwm_cpu_fs_selector == 0x8);
-		//@assert (xmhfhwm_cpu_gs_selector == 0x8);
-		//@assert (xmhfhwm_cpu_ss_selector == 0x8);
-		//@assert (xmhfhwm_cpu_cr4 == 0x30);
-		//@assert (xmhfhwm_cpu_cr3 ==(uint32_t)&gp_rwdatahdr.gp_vhslabmempgtbl_lvl4t);
-		//@assert (xmhfhwm_cpu_msr_efer & 0x800);
-		//@assert (xmhfhwm_cpu_cr0 == 0x80000015);
-		//@assert (xmhfhwm_cpu_msr_apic_base == MMIO_APIC_BASE);
+		//@assert (hwm_cpu_es_selector == 0x8);
+		//@assert (hwm_cpu_fs_selector == 0x8);
+		//@assert (hwm_cpu_gs_selector == 0x8);
+		//@assert (hwm_cpu_ss_selector == 0x8);
+		//@assert (hwm_cpu_cr4 == 0x30);
+		//@assert (hwm_cpu_cr3 ==(uint32_t)&gp_rwdatahdr.gp_vhslabmempgtbl_lvl4t);
+		//@assert (hwm_cpu_msr_efer & 0x800);
+		//@assert (hwm_cpu_cr0 == 0x80000015);
+		//@assert (hwm_cpu_msr_apic_base == MMIO_APIC_BASE);
 	}
 
 	void main(void){
@@ -83,14 +83,14 @@
 
 		//execute harness
 		for(i=0; i < (MAX_PLATFORM_CPUS-1); i++){
-			xmhfhwm_cpu_gprs_esp = (uint32_t)&_init_bsp_cpustack + MAX_PLATFORM_CPUSTACK_SIZE;
-			xmhfhwm_cpu_ds_selector = 0x8;
-			xmhfhwm_cpu_cr4 = 0;
-			xmhfhwm_cpu_gprs_ebx = (uint32_t)&gp_rwdatahdr.gp_vhslabmempgtbl_lvl4t;
-			xmhfhwm_lapic_reg_id = i << 24;
+			hwm_cpu_gprs_esp = (uint32_t)&_init_bsp_cpustack + MAX_PLATFORM_CPUSTACK_SIZE;
+			hwm_cpu_ds_selector = 0x8;
+			hwm_cpu_cr4 = 0;
+			hwm_cpu_gprs_ebx = (uint32_t)&gp_rwdatahdr.gp_vhslabmempgtbl_lvl4t;
+			hwm_lapic_reg_id = i << 24;
 			CASM_FUNCCALL(gp_s4_apstacks, CASM_NOPARAM);
 			//@assert (invoked_gp_s5_entry == true);
-			//@assert (xmhfhwm_cpu_gprs_esp == ((uint32_t)&_init_cpustacks[i+1][8]));
+			//@assert (hwm_cpu_gprs_esp == ((uint32_t)&_init_cpustacks[i+1][8]));
 		}
 	}
 #endif
@@ -98,56 +98,56 @@
 
 CASM_FUNCDEF(void, gp_s4_apstacks,
 {
-    xmhfhwm_cpu_insn_movw_ds_ax();
-    xmhfhwm_cpu_insn_movw_ax_es();
-    xmhfhwm_cpu_insn_movw_ax_fs();
-    xmhfhwm_cpu_insn_movw_ax_gs();
-    xmhfhwm_cpu_insn_movw_ax_ss();
+    __casm__movw_ds_ax();
+    __casm__movw_ax_es();
+    __casm__movw_ax_fs();
+    __casm__movw_ax_gs();
+    __casm__movw_ax_ss();
 
-    xmhfhwm_cpu_insn_movl_cr4_eax();
-    xmhfhwm_cpu_insn_orl_imm_eax(0x00000030);
-    xmhfhwm_cpu_insn_movl_eax_cr4();
-
-
-    xmhfhwm_cpu_insn_movl_ebx_cr3();
+    __casm__movl_cr4_eax();
+    __casm__orl_imm_eax(0x00000030);
+    __casm__movl_eax_cr4();
 
 
-    xmhfhwm_cpu_insn_movl_imm_ecx(0xc0000080);
-    xmhfhwm_cpu_insn_rdmsr();
-    xmhfhwm_cpu_insn_orl_imm_eax(0x00000800);
-    xmhfhwm_cpu_insn_wrmsr();
+    __casm__movl_ebx_cr3();
 
 
-    xmhfhwm_cpu_insn_movl_cr0_eax();
-    xmhfhwm_cpu_insn_orl_imm_eax(0x80000015);
-    xmhfhwm_cpu_insn_movl_eax_cr0();
+    __casm__movl_imm_ecx(0xc0000080);
+    __casm__rdmsr();
+    __casm__orl_imm_eax(0x00000800);
+    __casm__wrmsr();
+
+
+    __casm__movl_cr0_eax();
+    __casm__orl_imm_eax(0x80000015);
+    __casm__movl_eax_cr0();
 
     //TODO: for non-TXT wakeup we need to reload GDT
     //"movl %1, %esi \r\n");
     //"lgdt (%esi) \r\n");
 
-    xmhfhwm_cpu_insn_movl_imm_ecx(0x0000001B);
-    xmhfhwm_cpu_insn_rdmsr();
-    xmhfhwm_cpu_insn_andl_imm_eax(0x00000FFF);
-    xmhfhwm_cpu_insn_orl_imm_eax(0xFEE00000);
-    xmhfhwm_cpu_insn_wrmsr();
+    __casm__movl_imm_ecx(0x0000001B);
+    __casm__rdmsr();
+    __casm__andl_imm_eax(0x00000FFF);
+    __casm__orl_imm_eax(0xFEE00000);
+    __casm__wrmsr();
 
 
-    xmhfhwm_cpu_insn_xorl_eax_eax();
-    xmhfhwm_cpu_insn_movl_imm_esi(0xFEE00020);
-    xmhfhwm_cpu_insn_movl_mesi_eax(0x0);
-    xmhfhwm_cpu_insn_shr_imm_eax(24);           //eax = lapic id (0-255)
+    __casm__xorl_eax_eax();
+    __casm__movl_imm_esi(0xFEE00020);
+    __casm__movl_mesi_eax(0x0);
+    __casm__shr_imm_eax(24);           //eax = lapic id (0-255)
 
 
-    xmhfhwm_cpu_insn_movl_imm_ecx(16384);
-    xmhfhwm_cpu_insn_xorl_edx_edx();
-    xmhfhwm_cpu_insn_mull_ecx();
-    xmhfhwm_cpu_insn_addl_ecx_eax();
-    xmhfhwm_cpu_insn_movl_imm_esp(_init_cpustacks);
-    xmhfhwm_cpu_insn_addl_eax_esp();
+    __casm__movl_imm_ecx(16384);
+    __casm__xorl_edx_edx();
+    __casm__mull_ecx();
+    __casm__addl_ecx_eax();
+    __casm__movl_imm_esp(_init_cpustacks);
+    __casm__addl_eax_esp();
 
-    xmhfhwm_cpu_insn_jmpsmpcommon();
-    xmhfhwm_cpu_insn_ret();
+    __casm__jmpsmpcommon();
+    __casm__ret();
 },
 void *noparam)
 

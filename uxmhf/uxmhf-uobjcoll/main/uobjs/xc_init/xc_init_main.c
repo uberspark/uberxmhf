@@ -43,7 +43,7 @@
  *
  * @XMHF_LICENSE_HEADER_END@
  */
-#include <uberspark/include/uberspark.h>
+
 
 /*
  * XMHF core initialization slab code
@@ -52,8 +52,9 @@
  */
 
 #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf.h>
-#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf-debug.h>
+// #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf-debug.h>
 
+// #include <xmhfgeec.h>
 #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhfhw.h>
 
 #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xc.h>
@@ -395,20 +396,20 @@ static void	xcinit_e820initializehooks(void){
 		uint16_t orig_int15h_ip, orig_int15h_cs;
 
 		//implant VMCALL followed by IRET at 0040:04AC
-		CASM_FUNCCALL(xmhfhw_sysmemaccess_writeu8, 0x4ac, 0x0f); //VMCALL
-		CASM_FUNCCALL(xmhfhw_sysmemaccess_writeu8, 0x4ad, 0x01);
-		CASM_FUNCCALL(xmhfhw_sysmemaccess_writeu8, 0x4ae, 0xc1);
-		CASM_FUNCCALL(xmhfhw_sysmemaccess_writeu8, 0x4af, 0xcf); //IRET
+		CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__sysmemaccess_writeu8, 0x4ac, 0x0f); //VMCALL
+		CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__sysmemaccess_writeu8, 0x4ad, 0x01);
+		CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__sysmemaccess_writeu8, 0x4ae, 0xc1);
+		CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__sysmemaccess_writeu8, 0x4af, 0xcf); //IRET
 
 		//store original INT 15h handler CS:IP following VMCALL and IRET
-		orig_int15h_ip = CASM_FUNCCALL(xmhfhw_sysmemaccess_readu16, 0x54);
-		orig_int15h_cs = CASM_FUNCCALL(xmhfhw_sysmemaccess_readu16, 0x56);
-		CASM_FUNCCALL(xmhfhw_sysmemaccess_writeu16, 0x4b0, orig_int15h_ip); //original INT 15h IP
-		CASM_FUNCCALL(xmhfhw_sysmemaccess_writeu16, 0x4b2, orig_int15h_cs); //original INT 15h CS
+		orig_int15h_ip = CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__sysmemaccess_readu16, 0x54);
+		orig_int15h_cs = CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__sysmemaccess_readu16, 0x56);
+		CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__sysmemaccess_writeu16, 0x4b0, orig_int15h_ip); //original INT 15h IP
+		CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__sysmemaccess_writeu16, 0x4b2, orig_int15h_cs); //original INT 15h CS
 
 		//point IVT INT15 handler to the VMCALL instruction
-		CASM_FUNCCALL(xmhfhw_sysmemaccess_writeu16, 0x54, 0x00ac);
-		CASM_FUNCCALL(xmhfhw_sysmemaccess_writeu16, 0x56, 0x0040);
+		CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__sysmemaccess_writeu16, 0x54, 0x00ac);
+		CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__sysmemaccess_writeu16, 0x56, 0x0040);
 
 }
 
@@ -419,10 +420,10 @@ static void	xcinit_e820initializehooks(void){
 static void	xcinit_copyguestbootmodule(uint32_t g_bm_base, uint32_t g_bm_size){
 	_XDPRINTF_("%s: boot-module at 0x%08x, size=0x%08x (%u) bytes\n", __func__, g_bm_base, g_bm_size, g_bm_size);
 	if( (g_bm_size == 512) ){
-		CASM_FUNCCALL(xmhfhw_sysmemaccess_copy, 0x00007C00, g_bm_base, g_bm_size);
+		CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__sysmemaccess_copy, 0x00007C00, g_bm_base, g_bm_size);
 	}else{
 		_XDPRINTF_("%s: invalid boot-module at 0x%08x, size=0x%08x (%u) bytes, Halting!\n", __func__, g_bm_base, g_bm_size, g_bm_size);
-		CASM_FUNCCALL(xmhfhw_cpu_hlt, CASM_NOPARAM);
+		CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__hlt, CASM_NOPARAM);
 	}
 }
 
@@ -435,21 +436,21 @@ uint32_t cpuid = 0;	//cpu id
 
 void main(void){
 	//populate hardware model stack and program counter
-	xmhfhwm_cpu_gprs_esp = _slab_tos[cpuid];
-	xmhfhwm_cpu_gprs_eip = check_eip;
-	check_esp = xmhfhwm_cpu_gprs_esp; // pointing to top-of-stack
+	hwm_cpu_gprs_esp = _slab_tos[cpuid];
+	hwm_cpu_gprs_eip = check_eip;
+	check_esp = hwm_cpu_gprs_esp; // pointing to top-of-stack
 
 	//inform hardware model to treat rich guest memory region as valid memory
-	xmhfhwm_sysmemaccess_physmem_extents[xmhfhwm_sysmemaccess_physmem_extents_total].addr_start =
+	hwm_sysmemaccess_physmem_extents[hwm_sysmemaccess_physmem_extents_total].addr_start =
 		xmhfgeec_slab_info_table[XMHFGEEC_SLAB_XG_RICHGUEST].slab_physmem_extents[0].addr_start;
-	xmhfhwm_sysmemaccess_physmem_extents[xmhfhwm_sysmemaccess_physmem_extents_total].addr_end =
+	hwm_sysmemaccess_physmem_extents[hwm_sysmemaccess_physmem_extents_total].addr_end =
 		xmhfgeec_slab_info_table[XMHFGEEC_SLAB_XG_RICHGUEST].slab_physmem_extents[0].addr_end;
-	xmhfhwm_sysmemaccess_physmem_extents_total++;
-	xmhfhwm_sysmemaccess_physmem_extents[xmhfhwm_sysmemaccess_physmem_extents_total].addr_start =
+	hwm_sysmemaccess_physmem_extents_total++;
+	hwm_sysmemaccess_physmem_extents[hwm_sysmemaccess_physmem_extents_total].addr_start =
 		xmhfgeec_slab_info_table[XMHFGEEC_SLAB_XG_RICHGUEST].slab_physmem_extents[1].addr_start;
-	xmhfhwm_sysmemaccess_physmem_extents[xmhfhwm_sysmemaccess_physmem_extents_total].addr_end =
+	hwm_sysmemaccess_physmem_extents[hwm_sysmemaccess_physmem_extents_total].addr_end =
 		xmhfgeec_slab_info_table[XMHFGEEC_SLAB_XG_RICHGUEST].slab_physmem_extents[1].addr_end;
-	xmhfhwm_sysmemaccess_physmem_extents_total++;
+	hwm_sysmemaccess_physmem_extents_total++;
 
 
     test_sp.slab_ctype = framac_nondetu32();
@@ -468,14 +469,14 @@ void main(void){
 
 	slab_main(&test_sp);
 
-	/*@assert ((xmhfhwm_cpu_state == CPU_STATE_RUNNING && xmhfhwm_cpu_gprs_esp == check_esp && xmhfhwm_cpu_gprs_eip == check_eip) ||
-		(xmhfhwm_cpu_state == CPU_STATE_HALT));
+	/*@assert ((hwm_cpu_state == CPU_STATE_RUNNING && hwm_cpu_gprs_esp == check_esp && hwm_cpu_gprs_eip == check_eip) ||
+		(hwm_cpu_state == CPU_STATE_HALT));
 	@*/
 }
 #endif
 
 void slab_main(slab_params_t *sp){
-    bool isbsp = xmhfhw_lapic_isbsp();
+    bool isbsp = uberspark_uobjrtl_hw__generic_x86_32_intel__lapic_isbsp();
 
     #if defined (__DEBUG_SERIAL__)
 	static volatile uint32_t cpucount=0;
@@ -523,7 +524,7 @@ void slab_main(slab_params_t *sp){
     xcinit_do_callguest(sp);
 
     //_XDPRINTF_("%s[%u]: Should  never get here.Halting!\n", __func__, (uint16_t)sp->cpuid);
-    CASM_FUNCCALL(xmhfhw_cpu_hlt, CASM_NOPARAM);
+    CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__hlt, CASM_NOPARAM);
 
     return;
 }

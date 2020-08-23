@@ -43,10 +43,11 @@
  *
  * @XMHF_LICENSE_HEADER_END@
  */
-#include <uberspark/include/uberspark.h>
+
 
 #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf.h>
-#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf-debug.h>
+// #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf-debug.h>
+// #include <xmhfgeec.h>
 #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/geec_sentinel.h>
 
 __attribute__((section(".data"))) uint32_t gs_siss_indices[MAX_PLATFORM_CPUS] = { 0 };

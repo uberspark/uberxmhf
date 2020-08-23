@@ -43,8 +43,9 @@
  *
  * @XMHF_LICENSE_HEADER_END@
  */
-#include <uberspark/include/uberspark.h>
-#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf-debug.h>
+#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf.h>
+// #include <xmhfgeec.h>
+// #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf-debug.h>
 
 #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xc.h>
 #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xc_ihub.h>
@@ -139,7 +140,7 @@ bool xcihub_rg_e820emulation(uint32_t cpuid, uint32_t src_slabid){
 			usysd_getentryforindex->index = r.ebx;
 			XMHF_SLAB_CALLNEW(&splusysd);
 
-			CASM_FUNCCALL(xmhfhw_sysmem_copy_obj2sys, (uint32_t)(g_es_base+(uint16_t)r.edi), &(usysd_getentryforindex->baseaddr_low), 20);
+			CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__sysmem_copy_obj2sys, (uint32_t)(g_es_base+(uint16_t)r.edi), &(usysd_getentryforindex->baseaddr_low), 20);
 
 			_XDPRINTF_("%s[%u]:   base: 0x%08x%08x  len=0x%08x%08x, t=0x%08x\n", __func__, cpuid,
 					usysd_getentryforindex->baseaddr_high, usysd_getentryforindex->baseaddr_low,
@@ -163,7 +164,7 @@ bool xcihub_rg_e820emulation(uint32_t cpuid, uint32_t src_slabid){
 			//...
 
 			//grab guest eflags on guest stack
-			g_flags = CASM_FUNCCALL(xmhfhw_sysmemaccess_readu16, ((uint32_t)g_ss_base + (uint16_t)g_esp + 0x4));
+			g_flags = CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__sysmemaccess_readu16, ((uint32_t)g_ss_base + (uint16_t)g_esp + 0x4));
 
 			//increment e820 descriptor continuation value
 			r.ebx=r.ebx+1;
@@ -177,11 +178,11 @@ bool xcihub_rg_e820emulation(uint32_t cpuid, uint32_t src_slabid){
 				g_flags &= ~(uint16_t)EFLAGS_CF;
 			}
 
-			CASM_FUNCCALL(xmhfhw_sysmemaccess_writeu16, ((uint32_t)g_ss_base + (uint16_t)g_esp + 0x4), g_flags);
+			CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__sysmemaccess_writeu16, ((uint32_t)g_ss_base + (uint16_t)g_esp + 0x4), g_flags);
 
 		}else{	//invalid state specified during INT 15 E820, halt
 			_XDPRINTF_("%s[%u]: INT15 (E820), invalid state specified by guest. Halting!\n", __func__, cpuid);
-			CASM_FUNCCALL(xmhfhw_cpu_hlt, CASM_NOPARAM);
+			CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__hlt, CASM_NOPARAM);
 		}
 
 		//update GPRs
@@ -201,8 +202,8 @@ bool xcihub_rg_e820emulation(uint32_t cpuid, uint32_t src_slabid){
 
 		//ok, this is some other INT 15h service, so simply chain to the original
 		//INT 15h handler
-		orig_int15h_ip = CASM_FUNCCALL(xmhfhw_sysmemaccess_readu16, 0x4AC+0x4);
-		orig_int15h_cs = CASM_FUNCCALL(xmhfhw_sysmemaccess_readu16, 0x4AC+0x6);
+		orig_int15h_ip = CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__sysmemaccess_readu16, 0x4AC+0x4);
+		orig_int15h_cs = CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__sysmemaccess_readu16, 0x4AC+0x6);
 
 		//update VMCS with the CS and IP and let go
 		spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_VMWRITE;

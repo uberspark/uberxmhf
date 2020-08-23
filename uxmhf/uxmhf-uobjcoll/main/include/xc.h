@@ -54,7 +54,7 @@
 
 
 #ifndef __ASSEMBLY__
-	#include <xmhfcrypto.h>
+	#include <uberspark/uobjrtl/crypto/include/basedefs.h>
 #endif // __ASSEMBLY__
 
 #define XC_HYPAPPCB_CHAIN                       (1)

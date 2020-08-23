@@ -49,12 +49,12 @@
  author: amit vasudevan (amitvasudevan@acm.org)
 */
 
-#include <xmhf.h>
-#include <xmhf-hwm.h>
-#include <xmhf-debug.h>
-#include <xmhfgeec.h>
+#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf.h>
+#include <uberspark/hwm/arch/x86_32/intel/hwm.h>
+// #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf-debug.h>
+// #include <xmhfgeec.h>
 
-#include <geec_sentinel.h>
+#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/geec_sentinel.h>
 
 //////
 // sentinel [p_call] entry point
@@ -68,9 +68,9 @@
 
 
 #if defined (__XMHF_VERIFICATION__) && defined (__USPARK_FRAMAC_VA__)
-#include <xc_init.h>
-#include <uapi_gcpustate.h>
-#include <xh_aprvexec.h>
+#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xc_init.h>
+#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/uapi_gcpustate.h>
+#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xh_aprvexec.h>
 
 uint32_t saved_cpu_gprs_ebx=0;
 uint32_t saved_cpu_gprs_esi=0;
@@ -79,18 +79,18 @@ uint32_t saved_cpu_gprs_ebp=0;
 uint32_t cpuid = 0;	//cpu
 
 void cabi_establish(void){
-	xmhfhwm_cpu_gprs_ebx = 5UL;
-	xmhfhwm_cpu_gprs_esi = 6UL;
-	xmhfhwm_cpu_gprs_edi = 7UL;
-	saved_cpu_gprs_ebx = xmhfhwm_cpu_gprs_ebx;
-	saved_cpu_gprs_esi = xmhfhwm_cpu_gprs_esi;
-	saved_cpu_gprs_edi = xmhfhwm_cpu_gprs_edi;
+	hwm_cpu_gprs_ebx = 5UL;
+	hwm_cpu_gprs_esi = 6UL;
+	hwm_cpu_gprs_edi = 7UL;
+	saved_cpu_gprs_ebx = hwm_cpu_gprs_ebx;
+	saved_cpu_gprs_esi = hwm_cpu_gprs_esi;
+	saved_cpu_gprs_edi = hwm_cpu_gprs_edi;
 }
 
 void cabi_check(void){
-	//@ assert saved_cpu_gprs_ebx == xmhfhwm_cpu_gprs_ebx;
-	//@ assert saved_cpu_gprs_esi == xmhfhwm_cpu_gprs_esi;
-	//@ assert saved_cpu_gprs_edi == xmhfhwm_cpu_gprs_edi;
+	//@ assert saved_cpu_gprs_ebx == hwm_cpu_gprs_ebx;
+	//@ assert saved_cpu_gprs_esi == hwm_cpu_gprs_esi;
+	//@ assert saved_cpu_gprs_edi == hwm_cpu_gprs_edi;
 }
 
 uint32_t check_esp, check_eip = CASM_RET_EIP;
@@ -98,12 +98,12 @@ uint32_t check_esp, check_eip = CASM_RET_EIP;
 	#if defined (DRV_PATHV2V)
 	slab_params_t drv_pathv2v_sp;
 	
-	void xmhfhwm_vdriver_slabep(void){
+	void hwm_vdriver_slabep(void){
 		cabi_check();
-		//@assert xmhfhwm_cpu_gprs_eip == (uint32_t)xmhfgeec_slab_info_table[XMHFGEEC_SLAB_UAPI_GCPUSTATE].entrystub;
-		//@assert xmhfhwm_cpu_gprs_esp == check_esp - (2 * sizeof(uint32_t));
-		//@assert *((uint32_t *)xmhfhwm_cpu_gprs_esp) == CASM_RET_EIP;
-		//@assert *((uint32_t *)((uint32_t)xmhfhwm_cpu_gprs_esp+4)) == (unsigned int)&drv_pathv2v_sp;
+		//@assert hwm_cpu_gprs_eip == (uint32_t)xmhfgeec_slab_info_table[XMHFGEEC_SLAB_UAPI_GCPUSTATE].entrystub;
+		//@assert hwm_cpu_gprs_esp == check_esp - (2 * sizeof(uint32_t));
+		//@assert *((uint32_t *)hwm_cpu_gprs_esp) == CASM_RET_EIP;
+		//@assert *((uint32_t *)((uint32_t)hwm_cpu_gprs_esp+4)) == (unsigned int)&drv_pathv2v_sp;
 		//@assert false;
 	}
 	
@@ -123,9 +123,9 @@ uint32_t check_esp, check_eip = CASM_RET_EIP;
 	#if defined (DRV_PATHV2UV)
 	slab_params_t drv_pathv2uv_sp;
 	
-	void xmhfhwm_vdriver_slabep(void){
+	void hwm_vdriver_slabep(void){
 		cabi_check();
-		//@assert xmhfhwm_cpu_gprs_eip == (uint32_t)xmhfgeec_slab_info_table[XMHFGEEC_SLAB_XH_SSTEPTRACE].entrystub;
+		//@assert hwm_cpu_gprs_eip == (uint32_t)xmhfgeec_slab_info_table[XMHFGEEC_SLAB_XH_SSTEPTRACE].entrystub;
 		//@assert false;
 	}
 	
@@ -136,11 +136,11 @@ uint32_t check_esp, check_eip = CASM_RET_EIP;
         drv_pathv2uv_sp.dst_uapifn = 0;
 		drv_pathv2uv_sp.cpuid = 0;
 	
-		xmhfhwm_sysmemaccess_physmem_extents[xmhfhwm_sysmemaccess_physmem_extents_total].addr_start =
+		hwm_sysmemaccess_physmem_extents[hwm_sysmemaccess_physmem_extents_total].addr_start =
 			xmhfgeec_slab_info_table[XMHFGEEC_SLAB_XH_SSTEPTRACE].slab_physmem_extents[2].addr_start;
-		xmhfhwm_sysmemaccess_physmem_extents[xmhfhwm_sysmemaccess_physmem_extents_total].addr_end =
+		hwm_sysmemaccess_physmem_extents[hwm_sysmemaccess_physmem_extents_total].addr_end =
 			xmhfgeec_slab_info_table[XMHFGEEC_SLAB_XH_SSTEPTRACE].slab_physmem_extents[2].addr_end;
-		xmhfhwm_sysmemaccess_physmem_extents_total++;
+		hwm_sysmemaccess_physmem_extents_total++;
 	
 		cabi_establish();
 		CASM_FUNCCALL(_slab_entrystub, &drv_pathv2uv_sp);
@@ -152,7 +152,7 @@ uint32_t check_esp, check_eip = CASM_RET_EIP;
 	#if defined (DRV_PATHV2UG)
 	slab_params_t drv_path_callv2ug_sp;
 	
-	void xmhfhwm_vdriver_slabep(void){
+	void hwm_vdriver_slabep(void){
 		//@assert false;
 	}
 	
@@ -171,7 +171,7 @@ uint32_t check_esp, check_eip = CASM_RET_EIP;
 	#if defined (DRV_PATH_RETEXCP)
 	slab_params_t drv_path_retexcp_sp;
 
-	void xmhfhwm_vdriver_slabep(void){
+	void hwm_vdriver_slabep(void){
 		//@assert false;
 	}
 
@@ -190,7 +190,7 @@ uint32_t check_esp, check_eip = CASM_RET_EIP;
 	#if defined (DRV_PATH_RETICPT)
 	slab_params_t drv_path_reticpt_sp;
 	
-	void xmhfhwm_vdriver_slabep(void){
+	void hwm_vdriver_slabep(void){
 		//@assert false;
 	}
 	
@@ -211,9 +211,9 @@ uint32_t check_esp, check_eip = CASM_RET_EIP;
 	uint32_t drv_path_retuh2vh_callerstackframe[6];
 	gs_siss_element_t siss_elem;
 	
-	void xmhfhwm_vdriver_uhslabretaddr(void){
-		// //@assert xmhfhwm_cpu_gprs_eip == CASM_RET_EIP;
-		// //@assert xmhfhwm_cpu_gprs_esp == _slab_tos[cpuid];
+	void hwm_vdriver_uhslabretaddr(void){
+		// //@assert hwm_cpu_gprs_eip == CASM_RET_EIP;
+		// //@assert hwm_cpu_gprs_esp == _slab_tos[cpuid];
 		//@assert false;
 	}
 	
@@ -225,11 +225,11 @@ uint32_t check_esp, check_eip = CASM_RET_EIP;
 		drv_path_retuh2vh_calleesp.cpuid = 0;
 	
 		//inform hardware model to treat slab stack region as valid memory
-		xmhfhwm_sysmemaccess_physmem_extents[xmhfhwm_sysmemaccess_physmem_extents_total].addr_start =
+		hwm_sysmemaccess_physmem_extents[hwm_sysmemaccess_physmem_extents_total].addr_start =
 			xmhfgeec_slab_info_table[XMHFGEEC_SLAB_XH_SSTEPTRACE].slab_physmem_extents[2].addr_start;
-		xmhfhwm_sysmemaccess_physmem_extents[xmhfhwm_sysmemaccess_physmem_extents_total].addr_end =
+		hwm_sysmemaccess_physmem_extents[hwm_sysmemaccess_physmem_extents_total].addr_end =
 			xmhfgeec_slab_info_table[XMHFGEEC_SLAB_XH_SSTEPTRACE].slab_physmem_extents[2].addr_end;
-		xmhfhwm_sysmemaccess_physmem_extents_total++;
+		hwm_sysmemaccess_physmem_extents_total++;
 		
 		//plug in an entry in the SISS corresponding to this RET
 		siss_elem.src_slabid = XMHFGEEC_SLAB_XH_SSTEPTRACE;
@@ -250,9 +250,9 @@ uint32_t check_esp, check_eip = CASM_RET_EIP;
 
 void main(void){
 	//populate hardware model stack and program counter
-	xmhfhwm_cpu_gprs_esp = _slab_tos[cpuid];
-	xmhfhwm_cpu_gprs_eip = check_eip;
-	check_esp = xmhfhwm_cpu_gprs_esp; // pointing to top-of-stack
+	hwm_cpu_gprs_esp = _slab_tos[cpuid];
+	hwm_cpu_gprs_eip = check_eip;
+	check_esp = hwm_cpu_gprs_esp; // pointing to top-of-stack
 
 	#if defined (DRV_PATHV2V)
 	drv_pathv2v();
@@ -283,14 +283,14 @@ void main(void){
 
 CASM_FUNCDEF_FULL(.slab_entrystub, 1, void, _slab_entrystub,
 {
-	xmhfhwm_cpu_insn_movl_mesp_eax(0x4);
-	xmhfhwm_cpu_insn_pushl_ebp();
-	xmhfhwm_cpu_insn_pushl_edi();
-	xmhfhwm_cpu_insn_pushl_esi();
-	xmhfhwm_cpu_insn_pushl_ebx();
-	xmhfhwm_cpu_insn_movl_esp_edx();
-	xmhfhwm_cpu_insn_pushl_edx();
-	xmhfhwm_cpu_insn_pushl_eax();
+	__casm__movl_mesp_eax(0x4);
+	__casm__pushl_ebp();
+	__casm__pushl_edi();
+	__casm__pushl_esi();
+	__casm__pushl_ebx();
+	__casm__movl_esp_edx();
+	__casm__pushl_edx();
+	__casm__pushl_eax();
 	// stack frame at this point:
 	// 	[esp] = slab_params_t *sp
 	//	[esp+4] = &[esp+8]
@@ -300,10 +300,10 @@ CASM_FUNCDEF_FULL(.slab_entrystub, 1, void, _slab_entrystub,
 	//	[esp+20] = ebp
 	//	[esp+24] = return address to resume the (verified,privileged) caller
 	//	[esp+28] = slab_params_t *sp
-	xmhfhwm_cpu_insn_call_c_2p(geec_sentinel_main, slab_params_t *, void *);
+	__casm__call_c_2p(geec_sentinel_main, slab_params_t *, void *);
 
 	// halt if we ever return back (should never happen)
-	xmhfhwm_cpu_insn_hlt();
+	__casm__hlt();
 },
 slab_params_t *sp)
 
