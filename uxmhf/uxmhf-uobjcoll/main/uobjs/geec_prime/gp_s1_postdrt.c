@@ -85,15 +85,15 @@ void gp_s1_postdrt(void){
 	uint32_t os_mle_data_paddr;
 
 	//save SINIT to MLE MTRR mappings
-	uberspark_uobjrtl_hw__generic_x86_32_intel__x86_save_mtrrs(&sinit2mle_mtrrs);
+	uberspark_uobjrtl_hw__generic_x86_32_intel__save_mtrrs(&sinit2mle_mtrrs);
 
 	os_mle_data.saved_mtrr_state.num_var_mtrrs=0;
 
-	txt_heap = get_txt_heap();
+	txt_heap = uberspark_uobjrtl_hw__generic_x86_32_intel__get_txt_heap();
 	_XDPRINTF_("SL: txt_heap = 0x%08x\n", (uint32_t)txt_heap);
 
-	txt_heap_size =  (uint32_t)read_pub_config_reg(TXTCR_HEAP_SIZE);
-	os_mle_data_paddr = get_os_mle_data_start((txt_heap_t*)((uint32_t)txt_heap), txt_heap_size);
+	txt_heap_size =  (uint32_t)uberspark_uobjrtl_hw__generic_x86_32_intel__read_pub_config_reg(TXTCR_HEAP_SIZE);
+	os_mle_data_paddr = uberspark_uobjrtl_hw__generic_x86_32_intel__get_os_mle_data_start((txt_heap_t*)((uint32_t)txt_heap), txt_heap_size);
 	//@assert (os_mle_data_paddr == (hwm_TXT_SYSMEM_HEAPBASE+0x8+sizeof(bios_data_t)+0x8));
 
 	CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__sysmem_copy_sys2obj, (uint32_t)&os_mle_data,
@@ -104,14 +104,14 @@ void gp_s1_postdrt(void){
 
 	if(os_mle_data.saved_mtrr_state.num_var_mtrrs < MAX_VARIABLE_MTRRS){
 		// restore pre-SENTER MTRRs that were overwritten for SINIT launch
-		if(!validate_mtrrs(&os_mle_data.saved_mtrr_state)) {
-			_XDPRINTF_("Error: validate_mtrrs() failed.\n");
+		if(!uberspark_uobjrtl_hw__generic_x86_32_intel__validate_mtrrs(&os_mle_data.saved_mtrr_state)) {
+			_XDPRINTF_("Error: uberspark_uobjrtl_hw__generic_x86_32_intel__validate_mtrrs() failed.\n");
 			CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__hlt, CASM_NOPARAM);
 		}
 
 		_XDPRINTF_("SL: Validated MTRRs\n");
 
-		uberspark_uobjrtl_hw__generic_x86_32_intel__x86_restore_mtrrs(&(os_mle_data.saved_mtrr_state));
+		uberspark_uobjrtl_hw__generic_x86_32_intel__restore_mtrrs(&(os_mle_data.saved_mtrr_state));
 
 		_XDPRINTF_("SL: Restored MTRRs\n");
 

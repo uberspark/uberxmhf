@@ -78,7 +78,7 @@ void gp_s1_chkreq(void){
 	uint32_t cpu_vendor;
 
 	//grab CPU vendor
-	cpu_vendor = xmhf_baseplatform_arch_getcpuvendor();
+	cpu_vendor = uberspark_uobjrtl_hw__generic_x86_32_intel__getcpuvendor();
 	if (cpu_vendor != CPU_VENDOR_INTEL){
 		_XDPRINTF_("%s: not an Intel CPU but running VMX backend. Halting!\n", __func__);
 		CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__hlt, CASM_NOPARAM);
@@ -99,7 +99,7 @@ void gp_s1_chkreq(void){
 
 	//we require unrestricted guest and EPT support, bail out if we don't have it
 	{
-		uint64_t msr_procctls2 = CASM_FUNCCALL(rdmsr64,IA32_VMX_PROCBASED_CTLS2_MSR);
+		uint64_t msr_procctls2 = CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__rdmsr64,IA32_VMX_PROCBASED_CTLS2_MSR);
 		if( !( (msr_procctls2 >> 32) & 0x80 ) ){
 			_XDPRINTF_("%s: need unrestricted guest support but did not find any!\n", __func__);
 			CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__hlt, CASM_NOPARAM);

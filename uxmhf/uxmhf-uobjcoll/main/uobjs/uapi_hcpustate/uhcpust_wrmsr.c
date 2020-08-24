@@ -81,11 +81,11 @@
 @*/
 void uhcpust_wrmsr(uint32_t srcslabid, xmhf_uapi_hcpustate_msr_params_t *msrp){
 	if(srcslabid == XMHFGEEC_SLAB_GEEC_PRIME){
-		CASM_FUNCCALL(wrmsr64, msrp->msr, (uint32_t)msrp->value, (uint32_t)((uint64_t)msrp->value >> 32) );
+		CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__wrmsr64, msrp->msr, (uint32_t)msrp->value, (uint32_t)((uint64_t)msrp->value >> 32) );
 		//@ghost uhcpust_wrmsr_callwrmsr = true;
 	}else{
 		if(msrp->msr != MSR_EFER){
-			CASM_FUNCCALL(wrmsr64, msrp->msr, (uint32_t)msrp->value, (uint32_t)((uint64_t)msrp->value >> 32) );
+			CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__wrmsr64, msrp->msr, (uint32_t)msrp->value, (uint32_t)((uint64_t)msrp->value >> 32) );
 			//@ghost uhcpust_wrmsr_callwrmsr = true;
 		}else{
 			//invalid write

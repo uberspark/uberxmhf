@@ -82,19 +82,19 @@ static bool __xmhfhic_x86vmx_setupvmxstate(uint64_t cpuid){
 		uint32_t eax, edx;
 		uint64_t msr_value;
 		for(i=0; i < IA32_VMX_MSRCOUNT; i++){
-			msr_value = CASM_FUNCCALL(rdmsr64, (IA32_VMX_BASIC_MSR + i));
+			msr_value = CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__rdmsr64, (IA32_VMX_BASIC_MSR + i));
 			eax = (uint32_t)msr_value;
 			edx = (uint32_t)(msr_value >> 32);
 
 			__xmhfhic_x86vmx_archdata[cpuindex].vmx_msrs[i] = (uint64_t)edx << 32 | (uint64_t) eax;
 		}
 
-		msr_value = CASM_FUNCCALL(rdmsr64, MSR_EFER);
+		msr_value = CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__rdmsr64, MSR_EFER);
 		eax = (uint32_t)msr_value;
 		edx = (uint32_t)(msr_value >> 32);
 
 		__xmhfhic_x86vmx_archdata[cpuindex].vmx_msr_efer = (uint64_t)edx << 32 | (uint64_t) eax;
-		msr_value = CASM_FUNCCALL(rdmsr64, MSR_EFCR);
+		msr_value = CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__rdmsr64, MSR_EFCR);
 		eax = (uint32_t)msr_value;
 		edx = (uint32_t)(msr_value >> 32);
 
@@ -103,7 +103,7 @@ static bool __xmhfhic_x86vmx_setupvmxstate(uint64_t cpuid){
 
 
 
-	CASM_FUNCCALL(write_cr4, CASM_FUNCCALL(read_cr4,CASM_NOPARAM) |  CR4_VMXE);
+	CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__write_cr4, CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__read_cr4,CASM_NOPARAM) |  CR4_VMXE);
 
 
 	//enter VMX root operation using VMXON
@@ -139,9 +139,9 @@ static bool __xmhfhic_x86vmx_setupvmxstate(uint64_t cpuid){
 
 
 	//setup host state
-	CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__x86vmx_vmwrite,VMCS_HOST_CR0, CASM_FUNCCALL(read_cr0,CASM_NOPARAM));
-	CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__x86vmx_vmwrite,VMCS_HOST_CR4, CASM_FUNCCALL(read_cr4,CASM_NOPARAM));
-	CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__x86vmx_vmwrite,VMCS_HOST_CR3, CASM_FUNCCALL32(read_cr3,CASM_NOPARAM));
+	CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__x86vmx_vmwrite,VMCS_HOST_CR0, CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__read_cr0,CASM_NOPARAM));
+	CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__x86vmx_vmwrite,VMCS_HOST_CR4, CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__read_cr4,CASM_NOPARAM));
+	CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__x86vmx_vmwrite,VMCS_HOST_CR3, CASM_FUNCCALL32(uberspark_uobjrtl_hw__generic_x86_32_intel__read_cr3,CASM_NOPARAM));
 	CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__x86vmx_vmwrite,VMCS_HOST_CS_SELECTOR, CASM_FUNCCALL(read_segreg_cs,CASM_NOPARAM));
 	CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__x86vmx_vmwrite,VMCS_HOST_DS_SELECTOR, CASM_FUNCCALL(read_segreg_ds,CASM_NOPARAM));
 	CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__x86vmx_vmwrite,VMCS_HOST_ES_SELECTOR, CASM_FUNCCALL(read_segreg_es,CASM_NOPARAM));
@@ -185,27 +185,27 @@ static bool __xmhfhic_x86vmx_setupvmxstate(uint64_t cpuid){
 	CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__x86vmx_vmwrite,VMCS_HOST_RSP, CASM_FUNCCALL32(read_esp,CASM_NOPARAM));
 
 
-	msr_value = CASM_FUNCCALL(rdmsr64, IA32_SYSENTER_CS_MSR);
+	msr_value = CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__rdmsr64, IA32_SYSENTER_CS_MSR);
 	lodword = (uint32_t)msr_value;
 	hidword = (uint32_t)(msr_value >> 32);
 	CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__x86vmx_vmwrite,VMCS_HOST_SYSENTER_CS, lodword);
 
-	msr_value = CASM_FUNCCALL(rdmsr64, IA32_SYSENTER_ESP_MSR);
+	msr_value = CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__rdmsr64, IA32_SYSENTER_ESP_MSR);
 	lodword = (uint32_t)msr_value;
 	hidword = (uint32_t)(msr_value >> 32);
 	CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__x86vmx_vmwrite,VMCS_HOST_SYSENTER_ESP, (((uint64_t)hidword << 32) | (uint64_t)lodword));
 
-	msr_value = CASM_FUNCCALL(rdmsr64, IA32_SYSENTER_EIP_MSR);
+	msr_value = CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__rdmsr64, IA32_SYSENTER_EIP_MSR);
 	lodword = (uint32_t)msr_value;
 	hidword = (uint32_t)(msr_value >> 32);
 	CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__x86vmx_vmwrite,VMCS_HOST_SYSENTER_EIP, (((uint64_t)hidword << 32) | (uint64_t)lodword));
 
-	msr_value = CASM_FUNCCALL(rdmsr64, IA32_MSR_FS_BASE);
+	msr_value = CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__rdmsr64, IA32_MSR_FS_BASE);
 	lodword = (uint32_t)msr_value;
 	hidword = (uint32_t)(msr_value >> 32);
 	CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__x86vmx_vmwrite,VMCS_HOST_FS_BASE, (((uint64_t)hidword << 32) | (uint64_t)lodword) );
 
-	msr_value = CASM_FUNCCALL(rdmsr64, IA32_MSR_GS_BASE);
+	msr_value = CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__rdmsr64, IA32_MSR_GS_BASE);
 	lodword = (uint32_t)msr_value;
 	hidword = (uint32_t)(msr_value >> 32);
 	CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__x86vmx_vmwrite,VMCS_HOST_GS_BASE, (((uint64_t)hidword << 32) | (uint64_t)lodword) );
@@ -247,7 +247,7 @@ static bool __xmhfhic_x86vmx_setupvmxstate(uint64_t cpuid){
 			uint32_t msr, eax, edx;
 			uint64_t msr_value;
 			msr = vmx_msr_area_msrs[i];
-			msr_value = CASM_FUNCCALL(rdmsr64, msr);
+			msr_value = CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__rdmsr64, msr);
 			eax = (uint32_t)msr_value;
 			edx = (uint32_t)(msr_value >> 32);
 
@@ -379,7 +379,7 @@ static bool __xmhfhic_x86vmx_setupvmxstate(uint64_t cpuid){
 void gp_s5_setupcpustate(uint32_t cpuid, bool isbsp){
 
 	//replicate common MTRR state on this CPU
-	uberspark_uobjrtl_hw__generic_x86_32_intel__x86_restore_mtrrs(&_mtrrs);
+	uberspark_uobjrtl_hw__generic_x86_32_intel__restore_mtrrs(&_mtrrs);
 
 	//load GDT
 	CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__loadGDT,&__xmhfhic_x86vmx_gdt);
@@ -415,7 +415,7 @@ void gp_s5_setupcpustate(uint32_t cpuid, bool isbsp){
 
 
 	////turn on CR0.WP bit for supervisor mode write protection
-	//write_cr0(read_cr0() | CR0_WP);
+	//write_cr0(uberspark_uobjrtl_hw__generic_x86_32_intel__read_cr0() | CR0_WP);
 	//_XDPRINTF_("%s[%u]: Enabled supervisor mode write protection\n", __func__, (uint32_t)cpuid);
 
 	//set IOPL3
@@ -425,17 +425,17 @@ void gp_s5_setupcpustate(uint32_t cpuid, bool isbsp){
 
 	//set LAPIC base address to preferred address
 	{
-		uint64_t msrapic = CASM_FUNCCALL(rdmsr64,MSR_APIC_BASE);
+		uint64_t msrapic = CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__rdmsr64,MSR_APIC_BASE);
 		uint64_t msrapic_val = ((msrapic & 0x0000000000000FFFULL) | X86SMP_LAPIC_MEMORYADDRESS);
-		CASM_FUNCCALL(wrmsr64,MSR_APIC_BASE, (uint32_t)msrapic_val, (uint32_t)((uint64_t)msrapic_val >> 32) );
+		CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__wrmsr64,MSR_APIC_BASE, (uint32_t)msrapic_val, (uint32_t)((uint64_t)msrapic_val >> 32) );
 	}
-	_XDPRINTF_("%s[%u]: set LAPIC base address to %016llx\n", __func__, (uint32_t)cpuid, CASM_FUNCCALL(rdmsr64,MSR_APIC_BASE));
+	_XDPRINTF_("%s[%u]: set LAPIC base address to %016llx\n", __func__, (uint32_t)cpuid, CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__rdmsr64,MSR_APIC_BASE));
 
 
 	//turn on NX protections
 	{
-		uint64_t msrefer_val= (CASM_FUNCCALL(rdmsr64, MSR_EFER) | (1 << EFER_NXE));
-		CASM_FUNCCALL(wrmsr64,MSR_EFER, (uint32_t)msrefer_val, (uint32_t)((uint64_t)msrefer_val >> 32) );
+		uint64_t msrefer_val= (CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__rdmsr64, MSR_EFER) | (1 << EFER_NXE));
+		CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__wrmsr64,MSR_EFER, (uint32_t)msrefer_val, (uint32_t)((uint64_t)msrefer_val >> 32) );
 		_XDPRINTF_("%s[%u]: NX protections enabled\n", __func__, (uint32_t)cpuid);
 
 	}
@@ -445,13 +445,13 @@ void gp_s5_setupcpustate(uint32_t cpuid, bool isbsp){
 	//set OSXSAVE bit in CR4 to enable us to pass-thru XSETBV intercepts
 	//when the CPU supports XSAVE feature
 	if(xmhf_baseplatform_arch_x86_cpuhasxsavefeature()){
-		CASM_FUNCCALL(write_cr4, (CASM_FUNCCALL(read_cr4, CASM_NOPARAM) | CR4_OSXSAVE) );
+		CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__write_cr4, (CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__read_cr4, CASM_NOPARAM) | CR4_OSXSAVE) );
 		_XDPRINTF_("%s[%u]: XSETBV passthrough enabled\n", __func__, (uint32_t)cpuid);
 	}
 
 
 	//set bit 5 (EM) of CR0 to be VMX compatible in case of Intel cores
-	CASM_FUNCCALL(write_cr0, (CASM_FUNCCALL(read_cr0, CASM_NOPARAM) | 0x20));
+	CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__write_cr0, (CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__read_cr0, CASM_NOPARAM) | 0x20));
 	_XDPRINTF_("%s[%u]: Set CR0.EM to be VMX compatible\n", __func__, (uint32_t)cpuid);
 
 

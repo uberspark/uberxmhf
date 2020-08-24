@@ -123,7 +123,7 @@ void gs_exit_callv2uv(slab_params_t *sp, void *caller_stack_frame){
     _XDPRINTF_("%s[%u]: dst mempgtbl base=%x\n", __func__,
                (uint16_t)sp->cpuid,
 			   ps->mpgtblbase);
-	CASM_FUNCCALL(write_cr3,ps->mpgtblbase);
+	CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__write_cr3,ps->mpgtblbase);
 	_XDPRINTF_("%s[%u]: swiched to dst mempgtbl\n", __func__,
 			   (uint16_t)sp->cpuid);
 

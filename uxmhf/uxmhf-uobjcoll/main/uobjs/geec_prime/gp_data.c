@@ -163,7 +163,7 @@ __attribute__(( aligned(16) )) uint64_t _xcsmp_ap_init_gdt_start[]  = {
 
 __attribute__(( aligned(16) )) arch_x86_gdtdesc_t _xcsmp_ap_init_gdt  = {
 	.size=sizeof(_xcsmp_ap_init_gdt_start)-1,
-	.base=&_xcsmp_ap_init_gdt_start,
+	.base=(uint32_t)&_xcsmp_ap_init_gdt_start,
 };
 
 

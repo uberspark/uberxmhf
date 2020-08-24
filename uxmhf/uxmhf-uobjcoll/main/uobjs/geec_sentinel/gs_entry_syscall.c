@@ -84,7 +84,7 @@ void gs_entry_syscall(slab_params_t *sp, void *caller_stack_frame){
     	spl.cpuid = sp->cpuid;
     	spl.dst_uapifn = UAPI_UHMPGTBL_GETIDXFORMPGTBLBASE;
 
-    	ps->mpgtblbase = CASM_FUNCCALL(read_cr3, CASM_NOPARAM) & 0xFFFFF000UL;
+    	ps->mpgtblbase = CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__read_cr3, CASM_NOPARAM) & 0xFFFFF000UL;
 
     	CASM_FUNCCALL(gs_calluobj, &spl,
     			xmhfgeec_slab_info_table[spl.dst_slabid].entrystub);

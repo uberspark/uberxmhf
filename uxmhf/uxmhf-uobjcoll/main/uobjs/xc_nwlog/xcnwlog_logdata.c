@@ -90,7 +90,7 @@ void xcnwlog_logdata(xcnwlog_ls_element_t elem){
 		//@ghost xcnwlog_logdata_copytodmaregion = true;
 		e1000_xmitack();
 		//@ghost xcnwlog_logdata_xmit = true;
-		memset(&xcnwlog_ls[0], 0, sizeof(xcnwlog_ls[0]));
+		uberspark_uobjrtl_crt__memset(&xcnwlog_ls[0], 0, sizeof(xcnwlog_ls[0]));
 		//@ghost xcnwlog_logdata_resetbuffer = true;
 		xcnwlog_ls_index[0]=0;
 	}else{

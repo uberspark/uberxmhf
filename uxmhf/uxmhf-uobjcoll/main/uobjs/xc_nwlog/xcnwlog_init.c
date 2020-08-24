@@ -59,7 +59,7 @@
 
 
 void xcnwlog_init(void){
-	memset(&xcnwlog_ls[0], 0, sizeof(xcnwlog_ls[0]));
+	uberspark_uobjrtl_crt__memset(&xcnwlog_ls[0], 0, sizeof(xcnwlog_ls[0]));
 	xcnwlog_ls_index[0]=0;
 	e1000_init_module();
 }

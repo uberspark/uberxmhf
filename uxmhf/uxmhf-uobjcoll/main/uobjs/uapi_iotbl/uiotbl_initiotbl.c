@@ -61,20 +61,20 @@ void uiotbl_initiotbl(uapi_iotbl_initiotbl_t *ps){
 	//uh
 	if( xmhfgeec_slab_info_table[ps->dst_slabid].slabtype == XMHFGEEC_SLABTYPE_uVT_PROG ||
 			xmhfgeec_slab_info_table[ps->dst_slabid].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG) {
-        memset(&uiotbl_uhslab_iobitmap[(ps->dst_slabid - XMHFGEEC_UHSLAB_BASE_IDX)], 0xFFFFFFFFUL, sizeof(uiotbl_uhslab_iobitmap[0]));
+        uberspark_uobjrtl_crt__memset(&uiotbl_uhslab_iobitmap[(ps->dst_slabid - XMHFGEEC_UHSLAB_BASE_IDX)], 0xFFFFFFFFUL, sizeof(uiotbl_uhslab_iobitmap[0]));
 
 	//ug
 	}else if (
 			xmhfgeec_slab_info_table[ps->dst_slabid].slabtype == XMHFGEEC_SLABTYPE_uVT_PROG_GUEST ||
 			xmhfgeec_slab_info_table[ps->dst_slabid].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG_GUEST
 		){
-        memset(&uiotbl_ugslab_iobitmap[(ps->dst_slabid - XMHFGEEC_UGSLAB_BASE_IDX)], 0xFFFFFFFFUL, sizeof(uiotbl_ugslab_iobitmap[0]));
+        uberspark_uobjrtl_crt__memset(&uiotbl_ugslab_iobitmap[(ps->dst_slabid - XMHFGEEC_UGSLAB_BASE_IDX)], 0xFFFFFFFFUL, sizeof(uiotbl_ugslab_iobitmap[0]));
 
 	//ug_rg
 	}else if (
 			xmhfgeec_slab_info_table[ps->dst_slabid].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG_RICHGUEST
 		){
-		memset(&uiotbl_ugslab_iobitmap[(ps->dst_slabid - XMHFGEEC_UGSLAB_BASE_IDX)], 0UL, sizeof(uiotbl_ugslab_iobitmap[0]));
+		uberspark_uobjrtl_crt__memset(&uiotbl_ugslab_iobitmap[(ps->dst_slabid - XMHFGEEC_UGSLAB_BASE_IDX)], 0UL, sizeof(uiotbl_ugslab_iobitmap[0]));
 
 	//v
 	}else{

@@ -245,7 +245,7 @@ void gp_s1_scaniommu(void){
     for(i=0; i < vtd_num_drhd; i++){
         VTD_ECAP_REG ecap;
 
-        unpack_VTD_ECAP_REG(&ecap, _vtd_reg_read(&vtd_drhd[i], VTD_ECAP_REG_OFF));
+        unpack_VTD_ECAP_REG(&ecap, uberspark_uobjrtl_hw__generic_x86_32_intel__vtd_reg_read(&vtd_drhd[i], VTD_ECAP_REG_OFF));
         vtd_drhd[i].iotlb_regaddr= vtd_drhd[i].regbaseaddr+(ecap.iro*16)+0x8;
         vtd_drhd[i].iva_regaddr= vtd_drhd[i].regbaseaddr+(ecap.iro*16);
     }
@@ -261,10 +261,10 @@ void gp_s1_scaniommu(void){
 					vtd_drhd[i].type, vtd_drhd[i].length, vtd_drhd[i].flags, vtd_drhd[i].rsvdz0);
 		_XDPRINTF_("	Device %u on PCI seg %04x; base=0x%016llx\n", i,
 					vtd_drhd[i].pcisegment, vtd_drhd[i].regbaseaddr);
-		unpack_VTD_CAP_REG(&cap, _vtd_reg_read(&vtd_drhd[i], VTD_CAP_REG_OFF));
+		unpack_VTD_CAP_REG(&cap, uberspark_uobjrtl_hw__generic_x86_32_intel__vtd_reg_read(&vtd_drhd[i], VTD_CAP_REG_OFF));
 		_XDPRINTF_("		cap=0x%016llx\n", pack_VTD_CAP_REG(&cap));
-		//ecap.value = _vtd_reg_read(&vtd_drhd[i], VTD_ECAP_REG_OFF);
-		unpack_VTD_ECAP_REG(&ecap, _vtd_reg_read(&vtd_drhd[i], VTD_ECAP_REG_OFF));
+		//ecap.value = uberspark_uobjrtl_hw__generic_x86_32_intel__vtd_reg_read(&vtd_drhd[i], VTD_ECAP_REG_OFF);
+		unpack_VTD_ECAP_REG(&ecap, uberspark_uobjrtl_hw__generic_x86_32_intel__vtd_reg_read(&vtd_drhd[i], VTD_ECAP_REG_OFF));
 		_XDPRINTF_("		ecap=0x%016llx\n", (uint64_t)pack_VTD_ECAP_REG(&ecap));
 		_XDPRINTF_("	iotlb_regaddr=%08x, iva_regaddr=%08x\n",
 					vtd_drhd[i].iotlb_regaddr, vtd_drhd[i].iva_regaddr);

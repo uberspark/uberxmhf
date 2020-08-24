@@ -75,7 +75,7 @@
 void xcexhub_entryexcp(x86vmx_exception_frame_t *exframe){
     slab_params_t spl;
 
-    memset(&spl, 0, sizeof(spl));
+    uberspark_uobjrtl_crt__memset(&spl, 0, sizeof(spl));
 
     spl.slab_ctype = XMHFGEEC_SENTINEL_CALL_EXCEPTION;
     spl.src_slabid = XMHFGEEC_SLAB_GEEC_SENTINEL; //XXX: TODO: grab src_slabid based on exframe->orig_rip

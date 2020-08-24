@@ -65,8 +65,8 @@ static void _xcexhub_unhandled(x86vmx_exception_frame_t *exframe){
     _XDPRINTF_("errorcode=0x%08x\n", exframe->error_code);
     _XDPRINTF_("CS:EIP:EFLAGS = 0x%08x:0x%08x:0x%08x\n", exframe->orig_cs, exframe->orig_rip, exframe->orig_rflags);
     _XDPRINTF_("SS:ESP = 0x%08x:0x%08x\n", exframe->orig_ss, exframe->orig_rsp);
-    _XDPRINTF_("CR0=0x%08x, CR2=0x%08x\n", CASM_FUNCCALL(read_cr0,CASM_NOPARAM), CASM_FUNCCALL(read_cr2,CASM_NOPARAM));
-    _XDPRINTF_("CR3=0x%08x, CR4=0x%08x\n", CASM_FUNCCALL(read_cr3,CASM_NOPARAM), CASM_FUNCCALL(read_cr4,CASM_NOPARAM));
+    _XDPRINTF_("CR0=0x%08x, CR2=0x%08x\n", CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__read_cr0,CASM_NOPARAM), CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__read_cr2,CASM_NOPARAM));
+    _XDPRINTF_("CR3=0x%08x, CR4=0x%08x\n", CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__read_cr3,CASM_NOPARAM), CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__read_cr4,CASM_NOPARAM));
     _XDPRINTF_("CS=0x%04x, DS=0x%04x, ES=0x%04x, SS=0x%04x\n",
                (uint16_t)read_segreg_cs(CASM_NOPARAM), (uint16_t)read_segreg_ds(CASM_NOPARAM),
                (uint16_t)read_segreg_es(CASM_NOPARAM), (uint16_t)read_segreg_ss(CASM_NOPARAM));

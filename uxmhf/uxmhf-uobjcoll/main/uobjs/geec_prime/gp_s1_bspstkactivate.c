@@ -91,23 +91,23 @@ void gp_s1_bspstkactivate(void){
 	uint32_t _cr4;
 	uint32_t _cr0 = (CR0_PE | CR0_PG | CR0_ET | CR0_EM);
 
-	_msrefer = CASM_FUNCCALL(rdmsr64, MSR_EFER);
+	_msrefer = CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__rdmsr64, MSR_EFER);
 	_msrefer |= (1ULL << EFER_NXE);
-	CASM_FUNCCALL(wrmsr64, MSR_EFER, (uint32_t)_msrefer, (uint32_t)((uint64_t)_msrefer >> 32) );
+	CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__wrmsr64, MSR_EFER, (uint32_t)_msrefer, (uint32_t)((uint64_t)_msrefer >> 32) );
 
-	_XDPRINTF_("EFER=%016llx\n", CASM_FUNCCALL(rdmsr64,MSR_EFER));
+	_XDPRINTF_("EFER=%016llx\n", CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__rdmsr64,MSR_EFER));
 
-	_cr4 = CASM_FUNCCALL(read_cr4, CASM_NOPARAM);
+	_cr4 = CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__read_cr4, CASM_NOPARAM);
         _cr4 |= (CR4_PSE | CR4_PAE);
-	CASM_FUNCCALL(write_cr4, _cr4);
+	CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__write_cr4, _cr4);
 
-	_XDPRINTF_("CR4=%08x\n", CASM_FUNCCALL(read_cr4,CASM_NOPARAM));
+	_XDPRINTF_("CR4=%08x\n", CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__read_cr4,CASM_NOPARAM));
 
-	CASM_FUNCCALL(write_cr3,(uint32_t)&_xcprimeon_init_pdpt);
+	CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__write_cr3,(uint32_t)&_xcprimeon_init_pdpt);
 
-	_XDPRINTF_("CR3=%08x\n", CASM_FUNCCALL(read_cr3,CASM_NOPARAM));
+	_XDPRINTF_("CR3=%08x\n", CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__read_cr3,CASM_NOPARAM));
 
-	CASM_FUNCCALL(write_cr0, _cr0);
+	CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__write_cr0, _cr0);
 
 	gp_s1_hub();
 }

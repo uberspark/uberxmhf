@@ -89,7 +89,7 @@
 void gp_s5_invokestrt(uint32_t cpuid){
 	slab_params_t sp;
 
-	memset(&sp, 0, sizeof(sp));
+	uberspark_uobjrtl_crt__memset(&sp, 0, sizeof(sp));
 	sp.cpuid = cpuid;
 	sp.src_slabid = XMHFGEEC_SLAB_GEEC_PRIME;
 	sp.dst_slabid = XMHFGEEC_SLAB_XC_INIT;

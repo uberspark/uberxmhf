@@ -98,8 +98,8 @@ void gp_s3_startcores(void){
         os_sinit_data_t os_sinit_data;
 
 	//populate apdata structure
-	apdata.ap_cr3 = CASM_FUNCCALL(read_cr3,CASM_NOPARAM);
-	apdata.ap_cr4 = CASM_FUNCCALL(read_cr4,CASM_NOPARAM);
+	apdata.ap_cr3 = CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__read_cr3,CASM_NOPARAM);
+	apdata.ap_cr4 = CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__read_cr4,CASM_NOPARAM);
 	apdata.ap_entrypoint = (uint32_t)&gp_s4_apstacks;
 	apdata.ap_gdtdesc_limit = sizeof(apdata.ap_gdt) - 1;
 	apdata.ap_gdtdesc_base = (X86SMP_APBOOTSTRAP_DATASEG << 4) + 48;
@@ -123,13 +123,13 @@ void gp_s3_startcores(void){
 
 
 	//grab sinit2mle and os2sinit data structures from TXT heap
-        txt_heap = get_txt_heap();
+        txt_heap = uberspark_uobjrtl_hw__generic_x86_32_intel__get_txt_heap();
         CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__sysmem_copy_sys2obj, &sinit_mle_data,
-		get_sinit_mle_data_start(txt_heap, (uint32_t)read_pub_config_reg(TXTCR_HEAP_SIZE)),
+		get_sinit_mle_data_start(txt_heap, (uint32_t)uberspark_uobjrtl_hw__generic_x86_32_intel__read_pub_config_reg(TXTCR_HEAP_SIZE)),
 		sizeof(sinit_mle_data_t));
 
         CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__sysmem_copy_sys2obj, &os_sinit_data,
-		get_os_sinit_data_start(txt_heap, (uint32_t)read_pub_config_reg(TXTCR_HEAP_SIZE)),
+		get_os_sinit_data_start(txt_heap, (uint32_t)uberspark_uobjrtl_hw__generic_x86_32_intel__read_pub_config_reg(TXTCR_HEAP_SIZE)),
 		sizeof(os_sinit_data_t));
 
 

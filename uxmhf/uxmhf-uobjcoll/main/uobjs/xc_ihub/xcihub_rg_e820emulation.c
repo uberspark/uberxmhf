@@ -73,8 +73,8 @@ bool xcihub_rg_e820emulation(uint32_t cpuid, uint32_t src_slabid){
 	x86regs_t r;
 
 	//clear out slab_params
-	memset(&spl, 0, sizeof(spl));
-	memset(&splusysd, 0, sizeof(splusysd));
+	uberspark_uobjrtl_crt__memset(&spl, 0, sizeof(spl));
+	uberspark_uobjrtl_crt__memset(&splusysd, 0, sizeof(splusysd));
 
 	//setup uobj params
 	spl.cpuid = cpuid;

@@ -117,16 +117,16 @@ void sentinel_processapicall(slab_params_t *sp, void *caller_stack_frame){
 
             //setup SYSENTER/SYSEXIT mechanism
         	{
-        	CASM_FUNCCALL(wrmsr64, IA32_SYSENTER_CS_MSR, (uint32_t)__CS_CPL0, 0);
-        	CASM_FUNCCALL(wrmsr64, IA32_SYSENTER_EIP_MSR,
+        	CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__wrmsr64, IA32_SYSENTER_CS_MSR, (uint32_t)__CS_CPL0, 0);
+        	CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__wrmsr64, IA32_SYSENTER_EIP_MSR,
         			(uint32_t)&gs_syscallstub, 0);
-        	CASM_FUNCCALL(wrmsr64, IA32_SYSENTER_ESP_MSR,
+        	CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__wrmsr64, IA32_SYSENTER_ESP_MSR,
         			(uint32_t)((uint32_t)_sysenter_stack[(uint16_t)sp->cpuid] + MAX_PLATFORM_CPUSTACK_SIZE), 0);
         	}
         	_XDPRINTF_("%s: setup SYSENTER/SYSEXIT mechanism\n", __func__);
-        	_XDPRINTF_("SYSENTER CS=%016llx\n", CASM_FUNCCALL(rdmsr64,IA32_SYSENTER_CS_MSR));
-        	_XDPRINTF_("SYSENTER RIP=%016llx\n", CASM_FUNCCALL(rdmsr64,IA32_SYSENTER_EIP_MSR));
-        	_XDPRINTF_("SYSENTER RSP=%016llx\n", CASM_FUNCCALL(rdmsr64,IA32_SYSENTER_ESP_MSR));
+        	_XDPRINTF_("SYSENTER CS=%016llx\n", CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__rdmsr64,IA32_SYSENTER_CS_MSR));
+        	_XDPRINTF_("SYSENTER RIP=%016llx\n", CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__rdmsr64,IA32_SYSENTER_EIP_MSR));
+        	_XDPRINTF_("SYSENTER RSP=%016llx\n", CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__rdmsr64,IA32_SYSENTER_ESP_MSR));
 
             break;
 

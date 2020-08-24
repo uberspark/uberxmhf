@@ -81,7 +81,7 @@ void gp_s2_initsysmemmap(void){
 	uxmhf_uapi_sysdata_e820addentry_t *e820entry = (uxmhf_uapi_sysdata_e820addentry_t *)sp.in_out_params;
 	uint32_t i;
 
-	memset(&sp, 0, sizeof(sp));
+	uberspark_uobjrtl_crt__memset(&sp, 0, sizeof(sp));
 	sp.cpuid = 0; //XXX: fixme need to plugin BSP cpu id
 	sp.src_slabid = XMHFGEEC_SLAB_GEEC_PRIME;
 	sp.dst_slabid = XMHFGEEC_SLAB_UAPI_SYSDATA;

@@ -74,7 +74,7 @@
 static void xcinit_do_callguest(slab_params_t *sp){
 	slab_params_t spl;
 
-	memset(&spl, 0, sizeof(spl));
+	uberspark_uobjrtl_crt__memset(&spl, 0, sizeof(spl));
 	spl.cpuid = sp->cpuid;
 	spl.src_slabid = XMHFGEEC_SLAB_XC_INIT;
 	spl.dst_slabid = XMHFGEEC_SLAB_XG_RICHGUEST;

@@ -82,7 +82,7 @@ uint32_t xcihub_icptcrx_read_cr4(uint32_t cpuid){
 	slab_params_t spl;
 	xmhf_uapi_gcpustate_vmrw_params_t *gcpustate_vmrwp = (xmhf_uapi_gcpustate_vmrw_params_t *)spl.in_out_params;
 
-	memset(&spl, 0, sizeof(spl));
+	uberspark_uobjrtl_crt__memset(&spl, 0, sizeof(spl));
 
 	spl.cpuid = cpuid;
 	spl.src_slabid = XMHFGEEC_SLAB_XC_IHUB;
@@ -98,7 +98,7 @@ uint32_t xcihub_icptcrx_read_cr0(uint32_t cpuid){
 	slab_params_t spl;
 	xmhf_uapi_gcpustate_vmrw_params_t *gcpustate_vmrwp = (xmhf_uapi_gcpustate_vmrw_params_t *)spl.in_out_params;
 
-	memset(&spl, 0, sizeof(spl));
+	uberspark_uobjrtl_crt__memset(&spl, 0, sizeof(spl));
 
 	spl.cpuid = cpuid;
 	spl.src_slabid = XMHFGEEC_SLAB_XC_IHUB;
@@ -115,7 +115,7 @@ uint32_t xcihub_icptcrx_read_cr3(uint32_t cpuid){
 	slab_params_t spl;
 	xmhf_uapi_gcpustate_vmrw_params_t *gcpustate_vmrwp = (xmhf_uapi_gcpustate_vmrw_params_t *)spl.in_out_params;
 
-	memset(&spl, 0, sizeof(spl));
+	uberspark_uobjrtl_crt__memset(&spl, 0, sizeof(spl));
 
 	spl.cpuid = cpuid;
 	spl.src_slabid = XMHFGEEC_SLAB_XC_IHUB;
@@ -133,7 +133,7 @@ uint32_t xcihub_icptcrx_read_cr4_shadow(uint32_t cpuid){
 	slab_params_t spl;
 	xmhf_uapi_gcpustate_vmrw_params_t *gcpustate_vmrwp = (xmhf_uapi_gcpustate_vmrw_params_t *)spl.in_out_params;
 
-	memset(&spl, 0, sizeof(spl));
+	uberspark_uobjrtl_crt__memset(&spl, 0, sizeof(spl));
 
 	spl.cpuid = cpuid;
 	spl.src_slabid = XMHFGEEC_SLAB_XC_IHUB;
@@ -151,7 +151,7 @@ bool is_paging_enabled(uint32_t cpuid){
 	slab_params_t spl;
 	xmhf_uapi_gcpustate_vmrw_params_t *gcpustate_vmrwp = (xmhf_uapi_gcpustate_vmrw_params_t *)spl.in_out_params;
 
-	memset(&spl, 0, sizeof(spl));
+	uberspark_uobjrtl_crt__memset(&spl, 0, sizeof(spl));
 
 	spl.cpuid = cpuid;
 	spl.src_slabid = XMHFGEEC_SLAB_XC_IHUB;
@@ -180,7 +180,7 @@ uint32_t xcihub_icptcrx_handle_cr0(uint32_t cpuid, uint32_t src_slabid, uint32_t
 	uint32_t hw_cr0;
 	uint32_t update_bits = CR0_PG | CR0_WP;
 
-	memset(&spl, 0, sizeof(spl));
+	uberspark_uobjrtl_crt__memset(&spl, 0, sizeof(spl));
 
 	cr0 |= CR0_ET;
 	cr0 &= ~CR0_RESERVED_BITS;
@@ -226,7 +226,7 @@ uint32_t xcihub_icptcrx_handle_cr4(uint32_t cpuid, uint32_t src_slabid, uint32_t
 	uint32_t hw_cr4;
 
 
-	memset(&spl, 0, sizeof(spl));
+	uberspark_uobjrtl_crt__memset(&spl, 0, sizeof(spl));
 
 	_XDPRINTF_("%s[%u]: CR4[WRITE]: old=0x%08x, new=0x%08x\n",
 			__func__, cpuid, old_cr4, cr4);
@@ -293,7 +293,7 @@ void xcihub_icptcrx(uint32_t cpuid, uint32_t src_slabid){
 	x86regs_t r;
 
 	//_XDPRINTF_("%s[%u]: CRX access\n", __func__, cpuid);
-	memset(&spl, 0, sizeof(spl));
+	uberspark_uobjrtl_crt__memset(&spl, 0, sizeof(spl));
 
 	spl.cpuid = cpuid;
 	spl.src_slabid = XMHFGEEC_SLAB_XC_IHUB;

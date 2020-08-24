@@ -67,7 +67,7 @@ void xcihub_entry_icpt(x86regs_t *r){
     eflags |= EFLAGS_IOPL;
     CASM_FUNCCALL(write_eflags,eflags);
 
-    memset(&spl, 0, sizeof(spl));
+    uberspark_uobjrtl_crt__memset(&spl, 0, sizeof(spl));
 
     spl.slab_ctype = XMHFGEEC_SENTINEL_CALL_INTERCEPT;
     spl.src_slabid = CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__x86vmx_vmread,VMCS_CONTROL_VPID);

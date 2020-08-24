@@ -67,7 +67,7 @@ void xcihub_icptcpuid(uint32_t cpuid){
 	x86regs_t r;
 
 	//_XDPRINTF_("%s[%u]: VMX_VMEXIT_CPUID\n",   __func__, cpuid);
-	memset(&spl, 0, sizeof(spl));
+	uberspark_uobjrtl_crt__memset(&spl, 0, sizeof(spl));
 
 	spl.cpuid = cpuid;
 	spl.src_slabid = XMHFGEEC_SLAB_XC_IHUB;

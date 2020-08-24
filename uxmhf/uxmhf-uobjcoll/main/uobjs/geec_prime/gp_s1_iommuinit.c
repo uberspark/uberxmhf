@@ -106,7 +106,7 @@ void gp_s1_iommuinit(void){
 
 
 		//read and store DRHD supported page-walk length
-		unpack_VTD_CAP_REG(&cap, _vtd_reg_read(&vtd_drhd[drhd_handle], VTD_CAP_REG_OFF));
+		unpack_VTD_CAP_REG(&cap, uberspark_uobjrtl_hw__generic_x86_32_intel__vtd_reg_read(&vtd_drhd[drhd_handle], VTD_CAP_REG_OFF));
 		if(cap.sagaw & 0x2){
 		    if(vtd_pagewalk_level == VTD_PAGEWALK_NONE || vtd_pagewalk_level == VTD_PAGEWALK_3LEVEL){
 			vtd_pagewalk_level = VTD_PAGEWALK_3LEVEL;

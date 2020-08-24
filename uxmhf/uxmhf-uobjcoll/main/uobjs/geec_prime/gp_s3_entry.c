@@ -67,18 +67,18 @@
 void gp_s3_entry(void){
 
 	//switch to verified object page tables
-	CASM_FUNCCALL(write_cr3,(uint32_t)&gp_rwdatahdr.gp_vhslabmempgtbl_lvl4t);
+	CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__write_cr3,(uint32_t)&gp_rwdatahdr.gp_vhslabmempgtbl_lvl4t);
 	//@ghost gp_s3_entry_invoked_writecr3 = true;
 
 	//save cpu MTRR state which we will later replicate on all APs
 	//@assert gp_s3_entry_invoked_writecr3 == true;
-	uberspark_uobjrtl_hw__generic_x86_32_intel__x86_save_mtrrs(&_mtrrs);
+	uberspark_uobjrtl_hw__generic_x86_32_intel__save_mtrrs(&_mtrrs);
 	//@ghost gp_s3_entry_invoked_savemtrrs = true;
 
 	//restore SINIT to MLE MTRR mappings
 	//@assert gp_s3_entry_invoked_writecr3 == true;
 	//@assert gp_s3_entry_invoked_savemtrrs == true;
-	uberspark_uobjrtl_hw__generic_x86_32_intel__x86_restore_mtrrs(&sinit2mle_mtrrs);
+	uberspark_uobjrtl_hw__generic_x86_32_intel__restore_mtrrs(&sinit2mle_mtrrs);
 	//@ghost gp_s3_entry_invoked_restoremtrrs = true;
 
 	//start all cores

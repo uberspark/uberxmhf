@@ -1751,7 +1751,7 @@ static int e1000_probe(pci_device_t *nwdevice)
 
 	//err = -ENOMEM;
 
-	memset(&e1000_adapt, 0, sizeof(struct e1000_adapter));
+	uberspark_uobjrtl_crt__memset(&e1000_adapt, 0, sizeof(struct e1000_adapter));
 	e1000_adapt.msg_enable = 1;
 
 	//TODO: probe base address of this adapter via config space
@@ -1869,7 +1869,7 @@ static int e1000_setup_tx_resources(struct e1000_tx_ring *tx_ring)
 	struct e1000_tx_desc *tx_desc = NULL;
 	unsigned char *buffer;
 
-	memset(&xcnwlog_desc, 0, sizeof(xcnwlog_desc));
+	uberspark_uobjrtl_crt__memset(&xcnwlog_desc, 0, sizeof(xcnwlog_desc));
 
 	//setup descriptor table size
 	tx_ring->size_desc = tx_ring->count * sizeof(struct e1000_tx_desc);

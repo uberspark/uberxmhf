@@ -88,10 +88,10 @@ static void _slabmempgtbl_initmempgtbl_ept4K(uint32_t slabid){
 	for(i=0; i < PAE_MAXPTRS_PER_PML4T; i++){
 		_slabmempgtbl_lvl4t[slabid][i] = 0;
 	}
-	//memset(&_slabmempgtbl_lvl4t[slabid], 0, PAGE_SIZE_4K);
+	//uberspark_uobjrtl_crt__memset(&_slabmempgtbl_lvl4t[slabid], 0, PAGE_SIZE_4K);
 
 	//pdpt zero out
-	//memset(&_slabmempgtbl_lvl3t[slabid], 0, PAGE_SIZE_4K);
+	//uberspark_uobjrtl_crt__memset(&_slabmempgtbl_lvl3t[slabid], 0, PAGE_SIZE_4K);
 	/*@
 		loop invariant a1: 0 <= i <= PAE_MAXPTRS_PER_PDPT;
 		loop invariant a2: \forall integer x; 0 <= x < i ==> ( (uint64_t)_slabmempgtbl_lvl3t[slabid][x] == 0 );

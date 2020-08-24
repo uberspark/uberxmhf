@@ -91,7 +91,7 @@ void gp_s2_gathersysmemtypes(void){
   	}
 
   	//check MTRR caps
-	msr_value = CASM_FUNCCALL(rdmsr64, IA32_MTRRCAP);
+	msr_value = CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__rdmsr64, IA32_MTRRCAP);
 	eax = (uint32_t)msr_value;
 	edx = (uint32_t)(msr_value >> 32);
 
@@ -116,11 +116,11 @@ void gp_s2_gathersysmemtypes(void){
 
 
 	//1. clear memorytypes array
-	memset((void *)&_vmx_ept_memorytypes, 0, sizeof(struct _memorytype) * MAX_MEMORYTYPE_ENTRIES);
+	uberspark_uobjrtl_crt__memset((void *)&_vmx_ept_memorytypes, 0, sizeof(struct _memorytype) * MAX_MEMORYTYPE_ENTRIES);
 
 	//2. grab memory types using FIXED MTRRs
 	//0x00000000-0x0007FFFF
-	msr_value = CASM_FUNCCALL(rdmsr64, IA32_MTRR_FIX64K_00000);
+	msr_value = CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__rdmsr64, IA32_MTRR_FIX64K_00000);
 	eax = (uint32_t)msr_value;
 	edx = (uint32_t)(msr_value >> 32);
 
@@ -134,7 +134,7 @@ void gp_s2_gathersysmemtypes(void){
 	_vmx_ept_memorytypes[index].startaddr = 0x00070000; _vmx_ept_memorytypes[index].endaddr = 0x0007FFFF; _vmx_ept_memorytypes[index++].type= ((edx & 0xFF000000) >> 24);
 
 	//0x00080000-0x0009FFFF
-  	msr_value = CASM_FUNCCALL(rdmsr64, IA32_MTRR_FIX16K_80000);
+  	msr_value = CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__rdmsr64, IA32_MTRR_FIX16K_80000);
 	eax = (uint32_t)msr_value;
 	edx = (uint32_t)(msr_value >> 32);
 
@@ -148,7 +148,7 @@ void gp_s2_gathersysmemtypes(void){
 	_vmx_ept_memorytypes[index].startaddr = 0x0009C000; _vmx_ept_memorytypes[index].endaddr = 0x0009FFFF; _vmx_ept_memorytypes[index++].type= ((edx & 0xFF000000) >> 24);
 
 	//0x000A0000-0x000BFFFF
-    	msr_value = CASM_FUNCCALL(rdmsr64, IA32_MTRR_FIX16K_A0000);
+    	msr_value = CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__rdmsr64, IA32_MTRR_FIX16K_A0000);
 	eax = (uint32_t)msr_value;
 	edx = (uint32_t)(msr_value >> 32);
 
@@ -162,7 +162,7 @@ void gp_s2_gathersysmemtypes(void){
 	_vmx_ept_memorytypes[index].startaddr = 0x000BC000; _vmx_ept_memorytypes[index].endaddr = 0x000BFFFF; _vmx_ept_memorytypes[index++].type= ((edx & 0xFF000000) >> 24);
 
 	//0x000C0000-0x000C7FFF
-       	msr_value = CASM_FUNCCALL(rdmsr64, IA32_MTRR_FIX4K_C0000);
+       	msr_value = CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__rdmsr64, IA32_MTRR_FIX4K_C0000);
 	eax = (uint32_t)msr_value;
 	edx = (uint32_t)(msr_value >> 32);
 
@@ -176,7 +176,7 @@ void gp_s2_gathersysmemtypes(void){
 	_vmx_ept_memorytypes[index].startaddr = 0x000C7000; _vmx_ept_memorytypes[index].endaddr = 0x000C7FFF; _vmx_ept_memorytypes[index++].type= ((edx & 0xFF000000) >> 24);
 
 	//0x000C8000-0x000C8FFF
-       	msr_value = CASM_FUNCCALL(rdmsr64, IA32_MTRR_FIX4K_C8000);
+       	msr_value = CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__rdmsr64, IA32_MTRR_FIX4K_C8000);
 	eax = (uint32_t)msr_value;
 	edx = (uint32_t)(msr_value >> 32);
 
@@ -190,7 +190,7 @@ void gp_s2_gathersysmemtypes(void){
 	_vmx_ept_memorytypes[index].startaddr = 0x000CF000; _vmx_ept_memorytypes[index].endaddr = 0x000CFFFF; _vmx_ept_memorytypes[index++].type= ((edx & 0xFF000000) >> 24);
 
 	//0x000D0000-0x000D7FFF
-       	msr_value = CASM_FUNCCALL(rdmsr64, IA32_MTRR_FIX4K_D0000);
+       	msr_value = CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__rdmsr64, IA32_MTRR_FIX4K_D0000);
 	eax = (uint32_t)msr_value;
 	edx = (uint32_t)(msr_value >> 32);
 
@@ -204,7 +204,7 @@ void gp_s2_gathersysmemtypes(void){
 	_vmx_ept_memorytypes[index].startaddr = 0x000D7000; _vmx_ept_memorytypes[index].endaddr = 0x000D7FFF; _vmx_ept_memorytypes[index++].type= ((edx & 0xFF000000) >> 24);
 
 	//0x000D8000-0x000DFFFF
-       	msr_value = CASM_FUNCCALL(rdmsr64, IA32_MTRR_FIX4K_D8000);
+       	msr_value = CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__rdmsr64, IA32_MTRR_FIX4K_D8000);
 	eax = (uint32_t)msr_value;
 	edx = (uint32_t)(msr_value >> 32);
 
@@ -218,7 +218,7 @@ void gp_s2_gathersysmemtypes(void){
 	_vmx_ept_memorytypes[index].startaddr = 0x000DF000; _vmx_ept_memorytypes[index].endaddr = 0x000DFFFF; _vmx_ept_memorytypes[index++].type= ((edx & 0xFF000000) >> 24);
 
 	//0x000E0000-0x000E7FFF
-       	msr_value = CASM_FUNCCALL(rdmsr64, IA32_MTRR_FIX4K_E0000);
+       	msr_value = CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__rdmsr64, IA32_MTRR_FIX4K_E0000);
 	eax = (uint32_t)msr_value;
 	edx = (uint32_t)(msr_value >> 32);
 
@@ -232,7 +232,7 @@ void gp_s2_gathersysmemtypes(void){
 	_vmx_ept_memorytypes[index].startaddr = 0x000E7000; _vmx_ept_memorytypes[index].endaddr = 0x000E7FFF; _vmx_ept_memorytypes[index++].type= ((edx & 0xFF000000) >> 24);
 
 	//0x000E8000-0x000EFFFF
-       	msr_value = CASM_FUNCCALL(rdmsr64, IA32_MTRR_FIX4K_E8000);
+       	msr_value = CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__rdmsr64, IA32_MTRR_FIX4K_E8000);
 	eax = (uint32_t)msr_value;
 	edx = (uint32_t)(msr_value >> 32);
 
@@ -246,7 +246,7 @@ void gp_s2_gathersysmemtypes(void){
 	_vmx_ept_memorytypes[index].startaddr = 0x000EF000; _vmx_ept_memorytypes[index].endaddr = 0x000EFFFF; _vmx_ept_memorytypes[index++].type= ((edx & 0xFF000000) >> 24);
 
 	//0x000F0000-0x000F7FFF
-       	msr_value = CASM_FUNCCALL(rdmsr64, IA32_MTRR_FIX4K_F0000);
+       	msr_value = CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__rdmsr64, IA32_MTRR_FIX4K_F0000);
 	eax = (uint32_t)msr_value;
 	edx = (uint32_t)(msr_value >> 32);
 
@@ -260,7 +260,7 @@ void gp_s2_gathersysmemtypes(void){
 	_vmx_ept_memorytypes[index].startaddr = 0x000F7000; _vmx_ept_memorytypes[index].endaddr = 0x000F7FFF; _vmx_ept_memorytypes[index++].type= ((edx & 0xFF000000) >> 24);
 
 	//0x000F8000-0x000FFFFF
-       	msr_value = CASM_FUNCCALL(rdmsr64, IA32_MTRR_FIX4K_F8000);
+       	msr_value = CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__rdmsr64, IA32_MTRR_FIX4K_F8000);
 	eax = (uint32_t)msr_value;
 	edx = (uint32_t)(msr_value >> 32);
 
@@ -282,13 +282,13 @@ void gp_s2_gathersysmemtypes(void){
 		uint32_t i;
 
 		for(i=0; i < num_vmtrrs; i++){
-			msr_value = CASM_FUNCCALL(rdmsr64, msrval);
+			msr_value = CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__rdmsr64, msrval);
 			eax = (uint32_t)msr_value;
 			edx = (uint32_t)(msr_value >> 32);
 
 			vMTRR_base = ((uint64_t)edx << 32) | (uint64_t)eax;
 			msrval++;
-			msr_value = CASM_FUNCCALL(rdmsr64, msrval);
+			msr_value = CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__rdmsr64, msrval);
 			eax = (uint32_t)msr_value;
 			edx = (uint32_t)(msr_value >> 32);
 
