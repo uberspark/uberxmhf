@@ -135,3 +135,8 @@ hypercalls) is built.
          steps in the **Install and build RPI kernel on development system** section within **Build Core Micro-Hypervisor Framework**
          above. 
 
+	 
+#.
+   Note about uberapp libraries:
+
+   #. There are two libraries to support integrating uberapps into an existing code base. There is a userspace library (``libuhcall``) and a kernel space library (``libkhcall``). These provide a function call interface for making a hyper call (e.g., ``uhcall()`` for making userspace calls to invoke an uberapp).
