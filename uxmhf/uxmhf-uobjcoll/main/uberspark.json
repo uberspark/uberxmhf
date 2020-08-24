@@ -14,7 +14,7 @@
 
    /* uobj declaration */
  "uberspark-uobj" : {
-     "namespace" : "uberspark/uobjs/platform/pc/uxmhf/main",
+     "namespace" : "uberspark/uobjcoll/platform/pc/uxmhf/main",
      "platform" : "pc",
      "arch" : "x86_32",
      "cpu" : "generic",

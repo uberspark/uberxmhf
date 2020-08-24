@@ -75,7 +75,6 @@
 #define __XMHF_BUILD_VERSION__ 5.0
 #define __XMHF_BUILD_REVISION__ "sometimes-even-the-wisest-of-man-and-machines-can-be-in-error"
 #define __USPARK_FRAMAC_VA__
-#define __ASSEMBLY__
 
 /*                                                                                         */
 

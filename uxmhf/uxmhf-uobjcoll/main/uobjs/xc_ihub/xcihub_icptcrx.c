@@ -48,8 +48,6 @@
 // #include <xmhfgeec.h>
 // #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf-debug.h>
 
-#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhfhw.h>
-
 #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xc.h>
 #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xc_ihub.h>
 #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/uapi_gcpustate.h>

@@ -64,7 +64,7 @@
 
 
 #if defined (__XMHF_VERIFICATION__) && defined (__USPARK_FRAMAC_VA__)
-#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf-hwm.h>
+// #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf-hwm.h>
 
 uint32_t cpuid = 0;	//BSP cpu
 uint32_t check_esp, check_eip = CASM_RET_EIP;
