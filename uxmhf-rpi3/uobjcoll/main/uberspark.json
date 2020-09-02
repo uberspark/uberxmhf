@@ -82,6 +82,30 @@
 			{
 				"namespace" : "uberspark/uobjrtl/crypto"
 			}
+		],
+
+		/* sections */
+		"sections": [
+			{
+				"name" : "paligndata",
+				"output_names" : [ ".paligndata" ],
+				"type" : "0x0",
+				"prot" : "0x0",
+				"size" : "0x800000",
+				"aligned_at" : "0x1000",
+				"pad_to" : "0x1000"
+			},
+
+			{
+				"name" : "palign2mdata",
+				"output_names" : [ ".palign2mdata" ],
+				"type" : "0x0",
+				"prot" : "0x0",
+				"size" : "0x600000",
+				"aligned_at" : "0x200000",
+				"pad_to" : "0x1000"
+			}
+
 		]
 		
 	}

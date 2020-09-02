@@ -9,7 +9,7 @@ COMPILER := container/amd64/armv8_32/generic/gcc/v4.9.3
 ASSEMBLER := container/amd64/armv8_32/generic/gnu-as/v2.26.1
 LINKER := container/amd64/armv8_32/generic/gnu-ld/v2.26.1
 
-SPARK_NAMESPACE := $(shell uberspark staging list | grep rpi3))
+SPARK_NAMESPACE := $(shell uberspark staging list | grep rpi3)
 SPARK_CC := $(shell uberspark staging --setting-name=bridge_cc_bridge config-get)
 SPARK_AS := $(shell uberspark staging --setting-name=bridge_as_bridge config-get)
 SPARK_LD := $(shell uberspark staging --setting-name=bridge_ld_bridge config-get)
@@ -29,18 +29,18 @@ build:
 
 .PHONY: prep
 prep:
-ifneq ("$(SPARK_NAMESPACE)", "")
+ifeq ("$(SPARK_NAMESPACE)", "")
 	uberspark staging create rpi3
 endif
-ifneq ("$(SPARK_CC)", "$(COMPILER)")
+#ifneq ("$(SPARK_CC)", "$(COMPILER)")
 	uberspark staging config-set --setting-name=bridge_cc_bridge --setting-value=$(COMPILER)
-endif
-ifneq ("$(SPARK_AS)", "$(ASSEMBLER)")
+#endif
+#ifneq ("$(SPARK_AS)", "$(ASSEMBLER)")
 	uberspark staging config-set --setting-name=bridge_as_bridge --setting-value=$(ASSEMBLER)
-endif
-ifneq ("$(SPARK_LD)", "$(LINKER)")
+#endif
+#ifneq ("$(SPARK_LD)", "$(LINKER)")
 	uberspark staging config-set --setting-name=bridge_ld_bridge --setting-value=$(LINKER)
-endif
+#endif
 
 
 
