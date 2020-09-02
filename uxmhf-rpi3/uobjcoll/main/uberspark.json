@@ -101,7 +101,7 @@
 				"output_names" : [ ".palign2mdata" ],
 				"type" : "0x0",
 				"prot" : "0x0",
-				"size" : "0x600000",
+				"size" : "0x400000",
 				"aligned_at" : "0x200000",
 				"pad_to" : "0x1000"
 			}
