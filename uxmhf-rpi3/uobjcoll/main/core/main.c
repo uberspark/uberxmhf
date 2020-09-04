@@ -262,8 +262,7 @@ void guest_cp15_trap_handler(arm8_32_regs_t *r, u32 hsr){
 		elr_hyp += sizeof(u16);
 	sysreg_write_elrhyp(elr_hyp);
 
-
-	ctxtrace_cp15_trap_handler(r, hsr);
+	//ctxtrace_cp15_trap_handler(r, hsr);
 }
 
 
@@ -633,6 +632,7 @@ void secondary_main(u32 cpuid){
 // test functions
 //////
 /* UART receive test function */
+/*
 void uart_testrecv(void){
     unsigned int i;
     unsigned int pl011_uart_rxff;
@@ -668,3 +668,4 @@ void uart_testrecv(void){
     _XDPRINTF_("%s: Total chars received=%u\n", __func__, num_count);
 }
 
+*/
