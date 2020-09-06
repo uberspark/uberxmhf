@@ -37,11 +37,13 @@
 
 	author: amit vasudevan (amitvasudevan@acm.org)
 */
+#include <uberspark/include/uberspark.h>
 
-.section ".text"
+
 
 //r0, r1 and r2 are set by the boot-loader and need to
 //be preserved
+.section ".uobj_pm_entry"
 .globl entry
 entry:
 
@@ -60,7 +62,7 @@ halt:
 	b halt
 
 
-
+.section ".text"
 
 //r0,r1,r2 go through to the guest os
 //r3 contains the starting address to execute the guestos

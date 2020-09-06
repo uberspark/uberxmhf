@@ -44,15 +44,15 @@
 				 "libutpm/utpm-common.c", "libutpm/utpm.c" ],
 		    "casm-files": [ ],
 		    "asm-files": [ "core/hypvtablestubs.s",
-				   "common/arm8-32.s", "core/entry.s"  ]
+				   "common/arm8-32.s", "core/entry.S"  ]
 		},
 	
 		/* public methods */
 		"publicmethods" : {
-			"main" : [
+			"entry" : [
 				"void",
-				"(uint32_t r0, uint32_t id, struct atag *at, uint32_t cpuid)", 
-				"4"
+				"(uint32_t r0, uint32_t id, struct atag *at)", 
+				"3"
 			]
 		},
 
