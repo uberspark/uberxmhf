@@ -56,7 +56,8 @@ entry:
 	mul r6, r4, r5					//r6 is the offset to add based on index (r4)
 	add sp, sp, r6					//sp is the top-of-stack for this cpu
 
-	bl main
+	ldr r4, =main
+	mov pc, r4
 
 halt:
 	b halt
