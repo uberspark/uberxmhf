@@ -42,8 +42,8 @@
 #ifndef __UART_H__
 #define __UART_H__
 
-//#define __ENABLE_UART___
-//#define __ENABLE_UART_PL011__
+#define __ENABLE_UART__
+#define __ENABLE_UART_PL011__
 
 #if defined (__ENABLE_UART__)
 

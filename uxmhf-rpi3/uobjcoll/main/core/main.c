@@ -440,11 +440,6 @@ void main(u32 r0, u32 id, struct atag *at, u32 cpuid){
 	u32 hvbar, hcr, spsr_hyp;
 	u64 boardserial;
 
-	bcm2837_pl011uart_init();
-	bcm2837_pl011uart_puts("hello world!\n\nhello world!\n");
-
-	HALT();
-
 #if defined (__ENABLE_UART_PL011__) || defined (__ENABLE_UART_MINI__)
 	//initialize uart
 	uart_init();
