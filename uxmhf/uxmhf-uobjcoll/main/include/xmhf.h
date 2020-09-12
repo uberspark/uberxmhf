@@ -52,6 +52,8 @@
 
 #include <uberspark/include/uberspark.h>
 #include <uberspark/uobjrtl/hw/include/generic/x86_32/intel/hw.h>
+#include <uberspark/uobjrtl/crypto/include/hashes/sha1/sha1.h>
+// #include <uberspark/uobjrtl/debug/include/debug.h>
 
 #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf-config.h>          //XMHF platform/arch config, TODO: this needs to be platform/arch independent push arch dependent stuff into arch/
 #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf-types.h>           //XMHF specific base types

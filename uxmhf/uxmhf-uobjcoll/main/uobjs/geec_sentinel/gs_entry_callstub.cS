@@ -52,7 +52,7 @@
 #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf.h>
 #include <uberspark/hwm/arch/x86_32/intel/hwm.h>
 // #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf-debug.h>
-// #include <xmhfgeec.h>
+#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/geec.h>
 
 #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/geec_sentinel.h>
 

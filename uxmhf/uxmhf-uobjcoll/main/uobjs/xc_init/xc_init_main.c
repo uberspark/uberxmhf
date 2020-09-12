@@ -54,7 +54,7 @@
 #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf.h>
 // #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf-debug.h>
 
-// #include <xmhfgeec.h>
+#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/geec.h>
 
 
 #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xc.h>
@@ -475,58 +475,58 @@ void main(void){
 }
 #endif
 
-void slab_main(slab_params_t *sp){
-    bool isbsp = uberspark_uobjrtl_hw__generic_x86_32_intel__lapic_isbsp();
+// void slab_main(slab_params_t *sp){
+//     bool isbsp = uberspark_uobjrtl_hw__generic_x86_32_intel__lapic_isbsp();
 
-    #if defined (__DEBUG_SERIAL__)
-	static volatile uint32_t cpucount=0;
-	#endif //__DEBUG_SERIAL__
+//     #if defined (__DEBUG_SERIAL__)
+// 	static volatile uint32_t cpucount=0;
+// 	#endif //__DEBUG_SERIAL__
 
-    //grab lock
-    CASM_FUNCCALL(spin_lock,&__xcinit_smplock);
+//     //grab lock
+//     CASM_FUNCCALL(spin_lock,&__xcinit_smplock);
 
-    _XDPRINTF_("XC_INIT[%u]: got control: ESP=%08x\n", (uint16_t)sp->cpuid, CASM_FUNCCALL(read_esp,CASM_NOPARAM));
-    _XDPRINTF_("XC_INIT[%u]: HYPAPP_INFO_TABLE_NUMENTRIES=%u\n", (uint16_t)sp->cpuid, HYPAPP_INFO_TABLE_NUMENTRIES);
+//     _XDPRINTF_("XC_INIT[%u]: got control: ESP=%08x\n", (uint16_t)sp->cpuid, CASM_FUNCCALL(read_esp,CASM_NOPARAM));
+//     _XDPRINTF_("XC_INIT[%u]: HYPAPP_INFO_TABLE_NUMENTRIES=%u\n", (uint16_t)sp->cpuid, HYPAPP_INFO_TABLE_NUMENTRIES);
 
-    //plant int 15h redirection code for E820 reporting and copy boot-module
-    if(isbsp){
-        _XDPRINTF_("XC_INIT[%u]: BSP: Proceeding to install E820 redirection...\n", (uint16_t)sp->cpuid);
-    	xcinit_e820initializehooks();
-        _XDPRINTF_("XC_INIT[%u]: BSP: E820 redirection enabled\n", (uint16_t)sp->cpuid);
-        _XDPRINTF_("XC_INIT[%u]: BSP: Proceeding to copy guest boot-module...\n", (uint16_t)sp->cpuid);
-    	xcinit_copyguestbootmodule(sp->in_out_params[0], sp->in_out_params[1]);
-        _XDPRINTF_("XC_INIT[%u]: BSP: guest boot-module copied\n", (uint16_t)sp->cpuid);
-    }
+//     //plant int 15h redirection code for E820 reporting and copy boot-module
+//     if(isbsp){
+//         _XDPRINTF_("XC_INIT[%u]: BSP: Proceeding to install E820 redirection...\n", (uint16_t)sp->cpuid);
+//     	xcinit_e820initializehooks();
+//         _XDPRINTF_("XC_INIT[%u]: BSP: E820 redirection enabled\n", (uint16_t)sp->cpuid);
+//         _XDPRINTF_("XC_INIT[%u]: BSP: Proceeding to copy guest boot-module...\n", (uint16_t)sp->cpuid);
+//     	xcinit_copyguestbootmodule(sp->in_out_params[0], sp->in_out_params[1]);
+//         _XDPRINTF_("XC_INIT[%u]: BSP: guest boot-module copied\n", (uint16_t)sp->cpuid);
+//     }
 
-    //setup guest uobj state
-    xcinit_setup_guest(sp, isbsp);
-
-
-    //invoke hypapp initialization callbacks
-    xc_hcbinvoke(XMHFGEEC_SLAB_XC_INIT, sp->cpuid, XC_HYPAPPCB_INITIALIZE, 0, XMHFGEEC_SLAB_XG_RICHGUEST);
+//     //setup guest uobj state
+//     xcinit_setup_guest(sp, isbsp);
 
 
-    _XDPRINTF_("XC_INIT[%u]: Proceeding to call guest: ESP=%08x, eflags=%08x\n", (uint16_t)sp->cpuid,
-    		CASM_FUNCCALL(read_esp,CASM_NOPARAM), CASM_FUNCCALL(read_eflags, CASM_NOPARAM));
+//     //invoke hypapp initialization callbacks
+//     xc_hcbinvoke(XMHFGEEC_SLAB_XC_INIT, sp->cpuid, XC_HYPAPPCB_INITIALIZE, 0, XMHFGEEC_SLAB_XG_RICHGUEST);
 
-    #if defined (__DEBUG_SERIAL__)
-	cpucount++;
-	#endif //__DEBUG_SERIAL__
 
-    //release lock
-    CASM_FUNCCALL(spin_unlock,&__xcinit_smplock);
+//     _XDPRINTF_("XC_INIT[%u]: Proceeding to call guest: ESP=%08x, eflags=%08x\n", (uint16_t)sp->cpuid,
+//     		CASM_FUNCCALL(read_esp,CASM_NOPARAM), CASM_FUNCCALL(read_eflags, CASM_NOPARAM));
 
-    #if defined (__DEBUG_SERIAL__)
-    while(cpucount < __XMHF_CONFIG_DEBUG_SERIAL_MAXCPUS__);
-    #endif //__DEBUG_SERIAL__
+//     #if defined (__DEBUG_SERIAL__)
+// 	cpucount++;
+// 	#endif //__DEBUG_SERIAL__
 
-    //call guest
-    xcinit_do_callguest(sp);
+//     //release lock
+//     CASM_FUNCCALL(spin_unlock,&__xcinit_smplock);
 
-    //_XDPRINTF_("%s[%u]: Should  never get here.Halting!\n", __func__, (uint16_t)sp->cpuid);
-    CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__hlt, CASM_NOPARAM);
+//     #if defined (__DEBUG_SERIAL__)
+//     while(cpucount < __XMHF_CONFIG_DEBUG_SERIAL_MAXCPUS__);
+//     #endif //__DEBUG_SERIAL__
 
-    return;
-}
+//     //call guest
+//     xcinit_do_callguest(sp);
+
+//     //_XDPRINTF_("%s[%u]: Should  never get here.Halting!\n", __func__, (uint16_t)sp->cpuid);
+//     CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__hlt, CASM_NOPARAM);
+
+//     return;
+// }
 
 

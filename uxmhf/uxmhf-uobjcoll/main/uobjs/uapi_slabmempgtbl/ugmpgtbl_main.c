@@ -52,7 +52,7 @@
 
 #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf.h>
 // #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf-debug.h>
-// #include <xmhfgeec.h>
+#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/geec.h>
 
 #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/uapi_slabmempgtbl.h>
 
@@ -76,49 +76,49 @@
 		   sp->dst_uapifn == XMHFGEEC_UAPI_SLABMEMPGTBL_GETENTRYFORPADDR ||
 		   sp->dst_uapifn == XMHFGEEC_UAPI_SLABMEMPGTBL_FLUSHTLB) ==> (ugmpgtbl_methodcall_invalid == true);
 @*/
-void slab_main(slab_params_t *sp){
+// void slab_main(slab_params_t *sp){
 
-	if(sp->dst_uapifn == XMHFGEEC_UAPI_SLABMEMPGTBL_INITMEMPGTBL){
-	    xmhfgeec_uapi_slabmempgtbl_initmempgtbl_params_t *initmempgtblp =
-		(xmhfgeec_uapi_slabmempgtbl_initmempgtbl_params_t *)sp->in_out_params;
+// 	if(sp->dst_uapifn == XMHFGEEC_UAPI_SLABMEMPGTBL_INITMEMPGTBL){
+// 	    xmhfgeec_uapi_slabmempgtbl_initmempgtbl_params_t *initmempgtblp =
+// 		(xmhfgeec_uapi_slabmempgtbl_initmempgtbl_params_t *)sp->in_out_params;
 
-            //@ ghost ugmpgtbl_methodcall_inittable = true;
-	    _slabmempgtbl_initmempgtbl(initmempgtblp);
+//             //@ ghost ugmpgtbl_methodcall_inittable = true;
+// 	    _slabmempgtbl_initmempgtbl(initmempgtblp);
 
-	}else if (sp->dst_uapifn == XMHFGEEC_UAPI_SLABMEMPGTBL_SETENTRYFORPADDR){
-          xmhfgeec_uapi_slabmempgtbl_setentryforpaddr_params_t *setentryforpaddrp =
-            (xmhfgeec_uapi_slabmempgtbl_setentryforpaddr_params_t *)sp->in_out_params;
+// 	}else if (sp->dst_uapifn == XMHFGEEC_UAPI_SLABMEMPGTBL_SETENTRYFORPADDR){
+//           xmhfgeec_uapi_slabmempgtbl_setentryforpaddr_params_t *setentryforpaddrp =
+//             (xmhfgeec_uapi_slabmempgtbl_setentryforpaddr_params_t *)sp->in_out_params;
 
-            //@ ghost ugmpgtbl_methodcall_setentry = true;
-            _slabmempgtbl_setentryforpaddr(setentryforpaddrp);
+//             //@ ghost ugmpgtbl_methodcall_setentry = true;
+//             _slabmempgtbl_setentryforpaddr(setentryforpaddrp);
 
-	}else if (sp->dst_uapifn == XMHFGEEC_UAPI_SLABMEMPGTBL_GETENTRYFORPADDR){
-            xmhfgeec_uapi_slabmempgtbl_getentryforpaddr_params_t *getentryforpaddrp =
-                (xmhfgeec_uapi_slabmempgtbl_getentryforpaddr_params_t *)sp->in_out_params;
-
-
-            //@ ghost ugmpgtbl_methodcall_getentry = true;
-            _slabmempgtbl_getentryforpaddr(getentryforpaddrp);
+// 	}else if (sp->dst_uapifn == XMHFGEEC_UAPI_SLABMEMPGTBL_GETENTRYFORPADDR){
+//             xmhfgeec_uapi_slabmempgtbl_getentryforpaddr_params_t *getentryforpaddrp =
+//                 (xmhfgeec_uapi_slabmempgtbl_getentryforpaddr_params_t *)sp->in_out_params;
 
 
-	}else if (sp->dst_uapifn == XMHFGEEC_UAPI_SLABMEMPGTBL_FLUSHTLB){
-		xmhfgeec_uapi_slabmempgtbl_flushtlb_params_t *flushtlbp =
-                (xmhfgeec_uapi_slabmempgtbl_flushtlb_params_t *)sp->in_out_params;
-
-            //@ ghost ugmpgtbl_methodcall_flushtlb = true;
-            _slabmempgtbl_flushtlb(flushtlbp);
-
-	}else if (sp->dst_uapifn == UAPI_UGMPGTBL_GETMPGTBLBASE){
-		uapi_ugmpgtbl_getmpgtblbase_params_t *p =
-                (uapi_ugmpgtbl_getmpgtblbase_params_t *)sp->in_out_params;
-
-            _ugmpgtbl_getmpgtblbase(p);
+//             //@ ghost ugmpgtbl_methodcall_getentry = true;
+//             _slabmempgtbl_getentryforpaddr(getentryforpaddrp);
 
 
-	}else{
+// 	}else if (sp->dst_uapifn == XMHFGEEC_UAPI_SLABMEMPGTBL_FLUSHTLB){
+// 		xmhfgeec_uapi_slabmempgtbl_flushtlb_params_t *flushtlbp =
+//                 (xmhfgeec_uapi_slabmempgtbl_flushtlb_params_t *)sp->in_out_params;
 
-            //@ ghost ugmpgtbl_methodcall_invalid = true;
-            //_XDPRINTF_("UAPI_SLABMEMPGTBL[%u]: Unknown uAPI function %x. Halting!\n",
-            //        (uint16_t)sp->cpuid, sp->dst_uapifn);
-	}
-}
+//             //@ ghost ugmpgtbl_methodcall_flushtlb = true;
+//             _slabmempgtbl_flushtlb(flushtlbp);
+
+// 	}else if (sp->dst_uapifn == UAPI_UGMPGTBL_GETMPGTBLBASE){
+// 		uapi_ugmpgtbl_getmpgtblbase_params_t *p =
+//                 (uapi_ugmpgtbl_getmpgtblbase_params_t *)sp->in_out_params;
+
+//             _ugmpgtbl_getmpgtblbase(p);
+
+
+// 	}else{
+
+//             //@ ghost ugmpgtbl_methodcall_invalid = true;
+//             //_XDPRINTF_("UAPI_SLABMEMPGTBL[%u]: Unknown uAPI function %x. Halting!\n",
+//             //        (uint16_t)sp->cpuid, sp->dst_uapifn);
+// 	}
+// }

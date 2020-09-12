@@ -22,6 +22,8 @@
      /* sources */
      "sources" : {
          "h-files": [ 
+			"include/geec.h",
+
             "include/geec_prime.h",
             /* "include/geec_sentinel.h", */
 			"include/uapi_gcpustate.h",
@@ -36,7 +38,7 @@
 			"include/xc_init.h",
 			"include/xc_nwlog.h",
 			"include/xg_richguest.h",
-			"include/xh_aprvexec.h",
+			// "include/xh_aprvexec.h",
 			"include/xh_hyperdep.h",
 			"include/xh_ssteptrace.h",
             "include/xh_syscalllog.h",
@@ -46,6 +48,8 @@
 			"include/xmhf.h"
         ],
          "c-files": [ 
+			"uobjs/geec/geec_slabmapdef.c",
+
 			"uobjs/geec_prime/gp_data.c",
 			"uobjs/geec_prime/gp_s1_bspstack.c",
 			"uobjs/geec_prime/gp_s1_bspstackgetflags.c",
@@ -177,8 +181,8 @@
 			"uobjs/xc_nwlog/xcnwlog_init.c",
 			"uobjs/xc_nwlog/xcnwlog_logdata.c",
 			"uobjs/xc_nwlog/xcnwlog_main.c",
-			"uobjs/xh_aprvexec/xh_aprvexec_code.c",
-			"uobjs/xh_aprvexec/xh_aprvexec_data.c",
+			// "uobjs/xh_aprvexec/xh_aprvexec_code.c",
+			// "uobjs/xh_aprvexec/xh_aprvexec_data.c",
 			"uobjs/xh_hyperdep/xhhyperdep_activate.c",
 			"uobjs/xh_hyperdep/xhhyperdep_data.c",
 			"uobjs/xh_hyperdep/xhhyperdep_deactivate.c",
@@ -198,6 +202,11 @@
 			"uobjs/xh_syscalllog/xhsysclog_register.c"
         ],
          "casm-files": [ 
+			"geec_slabstubs_uvt.cS",
+			"geec_slabstubs_uvu.cS",
+			"geec_slabstubs_uvug.cS",
+			"geec_slabstubs_vft.cS",
+
             "uobjs/geec_prime/gp_s1_entry.cS",
 			"uobjs/geec_prime/gp_s4_apstacks.cS",
             "uobjs/geec_prime/gp_s4_entry.cS",
@@ -217,7 +226,7 @@
 			"uobjs/xc_exhub/xcexhub_retexcp.cS",
 			"uobjs/xc_ihub/xcihub_icptstub.cS",
 			"uobjs/xc_ihub/xcihub_reticpt.cS",
-			"uobjs/xh_aprvexec/xh_aprvexec_codesup.cS",
+			// "uobjs/xh_aprvexec/xh_aprvexec_codesup.cS",
             "uobjs/xh_ssteptrace/xh_ssteptrace_codesup.cS"
          ],
          "asm-files": [ 

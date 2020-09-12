@@ -45,7 +45,7 @@
  */
 
 #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf.h>
-// #include <xmhfgeec.h>
+#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/geec.h>
 // #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf-debug.h>
 
 #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xc.h>
@@ -70,29 +70,29 @@
 	assigns sp->in_out_params[6];
 	assigns sp->in_out_params[7];
 
-@*/
-void slab_main(slab_params_t *sp){
+// @*/
+// void slab_main(slab_params_t *sp){
 
-	switch(sp->dst_uapifn){
-		case UAPI_XCIHUB_INSTALLICPTHANDLER:
-            _XDPRINTF_("XCIHUB[cpu=%u]: intalling icpt handler\n",
-                       (uint16_t)sp->cpuid);
+// 	switch(sp->dst_uapifn){
+// 		case UAPI_XCIHUB_INSTALLICPTHANDLER:
+//             _XDPRINTF_("XCIHUB[cpu=%u]: intalling icpt handler\n",
+//                        (uint16_t)sp->cpuid);
 
-            CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__x86vmx_vmwrite,VMCS_HOST_RIP,
-            		&xcihub_entry_icptstub);
+//             CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__x86vmx_vmwrite,VMCS_HOST_RIP,
+//             		&xcihub_entry_icptstub);
 
-            break;
+//             break;
 
-		default:
-            _XDPRINTF_("XCIHUB[cpu=%u]: unknown uapifn(%u). ignoring!\n",
-                       (uint16_t)sp->cpuid, sp->dst_uapifn);
+// 		default:
+//             _XDPRINTF_("XCIHUB[cpu=%u]: unknown uapifn(%u). ignoring!\n",
+//                        (uint16_t)sp->cpuid, sp->dst_uapifn);
 
-            break;
+//             break;
 
-	}
+// 	}
 
-	return;
-}
+// 	return;
+// }
 
 
 

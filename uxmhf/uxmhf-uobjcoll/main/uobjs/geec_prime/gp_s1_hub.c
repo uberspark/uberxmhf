@@ -46,7 +46,7 @@
 
 #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf.h>
 // #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf-debug.h>
-// #include <xmhfgeec.h>
+#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/geec.h>
 
 #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/geec_prime.h>
 
@@ -78,7 +78,7 @@ void gp_s1_hub(void){
 #if defined (__DEBUG_SERIAL__)
 
 	//initialize debugging early on
-	xmhf_debug_init((char *)&xcbootinfo->debugcontrol_buffer);
+	uberspark_uobjrtl_debug__init((char *)&xcbootinfo->debugcontrol_buffer);
 
 
 	//[debug] print relevant startup info.

@@ -52,42 +52,42 @@
 
 #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf.h>
 // #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf-debug.h>
-// #include <xmhfgeec.h>
+#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/geec.h>
 
 #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/uapi_uhmpgtbl.h>
 
 
-void slab_main(slab_params_t *sp){
+// void slab_main(slab_params_t *sp){
 
-	if(sp->dst_uapifn == UAPI_UHMPGTBL_INITMEMPGTBL){
-		uapi_uhmpgtbl_initmempgtbl_params_t *initmempgtblp =
-		(uapi_uhmpgtbl_initmempgtbl_params_t *)sp->in_out_params;
+// 	if(sp->dst_uapifn == UAPI_UHMPGTBL_INITMEMPGTBL){
+// 		uapi_uhmpgtbl_initmempgtbl_params_t *initmempgtblp =
+// 		(uapi_uhmpgtbl_initmempgtbl_params_t *)sp->in_out_params;
 
-	    _uhmpgtbl_initmempgtbl(initmempgtblp);
+// 	    _uhmpgtbl_initmempgtbl(initmempgtblp);
 
-	}else if (sp->dst_uapifn == UAPI_UHMPGTBL_SETENTRYFORPADDR){
-		uapi_uhmpgtbl_setentryforpaddr_params_t *setentryforpaddrp =
-            (uapi_uhmpgtbl_setentryforpaddr_params_t *)sp->in_out_params;
+// 	}else if (sp->dst_uapifn == UAPI_UHMPGTBL_SETENTRYFORPADDR){
+// 		uapi_uhmpgtbl_setentryforpaddr_params_t *setentryforpaddrp =
+//             (uapi_uhmpgtbl_setentryforpaddr_params_t *)sp->in_out_params;
 
-            _uhmpgtbl_setentryforpaddr(setentryforpaddrp);
+//             _uhmpgtbl_setentryforpaddr(setentryforpaddrp);
 
-	}else if (sp->dst_uapifn == UAPI_UHMPGTBL_GETMPGTBLBASE){
-		uapi_uhmpgtbl_getmpgtblbase_params_t *p =
-            (uapi_uhmpgtbl_getmpgtblbase_params_t *)sp->in_out_params;
+// 	}else if (sp->dst_uapifn == UAPI_UHMPGTBL_GETMPGTBLBASE){
+// 		uapi_uhmpgtbl_getmpgtblbase_params_t *p =
+//             (uapi_uhmpgtbl_getmpgtblbase_params_t *)sp->in_out_params;
 
-		_XDPRINTF_("uapi_uhmpgtbl[%u]: GETMPGTBLBASE\n",
-                (uint16_t)sp->cpuid);
+// 		_XDPRINTF_("uapi_uhmpgtbl[%u]: GETMPGTBLBASE\n",
+//                 (uint16_t)sp->cpuid);
 
-        _uhmpgtbl_getmpgtblbase(p);
+//         _uhmpgtbl_getmpgtblbase(p);
 
-	}else if (sp->dst_uapifn == UAPI_UHMPGTBL_GETIDXFORMPGTBLBASE){
-		uapi_uhmpgtbl_getidxformpgtblbase_params_t *p =
-            (uapi_uhmpgtbl_getidxformpgtblbase_params_t *)sp->in_out_params;
+// 	}else if (sp->dst_uapifn == UAPI_UHMPGTBL_GETIDXFORMPGTBLBASE){
+// 		uapi_uhmpgtbl_getidxformpgtblbase_params_t *p =
+//             (uapi_uhmpgtbl_getidxformpgtblbase_params_t *)sp->in_out_params;
 
-        _uhmpgtbl_getidxformpgtblbase(p);
+//         _uhmpgtbl_getidxformpgtblbase(p);
 
-	}else{
-            //_XDPRINTF_("uapi_uhmpgtbl[%u]: Unknown uAPI function %x. Halting!\n",
-            //        (uint16_t)sp->cpuid, sp->dst_uapifn);
-	}
-}
+// 	}else{
+//             //_XDPRINTF_("uapi_uhmpgtbl[%u]: Unknown uAPI function %x. Halting!\n",
+//             //        (uint16_t)sp->cpuid, sp->dst_uapifn);
+// 	}
+// }

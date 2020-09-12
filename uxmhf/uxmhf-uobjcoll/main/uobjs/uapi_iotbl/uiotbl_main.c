@@ -52,32 +52,32 @@
 
 #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf.h>
 // #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf-debug.h>
-// #include <xmhfgeec.h>
+#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/geec.h>
 
 #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/uapi_iotbl.h>
 
 
 
-void slab_main(slab_params_t *sp){
+// void slab_main(slab_params_t *sp){
 
-	if(sp->dst_uapifn == UXMHF_UAPI_IOTBL_GETIOTBLBASE &&
-			sp->src_slabid < XMHFGEEC_TOTAL_SLABS){
-		uiotbl_getiotblbase((uapi_iotbl_getiotblbase_t *)sp->in_out_params);
+// 	if(sp->dst_uapifn == UXMHF_UAPI_IOTBL_GETIOTBLBASE &&
+// 			sp->src_slabid < XMHFGEEC_TOTAL_SLABS){
+// 		uiotbl_getiotblbase((uapi_iotbl_getiotblbase_t *)sp->in_out_params);
 
-	}else if(sp->dst_uapifn == UXMHF_UAPI_IOTBL_INITIOTBL &&
-			sp->src_slabid < XMHFGEEC_TOTAL_SLABS){
-		uiotbl_initiotbl((uapi_iotbl_initiotbl_t *)sp->in_out_params);
+// 	}else if(sp->dst_uapifn == UXMHF_UAPI_IOTBL_INITIOTBL &&
+// 			sp->src_slabid < XMHFGEEC_TOTAL_SLABS){
+// 		uiotbl_initiotbl((uapi_iotbl_initiotbl_t *)sp->in_out_params);
 
-	}else if(sp->dst_uapifn == UXMHF_UAPI_IOTBL_SETUPIOTBLUGPORTACCESS &&
-			sp->src_slabid < XMHFGEEC_TOTAL_SLABS){
-		uiotbl_setupiotblugportaccess((uapi_iotbl_setupiotblugportaccess_t *)sp->in_out_params);
+// 	}else if(sp->dst_uapifn == UXMHF_UAPI_IOTBL_SETUPIOTBLUGPORTACCESS &&
+// 			sp->src_slabid < XMHFGEEC_TOTAL_SLABS){
+// 		uiotbl_setupiotblugportaccess((uapi_iotbl_setupiotblugportaccess_t *)sp->in_out_params);
 
-	}else if(sp->dst_uapifn == UXMHF_UAPI_IOTBL_SETUPIOTBLUHPORTACCESS &&
-			sp->src_slabid < XMHFGEEC_TOTAL_SLABS){
-		uiotbl_setupiotbluhportaccess((uapi_iotbl_setupiotbluhportaccess_t *)sp->in_out_params);
+// 	}else if(sp->dst_uapifn == UXMHF_UAPI_IOTBL_SETUPIOTBLUHPORTACCESS &&
+// 			sp->src_slabid < XMHFGEEC_TOTAL_SLABS){
+// 		uiotbl_setupiotbluhportaccess((uapi_iotbl_setupiotbluhportaccess_t *)sp->in_out_params);
 
-	}else {
-		//unknown uapi
-	}
+// 	}else {
+// 		//unknown uapi
+// 	}
 
-}
+// }

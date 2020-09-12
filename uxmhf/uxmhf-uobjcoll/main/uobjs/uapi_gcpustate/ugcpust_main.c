@@ -52,7 +52,7 @@
 
 #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf.h>
 // #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf-debug.h>
-// #include <xmhfgeec.h>
+#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/geec.h>
 
 #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/uapi_gcpustate.h>
 
@@ -137,34 +137,34 @@ void main(void){
 	) ==> (ugcpust_methodcall_invalid == true);
 
 @*/
-void slab_main(slab_params_t *sp){
+// void slab_main(slab_params_t *sp){
 
-	if( sp->dst_uapifn == XMHF_HIC_UAPI_CPUSTATE_VMREAD){
-		ugcpust_vmread((xmhf_uapi_gcpustate_vmrw_params_t *)sp->in_out_params);
-		//@ghost ugcpust_methodcall_vmread = true;
+// 	if( sp->dst_uapifn == XMHF_HIC_UAPI_CPUSTATE_VMREAD){
+// 		ugcpust_vmread((xmhf_uapi_gcpustate_vmrw_params_t *)sp->in_out_params);
+// 		//@ghost ugcpust_methodcall_vmread = true;
 
-	}else if( sp->dst_uapifn == XMHF_HIC_UAPI_CPUSTATE_VMWRITE && (uint16_t)sp->src_slabid < XMHFGEEC_TOTAL_SLABS ){
-		ugcpust_vmwrite(sp->src_slabid, (xmhf_uapi_gcpustate_vmrw_params_t *)sp->in_out_params);
-		//@ghost ugcpust_methodcall_vmwrite = true;
+// 	}else if( sp->dst_uapifn == XMHF_HIC_UAPI_CPUSTATE_VMWRITE && (uint16_t)sp->src_slabid < XMHFGEEC_TOTAL_SLABS ){
+// 		ugcpust_vmwrite(sp->src_slabid, (xmhf_uapi_gcpustate_vmrw_params_t *)sp->in_out_params);
+// 		//@ghost ugcpust_methodcall_vmwrite = true;
 
-	}else if( sp->dst_uapifn == XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSREAD && (uint16_t)sp->cpuid < MAX_PLATFORM_CPUS){
-		ugcpust_gprsread((uint16_t)sp->cpuid, (xmhf_uapi_gcpustate_gprs_params_t *)sp->in_out_params);
-		//@ghost ugcpust_methodcall_gprsread = true;
+// 	}else if( sp->dst_uapifn == XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSREAD && (uint16_t)sp->cpuid < MAX_PLATFORM_CPUS){
+// 		ugcpust_gprsread((uint16_t)sp->cpuid, (xmhf_uapi_gcpustate_gprs_params_t *)sp->in_out_params);
+// 		//@ghost ugcpust_methodcall_gprsread = true;
 
-	}else if( sp->dst_uapifn == XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSWRITE && (uint16_t)sp->cpuid < MAX_PLATFORM_CPUS){
-		ugcpust_gprswrite((uint16_t)sp->cpuid, (xmhf_uapi_gcpustate_gprs_params_t *)sp->in_out_params);
-		//@ghost ugcpust_methodcall_gprswrite = true;
+// 	}else if( sp->dst_uapifn == XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSWRITE && (uint16_t)sp->cpuid < MAX_PLATFORM_CPUS){
+// 		ugcpust_gprswrite((uint16_t)sp->cpuid, (xmhf_uapi_gcpustate_gprs_params_t *)sp->in_out_params);
+// 		//@ghost ugcpust_methodcall_gprswrite = true;
 
-	}else if( sp->dst_uapifn == XMHFGEEC_UAPI_CPUSTATE_GUESTMSRREAD){
-		ugcpust_msrread((xmhf_uapi_gcpustate_msrrw_params_t *)sp->in_out_params);
-		//@ghost ugcpust_methodcall_msrread = true;
+// 	}else if( sp->dst_uapifn == XMHFGEEC_UAPI_CPUSTATE_GUESTMSRREAD){
+// 		ugcpust_msrread((xmhf_uapi_gcpustate_msrrw_params_t *)sp->in_out_params);
+// 		//@ghost ugcpust_methodcall_msrread = true;
 
-	}else if (sp->dst_uapifn == XMHFGEEC_UAPI_CPUSTATE_GUESTMSRWRITE){
-		ugcpust_msrwrite((xmhf_uapi_gcpustate_msrrw_params_t *)sp->in_out_params);
-		//@ghost ugcpust_methodcall_msrwrite = true;
+// 	}else if (sp->dst_uapifn == XMHFGEEC_UAPI_CPUSTATE_GUESTMSRWRITE){
+// 		ugcpust_msrwrite((xmhf_uapi_gcpustate_msrrw_params_t *)sp->in_out_params);
+// 		//@ghost ugcpust_methodcall_msrwrite = true;
 
-	}else{
-		//_XDPRINTF_("UAPI_GCPUSTATE[%u]: Unknown uAPI function %x. Halting!\n", (uint16_t)sp->cpuid, sp->dst_uapifn);
-		//@ghost ugcpust_methodcall_invalid = true;
-	}
-}
+// 	}else{
+// 		//_XDPRINTF_("UAPI_GCPUSTATE[%u]: Unknown uAPI function %x. Halting!\n", (uint16_t)sp->cpuid, sp->dst_uapifn);
+// 		//@ghost ugcpust_methodcall_invalid = true;
+// 	}
+// }

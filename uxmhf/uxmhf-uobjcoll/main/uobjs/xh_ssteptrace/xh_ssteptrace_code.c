@@ -48,7 +48,7 @@
 // author: amit vasudevan (amitvasudevan@acm.org)
 
 #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf.h>
-// #include <xmhfgeec.h>
+#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/geec.h>
 // #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf-debug.h>
 
 #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xc.h>
@@ -322,61 +322,61 @@ static void _hcb_shutdown(uint32_t cpuindex, uint32_t guest_slab_index){
 // slab interface
 
 //void slab_interface(slab_input_params_t *iparams, uint64_t iparams_size, slab_output_params_t *oparams, uint64_t oparams_size, uint64_t src_slabid, uint64_t cpuindex){
-void slab_main(slab_params_t *sp){
-    //xc_hypappcb_inputparams_t *hcb_iparams = (xc_hypappcb_inputparams_t *)iparams;
-    //xc_hypappcb_outputparams_t *hcb_oparams = (xc_hypappcb_outputparams_t *)oparams;
-    xc_hypappcb_params_t *hcbp = (xc_hypappcb_params_t *)&sp->in_out_params[0];
-    hcbp->cbresult=XC_HYPAPPCB_CHAIN;
+// void slab_main(slab_params_t *sp){
+//     //xc_hypappcb_inputparams_t *hcb_iparams = (xc_hypappcb_inputparams_t *)iparams;
+//     //xc_hypappcb_outputparams_t *hcb_oparams = (xc_hypappcb_outputparams_t *)oparams;
+//     xc_hypappcb_params_t *hcbp = (xc_hypappcb_params_t *)&sp->in_out_params[0];
+//     hcbp->cbresult=XC_HYPAPPCB_CHAIN;
 
 
-	//_XDPRINTF_("XHSSTEPTRACE[%u]: Got control, cbtype=%x: ESP=%08x\n",
-    //            (uint16_t)sp->cpuid, hcbp->cbtype, CASM_FUNCCALL(read_esp,CASM_NOPARAM));
+// 	//_XDPRINTF_("XHSSTEPTRACE[%u]: Got control, cbtype=%x: ESP=%08x\n",
+//     //            (uint16_t)sp->cpuid, hcbp->cbtype, CASM_FUNCCALL(read_esp,CASM_NOPARAM));
 
 
-    switch(hcbp->cbtype){
-        case XC_HYPAPPCB_INITIALIZE:{
-            _hcb_initialize(sp->cpuid);
-        }
-        break;
+//     switch(hcbp->cbtype){
+//         case XC_HYPAPPCB_INITIALIZE:{
+//             _hcb_initialize(sp->cpuid);
+//         }
+//         break;
 
-        case XC_HYPAPPCB_HYPERCALL:{
-            _hcb_hypercall(sp->cpuid, hcbp->guest_slab_index);
-        }
-        break;
+//         case XC_HYPAPPCB_HYPERCALL:{
+//             _hcb_hypercall(sp->cpuid, hcbp->guest_slab_index);
+//         }
+//         break;
 
-        //case XC_HYPAPPCB_MEMORYFAULT:{
-        //
-        //
-        //}
-        //break;
+//         //case XC_HYPAPPCB_MEMORYFAULT:{
+//         //
+//         //
+//         //}
+//         //break;
 
-        case XC_HYPAPPCB_SHUTDOWN:{
-            _hcb_shutdown(sp->cpuid, hcbp->guest_slab_index);
-        }
-        break;
+//         case XC_HYPAPPCB_SHUTDOWN:{
+//             _hcb_shutdown(sp->cpuid, hcbp->guest_slab_index);
+//         }
+//         break;
 
-        //case XC_HYPAPPCB_TRAP_IO:{
-        //
-        //
-        //}
-        //break;
+//         //case XC_HYPAPPCB_TRAP_IO:{
+//         //
+//         //
+//         //}
+//         //break;
 
-        //case XC_HYPAPPCB_TRAP_INSTRUCTION:{
-        //
-        //
-        //}
-        //break;
+//         //case XC_HYPAPPCB_TRAP_INSTRUCTION:{
+//         //
+//         //
+//         //}
+//         //break;
 
-        case XC_HYPAPPCB_TRAP_EXCEPTION:{
-            _hcb_trap_exception(sp->cpuid, hcbp->guest_slab_index);
-        }
-        break;
+//         case XC_HYPAPPCB_TRAP_EXCEPTION:{
+//             _hcb_trap_exception(sp->cpuid, hcbp->guest_slab_index);
+//         }
+//         break;
 
 
-        default:{
-            _XDPRINTF_("%s[%u]: Unknown cbtype. Ignoring!\n",
-                __func__, (uint16_t)sp->cpuid);
-        }
-    }
+//         default:{
+//             _XDPRINTF_("%s[%u]: Unknown cbtype. Ignoring!\n",
+//                 __func__, (uint16_t)sp->cpuid);
+//         }
+//     }
 
-}
+// }
