@@ -33,21 +33,23 @@
  *
  */
 
-#ifndef __HMAC_SHA2_H__
-#define __HMAC_SHA2_H__
-
+#ifndef __HMAC_SHA256_H__
+#define __HMAC_SHA256_H__
 
 #ifndef __ASSEMBLY__
 
 #include <xmhfcrypto.h>
 
-int hmac_sha2_init(hmac_state *hmac, const unsigned char *key, unsigned long keylen);
-int hmac_sha2_process(hmac_state *hmac, const unsigned char *in, unsigned long inlen);
-int hmac_sha2_done(hmac_state *hmac, unsigned char *out, unsigned long *outlen);
-int hmac_sha2_memory(const unsigned char *key,  unsigned long keylen,
-                     const unsigned char *in,   unsigned long inlen,
-                     unsigned char *out,  unsigned long *outlen);
+int hmac_sha256_init(hmac_state *hmac, const unsigned char *key,
+		     unsigned long keylen);
+int hmac_sha256_process(hmac_state *hmac, const unsigned char *in,
+		      unsigned long inlen);
+int hmac_sha256_done(hmac_state *hmac, unsigned char *out,
+    		     unsigned long *outlen);
+int hmac_sha256_memory(const unsigned char *key,  unsigned long keylen,
+                       const unsigned char *in,   unsigned long inlen,
+                       unsigned char *out,  unsigned long *outlen);
 
 #endif // __ASSEMBLY__
 
-#endif /* __HMAC_SHA2_H__ */
+#endif /* __HMAC_SHA256_H__ */

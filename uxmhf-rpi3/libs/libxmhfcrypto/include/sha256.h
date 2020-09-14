@@ -33,8 +33,8 @@
  *
  */
 
-#ifndef __SHA2_H__
-#define __SHA2_H__
+#ifndef __SHA256_H__
+#define __SHA256_H__
 
 #include <xmhfcrypto.h>
 
@@ -43,15 +43,15 @@
 
 #ifndef __ASSEMBLY__
 
-int sha2_compress(hash_state *md, unsigned char *buf);
-int sha2_init(hash_state * md);
-int sha2_process (hash_state * md, const unsigned char *in, unsigned long inlen);
-int sha2_done(hash_state * md, unsigned char *out);
-int sha2_memory(const unsigned char *in, unsigned long inlen, unsigned char *out, unsigned long *outlen);
-int sha2_memory_multi(unsigned char *out, unsigned long *outlen,
-                      const unsigned char *in, unsigned long inlen, ...);
-
+int sha256_compress(hash_state *md, unsigned char *buf);
+int sha256_init(hash_state * md);
+int sha256_process (hash_state * md, const unsigned char *in,
+		    unsigned long inlen);
+int sha256_done(hash_state * md, unsigned char *out);
+int sha256_memory(const unsigned char *in, unsigned long inlen,
+		  unsigned char *out, unsigned long *outlen);
+int sha256_memory_multi(unsigned char *out, unsigned long *outlen,
+                        const unsigned char *in, unsigned long inlen, ...);
 #endif // __ASSEMBLY__
 
-
-#endif /* __SHA2_H__ */
+#endif /* __SHA256_H__ */
