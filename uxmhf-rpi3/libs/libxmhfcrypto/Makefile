@@ -7,12 +7,12 @@ vpath %.c $(srcdir) $(srcdir)/mac/hmac-sha2
 
 
 C_SOURCES := hashes/sha1/sha1.c
-C_SOURCES += hashes/sha2/sha2.c
+C_SOURCES += hashes/sha2/sha256.c
 C_SOURCES += ciphers/aes/aes.c
 C_SOURCES += ciphers/aes/aes_tab.c
 C_SOURCES += ciphers/aes/aes_cbc.c
 C_SOURCES += mac/hmac-sha1/hmac-sha1.c
-C_SOURCES += mac/hmac-sha2/hmac-sha2.c
+C_SOURCES += mac/hmac-sha2/hmac-sha256.c
 
 O_SOURCES := $(C_SOURCES)
 O_SOURCES := $(patsubst hashes/sha1/%, %, $(O_SOURCES))
