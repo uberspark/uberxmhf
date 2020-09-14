@@ -186,7 +186,7 @@ struct sha256_state {
 typedef union Hash_state {
     char dummy[1];
     struct sha1_state sha1;
-    struct sha256_state sha1;  
+    struct sha256_state sha256;  
     void *data;
 } hash_state;
 
