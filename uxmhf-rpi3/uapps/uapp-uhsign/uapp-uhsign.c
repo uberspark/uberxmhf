@@ -49,7 +49,7 @@
 #include <uhsign.h>
 #include <whitelist.h>
 #include <hmac-sha1.h>
-#include <hmac-sha2.h>
+#include <hmac-sha256.h>
 #include <xmhfcrypto.h>
 
 
