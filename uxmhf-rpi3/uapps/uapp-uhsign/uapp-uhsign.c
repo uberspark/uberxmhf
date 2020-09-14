@@ -77,7 +77,7 @@ bool uapp_uhsign_handlehcall(u32  uhcall_function, void *uhcall_buffer, u32 uhca
   unsigned long digest_size = HMAC_DIGEST_SIZE;
   unsigned char digest_result[HMAC_DIGEST_SIZE];
 
-  if(hmac_sha2_memory(uhsign_key, (unsigned long) UHSIGN_KEY_SIZE, (unsigned char *) uhcp->pkt, (unsigned long) uhcp->pkt_size, &digest_result, &digest_size)==CRYPT_OK) {
+  if(hmac_sha256_memory(uhsign_key, (unsigned long) UHSIGN_KEY_SIZE, (unsigned char *) uhcp->pkt, (unsigned long) uhcp->pkt_size, &digest_result, &digest_size)==CRYPT_OK) {
     memcpy(uhcp->digest, digest_result, HMAC_DIGEST_SIZE);
 
     int i;
