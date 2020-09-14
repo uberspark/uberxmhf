@@ -68,7 +68,7 @@ void do_uhsign(void *bufptr) {
 
   printf("Digest: ");
   uint32_t i;
-  for(i=0;i<20;i++)
+  for(i=0;i<32;i++)
     printf("%02x", ptr_uhcp->digest[i]);
   printf("\n");
 }

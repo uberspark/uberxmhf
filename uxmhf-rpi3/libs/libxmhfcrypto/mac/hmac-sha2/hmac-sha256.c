@@ -132,7 +132,7 @@ int hmac_sha256_process(hmac_state *hmac, const unsigned char *in, unsigned long
    @return CRYPT_OK if successful
 **/
 int hmac_sha256_done(hmac_state *hmac, unsigned char *out, unsigned long *outlen) {
-    unsigned char buf[LTC_HMAC_SHA2_BLOCKSIZE], isha[20];
+    unsigned char buf[LTC_HMAC_SHA2_BLOCKSIZE], isha[32];
     unsigned long hashsize, i;
     int err;
 
@@ -182,8 +182,8 @@ LBL_ERR:
    @return CRYPT_OK if successful
 **/
 int hmac_sha256_memory(const unsigned char *key,  unsigned long keylen,
-                     const unsigned char *in,   unsigned long inlen,
-                     unsigned char *out,  unsigned long *outlen) {
+                       const unsigned char *in,   unsigned long inlen,
+                       unsigned char *out,  unsigned long *outlen) {
     hmac_state hmac;
     int         err;
 
