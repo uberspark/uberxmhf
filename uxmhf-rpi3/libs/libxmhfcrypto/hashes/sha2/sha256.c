@@ -176,7 +176,40 @@ int sha256_init(hash_state * md) {
    @return CRYPT_OK if successful
 */
 int sha2_process (hash_state * md, const unsigned char *in, unsigned long inlen) {
-  //TODO
+  unsigned long n;
+  int           err;
+  LTC_ARGCHK(md != NULL);
+  LTC_ARGCHK(in != NULL);
+  if (md->sha2.curlen > sizeof(md->sha2.buf)) {
+    return CRYPT_INVALID_ARG;
+  }
+  if ((md->sha2.length + inlen) < md->sha2.length) {
+    return CRYPT_HASH_OVERFLOW;
+  }
+  while (inlen > 0) {
+    if (md->sha2.curlen == 0 && inlen >= 64) {
+      if ((err = sha2_compress (md, (unsigned char *)in)) != CRYPT_OK) {
+	return err;
+      }
+      md->sha2.length += 64 * 8;
+      in              += 64;
+      inlen           -= 64;
+    } else {
+      n = MIN(inlen, (64 - md-> sha2.curlen));
+      XMEMCPY(md->sha2.buf + md->sha2.curlen, in, (size_t)n);
+      md->sha2.curlen += n;
+      in               += n;
+      inlen            -= n;
+      if (md->sha2.curlen == 64) {
+	if ((err = sha2_compress (md, md->sha2.buf)) != CRYPT_OK) {
+	  return err;
+	}
+	md->sha2.length += 8*64;
+	md->sha2.curlen = 0;
+      }
+    }
+  }
+  return CRYPT_OK;
 }
 
 /**
@@ -278,7 +311,29 @@ int sha256_test(void) {
 */
 //int hash_memory(int hash, const unsigned char *in, unsigned long inlen, unsigned char *out, unsigned long *outlen)
 int sha2_memory(const unsigned char *in, unsigned long inlen, unsigned char *out, unsigned long *outlen) {
-  //TODO
+  hash_state md;
+  int err;
+
+  LTC_ARGCHK(in     != NULL);
+  LTC_ARGCHK(out    != NULL);
+  LTC_ARGCHK(outlen != NULL);
+
+  if (*outlen < 20) {
+    *outlen = 20;
+    return CRYPT_BUFFER_OVERFLOW;
+  }
+
+  if ((err = sha2_init(&md)) != CRYPT_OK) {
+    goto LBL_ERR;
+  }
+  if ((err = sha2_process(&md, in, inlen)) != CRYPT_OK) {
+    goto LBL_ERR;
+  }
+  err = sha2_done(&md, out);
+  *outlen = 20;
+LBL_ERR:
+
+  return err;
 }
 
 /**
@@ -293,5 +348,43 @@ int sha2_memory(const unsigned char *in, unsigned long inlen, unsigned char *out
 */
 int sha2_memory_multi(unsigned char *out, unsigned long *outlen,
                       const unsigned char *in, unsigned long inlen, ...) {
-  //TODO
+  hash_state           md;
+  int                  err;
+  va_list              args;
+  const unsigned char *curptr;
+  unsigned long        curlen;
+
+  LTC_ARGCHK(in     != NULL);
+  LTC_ARGCHK(out    != NULL);
+  LTC_ARGCHK(outlen != NULL);
+
+  if (*outlen < 20) {
+    *outlen = 20;
+    return CRYPT_BUFFER_OVERFLOW;
+  }
+
+  if ((err = sha2_init(&md)) != CRYPT_OK) {
+    goto LBL_ERR;
+  }
+
+  va_start(args, inlen);
+  curptr = in;
+  curlen = inlen;
+  for (;;) {
+    /* process buf */
+    if ((err = sha2_process(&md, curptr, curlen)) != CRYPT_OK) {
+      goto LBL_ERR;
+    }
+    /* step to next */
+    curptr = va_arg(args, const unsigned char*);
+    if (curptr == NULL) {
+      break;
+    }
+    curlen = va_arg(args, unsigned long);
+  }
+  err = sha1_done(&md, out);
+  *outlen = 20;
+LBL_ERR:
+    va_end(args);
+    return err;
 }
