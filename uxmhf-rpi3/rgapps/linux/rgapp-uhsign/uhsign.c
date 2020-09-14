@@ -54,6 +54,7 @@
 
 #include <xmhfcrypto.h>
 #include <hmac-sha1.h>
+#include <hmac-sha2.h>
 
 __attribute__((aligned(4096))) __attribute__((section(".data"))) uhsign_param_t uhcp;
 
