@@ -176,7 +176,7 @@ struct sha1_state {
     uint8_t buf[64];
 };
 
-struct sha2_state {
+struct sha256_state {
   uint64_t length;
   uint32_t state[8], curlen;
   uint8_t buf[64];
@@ -186,6 +186,7 @@ struct sha2_state {
 typedef union Hash_state {
     char dummy[1];
     struct sha1_state sha1;
+    struct sha256_state sha1;  
     void *data;
 } hash_state;
 

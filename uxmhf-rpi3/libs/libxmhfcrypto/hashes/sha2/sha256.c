@@ -35,7 +35,7 @@
 
 #include <string.h>
 #include <xmhfcrypto.h>
-#include <sha2.h>
+#include <sha256.h>
 
 /* Various logical functions */
 #define Ch(x,y,z)       (z ^ (x & (y ^ z)))
@@ -180,32 +180,32 @@ int sha2_process (hash_state * md, const unsigned char *in, unsigned long inlen)
   int           err;
   LTC_ARGCHK(md != NULL);
   LTC_ARGCHK(in != NULL);
-  if (md->sha2.curlen > sizeof(md->sha2.buf)) {
+  if (md->sha256.curlen > sizeof(md->sha256.buf)) {
     return CRYPT_INVALID_ARG;
   }
-  if ((md->sha2.length + inlen) < md->sha2.length) {
+  if ((md->sha256.length + inlen) < md->sha256.length) {
     return CRYPT_HASH_OVERFLOW;
   }
   while (inlen > 0) {
-    if (md->sha2.curlen == 0 && inlen >= 64) {
+    if (md->sha256.curlen == 0 && inlen >= 64) {
       if ((err = sha2_compress (md, (unsigned char *)in)) != CRYPT_OK) {
 	return err;
       }
-      md->sha2.length += 64 * 8;
-      in              += 64;
-      inlen           -= 64;
+      md->sha256.length += 64 * 8;
+      in                += 64;
+      inlen             -= 64;
     } else {
-      n = MIN(inlen, (64 - md-> sha2.curlen));
-      XMEMCPY(md->sha2.buf + md->sha2.curlen, in, (size_t)n);
-      md->sha2.curlen += n;
-      in               += n;
-      inlen            -= n;
-      if (md->sha2.curlen == 64) {
-	if ((err = sha2_compress (md, md->sha2.buf)) != CRYPT_OK) {
+      n = MIN(inlen, (64 - md-> sha256.curlen));
+      XMEMCPY(md->sha256.buf + md->sha256.curlen, in, (size_t)n);
+      md->sha256.curlen += n;
+      in                += n;
+      inlen             -= n;
+      if (md->sha256.curlen == 64) {
+	if ((err = sha2_compress (md, md->sha256.buf)) != CRYPT_OK) {
 	  return err;
 	}
-	md->sha2.length += 8*64;
-	md->sha2.curlen = 0;
+	md->sha256.length += 8*64;
+	md->sha256.curlen = 0;
       }
     }
   }

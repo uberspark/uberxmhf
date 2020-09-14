@@ -42,8 +42,8 @@
 
 #include <string.h>
 #include <xmhfcrypto.h>
-#include <sha2.h>
-#include <hmac-sha2.h>
+#include <sha256.h>
+#include <hmac-sha256.h>
 
 
 #define LTC_HMAC_SHA2_BLOCKSIZE 64 //TODO check?
