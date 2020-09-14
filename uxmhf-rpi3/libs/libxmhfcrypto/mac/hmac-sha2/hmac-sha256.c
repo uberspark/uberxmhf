@@ -46,7 +46,7 @@
 #include <hmac-sha256.h>
 
 
-#define LTC_HMAC_SHA2_BLOCKSIZE 64 //TODO check?
+#define LTC_HMAC_SHA2_BLOCKSIZE 64
 
 /**
    Initialize an HMAC context.
@@ -56,7 +56,7 @@
    @param keylen   The length of the secret key (octets)
    @return CRYPT_OK if successful
 **/
-int hmac_sha2_init(hmac_state *hmac, const unsigned char *key, unsigned long keylen) {
+int hmac_sha256_init(hmac_state *hmac, const unsigned char *key, unsigned long keylen) {
     unsigned char buf[LTC_HMAC_SHA2_BLOCKSIZE];
     unsigned long hashsize;
     unsigned long i, z;
@@ -76,7 +76,7 @@ int hmac_sha2_init(hmac_state *hmac, const unsigned char *key, unsigned long key
     /* (1) make sure we have a large enough key */
     if(keylen > LTC_HMAC_SHA2_BLOCKSIZE) {
         z = LTC_HMAC_SHA2_BLOCKSIZE;
-        if ((err = sha2_memory(key, keylen, hmac->key, &z)) != CRYPT_OK) {
+        if ((err = sha256_memory(key, keylen, hmac->key, &z)) != CRYPT_OK) {
            goto LBL_ERR;
         }
         keylen = hashsize;
@@ -94,11 +94,11 @@ int hmac_sha2_init(hmac_state *hmac, const unsigned char *key, unsigned long key
     }
 
     /* Pre-pend that to the hash data */
-    if ((err = sha2_init(&hmac->md)) != CRYPT_OK) {
+    if ((err = sha256_init(&hmac->md)) != CRYPT_OK) {
        goto LBL_ERR;
     }
 
-    if ((err = sha2_process(&hmac->md, buf, LTC_HMAC_SHA2_BLOCKSIZE)) != CRYPT_OK) {
+    if ((err = sha256_process(&hmac->md, buf, LTC_HMAC_SHA2_BLOCKSIZE)) != CRYPT_OK) {
        goto LBL_ERR;
     }
 
@@ -116,10 +116,10 @@ done:
   @param inlen   The length of the data to HMAC (octets)
   @return CRYPT_OK if successful
 **/
-int hmac_sha2_process(hmac_state *hmac, const unsigned char *in, unsigned long inlen) {
+int hmac_sha256_process(hmac_state *hmac, const unsigned char *in, unsigned long inlen) {
     LTC_ARGCHK(hmac != NULL);
     LTC_ARGCHK(in != NULL);
-    return sha2_process(&hmac->md, in, inlen);
+    return sha256_process(&hmac->md, in, inlen);
 }
 
 
@@ -131,7 +131,7 @@ int hmac_sha2_process(hmac_state *hmac, const unsigned char *in, unsigned long i
                   authentication tag
    @return CRYPT_OK if successful
 **/
-int hmac_sha2_done(hmac_state *hmac, unsigned char *out, unsigned long *outlen) {
+int hmac_sha256_done(hmac_state *hmac, unsigned char *out, unsigned long *outlen) {
     unsigned char buf[LTC_HMAC_SHA2_BLOCKSIZE], isha[20];
     unsigned long hashsize, i;
     int err;
@@ -143,7 +143,7 @@ int hmac_sha2_done(hmac_state *hmac, unsigned char *out, unsigned long *outlen) 
     hashsize = 32;
 
     /* Get the hash of the first HMAC vector plus the data */
-    if ((err = sha2_done(&hmac->md, isha)) != CRYPT_OK) {
+    if ((err = sha256_done(&hmac->md, isha)) != CRYPT_OK) {
        goto LBL_ERR;
     }
 
@@ -153,10 +153,10 @@ int hmac_sha2_done(hmac_state *hmac, unsigned char *out, unsigned long *outlen) 
     }
 
     /* Now calculate the "outer" hash for step (5), (6), and (7) */
-    if ((err = sha2_init(&hmac->md)) != CRYPT_OK) { goto LBL_ERR; }
-    if ((err = sha2_process(&hmac->md, buf, LTC_HMAC_SHA2_BLOCKSIZE)) != CRYPT_OK) { goto LBL_ERR; }
-    if ((err = sha2_process(&hmac->md, isha, hashsize)) != CRYPT_OK) { goto LBL_ERR; }
-    if ((err = sha2_done(&hmac->md, buf)) != CRYPT_OK) { goto LBL_ERR; }
+    if ((err = sha256_init(&hmac->md)) != CRYPT_OK) { goto LBL_ERR; }
+    if ((err = sha256_process(&hmac->md, buf, LTC_HMAC_SHA2_BLOCKSIZE)) != CRYPT_OK) { goto LBL_ERR; }
+    if ((err = sha256_process(&hmac->md, isha, hashsize)) != CRYPT_OK) { goto LBL_ERR; }
+    if ((err = sha256_done(&hmac->md, buf)) != CRYPT_OK) { goto LBL_ERR; }
 
     /* copy to output  */
     for (i = 0; i < hashsize && i < *outlen; i++) {
@@ -181,7 +181,7 @@ LBL_ERR:
    @param outlen    [in/out] Max size and resulting size of authentication tag
    @return CRYPT_OK if successful
 **/
-int hmac_sha2_memory(const unsigned char *key,  unsigned long keylen,
+int hmac_sha256_memory(const unsigned char *key,  unsigned long keylen,
                      const unsigned char *in,   unsigned long inlen,
                      unsigned char *out,  unsigned long *outlen) {
     hmac_state hmac;
@@ -192,9 +192,9 @@ int hmac_sha2_memory(const unsigned char *key,  unsigned long keylen,
     LTC_ARGCHK(out    != NULL);
     LTC_ARGCHK(outlen != NULL);
 
-    if ((err = hmac_sha2_init(&hmac, key, keylen)) != CRYPT_OK) { goto LBL_ERR; }
-    if ((err = hmac_sha2_process(&hmac, in, inlen)) != CRYPT_OK) { goto LBL_ERR; }
-    if ((err = hmac_sha2_done(&hmac, out, outlen)) != CRYPT_OK) { goto LBL_ERR; }
+    if ((err = hmac_sha256_init(&hmac, key, keylen)) != CRYPT_OK) { goto LBL_ERR; }
+    if ((err = hmac_sha256_process(&hmac, in, inlen)) != CRYPT_OK) { goto LBL_ERR; }
+    if ((err = hmac_sha256_done(&hmac, out, outlen)) != CRYPT_OK) { goto LBL_ERR; }
     err = CRYPT_OK;
 LBL_ERR:
    return err;

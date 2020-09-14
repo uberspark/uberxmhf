@@ -175,7 +175,7 @@ int sha256_init(hash_state * md) {
    @param inlen  The length of the data (octets)
    @return CRYPT_OK if successful
 */
-int sha2_process (hash_state * md, const unsigned char *in, unsigned long inlen) {
+int sha256_process (hash_state * md, const unsigned char *in, unsigned long inlen) {
   unsigned long n;
   int           err;
   LTC_ARGCHK(md != NULL);
@@ -188,7 +188,7 @@ int sha2_process (hash_state * md, const unsigned char *in, unsigned long inlen)
   }
   while (inlen > 0) {
     if (md->sha256.curlen == 0 && inlen >= 64) {
-      if ((err = sha2_compress (md, (unsigned char *)in)) != CRYPT_OK) {
+      if ((err = sha256_compress (md, (unsigned char *)in)) != CRYPT_OK) {
 	return err;
       }
       md->sha256.length += 64 * 8;
@@ -201,7 +201,7 @@ int sha2_process (hash_state * md, const unsigned char *in, unsigned long inlen)
       in                += n;
       inlen             -= n;
       if (md->sha256.curlen == 64) {
-	if ((err = sha2_compress (md, md->sha256.buf)) != CRYPT_OK) {
+	if ((err = sha256_compress (md, md->sha256.buf)) != CRYPT_OK) {
 	  return err;
 	}
 	md->sha256.length += 8*64;
@@ -310,7 +310,7 @@ int sha256_test(void) {
   @return CRYPT_OK if successful
 */
 //int hash_memory(int hash, const unsigned char *in, unsigned long inlen, unsigned char *out, unsigned long *outlen)
-int sha2_memory(const unsigned char *in, unsigned long inlen, unsigned char *out, unsigned long *outlen) {
+int sha256_memory(const unsigned char *in, unsigned long inlen, unsigned char *out, unsigned long *outlen) {
   hash_state md;
   int err;
 
@@ -323,13 +323,13 @@ int sha2_memory(const unsigned char *in, unsigned long inlen, unsigned char *out
     return CRYPT_BUFFER_OVERFLOW;
   }
 
-  if ((err = sha2_init(&md)) != CRYPT_OK) {
+  if ((err = sha256_init(&md)) != CRYPT_OK) {
     goto LBL_ERR;
   }
-  if ((err = sha2_process(&md, in, inlen)) != CRYPT_OK) {
+  if ((err = sha256_process(&md, in, inlen)) != CRYPT_OK) {
     goto LBL_ERR;
   }
-  err = sha2_done(&md, out);
+  err = sha256_done(&md, out);
   *outlen = 20;
 LBL_ERR:
 
@@ -346,7 +346,7 @@ LBL_ERR:
   @param ...    tuples of (data,len) pairs to hash, terminated with a (NULL,x) (x=don't care)
   @return CRYPT_OK if successful
 */
-int sha2_memory_multi(unsigned char *out, unsigned long *outlen,
+int sha256_memory_multi(unsigned char *out, unsigned long *outlen,
                       const unsigned char *in, unsigned long inlen, ...) {
   hash_state           md;
   int                  err;
@@ -363,7 +363,7 @@ int sha2_memory_multi(unsigned char *out, unsigned long *outlen,
     return CRYPT_BUFFER_OVERFLOW;
   }
 
-  if ((err = sha2_init(&md)) != CRYPT_OK) {
+  if ((err = sha256_init(&md)) != CRYPT_OK) {
     goto LBL_ERR;
   }
 
@@ -372,7 +372,7 @@ int sha2_memory_multi(unsigned char *out, unsigned long *outlen,
   curlen = inlen;
   for (;;) {
     /* process buf */
-    if ((err = sha2_process(&md, curptr, curlen)) != CRYPT_OK) {
+    if ((err = sha256_process(&md, curptr, curlen)) != CRYPT_OK) {
       goto LBL_ERR;
     }
     /* step to next */
@@ -382,7 +382,7 @@ int sha2_memory_multi(unsigned char *out, unsigned long *outlen,
     }
     curlen = va_arg(args, unsigned long);
   }
-  err = sha1_done(&md, out);
+  err = sha256_done(&md, out);
   *outlen = 20;
 LBL_ERR:
     va_end(args);
