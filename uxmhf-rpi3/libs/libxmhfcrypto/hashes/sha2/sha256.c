@@ -175,7 +175,8 @@ int sha256_init(hash_state * md) {
    @param inlen  The length of the data (octets)
    @return CRYPT_OK if successful
 */
-int sha256_process (hash_state * md, const unsigned char *in, unsigned long inlen) {
+int sha256_process (hash_state * md, const unsigned char *in,
+		    unsigned long inlen) {
   unsigned long n;
   int           err;
   LTC_ARGCHK(md != NULL);
@@ -307,7 +308,8 @@ int sha256_test(void) {
   @return CRYPT_OK if successful
 */
 //int hash_memory(int hash, const unsigned char *in, unsigned long inlen, unsigned char *out, unsigned long *outlen)
-int sha256_memory(const unsigned char *in, unsigned long inlen, unsigned char *out, unsigned long *outlen) {
+int sha256_memory(const unsigned char *in, unsigned long inlen,
+		  unsigned char *out, unsigned long *outlen) {
   hash_state md;
   int err;
 
@@ -344,7 +346,7 @@ LBL_ERR:
   @return CRYPT_OK if successful
 */
 int sha256_memory_multi(unsigned char *out, unsigned long *outlen,
-                      const unsigned char *in, unsigned long inlen, ...) {
+                        const unsigned char *in, unsigned long inlen, ...) {
   hash_state           md;
   int                  err;
   va_list              args;

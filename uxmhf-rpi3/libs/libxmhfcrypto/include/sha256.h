@@ -43,7 +43,7 @@
 
 #ifndef __ASSEMBLY__
 
-int sha256_compress(hash_state *md, unsigned char *buf);
+int sha256_compress(hash_state *md, const unsigned char *buf);
 int sha256_init(hash_state * md);
 int sha256_process (hash_state * md, const unsigned char *in,
 		    unsigned long inlen);
