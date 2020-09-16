@@ -114,7 +114,7 @@ bool xcihub_rg_e820emulation(uint32_t cpuid, uint32_t src_slabid){
 	//read GPRs
 	spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSREAD;
 	XMHF_SLAB_CALLNEW(&spl);
-	memcpy(&r, &gcpustate_gprs->gprs, sizeof(x86regs_t));
+	uberspark_uobjrtl_crt__memcpy(&r, &gcpustate_gprs->gprs, sizeof(x86regs_t));
 
 
 	//if E820 service then...
@@ -187,7 +187,7 @@ bool xcihub_rg_e820emulation(uint32_t cpuid, uint32_t src_slabid){
 
 		//update GPRs
 		spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSWRITE;
-		memcpy(&gcpustate_gprs->gprs, &r, sizeof(x86regs_t));
+		uberspark_uobjrtl_crt__memcpy(&gcpustate_gprs->gprs, &r, sizeof(x86regs_t));
 		XMHF_SLAB_CALLNEW(&spl);
 
 		//update RIP to execute the IRET following the VMCALL instruction

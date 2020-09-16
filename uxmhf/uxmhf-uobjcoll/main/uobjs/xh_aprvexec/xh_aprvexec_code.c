@@ -111,14 +111,15 @@ if(!ae_activated){
 				_ae_page_buffer[2], _ae_page_buffer[3], _ae_page_buffer[4]);
 
     //compute SHA-1 of the local page buffer
-    sha1(&_ae_page_buffer, PAGE_SIZE_4K, digest);
+    unsigned long outlen = 20; // not sure what outlen is for, placeholder for now...
+    uberspark_uobjrtl_crypto__hashes_sha1__sha1_memory(&_ae_page_buffer, PAGE_SIZE_4K, digest, &outlen);
 
     _XDPRINTF_("%s[%u]: computed SHA-1: %*D\n",
                __func__, (uint16_t)cpuindex, SHA_DIGEST_LENGTH, digest, " ");
 
     //compare computed SHA-1 to the database
     for(i=0; i < NUMENTRIES_AE_DATABASE; i++){
-        if(!memcmp(&digest, &_ae_database[i], SHA_DIGEST_LENGTH)){
+        if(!uberspark_uobjrtl_crt__memcmp(&digest, &_ae_database[i], SHA_DIGEST_LENGTH)){
             found_in_database=true;
             break;
         }
@@ -332,7 +333,7 @@ static void _hcb_shutdown(uint32_t cpuindex, uint32_t guest_slab_index){
 //     hcbp->cbresult=XC_HYPAPPCB_CHAIN;
 
 // 	//_XDPRINTF_("XHAPRVEXEC[%u]: Got control, cbtype=%x: ESP=%08x\n",
-//     //             (uint16_t)sp->cpuid, hcbp->cbtype, CASM_FUNCCALL(read_esp,CASM_NOPARAM));
+//     //             (uint16_t)sp->cpuid, hcbp->cbtype, CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__read_esp,CASM_NOPARAM));
 
 
 //     switch(hcbp->cbtype){

@@ -1611,14 +1611,14 @@ static void e1000_pci_set_master(pci_device_t *nwdevice)
 {
         uint32_t cmd;
 
-        xmhf_baseplatform_arch_x86_pci_type1_read(nwdevice->bus,
+        uberspark_uobjrtl_hw__generic_x86_32_intel__pci_type1_read(nwdevice->bus,
 						nwdevice->dev,
 						nwdevice->func,
 						PCI_CONF_HDR_IDX_COMMAND,
 						sizeof(uint16_t),
 						&cmd);
         cmd |= PCI_COMMAND_MASTER;
-        xmhf_baseplatform_arch_x86_pci_type1_write(nwdevice->bus,
+        uberspark_uobjrtl_hw__generic_x86_32_intel__pci_type1_write(nwdevice->bus,
 						nwdevice->dev,
 						nwdevice->func,
 						PCI_CONF_HDR_IDX_COMMAND,
@@ -1630,14 +1630,14 @@ static void e1000_pci_disable_master(pci_device_t *nwdevice)
 {
         uint16_t cmd;
 
-        xmhf_baseplatform_arch_x86_pci_type1_read(nwdevice->bus,
+        uberspark_uobjrtl_hw__generic_x86_32_intel__pci_type1_read(nwdevice->bus,
 						nwdevice->dev,
 						nwdevice->func,
 						PCI_CONF_HDR_IDX_COMMAND,
 						sizeof(uint16_t),
 						&cmd);
         cmd &= ~PCI_COMMAND_MASTER;
-        xmhf_baseplatform_arch_x86_pci_type1_write(nwdevice->bus,
+        uberspark_uobjrtl_hw__generic_x86_32_intel__pci_type1_write(nwdevice->bus,
 						nwdevice->dev,
 						nwdevice->func,
 						PCI_CONF_HDR_IDX_COMMAND,
@@ -1685,10 +1685,10 @@ void e1000_mdelay1(unsigned int msec)
 	uint64_t cycles = E1000_TIMEOUT_1MS * msec;
 	uint64_t diff;
 	uint64_t tscbefore, tscafter;
-	tscbefore = CASM_FUNCCALL(rdtsc64, CASM_NOPARAM);
+	tscbefore = CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__rdtsc64, CASM_NOPARAM);
 	do
 	{
-		tscafter = CASM_FUNCCALL(rdtsc64, CASM_NOPARAM);
+		tscafter = CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__rdtsc64, CASM_NOPARAM);
 		diff = tscafter - tscbefore;
 	} while (diff < cycles);
 }

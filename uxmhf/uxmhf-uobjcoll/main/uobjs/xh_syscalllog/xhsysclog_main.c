@@ -118,7 +118,7 @@ void main(void){
 // void slab_main(slab_params_t *sp){
 
 // 	//_XDPRINTF_("XHSYSCALLLOG[%u]: Got control, cbtype=%x: ESP=%08x\n",
-// 	//	(uint16_t)sp->cpuid, sp->in_out_params[0], CASM_FUNCCALL(read_esp,CASM_NOPARAM));
+// 	//	(uint16_t)sp->cpuid, sp->in_out_params[0], CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__read_esp,CASM_NOPARAM));
 
 // 	if( sp->in_out_params[0] == XC_HYPAPPCB_INITIALIZE){
 // 		sysclog_hcbinit(sp->cpuid);

@@ -82,7 +82,7 @@ void gs_exit_callv2uv(slab_params_t *sp, void *caller_stack_frame){
         dst_sp = (slab_params_t *) xmhfgeec_slab_info_table[sp->dst_slabid].slabtos[(uint16_t)sp->cpuid];
         _XDPRINTF_("%s[%u]: copying params to dst_sp=%x from sp=%x\n", __func__, (uint16_t)sp->cpuid,
                    (uint32_t)dst_sp, (uint32_t)sp);
-        //memcpy(dst_sp, sp, sizeof(slab_params_t));
+        //uberspark_uobjrtl_crt__memcpy(dst_sp, sp, sizeof(slab_params_t));
         CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__sysmemaccess_copy, dst_sp, sp, sizeof(slab_params_t));
 
     }
@@ -130,7 +130,7 @@ void gs_exit_callv2uv(slab_params_t *sp, void *caller_stack_frame){
 
     _XDPRINTF_("%s[%u]: entry=%x, dst_sp=%x, eflags=%08x, proceeding to xfer...\n", __func__,
                (uint16_t)sp->cpuid, xmhfgeec_slab_info_table[sp->dst_slabid].entrystub, (uint32_t)dst_sp,
-		CASM_FUNCCALL(read_eflags, CASM_NOPARAM));
+		CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__read_eflags, CASM_NOPARAM));
 
 
     CASM_FUNCCALL(gs_exit_callv2uvstub,

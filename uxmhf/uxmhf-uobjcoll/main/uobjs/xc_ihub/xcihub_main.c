@@ -78,7 +78,7 @@
 //             _XDPRINTF_("XCIHUB[cpu=%u]: intalling icpt handler\n",
 //                        (uint16_t)sp->cpuid);
 
-//             CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__x86vmx_vmwrite,VMCS_HOST_RIP,
+//             CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__vmx_vmwrite,VMCS_HOST_RIP,
 //             		&xcihub_entry_icptstub);
 
 //             break;

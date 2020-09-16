@@ -63,11 +63,11 @@ void ugcpust_msrread(xmhf_uapi_gcpustate_msrrw_params_t *msrrwp){
 			msrrwp->value = guestmsrs[msrrwp->msr];
 
 			 //TODO: make core specific guestmsrs load
-			 CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__x86vmx_vmwrite,VMCS_CONTROL_VM_ENTRY_MSR_LOAD_ADDRESS_FULL, guestmsrs);
-			 CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__x86vmx_vmwrite,VMCS_CONTROL_VM_ENTRY_MSR_LOAD_ADDRESS_HIGH, 0);
-			 CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__x86vmx_vmwrite,VMCS_CONTROL_VM_ENTRY_MSR_LOAD_COUNT, GCPUSTATE_MSR_TOTAL);
-			 CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__x86vmx_vmwrite,VMCS_CONTROL_VM_EXIT_MSR_STORE_ADDRESS_FULL, guestmsrs);
-			 CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__x86vmx_vmwrite,VMCS_CONTROL_VM_EXIT_MSR_STORE_ADDRESS_HIGH, 0);
-			 CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__x86vmx_vmwrite,VMCS_CONTROL_VM_EXIT_MSR_STORE_COUNT, GCPUSTATE_MSR_TOTAL);
+			 CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__vmx_vmwrite,VMCS_CONTROL_VM_ENTRY_MSR_LOAD_ADDRESS_FULL, guestmsrs);
+			 CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__vmx_vmwrite,VMCS_CONTROL_VM_ENTRY_MSR_LOAD_ADDRESS_HIGH, 0);
+			 CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__vmx_vmwrite,VMCS_CONTROL_VM_ENTRY_MSR_LOAD_COUNT, GCPUSTATE_MSR_TOTAL);
+			 CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__vmx_vmwrite,VMCS_CONTROL_VM_EXIT_MSR_STORE_ADDRESS_FULL, guestmsrs);
+			 CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__vmx_vmwrite,VMCS_CONTROL_VM_EXIT_MSR_STORE_ADDRESS_HIGH, 0);
+			 CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__vmx_vmwrite,VMCS_CONTROL_VM_EXIT_MSR_STORE_COUNT, GCPUSTATE_MSR_TOTAL);
 		}
 }

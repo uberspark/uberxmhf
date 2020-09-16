@@ -124,8 +124,8 @@ void gp_s2_sdmenumsysdevices(void){
 			@*/
 			for(f=0; f < PCI_FUNCTION_MAX; f++){
 				//read device and vendor ids, if no device then both will be 0xFFFF
-				xmhf_baseplatform_arch_x86_pci_type1_read(b, d, f, PCI_CONF_HDR_IDX_VENDOR_ID, sizeof(uint16_t), &vendor_id);
-				xmhf_baseplatform_arch_x86_pci_type1_read(b, d, f, PCI_CONF_HDR_IDX_DEVICE_ID, sizeof(uint16_t), &device_id);
+				uberspark_uobjrtl_hw__generic_x86_32_intel__pci_type1_read(b, d, f, PCI_CONF_HDR_IDX_VENDOR_ID, sizeof(uint16_t), &vendor_id);
+				uberspark_uobjrtl_hw__generic_x86_32_intel__pci_type1_read(b, d, f, PCI_CONF_HDR_IDX_DEVICE_ID, sizeof(uint16_t), &device_id);
 
 				if( !(vendor_id == 0xFFFF && device_id == 0xFFFF) ){
 	                gp_s2_sdmenumsysdevices_memioextents(b, d, f, vendor_id, device_id);

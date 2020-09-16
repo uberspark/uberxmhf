@@ -75,13 +75,13 @@ void xcihub_icptcpuid(uint32_t cpuid){
 
 	spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSREAD;
 	XMHF_SLAB_CALLNEW(&spl);
-	memcpy(&r, &gcpustate_gprs->gprs, sizeof(x86regs_t));
+	uberspark_uobjrtl_crt__memcpy(&r, &gcpustate_gprs->gprs, sizeof(x86regs_t));
 
 	//invoke actual CPUID instruction
 	CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__cpuid,(uint32_t)r.eax, (uint32_t *)&r.eax, (uint32_t *)&r.ebx, (uint32_t *)&r.ecx, (uint32_t *)&r.edx);
 
 	spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSWRITE;
-	memcpy(&gcpustate_gprs->gprs, &r, sizeof(x86regs_t));
+	uberspark_uobjrtl_crt__memcpy(&gcpustate_gprs->gprs, &r, sizeof(x86regs_t));
 	XMHF_SLAB_CALLNEW(&spl);
 
 	//set guest RIP to next instruction and resume

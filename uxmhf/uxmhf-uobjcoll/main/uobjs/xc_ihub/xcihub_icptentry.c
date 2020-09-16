@@ -62,19 +62,19 @@ void xcihub_entry_icpt(x86regs_t *r){
     slab_params_t spl;
     uint32_t eflags;
 
-    eflags = CASM_FUNCCALL(read_eflags,CASM_NOPARAM);
+    eflags = CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__read_eflags,CASM_NOPARAM);
     eflags &= ~(EFLAGS_IOPL); //clear out IOPL bits
     eflags |= EFLAGS_IOPL;
-    CASM_FUNCCALL(write_eflags,eflags);
+    CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__write_eflags,eflags);
 
     uberspark_uobjrtl_crt__memset(&spl, 0, sizeof(spl));
 
     spl.slab_ctype = XMHFGEEC_SENTINEL_CALL_INTERCEPT;
-    spl.src_slabid = CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__x86vmx_vmread,VMCS_CONTROL_VPID);
+    spl.src_slabid = CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__vmx_vmread,VMCS_CONTROL_VPID);
     spl.dst_slabid = XMHFGEEC_SLAB_XC_IHUB;
-    spl.cpuid = xmhf_baseplatform_arch_x86_getcpulapicid();
+    spl.cpuid = uberspark_uobjrtl_hw__generic_x86_32_intel__getcpulapicid();
 
-    memcpy(&spl.in_out_params[0], r, sizeof(x86regs_t));
+    uberspark_uobjrtl_crt__memcpy(&spl.in_out_params[0], r, sizeof(x86regs_t));
 
     //invoke processing of intercept
     xcihub_icptmain(&spl);

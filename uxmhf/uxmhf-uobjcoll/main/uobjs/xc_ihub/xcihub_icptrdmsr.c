@@ -76,7 +76,7 @@ void xcihub_icptrdmsr(uint32_t cpuid){
 
 	spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSREAD;
 	XMHF_SLAB_CALLNEW(&spl);
-	memcpy(&r, &gcpustate_gprs->gprs, sizeof(x86regs_t));
+	uberspark_uobjrtl_crt__memcpy(&r, &gcpustate_gprs->gprs, sizeof(x86regs_t));
 
 	switch((uint32_t)r.ecx){
 	    case IA32_SYSENTER_CS_MSR:
@@ -125,7 +125,7 @@ void xcihub_icptrdmsr(uint32_t cpuid){
 
 	spl.dst_slabid = XMHFGEEC_SLAB_UAPI_GCPUSTATE;
 	spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSWRITE;
-	memcpy(&gcpustate_gprs->gprs, &r, sizeof(x86regs_t));
+	uberspark_uobjrtl_crt__memcpy(&gcpustate_gprs->gprs, &r, sizeof(x86regs_t));
 	XMHF_SLAB_CALLNEW(&spl);
 
 	spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_VMREAD;

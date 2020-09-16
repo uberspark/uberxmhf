@@ -81,8 +81,8 @@ void xcexhub_entryexcp(x86vmx_exception_frame_t *exframe){
     spl.src_slabid = XMHFGEEC_SLAB_GEEC_SENTINEL; //XXX: TODO: grab src_slabid based on exframe->orig_rip
     spl.dst_slabid = XMHFGEEC_SLAB_XC_EXHUB;
     spl.dst_uapifn = 0;
-    spl.cpuid = xmhf_baseplatform_arch_x86_getcpulapicid();
-    memcpy(&spl.in_out_params[0], exframe,
+    spl.cpuid = uberspark_uobjrtl_hw__generic_x86_32_intel__getcpulapicid();
+    uberspark_uobjrtl_crt__memcpy(&spl.in_out_params[0], exframe,
            sizeof(x86vmx_exception_frame_t));
 
     //invoke exception processing

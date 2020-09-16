@@ -113,7 +113,7 @@ void main(void){
 
 // 	}else if( sp->dst_uapifn == UAPI_XCEXHUB_LOADHOSTIDTRBASE){
 
-// 		CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__x86vmx_vmwrite,VMCS_HOST_IDTR_BASE, CASM_FUNCCALL32(xmhf_baseplatform_arch_x86_getidtbase,CASM_NOPARAM));
+// 		CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__vmx_vmwrite,VMCS_HOST_IDTR_BASE, CASM_FUNCCALL32(xmhf_baseplatform_arch_x86_getidtbase,CASM_NOPARAM));
 
 // 	}else{
 // 		//unknown api ignore and return

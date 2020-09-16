@@ -483,9 +483,9 @@ void main(void){
 // 	#endif //__DEBUG_SERIAL__
 
 //     //grab lock
-//     CASM_FUNCCALL(spin_lock,&__xcinit_smplock);
+//     CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__spin_lock,&__xcinit_smplock);
 
-//     _XDPRINTF_("XC_INIT[%u]: got control: ESP=%08x\n", (uint16_t)sp->cpuid, CASM_FUNCCALL(read_esp,CASM_NOPARAM));
+//     _XDPRINTF_("XC_INIT[%u]: got control: ESP=%08x\n", (uint16_t)sp->cpuid, CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__read_esp,CASM_NOPARAM));
 //     _XDPRINTF_("XC_INIT[%u]: HYPAPP_INFO_TABLE_NUMENTRIES=%u\n", (uint16_t)sp->cpuid, HYPAPP_INFO_TABLE_NUMENTRIES);
 
 //     //plant int 15h redirection code for E820 reporting and copy boot-module
@@ -507,14 +507,14 @@ void main(void){
 
 
 //     _XDPRINTF_("XC_INIT[%u]: Proceeding to call guest: ESP=%08x, eflags=%08x\n", (uint16_t)sp->cpuid,
-//     		CASM_FUNCCALL(read_esp,CASM_NOPARAM), CASM_FUNCCALL(read_eflags, CASM_NOPARAM));
+//     		CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__read_esp,CASM_NOPARAM), CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__read_eflags, CASM_NOPARAM));
 
 //     #if defined (__DEBUG_SERIAL__)
 // 	cpucount++;
 // 	#endif //__DEBUG_SERIAL__
 
 //     //release lock
-//     CASM_FUNCCALL(spin_unlock,&__xcinit_smplock);
+//     CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__spin_unlock,&__xcinit_smplock);
 
 //     #if defined (__DEBUG_SERIAL__)
 //     while(cpucount < __XMHF_CONFIG_DEBUG_SERIAL_MAXCPUS__);

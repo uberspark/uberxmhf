@@ -182,8 +182,8 @@ void gp_s2_sdmenumsysdevices_memioextents(uint32_t b, uint32_t d, uint32_t f, ui
 
 		}else{
 
-			xmhf_baseplatform_arch_x86_pci_type1_read(b, d, f, PCI_CONF_HDR_IDX_HEADER_TYPE, sizeof(uint8_t), &hdr_type);
-			xmhf_baseplatform_arch_x86_pci_type1_read(b, d, f, PCI_CONF_HDR_IDX_COMMAND, sizeof(uint16_t), &command);
+			uberspark_uobjrtl_hw__generic_x86_32_intel__pci_type1_read(b, d, f, PCI_CONF_HDR_IDX_HEADER_TYPE, sizeof(uint8_t), &hdr_type);
+			uberspark_uobjrtl_hw__generic_x86_32_intel__pci_type1_read(b, d, f, PCI_CONF_HDR_IDX_COMMAND, sizeof(uint16_t), &command);
 
 			//_XDPRINTF_("Device %x:%x:%x(%x:%x) HDR=%x, CMD=%x\n",
 			//       b, d, f, vendor_id, device_id, hdr_type, command);
@@ -196,7 +196,7 @@ void gp_s2_sdmenumsysdevices_memioextents(uint32_t b, uint32_t d, uint32_t f, ui
 				sysdev_memioregions[numentries_sysdev_memioregions].dtype=SYSDEV_MEMIOREGIONS_DTYPE_UNKNOWN;
 
 			//disable decode
-			xmhf_baseplatform_arch_x86_pci_type1_write(b, d, f, PCI_CONF_HDR_IDX_COMMAND, sizeof(uint16_t), (command & ~(0x3)) ) ;
+			uberspark_uobjrtl_hw__generic_x86_32_intel__pci_type1_write(b, d, f, PCI_CONF_HDR_IDX_COMMAND, sizeof(uint16_t), (command & ~(0x3)) ) ;
 
 
 			//size BARs
@@ -216,11 +216,11 @@ void gp_s2_sdmenumsysdevices_memioextents(uint32_t b, uint32_t d, uint32_t f, ui
 					sysdev_memioregions[numentries_sysdev_memioregions].memioextents[i].addr_end=0;
 				}else{
 					//for general devices BAR0-BAR5 are valid BARs
-					xmhf_baseplatform_arch_x86_pci_type1_read(b, d, f, PCI_CONF_HDR_IDX_BAR0+(i*4), sizeof(uint32_t), &bar_value);
+					uberspark_uobjrtl_hw__generic_x86_32_intel__pci_type1_read(b, d, f, PCI_CONF_HDR_IDX_BAR0+(i*4), sizeof(uint32_t), &bar_value);
 					if(bar_value){
 						if(bar_value & 0x1){ //I/O
-							xmhf_baseplatform_arch_x86_pci_type1_write(b, d, f, PCI_CONF_HDR_IDX_BAR0+(i*4), sizeof(uint32_t), 0xFFFFFFFFUL);
-							xmhf_baseplatform_arch_x86_pci_type1_read(b, d, f, PCI_CONF_HDR_IDX_BAR0+(i*4), sizeof(uint32_t), &bar_size);
+							uberspark_uobjrtl_hw__generic_x86_32_intel__pci_type1_write(b, d, f, PCI_CONF_HDR_IDX_BAR0+(i*4), sizeof(uint32_t), 0xFFFFFFFFUL);
+							uberspark_uobjrtl_hw__generic_x86_32_intel__pci_type1_read(b, d, f, PCI_CONF_HDR_IDX_BAR0+(i*4), sizeof(uint32_t), &bar_size);
 							bar_size = bar_size & ~(0x1);
 							bar_size = ~(bar_size);
 							bar_size++;
@@ -233,8 +233,8 @@ void gp_s2_sdmenumsysdevices_memioextents(uint32_t b, uint32_t d, uint32_t f, ui
 
 					   }else{
 							//memory
-							xmhf_baseplatform_arch_x86_pci_type1_write(b, d, f, PCI_CONF_HDR_IDX_BAR0+(i*4), sizeof(uint32_t), 0xFFFFFFFFUL);
-							xmhf_baseplatform_arch_x86_pci_type1_read(b, d, f, PCI_CONF_HDR_IDX_BAR0+(i*4), sizeof(uint32_t), &bar_size);
+							uberspark_uobjrtl_hw__generic_x86_32_intel__pci_type1_write(b, d, f, PCI_CONF_HDR_IDX_BAR0+(i*4), sizeof(uint32_t), 0xFFFFFFFFUL);
+							uberspark_uobjrtl_hw__generic_x86_32_intel__pci_type1_read(b, d, f, PCI_CONF_HDR_IDX_BAR0+(i*4), sizeof(uint32_t), &bar_size);
 							bar_size = bar_size & ~(0xF);
 							bar_size = ~(bar_size);
 							bar_size++;
@@ -247,7 +247,7 @@ void gp_s2_sdmenumsysdevices_memioextents(uint32_t b, uint32_t d, uint32_t f, ui
 
 						}
 
-						xmhf_baseplatform_arch_x86_pci_type1_write(b, d, f, PCI_CONF_HDR_IDX_BAR0+(i*4), sizeof(uint32_t), bar_value);
+						uberspark_uobjrtl_hw__generic_x86_32_intel__pci_type1_write(b, d, f, PCI_CONF_HDR_IDX_BAR0+(i*4), sizeof(uint32_t), bar_value);
 					}else{
 						sysdev_memioregions[numentries_sysdev_memioregions].memioextents[i].extent_type=_MEMIOREGIONS_EXTENTS_TYPE_NONE;
 						sysdev_memioregions[numentries_sysdev_memioregions].memioextents[i].addr_start=0;
@@ -258,7 +258,7 @@ void gp_s2_sdmenumsysdevices_memioextents(uint32_t b, uint32_t d, uint32_t f, ui
 
 
 			//restore command register
-			xmhf_baseplatform_arch_x86_pci_type1_write(b, d, f, PCI_CONF_HDR_IDX_COMMAND, sizeof(uint16_t), command);
+			uberspark_uobjrtl_hw__generic_x86_32_intel__pci_type1_write(b, d, f, PCI_CONF_HDR_IDX_COMMAND, sizeof(uint16_t), command);
 		}
 
 		numentries_sysdev_memioregions++;

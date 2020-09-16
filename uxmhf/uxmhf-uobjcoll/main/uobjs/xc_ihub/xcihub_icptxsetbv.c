@@ -77,7 +77,7 @@ void xcihub_icptxsetbv(uint32_t cpuid){
 	//read GPRs
 	spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSREAD;
 	XMHF_SLAB_CALLNEW(&spl);
-	memcpy(&r, &gcpustate_gprs->gprs, sizeof(x86regs_t));
+	uberspark_uobjrtl_crt__memcpy(&r, &gcpustate_gprs->gprs, sizeof(x86regs_t));
 
    	xcr_value = ((uint64_t)r.edx << 32) + (uint64_t)r.eax;
 
@@ -90,7 +90,7 @@ void xcihub_icptxsetbv(uint32_t cpuid){
 	_XDPRINTF_("%s[%u]: xcr_value=%llx", __func__, cpuid, xcr_value);
 
 	//set XCR with supplied value
-	CASM_FUNCCALL(xsetbv, XCR_XFEATURE_ENABLED_MASK, r.eax, r.edx);
+	CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__xsetbv, XCR_XFEATURE_ENABLED_MASK, r.eax, r.edx);
 
 	//skip over XSETBV instruction by adjusting RIP
 	spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_VMREAD;

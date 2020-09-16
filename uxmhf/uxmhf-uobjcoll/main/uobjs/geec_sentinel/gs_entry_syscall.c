@@ -63,7 +63,7 @@
 void gs_entry_syscall(slab_params_t *sp, void *caller_stack_frame){
 
     //sanity check sp
-    sp->cpuid = xmhf_baseplatform_arch_x86_getcpulapicid();
+    sp->cpuid = uberspark_uobjrtl_hw__generic_x86_32_intel__getcpulapicid();
 
     if( !(sp->slab_ctype == XMHFGEEC_SENTINEL_RET_VfT_PROG_TO_uVT_uVU_PROG ||
           sp->slab_ctype == XMHFGEEC_SENTINEL_CALL_uVT_uVU_PROG_TO_VfT_PROG

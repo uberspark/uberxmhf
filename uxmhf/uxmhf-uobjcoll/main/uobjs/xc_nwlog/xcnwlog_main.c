@@ -204,8 +204,8 @@ void main(void){
 // void slab_main(slab_params_t *sp){
 
 // 	_XDPRINTF_("XCNWLOG[%u]: Got control: src=%u, dst=%u, esp=%08x, eflags=%08x\n",
-// 		(uint16_t)sp->cpuid, sp->src_slabid, sp->dst_slabid, CASM_FUNCCALL(read_esp,CASM_NOPARAM),
-// 			CASM_FUNCCALL(read_eflags, CASM_NOPARAM));
+// 		(uint16_t)sp->cpuid, sp->src_slabid, sp->dst_slabid, CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__read_esp,CASM_NOPARAM),
+// 			CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__read_eflags, CASM_NOPARAM));
 
 // 	if(sp->dst_uapifn == XMHFGEEC_SLAB_XC_NWLOG_INITIALIZE){
 // 		xcnwlog_init();

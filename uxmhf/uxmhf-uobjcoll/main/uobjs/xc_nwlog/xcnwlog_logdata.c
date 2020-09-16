@@ -85,8 +85,8 @@
 
 void xcnwlog_logdata(xcnwlog_ls_element_t elem){
 	if(xcnwlog_ls_index[0] >= XC_NWLOG_BUF_MAXELEM){
-		//memcpy(&xcnwlog_lsdma[0], &xcnwlog_ls[0], sizeof(xcnwlog_ls_element_t)*XC_NWLOG_BUF_MAXELEM);
-		memcpy(&xcnwlog_packet.logbuf, &xcnwlog_ls[0], sizeof(xcnwlog_ls_element_t)*XC_NWLOG_BUF_MAXELEM);
+		//uberspark_uobjrtl_crt__memcpy(&xcnwlog_lsdma[0], &xcnwlog_ls[0], sizeof(xcnwlog_ls_element_t)*XC_NWLOG_BUF_MAXELEM);
+		uberspark_uobjrtl_crt__memcpy(&xcnwlog_packet.logbuf, &xcnwlog_ls[0], sizeof(xcnwlog_ls_element_t)*XC_NWLOG_BUF_MAXELEM);
 		//@ghost xcnwlog_logdata_copytodmaregion = true;
 		e1000_xmitack();
 		//@ghost xcnwlog_logdata_xmit = true;

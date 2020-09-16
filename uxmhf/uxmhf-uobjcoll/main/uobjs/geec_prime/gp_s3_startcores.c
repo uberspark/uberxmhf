@@ -125,11 +125,11 @@ void gp_s3_startcores(void){
 	//grab sinit2mle and os2sinit data structures from TXT heap
         txt_heap = uberspark_uobjrtl_hw__generic_x86_32_intel__get_txt_heap();
         CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__sysmem_copy_sys2obj, &sinit_mle_data,
-		get_sinit_mle_data_start(txt_heap, (uint32_t)uberspark_uobjrtl_hw__generic_x86_32_intel__read_pub_config_reg(TXTCR_HEAP_SIZE)),
+		uberspark_uobjrtl_hw__generic_x86_32_intel__get_sinit_mle_data_start(txt_heap, (uint32_t)uberspark_uobjrtl_hw__generic_x86_32_intel__read_pub_config_reg(TXTCR_HEAP_SIZE)),
 		sizeof(sinit_mle_data_t));
 
         CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__sysmem_copy_sys2obj, &os_sinit_data,
-		get_os_sinit_data_start(txt_heap, (uint32_t)uberspark_uobjrtl_hw__generic_x86_32_intel__read_pub_config_reg(TXTCR_HEAP_SIZE)),
+		uberspark_uobjrtl_hw__generic_x86_32_intel__get_os_sinit_data_start(txt_heap, (uint32_t)uberspark_uobjrtl_hw__generic_x86_32_intel__read_pub_config_reg(TXTCR_HEAP_SIZE)),
 		sizeof(os_sinit_data_t));
 
 
@@ -147,7 +147,7 @@ void gp_s3_startcores(void){
         _XDPRINTF_("\nBSP: mle_join.entry_point = %x", mle_join->entry_point);
 
         //populate TXT MLE_JOIN register
-        write_priv_config_reg(TXTCR_MLE_JOIN, (uint64_t)(unsigned long)mle_join);
+        uberspark_uobjrtl_hw__generic_x86_32_intel__write_priv_config_reg(TXTCR_MLE_JOIN, (uint64_t)(unsigned long)mle_join);
 
 
 	//wakeup APs
@@ -157,7 +157,7 @@ void gp_s3_startcores(void){
 	    CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__sysmemaccess_writeu32, sinit_mle_data.rlp_wakeup_addr, 0x01);
         }else {
             _XDPRINTF_("BSP: joining RLPs to MLE with GETSEC[WAKEUP]\n");
-            __getsec_wakeup();
+            uberspark_uobjrtl_hw__generic_x86_32_intel__getsec_wakeup();
             _XDPRINTF_("BSP: GETSEC[WAKEUP] completed\n");
         }
 

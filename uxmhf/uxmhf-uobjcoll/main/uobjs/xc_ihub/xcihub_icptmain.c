@@ -236,7 +236,7 @@ void xcihub_icptmain(slab_params_t *sp){
 	uint32_t cr4;
 
     //grab lock
-    CASM_FUNCCALL(spin_lock,&xcihub_smplock);
+    CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__spin_lock,&xcihub_smplock);
 
 	spl.cpuid = sp->cpuid;
 	spl.src_slabid = XMHFGEEC_SLAB_XC_IHUB;
@@ -280,12 +280,12 @@ void xcihub_icptmain(slab_params_t *sp){
 	sp->in_out_params[6] = spl.in_out_params[6];
 	sp->in_out_params[7] = spl.in_out_params[7];
 
-	//_XDPRINTF_("XCIHUB[%u]: Resuming guest, esp=%08x\n", (uint16_t)sp->cpuid, CASM_FUNCCALL(read_esp,CASM_NOPARAM));
+	//_XDPRINTF_("XCIHUB[%u]: Resuming guest, esp=%08x\n", (uint16_t)sp->cpuid, CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__read_esp,CASM_NOPARAM));
 
 	update_exhub_withinfo((uint16_t)sp->cpuid, false, info_vmexit_reason);
 
     //release lock
-    CASM_FUNCCALL(spin_unlock,&xcihub_smplock);
+    CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__spin_unlock,&xcihub_smplock);
 
 	//resume guest slab
 	return;

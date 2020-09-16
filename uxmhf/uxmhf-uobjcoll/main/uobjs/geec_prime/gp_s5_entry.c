@@ -77,15 +77,15 @@ void gp_s5_entry(void){
 	//@ghost gp_s5_entry_invokedisbsp = true;
 
 	//@assert gp_s5_entry_invokedisbsp == true;
-	cpuid  = xmhf_baseplatform_arch_x86_getcpulapicid();
+	cpuid  = uberspark_uobjrtl_hw__generic_x86_32_intel__getcpulapicid();
 	//@ghost gp_s5_entry_invokedgetcpulapicid = true;
 
 	//@assert gp_s5_entry_invokedisbsp == true;
 	//@assert gp_s5_entry_invokedgetcpulapicid == true;
-    CASM_FUNCCALL(spin_lock,&gp_state4_smplock);
+    CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__spin_lock,&gp_state4_smplock);
 	//@ghost gp_s5_entry_invokedspinlock = true;
 
-    _XDPRINTF_("%s[%u]: ESP=%08x\n", __func__, (uint16_t)cpuid, CASM_FUNCCALL(read_esp,CASM_NOPARAM));
+    _XDPRINTF_("%s[%u]: ESP=%08x\n", __func__, (uint16_t)cpuid, CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__read_esp,CASM_NOPARAM));
 
 	//@assert gp_s5_entry_invokedisbsp == true;
 	//@assert gp_s5_entry_invokedgetcpulapicid == true;
@@ -101,7 +101,7 @@ void gp_s5_entry(void){
 	//@assert gp_s5_entry_invokedgetcpulapicid == true;
 	//@assert gp_s5_entry_invokedspinlock == true;
 	//@assert gp_s5_entry_invokedsetupcpustate == true;
-    CASM_FUNCCALL(spin_unlock,&gp_state4_smplock);
+    CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__spin_unlock,&gp_state4_smplock);
 	//@ghost gp_s5_entry_invokedspinunlock = true;
 
     #if defined (__DEBUG_SERIAL__)

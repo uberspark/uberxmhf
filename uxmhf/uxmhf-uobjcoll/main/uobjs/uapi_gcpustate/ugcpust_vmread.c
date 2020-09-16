@@ -59,5 +59,5 @@
 #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/uapi_gcpustate.h>
 
 void ugcpust_vmread(xmhf_uapi_gcpustate_vmrw_params_t *vmrwp){
-	vmrwp->value = CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__x86vmx_vmread,vmrwp->encoding);
+	vmrwp->value = CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__vmx_vmread,vmrwp->encoding);
 }

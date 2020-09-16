@@ -163,11 +163,12 @@ static bool st_scanforsignature(uint8_t *buffer, uint32_t buffer_size){
     uint64_t i;
 
     //compute SHA-1 of the buffer
-    sha1(buffer, buffer_size, digest);
+    unsigned long outlen = 20; // not sure what outlen is for, placeholder for now...
+    uberspark_uobjrtl_crypto__hashes_sha1__sha1_memory(buffer, buffer_size, digest, &outlen);
 
     //compare computed SHA-1 to the signature database
     for(i=0; i < NUMENTRIES_ST_SIGDATABASE; i++){
-        if(!memcmp(&digest, &_st_sigdatabase[i], SHA_DIGEST_LENGTH)){
+        if(!uberspark_uobjrtl_crt__memcmp(&digest, &_st_sigdatabase[i], SHA_DIGEST_LENGTH)){
             return true;
         }
     }
@@ -330,7 +331,7 @@ static void _hcb_shutdown(uint32_t cpuindex, uint32_t guest_slab_index){
 
 
 // 	//_XDPRINTF_("XHSSTEPTRACE[%u]: Got control, cbtype=%x: ESP=%08x\n",
-//     //            (uint16_t)sp->cpuid, hcbp->cbtype, CASM_FUNCCALL(read_esp,CASM_NOPARAM));
+//     //            (uint16_t)sp->cpuid, hcbp->cbtype, CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__read_esp,CASM_NOPARAM));
 
 
 //     switch(hcbp->cbtype){
