@@ -60,5 +60,6 @@
 #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf-error.h>			//error handling
 #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xc.h>					//core framework decls.
 
+#define _XDPRINTF_(format, args...)
 
 #endif /* __XMHF_H_ */

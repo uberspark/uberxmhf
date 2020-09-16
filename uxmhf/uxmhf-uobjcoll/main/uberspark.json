@@ -258,17 +258,52 @@
 
      /* legacy CoSS functions/code that this uobj invokes */
      "legacy-callees": [
-     ],
+	 ],
 
-     /* uobjrtl */
-     "uobjrtl": [
-		 {
-			 "namespace" : "uberspark/uobjrtl/crypto"
-		 },
-		 {
+	/* uobj binary sectioning parameters */
+	"sections": [
+		{ 
+			"name": "uobj_code",
+			"size": "0x1C00000"  // 0x200000 * 14
+			// "output_names": [
+			// 	".text"
+			// ]
+		},
+		{
+			"name": "uobj_rwdata",
+			"size": "0x9A00000"  // 0x200000 * 11 + 0xA00000 + 0x4200000 + 0x3800000
+			// "output_names": [
+			// 	".data"
+			// ]
+		},
+		{ 
+			"name": "uobj_tstack",
+			"size": "0x5C00000"  // 0x600000 * 13 + 0xe00000
+			// "output_names": [
+			// 	".stack"
+			// ]
+		},
+		{ 
+			"name": "uobj_dmadata",
+			"size": "0x1C00000"  // 0x200000 * 14
+			// "output_names": [
+			// 	".dmadata"
+			// ]
+		}
+	],
+
+	/* uobjrtl */
+	"uobjrtl": [
+		{
+			"namespace" : "uberspark/uobjrtl/crypto"
+		},
+		{
 			"namespace" : "uberspark/uobjrtl/hw"
-		 }
-     ]
+		}
+		// {
+		// 	"namespace" : "uberspark/uobjrtl/debug"
+		// }
+	]
      
  }
 
