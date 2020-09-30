@@ -317,8 +317,8 @@ int sha256_memory(const unsigned char *in, unsigned long inlen,
   LTC_ARGCHK(out    != NULL);
   LTC_ARGCHK(outlen != NULL);
 
-  if (*outlen < 20) {
-    *outlen = 20;
+  if (*outlen < 32) {
+    *outlen = 32;
     return CRYPT_BUFFER_OVERFLOW;
   }
 
@@ -329,7 +329,7 @@ int sha256_memory(const unsigned char *in, unsigned long inlen,
     goto LBL_ERR;
   }
   err = sha256_done(&md, out);
-  *outlen = 20;
+  *outlen = 32;
 LBL_ERR:
 
   return err;
@@ -357,8 +357,8 @@ int sha256_memory_multi(unsigned char *out, unsigned long *outlen,
   LTC_ARGCHK(out    != NULL);
   LTC_ARGCHK(outlen != NULL);
 
-  if (*outlen < 20) {
-    *outlen = 20;
+  if (*outlen < 32) {
+    *outlen = 32;
     return CRYPT_BUFFER_OVERFLOW;
   }
 
@@ -382,7 +382,7 @@ int sha256_memory_multi(unsigned char *out, unsigned long *outlen,
     curlen = va_arg(args, unsigned long);
   }
   err = sha256_done(&md, out);
-  *outlen = 20;
+  *outlen = 32;
 LBL_ERR:
     va_end(args);
     return err;
