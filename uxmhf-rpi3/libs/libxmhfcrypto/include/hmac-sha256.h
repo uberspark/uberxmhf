@@ -28,65 +28,28 @@
  */
 
 /*
- * Author: Matt McCormack (matthew.mccormack@live.com)
+ * Author: Amit Vasudevan (amitvasudevan@acm.org)
+ *         matt mccormack (matthew.mccormack@live.com)
  *
  */
 
-/*
- * hypercall program (uhsign)
- * author: matt mccormack (<matthew.mccormack@live.com>)
- *
- */
+#ifndef __HMAC_SHA256_H__
+#define __HMAC_SHA256_H__
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdint.h>
-#include <stdbool.h>
-
-#include <errno.h>
-#include <fcntl.h>
-#include <string.h>
-#include <unistd.h>
-#include <sys/mman.h>
-
-#include <uhcall.h>
-#include <uhsign.h>
+#ifndef __ASSEMBLY__
 
 #include <xmhfcrypto.h>
-#include <hmac-sha1.h>
-#include <hmac-sha256.h>
 
-__attribute__((aligned(4096))) __attribute__((section(".data"))) uhsign_param_t uhcp;
+int hmac_sha256_init(hmac_state *hmac, const unsigned char *key,
+		     unsigned long keylen);
+int hmac_sha256_process(hmac_state *hmac, const unsigned char *in,
+		      unsigned long inlen);
+int hmac_sha256_done(hmac_state *hmac, unsigned char *out,
+    		     unsigned long *outlen);
+int hmac_sha256_memory(const unsigned char *key,  unsigned long keylen,
+                       const unsigned char *in,   unsigned long inlen,
+                       unsigned char *out,  unsigned long *outlen);
 
-void do_uhsign(void *bufptr) {
-  uhsign_param_t *ptr_uhcp = (uhsign_param_t *)bufptr;
-  if(!uhcall(UAPP_UHSIGN_FUNCTION_SIGN, ptr_uhcp, sizeof(uhsign_param_t)))    
-    printf("hypercall FAILED\n");
-  else
-    printf("SUCCESS\n");
+#endif // __ASSEMBLY__
 
-
-  printf("Digest: ");
-  uint32_t i;
-  for(i=0;i<32;i++)
-    printf("%02x", ptr_uhcp->digest[i]);
-  printf("\n");
-}
-
-
-int main() {
-  uint8_t *data=(uint8_t *)"hello world";
-  uint32_t data_len=11;
-  memcpy(&uhcp.pkt, data, data_len); 
-  uhcp.pkt_size=data_len;
-  uhcp.vaddr = (uint32_t)&uhcp;
-
-  printf("[] passing uhsign_param_t\n");
-
-  do_uhsign((void *)&uhcp);
-
-  printf("[] test complete\n");
-    
-  return 0;
-}
-  
+#endif /* __HMAC_SHA256_H__ */
