@@ -81,8 +81,10 @@ void guest_hypercall_handler(arm8_32_regs_t *r, u32 hsr){
 			return;
 #endif
 
+#if defined (__ENABLE_UAPP_MAVLINKSERHB__)
 		if( uapp_mavlinkserhb_handlehcall(r->r0, r->r1, r->r2) )
 			return;
+#endif
 
 		if( uapp_uhcalltest_handlehcall(r->r0, r->r1, r->r2) )
 			return;

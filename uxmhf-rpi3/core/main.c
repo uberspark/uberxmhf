@@ -560,9 +560,9 @@ void main(u32 r0, u32 id, struct atag *at, u32 cpuid){
 		uapp_sched_initialize(cpuid);
 	#endif
 
-#if 0
-	uapp_mavlinkserhb_initialize(cpuid);
-#endif
+	#if defined (__ENABLE_UAPP_MAVLINKSERHB__)
+		uapp_mavlinkserhb_initialize(cpuid);
+	#endif
 
 	//////
 	// boot secondary cores

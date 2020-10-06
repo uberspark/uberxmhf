@@ -105,6 +105,18 @@ AS_IF([test "x${enable_uapp_hypmtscheduler}" != "xno"],
       [ENABLE_UAPP_HYPMTSCHEDULER=n])
 
 
+# selectively enable/disable MAVLINK serial heart-beat protocol functionality in hypervisor
+AC_SUBST([ENABLE_UAPP_MAVLINKSERHB])
+AC_ARG_ENABLE([uapp_mavlinkserhb],
+	AS_HELP_STRING([--enable-uapp-mavlinkserhb@<:@=yes|no@:>@],
+		[enable MAVLINK serial heart-beat protocol uapp functionality in hypervisor; you must also enable hypervisor scheduler uapp configure option]),
+		, [enable_uapp_mavlinkserhb=no])
+AS_IF([test "x${enable_uapp_mavlinkserhb}" != "xno"],
+      [ENABLE_UAPP_MAVLINKSERHB=y],
+      [ENABLE_UAPP_MAVLINKSERHB=n])
+
+
+
 # selectively enable/disable HMAC functionality in hypervisor
 AC_SUBST([ENABLE_UAPP_UHSIGN])
 AC_ARG_ENABLE([uapp_uhsign],
