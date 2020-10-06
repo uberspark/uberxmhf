@@ -133,8 +133,7 @@ struct sched_timer *uapp_sched_timer_declare(u32 first_time_period,
 		u32 regular_time_period, int priority, HYPTHREADFUNC func);
 
 
-#ifdef __SECURE_HYPTASK_BOOTSTRAP__
-
+#ifdef __ENABLE_UAPP_HYPMTSCHEDULER_SECURE_HYPTASK_BOOTSTRAP__
 typedef struct {
 	uint32_t hyptask_first_period;
 	uint32_t hyptask_regular_period;

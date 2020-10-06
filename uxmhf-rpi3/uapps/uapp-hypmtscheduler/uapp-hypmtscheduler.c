@@ -11,7 +11,6 @@
 #include <uart.h>
 #include <debug.h>
 
-//#define __SECURE_HYPTASK_BOOTSTRAP__	1
 
 #include <hypmtscheduler.h>
 
@@ -97,7 +96,7 @@ __attribute__((section(".data"))) struct sched_timer timer_last = {
 
 
 
-#ifdef __SECURE_HYPTASK_BOOTSTRAP__
+#ifdef __ENABLE_UAPP_HYPMTSCHEDULER_SECURE_HYPTASK_BOOTSTRAP__
 
 hypmtscheduler_secure_bootstrap_config_t hyptask_secure_bootstrap_config[] = {
 		{ (0.5 * HYPMTSCHEDULER_TIME_1SEC),	//hyptask_first_period
@@ -974,7 +973,7 @@ bool uapp_hypmtscheduler_handlehcall(u32 uhcall_function, void *uhcall_buffer,
 
 	if(hmtsp->uhcall_fn == UAPP_HYPMTSCHEDULER_UHCALL_CREATEHYPTASK){
 
-#ifndef __SECURE_HYPTASK_BOOTSTRAP__
+#ifndef __ENABLE_UAPP_HYPMTSCHEDULER_SECURE_HYPTASK_BOOTSTRAP__
 		uapp_hypmtscheduler_handlehcall_createhyptask(hmtsp);
 #endif
 
@@ -1011,7 +1010,7 @@ bool uapp_hypmtscheduler_handlehcall(u32 uhcall_function, void *uhcall_buffer,
 // hypmtscheduler helper functions
 //////////////////////////////////////////////////////////////////////////////
 
-#ifdef __SECURE_HYPTASK_BOOTSTRAP__
+#ifdef __ENABLE_UAPP_HYPMTSCHEDULER_SECURE_HYPTASK_BOOTSTRAP__
 
 void uapp_sched_bootstrap_hyptasks(u32 cpuid){
 	uint32_t i;
@@ -1152,7 +1151,7 @@ void uapp_sched_initialize(u32 cpuid){
 		//declare a keep-alive timer to initialize timer subsystem
 		//uapp_sched_timer_declare((20 * HYPMTSCHEDULER_TIME_1SEC), (20 * HYPMTSCHEDULER_TIME_1SEC), 1, NULL);
 
-#ifdef __SECURE_HYPTASK_BOOTSTRAP__
+#ifdef __ENABLE_UAPP_HYPMTSCHEDULER_SECURE_HYPTASK_BOOTSTRAP__
 		
 		uapp_sched_bootstrap_hyptasks(cpuid);
 #endif

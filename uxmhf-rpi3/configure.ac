@@ -105,6 +105,17 @@ AS_IF([test "x${enable_uapp_hypmtscheduler}" != "xno"],
       [ENABLE_UAPP_HYPMTSCHEDULER=n])
 
 
+# selectively enable/disable secure hyptask bootstrapping for mixed-trusted scheduler functionality in hypervisor
+AC_SUBST([ENABLE_UAPP_HYPMTSCHEDULER_SECURE_HYPTASK_BOOTSTRAP])
+AC_ARG_ENABLE([uapp_hypmtscheduler_secure_hyptask_bootstrap],
+	AS_HELP_STRING([--enable-uapp-hypmtscheduler-secure-hyptask-bootstrap@<:@=yes|no@:>@],
+		[enable secure hyptask bootstrapping for mixed-trust scheduler uapp functionality in hypervisor; you must also enable mixed-trust scheduler functionality]),
+		, [enable_uapp_hypmtscheduler_secure_hyptask_bootstrap=no])
+AS_IF([test "x${enable_uapp_hypmtscheduler_secure_hyptask_bootstrap}" != "xno"],
+      [ENABLE_UAPP_HYPMTSCHEDULER_SECURE_HYPTASK_BOOTSTRAP=y],
+      [ENABLE_UAPP_HYPMTSCHEDULER_SECURE_HYPTASK_BOOTSTRAP=n])
+
+
 # selectively enable/disable MAVLINK serial heart-beat protocol functionality in hypervisor
 AC_SUBST([ENABLE_UAPP_MAVLINKSERHB])
 AC_ARG_ENABLE([uapp_mavlinkserhb],
