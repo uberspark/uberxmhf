@@ -11,7 +11,8 @@
 #include <types.h>
 #include <arm8-32.h>
 #include <bcm2837.h>
-#include <miniuart.h>
+
+#include <uart.h>
 #include <debug.h>
 
 #include <hypmtscheduler.h>
