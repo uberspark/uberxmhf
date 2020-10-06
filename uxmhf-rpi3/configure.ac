@@ -94,6 +94,17 @@ AS_IF([test "x${enable_fiqreflection}" != "xno"],
       [FIQREFLECTION=y],
       [FIQREFLECTION=n])
 
+# selectively enable/disable mixed-trusted scheduler functionality in hypervisor
+AC_SUBST([ENABLE_UAPP_HYPMTSCHEDULER])
+AC_ARG_ENABLE([uapp_hypmtscheduler],
+	AS_HELP_STRING([--enable-uapp-hypmtscheduler@<:@=yes|no@:>@],
+		[enable mixed-trust scheduler uapp functionality in hypervisor; you must also enable FIQ interrupt reflection configure option]),
+		, [enable_uapp_hypmtscheduler=no])
+AS_IF([test "x${enable_uapp_hypmtscheduler}" != "xno"],
+      [ENABLE_UAPP_HYPMTSCHEDULER=y],
+      [ENABLE_UAPP_HYPMTSCHEDULER=n])
+
+
 # selectively enable/disable HMAC functionality in hypervisor
 AC_SUBST([ENABLE_UAPP_UHSIGN])
 AC_ARG_ENABLE([uapp_uhsign],
