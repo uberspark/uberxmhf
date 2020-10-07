@@ -32,6 +32,11 @@ framework and associated components.
 
 .. toctree::
    :maxdepth: 2
+   
+   general-swreq.rst
+
+.. toctree::
+   :maxdepth: 2
    :caption: PC Intel x86 32-bit:
 
    pc-intel-x86_32/hw-requirements
