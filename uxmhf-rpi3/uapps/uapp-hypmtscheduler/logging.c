@@ -7,7 +7,8 @@
 #include <types.h>
 #include <arm8-32.h>
 #include <bcm2837.h>
-#include <miniuart.h>
+
+#include <uart.h>
 #include <debug.h>
 
 #include <hypmtscheduler.h>
@@ -25,12 +26,12 @@ void debug_log_tsc(u32 hyptask_id, u64 timestamp, u32 event_type){
 		debug_log_buffer[debug_log_buffer_index].event_type = event_type;
 
 #ifdef DEBUG_LOGGING_SERIAL
-		bcm2837_miniuart_puts("\n[debug_log_tsc]: hid=0x");
+		uart_puts("\n[debug_log_tsc]: hid=0x");
 		debug_hexdumpu32_nolf(hyptask_id);
-		bcm2837_miniuart_puts(", timestamp=0x");
+		uart_puts(", timestamp=0x");
 		debug_hexdumpu32_nolf(timestamp >> 32);
 		debug_hexdumpu32_nolf((u32)timestamp);
-		bcm2837_miniuart_puts(", event=0x");
+		uart_puts(", event=0x");
 		debug_hexdumpu32_nolf(event_type);
 #endif
 
