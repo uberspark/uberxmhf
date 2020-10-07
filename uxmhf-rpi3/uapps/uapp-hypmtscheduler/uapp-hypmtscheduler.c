@@ -778,6 +778,10 @@ void uapp_hypmtscheduler_handlehcall_disablehyptask(ugapp_hypmtscheduler_param_t
 	//ok grab the timer for the hyptask
 	hyptask_timer = hyptask_handle_list[hyptask_handle].t;
 
+	//only disable hyptask if guest job started and ended in the same period
+	//there are other conditions as below
+	//there should only be one job per period
+	//only one job and job started in the previous period --> invalid 
 	if ( (hyptask_handle_list[hyptask_handle].valid_guest_mask & GUEST_JOB_START_VALID_MASK)
 	     &&
 	     (
