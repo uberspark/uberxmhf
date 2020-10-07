@@ -8,6 +8,7 @@
 
 .. |uberapp| replace:: überApp
 .. |uberapps| replace:: überApps
+.. |uberappuhvext| replace:: überApp micro-hypervisor extension
 
 .. |uobj| replace:: üobject
 .. |uobject| replace:: üobject

@@ -4,7 +4,7 @@
 Installing
 ==========
 
-Refer to the :doc:`build process </rpi3-cortex_a53-armv8_32/build>`
+Refer to the :doc:`build process </rpi3-cortex_a53-armv8_32/build/intro>`
 to build the required binaries for installation. Then proceed with the 
 following instructions to deploy uberXMHF on the SD card:
 
