@@ -47,8 +47,8 @@ whitelist.o : ../common/whitelist.c
 OPT_FILES += whitelist.o
 endif
 
-hypvtablestubs.o : hypvtablestubs.S
-	$(TOOLPREFIX)gcc $(CFLAGS) hypvtablestubs.S -o hypvtablestubs.o
+hypvtablestubs.o : hypvtablestubs.s
+	$(TOOLPREFIX)gcc $(CFLAGS) hypvtablestubs.s -o hypvtablestubs.o
 
 hypvtable.o : hypvtable.c
 	$(TOOLPREFIX)gcc $(CFLAGS) hypvtable.c -o hypvtable.o

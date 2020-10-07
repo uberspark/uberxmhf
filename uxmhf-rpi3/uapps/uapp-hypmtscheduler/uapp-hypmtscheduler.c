@@ -207,8 +207,8 @@ struct sched_timer *uapp_sched_timer_instantiate(struct sched_timer *t, u32 firs
 	if (!timer_next) {
 		// no timers set at all, so this is shortest
 		time_timer_set = uapp_sched_read_cpucounter();
-		debug_log_tsc((u32)(timer_next = t)->time_to_wait,
-				uapp_sched_read_cpucounter(), DEBUG_LOG_EVTTYPE_PHYSTIMERPROGRAM_INSTANTIATESHORTEST);
+		//debug_log_tsc((u32)(timer_next = t)->time_to_wait,
+		//		uapp_sched_read_cpucounter(), DEBUG_LOG_EVTTYPE_PHYSTIMERPROGRAM_INSTANTIATESHORTEST);
 		uapp_sched_start_physical_timer((timer_next = t)->time_to_wait);
 
 	} else if ((first_time_period + uapp_sched_read_cpucounter()) < (timer_next->time_to_wait + time_timer_set)) {
@@ -216,8 +216,8 @@ struct sched_timer *uapp_sched_timer_instantiate(struct sched_timer *t, u32 firs
 		// this timer as the physical timer
 		uapp_sched_timers_update(uapp_sched_read_cpucounter() - time_timer_set);
 		time_timer_set = uapp_sched_read_cpucounter();
-		debug_log_tsc((u32)(timer_next = t)->time_to_wait,
-				uapp_sched_read_cpucounter(), DEBUG_LOG_EVTTYPE_PHYSTIMERPROGRAM_INSTANTIATESHORTER);
+		//debug_log_tsc((u32)(timer_next = t)->time_to_wait,
+		//		uapp_sched_read_cpucounter(), DEBUG_LOG_EVTTYPE_PHYSTIMERPROGRAM_INSTANTIATESHORTER);
 		uapp_sched_start_physical_timer((timer_next = t)->time_to_wait);
 
 	} else {
@@ -500,8 +500,7 @@ void uapp_sched_fiqhandler(void){
 //////
 void uapp_sched_timerhandler(void){
 
-	uart_puts("timer fired!");
-	debug_log_tsc(0xFFFFFFFFFUL, uapp_sched_read_cpucounter(), DEBUG_LOG_EVTTYPE_TIMERHANDLER_BEFORE);
+	//debug_log_tsc(0xFFFFFFFFFUL, uapp_sched_read_cpucounter(), DEBUG_LOG_EVTTYPE_TIMERHANDLER_BEFORE);
 
 	//stop physical timer
 	uapp_sched_stop_physical_timer();
@@ -1153,17 +1152,8 @@ void uapp_sched_initialize(u32 cpuid){
 		//initialize timers
 		uapp_sched_timer_initialize(cpuid);
 
-#if 1
-		//declare a test timer
-		uapp_sched_timer_declare((2 * HYPMTSCHEDULER_TIME_1SEC), (2 * HYPMTSCHEDULER_TIME_1SEC), 1, &hyptask0);
-
-		_XDPRINTFSMP_("%s[%u]: Test halting!\n", __func__, cpuid);
-		HALT();
-		
-#endif
-
 		//declare a keep-alive timer to initialize timer subsystem
-		//uapp_sched_timer_declare((20 * HYPMTSCHEDULER_TIME_1SEC), (20 * HYPMTSCHEDULER_TIME_1SEC), 1, NULL);
+		//uapp_sched_timer_declare((20 * HYPMTSCHEDULER_TIME_1SEC), (20 * HYPMTSCHEDULER_TIME_1SEC), 1, &hyptask0);
 
 #ifdef __ENABLE_UAPP_HYPMTSCHEDULER_SECURE_HYPTASK_BOOTSTRAP__
 		

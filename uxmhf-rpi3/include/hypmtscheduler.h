@@ -58,7 +58,7 @@
 
 
 
-#define DEBUG_LOGGING_SERIAL	1
+//#define DEBUG_LOGGING_SERIAL	1
 
 
 #ifndef __ASSEMBLY__
