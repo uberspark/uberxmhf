@@ -465,7 +465,7 @@ void uapp_sched_run_hyptasks(void){
 	while(1){
 	        cnt++;
 		if (cnt > 5){
-		  bcm2837_miniuart_puts("ERROR: Scheduling more than 5!!\n");
+		  uart_puts("ERROR: Scheduling more than 5!!\n");
 		  break;
 		}
 		
@@ -621,7 +621,7 @@ void hyptask0(struct sched_timer *t){
   /* uapp_mavlinkserhb_uart_send(heartbeat, sizeof(heartbeat)); */
   /* uapp_mavlinkserhb_uart_flush(); */
   busy(10);
-  bcm2837_miniuart_puts("A");
+  uart_puts("A");
   debug_log_tsc(0, uapp_sched_read_cpucounter(), DEBUG_LOG_EVTTYPE_HYPTASKEXEC_AFTER);
 }
 
@@ -629,7 +629,7 @@ void hyptask1(struct sched_timer *t){
   debug_log_tsc(1, uapp_sched_read_cpucounter(), DEBUG_LOG_EVTTYPE_HYPTASKEXEC_BEFORE);
 	/* //busy(10); */
   debug_log_tsc(1, uapp_sched_read_cpucounter(), DEBUG_LOG_EVTTYPE_HYPTASKEXEC_AFTER);
-  //bcm2837_miniuart_puts("B");
+  //uart_puts("B");
 }
 
 
@@ -637,14 +637,14 @@ void hyptask2(struct sched_timer *t){
   debug_log_tsc(2, uapp_sched_read_cpucounter(), DEBUG_LOG_EVTTYPE_HYPTASKEXEC_BEFORE);
 	/* //busy(10); */
   debug_log_tsc(2, uapp_sched_read_cpucounter(), DEBUG_LOG_EVTTYPE_HYPTASKEXEC_AFTER);
-  //bcm2837_miniuart_puts("C");
+  //uart_puts("C");
 }
 
 void hyptask3(struct sched_timer *t){
   debug_log_tsc(3, uapp_sched_read_cpucounter(), DEBUG_LOG_EVTTYPE_HYPTASKEXEC_BEFORE);
 	/* //busy(10); */
   debug_log_tsc(3, uapp_sched_read_cpucounter(), DEBUG_LOG_EVTTYPE_HYPTASKEXEC_AFTER);
-  //bcm2837_miniuart_puts("D");
+  //uart_puts("D");
 }
 
 __attribute__((section(".data"))) HYPTHREADFUNC hyptask_idlist[HYPMTSCHEDULER_MAX_HYPTASKID] =
@@ -991,9 +991,9 @@ bool uapp_hypmtscheduler_handlehcall(u32 uhcall_function, void *uhcall_buffer,
 		uapp_hypmtscheduler_handlehcall_dumpdebuglog(hmtsp);
 
 	}else{
-		bcm2837_miniuart_puts("\nHYPMTSCHED: UHCALL: ignoring unknown uhcall_fn=0x");
+		uart_puts("\nHYPMTSCHED: UHCALL: ignoring unknown uhcall_fn=0x");
 		debug_hexdumpu32(hmtsp->uhcall_fn);
-		bcm2837_miniuart_puts("\n");
+		uart_puts("\n");
 	}
 
 	//debug_log_tsc(0xFFFFFFFFUL, uapp_sched_read_cpucounter(), DEBUG_LOG_EVTTYPE_HANDLEHCALL_AFTER);
