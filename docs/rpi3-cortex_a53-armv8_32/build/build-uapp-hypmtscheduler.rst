@@ -34,7 +34,7 @@ Instructions to build and run kernel-mode test application for mixed-trust sched
 
    1. ``cd rgapps/linux/ugapp-hypmtscheduler-zsrmv``
    2. ``make builduserapp``
-   3. ``cp ./hypmtschedulertest_userapp.ko ~/uxmhf-rpi3-staging/.``
+   3. ``cp ./hypmtschedulertest_userapp ~/uxmhf-rpi3-staging/.``
 
 4. Continue with the installation of the framework as described within
    :doc:`Installing Micro-Hypervisor Framework </rpi3-cortex_a53-armv8_32/installing>` and boot
