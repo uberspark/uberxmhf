@@ -16,6 +16,10 @@ building the micro-hypervisor core framework (See :doc:`Build Micro-Hypervisor C
            can be optionally enabled via the configure option
            ``--enable-uapp-hypmtscheduler-secure-hyptask-bootstrap``
 
+Running the hypmtscheduler |uberappuhvext| is supported with only a single-CPU configuration.
+You will need to append ``maxcpus=1`` to the kernel command line when installing the micro-hypervisor
+framework (See :doc:`Installing Micro-Hypervisor Framework </rpi3-cortex_a53-armv8_32/installing>`).
+
 
 
 Instructions to build and run kernel-mode test application for mixed-trust scheduler

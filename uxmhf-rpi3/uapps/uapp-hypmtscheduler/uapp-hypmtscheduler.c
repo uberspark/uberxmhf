@@ -620,8 +620,8 @@ void hyptask0(struct sched_timer *t){
   debug_log_tsc(0, uapp_sched_read_cpucounter(), DEBUG_LOG_EVTTYPE_HYPTASKEXEC_BEFORE);
   /* uapp_mavlinkserhb_uart_send(heartbeat, sizeof(heartbeat)); */
   /* uapp_mavlinkserhb_uart_flush(); */
-  busy(10);
-  uart_puts("A");
+  /*busy(10);*/
+  //uart_puts("A");
   debug_log_tsc(0, uapp_sched_read_cpucounter(), DEBUG_LOG_EVTTYPE_HYPTASKEXEC_AFTER);
 }
 
@@ -643,8 +643,8 @@ void hyptask2(struct sched_timer *t){
 void hyptask3(struct sched_timer *t){
   debug_log_tsc(3, uapp_sched_read_cpucounter(), DEBUG_LOG_EVTTYPE_HYPTASKEXEC_BEFORE);
 	/* //busy(10); */
+  uart_puts("hyptaskid=3 executed");
   debug_log_tsc(3, uapp_sched_read_cpucounter(), DEBUG_LOG_EVTTYPE_HYPTASKEXEC_AFTER);
-  //uart_puts("D");
 }
 
 __attribute__((section(".data"))) HYPTHREADFUNC hyptask_idlist[HYPMTSCHEDULER_MAX_HYPTASKID] =

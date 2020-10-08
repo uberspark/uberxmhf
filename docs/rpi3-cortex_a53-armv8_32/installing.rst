@@ -37,7 +37,7 @@ Deploying binaries to SD Card
    ``sudo cp ~/uxmhf-rpi3-staging/config.txt ~/mnt/pi-boot/.``
 
 #. 
-   Append ``loglevel=8 memblock=debug dwc_otg.fiq_enable=0 dwc_otg.fiq_fsm_enable=0`` to ``~/mnt/pi-boot/cmdline.txt``
+   Append ``loglevel=8 memblock=debug dwc_otg.fiq_enable=0 dwc_otg.fiq_fsm_enable=0 dwc_otg.nak_holdoff=0`` to ``~/mnt/pi-boot/cmdline.txt``
 
 #. 
    ``sudo cp ~/uxmhf-rpi3-staging/boot/* ~/mnt/pi-boot/.``
