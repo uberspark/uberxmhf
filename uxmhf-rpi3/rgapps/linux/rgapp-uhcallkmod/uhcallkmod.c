@@ -40,8 +40,6 @@
 #include <asm/uaccess.h>          // required for the copy to user function
 
 #include <asm/pgtable.h>
-#include <linux/mm.h>
-#include <linux/highmem.h>
 
 #include <uhcall.h>
 #include <uhcalltest.h>
@@ -106,16 +104,23 @@ static unsigned long va2pa(unsigned long va) {
   pgd = pgd_offset(current->mm, va);
   if(pgd_none(*pgd))
     return -1;
+
   pud = pud_offset(pgd, va);
   if(pud_none(*pud))
     return -1;
+
   pmd = pmd_offset(pud, va);
   if(pmd_none(*pmd))
     return -1;
+
+  pte = pte_offset_kernel(pmd, va);
+  if(pte_none(*pte))
+    return -1;
+
   page_addr = pte_val(*pte) & PAGE_MASK;
   page_offset = va & ~PAGE_MASK;
   pa = page_addr | page_offset;
-
+  
   return pa;
 }
 
@@ -134,8 +139,6 @@ static int dev_release(struct inode *inodep, struct file *filep){
 static ssize_t dev_write(struct file *filep, const char *buffer, size_t len, loff_t *offset){
 	uhcallkmod_param_t *uhcallp;
 	unsigned long pa;
-	void *kbuff;
-	struct page *k_page;
 
 	if(buffer == NULL)
 		return -EINVAL;
@@ -145,21 +148,12 @@ static ssize_t dev_write(struct file *filep, const char *buffer, size_t len, lof
 
 	uhcallp = (uhcallkmod_param_t *)buffer;
 
-	k_page = alloc_page(GFP_KERNEL | __GFP_ZERO);
-	kbuff = (void *)page_address(k_page);
-	copy_from_user(kbuff, uhcallp->uhcall_buffer, uhcallp->uhcall_buffer_len);
-	//	pa = va2pa((unsigned long)kbuff);
-	pa = page_to_phys(k_page);
-
+	pa = va2pa((u32)(uhcallp->uhcall_buffer));
+	
 	printk(KERN_INFO "uhcallkmod: dev_write: uhcall_function=0x%08x, uhcall_buffer=0x%08x, uhcall_buffer_len=0x%08x\n",
 			uhcallp->uhcall_function, uhcallp->uhcall_buffer, uhcallp->uhcall_buffer_len);
 
 	uhcallkmod_hvc(uhcallp->uhcall_function, (void *)pa, uhcallp->uhcall_buffer_len);	
-	//	uhcallkmod_hvc(uhcallp->uhcall_function, uhcallp->uhcall_buffer, uhcallp->uhcall_buffer_len);
-	//uhcallkmod_hvc(uhcallp->uhcall_function, &buffer, uhcallp->uhcall_buffer_len);
-
-	copy_to_user(uhcallp->uhcall_buffer, kbuff, uhcallp->uhcall_buffer_len);
-	__free_page(k_page);
 
    return 0;
 }
