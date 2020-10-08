@@ -643,7 +643,7 @@ void hyptask2(struct sched_timer *t){
 void hyptask3(struct sched_timer *t){
   debug_log_tsc(3, uapp_sched_read_cpucounter(), DEBUG_LOG_EVTTYPE_HYPTASKEXEC_BEFORE);
 	/* //busy(10); */
-  uart_puts("hyptaskid=3 executed");
+  //uart_puts("hyptaskid=3 executed");
   debug_log_tsc(3, uapp_sched_read_cpucounter(), DEBUG_LOG_EVTTYPE_HYPTASKEXEC_AFTER);
 }
 
