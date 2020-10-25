@@ -101,110 +101,110 @@
 @*/
 void gp_s2_entry(void){
 
-	//intialize system memory map
-	gp_s2_initsysmemmap();
-	//@ghost cor_gp_s2_initsysmemmap = true;
+	// //intialize system memory map
+	// gp_s2_initsysmemmap();
+	// //@ghost cor_gp_s2_initsysmemmap = true;
 
 
-	//enumerate system devices
-	//@assert cor_gp_s2_initsysmemmap == true;
-	gp_s2_sdmenumsysdevices();
-	//@ghost cor_gp_s2_sdmenumsysdevices = true;
+	// //enumerate system devices
+	// //@assert cor_gp_s2_initsysmemmap == true;
+	// gp_s2_sdmenumsysdevices();
+	// //@ghost cor_gp_s2_sdmenumsysdevices = true;
 
 
-	//initialize uobj device mapping
-	//@assert cor_gp_s2_initsysmemmap == true;
-	//@assert cor_gp_s2_sdmenumsysdevices == true;
-	gp_s2_sdminitdevmap();
-	//@ghost cor_gp_s2_sdminitdevmap = true;
+	// //initialize uobj device mapping
+	// //@assert cor_gp_s2_initsysmemmap == true;
+	// //@assert cor_gp_s2_sdmenumsysdevices == true;
+	// gp_s2_sdminitdevmap();
+	// //@ghost cor_gp_s2_sdminitdevmap = true;
 
 
-	//setup slab system device allocation and device page tables
-	//@assert (cor_gp_s2_initsysmemmap == true);
-	//@assert cor_gp_s2_sdmenumsysdevices == true;
-	//@assert (cor_gp_s2_sdminitdevmap == true);
-	gp_s2_sda();
-	//@ghost cor_gp_s2_sda = true;
+	// //setup slab system device allocation and device page tables
+	// //@assert (cor_gp_s2_initsysmemmap == true);
+	// //@assert cor_gp_s2_sdmenumsysdevices == true;
+	// //@assert (cor_gp_s2_sdminitdevmap == true);
+	// gp_s2_sda();
+	// //@ghost cor_gp_s2_sda = true;
 
-	//gather memory types for EPT (for guest slabs)
-	//@assert (cor_gp_s2_initsysmemmap == true);
-	//@assert cor_gp_s2_sdmenumsysdevices == true;
-	//@assert (cor_gp_s2_sdminitdevmap == true);
-	//@assert (cor_gp_s2_sda == true);
-	gp_s2_gathersysmemtypes();
-	//@ghost cor_gp_s2_gathersysmemtypes = true;
+	// //gather memory types for EPT (for guest slabs)
+	// //@assert (cor_gp_s2_initsysmemmap == true);
+	// //@assert cor_gp_s2_sdmenumsysdevices == true;
+	// //@assert (cor_gp_s2_sdminitdevmap == true);
+	// //@assert (cor_gp_s2_sda == true);
+	// gp_s2_gathersysmemtypes();
+	// //@ghost cor_gp_s2_gathersysmemtypes = true;
 
-	//setup (unverified) slab iotbl
-	//@assert (cor_gp_s2_initsysmemmap == true);
-	//@assert cor_gp_s2_sdmenumsysdevices == true;
-	//@assert (cor_gp_s2_sdminitdevmap == true);
-	//@assert (cor_gp_s2_sda == true);
-	//@assert (cor_gp_s2_gathersysmemtypes == true);
-	gp_s2_setupiotbl();
-	//@ghost cor_gp_s2_setupiotbl = true;
+	// //setup (unverified) slab iotbl
+	// //@assert (cor_gp_s2_initsysmemmap == true);
+	// //@assert cor_gp_s2_sdmenumsysdevices == true;
+	// //@assert (cor_gp_s2_sdminitdevmap == true);
+	// //@assert (cor_gp_s2_sda == true);
+	// //@assert (cor_gp_s2_gathersysmemtypes == true);
+	// gp_s2_setupiotbl();
+	// //@ghost cor_gp_s2_setupiotbl = true;
 
-	//setup verified uobj memory page tables
-	//@assert (cor_gp_s2_initsysmemmap == true);
-	//@assert cor_gp_s2_sdmenumsysdevices == true;
-	//@assert (cor_gp_s2_sdminitdevmap == true);
-	//@assert (cor_gp_s2_sda == true);
-	//@assert (cor_gp_s2_gathersysmemtypes == true);
-	//@assert (cor_gp_s2_setupiotbl == true);
-	gp_s2_setupmpgtblv();
-	//@ghost cor_gp_s2_setupmpgtblv = true;
-
-
-	//setup unverified uobj memory page tables
-	//@assert (cor_gp_s2_initsysmemmap == true);
-	//@assert cor_gp_s2_sdmenumsysdevices == true;
-	//@assert (cor_gp_s2_sdminitdevmap == true);
-	//@assert (cor_gp_s2_sda == true);
-	//@assert (cor_gp_s2_gathersysmemtypes == true);
-	//@assert (cor_gp_s2_setupiotbl == true);
-	//@assert (cor_gp_s2_setupmpgtblv == true);
-	gp_s2_setupmpgtblu();
-	//@ghost cor_gp_s2_setupmpgtblu = true;
-
-	//initialize GDT
-	//@assert (cor_gp_s2_initsysmemmap == true);
-	//@assert cor_gp_s2_sdmenumsysdevices == true;
-	//@assert (cor_gp_s2_sdminitdevmap == true);
-	//@assert (cor_gp_s2_sda == true);
-	//@assert (cor_gp_s2_gathersysmemtypes == true);
-	//@assert (cor_gp_s2_setupiotbl == true);
-	//@assert (cor_gp_s2_setupmpgtblv == true);
-	//@assert (cor_gp_s2_setupmpgtblu == true);
-	gp_s2_setupgdt();
-	//@ghost cor_gp_s2_setupgdt = true;
+	// //setup verified uobj memory page tables
+	// //@assert (cor_gp_s2_initsysmemmap == true);
+	// //@assert cor_gp_s2_sdmenumsysdevices == true;
+	// //@assert (cor_gp_s2_sdminitdevmap == true);
+	// //@assert (cor_gp_s2_sda == true);
+	// //@assert (cor_gp_s2_gathersysmemtypes == true);
+	// //@assert (cor_gp_s2_setupiotbl == true);
+	// gp_s2_setupmpgtblv();
+	// //@ghost cor_gp_s2_setupmpgtblv = true;
 
 
-	//initialize IDT
-	//@assert (cor_gp_s2_initsysmemmap == true);
-	//@assert cor_gp_s2_sdmenumsysdevices == true;
-	//@assert (cor_gp_s2_sdminitdevmap == true);
-	//@assert (cor_gp_s2_sda == true);
-	//@assert (cor_gp_s2_gathersysmemtypes == true);
-	//@assert (cor_gp_s2_setupiotbl == true);
-	//@assert (cor_gp_s2_setupmpgtblv == true);
-	//@assert (cor_gp_s2_setupmpgtblu == true);
-	//@assert (cor_gp_s2_setupgdt == true);
-	gp_s2_setupidt();
-	//@ghost cor_gp_s2_setupidt = true;
+	// //setup unverified uobj memory page tables
+	// //@assert (cor_gp_s2_initsysmemmap == true);
+	// //@assert cor_gp_s2_sdmenumsysdevices == true;
+	// //@assert (cor_gp_s2_sdminitdevmap == true);
+	// //@assert (cor_gp_s2_sda == true);
+	// //@assert (cor_gp_s2_gathersysmemtypes == true);
+	// //@assert (cor_gp_s2_setupiotbl == true);
+	// //@assert (cor_gp_s2_setupmpgtblv == true);
+	// gp_s2_setupmpgtblu();
+	// //@ghost cor_gp_s2_setupmpgtblu = true;
+
+	// //initialize GDT
+	// //@assert (cor_gp_s2_initsysmemmap == true);
+	// //@assert cor_gp_s2_sdmenumsysdevices == true;
+	// //@assert (cor_gp_s2_sdminitdevmap == true);
+	// //@assert (cor_gp_s2_sda == true);
+	// //@assert (cor_gp_s2_gathersysmemtypes == true);
+	// //@assert (cor_gp_s2_setupiotbl == true);
+	// //@assert (cor_gp_s2_setupmpgtblv == true);
+	// //@assert (cor_gp_s2_setupmpgtblu == true);
+	// gp_s2_setupgdt();
+	// //@ghost cor_gp_s2_setupgdt = true;
 
 
-	//initialize TSS
-	//@assert (cor_gp_s2_initsysmemmap == true);
-	//@assert cor_gp_s2_sdmenumsysdevices == true;
-	//@assert (cor_gp_s2_sdminitdevmap == true);
-	//@assert (cor_gp_s2_sda == true);
-	//@assert (cor_gp_s2_gathersysmemtypes == true);
-	//@assert (cor_gp_s2_setupiotbl == true);
-	//@assert (cor_gp_s2_setupmpgtblv == true);
-	//@assert (cor_gp_s2_setupmpgtblu == true);
-	//@assert (cor_gp_s2_setupgdt == true);
-	//@assert (cor_gp_s2_setupidt == true);
-	gp_s2_setuptss();
-	//@ghost cor_gp_s2_setuptss = true;
+	// //initialize IDT
+	// //@assert (cor_gp_s2_initsysmemmap == true);
+	// //@assert cor_gp_s2_sdmenumsysdevices == true;
+	// //@assert (cor_gp_s2_sdminitdevmap == true);
+	// //@assert (cor_gp_s2_sda == true);
+	// //@assert (cor_gp_s2_gathersysmemtypes == true);
+	// //@assert (cor_gp_s2_setupiotbl == true);
+	// //@assert (cor_gp_s2_setupmpgtblv == true);
+	// //@assert (cor_gp_s2_setupmpgtblu == true);
+	// //@assert (cor_gp_s2_setupgdt == true);
+	// gp_s2_setupidt();
+	// //@ghost cor_gp_s2_setupidt = true;
+
+
+	// //initialize TSS
+	// //@assert (cor_gp_s2_initsysmemmap == true);
+	// //@assert cor_gp_s2_sdmenumsysdevices == true;
+	// //@assert (cor_gp_s2_sdminitdevmap == true);
+	// //@assert (cor_gp_s2_sda == true);
+	// //@assert (cor_gp_s2_gathersysmemtypes == true);
+	// //@assert (cor_gp_s2_setupiotbl == true);
+	// //@assert (cor_gp_s2_setupmpgtblv == true);
+	// //@assert (cor_gp_s2_setupmpgtblu == true);
+	// //@assert (cor_gp_s2_setupgdt == true);
+	// //@assert (cor_gp_s2_setupidt == true);
+	// gp_s2_setuptss();
+	// //@ghost cor_gp_s2_setuptss = true;
 
 
 	//move on to stage-3

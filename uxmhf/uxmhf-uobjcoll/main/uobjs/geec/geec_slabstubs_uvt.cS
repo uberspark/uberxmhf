@@ -54,35 +54,35 @@
 
 CASM_FUNCDEF_FULL(.slab_entrystub, 1, void, _slab_entrystub,
 {
-	xmhfhwm_cpu_insn_pushl_esp();
-	xmhfhwm_cpu_insn_call(slab_main);   //invoke slab_main
-    xmhfhwm_cpu_insn_addl_imm_esp(0x4);
-    xmhfhwm_cpu_insn_movl_esp_eax();
-    xmhfhwm_cpu_insn_movl_imm_meax(XMHFGEEC_SENTINEL_RET_VfT_PROG_TO_uVT_uVU_PROG, 0x0);
-    xmhfhwm_cpu_insn_movl_meax_edx(0x4); //edx = src_slabid
-    xmhfhwm_cpu_insn_movl_meax_ecx(0x8); //ecx = dst_slabid
-    xmhfhwm_cpu_insn_movl_ecx_meax(0x4); //[eax+4] = src_slabid = dst_slabid
-    xmhfhwm_cpu_insn_movl_edx_meax(0x8); //[eax+8] = dst_slabid = src_slabid
-    xmhfhwm_cpu_insn_movl_esp_ecx();
-    xmhfhwm_cpu_insn_xorl_edx_edx();
-    xmhfhwm_cpu_insn_sysenter();
-    xmhfhwm_cpu_insn_hlt();
+	__casm__pushl_esp();
+	__casm__call(slab_main);   //invoke slab_main
+    __casm__addl_imm_esp(0x4);
+    __casm__movl_esp_eax();
+    __casm__movl_imm_meax(XMHFGEEC_SENTINEL_RET_VfT_PROG_TO_uVT_uVU_PROG, 0x0);
+    __casm__movl_meax_edx(0x4); //edx = src_slabid
+    __casm__movl_meax_ecx(0x8); //ecx = dst_slabid
+    __casm__movl_ecx_meax(0x4); //[eax+4] = src_slabid = dst_slabid
+    __casm__movl_edx_meax(0x8); //[eax+8] = dst_slabid = src_slabid
+    __casm__movl_esp_ecx();
+    __casm__xorl_edx_edx();
+    __casm__sysenter();
+    __casm__hlt();
 },
 slab_params_t *sp)
 
 //XXX: TODO: need to revise with sysenter
 CASM_FUNCDEF(void, __slab_callsentinel,
 {
-    xmhfhwm_cpu_insn_movl_mesp_eax(0x4);
-    xmhfhwm_cpu_insn_movl_imm_meax(XMHFGEEC_SENTINEL_CALL_uVT_uVU_PROG_TO_VfT_PROG, 0x0);
-    xmhfhwm_cpu_insn_movl_mesp_ecx(0x4);    //slab_params_t *
-    xmhfhwm_cpu_insn_pushl_ebp();
-    xmhfhwm_cpu_insn_pushl_edi();
-    xmhfhwm_cpu_insn_pushl_esi();
-    xmhfhwm_cpu_insn_pushl_ebx();
-    xmhfhwm_cpu_insn_movl_esp_edx();        //caller_stack_frame
-    xmhfhwm_cpu_insn_sysenter();
-    xmhfhwm_cpu_insn_hlt();
+    __casm__movl_mesp_eax(0x4);
+    __casm__movl_imm_meax(XMHFGEEC_SENTINEL_CALL_uVT_uVU_PROG_TO_VfT_PROG, 0x0);
+    __casm__movl_mesp_ecx(0x4);    //slab_params_t *
+    __casm__pushl_ebp();
+    __casm__pushl_edi();
+    __casm__pushl_esi();
+    __casm__pushl_ebx();
+    __casm__movl_esp_edx();        //caller_stack_frame
+    __casm__sysenter();
+    __casm__hlt();
 },
 slab_params_t *sp)
 

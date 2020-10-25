@@ -325,87 +325,87 @@ static void _hcb_shutdown(uint32_t cpuindex, uint32_t guest_slab_index){
 //////
 // slab interface
 
-//void slab_interface(slab_input_params_t *iparams, uint64_t iparams_size, slab_output_params_t *oparams, uint64_t oparams_size, uint64_t src_slabid, uint64_t cpuindex){
-// void slab_main(slab_params_t *sp){
-//     //xc_hypappcb_inputparams_t *hcb_iparams = (xc_hypappcb_inputparams_t *)iparams;
-//     //xc_hypappcb_outputparams_t *hcb_oparams = (xc_hypappcb_outputparams_t *)oparams;
-//     xc_hypappcb_params_t *hcbp = (xc_hypappcb_params_t *)&sp->in_out_params[0];
-//     hcbp->cbresult=XC_HYPAPPCB_CHAIN;
+// slab_interface(slab_input_params_t *iparams, uint64_t iparams_size, slab_output_params_t *oparams, uint64_t oparams_size, uint64_t src_slabid, uint64_t cpuindex){
+void xh_aprvexec_slab_main(slab_params_t *sp){
+    //xc_hypappcb_inputparams_t *hcb_iparams = (xc_hypappcb_inputparams_t *)iparams;
+    //xc_hypappcb_outputparams_t *hcb_oparams = (xc_hypappcb_outputparams_t *)oparams;
+    xc_hypappcb_params_t *hcbp = (xc_hypappcb_params_t *)&sp->in_out_params[0];
+    hcbp->cbresult=XC_HYPAPPCB_CHAIN;
 
-// 	//_XDPRINTF_("XHAPRVEXEC[%u]: Got control, cbtype=%x: ESP=%08x\n",
-//     //             (uint16_t)sp->cpuid, hcbp->cbtype, CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__read_esp,CASM_NOPARAM));
-
-
-//     switch(hcbp->cbtype){
-//         case XC_HYPAPPCB_INITIALIZE:{
-//             _hcb_initialize(sp->cpuid);
-//         }
-//         break;
-
-//         case XC_HYPAPPCB_HYPERCALL:{
-//             _hcb_hypercall(sp->cpuid, hcbp->guest_slab_index);
-//         }
-//         break;
-
-//         case XC_HYPAPPCB_MEMORYFAULT:{
-//          	uint64_t errorcode;
-//          	uint64_t gpa;
-//          	uint64_t gva;
-//          	slab_params_t spl;
-//        	    xmhf_uapi_gcpustate_vmrw_params_t *gcpustate_vmrwp =
-//                 (xmhf_uapi_gcpustate_vmrw_params_t *)spl.in_out_params;
+	//_XDPRINTF_("XHAPRVEXEC[%u]: Got control, cbtype=%x: ESP=%08x\n",
+    //             (uint16_t)sp->cpuid, hcbp->cbtype, CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__read_esp,CASM_NOPARAM));
 
 
-//          	spl.src_slabid = XMHFGEEC_SLAB_XH_APRVEXEC;
-//          	spl.dst_slabid = XMHFGEEC_SLAB_UAPI_GCPUSTATE;
-//          	spl.cpuid = sp->cpuid;
-//             //spl.in_out_params[0] = XMHF_HIC_UAPI_CPUSTATE;
-//              spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_VMREAD;
+    switch(hcbp->cbtype){
+        case XC_HYPAPPCB_INITIALIZE:{
+            _hcb_initialize(sp->cpuid);
+        }
+        break;
 
-//             gcpustate_vmrwp->encoding = VMCS_INFO_EXIT_QUALIFICATION;
-//             XMHF_SLAB_CALLNEW(&spl);
-//             errorcode = gcpustate_vmrwp->value;
+        case XC_HYPAPPCB_HYPERCALL:{
+            _hcb_hypercall(sp->cpuid, hcbp->guest_slab_index);
+        }
+        break;
 
-//             gcpustate_vmrwp->encoding = VMCS_INFO_GUEST_PADDR_FULL;
-//             XMHF_SLAB_CALLNEW(&spl);
-//             gpa = gcpustate_vmrwp->value;
-
-//             gcpustate_vmrwp->encoding = VMCS_INFO_GUEST_LINEAR_ADDRESS;
-//             XMHF_SLAB_CALLNEW(&spl);
-//             gva = gcpustate_vmrwp->value;
-
-//             _hcb_memoryfault(sp->cpuid, hcbp->guest_slab_index, gpa, gva, errorcode);
-//         }
-//         break;
-
-//         case XC_HYPAPPCB_SHUTDOWN:{
-//             _hcb_shutdown(sp->cpuid, hcbp->guest_slab_index);
-//         }
-//         break;
-
-//         //case XC_HYPAPPCB_TRAP_IO:{
-//         //
-//         //
-//         //}
-//         //break;
-
-//         //case XC_HYPAPPCB_TRAP_INSTRUCTION:{
-//         //
-//         //
-//         //}
-//         //break;
-
-//         //case XC_HYPAPPCB_TRAP_EXCEPTION:{
-//         //
-//         //
-//         //}
-//         //break;
+        case XC_HYPAPPCB_MEMORYFAULT:{
+         	uint64_t errorcode;
+         	uint64_t gpa;
+         	uint64_t gva;
+         	slab_params_t spl;
+       	    xmhf_uapi_gcpustate_vmrw_params_t *gcpustate_vmrwp =
+                (xmhf_uapi_gcpustate_vmrw_params_t *)spl.in_out_params;
 
 
-//         default:{
-//             //_XDPRINTF_("%s[%u]: Unknown cbtype. Ignoring!\n",
-//             //    __func__, (uint16_t)sp->cpuid);
-//         }
-//     }
+         	spl.src_slabid = XMHFGEEC_SLAB_XH_APRVEXEC;
+         	spl.dst_slabid = XMHFGEEC_SLAB_UAPI_GCPUSTATE;
+         	spl.cpuid = sp->cpuid;
+            //spl.in_out_params[0] = XMHF_HIC_UAPI_CPUSTATE;
+             spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_VMREAD;
 
-// }
+            gcpustate_vmrwp->encoding = VMCS_INFO_EXIT_QUALIFICATION;
+            XMHF_SLAB_CALLNEW(&spl);
+            errorcode = gcpustate_vmrwp->value;
+
+            gcpustate_vmrwp->encoding = VMCS_INFO_GUEST_PADDR_FULL;
+            XMHF_SLAB_CALLNEW(&spl);
+            gpa = gcpustate_vmrwp->value;
+
+            gcpustate_vmrwp->encoding = VMCS_INFO_GUEST_LINEAR_ADDRESS;
+            XMHF_SLAB_CALLNEW(&spl);
+            gva = gcpustate_vmrwp->value;
+
+            _hcb_memoryfault(sp->cpuid, hcbp->guest_slab_index, gpa, gva, errorcode);
+        }
+        break;
+
+        case XC_HYPAPPCB_SHUTDOWN:{
+            _hcb_shutdown(sp->cpuid, hcbp->guest_slab_index);
+        }
+        break;
+
+        //case XC_HYPAPPCB_TRAP_IO:{
+        //
+        //
+        //}
+        //break;
+
+        //case XC_HYPAPPCB_TRAP_INSTRUCTION:{
+        //
+        //
+        //}
+        //break;
+
+        //case XC_HYPAPPCB_TRAP_EXCEPTION:{
+        //
+        //
+        //}
+        //break;
+
+
+        default:{
+            //_XDPRINTF_("%s[%u]: Unknown cbtype. Ignoring!\n",
+            //    __func__, (uint16_t)sp->cpuid);
+        }
+    }
+
+}

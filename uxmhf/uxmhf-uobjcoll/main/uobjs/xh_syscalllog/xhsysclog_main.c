@@ -115,33 +115,33 @@ void main(void){
 		) ==> (sysclog_methodcall_invalid == true);
 @*/
 
-// void slab_main(slab_params_t *sp){
+void xhsysclog_slab_main(slab_params_t *sp){
 
-// 	//_XDPRINTF_("XHSYSCALLLOG[%u]: Got control, cbtype=%x: ESP=%08x\n",
-// 	//	(uint16_t)sp->cpuid, sp->in_out_params[0], CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__read_esp,CASM_NOPARAM));
+	//_XDPRINTF_("XHSYSCALLLOG[%u]: Got control, cbtype=%x: ESP=%08x\n",
+	//	(uint16_t)sp->cpuid, sp->in_out_params[0], CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__read_esp,CASM_NOPARAM));
 
-// 	if( sp->in_out_params[0] == XC_HYPAPPCB_INITIALIZE){
-// 		sysclog_hcbinit(sp->cpuid);
-// 		//@ghost sysclog_methodcall_hcbinit = true;
-// 		sp->in_out_params[3]= XC_HYPAPPCB_CHAIN;
+	if( sp->in_out_params[0] == XC_HYPAPPCB_INITIALIZE){
+		sysclog_hcbinit(sp->cpuid);
+		//@ghost sysclog_methodcall_hcbinit = true;
+		sp->in_out_params[3]= XC_HYPAPPCB_CHAIN;
 
 
-// 	}else if (sp->in_out_params[0] == XC_HYPAPPCB_HYPERCALL){
-// 		sysclog_hcbhypercall(sp->cpuid, sp->in_out_params[2]);
-// 		//@ghost sysclog_methodcall_hcbhypercall = true;
-// 		sp->in_out_params[3]= XC_HYPAPPCB_CHAIN;
+	}else if (sp->in_out_params[0] == XC_HYPAPPCB_HYPERCALL){
+		sysclog_hcbhypercall(sp->cpuid, sp->in_out_params[2]);
+		//@ghost sysclog_methodcall_hcbhypercall = true;
+		sp->in_out_params[3]= XC_HYPAPPCB_CHAIN;
 
-// 	}else if (sp->in_out_params[0] == XC_HYPAPPCB_MEMORYFAULT){
-// 		if(sysclog_hcbmemfault(sp->cpuid, sp->in_out_params[2]))
-// 			sp->in_out_params[3] = XC_HYPAPPCB_NOCHAIN;
-// 		else
-// 			sp->in_out_params[3] = XC_HYPAPPCB_CHAIN;
-// 		//@ghost sysclog_methodcall_hcbmemfault = true;
+	}else if (sp->in_out_params[0] == XC_HYPAPPCB_MEMORYFAULT){
+		if(sysclog_hcbmemfault(sp->cpuid, sp->in_out_params[2]))
+			sp->in_out_params[3] = XC_HYPAPPCB_NOCHAIN;
+		else
+			sp->in_out_params[3] = XC_HYPAPPCB_CHAIN;
+		//@ghost sysclog_methodcall_hcbmemfault = true;
 
-// 	}else{
-// 		//_XDPRINTF_("%s[%u]: Unknown cbtype. Ignoring!\n",__func__, (uint16_t)sp->cpuid);
-// 		sp->in_out_params[3]= XC_HYPAPPCB_CHAIN;
-// 		//@ghost sysclog_methodcall_invalid = true;
-// 	}
+	}else{
+		//_XDPRINTF_("%s[%u]: Unknown cbtype. Ignoring!\n",__func__, (uint16_t)sp->cpuid);
+		sp->in_out_params[3]= XC_HYPAPPCB_CHAIN;
+		//@ghost sysclog_methodcall_invalid = true;
+	}
 
-// }
+}

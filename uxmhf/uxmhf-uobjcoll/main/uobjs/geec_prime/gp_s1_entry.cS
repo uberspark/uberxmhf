@@ -94,7 +94,7 @@ CASM_FUNCDEF(void, slab_main,
 	__casm__movw_ax_gs();
 	__casm__movw_ax_ss();
 	__casm__movl_imm_eax(_init_bsp_cpustack);
-	__casm__addl_imm_eax(MAX_PLATFORM_CPUSTACK_SIZE);
+	MACRO_EXPANSION_WORKAROUND(__casm__addl_imm_eax,MAX_PLATFORM_CPUSTACK_SIZE);
 	__casm__movl_eax_esp();
 	__casm__call_c(gp_s1_bspstack);
 	__casm__hlt();

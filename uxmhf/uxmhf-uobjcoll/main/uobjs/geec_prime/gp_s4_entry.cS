@@ -92,21 +92,20 @@
 #endif
 
 
-
 CASM_FUNCDEF(void, gp_s4_entry,
 {
-    __casm__movw_imm_ax(__DS_CPL0);
+    MACRO_EXPANSION_WORKAROUND(__casm__movw_imm_ax,__DS_CPL0);
     __casm__movw_ax_ds();
 
-    __casm__movl_imm_esi(((X86SMP_APBOOTSTRAP_DATASEG << 4) + 32))
+    MACRO_EXPANSION_WORKAROUND(__casm__movl_imm_esi,((X86SMP_APBOOTSTRAP_DATASEG << 4) + 32));
     __casm__movl_mesi_eax(0x0);
     __casm__movl_eax_edi();
 
-    __casm__movl_imm_esi(((X86SMP_APBOOTSTRAP_DATASEG << 4) + 0));
+    MACRO_EXPANSION_WORKAROUND(__casm__movl_imm_esi,((X86SMP_APBOOTSTRAP_DATASEG << 4) + 0));
     __casm__movl_mesi_eax(0x0);
     __casm__movl_eax_ebx();
 
-    __casm__movl_imm_esi(((X86SMP_APBOOTSTRAP_DATASEG << 4) + 8));
+    MACRO_EXPANSION_WORKAROUND(__casm__movl_imm_esi,((X86SMP_APBOOTSTRAP_DATASEG << 4) + 8));
     __casm__movl_mesi_eax(0x0);
 
     __casm__jmpapentry();

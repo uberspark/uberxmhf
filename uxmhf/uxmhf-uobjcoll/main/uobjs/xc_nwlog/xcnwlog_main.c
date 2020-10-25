@@ -201,38 +201,38 @@ void main(void){
 		( sp->dst_uapifn == XMHFGEEC_SLAB_XC_NWLOG_LOGDATA )
 	) ==> (xcnwlog_methodcall_invalid == true);
 @*/
-// void slab_main(slab_params_t *sp){
+void xcnwlog_slab_main(slab_params_t *sp){
 
-// 	_XDPRINTF_("XCNWLOG[%u]: Got control: src=%u, dst=%u, esp=%08x, eflags=%08x\n",
-// 		(uint16_t)sp->cpuid, sp->src_slabid, sp->dst_slabid, CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__read_esp,CASM_NOPARAM),
-// 			CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__read_eflags, CASM_NOPARAM));
+	_XDPRINTF_("XCNWLOG[%u]: Got control: src=%u, dst=%u, esp=%08x, eflags=%08x\n",
+		(uint16_t)sp->cpuid, sp->src_slabid, sp->dst_slabid, CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__read_esp,CASM_NOPARAM),
+			CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__read_eflags, CASM_NOPARAM));
 
-// 	if(sp->dst_uapifn == XMHFGEEC_SLAB_XC_NWLOG_INITIALIZE){
-// 		xcnwlog_init();
-// 		//@ghost xcnwlog_methodcall_init = true;
+	if(sp->dst_uapifn == XMHFGEEC_SLAB_XC_NWLOG_INITIALIZE){
+		xcnwlog_init();
+		//@ghost xcnwlog_methodcall_init = true;
 
-// 	}else if (sp->dst_uapifn == XMHFGEEC_SLAB_XC_NWLOG_LOGDATA){
-// 		xcnwlog_ls_element_t elem;
-// 		elem.logbuf[0] = sp->in_out_params[0]; 		elem.logbuf[1] = sp->in_out_params[0];
-// 		elem.logbuf[2] = sp->in_out_params[0]; 		elem.logbuf[3] = sp->in_out_params[0];
-// 		elem.logbuf[4] = sp->in_out_params[0]; 		elem.logbuf[5] = sp->in_out_params[0];
-// 		elem.logbuf[6] = sp->in_out_params[0]; 		elem.logbuf[7] = sp->in_out_params[0];
-// 		elem.logbuf[8] = sp->in_out_params[0]; 		elem.logbuf[9] = sp->in_out_params[0];
-// 		elem.logbuf[10] = sp->in_out_params[0]; 		elem.logbuf[11] = sp->in_out_params[0];
-// 		elem.logbuf[12] = sp->in_out_params[0]; 		elem.logbuf[13] = sp->in_out_params[0];
-// 		elem.logbuf[14] = sp->in_out_params[0]; 		elem.logbuf[15] = sp->in_out_params[0];
-// 		xcnwlog_logdata(elem);
-// 		//@ghost xcnwlog_methodcall_logdata = true;
+	}else if (sp->dst_uapifn == XMHFGEEC_SLAB_XC_NWLOG_LOGDATA){
+		xcnwlog_ls_element_t elem;
+		elem.logbuf[0] = sp->in_out_params[0]; 		elem.logbuf[1] = sp->in_out_params[0];
+		elem.logbuf[2] = sp->in_out_params[0]; 		elem.logbuf[3] = sp->in_out_params[0];
+		elem.logbuf[4] = sp->in_out_params[0]; 		elem.logbuf[5] = sp->in_out_params[0];
+		elem.logbuf[6] = sp->in_out_params[0]; 		elem.logbuf[7] = sp->in_out_params[0];
+		elem.logbuf[8] = sp->in_out_params[0]; 		elem.logbuf[9] = sp->in_out_params[0];
+		elem.logbuf[10] = sp->in_out_params[0]; 		elem.logbuf[11] = sp->in_out_params[0];
+		elem.logbuf[12] = sp->in_out_params[0]; 		elem.logbuf[13] = sp->in_out_params[0];
+		elem.logbuf[14] = sp->in_out_params[0]; 		elem.logbuf[15] = sp->in_out_params[0];
+		xcnwlog_logdata(elem);
+		//@ghost xcnwlog_methodcall_logdata = true;
 
-//         }else {
-// 		_XDPRINTF_("XCNWLOG[%u]: Unknown sub-function %x. Halting!\n",
-// 		    (uint16_t)sp->cpuid, sp->dst_uapifn);
-// 		//@ghost xcnwlog_methodcall_invalid = true;
+        }else {
+		_XDPRINTF_("XCNWLOG[%u]: Unknown sub-function %x. Halting!\n",
+		    (uint16_t)sp->cpuid, sp->dst_uapifn);
+		//@ghost xcnwlog_methodcall_invalid = true;
 
 
-//         }
+        }
 
-// }
+}
 
 
 

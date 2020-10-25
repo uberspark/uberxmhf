@@ -71,7 +71,7 @@
 	) ==> (uhcpust_methodcall_invalid == true);
 @*/
 
-void slab_main(slab_params_t *sp){
+void uhcpust_slab_main(slab_params_t *sp){
 
 	if(sp->dst_uapifn == XMHF_HIC_UAPI_CPUSTATE_WRMSR && sp->src_slabid < XMHFGEEC_TOTAL_SLABS){
 		uhcpust_wrmsr(sp->src_slabid, (xmhf_uapi_hcpustate_msr_params_t *)sp->in_out_params);

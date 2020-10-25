@@ -50,7 +50,7 @@
 */
 
 #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf.h>
-#include <uberspark/hwm/arch/x86_32/intel/hwm.h>
+#include <uberspark/hwm/include/arch/x86_32/intel/hwm.h>
 // #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf-debug.h>
 #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/geec.h>
 
@@ -120,7 +120,7 @@ void main(void){
     { \
         __casm__pushl_imm(vector); \
         __casm__pushal(); \
-        __casm__movw_imm_ax(__DS_CPL0); \
+        MACRO_EXPANSION_WORKAROUND(__casm__movw_imm_ax,__DS_CPL0); \
         __casm__movw_ax_ds();\
         __casm__movw_ax_es();\
         __casm__pushl_esp(); \
@@ -135,7 +135,7 @@ void main(void){
 		__casm__pushl_imm(0x0); \
         __casm__pushl_imm(vector); \
         __casm__pushal(); \
-        __casm__movw_imm_ax(__DS_CPL0); \
+        MACRO_EXPANSION_WORKAROUND(__casm__movw_imm_ax,__DS_CPL0); \
         __casm__movw_ax_ds();\
         __casm__movw_ax_es();\
         __casm__pushl_esp(); \
