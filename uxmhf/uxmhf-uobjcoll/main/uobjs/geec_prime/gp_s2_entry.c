@@ -102,20 +102,20 @@
 void gp_s2_entry(void){
 
 	// //intialize system memory map
-	// gp_s2_initsysmemmap();
+	gp_s2_initsysmemmap();
 	// //@ghost cor_gp_s2_initsysmemmap = true;
 
 
 	// //enumerate system devices
 	// //@assert cor_gp_s2_initsysmemmap == true;
-	// gp_s2_sdmenumsysdevices();
+	gp_s2_sdmenumsysdevices();
 	// //@ghost cor_gp_s2_sdmenumsysdevices = true;
 
 
 	// //initialize uobj device mapping
 	// //@assert cor_gp_s2_initsysmemmap == true;
 	// //@assert cor_gp_s2_sdmenumsysdevices == true;
-	// gp_s2_sdminitdevmap();
+	gp_s2_sdminitdevmap();
 	// //@ghost cor_gp_s2_sdminitdevmap = true;
 
 
@@ -123,7 +123,7 @@ void gp_s2_entry(void){
 	// //@assert (cor_gp_s2_initsysmemmap == true);
 	// //@assert cor_gp_s2_sdmenumsysdevices == true;
 	// //@assert (cor_gp_s2_sdminitdevmap == true);
-	// gp_s2_sda();
+	gp_s2_sda();
 	// //@ghost cor_gp_s2_sda = true;
 
 	// //gather memory types for EPT (for guest slabs)
@@ -131,7 +131,7 @@ void gp_s2_entry(void){
 	// //@assert cor_gp_s2_sdmenumsysdevices == true;
 	// //@assert (cor_gp_s2_sdminitdevmap == true);
 	// //@assert (cor_gp_s2_sda == true);
-	// gp_s2_gathersysmemtypes();
+	gp_s2_gathersysmemtypes();
 	// //@ghost cor_gp_s2_gathersysmemtypes = true;
 
 	// //setup (unverified) slab iotbl
@@ -140,7 +140,7 @@ void gp_s2_entry(void){
 	// //@assert (cor_gp_s2_sdminitdevmap == true);
 	// //@assert (cor_gp_s2_sda == true);
 	// //@assert (cor_gp_s2_gathersysmemtypes == true);
-	// gp_s2_setupiotbl();
+	gp_s2_setupiotbl();
 	// //@ghost cor_gp_s2_setupiotbl = true;
 
 	// //setup verified uobj memory page tables
@@ -150,7 +150,7 @@ void gp_s2_entry(void){
 	// //@assert (cor_gp_s2_sda == true);
 	// //@assert (cor_gp_s2_gathersysmemtypes == true);
 	// //@assert (cor_gp_s2_setupiotbl == true);
-	// gp_s2_setupmpgtblv();
+	gp_s2_setupmpgtblv();
 	// //@ghost cor_gp_s2_setupmpgtblv = true;
 
 
@@ -162,7 +162,7 @@ void gp_s2_entry(void){
 	// //@assert (cor_gp_s2_gathersysmemtypes == true);
 	// //@assert (cor_gp_s2_setupiotbl == true);
 	// //@assert (cor_gp_s2_setupmpgtblv == true);
-	// gp_s2_setupmpgtblu();
+	gp_s2_setupmpgtblu();
 	// //@ghost cor_gp_s2_setupmpgtblu = true;
 
 	// //initialize GDT
@@ -174,7 +174,7 @@ void gp_s2_entry(void){
 	// //@assert (cor_gp_s2_setupiotbl == true);
 	// //@assert (cor_gp_s2_setupmpgtblv == true);
 	// //@assert (cor_gp_s2_setupmpgtblu == true);
-	// gp_s2_setupgdt();
+	gp_s2_setupgdt();
 	// //@ghost cor_gp_s2_setupgdt = true;
 
 
@@ -188,7 +188,7 @@ void gp_s2_entry(void){
 	// //@assert (cor_gp_s2_setupmpgtblv == true);
 	// //@assert (cor_gp_s2_setupmpgtblu == true);
 	// //@assert (cor_gp_s2_setupgdt == true);
-	// gp_s2_setupidt();
+	gp_s2_setupidt();
 	// //@ghost cor_gp_s2_setupidt = true;
 
 
@@ -203,7 +203,7 @@ void gp_s2_entry(void){
 	// //@assert (cor_gp_s2_setupmpgtblu == true);
 	// //@assert (cor_gp_s2_setupgdt == true);
 	// //@assert (cor_gp_s2_setupidt == true);
-	// gp_s2_setuptss();
+	gp_s2_setuptss();
 	// //@ghost cor_gp_s2_setuptss = true;
 
 
