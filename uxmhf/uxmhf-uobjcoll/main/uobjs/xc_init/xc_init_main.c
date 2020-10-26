@@ -54,17 +54,17 @@
 #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf.h>
 // #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf-debug.h>
 
-#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/geec.h>
+#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/uobjs/geec.h>
 
 
-#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xc.h>
-#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/uapi_gcpustate.h>
-#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xh_hyperdep.h>
-#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xh_syscalllog.h>
-#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xh_ssteptrace.h>
-#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xh_aprvexec.h>
+#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/uobjs/xc.h>
+#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/uobjs/uapi_gcpustate.h>
+#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/uobjs/xh_hyperdep.h>
+#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/uobjs/xh_syscalllog.h>
+#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/uobjs/xh_ssteptrace.h>
+#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/uobjs/xh_aprvexec.h>
 
-#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xc_init.h>
+#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/uobjs/xc_init.h>
 
 
 

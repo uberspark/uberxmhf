@@ -47,9 +47,9 @@
 #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf.h>
 // #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf-debug.h>
 
-#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/geec.h>
+#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/uobjs/geec.h>
 
-#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xc_init.h>
+#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/uobjs/xc_init.h>
 
 __attribute__(( section(".data") )) uint32_t __xcinit_smplock = 1;
 

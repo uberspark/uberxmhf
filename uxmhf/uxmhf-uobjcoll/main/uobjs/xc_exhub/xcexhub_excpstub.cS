@@ -52,12 +52,12 @@
 #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf.h>
 #include <uberspark/hwm/include/arch/x86_32/intel/hwm.h>
 // #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf-debug.h>
-#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/geec.h>
+#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/uobjs/geec.h>
 
-#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xc_exhub.h>
+#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/uobjs/xc_exhub.h>
 
 #if defined (__XMHF_VERIFICATION__) && defined (__USPARK_FRAMAC_VA__)
-#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xc_exhub.h>
+#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/uobjs/xc_exhub.h>
 
 uint32_t saved_cpu_gprs_ebx=0;
 uint32_t saved_cpu_gprs_esi=0;

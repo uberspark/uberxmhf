@@ -22,26 +22,28 @@
      /* sources */
      "sources" : {
          "h-files": [ 
-			"include/geec.h",
+			"include/uobjs/debug.h",
+			"include/uobjs/geec.h",
+            "include/uobjs/geec_prime.h",
+            /* "include/uobjs/geec_sentinel.h", */
+			"include/uobjs/uapi_gcpustate.h",
+			"include/uobjs/uapi_hcpustate.h",
+			"include/uobjs/uapi_iotbl.h",
+			"include/uobjs/uapi_slabmempgtbl.h",
+			"include/uobjs/uapi_sysdata.h",
+			"include/uobjs/uapi_uhmpgtbl.h",
+			"include/uobjs/xc.h",
+			"include/uobjs/xc_exhub.h",
+			"include/uobjs/xc_ihub.h",
+			"include/uobjs/xc_init.h",
+			"include/uobjs/xc_nwlog.h",
+			"include/uobjs/xg_richguest.h",
+			// "include/uobjs/xh_aprvexec.h",
+			"include/uobjs/xh_hyperdep.h",
+			"include/uobjs/xh_ssteptrace.h",
+			"include/uobjs/xh_syscalllog.h",
 
-            "include/geec_prime.h",
-            /* "include/geec_sentinel.h", */
-			"include/uapi_gcpustate.h",
-			"include/uapi_hcpustate.h",
-			"include/uapi_iotbl.h",
-			"include/uapi_slabmempgtbl.h",
-			"include/uapi_sysdata.h",
-			"include/uapi_uhmpgtbl.h",
-			"include/xc.h",
-			"include/xc_exhub.h",
-			"include/xc_ihub.h",
-			"include/xc_init.h",
-			"include/xc_nwlog.h",
-			"include/xg_richguest.h",
-			// "include/xh_aprvexec.h",
-			"include/xh_hyperdep.h",
-			"include/xh_ssteptrace.h",
-            "include/xh_syscalllog.h",
+			"include/_com.h",
 			"include/xmhf-config.h",
 			"include/xmhf-error.h",
 			"include/xmhf-types.h",
@@ -49,6 +51,9 @@
         ],
          "c-files": [ 
 			"uobjinfotable.c",
+
+			"uobjs/debug/dbgdata.c",
+			"uobjs/debug/subr_prf.c",
 
 			"uobjs/geec/geec_slabmapdef.c",
 

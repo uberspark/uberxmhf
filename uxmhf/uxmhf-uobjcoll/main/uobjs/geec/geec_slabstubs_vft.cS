@@ -51,7 +51,7 @@
 
 
 #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf.h>
-#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/geec.h>
+#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/uobjs/geec.h>
 
 // #define xmhfhwm_cpu_insn_jmpxsentinel() \
 // 	__builtin_annot("movl $0x06200000, %eax"); \

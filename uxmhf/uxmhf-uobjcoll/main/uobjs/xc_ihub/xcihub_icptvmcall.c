@@ -45,12 +45,12 @@
  */
 
 #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf.h>
-#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/geec.h>
+#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/uobjs/geec.h>
 // #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf-debug.h>
 
-#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xc.h>
-#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xc_ihub.h>
-#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/uapi_gcpustate.h>
+#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/uobjs/xc.h>
+#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/uobjs/xc_ihub.h>
+#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/uobjs/uapi_gcpustate.h>
 
 /*
  * xcihub_icptvmcall -- rich guest VMCALL interfacing

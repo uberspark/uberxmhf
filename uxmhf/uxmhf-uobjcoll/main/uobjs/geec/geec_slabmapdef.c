@@ -50,7 +50,7 @@
 */
 
 #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf.h>
-#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/geec.h>
+#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/uobjs/geec.h>
 
 __attribute__ ((section(".rodata"))) char * _namestring="_xmhfslab_";
 __attribute__ ((section(".stack"))) __attribute__ ((aligned(4096))) uint8_t _slab_stack[MAX_PLATFORM_CPUS][XMHF_SLAB_STACKSIZE];

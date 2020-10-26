@@ -52,9 +52,9 @@
 
 #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf.h>
 // #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf-debug.h>
-#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/geec.h>
+#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/uobjs/geec.h>
 
-#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/uapi_uhmpgtbl.h>
+#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/uobjs/uapi_uhmpgtbl.h>
 
 void _uhmpgtbl_setentryforpaddr(uapi_uhmpgtbl_setentryforpaddr_params_t *setentryforpaddrp){
     if(	(setentryforpaddrp->dst_slabid < XMHFGEEC_TOTAL_SLABS) &&

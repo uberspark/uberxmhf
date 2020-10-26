@@ -48,13 +48,13 @@
 // author: amit vasudevan (amitvasudevan@acm.org)
 
 #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf.h>
-#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/geec.h>
+#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/uobjs/geec.h>
 // #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf-debug.h>
 
-#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xc.h>
-#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/uapi_gcpustate.h>
+#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/uobjs/xc.h>
+#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/uobjs/uapi_gcpustate.h>
 
-#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xh_hyperdep.h>
+#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/uobjs/xh_hyperdep.h>
 
 //memory fault handler
 void hyperdep_hcbmemfault(uint32_t cpuindex, uint32_t guest_slab_index){

@@ -46,9 +46,9 @@
 
 #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf.h>
 // #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf-debug.h>
-#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/geec.h>
+#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/uobjs/geec.h>
 
-#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/geec_prime.h>
+#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/uobjs/geec_prime.h>
 
 //@ghost bool gp_s2_sdminitdevmap_addalldevstouobj_coradddeventry[MAX_PLATFORM_DEVICES];
 //@ghost bool gp_s2_sdminitdevmap_addalldevstouobj_isdevinexcl[MAX_PLATFORM_DEVICES];

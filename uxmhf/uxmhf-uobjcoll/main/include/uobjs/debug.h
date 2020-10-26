@@ -43,11 +43,67 @@
  *
  * @XMHF_LICENSE_HEADER_END@
  */
-#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf.h>
-#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/uobjs/geec.h>
-// #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf-debug.h>
 
-#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/uobjs/xc.h>
-#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/uobjs/xc_ihub.h>
+#ifndef __XMHF_DEBUG_H__
+#define __XMHF_DEBUG_H__
 
-__attribute__(( section(".data") )) volatile uint32_t xcihub_smplock = 1;
+#ifndef __ASSEMBLY__
+
+
+#if defined (__DEBUG_SERIAL__)
+
+//#include <xmhfhw.h>
+
+#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/geecgeecgeec_com.h>       		//UART/serial
+
+#define LOG_LEVEL_NONE    0x00
+#define LOG_LEVEL_ALL     0xFF
+
+#define LOG_TARGET_NONE   0x00
+#define LOG_TARGET_VGA    0x01
+#define LOG_TARGET_SERIAL 0x02
+#define LOG_TARGET_MEMORY 0x04
+
+#define LOG_PROFILE (1<<0)
+#define LOG_TRACE   (1<<1)
+#define LOG_ERROR   (1<<2)
+
+#define ENABLED_LOG_TYPES (LOG_PROFILE|LOG_TRACE|LOG_ERROR)
+
+static inline void xmhf_debug_init(char *params){
+	(void)params;
+  xmhfhw_platform_serial_init(params);
+}
+
+extern __attribute__(( section(".data") )) uint32_t libxmhfdebug_lock;
+
+static inline void _XDPRINTF_(const char *fmt, ...){
+    va_list       ap;
+	int retval;
+	char buffer[1024];
+
+	va_start(ap, fmt);
+	retval = vsnprintf(&buffer, 1024, fmt, ap);
+	spin_lock(&libxmhfdebug_lock);
+	xmhfhw_platform_serial_puts(&buffer);
+	spin_unlock(&libxmhfdebug_lock);
+    va_end(ap);
+}
+
+#else
+
+static inline void xmhf_debug_init(char *params){
+	(void)params;
+}
+
+#define _XDPRINTF_(format, args...)
+
+#endif // defined
+
+
+
+
+
+#endif	//__ASSEMBLY__
+
+#endif //__XMHF_DEBUG_H__

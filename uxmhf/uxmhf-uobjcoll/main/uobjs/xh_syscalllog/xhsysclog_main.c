@@ -48,11 +48,11 @@
 // author: amit vasudevan (amitvasudevan@acm.org)
 
 #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf.h>
-#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/geec.h>
+#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/uobjs/geec.h>
 // #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf-debug.h>
 
-#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xc.h>
-#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xh_syscalllog.h>
+#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/uobjs/xc.h>
+#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/uobjs/xh_syscalllog.h>
 
 
 #if defined (__XMHF_VERIFICATION__) && defined (__USPARK_FRAMAC_VA__)

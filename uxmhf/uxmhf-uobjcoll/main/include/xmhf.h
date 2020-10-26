@@ -58,7 +58,7 @@
 #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf-config.h>          //XMHF platform/arch config, TODO: this needs to be platform/arch independent push arch dependent stuff into arch/
 #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf-types.h>           //XMHF specific base types
 #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf-error.h>			//error handling
-#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xc.h>					//core framework decls.
+#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/uobjs/xc.h>					//core framework decls.
 
 #define _XDPRINTF_(format, args...)
 #define MACRO_EXPANSION_WORKAROUND(func, ...) func(__VA_ARGS__) // used to expand macros before they get stringized (https://gcc.gnu.org/onlinedocs/cpp/Argument-Prescan.html)

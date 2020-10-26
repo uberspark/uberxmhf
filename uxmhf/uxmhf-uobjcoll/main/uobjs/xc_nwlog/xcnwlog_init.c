@@ -45,11 +45,11 @@
  */
 
 #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf.h>
-#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/geec.h>
+#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/uobjs/geec.h>
 // #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf-debug.h>
 
-#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xc.h>
-#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xc_nwlog.h>
+#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/uobjs/xc.h>
+#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/uobjs/xc_nwlog.h>
 
 /*
  * slab code

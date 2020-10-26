@@ -52,8 +52,8 @@
 #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf.h>
 #include <uberspark/hwm/include/arch/x86_32/intel/hwm.h>
 // #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf-debug.h>
-#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/geec.h>
-#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xc_exhub.h>
+#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/uobjs/geec.h>
+#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/uobjs/xc_exhub.h>
 
 CASM_FUNCDEF(void, xcexhub_retexcp,
 {
