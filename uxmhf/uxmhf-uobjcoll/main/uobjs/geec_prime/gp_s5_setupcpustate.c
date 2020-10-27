@@ -49,7 +49,7 @@
 #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/uobjs/geec.h>
 
 #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/uobjs/geec_prime.h>
-#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/geec_sentinel.h>
+// #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/geec_sentinel.h>
 //#include <uapi_slabmempgtbl.h>
 //#include <xc_init.h>
 #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/uobjs/xc_ihub.h>
@@ -462,7 +462,7 @@ void gp_s5_setupcpustate(uint32_t cpuid, bool isbsp){
 		spl.src_slabid = XMHFGEEC_SLAB_GEEC_PRIME;
 		spl.dst_slabid = XMHFGEEC_SLAB_GEEC_SENTINEL;
 		spl.cpuid = cpuid;
-		spl.dst_uapifn = UAPI_SENTINEL_INSTALLSYSCALLSTUB;
+		// spl.dst_uapifn = UAPI_SENTINEL_INSTALLSYSCALLSTUB;
 
 		XMHF_SLAB_CALLNEW(&spl);
 	}

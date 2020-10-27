@@ -64,34 +64,6 @@ static __inline int imax(int a, int b) { return (a > b ? a : b); }
 /* Max number conversion buffer length: a u_quad_t in base 2, plus NUL byte. */
 #define MAXNBUF	(sizeof(intmax_t) * NBBY + 1)
 
-
-/*
- * do_div() from linux kernel
- * workaround to divide unsigned long long because gcc lib isn't linked
- */
-#define do_div(n, base)						\
-({								\
-	unsigned long __upper, __low, __high, __mod, __base;	\
-	__base = (base);					\
-	if (__builtin_constant_p(__base) && is_power_of_2(__base)) { \
-		__mod = n & (__base - 1);			\
-		n >>= ilog2(__base);				\
-	} else {						\
-		asm("" : "=a" (__low), "=d" (__high) : "A" (n));\
-		__upper = __high;				\
-		if (__high) {					\
-			__upper = __high % (__base);		\
-			__high = __high / (__base);		\
-		}						\
-		asm("divl %2" : "=a" (__low), "=d" (__mod)	\
-			: "rm" (__base), "0" (__low), "1" (__upper));	\
-		asm("" : "=A" (n) : "a" (__low), "d" (__high));	\
-	}							\
-	__mod;							\
-})
-
-
-
 //#include "emhfc_callbacks.h"
 
 
@@ -238,10 +210,9 @@ ksprintn(char *nbuf, uintmax_t num, int base, int *lenp, int upper)
 	p = nbuf;
 	*p = '\0';
 	do {
-		uintmax_t rem = do_div(num, base);
-		c = hex2ascii(rem);
+		c = hex2ascii(num % base);
 		*++p = upper ? toupper(c) : c;
-	} while (num);
+	} while (num /= base);
 	if (lenp)
 		*lenp = p - nbuf;
 	return (p);

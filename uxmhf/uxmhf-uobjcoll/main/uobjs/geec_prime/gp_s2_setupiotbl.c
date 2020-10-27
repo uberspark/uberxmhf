@@ -49,7 +49,7 @@
 #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/uobjs/geec.h>
 
 #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/uobjs/geec_prime.h>
-#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/geec_sentinel.h>
+// #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/geec_sentinel.h>
 #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/uobjs/uapi_iotbl.h>
 
 //@ghost bool gp_s2_setupiotbl_invokeduhslabiotbl[XMHFGEEC_TOTAL_SLABS];
