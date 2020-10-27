@@ -39,6 +39,8 @@
 #include <linux/fs.h>             // header for the Linux file system support
 #include <asm/uaccess.h>          // required for the copy to user function
 
+#include <asm/pgtable.h>
+
 #include <uhcall.h>
 #include <uhcalltest.h>
 
@@ -69,6 +71,8 @@ static struct file_operations fops =
    .release = dev_release,
 };
 
+//prototype for va2pa
+static unsigned long va2pa(unsigned long va);  
 
 __attribute__((aligned(4096))) unsigned char buffer[]= {'a', 'b', 'c', 'd'};
 
@@ -88,6 +92,38 @@ static void uhcallkmod_hvc(u32 uhcall_function, void *uhcall_buffer,
 }
 
 
+static unsigned long va2pa(unsigned long va) {
+  pgd_t *pgd;
+  pud_t *pud;
+  pmd_t *pmd;
+  pte_t *pte;
+  unsigned long pa = 0;
+  unsigned long page_addr = 0;
+  unsigned long page_offset = 0;
+
+  pgd = pgd_offset(current->mm, va);
+  if(pgd_none(*pgd))
+    return -1;
+
+  pud = pud_offset(pgd, va);
+  if(pud_none(*pud))
+    return -1;
+
+  pmd = pmd_offset(pud, va);
+  if(pmd_none(*pmd))
+    return -1;
+
+  pte = pte_offset_kernel(pmd, va);
+  if(pte_none(*pte))
+    return -1;
+
+  page_addr = pte_val(*pte) & PAGE_MASK;
+  page_offset = va & ~PAGE_MASK;
+  pa = page_addr | page_offset;
+  
+  return pa;
+}
+
 static int dev_open(struct inode *inodep, struct file *filep){
    number_opens++;
    printk(KERN_INFO "uhcallkmod: device has been opened %d time(s)\n", number_opens);
@@ -102,6 +138,7 @@ static int dev_release(struct inode *inodep, struct file *filep){
 
 static ssize_t dev_write(struct file *filep, const char *buffer, size_t len, loff_t *offset){
 	uhcallkmod_param_t *uhcallp;
+	unsigned long pa;
 
 	if(buffer == NULL)
 		return -EINVAL;
@@ -111,11 +148,12 @@ static ssize_t dev_write(struct file *filep, const char *buffer, size_t len, lof
 
 	uhcallp = (uhcallkmod_param_t *)buffer;
 
+	pa = va2pa((u32)(uhcallp->uhcall_buffer));
+	
 	printk(KERN_INFO "uhcallkmod: dev_write: uhcall_function=0x%08x, uhcall_buffer=0x%08x, uhcall_buffer_len=0x%08x\n",
 			uhcallp->uhcall_function, uhcallp->uhcall_buffer, uhcallp->uhcall_buffer_len);
 
-	uhcallkmod_hvc(uhcallp->uhcall_function, uhcallp->uhcall_buffer, uhcallp->uhcall_buffer_len);
-	//uhcallkmod_hvc(uhcallp->uhcall_function, &buffer, uhcallp->uhcall_buffer_len);
+	uhcallkmod_hvc(uhcallp->uhcall_function, (void *)pa, uhcallp->uhcall_buffer_len);	
 
    return 0;
 }

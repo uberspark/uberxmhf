@@ -124,7 +124,7 @@ bool uhcall(uint32_t uhcall_function, void *uhcall_buffer, uint32_t uhcall_buffe
 		}
 	}
 
-#if 1
+#if 0
     //get buffer physical address
     if(!uhcall_va2pa(uhcall_buffer, &uhcall_buffer_paddr) ){
 	    printf("%s: error: line %u\n", __FUNCTION__, __LINE__);
@@ -154,7 +154,8 @@ bool uhcall(uint32_t uhcall_function, void *uhcall_buffer, uint32_t uhcall_buffe
 	//populate uhcallkmod_param_t
 	uhcallp.uhcall_function=uhcall_function;
 	//uhcallp.uhcall_buffer=(uint32_t)uhcall_buffer;
-	uhcallp.uhcall_buffer=(void *)(uint32_t)uhcall_buffer_paddr;
+	//	uhcallp.uhcall_buffer=(void *)(uint32_t)uhcall_buffer_paddr;
+	uhcallp.uhcall_buffer=(void *)(uint32_t)uhcall_buffer;	
 	uhcallp.uhcall_buffer_len=uhcall_buffer_len;
 
 	//printf("%s: uhcall_function=%u, uhcall_buffer=0x%08x, uhcall_buffer_len=%u\n", __FUNCTION__,
