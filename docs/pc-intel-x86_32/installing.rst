@@ -12,6 +12,7 @@ be sure to enable the corresponding BIOS options. Also make sure your
 BIOS is up to date; you could ruin your motherboard if your BIOS is
 buggy. Secondly, ensure that you are running one of the supported 
 guest operating systems (see :doc:`uberXMHF (pc-intel-x86_32) Supported Guest Operating Systems </pc-intel-x86_32/supported-os>`\ ).
+Thirdly, ensure you have copied the mico-hypervisor (``xmhf-x86-vmx-x86pc.bin.gz``) and the SINIT module (`Intel TXT webpage <http://software.intel.com/en-us/articles/intel-trusted-execution-technology/>`_) into your `/boot/` directory.
 Lastly, configure your system to boot uberXMHF as described below.
 
 
@@ -36,14 +37,16 @@ The following commands accomplish the above task on Ubuntu:
 
 .. code-block:: bash
 
-   sudo apt-get purge grub* os-prober
+   # remove all GRUB 2 files (answer yes to any questions)
+   sudo apt-get purge grub-pc grub-common os-prober
    sudo apt-get purge grub-gfxpayload-lists
    sudo apt-get install grub
+   # If asked about creating a /boot/grub/menu.lst answer yes
    sudo update-grub
    grub-install /dev/sda
 
 
-And remove lines (if any) from ``/boot/grub/menu.lst``\ :
+You should have an automatically filled in ``/boot/grub/menu.lst`` with entries for any kernels installed on the machine. While unlikely, check this file for any lines attempting to load GRUB 2 (such as the snippet below):
 
 .. code-block:: bash
 
@@ -52,7 +55,7 @@ And remove lines (if any) from ``/boot/grub/menu.lst``\ :
    kernel         /boot/grub/core.img
 
 
-For further details refer to the following posts on `downgrading GRUB for Ubuntu <http://ubuntuforums.org/showthread.php?t=1298932>`_ and `downgrading GRUB for Debian <http://forums.debian.net/viewtopic.php?f=17&t=50132>`_ respectively.
+For further details about downgradeing GRUB, please refer to the following posts on `downgrading GRUB for Ubuntu <http://ubuntuforums.org/showthread.php?t=1298932>`_ and `downgrading GRUB for Debian <http://forums.debian.net/viewtopic.php?f=17&t=50132>`_ respectively.
 
 Get the correct SINIT module
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -64,21 +67,27 @@ matches your platform CPU and chipset.
 SINIT modules can be found here:
 http://software.intel.com/en-us/articles/intel-trusted-execution-technology/
 
+You can determine the appropriate SINIT module by determining your CPU's ``Product Collection`` and ``Code Name``. If unsure about these details. First, find your CPU's model name (``cat /proc/cpuinfo | grep 'model name'``). Second, use the CPU model to search `Intel's product specifications <ark.intel.com>`_. You should now have your CPU's ``Product Collection`` and ``Code Name``, which you can use to identify the appropriate `SINIT module <http://software.intel.com/en-us/articles/intel-trusted-execution-technology/>`_. Note, as of the time of writing, there was a second table at the bottom of the page with the attached SINIT modules (in case the links in the main table do not work).
+
+Ensure that the ``.BIN`` from this module is copied into your ``/boot/`` directory.
+
 Building and Installing uberXMHF binaries
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 If you haven't already built and installed uberXMHF, 
 see :doc:`Verifying and Building uberXMHF (pc-intel-x86_32) </pc-intel-x86_32/verify-build>`
 
+Ensure that the ``xmhf-x86-vmx-x86pc.bin.gz`` is copied into your ``/boot/`` directory.
+
 Adding a Grub entry to boot Linux
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 You will need to add a Grub entry to ``/boot/grub/menu.lst``. To ensure
 that it doesn't get clobbered, put it **outside** the **AUTOMAGIC KERNEL
-LIST**.
+LIST** (i.e., append it to the end of the file).
 
 To boot a Linux guest, we create a grub entry that loads the
-hypervisor, and then re-loads grub. When booting the machine, first
+micro-hypervisor, and then re-loads grub. When booting the machine, first
 choose the uberXMHF entry, and then choose a normal Linux entry.
 
 A grub entry for uberXMHF should look something like this:
@@ -89,11 +98,22 @@ A grub entry for uberXMHF should look something like this:
    rootnoverify (hd0,1)                                      # should point to /boot
    kernel /boot/xmhf-x86-vmx-x86pc.bin.gz serial=115200,8n1,0x3f8 # substitute in the correct serial address
    modulenounzip (hd0)+1                                     # should point to where grub is installed
-           modulenounzip /boot/4th_gen_i5_i7_SINIT_75.BIN            # Intel TXT AC SINIT module
+   modulenounzip /boot/4th_gen_i5_i7_SINIT_75.BIN            # Intel TXT SINIT AC module
 
 
 This will boot uberXMHF with debug output going to the specified serial
 port, and then reload grub.
+Note, check if the AUTOMAGIC KERNELS refernce ``/boot/vmlinuz-*`` or simply ``/vmlinuz-*`` and have your uberXMHF entry match (i.e., some do not require the ``/boot/`` prefix in the above example).
+
+If your Default OS (the Linux kernel that will be booting after the micro-hypervisor) uses an LVM filesystem, you might need to alter its GRUB entry. Modify the kernel entry to specify the root as the LVM disk. For example, change:
+
+`` kernel     vmlinuz-4.4.236+ root=UUID=xxxxxxxx-xxxx-xxxx-xxxxxxxxxxxx ro quiet splash``
+
+to
+
+``kernel      vmlinuz-4.4.236+ root=/dev/${Volume Group name}/root ro quiet splash``
+
+Where you can find the appropriate ``${Volume Group name}`` using ``sudo vgs --noheadings -o vg_name``
 
 savedefault for unattended boot
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -115,10 +135,10 @@ each-other as the new default:
 .. code-block:: bash
 
    title uberXMHF
-       savedefault 1
+   savedefault 1
 
    title Default OS
-       savedefault 0
+   savedefault 0
 
 
 The parameter to savedefault is the menu entry that you would like as
