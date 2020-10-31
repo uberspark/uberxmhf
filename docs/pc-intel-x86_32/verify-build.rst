@@ -7,7 +7,7 @@ Verifying and Building
 Software Requirements and Dependencies
 --------------------------------------
 
-UberSpark development and verification framework (available `here <https://uberspark.org>`_\ ).
+The uberSpark development and verification framework is required (available `here <https://uberspark.org>`_\ ). Note, these tools require a 64-bit environment, so the micro-hypervisor cannot be built locally.
 
 
 Verfying
