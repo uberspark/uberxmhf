@@ -11,6 +11,7 @@
 #include <sys/syscall.h>
 #include <sys/types.h>
 #include <unistd.h>
+#include <stdbool.h>
 
 //////////////////////////////////////////////////////////////////////////////
 // base types
@@ -112,7 +113,7 @@ typedef struct{
   uint8_t out[16];
 }uhcalltest_param_t;
 
-__attribute__ ((aligned(4096))) __attribute__(section(".data"))) uhcalltest_param_t uhctp;
+__attribute__ ((aligned(4096))) __attribute__((section(".data"))) uhcalltest_param_t uhctp;
 
 void do_uhcalltest(void *bufptr){
   uhcalltest_param_t *ptr_uhctp = (uhcalltest_param_t *)bufptr;
@@ -134,7 +135,7 @@ void do_uhcalltest(void *bufptr){
   else
     printf("hypercall SUCCESS\n");
   printf("dumping out[]...\n");
-  for(i=0;i<16;;i++)
+  for(i=0;i<16;i++)
     printf("%c", ptr_uhctp->out[i]);
   printf("\n");
   printf("%s: end\n", __FUNCTION__);
