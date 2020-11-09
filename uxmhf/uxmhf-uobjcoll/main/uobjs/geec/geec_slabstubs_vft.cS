@@ -53,12 +53,12 @@
 #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf.h>
 #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/uobjs/geec.h>
 
-// #define xmhfhwm_cpu_insn_jmpxsentinel() \
-// 	__builtin_annot("movl $0x06200000, %eax"); \
-// 	__builtin_annot("jmpl *%eax "); \
-// 	__builtin_annot("hlt "); \
-// 	xmhfhwm_vdriver_sentinel(); \
-// 	_impl_xmhfhwm_cpu_insn_hlt(); \
+#define __casm__jmpxsentinel() \
+	__builtin_annot("movl $0x06200000, %eax"); \
+	__builtin_annot("jmpl *%eax "); \
+	__builtin_annot("hlt "); \
+	hwm_vdriver_sentinel(); \
+	_impl__casm__hlt(); \
 
 
 CASM_FUNCDEF_FULL(.slab_entrystub, 1, void, _slab_entrystub,

@@ -78,7 +78,7 @@ void hyperdep_deactivatedep(uint32_t cpuindex, uint32_t guest_slab_index, uint64
              spl.dst_uapifn = XMHFGEEC_UAPI_SLABMEMPGTBL_GETENTRYFORPADDR;
             getentryforpaddrp->dst_slabid = guest_slab_index;
             getentryforpaddrp->gpa = gpa;
-            XMHF_SLAB_CALLNEW(&spl);
+            ugmpgtbl_slab_main(&spl);
 
             _XDPRINTF_("%s[%u]: original entry for gpa=%016llx is %016llx\n", __func__,
                        (uint16_t)cpuindex, gpa, getentryforpaddrp->result_entry);
@@ -88,7 +88,7 @@ void hyperdep_deactivatedep(uint32_t cpuindex, uint32_t guest_slab_index, uint64
             setentryforpaddrp->gpa = gpa;
             setentryforpaddrp->entry = getentryforpaddrp->result_entry & ~(0x7);
             setentryforpaddrp->entry |= 0x7; //execute, read-write
-            XMHF_SLAB_CALLNEW(&spl);
+            ugmpgtbl_slab_main(&spl);
 
             _XDPRINTF_("%s[%u]: deactivated DEP for page at gpa %016llx\n", __func__, (uint16_t)cpuindex, gpa);
 

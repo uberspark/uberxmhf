@@ -89,7 +89,7 @@ uint32_t xcihub_icptcrx_read_cr4(uint32_t cpuid){
 	spl.dst_slabid = XMHFGEEC_SLAB_UAPI_GCPUSTATE;
 	spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_VMREAD;
 	gcpustate_vmrwp->encoding = VMCS_GUEST_CR4;
-	XMHF_SLAB_CALLNEW(&spl);
+	ugcpust_slab_main(&spl);
 
 	return (gcpustate_vmrwp->value);
 }
@@ -105,7 +105,7 @@ uint32_t xcihub_icptcrx_read_cr0(uint32_t cpuid){
 	spl.dst_slabid = XMHFGEEC_SLAB_UAPI_GCPUSTATE;
 	spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_VMREAD;
 	gcpustate_vmrwp->encoding = VMCS_GUEST_CR0;
-	XMHF_SLAB_CALLNEW(&spl);
+	ugcpust_slab_main(&spl);
 
 	return (gcpustate_vmrwp->value);
 }
@@ -122,7 +122,7 @@ uint32_t xcihub_icptcrx_read_cr3(uint32_t cpuid){
 	spl.dst_slabid = XMHFGEEC_SLAB_UAPI_GCPUSTATE;
 	spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_VMREAD;
 	gcpustate_vmrwp->encoding = VMCS_GUEST_CR3;
-	XMHF_SLAB_CALLNEW(&spl);
+	ugcpust_slab_main(&spl);
 
 	return (gcpustate_vmrwp->value);
 }
@@ -140,7 +140,7 @@ uint32_t xcihub_icptcrx_read_cr4_shadow(uint32_t cpuid){
 	spl.dst_slabid = XMHFGEEC_SLAB_UAPI_GCPUSTATE;
 	spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_VMREAD;
 	gcpustate_vmrwp->encoding = VMCS_CONTROL_CR4_SHADOW;
-	XMHF_SLAB_CALLNEW(&spl);
+	ugcpust_slab_main(&spl);
 
 	return (gcpustate_vmrwp->value);
 }
@@ -158,7 +158,7 @@ bool is_paging_enabled(uint32_t cpuid){
 	spl.dst_slabid = XMHFGEEC_SLAB_UAPI_GCPUSTATE;
 	spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_VMREAD;
 	gcpustate_vmrwp->encoding = VMCS_GUEST_CR0;
-	XMHF_SLAB_CALLNEW(&spl);
+	ugcpust_slab_main(&spl);
 
 	if(gcpustate_vmrwp->value & CR0_PG)
 		return true;
@@ -194,11 +194,11 @@ uint32_t xcihub_icptcrx_handle_cr0(uint32_t cpuid, uint32_t src_slabid, uint32_t
 		spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_VMWRITE;
 		gcpustate_vmrwp->encoding = VMCS_CONTROL_CR0_SHADOW;
 		gcpustate_vmrwp->value = cr0;
-		XMHF_SLAB_CALLNEW(&spl);
+		ugcpust_slab_main(&spl);
 
 		gcpustate_vmrwp->encoding = VMCS_GUEST_CR0;
 		gcpustate_vmrwp->value = hw_cr0;
-		XMHF_SLAB_CALLNEW(&spl);
+		ugcpust_slab_main(&spl);
 
 		if ((cr0 ^ old_cr0) & CR0_PG) {
 			_XDPRINTF_("%s[%u]: CR0[WRITE]: PG bit set logic\n", __func__, cpuid);
@@ -254,11 +254,11 @@ uint32_t xcihub_icptcrx_handle_cr4(uint32_t cpuid, uint32_t src_slabid, uint32_t
 	spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_VMWRITE;
 	gcpustate_vmrwp->encoding = VMCS_CONTROL_CR4_SHADOW;
 	gcpustate_vmrwp->value = cr4;
-	XMHF_SLAB_CALLNEW(&spl);
+	ugcpust_slab_main(&spl);
 
 	gcpustate_vmrwp->encoding = VMCS_GUEST_CR4;
 	gcpustate_vmrwp->value = hw_cr4;
-	XMHF_SLAB_CALLNEW(&spl);
+	ugcpust_slab_main(&spl);
 
 	_XDPRINTF_("%s[%u]: CR4[WRITE]: old=0x%08x, new=0x%08x, final=0x%08x\n",
 			__func__, cpuid, old_cr4, cr4, hw_cr4);
@@ -301,13 +301,13 @@ void xcihub_icptcrx(uint32_t cpuid, uint32_t src_slabid){
 
 	//read GPRs
 	spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSREAD;
-	XMHF_SLAB_CALLNEW(&spl);
+	ugcpust_slab_main(&spl);
 	uberspark_uobjrtl_crt__memcpy(&r, &gcpustate_gprs->gprs, sizeof(x86regs_t));
 
 	//read exit qualification
 	spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_VMREAD;
 	gcpustate_vmrwp->encoding = VMCS_INFO_EXIT_QUALIFICATION;
-	XMHF_SLAB_CALLNEW(&spl);
+	ugcpust_slab_main(&spl);
 	info_exit_qualification = gcpustate_vmrwp->value;
 
 	crx=(uint32_t) ((uint32_t)info_exit_qualification & 0x0000000FUL);
@@ -350,23 +350,23 @@ void xcihub_icptcrx(uint32_t cpuid, uint32_t src_slabid){
 	//skip over CRx instruction by adjusting RIP
 	spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_VMREAD;
 	gcpustate_vmrwp->encoding = VMCS_INFO_VMEXIT_INSTRUCTION_LENGTH;
-	XMHF_SLAB_CALLNEW(&spl);
+	ugcpust_slab_main(&spl);
 	info_vmexit_instruction_length = gcpustate_vmrwp->value;
 
 	gcpustate_vmrwp->encoding = VMCS_GUEST_RIP;
-	XMHF_SLAB_CALLNEW(&spl);
+	ugcpust_slab_main(&spl);
 	guest_rip = gcpustate_vmrwp->value;
 	guest_rip+=info_vmexit_instruction_length;
 
 	spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_VMWRITE;
 	gcpustate_vmrwp->encoding = VMCS_GUEST_RIP;
 	gcpustate_vmrwp->value = guest_rip;
-	XMHF_SLAB_CALLNEW(&spl);
+	ugcpust_slab_main(&spl);
 
 	//write interruptibility = 0
 	gcpustate_vmrwp->encoding = VMCS_GUEST_INTERRUPTIBILITY;
 	gcpustate_vmrwp->value = 0;
-	XMHF_SLAB_CALLNEW(&spl);
+	ugcpust_slab_main(&spl);
 
 	//_XDPRINTF_("%s[%u]: adjusted guest_rip=%08x\n",  __func__, cpuid, guest_rip);
 }

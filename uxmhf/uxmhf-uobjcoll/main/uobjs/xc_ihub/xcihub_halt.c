@@ -75,15 +75,15 @@ void xcihub_halt_eptviolation(uint32_t cpuid, uint32_t info_vmexitreason){
             spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_VMREAD;
 
             gcpustate_vmrwp->encoding = VMCS_INFO_EXIT_QUALIFICATION;
-            XMHF_SLAB_CALLNEW(&spl);
+            ugcpust_slab_main(&spl);
             errorcode = gcpustate_vmrwp->value;
 
             gcpustate_vmrwp->encoding = VMCS_INFO_GUEST_PADDR_FULL;
-            XMHF_SLAB_CALLNEW(&spl);
+            ugcpust_slab_main(&spl);
             gpa = gcpustate_vmrwp->value;
 
             gcpustate_vmrwp->encoding = VMCS_INFO_GUEST_LINEAR_ADDRESS;
-            XMHF_SLAB_CALLNEW(&spl);
+            ugcpust_slab_main(&spl);
             gva = gcpustate_vmrwp->value;
 
         	_XDPRINTF_("%s[%u]: EPT violation gpa=0x%016llx\n", __func__, cpuid, gpa);

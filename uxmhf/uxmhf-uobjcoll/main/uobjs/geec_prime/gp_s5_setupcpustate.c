@@ -162,7 +162,7 @@ static bool __xmhfhic_x86vmx_setupvmxstate(uint64_t cpuid){
 		spl.cpuid = (uint16_t)cpuid;
 		spl.dst_uapifn = UAPI_XCEXHUB_LOADHOSTIDTRBASE;
 
-		XMHF_SLAB_CALLNEW(&spl);
+		xcexhub_slab_main(&spl);
 	}
 
 
@@ -178,7 +178,7 @@ static bool __xmhfhic_x86vmx_setupvmxstate(uint64_t cpuid){
 		spl.cpuid = (uint16_t)cpuid;
 		spl.dst_uapifn = UAPI_XCIHUB_INSTALLICPTHANDLER;
 
-		XMHF_SLAB_CALLNEW(&spl);
+		xcihub_slab_main(&spl);
 	}
 
 
@@ -410,7 +410,7 @@ void gp_s5_setupcpustate(uint32_t cpuid, bool isbsp){
 		spl.cpuid = (uint16_t)cpuid;
 		spl.dst_uapifn = UAPI_XCEXHUB_LOADIDT;
 
-		XMHF_SLAB_CALLNEW(&spl);
+		xcexhub_slab_main(&spl);
 	}
 
 

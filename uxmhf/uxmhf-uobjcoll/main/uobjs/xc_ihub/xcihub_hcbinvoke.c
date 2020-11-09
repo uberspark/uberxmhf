@@ -88,7 +88,7 @@ static uint32_t xc_hcbinvoke_helper(uint32_t hcbentry, uint32_t cbtype, uint32_t
 
 	if(_xcihub_hypapp_info_table[hcbentry].cbmask & XC_HYPAPPCB_MASK(cbtype)){
 		spl.dst_slabid = _xcihub_hypapp_info_table[hcbentry].xmhfhic_slab_index;
-		XMHF_SLAB_CALLNEW(&spl);
+		xcihub_slab_main(&spl);
 		if(spl.in_out_params[3] == XC_HYPAPPCB_NOCHAIN){
 			status = XC_HYPAPPCB_NOCHAIN;
 		}

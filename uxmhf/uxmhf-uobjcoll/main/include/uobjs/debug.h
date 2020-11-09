@@ -54,7 +54,7 @@
 
 //#include <xmhfhw.h>
 
-#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/geecgeecgeec_com.h>       		//UART/serial
+#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/_com.h>       		//UART/serial
 
 #define LOG_LEVEL_NONE    0x00
 #define LOG_LEVEL_ALL     0xFF

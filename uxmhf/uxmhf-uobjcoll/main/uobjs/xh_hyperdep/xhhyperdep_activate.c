@@ -78,7 +78,7 @@ void hyperdep_activatedep(uint32_t cpuindex, uint32_t guest_slab_index, uint64_t
 		getentryforpaddrp->dst_slabid = guest_slab_index;
 		getentryforpaddrp->gpa = gpa;
 		//@assert getentryforpaddrp->gpa == gpa;
-		XMHF_SLAB_CALLNEW(&spl);
+		ugmpgtbl_slab_main(&spl);
 
 		_XDPRINTF_("%s[%u]: original entry for gpa=%016llx is %016llx\n", __func__, (uint16_t)cpuindex,
 		       gpa, getentryforpaddrp->result_entry);
@@ -89,7 +89,7 @@ void hyperdep_activatedep(uint32_t cpuindex, uint32_t guest_slab_index, uint64_t
 		setentryforpaddrp->entry = getentryforpaddrp->result_entry & ~(0x4); //execute-disable
 		//@assert setentryforpaddrp->gpa == gpa;
 		//@assert !(setentryforpaddrp->entry & 0x4);
-		XMHF_SLAB_CALLNEW(&spl);
+		ugmpgtbl_slab_main(&spl);
 
 		_XDPRINTF_("%s[%u]: activated DEP for page at gpa %016llx\n", __func__, (uint16_t)cpuindex, gpa);
 

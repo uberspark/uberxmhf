@@ -87,11 +87,11 @@ bool xcihub_rg_e820emulation(uint32_t cpuid, uint32_t src_slabid){
 	//read CS base and RIP
 	spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_VMREAD;
 	gcpustate_vmrwp->encoding = VMCS_GUEST_CS_BASE;
-	XMHF_SLAB_CALLNEW(&spl);
+	ugcpust_slab_main(&spl);
 	g_cs_base= gcpustate_vmrwp->value;
 
 	gcpustate_vmrwp->encoding = VMCS_GUEST_RIP;
-	XMHF_SLAB_CALLNEW(&spl);
+	ugcpust_slab_main(&spl);
 	g_eip = gcpustate_vmrwp->value;
 
 	//check if this is a E820 emulation VMCALL, if not return false
@@ -100,20 +100,20 @@ bool xcihub_rg_e820emulation(uint32_t cpuid, uint32_t src_slabid){
 
 	//read ES.base, SS.base and ESP
 	gcpustate_vmrwp->encoding = VMCS_GUEST_ES_BASE;
-	XMHF_SLAB_CALLNEW(&spl);
+	ugcpust_slab_main(&spl);
 	g_es_base= gcpustate_vmrwp->value;
 
 	gcpustate_vmrwp->encoding = VMCS_GUEST_SS_BASE;
-	XMHF_SLAB_CALLNEW(&spl);
+	ugcpust_slab_main(&spl);
 	g_ss_base= gcpustate_vmrwp->value;
 
 	gcpustate_vmrwp->encoding = VMCS_GUEST_RSP;
-	XMHF_SLAB_CALLNEW(&spl);
+	ugcpust_slab_main(&spl);
 	g_esp = gcpustate_vmrwp->value;
 
 	//read GPRs
 	spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSREAD;
-	XMHF_SLAB_CALLNEW(&spl);
+	ugcpust_slab_main(&spl);
 	uberspark_uobjrtl_crt__memcpy(&r, &gcpustate_gprs->gprs, sizeof(x86regs_t));
 
 
@@ -131,14 +131,14 @@ bool xcihub_rg_e820emulation(uint32_t cpuid, uint32_t src_slabid){
 
 		//read maximum E820 index
 		splusysd.dst_uapifn = UXMHF_UAPI_SYSDATA_E820GETMAXINDEX;
-		XMHF_SLAB_CALLNEW(&splusysd);
+		usysd_slab_main(&splusysd);
 		e820_maxindex = usysd_getmaxindex->index;
 
 		if( (r.edx == 0x534D4150UL) && (r.ebx < e820_maxindex) ){
 
 			splusysd.dst_uapifn = UXMHF_UAPI_SYSDATA_E820GETENTRYFORINDEX;
 			usysd_getentryforindex->index = r.ebx;
-			XMHF_SLAB_CALLNEW(&splusysd);
+			usysd_slab_main(&splusysd);
 
 			CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__sysmem_copy_obj2sys, (uint32_t)(g_es_base+(uint16_t)r.edi), &(usysd_getentryforindex->baseaddr_low), 20);
 
@@ -188,7 +188,7 @@ bool xcihub_rg_e820emulation(uint32_t cpuid, uint32_t src_slabid){
 		//update GPRs
 		spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSWRITE;
 		uberspark_uobjrtl_crt__memcpy(&gcpustate_gprs->gprs, &r, sizeof(x86regs_t));
-		XMHF_SLAB_CALLNEW(&spl);
+		ugcpust_slab_main(&spl);
 
 		//update RIP to execute the IRET following the VMCALL instruction
 		//effectively returning from the INT 15 call made by the guest
@@ -196,7 +196,7 @@ bool xcihub_rg_e820emulation(uint32_t cpuid, uint32_t src_slabid){
 		spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_VMWRITE;
 		gcpustate_vmrwp->encoding = VMCS_GUEST_RIP;
 		gcpustate_vmrwp->value = g_eip;
-		XMHF_SLAB_CALLNEW(&spl);
+		ugcpust_slab_main(&spl);
 
 	}else{
 
@@ -209,15 +209,15 @@ bool xcihub_rg_e820emulation(uint32_t cpuid, uint32_t src_slabid){
 		spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_VMWRITE;
 		gcpustate_vmrwp->encoding = VMCS_GUEST_RIP;
 		gcpustate_vmrwp->value = orig_int15h_ip;
-		XMHF_SLAB_CALLNEW(&spl);
+		ugcpust_slab_main(&spl);
 
 		gcpustate_vmrwp->encoding = VMCS_GUEST_CS_SELECTOR;
 		gcpustate_vmrwp->value = orig_int15h_cs;
-		XMHF_SLAB_CALLNEW(&spl);
+		ugcpust_slab_main(&spl);
 
 		gcpustate_vmrwp->encoding = VMCS_GUEST_CS_BASE;
 		gcpustate_vmrwp->value = (orig_int15h_cs * 16);
-		XMHF_SLAB_CALLNEW(&spl);
+		ugcpust_slab_main(&spl);
 
 	}
 
@@ -225,7 +225,7 @@ bool xcihub_rg_e820emulation(uint32_t cpuid, uint32_t src_slabid){
 	spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_VMWRITE;
 	gcpustate_vmrwp->encoding = VMCS_GUEST_INTERRUPTIBILITY;
 	gcpustate_vmrwp->value = 0;
-	XMHF_SLAB_CALLNEW(&spl);
+	ugcpust_slab_main(&spl);
 
 	//we handled a VMCALL which was E820 emulation
 	return true;

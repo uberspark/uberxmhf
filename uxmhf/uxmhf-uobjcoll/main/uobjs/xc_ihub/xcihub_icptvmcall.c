@@ -80,24 +80,24 @@ void xcihub_icptvmcall(uint32_t cpuid, uint32_t src_slabid){
 
 		gcpustate_vmrwp->encoding = VMCS_INFO_VMEXIT_INSTRUCTION_LENGTH;
 		gcpustate_vmrwp->value=0;
-		XMHF_SLAB_CALLNEW(&spl);
+		ugcpust_slab_main(&spl);
 		info_vmexit_instruction_length = gcpustate_vmrwp->value;
 
 		gcpustate_vmrwp->encoding = VMCS_GUEST_RIP;
 		gcpustate_vmrwp->value=0;
-		XMHF_SLAB_CALLNEW(&spl);
+		ugcpust_slab_main(&spl);
 		guest_rip = gcpustate_vmrwp->value;
 		guest_rip+=info_vmexit_instruction_length;
 
 		spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_VMWRITE;
 		gcpustate_vmrwp->encoding = VMCS_GUEST_RIP;
 		gcpustate_vmrwp->value = guest_rip;
-		XMHF_SLAB_CALLNEW(&spl);
+		ugcpust_slab_main(&spl);
 
 		//write interruptibility = 0
 		gcpustate_vmrwp->encoding = VMCS_GUEST_INTERRUPTIBILITY;
 		gcpustate_vmrwp->value = 0;
-		XMHF_SLAB_CALLNEW(&spl);
+		ugcpust_slab_main(&spl);
 
 		//_XDPRINTF_("%s[%u]: no-E820 adjusted guest_rip=%08x\n", __func__, cpuid, guest_rip);
 	}

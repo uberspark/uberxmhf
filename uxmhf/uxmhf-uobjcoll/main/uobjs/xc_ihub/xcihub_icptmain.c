@@ -67,7 +67,7 @@ void update_exhub_withinfo(uint32_t cpuid, bool exit_status, uint32_t info_reaso
 	spl.dst_uapifn = 1;
 	spl.in_out_params[0] = exit_status;
 	spl.in_out_params[1] = info_reason;
-	XMHF_SLAB_CALLNEW(&spl);
+	xcexhub_slab_main(&spl);
 }
 #endif
 
@@ -252,14 +252,14 @@ void xcihub_icptmain(slab_params_t *sp){
 	spl.in_out_params[5] = sp->in_out_params[5];
 	spl.in_out_params[6] = sp->in_out_params[6];
 	spl.in_out_params[7] = sp->in_out_params[7];
-	XMHF_SLAB_CALLNEW(&spl);
+	ugcpust_slab_main(&spl);
 
 	//grab exit reason
 	spl.dst_slabid = XMHFGEEC_SLAB_UAPI_GCPUSTATE;
 	spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_VMREAD;
 	spl.in_out_params[0] = VMCS_INFO_VMEXIT_REASON;
 	spl.in_out_params[1] = 0;
-	XMHF_SLAB_CALLNEW(&spl);
+	ugcpust_slab_main(&spl);
 	info_vmexit_reason = gcpustate_vmrwp->value;
 
 	update_exhub_withinfo((uint16_t)sp->cpuid, true, info_vmexit_reason);
@@ -270,7 +270,7 @@ void xcihub_icptmain(slab_params_t *sp){
 	//load GPRs
 	spl.dst_slabid = XMHFGEEC_SLAB_UAPI_GCPUSTATE;
 	spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSREAD;
-	XMHF_SLAB_CALLNEW(&spl);
+	ugcpust_slab_main(&spl);
 	sp->in_out_params[0] = spl.in_out_params[0];
 	sp->in_out_params[1] = spl.in_out_params[1];
 	sp->in_out_params[2] = spl.in_out_params[2];

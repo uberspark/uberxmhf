@@ -90,13 +90,13 @@ bool sysclog_loginfo(uint32_t cpuindex, uint32_t guest_slab_index, uint64_t gpa,
 		//read GPR state
 		spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSREAD;
 		//@assert spl.dst_slabid == XMHFGEEC_SLAB_UAPI_GCPUSTATE && spl.dst_uapifn == XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSREAD;
-		XMHF_SLAB_CALLNEW(&spl);
+		ugcpust_slab_main(&spl);
 
 		//log GPR state for syscall
 		spl.dst_slabid = XMHFGEEC_SLAB_XC_NWLOG;
 		spl.dst_uapifn = XMHFGEEC_SLAB_XC_NWLOG_LOGDATA;
 		//@assert spl.dst_slabid == XMHFGEEC_SLAB_XC_NWLOG && spl.dst_uapifn == XMHFGEEC_SLAB_XC_NWLOG_LOGDATA;
-		XMHF_SLAB_CALLNEW(&spl);
+		xcnwlog_slab_main(&spl);
 		//@ghost sysclog_loginfo_nwlogged = true;
 
 		//set guest RIP to shadow syscall page to continue execution
@@ -104,7 +104,7 @@ bool sysclog_loginfo(uint32_t cpuindex, uint32_t guest_slab_index, uint64_t gpa,
 		spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_VMWRITE;
 		gcpustate_vmrwp->encoding = VMCS_GUEST_RIP;
 		gcpustate_vmrwp->value = sl_syscall_shadowpage_vaddr | ((uint32_t)gpa & 0x00000FFFUL);
-		XMHF_SLAB_CALLNEW(&spl);
+		ugcpust_slab_main(&spl);
 
 		_XDPRINTF_("%s[%u]: syscall trapping reset eip to 0x%08x\n",
 		__func__, (uint16_t)cpuindex, gcpustate_vmrwp->value);

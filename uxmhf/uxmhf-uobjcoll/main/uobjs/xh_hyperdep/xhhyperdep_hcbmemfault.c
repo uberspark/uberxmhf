@@ -73,17 +73,17 @@ void hyperdep_hcbmemfault(uint32_t cpuindex, uint32_t guest_slab_index){
 
 	gcpustate_vmrwp->encoding = VMCS_INFO_EXIT_QUALIFICATION;
 	gcpustate_vmrwp->value=0;
-	XMHF_SLAB_CALLNEW(&spl);
+	ugcpust_slab_main(&spl);
 	errorcode = gcpustate_vmrwp->value;
 
 	gcpustate_vmrwp->encoding = VMCS_INFO_GUEST_PADDR_FULL;
 	gcpustate_vmrwp->value=0;
-	XMHF_SLAB_CALLNEW(&spl);
+	ugcpust_slab_main(&spl);
 	gpa = gcpustate_vmrwp->value;
 
 	gcpustate_vmrwp->encoding = VMCS_INFO_GUEST_LINEAR_ADDRESS;
 	gcpustate_vmrwp->value=0;
-	XMHF_SLAB_CALLNEW(&spl);
+	ugcpust_slab_main(&spl);
 	gva = gcpustate_vmrwp->value;
 
 	if(hd_activated && hd_pageaddr == (uint32_t)gpa){

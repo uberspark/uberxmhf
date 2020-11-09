@@ -86,7 +86,7 @@ void gp_s2_setupmpgtbluh(uint32_t slabid){
 	spl.dst_uapifn = UAPI_UHMPGTBL_INITMEMPGTBL;
 	spl.in_out_params[0] = slabid;
 
-	XMHF_SLAB_CALLNEW(&spl);
+	uhmpgtbl_slab_main(&spl);
 
 
 	//pts

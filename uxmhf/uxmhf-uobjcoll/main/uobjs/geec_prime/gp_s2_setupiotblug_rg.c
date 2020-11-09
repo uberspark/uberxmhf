@@ -68,7 +68,7 @@ void gp_s2_setupiotblug_rg(uint32_t slabid){
 
 		ps->dst_slabid = slabid;
 
-		XMHF_SLAB_CALLNEW(&spl);
+		uiotbl_slab_main(&spl);
 	}
 
 }

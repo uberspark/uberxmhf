@@ -77,7 +77,7 @@ void gp_s2_setupmpgtblug(uint32_t slabid){
 	//@assert (spl.dst_slabid == XMHFGEEC_SLAB_UAPI_SLABMEMPGTBL);
 	//@assert (spl.dst_uapifn == XMHFGEEC_UAPI_SLABMEMPGTBL_INITMEMPGTBL);
 	//@assert (spl.in_out_params[0] == slabid);
-        XMHF_SLAB_CALLNEW(&spl);
+        ugmpgtbl_slab_main(&spl);
 
 
 
@@ -122,7 +122,7 @@ void gp_s2_setupmpgtblug(uint32_t slabid){
 		//@assert (spl.in_out_params[2] == 0);
 		//@assert (spl.in_out_params[3] == ((uint32_t) ((i*PAGE_SIZE_4K))  | ((uint32_t)memorytype * 8) |  (uint32_t)flags)) ;
 		//@assert (spl.in_out_params[4] == 0);
-		XMHF_SLAB_CALLNEW(&spl);
+		ugmpgtbl_slab_main(&spl);
 	}
 }
 

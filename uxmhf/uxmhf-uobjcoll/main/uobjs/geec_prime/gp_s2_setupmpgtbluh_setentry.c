@@ -63,7 +63,7 @@ uint32_t _setupmpgtbluh_setentry_getiotblbase(uint32_t slabid){
 
 	ps->dst_slabid = slabid;
 
-	XMHF_SLAB_CALLNEW(&spl);
+	uiotbl_slab_main(&spl);
 
 	return ps->iotbl_base;
 }
@@ -83,7 +83,7 @@ void _setupmpgtbluh_setentry_helper(uint32_t slabid, uint32_t ptindex, uint64_t 
 	p->entry_lo = (uint32_t) entry;
 	p->entry_hi = (uint32_t)((uint64_t)entry >> 32);
 
-	XMHF_SLAB_CALLNEW(&spl);
+	uhmpgtbl_slab_main(&spl);
 }
 
 //returns true if entry was mapped unchanged

@@ -80,11 +80,11 @@ static void st_on(uint32_t cpuindex, uint32_t guest_slab_index){
 if(!ssteptrace_on){
      spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_VMREAD;
     gcpustate_vmrwp->encoding = VMCS_GUEST_RFLAGS;
-    XMHF_SLAB_CALLNEW(&spl);
+    ugcpust_slab_main(&spl);
     guest_rflags = gcpustate_vmrwp->value;
 
     gcpustate_vmrwp->encoding = VMCS_CONTROL_EXCEPTION_BITMAP;
-    XMHF_SLAB_CALLNEW(&spl);
+    ugcpust_slab_main(&spl);
     exception_bitmap = gcpustate_vmrwp->value;
 
     guest_rflags |= EFLAGS_TF;
@@ -93,11 +93,11 @@ if(!ssteptrace_on){
      spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_VMWRITE;
     gcpustate_vmrwp->encoding = VMCS_CONTROL_EXCEPTION_BITMAP;
     gcpustate_vmrwp->value = exception_bitmap;
-    XMHF_SLAB_CALLNEW(&spl);
+    ugcpust_slab_main(&spl);
 
     gcpustate_vmrwp->encoding = VMCS_GUEST_RFLAGS;
     gcpustate_vmrwp->value = guest_rflags;
-    XMHF_SLAB_CALLNEW(&spl);
+    ugcpust_slab_main(&spl);
 
     ssteptrace_on=true;
 }
@@ -120,11 +120,11 @@ static void st_off(uint32_t cpuindex, uint32_t guest_slab_index){
 if(ssteptrace_on){
      spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_VMREAD;
     gcpustate_vmrwp->encoding = VMCS_GUEST_RFLAGS;
-    XMHF_SLAB_CALLNEW(&spl);
+    ugcpust_slab_main(&spl);
     guest_rflags = gcpustate_vmrwp->value;
 
     gcpustate_vmrwp->encoding = VMCS_CONTROL_EXCEPTION_BITMAP;
-    XMHF_SLAB_CALLNEW(&spl);
+    ugcpust_slab_main(&spl);
     exception_bitmap = gcpustate_vmrwp->value;
 
 
@@ -134,11 +134,11 @@ if(ssteptrace_on){
      spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_VMWRITE;
     gcpustate_vmrwp->encoding = VMCS_CONTROL_EXCEPTION_BITMAP;
     gcpustate_vmrwp->value = exception_bitmap;
-    XMHF_SLAB_CALLNEW(&spl);
+    ugcpust_slab_main(&spl);
 
     gcpustate_vmrwp->encoding = VMCS_GUEST_RFLAGS;
     gcpustate_vmrwp->value = guest_rflags;
-    XMHF_SLAB_CALLNEW(&spl);
+    ugcpust_slab_main(&spl);
 
     ssteptrace_on=false;
 }
@@ -207,7 +207,7 @@ static void _hcb_hypercall(uint32_t cpuindex, uint32_t guest_slab_index){
     //spl.in_out_params[0] = XMHF_HIC_UAPI_CPUSTATE;
 
      spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSREAD;
-    XMHF_SLAB_CALLNEW(&spl);
+    ugcpust_slab_main(&spl);
 
     call_id = gprs->eax;
     //gpa = ((uint64_t)gprs->edx << 32) | gprs->ebx;
@@ -263,7 +263,7 @@ static void _hcb_trap_exception(uint32_t cpuindex, uint32_t guest_slab_index){
         //spl.in_out_params[0] = XMHF_HIC_UAPI_CPUSTATE;
          spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_VMREAD;
         gcpustate_vmrwp->encoding = VMCS_INFO_VMEXIT_INTERRUPT_INFORMATION;
-        XMHF_SLAB_CALLNEW(&spl);
+        ugcpust_slab_main(&spl);
         info_vmexit_interruption_information = gcpustate_vmrwp->value;
 
         _XDPRINTF_("%s[%u]: guest slab %u exception %u...\n",
@@ -274,7 +274,7 @@ static void _hcb_trap_exception(uint32_t cpuindex, uint32_t guest_slab_index){
             return;
 
         gcpustate_vmrwp->encoding = VMCS_GUEST_RIP;
-        XMHF_SLAB_CALLNEW(&spl);
+        ugcpust_slab_main(&spl);
         guest_rip = gcpustate_vmrwp->value;
 
         //copy 256 bytes from the current guest RIP for trace inference

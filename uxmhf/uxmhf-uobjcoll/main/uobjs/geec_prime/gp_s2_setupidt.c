@@ -60,6 +60,6 @@ void gp_s2_setupidt(void){
 	spl.cpuid = 0;
 	spl.dst_uapifn = UAPI_XCEXHUB_SETUPIDT;
 
-	XMHF_SLAB_CALLNEW(&spl);
+	xcexhub_slab_main(&spl);
 }
 

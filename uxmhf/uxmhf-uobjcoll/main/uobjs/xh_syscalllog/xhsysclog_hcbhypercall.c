@@ -73,7 +73,7 @@ void sysclog_hcbhypercall(uint32_t cpuindex, uint32_t guest_slab_index){
     spl.dst_slabid = XMHFGEEC_SLAB_UAPI_GCPUSTATE;
     spl.cpuid = cpuindex;
     spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSREAD;
-    XMHF_SLAB_CALLNEW(&spl);
+    ugcpust_slab_main(&spl);
 
     call_id = gprs->eax;
     syscall_page_paddr = gprs ->ebx;

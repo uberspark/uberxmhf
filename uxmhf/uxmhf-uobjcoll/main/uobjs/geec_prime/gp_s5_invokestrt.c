@@ -95,7 +95,7 @@ void gp_s5_invokestrt(uint32_t cpuid){
 	sp.dst_slabid = XMHFGEEC_SLAB_XC_INIT;
 	sp.in_out_params[0] = xcbootinfo->richguest_bootmodule_base;
 	sp.in_out_params[1] = xcbootinfo->richguest_bootmodule_size;
-	XMHF_SLAB_CALLNEW(&sp);
+	xc_init_slab_main(&sp);
 
 	_XDPRINTF_("%s[%u]: Should never be here. Halting!\n",
 		__func__, (uint16_t)cpuid);

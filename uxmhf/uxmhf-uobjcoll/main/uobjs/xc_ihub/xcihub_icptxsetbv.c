@@ -76,7 +76,7 @@ void xcihub_icptxsetbv(uint32_t cpuid){
 
 	//read GPRs
 	spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSREAD;
-	XMHF_SLAB_CALLNEW(&spl);
+	ugcpust_slab_main(&spl);
 	uberspark_uobjrtl_crt__memcpy(&r, &gcpustate_gprs->gprs, sizeof(x86regs_t));
 
    	xcr_value = ((uint64_t)r.edx << 32) + (uint64_t)r.eax;
@@ -95,23 +95,23 @@ void xcihub_icptxsetbv(uint32_t cpuid){
 	//skip over XSETBV instruction by adjusting RIP
 	spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_VMREAD;
 	gcpustate_vmrwp->encoding = VMCS_INFO_VMEXIT_INSTRUCTION_LENGTH;
-	XMHF_SLAB_CALLNEW(&spl);
+	ugcpust_slab_main(&spl);
 	info_vmexit_instruction_length = gcpustate_vmrwp->value;
 
 	gcpustate_vmrwp->encoding = VMCS_GUEST_RIP;
-	XMHF_SLAB_CALLNEW(&spl);
+	ugcpust_slab_main(&spl);
 	guest_rip = gcpustate_vmrwp->value;
 	guest_rip+=info_vmexit_instruction_length;
 
 	spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_VMWRITE;
 	gcpustate_vmrwp->encoding = VMCS_GUEST_RIP;
 	gcpustate_vmrwp->value = guest_rip;
-	XMHF_SLAB_CALLNEW(&spl);
+	ugcpust_slab_main(&spl);
 
 	//write interruptibility = 0
 	gcpustate_vmrwp->encoding = VMCS_GUEST_INTERRUPTIBILITY;
 	gcpustate_vmrwp->value = 0;
-	XMHF_SLAB_CALLNEW(&spl);
+	ugcpust_slab_main(&spl);
 
 	//_XDPRINTF_("%s[%u]: adjusted guest_rip=%08x\n",  __func__, cpuid, guest_rip);
 }

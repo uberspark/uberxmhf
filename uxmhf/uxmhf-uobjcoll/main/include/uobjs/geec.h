@@ -202,7 +202,21 @@ void __slab_callsentinel(slab_params_t *sp);
 // slab entry stub definitions
 CASM_FUNCDECL(void _slab_entrystub(slab_params_t *sp));
 
+/////
+// update to slab_main
 extern void slab_main(slab_params_t *sp);
+extern void ugcpust_slab_main(slab_params_t *sp);
+extern void uhcpust_slab_main(slab_params_t *sp);
+extern void uiotbl_slab_main(slab_params_t *sp);
+extern void ugmpgtbl_slab_main(slab_params_t *sp);
+extern void usysd_slab_main(slab_params_t *sp);
+extern void uhmpgtbl_slab_main(slab_params_t *sp);
+extern void xcexhub_slab_main(slab_params_t *sp);
+extern void xcihub_slab_main(slab_params_t *sp);
+extern void xc_init_slab_main(slab_params_t *sp);
+extern void xcnwlog_slab_main(slab_params_t *sp);
+extern void xhhyperdep_slab_main(slab_params_t *sp);
+extern void xhsysclog_slab_main(slab_params_t *sp);
 
 
 

@@ -73,7 +73,7 @@ void xcihub_icptsipi(uint32_t cpuid){
 	//read exit qualification
 	spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_VMREAD;
 	gcpustate_vmrwp->encoding = VMCS_INFO_EXIT_QUALIFICATION;
-	XMHF_SLAB_CALLNEW(&spl);
+	ugcpust_slab_main(&spl);
 	info_exit_qualification = gcpustate_vmrwp->value;
 
 	//compute SIPI vector
@@ -85,25 +85,25 @@ void xcihub_icptsipi(uint32_t cpuid){
 	//set guest CS:RIP to value specified by the SIPI vector
 	gcpustate_vmrwp->encoding = VMCS_GUEST_CS_SELECTOR;
 	gcpustate_vmrwp->value = ((sipivector * PAGE_SIZE_4K) >> 4);
-	XMHF_SLAB_CALLNEW(&spl);
+	ugcpust_slab_main(&spl);
 
 	gcpustate_vmrwp->encoding = VMCS_GUEST_CS_BASE;
 	gcpustate_vmrwp->value = (sipivector * PAGE_SIZE_4K);
-	XMHF_SLAB_CALLNEW(&spl);
+	ugcpust_slab_main(&spl);
 
 	gcpustate_vmrwp->encoding = VMCS_GUEST_RIP;
 	gcpustate_vmrwp->value = 0;
-	XMHF_SLAB_CALLNEW(&spl);
+	ugcpust_slab_main(&spl);
 
 	//set CPU activity state to active
 	gcpustate_vmrwp->encoding = VMCS_GUEST_ACTIVITY_STATE;
 	gcpustate_vmrwp->value = 0;
-	XMHF_SLAB_CALLNEW(&spl);
+	ugcpust_slab_main(&spl);
 
 	//clear interruptibility
 	gcpustate_vmrwp->encoding = VMCS_GUEST_INTERRUPTIBILITY;
 	gcpustate_vmrwp->value = 0;
-	XMHF_SLAB_CALLNEW(&spl);
+	ugcpust_slab_main(&spl);
 }
 
 

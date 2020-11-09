@@ -78,7 +78,7 @@ void xcihub_icptwrmsr(uint32_t cpuid){
 	spl.dst_slabid = XMHFGEEC_SLAB_UAPI_GCPUSTATE;
 
 	spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSREAD;
-	XMHF_SLAB_CALLNEW(&spl);
+	ugcpust_slab_main(&spl);
 	uberspark_uobjrtl_crt__memcpy(&r, &gcpustate_gprs->gprs, sizeof(x86regs_t));
 
 	switch((uint32_t)r.ecx){
@@ -86,26 +86,26 @@ void xcihub_icptwrmsr(uint32_t cpuid){
 		spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_VMWRITE;
 		gcpustate_vmrwp->encoding = VMCS_GUEST_SYSENTER_CS;
 		gcpustate_vmrwp->value = r.eax;
-		XMHF_SLAB_CALLNEW(&spl);
+		ugcpust_slab_main(&spl);
 		break;
 	    case IA32_SYSENTER_EIP_MSR:
 		spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_VMWRITE;
 		gcpustate_vmrwp->encoding = VMCS_GUEST_SYSENTER_EIP;
 		gcpustate_vmrwp->value = r.eax;
-		XMHF_SLAB_CALLNEW(&spl);
+		ugcpust_slab_main(&spl);
 		break;
 	    case IA32_SYSENTER_ESP_MSR:
 		spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_VMWRITE;
 		gcpustate_vmrwp->encoding = VMCS_GUEST_SYSENTER_ESP;
 		gcpustate_vmrwp->value = r.eax;
-		XMHF_SLAB_CALLNEW(&spl);
+		ugcpust_slab_main(&spl);
 		break;
 	    default:
 		spl.dst_slabid = XMHFGEEC_SLAB_UAPI_HCPUSTATE;
 		spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_WRMSR;
 		hcpustate_msrp->msr = r.ecx;
 		hcpustate_msrp->value = ((uint64_t)r.edx << 32) | (uint64_t)r.eax;
-		XMHF_SLAB_CALLNEW(&spl);
+		ugcpust_slab_main(&spl);
 		break;
 	}
 
@@ -113,18 +113,18 @@ void xcihub_icptwrmsr(uint32_t cpuid){
 	spl.dst_slabid = XMHFGEEC_SLAB_UAPI_GCPUSTATE;
 	spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_VMREAD;
 	gcpustate_vmrwp->encoding = VMCS_INFO_VMEXIT_INSTRUCTION_LENGTH;
-	XMHF_SLAB_CALLNEW(&spl);
+	ugcpust_slab_main(&spl);
 	info_vmexit_instruction_length = gcpustate_vmrwp->value;
 
 	gcpustate_vmrwp->encoding = VMCS_GUEST_RIP;
-	XMHF_SLAB_CALLNEW(&spl);
+	ugcpust_slab_main(&spl);
 	guest_rip = gcpustate_vmrwp->value;
 	guest_rip+=info_vmexit_instruction_length;
 
 	spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_VMWRITE;
 	gcpustate_vmrwp->encoding = VMCS_GUEST_RIP;
 	gcpustate_vmrwp->value = guest_rip;
-	XMHF_SLAB_CALLNEW(&spl);
+	ugcpust_slab_main(&spl);
 
 	//_XDPRINTF_("%s[%u]: adjusted guest_rip=%08x\n",
 	//    __func__, cpuid, guest_rip);

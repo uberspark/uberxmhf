@@ -93,7 +93,7 @@ void gp_s2_initsysmemmap(void){
 		e820entry->length_high = gp_rwdatahdr.xcbootinfo_store.memmapinfo_buffer[i].length_high;
 		e820entry->length_low = gp_rwdatahdr.xcbootinfo_store.memmapinfo_buffer[i].length_low;
 		e820entry->type = gp_rwdatahdr.xcbootinfo_store.memmapinfo_buffer[i].type;
-		XMHF_SLAB_CALLNEW(&sp);
+		usysd_slab_main(&sp);
 	}
 
 }

@@ -75,7 +75,7 @@ void xcihub_icptrdmsr(uint32_t cpuid){
 	spl.dst_slabid = XMHFGEEC_SLAB_UAPI_GCPUSTATE;
 
 	spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSREAD;
-	XMHF_SLAB_CALLNEW(&spl);
+	ugcpust_slab_main(&spl);
 	uberspark_uobjrtl_crt__memcpy(&r, &gcpustate_gprs->gprs, sizeof(x86regs_t));
 
 	switch((uint32_t)r.ecx){
@@ -83,7 +83,7 @@ void xcihub_icptrdmsr(uint32_t cpuid){
 		spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_VMREAD;
 		gcpustate_vmrwp->encoding = VMCS_GUEST_SYSENTER_CS;
 		gcpustate_vmrwp->value = 0;
-		XMHF_SLAB_CALLNEW(&spl);
+		ugcpust_slab_main(&spl);
 		r.edx = 0;
 		r.eax = gcpustate_vmrwp->value;
 		break;
@@ -91,7 +91,7 @@ void xcihub_icptrdmsr(uint32_t cpuid){
 		spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_VMREAD;
 		gcpustate_vmrwp->encoding = VMCS_GUEST_SYSENTER_EIP;
 		gcpustate_vmrwp->value = 0;
-		XMHF_SLAB_CALLNEW(&spl);
+		ugcpust_slab_main(&spl);
 		r.edx = 0;
 		r.eax = gcpustate_vmrwp->value;
 		break;
@@ -99,7 +99,7 @@ void xcihub_icptrdmsr(uint32_t cpuid){
 		spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_VMREAD;
 		gcpustate_vmrwp->encoding = VMCS_GUEST_SYSENTER_ESP;
 		gcpustate_vmrwp->value = 0;
-		XMHF_SLAB_CALLNEW(&spl);
+		ugcpust_slab_main(&spl);
 		r.edx = 0;
 		r.eax = gcpustate_vmrwp->value;
 		break;
@@ -110,7 +110,7 @@ void xcihub_icptrdmsr(uint32_t cpuid){
 			spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_RDMSR;
 			hcpustate_msrp->msr = r.ecx;
 			hcpustate_msrp->value = 0;
-			XMHF_SLAB_CALLNEW(&spl);
+			ugcpust_slab_main(&spl);
 			r.edx = (uint32_t)((uint64_t)hcpustate_msrp->value >> 32);
 			r.eax = (uint32_t)hcpustate_msrp->value;
 
@@ -126,24 +126,24 @@ void xcihub_icptrdmsr(uint32_t cpuid){
 	spl.dst_slabid = XMHFGEEC_SLAB_UAPI_GCPUSTATE;
 	spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSWRITE;
 	uberspark_uobjrtl_crt__memcpy(&gcpustate_gprs->gprs, &r, sizeof(x86regs_t));
-	XMHF_SLAB_CALLNEW(&spl);
+	ugcpust_slab_main(&spl);
 
 	spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_VMREAD;
 	gcpustate_vmrwp->encoding = VMCS_INFO_VMEXIT_INSTRUCTION_LENGTH;
 	gcpustate_vmrwp->value=0;
-	XMHF_SLAB_CALLNEW(&spl);
+	ugcpust_slab_main(&spl);
 	info_vmexit_instruction_length = gcpustate_vmrwp->value;
 
 	gcpustate_vmrwp->encoding = VMCS_GUEST_RIP;
 	gcpustate_vmrwp->value=0;
-	XMHF_SLAB_CALLNEW(&spl);
+	ugcpust_slab_main(&spl);
 	guest_rip = gcpustate_vmrwp->value;
 	guest_rip+=info_vmexit_instruction_length;
 
 	spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_VMWRITE;
 	gcpustate_vmrwp->encoding = VMCS_GUEST_RIP;
 	gcpustate_vmrwp->value = guest_rip;
-	XMHF_SLAB_CALLNEW(&spl);
+	ugcpust_slab_main(&spl);
 
 	//_XDPRINTF_("%s[%u]: adjusted guest_rip=%08x\n",   __func__, cpuid, guest_rip);
 }

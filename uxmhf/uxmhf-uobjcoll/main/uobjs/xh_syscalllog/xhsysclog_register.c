@@ -83,7 +83,7 @@ void sysclog_register(uint32_t cpuindex, uint32_t guest_slab_index, uint32_t sys
 	getentryforpaddrp->dst_slabid = guest_slab_index;
 	getentryforpaddrp->gpa = syscall_page_paddr;
 	getentryforpaddrp->result_entry = 0;
-	XMHF_SLAB_CALLNEW(&spl);
+	ugmpgtbl_slab_main(&spl);
 	_XDPRINTF_("%s[%u]: syscall_page existing entry = 0x%08x\n",
 				__func__, (uint16_t)cpuindex, (uint32_t)getentryforpaddrp->result_entry);
 
@@ -91,21 +91,21 @@ void sysclog_register(uint32_t cpuindex, uint32_t guest_slab_index, uint32_t sys
 	setentryforpaddrp->dst_slabid = guest_slab_index;
 	setentryforpaddrp->gpa = syscall_page_paddr;
 	setentryforpaddrp->entry = getentryforpaddrp->result_entry & ~(0x4);
-	XMHF_SLAB_CALLNEW(&spl);
+	ugmpgtbl_slab_main(&spl);
 	_XDPRINTF_("%s[%u]: syscall_page new entry = 0x%08x\n",
 				__func__, (uint16_t)cpuindex, (uint32_t)setentryforpaddrp->entry);
 
 	//flush EPT TLB for permission changes to take effect
 	spl.dst_uapifn = XMHFGEEC_UAPI_SLABMEMPGTBL_FLUSHTLB;
 	flushtlbp->dst_slabid = guest_slab_index;
-	XMHF_SLAB_CALLNEW(&spl);
+	ugmpgtbl_slab_main(&spl);
 
 	//initialize network comms
 	spl.src_slabid = XMHFGEEC_SLAB_XH_SYSCALLLOG;
 	spl.dst_slabid = XMHFGEEC_SLAB_XC_NWLOG;
 	spl.cpuid = cpuindex;
 	spl.dst_uapifn = XMHFGEEC_SLAB_XC_NWLOG_INITIALIZE;
-	XMHF_SLAB_CALLNEW(&spl);
+	xcnwlog_slab_main(&spl);
 
 	sl_syscall_page_paddr = syscall_page_paddr;
 	sl_syscall_shadowpage_vaddr = syscall_shadowpage_vaddr;

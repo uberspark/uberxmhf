@@ -462,7 +462,7 @@ void gp_s5_setupcpustate(uint32_t cpuid, bool isbsp){
 		spl.src_slabid = XMHFGEEC_SLAB_GEEC_PRIME;
 		spl.dst_slabid = XMHFGEEC_SLAB_GEEC_SENTINEL;
 		spl.cpuid = cpuid;
-		spl.dst_uapifn = UAPI_SENTINEL_INSTALLSYSCALLSTUB;
+		// spl.dst_uapifn = UAPI_SENTINEL_INSTALLSYSCALLSTUB;
 
 		XMHF_SLAB_CALLNEW(&spl);
 	}

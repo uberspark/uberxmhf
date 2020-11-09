@@ -102,7 +102,7 @@ static inline void gp_s2_setupiotbluh_helper(uint32_t slabid, uint32_t sysdev_me
 					ps->port = portnum;
 					ps->port_size = 1;
 
-					XMHF_SLAB_CALLNEW(&spl);
+					uiotbl_slab_main(&spl);
 				}
 
 			}
@@ -139,7 +139,7 @@ void gp_s2_setupiotbluh(uint32_t slabid){
 
         	ps->dst_slabid = slabid;
 
-        	XMHF_SLAB_CALLNEW(&spl);
+        	uiotbl_slab_main(&spl);
         }
 
     	/*@
