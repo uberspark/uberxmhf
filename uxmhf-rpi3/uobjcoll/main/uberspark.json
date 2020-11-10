@@ -87,6 +87,11 @@
 		/* sections */
 		"sections": [
 			{
+				"name" : "uobj_code",
+				"size" : "0x400000"
+			},
+
+			{
 				"name" : "paligndata",
 				"output_names" : [ ".paligndata" ],
 				"type" : "0x0",

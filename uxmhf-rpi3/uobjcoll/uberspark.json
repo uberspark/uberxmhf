@@ -20,7 +20,7 @@
 		"arch" : "armv8_32",
 		"cpu" : "generic",
 		"hpl" : "hyp",
-		"sentinels-intrauobjcoll" : [ "call" ],
+		"sentinels-intrauobjcoll" : [ "generic/generic/hyp/call" ],
 
 		/* uobjs */
 		"uobjs" : {
@@ -30,10 +30,23 @@
 			]
 		},
 
+		/* uobjcoll init method */
+		"initmethod" : {
+			"uobj_ns" : "uberspark/uobjcoll/platform/rpi3/uxmhf/main",
+			"pm_name" : "entry",
+			"sentinels" : [
+				{
+					"sentinel_type" : "baremetal/vccore/srot/generic/rpi3/hyp/call",
+					"sentinel_size" : "0xff9000"	
+				}	
+			]
+		},	
+
+
 		/* uobjcoll public methods */
 		"publicmethods" : {
 			"uberspark/uobjcoll/platform/rpi3/uxmhf/main" : {
-				"entry" : [ "call" ]
+				"entry" : [ "generic/generic/hyp/call" ]
 			}
 		}
 
