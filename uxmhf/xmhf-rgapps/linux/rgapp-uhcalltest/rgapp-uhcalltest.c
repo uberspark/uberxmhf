@@ -106,7 +106,7 @@ bool uhcall(uint32_t uhcall_function, void *uhcall_buffer, uint32_t uhcall_buffe
 //////
 // uhcalltest test harness
 //////
-#define UAPP_UHCALLTEST_FUNCTION_TEST   10
+#define UAPP_UHCALLTEST_FUNCTION_TEST   0x22
 
 typedef struct{
   uint8_t in[16];
