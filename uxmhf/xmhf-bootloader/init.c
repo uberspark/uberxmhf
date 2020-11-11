@@ -711,6 +711,14 @@ static bool svm_prepare_cpu(void)
 //cpu_vendor = intel or amd
 //slbase= physical memory address of start of sl
 void do_drtm(BOOTVCPU __attribute__((unused))*vcpu, uint32_t slbase, size_t mle_size __attribute__((unused))){
+#if !defined (__DRT__)
+		uint32_t sl_entry_point;
+		uint16_t *sl_entry_point_offset = (uint16_t *)slbase;
+		//typedef void(*FCALL)(void);
+		FCALL invokesl;
+#endif
+
+
 //#ifdef __MP_VERSION__
     HALT_ON_ERRORCOND(vcpu->id == 0);
     //send INIT IPI to all APs
@@ -754,21 +762,14 @@ void do_drtm(BOOTVCPU __attribute__((unused))*vcpu, uint32_t slbase, size_t mle_
 
 #else  //!__DRT__
 	//don't use SKINIT or SENTER
-	{
-		uint32_t sl_entry_point;
-		uint16_t *sl_entry_point_offset = (uint16_t *)slbase;
-		typedef void(*FCALL)(void);
-		FCALL invokesl;
-
-		_XDPRINTF_("\n****** NO DRTM startup ******\n");
-		_XDPRINTF_("\nslbase=0x%08x, sl_entry_point_offset=0x%08x", (uint32_t)slbase, *sl_entry_point_offset);
-		sl_entry_point = (uint32_t)slbase + (uint32_t) (*sl_entry_point_offset);
-		invokesl = (FCALL)(uint32_t)sl_entry_point;
-		_XDPRINTF_("\nSL entry point to transfer control to: 0x%08x", invokesl);
-		invokesl();
-        _XDPRINTF_("\nINIT(early): error(fatal), should never come here!");
-        HALT();
-	}
+	_XDPRINTF_("\n****** NO DRTM startup ******\n");
+	_XDPRINTF_("\nslbase=0x%08x, sl_entry_point_offset=0x%08x", (uint32_t)slbase, *sl_entry_point_offset);
+	sl_entry_point = (uint32_t)slbase + (uint32_t) (*sl_entry_point_offset);
+	invokesl = (FCALL)(uint32_t)sl_entry_point;
+	_XDPRINTF_("\nSL entry point to transfer control to: 0x%08x", invokesl);
+	invokesl();
+    _XDPRINTF_("\nINIT(early): error(fatal), should never come here!");
+    HALT();
 #endif
 
 }
