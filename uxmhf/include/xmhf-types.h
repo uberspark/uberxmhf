@@ -149,6 +149,11 @@ typedef struct {
 } context_desc_t;
 
 
+#if !defined (__DRT__)
+typedef void(*FCALL)(void);
+#endif
+
+
 #endif /*ifndef __ASSEMBLY__*/
 
 #endif /* __XMHF_TYPES_H_ */
