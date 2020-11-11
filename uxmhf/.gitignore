@@ -1,0 +1,13 @@
+*.*~
+*~
+*.cache
+*.log
+*.status
+confdefs.h
+*.exe
+*.bin
+*.ls
+*.tmp
+*.cache
+_objects/
+
