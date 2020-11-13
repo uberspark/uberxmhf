@@ -10,4 +10,6 @@ confdefs.h
 *.tmp
 *.cache
 _objects/
-
+Makefile
+*.pp
+*.lscript
