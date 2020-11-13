@@ -16,3 +16,4 @@ Makefile
 configure
 *.mk
 *.v.c
+_verif
