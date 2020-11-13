@@ -55,10 +55,10 @@ tree of the sources:
 #. 
    Configure the serial debug output
 
-   ``./configure --enable-debug-serial=<your-serial-port-number>``
+   ``./configure --enable-debug-serial=<your-serial-port-number> --with-enable-serial-debug=$(nproc)``
 
    replace ``<your-serial-port-number>`` with the system serial port number.
-   e.g., ``0x3f8`` for ``COM1``.
+   e.g., ``0x3f8`` for ``COM1``. 
 
 
 #. Building the uberobject binaries and the final hypervisor image
