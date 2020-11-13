@@ -60,6 +60,7 @@
 #include <xc.h>
 #include <uapi_gcpustate.h>
 #include <xh_hyperdep.h>
+#include <xh_uhcalltest.h>
 #include <xh_syscalllog.h>
 #include <xh_ssteptrace.h>
 #include <xh_aprvexec.h>

@@ -7,7 +7,7 @@
       uapi_hcpustate
       uapi_sysdata
       uapi_slabmempgtbl
-      xh_hyperdep
+      xh_uhcalltest
       xh_syscalllog
       xh_ssteptrace
       xc_exhub

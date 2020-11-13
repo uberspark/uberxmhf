@@ -44,33 +44,20 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
+// uhcalltest
+// author: amit vasudevan (amitvasudevan@acm.org)
 
-/*
- *
- *  uhcalltest hypapp slab decls.
- *
- *  author: amit vasudevan (amitvasudevan@acm.org)
- *  author: matt mccormack (matthew.mccormack@live.com)
- */
+#include <xmhf.h>
+#include <xmhfgeec.h>
+#include <xmhf-debug.h>
 
-#ifndef __XH_UHCALLTEST_H__
-#define __XH_UHCALLTEST_H__
-
-#define UAPP_UHCALLTEST_FUNCTION_TEST 0x22
+#include <xc.h>
+#include <xh_uhcalltest.h>
 
 
-#ifndef __ASSEMBLY__
+#if defined (__XMHF_VERIFICATION__)
 
-typedef struct {
-  uint8_t in[16];
-  uint8_t out[16];
-}uhcalltest_param_t;
+#else
 
-void uhcalltest_hcbshutdown(uint32_t cpuindex, uint32_t guest_slab_index);
-void uhcalltest_hcbinit(uint32_t cpuindex);
-void uhcalltest_hcbhypercall(uint32_t cpuindex, uint32_t guest_slab_index);
-void uhcalltest_action(uint32_t cpuindex, uint32_t guest_slab_index, uint64_t gpa);
+#endif
 
-#endif	//__ASSEMBLY__
-
-#endif //__XH_UHCALLTEST_H__

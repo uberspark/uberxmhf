@@ -3,7 +3,7 @@
 
 #include <geec_sentinel.h>
 #include <uapi_gcpustate.h>
-#include <xh_hyperdep.h>
+#include <xh_uhcalltest.h>
 #include <xh_syscalllog.h>
 #include <xh_ssteptrace.h>
 #include <xh_aprvexec.h>
@@ -18,7 +18,7 @@
 	"uobj-callees": "	geec_sentinel
 						uapi_gcpustate
 						xg_richguest
-						xh_hyperdep
+						xh_uhcalltest
 						xh_syscalllog
 						xh_ssteptrace
 					",

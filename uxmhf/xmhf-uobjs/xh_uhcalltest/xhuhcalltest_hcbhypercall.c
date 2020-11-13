@@ -44,33 +44,46 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
+// hyperdep hypapp hypercall handler
+// author: amit vasudevan (amitvasudevan@acm.org)
 
-/*
- *
- *  uhcalltest hypapp slab decls.
- *
- *  author: amit vasudevan (amitvasudevan@acm.org)
- *  author: matt mccormack (matthew.mccormack@live.com)
- */
+#include <xmhf.h>
+#include <xmhfgeec.h>
+#include <xmhf-debug.h>
 
-#ifndef __XH_UHCALLTEST_H__
-#define __XH_UHCALLTEST_H__
+#include <xc.h>
+#include <uapi_gcpustate.h>
+#include <xh_uhcalltest.h>
 
-#define UAPP_UHCALLTEST_FUNCTION_TEST 0x22
+static inline void uhcalltest_hcbhypercall_helper(uint32_t cpuindex, uint32_t call_id, uint32_t guest_slab_index, uint64_t gpa){
+	_XDPRINTF_("%s[%u]: call_id=%x, gpa=%016llx\n", __func__, (uint16_t)cpuindex, call_id, gpa);
 
+	if(call_id == UAPP_UHCALLTEST_FUNCTION_TEST){
+		uhcalltest_copy(cpuindex, guest_slab_index, gpa);
+	}else{
+		_XDPRINTF_("%s[%u]: unsupported hypercall %x. Ignoring\n",__func__, (uint16_t)cpuindex, call_id);
 
-#ifndef __ASSEMBLY__
+	}
+}
 
-typedef struct {
-  uint8_t in[16];
-  uint8_t out[16];
-}uhcalltest_param_t;
+void uhcalltest_hcbhypercall(uint32_t cpuindex, uint32_t guest_slab_index){
+	slab_params_t spl;
+	xmhf_uapi_gcpustate_gprs_params_t *gcpustate_gprs =
+		(xmhf_uapi_gcpustate_gprs_params_t *)spl.in_out_params;
+	x86regs_t *gprs = (x86regs_t *)&gcpustate_gprs->gprs;
+	uint32_t call_id;
+	uint64_t gpa;
 
-void uhcalltest_hcbshutdown(uint32_t cpuindex, uint32_t guest_slab_index);
-void uhcalltest_hcbinit(uint32_t cpuindex);
-void uhcalltest_hcbhypercall(uint32_t cpuindex, uint32_t guest_slab_index);
-void uhcalltest_action(uint32_t cpuindex, uint32_t guest_slab_index, uint64_t gpa);
+	spl.in_out_params[0] = spl.in_out_params[1] = spl.in_out_params[2] = spl.in_out_params[3] = 0;
+	spl.in_out_params[4] = spl.in_out_params[5] = spl.in_out_params[6] = spl.in_out_params[7] = 0;
+	spl.src_slabid = XMHFGEEC_SLAB_XH_UHCALLTEST;
+	spl.dst_slabid = XMHFGEEC_SLAB_UAPI_GCPUSTATE;
+	spl.cpuid = cpuindex;
+	spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSREAD;
+	XMHF_SLAB_CALLNEW(&spl);
 
-#endif	//__ASSEMBLY__
+	call_id = gprs->eax;
+	gpa = ((uint64_t)gprs->ebx << 32) | gprs->edx;
 
-#endif //__XH_UHCALLTEST_H__
+	uhcalltest_hcbhypercall_helper(cpuindex, call_id, guest_slab_index, gpa);
+}

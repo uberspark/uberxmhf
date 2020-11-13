@@ -44,33 +44,57 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
+// uhcalltest hypapp main module
+// author: amit vasudevan (amitvasudevan@acm.org)
 
-/*
- *
- *  uhcalltest hypapp slab decls.
- *
- *  author: amit vasudevan (amitvasudevan@acm.org)
- *  author: matt mccormack (matthew.mccormack@live.com)
- */
+#include <xmhf.h>
+#include <xmhfgeec.h>
+#include <xmhf-debug.h>
 
-#ifndef __XH_UHCALLTEST_H__
-#define __XH_UHCALLTEST_H__
+#include <xc.h>
+#include <uapi_gcpustate.h>
+#include <uapi_slabmempgtbl.h>
 
-#define UAPP_UHCALLTEST_FUNCTION_TEST 0x22
+#include <xh_uhcalltest.h>
 
 
-#ifndef __ASSEMBLY__
+void uhcalltest_copy(uint32_t cpuindex, uint32_t guest_slab_index, uint64_t gpa){
+  slab_params_t spl;
+  xmhfgeec_uapi_slabmempgtbl_getentryforpaddr_params_t *getentryforpaddrp =
+    (xmhfgeec_uapi_slabmempgtbl_getentryforpaddr_params_t *)spl.in_out_params;
+  xmhfgeec_uapi_slabmempgtbl_setentryforpaddr_params_t *setentryforpaddrp =
+    (xmhfgeec_uapi_slabmempgtbl_setentryforpaddr_params_t *)spl.in_out_params;
 
-typedef struct {
-  uint8_t in[16];
-  uint8_t out[16];
-}uhcalltest_param_t;
+  spl.src_slabid = XMHFGEEC_SLAB_XH_UHCALLTEST;
+  spl.dst_slabid = XMHFGEEC_SLAB_UAPI_SLABMEMPGTBL;
+  spl.cpuid = cpuindex;
 
-void uhcalltest_hcbshutdown(uint32_t cpuindex, uint32_t guest_slab_index);
-void uhcalltest_hcbinit(uint32_t cpuindex);
-void uhcalltest_hcbhypercall(uint32_t cpuindex, uint32_t guest_slab_index);
-void uhcalltest_action(uint32_t cpuindex, uint32_t guest_slab_index, uint64_t gpa);
+  if( gpa != 0){
+    spl.dst_uapifn = XMHFGEEC_UAPI_SLABMEMPGTBL_GETENTRYFORPADDR;
+    getentryforpaddrp->dst_slabid = guest_slab_index;
+    getentryforpaddrp->gpa = gpa;
+    //@assert getentryforpaddrp->gpa == gpa;
+    XMHF_SLAB_CALLNEW(&spl);
 
-#endif	//__ASSEMBLY__
+    _XDPRINTF_("%s[%u]: original entry for gpa=%016llx is %016llx\n",
+	       __func__, (uint16_t)cpuindex,
+	       gpa, getentryforpaddrp->result_entry);
 
-#endif //__XH_UHCALLTEST_H__
+    spl.dst_uapifn = XMHFGEEC_UAPI_SLABMEMPGTBL_SETENTRYFORPADDR;
+    setentryforpaddrp->dst_slabid = guest_slab_index;
+    setentryforpaddrp->gpa = gpa;
+    setentryforpaddrp->entry = getentryforpaddrp->result_entry & ~(0x4); //execute-disable
+    //@assert setentryforpaddrp->gpa == gpa;
+    //@assert !(setentryforpaddrp->entry & 0x4);
+    XMHF_SLAB_CALLNEW(&spl);
+
+    uhcalltest_param_t *uhctp;
+    uhctp = (uhcalltest_param_t *)gpa;
+    memcpy(uhctp->out, uhctp->in, 16);
+
+    _XDPRINTF_("%s[%u]: finished uhcalltest \n",
+	       __func__, (uint16_t)cpuindex);
+  }else{
+    //do nothing
+  }
+}

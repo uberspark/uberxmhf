@@ -94,10 +94,10 @@ export XMHF_SLAB_SOURCES := $(wildcard $(srcdir)/*.c)
 
 ########################################################################
 
-
 .PHONY: verify
 verify: 
 	@echo Nothing to verify for $(XMHF_SLAB_NAME)
+
 
 # common makefile for slabs
 # author: amit vasudevan (amitvasudevan@acm.org)
