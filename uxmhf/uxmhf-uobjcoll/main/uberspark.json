@@ -243,7 +243,7 @@
 
      /* public methods */
      "publicmethods" : {
-		 "main" : [
+		 "entry" : [
 			 "void",
 			 "(void)",
 			 "1"

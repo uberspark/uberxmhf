@@ -33,7 +33,7 @@
     /* uobjcoll init method */
     "initmethod" : {
         "uobj_ns" : "uberspark/uobjcoll/platform/pc/uxmhf/main",
-        "pm_name" : "main",
+        "pm_name" : "entry",
         "sentinels" : [
             {
                 "sentinel_type" : "baremetal/grub-legacy/srot/generic/pc/pmr0/call"
@@ -45,7 +45,7 @@
       /* uobjcoll public methods */
       "publicmethods" : {
           "uberspark/uobjcoll/platform/pc/uxmhf/main" : {
-              "main" : [ "generic/generic/any/call" ]
+              "entry" : [ "generic/generic/any/call" ]
           }
       }
 
