@@ -105,7 +105,7 @@ This will boot uberXMHF with debug output going to the specified serial
 port, and then reload grub.
 Note, check if the AUTOMAGIC KERNELS refernce ``/boot/vmlinuz-*`` or simply ``/vmlinuz-*`` and have your uberXMHF entry match (i.e., some do not require the ``/boot/`` prefix in the above example).
 
-Additionally, you must specify new command line options to your guest OS. These options must include ``nmi_watchdog=0``
+Additionally, you must specify new command line option to disable NMIs on your guest OS (linux). The added command line options must include ``nmi_watchdog=0``
 
 If your Default OS (the Linux kernel that will be booting after the micro-hypervisor) uses an LVM filesystem, you might need to alter its GRUB entry. Modify the kernel entry to specify the root as the LVM disk. For example, change:
 
