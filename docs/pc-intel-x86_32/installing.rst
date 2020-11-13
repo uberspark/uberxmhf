@@ -8,10 +8,10 @@ Prerequisites
 -------------
 
 As a first step, check the :doc:`uberXMHF (pc-intel-x86_32) Hardware Requirements </pc-intel-x86_32/hw-requirements>`\ , and
-be sure to enable the corresponding BIOS options. Also make sure your
-BIOS is up to date; you could ruin your motherboard if your BIOS is
-buggy. Secondly, ensure that you are running one of the supported 
-guest operating systems (see :doc:`uberXMHF (pc-intel-x86_32) Supported Guest Operating Systems </pc-intel-x86_32/supported-os>`\ ).
+be sure to enable the corresponding BIOS options (enable TPM, enable VT-x, enable VT-d, and enable TXT--often many of these are disabled by default in the BIOS).
+Also make sure your BIOS is up to date; you could ruin your motherboard if your BIOS is buggy.
+Secondly, ensure that you are running one of the supported 
+guest operating systems (see :doc:`uberXMHF (pc-intel-x86_32) Supported Guest Operating Systems </pc-intel-x86_32/supported-os>`\ -- 32-bit page tables, blacklisted kernel modules ).
 Thirdly, ensure you have copied the mico-hypervisor (``xmhf-x86-vmx-x86pc.bin.gz``) and the SINIT module (`Intel TXT webpage <http://software.intel.com/en-us/articles/intel-trusted-execution-technology/>`_) into your `/boot/` directory.
 Lastly, configure your system to boot uberXMHF as described below.
 
@@ -95,7 +95,7 @@ A grub entry for uberXMHF should look something like this:
 .. code-block:: bash
 
    title uberXMHF
-   rootnoverify (hd0,1)                                      # should point to /boot
+   uuid   xxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx               # copy this from an AUTOMAGIC entry
    kernel /boot/xmhf-x86-vmx-x86pc.bin.gz serial=115200,8n1,0x3f8 # substitute in the correct serial address
    modulenounzip (hd0)+1                                     # should point to where grub is installed
    modulenounzip /boot/4th_gen_i5_i7_SINIT_75.BIN            # Intel TXT SINIT AC module
@@ -107,12 +107,19 @@ Note, check if the AUTOMAGIC KERNELS refernce ``/boot/vmlinuz-*`` or simply ``/v
 
 If your Default OS (the Linux kernel that will be booting after the micro-hypervisor) uses an LVM filesystem, you might need to alter its GRUB entry. Modify the kernel entry to specify the root as the LVM disk. For example, change:
 
-`` kernel     vmlinuz-4.4.236+ root=UUID=xxxxxxxx-xxxx-xxxx-xxxxxxxxxxxx ro quiet splash``
 
+.. code-block:: bash
+		
+  kernel     /vmlinuz-4.4.236+ root=UUID=xxxxxxxx-xxxx-xxxx-xxxxxxxxxxxx ro quiet splash
+
+  
 to
 
-``kernel      vmlinuz-4.4.236+ root=/dev/${Volume Group name}/root ro quiet splash``
+.. code-block:: bash
 
+  kernel      /vmlinuz-4.4.236+ root=/dev/${Volume Group name}/root ro text nomodeset nmi_watchdog=0
+
+  
 Where you can find the appropriate ``${Volume Group name}`` using ``sudo vgs --noheadings -o vg_name``
 
 savedefault for unattended boot
@@ -134,11 +141,11 @@ each-other as the new default:
 
 .. code-block:: bash
 
-   title uberXMHF
-   savedefault 1
-
    title Default OS
-   savedefault 0
+   savedefault 1         # where the number equates to the subsequent grub entry to load (i.e. 0 == the first in the list of options)
+		
+   title uberXMHF
+   savedefault 0          
 
 
 The parameter to savedefault is the menu entry that you would like as
