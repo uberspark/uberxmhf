@@ -31,6 +31,8 @@ export prefix=@prefix@
 
 export DEBUG_SERIAL := @DEBUG_SERIAL@
 export DEBUG_SERIAL_PORT := @DEBUG_SERIAL_PORT@
+export XMHF_CONFIG_DEBUG_SERIAL_MAXCPUS	:= @DEBUG_SERIAL_MAXCPUS@
+
 #export DEBUG_VGA := @DEBUG_VGA@
 export DRT := @DRT@
 export DMAP := @DMAP@
@@ -81,7 +83,6 @@ export XMHF_CONFIG_MAX_EXCLDEVLIST_ENTRIES := 6
 
 export XMHF_CONFIG_MAX_MEMOFFSET_ENTRIES := 64
 
-export XMHF_CONFIG_DEBUG_SERIAL_MAXCPUS	:= 8
 
 ## build version
 #export XMHF_BUILD_VERSION := $(shell git describe --abbrev=0)
