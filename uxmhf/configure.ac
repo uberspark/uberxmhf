@@ -57,6 +57,15 @@ AS_IF([test "x${enable_debug_serial}" != "xno"],
        DEBUG_SERIAL_PORT=$[]enable_debug_serial],
       [DEBUG_SERIAL=n])
 
+#debugging
+AC_SUBST([DEBUG_SERIAL_MAXCPUS])
+AC_ARG_WITH([debug_serial_maxcpus],
+        AS_HELP_STRING([--with-debug-serial-maxcpus@<:@=CPUS@:>@],
+                [specify number of CPUS on the platform when debug mode is enabled]),
+                , [with_debug_serial_maxcpus=8])
+DEBUG_SERIAL_MAXCPUS=$[]with_debug_serial_maxcpus
+
+
 
 # selectively enable/disable Dynamic Root-of-Trust (DRT)
 AC_SUBST([DRT])
