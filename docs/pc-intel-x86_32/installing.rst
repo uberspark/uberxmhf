@@ -105,6 +105,8 @@ This will boot uberXMHF with debug output going to the specified serial
 port, and then reload grub.
 Note, check if the AUTOMAGIC KERNELS refernce ``/boot/vmlinuz-*`` or simply ``/vmlinuz-*`` and have your uberXMHF entry match (i.e., some do not require the ``/boot/`` prefix in the above example).
 
+Additionally, you must specify new command line options to your guest OS. These options must include ``nmi_watchdog=0``
+
 If your Default OS (the Linux kernel that will be booting after the micro-hypervisor) uses an LVM filesystem, you might need to alter its GRUB entry. Modify the kernel entry to specify the root as the LVM disk. For example, change:
 
 
@@ -150,3 +152,27 @@ each-other as the new default:
 
 The parameter to savedefault is the menu entry that you would like as
 the new default.
+
+
+Example GRUB `menu.lst`
+^^^^^^^^^^^^^^^^^^^^^^^
+
+A minimal grub ``menu.lst`` example is shown below.
+
+.. code-block:: bash
+ 
+default saved
+
+title          Default OS
+uuid           c8abe43f-8658-42bb-b238-60b97320c50
+kernel         /vmlinuz-4.4.236+ root=/dev/uberXMHF-vg/root ro text nomodeset memblock=debug nmi_watchdog=0
+initrd         /initrd.img-4.4.236+
+savedefault    1
+
+title          uberXMHF
+uuid           c8abe43f-8658-42bb-b238-60b97320c50
+kernel         /xmhf-x86-vmx-x86pc.bin.gz serial=11520,8n1,0x3f8
+modulenounzip  (hd0)+1
+modulenounzip  /4th_gen_i5_i7_SINIT_75.BIN
+savedefault    0
+
