@@ -19,7 +19,7 @@
       "arch" : "x86_32",
       "cpu" : "generic",
       "hpl" : "any", //"hyp",
-      "sentinels-intrauobjcoll" : [ "call" ],
+      "sentinels-intrauobjcoll" : [ "generic/generic/any/call" ],
 
       /* uobjs */
       "uobjs" : {
@@ -29,10 +29,23 @@
           ]
       },
 
+
+    /* uobjcoll init method */
+    "initmethod" : {
+        "uobj_ns" : "uberspark/uobjcoll/platform/pc/uxmhf/main",
+        "pm_name" : "main",
+        "sentinels" : [
+            {
+                "sentinel_type" : "baremetal/grub-legacy/srot/generic/pc/pmr0/call"
+            }	
+        ]
+    },	
+
+
       /* uobjcoll public methods */
       "publicmethods" : {
           "uberspark/uobjcoll/platform/pc/uxmhf/main" : {
-              "main" : [ "call" ]
+              "main" : [ "generic/generic/any/call" ]
           }
       }
 
