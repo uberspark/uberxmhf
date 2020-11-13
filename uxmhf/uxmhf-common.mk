@@ -31,9 +31,11 @@ export prefix=/usr/local
 
 export DEBUG_SERIAL := y
 export DEBUG_SERIAL_PORT := 0x3f8
+export XMHF_CONFIG_DEBUG_SERIAL_MAXCPUS	:= 4
+
 #export DEBUG_VGA := @DEBUG_VGA@
-export DRT := n
-export DMAP := n
+export DRT := y
+export DMAP := y
 export XMHF_TARGET_CPU := x86
 export XMHF_TARGET_CONTAINER := vmx
 export XMHF_TARGET_PLATFORM := x86pc
@@ -81,7 +83,6 @@ export XMHF_CONFIG_MAX_EXCLDEVLIST_ENTRIES := 6
 
 export XMHF_CONFIG_MAX_MEMOFFSET_ENTRIES := 64
 
-export XMHF_CONFIG_DEBUG_SERIAL_MAXCPUS	:= 8
 
 ## build version
 #export XMHF_BUILD_VERSION := $(shell git describe --abbrev=0)

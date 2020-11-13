@@ -585,6 +585,7 @@ ac_subst_vars='LTLIBOBJS
 LIBOBJS
 DMAP
 DRT
+DEBUG_SERIAL_MAXCPUS
 DEBUG_SERIAL_PORT
 DEBUG_SERIAL
 TARGET_PLATFORM
@@ -649,6 +650,7 @@ with_target_cpu
 with_target_container
 with_target_platform
 enable_debug_serial
+with_debug_serial_maxcpus
 enable_drt
 enable_dmap
 '
@@ -1288,6 +1290,9 @@ Optional Packages:
                           select target container (vmx)
   --with-target-platform=[PLATFORM]
                           select target platform (x86pc)
+  --with-debug-serial-maxcpus[=CPUS]
+                          specify number of CPUS on the platform when debug
+                          mode is enabled
 
 Report bugs to the package provider.
 _ACEOF
@@ -2259,6 +2264,19 @@ if test "x${enable_debug_serial}" != "xno"; then :
 else
   DEBUG_SERIAL=n
 fi
+
+#debugging
+
+
+# Check whether --with-debug_serial_maxcpus was given.
+if test "${with_debug_serial_maxcpus+set}" = set; then :
+  withval=$with_debug_serial_maxcpus;
+else
+  with_debug_serial_maxcpus=8
+fi
+
+DEBUG_SERIAL_MAXCPUS=$with_debug_serial_maxcpus
+
 
 
 # selectively enable/disable Dynamic Root-of-Trust (DRT)

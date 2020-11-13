@@ -13,3 +13,5 @@ _objects/
 Makefile
 *.pp
 *.lscript
+configure
+*.mk
