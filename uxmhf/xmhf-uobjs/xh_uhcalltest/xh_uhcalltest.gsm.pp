@@ -1,9 +1,10 @@
 {
  "uobj-name": "xh_uhcalltest",
- "uobj-type": "uVU_SLAB",
+ "uobj-type": "VfT_SLAB",
  "uobj-subtype": "XHYPAPP",
  "uobj-uapifunctions":[],
  "uobj-callees": " 	uapi_gcpustate
+    uapi_slabmempgtbl
      ",
  "uobj-uapicallees":[
   {

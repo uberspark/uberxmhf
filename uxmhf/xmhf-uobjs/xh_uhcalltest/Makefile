@@ -10,7 +10,7 @@ vpath %.lscript $(srcdir)
 include $(srcdir)/../../uxmhf-common.mk
 
 export XMHF_SLAB_FULLLINK := y
-export XMHF_SLAB_TYPE := uVU_SLAB
+export XMHF_SLAB_TYPE := VfT_SLAB
 export XMHF_SLAB_SUBTYPE := XHYPAPP
 export XMHF_SLAB_MAIN := slab_main
 

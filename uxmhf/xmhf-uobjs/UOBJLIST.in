@@ -12,9 +12,8 @@
 						uapi_sysdata
 						uapi_iotbl
 						uapi_uhmpgtbl
-						xh_uhcalltest
 						xh_syscalllog
-						xh_hyperdep
+						xh_uhcalltest
 						xh_ssteptrace
 						xg_richguest
 					"
