@@ -161,18 +161,19 @@ A minimal grub ``menu.lst`` example is shown below.
 
 .. code-block:: bash
  
-default saved
+  default saved
 
-title          Default OS
-uuid           c8abe43f-8658-42bb-b238-60b97320c50
-kernel         /vmlinuz-4.4.236+ root=/dev/uberXMHF-vg/root ro text nomodeset memblock=debug nmi_watchdog=0
-initrd         /initrd.img-4.4.236+
-savedefault    1
+  title          Default OS
+  uuid           c8abe43f-8658-42bb-b238-60b97320c50
+  kernel         /vmlinuz-4.4.236+ root=/dev/uberXMHF-vg/root ro text nomodeset memblock=debug nmi_watchdog=0
+  initrd         /initrd.img-4.4.236+
+  savedefault    1
 
-title          uberXMHF
-uuid           c8abe43f-8658-42bb-b238-60b97320c50
-kernel         /xmhf-x86-vmx-x86pc.bin.gz serial=11520,8n1,0x3f8
-modulenounzip  (hd0)+1
-modulenounzip  /4th_gen_i5_i7_SINIT_75.BIN
-savedefault    0
+  title          uberXMHF
+  uuid           c8abe43f-8658-42bb-b238-60b97320c50
+  kernel         /xmhf-x86-vmx-x86pc.bin.gz serial=11520,8n1,0x3f8
+  modulenounzip  (hd0)+1
+  modulenounzip  /4th_gen_i5_i7_SINIT_75.BIN
+  savedefault    0
+
 
