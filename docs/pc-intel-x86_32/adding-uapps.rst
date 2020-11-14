@@ -20,8 +20,10 @@ Integrating a new uberapp into the micro-hypervisor requires the following integ
 
 4. Add a test program that exercises your hypapp in `xmhf-rgapps/linux`
 * Create a directory for the test program (`rgapp-newapp`) that includes a `Makefile` and the testprogram (`rgapp-newapp.c`).
-  * This test program will need to call `__vmcall(eax, ebx, edx, ecx)`, where `eax` is the hypercall ID, `ebx` is the high order 32-bit of the physical address, `edx` is the low-order 32-bit of the physical address (e.g., of an up to 4KB buffer being passed to the hypapp), and `ecx` is variable based upon the hypapp.
+* This test program will need to call `__vmcall(eax, ebx, edx, ecx)`, where `eax` is the hypercall ID, `ebx` is the high order 32-bit of the physical address, `edx` is the low-order 32-bit of the physical address (e.g., of an up to 4KB buffer being passed to the hypapp), and `ecx` is variable based upon the hypapp.
+* This test program needs to convert the data buffer being sent to the hypapp from a virtual to a physical address. Some approaches for this (such as reading `/proc/self/pagemap`) require root permissions.
 
+5. Running test program. 
 
 
 Note about naming conventions:
