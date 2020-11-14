@@ -21,7 +21,6 @@
 						xg_richguest
 						xh_uhcalltest
 						xh_syscalllog
-						xh_hyperdep
 						xh_ssteptrace
 					",
 

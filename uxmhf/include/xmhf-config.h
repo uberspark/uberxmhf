@@ -74,57 +74,57 @@
 //"runtime" parameter block magic value
 #define RUNTIME_PARAMETER_BLOCK_MAGIC	0xF00DDEAD
 
-#define SL_PARAMETER_BLOCK_MAGIC		0xF00DDEAD
+#define SL_PARAMETER_BLOCK_MAGIC	0xF00DDEAD
 
 //16K stack for each core during runtime
-#define RUNTIME_STACK_SIZE  			(16384)
+#define RUNTIME_STACK_SIZE  		(16384)
 
 //8K stack for each core in "init"
-#define INIT_STACK_SIZE					(8192)
+#define INIT_STACK_SIZE			(8192)
 
 //max. size of command line parameter buffer
-#define MAX_CMDLINE_BUFFER_SIZE			(128)
+#define MAX_CMDLINE_BUFFER_SIZE		(128)
 
 //max. cores/vcpus we support currently
 //#ifndef __XMHF_VERIFICATION__
-//	#define	MAX_PLATFORM_CPUS					(256)
+//	#define	MAX_PLATFORM_CPUS	(256)
 //#else
-//	#define	MAX_PLATFORM_CPUS					(1)
+//	#define	MAX_PLATFORM_CPUS	(1)
 //#endif
 
 //max. platform devices we support currently
-#define MAX_PLATFORM_DEVICES                    (64)
+#define MAX_PLATFORM_DEVICES            (64)
 
-#define MAX_MIDTAB_ENTRIES  			(MAX_PLATFORM_CPUS)
-#define MAX_PCPU_ENTRIES  				(MAX_PLATFORM_CPUS)
-#define MAX_VCPU_ENTRIES    			(MAX_PLATFORM_CPUS)
+#define MAX_MIDTAB_ENTRIES  		(MAX_PLATFORM_CPUS)
+#define MAX_PCPU_ENTRIES  		(MAX_PLATFORM_CPUS)
+#define MAX_VCPU_ENTRIES    		(MAX_PLATFORM_CPUS)
 
 //max. primary partitions we support
-#define	MAX_PRIMARY_PARTITIONS					(1)
+#define	MAX_PRIMARY_PARTITIONS		(1)
 
 //max. secondary partitions we support
-#define	MAX_SECONDARY_PARTITIONS				(4)
+#define	MAX_SECONDARY_PARTITIONS	(4)
 
 //max. size of primary partition HPT data buffer
-#define	MAX_PRIMARY_PARTITION_HPTDATA_SIZE				(2054*4096)
+#define	MAX_PRIMARY_PARTITION_HPTDATA_SIZE	(2054*4096)
 
 //max. size of primary partition HPT data buffer
-#define	MAX_SECONDARY_PARTITION_HPTDATA_SIZE			(6*4096)
+#define	MAX_SECONDARY_PARTITION_HPTDATA_SIZE	(6*4096)
 
 //max. partition trapmask data buffer
-#define MAX_PRIMARY_PARTITION_TRAPMASKDATA_SIZE					(4*4096)
+#define MAX_PRIMARY_PARTITION_TRAPMASKDATA_SIZE	(4*4096)
 
 //max. size of CPU arch. specific data (32K default)
-#define	MAX_PLATFORM_CPUARCHDATA_SIZE			(8*4096)
+#define	MAX_PLATFORM_CPUARCHDATA_SIZE		(8*4096)
 
 //max. size of CPU stack (16K default)
-#define MAX_PLATFORM_CPUSTACK_SIZE				(4*4096)
+#define MAX_PLATFORM_CPUSTACK_SIZE		(4*4096)
 
 //max. number of arch. specific parameters for hypapp callback
 #define MAX_XC_HYPAPP_CB_ARCH_PARAMS	8
 
 //maximum system memory map entries (e.g., E820) currently supported
-#define MAX_E820_ENTRIES    			(64)
+#define MAX_E820_ENTRIES    		(64)
 
 // SHA-1 hash of runtime should be defined during build process.
 // However, if it's not, don't fail.  Just proceed with all zeros.
@@ -164,24 +164,23 @@
 #define UOBJ_UAPI_UHMPGTBL		    11
 #define XMHFGEEC_SLAB_XH_SYSCALLLOG         12
 #define XMHFGEEC_SLAB_XH_UHCALLTEST         13
-#define XMHFGEEC_SLAB_XH_HYPERDEP           14
-#define XMHFGEEC_SLAB_XH_SSTEPTRACE         15
-#define XMHFGEEC_SLAB_XG_RICHGUEST          16
+#define XMHFGEEC_SLAB_XH_SSTEPTRACE         14
+#define XMHFGEEC_SLAB_XG_RICHGUEST          15
 
 
 
 
-#define XMHFGEEC_VHSLAB_BASE_IDX		0
-#define XMHFGEEC_VHSLAB_MAX_IDX			14
-#define XMHFGEEC_UHSLAB_BASE_IDX		15
-#define XMHFGEEC_UHSLAB_MAX_IDX			15
-#define XMHFGEEC_UGSLAB_BASE_IDX		16
-#define XMHFGEEC_UGSLAB_MAX_IDX			16
+#define XMHFGEEC_VHSLAB_BASE_IDX	    0
+#define XMHFGEEC_VHSLAB_MAX_IDX		    13
+#define XMHFGEEC_UHSLAB_BASE_IDX	    14
+#define XMHFGEEC_UHSLAB_MAX_IDX		    14
+#define XMHFGEEC_UGSLAB_BASE_IDX	    15
+#define XMHFGEEC_UGSLAB_MAX_IDX		    15
 
 
 #define XMHFGEEC_TOTAL_VHSLABS		((XMHFGEEC_VHSLAB_MAX_IDX - XMHFGEEC_VHSLAB_BASE_IDX) + 1)
 #define __XMHFGEEC_TOTAL_UHSLABS	((XMHFGEEC_UHSLAB_MAX_IDX - XMHFGEEC_UHSLAB_BASE_IDX) + 1)
-#define __XMHFGEEC_TOTAL_UGSLABS		((XMHFGEEC_UGSLAB_MAX_IDX - XMHFGEEC_UGSLAB_BASE_IDX) + 1)
+#define __XMHFGEEC_TOTAL_UGSLABS	((XMHFGEEC_UGSLAB_MAX_IDX - XMHFGEEC_UGSLAB_BASE_IDX) + 1)
 
 
 #if (XMHFGEEC_TOTAL_UHSLABS != __XMHFGEEC_TOTAL_UHSLABS)
@@ -203,10 +202,10 @@
 //----------------------------------------------------------------------
 // XMHF platform memory map
 	//physical memory extents of the XMHF framework
-	#define __TARGET_BASE_XMHF				__XMHF_CONFIG_LOADADDR__
-	#define __TARGET_SIZE_XMHF				__XMHF_CONFIG_LOADMAXSIZE__
-	#define __TARGET_MAX_XMHF				__XMHF_CONFIG_LOADMAXADDR__
-	#define __TARGET_MAX_SYS				__XMHF_CONFIG_MAXSYSADDR__
+	#define __TARGET_BASE_XMHF		__XMHF_CONFIG_LOADADDR__
+	#define __TARGET_SIZE_XMHF		__XMHF_CONFIG_LOADMAXSIZE__
+	#define __TARGET_MAX_XMHF		__XMHF_CONFIG_LOADMAXADDR__
+	#define __TARGET_MAX_SYS		__XMHF_CONFIG_MAXSYSADDR__
 
 
 	//physical address where the XMHF boot-loader is loaded (e.g., via GRUB)
@@ -217,9 +216,9 @@
 	#define __TARGET_SIZE_BOOTLOADER		(__TARGET_BASE_XMHF - __TARGET_BASE_BOOTLOADER)
 
 	//physical address of geec_prime slab (acts as secure loader)
-	#define __TARGET_BASE_SL				(__TARGET_BASE_XMHF + 0x01200000)
+	#define __TARGET_BASE_SL			(__TARGET_BASE_XMHF + 0x01200000)
 
-	#define __TARGET_SIZE_SL				0x00200000
+	#define __TARGET_SIZE_SL			0x00200000
 
 //----------------------------------------------------------------------
 
@@ -235,24 +234,24 @@
 
 //where the guest OS boot record is loaded
 #define __GUESTOSBOOTMODULE_BASE		0x7c00
-#define __GUESTOSBOOTMODULESUP1_BASE	0x7C00
+#define __GUESTOSBOOTMODULESUP1_BASE	        0x7C00
 
 //----------------------------------------------------------------------
 
 //code segment of memory address where APs startup initially
 //address 0x1000:0x0000 or 0x10000 physical
-#define X86SMP_APBOOTSTRAP_CODESEG 			0x1000
+#define X86SMP_APBOOTSTRAP_CODESEG 		0x1000
 
 //data segment of memory address where APs startup initially
 //address 0x1100:0x0000 or 0x11000 physical
-#define X86SMP_APBOOTSTRAP_DATASEG 			0x1100
+#define X86SMP_APBOOTSTRAP_DATASEG 		0x1100
 
 #define X86SMP_APBOOTSTRAP_MAXGDTENTRIES    4
 
 #define X86SMP_LAPIC_MEMORYADDRESS          0xFEE00000
 #define X86SMP_LAPIC_ID_MEMORYADDRESS       0xFEE00020
 
-#define TPM_LOCALITY_BASE             0xfed40000
+#define TPM_LOCALITY_BASE                   0xfed40000
 
 //----------------------------------------------------------------------
 
@@ -264,8 +263,8 @@
 //VMX Unrestricted Guest (UG) E820 hook support
 //we currently use the BIOS data area (BDA) unused region
 //at 0x0040:0x00AC
-#define	VMX_UG_E820HOOK_CS				(0x0040)
-#define	VMX_UG_E820HOOK_IP				(0x00AC)
+#define	VMX_UG_E820HOOK_CS			(0x0040)
+#define	VMX_UG_E820HOOK_IP			(0x00AC)
 
 
 #define     MAX_X86_APIC_ID     256
@@ -276,14 +275,14 @@
 
 
 // segment selectors
-#define     __NULLSEL       0x0000  //NULL selector
+#define         __NULLSEL           0x0000      //NULL selector
 #define 	__CS_CPL0 	    0x0008 	//CPL-0 code segment selector
 #define 	__DS_CPL0 	    0x0010 	//CPL-0 data segment selector
 #define		__CS_CPL3	    0x001b	//CPL-3 code segment selector
-#define		__DS_CPL3	    0x0023  //CPL-3 data segment selector
-#define		__CS_CPL3_SE	0x002b	//CPL-3 code segment selector
-#define		__DS_CPL3_SE	0x0033  //CPL-3 data segment selector
-#define 	__TRSEL 	    0x0038  //TSS (task) selector
+#define		__DS_CPL3	    0x0023      //CPL-3 data segment selector
+#define		__CS_CPL3_SE        0x002b	//CPL-3 code segment selector
+#define		__DS_CPL3_SE	    0x0033      //CPL-3 data segment selector
+#define 	__TRSEL 	    0x0038      //TSS (task) selector
 
 // max. segment descriptors not including TSS descriptors
 #define     XMHFGEEC_MAX_GDT_CODEDATA_DESCRIPTORS   7
