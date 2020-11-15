@@ -18,7 +18,11 @@ build, install, contribute and get involved.
 The formatted documentation can 
 be read online at: <http://uberxmhf.org/docs/toc.html>
 
-Documentation sources are within `docs/` and can be built using
+Documentation sources are within `docs/` and are in reStructuredText (reST)
+format. You can start reading the docs from `docs/index.rst` using any text 
+editor of your choice. 
+
+A html version of the documentation can also be built using
 `make clean` followed by `make docs_html` within the `docs/` folder.
 Note that you will need a working installation of sphinx to build
 the documentation within your development environment. For example, 
