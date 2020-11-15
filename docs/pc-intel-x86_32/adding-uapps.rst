@@ -7,8 +7,8 @@ Adding hypapps
 Integrating a new uberapp into the micro-hypervisor requires the following integration pieces:
 
 1. Create directory for hypapp functionality (e.g., ``xh_newapp``) within ``xmhf-uobjs``
-* ``xh_newapp.gsm`` defines key attributes of the hypapp.
-* ``xhnewapp_main.c`` is used to invoke different operations (e.g., initialize, hypercall, shutdown, etc.). Where each of these opertions has a related file (``xhnewapp_hcbinit.c``)
+  * ``xh_newapp.gsm`` defines key attributes of the hypapp.
+  * ``xhnewapp_main.c`` is used to invoke different operations (e.g., initialize, hypercall, shutdown, etc.). Where each of these opertions has a related file (``xhnewapp_hcbinit.c``)
 
   
 2. To integrate the hypapp add references in the following locations:
