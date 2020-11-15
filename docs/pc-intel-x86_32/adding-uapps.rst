@@ -13,7 +13,7 @@ Integrating a new uberapp into the micro-hypervisor requires the following integ
   
 2. To integrate the hypapp add references in the following locations:
   * Add ``xh_newapp`` to the list in ``xmhf-uobjs/UOBJLIST.in``
-  * Add a ``DEFINE XMHFGEEC_SLAB_XH_NEWAPP` to ``include/xmhf-config.h``
+  * Add a ``DEFINE XMHFGEEC_SLAB_XH_NEWAPP`` to ``include/xmhf-config.h``
   * Add a table entry to ``static xc_hypapp_info_t _xcihub_hypapp_info_table[]`` corresponding to the operations your hypapp performs in ``xmhf-uobjs/include/xc.h``
   * Add ``xh_newapp`` to the list of ``uobj-callees`` in ``xmhf-uobjs/xc_init/sc_init.gsm`` and ``xmhf-uobj/xc_ihub/xc_ihub.gsm``
 
@@ -33,6 +33,7 @@ Integrating a new uberapp into the micro-hypervisor requires the following integ
 Notes
 ^^^^^
 
+Total hypapps:
 Currently, the preferred method of adding hypapps is to switch out a hypapp (to preserve the memory mapping). By default the following hypapps are enabled: ``syscalllog``, ``hyperdep``, and ``ssteptrace``.
 Thus to add a new hypapp, one would replace one of the above with the new hypapp.
 

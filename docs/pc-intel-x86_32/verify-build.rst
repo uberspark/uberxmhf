@@ -57,8 +57,7 @@ tree of the sources:
 
    ``./configure --enable-debug-serial=<your-serial-port-number> --with-enable-serial-debug=<number-of-cores>``
 
-   replace ``<your-serial-port-number>`` with the system serial port number.
-e.g., ``0x3f8`` for ``COM1``.
+   replace ``<your-serial-port-number>`` with the system serial port number (e.g., ``0x3f8`` for ``COM1``).
    replace ``<number-of-cores>`` with the number of cores on the platform that will run uxmhf. Note, that this is required when serial debugging is enabled. Also, it is not recommended to use tools such as ``nproc`` as the number of cores may differ between the build and target systems.
 
 
@@ -66,6 +65,6 @@ e.g., ``0x3f8`` for ``COM1``.
 
 .. code-block:: bash
 
-   `make uxmhf-image`
+   ``make uxmhf-image``
 
-   If everything goes well then a final hypervisor image `xmhf-x86-vmx-x86pc.bin.gz` will be generated.
+If everything goes well then a final hypervisor image ``xmhf-x86-vmx-x86pc.bin.gz`` will be generated. Copy this to the target machine's ``/boot/``
