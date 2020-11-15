@@ -17,8 +17,8 @@ The following guest OSes are known to work:
 * Ubuntu 12.04 LTS with Linux Kernel 3.2.0-27-generic and below
 
 Note:
-
-  Currently certain kernel modules must be black-listed (e.g., in ``/etc/modprobe.d/blacklist.conf``):
+  
+Currently certain kernel modules must be black-listed (e.g., in ``/etc/modprobe.d/blacklist.conf``):
   * ``kvm``
   * ``kvm_intel``
   * ``intel_rapl``
