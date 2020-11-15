@@ -18,7 +18,7 @@ The following guest OSes are known to work:
 
 Note:
   
-Currently certain kernel modules must be black-listed (e.g., in ``/etc/modprobe.d/blacklist.conf``):
-  * ``kvm``
-  * ``kvm_intel``
-  * ``intel_rapl``
+  Currently certain kernel modules must be black-listed (e.g., in ``/etc/modprobe.d/blacklist.conf``):
+    * ``kvm``
+    * ``kvm_intel``
+    * ``intel_rapl``
