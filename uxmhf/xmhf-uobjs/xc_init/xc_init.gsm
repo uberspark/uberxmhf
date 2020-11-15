@@ -19,7 +19,7 @@
 	"uobj-callees": "	geec_sentinel
 						uapi_gcpustate
 						xg_richguest
-						xh_uhcalltest
+						xh_hyperdep
 						xh_syscalllog
 						xh_ssteptrace
 					",
