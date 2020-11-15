@@ -13,7 +13,6 @@
 						uapi_iotbl
 						uapi_uhmpgtbl
 						xh_syscalllog
-						xh_uhcalltest
 						xh_hyperdep
 						xh_ssteptrace
 						xg_richguest
