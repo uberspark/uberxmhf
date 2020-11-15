@@ -9,6 +9,6 @@ uxmhf/xmhf-uobjs/uapi_hcpustate , VfT_SLAB, UAPI
 uxmhf/xmhf-uobjs/uapi_slabmempgtbl , VfT_SLAB, UAPI
 uxmhf/xmhf-uobjs/uapi_sysdata , VfT_SLAB, UAPI
 uxmhf/xmhf-uobjs/xh_syscalllog , VfT_SLAB, XHYPAPP
-uxmhf/xmhf-uobjs/xh_uhcalltest , VfT_SLAB, XHYPAPP
+uxmhf/xmhf-uobjs/xh_hyperdep , VfT_SLAB, XHYPAPP
 uxmhf/xmhf-uobjs/xh_ssteptrace , uVU_SLAB, XHYPAPP
 uxmhf/xmhf-uobjs/xg_richguest , uVU_SLAB, XRICHGUEST

@@ -14,6 +14,7 @@ Makefile
 *.pp
 *.lscript
 configure
+configure-uxmhfuobj
 *.mk
 *.v.c
 _verif
