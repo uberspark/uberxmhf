@@ -18,11 +18,11 @@ Integrating a new uberapp into the micro-hypervisor requires the following integ
   * Add ``xh_newapp`` to the list of ``uobj-callees`` in ``xmhf-uobjs/xc_init/sc_init.gsm`` and ``xmhf-uobj/xc_ihub/xc_ihub.gsm``
 
     
-3. Ensure that your reconfigure prior to building (this is required to rewrite ``xmhf-uobjs/UOBJLST`` that is used by the ``Makefile``). Following the steps in `Verifying and Building <https://uberspark.org/docs/pc-intel-x86_32/verify-build.html>`_\.
+    3. Ensure that your reconfigure prior to building (this is required to rewrite ``xmhf-uobjs/UOBJLST`` that is used by the ``Makefile``). Following the steps in  :doc:`uberXMHF (pc-intel-x86_32) Veryfying and Building </pc-intel-x86_32/verify-build.html>`\
 
    
 4. Add a test program that exercises your hypapp in ``xmhf-rgapps/linux``
-  * Create a directory for the test program (`rgapp-newapp`) that includes a ``Makefile`` and the testprogram (``rgapp-newapp.c``).
+  * Create a directory for the test program (``rgapp-newapp``) that includes a ``Makefile`` and the testprogram (``rgapp-newapp.c``).
   * This test program will need to call ``__vmcall(eax, ebx, edx, ecx)``, where ``eax`` is the hypercall ID, ``ebx`` is the high order 32-bit of the physical address, ``edx`` is the low-order 32-bit of the physical address (e.g., of an up to 4KB buffer being passed to the hypapp), and ``ecx`` is variable based upon the hypapp.
   * This test program needs to convert the data buffer being sent to the hypapp from a virtual to a physical address. Some approaches for this (such as reading ``/proc/self/pagemap``) require root permissions.
 
@@ -34,6 +34,7 @@ Notes
 ^^^^^
 
 Total hypapps:
+
 Currently, the preferred method of adding hypapps is to switch out a hypapp (to preserve the memory mapping). By default the following hypapps are enabled: ``syscalllog``, ``hyperdep``, and ``ssteptrace``.
 Thus to add a new hypapp, one would replace one of the above with the new hypapp.
 
