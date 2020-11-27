@@ -9,6 +9,12 @@
 .. |uberapp| replace:: überApp
 .. |uberapps| replace:: überApps
 
+.. |uobj| replace:: üobject
+.. |uobject| replace:: üobject
+.. |uobjs| replace:: üobjects
+.. |uobjects| replace:: üobjects
+
+
 .. |br| raw:: html
 
     <br>

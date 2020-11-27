@@ -38,6 +38,7 @@ framework and associated components.
    pc-intel-x86_32/supported-os
    pc-intel-x86_32/verify-build
    pc-intel-x86_32/installing
+   pc-intel-x86_32/adding-uapps
    pc-intel-x86_32/debugging
 
 
