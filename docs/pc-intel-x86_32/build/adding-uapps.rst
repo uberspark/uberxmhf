@@ -44,6 +44,10 @@ integration pieces:
     
 5.  Run the test program (using permissions as required, see above). 
 
+``xh_uhcalltest`` is an example |uberapp| that follows the above steps to 
+demonstrate a simple hypercall handling functionality. The corresponding
+rich-guest application is found within ``xmhf-rgapps/linux/rgapp-uhcalltest``.
+
 
 ..  note::  
     Currently, the preferred method of adding |uberapps| is to switch out an
