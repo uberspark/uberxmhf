@@ -50,6 +50,7 @@ framework and associated components.
    rpi3-cortex_a53-armv8_32/supported-os
    rpi3-cortex_a53-armv8_32/build
    rpi3-cortex_a53-armv8_32/installing
+   rpi3-cortex_a53-armv8_32/adding-uapps
    rpi3-cortex_a53-armv8_32/debugging
 
 
