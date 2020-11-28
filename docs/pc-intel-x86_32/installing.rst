@@ -75,12 +75,12 @@ Building and Installing uberXMHF binaries
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 If you haven't already built and installed uberXMHF, 
-see :doc:`Verifying and Building uberXMHF (pc-intel-x86_32) </pc-intel-x86_32/verify-build>`
+see :doc:`Verifying and Building uberXMHF (pc-intel-x86_32) </pc-intel-x86_32/build/intro>`
 
 Ensure that the ``xmhf-x86-vmx-x86pc.bin.gz`` is copied into your ``/boot/`` directory.
 
 Adding a Grub entry to boot Linux
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^verify-
 
 You will need to add a Grub entry to ``/boot/grub/menu.lst``. To ensure
 that it doesn't get clobbered, put it **outside** the **AUTOMAGIC KERNEL

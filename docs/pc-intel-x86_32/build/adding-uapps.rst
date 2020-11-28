@@ -25,7 +25,7 @@ integration pieces:
     
 3.  Ensure that your reconfigure prior to building (this is required to 
     rewrite ``xmhf-uobjs/UOBJLST`` that is used by the ``Makefile``). Follow the 
-    steps in  :doc:`uberXMHF (pc-intel-x86_32) Veryfying and Building </pc-intel-x86_32/verify-build>`
+    steps in  :doc:`uberXMHF (pc-intel-x86_32) Veryfying and Building </pc-intel-x86_32/build/intro>`
 
    
 4.  Add a test program that exercises your |uberapp| in ``xmhf-rgapps/linux``
