@@ -44,64 +44,46 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-/*
- * HIC trampoline and stubs
- *
- * author: amit vasudevan (amitvasudevan@acm.org)
- */
+// hyperdep hypapp hypercall handler
+// author: amit vasudevan (amitvasudevan@acm.org)
 
 #include <xmhf.h>
-#include <xmhf-debug.h>
 #include <xmhfgeec.h>
-#include <geec_sentinel.h>
+#include <xmhf-debug.h>
 
+#include <xc.h>
+#include <uapi_gcpustate.h>
+#include <xh_uhcalltest.h>
 
+static inline void uhcalltest_hcbhypercall_helper(uint32_t cpuindex, uint32_t call_id, uint32_t guest_slab_index, uint64_t gpa){
+	_XDPRINTF_("%s[%u]: call_id=%x, gpa=%016llx\n", __func__, (uint16_t)cpuindex, call_id, gpa);
 
+	if(call_id == UAPP_UHCALLTEST_FUNCTION_TEST){
+		uhcalltest_copy(cpuindex, guest_slab_index, gpa);
+	}else{
+		_XDPRINTF_("%s[%u]: unsupported hypercall %x. Ignoring\n",__func__, (uint16_t)cpuindex, call_id);
 
-
-void gs_exit_retv2uv(slab_params_t *sp, void *caller_stack_frame){
-    slab_params_t *dst_sp;
-    gs_siss_element_t elem;
-
-    _XDPRINTF_("%s[%u]: src=%u, dst=%u\n", __func__, (uint16_t)sp->cpuid, sp->src_slabid, sp->dst_slabid);
-
-
-    //pop tuple from safe stack
-    //gs_siss_pop((uint16_t)sp->cpuid, &elem.src_slabid, &elem.dst_slabid, &elem.slab_ctype, &elem.caller_stack_frame,
-    //                    &elem.sp);
-    gs_siss_pop((uint16_t)sp->cpuid, &elem);
-
-
-
-
-    _XDPRINTF_("%s[%u]: safepop: {cpuid: %u, src: %u, dst: %u, ctype: 0x%x, csf=0x%x, sp=0x%x \n",
-	       __func__, (uint16_t)sp->cpuid,
-               (uint16_t)sp->cpuid, elem.src_slabid, elem.dst_slabid,
-	       elem.slab_ctype,
-               elem.caller_stack_frame, elem.sp);
-
-    //check to ensure this return is paired with a prior call
-    if( !((elem.src_slabid == sp->dst_slabid) && (elem.dst_slabid == sp->src_slabid) &&
-           (elem.slab_ctype == XMHFGEEC_SENTINEL_CALL_VfT_PROG_TO_uVT_uVU_PROG)) ){
-      _XDPRINTF_("%s[ln:%u]: Fatal: ret does not match prior call. Halting!\n",
-		 __func__, __LINE__);
-      HALT();
-    }
-
-
-    //marshall parameters
-    CASM_FUNCCALL(xmhfhw_sysmemaccess_copy, (elem.sp)->in_out_params,
-		  sp->in_out_params, sizeof(sp->in_out_params));
-
-
-    //return back to VfT_PROG slab
-    CASM_FUNCCALL(gs_exit_retv2uvstub,
-		  elem.caller_stack_frame);
-
-    _XDPRINTF_("%s[%u]: wip. halting!\n", __func__, (uint16_t)sp->cpuid);
-    HALT();
-
+	}
 }
 
+void uhcalltest_hcbhypercall(uint32_t cpuindex, uint32_t guest_slab_index){
+	slab_params_t spl;
+	xmhf_uapi_gcpustate_gprs_params_t *gcpustate_gprs =
+		(xmhf_uapi_gcpustate_gprs_params_t *)spl.in_out_params;
+	x86regs_t *gprs = (x86regs_t *)&gcpustate_gprs->gprs;
+	uint32_t call_id;
+	uint64_t gpa;
 
+	spl.in_out_params[0] = spl.in_out_params[1] = spl.in_out_params[2] = spl.in_out_params[3] = 0;
+	spl.in_out_params[4] = spl.in_out_params[5] = spl.in_out_params[6] = spl.in_out_params[7] = 0;
+	spl.src_slabid = XMHFGEEC_SLAB_XH_UHCALLTEST;
+	spl.dst_slabid = XMHFGEEC_SLAB_UAPI_GCPUSTATE;
+	spl.cpuid = cpuindex;
+	spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSREAD;
+	XMHF_SLAB_CALLNEW(&spl);
 
+	call_id = gprs->eax;
+	gpa = ((uint64_t)gprs->ebx << 32) | gprs->edx;
+
+	uhcalltest_hcbhypercall_helper(cpuindex, call_id, guest_slab_index, gpa);
+}

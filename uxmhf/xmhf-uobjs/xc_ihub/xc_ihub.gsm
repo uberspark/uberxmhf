@@ -6,6 +6,7 @@
 #include <uapi_hcpustate.h>
 #include <uapi_sysdata.h>
 #include <uapi_slabmempgtbl.h>
+#include <xh_uhcalltest.h>
 #include <xh_hyperdep.h>
 #include <xh_syscalllog.h>
 #include <xh_ssteptrace.h>

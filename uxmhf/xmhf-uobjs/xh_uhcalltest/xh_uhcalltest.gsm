@@ -1,29 +1,20 @@
 #include <uberspark.h>
 #include <xmhf-hwm.h>
 
-#include <geec_sentinel.h>
 #include <uapi_gcpustate.h>
+#include <uapi_slabmempgtbl.h>
 #include <xh_uhcalltest.h>
-#include <xh_hyperdep.h>
-#include <xh_syscalllog.h>
-#include <xh_ssteptrace.h>
-#include <xh_aprvexec.h>
 
 {
-	"uobj-name": "xc_init",
+	"uobj-name": "xh_uhcalltest",
 	"uobj-type": "VfT_SLAB",
-	"uobj-subtype": "INIT",
+	"uobj-subtype": "XHYPAPP",
 
 	"uobj-uapifunctions":[],
 
-	"uobj-callees": "	geec_sentinel
-						uapi_gcpustate
-						xg_richguest
-						xh_hyperdep
-						xh_syscalllog
-						xh_ssteptrace
+	"uobj-callees": " 	uapi_gcpustate
+				uapi_slabmempgtbl
 					",
-
 
 	"uobj-uapicallees":[
 		{ 
@@ -34,17 +25,23 @@
 		},
 		{ 
 			"uobj-name": "uapi_gcpustate",
-			"uobj-uapifunctionid": USMF_STR(XMHF_HIC_UAPI_CPUSTATE_VMWRITE), 
+			"uobj-uapifunctionid": USMF_STR(XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSREAD), 
 			"opt1" : "(void)0;",
 			"opt2" : "(1)" 
 		},
 		{ 
-			"uobj-name": "uapi_gcpustate",
-			"uobj-uapifunctionid": USMF_STR(XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSWRITE), 
+			"uobj-name": "uapi_slabmempgtbl",
+			"uobj-uapifunctionid": USMF_STR(XMHFGEEC_UAPI_SLABMEMPGTBL_GETENTRYFORPADDR), 
 			"opt1" : "(void)0;",
 			"opt2" : "(1)" 
-		}	
-	],	
+		},
+		{ 
+			"uobj-name": "uapi_slabmempgtbl",
+			"uobj-uapifunctionid": USMF_STR(XMHFGEEC_UAPI_SLABMEMPGTBL_SETENTRYFORPADDR), 
+			"opt1" : "{setentryforpaddrp->entry=setentryforpaddrp->entry&7; setentryforpaddrp->entry&=~0x4; setentryforpaddrp->entry|=0x1; setentryforpaddrp->entry|=0x2;}",
+			"opt2" : "(!(setentryforpaddrp->entry & 0x4) && (setentryforpaddrp->entry & 0x1) &&  (setentryforpaddrp->entry & 0x2))" 
+		}
+	],
 
 
 	"uobj-resource-devices":[],
@@ -80,6 +77,7 @@
 		
 	
 }
+
 
 
 

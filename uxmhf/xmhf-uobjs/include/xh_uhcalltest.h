@@ -44,64 +44,33 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
+
 /*
- * HIC trampoline and stubs
  *
- * author: amit vasudevan (amitvasudevan@acm.org)
+ *  uhcalltest hypapp slab decls.
+ *
+ *  author: amit vasudevan (amitvasudevan@acm.org)
+ *  author: matt mccormack (matthew.mccormack@live.com)
  */
 
-#include <xmhf.h>
-#include <xmhf-debug.h>
-#include <xmhfgeec.h>
-#include <geec_sentinel.h>
+#ifndef __XH_UHCALLTEST_H__
+#define __XH_UHCALLTEST_H__
+
+#define UAPP_UHCALLTEST_FUNCTION_TEST 0x22
 
 
+#ifndef __ASSEMBLY__
 
+typedef struct {
+  uint8_t in[16];
+  uint8_t out[16];
+}uhcalltest_param_t;
 
+void uhcalltest_hcbshutdown(uint32_t cpuindex, uint32_t guest_slab_index);
+void uhcalltest_hcbinit(uint32_t cpuindex);
+void uhcalltest_hcbhypercall(uint32_t cpuindex, uint32_t guest_slab_index);
+void uhcalltest_action(uint32_t cpuindex, uint32_t guest_slab_index, uint64_t gpa);
 
-void gs_exit_retv2uv(slab_params_t *sp, void *caller_stack_frame){
-    slab_params_t *dst_sp;
-    gs_siss_element_t elem;
+#endif	//__ASSEMBLY__
 
-    _XDPRINTF_("%s[%u]: src=%u, dst=%u\n", __func__, (uint16_t)sp->cpuid, sp->src_slabid, sp->dst_slabid);
-
-
-    //pop tuple from safe stack
-    //gs_siss_pop((uint16_t)sp->cpuid, &elem.src_slabid, &elem.dst_slabid, &elem.slab_ctype, &elem.caller_stack_frame,
-    //                    &elem.sp);
-    gs_siss_pop((uint16_t)sp->cpuid, &elem);
-
-
-
-
-    _XDPRINTF_("%s[%u]: safepop: {cpuid: %u, src: %u, dst: %u, ctype: 0x%x, csf=0x%x, sp=0x%x \n",
-	       __func__, (uint16_t)sp->cpuid,
-               (uint16_t)sp->cpuid, elem.src_slabid, elem.dst_slabid,
-	       elem.slab_ctype,
-               elem.caller_stack_frame, elem.sp);
-
-    //check to ensure this return is paired with a prior call
-    if( !((elem.src_slabid == sp->dst_slabid) && (elem.dst_slabid == sp->src_slabid) &&
-           (elem.slab_ctype == XMHFGEEC_SENTINEL_CALL_VfT_PROG_TO_uVT_uVU_PROG)) ){
-      _XDPRINTF_("%s[ln:%u]: Fatal: ret does not match prior call. Halting!\n",
-		 __func__, __LINE__);
-      HALT();
-    }
-
-
-    //marshall parameters
-    CASM_FUNCCALL(xmhfhw_sysmemaccess_copy, (elem.sp)->in_out_params,
-		  sp->in_out_params, sizeof(sp->in_out_params));
-
-
-    //return back to VfT_PROG slab
-    CASM_FUNCCALL(gs_exit_retv2uvstub,
-		  elem.caller_stack_frame);
-
-    _XDPRINTF_("%s[%u]: wip. halting!\n", __func__, (uint16_t)sp->cpuid);
-    HALT();
-
-}
-
-
-
+#endif //__XH_UHCALLTEST_H__

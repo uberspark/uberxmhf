@@ -44,64 +44,57 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-/*
- * HIC trampoline and stubs
- *
- * author: amit vasudevan (amitvasudevan@acm.org)
- */
+// uhcalltest hypapp main module
+// author: amit vasudevan (amitvasudevan@acm.org)
 
 #include <xmhf.h>
-#include <xmhf-debug.h>
 #include <xmhfgeec.h>
-#include <geec_sentinel.h>
+#include <xmhf-debug.h>
+
+#include <xc.h>
+#include <uapi_gcpustate.h>
+#include <uapi_slabmempgtbl.h>
+
+#include <xh_uhcalltest.h>
 
 
+void uhcalltest_copy(uint32_t cpuindex, uint32_t guest_slab_index, uint64_t gpa){
+  slab_params_t spl;
+  xmhfgeec_uapi_slabmempgtbl_getentryforpaddr_params_t *getentryforpaddrp =
+    (xmhfgeec_uapi_slabmempgtbl_getentryforpaddr_params_t *)spl.in_out_params;
+  xmhfgeec_uapi_slabmempgtbl_setentryforpaddr_params_t *setentryforpaddrp =
+    (xmhfgeec_uapi_slabmempgtbl_setentryforpaddr_params_t *)spl.in_out_params;
 
+  spl.src_slabid = XMHFGEEC_SLAB_XH_UHCALLTEST;
+  spl.dst_slabid = XMHFGEEC_SLAB_UAPI_SLABMEMPGTBL;
+  spl.cpuid = cpuindex;
 
+  if( gpa != 0){
+    spl.dst_uapifn = XMHFGEEC_UAPI_SLABMEMPGTBL_GETENTRYFORPADDR;
+    getentryforpaddrp->dst_slabid = guest_slab_index;
+    getentryforpaddrp->gpa = gpa;
+    //@assert getentryforpaddrp->gpa == gpa;
+    XMHF_SLAB_CALLNEW(&spl);
 
-void gs_exit_retv2uv(slab_params_t *sp, void *caller_stack_frame){
-    slab_params_t *dst_sp;
-    gs_siss_element_t elem;
+    _XDPRINTF_("%s[%u]: original entry for gpa=%016llx is %016llx\n",
+	       __func__, (uint16_t)cpuindex,
+	       gpa, getentryforpaddrp->result_entry);
 
-    _XDPRINTF_("%s[%u]: src=%u, dst=%u\n", __func__, (uint16_t)sp->cpuid, sp->src_slabid, sp->dst_slabid);
+    spl.dst_uapifn = XMHFGEEC_UAPI_SLABMEMPGTBL_SETENTRYFORPADDR;
+    setentryforpaddrp->dst_slabid = guest_slab_index;
+    setentryforpaddrp->gpa = gpa;
+    setentryforpaddrp->entry = getentryforpaddrp->result_entry & ~(0x4); //execute-disable
+    //@assert setentryforpaddrp->gpa == gpa;
+    //@assert !(setentryforpaddrp->entry & 0x4);
+    XMHF_SLAB_CALLNEW(&spl);
 
+    uhcalltest_param_t *uhctp;
+    uhctp = (uhcalltest_param_t *)gpa;
+    memcpy(uhctp->out, uhctp->in, 16);
 
-    //pop tuple from safe stack
-    //gs_siss_pop((uint16_t)sp->cpuid, &elem.src_slabid, &elem.dst_slabid, &elem.slab_ctype, &elem.caller_stack_frame,
-    //                    &elem.sp);
-    gs_siss_pop((uint16_t)sp->cpuid, &elem);
-
-
-
-
-    _XDPRINTF_("%s[%u]: safepop: {cpuid: %u, src: %u, dst: %u, ctype: 0x%x, csf=0x%x, sp=0x%x \n",
-	       __func__, (uint16_t)sp->cpuid,
-               (uint16_t)sp->cpuid, elem.src_slabid, elem.dst_slabid,
-	       elem.slab_ctype,
-               elem.caller_stack_frame, elem.sp);
-
-    //check to ensure this return is paired with a prior call
-    if( !((elem.src_slabid == sp->dst_slabid) && (elem.dst_slabid == sp->src_slabid) &&
-           (elem.slab_ctype == XMHFGEEC_SENTINEL_CALL_VfT_PROG_TO_uVT_uVU_PROG)) ){
-      _XDPRINTF_("%s[ln:%u]: Fatal: ret does not match prior call. Halting!\n",
-		 __func__, __LINE__);
-      HALT();
-    }
-
-
-    //marshall parameters
-    CASM_FUNCCALL(xmhfhw_sysmemaccess_copy, (elem.sp)->in_out_params,
-		  sp->in_out_params, sizeof(sp->in_out_params));
-
-
-    //return back to VfT_PROG slab
-    CASM_FUNCCALL(gs_exit_retv2uvstub,
-		  elem.caller_stack_frame);
-
-    _XDPRINTF_("%s[%u]: wip. halting!\n", __func__, (uint16_t)sp->cpuid);
-    HALT();
-
+    _XDPRINTF_("%s[%u]: finished uhcalltest \n",
+	       __func__, (uint16_t)cpuindex);
+  }else{
+    //do nothing
+  }
 }
-
-
-
