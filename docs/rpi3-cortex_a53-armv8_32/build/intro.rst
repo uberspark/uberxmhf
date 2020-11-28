@@ -26,3 +26,4 @@ and a micro-hypervisor extension (found within ``uxmhf-rpi3/uapps/``)
    Build micro-hypervisor core framework <build-core.rst>
    uhcalltest überApp micro-hypervisor extension <build-uapp-uhcalltest.rst>
    Other überApp micro-hypervisor extensions <build-uapp-others.rst>
+   Adding new überApps <adding-uapps.rst>
