@@ -208,9 +208,9 @@ int rijndael_cbc_encrypt(const unsigned char *pt, unsigned char *ct, unsigned lo
 */
 int rijndael_cbc_done(symmetric_CBC *cbc)
 {
-   int err;
    LTC_ARGCHK(cbc != NULL);
 
+   //int err;
    //if ((err = cipher_is_valid(cbc->cipher)) != CRYPT_OK) {
    //   return err;
    //}

@@ -35,6 +35,8 @@
 #ifndef __AES_H__
 #define __AES_H__
 
+#include <xmhfcrypto.h>
+
 #define AES_KEY_LEN_BYTES	16
 
 #ifndef __ASSEMBLY__
@@ -77,6 +79,13 @@ extern const u32 Tks2[];
 extern const u32 Tks3[];
 
 extern const u32 rcon[];
+
+int rijndael_cbc_start(const unsigned char * IV, const unsigned char *key,
+		       int keylen, int num_rounds, symmetric_CBC *cbc);
+int rijndael_cbc_encrypt(const unsigned char *pt, unsigned char *ct, unsigned long len, symmetric_CBC *cbc);
+int rijndael_cbc_done(symmetric_CBC *cbc);
+int rijndael_cbc_decrypt(const unsigned char *ct, unsigned char *pt, unsigned long len, symmetric_CBC *cbc);
+
 
 
 #endif // __ASSEMBLY__

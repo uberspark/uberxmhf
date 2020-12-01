@@ -107,7 +107,7 @@ bool uhcall(uint32_t uhcall_function, void *uhcall_buffer, uint32_t uhcall_buffe
 	int ret, fd;
 	uhcallkmod_param_t uhcallp;
 	uint64_t uhcall_buffer_paddr;
-
+	
 	//if uhcall_buffer is NULL then uhcall_buffer_len should be 0
 	//for a NULL hypercall test
 	if(uhcall_buffer == NULL && uhcall_buffer_len != 0){
@@ -124,13 +124,13 @@ bool uhcall(uint32_t uhcall_function, void *uhcall_buffer, uint32_t uhcall_buffe
 		}
 	}
 
-
-#if 1
+#if 0
     //get buffer physical address
     if(!uhcall_va2pa(uhcall_buffer, &uhcall_buffer_paddr) ){
 	    printf("%s: error: line %u\n", __FUNCTION__, __LINE__);
     	return false;
     }
+
 
     //printf("%s: uhcall_buffer_paddr=0x%08x\n", __FUNCTION__, (uint32_t)uhcall_buffer_paddr);
 #endif
@@ -151,12 +151,11 @@ bool uhcall(uint32_t uhcall_function, void *uhcall_buffer, uint32_t uhcall_buffe
     	return false; //nFailed to lock page in memory
     }
 #endif
-
-
 	//populate uhcallkmod_param_t
 	uhcallp.uhcall_function=uhcall_function;
 	//uhcallp.uhcall_buffer=(uint32_t)uhcall_buffer;
-	uhcallp.uhcall_buffer=(void *)(uint32_t)uhcall_buffer_paddr;
+	//	uhcallp.uhcall_buffer=(void *)(uint32_t)uhcall_buffer_paddr;
+	uhcallp.uhcall_buffer=(void *)(uint32_t)uhcall_buffer;	
 	uhcallp.uhcall_buffer_len=uhcall_buffer_len;
 
 	//printf("%s: uhcall_function=%u, uhcall_buffer=0x%08x, uhcall_buffer_len=%u\n", __FUNCTION__,
@@ -177,7 +176,6 @@ bool uhcall(uint32_t uhcall_function, void *uhcall_buffer, uint32_t uhcall_buffe
 		return false; //Failed to unlock page in memory
 	}
 #endif
-
 	if ( close(fd) < 0 ){
 	    printf("%s: error: line %u\n", __FUNCTION__, __LINE__);
 		return false;	//error in closing uhcallkmod device

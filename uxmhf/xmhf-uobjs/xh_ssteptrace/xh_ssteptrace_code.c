@@ -90,7 +90,7 @@ if(!ssteptrace_on){
     guest_rflags |= EFLAGS_TF;
     exception_bitmap |= (1 << 1);
 
-     spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_VMWRITE;
+    spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_VMWRITE;
     gcpustate_vmrwp->encoding = VMCS_CONTROL_EXCEPTION_BITMAP;
     gcpustate_vmrwp->value = exception_bitmap;
     XMHF_SLAB_CALLNEW(&spl);
@@ -184,10 +184,8 @@ static bool st_scanforsignature(uint8_t *buffer, uint32_t buffer_size){
 
 // initialization
 static void _hcb_initialize(uint32_t cpuindex){
-
-	_XDPRINTF_("%s[%u]: xhssteptrace initializing...\n", __func__,
-            (uint16_t)cpuindex);
-
+  _XDPRINTF_("%s[%u]: xhssteptrace initializing...\n", __func__,
+	     (uint16_t)cpuindex);
 }
 
 
@@ -205,40 +203,38 @@ static void _hcb_hypercall(uint32_t cpuindex, uint32_t guest_slab_index){
     spl.cpuid = cpuindex;
     //spl.in_out_params[0] = XMHF_HIC_UAPI_CPUSTATE;
 
-     spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSREAD;
+    spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSREAD;
     XMHF_SLAB_CALLNEW(&spl);
 
     call_id = gprs->eax;
     //gpa = ((uint64_t)gprs->edx << 32) | gprs->ebx;
 
-	//_XDPRINTF_("%s[%u]: call_id=%x, gpa=%016llx\n", __func__, (uint16_t)cpuindex, call_id, gpa);
+    //_XDPRINTF_("%s[%u]: call_id=%x, gpa=%016llx\n", __func__, (uint16_t)cpuindex, call_id, gpa);
 
-	switch(call_id){
+    switch(call_id){
 
-		case SSTEPTRACE_REGISTER:{
-			ssteptrace_codepaddr = gprs->edx;
-			_XDPRINTF_("%s[%u]: call_id=%x(REGISTER) at paddr=0x%08x\n", __func__, (uint16_t)cpuindex, call_id, ssteptrace_codepaddr);
-		}
-		break;
+    case SSTEPTRACE_REGISTER:{
+      ssteptrace_codepaddr = gprs->edx;
+      _XDPRINTF_("%s[%u]: call_id=%x(REGISTER) at paddr=0x%08x\n", __func__, (uint16_t)cpuindex, call_id, ssteptrace_codepaddr);
+    }
+      break;
 
-		case SSTEPTRACE_ON:{
-		    _XDPRINTF_("%s[%u]: call_id=%x(TRACE_ON)\n", __func__, (uint16_t)cpuindex, call_id);
-			st_on(cpuindex, guest_slab_index);
-		}
-		break;
+    case SSTEPTRACE_ON:{
+      _XDPRINTF_("%s[%u]: call_id=%x(TRACE_ON)\n", __func__, (uint16_t)cpuindex, call_id);
+      st_on(cpuindex, guest_slab_index);
+    }
+      break;
 
-		case SSTEPTRACE_OFF:{
-		    _XDPRINTF_("%s[%u]: call_id=%x(TRACE_OFF)\n", __func__, (uint16_t)cpuindex, call_id);
-			st_off(cpuindex, guest_slab_index);
-		}
-		break;
-
-		default:
-            //_XDPRINTF_("%s[%u]: unsupported hypercall %x. Ignoring\n", __func__, (uint16_t)cpuindex, call_id);
-			break;
-	}
-
-
+    case SSTEPTRACE_OFF:{
+      _XDPRINTF_("%s[%u]: call_id=%x(TRACE_OFF)\n", __func__, (uint16_t)cpuindex, call_id);
+      st_off(cpuindex, guest_slab_index);
+    }
+      break;
+      
+    default:
+      //_XDPRINTF_("%s[%u]: unsupported hypercall %x. Ignoring\n", __func__, (uint16_t)cpuindex, call_id);
+      break;
+    }
 
 }
 

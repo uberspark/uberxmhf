@@ -42,7 +42,7 @@
 #include <types.h>
 #include <arm8-32.h>
 #include <bcm2837.h>
-#include <miniuart.h>
+#include <uart.h>
 #include <debug.h>
 
 #include <uhcalltest.h>
@@ -115,7 +115,6 @@ uint32_t va2pa(uint32_t va){
 
 bool va2pa(uint32_t va, u32 *pa){
 	u32 par;
-	u8 *ch;
 
 	//_XDPRINTFSMP_("%s: ENTER: va=0x%08x\n", __func__, va);
 
@@ -149,12 +148,11 @@ bool va2pa(uint32_t va, u32 *pa){
 //return true if handled the hypercall, false if not
 bool uapp_uhcalltest_handlehcall(u32 uhcall_function, void *uhcall_buffer, u32 uhcall_buffer_len){
 	uhcalltest_param_t *uhctp;
-	uint32_t i;
-	u32 uhcall_buffer_paddr;
 
 	if(uhcall_function != UAPP_UHCALLTEST_FUNCTION_TEST)
 		return false;
-
+	
+	//u32 uhcall_buffer_paddr;
 	//_XDPRINTFSMP_("%s: hcall: uhcall_function=0x%08x, uhcall_buffer=0x%08x, uhcall_buffer_len=0x%08x\n", __func__,
 	//		uhcall_function, uhcall_buffer, uhcall_buffer_len);
 
@@ -165,6 +163,7 @@ bool uapp_uhcalltest_handlehcall(u32 uhcall_function, void *uhcall_buffer, u32 u
 	uhctp = (uhcalltest_param_t *)uhcall_buffer;
 
 #if 0
+   uint32_t i;
    _XDPRINTFSMP_("dumping in[]...\n");
    for(i=0; i < 16; i++)
 	   _XDPRINTFSMP_("%c", uhctp->in[i]);

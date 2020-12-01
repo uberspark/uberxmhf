@@ -63,11 +63,10 @@ uobjinfotable_build:
 	$(MKDIR) -p $(XMHF_OBJDIR)
 	cd $(XMHF_OBJDIR) && $(CCERT) -c $(CCERT_CFLAGS) -o $(XMHF_OBJDIR)/uobjinfotable.o uobjinfotable.c
 	@echo uobjinfotable built sucessfully.
-	
-	
+
 ######
 # uxmhf uobj build
-	
+
 .PHONY: uxmhf-uobjsbuild
 uxmhf-uobjsbuild: _uobjs_configureandgenerateuobjinfo uobjinfotable_build
 	@echo Building uobjs...
@@ -105,7 +104,6 @@ uxmhf-binimage:
 	@echo uXMHF binary image generation SUCCESS
 
 
-	
 ######
 # uxmhf verify targets
 
@@ -116,9 +114,7 @@ uxmhf-verif-gensentinelstubs: _uobjs_configureandgenerateuobjinfo
 		cd $(XMHF_DIR) && $(USPARK_INSTALL_TOOLSDIR)/ubp $(XMHF_DIR)/xmhf-uobjs/UOBJLIST $(XMHF_OBJDIR)/_verif_bp/ $(XMHF_CONFIG_MAX_INCLDEVLIST_ENTRIES) $(XMHF_CONFIG_MAX_EXCLDEVLIST_ENTRIES) $(XMHF_CONFIG_MAX_MEMOFFSET_ENTRIES) 0
 		@echo sentinel stubs generated
 
-	
 
-	
 .PHONY: uxmhf-verifyuobjs-prep
 uxmhf-verifyuobjs-prep: _uobjs_configureandgenerateuobjinfo uxmhf-verif-gensentinelstubs
 
@@ -131,10 +127,10 @@ uxmhf-verifyuobjs-all: uxmhf-verifyuobjs-prep
 	done;
 	@echo All uobjs verified!
 
-	
+
 ######
 # uxmhf cleanup targets
-	
+
 .PHONY: clean 
 clean:
 	$(RM) -rf $(XMHF_OBJDIR)
@@ -143,10 +139,9 @@ clean:
 distclean: clean
 	$(RM) config.log config.status
 	$(RM) -rf Makefile
+	@find $(XMHF_DIR) -name _verif* -type d -exec rm -rf {} +
 
 
-	
-	
 ######
 # uxmhf autoconf targets
 

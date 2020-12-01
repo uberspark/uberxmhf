@@ -90,13 +90,8 @@ enum {
 
 
 //tomcrypt_cfg.h
-
 typedef uint32_t LTC_FAST_TYPE;
 #define LTC_FAST_TYPE_PTR_CAST(x) ((LTC_FAST_TYPE*)(void*)(x))
-
-
-
-
 
 //tomcrypt_macros.h
 #define STORE32H(x, y)                                                                     \
@@ -127,16 +122,6 @@ typedef uint32_t LTC_FAST_TYPE;
 
 /* extract a byte portably */
 #define byte(x, n) (((x) >> (8 * (n))) & 255)
-
-
-
-
-
-
-
-
-
-
 
 //tomcrypt_cipher.h
 //Empty for now
@@ -184,26 +169,26 @@ struct ltc_cipher_descriptor {
 };
 
 
-
-
-
-
 //tomcrypt_hash.h
-
 struct sha1_state {
     uint64_t length;
     uint32_t state[5], curlen;
     uint8_t buf[64];
 };
 
+struct sha256_state {
+  uint64_t length;
+  uint32_t state[8], curlen;
+  uint8_t buf[64];
+};
+
 
 typedef union Hash_state {
     char dummy[1];
     struct sha1_state sha1;
+    struct sha256_state sha256;  
     void *data;
 } hash_state;
-
-
 
 
 //tomcrypt_mac.h
@@ -217,8 +202,6 @@ typedef struct Hmac_state {
      hash_state     hashstate;
      unsigned char  key[LTC_HMAC_BLOCKSIZE];
 } hmac_state;
-
-
 
 
 //tomcrypt_custom.h
@@ -269,11 +252,8 @@ typedef struct Hmac_state {
 #endif
 
 
-
-
 //tomcrypt_misc.h
 //empty for now
-
 
 
 //tomcrypt_argchk.h
@@ -281,13 +261,8 @@ typedef struct Hmac_state {
 #define LTC_ARGCHKVD(x) LTC_ARGCHK(x)
 
 
-
 //tomcrypt_pkcs.h
 //empty for now
-
-
-
-
 
 
 #endif /* __XMHFCRYPTO_H__ */

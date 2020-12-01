@@ -1,0 +1,13 @@
+*.a
+*.o
+*.*~
+*~
+*.log
+*.status
+*.bin
+*.elf
+*.img
+*.cache
+*.0
+*.ls
+*.tmp

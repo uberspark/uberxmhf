@@ -41,7 +41,7 @@
 #include <types.h>
 #include <arm8-32.h>
 #include <bcm2837.h>
-#include <miniuart.h>
+#include <uart.h>
 #include <debug.h>
 #include <dmaprot.h>
 
@@ -84,20 +84,20 @@ u32 dmaprot_shadowcb(u32 dmac_channel, u32 cb_pa){
 
 	dmacb = (dmac_cb_t *)cb_syspa;
 
-	//bcm2837_miniuart_puts("dmaprot: ccb: dmacb=");
+	////uart_puts("dmaprot: ccb: dmacb=");
 	//debug_hexdumpu32((u32)dmacb);
 
 	while(1){
 
-		//bcm2837_miniuart_puts("dmaprot: ccb: ti=");
+		////uart_puts("dmaprot: ccb: ti=");
 		//debug_hexdumpu32(dmacb->ti);
-		//bcm2837_miniuart_puts("dmaprot: ccb: src_addr=");
+		////uart_puts("dmaprot: ccb: src_addr=");
 		//debug_hexdumpu32(dmacb->src_addr);
-		//bcm2837_miniuart_puts("dmaprot: ccb: dst_addr=");
+		////uart_puts("dmaprot: ccb: dst_addr=");
 		//debug_hexdumpu32(dmacb->dst_addr);
-		//bcm2837_miniuart_puts("dmaprot: ccb: len=");
+		////uart_puts("dmaprot: ccb: len=");
 		//debug_hexdumpu32(dmacb->len);
-		//bcm2837_miniuart_puts("dmaprot: ccb: next_cb_addr=");
+		////uart_puts("dmaprot: ccb: next_cb_addr=");
 		//debug_hexdumpu32(dmacb->next_cb_addr);
 
 		syspa_src_addr = dmapa_to_syspa(dmacb->src_addr);
@@ -106,14 +106,14 @@ u32 dmaprot_shadowcb(u32 dmac_channel, u32 cb_pa){
 		if( 	(syspa_src_addr >= UXMHF_CORE_START_ADDR &&
 				 syspa_src_addr < UXMHF_CORE_END_ADDR)
 		){
-			bcm2837_miniuart_puts("CB src_addr using micro-hypervisor memory regions. Halting!\n");
+			////uart_puts("CB src_addr using micro-hypervisor memory regions. Halting!\n");
 			HALT();
 		}
 
 		if( 	(syspa_dst_addr >= UXMHF_CORE_START_ADDR &&
 				 syspa_dst_addr < UXMHF_CORE_END_ADDR)
 		){
-			bcm2837_miniuart_puts("CB dst_addr using micro-hypervisor memory regions. Halting!\n");
+			////uart_puts("CB dst_addr using micro-hypervisor memory regions. Halting!\n");
 			HALT();
 		}
 
@@ -149,7 +149,7 @@ u32 dmaprot_shadowcb(u32 dmac_channel, u32 cb_pa){
 		dmacb = (dmac_cb_t *)dmapa_to_syspa(dmacb->next_cb_addr);
 
 		if((i+1) >= BCM2837_DMA_MAXCBRECORDS){
-			bcm2837_miniuart_puts("dmaprot: ccb: i < max records. Halting!\n");
+			//uart_puts("dmaprot: ccb: i < max records. Halting!\n");
 			HALT();
 		}
 		dmac_cblist[dmac_channel][i].next_cb_addr = syspa_to_dmapa((u32)&dmac_cblist[dmac_channel][i+1].ti);
@@ -157,23 +157,23 @@ u32 dmaprot_shadowcb(u32 dmac_channel, u32 cb_pa){
 	}
 
 	//debug
-	/*bcm2837_miniuart_puts("dumping shadow cb:\n");
+	/*//uart_puts("dumping shadow cb:\n");
 	{
 		u32 count;
 		for(count=0; count < i; count++){
-			bcm2837_miniuart_puts("ti = ");
+			//uart_puts("ti = ");
 			debug_hexdumpu32(dmac_cblist[dmac_channel][count].ti);
-			bcm2837_miniuart_puts("src_addr = ");
+			//uart_puts("src_addr = ");
 			debug_hexdumpu32(dmac_cblist[dmac_channel][count].src_addr);
-			bcm2837_miniuart_puts("dst_addr = ");
+			//uart_puts("dst_addr = ");
 			debug_hexdumpu32(dmac_cblist[dmac_channel][count].dst_addr);
-			bcm2837_miniuart_puts("len = ");
+			//uart_puts("len = ");
 			debug_hexdumpu32(dmac_cblist[dmac_channel][count].len);
-			bcm2837_miniuart_puts("next_cb_addr = ");
+			//uart_puts("next_cb_addr = ");
 			debug_hexdumpu32(dmac_cblist[dmac_channel][count].next_cb_addr);
 		}
 	}
-	bcm2837_miniuart_puts("dumping done; retval=\n");
+	//uart_puts("dumping done; retval=\n");
 	debug_hexdumpu32(syspa_to_dmapa((u32)&dmac_cblist[dmac_channel][0].ti));
 	*/
 
@@ -187,19 +187,19 @@ void dmaprot_dump_cb(u32 cb_pa){
 
 	dmacb = (dmac_cb_t *)cb_syspa;
 
-	bcm2837_miniuart_puts("dmaprot_dump_cb=");
+	//uart_puts("dmaprot_dump_cb=");
 	debug_hexdumpu32(cb_pa);
-	bcm2837_miniuart_puts("  ti=");
+	//uart_puts("  ti=");
 	debug_hexdumpu32(dmacb->ti);
-	bcm2837_miniuart_puts("  src_addr=");
+	//uart_puts("  src_addr=");
 	debug_hexdumpu32(dmacb->src_addr);
-	bcm2837_miniuart_puts("  dst_addr=");
+	//uart_puts("  dst_addr=");
 	debug_hexdumpu32(dmacb->dst_addr);
-	bcm2837_miniuart_puts("  len=");
+	//uart_puts("  len=");
 	debug_hexdumpu32(dmacb->len);
-	bcm2837_miniuart_puts("  next_cb_addr=");
+	//uart_puts("  next_cb_addr=");
 	debug_hexdumpu32(dmacb->next_cb_addr);
-	bcm2837_miniuart_puts("dmaprot_dump_end\n");
+	//uart_puts("dmaprot_dump_end\n");
 
 }
 */
@@ -217,10 +217,10 @@ void dmaprot_channel_cs_access(u32 wnr, u32 dmac_channel, u32 *dmac_reg, u32 val
 			//activating DMA, get current cb register value
 			dmac_cb_reg_value = *dmac_cb_reg;
 
-			bcm2837_miniuart_puts("dmaprot: DMA_ACTIVATE=");
+			//uart_puts("dmaprot: DMA_ACTIVATE=");
 			debug_hexdumpu32(dmac_cb_reg_value);
 		}else{
-			bcm2837_miniuart_puts("dmaprot: DMA_DE-ACTIVATE\n");
+			//uart_puts("dmaprot: DMA_DE-ACTIVATE\n");
 		}
 
 		cpu_dsb();
@@ -240,10 +240,10 @@ void dmaprot_channel_conblkad_access(u32 wnr, u32 dmac_channel, u32 *dmac_reg, u
 
 	if(wnr){	//write
 		//shadow cb
-		//bcm2837_miniuart_puts("dmaprot: conblkad=");
+		////uart_puts("dmaprot: conblkad=");
 		//debug_hexdumpu32(value);
 		shadow_value=dmaprot_shadowcb(dmac_channel, value);
-		//bcm2837_miniuart_puts("dmaprot: conblkad[shadow]=");
+		////uart_puts("dmaprot: conblkad[shadow]=");
 		//debug_hexdumpu32(shadow_value);
 
 		cpu_dsb();

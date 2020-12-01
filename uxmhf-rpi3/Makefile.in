@@ -41,12 +41,21 @@ export prefix=@prefix@
 export SECBOOT := @SECBOOT@
 export DMAPROT := @DMAPROT@
 
+export ENABLE_UAPP_UHSIGN := @ENABLE_UAPP_UHSIGN@
+export ENABLE_UAPP_UAGENT := @ENABLE_UAPP_UAGENT@
+export ENABLE_UAPP_PVDRIVER_UART := @ENABLE_UAPP_PVDRIVER_UART@
+
+export ENABLE_DEBUG_UART := @ENABLE_DEBUG_UART@
+export ENABLE_UART_MINI := @ENABLE_UART_MINI@
+export ENABLE_UART_PL011 := @ENABLE_UART_PL011@
+export ENABLE_UART_PL011_CTSRTS := @ENABLE_UART_PL011_CTSRTS@
+
 
 INCS = -I$(UXMHFRPI3_DIR)/libs/libxmhfc/include
 INCS += -I$(UXMHFRPI3_DIR)/libs/libxmhfcrypto/include
 INCS += -I$(UXMHFRPI3_DIR)/libs/libutpm/include
 
-CFLAGS_DEFS =  $(INCS) -I./include -I../include -D__DEBUG_SERIAL__ 
+CFLAGS_DEFS =  $(INCS) -I./include -I../include  
 
 ######
 # refine CFLAG definitions based on uxmhf rpi3 configure options
@@ -66,6 +75,36 @@ endif
 
 ifeq ($(FIQREFLECTION), y)
 	CFLAGS_DEFS += -D__FIQREFLECTION__
+endif
+
+ifeq ($(ENABLE_UAPP_UHSIGN),y)
+	CFLAGS_DEFS += -D__ENABLE_UAPP_UHSIGN__
+endif
+
+ifeq ($(ENABLE_UAPP_UAGENT),y)
+	CFLAGS_DEFS += -D__ENABLE_UAPP_UAGENT__
+endif
+
+ifeq ($(ENABLE_UAPP_PVDRIVER_UART),y)
+	CFLAGS_DEFS += -D__ENABLE_UAPP_PVDRIVER_UART__
+endif
+
+
+ifeq ($(ENABLE_DEBUG_UART),y)
+	CFLAGS_DEFS += -D__DEBUG_UART__
+endif
+
+
+ifeq ($(ENABLE_UART_MINI),y)
+	CFLAGS_DEFS += -D__ENABLE_UART_MINI__
+endif
+
+ifeq ($(ENABLE_UART_PL011),y)
+	CFLAGS_DEFS += -D__ENABLE_UART_PL011__
+endif
+
+ifeq ($(ENABLE_UART_PL011_CTSRTS),y)
+	CFLAGS_DEFS += -D__ENABLE_UART_PL011_CTSRTS__
 endif
 
 CFLAGS = $(CFLAGS_DEFS) -c -Wall -nostdlib -nostartfiles -ffreestanding -mcpu=cortex-a53
@@ -113,7 +152,7 @@ checkoskrnlimg:
 	cp $(OSKRNLIMG) ./oskrnlimg.tmp
 	truncate --size=$(OSKRNLIMG_FINALSIZE) ./oskrnlimg.tmp 
 	#./configure --with-core-startaddr=$(CORE_STARTADDR_HEX) --with-core-size=0xC00000
-	./configure --with-core-startaddr=0x1000000 --with-core-size=0xC00000
+	#./configure --with-core-startaddr=0x1000000 --with-core-size=0xC00000
 
 
 .PHONY: clean

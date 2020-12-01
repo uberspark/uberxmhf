@@ -1,4 +1,4 @@
-AC_INIT([uxmhf-rpi3], [5.0])
+AC_INIT([uxmhf-rpi3], [6.0.0])
 
 
 ###### autoconf general options
@@ -94,10 +94,103 @@ AS_IF([test "x${enable_fiqreflection}" != "xno"],
       [FIQREFLECTION=y],
       [FIQREFLECTION=n])
 
+# selectively enable/disable HMAC functionality in hypervisor
+AC_SUBST([ENABLE_UAPP_UHSIGN])
+AC_ARG_ENABLE([uapp_uhsign],
+	AS_HELP_STRING([--enable-uapp-uhsign@<:@=yes|no@:>@],
+		[enable signing uapp]),
+		, [enable_uapp_uhsign=no])
+AS_IF([test "x${enable_uapp_uhsign}" != "xno"],
+      [ENABLE_UAPP_UHSIGN=y],
+      [ENABLE_UAPP_UHSIGN=n])
+
+# selectively enable/disable AES encryption functionality in hypervisor
+AC_SUBST([ENABLE_UAPP_UAGENT])
+AC_ARG_ENABLE([uapp_uagent],
+	AS_HELP_STRING([--enable-uapp-uagent@<:@=yes|no@:>@],
+		[enable signing uapp]),
+		, [enable_uapp_uagent=no])
+AS_IF([test "x${enable_uapp_uagent}" != "xno"],
+      [ENABLE_UAPP_UAGENT=y],
+      [ENABLE_UAPP_UAGENT=n])
+
+
+# selectively enable/disable simple state DB functionality in hypervisor
+AC_SUBST([ENABLE_UAPP_STATEDB])
+AC_ARG_ENABLE([uapp_stateDB],
+	AS_HELP_STRING([--enable-uapp-uhstateDB@<:@=yes|no@:>@],
+		[enable stateDB uapp]),
+		, [enable_uapp_stateDB=no])
+AS_IF([test "x${enable_uapp_stateDB}" != "xno"],
+      [ENABLE_UAPP_STATEDB=y],
+      [ENABLE_UAPP_STATEDB=n])
+
+# selectively enable/disable UART para-virtualized driver backend in hypervisor
+AC_SUBST([ENABLE_UAPP_PVDRIVER_UART])
+AC_ARG_ENABLE([uapp_pvdriver_uart],
+	AS_HELP_STRING([--enable-uapp-pvdriver-uart@<:@=yes|no@:>@],
+		[enable UART para-virtualized driver backend uapp]),
+		, [enable_uapp_pvdriver_uart=no])
+AS_IF([test "x${enable_uapp_pvdriver_uart}" != "xno"],
+      [ENABLE_UAPP_PVDRIVER_UART=y],
+      [ENABLE_UAPP_PVDRIVER_UART=n])
+
+
+# selectively enable/disable debugging via UART
+AC_SUBST([ENABLE_DEBUG_UART])
+AC_ARG_ENABLE([debug_uart],
+	AS_HELP_STRING([--enable-debug-uart@<:@=yes|no@:>@],
+		[enable debug via UART, default is via mini UART]),
+		, [enable_debug_uart=no])
+AS_IF([test "x${enable_debug_uart}" != "xno"],
+      [ENABLE_DEBUG_UART=y],
+      [ENABLE_DEBUG_UART=n])
+
+
+# selectively enable/disable Mini UART support
+AC_SUBST([ENABLE_UART_MINI])
+
+AC_ARG_ENABLE([uart_mini],
+	AS_HELP_STRING([--enable-uart-mini@<:@=yes|no@:>@],
+		[enable Mini UART]),
+		, [enable_uart_mini=no])
+AS_IF([test "x${enable_uart_mini}" != "xno"],
+      [ENABLE_UART_MINI=y],
+      [ENABLE_UART_MINI=n])
+
+
+
+# selectively enable/disable PL011 UART support
+AC_SUBST([ENABLE_UART_PL011])
+AC_SUBST([RPI3CONFIG_ENABLE_UART_PL011])
+
+AC_ARG_ENABLE([uart_pl011],
+	AS_HELP_STRING([--enable-uart-pl011@<:@=yes|no@:>@],
+		[enable PL011 UART]),
+		, [enable_uart_pl011=no])
+AS_IF([test "x${enable_uart_pl011}" != "xno"],
+      [ENABLE_UART_PL011=y],
+      [ENABLE_UART_PL011=n])
+AS_IF([test "x${enable_uart_pl011}" != "xno"],
+      [RPI3CONFIG_ENABLE_UART_PL011=dtoverlay=pi3-miniuart-bt],
+      [RPI3CONFIG_ENABLE_UART_PL011=])
+
+
+# selectively enable/disable PL011 UART hardware flow control
+AC_SUBST([ENABLE_UART_PL011_CTSRTS])
+
+AC_ARG_ENABLE([uart_pl011_ctsrts],
+	AS_HELP_STRING([--enable-uart-pl011-ctsrts@<:@=yes|no@:>@],
+		[enable PL011 UART hardware flow control (CTS/RTS)]),
+		, [enable_uart_pl011_ctsrts=no])
+AS_IF([test "x${enable_uart_pl011_ctsrts}" != "xno"],
+      [ENABLE_UART_PL011_CTSRTS=y],
+      [ENABLE_UART_PL011_CTSRTS=n])
+
 
 ###### autoconf output files
 AC_CONFIG_FILES(
-			[./include/config.h Makefile]
+			[./include/config.h Makefile rpi3-config.txt]
 	)
 
 AC_OUTPUT

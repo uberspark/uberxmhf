@@ -60,12 +60,10 @@
    @param key      The secret key
    @param keylen   The length of the secret key (octets)
    @return CRYPT_OK if successful
-*/
-//int hmac_init(hmac_state *hmac, int hash, const unsigned char *key, unsigned long keylen)
+**/
 int hmac_sha1_init(hmac_state *hmac, const unsigned char *key, unsigned long keylen)
 {
-    //unsigned char *buf;
-	unsigned char buf[LTC_HMAC_SHA1_BLOCKSIZE];
+    unsigned char buf[LTC_HMAC_SHA1_BLOCKSIZE];
     unsigned long hashsize;
     unsigned long i, z;
     int err;
@@ -73,11 +71,6 @@ int hmac_sha1_init(hmac_state *hmac, const unsigned char *key, unsigned long key
     LTC_ARGCHK(hmac != NULL);
     LTC_ARGCHK(key  != NULL);
 
-    /* valid hash? */
-    //if ((err = hash_is_valid(hash)) != CRYPT_OK) {
-    //    return err;
-    //}
-    //hmac->hash = hash;
     hmac->hash = 0;
     hashsize   = 20;
 
@@ -85,19 +78,6 @@ int hmac_sha1_init(hmac_state *hmac, const unsigned char *key, unsigned long key
     if (keylen == 0) {
         return CRYPT_INVALID_KEYSIZE;
     }
-
-    /* allocate ram for buf */
-    //buf = XMALLOC(LTC_HMAC_BLOCKSIZE);
-    //if (buf == NULL) {
-    //   return CRYPT_MEM;
-    //}
-
-    /* allocate memory for key */
-    //hmac->key = XMALLOC(LTC_HMAC_BLOCKSIZE);
-    //if (hmac->key == NULL) {
-    //   XFREE(buf);
-    //   return CRYPT_MEM;
-    //}
 
     /* (1) make sure we have a large enough key */
     if(keylen > LTC_HMAC_SHA1_BLOCKSIZE) {
@@ -111,7 +91,6 @@ int hmac_sha1_init(hmac_state *hmac, const unsigned char *key, unsigned long key
     }
 
     if(keylen < LTC_HMAC_SHA1_BLOCKSIZE) {
-       //zeromem((hmac->key) + keylen, (size_t)(LTC_HMAC_BLOCKSIZE - keylen));
     	memset((hmac->key) + keylen, 0, (size_t)(LTC_HMAC_BLOCKSIZE - keylen));
     }
 
@@ -144,15 +123,11 @@ done:
   @param in      The data to send through HMAC
   @param inlen   The length of the data to HMAC (octets)
   @return CRYPT_OK if successful
-*/
+**/
 int hmac_sha1_process(hmac_state *hmac, const unsigned char *in, unsigned long inlen)
 {
-    int err;
     LTC_ARGCHK(hmac != NULL);
     LTC_ARGCHK(in != NULL);
-    //if ((err = hash_is_valid(hmac->hash)) != CRYPT_OK) {
-    //    return err;
-    //}
     return sha1_process(&hmac->md, in, inlen);
 }
 
@@ -161,42 +136,21 @@ int hmac_sha1_process(hmac_state *hmac, const unsigned char *in, unsigned long i
    Terminate an HMAC session
    @param hmac    The HMAC state
    @param out     [out] The destination of the HMAC authentication tag
-   @param outlen  [in/out]  The max size and resulting size of the HMAC authentication tag
+   @param outlen  [in/out]  The max size and resulting size of the HMAC 
+                  authentication tag
    @return CRYPT_OK if successful
-*/
+**/
 int hmac_sha1_done(hmac_state *hmac, unsigned char *out, unsigned long *outlen)
 {
-    //unsigned char *buf, *isha;
-	unsigned char buf[LTC_HMAC_SHA1_BLOCKSIZE], isha[20];
+    unsigned char buf[LTC_HMAC_SHA1_BLOCKSIZE], isha[20];
     unsigned long hashsize, i;
-    //int hash, err;
     int err;
 
     LTC_ARGCHK(hmac  != NULL);
     LTC_ARGCHK(out   != NULL);
 
-    /* test hash */
-    //hash = hmac->hash;
-    //if((err = hash_is_valid(hash)) != CRYPT_OK) {
-    //    return err;
-    //}
-
     /* get the hash message digest size */
-    //hashsize = hash_descriptor[hash].hashsize;
     hashsize = 20;
-
-    /* allocate buffers */
-    //buf  = XMALLOC(LTC_HMAC_BLOCKSIZE);
-    //isha = XMALLOC(hashsize);
-    //if (buf == NULL || isha == NULL) {
-    //   if (buf != NULL) {
-    //      XFREE(buf);
-    //   }
-    //   if (isha != NULL) {
-    //      XFREE(isha);
-    //   }
-    //   return CRYPT_MEM;
-    //}
 
     /* Get the hash of the first HMAC vector plus the data */
     if ((err = sha1_done(&hmac->md, isha)) != CRYPT_OK) {
@@ -230,10 +184,6 @@ int hmac_sha1_done(hmac_state *hmac, unsigned char *out, unsigned long *outlen)
 
     err = CRYPT_OK;
 LBL_ERR:
-    //XFREE(hmac->key);
-
-    //XFREE(isha);
-    //XFREE(buf);
 
     return err;
 }
@@ -249,19 +199,17 @@ LBL_ERR:
    @param in        The data to HMAC
    @param inlen     The length of the data to HMAC (octets)
    @param out       [out] Destination of the authentication tag
-   @param outlen    [in/out] Max size and resulting size of authentication tag
+   @param outlen    [in/out] Max size and resulting size of 
+                    authentication tag
    @return CRYPT_OK if successful
-*/
-//int hmac_memory(int hash,
-//                const unsigned char *key,  unsigned long keylen,
-//                const unsigned char *in,   unsigned long inlen,
-//                      unsigned char *out,  unsigned long *outlen)
+**/
+
+
 int hmac_sha1_memory(const unsigned char *key,  unsigned long keylen,
                 const unsigned char *in,   unsigned long inlen,
                       unsigned char *out,  unsigned long *outlen)
 {
-    //hmac_state *hmac;
-	hmac_state hmac;
+    hmac_state hmac;
     int         err;
 
     LTC_ARGCHK(key    != NULL);
@@ -269,42 +217,17 @@ int hmac_sha1_memory(const unsigned char *key,  unsigned long keylen,
     LTC_ARGCHK(out    != NULL);
     LTC_ARGCHK(outlen != NULL);
 
-	//_XDPRINTFSMP_("%s: %u: inlen=%u, *outlen=%u\n", __func__, __LINE__,  inlen, *outlen);
-
-    /* make sure hash descriptor is valid */
-    //if ((err = hash_is_valid(hash)) != CRYPT_OK) {
-    //   return err;
-    //}
-
-    /* is there a descriptor? */
-    //if (hash_descriptor[hash].hmac_block != NULL) {
-    //    return hash_descriptor[hash].hmac_block(key, keylen, in, inlen, out, outlen);
-    //}
-
-    /* nope, so call the hmac functions */
-    /* allocate ram for hmac state */
-    //hmac = XMALLOC(sizeof(hmac_state));
-    //if (hmac == NULL) {
-    //   return CRYPT_MEM;
-    //}
-
     if ((err = hmac_sha1_init(&hmac, key, keylen)) != CRYPT_OK) {
        goto LBL_ERR;
     }
-
-	//_XDPRINTFSMP_("%s: %u\n", __func__, __LINE__);
 
     if ((err = hmac_sha1_process(&hmac, in, inlen)) != CRYPT_OK) {
        goto LBL_ERR;
     }
 
-	//_XDPRINTFSMP_("%s: %u\n", __func__, __LINE__);
-
     if ((err = hmac_sha1_done(&hmac, out, outlen)) != CRYPT_OK) {
        goto LBL_ERR;
     }
-
-	//_XDPRINTFSMP_("%s: %u\n", __func__, __LINE__);
 
    err = CRYPT_OK;
 LBL_ERR:

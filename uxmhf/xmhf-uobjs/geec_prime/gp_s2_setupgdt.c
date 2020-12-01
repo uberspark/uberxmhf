@@ -75,7 +75,7 @@ void gp_s2_setupgdt(void){
 	for(i=0; i < xcbootinfo->cpuinfo_numentries; i++){
 
 		if(xcbootinfo->cpuinfo_buffer[i].lapic_id < MAX_PLATFORM_CPUS){
-			gp_s2_setupgdt_setgdttssentry( ((__TRSEL/8)+(i)) , xcbootinfo->cpuinfo_buffer[i].lapic_id);
+			gp_s2_setupgdt_setgdttssentry( ((__TRSEL/8)+(xcbootinfo->cpuinfo_buffer[i].lapic_id)) , xcbootinfo->cpuinfo_buffer[i].lapic_id);
 			//@ghost gp_s2_setupgdt_invokehelper[i] = true;
 
 			_XDPRINTF_("%s: setup TSS CPU idx=%u with base address=%x, iobitmap=%x\n, size=%u bytes", __func__,

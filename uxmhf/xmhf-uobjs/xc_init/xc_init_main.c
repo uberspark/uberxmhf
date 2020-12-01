@@ -60,6 +60,7 @@
 #include <xc.h>
 #include <uapi_gcpustate.h>
 #include <xh_hyperdep.h>
+#include <xh_uhcalltest.h>
 #include <xh_syscalllog.h>
 #include <xh_ssteptrace.h>
 #include <xh_aprvexec.h>
@@ -495,7 +496,8 @@ void slab_main(slab_params_t *sp){
         _XDPRINTF_("XC_INIT[%u]: BSP: E820 redirection enabled\n", (uint16_t)sp->cpuid);
         _XDPRINTF_("XC_INIT[%u]: BSP: Proceeding to copy guest boot-module...\n", (uint16_t)sp->cpuid);
     	xcinit_copyguestbootmodule(sp->in_out_params[0], sp->in_out_params[1]);
-        _XDPRINTF_("XC_INIT[%u]: BSP: guest boot-module copied\n", (uint16_t)sp->cpuid);
+        _XDPRINTF_("XC_INIT[%u]: BSP: guest boot-module copied\n",
+		   (uint16_t)sp->cpuid);
     }
 
     //setup guest uobj state
@@ -503,11 +505,14 @@ void slab_main(slab_params_t *sp){
 
 
     //invoke hypapp initialization callbacks
-    xc_hcbinvoke(XMHFGEEC_SLAB_XC_INIT, sp->cpuid, XC_HYPAPPCB_INITIALIZE, 0, XMHFGEEC_SLAB_XG_RICHGUEST);
+    xc_hcbinvoke(XMHFGEEC_SLAB_XC_INIT, sp->cpuid, XC_HYPAPPCB_INITIALIZE,
+		 0, XMHFGEEC_SLAB_XG_RICHGUEST);
 
 
-    _XDPRINTF_("XC_INIT[%u]: Proceeding to call guest: ESP=%08x, eflags=%08x\n", (uint16_t)sp->cpuid,
-    		CASM_FUNCCALL(read_esp,CASM_NOPARAM), CASM_FUNCCALL(read_eflags, CASM_NOPARAM));
+    _XDPRINTF_("XC_INIT[%u]: Proceeding to call guest: ESP=%08x, eflags=%08x\n",
+	       (uint16_t)sp->cpuid,
+	       CASM_FUNCCALL(read_esp,CASM_NOPARAM),
+	       CASM_FUNCCALL(read_eflags, CASM_NOPARAM));
 
     #if defined (__DEBUG_SERIAL__)
 	cpucount++;
