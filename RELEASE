@@ -1,6 +1,6 @@
 Version: 6.0.0
 Release Tagline: you gotta have faith not in who you are, but who you can be
-Release Date: 28-Nov-2020
+Release Date: 01-Dec-2020
 Release Notes:
 	* Features
 		* uxmhf: add new üapp uhcalltest for testing hypercalls; add corresponding rich guest app for linux
