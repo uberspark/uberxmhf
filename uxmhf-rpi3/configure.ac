@@ -1,4 +1,4 @@
-AC_INIT([uxmhf-rpi3], [5.0])
+AC_INIT([uxmhf-rpi3], [6.0.0])
 
 
 ###### autoconf general options
