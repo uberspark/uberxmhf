@@ -57,6 +57,7 @@
 
 #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf-config.h>          //XMHF platform/arch config, TODO: this needs to be platform/arch independent push arch dependent stuff into arch/
 #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf-types.h>           //XMHF specific base types
+#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf-debug.h>           //XMHF specific base types
 #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf-error.h>			//error handling
 #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/uobjs/xc.h>					//core framework decls.
 

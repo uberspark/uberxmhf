@@ -341,13 +341,13 @@ static uart_config_t g_uart_config = {115200,
 //low-level UART character output
 static inline void dbg_x86_uart_putc_bare(char ch){
   //wait for xmit hold register to be empty
-  while ( ! (inb(g_uart_config.port+0x5) & 0x20) );
+  while ( ! (uberspark_uobjrtl_hw__generic_x86_32_intel__inb(g_uart_config.port+0x5) & 0x20) );
 
   //write the character
-  outb((uint8_t)ch, g_uart_config.port);
+  uberspark_uobjrtl_hw__generic_x86_32_intel__outb((uint8_t)ch, g_uart_config.port);
 
   //wait for xmit hold register to be empty and line is idle
-  while ( ! (inb(g_uart_config.port+0x5) & 0x40) );
+  while ( ! (uberspark_uobjrtl_hw__generic_x86_32_intel__inb(g_uart_config.port+0x5) & 0x40) );
 
   return;
 }
@@ -388,35 +388,35 @@ static inline void xmhfhw_platform_serial_init(char *params){
 
   //override default UART parameters with the one passed via the
   //command line
-  memcpy((void *)&g_uart_config, params, sizeof(uart_config_t));
+  uberspark_uobjrtl_crt__memcpy((void *)&g_uart_config, params, sizeof(uart_config_t));
 
   // FIXME: work-around for issue #143
   g_uart_config.fifo = 0;
 
   // disable UART interrupts
-  outb((uint8_t)0, g_uart_config.port+0x1); //clear interrupt enable register
+  uberspark_uobjrtl_hw__generic_x86_32_intel__outb((uint8_t)0, g_uart_config.port+0x1); //clear interrupt enable register
 
   //compute divisor latch data from baud-rate and set baud-rate
   {
 	uint16_t divisor_latch_data = g_uart_config.clock_hz / (g_uart_config.baud * 16);
 
-	outb(0x80, g_uart_config.port+0x3); //enable divisor latch access by
+	uberspark_uobjrtl_hw__generic_x86_32_intel__outb(0x80, g_uart_config.port+0x3); //enable divisor latch access by
 									    //writing to line control register
 
-	outb((uint8_t)divisor_latch_data, g_uart_config.port); //write low 8-bits of divisor latch data
-	outb((uint8_t)(divisor_latch_data >> 8), g_uart_config.port+0x1); //write high 8-bits of divisor latch data
+	uberspark_uobjrtl_hw__generic_x86_32_intel__outb((uint8_t)divisor_latch_data, g_uart_config.port); //write low 8-bits of divisor latch data
+	uberspark_uobjrtl_hw__generic_x86_32_intel__outb((uint8_t)(divisor_latch_data >> 8), g_uart_config.port+0x1); //write high 8-bits of divisor latch data
 
    }
 
   //set data bits, stop bits and parity info. by writing to
   //line control register
-  outb((uint8_t)((g_uart_config.data_bits - 5) |
+  uberspark_uobjrtl_hw__generic_x86_32_intel__outb((uint8_t)((g_uart_config.data_bits - 5) |
                ((g_uart_config.stop_bits - 1) << 2) |
                       g_uart_config.parity), g_uart_config.port+0x3);
 
   //signal ready by setting DTR and RTS high in
   //modem control register
-  outb((uint8_t)0x3, g_uart_config.port+0x4);
+  uberspark_uobjrtl_hw__generic_x86_32_intel__outb((uint8_t)0x3, g_uart_config.port+0x4);
 
   return;
 }
