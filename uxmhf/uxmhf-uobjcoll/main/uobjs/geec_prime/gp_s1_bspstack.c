@@ -70,6 +70,17 @@ void gp_s1_bspstack(void){
 	uint32_t i, j;
 	uint64_t flags;
 
+#if 0
+	//initialize debugging early on
+	uberspark_uobjrtl_debug__init((char *)&xcbootinfo->debugcontrol_buffer);
+
+
+	//[debug] print relevant startup info.
+	_XDPRINTF_("%s: alive and starting...\n", __func__);
+	_XDPRINTF_("%s: halting!\n", __func__);
+	while(1);
+#endif
+
 	//clear PDPT
 	/*@
 		loop invariant a1: 0 <= i <= PAE_MAXPTRS_PER_PDPT;
