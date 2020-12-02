@@ -70,9 +70,9 @@ void gp_s1_bspstack(void){
 	uint32_t i, j;
 	uint64_t flags;
 
-#if 0
+#if 1
 	//initialize debugging early on
-	uberspark_uobjrtl_debug__init((char *)&xcbootinfo->debugcontrol_buffer);
+	uberspark_uobjrtl_debug__init(NULL);
 
 
 	//[debug] print relevant startup info.

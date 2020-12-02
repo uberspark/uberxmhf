@@ -78,7 +78,8 @@ void gp_s1_hub(void){
 #if defined (__DEBUG_SERIAL__)
 
 	//initialize debugging early on
-	uberspark_uobjrtl_debug__init((char *)&xcbootinfo->debugcontrol_buffer);
+	//uberspark_uobjrtl_debug__init((char *)&xcbootinfo->debugcontrol_buffer);
+	uberspark_uobjrtl_debug__init(NULL);
 
 
 	//[debug] print relevant startup info.

@@ -387,8 +387,9 @@ static inline void xmhfhw_platform_serial_puts(char *buffer){
 static inline void xmhfhw_platform_serial_init(char *params){
 
   //override default UART parameters with the one passed via the
-  //command line
-  uberspark_uobjrtl_crt__memcpy((void *)&g_uart_config, params, sizeof(uart_config_t));
+  //command line (if any)
+  if(params)
+    uberspark_uobjrtl_crt__memcpy((void *)&g_uart_config, params, sizeof(uart_config_t));
 
   // FIXME: work-around for issue #143
   g_uart_config.fifo = 0;
