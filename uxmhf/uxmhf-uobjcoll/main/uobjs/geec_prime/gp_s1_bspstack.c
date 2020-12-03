@@ -71,13 +71,24 @@ void gp_s1_bspstack(void){
 	uint64_t flags;
 
 #if 1
+	* ((volatile unsigned int *)0x000B8000) = 0x07640764;
+
+
 	//initialize debugging early on
 	uberspark_uobjrtl_debug__init(NULL);
+	* ((volatile unsigned int *)0x000B8000) = 0x076b076b;
 
+	xmhfhw_platform_serial_puts("simple is the way to go...\n");
+	xmhfhw_platform_serial_puts("simple is the way to go...\n");
+	xmhfhw_platform_serial_puts("simple is the way to go...\n");
 
 	//[debug] print relevant startup info.
 	_XDPRINTF_("%s: alive and starting...\n", __func__);
+	* ((volatile unsigned int *)0x000B8000) = 0x076c076c;
+
 	_XDPRINTF_("%s: halting!\n", __func__);
+	* ((volatile unsigned int *)0x000B8000) = 0x076d076d;
+
 	while(1);
 #endif
 

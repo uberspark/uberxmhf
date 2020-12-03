@@ -386,10 +386,17 @@ static inline void xmhfhw_platform_serial_puts(char *buffer){
 //void dbg_x86_uart_init(char *params){
 static inline void xmhfhw_platform_serial_init(char *params){
 
+	* ((volatile unsigned int *)0x000B8000) = 0x07650765;
+
   //override default UART parameters with the one passed via the
   //command line (if any)
-  if(params)
+  if(params){
     uberspark_uobjrtl_crt__memcpy((void *)&g_uart_config, params, sizeof(uart_config_t));
+  	* ((volatile unsigned int *)0x000B8000) = 0x07660766;
+    while(1);
+  }
+
+	* ((volatile unsigned int *)0x000B8000) = 0x07670767;
 
   // FIXME: work-around for issue #143
   g_uart_config.fifo = 0;
@@ -409,15 +416,22 @@ static inline void xmhfhw_platform_serial_init(char *params){
 
    }
 
+	* ((volatile unsigned int *)0x000B8000) = 0x07680768;
+
   //set data bits, stop bits and parity info. by writing to
   //line control register
   uberspark_uobjrtl_hw__generic_x86_32_intel__outb((uint8_t)((g_uart_config.data_bits - 5) |
                ((g_uart_config.stop_bits - 1) << 2) |
                       g_uart_config.parity), g_uart_config.port+0x3);
 
+	* ((volatile unsigned int *)0x000B8000) = 0x07690769;
+
   //signal ready by setting DTR and RTS high in
   //modem control register
   uberspark_uobjrtl_hw__generic_x86_32_intel__outb((uint8_t)0x3, g_uart_config.port+0x4);
+
+	* ((volatile unsigned int *)0x000B8000) = 0x076a076a;
+
 
   return;
 }

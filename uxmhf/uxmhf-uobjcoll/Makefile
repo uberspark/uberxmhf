@@ -14,6 +14,7 @@ all:
 stage:
 	@echo creating staging
 	uberspark staging create uxmhf-pc 
+	uberspark staging config-set --setting-name=uobjcoll_binary_image_load_address --setting-value=0x06000000
 	uberspark staging config-set --setting-name=uobj_binary_image_size --setting-value=0x14A00000
 	# uberspark staging config-set --root-dir=/home/yeeb16 --setting-name=bridge_cc_bridge --setting-value=container/amd64/x86_32/generic/gcc/v5.5.0
 	# uberspark staging config-set --root-dir=/home/yeeb16 --setting-name=bridge_cc_bridge --setting-value=container/amd64/x86_32/generic/compcert/uxmhf-test
