@@ -77,16 +77,19 @@ static inline void uberspark_uobjrtl_debug__init(char *params){
 
 extern __attribute__(( section(".data") )) uint32_t libxmhfdebug_lock;
 
+int vsnprintf(char *str, size_t size, const char *format, va_list ap);
+
+
 static inline void _XDPRINTF_(const char *fmt, ...){
     va_list       ap;
 	int retval;
 	char buffer[1024];
 
 	va_start(ap, fmt);
-	retval = vsnprintf(&buffer, 1024, fmt, ap);
-	spin_lock(&libxmhfdebug_lock);
-	xmhfhw_platform_serial_puts(&buffer);
-	spin_unlock(&libxmhfdebug_lock);
+	retval = vsnprintf((char *)&buffer, 1024, (const char *)fmt, ap);
+	//uberspark_uobjrtl_hw__generic_x86_32_intel__spin_lock(&libxmhfdebug_lock);
+	xmhfhw_platform_serial_puts((char *)&buffer);
+	//uberspark_uobjrtl_hw__generic_x86_32_intel__spin_unlock(&libxmhfdebug_lock);
     va_end(ap);
 }
 

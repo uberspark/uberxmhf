@@ -54,6 +54,8 @@
 //#include <xc_init.h>
 
 
+__attribute__(( section(".data") )) char g_buffer[64];
+
 //@ghost bool gp_s1_bspstack_invoke_bspstkactivate = false;
 //@ghost uint64_t gflags[PAE_PTRS_PER_PDPT][PAE_PTRS_PER_PDT];
 /*@
@@ -69,6 +71,7 @@
 void gp_s1_bspstack(void){
 	uint32_t i, j;
 	uint64_t flags;
+	char buffer[64];
 
 #if 1
 	* ((volatile unsigned int *)0x000B8000) = 0x07640764;
@@ -81,6 +84,12 @@ void gp_s1_bspstack(void){
 	xmhfhw_platform_serial_puts("simple is the way to go...\n");
 	xmhfhw_platform_serial_puts("simple is the way to go...\n");
 	xmhfhw_platform_serial_puts("simple is the way to go...\n");
+
+    uberspark_uobjrtl_crt__memcpy((void *)&buffer, "simple is the way to go...\n", 27);
+	xmhfhw_platform_serial_puts(buffer);
+   uberspark_uobjrtl_crt__memcpy((void *)&g_buffer, "SIMPLE is the way to go...\n", 27);
+	xmhfhw_platform_serial_puts(g_buffer);
+
 
 	//[debug] print relevant startup info.
 	_XDPRINTF_("%s: alive and starting...\n", __func__);
