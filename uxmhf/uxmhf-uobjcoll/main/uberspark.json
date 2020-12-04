@@ -300,18 +300,28 @@
 		},
 		{
 			"name": "rwdatahdr",
-			"size": "0x19000",
+			"size": "0x200000",
 			"output_names": [
 				".rwdatahdr"
 			]
 		},
 		{
 			"name": "slab_dmadata",
-			"size": "0x13000",
+			"size": "0x200000",
 			"output_names": [
 				".slab_dmadata"
 			]
+		},
+		{
+			"name": "others",
+			"size": "0x200000",
+			"output_names": [
+				".eh_frame"
+			]
 		}
+
+
+
 	],
 
 	/* uobjrtl */

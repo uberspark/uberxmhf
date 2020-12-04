@@ -64,7 +64,7 @@
 CASM_FUNCDEF_FULL(.slab_entrystub, 1, void, _slab_entrystub,
 {
 	__casm__pushl_mesp(0x4); //push slab_params_t *
-	__casm__call_c_1p(slab_main, slab_params_t *);
+	//__casm__call_c_1p(slab_main, slab_params_t *);
 	__casm__addl_imm_esp(0x4); //remove slab_params_t *
 
 	__casm__movl_mesp_eax(0x4);

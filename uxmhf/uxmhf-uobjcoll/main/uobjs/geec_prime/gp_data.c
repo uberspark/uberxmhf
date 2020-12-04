@@ -69,7 +69,8 @@ __attribute__(( section(".rwdatahdr") )) __attribute__(( aligned(4096) )) gp_rwd
 // XMHF boot information block
 __attribute__(( section(".data") )) XMHF_BOOTINFO *xcbootinfo= &gp_rwdatahdr.xcbootinfo_store;
 
-__attribute__((section(".slab_codehdr"))) x86vmx_mle_header_t mleheader = { 0 };
+//TBD: this needs to be in a sentinel
+__attribute__((section(".data"))) x86vmx_mle_header_t mleheader = { 0 };
 
 
 // initialization BSP stack
