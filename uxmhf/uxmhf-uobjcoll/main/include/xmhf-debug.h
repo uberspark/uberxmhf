@@ -50,7 +50,6 @@
 #ifndef __ASSEMBLY__
 
 
-#if defined (__DEBUG_SERIAL__)
 
 //#include <xmhfhw.h>
 
@@ -70,35 +69,20 @@
 
 #define ENABLED_LOG_TYPES (LOG_PROFILE|LOG_TRACE|LOG_ERROR)
 
-static inline void uberspark_uobjrtl_debug__init(char *params){
-	(void)params;
-  xmhfhw_platform_serial_init(params);
-}
-
 extern __attribute__(( section(".data") )) uint32_t libxmhfdebug_lock;
 
-int vsnprintf(char *str, size_t size, const char *format, va_list ap);
+#if defined (__DEBUG_SERIAL__)
 
+extern void uberspark_uobjrtl_debug__init(char *params);
+extern int vsnprintf(char *str, size_t size, const char *format, va_list ap);
+extern void dbgprintf (const char *fmt, ...);
 
-static inline void _XDPRINTF_(const char *fmt, ...){
-    va_list       ap;
-	int retval;
-	char buffer[1024];
+#define _XDPRINTF_ dbgprintf
 
-	va_start(ap, fmt);
-	retval = vsnprintf((char *)&buffer, 1024, (const char *)fmt, ap);
-	//uberspark_uobjrtl_hw__generic_x86_32_intel__spin_lock(&libxmhfdebug_lock);
-	xmhfhw_platform_serial_puts((char *)&buffer);
-	//uberspark_uobjrtl_hw__generic_x86_32_intel__spin_unlock(&libxmhfdebug_lock);
-    va_end(ap);
-}
 
 #else
 
-static inline void uberspark_uobjrtl_debug__init(char *params){
-	(void)params;
-}
-
+extern void uberspark_uobjrtl_debug__init(char *params);
 #define _XDPRINTF_(format, args...)
 
 #endif // defined

@@ -40,9 +40,7 @@
  * author: amit vasudevan (amitvasudevan@acm.org)
  */
 
-#include <uberspark/include/uberspark.h>
-
-#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/uobjs/debug.h>
+#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf.h>
 
 //////
 //libxmhfdebug debug data

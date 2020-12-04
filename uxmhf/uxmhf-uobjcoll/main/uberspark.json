@@ -54,6 +54,7 @@
 
 			"uobjs/debug/dbgdata.c",
 			"uobjs/debug/subr_prf.c",
+			"uobjs/debug/dbgapi.c",
 
 			"uobjs/geec/geec_slabmapdef.c",
 
