@@ -89,31 +89,21 @@ void main(void){
 //CASM_FUNCDEF(void, entry,
 CASM_FUNCDEF_FULL(.uobj_pm_entry, 0x1000, void, entry,
 {
-	__casm__movl_imm_eax(0x000B8000);
-	__casm__movl_imm_meax(0x07620762, 0);
-
 	__casm__movw_ds_ax();
 	__casm__movw_ax_es();
 	__casm__movw_ax_fs();
 	__casm__movw_ax_gs();
 	__casm__movw_ax_ss();
+
 	__casm__movl_imm_eax(_init_bsp_cpustack);
 	MACRO_EXPANSION_WORKAROUND(__casm__addl_imm_eax,MAX_PLATFORM_CPUSTACK_SIZE);
 	__casm__movl_eax_esp();
 
-	__casm__movl_imm_eax(0x000B8000);
-	__casm__movl_imm_meax(0x07630763, 0);
-
 	__casm__call_c(gp_s1_bspstack);
+
 	__casm__hlt();
 	__casm__ret()
 
-/*
-	__casm__movl_imm_eax(0x000B8000);
-	__casm__movl_imm_meax(0x07620762, 0);
-	__casm__hlt();
-	__casm__ret()
-*/
 },
 slab_params_t *sp)
 
