@@ -114,6 +114,10 @@ void xmhfhw_platform_serial_init(char *params){
   // disable UART interrupts
   uberspark_uobjrtl_hw__generic_x86_32_intel__outb((uint8_t)0, g_uart_config.port+0x1); //clear interrupt enable register
 
+  //disable FIFO
+  uberspark_uobjrtl_hw__generic_x86_32_intel__outb((uint8_t)0, g_uart_config.port+0x2); //fifo disable
+
+
   //compute divisor latch data from baud-rate and set baud-rate
   {
 	uint16_t divisor_latch_data = g_uart_config.clock_hz / (g_uart_config.baud * 16);
