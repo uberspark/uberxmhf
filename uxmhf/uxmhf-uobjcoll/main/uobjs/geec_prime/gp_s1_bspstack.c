@@ -70,16 +70,11 @@ void gp_s1_bspstack(void){
 	uint32_t i, j;
 	uint64_t flags;
 
-#if 1
+#if defined (__DEBUG_SERIAL__)
 	//initialize debugging early on
 	uberspark_uobjrtl_debug__init(NULL);
-
-
 	//[debug] print relevant startup info.
-	_XDPRINTF_("%s: alive and starting...\n", __func__);
-	_XDPRINTF_("%s: halting!\n", __func__);
-
-	while(1);
+	_XDPRINTF_("%s: überXMHF -- alive and starting...\n", __func__);
 #endif
 
 	//clear PDPT

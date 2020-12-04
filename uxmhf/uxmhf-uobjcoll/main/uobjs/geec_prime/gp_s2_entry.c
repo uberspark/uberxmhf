@@ -143,6 +143,12 @@ void gp_s2_entry(void){
 	gp_s2_setupiotbl();
 	// //@ghost cor_gp_s2_setupiotbl = true;
 
+
+#if 1
+	_XDPRINTF_("%s: WiP. halting!\n", __func__);
+	while(1);
+#endif
+
 	// //setup verified uobj memory page tables
 	// //@assert (cor_gp_s2_initsysmemmap == true);
 	// //@assert cor_gp_s2_sdmenumsysdevices == true;
@@ -205,6 +211,7 @@ void gp_s2_entry(void){
 	// //@assert (cor_gp_s2_setupidt == true);
 	gp_s2_setuptss();
 	// //@ghost cor_gp_s2_setuptss = true;
+
 
 
 	//move on to stage-3

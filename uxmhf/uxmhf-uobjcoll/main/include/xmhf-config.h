@@ -60,8 +60,8 @@
 #define __DEBUG_SERIAL__ 
 #define DEBUG_PORT 0x3f8 
 #define __XMHF_CONFIG_DEBUG_SERIAL_MAXCPUS__ 8 
-#define __DRT__ 
-#define __DMAP__ 
+//#define __DRT__ 
+//#define __DMAP__ 
 
 //-D__XMHFGEEC_TOTAL_UHSLABS__=1 
 //-D__XMHFGEEC_TOTAL_UGSLABS__=1 

@@ -79,11 +79,11 @@ void gp_s1_hub(void){
 
 	//initialize debugging early on
 	//uberspark_uobjrtl_debug__init((char *)&xcbootinfo->debugcontrol_buffer);
-	uberspark_uobjrtl_debug__init(NULL);
+	//uberspark_uobjrtl_debug__init(NULL);
 
 
 	//[debug] print relevant startup info.
-	_XDPRINTF_("%s: alive and starting...\n", __func__);
+	//_XDPRINTF_("%s: alive and starting...\n", __func__);
 
 	_XDPRINTF_("    xcbootinfo at = 0x%08x\n", (uint32_t)xcbootinfo);
 	_XDPRINTF_("	numE820Entries=%u\n", xcbootinfo->memmapinfo_numentries);
