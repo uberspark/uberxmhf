@@ -66,6 +66,7 @@ Deploying binaries to SD Card
 #. 
    Edit ``~/mnt/pi-root/etc/fstab`` and comment out line beginning with ``/dev/mmcblk0p1`` which is mounted to boot
 
+
 Boot up and test
 ----------------
 
@@ -84,3 +85,12 @@ Boot up and test
 
 #. 
    ... and you should see uberXMHF booting up with debug output and the guest starting soon thereafter
+
+#.
+Note:
+Once the hypervisor boots the Linux OS we need the /boot partition to be mounted so that raspi-config can run.
+Steps to mount /boot: 
+sudo vi /etc/fstab
+Uncomment the first line commented during the build of the hypervisor.
+/dev/mmcblk0p1 /boot vfat defaults 0 2
+mount /boot
