@@ -47,7 +47,13 @@
           "uberspark/uobjcoll/platform/pc/uxmhf/main" : {
               "entry" : [ "generic/generic/any/call" ]
           }
-      }
+      },
+
+      /* loaders */
+      "loaders" : [
+        "uberspark/loaders/baremetal/x86_32/grub-legacy"    
+      ]
+      
 
   }
 

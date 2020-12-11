@@ -22,7 +22,7 @@
      /* sources */
      "sources" : {
          "h-files": [ 
-			"include/uobjs/debug.h",
+			/*"include/uobjs/debug.h",*/
 			"include/uobjs/geec.h",
             "include/uobjs/geec_prime.h",
             /* "include/uobjs/geec_sentinel.h", */
