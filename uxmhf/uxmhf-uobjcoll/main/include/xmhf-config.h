@@ -60,8 +60,8 @@
 #define __DEBUG_SERIAL__ 
 #define DEBUG_PORT 0x3f8 
 #define __XMHF_CONFIG_DEBUG_SERIAL_MAXCPUS__ 8 
-//#define __DRT__ 
-//#define __DMAP__ 
+#define __DRT__ 
+#define __DMAP__ 
 
 //-D__XMHFGEEC_TOTAL_UHSLABS__=1 
 //-D__XMHFGEEC_TOTAL_UGSLABS__=1 
@@ -100,10 +100,7 @@
 #define __XMHF_BUILD_REVISION__ "sometimes-even-the-wisest-of-man-and-machines-can-be-in-error"
 #define __USPARK_FRAMAC_VA__
 
-/*                                                                                         */
 
-//"runtime" parameter block magic value
-#define RUNTIME_PARAMETER_BLOCK_MAGIC	0xF00DDEAD
 
 #define SL_PARAMETER_BLOCK_MAGIC		0xF00DDEAD
 
@@ -248,11 +245,17 @@
 	#define __TARGET_SIZE_BOOTLOADER		(__TARGET_BASE_XMHF - __TARGET_BASE_BOOTLOADER)
 
 	//physical address of geec_prime slab (acts as secure loader)
-	#define __TARGET_BASE_SL				(__TARGET_BASE_XMHF + 0x01200000)
+	//#define __TARGET_BASE_SL				(__TARGET_BASE_XMHF + 0x01200000)
+	#define __TARGET_BASE_SL				(__TARGET_BASE_XMHF)
 
 	#define __TARGET_SIZE_SL				0x00200000
 
 //----------------------------------------------------------------------
+
+//"runtime" parameter block magic value and offset
+#define RUNTIME_PARAMETER_BLOCK_BASE	(__TARGET_BASE_XMHF + 0x00600000)
+#define RUNTIME_PARAMETER_BLOCK_MAGIC	0xF00DDEAD
+
 
 //"sl" parameter block magic value
 //#define SL_PARAMETER_BLOCK_MAGIC		0xDEADBEEF

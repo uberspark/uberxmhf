@@ -189,7 +189,7 @@ typedef struct {
 
 extern __attribute__(( section(".data") )) XMHF_BOOTINFO *xcbootinfo;
 
-extern __attribute__(( section(".rwdatahdr") )) gp_rwdatahdr_t gp_rwdatahdr;
+extern __attribute__(( section(".uobj_ssa") )) gp_rwdatahdr_t gp_rwdatahdr;
 
 extern __attribute__((section(".data"))) __attribute__(( aligned(16) )) uint64_t __xmhfhic_x86vmx_gdt_start[];     //ro
 extern __attribute__((section(".data"))) __attribute__(( aligned(16) )) arch_x86_gdtdesc_t __xmhfhic_x86vmx_gdt;  //ro
