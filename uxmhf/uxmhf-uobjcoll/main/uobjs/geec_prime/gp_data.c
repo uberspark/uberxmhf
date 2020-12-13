@@ -70,7 +70,7 @@ __attribute__(( section(".uobj_ssa") )) gp_rwdatahdr_t gp_rwdatahdr = {
 __attribute__(( section(".data") )) XMHF_BOOTINFO *xcbootinfo= &gp_rwdatahdr.xcbootinfo_store;
 
 //TBD: this needs to be in a sentinel
-__attribute__((section(".data"))) x86vmx_mle_header_t mleheader = { 0 };
+//__attribute__((section(".data"))) x86vmx_mle_header_t mleheader = { 0 };
 
 
 // initialization BSP stack

@@ -80,10 +80,10 @@ struct _memorytype {
 } __attribute__((packed));
 
 
-typedef struct {
-    uint8_t pgtbl[3 * PAGE_SIZE_4K];
-    uint8_t mlehdr[0x80];
-} __attribute__((packed)) x86vmx_mle_header_t;
+//typedef struct {
+//    uint8_t pgtbl[3 * PAGE_SIZE_4K];
+//    uint8_t mlehdr[0x80];
+//} __attribute__((packed)) x86vmx_mle_header_t;
 
 #define MAX_SLAB_MEMIOREGIONS_MEMEXTENTS (PCI_CONF_MAX_BARS * MAX_PLATFORM_DEVICES)
 #define MAX_SLAB_MEMIOREGIONS_IOEXTENTS (PCI_CONF_MAX_BARS * MAX_PLATFORM_DEVICES)

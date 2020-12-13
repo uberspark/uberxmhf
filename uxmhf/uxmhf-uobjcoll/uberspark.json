@@ -36,7 +36,8 @@
         "pm_name" : "entry",
         "sentinels" : [
             {
-                "sentinel_type" : "baremetal/grub-legacy/srot/generic/pc/pmr0/call"
+                /*"sentinel_type" : "baremetal/grub-legacy/srot/generic/pc/pmr0/call"*/
+                "sentinel_type" : "drot/intel/pc/pmr0/call"
             }	
         ]
     },	
