@@ -167,9 +167,7 @@ void gp_s2_entry(void){
 	// //@assert (cor_gp_s2_gathersysmemtypes == true);
 	// //@assert (cor_gp_s2_setupiotbl == true);
 	// //@assert (cor_gp_s2_setupmpgtblv == true);
-	#if 0
 	gp_s2_setupmpgtblu();
-	#endif
 	// //@ghost cor_gp_s2_setupmpgtblu = true;
 
 	// //initialize GDT

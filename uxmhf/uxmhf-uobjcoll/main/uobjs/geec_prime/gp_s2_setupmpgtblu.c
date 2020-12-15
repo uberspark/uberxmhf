@@ -138,6 +138,7 @@ void gp_s2_setupmpgtblu(void){
 		loop assigns gp_s2_setupmpgtblu_invokedinvalidobjs[0..(XMHFGEEC_TOTAL_SLABS-1)];
 		loop variant XMHFGEEC_TOTAL_SLABS - i;
 	@*/
+	#if 0
 	for(i=0; i < XMHFGEEC_TOTAL_SLABS; i++){
 
 		if( (xmhfgeec_slab_info_table[i].slabtype == XMHFGEEC_SLABTYPE_uVT_PROG ||
@@ -181,5 +182,11 @@ void gp_s2_setupmpgtblu(void){
 
 		}
 	}
+	#endif
+
+	_XDPRINTF_("%s: slab %u --> ppopulating rich-guest page-tables...\n", __func__, i);
+	gp_s2_setupmpgtblug_rg(0);
+	//@ghost gp_s2_setupmpgtblu_invokedug_rg[i] = true;
+	_XDPRINTF_("%s: slab %u --> rich-guest page-tables populated\n", __func__, i);
 }
 

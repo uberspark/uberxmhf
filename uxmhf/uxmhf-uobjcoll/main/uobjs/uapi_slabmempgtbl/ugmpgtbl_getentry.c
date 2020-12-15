@@ -72,7 +72,7 @@
 		 ==> (getentryforpaddrp->result_entry == 0);
 @*/
 void _slabmempgtbl_getentryforpaddr(xmhfgeec_uapi_slabmempgtbl_getentryforpaddr_params_t *getentryforpaddrp){
-
+/*
     if( (getentryforpaddrp->dst_slabid < XMHFGEEC_TOTAL_SLABS)){
 		if(pae_get_pdpt_index(getentryforpaddrp->gpa) < PAE_PTRS_PER_PDPT && pae_get_pdt_index(getentryforpaddrp->gpa) < PAE_PTRS_PER_PDT && pae_get_pt_index(getentryforpaddrp->gpa) < PAE_PTRS_PER_PT){
 			if( (getentryforpaddrp->dst_slabid >= XMHFGEEC_UGSLAB_BASE_IDX && getentryforpaddrp->dst_slabid <= XMHFGEEC_UGSLAB_MAX_IDX) &&
@@ -86,6 +86,15 @@ void _slabmempgtbl_getentryforpaddr(xmhfgeec_uapi_slabmempgtbl_getentryforpaddr_
     }else{
     	getentryforpaddrp->result_entry = 0;
     }
+*/
+
+
+	if(pae_get_pdpt_index(getentryforpaddrp->gpa) < PAE_PTRS_PER_PDPT && pae_get_pdt_index(getentryforpaddrp->gpa) < PAE_PTRS_PER_PDT && pae_get_pt_index(getentryforpaddrp->gpa) < PAE_PTRS_PER_PT){
+			getentryforpaddrp->result_entry = _slabmempgtbl_lvl1t[0][pae_get_pdpt_index(getentryforpaddrp->gpa)][pae_get_pdt_index(getentryforpaddrp->gpa)][pae_get_pt_index(getentryforpaddrp->gpa)];
+	}else{
+		getentryforpaddrp->result_entry = 0;
+	}
+
 
 }
 

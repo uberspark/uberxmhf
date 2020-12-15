@@ -188,6 +188,7 @@ static void _slabmempgtbl_initmempgtbl_ept4K(uint32_t slabid){
 @*/
 void _slabmempgtbl_initmempgtbl(xmhfgeec_uapi_slabmempgtbl_initmempgtbl_params_t *initmempgtblp){
 
+#if 0
     if( (initmempgtblp->dst_slabid < XMHFGEEC_TOTAL_SLABS) &&
 	(initmempgtblp->dst_slabid >= XMHFGEEC_UGSLAB_BASE_IDX && initmempgtblp->dst_slabid <= XMHFGEEC_UGSLAB_MAX_IDX) &&
 	(xmhfgeec_slab_info_table[initmempgtblp->dst_slabid].slabtype == XMHFGEEC_SLABTYPE_uVT_PROG_GUEST ||
@@ -204,5 +205,11 @@ void _slabmempgtbl_initmempgtbl(xmhfgeec_uapi_slabmempgtbl_initmempgtbl_params_t
 		//_XDPRINTF_("%s: Halting. Unknown slab type %u\n", __func__, slabtype);
 		//@ghost inittable_invokeept4K = false;
 	}
+#endif
+
+    _slabmempgtbl_initmempgtbl_ept4K(0);
+	//@ghost inittable_invokeept4K = true;
+
+
 }
 

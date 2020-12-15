@@ -58,6 +58,7 @@
 
 void _ugmpgtbl_getmpgtblbase(uapi_ugmpgtbl_getmpgtblbase_params_t *p){
 
+/*
 	if( (p->dst_slabid < XMHFGEEC_TOTAL_SLABS)
 			&&
 		(p->dst_slabid >= XMHFGEEC_UGSLAB_BASE_IDX &&
@@ -75,4 +76,8 @@ void _ugmpgtbl_getmpgtblbase(uapi_ugmpgtbl_getmpgtblbase_params_t *p){
 
 		p->mpgtblbase = 0;
 	}
+*/
+
+    	p->mpgtblbase = (uint32_t)&_slabmempgtbl_lvl4t[0];
+
 }

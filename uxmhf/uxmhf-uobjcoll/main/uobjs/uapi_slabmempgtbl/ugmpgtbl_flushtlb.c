@@ -85,7 +85,7 @@
 @*/
 void _slabmempgtbl_flushtlb(xmhfgeec_uapi_slabmempgtbl_flushtlb_params_t *flushtlbp){
 	uint32_t status;
-
+/*
 	if( (flushtlbp->dst_slabid < XMHFGEEC_TOTAL_SLABS) &&
 		    ( (flushtlbp->dst_slabid >= XMHFGEEC_UGSLAB_BASE_IDX && flushtlbp->dst_slabid <= XMHFGEEC_UGSLAB_MAX_IDX) &&
 			(xmhfgeec_slab_info_table[flushtlbp->dst_slabid].slabtype == XMHFGEEC_SLABTYPE_uVT_PROG_GUEST ||
@@ -98,4 +98,9 @@ void _slabmempgtbl_flushtlb(xmhfgeec_uapi_slabmempgtbl_flushtlb_params_t *flusht
 	}else{
 		//@ghost flushtlb_invoke_invept = false;
 	}
+*/
+
+	status = CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__vmx_invept, VMX_INVEPT_SINGLECONTEXT, 0, ((uint32_t)&_slabmempgtbl_lvl4t[0] | 0x1E), 0);
+	//@ghost flushtlb_invoke_invept = true;
+
 }
