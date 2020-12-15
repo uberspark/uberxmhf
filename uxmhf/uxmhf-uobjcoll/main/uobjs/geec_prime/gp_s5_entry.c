@@ -87,11 +87,14 @@ void gp_s5_entry(void){
 
     _XDPRINTF_("%s[%u]: ESP=%08x\n", __func__, (uint16_t)cpuid, CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__read_esp,CASM_NOPARAM));
 
+
+
 	//@assert gp_s5_entry_invokedisbsp == true;
 	//@assert gp_s5_entry_invokedgetcpulapicid == true;
 	//@assert gp_s5_entry_invokedspinlock == true;
     gp_s5_setupcpustate((uint16_t)cpuid, isbsp);
 	//@ghost gp_s5_entry_invokedsetupcpustate = true;
+
 
 	#if defined (__DEBUG_SERIAL__)
 	cpucount++;

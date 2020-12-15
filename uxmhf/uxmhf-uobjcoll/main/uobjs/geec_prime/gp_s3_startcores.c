@@ -154,7 +154,8 @@ void gp_s3_startcores(void){
         if (os_sinit_data.capabilities & TXT_CAPS_T_RLP_WAKE_MONITOR) {
             _XDPRINTF_("BSP: joining RLPs to MLE with MONITOR wakeup\n");
             _XDPRINTF_("BSP: rlp_wakeup_addr=0x%08x\n", sinit_mle_data.rlp_wakeup_addr);
-	    CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__sysmemaccess_writeu32, sinit_mle_data.rlp_wakeup_addr, 0x01);
+
+		CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__sysmemaccess_writeu32, sinit_mle_data.rlp_wakeup_addr, 0x01);
         }else {
             _XDPRINTF_("BSP: joining RLPs to MLE with GETSEC[WAKEUP]\n");
             uberspark_uobjrtl_hw__generic_x86_32_intel__getsec_wakeup();

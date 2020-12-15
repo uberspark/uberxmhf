@@ -454,7 +454,7 @@ void gp_s5_setupcpustate(uint32_t cpuid, bool isbsp){
 	CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__write_cr0, (CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__read_cr0, CASM_NOPARAM) | 0x20));
 	_XDPRINTF_("%s[%u]: Set CR0.EM to be VMX compatible\n", __func__, (uint32_t)cpuid);
 
-
+#if 0
 	//setup sysenter syscall stub
 	{
 		slab_params_t spl;
@@ -466,6 +466,7 @@ void gp_s5_setupcpustate(uint32_t cpuid, bool isbsp){
 
 		XMHF_SLAB_CALLNEW(&spl);
 	}
+#endif
 
 	//setup VMX state
 	if(!__xmhfhic_x86vmx_setupvmxstate(cpuid)){

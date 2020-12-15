@@ -74,11 +74,6 @@ void gp_s3_entry(void){
 	CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__write_cr3,(uint32_t)&gp_rwdatahdr.gp_vhslabmempgtbl_lvl4t);
 	//@ghost gp_s3_entry_invoked_writecr3 = true;
 
-#if 1
-	_XDPRINTF_("%s: WiP. halting!\n", __func__);
-	while(1);
-#endif
-
 	//save cpu MTRR state which we will later replicate on all APs
 	//@assert gp_s3_entry_invoked_writecr3 == true;
 	uberspark_uobjrtl_hw__generic_x86_32_intel__save_mtrrs(&_mtrrs);
