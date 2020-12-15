@@ -155,6 +155,7 @@ void gp_s2_setupiotbl(void){
 		loop assigns gp_s2_setupiotbl_handleinvalidobjs[0..(XMHFGEEC_TOTAL_SLABS-1)];
 		loop variant XMHFGEEC_TOTAL_SLABS - i;
 	@*/
+	#if 0
 	for(i=0; i < XMHFGEEC_TOTAL_SLABS; i++){
 		if( ((xmhfgeec_slab_info_table[i].slabtype == XMHFGEEC_SLABTYPE_uVT_PROG) ||
 		    (xmhfgeec_slab_info_table[i].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG)) &&
@@ -194,6 +195,12 @@ void gp_s2_setupiotbl(void){
 		}
 
 	}
+	#endif
+
+	#if 1
+		gp_s2_setupiotblug_rg(0);
+	#endif
+
 
 	_XDPRINTF_("%s: setup unverified slab legacy I/O permission tables\n", __func__);
 

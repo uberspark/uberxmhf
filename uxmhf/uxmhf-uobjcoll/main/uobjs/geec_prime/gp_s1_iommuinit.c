@@ -152,14 +152,14 @@ void gp_s1_iommuinit(void){
 
 
 		//enable VT-d translation
-#if 1
+#if 0
 		uberspark_uobjrtl_hw__generic_x86_32_intel__vtd_drhd_enable_translation(&vtd_drhd[drhd_handle]);
 #endif
 
-
+#if 0
 		//disable PMRs now (since DMA protection is active via translation)
 		uberspark_uobjrtl_hw__generic_x86_32_intel__vtd_drhd_disable_pmr(&vtd_drhd[drhd_handle]);
-
+#endif
 
 		_XDPRINTF_("%s: Successfully setup DRHD unit %u\n", __func__, drhd_handle);
 	}

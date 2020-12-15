@@ -153,7 +153,7 @@
 uint64_t gp_s2_setupmpgtblv_getflags(uint32_t slabid, uint32_t spa, uint32_t spatype){
 	uint64_t flags=0;
 
-
+	#if 0
      if( xmhfgeec_slab_info_table[slabid].slabtype == XMHFGEEC_SLABTYPE_VfT_PROG){
 
             //self slab: code=rx, data,stack,dmadata,mmio=rw, perms=SUPER
@@ -181,6 +181,14 @@ uint64_t gp_s2_setupmpgtblv_getflags(uint32_t slabid, uint32_t spa, uint32_t spa
             }
 
      }
+	#endif
+
+	if ( (spatype & 0x0000000FUL) == _SLAB_SPATYPE_SLAB_DEVICEMMIO){
+		flags = (_PAGE_PRESENT | _PAGE_RW | _PAGE_NX | _PAGE_PCD);
+	}else{
+		flags = (uint64_t)(_PAGE_PRESENT | _PAGE_RW);
+		//(spatype & 0x0000000FUL) == _SLAB_SPATYPE_OTHER)
+	}
 
     return flags;
 }

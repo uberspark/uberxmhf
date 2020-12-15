@@ -115,7 +115,9 @@ void gp_s2_entry(void){
 	// //initialize uobj device mapping
 	// //@assert cor_gp_s2_initsysmemmap == true;
 	// //@assert cor_gp_s2_sdmenumsysdevices == true;
+	#if 0
 	gp_s2_sdminitdevmap();
+	#endif
 	// //@ghost cor_gp_s2_sdminitdevmap = true;
 
 
@@ -123,7 +125,9 @@ void gp_s2_entry(void){
 	// //@assert (cor_gp_s2_initsysmemmap == true);
 	// //@assert cor_gp_s2_sdmenumsysdevices == true;
 	// //@assert (cor_gp_s2_sdminitdevmap == true);
+	#if 0
 	gp_s2_sda();
+	#endif
 	// //@ghost cor_gp_s2_sda = true;
 
 	// //gather memory types for EPT (for guest slabs)
@@ -144,11 +148,6 @@ void gp_s2_entry(void){
 	// //@ghost cor_gp_s2_setupiotbl = true;
 
 
-#if 1
-	_XDPRINTF_("%s: WiP. halting!\n", __func__);
-	while(1);
-#endif
-
 	// //setup verified uobj memory page tables
 	// //@assert (cor_gp_s2_initsysmemmap == true);
 	// //@assert cor_gp_s2_sdmenumsysdevices == true;
@@ -168,7 +167,9 @@ void gp_s2_entry(void){
 	// //@assert (cor_gp_s2_gathersysmemtypes == true);
 	// //@assert (cor_gp_s2_setupiotbl == true);
 	// //@assert (cor_gp_s2_setupmpgtblv == true);
+	#if 0
 	gp_s2_setupmpgtblu();
+	#endif
 	// //@ghost cor_gp_s2_setupmpgtblu = true;
 
 	// //initialize GDT

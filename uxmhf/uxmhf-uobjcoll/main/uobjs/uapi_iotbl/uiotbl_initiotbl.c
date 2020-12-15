@@ -58,6 +58,7 @@
 
 
 void uiotbl_initiotbl(uapi_iotbl_initiotbl_t *ps){
+	#if 0
 	//uh
 	if( xmhfgeec_slab_info_table[ps->dst_slabid].slabtype == XMHFGEEC_SLABTYPE_uVT_PROG ||
 			xmhfgeec_slab_info_table[ps->dst_slabid].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG) {
@@ -80,7 +81,11 @@ void uiotbl_initiotbl(uapi_iotbl_initiotbl_t *ps){
 	}else{
 
 	}
+	#endif
 
+	#if 1
+        uberspark_uobjrtl_crt__memset(&uiotbl_ugslab_iobitmap[0], 0xFFFFFFFFUL, sizeof(uiotbl_ugslab_iobitmap[0]));
+	#endif
 
 }
 

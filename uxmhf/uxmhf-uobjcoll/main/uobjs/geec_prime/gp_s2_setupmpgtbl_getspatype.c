@@ -77,6 +77,7 @@ uint32_t gp_s2_setupmpgtbl_getspatype(uint32_t slab_index, uint32_t spa){
 		loop assigns i, retval, gretval;
 		loop variant XMHFGEEC_TOTAL_SLABS - i;
 	@*/
+	#if 0
 	for(i=0; i < XMHFGEEC_TOTAL_SLABS; i++){
 		retval = gp_s2_setupmpgtbl_getspatypeuobj(i, spa);
 		//@ghost gretval = retval;
@@ -90,6 +91,11 @@ uint32_t gp_s2_setupmpgtbl_getspatype(uint32_t slab_index, uint32_t spa){
 		}
 
 	}
-
+	
 	return _SLAB_SPATYPE_OTHER;
+	#endif
+
+	retval = gp_s2_setupmpgtbl_getspatypeuobj(0, spa);
+
+	return retval;
 }

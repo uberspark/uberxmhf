@@ -72,10 +72,10 @@ void uiotbl_slab_main(slab_params_t *sp){
 			sp->src_slabid < XMHFGEEC_TOTAL_SLABS){
 		uiotbl_setupiotblugportaccess((uapi_iotbl_setupiotblugportaccess_t *)sp->in_out_params);
 
-	}else if(sp->dst_uapifn == UXMHF_UAPI_IOTBL_SETUPIOTBLUHPORTACCESS &&
+/*	}else if(sp->dst_uapifn == UXMHF_UAPI_IOTBL_SETUPIOTBLUHPORTACCESS &&
 			sp->src_slabid < XMHFGEEC_TOTAL_SLABS){
 		uiotbl_setupiotbluhportaccess((uapi_iotbl_setupiotbluhportaccess_t *)sp->in_out_params);
-
+*/
 	}else {
 		//unknown uapi
 	}

@@ -57,6 +57,7 @@
 #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/uobjs/uapi_iotbl.h>
 
 void uiotbl_getiotblbase(uapi_iotbl_getiotblbase_t *ps){
+#if 0
 	//uh
 	if( xmhfgeec_slab_info_table[ps->dst_slabid].slabtype == XMHFGEEC_SLABTYPE_uVT_PROG ||
 			xmhfgeec_slab_info_table[ps->dst_slabid].slabtype == XMHFGEEC_SLABTYPE_uVU_PROG) {
@@ -74,6 +75,9 @@ void uiotbl_getiotblbase(uapi_iotbl_getiotblbase_t *ps){
 	}else{
 		ps->iotbl_base = 0;
 	}
+#endif
+
+	ps->iotbl_base = (uint32_t)&uiotbl_ugslab_iobitmap[0];
 
 	//_XDPRINTF_("%s: dst_slabid=%u, iotbl_base=0x%08x\n", __func__,
 	//		ps->dst_slabid, ps->iotbl_base);

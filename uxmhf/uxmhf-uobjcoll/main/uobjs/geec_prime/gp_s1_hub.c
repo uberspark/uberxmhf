@@ -108,6 +108,7 @@ void gp_s1_hub(void){
 		}
   	}
 
+	#if 0
 	//print out slab table
 	{
 		uint32_t i, j;
@@ -137,6 +138,7 @@ void gp_s1_hub(void){
 
 		}
 	}
+	#endif
 
 #endif // __DEBUG_SERIAL__
 
