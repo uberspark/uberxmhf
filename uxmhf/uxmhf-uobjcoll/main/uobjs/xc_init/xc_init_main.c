@@ -520,6 +520,13 @@ void xc_init_slab_main(slab_params_t *sp){
     while(cpucount < __XMHF_CONFIG_DEBUG_SERIAL_MAXCPUS__);
     #endif //__DEBUG_SERIAL__
 
+
+	#if 1
+		_XDPRINTF_("%s[%u]: WiP. halting!\n", __func__, (uint16_t)sp->cpuid);
+		while(1);
+	#endif
+
+
     //call guest
     xcinit_do_callguest(sp);
 

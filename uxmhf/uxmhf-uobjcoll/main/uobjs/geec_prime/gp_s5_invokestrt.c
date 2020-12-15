@@ -89,11 +89,6 @@
 void gp_s5_invokestrt(uint32_t cpuid){
 	slab_params_t sp;
 
-	#if 1
-		_XDPRINTF_("%s[%u]: WiP. halting!\n", __func__, (uint16_t)cpuid);
-		while(1);
-	#endif
-
 	uberspark_uobjrtl_crt__memset(&sp, 0, sizeof(sp));
 	sp.cpuid = cpuid;
 	sp.src_slabid = XMHFGEEC_SLAB_GEEC_PRIME;
