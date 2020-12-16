@@ -230,6 +230,9 @@
 			"uobjs/geec_sentinel/gs_exit_retuv2vstub.cS",
 			"uobjs/geec_sentinel/gs_exit_retv2uvstub.cS",
 			*/
+
+			"uobjs/xc_init/xc_init_callrg.cS",
+
 			"uobjs/xc_exhub/xcexhub_excpstub.cS",
 			"uobjs/xc_exhub/xcexhub_retexcp.cS",
 			"uobjs/xc_ihub/xcihub_icptstub.cS",

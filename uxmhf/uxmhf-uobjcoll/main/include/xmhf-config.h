@@ -220,6 +220,9 @@
 	#error FATAL: Mistmatch in XMHFGEEC_TOTAL_UGSLABS (common.mk.in) and __XMHFGEEC_TOTAL_UGSLABS (xmhf-config.h)
 #endif
 
+
+#define UXMHF_RG_VPID		13
+
 //////
 
 

@@ -56,6 +56,8 @@
 
 extern __attribute__(( section(".data") )) uint32_t __xcinit_smplock;
 
+CASM_FUNCDECL(uint32_t xc_init_callrg(void *noparam));
+
 
 #endif //__ASSEMBLY__
 

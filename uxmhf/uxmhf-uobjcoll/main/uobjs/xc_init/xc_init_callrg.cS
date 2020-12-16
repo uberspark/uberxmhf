@@ -45,47 +45,33 @@
  */
 
 /*
- * HIC trampoline and stubs
- *
- * author: amit vasudevan (amitvasudevan@acm.org)
- */
+ CASM function to call rich guest
+ author: amit vasudevan (amitvasudevan@acm.org)
+*/
 
 #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf.h>
-// #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf-debug.h>
-#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/uobjs/geec.h>
-#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/uobjs/xc_ihub.h>
+#include <uberspark/hwm/include/arch/x86_32/intel/hwm.h>
+
+#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/uobjs/xc_init.h>
 
 
-////// intercepts
-
-void xcihub_entry_icpt(x86regs_t *r){
-    slab_params_t spl;
-    uint32_t eflags;
-
-    _XDPRINTF_("%s:%u: halting. wip!\n", __func__, __LINE__);
-    HALT();
-
-    eflags = CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__read_eflags,CASM_NOPARAM);
-    eflags &= ~(EFLAGS_IOPL); //clear out IOPL bits
-    eflags |= EFLAGS_IOPL;
-    CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__write_eflags,eflags);
-
-    uberspark_uobjrtl_crt__memset(&spl, 0, sizeof(spl));
-
-    spl.slab_ctype = XMHFGEEC_SENTINEL_CALL_INTERCEPT;
-    spl.src_slabid = CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__vmx_vmread,VMCS_CONTROL_VPID);
-    spl.dst_slabid = XMHFGEEC_SLAB_XC_IHUB;
-    spl.cpuid = uberspark_uobjrtl_hw__generic_x86_32_intel__getcpulapicid();
-
-    uberspark_uobjrtl_crt__memcpy(&spl.in_out_params[0], r, sizeof(x86regs_t));
-
-    //invoke processing of intercept
-    xcihub_icptmain(&spl);
-
-    //exit to guest
-    CASM_FUNCCALL(xcihub_reticpt, &spl.in_out_params[0]);
-    _XDPRINTF_("XC_IHUB[ln:%u]: halting. should never be here!\n",
-               __LINE__);
-    HALT();
-}
+//if we return, we had an error and we return the
+//corresponding error code
+CASM_FUNCDEF(uint32_t, xc_init_callrg,
+{
+	__casm__movl_imm_edx(0x80);
+    __casm__vmlaunch();
+    __casm__jc(__vmx_start_hvm_failinvalid);
+    __casm__jnz(__vmx_start_hvm_undefinedimplementation);
+    __casm__movl_imm_eax(0x1);		//VMLAUNCH error, XXX: need to read from VM instruction error field in VMCS
+    __casm__jmplabel(__vmx_start_continue);
+    CASM_LABEL(__vmx_start_hvm_undefinedimplementation);
+    __casm__movl_imm_eax(0x2);		//violation of VMLAUNCH specs., handle it anyways
+    __casm__jmplabel(__vmx_start_continue);
+    CASM_LABEL(__vmx_start_hvm_failinvalid);
+    __casm__xorl_eax_eax();		//return 0 as we have no error code available
+    CASM_LABEL(__vmx_start_continue);
+    __casm__retu32();
+},
+void *noparam)
 

@@ -59,6 +59,9 @@
 
 #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/uobjs/xc.h>
 #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/uobjs/uapi_gcpustate.h>
+#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/uobjs/uapi_slabmempgtbl.h>
+#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/uobjs/uapi_iotbl.h>
+
 #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/uobjs/xh_hyperdep.h>
 #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/uobjs/xh_syscalllog.h>
 #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/uobjs/xh_ssteptrace.h>
@@ -72,6 +75,7 @@
 // call guest uobj
 //////
 static void xcinit_do_callguest(slab_params_t *sp){
+#if 0
 	slab_params_t spl;
 
 	uberspark_uobjrtl_crt__memset(&spl, 0, sizeof(spl));
@@ -79,6 +83,87 @@ static void xcinit_do_callguest(slab_params_t *sp){
 	spl.src_slabid = XMHFGEEC_SLAB_XC_INIT;
 	spl.dst_slabid = XMHFGEEC_SLAB_XG_RICHGUEST;
 	XMHF_SLAB_CALLNEW(&spl);
+#endif
+
+
+	uint32_t errorcode;
+	//_geec_sentinel_checkandhalt_callcaps(sp->src_slabid, sp->dst_slabid, sp->dst_uapifn);
+	//_XDPRINTF_("GEEC_SENTINEL: launching guest %u...\n", sp->dst_slabid);
+	//sp->slab_ctype = XMHFGEEC_SENTINEL_CALL_VfT_PROG_TO_uVT_uVU_PROG_GUEST;
+	CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__vmx_vmwrite,VMCS_CONTROL_VPID, UXMHF_RG_VPID );
+
+	{
+		slab_params_t spl;
+		uapi_ugmpgtbl_getmpgtblbase_params_t *ps = (uapi_ugmpgtbl_getmpgtblbase_params_t *)spl.in_out_params;
+
+		spl.slab_ctype = XMHFGEEC_SENTINEL_CALL_FROM_VfT_PROG;
+		spl.src_slabid = XMHFGEEC_SLAB_GEEC_SENTINEL;
+		spl.dst_slabid = XMHFGEEC_SLAB_UAPI_SLABMEMPGTBL;
+		spl.cpuid = sp->cpuid;
+		spl.dst_uapifn = UAPI_UGMPGTBL_GETMPGTBLBASE;
+
+		ps->dst_slabid = sp->dst_slabid;
+
+		//_XDPRINTF_("GEEC_SENTINEL: guest: slabid=%u\n", ps->dst_slabid);
+
+		//CASM_FUNCCALL(gs_calluobj, &spl,
+		//		xmhfgeec_slab_info_table[spl.dst_slabid].entrystub);
+		ugmpgtbl_slab_main(&spl);
+
+		_XDPRINTF_("%s: guest: eptp base=0x%08x\n", __func__, ps->mpgtblbase);
+
+		CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__vmx_vmwrite,VMCS_CONTROL_EPT_POINTER_FULL, (ps->mpgtblbase  | 0x1E) );
+		CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__vmx_vmwrite,VMCS_CONTROL_EPT_POINTER_HIGH, 0);
+	}
+
+
+
+
+	{
+		slab_params_t spl;
+		uapi_iotbl_getiotblbase_t *ps = (uapi_iotbl_getiotblbase_t *)spl.in_out_params;
+
+		spl.slab_ctype = XMHFGEEC_SENTINEL_CALL_FROM_VfT_PROG;
+		spl.src_slabid = XMHFGEEC_SLAB_GEEC_SENTINEL;
+		spl.dst_slabid = UOBJ_UAPI_IOTBL;
+		spl.cpuid = sp->cpuid;
+		spl.dst_uapifn = UXMHF_UAPI_IOTBL_GETIOTBLBASE;
+
+		ps->dst_slabid = sp->dst_slabid;
+
+		//_XDPRINTF_("GEEC_SENTINEL: guest: slabid=%u\n", ps->dst_slabid);
+
+		//CASM_FUNCCALL(gs_calluobj, &spl,
+		//		xmhfgeec_slab_info_table[spl.dst_slabid].entrystub);
+		uiotbl_slab_main(&spl);
+
+		_XDPRINTF_("%s: guest: iotbl_base=0x%08x\n", __func__, ps->iotbl_base);
+
+		CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__vmx_vmwrite,VMCS_CONTROL_IO_BITMAPA_ADDRESS_FULL, ps->iotbl_base);
+		CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__vmx_vmwrite,VMCS_CONTROL_IO_BITMAPA_ADDRESS_HIGH, 0);
+		CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__vmx_vmwrite,VMCS_CONTROL_IO_BITMAPB_ADDRESS_FULL, (ps->iotbl_base + PAGE_SIZE_4K));
+		CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__vmx_vmwrite,VMCS_CONTROL_IO_BITMAPB_ADDRESS_HIGH, 0);
+	}
+
+	//if (xmhfgeec_slab_info_table[sp->dst_slabid].slabtype != XMHFGEEC_SLABTYPE_uVU_PROG_RICHGUEST){
+	//	CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__vmx_vmwrite,VMCS_GUEST_RSP, xmhfgeec_slab_info_table[sp->dst_slabid].slabtos[(uint16_t)sp->cpuid]);
+	//	CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__vmx_vmwrite,VMCS_GUEST_RIP, xmhfgeec_slab_info_table[sp->dst_slabid].entrystub);
+	//}
+
+	errorcode = CASM_FUNCCALL(xc_init_callrg, CASM_NOPARAM);
+
+	switch(errorcode){
+		case 0:	//no error code, VMCS pointer is invalid
+			_XDPRINTF_("INIT: VMLAUNCH error; VMCS pointer invalid?\n");
+			break;
+		case 1:{//error code available, so dump it
+			uint32_t code=uberspark_uobjrtl_hw__generic_x86_32_intel__vmx_vmread(VMCS_INFO_VMINSTR_ERROR);
+			_XDPRINTF_("INIT: VMLAUNCH error; code=%x\n", code);
+			break;
+		}
+	}
+
+	HALT();
 
 }
 
@@ -502,9 +587,10 @@ void xc_init_slab_main(slab_params_t *sp){
     xcinit_setup_guest(sp, isbsp);
 
 
+	#if 0
     //invoke hypapp initialization callbacks
     xc_hcbinvoke(XMHFGEEC_SLAB_XC_INIT, sp->cpuid, XC_HYPAPPCB_INITIALIZE, 0, XMHFGEEC_SLAB_XG_RICHGUEST);
-
+	#endif
 
     _XDPRINTF_("XC_INIT[%u]: Proceeding to call guest: ESP=%08x, eflags=%08x\n", (uint16_t)sp->cpuid,
     		CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__read_esp,CASM_NOPARAM), CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__read_eflags, CASM_NOPARAM));
@@ -519,12 +605,6 @@ void xc_init_slab_main(slab_params_t *sp){
     #if defined (__DEBUG_SERIAL__)
     while(cpucount < __XMHF_CONFIG_DEBUG_SERIAL_MAXCPUS__);
     #endif //__DEBUG_SERIAL__
-
-
-	#if 1
-		_XDPRINTF_("%s[%u]: WiP. halting!\n", __func__, (uint16_t)sp->cpuid);
-		while(1);
-	#endif
 
 
     //call guest
