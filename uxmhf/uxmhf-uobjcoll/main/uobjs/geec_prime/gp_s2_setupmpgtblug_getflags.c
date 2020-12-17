@@ -164,9 +164,9 @@ uint64_t gp_s2_setupmpgtblug_getflags(uint32_t slabid, uint32_t spa, uint32_t sp
 	}
 #endif
 
-	if ((spatype & _SLAB_SPATYPE_SLAB_DEVICEMMIO))
-		flags = 0x3;
-	else
+	//if ((spatype & _SLAB_SPATYPE_SLAB_DEVICEMMIO))
+	//	flags = 0x3;
+	//else
 		flags = 0x7;
 
 

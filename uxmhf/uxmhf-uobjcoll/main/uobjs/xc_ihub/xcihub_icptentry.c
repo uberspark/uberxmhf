@@ -62,9 +62,6 @@ void xcihub_entry_icpt(x86regs_t *r){
     slab_params_t spl;
     uint32_t eflags;
 
-    _XDPRINTF_("%s:%u: halting. wip!\n", __func__, __LINE__);
-    HALT();
-
     eflags = CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__read_eflags,CASM_NOPARAM);
     eflags &= ~(EFLAGS_IOPL); //clear out IOPL bits
     eflags |= EFLAGS_IOPL;
@@ -84,6 +81,9 @@ void xcihub_entry_icpt(x86regs_t *r){
 
     //exit to guest
     CASM_FUNCCALL(xcihub_reticpt, &spl.in_out_params[0]);
+    
+    
+    //should never get here
     _XDPRINTF_("XC_IHUB[ln:%u]: halting. should never be here!\n",
                __LINE__);
     HALT();

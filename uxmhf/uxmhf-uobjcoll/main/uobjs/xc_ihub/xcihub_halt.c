@@ -95,6 +95,14 @@ void xcihub_halt_eptviolation(uint32_t cpuid, uint32_t info_vmexitreason){
 
 
 void xcihub_halt(uint32_t cpuid, uint32_t info_vmexit_reason){
+#if defined (__DEBUG_SERIAL__)
+	//initialize debugging early on
+	uberspark_uobjrtl_debug__init(NULL);
+	//[debug] print relevant startup info.
+	_XDPRINTF_("%s: xcihub_halt: reinitted UART...\n", __func__);
+#endif
+
+
 	_XDPRINTF_("%s[%u]: unhandled intercept %x. Halting!\n", __func__, cpuid, info_vmexit_reason);
 #if 1
 	if(info_vmexit_reason == 0x30){

@@ -84,7 +84,9 @@ void uiotbl_initiotbl(uapi_iotbl_initiotbl_t *ps){
 	#endif
 
 	#if 1
-        uberspark_uobjrtl_crt__memset(&uiotbl_ugslab_iobitmap[0], 0xFFFFFFFFUL, sizeof(uiotbl_ugslab_iobitmap[0]));
+        //uberspark_uobjrtl_crt__memset(&uiotbl_ugslab_iobitmap[0], 0xFFFFFFFFUL, sizeof(uiotbl_ugslab_iobitmap[0]));
+        uberspark_uobjrtl_crt__memset(&uiotbl_ugslab_iobitmap[0], 0x0UL, (3 * PAGE_SIZE_4K));
+
 	#endif
 
 }

@@ -69,7 +69,7 @@ void xcihub_icptvmcall(uint32_t cpuid, uint32_t src_slabid){
 	//emulation, else rotate through hypapp callbacks
 	if (!xcihub_rg_e820emulation(cpuid, src_slabid)){
 
-		xc_hcbinvoke(XMHFGEEC_SLAB_XC_IHUB, cpuid, XC_HYPAPPCB_HYPERCALL, 0, src_slabid);
+		//xc_hcbinvoke(XMHFGEEC_SLAB_XC_IHUB, cpuid, XC_HYPAPPCB_HYPERCALL, 0, src_slabid);
 
 		//skip over VMCALL by updating guest RIP
 		//TODO: halt if we don't handle the VMCALL instead of just ignoring it

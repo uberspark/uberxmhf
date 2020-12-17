@@ -108,7 +108,7 @@ void gp_s2_entry(void){
 
 	// //enumerate system devices
 	// //@assert cor_gp_s2_initsysmemmap == true;
-	gp_s2_sdmenumsysdevices();
+	//gp_s2_sdmenumsysdevices();
 	// //@ghost cor_gp_s2_sdmenumsysdevices = true;
 
 

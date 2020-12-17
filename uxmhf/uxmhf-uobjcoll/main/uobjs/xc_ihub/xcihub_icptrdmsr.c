@@ -110,7 +110,7 @@ void xcihub_icptrdmsr(uint32_t cpuid){
 			spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_RDMSR;
 			hcpustate_msrp->msr = r.ecx;
 			hcpustate_msrp->value = 0;
-			ugcpust_slab_main(&spl);
+			uhcpust_slab_main(&spl);
 			r.edx = (uint32_t)((uint64_t)hcpustate_msrp->value >> 32);
 			r.eax = (uint32_t)hcpustate_msrp->value;
 

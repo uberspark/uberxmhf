@@ -156,7 +156,7 @@ void gp_s1_iommuinit(void){
 		uberspark_uobjrtl_hw__generic_x86_32_intel__vtd_drhd_enable_translation(&vtd_drhd[drhd_handle]);
 #endif
 
-#if 0
+#if 1
 		//disable PMRs now (since DMA protection is active via translation)
 		uberspark_uobjrtl_hw__generic_x86_32_intel__vtd_drhd_disable_pmr(&vtd_drhd[drhd_handle]);
 #endif

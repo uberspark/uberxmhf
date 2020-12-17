@@ -118,6 +118,7 @@ uint32_t xc_hcbinvoke(uint32_t src_slabid, uint32_t cpuid, uint32_t cbtype, uint
 		loop assigns invoke_helper[0..(HYPAPP_INFO_TABLE_NUMENTRIES-1)];
 		loop variant HYPAPP_INFO_TABLE_NUMENTRIES - i;
 	@*/
+	#if 0
     for(i=0; i < HYPAPP_INFO_TABLE_NUMENTRIES; i++){
         status = xc_hcbinvoke_helper(i, cbtype, src_slabid, cpuid, guest_slab_index, cbqual);
 		//@ghost invoke_helper[i] = true;
@@ -131,6 +132,9 @@ uint32_t xc_hcbinvoke(uint32_t src_slabid, uint32_t cpuid, uint32_t cbtype, uint
 		return XC_HYPAPPCB_NOCHAIN;
 	else
 		return XC_HYPAPPCB_CHAIN;
+	#endif
+
+	return XC_HYPAPPCB_CHAIN;
 }
 
 
