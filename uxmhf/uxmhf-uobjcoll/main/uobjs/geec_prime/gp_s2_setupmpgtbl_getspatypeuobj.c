@@ -98,7 +98,7 @@ uint32_t gp_s2_setupmpgtbl_getspatypeuobj(uint32_t slab_index, uint32_t spa){
 		isiotbl = gp_s2_setupmpgtbl_getspatypeuobj_isiotbl(slab_index, spa);
 		#endif
 		//@ghost gisiotbl = isiotbl;
-		//isdevicemmio = gp_s2_setupmpgtbl_getspatypeuobj_ismmio(slab_index, spa);
+		isdevicemmio = gp_s2_setupmpgtbl_getspatypeuobj_ismmio(slab_index, spa);
 		//@ghost gisdevicemmio = isdevicemmio;
 
 		#if 0
@@ -116,8 +116,8 @@ uint32_t gp_s2_setupmpgtbl_getspatypeuobj(uint32_t slab_index, uint32_t spa){
 		    return _SLAB_SPATYPE_SLAB_DEVICEMMIO;
 		#endif
 
-		//if(isdevicemmio)
-		//    return _SLAB_SPATYPE_SLAB_DEVICEMMIO;
-		//else
+		if(isdevicemmio)
+		    return _SLAB_SPATYPE_SLAB_DEVICEMMIO;
+		else
 			return _SLAB_SPATYPE_OTHER;
 }
