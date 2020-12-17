@@ -31,7 +31,7 @@
 			"include/uobjs/uapi_iotbl.h",
 			"include/uobjs/uapi_slabmempgtbl.h",
 			"include/uobjs/uapi_sysdata.h",
-			"include/uobjs/uapi_uhmpgtbl.h",
+			//"include/uobjs/uapi_uhmpgtbl.h",
 			"include/uobjs/xc.h",
 			"include/uobjs/xc_exhub.h",
 			"include/uobjs/xc_ihub.h",
@@ -56,7 +56,7 @@
 			"uobjs/debug/subr_prf.c",
 			"uobjs/debug/dbgapi.c",
 
-			"uobjs/geec/geec_slabmapdef.c",
+			//"uobjs/geec/geec_slabmapdef.c",
 
 			"uobjs/geec_prime/gp_data.c",
 			"uobjs/geec_prime/gp_s1_bspstack.c",
@@ -213,7 +213,7 @@
 			// "uobjs/geec/geec_slabstubs_uvt.cS",
 			// "uobjs/geec/geec_slabstubs_uvu.cS",
 			// "uobjs/geec/geec_slabstubs_uvug.cS",
-			"uobjs/geec/geec_slabstubs_vft.cS",
+			//"uobjs/geec/geec_slabstubs_vft.cS",
 
             "uobjs/geec_prime/gp_s1_entry.cS",
 			"uobjs/geec_prime/gp_s4_apstacks.cS",
