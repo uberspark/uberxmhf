@@ -22,23 +22,24 @@
      /* sources */
      "sources" : {
          "h-files": [ 
-			/*"include/uobjs/debug.h",*/
 			"include/uobjs/geec.h",
             "include/uobjs/geec_prime.h",
-            /* "include/uobjs/geec_sentinel.h", */
+
 			"include/uobjs/uapi_gcpustate.h",
 			"include/uobjs/uapi_hcpustate.h",
 			"include/uobjs/uapi_iotbl.h",
 			"include/uobjs/uapi_slabmempgtbl.h",
 			"include/uobjs/uapi_sysdata.h",
-			//"include/uobjs/uapi_uhmpgtbl.h",
+
 			"include/uobjs/xc.h",
 			"include/uobjs/xc_exhub.h",
 			"include/uobjs/xc_ihub.h",
 			"include/uobjs/xc_init.h",
 			"include/uobjs/xc_nwlog.h",
 			"include/uobjs/xg_richguest.h",
-			// "include/uobjs/xh_aprvexec.h",
+
+			"include/uobjs/xc_nwlog.h",
+			"include/uobjs/xh_aprvexec.h",
 			"include/uobjs/xh_hyperdep.h",
 			"include/uobjs/xh_ssteptrace.h",
 			"include/uobjs/xh_syscalllog.h",
@@ -51,13 +52,11 @@
 			"include/xmhf.h"
         ],
          "c-files": [ 
-			//"uobjinfotable.c",
 
 			"uobjs/debug/dbgdata.c",
 			"uobjs/debug/subr_prf.c",
 			"uobjs/debug/dbgapi.c",
 
-			//"uobjs/geec/geec_slabmapdef.c",
 
 			"uobjs/geec_prime/gp_data.c",
 			"uobjs/geec_prime/gp_s1_bspstack.c",
@@ -116,17 +115,7 @@
 			"uobjs/geec_prime/gp_s5_entry.c",
 			"uobjs/geec_prime/gp_s5_invokestrt.c",
             "uobjs/geec_prime/gp_s5_setupcpustate.c",
-            /*
-			"uobjs/geec_sentinel/gs_data.c",
-			"uobjs/geec_sentinel/gs_entry.c",
-			"uobjs/geec_sentinel/gs_entry_syscall.c",
-			"uobjs/geec_sentinel/gs_exit_calluv2v.c",
-			"uobjs/geec_sentinel/gs_exit_callv2uv.c",
-			"uobjs/geec_sentinel/gs_exit_retuv2v.c",
-			"uobjs/geec_sentinel/gs_exit_retv2uv.c",
-			"uobjs/geec_sentinel/gs_sisspop.c",
-			"uobjs/geec_sentinel/gs_sisspush.c",
-			*/
+
 			"uobjs/uapi_gcpustate/ugcpust_data.c",
 			"uobjs/uapi_gcpustate/ugcpust_gprsread.c",
 			"uobjs/uapi_gcpustate/ugcpust_gprswrite.c",
@@ -157,12 +146,7 @@
 			"uobjs/uapi_sysdata/usysd_e820getentryforindex.c",
 			"uobjs/uapi_sysdata/usysd_e820getmaxindex.c",
 			"uobjs/uapi_sysdata/usysd_main.c",
-			//"uobjs/uapi_uhmpgtbl/uhmpgtbl_data.c",
-			//"uobjs/uapi_uhmpgtbl/uhmpgtbl_getidxformpgtblbase.c",
-			//"uobjs/uapi_uhmpgtbl/uhmpgtbl_getmpgtblbase.c",
-			//"uobjs/uapi_uhmpgtbl/uhmpgtbl_inittable.c",
-			//"uobjs/uapi_uhmpgtbl/uhmpgtbl_main.c",
-			//"uobjs/uapi_uhmpgtbl/uhmpgtbl_setentry.c",
+
 			"uobjs/xc_exhub/xcexhub_data.c",
 			"uobjs/xc_exhub/xcexhub_entryexcp.c",
 			"uobjs/xc_exhub/xcexhub_excpmain.c",
@@ -222,26 +206,10 @@
 
         ],
          "casm-files": [ 
-			// "uobjs/geec/geec_slabstubs_uvt.cS",
-			// "uobjs/geec/geec_slabstubs_uvu.cS",
-			// "uobjs/geec/geec_slabstubs_uvug.cS",
-			//"uobjs/geec/geec_slabstubs_vft.cS",
 
             "uobjs/geec_prime/gp_s1_entry.cS",
 			"uobjs/geec_prime/gp_s4_apstacks.cS",
             "uobjs/geec_prime/gp_s4_entry.cS",
-            /*
-			"uobjs/geec_sentinel/gs_calluobj.cS",
-			"uobjs/geec_sentinel/gs_entry_callstub.cS",
-			"uobjs/geec_sentinel/gs_entry_syscallstub.cS",
-			"uobjs/geec_sentinel/gs_exit_calluv2vstub.cS",
-			"uobjs/geec_sentinel/gs_exit_callv2uvg.cS",
-			"uobjs/geec_sentinel/gs_exit_callv2uvstub.cS",
-			"uobjs/geec_sentinel/gs_exit_callv2v.cS",
-			"uobjs/geec_sentinel/gs_exit_ret2v.cS",
-			"uobjs/geec_sentinel/gs_exit_retuv2vstub.cS",
-			"uobjs/geec_sentinel/gs_exit_retv2uvstub.cS",
-			*/
 
 			"uobjs/xc_init/xc_init_callrg.cS",
 
