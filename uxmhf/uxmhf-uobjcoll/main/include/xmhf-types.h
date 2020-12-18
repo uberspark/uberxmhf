@@ -148,6 +148,9 @@ typedef struct {
 	cpu_desc_t cpu_desc;
 } context_desc_t;
 
+#if !defined (__DRT__)
+typedef void(*FCALL)(void);
+#endif
 
 #endif /*ifndef __ASSEMBLY__*/
 
