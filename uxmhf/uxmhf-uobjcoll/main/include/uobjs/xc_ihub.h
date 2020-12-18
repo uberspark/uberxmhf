@@ -62,10 +62,6 @@ CASM_FUNCDECL(void xcihub_reticpt(x86regs_t *r));
 void xcihub_icptmain(slab_params_t *sp);
 
 
-/*@
-	requires 0 <= cbtype <= XC_HYPAPPCB_MAXMASK;
-@*/
-uint32_t xc_hcbinvoke(uint32_t src_slabid, uint32_t cpuid, uint32_t cbtype, uint32_t cbqual, uint32_t guest_slab_index);
 
 void xcihub_icptvmcall(uint32_t cpuid, uint32_t src_slabid);
 void xcihub_icptcpuid(uint32_t cpuid);

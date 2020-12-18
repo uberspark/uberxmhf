@@ -63,6 +63,15 @@
 #define __DRT__ 
 #define __DMAP__ 
 
+#define __UAPP_APRVEXEC__
+#define __UAPP_HYPERDEP__
+#define __UAPP_SSTEPTRACE__
+#define __UAPP_SYSCALLLOG__
+//#define __UAPP_NWLOG__
+
+
+
+
 //-D__XMHFGEEC_TOTAL_UHSLABS__=1 
 //-D__XMHFGEEC_TOTAL_UGSLABS__=1 
 //-D__XMHF_CONFIG_LOADADDR__=0x06200000 
@@ -192,6 +201,7 @@
 #define UOBJ_UAPI_UHMPGTBL					11
 #define XMHFGEEC_SLAB_XH_SYSCALLLOG         12
 #define XMHFGEEC_SLAB_XH_HYPERDEP           13
+#define XMHFGEEC_SLAB_XH_APRVEXEC           13 //TBD: note this will all be removed eventually
 #define XMHFGEEC_SLAB_XH_SSTEPTRACE         14
 #define XMHFGEEC_SLAB_XG_RICHGUEST         	15
 

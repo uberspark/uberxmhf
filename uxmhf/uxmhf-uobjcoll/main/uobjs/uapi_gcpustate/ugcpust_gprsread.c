@@ -55,7 +55,7 @@
 
 #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/uobjs/geec.h>
 
-#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/uobjs/xc.h>
+//#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/uobjs/xc.h>
 #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/uobjs/uapi_gcpustate.h>
 
 

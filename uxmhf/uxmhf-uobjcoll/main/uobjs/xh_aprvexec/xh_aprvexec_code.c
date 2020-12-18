@@ -153,7 +153,7 @@ if(!ae_activated){
          spl.dst_uapifn = XMHFGEEC_UAPI_SLABMEMPGTBL_GETENTRYFORPADDR;
         getentryforpaddrp->dst_slabid = guest_slab_index;
         getentryforpaddrp->gpa = gpa;
-        XMHF_SLAB_CALLNEW(&spl);
+        ugmpgtbl_slab_main(&spl);
         _XDPRINTF_("%s[%u]: original entry for gpa=%016llx is %016llx\n",
                    __func__, (uint16_t)cpuindex, gpa, getentryforpaddrp->result_entry);
 
@@ -162,13 +162,13 @@ if(!ae_activated){
         setentryforpaddrp->gpa = gpa;
         setentryforpaddrp->entry = (getentryforpaddrp->result_entry & ~(0x7));
         setentryforpaddrp->entry |= 0x5; // execute, read-only
-        XMHF_SLAB_CALLNEW(&spl);
+        ugmpgtbl_slab_main(&spl);
 
 
         //flush EPT TLB for permission changes to take effect
 		spl.dst_uapifn = XMHFGEEC_UAPI_SLABMEMPGTBL_FLUSHTLB;
 		flushtlbp->dst_slabid = guest_slab_index;
-		XMHF_SLAB_CALLNEW(&spl);
+		ugmpgtbl_slab_main(&spl);
 
 
 		/*
@@ -219,7 +219,7 @@ static void ae_unlock(uint32_t cpuindex, uint32_t guest_slab_index, uint64_t gpa
          spl.dst_uapifn = XMHFGEEC_UAPI_SLABMEMPGTBL_GETENTRYFORPADDR;
         getentryforpaddrp->dst_slabid = guest_slab_index;
         getentryforpaddrp->gpa = gpa;
-         XMHF_SLAB_CALLNEW(&spl);
+        ugmpgtbl_slab_main(&spl);
 
          _XDPRINTF_("%s[%u]: original entry for gpa=%016llx is %016llx\n",
                     __func__, (uint16_t)cpuindex, gpa, getentryforpaddrp->result_entry);
@@ -229,7 +229,7 @@ static void ae_unlock(uint32_t cpuindex, uint32_t guest_slab_index, uint64_t gpa
         setentryforpaddrp->gpa = gpa;
         setentryforpaddrp->entry = getentryforpaddrp->result_entry & ~(0x7);
         setentryforpaddrp->entry |= 0x7; // execute, read-write
-        XMHF_SLAB_CALLNEW(&spl);
+        ugmpgtbl_slab_main(&spl);
 
         ae_activated=false;
         ae_paddr=0;
@@ -264,7 +264,7 @@ static void _hcb_hypercall(uint64_t cpuindex, uint64_t guest_slab_index){
     //spl.in_out_params[0] = XMHF_HIC_UAPI_CPUSTATE;
 
      spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSREAD;
-    XMHF_SLAB_CALLNEW(&spl);
+    ugcpust_slab_main(&spl);
 
 
     call_id = gprs->eax;
@@ -363,15 +363,15 @@ void xh_aprvexec_slab_main(slab_params_t *sp){
              spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_VMREAD;
 
             gcpustate_vmrwp->encoding = VMCS_INFO_EXIT_QUALIFICATION;
-            XMHF_SLAB_CALLNEW(&spl);
+            ugcpust_slab_main(&spl);
             errorcode = gcpustate_vmrwp->value;
 
             gcpustate_vmrwp->encoding = VMCS_INFO_GUEST_PADDR_FULL;
-            XMHF_SLAB_CALLNEW(&spl);
+            ugcpust_slab_main(&spl);
             gpa = gcpustate_vmrwp->value;
 
             gcpustate_vmrwp->encoding = VMCS_INFO_GUEST_LINEAR_ADDRESS;
-            XMHF_SLAB_CALLNEW(&spl);
+            ugcpust_slab_main(&spl);
             gva = gcpustate_vmrwp->value;
 
             _hcb_memoryfault(sp->cpuid, hcbp->guest_slab_index, gpa, gva, errorcode);

@@ -442,36 +442,6 @@ static void xcinit_setup_guest(slab_params_t *sp, bool isbsp){
 
 
 
-//////
-// invoke hypapp initialization callbacks
-//////
-static uint32_t xc_hcbinvoke(uint32_t src_slabid, uint32_t cpuid, uint32_t cbtype, uint32_t cbqual, uint32_t guest_slab_index){
-    uint32_t status = XC_HYPAPPCB_CHAIN;
-    uint32_t i;
-    slab_params_t spl;
-    xc_hypappcb_params_t *hcbp = (xc_hypappcb_params_t *)&spl.in_out_params[0];
-
-    spl.src_slabid = src_slabid;
-    spl.cpuid = cpuid;
-    spl.dst_uapifn = 0;
-    hcbp->cbtype=cbtype;
-    hcbp->cbqual=cbqual;
-    hcbp->guest_slab_index=guest_slab_index;
-    hcbp->cbresult = 0;
-
-    for(i=0; i < HYPAPP_INFO_TABLE_NUMENTRIES; i++){
-        if(_xcihub_hypapp_info_table[i].cbmask & XC_HYPAPPCB_MASK(cbtype)){
-            spl.dst_slabid = _xcihub_hypapp_info_table[i].xmhfhic_slab_index;
-            xcihub_slab_main(&spl);
-            if(hcbp->cbresult == XC_HYPAPPCB_NOCHAIN){
-                status = XC_HYPAPPCB_NOCHAIN;
-                break;
-            }
-        }
-    }
-
-    return status;
-}
 
 
 //////
@@ -571,7 +541,6 @@ void xc_init_slab_main(slab_params_t *sp){
     CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__spin_lock,&__xcinit_smplock);
 
     _XDPRINTF_("XC_INIT[%u]: got control: ESP=%08x\n", (uint16_t)sp->cpuid, CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__read_esp,CASM_NOPARAM));
-    _XDPRINTF_("XC_INIT[%u]: HYPAPP_INFO_TABLE_NUMENTRIES=%u\n", (uint16_t)sp->cpuid, HYPAPP_INFO_TABLE_NUMENTRIES);
 
     //plant int 15h redirection code for E820 reporting and copy boot-module
     if(isbsp){
@@ -587,10 +556,8 @@ void xc_init_slab_main(slab_params_t *sp){
     xcinit_setup_guest(sp, isbsp);
 
 
-	#if 0
     //invoke hypapp initialization callbacks
     xc_hcbinvoke(XMHFGEEC_SLAB_XC_INIT, sp->cpuid, XC_HYPAPPCB_INITIALIZE, 0, XMHFGEEC_SLAB_XG_RICHGUEST);
-	#endif
 
     _XDPRINTF_("XC_INIT[%u]: Proceeding to call guest: ESP=%08x, eflags=%08x\n", (uint16_t)sp->cpuid,
     		CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__read_esp,CASM_NOPARAM), CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__read_eflags, CASM_NOPARAM));

@@ -53,9 +53,9 @@
 #define __XC_H_
 
 
-#ifndef __ASSEMBLY__
-	#include <uberspark/uobjrtl/crypto/include/basedefs.h>
-#endif // __ASSEMBLY__
+//#ifndef __ASSEMBLY__
+//	#include <uberspark/uobjrtl/crypto/include/basedefs.h>
+//#endif // __ASSEMBLY__
 
 #define XC_HYPAPPCB_CHAIN                       (1)
 #define XC_HYPAPPCB_NOCHAIN                     (2)
@@ -79,6 +79,7 @@
 
 
 
+
 typedef struct {
     uint32_t cbtype;
     uint32_t cbqual;
@@ -86,40 +87,127 @@ typedef struct {
     uint32_t cbresult;
 }__attribute__((packed)) xc_hypappcb_params_t;
 
-typedef struct {
+/*typedef struct {
     uint32_t xmhfhic_slab_index;
     uint32_t cbmask;
 } __attribute__((packed)) xc_hypapp_info_t;
-
+*/
 
 #define XC_HYPAPPCB_MASK(x) (1 << x)
 
-static xc_hypapp_info_t _xcihub_hypapp_info_table[] = {
-    {
-        XMHFGEEC_SLAB_XH_HYPERDEP,
-        (XC_HYPAPPCB_MASK(XC_HYPAPPCB_INITIALIZE) | XC_HYPAPPCB_MASK(XC_HYPAPPCB_HYPERCALL) | XC_HYPAPPCB_MASK(XC_HYPAPPCB_MEMORYFAULT) | XC_HYPAPPCB_MASK(XC_HYPAPPCB_SHUTDOWN) )
-    },
+/*@
+	requires 0 <= cbtype <= XC_HYPAPPCB_MAXMASK;
+	assigns invoke_helper[0..(HYPAPP_INFO_TABLE_NUMENTRIES-1)];
+	ensures \result == XC_HYPAPPCB_CHAIN || \result == XC_HYPAPPCB_NOCHAIN;
+@*/
+static uint32_t xc_hcbinvoke(uint32_t src_slabid, uint32_t cpuid, 
+    uint32_t cbtype, uint32_t cbqual, 
+    uint32_t guest_slab_index){
+    
+    uint32_t status = XC_HYPAPPCB_CHAIN;
+    bool nochain = false;
+    uint32_t i;
+	
+   	slab_params_t spl;
 
-    //{
-    //   XMHFGEEC_SLAB_XH_APRVEXEC,
-    //    (XC_HYPAPPCB_MASK(XC_HYPAPPCB_INITIALIZE) | XC_HYPAPPCB_MASK(XC_HYPAPPCB_HYPERCALL) | XC_HYPAPPCB_MASK(XC_HYPAPPCB_MEMORYFAULT) | XC_HYPAPPCB_MASK(XC_HYPAPPCB_SHUTDOWN) )
-    //},
+	spl.src_slabid = src_slabid;
+	spl.cpuid = cpuid;
+	spl.dst_uapifn = 0;
+	spl.in_out_params[0]=cbtype; //hcbp->cbtype=cbtype;
+	spl.in_out_params[1]=cbqual; //hcbp->cbqual=cbqual;
+	spl.in_out_params[2]=guest_slab_index; //hcbp->guest_slab_index=guest_slab_index;
+	spl.in_out_params[3]=0;
 
+    /*@
+		loop invariant a1: 0 <= i <= HYPAPP_INFO_TABLE_NUMENTRIES;
+		loop invariant a2: \forall integer x; 0 <= x < i ==> ( invoke_helper[x] == true );
+		loop assigns i;
+		loop assigns status;
+		loop assigns nochain;
+		loop assigns invoke_helper[0..(HYPAPP_INFO_TABLE_NUMENTRIES-1)];
+		loop variant HYPAPP_INFO_TABLE_NUMENTRIES - i;
+	@*/
+    #if defined (__UAPP_APRVEXEC__)
+	    if( (XC_HYPAPPCB_MASK(XC_HYPAPPCB_INITIALIZE) | 
+            XC_HYPAPPCB_MASK(XC_HYPAPPCB_HYPERCALL) | 
+            XC_HYPAPPCB_MASK(XC_HYPAPPCB_MEMORYFAULT) | 
+            XC_HYPAPPCB_MASK(XC_HYPAPPCB_SHUTDOWN) )
+            & XC_HYPAPPCB_MASK(cbtype)){
+		    extern void xh_aprvexec_slab_main(slab_params_t *sp);
+            xh_aprvexec_slab_main(&spl);
+		    status = spl.in_out_params[3];
+            if (status == XC_HYPAPPCB_NOCHAIN){
+                return status;
+            }
+        }
+    #endif
 
-    {
-        XMHFGEEC_SLAB_XH_SSTEPTRACE,
-        (XC_HYPAPPCB_MASK(XC_HYPAPPCB_INITIALIZE) | XC_HYPAPPCB_MASK(XC_HYPAPPCB_HYPERCALL) | XC_HYPAPPCB_MASK(XC_HYPAPPCB_TRAP_EXCEPTION) | XC_HYPAPPCB_MASK(XC_HYPAPPCB_SHUTDOWN) )
-    },
+    #if defined (__UAPP_HYPERDEP__)
+	    if( (XC_HYPAPPCB_MASK(XC_HYPAPPCB_INITIALIZE) | 
+             XC_HYPAPPCB_MASK(XC_HYPAPPCB_HYPERCALL) | 
+             XC_HYPAPPCB_MASK(XC_HYPAPPCB_MEMORYFAULT) | 
+             XC_HYPAPPCB_MASK(XC_HYPAPPCB_SHUTDOWN) )
+            & XC_HYPAPPCB_MASK(cbtype)){
+            extern void xhhyperdep_slab_main(slab_params_t *sp);
+            xhhyperdep_slab_main(&spl);
+            status = spl.in_out_params[3];
+            if (status == XC_HYPAPPCB_NOCHAIN){
+                return status;
+            }
+        }
+    #endif
 
+    #if defined (__UAPP_SSTEPTRACE__)
+	    if( (XC_HYPAPPCB_MASK(XC_HYPAPPCB_INITIALIZE) | 
+             XC_HYPAPPCB_MASK(XC_HYPAPPCB_HYPERCALL) | 
+             XC_HYPAPPCB_MASK(XC_HYPAPPCB_TRAP_EXCEPTION) | 
+             XC_HYPAPPCB_MASK(XC_HYPAPPCB_SHUTDOWN) )
+            & XC_HYPAPPCB_MASK(cbtype)){
+            extern void xh_ssteptrace_slab_main(slab_params_t *sp);
+            xh_ssteptrace_slab_main(&spl);
+            status = spl.in_out_params[3];
+            if (status == XC_HYPAPPCB_NOCHAIN){
+                return status;
+            }
+        }
+    #endif
 
-    {
-        XMHFGEEC_SLAB_XH_SYSCALLLOG,
-        (XC_HYPAPPCB_MASK(XC_HYPAPPCB_INITIALIZE) | XC_HYPAPPCB_MASK(XC_HYPAPPCB_HYPERCALL) | XC_HYPAPPCB_MASK(XC_HYPAPPCB_MEMORYFAULT) )
-    }
+    #if defined (__UAPP_SYSCALLLOG__)
+	    if( (XC_HYPAPPCB_MASK(XC_HYPAPPCB_INITIALIZE) | 
+            XC_HYPAPPCB_MASK(XC_HYPAPPCB_HYPERCALL) | 
+            XC_HYPAPPCB_MASK(XC_HYPAPPCB_MEMORYFAULT) )
+            & XC_HYPAPPCB_MASK(cbtype)){
+            extern void xhsysclog_slab_main(slab_params_t *sp);
+            xhsysclog_slab_main(&spl);
+            status = spl.in_out_params[3];
+            if (status == XC_HYPAPPCB_NOCHAIN){
+                return status;
+            }
+        }
+    #endif
 
-};
+    //#if defined (__UAPP_NWLOG__)
+	//    if( (XC_HYPAPPCB_MASK(XC_HYPAPPCB_INITIALIZE) | 
+    //        XC_HYPAPPCB_MASK(XC_HYPAPPCB_HYPERCALL) | 
+    //         XC_HYPAPPCB_MASK(XC_HYPAPPCB_SHUTDOWN) )
+    //        & XC_HYPAPPCB_MASK(cbtype)){
+        //	extern void xcnwlog_slab_main(slab_params_t *sp);
+        //	xcnwlog_slab_main(&spl);
+        //	status = spl.in_out_params[3];
+        //    if (status == XC_HYPAPPCB_NOCHAIN){
+        //		return status;
+        //	}
+    //  }
+    //#endif
 
-#define HYPAPP_INFO_TABLE_NUMENTRIES (sizeof(_xcihub_hypapp_info_table)/sizeof(_xcihub_hypapp_info_table[0]))
+	return XC_HYPAPPCB_CHAIN;
+}
+
+//
+///*@
+//	requires 0 <= cbtype <= XC_HYPAPPCB_MAXMASK;
+//@*/
+//static uint32_t xc_hcbinvoke(uint32_t src_slabid, uint32_t cpuid, uint32_t cbtype, uint32_t cbqual, uint32_t guest_slab_index);
 
 
 #endif //__ASSEMBLY__
