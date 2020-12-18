@@ -67,6 +67,7 @@
 #define __UAPP_HYPERDEP__
 #define __UAPP_SSTEPTRACE__
 #define __UAPP_SYSCALLLOG__
+#define __UAPP_UHCALLTEST__
 //#define __UAPP_NWLOG__
 
 
@@ -202,6 +203,7 @@
 #define XMHFGEEC_SLAB_XH_SYSCALLLOG         12
 #define XMHFGEEC_SLAB_XH_HYPERDEP           13
 #define XMHFGEEC_SLAB_XH_APRVEXEC           13 //TBD: note this will all be removed eventually
+#define XMHFGEEC_SLAB_XH_UHCALLTEST         13 //TBD: note this will all be removed eventually
 #define XMHFGEEC_SLAB_XH_SSTEPTRACE         14
 #define XMHFGEEC_SLAB_XG_RICHGUEST         	15
 

@@ -44,64 +44,46 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
+// hyperdep hypapp hypercall handler
+// author: amit vasudevan (amitvasudevan@acm.org)
+
 #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf.h>
 #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/uobjs/geec.h>
-// #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf-debug.h>
 
 #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/uobjs/xc.h>
-#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/uobjs/xc_ihub.h>
 #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/uobjs/uapi_gcpustate.h>
+#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/uobjs/xh_uhcalltest.h>
 
-/*
- * xcihub_icptvmcall -- rich guest VMCALL interfacing
- *
- * author: amit vasudevan (amitvasudevan@acm.org)
- */
-void xcihub_icptvmcall(uint32_t cpuid, uint32_t src_slabid){
-	slab_params_t spl;
-	xmhf_uapi_gcpustate_vmrw_params_t *gcpustate_vmrwp = (xmhf_uapi_gcpustate_vmrw_params_t *)spl.in_out_params;
-	uint32_t guest_rip;
-	uint32_t info_vmexit_instruction_length;
 
-	//_XDPRINTF_("%s[%u]: VMX_VMEXIT_VMCALL\n", __func__, cpuid);
+static inline void uhcalltest_hcbhypercall_helper(uint32_t cpuindex, uint32_t call_id, uint32_t guest_slab_index, uint64_t gpa){
+	_XDPRINTF_("%s[%u]: call_id=%x, gpa=%016llx\n", __func__, (uint16_t)cpuindex, call_id, gpa);
 
-	//check to see if we need to handle rich guest E820 emulation, if so handle
-	//emulation, else rotate through hypapp callbacks
-	if (!xcihub_rg_e820emulation(cpuid, src_slabid)){
+	if(call_id == UAPP_UHCALLTEST_FUNCTION_TEST){
+		uhcalltest_copy(cpuindex, guest_slab_index, gpa);
+	}else{
+		_XDPRINTF_("%s[%u]: unsupported hypercall %x. Ignoring\n",__func__, (uint16_t)cpuindex, call_id);
 
-		xc_hcbinvoke(XMHFGEEC_SLAB_XC_IHUB, cpuid, XC_HYPAPPCB_HYPERCALL, 0, src_slabid);
-
-		//skip over VMCALL by updating guest RIP
-		//TODO: halt if we don't handle the VMCALL instead of just ignoring it
-		spl.cpuid = cpuid;
-		spl.src_slabid = XMHFGEEC_SLAB_XC_IHUB;
-		spl.dst_slabid = XMHFGEEC_SLAB_UAPI_GCPUSTATE;
-		spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_VMREAD;
-
-		gcpustate_vmrwp->encoding = VMCS_INFO_VMEXIT_INSTRUCTION_LENGTH;
-		gcpustate_vmrwp->value=0;
-		ugcpust_slab_main(&spl);
-		info_vmexit_instruction_length = gcpustate_vmrwp->value;
-
-		gcpustate_vmrwp->encoding = VMCS_GUEST_RIP;
-		gcpustate_vmrwp->value=0;
-		ugcpust_slab_main(&spl);
-		guest_rip = gcpustate_vmrwp->value;
-		guest_rip+=info_vmexit_instruction_length;
-
-		spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_VMWRITE;
-		gcpustate_vmrwp->encoding = VMCS_GUEST_RIP;
-		gcpustate_vmrwp->value = guest_rip;
-		ugcpust_slab_main(&spl);
-
-		//write interruptibility = 0
-		gcpustate_vmrwp->encoding = VMCS_GUEST_INTERRUPTIBILITY;
-		gcpustate_vmrwp->value = 0;
-		ugcpust_slab_main(&spl);
-
-		//_XDPRINTF_("%s[%u]: no-E820 adjusted guest_rip=%08x\n", __func__, cpuid, guest_rip);
 	}
 }
 
+void uhcalltest_hcbhypercall(uint32_t cpuindex, uint32_t guest_slab_index){
+	slab_params_t spl;
+	xmhf_uapi_gcpustate_gprs_params_t *gcpustate_gprs =
+		(xmhf_uapi_gcpustate_gprs_params_t *)spl.in_out_params;
+	x86regs_t *gprs = (x86regs_t *)&gcpustate_gprs->gprs;
+	uint32_t call_id;
+	uint64_t gpa;
 
+	spl.in_out_params[0] = spl.in_out_params[1] = spl.in_out_params[2] = spl.in_out_params[3] = 0;
+	spl.in_out_params[4] = spl.in_out_params[5] = spl.in_out_params[6] = spl.in_out_params[7] = 0;
+	spl.src_slabid = XMHFGEEC_SLAB_XH_UHCALLTEST;
+	spl.dst_slabid = XMHFGEEC_SLAB_UAPI_GCPUSTATE;
+	spl.cpuid = cpuindex;
+	spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_GUESTGPRSREAD;
+	ugcpust_slab_main(&spl);
 
+	call_id = gprs->eax;
+	gpa = ((uint64_t)gprs->ebx << 32) | gprs->edx;
+
+	uhcalltest_hcbhypercall_helper(cpuindex, call_id, guest_slab_index, gpa);
+}

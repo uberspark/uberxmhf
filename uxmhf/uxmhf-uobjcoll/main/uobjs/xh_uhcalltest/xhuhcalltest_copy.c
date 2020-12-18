@@ -44,64 +44,56 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
+// uhcalltest hypapp main module
+// author: amit vasudevan (amitvasudevan@acm.org)
+
 #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf.h>
 #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/uobjs/geec.h>
-// #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf-debug.h>
 
 #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/uobjs/xc.h>
-#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/uobjs/xc_ihub.h>
 #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/uobjs/uapi_gcpustate.h>
+#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/uobjs/uapi_slabmempgtbl.h>
 
-/*
- * xcihub_icptvmcall -- rich guest VMCALL interfacing
- *
- * author: amit vasudevan (amitvasudevan@acm.org)
- */
-void xcihub_icptvmcall(uint32_t cpuid, uint32_t src_slabid){
-	slab_params_t spl;
-	xmhf_uapi_gcpustate_vmrw_params_t *gcpustate_vmrwp = (xmhf_uapi_gcpustate_vmrw_params_t *)spl.in_out_params;
-	uint32_t guest_rip;
-	uint32_t info_vmexit_instruction_length;
+#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/uobjs/xh_uhcalltest.h>
 
-	//_XDPRINTF_("%s[%u]: VMX_VMEXIT_VMCALL\n", __func__, cpuid);
 
-	//check to see if we need to handle rich guest E820 emulation, if so handle
-	//emulation, else rotate through hypapp callbacks
-	if (!xcihub_rg_e820emulation(cpuid, src_slabid)){
+void uhcalltest_copy(uint32_t cpuindex, uint32_t guest_slab_index, uint64_t gpa){
+  slab_params_t spl;
+  xmhfgeec_uapi_slabmempgtbl_getentryforpaddr_params_t *getentryforpaddrp =
+    (xmhfgeec_uapi_slabmempgtbl_getentryforpaddr_params_t *)spl.in_out_params;
+  xmhfgeec_uapi_slabmempgtbl_setentryforpaddr_params_t *setentryforpaddrp =
+    (xmhfgeec_uapi_slabmempgtbl_setentryforpaddr_params_t *)spl.in_out_params;
 
-		xc_hcbinvoke(XMHFGEEC_SLAB_XC_IHUB, cpuid, XC_HYPAPPCB_HYPERCALL, 0, src_slabid);
+  spl.src_slabid = XMHFGEEC_SLAB_XH_UHCALLTEST;
+  spl.dst_slabid = XMHFGEEC_SLAB_UAPI_SLABMEMPGTBL;
+  spl.cpuid = cpuindex;
 
-		//skip over VMCALL by updating guest RIP
-		//TODO: halt if we don't handle the VMCALL instead of just ignoring it
-		spl.cpuid = cpuid;
-		spl.src_slabid = XMHFGEEC_SLAB_XC_IHUB;
-		spl.dst_slabid = XMHFGEEC_SLAB_UAPI_GCPUSTATE;
-		spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_VMREAD;
+  if( gpa != 0){
+    spl.dst_uapifn = XMHFGEEC_UAPI_SLABMEMPGTBL_GETENTRYFORPADDR;
+    getentryforpaddrp->dst_slabid = guest_slab_index;
+    getentryforpaddrp->gpa = gpa;
+    //@assert getentryforpaddrp->gpa == gpa;
+    ugmpgtbl_slab_main(&spl);
 
-		gcpustate_vmrwp->encoding = VMCS_INFO_VMEXIT_INSTRUCTION_LENGTH;
-		gcpustate_vmrwp->value=0;
-		ugcpust_slab_main(&spl);
-		info_vmexit_instruction_length = gcpustate_vmrwp->value;
+    _XDPRINTF_("%s[%u]: original entry for gpa=%016llx is %016llx\n",
+	       __func__, (uint16_t)cpuindex,
+	       gpa, getentryforpaddrp->result_entry);
 
-		gcpustate_vmrwp->encoding = VMCS_GUEST_RIP;
-		gcpustate_vmrwp->value=0;
-		ugcpust_slab_main(&spl);
-		guest_rip = gcpustate_vmrwp->value;
-		guest_rip+=info_vmexit_instruction_length;
+    spl.dst_uapifn = XMHFGEEC_UAPI_SLABMEMPGTBL_SETENTRYFORPADDR;
+    setentryforpaddrp->dst_slabid = guest_slab_index;
+    setentryforpaddrp->gpa = gpa;
+    setentryforpaddrp->entry = getentryforpaddrp->result_entry & ~(0x4); //execute-disable
+    //@assert setentryforpaddrp->gpa == gpa;
+    //@assert !(setentryforpaddrp->entry & 0x4);
+    ugmpgtbl_slab_main(&spl);
 
-		spl.dst_uapifn = XMHF_HIC_UAPI_CPUSTATE_VMWRITE;
-		gcpustate_vmrwp->encoding = VMCS_GUEST_RIP;
-		gcpustate_vmrwp->value = guest_rip;
-		ugcpust_slab_main(&spl);
+    uhcalltest_param_t *uhctp;
+    uhctp = (uhcalltest_param_t *)gpa;
+    uberspark_uobjrtl_crt__memcmp(uhctp->out, uhctp->in, 16);
 
-		//write interruptibility = 0
-		gcpustate_vmrwp->encoding = VMCS_GUEST_INTERRUPTIBILITY;
-		gcpustate_vmrwp->value = 0;
-		ugcpust_slab_main(&spl);
-
-		//_XDPRINTF_("%s[%u]: no-E820 adjusted guest_rip=%08x\n", __func__, cpuid, guest_rip);
-	}
+    _XDPRINTF_("%s[%u]: finished uhcalltest \n",
+	       __func__, (uint16_t)cpuindex);
+  }else{
+    //do nothing
+  }
 }
-
-
-

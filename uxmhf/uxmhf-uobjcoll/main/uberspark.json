@@ -42,6 +42,7 @@
 			"include/uobjs/xh_hyperdep.h",
 			"include/uobjs/xh_ssteptrace.h",
 			"include/uobjs/xh_syscalllog.h",
+			"include/uobjs/xh_uhcalltest.h",
 
 			"include/_com.h",
 			"include/xmhf-config.h",
@@ -208,7 +209,17 @@
 			"uobjs/xh_syscalllog/xhsysclog_hcbmemfault.c",
 			"uobjs/xh_syscalllog/xhsysclog_loginfo.c",
 			"uobjs/xh_syscalllog/xhsysclog_main.c",
-			"uobjs/xh_syscalllog/xhsysclog_register.c"
+			"uobjs/xh_syscalllog/xhsysclog_register.c",
+
+			"uobjs/xh_uhcalltest/xhuhcalltest_main.c",
+			"uobjs/xh_uhcalltest/xhuhcalltest_data.c",
+			"uobjs/xh_uhcalltest/xhuhcalltest_copy.c",
+			"uobjs/xh_uhcalltest/xhuhcalltest_hcb_init.c",
+			"uobjs/xh_uhcalltest/xhuhcalltest_hcbhypercall.c",
+			"uobjs/xh_uhcalltest/xhuhcalltest_hcbshutdown.c"
+
+
+
         ],
          "casm-files": [ 
 			// "uobjs/geec/geec_slabstubs_uvt.cS",

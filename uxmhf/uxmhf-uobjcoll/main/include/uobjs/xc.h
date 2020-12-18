@@ -127,6 +127,23 @@ static uint32_t xc_hcbinvoke(uint32_t src_slabid, uint32_t cpuid,
 		loop assigns invoke_helper[0..(HYPAPP_INFO_TABLE_NUMENTRIES-1)];
 		loop variant HYPAPP_INFO_TABLE_NUMENTRIES - i;
 	@*/
+  
+
+    #if defined (__UAPP_UHCALLTEST__)
+	    if( (XC_HYPAPPCB_MASK(XC_HYPAPPCB_INITIALIZE) | 
+            XC_HYPAPPCB_MASK(XC_HYPAPPCB_HYPERCALL) | 
+            XC_HYPAPPCB_MASK(XC_HYPAPPCB_SHUTDOWN) )
+            & XC_HYPAPPCB_MASK(cbtype)){
+            extern void xh_uhcalltest_slab_main(slab_params_t *sp);
+            xh_uhcalltest_slab_main(&spl);
+		    status = spl.in_out_params[3];
+            if (status == XC_HYPAPPCB_NOCHAIN){
+                return status;
+            }
+        }
+    #endif
+
+
     #if defined (__UAPP_APRVEXEC__)
 	    if( (XC_HYPAPPCB_MASK(XC_HYPAPPCB_INITIALIZE) | 
             XC_HYPAPPCB_MASK(XC_HYPAPPCB_HYPERCALL) | 
