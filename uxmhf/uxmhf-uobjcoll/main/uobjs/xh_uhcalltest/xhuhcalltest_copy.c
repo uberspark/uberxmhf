@@ -79,17 +79,18 @@ void uhcalltest_copy(uint32_t cpuindex, uint32_t guest_slab_index, uint64_t gpa)
 	       __func__, (uint16_t)cpuindex,
 	       gpa, getentryforpaddrp->result_entry);
 
-    spl.dst_uapifn = XMHFGEEC_UAPI_SLABMEMPGTBL_SETENTRYFORPADDR;
+    /*spl.dst_uapifn = XMHFGEEC_UAPI_SLABMEMPGTBL_SETENTRYFORPADDR;
     setentryforpaddrp->dst_slabid = guest_slab_index;
     setentryforpaddrp->gpa = gpa;
     setentryforpaddrp->entry = getentryforpaddrp->result_entry & ~(0x4); //execute-disable
     //@assert setentryforpaddrp->gpa == gpa;
     //@assert !(setentryforpaddrp->entry & 0x4);
     ugmpgtbl_slab_main(&spl);
+*/
 
     uhcalltest_param_t *uhctp;
     uhctp = (uhcalltest_param_t *)gpa;
-    uberspark_uobjrtl_crt__memcmp(uhctp->out, uhctp->in, 16);
+    uberspark_uobjrtl_crt__memcpy(uhctp->out, uhctp->in, 16);
 
     _XDPRINTF_("%s[%u]: finished uhcalltest \n",
 	       __func__, (uint16_t)cpuindex);
