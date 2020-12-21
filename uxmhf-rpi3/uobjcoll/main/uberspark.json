@@ -74,8 +74,8 @@
 				"libutpm/utpm-common.c", 
 				"libutpm/utpm.c",
 			
-				//"uapps/uapp-ctxtrace.c",
-				//"uapps/uapp-pa5encfs.c",
+				"uapps/uapp-ctxtrace.c",
+				"uapps/uapp-pa5encfs.c",
 				//"uapps/uapp-pvdriver-uart.c",
 				"uapps/uapp-uagent.c",
 				"uapps/uapp-uhcalltest.c",

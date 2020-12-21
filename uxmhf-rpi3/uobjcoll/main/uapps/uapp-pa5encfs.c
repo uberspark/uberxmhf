@@ -44,7 +44,6 @@
 #include <uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/uart.h>
 #include <uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/debug.h>
 
-#include <uberspark/uobjrtl/crypto/include/basedefs.h>
 #include <uberspark/uobjrtl/crypto/include/ciphers/aes/aes.h>
 #include <uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/pa5encfs.h>
 //#include <uberspark/include/uberspark.h>
@@ -80,7 +79,7 @@ bool uapp_pa5encfs_handlehcall(u32 uhcall_function, void *uhcall_buffer, u32 uhc
 	if(uhcall_function == UAPP_PA5ENCFS_FUNCTION_START){
 
 		/* Init Engine */
-		if( rijndael_cbc_start(pa5encfs_aes_iv, pa5encfs_aes_key, AES_KEY_LEN_BYTES, 0, &cbc_ctx) != CRYPT_OK )
+		if( uberspark_uobjrtl_crypto__ciphers_aes__rijndael_cbc_start(pa5encfs_aes_iv, pa5encfs_aes_key, AES_KEY_LEN_BYTES, 0, &cbc_ctx) != CRYPT_OK )
 			ep->result = 0;
 		else
 			ep->result = 1;
@@ -89,7 +88,7 @@ bool uapp_pa5encfs_handlehcall(u32 uhcall_function, void *uhcall_buffer, u32 uhc
 
 	}else if (uhcall_function == UAPP_PA5ENCFS_FUNCTION_ENCRYPT){
 
-		if( rijndael_cbc_encrypt(ep->inbuf, ep->outbuf, ep->inlen, &cbc_ctx) != CRYPT_OK)
+		if( uberspark_uobjrtl_crypto__ciphers_aes__rijndael_cbc_encrypt(ep->inbuf, ep->outbuf, ep->inlen, &cbc_ctx) != CRYPT_OK)
 			ep->result=0;
 		else
 			ep->result=1;
@@ -98,7 +97,7 @@ bool uapp_pa5encfs_handlehcall(u32 uhcall_function, void *uhcall_buffer, u32 uhc
 
 	}else if (uhcall_function == UAPP_PA5ENCFS_FUNCTION_DECRYPT){
 
-	    if( rijndael_cbc_decrypt(ep->inbuf, ep->outbuf, ep->inlen, &cbc_ctx) != CRYPT_OK)
+	    if( uberspark_uobjrtl_crypto__ciphers_aes__rijndael_cbc_decrypt(ep->inbuf, ep->outbuf, ep->inlen, &cbc_ctx) != CRYPT_OK)
 	    	ep->result=0;
 		else
 			ep->result=1;
@@ -108,7 +107,7 @@ bool uapp_pa5encfs_handlehcall(u32 uhcall_function, void *uhcall_buffer, u32 uhc
 
 	}else if (uhcall_function == UAPP_PA5ENCFS_FUNCTION_DONE){
 
-		if( rijndael_cbc_done( &cbc_ctx) != CRYPT_OK)
+		if( uberspark_uobjrtl_crypto__ciphers_aes__rijndael_cbc_done( &cbc_ctx) != CRYPT_OK)
 	    	ep->result=0;
 		else
 			ep->result=1;
