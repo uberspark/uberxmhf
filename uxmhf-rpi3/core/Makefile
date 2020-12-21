@@ -41,7 +41,7 @@ atags.o : ../common/atags.c
 arm8-32.o : ../common/arm8-32.s
 	$(TOOLPREFIX)gcc $(CFLAGS) -D__ASSEMBLY__ ../common/arm8-32.s -o arm8-32.o
 
-ifeq ($(filter $(ENABLE_UAPP_UAGENT) $(ENABLE_UAPP_UHSIGN),y),y)
+ifeq ($(filter $(ENABLE_UAPP_UAGENT) $(ENABLE_UAPP_UHSIGN) $(ENABLE_UAPP_STATEDB),y),y)
 whitelist.o : ../common/whitelist.c
 	$(TOOLPREFIX)gcc $(CFLAGS) ../common/whitelist.c -o whitelist.o
 OPT_FILES += whitelist.o
@@ -101,12 +101,17 @@ uapp-uagent.o : ../uapps/uapp-uagent/uapp-uagent.c
 OPT_FILES += uapp-uagent.o
 endif
 
+ifeq ($(ENABLE_UAPP_STATEDB), y)
+uapp-uhstateDB.o : ../uapps/uapp-uhstateDB/uapp-uhstateDB.c
+	$(TOOLPREFIX)gcc $(CFLAGS) ../uapps/uapp-uhstateDB/uapp-uhstateDB.c -o uapp-uhstateDB.o 
+OPT_FILES += uapp-uhstateDB.o
+endif
+
 ifeq ($(ENABLE_UAPP_PVDRIVER_UART), y)
 uapp-pvdriver-uart.o : ../uapps/uapp-pvdriver-uart/uapp-pvdriver-uart.c
 	$(TOOLPREFIX)gcc $(CFLAGS) ../uapps/uapp-pvdriver-uart/uapp-pvdriver-uart.c -o uapp-pvdriver-uart.o 
 OPT_FILES += uapp-pvdriver-uart.o
 endif
-
 
 uapp-utpmtest.o : ../uapps/uapp-utpmtest/uapp-utpmtest.c
 	$(TOOLPREFIX)gcc $(CFLAGS) ../uapps/uapp-utpmtest/uapp-utpmtest.c -o uapp-utpmtest.o

@@ -1,4 +1,4 @@
-AC_INIT([uxmhf-rpi3], [5.0])
+AC_INIT([uxmhf-rpi3], [6.0.0])
 
 
 ###### autoconf general options
@@ -114,6 +114,16 @@ AS_IF([test "x${enable_uapp_uagent}" != "xno"],
       [ENABLE_UAPP_UAGENT=y],
       [ENABLE_UAPP_UAGENT=n])
 
+
+# selectively enable/disable simple state DB functionality in hypervisor
+AC_SUBST([ENABLE_UAPP_STATEDB])
+AC_ARG_ENABLE([uapp_stateDB],
+	AS_HELP_STRING([--enable-uapp-uhstateDB@<:@=yes|no@:>@],
+		[enable stateDB uapp]),
+		, [enable_uapp_stateDB=no])
+AS_IF([test "x${enable_uapp_stateDB}" != "xno"],
+      [ENABLE_UAPP_STATEDB=y],
+      [ENABLE_UAPP_STATEDB=n])
 
 # selectively enable/disable UART para-virtualized driver backend in hypervisor
 AC_SUBST([ENABLE_UAPP_PVDRIVER_UART])

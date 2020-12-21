@@ -627,7 +627,7 @@ void secondary_main(u32 cpuid){
 }
 
 
-
+#if defined (__ENABLE_UART_PL011__) || defined (__ENABLE_UART_MINI__)
 //////
 // test functions
 //////
@@ -667,3 +667,4 @@ void uart_testrecv(void){
     _XDPRINTF_("%s: Total chars received=%u\n", __func__, num_count);
 }
 
+#endif

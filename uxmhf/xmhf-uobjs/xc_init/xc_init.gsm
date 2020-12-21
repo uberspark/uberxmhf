@@ -3,6 +3,7 @@
 
 #include <geec_sentinel.h>
 #include <uapi_gcpustate.h>
+#include <xh_uhcalltest.h>
 #include <xh_hyperdep.h>
 #include <xh_syscalllog.h>
 #include <xh_ssteptrace.h>

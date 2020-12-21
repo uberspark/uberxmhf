@@ -74,28 +74,29 @@ void gs_exit_retv2uv(slab_params_t *sp, void *caller_stack_frame){
 
 
 
-    _XDPRINTF_("%s[%u]: safepop: {cpuid: %u, src: %u, dst: %u, ctype: 0x%x, \
-               csf=0x%x, sp=0x%x \n",
-            __func__, (uint16_t)sp->cpuid,
-               (uint16_t)sp->cpuid, elem.src_slabid, elem.dst_slabid, elem.slab_ctype,
+    _XDPRINTF_("%s[%u]: safepop: {cpuid: %u, src: %u, dst: %u, ctype: 0x%x, csf=0x%x, sp=0x%x \n",
+	       __func__, (uint16_t)sp->cpuid,
+               (uint16_t)sp->cpuid, elem.src_slabid, elem.dst_slabid,
+	       elem.slab_ctype,
                elem.caller_stack_frame, elem.sp);
 
     //check to ensure this return is paired with a prior call
-    if ( !((elem.src_slabid == sp->dst_slabid) && (elem.dst_slabid == sp->src_slabid) &&
+    if( !((elem.src_slabid == sp->dst_slabid) && (elem.dst_slabid == sp->src_slabid) &&
            (elem.slab_ctype == XMHFGEEC_SENTINEL_CALL_VfT_PROG_TO_uVT_uVU_PROG)) ){
-        _XDPRINTF_("%s[ln:%u]: Fatal: ret does not match prior call. Halting!\n",
-            __func__, __LINE__);
-        HALT();
+      _XDPRINTF_("%s[ln:%u]: Fatal: ret does not match prior call. Halting!\n",
+		 __func__, __LINE__);
+      HALT();
     }
 
 
     //marshall parameters
-    CASM_FUNCCALL(xmhfhw_sysmemaccess_copy, (elem.sp)->in_out_params, sp->in_out_params, sizeof(sp->in_out_params));
+    CASM_FUNCCALL(xmhfhw_sysmemaccess_copy, (elem.sp)->in_out_params,
+		  sp->in_out_params, sizeof(sp->in_out_params));
 
 
     //return back to VfT_PROG slab
     CASM_FUNCCALL(gs_exit_retv2uvstub,
-                      elem.caller_stack_frame);
+		  elem.caller_stack_frame);
 
     _XDPRINTF_("%s[%u]: wip. halting!\n", __func__, (uint16_t)sp->cpuid);
     HALT();

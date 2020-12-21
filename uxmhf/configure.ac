@@ -1,4 +1,4 @@
-AC_INIT([uxmhf], [5.0])
+AC_INIT([uxmhf], [6.0.0])
 
 ###### simple configuration of tools. (just looks for matching binary on PATH)
 AC_CHECK_PROG([MAKE], [make], [make])
@@ -56,6 +56,15 @@ AS_IF([test "x${enable_debug_serial}" != "xno"],
       [DEBUG_SERIAL=y
        DEBUG_SERIAL_PORT=$[]enable_debug_serial],
       [DEBUG_SERIAL=n])
+
+#debugging
+AC_SUBST([DEBUG_SERIAL_MAXCPUS])
+AC_ARG_WITH([debug_serial_maxcpus],
+        AS_HELP_STRING([--with-debug-serial-maxcpus@<:@=CPUS@:>@],
+                [specify number of CPUS on the platform when debug mode is enabled]),
+                , [with_debug_serial_maxcpus=8])
+DEBUG_SERIAL_MAXCPUS=$[]with_debug_serial_maxcpus
+
 
 
 # selectively enable/disable Dynamic Root-of-Trust (DRT)

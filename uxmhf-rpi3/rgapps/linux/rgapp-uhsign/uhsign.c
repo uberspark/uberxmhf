@@ -54,6 +54,7 @@
 
 #include <xmhfcrypto.h>
 #include <hmac-sha1.h>
+#include <hmac-sha256.h>
 
 __attribute__((aligned(4096))) __attribute__((section(".data"))) uhsign_param_t uhcp;
 
@@ -67,7 +68,7 @@ void do_uhsign(void *bufptr) {
 
   printf("Digest: ");
   uint32_t i;
-  for(i=0;i<20;i++)
+  for(i=0;i<32;i++)
     printf("%02x", ptr_uhcp->digest[i]);
   printf("\n");
 }
