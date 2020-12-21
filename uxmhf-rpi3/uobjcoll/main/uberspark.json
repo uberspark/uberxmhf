@@ -39,7 +39,7 @@
 				"include/pl011uart.h", 
 				"include/types.h",
 				"include/uagent.h",
-				//"include/uapp-pvdriver-uart.h"
+				"include/uapp-pvdriver-uart.h",
 				"include/uart.h", 
 				"include/uhcalltest.h",
 				"include/uhsign.h",
@@ -76,7 +76,7 @@
 			
 				"uapps/uapp-ctxtrace.c",
 				"uapps/uapp-pa5encfs.c",
-				//"uapps/uapp-pvdriver-uart.c",
+				"uapps/uapp-pvdriver-uart.c",
 				"uapps/uapp-uagent.c",
 				"uapps/uapp-uhcalltest.c",
 				//"uapps/uapp-uhsign.c",
