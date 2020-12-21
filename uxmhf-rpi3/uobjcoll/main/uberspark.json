@@ -44,8 +44,8 @@
 				"include/uhcalltest.h",
 				"include/uhsign.h",
 				//"include/uhstateDB.h",
-				"include/utpmtest.h"
-				//"include/whitelist.h"
+				"include/utpmtest.h",
+				"include/whitelist.h"
 			],
 
 		    "c-files": [ 
@@ -55,7 +55,7 @@
 				"common/miniuart.c",
 				"common/pl011uart.c", 
 				"common/subr_prf.c",
-				//"common/whitelist.c",
+				"common/whitelist.c",
 				
 				"core/bcm2837.c",
 				"core/dmaprot.c",
