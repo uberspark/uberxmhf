@@ -51,7 +51,7 @@ void s2pgtbl_initialize(void){
 
 	vtcr = sysreg_read_vtcr();
 	uart_puts("VTCR before= ");
-	debug_hexdumpu32(vtcr);
+	//debug_hexdumpu32(vtcr);
 
 	vtcr = 0;
 	vtcr |= VTCR_RES1_MASK;	//reserved 1 bits
@@ -68,22 +68,22 @@ void s2pgtbl_initialize(void){
 
 	vtcr = sysreg_read_vtcr();
 	uart_puts("VTCR after= ");
-	debug_hexdumpu32(vtcr);
+	//debug_hexdumpu32(vtcr);
 
 	hdcr = sysreg_read_hdcr();
 	uart_puts("HDCR before= ");
-	debug_hexdumpu32(hdcr);
+	//debug_hexdumpu32(hdcr);
 
 	hdcr &= HDCR_HPMN_MASK;
 	sysreg_write_hdcr(hdcr);
 
 	hdcr = sysreg_read_hdcr();
 	uart_puts("HDCR after= ");
-	debug_hexdumpu32(hdcr);
+	//debug_hexdumpu32(hdcr);
 
 	hcptr = sysreg_read_hcptr();
 	uart_puts("HCPTR before= ");
-	debug_hexdumpu32(hcptr);
+	//debug_hexdumpu32(hcptr);
 
 	hcptr = 0;
 	hcptr |= HCPTR_RES1_MASK;
@@ -91,17 +91,17 @@ void s2pgtbl_initialize(void){
 
 	hcptr = sysreg_read_hcptr();
 	uart_puts("HCPTR after= ");
-	debug_hexdumpu32(hcptr);
+	//debug_hexdumpu32(hcptr);
 
 	hstr = sysreg_read_hstr();
 	uart_puts("HSTR before= ");
-	debug_hexdumpu32(hstr);
+	//debug_hexdumpu32(hstr);
 
 	sysreg_write_hstr(0);
 
 	hstr = sysreg_read_hstr();
 	uart_puts("HSTR after= ");
-	debug_hexdumpu32(hstr);
+	//debug_hexdumpu32(hstr);
 
 }
 
@@ -159,11 +159,11 @@ void s2pgtbl_populate_tables(void){
 
 	//debug
 	uart_puts(" attrs=\n");
-	debug_hexdumpu32(attrs >> 32);
-	debug_hexdumpu32((u32)attrs);
+	//debug_hexdumpu32(attrs >> 32);
+	//debug_hexdumpu32((u32)attrs);
 	//uart_puts(" roattrs=\n");
-	//debug_hexdumpu32(roattrs >> 32);
-	//debug_hexdumpu32((u32)roattrs);
+	////debug_hexdumpu32(roattrs >> 32);
+	////debug_hexdumpu32((u32)roattrs);
 
 
 	//populate l1 ldesc table
@@ -178,8 +178,8 @@ void s2pgtbl_populate_tables(void){
 	//debug
 	uart_puts("L1 LDESC table dump follows:\n");
 	for(i=0; i < L1_LDESC_TABLE_ENTRIES; i++){
-		debug_hexdumpu32(l1_ldesc_table[i] >> 32);
-		debug_hexdumpu32((u32)l1_ldesc_table[i]);
+		//debug_hexdumpu32(l1_ldesc_table[i] >> 32);
+		//debug_hexdumpu32((u32)l1_ldesc_table[i]);
 	}
 
 
@@ -217,8 +217,8 @@ void s2pgtbl_loadpgtblbase(void){
 	_XDPRINTFSMP_("%s: VTTBR before=0x%016llx\n", __func__, vttbr);
 
 	//uart_puts("VTTBR before=");
-	//debug_hexdumpu32(vttbr >> 32);
-	//debug_hexdumpu32((u32)vttbr);
+	////debug_hexdumpu32(vttbr >> 32);
+	////debug_hexdumpu32((u32)vttbr);
 
 	vttbr = 0;
 	vttbr |= ((u64)&l1_ldesc_table & VTTBR_BADDR_MASK);
@@ -231,8 +231,8 @@ void s2pgtbl_loadpgtblbase(void){
 
 
 	//uart_puts("VTTBR after=");
-	//debug_hexdumpu32(vttbr >> 32);
-	//debug_hexdumpu32((u32)vttbr);
+	////debug_hexdumpu32(vttbr >> 32);
+	////debug_hexdumpu32((u32)vttbr);
 
 }
 
@@ -241,13 +241,13 @@ void s2pgtbl_activatetranslation(void){
 
 	hcr = sysreg_read_hcr();
 	uart_puts("HCR before=");
-	debug_hexdumpu32(hcr);
+	//debug_hexdumpu32(hcr);
 
 	hcr |= HCR_VM_MASK;
 	sysreg_write_hcr(hcr);
 
 	hcr = sysreg_read_hcr();
 	uart_puts("HCR after=");
-	debug_hexdumpu32(hcr);
+	//debug_hexdumpu32(hcr);
 
 }

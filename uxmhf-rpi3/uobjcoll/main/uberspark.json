@@ -40,23 +40,31 @@
 				"common/subr_prf.c",
 				//"common/whitelist.c",
 				
-				"core/main.c", "core/ghcall.c",
-				 "core/hyptimer.c", 
-				 "core/bcm2837.c", "core/secboot.c",
-				 "core/intprot.c", "core/dmaprot.c",
-				 "core/uapi_s2pgtbl.c", "core/s2pgtbl.c",
-				 "core/hyppgtbl.c", "core/mmu.c",
-				 "core/hypvtable.c", 
-				 "libutpm/utpm-common.c", "libutpm/utpm.c" ],
+				"core/bcm2837.c",
+				"core/dmaprot.c",
+				"core/ghcall.c",
+				"core/hyppgtbl.c",
+				"core/hyptimer.c", 
+				"core/hypvtable.c", 
+				"core/intprot.c", 
+				"core/main.c", 
+				"core/mmu.c",
+				"core/s2pgtbl.c",
+				"core/secboot.c",
+				"core/uapi_s2pgtbl.c", 
+				
+				"libutpm/utpm-common.c", 
+				"libutpm/utpm.c" ],
 			
 			"casm-files": [ ],
 			
 			"asm-files": [ 
 				"common/arm8-32.s", 
 
-				"core/hypvtablestubs.s",
+				"core/entry.S",
+				"core/hypvtablestubs.s"
 				
-				"core/entry.S"  ]
+				  ]
 		},
 	
 		/* public methods */
