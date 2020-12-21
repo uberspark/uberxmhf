@@ -40,14 +40,14 @@
                  amit vasudevan (<amitvasudevan@acm.org>)
 */
 
-#include <types.h>
-#include <arm8-32.h>
-#include <bcm2837.h>
-#include <uart.h>
-#include <debug.h>
+#include <uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/types.h>
+#include <uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/arm8-32.h>
+#include <uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/bcm2837.h>
+#include <uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/uart.h>
+#include <uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/debug.h>
 
-#include <uhstateDB.h>
-#include <whitelist.h>
+#include <uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/whitelist.h>
+#include <uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/uhstateDB.h>
 
 __attribute__((section(".data"))) int32_t stateDB[MAX_STATES]={0};
 __attribute__((section(".data"))) uint32_t maxStateDB[MAX_STATES]={0};

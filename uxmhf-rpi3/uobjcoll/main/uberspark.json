@@ -43,7 +43,7 @@
 				"include/uart.h", 
 				"include/uhcalltest.h",
 				"include/uhsign.h",
-				//"include/uhstateDB.h",
+				"include/uhstateDB.h",
 				"include/utpmtest.h",
 				"include/watchdog.h",
 				"include/whitelist.h"
@@ -80,8 +80,8 @@
 				//"uapps/uapp-uagent.c",
 				//"uapps/uapp-uhcalltest.c",
 				//"uapps/uapp-uhsign.c",
-				//"uapps/uapp-uhstateDB.c",
-				//"uapps/uapp-utpmtest.c",
+				"uapps/uapp-uhstateDB.c",
+				"uapps/uapp-utpmtest.c",
 				"uapps/uapp-watchdog.c"
 
 			],
