@@ -79,7 +79,7 @@
 				"uapps/uapp-pvdriver-uart.c",
 				"uapps/uapp-uagent.c",
 				"uapps/uapp-uhcalltest.c",
-				//"uapps/uapp-uhsign.c",
+				"uapps/uapp-uhsign.c",
 				"uapps/uapp-uhstateDB.c",
 				"uapps/uapp-utpmtest.c",
 				"uapps/uapp-watchdog.c"
