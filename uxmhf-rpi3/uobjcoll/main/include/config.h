@@ -29,7 +29,7 @@
 //#define __ENABLE_UAPP_PA5ENCFS__
 //#define __ENABLE_UAPP_PVDRIVER_UART__
 //#define __ENABLE_UAPP_UAGENT__
-//#define __ENABLE_UAPP_UHCALLTEST__
+#define __ENABLE_UAPP_UHCALLTEST__
 //#define __ENABLE_UAPP_UHSIGN__
 //#define __ENABLE_UAPP_UHSTATEDB__
 //#define __ENABLE_UAPP_UTPMTEST__
