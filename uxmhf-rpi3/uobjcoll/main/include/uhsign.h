@@ -6,7 +6,7 @@
 //#include <uberspark/include/uberspark.h>
 
 #define UAPP_UHSIGN_FUNCTION_SIGN    0x69
-#define HMAC_DIGEST_SIZE 20
+#define HMAC_DIGEST_SIZE 32
 
 #ifndef __ASSEMBLY__
 
