@@ -25,10 +25,15 @@
 //#define __ENABLE_UART_PL011__
 //#define __ENABLE_UART_PL011_CTSRTS__
 
+//#define __ENABLE_UAPP_CTXTRACE__
+//#define __ENABLE_UAPP_PA5ENCFS__
 //#define __ENABLE_UAPP_PVDRIVER_UART__
 //#define __ENABLE_UAPP_UAGENT__
+//#define __ENABLE_UAPP_UHCALLTEST__
 //#define __ENABLE_UAPP_UHSIGN__
-//#define __ENABLE_UAPP_STATEDB__
+//#define __ENABLE_UAPP_UHSTATEDB__
+//#define __ENABLE_UAPP_UTPMTEST__
+//#define __ENABLE_UAPP_WATCHDOG__
 
 
 

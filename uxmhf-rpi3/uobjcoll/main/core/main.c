@@ -217,22 +217,32 @@ void guest_data_abort_handler(arm8_32_regs_t *r, u32 hsr){
 
 	//handle data abort fault by passing it to appropriate module
 	if ( fault_pa_page == ARMLOCALREGISTERS_BASE ){
+		
+		#if defined (__INTPROT__)
 		intprot_handle_intcontroller_access(&ida);
+		#endif
 
 	}else if( fault_pa_page == BCM2837_EMMC_BASE){
+		#if defined (__SECBOOT__)
 		secboot_handle_sdio_access(&ida);
+		#endif
 
 	}else if( fault_pa_page == BCM2837_SDHOST_BASE){
+		#if defined (__SECBOOT__)
 		secboot_handle_sdhost_access(&ida);
+		#endif
 
 	}else if( (fault_pa_page == BCM2837_DMA0_REGS_BASE) ||
 		(fault_pa_page == BCM2837_DMA15_REGS_BASE) ){
+		#if defined (__DMAPROT__)
 		dmaprot_handle_dmacontroller_access(&ida);
-
+		#endif
 
 	}else if ( fault_pa_page == DWC_REGS_BASE ){
+		#if defined (__DMAPROT__)
 		dmaprot_handle_usbdmac_access(&ida);
-
+		#endif
+		
 	}else if ( fault_pa_page == appnpf_page_pa && appnpf_activated){
 		//appnpf trigger, just omit the access
 
@@ -262,7 +272,9 @@ void guest_cp15_trap_handler(arm8_32_regs_t *r, u32 hsr){
 		elr_hyp += sizeof(u16);
 	sysreg_write_elrhyp(elr_hyp);
 
-	//ctxtrace_cp15_trap_handler(r, hsr);
+#if defined (__ENABLE_UAPP_CTXTRACE__)
+	ctxtrace_cp15_trap_handler(r, hsr);
+#endif
 }
 
 
@@ -551,9 +563,40 @@ void main(u32 r0, u32 id, struct atag *at, u32 cpuid){
 
 	//////
 	// initialize uapps
+	#if defined (__ENABLE_UAPP_CTXTRACE__)
+		ctxtrace_init(cpuid);	
+	#endif
+
+	#if defined (__ENABLE_UAPP_PA5ENCFS__)
+		//no initialization required	
+	#endif
 
 	#if defined (__ENABLE_UAPP_PVDRIVER_UART__)
 		uapp_pvdriver_uart_initialize_uapp(cpuid);
+	#endif
+
+	#if defined (__ENABLE_UAPP_UAGENT__)
+		//no initialization required	
+	#endif
+
+	#if defined (__ENABLE_UAPP_UHCALLTEST__)
+		//no initialization required	
+	#endif
+
+	#if defined (__ENABLE_UAPP_UHSIGN__)
+		//no initialization required	
+	#endif
+
+	#if defined (__ENABLE_UAPP_UHSTATEDB__)
+		//no initialization required	
+	#endif
+
+	#if defined (__ENABLE_UAPP_UTPMTEST__)
+		//no initialization required	
+	#endif
+
+	#if defined (__ENABLE_UAPP_WATCHDOG__)
+		uapp_watchdog_initialize(cpuid);
 	#endif
 
 
