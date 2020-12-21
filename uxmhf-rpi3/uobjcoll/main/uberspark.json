@@ -71,7 +71,19 @@
 				"core/uapi_s2pgtbl.c", 
 				
 				"libutpm/utpm-common.c", 
-				"libutpm/utpm.c" ],
+				"libutpm/utpm.c"
+			
+				//"uapps/uapp-ctxtrace.c",
+				//"uapps/uapp-pa5encfs.c",
+				//"uapps/uapp-pvdriver-uart.c",
+				//"uapps/uapp-uagent.c",
+				//"uapps/uapp-uhcalltest.c",
+				//"uapps/uapp-uhsign.c",
+				//"uapps/uapp-uhstateDB.c",
+				//"uapps/uapp-utpmtest.c",
+				//"uapps/uapp-watchdog.c",
+
+			],
 			
 			"casm-files": [ ],
 			
