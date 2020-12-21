@@ -40,17 +40,18 @@
                 amit vasudevan (<amitvasudevan@acm.org>)
 */
 
-#include <types.h>
-#include <arm8-32.h>
-#include <bcm2837.h>
-#include <uart.h>
-#include <debug.h>
+#include <uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/types.h>
+#include <uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/arm8-32.h>
+#include <uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/bcm2837.h>
+#include <uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/uart.h>
+#include <uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/debug.h>
 
-#include <uagent.h>
-#include <whitelist.h>
-#include <aes.h>
-#include <hmac-sha1.h>
-#include <xmhfcrypto.h>
+
+#include <uberspark/uobjrtl/crypto/include/ciphers/aes/aes.h>
+#include <uberspark/uobjrtl/crypto/include/mac/hmacsha1/hmacsha1.h>
+#include <uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/whitelist.h>
+#include <uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/uagent.h>
+
 
 
 #define UAGENT_BLOCK_SIZE 16
@@ -94,9 +95,9 @@ bool uapp_uagent_handlehcall(u32  uhcall_function, void *uhcall_buffer, u32 uhca
   symmetric_CBC cbc_ctx;
   uint8_t data_buffer[1600];
 
-  memset(data_buffer, 0, 1600);
+  uberspark_uobjrtl_crt__memset(data_buffer, 0, 1600);
 
-  if(rijndael_cbc_start(iv, uagent_key, UAGENT_KEY_SIZE, 0, &cbc_ctx)) {
+  if(uberspark_uobjrtl_crypto__ciphers_aes__rijndael_cbc_start(iv, uagent_key, UAGENT_KEY_SIZE, 0, &cbc_ctx)) {
     return false;
   }
   
@@ -104,21 +105,21 @@ bool uapp_uagent_handlehcall(u32  uhcall_function, void *uhcall_buffer, u32 uhca
 
   // encrypt
   if(uhcp->op==1){
-    if(rijndael_cbc_encrypt(uhcp->pkt_data, data_buffer, (unsigned long) cipher_len, &cbc_ctx)) {
+    if(uberspark_uobjrtl_crypto__ciphers_aes__rijndael_cbc_encrypt(uhcp->pkt_data, data_buffer, (unsigned long) cipher_len, &cbc_ctx)) {
       return false;
     }
-    memset(uhcp->pkt_data, 0, 1600);
-    memcpy(uhcp->pkt_data, data_buffer, cipher_len);
-    rijndael_cbc_done(&cbc_ctx);
+    uberspark_uobjrtl_crt__memset(uhcp->pkt_data, 0, 1600);
+    uberspark_uobjrtl_crt__memcpy(uhcp->pkt_data, data_buffer, cipher_len);
+    uberspark_uobjrtl_crypto__ciphers_aes__rijndael_cbc_done(&cbc_ctx);
     return true;
     //decrypt
   } else if(uhcp->op==2){
-    if(rijndael_cbc_decrypt(uhcp->pkt_data, data_buffer, (unsigned long) cipher_len, &cbc_ctx)) {
+    if(uberspark_uobjrtl_crypto__ciphers_aes__rijndael_cbc_decrypt(uhcp->pkt_data, data_buffer, (unsigned long) cipher_len, &cbc_ctx)) {
       return false;
     }
-    memset(uhcp->pkt_data, 0, 1600);
-    memcpy(uhcp->pkt_data, data_buffer, cipher_len);
-    rijndael_cbc_done(&cbc_ctx);
+    uberspark_uobjrtl_crt__memset(uhcp->pkt_data, 0, 1600);
+    uberspark_uobjrtl_crt__memcpy(uhcp->pkt_data, data_buffer, cipher_len);
+    uberspark_uobjrtl_crypto__ciphers_aes__rijndael_cbc_done(&cbc_ctx);
     return true;
   } else {
     return false;
