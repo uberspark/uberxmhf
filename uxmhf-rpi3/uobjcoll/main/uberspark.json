@@ -31,20 +31,32 @@
 				 "include/pl011uart.h", "include/types.h",
 				 "include/uart.h", "include/uhcalltest.h",
 				 "include/utpmtest.h", "include/uhsign.h" ],
-		    "c-files": [ "core/main.c", "core/ghcall.c",
+		    "c-files": [ 
+				"common/atags.c",
+				"common/debug.c", 
+				"common/mailbox.c",
+				"common/miniuart.c",
+				"common/pl011uart.c", 
+				"common/subr_prf.c",
+				//"common/whitelist.c",
+				
+				"core/main.c", "core/ghcall.c",
 				 "core/hyptimer.c", 
 				 "core/bcm2837.c", "core/secboot.c",
 				 "core/intprot.c", "core/dmaprot.c",
 				 "core/uapi_s2pgtbl.c", "core/s2pgtbl.c",
 				 "core/hyppgtbl.c", "core/mmu.c",
-				 "core/hypvtable.c", "common/atags.c",
-				 "common/debug.c", "common/subr_prf.c",
-				 "common/mailbox.c",
-				 "common/pl011uart.c", "common/miniuart.c",
+				 "core/hypvtable.c", 
 				 "libutpm/utpm-common.c", "libutpm/utpm.c" ],
-		    "casm-files": [ ],
-		    "asm-files": [ "core/hypvtablestubs.s",
-				   "common/arm8-32.s", "core/entry.S"  ]
+			
+			"casm-files": [ ],
+			
+			"asm-files": [ 
+				"common/arm8-32.s", 
+
+				"core/hypvtablestubs.s",
+				
+				"core/entry.S"  ]
 		},
 	
 		/* public methods */
