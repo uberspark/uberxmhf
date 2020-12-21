@@ -45,6 +45,7 @@
 				"include/uhsign.h",
 				//"include/uhstateDB.h",
 				"include/utpmtest.h",
+				"include/watchdog.h",
 				"include/whitelist.h"
 			],
 
@@ -71,7 +72,7 @@
 				"core/uapi_s2pgtbl.c", 
 				
 				"libutpm/utpm-common.c", 
-				"libutpm/utpm.c"
+				"libutpm/utpm.c",
 			
 				//"uapps/uapp-ctxtrace.c",
 				//"uapps/uapp-pa5encfs.c",
@@ -81,7 +82,7 @@
 				//"uapps/uapp-uhsign.c",
 				//"uapps/uapp-uhstateDB.c",
 				//"uapps/uapp-utpmtest.c",
-				//"uapps/uapp-watchdog.c",
+				"uapps/uapp-watchdog.c"
 
 			],
 			
@@ -91,7 +92,9 @@
 				"common/arm8-32.s", 
 
 				"core/entry.S",
-				"core/hypvtablestubs.s"
+				"core/hypvtablestubs.s",
+
+				"uapps/uapp-watchdogsup.s"
 				
 				  ]
 		},

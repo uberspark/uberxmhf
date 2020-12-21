@@ -44,6 +44,8 @@
 #include <uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/debug.h>
 //#include <uberspark/include/uberspark.h>
 
+#include <uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/watchdog.h>
+
 
 extern void uapp_watchdog_fiq_handler(void);
 
