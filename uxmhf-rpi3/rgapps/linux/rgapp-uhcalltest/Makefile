@@ -17,6 +17,7 @@ LFLAGS = -g -Wall -Wextra
 
 .PHONY: all
 all: 
+	cd $(RGAPPS_LIB_DIR)/libuhcall && make -w all
 	arm-linux-gnueabihf-gcc $(CFLAGS) uhcalltest.c -o uhcalltest.o
 	arm-linux-gnueabihf-gcc $(LFLAGS) uhcalltest.o -o uhcalltest $(LIBS)
 
