@@ -150,19 +150,19 @@ bool va2pa(uint32_t va, u32 *pa){
 bool uapp_uhcalltest_handlehcall(u32 uhcall_function, void *uhcall_buffer, u32 uhcall_buffer_len){
 	uhcalltest_param_t *uhctp;
 	uint32_t i;
-	u32 uhcall_buffer_paddr;
+	//u32 uhcall_buffer_paddr;
 
 	if(uhcall_function != UAPP_UHCALLTEST_FUNCTION_TEST)
 		return false;
 
-	_XDPRINTFSMP_("%s: hcall: uhcall_function=0x%08x, uhcall_buffer=0x%08x, uhcall_buffer_len=0x%08x\n", __func__,
-			uhcall_function, uhcall_buffer, uhcall_buffer_len);
+	//_XDPRINTFSMP_("%s: hcall: uhcall_function=0x%08x, uhcall_buffer=0x%08x, uhcall_buffer_len=0x%08x\n", __func__,
+	//		uhcall_function, uhcall_buffer, uhcall_buffer_len);
 
-	if(!va2pa((uint32_t)uhcall_buffer, &uhcall_buffer_paddr))
-		return false;
+	//if(!va2pa((uint32_t)uhcall_buffer, &uhcall_buffer_paddr))
+	//	return false;
 	
-	uhctp = (uhcalltest_param_t *)uhcall_buffer_paddr;
-	//uhctp = (uhcalltest_param_t *)uhcall_buffer;
+	//uhctp = (uhcalltest_param_t *)uhcall_buffer_paddr;
+	uhctp = (uhcalltest_param_t *)uhcall_buffer;
 
 #if 1
    _XDPRINTFSMP_("dumping in[]...\n");
