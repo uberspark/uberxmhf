@@ -63,29 +63,34 @@ Build Micro-Hypervisor Core Framework
    Build uberXMHF Raspbery PI 3 on development system
 
 
-   #. ``cd uxmhf-rpi3``
-   #. ``./bsconfigure.sh``
-   #. ``./configure`` 
+   #. ``cd uxmhf-rpi3/uobjcoll``
    #. ``make clean``
-   #. ``make OSKRNLIMG=~/uxmhf-rpi3-staging/kernel7.img``
-   #. ``cp uxmhf-rpi3.img ~/uxmhf-rpi3-staging/.``
-   #. ``cp rpi3-config.txt ~/uxmhf-rpi3-staging/config.txt``
+   #. ``make``
+   #. ``cd install && ./install.sh ~/uxmhf-rpi3-staging/kernel7.img`` 
+   #. ``cp install/uxmhf-rpi3.img ~/uxmhf-rpi3-staging/.``
+   #. ``cp install/rpi3-config.txt ~/uxmhf-rpi3-staging/config.txt``
 
 #. 
-   Note: you can run ``./configure`` above using any combination of the following 
-   optional (experimental) parameters as needed:
+   Note: you can enable optional core micro-hypervisor features by enabling
+   the following definitions within ``uxmhf-rpi3/uobjcoll/main/include/config.h``
+   as needed:
 
 
-   #. ``./configure --enable-dmaprot`` to enable DMA protection capabilities
-   #. ``./configure --enable-secboot --with-boot-partition-start=BP_START_SECTOR --with-boot-partition-end=BP_END_SECTOR`` to enable secure boot capabilities. In this case ``BP_START_SECTOR`` and 
-      ``BP_END_SECTOR`` are the values of the starting and ending sectors of the boot partition (\ ``/dev/mmcblk0p0``\ ) as obtained from the output of the following command: 
-      ``sudo fdisk -l /dev/mmcblk0``. Replace ``/dev/mmcblk0`` with the sdcard device on the development
-      system.
-   #. ``./configure --enable-intprot`` to enable interrupt protection capabilities
-   #. ``./configure --enable-fiqreflection`` to enable guest FIQ interrupts to be handled within micro-hypervisor
-   #. ``./configure --enable-debug-uart`` to enable debug output via UART; you must additionally either specify,
-      Mini UART (via ``--enable-uart-mini``) or full (PL011) UART (via ``--enable-uart-pl011``).
-      Also, if using PL011 UART, you can specify ``--enable-uart-pl011-ctsrts`` to enable UART hardware flow control. 
+   #. ``#define __DMAPROT__`` to enable DMA protection capabilities
+   #. ``#define __SECBOOT__`` with ``#define UXMHF_BOOT_PARTITION_START BP_START_SECTOR`` and ``#define UXMHF_BOOT_PARTITION_END BP_END_SECTOR`` to enable 
+      secure boot capabilities. In this case ``BP_START_SECTOR`` and 
+      ``BP_END_SECTOR`` are the values of the starting and ending sectors of the 
+      boot partition (\ ``/dev/mmcblk0p0``\ ) as obtained from the output of the 
+      following command: 
+      ``sudo fdisk -l /dev/mmcblk0``. Replace ``/dev/mmcblk0`` with the sdcard 
+      device on the development system.
+   #. ``#define __INTPROT__`` to enable interrupt protection capabilities
+   #. ``#define __FIQREFLECTION__`` to enable guest FIQ interrupts to be handled within micro-hypervisor
+   #. ``#define __DEBUG_UART__`` to enable debug output via UART; you must 
+      additionally either specify,
+      Mini UART (via ``#define __ENABLE_UART_MINI__``) or full (PL011) 
+      UART (via ``#define __ENABLE_UART_PL011__``).
+      Also, if using PL011 UART, you can use ``#define __ENABLE_UART_PL011_CTSRTS__`` to enable UART hardware flow control. 
 
 
 

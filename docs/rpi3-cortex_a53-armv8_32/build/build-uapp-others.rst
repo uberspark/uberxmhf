@@ -7,14 +7,16 @@ Other |uberapp| Micro-Hypervisor Extensions
 The following are other available |uberapp| micro-hypervisor extensions:
 
 
-.. note:: You can enable these extensions by running ``./configure`` with the appropriate 
-          parameters specified below while building the micro-hypervisor core framework. 
+..  note:: 
+    You can enable these extensions by editing ``uxmhf-rpi3/uobjcoll/main/include/config.h``
+    and enabling the appropriate definitions as below, while building the 
+    micro-hypervisor core framework. 
 
 
-#. ``./configure --enable-uapp-uhsign`` to enable a |uberapp| micro-hypervisor extension which provides HMAC key signing functionality
-#. ``./configure --enable-uapp-uagent`` to enable a |uberapp| micro-hypervisor extension which provides AES encryption functionality
-#. ``./configure --enable-uapp-uhstateDB`` to enable a |uberapp| micro-hypervisor extension which provides a simple database that tracks the state of each entry   
-#. ``./configure --enable-uapp-pvdriver-uart`` to enable a |uberapp| micro-hypervisor extension which provides a guest OS UART para-virtualized driver backend
+#. ``#define __ENABLE_UAPP_UHSIGN__`` to enable a |uberapp| micro-hypervisor extension which provides HMAC key signing functionality
+#. ``#define __ENABLE_UAPP_UAGENT__`` to enable a |uberapp| micro-hypervisor extension which provides AES encryption functionality
+#. ``#define __ENABLE_UAPP_UHSTATEDB__`` to enable a |uberapp| micro-hypervisor extension which provides a simple database that tracks the state of each entry   
+#. ``#define __ENABLE_UAPP_PVDRIVER_UART__`` to enable a |uberapp| micro-hypervisor extension which provides a guest OS UART para-virtualized driver backend
 
 
 For the UART para-virtualized driver backend |uberapp| micro-hypervisor extension, you 
