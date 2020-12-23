@@ -144,6 +144,16 @@
 			},
 
 			{
+				"name" : "uobj_rodata",
+				"size" : "0x6000"
+			},
+
+			{
+				"name" : "uobj_tstack",
+				"size" : "0x2d000"
+			},
+
+			{
 				"name" : "paligndata",
 				"output_names" : [ ".paligndata" ],
 				"type" : "0x0",
