@@ -1,8 +1,16 @@
 #!/bin/bash
 
+# installation script
+# author: amit vasudevan <amitvasudevan@acm.org>
+
 set -e
 
-KERNEL_IMAGE=~/uxmhf-rpi3-staging/kernel7.img
+if [[ $# -ne 1 ]]; then
+    echo "usage: install.sh <path-to-kernel-image-file>"
+    exit 1
+fi
+
+KERNEL_IMAGE=$1
 UOBJCOLL_IMAGE=../_build/uobjcoll.exe.flat
 
 KERNEL_IMAGE_SIZE=`stat -c %s ${KERNEL_IMAGE}`
