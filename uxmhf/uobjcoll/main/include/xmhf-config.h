@@ -63,10 +63,10 @@
 #define __DRT__ 
 #define __DMAP__ 
 
-#define __UAPP_APRVEXEC__
-#define __UAPP_HYPERDEP__
-#define __UAPP_SSTEPTRACE__
-#define __UAPP_SYSCALLLOG__
+//#define __UAPP_APRVEXEC__
+//#define __UAPP_HYPERDEP__
+//#define __UAPP_SSTEPTRACE__
+//#define __UAPP_SYSCALLLOG__
 #define __UAPP_UHCALLTEST__
 //#define __UAPP_NWLOG__
 
