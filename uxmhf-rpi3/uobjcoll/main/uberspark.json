@@ -7,9 +7,9 @@
 
    	/* manifest header */
 	"uberspark-manifest":{
-		"manifest_node_types" : [ "uberspark-uobj" ],
-		"uberspark_min_version" : "6.0.0",
-		"uberspark_max_version" : "any"
+		"namespace" : [ "uberspark-uobj" ],
+		"version_min" : "6.0.0",
+		"version_max" : "any"
 	},
 
 
