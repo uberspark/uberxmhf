@@ -5,12 +5,9 @@
 
 {
 
-    /* manifest header */
- "uberspark-manifest":{
-     "manifest_node_types" : [ "uberspark-uobj" ],
-     "uberspark_min_version" : "6.0.0",
-     "uberspark_max_version" : "any"
- },
+     "uberspark.manifest.namespace" : [ "uberspark-uobj" ],
+     "uberspark.manifest.version_min" : "6.0.0",
+     "uberspark.manifest.version_max" : "any",
 
    /* uobj declaration */
  "uberspark-uobj" : {
@@ -21,7 +18,7 @@
 
      /* sources */
      "sources" : {
-         "h-files": [ 
+         "h_files": [ 
 			"include/uobjs/geec.h",
             "include/uobjs/geec_prime.h",
 
@@ -51,7 +48,7 @@
 			"include/xmhf-types.h",
 			"include/xmhf.h"
         ],
-         "c-files": [ 
+         "c_files": [ 
 
 			"uobjs/debug/dbgdata.c",
 			"uobjs/debug/subr_prf.c",
@@ -184,7 +181,7 @@
 
 
         ],
-         "casm-files": [ 
+         "casm_files": [ 
 
             "uobjs/geec_prime/gp_s1_entry.cS",
 			"uobjs/geec_prime/gp_s4_apstacks.cS",
@@ -200,13 +197,13 @@
 			"uobjs/xh_aprvexec/xh_aprvexec_codesup.cS",
             "uobjs/xh_ssteptrace/xh_ssteptrace_codesup.cS"
          ],
-         "asm-files": [ 
+         "asm_files": [ 
 
          ]
      },
 
      /* public methods */
-     "publicmethods" : {
+     "public_methods" : {
 		 "entry" : [
 			 "void",
 			 "(void)",
@@ -217,18 +214,18 @@
      /* public methods of other uobjs that this uobj invokes 
          within the same collection
      */
-     "intrauobjcoll-callees" : {
+     "intra_uobjcoll_callees" : {
      },
  
 
      /* public methods of other uobjs that this uobj invokes 
          across other collection(s)
      */
-     "interuobjcoll-callees": {
+     "inter_uobjcoll_callees": {
      },
 
      /* legacy CoSS functions/code that this uobj invokes */
-     "legacy-callees": [
+     "legacy_callees": [
 	 ],
 
 	/* uobj binary sectioning parameters */

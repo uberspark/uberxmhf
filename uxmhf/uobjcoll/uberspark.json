@@ -5,12 +5,9 @@
 
 {
 
-    /* manifest header */
-  "uberspark-manifest":{
-      "manifest_node_types" : [ "uberspark-uobjcoll" ],
-      "uberspark_min_version" : "5.1",
-      "uberspark_max_version" : "any"
-  },
+      "uberspark.manifest.namespace" : [ "uberspark-uobjcoll" ],
+      "uberspark.manifest.version_min" : "5.1",
+      "uberspark.manifest.version_max" : "any",
 
   /* üobjcoll declarations */
   "uberspark-uobjcoll":{
@@ -19,7 +16,7 @@
       "arch" : "x86_32",
       "cpu" : "generic",
       "hpl" : "any", //"hyp",
-      "sentinels-intrauobjcoll" : [ "generic/generic/any/call" ],
+      "sentinels_intra_uobjcoll" : [ "generic/generic/any/call" ],
 
       /* uobjs */
       "uobjs" : {
@@ -31,9 +28,9 @@
 
 
     /* uobjcoll init method */
-    "initmethod" : {
-        "uobj_ns" : "uberspark/uobjcoll/platform/pc/uxmhf/main",
-        "pm_name" : "entry",
+    "init_method" : {
+        "uobj_namespace" : "uberspark/uobjcoll/platform/pc/uxmhf/main",
+        "public_method" : "entry",
         "sentinels" : [
             {
                 /*"sentinel_type" : "baremetal/grub-legacy/srot/generic/pc/pmr0/call"*/
@@ -44,7 +41,7 @@
 
 
       /* uobjcoll public methods */
-      "publicmethods" : {
+      "public_methods" : {
           "uberspark/uobjcoll/platform/pc/uxmhf/main" : {
               "entry" : [ "generic/generic/any/call" ]
           }
