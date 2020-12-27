@@ -5,12 +5,9 @@
 
 {
 
-   	/* manifest header */
-	"uberspark-manifest":{
-		"namespace" : [ "uberspark-uobj" ],
-		"version_min" : "6.0.0",
-		"version_max" : "any"
-	},
+		"uberspark.manifest.namespace" : [ "uberspark-uobj" ],
+		"uberspark.manifest.version_min" : "6.0.0",
+		"uberspark.manifest.version_max" : "any",
 
 
   	/* uobj declaration */
@@ -22,7 +19,7 @@
 
 		/* sources */
 		"sources" : {
-		    "h-files": [ 
+		    "h_files": [ 
 				"include/arm8-32.h", 
 				"include/atags.h",
 				"include/bcm2837.h", 
@@ -49,7 +46,7 @@
 				"include/whitelist.h"
 			],
 
-		    "c-files": [ 
+		    "c_files": [ 
 				"common/atags.c",
 				"common/debug.c", 
 				"common/mailbox.c",
@@ -86,9 +83,9 @@
 
 			],
 			
-			"casm-files": [ ],
+			"casm_files": [ ],
 			
-			"asm-files": [ 
+			"asm_files": [ 
 				"common/arm8-32.s", 
 
 				"core/entry.S",
@@ -100,7 +97,7 @@
 		},
 	
 		/* public methods */
-		"publicmethods" : {
+		"public_methods" : {
 			"entry" : [
 				"void",
 				"(uint32_t r0, uint32_t id, struct atag *at)", 
@@ -111,18 +108,18 @@
 		/* public methods of other uobjs that this uobj invokes 
 			within the same collection
 		*/
-		"intrauobjcoll-callees" : {
+		"intra_uobjcoll_callees" : {
 		},
 	
 
 		/* public methods of other uobjs that this uobj invokes 
 			across other collection(s)
 		*/
-		"interuobjcoll-callees": {
+		"inter_uobjcoll_callees": {
 		},
 	
 		/* legacy CoSS functions/code that this uobj invokes */
-		"legacy-callees": [
+		"legacy_callees": [
 		],
 
 		/* uobjrtl */

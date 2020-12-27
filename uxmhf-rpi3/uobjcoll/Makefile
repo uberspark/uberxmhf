@@ -10,9 +10,9 @@ ASSEMBLER := container/amd64/armv8_32/generic/gnu-as/v2.26.1
 LINKER := container/amd64/armv8_32/generic/gnu-ld/v2.26.1
 
 SPARK_NAMESPACE := $(shell uberspark staging list | grep rpi3)
-SPARK_CC := $(shell uberspark staging --setting-name=bridge_cc_bridge config-get)
-SPARK_AS := $(shell uberspark staging --setting-name=bridge_as_bridge config-get)
-SPARK_LD := $(shell uberspark staging --setting-name=bridge_ld_bridge config-get)
+SPARK_CC := $(shell uberspark staging --setting-name=cc_bridge_namespace config-get)
+SPARK_AS := $(shell uberspark staging --setting-name=as_bridge_namespace config-get)
+SPARK_LD := $(shell uberspark staging --setting-name=ld_bridge_namespace config-get)
 
 ###### targets
 
@@ -33,13 +33,13 @@ ifeq ("$(SPARK_NAMESPACE)", "")
 	uberspark staging create rpi3
 endif
 #ifneq ("$(SPARK_CC)", "$(COMPILER)")
-	uberspark staging config-set --setting-name=bridge_cc_bridge --setting-value=$(COMPILER)
+	uberspark staging config-set --setting-name=cc_bridge_namespace --setting-value=$(COMPILER)
 #endif
 #ifneq ("$(SPARK_AS)", "$(ASSEMBLER)")
-	uberspark staging config-set --setting-name=bridge_as_bridge --setting-value=$(ASSEMBLER)
+	uberspark staging config-set --setting-name=as_bridge_namespace --setting-value=$(ASSEMBLER)
 #endif
 #ifneq ("$(SPARK_LD)", "$(LINKER)")
-	uberspark staging config-set --setting-name=bridge_ld_bridge --setting-value=$(LINKER)
+	uberspark staging config-set --setting-name=ld_bridge_namespace --setting-value=$(LINKER)
 #endif
 	uberspark staging config-set --setting-name=binary_page_size --setting-value=0x1000
 	uberspark staging config-set --setting-name=binary_uobj_section_alignment --setting-value=0x1000

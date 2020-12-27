@@ -5,12 +5,9 @@
 
 {
 
-  	/* manifest header */
-	"uberspark-manifest":{
-		"namespace" : [ "uberspark-uobjcoll" ],
-		"version_min" : "6.0.0",
-		"version_max" : "any"
-	},
+		"uberspark.manifest.namespace" : [ "uberspark-uobjcoll" ],
+		"uberspark.manifest.version_min" : "6.0.0",
+		"uberspark.manifest.version_max" : "any",
 
 
 	/* üobjcoll declarations */
@@ -20,7 +17,7 @@
 		"arch" : "armv8_32",
 		"cpu" : "generic",
 		"hpl" : "hyp",
-		"sentinels-intrauobjcoll" : [ "generic/generic/hyp/call" ],
+		"sentinels_intra_uobjcoll" : [ "generic/generic/hyp/call" ],
 
 		/* uobjs */
 		"uobjs" : {
@@ -31,9 +28,9 @@
 		},
 
 		/* uobjcoll init method */
-		"initmethod" : {
-			"uobj_ns" : "uberspark/uobjcoll/platform/rpi3/uxmhf/main",
-			"pm_name" : "entry",
+		"init_method" : {
+			"uobj_namespace" : "uberspark/uobjcoll/platform/rpi3/uxmhf/main",
+			"public_method" : "entry",
 			"sentinels" : [
 				{
 					"sentinel_type" : "baremetal/vccore/srot/generic/rpi3/hyp/call",
@@ -44,7 +41,7 @@
 
 
 		/* uobjcoll public methods */
-		"publicmethods" : {
+		"public_methods" : {
 			"uberspark/uobjcoll/platform/rpi3/uxmhf/main" : {
 				"entry" : [ "generic/generic/hyp/call" ]
 			}
