@@ -1,0 +1,67 @@
+/*
+	uxmhf $uobj_name uobj json manifest
+	author: ethan joseph (ethanj217@gmail.com)
+*/
+
+{
+
+    /* manifest header */
+ "uberspark-manifest":{
+     "manifest_node_types" : [ "$node_type" ],
+     "uberspark_min_version" : "6.0.0",
+     "uberspark_max_version" : "any"
+ },
+
+
+   /* uobj declaration */
+ "uberspark-uobj" : {
+     "namespace" : "uberspark/uobjs/platform/pc/uxmhf/uobjs/$uobj_name",
+     "platform" : "pc",
+     "arch" : "x86_32",
+     "cpu" : "generic",
+
+     /* sources */
+     "sources" : {
+         "h-files": [ 
+            $h_files
+        ],
+         "c-files": [ 
+            $c_files
+        ],
+         "casm-files": [ 
+            $casm_files
+         ],
+         "asm-files": [ 
+            $asm_files
+         ]
+     },
+ 
+     /* public methods */
+     "publicmethods" : {
+         $public_methods
+     },
+
+     /* public methods of other uobjs that this uobj invokes 
+         within the same collection
+     */
+     "intrauobjcoll-callees" : {
+     },
+ 
+
+     /* public methods of other uobjs that this uobj invokes 
+         across other collection(s)
+     */
+     "interuobjcoll-callees": {
+     },
+ 
+     /* legacy CoSS functions/code that this uobj invokes */
+     "legacy-callees": [
+     ],
+
+     /* uobjrtl */
+     "uobjrtl": [
+     ]
+     
+ }
+
+}

@@ -4,6 +4,10 @@
 Adding new |uberapps|
 =====================
 
+..  note::
+    This section is out-of-date and needs to be revised to cope with the
+    current development version
+
 Integrating a new |uberapp| into the micro-hypervisor requires the following 
 integration pieces:
 

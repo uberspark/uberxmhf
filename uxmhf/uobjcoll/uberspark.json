@@ -1,0 +1,61 @@
+/*
+	uberxmhf uobj collection JSON manifest
+	author: ethan joseph (ethanj217@gmail.com)
+*/
+
+{
+
+    /* manifest header */
+  "uberspark-manifest":{
+      "manifest_node_types" : [ "uberspark-uobjcoll" ],
+      "uberspark_min_version" : "5.1",
+      "uberspark_max_version" : "any"
+  },
+
+  /* üobjcoll declarations */
+  "uberspark-uobjcoll":{
+      "namespace" : "uberspark/uobjcoll/platform/pc/uxmhf",
+      "platform" : "pc",
+      "arch" : "x86_32",
+      "cpu" : "generic",
+      "hpl" : "any", //"hyp",
+      "sentinels-intrauobjcoll" : [ "generic/generic/any/call" ],
+
+      /* uobjs */
+      "uobjs" : {
+          "master" : "",
+          "templars" : [
+              "uberspark/uobjcoll/platform/pc/uxmhf/main"
+          ]
+      },
+
+
+    /* uobjcoll init method */
+    "initmethod" : {
+        "uobj_ns" : "uberspark/uobjcoll/platform/pc/uxmhf/main",
+        "pm_name" : "entry",
+        "sentinels" : [
+            {
+                /*"sentinel_type" : "baremetal/grub-legacy/srot/generic/pc/pmr0/call"*/
+                "sentinel_type" : "drot/intel/pc/pmr0/call"
+            }	
+        ]
+    },	
+
+
+      /* uobjcoll public methods */
+      "publicmethods" : {
+          "uberspark/uobjcoll/platform/pc/uxmhf/main" : {
+              "entry" : [ "generic/generic/any/call" ]
+          }
+      },
+
+      /* loaders */
+      "loaders" : [
+        "uberspark/loaders/baremetal/x86_32/grub-legacy"    
+      ]
+      
+
+  }
+
+}
