@@ -59,6 +59,10 @@ Edit ``~/mnt/pi-boot/config.txt`` and add the following lines:
     force_turbo=0
 
 
+..  note::
+    If you use the `PL011` full UART for debugging, then you must add an additional 
+    line ``dtoverlay=pi3-miniuart-bt`` to ``config.txt``
+
 Before powering up the PI 3 and performing a boot, do the following on
 the ``host system`` in a seperate terminal (replace ttyUSB0 with the 
 serial port of the USB to TTL adapter):

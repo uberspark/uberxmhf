@@ -1,0 +1,55 @@
+/*
+	uberxmhf-rpi3 uobj collection JSON manifest
+	author: matt mccormack (matthew.mccormack@live.com)
+*/
+
+{
+
+  	/* manifest header */
+	"uberspark-manifest":{
+		"manifest_node_types" : [ "uberspark-uobjcoll" ],
+		"uberspark_min_version" : "5.1",
+		"uberspark_max_version" : "any"
+	},
+
+
+	/* üobjcoll declarations */
+	"uberspark-uobjcoll":{
+		"namespace" : "uberspark/uobjcoll/platform/rpi3/uxmhf",
+		"platform" : "rpi3",
+		"arch" : "armv8_32",
+		"cpu" : "generic",
+		"hpl" : "hyp",
+		"sentinels-intrauobjcoll" : [ "generic/generic/hyp/call" ],
+
+		/* uobjs */
+		"uobjs" : {
+			"master" : "",
+			"templars" : [
+				"uberspark/uobjcoll/platform/rpi3/uxmhf/main"
+			]
+		},
+
+		/* uobjcoll init method */
+		"initmethod" : {
+			"uobj_ns" : "uberspark/uobjcoll/platform/rpi3/uxmhf/main",
+			"pm_name" : "entry",
+			"sentinels" : [
+				{
+					"sentinel_type" : "baremetal/vccore/srot/generic/rpi3/hyp/call",
+					"sentinel_size" : "0xff9000"	
+				}	
+			]
+		},	
+
+
+		/* uobjcoll public methods */
+		"publicmethods" : {
+			"uberspark/uobjcoll/platform/rpi3/uxmhf/main" : {
+				"entry" : [ "generic/generic/hyp/call" ]
+			}
+		}
+
+	}
+
+}

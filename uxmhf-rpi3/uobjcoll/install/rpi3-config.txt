@@ -1,0 +1,33 @@
+#enable uart
+enable_uart=1
+
+#setup uart baud rate
+init_uart_baud=115200
+
+#force turbo mode (max freq.)
+force_turbo=0
+
+core_freq=250
+
+# uncomment the following line if PL011 UART is selected
+# this will allocate miniuart to bluetooth and make full UART available in case
+# dtoverlay=pi3-miniuart-bt
+
+#disable overscan
+disable_overscan=1
+
+#allocate GPU memory (in megabytes)
+gpu_mem=64
+
+#disable splash screen if set to 1 
+disable_splash=0
+
+#kernel name
+kernel=uxmhf-rpi3.img
+
+#kernel address
+kernel_address=0x7000
+
+#device tree address
+device_tree_address=0x20000000
+
