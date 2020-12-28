@@ -10,17 +10,15 @@
 		"uberspark.manifest.version_max" : "any",
 
 
-	/* üobjcoll declarations */
-	"uberspark-uobjcoll":{
-		"namespace" : "uberspark/uobjcoll/platform/rpi3/uxmhf",
-		"platform" : "rpi3",
-		"arch" : "armv8_32",
-		"cpu" : "generic",
-		"hpl" : "hyp",
-		"sentinels_intra_uobjcoll" : [ "generic/generic/hyp/call" ],
+		"uberspark.uobjcoll.namespace" : "uberspark/uobjcoll/platform/rpi3/uxmhf",
+		"uberspark.uobjcoll.platform" : "rpi3",
+		"uberspark.uobjcoll.arch" : "armv8_32",
+		"uberspark.uobjcoll.cpu" : "generic",
+		"uberspark.uobjcoll.hpl" : "hyp",
+		"uberspark.uobjcoll.sentinels_intra_uobjcoll" : [ "generic/generic/hyp/call" ],
 
 		/* uobjs */
-		"uobjs" : {
+		"uberspark.uobjcoll.uobjs" : {
 			"master" : "",
 			"templars" : [
 				"uberspark/uobjcoll/platform/rpi3/uxmhf/main"
@@ -28,7 +26,7 @@
 		},
 
 		/* uobjcoll init method */
-		"init_method" : {
+		"uberspark.uobjcoll.init_method" : {
 			"uobj_namespace" : "uberspark/uobjcoll/platform/rpi3/uxmhf/main",
 			"public_method" : "entry",
 			"sentinels" : [
@@ -41,12 +39,11 @@
 
 
 		/* uobjcoll public methods */
-		"public_methods" : {
+		"uberspark.uobjcoll.public_methods" : {
 			"uberspark/uobjcoll/platform/rpi3/uxmhf/main" : {
 				"entry" : [ "generic/generic/hyp/call" ]
 			}
 		}
 
-	}
-
+	
 }

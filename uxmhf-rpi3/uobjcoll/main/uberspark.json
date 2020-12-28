@@ -10,16 +10,12 @@
 		"uberspark.manifest.version_max" : "any",
 
 
-  	/* uobj declaration */
-	"uberspark-uobj" : {
-		"namespace" : "uberspark/uobjcoll/platform/rpi3/uxmhf/main",
-		"platform" : "rpi3",
-		"arch" : "armv8_32",
-		"cpu" : "generic",
+		"uberspark.uobj.namespace" : "uberspark/uobjcoll/platform/rpi3/uxmhf/main",
+		"uberspark.uobj.platform" : "rpi3",
+		"uberspark.uobj.arch" : "armv8_32",
+		"uberspark.uobj.cpu" : "generic",
 
-		/* sources */
-		"sources" : {
-		    "h_files": [ 
+		    "uberspark.uobj.source_h_files": [ 
 				"include/arm8-32.h", 
 				"include/atags.h",
 				"include/bcm2837.h", 
@@ -46,7 +42,7 @@
 				"include/whitelist.h"
 			],
 
-		    "c_files": [ 
+		    "uberspark.uobj.source_c_files": [ 
 				"common/atags.c",
 				"common/debug.c", 
 				"common/mailbox.c",
@@ -83,9 +79,9 @@
 
 			],
 			
-			"casm_files": [ ],
+			"uberspark.uobj.source_casm_files": [ ],
 			
-			"asm_files": [ 
+			"uberspark.uobj.source_asm_files": [ 
 				"common/arm8-32.s", 
 
 				"core/entry.S",
@@ -93,11 +89,10 @@
 
 				"uapps/uapp-watchdogsup.s"
 				
-				  ]
-		},
+				  ],
 	
 		/* public methods */
-		"public_methods" : {
+		"uberspark.uobj.public_methods" : {
 			"entry" : [
 				"void",
 				"(uint32_t r0, uint32_t id, struct atag *at)", 
@@ -108,22 +103,22 @@
 		/* public methods of other uobjs that this uobj invokes 
 			within the same collection
 		*/
-		"intra_uobjcoll_callees" : {
+		"uberspark.uobj.intra_uobjcoll_callees" : {
 		},
 	
 
 		/* public methods of other uobjs that this uobj invokes 
 			across other collection(s)
 		*/
-		"inter_uobjcoll_callees": {
+		"uberspark.uobj.inter_uobjcoll_callees": {
 		},
 	
 		/* legacy CoSS functions/code that this uobj invokes */
-		"legacy_callees": [
+		"uberspark.uobj.legacy_callees": [
 		],
 
 		/* uobjrtl */
-		"uobjrtl": [
+		"uberspark.uobj.uobjrtl": [
 			{
 				"namespace" : "uberspark/uobjrtl/crt"
 			},
@@ -134,7 +129,7 @@
 		],
 
 		/* sections */
-		"sections": [
+		"uberspark.uobj.sections": [
 			{
 				"name" : "uobj_code",
 				"size" : "0x400000"
@@ -154,7 +149,7 @@
 				"name" : "paligndata",
 				"output_names" : [ ".paligndata" ],
 				"type" : "0x0",
-				"prot" : "0x0",
+				"attribute" : "0x0",
 				"size" : "0x800000",
 				"aligned_at" : "0x1000",
 				"pad_to" : "0x1000"
@@ -164,7 +159,7 @@
 				"name" : "palign2mdata",
 				"output_names" : [ ".palign2mdata" ],
 				"type" : "0x0",
-				"prot" : "0x0",
+				"attribute" : "0x0",
 				"size" : "0x400000",
 				"aligned_at" : "0x200000",
 				"pad_to" : "0x1000"
@@ -172,6 +167,5 @@
 
 		]
 		
-	}
-
+	
 }
