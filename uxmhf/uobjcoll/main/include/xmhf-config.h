@@ -105,7 +105,6 @@
 
 /* defining variables temporarily before compilation flags are added to next-gen uberspark */
 
-#define __XMHF_CONFIG_DEBUG_SERIAL_MAXCPUS__ 8
 #define __XMHF_BUILD_VERSION__ 5.0
 #define __XMHF_BUILD_REVISION__ "sometimes-even-the-wisest-of-man-and-machines-can-be-in-error"
 #define __USPARK_FRAMAC_VA__
