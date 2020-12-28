@@ -9,16 +9,12 @@
      "uberspark.manifest.version_min" : "6.0.0",
      "uberspark.manifest.version_max" : "any",
 
-   /* uobj declaration */
- "uberspark-uobj" : {
-     "namespace" : "uberspark/uobjcoll/platform/pc/uxmhf/main",
-     "platform" : "pc",
-     "arch" : "x86_32",
-     "cpu" : "generic",
+     "uberspark.uobj.namespace" : "uberspark/uobjcoll/platform/pc/uxmhf/main",
+     "uberspark.uobj.platform" : "pc",
+     "uberspark.uobj.arch" : "x86_32",
+     "uberspark.uobj.cpu" : "generic",
 
-     /* sources */
-     "sources" : {
-         "h_files": [ 
+         "uberspark.uobj.source_h_files": [ 
 			"include/uobjs/geec.h",
             "include/uobjs/geec_prime.h",
 
@@ -48,7 +44,7 @@
 			"include/xmhf-types.h",
 			"include/xmhf.h"
         ],
-         "c_files": [ 
+         "uberspark.uobj.source_c_files": [ 
 
 			"uobjs/debug/dbgdata.c",
 			"uobjs/debug/subr_prf.c",
@@ -181,7 +177,7 @@
 
 
         ],
-         "casm_files": [ 
+         "uberspark.uobj.source_casm_files": [ 
 
             "uobjs/geec_prime/gp_s1_entry.cS",
 			"uobjs/geec_prime/gp_s4_apstacks.cS",
@@ -197,13 +193,12 @@
 			"uobjs/xh_aprvexec/xh_aprvexec_codesup.cS",
             "uobjs/xh_ssteptrace/xh_ssteptrace_codesup.cS"
          ],
-         "asm_files": [ 
+         "uberspark.uobj.source_asm_files": [ 
 
-         ]
-     },
+         ],
 
      /* public methods */
-     "public_methods" : {
+     "uberspark.uobj.public_methods" : {
 		 "entry" : [
 			 "void",
 			 "(void)",
@@ -214,22 +209,22 @@
      /* public methods of other uobjs that this uobj invokes 
          within the same collection
      */
-     "intra_uobjcoll_callees" : {
+     "uberspark.uobj.intra_uobjcoll_callees" : {
      },
  
 
      /* public methods of other uobjs that this uobj invokes 
          across other collection(s)
      */
-     "inter_uobjcoll_callees": {
+     "uberspark.uobj.inter_uobjcoll_callees": {
      },
 
      /* legacy CoSS functions/code that this uobj invokes */
-     "legacy_callees": [
+     "uberspark.uobj.legacy_callees": [
 	 ],
 
 	/* uobj binary sectioning parameters */
-	"sections": [
+	"uberspark.uobj.sections": [
 		{ 
 			"name": "uobj_code",
 			"size": "0x1C00000"  // 0x200000 * 14
@@ -285,7 +280,7 @@
 	],
 
 	/* uobjrtl */
-	"uobjrtl": [
+	"uberspark.uobj.uobjrtl": [
 		{
 			"namespace" : "uberspark/uobjrtl/crt"
 		},
@@ -297,6 +292,5 @@
 		}
 	]
      
- }
-
+ 
 }
