@@ -17,22 +17,22 @@
       "uberspark.uobjcoll.sentinels_intra_uobjcoll" : [ "generic/generic/any/call" ],
 
     "uberspark.uobjcoll.configdefs" : [
-        { "name": "__xnhf_build_version__", "type": "string", "value": "6.0.0"},
-        { "name": "__xmhf_build_revision__", "type": "string", "value": "you-gotta-have-faith-not-in-who-you-are-but-who-you-can-be"},
-        { "name": "xmhf_target_cpu_x86", "type": "bool", "value": true},
-        { "name": "xmhf_target_container_vmx", "type": "bool", "value": true},
-        { "name": "xmhf_target_platform_x86pc", "type": "bool", "value": true},
-        { "name": "debug_serial", "type": "bool", "value": true},
-        { "name": "debug_port", "type": "string", "value": "0x3f8"},
-        { "name": "xmhf_config_debug_serial_maxcpus", "type": "string", "value": "8"},
-        { "name": "drt", "type": "bool", "value": true},
-        { "name": "dmap", "type": "bool", "value": true},
-        { "name": "uapp_aprvexec", "type": "bool", "value": false},
-        { "name": "uapp_hyperdep", "type": "bool", "value": false},
-        { "name": "uapp_ssteptrace", "type": "bool", "value": false},
-        { "name": "uapp_syscalllog", "type": "bool", "value": false},
-        { "name": "uapp_uhcalltest", "type": "bool", "value": true},
-        { "name": "uapp_nwlog", "type": "bool", "value": false}
+        { "name": "__xnhf_build_version__", "value": "6.0.0"},
+        { "name": "__xmhf_build_revision__", "value": "you-gotta-have-faith-not-in-who-you-are-but-who-you-can-be"},
+        { "name": "xmhf_target_cpu_x86", "value": "@@TRUE@@"},
+        { "name": "xmhf_target_container_vmx", "value": "@@TRUE@@"},
+        { "name": "xmhf_target_platform_x86pc", "value": "@@TRUE@@"},
+        { "name": "debug_serial", "value": "@@TRUE@@"},
+        { "name": "debug_port", "value": "0x3f8"},
+        { "name": "xmhf_config_debug_serial_maxcpus", "value": "8"},
+        { "name": "drt", "value": "@@TRUE@@"},
+        { "name": "dmap", "value": "@@TRUE@@"},
+        { "name": "uapp_aprvexec", "value": "@@FALSE@@"},
+        { "name": "uapp_hyperdep", "value": "@@FALSE@@"},
+        { "name": "uapp_ssteptrace", "value": "@@FALSE@@"},
+        { "name": "uapp_syscalllog", "value": "@@FALSE@@"},
+        { "name": "uapp_uhcalltest", "value": "@@TRUE@@"},
+        { "name": "uapp_nwlog", "value": "@@FALSE@@"}
 
     ],
 
