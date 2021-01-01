@@ -18,12 +18,12 @@ stage:
 	uberspark staging config-set --setting-name=uobj_binary_image_size --setting-value=0x14900000
 	# uberspark staging config-set --root-dir=/home/yeeb16 --setting-name=bridge_cc_bridge --setting-value=container/amd64/x86_32/generic/gcc/v5.5.0
 	# uberspark staging config-set --root-dir=/home/yeeb16 --setting-name=bridge_cc_bridge --setting-value=container/amd64/x86_32/generic/compcert/uxmhf-test
-	uberspark staging config-set --setting-name=cc_bridge_namespace --setting-value=container/amd64/x86_32/generic/compcert/v3.1
+	uberspark staging config-set --setting-name=cc_bridge_namespace --setting-value=uberspark/bridges/container/amd64/cc-bridge/x86_32/generic/compcert/v3.1
 
 #uxmhf-test
 #v5.4.0
-	uberspark staging config-set --setting-name=as_bridge_namespace --setting-value=container/amd64/x86_32/generic/gnu-as/v2.26.1
-	uberspark staging config-set --setting-name=ld_bridge_namespace --setting-value=container/amd64/x86_32/generic/gnu-ld/v2.26.1
+	uberspark staging config-set --setting-name=as_bridge_namespace --setting-value=uberspark/bridges/container/amd64/as-bridge/x86_32/generic/gnu-as/v2.26.1
+	uberspark staging config-set --setting-name=ld_bridge_namespace --setting-value=uberspark/bridges/container/amd64/ld-bridge/x86_32/generic/gnu-ld/v2.26.1
 	@echo staging created successfully!
 
 .PHONY: clean

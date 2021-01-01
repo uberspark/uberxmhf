@@ -5,9 +5,9 @@
 #   author: amit vasudevan <amitvasudevan@acm.org>, matt mccormack <matthew.mccormack@live.com>
 #
 
-COMPILER := container/amd64/armv8_32/generic/gcc/v4.9.3
-ASSEMBLER := container/amd64/armv8_32/generic/gnu-as/v2.26.1
-LINKER := container/amd64/armv8_32/generic/gnu-ld/v2.26.1
+COMPILER := uberspark/bridges/container/amd64/cc-bridge/armv8_32/generic/gcc/v4.9.3
+ASSEMBLER := uberspark/bridges/container/amd64/as-bridge/armv8_32/generic/gnu-as/v2.26.1
+LINKER := uberspark/bridges/container/amd64/ld-bridge/armv8_32/generic/gnu-ld/v2.26.1
 
 SPARK_NAMESPACE := $(shell uberspark staging list | grep rpi3)
 SPARK_CC := $(shell uberspark staging --setting-name=cc_bridge_namespace config-get)
