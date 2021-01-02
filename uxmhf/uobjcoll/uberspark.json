@@ -20,9 +20,6 @@
 
         { "name": "__xnhf_build_version__", "value": "\"6.0.0\""},
         { "name": "__xmhf_build_revision__", "value": "\"you-gotta-have-faith-not-in-who-you-are-but-who-you-can-be\""},
-        { "name": "xmhf_target_cpu_x86", "value": "@@TRUE@@"},
-        { "name": "xmhf_target_container_vmx", "value": "@@TRUE@@"},
-        { "name": "xmhf_target_platform_x86pc", "value": "@@TRUE@@"},
         { "name": "debug_serial", "value": "@@TRUE@@"},
         { "name": "debug_port", "value": "0x3f8"},
         { "name": "xmhf_config_debug_serial_maxcpus", "value": "8"},
