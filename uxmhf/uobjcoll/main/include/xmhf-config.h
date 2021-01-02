@@ -51,8 +51,8 @@
 #define __XMHF_CONFIG_H__
 
 
-#define __UBERSPARK_UOBJCOLL_CONFIGDEF_UXMHF_BUILD_VERSION___ "6.0.0"
-#define __UBERSPARK_UOBJCOLL_CONFIGDEF_UXMHF_BUILD_REVISION___ "you-gotta-have-faith-not-in-who-you-are-but-who-you-can-be" 
+#define __UBERSPARK_UOBJCOLL_CONFIGDEF_UXMHF_BUILD_VERSION__ "6.0.0"
+#define __UBERSPARK_UOBJCOLL_CONFIGDEF_UXMHF_BUILD_REVISION__ "you-gotta-have-faith-not-in-who-you-are-but-who-you-can-be" 
 
 #define __UBERSPARK_UOBJCOLL_CONFIGDEF_DEBUG_SERIAL__ 
 #define __UBERSPARK_UOBJCOLL_CONFIGDEF_DEBUG_PORT__ 0x3f8 
