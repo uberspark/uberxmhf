@@ -218,28 +218,28 @@ void guest_data_abort_handler(arm8_32_regs_t *r, u32 hsr){
 	//handle data abort fault by passing it to appropriate module
 	if ( fault_pa_page == ARMLOCALREGISTERS_BASE ){
 		
-		#if defined (__INTPROT__)
+		#if defined (__UBERSPARK_UOBJCOLL_CONFIGDEF_INTPROT__)
 		intprot_handle_intcontroller_access(&ida);
 		#endif
 
 	}else if( fault_pa_page == BCM2837_EMMC_BASE){
-		#if defined (__SECBOOT__)
+		#if defined (__UBERSPARK_UOBJCOLL_CONFIGDEF_SECBOOT__)
 		secboot_handle_sdio_access(&ida);
 		#endif
 
 	}else if( fault_pa_page == BCM2837_SDHOST_BASE){
-		#if defined (__SECBOOT__)
+		#if defined (__UBERSPARK_UOBJCOLL_CONFIGDEF_SECBOOT__)
 		secboot_handle_sdhost_access(&ida);
 		#endif
 
 	}else if( (fault_pa_page == BCM2837_DMA0_REGS_BASE) ||
 		(fault_pa_page == BCM2837_DMA15_REGS_BASE) ){
-		#if defined (__DMAPROT__)
+		#if defined (__UBERSPARK_UOBJCOLL_CONFIGDEF_DMAPROT__)
 		dmaprot_handle_dmacontroller_access(&ida);
 		#endif
 
 	}else if ( fault_pa_page == DWC_REGS_BASE ){
-		#if defined (__DMAPROT__)
+		#if defined (__UBERSPARK_UOBJCOLL_CONFIGDEF_DMAPROT__)
 		dmaprot_handle_usbdmac_access(&ida);
 		#endif
 		
@@ -272,7 +272,7 @@ void guest_cp15_trap_handler(arm8_32_regs_t *r, u32 hsr){
 		elr_hyp += sizeof(u16);
 	sysreg_write_elrhyp(elr_hyp);
 
-#if defined (__ENABLE_UAPP_CTXTRACE__)
+#if defined (__UBERSPARK_UOBJCOLL_CONFIGDEF_ENABLE_UAPP_CTXTRACE__)
 	ctxtrace_cp15_trap_handler(r, hsr);
 #endif
 }
@@ -399,8 +399,8 @@ void core_fixresmemmap(u32 fdt_address){
 	//debug_hexdumpu32(sizeof(struct fdt_reserve_entry));
 
 	//write the guestos extent as first entry
-	fdtrsvmmapentryp->address = cpu_le2be_u64((u64)UXMHF_CORE_START_ADDR);
-	fdtrsvmmapentryp->size = cpu_le2be_u64((u64)UXMHF_CORE_SIZE);
+	fdtrsvmmapentryp->address = cpu_le2be_u64((u64)__UBERSPARK_UOBJCOLL_CONFIGDEF_UXMHF_CORE_START_ADDR__);
+	fdtrsvmmapentryp->size = cpu_le2be_u64((u64)__UBERSPARK_UOBJCOLL_CONFIGDEF_UXMHF_CORE_SIZE__);
 	//fdtrsvmmapentryp->address = 0ULL;
 	//fdtrsvmmapentryp->size = 0ULL;
 
@@ -452,7 +452,7 @@ void main(u32 r0, u32 id, struct atag *at, u32 cpuid){
 	u32 hvbar, hcr, spsr_hyp;
 	u64 boardserial;
 
-#if defined (__ENABLE_UART_PL011__) || defined (__ENABLE_UART_MINI__)
+#if defined (__UBERSPARK_UOBJCOLL_CONFIGDEF_ENABLE_UART_PL011__) || defined (__UBERSPARK_UOBJCOLL_CONFIGDEF_ENABLE_UART_MINI__)
 	//initialize uart
 	uart_init();
 #endif
@@ -505,7 +505,7 @@ void main(u32 r0, u32 id, struct atag *at, u32 cpuid){
 	//initialize CPU vector table
 	hypvtable_initialize(cpuid);
 
-#if defined (__FIQREFLECTION__)
+#if defined (__UBERSPARK_UOBJCOLL_CONFIGDEF_FIQREFLECTION__)
 
 	//enable FIQ mask override; this should land us in HYP mode FIQ handler when FIQs are triggered inside guest
 	hcr = sysreg_read_hcr();
@@ -525,19 +525,19 @@ void main(u32 r0, u32 id, struct atag *at, u32 cpuid){
 	s2pgtbl_populate_tables();
 	_XDPRINTF_("%s[%u]: stage-2 pts populated.\n", __func__, cpuid);
 
-#if defined (__DMAPROT__)
+#if defined (__UBERSPARK_UOBJCOLL_CONFIGDEF_DMAPROT__)
 	//activate DMA protection mechanism via stage-2 pts
 	dmaprot_activate();
 	_XDPRINTF_("%s[%u]: DMA protection mechanism activated via stage-2 pts\n", __func__, cpuid);
 #endif
 
-#if defined (__INTPROT__)
+#if defined (__UBERSPARK_UOBJCOLL_CONFIGDEF_INTPROT__)
 	//activate interrupt protection mechanism via stage-2 pts
 	intprot_activate();
 	_XDPRINTF_("%s[%u]: INTERRUPT protection mechanism activated via stage-2 pts\n", __func__, cpuid);
 #endif
 
-#if defined (__SECBOOT__)
+#if defined (__UBERSPARK_UOBJCOLL_CONFIGDEF_SECBOOT__)
 	//activate secure boot protection mechanism
 	secboot_activate();
 #endif
@@ -563,39 +563,39 @@ void main(u32 r0, u32 id, struct atag *at, u32 cpuid){
 
 	//////
 	// initialize uapps
-	#if defined (__ENABLE_UAPP_CTXTRACE__)
+	#if defined (__UBERSPARK_UOBJCOLL_CONFIGDEF_ENABLE_UAPP_CTXTRACE__)
 		ctxtrace_init(cpuid);	
 	#endif
 
-	#if defined (__ENABLE_UAPP_PA5ENCFS__)
+	#if defined (__UBERSPARK_UOBJCOLL_CONFIGDEF_ENABLE_UAPP_PA5ENCFS__)
 		//no initialization required	
 	#endif
 
-	#if defined (__ENABLE_UAPP_PVDRIVER_UART__)
+	#if defined (__UBERSPARK_UOBJCOLL_CONFIGDEF_ENABLE_UAPP_PVDRIVER_UART__)
 		uapp_pvdriver_uart_initialize_uapp(cpuid);
 	#endif
 
-	#if defined (__ENABLE_UAPP_UAGENT__)
+	#if defined (__UBERSPARK_UOBJCOLL_CONFIGDEF_ENABLE_UAPP_UAGENT__)
 		//no initialization required	
 	#endif
 
-	#if defined (__ENABLE_UAPP_UHCALLTEST__)
+	#if defined (__UBERSPARK_UOBJCOLL_CONFIGDEF_ENABLE_UAPP_UHCALLTEST__)
 		//no initialization required	
 	#endif
 
-	#if defined (__ENABLE_UAPP_UHSIGN__)
+	#if defined (__UBERSPARK_UOBJCOLL_CONFIGDEF_ENABLE_UAPP_UHSIGN__)
 		//no initialization required	
 	#endif
 
-	#if defined (__ENABLE_UAPP_UHSTATEDB__)
+	#if defined (__UBERSPARK_UOBJCOLL_CONFIGDEF_ENABLE_UAPP_UHSTATEDB__)
 		//no initialization required	
 	#endif
 
-	#if defined (__ENABLE_UAPP_UTPMTEST__)
+	#if defined (__UBERSPARK_UOBJCOLL_CONFIGDEF_ENABLE_UAPP_UTPMTEST__)
 		//no initialization required	
 	#endif
 
-	#if defined (__ENABLE_UAPP_WATCHDOG__)
+	#if defined (__UBERSPARK_UOBJCOLL_CONFIGDEF_ENABLE_UAPP_WATCHDOG__)
 		uapp_watchdog_initialize(cpuid);
 	#endif
 

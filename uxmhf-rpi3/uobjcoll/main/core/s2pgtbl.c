@@ -198,8 +198,8 @@ void s2pgtbl_populate_tables(void){
 		//	l3_ldesc_table[i] = ldesc_make_s2_l3e_page((i * PAGE_SIZE_4K), attrs);
 		if ( (i * PAGE_SIZE_4K) >= BCM2837_PERIPHERALS_BASE )
 			l3_ldesc_table[i] = ldesc_make_s2_l3e_page((i * PAGE_SIZE_4K), attrs_dev);
-		else if ( ((i * PAGE_SIZE_4K) >= UXMHF_CORE_START_ADDR) &&
-				  ((i * PAGE_SIZE_4K) < UXMHF_CORE_END_ADDR) )
+		else if ( ((i * PAGE_SIZE_4K) >= __UBERSPARK_UOBJCOLL_CONFIGDEF_UXMHF_CORE_START_ADDR__) &&
+				  ((i * PAGE_SIZE_4K) < __UBERSPARK_UOBJCOLL_CONFIGDEF_UXMHF_CORE_END_ADDR__) )
 			l3_ldesc_table[i] = ldesc_make_s2_l3e_page((i * PAGE_SIZE_4K), attrs_noaccess);
 		else
 			l3_ldesc_table[i] = ldesc_make_s2_l3e_page((i * PAGE_SIZE_4K), attrs);

@@ -50,8 +50,8 @@ extern u64 l3_ldesc_table[L1_LDESC_TABLE_ENTRIES * L2_LDESC_TABLE_MAXENTRIES * L
 void uapi_s2pgtbl_setprot(u32 address, u64 protection){
 	u32 index;
 
-	if ( !((address >= UXMHF_CORE_START_ADDR) &&
-			  (address < UXMHF_CORE_END_ADDR)) ){
+	if ( !((address >= __UBERSPARK_UOBJCOLL_CONFIGDEF_UXMHF_CORE_START_ADDR__) &&
+			  (address < __UBERSPARK_UOBJCOLL_CONFIGDEF_UXMHF_CORE_END_ADDR__)) ){
 		index = address/PAGE_SIZE_4K;
 		l3_ldesc_table[index] = ldesc_make_s2_l3e_page(address, protection);
 	}
@@ -62,8 +62,8 @@ u64 uapi_s2pgtbl_getprot(u32 address){
 	u32 index;
 	u64 result=0;
 
-	if ( !((address >= UXMHF_CORE_START_ADDR) &&
-			  (address < UXMHF_CORE_END_ADDR)) ){
+	if ( !((address >= __UBERSPARK_UOBJCOLL_CONFIGDEF_UXMHF_CORE_START_ADDR__) &&
+			  (address < __UBERSPARK_UOBJCOLL_CONFIGDEF_UXMHF_CORE_END_ADDR__)) ){
 		index = address/PAGE_SIZE_4K;
 		result = ldesc_get_s2_l3e_page_attrs(l3_ldesc_table[index]);
 	}else{

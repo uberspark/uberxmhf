@@ -43,13 +43,13 @@
 #define __UART_H__
 
 #define __ENABLE_UART__
-#define __ENABLE_UART_PL011__
+#define __UBERSPARK_UOBJCOLL_CONFIGDEF_ENABLE_UART_PL011__
 
 #if defined (__ENABLE_UART__)
 
-	#if defined (__ENABLE_UART_PL011__)
+	#if defined (__UBERSPARK_UOBJCOLL_CONFIGDEF_ENABLE_UART_PL011__)
 		#include <uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/pl011uart.h>
-	#elif defined (__ENABLE_UART_MINI__)
+	#elif defined (__UBERSPARK_UOBJCOLL_CONFIGDEF_ENABLE_UART_MINI__)
 		#include <uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/miniuart.h>
 	#else
 
@@ -62,7 +62,7 @@
 
 #if defined (__ENABLE_UART__)
 
-	#if defined (__ENABLE_UART_PL011__)
+	#if defined (__UBERSPARK_UOBJCOLL_CONFIGDEF_ENABLE_UART_PL011__)
 		#define uart_init bcm2837_pl011uart_init
 		#define uart_can_send bcm2837_pl011uart_can_send
 		#define uart_can_recv bcm2837_pl011uart_can_recv
