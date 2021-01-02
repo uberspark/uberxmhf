@@ -109,7 +109,7 @@ void gp_s1_scaniommu(void){
 	}
 
 
-#if defined (__DEBUG_SERIAL__)
+#if defined (__UBERSPARK_UOBJCOLL_CONFIGDEF_DEBUG_SERIAL__)
 	_XDPRINTF_("rdsp.signature=%016llx\n", rsdp.signature);
 	_XDPRINTF_("rdsp.checksum=%02x\n", rsdp.checksum);
 	_XDPRINTF_("rdsp.oemid=%02x %02x %02x %02x %02x %02x\n",
@@ -122,7 +122,7 @@ void gp_s1_scaniommu(void){
 	_XDPRINTF_("rdsp.xchecksum=%02x\n", rsdp.xchecksum);
 	_XDPRINTF_("rdsp.rsvd0=%02x %02x %02x\n",
 		rsdp.oemid[0], rsdp.oemid[1], rsdp.oemid[2]);
-#endif //__DEBUG_SERIAL__
+#endif //__UBERSPARK_UOBJCOLL_CONFIGDEF_DEBUG_SERIAL__
 
 
 	//grab ACPI RSDT
@@ -131,7 +131,7 @@ void gp_s1_scaniommu(void){
 		__func__, __LINE__, rsdp.rsdtaddress, rsdt.length, sizeof(ACPI_RSDT));
 
 
-	#if defined (__DEBUG_SERIAL__)
+	#if defined (__UBERSPARK_UOBJCOLL_CONFIGDEF_DEBUG_SERIAL__)
 	_XDPRINTF_("rsdt.signature=%016llx\n", rsdt.signature);
 	_XDPRINTF_("rsdt.length=%08x\n", rsdt.length);
 	_XDPRINTF_("rsdt.revision=%02x\n", rsdt.revision);
@@ -143,7 +143,7 @@ void gp_s1_scaniommu(void){
 	_XDPRINTF_("rsdt.oemrevision=%08x\n", rsdt.oemrevision);
 	_XDPRINTF_("rsdt.creatorid=%08x\n", rsdt.creatorid);
 	_XDPRINTF_("rsdt.creatorrevision=%08x\n", rsdt.creatorrevision);
-	#endif //__DEBUG_SERIAL__
+	#endif //__UBERSPARK_UOBJCOLL_CONFIGDEF_DEBUG_SERIAL__
 
 
 
@@ -170,7 +170,7 @@ void gp_s1_scaniommu(void){
 		CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__sysmem_copy_sys2obj, (uint8_t *)&dmar, (uint8_t *)rsdtentries[i], sizeof(VTD_DMAR));
 		if(dmar.signature == VTD_DMAR_SIGNATURE){
 		  dmarfound=1;
-			#if defined (__DEBUG_SERIAL__)
+			#if defined (__UBERSPARK_UOBJCOLL_CONFIGDEF_DEBUG_SERIAL__)
 			_XDPRINTF_("dmar.signature=%016llx\n", dmar.signature);
 			_XDPRINTF_("dmar.length=%08x\n", dmar.length);
 			_XDPRINTF_("dmar.revision=%02x\n", dmar.revision);
@@ -189,7 +189,7 @@ void gp_s1_scaniommu(void){
 				dmar.oemid[3], dmar.oemid[4], dmar.oemid[5],
 				dmar.oemid[6], dmar.oemid[7], dmar.oemid[8],
 				dmar.oemid[9]);
-			#endif //__DEBUG_SERIAL__
+			#endif //__UBERSPARK_UOBJCOLL_CONFIGDEF_DEBUG_SERIAL__
 
 		  break;
 		}
@@ -251,7 +251,7 @@ void gp_s1_scaniommu(void){
     }
 
 
-#if defined (__DEBUG_SERIAL__)
+#if defined (__UBERSPARK_UOBJCOLL_CONFIGDEF_DEBUG_SERIAL__)
 	//[DEBUG]: be a little verbose about what we found
 	_XDPRINTF_("%s: DMAR Devices:\n", __func__);
 	for(i=0; i < vtd_num_drhd; i++){
@@ -270,7 +270,7 @@ void gp_s1_scaniommu(void){
 					vtd_drhd[i].iotlb_regaddr, vtd_drhd[i].iva_regaddr);
 
 	}
-#endif // __DEBUG_SERIAL__
+#endif // __UBERSPARK_UOBJCOLL_CONFIGDEF_DEBUG_SERIAL__
 
 	vtd_drhd_maxhandle = vtd_num_drhd;
 	vtd_drhd_scanned = true;

@@ -65,7 +65,7 @@ void gp_s2_sdmenumsysdevices(void){
     //LAPIC at X86SMP_LAPIC_MEMORYADDRESS (0xFEE00000)
     //TPM at TPM_LOCALITY_BASE (0xfed40000)
     //TXT at TXT_PUB_CONFIG_REGS_BASE (0xfed30000) and TXT_PRIV_CONFIG_REGS_BASE (0xfed20000)
-    //SERIAL0 (used for debugging only) at DEBUG_PORT
+    //SERIAL0 (used for debugging only) at __UBERSPARK_UOBJCOLL_CONFIGDEF_DEBUG_PORT__
     //IOMMU as described by vtd_drhd[]
 
 	//add LAPIC device
@@ -77,7 +77,7 @@ void gp_s2_sdmenumsysdevices(void){
 	//add TXT
 	gp_s2_sdmenumsysdevices_memioextents(PCI_BUS_XMHFGEEC, PCI_DEVICE_XMHFGEEC, 0, PCI_VENDOR_ID_XMHFGEEC, PCI_DEVICE_ID_XMHFGEEC_TXT);
 
-	#if defined (__DEBUG_SERIAL__)
+	#if defined (__UBERSPARK_UOBJCOLL_CONFIGDEF_DEBUG_SERIAL__)
 		//add SERIAL0
 	gp_s2_sdmenumsysdevices_memioextents(PCI_BUS_XMHFGEEC, PCI_DEVICE_XMHFGEEC, 0, PCI_VENDOR_ID_XMHFGEEC, PCI_DEVICE_ID_XMHFGEEC_SERIAL0);
 	#endif
@@ -135,7 +135,7 @@ void gp_s2_sdmenumsysdevices(void){
 	}
 
 
-#if defined (__DEBUG_SERIAL__)
+#if defined (__UBERSPARK_UOBJCOLL_CONFIGDEF_DEBUG_SERIAL__)
 
     //be verbose about the system devices and their MM(IO) extents
     {
@@ -162,7 +162,7 @@ void gp_s2_sdmenumsysdevices(void){
             }
         }
     }
-#endif // __DEBUG_SERIAL__
+#endif // __UBERSPARK_UOBJCOLL_CONFIGDEF_DEBUG_SERIAL__
 
 }
 

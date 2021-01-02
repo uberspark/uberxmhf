@@ -129,7 +129,7 @@ static uint32_t xc_hcbinvoke(uint32_t src_slabid, uint32_t cpuid,
 	@*/
   
 
-    #if defined (__UAPP_UHCALLTEST__)
+    #if defined (__UBERSPARK_UOBJCOLL_CONFIGDEF_UAPP_UHCALLTEST__)
 	    if( (XC_HYPAPPCB_MASK(XC_HYPAPPCB_INITIALIZE) | 
             XC_HYPAPPCB_MASK(XC_HYPAPPCB_HYPERCALL) | 
             XC_HYPAPPCB_MASK(XC_HYPAPPCB_SHUTDOWN) )
@@ -144,7 +144,7 @@ static uint32_t xc_hcbinvoke(uint32_t src_slabid, uint32_t cpuid,
     #endif
 
 
-    #if defined (__UAPP_APRVEXEC__)
+    #if defined (__UBERSPARK_UOBJCOLL_CONFIGDEF_UAPP_APRVEXEC__)
 	    if( (XC_HYPAPPCB_MASK(XC_HYPAPPCB_INITIALIZE) | 
             XC_HYPAPPCB_MASK(XC_HYPAPPCB_HYPERCALL) | 
             XC_HYPAPPCB_MASK(XC_HYPAPPCB_MEMORYFAULT) | 
@@ -159,7 +159,7 @@ static uint32_t xc_hcbinvoke(uint32_t src_slabid, uint32_t cpuid,
         }
     #endif
 
-    #if defined (__UAPP_HYPERDEP__)
+    #if defined (__UBERSPARK_UOBJCOLL_CONFIGDEF_UAPP_HYPERDEP__)
 	    if( (XC_HYPAPPCB_MASK(XC_HYPAPPCB_INITIALIZE) | 
              XC_HYPAPPCB_MASK(XC_HYPAPPCB_HYPERCALL) | 
              XC_HYPAPPCB_MASK(XC_HYPAPPCB_MEMORYFAULT) | 
@@ -174,7 +174,7 @@ static uint32_t xc_hcbinvoke(uint32_t src_slabid, uint32_t cpuid,
         }
     #endif
 
-    #if defined (__UAPP_SSTEPTRACE__)
+    #if defined (__UBERSPARK_UOBJCOLL_CONFIGDEF_UAPP_SSTEPTRACE__)
 	    if( (XC_HYPAPPCB_MASK(XC_HYPAPPCB_INITIALIZE) | 
              XC_HYPAPPCB_MASK(XC_HYPAPPCB_HYPERCALL) | 
              XC_HYPAPPCB_MASK(XC_HYPAPPCB_TRAP_EXCEPTION) | 
@@ -189,7 +189,7 @@ static uint32_t xc_hcbinvoke(uint32_t src_slabid, uint32_t cpuid,
         }
     #endif
 
-    #if defined (__UAPP_SYSCALLLOG__)
+    #if defined (__UBERSPARK_UOBJCOLL_CONFIGDEF_UAPP_SYSCALLLOG__)
 	    if( (XC_HYPAPPCB_MASK(XC_HYPAPPCB_INITIALIZE) | 
             XC_HYPAPPCB_MASK(XC_HYPAPPCB_HYPERCALL) | 
             XC_HYPAPPCB_MASK(XC_HYPAPPCB_MEMORYFAULT) )
@@ -203,7 +203,7 @@ static uint32_t xc_hcbinvoke(uint32_t src_slabid, uint32_t cpuid,
         }
     #endif
 
-    //#if defined (__UAPP_NWLOG__)
+    //#if defined (__UBERSPARK_UOBJCOLL_CONFIGDEF_UAPP_NWLOG__)
 	//    if( (XC_HYPAPPCB_MASK(XC_HYPAPPCB_INITIALIZE) | 
     //        XC_HYPAPPCB_MASK(XC_HYPAPPCB_HYPERCALL) | 
     //         XC_HYPAPPCB_MASK(XC_HYPAPPCB_SHUTDOWN) )

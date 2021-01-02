@@ -42,7 +42,7 @@
 
 #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf.h>
 
-#if defined (__DEBUG_SERIAL__)
+#if defined (__UBERSPARK_UOBJCOLL_CONFIGDEF_DEBUG_SERIAL__)
 
 // default config parameters for serial port
 uart_config_t g_uart_config = {115200,
@@ -51,7 +51,7 @@ uart_config_t g_uart_config = {115200,
 							   1,
 							   0,
 							   UART_CLOCKFREQ,
-							   DEBUG_PORT};
+							   __UBERSPARK_UOBJCOLL_CONFIGDEF_DEBUG_PORT__};
 
 
 //low-level UART character output

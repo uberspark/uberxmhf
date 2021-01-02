@@ -51,21 +51,21 @@
 #define __XMHF_CONFIG_H__
 
 
-#define ___XMHF_BUILD_VERSION___ "6.0.0"
-#define ___XMHF_BUILD_REVISION___ "you-gotta-have-faith-not-in-who-you-are-but-who-you-can-be" 
+#define __UBERSPARK_UOBJCOLL_CONFIGDEF_UXMHF_BUILD_VERSION___ "6.0.0"
+#define __UBERSPARK_UOBJCOLL_CONFIGDEF_UXMHF_BUILD_REVISION___ "you-gotta-have-faith-not-in-who-you-are-but-who-you-can-be" 
 
-#define __DEBUG_SERIAL__ 
-#define DEBUG_PORT 0x3f8 
-#define __XMHF_CONFIG_DEBUG_SERIAL_MAXCPUS__ 8 
-#define __DRT__ 
-#define __DMAP__ 
+#define __UBERSPARK_UOBJCOLL_CONFIGDEF_DEBUG_SERIAL__ 
+#define __UBERSPARK_UOBJCOLL_CONFIGDEF_DEBUG_PORT__ 0x3f8 
+#define __UBERSPARK_UOBJCOLL_CONFIGDEF_DEBUG_SERIAL_MAXCPUS__ 8 
+#define __UBERSPARK_UOBJCOLL_CONFIGDEF_DRT__ 
+#define __UBERSPARK_UOBJCOLL_CONFIGDEF_DMAP__ 
 
-//#define __UAPP_APRVEXEC__
-//#define __UAPP_HYPERDEP__
-//#define __UAPP_SSTEPTRACE__
-//#define __UAPP_SYSCALLLOG__
-#define __UAPP_UHCALLTEST__
-//#define __UAPP_NWLOG__
+//#define __UBERSPARK_UOBJCOLL_CONFIGDEF_UAPP_APRVEXEC__
+//#define __UBERSPARK_UOBJCOLL_CONFIGDEF_UAPP_HYPERDEP__
+//#define __UBERSPARK_UOBJCOLL_CONFIGDEF_UAPP_SSTEPTRACE__
+//#define __UBERSPARK_UOBJCOLL_CONFIGDEF_UAPP_SYSCALLLOG__
+#define __UBERSPARK_UOBJCOLL_CONFIGDEF_UAPP_UHCALLTEST__
+//#define __UBERSPARK_UOBJCOLL_CONFIGDEF_UAPP_NWLOG__
 
 
 
@@ -339,7 +339,7 @@
 
 #ifndef __ASSEMBLY__
 
-/*#if defined (__DEBUG_SERIAL__)
+/*#if defined (__UBERSPARK_UOBJCOLL_CONFIGDEF_DEBUG_SERIAL__)
 
 extern uint8_t _libxmhfdebugdata_start[];
 extern uint8_t _libxmhfdebugdata_end[];

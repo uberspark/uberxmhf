@@ -69,9 +69,9 @@
 void gp_s5_entry(void){
 	uint32_t cpuid;
 	bool isbsp;
-	#if defined (__DEBUG_SERIAL__)
+	#if defined (__UBERSPARK_UOBJCOLL_CONFIGDEF_DEBUG_SERIAL__)
 	static volatile uint32_t cpucount=0;
-	#endif //__DEBUG_SERIAL__
+	#endif //__UBERSPARK_UOBJCOLL_CONFIGDEF_DEBUG_SERIAL__
 
 	isbsp = uberspark_uobjrtl_hw__generic_x86_32_intel__lapic_isbsp();
 	//@ghost gp_s5_entry_invokedisbsp = true;
@@ -96,9 +96,9 @@ void gp_s5_entry(void){
 	//@ghost gp_s5_entry_invokedsetupcpustate = true;
 
 
-	#if defined (__DEBUG_SERIAL__)
+	#if defined (__UBERSPARK_UOBJCOLL_CONFIGDEF_DEBUG_SERIAL__)
 	cpucount++;
-	#endif //__DEBUG_SERIAL__
+	#endif //__UBERSPARK_UOBJCOLL_CONFIGDEF_DEBUG_SERIAL__
 
 	//@assert gp_s5_entry_invokedisbsp == true;
 	//@assert gp_s5_entry_invokedgetcpulapicid == true;
@@ -107,9 +107,9 @@ void gp_s5_entry(void){
     CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__spin_unlock,&gp_state4_smplock);
 	//@ghost gp_s5_entry_invokedspinunlock = true;
 
-    #if defined (__DEBUG_SERIAL__)
-    while(cpucount < __XMHF_CONFIG_DEBUG_SERIAL_MAXCPUS__);
-    #endif //__DEBUG_SERIAL__
+    #if defined (__UBERSPARK_UOBJCOLL_CONFIGDEF_DEBUG_SERIAL__)
+    while(cpucount < __UBERSPARK_UOBJCOLL_CONFIGDEF_DEBUG_SERIAL_MAXCPUS__);
+    #endif //__UBERSPARK_UOBJCOLL_CONFIGDEF_DEBUG_SERIAL__
 
 	//@assert gp_s5_entry_invokedisbsp == true;
 	//@assert gp_s5_entry_invokedgetcpulapicid == true;

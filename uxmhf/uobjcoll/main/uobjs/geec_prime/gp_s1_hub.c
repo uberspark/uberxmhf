@@ -75,7 +75,7 @@
 void gp_s1_hub(void){
 
 
-#if defined (__DEBUG_SERIAL__)
+#if defined (__UBERSPARK_UOBJCOLL_CONFIGDEF_DEBUG_SERIAL__)
 
 	//initialize debugging early on
 	//uberspark_uobjrtl_debug__init((char *)&xcbootinfo->debugcontrol_buffer);
@@ -140,7 +140,7 @@ void gp_s1_hub(void){
 	}
 	#endif
 
-#endif // __DEBUG_SERIAL__
+#endif // __UBERSPARK_UOBJCOLL_CONFIGDEF_DEBUG_SERIAL__
 
 
 	//sanity check hardware requirements
