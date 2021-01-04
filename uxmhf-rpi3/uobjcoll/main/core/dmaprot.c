@@ -104,15 +104,15 @@ u32 dmaprot_shadowcb(u32 dmac_channel, u32 cb_pa){
 		syspa_src_addr = dmapa_to_syspa(dmacb->src_addr);
 		syspa_dst_addr = dmapa_to_syspa(dmacb->dst_addr);
 
-		if( 	(syspa_src_addr >= UXMHF_CORE_START_ADDR &&
-				 syspa_src_addr < UXMHF_CORE_END_ADDR)
+		if( 	(syspa_src_addr >= __UBERSPARK_UOBJCOLL_CONFIGDEF_UXMHF_CORE_START_ADDR__ &&
+				 syspa_src_addr < __UBERSPARK_UOBJCOLL_CONFIGDEF_UXMHF_CORE_END_ADDR__)
 		){
 			uart_puts("CB src_addr using micro-hypervisor memory regions. Halting!\n");
 			HALT();
 		}
 
-		if( 	(syspa_dst_addr >= UXMHF_CORE_START_ADDR &&
-				 syspa_dst_addr < UXMHF_CORE_END_ADDR)
+		if( 	(syspa_dst_addr >= __UBERSPARK_UOBJCOLL_CONFIGDEF_UXMHF_CORE_START_ADDR__ &&
+				 syspa_dst_addr < __UBERSPARK_UOBJCOLL_CONFIGDEF_UXMHF_CORE_END_ADDR__)
 		){
 			uart_puts("CB dst_addr using micro-hypervisor memory regions. Halting!\n");
 			HALT();

@@ -45,7 +45,7 @@
 
 #ifndef __ASSEMBLY__
 
-#if defined (__ENABLE_UART_PL011_CTSRTS__)
+#if defined (__UBERSPARK_UOBJCOLL_CONFIGDEF_ENABLE_UART_PL011_CTSRTS__)
 void bcm2837_pl011uart_init_hwflowcontrol(void);
 #endif
 

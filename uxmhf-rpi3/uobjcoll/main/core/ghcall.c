@@ -77,46 +77,46 @@ void guest_hypercall_handler(arm8_32_regs_t *r, u32 hsr){
 		 * note: r1+r2 cannot cross page-boundary
 		 */
 
-		#if defined (__ENABLE_UAPP_CTXTRACE__)
+		#if defined (__UBERSPARK_UOBJCOLL_CONFIGDEF_ENABLE_UAPP_CTXTRACE__)
 			// no hypercall handling required
 		#endif
 
-		#if defined (__ENABLE_UAPP_PA5ENCFS__)
+		#if defined (__UBERSPARK_UOBJCOLL_CONFIGDEF_ENABLE_UAPP_PA5ENCFS__)
 		if( uapp_pa5encfs_handlehcall(r->r0, r->r1, r->r2) )
 			return;
 		#endif
 
-		#if defined (__ENABLE_UAPP_PVDRIVER_UART__)
+		#if defined (__UBERSPARK_UOBJCOLL_CONFIGDEF_ENABLE_UAPP_PVDRIVER_UART__)
 		if( uapp_pvdriver_uart_handlehcall(r->r0, r->r1, r->r2) )
 			return;
 		#endif
 
-		#if defined (__ENABLE_UAPP_UAGENT__)		
+		#if defined (__UBERSPARK_UOBJCOLL_CONFIGDEF_ENABLE_UAPP_UAGENT__)		
 		if( uapp_uagent_handlehcall(r->r0, r->r1, r->r2) )
 			return;
 		#endif		
 
-		#if defined (__ENABLE_UAPP_UHCALLTEST__)		
+		#if defined (__UBERSPARK_UOBJCOLL_CONFIGDEF_ENABLE_UAPP_UHCALLTEST__)		
 		if( uapp_uhcalltest_handlehcall(r->r0, r->r1, r->r2) )
 			return;
 		#endif		
 
-		#if defined (__ENABLE_UAPP_UHSIGN__)
+		#if defined (__UBERSPARK_UOBJCOLL_CONFIGDEF_ENABLE_UAPP_UHSIGN__)
 		if( uapp_uhsign_handlehcall(r->r0, r->r1, r->r2) )
 			return;
 		#endif
 
-		#if defined (__ENABLE_UAPP_UHSTATEDB__)
+		#if defined (__UBERSPARK_UOBJCOLL_CONFIGDEF_ENABLE_UAPP_UHSTATEDB__)
 		if( uapp_uhstateDB_handlehcall(r->r0, r->r1, r->r2) )
 			return;
 		#endif
 
-		#if defined (__ENABLE_UAPP_UTPMTEST__)
+		#if defined (__UBERSPARK_UOBJCOLL_CONFIGDEF_ENABLE_UAPP_UTPMTEST__)
 		if( uapp_utpmtest_handlehcall(r->r0, r->r1, r->r2) )
 			return;
 		#endif
 
-		#if defined (__ENABLE_UAPP_WATCHDOG__)
+		#if defined (__UBERSPARK_UOBJCOLL_CONFIGDEF_ENABLE_UAPP_WATCHDOG__)
 			// no hypercall handling required
 		#endif
 

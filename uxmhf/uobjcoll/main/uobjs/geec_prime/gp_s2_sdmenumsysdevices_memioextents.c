@@ -148,12 +148,12 @@ void gp_s2_sdmenumsysdevices_memioextents(uint32_t b, uint32_t d, uint32_t f, ui
 			}
 
 
-		#if defined (__DEBUG_SERIAL__)
+		#if defined (__UBERSPARK_UOBJCOLL_CONFIGDEF_DEBUG_SERIAL__)
 		}else if(vendor_id == PCI_VENDOR_ID_XMHFGEEC && device_id == PCI_DEVICE_ID_XMHFGEEC_SERIAL0){
 			sysdev_memioregions[numentries_sysdev_memioregions].dtype = SYSDEV_MEMIOREGIONS_DTYPE_SERIAL0;
 			sysdev_memioregions[numentries_sysdev_memioregions].memioextents[0].extent_type=_MEMIOREGIONS_EXTENTS_TYPE_IO;
-			sysdev_memioregions[numentries_sysdev_memioregions].memioextents[0].addr_start=DEBUG_PORT;
-			sysdev_memioregions[numentries_sysdev_memioregions].memioextents[0].addr_end=DEBUG_PORT+0x8;
+			sysdev_memioregions[numentries_sysdev_memioregions].memioextents[0].addr_start=__UBERSPARK_UOBJCOLL_CONFIGDEF_DEBUG_PORT__;
+			sysdev_memioregions[numentries_sysdev_memioregions].memioextents[0].addr_end=__UBERSPARK_UOBJCOLL_CONFIGDEF_DEBUG_PORT__+0x8;
 			for(i=1; i < PCI_CONF_MAX_BARS; i++){
 				sysdev_memioregions[numentries_sysdev_memioregions].memioextents[i].extent_type=_MEMIOREGIONS_EXTENTS_TYPE_NONE;
 				sysdev_memioregions[numentries_sysdev_memioregions].memioextents[i].addr_start=0;

@@ -51,25 +51,7 @@
 #define __XMHF_CONFIG_H__
 
 
-#define ___XMHF_BUILD_VERSION___ "6.0.0"
-#define ___XMHF_BUILD_REVISION___ "you-gotta-have-faith-not-in-who-you-are-but-who-you-can-be" 
-#define __XMHF_TARGET_CPU_X86__ 
-#define __XMHF_TARGET_CONTAINER_VMX__ 
-#define __XMHF_TARGET_PLATFORM_X86PC__ 
-#define __XMHF_TARGET_TRIAD_X86_VMX_X86PC__ 
-#define __DEBUG_SERIAL__ 
-#define DEBUG_PORT 0x3f8 
-#define __XMHF_CONFIG_DEBUG_SERIAL_MAXCPUS__ 8 
-#define __DRT__ 
-#define __DMAP__ 
-
-//#define __UAPP_APRVEXEC__
-//#define __UAPP_HYPERDEP__
-//#define __UAPP_SSTEPTRACE__
-//#define __UAPP_SYSCALLLOG__
-#define __UAPP_UHCALLTEST__
-//#define __UAPP_NWLOG__
-
+#include <uberspark/uobjcoll/platform/pc/uxmhf/include/uobjcoll.h>
 
 
 
@@ -342,7 +324,7 @@
 
 #ifndef __ASSEMBLY__
 
-/*#if defined (__DEBUG_SERIAL__)
+/*#if defined (__UBERSPARK_UOBJCOLL_CONFIGDEF_DEBUG_SERIAL__)
 
 extern uint8_t _libxmhfdebugdata_start[];
 extern uint8_t _libxmhfdebugdata_end[];

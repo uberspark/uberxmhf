@@ -71,7 +71,7 @@
 
 extern __attribute__(( section(".data") )) uint32_t libxmhfdebug_lock;
 
-#if defined (__DEBUG_SERIAL__)
+#if defined (__UBERSPARK_UOBJCOLL_CONFIGDEF_DEBUG_SERIAL__)
 
 extern void uberspark_uobjrtl_debug__init(char *params);
 extern int vsnprintf(char *str, size_t size, const char *format, va_list ap);

@@ -168,8 +168,8 @@ void hyppgtbl_populate_tables(void){
 
 	//populate l2 ldesc table
 	for(i=0; i < (L1_LDESC_TABLE_ENTRIES * L2_LDESC_TABLE_MAXENTRIES); i++){
-		if ( ((i * PAGE_SIZE_2M) >= UXMHF_CORE_START_ADDR) &&
-				((i * PAGE_SIZE_2M) < UXMHF_CORE_END_ADDR)	){
+		if ( ((i * PAGE_SIZE_2M) >= __UBERSPARK_UOBJCOLL_CONFIGDEF_UXMHF_CORE_START_ADDR__) &&
+				((i * PAGE_SIZE_2M) < __UBERSPARK_UOBJCOLL_CONFIGDEF_UXMHF_CORE_END_ADDR__)	){
 			//hypervisor memory region mapping
 			if ( (i * PAGE_SIZE_2M) == (u32)&dmac_cblist ){
 				hyp_l2_ldesc_table[i] = ldesc_make_s1_l2e_block( (i * PAGE_SIZE_2M), l2_attrs_nc);

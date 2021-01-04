@@ -75,7 +75,7 @@ void bcm2837_pl011uart_init(void){
     r &= ~((7<<12) | (7<<15)); // gpio14, gpio15
     r |= (4<<12) | (4<<15);    // alt0
 
-#if defined (__ENABLE_UART_PL011_CTSRTS__)
+#if defined (__UBERSPARK_UOBJCOLL_CONFIGDEF_ENABLE_UART_PL011_CTSRTS__)
     r |= 0x00fc0000; 
 #endif
 
@@ -86,7 +86,7 @@ void bcm2837_pl011uart_init(void){
 
     for(i=0; i<150; i++);
 
-#if defined (__ENABLE_UART_PL011_CTSRTS__)
+#if defined (__UBERSPARK_UOBJCOLL_CONFIGDEF_ENABLE_UART_PL011_CTSRTS__)
     mmio_write32(GPPUDCLK0, (1<<14)|(1<<15)|(1<<16)|(1<<17) );
 #else
     mmio_write32(GPPUDCLK0, (1<<14)|(1<<15));
@@ -109,7 +109,7 @@ void bcm2837_pl011uart_init(void){
 //    mmio_write32(PL011_UART_LCR_REG, 0x72);  // 8 bits, odd parity, 1 stop bit, enable FIFO
     mmio_write32(PL011_UART_LCR_REG, 0x70);  // 8 bits, no parity, 1 stop bit, enable FIFO
 
-#if defined (__ENABLE_UART_PL011_CTSRTS__)
+#if defined (__UBERSPARK_UOBJCOLL_CONFIGDEF_ENABLE_UART_PL011_CTSRTS__)
     mmio_write32(PL011_UART_CR_REG, 0xC301);     // enable CTS, RTS, Tx, Rx 
 #else
     mmio_write32(PL011_UART_CR_REG, 0x301);     // enable Tx, Rx

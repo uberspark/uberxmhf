@@ -5,24 +5,38 @@
 
 {
 
-    /* manifest header */
-  "uberspark-manifest":{
-      "manifest_node_types" : [ "uberspark-uobjcoll" ],
-      "uberspark_min_version" : "5.1",
-      "uberspark_max_version" : "any"
-  },
+      "uberspark.manifest.namespace" : [ "uberspark-uobjcoll" ],
+      "uberspark.manifest.version_min" : "5.1",
+      "uberspark.manifest.version_max" : "any",
 
-  /* üobjcoll declarations */
-  "uberspark-uobjcoll":{
-      "namespace" : "uberspark/uobjcoll/platform/pc/uxmhf",
-      "platform" : "pc",
-      "arch" : "x86_32",
-      "cpu" : "generic",
-      "hpl" : "any", //"hyp",
-      "sentinels-intrauobjcoll" : [ "generic/generic/any/call" ],
+      "uberspark.uobjcoll.namespace" : "uberspark/uobjcoll/platform/pc/uxmhf",
+      "uberspark.uobjcoll.platform" : "pc",
+      "uberspark.uobjcoll.arch" : "x86_32",
+      "uberspark.uobjcoll.cpu" : "generic",
+      "uberspark.uobjcoll.hpl" : "any", //"hyp",
+      "uberspark.uobjcoll.sentinels_intra_uobjcoll" : [ "generic/generic/any/call" ],
+
+    "uberspark.uobjcoll.configdefs" : [
+
+        { "name": "uxmhf_build_version", "value": "\"6.0.0\""},
+        { "name": "uxmhf_build_revision", "value": "\"you-gotta-have-faith-not-in-who-you-are-but-who-you-can-be\""},
+        { "name": "debug_serial", "value": "@@TRUE@@"},
+        { "name": "debug_port", "value": "0x3f8"},
+        { "name": "debug_serial_maxcpus", "value": "8"},
+        { "name": "drt", "value": "@@TRUE@@"},
+        { "name": "dmap", "value": "@@TRUE@@"},
+        { "name": "uapp_aprvexec", "value": "@@FALSE@@"},
+        { "name": "uapp_hyperdep", "value": "@@FALSE@@"},
+        { "name": "uapp_ssteptrace", "value": "@@FALSE@@"},
+        { "name": "uapp_syscalllog", "value": "@@FALSE@@"},
+        { "name": "uapp_uhcalltest", "value": "@@TRUE@@"},
+        { "name": "uapp_nwlog", "value": "@@FALSE@@"}
+
+    ],
+
 
       /* uobjs */
-      "uobjs" : {
+      "uberspark.uobjcoll.uobjs" : {
           "master" : "",
           "templars" : [
               "uberspark/uobjcoll/platform/pc/uxmhf/main"
@@ -31,9 +45,9 @@
 
 
     /* uobjcoll init method */
-    "initmethod" : {
-        "uobj_ns" : "uberspark/uobjcoll/platform/pc/uxmhf/main",
-        "pm_name" : "entry",
+    "uberspark.uobjcoll.init_method" : {
+        "uobj_namespace" : "uberspark/uobjcoll/platform/pc/uxmhf/main",
+        "public_method" : "entry",
         "sentinels" : [
             {
                 /*"sentinel_type" : "baremetal/grub-legacy/srot/generic/pc/pmr0/call"*/
@@ -44,18 +58,15 @@
 
 
       /* uobjcoll public methods */
-      "publicmethods" : {
+      "uberspark.uobjcoll.public_methods" : {
           "uberspark/uobjcoll/platform/pc/uxmhf/main" : {
               "entry" : [ "generic/generic/any/call" ]
           }
       },
 
       /* loaders */
-      "loaders" : [
+      "uberspark.uobjcoll.loaders" : [
         "uberspark/loaders/baremetal/x86_32/grub-legacy"    
       ]
-      
-
-  }
 
 }

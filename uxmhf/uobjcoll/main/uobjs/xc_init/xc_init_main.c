@@ -533,9 +533,9 @@ void main(void){
 void xc_init_slab_main(slab_params_t *sp){
     bool isbsp = uberspark_uobjrtl_hw__generic_x86_32_intel__lapic_isbsp();
 
-    #if defined (__DEBUG_SERIAL__)
+    #if defined (__UBERSPARK_UOBJCOLL_CONFIGDEF_DEBUG_SERIAL__)
 	static volatile uint32_t cpucount=0;
-	#endif //__DEBUG_SERIAL__
+	#endif //__UBERSPARK_UOBJCOLL_CONFIGDEF_DEBUG_SERIAL__
 
     //grab lock
     CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__spin_lock,&__xcinit_smplock);
@@ -562,16 +562,16 @@ void xc_init_slab_main(slab_params_t *sp){
     _XDPRINTF_("XC_INIT[%u]: Proceeding to call guest: ESP=%08x, eflags=%08x\n", (uint16_t)sp->cpuid,
     		CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__read_esp,CASM_NOPARAM), CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__read_eflags, CASM_NOPARAM));
 
-    #if defined (__DEBUG_SERIAL__)
+    #if defined (__UBERSPARK_UOBJCOLL_CONFIGDEF_DEBUG_SERIAL__)
 	cpucount++;
-	#endif //__DEBUG_SERIAL__
+	#endif //__UBERSPARK_UOBJCOLL_CONFIGDEF_DEBUG_SERIAL__
 
     //release lock
     CASM_FUNCCALL(uberspark_uobjrtl_hw__generic_x86_32_intel__spin_unlock,&__xcinit_smplock);
 
-    #if defined (__DEBUG_SERIAL__)
-    while(cpucount < __XMHF_CONFIG_DEBUG_SERIAL_MAXCPUS__);
-    #endif //__DEBUG_SERIAL__
+    #if defined (__UBERSPARK_UOBJCOLL_CONFIGDEF_DEBUG_SERIAL__)
+    while(cpucount < __UBERSPARK_UOBJCOLL_CONFIGDEF_DEBUG_SERIAL_MAXCPUS__);
+    #endif //__UBERSPARK_UOBJCOLL_CONFIGDEF_DEBUG_SERIAL__
 
 
     //call guest

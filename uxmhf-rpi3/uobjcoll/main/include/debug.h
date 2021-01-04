@@ -44,7 +44,7 @@
 #ifndef __ASSEMBLY__
 
 
-#if defined (__DEBUG_UART__)
+#if defined (__UBERSPARK_UOBJCOLL_CONFIGDEF_DEBUG_UART__)
 
 
 

@@ -5,25 +5,52 @@
 
 {
 
-  	/* manifest header */
-	"uberspark-manifest":{
-		"manifest_node_types" : [ "uberspark-uobjcoll" ],
-		"uberspark_min_version" : "5.1",
-		"uberspark_max_version" : "any"
-	},
+		"uberspark.manifest.namespace" : [ "uberspark-uobjcoll" ],
+		"uberspark.manifest.version_min" : "6.0.0",
+		"uberspark.manifest.version_max" : "any",
 
 
-	/* üobjcoll declarations */
-	"uberspark-uobjcoll":{
-		"namespace" : "uberspark/uobjcoll/platform/rpi3/uxmhf",
-		"platform" : "rpi3",
-		"arch" : "armv8_32",
-		"cpu" : "generic",
-		"hpl" : "hyp",
-		"sentinels-intrauobjcoll" : [ "generic/generic/hyp/call" ],
+		"uberspark.uobjcoll.namespace" : "uberspark/uobjcoll/platform/rpi3/uxmhf",
+		"uberspark.uobjcoll.platform" : "rpi3",
+		"uberspark.uobjcoll.arch" : "armv8_32",
+		"uberspark.uobjcoll.cpu" : "generic",
+		"uberspark.uobjcoll.hpl" : "hyp",
+		"uberspark.uobjcoll.sentinels_intra_uobjcoll" : [ "generic/generic/hyp/call" ],
 
+
+		"uberspark.uobjcoll.configdefs" : [
+
+			{ "name": "uxmhf_core_start_addr", "value": "0x01000000"},
+			{ "name": "uxmhf_core_size", "value": "( 0x00200000 + 0x00200000 + 0x01100000)"},
+			{ "name": "uxmhf_core_end_addr", "value": "( __UBERSPARK_UOBJCOLL_CONFIGDEF_UXMHF_CORE_START_ADDR__ + __UBERSPARK_UOBJCOLL_CONFIGDEF_UXMHF_CORE_SIZE__)"},
+			{ "name": "uxmhf_boot_partition_start", "value": "8192"},
+			{ "name": "uxmhf_boot_partition_end", "value": "137215"},
+
+			{ "name": "secboot", "value": "@@FALSE@@"},
+			{ "name": "dmaprot", "value": "@@FALSE@@"},
+			{ "name": "intprot", "value": "@@FALSE@@"},
+			{ "name": "fiqreflection", "value": "@@FALSE@@"},
+			
+			{ "name": "debug_uart", "value": "@@TRUE@@"},
+			{ "name": "enable_uart_mini", "value": "@@TRUE@@"},
+			{ "name": "enable_uart_pl011", "value": "@@FALSE@@"},
+			{ "name": "enable_uart_pl011_ctsrts", "value": "@@FALSE@@"},
+
+			{ "name": "enable_uapp_ctxtrace", "value": "@@FALSE@@"},
+			{ "name": "enable_uapp_pa5encfs", "value": "@@FALSE@@"},
+			{ "name": "enable_uapp_pvdrive_uart", "value": "@@FALSE@@"},
+			{ "name": "enable_uapp_uagent", "value": "@@FALSE@@"},
+			{ "name": "enable_uapp_uhcalltest", "value": "@@TRUE@@"},
+			{ "name": "enable_uapp_uhsign", "value": "@@FALSE@@"},
+			{ "name": "enable_uapp_uhstatedb", "value": "@@FALSE@@"},
+			{ "name": "enable_uapp_utpmtest", "value": "@@FALSE@@"},
+			{ "name": "enable_uapp_watchdog", "value": "@@FALSE@@"}
+
+		],
+	
+	
 		/* uobjs */
-		"uobjs" : {
+		"uberspark.uobjcoll.uobjs" : {
 			"master" : "",
 			"templars" : [
 				"uberspark/uobjcoll/platform/rpi3/uxmhf/main"
@@ -31,9 +58,9 @@
 		},
 
 		/* uobjcoll init method */
-		"initmethod" : {
-			"uobj_ns" : "uberspark/uobjcoll/platform/rpi3/uxmhf/main",
-			"pm_name" : "entry",
+		"uberspark.uobjcoll.init_method" : {
+			"uobj_namespace" : "uberspark/uobjcoll/platform/rpi3/uxmhf/main",
+			"public_method" : "entry",
 			"sentinels" : [
 				{
 					"sentinel_type" : "baremetal/vccore/srot/generic/rpi3/hyp/call",
@@ -44,12 +71,11 @@
 
 
 		/* uobjcoll public methods */
-		"publicmethods" : {
+		"uberspark.uobjcoll.public_methods" : {
 			"uberspark/uobjcoll/platform/rpi3/uxmhf/main" : {
 				"entry" : [ "generic/generic/hyp/call" ]
 			}
 		}
 
-	}
-
+	
 }
