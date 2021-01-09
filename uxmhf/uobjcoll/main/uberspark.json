@@ -5,7 +5,7 @@
 
 {
 
-     "uberspark.manifest.namespace" : [ "uberspark-uobj" ],
+     "uberspark.manifest.namespace" : "uberspark/uobj",
      "uberspark.manifest.version_min" : "6.0.0",
      "uberspark.manifest.version_max" : "any",
 
