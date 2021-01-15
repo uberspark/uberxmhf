@@ -31,7 +31,7 @@ LIBS += $(DIR_LIBXMHFCRYPTO) $(DIR_LIBFUSE) $(DIR_LIBPTHREAD) $(DIR_LIBCRYPTO)  
 
 
 
-INCS = -I$(UXMHFRPI3_DIR)/include
+INCS = -I$(UXMHFRPI3_DIR)/uobjcoll/main/include
 INCS += -I$(RGAPPS_LIB_DIR)/libuhcall/include
 INCS += -I../../../libs/libxmhfcrypto/include
 

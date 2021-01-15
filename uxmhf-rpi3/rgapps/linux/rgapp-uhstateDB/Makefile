@@ -5,7 +5,7 @@ export CURRENT_DIR := $(realpath $(dir $(lastword $(MAKEFILE_LIST))))
 export UXMHFRPI3_DIR := $(CURRENT_DIR)/../../..
 export RGAPPS_LIB_DIR := $(realpath $(CURRENT_DIR)/../libs)
 
-INCS = -I$(UXMHFRPI3_DIR)/include
+INCS = -I$(UXMHFRPI3_DIR)/uobjcoll/main/include
 INCS += -I$(RGAPPS_LIB_DIR)/libuhcall/include
 INCS += -I$(UXMHFRPI3_DIR)/libs/libxmhfcrypto/include
 
