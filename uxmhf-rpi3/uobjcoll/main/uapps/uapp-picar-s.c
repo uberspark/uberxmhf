@@ -63,31 +63,19 @@ __attribute__((section(".data"))) static unsigned char uhsign_key_picar[]="super
 
 //return true if handled the hypercall, false if not
 bool uapp_picar_s_handlehcall(u32 picar_s_function, void *picar_s_buffer, u32 picar_s_buffer_len){
-	picar_s_param_t *uhctp;
-	uint32_t i;
-	//u32 picar_s_buffer_paddr;
-        unsigned long digest_size = HMAC_DIGEST_SIZE;
-        unsigned char digest_result[HMAC_DIGEST_SIZE];
+	picar_s_param_t *upicar;
+	upicar = (picar_s_param_t *)picar_s_buffer;
 
 	if(picar_s_function != UAPP_PICAR_S_FUNCTION_TEST)
 		return false;
 
-        if(uberspark_uobjrtl_crypto__mac_hmacsha256__hmac_sha256_memory(uhsign_key_picar, (unsigned long) UHSIGN_KEY_SIZE, (unsigned char *) 
-        picar_s_buffer, (unsigned long) picar_s_buffer_len, digest_result, &digest_size)==CRYPT_OK) {
-          if(uberspark_uobjrtl_crt__memcmp(picar_s_buffer+picar_s_buffer_len,digest_result,digest_size) != 0){
-          }
-         // else{
-         //    printf("HMAC digest match\n");
-         // }
+        if(uberspark_uobjrtl_crypto__mac_hmacsha256__hmac_sha256_memory(uhsign_key_picar, 
+			(unsigned long) UHSIGN_KEY_SIZE, (unsigned char *) upicar->in, 
+			(unsigned long) upicar->len, upicar->out, &upicar->len)==CRYPT_OK) {
+               _XDPRINTFSMP_("hmac call success\n");
         }
-	//_XDPRINTFSMP_("%s: hcall: picar_s_function=0x%08x, picar_s_buffer=0x%08x, picar_s_buffer_len=0x%08x\n", __func__,
-	//		picar_s_function, picar_s_buffer, picar_s_buffer_len);
-
-	//if(!va2pa((uint32_t)picar_s_buffer, &picar_s_buffer_paddr))
-	//	return false;
-	
-	//uhctp = (picar_s_param_t *)picar_s_buffer_paddr;
-	uhctp = (picar_s_param_t *)picar_s_buffer;
+	_XDPRINTFSMP_("%s: hcall: picar_s_function=0x%08x, picar_s_buffer=0x%08x, picar_s_buffer_len=0x%08x\n", __func__,
+			picar_s_function, picar_s_buffer, picar_s_buffer_len);
 
 	return true;
 }

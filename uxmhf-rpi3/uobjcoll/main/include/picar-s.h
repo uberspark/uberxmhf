@@ -48,6 +48,7 @@
 typedef struct {
 	uint8_t in[64];
 	uint8_t out[64];
+	uint8_t len;
 }picar_s_param_t;
 
 #endif // __ASSEMBLY__
