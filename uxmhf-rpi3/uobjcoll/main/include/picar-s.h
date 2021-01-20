@@ -41,13 +41,13 @@
 #ifndef __PICAR_S_H__
 #define __PICAR_S_H__
 
-#define UAPP_PICAR_S_FUNCTION_TEST	10
+#define UAPP_PICAR_S_FUNCTION_TEST	11
 
 #ifndef __ASSEMBLY__
 
 typedef struct {
-	uint8_t in[16];
-	uint8_t out[16];
+	uint8_t in[64];
+	uint8_t out[64];
 }picar_s_param_t;
 
 #endif // __ASSEMBLY__
