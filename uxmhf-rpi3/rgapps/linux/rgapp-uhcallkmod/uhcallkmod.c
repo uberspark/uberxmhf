@@ -153,7 +153,13 @@ static ssize_t dev_write(struct file *filep, const char *buffer, size_t len, lof
 	printk(KERN_INFO "uhcallkmod: dev_write: uhcall_function=0x%08x, uhcall_buffer=0x%08x, uhcall_buffer_len=0x%08x\n",
 			uhcallp->uhcall_function, uhcallp->uhcall_buffer, uhcallp->uhcall_buffer_len);
 
-	uhcallkmod_hvc(uhcallp->uhcall_function, (void *)pa, uhcallp->uhcall_buffer_len);	
+	if(pa != -1){
+	   uhcallkmod_hvc(uhcallp->uhcall_function, (void *)pa, uhcallp->uhcall_buffer_len);	
+	}
+	else{
+	   printk("dev_write() pa == -1\n");
+	   return -EINVAL;
+	}
 
    return 0;
 }
