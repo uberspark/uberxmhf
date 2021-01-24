@@ -44,7 +44,8 @@
 			{ "name": "enable_uapp_uhsign", "value": "@@FALSE@@"},
 			{ "name": "enable_uapp_uhstatedb", "value": "@@FALSE@@"},
 			{ "name": "enable_uapp_utpmtest", "value": "@@FALSE@@"},
-			{ "name": "enable_uapp_watchdog", "value": "@@FALSE@@"}
+			{ "name": "enable_uapp_watchdog", "value": "@@FALSE@@"},
+			{ "name": "enable_uapp_picar_s", "value": "@@TRUE@@"}
 
 		],
 	

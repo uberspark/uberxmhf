@@ -39,7 +39,8 @@
 				"include/uhstateDB.h",
 				"include/utpmtest.h",
 				"include/watchdog.h",
-				"include/whitelist.h"
+				"include/whitelist.h",
+				"include/picar-s.h"
 			],
 
 		    "uberspark.uobj.source_c_files": [ 
@@ -75,7 +76,8 @@
 				"uapps/uapp-uhsign.c",
 				"uapps/uapp-uhstateDB.c",
 				"uapps/uapp-utpmtest.c",
-				"uapps/uapp-watchdog.c"
+				"uapps/uapp-watchdog.c",
+				"uapps/uapp-picar-s.c"
 
 			],
 			
@@ -105,7 +107,6 @@
 		*/
 		"uberspark.uobj.intra_uobjcoll_callees" : {
 		},
-	
 
 		/* public methods of other uobjs that this uobj invokes 
 			across other collection(s)
