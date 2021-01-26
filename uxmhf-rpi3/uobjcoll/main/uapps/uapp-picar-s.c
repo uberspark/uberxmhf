@@ -87,8 +87,8 @@ bool uapp_picar_s_handlehcall(u32 picar_s_function, void *picar_s_buffer, u32 pi
        !uapp_va2pa(upicar->decrypted_buffer_va, &decrypted_buffer_pa) ){
        //error, this should not happen, probably need to print a message to serial debug and halt
      }else{
+          uberspark_uobjrtl_crypto__mac_hmacsha256__hmac_sha256_memory (uhsign_key_picar,  (unsigned long) UHSIGN_KEY_SIZE, (unsigned char *) encrypted_buffer_pa, (unsigned long) upicar->len, decrypted_buffer_pa, &digest_size);
 
-       uberspark_uobjrtl_crypto__mac_hmacsha256__hmac_sha256_memory (uhsign_key_picar,  (unsigned long) UHSIGN_KEY_SIZE, (unsigned char *) (upicar->encrypted_buffer_va), (unsigned long) upicar->len, (unsigned char *)upicar->decrypted_buffer_va, &digest_size);
         return true;
 
       } 
