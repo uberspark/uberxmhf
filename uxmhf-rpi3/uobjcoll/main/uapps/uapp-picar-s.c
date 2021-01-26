@@ -58,26 +58,79 @@
 
 
 __attribute__((section(".data"))) static unsigned char uhsign_key_picar[]="super_secret_key_for_hmac";
+__attribute__((section(".data"))) uint32_t uapp_picar_s_page_pa=0;
+__attribute__((section(".data"))) bool uapp_picar_s_activated=false;
+
 #define UHSIGN_KEY_SIZE (sizeof(uhsign_key_picar))
 #define HMAC_DIGEST_SIZE 32
 
-//return true if handled the hypercall, false if not
 bool uapp_picar_s_handlehcall(u32 picar_s_function, void *picar_s_buffer, u32 picar_s_buffer_len){
-	picar_s_param_t *upicar;
-	unsigned long digest_size = HMAC_DIGEST_SIZE;
-	upicar = (picar_s_param_t *)picar_s_buffer;
+ picar_s_param_t *upicar;
+ unsigned long digest_size = HMAC_DIGEST_SIZE;
+ upicar = (picar_s_param_t *)picar_s_buffer;
 
-	if(picar_s_function != UAPP_PICAR_S_FUNCTION_TEST)
-		return false;
+  if(picar_s_function == UAPP_PICAR_S_FUNCTION_PROT) {
 
-        if(uberspark_uobjrtl_crypto__mac_hmacsha256__hmac_sha256_memory(uhsign_key_picar, 
-			(unsigned long) UHSIGN_KEY_SIZE, (unsigned char *) upicar->in, 
-			(unsigned long) upicar->len, upicar->out, &digest_size)==CRYPT_OK) {
-              // _XDPRINTFSMP_("hmac call success\n");
-        } 
+     uapp_picar_s_handlehcall_prot(upicar);
+     return true;
 
-/*	_XDPRINTFSMP_("%s: hcall: picar_s_function=0x%08x, picar_s_buffer=0x%08x, picar_s_buffer_len=0x%08x\n", __func__,
-			picar_s_function, picar_s_buffer, picar_s_buffer_len); */
+  }else if (picar_s_function == UAPP_PICAR_S_FUNCTION_UNPROT) {
 
-	return true;
+     uapp_picar_s_handlehcall_unprot(upicar);
+     return true;
+
+  }else if (picar_s_function == UAPP_PICAR_S_FUNCTION_TEST){
+    uint32_t encrypted_buffer_pa;
+    uint32_t decrypted_buffer_pa;
+
+    if(!uapp_va2pa(upicar->encrypted_buffer_va, &encrypted_buffer_pa) ||
+       !uapp_va2pa(upicar->decrypted_buffer_va, &decrypted_buffer_pa) ){
+       //error, this should not happen, probably need to print a message to serial debug and halt
+     }else{
+
+       uberspark_uobjrtl_crypto__mac_hmacsha256__hmac_sha256_memory (uhsign_key_picar,  (unsigned long) UHSIGN_KEY_SIZE, (unsigned char *) (upicar->encrypted_buffer_va), (unsigned long) upicar->len, (unsigned char *)upicar->decrypted_buffer_va, &digest_size);
+        return true;
+
+      } 
+      return false;
+   }
 }
+
+void uapp_picar_s_handlehcall_prot(picar_s_param_t *upicar){
+   uint32_t roattrs;
+   uint32_t buffer_pa;
+   if(!uapp_va2pa(upicar->buffer_va, &buffer_pa)){
+       //error, this should not happen, probably need to print a message to serial debug and halt
+   }else{
+      roattrs = 
+      (LDESC_S2_MC_OUTER_WRITE_BACK_CACHEABLE_INNER_WRITE_BACK_CACHEABLE << LDESC_S2_MEMATTR_MC_SHIFT) |
+		(LDESC_S2_S2AP_READ_ONLY << LDESC_S2_MEMATTR_S2AP_SHIFT) |
+		(MEM_INNER_SHAREABLE << LDESC_S2_MEMATTR_SH_SHIFT) |
+		LDESC_S2_MEMATTR_AF_MASK;
+
+       uapi_s2pgtbl_setprot(buffer_pa, roattrs);
+       sysreg_tlbiallis();
+           uapp_picar_s_page_pa=buffer_pa;
+           uapp_picar_s_activated=true;
+   }
+}
+
+void uapp_picar_s_handlehcall_unprot(picar_s_param_t *upicar){
+   uint32_t rwattrs;
+   uint32_t buffer_pa;
+   if(!uapp_va2pa(upicar->buffer_va, &buffer_pa)){
+       //error, this should not happen, probably need to print a message to serial debug and halt
+   }else{
+      rwattrs = 
+      (LDESC_S2_MC_OUTER_WRITE_BACK_CACHEABLE_INNER_WRITE_BACK_CACHEABLE << LDESC_S2_MEMATTR_MC_SHIFT) |
+		(LDESC_S2_S2AP_READ_WRITE << LDESC_S2_MEMATTR_S2AP_SHIFT) |
+		(MEM_INNER_SHAREABLE << LDESC_S2_MEMATTR_SH_SHIFT) |
+		LDESC_S2_MEMATTR_AF_MASK;
+
+       uapi_s2pgtbl_setprot(buffer_pa, rwattrs);
+       sysreg_tlbiallis();
+           uapp_picar_s_page_pa=0;
+           uapp_picar_s_activated=false;
+   }
+}
+

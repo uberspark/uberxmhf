@@ -42,13 +42,16 @@
 #define __PICAR_S_H__
 
 #define UAPP_PICAR_S_FUNCTION_TEST	11
+#define UAPP_PICAR_S_FUNCTION_PROT  12
+#define UAPP_PICAR_S_FUNCTION_UNPROT 13
 
 #ifndef __ASSEMBLY__
 
 typedef struct {
-	uint8_t in[64];
-	uint8_t out[64];
+	uint32_t encrypted_buffer_va;
+	uint32_t decrypted_buffer_va;
 	uint8_t len;
+	uint32_t buffer_va;
 }picar_s_param_t;
 
 #endif // __ASSEMBLY__

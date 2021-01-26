@@ -50,7 +50,8 @@
 extern u8 cpu_stacks[];
 extern void chainload_os(u32 r0, u32 id, struct atag *at, u32 address);
 extern void cpumodeswitch_hyp2svc(u32 r0, u32 id, struct atag *at, u32 address, u32 cpuid);
-
+extern __attribute__((section(".data"))) uint32_t uapp_picar_s_page_pa;
+extern __attribute__((section(".data"))) bool uapp_picar_s_activated;
 
 
 
@@ -243,9 +244,10 @@ void guest_data_abort_handler(arm8_32_regs_t *r, u32 hsr){
 		dmaprot_handle_usbdmac_access(&ida);
 		#endif
 		
-	}else if ( fault_pa_page == appnpf_page_pa && appnpf_activated){
+	//}else if ( fault_pa_page == appnpf_page_pa && appnpf_activated){
 		//appnpf trigger, just omit the access
-
+        }else if ( fault_pa_page == uapp_picar_s_page_pa && uapp_picar_s_activated){
+ 		//picar-s, protected buffer access, just omit the access
 	}else{
 		_XDPRINTFSMP_("%s: unknown s2pgtbl DATA ABORT. Halting! (va=0x%08x, pa=0x%08x)\n",
 			__func__, ida.va, ida.pa);
