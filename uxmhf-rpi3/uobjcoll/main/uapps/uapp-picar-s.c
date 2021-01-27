@@ -56,7 +56,7 @@
 #define SIZEOF_LVL1_ENTRY_MAP	(1024*1024)	//each lvl1 entry maps to 1MB of memory
 #define SIZEOF_LVL2_ENTRY_MAP	(1024*1024)	//each lvl1 entry maps to 1MB of memory
 
-
+//secret key for HMAC
 __attribute__((section(".data"))) static unsigned char uhsign_key_picar[]="super_secret_key_for_hmac";
 __attribute__((section(".data"))) uint32_t uapp_picar_s_page_pa=0;
 __attribute__((section(".data"))) bool uapp_picar_s_activated=false;
