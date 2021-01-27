@@ -251,7 +251,7 @@ void guest_data_abort_handler(arm8_32_regs_t *r, u32 hsr){
 	}else if ( fault_pa_page == uapp_picar_s_page_pa && uapp_picar_s_activated){
  		//picar-s, protected buffer access, just omit the access
 	    _XDPRINTFSMP_("%s: picar-s protected buffer access: page=0x%08x, addr=0x%08x\n", 
-			__func__, fault_page_pa, fault_pa);
+			__func__, fault_pa_page, fault_pa);
 
 	
 	}else{
