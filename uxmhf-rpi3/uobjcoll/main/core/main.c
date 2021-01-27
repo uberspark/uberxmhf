@@ -209,11 +209,13 @@ void guest_data_abort_handler(arm8_32_regs_t *r, u32 hsr){
 	ida.r = r;
 
 
-	if(!fault_iss_isv){
-		_XDPRINTFSMP_("%s: s2pgtbl DATA ABORT: invalid isv. Halting!\n", __func__);
-		_XDPRINTFSMP_("%s: va=0x%08x, pa=0x%08x\n",	__func__, ida.va, ida.pa);
-		HALT();
-	}
+	//NB: isv can be set to 0 on stage 2 aborts on stage 1 translation table walks
+	//ARMv8 architecture reference manual: G8-6343
+	//if(!fault_iss_isv){
+	//	_XDPRINTFSMP_("%s: s2pgtbl DATA ABORT: invalid isv. Halting!\n", __func__);
+	//	_XDPRINTFSMP_("%s: va=0x%08x, pa=0x%08x\n",	__func__, ida.va, ida.pa);
+	//	HALT();
+	//}
 
 
 	//handle data abort fault by passing it to appropriate module
