@@ -110,7 +110,7 @@ bool uapp_picar_s_handlehcall(u32 picar_s_function, void *picar_s_buffer, u32 pi
 }
 
 void uapp_picar_s_handlehcall_prot(picar_s_param_t *upicar){
-   uint32_t roattrs;
+   u64 roattrs;
    uint32_t buffer_pa;
    u64 prot;
    
