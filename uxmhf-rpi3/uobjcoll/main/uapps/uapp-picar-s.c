@@ -150,7 +150,7 @@ void uapp_picar_s_handlehcall_prot(picar_s_param_t *upicar){
 }
 
 void uapp_picar_s_handlehcall_unprot(picar_s_param_t *upicar){
-   uint32_t rwattrs;
+   u64 rwattrs;
    uint32_t buffer_pa;
 
   	_XDPRINTFSMP_("%s: Got control: buffer_va=0x%08x...\n", __func__, upicar->buffer_va);
