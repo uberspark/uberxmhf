@@ -112,6 +112,8 @@ bool uapp_picar_s_handlehcall(u32 picar_s_function, void *picar_s_buffer, u32 pi
 void uapp_picar_s_handlehcall_prot(picar_s_param_t *upicar){
    uint32_t roattrs;
    uint32_t buffer_pa;
+   u64 prot;
+   
 
 #if defined (__UBERSPARK_UOBJCOLL_CONFIGDEF_ENABLE_UART_PL011__) || defined (__UBERSPARK_UOBJCOLL_CONFIGDEF_ENABLE_UART_MINI__)
 	//initialize uart
@@ -131,10 +133,16 @@ void uapp_picar_s_handlehcall_prot(picar_s_param_t *upicar){
 		(MEM_INNER_SHAREABLE << LDESC_S2_MEMATTR_SH_SHIFT) |
 		LDESC_S2_MEMATTR_AF_MASK;
 
+      prot=uapi_s2pgtbl_getprot(buffer_pa);
+     	_XDPRINTFSMP_("%s: original pt entry=0x%016llx\n", __func__, prot);
+
        uapi_s2pgtbl_setprot(buffer_pa, roattrs);
        sysreg_tlbiallis();
            uapp_picar_s_page_pa=buffer_pa;
            uapp_picar_s_activated=true;
+
+      prot=uapi_s2pgtbl_getprot(buffer_pa);
+     	_XDPRINTFSMP_("%s: revised pt entry=0x%016llx\n", __func__, prot);
 
      	_XDPRINTFSMP_("%s: setup protections: buffer_va=0x%08x, buffer_pa=0x%08x\n", __func__, upicar->buffer_va, buffer_pa);
 
