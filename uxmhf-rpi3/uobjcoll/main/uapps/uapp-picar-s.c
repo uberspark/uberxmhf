@@ -83,9 +83,9 @@ bool uapp_picar_s_handlehcall(u32 picar_s_function, void *picar_s_buffer, u32 pi
     uint32_t encrypted_buffer_pa;
     uint32_t decrypted_buffer_pa;
 
-  	_XDPRINTFSMP_("%s: Got control: encrypted_buffer_va=0x%08x, decrypted_buffer_va=0x%08x\n", 
+/*  	_XDPRINTFSMP_("%s: Got control: encrypted_buffer_va=0x%08x, decrypted_buffer_va=0x%08x\n", 
       __func__, upicar->encrypted_buffer_va, upicar->decrypted_buffer_va);
-
+*/
 
     if(!uapp_va2pa(upicar->encrypted_buffer_va, &encrypted_buffer_pa) ||
        !uapp_va2pa(upicar->decrypted_buffer_va, &decrypted_buffer_pa) ){
@@ -94,12 +94,12 @@ bool uapp_picar_s_handlehcall(u32 picar_s_function, void *picar_s_buffer, u32 pi
 
      }else{
 
-        _XDPRINTFSMP_("%s: encrypted buffer va=0x%08x, pa=0x%08x\n", __func__,
+ /*       _XDPRINTFSMP_("%s: encrypted buffer va=0x%08x, pa=0x%08x\n", __func__,
             upicar->encrypted_buffer_va, encrypted_buffer_pa);
 
         _XDPRINTFSMP_("%s: decrypted buffer va=0x%08x, pa=0x%08x\n", __func__,
             upicar->decrypted_buffer_va, decrypted_buffer_pa);
-
+*/
         uberspark_uobjrtl_crypto__mac_hmacsha256__hmac_sha256_memory (uhsign_key_picar,  (unsigned long) UHSIGN_KEY_SIZE, (unsigned char *) encrypted_buffer_pa, (unsigned long) upicar->len, decrypted_buffer_pa, &digest_size);
 
         return true;
