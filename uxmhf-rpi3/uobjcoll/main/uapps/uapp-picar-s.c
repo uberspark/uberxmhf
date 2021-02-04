@@ -56,28 +56,123 @@
 #define SIZEOF_LVL1_ENTRY_MAP	(1024*1024)	//each lvl1 entry maps to 1MB of memory
 #define SIZEOF_LVL2_ENTRY_MAP	(1024*1024)	//each lvl1 entry maps to 1MB of memory
 
-
+//secret key for HMAC
 __attribute__((section(".data"))) static unsigned char uhsign_key_picar[]="super_secret_key_for_hmac";
+__attribute__((section(".data"))) uint32_t uapp_picar_s_page_pa=0;
+__attribute__((section(".data"))) bool uapp_picar_s_activated=false;
+
 #define UHSIGN_KEY_SIZE (sizeof(uhsign_key_picar))
 #define HMAC_DIGEST_SIZE 32
 
-//return true if handled the hypercall, false if not
 bool uapp_picar_s_handlehcall(u32 picar_s_function, void *picar_s_buffer, u32 picar_s_buffer_len){
-	picar_s_param_t *upicar;
-	unsigned long digest_size = HMAC_DIGEST_SIZE;
-	upicar = (picar_s_param_t *)picar_s_buffer;
+ picar_s_param_t *upicar;
+ unsigned long digest_size = HMAC_DIGEST_SIZE;
+ upicar = (picar_s_param_t *)picar_s_buffer;
 
-	if(picar_s_function != UAPP_PICAR_S_FUNCTION_TEST)
-		return false;
+  if(picar_s_function == UAPP_PICAR_S_FUNCTION_PROT) {
 
-        if(uberspark_uobjrtl_crypto__mac_hmacsha256__hmac_sha256_memory(uhsign_key_picar, 
-			(unsigned long) UHSIGN_KEY_SIZE, (unsigned char *) upicar->in, 
-			(unsigned long) upicar->len, upicar->out, &digest_size)==CRYPT_OK) {
-              // _XDPRINTFSMP_("hmac call success\n");
-        } 
+     uapp_picar_s_handlehcall_prot(upicar);
+     return true;
 
-/*	_XDPRINTFSMP_("%s: hcall: picar_s_function=0x%08x, picar_s_buffer=0x%08x, picar_s_buffer_len=0x%08x\n", __func__,
-			picar_s_function, picar_s_buffer, picar_s_buffer_len); */
+  }else if (picar_s_function == UAPP_PICAR_S_FUNCTION_UNPROT) {
 
-	return true;
+     uapp_picar_s_handlehcall_unprot(upicar);
+     return true;
+
+  }else if (picar_s_function == UAPP_PICAR_S_FUNCTION_TEST){
+    uint32_t encrypted_buffer_pa;
+    uint32_t decrypted_buffer_pa;
+
+/*  	_XDPRINTFSMP_("%s: Got control: encrypted_buffer_va=0x%08x, decrypted_buffer_va=0x%08x\n", 
+      __func__, upicar->encrypted_buffer_va, upicar->decrypted_buffer_va);
+*/
+
+    if(!uapp_va2pa(upicar->encrypted_buffer_va, &encrypted_buffer_pa) ||
+       !uapp_va2pa(upicar->decrypted_buffer_va, &decrypted_buffer_pa) ){
+       //error, this should not happen, probably need to print a message to serial debug and halt
+     	_XDPRINTFSMP_("%s: Error, could not translate va2pa!\n", __func__);
+
+     }else{
+
+ /*       _XDPRINTFSMP_("%s: encrypted buffer va=0x%08x, pa=0x%08x\n", __func__,
+            upicar->encrypted_buffer_va, encrypted_buffer_pa);
+
+        _XDPRINTFSMP_("%s: decrypted buffer va=0x%08x, pa=0x%08x\n", __func__,
+            upicar->decrypted_buffer_va, decrypted_buffer_pa);
+*/
+        uberspark_uobjrtl_crypto__mac_hmacsha256__hmac_sha256_memory (uhsign_key_picar,  (unsigned long) UHSIGN_KEY_SIZE, (unsigned char *) encrypted_buffer_pa, (unsigned long) upicar->len, decrypted_buffer_pa, &digest_size);
+
+        return true;
+
+      } 
+      return false;
+   }
 }
+
+void uapp_picar_s_handlehcall_prot(picar_s_param_t *upicar){
+   u64 roattrs;
+   uint32_t buffer_pa;
+   u64 prot;
+   
+
+#if defined (__UBERSPARK_UOBJCOLL_CONFIGDEF_ENABLE_UART_PL011__) || defined (__UBERSPARK_UOBJCOLL_CONFIGDEF_ENABLE_UART_MINI__)
+	//initialize uart
+	uart_init();
+#endif
+   
+  	_XDPRINTFSMP_("%s: Got control: buffer_va=0x%08x...\n", __func__, upicar->buffer_va);
+
+   if(!uapp_va2pa(upicar->buffer_va, &buffer_pa)){
+       //error, this should not happen, probably need to print a message to serial debug and halt
+     	_XDPRINTFSMP_("%s: Error, could not translate va2pa!\n", __func__);
+
+   }else{
+      roattrs = 
+      (LDESC_S2_MC_OUTER_WRITE_BACK_CACHEABLE_INNER_WRITE_BACK_CACHEABLE << LDESC_S2_MEMATTR_MC_SHIFT) |
+		(LDESC_S2_S2AP_READ_ONLY << LDESC_S2_MEMATTR_S2AP_SHIFT) |
+		(MEM_INNER_SHAREABLE << LDESC_S2_MEMATTR_SH_SHIFT) |
+		LDESC_S2_MEMATTR_AF_MASK;
+
+      prot=uapi_s2pgtbl_getprot(buffer_pa);
+     	_XDPRINTFSMP_("%s: original pt entry=0x%016llx\n", __func__, prot);
+
+       uapi_s2pgtbl_setprot(buffer_pa, roattrs);
+       sysreg_tlbiallis();
+           uapp_picar_s_page_pa=buffer_pa;
+           uapp_picar_s_activated=true;
+
+      prot=uapi_s2pgtbl_getprot(buffer_pa);
+     	_XDPRINTFSMP_("%s: revised pt entry=0x%016llx\n", __func__, prot);
+
+     	_XDPRINTFSMP_("%s: setup protections: buffer_va=0x%08x, buffer_pa=0x%08x\n", __func__, upicar->buffer_va, buffer_pa);
+
+   }
+}
+
+void uapp_picar_s_handlehcall_unprot(picar_s_param_t *upicar){
+   u64 rwattrs;
+   uint32_t buffer_pa;
+
+  	_XDPRINTFSMP_("%s: Got control: buffer_va=0x%08x...\n", __func__, upicar->buffer_va);
+
+   if(!uapp_va2pa(upicar->buffer_va, &buffer_pa)){
+       //error, this should not happen, probably need to print a message to serial debug and halt
+     	_XDPRINTFSMP_("%s: Error, could not translate va2pa!\n", __func__);
+
+   }else{
+      rwattrs = 
+      (LDESC_S2_MC_OUTER_WRITE_BACK_CACHEABLE_INNER_WRITE_BACK_CACHEABLE << LDESC_S2_MEMATTR_MC_SHIFT) |
+		(LDESC_S2_S2AP_READ_WRITE << LDESC_S2_MEMATTR_S2AP_SHIFT) |
+		(MEM_INNER_SHAREABLE << LDESC_S2_MEMATTR_SH_SHIFT) |
+		LDESC_S2_MEMATTR_AF_MASK;
+
+       uapi_s2pgtbl_setprot(buffer_pa, rwattrs);
+       sysreg_tlbiallis();
+           uapp_picar_s_page_pa=0;
+           uapp_picar_s_activated=false;
+
+     	_XDPRINTFSMP_("%s: removed protections: buffer_va=0x%08x, buffer_pa=0x%08x\n", __func__, upicar->buffer_va, buffer_pa);
+
+   }
+}
+
