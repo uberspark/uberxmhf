@@ -23,7 +23,7 @@ all: prep build
 build:
 	@echo building xmhf-rpi3...
 	uberspark staging switch rpi3 
-	uberspark uobjcoll build -v --platform=rpi3 --arch=armv8_32 --cpu=generic .
+	uberspark -v
 	@echo built xmhf-rpi3 successfully!
 
 

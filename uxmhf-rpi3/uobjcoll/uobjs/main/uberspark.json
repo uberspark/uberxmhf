@@ -10,12 +10,12 @@
 		"uberspark.manifest.version_max" : "any",
 
 
-		"uberspark.uobj.namespace" : "uberspark/uobjcoll/platform/rpi3/uxmhf/main",
+		"uberspark.uobj.namespace" : "uberspark/uobjcoll/platform/rpi3/uxmhf/uobjs/main",
 		"uberspark.uobj.platform" : "rpi3",
 		"uberspark.uobj.arch" : "armv8_32",
 		"uberspark.uobj.cpu" : "generic",
 
-		    "uberspark.uobj.source_h_files": [ 
+		    "uberspark.uobj.headers": [ 
 				"include/arm8-32.h", 
 				"include/atags.h",
 				"include/bcm2837.h", 
@@ -43,7 +43,7 @@
 				"include/picar-s.h"
 			],
 
-		    "uberspark.uobj.source_c_files": [ 
+		    "uberspark.uobj.sources": [ 
 				"common/atags.c",
 				"common/debug.c", 
 				"common/mailbox.c",
@@ -77,21 +77,19 @@
 				"uapps/uapp-uhstateDB.c",
 				"uapps/uapp-utpmtest.c",
 				"uapps/uapp-watchdog.c",
-				"uapps/uapp-picar-s.c"
+				"uapps/uapp-picar-s.c",
 
-			],
-			
-			"uberspark.uobj.source_casm_files": [ ],
-			
-			"uberspark.uobj.source_asm_files": [ 
+
 				"common/arm8-32.s", 
 
 				"core/entry.S",
 				"core/hypvtablestubs.s",
 
 				"uapps/uapp-watchdogsup.s"
-				
-				  ],
+
+
+			],
+			
 	
 		/* public methods */
 		"uberspark.uobj.public_methods" : {
