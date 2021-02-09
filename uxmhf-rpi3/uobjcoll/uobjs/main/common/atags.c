@@ -38,10 +38,10 @@
 	author: amit vasudevan (amitvasudevan@acm.org)
 */
 
-#include <uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/types.h>
-#include <uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/bcm2837.h>
-#include <uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/uart.h>
-#include <uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/atags.h>
+#include <uberspark/uobjcoll/platform/rpi3/uxmhf/uobjs/main/include/types.h>
+#include <uberspark/uobjcoll/platform/rpi3/uxmhf/uobjs/main/include/bcm2837.h>
+#include <uberspark/uobjcoll/platform/rpi3/uxmhf/uobjs/main/include/uart.h>
+#include <uberspark/uobjcoll/platform/rpi3/uxmhf/uobjs/main/include/atags.h>
 //#include <uberspark/include/uberspark.h>
 
 void atag_dumptags(struct atag *at){

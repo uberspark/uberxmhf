@@ -41,7 +41,7 @@
 #ifndef __TYPES_H__
 #define __TYPES_H__
 
-#include <uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/config.h>
+#include <uberspark/uobjcoll/platform/rpi3/uxmhf/uobjs/main/include/config.h>
 #include <uberspark/uobjrtl/crt/include/stdint.h>
 #include <uberspark/uobjrtl/crt/include/stdbool.h>
 #include <uberspark/uobjrtl/crt/include/stddef.h>

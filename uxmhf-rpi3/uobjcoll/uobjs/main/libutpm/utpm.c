@@ -49,7 +49,7 @@
 #include <uberspark/uobjrtl/crypto/include/ciphers/aes/aes.h>
 #include <uberspark/uobjrtl/crypto/include/mac/hmacsha1/hmacsha1.h>
 
-#include <uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/libutpm/utpm.h>
+#include <uberspark/uobjcoll/platform/rpi3/uxmhf/uobjs/main/include/libutpm/utpm.h>
 //#include <uberspark/include/uberspark.h>
 
 //////

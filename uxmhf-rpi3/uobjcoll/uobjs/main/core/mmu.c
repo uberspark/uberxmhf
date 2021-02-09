@@ -37,11 +37,11 @@
 	author: amit vasudevan (amitvasudevan@acm.org)
 */
 
-#include <uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/types.h>
-#include <uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/arm8-32.h>
-#include <uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/bcm2837.h>
-#include <uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/uart.h>
-#include <uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/debug.h>
+#include <uberspark/uobjcoll/platform/rpi3/uxmhf/uobjs/main/include/types.h>
+#include <uberspark/uobjcoll/platform/rpi3/uxmhf/uobjs/main/include/arm8-32.h>
+#include <uberspark/uobjcoll/platform/rpi3/uxmhf/uobjs/main/include/bcm2837.h>
+#include <uberspark/uobjcoll/platform/rpi3/uxmhf/uobjs/main/include/uart.h>
+#include <uberspark/uobjcoll/platform/rpi3/uxmhf/uobjs/main/include/debug.h>
 //#include <uberspark/include/uberspark.h>
 
 void mmu_invalidatetlbs(void){

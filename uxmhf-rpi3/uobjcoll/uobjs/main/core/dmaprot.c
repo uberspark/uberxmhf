@@ -38,12 +38,12 @@
 	author: amit vasudevan (amitvasudevan@acm.org)
 */
 
-#include <uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/types.h>
-#include <uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/arm8-32.h>
-#include <uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/bcm2837.h>
-#include <uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/uart.h>
-#include <uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/debug.h>
-#include <uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/dmaprot.h>
+#include <uberspark/uobjcoll/platform/rpi3/uxmhf/uobjs/main/include/types.h>
+#include <uberspark/uobjcoll/platform/rpi3/uxmhf/uobjs/main/include/arm8-32.h>
+#include <uberspark/uobjcoll/platform/rpi3/uxmhf/uobjs/main/include/bcm2837.h>
+#include <uberspark/uobjcoll/platform/rpi3/uxmhf/uobjs/main/include/uart.h>
+#include <uberspark/uobjcoll/platform/rpi3/uxmhf/uobjs/main/include/debug.h>
+#include <uberspark/uobjcoll/platform/rpi3/uxmhf/uobjs/main/include/dmaprot.h>
 //#include <uberspark/include/uberspark.h>
 
 __attribute__((section(".palign2mdata"))) __attribute__((align(PAGE_SIZE_2M))) dmac_cb_t dmac_cblist[BCM2837_DMA_NUMCHANNELS][BCM2837_DMA_MAXCBRECORDS];

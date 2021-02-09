@@ -48,9 +48,9 @@
 #if defined (__ENABLE_UART__)
 
 	#if defined (__UBERSPARK_UOBJCOLL_CONFIGDEF_ENABLE_UART_PL011__)
-		#include <uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/pl011uart.h>
+		#include <uberspark/uobjcoll/platform/rpi3/uxmhf/uobjs/main/include/pl011uart.h>
 	#elif defined (__UBERSPARK_UOBJCOLL_CONFIGDEF_ENABLE_UART_MINI__)
-		#include <uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/miniuart.h>
+		#include <uberspark/uobjcoll/platform/rpi3/uxmhf/uobjs/main/include/miniuart.h>
 	#else
 
 	#endif

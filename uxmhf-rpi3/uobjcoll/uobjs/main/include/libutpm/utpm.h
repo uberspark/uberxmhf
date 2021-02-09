@@ -51,7 +51,7 @@
  * rsa.h in here.  For now, it's not.
  */
 //#include <rsa.h>
-#include <uberspark/uobjcoll/platform/rpi3/uxmhf/main/include/types.h>
+#include <uberspark/uobjcoll/platform/rpi3/uxmhf/uobjs/main/include/types.h>
 
 /* Intentionally not including basic types such as uintXX_t, since the
  * headers that provide these may vary across hypervisor-internal
