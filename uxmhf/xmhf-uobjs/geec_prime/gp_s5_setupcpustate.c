@@ -293,8 +293,10 @@ static bool __xmhfhic_x86vmx_setupvmxstate(uint64_t cpuid){
 	CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_CONTROL_VMX_SECCPU_BASED, (uint32_t)((uint64_t)CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmread,VMCS_CONTROL_VMX_SECCPU_BASED) | (uint64_t)(1 << 7)) );
 
 	//enable execution of INVPCID
+	#if 0
 	CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_CONTROL_VMX_SECCPU_BASED, (uint32_t)((uint64_t)CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmread,VMCS_CONTROL_VMX_SECCPU_BASED) | (uint64_t)(1 << 12)) );
-
+	#endif
+	
 	//setup CR0 and CR0 access
 	{
 		_XDPRINTF_("%s[%u]: CR0_ALWAYS1BITS_MASK=0x%08x\n", __func__, (uint32_t)cpuid, (uint32_t)__xmhfhic_x86vmx_archdata[cpuindex].vmx_msrs[INDEX_IA32_VMX_CR0_FIXED0_MSR]);
