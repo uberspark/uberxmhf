@@ -46,7 +46,7 @@ endif
 	uberspark staging config-set --setting-name=binary_uobj_default_section_size --setting-value=0x1000
 	uberspark staging config-set --setting-name=uobj_binary_image_alignment --setting-value=0x1000
 	uberspark staging config-set --setting-name=uobjcoll_binary_image_load_address --setting-value=0x00007000
-	uberspark staging config-set --setting-name=uobj_binary_image_size --setting-value=0x01100000
+	uberspark staging config-set --setting-name=uobj_binary_image_size --setting-value=0x00200000
 	#uberspark staging config-set --setting-name=uobjcoll_binary_image_section_alignment --setting-value=0x1000
 
 

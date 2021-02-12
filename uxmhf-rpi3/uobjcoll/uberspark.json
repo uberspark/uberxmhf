@@ -25,7 +25,7 @@
 			{ "name": "uxmhf_core_start_addr", "value": "0x01000000"},
 			/* TBD: bring in automatically; for now it is the length of all sections
 				within uobjcoll.lscript except for the init method vccore srot section */
-			{ "name": "uxmhf_core_size", "value": "( 0x00200000 + 0x01200000 + 0x00800000 + 0x00400000)"},
+			{ "name": "uxmhf_core_size", "value": "( 0x00200000 + 0x00200000 + 0x00800000 + 0x00400000)"},
 			{ "name": "uxmhf_core_end_addr", "value": "( __UBERSPARK_UOBJCOLL_CONFIGDEF_UXMHF_CORE_START_ADDR__ + __UBERSPARK_UOBJCOLL_CONFIGDEF_UXMHF_CORE_SIZE__)"},
 			{ "name": "uxmhf_boot_partition_start", "value": "8192"},
 			{ "name": "uxmhf_boot_partition_end", "value": "137215"},
