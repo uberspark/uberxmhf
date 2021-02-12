@@ -129,7 +129,7 @@
 
 		/* sections */
 		"uberspark.uobj.sections": [
-			{
+			/*{
 				"name" : "uobj_code",
 				"size" : "0x400000"
 			},
@@ -142,7 +142,7 @@
 			{
 				"name" : "uobj_tstack",
 				"size" : "0x2d000"
-			},
+			},*/
 
 			{
 				"name" : "paligndata",

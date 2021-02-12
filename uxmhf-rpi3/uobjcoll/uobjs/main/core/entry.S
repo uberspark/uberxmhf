@@ -43,7 +43,10 @@
 
 //r0, r1 and r2 are set by the boot-loader and need to
 //be preserved
-.section ".uobj_pm_entry"
+//.section ".uobj_pm_entry"
+
+.section ".text"
+
 .globl entry
 entry:
 

@@ -20,7 +20,7 @@ SPARK_LD := $(shell uberspark staging --setting-name=ld_bridge_namespace config-
 all: prep build
 
 .PHONY: build
-build:
+build: 
 	@echo building xmhf-rpi3...
 	uberspark staging switch rpi3 
 	uberspark -v
@@ -53,4 +53,4 @@ endif
 
 .PHONY: clean
 clean: 
-	rm -rf _build
+	rm -rf _triage

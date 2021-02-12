@@ -11,7 +11,7 @@ if [[ $# -ne 1 ]]; then
 fi
 
 KERNEL_IMAGE=$1
-UOBJCOLL_IMAGE=../_build/uobjcoll.exe.flat
+UOBJCOLL_IMAGE=../_triage/uberspark/uobjcoll/platform/rpi3/uxmhf/uobjcoll.exe.flat
 
 KERNEL_IMAGE_SIZE=`stat -c %s ${KERNEL_IMAGE}`
 UOBJCOLL_IMAGE_SIZE=`stat -c %s ${UOBJCOLL_IMAGE}`
