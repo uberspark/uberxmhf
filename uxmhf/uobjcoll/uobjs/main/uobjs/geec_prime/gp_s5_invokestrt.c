@@ -44,12 +44,12 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf.h>
-// #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf-debug.h>
-#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/uobjs/geec.h>
+#include <uberspark/uobjcoll/platform/pc/uxmhf/uobjs/main/include/xmhf.h>
+// #include <uberspark/uobjcoll/platform/pc/uxmhf/uobjs/main/include/xmhf-debug.h>
+#include <uberspark/uobjcoll/platform/pc/uxmhf/uobjs/main/include/uobjs/geec.h>
 
-#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/uobjs/geec_prime.h>
-#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/uobjs/xc_init.h>
+#include <uberspark/uobjcoll/platform/pc/uxmhf/uobjs/main/include/uobjs/geec_prime.h>
+#include <uberspark/uobjcoll/platform/pc/uxmhf/uobjs/main/include/uobjs/xc_init.h>
 
 #if defined (__XMHF_VERIFICATION__) && defined (__USPARK_FRAMAC_VA__)
 	uint32_t check_esp, check_eip = CASM_RET_EIP;

@@ -47,12 +47,12 @@
 // hyperdep hypapp
 // author: amit vasudevan (amitvasudevan@acm.org)
 
-#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf.h>
-#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/uobjs/geec.h>
-// #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf-debug.h>
+#include <uberspark/uobjcoll/platform/pc/uxmhf/uobjs/main/include/xmhf.h>
+#include <uberspark/uobjcoll/platform/pc/uxmhf/uobjs/main/include/uobjs/geec.h>
+// #include <uberspark/uobjcoll/platform/pc/uxmhf/uobjs/main/include/xmhf-debug.h>
 
-#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/uobjs/xc.h>
-#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/uobjs/xh_hyperdep.h>
+#include <uberspark/uobjcoll/platform/pc/uxmhf/uobjs/main/include/uobjs/xc.h>
+#include <uberspark/uobjcoll/platform/pc/uxmhf/uobjs/main/include/uobjs/xh_hyperdep.h>
 
 //shutdown handler
 void hyperdep_hcbshutdown(uint32_t cpuindex, uint32_t guest_slab_index){

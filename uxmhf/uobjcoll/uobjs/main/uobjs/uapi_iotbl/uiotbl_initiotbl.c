@@ -50,11 +50,11 @@
  * author: amit vasudevan (amitvasudevan@acm.org)
  */
 
-#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf.h>
-// #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf-debug.h>
-#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/uobjs/geec.h>
+#include <uberspark/uobjcoll/platform/pc/uxmhf/uobjs/main/include/xmhf.h>
+// #include <uberspark/uobjcoll/platform/pc/uxmhf/uobjs/main/include/xmhf-debug.h>
+#include <uberspark/uobjcoll/platform/pc/uxmhf/uobjs/main/include/uobjs/geec.h>
 
-#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/uobjs/uapi_iotbl.h>
+#include <uberspark/uobjcoll/platform/pc/uxmhf/uobjs/main/include/uobjs/uapi_iotbl.h>
 
 
 void uiotbl_initiotbl(uapi_iotbl_initiotbl_t *ps){

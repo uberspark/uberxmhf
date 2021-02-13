@@ -44,12 +44,12 @@
  * @XMHF_LICENSE_HEADER_END@
  */
 
-#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf.h>
-// #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf-debug.h>
+#include <uberspark/uobjcoll/platform/pc/uxmhf/uobjs/main/include/xmhf.h>
+// #include <uberspark/uobjcoll/platform/pc/uxmhf/uobjs/main/include/xmhf-debug.h>
 
-#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/uobjs/geec.h>
+#include <uberspark/uobjcoll/platform/pc/uxmhf/uobjs/main/include/uobjs/geec.h>
 
-#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/uobjs/uapi_iotbl.h>
+#include <uberspark/uobjcoll/platform/pc/uxmhf/uobjs/main/include/uobjs/uapi_iotbl.h>
 
 //__attribute__((section(".data")))
 __attribute__((section(".data"))) __attribute__((aligned(4096))) uint8_t uiotbl_uhslab_iobitmap[XMHFGEEC_TOTAL_UHSLABS][3*PAGE_SIZE_4K];

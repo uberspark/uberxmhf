@@ -40,7 +40,7 @@
  * author: amit vasudevan (amitvasudevan@acm.org)
  */
 
-#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf.h>
+#include <uberspark/uobjcoll/platform/pc/uxmhf/uobjs/main/include/xmhf.h>
 
 #if defined (__UBERSPARK_UOBJCOLL_CONFIGDEF_DEBUG_SERIAL__)
 

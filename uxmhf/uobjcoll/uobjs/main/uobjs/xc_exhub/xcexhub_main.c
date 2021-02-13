@@ -50,12 +50,12 @@
  * author: amit vasudevan (amitvasudevan@acm.org)
  */
 
-#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf.h>
-#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/uobjs/geec.h>
-// #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf-debug.h>
+#include <uberspark/uobjcoll/platform/pc/uxmhf/uobjs/main/include/xmhf.h>
+#include <uberspark/uobjcoll/platform/pc/uxmhf/uobjs/main/include/uobjs/geec.h>
+// #include <uberspark/uobjcoll/platform/pc/uxmhf/uobjs/main/include/xmhf-debug.h>
 
 //#include <xc.h>
-#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/uobjs/xc_exhub.h>
+#include <uberspark/uobjcoll/platform/pc/uxmhf/uobjs/main/include/uobjs/xc_exhub.h>
 
 bool ihub_exit_status = false;
 uint32_t ihub_exit_info = 0;

@@ -49,16 +49,16 @@
  author: amit vasudevan (amitvasudevan@acm.org)
 */
 
-#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf.h>
+#include <uberspark/uobjcoll/platform/pc/uxmhf/uobjs/main/include/xmhf.h>
 #include <uberspark/hwm/include/arch/x86_32/intel/hwm.h>
-// #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf-debug.h>
-#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/uobjs/geec.h>
+// #include <uberspark/uobjcoll/platform/pc/uxmhf/uobjs/main/include/xmhf-debug.h>
+#include <uberspark/uobjcoll/platform/pc/uxmhf/uobjs/main/include/uobjs/geec.h>
 
-#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/uobjs/xc_ihub.h>
+#include <uberspark/uobjcoll/platform/pc/uxmhf/uobjs/main/include/uobjs/xc_ihub.h>
 
 #if defined (__XMHF_VERIFICATION__) && defined (__USPARK_FRAMAC_VA__)
-#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/uobjs/xc.h>
-#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/uobjs/xc_ihub.h>
+#include <uberspark/uobjcoll/platform/pc/uxmhf/uobjs/main/include/uobjs/xc.h>
+#include <uberspark/uobjcoll/platform/pc/uxmhf/uobjs/main/include/uobjs/xc_ihub.h>
 
 uint32_t check_eip = CASM_RET_EIP;
 uint32_t cpuid = 0;	//cpu

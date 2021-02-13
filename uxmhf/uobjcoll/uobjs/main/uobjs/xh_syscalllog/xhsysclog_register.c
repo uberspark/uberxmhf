@@ -47,16 +47,16 @@
 // syscalllog hypapp main module
 // author: amit vasudevan (amitvasudevan@acm.org)
 
-#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf.h>
-#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/uobjs/geec.h>
-// #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf-debug.h>
+#include <uberspark/uobjcoll/platform/pc/uxmhf/uobjs/main/include/xmhf.h>
+#include <uberspark/uobjcoll/platform/pc/uxmhf/uobjs/main/include/uobjs/geec.h>
+// #include <uberspark/uobjcoll/platform/pc/uxmhf/uobjs/main/include/xmhf-debug.h>
 
-#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/uobjs/xc.h>
-#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/uobjs/xc_nwlog.h>
-#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/uobjs/uapi_gcpustate.h>
-#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/uobjs/uapi_slabmempgtbl.h>
+#include <uberspark/uobjcoll/platform/pc/uxmhf/uobjs/main/include/uobjs/xc.h>
+#include <uberspark/uobjcoll/platform/pc/uxmhf/uobjs/main/include/uobjs/xc_nwlog.h>
+#include <uberspark/uobjcoll/platform/pc/uxmhf/uobjs/main/include/uobjs/uapi_gcpustate.h>
+#include <uberspark/uobjcoll/platform/pc/uxmhf/uobjs/main/include/uobjs/uapi_slabmempgtbl.h>
 
-#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/uobjs/xh_syscalllog.h>
+#include <uberspark/uobjcoll/platform/pc/uxmhf/uobjs/main/include/uobjs/xh_syscalllog.h>
 
 //register a syscall handler code page (at gpa)
 void sysclog_register(uint32_t cpuindex, uint32_t guest_slab_index, uint32_t syscall_page_paddr, uint32_t syscall_shadowpage_vaddr, uint32_t syscall_shadowpage_paddr){

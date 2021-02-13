@@ -47,13 +47,13 @@
 // hyperdep hypapp hypercall handler
 // author: amit vasudevan (amitvasudevan@acm.org)
 
-#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf.h>
-#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/uobjs/geec.h>
-// #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf-debug.h>
+#include <uberspark/uobjcoll/platform/pc/uxmhf/uobjs/main/include/xmhf.h>
+#include <uberspark/uobjcoll/platform/pc/uxmhf/uobjs/main/include/uobjs/geec.h>
+// #include <uberspark/uobjcoll/platform/pc/uxmhf/uobjs/main/include/xmhf-debug.h>
 
-#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/uobjs/xc.h>
-#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/uobjs/uapi_gcpustate.h>
-#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/uobjs/xh_hyperdep.h>
+#include <uberspark/uobjcoll/platform/pc/uxmhf/uobjs/main/include/uobjs/xc.h>
+#include <uberspark/uobjcoll/platform/pc/uxmhf/uobjs/main/include/uobjs/uapi_gcpustate.h>
+#include <uberspark/uobjcoll/platform/pc/uxmhf/uobjs/main/include/uobjs/xh_hyperdep.h>
 
 //@ ghost bool hyperdep_methodcall_hcbhypercall_activatedep = false;
 //@ ghost bool hyperdep_methodcall_hcbhypercall_deactivatedep = false;

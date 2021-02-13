@@ -9,7 +9,7 @@
      "uberspark.manifest.version_min" : "6.0.0",
      "uberspark.manifest.version_max" : "any",
 
-     "uberspark.uobj.namespace" : "uberspark/uobjcoll/platform/pc/uxmhf/main",
+     "uberspark.uobj.namespace" : "uberspark/uobjcoll/platform/pc/uxmhf/uobjs/main",
      "uberspark.uobj.platform" : "pc",
      "uberspark.uobj.arch" : "x86_32",
      "uberspark.uobj.cpu" : "generic",

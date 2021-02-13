@@ -43,7 +43,7 @@
  * Amit Vasudevan (amitvasudevan@acm.org)
  */
 
-#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf.h>
+#include <uberspark/uobjcoll/platform/pc/uxmhf/uobjs/main/include/xmhf.h>
 
 #include <uberspark/uobjrtl/crt/include/ctype.h>
 

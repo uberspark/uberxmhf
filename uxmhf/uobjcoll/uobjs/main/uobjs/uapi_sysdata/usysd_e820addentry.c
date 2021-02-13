@@ -50,12 +50,12 @@
  * author: amit vasudevan (amitvasudevan@acm.org)
  */
 
-#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf.h>
-// #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf-debug.h>
-#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/uobjs/geec.h>
+#include <uberspark/uobjcoll/platform/pc/uxmhf/uobjs/main/include/xmhf.h>
+// #include <uberspark/uobjcoll/platform/pc/uxmhf/uobjs/main/include/xmhf-debug.h>
+#include <uberspark/uobjcoll/platform/pc/uxmhf/uobjs/main/include/uobjs/geec.h>
 
-#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/uobjs/xc.h>
-#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/uobjs/uapi_sysdata.h>
+#include <uberspark/uobjcoll/platform/pc/uxmhf/uobjs/main/include/uobjs/xc.h>
+#include <uberspark/uobjcoll/platform/pc/uxmhf/uobjs/main/include/uobjs/uapi_sysdata.h>
 
 /*@
 	requires \valid(e820entryp);

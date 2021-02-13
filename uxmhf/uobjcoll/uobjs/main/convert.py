@@ -25,12 +25,12 @@ for dirName, subdirList, fileList in os.walk(path):
                 with open(file_path, 'w+') as dest:
                     for line in src:
                         if line.startswith("#include <xmhf-debug.h>"):
-                            dest.write("// #include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf-debug.h>\n")
+                            dest.write("// #include <uberspark/uobjcoll/platform/pc/uxmhf/uobjs/main/include/xmhf-debug.h>\n")
                         elif line.startswith("#include <xmhfgeec.h>"):
                             dest.write("// #include <xmhfgeec.h>\n")
                         elif line.startswith("#include"):
                             idx = line.find('<') + 1
-                            dest.write(line[:idx] + "uberspark/uobjcoll/platform/pc/uxmhf/main/include/" + line[idx:])
+                            dest.write(line[:idx] + "uberspark/uobjcoll/platform/pc/uxmhf/uobjs/main/include/" + line[idx:])
                         else:
                             dest.write(line)
             os.remove(file_path+"~")

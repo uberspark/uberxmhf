@@ -49,10 +49,10 @@
  author: amit vasudevan (amitvasudevan@acm.org)
 */
 
-#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/xmhf.h>
+#include <uberspark/uobjcoll/platform/pc/uxmhf/uobjs/main/include/xmhf.h>
 #include <uberspark/hwm/include/arch/x86_32/intel/hwm.h>
 
-#include <uberspark/uobjcoll/platform/pc/uxmhf/main/include/uobjs/xc_init.h>
+#include <uberspark/uobjcoll/platform/pc/uxmhf/uobjs/main/include/uobjs/xc_init.h>
 
 
 //if we return, we had an error and we return the
