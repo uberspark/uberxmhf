@@ -87,7 +87,7 @@ void main(void){
 #endif
 
 //CASM_FUNCDEF(void, entry,
-CASM_FUNCDEF_FULL(.uobj_pm_entry, 0x1000, void, entry,
+CASM_FUNCDEF_FULL(.text, 0x1000, void, entry,
 {
 	__casm__movw_ds_ax();
 	__casm__movw_ax_es();

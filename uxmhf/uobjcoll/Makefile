@@ -8,7 +8,7 @@ COMPILER := uberspark/bridges/container/amd64/cc-bridge/x86_32/generic/compcert/
 ASSEMBLER := uberspark/bridges/container/amd64/as-bridge/x86_32/generic/gnu-as/v2.26.1
 LINKER := uberspark/bridges/container/amd64/ld-bridge/x86_32/generic/gnu-ld/v2.26.1
 
-SPARK_NAMESPACE := $(shell uberspark staging list | grep rpi3)
+SPARK_NAMESPACE := $(shell uberspark staging list | grep uxmhf-pc)
 SPARK_CC := $(shell uberspark staging --setting-name=cc_bridge_namespace config-get)
 SPARK_AS := $(shell uberspark staging --setting-name=as_bridge_namespace config-get)
 SPARK_LD := $(shell uberspark staging --setting-name=ld_bridge_namespace config-get)

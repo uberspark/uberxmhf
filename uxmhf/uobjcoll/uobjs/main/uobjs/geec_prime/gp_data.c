@@ -58,7 +58,7 @@
  */
 
 
-__attribute__(( section(".uobj_ssa") )) gp_rwdatahdr_t gp_rwdatahdr = {
+__attribute__(( section(".hdrdata") )) gp_rwdatahdr_t gp_rwdatahdr = {
 		.xcbootinfo_store.magic = RUNTIME_PARAMETER_BLOCK_MAGIC,
 };
 

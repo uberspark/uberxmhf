@@ -14,7 +14,7 @@
      "uberspark.uobj.arch" : "x86_32",
      "uberspark.uobj.cpu" : "generic",
 
-         "uberspark.uobj.source_h_files": [ 
+         "uberspark.uobj.headers": [ 
 			"include/uobjs/geec.h",
             "include/uobjs/geec_prime.h",
 
@@ -44,7 +44,7 @@
 			"include/xmhf-types.h",
 			"include/xmhf.h"
         ],
-         "uberspark.uobj.source_c_files": [ 
+         "uberspark.uobj.sources": [ 
 
 			"uobjs/debug/dbgdata.c",
 			"uobjs/debug/subr_prf.c",
@@ -172,13 +172,9 @@
 			"uobjs/xh_uhcalltest/xhuhcalltest_copy.c",
 			"uobjs/xh_uhcalltest/xhuhcalltest_hcb_init.c",
 			"uobjs/xh_uhcalltest/xhuhcalltest_hcbhypercall.c",
-			"uobjs/xh_uhcalltest/xhuhcalltest_hcbshutdown.c"
+			"uobjs/xh_uhcalltest/xhuhcalltest_hcbshutdown.c",
 
-
-
-        ],
-         "uberspark.uobj.source_casm_files": [ 
-
+			/* CASM sources */
             "uobjs/geec_prime/gp_s1_entry.cS",
 			"uobjs/geec_prime/gp_s4_apstacks.cS",
             "uobjs/geec_prime/gp_s4_entry.cS",
@@ -192,11 +188,8 @@
 			
 			"uobjs/xh_aprvexec/xh_aprvexec_codesup.cS",
             "uobjs/xh_ssteptrace/xh_ssteptrace_codesup.cS"
-         ],
-         "uberspark.uobj.source_asm_files": [ 
-
-         ],
-
+		 ],
+		 
      /* public methods */
      "uberspark.uobj.public_methods" : {
 		 "entry" : [
@@ -225,7 +218,7 @@
 
 	/* uobj binary sectioning parameters */
 	"uberspark.uobj.sections": [
-		{ 
+		/*{ 
 			"name": "uobj_code",
 			"size": "0x1C00000"  // 0x200000 * 14
 			// "output_names": [
@@ -252,7 +245,7 @@
 			// "output_names": [
 			// 	".dmadata"
 			// ]
-		},
+		},*/
 		{
 			"name": "rwdatahdr",
 			"size": "0x200000",

@@ -223,6 +223,8 @@
 
 //======================================================================
 //XMHF platform/arch. specific configurable constant definitions
+//TBD: we need to get rid of these hard-coded values at some point
+//======================================================================
 
 //----------------------------------------------------------------------
 // XMHF platform memory map
@@ -246,11 +248,15 @@
 
 	#define __TARGET_SIZE_SL				0x00200000
 
+//"runtime" parameter block magic value and offset
+//the offset specified here is the offset of section uberspark__uobjcoll__platform__pc__uxmhf__uobjs
+//in uobjcoll.lscript
+//TBD: get rid of this eventually
+#define RUNTIME_PARAMETER_BLOCK_BASE	(__TARGET_BASE_XMHF + 0x00400000)
+#define RUNTIME_PARAMETER_BLOCK_MAGIC	0xF00DDEAD
+
 //----------------------------------------------------------------------
 
-//"runtime" parameter block magic value and offset
-#define RUNTIME_PARAMETER_BLOCK_BASE	(__TARGET_BASE_XMHF + 0x00600000)
-#define RUNTIME_PARAMETER_BLOCK_MAGIC	0xF00DDEAD
 
 
 //"sl" parameter block magic value
