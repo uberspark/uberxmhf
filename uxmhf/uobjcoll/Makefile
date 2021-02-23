@@ -22,7 +22,7 @@ all: prep build
 build: 
 	@echo building uxmhf collection...
 	uberspark staging switch uxmhf-pc 
-	uberspark -v
+	uberspark build -v
 	@echo built uxmhf collection successfully!
 
 .PHONY: prep
