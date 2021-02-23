@@ -23,7 +23,7 @@ all: prep build
 build: 
 	@echo building xmhf-rpi3...
 	uberspark staging switch rpi3 
-	uberspark -v
+	uberspark build -v
 	@echo built xmhf-rpi3 successfully!
 
 
