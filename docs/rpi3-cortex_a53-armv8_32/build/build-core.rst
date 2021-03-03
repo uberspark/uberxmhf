@@ -72,25 +72,28 @@ Build Micro-Hypervisor Core Framework
 
 #. 
    Note: you can enable optional core micro-hypervisor features by enabling
-   the following definitions within ``uxmhf-rpi3/uobjcoll/main/include/config.h``
-   as needed:
+   the following definitions within the ``uberspark.uobjcoll.configdefs`` JSON
+   node within ``uxmhf-rpi3/uobjcoll/uberspark.json`` as needed:
 
 
-   #. ``#define __DMAPROT__`` to enable DMA protection capabilities
-   #. ``#define __SECBOOT__`` with ``#define UXMHF_BOOT_PARTITION_START BP_START_SECTOR`` and ``#define UXMHF_BOOT_PARTITION_END BP_END_SECTOR`` to enable 
-      secure boot capabilities. In this case ``BP_START_SECTOR`` and 
-      ``BP_END_SECTOR`` are the values of the starting and ending sectors of the 
+   #. set ``dmaprot`` to ``@@TRUE@@`` to enable DMA protection capabilities
+   #. set ``secboot`` to ``@@TRUE@@`` with ``uxmhf_boot_partition_start_bp_start_sector`` 
+      and ``uxmhf_boot_partition_end_bp_end_sector`` to enable 
+      secure boot capabilities. The start and end sector values are
+      the values of the starting and ending sectors of the 
       boot partition (\ ``/dev/mmcblk0p0``\ ) as obtained from the output of the 
       following command: 
       ``sudo fdisk -l /dev/mmcblk0``. Replace ``/dev/mmcblk0`` with the sdcard 
       device on the development system.
-   #. ``#define __INTPROT__`` to enable interrupt protection capabilities
-   #. ``#define __FIQREFLECTION__`` to enable guest FIQ interrupts to be handled within micro-hypervisor
-   #. ``#define __DEBUG_UART__`` to enable debug output via UART; you must 
+   #. set ``intprot`` to ``@@TRUE@@`` to enable interrupt protection capabilities
+   #. set ``fiqreflection`` to ``@@TRUE@@`` to enable guest FIQ interrupts to be 
+      handled within micro-hypervisor
+   #. set ``debug_uart`` to ``@@TRUE@@`` to enable debug output via UART; you must 
       additionally either specify,
-      Mini UART (via ``#define __ENABLE_UART_MINI__``) or full (PL011) 
-      UART (via ``#define __ENABLE_UART_PL011__``).
-      Also, if using PL011 UART, you can use ``#define __ENABLE_UART_PL011_CTSRTS__`` to enable UART hardware flow control. 
+      Mini UART (via ``enable_uart_mini``) or full (PL011) 
+      UART (via ``enable_uart_pl011``).
+      Also, if using PL011 UART, you can use 
+      ``enable_uart_pl011_ctsrts`` to enable UART hardware flow control. 
 
 
 
