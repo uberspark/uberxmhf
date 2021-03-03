@@ -20,7 +20,8 @@ hypercalls) is built.
 Copy ``uhcalltest`` to the target platform and execute with ``sudo ./uhcalltest``.
 
 .. note::
-   You must also enable uapp uhcalltest by using ``#define __UAPP_UHCALLTEST__`` within
-   ``uxmhf/uobjcoll/main/include/xmhf-config.h`` when building
+   You must also enable uapp uhcalltest by using ``uapp_uhcalltest``
+   within the ``uberspark.uobjcoll.configdefs`` JSON
+   node in ``uxmhf/uobjcoll/uberspark.json`` when building
    the micro-hypervisor core as described in 
    :doc:`Build Micro-Hypervisor Core Framework </pc-intel-x86_32/build/build-core>`.
