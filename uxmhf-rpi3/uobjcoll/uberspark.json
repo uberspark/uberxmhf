@@ -20,8 +20,12 @@
 
 		"uberspark.uobjcoll.configdefs" : [
 
+			/* TBD: bring in automatically; for now it is the address of ORIGIN plus
+				length of init method vccore srot section within uobjcoll.lscript */
 			{ "name": "uxmhf_core_start_addr", "value": "0x01000000"},
-			{ "name": "uxmhf_core_size", "value": "( 0x00200000 + 0x00200000 + 0x01100000)"},
+			/* TBD: bring in automatically; for now it is the length of all sections
+				within uobjcoll.lscript except for the init method vccore srot section */
+			{ "name": "uxmhf_core_size", "value": "( 0x00200000 + 0x00200000 + 0x00800000 + 0x00400000)"},
 			{ "name": "uxmhf_core_end_addr", "value": "( __UBERSPARK_UOBJCOLL_CONFIGDEF_UXMHF_CORE_START_ADDR__ + __UBERSPARK_UOBJCOLL_CONFIGDEF_UXMHF_CORE_SIZE__)"},
 			{ "name": "uxmhf_boot_partition_start", "value": "8192"},
 			{ "name": "uxmhf_boot_partition_end", "value": "137215"},
@@ -54,13 +58,13 @@
 		"uberspark.uobjcoll.uobjs" : {
 			"master" : "",
 			"templars" : [
-				"uberspark/uobjcoll/platform/rpi3/uxmhf/main"
+				"uberspark/uobjcoll/platform/rpi3/uxmhf/uobjs/main"
 			]
 		},
 
 		/* uobjcoll init method */
 		"uberspark.uobjcoll.init_method" : {
-			"uobj_namespace" : "uberspark/uobjcoll/platform/rpi3/uxmhf/main",
+			"uobj_namespace" : "uberspark/uobjcoll/platform/rpi3/uxmhf/uobjs/main",
 			"public_method" : "entry",
 			"sentinels" : [
 				{
@@ -73,7 +77,7 @@
 
 		/* uobjcoll public methods */
 		"uberspark.uobjcoll.public_methods" : {
-			"uberspark/uobjcoll/platform/rpi3/uxmhf/main" : {
+			"uberspark/uobjcoll/platform/rpi3/uxmhf/uobjs/main" : {
 				"entry" : [ "generic/generic/hyp/call" ]
 			}
 		}

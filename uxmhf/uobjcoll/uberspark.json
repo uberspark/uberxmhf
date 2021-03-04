@@ -39,14 +39,14 @@
       "uberspark.uobjcoll.uobjs" : {
           "master" : "",
           "templars" : [
-              "uberspark/uobjcoll/platform/pc/uxmhf/main"
+              "uberspark/uobjcoll/platform/pc/uxmhf/uobjs/main"
           ]
       },
 
 
     /* uobjcoll init method */
     "uberspark.uobjcoll.init_method" : {
-        "uobj_namespace" : "uberspark/uobjcoll/platform/pc/uxmhf/main",
+        "uobj_namespace" : "uberspark/uobjcoll/platform/pc/uxmhf/uobjs/main",
         "public_method" : "entry",
         "sentinels" : [
             {
@@ -59,7 +59,7 @@
 
       /* uobjcoll public methods */
       "uberspark.uobjcoll.public_methods" : {
-          "uberspark/uobjcoll/platform/pc/uxmhf/main" : {
+          "uberspark/uobjcoll/platform/pc/uxmhf/uobjs/main" : {
               "entry" : [ "generic/generic/any/call" ]
           }
       },

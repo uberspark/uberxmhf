@@ -20,10 +20,10 @@ SPARK_LD := $(shell uberspark staging --setting-name=ld_bridge_namespace config-
 all: prep build
 
 .PHONY: build
-build:
+build: 
 	@echo building xmhf-rpi3...
 	uberspark staging switch rpi3 
-	uberspark uobjcoll build -v --platform=rpi3 --arch=armv8_32 --cpu=generic .
+	uberspark build -v
 	@echo built xmhf-rpi3 successfully!
 
 
@@ -46,11 +46,11 @@ endif
 	uberspark staging config-set --setting-name=binary_uobj_default_section_size --setting-value=0x1000
 	uberspark staging config-set --setting-name=uobj_binary_image_alignment --setting-value=0x1000
 	uberspark staging config-set --setting-name=uobjcoll_binary_image_load_address --setting-value=0x00007000
-	uberspark staging config-set --setting-name=uobj_binary_image_size --setting-value=0x01100000
+	uberspark staging config-set --setting-name=uobj_binary_image_size --setting-value=0x00200000
 	#uberspark staging config-set --setting-name=uobjcoll_binary_image_section_alignment --setting-value=0x1000
 
 
 
 .PHONY: clean
 clean: 
-	rm -rf _build
+	rm -rf _triage

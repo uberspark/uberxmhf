@@ -6,16 +6,15 @@ Other |uberapp| Micro-Hypervisor Extensions
 
 The following are other available |uberapp| micro-hypervisor extensions:
 
+.. note::   you can enable these optional micro-hypervisor extensions by enabling
+            the following definitions within the ``uberspark.uobjcoll.configdefs`` JSON
+            node within ``uxmhf/uobjcoll/uberspark.json`` as needed:
 
-.. note:: 
-    You can enable these extensions by editing ``uxmhf/uobjcoll/main/include/xmhf-config.h``
-    and enabling the appropriate definition while building the micro-hypervisor core framework. 
 
-
-#. ``#define __UAPP_APRVEXEC__`` to enable a |uberapp| micro-hypervisor extension which provides approved code execution
-#. ``#define __UAPP_HYPERDEP__`` to enable a |uberapp| micro-hypervisor extension which provides data execution prevention
-#. ``#define __UAPP_SSTEPTRACE__`` to enable a |uberapp| micro-hypervisor extension which provides single-step instruction tracing
-#. ``#define __UAPP_SYSCALLLOG__`` to enable a |uberapp| micro-hypervisor extension which provides system call logging.
+#. ``uapp_aprvexec`` to enable a |uberapp| micro-hypervisor extension which provides approved code execution
+#. ``uapp_hyperdep`` to enable a |uberapp| micro-hypervisor extension which provides data execution prevention
+#. ``uapp_ssteptrace`` to enable a |uberapp| micro-hypervisor extension which provides single-step instruction tracing
+#. ``uapp_syscalllog`` to enable a |uberapp| micro-hypervisor extension which provides system call logging.
 
 The corresponding rich-guest applications can be found within 
 ``uxmhf/rgapps/linux/rgapp-*`` and can be built using:

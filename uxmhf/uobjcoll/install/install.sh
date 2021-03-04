@@ -2,8 +2,8 @@
 
 set -e
 
-LOADER_IMAGE=../_build/uberspark/loaders/baremetal/x86_32/grub-legacy/_build/loader.exe.flat
-UOBJCOLL_IMAGE=../_build/uobjcoll.exe.flat
+LOADER_IMAGE=../_triage/uberspark/loaders/baremetal/x86_32/grub-legacy/_build/loader.exe.flat
+UOBJCOLL_IMAGE=../_triage/uberspark/uobjcoll/platform/pc/uxmhf/uobjcoll.exe.flat
 
 LOADER_IMAGE_SIZE=`stat -c %s ${LOADER_IMAGE}`
 UOBJCOLL_IMAGE_SIZE=`stat -c %s ${UOBJCOLL_IMAGE}`
