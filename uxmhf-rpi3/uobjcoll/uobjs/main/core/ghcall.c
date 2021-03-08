@@ -125,6 +125,11 @@ void guest_hypercall_handler(arm8_32_regs_t *r, u32 hsr){
                         return;
                 #endif
 
+                #if defined (__UBERSPARK_UOBJCOLL_CONFIGDEF_ENABLE_UAPP_I2C_DRIVER__)
+                if( uapp_i2c_driver_handlehcall(r->r0, r->r1, r->r2) )
+                        return;
+                #endif
+
 		_XDPRINTFSMP_("%s: hcall unhandled. Halting!\n", __func__);
 		HALT();
 
