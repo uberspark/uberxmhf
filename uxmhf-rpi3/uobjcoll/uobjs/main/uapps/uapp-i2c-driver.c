@@ -163,7 +163,7 @@ bool uapp_i2c_driver_handlehcall(u32 i2c_driver_function, void *i2c_driver_buffe
        uint32_t in_buffer_pa;
        uint32_t out_buffer_pa;
        if(!uapp_va2pa(u_i2c_driver->in_buffer_va, &in_buffer_pa) ||
-          !uapp_va2pa(u_i2c_driver->in_buffer_va, &in_buffer_pa) ){
+          !uapp_va2pa(u_i2c_driver->out_buffer_va, &out_buffer_pa) ){
           //error, this should not happen, probably need to print a message to serial debug and halt
            _XDPRINTFSMP_("%s: Error, could not translate va2pa!\n", __func__);
 
