@@ -45,6 +45,7 @@
 			{ "name": "enable_uapp_pvdrive_uart", "value": "@@FALSE@@"},
 			{ "name": "enable_uapp_uagent", "value": "@@FALSE@@"},
 			{ "name": "enable_uapp_uhcalltest", "value": "@@TRUE@@"},
+			{ "name": "enable_uapp_khcalltest", "value": "@@TRUE@@"},
 			{ "name": "enable_uapp_uhsign", "value": "@@FALSE@@"},
 			{ "name": "enable_uapp_uhstatedb", "value": "@@FALSE@@"},
 			{ "name": "enable_uapp_utpmtest", "value": "@@FALSE@@"},

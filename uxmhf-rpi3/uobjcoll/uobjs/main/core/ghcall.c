@@ -101,6 +101,11 @@ void guest_hypercall_handler(arm8_32_regs_t *r, u32 hsr){
 			return;
 		#endif		
 
+		#if defined (__UBERSPARK_UOBJCOLL_CONFIGDEF_ENABLE_UAPP_KHCALLTEST__)		
+		if( uapp_khcalltest_handlehcall(r->r0, r->r1, r->r2) )
+			return;
+		#endif		
+
 		#if defined (__UBERSPARK_UOBJCOLL_CONFIGDEF_ENABLE_UAPP_UHSIGN__)
 		if( uapp_uhsign_handlehcall(r->r0, r->r1, r->r2) )
 			return;
