@@ -138,6 +138,8 @@ int khcallkmod_init(void)
 	{
 		struct page *k_page1;
 		uhcalltest_param_t *uhctp;
+		u32 i;
+		u8 ch='a';
 
       	k_page1 = alloc_page(GFP_KERNEL | __GFP_ZERO);
         uhctp = (uhcalltest_param_t *)page_address(k_page1);
@@ -146,9 +148,30 @@ int khcallkmod_init(void)
 			printk(KERN_INFO "khcallkmod: could not alloc_page\n");
 			return -1;
 		}
-
 		printk(KERN_INFO "khcallkmod: allocated buffer\n");
 
+		//prepare test input buffer
+		printk(KERN_INFO "%s: populating in[] and out[]...\n", __FUNCTION__);
+		for(i=0; i < 16; i++)
+	   		uhctp->in[i] = ch + i;
+		memset(&uhctp->out, 0, 16);
+
+		printk(KERN_INFO "dumping in[]...\n");
+		for(i=0; i < 16; i++)
+			printk(KERN_INFO "%c", uhctp->in[i]);
+		printk(KERN_INFO "\n");
+
+		if(!khcall(UAPP_UHCALLTEST_FUNCTION_TEST, uhctp, sizeof(uhcalltest_param_t)))
+			printk(KERN_INFO "hypercall FAILED\n");
+		else
+			printk(KERN_INFO "hypercall SUCCESS\n");
+
+		printk(KERN_INFO "dumping out[]...\n");
+		for(i=0; i < 16; i++)
+			printk(KERN_INFO "%c", uhctp->out[i]);
+		printk(KERN_INFO "\n");
+
+		printk(KERN_INFO "khcallkmod: done!\n");
       	__free_page(k_page1);
 	}
 
