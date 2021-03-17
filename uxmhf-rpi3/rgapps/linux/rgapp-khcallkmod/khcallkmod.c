@@ -40,6 +40,12 @@
 #include <asm/uaccess.h>          // required for the copy to user function
 
 #include <asm/pgtable.h>
+#include <linux/numa.h>
+#include <linux/gfp.h>
+#include <linux/mm.h>
+#include <linux/highmem.h>
+
+
 
 //to bring in khcall
 #include <khcall.h>
@@ -129,7 +135,22 @@ int khcallkmod_init(void)
 	printk(KERN_INFO "khcallkmod: device class created correctly\n");
 
 	//test khcall
+	{
+		struct page *k_page1;
+		uhcalltest_param_t *uhctp;
 
+      	k_page1 = alloc_page(GFP_KERNEL | __GFP_ZERO);
+        uhctp = (uhcalltest_param_t *)page_address(k_page1);
+
+		if(!uhctp){
+			printk(KERN_INFO "khcallkmod: could not alloc_page\n");
+			return -1;
+		}
+
+		printk(KERN_INFO "khcallkmod: allocated buffer\n");
+
+      	__free_page(k_page1);
+	}
 
 	return 0;
 }
