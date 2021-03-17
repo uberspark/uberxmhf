@@ -48,7 +48,7 @@
 // externs
 //////
 extern u8 cpu_stacks[];
-extern void chainload_os(u32 r0, u32 id, struct atag *at, u32 address);
+CASM_FUNCDECL(void chainload_os(u32 r0, u32 id, struct atag *at, u32 address));
 extern void cpumodeswitch_hyp2svc(u32 r0, u32 id, struct atag *at, u32 address, u32 cpuid);
 extern __attribute__((section(".data"))) uint32_t uapp_picar_s_page_pa;
 extern __attribute__((section(".data"))) bool uapp_picar_s_activated;

@@ -47,7 +47,7 @@
 #include <uberspark/uobjcoll/platform/rpi3/uxmhf/uobjs/main/include/watchdog.h>
 
 
-extern void uapp_watchdog_fiq_handler(void);
+CASM_FUNCDECL(void uapp_watchdog_fiq_handler(void *noparam));
 
 __attribute__((section(".data"))) volatile u32 *gpio;
 bool led_on=false;

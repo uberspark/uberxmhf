@@ -45,7 +45,7 @@
 #include <uberspark/uobjcoll/platform/rpi3/uxmhf/uobjs/main/include/debug.h>
 //#include <uberspark/include/uberspark.h>
 
-extern void secondary_cpu_entry(void);
+CASM_FUNCDECL(void secondary_cpu_entry(void *noparam));
 volatile u32 cpu_smpready[BCM2837_MAXCPUS] = {1, 0, 0, 0};
 
 void bcm2837_platform_initialize(void){
