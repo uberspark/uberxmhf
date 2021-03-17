@@ -11,3 +11,6 @@ UINCS += -I$(UXMHFRPI3_DIR)/rgapps/linux/libs/libuhcall/include
 EXTRA_CFLAGS := $(UINCS)
 
 obj-m := khcallkmod.o
+
+khcallkmod-objs += khcallkmod_main.o ../../../rgapps/linux/libs/libkhcall/libkhcall.a
+
