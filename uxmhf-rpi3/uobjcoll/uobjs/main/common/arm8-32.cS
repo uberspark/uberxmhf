@@ -463,17 +463,19 @@ CASM_FUNCDEF(u32, sysreg_read_hpfar,
 CASM_FUNCDEF(void, spin_lock,
 			 {
 				 __casm__mov_imm_r1(0);			 //load r1 with 32-bit constant 0, signifies lock is occupied
-				 1 : __casm__ldrex_imm_r2_r0(0); //load current 32-bit value of lock and mark its memory region exclusive
+CASM_LABEL(1);
+				 __casm__ldrex_imm_r2_r0(0); //load current 32-bit value of lock and mark its memory region exclusive
 				 __casm__teq_imm_r2(1);			 //check if it is 1 i.e, free
 				 __casm__wfe_ne();				 //if not free, then put this core in the wait-for-event state
 				 __casm__strex_eq_r3_r1_r0(0);	 //if free, try occupying the lock (storing 0); status is in r3
 				 __casm__teq_eq_imm_r3(0);		 //if free, test the status of the store, 0=success, 1=fail
-				 __casm__b_ne(1f);				 //start all over again if failure to store
+				 __casm__b_ne(1b);				 //start all over again if failure to store
 
 				 __casm__dmb_ish(); //data memory barrier inner shareability; make memory updates visible to all cores
 				 __casm__bx_lr();
 			 },
 			 u32 *lock)
+
 //r0 specifies the 32-bit lock variable address
 CASM_FUNCDEF(void, spin_unlock,
 			 {

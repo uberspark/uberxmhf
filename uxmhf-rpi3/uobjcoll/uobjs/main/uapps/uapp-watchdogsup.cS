@@ -43,6 +43,7 @@
 
 CASM_FUNCDEF(void, uapp_watchdog_fiq_handler,
 {
+	CASM_BALIGN(32);
 	__casm__ldr_pseudo_sp(uapp_watchdog_fiqhandler_stack_top);
 	__casm__push_lr(); 
 	__casm__push_r12(); 

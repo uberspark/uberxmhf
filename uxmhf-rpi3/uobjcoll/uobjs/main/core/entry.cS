@@ -56,12 +56,12 @@ CASM_FUNCDEF(void, entry,
 	__casm__mul_r6_r4_r5();	//r6 is the offset to add based on index (r4)
 	__casm__add_sp_sp_r6();	//sp is the top-of-stack for this cpu
 	__casm__bl(main);
-})
+}, void *noparam)
 
 CASM_FUNCDEF(void, halt,
 {
 	__casm__b(halt);
-})
+}, void *noparam)
 
 //r0,r1,r2 go through to the guest os
 //r3 contains the starting address to execute the guestos
@@ -97,7 +97,7 @@ CASM_FUNCDEF(void, chainload_os,
 	__casm_bic_imm_r7_r7(1);     // Clear ENABLE
 	__casm__mcr_p15_0_r7_c14_c3_1(); // CNTV_CTL
 
-1:
+CASM_LABEL(1);
 
 	__casm__mrs_r9_cpsr();
 	__casm__eor_imm_r9_r9(0x0000001a);  //HYP_MODE
@@ -127,7 +127,7 @@ CASM_FUNCDEF(void, secondary_cpu_entry,
 CASM_FUNCDEF(void, secondary_cpu_entry_halt,
 {
 	__casm__b(secondary_cpu_entry_halt);
-})
+}, void *noparam)
 
 
 // .section ".stack", "aw"

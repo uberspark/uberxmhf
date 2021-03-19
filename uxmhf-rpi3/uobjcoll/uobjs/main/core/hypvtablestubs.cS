@@ -59,97 +59,120 @@
 CASM_FUNCDEF(void, g_hypvtable,
 {
 	//cpu-0
-	__casm__b(hypvtable_reserved_handler0);
-	__casm__b(hypvtable_reserved_handler0);
-	__casm__b(hypvtable_reserved_handler0);
-	__casm__b(hypvtable_reserved_handler0);
-	__casm__b(hypvtable_reserved_handler0);
-	__casm__b(hypvtable_hypsvc_handler0);
-	__casm__b(hypvtable_reserved_handler0);
-	__casm__b(hypvtable_reserved_handler0);
+	hypvtable_reserved_handler0();
+	hypvtable_reserved_handler0();
+	hypvtable_reserved_handler0();
+	hypvtable_reserved_handler0();
+	hypvtable_reserved_handler0();
+	hypvtable_hypsvc_handler0();
+	hypvtable_reserved_handler0();
+	hypvtable_reserved_handler0();
 	//cpu-1
-	__casm__b(hypvtable_reserved_handler1);
-	__casm__b(hypvtable_reserved_handler1);
-	__casm__b(hypvtable_reserved_handler1);
-	__casm__b(hypvtable_reserved_handler1);
-	__casm__b(hypvtable_reserved_handler1);
-	__casm__b(hypvtable_hypsvc_handler1);
-	__casm__b(hypvtable_reserved_handler1);
-	__casm__b(hypvtable_reserved_handler1);
+	hypvtable_reserved_handler1();
+	hypvtable_reserved_handler1();
+	hypvtable_reserved_handler1();
+	hypvtable_reserved_handler1();
+	hypvtable_reserved_handler1();
+	hypvtable_hypsvc_handler1();
+	hypvtable_reserved_handler1();
+	hypvtable_reserved_handler1();
 	//cpu-2
-	__casm__b(hypvtable_reserved_handler2);
-	__casm__b(hypvtable_reserved_handler2);
-	__casm__b(hypvtable_reserved_handler2);
-	__casm__b(hypvtable_reserved_handler2);
-	__casm__b(hypvtable_reserved_handler2);
-	__casm__b(hypvtable_hypsvc_handler2);
-	__casm__b(hypvtable_reserved_handler2);
-	__casm__b(hypvtable_reserved_handler2);
+	hypvtable_reserved_handler2();
+	hypvtable_reserved_handler2();
+	hypvtable_reserved_handler2();
+	hypvtable_reserved_handler2();
+	hypvtable_reserved_handler2();
+	hypvtable_hypsvc_handler2();
+	hypvtable_reserved_handler2();
+	hypvtable_reserved_handler2();
 	//cpu-3
-	__casm__b(hypvtable_reserved_handler3);
-	__casm__b(hypvtable_reserved_handler3);
-	__casm__b(hypvtable_reserved_handler3);
-	__casm__b(hypvtable_reserved_handler3);
-	__casm__b(hypvtable_reserved_handler3);
-	__casm__b(hypvtable_hypsvc_handler3);
-	__casm__b(hypvtable_reserved_handler3);
-	__casm__b(hypvtable_reserved_handler3);
-})
+	hypvtable_reserved_handler3();
+	hypvtable_reserved_handler3();
+	hypvtable_reserved_handler3();
+	hypvtable_reserved_handler3();
+	hypvtable_reserved_handler3();
+	hypvtable_hypsvc_handler3();
+	hypvtable_reserved_handler3();
+	hypvtable_reserved_handler3();
+}, void *noparam)
+
+CASM_FUNCDEF(void, hypvtable_reserved_handler0,
+{
+	CASM_BALIGN(32);
+	__casm__ldr_pseudo_sp(hypvtable_rsvhandler_stack_top0);
+	__casm__bl(hyp_rsvhandler);
+CASM_LABEL(1);
+	__casm__b(1b);
+
+}, void *noparam)
+
+CASM_FUNCDEF(void, hypvtable_reserved_handler1,
+{
+	__casm__ldr_pseudo_sp(hypvtable_rsvhandler_stack_top1);
+	__casm__bl(hyp_rsvhandler);
+CASM_LABEL(1);
+	__casm__b(1b);
+
+}, void *noparam)
+
+CASM_FUNCDEF(void, hypvtable_reserved_handler2,
+{
+	__casm__ldr_pseudo_sp(hypvtable_rsvhandler_stack_top2);
+	__casm__bl(hyp_rsvhandler);
+CASM_LABEL(1);
+	__casm__b(1b);
+
+}, void *noparam)
+
+CASM_FUNCDEF(void, hypvtable_reserved_handler3,
+{
+	__casm__ldr_pseudo_sp(hypvtable_rsvhandler_stack_top3);
+	__casm__bl(hyp_rsvhandler);
+CASM_LABEL(1);
+	__casm__b(1b);
+
+}, void *noparam)
 
 
-	.balign 32
-	.global	hypvtable_reserved_handler0
-hypvtable_reserved_handler0:
-	ldr sp, =hypvtable_rsvhandler_stack_top0
-	bl hyp_rsvhandler
-1:	b 1b
+CASM_FUNCDEF(void, hypvtable_hypsvc_handler0,
+{
+	CASM_BALIGN(32);
+	__casm__ldr_pseudo_sp(hypvtable_hypsvc_stack_top0);
+	__casm__bl(hypvtable_hypsvc_handler_common);
+CASM_LABEL(1);
+	__casm__b(1b);
 
+}, void *noparam)
 
-	.global	hypvtable_reserved_handler1
-hypvtable_reserved_handler1:
-	ldr sp, =hypvtable_rsvhandler_stack_top1
-	bl hyp_rsvhandler
-1:	b 1b
+CASM_FUNCDEF(void, hypvtable_hypsvc_handler1,
+{
+	CASM_BALIGN(32);
+	__casm__ldr_pseudo_sp(hypvtable_hypsvc_stack_top1);
+	__casm__bl(hypvtable_hypsvc_handler_common);
+CASM_LABEL(1);
+	__casm__b(1b);
 
-	.global	hypvtable_reserved_handler2
-hypvtable_reserved_handler2:
-	ldr sp, =hypvtable_rsvhandler_stack_top2
-	bl hyp_rsvhandler
-1:	b 1b
+}, void *noparam)
 
-	.global	hypvtable_reserved_handler3
-hypvtable_reserved_handler3:
-	ldr sp, =hypvtable_rsvhandler_stack_top3
-	bl hyp_rsvhandler
-1:	b 1b
+CASM_FUNCDEF(void, hypvtable_hypsvc_handler2,
+{
+	CASM_BALIGN(32);
+	__casm__ldr_pseudo_sp(hypvtable_hypsvc_stack_top2);
+	__casm__bl(hypvtable_hypsvc_handler_common);
+CASM_LABEL(1);
+	__casm__b(1b);
 
+}, void *noparam)
 
+CASM_FUNCDEF(void, hypvtable_hypsvc_handler3,
+{
+	CASM_BALIGN(32);
+	__casm__ldr_pseudo_sp(hypvtable_hypsvc_stack_top3);
+	__casm__bl(hypvtable_hypsvc_handler_common);
+CASM_LABEL(1);
+	__casm__b(1b);
 
-
-	.global	hypvtable_hypsvc_handler0
-hypvtable_hypsvc_handler0:
-	ldr sp, =hypvtable_hypsvc_stack_top0
-	b hypvtable_hypsvc_handler_common
-
-	.global	hypvtable_hypsvc_handler1
-hypvtable_hypsvc_handler1:
-	ldr sp, =hypvtable_hypsvc_stack_top1
-	b hypvtable_hypsvc_handler_common
-
-	.global	hypvtable_hypsvc_handler2
-hypvtable_hypsvc_handler2:
-	ldr sp, =hypvtable_hypsvc_stack_top2
-	b hypvtable_hypsvc_handler_common
-
-	.global	hypvtable_hypsvc_handler3
-hypvtable_hypsvc_handler3:
-	ldr sp, =hypvtable_hypsvc_stack_top3
-	b hypvtable_hypsvc_handler_common
-
-
-
-
-
+}, void *noparam)
 
 
 /*
@@ -207,7 +230,7 @@ CASM_FUNCDEF(void, hypvtable_hypsvc_handler_common,
 	//
 
 	__casm__eret();
-})
+}, void *noparam)
 
 // .section ".stack"
 // 	.balign 8
