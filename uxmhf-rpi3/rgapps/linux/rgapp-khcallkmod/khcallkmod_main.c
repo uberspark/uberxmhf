@@ -50,8 +50,6 @@
 //to bring in khcall
 #include <khcall.h>
 #include <i2c-driver.h>
-#include <miniuart.h>
-#include <debug.h>
 
 //to bring in uhcalltest uapp definitions
 #include <uhcalltest.h>
@@ -181,10 +179,6 @@ int khcallkmod_init(void)
 
         // test HMAC call
         {
-#if defined (__UBERSPARK_UOBJCOLL_CONFIGDEF_ENABLE_UART_PL011__) || defined (__UBERSPARK_UOBJCOLL_CONFIGDEF_ENABLE_UART_MINI__)
-	//initialize uart
-	uart_init();
-#endif
             unsigned long digest_size = HMAC_DIGEST_SIZE;
             struct page *k_page1;
             struct page *k_page2;
