@@ -44,7 +44,7 @@
 CASM_FUNCDEF(void, uapp_watchdog_fiq_handler,
 {
 	CASM_BALIGN(32);
-	__casm__ldr_pseudo_sp(uapp_watchdog_fiqhandler_stack_top);
+	__casm__ldr_pseudo_sp(uapp_watchdog_fiqhandler_stack);
 	__casm__push_lr(); 
 	__casm__push_r12(); 
 	__casm__push_r11(); 
@@ -82,10 +82,6 @@ CASM_FUNCDEF(void, uapp_watchdog_fiq_handler,
 }, void *noparam)
 
 
-// .section ".stack"
-
-// 	.balign 8
-// 	.global uapp_watchdog_fiqhandler_stack
-// 	uapp_watchdog_fiqhandler_stack:	.space	8192
+__attribute__((section(".stack"))) __attribute__((aligned(8))) uapp_watchdog_fiqhandler_stack[8192];
 // 	.global uapp_watchdog_fiqhandler_stack_top
 // 	uapp_watchdog_fiqhandler_stack_top:

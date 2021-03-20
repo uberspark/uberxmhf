@@ -130,14 +130,10 @@ CASM_FUNCDEF(void, secondary_cpu_entry_halt,
 }, void *noparam)
 
 
-// .section ".stack", "aw"
+__attribute__((section(".stack")))
+__attribute__((section("aw")))
 
-// 	.balign 8
-// 	.global cpu_stacks
-// 	cpu_stacks:	.space	(8192 * 4)
+__attribute__((aligned(8))) cpu_stacks[8192 * 4];
 
-// 	.balign 8
-// 	.global cpu_stacks_svc
-// 	cpu_stacks_svc:	.space	(8192 * 4)
-
+__attribute__((aligned(8))) cpu_stacks_svc[8192 * 4];
 

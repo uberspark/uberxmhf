@@ -58,6 +58,7 @@
 /* need lower 5 bits (0-4) of the table address as 0, so use balign 32 */
 CASM_FUNCDEF(void, g_hypvtable,
 {
+	CASM_BALIGN(32);
 	//cpu-0
 	hypvtable_reserved_handler0();
 	hypvtable_reserved_handler0();
@@ -99,7 +100,7 @@ CASM_FUNCDEF(void, g_hypvtable,
 CASM_FUNCDEF(void, hypvtable_reserved_handler0,
 {
 	CASM_BALIGN(32);
-	__casm__ldr_pseudo_sp(hypvtable_rsvhandler_stack_top0);
+	__casm__ldr_pseudo_sp(hypvtable_rsvhandler_stack0);
 	__casm__bl(hyp_rsvhandler);
 CASM_LABEL(1);
 	__casm__b(1b);
@@ -108,7 +109,7 @@ CASM_LABEL(1);
 
 CASM_FUNCDEF(void, hypvtable_reserved_handler1,
 {
-	__casm__ldr_pseudo_sp(hypvtable_rsvhandler_stack_top1);
+	__casm__ldr_pseudo_sp(hypvtable_rsvhandler_stack1);
 	__casm__bl(hyp_rsvhandler);
 CASM_LABEL(1);
 	__casm__b(1b);
@@ -117,7 +118,7 @@ CASM_LABEL(1);
 
 CASM_FUNCDEF(void, hypvtable_reserved_handler2,
 {
-	__casm__ldr_pseudo_sp(hypvtable_rsvhandler_stack_top2);
+	__casm__ldr_pseudo_sp(hypvtable_rsvhandler_stack2);
 	__casm__bl(hyp_rsvhandler);
 CASM_LABEL(1);
 	__casm__b(1b);
@@ -126,7 +127,7 @@ CASM_LABEL(1);
 
 CASM_FUNCDEF(void, hypvtable_reserved_handler3,
 {
-	__casm__ldr_pseudo_sp(hypvtable_rsvhandler_stack_top3);
+	__casm__ldr_pseudo_sp(hypvtable_rsvhandler_stack3);
 	__casm__bl(hyp_rsvhandler);
 CASM_LABEL(1);
 	__casm__b(1b);
@@ -137,7 +138,7 @@ CASM_LABEL(1);
 CASM_FUNCDEF(void, hypvtable_hypsvc_handler0,
 {
 	CASM_BALIGN(32);
-	__casm__ldr_pseudo_sp(hypvtable_hypsvc_stack_top0);
+	__casm__ldr_pseudo_sp(hypvtable_hypsvc_stack0);
 	__casm__bl(hypvtable_hypsvc_handler_common);
 CASM_LABEL(1);
 	__casm__b(1b);
@@ -147,7 +148,7 @@ CASM_LABEL(1);
 CASM_FUNCDEF(void, hypvtable_hypsvc_handler1,
 {
 	CASM_BALIGN(32);
-	__casm__ldr_pseudo_sp(hypvtable_hypsvc_stack_top1);
+	__casm__ldr_pseudo_sp(hypvtable_hypsvc_stack1);
 	__casm__bl(hypvtable_hypsvc_handler_common);
 CASM_LABEL(1);
 	__casm__b(1b);
@@ -157,7 +158,7 @@ CASM_LABEL(1);
 CASM_FUNCDEF(void, hypvtable_hypsvc_handler2,
 {
 	CASM_BALIGN(32);
-	__casm__ldr_pseudo_sp(hypvtable_hypsvc_stack_top2);
+	__casm__ldr_pseudo_sp(hypvtable_hypsvc_stack2);
 	__casm__bl(hypvtable_hypsvc_handler_common);
 CASM_LABEL(1);
 	__casm__b(1b);
@@ -167,7 +168,7 @@ CASM_LABEL(1);
 CASM_FUNCDEF(void, hypvtable_hypsvc_handler3,
 {
 	CASM_BALIGN(32);
-	__casm__ldr_pseudo_sp(hypvtable_hypsvc_stack_top3);
+	__casm__ldr_pseudo_sp(hypvtable_hypsvc_stack3);
 	__casm__bl(hypvtable_hypsvc_handler_common);
 CASM_LABEL(1);
 	__casm__b(1b);
@@ -232,60 +233,39 @@ CASM_FUNCDEF(void, hypvtable_hypsvc_handler_common,
 	__casm__eret();
 }, void *noparam)
 
-// .section ".stack"
-// 	.balign 8
-// 	.global hypvtable_stack
-// 	stack:	.space	8192
+
+__attribute__((section(".stack"))) __attribute__((aligned(8))) hypvtable_stack[8192];
 // 	.global hypvtable_stack_top
 // 	hypvtable_stack_top:
 
-// 	.balign 8
-// 	.global hypvtable_hypsvc_stack0
-// 	hypvtable_hypsvc_stack0:	.space	16384
+__attribute__((aligned(8))) hypvtable_hypsvc_stack0[16384];
 // 	.global hypvtable_hypsvc_stack_top0
 // 	hypvtable_hypsvc_stack_top0:
 
-// 	.balign 8
-// 	.global hypvtable_hypsvc_stack1
-// 	hypvtable_hypsvc_stack1:	.space	16384
+__attribute__((aligned(8))) hypvtable_hypsvc_stack1[16384];
 // 	.global hypvtable_hypsvc_stack_top1
 // 	hypvtable_hypsvc_stack_top1:
 
-// 	.balign 8
-// 	.global hypvtable_hypsvc_stack2
-// 	hypvtable_hypsvc_stack2:	.space	16384
+__attribute__((aligned(8))) hypvtable_hypsvc_stack2[16384];
 // 	.global hypvtable_hypsvc_stack_top2
 // 	hypvtable_hypsvc_stack_top2:
 
-// 	.balign 8
-// 	.global hypvtable_hypsvc_stack3
-// 	hypvtable_hypsvc_stack3:	.space	16384
+__attribute__((aligned(8))) hypvtable_hypsvc_stack3[16384];
 // 	.global hypvtable_hypsvc_stack_top3
 // 	hypvtable_hypsvc_stack_top3:
 
-// 	.balign 8
-// 	.global hypvtable_rsvhandler_stack0
-// 	hypvtable_rsvhandler_stack0:	.space	8192
+__attribute__((aligned(8))) hypvtable_rsvhandler_stack0[8192];
 // 	.global hypvtable_rsvhandler_stack_top0
 // 	hypvtable_rsvhandler_stack_top0:
 
-// 	.balign 8
-// 	.global hypvtable_rsvhandler_stack1
-// 	hypvtable_rsvhandler_stack1:	.space	8192
+__attribute__((aligned(8))) hypvtable_rsvhandler_stack1[8192];
 // 	.global hypvtable_rsvhandler_stack_top1
 // 	hypvtable_rsvhandler_stack_top1:
 
-// 	.balign 8
-// 	.global hypvtable_rsvhandler_stack2
-// 	hypvtable_rsvhandler_stack2:	.space	8192
+__attribute__((aligned(8))) hypvtable_rsvhandler_stack2[8192];
 // 	.global hypvtable_rsvhandler_stack_top2
 // 	hypvtable_rsvhandler_stack_top2:
 
-// 	.balign 8
-// 	.global hypvtable_rsvhandler_stack3
-// 	hypvtable_rsvhandler_stack3:	.space	8192
+__attribute__((aligned(8))) hypvtable_rsvhandler_stack3[8192];
 // 	.global hypvtable_rsvhandler_stack_top3
 // 	hypvtable_rsvhandler_stack_top3:
-
-
-
