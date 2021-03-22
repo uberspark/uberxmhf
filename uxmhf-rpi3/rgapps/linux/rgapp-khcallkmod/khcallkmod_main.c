@@ -209,10 +209,10 @@ int khcallkmod_init(void)
             else{  
                int i;
                printk("hypercall SUCCESS \n"); 
-	       printk(KERN_INFO "dumping in[]...\n");
-	       for(i=0; i < 10; i++)
-		  printk(KERN_INFO "%c", ((char *)ptr_i2c_driver->in_buffer_va)[i]);
-	       printk(KERN_INFO "\n");
+	       //printk(KERN_INFO "dumping in[]...\n");
+	       //for(i=0; i < 10; i++)
+		  //printk(KERN_INFO "%c", ((char *)ptr_i2c_driver->in_buffer_va)[i]);
+	       //printk(KERN_INFO "\n");
                printk("Dumping HMAC bytes \n"); 
                for(i=0;i<digest_size;i++){
 		  printk(KERN_INFO "0x%X", digest_result[i]);
