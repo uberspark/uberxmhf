@@ -169,6 +169,7 @@ bool uapp_i2c_driver_handlehcall(u32 i2c_driver_function, void *i2c_driver_buffe
     if (i2c_driver_function == UAPP_I2C_DRIVER_FUNCTION_TEST){
        uint32_t in_buffer_pa;
        uint32_t out_buffer_pa;
+
        if(!uapp_va2pa(u_i2c_driver->in_buffer_va, &in_buffer_pa) ||
           !uapp_va2pa(u_i2c_driver->out_buffer_va, &out_buffer_pa) ){
           //error, this should not happen, probably need to print a message to serial debug and halt
@@ -177,9 +178,12 @@ bool uapp_i2c_driver_handlehcall(u32 i2c_driver_function, void *i2c_driver_buffe
         }else{
            _XDPRINTFSMP_("About to call HMAC function: \n");
            uberspark_uobjrtl_crypto__mac_hmacsha256__hmac_sha256_memory (uhsign_key_i2c_driver,  (unsigned long) UHSIGN_KEY_SIZE, (unsigned char *) in_buffer_pa, (unsigned long) u_i2c_driver->len, out_buffer_pa, &digest_size);
-
-           return true;
+           _XDPRINTFSMP_("HMAC function done\n");
         } 
-	return false;
-     }
+		return true;
+
+	}else{
+		return false; //this is not our hypercall, so pass up the chain
+	}
+
 }
