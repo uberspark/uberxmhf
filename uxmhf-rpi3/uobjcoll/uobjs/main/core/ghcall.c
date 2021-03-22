@@ -83,6 +83,8 @@ void guest_hypercall_handler(arm8_32_regs_t *r, u32 hsr){
 		 * r2 = size of the guest buffer
 		 * note: r1+r2 cannot cross page-boundary
 		 */
+	     _XDPRINTFSMP_("guest_hypercall_handler: hyercall hub interaction: r0=%x\n", r->r0);
+
 
 		#if defined (__UBERSPARK_UOBJCOLL_CONFIGDEF_ENABLE_UAPP_CTXTRACE__)
 			// no hypercall handling required
