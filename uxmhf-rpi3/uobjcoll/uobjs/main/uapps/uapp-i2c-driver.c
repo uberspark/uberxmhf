@@ -158,13 +158,13 @@ bool uapp_i2c_driver_handlehcall(u32 i2c_driver_function, void *i2c_driver_buffe
     i2c_driver_param_t *u_i2c_driver;
     unsigned long digest_size = HMAC_DIGEST_SIZE;
 
-#if defined (__UBERSPARK_UOBJCOLL_CONFIGDEF_ENABLE_UART_PL011__) || defined (__UBERSPARK_UOBJCOLL_CONFIGDEF_ENABLE_UART_MINI__)
-        //initialize uart
-        uart_init();
-#endif
+//#if defined (__UBERSPARK_UOBJCOLL_CONFIGDEF_ENABLE_UART_PL011__) || defined (__UBERSPARK_UOBJCOLL_CONFIGDEF_ENABLE_UART_MINI__)
+//        //initialize uart
+//        uart_init();
+//#endif
 
     u_i2c_driver = (i2c_driver_param_t *)i2c_driver_buffer;
-    _XDPRINTFSMP_("u_i2c_driver address: %x\n", u_i2c_driver);
+    //_XDPRINTFSMP_("u_i2c_driver address: %x\n", u_i2c_driver);
 
     if (i2c_driver_function == UAPP_I2C_DRIVER_FUNCTION_TEST){
        uint32_t in_buffer_pa;
@@ -176,9 +176,9 @@ bool uapp_i2c_driver_handlehcall(u32 i2c_driver_function, void *i2c_driver_buffe
            _XDPRINTFSMP_("%s: Error, could not translate va2pa!\n", __func__);
 
         }else{
-           _XDPRINTFSMP_("About to call HMAC function: \n");
+           //_XDPRINTFSMP_("About to call HMAC function: \n");
            uberspark_uobjrtl_crypto__mac_hmacsha256__hmac_sha256_memory (uhsign_key_i2c_driver,  (unsigned long) UHSIGN_KEY_SIZE, (unsigned char *) in_buffer_pa, (unsigned long) u_i2c_driver->len, out_buffer_pa, &digest_size);
-           _XDPRINTFSMP_("HMAC function done\n");
+           //_XDPRINTFSMP_("HMAC function done\n");
         } 
 		return true;
 

@@ -64,12 +64,12 @@ void guest_hypercall_handler(arm8_32_regs_t *r, u32 hsr){
 	hvc_iss = ((hsr & HSR_ISS_MASK) >> HSR_ISS_SHIFT);
 	hvc_imm16 = hvc_iss & 0x0000FFFFUL;
 
-#if defined (__UBERSPARK_UOBJCOLL_CONFIGDEF_ENABLE_UART_PL011__) || defined (__UBERSPARK_UOBJCOLL_CONFIGDEF_ENABLE_UART_MINI__)
-        //initialize uart
-        uart_init();
-#endif
+//#if defined (__UBERSPARK_UOBJCOLL_CONFIGDEF_ENABLE_UART_PL011__) || defined (__UBERSPARK_UOBJCOLL_CONFIGDEF_ENABLE_UART_MINI__)
+//        //initialize uart
+//        uart_init();
+//#endif
 
-    _XDPRINTFSMP_("guest_hypercall_handler: hvc_imm16 = %x\n", hvc_imm16);
+    //_XDPRINTFSMP_("guest_hypercall_handler: hvc_imm16 = %x\n", hvc_imm16);
 
 
 	if (hvc_imm16 == 0){
@@ -83,7 +83,7 @@ void guest_hypercall_handler(arm8_32_regs_t *r, u32 hsr){
 		 * r2 = size of the guest buffer
 		 * note: r1+r2 cannot cross page-boundary
 		 */
-	     _XDPRINTFSMP_("guest_hypercall_handler: hyercall hub interaction: r0=%x\n", r->r0);
+	     //_XDPRINTFSMP_("guest_hypercall_handler: hyercall hub interaction: r0=%x\n", r->r0);
 
 
 		#if defined (__UBERSPARK_UOBJCOLL_CONFIGDEF_ENABLE_UAPP_CTXTRACE__)
@@ -140,7 +140,7 @@ void guest_hypercall_handler(arm8_32_regs_t *r, u32 hsr){
 		#endif
 
 		#if defined (__UBERSPARK_UOBJCOLL_CONFIGDEF_ENABLE_UAPP_I2C_DRIVER__)
-	    _XDPRINTFSMP_("guest_hypercall_handler: proceeding to call i2c driver handehcall...\n");
+	    //_XDPRINTFSMP_("guest_hypercall_handler: proceeding to call i2c driver handehcall...\n");
 
 		if( uapp_i2c_driver_handlehcall(r->r0, r->r1, r->r2) )
 			return;
