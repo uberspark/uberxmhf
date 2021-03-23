@@ -126,13 +126,13 @@ static unsigned long va2pa(unsigned long va) {
 
 static int dev_open(struct inode *inodep, struct file *filep){
    number_opens++;
-   printk(KERN_INFO "uhcallkmod: device has been opened %d time(s)\n", number_opens);
+   //printk(KERN_INFO "uhcallkmod: device has been opened %d time(s)\n", number_opens);
    return 0;
 }
 
 static int dev_release(struct inode *inodep, struct file *filep){
    number_opens--;
-   printk(KERN_INFO "uhcallkmod: device successfully closed\n");
+   //printk(KERN_INFO "uhcallkmod: device successfully closed\n");
    return 0;
 }
 
@@ -150,8 +150,8 @@ static ssize_t dev_write(struct file *filep, const char *buffer, size_t len, lof
 
 	pa = va2pa((u32)(uhcallp->uhcall_buffer));
 	
-	printk(KERN_INFO "uhcallkmod: dev_write: uhcall_function=0x%08x, uhcall_buffer=0x%08x, uhcall_buffer_len=0x%08x\n",
-			uhcallp->uhcall_function, uhcallp->uhcall_buffer, uhcallp->uhcall_buffer_len);
+	/*printk(KERN_INFO "uhcallkmod: dev_write: uhcall_function=0x%08x, uhcall_buffer=0x%08x, uhcall_buffer_len=0x%08x\n",
+			uhcallp->uhcall_function, uhcallp->uhcall_buffer, uhcallp->uhcall_buffer_len); */
 
 	if(pa != -1){
 	   uhcallkmod_hvc(uhcallp->uhcall_function, (void *)pa, uhcallp->uhcall_buffer_len);	
