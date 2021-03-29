@@ -69,43 +69,46 @@ bool uapp_picar_s_handlehcall(u32 picar_s_function, void *picar_s_buffer, u32 pi
  unsigned long digest_size = HMAC_DIGEST_SIZE;
  upicar = (picar_s_param_t *)picar_s_buffer;
 
-  if(picar_s_function == UAPP_PICAR_S_FUNCTION_PROT) {
+   if(picar_s_function == UAPP_PICAR_S_FUNCTION_PROT) {
 
      uapp_picar_s_handlehcall_prot(upicar);
      return true;
 
-  }else if (picar_s_function == UAPP_PICAR_S_FUNCTION_UNPROT) {
+   }else if (picar_s_function == UAPP_PICAR_S_FUNCTION_UNPROT) {
 
      uapp_picar_s_handlehcall_unprot(upicar);
      return true;
 
-  }else if (picar_s_function == UAPP_PICAR_S_FUNCTION_TEST){
-    uint32_t encrypted_buffer_pa;
-    uint32_t decrypted_buffer_pa;
+   }else if (picar_s_function == UAPP_PICAR_S_FUNCTION_TEST){
+      uint32_t encrypted_buffer_pa;
+      uint32_t decrypted_buffer_pa;
 
-/*  	_XDPRINTFSMP_("%s: Got control: encrypted_buffer_va=0x%08x, decrypted_buffer_va=0x%08x\n", 
-      __func__, upicar->encrypted_buffer_va, upicar->decrypted_buffer_va);
-*/
+      /*  	_XDPRINTFSMP_("%s: Got control: encrypted_buffer_va=0x%08x, decrypted_buffer_va=0x%08x\n", 
+            __func__, upicar->encrypted_buffer_va, upicar->decrypted_buffer_va);
+      */
 
-    if(!uapp_va2pa(upicar->encrypted_buffer_va, &encrypted_buffer_pa) ||
-       !uapp_va2pa(upicar->decrypted_buffer_va, &decrypted_buffer_pa) ){
-       //error, this should not happen, probably need to print a message to serial debug and halt
-     	_XDPRINTFSMP_("%s: Error, could not translate va2pa!\n", __func__);
+      if(!uapp_va2pa(upicar->encrypted_buffer_va, &encrypted_buffer_pa) ||
+         !uapp_va2pa(upicar->decrypted_buffer_va, &decrypted_buffer_pa) ){
+         //error, this should not happen, probably need to print a message to serial debug and halt
+         _XDPRINTFSMP_("%s: Error, could not translate va2pa!\n", __func__);
 
-     }else{
+      }else{
 
- /*       _XDPRINTFSMP_("%s: encrypted buffer va=0x%08x, pa=0x%08x\n", __func__,
-            upicar->encrypted_buffer_va, encrypted_buffer_pa);
+         /*       _XDPRINTFSMP_("%s: encrypted buffer va=0x%08x, pa=0x%08x\n", __func__,
+                     upicar->encrypted_buffer_va, encrypted_buffer_pa);
 
-        _XDPRINTFSMP_("%s: decrypted buffer va=0x%08x, pa=0x%08x\n", __func__,
-            upicar->decrypted_buffer_va, decrypted_buffer_pa);
-*/
-        uberspark_uobjrtl_crypto__mac_hmacsha256__hmac_sha256_memory (uhsign_key_picar,  (unsigned long) UHSIGN_KEY_SIZE, (unsigned char *) encrypted_buffer_pa, (unsigned long) upicar->len, decrypted_buffer_pa, &digest_size);
-
-        return true;
+               _XDPRINTFSMP_("%s: decrypted buffer va=0x%08x, pa=0x%08x\n", __func__,
+                     upicar->decrypted_buffer_va, decrypted_buffer_pa);
+         */
+         uberspark_uobjrtl_crypto__mac_hmacsha256__hmac_sha256_memory (uhsign_key_picar,  (unsigned long) UHSIGN_KEY_SIZE, (unsigned char *) encrypted_buffer_pa, (unsigned long) upicar->len, decrypted_buffer_pa, &digest_size);
 
       } 
-      return false;
+
+      return true;
+
+   }else{
+      return false; //this is not our hypercall, so pass up the chain
+
    }
 }
 

@@ -35,12 +35,14 @@
 				"include/uapp-pvdriver-uart.h",
 				"include/uart.h", 
 				"include/uhcalltest.h",
+				"include/khcalltest.h",
 				"include/uhsign.h",
 				"include/uhstateDB.h",
 				"include/utpmtest.h",
 				"include/watchdog.h",
 				"include/whitelist.h",
-				"include/picar-s.h"
+				"include/picar-s.h",
+                                "include/uapp-i2c-driver.h"
 			],
 
 		    "uberspark.uobj.sources": [ 
@@ -73,11 +75,13 @@
 				"uapps/uapp-pvdriver-uart.c",
 				"uapps/uapp-uagent.c",
 				"uapps/uapp-uhcalltest.c",
+				"uapps/uapp-khcalltest.c",
 				"uapps/uapp-uhsign.c",
 				"uapps/uapp-uhstateDB.c",
 				"uapps/uapp-utpmtest.c",
 				"uapps/uapp-watchdog.c",
 				"uapps/uapp-picar-s.c",
+				"uapps/uapp-i2c-driver.c",
 
 
 				"common/arm8-32.s", 

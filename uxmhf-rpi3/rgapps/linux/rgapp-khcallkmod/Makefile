@@ -3,8 +3,14 @@ UXMHFRPI3_DIR := $(CURRENT_DIR)/../../..
 
 UINCS = -I$(CURRENT_DIR)/.
 UINCS += -I$(UXMHFRPI3_DIR)/uobjcoll/uobjs/main/include
+#rgapps/linux/libs/libkhcall/include
+
+UINCS += -I$(UXMHFRPI3_DIR)/rgapps/linux/libs/libkhcall/include
 UINCS += -I$(UXMHFRPI3_DIR)/rgapps/linux/libs/libuhcall/include
 
 EXTRA_CFLAGS := $(UINCS)
 
-obj-m := uhcallkmod.o
+obj-m := khcallkmod.o
+
+khcallkmod-objs += khcallkmod_main.o ../../../rgapps/linux/libs/libkhcall/libkhcall.a
+
