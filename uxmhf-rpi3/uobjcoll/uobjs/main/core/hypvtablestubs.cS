@@ -60,41 +60,41 @@ CASM_FUNCDEF(void, g_hypvtable,
 {
 	CASM_BALIGN(32);
 	//cpu-0
-	hypvtable_reserved_handler0();
-	hypvtable_reserved_handler0();
-	hypvtable_reserved_handler0();
-	hypvtable_reserved_handler0();
-	hypvtable_reserved_handler0();
-	hypvtable_hypsvc_handler0();
-	hypvtable_reserved_handler0();
-	hypvtable_reserved_handler0();
+	__casm__b(hypvtable_reserved_handler0);
+	__casm__b(hypvtable_reserved_handler0);
+	__casm__b(hypvtable_reserved_handler0);
+	__casm__b(hypvtable_reserved_handler0);
+	__casm__b(hypvtable_reserved_handler0);
+	__casm__b(hypvtable_hypsvc_handler0);
+	__casm__b(hypvtable_reserved_handler0);
+	__casm__b(hypvtable_reserved_handler0);
 	//cpu-1
-	hypvtable_reserved_handler1();
-	hypvtable_reserved_handler1();
-	hypvtable_reserved_handler1();
-	hypvtable_reserved_handler1();
-	hypvtable_reserved_handler1();
-	hypvtable_hypsvc_handler1();
-	hypvtable_reserved_handler1();
-	hypvtable_reserved_handler1();
+	__casm__b(hypvtable_reserved_handler1);
+	__casm__b(hypvtable_reserved_handler1);
+	__casm__b(hypvtable_reserved_handler1);
+	__casm__b(hypvtable_reserved_handler1);
+	__casm__b(hypvtable_reserved_handler1);
+	__casm__b(hypvtable_hypsvc_handler1);
+	__casm__b(hypvtable_reserved_handler1);
+	__casm__b(hypvtable_reserved_handler1);
 	//cpu-2
-	hypvtable_reserved_handler2();
-	hypvtable_reserved_handler2();
-	hypvtable_reserved_handler2();
-	hypvtable_reserved_handler2();
-	hypvtable_reserved_handler2();
-	hypvtable_hypsvc_handler2();
-	hypvtable_reserved_handler2();
-	hypvtable_reserved_handler2();
+	__casm__b(hypvtable_reserved_handler2);
+	__casm__b(hypvtable_reserved_handler2);
+	__casm__b(hypvtable_reserved_handler2);
+	__casm__b(hypvtable_reserved_handler2);
+	__casm__b(hypvtable_reserved_handler2);
+	__casm__b(hypvtable_hypsvc_handler2);
+	__casm__b(hypvtable_reserved_handler2);
+	__casm__b(hypvtable_reserved_handler2);
 	//cpu-3
-	hypvtable_reserved_handler3();
-	hypvtable_reserved_handler3();
-	hypvtable_reserved_handler3();
-	hypvtable_reserved_handler3();
-	hypvtable_reserved_handler3();
-	hypvtable_hypsvc_handler3();
-	hypvtable_reserved_handler3();
-	hypvtable_reserved_handler3();
+	__casm__b(hypvtable_reserved_handler3);
+	__casm__b(hypvtable_reserved_handler3);
+	__casm__b(hypvtable_reserved_handler3);
+	__casm__b(hypvtable_reserved_handler3);
+	__casm__b(hypvtable_reserved_handler3);
+	__casm__b(hypvtable_hypsvc_handler3);
+	__casm__b(hypvtable_reserved_handler3);
+	__casm__b(hypvtable_reserved_handler3);
 }, void *noparam)
 
 CASM_FUNCDEF(void, hypvtable_reserved_handler0,
@@ -232,40 +232,3 @@ CASM_FUNCDEF(void, hypvtable_hypsvc_handler_common,
 
 	__casm__eret();
 }, void *noparam)
-
-
-__attribute__((section(".stack"))) __attribute__((aligned(8))) hypvtable_stack[8192];
-// 	.global hypvtable_stack_top
-// 	hypvtable_stack_top:
-
-__attribute__((aligned(8))) hypvtable_hypsvc_stack0[16384];
-// 	.global hypvtable_hypsvc_stack_top0
-// 	hypvtable_hypsvc_stack_top0:
-
-__attribute__((aligned(8))) hypvtable_hypsvc_stack1[16384];
-// 	.global hypvtable_hypsvc_stack_top1
-// 	hypvtable_hypsvc_stack_top1:
-
-__attribute__((aligned(8))) hypvtable_hypsvc_stack2[16384];
-// 	.global hypvtable_hypsvc_stack_top2
-// 	hypvtable_hypsvc_stack_top2:
-
-__attribute__((aligned(8))) hypvtable_hypsvc_stack3[16384];
-// 	.global hypvtable_hypsvc_stack_top3
-// 	hypvtable_hypsvc_stack_top3:
-
-__attribute__((aligned(8))) hypvtable_rsvhandler_stack0[8192];
-// 	.global hypvtable_rsvhandler_stack_top0
-// 	hypvtable_rsvhandler_stack_top0:
-
-__attribute__((aligned(8))) hypvtable_rsvhandler_stack1[8192];
-// 	.global hypvtable_rsvhandler_stack_top1
-// 	hypvtable_rsvhandler_stack_top1:
-
-__attribute__((aligned(8))) hypvtable_rsvhandler_stack2[8192];
-// 	.global hypvtable_rsvhandler_stack_top2
-// 	hypvtable_rsvhandler_stack_top2:
-
-__attribute__((aligned(8))) hypvtable_rsvhandler_stack3[8192];
-// 	.global hypvtable_rsvhandler_stack_top3
-// 	hypvtable_rsvhandler_stack_top3:

@@ -128,12 +128,3 @@ CASM_FUNCDEF(void, secondary_cpu_entry_halt,
 {
 	__casm__b(secondary_cpu_entry_halt);
 }, void *noparam)
-
-
-__attribute__((section(".stack")))
-__attribute__((section("aw")))
-
-__attribute__((aligned(8))) cpu_stacks[8192 * 4];
-
-__attribute__((aligned(8))) cpu_stacks_svc[8192 * 4];
-
