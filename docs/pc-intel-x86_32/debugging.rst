@@ -112,6 +112,7 @@ Debugging via Intel Direct Connect Interface (DCI)
 ---------------
 
 One can use the following settings to debug uberXMHF on a modern hardware.
+
 * Host PC: Win10 x64, USB 3.0 ports, Intel System Debugger NDA U2110.
 * Target PC: Gigabyte Z390 Designare (bios: mb_bios_z390-designare_f8), i9 9900K, USB 3.0 ports (I did not try USB 3.1 and so on)
 
@@ -126,14 +127,14 @@ Prepare the target PC
 
 * On the host PC, open "section IFR.txt" and find the following variables, their offsets, and values that should be picked. My example is as follows:
 
-* **Platform Debug Consent   					offset:0x10d5    	set to 3
-* **USB3 Type-C UFP2DFP Kernel/Platform Debug Support		offset:0xa0b    	set to 1
-* **USB Overcurrent Override for DbC      			offset:0xa0c    	set to 1
-	- Set {0A 82} to 0
-* **CPU Run Control						offset:0x65f    	set to 1
-* **CPU Run Control Lock						offset:0x660    	set to 0
-* **Enable/Disable IED (Intel Enhanced Debug)			offset:0x8ec    	set to 1
-* **xDCI Support							offset:0xa43    	set to 1
+  * **Platform Debug Consent   					offset:0x10d5    	set to 3
+  * **USB3 Type-C UFP2DFP Kernel/Platform Debug Support		offset:0xa0b    	set to 1
+  * **USB Overcurrent Override for DbC      			offset:0xa0c    	set to 1
+      - Set {0A 82} to 0
+  * **CPU Run Control						offset:0x65f    	set to 1
+  * **CPU Run Control Lock						offset:0x660    	set to 0
+  * **Enable/Disable IED (Intel Enhanced Debug)			offset:0x8ec    	set to 1
+  * **xDCI Support							offset:0xa43    	set to 1
 
 Especially, {0A 82} is due to the description "Suppress If {0A 82}" in the file "section IFR.txt". The referred document 1 says that "There might also be a section around these variables that you need to take into account: If there is i.e.: "Suppress If {0A 82}" , then you also have to memorize that address, it needs to be set so that the Debug variables are initialized: 0xa82 leads to VarStore and the definition of it shows "enabed if 1", therefore it later has to be set to "0""
 
@@ -156,6 +157,7 @@ Run Intel System Debugger on host PC
 Example shell output is:
 
 .. code-block:: bash
+
   [INFO    ] Using workspace directory 'E:/workspaces/system_debugger/workspace/isd_cli/8ff45f4c-3686-49dc-b3dc-17c877f6eb
   62' for console session
 
