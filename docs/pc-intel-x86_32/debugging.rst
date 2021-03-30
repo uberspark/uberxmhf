@@ -231,9 +231,9 @@ Example shell output is:
   In [1]: 
 
 
-* Then create a new debug configuration, see the `link <https://software.intel.com/content/www/us/en/develop/documentation/system-debug-user-guide/top/intel-system-debugger-startup/launching-the-debugger.html`>_
+* Then create a new debug configuration, see the `link <https://software.intel.com/content/www/us/en/develop/documentation/system-debug-user-guide/top/intel-system-debugger-startup/launching-the-debugger.html>`_
 
-* Now one can debug the system, see the `link <https://software.intel.com/content/www/us/en/develop/documentation/system-debug-user-guide/top/debugging-basics.html`>_
+* Now one can debug the system, see the `link <https://software.intel.com/content/www/us/en/develop/documentation/system-debug-user-guide/top/debugging-basics.html>`_
 
 Reference
 ^^^^^^^^^^^^^^^^^^^^^^^^^
