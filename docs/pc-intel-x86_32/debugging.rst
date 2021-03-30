@@ -127,6 +127,8 @@ Prepare the target PC
 
 * On the host PC, open "section IFR.txt" and find the following variables, their offsets, and values that should be picked. My example is as follows:
 
+.. code-block:: bash
+
   * Platform Debug Consent   					offset:0x10d5    	set to 3
   * USB3 Type-C UFP2DFP Kernel/Platform Debug Support		offset:0xa0b    	set to 1
   * USB Overcurrent Override for DbC      			offset:0xa0c    	set to 1
