@@ -21,7 +21,7 @@
         { "name": "uxmhf_build_version", "value": "\"6.0.0\""},
         { "name": "uxmhf_build_revision", "value": "\"you-gotta-have-faith-not-in-who-you-are-but-who-you-can-be\""},
         { "name": "debug_serial", "value": "@@TRUE@@"},
-        { "name": "debug_port", "value": "0x5080"},
+        { "name": "debug_port", "value": "0x3f8"},
         { "name": "debug_serial_maxcpus", "value": "8"},
         { "name": "drt", "value": "@@TRUE@@"},
         { "name": "dmap", "value": "@@TRUE@@"},

@@ -18,3 +18,4 @@ configure-uxmhfuobj
 *.mk
 *.v.c
 _verif
+uberspark.json
