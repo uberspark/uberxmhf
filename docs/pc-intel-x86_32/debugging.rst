@@ -134,9 +134,9 @@ Prepare the target PC
   * USB Overcurrent Override for DbC      			offset:0xa0c    	set to 1
       - Set {0A 82} to 0
   * CPU Run Control						offset:0x65f    	set to 1
-  * CPU Run Control Lock				offset:0x660    	set to 0
+  * CPU Run Control Lock					offset:0x660    	set to 0
   * Enable/Disable IED (Intel Enhanced Debug)			offset:0x8ec    	set to 1
-  * xDCI Support					offset:0xa43    	set to 1
+  * xDCI Support						offset:0xa43    	set to 1
 
 Especially, {0A 82} is due to the description "Suppress If {0A 82}" in the file "section IFR.txt". The referred document 1 says that "There might also be a section around these variables that you need to take into account: If there is i.e.: "Suppress If {0A 82}" , then you also have to memorize that address, it needs to be set so that the Debug variables are initialized: 0xa82 leads to VarStore and the definition of it shows "enabed if 1", therefore it later has to be set to "0""
 
