@@ -42,6 +42,20 @@
 
 #include <uberspark/uobjcoll/platform/pc/uxmhf/uobjs/main/include/xmhf.h>
 
+#if defined (__UBERSPARK_UOBJCOLL_CONFIGDEF_DEBUG_MEMORY__)
+
+// Memory storing uberXMHF output. 1MB in size.
+#define _LOG_MEM_SZ   (1*1024*1024)
+__attribute__((aligned(4096))) static char _log_mem[_LOG_MEM_SZ];
+static uint32_t _log_mem_pos = 0;
+
+static void _dbgprint_logmem_addr(void){
+  _XDPRINTF_("\nLog memory address:%#X\n", (unsigned long)_log_mem);
+}
+
+#endif
+
+
 #if defined (__UBERSPARK_UOBJCOLL_CONFIGDEF_DEBUG_SERIAL__)
 
 // default config parameters for serial port
@@ -52,12 +66,6 @@ uart_config_t g_uart_config = {115200,
 							   0,
 							   UART_CLOCKFREQ,
 							   __UBERSPARK_UOBJCOLL_CONFIGDEF_DEBUG_PORT__};
-
-// Memory storing uberXMHF output. 1MB in size.
-#define _LOG_MEM_SZ   (1*1024*1024)
-__attribute__((aligned(4096))) static char _log_mem[_LOG_MEM_SZ];
-static uint32_t _log_mem_pos = 0;
-
 
 //low-level UART character output
 void dbg_x86_uart_putc_bare(char ch){
@@ -148,15 +156,13 @@ void xmhfhw_platform_serial_init(char *params){
   return;
 }
 
-static void _dbgprint_logmem_addr(void){
-  _XDPRINTF_("\nLog memory address:%#X\n", (unsigned long)_log_mem);
-}
-
 void uberspark_uobjrtl_debug__init(char *params){
   xmhfhw_platform_serial_init(params);
 
+#if defined (__UBERSPARK_UOBJCOLL_CONFIGDEF_DEBUG_MEMORY__)
   _log_mem_pos = 0;
   _dbgprint_logmem_addr();
+#endif
 }
 
 void dbgprintf (const char *fmt, ...){
@@ -170,11 +176,13 @@ void dbgprintf (const char *fmt, ...){
 	uberspark_uobjrtl_hw__generic_x86_32_intel__spin_lock(&libxmhfdebug_lock);
 	xmhfhw_platform_serial_puts((char *)&buffer);
 
+#if defined (__UBERSPARK_UOBJCOLL_CONFIGDEF_DEBUG_MEMORY__)
   str_len = uberspark_uobjrtl_crt__strlen(buffer);
   if(str_len > 0 && _log_mem_pos + str_len < _LOG_MEM_SZ){
     uberspark_uobjrtl_crt__memcpy(&_log_mem[_log_mem_pos], buffer, str_len);
     _log_mem_pos += str_len;
   } // Discard subsequent logs if the memory is full
+#endif
 	uberspark_uobjrtl_hw__generic_x86_32_intel__spin_unlock(&libxmhfdebug_lock);
     va_end(ap);
 }
