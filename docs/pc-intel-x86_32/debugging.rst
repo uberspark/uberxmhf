@@ -106,3 +106,8 @@ probably need a little adaptation on other platforms running AMT.
     Connect to the ``target system`` by using the following command: ``./amtterm 192.168.0.2 -p 'YourAMTpassword' | tee output-log.txt``. 
     Note: you may have to bring up the ethernet interface on the ``host system`` prior to issuing the above command. This can be done
     via ``sudo ifconfig eth0 192.168.0.1`` (assuming the ``host system`` IP is ``192.168.0.1``\ ).
+
+
+Debugging via Intel Direct Connect Interface (DCI)
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
