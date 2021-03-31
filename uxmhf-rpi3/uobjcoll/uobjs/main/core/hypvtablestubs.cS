@@ -38,8 +38,8 @@
 	author: amit vasudevan (amitvasudevan@acm.org), ethan joseph (ethanj217@gmail.com)
 */
 
-#include <uberspark/include/uberspark.h>
 #include <uberspark/hwm/include/arch/arm/hwm.h>
+#include <uberspark/uobjcoll/platform/rpi3/uxmhf/uobjs/main/include/types.h>
 
 /*
 	G1.12.1 (Table G1-6 ARMv8)
@@ -102,8 +102,8 @@ CASM_FUNCDEF(void, hypvtable_reserved_handler0,
 	CASM_BALIGN(32);
 	__casm__ldr_pseudo_sp(hypvtable_rsvhandler_stack0);
 	__casm__bl(hyp_rsvhandler);
-CASM_LABEL(1);
-	__casm__b(1b);
+CASM_LABEL(one);
+	__casm__b(one);
 
 }, void *noparam)
 
@@ -111,8 +111,8 @@ CASM_FUNCDEF(void, hypvtable_reserved_handler1,
 {
 	__casm__ldr_pseudo_sp(hypvtable_rsvhandler_stack1);
 	__casm__bl(hyp_rsvhandler);
-CASM_LABEL(1);
-	__casm__b(1b);
+CASM_LABEL(one);
+	__casm__b(one);
 
 }, void *noparam)
 
@@ -120,8 +120,8 @@ CASM_FUNCDEF(void, hypvtable_reserved_handler2,
 {
 	__casm__ldr_pseudo_sp(hypvtable_rsvhandler_stack2);
 	__casm__bl(hyp_rsvhandler);
-CASM_LABEL(1);
-	__casm__b(1b);
+CASM_LABEL(one);
+	__casm__b(one);
 
 }, void *noparam)
 
@@ -129,8 +129,8 @@ CASM_FUNCDEF(void, hypvtable_reserved_handler3,
 {
 	__casm__ldr_pseudo_sp(hypvtable_rsvhandler_stack3);
 	__casm__bl(hyp_rsvhandler);
-CASM_LABEL(1);
-	__casm__b(1b);
+CASM_LABEL(one);
+	__casm__b(one);
 
 }, void *noparam)
 
@@ -140,8 +140,8 @@ CASM_FUNCDEF(void, hypvtable_hypsvc_handler0,
 	CASM_BALIGN(32);
 	__casm__ldr_pseudo_sp(hypvtable_hypsvc_stack0);
 	__casm__bl(hypvtable_hypsvc_handler_common);
-CASM_LABEL(1);
-	__casm__b(1b);
+CASM_LABEL(one);
+	__casm__b(one);
 
 }, void *noparam)
 
@@ -150,8 +150,8 @@ CASM_FUNCDEF(void, hypvtable_hypsvc_handler1,
 	CASM_BALIGN(32);
 	__casm__ldr_pseudo_sp(hypvtable_hypsvc_stack1);
 	__casm__bl(hypvtable_hypsvc_handler_common);
-CASM_LABEL(1);
-	__casm__b(1b);
+CASM_LABEL(one);
+	__casm__b(one);
 
 }, void *noparam)
 
@@ -160,8 +160,8 @@ CASM_FUNCDEF(void, hypvtable_hypsvc_handler2,
 	CASM_BALIGN(32);
 	__casm__ldr_pseudo_sp(hypvtable_hypsvc_stack2);
 	__casm__bl(hypvtable_hypsvc_handler_common);
-CASM_LABEL(1);
-	__casm__b(1b);
+CASM_LABEL(one);
+	__casm__b(one);
 
 }, void *noparam)
 
@@ -170,8 +170,8 @@ CASM_FUNCDEF(void, hypvtable_hypsvc_handler3,
 	CASM_BALIGN(32);
 	__casm__ldr_pseudo_sp(hypvtable_hypsvc_stack3);
 	__casm__bl(hypvtable_hypsvc_handler_common);
-CASM_LABEL(1);
-	__casm__b(1b);
+CASM_LABEL(one);
+	__casm__b(one);
 
 }, void *noparam)
 

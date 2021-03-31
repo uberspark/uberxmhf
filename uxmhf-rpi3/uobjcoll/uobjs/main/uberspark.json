@@ -89,12 +89,12 @@
 				"common/arm8-32.cS", 
 
 				"core/entry.cS",
-				"core/entry.c",
+				"core/entry.cS.c",
 				"core/hypvtablestubs.cS",
-				"core/hypvtablestubs.c",
+				"core/hypvtablestubs.cS.c",
 
 				"uapps/uapp-watchdogsup.cS",
-				"uapps/uapp-watchdogsup.c"
+				"uapps/uapp-watchdogsup.cS.c"
 
 				// "common/arm8-32.s", 
 

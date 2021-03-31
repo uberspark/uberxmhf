@@ -38,8 +38,8 @@
 	author: amit vasudevan (amitvasudevan@acm.org), ethan joseph (ethanj217@gmail.com)
 */
 
-#include <uberspark/include/uberspark.h>
 #include <uberspark/hwm/include/arch/arm/hwm.h>
+#include <uberspark/uobjcoll/platform/rpi3/uxmhf/uobjs/main/include/types.h>
 
 CASM_FUNCDEF(void, uapp_watchdog_fiq_handler,
 {

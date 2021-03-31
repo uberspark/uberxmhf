@@ -33,9 +33,9 @@
 	author: amit vasudevan (amitvasudevan@acm.org), ethan joseph (ethanj217@gmail.com)
 */
 
-#include <uberspark.h>
 #include <uberspark/hwm/include/arch/arm/hwm.h>
 #include <uberspark/uobjcoll/platform/rpi3/uxmhf/uobjs/main/include/arm8-32.h>
+#include <uberspark/uobjcoll/platform/rpi3/uxmhf/uobjs/main/include/types.h>
 
 CASM_FUNCDEF(void, mmio_write32,
 			 {
@@ -71,7 +71,7 @@ CASM_FUNCDEF(u32, sysreg_read_cpsr,
 				 __casm__mrs_r0_cpsr();
 				 __casm__bx_lr();
 			 },
-			 u32 value)
+			 void *noparam)
 
 CASM_FUNCDEF(void, sysreg_write_cpsr,
 			 {
@@ -122,7 +122,7 @@ CASM_FUNCDEF(void, sysreg_write_hsctlr,
 				 __casm__isb();
 				 __casm__bx_lr();
 			 },
-			 void *noparam)
+			 u32 value)
 
 CASM_FUNCDEF(u32, sysreg_read_actlr,
 			 {
@@ -463,13 +463,13 @@ CASM_FUNCDEF(u32, sysreg_read_hpfar,
 CASM_FUNCDEF(void, spin_lock,
 			 {
 				 __casm__mov_imm_r1(0);			 //load r1 with 32-bit constant 0, signifies lock is occupied
-CASM_LABEL(1);
+CASM_LABEL(one);
 				 __casm__ldrex_imm_r2_r0(0); //load current 32-bit value of lock and mark its memory region exclusive
 				 __casm__teq_imm_r2(1);			 //check if it is 1 i.e, free
 				 __casm__wfe_ne();				 //if not free, then put this core in the wait-for-event state
 				 __casm__strex_eq_r3_r1_r0(0);	 //if free, try occupying the lock (storing 0); status is in r3
 				 __casm__teq_eq_imm_r3(0);		 //if free, test the status of the store, 0=success, 1=fail
-				 __casm__b_ne(1b);				 //start all over again if failure to store
+				 __casm__b_ne(one);				 //start all over again if failure to store
 
 				 __casm__dmb_ish(); //data memory barrier inner shareability; make memory updates visible to all cores
 				 __casm__bx_lr();

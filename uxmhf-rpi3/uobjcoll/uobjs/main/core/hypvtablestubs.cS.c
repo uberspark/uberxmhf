@@ -37,6 +37,21 @@
 
 	author: amit vasudevan (amitvasudevan@acm.org), ethan joseph (ethanj217@gmail.com)
 */
-#include <uberspark/include/uberspark.h>
 
-__attribute__((section(".stack"))) __attribute__((aligned(8))) uapp_watchdog_fiqhandler_stack[8192];
+__attribute__((section(".stack"))) __attribute__((aligned(8))) hypvtable_stack[8192];
+
+__attribute__((section(".stack"))) __attribute__((aligned(8))) hypvtable_hypsvc_stack0[16384];
+
+__attribute__((section(".stack"))) __attribute__((aligned(8))) hypvtable_hypsvc_stack1[16384];
+
+__attribute__((section(".stack"))) __attribute__((aligned(8))) hypvtable_hypsvc_stack2[16384];
+
+__attribute__((section(".stack"))) __attribute__((aligned(8))) hypvtable_hypsvc_stack3[16384];
+
+__attribute__((section(".stack"))) __attribute__((aligned(8))) hypvtable_rsvhandler_stack0[8192];
+
+__attribute__((section(".stack"))) __attribute__((aligned(8))) hypvtable_rsvhandler_stack1[8192];
+
+__attribute__((section(".stack"))) __attribute__((aligned(8))) hypvtable_rsvhandler_stack2[8192];
+
+__attribute__((section(".stack"))) __attribute__((aligned(8))) hypvtable_rsvhandler_stack3[8192];

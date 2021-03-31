@@ -41,6 +41,8 @@
 #ifndef __ARM8_32_H__
 #define __ARM8_32_H__
 
+#include <uberspark/uobjcoll/platform/rpi3/uxmhf/uobjs/main/include/types.h>
+
 //
 // memory shareability types
 //

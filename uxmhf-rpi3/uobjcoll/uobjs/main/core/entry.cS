@@ -37,8 +37,8 @@
 
 	author: amit vasudevan (amitvasudevan@acm.org), ethan joseph (ethanj217@gmail.com)
 */
-#include <uberspark/include/uberspark.h>
 #include <uberspark/hwm/include/arch/arm/hwm.h>
+#include <uberspark/uobjcoll/platform/rpi3/uxmhf/uobjs/main/include/types.h>
 
 
 //r0, r1 and r2 are set by the boot-loader and need to
@@ -85,7 +85,7 @@ CASM_FUNCDEF(void, chainload_os,
 	__casm__lsr_imm_r7_r7(16);
 	__casm__and_imm_r7_r7(0xf);
 	__casm__cmp_imm_r7_r7(1);
-	__casm__b_ne(1f);
+	__casm__b_ne(one);
 	__casm__mrc_p15_4_r7_c14_c1_0(); // CNTHCTL
 	__casm__orr_imm_r7_r7(3);    // PL1PCEN | PL1PCTEN
 	__casm__mcr_p15_4_r7_c14_c1_0(); // CNTHCTL
@@ -97,14 +97,14 @@ CASM_FUNCDEF(void, chainload_os,
 	__casm_bic_imm_r7_r7(1);     // Clear ENABLE
 	__casm__mcr_p15_0_r7_c14_c3_1(); // CNTV_CTL
 
-CASM_LABEL(1);
+CASM_LABEL(one);
 
 	__casm__mrs_r9_cpsr();
 	__casm__eor_imm_r9_r9(0x0000001a);  //HYP_MODE
 	__casm__tst_imm_r9(0x0000001f);   //MODE_MASK
 	__casm_bic_imm_r9_r9(0x0000001f); //MODE_MASK
 	__casm__orr_imm_r9_r9(0x00000080 | 0x00000040 | 0x00000013); //PSR_I_BIT | PSR_F_BIT | SVC_MODE
-	__casm__orr_imm_r9_r9(0x00000100)  //PSR_A_BIT
+	__casm__orr_imm_r9_r9(0x00000100);  //PSR_A_BIT
 	__casm__msr_spsrcxsf_r9();
 	__casm__msr_elrhyp_r3();   //store address to begin execution in SVC mode in ELR_hyp
 	__casm__eret();

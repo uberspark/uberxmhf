@@ -37,7 +37,6 @@
 
 	author: amit vasudevan (amitvasudevan@acm.org), ethan joseph (ethanj217@gmail.com)
 */
-#include <uberspark/include/uberspark.h>
 
 __attribute__((section(".stack"))) __attribute__((section("aw"))) __attribute__((aligned(8))) cpu_stacks[8192 * 4];
 __attribute__((section(".stack"))) __attribute__((section("aw"))) __attribute__((aligned(8))) cpu_stacks_svc[8192 * 4];
