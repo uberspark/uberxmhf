@@ -96,7 +96,7 @@ A grub entry for uberXMHF should look something like this:
 
    title uberXMHF
    uuid   xxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx               # copy this from an AUTOMAGIC entry
-   kernel /boot/xmhf-x86-vmx-x86pc.bin.gz serial=115200,8n1,0x3f8 # substitute in the correct serial address
+   kernel /boot/xmhf-x86-vmx-x86pc.bin.gz serial=115200,8n1,0x3f8 nmi_watchdog=0 # substitute in the correct serial address
    modulenounzip (hd0)+1                                     # should point to where grub is installed
    modulenounzip /boot/4th_gen_i5_i7_SINIT_75.BIN            # Intel TXT SINIT AC module
 
@@ -109,7 +109,8 @@ Additionally, you must specify new command line option to disable the NMI
 watchdog kernel-module on your guest OS (linux). The added command line 
 options must include ``nmi_watchdog=0``
 
-If your Default OS (the Linux kernel that will be booting after the micro-hypervisor) uses an LVM filesystem, you might need to alter its GRUB entry. Modify the kernel entry to specify the root as the LVM disk. For example, change:
+If your Default OS (the Linux kernel that will be booting after the micro-hypervisor) uses an LVM filesystem, 
+you might need to alter its GRUB entry. Modify the kernel entry to specify the root as the LVM disk. For example, change:
 
 
 .. code-block:: bash

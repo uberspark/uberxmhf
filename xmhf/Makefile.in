@@ -133,7 +133,7 @@ export XMHF_BUILD_VERSION := $(shell git describe --abbrev=0)
 #----- build information (revision)
 export XMHF_BUILD_REVISION_BRANCH := 
 export XMHF_BUILD_REVISION_COMMIT := 
-export XMHF_BUILD_REVISION := v6.0.0-you-gotta-have-faith-not-in-who-you-are-but-who-you-can-be
+export XMHF_BUILD_REVISION := v6.1.0-you-gotta-have-faith-not-in-who-you-are-but-who-you-can-be
 
 #-----basic flags for compiling and assembling
 CFLAGS = -fno-builtin -fno-common -fno-strict-aliasing -iwithprefix include

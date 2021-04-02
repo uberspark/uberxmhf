@@ -1,4 +1,4 @@
-AC_INIT([uxmhf], [6.0.0])
+AC_INIT([uxmhf], [6.1.0])
 
 ###### simple configuration of tools. (just looks for matching binary on PATH)
 AC_CHECK_PROG([MAKE], [make], [make])

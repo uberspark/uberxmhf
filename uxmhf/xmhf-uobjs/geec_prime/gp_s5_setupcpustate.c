@@ -292,8 +292,22 @@ static bool __xmhfhic_x86vmx_setupvmxstate(uint64_t cpuid){
 	//setup unrestricted guest
 	CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_CONTROL_VMX_SECCPU_BASED, (uint32_t)((uint64_t)CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmread,VMCS_CONTROL_VMX_SECCPU_BASED) | (uint64_t)(1 << 7)) );
 
-	//enable execution of INVPCID
-	CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_CONTROL_VMX_SECCPU_BASED, (uint32_t)((uint64_t)CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmread,VMCS_CONTROL_VMX_SECCPU_BASED) | (uint64_t)(1 << 12)) );
+	//enable execution of INVPCID in the event we have that support
+	#if 1
+	{
+		uint64_t ia32_vmx_procbased_ctls2;
+		ia32_vmx_procbased_ctls2 = CASM_FUNCCALL(rdmsr64, IA32_VMX_PROCBASED_CTLS2_MSR);
+		_XDPRINTF_("%s[%u]: IA32_VMX_PROCBASED_CTLS2=0x%016llx\n", 
+			__func__, (uint32_t)cpuid, (uint64_t)ia32_vmx_procbased_ctls2);
+
+		if ( (uint32_t)((ia32_vmx_procbased_ctls2 & 0xFFFFFFFF00000000ULL) >> 32) &
+			 (uint32_t)(0x1UL << 12) ) {
+			_XDPRINTF_("%s[%u]: Enabling INVPCID execution\n", 
+				__func__, (uint32_t)cpuid);
+			CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmwrite,VMCS_CONTROL_VMX_SECCPU_BASED, (uint32_t)((uint64_t)CASM_FUNCCALL(xmhfhw_cpu_x86vmx_vmread,VMCS_CONTROL_VMX_SECCPU_BASED) | (uint64_t)(1 << 12)) );
+		} 
+	}
+	#endif
 
 	//setup CR0 and CR0 access
 	{
