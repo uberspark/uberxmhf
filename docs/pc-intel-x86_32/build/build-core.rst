@@ -31,5 +31,6 @@ Copy this to the target machine's ``/boot/``
    additionally specify the debug port number via ``debug_port`` (e.g., 0x3f8 for COM1)
 #. ``debug_memory`` to enable debug output to memory. One can use the following commands
    to locate its base address in bootloader and runtime:
-   readelf -a ./_triage/uberspark/loaders/baremetal/x86_32/grub-legacy/_build/loader.exe
-   readelf -a ./_triage/uberspark/uobjcoll/platform/pc/uxmhf/uobjcoll.exe
+   readelf -a ./_triage/uberspark/loaders/baremetal/x86_32/grub-legacy/_build/loader.exe | grep g_log_mem
+   readelf -a ./_triage/uberspark/uobjcoll/platform/pc/uxmhf/uobjcoll.exe | grep g_log_mem
+   For example, the first command outputs the address 1e12000 and the second one outputs 661b000
