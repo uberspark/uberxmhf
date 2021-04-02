@@ -33,4 +33,4 @@ Copy this to the target machine's ``/boot/``
    to locate its base address in bootloader and runtime:
    readelf -a ./_triage/uberspark/loaders/baremetal/x86_32/grub-legacy/_build/loader.exe | grep g_log_mem
    readelf -a ./_triage/uberspark/uobjcoll/platform/pc/uxmhf/uobjcoll.exe | grep g_log_mem
-   For example, the first command outputs the address 1e12000 and the second one outputs 661b000
+   For example, the first command outputs the address 1e12000 and the second one outputs 661c000
