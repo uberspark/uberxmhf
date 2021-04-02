@@ -27,6 +27,10 @@ The actively supported OS/distribution is:
     * ``kvm_intel``
     * ``intel_rapl``
 
+..  note::
+    You will also need to disable NMI watchdog if one is present. See
+    see :doc:`uberXMHF (pc-intel-x86_32) Installing </pc-intel-x86_32/installing>`
+
 
 The following guest OSes are also known to work:
 
