@@ -46,11 +46,11 @@
 
 // Memory storing uberXMHF output. 1MB in size.
 #define _LOG_MEM_SZ   (1*1024*1024)
-__attribute__((aligned(4096))) static char _log_mem[_LOG_MEM_SZ];
+__attribute__(( section(".data") )) __attribute__((aligned(4096))) char g_log_mem[_LOG_MEM_SZ];
 static uint32_t _log_mem_pos = 0;
 
 static void _dbgprint_logmem_addr(void){
-  _XDPRINTF_("\nLog memory address:%#X\n", (unsigned long)_log_mem);
+  _XDPRINTF_("\nLog memory address:%#X\n", (unsigned long)g_log_mem);
 }
 
 #endif
@@ -179,10 +179,39 @@ void dbgprintf (const char *fmt, ...){
 #if defined (__UBERSPARK_UOBJCOLL_CONFIGDEF_DEBUG_MEMORY__)
   str_len = uberspark_uobjrtl_crt__strlen(buffer);
   if(str_len > 0 && _log_mem_pos + str_len < _LOG_MEM_SZ){
-    uberspark_uobjrtl_crt__memcpy(&_log_mem[_log_mem_pos], buffer, str_len);
+    uberspark_uobjrtl_crt__memcpy(&g_log_mem[_log_mem_pos], buffer, str_len);
     _log_mem_pos += str_len;
   } // Discard subsequent logs if the memory is full
 #endif
+	uberspark_uobjrtl_hw__generic_x86_32_intel__spin_unlock(&libxmhfdebug_lock);
+    va_end(ap);
+}
+
+#elif defined (__UBERSPARK_UOBJCOLL_CONFIGDEF_DEBUG_MEMORY__)
+
+void uberspark_uobjrtl_debug__init(char *params){
+	(void)params;
+
+  _log_mem_pos = 0;
+  _dbgprint_logmem_addr();
+}
+
+void dbgprintf (const char *fmt, ...){
+    va_list       ap;
+	int retval;
+	char buffer[1024];
+  int str_len = 0;
+
+	va_start(ap, fmt);
+	retval = vsnprintf((char *)&buffer, 1024, (const char *)fmt, ap);
+	uberspark_uobjrtl_hw__generic_x86_32_intel__spin_lock(&libxmhfdebug_lock);
+
+  str_len = uberspark_uobjrtl_crt__strlen(buffer);
+  if(str_len > 0 && _log_mem_pos + str_len < _LOG_MEM_SZ){
+    uberspark_uobjrtl_crt__memcpy(&g_log_mem[_log_mem_pos], buffer, str_len);
+    _log_mem_pos += str_len;
+  } // Discard subsequent logs if the memory is full
+  
 	uberspark_uobjrtl_hw__generic_x86_32_intel__spin_unlock(&libxmhfdebug_lock);
     va_end(ap);
 }

@@ -29,6 +29,7 @@ Copy this to the target machine's ``/boot/``
    below
 #. ``debug_serial`` to enable debug output via UART; you must 
    additionally specify the debug port number via ``debug_port`` (e.g., 0x3f8 for COM1)
-#. ``debug_memory`` to enable debug output to memory. Currently this configuration 
-   works only when debug_serial is enabled. This is because one has to find the 
-   base address of the log memory in the serial output.
+#. ``debug_memory`` to enable debug output to memory. One can use the following commands
+   to locate its base address in bootloader and runtime:
+   readelf -a ./_triage/uberspark/loaders/baremetal/x86_32/grub-legacy/_build/loader.exe
+   readelf -a ./_triage/uberspark/uobjcoll/platform/pc/uxmhf/uobjcoll.exe

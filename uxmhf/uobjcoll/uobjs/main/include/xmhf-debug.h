@@ -71,14 +71,13 @@
 
 extern __attribute__(( section(".data") )) uint32_t libxmhfdebug_lock;
 
-#if defined (__UBERSPARK_UOBJCOLL_CONFIGDEF_DEBUG_SERIAL__)
+#if defined (__UBERSPARK_UOBJCOLL_CONFIGDEF_DEBUG_SERIAL__) || defined (__UBERSPARK_UOBJCOLL_CONFIGDEF_DEBUG_MEMORY__)
 
 extern void uberspark_uobjrtl_debug__init(char *params);
 extern int vsnprintf(char *str, size_t size, const char *format, va_list ap);
 extern void dbgprintf (const char *fmt, ...);
 
 #define _XDPRINTF_ dbgprintf
-
 
 #else
 
