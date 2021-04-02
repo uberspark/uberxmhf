@@ -86,7 +86,7 @@ export XMHF_CONFIG_MAX_MEMOFFSET_ENTRIES := 64
 
 ## build version
 #export XMHF_BUILD_VERSION := $(shell git describe --abbrev=0)
-export XMHF_BUILD_VERSION := 6.0.0
+export XMHF_BUILD_VERSION := 6.1.0
 
 ## build revision
 #export XMHF_BUILD_REVISION_BRANCH := $(shell git rev-parse --abbrev-ref HEAD)

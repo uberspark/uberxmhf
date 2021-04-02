@@ -2,6 +2,16 @@
 
 ## Changelog
 
+* Version 6.1.0
+
+	* Features
+    	* uxmhf: add support for Intel 1st generation core CPU (HP 2540p laptop platform)
+
+	* Documentation
+    	* uxmhf: revise documentation to clarify OS and boot-loader support
+		* uxmhf: clarify documentation on required OS kernel command line parameters and module blacklistings
+
+
 * Version 6.0.0
 
 	* Features

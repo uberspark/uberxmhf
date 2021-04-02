@@ -1,57 +1,10 @@
-Version: 6.0.0
+Version: 6.1.0
 Release Tagline: you gotta have faith not in who you are, but who you can be
-Release Date: 01-Dec-2020
-Release Notes:
+Release Date: 02-Apr-2021
+Release Notes::
 	* Features
-		* uxmhf: add new üapp uhcalltest for testing hypercalls; add corresponding rich guest app for linux
-		* uxmhf: add configure option --with-debug-serial-maxcpus to specify platform cores while in debugging mode
-		* uxmhf: add support for non linear CPU id mappings setup by some BIOSes
-		* uxmhf-rpi3: add support for receive functionality (getc) within uart.h
-		* uxmhf-rpi3: add PL011 full UART uart_getc implementation
-		* uxmhf-rpi3: add support for PL011 full UART hardware flow control functionality
-		* uxmhf-rpi3: add support for mailboxes
-		* uxmhf-rpi3: add support for PL011 full UART based debugging
-		* uxmhf-rpi3/uapps: add new uberapp (stateDB) to track state entries updates (bounded by a max. value) via in-memory database.
-		* uxmhf-rpi3/uapps: add uapp-pvdriver-uart, a para-virtualized guest OS UART driver backend
-		* uxmhf-rpi3/uapps: add uapp-uagent, an uberapp that takes an input buffer and returns the encrypt/decrypt of the data based upon an AES secret key.
-		* uxmhf-rpi3/uapps: add new uapp (uhsign) for protected HMAC calculation
-		* uxmhf-rpi3/uapps: switch to using sha256 within uapp-uhsign
-		* uxmhf-rpi3/rgapps/linux - revise libuhcall and uhcallkmod  and migrate the va2pa function from user space to kernel driver. 
-		* uxmhf-rpi3/libs: add sha256 support within libxmhfcrypto
-		* uxmhf-rpi3/rgapps/linux/libs: add kernel library libkhcall for performing hypercall from OS kernel mode
+    	* uxmhf: add support for Intel 1st generation core CPU (HP 2540p laptop platform)
 
 	* Documentation
-		* revise top-level README with instructions on documentation build
-		* add software requirements within a top-level index toctree
-		* uxmhf: revise build and installation documentation to clarify grub and debug settings, kernel command line parameters, and modules that need to be blacklisted currently
-		* uxmhf: revise instructions to add a new üapp and clarify OS kernel boot configuration details
-		* uxmhf: migrate documentation from markdown to restructured text syntax
-		* uxmhf-rpi3: add information to turn on UART debugging and select mini/PL011 UART during build
-		* uxmhf-rpi3: add information to enable uhsign uberApp during build
-		* uxmhf-rpi3: add information about different USB to serial cabling for miniuart and PL011 UART based debugging
-		* uxmhf-rpi3: add documentation on how to enable and use uapp-uagent
-		* uxmhf-rpi3: revise documentation on how to enable and use uapp-pvdriver-uart
-		* uxmhf-rpi3: add stateDB uberapp build documentation
-		* uxmhf-rpi3: add documentation to describe libuhcall (user-mode) and libkhcall (kernel-mode) hypercall libraries
-		* uxmhf-rpi3: revise instructions to configure existing üapps and add new üapps
-		* uxmhf-rpi3: clarify OS kernel boot configuration details
-		* uxmhf-rpi3: migrate documentation from markdown to restructured text syntax
-		* xmhf: migrate documentation from markdown to restructured text syntax
-
-	* Fixes
-		* uxmhf: revise xmhf-bootloader sources to cope with --disable-drt and --disable-dmap configure options
-		* uxmhf-rpi3: modify main.c to place uart_testrecv() inside a #ifdef to eliminate build errors if not configured for UART debugging
-
-	* Build
-		* add sphinx based documentation build harness
-		* uxmhf-rpi3: revise build harness to include --enable-debug-uart, --enable-debug-uart-PL011, and --enable-uapp-uhsign configure options
-		* uxmhf-rpi3: autogenerate rpi3 config based on UART selection so we can enable/disable bluetooth UART accordingly
-		* uxmhf-rpi3: add docker container for building and installing uberXMHF on Raspberry Pi 3
-		* uxmhf-rpi3: rework build configuration options to decouple --enable-debug-uart and --enable-uart-{pl011,mini}
-
-	* Others
-		* uxmhf-rpi3: clean up and use debug printf interface throughout
-		* uxmhf-rpi3: add function declarations to header files to remove warnings about implicit function declarations.
-		* uxmhf-rpi3: clean up some unused variables
-		* uxmhf-rpi3: use top-level uart.h to bring in UART backend interfaces (mini or PL011 UART)
-		* uxmhf-rpi3: move code whitelisting functionality into common/ (as it is used by uapp-uhsign and uapp-uagent).
+    	* uxmhf: revise documentation to clarify OS and boot-loader support
+		* uxmhf: clarify documentation on required OS kernel command line parameters and module blacklistings
