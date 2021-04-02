@@ -23,7 +23,7 @@
         { "name": "debug_serial", "value": "@@TRUE@@"},
         { "name": "debug_port", "value": "0x3f8"},
         { "name": "debug_serial_maxcpus", "value": "8"},
-        { "name": "debug_memory", "value": "@@TRUE@@"},
+        { "name": "debug_memory", "value": "@@FALSE@@"},
         { "name": "drt", "value": "@@TRUE@@"},
         { "name": "dmap", "value": "@@TRUE@@"},
         { "name": "uapp_aprvexec", "value": "@@FALSE@@"},
