@@ -42,7 +42,8 @@
 				"include/watchdog.h",
 				"include/whitelist.h",
 				"include/picar-s.h",
-                                "include/uapp-i2c-driver.h"
+                                "include/uapp-i2c-driver.h",
+                                "include/uapp-i2c-ioaccess.h"
 			],
 
 		    "uberspark.uobj.sources": [ 
@@ -82,6 +83,7 @@
 				"uapps/uapp-watchdog.c",
 				"uapps/uapp-picar-s.c",
 				"uapps/uapp-i2c-driver.c",
+				"uapps/uapp-i2c-ioaccess.c",
 
 
 				"common/arm8-32.s", 

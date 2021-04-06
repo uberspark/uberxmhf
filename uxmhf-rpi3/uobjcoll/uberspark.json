@@ -51,7 +51,8 @@
 			{ "name": "enable_uapp_utpmtest", "value": "@@FALSE@@"},
 			{ "name": "enable_uapp_watchdog", "value": "@@FALSE@@"},
 			{ "name": "enable_uapp_picar_s", "value": "@@TRUE@@"},
-			{ "name": "enable_uapp_i2c_driver", "value": "@@TRUE@@"} 
+			{ "name": "enable_uapp_i2c_driver", "value": "@@TRUE@@"}, 
+			{ "name": "enable_uapp_i2c_ioaccess", "value": "@@TRUE@@"} 
 		],
 	
 	
