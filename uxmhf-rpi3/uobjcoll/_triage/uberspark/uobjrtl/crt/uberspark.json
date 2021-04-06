@@ -1,0 +1,91 @@
+/*
+    überSpark uobjrtl manifest -- crt (c runtime memory and string functionality)
+    author: amit vasudevan (amitvasudevan@acm.org)
+*/
+
+{
+
+		"uberspark.manifest.namespace" : "uberspark/uobjrtl",
+		"uberspark.manifest.version_min" : "any",
+		"uberspark.manifest.version_max" : "any",
+
+        "uberspark.uobjrtl.namespace" : "uberspark/uobjrtl/crt",
+		"uberspark.uobjrtl.platform" : "generic",
+		"uberspark.uobjrtl.arch" : "generic",
+        "uberspark.uobjrtl.cpu" : "generic",
+
+        "uberspark.uobjrtl.sources" : [
+            {
+                "path" : "src/memcmp.c",
+                "fn_decls" :  [
+                        { "fn_name" : "uberspark_uobjrtl_crt__memcmp" }
+                    ]
+            },
+  
+            {
+                "path" : "src/memcpy.c",
+                "fn_decls" :  [
+                        { "fn_name" : "uberspark_uobjrtl_crt__memcpy" }
+                    ]
+            },
+            
+            {
+                "path" : "src/memmove.c",
+                "fn_decls" :  [
+                        { "fn_name" : "uberspark_uobjrtl_crt__memmove" }
+                    ]
+            },
+
+            {
+                "path" : "src/memset.c",
+                "fn_decls" :  [
+                        { "fn_name" : "uberspark_uobjrtl_crt__memset" }
+                    ]
+            },
+
+            {
+                "path" : "src/strchr.c",
+                "fn_decls" :  [
+                        { "fn_name" : "uberspark_uobjrtl_crt__strchr" }
+                    ]
+            },
+
+            {
+                "path" : "src/strcmp.c",
+                "fn_decls" :  [
+                        { "fn_name" : "uberspark_uobjrtl_crt__strcmp" }
+                    ]
+            },
+           
+            {
+                "path" : "src/strlen.c",
+                "fn_decls" :  [
+                        { "fn_name" : "uberspark_uobjrtl_crt__strlen" }
+                    ]
+            },
+
+            {
+                "path" : "src/strncmp.c",
+                "fn_decls" :  [
+                        { "fn_name" : "uberspark_uobjrtl_crt__strncmp" }
+                    ]
+            },
+
+            {
+                "path" : "src/strncpy.c",
+                "fn_decls" :  [
+                        { "fn_name" : "uberspark_uobjrtl_crt__strncpy" }
+                    ]
+            },
+
+            {
+                "path" : "src/strnlen.c",
+                "fn_decls" :  [
+                        { "fn_name" : "uberspark_uobjrtl_crt__strnlen" }
+                    ]
+            }
+
+
+        ]
+
+}

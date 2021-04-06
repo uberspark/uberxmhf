@@ -1,0 +1,100 @@
+/*
+    überSpark uobjrtl manifest -- crypto
+    author: amit vasudevan (amitvasudevan@acm.org)
+*/
+
+{
+
+		"uberspark.manifest.namespace" : "uberspark/uobjrtl",
+		"uberspark.manifest.version_min" : "any",
+		"uberspark.manifest.version_max" : "any",
+
+
+        "uberspark.uobjrtl.namespace" : "uberspark/uobjrtl/crypto",
+		"uberspark.uobjrtl.platform" : "generic",
+		"uberspark.uobjrtl.arch" : "generic",
+        "uberspark.uobjrtl.cpu" : "generic",
+
+        "uberspark.uobjrtl.sources" : [
+
+            {
+                "path" : "src/ciphers/aes/aes.c",
+                "fn_decls" :  [
+                        { "fn_name" : "uberspark_uobjrtl_crypto__ciphers_aes__rijndael_setup" },
+                        { "fn_name" : "uberspark_uobjrtl_crypto__ciphers_aes__rijndael_ecb_encrypt" },
+                        { "fn_name" : "uberspark_uobjrtl_crypto__ciphers_aes__rijndael_ecb_decrypt" },
+                        { "fn_name" : "uberspark_uobjrtl_crypto__ciphers_aes__rijndael_done" },
+                        { "fn_name" : "uberspark_uobjrtl_crypto__ciphers_aes__rijndael_test" },
+                        { "fn_name" : "uberspark_uobjrtl_crypto__ciphers_aes__rijndael_keysize" }
+
+                    ]
+            },
+            
+            {
+                "path" : "src/ciphers/aes/aes_cbc.c",
+                "fn_decls" :  [
+                        { "fn_name" : "uberspark_uobjrtl_crypto__ciphers_aes__rijndael_cbc_start" },
+                        { "fn_name" : "uberspark_uobjrtl_crypto__ciphers_aes__rijndael_cbc_setiv"},
+                        { "fn_name" : "uberspark_uobjrtl_crypto__ciphers_aes__rijndael_cbc_getiv" },
+                        { "fn_name" : "uberspark_uobjrtl_crypto__ciphers_aes__rijndael_cbc_encrypt" },
+                        { "fn_name" : "uberspark_uobjrtl_crypto__ciphers_aes__rijndael_cbc_done" },
+                        { "fn_name" : "uberspark_uobjrtl_crypto__ciphers_aes__rijndael_cbc_decrypt" }
+
+                    ]
+            },
+
+            {
+                "path" : "src/ciphers/aes/aes_tab.c"
+            },
+
+            {
+                "path" : "src/hashes/sha1/sha1.c",
+                "fn_decls" :  [
+                        { "fn_name" : "uberspark_uobjrtl_crypto__hashes_sha1__sha1_compress" },
+                        { "fn_name" : "uberspark_uobjrtl_crypto__hashes_sha1__sha1_init" },
+                        { "fn_name" : "uberspark_uobjrtl_crypto__hashes_sha1__sha1_process" },
+                        { "fn_name" : "uberspark_uobjrtl_crypto__hashes_sha1__sha1_done" },
+                        { "fn_name" : "uberspark_uobjrtl_crypto__hashes_sha1__sha1_memory" },
+                        { "fn_name" : "uberspark_uobjrtl_crypto__hashes_sha1__sha1_memory_multi" }
+                    ]
+            },
+
+            {
+                "path" : "src/hashes/sha256/sha256.c",
+                "fn_decls" :  [
+                        { "fn_name" : "uberspark_uobjrtl_crypto__hashes_sha256__sha256_compress" },
+                        { "fn_name" : "uberspark_uobjrtl_crypto__hashes_sha256__sha256_init" },
+                        { "fn_name" : "uberspark_uobjrtl_crypto__hashes_sha256__sha256_process" },
+                        { "fn_name" : "uberspark_uobjrtl_crypto__hashes_sha256__sha256_done" },
+                        { "fn_name" : "uberspark_uobjrtl_crypto__hashes_sha256__sha256_memory" },
+                        { "fn_name" : "uberspark_uobjrtl_crypto__hashes_sha256__sha256_memory_multi" }
+                    ]
+            },
+
+            {
+                "path" : "src/mac/hmacsha1/hmacsha1.c",
+                "fn_decls" :  [
+                        { "fn_name" : "uberspark_uobjrtl_crypto__mac_hmacsha1__hmac_sha1_init" },
+                        { "fn_name" : "uberspark_uobjrtl_crypto__mac_hmacsha1__hmac_sha1_process" },
+                        { "fn_name" : "uberspark_uobjrtl_crypto__mac_hmacsha1__hmac_sha1_done" },
+                        { "fn_name" : "uberspark_uobjrtl_crypto__mac_hmacsha1__hmac_sha1_memory" }
+                    ]
+            },
+
+            {
+                "path" : "src/mac/hmacsha256/hmacsha256.c",
+                "fn_decls" :  [
+                        { "fn_name" : "uberspark_uobjrtl_crypto__mac_hmacsha256__hmac_sha256_init" },
+                        { "fn_name" : "uberspark_uobjrtl_crypto__mac_hmacsha256__hmac_sha256_process" },
+                        { "fn_name" : "uberspark_uobjrtl_crypto__mac_hmacsha256__hmac_sha256_done" },
+                        { "fn_name" : "uberspark_uobjrtl_crypto__mac_hmacsha256__hmac_sha256_memory" }
+                    ]
+            }
+
+        
+
+
+
+        ]
+
+}

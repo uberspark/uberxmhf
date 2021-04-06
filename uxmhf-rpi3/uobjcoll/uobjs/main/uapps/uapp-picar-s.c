@@ -140,7 +140,7 @@ void uapp_picar_s_handlehcall_prot(picar_s_param_t *upicar){
      	_XDPRINTFSMP_("%s: original pt entry=0x%016llx\n", __func__, prot);
 
        uapi_s2pgtbl_setprot(buffer_pa, roattrs);
-       sysreg_tlbiallis();
+       CASM_FUNCCALL(sysreg_tlbiallis, CASM_NOPARAM);
            uapp_picar_s_page_pa=buffer_pa;
            uapp_picar_s_activated=true;
 
@@ -170,7 +170,7 @@ void uapp_picar_s_handlehcall_unprot(picar_s_param_t *upicar){
 		LDESC_S2_MEMATTR_AF_MASK;
 
        uapi_s2pgtbl_setprot(buffer_pa, rwattrs);
-       sysreg_tlbiallis();
+       CASM_FUNCCALL(sysreg_tlbiallis, CASM_NOPARAM);
            uapp_picar_s_page_pa=0;
            uapp_picar_s_activated=false;
 
