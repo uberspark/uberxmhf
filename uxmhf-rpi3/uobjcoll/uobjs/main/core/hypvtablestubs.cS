@@ -40,6 +40,7 @@
 
 #include <uberspark/hwm/include/arch/arm/hwm.h>
 #include <uberspark/uobjcoll/platform/rpi3/uxmhf/uobjs/main/include/types.h>
+#include <uberspark/uobjcoll/platform/rpi3/uxmhf/uobjs/main/include/arm8-32.h>
 
 #include <uberspark/uobjcoll/platform/rpi3/uxmhf/uobjs/main/include/hypvtablestubs.h>
 
@@ -58,7 +59,8 @@
 		0x1C:	FIQ
 */
 
-void hypsvc_handler(arm8_32_regs_t *r)
+void hypsvc_handler(arm8_32_regs_t *r);
+void hyp_rsvhandler(void);
 
 CASM_FUNCDECL(void hypvtable_hypsvc_handler_common(void *noparam));
 
@@ -66,7 +68,7 @@ CASM_FUNCDEF(void, hypvtable_reserved_handler0,
 {
 	CASM_BALIGN(32);
 	__casm__ldr_pseudo_sp(hypvtable_rsvhandler_stack0);
-	__casm__call_c_1p(hyp_rsvhandler, arm8_32_regs_t*);
+	__casm__call_c(hyp_rsvhandler);
 CASM_LABEL(one);
 	__casm__b(one);
 
@@ -75,27 +77,27 @@ CASM_LABEL(one);
 CASM_FUNCDEF(void, hypvtable_reserved_handler1,
 {
 	__casm__ldr_pseudo_sp(hypvtable_rsvhandler_stack1);
-	__casm__call_c_1p(hyp_rsvhandler, arm8_32_regs_t*);
-CASM_LABEL(one);
-	__casm__b(one);
+	__casm__call_c(hyp_rsvhandler);
+CASM_LABEL(two);
+	__casm__b(two);
 
 }, void *noparam)
 
 CASM_FUNCDEF(void, hypvtable_reserved_handler2,
 {
 	__casm__ldr_pseudo_sp(hypvtable_rsvhandler_stack2);
-	__casm__call_c_1p(hyp_rsvhandler, arm8_32_regs_t*);
-CASM_LABEL(one);
-	__casm__b(one);
+	__casm__call_c(hyp_rsvhandler);
+CASM_LABEL(three);
+	__casm__b(three);
 
 }, void *noparam)
 
 CASM_FUNCDEF(void, hypvtable_reserved_handler3,
 {
 	__casm__ldr_pseudo_sp(hypvtable_rsvhandler_stack3);
-	__casm__call_c_1p(hyp_rsvhandler, arm8_32_regs_t*);
-CASM_LABEL(one);
-	__casm__b(one);
+	__casm__call_c(hyp_rsvhandler);
+CASM_LABEL(four);
+	__casm__b(four);
 
 }, void *noparam)
 
@@ -105,8 +107,8 @@ CASM_FUNCDEF(void, hypvtable_hypsvc_handler0,
 	CASM_BALIGN(32);
 	__casm__ldr_pseudo_sp(hypvtable_hypsvc_stack0);
 	CASM_FUNCCALL(hypvtable_hypsvc_handler_common, CASM_NOPARAM);
-CASM_LABEL(one);
-	__casm__b(one);
+CASM_LABEL(five);
+	__casm__b(five);
 
 }, void *noparam)
 
@@ -115,8 +117,8 @@ CASM_FUNCDEF(void, hypvtable_hypsvc_handler1,
 	CASM_BALIGN(32);
 	__casm__ldr_pseudo_sp(hypvtable_hypsvc_stack1);
 	CASM_FUNCCALL(hypvtable_hypsvc_handler_common, CASM_NOPARAM);
-CASM_LABEL(one);
-	__casm__b(one);
+CASM_LABEL(six);
+	__casm__b(six);
 
 }, void *noparam)
 
@@ -125,8 +127,8 @@ CASM_FUNCDEF(void, hypvtable_hypsvc_handler2,
 	CASM_BALIGN(32);
 	__casm__ldr_pseudo_sp(hypvtable_hypsvc_stack2);
 	CASM_FUNCCALL(hypvtable_hypsvc_handler_common, CASM_NOPARAM);
-CASM_LABEL(one);
-	__casm__b(one);
+CASM_LABEL(seven);
+	__casm__b(seven);
 
 }, void *noparam)
 
@@ -135,8 +137,8 @@ CASM_FUNCDEF(void, hypvtable_hypsvc_handler3,
 	CASM_BALIGN(32);
 	__casm__ldr_pseudo_sp(hypvtable_hypsvc_stack3);
 	CASM_FUNCCALL(hypvtable_hypsvc_handler_common, CASM_NOPARAM);
-CASM_LABEL(one);
-	__casm__b(one);
+CASM_LABEL(eight);
+	__casm__b(eight);
 
 }, void *noparam)
 
@@ -170,7 +172,7 @@ CASM_FUNCDEF(void, hypvtable_hypsvc_handler_common,
 
 	// invoke C handler
 	__casm__mov_r0_sp();
-	__casm__call_c(hypsvc_handler);
+	__casm__call_c_1p(hypsvc_handler, arm8_32_regs_t*);
 
 	// restore all saved registers
 	__casm__pop_r0();

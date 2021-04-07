@@ -93,9 +93,12 @@
 				"common/arm8-32.cS", 
 
 				"core/entry.cS",
+				"core/entry_data.c",
 				"core/hypvtablestubs.cS",
+				"core/hypvtablestubs_data.c",
 
-				"uapps/uapp-watchdogsup.cS"
+				"uapps/uapp-watchdogsup.cS",
+				"uapps/uapp-watchdogsup_data.c"
 
 				// "common/arm8-32.s", 
 
@@ -103,8 +106,6 @@
 				// "core/hypvtablestubs.s",
 
 				// "uapps/uapp-watchdogsup.s"
-
-
 			],
 			
 	

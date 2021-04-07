@@ -45,7 +45,7 @@
 
 #ifndef __ASSEMBLY__
 
-__attribute__((section(".stack"))) __attribute__((aligned(8))) u32 uapp_watchdog_fiqhandler_stack[8192 / 4] = {0};
+extern __attribute__((section(".stack"))) __attribute__((aligned(8))) u32 uapp_watchdog_fiqhandler_stack[8192 / 4];
 
 #endif // __UAPP_WATCHDOGSUP_H__
 
