@@ -38,4 +38,15 @@
 	author: amit vasudevan (amitvasudevan@acm.org), ethan joseph (ethanj217@gmail.com)
 */
 
-__attribute__((section(".stack"))) __attribute__((aligned(8))) uapp_watchdog_fiqhandler_stack[8192];
+#ifndef __UAPP_WATCHDOGSUP_H__
+#define __UAPP_WATCHDOGSUP_H__
+
+#include <uberspark/uobjcoll/platform/rpi3/uxmhf/uobjs/main/include/types.h>
+
+#ifndef __ASSEMBLY__
+
+__attribute__((section(".stack"))) __attribute__((aligned(8))) u32 uapp_watchdog_fiqhandler_stack[8192 / 4] = {0};
+
+#endif // __UAPP_WATCHDOGSUP_H__
+
+#endif // __ASSEMBLY__

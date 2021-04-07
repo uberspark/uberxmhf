@@ -38,20 +38,32 @@
 	author: amit vasudevan (amitvasudevan@acm.org), ethan joseph (ethanj217@gmail.com)
 */
 
-__attribute__((section(".stack"))) __attribute__((aligned(8))) hypvtable_stack[8192];
+#ifndef __HYPVTABLESTUBS_H__
+#define __HYPVTABLESTUBS_H__
 
-__attribute__((section(".stack"))) __attribute__((aligned(8))) hypvtable_hypsvc_stack0[16384];
+#include <uberspark/uobjcoll/platform/rpi3/uxmhf/uobjs/main/include/types.h>
 
-__attribute__((section(".stack"))) __attribute__((aligned(8))) hypvtable_hypsvc_stack1[16384];
+#ifndef __ASSEMBLY__
 
-__attribute__((section(".stack"))) __attribute__((aligned(8))) hypvtable_hypsvc_stack2[16384];
 
-__attribute__((section(".stack"))) __attribute__((aligned(8))) hypvtable_hypsvc_stack3[16384];
+__attribute__((section(".stack"))) __attribute__((aligned(8))) u32 hypvtable_stack[8192 / 4];
 
-__attribute__((section(".stack"))) __attribute__((aligned(8))) hypvtable_rsvhandler_stack0[8192];
+__attribute__((section(".stack"))) __attribute__((aligned(8))) u32 hypvtable_hypsvc_stack0[16384 / 4];
 
-__attribute__((section(".stack"))) __attribute__((aligned(8))) hypvtable_rsvhandler_stack1[8192];
+__attribute__((section(".stack"))) __attribute__((aligned(8))) u32 hypvtable_hypsvc_stack1[16384 / 4];
 
-__attribute__((section(".stack"))) __attribute__((aligned(8))) hypvtable_rsvhandler_stack2[8192];
+__attribute__((section(".stack"))) __attribute__((aligned(8))) u32 hypvtable_hypsvc_stack2[16384 / 4];
 
-__attribute__((section(".stack"))) __attribute__((aligned(8))) hypvtable_rsvhandler_stack3[8192];
+__attribute__((section(".stack"))) __attribute__((aligned(8))) u32 hypvtable_hypsvc_stack3[16384 / 4];
+
+__attribute__((section(".stack"))) __attribute__((aligned(8))) u32 hypvtable_rsvhandler_stack0[8192 / 4];
+
+__attribute__((section(".stack"))) __attribute__((aligned(8))) u32 hypvtable_rsvhandler_stack1[8192 / 4];
+
+__attribute__((section(".stack"))) __attribute__((aligned(8))) u32 hypvtable_rsvhandler_stack2[8192 / 4];
+
+__attribute__((section(".stack"))) __attribute__((aligned(8))) u32 hypvtable_rsvhandler_stack3[8192 / 4];
+
+#endif // __ASSEMBLY__
+
+#endif // __HYPVTABLESTUBS_H__

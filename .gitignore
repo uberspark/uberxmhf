@@ -12,3 +12,4 @@
 *.ls
 *.tmp
 **/_build
+**/_triage

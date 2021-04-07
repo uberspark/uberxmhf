@@ -69,7 +69,7 @@ uint32_t va2pa(uint32_t va){
 
 	_XDPRINTFSMP_("%s: ENTER: va=0x%08x\n", __func__, va);
 
-	ttbcr = sysreg_read_ttbcr();
+	ttbcr = CASM_FUNCCALL(sysreg_read_ttbcr, CASM_NOPARAM);
 	_XDPRINTFSMP_("%s: ttbcr=0x%08x\n", __func__, ttbcr);
 
 	ttbr0 = CASM_FUNCCALL(sysreg_read_ttbr0, CASM_NOPARAM);

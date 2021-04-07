@@ -194,7 +194,7 @@ void guest_data_abort_handler(arm8_32_regs_t *r, u32 hsr){
 	fault_va_page_offset = fault_va & 0x00000FFFUL;
 
 	//get faulting pa page
-	fault_pa_page = sysreg_read_hpfar();
+	fault_pa_page = CASM_FUNCCALL(sysreg_read_hpfar, CASM_NOPARAM);
 	fault_pa_page = (fault_pa_page & 0xFFFFFFF0UL) << 8;
 
 	//compute faulting pa

@@ -89,7 +89,7 @@ void ctxtrace_ttbcr_access_handler(arm8_32_regs_t *r, u32 rw, u32 rt){
 	//_XDPRINTFSMP_("%s: rw=%u, rt=%u\n", __func__, rw, rt);
 	if(rw == 1){
 		//read from system register and write to guest general purpose register
-		guest_regwrite(r, rt, sysreg_read_ttbcr());
+		guest_regwrite(r, rt, CASM_FUNCCALL(sysreg_read_ttbcr, CASM_NOPARAM));
 	}else{
 		//write to system register by reading from guest general purpose register
 		sysreg_write_ttbcr(guest_regread(r, rt));

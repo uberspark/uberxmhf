@@ -42,6 +42,8 @@
 #include <uberspark/uobjcoll/platform/rpi3/uxmhf/uobjs/main/include/types.h>
 #include <uberspark/uobjcoll/platform/rpi3/uxmhf/uobjs/main/include/uapp-watchdogsup.h>
 
+void uapp_watchdog_fiqhandler(void);
+
 CASM_FUNCDEF(void, uapp_watchdog_fiq_handler,
 {
 	CASM_BALIGN(32);
@@ -61,7 +63,7 @@ CASM_FUNCDEF(void, uapp_watchdog_fiq_handler,
 	__casm__push_r1(); 
 	__casm__push_r0();
 
-	__casm__bl(uapp_watchdog_fiqhandler);
+	__casm__call_c(uapp_watchdog_fiqhandler);
 
 	// restore all saved registers
 	__casm__pop_r0();

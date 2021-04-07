@@ -39,6 +39,7 @@
 */
 #include <uberspark/hwm/include/arch/arm/hwm.h>
 #include <uberspark/uobjcoll/platform/rpi3/uxmhf/uobjs/main/include/types.h>
+#include <uberspark/uobjcoll/platform/rpi3/uxmhf/uobjs/main/include/atags.h>
 
 #include <uberspark/uobjcoll/platform/rpi3/uxmhf/uobjs/main/include/entry.h>
 
@@ -47,6 +48,7 @@
 //r0, r1 and r2 are set by the boot-loader and need to
 //be preserved
 //.section ".uobj_pm_entry"
+void main(u32 r0, u32 id, struct atag *at, u32 cpuid);
 
 CASM_FUNCDEF(void, entry,
 {
@@ -58,12 +60,12 @@ CASM_FUNCDEF(void, entry,
 	__casm__mov_imm_r5(8192);
 	__casm__mul_r6_r4_r5();	//r6 is the offset to add based on index (r4)
 	__casm__add_sp_sp_r6();	//sp is the top-of-stack for this cpu
-	__casm__bl(main);
+	__casm__call_c_4p(main, u32, u32, struct atag*, u32);
 }, void *noparam)
 
 CASM_FUNCDEF(void, halt,
 {
-	__casm__b(halt);
+	CASM_FUNCCALL(halt, CASM_NOPARAM);
 }, void *noparam)
 
 //r0,r1,r2 go through to the guest os
@@ -124,10 +126,10 @@ CASM_FUNCDEF(void, secondary_cpu_entry,
 	__casm__mul_r3_r2_r1();				//r3 is the offset to add based on index (r1)
 	__casm__add_sp_sp_r3();			//sp is the top-of-stack for this cpu
 
-	__casm__bl(secondary_main);				//r0 is the cpuid
+	// __casm__call_c_1p(secondary_main, u32);				//r0 is the cpuid
 }, void *noparam)
 
 CASM_FUNCDEF(void, secondary_cpu_entry_halt,
 {
-	__casm__b(secondary_cpu_entry_halt);
+	CASM_FUNCCALL(secondary_cpu_entry_halt, CASM_NOPARAM);
 }, void *noparam)
