@@ -48,6 +48,7 @@
 
 bool khcall(uint32_t khcall_function, void *khcall_buffer, uint32_t khcall_buffer_len);
 void khcall_fast(uint32_t khcall_function, uint32_t param1, uint32_t param2);
+uint32_t khcall_fast_retu32(uint32_t khcall_function, uint32_t param1, uint32_t param2);
 
 
 #endif // __ASSEMBLY__
