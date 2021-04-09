@@ -57,6 +57,13 @@ bool uapp_i2c_ioaccess_handle_fast_hcall(arm8_32_regs_t *r){
 		//r->r2 = value
 		mmio_write32(r->r1, r->r2);
 		return true;
+	else if(fn == UAPP_I2C_IOACCESS_READL){
+		//r->r1 = addresss
+		//r->r2 = value
+		r->r2 = mmio_read32(r->r1);
+		return true;
+	}else 
+
 	}else 
 		return false;
 }

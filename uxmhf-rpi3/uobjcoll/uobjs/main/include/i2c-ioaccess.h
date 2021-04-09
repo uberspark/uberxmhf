@@ -42,6 +42,7 @@
 #define __I2C_IOACCESS_H__
 
 #define UAPP_I2C_IOACCESS_WRITEL  0x1000
+#define UAPP_I2C_IOACCESS_READL  0x1001
 
 #ifndef __ASSEMBLY__
 
