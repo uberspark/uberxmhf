@@ -33,8 +33,8 @@
  */
 
 /*
-	uhcalltest hypapp
-	guest hypercall test 
+	i2c-ioaccess uapp
+	low-level i2c driver uapp (i2c-bcm2708) 
 	author: amit vasudevan (amitvasudevan@acm.org)
 */
 
@@ -45,67 +45,18 @@
 #include <uberspark/uobjcoll/platform/rpi3/uxmhf/uobjs/main/include/debug.h>
 #include <uberspark/uobjcoll/platform/rpi3/uxmhf/uobjs/main/include/i2c-ioaccess.h>
 
-#include <uberspark/uobjcoll/platform/rpi3/uxmhf/uobjs/main/include/uhcalltest.h>
-//#include <uberspark/include/uberspark.h>
-
-#define MAX_LVL1_ENTRIES	4096
-#define MAX_LVL2_ENTRIES	256
-
-#define SIZEOF_LVL1_ENTRY_MAP	(1024*1024)	//each lvl1 entry maps to 1MB of memory
-#define SIZEOF_LVL2_ENTRY_MAP	(1024*1024)	//each lvl1 entry maps to 1MB of memory
-
-
-/*
-bool va2pa(uint32_t va, u32 *pa){
-	u32 par;
-	u8 *ch;
-
-	//_XDPRINTFSMP_("%s: ENTER: va=0x%08x\n", __func__, va);
-
-	//sysreg_tlbiallh();
-#if 0
-	sysreg_ats12nsour(va);
-	par = sysreg_read_par();
-#endif
-
-	sysreg_ats1cpr(va);
-	par = sysreg_read_par();
-
-	//_XDPRINTFSMP_("%s: PAR=0x%08x\n", __func__, par);
-
-	if(par & 0x1)
-		return false; 	//_XDPRINTFSMP_("%s: Fault in address translation. Halting!\n", __func__);
-
-	par &= 0xFFFFF000UL;
-
-	//_XDPRINTFSMP_("%s: PAR after pruning=0x%08x\n", __func__, par);
-
-	*pa = par;
-
-	//_XDPRINTFSMP_("%s: EXIT: pa=0x%08x\n", __func__, *pa);
-
-	return true;
-}
-*/
-
+#include <uberspark/uobjcoll/platform/rpi3/uxmhf/uobjs/main/include/i2c-ioaccess.h>
 
 //return true if handled the hypercall, false if not
-bool uapp_i2c_ioaccess_handlehcall(u32 i2c_ioaccess_function, void *i2c_ioaccess_buffer, u32 i2c_ioaccess_buffer_len){
-	i2c_ioaccess_param_t *uhctp;
-	uint32_t i;
-	//u32 uhcall_buffer_paddr;
+bool uapp_i2c_ioaccess_handle_fast_hcall(arm8_32_regs_t *r){
+	uint32_t fn;
+	fn = r->r0;	
 
-	if(i2c_ioaccess_function != UAPP_I2C_IOACCESS_FUNCTION_TEST)
+	if(fn == UAPP_I2C_IOACCESS_WRITEL){
+		//r->r1 = addresss
+		//r->r2 = value
+		mmio_write32(r->r1, r->r2);
+		return true;
+	}else 
 		return false;
-
-	//_XDPRINTFSMP_("%s: hcall: uhcall_function=0x%08x, uhcall_buffer=0x%08x, uhcall_buffer_len=0x%08x\n", __func__,
-	//		uhcall_function, uhcall_buffer, uhcall_buffer_len);
-
-	//if(!va2pa((uint32_t)uhcall_buffer, &uhcall_buffer_paddr))
-	//	return false;
-	
-	//uhctp = (uhcalltest_param_t *)uhcall_buffer_paddr;
-	uhctp = (i2c_ioaccess_param_t *)i2c_ioaccess_buffer;
-
-	return true;
 }

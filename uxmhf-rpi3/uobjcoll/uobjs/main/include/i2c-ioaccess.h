@@ -41,17 +41,13 @@
 #ifndef __I2C_IOACCESS_H__
 #define __I2C_IOACCESS_H__
 
-#define UAPP_I2C_IOACCESS_FUNCTION_TEST	10
+#define UAPP_I2C_IOACCESS_WRITEL  0x1000
 
 #ifndef __ASSEMBLY__
 
-typedef struct {
-	uint8_t in[16];
-	uint8_t out[16];
-}i2c_ioaccess_param_t;
 
 #endif // __ASSEMBLY__
 
-
+bool uapp_i2c_ioaccess_handle_fast_hcall(arm8_32_regs_t *r);
 
 #endif //__I2C_IOACCESS_H__
