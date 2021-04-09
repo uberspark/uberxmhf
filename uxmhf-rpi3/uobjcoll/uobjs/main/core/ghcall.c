@@ -47,6 +47,9 @@
 #include <uberspark/uobjcoll/platform/rpi3/uxmhf/uobjs/main/include/dmaprot.h>
 //#include <uberspark/include/uberspark.h>
 
+#include <uberspark/uobjcoll/platform/rpi3/uxmhf/uobjs/main/include/i2c-ioaccess.h>
+
+
 //////
 // externs
 //////
@@ -73,6 +76,14 @@ void guest_hypercall_handler(arm8_32_regs_t *r, u32 hsr){
 
 
 	if (hvc_imm16 == 0){
+		// this is fast hypercall path where all parameters
+		// are passed via registers
+
+		#if defined (__UBERSPARK_UOBJCOLL_CONFIGDEF_ENABLE_UAPP_I2C_IOACCESS__)
+			if( uapp_i2c_ioaccess_handle_fast_hcall(r) )
+				return;
+		#endif
+
 		//do nothing; null hypercall
 
 	}else if (hvc_imm16 == 1){
@@ -146,10 +157,6 @@ void guest_hypercall_handler(arm8_32_regs_t *r, u32 hsr){
 			return;
 		#endif
 
-                #if defined (__UBERSPARK_UOBJCOLL_CONFIGDEF_ENABLE_UAPP_I2C_IOACCESS__)
-                if( uapp_i2c_ioaccess_handlehcall(r->r0, r->r1, r->r2) )
-                        return;
-                #endif
 
 		_XDPRINTFSMP_("%s: hcall unhandled. Halting!\n", __func__);
 		HALT();
