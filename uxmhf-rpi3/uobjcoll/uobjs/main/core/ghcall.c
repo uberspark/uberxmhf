@@ -67,7 +67,7 @@ void guest_hypercall_handler(arm8_32_regs_t *r, u32 hsr){
 	hvc_iss = ((hsr & HSR_ISS_MASK) >> HSR_ISS_SHIFT);
 	hvc_imm16 = hvc_iss & 0x0000FFFFUL;
 
-//#if defined (__UBERSPARK_UOBJCOLL_CONFIGDEF_ENABLE_UART_PL011__) || defined (__UBERSPARK_UOBJCOLL_CONFIGDEF_ENABLE_UART_MINI__)
+/#if defined (__UBERSPARK_UOBJCOLL_CONFIGDEF_ENABLE_UART_PL011__) || defined (__UBERSPARK_UOBJCOLL_CONFIGDEF_ENABLE_UART_MINI__)
 //        //initialize uart
 //        uart_init();
 //#endif
@@ -79,10 +79,10 @@ void guest_hypercall_handler(arm8_32_regs_t *r, u32 hsr){
 		// this is fast hypercall path where all parameters
 		// are passed via registers
 
-		//#if defined (__UBERSPARK_UOBJCOLL_CONFIGDEF_ENABLE_UAPP_I2C_IOACCESS__)
-		//	if( uapp_i2c_ioaccess_handle_fast_hcall(r) )
-		//		return;
-		//#endif
+		#if defined (__UBERSPARK_UOBJCOLL_CONFIGDEF_ENABLE_UAPP_I2C_IOACCESS__)
+			if( uapp_i2c_ioaccess_handle_fast_hcall(r) )
+				return;
+		#endif
 
 		//do nothing; null hypercall
 
