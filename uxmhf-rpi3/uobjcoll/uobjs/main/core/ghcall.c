@@ -67,7 +67,7 @@ void guest_hypercall_handler(arm8_32_regs_t *r, u32 hsr){
 	hvc_iss = ((hsr & HSR_ISS_MASK) >> HSR_ISS_SHIFT);
 	hvc_imm16 = hvc_iss & 0x0000FFFFUL;
 
-/#if defined (__UBERSPARK_UOBJCOLL_CONFIGDEF_ENABLE_UART_PL011__) || defined (__UBERSPARK_UOBJCOLL_CONFIGDEF_ENABLE_UART_MINI__)
+//#if defined (__UBERSPARK_UOBJCOLL_CONFIGDEF_ENABLE_UART_PL011__) || defined (__UBERSPARK_UOBJCOLL_CONFIGDEF_ENABLE_UART_MINI__)
 //        //initialize uart
 //        uart_init();
 //#endif
