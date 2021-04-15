@@ -50,28 +50,44 @@
 //return true if handled the hypercall, false if not
 bool uapp_i2c_ioaccess_handle_fast_hcall(arm8_32_regs_t *r){
 	uint32_t fn;
+	uint32_t mmio_pa=0;
+	
 	fn = r->r0;	
 
 	if(fn == UAPP_I2C_IOACCESS_WRITEL){
-		//r->r1 = addresss
-		//r->r2 = value
-		mmio_write32(r->r1, r->r2);
+		//r->r1 = input addresss
+		//r->r2 = input value
+		if(!uapp_va2pa(r->r1, &mmio_pa)){
+			//error, this should not happen, print a message to serial debug and halt
+			_XDPRINTFSMP_("%s: WRITEL: Error, could not translate va2pa. halting!\n", __func__);
+			while(1);
+		}	
+
+		mmio_write32(mmio_pa, r->r2);
 		return true;
+	
 	}else if(fn == UAPP_I2C_IOACCESS_READL){
-		//r->r1 = addresss
-		//r->r2 = value
-		//r->r2 = mmio_read32(r->r1);
-		r->r2 = 0xDEADBEEF;
-		#if defined (__UBERSPARK_UOBJCOLL_CONFIGDEF_ENABLE_UART_PL011__) || defined (__UBERSPARK_UOBJCOLL_CONFIGDEF_ENABLE_UART_MINI__)
-	        //initialize uart
-	  	    uart_init();
-		#endif
+		//r->r1 = input addresss
+		//r->r2 = output value
+	
+		//#if defined (__UBERSPARK_UOBJCOLL_CONFIGDEF_ENABLE_UART_PL011__) || defined (__UBERSPARK_UOBJCOLL_CONFIGDEF_ENABLE_UART_MINI__)
+	    //    //initialize uart
+	  	//    uart_init();
+		//#endif
 
-		_XDPRINTFSMP_("%s: r1(addr)=0x%08x, r2(value)=0x%08x\n", __func__,
-			r->r1, r->r2);
+		//_XDPRINTFSMP_("%s: r1(addr)=0x%08x, r2(value)=0x%08x\n", __func__,
+		//	r->r1, r->r2);
 
-		//r->r2 = r->r1; //temporary
+		if(!uapp_va2pa(r->r1, &mmio_pa)){
+			//error, this should not happen, print a message to serial debug and halt
+			_XDPRINTFSMP_("%s: READL: Error, could not translate va2pa. halting!\n", __func__);
+			while(1);
+		}	
+
+		r->r2 = mmio_read32(mmio_pa);
+	
 		return true;
+	
 	}else 
 		return false;
 }
