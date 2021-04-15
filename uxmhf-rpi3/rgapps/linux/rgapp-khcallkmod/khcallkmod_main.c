@@ -273,9 +273,10 @@ int khcallkmod_init(void)
 
 	//////
 	// call test rig
+	printk(KERN_INFO "khcallkmod: proceeding to do test...\n");
+	do_test3();
+	printk(KERN_INFO "khcallkmod: test done\n");
 	//////
-
-
 
 	////// end test rig
 
