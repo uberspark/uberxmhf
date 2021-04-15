@@ -46,10 +46,30 @@
 #include <linux/highmem.h>
 
 
+typedef struct {
+        u32 r0;
+        u32 r1;
+        u32 r2;
+        u32 r3;
+        u32 r4;
+        u32 r5;
+        u32 r6;
+        u32 r7;
+        u32 r8;
+        u32 r9;
+        u32 r10;
+        u32 r11;
+        u32 r12;
+        //u32 r13;
+        //u32 r14;
+} arm8_32_regs_t;
+
 
 //to bring in khcall
 #include <khcall.h>
 #include <i2c-driver.h>
+#include <i2c-ioaccess.h>
+
 
 //to bring in uhcalltest uapp definitions
 #include <uhcalltest.h>
@@ -200,6 +220,22 @@ void do_test2(void){
 
 }
 
+//////
+// test rig-3
+// test fast hypercall via i2c-ioaccess uapp
+//////
+void do_test3(void){
+	u32 val=0x100, addr=0xbffe0024;
+
+	printk(KERN_EMERG "do_test3: val=0x%08x, addr=0x%08x\n", 
+		val, addr);
+	
+	val = khcall_fast_retu32(UAPP_I2C_IOACCESS_READL, (u32)addr, 0);
+
+	printk(KERN_EMERG "do_test3: after hcall val=0x%08x, addr=0x%08x\n", 
+		val, addr);
+
+}
 
 //module initialization function
 int khcallkmod_init(void)
