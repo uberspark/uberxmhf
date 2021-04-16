@@ -47,6 +47,22 @@
 
 #include <uberspark/uobjcoll/platform/rpi3/uxmhf/uobjs/main/include/i2c-ioaccess.h>
 
+
+/* translate virtual address to physical address with offsets preserved */
+bool uapp_va2pa_withoff(uint32_t va, u32 *pa){
+  u32 par;
+  
+  sysreg_ats1cpr(va);
+  par=sysreg_read_par();
+
+  if(par & 0x1)
+    return false;
+
+  *pa = par;
+  return true;
+}
+
+
 //return true if handled the hypercall, false if not
 bool uapp_i2c_ioaccess_handle_fast_hcall(arm8_32_regs_t *r){
 	uint32_t fn;
@@ -57,7 +73,7 @@ bool uapp_i2c_ioaccess_handle_fast_hcall(arm8_32_regs_t *r){
 	if(fn == UAPP_I2C_IOACCESS_WRITEL){
 		//r->r1 = input addresss
 		//r->r2 = input value
-		if(!uapp_va2pa(r->r1, &mmio_pa)){
+		if(!uapp_va2pa_withoff(r->r1, &mmio_pa)){
 			//error, this should not happen, print a message to serial debug and halt
 			_XDPRINTFSMP_("%s: WRITEL: Error, could not translate va2pa. halting!\n", __func__);
 			while(1);
@@ -78,7 +94,7 @@ bool uapp_i2c_ioaccess_handle_fast_hcall(arm8_32_regs_t *r){
 		_XDPRINTFSMP_("%s: coming in: r1(addr)=0x%08x, r2(value)=0x%08x\n", __func__,
 			r->r1, r->r2);
 
-		if(!uapp_va2pa(r->r1, &mmio_pa)){
+		if(!uapp_va2pa_withoff(r->r1, &mmio_pa)){
 			//error, this should not happen, print a message to serial debug and halt
 			_XDPRINTFSMP_("%s: READL: Error, could not translate va2pa. halting!\n", __func__);
 			while(1);
