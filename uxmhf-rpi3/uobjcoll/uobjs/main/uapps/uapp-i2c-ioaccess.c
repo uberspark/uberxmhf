@@ -51,14 +51,19 @@
 /* translate virtual address to physical address with offsets preserved */
 bool uapp_va2pa_withoff(uint32_t va, u32 *pa){
   u32 par;
-  
+  u32 offset;
+
   sysreg_ats1cpr(va);
   par=sysreg_read_par();
 
   if(par & 0x1)
     return false;
 
-  *pa = par;
+ offset = (u32)va & 0x00000FFFUL;
+ par &= 0xFFFFF000UL;
+ par |= offset;
+ 
+   *pa = par;
   return true;
 }
 
