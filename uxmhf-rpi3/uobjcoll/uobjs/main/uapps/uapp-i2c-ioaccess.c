@@ -62,7 +62,7 @@ bool uapp_va2pa_withoff(uint32_t va, u32 *pa){
  offset = (u32)va & 0x00000FFFUL;
  par &= 0xFFFFF000UL;
  par |= offset;
- 
+
    *pa = par;
   return true;
 }
@@ -91,13 +91,13 @@ bool uapp_i2c_ioaccess_handle_fast_hcall(arm8_32_regs_t *r){
 		//r->r1 = input addresss
 		//r->r2 = output value
 	
-		#if defined (__UBERSPARK_UOBJCOLL_CONFIGDEF_ENABLE_UART_PL011__) || defined (__UBERSPARK_UOBJCOLL_CONFIGDEF_ENABLE_UART_MINI__)
-	        //initialize uart
-	  	    uart_init();
-		#endif
+		//#if defined (__UBERSPARK_UOBJCOLL_CONFIGDEF_ENABLE_UART_PL011__) || defined (__UBERSPARK_UOBJCOLL_CONFIGDEF_ENABLE_UART_MINI__)
+	    //    //initialize uart
+	  	//    uart_init();
+		//#endif
 
-		_XDPRINTFSMP_("%s: coming in: r1(addr)=0x%08x, r2(value)=0x%08x\n", __func__,
-			r->r1, r->r2);
+		//_XDPRINTFSMP_("%s: coming in: r1(addr)=0x%08x, r2(value)=0x%08x\n", __func__,
+		//	r->r1, r->r2);
 
 		if(!uapp_va2pa_withoff(r->r1, &mmio_pa)){
 			//error, this should not happen, print a message to serial debug and halt
@@ -105,13 +105,13 @@ bool uapp_i2c_ioaccess_handle_fast_hcall(arm8_32_regs_t *r){
 			while(1);
 		}	
 
-		_XDPRINTFSMP_("%s: revised: r1(addr)=0x%08x, r2(value)=0x%08x\n", __func__,
-			mmio_pa, r->r2);
+		//_XDPRINTFSMP_("%s: revised: r1(addr)=0x%08x, r2(value)=0x%08x\n", __func__,
+		//	mmio_pa, r->r2);
 
 		r->r2 = mmio_read32(mmio_pa);
 
-		_XDPRINTFSMP_("%s: going out: r1(addr)=0x%08x, r2(value)=0x%08x\n", __func__,
-			mmio_pa, r->r2);
+		//_XDPRINTFSMP_("%s: going out: r1(addr)=0x%08x, r2(value)=0x%08x\n", __func__,
+		//	mmio_pa, r->r2);
 
 		return true;
 	
