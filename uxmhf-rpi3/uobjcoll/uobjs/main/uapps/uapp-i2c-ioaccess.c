@@ -47,6 +47,12 @@
 
 #include <uberspark/uobjcoll/platform/rpi3/uxmhf/uobjs/main/include/i2c-ioaccess.h>
 
+// this is from BCM ARM peripherals data-sheet and initial debugging
+// of i2c-bcm2708 which seems to use this base. The data sheet talks about
+// two more BSC master units at different addresses
+// TBD: take this in via a hypercall that is called during kernel module
+// initialization (presumably during ioremap)
+#define I2C_BSC_BASE 0x3f804000
 
 /* translate virtual address to physical address with offsets preserved */
 bool uapp_va2pa_withoff(uint32_t va, u32 *pa){
@@ -78,11 +84,13 @@ bool uapp_i2c_ioaccess_handle_fast_hcall(arm8_32_regs_t *r){
 	if(fn == UAPP_I2C_IOACCESS_WRITEL){
 		//r->r1 = input addresss
 		//r->r2 = input value
-		if(!uapp_va2pa_withoff(r->r1, &mmio_pa)){
+		//if(!uapp_va2pa_withoff(r->r1, &mmio_pa)){
 			//error, this should not happen, print a message to serial debug and halt
-			_XDPRINTFSMP_("%s: WRITEL: Error, could not translate va2pa. halting!\n", __func__);
-			while(1);
-		}	
+		//	_XDPRINTFSMP_("%s: WRITEL: Error, could not translate va2pa. halting!\n", __func__);
+		//	while(1);
+		//}	
+
+		mmio_pa = (u32)I2C_BSC_BASE | ((u32)r->r1 & 0x00000FFFUL);
 
 		mmio_write32(mmio_pa, r->r2);
 		return true;
@@ -99,14 +107,16 @@ bool uapp_i2c_ioaccess_handle_fast_hcall(arm8_32_regs_t *r){
 		//_XDPRINTFSMP_("%s: coming in: r1(addr)=0x%08x, r2(value)=0x%08x\n", __func__,
 		//	r->r1, r->r2);
 
-		if(!uapp_va2pa_withoff(r->r1, &mmio_pa)){
-			//error, this should not happen, print a message to serial debug and halt
-			_XDPRINTFSMP_("%s: READL: Error, could not translate va2pa. halting!\n", __func__);
-			while(1);
-		}	
+		//if(!uapp_va2pa_withoff(r->r1, &mmio_pa)){
+		//	//error, this should not happen, print a message to serial debug and halt
+		//	_XDPRINTFSMP_("%s: READL: Error, could not translate va2pa. halting!\n", __func__);
+		//	while(1);
+		//}	
 
 		//_XDPRINTFSMP_("%s: revised: r1(addr)=0x%08x, r2(value)=0x%08x\n", __func__,
 		//	mmio_pa, r->r2);
+
+		mmio_pa = (u32)I2C_BSC_BASE | ((u32)r->r1 & 0x00000FFFUL);
 
 		r->r2 = mmio_read32(mmio_pa);
 
