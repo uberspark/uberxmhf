@@ -33,26 +33,22 @@
  */
 
 /*
-	libkhcall header
+	i2c_ioaccess application
 
 	author: amit vasudevan (amitvasudevan@acm.org)
-                matt mccormack (matthew.mccormack@live.com)
 */
 
-#ifndef __KHCALL_H__
-#define __KHCALL_H__
+#ifndef __I2C_IOACCESS_H__
+#define __I2C_IOACCESS_H__
 
-#define KHCALL_PM_PAGE_SIZE    4096
+#define UAPP_I2C_IOACCESS_WRITEL  0x1000
+#define UAPP_I2C_IOACCESS_READL  0x1001
 
 #ifndef __ASSEMBLY__
-
-bool khcall(uint32_t khcall_function, void *khcall_buffer, uint32_t khcall_buffer_len);
-void khcall_fast(uint32_t khcall_function, uint32_t param1, uint32_t param2);
-uint32_t khcall_fast_retu32(uint32_t khcall_function, uint32_t param1, uint32_t param2);
 
 
 #endif // __ASSEMBLY__
 
+bool uapp_i2c_ioaccess_handle_fast_hcall(arm8_32_regs_t *r);
 
-
-#endif //__KHCALL_H__
+#endif //__I2C_IOACCESS_H__

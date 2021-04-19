@@ -46,10 +46,30 @@
 #include <linux/highmem.h>
 
 
+typedef struct {
+        u32 r0;
+        u32 r1;
+        u32 r2;
+        u32 r3;
+        u32 r4;
+        u32 r5;
+        u32 r6;
+        u32 r7;
+        u32 r8;
+        u32 r9;
+        u32 r10;
+        u32 r11;
+        u32 r12;
+        //u32 r13;
+        //u32 r14;
+} arm8_32_regs_t;
+
 
 //to bring in khcall
 #include <khcall.h>
 #include <i2c-driver.h>
+#include <i2c-ioaccess.h>
+
 
 //to bring in uhcalltest uapp definitions
 #include <uhcalltest.h>
@@ -103,6 +123,120 @@ __attribute__((aligned(4096))) unsigned char buffer[]= {'a', 'b', 'c', 'd'};
 __attribute__((section(".data"))) __attribute__((aligned(4096))) i2c_driver_param_t i2c_drv_param;
 #define HMAC_DIGEST_SIZE 32
 
+
+//////
+// test rig-1
+// test basic khcall functionality via uapp-uhcalltest
+//////
+void do_test1(void){
+		struct page *k_page1;
+		uhcalltest_param_t *uhctp;
+		u32 i;
+		u8 ch='a';
+
+      	k_page1 = alloc_page(GFP_KERNEL | __GFP_ZERO);
+        uhctp = (uhcalltest_param_t *)page_address(k_page1);
+
+		if(!uhctp){
+			printk(KERN_INFO "khcallkmod: could not alloc_page\n");
+			return;
+		}
+		printk(KERN_INFO "khcallkmod: allocated buffer\n");
+
+		//prepare test input buffer
+		printk(KERN_INFO "%s: populating in[] and out[]...\n", __FUNCTION__);
+		for(i=0; i < 16; i++)
+	   		uhctp->in[i] = ch + i;
+		memset(&uhctp->out, 0, 16);
+
+		printk(KERN_INFO "dumping in[]...\n");
+		for(i=0; i < 16; i++)
+			printk(KERN_INFO "%c", uhctp->in[i]);
+		printk(KERN_INFO "\n");
+
+		if(!khcall(UAPP_UHCALLTEST_FUNCTION_TEST, uhctp, sizeof(uhcalltest_param_t)))
+			printk(KERN_INFO "hypercall FAILED\n");
+		else
+			printk(KERN_INFO "hypercall SUCCESS\n");
+
+		printk(KERN_INFO "dumping out[]...\n");
+		for(i=0; i < 16; i++)
+			printk(KERN_INFO "%c", uhctp->out[i]);
+		printk(KERN_INFO "\n");
+
+		printk(KERN_INFO "khcallkmod: done!\n");
+      	__free_page(k_page1);
+
+		return;
+}
+
+
+//////
+// test rig-2
+// test HMAC functionality via uapp-i2c-driver
+//////
+void do_test2(void){
+            unsigned long digest_size = HMAC_DIGEST_SIZE;
+            struct page *k_page1;
+            struct page *k_page2;
+            unsigned char *digest_result;
+	    char *tmp;
+            i2c_driver_param_t *ptr_i2c_driver = &i2c_drv_param; 
+            // allocate kernel pages
+            k_page1 = alloc_page(GFP_KERNEL | __GFP_ZERO);
+            if(!k_page1){
+               printk("alloc_page() failed for k_page1\n");
+	       return;
+            }
+            digest_result = (void *)page_address(k_page1);
+            k_page2 = alloc_page(GFP_KERNEL | __GFP_ZERO);
+            if(!k_page2){
+               printk("alloc_page() failed for k_page2\n");
+	       return;
+            }
+            tmp = (void *)page_address(k_page2);
+            tmp[0]='a'; tmp[1]='b';tmp[2]='c';tmp[3]='d';tmp[4]='e';
+            tmp[5]='f'; tmp[6]='g';tmp[7]='h';tmp[8]='i';tmp[9]='j';
+            ptr_i2c_driver = &i2c_drv_param; 
+            ptr_i2c_driver->in_buffer_va = (uint32_t) tmp;
+            ptr_i2c_driver->len = 10;
+            ptr_i2c_driver->out_buffer_va = (uint32_t) digest_result;
+            if(!khcall(UAPP_I2C_DRIVER_FUNCTION_TEST, ptr_i2c_driver, sizeof(i2c_driver_param_t)))
+               printk("hypercall FAILED\n");
+            else{  
+               int i;
+               printk("hypercall SUCCESS \n"); 
+	       //printk(KERN_INFO "dumping in[]...\n");
+	       //for(i=0; i < 10; i++)
+		  //printk(KERN_INFO "%c", ((char *)ptr_i2c_driver->in_buffer_va)[i]);
+	       //printk(KERN_INFO "\n");
+               printk("Dumping HMAC bytes \n"); 
+               for(i=0;i<digest_size;i++){
+		  printk(KERN_INFO "0x%X", digest_result[i]);
+               } 
+            }   
+            __free_page(k_page1);
+            __free_page(k_page2);
+
+}
+
+//////
+// test rig-3
+// test fast hypercall via i2c-ioaccess uapp
+//////
+void do_test3(void){
+	u32 val=0x100, addr=0xbffe0024;
+
+	printk(KERN_EMERG "do_test3: val=0x%08x, addr=0x%08x\n", 
+		val, addr);
+	
+	val = khcall_fast_retu32(UAPP_I2C_IOACCESS_READL, (u32)addr, 0);
+
+	printk(KERN_EMERG "do_test3: after hcall val=0x%08x, addr=0x%08x\n", 
+		val, addr);
+
+}
+
 //module initialization function
 int khcallkmod_init(void)
 {
@@ -136,92 +270,15 @@ int khcallkmod_init(void)
 	}
 	printk(KERN_INFO "khcallkmod: device class created correctly\n");
 
-	//test khcall
-/*	{
-		struct page *k_page1;
-		uhcalltest_param_t *uhctp;
-		u32 i;
-		u8 ch='a';
 
-      	k_page1 = alloc_page(GFP_KERNEL | __GFP_ZERO);
-        uhctp = (uhcalltest_param_t *)page_address(k_page1);
+	//////
+	// call test rig
+	printk(KERN_INFO "khcallkmod: proceeding to do test...\n");
+	do_test3();
+	printk(KERN_INFO "khcallkmod: test done\n");
+	//////
 
-		if(!uhctp){
-			printk(KERN_INFO "khcallkmod: could not alloc_page\n");
-			return -1;
-		}
-		printk(KERN_INFO "khcallkmod: allocated buffer\n");
-
-		//prepare test input buffer
-		printk(KERN_INFO "%s: populating in[] and out[]...\n", __FUNCTION__);
-		for(i=0; i < 16; i++)
-	   		uhctp->in[i] = ch + i;
-		memset(&uhctp->out, 0, 16);
-
-		printk(KERN_INFO "dumping in[]...\n");
-		for(i=0; i < 16; i++)
-			printk(KERN_INFO "%c", uhctp->in[i]);
-		printk(KERN_INFO "\n");
-
-		if(!khcall(UAPP_UHCALLTEST_FUNCTION_TEST, uhctp, sizeof(uhcalltest_param_t)))
-			printk(KERN_INFO "hypercall FAILED\n");
-		else
-			printk(KERN_INFO "hypercall SUCCESS\n");
-
-		printk(KERN_INFO "dumping out[]...\n");
-		for(i=0; i < 16; i++)
-			printk(KERN_INFO "%c", uhctp->out[i]);
-		printk(KERN_INFO "\n");
-
-		printk(KERN_INFO "khcallkmod: done!\n");
-      	__free_page(k_page1);
-	} */ 
-
-        // test HMAC call
-        {
-            unsigned long digest_size = HMAC_DIGEST_SIZE;
-            struct page *k_page1;
-            struct page *k_page2;
-            unsigned char *digest_result;
-	    char *tmp;
-            i2c_driver_param_t *ptr_i2c_driver = &i2c_drv_param; 
-            // allocate kernel pages
-            k_page1 = alloc_page(GFP_KERNEL | __GFP_ZERO);
-            if(!k_page1){
-               printk("alloc_page() failed for k_page1\n");
-	       return -ENOMEM;
-            }
-            digest_result = (void *)page_address(k_page1);
-            k_page2 = alloc_page(GFP_KERNEL | __GFP_ZERO);
-            if(!k_page2){
-               printk("alloc_page() failed for k_page2\n");
-	       return -ENOMEM;
-            }
-            tmp = (void *)page_address(k_page2);
-            tmp[0]='a'; tmp[1]='b';tmp[2]='c';tmp[3]='d';tmp[4]='e';
-            tmp[5]='f'; tmp[6]='g';tmp[7]='h';tmp[8]='i';tmp[9]='j';
-            ptr_i2c_driver = &i2c_drv_param; 
-            ptr_i2c_driver->in_buffer_va = (uint32_t) tmp;
-            ptr_i2c_driver->len = 10;
-            ptr_i2c_driver->out_buffer_va = (uint32_t) digest_result;
-            if(!khcall(UAPP_I2C_DRIVER_FUNCTION_TEST, ptr_i2c_driver, sizeof(i2c_driver_param_t)))
-               printk("hypercall FAILED\n");
-            else{  
-               int i;
-               printk("hypercall SUCCESS \n"); 
-	       //printk(KERN_INFO "dumping in[]...\n");
-	       //for(i=0; i < 10; i++)
-		  //printk(KERN_INFO "%c", ((char *)ptr_i2c_driver->in_buffer_va)[i]);
-	       //printk(KERN_INFO "\n");
-               printk("Dumping HMAC bytes \n"); 
-               for(i=0;i<digest_size;i++){
-		  printk(KERN_INFO "0x%X", digest_result[i]);
-               } 
-            }   
-            __free_page(k_page1);
-            __free_page(k_page2);
-        }
-
+	////// end test rig
 
 	return 0;
 }

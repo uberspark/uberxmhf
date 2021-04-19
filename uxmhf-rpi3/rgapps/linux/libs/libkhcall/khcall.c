@@ -110,3 +110,33 @@ static void khcall_hvc(uint32_t khcall_function, void *khcall_buffer, uint32_t k
       : "r0", "r1", "r2"
       );
 }
+
+
+void khcall_fast(uint32_t khcall_function, uint32_t param1, uint32_t param2) { 
+    asm volatile
+    ( " mov r0, %[in_0]\r\n"
+      " mov r1, %[in_1]\r\n"
+      " mov r2, %[in_2]\r\n"
+      ".long 0xE1400070 \r\n"
+        : 
+        : [in_0] "r" (khcall_function), [in_1] "r" (param1), [in_2] "r" (param2)
+        : "r0", "r1", "r2" ); 
+}
+
+
+uint32_t khcall_fast_retu32(uint32_t khcall_function, uint32_t param1, uint32_t param2) { 
+    u32 ret_val;
+
+	asm volatile
+    ( " mov r0, %[in_0]\r\n"
+      " mov r1, %[in_1]\r\n"
+      " mov r2, %[in_2]\r\n"
+      ".long 0xE1400070 \r\n"
+	  "mov %[out_0], r2 \r\n"
+        : [out_0] "=r" (ret_val)
+        : [in_0] "r" (khcall_function), [in_1] "r" (param1), [in_2] "r" (param2)
+        : "r0", "r1", "r2" ); 
+
+
+	return ret_val;
+}
