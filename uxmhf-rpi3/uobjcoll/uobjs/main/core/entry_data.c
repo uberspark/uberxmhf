@@ -40,6 +40,6 @@
 
 #include <uberspark/uobjcoll/platform/rpi3/uxmhf/uobjs/main/include/types.h>
 
-__attribute__((section(".stack"))) __attribute__((aligned(8))) u32 cpu_stacks[8192 * 4 / 4];
+__attribute__((section(".stack"))) __attribute__((aligned(8))) u8 cpu_stacks[8192 * 4];
 
-__attribute__((section(".stack"))) __attribute__((aligned(8))) u32 cpu_stacks_svc[8192 * 4 / 4];
+__attribute__((section(".stack"))) __attribute__((aligned(8))) u8 cpu_stacks_svc[8192 * 4];

@@ -66,7 +66,7 @@ CASM_FUNCDEF(void, entry,
 CASM_LABEL(label_halt);
 	__casm__b(label_halt);
 
-}, void *noparam)
+}, void)
 
 //CASM_FUNCDEF(void, halt,
 //{
