@@ -40,4 +40,4 @@
 
 #include <uberspark/uobjcoll/platform/rpi3/uxmhf/uobjs/main/include/types.h>
 
-__attribute__((section(".stack"))) __attribute__((aligned(8))) u32 uapp_watchdog_fiqhandler_stack[8192 / 4];
+__attribute__((section(".stack"))) __attribute__((aligned(8))) u8 uapp_watchdog_fiqhandler_stack[8192];

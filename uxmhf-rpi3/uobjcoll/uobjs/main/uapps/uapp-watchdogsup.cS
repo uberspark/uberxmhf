@@ -44,9 +44,8 @@
 
 void uapp_watchdog_fiqhandler(void);
 
-CASM_FUNCDEF(void, uapp_watchdog_fiq_handler,
+CASM_FUNCDEF_FULL(.text, 32, void, uapp_watchdog_fiq_handler,
 {
-	CASM_BALIGN(32);
 	__casm__ldr_pseudo_sp(uapp_watchdog_fiqhandler_stack);
 	__casm__push_lr(); 
 	__casm__push_r12(); 
@@ -82,4 +81,4 @@ CASM_FUNCDEF(void, uapp_watchdog_fiq_handler,
   	__casm__pop_lr();
 
 	__casm__eret();
-}, void *noparam)
+}, void)

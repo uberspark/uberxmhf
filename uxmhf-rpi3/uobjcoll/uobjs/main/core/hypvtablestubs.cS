@@ -64,87 +64,83 @@ void hyp_rsvhandler(void);
 
 CASM_FUNCDECL(void hypvtable_hypsvc_handler_common(void));
 
-CASM_FUNCDEF(void, hypvtable_reserved_handler0,
+//reserved handlers for all the cores
+
+CASM_FUNCDEF_FULL(.text, 32, void, hypvtable_reserved_handler0,
 {
-	CASM_BALIGN(32);
 	__casm__ldr_pseudo_sp(hypvtable_rsvhandler_stack0);
 	__casm__call_c(hyp_rsvhandler);
 CASM_LABEL(one);
 	__casm__b(one);
 
-}, void *noparam)
+}, void)
 
-CASM_FUNCDEF(void, hypvtable_reserved_handler1,
+CASM_FUNCDEF_FULL(.text, 32, void, hypvtable_reserved_handler1,
 {
 	__casm__ldr_pseudo_sp(hypvtable_rsvhandler_stack1);
 	__casm__call_c(hyp_rsvhandler);
 CASM_LABEL(two);
 	__casm__b(two);
 
-}, void *noparam)
+}, void)
 
-CASM_FUNCDEF(void, hypvtable_reserved_handler2,
+CASM_FUNCDEF_FULL(.text, 32, void, hypvtable_reserved_handler2,
 {
 	__casm__ldr_pseudo_sp(hypvtable_rsvhandler_stack2);
 	__casm__call_c(hyp_rsvhandler);
 CASM_LABEL(three);
 	__casm__b(three);
 
-}, void *noparam)
+}, void)
 
-CASM_FUNCDEF(void, hypvtable_reserved_handler3,
+CASM_FUNCDEF_FULL(.text, 32, void, hypvtable_reserved_handler3,
 {
 	__casm__ldr_pseudo_sp(hypvtable_rsvhandler_stack3);
 	__casm__call_c(hyp_rsvhandler);
 CASM_LABEL(four);
 	__casm__b(four);
 
-}, void *noparam)
+}, void)
 
 
-CASM_FUNCDEF(void, hypvtable_hypsvc_handler0,
+
+//SVC handlers for all the cores
+
+CASM_FUNCDEF_FULL(.text, 32, void, hypvtable_hypsvc_handler0,
 {
-	CASM_BALIGN(32);
 	__casm__ldr_pseudo_sp(hypvtable_hypsvc_stack0);
-	//CASM_FUNCCALL(hypvtable_hypsvc_handler_common, CASM_NOPARAM);
 	__casm__jmp_casm(hypvtable_hypsvc_handler_common);
 CASM_LABEL(five);
 	__casm__b(five);
 
-}, void *noparam)
+}, void)
 
-CASM_FUNCDEF(void, hypvtable_hypsvc_handler1,
+CASM_FUNCDEF_FULL(.text, 32, void, hypvtable_hypsvc_handler1,
 {
-	CASM_BALIGN(32);
 	__casm__ldr_pseudo_sp(hypvtable_hypsvc_stack1);
-	//CASM_FUNCCALL(hypvtable_hypsvc_handler_common, CASM_NOPARAM);
 	__casm__jmp_casm(hypvtable_hypsvc_handler_common);
 CASM_LABEL(six);
 	__casm__b(six);
 
-}, void *noparam)
+}, void)
 
-CASM_FUNCDEF(void, hypvtable_hypsvc_handler2,
+CASM_FUNCDEF_FULL(.text, 32, void, hypvtable_hypsvc_handler2,
 {
-	CASM_BALIGN(32);
 	__casm__ldr_pseudo_sp(hypvtable_hypsvc_stack2);
-	//CASM_FUNCCALL(hypvtable_hypsvc_handler_common, CASM_NOPARAM);
 	__casm__jmp_casm(hypvtable_hypsvc_handler_common);
 CASM_LABEL(seven);
 	__casm__b(seven);
 
-}, void *noparam)
+}, void)
 
-CASM_FUNCDEF(void, hypvtable_hypsvc_handler3,
+CASM_FUNCDEF_FULL(.text, 32, void, hypvtable_hypsvc_handler3,
 {
-	CASM_BALIGN(32);
 	__casm__ldr_pseudo_sp(hypvtable_hypsvc_stack3);
-	//CASM_FUNCCALL(hypvtable_hypsvc_handler_common, CASM_NOPARAM);
 	__casm__jmp_casm(hypvtable_hypsvc_handler_common);
 CASM_LABEL(eight);
 	__casm__b(eight);
 
-}, void *noparam)
+}, void)
 
 
 /*
@@ -206,43 +202,43 @@ CASM_FUNCDEF(void, hypvtable_hypsvc_handler_common,
 
 
 /* need lower 5 bits (0-4) of the table address as 0, so use balign 32 */
-CASM_FUNCDEF(void, g_hypvtable,
+CASM_FUNCDEF_FULL(.text, 32, void, g_hypvtable,
 {
-	CASM_BALIGN(32);
+	//CASM_BALIGN(32);
 	//cpu-0
-	CASM_FUNCCALL(hypvtable_reserved_handler0, CASM_NOPARAM);
-	CASM_FUNCCALL(hypvtable_reserved_handler0, CASM_NOPARAM);
-	CASM_FUNCCALL(hypvtable_reserved_handler0, CASM_NOPARAM);
-	CASM_FUNCCALL(hypvtable_reserved_handler0, CASM_NOPARAM);
-	CASM_FUNCCALL(hypvtable_reserved_handler0, CASM_NOPARAM);
-	CASM_FUNCCALL(hypvtable_hypsvc_handler0, CASM_NOPARAM);
-	CASM_FUNCCALL(hypvtable_reserved_handler0, CASM_NOPARAM);
-	CASM_FUNCCALL(hypvtable_reserved_handler0, CASM_NOPARAM);
+	__casm__jmp_casm(hypvtable_reserved_handler0);
+	__casm__jmp_casm(hypvtable_reserved_handler0);
+	__casm__jmp_casm(hypvtable_reserved_handler0);
+	__casm__jmp_casm(hypvtable_reserved_handler0);
+	__casm__jmp_casm(hypvtable_reserved_handler0);
+	__casm__jmp_casm(hypvtable_hypsvc_handler0);
+	__casm__jmp_casm(hypvtable_reserved_handler0);
+	__casm__jmp_casm(hypvtable_reserved_handler0);
 	//cpu-1
-	CASM_FUNCCALL(hypvtable_reserved_handler1, CASM_NOPARAM);
-	CASM_FUNCCALL(hypvtable_reserved_handler1, CASM_NOPARAM);
-	CASM_FUNCCALL(hypvtable_reserved_handler1, CASM_NOPARAM);
-	CASM_FUNCCALL(hypvtable_reserved_handler1, CASM_NOPARAM);
-	CASM_FUNCCALL(hypvtable_reserved_handler1, CASM_NOPARAM);
-	CASM_FUNCCALL(hypvtable_hypsvc_handler1, CASM_NOPARAM);
-	CASM_FUNCCALL(hypvtable_reserved_handler1, CASM_NOPARAM);
-	CASM_FUNCCALL(hypvtable_reserved_handler1, CASM_NOPARAM);
+	__casm__jmp_casm(hypvtable_reserved_handler1);
+	__casm__jmp_casm(hypvtable_reserved_handler1);
+	__casm__jmp_casm(hypvtable_reserved_handler1);
+	__casm__jmp_casm(hypvtable_reserved_handler1);
+	__casm__jmp_casm(hypvtable_reserved_handler1);
+	__casm__jmp_casm(hypvtable_hypsvc_handler1);
+	__casm__jmp_casm(hypvtable_reserved_handler1);
+	__casm__jmp_casm(hypvtable_reserved_handler1);
 	//cpu-2
-	CASM_FUNCCALL(hypvtable_reserved_handler2, CASM_NOPARAM);
-	CASM_FUNCCALL(hypvtable_reserved_handler2, CASM_NOPARAM);
-	CASM_FUNCCALL(hypvtable_reserved_handler2, CASM_NOPARAM);
-	CASM_FUNCCALL(hypvtable_reserved_handler2, CASM_NOPARAM);
-	CASM_FUNCCALL(hypvtable_reserved_handler2, CASM_NOPARAM);
-	CASM_FUNCCALL(hypvtable_hypsvc_handler2, CASM_NOPARAM);
-	CASM_FUNCCALL(hypvtable_reserved_handler2, CASM_NOPARAM);
-	CASM_FUNCCALL(hypvtable_reserved_handler2, CASM_NOPARAM);
+	__casm__jmp_casm(hypvtable_reserved_handler2);
+	__casm__jmp_casm(hypvtable_reserved_handler2);
+	__casm__jmp_casm(hypvtable_reserved_handler2);
+	__casm__jmp_casm(hypvtable_reserved_handler2);
+	__casm__jmp_casm(hypvtable_reserved_handler2);
+	__casm__jmp_casm(hypvtable_hypsvc_handler2);
+	__casm__jmp_casm(hypvtable_reserved_handler2);
+	__casm__jmp_casm(hypvtable_reserved_handler2);
 	//cpu-3
-	CASM_FUNCCALL(hypvtable_reserved_handler3, CASM_NOPARAM);
-	CASM_FUNCCALL(hypvtable_reserved_handler3, CASM_NOPARAM);
-	CASM_FUNCCALL(hypvtable_reserved_handler3, CASM_NOPARAM);
-	CASM_FUNCCALL(hypvtable_reserved_handler3, CASM_NOPARAM);
-	CASM_FUNCCALL(hypvtable_reserved_handler3, CASM_NOPARAM);
-	CASM_FUNCCALL(hypvtable_hypsvc_handler3, CASM_NOPARAM);
-	CASM_FUNCCALL(hypvtable_reserved_handler3, CASM_NOPARAM);
-	CASM_FUNCCALL(hypvtable_reserved_handler3, CASM_NOPARAM);
-}, void *noparam)
+	__casm__jmp_casm(hypvtable_reserved_handler3);
+	__casm__jmp_casm(hypvtable_reserved_handler3);
+	__casm__jmp_casm(hypvtable_reserved_handler3);
+	__casm__jmp_casm(hypvtable_reserved_handler3);
+	__casm__jmp_casm(hypvtable_reserved_handler3);
+	__casm__jmp_casm(hypvtable_hypsvc_handler3);
+	__casm__jmp_casm(hypvtable_reserved_handler3);
+	__casm__jmp_casm(hypvtable_reserved_handler3);
+}, void)

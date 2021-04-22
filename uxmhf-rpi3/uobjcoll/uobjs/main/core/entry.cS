@@ -49,6 +49,7 @@
 //be preserved
 //.section ".uobj_pm_entry"
 void main(u32 r0, u32 id, struct atag *at, u32 cpuid);
+void secondary_main(u32 cpuid);
 
 CASM_FUNCDEF(void, entry,
 {
@@ -61,12 +62,16 @@ CASM_FUNCDEF(void, entry,
 	__casm__mul_r6_r4_r5();	//r6 is the offset to add based on index (r4)
 	__casm__add_sp_sp_r6();	//sp is the top-of-stack for this cpu
 	__casm__call_c_4p(main, u32, u32, struct atag*, u32);
+
+CASM_LABEL(label_halt);
+	__casm__b(label_halt);
+
 }, void *noparam)
 
-CASM_FUNCDEF(void, halt,
-{
-	CASM_FUNCCALL(halt, CASM_NOPARAM);
-}, void *noparam)
+//CASM_FUNCDEF(void, halt,
+//{
+//	CASM_FUNCCALL(halt, CASM_NOPARAM);
+//}, void *noparam)
 
 //r0,r1,r2 go through to the guest os
 //r3 contains the starting address to execute the guestos
@@ -126,10 +131,14 @@ CASM_FUNCDEF(void, secondary_cpu_entry,
 	__casm__mul_r3_r2_r1();				//r3 is the offset to add based on index (r1)
 	__casm__add_sp_sp_r3();			//sp is the top-of-stack for this cpu
 
-	// __casm__call_c_1p(secondary_main, u32);				//r0 is the cpuid
+	__casm__call_c_1p(secondary_main, u32);				//r0 is the cpuid
+CASM_LABEL(secondary_cpu_entry_halt);
+	__casm__b(secondary_cpu_entry_halt);
+
+
 }, void *noparam)
 
-CASM_FUNCDEF(void, secondary_cpu_entry_halt,
-{
-	CASM_FUNCCALL(secondary_cpu_entry_halt, CASM_NOPARAM);
-}, void *noparam)
+//CASM_FUNCDEF(void, secondary_cpu_entry_halt,
+//{
+//	CASM_FUNCCALL(secondary_cpu_entry_halt, CASM_NOPARAM);
+//}, void *noparam)
