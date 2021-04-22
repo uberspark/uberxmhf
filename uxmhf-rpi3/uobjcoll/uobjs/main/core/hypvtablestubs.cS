@@ -62,7 +62,7 @@
 void hypsvc_handler(arm8_32_regs_t *r);
 void hyp_rsvhandler(void);
 
-CASM_FUNCDECL(void hypvtable_hypsvc_handler_common(void *noparam));
+CASM_FUNCDECL(void hypvtable_hypsvc_handler_common(void));
 
 CASM_FUNCDEF(void, hypvtable_reserved_handler0,
 {
@@ -106,7 +106,8 @@ CASM_FUNCDEF(void, hypvtable_hypsvc_handler0,
 {
 	CASM_BALIGN(32);
 	__casm__ldr_pseudo_sp(hypvtable_hypsvc_stack0);
-	CASM_FUNCCALL(hypvtable_hypsvc_handler_common, CASM_NOPARAM);
+	//CASM_FUNCCALL(hypvtable_hypsvc_handler_common, CASM_NOPARAM);
+	__casm__jmp_casm(hypvtable_hypsvc_handler_common);
 CASM_LABEL(five);
 	__casm__b(five);
 
@@ -116,7 +117,8 @@ CASM_FUNCDEF(void, hypvtable_hypsvc_handler1,
 {
 	CASM_BALIGN(32);
 	__casm__ldr_pseudo_sp(hypvtable_hypsvc_stack1);
-	CASM_FUNCCALL(hypvtable_hypsvc_handler_common, CASM_NOPARAM);
+	//CASM_FUNCCALL(hypvtable_hypsvc_handler_common, CASM_NOPARAM);
+	__casm__jmp_casm(hypvtable_hypsvc_handler_common);
 CASM_LABEL(six);
 	__casm__b(six);
 
@@ -126,7 +128,8 @@ CASM_FUNCDEF(void, hypvtable_hypsvc_handler2,
 {
 	CASM_BALIGN(32);
 	__casm__ldr_pseudo_sp(hypvtable_hypsvc_stack2);
-	CASM_FUNCCALL(hypvtable_hypsvc_handler_common, CASM_NOPARAM);
+	//CASM_FUNCCALL(hypvtable_hypsvc_handler_common, CASM_NOPARAM);
+	__casm__jmp_casm(hypvtable_hypsvc_handler_common);
 CASM_LABEL(seven);
 	__casm__b(seven);
 
@@ -136,7 +139,8 @@ CASM_FUNCDEF(void, hypvtable_hypsvc_handler3,
 {
 	CASM_BALIGN(32);
 	__casm__ldr_pseudo_sp(hypvtable_hypsvc_stack3);
-	CASM_FUNCCALL(hypvtable_hypsvc_handler_common, CASM_NOPARAM);
+	//CASM_FUNCCALL(hypvtable_hypsvc_handler_common, CASM_NOPARAM);
+	__casm__jmp_casm(hypvtable_hypsvc_handler_common);
 CASM_LABEL(eight);
 	__casm__b(eight);
 
@@ -198,7 +202,7 @@ CASM_FUNCDEF(void, hypvtable_hypsvc_handler_common,
 	//
 
 	__casm__eret();
-}, void *noparam)
+}, void)
 
 
 /* need lower 5 bits (0-4) of the table address as 0, so use balign 32 */
