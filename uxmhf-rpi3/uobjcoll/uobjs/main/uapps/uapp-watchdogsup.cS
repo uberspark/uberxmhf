@@ -47,6 +47,9 @@ void uapp_watchdog_fiqhandler(void);
 CASM_FUNCDEF_FULL(.text, 32, void, uapp_watchdog_fiq_handler,
 {
 	__casm__ldr_pseudo_sp(uapp_watchdog_fiqhandler_stack);
+	//TBD: get this in via a definition; should match what is in uapp_watchdog_fiqhandler_stack within uapp-watchdogsup_data.c	
+	__casm__add_sp_sp_imm(8192); 
+	
 	__casm__push_lr(); 
 	__casm__push_r12(); 
 	__casm__push_r11(); 

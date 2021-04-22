@@ -69,6 +69,10 @@ CASM_FUNCDECL(void hypvtable_hypsvc_handler_common(void));
 CASM_FUNCDEF_FULL(.text, 32, void, hypvtable_reserved_handler0,
 {
 	__casm__ldr_pseudo_sp(hypvtable_rsvhandler_stack0);
+	//TBD: get this in via a definition; should match what is in 
+	//hypvtable_rsvhandler_stack0 within hypvtablestubs-data.c	
+	__casm__add_sp_sp_imm(8192); 
+
 	__casm__call_c(hyp_rsvhandler);
 CASM_LABEL(one);
 	__casm__b(one);
@@ -78,6 +82,10 @@ CASM_LABEL(one);
 CASM_FUNCDEF_FULL(.text, 32, void, hypvtable_reserved_handler1,
 {
 	__casm__ldr_pseudo_sp(hypvtable_rsvhandler_stack1);
+	//TBD: get this in via a definition; should match what is in 
+	//hypvtable_rsvhandler_stack0 within hypvtablestubs-data.c	
+	__casm__add_sp_sp_imm(8192); 
+
 	__casm__call_c(hyp_rsvhandler);
 CASM_LABEL(two);
 	__casm__b(two);
@@ -87,6 +95,10 @@ CASM_LABEL(two);
 CASM_FUNCDEF_FULL(.text, 32, void, hypvtable_reserved_handler2,
 {
 	__casm__ldr_pseudo_sp(hypvtable_rsvhandler_stack2);
+	//TBD: get this in via a definition; should match what is in 
+	//hypvtable_rsvhandler_stack0 within hypvtablestubs-data.c	
+	__casm__add_sp_sp_imm(8192); 
+
 	__casm__call_c(hyp_rsvhandler);
 CASM_LABEL(three);
 	__casm__b(three);
@@ -96,6 +108,10 @@ CASM_LABEL(three);
 CASM_FUNCDEF_FULL(.text, 32, void, hypvtable_reserved_handler3,
 {
 	__casm__ldr_pseudo_sp(hypvtable_rsvhandler_stack3);
+	//TBD: get this in via a definition; should match what is in 
+	//hypvtable_rsvhandler_stack0 within hypvtablestubs-data.c	
+	__casm__add_sp_sp_imm(8192); 
+
 	__casm__call_c(hyp_rsvhandler);
 CASM_LABEL(four);
 	__casm__b(four);
@@ -109,6 +125,10 @@ CASM_LABEL(four);
 CASM_FUNCDEF_FULL(.text, 32, void, hypvtable_hypsvc_handler0,
 {
 	__casm__ldr_pseudo_sp(hypvtable_hypsvc_stack0);
+	//TBD: get this in via a definition; should match what is in 
+	//hypvtable_hypsvc_stack0 within hypvtablestubs-data.c	
+	__casm__add_sp_sp_imm(16384); 
+
 	__casm__jmp_casm(hypvtable_hypsvc_handler_common);
 CASM_LABEL(five);
 	__casm__b(five);
@@ -118,6 +138,10 @@ CASM_LABEL(five);
 CASM_FUNCDEF_FULL(.text, 32, void, hypvtable_hypsvc_handler1,
 {
 	__casm__ldr_pseudo_sp(hypvtable_hypsvc_stack1);
+	//TBD: get this in via a definition; should match what is in 
+	//hypvtable_hypsvc_stack0 within hypvtablestubs-data.c	
+	__casm__add_sp_sp_imm(16384); 
+
 	__casm__jmp_casm(hypvtable_hypsvc_handler_common);
 CASM_LABEL(six);
 	__casm__b(six);
@@ -127,6 +151,10 @@ CASM_LABEL(six);
 CASM_FUNCDEF_FULL(.text, 32, void, hypvtable_hypsvc_handler2,
 {
 	__casm__ldr_pseudo_sp(hypvtable_hypsvc_stack2);
+	//TBD: get this in via a definition; should match what is in 
+	//hypvtable_hypsvc_stack0 within hypvtablestubs-data.c	
+	__casm__add_sp_sp_imm(16384); 
+
 	__casm__jmp_casm(hypvtable_hypsvc_handler_common);
 CASM_LABEL(seven);
 	__casm__b(seven);
@@ -136,6 +164,10 @@ CASM_LABEL(seven);
 CASM_FUNCDEF_FULL(.text, 32, void, hypvtable_hypsvc_handler3,
 {
 	__casm__ldr_pseudo_sp(hypvtable_hypsvc_stack3);
+	//TBD: get this in via a definition; should match what is in 
+	//hypvtable_hypsvc_stack0 within hypvtablestubs-data.c	
+	__casm__add_sp_sp_imm(16384); 
+
 	__casm__jmp_casm(hypvtable_hypsvc_handler_common);
 CASM_LABEL(eight);
 	__casm__b(eight);
