@@ -10,7 +10,7 @@
       "uberspark.manifest.version_max" : "any",
 
       "uberspark.uobjcoll.namespace" : "uberspark/uobjcoll/platform/pc/uxmhf",
-      "uberspark.uobjcoll.platform" : "pc",
+      "uberspark.uobjcoll.platform" : "uberspark/platforms/pcintel-generic/x86/32-bit/core-gen1",
       "uberspark.uobjcoll.arch" : "x86_32",
       "uberspark.uobjcoll.cpu" : "generic",
       "uberspark.uobjcoll.hpl" : "any", //"hyp",
