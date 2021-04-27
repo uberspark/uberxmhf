@@ -64,7 +64,7 @@ bool uapp_uhstateDB_handlehcall(u32  uhcall_function, void *uhcall_buffer, u32 u
   int i;
 
   //call acl function
-  uapp_checkacl(sysreg_read_elrhyp());
+  uapp_checkacl(CASM_FUNCCALL(sysreg_read_elrhyp, CASM_NOPARAM));
 
   if(uhcall_function == UAPP_UHSTATEDB_FUNCTION_INIT) {
     if(DB_SET==0) {
@@ -83,7 +83,7 @@ bool uapp_uhstateDB_handlehcall(u32  uhcall_function, void *uhcall_buffer, u32 u
 
     #if 0
     //debug dump
-    _XDPRINTFSMP_("%s: elr_hyp va=0x%08x\n", __func__, sysreg_read_elrhyp());
+    _XDPRINTFSMP_("%s: elr_hyp va=0x%08x\n", __func__, CASM_FUNCCALL(sysreg_read_elrhyp, CASM_NOPARAM));
     #endif
 
     if(uhcall_function == UAPP_UHSTATEDB_FUNCTION_GET) {

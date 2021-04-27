@@ -197,7 +197,7 @@ void guest_hypercall_handler(arm8_32_regs_t *r, u32 hsr){
 				r->r0);
 
 		uapi_s2pgtbl_setprot(r->r0, attrs_noaccess);
-		sysreg_tlbiallis();
+		CASM_FUNCCALL(sysreg_tlbiallis, CASM_NOPARAM);
 
 		appnpf_page_pa = r->r0;
 		appnpf_activated=true;
@@ -212,7 +212,7 @@ void guest_hypercall_handler(arm8_32_regs_t *r, u32 hsr){
 				r->r0);
 
 		uapi_s2pgtbl_setprot(r->r0, attrs);
-		sysreg_tlbiallis();
+		CASM_FUNCCALL(sysreg_tlbiallis, CASM_NOPARAM);
 
 		appnpf_page_pa = 0UL;
 		appnpf_activated=false;

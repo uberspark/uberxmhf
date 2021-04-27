@@ -49,7 +49,7 @@
 void s2pgtbl_initialize(void){
 	u32 vtcr, hdcr, hcptr, hstr;
 
-	vtcr = sysreg_read_vtcr();
+	vtcr = CASM_FUNCCALL(sysreg_read_vtcr, CASM_NOPARAM);
 	uart_puts("VTCR before= ");
 	//debug_hexdumpu32(vtcr);
 
@@ -66,22 +66,22 @@ void s2pgtbl_initialize(void){
 
 	sysreg_write_vtcr(vtcr);
 
-	vtcr = sysreg_read_vtcr();
+	vtcr = CASM_FUNCCALL(sysreg_read_vtcr, CASM_NOPARAM);
 	uart_puts("VTCR after= ");
 	//debug_hexdumpu32(vtcr);
 
-	hdcr = sysreg_read_hdcr();
+	hdcr = CASM_FUNCCALL(sysreg_read_hdcr, CASM_NOPARAM);
 	uart_puts("HDCR before= ");
 	//debug_hexdumpu32(hdcr);
 
 	hdcr &= HDCR_HPMN_MASK;
 	sysreg_write_hdcr(hdcr);
 
-	hdcr = sysreg_read_hdcr();
+	hdcr = CASM_FUNCCALL(sysreg_read_hdcr, CASM_NOPARAM);
 	uart_puts("HDCR after= ");
 	//debug_hexdumpu32(hdcr);
 
-	hcptr = sysreg_read_hcptr();
+	hcptr = CASM_FUNCCALL(sysreg_read_hcptr, CASM_NOPARAM);
 	uart_puts("HCPTR before= ");
 	//debug_hexdumpu32(hcptr);
 
@@ -89,17 +89,17 @@ void s2pgtbl_initialize(void){
 	hcptr |= HCPTR_RES1_MASK;
 	sysreg_write_hcptr(hcptr);
 
-	hcptr = sysreg_read_hcptr();
+	hcptr = CASM_FUNCCALL(sysreg_read_hcptr, CASM_NOPARAM);
 	uart_puts("HCPTR after= ");
 	//debug_hexdumpu32(hcptr);
 
-	hstr = sysreg_read_hstr();
+	hstr = CASM_FUNCCALL(sysreg_read_hstr, CASM_NOPARAM);
 	uart_puts("HSTR before= ");
 	//debug_hexdumpu32(hstr);
 
 	sysreg_write_hstr(0);
 
-	hstr = sysreg_read_hstr();
+	hstr = CASM_FUNCCALL(sysreg_read_hstr, CASM_NOPARAM);
 	uart_puts("HSTR after= ");
 	//debug_hexdumpu32(hstr);
 
@@ -213,7 +213,7 @@ void s2pgtbl_loadpgtblbase(void){
 
 	_XDPRINTFSMP_("%s: L1 DESC table at=0x%08x\n", __func__, (u32)&l1_ldesc_table);
 
-	vttbr = sysreg_read_vttbr();
+	vttbr = CASM_FUNCCALL(sysreg_read_vttbr, CASM_NOPARAM);
 	_XDPRINTFSMP_("%s: VTTBR before=0x%016llx\n", __func__, vttbr);
 
 	//uart_puts("VTTBR before=");
@@ -226,7 +226,7 @@ void s2pgtbl_loadpgtblbase(void){
 	sysreg_write_vttbr(vttbr);
 
 
-	vttbr = sysreg_read_vttbr();
+	vttbr = CASM_FUNCCALL(sysreg_read_vttbr, CASM_NOPARAM);
 	_XDPRINTFSMP_("%s: VTTBR after=0x%016llx\n", __func__, vttbr);
 
 
@@ -239,14 +239,14 @@ void s2pgtbl_loadpgtblbase(void){
 void s2pgtbl_activatetranslation(void){
 	u32 hcr;
 
-	hcr = sysreg_read_hcr();
+	hcr = CASM_FUNCCALL(sysreg_read_hcr, CASM_NOPARAM);
 	uart_puts("HCR before=");
 	//debug_hexdumpu32(hcr);
 
 	hcr |= HCR_VM_MASK;
 	sysreg_write_hcr(hcr);
 
-	hcr = sysreg_read_hcr();
+	hcr = CASM_FUNCCALL(sysreg_read_hcr, CASM_NOPARAM);
 	uart_puts("HCR after=");
 	//debug_hexdumpu32(hcr);
 

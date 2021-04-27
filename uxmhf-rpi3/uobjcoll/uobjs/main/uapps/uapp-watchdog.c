@@ -42,12 +42,13 @@
 #include <uberspark/uobjcoll/platform/rpi3/uxmhf/uobjs/main/include/bcm2837.h>
 #include <uberspark/uobjcoll/platform/rpi3/uxmhf/uobjs/main/include/uart.h>
 #include <uberspark/uobjcoll/platform/rpi3/uxmhf/uobjs/main/include/debug.h>
+#include <uberspark/hwm/include/arch/arm/hwm.h>
 //#include <uberspark/include/uberspark.h>
 
 #include <uberspark/uobjcoll/platform/rpi3/uxmhf/uobjs/main/include/watchdog.h>
 
 
-extern void uapp_watchdog_fiq_handler(void);
+CASM_FUNCDECL(void uapp_watchdog_fiq_handler(void *noparam));
 
 __attribute__((section(".data"))) volatile u32 *gpio;
 bool led_on=false;
@@ -94,20 +95,20 @@ void uapp_watchdog_timer_initialize(u32 cpuid){
 
 
 
-	//cpsr = sysreg_read_cpsr();
+	//cpsr = CASM_FUNCCALL(sysreg_read_cpsr, CASM_NOPARAM);
 	//_XDPRINTFSMP_("%s[%u]: CPSR[before]=0x%08x; CPSR.A=%u, CPSR.I=%u, CPSR.F=%u\n",
 	//		__func__, cpuid, cpsr, ((cpsr & (1UL << 8)) >> 8),
 	//		((cpsr & (1UL << 7)) >> 7),
 	//		((cpsr & (1UL << 6)) >> 6) );
 
 
-	_XDPRINTFSMP_("%s[%u]: CNTHP_TVAL[initial]=%d\n", __func__, cpuid, sysreg_read_cnthp_tval());
+	_XDPRINTFSMP_("%s[%u]: CNTHP_TVAL[initial]=%d\n", __func__, cpuid, CASM_FUNCCALL(sysreg_read_cnthp_tval, CASM_NOPARAM));
 	sysreg_write_cnthp_tval(10*1024*1024);
-	_XDPRINTFSMP_("%s[%u]: CNTHP_TVAL[reset]=%d\n", __func__, cpuid, sysreg_read_cnthp_tval());
+	_XDPRINTFSMP_("%s[%u]: CNTHP_TVAL[reset]=%d\n", __func__, cpuid, CASM_FUNCCALL(sysreg_read_cnthp_tval, CASM_NOPARAM));
 
 	sysreg_write_cnthp_ctl(0x1);
-	_XDPRINTFSMP_("%s[%u]: CNTHP_TVAL[current]=%d\n", __func__, cpuid, sysreg_read_cnthp_tval());
-	_XDPRINTFSMP_("%s[%u]: CNTHP_CTL[current]=%d\n", __func__, cpuid, sysreg_read_cnthp_ctl());
+	_XDPRINTFSMP_("%s[%u]: CNTHP_TVAL[current]=%d\n", __func__, cpuid, CASM_FUNCCALL(sysreg_read_cnthp_tval, CASM_NOPARAM));
+	_XDPRINTFSMP_("%s[%u]: CNTHP_CTL[current]=%d\n", __func__, cpuid, CASM_FUNCCALL(sysreg_read_cnthp_ctl, CASM_NOPARAM));
 
 
 	//cpsr &= ~(1UL << 6);	//clear CPSR.F to allow FIQs

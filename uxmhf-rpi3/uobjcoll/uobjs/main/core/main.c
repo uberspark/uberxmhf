@@ -33,6 +33,7 @@
  */
 
 #include <uberspark/include/uberspark.h>
+#include <uberspark/hwm/include/arch/arm/hwm.h>
 #include <uberspark/uobjcoll/platform/rpi3/uxmhf/uobjs/main/include/types.h>
 #include <uberspark/uobjcoll/platform/rpi3/uxmhf/uobjs/main/include/arm8-32.h>
 #include <uberspark/uobjcoll/platform/rpi3/uxmhf/uobjs/main/include/bcm2837.h>
@@ -48,7 +49,7 @@
 // externs
 //////
 extern u8 cpu_stacks[];
-extern void chainload_os(u32 r0, u32 id, struct atag *at, u32 address);
+CASM_FUNCDECL(void chainload_os(u32 r0, u32 id, struct atag *at, u32 address));
 extern void cpumodeswitch_hyp2svc(u32 r0, u32 id, struct atag *at, u32 address, u32 cpuid);
 extern __attribute__((section(".data"))) uint32_t uapp_picar_s_page_pa;
 extern __attribute__((section(".data"))) bool uapp_picar_s_activated;
@@ -179,7 +180,7 @@ void guest_data_abort_handler(arm8_32_regs_t *r, u32 hsr){
 	fault_il = ((hsr & HSR_IL_MASK) >> HSR_IL_SHIFT);
 
 	//fix return address
-	elr_hyp = sysreg_read_elrhyp();
+	elr_hyp = CASM_FUNCCALL(sysreg_read_elrhyp, CASM_NOPARAM);
 	if(fault_il)
 		elr_hyp += sizeof(u32);
 	else
@@ -187,13 +188,13 @@ void guest_data_abort_handler(arm8_32_regs_t *r, u32 hsr){
 	sysreg_write_elrhyp(elr_hyp);
 
 	//get faulting va
-	fault_va= sysreg_read_hdfar();
+	fault_va= CASM_FUNCCALL(sysreg_read_hdfar, CASM_NOPARAM);
 
 	//compute faulting va page_offset
 	fault_va_page_offset = fault_va & 0x00000FFFUL;
 
 	//get faulting pa page
-	fault_pa_page = sysreg_read_hpfar();
+	fault_pa_page = CASM_FUNCCALL(sysreg_read_hpfar, CASM_NOPARAM);
 	fault_pa_page = (fault_pa_page & 0xFFFFFFF0UL) << 8;
 
 	//compute faulting pa
@@ -273,7 +274,7 @@ void guest_cp15_trap_handler(arm8_32_regs_t *r, u32 hsr){
 	trap_il = ((hsr & HSR_IL_MASK) >> HSR_IL_SHIFT);
 
 	//fix return address
-	elr_hyp = sysreg_read_elrhyp();
+	elr_hyp = CASM_FUNCCALL(sysreg_read_elrhyp, CASM_NOPARAM);
 	if(trap_il)
 		elr_hyp += sizeof(u32);
 	else
@@ -299,7 +300,7 @@ void hypsvc_handler(arm8_32_regs_t *r){
 	spin_lock(&hypsvc_handler_lock);
 
 	//read hsr to determine the cause of the intercept
-	hsr = sysreg_read_hsr();
+	hsr = CASM_FUNCCALL(sysreg_read_hsr, CASM_NOPARAM);
 	hsr_ec = ((hsr & HSR_EC_MASK) >> HSR_EC_SHIFT);
 	////uart_puts(" HSR= ");
 	////debug_hexdumpu32(hsr);
@@ -332,10 +333,10 @@ void main_svc(u32 r0, u32 id, struct atag *at){
 	_XDPRINTF_("%s: now in SVC mode\n", __func__);
 	_XDPRINTF_("%s: r0=0x%08x, id=0x%08x, ATAGS=0x%08x\n", __func__, r0, id, at);
 
-	_XDPRINTF_("%s: CPSR[mode]=0x%08x\n", __func__, (sysreg_read_cpsr() & 0xF));
+	_XDPRINTF_("%s: CPSR[mode]=0x%08x\n", __func__, (CASM_FUNCCALL(sysreg_read_cpsr, CASM_NOPARAM) & 0xF));
 
 	_XDPRINTF_("%s: proceeding to test hypercall (HVC) in SVC mode...\n", __func__);
-	hypcall();
+	CASM_FUNCCALL(hypcall, CASM_NOPARAM);
 	_XDPRINTF_("%s: successful return after hypercall test\n", __func__);
 
 
@@ -467,7 +468,7 @@ void main(u32 r0, u32 id, struct atag *at, u32 cpuid){
 
 	_XDPRINTF_("uberXMHF (Raspberry Pi 3) - Booting...\n", __func__, cpuid);
 	_XDPRINTF_("%s[%u]: ENTER: sp=0x%08x (cpu_stacks=0x%08x)\n", __func__, cpuid,
-			cpu_read_sp(), &cpu_stacks);
+			CASM_FUNCCALL(cpu_read_sp, CASM_NOPARAM), &cpu_stacks);
 	_XDPRINTF_("%s[%u]: r0=0x%08x, id=0x%08x, ATAGS=0x%08x\n", __func__, cpuid, r0, id, at);
 
 
@@ -516,14 +517,14 @@ void main(u32 r0, u32 id, struct atag *at, u32 cpuid){
 #if defined (__UBERSPARK_UOBJCOLL_CONFIGDEF_FIQREFLECTION__)
 
 	//enable FIQ mask override; this should land us in HYP mode FIQ handler when FIQs are triggered inside guest
-	hcr = sysreg_read_hcr();
+	hcr = CASM_FUNCCALL(sysreg_read_hcr, CASM_NOPARAM);
 	hcr |= (1UL << 3);
 	sysreg_write_hcr(hcr);
 
 #else
 
 	//disable FIQ mask override; let guest process FIQs
-	hcr = sysreg_read_hcr();
+	hcr = CASM_FUNCCALL(sysreg_read_hcr, CASM_NOPARAM);
 	hcr &= ~(1UL << 3);
 	sysreg_write_hcr(hcr);
 
@@ -551,10 +552,10 @@ void main(u32 r0, u32 id, struct atag *at, u32 cpuid){
 #endif
 
 	//dump hyp registers and load hvbar
-	_XDPRINTF_("%s[%u]: HCR=0x%08x\n", __func__, cpuid, sysreg_read_hcr());
-	_XDPRINTF_("%s[%u]: HSTR=0x%08x\n", __func__, cpuid, sysreg_read_hstr());
-	_XDPRINTF_("%s[%u]: HCPTR=0x%08x\n", __func__, cpuid, sysreg_read_hcptr());
-	_XDPRINTF_("%s[%u]: HDCR=0x%08x\n", __func__, cpuid, sysreg_read_hdcr());
+	_XDPRINTF_("%s[%u]: HCR=0x%08x\n", __func__, cpuid, CASM_FUNCCALL(sysreg_read_hcr, CASM_NOPARAM));
+	_XDPRINTF_("%s[%u]: HSTR=0x%08x\n", __func__, cpuid, CASM_FUNCCALL(sysreg_read_hstr, CASM_NOPARAM));
+	_XDPRINTF_("%s[%u]: HCPTR=0x%08x\n", __func__, cpuid, CASM_FUNCCALL(sysreg_read_hcptr, CASM_NOPARAM));
+	_XDPRINTF_("%s[%u]: HDCR=0x%08x\n", __func__, cpuid, CASM_FUNCCALL(sysreg_read_hdcr, CASM_NOPARAM));
 
 	// initialize cpu support for second stage page table translations
 	s2pgtbl_initialize();
@@ -618,7 +619,7 @@ void main(u32 r0, u32 id, struct atag *at, u32 cpuid){
 	_XDPRINTF_("%s[%u]: booting guest in SVC mode\n", __func__, cpuid);
 	_XDPRINTF_("%s[%u]: r0=0x%08x, id=0x%08x, at=0x%08x\n", __func__, cpuid, r0, id, at);
 
-	chainload_os(r0,id,at,0x8000);
+	CASM_FUNCCALL(chainload_os, r0,id,at,0x8000);
 
 	_XDPRINTF_("%s[%u]: Should not come here.Halting\n", __func__, cpuid);
 	HALT();
@@ -634,7 +635,7 @@ void secondary_main(u32 cpuid){
 
 
 	_XDPRINTF_("%s[%u]: ENTER: sp=0x%08x (cpu_stacks=0x%08x)\n", __func__, cpuid,
-			cpu_read_sp(), &cpu_stacks);
+			CASM_FUNCCALL(cpu_read_sp, CASM_NOPARAM), &cpu_stacks);
 
 	armlocalregisters_mailboxwrite = (armlocalregisters_mailboxwrite_t *)(ARMLOCALREGISTERS_MAILBOXWRITE_BASE + (0 * sizeof(armlocalregisters_mailboxwrite_t)));
 
@@ -642,10 +643,10 @@ void secondary_main(u32 cpuid){
 	_XDPRINTF_("%s[%u]: hyp page-tables activated\n", __func__, cpuid);
 
 	//dump hyp registers and load hvbar
-	_XDPRINTF_("%s[%u]: HCR=0x%08x\n", __func__, cpuid, sysreg_read_hcr());
-	_XDPRINTF_("%s[%u]: HSTR=0x%08x\n", __func__, cpuid, sysreg_read_hstr());
-	_XDPRINTF_("%s[%u]: HCPTR=0x%08x\n", __func__, cpuid, sysreg_read_hcptr());
-	_XDPRINTF_("%s[%u]: HDCR=0x%08x\n", __func__, cpuid, sysreg_read_hdcr());
+	_XDPRINTF_("%s[%u]: HCR=0x%08x\n", __func__, cpuid, CASM_FUNCCALL(sysreg_read_hcr, CASM_NOPARAM));
+	_XDPRINTF_("%s[%u]: HSTR=0x%08x\n", __func__, cpuid, CASM_FUNCCALL(sysreg_read_hstr, CASM_NOPARAM));
+	_XDPRINTF_("%s[%u]: HCPTR=0x%08x\n", __func__, cpuid, CASM_FUNCCALL(sysreg_read_hcptr, CASM_NOPARAM));
+	_XDPRINTF_("%s[%u]: HDCR=0x%08x\n", __func__, cpuid, CASM_FUNCCALL(sysreg_read_hdcr, CASM_NOPARAM));
 
 	//setup vector table for CPU
 	hypvtable_initialize(cpuid);
@@ -665,13 +666,13 @@ void secondary_main(u32 cpuid){
 
 	_XDPRINTF_("%s[%u]: Signalling SMP readiness and entering SMP boot wait loop...\n", __func__, cpuid);
 	armlocalregisters_mailboxwrite->mailbox3write = 1;
-	cpu_dsb();
+	CASM_FUNCCALL(cpu_dsb, CASM_NOPARAM);
 
 	start_address=bcm2837_platform_waitforstartup(cpuid);
 
 	_XDPRINTFSMP_("%s[%u]: Got startup signal, address=0x%08x\n", __func__, cpuid, start_address);
 
-	chainload_os(0, 0, 0, start_address);
+	CASM_FUNCCALL(chainload_os, 0, 0, 0, start_address);
 
 	_XDPRINTFSMP_("%s[%u]: Should never be here. Halting!\n", __func__, cpuid);
 	HALT();

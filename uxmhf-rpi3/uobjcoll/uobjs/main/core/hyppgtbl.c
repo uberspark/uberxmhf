@@ -76,8 +76,8 @@
 void hyppgtbl_initialize_memoryattributes(void){
 	u32 hmair0, hmair1;
 
-	hmair0 = sysreg_read_hmair0();
-	hmair1 = sysreg_read_hmair1();
+	hmair0 = CASM_FUNCCALL(sysreg_read_hmair0, CASM_NOPARAM);
+	hmair1 = CASM_FUNCCALL(sysreg_read_hmair1, CASM_NOPARAM);
 	_XDPRINTF_("%s: before: hmair0=0x%08x, hmair1=0x%08x\n", __func__, hmair0, hmair1);
 
 	hmair0 = hmair1 = (LDESC_S1_MAIR_HI_DEV | LDESC_S1_MAIR_LO_DEVnGnRnE) |
@@ -88,8 +88,8 @@ void hyppgtbl_initialize_memoryattributes(void){
 	sysreg_write_hmair0(hmair0);
 	sysreg_write_hmair1(hmair1);
 
-	hmair0 = sysreg_read_hmair0();
-	hmair1 = sysreg_read_hmair1();
+	hmair0 = CASM_FUNCCALL(sysreg_read_hmair0, CASM_NOPARAM);
+	hmair1 = CASM_FUNCCALL(sysreg_read_hmair1, CASM_NOPARAM);
 	_XDPRINTF_("%s: after: hmair0=0x%08x, hmair1=0x%08x\n", __func__, hmair0, hmair1);
 }
 
@@ -99,7 +99,7 @@ void hyppgtbl_initialize_memoryattributes(void){
 void hyppgtbl_initialize_translationcontrol(void){
 	u32 htcr;
 
-	htcr = sysreg_read_htcr();
+	htcr = CASM_FUNCCALL(sysreg_read_htcr, CASM_NOPARAM);
 	_XDPRINTF_("%s: HTCR before=0x%08x\n", __func__, htcr);
 
 	htcr &= HTCR_IMPDEF_MASK;	//clear out everything except implementation defined bits
@@ -113,7 +113,7 @@ void hyppgtbl_initialize_translationcontrol(void){
 
 	sysreg_write_htcr(htcr);
 
-	htcr = sysreg_read_htcr();
+	htcr = CASM_FUNCCALL(sysreg_read_htcr, CASM_NOPARAM);
 	_XDPRINTF_("%s: HTCR after=0x%08x\n", __func__, htcr);
 }
 
@@ -199,14 +199,14 @@ void hyppgtbl_loadpgtblbase(void){
 
 	_XDPRINTF_("%s: hyp_l1_desc table at=0x%08x\n", __func__, (u32)&hyp_l1_ldesc_table);
 
-	httbr = sysreg_read_httbr();
+	httbr = CASM_FUNCCALL(sysreg_read_httbr, CASM_NOPARAM);
 	_XDPRINTF_("%s: HTTBR before=0x%016llx\n", __func__, httbr);
 
 	httbr = 0;
 	httbr |= ((u64)&hyp_l1_ldesc_table & HTTBR_BADDR_MASK);
 	sysreg_write_httbr(httbr);
 
-	httbr = sysreg_read_httbr();
+	httbr = CASM_FUNCCALL(sysreg_read_httbr, CASM_NOPARAM);
 	_XDPRINTF_("%s: HTTBR after=0x%016llx\n", __func__, httbr);
 }
 
@@ -245,6 +245,6 @@ void hyppgtbl_activate(void){
 	//mmu_enabledcache();
 	//_XDPRINTF_("%s: enabled dcache\n", __func__);
 
-	hsctlr = sysreg_read_hsctlr();
+	hsctlr = CASM_FUNCCALL(sysreg_read_hsctlr, CASM_NOPARAM);
 	_XDPRINTF_("%s: [EXIT] HSCTLR=0x%08x\n", __func__, hsctlr);
 }

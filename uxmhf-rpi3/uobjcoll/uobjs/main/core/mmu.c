@@ -46,19 +46,19 @@
 
 void mmu_invalidatetlbs(void){
 	//invalidate all TLB
-	sysreg_tlbiallh();
+	CASM_FUNCCALL(sysreg_tlbiallh, CASM_NOPARAM);
 }
 
 void mmu_invalidateicache(void){
 	//invalidate instruction caches
-	sysreg_iciallu();
+	CASM_FUNCCALL(sysreg_iciallu, CASM_NOPARAM);
 }
 
 //enable instruction caching
 void mmu_enableicache(void){
 	u32 hsctlr;
 
-	hsctlr = sysreg_read_hsctlr();
+	hsctlr = CASM_FUNCCALL(sysreg_read_hsctlr, CASM_NOPARAM);
 	hsctlr |= (1 << 12);	//enable instruction caching
 	sysreg_write_hsctlr(hsctlr);
 }
@@ -67,7 +67,7 @@ void mmu_enableicache(void){
 void mmu_enabledcache(void){
 	u32 hsctlr;
 
-	hsctlr = sysreg_read_hsctlr();
+	hsctlr = CASM_FUNCCALL(sysreg_read_hsctlr, CASM_NOPARAM);
 	hsctlr |= (1 << 2);		//enable data caching
 	sysreg_write_hsctlr(hsctlr);
 }
@@ -76,7 +76,7 @@ void mmu_enabledcache(void){
 void mmu_disableicache(void){
 	u32 hsctlr;
 
-	hsctlr = sysreg_read_hsctlr();
+	hsctlr = CASM_FUNCCALL(sysreg_read_hsctlr, CASM_NOPARAM);
 	hsctlr &= ~(1 << 12);	//disable instruction caching
 	sysreg_write_hsctlr(hsctlr);
 }
@@ -85,7 +85,7 @@ void mmu_disableicache(void){
 void mmu_disabledcache(void){
 	u32 hsctlr;
 
-	hsctlr = sysreg_read_hsctlr();
+	hsctlr = CASM_FUNCCALL(sysreg_read_hsctlr, CASM_NOPARAM);
 	hsctlr &= ~(1 << 2);		//disable data caching
 	sysreg_write_hsctlr(hsctlr);
 }
@@ -95,7 +95,7 @@ void mmu_disabledcache(void){
 void mmu_activatetranslation(void){
 	u32 hsctlr;
 
-	hsctlr = sysreg_read_hsctlr();
+	hsctlr = CASM_FUNCCALL(sysreg_read_hsctlr, CASM_NOPARAM);
 	_XDPRINTF_("%s: HSCTLR before=0x%08x\n", __func__, hsctlr);
 
 	hsctlr |= HSCTLR_M_MASK;
@@ -104,7 +104,7 @@ void mmu_activatetranslation(void){
 
 	sysreg_write_hsctlr(hsctlr);
 
-	hsctlr = sysreg_read_hsctlr();
+	hsctlr = CASM_FUNCCALL(sysreg_read_hsctlr, CASM_NOPARAM);
 	_XDPRINTF_("%s: HSCTLR after=0x%08x\n", __func__, hsctlr);
 }
 

@@ -95,7 +95,7 @@ void hypvtable_initialize(u32 cpuid){
 	_XDPRINTFSMP_("%s[%u]: dumped ghypvtable\n", __func__, cpuid);
 
 	//setup HVBAR for vectors
-	_XDPRINTFSMP_("%s[%u]: HVBAR[before]=0x%08x\n", __func__, cpuid, sysreg_read_hvbar());
+	_XDPRINTFSMP_("%s[%u]: HVBAR[before]=0x%08x\n", __func__, cpuid, CASM_FUNCCALL(sysreg_read_hvbar, CASM_NOPARAM));
 	sysreg_write_hvbar((u32)&g_hypvtable[cpuid]);
-	_XDPRINTFSMP_("%s[%u]: HVBAR[after]=0x%08x\n", __func__, cpuid, sysreg_read_hvbar());
+	_XDPRINTFSMP_("%s[%u]: HVBAR[after]=0x%08x\n", __func__, cpuid, CASM_FUNCCALL(sysreg_read_hvbar, CASM_NOPARAM));
 }

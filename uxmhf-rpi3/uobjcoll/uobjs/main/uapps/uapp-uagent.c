@@ -85,11 +85,11 @@ bool uapp_uagent_handlehcall(u32  uhcall_function, void *uhcall_buffer, u32 uhca
 
   //debug dump
   #if 0
-  _XDPRINTFSMP_("%s: elr_hyp va=0x%08x\n", __func__, sysreg_read_elrhyp());
+  _XDPRINTFSMP_("%s: elr_hyp va=0x%08x\n", __func__, CASM_FUNCCALL(sysreg_read_elrhyp, CASM_NOPARAM));
   #endif
 
   //call acl function
-  uapp_checkacl(sysreg_read_elrhyp());
+  uapp_checkacl(CASM_FUNCCALL(sysreg_read_elrhyp, CASM_NOPARAM));
 
   //Call AES_CBC function(s)
   symmetric_CBC cbc_ctx;

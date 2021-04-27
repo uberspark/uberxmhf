@@ -99,7 +99,7 @@ bool uapp_va2pa(uint32_t va, u32 *pa){
   u32 par;
   
   sysreg_ats1cpr(va);
-  par=sysreg_read_par();
+  par=CASM_FUNCCALL(sysreg_read_par, CASM_NOPARAM);
 
   if(par & 0x1)
     return false;

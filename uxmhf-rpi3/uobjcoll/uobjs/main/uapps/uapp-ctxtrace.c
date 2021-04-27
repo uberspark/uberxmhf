@@ -50,7 +50,7 @@
 void ctxtrace_init(u32 cpuid){
 	u32 hstr;
 
-	hstr = sysreg_read_hstr();
+	hstr = CASM_FUNCCALL(sysreg_read_hstr, CASM_NOPARAM);
 	_XDPRINTFSMP_("%s[%u]: HSTR before=0x%08x\n", __func__, cpuid, hstr);
 
 	hstr = hstr | (1UL << 2);	//activate trap on CP15, c2
@@ -67,7 +67,7 @@ void ctxtrace_ttbr0_access_handler(arm8_32_regs_t *r, u32 rw, u32 rt){
 	//_XDPRINTFSMP_("%s: rw=%u, rt=%u\n", __func__, rw, rt);
 	if(rw == 1){
 		//read from system register and write to guest general purpose register
-		guest_regwrite(r, rt, sysreg_read_ttbr0());
+		guest_regwrite(r, rt, CASM_FUNCCALL(sysreg_read_ttbr0, CASM_NOPARAM));
 	}else{
 		//write to system register by reading from guest general purpose register
 		sysreg_write_ttbr0(guest_regread(r, rt));
@@ -78,7 +78,7 @@ void ctxtrace_ttbr1_access_handler(arm8_32_regs_t *r, u32 rw, u32 rt){
 	//_XDPRINTFSMP_("%s: rw=%u, rt=%u\n", __func__, rw, rt);
 	if(rw == 1){
 		//read from system register and write to guest general purpose register
-		guest_regwrite(r, rt, sysreg_read_ttbr1());
+		guest_regwrite(r, rt, CASM_FUNCCALL(sysreg_read_ttbr1, CASM_NOPARAM));
 	}else{
 		//write to system register by reading from guest general purpose register
 		sysreg_write_ttbr1(guest_regread(r, rt));
@@ -89,7 +89,7 @@ void ctxtrace_ttbcr_access_handler(arm8_32_regs_t *r, u32 rw, u32 rt){
 	//_XDPRINTFSMP_("%s: rw=%u, rt=%u\n", __func__, rw, rt);
 	if(rw == 1){
 		//read from system register and write to guest general purpose register
-		guest_regwrite(r, rt, sysreg_read_ttbcr());
+		guest_regwrite(r, rt, CASM_FUNCCALL(sysreg_read_ttbcr, CASM_NOPARAM));
 	}else{
 		//write to system register by reading from guest general purpose register
 		sysreg_write_ttbcr(guest_regread(r, rt));

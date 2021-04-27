@@ -42,8 +42,12 @@
 				"include/watchdog.h",
 				"include/whitelist.h",
 				"include/picar-s.h",
-                                "include/uapp-i2c-driver.h",
-                                "include/uapp-i2c-ioaccess.h"
+				"include/uapp-i2c-driver.h",
+				"include/uapp-i2c-ioaccess.h",
+
+				"include/entry.h",
+				"include/hypvtablestubs.h",
+				"include/uapp-watchdogsup.h"
 			],
 
 		    "uberspark.uobj.sources": [ 
@@ -85,15 +89,23 @@
 				"uapps/uapp-i2c-driver.c",
 				"uapps/uapp-i2c-ioaccess.c",
 
+				
+				"common/arm8-32.cS", 
 
-				"common/arm8-32.s", 
+				"core/entry.cS",
+				"core/entry_data.c",
+				"core/hypvtablestubs.cS",
+				"core/hypvtablestubs_data.c",
 
-				"core/entry.S",
-				"core/hypvtablestubs.s",
+				"uapps/uapp-watchdogsup.cS",
+				"uapps/uapp-watchdogsup_data.c"
 
-				"uapps/uapp-watchdogsup.s"
+				// "common/arm8-32.s", 
 
+				// "core/entry.S",
+				// "core/hypvtablestubs.s",
 
+				// "uapps/uapp-watchdogsup.s"
 			],
 			
 	

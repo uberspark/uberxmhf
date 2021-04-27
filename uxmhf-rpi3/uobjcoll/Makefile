@@ -8,6 +8,7 @@
 COMPILER := uberspark/bridges/container/amd64/cc-bridge/armv8_32/generic/gcc/v4.9.3
 ASSEMBLER := uberspark/bridges/container/amd64/as-bridge/armv8_32/generic/gnu-as/v2.26.1
 LINKER := uberspark/bridges/container/amd64/ld-bridge/armv8_32/generic/gnu-ld/v2.26.1
+CASM := uberspark/bridges/container/amd64/as-bridge/armv8_32/generic/casm/vlatest
 
 SPARK_NAMESPACE := $(shell uberspark staging list | grep rpi3)
 SPARK_CC := $(shell uberspark staging --setting-name=cc_bridge_namespace config-get)
@@ -41,6 +42,7 @@ endif
 #ifneq ("$(SPARK_LD)", "$(LINKER)")
 	uberspark staging config-set --setting-name=ld_bridge_namespace --setting-value=$(LINKER)
 #endif
+	uberspark staging config-set --setting-name=casm_bridge_namespace --setting-value=$(CASM)
 	uberspark staging config-set --setting-name=binary_page_size --setting-value=0x1000
 	uberspark staging config-set --setting-name=binary_uobj_section_alignment --setting-value=0x1000
 	uberspark staging config-set --setting-name=binary_uobj_default_section_size --setting-value=0x1000

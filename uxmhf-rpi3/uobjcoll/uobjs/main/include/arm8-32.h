@@ -41,6 +41,9 @@
 #ifndef __ARM8_32_H__
 #define __ARM8_32_H__
 
+#include <uberspark/hwm/include/arch/arm/hwm.h>
+#include <uberspark/uobjcoll/platform/rpi3/uxmhf/uobjs/main/include/types.h>
+
 //
 // memory shareability types
 //
@@ -449,127 +452,126 @@ static inline u64 cpu_bswap_u64(u64 val){
 #define cpu_le2be_u64(le_val_u64)	cpu_bswap_u64(le_val_u64)
 
 
+CASM_FUNCDECL(u32 mmio_read32 (u32 address));
+CASM_FUNCDECL(void mmio_write32 (u32 address, u32 value));
 
-extern u32 mmio_read32 (u32 address);
-extern void mmio_write32 (u32 address, u32 value);
+CASM_FUNCDECL(u32 sysreg_read_scr(void *noparam));
 
-extern u32 sysreg_read_scr(void);
+CASM_FUNCDECL(u32 sysreg_read_cpsr(void *noparam));
+CASM_FUNCDECL(void sysreg_write_cpsr(u32 value));
 
-extern u32 sysreg_read_cpsr(void);
-extern void sysreg_write_cpsr(u32 value);
+CASM_FUNCDECL(u32 sysreg_read_hvbar(void *noparam));
+CASM_FUNCDECL(void sysreg_write_hvbar(u32 value));
 
-extern u32 sysreg_read_hvbar(void);
-extern void sysreg_write_hvbar(u32 value);
+CASM_FUNCDECL(u32 sysreg_read_hcr(void *noparam));
+CASM_FUNCDECL(void sysreg_write_hcr(u32 value));
 
-extern u32 sysreg_read_hcr(void);
-extern void sysreg_write_hcr(u32 value);
+CASM_FUNCDECL(u32 sysreg_read_spsr_hyp(void *noparam));
 
-extern u32 sysreg_read_spsr_hyp(void);
+CASM_FUNCDECL(u32 sysreg_read_hsctlr(void *noparam));
+CASM_FUNCDECL(void sysreg_write_hsctlr(u32 value));
 
-extern u32 sysreg_read_hsctlr(void);
-extern void sysreg_write_hsctlr(u32 value);
+CASM_FUNCDECL(void hypcall(void *noparam));
 
-extern void hypcall(void);
+CASM_FUNCDECL(void svccall(void *noparam));
 
-extern void svccall(void);
-
-extern u32 sysreg_read_sctlr(void);
-extern void sysreg_write_sctlr(u32 value);
-
-
-extern u32 sysreg_read_vbar(void);
-extern void sysreg_write_vbar(u32 value);
-
-extern u32 sysreg_read_vtcr(void);
-extern void sysreg_write_vtcr(u32 value);
-
-extern u32 sysreg_read_hdcr(void);
-extern void sysreg_write_hdcr(u32 value);
-
-extern u32 sysreg_read_hcptr(void);
-extern void sysreg_write_hcptr(u32 value);
-
-extern u32 sysreg_read_hstr(void);
-extern void sysreg_write_hstr(u32 value);
-
-extern u64 sysreg_read_vttbr(void);
-extern void sysreg_write_vttbr(u64 value);
-
-extern u32 sysreg_read_hsr(void);
-
-extern u32 sysreg_read_elrhyp(void);
-extern void sysreg_write_elrhyp(u32 value);
-
-extern u32 sysreg_read_mair0(void);
-extern void sysreg_write_mair0(u32 value);
-
-extern u32 sysreg_read_mair1(void);
-extern void sysreg_write_mair1(u32 value);
-
-extern u32 sysreg_read_hmair0(void);
-extern void sysreg_write_hmair0(u32 value);
-
-extern u32 sysreg_read_hmair1(void);
-extern void sysreg_write_hmair1(u32 value);
+CASM_FUNCDECL(u32 sysreg_read_sctlr(void *noparam));
+CASM_FUNCDECL(void sysreg_write_sctlr(u32 value));
 
 
-extern void sysreg_tlbiallh(void);
-extern void sysreg_iciallu(void);
-extern void sysreg_tlbiipas2is(u32 ipa);
-extern void sysreg_tlbiallis(void);
+CASM_FUNCDECL(u32 sysreg_read_vbar(void *noparam));
+CASM_FUNCDECL(void sysreg_write_vbar(u32 value));
 
-extern u64 sysreg_read_httbr(void);
-extern void sysreg_write_httbr(u64 value);
+CASM_FUNCDECL(u32 sysreg_read_vtcr(void *noparam));
+CASM_FUNCDECL(void sysreg_write_vtcr(u32 value));
 
-extern u32 sysreg_read_htcr(void);
-extern void sysreg_write_htcr(u32 value);
+CASM_FUNCDECL(u32 sysreg_read_hdcr(void *noparam));
+CASM_FUNCDECL(void sysreg_write_hdcr(u32 value));
 
-extern u32 sysreg_read_actlr(void);
-extern void sysreg_write_actlr(u32 value);
+CASM_FUNCDECL(u32 sysreg_read_hcptr(void *noparam));
+CASM_FUNCDECL(void sysreg_write_hcptr(u32 value));
 
-extern u32 sysreg_read_dacr(void);
-extern void sysreg_write_dacr(u32 value);
+CASM_FUNCDECL(u32 sysreg_read_hstr(void *noparam));
+CASM_FUNCDECL(void sysreg_write_hstr(u32 value));
 
-extern u32 sysreg_read_hdfar(void);
-extern u32 sysreg_read_hpfar(void);
+CASM_FUNCDECL(u64 sysreg_read_vttbr(void *noparam));
+CASM_FUNCDECL(void sysreg_write_vttbr(u64 value));
 
-extern void cpu_isb(void);
-extern void cpu_dsb(void);
-extern void cpu_dmbish(void);
-extern u32 cpu_read_sp(void);
+CASM_FUNCDECL(u32 sysreg_read_hsr(void *noparam));
+
+CASM_FUNCDECL(u32 sysreg_read_elrhyp(void *noparam));
+CASM_FUNCDECL(void sysreg_write_elrhyp(u32 value));
+
+CASM_FUNCDECL(u32 sysreg_read_mair0(void *noparam));
+CASM_FUNCDECL(void sysreg_write_mair0(u32 value));
+
+CASM_FUNCDECL(u32 sysreg_read_mair1(void *noparam));
+CASM_FUNCDECL(void sysreg_write_mair1(u32 value));
+
+CASM_FUNCDECL(u32 sysreg_read_hmair0(void *noparam));
+CASM_FUNCDECL(void sysreg_write_hmair0(u32 value));
+
+CASM_FUNCDECL(u32 sysreg_read_hmair1(void *noparam));
+CASM_FUNCDECL(void sysreg_write_hmair1(u32 value));
 
 
-extern u32 sysreg_read_idisar4(void);
+CASM_FUNCDECL(void sysreg_tlbiallh(void *noparam));
+CASM_FUNCDECL(void sysreg_iciallu(void *noparam));
+CASM_FUNCDECL(void sysreg_tlbiipas2is(u32 ipa));
+CASM_FUNCDECL(void sysreg_tlbiallis(void *noparam));
+
+CASM_FUNCDECL(u64 sysreg_read_httbr(void *noparam));
+CASM_FUNCDECL(void sysreg_write_httbr(u64 value));
+
+CASM_FUNCDECL(u32 sysreg_read_htcr(void *noparam));
+CASM_FUNCDECL(void sysreg_write_htcr(u32 value));
+
+CASM_FUNCDECL(u32 sysreg_read_actlr(void *noparam));
+CASM_FUNCDECL(void sysreg_write_actlr(u32 value));
+
+CASM_FUNCDECL(u32 sysreg_read_dacr(void *noparam));
+CASM_FUNCDECL(void sysreg_write_dacr(u32 value));
+
+CASM_FUNCDECL(u32 sysreg_read_hdfar(void *noparam));
+CASM_FUNCDECL(u32 sysreg_read_hpfar(void *noparam));
+
+CASM_FUNCDECL(void cpu_isb(void *noparam));
+CASM_FUNCDECL(void cpu_dsb(void *noparam));
+CASM_FUNCDECL(void cpu_dmbish(void *noparam));
+CASM_FUNCDECL(u32 cpu_read_sp(void *noparam));
 
 
-extern void sysreg_ats12nsour(u32 value);
-extern void sysreg_ats1cpr(u32 value);
-extern u32 sysreg_read_par(void);
+CASM_FUNCDECL(u32 sysreg_read_idisar4(void *noparam));
 
-void spin_lock(u32 *lock);
-void spin_unlock(u32 *lock);
+
+CASM_FUNCDECL(void sysreg_ats12nsour(u32 value));
+CASM_FUNCDECL(void sysreg_ats1cpr(u32 value));
+CASM_FUNCDECL(u32 sysreg_read_par(void *noparam));
+
+CASM_FUNCDECL(void spin_lock(u32 *lock));
+CASM_FUNCDECL(void spin_unlock(u32 *lock));
 
 
 //////
 // pl0,1 system register access functions
 // chiefly used for emulation/pass-thru
 //////
-u32 sysreg_read_ttbcr(void);
-void sysreg_write_ttbcr(u32 value);
-u32 sysreg_read_ttbr0(void);
-void sysreg_write_ttbr0(u32 value);
-u32 sysreg_read_ttbr1(void);
-void sysreg_write_ttbr1(u32 value);
+CASM_FUNCDECL(u32 sysreg_read_ttbcr(void *noparam));
+CASM_FUNCDECL(void sysreg_write_ttbcr(u32 value));
+CASM_FUNCDECL(u32 sysreg_read_ttbr0(void *noparam));
+CASM_FUNCDECL(void sysreg_write_ttbr0(u32 value));
+CASM_FUNCDECL(u32 sysreg_read_ttbr1(void *noparam));
+CASM_FUNCDECL(void sysreg_write_ttbr1(u32 value));
 
 
 //////
 // generic timer system register access functions
 //////
-extern u64 sysreg_read_cntpct(void);
-int sysreg_read_cnthp_tval(void);
-void sysreg_write_cnthp_tval(int value);
-u32 sysreg_read_cnthp_ctl(void);
-void sysreg_write_cnthp_ctl(u32 value);
+CASM_FUNCDECL(u64 sysreg_read_cntpct(void *noparam));
+CASM_FUNCDECL(int sysreg_read_cnthp_tval(void *noparam));
+CASM_FUNCDECL(void sysreg_write_cnthp_tval(int value));
+CASM_FUNCDECL(u32 sysreg_read_cnthp_ctl(void *noparam));
+CASM_FUNCDECL(void sysreg_write_cnthp_ctl(u32 value));
 
 
 

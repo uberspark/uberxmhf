@@ -43,9 +43,10 @@
 #include <uberspark/uobjcoll/platform/rpi3/uxmhf/uobjs/main/include/bcm2837.h>
 #include <uberspark/uobjcoll/platform/rpi3/uxmhf/uobjs/main/include/uart.h>
 #include <uberspark/uobjcoll/platform/rpi3/uxmhf/uobjs/main/include/debug.h>
+#include <uberspark/hwm/include/arch/arm/hwm.h>
 //#include <uberspark/include/uberspark.h>
 
-extern void secondary_cpu_entry(void);
+CASM_FUNCDECL(void secondary_cpu_entry(void *noparam));
 volatile u32 cpu_smpready[BCM2837_MAXCPUS] = {1, 0, 0, 0};
 
 void bcm2837_platform_initialize(void){
@@ -72,7 +73,7 @@ void bcm2837_platform_smpinitialize(void){
 		_XDPRINTF_("%s: cpu %u: armlocalregisters_mailboxwrite at 0x%08x\n", __func__, i, armlocalregisters_mailboxwrite);
 		_XDPRINTF_("%s: cpu %u: armlocalregisters_mailboxwrite->mailbox3write at 0x%08x\n", __func__, i, &armlocalregisters_mailboxwrite->mailbox3write);
 
-		cpu_dsb();
+		CASM_FUNCCALL(cpu_dsb, CASM_NOPARAM);
 		if( armlocalregisters_mailboxreadclear->mailbox3readclear != 0){
 			_XDPRINTF_("%s: cpu %u: failed to respond. Halting!\n", __func__, i);
 			HALT();
@@ -83,7 +84,7 @@ void bcm2837_platform_smpinitialize(void){
 
 		while (--timeout > 0) {
 			if (armlocalregisters_mailboxreadclear->mailbox3readclear == 0) break;
-			cpu_dmbish();
+			CASM_FUNCCALL(cpu_dmbish, CASM_NOPARAM);
 		}
 
 		if (timeout==0){
@@ -92,15 +93,15 @@ void bcm2837_platform_smpinitialize(void){
 		}
 
 		while(armlocalregisters_mailboxreadclear_cpu0->mailbox3readclear == 0){
-			cpu_dmbish();
-			cpu_dsb();
+			CASM_FUNCCALL(cpu_dmbish, CASM_NOPARAM);
+			CASM_FUNCCALL(cpu_dsb, CASM_NOPARAM);;
 		}
 
 		armlocalregisters_mailboxreadclear_cpu0->mailbox3readclear = 1;
 
 		//while(!cpu_smpready[i]){
-		//	cpu_dmbish();
-		//	cpu_dsb();
+		//	CASM_FUNCCALL(cpu_dmbish, CASM_NOPARAM);
+		//	CASM_FUNCCALL(cpu_dsb, CASM_NOPARAM);
 		//}
 
 		_XDPRINTF_("%s: cpu-%u started successfully\n", __func__, i);

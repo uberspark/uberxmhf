@@ -69,13 +69,13 @@ uint32_t va2pa(uint32_t va){
 
 	_XDPRINTFSMP_("%s: ENTER: va=0x%08x\n", __func__, va);
 
-	ttbcr = sysreg_read_ttbcr();
+	ttbcr = CASM_FUNCCALL(sysreg_read_ttbcr, CASM_NOPARAM);
 	_XDPRINTFSMP_("%s: ttbcr=0x%08x\n", __func__, ttbcr);
 
-	ttbr0 = sysreg_read_ttbr0();
+	ttbr0 = CASM_FUNCCALL(sysreg_read_ttbr0, CASM_NOPARAM);
 	_XDPRINTFSMP_("%s: ttbr0=0x%08x\n", __func__, ttbr0);
 
-	ttbr1 = sysreg_read_ttbr1();
+	ttbr1 = CASM_FUNCCALL(sysreg_read_ttbr1, CASM_NOPARAM);
 	_XDPRINTFSMP_("%s: ttbr1=0x%08x\n", __func__, ttbr1);
 
 
@@ -119,14 +119,14 @@ bool va2pa(uint32_t va, u32 *pa){
 
 	//_XDPRINTFSMP_("%s: ENTER: va=0x%08x\n", __func__, va);
 
-	//sysreg_tlbiallh();
+	//CASM_FUNCCALL(sysreg_tlbiallh, CASM_NOPARAM);
 #if 0
 	sysreg_ats12nsour(va);
-	par = sysreg_read_par();
+	par = CASM_FUNCCALL(sysreg_read_par, CASM_NOPARAM);
 #endif
 
 	sysreg_ats1cpr(va);
-	par = sysreg_read_par();
+	par = CASM_FUNCCALL(sysreg_read_par, CASM_NOPARAM);
 
 	//_XDPRINTFSMP_("%s: PAR=0x%08x\n", __func__, par);
 

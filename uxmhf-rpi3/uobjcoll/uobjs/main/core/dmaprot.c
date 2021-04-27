@@ -62,13 +62,13 @@ void dmaprot_activate(void){
 
 
 	uapi_s2pgtbl_setprot(BCM2837_DMA0_REGS_BASE, attrs_dev);
-	sysreg_tlbiallis();
+	CASM_FUNCCALL(sysreg_tlbiallis, CASM_NOPARAM);
 	uapi_s2pgtbl_setprot(BCM2837_DMA15_REGS_BASE, attrs_dev);
-	sysreg_tlbiallis();
+	CASM_FUNCCALL(sysreg_tlbiallis, CASM_NOPARAM);
 
 	//USB DMA controller
 	uapi_s2pgtbl_setprot(DWC_REGS_BASE, attrs_dev_dwc);
-	sysreg_tlbiallis();
+	CASM_FUNCCALL(sysreg_tlbiallis, CASM_NOPARAM);
 
 
 
@@ -224,8 +224,8 @@ void dmaprot_channel_cs_access(u32 wnr, u32 dmac_channel, u32 *dmac_reg, u32 val
 			uart_puts("dmaprot: DMA_DE-ACTIVATE\n");
 		}
 
-		cpu_dsb();
-		cpu_isb();	//synchronize all memory accesses above
+		CASM_FUNCCALL(cpu_dsb, CASM_NOPARAM);
+		CASM_FUNCCALL(cpu_isb, CASM_NOPARAM);	//synchronize all memory accesses above
 		*dmac_reg = value;
 
 	}else{		//read
@@ -247,8 +247,8 @@ void dmaprot_channel_conblkad_access(u32 wnr, u32 dmac_channel, u32 *dmac_reg, u
 		//uart_puts("dmaprot: conblkad[shadow]=");
 		//debug_hexdumpu32(shadow_value);
 
-		cpu_dsb();
-		cpu_isb();	//synchronize all memory accesses above
+		CASM_FUNCCALL(cpu_dsb, CASM_NOPARAM);
+		CASM_FUNCCALL(cpu_isb, CASM_NOPARAM);	//synchronize all memory accesses above
 		*dmac_reg = shadow_value;
 
 	}else{		//read
@@ -304,8 +304,8 @@ void dmaprot_handle_dmacontroller_access(info_intercept_data_abort_t *ida){
 
 
 			default:	//just pass-through writes
-				cpu_dsb();
-				cpu_isb();	//synchronize all memory accesses above
+				CASM_FUNCCALL(cpu_dsb, CASM_NOPARAM);
+				CASM_FUNCCALL(cpu_isb, CASM_NOPARAM);	//synchronize all memory accesses above
 				*dmac_reg = value;
 				break;
 		}
@@ -315,8 +315,8 @@ void dmaprot_handle_dmacontroller_access(info_intercept_data_abort_t *ida){
 		switch(dmac_reg_off){
 			default:{	//just pass-through reads
 					u32 value;
-					cpu_dsb();
-					cpu_isb();	//synchronize all memory accesses above
+					CASM_FUNCCALL(cpu_dsb, CASM_NOPARAM);
+					CASM_FUNCCALL(cpu_isb, CASM_NOPARAM);	//synchronize all memory accesses above
 					value = (u32)*dmac_reg;
 					guest_regwrite(ida->r, ida->srt, value);
 				}

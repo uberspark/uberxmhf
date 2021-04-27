@@ -54,7 +54,7 @@ void intprot_activate(void){
 
 
 	uapi_s2pgtbl_setprot(ARMLOCALREGISTERS_BASE, attrs_dev_intc);
-	sysreg_tlbiallis();
+	CASM_FUNCCALL(sysreg_tlbiallis, CASM_NOPARAM);
 }
 
 
@@ -88,8 +88,8 @@ void intprot_handle_intcontroller_access(info_intercept_data_abort_t *ida){
 
 		//just pass-through writes
 		//mmio_write32(intc_reg, guest_value);
-		cpu_dsb();
-		cpu_isb();	//synchronize all memory accesses above
+		CASM_FUNCCALL(cpu_dsb, CASM_NOPARAM);
+		CASM_FUNCCALL(cpu_isb, CASM_NOPARAM);	//synchronize all memory accesses above
 		*intc_reg = guest_value;
 
 	}else{	//intc register read
