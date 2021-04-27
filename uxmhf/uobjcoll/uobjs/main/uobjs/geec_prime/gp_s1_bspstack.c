@@ -70,7 +70,7 @@ void gp_s1_bspstack(void){
 	uint32_t i, j;
 	uint64_t flags;
 
-#if defined (__UBERSPARK_UOBJCOLL_CONFIGDEF_DEBUG_SERIAL__)
+#if defined (__UBERSPARK_UOBJCOLL_CONFIGDEF_DEBUG_SERIAL__) || defined (__UBERSPARK_UOBJCOLL_CONFIGDEF_DEBUG_MEMORY__)
 	//initialize debugging early on
 	uberspark_uobjrtl_debug__init(NULL);
 	//[debug] print relevant startup info.

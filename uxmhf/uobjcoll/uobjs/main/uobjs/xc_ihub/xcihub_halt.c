@@ -95,7 +95,7 @@ void xcihub_halt_eptviolation(uint32_t cpuid, uint32_t info_vmexitreason){
 
 
 void xcihub_halt(uint32_t cpuid, uint32_t info_vmexit_reason){
-#if defined (__UBERSPARK_UOBJCOLL_CONFIGDEF_DEBUG_SERIAL__)
+#if defined (__UBERSPARK_UOBJCOLL_CONFIGDEF_DEBUG_SERIAL__) || defined (__UBERSPARK_UOBJCOLL_CONFIGDEF_DEBUG_MEMORY__)
 	//initialize debugging early on
 	uberspark_uobjrtl_debug__init(NULL);
 	//[debug] print relevant startup info.
