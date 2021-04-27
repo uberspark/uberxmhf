@@ -59,8 +59,8 @@ bool uapp_va2pa_withoff(uint32_t va, u32 *pa){
   u32 par;
   u32 offset;
 
-  sysreg_ats1cpr(va);
-  par=sysreg_read_par();
+  CASM_FUNCCALL(sysreg_ats1cpr, va);
+  par=CASM_FUNCCALL(sysreg_read_par, CASM_NOPARAM);
 
   if(par & 0x1)
     return false;

@@ -40,7 +40,7 @@
 
 #include <uberspark/uobjcoll/platform/rpi3/uxmhf/uobjs/main/include/types.h>
 
-_//_attribute__((section(".stack"))) __attribute__((aligned(8))) u32 hypvtable_stack[8192 / 4];
+//_attribute__((section(".stack"))) __attribute__((aligned(8))) u32 hypvtable_stack[8192 / 4];
 
 __attribute__((section(".stack"))) __attribute__((aligned(8))) u8 hypvtable_hypsvc_stack0[16384];
 
