@@ -54,4 +54,4 @@ endif
 
 .PHONY: clean
 clean: 
-	rm -rf _triage
+	rm -rf _staging
