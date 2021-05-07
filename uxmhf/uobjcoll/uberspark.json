@@ -68,6 +68,11 @@
       /* loaders */
       "uberspark.uobjcoll.loaders" : [
         "uberspark/loaders/baremetal/x86_32/grub-legacy"    
-      ]
+      ],
+
+    /* platform definitions */
+    "uberspark.platform.binary.uobj_image_size" : "0x14900000",
+    "uberspark.platform.binary.uobjcoll_image_load_address" : "0x06200000"
+
 
 }

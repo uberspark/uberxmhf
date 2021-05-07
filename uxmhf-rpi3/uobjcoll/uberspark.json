@@ -82,7 +82,9 @@
 			"uberspark/uobjcoll/platform/rpi3/uxmhf/uobjs/main" : {
 				"entry" : [ "generic/generic/hyp/call" ]
 			}
-		}
+		},
 
+		/* platform definitions */
+		"uberspark.platform.binary.uobjcoll_image_load_address" : "0x00007000"
 	
 }
