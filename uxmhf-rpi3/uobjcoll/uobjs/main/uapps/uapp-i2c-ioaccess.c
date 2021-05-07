@@ -47,6 +47,13 @@
 
 #include <uberspark/uobjcoll/platform/rpi3/uxmhf/uobjs/main/include/i2c-ioaccess.h>
 
+
+//secret key for HMAC
+__attribute__((section(".data"))) static unsigned char uhsign_key_i2c_driver[]="super_secret_key_for_hmac";
+#define UHSIGN_KEY_SIZE (sizeof(uhsign_key_i2c_driver))
+#define HMAC_DIGEST_SIZE 32
+
+
 // this is from BCM ARM peripherals data-sheet and initial debugging
 // of i2c-bcm2708 which seems to use this base. The data sheet talks about
 // two more BSC master units at different addresses
@@ -124,7 +131,38 @@ bool uapp_i2c_ioaccess_handle_fast_hcall(arm8_32_regs_t *r){
 		//	mmio_pa, r->r2);
 
 		return true;
-	
+
 	}else 
 		return false;
+}
+
+
+//return true if handled the hypercall, false if not
+bool uapp_i2c_ioaccess_handlehcall(u32 function, void *buffer, u32 buffer_len){
+ 
+    if (function == UAPP_I2C_IOACCESS_HMAC){
+	    uapp_i2c_ioaccess_hmac_param_t *phmac_param;
+    	unsigned long digest_size = HMAC_DIGEST_SIZE;
+       uint32_t in_buffer_pa;
+       uint32_t out_buffer_pa;
+
+	    phmac_param = (uapp_i2c_ioaccess_hmac_param_t *)buffer;
+
+       if(!uapp_va2pa(phmac_param->in_buffer_va, &in_buffer_pa) ||
+          !uapp_va2pa(phmac_param->out_buffer_va, &out_buffer_pa) ){
+          //error, this should not happen, probably need to print a message to serial debug and halt
+           _XDPRINTFSMP_("%s: Error, could not translate va2pa!\n", __func__);
+
+        }else{
+           //_XDPRINTFSMP_("About to call HMAC function: \n");
+           uberspark_uobjrtl_crypto__mac_hmacsha256__hmac_sha256_memory (uhsign_key_i2c_driver,  (unsigned long) UHSIGN_KEY_SIZE, (unsigned char *) in_buffer_pa, (unsigned long) phmac_param->len, out_buffer_pa, &digest_size);
+           //_XDPRINTFSMP_("HMAC function done\n");
+        } 
+		return true;
+
+	}else{
+		return false; //this is not our hypercall, so pass up the chain
+	}
+
+
 }
