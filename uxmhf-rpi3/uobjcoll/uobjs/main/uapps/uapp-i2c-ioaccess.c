@@ -53,6 +53,9 @@ __attribute__((section(".data"))) static unsigned char uhsign_key_i2c_driver[]="
 #define UHSIGN_KEY_SIZE (sizeof(uhsign_key_i2c_driver))
 #define HMAC_DIGEST_SIZE 32
 
+//buffer for burst reads and computing hmac on it
+__attribute__((section(".data"))) static unsigned char static_buffer[1024];
+
 
 // this is from BCM ARM peripherals data-sheet and initial debugging
 // of i2c-bcm2708 which seems to use this base. The data sheet talks about
@@ -60,6 +63,40 @@ __attribute__((section(".data"))) static unsigned char uhsign_key_i2c_driver[]="
 // TBD: take this in via a hypercall that is called during kernel module
 // initialization (presumably during ioremap)
 #define I2C_BSC_BASE 0x3f804000
+
+
+/* BSC register offsets */
+#define BSC_C			0x00
+#define BSC_S			0x04
+#define BSC_DLEN		0x08
+#define BSC_A			0x0c
+#define BSC_FIFO		0x10
+#define BSC_DIV			0x14
+#define BSC_DEL			0x18
+#define BSC_CLKT		0x1c
+
+/* Bitfields in BSC_C */
+#define BSC_C_I2CEN		0x00008000
+#define BSC_C_INTR		0x00000400
+#define BSC_C_INTT		0x00000200
+#define BSC_C_INTD		0x00000100
+#define BSC_C_ST		0x00000080
+#define BSC_C_CLEAR_1		0x00000020
+#define BSC_C_CLEAR_2		0x00000010
+#define BSC_C_READ		0x00000001
+
+/* Bitfields in BSC_S */
+#define BSC_S_CLKT		0x00000200
+#define BSC_S_ERR		0x00000100
+#define BSC_S_RXF		0x00000080
+#define BSC_S_TXE		0x00000040
+#define BSC_S_RXD		0x00000020
+#define BSC_S_TXD		0x00000010
+#define BSC_S_RXR		0x00000008
+#define BSC_S_TXW		0x00000004
+#define BSC_S_DONE		0x00000002
+#define BSC_S_TA		0x00000001
+
 
 /* translate virtual address to physical address with offsets preserved */
 bool uapp_va2pa_withoff(uint32_t va, u32 *pa){
@@ -132,6 +169,27 @@ bool uapp_i2c_ioaccess_handle_fast_hcall(arm8_32_regs_t *r){
 
 		return true;
 
+	} else if (fn== UAPP_I2C_IOACCESS_HMAC){
+		//r->r1 = destination buffer
+		//r->r2 = len
+
+
+	} else if (fn== UAPP_I2C_IOACCESS_READBUFFER){
+		//r->r1 = bi_pos
+		//r->r2 = bi_msg_len
+		//output: r->r1 = updated position
+		uint32_t bi_pos = r->r1;
+		uint32_t bi_msg_len = r->r2;
+		uint32_t i;
+
+		i = bi_pos;
+
+		/*while ((i < bi_msg_len) && (u_readl(I2C_BSC_BASE + BSC_S) & BSC_S_RXD)){
+			static_buffer[i++] = u_readl(I2C_BSC_BASE + BSC_FIFO);
+		}*/
+
+		r->r1 = i;
+		return true;
 	}else 
 		return false;
 }
