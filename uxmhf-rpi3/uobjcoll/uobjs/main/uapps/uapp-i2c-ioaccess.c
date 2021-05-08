@@ -47,6 +47,9 @@
 
 #include <uberspark/uobjcoll/platform/rpi3/uxmhf/uobjs/main/include/i2c-ioaccess.h>
 
+#include <uberspark/uobjrtl/crypto/include/mac/hmacsha256/hmacsha256.h>
+#include <uberspark/uobjrtl/crypto/include/basedefs.h>
+
 
 //secret key for HMAC
 __attribute__((section(".data"))) static unsigned char uhsign_key_i2c_driver[]="super_secret_key_for_hmac";
@@ -55,6 +58,10 @@ __attribute__((section(".data"))) static unsigned char uhsign_key_i2c_driver[]="
 
 //buffer for burst reads and computing hmac on it
 __attribute__((section(".data"))) static unsigned char static_buffer[1024];
+
+
+__attribute__((section(".data"))) unsigned char l_digest_array[HMAC_DIGEST_SIZE];
+__attribute__((section(".data"))) unsigned long l_digest_size = HMAC_DIGEST_SIZE;
 
 
 // this is from BCM ARM peripherals data-sheet and initial debugging
@@ -171,8 +178,32 @@ bool uapp_i2c_ioaccess_handle_fast_hcall(arm8_32_regs_t *r){
 
 	} else if (fn== UAPP_I2C_IOACCESS_HMAC){
 		//r->r1 = destination buffer
-		//r->r2 = len
+		//r->r2 = msg_size
+	    uint32_t out_buffer_pa;
+		uint32_t msg_size = r->r2;
 
+	    if(!uapp_va2pa(r->r1, &out_buffer_pa)){
+          	//error, this should not happen, halt!
+        	_XDPRINTFSMP_("%s: Error, could not translate va2pa!\n", __func__);
+			while(1);
+        }
+
+		if(uberspark_uobjrtl_crypto__mac_hmacsha256__hmac_sha256_memory (uhsign_key_i2c_driver,  (unsigned long) UHSIGN_KEY_SIZE, (unsigned char *) static_buffer, (unsigned long) msg_size, l_digest_array, &l_digest_size) != CRYPT_OK ){
+          	//error, this should not happen, halt!
+        	_XDPRINTFSMP_("%s: Error, could not compute HMAC!\n", __func__);
+			while(1);
+		}
+		
+		//copy over the sensor read buffer first
+		uberspark_uobjrtl_crt__memcpy(out_buffer_pa,
+			static_buffer,msg_size);
+
+		//now copy the HAC digest
+		uberspark_uobjrtl_crt__memcpy(out_buffer_pa+msg_size,
+			l_digest_array,HMAC_DIGEST_SIZE);
+
+
+		return true;
 
 	} else if (fn== UAPP_I2C_IOACCESS_READBUFFER){
 		//r->r1 = bi_pos
@@ -190,37 +221,9 @@ bool uapp_i2c_ioaccess_handle_fast_hcall(arm8_32_regs_t *r){
 
 		r->r1 = i;
 		return true;
+
+
 	}else 
 		return false;
 }
 
-
-//return true if handled the hypercall, false if not
-bool uapp_i2c_ioaccess_handlehcall(u32 function, void *buffer, u32 buffer_len){
- 
-    if (function == UAPP_I2C_IOACCESS_HMAC){
-	    uapp_i2c_ioaccess_hmac_param_t *phmac_param;
-    	unsigned long digest_size = HMAC_DIGEST_SIZE;
-       uint32_t in_buffer_pa;
-       uint32_t out_buffer_pa;
-
-	    phmac_param = (uapp_i2c_ioaccess_hmac_param_t *)buffer;
-
-       if(!uapp_va2pa(phmac_param->in_buffer_va, &in_buffer_pa) ||
-          !uapp_va2pa(phmac_param->out_buffer_va, &out_buffer_pa) ){
-          //error, this should not happen, probably need to print a message to serial debug and halt
-           _XDPRINTFSMP_("%s: Error, could not translate va2pa!\n", __func__);
-
-        }else{
-           //_XDPRINTFSMP_("About to call HMAC function: \n");
-           uberspark_uobjrtl_crypto__mac_hmacsha256__hmac_sha256_memory (uhsign_key_i2c_driver,  (unsigned long) UHSIGN_KEY_SIZE, (unsigned char *) in_buffer_pa, (unsigned long) phmac_param->len, out_buffer_pa, &digest_size);
-           //_XDPRINTFSMP_("HMAC function done\n");
-        } 
-		return true;
-
-	}else{
-		return false; //this is not our hypercall, so pass up the chain
-	}
-
-
-}
