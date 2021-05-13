@@ -215,9 +215,9 @@ bool uapp_i2c_ioaccess_handle_fast_hcall(arm8_32_regs_t *r){
 
 		i = bi_pos;
 
-		/*while ((i < bi_msg_len) && (u_readl(I2C_BSC_BASE + BSC_S) & BSC_S_RXD)){
-			static_buffer[i++] = u_readl(I2C_BSC_BASE + BSC_FIFO);
-		}*/
+		while ((i < bi_msg_len) && (mmio_read32(I2C_BSC_BASE + BSC_S) & BSC_S_RXD)){
+			static_buffer[i++] = mmio_read32(I2C_BSC_BASE + BSC_FIFO);
+		}
 
 		r->r1 = i;
 		return true;
