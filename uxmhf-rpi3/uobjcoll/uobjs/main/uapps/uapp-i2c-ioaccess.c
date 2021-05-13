@@ -132,6 +132,12 @@ bool uapp_i2c_ioaccess_handle_fast_hcall(arm8_32_regs_t *r){
 	
 	fn = r->r0;	
 
+#if defined (__UBERSPARK_UOBJCOLL_CONFIGDEF_ENABLE_UART_PL011__) || defined (__UBERSPARK_UOBJCOLL_CONFIGDEF_ENABLE_UART_MINI__)
+        //initialize uart
+        uart_init();
+#endif
+
+
 	if(fn == UAPP_I2C_IOACCESS_WRITEL){
 		//r->r1 = input addresss
 		//r->r2 = input value
