@@ -143,6 +143,7 @@ bool uapp_i2c_ioaccess_handle_fast_hcall(arm8_32_regs_t *r){
 
 		mmio_pa = (u32)I2C_BSC_BASE | ((u32)r->r1 & 0x00000FFFUL);
 
+		_XDPRINTFSMP_("%s: WRITEL: addr=0x%08x, val=0x%08x\n", __func__, mmio_pa, r->r2);
 		mmio_write32(mmio_pa, r->r2);
 		return true;
 	
@@ -170,6 +171,8 @@ bool uapp_i2c_ioaccess_handle_fast_hcall(arm8_32_regs_t *r){
 		mmio_pa = (u32)I2C_BSC_BASE | ((u32)r->r1 & 0x00000FFFUL);
 
 		r->r2 = mmio_read32(mmio_pa);
+
+		_XDPRINTFSMP_("%s: READL: addr=0x%08x, val=0x%08x\n", __func__, mmio_pa, r->r2);
 
 		//_XDPRINTFSMP_("%s: going out: r1(addr)=0x%08x, r2(value)=0x%08x\n", __func__,
 		//	mmio_pa, r->r2);
@@ -203,6 +206,9 @@ bool uapp_i2c_ioaccess_handle_fast_hcall(arm8_32_regs_t *r){
 			l_digest_array,HMAC_DIGEST_SIZE);
 
 
+		_XDPRINTFSMP_("%s: HMAC: computed, buffer(va=0x%08x, pa=0x%08x), size=0x%08x\n", 
+			__func__, r->r1, out_buffer_pa, msg_size);
+
 		return true;
 
 	} else if (fn== UAPP_I2C_IOACCESS_READBUFFER){
@@ -215,11 +221,19 @@ bool uapp_i2c_ioaccess_handle_fast_hcall(arm8_32_regs_t *r){
 
 		i = bi_pos;
 
+		_XDPRINTFSMP_("%s: READBUFFER: bi_pos=0x%08x, bi_msg_len=0x%08x\n", 
+			__func__, bi_pos, bi_msg_len);
+
+
 		while ((i < bi_msg_len) && (mmio_read32(I2C_BSC_BASE + BSC_S) & BSC_S_RXD)){
 			static_buffer[i++] = mmio_read32(I2C_BSC_BASE + BSC_FIFO);
 		}
 
 		r->r1 = i;
+
+		_XDPRINTFSMP_("%s: READBUFFER: bi_pos=0x%08x, bi_msg_len=0x%08x, result=0x%08x\n", 
+			__func__, bi_pos, bi_msg_len, r->r1);
+
 		return true;
 
 
