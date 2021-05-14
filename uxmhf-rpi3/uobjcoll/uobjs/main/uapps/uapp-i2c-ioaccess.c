@@ -191,16 +191,19 @@ bool uapp_i2c_ioaccess_handle_fast_hcall(arm8_32_regs_t *r){
 	    uint32_t out_buffer_pa;
 		uint32_t msg_size = r->r2;
 
+		_XDPRINTFSMP_("%s: HMAC: buffer va=0x%08x, size=0x%08x\n", __func__, 
+			r->r1, msg_size);
+
 	    if(!uapp_va2pa(r->r1, &out_buffer_pa)){
           	//error, this should not happen, halt!
         	_XDPRINTFSMP_("%s: Error, could not translate va2pa!\n", __func__);
-			while(1);
+			return true;
         }
 
 		if(uberspark_uobjrtl_crypto__mac_hmacsha256__hmac_sha256_memory (uhsign_key_i2c_driver,  (unsigned long) UHSIGN_KEY_SIZE, (unsigned char *) static_buffer, (unsigned long) msg_size, l_digest_array, &l_digest_size) != CRYPT_OK ){
           	//error, this should not happen, halt!
         	_XDPRINTFSMP_("%s: Error, could not compute HMAC!\n", __func__);
-			while(1);
+			return true;
 		}
 		
 		//copy over the sensor read buffer first
