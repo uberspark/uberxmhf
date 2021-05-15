@@ -137,6 +137,9 @@ bool uapp_i2c_ioaccess_handle_fast_hcall(arm8_32_regs_t *r){
         uart_init();
 #endif
 
+	_XDPRINTFSMP_("%s: fn=0x%08x\n",
+			__func__, fn);
+
 
 	if(fn == UAPP_I2C_IOACCESS_WRITEL){
 		//r->r1 = input addresss
