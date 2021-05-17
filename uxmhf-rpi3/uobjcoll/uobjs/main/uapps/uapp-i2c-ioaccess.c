@@ -239,6 +239,8 @@ bool uapp_i2c_ioaccess_handle_fast_hcall(arm8_32_regs_t *r){
 		_XDPRINTFSMP_("%s: READBUFFER: Halting!\n",
 			__func__);
 
+		while(1);
+
 /*
 		while ((i < bi_msg_len) && (mmio_read32(I2C_BSC_BASE + BSC_S) & BSC_S_RXD)){
 			static_buffer[i++] = mmio_read32(I2C_BSC_BASE + BSC_FIFO);
