@@ -132,27 +132,22 @@ bool uapp_i2c_ioaccess_handle_fast_hcall(arm8_32_regs_t *r){
 	
 	fn = r->r0;	
 
-#if defined (__UBERSPARK_UOBJCOLL_CONFIGDEF_ENABLE_UART_PL011__) || defined (__UBERSPARK_UOBJCOLL_CONFIGDEF_ENABLE_UART_MINI__)
-        //initialize uart
-        uart_init();
-#endif
+//#if defined (__UBERSPARK_UOBJCOLL_CONFIGDEF_ENABLE_UART_PL011__) || defined (__UBERSPARK_UOBJCOLL_CONFIGDEF_ENABLE_UART_MINI__)
+//        //initialize uart
+//        uart_init();
+//#endif
 
-	_XDPRINTFSMP_("%s: fn=0x%08x\n",
-			__func__, fn);
+//	_XDPRINTFSMP_("%s: fn=0x%08x\n",
+//			__func__, fn);
 
 
 	if(fn == UAPP_I2C_IOACCESS_WRITEL){
 		//r->r1 = input addresss
 		//r->r2 = input value
-		//if(!uapp_va2pa_withoff(r->r1, &mmio_pa)){
-			//error, this should not happen, print a message to serial debug and halt
-		//	_XDPRINTFSMP_("%s: WRITEL: Error, could not translate va2pa. halting!\n", __func__);
-		//	while(1);
-		//}	
 
 		mmio_pa = (u32)I2C_BSC_BASE | ((u32)r->r1 & 0x00000FFFUL);
 
-		_XDPRINTFSMP_("%s: WRITEL: addr=0x%08x, val=0x%08x\n", __func__, mmio_pa, r->r2);
+		//_XDPRINTFSMP_("%s: WRITEL: addr=0x%08x, val=0x%08x\n", __func__, mmio_pa, r->r2);
 		mmio_write32(mmio_pa, r->r2);
 		return true;
 	
@@ -160,31 +155,11 @@ bool uapp_i2c_ioaccess_handle_fast_hcall(arm8_32_regs_t *r){
 		//r->r1 = input addresss
 		//r->r2 = output value
 	
-		//#if defined (__UBERSPARK_UOBJCOLL_CONFIGDEF_ENABLE_UART_PL011__) || defined (__UBERSPARK_UOBJCOLL_CONFIGDEF_ENABLE_UART_MINI__)
-	    //    //initialize uart
-	  	//    uart_init();
-		//#endif
-
-		//_XDPRINTFSMP_("%s: coming in: r1(addr)=0x%08x, r2(value)=0x%08x\n", __func__,
-		//	r->r1, r->r2);
-
-		//if(!uapp_va2pa_withoff(r->r1, &mmio_pa)){
-		//	//error, this should not happen, print a message to serial debug and halt
-		//	_XDPRINTFSMP_("%s: READL: Error, could not translate va2pa. halting!\n", __func__);
-		//	while(1);
-		//}	
-
-		//_XDPRINTFSMP_("%s: revised: r1(addr)=0x%08x, r2(value)=0x%08x\n", __func__,
-		//	mmio_pa, r->r2);
-
 		mmio_pa = (u32)I2C_BSC_BASE | ((u32)r->r1 & 0x00000FFFUL);
 
 		r->r2 = mmio_read32(mmio_pa);
 
-		_XDPRINTFSMP_("%s: READL: addr=0x%08x, val=0x%08x\n", __func__, mmio_pa, r->r2);
-
-		//_XDPRINTFSMP_("%s: going out: r1(addr)=0x%08x, r2(value)=0x%08x\n", __func__,
-		//	mmio_pa, r->r2);
+		//_XDPRINTFSMP_("%s: READL: addr=0x%08x, val=0x%08x\n", __func__, mmio_pa, r->r2);
 
 		return true;
 
@@ -194,8 +169,8 @@ bool uapp_i2c_ioaccess_handle_fast_hcall(arm8_32_regs_t *r){
 	    uint32_t out_buffer_pa;
 		uint32_t msg_size = r->r2;
 
-		_XDPRINTFSMP_("%s: HMAC: buffer va=0x%08x, size=0x%08x\n", __func__, 
-			r->r1, msg_size);
+		//_XDPRINTFSMP_("%s: HMAC: buffer va=0x%08x, size=0x%08x\n", __func__, 
+		//	r->r1, msg_size);
 
 	    if(!uapp_va2pa(r->r1, &out_buffer_pa)){
           	//error, this should not happen, halt!
@@ -218,27 +193,23 @@ bool uapp_i2c_ioaccess_handle_fast_hcall(arm8_32_regs_t *r){
 			l_digest_array,HMAC_DIGEST_SIZE);
 
 
-		_XDPRINTFSMP_("%s: HMAC: computed, buffer(va=0x%08x, pa=0x%08x), size=0x%08x\n", 
-			__func__, r->r1, out_buffer_pa, msg_size);
+		//_XDPRINTFSMP_("%s: HMAC: computed, buffer(va=0x%08x, pa=0x%08x), size=0x%08x\n", 
+		//	__func__, r->r1, out_buffer_pa, msg_size);
 
 		return true;
 
 	} else if (fn== UAPP_I2C_IOACCESS_READBUFFER){
 		//r->r1 = bi_pos
 		//r->r2 = bi_msg_len
-		//output: r->r1 = updated position
+		//output: r->r2 = updated position
 		uint32_t bi_pos = r->r1;
 		uint32_t bi_msg_len = r->r2;
 		uint32_t i;
 
 		i = bi_pos;
 
-		_XDPRINTFSMP_("%s: READBUFFER: bi_pos=0x%08x, bi_msg_len=0x%08x\n", 
-			__func__, bi_pos, bi_msg_len);
-
-		_XDPRINTFSMP_("%s: READBUFFER: Halting!\n",
-			__func__);
-
+		//_XDPRINTFSMP_("%s: READBUFFER: bi_pos=0x%08x, bi_msg_len=0x%08x\n", 
+		//	__func__, bi_pos, bi_msg_len);
 
 		while ((i < bi_msg_len) && (mmio_read32(I2C_BSC_BASE + BSC_S) & BSC_S_RXD)){
 			static_buffer[i++] = mmio_read32(I2C_BSC_BASE + BSC_FIFO);
@@ -246,8 +217,8 @@ bool uapp_i2c_ioaccess_handle_fast_hcall(arm8_32_regs_t *r){
 
 		r->r2 = i;
 
-		_XDPRINTFSMP_("%s: READBUFFER: bi_pos=0x%08x, bi_msg_len=0x%08x, result=0x%08x\n", 
-			__func__, bi_pos, bi_msg_len, r->r1);
+		//_XDPRINTFSMP_("%s: READBUFFER: bi_pos=0x%08x, bi_msg_len=0x%08x, result=0x%08x\n", 
+		//	__func__, bi_pos, bi_msg_len, r->r1);
 
 
 		return true;
