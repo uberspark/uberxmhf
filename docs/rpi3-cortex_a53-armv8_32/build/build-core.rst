@@ -64,11 +64,14 @@ Build Micro-Hypervisor Core Framework
 
 
    #. ``cd uxmhf-rpi3/uobjcoll``
-   #. ``make clean``
-   #. ``make``
+   #. ``uberspark build -v``
    #. ``cd install && ./install.sh ~/uxmhf-rpi3-staging/kernel7.img`` 
    #. ``cp install/uxmhf-rpi3.img ~/uxmhf-rpi3-staging/.``
    #. ``cp install/rpi3-config.txt ~/uxmhf-rpi3-staging/config.txt``
+
+   .. note::   the option ``-v`` above, is optional and enables verbose debugging information
+               for the |uspark| command line tool. 
+
 
 #. 
    Note: you can enable optional core micro-hypervisor features by enabling

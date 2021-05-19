@@ -1,3 +1,6 @@
+.. |uspark| replace:: überSpark
+.. |uberspark| replace:: überSpark
+
 .. |uxmhf| replace:: überXMHF
 .. |uberxmhf| replace:: überXMHF
 .. |uxmhflong| replace:: über eXtensible Micro-Hypervisor Framework

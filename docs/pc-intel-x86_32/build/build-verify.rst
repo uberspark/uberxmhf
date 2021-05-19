@@ -5,5 +5,5 @@ Verfying
 ========
 
 .. note::
-   This is work-in-progress for the new überSpark tool-chain
+   This is work-in-progress for the new |uspark| tool-chain
 
