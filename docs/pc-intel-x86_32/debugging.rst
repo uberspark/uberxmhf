@@ -109,7 +109,7 @@ probably need a little adaptation on other platforms running AMT.
 
 
 Debugging via Intel Direct Connect Interface (DCI)
----------------
+--------------------------------------------------
 
 One can use the following settings to debug uberXMHF on a modern hardware.
 
@@ -148,88 +148,86 @@ Especially, {0A 82} is due to the description "Suppress If {0A 82}" in the file 
 
 
 Run Intel System Debugger on host PC
-^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 * Run "Intel System Debugger Target Indicator 2021 NDA U2110", check if the connection is good.
 
 * Run Intel System Debugger. First click the "New Connection" dropbox
 
 * Then select "Connect and detect target". Use default settings and then click "Finish"
 
-* Now the connection panel shows this:
-Example shell output is:
+* Now the connection panel shows the following as a shell output:
 
-.. code-block:: bash
+  .. code-block:: bash
 
-  [INFO    ] Using workspace directory 'E:/workspaces/system_debugger/workspace/isd_cli/8ff45f4c-3686-49dc-b3dc-17c877f6eb
-  62' for console session
+    [INFO    ] Using workspace directory 'E:/workspaces/system_debugger/workspace/isd_cli/8ff45f4c-3686-49dc-b3dc-17c877f6eb
+    62' for console session
 
-  Welcome to the Intel(R) System Debugger CLI
-          Python   (v3.6.10) 'D:\IntelSWTools\system_debugger\2110-nda\tools\python3\python.exe'
-          IPython  (v7.13.0)
-          colorama [Loaded]
+    Welcome to the Intel(R) System Debugger CLI
+            Python   (v3.6.10) 'D:\IntelSWTools\system_debugger\2110-nda\tools\python3\python.exe'
+            IPython  (v7.13.0)
+            colorama [Loaded]
 
-  Modules:
-          isd          - Intel(R) System Debugger CLI (v3.0.4673) [Loaded]
-          tca          - Target Connection Assistant CLI (v3.0.4673) [Loaded]
-          ipccli       - OpenIPC CLI (v1.2105.2135.100) [Loaded]
-          sysdbg       - System Debug CLI (v1.21074+86b32) [Loaded]
-          trace        - System Trace CLI (v1.2107.1906.200) [Loaded]
-          crashlog     - Intel(R) Crash Log Framework (v3.42.21084.200) [Loaded]
-          trace_agent  - System Trace Target Agent CLI [Loaded]
+    Modules:
+            isd          - Intel(R) System Debugger CLI (v3.0.4673) [Loaded]
+            tca          - Target Connection Assistant CLI (v3.0.4673) [Loaded]
+            ipccli       - OpenIPC CLI (v1.2105.2135.100) [Loaded]
+            sysdbg       - System Debug CLI (v1.21074+86b32) [Loaded]
+            trace        - System Trace CLI (v1.2107.1906.200) [Loaded]
+            crashlog     - Intel(R) Crash Log Framework (v3.42.21084.200) [Loaded]
+            trace_agent  - System Trace Target Agent CLI [Loaded]
 
 
-  [INFO    ] OpenIPC configuration 'CFL_CNP_DCI_USB'; probe plug-in(s): 'OpenDCI'
-  [INFO    ] DCI: A DCI device has been detected, attempting to establish connection
-  [INFO    ] DCI: Target connection has been fully established
-  [INFO    ] Added new debug port 0 using probe plug-in 'OpenDCI'
-  [INFO    ] Detected CNP B0 (H) on JTAG chain 0 at position 0
-  [INFO    ] Detected CFL_M_UC R0 on JTAG chain 1 at position 0
-  [INFO    ] Target state changed - Checking Target
-  --- Logging error ---
-  Traceback (most recent call last):
-    File "D:\IntelSWTools\system_debugger\2110-nda\tools\python3\lib\logging\__init__.py", line 996, in emit
-      stream.write(msg)
-  UnicodeEncodeError: 'gbk' codec can't encode character '\xae' in position 119: illegal multibyte sequence
-  Call stack:
-    File "D:\IntelSWTools\system_debugger\2110-nda\tools\python3\lib\site-packages\intel\tcacli\logging.py", line 68, in _
-  print
-      self._logger.handle(log_record)
-  Message: 'Trying to map detected components to targets: 8th Gen Intel? Core? processor (Coffee Lake S) R0, Intel 300 Ser
-  ies Chipset (Cannon Point PCH-H) B0'
-  Arguments: []
-  --- Logging error ---
-  Traceback (most recent call last):
-    File "D:\IntelSWTools\system_debugger\2110-nda\tools\python3\lib\logging\__init__.py", line 996, in emit
-      stream.write(msg)
-  UnicodeEncodeError: 'gbk' codec can't encode character '\xae' in position 149: illegal multibyte sequence
-  Call stack:
-    File "D:\IntelSWTools\system_debugger\2110-nda\tools\python3\lib\site-packages\intel\tcacli\logging.py", line 68, in _
-  print
-      self._logger.handle(log_record)
-  Message: "Detected known target 'Coffee Lake S / Cannon Point PCH-H' with components: 8th Gen Intel? Core? processor (Co
-  ffee Lake S) R0 and Intel 300 Series Chipset (Cannon Point PCH-H) B0"
-  Arguments: []
-  [INFO    ] Detected known target 'Coffee Lake S / Cannon Point PCH-H' with components: 8th Gen Intel? Core? processor (C
-  offee Lake S) R0 and Intel 300 Series Chipset (Cannon Point PCH-H) B0
-  --- Logging error ---
-  Traceback (most recent call last):
-    File "D:\IntelSWTools\system_debugger\2110-nda\tools\python3\lib\logging\__init__.py", line 996, in emit
-      stream.write(msg)
-  UnicodeEncodeError: 'gbk' codec can't encode character '\xae' in position 91: illegal multibyte sequence
-  Call stack:
-    File "D:\IntelSWTools\system_debugger\2110-nda\tools\python3\lib\site-packages\intel\tcacli\logging.py", line 68, in _
-  print
-      self._logger.handle(log_record)
-  Message: 'Components: \n\tCPU: 8th Gen Intel? Core? processor (Coffee Lake S) available.\n\tPCH: Intel 300 Series Chipse
-  t (Cannon Point PCH-H) available.'
-  Arguments: []
-  [INFO    ] Components:
-          CPU: 8th Gen Intel? Core? processor (Coffee Lake S) available.
-          PCH: Intel 300 Series Chipset (Cannon Point PCH-H) available.
-  [INFO    ] Target state changed - Available
-  [INFO    ] IPC-CLI: 1.2105.2135.100, OpenIPC:Main (rev 661986) : 1.2106.5146.200
-  In [1]: 
-
+    [INFO    ] OpenIPC configuration 'CFL_CNP_DCI_USB'; probe plug-in(s): 'OpenDCI'
+    [INFO    ] DCI: A DCI device has been detected, attempting to establish connection
+    [INFO    ] DCI: Target connection has been fully established
+    [INFO    ] Added new debug port 0 using probe plug-in 'OpenDCI'
+    [INFO    ] Detected CNP B0 (H) on JTAG chain 0 at position 0
+    [INFO    ] Detected CFL_M_UC R0 on JTAG chain 1 at position 0
+    [INFO    ] Target state changed - Checking Target
+    --- Logging error ---
+    Traceback (most recent call last):
+      File "D:\IntelSWTools\system_debugger\2110-nda\tools\python3\lib\logging\__init__.py", line 996, in emit
+        stream.write(msg)
+    UnicodeEncodeError: 'gbk' codec can't encode character '\xae' in position 119: illegal multibyte sequence
+    Call stack:
+      File "D:\IntelSWTools\system_debugger\2110-nda\tools\python3\lib\site-packages\intel\tcacli\logging.py", line 68, in _
+    print
+        self._logger.handle(log_record)
+    Message: 'Trying to map detected components to targets: 8th Gen Intel? Core? processor (Coffee Lake S) R0, Intel 300 Ser
+    ies Chipset (Cannon Point PCH-H) B0'
+    Arguments: []
+    --- Logging error ---
+    Traceback (most recent call last):
+      File "D:\IntelSWTools\system_debugger\2110-nda\tools\python3\lib\logging\__init__.py", line 996, in emit
+        stream.write(msg)
+    UnicodeEncodeError: 'gbk' codec can't encode character '\xae' in position 149: illegal multibyte sequence
+    Call stack:
+      File "D:\IntelSWTools\system_debugger\2110-nda\tools\python3\lib\site-packages\intel\tcacli\logging.py", line 68, in _
+    print
+        self._logger.handle(log_record)
+    Message: "Detected known target 'Coffee Lake S / Cannon Point PCH-H' with components: 8th Gen Intel? Core? processor (Co
+    ffee Lake S) R0 and Intel 300 Series Chipset (Cannon Point PCH-H) B0"
+    Arguments: []
+    [INFO    ] Detected known target 'Coffee Lake S / Cannon Point PCH-H' with components: 8th Gen Intel? Core? processor (C
+    offee Lake S) R0 and Intel 300 Series Chipset (Cannon Point PCH-H) B0
+    --- Logging error ---
+    Traceback (most recent call last):
+      File "D:\IntelSWTools\system_debugger\2110-nda\tools\python3\lib\logging\__init__.py", line 996, in emit
+        stream.write(msg)
+    UnicodeEncodeError: 'gbk' codec can't encode character '\xae' in position 91: illegal multibyte sequence
+    Call stack:
+      File "D:\IntelSWTools\system_debugger\2110-nda\tools\python3\lib\site-packages\intel\tcacli\logging.py", line 68, in _
+    print
+        self._logger.handle(log_record)
+    Message: 'Components: \n\tCPU: 8th Gen Intel? Core? processor (Coffee Lake S) available.\n\tPCH: Intel 300 Series Chipse
+    t (Cannon Point PCH-H) available.'
+    Arguments: []
+    [INFO    ] Components:
+            CPU: 8th Gen Intel? Core? processor (Coffee Lake S) available.
+            PCH: Intel 300 Series Chipset (Cannon Point PCH-H) available.
+    [INFO    ] Target state changed - Available
+    [INFO    ] IPC-CLI: 1.2105.2135.100, OpenIPC:Main (rev 661986) : 1.2106.5146.200
+    In [1]: 
 
 * Then create a new debug configuration, see the `link <https://software.intel.com/content/www/us/en/develop/documentation/system-debug-user-guide/top/intel-system-debugger-startup/launching-the-debugger.html>`_
 
