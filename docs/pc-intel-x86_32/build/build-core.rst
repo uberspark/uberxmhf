@@ -11,8 +11,7 @@ tree of the sources:
 
 ::
 
-   make clean
-   make
+   uberspark build -v
    cd install && ./install.sh
 
 If everything goes well then a final hypervisor image ``install/xmhf-x86-vmx-x86pc.bin.gz`` will be generated. 
@@ -21,6 +20,10 @@ Copy this to the target machine's ``/boot/``
 .. note::   you can enable optional core micro-hypervisor features by enabling
             the following definitions within the ``uberspark.uobjcoll.configdefs`` JSON
             node within ``uxmhf/uobjcoll/uberspark.json`` as needed:
+
+.. note::   the option ``-v`` above, is optional and enables verbose debugging information
+            for the |uspark| command line tool. 
+            
 
 #. ``dmap`` to enable DMA protection capabilities
 #. ``xmhf_config_debug_serial_maxcpus`` will set the
