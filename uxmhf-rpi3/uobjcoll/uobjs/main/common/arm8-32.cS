@@ -48,6 +48,7 @@ CASM_FUNCDEF(void, mmio_write32,
 CASM_FUNCDEF(u32, mmio_read32,
 			 {
 				 __casm__ldr_imm_r0_r0(0);
+				 __casm__dsb();
 				 __casm__bx_lr();
 				 __casm__retu32();
 			 },

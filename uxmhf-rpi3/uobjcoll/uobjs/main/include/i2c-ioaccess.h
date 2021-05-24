@@ -43,12 +43,22 @@
 
 #define UAPP_I2C_IOACCESS_WRITEL  0x1000
 #define UAPP_I2C_IOACCESS_READL  0x1001
+#define UAPP_I2C_IOACCESS_HMAC  0x1002
+#define UAPP_I2C_IOACCESS_READBUFFER  0x1003
 
 #ifndef __ASSEMBLY__
+
+bool uapp_i2c_ioaccess_handle_fast_hcall(arm8_32_regs_t *r);
+
+typedef struct {
+	uint32_t  in_buffer_va;
+	uint32_t  out_buffer_va;
+	uint8_t len;
+}uapp_i2c_ioaccess_hmac_param_t;
+
 
 
 #endif // __ASSEMBLY__
 
-bool uapp_i2c_ioaccess_handle_fast_hcall(arm8_32_regs_t *r);
 
 #endif //__I2C_IOACCESS_H__
