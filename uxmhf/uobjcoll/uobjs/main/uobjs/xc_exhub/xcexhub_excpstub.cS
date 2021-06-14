@@ -49,9 +49,11 @@
  author: amit vasudevan (amitvasudevan@acm.org)
 */
 
+#include <uberspark/include/uberspark.h>
+#include <uberspark/hwm/cpu/x86/32-bit/generic/include/hwm.h>
+
+
 #include <uberspark/uobjcoll/platform/pc/uxmhf/uobjs/main/include/xmhf.h>
-#include <uberspark/hwm/include/arch/x86_32/intel/hwm.h>
-// #include <uberspark/uobjcoll/platform/pc/uxmhf/uobjs/main/include/xmhf-debug.h>
 #include <uberspark/uobjcoll/platform/pc/uxmhf/uobjs/main/include/uobjs/geec.h>
 
 #include <uberspark/uobjcoll/platform/pc/uxmhf/uobjs/main/include/uobjs/xc_exhub.h>

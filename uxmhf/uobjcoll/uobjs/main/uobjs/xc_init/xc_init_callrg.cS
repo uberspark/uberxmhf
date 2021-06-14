@@ -48,10 +48,11 @@
  CASM function to call rich guest
  author: amit vasudevan (amitvasudevan@acm.org)
 */
+#include <uberspark/include/uberspark.h>
+#include <uberspark/hwm/cpu/x86/32-bit/core-gen1/include/hwm.h>
+
 
 #include <uberspark/uobjcoll/platform/pc/uxmhf/uobjs/main/include/xmhf.h>
-#include <uberspark/hwm/include/arch/x86_32/intel/hwm.h>
-
 #include <uberspark/uobjcoll/platform/pc/uxmhf/uobjs/main/include/uobjs/xc_init.h>
 
 
