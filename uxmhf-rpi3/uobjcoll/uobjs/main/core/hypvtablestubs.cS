@@ -38,10 +38,11 @@
 	author: amit vasudevan (amitvasudevan@acm.org), ethan joseph (ethanj217@gmail.com)
 */
 
-#include <uberspark/hwm/include/arch/arm/hwm.h>
+#include <uberspark/include/uberspark.h>
+#include <uberspark/hwm/cpu/armv8-a/32-bit/cortex-a53/include/hwm.h>
+
 #include <uberspark/uobjcoll/platform/rpi3/uxmhf/uobjs/main/include/types.h>
 #include <uberspark/uobjcoll/platform/rpi3/uxmhf/uobjs/main/include/arm8-32.h>
-
 #include <uberspark/uobjcoll/platform/rpi3/uxmhf/uobjs/main/include/hypvtablestubs.h>
 
 

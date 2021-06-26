@@ -11,7 +11,7 @@
 
 
 		"uberspark.uobjcoll.namespace" : "uberspark/uobjcoll/platform/rpi3/uxmhf",
-		"uberspark.uobjcoll.platform" : "uberspark/platforms/rpi3/armv8a/32-bit/cortex-a53",
+		"uberspark.uobjcoll.platform" : "uberspark/platforms/rpi3/armv8-a/32-bit/cortex-a53",
 		"uberspark.uobjcoll.arch" : "armv8_32",
 		"uberspark.uobjcoll.cpu" : "generic",
 		"uberspark.uobjcoll.hpl" : "hyp",
