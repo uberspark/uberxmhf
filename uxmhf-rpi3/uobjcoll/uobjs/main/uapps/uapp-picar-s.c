@@ -34,7 +34,7 @@
 
 /*
 	picar-s hypapp
-	guest picar-s test 
+	guest picar-s test
 	author: amit vasudevan (amitvasudevan@acm.org)
 */
 
@@ -63,6 +63,82 @@ __attribute__((section(".data"))) bool uapp_picar_s_activated=false;
 
 #define UHSIGN_KEY_SIZE (sizeof(uhsign_key_picar))
 #define HMAC_DIGEST_SIZE 32
+#define NUM_REF 5
+
+
+/* Private Functions */
+void calculate_speed(int *array,int arr_len,int fw_speed,int *sp, int *st){
+   const int a_step = 2;
+   const int b_step = 8;
+   const int c_step = 24;
+   const int d_step = 40;
+   if((array[0] == 0) && (array[1] == 0) && (array[2] == 1) &&
+      (array[3] == 0) && (array[4] == 0) ){
+      *st = 0;
+   }
+   else if(((array[0] == 0) && (array[1] == 1) && (array[2] == 1) &&
+      (array[3] == 0) && (array[4] == 0) ) ||
+      ((array[0] == 0) && (array[1] == 0) && (array[2] == 1) &&
+      (array[3] == 1) && (array[4] == 0))) {
+      *st =  a_step;
+      *sp = fw_speed - 10;
+   }
+   else if(((array[0] == 0) && (array[1] == 1) && (array[2] == 0) &&
+      (array[3] == 0) && (array[4] == 0) ) ||
+      ((array[0] == 0) && (array[1] == 0) && (array[2] == 0) &&
+      (array[3] == 1) && (array[4] == 0))) {
+      *st = b_step;
+      *sp = fw_speed - 15;
+   }
+   else if(((array[0] == 1) && (array[1] == 1) && (array[2] == 0) &&
+      (array[3] == 0) && (array[4] == 0) ) ||
+      ((array[0] == 0) && (array[1] == 0) && (array[2] == 0) &&
+      (array[3] == 1) && (array[4] == 1))) {
+      *st = c_step;
+      *sp = fw_speed - 25;
+   }
+   else if(((array[0] == 1) && (array[1] == 0) && (array[2] == 0) &&
+      (array[3] == 0) && (array[4] == 0) ) ||
+      ((array[0] == 0) && (array[1] == 0) && (array[2] == 0) &&
+      (array[3] == 0) && (array[4] == 1))) {
+      *st = d_step;
+      *sp = fw_speed - 35;
+   }
+   else{
+      *st = d_step;
+      *sp = fw_speed - 40;
+   }
+}
+
+
+void calculate_angle(int *array,int arr_len,int *turn_angle, int st){
+   if((array[0] == 0) && (array[1] == 0) && (array[2] == 1) &&
+      (array[3] == 0) && (array[4] == 0) ){
+      *turn_angle = 90;
+   }
+   else if(((array[0] == 0) && (array[1] == 1) && (array[2] == 1) &&
+      (array[3] == 0) && (array[4] == 0) ) ||
+      ((array[0] == 0) && (array[1] == 1) && (array[2] == 0) &&
+      (array[3] == 0) && (array[4] == 0)) ||
+      ((array[0] == 1) && (array[1] == 1) && (array[2] == 0) &&
+      (array[3] == 0) && (array[4] == 0)) ||
+      ((array[0] == 1) && (array[1] == 0) && (array[2] == 0) &&
+      (array[3] == 0) && (array[4] == 0)) ) {
+      *turn_angle = (int)(90 - st);
+   }
+   else if(((array[0] == 0) && (array[1] == 0) && (array[2] == 1) &&
+      (array[3] == 1) && (array[4] == 0) ) ||
+      ((array[0] == 0) && (array[1] == 0) && (array[2] == 0) &&
+      (array[3] == 1) && (array[4] == 0)) ||
+      ((array[0] == 0) && (array[1] == 0) && (array[2] == 0) &&
+      (array[3] == 1) && (array[4] == 1)) ||
+      ((array[0] == 0) && (array[1] == 0) && (array[2] == 0) &&
+      (array[3] == 0) && (array[4] == 1)) ) {
+      *turn_angle = (int)(90 + st);
+   }
+}
+
+
 
 bool uapp_picar_s_handlehcall(u32 picar_s_function, void *picar_s_buffer, u32 picar_s_buffer_len){
  picar_s_param_t *upicar;
@@ -83,7 +159,7 @@ bool uapp_picar_s_handlehcall(u32 picar_s_function, void *picar_s_buffer, u32 pi
       uint32_t encrypted_buffer_pa;
       uint32_t decrypted_buffer_pa;
 
-      /*  	_XDPRINTFSMP_("%s: Got control: encrypted_buffer_va=0x%08x, decrypted_buffer_va=0x%08x\n", 
+      /*  	_XDPRINTFSMP_("%s: Got control: encrypted_buffer_va=0x%08x, decrypted_buffer_va=0x%08x\n",
             __func__, upicar->encrypted_buffer_va, upicar->decrypted_buffer_va);
       */
 
@@ -95,14 +171,15 @@ bool uapp_picar_s_handlehcall(u32 picar_s_function, void *picar_s_buffer, u32 pi
       }else{
 
          /*       _XDPRINTFSMP_("%s: encrypted buffer va=0x%08x, pa=0x%08x\n", __func__,
-                     upicar->encrypted_buffer_va, encrypted_buffer_pa);
+                     upicar->encrypted_bu:179ffer_va, encrypted_buffer_pa);
 
                _XDPRINTFSMP_("%s: decrypted buffer va=0x%08x, pa=0x%08x\n", __func__,
                      upicar->decrypted_buffer_va, decrypted_buffer_pa);
          */
          uberspark_uobjrtl_crypto__mac_hmacsha256__hmac_sha256_memory (uhsign_key_picar,  (unsigned long) UHSIGN_KEY_SIZE, (unsigned char *) encrypted_buffer_pa, (unsigned long) upicar->len, decrypted_buffer_pa, &digest_size);
-
-      } 
+         calculate_speed((int *)(upicar->array),NUM_REF,upicar->fw_speed,(int *)(upicar->out_fw_speed),(int *)(upicar->out_st));
+         calculate_angle((int *)(upicar->array),NUM_REF,(int *)(upicar->out_turn_angle),*((int*)upicar->out_st));
+      }
 
       return true;
 
@@ -116,13 +193,13 @@ void uapp_picar_s_handlehcall_prot(picar_s_param_t *upicar){
    u64 roattrs;
    uint32_t buffer_pa;
    u64 prot;
-   
+
 
 #if defined (__UBERSPARK_UOBJCOLL_CONFIGDEF_ENABLE_UART_PL011__) || defined (__UBERSPARK_UOBJCOLL_CONFIGDEF_ENABLE_UART_MINI__)
 	//initialize uart
 	uart_init();
 #endif
-   
+
   	_XDPRINTFSMP_("%s: Got control: buffer_va=0x%08x...\n", __func__, upicar->buffer_va);
 
    if(!uapp_va2pa(upicar->buffer_va, &buffer_pa)){
@@ -130,7 +207,7 @@ void uapp_picar_s_handlehcall_prot(picar_s_param_t *upicar){
      	_XDPRINTFSMP_("%s: Error, could not translate va2pa!\n", __func__);
 
    }else{
-      roattrs = 
+      roattrs =
       (LDESC_S2_MC_OUTER_WRITE_BACK_CACHEABLE_INNER_WRITE_BACK_CACHEABLE << LDESC_S2_MEMATTR_MC_SHIFT) |
 		(LDESC_S2_S2AP_READ_ONLY << LDESC_S2_MEMATTR_S2AP_SHIFT) |
 		(MEM_INNER_SHAREABLE << LDESC_S2_MEMATTR_SH_SHIFT) |
@@ -163,7 +240,7 @@ void uapp_picar_s_handlehcall_unprot(picar_s_param_t *upicar){
      	_XDPRINTFSMP_("%s: Error, could not translate va2pa!\n", __func__);
 
    }else{
-      rwattrs = 
+      rwattrs =
       (LDESC_S2_MC_OUTER_WRITE_BACK_CACHEABLE_INNER_WRITE_BACK_CACHEABLE << LDESC_S2_MEMATTR_MC_SHIFT) |
 		(LDESC_S2_S2AP_READ_WRITE << LDESC_S2_MEMATTR_S2AP_SHIFT) |
 		(MEM_INNER_SHAREABLE << LDESC_S2_MEMATTR_SH_SHIFT) |
@@ -178,4 +255,3 @@ void uapp_picar_s_handlehcall_unprot(picar_s_param_t *upicar){
 
    }
 }
-
