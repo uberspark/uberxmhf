@@ -51,16 +51,16 @@ typedef struct {
 	/* In parameters */
 	uint32_t encrypted_buffer_va;
 	uint32_t decrypted_buffer_va;
+   uint32_t buffer_va;
 	uint8_t len;
-	uint32_t buffer_va;
 	uint32_t array;
-	int fw_speed;
+	int speed;
 	int turn_angle;
-   int st;
+   int step;
 	/* Out parameters */
-	uint32_t out_fw_speed;
+	uint32_t out_speed;
 	uint32_t out_turn_angle;
-	uint32_t out_st;
+	uint32_t out_step;
 }picar_s_param_t;
 
 #endif // __ASSEMBLY__
