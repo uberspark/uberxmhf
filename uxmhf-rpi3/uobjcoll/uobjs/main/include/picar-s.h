@@ -48,19 +48,28 @@
 #ifndef __ASSEMBLY__
 
 typedef struct {
-	/* In parameters */
-	uint32_t encrypted_buffer_va;
-	uint32_t decrypted_buffer_va;
-   uint32_t buffer_va;
+	// Input parameters
 	uint8_t len;
-	uint32_t array;
+	int array[5];
 	int speed;
 	int turn_angle;
    int step;
-	/* Out parameters */
-	uint32_t out_speed;
-	uint32_t out_turn_angle;
-	uint32_t out_step;
+} input_params;
+
+typedef struct {
+	/* Output parameters */
+	int out_speed;
+	int out_turning_angle;
+	int out_step;
+} output_params;
+
+typedef struct {
+	/* All parameters */
+	uint32_t encrypted_buffer_va;
+	uint32_t decrypted_buffer_va;
+   uint32_t buffer_va;
+   uint32_t in_params_va;
+	uint32_t out_params_va;
 }picar_s_param_t;
 
 #endif // __ASSEMBLY__

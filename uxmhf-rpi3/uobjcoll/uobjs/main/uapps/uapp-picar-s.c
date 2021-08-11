@@ -144,6 +144,8 @@ bool uapp_picar_s_handlehcall(u32 picar_s_function, void *picar_s_buffer, u32 pi
  picar_s_param_t *upicar;
  unsigned long digest_size = HMAC_DIGEST_SIZE;
  upicar = (picar_s_param_t *)picar_s_buffer;
+ input_params *in_params;
+ output_params *out_params;
 
    if(picar_s_function == UAPP_PICAR_S_FUNCTION_PROT) {
 
@@ -158,15 +160,8 @@ bool uapp_picar_s_handlehcall(u32 picar_s_function, void *picar_s_buffer, u32 pi
    }else if (picar_s_function == UAPP_PICAR_S_FUNCTION_TEST){
       uint32_t encrypted_buffer_pa;
       uint32_t decrypted_buffer_pa;
-      uint32_t len_pa;
-      uint32_t array_pa;
-      uint32_t speed_pa;
-      uint32_t turn_angle_pa;
-      uint32_t step_pa;
-      /* Out parameters */
-      uint32_t out_speed_pa;
-      uint32_t out_turn_angle_pa;
-      uint32_t out_step_pa;
+      uint32_t in_params_pa;
+      uint32_t out_params_pa;
 
       /*  	_XDPRINTFSMP_("%s: Got control: encrypted_buffer_va=0x%08x, decrypted_buffer_va=0x%08x\n",
             __func__, upicar->encrypted_buffer_va, upicar->decrypted_buffer_va);
@@ -174,35 +169,31 @@ bool uapp_picar_s_handlehcall(u32 picar_s_function, void *picar_s_buffer, u32 pi
 
       if(!uapp_va2pa(upicar->encrypted_buffer_va, &encrypted_buffer_pa) ||
          !uapp_va2pa(upicar->decrypted_buffer_va, &decrypted_buffer_pa) ||
-         !uapp_va2pa(upicar->len, &len_pa) ||
-         !uapp_va2pa(upicar->array, &array_pa) ||
-         !uapp_va2pa(upicar->speed, &speed_pa) ||
-         !uapp_va2pa(upicar->turn_angle, &turn_angle_pa) ||
-         !uapp_va2pa(upicar->step, &step_pa) ||
-         !uapp_va2pa(upicar->out_speed, &out_speed_pa) ||
-         !uapp_va2pa(upicar->out_turn_angle, &out_turn_angle_pa) ||
-         !uapp_va2pa(upicar->out_step, &out_step_pa)
-         ){
+         !uapp_va2pa(upicar->in_params_va, &in_params_pa) ||
+         !uapp_va2pa(upicar->out_params_va, &out_params_pa))
+         {
          //error, this should not happen, probably need to print a message to serial debug and halt
          _XDPRINTFSMP_("%s: Error, could not translate va2pa!\n", __func__);
+         return false;
 
       }else{
          int out_step;
          int out_speed;
-         int out_turn_angle;
-
+         int out_turning_angle;
+         in_params = (input_params *) in_params_pa;
+         out_params = (output_params *) out_params_pa;
          /*       _XDPRINTFSMP_("%s: encrypted buffer va=0x%08x, pa=0x%08x\n", __func__,
                      upicar->encrypted_bu:179ffer_va, encrypted_buffer_pa);
 
                _XDPRINTFSMP_("%s: decrypted buffer va=0x%08x, pa=0x%08x\n", __func__,
                      upicar->decrypted_buffer_va, decrypted_buffer_pa);
          */
-         uberspark_uobjrtl_crypto__mac_hmacsha256__hmac_sha256_memory (uhsign_key_picar,  (unsigned long) UHSIGN_KEY_SIZE, (unsigned char *) encrypted_buffer_pa, (unsigned long) upicar->len, decrypted_buffer_pa, &digest_size);
-         calculate_speed(array_pa,NUM_REF,speed_pa,&out_speed,&out_step);
-         calculate_angle(array_pa,NUM_REF,&out_turn_angle,out_step);
-        *out_speed_pa = out_speed;
-        *out_step_pa  = out_speed;
-        *out_turn_angle = out_turn_angle;
+         uberspark_uobjrtl_crypto__mac_hmacsha256__hmac_sha256_memory (uhsign_key_picar,  (unsigned long) UHSIGN_KEY_SIZE, (unsigned char *) encrypted_buffer_pa, (unsigned long) in_params->len, decrypted_buffer_pa, &digest_size);
+         calculate_speed(in_params->array,NUM_REF,in_params->speed,&out_speed,&out_step);
+         calculate_angle(in_params->array,NUM_REF,&out_turning_angle,out_step);
+        out_params->out_speed = out_speed;
+        out_params->out_step  = out_step;
+        out_params->out_turning_angle = out_turning_angle;
       }
 
       return true;
