@@ -629,23 +629,23 @@ reswitch:	switch (ch = (u_char)*fmt++) {
 				padc = '0';
 				goto reswitch;
 			}
-			__attribute__ ((fallthrough));
+			/* fallthrough */
 		case '1':
-			__attribute__ ((fallthrough));
+			/* fallthrough */
 		case '2':
-			__attribute__ ((fallthrough));
+			/* fallthrough */
 		case '3':
-			__attribute__ ((fallthrough));
+			/* fallthrough */
 		case '4':
-			__attribute__ ((fallthrough));
+			/* fallthrough */
 		case '5':
-			__attribute__ ((fallthrough));
+			/* fallthrough */
 		case '6':
-			__attribute__ ((fallthrough));
+			/* fallthrough */
 		case '7':
-			__attribute__ ((fallthrough));
+			/* fallthrough */
 		case '8':
-			__attribute__ ((fallthrough));
+			/* fallthrough */
 		case '9':
 			for (n = 0;; ++fmt) {
 				n = n * 10 + ch - '0';
@@ -782,7 +782,7 @@ reswitch:	switch (ch = (u_char)*fmt++) {
 			goto handle_nosign;
 		case 'X':
 			upper = 1;
-			__attribute__ ((fallthrough));
+			/* fallthrough */
 		case 'x':
 			base = 16;
 			goto handle_nosign;
