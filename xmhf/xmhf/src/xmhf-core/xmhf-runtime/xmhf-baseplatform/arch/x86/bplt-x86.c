@@ -56,12 +56,12 @@ u32 xmhf_baseplatform_arch_getcpuvendor(void){
 	u32 vendor_dword1, vendor_dword2, vendor_dword3;
 	u32 cpu_vendor;
 	asm(	"xor	%%eax, %%eax \n"
-				  "cpuid \n"		
-				  "mov	%%ebx, %0 \n"
-				  "mov	%%edx, %1 \n"
-				  "mov	%%ecx, %2 \n"
-			     :	//no inputs
-					 : "m"(vendor_dword1), "m"(vendor_dword2), "m"(vendor_dword3)
+					"cpuid \n"		
+					"mov	%%ebx, %0 \n"
+					"mov	%%edx, %1 \n"
+					"mov	%%ecx, %2 \n"
+					 : "=m"(vendor_dword1), "=m"(vendor_dword2), "=m"(vendor_dword3)
+					 : //no inputs
 					 : "eax", "ebx", "ecx", "edx" );
 
 	if(vendor_dword1 == AMD_STRING_DWORD1 && vendor_dword2 == AMD_STRING_DWORD2
