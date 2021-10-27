@@ -572,10 +572,10 @@ bool verify_acmod(acm_hdr_t *acm_hdr)
 /*         return false; */
 /*     } */
 
-    if ( size > params.acm_max_size ) {
-        printf("AC mod size too large: %x (max=%x)\n", size,
-               params.acm_max_size);
-        return false;
+/*     if ( size > params.acm_max_size ) { */
+/*         printf("AC mod size too large: %x (max=%x)\n", size, */
+/*                params.acm_max_size); */
+/*         return false; */
     }
 
     printf("AC mod size OK\n");
