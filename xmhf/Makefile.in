@@ -151,6 +151,7 @@ CFLAGS += -mno-sse4.1 -mno-sse4.2 -mno-sse4 -mno-avx -mno-aes
 CFLAGS += -mno-pclmul -mno-sse4a -mno-sse5 -mno-3dnow -mno-popcnt -mno-abm
 CFLAGS += -nostdinc -pipe
 CFLAGS += -Wno-address-of-packed-member
+CFLAGS += -no-pie
 
 CFLAGS += $(ADDL_INCLUDES)
 VFLAGS = $(ADDL_INCLUDES)
