@@ -536,7 +536,7 @@ acm_hdr_t *copy_sinit(acm_hdr_t *sinit)
  */
 bool verify_acmod(acm_hdr_t *acm_hdr)
 {
-    getsec_parameters_t params;
+/*     getsec_parameters_t params; */
     uint32_t size;
     acm_info_table_t *info_table;
     txt_caps_t caps_mask = { 0 };
