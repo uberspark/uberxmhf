@@ -629,14 +629,30 @@ reswitch:	switch (ch = (u_char)*fmt++) {
 				padc = '0';
 				goto reswitch;
 			}
-		case '1': case '2': case '3': case '4':
-		case '5': case '6': case '7': case '8': case '9':
-				for (n = 0;; ++fmt) {
-					n = n * 10 + ch - '0';
-					ch = *fmt;
-					if (ch < '0' || ch > '9')
-						break;
-				}
+			__attribute__ ((fallthrough));
+		case '1':
+			__attribute__ ((fallthrough));
+		case '2':
+			__attribute__ ((fallthrough));
+		case '3':
+			__attribute__ ((fallthrough));
+		case '4':
+			__attribute__ ((fallthrough));
+		case '5':
+			__attribute__ ((fallthrough));
+		case '6':
+			__attribute__ ((fallthrough));
+		case '7':
+			__attribute__ ((fallthrough));
+		case '8':
+			__attribute__ ((fallthrough));
+		case '9':
+			for (n = 0;; ++fmt) {
+				n = n * 10 + ch - '0';
+				ch = *fmt;
+				if (ch < '0' || ch > '9')
+					break;
+			}
 			if (dot)
 				dwidth = n;
 			else
@@ -766,6 +782,7 @@ reswitch:	switch (ch = (u_char)*fmt++) {
 			goto handle_nosign;
 		case 'X':
 			upper = 1;
+			__attribute__ ((fallthrough));
 		case 'x':
 			base = 16;
 			goto handle_nosign;

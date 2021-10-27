@@ -74,13 +74,13 @@ static void _svm_handle_ioio(VCPU *vcpu, struct _svm_vmcbfields *vmcb, struct re
 	access_size = IO_SIZE_WORD;
   else
 	access_size = IO_SIZE_DWORD;
-	
-	//call our app handler
-	xmhf_smpguest_arch_x86svm_quiesce(vcpu);
-	app_ret_status=xmhf_app_handleintercept_portaccess(vcpu, r, ioinfo.fields.port, access_type, 
+  
+  //call our app handler
+  xmhf_smpguest_arch_x86svm_quiesce(vcpu);
+  app_ret_status=xmhf_app_handleintercept_portaccess(vcpu, r, ioinfo.fields.port, access_type, 
           access_size);
-    xmhf_smpguest_arch_x86svm_endquiesce(vcpu);
-	
+  xmhf_smpguest_arch_x86svm_endquiesce(vcpu);
+  
   
   if(app_ret_status == APP_IOINTERCEPT_CHAIN){
 	  if (ioinfo.fields.type){
