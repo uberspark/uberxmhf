@@ -861,7 +861,7 @@ void cstartup(multiboot_info_t *mbi){
     cpu_vendor = get_cpu_vendor_or_die(); // HALT()'s if unrecognized    
 
     if(CPU_VENDOR_INTEL == cpu_vendor) {
-        printf("\nINIT(early): detected an Intel CPU");
+        printf("\nINIT(early): detected an Intel CPU\n");
         
         /* Intel systems require an SINIT module */
         if(!txt_parse_sinit(mod_array, mods_count)) {
@@ -869,7 +869,7 @@ void cstartup(multiboot_info_t *mbi){
             HALT();
         }            
     } else if(CPU_VENDOR_AMD == cpu_vendor) {
-        printf("\nINIT(early): detected an AMD CPU");
+        printf("\nINIT(early): detected an AMD CPU\n");
     } else {
         printf("\nINIT(early): Dazed and confused: Unknown CPU vendor %d\n", cpu_vendor);
     }
