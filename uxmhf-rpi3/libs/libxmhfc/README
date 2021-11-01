@@ -1,8 +1,0 @@
-This directory contains an extremely stripped down libc.
-Primarily, it contains the mem*() and str*() functions
-that are part of string.h.
-
-The intention is to provide basic libc computational support
-for XMHF and hypapps.
-
-Code and headers were based on FreeBSD 9.

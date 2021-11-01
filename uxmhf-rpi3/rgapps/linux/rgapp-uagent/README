@@ -1,7 +1,0 @@
-guest app for demonstrating use of uberapp that encrypts a data blob.
-
-Includes 2 example programs:
-- demo which has the hypervisor encrypt and decrypt a variable.
-- a simple "chat" program (server/client) encrypts data prior to sending and decrypts upon receiving using shared symmetric secret key in hypervisor (AES encryption). Note: the chat program assumes that server is bound to an IP of 10.1.1.2
-
-author: matt mccormack (matthew.mccormack@live.com)

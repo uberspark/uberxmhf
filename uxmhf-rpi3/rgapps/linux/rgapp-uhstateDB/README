@@ -1,5 +1,0 @@
-guest app for demonstrating use of uberapp to store and mediate access to simple database
-
-First initializes the max stateDB, then gets a current state value, and finally increments the state value and returns that value:
-
-author: matt mccormack (matthew.mccormack@live.com)
