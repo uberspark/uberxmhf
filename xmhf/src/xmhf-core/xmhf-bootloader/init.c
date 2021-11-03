@@ -535,7 +535,7 @@ static bool txt_parse_sinit(module_t *mod_array, unsigned int mods_count) {
     
     for(i=(int)mods_count-1; i >= 0; i--) {
         bytes = mod_array[i].mod_end - mod_array[i].mod_start;
-        printf("Checking whether MBI module %i is SINIT...\n", i);
+        printf("\nChecking whether MBI module %i is SINIT...\n", i);
         if(is_sinit_acmod((void*)mod_array[i].mod_start, bytes, false)) {
             g_sinit_module_ptr = (u8*)mod_array[i].mod_start;
             g_sinit_module_size = bytes;
@@ -861,7 +861,7 @@ void cstartup(multiboot_info_t *mbi){
     cpu_vendor = get_cpu_vendor_or_die(); // HALT()'s if unrecognized    
 
     if(CPU_VENDOR_INTEL == cpu_vendor) {
-        printf("\nINIT(early): detected an Intel CPU\n");
+        printf("\nINIT(early): detected an Intel CPU");
         
         /* Intel systems require an SINIT module */
         if(!txt_parse_sinit(mod_array, mods_count)) {
@@ -869,7 +869,7 @@ void cstartup(multiboot_info_t *mbi){
             HALT();
         }            
     } else if(CPU_VENDOR_AMD == cpu_vendor) {
-        printf("\nINIT(early): detected an AMD CPU\n");
+        printf("\nINIT(early): detected an AMD CPU");
     } else {
         printf("\nINIT(early): Dazed and confused: Unknown CPU vendor %d\n", cpu_vendor);
     }
