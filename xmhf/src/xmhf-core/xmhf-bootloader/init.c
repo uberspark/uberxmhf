@@ -200,6 +200,8 @@ u32 dealwithE820(multiboot_info_t *mbi, u32 runtimesize __attribute__((unused)))
 
     //grab e820 list into grube820list
     {
+        // TODO: grube820list_numentries < MAX_E820_ENTRIES not checked.
+        // Possible buffer overflow?
         memory_map_t *mmap;
         for ( mmap = (memory_map_t *) mbi->mmap_addr;
               (unsigned long) mmap < mbi->mmap_addr + mbi->mmap_length;

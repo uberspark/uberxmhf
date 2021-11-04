@@ -52,7 +52,7 @@
 void hashandprint(const char* prefix, const u8 *bytes, size_t len) {
     u8 digest[SHA_DIGEST_LENGTH];
 
-    printf("\nhashandprint: processing 0x%08x bytes at addr 0x%08x", len, (u32)bytes);
+    printf("hashandprint: processing 0x%08x bytes at addr 0x%08x\n", len, (u32)bytes);
 
     EU_VERIFYN( sha1_buffer(bytes, len, digest));
 
