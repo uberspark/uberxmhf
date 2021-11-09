@@ -348,9 +348,13 @@ void init_scode(VCPU * vcpu)
   scode_curr = malloc((max+1) * sizeof(*scode_curr));
   memset(scode_curr, 0xFF, ((max+1) * sizeof(*scode_curr)));
 
+#ifdef __DRT__
   /* init PRNG and long-term crypto keys */
   EU_VERIFYN(trustvisor_master_crypto_init());
   eu_trace("trustvisor_master_crypto_init successful.");
+#else /* !__DRT__ */
+  eu_trace("DEVELOPMENT ONLY: skipping trustvisor_master_crypto_init().");
+#endif /* __DRT__ */
 }
 
 /* parse scode paramter info ( scode registration input) */
