@@ -201,11 +201,11 @@ static void _svm_int15_handleintercept(VCPU *vcpu, struct regs *r){
 		#ifdef __XMHF_VERIFICATION__
 			bdamemoryphysical = (u8 *)nondet_u32();
 		#else
-			bdamemoryphysical = (u8 *)xmhf_smpguest_arch_x86svm_walk_pagetables(vcpu, (u32)bdamemory);
+			bdamemoryphysical = (u8 *)xmhf_smpguest_arch_x86svm_walk_pagetables(vcpu, (uintptr_t)bdamemory);
 		#endif
-		if((u32)bdamemoryphysical < rpb->XtVmmRuntimePhysBase){
-			printf("\nINT15 (E820): V86 mode, bdamemory translated from %08x to %08x",
-				(u32)bdamemory, (u32)bdamemoryphysical);
+		if((uintptr_t)bdamemoryphysical < rpb->XtVmmRuntimePhysBase){
+			printf("\nINT15 (E820): V86 mode, bdamemory translated from %08lx to %08lx",
+				(uintptr_t)bdamemory, (uintptr_t)bdamemoryphysical);
 			bdamemory = bdamemoryphysical; 		
 		}else{
 			printf("\nCPU(0x%02x): INT15 (E820) V86 mode, translated bdamemory points beyond \
@@ -241,7 +241,7 @@ static void _svm_int15_handleintercept(VCPU *vcpu, struct regs *r){
 						pe820entry.type = g_e820map[r->ebx].type;
 					#else
 						GRUBE820 *pe820entry;
-						pe820entry = (GRUBE820 *)((u32)((vmcb->es.base)+(u16)r->edi));
+						pe820entry = (GRUBE820 *)((uintptr_t)((vmcb->es.base)+(u16)r->edi));
 					
 						pe820entry->baseaddr_low = g_e820map[r->ebx].baseaddr_low;
 						pe820entry->baseaddr_high = g_e820map[r->ebx].baseaddr_high;
@@ -275,7 +275,7 @@ static void _svm_int15_handleintercept(VCPU *vcpu, struct regs *r){
 			{
 				//u16 guest_cs, guest_ip, guest_flags;
 				u16 guest_cs __attribute__((unused)), guest_ip __attribute__((unused)), guest_flags;
-				u16 *gueststackregion = (u16 *)( (u32)vmcb->ss.base + (u16)vmcb->rsp );
+				u16 *gueststackregion = (u16 *)( (uintptr_t)vmcb->ss.base + (u16)vmcb->rsp );
 			
 			
 				//if V86 mode translate the virtual address to physical address
@@ -284,11 +284,11 @@ static void _svm_int15_handleintercept(VCPU *vcpu, struct regs *r){
 					#ifdef __XMHF_VERIFICATION__
 						u8 *gueststackregionphysical = (u8 *)nondet_u32();
 					#else
-						u8 *gueststackregionphysical = (u8 *)xmhf_smpguest_arch_x86svm_walk_pagetables(vcpu, (u32)gueststackregion);
+						u8 *gueststackregionphysical = (u8 *)xmhf_smpguest_arch_x86svm_walk_pagetables(vcpu, (uintptr_t)gueststackregion);
 					#endif
-					if((u32)gueststackregionphysical < rpb->XtVmmRuntimePhysBase){
+					if((uintptr_t)gueststackregionphysical < rpb->XtVmmRuntimePhysBase){
 						printf("\nINT15 (E820): V86 mode, gueststackregion translated from %08x to %08x",
-							(u32)gueststackregion, (u32)gueststackregionphysical);
+							(uintptr_t)gueststackregion, (uintptr_t)gueststackregionphysical);
 						gueststackregion = (u16 *)gueststackregionphysical; 		
 					}else{
 						printf("\nCPU(0x%02x): INT15 (E820) V86 mode, translated gueststackregion points beyond \
@@ -351,8 +351,8 @@ static void _svm_int15_handleintercept(VCPU *vcpu, struct regs *r){
 	cs = nondet_u16();
 #else
 	//get IP and CS of the original INT 15h handler
-	ip = *((u16 *)((u32)bdamemory + 4));
-	cs = *((u16 *)((u32)bdamemory + 6));
+	ip = *((u16 *)((uintptr_t)bdamemory + 4));
+	cs = *((u16 *)((uintptr_t)bdamemory + 6));
 #endif
 	
 	//update VMCB with the CS and IP and let go
