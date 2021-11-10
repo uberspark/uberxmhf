@@ -282,6 +282,8 @@ int scode_measure_section(utpm_master_state_t *utpm,
 #ifdef __DRT__
   /* extend pcr 0 */
   utpm_extend(&sha1sum, utpm, 0);
+#else /* !__DRT__ */
+  (void) utpm;  // unused
 #endif /* __DRT__ */
 
   rv=0;
