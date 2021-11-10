@@ -93,8 +93,8 @@
 char linux_kernel_cmdline[] = "ro root=/dev/sda2 maxcpus=1 mem=1024M"; 
 
 struct linux_setup_header {
-  u8 setup_sects;		
-  u16 root_flags;		
+  u8 setup_sects;
+  u16 root_flags;
   u32 syssize;
   u16 ramsize;
   u16 vid_mode;
@@ -124,7 +124,7 @@ struct linux_setup_header {
 void linux_store_setupandinitrd(u32 setupbase, u32 setupsize, u32 initrdbase,
 		u32 initrdsize, char *cmdline_untrusted, char *cmdline_trusted){
 	extern u32 __linux_setup_image[], __linux_initrd_image[];
-	extern u32 __linux_kernel_cmdline_untrusted[], __linux_kernel_cmdline_trusted[];		
+	extern u32 __linux_kernel_cmdline_untrusted[], __linux_kernel_cmdline_trusted[];
 	
 	HALT_ON_ERRORCOND(setupsize < __LINUX_OS_SETUP_SIZE);
 	HALT_ON_ERRORCOND(initrdsize < __LINUX_OS_INITRD_SIZE);
@@ -138,85 +138,85 @@ void linux_store_setupandinitrd(u32 setupbase, u32 setupsize, u32 initrdbase,
 
 //---relocate linux kernel 
 //void relocate_kernel(u32 setupbase, u32 setupsize, u32 initrdbase, u32 initrdsize){
-void relocate_kernel(u32 vmlinuz_base, u32 vmlinuz_size, 
-			u32 initrd_base, u32 initrd_size){
+void relocate_kernel(uintptr_t vmlinuz_base, uintptr_t vmlinuz_size, 
+			uintptr_t initrd_base, uintptr_t initrd_size){
   
-	struct linux_setup_header *h;
-  u32 setup_size, setup_base= SETUP_RELOCATE;
-	u32 system_size, system_base = SYSTEM_RELOCATE;
-  
-	//initialize linux kernel header located at OFFSET from vmlinuz_base
-	h = (struct linux_setup_header*)(vmlinuz_base + OFFSET);
+  struct linux_setup_header *h;
+  uintptr_t setup_size, setup_base= SETUP_RELOCATE;
+  uintptr_t system_size, system_base = SYSTEM_RELOCATE;
+
+  //initialize linux kernel header located at OFFSET from vmlinuz_base
+  h = (struct linux_setup_header*)(vmlinuz_base + OFFSET);
 
   //some sanity checks
-	if ( (h->header != HEADER) ){
+  if ( (h->header != HEADER) ){
     printf("\nHeader mismatch. Halting");
-		HALT();
+    HALT();
   }
   if ( (h->version < MIN_BOOTPROTO_VER) ){
     printf("\nBoot-protocol version mismatch. Halting!");
     HALT();
   }
 
-	//determine "setup" size  
+  //determine "setup" size  
   //the "setup" code executes in real mode. all of the setup (code,
   //header, command line, heap, and stack) is designed to occupy one
   //segment (64K). 
-	//offset 0x0000 - 0x7fff: setup code and header 
+  //offset 0x0000 - 0x7fff: setup code and header 
   //offset 0x8000 - 0x8fff: stack and heap 
   //offset 0x9000 - 0x90ff: command line 
-  
-	if ( h->setup_sects == 0 )
+
+  if ( h->setup_sects == 0 )
     setup_size = 4;
   else
     setup_size = h->setup_sects + 1;
   setup_size *= SECTOR_SIZE;
 
-	HALT_ON_ERRORCOND(setup_size < (64*1024) );	//setup_size _MUST_ be within 64K
-	printf("\n	setup at 0x%08x, size=0x%08x", setup_base, setup_size);
+  HALT_ON_ERRORCOND(setup_size < (64*1024) );	//setup_size _MUST_ be within 64K
+  printf("\n	setup at 0x%08x, size=0x%08x", setup_base, setup_size);
 
-	//copy 16-bit setup code to setup_base
+  //copy 16-bit setup code to setup_base
   memcpy((void *)setup_base, (void *)(vmlinuz_base), setup_size);
 
-	//determine "system" size
-	system_size = vmlinuz_size - setup_size;
+  //determine "system" size
+  system_size = vmlinuz_size - setup_size;
   printf("\n	system at 0x%08x, size=0x%08x", system_base, system_size);
-	
-	//copy 32-bit kernel code to system_base i.e 0x100000 (1MB)
+
+  //copy 32-bit kernel code to system_base i.e 0x100000 (1MB)
   memcpy((void *)system_base, (void*)(vmlinuz_base + setup_size), system_size);
 
 
   printf("\n	initrd at 0x%08x, size=0x%08x", INITRD_RELOCATE, initrd_size);
-	
-	//copy initrd
+
+  //copy initrd
   memcpy((void*)INITRD_RELOCATE, (void*)initrd_base,  initrd_size);
-	
+
   //copy the kernel command line to offset 0x9000. max size of command line is
   //255 bytes, excluding the trailing '\0' 
   memset((void *)(setup_base+0x9000), 0, 256);
-	memcpy((void *)(setup_base+0x9000), &linux_kernel_cmdline, sizeof(linux_kernel_cmdline));
-	printf("\n	cmdline at 0x%08x, size=%u bytes", (setup_base+0x9000), sizeof(linux_kernel_cmdline));
+  memcpy((void *)(setup_base+0x9000), &linux_kernel_cmdline, sizeof(linux_kernel_cmdline));
+  printf("\n	cmdline at 0x%08x, size=%u bytes", (setup_base+0x9000), sizeof(linux_kernel_cmdline));
 
-	//re-initialize linux kernel header pointer to the new setup code
-	//at setup_base
-	h = (struct linux_setup_header*)(setup_base + OFFSET);
-	
-	//write location of command line in setup header. note that command line
+  //re-initialize linux kernel header pointer to the new setup code
+  //at setup_base
+  h = (struct linux_setup_header*)(setup_base + OFFSET);
+
+  //write location of command line in setup header. note that command line
   //is at physical address 0x19000 and thus will not get overwritten when
   //setup relocates itself to 0x90000
   h->cmd_line_ptr = (u32)(setup_base + 0x9000);
-  
+
   //write location and size of initrd in setup header 
   h->ramdisk_image = INITRD_RELOCATE;
   h->ramdisk_size = initrd_size;
   h->initrd_addr_max = INITRD_MAXADDR;
-  
+
   // initialize other required fields of the setup header 
   // see Documentation/x86/boot.txt for details
   h->vid_mode = (u16)NORMAL;
   h->type_of_loader = (u8)OTHER;
-  
-	//offset limit of heap in real mode segment. leave space for a 
+
+  //offset limit of heap in real mode segment. leave space for a 
   //512 byte stack at the end of heap, as recommended by 
   //Documentation/x86/boot.txt.
   h->heap_end_ptr = (u16)(0x9000 - 0x200); 
@@ -229,31 +229,31 @@ void relocate_kernel(u32 vmlinuz_base, u32 vmlinuz_size,
 }
 
 //---setuplinuxboot
-void setuplinuxboot(VCPU *vcpu, u32 vmlinuz_base, u32 vmlinuz_size, 
-		u32 initrd_base, u32 initrd_size){
+void setuplinuxboot(VCPU *vcpu, uintptr_t vmlinuz_base, uintptr_t vmlinuz_size, 
+		uintptr_t initrd_base, uintptr_t initrd_size){
 
 
-	relocate_kernel(vmlinuz_base, vmlinuz_size, initrd_base, initrd_size);
-	printf("\nCPU(0x%02x): relocated and setup linux kernel...", vcpu->id);
-	
-	//setup VMCS for linux real-mode setup code
-	vcpu->vmcs.guest_DS_selector = 0x1000;
-	vcpu->vmcs.guest_DS_base = vcpu->vmcs.guest_DS_selector * 16;
-	vcpu->vmcs.guest_ES_selector = 0x1000;
-	vcpu->vmcs.guest_ES_base = vcpu->vmcs.guest_ES_selector * 16;
-	vcpu->vmcs.guest_FS_selector = 0x1000;
-	vcpu->vmcs.guest_FS_base = vcpu->vmcs.guest_FS_selector * 16;
-	vcpu->vmcs.guest_GS_selector = 0x1000;
-	vcpu->vmcs.guest_GS_base = vcpu->vmcs.guest_GS_selector * 16;
-	vcpu->vmcs.guest_SS_selector = 0x1000;
-	vcpu->vmcs.guest_SS_base = vcpu->vmcs.guest_SS_selector * 16;
-	vcpu->vmcs.guest_RSP = 0x9000;
-	vcpu->vmcs.guest_CS_selector = 0x1020;
-	vcpu->vmcs.guest_CS_base = vcpu->vmcs.guest_CS_selector * 16;
-	vcpu->vmcs.guest_IDTR_base = 0x0;	
-	vcpu->vmcs.guest_IDTR_limit = 0xffff;	
-	vcpu->vmcs.guest_RIP=0;
-	vcpu->vmcs.guest_RFLAGS &= ~(EFLAGS_IF);
+  relocate_kernel(vmlinuz_base, vmlinuz_size, initrd_base, initrd_size);
+  printf("\nCPU(0x%02x): relocated and setup linux kernel...", vcpu->id);
+
+  //setup VMCS for linux real-mode setup code
+  vcpu->vmcs.guest_DS_selector = 0x1000;
+  vcpu->vmcs.guest_DS_base = vcpu->vmcs.guest_DS_selector * 16;
+  vcpu->vmcs.guest_ES_selector = 0x1000;
+  vcpu->vmcs.guest_ES_base = vcpu->vmcs.guest_ES_selector * 16;
+  vcpu->vmcs.guest_FS_selector = 0x1000;
+  vcpu->vmcs.guest_FS_base = vcpu->vmcs.guest_FS_selector * 16;
+  vcpu->vmcs.guest_GS_selector = 0x1000;
+  vcpu->vmcs.guest_GS_base = vcpu->vmcs.guest_GS_selector * 16;
+  vcpu->vmcs.guest_SS_selector = 0x1000;
+  vcpu->vmcs.guest_SS_base = vcpu->vmcs.guest_SS_selector * 16;
+  vcpu->vmcs.guest_RSP = 0x9000;
+  vcpu->vmcs.guest_CS_selector = 0x1020;
+  vcpu->vmcs.guest_CS_base = vcpu->vmcs.guest_CS_selector * 16;
+  vcpu->vmcs.guest_IDTR_base = 0x0;
+  vcpu->vmcs.guest_IDTR_limit = 0xffff;
+  vcpu->vmcs.guest_RIP=0;
+  vcpu->vmcs.guest_RFLAGS &= ~(EFLAGS_IF);
 
   return;
 }
