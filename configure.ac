@@ -23,9 +23,6 @@ AC_CHECK_PROG([SED], [sed], [sed])
 AC_CHECK_PROG([MKDIR], [mkdir], [mkdir])
 AC_CHECK_PROG([CAT], [cat], [cat])
 
-# find path to -lgcc
-AC_SUBST([CCLIB], [`$CC -m32 --print-file-name=`])
-
 # user-defined options
 
 # 64-bit?
@@ -35,6 +32,12 @@ AC_ARG_WITH([target_hwplatform],
                 [select target hardware platform (x86, x86_64)]),
                 , [with_target_hwplatform=x86])
 TARGET_HWPLATFORM=$[]with_target_hwplatform
+
+# find path to -lgcc
+AC_SUBST([CCLIB])
+AS_IF([test "x${target_hwplatform}" != "xx86_64"],
+      [CCLIB=`$CC -m32 --print-file-name=`],
+      [CCLIB=`$CC -m64 --print-file-name=`])
 
 # target platform
 AC_SUBST([TARGET_PLATFORM])
