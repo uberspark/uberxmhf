@@ -11,3 +11,11 @@
 *.0
 *.ls
 *.tmp
+*.exe
+/build-aux/
+/Makefile
+/configure
+/hypapps/trustvisor/configure
+/hypapps/trustvisor/trustvisor.pc
+/hypervisor-x86.bin.gz
+/xmhf/src/xmhf-core/hypervisor-x86.bin.gz
