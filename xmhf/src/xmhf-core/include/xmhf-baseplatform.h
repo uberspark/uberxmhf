@@ -63,8 +63,9 @@
 //NOTE: The size of this structure _MUST_ be _EXACTLY_EQUAL_ to 8 bytes
 //as it is made use of in low-level assembly language stubs
 typedef struct _midtab {
-  u32 cpu_lapic_id;       //CPU LAPIC id (unique)
-  u32 vcpu_vaddr_ptr;     //virt. addr. pointer to vcpu struct for this CPU
+  u32 cpu_lapic_id;         //CPU LAPIC id (unique)
+  uintptr_t vcpu_vaddr_ptr; //virt. addr. pointer to vcpu struct for this CPU
+  // TODO: table no longer aligned in 64-bit
 } __attribute__((packed)) MIDTAB;
 
 #define SIZE_STRUCT_MIDTAB  (sizeof(struct _midtab))

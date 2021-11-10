@@ -328,11 +328,11 @@ void init_scode(VCPU * vcpu)
   mem_init();
 
   whitelist = malloc(WHITELIST_LIMIT);
-  eu_trace("alloc %dKB mem for scode_list at %x!", (WHITELIST_LIMIT/1024), (unsigned int)whitelist);
+  eu_trace("alloc %dKB mem for scode_list at %lx!", (WHITELIST_LIMIT/1024), (unsigned long)whitelist);
   scode_pfn_bitmap = (unsigned char *)malloc(PFN_BITMAP_LIMIT);
-  eu_trace("alloc %dKB mem for pfn_bitmap at %x!", (PFN_BITMAP_LIMIT/1024), (unsigned int)scode_pfn_bitmap);
+  eu_trace("alloc %dKB mem for pfn_bitmap at %lx!", (PFN_BITMAP_LIMIT/1024), (unsigned long)scode_pfn_bitmap);
   scode_pfn_bitmap_2M = (unsigned short *)malloc(PFN_BITMAP_2M_LIMIT);
-  eu_trace("alloc %dKB mem for pfn_bitmap_2M at %x!", (PFN_BITMAP_LIMIT/1024), (unsigned int)scode_pfn_bitmap_2M);
+  eu_trace("alloc %dKB mem for pfn_bitmap_2M at %lx!", (PFN_BITMAP_LIMIT/1024), (unsigned long)scode_pfn_bitmap_2M);
 
   memset(whitelist, 0, WHITELIST_LIMIT); 
   memset(scode_pfn_bitmap, 0, PFN_BITMAP_LIMIT);
