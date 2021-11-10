@@ -56,10 +56,10 @@
 #include <stdarg.h>
 
 #ifndef __ASSEMBLY__
-void *memmove(void *dst_void, const void *src_void, uint32_t length);
+void *memmove(void *dst_void, const void *src_void, size_t length);
 char *strchr(const char *s, int c);
-u32 strnlen(const char * s, uint32_t count);
-void *memcpy(void * to, const void * from, uint32_t n);
+size_t strnlen(const char * s, size_t count);
+void *memcpy(void * to, const void * from, size_t n);
 void *memset (void *str, int c, size_t len);
 int strncmp(const char *s1, const char *s2, size_t n);
 int strcmp(const char * cs,const char * ct);

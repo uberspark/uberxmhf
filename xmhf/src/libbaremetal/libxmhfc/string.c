@@ -47,7 +47,7 @@
 #include <stdint.h>
 #include <string.h> 
 
-void *memmove(void *dst_void, const void *src_void, u32 length){
+void *memmove(void *dst_void, const void *src_void, size_t length){
   char *dst = dst_void;
   const char *src = src_void;
 
@@ -68,14 +68,14 @@ void *memmove(void *dst_void, const void *src_void, u32 length){
 }
 
 
-u32 strnlen(const char * s, u32 count){
+size_t strnlen(const char * s, size_t count){
 	const char *sc;
 
 	for (sc = s; count-- && *sc != '\0'; ++sc);
-	return (u32)(sc - s);
+	return (size_t)(sc - s);
 }
 
-void *memcpy(void * to, const void * from, u32 n)
+void *memcpy(void * to, const void * from, size_t n)
 {
   size_t i;
   for(i=0; i<n; i++) {
