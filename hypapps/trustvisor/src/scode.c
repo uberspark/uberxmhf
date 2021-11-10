@@ -279,8 +279,10 @@ int scode_measure_section(utpm_master_state_t *utpm,
 
   EU_CHKN( sha1_done( &ctx, sha1sum.value));
 
+#ifdef __DRT__
   /* extend pcr 0 */
   utpm_extend(&sha1sum, utpm, 0);
+#endif /* __DRT__ */
 
   rv=0;
  out:
